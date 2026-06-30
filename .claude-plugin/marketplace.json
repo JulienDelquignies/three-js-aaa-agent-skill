@@ -1,0 +1,15 @@
+{
+  "name": "threejs-aaa-marketplace",
+  "owner": {
+    "name": "Julien Delquignies"
+  },
+  "plugins": [
+    {
+      "name": "threejs-aaa",
+      "source": "./",
+      "description": "Build AAA-quality 3D games in Three.js: WebGPU/TSL rendering, PBR + HDRI lighting, post-processing, procedural worlds, terrain, and Mixamo-rigged animated characters.",
+      "category": "game-development",
+      "tags": ["threejs", "webgpu", "3d", "procedural", "mixamo"]
+    }
+  ]
+}

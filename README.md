@@ -1,0 +1,74 @@
+# Three.js AAA Game Toolkit — Claude Code Skill
+
+A Claude Code **skill** (packaged as a plugin) that helps AI coding agents build
+**AAA-quality 3D games in Three.js**: production rendering, procedural worlds, and
+Mixamo-rigged animated characters. It bundles distilled, version-verified reference docs,
+executable helper scripts, and a runnable starter project.
+
+Targets the modern (2026) stack: `three@^0.185`, **WebGPURenderer** with automatic WebGL2
+fallback, **TSL** shaders, node-based post-processing, and the Mixamo → glTF pipeline.
+
+## What's inside
+
+```
+threejs-aaa/ (the skill)
+├── SKILL.md                  navigation hub + default tech decisions + workflow checklist
+├── reference/                load-on-demand domain docs (verified APIs & versions)
+│   ├── 01-project-setup.md   deps, engine architecture, asset pipeline
+│   ├── 02-rendering.md        WebGPU, PBR, HDRI/IBL, tone mapping, shadows
+│   ├── 03-materials-shaders.md  TSL, procedural & node materials, triplanar
+│   ├── 04-post-processing.md  bloom, GTAO, SSR, DOF, TAA/SMAA, color grade
+│   ├── 05-characters-mixamo.md  Mixamo pipeline, AnimationMixer, FSM, physics, IK
+│   ├── 06-procedural-geometry.md  BufferGeometry, extrude/lathe, CSG, L-systems, WFC
+│   ├── 07-terrain-noise.md    noise, heightmaps, erosion, marching cubes, chunked LOD
+│   ├── 08-scattering-instancing.md  InstancedMesh, surface sampling, BVH, grass
+│   └── 09-performance.md      draw calls, LOD, KTX2/Draco, profiling, quality tiers
+├── scripts/                  executable helpers (run, don't read)
+│   ├── scaffold.mjs          create a new game from the starter
+│   ├── convert-character.mjs Mixamo/FBX → optimized GLB
+│   └── procgen.mjs           generate a procedural prop GLB (zero deps)
+└── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
+```
+
+## Capabilities
+
+- **AAA rendering** — WebGPU/TSL, PBR (clearcoat/transmission/sheen/iridescence/anisotropy),
+  HDRI image-based lighting, AgX/ACES tone mapping, soft + cascaded shadows, a modern
+  post-processing stack (bloom, GTAO, DOF, TAA/SMAA, LUT color grading).
+- **Procedural content** — BufferGeometry authoring, CSG booleans (`three-bvh-csg`), noise &
+  fBm terrain, hydraulic/thermal erosion, marching cubes / surface nets, L-systems, WFC,
+  reproducible seeded generation, instanced scattering, and GPU grass.
+- **Animated characters** — the full Mixamo → glTF pipeline, `SkeletonUtils` cloning,
+  `AnimationMixer` blending/additive, an explicit animation state machine, Rapier physics
+  capsule controllers, IK (foot/look-at), morph-target facial animation, and VRM.
+- **Performance** — instancing/batching, LOD, Draco/Meshopt + KTX2 compression via
+  glTF-Transform, draw-call budgeting, and device quality tiers.
+
+## Install
+
+As a plugin via marketplace:
+
+```
+/plugin marketplace add JulienDelquignies/three-js-aaa-agent-skill
+/plugin install threejs-aaa@threejs-aaa-marketplace
+```
+
+Or as a project skill — copy `skills/threejs-aaa/` into your repo's `.claude/skills/`.
+
+Then ask Claude to build a Three.js game, scaffold a project, convert a Mixamo character, or
+generate procedural content, and the skill activates automatically.
+
+## Try the starter directly
+
+```bash
+node skills/threejs-aaa/scripts/scaffold.mjs ./my-game --name my-game
+cd my-game && npm install && npm run dev
+```
+
+## Notes on sources & versions
+
+All package versions in the references were verified against the npm registry on 2026-06-30
+and are pinned by major. Three.js addon APIs are not semver-stable — pin `three` and re-check
+import paths after upgrades. Two commercial caveats flagged in the docs: **LYGIA** is
+non-commercial by default (needs a commercial/patron license to ship), and **`three-bvh-csg`**
+is pre-1.0 (pin it). License: MIT.

@@ -1,0 +1,23 @@
+{
+  "name": "threejs-aaa",
+  "displayName": "Three.js AAA Game Toolkit",
+  "description": "Build AAA-quality 3D games in Three.js: WebGPU/TSL rendering, PBR + HDRI lighting, post-processing, procedural worlds, terrain, and Mixamo-rigged animated characters.",
+  "author": {
+    "name": "Julien Delquignies"
+  },
+  "homepage": "https://github.com/JulienDelquignies/three-js-aaa-agent-skill",
+  "repository": "https://github.com/JulienDelquignies/three-js-aaa-agent-skill",
+  "license": "MIT",
+  "keywords": [
+    "threejs",
+    "webgpu",
+    "tsl",
+    "game-development",
+    "3d",
+    "procedural-generation",
+    "mixamo",
+    "pbr",
+    "post-processing",
+    "aaa"
+  ]
+}
