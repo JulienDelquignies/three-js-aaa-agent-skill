@@ -22,11 +22,15 @@ threejs-aaa/ (the skill)
 │   ├── 06-procedural-geometry.md  BufferGeometry, extrude/lathe, CSG, L-systems, WFC
 │   ├── 07-terrain-noise.md    noise, heightmaps, erosion, marching cubes, chunked LOD
 │   ├── 08-scattering-instancing.md  InstancedMesh, surface sampling, BVH, grass
-│   └── 09-performance.md      draw calls, LOD, KTX2/Draco, profiling, quality tiers
+│   ├── 09-performance.md      draw calls, LOD, KTX2/Draco, profiling, quality tiers
+│   ├── 10-ai-asset-generation.md   text/image-to-3D, AI textures/HDRI, APIs, licensing
+│   ├── 11-ai-characters-motion.md  AI auto-rig, mocap, text-to-motion, audio-to-face, MediaPipe
+│   └── 12-advanced-rendering-scale.md  GPU-driven rendering, web-Nanite, streaming, FSR, GI
 ├── scripts/                  executable helpers (run, don't read)
 │   ├── scaffold.mjs          create a new game from the starter
 │   ├── convert-character.mjs Mixamo/FBX → optimized GLB
-│   └── procgen.mjs           generate a procedural prop GLB (zero deps)
+│   ├── procgen.mjs           generate a procedural prop GLB (zero deps)
+│   └── gen-asset.mjs         AI text/image-to-3D → game-ready GLB (Meshy adapter)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
 ```
 
@@ -43,6 +47,11 @@ threejs-aaa/ (the skill)
   capsule controllers, IK (foot/look-at), morph-target facial animation, and VRM.
 - **Performance** — instancing/batching, LOD, Draco/Meshopt + KTX2 compression via
   glTF-Transform, draw-call budgeting, and device quality tiers.
+- **Overcoming the "no art / browser budget" limits** — orchestrating AI generation
+  (text/image-to-3D, AI PBR textures, AI/CC0 HDRIs, AI auto-rig + mocap + facial animation)
+  with a game-ready cleanup pipeline and explicit commercial-licensing guidance; plus the
+  realistic path to AAA-scale fidelity in the browser (GPU-driven rendering, KTX2/Meshopt
+  streaming, dynamic-resolution + FSR1, baked GI) and an honest gap analysis vs native.
 
 ## Install
 

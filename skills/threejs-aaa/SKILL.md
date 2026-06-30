@@ -43,6 +43,9 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Noise, heightmap terrain, erosion, marching cubes, chunked LOD | [reference/07-terrain-noise.md](reference/07-terrain-noise.md) |
 | Scattering vegetation/props, InstancedMesh, surface sampling, BVH | [reference/08-scattering-instancing.md](reference/08-scattering-instancing.md) |
 | Performance: draw calls, instancing, LOD, KTX2/Draco, profiling | [reference/09-performance.md](reference/09-performance.md) |
+| AI asset generation: text/image-to-3D, AI textures, AI HDRI, licensing | [reference/10-ai-asset-generation.md](reference/10-ai-asset-generation.md) |
+| AI characters: auto-rig, mocap, text-to-motion, audio-to-face, MediaPipe | [reference/11-ai-characters-motion.md](reference/11-ai-characters-motion.md) |
+| Toward true AAA: GPU-driven rendering, web-Nanite, streaming, FSR, GI, scale | [reference/12-advanced-rendering-scale.md](reference/12-advanced-rendering-scale.md) |
 
 ## Bundled scripts (execute, don't read into context)
 
@@ -62,6 +65,11 @@ resolve regardless of install location. Each prints `--help`.
   CSG booleans, greebles) for quick props:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/procgen.mjs --spec ./prop.json --out ./public/prop.glb
+  ```
+- **Generate an AI 3D asset** — text/image → 3D via the Meshy API, then make it game-ready.
+  Needs `MESHY_API_KEY`; prints setup + open-model alternatives if absent:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/gen-asset.mjs --prompt "a mossy stone well" --out ./public/well.glb --optimize
   ```
 
 ## Default tech decisions (the AAA baseline)
@@ -87,6 +95,14 @@ Apply these unless the user asks otherwise. Rationale and alternatives are in th
   Mention `react-three-fiber` + `drei` as an option for declarative/indie projects.
 - **Determinism:** never `Math.random()` for procedural content — use a seeded PRNG
   (`pure-rand` or an inline mulberry32) and derive independent sub-seeds per subsystem.
+- **AI-generated assets:** to get past "no art," orchestrate generation services — text/image-to-3D
+  (Meshy/Tripo/Rodin or open TRELLIS/TripoSR), AI PBR textures, AI/CC0 HDRIs, AI auto-rig + mocap +
+  facial — then always run the **game-ready cleanup** (retopo/optimize → KTX2/Meshopt GLB). See
+  `reference/10` and `11`. **Check licensing first** (`reference/10` table): some open models exclude
+  the EU, and text-to-motion datasets are non-commercial.
+- **Pushing real AAA scale:** browsers have no mesh shaders / hardware RT / sparse textures, so the
+  wins are KTX2 textures, dynamic-resolution + FSR1, GPU-driven culling (`BatchedMesh` + compute +
+  indirect draws), meshopt LOD streaming, and baked GI — not brute force. See `reference/12`.
 
 ## Build workflow checklist
 
