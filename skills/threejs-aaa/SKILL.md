@@ -41,6 +41,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Mixamo pipeline, GLTF loading, AnimationMixer, state machine, IK | [reference/05-characters-mixamo.md](reference/05-characters-mixamo.md) |
 | Procedural animation: springs, damping, two-bone IK, look-at, foot IK | [reference/14-procedural-animation.md](reference/14-procedural-animation.md) |
 | **Locomotion (REQUIRED for moving characters): no foot-skate — cadence-sync + foot-lock IK + follow camera** | [reference/21-locomotion-no-footskate.md](reference/21-locomotion-no-footskate.md) |
+| **Character controller (controls): input→facing (no moonwalk)+run/idle+no-slide, camera-relative, gamepad** | [reference/22-character-controller.md](reference/22-character-controller.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -110,6 +111,11 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-locomotion.mjs   # self-test the cadence math
   ```
+- **Give a character good controls (the point of a game)** — `engine/character-controller.js` turns a
+  world-space move vector (keyboard/gamepad, camera-relative) into correct movement: the model faces
+  where it moves (no moonwalk — the Mixamo Soldier's forward is −Z; verify `dot(forward,velocity)>0`),
+  run/idle blends by speed, cadence tracks ground speed, and the planted foot is locked. Shots aim along
+  `ctrl.forward()`. Playable demo: `examples/showcase` → **Contrôles**. See `reference/22`.
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free
   (Playwright/Chromium pre-installed in the Claude Code env):

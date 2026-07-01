@@ -1,10 +1,11 @@
-# Example — Soldier Volley (real rigged character + validation)
+# Example — Soldier Volley (two real rigged characters + validation)
 
-A runnable example that composes much of the `threejs-aaa` skill into one animated scene, using a
-**real rigged Mixamo character**: a footballer runs in, a **procedural right-leg kick** strikes the
-ball, and it arcs into the goal net — with **temporal correctness validation** on the real bones.
+A runnable example that composes much of the `threejs-aaa` skill into one animated scene, using **two
+real rigged Mixamo characters** (the second cloned with `SkeletonUtils`): a **dribbler** carries the ball
+down the wing and **crosses**, a **striker** runs onto it and **volleys** into the net. Each player
+**faces where it runs** (no moonwalk) and the shots go toward their targets — asserted by validation.
 
-It exists to prove the skill's pieces work together on a real character, not just synthetic data.
+It exists to prove the skill's pieces work together on real characters, not just synthetic data.
 
 ## What it demonstrates
 
@@ -24,13 +25,12 @@ It exists to prove the skill's pieces work together on a real character, not jus
   and a keyframed broadcast camera, seekable frame-by-frame for capture (`reference/16`).
 - **Zero-cost / zero paid API** — procedural pitch + goal + ball, HDRI sky from CC0 (drop one into
   `public/env/`), Soldier.glb from the three.js examples. Nothing billable (`reference/13`).
-- **Temporal correctness** (`reference/20`) — samples the real foot bone and the ball across the
-  run-up and asserts:
-  - `locomotion_no_slide` — the planted (lower) foot's per-frame world slip falls from **0.15 m/frame**
-    (old fixed clip rate) to **0 m/frame** with `matchCadence` + `FootLockIK`, i.e. at or below the
-    ground's per-frame travel: the foot grips the pitch instead of skating,
-  - `noPops` — the ball trajectory is continuous (no teleport between frames).
-  The report is logged and exposed on `window.__volleyReport`.
+- **Correctness validation** (`reference/20`/`22`) — `window.__volleyReport` asserts:
+  - `players_face_travel_not_moonwalk` — each player's forward · velocity > 0 (the Mixamo Soldier faces
+    −Z, so a naive facing moonwalks; this catches it),
+  - `cross_goes_toward_striker` and `volley_goes_toward_goal` — the shots fire the right way (not "à
+    l'envers"),
+  - `ball_no_pops` — the ball trajectory is continuous (no teleport between frames).
 
 ## Run
 

@@ -4,9 +4,12 @@ A small multi-page Vite app that presents the skill's runnable scenes behind a h
 Each card opens a live, interactive preview. **Live:** https://threejs-aaa-showcase.vercel.app
 
 ## Scenes
-- **Soldier Volley** (`volley.html`) — the cinematic: a real Mixamo rig (`Soldier.glb`) runs in without
-  foot-skate (cadence-sync + foot-lock IK), chases a rolling ball and volleys into the net, broadcast
-  camera. Deterministic timeline (`setTime(t, camera)`), temporal validation on `window.__volleyReport`.
+- **Contrôles — jouable** (`controls.html`) — drive the Soldier with WASD/ZQSD/arrows or a gamepad
+  (camera-relative); built on the native `CharacterController`: faces where it moves (no moonwalk), no
+  foot-skate, dribbles the ball, Space shoots along its facing, Shift crosses, third-person follow camera.
+- **Soldier Volley** (`volley.html`) — the cinematic done right: a **dribbler** carries the ball down the
+  wing and **crosses**, a **striker** (cloned rig) runs on and **volleys** into the net. Each player faces
+  its run; validation on `window.__volleyReport` asserts no-moonwalk + shots-toward-target.
 - **Matériaux PBR** (`materials.html`) — a lineup of spheres under image-based lighting: clearcoat,
   glass/transmission, brushed metal, gold, iridescence, velvet (sheen). Orbit to inspect.
 - **Monde procédural** (`procedural.html`) — a seeded fBm-noise terrain, height-based coloring, water,

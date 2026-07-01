@@ -29,6 +29,7 @@ threejs-aaa/ (the skill)
 │   ├── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
 │   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
 │   ├── 21-locomotion-no-footskate.md  moving characters that don't slide: cadence-sync + foot-lock IK + follow camera
+│   ├── 22-character-controller.md  controls: input→facing (no moonwalk) + run/idle + no-slide, camera-relative, gamepad
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -81,6 +82,12 @@ examples/
   ties clip phase to distance travelled so legs cycle at ground speed, and `FootLockIK` pins the
   planted foot (root-motion clips barely push, so cadence alone still smears). Proven on the real
   Mixamo Soldier rig: planted-foot slip **0.15 → 0 m/frame**. Cadence math self-tests with zero deps.
+- **Character controller / controls (native)** — the point of a game. `CharacterController` turns a
+  camera-relative move vector (keyboard/gamepad) into correct movement: the model **faces where it
+  moves** (no moonwalk — the Mixamo Soldier's forward is −Z, so a naive rotation makes it moonwalk and
+  shoot backward; the controller fixes it and you verify `dot(forward,velocity)>0`), run/idle blends,
+  cadence tracks ground speed, foot stays planted, and shots aim along its facing. Playable demo in the
+  live gallery (**Contrôles** — drive the Soldier, dribble, shoot).
 - **Scene correctness enforcement (the skill's job, not the user's)** — a tested spatial validator
   that catches placement bugs the way an AAA reviewer would: a door must sit in the wall opening, a
   chair must face the desk, a seated character's hips on the seat, furniture must not clip walls, a

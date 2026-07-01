@@ -9,6 +9,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: page('index'),
+        controls: page('controls'),
         volley: page('volley'),
         materials: page('materials'),
         procedural: page('procedural'),
