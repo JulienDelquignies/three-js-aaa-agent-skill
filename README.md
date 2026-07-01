@@ -30,6 +30,7 @@ threejs-aaa/ (the skill)
 │   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
+│   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
 │   ├── 16-visual-qa.md        screenshot → critique → fix loop + draw-call perf gate
 │   └── 17-autonomous-loop.md  agent-driven build→see→fix loop to the AAA rubric (demonstrated)
 ├── scripts/                  executable helpers (run, don't read)

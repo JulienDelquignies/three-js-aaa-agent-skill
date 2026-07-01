@@ -11,6 +11,11 @@ This list is non-exhaustive by design; the predicates are extensible. Implementa
 `assets/starter/src/engine/scene-validate.js` (dep-free, runtime + CI) and are proven by
 `scripts/verify-scene.mjs --selftest`.
 
+> **Want the exhaustive list + the method to keep it complete?** See
+> [reference/19-correctness-catalogue.md](19-correctness-catalogue.md): the rule *generator*
+> (relationship × failure-mode × archetype), the full catalogue by relationship type (what's
+> implemented vs extensible), severity/review-pass model, and how to add a rule.
+
 Table of contents
 - [The rule taxonomy](#the-rule-taxonomy)
 - [Objects as OBBs](#objects-as-obbs)

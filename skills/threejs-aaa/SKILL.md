@@ -42,6 +42,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Procedural animation: springs, damping, two-bone IK, look-at, foot IK | [reference/14-procedural-animation.md](reference/14-procedural-animation.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
+| **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
 | Procedural geometry: BufferGeometry, extrude/lathe, CSG booleans | [reference/06-procedural-geometry.md](reference/06-procedural-geometry.md) |
 | Noise, heightmap terrain, erosion, marching cubes, chunked LOD | [reference/07-terrain-noise.md](reference/07-terrain-noise.md) |
 | Scattering vegetation/props, InstancedMesh, surface sampling, BVH | [reference/08-scattering-instancing.md](reference/08-scattering-instancing.md) |

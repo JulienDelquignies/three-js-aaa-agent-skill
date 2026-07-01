@@ -204,14 +204,22 @@ export function stableOnBase(obj, support, margin = 0.0) {
 }
 
 /** Plausible real-world size for an object archetype (see SIZE_TABLE). */
+// Plausible real-world size envelopes (meters). h = height range; foot = [[small,small],[large,large]]
+// footprint range (extents sorted ascending). Extend freely — each row is one archetype constraint.
 export const SIZE_TABLE = {
-  human: { h: [1.4, 2.1] }, door: { h: [1.9, 2.3], foot: [[0.03, 0.15], [0.6, 1.2]] },
+  human: { h: [1.4, 2.1] }, child: { h: [0.9, 1.4] },
+  door: { h: [1.9, 2.3], foot: [[0.03, 0.15], [0.6, 1.2]] }, window: { h: [0.6, 1.8] },
   chair: { h: [0.7, 1.2], foot: [[0.35, 0.6], [0.35, 0.6]] }, stool: { h: [0.4, 0.8] },
-  table: { h: [0.68, 0.78], foot: [[0.5, 1.4], [0.7, 2.4]] }, desk: { h: [0.7, 0.8], foot: [[0.5, 0.9], [1.0, 2.0]] },
+  table: { h: [0.68, 0.78], foot: [[0.5, 1.4], [0.7, 2.4]] }, desk: { h: [0.7, 0.92], foot: [[0.5, 0.9], [1.0, 2.0]] },
   sofa: { h: [0.7, 1.1], foot: [[0.8, 1.05], [1.4, 2.8]] }, bed: { h: [0.4, 1.4], foot: [[0.9, 1.9], [1.9, 2.2]] },
-  bookshelf: { h: [0.8, 2.2] }, lamp_floor: { h: [1.2, 1.8] }, bottle: { h: [0.18, 0.35] }, cup: { h: [0.06, 0.14] },
-  car: { h: [1.3, 1.9], foot: [[1.6, 2.1], [3.6, 5.4]] }, window: { h: [0.6, 1.8] }, step: { h: [0.14, 0.20] },
-  ball_football: { h: [0.20, 0.24] }, goal_football: { h: [2.3, 2.6], foot: [[0.5, 2.5], [6.8, 7.7]] },
+  bookshelf: { h: [0.8, 2.2] }, fridge: { h: [1.5, 1.9], foot: [[0.6, 0.9], [0.6, 1.0]] },
+  lamp_floor: { h: [1.2, 1.8] }, bottle: { h: [0.18, 0.35] }, cup: { h: [0.06, 0.14] },
+  crate: { h: [0.4, 1.2], foot: [[0.4, 1.2], [0.4, 1.2]] }, barrel: { h: [0.8, 1.0], foot: [[0.5, 0.7], [0.5, 0.7]] },
+  car: { h: [1.3, 1.9], foot: [[1.6, 2.1], [3.6, 5.4]] }, suv: { h: [1.6, 2.0], foot: [[1.8, 2.2], [4.6, 5.8]] },
+  bus: { h: [2.9, 3.5], foot: [[2.3, 2.7], [9.5, 13.5]] }, streetlight: { h: [4.0, 12.0] }, tree: { h: [4.0, 25.0] },
+  bush: { h: [0.4, 2.2] }, house_storey: { h: [2.9, 4.1] }, ceiling_room: { h: [2.3, 3.1] }, step: { h: [0.14, 0.20] },
+  ball_football: { h: [0.20, 0.24] }, ball_basketball: { h: [0.23, 0.25] },
+  goal_football: { h: [2.3, 2.6], foot: [[0.5, 2.5], [6.8, 7.7]] }, hoop_basketball: { h: [3.0, 3.1] },
 };
 export function withinScale(obj, archetype, table = SIZE_TABLE) {
   const spec = table[archetype];
