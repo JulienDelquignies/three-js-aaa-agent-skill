@@ -166,6 +166,97 @@ export function sitPose(pelvis, seat, characterQuat, chairQuat, opts = {}) {
   ];
 }
 
+/** Object held in a hand: grip point at the hand socket AND object clear of the body/arm. */
+export function heldInHand(obj, gripWorld, handWorld, body, maxGap = 0.06) {
+  const d = dist(gripWorld, handWorld);
+  const atHand = d <= maxGap;
+  const clear = !obbOverlap(obj, body, 0.02).overlap;
+  return [
+    R('gripAtHand', atHand, +d.toFixed(4), maxGap, atHand ? 'grip at the hand' : `grip ${d.toFixed(3)}m from the hand`),
+    R('clearOfBody', clear, 0, 0, clear ? 'object clear of the body' : 'held object clips the body/arm'),
+  ];
+}
+
+/** Nothing floats: object rests on the ground or one of its supports, or it's flagged floating. */
+export function supported(obj, { supports = [], groundY = null, tol = 0.03 } = {}) {
+  const o = worldAABB(obj);
+  if (groundY != null && Math.abs(o.min[1] - groundY) <= tol) return R('supported', true, +(o.min[1] - groundY).toFixed(4), tol, 'resting on ground');
+  for (const s of supports) if (restsOn(obj, s, tol).ok) return R('supported', true, 0, tol, 'resting on a support');
+  const gap = groundY != null ? o.min[1] - groundY : o.min[1];
+  const fix = groundY != null ? { position: [obj.c[0], obj.c[1] - (o.min[1] - groundY), obj.c[2]] } : undefined;
+  return R('supported', false, +gap.toFixed(4), tol, 'floating — nothing supports it', fix);
+}
+
+/** Object that should stand upright has its local +Y within a tilt tolerance of world up. */
+export function upright(obj, maxTiltDeg = 8) {
+  const up = norm(applyQuat([0, 1, 0], obj.q));
+  const tilt = Math.acos(clamp(dot(up, [0, 1, 0]), -1, 1)) * DEG;
+  return R('upright', tilt <= maxTiltDeg, +tilt.toFixed(2), maxTiltDeg, `tilted ${tilt.toFixed(1)}° from vertical`);
+}
+
+/** Won't topple: the object's centre (approx. centre of mass) sits over its support footprint. */
+export function stableOnBase(obj, support, margin = 0.0) {
+  const s = worldAABB(support);
+  const inX = obj.c[0] >= s.min[0] - margin && obj.c[0] <= s.max[0] + margin;
+  const inZ = obj.c[2] >= s.min[2] - margin && obj.c[2] <= s.max[2] + margin;
+  const ok = inX && inZ;
+  return R('stable', ok, 0, margin, ok ? 'centre of mass over the base' : 'centre of mass past the base — topples');
+}
+
+/** Plausible real-world size for an object archetype (see SIZE_TABLE). */
+export const SIZE_TABLE = {
+  human: { h: [1.4, 2.1] }, door: { h: [1.9, 2.3], foot: [[0.03, 0.15], [0.6, 1.2]] },
+  chair: { h: [0.7, 1.2], foot: [[0.35, 0.6], [0.35, 0.6]] }, stool: { h: [0.4, 0.8] },
+  table: { h: [0.68, 0.78], foot: [[0.5, 1.4], [0.7, 2.4]] }, desk: { h: [0.7, 0.8], foot: [[0.5, 0.9], [1.0, 2.0]] },
+  sofa: { h: [0.7, 1.1], foot: [[0.8, 1.05], [1.4, 2.8]] }, bed: { h: [0.4, 1.4], foot: [[0.9, 1.9], [1.9, 2.2]] },
+  bookshelf: { h: [0.8, 2.2] }, lamp_floor: { h: [1.2, 1.8] }, bottle: { h: [0.18, 0.35] }, cup: { h: [0.06, 0.14] },
+  car: { h: [1.3, 1.9], foot: [[1.6, 2.1], [3.6, 5.4]] }, window: { h: [0.6, 1.8] }, step: { h: [0.14, 0.20] },
+  ball_football: { h: [0.20, 0.24] }, goal_football: { h: [2.3, 2.6], foot: [[0.5, 2.5], [6.8, 7.7]] },
+};
+export function withinScale(obj, archetype, table = SIZE_TABLE) {
+  const spec = table[archetype];
+  if (!spec) return R('scale', true, 0, 0, `no size reference for "${archetype}"`);
+  const a = worldAABB(obj), size = [a.max[0] - a.min[0], a.max[1] - a.min[1], a.max[2] - a.min[2]];
+  const h = size[1], foot = [size[0], size[2]].sort((x, y) => x - y);
+  const okH = h >= spec.h[0] - 1e-6 && h <= spec.h[1] + 1e-6;
+  const okF = !spec.foot || (foot[0] >= spec.foot[0][0] - 1e-6 && foot[0] <= spec.foot[0][1] + 1e-6 && foot[1] >= spec.foot[1][0] - 1e-6 && foot[1] <= spec.foot[1][1] + 1e-6);
+  const ok = okH && okF;
+  return R('scale', ok, +h.toFixed(3), spec.h[1], ok ? `plausible ${archetype} size` : `implausible ${archetype} size (h=${h.toFixed(2)}m, expected ${spec.h[0]}–${spec.h[1]}m)`);
+}
+
+/** Continuity: two segment endpoints coincide (road/pipe/rail/fence runs, terrain seams). */
+export function connected(pA, pB, tol = 0.05) {
+  const d = dist(pA, pB);
+  return R('connected', d <= tol, +d.toFixed(4), tol, d <= tol ? 'endpoints connected' : `gap of ${d.toFixed(3)}m between segments`, d <= tol ? undefined : { position: [(pA[0] + pB[0]) / 2, (pA[1] + pB[1]) / 2, (pA[2] + pB[2]) / 2] });
+}
+
+/** Containment: object fully inside a container/room bounds. */
+export function containedWithin(obj, container, tol = 0.02) {
+  const o = worldAABB(obj), c = worldAABB(container);
+  const inside = [0, 1, 2].every((k) => o.min[k] >= c.min[k] - tol && o.max[k] <= c.max[k] + tol);
+  return R('contained', inside, 0, tol, inside ? 'fully inside the container' : 'sticks outside the container');
+}
+
+/** Flush against a wall plane: touching, not gapped, not sunk in. */
+export function flushAgainst(obj, plane, tol = 0.03) {
+  const n = norm(plane.normal);
+  const eN = obbAxes(obj.q).reduce((s, ax, i) => s + Math.abs(dot(ax, n)) * obj.e[i], 0);
+  const distC = dot(sub(obj.c, plane.point), n);      // signed distance of centre to plane
+  const gap = Math.abs(distC) - eN;                    // +: gapped, -: overlapping
+  const ok = Math.abs(gap) <= tol && distC > 0;
+  // fix: slide the centre along the normal so the near face just touches the plane (in front of it)
+  const inPlane = sub(obj.c, [n[0] * distC, n[1] * distC, n[2] * distC]);
+  const fix = ok ? undefined : { position: add(inPlane, [n[0] * eN, n[1] * eN, n[2] * eN]) };
+  return R('flush', ok, +gap.toFixed(4), tol, ok ? 'flush against the wall' : gap > 0 ? `gap of ${gap.toFixed(3)}m from wall` : `sunk ${(-gap).toFixed(3)}m into wall`, fix);
+}
+
+/** Minimum clearance between two objects (headroom, path width, spacing). */
+export function clearance(a, b, minGap) {
+  const A = worldAABB(a), B = worldAABB(b);
+  const sep = Math.max(A.min[0] - B.max[0], B.min[0] - A.max[0], A.min[1] - B.max[1], B.min[1] - A.max[1], A.min[2] - B.max[2], B.min[2] - A.max[2]);
+  return R('clearance', sep >= minGap, +sep.toFixed(4), minGap, sep >= minGap ? `clearance ${sep.toFixed(2)}m` : `only ${sep.toFixed(2)}m clearance (need ${minGap}m)`);
+}
+
 /**
  * Run a declared set of constraints and return a pass/fail report with fixes.
  * spec = { objects: { id: obb|{...} }, constraints: [ {type, ...refs} ] }
@@ -185,6 +276,15 @@ export function validateScene(spec) {
       case 'insideOpening': checks.push({ ref: cst, ...insideOpening(g(cst.door), cst.wall, cst.tol) }); break;
       case 'attachment': checks.push({ ref: cst, ...attachment(g(cst.ball), cst.footTip, g(cst.body), cst.maxGap) }); break;
       case 'sit': for (const c of sitPose(g(cst.pelvis), g(cst.seat), g(cst.character).q, g(cst.chair).q, cst)) checks.push({ ref: cst, ...c }); break;
+      case 'held': for (const c of heldInHand(g(cst.obj), cst.gripWorld, cst.handWorld, g(cst.body), cst.maxGap)) checks.push({ ref: cst, ...c }); break;
+      case 'supported': checks.push({ ref: cst, ...supported(g(cst.obj), { supports: (cst.supports || []).map(g), groundY: cst.groundY, tol: cst.tol }) }); break;
+      case 'upright': checks.push({ ref: cst, ...upright(g(cst.obj), cst.maxTiltDeg) }); break;
+      case 'stable': checks.push({ ref: cst, ...stableOnBase(g(cst.obj), g(cst.support), cst.margin) }); break;
+      case 'scale': checks.push({ ref: cst, ...withinScale(g(cst.obj), cst.archetype, cst.table) }); break;
+      case 'connected': checks.push({ ref: cst, ...connected(cst.a, cst.b, cst.tol) }); break;
+      case 'contained': checks.push({ ref: cst, ...containedWithin(g(cst.obj), g(cst.container), cst.tol) }); break;
+      case 'flush': checks.push({ ref: cst, ...flushAgainst(g(cst.obj), cst.plane, cst.tol) }); break;
+      case 'clearance': checks.push({ ref: cst, ...clearance(g(cst.a), g(cst.b), cst.minGap) }); break;
       default: checks.push(R(`unknown:${cst.type}`, false, 0, 0, 'unknown constraint type'));
     }
   }

@@ -106,6 +106,54 @@ function selftest() {
     assert('goal facing away fails', !S.facing(goalWrong, pitchCentre).ok);
   }
 
+  console.log('\nHeld in hand — object gripped, not clipping the body:');
+  {
+    const body = box([0, 1.0, 0], [0.3, 0.9, 0.2]);
+    const sword = box([0.9, 1.0, 0], [0.05, 0.5, 0.05]);
+    const hand = [0.55, 1.0, 0], grip = [0.55, 1.0, 0];
+    assert('sword gripped at hand, clear of body passes', S.heldInHand(sword, grip, hand, body).every((c) => c.ok));
+    assert('grip far from hand fails', !S.heldInHand(sword, [0.2, 1.0, 0], hand, body).find((c) => c.name === 'gripAtHand').ok);
+    const swordThroughBody = box([0.05, 1.0, 0], [0.05, 0.5, 0.05]);
+    assert('sword clipping body fails', !S.heldInHand(swordThroughBody, grip, hand, body).find((c) => c.name === 'clearOfBody').ok);
+  }
+
+  console.log('\nGravity/support — nothing floats:');
+  {
+    const table = box([2, 0.375, 0], [0.6, 0.375, 0.6]);
+    assert('box on ground passes', S.supported(box([0, 0.5, 0], [0.3, 0.5, 0.3]), { groundY: 0 }).ok);
+    assert('box on a table passes', S.supported(box([2, 0.9, 0], [0.15, 0.15, 0.15]), { supports: [table], groundY: 0 }).ok);
+    const r = S.supported(box([0, 2, 0], [0.3, 0.5, 0.3]), { groundY: 0 });
+    assert('floating box fails', !r.ok);
+    assert('  → suggests dropping it to the ground', Math.abs(r.fix.position[1] - 0.5) < 1e-6);
+  }
+
+  console.log('\nUpright / stability / scale:');
+  {
+    assert('upright bottle passes', S.upright(box([0, 0.2, 0], [0.05, 0.15, 0.05], qY(0))).ok);
+    assert('tipped bottle fails', !S.upright(box([0, 0.2, 0], [0.05, 0.15, 0.05], vm.quatFromAxisAngle([1, 0, 0], 40 * vm.RAD))).ok);
+    const support = box([0, 0.375, 0], [0.6, 0.375, 0.6]);
+    assert('object centred over base is stable', S.stableOnBase(box([0, 0.9, 0], [0.1, 0.15, 0.1]), support).ok);
+    assert('object past the base topples', !S.stableOnBase(box([1.2, 0.9, 0], [0.1, 0.15, 0.1]), support).ok);
+    assert('plausible door size passes', S.withinScale(box([0, 1.05, 0], [0.45, 1.0, 0.05]), 'door').ok);
+    assert('giant chair fails scale', !S.withinScale(box([0, 1.6, 0], [0.3, 1.6, 0.3]), 'chair').ok);
+  }
+
+  console.log('\nContinuity / containment / flush / clearance:');
+  {
+    assert('connected road segments pass', S.connected([0, 0, 0], [0.02, 0, 0]).ok);
+    assert('disconnected segments fail', !S.connected([0, 0, 0], [0.5, 0, 0]).ok);
+    const room = box([0, 1.5, 0], [2, 1.5, 2]);
+    assert('object inside room passes', S.containedWithin(box([0, 1, 0], [0.2, 0.2, 0.2]), room).ok);
+    assert('object poking outside fails', !S.containedWithin(box([0, 3.2, 0], [0.2, 0.2, 0.2]), room).ok);
+    const wall = { point: [0, 1, 0], normal: [0, 0, 1] };
+    assert('cabinet flush against wall passes', S.flushAgainst(box([0, 1, 0.4], [0.4, 0.9, 0.4]), wall).ok);
+    const rg = S.flushAgainst(box([0, 1, 1.0], [0.4, 0.9, 0.4]), wall);
+    assert('cabinet gapped from wall fails', !rg.ok);
+    assert('  → suggests sliding it flush', Math.abs(rg.fix.position[2] - 0.4) < 1e-6);
+    assert('enough clearance passes', S.clearance(box([0, 1, 0], [0.5, 0.5, 0.5]), box([2, 1, 0], [0.5, 0.5, 0.5]), 0.8).ok);
+    assert('too little clearance fails', !S.clearance(box([0, 1, 0], [0.5, 0.5, 0.5]), box([1.2, 1, 0], [0.5, 0.5, 0.5]), 0.8).ok);
+  }
+
   console.log(`\n${fails === 0 ? '✓ ALL SELF-TESTS PASSED' : `✗ ${fails} SELF-TEST(S) FAILED`}`);
   return fails === 0;
 }
