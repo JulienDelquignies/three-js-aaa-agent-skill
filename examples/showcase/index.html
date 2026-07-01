@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Three.js AAA — Galerie d'aperçus</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { min-height: 100%; }
+      body {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #e8ebf2;
+        background: radial-gradient(1200px 700px at 70% -10%, #1a2233 0%, #0b0d12 55%, #08090c 100%);
+        min-height: 100vh; padding: 6vh 5vw 8vh;
+      }
+      header { max-width: 1100px; margin: 0 auto 40px; }
+      .kicker { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: #6ea8ff; font-weight: 700; }
+      h1 { font-size: clamp(28px, 5vw, 46px); line-height: 1.05; margin: 10px 0 12px; letter-spacing: -.01em; }
+      .lede { color: #9aa2b1; max-width: 62ch; font-size: 15px; line-height: 1.6; }
+      .grid { max-width: 1100px; margin: 0 auto; display: grid; gap: 22px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+      .card { display: flex; flex-direction: column; text-decoration: none; color: inherit;
+        background: #12151c; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; overflow: hidden;
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+      .card:hover { transform: translateY(-4px); border-color: rgba(110,168,255,.5);
+        box-shadow: 0 18px 40px -18px rgba(50,100,220,.6); }
+      .thumb { aspect-ratio: 16 / 9; background-size: cover; background-position: center;
+        background-color: #0e1420; border-bottom: 1px solid rgba(255,255,255,.06); position: relative; }
+      .thumb .badge { position: absolute; left: 12px; top: 12px; font-size: 11px; font-weight: 700;
+        letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px;
+        background: rgba(8,10,14,.7); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(6px); }
+      .body { padding: 16px 18px 18px; }
+      .body h2 { font-size: 18px; margin-bottom: 6px; }
+      .body p { color: #9aa2b1; font-size: 13.5px; line-height: 1.55; }
+      .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+      .tag { font-size: 11px; color: #b7c0d0; background: #1b2130; border: 1px solid rgba(255,255,255,.07);
+        padding: 3px 8px; border-radius: 6px; }
+      .open { margin-top: 14px; font-size: 13px; font-weight: 600; color: #6ea8ff; }
+      footer { max-width: 1100px; margin: 46px auto 0; color: #6b7280; font-size: 12.5px; line-height: 1.7; }
+      footer a { color: #9aa2b1; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="kicker">Three.js AAA · Claude Code Skill</div>
+      <h1>Galerie d'aperçus</h1>
+      <p class="lede">Des scènes runnables qui montrent le skill à l'œuvre : rendu WebGPU/PBR sous
+        éclairage image-based, personnage riggé Mixamo avec locomotion sans glisse, et génération
+        procédurale. Cliquez une scène pour l'ouvrir en direct (orbite à la souris / au doigt).</p>
+    </header>
+
+    <main class="grid">
+      <a class="card" href="volley.html">
+        <div class="thumb" style="background-image:url(thumb-volley.png)"><span class="badge">Cinématique</span></div>
+        <div class="body">
+          <h2>Soldier Volley</h2>
+          <p>Un vrai personnage Mixamo (Soldier.glb) court sans foot-skate (cadence synchronisée + foot-lock IK),
+             poursuit un ballon qui roule devant lui et le reprend de volée dans la lucarne. Caméra broadcast.</p>
+          <div class="tags"><span class="tag">Rig Mixamo</span><span class="tag">Locomotion</span><span class="tag">Foot-lock IK</span><span class="tag">Validation temporelle</span></div>
+          <div class="open">Ouvrir l'aperçu →</div>
+        </div>
+      </a>
+
+      <a class="card" href="materials.html">
+        <div class="thumb" style="background-image:url(thumb-materials.png)"><span class="badge">Interactif</span></div>
+        <div class="body">
+          <h2>Matériaux PBR</h2>
+          <p>Une rangée de sphères sous éclairage image-based : clearcoat, verre/transmission, métal brossé,
+             or, iridescence, velours (sheen). Orbitez pour voir bouger les reflets.</p>
+          <div class="tags"><span class="tag">WebGPU</span><span class="tag">Physical material</span><span class="tag">IBL</span><span class="tag">Post-processing</span></div>
+          <div class="open">Ouvrir l'aperçu →</div>
+        </div>
+      </a>
+
+      <a class="card" href="procedural.html">
+        <div class="thumb" style="background-image:url(thumb-procedural.png)"><span class="badge">Interactif</span></div>
+        <div class="body">
+          <h2>Monde procédural</h2>
+          <p>Un terrain généré par bruit fBm seedé, coloré par altitude (eau → herbe → roche → neige),
+             avec rochers et arbres dispersés en InstancedMesh. Déterministe depuis une graine.</p>
+          <div class="tags"><span class="tag">Bruit fBm</span><span class="tag">Terrain</span><span class="tag">Instancing</span><span class="tag">Seedé</span></div>
+          <div class="open">Ouvrir l'aperçu →</div>
+        </div>
+      </a>
+    </main>
+
+    <footer>
+      Rendu en WebGPU avec repli WebGL2 automatique. Les aperçus sans GPU (capture headless) retombent en
+      WebGL logiciel — sur une vraie carte c'est plus net avec toute la pile de post-processing.<br />
+      Skill open-source : <a href="https://github.com/JulienDelquignies/three-js-aaa-agent-skill">three-js-aaa-agent-skill</a>.
+    </footer>
+  </body>
+</html>

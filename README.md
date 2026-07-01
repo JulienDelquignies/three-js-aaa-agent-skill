@@ -49,6 +49,8 @@ threejs-aaa/ (the skill)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
 
 examples/
+├── showcase/                 a scene gallery (multi-page): home page → live previews of every scene
+│                             LIVE: https://threejs-aaa-showcase.vercel.app  (WebGPU + WebGL2 fallback)
 └── soldier-volley/           runnable demo: a REAL Mixamo-rigged character (Soldier.glb) runs in
                               (no foot-skate: cadence-sync + foot-lock IK) chasing a rolling ball and
                               volleys into the net, with a follow camera + temporal validation on the bones
