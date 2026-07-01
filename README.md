@@ -28,13 +28,15 @@ threejs-aaa/ (the skill)
 │   ├── 12-advanced-rendering-scale.md  GPU-driven rendering, web-Nanite, streaming, FSR, GI
 │   ├── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
 │   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
-│   └── 15-interaction-alignment.md  character↔object interaction + correctness verification
+│   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
+│   └── 16-visual-qa.md        screenshot → critique → fix loop + draw-call perf gate
 ├── scripts/                  executable helpers (run, don't read)
 │   ├── scaffold.mjs          create a new game from the starter
 │   ├── convert-character.mjs Mixamo/FBX → optimized GLB
 │   ├── procgen.mjs           generate a procedural prop GLB (zero deps)
 │   ├── fetch-cc0.mjs         download free CC0 HDRIs + PBR textures (Poly Haven, no key)
 │   ├── verify-interaction.mjs validate character↔object interaction; --selftest proves the math
+│   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
 ```
@@ -52,6 +54,14 @@ threejs-aaa/ (the skill)
   capsule controllers, IK (foot/look-at), morph-target facial animation, and VRM.
 - **Performance** — instancing/batching, LOD, Draco/Meshopt + KTX2 compression via
   glTF-Transform, draw-call budgeting, and device quality tiers.
+- **Closing the perception loop (visual QA)** — the agent screenshots its own build in headless
+  Chromium, reads the image back, and critiques it against an AAA rubric (exposure, IBL, materials,
+  shadows, AA, banding), then fixes and repeats — plus a draw-call perf gate for CI. Free
+  (Playwright/Chromium pre-installed). This is what makes "AAA-perfect renders" iteratively reachable
+  instead of coded blind.
+- **Procedural animation & interaction verification** — math-driven motion (springs, damping,
+  two-bone IK, look-at, foot IK) and a tested validator that checks a character↔object interaction
+  is correct (orientation, reach, hand-on-target, feet grounded) — runnable at runtime and in CI.
 - **Zero-cost content (no paid APIs)** — the default path: Claude writes procedural geometry/
   shaders (free, infinite), fetches **CC0 assets** from free no-key APIs (Poly Haven/ambientCG
   HDRIs + PBR textures via `fetch-cc0.mjs`), rigs with free Mixamo/AccuRIG, and does live capture
