@@ -26,12 +26,15 @@ threejs-aaa/ (the skill)
 │   ├── 10-ai-asset-generation.md   (optional/paid) text/image-to-3D, AI textures/HDRI, licensing
 │   ├── 11-ai-characters-motion.md  AI auto-rig, mocap, text-to-motion, audio-to-face, MediaPipe
 │   ├── 12-advanced-rendering-scale.md  GPU-driven rendering, web-Nanite, streaming, FSR, GI
-│   └── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
+│   ├── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
+│   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
+│   └── 15-interaction-alignment.md  character↔object interaction + correctness verification
 ├── scripts/                  executable helpers (run, don't read)
 │   ├── scaffold.mjs          create a new game from the starter
 │   ├── convert-character.mjs Mixamo/FBX → optimized GLB
 │   ├── procgen.mjs           generate a procedural prop GLB (zero deps)
 │   ├── fetch-cc0.mjs         download free CC0 HDRIs + PBR textures (Poly Haven, no key)
+│   ├── verify-interaction.mjs validate character↔object interaction; --selftest proves the math
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
 ```

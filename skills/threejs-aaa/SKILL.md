@@ -39,6 +39,8 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Custom shaders, TSL, procedural & node materials, triplanar | [reference/03-materials-shaders.md](reference/03-materials-shaders.md) |
 | Post-processing: bloom, GTAO, SSR, DOF, TAA/SMAA, color grade | [reference/04-post-processing.md](reference/04-post-processing.md) |
 | Mixamo pipeline, GLTF loading, AnimationMixer, state machine, IK | [reference/05-characters-mixamo.md](reference/05-characters-mixamo.md) |
+| Procedural animation: springs, damping, two-bone IK, look-at, foot IK | [reference/14-procedural-animation.md](reference/14-procedural-animation.md) |
+| Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | Procedural geometry: BufferGeometry, extrude/lathe, CSG booleans | [reference/06-procedural-geometry.md](reference/06-procedural-geometry.md) |
 | Noise, heightmap terrain, erosion, marching cubes, chunked LOD | [reference/07-terrain-noise.md](reference/07-terrain-noise.md) |
 | Scattering vegetation/props, InstancedMesh, surface sampling, BVH | [reference/08-scattering-instancing.md](reference/08-scattering-instancing.md) |
@@ -72,6 +74,12 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/fetch-cc0.mjs --hdri kloofendal_48d_partly_cloudy --res 2k --out ./public/env.hdr
   node ${CLAUDE_SKILL_DIR}/scripts/fetch-cc0.mjs --texture rock_boulder_dry --res 2k --out-dir ./public/textures/rock
+  ```
+- **Verify a character↔object interaction** — checks orientation, reach, hand-on-target, feet on
+  ground; `--selftest` proves the procedural-animation + IK + alignment math (free, zero deps):
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-interaction.mjs --selftest
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-interaction.mjs --spec ./interaction.json
   ```
 - **Generate an AI 3D asset (OPTIONAL / paid)** — text/image → 3D via the Meshy API. Only if you
   choose to pay; needs `MESHY_API_KEY`. Prefer procedural + CC0 (above) for zero cost:
