@@ -154,6 +154,41 @@ function selftest() {
     assert('too little clearance fails', !S.clearance(box([0, 1, 0], [0.5, 0.5, 0.5]), box([1.2, 1, 0], [0.5, 0.5, 0.5]), 0.8).ok);
   }
 
+  console.log('\nContinuity — roads/pipes connect, fence runs, terrain seams:');
+  {
+    const a = { start: [0, 0, 0], end: [10, 0, 0] };
+    assert('aligned connected segments pass', S.tangentContinuity(a, { start: [10, 0, 0], end: [20, 0, 0] }).ok);
+    assert('gapped segments fail', !S.tangentContinuity(a, { start: [11, 0, 0], end: [20, 0, 0] }).ok);
+    assert('kinked segments fail', !S.tangentContinuity(a, { start: [10, 0, 0], end: [12, 0, 8] }).ok);
+    assert('continuous fence run passes', S.runContinuity([{ start: [0, 0, 0], end: [2, 0, 0], top: 1 }, { start: [2, 0, 0], end: [4, 0, 0], top: 1 }]).ok);
+    assert('broken fence run fails', !S.runContinuity([{ start: [0, 0, 0], end: [2, 0, 0], top: 1 }, { start: [2.5, 0, 0], end: [4, 0, 0], top: 1 }]).ok);
+    assert('matching terrain seam passes', S.seamHeightsMatch([1, 1.2, 1.4], [1, 1.2, 1.4]).ok);
+    assert('mismatched seam fails (crack)', !S.seamHeightsMatch([1, 1.2, 1.4], [1, 1.9, 1.4]).ok);
+  }
+
+  console.log('\nNavigation — headroom, doorway, stairs, reachability:');
+  {
+    assert('enough headroom passes', S.headroom(2.4).ok);
+    assert('low ceiling fails', !S.headroom(1.7).ok);
+    assert('passable doorway passes', S.doorwayPassable(0.9, 2.1).ok);
+    assert('tiny doorway fails', !S.doorwayPassable(0.5, 1.6).ok);
+    assert('uniform climbable stairs pass', S.stepsTraversable([0.17, 0.17, 0.17, 0.17]).ok);
+    assert('too-tall step fails', !S.stepsTraversable([0.17, 0.6, 0.17]).ok);
+    const adj = { spawn: ['a'], a: ['b', 'spawn'], b: ['a'], island: [] };
+    assert('reachable objective passes', S.reachable(adj, 'spawn', ['a', 'b']).ok);
+    assert('unreachable objective fails', !S.reachable(adj, 'spawn', ['island']).ok);
+  }
+
+  console.log('\nRelative scale / duplicates / units:');
+  {
+    assert('table/seat ratio plausible passes', S.relativeScale(0.74, 0.45, [1.4, 1.9], 'table/seat').ok);
+    assert('chair taller than table fails', !S.relativeScale(0.45, 0.74, [1.4, 1.9], 'table/seat').ok);
+    assert('distinct meshes pass', S.noCoincidentDupe(box([0, 0, 0], [1, 1, 1]), box([3, 0, 0], [1, 1, 1])).ok);
+    assert('coincident duplicate fails', !S.noCoincidentDupe(box([0, 0, 0], [1, 1, 1]), box([0, 0, 0], [1, 1, 1])).ok);
+    assert('correct unit scale passes', S.unitSanity(2.0, 2.0).ok);
+    assert('cm-imported asset (×100) fails', !S.unitSanity(200, 2.0).ok);
+  }
+
   console.log(`\n${fails === 0 ? '✓ ALL SELF-TESTS PASSED' : `✗ ${fails} SELF-TEST(S) FAILED`}`);
   return fails === 0;
 }

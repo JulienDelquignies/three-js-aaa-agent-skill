@@ -265,6 +265,93 @@ export function clearance(a, b, minGap) {
   return R('clearance', sep >= minGap, +sep.toFixed(4), minGap, sep >= minGap ? `clearance ${sep.toFixed(2)}m` : `only ${sep.toFixed(2)}m clearance (need ${minGap}m)`);
 }
 
+// ---------- R4/R5 continuity & adjacency ----------
+
+/** Segments connect AND their directions align at the joint (no gap, no kink). */
+export function tangentContinuity(a, b, maxAngleDeg = 25, tol = 0.05) {
+  const gap = dist(a.end, b.start);
+  const ta = norm(sub(a.end, a.start)), tb = norm(sub(b.end, b.start));
+  const ang = Math.acos(clamp(dot(ta, tb), -1, 1)) * DEG;
+  const ok = gap <= tol && ang <= maxAngleDeg;
+  const detail = gap > tol ? `${gap.toFixed(3)}m gap between segments` : ang > maxAngleDeg ? `kink of ${ang.toFixed(0)}° at joint` : 'continuous';
+  return R('tangent', ok, +ang.toFixed(2), maxAngleDeg, detail, gap > tol ? { position: a.end.slice() } : undefined);
+}
+
+/** A run of panels (fence/wall/guardrail) is unbroken and level. panels: [{start,end,top?}]. */
+export function runContinuity(panels, { tol = 0.05, heightTol = 0.05 } = {}) {
+  const issues = [];
+  for (let i = 0; i < panels.length - 1; i++) {
+    const g = dist(panels[i].end, panels[i + 1].start);
+    if (g > tol) issues.push(`gap ${g.toFixed(2)}m between panels ${i}/${i + 1}`);
+    if (panels[i].top != null && panels[i + 1].top != null && Math.abs(panels[i].top - panels[i + 1].top) > heightTol) issues.push(`height step at panel ${i}`);
+  }
+  return R('run', issues.length === 0, issues.length, 0, issues.length ? issues.join('; ') : 'continuous run');
+}
+
+/** Adjacent tile/terrain edges match along the shared seam (no crack/cliff). Arrays of heights. */
+export function seamHeightsMatch(edgeA, edgeB, tol = 0.02) {
+  const n = Math.min(edgeA.length, edgeB.length);
+  let maxd = 0; for (let i = 0; i < n; i++) maxd = Math.max(maxd, Math.abs(edgeA[i] - edgeB[i]));
+  return R('seam', maxd <= tol, +maxd.toFixed(4), tol, maxd <= tol ? 'edges match' : `seam mismatch up to ${maxd.toFixed(3)}m (crack/cliff)`);
+}
+
+// ---------- R6/R10 navigation & clearance ----------
+
+/** Vertical clearance above a walkable point is at least the player height. */
+export function headroom(clearHeight, minHeight = 2.0) {
+  return R('headroom', clearHeight >= minHeight, +clearHeight.toFixed(3), minHeight, clearHeight >= minHeight ? `headroom ${clearHeight.toFixed(2)}m` : `only ${clearHeight.toFixed(2)}m headroom (need ${minHeight}m)`);
+}
+
+/** A doorway/opening is wide & tall enough to pass. */
+export function doorwayPassable(width, height, minW = 0.8, minH = 2.0) {
+  const ok = width >= minW && height >= minH;
+  return R('doorway', ok, +Math.min(width, height).toFixed(3), minW, ok ? `${width.toFixed(2)}×${height.toFixed(2)}m passable` : `opening ${width.toFixed(2)}×${height.toFixed(2)}m too small (need ≥ ${minW}×${minH}m)`);
+}
+
+/** Stairs are climbable: no riser over the step-up limit, and risers near-uniform. */
+export function stepsTraversable(risers, { maxStep = 0.45, uniformTol = 0.02 } = {}) {
+  const tooTall = risers.filter((r) => r > maxStep);
+  const mean = risers.reduce((a, b) => a + b, 0) / (risers.length || 1);
+  const nonUniform = risers.some((r) => Math.abs(r - mean) > uniformTol);
+  const ok = tooTall.length === 0 && !nonUniform;
+  const detail = tooTall.length ? `${tooTall.length} riser(s) > ${maxStep}m (unclimbable)` : nonUniform ? `uneven risers (±${uniformTol}m)` : 'stairs traversable';
+  return R('steps', ok, +Math.max(...risers, 0).toFixed(3), maxStep, detail);
+}
+
+/** Reachability over a nav graph: all required nodes reachable from start (BFS). */
+export function reachable(adjacency, start, required = []) {
+  const seen = new Set([start]), q = [start];
+  while (q.length) { const n = q.shift(); for (const m of (adjacency[n] || [])) if (!seen.has(m)) { seen.add(m); q.push(m); } }
+  const missing = required.filter((r) => !seen.has(r));
+  return R('reachable', missing.length === 0, seen.size, required.length, missing.length ? `unreachable: ${missing.join(', ')}` : 'all required nodes reachable');
+}
+
+// ---------- R7/R9 relative scale, duplicates, units ----------
+
+/** Two related objects keep a plausible size ratio (table/seat, door/human, human/ceiling). */
+export function relativeScale(aHeight, bHeight, ratio = [0, Infinity], label = 'ratio') {
+  const r = bHeight !== 0 ? aHeight / bHeight : Infinity;
+  const ok = r >= ratio[0] && r <= ratio[1];
+  return R('relativeScale', ok, +r.toFixed(3), ratio[1], ok ? `${label} ${r.toFixed(2)} plausible` : `${label} ${r.toFixed(2)} out of [${ratio[0]}, ${ratio[1]}]`);
+}
+
+/** No coincident duplicate mesh (same place + same size → z-fight/perf). */
+export function noCoincidentDupe(a, b, posTol = 0.02) {
+  const d = dist(a.c, b.c);
+  const sameSize = Math.abs((a.e[0] + a.e[1] + a.e[2]) - (b.e[0] + b.e[1] + b.e[2])) < posTol;
+  const dup = d <= posTol && sameSize;
+  return R('noDuplicate', !dup, +d.toFixed(4), posTol, dup ? 'coincident duplicate mesh (z-fight/perf)' : 'not a duplicate');
+}
+
+/** Unit sanity: size vs expected reveals a cm/inch/foot import mismatch (×100, ×2.54, ×3.28…). */
+const UNIT_FACTORS = [100, 39.37, 30.48, 3.28, 2.54];
+export function unitSanity(actualDominant, expectedDominant, tol = 0.2) {
+  const f = actualDominant / expectedDominant;
+  if (f >= 1 - tol && f <= 1 + tol) return R('unit', true, +f.toFixed(3), tol, 'plausible unit scale');
+  const hit = UNIT_FACTORS.find((u) => Math.abs(f - u) / u < 0.12 || Math.abs(f - 1 / u) * u < 0.12);
+  return R('unit', false, +f.toFixed(3), tol, hit ? `${f.toFixed(1)}× off — likely unit mismatch (rescale ~×${(f > 1 ? 1 / hit : hit).toFixed(3)})` : `${f.toFixed(1)}× off expected size`);
+}
+
 /**
  * Run a declared set of constraints and return a pass/fail report with fixes.
  * spec = { objects: { id: obb|{...} }, constraints: [ {type, ...refs} ] }
@@ -293,6 +380,16 @@ export function validateScene(spec) {
       case 'contained': checks.push({ ref: cst, ...containedWithin(g(cst.obj), g(cst.container), cst.tol) }); break;
       case 'flush': checks.push({ ref: cst, ...flushAgainst(g(cst.obj), cst.plane, cst.tol) }); break;
       case 'clearance': checks.push({ ref: cst, ...clearance(g(cst.a), g(cst.b), cst.minGap) }); break;
+      case 'tangent': checks.push({ ref: cst, ...tangentContinuity(cst.a, cst.b, cst.maxAngleDeg, cst.tol) }); break;
+      case 'run': checks.push({ ref: cst, ...runContinuity(cst.panels, cst) }); break;
+      case 'seam': checks.push({ ref: cst, ...seamHeightsMatch(cst.edgeA, cst.edgeB, cst.tol) }); break;
+      case 'headroom': checks.push({ ref: cst, ...headroom(cst.clearHeight, cst.minHeight) }); break;
+      case 'doorway': checks.push({ ref: cst, ...doorwayPassable(cst.width, cst.height, cst.minW, cst.minH) }); break;
+      case 'steps': checks.push({ ref: cst, ...stepsTraversable(cst.risers, cst) }); break;
+      case 'reachable': checks.push({ ref: cst, ...reachable(cst.adjacency, cst.start, cst.required) }); break;
+      case 'relativeScale': checks.push({ ref: cst, ...relativeScale(cst.aHeight, cst.bHeight, cst.ratio, cst.label) }); break;
+      case 'duplicate': checks.push({ ref: cst, ...noCoincidentDupe(g(cst.a), g(cst.b), cst.posTol) }); break;
+      case 'unit': checks.push({ ref: cst, ...unitSanity(cst.actual, cst.expected, cst.tol) }); break;
       default: checks.push(R(`unknown:${cst.type}`, false, 0, 0, 'unknown constraint type'));
     }
   }

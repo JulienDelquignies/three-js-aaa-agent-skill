@@ -159,11 +159,19 @@ interaction sync.
 
 ## Implemented vs extensible
 
-`scene-validate.js` ships tested predicates for the highest-frequency rules across every relationship
-type: `withinScale, upright, supported, restsOn, stableOnBase, heldInHand, attachment, containedWithin,
-insideOpening, connected, clearance, flushAgainst, facing, orientationMatch, noPenetration, sitPose`
-— proven by `verify-scene.mjs --selftest`. Everything marked `○` above is a documented cell of the
-generator you implement when a scene needs it; the module is designed to grow one predicate at a time.
+`scene-validate.js` ships tested predicates across every relationship type, all proven by
+`verify-scene.mjs --selftest`:
+- **Self/scale (R1/R7):** `withinScale`, `upright`, `relativeScale`, `unitSanity`
+- **Support (R2):** `supported`, `restsOn`, `stableOnBase`, `heldInHand`, `attachment`, `flushAgainst`
+- **Containment (R3):** `containedWithin`, `insideOpening`
+- **Adjacency/continuity (R4/R5):** `connected`, `tangentContinuity`, `runContinuity`, `seamHeightsMatch`
+- **Clearance/nav (R6/R10):** `clearance`, `headroom`, `doorwayPassable`, `stepsTraversable`, `reachable`
+- **Orientation (R8):** `facing`, `orientationMatch`
+- **Non-penetration/global (R2/R9):** `noPenetration` (OBB SAT), `noCoincidentDupe`
+- **Composite:** `sitPose`, `validateScene` (runs a declared constraint list, returns fixes)
+
+Everything still marked `○` above is a documented cell of the generator you implement when a scene
+needs it; the module grows one tested predicate at a time.
 
 ## Severity & review passes
 
