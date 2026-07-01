@@ -21,10 +21,11 @@ Table of contents
 - **Reallusion AccuRIG** — free desktop app (GUI, no API). Humanoid auto-rig with **better weight
   painting and finger rigging than Mixamo**, local (no cloud upload), exports FBX. Skeleton is
   Reallusion's (retarget by bone-name map). Best free humanoid rigger.
-- **Anything World** — the standout for **creatures/arbitrary meshes**: cloud **REST API**, async
-  (upload mesh → ML predicts type + skeleton → auto-rig + behavioral animation → returns rigged GLB).
-  Key/token auth, paid tiers commercial. The main API-callable option for non-humanoids (quadrupeds,
-  birds, fish). (verify endpoints/pricing)
+- **Anything World** — the standout for **creatures/arbitrary meshes**: cloud **REST API** (base
+  `https://api.anything.world`, key as `?key=` query param), async (`POST /rig` or `/animate` →
+  poll `GET /user-processed-model` → download **GLB/FBX/glTF**). Handles humanoids **and quadrupeds/
+  animals**. **Has a free tier** (Individual, <$100K annual revenue) — commercial use with
+  **attribution required** ("Animated by Anything World"). The main API-callable option for non-humanoids.
 - **Meshy / Tripo** — their generated humanoids ship **auto-rig + animation** export (GLB/FBX), API-accessible.
 - **Meshcapade** — SMPL/SMPL-X parametric humans. **Note: its public API shut down ~Apr 2025 after
   the Epic Games acquisition; treat as unavailable.** SMPL outputs are also non-commercial by default.
@@ -38,7 +39,7 @@ Table of contents
 |---|---|---|---|
 | **DeepMotion Animate 3D** | FBX/BVH/glTF/GLB | **REST async** | face + hand, physics filters, retarget. Credit-based, commercial on paid. |
 | **Move.ai** | FBX/USD/BVH | limited/enterprise (verify) | best quality, esp. multicam. |
-| **Rokoko Video** | FBX/BVH | Studio app + live SDK; no broad public mocap REST (verify) | free tier; retarget in Studio. |
+| **Rokoko Video** | FBX/BVH | Studio app + LAN Command API + live-stream SDK (Blender/Unity/UE); no cloud REST | **free Starter tier** (FBX, video-to-motion, ~150 commercial-usable clips, retargets to Mixamo). |
 | **Plask** | FBX/BVH/glTF | (verify) | browser-based mocap + editor. |
 
 **Open-source / research:**

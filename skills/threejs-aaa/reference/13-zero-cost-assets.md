@@ -59,6 +59,8 @@ All CC0 (public domain, no attribution, commercial-safe worldwide — EU include
 | **Sketchfab** | huge model library — **filter to CC0/CC-BY** | API (free key) or manual; check license per model |
 | **Mixamo** | free auto-rig + 2400 humanoid animations | free (Adobe account) — see `reference/05` |
 | **Ready Player Me** | free rigged avatars (ARKit face + visemes) | free — see `reference/11` |
+| **Anything World** | **creature/non-humanoid** auto-rig + animation → GLB/FBX | **free tier** (Individual, <$100K rev; attribution required) — REST API |
+| **Rokoko** | video-to-motion mocap + ~150 commercial-usable clips | **free Starter tier** (FBX, unlimited text-to-motion; retargets to Mixamo) |
 
 Prefer CC0 over CC-BY when you can, to avoid attribution bookkeeping. Poly Haven and ambientCG are
 100% CC0.
