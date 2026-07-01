@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IK & Interaction — Three.js AAA</title>
+    <style>
+      :root { color-scheme: dark; } * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0c; }
+      #app { position: fixed; inset: 0; } canvas { display: block; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center;
+        font: 600 14px/1.4 system-ui, sans-serif; color: #cfd3dc; letter-spacing: .04em; background: #0a0a0c; transition: opacity .4s; z-index: 10; }
+      #loading.hidden { opacity: 0; pointer-events: none; }
+      .hud { position: fixed; z-index: 20; font: 500 13px/1.3 system-ui, sans-serif; color: #e8ebf2; }
+      .back { top: 16px; left: 16px; padding: 8px 14px; border-radius: 999px; text-decoration: none;
+        background: rgba(20,22,28,.72); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(8px); }
+      .back:hover { background: rgba(40,44,54,.9); }
+      .title { top: 16px; right: 16px; padding: 8px 14px; border-radius: 10px; text-align: right;
+        background: rgba(20,22,28,.6); border: 1px solid rgba(255,255,255,.08); max-width: 46vw; }
+      .title b { font-weight: 700; } .title span { color: #9aa2b1; font-weight: 400; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <a class="hud back" href="./index.html">← Galerie</a>
+    <div class="hud title"><b>IK & Interaction</b><br><span>Bras 2-os · IK analytique · l'effecteur vire au vert quand la cible est atteinte, rouge sinon</span></div>
+    <div id="loading">INITIALISATION DU RENDU…</div>
+    <script type="module" src="/src/entry-interaction.js"></script>
+  </body>
+</html>

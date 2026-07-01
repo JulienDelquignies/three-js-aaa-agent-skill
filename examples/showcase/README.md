@@ -11,6 +11,16 @@ Each card opens a live, interactive preview. **Live:** https://threejs-aaa-showc
   glass/transmission, brushed metal, gold, iridescence, velvet (sheen). Orbit to inspect.
 - **Monde procédural** (`procedural.html`) — a seeded fBm-noise terrain, height-based coloring, water,
   and instanced rock/tree scatter. Deterministic from a seed. Orbit to explore.
+- **IK & Interaction** (`interaction.html`) — a two-bone arm tracks a moving target with analytic IK;
+  the effector turns green when it reaches the target, red when out of reach (the runtime correctness check).
+- **Géométrie procédurale** (`geometry.html`) — a museum of code-authored meshes: lathe vase, extruded
+  gear with bore, tube along a curve, torus knot, faceted gem, twisted shell. No imported models.
+- **Post-processing · Bloom** (`neon.html`) — a dark set of emissive neon shapes so the TSL bloom pass
+  reads clearly; the scene dims the inherited IBL/fog so emissive dominates.
+- **Océan · Gerstner** (`ocean.html`) — a surface displaced by summed Gerstner waves (CPU, animated) with
+  a physical water material and a bobbing buoy.
+- **Champ d'herbe** (`grass.html`) — 6000 grass blades scattered on rolling ground as a single
+  InstancedMesh (one draw call), bending in a travelling wind, with scattered flowers.
 
 All scenes share `src/engine/` (WebGPU renderer + IBL + post-processing) and `src/runner.js`, which boots
 the engine and runs a scene either as a **cinematic** (if it exposes `setTime`) or **interactive** (orbit +
