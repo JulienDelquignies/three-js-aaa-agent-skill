@@ -20,7 +20,7 @@ export function createRenderer(canvasParent, { forceWebGL = false } = {}) {
 
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.AgXToneMapping;   // realism; try ACESFilmicToneMapping for cinematic
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 0.9;            // slightly under 1 to protect highlights from blowing out
 
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;

@@ -46,6 +46,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Scattering vegetation/props, InstancedMesh, surface sampling, BVH | [reference/08-scattering-instancing.md](reference/08-scattering-instancing.md) |
 | Performance: draw calls, instancing, LOD, KTX2/Draco, profiling | [reference/09-performance.md](reference/09-performance.md) |
 | **Visual QA: screenshot → critique → fix loop + perf gate (see your render)** | [reference/16-visual-qa.md](reference/16-visual-qa.md) |
+| **Autonomous build→see→fix loop: iterate a scene to the AAA rubric on its own** | [reference/17-autonomous-loop.md](reference/17-autonomous-loop.md) |
 | **Zero-cost pipeline: no paid APIs, procedural + free CC0 + free local tools** | [reference/13-zero-cost-assets.md](reference/13-zero-cost-assets.md) |
 | AI asset generation (optional/paid): text/image-to-3D, AI textures, HDRI, licensing | [reference/10-ai-asset-generation.md](reference/10-ai-asset-generation.md) |
 | AI characters: auto-rig, mocap, text-to-motion, audio-to-face, MediaPipe | [reference/11-ai-characters-motion.md](reference/11-ai-characters-motion.md) |

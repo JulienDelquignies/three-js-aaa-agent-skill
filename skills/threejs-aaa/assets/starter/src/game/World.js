@@ -44,7 +44,19 @@ export class World {
     geo.computeVertexNormals();      // REQUIRED after displacement
     geo.computeBoundingSphere();
 
-    const mat = new THREE.MeshStandardNodeMaterial({ color: 0x4a5240, roughness: 0.95, metalness: 0.0 });
+    const mat = new THREE.MeshStandardNodeMaterial({ color: 0x6a7358, roughness: 0.95, metalness: 0.0 });
+    // Optional CC0 PBR ground: drop maps into public/textures/ground/ (fetch-cc0.mjs --texture).
+    // Falls back to a flat color if absent, so the starter runs with zero external assets.
+    const tl = new THREE.TextureLoader();
+    const tryTex = (file, srgb, assign) => tl.load(file, (t) => {
+      t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(24, 24);
+      t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      assign(t); mat.needsUpdate = true;
+    }, undefined, () => {});
+    tryTex('textures/ground/albedo.jpg', true, (t) => (mat.map = t));
+    tryTex('textures/ground/normal.jpg', false, (t) => (mat.normalMap = t));
+    tryTex('textures/ground/roughness.jpg', false, (t) => (mat.roughnessMap = t));
+
     const ground = new THREE.Mesh(geo, mat);
     ground.receiveShadow = true;
     this.scene.add(ground);

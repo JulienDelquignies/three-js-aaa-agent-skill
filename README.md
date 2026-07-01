@@ -29,7 +29,8 @@ threejs-aaa/ (the skill)
 │   ├── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
 │   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
-│   └── 16-visual-qa.md        screenshot → critique → fix loop + draw-call perf gate
+│   ├── 16-visual-qa.md        screenshot → critique → fix loop + draw-call perf gate
+│   └── 17-autonomous-loop.md  agent-driven build→see→fix loop to the AAA rubric (demonstrated)
 ├── scripts/                  executable helpers (run, don't read)
 │   ├── scaffold.mjs          create a new game from the starter
 │   ├── convert-character.mjs Mixamo/FBX → optimized GLB

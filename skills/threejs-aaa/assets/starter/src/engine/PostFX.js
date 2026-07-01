@@ -25,8 +25,9 @@ export async function createPostFX(renderer, scene, camera) {
   const scenePass = pass(scene, camera);
   const color = scenePass.getTextureNode();
 
-  // Bloom from HDR/emissive areas. strength, radius, threshold.
-  const bloomPass = bloom(color, 0.5, 0.4, 0.85);
+  // Bloom from HDR/emissive areas. strength, radius, threshold. Higher threshold + lower strength
+  // keeps bloom to genuinely bright areas instead of a blown haze over the whole frame.
+  const bloomPass = bloom(color, 0.35, 0.5, 1.0);
   postProcessing.outputNode = color.add(bloomPass);
 
   return {

@@ -36,7 +36,7 @@ export class Engine {
     this.controls.enableDamping = true;
     this.controls.target.set(0, 1, 0);
 
-    this.lighting = setupLighting(this.scene, this.renderer);
+    this.lighting = await setupLighting(this.scene, this.renderer);
     this.postfx = await createPostFX(this.renderer, this.scene, this.camera);
 
     this.stats = new Stats({ trackGPU: true });
