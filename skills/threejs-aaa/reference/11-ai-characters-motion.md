@@ -26,7 +26,8 @@ Table of contents
   Key/token auth, paid tiers commercial. The main API-callable option for non-humanoids (quadrupeds,
   birds, fish). (verify endpoints/pricing)
 - **Meshy / Tripo** — their generated humanoids ship **auto-rig + animation** export (GLB/FBX), API-accessible.
-- **Meshcapade** — SMPL/SMPL-X parametric humans (consistent body model, API), not for rigging arbitrary meshes.
+- **Meshcapade** — SMPL/SMPL-X parametric humans. **Note: its public API shut down ~Apr 2025 after
+  the Epic Games acquisition; treat as unavailable.** SMPL outputs are also non-commercial by default.
 - **Research**: RigNet / RigAnything (neural skeleton+skinning prediction for arbitrary shapes) — not turnkey.
 
 ## AI motion capture from video
