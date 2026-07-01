@@ -29,6 +29,7 @@ threejs-aaa/ (the skill)
 │   ├── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
 │   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
+│   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 16-visual-qa.md        screenshot → critique → fix loop + draw-call perf gate
 │   └── 17-autonomous-loop.md  agent-driven build→see→fix loop to the AAA rubric (demonstrated)
 ├── scripts/                  executable helpers (run, don't read)
@@ -37,6 +38,7 @@ threejs-aaa/ (the skill)
 │   ├── procgen.mjs           generate a procedural prop GLB (zero deps)
 │   ├── fetch-cc0.mjs         download free CC0 HDRIs + PBR textures (Poly Haven, no key)
 │   ├── verify-interaction.mjs validate character↔object interaction; --selftest proves the math
+│   ├── verify-scene.mjs       validate scene placement correctness (door/chair/clip/rests-on/foot)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
@@ -63,6 +65,11 @@ threejs-aaa/ (the skill)
 - **Procedural animation & interaction verification** — math-driven motion (springs, damping,
   two-bone IK, look-at, foot IK) and a tested validator that checks a character↔object interaction
   is correct (orientation, reach, hand-on-target, feet grounded) — runnable at runtime and in CI.
+- **Scene correctness enforcement (the skill's job, not the user's)** — a tested spatial validator
+  that catches placement bugs the way an AAA reviewer would: a door must sit in the wall opening, a
+  chair must face the desk, a seated character's hips on the seat, furniture must not clip walls, a
+  plant rests ON a table (not through it), a ball is at the foot (not through the body), a structure
+  faces the right way. Each failure returns a suggested fix; proven by `verify-scene.mjs --selftest`.
 - **Zero-cost content (no paid APIs)** — the default path: Claude writes procedural geometry/
   shaders (free, infinite), fetches **CC0 assets** from free no-key APIs (Poly Haven/ambientCG
   HDRIs + PBR textures via `fetch-cc0.mjs`), rigs with free Mixamo/AccuRIG, and does live capture

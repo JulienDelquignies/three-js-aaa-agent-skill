@@ -19,17 +19,24 @@ Table of contents
 ## The procedure
 
 ```
-target = the AAA rubric (16-visual-qa.md) + a draw-call budget
+target = scene-correctness (18) + the AAA rubric (16) + a draw-call budget
 for iteration in 1..N (N ≈ 4–6 max):
+    0. validate PLACEMENT: verify-scene --spec scene.json  ← semantic correctness first
+       if not ok → apply report.fixes, re-validate (door in wall, chair faces desk, no clipping,
+       rests-on, ball-at-foot, structure orientation). Don't render a spatially-wrong scene.
     1. npm run build                                        (or run dev server)
     2. node scripts/capture.mjs --dir dist --out iterK.png --webgl --max-draws <budget>
     3. Read iterK.png                                       ← LOOK at the render
     4. score it against the rubric → list defects with severity
-    5. if no defects AND perf gate passed: STOP (ship)
+    5. if placement ok AND no visual defects AND perf gate passed: STOP (ship)
     6. pick the highest-severity defect
     7. apply its mapped fix (table below); keep the change minimal
     8. continue
 ```
+
+Placement correctness comes first: a door floating in a wall or a goal facing backwards is wrong
+before you even judge the lighting. The goal-orientation bug in the football demo is exactly what
+step 0 catches (a structure-orientation constraint).
 
 Run it after every substantive scene change as a regression gate, not just once.
 
@@ -54,6 +61,7 @@ Highest-leverage first — this ordering reflects what actually moves a web rend
 
 | Defect | Fix | Ref |
 |---|---|---|
+| Placement wrong (float/clip/backwards/through) | `verify-scene` → apply `report.fixes` | `18` |
 | Black screen / hard failure | `await renderer.init()`, import paths | `02`, SKILL gotchas |
 | Flat/gray reflections, dull metals | add a real CC0 HDRI | `fetch-cc0 --hdri`, `02` |
 | Washed-out / wrong colors | color management + color spaces | `02` |

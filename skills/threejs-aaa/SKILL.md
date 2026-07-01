@@ -41,6 +41,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Mixamo pipeline, GLTF loading, AnimationMixer, state machine, IK | [reference/05-characters-mixamo.md](reference/05-characters-mixamo.md) |
 | Procedural animation: springs, damping, two-bone IK, look-at, foot IK | [reference/14-procedural-animation.md](reference/14-procedural-animation.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
+| **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | Procedural geometry: BufferGeometry, extrude/lathe, CSG booleans | [reference/06-procedural-geometry.md](reference/06-procedural-geometry.md) |
 | Noise, heightmap terrain, erosion, marching cubes, chunked LOD | [reference/07-terrain-noise.md](reference/07-terrain-noise.md) |
 | Scattering vegetation/props, InstancedMesh, surface sampling, BVH | [reference/08-scattering-instancing.md](reference/08-scattering-instancing.md) |
@@ -82,6 +83,14 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-interaction.mjs --selftest
   node ${CLAUDE_SKILL_DIR}/scripts/verify-interaction.mjs --spec ./interaction.json
+  ```
+- **Validate scene placement correctness (REQUIRED)** — checks door-in-wall, chair-faces-desk,
+  sit pose, furniture-not-through-wall, plant-on-table, ball-at-foot-not-through-body, structure
+  orientation; `--selftest` proves the rules (free, zero deps). Declare relationships, don't rely
+  on the user to catch placement bugs:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-scene.mjs --selftest
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-scene.mjs --spec ./scene.json
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free
@@ -164,6 +173,12 @@ A repeatable order for standing up an AAA scene. Tick each as you go.
   normalize bone names. `SkeletonUtils.retargetClip` is unreliable across rigs — prefer the
   manual rest-pose retarget recipe in `reference/05`.
 - **Dispose** geometries, materials, textures, and render targets you discard.
+- **Own spatial correctness — it's the skill's job, not the user's.** Whenever you place objects or
+  characters, declare the intended relationships (door in the wall opening, chair facing the desk,
+  hips on the seat, furniture not through walls, plant on the table not through it, ball at the foot
+  not through the body, a structure facing the right way) and validate with `verify-scene.mjs` /
+  `scene-validate.js`, then apply the suggested fixes. Never rely on the user to notice that a door
+  floats or a goal is backwards. See `reference/18`.
 
 ## When an MCP server instead of this skill?
 
