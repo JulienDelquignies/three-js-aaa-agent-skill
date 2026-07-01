@@ -45,6 +45,10 @@ threejs-aaa/ (the skill)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
+
+examples/
+└── soldier-volley/           runnable demo: a REAL Mixamo-rigged character (Soldier.glb) runs in
+                              and volleys into the net, with temporal validation on the real bones
 ```
 
 ## Capabilities
