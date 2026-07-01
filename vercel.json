@@ -1,0 +1,5 @@
+{
+  "installCommand": "cd examples/soldier-volley && npm install",
+  "buildCommand": "cd examples/soldier-volley && npm run build",
+  "outputDirectory": "examples/soldier-volley/dist"
+}
