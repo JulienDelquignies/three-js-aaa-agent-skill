@@ -46,29 +46,48 @@ What `update(dt)` guarantees:
 - **Run/idle blend** — by speed, so stopping eases to idle.
 - **No foot-skate** — `FootLockIK` pins the planted foot while running (reference/21).
 
-Read `ctrl.pos` (position), `ctrl.yaw`, `ctrl.speed`, `ctrl.forward()` to attach a camera, a dribbled ball,
-UI, etc.
+Also: `ctrl.setSprint(bool)` (speed ×`sprintMult`), `ctrl.jump()` (vertical velocity + gravity, lands on
+`groundY`; foot-lock auto-disables while airborne). Read `ctrl.pos`, `ctrl.yaw`, `ctrl.speed`,
+`ctrl.forward()`, `ctrl.airborne` to attach a camera, a dribbled ball, UI, etc.
 
-## Input → move vector (camera-relative)
+## Native input + camera (the rest of "controls")
 
-Map keys/stick to a **camera-relative** move so "up" always means "away from the camera":
+Two more native modules complete a real control scheme — don't hand-roll these:
 
-```js
-let ix = 0, iz = 0;                                   // from WASD/ZQSD/arrows or gamepad axes (deadzone!)
-const fwd = player.pos.clone().sub(cam.position); fwd.y = 0; fwd.normalize();  // camera→player on ground
-const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
-const move = fwd.multiplyScalar(iz).addScaledVector(right, ix);
-ctrl.setMoveWorld(move.x, move.z);
-```
+- **`engine/input.js` `Input`** — one abstraction over **keyboard + gamepad + mouse-look + touch**. It
+  builds an on-screen joystick + action buttons on touch devices automatically. Read intent, not devices:
+  ```js
+  const input = new Input(document.body);
+  // each frame:
+  input.update();                         // polls the gamepad
+  const mv   = input.move();              // {x,z} on the unit disk (keys / left stick / touch stick)
+  const look = input.consumeLook();       // {dx,dy} mouse drag / right stick / right-side touch
+  const zoom = input.consumeZoom();       // wheel / pinch
+  input.down('sprint');                   // held (Shift / RB / stick-to-rim)
+  if (input.pressed('jump'))  ctrl.jump();   // edge (J / gamepad B)
+  if (input.pressed('shoot')) shoot();       // edge (Space / gamepad A)
+  if (input.pressed('cross')) cross();       // edge (E / gamepad X)
+  input.endFrame();                       // clears edge-triggers
+  ```
+- **`engine/third-person-camera.js` `ThirdPersonCamera`** — a follow camera the player can also steer
+  (`orbit(dx,dy)`, `zoom(d)`), damped behind the target. Its `heading` (yaw) is what makes movement
+  camera-relative:
+  ```js
+  tpc.orbit(look.dx, look.dy); tpc.zoom(zoom);
+  const yaw = tpc.yaw, fx = Math.sin(yaw), fz = Math.cos(yaw);   // camera forward on the ground
+  ctrl.setMoveWorld(fx*mv.z - fz*mv.x, fz*mv.z + fx*mv.x);       // right = (−fz, fx)
+  ctrl.update(dt);
+  tpc.update(ctrl.pos, dt);                                       // follow (optionally auto-swing behind facing)
+  ```
 
-Support a gamepad via `navigator.getGamepads()` (left stick = axes 0/1, apply a ~0.18 deadzone; buttons for
-shoot/pass). Prefer camera-relative movement + a **third-person follow camera** that trails behind the
-player's facing (damp the camera position so it lags and settles — use `Spring`/`damp` from
-`procedural.js`). See `showcase/src/scenes/Controls.js` for the full playable example: dribble (knock the
-ball ahead when you run onto it), `Space` to shoot along `forward()`, `Shift` for a low cross, goal detect.
+The **Contrôles** scene (`showcase/src/scenes/Controls.js`) wires all of it: run, look, zoom, sprint,
+jump, dribble (knock the ball ahead when you run onto it), `Space` shoots along `forward()`, `E` crosses
+low, goal detection + net ripple — playable on keyboard, gamepad, and phone.
 
 ## Checklist for "the controls feel right"
 1. Model faces where it moves — `dot(forward, velocity) > 0` (no moonwalk); shots use `forward()`.
 2. Legs cadence-synced + foot-locked (no slide) — reference/21.
-3. Input is camera-relative; gamepad has a deadzone; run/idle blends on start/stop.
-4. Third-person camera trails the facing and is damped (no rigid snap).
+3. Movement is **camera-relative** (via the camera's `heading`); gamepad axes have a deadzone; run/idle
+   blends on start/stop; sprint/jump available.
+4. Third-person camera is **steerable** (mouse/right-stick/touch look + zoom) and damped, not a rigid rig.
+5. **Touch**: an on-screen joystick + buttons exist so it's playable on a phone (`Input` adds them).

@@ -4,6 +4,7 @@ import { clone as skeletonClone } from 'three/addons/utils/SkeletonUtils.js';
 import { matchCadence } from '../engine/locomotion.js';
 import { FootLockIK } from '../engine/foot-lock.js';
 import { noPops } from '../engine/temporal-validate.js';
+import { buildGoal } from './goal.js';
 
 // The move, done right: a DRIBBLER carries the ball down the wing and CROSSES; a STRIKER runs onto it
 // and VOLLEYS into the net. Two real Mixamo rigs. Each player FACES where it moves (Soldier forward is
@@ -68,23 +69,7 @@ export class SoldierVolley {
     const s = new THREE.Mesh(sgeo, smat); s.position.y = -0.04; this.scene.add(s); this.disposables.push(sgeo, smat);
   }
 
-  _goal() {
-    const white = new THREE.MeshStandardNodeMaterial({ color: 0xf4f6f8, roughness: 0.4 });
-    const post = new THREE.CylinderGeometry(0.1, 0.1, GOAL_H, 12), bar = new THREE.CylinderGeometry(0.1, 0.1, GOAL_W, 12);
-    const add = (geo, x, y, z, rx = 0) => { const mm = new THREE.Mesh(geo, white); mm.position.set(x, y, z); mm.rotation.x = rx; mm.castShadow = true; this.scene.add(mm); };
-    add(post, GOAL_X, GOAL_H / 2, -GOAL_W / 2); add(post, GOAL_X, GOAL_H / 2, GOAL_W / 2); add(bar, GOAL_X, GOAL_H, 0, Math.PI / 2);
-    const nc = document.createElement('canvas'); nc.width = nc.height = 128; const ng = nc.getContext('2d'); ng.strokeStyle = '#fff'; ng.lineWidth = 3;
-    for (let i = 0; i <= 8; i++) { const p = i / 8 * 128; ng.beginPath(); ng.moveTo(p, 0); ng.lineTo(p, 128); ng.moveTo(0, p); ng.lineTo(128, p); ng.stroke(); }
-    const ntex = new THREE.CanvasTexture(nc); ntex.wrapS = ntex.wrapT = THREE.RepeatWrapping; ntex.repeat.set(8, 3);
-    const nmat = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, alphaMap: ntex, transparent: true, side: THREE.DoubleSide, depthWrite: false, roughness: 1 });
-    const back = new THREE.PlaneGeometry(GOAL_W, GOAL_H, 24, 12); this.net = new THREE.Mesh(back, nmat); this.net.position.set(GOAL_X + D, GOAL_H / 2, 0);
-    this.netRest = back.attributes.position.array.slice(); this.scene.add(this.net);
-    const side = new THREE.PlaneGeometry(D, GOAL_H);
-    const sl = new THREE.Mesh(side, nmat); sl.position.set(GOAL_X + D / 2, GOAL_H / 2, -GOAL_W / 2);
-    const sr = new THREE.Mesh(side, nmat); sr.position.set(GOAL_X + D / 2, GOAL_H / 2, GOAL_W / 2);
-    const top = new THREE.PlaneGeometry(D, GOAL_W); const tp = new THREE.Mesh(top, nmat); tp.rotation.x = Math.PI / 2; tp.position.set(GOAL_X + D / 2, GOAL_H, 0);
-    this.scene.add(sl, sr, tp); this.disposables.push(post, bar, white, back, side, top, nmat, ntex);
-  }
+  _goal() { this.goal = buildGoal(this.scene, { X: GOAL_X, W: GOAL_W, H: GOAL_H, D }); this.disposables.push(this.goal); }
 
   _ball() {
     const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, 128, 128);
@@ -124,7 +109,8 @@ export class SoldierVolley {
     else { const s = Math.exp(-(t - T_GOAL) * 3) * Math.abs(Math.sin((t - T_GOAL) * 20)) * 0.15; bp = [GOALPT[0] + 0.15, GOALPT[1] + s, GOALPT[2]]; }
     this.ball.position.set(bp[0], bp[1], bp[2]); this.ball.rotation.x = t * 6; this.ball.rotation.z -= 0.25;
 
-    if (this.net) { const pos = this.net.geometry.attributes.position; const amp = t > T_GOAL ? Math.exp(-(t - T_GOAL) * 4) * 0.5 : 0; for (let i = 0; i < pos.count; i++) { const x = this.netRest[i * 3], y = this.netRest[i * 3 + 1]; const d = Math.hypot(x - GOALPT[2], y - (GOALPT[1] - GOAL_H / 2)); pos.array[i * 3 + 2] = this.netRest[i * 3 + 2] - amp * Math.exp(-d * d * 1.5) * Math.cos(d * 8 - (t - T_GOAL) * 20); } pos.needsUpdate = true; }
+    const amp = t > T_GOAL ? Math.exp(-(t - T_GOAL) * 4) * 0.45 * Math.cos((t - T_GOAL) * 22) + Math.exp(-(t - T_GOAL) * 3) * 0.12 : 0;
+    this.goal.setRipple(Math.max(0, amp), GOALPT[2], GOALPT[1]);
 
     if (camera) this._camera(camera, t, dPos);
   }

@@ -82,12 +82,12 @@ examples/
   ties clip phase to distance travelled so legs cycle at ground speed, and `FootLockIK` pins the
   planted foot (root-motion clips barely push, so cadence alone still smears). Proven on the real
   Mixamo Soldier rig: planted-foot slip **0.15 → 0 m/frame**. Cadence math self-tests with zero deps.
-- **Character controller / controls (native)** — the point of a game. `CharacterController` turns a
-  camera-relative move vector (keyboard/gamepad) into correct movement: the model **faces where it
-  moves** (no moonwalk — the Mixamo Soldier's forward is −Z, so a naive rotation makes it moonwalk and
-  shoot backward; the controller fixes it and you verify `dot(forward,velocity)>0`), run/idle blends,
-  cadence tracks ground speed, foot stays planted, and shots aim along its facing. Playable demo in the
-  live gallery (**Contrôles** — drive the Soldier, dribble, shoot).
+- **Character controller / controls (native)** — the point of a game, as three composable modules:
+  `CharacterController` (faces where it moves — no moonwalk — run/idle blend, cadence-synced, foot-locked,
+  **sprint + jump**, shots aim along `forward()`), `Input` (one abstraction over **keyboard + gamepad +
+  mouse-look + touch**, auto-building an on-screen joystick + buttons on phones), and `ThirdPersonCamera`
+  (a **steerable** follow camera — orbit/zoom — whose heading makes movement camera-relative). Playable in
+  the live gallery (**Contrôles** — run, look, sprint, jump, dribble, shoot; keyboard/gamepad/touch).
 - **Scene correctness enforcement (the skill's job, not the user's)** — a tested spatial validator
   that catches placement bugs the way an AAA reviewer would: a door must sit in the wall opening, a
   chair must face the desk, a seated character's hips on the seat, furniture must not clip walls, a

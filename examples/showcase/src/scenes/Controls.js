@@ -1,24 +1,23 @@
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CharacterController } from '../engine/character-controller.js';
+import { ThirdPersonCamera } from '../engine/third-person-camera.js';
+import { Input } from '../engine/input.js';
+import { buildGoal } from './goal.js';
 
-// Playable controls — drive the Soldier around the pitch: WASD/ZQSD/arrows or a gamepad left stick to
-// run (camera-relative), the player turns to face where it moves (no moonwalk) and never foot-skates,
-// dribbles the ball at its feet, Space shoots, Shift crosses low. Third-person follow camera.
-// This is what the skill is for: correct, good-feeling controls built on the native CharacterController.
-const GOAL_X = 26, GOAL_W = 7.3, GOAL_H = 2.44, R = 0.12, G = 16;
+// Playable controls — the point of the skill. Drive the Soldier with the native Input (keyboard / gamepad
+// / touch joystick) + a steerable ThirdPersonCamera: run (camera-relative), LOOK around (mouse/right-stick/
+// touch), ZOOM (wheel/pinch), SPRINT (Shift/RB), JUMP (J/B), dribble the ball, shoot along facing (Space/A),
+// cross low (E/X). The player faces where it moves (no moonwalk) and never foot-skates. Scores in the net.
+const GOAL_X = 26, GOAL_W = 7.3, GOAL_H = 2.44, R = 0.12;
 
 export class Controls {
   constructor(scene, renderer) {
-    this.scene = scene; this.disposables = []; this.keys = new Set();
+    this.scene = scene; this.disposables = [];
     this._buildPitch(); this._buildGoal(); this._buildBall();
     this.ball = { pos: new THREE.Vector3(2, R, 0), vel: new THREE.Vector3() };
-    this.camPos = new THREE.Vector3(-6, 3, 0); this.score = 0; this._cool = 0;
-    this._tmp = new THREE.Vector3(); this._fwd = new THREE.Vector3();
-    this._onKey = (e) => { const d = e.type === 'keydown'; const k = e.key.toLowerCase();
-      if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
-      if (d) this.keys.add(k); else this.keys.delete(k); if (k === ' ' && d) this._wantShoot = true; if (k === 'shift') this._cross = d; };
-    addEventListener('keydown', this._onKey); addEventListener('keyup', this._onKey);
+    this._cool = 0; this._fwd = new THREE.Vector3(); this._tmp = new THREE.Vector3();
+    this.input = new Input(document.body);
     this.ready = this._load(renderer);
   }
 
@@ -33,18 +32,7 @@ export class Controls {
     const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; this.scene.add(m); this.disposables.push(geo, mat, tex);
   }
 
-  _buildGoal() {
-    const white = new THREE.MeshStandardNodeMaterial({ color: 0xf4f6f8, roughness: 0.4 });
-    const post = new THREE.CylinderGeometry(0.1, 0.1, GOAL_H, 12), bar = new THREE.CylinderGeometry(0.1, 0.1, GOAL_W, 12);
-    const add = (geo, x, y, z, rx = 0) => { const mm = new THREE.Mesh(geo, white); mm.position.set(x, y, z); mm.rotation.x = rx; mm.castShadow = true; this.scene.add(mm); };
-    add(post, GOAL_X, GOAL_H / 2, -GOAL_W / 2); add(post, GOAL_X, GOAL_H / 2, GOAL_W / 2); add(bar, GOAL_X, GOAL_H, 0, Math.PI / 2);
-    const nc = document.createElement('canvas'); nc.width = nc.height = 128; const ng = nc.getContext('2d'); ng.strokeStyle = '#fff'; ng.lineWidth = 3;
-    for (let i = 0; i <= 8; i++) { const p = i / 8 * 128; ng.beginPath(); ng.moveTo(p, 0); ng.lineTo(p, 128); ng.moveTo(0, p); ng.lineTo(128, p); ng.stroke(); }
-    const ntex = new THREE.CanvasTexture(nc); ntex.wrapS = ntex.wrapT = THREE.RepeatWrapping; ntex.repeat.set(8, 3);
-    const nmat = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, alphaMap: ntex, transparent: true, side: THREE.DoubleSide, depthWrite: false, roughness: 1 });
-    const back = new THREE.PlaneGeometry(GOAL_W, GOAL_H); const bk = new THREE.Mesh(back, nmat); bk.position.set(GOAL_X + 1.5, GOAL_H / 2, 0); this.scene.add(bk);
-    this.disposables.push(post, bar, white, back, nmat, ntex);
-  }
+  _buildGoal() { this.goal = buildGoal(this.scene, { X: GOAL_X, W: GOAL_W, H: GOAL_H, D: 1.6 }); this.disposables.push(this.goal); this._ripple = 0; }
 
   _buildBall() {
     const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, 128, 128);
@@ -54,7 +42,7 @@ export class Controls {
     this.ballMesh = new THREE.Mesh(geo, mat); this.ballMesh.castShadow = true; this.scene.add(this.ballMesh); this.disposables.push(geo, mat, tex);
   }
 
-  async _load(renderer) {
+  async _load() {
     const gltf = await new GLTFLoader().loadAsync('Soldier.glb');
     const model = gltf.scene; model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
     const box = new THREE.Box3().setFromObject(model); model.scale.setScalar(1.8 / box.getSize(new THREE.Vector3()).y);
@@ -73,75 +61,69 @@ export class Controls {
   }
 
   camera(cam, controls) {
-    this._cam = cam;
-    if (controls) controls.enabled = false;                // we drive a third-person follow camera
+    if (controls) controls.enabled = false;
+    this.tpc = new ThirdPersonCamera(cam, { distance: 7, height: 1.4, lookHeight: 1.2 });
+    this.tpc.yaw = Math.PI / 2;            // look toward +X (the goal)
     cam.position.set(-10, 4, 0); cam.lookAt(0, 1, 0);
   }
 
-  _readInput(cam) {
-    let ix = 0, iz = 0; const K = this.keys;
-    if (K.has('w') || K.has('z') || K.has('arrowup')) iz += 1;
-    if (K.has('s') || K.has('arrowdown')) iz -= 1;
-    if (K.has('a') || K.has('q') || K.has('arrowleft')) ix -= 1;
-    if (K.has('d') || K.has('arrowright')) ix += 1;
-    const gp = navigator.getGamepads?.()[0];
-    if (gp) { const dz = (v) => Math.abs(v) < 0.18 ? 0 : v; ix += dz(gp.axes[0]); iz -= dz(gp.axes[1]); if (gp.buttons[0]?.pressed) this._wantShoot = true; this._cross = !!gp.buttons[2]?.pressed; }
-    // camera-relative: forward = camera→player on the ground, right = perpendicular
-    const f = this._fwd.copy(this.ctrl.pos).sub(cam.position); f.y = 0; if (f.lengthSq() < 1e-4) f.set(1, 0, 0); f.normalize();
-    const rx = -f.z, rz = f.x;
-    let mx = f.x * iz + rx * ix, mz = f.z * iz + rz * ix;
-    const l = Math.hypot(mx, mz); if (l > 1) { mx /= l; mz /= l; }
-    return [mx, mz, l];
-  }
-
   update(dt) {
-    const cam = this._cam; if (!this.ctrl || !cam) { this._integrateBall(dt); this._draw(); return; }
-    const [mx, mz] = this._readInput(cam);
-    this.ctrl.setMoveWorld(mx, mz);
+    if (!this.ctrl || !this.tpc) { this._integrateBall(dt); this._draw(); return; }
+    this.input.update();
+    const look = this.input.consumeLook(); const z = this.input.consumeZoom();
+    if (z) this.tpc.zoom(z);
+    if (Math.abs(look.dx) > 1e-4 || Math.abs(look.dy) > 1e-4) this.tpc.orbit(look.dx, look.dy);
+
+    // camera-relative move
+    const mv = this.input.move(); const yaw = this.tpc.yaw;
+    const fx = Math.sin(yaw), fz = Math.cos(yaw);            // camera forward on ground
+    const wx = fx * mv.z - fz * mv.x, wz = fz * mv.z + fx * mv.x;   // right = (−fz, fx)
+    this.ctrl.setMoveWorld(wx, wz);
+    this.ctrl.setSprint(this.input.down('sprint'));
+    if (this.input.pressed('jump')) this.ctrl.jump();
     this.ctrl.update(dt);
 
-    // ball: dribble when the player is on it, shoot on demand
-    const p = this.ctrl.pos, fwd = this.ctrl.forward(this._fwd);
-    const toBall = this._tmp.copy(this.ball.pos).setY(0).sub(this._tmp2().copy(p).setY(0));
-    const d = toBall.length(); this._cool = Math.max(0, this._cool - dt);
-    if (this._wantShoot && d < 1.6 && this._cool === 0) {
-      const power = this._cross ? 9 : 15, lift = this._cross ? 3.2 : 5.5;
-      this.ball.vel.set(fwd.x * power, lift, fwd.z * power); this._cool = 0.4;
-    } else if (d < 0.75 && this.ctrl.speed > 0.6) {
-      const s = this.ctrl.speed + 1.6; this.ball.vel.set(fwd.x * s, this.ball.vel.y, fwd.z * s); // knock it ahead → dribble
+    // gently swing the camera behind the player when moving and not manually looking
+    const pf = this.ctrl.forward(this._fwd);
+    if (Math.abs(look.dx) < 1e-4 && Math.hypot(wx, wz) > 0.05) {
+      const targetYaw = Math.atan2(pf.x, pf.z);
+      let d = ((targetYaw - this.tpc.yaw + Math.PI) % (2 * Math.PI)) - Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+      this.tpc.yaw += d * (1 - Math.exp(-2.2 * dt));
     }
-    this._wantShoot = false;
+
+    // ball: shoot / cross / dribble
+    const p = this.ctrl.pos; const d = Math.hypot(this.ball.pos.x - p.x, this.ball.pos.z - p.z);
+    this._cool = Math.max(0, this._cool - dt);
+    if (this.input.pressed('shoot') && d < 1.8 && this._cool === 0) { this.ball.vel.set(pf.x * 15, 5.5, pf.z * 15); this._cool = 0.35; }
+    else if (this.input.pressed('cross') && d < 1.8 && this._cool === 0) { this.ball.vel.set(pf.x * 9, 3.4, pf.z * 9); this._cool = 0.35; }
+    else if (d < 0.75 && this.ctrl.speed > 0.6) { const s = this.ctrl.speed + 1.6; this.ball.vel.set(pf.x * s, this.ball.vel.y, pf.z * s); }
+    this.input.endFrame();
+
     this._integrateBall(dt);
-    this._follow(cam, dt);
+    this.tpc.update(this._tmp.set(p.x, p.y, p.z), dt);
     this._draw();
   }
-  _tmp2() { return (this.__t2 ||= new THREE.Vector3()); }
 
   _integrateBall(dt) {
     const b = this.ball; b.vel.y -= 18 * dt;
     b.pos.addScaledVector(b.vel, dt);
     if (b.pos.y < R) { b.pos.y = R; b.vel.y = Math.abs(b.vel.y) * 0.45; const f = Math.exp(-2.2 * dt); b.vel.x *= f; b.vel.z *= f; }
-    b.pos.x = THREE.MathUtils.clamp(b.pos.x, -33, GOAL_X + 2.5); b.pos.z = THREE.MathUtils.clamp(b.pos.z, -22, 22);
-    // goal!
+    b.pos.x = THREE.MathUtils.clamp(b.pos.x, -33, GOAL_X + 2.4); b.pos.z = THREE.MathUtils.clamp(b.pos.z, -22, 22);
     if (b.pos.x > GOAL_X - 0.1 && Math.abs(b.pos.z) < GOAL_W / 2 && b.pos.y < GOAL_H && this._cool2 !== 1) {
-      this.score++; this._flash(); this._cool2 = 1; setTimeout(() => { b.pos.set(2, R, 0); b.vel.set(0, 0, 0); this._cool2 = 0; }, 250);
+      this.score = (this.score || 0) + 1; this._flash(); this._cool2 = 1; this._ripple = 0.5; this._rz = b.pos.z; this._ry = b.pos.y;
+      setTimeout(() => { b.pos.set(2, R, 0); b.vel.set(0, 0, 0); this._cool2 = 0; }, 250);
     }
-  }
-
-  _follow(cam, dt) {
-    const p = this.ctrl.pos, fwd = this.ctrl.forward(this._fwd);
-    const want = this._tmp.set(p.x - fwd.x * 6.5, 3.2, p.z - fwd.z * 6.5);
-    const k = 1 - Math.exp(-6 * dt); this.camPos.lerp(want, k);
-    cam.position.copy(this.camPos); cam.lookAt(p.x + fwd.x * 2, 1.2, p.z + fwd.z * 2);
   }
 
   _draw() {
     this.ballMesh.position.copy(this.ball.pos);
     this.ballMesh.rotation.x += this.ball.vel.z * 0.02; this.ballMesh.rotation.z -= this.ball.vel.x * 0.02;
-    const el = document.getElementById('score'); if (el && el.__n !== this.score) { el.__n = this.score; el.textContent = `⚽ ${this.score}`; }
+    if (this._ripple > 0.002) { this._ripple *= 0.9; this.goal.setRipple(this._ripple, this._rz || 0, this._ry || 1.1); }
+    else if (this._ripple) { this._ripple = 0; this.goal.setRipple(0); }
+    const el = document.getElementById('score'); if (el && el.__n !== this.score) { el.__n = this.score || 0; el.textContent = `⚽ ${this.score || 0}`; }
   }
 
   _flash() { const el = document.getElementById('goal-flash'); if (el) { el.style.opacity = '1'; setTimeout(() => (el.style.opacity = '0'), 500); } }
 
-  dispose() { removeEventListener('keydown', this._onKey); removeEventListener('keyup', this._onKey); for (const d of this.disposables) d.dispose?.(); }
+  dispose() { this.input?.dispose(); for (const d of this.disposables) d.dispose?.(); }
 }
