@@ -4,6 +4,11 @@ Overcoming "an agent can't make the art." An agent can't paint pixels itself, bu
 orchestrate** generation services + deterministic cleanup: prompt → generate (submit/poll/
 download) → make game-ready (retopo/optimize) → wire into Three.js. This file is the playbook.
 
+> **Want zero cost / no paid API?** This file covers **paid/optional** generators. For the free
+> default path (procedural + CC0 libraries + free local tools + self-hosted open models), read
+> **[reference/13-zero-cost-assets.md](13-zero-cost-assets.md) first** — it covers everything a game
+> needs at no cost beyond your plan. Use the paid services below only if you explicitly choose to.
+
 > Versions/prices/endpoints below were researched 2026-06; AI services change fast. Treat
 > specifics marked **(verify)** as needing a live-docs check before you depend on them.
 > **Commercial licensing is the #1 risk** — read each tool's license before shipping, especially

@@ -23,14 +23,16 @@ threejs-aaa/ (the skill)
 │   ├── 07-terrain-noise.md    noise, heightmaps, erosion, marching cubes, chunked LOD
 │   ├── 08-scattering-instancing.md  InstancedMesh, surface sampling, BVH, grass
 │   ├── 09-performance.md      draw calls, LOD, KTX2/Draco, profiling, quality tiers
-│   ├── 10-ai-asset-generation.md   text/image-to-3D, AI textures/HDRI, APIs, licensing
+│   ├── 10-ai-asset-generation.md   (optional/paid) text/image-to-3D, AI textures/HDRI, licensing
 │   ├── 11-ai-characters-motion.md  AI auto-rig, mocap, text-to-motion, audio-to-face, MediaPipe
-│   └── 12-advanced-rendering-scale.md  GPU-driven rendering, web-Nanite, streaming, FSR, GI
+│   ├── 12-advanced-rendering-scale.md  GPU-driven rendering, web-Nanite, streaming, FSR, GI
+│   └── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
 ├── scripts/                  executable helpers (run, don't read)
 │   ├── scaffold.mjs          create a new game from the starter
 │   ├── convert-character.mjs Mixamo/FBX → optimized GLB
 │   ├── procgen.mjs           generate a procedural prop GLB (zero deps)
-│   └── gen-asset.mjs         AI text/image-to-3D → game-ready GLB (Meshy adapter)
+│   ├── fetch-cc0.mjs         download free CC0 HDRIs + PBR textures (Poly Haven, no key)
+│   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
 ```
 
@@ -47,11 +49,15 @@ threejs-aaa/ (the skill)
   capsule controllers, IK (foot/look-at), morph-target facial animation, and VRM.
 - **Performance** — instancing/batching, LOD, Draco/Meshopt + KTX2 compression via
   glTF-Transform, draw-call budgeting, and device quality tiers.
-- **Overcoming the "no art / browser budget" limits** — orchestrating AI generation
-  (text/image-to-3D, AI PBR textures, AI/CC0 HDRIs, AI auto-rig + mocap + facial animation)
-  with a game-ready cleanup pipeline and explicit commercial-licensing guidance; plus the
-  realistic path to AAA-scale fidelity in the browser (GPU-driven rendering, KTX2/Meshopt
-  streaming, dynamic-resolution + FSR1, baked GI) and an honest gap analysis vs native.
+- **Zero-cost content (no paid APIs)** — the default path: Claude writes procedural geometry/
+  shaders (free, infinite), fetches **CC0 assets** from free no-key APIs (Poly Haven/ambientCG
+  HDRIs + PBR textures via `fetch-cc0.mjs`), rigs with free Mixamo/AccuRIG, and does live capture
+  with free in-browser MediaPipe — entirely inside a Claude Code Pro/Max plan.
+- **Overcoming the "no art / browser budget" limits** — optionally orchestrating paid AI generation
+  (text/image-to-3D, AI PBR textures, auto-rig + mocap + facial) or free self-hosted open models,
+  with a game-ready cleanup pipeline and explicit commercial-licensing guidance; plus the realistic
+  path to AAA-scale fidelity in the browser (GPU-driven rendering, KTX2/Meshopt streaming,
+  dynamic-resolution + FSR1, baked GI) and an honest gap analysis vs native.
 
 ## Install
 

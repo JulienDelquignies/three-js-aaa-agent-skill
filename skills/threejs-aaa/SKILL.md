@@ -43,7 +43,8 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Noise, heightmap terrain, erosion, marching cubes, chunked LOD | [reference/07-terrain-noise.md](reference/07-terrain-noise.md) |
 | Scattering vegetation/props, InstancedMesh, surface sampling, BVH | [reference/08-scattering-instancing.md](reference/08-scattering-instancing.md) |
 | Performance: draw calls, instancing, LOD, KTX2/Draco, profiling | [reference/09-performance.md](reference/09-performance.md) |
-| AI asset generation: text/image-to-3D, AI textures, AI HDRI, licensing | [reference/10-ai-asset-generation.md](reference/10-ai-asset-generation.md) |
+| **Zero-cost pipeline: no paid APIs, procedural + free CC0 + free local tools** | [reference/13-zero-cost-assets.md](reference/13-zero-cost-assets.md) |
+| AI asset generation (optional/paid): text/image-to-3D, AI textures, HDRI, licensing | [reference/10-ai-asset-generation.md](reference/10-ai-asset-generation.md) |
 | AI characters: auto-rig, mocap, text-to-motion, audio-to-face, MediaPipe | [reference/11-ai-characters-motion.md](reference/11-ai-characters-motion.md) |
 | Toward true AAA: GPU-driven rendering, web-Nanite, streaming, FSR, GI, scale | [reference/12-advanced-rendering-scale.md](reference/12-advanced-rendering-scale.md) |
 
@@ -66,8 +67,14 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/procgen.mjs --spec ./prop.json --out ./public/prop.glb
   ```
-- **Generate an AI 3D asset** — text/image → 3D via the Meshy API, then make it game-ready.
-  Needs `MESHY_API_KEY`; prints setup + open-model alternatives if absent:
+- **Fetch a free CC0 asset** — HDRIs and full PBR texture sets from Poly Haven. **Free, no API
+  key, no cost** — the default asset path:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/fetch-cc0.mjs --hdri kloofendal_48d_partly_cloudy --res 2k --out ./public/env.hdr
+  node ${CLAUDE_SKILL_DIR}/scripts/fetch-cc0.mjs --texture rock_boulder_dry --res 2k --out-dir ./public/textures/rock
+  ```
+- **Generate an AI 3D asset (OPTIONAL / paid)** — text/image → 3D via the Meshy API. Only if you
+  choose to pay; needs `MESHY_API_KEY`. Prefer procedural + CC0 (above) for zero cost:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/gen-asset.mjs --prompt "a mossy stone well" --out ./public/well.glb --optimize
   ```
@@ -95,11 +102,15 @@ Apply these unless the user asks otherwise. Rationale and alternatives are in th
   Mention `react-three-fiber` + `drei` as an option for declarative/indie projects.
 - **Determinism:** never `Math.random()` for procedural content — use a seeded PRNG
   (`pure-rand` or an inline mulberry32) and derive independent sub-seeds per subsystem.
-- **AI-generated assets:** to get past "no art," orchestrate generation services — text/image-to-3D
-  (Meshy/Tripo/Rodin or open TRELLIS/TripoSR), AI PBR textures, AI/CC0 HDRIs, AI auto-rig + mocap +
-  facial — then always run the **game-ready cleanup** (retopo/optimize → KTX2/Meshopt GLB). See
-  `reference/10` and `11`. **Check licensing first** (`reference/10` table): some open models exclude
-  the EU, and text-to-motion datasets are non-commercial.
+- **Zero cost is the default (no paid APIs).** Get past "no art" for free: Claude writes the
+  **procedural** geometry/shaders (infinite, free), pulls **CC0 assets** from free no-key APIs
+  (`fetch-cc0.mjs` → Poly Haven/ambientCG HDRIs + PBR textures), rigs with free **Mixamo/AccuRIG**,
+  and does live capture with free in-browser **MediaPipe** — all inside the Pro/Max plan. See
+  `reference/13`. Paid generators (Meshy/Tripo/Rodin, `reference/10`) are **opt-in only**.
+- **AI-generated assets (optional/paid):** if you *choose* to pay, orchestrate text/image-to-3D or
+  self-host open models for free on your own GPU (TRELLIS/TripoSR). Always run the **game-ready
+  cleanup** (retopo/optimize → KTX2/Meshopt GLB). **Check licensing** (`reference/10` table): some
+  open models exclude the EU; text-to-motion datasets are non-commercial.
 - **Pushing real AAA scale:** browsers have no mesh shaders / hardware RT / sparse textures, so the
   wins are KTX2 textures, dynamic-resolution + FSR1, GPU-driven culling (`BatchedMesh` + compute +
   indirect draws), meshopt LOD streaming, and baked GI — not brute force. See `reference/12`.
