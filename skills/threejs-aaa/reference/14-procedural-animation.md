@@ -94,6 +94,11 @@ Plant feet on uneven ground so they don't float or clip:
 Do this after `mixer.update(dt)` each frame. Validate the result with `checkGroundContact`
 (`15-interaction-alignment.md`).
 
+**Moving characters that must not slide** → see `21-locomotion-no-footskate.md`: `matchCadence()` ties
+clip phase to distance travelled and `FootLockIK` (built on the `twoBoneIK` above) pins the planted foot.
+That's the dedicated fix for foot-skate on a locomoting character; foot-IK-on-terrain here is about
+height/normal on uneven ground.
+
 ## Driving THREE bones
 
 The math modules use arrays; bridge to Three.js:

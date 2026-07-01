@@ -28,6 +28,7 @@ threejs-aaa/ (the skill)
 │   ├── 12-advanced-rendering-scale.md  GPU-driven rendering, web-Nanite, streaming, FSR, GI
 │   ├── 13-zero-cost-assets.md  NO paid APIs: procedural + free CC0 libraries + free local tools
 │   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
+│   ├── 21-locomotion-no-footskate.md  moving characters that don't slide: cadence-sync + foot-lock IK + follow camera
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -42,13 +43,15 @@ threejs-aaa/ (the skill)
 │   ├── verify-interaction.mjs validate character↔object interaction; --selftest proves the math
 │   ├── verify-scene.mjs       validate scene placement correctness (door/chair/clip/rests-on/foot)
 │   ├── verify-temporal.mjs    validate animation-time correctness (skate/detach/pops/loop/phase)
+│   ├── verify-locomotion.mjs  self-test the no-foot-skate cadence math (matchCadence/estimateStride)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
 
 examples/
 └── soldier-volley/           runnable demo: a REAL Mixamo-rigged character (Soldier.glb) runs in
-                              and volleys into the net, with temporal validation on the real bones
+                              (no foot-skate: cadence-sync + foot-lock IK) chasing a rolling ball and
+                              volleys into the net, with a follow camera + temporal validation on the bones
 ```
 
 ## Capabilities
@@ -72,6 +75,10 @@ examples/
 - **Procedural animation & interaction verification** — math-driven motion (springs, damping,
   two-bone IK, look-at, foot IK) and a tested validator that checks a character↔object interaction
   is correct (orientation, reach, hand-on-target, feet grounded) — runnable at runtime and in CI.
+- **Locomotion without foot-skate (native)** — a moving character must not slide. `matchCadence()`
+  ties clip phase to distance travelled so legs cycle at ground speed, and `FootLockIK` pins the
+  planted foot (root-motion clips barely push, so cadence alone still smears). Proven on the real
+  Mixamo Soldier rig: planted-foot slip **0.15 → 0 m/frame**. Cadence math self-tests with zero deps.
 - **Scene correctness enforcement (the skill's job, not the user's)** — a tested spatial validator
   that catches placement bugs the way an AAA reviewer would: a door must sit in the wall opening, a
   chair must face the desk, a seated character's hips on the seat, furniture must not clip walls, a

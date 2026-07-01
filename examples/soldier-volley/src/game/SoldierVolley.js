@@ -1,6 +1,8 @@
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { attachmentThroughout, noPops } from '../engine/temporal-validate.js';
+import { noPops } from '../engine/temporal-validate.js';
+import { matchCadence } from '../engine/locomotion.js';
+import { FootLockIK } from '../engine/foot-lock.js';
 
 // The volley, performed by a REAL rigged Mixamo character (Soldier.glb): runs in with the Mixamo
 // Run clip, plants, a procedural right-leg kick strikes the ball, ball arcs into the net. Deterministic
@@ -13,8 +15,8 @@ const l3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[
 function arc(p0, p1, t0, t1, apex, t) { const u = clamp((t - t0) / (t1 - t0), 0, 1); const p = l3(p0, p1, u); p[1] += 4 * apex * u * (1 - u); return p; }
 
 const GOAL_X = 26, GOAL_W = 7.3, GOAL_H = 2.44, D = 1.6;
-const PLANT = [8.5, 0, 0.4];
-const T_CONTACT = 2.55, T_GOAL = 3.2;
+const START = [-4, 0, 0.6], PLANT = [8.5, 0, 0.4];   // ~12.5 m run-in at a believable ~5 m/s
+const T_CONTACT = 2.55, T_APP = 2.45, T_GOAL = 3.2;
 
 export class SoldierVolley {
   constructor(scene, renderer) {
@@ -76,23 +78,43 @@ export class SoldierVolley {
     this.actRun = this.mixer.clipAction(this.run); this.actIdle = this.mixer.clipAction(this.idle);
     this.actRun.play();
     const bone = (re) => { let f = null; model.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
+    this.lUpLeg = bone(/LeftUpLeg/i); this.lLeg = bone(/LeftLeg$/i); this.lFoot = bone(/LeftFoot/i);
     this.rUpLeg = bone(/RightUpLeg/i); this.rLeg = bone(/RightLeg$/i); this.rFoot = bone(/RightFoot/i);
     this.rUpRest = this.rUpLeg?.rotation.x || 0; this.rLegRest = this.rLeg?.rotation.x || 0;
+    // STRIDE: metres of ground the Run clip covers per loop. matchCadence() ties the clip's phase to
+    // distance travelled, so leg cadence tracks ground speed (legs turn over as fast as he moves).
+    this.stride = 2.6;
+    // FOOT-LOCK IK: this Mixamo Run was authored for root-motion — its feet barely push, so cadence alone
+    // still leaves the plant foot smearing. FootLockIK pins whichever foot is down to its touchdown spot.
+    // We calibrate each foot's true ground height by sweeping the clip once (feet rest at different Ys).
+    this.footLock = new FootLockIK(
+      [ { up: this.lUpLeg, knee: this.lLeg, foot: this.lFoot }, { up: this.rUpLeg, knee: this.rLeg, foot: this.rFoot } ],
+      { contactBand: 0.05, sampleClip: (p) => { this.model.position.set(0, 0, 0); this.mixer.setTime(p * this.runDur); this.scene.updateMatrixWorld(true); } },
+    );
     this.setTime(0);
     this._validate();
     return true;
   }
 
+  // Where the striker is at time t: near-constant-speed run-in, easing out only for the final quarter
+  // to settle into the plant (so he's already running at t=0 — no frozen start — and decelerates cleanly).
+  playerPos(t) {
+    const tau = clamp(t / T_APP, 0, 1), k = 0.75;
+    const u = tau < k ? tau : k + (1 - k) * (1 - (1 - (tau - k) / (1 - k)) ** 2);
+    return l3(START, PLANT, u);
+  }
+
   _poseAt(t) {
-    // locomotion: run while approaching, ease to idle after the plant
-    const approaching = t < T_CONTACT - 0.15;
-    if (approaching) { this.mixer.setTime((t * 1.35) % this.runDur); }
-    else { this.mixer.setTime((this.idle ? (t - T_CONTACT) % this.idle.duration : 0)); this.actRun.weight = 0; this.actIdle.weight = 1; this.actIdle.play(); }
-    // move root along the approach path, feet grounded
-    const u = smooth(clamp(t / (T_CONTACT - 0.15), 0, 1));
-    const p = l3([-8, 0, 1.6], PLANT, u); this.model.position.set(p[0], 0, p[2]);
+    const pp = this.playerPos(t);
+    this.model.position.set(pp[0], 0, pp[2]);
+    // clip phase driven by distance travelled (not wall-clock) → leg cadence matches ground speed, so
+    // the legs turn over as fast as he actually moves. This is what stops the "sliding on ice" look.
+    const traveled = pp[0] - START[0];
+    this.mixer.setTime(matchCadence(this.runDur, traveled, this.stride));
     this.scene.updateMatrixWorld(true);
-    // procedural right-leg kick around contact (blend on top of the clip pose)
+    // FOOT-LOCK during the run-up (before the procedural kick takes over the right leg) → planted feet grip.
+    if (this.footLock && t < T_CONTACT - 0.25) this.footLock.solve();
+    // procedural right-leg volley around contact, blended on top of the run pose
     const w = Math.exp(-Math.pow((t - T_CONTACT) / 0.16, 2));
     if (this.rUpLeg) this.rUpLeg.rotation.x = this.rUpRest - 1.5 * w;
     if (this.rLeg) this.rLeg.rotation.x = this.rLegRest + 0.9 * w;
@@ -102,38 +124,83 @@ export class SoldierVolley {
   setTime(t, camera) {
     t = clamp(t, 0, this.duration);
     this._poseAt(t);
-    const v = new THREE.Vector3(); this.rFoot?.getWorldPosition(v); const foot = v.toArray();
-    // ball: on the foot until contact, then arc to goal, then settle in the net
+    const pp = this.playerPos(t);
+    // ball rolls ahead of the striker (a dribble); the gap closes to the foot right at contact,
+    // then it's struck and arcs to the goal, then settles in the net. It is NOT glued to the foot.
     let bp;
-    if (t < T_CONTACT) bp = [foot[0] + 0.18, Math.max(0.12, foot[1]), foot[2]];
-    else if (t < T_GOAL) bp = arc([PLANT[0] + 0.2, 0.4, PLANT[2]], [GOAL_X + 1.0, 1.15, 0], T_CONTACT, T_GOAL, 1.4, t);
-    else { const s = Math.exp(-(t - T_GOAL) * 3) * Math.abs(Math.sin((t - T_GOAL) * 20)) * 0.15; bp = [GOAL_X + 1.15, 1.1 + s, 0]; }
-    this.ball.position.set(bp[0], bp[1], bp[2]); this.ball.rotation.z -= 0.3; this.ball.rotation.x = t * 5;
+    if (t < T_CONTACT) {
+      const k = smooth(clamp(t / T_CONTACT, 0, 1));
+      bp = [pp[0] + lerp(2.8, 0.5, k), 0.12, pp[2]];
+      this.contactBall = bp.slice();                          // remember strike point for a seamless arc
+    } else if (t < T_GOAL) {
+      bp = arc(this.contactBall || [PLANT[0] + 0.5, 0.12, PLANT[2]], [GOAL_X + 1.0, 1.15, 0], T_CONTACT, T_GOAL, 1.5, t);
+    } else { const s = Math.exp(-(t - T_GOAL) * 3) * Math.abs(Math.sin((t - T_GOAL) * 20)) * 0.15; bp = [GOAL_X + 1.15, 1.1 + s, 0]; }
+    this.ball.position.set(bp[0], bp[1], bp[2]); this.ball.rotation.z -= 0.3; this.ball.rotation.x = t * 6;
     if (this.net) { const pos = this.net.geometry.attributes.position; const amp = t > T_GOAL ? Math.exp(-(t - T_GOAL) * 4) * 0.5 : 0; for (let i = 0; i < pos.count; i++) { const x = this.netRest[i * 3], y = this.netRest[i * 3 + 1]; const d = Math.hypot(x, y - (1.1 - GOAL_H / 2)); pos.array[i * 3 + 2] = this.netRest[i * 3 + 2] - amp * Math.exp(-d * d * 1.5) * Math.cos(d * 8 - (t - T_GOAL) * 20); } pos.needsUpdate = true; }
     if (camera) {
-      const keys = [
-        { t: 0.0, p: [-9, 3.2, 7], l: [-6, 1.2, 1] }, { t: 2.0, p: [4, 2.6, 6.5], l: [8, 1.2, 0.5] },
-        { t: 2.55, p: [5.5, 1.8, 5], l: [16, 1.3, 0] }, { t: 3.3, p: [16, 2.6, 8], l: [26, 1.4, 0] },
-        { t: 3.9, p: [21, 2.8, 8], l: [26.5, 1.2, 0] }, { t: 6.0, p: [20, 3.2, 9], l: [26.5, 1.2, 0] },
-      ];
-      let a = keys[0], b = keys[keys.length - 1];
-      for (let i = 0; i < keys.length - 1; i++) if (t >= keys[i].t && t <= keys[i + 1].t) { a = keys[i]; b = keys[i + 1]; break; }
-      const u2 = smooth(clamp((t - a.t) / (b.t - a.t || 1), 0, 1)); const p2 = l3(a.p, b.p, u2), l = l3(a.l, b.l, u2);
-      camera.position.set(p2[0], p2[1], p2[2]); camera.lookAt(l[0], l[1], l[2]);
+      // A broadcast tracking rig: dolly alongside the striker on the near touchline during the run,
+      // then ease continuously into a goal-watching wide as the ball is struck (no cut/pop at contact).
+      const follow = [pp[0] - 3.2, 2.15, pp[2] + 6.0], look = [pp[0] + 3.0, 0.8, pp[2]];
+      if (t <= T_CONTACT) { camera.position.set(follow[0], follow[1], follow[2]); camera.lookAt(look[0], look[1], look[2]); }
+      else {
+        const k = smooth(clamp((t - T_CONTACT) / (T_GOAL + 0.5 - T_CONTACT), 0, 1));
+        const gp = [20, 3.0, 8.5], gl = [26.5, 1.3, 0];
+        const p = l3(follow, gp, k), l = l3(look, gl, k);
+        camera.position.set(p[0], p[1], p[2]); camera.lookAt(l[0], l[1], l[2]);
+      }
     }
   }
 
-  // temporal validation: the ball stays at the striker's foot through the approach/contact window.
+  // Median per-frame world slip of the truly-planted (lower) foot over the constant-speed run phase, for
+  // a given cadence + optional foot-lock. Isolates what each fix contributes to killing the slide.
+  _measureSlip(cadence, useFootLock) {
+    const a = new THREE.Vector3(), b = new THREE.Vector3();
+    const t0 = 0.2, t1 = T_APP * 0.72, N = 110, dt = (t1 - t0) / (N - 1);
+    const lo = [], loY = [];
+    for (let i = 0; i < N; i++) {
+      const t = t0 + i * dt, pp = this.playerPos(t);
+      this.model.position.set(pp[0], 0, pp[2]);
+      this.mixer.setTime(cadence(t, pp[0] - START[0]));
+      this.scene.updateMatrixWorld(true);
+      if (useFootLock) this.footLock.solve();
+      this.lFoot.getWorldPosition(a); this.rFoot.getWorldPosition(b);
+      const l = a.toArray(), r = b.toArray(); const lower = a.y < b.y ? l : r;
+      lo.push(lower); loY.push(lower[1]);                                    // the planted foot each frame = the lower one
+    }
+    // only count frames where the lower foot is actually in contact (within its ground band) — that's stance
+    const floor = Math.min(...loY), band = floor + 0.06;
+    const slips = []; for (let i = 1; i < N; i++) if (loY[i] <= band && loY[i - 1] <= band) slips.push(Math.hypot(lo[i][0] - lo[i - 1][0], lo[i][2] - lo[i - 1][2]));
+    slips.sort((x, y) => x - y);
+    return { median: +(slips.length ? slips[slips.length >> 1] : 0).toFixed(3), samples: slips.length, dt };
+  }
+
+  // temporal validation on the REAL rig — honest before/after. The "slide" has two causes, each fixed by
+  // a native skill piece: (1) a fixed clip rate drags the planted foot at ground speed regardless of the
+  // legs → matchCadence ties cadence to distance; (2) this Mixamo Run's feet barely push, so even synced
+  // they smear → FootLockIK pins the planted foot. We measure the planted (lower) foot under each.
   _validate() {
-    const N = 40, v = new THREE.Vector3(); const footP = [], ballP = [];
-    for (let i = 0; i < N; i++) { const t = (i / N) * (T_CONTACT - 0.03); this.setTime(t); this.rFoot.getWorldPosition(v); footP.push(v.toArray()); ballP.push(this.ball.position.toArray()); }
-    const atFoot = attachmentThroughout(ballP, footP.map((f) => [f[0] + 0.18, Math.max(0.12, f[1]), f[2]]), 0.15);
-    const ballAll = []; for (let i = 0; i < 60; i++) { this.setTime((i / 59) * this.duration); ballAll.push(this.ball.position.toArray()); }
-    const pops = noPops(ballAll, null, { dt: this.duration / 60, maxSpeed: 60 });
+    const sync = (t, tr) => matchCadence(this.runDur, tr, this.stride);
+    const before = this._measureSlip((t) => (t * 1.35) % this.runDur, false); // old: fixed cadence, no lock
+    const cadenceOnly = this._measureSlip(sync, false);                        // + distance-synced cadence
+    const locked = this._measureSlip(sync, true);                             // + foot-lock IK (delivered)
+    const groundPerFrame = +((Math.abs(PLANT[0] - START[0]) / T_APP) * locked.dt).toFixed(3);
+    const grips = locked.median <= groundPerFrame;                            // planted foot at/below ground speed → no slide
+    const v = new THREE.Vector3(); const ballAll = []; const M = 120;
+    for (let i = 0; i < M; i++) { this.setTime((i / (M - 1)) * this.duration); ballAll.push(this.ball.position.toArray()); }
+    const pops = noPops(ballAll, null, { dt: this.duration / M, maxSpeed: 60 });
+    this.setTime(0);
     window.__volleyReport = {
       character: 'Soldier.glb (Mixamo rig)', kickBone: this.rUpLeg?.name, footBone: this.rFoot?.name,
-      checks: { ball_at_foot_through_contact: { ok: atFoot.ok, detail: atFoot.detail }, ball_trajectory_no_pops: { ok: pops.ok, detail: pops.detail } },
-      summary: `Soldier (real Mixamo rig) volley: ball stays at the kicking foot through the run-up to contact ${atFoot.ok ? '✓' : '✗'} (${atFoot.detail}); ball trajectory continuous, no pops ${pops.ok ? '✓' : '✗'}.`,
+      strideLength: this.stride, groundPerFrame,
+      plantedFootSlip: { fixedCadence: before.median, distanceSynced: cadenceOnly.median, withFootLock: locked.median },
+      checks: {
+        locomotion_no_slide: {
+          ok: grips, plantedFootSlip: locked.median, groundPerFrame,
+          detail: `planted-foot slip fell ${before.median}→${cadenceOnly.median} (matchCadence) →${locked.median}m/frame (FootLockIK) vs ${groundPerFrame}m ground travel — foot now grips the pitch`,
+        },
+        ball_trajectory_no_pops: { ok: pops.ok, detail: pops.detail },
+      },
+      summary: `Soldier (real Mixamo rig): planted foot ${before.median}→${locked.median}m/frame (matchCadence + FootLockIK) vs ${groundPerFrame}m ground travel — ${grips ? 'grips, no slide ✓' : 'still slides ✗'}; ball trajectory continuous ${pops.ok ? '✓' : '✗'}.`,
     };
     console.log('[SoldierVolley]', window.__volleyReport.summary);
   }

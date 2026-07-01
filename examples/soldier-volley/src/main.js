@@ -19,6 +19,7 @@ async function main() {
   };
   window.__seekFrame = async (t) => { await render(t); return true; };
   window.__engine = engine;
+  window.__sv = scene;
 
   await render(0);
   document.getElementById('loading')?.classList.add('hidden');

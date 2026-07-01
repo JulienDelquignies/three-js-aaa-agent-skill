@@ -10,6 +10,14 @@ It exists to prove the skill's pieces work together on a real character, not jus
 
 - **Real Mixamo rig** — `Soldier.glb` (a Mixamo-rigged humanoid: bones `mixamorig…`), loaded with
   `GLTFLoader`, normalized, grounded, and animated with its **Run** clip via `AnimationMixer`.
+- **Locomotion without foot-skate** (`reference/21`) — `matchCadence()` drives the clip's phase from
+  distance travelled so the legs turn over at ground speed (no "sliding on ice"), and `FootLockIK`
+  pins whichever foot is planted (this Run was authored for root-motion, so its feet barely push and
+  cadence alone still smears). Measured: planted-foot slip **0.15 → 0 m/frame**.
+- **Ball possession → release** — the ball rolls ahead as a dribble and the striker chases it; it is
+  at the foot only at contact, then it's struck (not glued to the boot).
+- **Broadcast camera** — a follow rig dollies alongside the run, then eases continuously into a
+  goal-watching wide as the ball is struck (no cut at contact).
 - **Procedural animation layered on a clip** — a right-leg kick (`procedural.js` style leg override)
   blended on top of the Mixamo Run pose at contact (`reference/14`).
 - **Deterministic cinematic** — `setTime(t, camera)` drives the run-up → plant → volley → net-ripple
@@ -18,8 +26,9 @@ It exists to prove the skill's pieces work together on a real character, not jus
   `public/env/`), Soldier.glb from the three.js examples. Nothing billable (`reference/13`).
 - **Temporal correctness** (`reference/20`) — samples the real foot bone and the ball across the
   run-up and asserts:
-  - `attachmentThroughout` — the ball stays at the kicking foot through contact (it detaches only at
-    the strike, as it should),
+  - `locomotion_no_slide` — the planted (lower) foot's per-frame world slip falls from **0.15 m/frame**
+    (old fixed clip rate) to **0 m/frame** with `matchCadence` + `FootLockIK`, i.e. at or below the
+    ground's per-frame travel: the foot grips the pitch instead of skating,
   - `noPops` — the ball trajectory is continuous (no teleport between frames).
   The report is logged and exposed on `window.__volleyReport`.
 

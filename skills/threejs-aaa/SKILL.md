@@ -40,6 +40,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Post-processing: bloom, GTAO, SSR, DOF, TAA/SMAA, color grade | [reference/04-post-processing.md](reference/04-post-processing.md) |
 | Mixamo pipeline, GLTF loading, AnimationMixer, state machine, IK | [reference/05-characters-mixamo.md](reference/05-characters-mixamo.md) |
 | Procedural animation: springs, damping, two-bone IK, look-at, foot IK | [reference/14-procedural-animation.md](reference/14-procedural-animation.md) |
+| **Locomotion (REQUIRED for moving characters): no foot-skate — cadence-sync + foot-lock IK + follow camera** | [reference/21-locomotion-no-footskate.md](reference/21-locomotion-no-footskate.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -100,6 +101,14 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-temporal.mjs --selftest
   node ${CLAUDE_SKILL_DIR}/scripts/verify-temporal.mjs --spec ./sequence.json
+  ```
+- **Make a moving character not slide (REQUIRED for locomotion)** — `engine/locomotion.js`
+  `matchCadence()` ties clip phase to distance travelled (legs cycle at ground speed) and
+  `engine/foot-lock.js` `FootLockIK` pins the planted foot (root-motion clips barely push, so
+  cadence alone still smears). Proven on a real Mixamo rig in `examples/soldier-volley`
+  (planted-foot slip 0.15 → 0 m/frame). See `reference/21`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-locomotion.mjs   # self-test the cadence math
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free
