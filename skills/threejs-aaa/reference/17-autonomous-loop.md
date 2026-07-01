@@ -24,6 +24,8 @@ for iteration in 1..N (N ≈ 4–6 max):
     0. validate PLACEMENT: verify-scene --spec scene.json  ← semantic correctness first
        if not ok → apply report.fixes, re-validate (door in wall, chair faces desk, no clipping,
        rests-on, ball-at-foot, structure orientation). Don't render a spatially-wrong scene.
+    0b. if the scene is ANIMATED: verify-temporal --spec sequence.json ← sample the animation for
+       foot-skate, mid-motion detachment, pops, loop-seam, impossible speed, foot-plant phase (20).
     1. npm run build                                        (or run dev server)
     2. node scripts/capture.mjs --dir dist --out iterK.png --webgl --max-draws <budget>
     3. Read iterK.png                                       ← LOOK at the render

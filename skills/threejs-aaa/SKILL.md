@@ -43,6 +43,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
+| **Temporal correctness (animation-time): foot-skate, detach, pops, loop seam** | [reference/20-temporal-correctness.md](reference/20-temporal-correctness.md) |
 | Procedural geometry: BufferGeometry, extrude/lathe, CSG booleans | [reference/06-procedural-geometry.md](reference/06-procedural-geometry.md) |
 | Noise, heightmap terrain, erosion, marching cubes, chunked LOD | [reference/07-terrain-noise.md](reference/07-terrain-noise.md) |
 | Scattering vegetation/props, InstancedMesh, surface sampling, BVH | [reference/08-scattering-instancing.md](reference/08-scattering-instancing.md) |
@@ -92,6 +93,13 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-scene.mjs --selftest
   node ${CLAUDE_SKILL_DIR}/scripts/verify-scene.mjs --spec ./scene.json
+  ```
+- **Validate animation-time correctness** — samples an animation across frames for foot-skate,
+  object detachment mid-motion, pops/teleports, loop-seam hitches, impossible speed, foot-plant
+  phase (catches what a single frame can't):
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-temporal.mjs --selftest
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-temporal.mjs --spec ./sequence.json
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

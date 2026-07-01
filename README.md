@@ -31,6 +31,7 @@ threejs-aaa/ (the skill)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
+│   ├── 20-temporal-correctness.md  animation-time pass: foot-skate, detach, pops, loop seam, phase
 │   ├── 16-visual-qa.md        screenshot → critique → fix loop + draw-call perf gate
 │   └── 17-autonomous-loop.md  agent-driven build→see→fix loop to the AAA rubric (demonstrated)
 ├── scripts/                  executable helpers (run, don't read)
@@ -40,6 +41,7 @@ threejs-aaa/ (the skill)
 │   ├── fetch-cc0.mjs         download free CC0 HDRIs + PBR textures (Poly Haven, no key)
 │   ├── verify-interaction.mjs validate character↔object interaction; --selftest proves the math
 │   ├── verify-scene.mjs       validate scene placement correctness (door/chair/clip/rests-on/foot)
+│   ├── verify-temporal.mjs    validate animation-time correctness (skate/detach/pops/loop/phase)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
