@@ -30,6 +30,7 @@ threejs-aaa/ (the skill)
 │   ├── 14-procedural-animation.md  springs, damping, two-bone IK, look-at, foot IK
 │   ├── 21-locomotion-no-footskate.md  moving characters that don't slide: cadence-sync + foot-lock IK + follow camera
 │   ├── 22-character-controller.md  controls: input→facing (no moonwalk) + run/idle + no-slide, camera-relative, gamepad
+│   ├── 23-physics-rapier.md    physics & collisions (Rapier): kinematic character, static/dynamic bodies, kick/push
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -89,6 +90,11 @@ examples/
   mouse-look + touch**, auto-building an on-screen joystick + buttons on phones), and `ThirdPersonCamera`
   (a **steerable** follow camera — orbit/zoom — whose heading makes movement camera-relative). Playable in
   the live gallery (**Contrôles** — run, look, sprint, jump, dribble, shoot; keyboard/gamepad/touch).
+- **Physics & collisions (native, Rapier)** — `engine/physics.js` wraps Rapier for real runtime collision:
+  a ground, static/dynamic boxes, a dynamic ball, and a **kinematic capsule character** (auto-step,
+  snap-to-ground, pushes dynamic bodies) that plugs into `CharacterController.collide`. The character
+  can't walk through walls, climbs ramps/steps, pushes crates, and kicks the ball. Playable in the live
+  gallery (**Physique**). Verified headless: walls block, crates displace, kick launches ~12 m/s.
 - **Scene correctness enforcement (the skill's job, not the user's)** — a tested spatial validator
   that catches placement bugs the way an AAA reviewer would: a door must sit in the wall opening, a
   chair must face the desk, a seated character's hips on the seat, furniture must not clip walls, a

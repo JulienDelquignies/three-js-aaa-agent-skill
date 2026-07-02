@@ -7,6 +7,9 @@ Each card opens a live, interactive preview. **Live:** https://threejs-aaa-showc
 - **Contrôles — jouable** (`controls.html`) — drive the Soldier with WASD/ZQSD/arrows or a gamepad
   (camera-relative); built on the native `CharacterController`: faces where it moves (no moonwalk), no
   foot-skate, dribbles the ball, Space shoots along its facing, Shift crosses, third-person follow camera.
+- **Physique — jouable** (`physics.html`) — real Rapier collisions: the Soldier can't pass the walls,
+  climbs the ramp/steps, pushes crates, and kicks the ball (dynamic bodies). Kinematic capsule character
+  via `engine/physics.js` wired into `CharacterController.collide`.
 - **Soldier Volley** (`volley.html`) — the cinematic done right: a **dribbler** carries the ball down the
   wing and **crosses**, a **striker** (cloned rig) runs on and **volleys** into the net. Each player faces
   its run; validation on `window.__volleyReport` asserts no-moonwalk + shots-toward-target.

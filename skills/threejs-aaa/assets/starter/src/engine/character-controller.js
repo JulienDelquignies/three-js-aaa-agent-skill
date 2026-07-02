@@ -20,6 +20,9 @@ export class CharacterController {
     if (this.actIdle) { this.actIdle.play(); this.actIdle.weight = 1; }
     this.stride = stride; this.runSpeed = runSpeed; this.sprintMult = sprintMult; this.jumpSpeed = jumpSpeed; this.gravity = gravity;
     this.accel = accel; this.turnRate = turnRate;
+    // optional physics resolver: collide(dx,dy,dz) → {dx,dy,dz,grounded}. If set, movement is resolved
+    // against the physics world (Rapier) instead of moving freely + clamping to a flat groundY.
+    this.collide = null;
     this.fwd = forwardLocal.clone().normalize();
     this.fa = WORLD.forwardAngle([this.fwd.x, this.fwd.y, this.fwd.z]); // ground angle of the model's forward axis
     this.pos = model.position.clone(); this.yaw = model.rotation.y; this.dist = 0; this.speed = 0;
@@ -48,13 +51,23 @@ export class CharacterController {
     const k = 1 - Math.exp(-this.accel * dt);
     this._cur.lerp(this._move, k);
     const mag = this._cur.length(); this.speed = mag * this.runSpeed * (this._sprint ? this.sprintMult : 1);
+    let ddx = 0, ddz = 0;                                    // desired horizontal delta this frame
     if (mag > 0.02) {
       const dx = this._cur.x / mag, dz = this._cur.y / mag;
       this.yaw = WORLD.turnToward(this.yaw, this.yawFor(dx, dz), this.turnRate * dt);
-      const adv = this.speed * dt; this.pos.x += dx * adv; this.pos.z += dz * adv; this.dist += adv;
+      const adv = this.speed * dt; ddx = dx * adv; ddz = dz * adv;
     }
-    // vertical (jump / gravity)
-    if (this.airborne || this.vy !== 0) { this.vy -= this.gravity * dt; this.pos.y += this.vy * dt; if (this.pos.y <= this.groundY) { this.pos.y = this.groundY; this.vy = 0; this.airborne = false; } }
+    if (this.collide) {
+      // physics-resolved: gravity always applies; the resolver reports contact with the ground
+      this.vy -= this.gravity * dt;
+      const r = this.collide(ddx, this.vy * dt, ddz);
+      this.pos.x += r.dx; this.pos.y += r.dy; this.pos.z += r.dz;
+      if (r.grounded) { if (this.vy < 0) this.vy = 0; this.airborne = false; } else this.airborne = true;
+      this.dist += Math.hypot(r.dx, r.dz);                  // cadence tracks ACTUAL movement (blocked → legs slow)
+    } else {
+      this.pos.x += ddx; this.pos.z += ddz; this.dist += Math.hypot(ddx, ddz);
+      if (this.airborne || this.vy !== 0) { this.vy -= this.gravity * dt; this.pos.y += this.vy * dt; if (this.pos.y <= this.groundY) { this.pos.y = this.groundY; this.vy = 0; this.airborne = false; } }
+    }
     this.model.position.copy(this.pos); this.model.rotation.y = this.yaw;
 
     const runRef = this.runSpeed * (this._sprint ? this.sprintMult : 1);

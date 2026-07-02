@@ -42,6 +42,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | Procedural animation: springs, damping, two-bone IK, look-at, foot IK | [reference/14-procedural-animation.md](reference/14-procedural-animation.md) |
 | **Locomotion (REQUIRED for moving characters): no foot-skate — cadence-sync + foot-lock IK + follow camera** | [reference/21-locomotion-no-footskate.md](reference/21-locomotion-no-footskate.md) |
 | **Character controller (controls): input→facing (no moonwalk)+run/idle+no-slide, camera-relative, gamepad** | [reference/22-character-controller.md](reference/22-character-controller.md) |
+| **Physics & collisions (Rapier): walls/crates/steps, kinematic character, dynamic bodies, kick/push** | [reference/23-physics-rapier.md](reference/23-physics-rapier.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |

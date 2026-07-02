@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: page('index'),
         controls: page('controls'),
+        physics: page('physics'),
         volley: page('volley'),
         materials: page('materials'),
         procedural: page('procedural'),

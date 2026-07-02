@@ -47,8 +47,10 @@ Issues de la veille GameBlocks :
    transforms direction-gameplay ↔ axes-monde (heading, facing sans moonwalk, control-signal / move
    relatif-caméra, shortest-turn). Le `CharacterController` et les scènes (Contrôles, Soldier Volley) y
    routent. Self-test dep-free : `scripts/verify-worldbasis.mjs` (27/27, dont le cas moonwalk).
-2. **Physique Rapier** — vraies collisions runtime dans les scènes jouables (aujourd'hui seul le ballon a
-   une physique maison). Résolveur kinematic pour le personnage + colliders de décor.
+2. ✅ **Physique Rapier** *(fait)* — `engine/physics.js` (wrapper Rapier WASM) : sol, boîtes statiques
+   (murs/rampe/marches) + dynamiques, ballon dynamique, et **personnage capsule cinématique** (auto-step,
+   snap-to-ground, pousse les corps dynamiques) branché sur `CharacterController.collide`. Scène jouable
+   **Physique**. Vérifié headless : murs bloquants (x≤17.3), caisses poussées (0.44 m), frappe ~12 m/s.
 3. **Positionnement complémentaire / interop** — notre couche *rendu AAA + validation + locomotion* par
    dessus des blocs gameplay façon GameBlocks. Viser deux skills installables ensemble.
 
