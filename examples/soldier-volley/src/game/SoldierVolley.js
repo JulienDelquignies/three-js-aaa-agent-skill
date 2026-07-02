@@ -4,6 +4,7 @@ import { clone as skeletonClone } from 'three/addons/utils/SkeletonUtils.js';
 import { matchCadence } from '../engine/locomotion.js';
 import { FootLockIK } from '../engine/foot-lock.js';
 import { noPops } from '../engine/temporal-validate.js';
+import { WORLD } from '../engine/world-basis.js';
 import { buildGoal } from './goal.js';
 
 // The move, done right: a DRIBBLER carries the ball down the wing and CROSSES; a STRIKER runs onto it
@@ -15,7 +16,8 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => t * t * (3 - 2 * t);
 const l3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 function arc(p0, p1, t0, t1, apex, t) { const u = clamp((t - t0) / (t1 - t0), 0, 1); const p = l3(p0, p1, u); p[1] += 4 * apex * u * (1 - u); return p; }
-const faceYaw = (dx, dz) => Math.atan2(dx, dz) - Math.PI;         // Soldier forward is −Z
+const SOLDIER_FA = WORLD.forwardAngle([0, 0, -1]);               // Soldier forward is −Z (ground angle π)
+const faceYaw = (dx, dz) => WORLD.yawToFace(dx, dz, SOLDIER_FA); // via the WorldBasis (single source of truth)
 
 const GOAL_X = 26, GOAL_W = 7.3, GOAL_H = 2.44, D = 1.6, R = 0.12;
 // choreography
@@ -131,7 +133,7 @@ export class SoldierVolley {
 
   _validate() {
     // orientation: each player faces its travel direction (dot(forward, velocity) > 0 = not moonwalking)
-    const facing = (dir) => { const y = faceYaw(dir[0], dir[1]); const fx = Math.sin(y + Math.PI), fz = Math.cos(y + Math.PI); const l = Math.hypot(dir[0], dir[1]); return (fx * dir[0] + fz * dir[1]) / l; };
+    const facing = (dir) => { const [fx, fz] = WORLD.facingDir(faceYaw(dir[0], dir[1]), SOLDIER_FA); const l = Math.hypot(dir[0], dir[1]); return (fx * dir[0] + fz * dir[1]) / l; };
     const dFace = facing([DRB1[0] - DRB0[0], DRB1[2] - DRB0[2]]);
     const sFace = facing([MEET[0] - STR0[0], MEET[2] - STR0[2]]);
     const dir = (a, b) => { const v = [b[0] - a[0], b[2] - a[2]]; const l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };

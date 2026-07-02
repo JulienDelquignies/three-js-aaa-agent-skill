@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { ThirdPersonCamera } from '../engine/third-person-camera.js';
 import { Input } from '../engine/input.js';
+import { WORLD } from '../engine/world-basis.js';
 import { buildGoal } from './goal.js';
 
 // Playable controls — the point of the skill. Drive the Soldier with the native Input (keyboard / gamepad
@@ -74,10 +75,9 @@ export class Controls {
     if (z) this.tpc.zoom(z);
     if (Math.abs(look.dx) > 1e-4 || Math.abs(look.dy) > 1e-4) this.tpc.orbit(look.dx, look.dy);
 
-    // camera-relative move
-    const mv = this.input.move(); const yaw = this.tpc.yaw;
-    const fx = Math.sin(yaw), fz = Math.cos(yaw);            // camera forward on ground
-    const wx = fx * mv.z - fz * mv.x, wz = fz * mv.z + fx * mv.x;   // right = (−fz, fx)
+    // camera-relative move, resolved through the WorldBasis (single source of truth)
+    const mv = this.input.move();
+    const [wx, wz] = WORLD.moveFromInput(mv.x, mv.z, this.tpc.yaw);
     this.ctrl.setMoveWorld(wx, wz);
     this.ctrl.setSprint(this.input.down('sprint'));
     if (this.input.pressed('jump')) this.ctrl.jump();
@@ -86,8 +86,7 @@ export class Controls {
     // gently swing the camera behind the player when moving and not manually looking
     const pf = this.ctrl.forward(this._fwd);
     if (Math.abs(look.dx) < 1e-4 && Math.hypot(wx, wz) > 0.05) {
-      const targetYaw = Math.atan2(pf.x, pf.z);
-      let d = ((targetYaw - this.tpc.yaw + Math.PI) % (2 * Math.PI)) - Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+      const d = WORLD.shortestTurn(this.tpc.yaw, WORLD.heading(pf.x, pf.z));
       this.tpc.yaw += d * (1 - Math.exp(-2.2 * dt));
     }
 

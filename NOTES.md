@@ -43,8 +43,10 @@ physique + IA ; nous = rendu AAA + correction/vérification + qualité de locomo
 ## Roadmap / pistes à explorer
 
 Issues de la veille GameBlocks :
-1. **`WorldBasis` natif** — extraire la logique facing/axes du `CharacterController` en un module
-   « source de vérité » unique (généralise la correction moonwalk, nettoie le controller et les scènes).
+1. ✅ **`WorldBasis` natif** *(fait)* — `engine/world-basis.js` (`WORLD`) : source de vérité unique des
+   transforms direction-gameplay ↔ axes-monde (heading, facing sans moonwalk, control-signal / move
+   relatif-caméra, shortest-turn). Le `CharacterController` et les scènes (Contrôles, Soldier Volley) y
+   routent. Self-test dep-free : `scripts/verify-worldbasis.mjs` (27/27, dont le cas moonwalk).
 2. **Physique Rapier** — vraies collisions runtime dans les scènes jouables (aujourd'hui seul le ballon a
    une physique maison). Résolveur kinematic pour le personnage + colliders de décor.
 3. **Positionnement complémentaire / interop** — notre couche *rendu AAA + validation + locomotion* par

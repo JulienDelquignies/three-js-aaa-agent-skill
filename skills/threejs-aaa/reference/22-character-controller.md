@@ -10,17 +10,29 @@ volley cinematic.
 
 A model has its own "forward" axis. The three.js **Mixamo Soldier faces −Z** (verified by rendering it
 from +Z and seeing its back). If you rotate it to move +X with the naive `rotation.y = π/2`, it ends up
-**facing −X while travelling +X → moonwalk**, and anything it "kicks forward" fires backward. The fix is to
-turn the model so its forward axis maps onto the travel direction:
+**facing −X while travelling +X → moonwalk**, and anything it "kicks forward" fires backward.
 
-```
-yaw = atan2(dir.x, dir.z) − atan2(forwardLocal.x, forwardLocal.z)   // forwardLocal = (0,0,−1) for Soldier
+This whole class of bug is a *sign-convention* drift, so the skill centralizes every gameplay-direction ↔
+world-axis transform in one module — **`engine/world-basis.js` (`WORLD`)**, the single source of truth
+(mirrors the pattern in [GameBlocks](https://github.com/xt4d/GameBlocks)). Nothing computes headings or
+facings ad hoc; it all routes through `WORLD`:
+
+```js
+import { WORLD } from './engine/world-basis.js';
+const fa   = WORLD.forwardAngle([0, 0, -1]);       // Soldier forward axis → ground angle (π)
+const yaw  = WORLD.yawToFace(dir.x, dir.z, fa);     // turn to face a world dir (no moonwalk)
+const face = WORLD.facingDir(yaw, fa);              // the world dir it now faces (for aiming shots)
+const move = WORLD.moveFromInput(ix, iz, camHeading); // camera-relative WASD → world move
 ```
 
-The controller does this for you (`yawFor`, `faceInstant`, and a rate-limited turn each frame). `forward()`
-returns the world direction the model currently faces — use it to aim a shot/pass so it goes where the
-player looks. **Always verify**: `dot(forward, velocity) > 0`. The volley scene asserts exactly this
-(`players_face_travel_not_moonwalk`), which is what caught the original bug.
+The `CharacterController` uses `WORLD` internally (`yawFor`, `faceInstant`, `forward()`, rate-limited turn).
+`forward()` returns the world direction the model faces — aim shots/passes along it. **Always verify**:
+`dot(forward, velocity) > 0` (the volley scene asserts `players_face_travel_not_moonwalk`). The transforms
+are dependency-free and self-tested:
+
+```bash
+node ${CLAUDE_SKILL_DIR}/scripts/verify-worldbasis.mjs   # round-trips + the moonwalk case
+```
 
 ## Usage
 

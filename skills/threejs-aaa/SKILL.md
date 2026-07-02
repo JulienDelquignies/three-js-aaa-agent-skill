@@ -115,7 +115,12 @@ resolve regardless of install location. Each prints `--help`.
   world-space move vector (keyboard/gamepad, camera-relative) into correct movement: the model faces
   where it moves (no moonwalk — the Mixamo Soldier's forward is −Z; verify `dot(forward,velocity)>0`),
   run/idle blends by speed, cadence tracks ground speed, and the planted foot is locked. Shots aim along
-  `ctrl.forward()`. Playable demo: `examples/showcase` → **Contrôles**. See `reference/22`.
+  `ctrl.forward()`. All facing/heading/control-signal transforms route through one source of truth,
+  `engine/world-basis.js` (`WORLD`), so sign conventions can't drift. Playable demo: `examples/showcase`
+  → **Contrôles**. See `reference/22`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-worldbasis.mjs   # self-test the direction transforms + moonwalk case
+  ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free
   (Playwright/Chromium pre-installed in the Claude Code env):

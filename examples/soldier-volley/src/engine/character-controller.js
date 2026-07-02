@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { FootLockIK } from './foot-lock.js';
+import { WORLD } from './world-basis.js';
 
 // CharacterController — turn input into believable, correct movement. This is the point of the skill:
 // good controls. It couples player intent (a world-space move vector, 0..1) to:
@@ -20,7 +21,7 @@ export class CharacterController {
     this.stride = stride; this.runSpeed = runSpeed; this.sprintMult = sprintMult; this.jumpSpeed = jumpSpeed; this.gravity = gravity;
     this.accel = accel; this.turnRate = turnRate;
     this.fwd = forwardLocal.clone().normalize();
-    this.base = Math.atan2(this.fwd.x, this.fwd.z);     // world angle of the model's own forward axis
+    this.fa = WORLD.forwardAngle([this.fwd.x, this.fwd.y, this.fwd.z]); // ground angle of the model's forward axis
     this.pos = model.position.clone(); this.yaw = model.rotation.y; this.dist = 0; this.speed = 0;
     this.groundY = this.pos.y; this.vy = 0; this.airborne = false; this._sprint = false;
     this._move = new THREE.Vector2(); this._cur = new THREE.Vector2();  // desired / smoothed move
@@ -35,11 +36,12 @@ export class CharacterController {
   setSprint(on) { this._sprint = !!on; }
   jump() { if (!this.airborne) { this.vy = this.jumpSpeed; this.airborne = true; } }
 
-  // Yaw that rotates the model's forward axis onto world dir (dx,dz). For forward=−Z this is atan2(−dx,−dz).
-  yawFor(dx, dz) { return Math.atan2(dx, dz) - this.base; }
+  // Yaw that turns the model's forward axis onto world dir (dx,dz) — via the WorldBasis, so facing is
+  // always consistent (no moonwalk). For forward=−Z this resolves to atan2(dx,dz)−π.
+  yawFor(dx, dz) { return WORLD.yawToFace(dx, dz, this.fa); }
   faceInstant(dx, dz) { this.yaw = this.yawFor(dx, dz); this.model.rotation.y = this.yaw; }
   // The world direction the model currently faces (unit XZ) — where a shot/pass would go.
-  forward(out = new THREE.Vector3()) { const h = this.yaw + this.base; return out.set(Math.sin(h), 0, Math.cos(h)); }
+  forward(out = new THREE.Vector3()) { const [dx, dz] = WORLD.facingDir(this.yaw, this.fa); return out.set(dx, 0, dz); }
 
   update(dt) {
     // smooth the input so starts/stops ease instead of snapping
@@ -48,9 +50,7 @@ export class CharacterController {
     const mag = this._cur.length(); this.speed = mag * this.runSpeed * (this._sprint ? this.sprintMult : 1);
     if (mag > 0.02) {
       const dx = this._cur.x / mag, dz = this._cur.y / mag;
-      const target = this.yawFor(dx, dz);
-      let d = ((target - this.yaw + Math.PI) % (2 * Math.PI)) - Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
-      const step = this.turnRate * dt; this.yaw += Math.max(-step, Math.min(step, d));
+      this.yaw = WORLD.turnToward(this.yaw, this.yawFor(dx, dz), this.turnRate * dt);
       const adv = this.speed * dt; this.pos.x += dx * adv; this.pos.z += dz * adv; this.dist += adv;
     }
     // vertical (jump / gravity)

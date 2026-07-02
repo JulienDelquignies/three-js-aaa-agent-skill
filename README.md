@@ -45,6 +45,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-scene.mjs       validate scene placement correctness (door/chair/clip/rests-on/foot)
 │   ├── verify-temporal.mjs    validate animation-time correctness (skate/detach/pops/loop/phase)
 │   ├── verify-locomotion.mjs  self-test the no-foot-skate cadence math (matchCadence/estimateStride)
+│   ├── verify-worldbasis.mjs  self-test the gameplay-direction ↔ world-axis transforms (facing/heading/no-moonwalk)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
