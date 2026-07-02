@@ -124,6 +124,11 @@ node skills/threejs-aaa/scripts/scaffold.mjs ./my-game --name my-game
 cd my-game && npm install && npm run dev
 ```
 
+## Cahier de bord
+
+Design notes, external watch (e.g. [GameBlocks](https://github.com/xt4d/GameBlocks)), and the roadmap
+live in [`NOTES.md`](NOTES.md).
+
 ## Notes on sources & versions
 
 All package versions in the references were verified against the npm registry on 2026-06-30
