@@ -50,13 +50,13 @@ export class Controls {
     const b2 = new THREE.Box3().setFromObject(model); model.position.set(-4, -b2.min.y, 0);
     this.scene.add(model); this.model = model;
     const mixer = new THREE.AnimationMixer(model);
-    const run = gltf.animations.find((a) => /run/i.test(a.name)), idle = gltf.animations.find((a) => /idle/i.test(a.name));
+    const run = gltf.animations.find((a) => /run/i.test(a.name)), idle = gltf.animations.find((a) => /idle/i.test(a.name)), walk = gltf.animations.find((a) => /walk/i.test(a.name));
     const bone = (re) => { let f = null; model.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
     const legs = [
       { up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i), foot: bone(/LeftFoot/i) },
       { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i), foot: bone(/RightFoot/i) },
     ];
-    this.ctrl = new CharacterController(model, { mixer, runClip: run, idleClip: idle, legs, stride: 2.6, runSpeed: 6, forwardLocal: new THREE.Vector3(0, 0, -1) });
+    this.ctrl = new CharacterController(model, { mixer, runClip: run, idleClip: idle, walkClip: walk, legs, stride: 2.6, runSpeed: 6, forwardLocal: new THREE.Vector3(0, 0, -1) });
     this.ctrl.faceInstant(1, 0); // face the goal to start
     return true;
   }

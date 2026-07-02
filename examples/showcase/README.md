@@ -5,7 +5,8 @@ Each card opens a live, interactive preview. **Live:** https://threejs-aaa-showc
 
 ## Scenes
 - **Contrôles — jouable** (`controls.html`) — drive the Soldier with WASD/ZQSD/arrows or a gamepad
-  (camera-relative); built on the native `CharacterController`: faces where it moves (no moonwalk), no
+  (camera-relative); built on the native `CharacterController`: faces where it moves (no moonwalk),
+  **Idle→Walk→Run** animation state machine (blends by speed — analog stick or during accel/decel), no
   foot-skate, dribbles the ball, Space shoots along its facing, Shift crosses, third-person follow camera.
 - **Physique — jouable** (`physics.html`) — real Rapier collisions: the Soldier can't pass the walls,
   climbs the ramp/steps, pushes crates, and kicks the ball (dynamic bodies). Kinematic capsule character

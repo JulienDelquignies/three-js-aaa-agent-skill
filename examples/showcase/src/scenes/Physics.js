@@ -90,14 +90,14 @@ export class PhysicsScene {
     const box = new THREE.Box3().setFromObject(model); model.scale.setScalar(1.8 / box.getSize(new THREE.Vector3()).y);
     const b2 = new THREE.Box3().setFromObject(model); model.position.set(start[0], -b2.min.y, start[2]); this.scene.add(model);
     const mixer = new THREE.AnimationMixer(model);
-    const run = anims.find((a) => /run/i.test(a.name)), idle = anims.find((a) => /idle/i.test(a.name));
+    const run = anims.find((a) => /run/i.test(a.name)), idle = anims.find((a) => /idle/i.test(a.name)), walk = anims.find((a) => /walk/i.test(a.name));
     const bone = (re) => { let f = null; model.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
     const legs = [
       { up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i), foot: bone(/LeftFoot/i) },
       { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i), foot: bone(/RightFoot/i) },
     ];
     const char = this.phys.addCharacter(start, { radius: 0.32, height: 1.8 });
-    const ctrl = new CharacterController(model, { mixer, runClip: run, idleClip: idle, legs, stride: 2.6, runSpeed: 5.5, forwardLocal: new THREE.Vector3(0, 0, -1) });
+    const ctrl = new CharacterController(model, { mixer, runClip: run, idleClip: idle, walkClip: walk, legs, stride: 2.6, runSpeed: 5.5, forwardLocal: new THREE.Vector3(0, 0, -1) });
     ctrl.collide = (dx, dy, dz) => char.move(dx, dy, dz);
     return { model, ctrl, char };
   }

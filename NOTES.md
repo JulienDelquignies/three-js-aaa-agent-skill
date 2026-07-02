@@ -57,7 +57,10 @@ Issues de la veille GameBlocks :
    alignés/interopérables ; reste à écrire un guide d'interop explicite.)*
 
 Autres idées déjà évoquées :
-4. Blend d'animations **Idle → Walk → Run** avec machine à états (au lieu du blend binaire actuel).
+4. ✅ **Machine à états d'anim** *(fait)* — `engine/anim-state-machine.js` : blend 1D Idle→Walk→Run par
+   vitesse (chaque clip synchronisé à la vitesse au sol via son stride) + états discrets + crossfades.
+   Intégrée au `CharacterController` (passer `walkClip`). Soldier a bien Idle/Walk/Run. Math pure testée
+   (`verify-anim-fsm.mjs`, 15/15). Reste : couche additive (geste par-dessus la locomotion).
 5. **Scattering GPU / herbe** à plus grande échelle, **LOD / streaming** (web-Nanite), caustiques d'eau.
 6. ✅ **Particules** *(fait)* — `engine/particles.js` : système poolé instancié additif (1 draw call, sans
    alloc/frame) — poussière de course, étincelles à la frappe, gerbe à l'atterrissage, trails. Branché dans

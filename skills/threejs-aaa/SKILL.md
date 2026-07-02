@@ -45,6 +45,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Physics & collisions (Rapier): walls/crates/steps, kinematic character, dynamic bodies, kick/push** | [reference/23-physics-rapier.md](reference/23-physics-rapier.md) |
 | **AI opponents: steering (seek/flee/arrive/pursue/wander) driving the same CharacterController** | [reference/24-ai-steering.md](reference/24-ai-steering.md) |
 | **Particles (juice): pooled instanced additive bursts — run dust, kick sparks, impacts, trails** | [reference/25-particles.md](reference/25-particles.md) |
+| **Animation state machine: Idle→Walk→Run 1D blend (cadence-synced) + discrete states + crossfades** | [reference/26-anim-state-machine.md](reference/26-anim-state-machine.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -131,6 +132,12 @@ resolve regardless of install location. Each prints `--help`.
   See `reference/23`–`24`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-steering.mjs     # self-test the steering behaviours
+  ```
+- **Blend Idle→Walk→Run properly** — `engine/anim-state-machine.js` is a 1D blend space (by speed, each
+  clip cadence-synced) + discrete states with crossfades; built into `CharacterController` (pass a
+  `walkClip`). Only the two neighbouring clips are ever active (partition of unity). See `reference/26`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-anim-fsm.mjs     # self-test the 1D blend weights
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

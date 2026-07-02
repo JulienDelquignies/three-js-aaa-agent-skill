@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { FootLockIK } from './foot-lock.js';
 import { WORLD } from './world-basis.js';
+import { AnimationStateMachine } from './anim-state-machine.js';
 
 // CharacterController — turn input into believable, correct movement. This is the point of the skill:
 // good controls. It couples player intent (a world-space move vector, 0..1) to:
@@ -13,13 +14,23 @@ import { WORLD } from './world-basis.js';
 const FWD = new THREE.Vector3(0, 0, -1);
 
 export class CharacterController {
-  constructor(model, { mixer, runClip, idleClip, legs = null, stride = 2.6, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, forwardLocal = FWD } = {}) {
+  constructor(model, { mixer, runClip, idleClip, walkClip = null, legs = null, stride = 2.6, walkStride = 1.5, walkSpeed = 1.9, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, forwardLocal = FWD } = {}) {
     this.model = model; this.mixer = mixer; this.runDur = runClip.duration;
-    this.actRun = mixer.clipAction(runClip); this.actRun.play(); this.actRun.weight = 0;
-    this.actIdle = idleClip ? mixer.clipAction(idleClip) : null;
-    if (this.actIdle) { this.actIdle.play(); this.actIdle.weight = 1; }
     this.stride = stride; this.runSpeed = runSpeed; this.sprintMult = sprintMult; this.jumpSpeed = jumpSpeed; this.gravity = gravity;
     this.accel = accel; this.turnRate = turnRate;
+    // Locomotion: if a Walk clip is given, blend Idle→Walk→Run by speed through a state machine (each clip
+    // cadence-synced to ground speed via its stride). Otherwise fall back to a binary run/idle crossfade.
+    this._useFsm = !!(walkClip && idleClip);
+    if (this._useFsm) {
+      this.anim = new AnimationStateMachine(mixer);
+      this.anim.blend1d('locomotion', 'speed', [
+        { clip: idleClip, at: 0 }, { clip: walkClip, at: walkSpeed, stride: walkStride }, { clip: runClip, at: runSpeed, stride: stride },
+      ]).play('locomotion');
+    } else {
+      this.actRun = mixer.clipAction(runClip); this.actRun.play(); this.actRun.weight = 0;
+      this.actIdle = idleClip ? mixer.clipAction(idleClip) : null;
+      if (this.actIdle) { this.actIdle.play(); this.actIdle.weight = 1; }
+    }
     // optional physics resolver: collide(dx,dy,dz) → {dx,dy,dz,grounded}. If set, movement is resolved
     // against the physics world (Rapier) instead of moving freely + clamping to a flat groundY.
     this.collide = null;
@@ -72,9 +83,13 @@ export class CharacterController {
 
     const runRef = this.runSpeed * (this._sprint ? this.sprintMult : 1);
     const run01 = Math.min(1, this.speed / runRef);
-    this.actRun.weight = run01; if (this.actIdle) this.actIdle.weight = 1 - run01;
-    this.actRun.timeScale = Math.max(0.001, (this.speed / this.stride) * this.runDur); // cadence = ground speed
-    this.mixer.update(dt);
+    if (this._useFsm) {
+      this.anim.set('speed', this.speed).update(dt);                 // Idle→Walk→Run blend, cadence-synced
+    } else {
+      this.actRun.weight = run01; if (this.actIdle) this.actIdle.weight = 1 - run01;
+      this.actRun.timeScale = Math.max(0.001, (this.speed / this.stride) * this.runDur); // cadence = ground speed
+      this.mixer.update(dt);
+    }
     this.model.updateWorldMatrix(true, true);
     if (this.footLock && run01 > 0.25 && !this.airborne) this.footLock.solve();
   }
