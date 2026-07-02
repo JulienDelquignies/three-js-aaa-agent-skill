@@ -7,6 +7,7 @@ import { Input } from '../engine/input.js';
 import { WORLD } from '../engine/world-basis.js';
 import { Physics } from '../engine/physics.js';
 import { pursue, seek, toMoveInput } from '../engine/steering.js';
+import { ParticleSystem } from '../engine/particles.js';
 
 // Physics playground (roadmap #2) — real Rapier collisions. Drive the Soldier: he can't walk through the
 // walls/crates, climbs the ramp and steps, PUSHES the crates around, and kicks the ball (dynamic rigid
@@ -75,6 +76,8 @@ export class PhysicsScene {
     this.ctrl = player.ctrl; this.model = player.model; this.ctrl.faceInstant(1, 0);
     const opp = this._makeCharacter(skeletonClone(gltf.scene), gltf.animations, [8, 0, 0], 0xd23b3b);
     this.aiCtrl = opp.ctrl; this.aiCtrl.runSpeed = 5.0; this.aiCtrl.faceInstant(-1, 0);
+    this.fx = new ParticleSystem(this.scene, { max: 500 }); this.disposables.push(this.fx);
+    this._wasAir = false; this._dust = 0;
     return true;
   }
 
@@ -142,14 +145,23 @@ export class PhysicsScene {
     const pf = this.ctrl.forward(this._fwd); const p = this.ctrl.pos; const bt = this.ballBody.translation();
     const near = Math.hypot(bt.x - p.x, bt.z - p.z) < 1.1;
     // kick = set a predictable launch velocity (mass-independent), so it doesn't depend on ball density
-    if (near && this.input.pressed('shoot')) this.ballBody.setLinvel({ x: pf.x * 12, y: 4.5, z: pf.z * 12 }, true);
-    else if (near && this.input.pressed('cross')) this.ballBody.setLinvel({ x: pf.x * 7, y: 2.6, z: pf.z * 7 }, true);
+    const bp = [bt.x, bt.y, bt.z];
+    if (near && this.input.pressed('shoot')) { this.ballBody.setLinvel({ x: pf.x * 12, y: 4.5, z: pf.z * 12 }, true); this.fx.emit(bp, { count: 22, speed: 6, spread: 1.2, gravity: -14, ttl: 0.4, size: 0.13, color: 0xffe08a, up: 0.7 }); }
+    else if (near && this.input.pressed('cross')) { this.ballBody.setLinvel({ x: pf.x * 7, y: 2.6, z: pf.z * 7 }, true); this.fx.emit(bp, { count: 12, speed: 4, spread: 1.0, gravity: -14, ttl: 0.35, size: 0.11, color: 0xffd27f, up: 0.6 }); }
     this.input.endFrame();
     if (this.aiCtrl) this._ai(dt);        // opponent contests the ball (queues its kinematic move too)
 
     this.phys.step();
     for (const { body, mesh } of this.dyn) this.phys.sync(body, mesh);
+
+    // juice: run dust while sprinting/running on the ground; a puff on landing
+    this._dust -= dt;
+    if (!this.ctrl.airborne && this.ctrl.speed > 2.5 && this._dust <= 0) { this.fx.emit([p.x, 0.05, p.z], { count: 3, speed: 1.2, spread: 0.3, gravity: -3, ttl: 0.4, size: 0.16, color: 0x9aa2b0, up: 0.5, drag: 1.2 }); this._dust = 0.06; }
+    if (this._wasAir && !this.ctrl.airborne) this.fx.emit([p.x, 0.05, p.z], { count: 14, speed: 2.4, spread: 0.5, gravity: -4, ttl: 0.5, size: 0.2, color: 0xb0b6c2, up: 0.35, drag: 1.4 });
+    this._wasAir = this.ctrl.airborne;
+
     this.tpc.update(this._tmp.set(p.x, p.y, p.z), dt);
+    this.fx.update(dt, this.tpc.cam);
   }
 
   dispose() { this.input?.dispose(); for (const d of this.disposables) d.dispose?.(); }

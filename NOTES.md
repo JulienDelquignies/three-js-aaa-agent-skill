@@ -59,7 +59,9 @@ Issues de la veille GameBlocks :
 Autres idées déjà évoquées :
 4. Blend d'animations **Idle → Walk → Run** avec machine à états (au lieu du blend binaire actuel).
 5. **Scattering GPU / herbe** à plus grande échelle, **LOD / streaming** (web-Nanite), caustiques d'eau.
-6. **Systèmes de particules** (étincelles, impacts, fumée).
+6. ✅ **Particules** *(fait)* — `engine/particles.js` : système poolé instancié additif (1 draw call, sans
+   alloc/frame) — poussière de course, étincelles à la frappe, gerbe à l'atterrissage, trails. Branché dans
+   la scène **Physique**. Ref 25. Reste : fumée/traînées longues via TSL compute.
 7. ✅ **IA adversaire (steering)** *(fait)* — `engine/steering.js` (seek/flee/arrive/pursue/wander),
    adversaire qui intercepte et dégage le ballon dans la scène **Physique**, piloté par le même
    `CharacterController`. Self-test `scripts/verify-steering.mjs` (10/10). Reste : pathfinding sur grille.

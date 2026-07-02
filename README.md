@@ -32,6 +32,7 @@ threejs-aaa/ (the skill)
 │   ├── 22-character-controller.md  controls: input→facing (no moonwalk) + run/idle + no-slide, camera-relative, gamepad
 │   ├── 23-physics-rapier.md    physics & collisions (Rapier): kinematic character, static/dynamic bodies, kick/push
 │   ├── 24-ai-steering.md       AI opponents: steering (seek/flee/arrive/pursue/wander) driving the CharacterController
+│   ├── 25-particles.md         particles (juice): pooled instanced additive bursts — run dust, kick sparks, impacts
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -101,6 +102,9 @@ examples/
   through the *same* `CharacterController` as the player, so they face where they move, don't foot-skate,
   and collide via physics. The **Physique** demo has an AI opponent that intercepts and boots the ball
   away; verified headless (closes to 0.5 m, displaces the ball ~9 m). Behaviours self-test with zero deps.
+- **Particles / juice (native)** — `engine/particles.js` is a pooled instanced additive particle system
+  (one draw call, no per-frame allocation) for run dust, kick sparks, impact/landing bursts, and trails.
+  Wired into the **Physique** demo (sparks on kick, dust while running); feeds the bloom pass.
 - **Scene correctness enforcement (the skill's job, not the user's)** — a tested spatial validator
   that catches placement bugs the way an AAA reviewer would: a door must sit in the wall opening, a
   chair must face the desk, a seated character's hips on the seat, furniture must not clip walls, a

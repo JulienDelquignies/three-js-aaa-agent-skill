@@ -10,7 +10,8 @@ Each card opens a live, interactive preview. **Live:** https://threejs-aaa-showc
 - **Physique — jouable** (`physics.html`) — real Rapier collisions: the Soldier can't pass the walls,
   climbs the ramp/steps, pushes crates, and kicks the ball (dynamic bodies). Kinematic capsule character
   via `engine/physics.js` wired into `CharacterController.collide`. A red-tinted **AI opponent**
-  (`engine/steering.js`) contests the ball, driven through the same controller.
+  (`engine/steering.js`) contests the ball, driven through the same controller. Kick sparks + run dust
+  via `engine/particles.js`.
 - **Soldier Volley** (`volley.html`) — the cinematic done right: a **dribbler** carries the ball down the
   wing and **crosses**, a **striker** (cloned rig) runs on and **volleys** into the net. Each player faces
   its run; validation on `window.__volleyReport` asserts no-moonwalk + shots-toward-target.
