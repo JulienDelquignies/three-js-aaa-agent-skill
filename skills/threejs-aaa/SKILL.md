@@ -43,6 +43,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Locomotion (REQUIRED for moving characters): no foot-skate — cadence-sync + foot-lock IK + follow camera** | [reference/21-locomotion-no-footskate.md](reference/21-locomotion-no-footskate.md) |
 | **Character controller (controls): input→facing (no moonwalk)+run/idle+no-slide, camera-relative, gamepad** | [reference/22-character-controller.md](reference/22-character-controller.md) |
 | **Physics & collisions (Rapier): walls/crates/steps, kinematic character, dynamic bodies, kick/push** | [reference/23-physics-rapier.md](reference/23-physics-rapier.md) |
+| **AI opponents: steering (seek/flee/arrive/pursue/wander) driving the same CharacterController** | [reference/24-ai-steering.md](reference/24-ai-steering.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -121,6 +122,14 @@ resolve regardless of install location. Each prints `--help`.
   → **Contrôles**. See `reference/22`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-worldbasis.mjs   # self-test the direction transforms + moonwalk case
+  ```
+- **Real collisions + AI opponents** — `engine/physics.js` wraps Rapier (ground, static/dynamic bodies, a
+  kinematic capsule character that can't clip walls, climbs steps, pushes crates, kicks the ball) via
+  `CharacterController.collide`; `engine/steering.js` (seek/flee/arrive/pursue/wander) drives NPCs through
+  the *same* controller. Playable: `examples/showcase` → **Physique** (an AI opponent contests the ball).
+  See `reference/23`–`24`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-steering.mjs     # self-test the steering behaviours
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

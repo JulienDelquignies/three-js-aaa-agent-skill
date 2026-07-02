@@ -1,10 +1,12 @@
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as skeletonClone } from 'three/addons/utils/SkeletonUtils.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { ThirdPersonCamera } from '../engine/third-person-camera.js';
 import { Input } from '../engine/input.js';
 import { WORLD } from '../engine/world-basis.js';
 import { Physics } from '../engine/physics.js';
+import { pursue, seek, toMoveInput } from '../engine/steering.js';
 
 // Physics playground (roadmap #2) — real Rapier collisions. Drive the Soldier: he can't walk through the
 // walls/crates, climbs the ramp and steps, PUSHES the crates around, and kicks the ball (dynamic rigid
@@ -64,27 +66,54 @@ export class PhysicsScene {
     const btex = new THREE.CanvasTexture(bc); btex.colorSpace = THREE.SRGBColorSpace;
     const bmat = new THREE.MeshStandardNodeMaterial({ map: btex, roughness: 0.5 });
     const ballMesh = new THREE.Mesh(bgeo, bmat); ballMesh.castShadow = true; this.scene.add(ballMesh); this.disposables.push(bgeo, bmat, btex);
-    this.ballBody = this.phys.addDynamicBall([2, R, 1], R, { density: 22, restitution: 0.55 }); // ~football mass
+    this.ballBody = this.phys.addDynamicBall([0, R, 0], R, { density: 22, restitution: 0.55 }); // ~football mass, centre
     this.dyn.push({ mesh: ballMesh, body: this.ballBody });
 
-    // character
+    // player + AI opponent (cloned rig, red tint) — both are physics-collided capsule characters
     const gltf = await new GLTFLoader().loadAsync('Soldier.glb');
-    const model = gltf.scene; model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+    const player = this._makeCharacter(gltf.scene, gltf.animations, [-8, 0, 0]);
+    this.ctrl = player.ctrl; this.model = player.model; this.ctrl.faceInstant(1, 0);
+    const opp = this._makeCharacter(skeletonClone(gltf.scene), gltf.animations, [8, 0, 0], 0xd23b3b);
+    this.aiCtrl = opp.ctrl; this.aiCtrl.runSpeed = 5.0; this.aiCtrl.faceInstant(-1, 0);
+    return true;
+  }
+
+  // build a physics-collided capsule character; optional `tint` recolours the rig (the AI opponent)
+  _makeCharacter(model, anims, start, tint) {
+    model.traverse((o) => {
+      if (!o.isMesh) return; o.castShadow = true; o.frustumCulled = false;
+      if (tint) { o.material = o.material.clone(); o.material.color = o.material.color.clone().lerp(new THREE.Color(tint), 0.55); this.disposables.push(o.material); }
+    });
     const box = new THREE.Box3().setFromObject(model); model.scale.setScalar(1.8 / box.getSize(new THREE.Vector3()).y);
-    const b2 = new THREE.Box3().setFromObject(model); const START = [-8, 0, 0];
-    model.position.set(START[0], -b2.min.y, START[2]); this.scene.add(model); this.model = model;
+    const b2 = new THREE.Box3().setFromObject(model); model.position.set(start[0], -b2.min.y, start[2]); this.scene.add(model);
     const mixer = new THREE.AnimationMixer(model);
-    const run = gltf.animations.find((a) => /run/i.test(a.name)), idle = gltf.animations.find((a) => /idle/i.test(a.name));
+    const run = anims.find((a) => /run/i.test(a.name)), idle = anims.find((a) => /idle/i.test(a.name));
     const bone = (re) => { let f = null; model.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
     const legs = [
       { up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i), foot: bone(/LeftFoot/i) },
       { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i), foot: bone(/RightFoot/i) },
     ];
-    this.char = this.phys.addCharacter(START, { radius: 0.32, height: 1.8 });
-    this.ctrl = new CharacterController(model, { mixer, runClip: run, idleClip: idle, legs, stride: 2.6, runSpeed: 5.5, forwardLocal: new THREE.Vector3(0, 0, -1) });
-    this.ctrl.collide = (dx, dy, dz) => this.char.move(dx, dy, dz);
-    this.ctrl.faceInstant(1, 0);
-    return true;
+    const char = this.phys.addCharacter(start, { radius: 0.32, height: 1.8 });
+    const ctrl = new CharacterController(model, { mixer, runClip: run, idleClip: idle, legs, stride: 2.6, runSpeed: 5.5, forwardLocal: new THREE.Vector3(0, 0, -1) });
+    ctrl.collide = (dx, dy, dz) => char.move(dx, dy, dz);
+    return { model, ctrl, char };
+  }
+
+  // opponent AI: chase the ball (intercept its predicted position); when on it, shield/boot it away from the player
+  _ai(dt) {
+    const ai = this.aiCtrl, p = this.ctrl, b = this.ballBody.translation(), bv = this.ballBody.linvel();
+    const aiPos = [ai.pos.x, ai.pos.z], ball = [b.x, b.z], player = [p.pos.x, p.pos.z];
+    const dBall = Math.hypot(ball[0] - aiPos[0], ball[1] - aiPos[1]);
+    let vel;
+    if (dBall > 1.0) { vel = pursue(aiPos, ball, [bv.x, bv.z], ai.runSpeed, 0.35); }        // intercept
+    else {                                                                                  // has it → clear away from player
+      const away = [ball[0] - player[0], ball[1] - player[1]]; const l = Math.hypot(away[0], away[1]) || 1; away[0] /= l; away[1] /= l;
+      vel = seek(aiPos, [ball[0] + away[0] * 2.5, ball[1] + away[1] * 2.5], ai.runSpeed);
+      this._kickCd = (this._kickCd || 0) - dt;
+      if (this._kickCd <= 0) { this.ballBody.setLinvel({ x: away[0] * 9, y: 3, z: away[1] * 9 }, true); this._kickCd = 1.4; }
+    }
+    const [mx, mz] = toMoveInput(vel, ai.runSpeed);
+    ai.setMoveWorld(mx, mz); ai.update(dt);
   }
 
   camera(cam, controls) {
@@ -116,6 +145,7 @@ export class PhysicsScene {
     if (near && this.input.pressed('shoot')) this.ballBody.setLinvel({ x: pf.x * 12, y: 4.5, z: pf.z * 12 }, true);
     else if (near && this.input.pressed('cross')) this.ballBody.setLinvel({ x: pf.x * 7, y: 2.6, z: pf.z * 7 }, true);
     this.input.endFrame();
+    if (this.aiCtrl) this._ai(dt);        // opponent contests the ball (queues its kinematic move too)
 
     this.phys.step();
     for (const { body, mesh } of this.dyn) this.phys.sync(body, mesh);

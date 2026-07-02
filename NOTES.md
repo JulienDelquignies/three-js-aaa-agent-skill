@@ -52,13 +52,17 @@ Issues de la veille GameBlocks :
    snap-to-ground, pousse les corps dynamiques) branché sur `CharacterController.collide`. Scène jouable
    **Physique**. Vérifié headless : murs bloquants (x≤17.3), caisses poussées (0.44 m), frappe ~12 m/s.
 3. **Positionnement complémentaire / interop** — notre couche *rendu AAA + validation + locomotion* par
-   dessus des blocs gameplay façon GameBlocks. Viser deux skills installables ensemble.
+   dessus des blocs gameplay façon GameBlocks. Viser deux skills installables ensemble. *(en cours : les
+   refs 21–24 citent GameBlocks et reprennent ses patterns — WorldBasis, behaviour/steering — pour rester
+   alignés/interopérables ; reste à écrire un guide d'interop explicite.)*
 
 Autres idées déjà évoquées :
 4. Blend d'animations **Idle → Walk → Run** avec machine à états (au lieu du blend binaire actuel).
 5. **Scattering GPU / herbe** à plus grande échelle, **LOD / streaming** (web-Nanite), caustiques d'eau.
 6. **Systèmes de particules** (étincelles, impacts, fumée).
-7. IA basique (pathfinding, steering) pour un adversaire dans la scène jouable.
+7. ✅ **IA adversaire (steering)** *(fait)* — `engine/steering.js` (seek/flee/arrive/pursue/wander),
+   adversaire qui intercepte et dégage le ballon dans la scène **Physique**, piloté par le même
+   `CharacterController`. Self-test `scripts/verify-steering.mjs` (10/10). Reste : pathfinding sur grille.
 
 ---
 

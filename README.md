@@ -31,6 +31,7 @@ threejs-aaa/ (the skill)
 │   ├── 21-locomotion-no-footskate.md  moving characters that don't slide: cadence-sync + foot-lock IK + follow camera
 │   ├── 22-character-controller.md  controls: input→facing (no moonwalk) + run/idle + no-slide, camera-relative, gamepad
 │   ├── 23-physics-rapier.md    physics & collisions (Rapier): kinematic character, static/dynamic bodies, kick/push
+│   ├── 24-ai-steering.md       AI opponents: steering (seek/flee/arrive/pursue/wander) driving the CharacterController
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -47,6 +48,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-temporal.mjs    validate animation-time correctness (skate/detach/pops/loop/phase)
 │   ├── verify-locomotion.mjs  self-test the no-foot-skate cadence math (matchCadence/estimateStride)
 │   ├── verify-worldbasis.mjs  self-test the gameplay-direction ↔ world-axis transforms (facing/heading/no-moonwalk)
+│   ├── verify-steering.mjs    self-test the AI steering behaviours (seek/flee/arrive/pursue/wander)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
@@ -95,6 +97,10 @@ examples/
   snap-to-ground, pushes dynamic bodies) that plugs into `CharacterController.collide`. The character
   can't walk through walls, climbs ramps/steps, pushes crates, and kicks the ball. Playable in the live
   gallery (**Physique**). Verified headless: walls block, crates displace, kick launches ~12 m/s.
+- **AI opponents (native, steering)** — `engine/steering.js` (seek/flee/arrive/pursue/wander) drives NPCs
+  through the *same* `CharacterController` as the player, so they face where they move, don't foot-skate,
+  and collide via physics. The **Physique** demo has an AI opponent that intercepts and boots the ball
+  away; verified headless (closes to 0.5 m, displaces the ball ~9 m). Behaviours self-test with zero deps.
 - **Scene correctness enforcement (the skill's job, not the user's)** — a tested spatial validator
   that catches placement bugs the way an AAA reviewer would: a door must sit in the wall opening, a
   chair must face the desk, a seated character's hips on the seat, furniture must not clip walls, a
