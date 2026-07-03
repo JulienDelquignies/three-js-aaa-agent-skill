@@ -71,6 +71,32 @@ Autres idées déjà évoquées :
 
 ---
 
+## Vision du jeu : « DS Life » — un FM incarné en 3D
+
+On est **directeur sportif**. La gestion se fait comme dans FM via une **UI diégétique** — le
+**téléphone** et l'**ordinateur** du DS (écrans in-world + overlay) — et toute la 3D sert à **vivre**
+l'expérience : on contrôle son DS au quotidien, on se déplace dans les lieux, on rencontre.
+
+Piliers (et leur mapping sur ce qu'on a déjà) :
+1. **Incarnation** — contrôler le DS partout : ✅ CharacterController + caméra occlusion + interactions
+   + monde multi-sites (`career.js`, contrats).
+2. **Gestion FM via UI diégétique** — téléphone/ordinateur : interactable « consulter » → overlay UI
+   (DOM/HTML par-dessus le canvas) ; la couche *données de jeu* (effectif, budget, offres) est un state
+   séparé que la 3D et l'UI lisent tous les deux. *(à faire)*
+3. **Lieux de rencontre & de vie** — là où se joue le métier : **restaurant, bar** (dîner avec un agent,
+   fête avec les joueurs, croiser un joueur), **jet privé** (déplacements/recrutement), **concessionnaire**
+   (s'acheter une voiture), **lieux de vacances** (villa plage, hôtel)… Chaque venue = un **nouveau type
+   dans la grammaire** (même solveur, mêmes contrats) ou un petit générateur dédié façon `stadium.js`
+   quand la forme est spéciale (fuselage d'avion). *(à faire)*
+4. **Rencontres/événements** — des NPC (joueurs, agents) : on a déjà le même contrôleur pour les NPC +
+   le steering ; une rencontre = spawn NPC + interactable (« E — Saluer / Discuter ») + s'asseoir à la
+   même table. Les conversations/choix passent par l'UI (pilier 2). *(à faire)*
+
+Backlog venues (ordre proposé) : ① restaurant/bar + rencontre NPC assis en face → ② téléphone/ordi
+(overlay + écrans) → ③ concessionnaire (showroom + voitures procédurales) → ④ jet privé → ⑤ vacances.
+Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
+données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
+
 ## Chantier : jeu « carrière » (club de foot + logement du joueur)
 
 Objectif : un jeu où l'on contrôle un perso Mixamo dans les locaux du club **et** chez lui, avec des
