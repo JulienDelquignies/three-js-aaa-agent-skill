@@ -11,6 +11,7 @@ import { furnishPlace } from '../engine/furnish.js';
 import { buildFurnishing } from '../engine/furniture-kit.js';
 import { makeTheme } from '../engine/club-theme.js';
 import { InteractableSystem, doorsFromFloorplan, carryFollow } from '../engine/interactables.js';
+import { lightPlace, switchPositions } from '../engine/interior-lighting.js';
 
 // Intérieur — the interactions demo, in a GENERATED place (club tier 2, no plan drawn): walk the corridor,
 // OPEN the doors (hinged panels with kinematic colliders — closed doorways really block), SIT on the
@@ -46,6 +47,20 @@ export class Interieur {
     const furn = buildFurnishing(items, this.model, { at, theme: this.theme });
     this.scene.add(furn.group); this.disposables.push(furn);
     for (const c of [...built.colliders, ...furn.colliders]) this.phys.addStaticBox(c.pos, c.half);
+
+    // EVENING ambience: dim the sun/IBL so the room lights carry the interior
+    this.scene.environmentIntensity = 0.32;
+    this.scene.traverse((o) => { if (o.isDirectionalLight) o.intensity = 0.5; });
+    if (this.scene.fog) this.scene.fog.density = 0.006;
+    // per-room lights + wall switches (interactable)
+    this.lighting = lightPlace(this.scene, this.model, { at }); this.disposables.push(this.lighting);
+    for (const sw of switchPositions(this.model, { at })) {
+      const room = this.lighting.byId(sw.roomId); if (!room) continue;
+      const pg = new THREE.BoxGeometry(0.09, 0.13, 0.03); const pm = new THREE.MeshStandardNodeMaterial({ color: 0xdad7ce, roughness: 0.5 });
+      const plate = new THREE.Mesh(pg, pm); plate.position.set(sw.pos[0], sw.pos[1], sw.pos[2]); this.scene.add(plate);
+      this.disposables.push(pg, pm);
+      this.sys.add({ label: () => (room.on ? 'E — Éteindre la lumière' : 'E — Allumer la lumière'), pos: () => sw.pos, radius: 1.3, onInteract: () => room.toggle() });
+    }
 
     // DOORS: one per doorway (interior + entrance), animated kinematic colliders
     this.doors = doorsFromFloorplan(this.scene, this.phys, this.model, 0, { at });
@@ -120,7 +135,7 @@ export class Interieur {
   camera(cam, controls) {
     if (controls) controls.enabled = false;
     // Sims-style: steep pitch keeps the camera ABOVE the roofless walls → no wall clipping indoors
-    this.tpc = new ThirdPersonCamera(cam, { distance: 8.5, height: 1.2, lookHeight: 0.9, pitch: 0.92, minPitch: 0.6, maxPitch: 1.25, minDist: 5, maxDist: 16 });
+    this.tpc = new ThirdPersonCamera(cam, { distance: 8.5, height: 1.2, lookHeight: 1.1, pitch: 0.92, minPitch: 0.18, maxPitch: 1.25, minDist: 3, maxDist: 16 });   // minPitch bas = vue rasante possible (occlusion caméra gérée)
     this.tpc.yaw = Math.PI / 2;
     cam.position.set(-14, 9, 0); cam.lookAt(-6, 0, 0);
   }
@@ -147,7 +162,8 @@ export class Interieur {
     this.sys.update(this.ctrl.pos);
     const el = document.getElementById('prompt');
     if (el && el.textContent !== this.sys.promptText) { el.textContent = this.sys.promptText; el.style.opacity = this.sys.promptText ? '1' : '0'; }
-    this.tpc.update(this._tmp.set(this.ctrl.pos.x, this.ctrl.pos.y, this.ctrl.pos.z), dt);
+    this.tpc.update(this._tmp.set(this.ctrl.pos.x, this.ctrl.pos.y, this.ctrl.pos.z), dt,
+      (from, dir, max) => this.phys.raycast(from, dir, max, this.char.body));   // la caméra ne traverse plus les murs
   }
 
   dispose() { this.input?.dispose(); for (const d of this.disposables) d.dispose?.(); }

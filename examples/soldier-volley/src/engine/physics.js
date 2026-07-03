@@ -73,6 +73,13 @@ export class Physics {
     };
   }
 
+  /** First hit distance along a ray, or null. Excludes `excludeBody` (e.g. the player capsule). */
+  raycast(from, dir, maxDist, excludeBody = null) {
+    const ray = new RAPIER.Ray({ x: from[0], y: from[1], z: from[2] }, { x: dir[0], y: dir[1], z: dir[2] });
+    const hit = this.world.castRay(ray, maxDist, true, undefined, undefined, undefined, excludeBody || undefined);
+    return hit ? (hit.timeOfImpact ?? hit.toi) : null;
+  }
+
   // Copy a Rapier body's transform onto a THREE.Object3D (call after step()).
   sync(body, obj) { const t = body.translation(), q = body.rotation(); obj.position.set(t.x, t.y, t.z); obj.quaternion.set(q.x, q.y, q.z, q.w); }
 }

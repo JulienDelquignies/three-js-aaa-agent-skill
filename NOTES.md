@@ -112,8 +112,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    ballon ≤0,13 m de la main — règle heldInHand). Input par instance (keymap/padmap : E / X manette /
    tactile). Scène jouable **Intérieur** (club T2 généré + meublé + thémé, caméra Sims au-dessus des murs).
    Reste : interrupteurs de lumière (avec l'éclairage intérieur, étape 4).
-4. **Collision caméra** (3ᵉ personne qui ne traverse pas les murs) + **éclairage intérieur** (luminaires
-   par pièce, budget de lights).
+4. ✅ **Collision caméra + éclairage intérieur** *(fait)* — `ThirdPersonCamera.update(…, obstruct)` +
+   `Physics.raycast(excludeBody)` : la caméra se plaque devant le mur (snap-in) et ressort en douceur
+   (vérifié : 8,5 m → 0,36 m, segment tête→caméra dégagé ; les vitres, sans collider, laissent voir à
+   travers — assumé). `interior-lighting.js` : suspension + PointLight par pièce (budget : sans ombres,
+   portée limitée) + **interrupteurs dérivés** à côté de chaque porte (interactables), ambiance soir dans
+   la scène Intérieur. Vue rasante désormais permise (minPitch 0.18).
 5. **Démo jouable** : même perso, mêmes contrôles, club T1→T4 et hôtel→villa (physique branchée sur les
    colliders du builder).
 

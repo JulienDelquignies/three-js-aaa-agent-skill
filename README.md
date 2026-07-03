@@ -38,6 +38,7 @@ threejs-aaa/ (the skill)
 │   ├── 28-furnishing.md        rule-based furniture: archetype recipes, facing/clearance rules, re-verifiable
 │   ├── 29-stadiums-theming.md  parametric stadiums (tiers, loge+terrace FM view, sightline) + club identity theming
 │   ├── 30-interactables.md     playable interactions: doors that block/open, sit, pick up/carry, prompts
+│   ├── 31-interior-camera-lighting.md  indoor playability: camera occlusion + per-room lights & switches
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -136,6 +137,10 @@ examples/
   `sitAt()/standUp()` procedural sitting (hips ON the seat — the sitPose rule, verified at 0.50 m on a
   0.45 m bench), and carry-in-hand (ball ≤0.13 m from the hand bone). Playable demo **Intérieur** in a
   generated club with doors, seats and a ball.
+- **Indoor playability (native)** — `ThirdPersonCamera` occlusion via `Physics.raycast` (snaps in front
+  of walls, eases back out; verified 8.5 m → 0.36 m with a clear head→camera segment) and
+  `interior-lighting.js`: a pendant + PointLight per room with **derived wall switches** beside each door
+  ("E — Allumer/Éteindre"), under an evening ambience so lighting visibly matters.
 - **Particles / juice (native)** — `engine/particles.js` is a pooled instanced additive particle system
   (one draw call, no per-frame allocation) for run dust, kick sparks, impact/landing bursts, and trails.
   Wired into the **Physique** demo (sparks on kick, dust while running); feeds the bloom pass.
