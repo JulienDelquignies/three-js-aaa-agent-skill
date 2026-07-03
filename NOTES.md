@@ -164,6 +164,16 @@ podiums tournent et **cyclent leurs teintes** — acheter prend la couleur affic
 la voiture achetée devient CELLE qui roule en ville. Headless 59/59 (Ferrari refusée niv 3, SUV acheté
 −90 k€ + message + conduit jusqu'au resto). Harnais : 20 programmes floorplan/furnish, dealership 13/13.
 
+④bis ✅ **Voitures procédurales v2** *(fait, sur retour utilisateur « loin de la Ferrari »)* — le
+kit voiture est passé des boîtes à la **carrosserie par profil 2D extrudé avec bevel** (museau, capot,
+ceinture, malle — listes de points par gamme) + **bulle vitrée posée SUR la ligne de caisse** (le
+contraste coque peinte / vitrage est ce qui fait « vraie voiture » ; v1 avec un seul profil jusqu'au
+toit avalait le vitrage — attrapé en QA visuelle). Peinture clearcoat physique (modérée : un clearcoat
+miroir crame en blanc au soleil + bloom — 3 itérations de QA), pneus toriques + jantes à rayons,
+calandre, optiques émissives douces, rétros, plaques. Le glint de pare-brise face au soleil est
+physique et assumé. Backlog : packs CC0 (Kenney Car Kit / Quaternius) si on veut des modèles réalistes
+supplémentaires sans coût de licence.
+
 Backlog (suite) : ⑤ jet privé + gare fonctionnelles + bus d'équipe (même PathDriver, livrée club)
 → ⑥ vacances → polish visuel ville (retour utilisateur).
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de

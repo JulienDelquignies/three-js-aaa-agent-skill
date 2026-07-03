@@ -28,8 +28,14 @@ pushes a Concessionnaire message → phone badge).
 
 ## The cars
 
-- Procedural variants from ONE parametric builder (`buildCar({kind})`: citadine/berline/suv via a DIMS
-  table — length, body height, cabin, wheel radius).
+- Procedural variants from ONE parametric builder (`buildCar({kind})`): the body is a **2D side
+  PROFILE extruded across the width with a bevel** (nose, hood, beltline, decklid — per-kind point
+  lists), and the GREENHOUSE is a second, narrower profile extrusion of tinted glass SITTING ON the
+  beltline — that paint-shell/greenhouse split is what makes a silhouette read as a car (a single
+  profile up to the roof swallows the glass; found by visual QA). Clearcoat paint
+  (`MeshPhysicalNodeMaterial`, moderate clearcoat — a mirror clearcoat blows out to white in sun +
+  bloom), torus tires with spoked rims, rocker band, grille, emissive head/tail lights, mirrors,
+  plates. Name the paint material `body` so `paintCar` finds it.
 - The premium model is **ferrari.glb from the three.js repo** (Ferrari 458 Italia by vicent091036 —
   credit it in your UI). It is Draco-compressed: `DRACOLoader.setDecoderPath('draco/')` with the
   decoder files copied from `three/examples/jsm/libs/draco/gltf/` into `public/draco/`.
