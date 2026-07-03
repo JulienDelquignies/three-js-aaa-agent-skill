@@ -20,11 +20,11 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
 // ---- programs: tier → required rooms. `via` attaches a room to a parent (ensuite) instead of the hub.
 const CLUB = {
-  1: { hub: ['couloir', 9], rooms: [['vestiaire', 20, 1], ['bureau', 10, 1], ['stockage', 8, 0]] },
-  2: { hub: ['couloir', 12], rooms: [['vestiaire', 20, 1], ['gym', 30, 1], ['bureau', 10, 1], ['infirmerie', 10, 1], ['stockage', 8, 0]] },
-  3: { hub: ['couloir', 16], rooms: [['vestiaire', 20, 1], ['vestiaire2', 20, 1], ['gym', 34, 1], ['salle-video', 16, 1], ['bureau', 12, 1], ['infirmerie', 10, 1]] },
-  4: { hub: ['hall', 22], rooms: [['vestiaire', 22, 1], ['vestiaire2', 22, 1], ['gym', 40, 1], ['spa', 24, 1], ['salle-video', 18, 1], ['cafeteria', 30, 1], ['bureau', 12, 1], ['infirmerie', 12, 1]] },
-  5: { hub: ['hall', 30], rooms: [['vestiaire', 24, 1], ['vestiaire2', 24, 1], ['gym', 48, 1], ['spa', 30, 1], ['auditorium', 40, 1], ['cafeteria', 34, 1], ['bureaux-staff', 20, 1], ['infirmerie', 14, 1], ['stockage', 10, 0]] },
+  1: { hub: ['couloir', 9], rooms: [['vestiaire', 20, 1], ['bureau', 10, 1, null, 'glass'], ['stockage', 8, 0]], pitches: 1 },
+  2: { hub: ['couloir', 12], rooms: [['vestiaire', 20, 1], ['gym', 30, 1], ['bureau', 10, 1, null, 'glass'], ['infirmerie', 10, 1], ['stockage', 8, 0]], pitches: 1 },
+  3: { hub: ['couloir', 16], rooms: [['vestiaire', 20, 1], ['vestiaire2', 20, 1], ['gym', 34, 1], ['salle-video', 16, 1], ['bureau', 12, 1, null, 'glass'], ['infirmerie', 10, 1]], pitches: 2 },
+  4: { hub: ['hall', 22], rooms: [['vestiaire', 22, 1], ['vestiaire2', 22, 1], ['gym', 40, 1], ['spa', 24, 1], ['salle-video', 18, 1], ['cafeteria', 30, 1], ['bureau', 12, 1, null, 'glass'], ['infirmerie', 12, 1]], pitches: 2 },
+  5: { hub: ['hall', 30], rooms: [['vestiaire', 24, 1], ['vestiaire2', 24, 1], ['gym', 48, 1], ['spa', 30, 1], ['auditorium', 40, 1], ['cafeteria', 34, 1], ['bureaux-staff', 20, 1, null, 'glass'], ['infirmerie', 14, 1], ['stockage', 10, 0]], pitches: 3 },
 };
 const HOME = {
   1: { hub: ['chambre', 18], rooms: [['sdb', 6, 1]] },                                                    // chambre d'hôtel
@@ -37,7 +37,7 @@ const HOME = {
        outdoor: { pool: [4.5, 9], terrace: 2.5 } },                                                        // villa + piscine
 };
 
-const parse = ([id, area, win, via]) => ({ id, area, win: win || 0, via: via || null });
+const parse = ([id, area, win, via, flag]) => ({ id, area, win: win || 0, via: via || null, glass: flag === 'glass' });
 
 // ---- layout: one floor = north strip | hub band | south strip, all spanning the same width W.
 function layoutFloor(prog, W, sd, hubD, zStart, rnd) {
@@ -50,7 +50,10 @@ function layoutFloor(prog, W, sd, hubD, zStart, rnd) {
   const width = (cl) => cl.reduce((s, r) => s + r.area, 0) / sd;
   clusters.sort((a, b) => width(b) - width(a));
   const strips = [[], []], loads = [0, 0];
-  for (const cl of clusters) { const i = loads[0] - loads[1] < (rnd() - 0.5) * 0.6 ? 0 : 1; strips[i].push(cl); loads[i] += width(cl); }
+  for (const cl of clusters) {
+    const i = cl.some((r) => r.glass) ? 0 : loads[0] - loads[1] < (rnd() - 0.5) * 0.6 ? 0 : 1;   // vitrés → côté terrains
+    strips[i].push(cl); loads[i] += width(cl);
+  }
   if (strips[0].length === 0 && strips[1].length) strips[0].push(strips[1].pop());
   // stretch each strip to exactly W, tile the rooms
   const out = [], hubId = prog.hub[0];
@@ -80,9 +83,10 @@ function buildWalls(fl, W, isGround, entrance) {
     // wall shared with the hub — THE door lives here (derived, centred), unless the room is an ensuite
     const zh = r.strip === 'N' ? z1 : z0;
     add([x0, zh], [x1, zh], [r.id, hub.id], r.via ? [] : [door(len)]);
-    // exterior wall (window side)
+    // exterior wall — glazed bay for glass rooms (view over the pitches), else a window
     const ze = r.strip === 'N' ? z0 : z1;
-    add([x0, ze], [x1, ze], [r.id, 'out'], r.win && len > WIN_W + 1 ? [win(len)] : []);
+    const glass = (l) => ({ type: 'glass', at: l / 2, w: Math.max(0.8, l - 0.7), h: WALL_H - 0.5, sill: 0.15 });
+    add([x0, ze], [x1, ze], [r.id, 'out'], r.glass ? [glass(len)] : r.win && len > WIN_W + 1 ? [win(len)] : []);
   }
   // vertical walls between strip neighbours (+ ensuite doors on the shared wall with their parent)
   for (const strip of ['N', 'S']) {
@@ -132,7 +136,7 @@ export function generatePlace({ type = 'home', tier = 1, seed = 1 } = {}) {
   const floors = floorsProg.map((p, fi) => {
     const fl = layoutFloor(p, W, sd, hubD, 0, rnd);
     const walls = buildWalls(fl, W, fi === 0, true);
-    return { y: fi * FLOOR_H, rooms: fl.rooms.map(({ via, strip, ...r }) => ({ ...r, strip })), walls, hubId: fl.hubId };
+    return { y: fi * FLOOR_H, rooms: fl.rooms.map(({ via, ...r }) => r), walls, hubId: fl.hubId };
   });
   if (stairs) {
     const hub = floors[0].rooms.find((r) => r.id === floors[0].hubId).rect;
@@ -142,10 +146,17 @@ export function generatePlace({ type = 'home', tier = 1, seed = 1 } = {}) {
   }
   const D = Math.max(...floors.map((f) => Math.max(...f.rooms.map((r) => r.rect[3]))));
   const hub0 = floors[0].rooms.find((r) => r.id === floors[0].hubId);
+  let outdoor = null;
+  if (prog.outdoor) outdoor = { terrace: [0, D, W, D + prog.outdoor.terrace + prog.outdoor.pool[1]], pool: [W / 2 - prog.outdoor.pool[0] / 2, D + prog.outdoor.terrace, W / 2 + prog.outdoor.pool[0] / 2, D + prog.outdoor.terrace + prog.outdoor.pool[1]] };
+  if (prog.pitches) {                                  // club training pitches north of the building (facing the glass offices)
+    const PW = 30, PD = 20, gap = 3, total = prog.pitches * PW + (prog.pitches - 1) * gap;
+    const x0 = W / 2 - total / 2;
+    outdoor = { pitches: Array.from({ length: prog.pitches }, (_, i) => [x0 + i * (PW + gap), -6 - PD, x0 + i * (PW + gap) + PW, -6]) };
+  }
   const model = {
     spec: { type, tier, seed }, W, D, floorH: FLOOR_H, wallH: WALL_H,
     floors, stairs,
-    outdoor: prog.outdoor ? { terrace: [0, D, W, D + prog.outdoor.terrace + prog.outdoor.pool[1]], pool: [W / 2 - prog.outdoor.pool[0] / 2, D + prog.outdoor.terrace, W / 2 + prog.outdoor.pool[0] / 2, D + prog.outdoor.terrace + prog.outdoor.pool[1]] } : null,
+    outdoor,
     spawn: { pos: [0.9, 0, (hub0.rect[1] + hub0.rect[3]) / 2], room: hub0.id },
   };
   return model;
@@ -184,7 +195,7 @@ export function checkModel(model) {
       for (const o of w.openings) {
         if (o.at - o.w / 2 < 0.2 || o.at + o.w / 2 > len - 0.2) issues.push(`floor${fi}: ${o.type} too close to a corner (${w.rooms.join('/')})`);
         if (o.type === 'door' && o.w < CAPSULE_D + 0.2) issues.push(`floor${fi}: door too narrow for the character (${w.rooms.join('/')})`);
-        if (o.type === 'window' && !w.rooms.includes('out')) issues.push(`floor${fi}: window on an interior wall (${w.rooms.join('/')})`);
+        if ((o.type === 'window' || o.type === 'glass') && !w.rooms.includes('out')) issues.push(`floor${fi}: ${o.type} on an interior wall (${w.rooms.join('/')})`);
       }
     }
     // connectivity: BFS over door edges (+ stairs between hub floors) must reach every room from outside
@@ -205,7 +216,11 @@ export function checkModel(model) {
     const inside = (rect, hub) => rect[0] >= hub[0] - 0.01 && rect[1] >= hub[1] - 0.01 && rect[2] <= hub[2] + 0.01 && rect[3] <= hub[3] + 0.01;
     for (const [fi, f] of model.floors.entries()) { const hub = f.rooms.find((r) => r.id === f.hubId).rect; if (!inside(s.rect, hub)) issues.push(`stairwell escapes the floor-${fi} hub`); }
   }
-  if (model.outdoor) { const p = model.outdoor.pool; if (p[1] < model.D) issues.push('pool intersects the house'); }
+  if (model.outdoor?.pool) { const p = model.outdoor.pool; if (p[1] < model.D) issues.push('pool intersects the house'); }
+  if (model.outdoor?.pitches) for (const p of model.outdoor.pitches) if (p[3] > 0) issues.push('training pitch intersects the building');
+  // every glass room must actually face the pitches (north exterior)
+  if (model.outdoor?.pitches) for (const f of model.floors) for (const w of f.walls)
+    for (const o of w.openings) if (o.type === 'glass' && Math.abs(w.a[1]) > 0.01) issues.push(`glass wall not facing the pitches (${w.rooms.join('/')})`);
   // hub is passable
   for (const [fi, f] of model.floors.entries()) { const hub = f.rooms.find((r) => r.id === f.hubId).rect; if (hub[3] - hub[1] < 1.2) issues.push(`floor${fi} hub narrower than 1.2 m`); }
   return { ok: issues.length === 0, issues };

@@ -3,6 +3,7 @@ import { generatePlace, checkModel } from '../engine/floorplan.js';
 import { buildPlace } from '../engine/place-builder.js';
 import { furnishPlace, checkFurnishing } from '../engine/furnish.js';
 import { buildFurnishing } from '../engine/furniture-kit.js';
+import { makeTheme } from '../engine/club-theme.js';
 
 // Lieux procéduraux — four places from four SPECS (no plan was drawn): club tier 1 vs tier 4, and the
 // player's home at tier 1 (hotel room) vs tier 5 (villa + pool, two floors). Same generator, different
@@ -30,10 +31,11 @@ export class Places {
     models.forEach(({ spec, label, model }, i) => {
       const cx = (i % 2) * cell - cell / 2, cz = ((i / 2) | 0) * cell - cell / 2;
       const at = [cx - model.W / 2, 0, cz - model.D / 2];
-      const built = buildPlace(model, { at });
+      const theme = spec.type === 'club' ? makeTheme({ seed: 3, name: 'AS Colline', primary: 0x0b6e4f, secondary: 0xffffff }) : null;
+      const built = buildPlace(model, { at, theme });
       this.scene.add(built.group); this.disposables.push(built);
       const items = furnishPlace(model);
-      const furn = buildFurnishing(items, model, { at });
+      const furn = buildFurnishing(items, model, { at, theme });
       this.scene.add(furn.group); this.disposables.push(furn);
       const check = checkModel(model); const fcheck = checkFurnishing(model, items);
       report[label] = { spec, footprint: `${model.W.toFixed(1)}×${model.D.toFixed(1)}m`, floors: model.floors.length, rooms: model.floors.reduce((s, f) => s + f.rooms.length, 0), furniture: items.length, colliders: built.colliders.length + furn.colliders.length, valid: check.ok && fcheck.ok, issues: [...check.issues, ...fcheck.issues] };

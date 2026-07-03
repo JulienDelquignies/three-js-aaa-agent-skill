@@ -12,6 +12,7 @@ export default defineConfig({
         controls: page('controls'),
         physics: page('physics'),
         places: page('places'),
+        stadiums: page('stadiums'),
         volley: page('volley'),
         materials: page('materials'),
         procedural: page('procedural'),

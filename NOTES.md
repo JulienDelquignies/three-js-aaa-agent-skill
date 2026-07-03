@@ -90,6 +90,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    **zones de dégagement des portes/escalier toujours libres**, contraintes d'orientation (chaise→bureau,
    TV→canapé). `checkFurnishing()` re-vérifie indépendamment ; kit 3D compact (~25 meubles) + colliders.
    Harnais `verify-furnish.mjs` : 10 programmes × 20 seeds verts ; sabotages attrapés nommément.
+2bis. ✅ **Stades + identité club** *(fait)* — `stadium.js` paramétrique T1 champêtre (1 tribune basse,
+   ~850 places) → T5 moderne (4 tribunes 2 niveaux, toit, ~13,5k) ; **loge + terrasse du directeur
+   sportif** = points de vue jouables (`model.vantages`, la « vue FM »), contrat `checkStadium` avec
+   **sightline terrasse→rond central garantie** (harnais `verify-stadium.mjs`, 5 tiers verts). Sièges
+   instanciés aux couleurs du club, blason en loge (`club-theme.js` : makeTheme + drawCrest/drawJersey).
+   Clubs : **bureaux vitrés forcés côté terrains** (baies dérivées, contrat « glass face aux terrains »)
+   + 1→3 terrains d'entraînement dehors. Maillots encadrés + blason dans les bureaux (furnish `club`).
 3. **`interactables.js`** — portes qui s'ouvrent, s'asseoir (sitPose), ramasser/porter (heldInHand),
    interrupteurs ; prompts de proximité « E — … ».
 4. **Collision caméra** (3ᵉ personne qui ne traverse pas les murs) + **éclairage intérieur** (luminaires

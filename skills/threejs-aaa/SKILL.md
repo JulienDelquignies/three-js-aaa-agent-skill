@@ -48,6 +48,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Animation state machine: Idle→Walk→Run 1D blend (cadence-synced) + discrete states + crossfades** | [reference/26-anim-state-machine.md](reference/26-anim-state-machine.md) |
 | **Procedural places (interiors): spec→rooms/walls, doors/stairs DERIVED, no-regression contract** | [reference/27-procedural-places.md](reference/27-procedural-places.md) |
 | **Furnishing: room-archetype recipes, against-wall/facing/clearance rules, re-verifiable** | [reference/28-furnishing.md](reference/28-furnishing.md) |
+| **Stadiums & club identity: tiers, loge+terrace (FM view), sightline contract, theming** | [reference/29-stadiums-theming.md](reference/29-stadiums-theming.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -156,6 +157,13 @@ resolve regardless of install location. Each prints `--help`.
   `engine/furniture-kit.js` builds the meshes + colliders. See `reference/28`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-furnish.mjs --seeds 20
+  ```
+- **Generate a stadium + club identity** — `engine/stadium.js` (tier 1 champêtre → tier 5 moderne, the
+  directors' loge + terrace as playable FM-view vantages, sightline contract) + `engine/club-theme.js`
+  (colors/crest/jerseys applied to seats, walls, offices). Club places get glass offices facing their
+  training pitches. See `reference/29`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-stadium.mjs
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

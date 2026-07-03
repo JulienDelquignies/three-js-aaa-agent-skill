@@ -37,7 +37,7 @@ function roomCtx(model, fi, room, items) {
   if (model.stairs && room.id === floor.hubId) { const s = model.stairs.rect; zones.push([s[0] - 0.5, s[1] - 0.4, s[2] + 0.5, s[3] + 0.4]); }
   const mine = () => items.filter((i) => i.floor === fi && i.room === room.id);
   const fits = (it) => { const A = aabb(it); return rInside(A, inner) && !zones.some((z) => rOverlap(A, z)) && !mine().some((o) => rOverlap(A, aabb(o), -0.03)); };
-  return { inner, zones, fits };
+  return { inner, zones, fits, club: model.spec.type === 'club' };
 }
 
 // slide along a wall side looking for a valid spot; sides tried in seeded order
@@ -110,6 +110,10 @@ const RECIPES = {
     if (desk) { const ch = { ...front(desk, 0.75), yaw: desk.yaw + Math.PI, w: 0.5, d: 0.5 }; const it = add('office-chair', c.fits(ch) ? ch : null, 0.5, 0.5, 0.95); if (it) it.faces = desk.id; }
     add('bookshelf', againstWall(c, room, 0.9, 0.32, rnd), 0.9, 0.32, 1.9);
     add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+    if (c.club) {                                       // identité club : maillot encadré + blason au mur
+      add('jersey-frame', againstWall(c, room, 0.85, 0.1, rnd), 0.85, 0.1, 2.0);
+      add('crest-panel', againstWall(c, room, 0.9, 0.08, rnd), 0.9, 0.08, 2.0);
+    }
   },
   locker(c, room, add, rnd) {
     for (let i = 0; i < 4; i++) add('locker', againstWall(c, room, 1.2, 0.5, rnd), 1.2, 0.5, 1.9);

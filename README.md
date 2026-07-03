@@ -36,6 +36,7 @@ threejs-aaa/ (the skill)
 │   ├── 26-anim-state-machine.md  animation FSM: Idle→Walk→Run 1D blend (cadence-synced) + discrete states + crossfades
 │   ├── 27-procedural-places.md  interiors from a spec: doors/stairs derived, tiers, no-regression contract
 │   ├── 28-furnishing.md        rule-based furniture: archetype recipes, facing/clearance rules, re-verifiable
+│   ├── 29-stadiums-theming.md  parametric stadiums (tiers, loge+terrace FM view, sightline) + club identity theming
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -56,6 +57,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-anim-fsm.mjs    self-test the animation state machine's 1D blend weights (partition of unity)
 │   ├── verify-floorplan.mjs   no-regression harness for procedural places (all types × tiers × seeds)
 │   ├── verify-furnish.mjs     no-regression harness for rule-based furnishing (clearances, facing, overlaps)
+│   ├── verify-stadium.mjs     no-regression harness for parametric stadiums (sightline, loge, capacity by tier)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
@@ -123,6 +125,11 @@ examples/
   gym…) under hard rules: against-wall, no overlaps, door/stair clearances always free, facing
   constraints. `checkFurnishing()` re-verifies independently; `furniture-kit.js` builds meshes +
   colliders. Sabotages (wardrobe in front of a door, chair turned away) are caught by name.
+- **Stadiums & club identity (native)** — `engine/stadium.js` generates stadiums by infrastructure tier
+  (t1 champêtre, one low stand → t5 four two-deck roofed stands, ~13.5k seats), always with the
+  **directors' loge + terrace** as playable vantage points (the "FM view") and a contract asserting an
+  unobstructed sightline to the pitch. `club-theme.js` themes everything (instanced seats in club colors,
+  crest, framed jerseys in offices); club buildings get **glass offices facing their training pitches**.
 - **Particles / juice (native)** — `engine/particles.js` is a pooled instanced additive particle system
   (one draw call, no per-frame allocation) for run dust, kick sparks, impact/landing bursts, and trails.
   Wired into the **Physique** demo (sparks on kick, dust while running); feeds the bloom pass.
