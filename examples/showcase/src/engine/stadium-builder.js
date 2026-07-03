@@ -18,24 +18,34 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
     return mesh;
   };
 
-  // pitch + markings (canvas), surrounding apron
+  // pitch + markings (canvas), surrounding apron. ONE metre→pixel transform draws every line, and the
+  // grass plane is (L+2m)×(W+2m) with MARGIN of grass beyond the lines — so the DRAWN goal line sits at
+  // exactly x=±L/2 in world space, where the goals/flags stand. (Bug fixed: the border used to be inset
+  // in texture space, leaving the goals ~2 m behind the drawn line.)
   const { L, W } = model.pitch;
-  const pc = document.createElement('canvas'); pc.width = 1024; pc.height = 664; const pg = pc.getContext('2d');
-  for (let i = 0; i < 16; i++) { pg.fillStyle = i % 2 ? '#3f9a3f' : '#368636'; pg.fillRect(i / 16 * 1024, 0, 64, 664); }
-  pg.strokeStyle = '#eef4ee'; pg.lineWidth = 4; pg.strokeRect(20, 20, 984, 624);
-  pg.beginPath(); pg.moveTo(512, 20); pg.lineTo(512, 644); pg.stroke(); pg.beginPath(); pg.arc(512, 332, 88, 0, 7); pg.stroke();
-  const sx = 984 / L, sz = 624 / W;                                   // metres → px
+  const MARGIN = 3, PW2 = L + 2 * MARGIN, PH2 = W + 2 * MARGIN;
+  const pc = document.createElement('canvas'); pc.width = 1110; pc.height = 740; const pg = pc.getContext('2d');
+  const kx = pc.width / PW2, kz = pc.height / PH2;
+  const X = (xm) => (xm + PW2 / 2) * kx, Z = (zm) => (zm + PH2 / 2) * kz;
+  for (let i = 0; i < 18; i++) { pg.fillStyle = i % 2 ? '#3f9a3f' : '#368636'; pg.fillRect(i / 18 * pc.width, 0, pc.width / 18 + 1, pc.height); }
+  pg.strokeStyle = '#eef4ee'; pg.lineWidth = Math.max(2, 0.12 * kx);
+  pg.strokeRect(X(-L / 2), Z(-W / 2), L * kx, W * kz);                                   // lignes de touche + de but
+  pg.beginPath(); pg.moveTo(X(0), Z(-W / 2)); pg.lineTo(X(0), Z(W / 2)); pg.stroke();    // médiane
+  pg.beginPath(); pg.arc(X(0), Z(0), 9.15 * kx, 0, 7); pg.stroke();                      // rond central
+  pg.fillStyle = '#eef4ee'; pg.beginPath(); pg.arc(X(0), Z(0), 0.25 * kx, 0, 7); pg.fill();
   for (const side of [-1, 1]) {
-    const gx = side < 0 ? 20 : 1004;                                  // goal line px
-    const dir = side < 0 ? 1 : -1;
-    pg.strokeRect(Math.min(gx, gx + dir * 16.5 * sx), 332 - 20.16 * sz, 16.5 * sx, 40.32 * sz);   // surface de réparation
-    pg.strokeRect(Math.min(gx, gx + dir * 5.5 * sx), 332 - 9.16 * sz, 5.5 * sx, 18.32 * sz);      // 5,5 m
-    pg.fillStyle = '#eef4ee'; pg.beginPath(); pg.arc(gx + dir * 11 * sx, 332, 4, 0, 7); pg.fill();  // point de penalty
-    pg.beginPath(); pg.arc(gx + dir * 11 * sx, 332, 9.15 * sx, side < 0 ? -0.94 : Math.PI - 0.94, side < 0 ? 0.94 : Math.PI + 0.94); pg.stroke();
+    const gx = side * L / 2, dir = -side;                                                // vers le centre
+    pg.strokeRect(Math.min(X(gx), X(gx + dir * 16.5)), Z(-20.16), 16.5 * kx, 40.32 * kz); // surface de réparation
+    pg.strokeRect(Math.min(X(gx), X(gx + dir * 5.5)), Z(-9.16), 5.5 * kx, 18.32 * kz);    // 5,5 m
+    pg.beginPath(); pg.arc(X(gx + dir * 11), Z(0), 0.25 * kx, 0, 7); pg.fill();           // point de penalty
+    const a0 = side < 0 ? -0.94 : Math.PI - 0.94, a1 = side < 0 ? 0.94 : Math.PI + 0.94;
+    pg.beginPath(); pg.arc(X(gx + dir * 11), Z(0), 9.15 * kx, a0, a1); pg.stroke();       // arc de réparation
   }
-  for (const cx of [20, 1004]) for (const cy of [20, 644]) { pg.beginPath(); pg.arc(cx, cy, 1 * sx * 3, 0, 7); pg.stroke(); }
+  for (const cx of [-L / 2, L / 2]) for (const cz of [-W / 2, W / 2]) {                   // arcs de corner (1 m)
+    pg.beginPath(); pg.arc(X(cx), Z(cz), 1 * kx, 0, 7); pg.stroke();
+  }
   const ptex = new THREE.CanvasTexture(pc); ptex.colorSpace = THREE.SRGBColorSpace; disposables.push(ptex);
-  const pgeo = new THREE.PlaneGeometry(L, W); pgeo.rotateX(-Math.PI / 2); disposables.push(pgeo);
+  const pgeo = new THREE.PlaneGeometry(PW2, PH2); pgeo.rotateX(-Math.PI / 2); disposables.push(pgeo);
   const pitch = new THREE.Mesh(pgeo, mat({ map: ptex, roughness: 0.95 })); pitch.receiveShadow = true; group.add(pitch);
   const agеo = new THREE.PlaneGeometry(L + 2 * (model.apron + model.stands[0].rows * model.rowD + 8), W + 2 * (model.apron + model.stands[0].rows * model.rowD + 8));
   agеo.rotateX(-Math.PI / 2); disposables.push(agеo);
