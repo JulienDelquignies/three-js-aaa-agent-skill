@@ -64,12 +64,30 @@ export class Carriere {
       }
       for (const it of items) {
         const seatH = SEAT_H[it.kind]; if (!seatH) continue;
+        // the speakers' chairs at the press podium get their own interaction: sitting there switches
+        // the camera to the TV SHOT (from the press rows, framing podium + sponsor backdrop)
+        const podium = key === 'club' && it.room === 'salle-presse' && it.kind === 'office-chair';
         const wp = [at[0] + it.x, 0, at[2] + it.z];
         this.sys.add({
-          label: () => (this.ctrl?.seated ? 'E — Se lever' : 'E — S’asseoir'),
+          label: () => (this.ctrl?.seated ? 'E — Se lever' : (podium ? 'E — S’installer au pupitre' : 'E — S’asseoir')),
           pos: () => wp, radius: 1.4,
-          onInteract: () => { if (this.ctrl.seated) this.ctrl.standUp(); else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: it.yaw, seatH }); },
+          onInteract: () => {
+            if (this.ctrl.seated) { this.ctrl.standUp(); this._podium = false; this.tpc._init = false; }
+            else { this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: it.yaw, seatH }); this._podium = podium; }
+          },
         });
+      }
+      // the TV shot pose, derived from the podium desk + its room (camera at the back of the rows)
+      if (key === 'club') {
+        const desk = items.find((i) => i.kind === 'press-desk');
+        const room = desk && model.floors[0].rooms.find((r) => r.id === desk.room);
+        if (desk && room) {
+          const fx = Math.sin(desk.yaw), fz = Math.cos(desk.yaw);
+          const dist = Math.min(fx > 0.5 ? room.rect[2] - desk.x : fx < -0.5 ? desk.x - room.rect[0] : 99,
+            fz > 0.5 ? room.rect[3] - desk.z : fz < -0.5 ? desk.z - room.rect[1] : 99);
+          const back = Math.max(1.8, dist - 0.45);
+          this._pressShot = { pos: [at[0] + desk.x + fx * back, 1.55, at[2] + desk.z + fz * back], look: [at[0] + desk.x, 1.0, at[2] + desk.z] };
+        }
       }
     }
 
@@ -155,6 +173,7 @@ export class Carriere {
   travelTo(key) {
     const s = this.career.sites[key]; if (!s) return;
     if (this.ctrl.seated) this.ctrl.standUp();
+    this._podium = false;
     const p = s.spawn, c = this.char;
     c.body.setTranslation({ x: p[0], y: p[1] + c.center, z: p[2] }, true);
     c.body.setNextKinematicTranslation({ x: p[0], y: p[1] + c.center, z: p[2] });
@@ -196,8 +215,14 @@ export class Carriere {
     this.sys.update(this.ctrl.pos);
     const el = document.getElementById('prompt');
     if (el && el.textContent !== this.sys.promptText) { el.textContent = this.sys.promptText; el.style.opacity = this.sys.promptText ? '1' : '0'; }
-    this.tpc.update(this._tmp.set(this.ctrl.pos.x, this.ctrl.pos.y, this.ctrl.pos.z), dt,
-      (from, dir, max) => this.phys.raycast(from, dir, max, this.char.body));
+    if (this._podium && this.ctrl.seated && this._pressShot) {  // seated at the podium → the TV shot
+      const p = this._pressShot;
+      this.tpc.cam.position.lerp(this._tmp.set(p.pos[0], p.pos[1], p.pos[2]), 1 - Math.exp(-4 * dt));
+      this.tpc.cam.lookAt(p.look[0], p.look[1], p.look[2]);
+    } else {
+      this.tpc.update(this._tmp.set(this.ctrl.pos.x, this.ctrl.pos.y, this.ctrl.pos.z), dt,
+        (from, dir, max) => this.phys.raycast(from, dir, max, this.char.body));
+    }
   }
 
   dispose() { this.input?.dispose(); for (const d of this.disposables) d.dispose?.(); }

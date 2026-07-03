@@ -30,7 +30,10 @@ scene.add(furn.group);
 `sdb→bathroom` (lavabo, WC, douche), `sejour→living` (canapé + table basse devant + meuble TV en face +
 plante + bibliothèque), `cuisine→kitchen` (plan de travail ×3 + frigo + table + chaises), `bureau→office`
 (bureau + chaise qui LE regarde + bibliothèque), `vestiaire→locker` (casiers ×4 + banc central),
-`gym` (tapis ×2, rack, banc de développé, tapis de sol), `infirmerie|spa→medical`, `cafeteria`,
+`gym` (tapis ×2, rack, banc de développé, tapis de sol), `infirmerie|spa→medical`,
+`salle-kine→physio` (2 **tables de massage** en accès libre tout autour — freeSpot, jamais contre un mur —
+rangement, lavabo, tapis d'étirement, tabouret du praticien), `cafeteria` (+ ses **cuisines attenantes**
+`cuisine-cafet`, collées *via* la cafétéria dans la grammaire → mur partagé + porte dérivée),
 `salle-video|auditorium→media` (écran + rangées de chaises qui le regardent), `stockage→storage`,
 `couloir|hall|palier→hub` (plante, banc). Add an archetype by writing one recipe function.
 

@@ -42,6 +42,14 @@ function model_min(type, tier) { return type === 'club' ? 4 + tier : 3; }
     (hit ? pass++ : fail++);
     console.log(`${hit ? '✓' : '✗'} sabotage « ${name} » attrapé${hit ? '' : ` — issues: ${r.issues.join('; ') || '(aucune)'}`}`);
   };
+  // cafétéria + cuisines et espace kiné : présents et équipés dans les clubs t2+
+  const kine = items.filter((i) => i.room === 'salle-kine');
+  const okk = kine.filter((i) => i.kind === 'massage-table').length >= 2 && kine.some((i) => i.kind === 'sink');
+  (okk ? pass++ : fail++);
+  console.log(`${okk ? '✓' : '✗'} espace kiné équipé (≥2 tables de massage + lavabo)`);
+  const okc = items.some((i) => i.room === 'cafeteria' && i.kind === 'table') && items.some((i) => i.room === 'cuisine-cafet' && i.kind === 'counter') && items.some((i) => i.room === 'cuisine-cafet' && i.kind === 'fridge');
+  (okc ? pass++ : fail++);
+  console.log(`${okc ? '✓' : '✗'} cafétéria (tables) + cuisines attenantes (plans de travail, frigo)`);
   sab('chaise de presse tournée dos au pupitre', (its) => { const c = its.find((i) => i.kind === 'chair' && i.faces); c.yaw += Math.PI; }, 'does not face');
   sab('fond sponsors déplacé DEVANT le pupitre', (its) => { const w = its.find((i) => i.kind === 'press-wall'); const d = its.find((i) => i.kind === 'press-desk'); w.x = d.x + Math.sin(d.yaw) * 0.8; w.z = d.z + Math.cos(d.yaw) * 0.8; }, 'in FRONT of the podium');
   sab('fond sponsors supprimé', (its) => { its.splice(its.findIndex((i) => i.kind === 'press-wall'), 1); }, 'no sponsor backdrop');

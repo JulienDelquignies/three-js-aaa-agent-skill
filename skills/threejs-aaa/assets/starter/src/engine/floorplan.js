@@ -21,10 +21,10 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 // ---- programs: tier → required rooms. `via` attaches a room to a parent (ensuite) instead of the hub.
 const CLUB = {
   1: { hub: ['couloir', 9], rooms: [['vestiaire', 20, 1], ['bureau', 10, 1, null, 'glass'], ['stockage', 8, 0]], pitches: 1 },
-  2: { hub: ['couloir', 12], rooms: [['vestiaire', 20, 1], ['gym', 30, 1], ['bureau', 10, 1, null, 'glass'], ['salle-presse', 14, 1], ['infirmerie', 10, 1], ['stockage', 8, 0]], pitches: 1 },
-  3: { hub: ['couloir', 16], rooms: [['vestiaire', 20, 1], ['vestiaire2', 20, 1], ['gym', 34, 1], ['salle-video', 16, 1], ['salle-presse', 16, 1], ['bureau', 12, 1, null, 'glass'], ['infirmerie', 10, 1]], pitches: 2 },
-  4: { hub: ['hall', 22], rooms: [['vestiaire', 22, 1], ['vestiaire2', 22, 1], ['gym', 40, 1], ['spa', 24, 1], ['salle-video', 18, 1], ['salle-presse', 20, 1], ['cafeteria', 30, 1], ['bureau', 12, 1, null, 'glass'], ['infirmerie', 12, 1]], pitches: 2 },
-  5: { hub: ['hall', 30], rooms: [['vestiaire', 24, 1], ['vestiaire2', 24, 1], ['gym', 48, 1], ['spa', 30, 1], ['auditorium', 40, 1], ['salle-presse', 26, 1], ['cafeteria', 34, 1], ['bureaux-staff', 20, 1, null, 'glass'], ['infirmerie', 14, 1], ['stockage', 10, 0]], pitches: 3 },
+  2: { hub: ['couloir', 12], rooms: [['vestiaire', 20, 1], ['gym', 30, 1], ['bureau', 10, 1, null, 'glass'], ['salle-presse', 14, 1], ['cafeteria', 16, 1], ['cuisine-cafet', 8, 1, 'cafeteria'], ['salle-kine', 10, 1], ['infirmerie', 10, 1], ['stockage', 8, 0]], pitches: 1 },
+  3: { hub: ['couloir', 16], rooms: [['vestiaire', 20, 1], ['vestiaire2', 20, 1], ['gym', 34, 1], ['salle-video', 16, 1], ['salle-presse', 16, 1], ['cafeteria', 22, 1], ['cuisine-cafet', 10, 1, 'cafeteria'], ['salle-kine', 14, 1], ['bureau', 12, 1, null, 'glass'], ['infirmerie', 10, 1]], pitches: 2 },
+  4: { hub: ['hall', 22], rooms: [['vestiaire', 22, 1], ['vestiaire2', 22, 1], ['gym', 40, 1], ['spa', 24, 1], ['salle-video', 18, 1], ['salle-presse', 20, 1], ['cafeteria', 30, 1], ['cuisine-cafet', 12, 1, 'cafeteria'], ['salle-kine', 16, 1], ['bureau', 12, 1, null, 'glass'], ['infirmerie', 12, 1]], pitches: 2 },
+  5: { hub: ['hall', 30], rooms: [['vestiaire', 24, 1], ['vestiaire2', 24, 1], ['gym', 48, 1], ['spa', 30, 1], ['auditorium', 40, 1], ['salle-presse', 26, 1], ['cafeteria', 34, 1], ['cuisine-cafet', 14, 1, 'cafeteria'], ['salle-kine', 20, 1], ['bureaux-staff', 20, 1, null, 'glass'], ['infirmerie', 14, 1], ['stockage', 10, 0]], pitches: 3 },
 };
 const HOME = {
   1: { hub: ['chambre', 18], rooms: [['sdb', 6, 1]] },                                                    // chambre d'hôtel

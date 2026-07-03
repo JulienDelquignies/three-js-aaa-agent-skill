@@ -15,7 +15,7 @@ const rOverlap = (a, b, eps = 0) => Math.min(a[2], b[2]) - Math.max(a[0], b[0]) 
 const rInside = (a, r, eps = 0.02) => a[0] >= r[0] - eps && a[1] >= r[1] - eps && a[2] <= r[2] + eps && a[3] <= r[3] + eps;
 
 const ARCHETYPE = (id) => {
-  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^sdb/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^(salle-video|auditorium)/, 'media'], [/^stockage/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
+  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^sdb/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^(salle-kine|kine)/, 'physio'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^(salle-video|auditorium)/, 'media'], [/^stockage/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
   return 'hub';
 };
 
@@ -130,6 +130,16 @@ const RECIPES = {
     add('exam-table', freeSpot(c, room, 0.75, 1.95, rnd() > 0.5 ? 0 : Math.PI / 2, rnd), 0.75, 1.95, 0.8);
     add('cabinet', againstWall(c, room, 0.9, 0.45, rnd), 0.9, 0.45, 1.8);
     add('sink', againstWall(c, room, 0.62, 0.48, rnd), 0.62, 0.48, 0.85);
+  },
+  physio(c, room, add, rnd) {
+    // l'espace kiné : tables de massage accessibles TOUT AUTOUR (freeSpot, jamais contre un mur),
+    // rangement, lavabo, tapis d'étirement, tabouret du praticien
+    add('massage-table', freeSpot(c, room, 0.75, 1.95, rnd() > 0.5 ? 0 : Math.PI / 2, rnd), 0.75, 1.95, 0.8);
+    add('massage-table', freeSpot(c, room, 0.75, 1.95, rnd() > 0.5 ? 0 : Math.PI / 2, rnd), 0.75, 1.95, 0.8);
+    add('cabinet', againstWall(c, room, 0.9, 0.45, rnd), 0.9, 0.45, 1.8);
+    add('sink', againstWall(c, room, 0.62, 0.48, rnd), 0.62, 0.48, 0.85);
+    add('mat', freeSpot(c, room, 1.0, 1.8, 0, rnd), 1.0, 1.8, 0.05);
+    add('stool', freeSpot(c, room, 0.4, 0.4, 0, rnd), 0.4, 0.4, 0.7);
   },
   cafeteria(c, room, add, rnd) {
     for (let i = 0; i < 3; i++) {

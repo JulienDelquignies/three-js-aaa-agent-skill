@@ -8,7 +8,8 @@ import { wallBoxes, WALL_H, SLAB_T } from './floorplan.js';
 const ROOM_COLORS = {
   couloir: 0x8b93a3, hall: 0x8b93a3, palier: 0x8b93a3,
   vestiaire: 0x4f7a99, vestiaire2: 0x4f7a99, gym: 0x996d4f, spa: 0x4f9987, infirmerie: 0x99a3ad,
-  'salle-video': 0x5d5f8f, cafeteria: 0xa38a4f, bureau: 0x7a7f8c, 'bureaux-staff': 0x7a7f8c, stockage: 0x6b7078, auditorium: 0x8f5d70,
+  'salle-video': 0x5d5f8f, 'salle-presse': 0x707a94, cafeteria: 0xa38a4f, 'cuisine-cafet': 0x9c9c55, 'salle-kine': 0x5fa387,
+  bureau: 0x7a7f8c, 'bureaux-staff': 0x7a7f8c, stockage: 0x6b7078, auditorium: 0x8f5d70,
   sejour: 0xa3865f, 'sejour-cuisine': 0xa3865f, cuisine: 0x9c9c55, chambre: 0x5f7aa3, chambre2: 0x5f7aa3, chambre3: 0x5f7aa3,
   suite: 0x5f7aa3, sdb: 0x5fa39c, 'sdb-suite': 0x5fa39c, sdb2: 0x5fa39c,
 };

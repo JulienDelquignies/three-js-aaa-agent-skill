@@ -112,7 +112,15 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    (contrainte `faces`), caméra TV sur trépied au fond si la pièce est assez profonde. Règles NOMMÉES
    dans `checkFurnishing` (fond présent/aligné/DERRIÈRE/≤1,2 m, ≥2 sièges face au pupitre) + 3 sabotages
    au harnais. Les sièges sont des `chair` → asseyables d'office dans Intérieur/Carrière. Piège corrigé :
-   écart pupitre↔chaise pile à la tolérance de recouvrement (flottants) → desserré à 0,62 m. — `InteractableSystem` (proximité + prompts « E — … »),
+   écart pupitre↔chaise pile à la tolérance de recouvrement (flottants) → desserré à 0,62 m.
+2quater. ✅ **Cafétéria+cuisines, espace kiné, pupitre jouable** *(fait)* — grammaire club T2+ :
+   `cafeteria` + `cuisine-cafet` **attenante via** (mur partagé + porte dérivés par construction) et
+   `salle-kine` (archétype `physio` : 2 tables de massage en freeSpot — accessibles tout autour —
+   rangement, lavabo, tapis, tabouret). Assertions au harnais (kiné équipé, cafétéria+cuisines).
+   Scène Carrière : **« E — S'installer au pupitre »** sur les chaises des intervenants → pose assise +
+   **caméra plan TV** dérivée (au fond des rangées, cadrant pupitre + fond sponsors), retour caméra
+   épaule au lever. Vérifié headless 17/17.
+3. ✅ **`interactables.js`** *(fait)* — `InteractableSystem` (proximité + prompts « E — … »),
    **portes** construites depuis le floorplan (panneau pivotant + **collider Rapier cinématique** —
    fermé ça bloque : 0,54 m vs 4,5 m ouvert, vérifié headless), **s'asseoir** (`ctrl.sitAt` : pose
    procédurale, hanches SUR l'assise à 0,50 m — règle sitPose), **ramasser/porter/poser** (`carryFollow`,

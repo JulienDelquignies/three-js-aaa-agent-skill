@@ -57,8 +57,9 @@ works in ANY generated room with zero per-room work — controls are place-indep
 
 ## Programs (what a tier means)
 
-- **club**: t1 couloir+vestiaire+bureau+stockage → t3 adds 2nd vestiaire/gym/salle vidéo → t5 hall, spa,
-  auditorium, cafétéria, bureaux staff.
+- **club**: t1 couloir+vestiaire+bureau+stockage → t2 adds gym, **salle de presse**, **cafétéria with its
+  kitchens attached *via*** (shared wall + door by construction) and the **espace kiné** → t3 adds 2nd
+  vestiaire/salle vidéo → t5 hall, spa, auditorium, bureaux staff.
 - **home**: t1 chambre d'hôtel (chambre+sdb) → t3 appartement → t4 maison à étage (escalier dérivé) →
   t5 villa (suite avec sdb attenante *via* la suite, étage, terrasse + piscine).
 
