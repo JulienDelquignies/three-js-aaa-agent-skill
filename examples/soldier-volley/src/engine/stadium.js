@@ -53,11 +53,32 @@ export function generateStadium({ tier = 1, seed = 1 } = {}) {
   ];
   // deck 2 passes through the loge volume → the builder must NOTCH it (loges sit between the decks)
   if (t.deck2 > 0) loge.notchDeck2 = logeW / 2 + 0.6;
+  // match furniture — all pure data, themed & built by stadium-builder, checked by the contract:
+  const L = PITCH.L, Wp = PITCH.W;
+  const goals = [                                                    // cages réglementaires, ouverture vers le centre
+    { x: -L / 2, sign: 1, w: 7.32, h: 2.44, depth: 2.0 },
+    { x: L / 2, sign: -1, w: 7.32, h: 2.44, depth: 2.0 },
+  ];
+  const boardSides = tier >= 4 ? ['main', 'opp', 'endA', 'endB'] : tier === 3 ? ['main', 'opp', 'endA'] : tier === 2 ? ['main', 'opp'] : ['opp'];
+  const boards = [];                                                 // panneaux sponsors, 3 m derrière les lignes
+  for (const side of boardSides) {
+    if (side === 'main') boards.push({ a: [-L / 2 + 4, -(Wp / 2 + 3)], b: [L / 2 - 4, -(Wp / 2 + 3)], h: 0.95, face: 1 });
+    if (side === 'opp') boards.push({ a: [-L / 2 + 4, Wp / 2 + 3], b: [L / 2 - 4, Wp / 2 + 3], h: 0.95, face: -1 });
+    if (side === 'endA') boards.push({ a: [-(L / 2 + 3.5), -Wp / 2 + 4], b: [-(L / 2 + 3.5), Wp / 2 - 4], h: 0.95, face: 1 });
+    if (side === 'endB') boards.push({ a: [L / 2 + 3.5, -Wp / 2 + 4], b: [L / 2 + 3.5, Wp / 2 - 4], h: 0.95, face: -1 });
+  }
+  const flags = [[-L / 2, -Wp / 2], [-L / 2, Wp / 2], [L / 2, -Wp / 2], [L / 2, Wp / 2]];
+  const dugouts = tier >= 2 ? [{ x0: -15, x1: -5, z: -(Wp / 2 + 1.7), depth: 1.5, h: 2.1 }, { x0: 5, x1: 15, z: -(Wp / 2 + 1.7), depth: 1.5, h: 2.1 }] : [];
+  const tunnel = tier >= 2 ? { x0: -2.2, x1: 2.2, z: -(Wp / 2 + APRON), h: 2.3 } : null;
+  const lights = tier <= 3
+    ? { type: 'pylon', h: 12 + tier * 2.5, at: [[-(L / 2 + 9), -(Wp / 2 + 9)], [L / 2 + 9, -(Wp / 2 + 9)], [-(L / 2 + 9), Wp / 2 + 9], [L / 2 + 9, Wp / 2 + 9]] }
+    : { type: 'roof' };
+  const scoreboard = tier >= 3 ? { x: -(L / 2 + APRON + t.ends * ROW_D + 8), y: 7 + tier, w: 10 + tier * 1.5, h: 5 } : null;
   const capacity = stands.reduce((s, st) => s + (st.rows + st.deck2) * Math.floor(st.len / SEAT_STEP), 0);
   const eye = 1.6;
   return {
     spec: { tier, seed }, pitch: PITCH, apron: APRON, rowD: ROW_D, rowH: ROW_H, seatStep: SEAT_STEP,
-    stands, loge, capacity,
+    stands, loge, capacity, goals, boards, flags, dugouts, tunnel, lights, scoreboard,
     vantages: {
       loge: [0, floorY + eye, (loge.rect[1] + loge.rect[3]) / 2],
       terrace: [0, floorY + eye, (loge.terrace[1] + loge.terrace[3]) / 2],
@@ -107,6 +128,23 @@ export function checkStadium(m) {
   }
   const bar = items.find((i) => i.kind === 'counter');
   if (bar && Math.abs((bar.z - bar.d / 2) - lg.rect[1]) > 0.35) issues.push('loge bar not against the back wall');
+  // match furniture: regulation goals on the goal lines, boards clear & low, flags at corners, dugouts off-pitch
+  for (const g of m.goals || []) {
+    if (Math.abs(Math.abs(g.x) - m.pitch.L / 2) > 0.1) issues.push('goal not on the goal line');
+    if (Math.abs(g.w - 7.32) > 0.1 || Math.abs(g.h - 2.44) > 0.05) issues.push('goal not regulation size (7.32×2.44)');
+    if (Math.sign(g.sign) !== -Math.sign(g.x)) issues.push('goal opening faces away from the pitch');
+  }
+  if ((m.goals || []).length !== 2) issues.push('a football pitch needs exactly 2 goals');
+  for (const b of m.boards || []) {
+    const horiz = b.a[1] === b.b[1];
+    const gap = horiz ? Math.abs(Math.abs(b.a[1]) - m.pitch.W / 2) : Math.abs(Math.abs(b.a[0]) - m.pitch.L / 2);
+    if (gap < 2) issues.push('ad board too close to the pitch');
+    if (b.h > 1.15) issues.push('ad board too tall (blocks the first row sightline)');
+  }
+  for (const f of m.flags || []) if (Math.abs(Math.abs(f[0]) - m.pitch.L / 2) > 0.5 || Math.abs(Math.abs(f[1]) - m.pitch.W / 2) > 0.5) issues.push('corner flag not at a corner');
+  if ((m.flags || []).length !== 4) issues.push('4 corner flags required');
+  for (const d of m.dugouts || []) if (d.z + d.depth / 2 > -(m.pitch.W / 2 + 0.5)) issues.push('dugout encroaches the touchline');
+  if (m.lights?.type === 'pylon' && m.lights.at.length !== 4) issues.push('pylon lighting needs 4 masts');
   // deck 2 must be notched around the loge, or it clips straight through the room
   if (main.deck2 > 0) {
     const inner = m.pitch.W / 2 + m.apron;

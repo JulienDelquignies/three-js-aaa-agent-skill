@@ -13,14 +13,16 @@ const PALETTES = [
   { primary: 0xc9082a, secondary: 0xffffff, accent: 0x17408b },   // rouge / blanc / bleu
 ];
 const NAMES = ['FC Campagne', 'Racing Métropole', 'US Vallée', 'Sporting Rivière', 'Olympique du Port', 'AS Colline', 'Étoile du Nord', 'Union Atlantique'];
+const SPONSORS = ['NORDBANK', 'AZUR TÉLÉCOM', 'VOLTA ÉNERGIE', 'MAISON LUNEL', 'TRANSALTA', 'BOULANGERIE MARTIN', 'GARAGE DU PONT', 'HÔTEL RIVIERA', 'CAFÉ CENTRAL', 'ASSURANCES PICARD'];
 const mulberry = (seed) => { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let x = Math.imul(t ^ (t >>> 15), 1 | t); x ^= x + Math.imul(x ^ (x >>> 7), 61 | x); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; };
 
-export function makeTheme({ seed = 1, name = null, primary = null, secondary = null, accent = null } = {}) {
+export function makeTheme({ seed = 1, name = null, primary = null, secondary = null, accent = null, sponsors = null } = {}) {
   const rnd = mulberry(seed * 2657 + 43);
   const pal = PALETTES[(rnd() * PALETTES.length) | 0];
   const nm = name || NAMES[(rnd() * NAMES.length) | 0];
   const initials = nm.split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase();
-  return { name: nm, initials, primary: primary ?? pal.primary, secondary: secondary ?? pal.secondary, accent: accent ?? pal.accent };
+  const sp = sponsors || Array.from({ length: 4 }, () => SPONSORS[(rnd() * SPONSORS.length) | 0]).filter((v, i, a) => a.indexOf(v) === i);
+  return { name: nm, initials, primary: primary ?? pal.primary, secondary: secondary ?? pal.secondary, accent: accent ?? pal.accent, sponsors: sp };
 }
 
 export const hexCss = (hex) => `#${hex.toString(16).padStart(6, '0')}`;
@@ -49,5 +51,20 @@ export function drawJersey(theme, size = 256) {
   g.lineTo(size * 0.66, size * 0.85) ; g.lineTo(size * 0.34, size * 0.85); g.closePath(); g.fill();
   g.fillStyle = hexCss(theme.accent); g.font = `800 ${size * 0.22}px system-ui, sans-serif`; g.textAlign = 'center';
   g.fillText('10', size * 0.5, size * 0.62);
+  return c;
+}
+
+/** Sponsor boards strip: alternating blocks with each sponsor name (LED-board look). */
+export function drawSponsorStrip(theme, width = 2048, height = 96) {
+  const c = document.createElement('canvas'); c.width = width; c.height = height; const g = c.getContext('2d');
+  const names = theme.sponsors?.length ? theme.sponsors : ['SPONSOR'];
+  const bw = width / Math.max(4, names.length * 2);
+  for (let i = 0; i * bw < width; i++) {
+    const dark = i % 2 === 0;
+    g.fillStyle = dark ? hexCss(theme.primary) : '#f2f3f5'; g.fillRect(i * bw, 0, bw, height);
+    g.fillStyle = dark ? '#ffffff' : hexCss(theme.primary);
+    g.font = `800 ${height * 0.42}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(names[i % names.length], i * bw + bw / 2, height / 2, bw * 0.9);
+  }
   return c;
 }
