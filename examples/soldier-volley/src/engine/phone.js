@@ -121,6 +121,15 @@ export const PhoneApps = {
         <div class="placeholder">Offres & clauses — bientôt.</div>`;
     },
   }),
+  transferts: (state) => ({
+    id: 'transferts', name: 'Transferts', icon: '🔁',
+    render: (body) => {
+      body.innerHTML = '<div class="row"><span style="font-weight:700">Shortlist scouting</span><span style="color:#5b6577">rapports</span></div>' +
+        (state.shortlist.length
+          ? state.shortlist.map((p) => `<div class="row"><span><b style="color:#8fc1ff">${p.poste}</b>&nbsp; ${p.name} <span style="color:#5b6577">· ${p.ville} ${p.mode === 'jet' ? '✈️' : '🚆'}</span></span><span style="font-weight:800;color:${p.note >= 75 ? '#57c07a' : '#e0b54c'}">${p.note}</span></div>`).join('')
+          : '<div class="placeholder">Aucun rapport — partez en voyage de scouting (gare / aéroport).</div>');
+    },
+  }),
   placeholder: (id, name, icon, note = 'Bientôt.') => ({
     id, name, icon, render: (body) => { body.innerHTML = `<div class="placeholder">${note}</div>`; },
   }),

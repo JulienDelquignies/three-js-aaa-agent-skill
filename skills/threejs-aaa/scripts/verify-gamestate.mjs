@@ -22,5 +22,12 @@ ok('qualité d’effectif croissante avec le niveau', avg(1) < avg(2) && avg(2) 
   s.markRead();
   ok('ouverture des messages → badge remis à zéro', s.unread === 0);
 }
+{
+  const s2 = makeGameState({ seed: 9, level: 3 });
+  const a = s2.scoutTrip('train'), b = s2.scoutTrip('jet');
+  ok('voyages de scouting → shortlist + rapports', s2.shortlist.length === 2 && s2.messages[0].from === 'Chef du scouting' && a.mode === 'train' && b.mode === 'jet');
+  const avgJ = [1, 2, 3, 4, 5].map(() => makeGameState({ seed: 9, level: 3 })).map((st) => st.scoutTrip('jet').note);
+  ok('déterminisme du scouting (même état → même prospect)', new Set(avgJ).size === 1, `${avgJ[0]}`);
+}
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

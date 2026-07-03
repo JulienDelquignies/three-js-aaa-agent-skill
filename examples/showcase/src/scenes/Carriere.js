@@ -9,7 +9,7 @@ import { Physics } from '../engine/physics.js';
 import { generateCareer, checkCareer } from '../engine/career.js';
 import { generateCity, checkCity } from '../engine/city.js';
 import { buildCity } from '../engine/city-builder.js';
-import { buildCar, paintCar, findWheels, PathDriver } from '../engine/vehicle.js';
+import { buildCar, buildBus, buildTrain, buildJet, paintCar, findWheels, PathDriver } from '../engine/vehicle.js';
 import { makeCatalog, checkCatalog } from '../engine/dealership.js';
 import { makeGameState } from '../engine/game-state.js';
 import { Phone, PhoneApps } from '../engine/phone.js';
@@ -54,11 +54,12 @@ export class Carriere {
     if (!check.ok) console.warn('checkCareer:', check.issues);
     this.theme = makeTheme({ seed: this.niveau * 5 + 3 });
 
-    // buildings (home + club + restaurant + dealership): meshes, furniture, colliders, doors, seats
+    // buildings (every place-kind site: home, club, restaurant, dealership, gare/aéroport by level)
     this.doors = []; this._podiums = [];
-    for (const key of ['home', 'club', 'resto', 'dealer']) {
+    const placeKeys = Object.keys(this.career.sites).filter((k) => this.career.sites[k].kind === 'place');
+    for (const key of placeKeys) {
       const site = this.career.sites[key]; const { model, at } = site;
-      const built = buildPlace(model, { at, theme: key === 'resto' || key === 'dealer' ? null : this.theme });
+      const built = buildPlace(model, { at, theme: key === 'home' || key === 'club' ? this.theme : null });
       this.scene.add(built.group); this.disposables.push(built);
       const items = furnishPlace(model);
       const furn = buildFurnishing(items, model, { at, theme: this.theme });
@@ -72,6 +73,26 @@ export class Carriere {
       }
       // the DEALERSHIP showroom: keep the podium items — the catalogue cars land on them below
       if (key === 'dealer') this._podiumItems = items.filter((i) => i.kind === 'car-podium').map((i) => ({ ...i, at }));
+      // GARE: parked train on the platform track + the scouting-trip interactable (train = domestic)
+      if (key === 'gare' && model.outdoor?.quai) {
+        const q = model.outdoor.quai;
+        const train = buildTrain({ accent: this.theme.primary, length: Math.min(18, q[2] - q[0] - 2) });
+        train.group.position.set(at[0] + (q[0] + q[2]) / 2, 0, at[2] + q[3] - 1.0);
+        train.group.rotation.y = Math.PI / 2;
+        this.scene.add(train.group); this.disposables.push(train);
+        const sp = [at[0] + (q[0] + q[2]) / 2, 0, at[2] + q[1] + 0.9];
+        this.sys.add({ label: 'E — Voyage de scouting 🚆 (national)', pos: () => sp, radius: 2.2, onInteract: () => this._scoutTrip('train') });
+      }
+      // AÉROPORT: the club jet on the tarmac + the scouting-trip interactable (jet = abroad, better)
+      if (key === 'aeroport' && model.outdoor?.tarmac) {
+        const t = model.outdoor.tarmac;
+        const jet = buildJet({ accent: this.theme.primary });
+        jet.group.position.set(at[0] + (t[0] + t[2]) / 2, 0, at[2] + (t[1] + t[3]) / 2 + 1);
+        jet.group.rotation.y = 0.5;
+        this.scene.add(jet.group); this.disposables.push(jet);
+        const sp = [at[0] + (t[0] + t[2]) / 2 - 4, 0, at[2] + t[1] + 1.2];
+        this.sys.add({ label: 'E — Voyage de scouting ✈️ (étranger)', pos: () => sp, radius: 2.4, onInteract: () => this._scoutTrip('jet') });
+      }
       // the MEETING (rendez-vous d'agent): the private-dining table of the restaurant — the NPC agent
       // sits on one seat, the opposite seat gets its own interaction (dialogue placeholder, see below)
       if (key === 'resto') {
@@ -141,6 +162,16 @@ export class Carriere {
     this.car = buildCar({ color: 0xb3252f });
     this.scene.add(this.car.group); this.disposables.push(this.car);
     this._parkCar('home');
+    // the TEAM BUS in club livery, parked at the club — matchday: ride it to the stadium
+    this.bus = buildBus({ theme: this.theme });
+    this._busHome = [this.city.stops.club.pos[0] + 4.5, this.city.stops.club.pos[1] + 2.5];
+    this.bus.group.position.set(this._busHome[0], 0, this._busHome[1]);
+    this.scene.add(this.bus.group); this.disposables.push(this.bus);
+    this.sys.add({
+      label: () => (this.site === 'club' ? 'E — Monter dans le bus d’équipe 🚌 (jour de match)' : 'Bus d’équipe'),
+      pos: () => [this.bus.group.position.x, 0, this.bus.group.position.z], radius: 2.6,
+      onInteract: () => { if (this.site === 'club') this.driveTo('stadium', this.bus); },
+    });
 
     // TRAVEL pads (derived by career.js): glowing discs, E to fast-travel between the sites
     const padGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.05, 28); this.disposables.push(padGeo);
@@ -269,7 +300,7 @@ export class Carriere {
         PhoneApps.effectif(this.state),
         PhoneApps.finances(this.state),
         { id: 'plan', name: 'Plan', icon: '🗺️', launch: () => { this.phone.close(); this.toggleCityView(true); } },
-        PhoneApps.placeholder('transferts', 'Transferts', '🔁', 'Le mercato ouvre bientôt.'),
+        PhoneApps.transferts(this.state),
         PhoneApps.placeholder('reglages', 'Réglages', '⚙️'),
       ],
     });
@@ -321,7 +352,7 @@ export class Carriere {
   }
 
   _parkCar(key) {
-    if (!this.car || !this.city) return;
+    if (!this.car || !this.city || this._skipCarPark) return;
     const st = this.city.stops[key]; if (!st) return;
     this.car.group.position.set(st.pos[0], 0, st.pos[1]);
   }
@@ -366,8 +397,9 @@ export class Carriere {
     return legs;
   }
 
-  /** Drive to a site: the car follows the derived street route, elevated camera, E skips. */
-  driveTo(to) {
+  /** Drive to a site: the vehicle (your car, or the team bus) follows the derived street route,
+   *  elevated camera, E skips. Coming to the stadium by bus, you also ride the bus back. */
+  driveTo(to, vehicle = null) {
     if (this._drive || to === this.site) return;
     this.phone?.close();
     let path = this.city?.paths?.[`${this.site}->${to}`];
@@ -382,10 +414,24 @@ export class Carriere {
     if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
     this._podium = false;
     const dlg = document.getElementById('dialog'); if (dlg) dlg.style.opacity = '0';
-    this._drive = { driver: new PathDriver(path, { speed: 15 }), to };
+    let veh = vehicle;
+    if (!veh && this._cameByBus && this.site === 'stadium') veh = this.bus;     // ride the bus back
+    const isBus = veh === this.bus;
+    this._drive = { driver: new PathDriver(path, { speed: isBus ? 13 : 15 }), to, vehicle: veh || this.car, isBus };
     this.ctrl.model.visible = false; this.ctrl.setMoveWorld(0, 0);
-    const el = document.getElementById('site'); if (el) el.textContent = '🚗 En route : ' + this.career.sites[to].label + '  (E : passer)';
+    const el = document.getElementById('site'); if (el) el.textContent = (isBus ? '🚌' : '🚗') + ' En route : ' + this.career.sites[to].label + '  (E : passer)';
     const pr = document.getElementById('prompt'); if (pr) { pr.textContent = ''; pr.style.opacity = '0'; }
+  }
+
+  /** A scouting trip (train from the gare, jet from the airport): report + shortlist on the phone. */
+  _scoutTrip(mode) {
+    const p = this.state.scoutTrip(mode);
+    const dlg = document.getElementById('dialog');
+    if (dlg) {
+      dlg.textContent = `${mode === 'jet' ? '✈️' : '🚆'} Voyage de scouting à ${p.ville} — rapport reçu : ${p.name} (${p.poste}, ${p.note} estimé). Voir l’app Transferts.`;
+      dlg.style.opacity = '1';
+      clearTimeout(this._scoutT); this._scoutT = setTimeout(() => { dlg.style.opacity = '0'; }, 3500);
+    }
   }
 
   /** Re-seat the physics capsule on the controller position (after sitAt/standUp moved it). */
@@ -434,14 +480,22 @@ export class Carriere {
       if (this.input.pressed('interact')) this._drive.driver.finish();   // E skips the trip
       this.input.endFrame();
       const d = this._drive.driver.update(dt);
-      this.car.group.position.set(d.x, 0, d.z); this.car.group.rotation.y = d.yaw;
-      for (const w of this.car.wheels) w.rotation.x += d.wheelSpin * dt;
+      const veh = this._drive.vehicle;
+      veh.group.position.set(d.x, 0, d.z); veh.group.rotation.y = d.yaw;
+      for (const w of veh.wheels || []) w.rotation.x += d.wheelSpin * dt;
       const fx = Math.sin(d.yaw), fz = Math.cos(d.yaw);         // elevated chase camera → you SEE the city
       const cam = this.tpc.cam, k = 1 - Math.exp(-2.2 * dt);
       this._tmp.set(d.x - fx * 13, 31, d.z - fz * 13);
       if (!this._driveCamInit) { cam.position.copy(this._tmp); this._driveCamInit = true; } else cam.position.lerp(this._tmp, k);
       cam.lookAt(d.x + fx * 10, 1, d.z + fz * 10);
-      if (d.done) { const to = this._drive.to; this._drive = null; this._driveCamInit = false; this.travelTo(to); }
+      if (d.done) {
+        const { to, isBus } = this._drive; this._drive = null; this._driveCamInit = false;
+        if (isBus) {                                            // the bus parks; your car stays where it was
+          this._cameByBus = to === 'stadium';
+          if (!this._cameByBus) this.bus.group.position.set(this._busHome[0], 0, this._busHome[1]);
+          this._skipCarPark = true; this.travelTo(to); this._skipCarPark = false;
+        } else this.travelTo(to);
+      }
       return;
     }
     this.input.update();

@@ -44,6 +44,7 @@ threejs-aaa/ (the skill)
 │   ├── 34-city-layer.md        derived city: Dijkstra streets, drivable routes, level-scaled skyline
 │   ├── 35-diegetic-ui.md       diegetic UI: phone overlay, FM data layer, one city rendered 3D and 2D
 │   ├── 36-dealership.md        dealership: showroom grammar, derived catalogue, buy loop, GLB car
+│   ├── 37-transport-tiers.md   transport tiers: team bus livery, station/airport gating, scouting
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship

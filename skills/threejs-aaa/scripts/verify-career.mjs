@@ -33,6 +33,14 @@ sab('trajet club→stade supprimé', (c) => { c.travels = c.travels.filter((t) =
 sab('pad de trajet déplacé dans le bâtiment', (c) => { c.travels[0].pos = [...c.sites.home.spawn]; }, 'inside the building');
 sab('porte de terrasse de la loge supprimée', (c) => { delete c.sites.stadium.model.loge.door; }, 'no doorway from the loge');
 sab('spawn stade hors de la loge', (c) => { c.sites.stadium.spawn[1] = 0; }, 'spawn not in the loge');
+// gating transport par paliers
+{
+  const c3 = generateCareer({ level: 3, seed: 1 }), c1 = generateCareer({ level: 1, seed: 1 }), c4 = generateCareer({ level: 4, seed: 1 });
+  const okg = !!c3.sites.gare && !c1.sites.gare && !!c4.sites.aeroport && !c3.sites.aeroport;
+  (okg ? pass++ : fail++);
+  console.log(`${okg ? '✓' : '✗'} paliers transport : gare dès le niveau 3, aéroport au niveau 4`);
+}
+sab('gare supprimée au niveau 3', (c) => { delete c.sites.gare; c.travels = c.travels.filter((t) => t.from !== 'gare' && t.to !== 'gare'); }, 'lacks its train station');
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

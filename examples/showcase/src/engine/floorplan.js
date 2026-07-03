@@ -58,6 +58,23 @@ const CONCESSION = {
   5: { hub: ['hall-accueil', 14], rooms: [['showroom', 80, 1, null, 'glass'], ['bureau-vente', 12, 1], ['atelier', 18, 1], ['stockage', 8, 0]] },
 };
 
+// les transports (jeu DS) : la GARE (dès le niveau 3 de carrière) et l'AÉROPORT (niveau 4) — petits
+// bâtiments civils + un extérieur DÉRIVÉ (quai / tarmac) où la scène pose le train ou le jet.
+const GARE = {
+  1: { hub: ['hall-gare', 12], rooms: [['guichets', 8, 1], ['attente', 10, 1]], quai: true },
+  2: { hub: ['hall-gare', 14], rooms: [['guichets', 8, 1], ['attente', 12, 1]], quai: true },
+  3: { hub: ['hall-gare', 18], rooms: [['guichets', 10, 1], ['attente', 14, 1], ['kiosque', 6, 1]], quai: true },
+  4: { hub: ['hall-gare', 22], rooms: [['guichets', 10, 1], ['attente', 16, 1], ['kiosque', 8, 1]], quai: true },
+  5: { hub: ['hall-gare', 26], rooms: [['guichets', 12, 1], ['attente', 18, 1], ['kiosque', 8, 1], ['stockage', 6, 0]], quai: true },
+};
+const AEROPORT = {
+  1: { hub: ['hall-aeroport', 16], rooms: [['comptoirs', 10, 1], ['salle-embarquement', 14, 1]], tarmac: true },
+  2: { hub: ['hall-aeroport', 18], rooms: [['comptoirs', 10, 1], ['salle-embarquement', 16, 1]], tarmac: true },
+  3: { hub: ['hall-aeroport', 22], rooms: [['comptoirs', 12, 1], ['salle-embarquement', 18, 1], ['controle', 6, 0]], tarmac: true },
+  4: { hub: ['hall-aeroport', 26], rooms: [['comptoirs', 12, 1], ['salle-embarquement', 20, 1], ['controle', 8, 0]], tarmac: true },
+  5: { hub: ['hall-aeroport', 30], rooms: [['comptoirs', 14, 1], ['salle-embarquement', 24, 1], ['controle', 8, 0], ['salon-vip', 12, 1]], tarmac: true },
+};
+
 const parse = ([id, area, win, via, flag]) => ({ id, area, win: win || 0, via: via || null, glass: flag === 'glass' });
 
 // ---- layout: one floor = north strip | hub band | south strip, all spanning the same width W.
@@ -134,9 +151,10 @@ function buildWalls(fl, W, isGround, entrance) {
 
 /** Generate a place model from a spec. Deterministic for a given (type, tier, seed). */
 export function generatePlace({ type = 'home', tier = 1, seed = 1 } = {}) {
-  const catalog = type === 'club' ? CLUB : type === 'restaurant' ? RESTO : type === 'concession' ? CONCESSION : HOME;
+  const catalog = type === 'club' ? CLUB : type === 'restaurant' ? RESTO : type === 'concession' ? CONCESSION
+    : type === 'gare' ? GARE : type === 'aeroport' ? AEROPORT : HOME;
   const prog = catalog[clamp(tier, 1, 5)];
-  const rnd = mulberry(seed * 7919 + tier * 131 + (type === 'club' ? 17 : type === 'restaurant' ? 29 : type === 'concession' ? 41 : 0));
+  const rnd = mulberry(seed * 7919 + tier * 131 + (type === 'club' ? 17 : type === 'restaurant' ? 29 : type === 'concession' ? 41 : type === 'gare' ? 53 : type === 'aeroport' ? 67 : 0));
   const floorsProg = [prog, prog.upper].filter(Boolean);
   // shared strip metrics across floors so the stairwell always lands inside both hubs
   const all = floorsProg.flatMap((p) => p.rooms.map(parse));
@@ -174,6 +192,8 @@ export function generatePlace({ type = 'home', tier = 1, seed = 1 } = {}) {
     const x0 = W / 2 - total / 2;
     outdoor = { pitches: Array.from({ length: prog.pitches }, (_, i) => [x0 + i * (PW + gap), -6 - PD, x0 + i * (PW + gap) + PW, -6]) };
   }
+  if (prog.quai) outdoor = { quai: [-2, D + 1.2, W + 8, D + 5.2] };            // platform + track strip behind
+  if (prog.tarmac) outdoor = { tarmac: [-4, D + 2, W + 14, D + 18] };          // apron where the jet parks
   const model = {
     spec: { type, tier, seed }, W, D, floorH: FLOOR_H, wallH: WALL_H,
     floors, stairs,
@@ -239,6 +259,8 @@ export function checkModel(model) {
   }
   if (model.outdoor?.pool) { const p = model.outdoor.pool; if (p[1] < model.D) issues.push('pool intersects the house'); }
   if (model.outdoor?.pitches) for (const p of model.outdoor.pitches) if (p[3] > 0) issues.push('training pitch intersects the building');
+  if (model.outdoor?.quai && model.outdoor.quai[1] < model.D) issues.push('platform intersects the station');
+  if (model.outdoor?.tarmac && model.outdoor.tarmac[1] < model.D) issues.push('tarmac intersects the terminal');
   // every glass room must actually face the pitches (north exterior)
   if (model.outdoor?.pitches) for (const f of model.floors) for (const w of f.walls)
     for (const o of w.openings) if (o.type === 'glass' && Math.abs(w.a[1]) > 0.01) issues.push(`glass wall not facing the pitches (${w.rooms.join('/')})`);

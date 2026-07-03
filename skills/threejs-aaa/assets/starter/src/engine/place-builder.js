@@ -13,6 +13,8 @@ const ROOM_COLORS = {
   'salle-resto': 0x9a7b52, 'salon-prive': 0x7d5a63, 'salon-prive2': 0x7d5a63, 'cuisine-resto': 0x9c9c55,
   sanitaires: 0x5fa39c, reserve: 0x6b7078, cave: 0x5a5148,
   showroom: 0xd8dbe0, 'hall-accueil': 0xc9ccd2, 'bureau-vente': 0x7a7f8c, atelier: 0x70757d,
+  'hall-gare': 0xbfc3ca, guichets: 0x8b93a3, attente: 0x9aa3b0, kiosque: 0xa38a4f,
+  'hall-aeroport': 0xc6cbd3, comptoirs: 0x8b93a3, 'salle-embarquement': 0x9aa3b0, controle: 0x6b7078, 'salon-vip': 0x7d5a63,
   sejour: 0xa3865f, 'sejour-cuisine': 0xa3865f, cuisine: 0x9c9c55, chambre: 0x5f7aa3, chambre2: 0x5f7aa3, chambre3: 0x5f7aa3,
   suite: 0x5f7aa3, sdb: 0x5fa39c, 'sdb-suite': 0x5fa39c, sdb2: 0x5fa39c,
 };
@@ -79,6 +81,21 @@ export function buildPlace(model, { at = [0, 0, 0], theme = null } = {}) {
       const pm = new THREE.Mesh(pgeo, slabMat(0xffffff)); pm.material.map = tx; pm.receiveShadow = true;
       pm.position.set((r[0] + r[2]) / 2, -0.02, (r[1] + r[3]) / 2); group.add(pm);
     }
+  }
+  if (model.outdoor?.quai) {                             // station platform + track bed + safety line
+    const q = model.outdoor.quai;
+    addBox([(q[0] + q[2]) / 2, 0.09, (q[1] + q[3]) / 2 - 1.1], [(q[2] - q[0]) / 2, 0.09, (q[3] - q[1]) / 2 - 1.1], slabMat(0xb9bcc2));
+    const lg2 = new THREE.PlaneGeometry(q[2] - q[0], 0.14); lg2.rotateX(-Math.PI / 2); disposables.push(lg2);
+    const line = new THREE.Mesh(lg2, slabMat(0xe8d24c)); line.position.set((q[0] + q[2]) / 2, 0.185, q[3] - 2.35); group.add(line);
+    for (const rz of [q[3] - 1.35, q[3] - 0.65]) {       // rails
+      const rg = new THREE.BoxGeometry(q[2] - q[0], 0.06, 0.07); disposables.push(rg);
+      const rail = new THREE.Mesh(rg, slabMat(0x4c5158)); rail.position.set((q[0] + q[2]) / 2, 0.03, rz); group.add(rail);
+    }
+  }
+  if (model.outdoor?.tarmac) {                           // airport apron
+    const t = model.outdoor.tarmac;
+    const ag2 = new THREE.PlaneGeometry(t[2] - t[0], t[3] - t[1]); ag2.rotateX(-Math.PI / 2); disposables.push(ag2);
+    const ap = new THREE.Mesh(ag2, slabMat(0x565b62)); ap.position.set((t[0] + t[2]) / 2, 0.012, (t[1] + t[3]) / 2); ap.receiveShadow = true; group.add(ap);
   }
   if (model.outdoor?.pool) {                             // terrace + pool basin
     const t = model.outdoor.terrace, p = model.outdoor.pool;

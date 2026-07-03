@@ -7,6 +7,8 @@ const mulberry = (seed) => { let t = seed >>> 0; return () => { t += 0x6D2B79F5;
 const FIRST = ['Théo', 'Rayan', 'Noa', 'Ilan', 'Marco', 'Adem', 'Louis', 'Kylian', 'Sacha', 'Enzo', 'Mattéo', 'Yanis', 'Diego', 'Aksel', 'Pablo', 'Nino'];
 const LAST = ['Delcourt', 'Ndiaye', 'Marchetti', 'Bouras', 'Keller', 'Fontaine', 'Diallo', 'Silva', 'Renard', 'Costa', 'Lambert', 'Meunier', 'Barros', 'Guedes', 'Petit', 'Zanetti'];
 const POSTES = ['G', 'D', 'D', 'D', 'D', 'M', 'M', 'M', 'M', 'A', 'A', 'A', 'M', 'D'];
+const SCOUT_TRAIN = ['Valenciennes', 'Sochaux', 'Auxerre', 'Grenoble', 'Laval', 'Pau', 'Annecy', 'Rodez'];
+const SCOUT_JET = ['Porto', 'Anvers', 'Salzbourg', 'Zagreb', 'São Paulo', 'Rosario', 'Copenhague', 'Dakar'];
 
 export function makeGameState({ seed = 1, level = 1 } = {}) {
   const rnd = mulberry(seed * 4801 + level * 97 + 11);
@@ -26,6 +28,20 @@ export function makeGameState({ seed = 1, level = 1 } = {}) {
     messages: [], unread: 0,
     addMessage({ from, text }) { state.messages.unshift({ from, text, t: state.messages.length }); state.unread++; },
     markRead() { state.unread = 0; },
+    shortlist: [],
+    /** A scouting trip (train = domestic, jet = abroad/better prospects): deterministic sequence per
+     *  state — pushes the scout's report as a message and the prospect onto the shortlist. */
+    scoutTrip(mode = 'train') {
+      const jet = mode === 'jet';
+      const name = `${FIRST[(rnd() * FIRST.length) | 0]} ${LAST[(rnd() * LAST.length) | 0]}`;
+      const poste = ['D', 'M', 'M', 'A', 'A'][(rnd() * 5) | 0];
+      const note = Math.min(90, Math.round(50 + level * 5 + rnd() * 12 + (jet ? 8 : 0)));
+      const ville = (jet ? SCOUT_JET : SCOUT_TRAIN)[(rnd() * 8) | 0];
+      const p = { name, poste, note, ville, mode };
+      state.shortlist.unshift(p);
+      state.addMessage({ from: 'Chef du scouting', text: `Rapport ${jet ? '✈️' : '🚆'} ${ville} : ${name} (${poste}, ${p.note} estimé) ajouté à la shortlist.` });
+      return p;
+    },
     /** Buy a car from the dealership catalogue — refuses if it can't be afforded. */
     buyCar(entry, color) {
       if (entry.price > state.cash) return { ok: false, reason: 'insufficient funds' };

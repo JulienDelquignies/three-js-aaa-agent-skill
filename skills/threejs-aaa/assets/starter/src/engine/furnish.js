@@ -15,7 +15,7 @@ const rOverlap = (a, b, eps = 0) => Math.min(a[2], b[2]) - Math.max(a[0], b[0]) 
 const rInside = (a, r, eps = 0.02) => a[0] >= r[0] - eps && a[1] >= r[1] - eps && a[2] <= r[2] + eps && a[3] <= r[3] + eps;
 
 const ARCHETYPE = (id) => {
-  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^(sdb|sanitaires)/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^(salle-kine|kine)/, 'physio'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^salle-resto/, 'dining'], [/^salon-prive/, 'meeting'], [/^showroom/, 'showroom'], [/^atelier/, 'workshop'], [/^bureau-vente/, 'office'], [/^hall-accueil/, 'hub'], [/^(salle-video|auditorium)/, 'media'], [/^(stockage|reserve|cave)/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
+  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^(sdb|sanitaires)/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^(salle-kine|kine)/, 'physio'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^salle-resto/, 'dining'], [/^salon-prive/, 'meeting'], [/^showroom/, 'showroom'], [/^atelier/, 'workshop'], [/^bureau-vente/, 'office'], [/^hall-accueil/, 'hub'], [/^(guichets|comptoirs)/, 'ticketing'], [/^(attente|salle-embarquement)/, 'waiting'], [/^(kiosque|salon-vip)/, 'living'], [/^controle/, 'storage'], [/^(salle-video|auditorium)/, 'media'], [/^(stockage|reserve|cave)/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
   return 'hub';
 };
 
@@ -181,6 +181,20 @@ const RECIPES = {
       add('car-podium', c.fits(it) ? it : null, 2.3, pd, 0.16);
     }
     add('counter', againstWall(c, room, 1.8, 0.62, rnd), 1.8, 0.62, 1.05);
+    add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+  },
+  ticketing(c, room, add, rnd) {
+    // guichets / comptoirs d'enregistrement : comptoirs contre le mur + chaises côté agents
+    for (let i = 0; i < 2; i++) {
+      const ct = add('counter', againstWall(c, room, 1.4, 0.62, rnd), 1.4, 0.62, 1.05);
+      if (ct) { const ch = { ...front(ct, -0.65), yaw: ct.yaw, w: 0.5, d: 0.5 }; add('office-chair', c.fits(ch) ? ch : null, 0.5, 0.5, 0.95); }
+    }
+    add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+  },
+  waiting(c, room, add, rnd) {
+    // salle d'attente / d'embarquement : rangées de bancs, plante, écran d'affichage
+    for (let i = 0; i < 3; i++) add('bench', freeSpot(c, room, 1.8, 0.38, rnd() > 0.5 ? 0 : Math.PI / 2, rnd), 1.8, 0.38, 0.45);
+    add('screen', againstWall(c, room, 1.4, 0.14, rnd), 1.4, 0.14, 1.2);
     add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
   },
   workshop(c, room, add, rnd) {

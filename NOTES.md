@@ -174,8 +174,21 @@ calandre, optiques émissives douces, rétros, plaques. Le glint de pare-brise f
 physique et assumé. Backlog : packs CC0 (Kenney Car Kit / Quaternius) si on veut des modèles réalistes
 supplémentaires sans coût de licence.
 
-Backlog (suite) : ⑤ jet privé + gare fonctionnelles + bus d'équipe (même PathDriver, livrée club)
-→ ⑥ vacances → polish visuel ville (retour utilisateur).
+⑤ ✅ **Transport par paliers** *(fait)* — types `gare` et `aeroport` dans la grammaire (hall +
+guichets/comptoirs `ticketing` + attente `waiting`, **extérieur dérivé** : quai avec ligne de sécurité
+et rails / tarmac) ; `checkCareer` IMPOSE l'échelle dans les deux sens (gare obligatoire dès le niveau
+3, interdite avant ; aéroport au 4) — sabotage prouvé. **Bus d'équipe** `buildBus({theme})` : profil
+extrudé à l'échelle car, **livrée club** (peinture primaire, bandeau sponsors sur les deux flancs,
+blason) ; jour de match « E — Monter dans le bus » → MÊME PathDriver jusqu'au stade, la voiture RESTE
+garée (flag `_skipCarPark`), retour en bus depuis la loge puis regarage au club. Train régional + jet
+d'affaires en habillage quai/tarmac. **Voyages de scouting** (gare 🚆 national / aéroport ✈️ étranger,
+meilleurs prospects) → `state.scoutTrip` déterministe → shortlist + message du Chef du scouting →
+**l'app Transferts affiche la shortlist** (le placeholder est devenu une vraie app). Piège attrapé :
+`Object.assign(mesh, {position})` jette (accesseur read-only d'Object3D) — la scène entière ne
+chargeait plus, diagnostiqué headless (ref 37). Harnais 600 modèles + carrière 11/11 + gamestate 10/10 ;
+headless ~72 checks verts (aller-retour bus, voiture immobile, scouting, app).
+
+Backlog (suite) : ⑥ vacances → polish visuel ville (retour utilisateur) → packs CC0 véhicules.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

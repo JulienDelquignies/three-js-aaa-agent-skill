@@ -48,6 +48,10 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
   const clubM = generatePlace({ type: 'club', tier: lvl, seed: seed + 1 });
   const restoM = generatePlace({ type: 'restaurant', tier: Math.min(5, lvl + 1), seed: seed + 2 });
   const dealM = generatePlace({ type: 'concession', tier: Math.min(5, lvl + 1), seed: seed + 3 });
+  // transport by tier (the realistic ladder): bus always (parked at the club) · TRAIN STATION from
+  // level 3 · AIRPORT/jet at level 4 — presence is contract-checked (checkCareer gating rules)
+  const gareM = lvl >= 3 ? generatePlace({ type: 'gare', tier: Math.min(5, lvl), seed: seed + 4 }) : null;
+  const aeroM = lvl >= 4 ? generatePlace({ type: 'aeroport', tier: Math.min(5, lvl), seed: seed + 5 }) : null;
   const stadM = generateStadium({ tier: lvl, seed });
   // offsets derived from the footprints: club centred at the origin, home west, restaurant east,
   // stadium south — always GAP metres of walkable ground between the real footprints
@@ -56,6 +60,9 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
   const homeAt = [clubAt[0] + cb[0] - GAP - hb[2], 0, -homeM.D / 2];
   const restoAt = [clubAt[0] + cb[2] + GAP - rb[0], 0, -restoM.D / 2];
   const dealAt = [restoAt[0] + rb[2] + GAP - db[0], 0, -dealM.D / 2];   // east of the restaurant
+  const gb = gareM && placeBounds(gareM), ab = aeroM && placeBounds(aeroM);
+  const gareAt = gareM ? [homeAt[0] + hb[0] - GAP - gb[2], 0, -gareM.D / 2] : null;    // west of home
+  const aeroAt = aeroM ? [dealAt[0] + db[2] + GAP - ab[0], 0, -aeroM.D / 2] : null;    // east of the dealer
   const [, shz] = stadiumHalf(stadM);
   const stadAt = [0, 0, clubAt[2] + cb[3] + GAP + shz];
   const lg = stadM.loge, logeZc = (lg.rect[1] + lg.rect[3]) / 2;
@@ -71,6 +78,10 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
     stadium: { kind: 'stadium', model: stadM, at: stadAt, label: 'Stade — loge du directeur sportif',
       spawn: [stadAt[0] + 0.8, lg.floorY, stadAt[2] + logeZc] },
   };
+  if (gareM) sites.gare = { kind: 'place', model: gareM, at: gareAt, label: 'Gare centrale',
+    spawn: [gareAt[0] + gareM.spawn.pos[0], 0, gareAt[2] + gareM.spawn.pos[2]] };
+  if (aeroM) sites.aeroport = { kind: 'place', model: aeroM, at: aeroAt, label: 'Aéroport — jet du club',
+    spawn: [aeroAt[0] + aeroM.spawn.pos[0], 0, aeroAt[2] + aeroM.spawn.pos[2]] };
   // travel pads: just outside the entrance door (buildings) / the middle of the loge (stadium)
   const he = entranceOf(homeM), ce = entranceOf(clubM), re = entranceOf(restoM), de = entranceOf(dealM);
   const travels = [
@@ -86,6 +97,18 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
     { from: 'dealer', to: 'home', pos: [dealAt[0] + de[0] - 1.4, 0, dealAt[2] + de[1] + 0.8] },
     { from: 'stadium', to: 'club', pos: [stadAt[0], lg.floorY, stadAt[2] + logeZc] },
   ];
+  if (gareM) {
+    const ge = entranceOf(gareM);
+    travels.push({ from: 'home', to: 'gare', pos: [homeAt[0] + he[0] - 2.6, 0, homeAt[2] + he[1]] });
+    travels.push({ from: 'gare', to: 'home', pos: [gareAt[0] + ge[0] - 1.4, 0, gareAt[2] + ge[1] - 0.8] });
+    travels.push({ from: 'gare', to: 'club', pos: [gareAt[0] + ge[0] - 1.4, 0, gareAt[2] + ge[1] + 0.8] });
+  }
+  if (aeroM) {
+    const ae = entranceOf(aeroM);
+    travels.push({ from: 'dealer', to: 'aeroport', pos: [dealAt[0] + entranceOf(dealM)[0] - 2.6, 0, dealAt[2] + entranceOf(dealM)[1]] });
+    travels.push({ from: 'aeroport', to: 'dealer', pos: [aeroAt[0] + ae[0] - 1.4, 0, aeroAt[2] + ae[1] - 0.8] });
+    travels.push({ from: 'aeroport', to: 'club', pos: [aeroAt[0] + ae[0] - 1.4, 0, aeroAt[2] + ae[1] + 0.8] });
+  }
   for (const t of travels) t.label = `Aller : ${sites[t.to].label}`;
   return { level: lvl, seed, sites, travels };
 }
@@ -135,5 +158,11 @@ export function checkCareer(c) {
   }
   { const s = c.sites.stadium, lg = s.model.loge, lx = s.spawn[0] - s.at[0], lz = s.spawn[2] - s.at[2];
     if (lx < lg.rect[0] || lx > lg.rect[2] || lz < lg.rect[1] || lz > lg.rect[3] || Math.abs(s.spawn[1] - lg.floorY) > 0.01) issues.push('stadium spawn not in the loge'); }
+  // transport ladder gating: the train station exists from level 3, the airport from level 4 — no
+  // level-1 club flies charter, no level-4 club lacks its jet
+  if (c.level >= 3 && !c.sites.gare) issues.push('level 3+ career lacks its train station');
+  if (c.level < 3 && c.sites.gare) issues.push('train station present below level 3');
+  if (c.level >= 4 && !c.sites.aeroport) issues.push('level 4 career lacks its airport');
+  if (c.level < 4 && c.sites.aeroport) issues.push('airport present below level 4');
   return { ok: issues.length === 0, issues };
 }

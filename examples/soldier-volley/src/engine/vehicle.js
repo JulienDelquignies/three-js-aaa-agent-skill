@@ -1,4 +1,5 @@
 import * as THREE from 'three/webgpu';
+import { drawSponsorStrip, drawCrest } from './club-theme.js';
 
 // vehicle — a compact procedural car + a PathDriver that drives it along a street polyline
 // (engine/city.js routes). ONE system, several skins later (personal car, team bus, taxi): the driver
@@ -85,6 +86,104 @@ export function buildCar({ kind = 'berline', color = 0xb3252f } = {}) {
   for (const s of [1, -1]) { const p = new THREE.Mesh(plateGeo, plateMat); p.position.set(0, d.profile[0][1] + 0.02, s * (d.L / 2 + 0.02)); group.add(p); }
 
   return { group, wheels, dispose: () => disposables.forEach((x) => x.dispose?.()) };
+}
+
+/** The TEAM BUS — same profile-extrusion technique, in the CLUB LIVERY: primary paint, dark window
+ *  band, the sponsor strip along both flanks (drawSponsorStrip) and the crest at the front. One drive
+ *  system, several skins: give this to the same PathDriver as the car. */
+export function buildBus({ theme } = {}) {
+  const L = 10.5, W = 2.5;
+  const group = new THREE.Group();
+  const disposables = [];
+  const matP = (o) => { const m = new THREE.MeshPhysicalNodeMaterial(o); disposables.push(m); return m; };
+  const mat = (o) => { const m = new THREE.MeshStandardNodeMaterial(o); disposables.push(m); return m; };
+  const paint = matP({ color: theme?.primary ?? 0x1f3a93, metalness: 0.5, roughness: 0.4, clearcoat: 0.5, clearcoatRoughness: 0.3 });
+  paint.name = 'body';
+  const bodyGeo = extrudeProfile([[0.5, 0.42], [0.5, 2.7], [0.46, 2.95], [-0.46, 2.95], [-0.5, 2.7], [-0.5, 0.42]], L, W, 0.1);
+  disposables.push(bodyGeo);
+  const body = new THREE.Mesh(bodyGeo, paint); body.castShadow = true; group.add(body);
+  const winGeo = new THREE.BoxGeometry(W + 0.04, 0.72, L * 0.78); disposables.push(winGeo);
+  const win = new THREE.Mesh(winGeo, mat({ color: 0x0c1018, roughness: 0.35 }));
+  win.position.set(0, 2.2, -L * 0.06); group.add(win);
+  const shieldGeo = new THREE.BoxGeometry(W - 0.5, 0.8, 0.06); disposables.push(shieldGeo);
+  const shield = new THREE.Mesh(shieldGeo, mat({ color: 0x0c1018, roughness: 0.3 }));
+  shield.position.set(0, 2.15, L / 2 + 0.03); group.add(shield);
+  if (theme) {                                                     // sponsor strip + crest, both flanks
+    const stex = new THREE.CanvasTexture(drawSponsorStrip(theme)); stex.colorSpace = THREE.SRGBColorSpace; disposables.push(stex);
+    const sg = new THREE.PlaneGeometry(L * 0.72, 0.5); disposables.push(sg);
+    const sm = mat({ map: stex, roughness: 0.6 });
+    const ctex = new THREE.CanvasTexture(drawCrest(theme)); ctex.colorSpace = THREE.SRGBColorSpace; disposables.push(ctex);
+    const cg = new THREE.PlaneGeometry(0.9, 0.9); disposables.push(cg);
+    const cm = mat({ map: ctex, roughness: 0.7, transparent: true });
+    for (const s of [-1, 1]) {
+      const strip = new THREE.Mesh(sg, sm);
+      strip.position.set(s * (W / 2 + 0.06), 1.15, -L * 0.04); strip.rotation.y = s * Math.PI / 2; group.add(strip);
+      const crest = new THREE.Mesh(cg, cm);
+      crest.position.set(s * (W / 2 + 0.06), 1.9, L * 0.37); crest.rotation.y = s * Math.PI / 2; group.add(crest);
+    }
+  }
+  const wg = new THREE.CylinderGeometry(0.5, 0.5, 0.34, 16); wg.rotateZ(Math.PI / 2); disposables.push(wg);
+  const wm = mat({ color: 0x14161a, roughness: 0.9 });
+  const wheels = [];
+  for (const [sx, sz] of [[-1, L / 2 - 1.5], [1, L / 2 - 1.5], [-1, -L / 2 + 1.7], [1, -L / 2 + 1.7]]) {
+    const w = new THREE.Mesh(wg, wm); w.position.set(sx * (W / 2 - 0.2), 0.5, sz); w.castShadow = true; group.add(w); wheels.push(w);
+  }
+  const hg = new THREE.BoxGeometry(0.34, 0.16, 0.06); disposables.push(hg);
+  const hm = mat({ color: 0xfff6da, emissive: 0xffedb8, emissiveIntensity: 0.5, roughness: 0.2 });
+  for (const s of [-1, 1]) { const h = new THREE.Mesh(hg, hm); h.position.set(s * (W / 2 - 0.4), 0.85, L / 2 + 0.04); group.add(h); }
+  return { group, wheels, dispose: () => disposables.forEach((x) => x.dispose?.()) };
+}
+
+/** A parked regional train (two coaches) for the station platform — static dressing. */
+export function buildTrain({ accent = 0xb3252f, length = 18 } = {}) {
+  const group = new THREE.Group();
+  const disposables = [];
+  const mat = (o) => { const m = new THREE.MeshStandardNodeMaterial(o); disposables.push(m); return m; };
+  const bodyM = mat({ color: 0xd6d9de, metalness: 0.4, roughness: 0.35 });
+  const winM = mat({ color: 0x0c1018, roughness: 0.3 });
+  const accM = mat({ color: accent, roughness: 0.5 });
+  const carL = (length - 0.6) / 2;
+  for (const s of [-1, 1]) {
+    const cz = s * (carL / 2 + 0.3);
+    const geo = extrudeProfile([[0.5, 0.5], [0.5, 2.6], [0.42, 2.95], [-0.42, 2.95], [-0.5, 2.6], [-0.5, 0.5]], carL, 2.9, 0.12);
+    disposables.push(geo);
+    const car = new THREE.Mesh(geo, bodyM); car.position.z = cz; car.castShadow = true; group.add(car);
+    const wg = new THREE.BoxGeometry(2.96, 0.6, carL * 0.72); disposables.push(wg);
+    const wb = new THREE.Mesh(wg, winM); wb.position.set(0, 2.1, cz); group.add(wb);
+    const ag = new THREE.BoxGeometry(2.96, 0.34, carL * 0.94); disposables.push(ag);
+    const ab = new THREE.Mesh(ag, accM); ab.position.set(0, 1.15, cz); group.add(ab);
+    const bg = new THREE.BoxGeometry(2.2, 0.5, 1.6); disposables.push(bg);
+    for (const bz of [cz - carL / 3, cz + carL / 3]) { const b = new THREE.Mesh(bg, winM); b.position.set(0, 0.25, bz); group.add(b); }
+  }
+  return { group, dispose: () => disposables.forEach((x) => x.dispose?.()) };
+}
+
+/** A parked business jet for the airport apron — static dressing. */
+export function buildJet({ accent = 0x1f3a93 } = {}) {
+  const group = new THREE.Group();
+  const disposables = [];
+  const mat = (o) => { const m = new THREE.MeshStandardNodeMaterial(o); disposables.push(m); return m; };
+  const bodyM = mat({ color: 0xeef0f3, metalness: 0.5, roughness: 0.25 });
+  const accM = mat({ color: accent, roughness: 0.4, metalness: 0.4 });
+  const fus = new THREE.CylinderGeometry(0.85, 0.85, 10.5, 16); fus.rotateX(Math.PI / 2); disposables.push(fus);
+  const f = new THREE.Mesh(fus, bodyM); f.position.y = 1.7; f.castShadow = true; group.add(f);
+  const nose = new THREE.SphereGeometry(0.85, 14, 10); disposables.push(nose);
+  const nm2 = new THREE.Mesh(nose, bodyM); nm2.position.set(0, 1.7, 5.25); group.add(nm2);
+  const cone = new THREE.ConeGeometry(0.85, 2.4, 14); cone.rotateX(-Math.PI / 2); disposables.push(cone);
+  const tc = new THREE.Mesh(cone, bodyM); tc.position.set(0, 1.7, -6.45); group.add(tc);
+  const wingG = new THREE.BoxGeometry(11.5, 0.14, 2.2); disposables.push(wingG);
+  const wing = new THREE.Mesh(wingG, bodyM); wing.position.set(0, 1.25, -0.4); wing.rotation.y = 0.12; wing.castShadow = true; group.add(wing);
+  const finG = new THREE.BoxGeometry(0.14, 2.4, 1.7); disposables.push(finG);
+  const fin = new THREE.Mesh(finG, accM); fin.position.set(0, 3.1, -6.1); group.add(fin);
+  const stabG = new THREE.BoxGeometry(4.2, 0.12, 1.2); disposables.push(stabG);
+  const stab = new THREE.Mesh(stabG, accM); stab.position.set(0, 3.9, -6.3); group.add(stab);
+  const engG = new THREE.CylinderGeometry(0.42, 0.42, 1.7, 12); engG.rotateX(Math.PI / 2); disposables.push(engG);
+  for (const s of [-1, 1]) { const e = new THREE.Mesh(engG, accM); e.position.set(s * 1.25, 1.85, -4.4); group.add(e); }
+  const gearG = new THREE.CylinderGeometry(0.09, 0.09, 0.9, 8); disposables.push(gearG);
+  for (const [gx, gz] of [[0, 4.2], [-1, -0.4], [1, -0.4]]) { const g2 = new THREE.Mesh(gearG, accM); g2.position.set(gx, 0.45, gz); group.add(g2); }
+  const stripeG = new THREE.BoxGeometry(1.72, 0.16, 10.4); disposables.push(stripeG);
+  const stripe = new THREE.Mesh(stripeG, accM); stripe.position.set(0, 1.95, -0.2); group.add(stripe);
+  return { group, dispose: () => disposables.forEach((x) => x.dispose?.()) };
 }
 
 /** Repaint a car: GLB like ferrari.glb names the body OBJECT (and/or material) 'body' — the official
