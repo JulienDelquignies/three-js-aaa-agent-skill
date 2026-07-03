@@ -115,10 +115,23 @@ headless 26/26 dont **face-à-face géométrique (dot 1.00/1.00 à 1,60 m)**. Le
 bug préexistant : **yaw mobilier ≠ yaw personnage** (conventions décalées de π) → tous les `sitAt`
 asseyaient dos à la table ; corrigé partout via `ctrl.yawFor` (ref 33) + resynchro capsule au lever.
 
-Backlog (suite) : ② ville surélevée + trajet
-véhicule (voiture, puis bus d'équipe ; gare/aéroport = sites sur la carte) → ③ téléphone/ordi (overlay ;
+② ✅ **Ville surélevée + trajet voiture** *(fait)* — `city.js` (dérivé, dep-free) : grille sur les
+empreintes réelles des sites, **rues creusées par Dijkstra ré-utilisateur de routes** entre les arrêts
+dérivés des entrées (les avenues partagées ÉMERGENT) + avenues seedées, itinéraires re-calculés sur le
+réseau seul, **parcelles→immeubles** (densité/hauteur = niveau du club : T1 bourg 30 % → T4 métropole
+92 % + downtown près du club), arbres/lampadaires. `checkCity` (arrêts sur rue, route pour CHAQUE
+trajet, rues jamais sur un site, immeubles jamais sur une rue, graphe connexe) ; harnais
+`verify-city.mjs` 10/10 (densité croissante vérifiée + 5 sabotages). `city-builder.js` : bandes de rue
+fusionnées (zéro z-fight), pointillés/passages piétons, **skyline = 1 InstancedMesh** (scale+couleur
+par instance) + colliders immeubles. `vehicle.js` : voiture procédurale + `PathDriver` (vitesse easée,
+yaw amorti, `finish()` = skip). Carrière : pad → **on regarde sa voiture traverser la ville** (caméra
+chase surélevée 31 m, E passe, l'arrivée masque le chargement). Headless 41/41 : voiture SUR les rues
+31/31 échantillons, garée à l'arrêt (d=0,00). Piège attrapé : toit de loge sans collider = l'occlusion
+caméra l'ignorait (gros plan sur le toit à l'arrivée) → toit solide, règle notée en ref 34.
+
+Backlog (suite) : ③ téléphone/ordi (overlay ;
 le plan du téléphone = 2e présentation de la même ville) → ④ concessionnaire (la voiture devient perso)
-→ ⑤ jet privé + gare fonctionnelles → ⑥ vacances.
+→ ⑤ jet privé + gare fonctionnelles + bus d'équipe (même PathDriver, livrée club) → ⑥ vacances.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

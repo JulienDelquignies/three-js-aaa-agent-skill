@@ -199,7 +199,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   box([0, lg.floorY - 0.1, zc], [lg.w / 2 + 0.3, 0.1, lg.d / 2 + 0.2], wallM, true);            // room floor
   box([0, lg.floorY + lg.h / 2, lg.rect[1]], [lg.w / 2 + 0.3, lg.h / 2, 0.07], wallM, true);    // back wall
   for (const e of [-1, 1]) box([e * (lg.w / 2 + 0.23), lg.floorY + lg.h / 2, zc], [0.07, lg.h / 2, lg.d / 2 + 0.2], wallM, true);
-  box([0, lg.floorY + lg.h + 0.08, zc], [lg.w / 2 + 0.3, 0.08, lg.d / 2 + 0.2], wallM);         // roof
+  box([0, lg.floorY + lg.h + 0.08, zc], [lg.w / 2 + 0.3, 0.08, lg.d / 2 + 0.2], wallM, true);   // roof (solid → the occlusion camera ducks under it)
   const glassM = mat({ color: 0xcfe6f0, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.3 });
   // glass front + low parapet, SPLIT around the derived terrace doorway (lg.door) — so the room really
   // opens onto the terrace on foot. A glass lintel spans the doorway above head height.

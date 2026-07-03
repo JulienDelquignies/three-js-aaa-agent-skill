@@ -41,6 +41,7 @@ threejs-aaa/ (the skill)
 │   ├── 31-interior-camera-lighting.md  indoor playability: camera occlusion + per-room lights & switches
 │   ├── 32-career-world.md      career world: home+club+stadium derived from one level, fast-travel, contract
 │   ├── 33-venues-encounters.md venues & encounters: restaurant grammar, meeting-table contract, seated NPC
+│   ├── 34-city-layer.md        derived city: Dijkstra streets, drivable routes, level-scaled skyline
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -63,6 +64,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-furnish.mjs     no-regression harness for rule-based furnishing (clearances, facing, overlaps)
 │   ├── verify-stadium.mjs     no-regression harness for parametric stadiums (sightline, loge, capacity by tier)
 │   ├── verify-career.mjs      no-regression harness for the multi-site career world (overlap, travel graph, pads)
+│   ├── verify-city.mjs        no-regression harness for the derived city (routes on streets, connectivity, density)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project

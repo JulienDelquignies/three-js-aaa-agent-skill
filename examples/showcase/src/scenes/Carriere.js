@@ -6,6 +6,9 @@ import { Input } from '../engine/input.js';
 import { WORLD } from '../engine/world-basis.js';
 import { Physics } from '../engine/physics.js';
 import { generateCareer, checkCareer } from '../engine/career.js';
+import { generateCity, checkCity } from '../engine/city.js';
+import { buildCity } from '../engine/city-builder.js';
+import { buildCar, PathDriver } from '../engine/vehicle.js';
 import { buildPlace } from '../engine/place-builder.js';
 import { furnishPlace } from '../engine/furnish.js';
 import { buildFurnishing } from '../engine/furniture-kit.js';
@@ -119,13 +122,26 @@ export class Carriere {
       });
     }
 
+    // the CITY around the sites: streets carved between the derived curb stops, buildings/trees/lights
+    // (see engine/city.js — checkCity is the contract). Buildings get colliders; streets stay open.
+    this.city = generateCity({ career: this.career, seed: 11 });
+    const cityCheck = checkCity(this.city, this.career);
+    if (!cityCheck.ok) console.warn('checkCity:', cityCheck.issues);
+    const builtCity = buildCity(this.city);
+    this.scene.add(builtCity.group); this.disposables.push(builtCity);
+    for (const c of builtCity.colliders) this.phys.addStaticBox(c.pos, c.half);
+    // your CAR, parked at the current site's curb stop — travel = watch it drive the streets
+    this.car = buildCar({ color: 0xb3252f });
+    this.scene.add(this.car.group); this.disposables.push(this.car);
+    this._parkCar('home');
+
     // TRAVEL pads (derived by career.js): glowing discs, E to fast-travel between the sites
     const padGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.05, 28); this.disposables.push(padGeo);
     for (const t of this.career.travels) {
       const pm = new THREE.MeshStandardNodeMaterial({ color: 0x123a4a, emissive: 0x35c8ff, emissiveIntensity: 1.6, roughness: 0.4 });
       const pad = new THREE.Mesh(padGeo, pm); pad.position.set(t.pos[0], t.pos[1] + 0.03, t.pos[2]);
       this.scene.add(pad); this.disposables.push(pm);
-      this.sys.add({ label: `E — ${t.label}`, pos: () => t.pos, radius: 1.5, onInteract: () => this.travelTo(t.to) });
+      this.sys.add({ label: `E — ${t.label} 🚗`, pos: () => t.pos, radius: 1.5, onInteract: () => this.driveTo(t.to) });
     }
 
     // the BALL on the first training pitch (carryable + kickable, same rules as the Intérieur scene)
@@ -222,6 +238,26 @@ export class Carriere {
     return true;
   }
 
+  _parkCar(key) {
+    if (!this.car || !this.city) return;
+    const st = this.city.stops[key]; if (!st) return;
+    this.car.group.position.set(st.pos[0], 0, st.pos[1]);
+  }
+
+  /** Drive to a site: the car follows the derived street route, elevated camera, E skips. */
+  driveTo(to) {
+    if (this._drive) return;
+    const path = this.city?.paths?.[`${this.site}->${to}`];
+    if (!path) return this.travelTo(to);                       // no route → instant fallback
+    if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
+    this._podium = false;
+    const dlg = document.getElementById('dialog'); if (dlg) dlg.style.opacity = '0';
+    this._drive = { driver: new PathDriver(path, { speed: 15 }), to };
+    this.ctrl.model.visible = false; this.ctrl.setMoveWorld(0, 0);
+    const el = document.getElementById('site'); if (el) el.textContent = '🚗 En route : ' + this.career.sites[to].label + '  (E : passer)';
+    const pr = document.getElementById('prompt'); if (pr) { pr.textContent = ''; pr.style.opacity = '0'; }
+  }
+
   /** Re-seat the physics capsule on the controller position (after sitAt/standUp moved it). */
   _syncBody() {
     const p = this.ctrl.pos, c = this.char, t = { x: p.x, y: p.y + c.center, z: p.z };
@@ -242,6 +278,8 @@ export class Carriere {
     if (key === 'stadium') { this.ctrl.faceInstant(0, 1); this.tpc?.setYaw(0); }      // face the pitch
     else { this.ctrl.faceInstant(1, 0); this.tpc?.setYaw(Math.PI / 2); }              // face into the hub
     if (this.tpc) { this.tpc._init = false; this.tpc._occDist = Infinity; }           // camera snaps behind
+    this.ctrl.model.visible = true;
+    this._parkCar(key);
     this.site = key; this._siteHud();
   }
   _siteHud() { const el = document.getElementById('site'); if (el) el.textContent = '📍 ' + this.career.sites[this.site].label; }
@@ -256,6 +294,21 @@ export class Carriere {
   update(dt) {
     if (!this.ctrl || !this.tpc) return;
     dt = Math.min(dt, 1 / 30);
+    if (this._drive) {                                          // EN ROUTE: the car drives the streets
+      this.input.update();
+      if (this.input.pressed('interact')) this._drive.driver.finish();   // E skips the trip
+      this.input.endFrame();
+      const d = this._drive.driver.update(dt);
+      this.car.group.position.set(d.x, 0, d.z); this.car.group.rotation.y = d.yaw;
+      for (const w of this.car.wheels) w.rotation.x += d.wheelSpin * dt;
+      const fx = Math.sin(d.yaw), fz = Math.cos(d.yaw);         // elevated chase camera → you SEE the city
+      const cam = this.tpc.cam, k = 1 - Math.exp(-2.2 * dt);
+      this._tmp.set(d.x - fx * 13, 31, d.z - fz * 13);
+      if (!this._driveCamInit) { cam.position.copy(this._tmp); this._driveCamInit = true; } else cam.position.lerp(this._tmp, k);
+      cam.lookAt(d.x + fx * 10, 1, d.z + fz * 10);
+      if (d.done) { const to = this._drive.to; this._drive = null; this._driveCamInit = false; this.travelTo(to); }
+      return;
+    }
     this.input.update();
     const look = this.input.consumeLook(), z = this.input.consumeZoom();
     if (z) this.tpc.zoom(z);
