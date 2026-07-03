@@ -123,7 +123,16 @@ export function generateCity({ career, seed = 1 } = {}) {
   for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {       // streetlights along the streets
     if (road[id(i, j)] && (i + j * 3) % 5 === 0) { const [wx, wz] = centre(i, j); lights.push([wx + C * 0.42, wz + C * 0.42]); }
   }
-  return { level: lvl, seed, bounds: [x0, z0, x1, z1], cell: C, nx, nz, road, blocked, rects, stops, paths, buildings, trees, lights };
+  // ---- pavement, derived: every free cell that touches a street OR a site is SIDEWALK/parvis paving
+  // — this is what makes it read as a city instead of boxes on a lawn (buildings stand on paved
+  // parcels, sites get an esplanade). Cells further in stay green (courtyards/parks).
+  const nextToSite = (i, j) => (i > 0 && blocked[id(i - 1, j)]) || (i < nx - 1 && blocked[id(i + 1, j)]) || (j > 0 && blocked[id(i, j - 1)]) || (j < nz - 1 && blocked[id(i, j + 1)]);
+  const pavement = [];
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    const c = id(i, j);
+    if (!blocked[c] && !road[c] && (nextToRoad(i, j) || nextToSite(i, j))) pavement.push([i, j]);
+  }
+  return { level: lvl, seed, bounds: [x0, z0, x1, z1], cell: C, nx, nz, road, blocked, rects, stops, paths, buildings, trees, lights, pavement };
 }
 
 /** The city contract — run after generation AND after any manual patch of the city data. */
@@ -149,6 +158,16 @@ export function checkCity(city, career) {
     const [i, j] = cellOf(b.x, b.z);
     if (road[id(i, j)]) { issues.push('a building sits on a street'); break; }
     if (blocked[id(i, j)]) { issues.push('a building sits on a site'); break; }
+  }
+  // pavement is real sidewalk: never on a street or a site, and every building stands on a paved
+  // parcel (façade cells touch a road, so their cell must be in the pavement set)
+  const paved = new Set((city.pavement || []).map(([i, j]) => id(i, j)));
+  for (const [i, j] of city.pavement || []) {
+    if (road[id(i, j)]) { issues.push('pavement laid on a street'); break; }
+    if (blocked[id(i, j)]) { issues.push('pavement laid on a site'); break; }
+  }
+  for (const b of city.buildings) {
+    if (!paved.has(id(...cellOf(b.x, b.z)))) { issues.push('a building stands on unpaved ground (no sidewalk frontage)'); break; }
   }
   // the street graph connects every stop (BFS from home)
   const seen = new Set(); const start = city.stops.home.cell; const q = [id(...start)]; seen.add(id(...start));

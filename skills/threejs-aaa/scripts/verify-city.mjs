@@ -49,6 +49,8 @@ sab('rue coupée (le graphe se déconnecte)', (c) => {
   const [si, sj] = c.stops.stadium.cell;
   for (let i = 0; i < c.nx; i++) for (let dj = 1; dj <= 3; dj++) if (sj - dj >= 0) c.road[(sj - dj) * c.nx + i] = 0;
 }, 'unreachable by street');
+sab('trottoir coulé au milieu de la rue', (c) => { const cell = c.road.findIndex((v) => v); c.pavement.push([cell % c.nx, (cell / c.nx) | 0]); }, 'pavement laid on a street');
+sab('immeuble sans trottoir (parcelle dépavée)', (c) => { const b = c.buildings[0]; const i = Math.floor((b.x - c.bounds[0]) / c.cell), j = Math.floor((b.z - c.bounds[1]) / c.cell); c.pavement = c.pavement.filter(([pi, pj]) => pi !== i || pj !== j); }, 'unpaved ground');
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

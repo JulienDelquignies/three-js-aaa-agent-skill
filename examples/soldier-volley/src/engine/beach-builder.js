@@ -26,10 +26,12 @@ export function buildBeach(beach, { theme = null } = {}) {
 
   // the SEA: a deep plane sloping nowhere (flat, slightly below the sand lip) + a foam line — the
   // VISUAL plane runs far wider/deeper than the data rect so the horizon reads as open water
+  // ...but only AWAY from the mainland (east/south): a symmetric extension floods the city next door
   const seaM = mat({ color: 0x1a6d8f, roughness: 0.12, metalness: 0.05, transparent: true, opacity: 0.92 });
-  const sea = new THREE.Mesh(new THREE.BoxGeometry(SEA[2] - SEA[0] + 260, 0.06, SEA[3] - SEA[1] + 220), seaM);
+  const seaW = SEA[2] - SEA[0] + 240, seaD = SEA[3] - SEA[1] + 220;
+  const sea = new THREE.Mesh(new THREE.BoxGeometry(seaW, 0.06, seaD), seaM);
   disposables.push(sea.geometry);
-  sea.position.set((SEA[0] + SEA[2]) / 2, -0.015, SEA[1] + (SEA[3] - SEA[1] + 220) / 2);
+  sea.position.set(SEA[0] + seaW / 2, -0.015, SEA[1] + seaD / 2);
   group.add(sea);
   const foamM = mat({ color: 0xf4fbff, roughness: 0.5, emissive: 0xdff2ff, emissiveIntensity: 0.25 });
   const foam = new THREE.Mesh(new THREE.BoxGeometry(S[2] - S[0], 0.05, 0.5), foamM);

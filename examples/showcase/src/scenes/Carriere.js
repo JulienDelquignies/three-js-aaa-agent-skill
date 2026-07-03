@@ -425,12 +425,20 @@ export class Carriere {
     return true;
   }
 
-  /** Enter/exit the Top-Eleven city view (M / 🗺️ / the phone's Plan app). */
+  /** Enter/exit the Top-Eleven city view (M / 🗺️ / the phone's Plan app). The aerial pose sits far
+   *  from everything, so the exponential fog washes the panorama grey — thin it while up there. */
   toggleCityView(force = null) {
     if (!this.cityView) return;
     const want = force ?? !this.cityView.active;
-    if (want && !this._drive) { this.phone?.close(); this.cityView.enter(); }
-    else if (!want) { this.cityView.exit(); if (this.tpc) { this.tpc._init = false; this.tpc._occDist = Infinity; } }
+    if (want && !this._drive) {
+      this.phone?.close();
+      if (this.scene.fog && this._fogD === undefined) { this._fogD = this.scene.fog.density; this.scene.fog.density = this._fogD * 0.35; }
+      this.cityView.enter();
+    } else if (!want) {
+      if (this.scene.fog && this._fogD !== undefined) { this.scene.fog.density = this._fogD; this._fogD = undefined; }
+      this.cityView.exit();
+      if (this.tpc) { this.tpc._init = false; this.tpc._occDist = Infinity; }
+    }
   }
 
   _parkCar(key) {

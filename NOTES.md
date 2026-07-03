@@ -225,7 +225,27 @@ de départ. Villa meublée, portes, sièges assis. Harnais beach 18/18 + gamesta
 checks verts (départ depuis le wagon, forme 88→100, transat face mer fz=1.00, retour gare, app
 Finances). Réf 38.
 
-Backlog (suite) : polish visuel ville (retour utilisateur) → packs CC0 véhicules.
+⑦ ✅ **Polish visuel ville** *(fait, sur le retour « pas fan de la vue ville »)* — diagnostic sur
+cliché : boîtes nues sans fenêtres ni toits, aucune séparation trottoir/rue, du vert vide partout =
+maquette en carton. Trois fixes NATIFS : **(1) trottoirs dérivés** dans city.js (toute cellule libre
+qui touche une rue OU un site devient pavage trottoir/parvis — les immeubles posent sur des parcelles
+pavées, les sites gagnent une esplanade, les cours restent vertes) avec contrat étendu (pavage jamais
+sur rue/site, chaque immeuble SUR une cellule pavée) + 2 sabotages (« trottoir coulé au milieu de la
+rue », « immeuble sans trottoir ») — verify-city 12/12. **(2) façades instanciées à VRAIES fenêtres**
+dans city-builder : instances bucketées par nombre d'étages (round(h/3), cap 12) pour que la texture
+canvas ait le bon nombre de rangées (une texture unique s'étire — une tour de 22 m portait 4 fenêtres
+géantes) ; par bucket : albedo déterministe (mur blanc teinté par instanceColor, vitres sombres, ~30 %
+allumées chaudes) + emissiveMap assortie + **material ARRAY sur la box** (flancs = façade, dessus =
+toit sombre — ordre des groups +x,−x,+y,−y,+z,−z) ; ~12 buckets = ~12 draw calls pour toute la
+skyline. **(3) leçons vue aérienne** : les grands plans quasi blancs (toit métallique clair des
+tribunes) crament au soleil+bloom en plongée → mi-teinte ; et le fog exponentiel qui pose l'échelle au
+sol délave le panorama → la vue ville amincit fog.density ×0,35 à l'entrée et le restaure à la sortie.
+Attrapé au passage : la mer VISUELLE de la station (élargie symétriquement) inondait le quartier du
+stade → extension côté large uniquement. Harnais 12/12 + stade 8/8 ; headless 73 checks verts. Réf 34
+enrichie.
+
+Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
+nuit) → échelle « dimensions PSG ».
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

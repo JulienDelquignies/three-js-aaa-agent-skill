@@ -19,19 +19,37 @@ E skips, the arrival hides the site (re)load.
 5. **Parcels**: free cells facing a street become buildings — density and height scale with the club
    level (`DENSITY`/`RISE`: T1 bourg ~30 % low houses → T4 métropole ~92 % with a downtown boost near
    the club). Leftovers: trees/parks; streetlights along the streets.
+6. **Pavement**: every free cell touching a street OR a site becomes SIDEWALK/parvis paving. This one
+   derivation kills the boxes-on-a-lawn look: buildings stand on paved parcels (the paving shows
+   around their edges as the sidewalk), sites get an esplanade, courtyards further in stay green.
 
 `checkCity(city, career)` is the contract: stops ON a street, a route EXISTS for every travel pair
 (entirely on streets, joining the stops), streets never on a site, buildings never on a street/site,
-the street graph connects every stop (BFS), city not empty. Harness `verify-city.mjs`: 4 levels ×
-seeds + determinism + **density strictly growing with the level** + 5 named sabotages (stop moved into
-the club, route deleted/diverted, building on a street, street cut → graph disconnected).
+pavement never on a street/site, **every building stands on a paved cell** (sidewalk frontage), the
+street graph connects every stop (BFS), city not empty. Harness `verify-city.mjs`: 4 levels × seeds +
+determinism + **density strictly growing with the level** + 7 named sabotages (stop moved into the
+club, route deleted/diverted, building on a street, street cut → graph disconnected, pavement poured
+on a street, building left unpaved).
 
-## Rendering (`city-builder.js`) — flat-shaded, one draw call per family
+## Rendering (`city-builder.js`) — flat-shaded, few draw calls per family
 
-Street cells merged into per-row strips (each cell rendered exactly once — no z-fighting), dashed
-centre lines + crosswalks at the stops (instanced), buildings as ONE `InstancedMesh` with per-instance
-scale AND color (a few hundred instances = the whole skyline), instanced trees + streetlights.
+Street cells merged into per-row strips (each cell rendered exactly once — no z-fighting), pavement
+cells merged the same way at curb height (asphalt 0.015 < pavement 0.022 < dashes 0.03), dashed centre
+lines + crosswalks at the stops (instanced), instanced trees + streetlights.
+
+**Buildings are instanced FAÇADES with real windows**, not colored boxes. Instances are BUCKETED by
+floor count (`round(h/3)`, capped at 12) so each bucket's canvas texture has the right number of
+window rows for its height class — ONE shared texture would stretch (a 22 m tower wearing 4 giant
+windows). Per bucket: a deterministic canvas albedo (white wall → tinted by `instanceColor`, dark
+glass windows, ~30 % lit warm) + a matching **emissiveMap** (lit windows only) + a material ARRAY on
+the unit box (sides = façade, top/bottom = dark mid-tone roof — box groups order +x,−x,+y,−y,+z,−z).
+A dozen buckets ≈ a dozen draw calls for the whole skyline, and the city reads as inhabited.
 Buildings return **colliders** (the player can't walk through the city); streets stay open.
+
+Aerial-view lessons (the "cardboard model" fixes): large near-white planes (metallic roofs, pale
+slabs) blow out under sun + bloom in high shots — keep them mid-tone. And the exponential fog that
+grounds street-level scale washes an aerial panorama grey — the city view thins `fog.density` (×0.35)
+while active and restores it on exit.
 
 ## Driving (`vehicle.js`)
 

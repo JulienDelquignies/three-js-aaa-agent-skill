@@ -93,7 +93,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
       const back = inner + (s.deck2 ? s.rows + 2 + s.deck2 : s.rows) * model.rowD + 0.6;
       const c = s.along === 'x' ? [0, top, s.sign * (inner + back) / 2] : [s.sign * (inner + back) / 2, top, 0];
       const h = s.along === 'x' ? [s.len / 2 + 1, 0.12, (back - inner) / 2 + 1] : [(back - inner) / 2 + 1, 0.12, s.len / 2 + 1];
-      box(c, h, mat({ color: 0xd8dde2, roughness: 0.5, metalness: 0.4 }));
+      box(c, h, mat({ color: 0x9aa1a8, roughness: 0.8, metalness: 0.15 }));   // mid-tone: light metal blows white in aerials
       for (const e of [-1, 1]) { const cc = s.along === 'x' ? [e * (s.len / 2 - 1), top / 2, s.sign * back] : [s.sign * back, top / 2, e * (s.len / 2 - 1)]; box(cc, [0.15, top / 2, 0.15], concrete); }
     }
   }
