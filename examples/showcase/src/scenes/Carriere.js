@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { ThirdPersonCamera } from '../engine/third-person-camera.js';
 import { Input } from '../engine/input.js';
@@ -11,6 +12,8 @@ import { generateCity, checkCity } from '../engine/city.js';
 import { buildCity } from '../engine/city-builder.js';
 import { buildCar, buildBus, buildTrain, buildJet, paintCar, findWheels, PathDriver } from '../engine/vehicle.js';
 import { makeCatalog, checkCatalog } from '../engine/dealership.js';
+import { generateCabin, checkCabin } from '../engine/cabin.js';
+import { buildCabin } from '../engine/cabin-builder.js';
 import { makeGameState } from '../engine/game-state.js';
 import { Phone, PhoneApps } from '../engine/phone.js';
 import { CityView } from '../engine/city-view.js';
@@ -73,25 +76,24 @@ export class Carriere {
       }
       // the DEALERSHIP showroom: keep the podium items — the catalogue cars land on them below
       if (key === 'dealer') this._podiumItems = items.filter((i) => i.kind === 'car-podium').map((i) => ({ ...i, at }));
-      // GARE: parked train on the platform track + the scouting-trip interactable (train = domestic)
+      // GARE: parked train on the platform track — BOARDABLE (walkable coach interior, scouting inside)
       if (key === 'gare' && model.outdoor?.quai) {
         const q = model.outdoor.quai;
+        const tPos = [at[0] + (q[0] + q[2]) / 2, 0, at[2] + q[3] - 1.0];
         const train = buildTrain({ accent: this.theme.primary, length: Math.min(18, q[2] - q[0] - 2) });
-        train.group.position.set(at[0] + (q[0] + q[2]) / 2, 0, at[2] + q[3] - 1.0);
-        train.group.rotation.y = Math.PI / 2;
+        train.group.position.set(tPos[0], 0, tPos[2]); train.group.rotation.y = Math.PI / 2;
         this.scene.add(train.group); this.disposables.push(train);
-        const sp = [at[0] + (q[0] + q[2]) / 2, 0, at[2] + q[1] + 0.9];
-        this.sys.add({ label: 'E — Voyage de scouting 🚆 (national)', pos: () => sp, radius: 2.2, onInteract: () => this._scoutTrip('train') });
+        const coach = [tPos[0] + 4.65, 0, tPos[2]];                        // first coach centre (rotated +x)
+        this._mountCabin('train', coach, Math.PI / 2, '🚆', 'du train', [at[0] + (q[0] + q[2]) / 2, 0, at[2] + q[1] + 0.9]);
       }
-      // AÉROPORT: the club jet on the tarmac + the scouting-trip interactable (jet = abroad, better)
+      // AÉROPORT: the club jet on the tarmac — BOARDABLE (the flying lounge, scouting from the cabin)
       if (key === 'aeroport' && model.outdoor?.tarmac) {
         const t = model.outdoor.tarmac;
+        const jPos = [at[0] + (t[0] + t[2]) / 2, 0, at[2] + (t[1] + t[3]) / 2 + 1];
         const jet = buildJet({ accent: this.theme.primary });
-        jet.group.position.set(at[0] + (t[0] + t[2]) / 2, 0, at[2] + (t[1] + t[3]) / 2 + 1);
-        jet.group.rotation.y = 0.5;
+        jet.group.position.set(jPos[0], 0, jPos[2]); jet.group.rotation.y = 0.5;
         this.scene.add(jet.group); this.disposables.push(jet);
-        const sp = [at[0] + (t[0] + t[2]) / 2 - 4, 0, at[2] + t[1] + 1.2];
-        this.sys.add({ label: 'E — Voyage de scouting ✈️ (étranger)', pos: () => sp, radius: 2.4, onInteract: () => this._scoutTrip('jet') });
+        this._mountCabin('jet', jPos, 0.5, '✈️', 'du jet', [jPos[0] + 4, 0, jPos[2] + 4]);
       }
       // the MEETING (rendez-vous d'agent): the private-dining table of the restaurant — the NPC agent
       // sits on one seat, the opposite seat gets its own interaction (dialogue placeholder, see below)
@@ -163,7 +165,16 @@ export class Carriere {
     this.scene.add(this.car.group); this.disposables.push(this.car);
     this._parkCar('home');
     // the TEAM BUS in club livery, parked at the club — matchday: ride it to the stadium
+    // ...WITH its interior: the cabin (contract-checked) rides INSIDE the bus group, and the matchday
+    // camera sits in the aisle among the seated teammates (the bus shell is invisible from inside —
+    // closed FrontSide mesh — so the city stays visible through the window band)
     this.bus = buildBus({ theme: this.theme });
+    const busCab = generateCabin({ kind: 'bus' });
+    const busChk = checkCabin(busCab);
+    if (!busChk.ok) console.warn('checkCabin bus:', busChk.issues);
+    this._busCabin = { model: busCab, built: buildCabin(busCab, { theme: this.theme }) };
+    this.bus.group.add(this._busCabin.built.group);
+    this.disposables.push(this._busCabin.built);
     this._busHome = [this.city.stops.club.pos[0] + 4.5, this.city.stops.club.pos[1] + 2.5];
     this.bus.group.position.set(this._busHome[0], 0, this._busHome[1]);
     this.scene.add(this.bus.group); this.disposables.push(this.bus);
@@ -230,6 +241,17 @@ export class Carriere {
     });
     this.ctrl.collide = (dx, dy, dz) => this.char.move(dx, dy, dz);
     this.ctrl.faceInstant(1, 0);
+    this._soldierGltf = gltf;
+
+    // THE TEAMMATES: three seated players (skinned clones, jersey-tinted) riding in the bus cabin
+    this._extras = [];
+    if (this._busCabin) {
+      const rows = this._busCabin.model.seats.filter((s) => !s.driver);
+      for (const idx of [0, 3, 9]) {
+        const s = rows[idx]; if (!s) continue;
+        this._seatedExtra(this._busCabin.built.group, [s.x, this._busCabin.model.shell.floorY, s.z], s.yaw + Math.PI);
+      }
+    }
 
     // the NPC AGENT: same Soldier rig in a dark suit, seated at the meeting table, waiting for you.
     // The opposite seat drives the encounter: sit → talk (placeholder dialogue) → stand up.
@@ -434,6 +456,75 @@ export class Carriere {
     }
   }
 
+  /** A seated, jersey-tinted skinned clone (teammate) attached to a parent (e.g. the bus cabin). */
+  _seatedExtra(parent, seatLocal, yawLocal) {
+    const m = cloneSkinned(this._soldierGltf.scene);
+    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; if (o.material) { o.material = o.material.clone(); o.material.color = new THREE.Color(this.theme.primary).lerp(new THREE.Color(0xffffff), 0.45); } } });
+    const box = new THREE.Box3().setFromObject(m); m.scale.setScalar(1.8 / box.getSize(new THREE.Vector3()).y);
+    const bone = (re) => { let f = null; m.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
+    const legs = [{ up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i) }, { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i) }];
+    const rests = legs.map((l) => ({ up: l.up.rotation.x, knee: l.knee.rotation.x }));
+    const mixer = new THREE.AnimationMixer(m);
+    mixer.clipAction(this._soldierGltf.animations.find((a) => /idle/i.test(a.name))).play();
+    m.position.set(seatLocal[0], seatLocal[1] + 0.47 + 0.08 - (this.ctrl?.hipH ?? 0.91), seatLocal[2]);
+    m.rotation.y = yawLocal;
+    parent.add(m);
+    this._extras.push({ mixer, legs, rests });
+    return m;
+  }
+
+  /** Mount a WALKABLE vehicle interior at a parked pose: cabin meshes + rotated colliders + the
+   *  board/leave doors, sittable seats and the scouting interactable inside. */
+  _mountCabin(kind, pos, yaw, emoji, name, exitPos) {
+    const model = generateCabin({ kind });
+    const chk = checkCabin(model);
+    if (!chk.ok) console.warn('checkCabin', kind, chk.issues);
+    const built = buildCabin(model, { theme: this.theme });
+    built.group.position.set(pos[0], pos[1], pos[2]); built.group.rotation.y = yaw;
+    this.scene.add(built.group); this.disposables.push(built);
+    const W = (p) => [pos[0] + p[0] * Math.cos(yaw) + p[2] * Math.sin(yaw), pos[1] + p[1], pos[2] - p[0] * Math.sin(yaw) + p[2] * Math.cos(yaw)];
+    const q = [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)];
+    for (const c of built.colliders) this.phys.addStaticBox(W(c.pos), c.half, q);
+    const sh = model.shell, mode = kind === 'jet' ? 'jet' : 'train';
+    const doorOut = W([sh.W / 2 + 1.1, 0, model.door.z]);                 // on the ground, by the door
+    const inSpawn = W([0, 0, model.door.z - 0.1]);                        // in the aisle, CLEAR of row 0
+    this.sys.add({
+      label: `E — Monter à bord ${name} ${emoji}`, pos: () => doorOut, radius: 1.8,
+      onInteract: () => this._teleport([inSpawn[0], sh.floorY, inSpawn[2]], yaw + Math.PI),
+    });
+    this.sys.add({
+      label: 'E — Descendre', pos: () => [inSpawn[0], sh.floorY, inSpawn[2]], radius: 1.1,
+      onInteract: () => this._teleport([exitPos[0], 0, exitPos[2]], yaw),
+    });
+    for (const t of model.tables) {                                       // scouting from the lounge table
+      const tw = W([t.x, 0, t.z]);
+      this.sys.add({ label: `E — Voyage de scouting ${emoji} (${mode === 'jet' ? 'étranger' : 'national'})`, pos: () => tw, radius: 1.1, onInteract: () => this._scoutTrip(mode) });
+    }
+    for (const s of model.seats) {                                        // the seats are sittable
+      if (s.driver) continue;
+      const swp = W([s.x, 0, s.z]);
+      const fYaw = yaw + s.yaw;                                           // furniture yaw in world
+      this.sys.add({
+        label: () => (this.ctrl?.seated ? 'E — Se lever' : 'E — S’asseoir'),
+        pos: () => swp, radius: 0.9,
+        onInteract: () => {
+          if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
+          else this.ctrl.sitAt({ pos: [swp[0], 0, swp[2]], yaw: this.ctrl.yawFor(Math.sin(fYaw), Math.cos(fYaw)), seatH: 0.47 });
+        },
+      });
+    }
+  }
+
+  /** Put the character (feet) somewhere, instantly, and snap the camera behind. */
+  _teleport(p, faceYaw = 0) {
+    const c = this.char, t = { x: p[0], y: p[1] + c.center, z: p[2] };
+    c.body.setTranslation(t, true); c.body.setNextKinematicTranslation(t);
+    this.ctrl.pos.set(p[0], p[1], p[2]); this.ctrl.groundY = p[1]; this.ctrl.vy = 0;
+    this.ctrl.model.position.copy(this.ctrl.pos);
+    this.ctrl.faceInstant(Math.sin(faceYaw), Math.cos(faceYaw));
+    if (this.tpc) { this.tpc._init = false; this.tpc._occDist = Infinity; }
+  }
+
   /** Re-seat the physics capsule on the controller position (after sitAt/standUp moved it). */
   _syncBody() {
     const p = this.ctrl.pos, c = this.char, t = { x: p.x, y: p.y + c.center, z: p.z };
@@ -475,6 +566,10 @@ export class Carriere {
       p.timer += dt;
       if (p.timer > 2.5) { p.timer = 0; p.colorIdx = (p.colorIdx + 1) % p.entry.colors.length; paintCar(p.group, p.entry.colors[p.colorIdx]); }
     }
+    for (const e of this._extras || []) {                       // seated teammates: idle anim + bent legs
+      e.mixer.update(dt);
+      e.legs.forEach((l, i) => { l.up.rotation.x = e.rests[i].up - 1.35; l.knee.rotation.x = e.rests[i].knee + 1.4; });
+    }
     if (this._drive) {                                          // EN ROUTE: the car drives the streets
       this.input.update();
       if (this.input.pressed('interact')) this._drive.driver.finish();   // E skips the trip
@@ -483,11 +578,19 @@ export class Carriere {
       const veh = this._drive.vehicle;
       veh.group.position.set(d.x, 0, d.z); veh.group.rotation.y = d.yaw;
       for (const w of veh.wheels || []) w.rotation.x += d.wheelSpin * dt;
-      const fx = Math.sin(d.yaw), fz = Math.cos(d.yaw);         // elevated chase camera → you SEE the city
+      const fx = Math.sin(d.yaw), fz = Math.cos(d.yaw);
       const cam = this.tpc.cam, k = 1 - Math.exp(-2.2 * dt);
-      this._tmp.set(d.x - fx * 13, 31, d.z - fz * 13);
-      if (!this._driveCamInit) { cam.position.copy(this._tmp); this._driveCamInit = true; } else cam.position.lerp(this._tmp, k);
-      cam.lookAt(d.x + fx * 10, 1, d.z + fz * 10);
+      if (this._drive.isBus && this._busCabin) {                // MATCHDAY: ride INSIDE, with the team
+        const sh = this._busCabin.model.shell;
+        this._tmp.set(0.51, sh.floorY + 1.34, -0.4);
+        this.bus.group.localToWorld(this._tmp);
+        cam.position.copy(this._tmp);
+        cam.lookAt(d.x + fx * 20, 1.5, d.z + fz * 20);
+      } else {                                                  // elevated chase camera → you SEE the city
+        this._tmp.set(d.x - fx * 13, 31, d.z - fz * 13);
+        if (!this._driveCamInit) { cam.position.copy(this._tmp); this._driveCamInit = true; } else cam.position.lerp(this._tmp, k);
+        cam.lookAt(d.x + fx * 10, 1, d.z + fz * 10);
+      }
       if (d.done) {
         const { to, isBus } = this._drive; this._drive = null; this._driveCamInit = false;
         if (isBus) {                                            // the bus parks; your car stays where it was

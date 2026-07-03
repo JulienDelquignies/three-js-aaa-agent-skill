@@ -44,7 +44,7 @@ threejs-aaa/ (the skill)
 │   ├── 34-city-layer.md        derived city: Dijkstra streets, drivable routes, level-scaled skyline
 │   ├── 35-diegetic-ui.md       diegetic UI: phone overlay, FM data layer, one city rendered 3D and 2D
 │   ├── 36-dealership.md        dealership: showroom grammar, derived catalogue, buy loop, GLB car
-│   ├── 37-transport-tiers.md   transport tiers: team bus livery, station/airport gating, scouting
+│   ├── 37-transport-tiers.md   transport tiers + interiors: bus matchday ride, walkable cabins, scouting
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -70,6 +70,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-city.mjs        no-regression harness for the derived city (routes on streets, connectivity, density)
 │   ├── verify-gamestate.mjs   FM data layer: deterministic roster/budget, message flow
 │   ├── verify-dealership.mjs  dealership catalogue: level gating, ascending prices, buy flow
+│   ├── verify-cabin.mjs       vehicle interiors: aisle at the real capsule gauge, facing rules
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project

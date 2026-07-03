@@ -188,6 +188,21 @@ meilleurs prospects) → `state.scoutTrip` déterministe → shortlist + message
 chargeait plus, diagnostiqué headless (ref 37). Harnais 600 modèles + carrière 11/11 + gamestate 10/10 ;
 headless ~72 checks verts (aller-retour bus, voiture immobile, scouting, app).
 
+⑤bis ✅ **Intérieurs des véhicules** *(fait, sur retour utilisateur « l'important c'est l'intérieur »)*
+— `cabin.js` : la cabine comme DONNÉE dérivée (bus 2+2 + conducteur ; wagon 2+2 + paires face-à-face à
+tablettes ; **jet = salon volant**, fauteuils club face-à-face — la future salle de recrutement en vol)
+avec contrat `checkCabin` (sièges dans la coque, allée intégralement dégagée, baie de porte libre,
+face-à-face du salon). **Leçon de contrat** : l'allée à 0,52 m passait le harnais mais coinçait la
+capsule en jeu (Ø 0,60 + 2×offset 0,02) → le contrat encode désormais le VRAI gabarit 0,64 m.
+`cabin-builder` : sol/panneaux vitrés/LED/sièges thémés + colliders locaux. Deux montages : cabine DANS
+le groupe bus (elle roule avec ; la coque FrontSide est invisible de l'intérieur → ville visible par le
+bandeau vitré) → **jour de match vécu de l'intérieur avec 3 coéquipiers assis en maillot** (clones
+SkeletonUtils, jambes repliées après chaque update mixer) ; cabine POSÉE au pose du véhicule garé avec
+`addStaticBox(pos, half, rot)` (yaw quelconque — le jet est à 0,5 rad) → **train et jet praticables** :
+monter à bord (groundY = plancher), marcher l'allée, s'asseoir, scouting depuis la tablette, descendre.
+Jet redimensionné pour contenir le salon (fuselage r 1,5 ; la bande déco passait À TRAVERS la cabine →
+sous le plancher). Harnais cabine 14/14 (6 sabotages) ; headless complet vert.
+
 Backlog (suite) : ⑥ vacances → polish visuel ville (retour utilisateur) → packs CC0 véhicules.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.

@@ -163,26 +163,27 @@ export function buildJet({ accent = 0x1f3a93 } = {}) {
   const group = new THREE.Group();
   const disposables = [];
   const mat = (o) => { const m = new THREE.MeshStandardNodeMaterial(o); disposables.push(m); return m; };
+  // sized so the WALKABLE lounge cabin (engine/cabin.js jet shell: floor 0.95, h 1.95) fits inside
   const bodyM = mat({ color: 0xeef0f3, metalness: 0.5, roughness: 0.25 });
   const accM = mat({ color: accent, roughness: 0.4, metalness: 0.4 });
-  const fus = new THREE.CylinderGeometry(0.85, 0.85, 10.5, 16); fus.rotateX(Math.PI / 2); disposables.push(fus);
-  const f = new THREE.Mesh(fus, bodyM); f.position.y = 1.7; f.castShadow = true; group.add(f);
-  const nose = new THREE.SphereGeometry(0.85, 14, 10); disposables.push(nose);
-  const nm2 = new THREE.Mesh(nose, bodyM); nm2.position.set(0, 1.7, 5.25); group.add(nm2);
-  const cone = new THREE.ConeGeometry(0.85, 2.4, 14); cone.rotateX(-Math.PI / 2); disposables.push(cone);
-  const tc = new THREE.Mesh(cone, bodyM); tc.position.set(0, 1.7, -6.45); group.add(tc);
-  const wingG = new THREE.BoxGeometry(11.5, 0.14, 2.2); disposables.push(wingG);
-  const wing = new THREE.Mesh(wingG, bodyM); wing.position.set(0, 1.25, -0.4); wing.rotation.y = 0.12; wing.castShadow = true; group.add(wing);
-  const finG = new THREE.BoxGeometry(0.14, 2.4, 1.7); disposables.push(finG);
-  const fin = new THREE.Mesh(finG, accM); fin.position.set(0, 3.1, -6.1); group.add(fin);
-  const stabG = new THREE.BoxGeometry(4.2, 0.12, 1.2); disposables.push(stabG);
-  const stab = new THREE.Mesh(stabG, accM); stab.position.set(0, 3.9, -6.3); group.add(stab);
-  const engG = new THREE.CylinderGeometry(0.42, 0.42, 1.7, 12); engG.rotateX(Math.PI / 2); disposables.push(engG);
-  for (const s of [-1, 1]) { const e = new THREE.Mesh(engG, accM); e.position.set(s * 1.25, 1.85, -4.4); group.add(e); }
-  const gearG = new THREE.CylinderGeometry(0.09, 0.09, 0.9, 8); disposables.push(gearG);
-  for (const [gx, gz] of [[0, 4.2], [-1, -0.4], [1, -0.4]]) { const g2 = new THREE.Mesh(gearG, accM); g2.position.set(gx, 0.45, gz); group.add(g2); }
-  const stripeG = new THREE.BoxGeometry(1.72, 0.16, 10.4); disposables.push(stripeG);
-  const stripe = new THREE.Mesh(stripeG, accM); stripe.position.set(0, 1.95, -0.2); group.add(stripe);
+  const fus = new THREE.CylinderGeometry(1.5, 1.5, 12, 18); fus.rotateX(Math.PI / 2); disposables.push(fus);
+  const f = new THREE.Mesh(fus, bodyM); f.position.y = 1.92; f.castShadow = true; group.add(f);
+  const nose = new THREE.SphereGeometry(1.5, 16, 12); disposables.push(nose);
+  const nm2 = new THREE.Mesh(nose, bodyM); nm2.position.set(0, 1.92, 6.0); group.add(nm2);
+  const cone = new THREE.ConeGeometry(1.5, 3.4, 16); cone.rotateX(-Math.PI / 2); disposables.push(cone);
+  const tc = new THREE.Mesh(cone, bodyM); tc.position.set(0, 1.92, -7.7); group.add(tc);
+  const wingG = new THREE.BoxGeometry(13.5, 0.16, 2.6); disposables.push(wingG);
+  const wing = new THREE.Mesh(wingG, bodyM); wing.position.set(0, 1.1, -0.6); wing.rotation.y = 0.12; wing.castShadow = true; group.add(wing);
+  const finG = new THREE.BoxGeometry(0.16, 3.0, 2.0); disposables.push(finG);
+  const fin = new THREE.Mesh(finG, accM); fin.position.set(0, 4.1, -7.2); group.add(fin);
+  const stabG = new THREE.BoxGeometry(5.0, 0.14, 1.4); disposables.push(stabG);
+  const stab = new THREE.Mesh(stabG, accM); stab.position.set(0, 5.15, -7.4); group.add(stab);
+  const engG = new THREE.CylinderGeometry(0.52, 0.52, 2.0, 12); engG.rotateX(Math.PI / 2); disposables.push(engG);
+  for (const s of [-1, 1]) { const e = new THREE.Mesh(engG, accM); e.position.set(s * 2.05, 2.1, -5.2); group.add(e); }
+  const gearG = new THREE.CylinderGeometry(0.1, 0.1, 0.95, 8); disposables.push(gearG);
+  for (const [gx, gz] of [[0, 4.6], [-1.1, -0.5], [1.1, -0.5]]) { const g2 = new THREE.Mesh(gearG, accM); g2.position.set(gx, 0.48, gz); group.add(g2); }
+  const stripeG = new THREE.BoxGeometry(3.06, 0.16, 11.6); disposables.push(stripeG);
+  const stripe = new THREE.Mesh(stripeG, accM); stripe.position.set(0, 0.72, -0.4); group.add(stripe);   // BELOW the cabin floor
   return { group, dispose: () => disposables.forEach((x) => x.dispose?.()) };
 }
 

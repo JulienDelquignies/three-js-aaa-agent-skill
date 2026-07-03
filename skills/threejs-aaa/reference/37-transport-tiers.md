@@ -27,6 +27,27 @@ platform/apron dressing (two-coach regional with an accent band; business jet wi
 Gotcha: never `Object.assign(mesh, { position: v })` — `Object3D.position` is a read-only accessor and
 throws at runtime; always `mesh.position.set(...)` (broke the whole scene load, caught headless).
 
+## The INTERIORS (engine/cabin.js + cabin-builder.js)
+
+Vehicles are experienced from inside. `generateCabin({kind})` derives the layout as data — bus: 2+2
+rows + driver; train coach: 2+2 + facing TABLE pairs; jet: the flying LOUNGE (club chairs face-à-face
+around tables — the future in-flight recruitment meetings). `checkCabin()` is the contract: seats
+inside the shell, no overlaps, clear door bay, forward seats facing forward, lounge pairs facing each
+other, and the AISLE unobstructed over the full length at the REAL physics gauge — capsule diameter
+0.60 + 2× the controller offset = **0.64 m**. The first contract said 0.52 and passed while the game
+wedged the capsule between the seat colliders: contracts must encode the real gauge, not a guess.
+
+`buildCabin()` renders floor / window-band side panels (glass between pillars) / lit ceiling / themed
+seats + tables, and returns LOCAL colliders. Two mounting modes:
+- **Riding** (bus): add the cabin group INSIDE the vehicle group — it drives along. The bus shell is a
+  closed FrontSide mesh, so from inside it is INVISIBLE: the matchday camera sits in the aisle among
+  three seated, jersey-tinted TEAMMATES (SkeletonUtils clones, idle anim + bent legs re-applied after
+  each mixer update) and the city stays visible through the window band.
+- **Walkable** (train/jet, parked): place the cabin at the vehicle's world pose and feed the colliders
+  to `Physics.addStaticBox(pos, half, rot)` — the ROTATION overload handles any parked yaw (the jet
+  sits at 0.5 rad). Board/leave doors teleport (set `groundY` to the cabin floor!), the seats are
+  sittable, and the scouting interactable lives at the lounge table.
+
 ## Scouting trips (the transport→management loop)
 
 On the platform / apron: « E — Voyage de scouting » → `state.scoutTrip('train'|'jet')` (deterministic
