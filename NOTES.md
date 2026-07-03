@@ -150,8 +150,22 @@ pour entrer, cliquer une épingle = fermer + rouler — style Top Eleven, pas de
 variation de façades (fenêtres émissives, toits), boulevards plus larges, places/rond-points, ambiance
 (heure dorée / nuit), échelle des immeubles vs sites. À reprendre avant d'aller plus loin sur la ville.
 
-Backlog (suite) : ④ concessionnaire (la voiture devient perso)
-→ ⑤ jet privé + gare fonctionnelles + bus d'équipe (même PathDriver, livrée club) → ⑥ vacances.
+④ ✅ **Concessionnaire** *(fait)* — type `concession` dans la grammaire (showroom VITRÉ via le flag
+glass, bureau de vente, atelier, réserve) ; archétype `showroom` : **rangée de podiums côté vitrine,
+nez vers la baie** (v1 centrée : le contrat a tué le podium devant la porte → rangée déplacée côté
+vitrine = correct ET réaliste). **Catalogue dérivé** (`dealership.js`) : les modèles/prix suivent le
+niveau — la **supercar apparaît au niveau 3 (lèche-vitrine, inabordable) et devient abordable au
+niveau 4** — contrat `checkCatalog` (prix croissants, ≥1 abordable, sabotages) + `state.cash` (argent
+PERSO ≠ budget transferts) et `buyCar` (refus/débit/message). 3D : variantes procédurales paramétriques
+(citadine/berline/SUV, table DIMS) + **ferrari.glb du repo three.js** (458 Italia par vicent091036,
+crédité — Draco : décodeur copié dans public/draco/) ; `paintCar` recolore l'objet `body` (matériau
+cloné par instance), `findWheels` fait tourner ses roues sous le même PathDriver. Les voitures des
+podiums tournent et **cyclent leurs teintes** — acheter prend la couleur affichée, zéro UI en plus, et
+la voiture achetée devient CELLE qui roule en ville. Headless 59/59 (Ferrari refusée niv 3, SUV acheté
+−90 k€ + message + conduit jusqu'au resto). Harnais : 20 programmes floorplan/furnish, dealership 13/13.
+
+Backlog (suite) : ⑤ jet privé + gare fonctionnelles + bus d'équipe (même PathDriver, livrée club)
+→ ⑥ vacances → polish visuel ville (retour utilisateur).
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

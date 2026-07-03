@@ -20,10 +20,20 @@ export function makeGameState({ seed = 1, level = 1 } = {}) {
   const state = {
     level, seed,
     budget: Math.round(level * level * 1.8 * 10) / 10,           // M€ — transfer kitty by level
+    cash: level * level * 60,                                    // k€ — the DS's PERSONAL money
+    car: { kind: 'berline', color: 0xb3252f, name: 'Berline de fonction' },
     players,
     messages: [], unread: 0,
     addMessage({ from, text }) { state.messages.unshift({ from, text, t: state.messages.length }); state.unread++; },
     markRead() { state.unread = 0; },
+    /** Buy a car from the dealership catalogue — refuses if it can't be afforded. */
+    buyCar(entry, color) {
+      if (entry.price > state.cash) return { ok: false, reason: 'insufficient funds' };
+      state.cash = Math.round(state.cash - entry.price);
+      state.car = { kind: entry.kind, color, name: entry.name };
+      state.addMessage({ from: 'Concessionnaire', text: `Félicitations pour votre ${entry.name} ! (${entry.price} k€) Les clés sont dessus. 🔑` });
+      return { ok: true };
+    },
   };
   state.addMessage({ from: 'Président', text: `Bienvenue. Budget transferts : ${state.budget} M€. Faites-nous monter.` });
   return state;

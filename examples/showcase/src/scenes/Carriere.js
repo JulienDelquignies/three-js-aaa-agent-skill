@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { ThirdPersonCamera } from '../engine/third-person-camera.js';
 import { Input } from '../engine/input.js';
@@ -8,7 +9,8 @@ import { Physics } from '../engine/physics.js';
 import { generateCareer, checkCareer } from '../engine/career.js';
 import { generateCity, checkCity } from '../engine/city.js';
 import { buildCity } from '../engine/city-builder.js';
-import { buildCar, PathDriver } from '../engine/vehicle.js';
+import { buildCar, paintCar, findWheels, PathDriver } from '../engine/vehicle.js';
+import { makeCatalog, checkCatalog } from '../engine/dealership.js';
 import { makeGameState } from '../engine/game-state.js';
 import { Phone, PhoneApps } from '../engine/phone.js';
 import { CityView } from '../engine/city-view.js';
@@ -52,11 +54,11 @@ export class Carriere {
     if (!check.ok) console.warn('checkCareer:', check.issues);
     this.theme = makeTheme({ seed: this.niveau * 5 + 3 });
 
-    // buildings (home + club + restaurant): meshes, furniture, colliders, doors, seats
-    this.doors = [];
-    for (const key of ['home', 'club', 'resto']) {
+    // buildings (home + club + restaurant + dealership): meshes, furniture, colliders, doors, seats
+    this.doors = []; this._podiums = [];
+    for (const key of ['home', 'club', 'resto', 'dealer']) {
       const site = this.career.sites[key]; const { model, at } = site;
-      const built = buildPlace(model, { at, theme: key === 'resto' ? null : this.theme });
+      const built = buildPlace(model, { at, theme: key === 'resto' || key === 'dealer' ? null : this.theme });
       this.scene.add(built.group); this.disposables.push(built);
       const items = furnishPlace(model);
       const furn = buildFurnishing(items, model, { at, theme: this.theme });
@@ -68,6 +70,8 @@ export class Carriere {
           this.sys.add({ label: () => (d.open ? 'E — Fermer la porte' : 'E — Ouvrir la porte'), pos: () => d.centre(), radius: 1.6, onInteract: () => d.toggle() });
         }
       }
+      // the DEALERSHIP showroom: keep the podium items — the catalogue cars land on them below
+      if (key === 'dealer') this._podiumItems = items.filter((i) => i.kind === 'car-podium').map((i) => ({ ...i, at }));
       // the MEETING (rendez-vous d'agent): the private-dining table of the restaurant — the NPC agent
       // sits on one seat, the opposite seat gets its own interaction (dialogue placeholder, see below)
       if (key === 'resto') {
@@ -271,6 +275,39 @@ export class Carriere {
     });
     this.disposables.push(this.phone);
     document.getElementById('phonebtn')?.addEventListener('click', () => this.phone.toggle());
+
+    // the DEALERSHIP: catalogue derived from the level (checkCatalog = the contract), one car per
+    // podium — slowly turning, paint cycling through the display colors; E buys AT the shown color,
+    // debits the personal cash (game-state) and the bought car becomes THE car driving the city.
+    this.catalog = makeCatalog({ level: this.niveau });
+    const catCheck = checkCatalog(this.catalog, this.state);
+    if (!catCheck.ok) console.warn('checkCatalog:', catCheck.issues);
+    if (this.catalog.some((m) => m.kind === 'ferrari')) {         // the three.js demo model (Draco)
+      const dl = new DRACOLoader(); dl.setDecoderPath('draco/');
+      const gl2 = new GLTFLoader(); gl2.setDRACOLoader(dl);
+      this._ferrari = (await gl2.loadAsync('ferrari.glb')).scene;
+      this._ferrari.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    }
+    for (let i = 0; i < (this._podiumItems || []).length && i < this.catalog.length; i++) {
+      const pod = this._podiumItems[i], entry = this.catalog[i];
+      const group = this._buildCarMesh(entry.kind, entry.colors[0]);
+      group.position.set(pod.at[0] + pod.x, 0.16, pod.at[2] + pod.z);
+      this.scene.add(group);
+      const p = { entry, group, colorIdx: 0, timer: 0 };
+      this._podiums.push(p);
+      const wp = [pod.at[0] + pod.x, 0, pod.at[2] + pod.z];
+      this.sys.add({
+        label: () => (this.state.car.kind === entry.kind ? `✓ Votre ${entry.name}`
+          : entry.price <= this.state.cash ? `E — Acheter ${entry.name} — ${entry.price} k€`
+          : `${entry.name} — ${entry.price} k€ (fonds insuffisants)`),
+        pos: () => wp, radius: 2.3,
+        onInteract: () => {
+          if (this.state.car.kind === entry.kind || entry.price > this.state.cash) return;
+          const color = entry.colors[p.colorIdx];
+          if (this.state.buyCar(entry, color).ok) this._setCar(entry.kind, color);
+        },
+      });
+    }
     window.__carriere = this;                                     // for headless verification
     return true;
   }
@@ -287,6 +324,34 @@ export class Carriere {
     if (!this.car || !this.city) return;
     const st = this.city.stops[key]; if (!st) return;
     this.car.group.position.set(st.pos[0], 0, st.pos[1]);
+  }
+
+  /** A car mesh for a catalogue kind: procedural variants, or the ferrari GLB (cloned + repainted). */
+  _buildCarMesh(kind, color) {
+    if (kind === 'ferrari' && this._ferrari) {
+      const g = this._ferrari.clone(true);
+      const body = g.getObjectByName('body');
+      if (body?.material) body.material = body.material.clone();          // independent paint per clone
+      paintCar(g, color);
+      return g;
+    }
+    const c = buildCar({ kind, color });
+    this.disposables.push(c);
+    return c.group;
+  }
+
+  /** Swap the player's car in the world (after a purchase) and park it at the current site. */
+  _setCar(kind, color) {
+    if (this.car) { this.scene.remove(this.car.group); this.car.dispose?.(); }
+    if (kind === 'ferrari' && this._ferrari) {
+      const group = this._buildCarMesh('ferrari', color);
+      this.car = { group, wheels: findWheels(group), dispose: null };
+    } else {
+      const c = buildCar({ kind, color });
+      this.car = c;
+    }
+    this.scene.add(this.car.group);
+    this._parkCar(this.site);
   }
 
   /** Shortest leg sequence over the travel graph (for map travel between non-adjacent sites). */
@@ -359,6 +424,11 @@ export class Carriere {
   update(dt) {
     if (!this.ctrl || !this.tpc) return;
     dt = Math.min(dt, 1 / 30);
+    for (const p of this._podiums) {                            // showroom life: turntables + paint cycle
+      p.group.rotation.y += dt * 0.5;
+      p.timer += dt;
+      if (p.timer > 2.5) { p.timer = 0; p.colorIdx = (p.colorIdx + 1) % p.entry.colors.length; paintCar(p.group, p.entry.colors[p.colorIdx]); }
+    }
     if (this._drive) {                                          // EN ROUTE: the car drives the streets
       this.input.update();
       if (this.input.pressed('interact')) this._drive.driver.finish();   // E skips the trip

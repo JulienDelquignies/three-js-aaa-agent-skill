@@ -55,6 +55,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Venues & encounters: restaurant grammar, meeting-table contract, seated NPC face-to-face** | [reference/33-venues-encounters.md](reference/33-venues-encounters.md) |
 | **City layer: derived streets (Dijkstra), drivable routes, level-scaled skyline, checkCity** | [reference/34-city-layer.md](reference/34-city-layer.md) |
 | **Diegetic UI: the phone overlay, FM data layer, one city rendered 3D AND 2D (map travel)** | [reference/35-diegetic-ui.md](reference/35-diegetic-ui.md) |
+| **Dealership: showroom grammar, derived catalogue (level-gated supercar), buy loop, GLB car** | [reference/36-dealership.md](reference/36-dealership.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |

@@ -9,7 +9,7 @@ import { generatePlace, checkModel, wallBoxes } from '../assets/starter/src/engi
 
 const N = Number(process.argv[process.argv.indexOf('--seeds') + 1]) || 20;
 let pass = 0, fail = 0; const failures = [];
-for (const type of ['club', 'home', 'restaurant']) for (let tier = 1; tier <= 5; tier++) {
+for (const type of ['club', 'home', 'restaurant', 'concession']) for (let tier = 1; tier <= 5; tier++) {
   let ok = true; const msgs = [];
   for (let seed = 0; seed < N; seed++) {
     const m = generatePlace({ type, tier, seed });
@@ -28,5 +28,5 @@ for (const type of ['club', 'home', 'restaurant']) for (let tier = 1; tier <= 5;
   if (msgs.length) failures.push(...msgs.slice(0, 3).map((s) => `  ${type} t${tier} ${s}`));
 }
 if (failures.length) console.log('\n' + failures.join('\n'));
-console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/15 programs green across ${N} seeds (${N * 15} models)`);
+console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/20 programs green across ${N} seeds (${N * 20} models)`);
 process.exit(fail === 0 ? 0 : 1);

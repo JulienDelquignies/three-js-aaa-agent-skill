@@ -15,7 +15,7 @@ const rOverlap = (a, b, eps = 0) => Math.min(a[2], b[2]) - Math.max(a[0], b[0]) 
 const rInside = (a, r, eps = 0.02) => a[0] >= r[0] - eps && a[1] >= r[1] - eps && a[2] <= r[2] + eps && a[3] <= r[3] + eps;
 
 const ARCHETYPE = (id) => {
-  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^(sdb|sanitaires)/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^(salle-kine|kine)/, 'physio'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^salle-resto/, 'dining'], [/^salon-prive/, 'meeting'], [/^(salle-video|auditorium)/, 'media'], [/^(stockage|reserve|cave)/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
+  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^(sdb|sanitaires)/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^(salle-kine|kine)/, 'physio'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^salle-resto/, 'dining'], [/^salon-prive/, 'meeting'], [/^showroom/, 'showroom'], [/^atelier/, 'workshop'], [/^bureau-vente/, 'office'], [/^hall-accueil/, 'hub'], [/^(salle-video|auditorium)/, 'media'], [/^(stockage|reserve|cave)/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
   return 'hub';
 };
 
@@ -167,6 +167,26 @@ const RECIPES = {
     }
     add('cabinet', againstWall(c, room, 0.9, 0.45, rnd), 0.9, 0.45, 1.1);
     add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+  },
+  showroom(c, room, add, rnd) {
+    // le showroom du concessionnaire : une RANGÉE de podiums d'exposition COLLÉE CÔTÉ VITRINE,
+    // voitures nez vers la baie (comme les vrais showrooms) — le dégagement de la porte côté hall
+    // reste libre PAR CONSTRUCTION. La scène pose les voitures du catalogue dessus et les fait tourner.
+    const [x0, z0, x1, z1] = room.rect; const w = x1 - x0, dpt = z1 - z0;
+    const pd = Math.min(4.2, dpt - 1.55);
+    const zc = room.strip === 'N' ? z0 + 0.45 + pd / 2 : z1 - 0.45 - pd / 2;   // exterior/glass side
+    const slots = Math.min(4, Math.max(1, Math.floor((w - 0.5) / 2.9)));
+    for (let i = 0; i < slots; i++) {
+      const it = { x: x0 + (i + 0.5) * (w / slots), z: zc, yaw: 0, w: 2.3, d: pd };
+      add('car-podium', c.fits(it) ? it : null, 2.3, pd, 0.16);
+    }
+    add('counter', againstWall(c, room, 1.8, 0.62, rnd), 1.8, 0.62, 1.05);
+    add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+  },
+  workshop(c, room, add, rnd) {
+    add('rack', againstWall(c, room, 1.2, 0.68, rnd), 1.2, 0.68, 2.2);
+    add('counter', againstWall(c, room, 1.6, 0.62, rnd), 1.6, 0.62, 0.95);
+    add('shelf', againstWall(c, room, 0.9, 0.42, rnd), 0.9, 0.42, 1.9);
   },
   physio(c, room, add, rnd) {
     // l'espace kiné : tables de massage accessibles TOUT AUTOUR (freeSpot, jamais contre un mur),

@@ -36,6 +36,12 @@ export function buildFurnitureItem(item, cache = {}, theme = null) {
     case 'mat': box(w, 0.05, d, 0, 0.03, 0, C.fabric2); break;
     case 'exam-table': box(w, 0.12, d, 0, 0.72, 0, C.white); box(w - 0.1, 0.6, d - 0.3, 0, 0.35, 0, C.metal); break;
     case 'massage-table': box(w, 0.1, d, 0, 0.75, 0, C.white); box(0.32, 0.06, 0.34, 0, 0.83, -d / 2 + 0.2, C.white); legs(w, d, 0.7, C.metalDark); break;
+    case 'car-podium': {                                   // showroom display dais with a lit rim
+      box(w, h, d, 0, h / 2, 0, C.white);
+      const rim = new THREE.Mesh((cache[`rb${w}|${d}`] ||= new THREE.BoxGeometry(w + 0.1, 0.03, d + 0.1)),
+        (cache.rimM ||= new THREE.MeshStandardNodeMaterial({ color: 0xdfeef6, emissive: 0x9fd4ff, emissiveIntensity: 1.1, roughness: 0.4 })));
+      rim.position.set(0, h + 0.015, 0); g.add(rim); break;
+    }
     case 'sink': cyl(0.14, 0.72, 0, 0.36, 0, C.white); box(w, 0.12, d, 0, 0.78, 0, C.white); break;
     case 'toilet': box(w, 0.4, d * 0.65, 0, 0.2, 0.1, C.white); box(w, 0.5, 0.16, 0, 0.53, -d / 2 + 0.1, C.white); break;
     case 'shower': box(w, 0.06, d, 0, 0.03, 0, C.white); for (const s of [[-1, 0], [0, -1]]) box(s[0] ? 0.03 : w, h, s[1] ? 0.03 : d, s[0] * (w / 2), h / 2, s[1] * (d / 2), 0xbfd4dd); cyl(0.02, h * 0.9, w / 2 - 0.08, h * 0.45, -d / 2 + 0.08, C.metal); break;

@@ -43,6 +43,7 @@ threejs-aaa/ (the skill)
 │   ├── 33-venues-encounters.md venues & encounters: restaurant grammar, meeting-table contract, seated NPC
 │   ├── 34-city-layer.md        derived city: Dijkstra streets, drivable routes, level-scaled skyline
 │   ├── 35-diegetic-ui.md       diegetic UI: phone overlay, FM data layer, one city rendered 3D and 2D
+│   ├── 36-dealership.md        dealership: showroom grammar, derived catalogue, buy loop, GLB car
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -67,6 +68,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-career.mjs      no-regression harness for the multi-site career world (overlap, travel graph, pads)
 │   ├── verify-city.mjs        no-regression harness for the derived city (routes on streets, connectivity, density)
 │   ├── verify-gamestate.mjs   FM data layer: deterministic roster/budget, message flow
+│   ├── verify-dealership.mjs  dealership catalogue: level gating, ascending prices, buy flow
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project

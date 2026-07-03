@@ -12,6 +12,7 @@ const ROOM_COLORS = {
   bureau: 0x7a7f8c, 'bureaux-staff': 0x7a7f8c, stockage: 0x6b7078, auditorium: 0x8f5d70,
   'salle-resto': 0x9a7b52, 'salon-prive': 0x7d5a63, 'salon-prive2': 0x7d5a63, 'cuisine-resto': 0x9c9c55,
   sanitaires: 0x5fa39c, reserve: 0x6b7078, cave: 0x5a5148,
+  showroom: 0xd8dbe0, 'hall-accueil': 0xc9ccd2, 'bureau-vente': 0x7a7f8c, atelier: 0x70757d,
   sejour: 0xa3865f, 'sejour-cuisine': 0xa3865f, cuisine: 0x9c9c55, chambre: 0x5f7aa3, chambre2: 0x5f7aa3, chambre3: 0x5f7aa3,
   suite: 0x5f7aa3, sdb: 0x5fa39c, 'sdb-suite': 0x5fa39c, sdb2: 0x5fa39c,
 };

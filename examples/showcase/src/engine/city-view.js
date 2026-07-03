@@ -22,9 +22,10 @@ const PINS = {
   home: { icon: '🏠', color: '#e0b54c' },
   club: { icon: '🏋️', color: '#4ca7e0' },
   resto: { icon: '🍽️', color: '#c76bd6' },
+  dealer: { icon: '🚗', color: '#e5484d' },
   stadium: { icon: '🏟️', color: '#57c07a' },
 };
-const PIN_H = { home: 5, club: 5, resto: 5, stadium: 16 };
+const PIN_H = { home: 5, club: 5, resto: 5, dealer: 5, stadium: 16 };
 
 export class CityView {
   constructor({ city, career, onPick, onExit }) {

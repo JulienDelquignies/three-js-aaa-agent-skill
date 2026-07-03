@@ -8,7 +8,7 @@ import { furnishPlace, checkFurnishing } from '../assets/starter/src/engine/furn
 
 const N = Number(process.argv[process.argv.indexOf('--seeds') + 1]) || 20;
 let pass = 0, fail = 0; const failures = [];
-for (const type of ['club', 'home', 'restaurant']) for (let tier = 1; tier <= 5; tier++) {
+for (const type of ['club', 'home', 'restaurant', 'concession']) for (let tier = 1; tier <= 5; tier++) {
   let ok = true; const msgs = []; let minItems = Infinity;
   for (let seed = 0; seed < N; seed++) {
     const model = generatePlace({ type, tier, seed });
@@ -25,7 +25,7 @@ for (const type of ['club', 'home', 'restaurant']) for (let tier = 1; tier <= 5;
   console.log(`${ok ? '✓' : '✗'} ${type} tier ${tier} (${N} seeds, ≥${minItems} items)${msgs.length ? ' — ' + msgs[0] : ''}`);
   if (msgs.length) failures.push(...msgs.slice(0, 3).map((s) => `  ${type} t${tier} ${s}`));
 }
-function model_min(type, tier) { return type === 'club' ? 4 + tier : type === 'restaurant' ? 6 : 3; }
+function model_min(type, tier) { return type === 'club' ? 4 + tier : type === 'restaurant' ? 6 : type === 'concession' ? 3 : 3; }
 
 // salle de presse : clubs t2+ — pupitre + fond sponsors + rangées face au pupitre, et le contrat mord
 {
@@ -74,6 +74,15 @@ function model_min(type, tier) { return type === 'club' ? 4 + tier : type === 'r
   sab2('table du salon privé supprimée', (its) => { its.splice(its.findIndex((i) => i.room === 'salon-prive' && i.kind === 'table'), 1); }, 'no meeting table');
 }
 
+// showroom du concessionnaire : rangée de podiums côté vitrine (≥3 au t3, porte dégagée)
+{
+  const m = generatePlace({ type: 'concession', tier: 3, seed: 2 });
+  const pods = furnishPlace(m).filter((i) => i.kind === 'car-podium');
+  const okp = pods.length >= 3;
+  (okp ? pass++ : fail++);
+  console.log(`${okp ? '✓' : '✗'} showroom équipé (${pods.length} podiums d'exposition)`);
+}
+
 if (failures.length) console.log('\n' + failures.join('\n'));
-console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green (15 programs × ${N} seeds + presse + rencontre)`);
+console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green (20 programs × ${N} seeds + presse + rencontre + showroom)`);
 process.exit(fail === 0 ? 0 : 1);

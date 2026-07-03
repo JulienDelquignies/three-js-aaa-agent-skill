@@ -47,13 +47,15 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
   const homeM = generatePlace({ type: 'home', tier: HOME_TIER[lvl], seed });
   const clubM = generatePlace({ type: 'club', tier: lvl, seed: seed + 1 });
   const restoM = generatePlace({ type: 'restaurant', tier: Math.min(5, lvl + 1), seed: seed + 2 });
+  const dealM = generatePlace({ type: 'concession', tier: Math.min(5, lvl + 1), seed: seed + 3 });
   const stadM = generateStadium({ tier: lvl, seed });
   // offsets derived from the footprints: club centred at the origin, home west, restaurant east,
   // stadium south — always GAP metres of walkable ground between the real footprints
-  const cb = placeBounds(clubM), hb = placeBounds(homeM), rb = placeBounds(restoM);
+  const cb = placeBounds(clubM), hb = placeBounds(homeM), rb = placeBounds(restoM), db = placeBounds(dealM);
   const clubAt = [-clubM.W / 2, 0, -clubM.D / 2];
   const homeAt = [clubAt[0] + cb[0] - GAP - hb[2], 0, -homeM.D / 2];
   const restoAt = [clubAt[0] + cb[2] + GAP - rb[0], 0, -restoM.D / 2];
+  const dealAt = [restoAt[0] + rb[2] + GAP - db[0], 0, -dealM.D / 2];   // east of the restaurant
   const [, shz] = stadiumHalf(stadM);
   const stadAt = [0, 0, clubAt[2] + cb[3] + GAP + shz];
   const lg = stadM.loge, logeZc = (lg.rect[1] + lg.rect[3]) / 2;
@@ -64,11 +66,13 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
       spawn: [clubAt[0] + clubM.spawn.pos[0], 0, clubAt[2] + clubM.spawn.pos[2]] },
     resto: { kind: 'place', model: restoM, at: restoAt, label: 'Restaurant « Le Rond Central »',
       spawn: [restoAt[0] + restoM.spawn.pos[0], 0, restoAt[2] + restoM.spawn.pos[2]] },
+    dealer: { kind: 'place', model: dealM, at: dealAt, label: 'Concessionnaire Prestige Auto',
+      spawn: [dealAt[0] + dealM.spawn.pos[0], 0, dealAt[2] + dealM.spawn.pos[2]] },
     stadium: { kind: 'stadium', model: stadM, at: stadAt, label: 'Stade — loge du directeur sportif',
       spawn: [stadAt[0] + 0.8, lg.floorY, stadAt[2] + logeZc] },
   };
   // travel pads: just outside the entrance door (buildings) / the middle of the loge (stadium)
-  const he = entranceOf(homeM), ce = entranceOf(clubM), re = entranceOf(restoM);
+  const he = entranceOf(homeM), ce = entranceOf(clubM), re = entranceOf(restoM), de = entranceOf(dealM);
   const travels = [
     { from: 'home', to: 'club', pos: [homeAt[0] + he[0] - 1.4, 0, homeAt[2] + he[1] - 0.8] },
     { from: 'home', to: 'resto', pos: [homeAt[0] + he[0] - 1.4, 0, homeAt[2] + he[1] + 0.8] },
@@ -77,6 +81,9 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
     { from: 'club', to: 'resto', pos: [clubAt[0] + ce[0] - 2.6, 0, clubAt[2] + ce[1]] },
     { from: 'resto', to: 'club', pos: [restoAt[0] + re[0] - 1.4, 0, restoAt[2] + re[1] - 0.8] },
     { from: 'resto', to: 'home', pos: [restoAt[0] + re[0] - 1.4, 0, restoAt[2] + re[1] + 0.8] },
+    { from: 'resto', to: 'dealer', pos: [restoAt[0] + re[0] - 2.6, 0, restoAt[2] + re[1]] },
+    { from: 'dealer', to: 'resto', pos: [dealAt[0] + de[0] - 1.4, 0, dealAt[2] + de[1] - 0.8] },
+    { from: 'dealer', to: 'home', pos: [dealAt[0] + de[0] - 1.4, 0, dealAt[2] + de[1] + 0.8] },
     { from: 'stadium', to: 'club', pos: [stadAt[0], lg.floorY, stadAt[2] + logeZc] },
   ];
   for (const t of travels) t.label = `Aller : ${sites[t.to].label}`;
