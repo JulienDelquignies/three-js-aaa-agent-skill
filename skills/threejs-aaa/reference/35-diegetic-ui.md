@@ -2,6 +2,9 @@
 
 The management side of the DS game: a PHONE overlay (DOM, no three.js) + a SEPARATE data store the 3D
 world and the UI both read and write. Playable in **Carrière**: `T` / gamepad Y / the 📱 button.
+The phone is a REAL one: a home screen of apps (wallpaper, status bar, unread badges, home bar) and
+full-screen app pages — the scene composes its app list (`PhoneApps.messages/effectif/finances` +
+placeholders + ACTION apps whose `launch()` runs immediately, e.g. Plan → the city view).
 
 ## Architecture: three layers, one direction of truth
 
@@ -20,20 +23,24 @@ game-state.js  (data: budget, roster, messages)  ← the single source for "the 
 - **The UI drives the 3D**: the map's destination buttons call the same `driveTo()` as the walk-up
   travel pads.
 
-## One city, two presentations
+## The city view (Top-Eleven style), not a phone map
 
-The phone's Carte tab renders **the same `city` object** (engine/city.js) on a 2D canvas: the same
-road grid cells, the same site rects, the same stops — plus live markers (you, your car). Because both
-the 3D world and the map read one model, they can never disagree; `checkCity` validates once for both.
+Feedback-driven redesign: city navigation does NOT live on the phone screen. `engine/city-view.js` is a
+management-game overview of the REAL 3D city: `M` / 🗺️ / the phone's Plan app glides the camera to a
+fixed panorama (pose derived from `city.bounds`), and clickable PINS (DOM chips, projected every frame
+with `Vector3.project`) hover over the sites — pick one, the view closes and the drive starts. No free
+camera, no SimCity building. The pins/pose read the same `city`/`career` objects as the 3D — one source
+of truth still holds.
 
-Map travel between NON-adjacent sites composes legs over the travel graph (BFS on `career.travels`,
+Travel between NON-adjacent sites composes legs over the travel graph (BFS on `career.travels`,
 concatenate the per-leg polylines minus the duplicated joint) — verified headless: home→stadium drives
 THROUGH the club's curb stop.
 
 ## Scene integration rules
 
-- Phone open ⇒ **the world waits**: zero move input, no interactions; physics/anim keep ticking so
-  nothing snaps when it closes.
+- Phone open OR city view active ⇒ **the world waits**: zero move input, no interactions;
+  physics/anim keep ticking so nothing snaps when it closes.
 - The phone is self-contained DOM (injects its own CSS, `dispose()` removes it) — works on any page,
   screenshots include it (Playwright captures DOM over canvas: free visual QA of UI + 3D together).
-- Repaint the live map at ~5 Hz while open, not per frame.
+- App badges refresh on the home screen each frame (cheap DOM); pins reproject every frame while the
+  view is active (4 elements).

@@ -1,117 +1,125 @@
-// phone — the DS's diegetic phone: a self-contained DOM overlay (no three.js) with three tabs:
-//   • Carte    — renders THE SAME city data (engine/city.js) as a 2D map: streets, sites, stops, you,
-//                your car. Tapping a destination triggers the SAME travel as the pads (onTravel) —
-//                one source of truth, two presentations, they can never disagree.
-//   • Club     — the FM side read from game-state (budget, roster with positions/ratings).
-//   • Messages — pushed by the 3D world (e.g. finishing the restaurant meeting) — unread badge.
-// Open/close with a key or the HUD button; the scene pauses movement while it's open. reference/35.
+// phone — the DS's phone as a real one: a HOME SCREEN of apps (wallpaper, status bar, badges, dock,
+// home bar) and full-screen app pages with a back header. Self-contained DOM (injects its own CSS,
+// dispose() removes everything) — no three.js. The scene passes the APPS: each is
+//   { id, name, icon, badge?: () => number, render?: (page, phone) => void, launch?: () => void }
+// `launch` (instead of `render`) makes the icon an ACTION — e.g. the Plan app closes the phone and
+// opens the Top-Eleven-style city view. Data comes from game-state.js (reference/35).
 const CSS = `
-#phone { position: fixed; right: 18px; bottom: 18px; width: 320px; height: 560px; z-index: 40;
-  background: #0d1016; border: 1px solid #2a3242; border-radius: 26px; box-shadow: 0 24px 60px -20px rgba(0,0,0,.8);
-  font: 500 13px/1.45 system-ui, sans-serif; color: #dde3ee; display: none; flex-direction: column; overflow: hidden; }
+#phone { position: fixed; right: 18px; bottom: 18px; width: 300px; height: 596px; z-index: 40;
+  background: #05070b; border: 1px solid #262e3e; border-radius: 34px; box-shadow: 0 24px 60px -18px rgba(0,0,0,.85), inset 0 0 0 3px #10141d;
+  font: 500 13px/1.45 system-ui, sans-serif; color: #eef1f7; display: none; flex-direction: column; overflow: hidden; }
 #phone.open { display: flex; }
-#phone .notch { height: 24px; display: grid; place-items: center; font-size: 10px; color: #5b6577; letter-spacing: .1em; }
-#phone .tabs { display: flex; gap: 4px; padding: 6px 10px; }
-#phone .tabs button { flex: 1; padding: 7px 0; border-radius: 10px; border: 1px solid #2a3242; background: #131824;
-  color: #9fb0ca; font: 600 12px system-ui; cursor: pointer; position: relative; }
-#phone .tabs button.on { background: #1c2536; color: #fff; border-color: #3d4d68; }
-#phone .tabs .badge { position: absolute; top: -5px; right: -3px; min-width: 16px; height: 16px; border-radius: 999px;
-  background: #e5484d; color: #fff; font-size: 10px; font-weight: 800; display: grid; place-items: center; padding: 0 4px; }
-#phone .page { flex: 1; overflow: auto; padding: 10px 12px 14px; }
-#phone canvas { width: 100%; border-radius: 12px; background: #0a0d13; display: block; }
-#phone .dests { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
-#phone .dests button { padding: 8px 6px; border-radius: 10px; border: 1px solid #2a3242; background: #131824;
-  color: #cfe0ff; font: 600 11.5px system-ui; cursor: pointer; }
-#phone .dests button:hover { background: #1c2536; }
-#phone .row { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 8px; }
-#phone .row:nth-child(odd) { background: #11151f; }
-#phone .kpi { font-size: 22px; font-weight: 800; color: #fff; }
-#phone .msg { padding: 9px 10px; border-radius: 12px; background: #131824; border: 1px solid #232c3d; margin-bottom: 8px; }
+#phone .screen { position: absolute; inset: 6px; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column;
+  background: linear-gradient(160deg, #14233f 0%, #0e1830 34%, #251b3e 72%, #0c1020 100%); }
+#phone .status { height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 0;
+  font: 700 12px system-ui; color: #fff; }
+#phone .status .notch { position: absolute; left: 50%; top: 7px; transform: translateX(-50%); width: 96px; height: 20px;
+  border-radius: 999px; background: #05070b; }
+#phone .apps { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); align-content: start;
+  gap: 16px 6px; padding: 22px 14px; }
+#phone .app { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; border: 0; background: none; color: #e6ebf5; font: 600 10.5px system-ui; }
+#phone .app .ic { position: relative; width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; font-size: 27px;
+  background: linear-gradient(150deg, rgba(255,255,255,.16), rgba(255,255,255,.05)); border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 6px 14px -6px rgba(0,0,0,.6); }
+#phone .app .ic .badge { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; border-radius: 999px;
+  background: #e5484d; color: #fff; font: 800 11px/18px system-ui; text-align: center; padding: 0 4px; }
+#phone .page { position: absolute; inset: 0; display: none; flex-direction: column; background: #0b0f17; }
+#phone .page.on { display: flex; }
+#phone .page .head { display: flex; align-items: center; gap: 8px; padding: 40px 12px 10px; border-bottom: 1px solid #1c2432; }
+#phone .page .head button { border: 0; background: none; color: #6ea8ff; font: 600 14px system-ui; cursor: pointer; }
+#phone .page .head b { font-size: 15px; }
+#phone .page .body { flex: 1; overflow: auto; padding: 12px; }
+#phone .row { display: flex; justify-content: space-between; gap: 8px; padding: 7px 9px; border-radius: 9px; }
+#phone .row:nth-child(odd) { background: #10151f; }
+#phone .kpi { font-size: 21px; font-weight: 800; color: #fff; }
+#phone .msg { padding: 10px 11px; border-radius: 13px; background: #121826; border: 1px solid #202a3c; margin-bottom: 8px; }
 #phone .msg b { color: #8fc1ff; }
-#phone .home { height: 26px; display: grid; place-items: center; }
-#phone .home i { width: 90px; height: 4.5px; border-radius: 999px; background: #2a3242; }`;
-
-const SITE_COLORS = { home: '#e0b54c', club: '#4ca7e0', resto: '#c76bd6', stadium: '#57c07a' };
-const SITE_SHORT = { home: 'Maison', club: 'Club', resto: 'Restaurant', stadium: 'Stade' };
+#phone .placeholder { color: #6b7487; text-align: center; margin-top: 40px; }
+#phone .homebar { height: 26px; display: grid; place-items: center; cursor: pointer; }
+#phone .homebar i { width: 96px; height: 4.5px; border-radius: 999px; background: rgba(255,255,255,.35); }`;
 
 export class Phone {
-  constructor({ city, career, state, getPlayer, getCar, onTravel }) {
-    this.city = city; this.career = career; this.state = state;
-    this.getPlayer = getPlayer; this.getCar = getCar; this.onTravel = onTravel;
-    this._open = false; this._tab = 'carte'; this._last = 0;
+  constructor({ state, apps }) {
+    this.state = state; this.apps = apps;
+    this._open = false;
     const style = document.createElement('style'); style.textContent = CSS; document.head.appendChild(style);
     const root = document.createElement('div'); root.id = 'phone';
     root.innerHTML = `
-      <div class="notch">●&nbsp;&nbsp;DS PHONE</div>
-      <div class="tabs">
-        <button data-t="carte">Carte</button>
-        <button data-t="club">Club</button>
-        <button data-t="msg">Messages<span class="badge" style="display:none">0</span></button>
-      </div>
-      <div class="page"></div>
-      <div class="home"><i></i></div>`;
+      <div class="screen">
+        <div class="status"><span>9:41</span><div class="notch"></div><span>𝄙 ▮▮▮</span></div>
+        <div class="apps"></div>
+        <div class="page"><div class="head"><button>‹ Accueil</button><b></b></div><div class="body"></div></div>
+        <div class="homebar"><i></i></div>
+      </div>`;
     document.body.appendChild(root);
-    this.root = root; this.page = root.querySelector('.page'); this.badge = root.querySelector('.badge');
-    for (const b of root.querySelectorAll('.tabs button')) b.addEventListener('click', () => { this._tab = b.dataset.t; this._render(); });
-    this._style = style;
+    this.root = root; this._style = style;
+    this.grid = root.querySelector('.apps'); this.page = root.querySelector('.page');
+    this.pageTitle = this.page.querySelector('b'); this.pageBody = this.page.querySelector('.body');
+    this.page.querySelector('.head button').addEventListener('click', () => this.homeScreen());
+    root.querySelector('.homebar').addEventListener('click', () => this.homeScreen());
+    this._buildHome();
   }
   get isOpen() { return this._open; }
   toggle() { this._open ? this.close() : this.open(); }
-  open() { this._open = true; this.root.classList.add('open'); this._render(); }
+  open() { this._open = true; this.root.classList.add('open'); this.homeScreen(); }
   close() { this._open = false; this.root.classList.remove('open'); }
-  /** call each frame — repaints the live map markers at ~5 Hz while open */
-  update(t) { if (this._open && this._tab === 'carte' && t - this._last > 0.2) { this._last = t; this._drawMap(); } this._badge(); }
+  homeScreen() { this.page.classList.remove('on'); this._refreshBadges(); }
+  /** call each frame (cheap) — keeps app badges live */
+  update() { if (this._open && !this.page.classList.contains('on')) this._refreshBadges(); }
 
-  _badge() {
-    const n = this.state.unread;
-    this.badge.style.display = n ? 'grid' : 'none'; this.badge.textContent = n;
+  _buildHome() {
+    this.grid.innerHTML = '';
+    for (const app of this.apps) {
+      const b = document.createElement('button'); b.className = 'app'; b.dataset.app = app.id;
+      b.innerHTML = `<span class="ic">${app.icon}<span class="badge" style="display:none"></span></span><span>${app.name}</span>`;
+      b.addEventListener('click', () => this._openApp(app.id));
+      this.grid.appendChild(b);
+    }
+    this._refreshBadges();
   }
-  _render() {
-    for (const b of this.root.querySelectorAll('.tabs button')) b.classList.toggle('on', b.dataset.t === this._tab);
-    if (this._tab === 'carte') {
-      this.page.innerHTML = '<canvas></canvas><div class="dests"></div>';
-      const dests = this.page.querySelector('.dests');
-      for (const k of Object.keys(this.career.sites)) {
-        const b = document.createElement('button');
-        b.textContent = `🚗 ${SITE_SHORT[k] || k}`;
-        b.addEventListener('click', () => { this.close(); this.onTravel(k); });
-        dests.appendChild(b);
-      }
-      this._drawMap();
-    } else if (this._tab === 'club') {
-      const s = this.state;
-      this.page.innerHTML = `<div class="row"><span>Budget transferts</span><span class="kpi">${s.budget} M€</span></div>` +
-        s.players.map((p) => `<div class="row"><span><b style="color:#8fc1ff">${p.poste}</b>&nbsp; ${p.name} <span style="color:#5b6577">(${p.age})</span></span><span style="font-weight:800;color:${p.note >= 70 ? '#57c07a' : p.note >= 60 ? '#e0b54c' : '#9fb0ca'}">${p.note}</span></div>`).join('');
-    } else {
-      this.state.markRead(); this._badge();
-      this.page.innerHTML = this.state.messages.map((m) => `<div class="msg"><b>${m.from}</b><br>${m.text}</div>`).join('') || '<div class="msg">Aucun message.</div>';
+  _refreshBadges() {
+    for (const app of this.apps) {
+      const el = this.grid.querySelector(`[data-app="${app.id}"] .badge`); if (!el) continue;
+      const n = app.badge ? app.badge() : 0;
+      el.style.display = n ? 'block' : 'none'; el.textContent = n;
     }
   }
-  _drawMap() {
-    const cv = this.page.querySelector('canvas'); if (!cv) return;
-    const { bounds, nx, nz, cell, road } = this.city;
-    const W = 296; cv.width = W * 2;
-    const kx = (W * 2) / (bounds[2] - bounds[0]);
-    const H = Math.round((bounds[3] - bounds[1]) * kx); cv.height = H;
-    cv.style.height = `${H / 2}px`;
-    const g = cv.getContext('2d');
-    const X = (x) => (x - bounds[0]) * kx, Z = (z) => (z - bounds[1]) * kx;
-    g.fillStyle = '#0f1420'; g.fillRect(0, 0, cv.width, cv.height);
-    g.fillStyle = '#3d4657';                                        // streets = the same grid cells
-    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++)
-      if (road[j * nx + i]) g.fillRect(X(bounds[0] + i * cell), Z(bounds[1] + j * cell), cell * kx + 0.5, cell * kx + 0.5);
-    for (const k of Object.keys(this.city.rects)) {                 // sites + labels
-      const r = this.city.rects[k];
-      g.fillStyle = SITE_COLORS[k] + '33'; g.strokeStyle = SITE_COLORS[k]; g.lineWidth = 2;
-      g.fillRect(X(r[0]), Z(r[1]), (r[2] - r[0]) * kx, (r[3] - r[1]) * kx);
-      g.strokeRect(X(r[0]), Z(r[1]), (r[2] - r[0]) * kx, (r[3] - r[1]) * kx);
-      g.fillStyle = SITE_COLORS[k]; g.font = '700 13px system-ui'; g.textAlign = 'center';
-      g.fillText(SITE_SHORT[k] || k, X((r[0] + r[2]) / 2), Z(r[1]) - 5);
-    }
-    const car = this.getCar?.();                                    // live markers
-    if (car) { g.fillStyle = '#e5484d'; g.beginPath(); g.arc(X(car[0]), Z(car[1]), 5, 0, 7); g.fill(); }
-    const me = this.getPlayer?.();
-    if (me) { g.fillStyle = '#ffffff'; g.beginPath(); g.arc(X(me[0]), Z(me[1]), 4, 0, 7); g.fill(); g.strokeStyle = '#0d1016'; g.lineWidth = 1.5; g.stroke(); }
+  _openApp(id) {
+    const app = this.apps.find((a) => a.id === id); if (!app) return;
+    if (app.launch) { app.launch(); return; }                     // action app (e.g. Plan → city view)
+    this.pageTitle.textContent = `${app.icon} ${app.name}`;
+    this.pageBody.innerHTML = '';
+    app.render?.(this.pageBody, this);
+    this.page.classList.add('on');
+    this._refreshBadges();
   }
   dispose() { this.root.remove(); this._style.remove(); }
 }
+
+/** Ready-made app pages over game-state (the scene composes its own app list). */
+export const PhoneApps = {
+  messages: (state) => ({
+    id: 'messages', name: 'Messages', icon: '💬', badge: () => state.unread,
+    render: (body) => {
+      state.markRead();
+      body.innerHTML = state.messages.map((m) => `<div class="msg"><b>${m.from}</b><br>${m.text}</div>`).join('') || '<div class="placeholder">Aucun message.</div>';
+    },
+  }),
+  effectif: (state) => ({
+    id: 'effectif', name: 'Effectif', icon: '👥',
+    render: (body) => {
+      body.innerHTML = state.players.map((p) => `<div class="row"><span><b style="color:#8fc1ff">${p.poste}</b>&nbsp; ${p.name} <span style="color:#5b6577">(${p.age})</span></span><span style="font-weight:800;color:${p.note >= 70 ? '#57c07a' : p.note >= 60 ? '#e0b54c' : '#9fb0ca'}">${p.note}</span></div>`).join('');
+    },
+  }),
+  finances: (state) => ({
+    id: 'finances', name: 'Finances', icon: '💶',
+    render: (body) => {
+      body.innerHTML = `<div class="row"><span>Budget transferts</span><span class="kpi">${state.budget} M€</span></div>
+        <div class="row"><span>Masse salariale</span><span style="font-weight:700">${Math.round(state.budget * 0.6 * 10) / 10} M€/an</span></div>
+        <div class="placeholder">Offres & clauses — bientôt.</div>`;
+    },
+  }),
+  placeholder: (id, name, icon, note = 'Bientôt.') => ({
+    id, name, icon, render: (body) => { body.innerHTML = `<div class="placeholder">${note}</div>`; },
+  }),
+};

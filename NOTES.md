@@ -138,7 +138,15 @@ sites, marqueurs live perso/voiture) et ses boutons déclenchent le MÊME `drive
 **La 3D écrit dans l'UI** : la fin du rendez-vous d'agent pousse un message (badge non-lu). Téléphone
 ouvert = monde en pause (input coupé, physique/anim continuent). Headless 48/48. Ref 35.
 
-⚠️ Retour utilisateur : **pas fan du rendu de la vue ville** — backlog polish visuel : trottoirs,
+③bis ✅ **iPhone à apps + vue ville Top Eleven** *(fait, sur retours utilisateur)* — le téléphone est
+devenu un **vrai smartphone** : écran d'accueil (fond, barre d'état, barre home), **grille d'apps** avec
+badges (Messages 💬, Effectif 👥, Finances 💶, Plan 🗺️, Transferts 🔁 et Réglages ⚙️ en placeholders),
+pages plein écran avec retour ; les apps « action » (`launch()`) déclenchent directement (Plan → vue
+ville). La **navigation ville sort du téléphone** : `city-view.js` = panorama fixe de la VRAIE ville 3D
+(pose dérivée des bounds), **épingles DOM cliquables projetées** sur les sites (Vector3.project), M/🗺️
+pour entrer, cliquer une épingle = fermer + rouler — style Top Eleven, pas de SimCity. Headless 52/52.
+
+⚠️ Retour utilisateur : **pas fan du rendu 3D de la ville** — backlog polish visuel : trottoirs,
 variation de façades (fenêtres émissives, toits), boulevards plus larges, places/rond-points, ambiance
 (heure dorée / nuit), échelle des immeubles vs sites. À reprendre avant d'aller plus loin sur la ville.
 

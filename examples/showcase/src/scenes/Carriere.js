@@ -10,7 +10,8 @@ import { generateCity, checkCity } from '../engine/city.js';
 import { buildCity } from '../engine/city-builder.js';
 import { buildCar, PathDriver } from '../engine/vehicle.js';
 import { makeGameState } from '../engine/game-state.js';
-import { Phone } from '../engine/phone.js';
+import { Phone, PhoneApps } from '../engine/phone.js';
+import { CityView } from '../engine/city-view.js';
 import { buildPlace } from '../engine/place-builder.js';
 import { furnishPlace } from '../engine/furnish.js';
 import { buildFurnishing } from '../engine/furniture-kit.js';
@@ -30,7 +31,7 @@ export class Carriere {
   constructor(scene) {
     this.scene = scene; this.disposables = [];
     this._tmp = new THREE.Vector3(); this._fwd = new THREE.Vector3();
-    this.input = new Input(document.body, { keymap: { e: 'interact', t: 'phone' }, padmap: { 2: 'interact', 3: 'phone' } });
+    this.input = new Input(document.body, { keymap: { e: 'interact', t: 'phone', m: 'map' }, padmap: { 2: 'interact', 3: 'phone' } });
     this.sys = new InteractableSystem();
     this.niveau = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get('niveau')) || 2));
     this.ready = this._load();
@@ -244,19 +245,42 @@ export class Carriere {
     }
     this.site = 'home'; this._siteHud();
 
-    // the DIEGETIC PHONE (T / gamepad Y / 📱): FM data (game-state) + the map = THE SAME city object
-    // rendered 2D — tapping a destination triggers the same drive as the pads (multi-leg if needed)
+    // the CITY VIEW (Top-Eleven style): M / 🗺️ / the phone's Plan app — a fixed panorama of the 3D
+    // city with clickable pins over the sites; picking one starts the drive
+    this.cityView = new CityView({
+      city: this.city, career: this.career,
+      onPick: (key) => this.driveTo(key),
+      onExit: () => { if (this.tpc) { this.tpc._init = false; this.tpc._occDist = Infinity; } },
+    });
+    this.disposables.push(this.cityView);
+    document.getElementById('mapbtn')?.addEventListener('click', () => this.toggleCityView());
+
+    // the PHONE (T / gamepad Y / 📱): a home screen of apps over the FM data layer (game-state);
+    // the Plan app is an ACTION — it closes the phone and opens the city view
     this.state = makeGameState({ seed: 11, level: this.niveau });
     this.phone = new Phone({
-      city: this.city, career: this.career, state: this.state,
-      getPlayer: () => [this.ctrl.pos.x, this.ctrl.pos.z],
-      getCar: () => [this.car.group.position.x, this.car.group.position.z],
-      onTravel: (key) => this.driveTo(key),
+      state: this.state,
+      apps: [
+        PhoneApps.messages(this.state),
+        PhoneApps.effectif(this.state),
+        PhoneApps.finances(this.state),
+        { id: 'plan', name: 'Plan', icon: '🗺️', launch: () => { this.phone.close(); this.toggleCityView(true); } },
+        PhoneApps.placeholder('transferts', 'Transferts', '🔁', 'Le mercato ouvre bientôt.'),
+        PhoneApps.placeholder('reglages', 'Réglages', '⚙️'),
+      ],
     });
     this.disposables.push(this.phone);
     document.getElementById('phonebtn')?.addEventListener('click', () => this.phone.toggle());
     window.__carriere = this;                                     // for headless verification
     return true;
+  }
+
+  /** Enter/exit the Top-Eleven city view (M / 🗺️ / the phone's Plan app). */
+  toggleCityView(force = null) {
+    if (!this.cityView) return;
+    const want = force ?? !this.cityView.active;
+    if (want && !this._drive) { this.phone?.close(); this.cityView.enter(); }
+    else if (!want) { this.cityView.exit(); if (this.tpc) { this.tpc._init = false; this.tpc._occDist = Infinity; } }
   }
 
   _parkCar(key) {
@@ -352,7 +376,14 @@ export class Carriere {
     }
     this.input.update();
     if (this.input.pressed('phone')) this.phone?.toggle();
-    this._t = (this._t || 0) + dt; this.phone?.update(this._t);
+    if (this.input.pressed('map')) this.toggleCityView();
+    this.phone?.update();
+    if (this.cityView?.active) {                                // CITY VIEW: panorama + pins, world waits
+      this.input.endFrame();
+      this.cityView.update(this.tpc.cam, dt);
+      this.ctrl.setMoveWorld(0, 0); this.ctrl.update(dt); this.npc?.update(dt); this.phys.step();
+      return;
+    }
     if (this.phone?.isOpen) {                                   // phone open → the world waits
       this.input.endFrame();
       this.ctrl.setMoveWorld(0, 0); this.ctrl.update(dt); this.npc?.update(dt); this.phys.step();
