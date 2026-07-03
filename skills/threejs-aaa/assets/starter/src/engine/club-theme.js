@@ -54,6 +54,30 @@ export function drawJersey(theme, size = 256) {
   return c;
 }
 
+/** Press-conference backdrop: the real-world sponsor wall — a light panel with a staggered grid
+ *  alternating the club crest and the sponsor names (what you see behind the coach on TV). */
+export function drawPressWall(theme, width = 1024, height = 512) {
+  const c = document.createElement('canvas'); c.width = width; c.height = height; const g = c.getContext('2d');
+  g.fillStyle = '#f4f5f7'; g.fillRect(0, 0, width, height);
+  const names = theme.sponsors?.length ? theme.sponsors : ['SPONSOR'];
+  const cols = 5, rows = 4, cw = width / cols, ch = height / rows;
+  let k = 0;
+  for (let r = 0; r < rows; r++) for (let i = 0; i < cols; i++) {
+    const x = (i + 0.5) * cw + (r % 2 ? cw * 0.5 : 0), y = (r + 0.5) * ch;   // staggered like the real walls
+    if (x > width) continue;
+    if ((r + i) % 2 === 0) {                                                 // crest roundel
+      g.fillStyle = hexCss(theme.primary); g.beginPath(); g.arc(x, y, ch * 0.3, 0, 7); g.fill();
+      g.strokeStyle = hexCss(theme.secondary); g.lineWidth = 3; g.stroke();
+      g.fillStyle = hexCss(theme.secondary); g.font = `800 ${ch * 0.26}px system-ui, sans-serif`;
+      g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(theme.initials, x, y + 1);
+    } else {                                                                 // sponsor wordmark
+      g.fillStyle = '#3a4048'; g.font = `800 ${ch * 0.2}px system-ui, sans-serif`;
+      g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(names[k++ % names.length], x, y, cw * 0.92);
+    }
+  }
+  return c;
+}
+
 /** Sponsor boards strip: alternating blocks with each sponsor name (LED-board look). */
 export function drawSponsorStrip(theme, width = 2048, height = 96) {
   const c = document.createElement('canvas'); c.width = width; c.height = height; const g = c.getContext('2d');

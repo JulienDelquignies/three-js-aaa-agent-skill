@@ -155,9 +155,10 @@ resolve regardless of install location. Each prints `--help`.
   node ${CLAUDE_SKILL_DIR}/scripts/verify-floorplan.mjs --seeds 30   # every type × tier × seed stays green
   ```
 - **Furnish generated rooms by rules** — `engine/furnish.js` places furniture per room archetype
-  (bedroom/bathroom/living/kitchen/office/locker/gym…) obeying against-wall + facing + door-clearance
-  rules; `checkFurnishing()` re-verifies independently (chair-faces-desk, nothing blocks a door);
-  `engine/furniture-kit.js` builds the meshes + colliders. See `reference/28`:
+  (bedroom/bathroom/living/kitchen/office/locker/gym/press-conference room — sponsor backdrop + podium
+  with mics + press rows facing it…) obeying against-wall + facing + door-clearance rules;
+  `checkFurnishing()` re-verifies independently (chair-faces-desk, nothing blocks a door, backdrop
+  BEHIND the podium); `engine/furniture-kit.js` builds the meshes + colliders. See `reference/28`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-furnish.mjs --seeds 20
   ```

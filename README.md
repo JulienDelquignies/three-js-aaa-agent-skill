@@ -125,9 +125,11 @@ examples/
   + identical physics colliders, so the character controls work in any generated room.
 - **Furnishing (native)** — `engine/furnish.js` furnishes any generated room by archetype recipes
   (bed+nightstands+wardrobe, sofa+coffee-table+tv-facing-sofa, desk+chair-facing-desk, lockers+bench,
-  gym…) under hard rules: against-wall, no overlaps, door/stair clearances always free, facing
-  constraints. `checkFurnishing()` re-verifies independently; `furniture-kit.js` builds meshes +
-  colliders. Sabotages (wardrobe in front of a door, chair turned away) are caught by name.
+  gym, **salle de presse** — sponsor backdrop + podium with mics + press rows facing it, the TV shot…)
+  under hard rules: against-wall, no overlaps, door/stair clearances always free, facing constraints.
+  `checkFurnishing()` re-verifies independently (incl. named press rules: backdrop BEHIND the podium,
+  ≥2 seats facing it); `furniture-kit.js` builds meshes + colliders. Sabotages (wardrobe in front of a
+  door, chair turned away, backdrop in front of the podium) are caught by name.
 - **Stadiums & club identity (native)** — `engine/stadium.js` generates stadiums by infrastructure tier
   (t1 champêtre, one low stand → t5 four two-deck roofed stands, ~13.5k seats), always with the
   **directors' loge + terrace** as playable vantage points (the "FM view") and a contract asserting an

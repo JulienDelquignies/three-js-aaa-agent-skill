@@ -15,7 +15,7 @@ const rOverlap = (a, b, eps = 0) => Math.min(a[2], b[2]) - Math.max(a[0], b[0]) 
 const rInside = (a, r, eps = 0.02) => a[0] >= r[0] - eps && a[1] >= r[1] - eps && a[2] <= r[2] + eps && a[3] <= r[3] + eps;
 
 const ARCHETYPE = (id) => {
-  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^sdb/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^cafeteria/, 'cafeteria'], [/^(salle-video|auditorium)/, 'media'], [/^stockage/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
+  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^sdb/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^(salle-video|auditorium)/, 'media'], [/^stockage/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
   return 'hub';
 };
 
@@ -138,6 +138,30 @@ const RECIPES = {
     }
     add('counter', againstWall(c, room, 2.0, 0.62, rnd), 2.0, 0.62, 0.92);
   },
+  press(c, room, add, rnd) {
+    // the podium: sponsor backdrop (press wall) against a wall, the press desk right in front of it
+    // (mics on top, club-cloth skirt), speakers' chairs behind, then ROWS of press seats facing it —
+    // exactly the TV shot. checkFurnishing() has named rules for this room (backdrop behind, rows face).
+    const back = add('press-wall', againstWall(c, room, 2.4, 0.1, rnd), 2.4, 0.1, 2.2);
+    if (!back) return;
+    const dk = { ...front(back, 1.0), yaw: back.yaw, w: 2.0, d: 0.6 };        // room for the speakers' chairs
+    const desk = add('press-desk', c.fits(dk) ? dk : null, 2.0, 0.6, 0.78);
+    if (!desk) return;
+    const rx = Math.cos(desk.yaw), rz = -Math.sin(desk.yaw);                  // podium's right axis (world)
+    for (const s of [-1, 1]) {                                                // speakers between desk and backdrop
+      const p = front(desk, -0.62);
+      const ch = { x: p.x + rx * 0.5 * s, z: p.z + rz * 0.5 * s, yaw: desk.yaw, w: 0.5, d: 0.5 };
+      add('office-chair', c.fits(ch) ? ch : null, 0.5, 0.5, 0.95);
+    }
+    for (let r = 0; r < 3; r++) for (let i = -1; i <= 1; i++) {               // press rows, facing the podium
+      const p = front(desk, 1.45 + r * 0.95);
+      const ch = { x: p.x + rx * i * 0.85, z: p.z + rz * i * 0.85, yaw: desk.yaw + Math.PI, w: 0.46, d: 0.5 };
+      const it = add('chair', c.fits(ch) ? ch : null, 0.46, 0.5, 0.9); if (it) it.faces = desk.id;
+    }
+    const camSpot = front(desk, 3.6);                                         // TV camera at the back
+    const cam = { x: camSpot.x, z: camSpot.z, yaw: desk.yaw + Math.PI, w: 0.55, d: 0.55 };
+    const tc = add('tripod-cam', c.fits(cam) ? cam : null, 0.55, 0.55, 1.6); if (tc) tc.faces = desk.id;
+  },
   media(c, room, add, rnd) {
     const screen = add('screen', againstWall(c, room, 2.4, 0.14, rnd), 2.4, 0.14, 1.6);
     if (screen) for (let r = 0; r < 2; r++) for (let i = -1; i <= 1; i++) {
@@ -187,6 +211,19 @@ export function checkFurnishing(model, items) {
     if (!it.faces) continue; const t = byId.get(it.faces); if (!t) continue;
     const dir = [Math.sin(it.yaw), Math.cos(it.yaw)]; const to = [t.x - it.x, t.z - it.z]; const l = Math.hypot(to[0], to[1]) || 1;
     if ((dir[0] * to[0] + dir[1] * to[1]) / l < 0.5) issues.push(`${it.kind}@${it.room}: does not face its ${t.kind}`);
+  }
+  // press room: the podium desk needs its sponsor backdrop RIGHT BEHIND it (aligned) and a press
+  // audience — at least 2 seats facing the desk (the TV shot must read)
+  for (const desk of items.filter((i) => i.kind === 'press-desk')) {
+    const wall = items.find((i) => i.kind === 'press-wall' && i.room === desk.room && i.floor === desk.floor);
+    if (!wall) { issues.push(`press-desk@${desk.room}: no sponsor backdrop`); continue; }
+    const dyaw = Math.atan2(Math.sin(wall.yaw - desk.yaw), Math.cos(wall.yaw - desk.yaw));
+    if (Math.abs(dyaw) > 0.1) issues.push(`press-wall@${desk.room}: backdrop not aligned with the podium`);
+    const fwd = [Math.sin(desk.yaw), Math.cos(desk.yaw)], to = [wall.x - desk.x, wall.z - desk.z];
+    if (fwd[0] * to[0] + fwd[1] * to[1] > 0) issues.push(`press-wall@${desk.room}: backdrop in FRONT of the podium`);
+    if (Math.hypot(to[0], to[1]) > 1.2) issues.push(`press-wall@${desk.room}: backdrop too far behind the podium`);
+    const seats = items.filter((i) => i.faces === desk.id && i.kind === 'chair').length;
+    if (seats < 2) issues.push(`press-desk@${desk.room}: fewer than 2 press seats facing the podium`);
   }
   return { ok: issues.length === 0, issues };
 }

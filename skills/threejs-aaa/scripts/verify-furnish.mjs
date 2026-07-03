@@ -26,6 +26,27 @@ for (const type of ['club', 'home']) for (let tier = 1; tier <= 5; tier++) {
   if (msgs.length) failures.push(...msgs.slice(0, 3).map((s) => `  ${type} t${tier} ${s}`));
 }
 function model_min(type, tier) { return type === 'club' ? 4 + tier : 3; }
+
+// salle de presse : clubs t2+ — pupitre + fond sponsors + rangées face au pupitre, et le contrat mord
+{
+  const model = generatePlace({ type: 'club', tier: 3, seed: 2 });
+  const items = furnishPlace(model);
+  const desk = items.find((i) => i.kind === 'press-desk');
+  const okp = !!desk && items.some((i) => i.kind === 'press-wall') && items.filter((i) => i.faces === desk?.id && i.kind === 'chair').length >= 2;
+  (okp ? pass++ : fail++);
+  console.log(`${okp ? '✓' : '✗'} salle de presse équipée (pupitre + fond sponsors + rangées face au pupitre)`);
+  const sab = (name, mutate, expect) => {
+    const m = generatePlace({ type: 'club', tier: 3, seed: 2 });
+    const its = furnishPlace(m); mutate(its);
+    const r = checkFurnishing(m, its); const hit = !r.ok && r.issues.some((i) => i.includes(expect));
+    (hit ? pass++ : fail++);
+    console.log(`${hit ? '✓' : '✗'} sabotage « ${name} » attrapé${hit ? '' : ` — issues: ${r.issues.join('; ') || '(aucune)'}`}`);
+  };
+  sab('chaise de presse tournée dos au pupitre', (its) => { const c = its.find((i) => i.kind === 'chair' && i.faces); c.yaw += Math.PI; }, 'does not face');
+  sab('fond sponsors déplacé DEVANT le pupitre', (its) => { const w = its.find((i) => i.kind === 'press-wall'); const d = its.find((i) => i.kind === 'press-desk'); w.x = d.x + Math.sin(d.yaw) * 0.8; w.z = d.z + Math.cos(d.yaw) * 0.8; }, 'in FRONT of the podium');
+  sab('fond sponsors supprimé', (its) => { its.splice(its.findIndex((i) => i.kind === 'press-wall'), 1); }, 'no sponsor backdrop');
+}
+
 if (failures.length) console.log('\n' + failures.join('\n'));
-console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/10 programs furnished correctly across ${N} seeds`);
+console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green (10 programs × ${N} seeds + presse)`);
 process.exit(fail === 0 ? 0 : 1);

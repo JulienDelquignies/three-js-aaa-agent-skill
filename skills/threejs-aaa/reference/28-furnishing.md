@@ -34,6 +34,15 @@ plante + bibliothèque), `cuisine→kitchen` (plan de travail ×3 + frigo + tabl
 `salle-video|auditorium→media` (écran + rangées de chaises qui le regardent), `stockage→storage`,
 `couloir|hall|palier→hub` (plante, banc). Add an archetype by writing one recipe function.
 
+### The press room (`salle-presse→press`, clubs t2+)
+The TV shot, derived: a **sponsor backdrop** (`press-wall`, themed canvas `drawPressWall` — staggered
+crest roundels + sponsor wordmarks, the real-world press wall) against a wall, the **podium desk** 1 m in
+front (white top, club-cloth skirt, 3 mics), two speakers' chairs between desk and backdrop, then **rows
+of press seats facing the podium** (`faces` constraint) and a TV **camera on a tripod** at the back when
+the room is deep enough. `checkFurnishing()` has NAMED press rules: backdrop present, aligned, BEHIND the
+podium and ≤1.2 m from it, ≥2 press seats facing the desk. Press seats are ordinary `chair` items → they
+are automatically sittable in the playable scenes.
+
 ## No-regression harness
 
 ```bash
@@ -42,4 +51,5 @@ node ${CLAUDE_SKILL_DIR}/scripts/verify-furnish.mjs --seeds 20   # all types × 
 
 Sabotage coverage (proven): furniture pushed through a wall → caught; wardrobe parked in front of a door
 → caught (`blocks a door/stair clearance`); office chair turned away from the desk → caught
-(`does not face its desk`).
+(`does not face its desk`); press seat turned away → caught; sponsor backdrop moved in FRONT of the
+podium, or deleted → caught by name.

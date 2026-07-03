@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { drawCrest, drawJersey } from './club-theme.js';
+import { drawCrest, drawJersey, drawPressWall } from './club-theme.js';
 
 // furniture-kit — compact procedural meshes for furnish.js items (no imported models). Each kind is a
 // small assembly of boxes/cylinders in LOCAL space (x=width, z=depth, front=+z, floor=y0), returned as a
@@ -41,6 +41,29 @@ export function buildFurnitureItem(item, cache = {}, theme = null) {
     case 'stool': cyl(0.19, 0.06, 0, 0.68, 0, C.fabric); cyl(0.035, 0.66, 0, 0.33, 0, C.metalDark); cyl(0.16, 0.03, 0, 0.02, 0, C.metalDark); break;
     case 'plant': cyl(0.16, 0.3, 0, 0.15, 0, 0x8a5a3a); { const m = new THREE.Mesh((cache.cone ||= new THREE.ConeGeometry(0.24, 0.9, 8)), mat(C.green)); m.position.set(0, 0.85, 0); m.castShadow = true; g.add(m); } break;
     case 'screen': box(w, h * 0.8, d, 0, h * 0.55, 0, C.screen); box(w + 0.2, 0.06, d + 0.05, 0, h * 0.96, 0, C.metalDark); break;
+    case 'press-wall': {                                   // sponsor backdrop (the TV wall), themed canvas
+      const key = 'press-wall' + (theme?.name || '');
+      if (!cache[key]) { const tex = new THREE.CanvasTexture(drawPressWall(theme || { primary: 0x444, secondary: 0xddd, initials: 'FC', sponsors: ['SPONSOR'] })); tex.colorSpace = THREE.SRGBColorSpace; cache[key] = new THREE.MeshStandardNodeMaterial({ map: tex, roughness: 0.85 }); }
+      box(w, h, 0.06, 0, h / 2, -0.02, C.metalDark);
+      const pg = (cache[`pw${w}|${h}`] ||= new THREE.PlaneGeometry(w - 0.06, h - 0.12));
+      const pm = new THREE.Mesh(pg, cache[key]); pm.position.set(0, h / 2, 0.015); g.add(pm);
+      for (const s of [-1, 1]) box(0.07, 0.07, 0.5, s * (w / 2 - 0.1), 0.035, 0.12, C.metalDark);   // feet
+      break;
+    }
+    case 'press-desk': {                                   // podium desk: club-cloth skirt, top, 3 mics
+      const skirtKey = 'skirt' + (theme?.primary ?? '');
+      if (!cache[skirtKey]) cache[skirtKey] = new THREE.MeshStandardNodeMaterial({ color: theme?.primary ?? C.fabric, roughness: 0.9 });
+      const sk = new THREE.Mesh((cache[`b${w}|0.72|${d}`] ||= new THREE.BoxGeometry(w, 0.72, d)), cache[skirtKey]);
+      sk.position.set(0, 0.36, 0); sk.castShadow = sk.receiveShadow = true; g.add(sk);
+      box(w + 0.06, 0.05, d + 0.06, 0, 0.75, 0, C.white);
+      for (const s of [-1, 0, 1]) { cyl(0.012, 0.22, s * w / 4, 0.88, 0.08, C.metalDark); box(0.05, 0.05, 0.05, s * w / 4, 1.0, 0.11, C.screen); }
+      break;
+    }
+    case 'tripod-cam': {                                   // TV camera on a tripod, at the back of the room
+      for (const a of [0, 2.1, -2.1]) cyl(0.02, 1.15, Math.sin(a) * 0.2, 0.55, Math.cos(a) * 0.2, C.metalDark);
+      box(0.22, 0.2, 0.4, 0, 1.25, 0, C.screen); cyl(0.07, 0.16, 0, 1.25, 0.26, C.metalDark);
+      break;
+    }
     case 'jersey-frame': case 'crest-panel': {
       const key = item.kind + (theme?.name || '');
       if (!cache[key]) { const tex = new THREE.CanvasTexture(item.kind === 'jersey-frame' ? drawJersey(theme || { primary: 0x444, secondary: 0xddd, accent: 0xfff, initials: 'FC' }) : drawCrest(theme || { primary: 0x444, secondary: 0xddd, accent: 0xfff, initials: 'FC' })); tex.colorSpace = THREE.SRGBColorSpace; cache[key] = new THREE.MeshStandardNodeMaterial({ map: tex, roughness: 0.7 }); }
