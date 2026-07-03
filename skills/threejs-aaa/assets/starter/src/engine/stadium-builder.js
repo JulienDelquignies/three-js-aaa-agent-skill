@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { drawCrest } from './club-theme.js';
+import { buildFurnitureItem } from './furniture-kit.js';
 
 // stadium-builder — turn a stadium model (engine/stadium.js) into the world, THEMED by the club:
 // pitch with markings, stepped stands with INSTANCED SEATS in the club colors (secondary-color end
@@ -45,13 +46,20 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
     let n = 0;
     for (const [r0, r1] of decks) for (let i = r0; i < r1; i++) {
       const dist = inner + (i + 0.5) * model.rowD, y = (i + 1) * model.rowH;
-      // concrete tread (full length)
-      const c = s.along === 'x' ? [0, y - model.rowH / 2, s.sign * dist] : [s.sign * dist, y - model.rowH / 2, 0];
-      const h = s.along === 'x' ? [s.len / 2, model.rowH / 2, model.rowD / 2] : [model.rowD / 2, model.rowH / 2, s.len / 2];
-      box(c, h, concrete);
+      // notch deck 2 of the MAIN stand around the loge (loges sit between the decks)
+      const notch = s.id === 'main' && i >= s.rows && model.loge.notchDeck2 ? model.loge.notchDeck2 : 0;
+      // concrete tread (split around the notch when present)
+      if (s.along === 'x' && notch) {
+        for (const e of [-1, 1]) { const segLen = s.len / 2 - notch; if (segLen > 0.2) box([e * (notch + segLen / 2), y - model.rowH / 2, s.sign * dist], [segLen / 2, model.rowH / 2, model.rowD / 2], concrete); }
+      } else {
+        const c = s.along === 'x' ? [0, y - model.rowH / 2, s.sign * dist] : [s.sign * dist, y - model.rowH / 2, 0];
+        const h = s.along === 'x' ? [s.len / 2, model.rowH / 2, model.rowD / 2] : [model.rowD / 2, model.rowH / 2, s.len / 2];
+        box(c, h, concrete);
+      }
       const per = Math.floor(s.len / model.seatStep);
       for (let k = 0; k < per; k++) {
         const t = -s.len / 2 + (k + 0.5) * model.seatStep;
+        if (notch && Math.abs(t) < notch + 0.3) continue;                 // no seats through the loge
         const p = s.along === 'x' ? [t, y + 0.21, s.sign * dist] : [s.sign * dist, y + 0.21, t];
         q.setFromAxisAngle(up, yaw); m4.compose(new THREE.Vector3(p[0], p[1], p[2]), q, new THREE.Vector3(1, 1, 1));
         seats.setMatrixAt(n, m4);
@@ -85,6 +93,14 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   const crestGeo = new THREE.PlaneGeometry(1.4, 1.4); disposables.push(crestGeo);
   const crest = new THREE.Mesh(crestGeo, mat({ map: crestTex, roughness: 0.8, transparent: true }));
   crest.position.set(0, lg.floorY + lg.h / 2 + 0.2, lg.rect[1] + 0.08); group.add(crest);
+  // loge equipment (bar, stools, VIP row, fridge, screen, plant) — themed via the furniture kit
+  const kitCache = {};
+  for (const it of lg.items || []) {
+    const sub = buildFurnitureItem(it, kitCache, theme);
+    sub.position.set(it.x, lg.floorY, it.z); group.add(sub);
+    colliders.push({ pos: [at[0] + it.x, at[1] + lg.floorY + it.h / 2, at[2] + it.z], half: [it.w / 2, it.h / 2, it.d / 2] });
+  }
+  disposables.push({ dispose: () => Object.values(kitCache).forEach((o) => o.dispose?.()) });
   // terrace over the top rows + railing
   const tz = (lg.terrace[1] + lg.terrace[3]) / 2, td = (lg.terrace[3] - lg.terrace[1]) / 2;
   box([0, lg.floorY - 0.1, tz], [lg.w / 2 + 0.3, 0.1, td], wallM, true);

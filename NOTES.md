@@ -97,6 +97,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    instanciés aux couleurs du club, blason en loge (`club-theme.js` : makeTheme + drawCrest/drawJersey).
    Clubs : **bureaux vitrés forcés côté terrains** (baies dérivées, contrat « glass face aux terrains »)
    + 1→3 terrains d'entraînement dehors. Maillots encadrés + blason dans les bureaux (furnish `club`).
+   **Loge équipée** : bar + tabourets, rangée VIP face à la vitre, frigo, écran, plante, blason — avec
+   contrat (VIP face au terrain, rien contre la vitre, bar au fond, zéro chevauchement) et **encoche du
+   niveau 2 autour de la loge** (le contrat a attrapé les sièges qui traversaient la pièce, puis la
+   plante qui bloquait la vitre — preuve que le garde-fou mord).
 3. **`interactables.js`** — portes qui s'ouvrent, s'asseoir (sitPose), ramasser/porter (heldInHand),
    interrupteurs ; prompts de proximité « E — … ».
 4. **Collision caméra** (3ᵉ personne qui ne traverse pas les murs) + **éclairage intérieur** (luminaires

@@ -35,6 +35,24 @@ export function generateStadium({ tier = 1, seed = 1 } = {}) {
     terrace: [-logeW / 2, zBack, logeW / 2, zBack + terrD],                          // slab over the top rows
     rail: 1.05,
   };
+  // loge equipment: bar along the back wall, stools at the bar, a VIP row facing the pitch through the
+  // glass, mini-fridge, wall screen, plant. Pure data — themed/built by stadium-builder, checked below.
+  const zB = loge.rect[1], zG = loge.rect[3];
+  loge.items = [
+    { kind: 'counter', x: -logeW / 2 + 1.5, z: zB + 0.45, yaw: Math.PI, w: 2.4, d: 0.62, h: 0.95 },      // bar (face la salle)
+    { kind: 'stool', x: -logeW / 2 + 0.8, z: zB + 1.1, yaw: 0, w: 0.4, d: 0.4, h: 0.7 },
+    { kind: 'stool', x: -logeW / 2 + 1.5, z: zB + 1.1, yaw: 0, w: 0.4, d: 0.4, h: 0.7 },
+    { kind: 'stool', x: -logeW / 2 + 2.2, z: zB + 1.1, yaw: 0, w: 0.4, d: 0.4, h: 0.7 },
+    { kind: 'fridge', x: logeW / 2 - 0.55, z: zB + 0.45, yaw: 0, w: 0.65, d: 0.65, h: 1.6 },
+    { kind: 'screen', x: logeW / 2 - 0.35, z: (zB + zG) / 2, yaw: -Math.PI / 2, w: 1.1, d: 0.12, h: 1.5 },
+    { kind: 'chair', x: -2.6, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'chair', x: -1.0, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'chair', x: 1.0, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'chair', x: 2.6, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'plant', x: logeW / 2 - 1.35, z: zB + 0.5, yaw: 0, w: 0.45, d: 0.45, h: 1.3 },
+  ];
+  // deck 2 passes through the loge volume → the builder must NOTCH it (loges sit between the decks)
+  if (t.deck2 > 0) loge.notchDeck2 = logeW / 2 + 0.6;
   const capacity = stands.reduce((s, st) => s + (st.rows + st.deck2) * Math.floor(st.len / SEAT_STEP), 0);
   const eye = 1.6;
   return {
@@ -71,5 +89,32 @@ export function checkStadium(m) {
   }
   if (m.loge.terrace[3] > -(m.pitch.W / 2)) issues.push('terrace overhangs the pitch');
   if (m.capacity < 100) issues.push('capacity implausibly low');
+  // loge equipment: everything inside the room, VIP seats FACE the pitch, nothing glued to the glass
+  // except the VIP row, bar against the back wall, no overlaps
+  const lg = m.loge; const items = lg.items || [];
+  if (items.length < 5) issues.push('loge is unequipped (no bar/seats)');
+  const half = (it) => (Math.abs(Math.sin(it.yaw)) > 0.5 ? [it.d / 2, it.w / 2] : [it.w / 2, it.d / 2]);
+  const bb = (it) => { const [hx, hz] = half(it); return [it.x - hx, it.z - hz, it.x + hx, it.z + hz]; };
+  for (const it of items) {
+    const A = bb(it);
+    if (A[0] < lg.rect[0] - 0.05 || A[1] < lg.rect[1] - 0.05 || A[2] > lg.rect[2] + 0.05 || A[3] > lg.rect[3] + 0.05) issues.push(`loge ${it.kind}: outside the loge`);
+    if (it.vip) { const face = [Math.sin(it.yaw), Math.cos(it.yaw)]; if (face[1] < 0.7) issues.push(`loge VIP seat does not face the pitch`); }
+    if (!it.vip && A[3] > lg.rect[3] - 0.35) issues.push(`loge ${it.kind}: blocks the glass front`);
+  }
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+    const A = bb(items[i]), B = bb(items[j]);
+    if (Math.min(A[2], B[2]) - Math.max(A[0], B[0]) > 0.02 && Math.min(A[3], B[3]) - Math.max(A[1], B[1]) > 0.02) issues.push(`loge ${items[i].kind}+${items[j].kind}: overlap`);
+  }
+  const bar = items.find((i) => i.kind === 'counter');
+  if (bar && Math.abs((bar.z - bar.d / 2) - lg.rect[1]) > 0.35) issues.push('loge bar not against the back wall');
+  // deck 2 must be notched around the loge, or it clips straight through the room
+  if (main.deck2 > 0) {
+    const inner = m.pitch.W / 2 + m.apron;
+    const d2z0 = -(inner + (main.rows + 2 + main.deck2) * m.rowD), d2z1 = -(inner + (main.rows + 2) * m.rowD);
+    const d2y0 = (main.rows + 3) * m.rowH;
+    const zHit = d2z1 > lg.rect[1] - 0.01 && d2z0 < lg.rect[3] + 0.01;
+    const yHit = d2y0 < lg.floorY + lg.h;
+    if (zHit && yHit && !(lg.notchDeck2 > lg.w / 2)) issues.push('deck-2 seating passes through the loge (missing notch)');
+  }
   return { ok: issues.length === 0, issues };
 }

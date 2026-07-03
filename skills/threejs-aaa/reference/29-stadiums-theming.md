@@ -23,6 +23,11 @@ const built = buildStadium(model, theme, { at: [0, 0, 0] });  // meshes + collid
   Harness: `node ${CLAUDE_SKILL_DIR}/scripts/verify-stadium.mjs` (5 tiers × seeds + determinism).
 - Seats are one `InstancedMesh` per stand (13k seats stay cheap), colored `theme.primary` with
   `theme.secondary` end blocks; the club crest hangs in the loge.
+- **The loge is EQUIPPED** (`model.loge.items`): a bar against the back wall + stools, a VIP chair row
+  facing the pitch through the glass, mini-fridge, wall screen, plant — all themed, all colliders, all
+  under contract (VIP seats face the pitch, nothing blocks the glass, bar at the back, no overlaps).
+  Two-deck stands are **notched around the loge** (contract: `deck-2 seating passes through the loge`
+  if a patch removes the notch).
 
 ## Glass offices over the training pitches (club places)
 

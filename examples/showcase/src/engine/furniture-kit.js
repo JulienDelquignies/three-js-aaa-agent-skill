@@ -38,6 +38,7 @@ export function buildFurnitureItem(item, cache = {}, theme = null) {
     case 'sink': cyl(0.14, 0.72, 0, 0.36, 0, C.white); box(w, 0.12, d, 0, 0.78, 0, C.white); break;
     case 'toilet': box(w, 0.4, d * 0.65, 0, 0.2, 0.1, C.white); box(w, 0.5, 0.16, 0, 0.53, -d / 2 + 0.1, C.white); break;
     case 'shower': box(w, 0.06, d, 0, 0.03, 0, C.white); for (const s of [[-1, 0], [0, -1]]) box(s[0] ? 0.03 : w, h, s[1] ? 0.03 : d, s[0] * (w / 2), h / 2, s[1] * (d / 2), 0xbfd4dd); cyl(0.02, h * 0.9, w / 2 - 0.08, h * 0.45, -d / 2 + 0.08, C.metal); break;
+    case 'stool': cyl(0.19, 0.06, 0, 0.68, 0, C.fabric); cyl(0.035, 0.66, 0, 0.33, 0, C.metalDark); cyl(0.16, 0.03, 0, 0.02, 0, C.metalDark); break;
     case 'plant': cyl(0.16, 0.3, 0, 0.15, 0, 0x8a5a3a); { const m = new THREE.Mesh((cache.cone ||= new THREE.ConeGeometry(0.24, 0.9, 8)), mat(C.green)); m.position.set(0, 0.85, 0); m.castShadow = true; g.add(m); } break;
     case 'screen': box(w, h * 0.8, d, 0, h * 0.55, 0, C.screen); box(w + 0.2, 0.06, d + 0.05, 0, h * 0.96, 0, C.metalDark); break;
     case 'jersey-frame': case 'crest-panel': {
