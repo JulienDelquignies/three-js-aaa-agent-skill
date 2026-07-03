@@ -203,7 +203,29 @@ monter à bord (groundY = plancher), marcher l'allée, s'asseoir, scouting depui
 Jet redimensionné pour contenir le salon (fuselage r 1,5 ; la bande déco passait À TRAVERS la cabine →
 sous le plancher). Harnais cabine 14/14 (6 sabotages) ; headless complet vert.
 
-Backlog (suite) : ⑥ vacances → polish visuel ville (retour utilisateur) → packs CC0 véhicules.
+⑥ ✅ **Lieux de vacances** *(fait)* — la **station balnéaire** comme donnée dérivée (`beach.js`) :
+villa = grammaire `home` UN TIER au-dessus du niveau (on part en vacances mieux qu'on ne vit), sable
+enveloppant qui descend vers la MER au sud, palmiers seedés (hors villa, hors transats), **transats
+face à la mer** (contrat géométrique `cos(yaw) ≥ 0,9`) + parasols. `checkBeach` = la porte : mer
+strictement après le sable, villa hors des vagues, transats sur le sable/hors de l'eau, spawn
+praticable, pad de retour à ≤ 6 m — 6 sabotages nommés (« la mer inonde la plage », « transat dos à la
+mer »…) dans verify-beach 18/18. `beach-builder` : sable/bande humide/écume, mer VISUELLE bien plus
+large que le rect de données (l'horizon lit « pleine mer »), palmiers procéduraux (tronc segmenté
+penché déterministe, palmes retombantes, cocos), transats à dossier ARTICULÉ au bout du bac (piège de
+signe `rotation.x` : dans le mauvais sens le dossier plane au-dessus de l'assise comme une table).
+Leçon rendu : un grand plan très clair (sable quasi blanc) sous soleil+bloom = voile laiteux sur toute
+l'image → grands plans mi-teinte (0xbfa26b), parasols terracotta plutôt que blancs. **Boucle forme** :
+`state.forme` 100 au départ, scouting −12 (train) / −18 (jet) borné à 0, `state.vacation()` restaure
+100 + message de l'assistante, l'app Finances affiche la forme (vert/ambre/rouge). Carrière : station
+construite dès que la gare existe (niveau ≥ 3) à `city.bounds[2]+100` — aucune rue n'y va, on n'y
+accède QUE par train/jet : table 0 du salon = scouting, **table 1 = « Partir en vacances 🏖️ »** (deux
+actions sur la même table se disputeraient le prompt) ; arrivée sur le sable devant la villa (site
+`vacances`, HUD manuel), transats allongeables (yawFor), pad « Rentrer de vacances » → retour au site
+de départ. Villa meublée, portes, sièges assis. Harnais beach 18/18 + gamestate 14/14 ; headless ~95
+checks verts (départ depuis le wagon, forme 88→100, transat face mer fz=1.00, retour gare, app
+Finances). Réf 38.
+
+Backlog (suite) : polish visuel ville (retour utilisateur) → packs CC0 véhicules.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

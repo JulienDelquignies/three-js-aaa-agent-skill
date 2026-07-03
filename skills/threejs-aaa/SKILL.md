@@ -57,6 +57,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Diegetic UI: the phone overlay, FM data layer, one city rendered 3D AND 2D (map travel)** | [reference/35-diegetic-ui.md](reference/35-diegetic-ui.md) |
 | **Dealership: showroom grammar, derived catalogue (level-gated supercar), buy loop, GLB car** | [reference/36-dealership.md](reference/36-dealership.md) |
 | **Transport tiers + INTERIORS: bus livery & matchday ride, walkable train/jet cabins, scouting** | [reference/37-transport-tiers.md](reference/37-transport-tiers.md) |
+| **Vacation resort: derived beach/villa/palms, loungers-face-the-sea contract, the forme loop** | [reference/38-vacation-resort.md](reference/38-vacation-resort.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |

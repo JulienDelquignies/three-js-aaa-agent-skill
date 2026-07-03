@@ -14,6 +14,8 @@ import { buildCar, buildBus, buildTrain, buildJet, paintCar, findWheels, PathDri
 import { makeCatalog, checkCatalog } from '../engine/dealership.js';
 import { generateCabin, checkCabin } from '../engine/cabin.js';
 import { buildCabin } from '../engine/cabin-builder.js';
+import { generateBeach, checkBeach } from '../engine/beach.js';
+import { buildBeach } from '../engine/beach-builder.js';
 import { makeGameState } from '../engine/game-state.js';
 import { Phone, PhoneApps } from '../engine/phone.js';
 import { CityView } from '../engine/city-view.js';
@@ -191,6 +193,64 @@ export class Carriere {
       const pad = new THREE.Mesh(padGeo, pm); pad.position.set(t.pos[0], t.pos[1] + 0.03, t.pos[2]);
       this.scene.add(pad); this.disposables.push(pm);
       this.sys.add({ label: `E — ${t.label} 🚗`, pos: () => t.pos, radius: 1.5, onInteract: () => this.driveTo(t.to) });
+    }
+
+    // the RESORT (level ≥ 3, with the gare): a seaside villa + beach far beyond the city — no street
+    // goes there, you only reach it by train or jet (« Partir en vacances » from their lounge tables).
+    // Everything derived and contract-checked (engine/beach.js), meshes from beach-builder.js.
+    if (this.career.sites.gare) {
+      const beach = generateBeach({ level: this.niveau, seed: 11 });
+      const bChk = checkBeach(beach);
+      if (!bChk.ok) console.warn('checkBeach:', bChk.issues);
+      const at = [this.city.bounds[2] + 100, 0, 0];
+      const builtV = buildPlace(beach.villa, { at, theme: this.theme });
+      this.scene.add(builtV.group); this.disposables.push(builtV);
+      const vItems = furnishPlace(beach.villa);
+      const vFurn = buildFurnishing(vItems, beach.villa, { at, theme: this.theme });
+      this.scene.add(vFurn.group); this.disposables.push(vFurn);
+      for (const c of [...builtV.colliders, ...vFurn.colliders]) this.phys.addStaticBox(c.pos, c.half);
+      for (let fi = 0; fi < beach.villa.floors.length; fi++) {
+        for (const d of doorsFromFloorplan(this.scene, this.phys, beach.villa, fi, { at })) {
+          this.doors.push(d); this.disposables.push(d);
+          this.sys.add({ label: () => (d.open ? 'E — Fermer la porte' : 'E — Ouvrir la porte'), pos: () => d.centre(), radius: 1.6, onInteract: () => d.toggle() });
+        }
+      }
+      const builtB = buildBeach(beach, { theme: this.theme });
+      builtB.group.position.set(at[0], 0, at[2]);
+      this.scene.add(builtB.group); this.disposables.push(builtB);
+      for (const c of builtB.colliders) {
+        const rot = c.yaw ? [0, Math.sin(c.yaw / 2), 0, Math.cos(c.yaw / 2)] : undefined;
+        this.phys.addStaticBox([at[0] + c.pos[0], c.pos[1], at[2] + c.pos[2]], c.half, rot);
+      }
+      for (const s of builtB.seats) {                             // the transats: lie back, face the sea
+        const wp = [at[0] + s.pos[0], 0, at[2] + s.pos[2]];
+        this.sys.add({
+          label: () => (this.ctrl?.seated ? 'E — Se lever' : 'E — S’allonger au soleil'),
+          pos: () => wp, radius: 1.3,
+          onInteract: () => {
+            if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
+            else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: this.ctrl.yawFor(Math.sin(s.yaw), Math.cos(s.yaw)), seatH: s.seatH });
+          },
+        });
+      }
+      for (const it of vItems) {                                  // the villa's own seats stay sittable
+        const seatH = SEAT_H[it.kind]; if (!seatH) continue;
+        const wp = [at[0] + it.x, 0, at[2] + it.z];
+        this.sys.add({
+          label: () => (this.ctrl?.seated ? 'E — Se lever' : 'E — S’asseoir'),
+          pos: () => wp, radius: 1.4,
+          onInteract: () => {
+            if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
+            else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: this.ctrl.yawFor(Math.sin(it.yaw), Math.cos(it.yaw)), seatH });
+          },
+        });
+      }
+      this._resort = { beach, at, spawn: [at[0] + beach.spawn[0], 0, at[2] + beach.spawn[2]] };
+      const rp = [at[0] + beach.returnPad[0], 0, at[2] + beach.returnPad[2]];
+      const rpm = new THREE.MeshStandardNodeMaterial({ color: 0x123a4a, emissive: 0x35c8ff, emissiveIntensity: 1.6, roughness: 0.4 });
+      const rpad = new THREE.Mesh(padGeo, rpm); rpad.position.set(rp[0], 0.03, rp[2]);
+      this.scene.add(rpad); this.disposables.push(rpm);
+      this.sys.add({ label: 'E — Rentrer de vacances 🧳', pos: () => rp, radius: 1.5, onInteract: () => this.travelTo(this._vacFrom || 'gare') });
     }
 
     // the BALL on the first training pitch (carryable + kickable, same rules as the Intérieur scene)
@@ -496,10 +556,11 @@ export class Carriere {
       label: 'E — Descendre', pos: () => [inSpawn[0], sh.floorY, inSpawn[2]], radius: 1.1,
       onInteract: () => this._teleport([exitPos[0], 0, exitPos[2]], yaw),
     });
-    for (const t of model.tables) {                                       // scouting from the lounge table
+    model.tables.forEach((t, ti) => {                                     // lounge tables: scouting, vacation
       const tw = W([t.x, 0, t.z]);
-      this.sys.add({ label: `E — Voyage de scouting ${emoji} (${mode === 'jet' ? 'étranger' : 'national'})`, pos: () => tw, radius: 1.1, onInteract: () => this._scoutTrip(mode) });
-    }
+      if (ti === 0) this.sys.add({ label: `E — Voyage de scouting ${emoji} (${mode === 'jet' ? 'étranger' : 'national'})`, pos: () => tw, radius: 1.1, onInteract: () => this._scoutTrip(mode) });
+      else this.sys.add({ label: `E — Partir en vacances 🏖️ ${emoji}`, pos: () => tw, radius: 1.1, onInteract: () => this._goVacation() });
+    });
     for (const s of model.seats) {                                        // the seats are sittable
       if (s.driver) continue;
       const swp = W([s.x, 0, s.z]);
@@ -512,6 +573,24 @@ export class Carriere {
           else this.ctrl.sitAt({ pos: [swp[0], 0, swp[2]], yaw: this.ctrl.yawFor(Math.sin(fYaw), Math.cos(fYaw)), seatH: 0.47 });
         },
       });
+    }
+  }
+
+  /** Off to the seaside resort (from the train or the jet lounge): land on the sand outside the
+   *  villa, the forme comes back to 100 (game-state.vacation) — the return pad brings you back. */
+  _goVacation() {
+    if (!this._resort || this.site === 'vacances') return;
+    this._vacFrom = this.site;
+    if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
+    this._teleport(this._resort.spawn, Math.PI / 2);              // facing the villa entrance (+x)
+    const r = this.state.vacation();
+    this.site = 'vacances';
+    const el = document.getElementById('site'); if (el) el.textContent = '🏖️ Station balnéaire — vacances';
+    const dlg = document.getElementById('dialog');
+    if (dlg) {
+      dlg.textContent = `🏖️ Vacances au bord de la mer — forme +${r.gained} (100 %). Les transats vous attendent.`;
+      dlg.style.opacity = '1';
+      clearTimeout(this._scoutT); this._scoutT = setTimeout(() => { dlg.style.opacity = '0'; }, 3500);
     }
   }
 

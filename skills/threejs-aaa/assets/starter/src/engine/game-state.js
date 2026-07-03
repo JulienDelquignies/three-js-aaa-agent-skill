@@ -24,6 +24,7 @@ export function makeGameState({ seed = 1, level = 1 } = {}) {
     budget: Math.round(level * level * 1.8 * 10) / 10,           // M€ — transfer kitty by level
     cash: level * level * 60,                                    // k€ — the DS's PERSONAL money
     car: { kind: 'berline', color: 0xb3252f, name: 'Berline de fonction' },
+    forme: 100,                                                  // the DS's OWN energy — trips wear it down
     players,
     messages: [], unread: 0,
     addMessage({ from, text }) { state.messages.unshift({ from, text, t: state.messages.length }); state.unread++; },
@@ -33,6 +34,7 @@ export function makeGameState({ seed = 1, level = 1 } = {}) {
      *  state — pushes the scout's report as a message and the prospect onto the shortlist. */
     scoutTrip(mode = 'train') {
       const jet = mode === 'jet';
+      state.forme = Math.max(0, state.forme - (jet ? 18 : 12));  // travelling is tiring — holidays fix it
       const name = `${FIRST[(rnd() * FIRST.length) | 0]} ${LAST[(rnd() * LAST.length) | 0]}`;
       const poste = ['D', 'M', 'M', 'A', 'A'][(rnd() * 5) | 0];
       const note = Math.min(90, Math.round(50 + level * 5 + rnd() * 12 + (jet ? 8 : 0)));
@@ -41,6 +43,13 @@ export function makeGameState({ seed = 1, level = 1 } = {}) {
       state.shortlist.unshift(p);
       state.addMessage({ from: 'Chef du scouting', text: `Rapport ${jet ? '✈️' : '🚆'} ${ville} : ${name} (${poste}, ${p.note} estimé) ajouté à la shortlist.` });
       return p;
+    },
+    /** A vacation at the seaside resort: the DS's forme comes back to 100 (+ a message). */
+    vacation() {
+      const gained = 100 - state.forme;
+      state.forme = 100;
+      state.addMessage({ from: 'Assistante', text: `Bon retour de vacances ! Forme au maximum (+${gained}). Le club vous attend. 🏖️` });
+      return { gained };
     },
     /** Buy a car from the dealership catalogue — refuses if it can't be afforded. */
     buyCar(entry, color) {

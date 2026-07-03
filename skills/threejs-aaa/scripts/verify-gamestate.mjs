@@ -29,5 +29,16 @@ ok('qualité d’effectif croissante avec le niveau', avg(1) < avg(2) && avg(2) 
   const avgJ = [1, 2, 3, 4, 5].map(() => makeGameState({ seed: 9, level: 3 })).map((st) => st.scoutTrip('jet').note);
   ok('déterminisme du scouting (même état → même prospect)', new Set(avgJ).size === 1, `${avgJ[0]}`);
 }
+{
+  const s3 = makeGameState({ seed: 9, level: 3 });
+  ok('forme au départ : 100', s3.forme === 100);
+  s3.scoutTrip('train'); const fTrain = s3.forme;
+  s3.scoutTrip('jet');
+  ok('les voyages fatiguent (jet > train)', fTrain < 100 && s3.forme < fTrain, `100 → ${fTrain} → ${s3.forme}`);
+  const r = s3.vacation();
+  ok('vacances → forme restaurée + message', s3.forme === 100 && r.gained > 0 && s3.messages[0].text.includes('vacances'));
+  for (let i = 0; i < 12; i++) s3.scoutTrip('jet');
+  ok('forme bornée à 0 (jamais négative)', s3.forme === 0);
+}
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

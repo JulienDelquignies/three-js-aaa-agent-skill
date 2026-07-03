@@ -118,6 +118,7 @@ export const PhoneApps = {
         <div class="row"><span>Masse salariale</span><span style="font-weight:700">${Math.round(state.budget * 0.6 * 10) / 10} M€/an</span></div>
         <div class="row"><span>Compte perso</span><span class="kpi">${state.cash} k€</span></div>
         <div class="row"><span>Votre voiture</span><span style="font-weight:700">${state.car?.name || '—'}</span></div>
+        <div class="row"><span>Votre forme</span><span style="font-weight:800;color:${state.forme >= 70 ? '#57c07a' : state.forme >= 40 ? '#e0b54c' : '#e5484d'}">${state.forme}%</span></div>
         <div class="placeholder">Offres & clauses — bientôt.</div>`;
     },
   }),
