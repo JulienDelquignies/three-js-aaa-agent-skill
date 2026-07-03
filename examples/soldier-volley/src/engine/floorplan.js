@@ -37,6 +37,17 @@ const HOME = {
        outdoor: { pool: [4.5, 9], terrace: 2.5 } },                                                        // villa + piscine
 };
 
+// venues de rencontre (jeu DS) : le restaurant — la salle EST le hub (bar + tables de 2 face à face),
+// cuisine attenante, et dès le t3 des SALONS PRIVÉS (la table de rendez-vous, contrat « 2 places face à
+// face » dans furnish). t1 bistrot → t5 gastronomique.
+const RESTO = {
+  1: { hub: ['salle-resto', 26], rooms: [['cuisine-resto', 10, 1], ['sanitaires', 5, 0]] },
+  2: { hub: ['salle-resto', 34], rooms: [['cuisine-resto', 12, 1], ['sanitaires', 6, 0], ['reserve', 6, 0]] },
+  3: { hub: ['salle-resto', 40], rooms: [['cuisine-resto', 14, 1], ['salon-prive', 12, 1], ['sanitaires', 6, 0], ['reserve', 6, 0]] },
+  4: { hub: ['salle-resto', 48], rooms: [['cuisine-resto', 16, 1], ['salon-prive', 14, 1], ['salon-prive2', 12, 1], ['sanitaires', 8, 0], ['reserve', 8, 0]] },
+  5: { hub: ['salle-resto', 58], rooms: [['cuisine-resto', 20, 1], ['salon-prive', 16, 1], ['salon-prive2', 14, 1], ['cave', 8, 0], ['sanitaires', 8, 0], ['reserve', 8, 0]] },
+};
+
 const parse = ([id, area, win, via, flag]) => ({ id, area, win: win || 0, via: via || null, glass: flag === 'glass' });
 
 // ---- layout: one floor = north strip | hub band | south strip, all spanning the same width W.
@@ -113,9 +124,9 @@ function buildWalls(fl, W, isGround, entrance) {
 
 /** Generate a place model from a spec. Deterministic for a given (type, tier, seed). */
 export function generatePlace({ type = 'home', tier = 1, seed = 1 } = {}) {
-  const catalog = type === 'club' ? CLUB : HOME;
+  const catalog = type === 'club' ? CLUB : type === 'restaurant' ? RESTO : HOME;
   const prog = catalog[clamp(tier, 1, 5)];
-  const rnd = mulberry(seed * 7919 + tier * 131 + (type === 'club' ? 17 : 0));
+  const rnd = mulberry(seed * 7919 + tier * 131 + (type === 'club' ? 17 : type === 'restaurant' ? 29 : 0));
   const floorsProg = [prog, prog.upper].filter(Boolean);
   // shared strip metrics across floors so the stairwell always lands inside both hubs
   const all = floorsProg.flatMap((p) => p.rooms.map(parse));

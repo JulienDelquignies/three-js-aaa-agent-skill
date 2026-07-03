@@ -8,7 +8,7 @@ import { furnishPlace, checkFurnishing } from '../assets/starter/src/engine/furn
 
 const N = Number(process.argv[process.argv.indexOf('--seeds') + 1]) || 20;
 let pass = 0, fail = 0; const failures = [];
-for (const type of ['club', 'home']) for (let tier = 1; tier <= 5; tier++) {
+for (const type of ['club', 'home', 'restaurant']) for (let tier = 1; tier <= 5; tier++) {
   let ok = true; const msgs = []; let minItems = Infinity;
   for (let seed = 0; seed < N; seed++) {
     const model = generatePlace({ type, tier, seed });
@@ -25,7 +25,7 @@ for (const type of ['club', 'home']) for (let tier = 1; tier <= 5; tier++) {
   console.log(`${ok ? '✓' : '✗'} ${type} tier ${tier} (${N} seeds, ≥${minItems} items)${msgs.length ? ' — ' + msgs[0] : ''}`);
   if (msgs.length) failures.push(...msgs.slice(0, 3).map((s) => `  ${type} t${tier} ${s}`));
 }
-function model_min(type, tier) { return type === 'club' ? 4 + tier : 3; }
+function model_min(type, tier) { return type === 'club' ? 4 + tier : type === 'restaurant' ? 6 : 3; }
 
 // salle de presse : clubs t2+ — pupitre + fond sponsors + rangées face au pupitre, et le contrat mord
 {
@@ -55,6 +55,25 @@ function model_min(type, tier) { return type === 'club' ? 4 + tier : 3; }
   sab('fond sponsors supprimé', (its) => { its.splice(its.findIndex((i) => i.kind === 'press-wall'), 1); }, 'no sponsor backdrop');
 }
 
+// salon privé du restaurant : la table de rencontre (2 places face à face) + sabotages
+{
+  const m = generatePlace({ type: 'restaurant', tier: 3, seed: 2 });
+  const items = furnishPlace(m);
+  const sp = items.filter((i) => i.room === 'salon-prive');
+  const okm = sp.some((i) => i.kind === 'table') && sp.filter((i) => i.kind === 'chair').length >= 2;
+  (okm ? pass++ : fail++);
+  console.log(`${okm ? '✓' : '✗'} salon privé équipé (table de rencontre + 2 places face à face)`);
+  const sab2 = (name, mutate, expect) => {
+    const mm = generatePlace({ type: 'restaurant', tier: 3, seed: 2 });
+    const its = furnishPlace(mm); mutate(its);
+    const r = checkFurnishing(mm, its); const hit = !r.ok && r.issues.some((i) => i.includes(expect));
+    (hit ? pass++ : fail++);
+    console.log(`${hit ? '✓' : '✗'} sabotage « ${name} » attrapé${hit ? '' : ` — issues: ${r.issues.join('; ') || '(aucune)'}`}`);
+  };
+  sab2('une place du salon privé supprimée', (its) => { its.splice(its.findIndex((i) => i.room === 'salon-prive' && i.kind === 'chair'), 1); }, 'lacks 2 seats facing each other');
+  sab2('table du salon privé supprimée', (its) => { its.splice(its.findIndex((i) => i.room === 'salon-prive' && i.kind === 'table'), 1); }, 'no meeting table');
+}
+
 if (failures.length) console.log('\n' + failures.join('\n'));
-console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green (10 programs × ${N} seeds + presse)`);
+console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green (15 programs × ${N} seeds + presse + rencontre)`);
 process.exit(fail === 0 ? 0 : 1);

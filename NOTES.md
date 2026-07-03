@@ -105,7 +105,17 @@ Piliers (et leur mapping sur ce qu'on a déjà) :
    **gare** (T1 halte → T5 grande gare, déplacements domestiques/scouting), **aéroport/jet** (T4+).
    Grille réaliste : T1-T2 bus · T3 bus+train · T4-T5 train 1re/charter.
 
-Backlog (ordre proposé) : ① restaurant/bar + rencontre NPC assis en face → ② ville surélevée + trajet
+① ✅ **Restaurant/bar + rencontre NPC** *(fait)* — type `restaurant` dans la grammaire (t1 bistrot →
+t5 gastro ; la salle EST le hub : bar+tabourets, tables de 2 face à face ; **salons privés** dès t3),
+archétypes `dining`/`meeting` avec contrat nommé « table de rencontre : 2 places face à face » (+ 2
+sabotages). 4e site du monde Carrière (pads dérivés, 8 trajets, checkCareer généralisé à tous les
+bâtiments). **Agent PNJ** (même rig/contrôleur, costume sombre) assis au salon privé ; chaise d'en face
+= « E — S'installer au rendez-vous » → dialogue placeholder en bulle (4 répliques) → se lever. Vérifié
+headless 26/26 dont **face-à-face géométrique (dot 1.00/1.00 à 1,60 m)**. Le check a attrapé un vrai
+bug préexistant : **yaw mobilier ≠ yaw personnage** (conventions décalées de π) → tous les `sitAt`
+asseyaient dos à la table ; corrigé partout via `ctrl.yawFor` (ref 33) + resynchro capsule au lever.
+
+Backlog (suite) : ② ville surélevée + trajet
 véhicule (voiture, puis bus d'équipe ; gare/aéroport = sites sur la carte) → ③ téléphone/ordi (overlay ;
 le plan du téléphone = 2e présentation de la même ville) → ④ concessionnaire (la voiture devient perso)
 → ⑤ jet privé + gare fonctionnelles → ⑥ vacances.

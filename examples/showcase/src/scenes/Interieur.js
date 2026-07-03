@@ -76,7 +76,8 @@ export class Interieur {
       this.sys.add({
         label: () => (this.ctrl?.seated ? 'E — Se lever' : 'E — S’asseoir'),
         pos: () => wp, radius: 1.4,
-        onInteract: () => { if (this.ctrl.seated) this.ctrl.standUp(); else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: it.yaw, seatH }); },
+        // furniture yaw (0 = faces +z) → character yaw via the WorldBasis, else the model sits BACKWARDS
+        onInteract: () => { if (this.ctrl.seated) this.ctrl.standUp(); else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: this.ctrl.yawFor(Math.sin(it.yaw), Math.cos(it.yaw)), seatH }); },
       });
     }
 

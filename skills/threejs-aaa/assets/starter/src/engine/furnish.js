@@ -15,7 +15,7 @@ const rOverlap = (a, b, eps = 0) => Math.min(a[2], b[2]) - Math.max(a[0], b[0]) 
 const rInside = (a, r, eps = 0.02) => a[0] >= r[0] - eps && a[1] >= r[1] - eps && a[2] <= r[2] + eps && a[3] <= r[3] + eps;
 
 const ARCHETYPE = (id) => {
-  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^sdb/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^(salle-kine|kine)/, 'physio'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^(salle-video|auditorium)/, 'media'], [/^stockage/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
+  for (const [re, a] of [[/^(chambre|suite)/, 'bedroom'], [/^(sdb|sanitaires)/, 'bathroom'], [/^sejour-cuisine/, 'studio'], [/^sejour/, 'living'], [/^cuisine/, 'kitchen'], [/^bureau/, 'office'], [/^vestiaire/, 'locker'], [/^gym/, 'gym'], [/^(infirmerie|spa)/, 'medical'], [/^(salle-kine|kine)/, 'physio'], [/^cafeteria/, 'cafeteria'], [/^salle-presse/, 'press'], [/^salle-resto/, 'dining'], [/^salon-prive/, 'meeting'], [/^(salle-video|auditorium)/, 'media'], [/^(stockage|reserve|cave)/, 'storage'], [/^(couloir|hall|palier)/, 'hub']]) if (re.test(id)) return a;
   return 'hub';
 };
 
@@ -131,6 +131,43 @@ const RECIPES = {
     add('cabinet', againstWall(c, room, 0.9, 0.45, rnd), 0.9, 0.45, 1.8);
     add('sink', againstWall(c, room, 0.62, 0.48, rnd), 0.62, 0.48, 0.85);
   },
+  dining(c, room, add, rnd) {
+    // la salle du restaurant : BAR (comptoir haut + tabourets devant) + tables de 2 avec les chaises
+    // FACE À FACE de part et d'autre (le setup rencontre du jeu DS) + un peu de verdure
+    const bar = add('counter', againstWall(c, room, 2.4, 0.62, rnd), 2.4, 0.62, 1.05);
+    if (bar) for (let i = -1; i <= 1; i++) {
+      const p = front(bar, 0.55);
+      const st = { x: p.x + Math.cos(bar.yaw) * i * 0.7, z: p.z - Math.sin(bar.yaw) * i * 0.7, yaw: bar.yaw + Math.PI, w: 0.4, d: 0.4 };
+      add('stool', c.fits(st) ? st : null, 0.4, 0.4, 0.7);
+    }
+    for (let i = 0; i < 4; i++) {
+      const t = add('table', freeSpot(c, room, 0.8, 0.8, 0, rnd), 0.8, 0.8, 0.75);
+      if (t) for (const s of [-1, 1]) {
+        const ch = { x: t.x + s * 0.75, z: t.z, yaw: s > 0 ? -Math.PI / 2 : Math.PI / 2, w: 0.46, d: 0.5 };
+        const it = add('chair', c.fits(ch) ? ch : null, 0.46, 0.5, 0.9); if (it) it.faces = t.id;
+      }
+    }
+    add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+    add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+  },
+  meeting(c, room, add, rnd) {
+    // le salon privé : LA table de rendez-vous — 2 places face à face (contrat nommé), buffet, plante.
+    // On cherche l'emplacement pour L'ENSEMBLE table+chaises (sinon la table peut coller un mur et la
+    // 2e chaise ne rentre pas — le contrat l'a attrapé), dans les deux orientations.
+    const spot = freeSpot(c, room, 1.2, 2.4, 0, rnd) || freeSpot(c, room, 1.2, 2.4, Math.PI / 2, rnd);
+    if (spot) {
+      const vert = Math.abs(Math.sin(spot.yaw)) > 0.5;                    // ensemble le long de x ou z
+      const t = add('table', { x: spot.x, z: spot.z, yaw: spot.yaw, w: 1.2, d: 0.9 }, 1.2, 0.9, 0.75);
+      if (t) for (const s of [-1, 1]) {
+        const ch = vert
+          ? { x: t.x + s * 0.8, z: t.z, yaw: s > 0 ? -Math.PI / 2 : Math.PI / 2, w: 0.46, d: 0.5 }
+          : { x: t.x, z: t.z + s * 0.8, yaw: s > 0 ? Math.PI : 0, w: 0.46, d: 0.5 };
+        const it = add('chair', c.fits(ch) ? ch : null, 0.46, 0.5, 0.9); if (it) it.faces = t.id;
+      }
+    }
+    add('cabinet', againstWall(c, room, 0.9, 0.45, rnd), 0.9, 0.45, 1.1);
+    add('plant', againstWall(c, room, 0.45, 0.45, rnd), 0.45, 0.45, 1.3);
+  },
   physio(c, room, add, rnd) {
     // l'espace kiné : tables de massage accessibles TOUT AUTOUR (freeSpot, jamais contre un mur),
     // rangement, lavabo, tapis d'étirement, tabouret du praticien
@@ -221,6 +258,18 @@ export function checkFurnishing(model, items) {
     if (!it.faces) continue; const t = byId.get(it.faces); if (!t) continue;
     const dir = [Math.sin(it.yaw), Math.cos(it.yaw)]; const to = [t.x - it.x, t.z - it.z]; const l = Math.hypot(to[0], to[1]) || 1;
     if ((dir[0] * to[0] + dir[1] * to[1]) / l < 0.5) issues.push(`${it.kind}@${it.room}: does not face its ${t.kind}`);
+  }
+  // private dining room (salon privé): THE meeting table of the DS game — a table with two seats
+  // FACING EACH OTHER across it (yaws opposed), so a face-to-face conversation can be staged
+  const meetingRooms = new Set(items.filter((i) => /^salon-prive/.test(i.room)).map((i) => `${i.floor}:${i.room}`));
+  for (const key of meetingRooms) {
+    const [fi, rid] = key.split(':');
+    const mine = items.filter((i) => i.floor === Number(fi) && i.room === rid);
+    const table = mine.find((i) => i.kind === 'table');
+    if (!table) { issues.push(`${rid}: no meeting table`); continue; }
+    const seats = mine.filter((i) => i.kind === 'chair' && i.faces === table.id);
+    const opposed = seats.some((a) => seats.some((b) => a !== b && Math.abs(Math.atan2(Math.sin(a.yaw - b.yaw), Math.cos(a.yaw - b.yaw))) > Math.PI - 0.15));
+    if (seats.length < 2 || !opposed) issues.push(`${rid}: meeting table lacks 2 seats facing each other`);
   }
   // press room: the podium desk needs its sponsor backdrop RIGHT BEHIND it (aligned) and a press
   // audience — at least 2 seats facing the desk (the TV shot must read)

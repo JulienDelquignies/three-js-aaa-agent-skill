@@ -46,11 +46,11 @@ export class Carriere {
     if (!check.ok) console.warn('checkCareer:', check.issues);
     this.theme = makeTheme({ seed: this.niveau * 5 + 3 });
 
-    // buildings (home + club): meshes, furniture, colliders, doors, seats
+    // buildings (home + club + restaurant): meshes, furniture, colliders, doors, seats
     this.doors = [];
-    for (const key of ['home', 'club']) {
+    for (const key of ['home', 'club', 'resto']) {
       const site = this.career.sites[key]; const { model, at } = site;
-      const built = buildPlace(model, { at, theme: this.theme });
+      const built = buildPlace(model, { at, theme: key === 'resto' ? null : this.theme });
       this.scene.add(built.group); this.disposables.push(built);
       const items = furnishPlace(model);
       const furn = buildFurnishing(items, model, { at, theme: this.theme });
@@ -62,8 +62,16 @@ export class Carriere {
           this.sys.add({ label: () => (d.open ? 'E — Fermer la porte' : 'E — Ouvrir la porte'), pos: () => d.centre(), radius: 1.6, onInteract: () => d.toggle() });
         }
       }
+      // the MEETING (rendez-vous d'agent): the private-dining table of the restaurant — the NPC agent
+      // sits on one seat, the opposite seat gets its own interaction (dialogue placeholder, see below)
+      if (key === 'resto') {
+        const table = items.find((i) => /^salon-prive/.test(i.room) && i.kind === 'table') || items.find((i) => i.room === 'salle-resto' && i.kind === 'table');
+        const chairs = table ? items.filter((i) => i.kind === 'chair' && i.faces === table.id) : [];
+        if (chairs.length >= 2) this._meet = { at, table, npcChair: chairs[0], meChair: chairs[1] };
+      }
       for (const it of items) {
         const seatH = SEAT_H[it.kind]; if (!seatH) continue;
+        if (this._meet && (it === this._meet.npcChair || it === this._meet.meChair)) continue;
         // the speakers' chairs at the press podium get their own interaction: sitting there switches
         // the camera to the TV SHOT (from the press rows, framing podium + sponsor backdrop)
         const podium = key === 'club' && it.room === 'salle-presse' && it.kind === 'office-chair';
@@ -72,8 +80,9 @@ export class Carriere {
           label: () => (this.ctrl?.seated ? 'E — Se lever' : (podium ? 'E — S’installer au pupitre' : 'E — S’asseoir')),
           pos: () => wp, radius: 1.4,
           onInteract: () => {
-            if (this.ctrl.seated) { this.ctrl.standUp(); this._podium = false; this.tpc._init = false; }
-            else { this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: it.yaw, seatH }); this._podium = podium; }
+            if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); this._podium = false; this.tpc._init = false; }
+            // furniture yaw (0 = faces +z) → character yaw via the WorldBasis, else the model sits BACKWARDS
+            else { this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: this.ctrl.yawFor(Math.sin(it.yaw), Math.cos(it.yaw)), seatH }); this._podium = podium; }
           },
         });
       }
@@ -103,7 +112,10 @@ export class Carriere {
       this.sys.add({
         label: () => (this.ctrl?.seated ? 'E — Se lever' : (it.vip ? 'E — S’asseoir (place VIP)' : 'E — S’asseoir')),
         pos: () => wp, radius: 1.2,
-        onInteract: () => { if (this.ctrl.seated) this.ctrl.standUp(); else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: it.yaw, seatH }); },
+        onInteract: () => {
+          if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
+          else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: this.ctrl.yawFor(Math.sin(it.yaw), Math.cos(it.yaw)), seatH });
+        },
       });
     }
 
@@ -164,9 +176,56 @@ export class Carriere {
     });
     this.ctrl.collide = (dx, dy, dz) => this.char.move(dx, dy, dz);
     this.ctrl.faceInstant(1, 0);
+
+    // the NPC AGENT: same Soldier rig in a dark suit, seated at the meeting table, waiting for you.
+    // The opposite seat drives the encounter: sit → talk (placeholder dialogue) → stand up.
+    if (this._meet) {
+      const g2 = await new GLTFLoader().loadAsync('Soldier.glb');
+      const nm = g2.scene;
+      nm.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; if (o.material) { o.material = o.material.clone(); o.material.color = new THREE.Color(0x6f7787); } } });
+      const nb = new THREE.Box3().setFromObject(nm); nm.scale.setScalar(1.8 / nb.getSize(new THREE.Vector3()).y);
+      this.scene.add(nm);
+      const nmix = new THREE.AnimationMixer(nm);
+      const nbone = (re) => { let f = null; nm.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
+      const nlegs = [
+        { up: nbone(/LeftUpLeg/i), knee: nbone(/LeftLeg$/i), foot: nbone(/LeftFoot/i) },
+        { up: nbone(/RightUpLeg/i), knee: nbone(/RightLeg$/i), foot: nbone(/RightFoot/i) },
+      ];
+      this.npc = new CharacterController(nm, {
+        mixer: nmix, runClip: g2.animations.find((a) => /run/i.test(a.name)), idleClip: g2.animations.find((a) => /idle/i.test(a.name)),
+        walkClip: g2.animations.find((a) => /walk/i.test(a.name)), legs: nlegs, forwardLocal: new THREE.Vector3(0, 0, -1),
+      });
+      const m = this._meet, np = [m.at[0] + m.npcChair.x, 0, m.at[2] + m.npcChair.z];
+      this.npc.pos.set(np[0], 0, np[2]); this.npc.model.position.copy(this.npc.pos);
+      this.npc.sitAt({ pos: np, yaw: this.npc.yawFor(Math.sin(m.npcChair.yaw), Math.cos(m.npcChair.yaw)), seatH: 0.45 });
+      const mp = [m.at[0] + m.meChair.x, 0, m.at[2] + m.meChair.z];
+      this._meetLines = [
+        'Agent : Merci d’être venu en personne, ça compte pour mon joueur.',
+        'Agent : Il progresse vite — et le PSG a déjà appelé, je ne vous le cache pas.',
+        'Vous : Chez nous, il jouera. Projet, temps de jeu, staff aux petits soins. Faisons ça bien.',
+        'Agent : … D’accord. Envoyez l’offre, on tient un accord de principe. 🤝',
+      ];
+      this._meetIdx = 0;
+      this.sys.add({
+        label: () => (!this.ctrl?.seated ? 'E — S’installer au rendez-vous' : (this._meetIdx < this._meetLines.length ? 'E — Discuter' : 'E — Se lever')),
+        pos: () => mp, radius: 1.6,
+        onInteract: () => {
+          const dlg = document.getElementById('dialog');
+          if (!this.ctrl.seated) { this.ctrl.sitAt({ pos: mp, yaw: this.ctrl.yawFor(Math.sin(m.meChair.yaw), Math.cos(m.meChair.yaw)), seatH: 0.45 }); this._meetIdx = 0; }
+          else if (this._meetIdx < this._meetLines.length) { if (dlg) { dlg.textContent = this._meetLines[this._meetIdx]; dlg.style.opacity = '1'; } this._meetIdx++; }
+          else { if (dlg) dlg.style.opacity = '0'; this.ctrl.standUp(); this._syncBody(); }
+        },
+      });
+    }
     this.site = 'home'; this._siteHud();
     window.__carriere = this;                                     // for headless verification
     return true;
+  }
+
+  /** Re-seat the physics capsule on the controller position (after sitAt/standUp moved it). */
+  _syncBody() {
+    const p = this.ctrl.pos, c = this.char, t = { x: p.x, y: p.y + c.center, z: p.z };
+    c.body.setTranslation(t, true); c.body.setNextKinematicTranslation(t);
   }
 
   /** Fast-travel: put the character (feet) on the destination spawn, snap the camera behind it. */
@@ -174,6 +233,7 @@ export class Carriere {
     const s = this.career.sites[key]; if (!s) return;
     if (this.ctrl.seated) this.ctrl.standUp();
     this._podium = false;
+    const dlg = document.getElementById('dialog'); if (dlg) dlg.style.opacity = '0';
     const p = s.spawn, c = this.char;
     c.body.setTranslation({ x: p[0], y: p[1] + c.center, z: p[2] }, true);
     c.body.setNextKinematicTranslation({ x: p[0], y: p[1] + c.center, z: p[2] });
@@ -207,6 +267,7 @@ export class Carriere {
     if (this.input.pressed('interact')) this.sys.interact();
     this.input.endFrame();
     this.ctrl.update(dt);
+    this.npc?.update(dt);
     for (const d of this.doors) d.update(dt);
     this.phys.step();
     if (this.carrying && this.hand) carryFollow(this.hand, this.ballMesh, this.ballBody);

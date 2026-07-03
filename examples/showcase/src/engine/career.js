@@ -46,11 +46,14 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
   const lvl = Math.max(1, Math.min(4, level | 0));
   const homeM = generatePlace({ type: 'home', tier: HOME_TIER[lvl], seed });
   const clubM = generatePlace({ type: 'club', tier: lvl, seed: seed + 1 });
+  const restoM = generatePlace({ type: 'restaurant', tier: Math.min(5, lvl + 1), seed: seed + 2 });
   const stadM = generateStadium({ tier: lvl, seed });
-  // offsets derived from the footprints: club centred at the origin, home west of it, stadium south
-  const cb = placeBounds(clubM), hb = placeBounds(homeM);
+  // offsets derived from the footprints: club centred at the origin, home west, restaurant east,
+  // stadium south — always GAP metres of walkable ground between the real footprints
+  const cb = placeBounds(clubM), hb = placeBounds(homeM), rb = placeBounds(restoM);
   const clubAt = [-clubM.W / 2, 0, -clubM.D / 2];
   const homeAt = [clubAt[0] + cb[0] - GAP - hb[2], 0, -homeM.D / 2];
+  const restoAt = [clubAt[0] + cb[2] + GAP - rb[0], 0, -restoM.D / 2];
   const [, shz] = stadiumHalf(stadM);
   const stadAt = [0, 0, clubAt[2] + cb[3] + GAP + shz];
   const lg = stadM.loge, logeZc = (lg.rect[1] + lg.rect[3]) / 2;
@@ -59,15 +62,21 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
       spawn: [homeAt[0] + homeM.spawn.pos[0], 0, homeAt[2] + homeM.spawn.pos[2]] },
     club: { kind: 'place', model: clubM, at: clubAt, label: "Centre d'entraînement",
       spawn: [clubAt[0] + clubM.spawn.pos[0], 0, clubAt[2] + clubM.spawn.pos[2]] },
+    resto: { kind: 'place', model: restoM, at: restoAt, label: 'Restaurant « Le Rond Central »',
+      spawn: [restoAt[0] + restoM.spawn.pos[0], 0, restoAt[2] + restoM.spawn.pos[2]] },
     stadium: { kind: 'stadium', model: stadM, at: stadAt, label: 'Stade — loge du directeur sportif',
       spawn: [stadAt[0] + 0.8, lg.floorY, stadAt[2] + logeZc] },
   };
   // travel pads: just outside the entrance door (buildings) / the middle of the loge (stadium)
-  const he = entranceOf(homeM), ce = entranceOf(clubM);
+  const he = entranceOf(homeM), ce = entranceOf(clubM), re = entranceOf(restoM);
   const travels = [
-    { from: 'home', to: 'club', pos: [homeAt[0] + he[0] - 1.4, 0, homeAt[2] + he[1]] },
+    { from: 'home', to: 'club', pos: [homeAt[0] + he[0] - 1.4, 0, homeAt[2] + he[1] - 0.8] },
+    { from: 'home', to: 'resto', pos: [homeAt[0] + he[0] - 1.4, 0, homeAt[2] + he[1] + 0.8] },
     { from: 'club', to: 'home', pos: [clubAt[0] + ce[0] - 1.4, 0, clubAt[2] + ce[1] - 0.8] },
     { from: 'club', to: 'stadium', pos: [clubAt[0] + ce[0] - 1.4, 0, clubAt[2] + ce[1] + 0.8] },
+    { from: 'club', to: 'resto', pos: [clubAt[0] + ce[0] - 2.6, 0, clubAt[2] + ce[1]] },
+    { from: 'resto', to: 'club', pos: [restoAt[0] + re[0] - 1.4, 0, restoAt[2] + re[1] - 0.8] },
+    { from: 'resto', to: 'home', pos: [restoAt[0] + re[0] - 1.4, 0, restoAt[2] + re[1] + 0.8] },
     { from: 'stadium', to: 'club', pos: [stadAt[0], lg.floorY, stadAt[2] + logeZc] },
   ];
   for (const t of travels) t.label = `Aller : ${sites[t.to].label}`;
@@ -77,12 +86,13 @@ export function generateCareer({ level = 1, seed = 1 } = {}) {
 /** The no-regression contract for the whole world — run after generation AND after any manual patch. */
 export function checkCareer(c) {
   const issues = [];
+  const placeKeys = Object.keys(c.sites).filter((k) => c.sites[k].kind === 'place');
   // every site passes its own contract
-  for (const k of ['home', 'club']) { const r = checkModel(c.sites[k].model); if (!r.ok) issues.push(`${k}: ${r.issues[0]}`); }
+  for (const k of placeKeys) { const r = checkModel(c.sites[k].model); if (!r.ok) issues.push(`${k}: ${r.issues[0]}`); }
   { const r = checkStadium(c.sites.stadium.model); if (!r.ok) issues.push(`stadium: ${r.issues[0]}`); }
   // world-space footprints must keep clear ground between them
   const rects = {};
-  for (const k of ['home', 'club']) { const b = placeBounds(c.sites[k].model), a = c.sites[k].at; rects[k] = [a[0] + b[0], a[2] + b[1], a[0] + b[2], a[2] + b[3]]; }
+  for (const k of placeKeys) { const b = placeBounds(c.sites[k].model), a = c.sites[k].at; rects[k] = [a[0] + b[0], a[2] + b[1], a[0] + b[2], a[2] + b[3]]; }
   { const [hx, hz] = stadiumHalf(c.sites.stadium.model), a = c.sites.stadium.at; rects.stadium = [a[0] - hx, a[2] - hz, a[0] + hx, a[2] + hz]; }
   const keys = Object.keys(rects), M = 4;
   for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) {
@@ -112,7 +122,7 @@ export function checkCareer(c) {
     }
   }
   // spawns on-site (the stadium spawn must be in the loge, on its floor)
-  for (const k of ['home', 'club']) {
+  for (const k of placeKeys) {
     const s = c.sites[k], [x, , z] = s.spawn;
     if (x < s.at[0] || x > s.at[0] + s.model.W || z < s.at[2] || z > s.at[2] + s.model.D) issues.push(`${k} spawn outside the building`);
   }
