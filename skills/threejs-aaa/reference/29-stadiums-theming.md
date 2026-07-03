@@ -29,6 +29,20 @@ const built = buildStadium(model, theme, { at: [0, 0, 0] });  // meshes + collid
   Two-deck stands are **notched around the loge** (contract: `deck-2 seating passes through the loge`
   if a patch removes the notch).
 
+## Match furniture (all data + contract)
+
+Every stadium also carries, in the model (built themed by `stadium-builder`, all under `checkStadium()`):
+- **Goals**: regulation 7.32 × 2.44 with real line-segment nets (sloped roof, back/side panels), centred
+  on the goal lines, opening toward the pitch — contract rejects off-line, non-regulation or backwards.
+- **Sponsor boards** (`theme.sponsors` — seeded defaults or the club's real sponsors): LED-look strips
+  ringing the pitch (1 side at t1 → all 4 at t4+), 3 m behind the lines, ≤1.1 m tall (first-row sightline
+  is contract-checked), slightly tilted, softly emissive.
+- **Floodlights by tier**: 4 corner pylons with glowing heads (t1–3, champêtre/L2 look) → roof-integrated
+  light strips (t4–5).
+- **Dugouts** (t2+): plexi shelters with club-colored benches flanking the **players' tunnel**.
+- **Corner flags** (club color), **giant scoreboard** behind the end (t3+, shows initials + score).
+- Full pitch markings: penalty areas + 5.5 m boxes, penalty spots + arcs, corner arcs, mown stripes.
+
 ## Glass offices over the training pitches (club places)
 
 Club programs (reference/27) mark offices `glass`: the layout FORCES them onto the north strip, their

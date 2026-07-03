@@ -100,7 +100,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    **Loge équipée** : bar + tabourets, rangée VIP face à la vitre, frigo, écran, plante, blason — avec
    contrat (VIP face au terrain, rien contre la vitre, bar au fond, zéro chevauchement) et **encoche du
    niveau 2 autour de la loge** (le contrat a attrapé les sièges qui traversaient la pièce, puis la
-   plante qui bloquait la vitre — preuve que le garde-fou mord).
+   plante qui bloquait la vitre — preuve que le garde-fou mord). **Mobilier de match** : cages
+   réglementaires 7,32×2,44 avec filets en segments, panneaux sponsors (theme.sponsors, 1→4 côtés),
+   pylônes (T1-3) → rampes de toit (T4-5), abris de touche plexi + tunnel, drapeaux de corner, écran
+   géant (T3+), marquages complets — tout sous contrat (cages sur la ligne, panneaux ≥2 m et ≤1,1 m…).
+   Reste idées AAA : foule instanciée, ambiance sonore, herbe 3D/decals d'usure, portique TV, mode nuit.
 3. **`interactables.js`** — portes qui s'ouvrent, s'asseoir (sitPose), ramasser/porter (heldInHand),
    interrupteurs ; prompts de proximité « E — … ».
 4. **Collision caméra** (3ᵉ personne qui ne traverse pas les murs) + **éclairage intérieur** (luminaires
