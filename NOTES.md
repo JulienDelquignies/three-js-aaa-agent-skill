@@ -92,8 +92,23 @@ Piliers (et leur mapping sur ce qu'on a déjà) :
    le steering ; une rencontre = spawn NPC + interactable (« E — Saluer / Discuter ») + s'asseoir à la
    même table. Les conversations/choix passent par l'UI (pilier 2). *(à faire)*
 
-Backlog venues (ordre proposé) : ① restaurant/bar + rencontre NPC assis en face → ② téléphone/ordi
-(overlay + écrans) → ③ concessionnaire (showroom + voitures procédurales) → ④ jet privé → ⑤ vacances.
+5. **La ville comme couche dérivée** (`city.js`, à faire) — vue surélevée : réseau de rues seedé +
+   parcelles + les sites générés posés dessus ; **niveaux de ville liés au niveau du club** (T1 bourg
+   champêtre → T5 métropole). Contrats : graphe routier connexe, chaque site raccordé, chemin entre tout
+   couple de sites, routes hors bâtiments. **Source de vérité unique, plusieurs présentations** : vue 3D
+   surélevée (on voit son véhicule rouler, l'arrivée masque le chargement du site) ET plan 2D sur le
+   téléphone — cliquer l'un ou l'autre déclenche la même action de voyage (jamais deux cartes qui se
+   contredisent). Remplacera les pads de téléport de la scène Carrière.
+6. **Transport par paliers** — UN système « véhicule qui suit les rues », plusieurs habillages :
+   **voiture perso** (celle achetée au concessionnaire), **bus d'équipe** (livrée aux couleurs +
+   sponsors via `club-theme` — « E — Monter dans le bus » le jour de match, cinématique jusqu'au stade),
+   **gare** (T1 halte → T5 grande gare, déplacements domestiques/scouting), **aéroport/jet** (T4+).
+   Grille réaliste : T1-T2 bus · T3 bus+train · T4-T5 train 1re/charter.
+
+Backlog (ordre proposé) : ① restaurant/bar + rencontre NPC assis en face → ② ville surélevée + trajet
+véhicule (voiture, puis bus d'équipe ; gare/aéroport = sites sur la carte) → ③ téléphone/ordi (overlay ;
+le plan du téléphone = 2e présentation de la même ville) → ④ concessionnaire (la voiture devient perso)
+→ ⑤ jet privé + gare fonctionnelles → ⑥ vacances.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 
