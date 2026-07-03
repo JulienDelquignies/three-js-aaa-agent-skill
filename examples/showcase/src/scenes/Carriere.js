@@ -9,6 +9,8 @@ import { generateCareer, checkCareer } from '../engine/career.js';
 import { generateCity, checkCity } from '../engine/city.js';
 import { buildCity } from '../engine/city-builder.js';
 import { buildCar, PathDriver } from '../engine/vehicle.js';
+import { makeGameState } from '../engine/game-state.js';
+import { Phone } from '../engine/phone.js';
 import { buildPlace } from '../engine/place-builder.js';
 import { furnishPlace } from '../engine/furnish.js';
 import { buildFurnishing } from '../engine/furniture-kit.js';
@@ -28,7 +30,7 @@ export class Carriere {
   constructor(scene) {
     this.scene = scene; this.disposables = [];
     this._tmp = new THREE.Vector3(); this._fwd = new THREE.Vector3();
-    this.input = new Input(document.body, { keymap: { e: 'interact' }, padmap: { 2: 'interact' } });
+    this.input = new Input(document.body, { keymap: { e: 'interact', t: 'phone' }, padmap: { 2: 'interact', 3: 'phone' } });
     this.sys = new InteractableSystem();
     this.niveau = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get('niveau')) || 2));
     this.ready = this._load();
@@ -228,12 +230,31 @@ export class Carriere {
         onInteract: () => {
           const dlg = document.getElementById('dialog');
           if (!this.ctrl.seated) { this.ctrl.sitAt({ pos: mp, yaw: this.ctrl.yawFor(Math.sin(m.meChair.yaw), Math.cos(m.meChair.yaw)), seatH: 0.45 }); this._meetIdx = 0; }
-          else if (this._meetIdx < this._meetLines.length) { if (dlg) { dlg.textContent = this._meetLines[this._meetIdx]; dlg.style.opacity = '1'; } this._meetIdx++; }
+          else if (this._meetIdx < this._meetLines.length) {
+            if (dlg) { dlg.textContent = this._meetLines[this._meetIdx]; dlg.style.opacity = '1'; }
+            this._meetIdx++;
+            if (this._meetIdx === this._meetLines.length && !this._meetDone) {   // the 3D pushes to the PHONE
+              this._meetDone = true;
+              this.state?.addMessage({ from: 'Agent', text: 'Accord de principe pour mon joueur. Envoyez l’offre écrite — on finalise cette semaine. 🤝' });
+            }
+          }
           else { if (dlg) dlg.style.opacity = '0'; this.ctrl.standUp(); this._syncBody(); }
         },
       });
     }
     this.site = 'home'; this._siteHud();
+
+    // the DIEGETIC PHONE (T / gamepad Y / 📱): FM data (game-state) + the map = THE SAME city object
+    // rendered 2D — tapping a destination triggers the same drive as the pads (multi-leg if needed)
+    this.state = makeGameState({ seed: 11, level: this.niveau });
+    this.phone = new Phone({
+      city: this.city, career: this.career, state: this.state,
+      getPlayer: () => [this.ctrl.pos.x, this.ctrl.pos.z],
+      getCar: () => [this.car.group.position.x, this.car.group.position.z],
+      onTravel: (key) => this.driveTo(key),
+    });
+    this.disposables.push(this.phone);
+    document.getElementById('phonebtn')?.addEventListener('click', () => this.phone.toggle());
     window.__carriere = this;                                     // for headless verification
     return true;
   }
@@ -244,10 +265,30 @@ export class Carriere {
     this.car.group.position.set(st.pos[0], 0, st.pos[1]);
   }
 
+  /** Shortest leg sequence over the travel graph (for map travel between non-adjacent sites). */
+  _route(from, to) {
+    const prev = { [from]: null }; const q = [from];
+    while (q.length) {
+      const u = q.shift(); if (u === to) break;
+      for (const t of this.career.travels) if (t.from === u && !(t.to in prev)) { prev[t.to] = u; q.push(t.to); }
+    }
+    if (!(to in prev)) return null;
+    const legs = []; for (let v = to; prev[v]; v = prev[v]) legs.unshift(`${prev[v]}->${v}`);
+    return legs;
+  }
+
   /** Drive to a site: the car follows the derived street route, elevated camera, E skips. */
   driveTo(to) {
-    if (this._drive) return;
-    const path = this.city?.paths?.[`${this.site}->${to}`];
+    if (this._drive || to === this.site) return;
+    this.phone?.close();
+    let path = this.city?.paths?.[`${this.site}->${to}`];
+    if (!path && this.city) {                                  // non-adjacent → compose the legs
+      const legs = this._route(this.site, to);
+      if (legs && legs.every((k) => this.city.paths[k])) {
+        path = [];
+        for (const k of legs) { const p = this.city.paths[k]; path = path.length ? path.concat(p.slice(1)) : p.slice(); }
+      }
+    }
     if (!path) return this.travelTo(to);                       // no route → instant fallback
     if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
     this._podium = false;
@@ -310,6 +351,13 @@ export class Carriere {
       return;
     }
     this.input.update();
+    if (this.input.pressed('phone')) this.phone?.toggle();
+    this._t = (this._t || 0) + dt; this.phone?.update(this._t);
+    if (this.phone?.isOpen) {                                   // phone open → the world waits
+      this.input.endFrame();
+      this.ctrl.setMoveWorld(0, 0); this.ctrl.update(dt); this.npc?.update(dt); this.phys.step();
+      return;
+    }
     const look = this.input.consumeLook(), z = this.input.consumeZoom();
     if (z) this.tpc.zoom(z);
     if (Math.abs(look.dx) > 1e-4 || Math.abs(look.dy) > 1e-4) this.tpc.orbit(look.dx, look.dy);

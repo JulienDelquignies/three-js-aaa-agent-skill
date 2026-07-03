@@ -129,8 +129,20 @@ chase surélevée 31 m, E passe, l'arrivée masque le chargement). Headless 41/4
 31/31 échantillons, garée à l'arrêt (d=0,00). Piège attrapé : toit de loge sans collider = l'occlusion
 caméra l'ignorait (gros plan sur le toit à l'arrivée) → toit solide, règle notée en ref 34.
 
-Backlog (suite) : ③ téléphone/ordi (overlay ;
-le plan du téléphone = 2e présentation de la même ville) → ④ concessionnaire (la voiture devient perso)
+③ ✅ **Téléphone diégétique + couche de données FM** *(fait)* — `game-state.js` (dep-free, harnais
+8/8 : effectif 14 joueurs G/D/M/A dont la qualité suit le niveau, budget par niveau, messages/non-lus,
+déterminisme) + `phone.js` (overlay DOM autonome, T / Y manette / bouton 📱, 3 onglets). **Une ville,
+deux présentations** : l'onglet Carte dessine LE MÊME objet `city` en 2D (mêmes cellules de rue, mêmes
+sites, marqueurs live perso/voiture) et ses boutons déclenchent le MÊME `driveTo` que les pads — avec
+**trajets multi-étapes composés** sur le graphe (maison→stade passe par l'arrêt du club, vérifié).
+**La 3D écrit dans l'UI** : la fin du rendez-vous d'agent pousse un message (badge non-lu). Téléphone
+ouvert = monde en pause (input coupé, physique/anim continuent). Headless 48/48. Ref 35.
+
+⚠️ Retour utilisateur : **pas fan du rendu de la vue ville** — backlog polish visuel : trottoirs,
+variation de façades (fenêtres émissives, toits), boulevards plus larges, places/rond-points, ambiance
+(heure dorée / nuit), échelle des immeubles vs sites. À reprendre avant d'aller plus loin sur la ville.
+
+Backlog (suite) : ④ concessionnaire (la voiture devient perso)
 → ⑤ jet privé + gare fonctionnelles + bus d'équipe (même PathDriver, livrée club) → ⑥ vacances.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.

@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+// verify-gamestate.mjs — the FM data layer (engine/game-state.js): deterministic roster/budget for a
+// given (seed, level), squad quality growing with the level, ratings bounded, message/unread flow.
+import { makeGameState } from '../assets/starter/src/engine/game-state.js';
+
+let pass = 0, fail = 0;
+const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
+
+const snap = (s) => JSON.stringify({ b: s.budget, p: s.players });
+ok('déterministe (même seed → même effectif)', snap(makeGameState({ seed: 4, level: 2 })) === snap(makeGameState({ seed: 4, level: 2 })));
+ok('le seed change l’effectif', snap(makeGameState({ seed: 4, level: 2 })) !== snap(makeGameState({ seed: 5, level: 2 })));
+const avg = (l) => { const s = makeGameState({ seed: 3, level: l }); return s.players.reduce((a, p) => a + p.note, 0) / s.players.length; };
+ok('qualité d’effectif croissante avec le niveau', avg(1) < avg(2) && avg(2) < avg(4), `${avg(1).toFixed(1)} → ${avg(4).toFixed(1)}`);
+{
+  const s = makeGameState({ seed: 7, level: 3 });
+  ok('effectif complet (G/D/M/A, 14 joueurs)', s.players.length === 14 && ['G', 'D', 'M', 'A'].every((p) => s.players.some((x) => x.poste === p)));
+  ok('notes bornées (30–88)', s.players.every((p) => p.note >= 30 && p.note <= 88));
+  ok('budget croissant avec le niveau', makeGameState({ seed: 7, level: 1 }).budget < makeGameState({ seed: 7, level: 4 }).budget);
+  const u0 = s.unread;
+  s.addMessage({ from: 'Agent', text: 'test' });
+  ok('message reçu → non-lu incrémenté', s.messages[0].text === 'test' && s.unread === u0 + 1);
+  s.markRead();
+  ok('ouverture des messages → badge remis à zéro', s.unread === 0);
+}
+console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
+process.exit(fail === 0 ? 0 : 1);
