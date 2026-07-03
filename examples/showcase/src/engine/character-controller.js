@@ -39,6 +39,14 @@ export class CharacterController {
     this.pos = model.position.clone(); this.yaw = model.rotation.y; this.dist = 0; this.speed = 0;
     this.groundY = this.pos.y; this.vy = 0; this.airborne = false; this._sprint = false;
     this._move = new THREE.Vector2(); this._cur = new THREE.Vector2();  // desired / smoothed move
+    this.legs = legs;
+    if (legs) {                                            // rest rotations + hip height for the sit pose
+      this._legRest = legs.map((l) => ({ up: l.up.rotation.x, knee: l.knee.rotation.x }));
+      model.updateWorldMatrix(true, true);
+      const v = new THREE.Vector3(); legs[0].up.getWorldPosition(v);
+      this.hipH = v.y - model.position.y;                  // hip height above the feet when standing
+    }
+    this.seated = null;
     this.footLock = legs ? new FootLockIK(legs, {
       contactBand: 0.05,
       sampleClip: (p) => { this.mixer.setTime(p * this.runDur); this.model.updateWorldMatrix(true, true); },
@@ -48,7 +56,18 @@ export class CharacterController {
   // Desired move in world XZ (e.g. from camera-relative WASD / left stick). Magnitude 0..1 = walk..run.
   setMoveWorld(x, z) { this._move.set(x, z); if (this._move.lengthSq() > 1) this._move.normalize(); }
   setSprint(on) { this._sprint = !!on; }
-  jump() { if (!this.airborne) { this.vy = this.jumpSpeed; this.airborne = true; } }
+  jump() { if (!this.airborne && !this.seated) { this.vy = this.jumpSpeed; this.airborne = true; } }
+  /** Sit on a seat: freezes locomotion, plants the hips at seatH, bends the legs procedurally. */
+  sitAt({ pos, yaw, seatH }) {
+    this.seated = { pos: [...pos], yaw, seatH };
+    this.yaw = yaw; this._move.set(0, 0); this._cur.set(0, 0); this.speed = 0;
+  }
+  standUp() {
+    if (!this.seated) return;
+    const { pos, yaw } = this.seated; this.seated = null;
+    for (let i = 0; i < (this.legs || []).length; i++) { this.legs[i].up.rotation.x = this._legRest[i].up; this.legs[i].knee.rotation.x = this._legRest[i].knee; }
+    this.pos.set(pos[0] + Math.sin(yaw) * 0.6, this.groundY, pos[2] + Math.cos(yaw) * 0.6);   // step off the seat
+  }
 
   // Yaw that turns the model's forward axis onto world dir (dx,dz) — via the WorldBasis, so facing is
   // always consistent (no moonwalk). For forward=−Z this resolves to atan2(dx,dz)−π.
@@ -58,6 +77,19 @@ export class CharacterController {
   forward(out = new THREE.Vector3()) { const [dx, dz] = WORLD.facingDir(this.yaw, this.fa); return out.set(dx, 0, dz); }
 
   update(dt) {
+    if (this.seated) {                                     // seated: no locomotion; idle anim + sit pose
+      const s = this.seated;
+      this.pos.set(s.pos[0], this.groundY + (s.seatH + 0.08 - this.hipH), s.pos[2]);   // hanches posées sur l'assise
+      this.model.position.copy(this.pos); this.model.rotation.y = this.yaw = s.yaw;
+      if (this._useFsm) this.anim.set('speed', 0).update(dt);
+      else { if (this.actIdle) { this.actIdle.weight = 1; this.actRun.weight = 0; } this.mixer.update(dt); }
+      for (let i = 0; i < (this.legs || []).length; i++) {  // procedural sit: thighs level, shins down
+        this.legs[i].up.rotation.x = this._legRest[i].up - 1.35;
+        this.legs[i].knee.rotation.x = this._legRest[i].knee + 1.4;
+      }
+      this.model.updateWorldMatrix(true, true);
+      return;
+    }
     // smooth the input so starts/stops ease instead of snapping
     const k = 1 - Math.exp(-this.accel * dt);
     this._cur.lerp(this._move, k);

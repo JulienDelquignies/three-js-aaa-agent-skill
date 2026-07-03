@@ -31,6 +31,12 @@ export class Physics {
     this.world.createCollider(RAPIER.ColliderDesc.cuboid(half[0], half[1], half[2]).setFriction(0.9), b);
     return b;
   }
+  // kinematic box (animated obstacles: doors, platforms) — drive with setNextKinematicTranslation/Rotation
+  addKinematicBox(pos, half) {
+    const b = this.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(pos[0], pos[1], pos[2]));
+    this.world.createCollider(RAPIER.ColliderDesc.cuboid(half[0], half[1], half[2]).setFriction(0.6), b);
+    return b;
+  }
   addDynamicBox(pos, half, { density = 0.5, friction = 0.9 } = {}) {
     const b = this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(pos[0], pos[1], pos[2]).setLinearDamping(0.2).setAngularDamping(0.4));
     this.world.createCollider(RAPIER.ColliderDesc.cuboid(half[0], half[1], half[2]).setDensity(density).setFriction(friction), b);

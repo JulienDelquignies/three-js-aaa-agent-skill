@@ -37,6 +37,7 @@ threejs-aaa/ (the skill)
 │   ├── 27-procedural-places.md  interiors from a spec: doors/stairs derived, tiers, no-regression contract
 │   ├── 28-furnishing.md        rule-based furniture: archetype recipes, facing/clearance rules, re-verifiable
 │   ├── 29-stadiums-theming.md  parametric stadiums (tiers, loge+terrace FM view, sightline) + club identity theming
+│   ├── 30-interactables.md     playable interactions: doors that block/open, sit, pick up/carry, prompts
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -130,6 +131,11 @@ examples/
   **directors' loge + terrace** as playable vantage points (the "FM view") and a contract asserting an
   unobstructed sightline to the pitch. `club-theme.js` themes everything (instanced seats in club colors,
   crest, framed jerseys in offices); club buildings get **glass offices facing their training pitches**.
+- **Interactables (native)** — `engine/interactables.js`: proximity prompts ("E — Ouvrir"), hinged doors
+  with **kinematic physics colliders** (closed doorways really block; verified 0.5 m vs 4.5 m advance),
+  `sitAt()/standUp()` procedural sitting (hips ON the seat — the sitPose rule, verified at 0.50 m on a
+  0.45 m bench), and carry-in-hand (ball ≤0.13 m from the hand bone). Playable demo **Intérieur** in a
+  generated club with doors, seats and a ball.
 - **Particles / juice (native)** — `engine/particles.js` is a pooled instanced additive particle system
   (one draw call, no per-frame allocation) for run dust, kick sparks, impact/landing bursts, and trails.
   Wired into the **Physique** demo (sparks on kick, dust while running); feeds the bloom pass.

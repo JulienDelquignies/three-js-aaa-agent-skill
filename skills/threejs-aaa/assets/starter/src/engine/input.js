@@ -10,8 +10,10 @@ const KEY_MOVE = { w: [0, 1], z: [0, 1], arrowup: [0, 1], s: [0, -1], arrowdown:
 const KEY_ACTION = { ' ': 'shoot', e: 'cross', shift: 'sprint', j: 'jump' };
 
 export class Input {
-  constructor(el = document.body, { lookSensitivity = 0.005 } = {}) {
+  constructor(el = document.body, { lookSensitivity = 0.005, keymap = {}, padmap = {} } = {}) {
     this.el = el; this.sens = lookSensitivity;
+    this.keyAction = { ...KEY_ACTION, ...keymap };
+    this.padAction = { 0: 'shoot', 2: 'cross', 1: 'jump', ...padmap };
     this.keys = new Set(); this._look = { dx: 0, dy: 0 }; this._zoom = 0;
     this._held = new Set(); this._edge = new Set(); this._touchMove = { x: 0, z: 0 };
     this._dragId = null; this._lastPointer = null;
@@ -20,7 +22,7 @@ export class Input {
       const k = e.key.toLowerCase(); const d = e.type === 'keydown';
       if (KEY_MOVE[k] || k === ' ') e.preventDefault();
       if (d) this.keys.add(k); else this.keys.delete(k);
-      const a = KEY_ACTION[k]; if (a) { if (d) { if (!this._held.has('k:' + a)) this._edge.add(a); this._held.add('k:' + a); } else this._held.delete('k:' + a); }
+      const a = this.keyAction[k]; if (a) { if (d) { if (!this._held.has('k:' + a)) this._edge.add(a); this._held.add('k:' + a); } else this._held.delete('k:' + a); }
     };
     addEventListener('keydown', this._onKey); addEventListener('keyup', this._onKey);
 
@@ -45,8 +47,7 @@ export class Input {
       this._gpMove = { x: dz(gp.axes[0] || 0), z: -dz(gp.axes[1] || 0) };
       this._look.dx += dz(gp.axes[2] || 0) * 0.05; this._look.dy += dz(gp.axes[3] || 0) * 0.05;
       const btn = (i) => !!gp.buttons[i]?.pressed; const was = this._prevBtns;
-      const map = { 0: 'shoot', 2: 'cross', 1: 'jump' };
-      for (const i of [0, 1, 2]) if (btn(i) && !was[i]) this._edge.add(map[i]);
+      for (const i of [0, 1, 2]) if (btn(i) && !was[i] && this.padAction[i]) this._edge.add(this.padAction[i]);
       this._gpSprint = btn(5) || btn(7);
       this._prevBtns = gp.buttons.map((b) => b.pressed);
     }
