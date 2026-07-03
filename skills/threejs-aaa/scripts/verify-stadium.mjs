@@ -20,5 +20,16 @@ for (let tier = 1; tier <= 5; tier++) {
   (ok ? pass++ : fail++);
   console.log(`${ok ? '✓' : '✗'} stade tier ${tier} (~${cap.toLocaleString('fr')} places)${msgs.length ? ' — ' + msgs[0] : ''}`);
 }
-console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/5 tiers green`);
+// sabotages — the contract must bite when the model is hand-broken
+const sab = (name, mutate, expect) => {
+  const m = generateStadium({ tier: 3, seed: 1 }); mutate(m);
+  const r = checkStadium(m); const hit = !r.ok && r.issues.some((i) => i.includes(expect));
+  (hit ? pass++ : fail++);
+  console.log(`${hit ? '✓' : '✗'} sabotage « ${name} » attrapé${hit ? '' : ` — issues: ${r.issues.join('; ') || '(aucune)'}`}`);
+};
+sab('loge sans porte de terrasse', (m) => { delete m.loge.door; }, 'no doorway from the loge');
+sab('chaise VIP déplacée devant la porte de terrasse', (m) => { m.loge.items.find((i) => i.vip).x = m.loge.door.x; }, 'blocks the terrace doorway');
+sab('porte de terrasse trop étroite', (m) => { m.loge.door.w = 0.5; }, 'too narrow');
+
+console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green (5 tiers + sabotages)`);
 process.exit(fail === 0 ? 0 : 1);

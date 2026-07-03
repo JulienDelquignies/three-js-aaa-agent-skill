@@ -39,6 +39,7 @@ threejs-aaa/ (the skill)
 │   ├── 29-stadiums-theming.md  parametric stadiums (tiers, loge+terrace FM view, sightline) + club identity theming
 │   ├── 30-interactables.md     playable interactions: doors that block/open, sit, pick up/carry, prompts
 │   ├── 31-interior-camera-lighting.md  indoor playability: camera occlusion + per-room lights & switches
+│   ├── 32-career-world.md      career world: home+club+stadium derived from one level, fast-travel, contract
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -141,6 +142,12 @@ examples/
   of walls, eases back out; verified 8.5 m → 0.36 m with a clear head→camera segment) and
   `interior-lighting.js`: a pendant + PointLight per room with **derived wall switches** beside each door
   ("E — Allumer/Éteindre"), under an evening ambience so lighting visibly matters.
+- **Career world (native)** — `engine/career.js` derives the WHOLE multi-site world from one number (the
+  club level 1..4): home (hôtel→villa) + training centre (club T1→T4) + stadium, offsets computed from
+  the real footprints, **travel pads derived from the entrances**, and the loge's **terrace door derived**
+  in the stadium model (checkStadium fails if the terrace can't be reached on foot). `checkCareer()`
+  re-runs every site contract + world checks. Playable demo **Carrière**: the same character and controls
+  walk the house, the club and the loge terrace over the stands (verified headless end-to-end).
 - **Particles / juice (native)** — `engine/particles.js` is a pooled instanced additive particle system
   (one draw call, no per-frame allocation) for run dust, kick sparks, impact/landing bursts, and trails.
   Wired into the **Physique** demo (sparks on kick, dust while running); feeds the bloom pass.

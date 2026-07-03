@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carrière — villa · club · stade — Three.js AAA</title>
+    <style>
+      :root { color-scheme: dark; } * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0c; }
+      #app { position: fixed; inset: 0; } canvas { display: block; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center;
+        font: 600 14px/1.4 system-ui, sans-serif; color: #cfd3dc; letter-spacing: .04em; background: #0a0a0c; transition: opacity .4s; z-index: 10; }
+      #loading.hidden { opacity: 0; pointer-events: none; }
+      .hud { position: fixed; z-index: 20; font: 500 13px/1.35 system-ui, sans-serif; color: #e8ebf2; }
+      .back { top: 16px; left: 16px; padding: 8px 14px; border-radius: 999px; text-decoration: none;
+        background: rgba(20,22,28,.72); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(8px); }
+      .back:hover { background: rgba(40,44,54,.9); }
+      #site { top: 16px; left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 999px;
+        font-weight: 700; background: rgba(14,16,22,.78); border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(8px); }
+      #niveaux { top: 16px; right: 16px; padding: 8px 12px; border-radius: 999px; display: flex; gap: 6px; align-items: center;
+        background: rgba(20,22,28,.72); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(8px); }
+      #niveaux a { color: #9fb2d0; text-decoration: none; padding: 2px 8px; border-radius: 999px; }
+      #niveaux a.on { color: #fff; background: rgba(53,200,255,.25); border: 1px solid rgba(53,200,255,.5); }
+      #niveaux a:hover { color: #fff; }
+      #prompt { left: 50%; bottom: 15vh; transform: translateX(-50%); padding: 10px 18px; border-radius: 12px;
+        font: 700 15px system-ui; background: rgba(14,16,22,.78); border: 1px solid rgba(255,255,255,.18);
+        backdrop-filter: blur(8px); opacity: 0; transition: opacity .15s; }
+      .help { right: 16px; bottom: 16px; text-align: right; padding: 12px 15px; border-radius: 12px;
+        background: rgba(16,18,24,.66); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(8px); line-height: 1.7; }
+      .help b { color: #fff; } kbd { font: 600 11px system-ui; background: #262c38; border: 1px solid #3a4354;
+        border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; margin: 0 1px; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <a class="hud back" href="./index.html">← Galerie</a>
+    <div class="hud" id="site"></div>
+    <nav class="hud" id="niveaux"><span>Niveau</span>
+      <a href="?niveau=1">1</a><a href="?niveau=2">2</a><a href="?niveau=3">3</a><a href="?niveau=4">4</a>
+    </nav>
+    <div class="hud" id="prompt"></div>
+    <div class="hud help">
+      <b>Carrière — villa · club · stade</b><br>
+      <kbd>WASD</kbd>/<kbd>ZQSD</kbd> marcher · <b>souris</b> orbite · <b>molette</b> zoom · <kbd>E</kbd> agir<br>
+      <b>Pads lumineux</b> : voyager maison ↔ centre d'entraînement ↔ <b>loge du stade</b> (terrasse !)<br>
+      Monde entier dérivé du <b>niveau du club</b> — 🎮 manette &amp; 📱 tactile OK.
+    </div>
+    <div id="loading">GÉNÉRATION DU MONDE CARRIÈRE…</div>
+    <script type="module" src="/src/entry-carriere.js"></script>
+    <script>
+      const n = new URLSearchParams(location.search).get('niveau') || '2';
+      document.querySelectorAll('#niveaux a').forEach((a) => { if (a.textContent === n) a.classList.add('on'); });
+    </script>
+  </body>
+</html>

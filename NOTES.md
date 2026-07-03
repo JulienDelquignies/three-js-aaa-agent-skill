@@ -118,8 +118,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    travers — assumé). `interior-lighting.js` : suspension + PointLight par pièce (budget : sans ombres,
    portée limitée) + **interrupteurs dérivés** à côté de chaque porte (interactables), ambiance soir dans
    la scène Intérieur. Vue rasante désormais permise (minPitch 0.18).
-5. **Démo jouable** : même perso, mêmes contrôles, club T1→T4 et hôtel→villa (physique branchée sur les
-   colliders du builder).
+5. ✅ **Démo jouable carrière** *(fait)* — `engine/career.js` : le monde ENTIER dérivé du **niveau du
+   club** (1..4) : logement (hôtel→villa) + centre d'entraînement (club T1→T4) + stade, **offsets calculés
+   depuis les empreintes réelles** (placeBounds/stadiumHalf + marge), **pads de voyage dérivés des
+   entrées** (dehors devant la porte / au centre de la loge), spawns dérivés. `checkCareer()` = contrat
+   monde (chaque site re-passe son propre contrat + non-chevauchement, graphe de voyage connexe, pads
+   praticables) ; harnais `verify-career.mjs` (4 niveaux × seeds + 5 sabotages nommés). Au passage :
+   **porte de terrasse de la loge DÉRIVÉE** (`loge.door`, contrat « terrasse atteignable à pied » — avant
+   ça le parapet scellait la pièce) + garde-corps en verre avec main courante. Scène jouable **Carrière**
+   (`?niveau=1..4`) : même perso, mêmes contrôles maison ↔ club ↔ terrasse de la loge (téléport
+   cinématique, `groundY` par site pour s'asseoir en hauteur — place VIP OK). Vérifié headless 13/13 :
+   marche aux 3 sites, porte de terrasse franchissable, parapet bloque ailleurs, garde-corps retient.
 
 ## État actuel (rappel)
 
@@ -127,5 +136,6 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
-- Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (Contrôles jouable, Soldier Volley
-  dribble→centre→volée, Matériaux PBR, Monde procédural, IK, Géométrie, Bloom, Océan, Herbe).
+- Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
+  Contrôles, Physique, Intérieur ; génération : Lieux, Stades ; plus Soldier Volley dribble→centre→volée,
+  Matériaux PBR, Monde procédural, IK, Géométrie, Bloom, Océan, Herbe).

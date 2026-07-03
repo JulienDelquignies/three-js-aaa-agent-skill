@@ -201,8 +201,15 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   for (const e of [-1, 1]) box([e * (lg.w / 2 + 0.23), lg.floorY + lg.h / 2, zc], [0.07, lg.h / 2, lg.d / 2 + 0.2], wallM, true);
   box([0, lg.floorY + lg.h + 0.08, zc], [lg.w / 2 + 0.3, 0.08, lg.d / 2 + 0.2], wallM);         // roof
   const glassM = mat({ color: 0xcfe6f0, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.3 });
-  box([0, lg.floorY + lg.h / 2 + 0.35, lg.rect[3]], [lg.w / 2, lg.h / 2 - 0.35, 0.03], glassM); // glass front (upper part)
-  box([0, lg.floorY + 0.35, lg.rect[3]], [lg.w / 2, 0.35, 0.04], wallM, true);                  // low front parapet
+  // glass front + low parapet, SPLIT around the derived terrace doorway (lg.door) — so the room really
+  // opens onto the terrace on foot. A glass lintel spans the doorway above head height.
+  const dr = lg.door || { x: lg.w, w: 0 };
+  for (const [a, b] of [[-lg.w / 2, dr.x - dr.w / 2], [dr.x + dr.w / 2, lg.w / 2]]) {
+    if (b - a < 0.05) continue;
+    box([(a + b) / 2, lg.floorY + lg.h / 2 + 0.35, lg.rect[3]], [(b - a) / 2, lg.h / 2 - 0.35, 0.03], glassM); // glass front (upper part)
+    box([(a + b) / 2, lg.floorY + 0.35, lg.rect[3]], [(b - a) / 2, 0.35, 0.04], wallM, true);                  // low front parapet
+  }
+  if (dr.w > 0 && lg.h > 2.15) box([dr.x, lg.floorY + (2.1 + lg.h) / 2, lg.rect[3]], [dr.w / 2, (lg.h - 2.1) / 2, 0.03], glassM);
   const crestTex = new THREE.CanvasTexture(drawCrest(theme)); crestTex.colorSpace = THREE.SRGBColorSpace; disposables.push(crestTex);
   const crestGeo = new THREE.PlaneGeometry(1.4, 1.4); disposables.push(crestGeo);
   const crest = new THREE.Mesh(crestGeo, mat({ map: crestTex, roughness: 0.8, transparent: true }));
@@ -215,11 +222,13 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
     colliders.push({ pos: [at[0] + it.x, at[1] + lg.floorY + it.h / 2, at[2] + it.z], half: [it.w / 2, it.h / 2, it.d / 2] });
   }
   disposables.push({ dispose: () => Object.values(kitCache).forEach((o) => o.dispose?.()) });
-  // terrace over the top rows + railing
+  // terrace over the top rows + GLASS railing with a dark handrail (solid collider, see-through view)
   const tz = (lg.terrace[1] + lg.terrace[3]) / 2, td = (lg.terrace[3] - lg.terrace[1]) / 2;
   box([0, lg.floorY - 0.1, tz], [lg.w / 2 + 0.3, 0.1, td], wallM, true);
-  box([0, lg.floorY + lg.rail / 2, lg.terrace[3]], [lg.w / 2 + 0.3, lg.rail / 2, 0.04], mat({ color: 0x30363d, roughness: 0.4, metalness: 0.7 }), true);
-  for (const e of [-1, 1]) box([e * (lg.w / 2 + 0.26), lg.floorY + lg.rail / 2, tz], [0.04, lg.rail / 2, td], wallM, true);
+  const railM = mat({ color: 0xdfeef6, roughness: 0.06, metalness: 0.1, transparent: true, opacity: 0.28 });
+  box([0, lg.floorY + lg.rail / 2, lg.terrace[3]], [lg.w / 2 + 0.3, lg.rail / 2, 0.03], railM, true);
+  box([0, lg.floorY + lg.rail, lg.terrace[3]], [lg.w / 2 + 0.3, 0.03, 0.05], mat({ color: 0x30363d, roughness: 0.4, metalness: 0.7 }));
+  for (const e of [-1, 1]) box([e * (lg.w / 2 + 0.26), lg.floorY + lg.rail / 2, tz], [0.03, lg.rail / 2, td], railM, true);
 
   return { group, colliders, vantages: model.vantages, dispose: () => disposables.forEach((d) => d.dispose?.()) };
 }

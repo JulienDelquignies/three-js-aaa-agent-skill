@@ -45,12 +45,15 @@ export function generateStadium({ tier = 1, seed = 1 } = {}) {
     { kind: 'stool', x: -logeW / 2 + 2.2, z: zB + 1.1, yaw: 0, w: 0.4, d: 0.4, h: 0.7 },
     { kind: 'fridge', x: logeW / 2 - 0.55, z: zB + 0.45, yaw: 0, w: 0.65, d: 0.65, h: 1.6 },
     { kind: 'screen', x: logeW / 2 - 0.35, z: (zB + zG) / 2, yaw: -Math.PI / 2, w: 1.1, d: 0.12, h: 1.5 },
-    { kind: 'chair', x: -2.6, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
-    { kind: 'chair', x: -1.0, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
-    { kind: 'chair', x: 1.0, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
-    { kind: 'chair', x: 2.6, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'chair', x: -2.7, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'chair', x: -1.1, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'chair', x: 0.5, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
+    { kind: 'chair', x: 2.1, z: zG - 0.75, yaw: 0, w: 0.5, d: 0.55, h: 0.9, vip: true },
     { kind: 'plant', x: logeW / 2 - 1.35, z: zB + 0.5, yaw: 0, w: 0.45, d: 0.45, h: 1.3 },
   ];
+  // derived TERRACE DOORWAY through the glass front, right of the VIP row: the parapet + glass are
+  // solid, so without it the terrace exists but can't be reached on foot. checkStadium enforces it.
+  loge.door = { x: logeW / 2 - 0.75, w: 0.95 };
   // deck 2 passes through the loge volume → the builder must NOTCH it (loges sit between the decks)
   if (t.deck2 > 0) loge.notchDeck2 = logeW / 2 + 0.6;
   // match furniture — all pure data, themed & built by stadium-builder, checked by the contract:
@@ -128,6 +131,14 @@ export function checkStadium(m) {
   }
   const bar = items.find((i) => i.kind === 'counter');
   if (bar && Math.abs((bar.z - bar.d / 2) - lg.rect[1]) > 0.35) issues.push('loge bar not against the back wall');
+  // the terrace must be REACHABLE on foot: a doorway through the front wall (parapet + glass are solid)
+  if (!lg.door) issues.push('no doorway from the loge to the terrace (the parapet seals the room)');
+  else {
+    if (lg.door.w < 0.9) issues.push('terrace doorway too narrow for the character');
+    if (Math.abs(lg.door.x) + lg.door.w / 2 > lg.w / 2 - 0.2) issues.push('terrace doorway in the loge corner');
+    const d0 = lg.door.x - lg.door.w / 2, d1 = lg.door.x + lg.door.w / 2;
+    for (const it of items) { const A = bb(it); if (A[2] > d0 - 0.05 && A[0] < d1 + 0.05 && A[3] > lg.rect[3] - 0.75) issues.push(`loge ${it.kind}: blocks the terrace doorway`); }
+  }
   // match furniture: regulation goals on the goal lines, boards clear & low, flags at corners, dugouts off-pitch
   for (const g of m.goals || []) {
     if (Math.abs(Math.abs(g.x) - m.pitch.L / 2) > 0.1) issues.push('goal not on the goal line');

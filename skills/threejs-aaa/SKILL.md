@@ -51,6 +51,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Stadiums & club identity: tiers, loge+terrace (FM view), sightline contract, theming** | [reference/29-stadiums-theming.md](reference/29-stadiums-theming.md) |
 | **Interactables (playable): doors that block/open, sit (hips on seat), pick up/carry, prompts** | [reference/30-interactables.md](reference/30-interactables.md) |
 | **Indoor playability: camera occlusion (never through walls) + per-room lights & switches** | [reference/31-interior-camera-lighting.md](reference/31-interior-camera-lighting.md) |
+| **Career world: multi-site (home+club+stadium) derived from ONE level, fast-travel, checkCareer** | [reference/32-career-world.md](reference/32-career-world.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -166,6 +167,15 @@ resolve regardless of install location. Each prints `--help`.
   training pitches. See `reference/29`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-stadium.mjs
+  ```
+- **Assemble the career world (multi-site)** — `engine/career.js`: ONE number (the club level 1..4) →
+  home + training centre + stadium, tiers/offsets/travel-pads/spawns all DERIVED (offsets from the real
+  footprints, pads from the derived entrances, the loge terrace door from the stadium model); the same
+  character/controls walk all of it (fast-travel = kinematic teleport). `checkCareer()` re-runs every
+  site contract + world checks (no overlap, travel graph connected, pads walkable). Playable:
+  `examples/showcase` → **Carrière** (`?niveau=1..4`). See `reference/32`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-career.mjs --seeds 8
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

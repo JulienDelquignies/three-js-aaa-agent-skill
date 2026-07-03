@@ -13,6 +13,7 @@ export default defineConfig({
         physics: page('physics'),
         places: page('places'),
         interieur: page('interieur'),
+        carriere: page('carriere'),
         stadiums: page('stadiums'),
         volley: page('volley'),
         materials: page('materials'),
