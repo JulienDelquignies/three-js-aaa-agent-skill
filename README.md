@@ -35,6 +35,7 @@ threejs-aaa/ (the skill)
 │   ├── 25-particles.md         particles (juice): pooled instanced additive bursts — run dust, kick sparks, impacts
 │   ├── 26-anim-state-machine.md  animation FSM: Idle→Walk→Run 1D blend (cadence-synced) + discrete states + crossfades
 │   ├── 27-procedural-places.md  interiors from a spec: doors/stairs derived, tiers, no-regression contract
+│   ├── 28-furnishing.md        rule-based furniture: archetype recipes, facing/clearance rules, re-verifiable
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -54,6 +55,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-steering.mjs    self-test the AI steering behaviours (seek/flee/arrive/pursue/wander)
 │   ├── verify-anim-fsm.mjs    self-test the animation state machine's 1D blend weights (partition of unity)
 │   ├── verify-floorplan.mjs   no-regression harness for procedural places (all types × tiers × seeds)
+│   ├── verify-furnish.mjs     no-regression harness for rule-based furnishing (clearances, facing, overlaps)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
@@ -116,6 +118,11 @@ examples/
   from real riser/going rules, output as patchable JSON gated by `checkModel()` — the no-regression
   contract, enforced across 200+ models in CI by `verify-floorplan.mjs`. `place-builder.js` emits meshes
   + identical physics colliders, so the character controls work in any generated room.
+- **Furnishing (native)** — `engine/furnish.js` furnishes any generated room by archetype recipes
+  (bed+nightstands+wardrobe, sofa+coffee-table+tv-facing-sofa, desk+chair-facing-desk, lockers+bench,
+  gym…) under hard rules: against-wall, no overlaps, door/stair clearances always free, facing
+  constraints. `checkFurnishing()` re-verifies independently; `furniture-kit.js` builds meshes +
+  colliders. Sabotages (wardrobe in front of a door, chair turned away) are caught by name.
 - **Particles / juice (native)** — `engine/particles.js` is a pooled instanced additive particle system
   (one draw call, no per-frame allocation) for run dust, kick sparks, impact/landing bursts, and trails.
   Wired into the **Physique** demo (sparks on kick, dust while running); feeds the bloom pass.

@@ -47,6 +47,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Particles (juice): pooled instanced additive bursts — run dust, kick sparks, impacts, trails** | [reference/25-particles.md](reference/25-particles.md) |
 | **Animation state machine: Idle→Walk→Run 1D blend (cadence-synced) + discrete states + crossfades** | [reference/26-anim-state-machine.md](reference/26-anim-state-machine.md) |
 | **Procedural places (interiors): spec→rooms/walls, doors/stairs DERIVED, no-regression contract** | [reference/27-procedural-places.md](reference/27-procedural-places.md) |
+| **Furnishing: room-archetype recipes, against-wall/facing/clearance rules, re-verifiable** | [reference/28-furnishing.md](reference/28-furnishing.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -148,6 +149,13 @@ resolve regardless of install location. Each prints `--help`.
   See `reference/27`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-floorplan.mjs --seeds 30   # every type × tier × seed stays green
+  ```
+- **Furnish generated rooms by rules** — `engine/furnish.js` places furniture per room archetype
+  (bedroom/bathroom/living/kitchen/office/locker/gym…) obeying against-wall + facing + door-clearance
+  rules; `checkFurnishing()` re-verifies independently (chair-faces-desk, nothing blocks a door);
+  `engine/furniture-kit.js` builds the meshes + colliders. See `reference/28`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-furnish.mjs --seeds 20
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

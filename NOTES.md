@@ -85,8 +85,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    Harnais `verify-floorplan.mjs` : 10 programmes × 30 seeds = 300 modèles verts + déterminisme ; les
    sabotages (porte suprimée, pièces qui se chevauchent, marche à 25 cm, porte dans l'angle) sont attrapés.
    `place-builder.js` : meshes + **mêmes boîtes en colliders Rapier**. Scène galerie **Lieux procéduraux**.
-2. **`furniture-kit.js` + `furnish.js`** — mobilier procédural par archétype de pièce (lit/canapé/casiers/
-   bancs/muscu…), placement par règles (contre-mur, orienté-vers, clearance) auto-validé par verify-scene.
+2. ✅ **`furnish.js` + `furniture-kit.js`** *(fait)* — recettes par archétype (chambre/sdb/séjour/cuisine/
+   bureau/vestiaire/gym/média/…) sous règles dures : contre-mur + face à la pièce, zéro chevauchement,
+   **zones de dégagement des portes/escalier toujours libres**, contraintes d'orientation (chaise→bureau,
+   TV→canapé). `checkFurnishing()` re-vérifie indépendamment ; kit 3D compact (~25 meubles) + colliders.
+   Harnais `verify-furnish.mjs` : 10 programmes × 20 seeds verts ; sabotages attrapés nommément.
 3. **`interactables.js`** — portes qui s'ouvrent, s'asseoir (sitPose), ramasser/porter (heldInHand),
    interrupteurs ; prompts de proximité « E — … ».
 4. **Collision caméra** (3ᵉ personne qui ne traverse pas les murs) + **éclairage intérieur** (luminaires
