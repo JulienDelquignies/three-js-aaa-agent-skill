@@ -71,6 +71,29 @@ Autres idées déjà évoquées :
 
 ---
 
+## Chantier : jeu « carrière » (club de foot + logement du joueur)
+
+Objectif : un jeu où l'on contrôle un perso Mixamo dans les locaux du club **et** chez lui, avec des
+**niveaux d'infrastructure** (club T1→T5 ; chambre d'hôtel→villa avec piscine). Principe retenu : pas de
+plans dessinés — une **grammaire + des contrats**. Le lieu est une *donnée* `{type, tier, seed}`,
+générée puis validée → « modifiable/personnalisable sans régression ».
+
+1. ✅ **`floorplan.js` + contrat anti-régression** *(fait)* — spec→programme→layout hub-et-bandes
+   (adjacences partagées par construction) → **portes/fenêtres/escalier dérivés** (porte = segment centré
+   du mur partagé ; escalier aux règles réelles 15–19 cm, atterrit dans les deux hubs) → JSON patchable →
+   `checkModel()` (accessibilité BFS, largeurs passables, recouvrements, porte-pas-dans-l'angle…).
+   Harnais `verify-floorplan.mjs` : 10 programmes × 30 seeds = 300 modèles verts + déterminisme ; les
+   sabotages (porte suprimée, pièces qui se chevauchent, marche à 25 cm, porte dans l'angle) sont attrapés.
+   `place-builder.js` : meshes + **mêmes boîtes en colliders Rapier**. Scène galerie **Lieux procéduraux**.
+2. **`furniture-kit.js` + `furnish.js`** — mobilier procédural par archétype de pièce (lit/canapé/casiers/
+   bancs/muscu…), placement par règles (contre-mur, orienté-vers, clearance) auto-validé par verify-scene.
+3. **`interactables.js`** — portes qui s'ouvrent, s'asseoir (sitPose), ramasser/porter (heldInHand),
+   interrupteurs ; prompts de proximité « E — … ».
+4. **Collision caméra** (3ᵉ personne qui ne traverse pas les murs) + **éclairage intérieur** (luminaires
+   par pièce, budget de lights).
+5. **Démo jouable** : même perso, mêmes contrôles, club T1→T4 et hôtel→villa (physique branchée sur les
+   colliders du builder).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

@@ -34,6 +34,7 @@ threejs-aaa/ (the skill)
 │   ├── 24-ai-steering.md       AI opponents: steering (seek/flee/arrive/pursue/wander) driving the CharacterController
 │   ├── 25-particles.md         particles (juice): pooled instanced additive bursts — run dust, kick sparks, impacts
 │   ├── 26-anim-state-machine.md  animation FSM: Idle→Walk→Run 1D blend (cadence-synced) + discrete states + crossfades
+│   ├── 27-procedural-places.md  interiors from a spec: doors/stairs derived, tiers, no-regression contract
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -52,6 +53,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-worldbasis.mjs  self-test the gameplay-direction ↔ world-axis transforms (facing/heading/no-moonwalk)
 │   ├── verify-steering.mjs    self-test the AI steering behaviours (seek/flee/arrive/pursue/wander)
 │   ├── verify-anim-fsm.mjs    self-test the animation state machine's 1D blend weights (partition of unity)
+│   ├── verify-floorplan.mjs   no-regression harness for procedural places (all types × tiers × seeds)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
@@ -108,6 +110,12 @@ examples/
   space by speed (each clip cadence-synced to ground speed, only two neighbours ever active) plus discrete
   states + crossfades; built into `CharacterController` (pass a `walkClip`). Verified on the Soldier rig:
   0 → idle, 1.8 m/s → walk, 6 m/s → run, distinct poses, no foot-skate at any blend.
+- **Procedural places (native)** — `engine/floorplan.js` generates interiors from a spec
+  `{type, tier, seed}` (club t1→t5, hotel room→villa with pool): rooms laid out around a hub so required
+  adjacencies share walls by construction, **doors/windows/stairs derived** (never hand-placed), stairs
+  from real riser/going rules, output as patchable JSON gated by `checkModel()` — the no-regression
+  contract, enforced across 200+ models in CI by `verify-floorplan.mjs`. `place-builder.js` emits meshes
+  + identical physics colliders, so the character controls work in any generated room.
 - **Particles / juice (native)** — `engine/particles.js` is a pooled instanced additive particle system
   (one draw call, no per-frame allocation) for run dust, kick sparks, impact/landing bursts, and trails.
   Wired into the **Physique** demo (sparks on kick, dust while running); feeds the bloom pass.

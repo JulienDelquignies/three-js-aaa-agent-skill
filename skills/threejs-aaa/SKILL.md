@@ -46,6 +46,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **AI opponents: steering (seek/flee/arrive/pursue/wander) driving the same CharacterController** | [reference/24-ai-steering.md](reference/24-ai-steering.md) |
 | **Particles (juice): pooled instanced additive bursts — run dust, kick sparks, impacts, trails** | [reference/25-particles.md](reference/25-particles.md) |
 | **Animation state machine: Idle→Walk→Run 1D blend (cadence-synced) + discrete states + crossfades** | [reference/26-anim-state-machine.md](reference/26-anim-state-machine.md) |
+| **Procedural places (interiors): spec→rooms/walls, doors/stairs DERIVED, no-regression contract** | [reference/27-procedural-places.md](reference/27-procedural-places.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -138,6 +139,15 @@ resolve regardless of install location. Each prints `--help`.
   `walkClip`). Only the two neighbouring clips are ever active (partition of unity). See `reference/26`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-anim-fsm.mjs     # self-test the 1D blend weights
+  ```
+- **Generate interiors from a spec (no plan drawing)** — `engine/floorplan.js`: `{type, tier, seed}` →
+  rooms/walls with doors, windows and stairs **derived** (a door = the centred shared-wall segment of two
+  connected rooms — it can't be misplaced); `checkModel()` is the no-regression contract (reachability,
+  passable widths, stair rules); `engine/place-builder.js` emits meshes + the SAME boxes as physics
+  colliders so controls work in any room. Tiers = infrastructure levels (club t1→t5, hôtel→villa+piscine).
+  See `reference/27`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-floorplan.mjs --seeds 30   # every type × tier × seed stays green
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

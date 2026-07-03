@@ -11,6 +11,7 @@ export default defineConfig({
         main: page('index'),
         controls: page('controls'),
         physics: page('physics'),
+        places: page('places'),
         volley: page('volley'),
         materials: page('materials'),
         procedural: page('procedural'),
