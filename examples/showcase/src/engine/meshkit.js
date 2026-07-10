@@ -167,6 +167,176 @@ export function merge(meshes) {
   return computeNormals({ positions, indices });
 }
 
+/** Seeded 3D value-noise fBm (4 octaves) — THE displacement field for rocks/dunes/wear. */
+export function noise(seed = 1) {
+  const h = (x, y, z) => {
+    let t = (x * 374761393 + y * 668265263 + z * 2147483647 + seed * 144665) | 0;
+    t = Math.imul(t ^ (t >>> 13), 1274126177); t ^= t >>> 16;
+    return (t >>> 0) / 4294967296;
+  };
+  const lerp = (a, b, t) => a + (b - a) * (t * t * (3 - 2 * t));
+  const val = (x, y, z) => {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const xf = x - xi, yf = y - yi, zf = z - zi;
+    const c = (dx, dy, dz) => h(xi + dx, yi + dy, zi + dz);
+    return lerp(
+      lerp(lerp(c(0, 0, 0), c(1, 0, 0), xf), lerp(c(0, 1, 0), c(1, 1, 0), xf), yf),
+      lerp(lerp(c(0, 0, 1), c(1, 0, 1), xf), lerp(c(0, 1, 1), c(1, 1, 1), xf), yf), zf) * 2 - 1;
+  };
+  return (x, y, z) => {
+    let a = 0, f = 1, amp = 0.5;
+    for (let o = 0; o < 4; o++) { a += val(x * f, y * f, z * f) * amp; f *= 2.1; amp *= 0.5; }
+    return a;
+  };
+}
+
+// ear-clipping triangulation of a simple 2D polygon (indices into pts; pts assumed CCW)
+function earClip(pts) {
+  const n = pts.length, idx = [...Array(n).keys()], tris = [];
+  const area2 = (a, b, c) => (pts[b][0] - pts[a][0]) * (pts[c][1] - pts[a][1]) - (pts[b][1] - pts[a][1]) * (pts[c][0] - pts[a][0]);
+  const inside = (a, b, c, p) => area2(a, b, p) >= -EPS && area2(b, c, p) >= -EPS && area2(c, a, p) >= -EPS;
+  let guard = n * n;
+  while (idx.length > 3 && guard-- > 0) {
+    let clipped = false;
+    for (let i = 0; i < idx.length; i++) {
+      const a = idx[(i + idx.length - 1) % idx.length], b = idx[i], c = idx[(i + 1) % idx.length];
+      if (area2(a, b, c) <= EPS) continue;                        // reflex or degenerate — not an ear
+      let ok = true;
+      for (const p of idx) { if (p !== a && p !== b && p !== c && inside(a, b, c, p)) { ok = false; break; } }
+      if (!ok) continue;
+      tris.push(a, b, c); idx.splice(i, 1); clipped = true; break;
+    }
+    if (!clipped) break;                                          // fallback: fan the rest
+  }
+  if (idx.length === 3) tris.push(idx[0], idx[1], idx[2]);
+  else for (let i = 1; i < idx.length - 1; i++) tris.push(idx[0], idx[i], idx[i + 1]);
+  return tris;
+}
+
+/** Rounded-rectangle outline (CCW) — the workhorse footprint for extrudePoly (soft-edged slabs). */
+export function roundedRect(w, d, r, { cornerSegments = 4 } = {}) {
+  const hw = w / 2 - r, hd = d / 2 - r, pts = [];
+  const corners = [[hw, hd, 0], [-hw, hd, Math.PI / 2], [-hw, -hd, Math.PI], [hw, -hd, Math.PI * 1.5]];
+  for (const [cx, cy, a0] of corners) {
+    for (let i = 0; i <= cornerSegments; i++) {
+      const a = a0 + (i / cornerSegments) * (Math.PI / 2);
+      pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+    }
+  }
+  return pts;
+}
+
+/** Extrude a simple 2D polygon ([[x,z]], any orientation) UP by `depth`, optional edge bevel.
+ *  Caps are ear-clipped (concave outlines welcome: L-shapes, brackets, logos). Closed manifold. */
+export function extrudePoly(outline, { depth = 1, bevel = 0, y0 = 0 } = {}) {
+  let pts = outline.slice();
+  let sa = 0;                                                     // normalize to CCW (positive area)
+  for (let i = 0; i < pts.length; i++) { const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length]; sa += x1 * y2 - x2 * y1; }
+  if (sa < 0) pts.reverse();
+  const nrm = pts.map((p, i) => {                                 // outward 2D vertex normals (miter)
+    const a = pts[(i + pts.length - 1) % pts.length], b = pts[(i + 1) % pts.length];
+    const e1 = [p[0] - a[0], p[1] - a[1]], e2 = [b[0] - p[0], b[1] - p[1]];
+    const n1 = [e1[1], -e1[0]], n2 = [e2[1], -e2[0]];
+    const l1 = Math.hypot(...n1) || 1, l2 = Math.hypot(...n2) || 1;
+    let nx = n1[0] / l1 + n2[0] / l2, ny = n1[1] / l1 + n2[1] / l2;
+    const l = Math.hypot(nx, ny) || 1;
+    return [nx / l, ny / l];
+  });
+  const ring = (inset, y) => pts.flatMap((p, i) => [p[0] - nrm[i][0] * inset, y, p[1] - nrm[i][1] * inset]);
+  const rows = [];
+  if (bevel > 0) rows.push(ring(bevel, y0), ring(0, y0 + bevel), ring(0, y0 + depth - bevel), ring(bevel, y0 + depth));
+  else rows.push(ring(0, y0), ring(0, y0 + depth));
+  const m = grid({ rows, colsClosed: true });
+  const nP = pts.length, positions = [...m.positions], indices = [...m.indices];
+  const capTris = earClip(pts);
+  const bot = 0, top = (rows.length - 1) * nP;                    // cap vertices REUSE the boundary rings
+  for (let i = 0; i < capTris.length; i += 3) {
+    indices.push(bot + capTris[i], bot + capTris[i + 2], bot + capTris[i + 1]);   // bottom faces −y
+    indices.push(top + capTris[i], top + capTris[i + 1], top + capTris[i + 2]);   // top faces +y
+  }
+  // orientation: the outline's 2D handedness vs the grid's ring convention can leave the solid
+  // inside-out — the SIGNED VOLUME is the truth, not the convention: flip windings if negative
+  const out = { positions: new Float32Array(positions), indices: new Uint32Array(indices) };
+  let vol = 0; const P = out.positions, I = out.indices;
+  for (let i = 0; i < I.length; i += 3) {
+    const a = I[i] * 3, b = I[i + 1] * 3, c = I[i + 2] * 3;
+    vol += P[a] * (P[b + 1] * P[c + 2] - P[b + 2] * P[c + 1]) + P[a + 1] * (P[b + 2] * P[c] - P[b] * P[c + 2]) + P[a + 2] * (P[b] * P[c + 1] - P[b + 1] * P[c]);
+  }
+  if (vol < 0) for (let i = 0; i < I.length; i += 3) { const t = I[i + 1]; I[i + 1] = I[i + 2]; I[i + 2] = t; }
+  return computeNormals(out);
+}
+
+/** One pass of LOOP SUBDIVISION (closed manifold required — the contract guarantees it): model a
+ *  rough cage, smooth() it n times → organic. ×4 triangles per pass. */
+export function smooth(mesh, passes = 1) {
+  let p = mesh.positions, idx = mesh.indices;
+  for (let pass = 0; pass < passes; pass++) {
+    const nv = p.length / 3;
+    const edge = new Map(), neigh = Array.from({ length: nv }, () => new Set());
+    const ekey = (a, b) => (a < b ? a * nv + b : b * nv + a);
+    for (let i = 0; i < idx.length; i += 3) {
+      for (const [a, b, o] of [[idx[i], idx[i + 1], idx[i + 2]], [idx[i + 1], idx[i + 2], idx[i]], [idx[i + 2], idx[i], idx[i + 1]]]) {
+        const k = ekey(a, b);
+        if (!edge.has(k)) edge.set(k, { a, b, opp: [o] }); else edge.get(k).opp.push(o);
+        neigh[a].add(b); neigh[b].add(a);
+      }
+    }
+    const np = [];                                                // repositioned originals
+    for (let v = 0; v < nv; v++) {
+      const nb = [...neigh[v]], n = nb.length;
+      const beta = n > 3 ? 3 / (8 * n) : 3 / 16;
+      let x = p[v * 3] * (1 - n * beta), y = p[v * 3 + 1] * (1 - n * beta), z = p[v * 3 + 2] * (1 - n * beta);
+      for (const u of nb) { x += p[u * 3] * beta; y += p[u * 3 + 1] * beta; z += p[u * 3 + 2] * beta; }
+      np.push(x, y, z);
+    }
+    for (const e of edge.values()) {                              // new edge points (3/8 ends + 1/8 wings)
+      e.mid = np.length / 3;
+      const [a, b] = [e.a * 3, e.b * 3], o0 = (e.opp[0] ?? e.a) * 3, o1 = (e.opp[1] ?? e.b) * 3;
+      np.push(
+        0.375 * (p[a] + p[b]) + 0.125 * (p[o0] + p[o1]),
+        0.375 * (p[a + 1] + p[b + 1]) + 0.125 * (p[o0 + 1] + p[o1 + 1]),
+        0.375 * (p[a + 2] + p[b + 2]) + 0.125 * (p[o0 + 2] + p[o1 + 2]));
+    }
+    const ni = [];
+    for (let i = 0; i < idx.length; i += 3) {
+      const a = idx[i], b = idx[i + 1], c = idx[i + 2];
+      const ab = edge.get(ekey(a, b)).mid, bc = edge.get(ekey(b, c)).mid, ca = edge.get(ekey(c, a)).mid;
+      ni.push(a, ab, ca, b, bc, ab, c, ca, bc, ab, bc, ca);
+    }
+    p = new Float32Array(np); idx = new Uint32Array(ni);
+  }
+  return computeNormals({ positions: p, indices: idx });
+}
+
+/** Run a declarative model SPEC → parts [{mesh, name, color, ...}] (the .blend file, as JSON).
+ *  spec = { parts: [{ name?, color?, roughness?, metalness?, ops: [{op, ...args}] }] }
+ *  ops: lathe{profile,segments}, sweep{shape,path}, loft{sections}, sphere{radius}, extrudePoly
+ *  {outline,depth,bevel}, roundedRect passes an outline to the NEXT op, displaceNoise{seed,amp,freq},
+ *  smooth{passes}, transform{at,rotY,scale}, mirrorX, merge (merges all previous results). */
+export function runSpec(spec) {
+  const parts = [];
+  for (const part of spec.parts) {
+    let acc = [], outline = null;
+    for (const step of part.ops) {
+      const { op } = step;
+      if (op === 'lathe') acc.push(lathe(step.profile, step));
+      else if (op === 'sweep') acc.push(sweep(step.shape, step.path, step));
+      else if (op === 'loft') acc.push(loft(step.sections, step));
+      else if (op === 'sphere') acc.push(sphere(step.radius ?? 1, step));
+      else if (op === 'roundedRect') outline = roundedRect(step.w, step.d, step.r, step);
+      else if (op === 'extrudePoly') acc.push(extrudePoly(step.outline || outline, step));
+      else if (op === 'displaceNoise') { const f = noise(step.seed ?? 1), a = step.amp ?? 0.1, q = step.freq ?? 2; acc.push(displace(acc.pop(), (x, y, z) => f(x * q, y * q, z * q) * a)); }
+      else if (op === 'smooth') acc.push(smooth(acc.pop(), step.passes ?? 1));
+      else if (op === 'transform') acc.push(transform(acc.pop(), step));
+      else if (op === 'mirrorX') acc.push(mirrorX(acc[acc.length - 1]));
+      else if (op === 'merge') acc = [merge(acc)];
+      else throw new Error(`op inconnue: ${op}`);
+    }
+    parts.push({ ...part, mesh: acc.length > 1 ? merge(acc) : acc[0] });
+  }
+  return parts;
+}
+
 /** Smooth area-weighted vertex normals (the organic look — flat facets are the box aesthetic). */
 export function computeNormals(mesh) {
   const p = mesh.positions, idx = mesh.indices;

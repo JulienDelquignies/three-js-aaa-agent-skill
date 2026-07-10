@@ -51,6 +51,34 @@ meeting-table vase (terracotta amphora), beach rocks (seeded displaced spheres, 
 Pattern for adding one: compose ops → `checkMesh` in the harness library → `buildParts`/`toGeometry`
 → place by derivation → `play_screenshot` to judge.
 
+## v2 — cages, polygons, noise, specs, GLB export
+
+- `extrudePoly(outline, {depth, bevel})` — any simple polygon (CONCAVE included: L-shapes, brackets)
+  extruded up with mitred edge bevel; caps ear-clipped and vertex-shared with the walls (manifold).
+  Orientation is self-correcting: the outline's 2D handedness vs the ring convention can leave the
+  solid inside-out, so the op checks its own signed volume and flips windings if negative — *the
+  volume sign is the truth, not the convention* (the harness proves the L's volume EXACTLY:
+  0.72 m² × 0.5 m = 0.36 m³).
+- `roundedRect(w, d, r)` — the workhorse outline (soft-edged slabs, cushions, table tops).
+- `smooth(mesh, passes)` — **Loop subdivision** (closed manifold required — the contract guarantees
+  it): model a rough CAGE, smooth it → organic. ×4 tris/pass; volume shrinks toward the cage's
+  interior hull (small cages melt — densify the cage for stiffer results).
+- `noise(seed)` — seeded 3D value-fBm, the standard displacement field (never `Math.random`).
+- `runSpec(spec)` — the `.blend` file as JSON: `{parts: [{name, color, ops: [{op: 'lathe', …}]}]}`
+  runs the whole pipeline declaratively (models become DATA, diffable and generatable).
+- **`scripts/meshkit-export.mjs`** — spec → standard **.glb** (hand-written glTF 2.0 binary, zero
+  deps, `checkMesh` gate before export): meshkit models load in Blender, Unity, PlayCanvas, any
+  three.js app. Built-in demos: `--demo vase|trophy|rock`.
+
+## Live modeling (the Blender console)
+
+Carrière exposes `window.__meshkit` (all ops + `buildParts`), so through the play-mode MCP the agent
+models INSIDE the running game: one `play_eval` composes cage → smooth → checkMesh → `buildParts` →
+`scene.add`, the next `play_screenshot` judges it — sculpt-look-adjust in seconds, then the keeper
+shapes graduate into scene code. Position live experiments by DERIVATION too (site data, not guessed
+coordinates): the first live lounger spawned inside the hotel room, the second inside a club wall;
+the pitch-centre derivation placed the third in the open.
+
 ## What about "real" AI-generated meshes?
 
 Three ladders, by cost: (1) meshkit — free, deterministic, contract-checked, THIS; (2) CC0 packs

@@ -4,7 +4,12 @@
 // positive volume = outward winding). A library of representative models proves the ops compose:
 // lathe (vase/bottle/trophy cup), sweep (S-pipe, curved rail), loft, displaced sphere (rock),
 // mirrored+merged assembly. Plus determinism and named sabotages.
-import { lathe, sweep, loft, sphere, displace, transform, mirrorX, merge, checkMesh } from '../assets/starter/src/engine/meshkit.js';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { lathe, sweep, loft, sphere, displace, transform, mirrorX, merge, checkMesh, noise, roundedRect, extrudePoly, smooth, runSpec } from '../assets/starter/src/engine/meshkit.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -55,6 +60,52 @@ ok('le seed change le rocher', JSON.stringify([...rock(7).positions.slice(0, 30)
   const t = transform(vase(), { at: [2, 1, -3], rotY: 0.7, scale: 2 });
   const r = checkMesh(t);
   ok('transform préserve le contrat (volume ×8)', r.ok && Math.abs(r.volume / checkMesh(m).volume - 8) < 0.01, `×${(r.volume / checkMesh(m).volume).toFixed(2)}`);
+}
+
+// ---- v2 : extrusion de polygone (chanfrein, concave), subdivision de Loop, bruit, spec, export GLB
+{
+  const slab = extrudePoly(roundedRect(1.2, 0.7, 0.18), { depth: 0.3, bevel: 0.04 });
+  const r = checkMesh(slab);
+  ok(`dalle arrondie extrudée : objet réel (${r.tris} tris)`, r.ok, r.issues[0] || `V=${r.volume.toFixed(3)}`);
+  const L = extrudePoly([[0, 0], [1, 0], [1, 0.4], [0.4, 0.4], [0.4, 1.2], [0, 1.2]], { depth: 0.5 });
+  const rl = checkMesh(L);
+  ok('polygone CONCAVE (L) extrudé : caps ear-clippées, manifold', rl.ok, rl.issues[0] || `V=${rl.volume.toFixed(3)}`);
+  ok('volume du L exact (aire 0,72 × 0,5)', Math.abs(rl.volume - 0.36) < 1e-3, `V=${rl.volume.toFixed(4)}`);
+}
+{
+  const cage = extrudePoly(roundedRect(1, 1, 0.2, { cornerSegments: 2 }), { depth: 1 });
+  const c0 = checkMesh(cage);
+  const s2 = smooth(cage, 2);
+  const r = checkMesh(s2);
+  ok(`Loop ×2 : cage ${c0.tris} tris → ${r.tris} tris, toujours manifold`, r.ok && r.tris === c0.tris * 16, r.issues[0] || '');
+  ok('Loop lisse VERS L\'INTÉRIEUR (volume décroît, reste positif)', r.volume > 0 && r.volume < c0.volume, `${c0.volume.toFixed(3)} → ${r.volume.toFixed(3)}`);
+}
+{
+  const f = noise(5);
+  ok('bruit seedé déterministe et borné', f(0.3, 1.2, -2) === noise(5)(0.3, 1.2, -2) && Math.abs(f(3.7, 0.1, 9)) < 1.01 && f(0.3, 1.2, -2) !== noise(6)(0.3, 1.2, -2));
+}
+{
+  const parts = runSpec({ parts: [{ name: 'galet', ops: [{ op: 'sphere', radius: 0.4, segments: 18, rings: 12 }, { op: 'displaceNoise', seed: 3, amp: 0.08, freq: 3 }, { op: 'smooth', passes: 1 }] }] });
+  const r = checkMesh(parts[0].mesh);
+  ok('runSpec : pipeline déclaratif (sphere→bruit→Loop) sous contrat', r.ok && parts[0].name === 'galet', r.issues[0] || `${r.tris} tris`);
+}
+{
+  const dir = mkdtempSync(join(tmpdir(), 'meshkit-'));
+  const glb = join(dir, 'trophy.glb');
+  execFileSync('node', [join(dirname(fileURLToPath(import.meta.url)), 'meshkit-export.mjs'), '--demo', 'trophy', '--out', glb]);
+  const buf = readFileSync(glb);
+  const magic = buf.readUInt32LE(0) === 0x46546c67, version = buf.readUInt32LE(4) === 2, total = buf.readUInt32LE(8) === buf.length;
+  const jlen = buf.readUInt32LE(12);
+  const gltf = JSON.parse(buf.subarray(20, 20 + jlen).toString());
+  ok('export GLB : en-tête binaire valide (magic/version/longueur)', magic && version && total);
+  ok('export GLB : glTF 2.0 complet (mesh+POSITION/NORMAL+indices+matériau PBR)',
+    gltf.asset.version === '2.0' && gltf.meshes.length >= 1 &&
+    gltf.meshes[0].primitives[0].attributes.POSITION !== undefined &&
+    gltf.materials[0].pbrMetallicRoughness.metallicFactor === 1 &&
+    gltf.accessors[gltf.meshes[0].primitives[0].attributes.POSITION].min.length === 3);
+  let bad = false;                                                 // accessors must fit the buffer
+  for (const a of gltf.accessors) { const v = gltf.bufferViews[a.bufferView]; if (v.byteOffset + v.byteLength > gltf.buffers[0].byteLength) bad = true; }
+  ok('export GLB : accessors dans les bornes du buffer binaire', !bad);
 }
 
 // ---- sabotages : le contrat doit mordre par son nom

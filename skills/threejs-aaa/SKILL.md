@@ -94,6 +94,15 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/procgen.mjs --spec ./prop.json --out ./public/prop.glb
   ```
+- **Model CURVED/ORGANIC objects (meshkit — Blender ops as data)** — lathe/sweep/loft/extrudePoly
+  (+bevel, concave ok)/Loop-subdivision cages/seeded-noise displace, all under the closed-manifold +
+  positive-volume contract, exportable to standard `.glb` (loads in Blender/Unity/any engine). See
+  `reference/40`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-meshkit.mjs                      # the contract harness
+  node ${CLAUDE_SKILL_DIR}/scripts/meshkit-export.mjs --demo trophy --out trophy.glb
+  node ${CLAUDE_SKILL_DIR}/scripts/meshkit-export.mjs --spec model.json --out model.glb
+  ```
 - **Fetch a free CC0 asset** — HDRIs and full PBR texture sets from Poly Haven. **Free, no API
   key, no cost** — the default asset path:
   ```bash

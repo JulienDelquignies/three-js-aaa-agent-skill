@@ -26,8 +26,9 @@ import { buildStadium } from '../engine/stadium-builder.js';
 import { makeTheme } from '../engine/club-theme.js';
 import { InteractableSystem, doorsFromFloorplan, carryFollow } from '../engine/interactables.js';
 import { DebugGizmos } from '../engine/debug-gizmos.js';
-import { lathe, sweep, transform, mirrorX, merge, sphere, displace } from '../engine/meshkit.js';
-import { buildParts } from '../engine/meshkit-builder.js';
+import * as MESHKIT from '../engine/meshkit.js';
+import { buildParts, toGeometry } from '../engine/meshkit-builder.js';
+const { lathe, sweep, transform, mirrorX, merge, sphere, displace } = MESHKIT;
 
 // Carrière — the career demo: ONE character, the SAME controls, across the three sites of a club level
 // (?niveau=1..4): the player's home (chambre d'hôtel → villa), the training centre (club T1→T4) and the
@@ -466,6 +467,7 @@ export class Carriere {
       this.disposables.push(this.gizmos);
     }
     window.__carriere = this;                                     // for headless verification
+    window.__meshkit = { ...MESHKIT, buildParts, toGeometry };    // live modeling from the play-mode MCP
     return true;
   }
 

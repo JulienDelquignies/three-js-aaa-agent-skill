@@ -282,9 +282,28 @@ rendez-vous, rochers sur la plage (colliders). **Dogfooding éditeur agent** : t
 (chope dorée → vraie coupe ; coin occupé par le bar puis le frigo → dérivation) faite au playmode MCP
 en secondes — v1 du trophée jugée et corrigée sur captures live sans un seul script jetable. Réf 40.
 
+⑨bis ✅ **Meshkit v2** *(fait, « tu peux encore améliorer l'outil ? »)* — **(1) `extrudePoly`**
+(polygone quelconque, CONCAVE inclus — ear clipping ; chanfrein par offset mitre ; caps partageant
+les sommets des anneaux → manifold) avec orientation AUTO-CORRECTIVE : le sens 2D du contour vs la
+convention des anneaux peut retourner le solide → l'op vérifie son propre volume signé et inverse le
+winding si négatif (« le signe du volume est la vérité, pas la convention ») ; harnais : volume du L
+EXACT (0,72×0,5=0,36). **(2) `roundedRect`** (contour à coins arrondis — dalles, coussins).
+**(3) `smooth`** = SUBDIVISION DE LOOP (manifold fermé requis — garanti par le contrat) : cage
+grossière → organique ; ×4 tris/passe, volume décroissant positif ; petites cages fondent (densifier
+pour du raide). **(4) `noise(seed)`** value-fBm 3D seedé. **(5) `runSpec`** : le .blend en JSON —
+pipeline déclaratif parts/ops. **(6) `meshkit-export.mjs`** : spec → **.glb standard** (writer
+glTF 2.0 binaire écrit à la main, zéro dép, refuse d'exporter un maillage qui casse checkMesh) —
+les modèles meshkit chargent dans Blender/Unity/PlayCanvas/tout three.js ; démos --demo
+vase|trophy|rock ; harnais valide magic/chunks/accessors du binaire. **(7) Modélisation LIVE** :
+`window.__meshkit` exposé dans Carrière → depuis le playmode MCP, un play_eval compose cage→smooth→
+checkMesh→buildParts→scene.add et le screenshot suivant juge — sculpter-regarder-ajuster en secondes
+(démo : méridienne cage L 44 tris → Loop ×2 → forme douce sur le terrain d'entraînement ; 2 premiers
+essais spawnés DANS la chambre puis DANS un mur → position dérivée du terrain, encore la leçon
+« dérivation > coordonnée »). Harnais meshkit 27/27. Réf 40 enrichie.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
-→ meshkit partout (mobilier galbé, lampadaires, végétation sweep).
+→ meshkit partout (mobilier galbé via cages denses, lampadaires, végétation sweep, UVs/textures).
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

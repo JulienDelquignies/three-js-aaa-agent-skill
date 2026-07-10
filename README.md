@@ -77,6 +77,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-beach.mjs       vacation resort: sea after the sand, loungers face the sea, palms clear
 │   ├── playmode-mcp.mjs       MCP server: persistent live game session (open/state/screenshot/eval/perf)
 │   ├── verify-meshkit.mjs     modeling kit: closed-manifold + positive-volume contract on every op
+│   ├── meshkit-export.mjs     meshkit spec (JSON) → standard .glb (zero-dep glTF 2.0 writer)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
