@@ -38,6 +38,18 @@ sab('clés dans le désordre', (s) => { s.keys[2].t = 0.1; }, 'not strictly sort
 sab('membre téléporté (180° en 30 ms)', (s) => { s.keys[1].t = 0.03; s.keys[1].pose.RightForeArm = [0, 0, -178]; s.keys[0].pose.RightForeArm = [0, 0, 0]; }, 'teleports');
 sab('couture de boucle cassée (fin ≠ début)', (s) => { s.keys[s.keys.length - 1].pose.RightArm = [0, 0, -20]; }, 'loop seam');
 sab('genou plié à l’envers', (s) => { s.keys[1].pose.RightLeg = [-60, 0, 0]; s.keys[0].pose.RightLeg = [-50, 0, 0]; s.keys[s.keys.length - 1].pose.RightLeg = [-50, 0, 0]; }, 'knee out of range');
+{
+  const sabH = (name, mutate, expect) => {
+    const spec = JSON.parse(JSON.stringify(MOVES.plongeon)); mutate(spec);
+    const r = checkClip(resolveTracks(spec));
+    const hit = !r.ok && r.issues.some((i) => i.includes(expect));
+    (hit ? pass++ : fail++);
+    console.log(`${hit ? '✓' : '✗'} sabotage « ${name} » attrapé${hit ? '' : ` — issues: ${r.issues.join('; ') || '(aucune)'}`}`);
+  };
+  sabH('bassin à travers le sol', (s) => { s.keys[3].hips = [1.35, -1.2, 0]; }, 'through the floor');
+  sabH('saut-fusée (dy 2 m)', (s) => { s.keys[2].hips = [0, 2, 0]; }, 'rocket jump');
+  sabH('bassin téléporté (1,3 m en 40 ms)', (s) => { s.keys[2].t = s.keys[1].t + 0.04; }, 'hips teleport');
+}
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

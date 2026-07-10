@@ -391,7 +391,7 @@ export class Carriere {
     // GESTURES (animkit, reference/42): data-authored moves compiled against THIS rig — the tracks
     // only claim the bones they pose, so a gesture plays OVER the locomotion (legs keep walking)
     this._gestures = {};
-    for (const g of ['poignee', 'celebration', 'salut', 'applaudir', 'frappe']) this._gestures[g] = toClip(MOVES[g], model);
+    for (const g of Object.keys(MOVES)) this._gestures[g] = toClip(MOVES[g], model);
     this._gesture = (name) => playGesture(this._mixer, this._gestures[name]);
 
     // THE TEAMMATES: three seated players (skinned clones, jersey-tinted) riding in the bus cabin

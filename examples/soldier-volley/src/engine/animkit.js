@@ -37,7 +37,10 @@ export const quatAngle = (a, b) => {                               // shortest a
   return 2 * Math.acos(d);
 };
 
-/** Resolve a spec → per-bone quaternion keyframes (BASE merged, every key stamps every used bone). */
+/** Resolve a spec → per-bone quaternion keyframes (BASE merged, every key stamps every used bone),
+ *  plus the ROOT MOTION track if any key carries `hips: [dx, dy, dz]` (METERS, deltas from rest —
+ *  dives, jumps and bicycle kicks need the pelvis to actually travel; the builder calibrates metres
+ *  to rig units, Mixamo skeletons are usually centimetres). */
 export function resolveTracks(spec) {
   const bones = new Set(Object.keys(BASE_POSE));
   for (const k of spec.keys) for (const b of Object.keys(k.pose)) bones.add(b);
@@ -49,7 +52,10 @@ export function resolveTracks(spec) {
       q: eulerToQuat(k.pose[b] || BASE_POSE[b] || [0, 0, 0]),
     }));
   }
-  return { name: spec.name, duration: spec.duration, loop: !!spec.loop, tracks };
+  const hipsPos = spec.keys.some((k) => k.hips)
+    ? spec.keys.map((k) => ({ t: k.t, p: k.hips || [0, 0, 0] }))
+    : null;
+  return { name: spec.name, duration: spec.duration, loop: !!spec.loop, tracks, hipsPos };
 }
 
 /** The movement contract — a generated move must be an ANATOMICALLY SANE animation. */
@@ -76,6 +82,22 @@ export function checkClip(resolved) {
     // seated-teammates code) — a knee bent backwards is the classic broken-generated-anim tell
     if (bone === 'LeftLeg' || bone === 'RightLeg') for (const k of keys) { if (k.e[0] < -8 || k.e[0] > 150) { issues.push(`${bone}: knee out of range (${k.e[0].toFixed(0)}°)`); break; } }
     if (bone === 'LeftUpLeg' || bone === 'RightUpLeg') for (const k of keys) { if (k.e[0] < -130 || k.e[0] > 40) { issues.push(`${bone}: hip out of range (${k.e[0].toFixed(0)}°)`); break; } }
+  }
+  // ROOT MOTION sanity: the pelvis travels, it doesn't glitch — standing hip ≈ 0.95 m, a lying hip
+  // ≈ 0.2 m, so dy stays in [−0.85, 1.1] (no floor clipping, no rocket jump); linear speed bounded;
+  // a looping move brings the pelvis home
+  if (resolved.hipsPos) {
+    for (let i = 0; i < resolved.hipsPos.length; i++) {
+      const k = resolved.hipsPos[i];
+      if (k.p[1] < -0.85 || k.p[1] > 1.1) { issues.push(`hips through the floor or rocket jump (dy=${k.p[1].toFixed(2)} m)`); break; }
+      if (i) {
+        const pv = resolved.hipsPos[i - 1];
+        const v = Math.hypot(k.p[0] - pv.p[0], k.p[1] - pv.p[1], k.p[2] - pv.p[2]) / Math.max(1e-4, k.t - pv.t);
+        if (v > 6.5) { issues.push(`hips teleport (${v.toFixed(1)} m/s between keys)`); break; }
+      }
+    }
+    const first = resolved.hipsPos[0], last = resolved.hipsPos[resolved.hipsPos.length - 1];
+    if (loop && Math.hypot(...last.p.map((v, i) => v - first.p[i])) > 0.05) issues.push('hips loop seam pops (pelvis does not come home)');
   }
   return { ok: issues.length === 0, issues };
 }
@@ -135,6 +157,50 @@ export const MOVES = {
       { t: 0.42, pose: { RightUpLeg: [-85, 0, 0], RightLeg: [15, 0, 0], RightFoot: [30, 0, 0], LeftArm: [15, 0, 60], RightArm: [-45, 0, 50], Spine1: [-8, 0, 0] } },
       { t: 0.6, pose: { RightUpLeg: [-60, 0, 0], RightLeg: [30, 0, 0], LeftArm: [0, 0, 55], RightArm: [-25, 0, 55], Spine1: [-4, 0, 0] } },
       { t: 0.85, pose: {} },
+    ],
+  },
+  /** BACKHEEL (once): quick heel flick behind, shoulders stay square */
+  talonnade: {
+    name: 'talonnade', duration: 0.65, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.18, pose: { RightUpLeg: [-18, 0, 0], RightLeg: [25, 0, 0], Spine1: [4, 0, 0] } },
+      { t: 0.36, pose: { RightUpLeg: [28, 0, 0], RightLeg: [105, 0, 0], RightFoot: [20, 0, 0], Spine1: [10, 0, 0], LeftArm: [-15, 0, 50], RightArm: [10, 0, 68] } },
+      { t: 0.65, pose: {} },
+    ],
+  },
+  /** CHEST CONTROL (once): arch back, chest puffed, arms open, soft knees */
+  amorti: {
+    name: 'amorti', duration: 1.0, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.3, pose: { Spine1: [-18, 0, 0], Head: [-10, 0, 0], LeftArm: [-12, 0, 28], RightArm: [-12, 0, 28], LeftUpLeg: [-14, 0, 0], RightUpLeg: [-14, 0, 0], LeftLeg: [24, 0, 0], RightLeg: [24, 0, 0] }, hips: [0, -0.07, 0] },
+      { t: 0.55, pose: { Spine1: [-6, 0, 0], LeftArm: [-5, 0, 45], RightArm: [-5, 0, 45], LeftLeg: [14, 0, 0], RightLeg: [14, 0, 0] }, hips: [0, -0.03, 0] },
+      { t: 1.0, pose: {}, hips: [0, 0, 0] },
+    ],
+  },
+  /** GOALKEEPER DIVE (once, root motion): crouch, launch to the right, lay out, spring back up */
+  plongeon: {
+    name: 'plongeon', duration: 1.6, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.25, pose: { LeftUpLeg: [-55, 0, 0], RightUpLeg: [-55, 0, 0], LeftLeg: [75, 0, 0], RightLeg: [75, 0, 0], Spine1: [16, 0, 0] }, hips: [0, -0.26, 0] },
+      { t: 0.55, pose: { Hips: [0, 0, -62], LeftArm: [-20, 0, -68], RightArm: [-20, 0, -72], LeftForeArm: [0, 0, 8], RightForeArm: [0, 0, 8], LeftUpLeg: [-12, 0, 0], RightUpLeg: [-16, 0, 0], LeftLeg: [12, 0, 0], RightLeg: [18, 0, 0], Spine1: [-6, 0, 0] }, hips: [0.85, 0.28, 0] },
+      { t: 0.9, pose: { Hips: [0, 0, -80], LeftArm: [-15, 0, -70], RightArm: [-15, 0, -74], LeftUpLeg: [-10, 0, 0], RightUpLeg: [-14, 0, 0], Spine1: [0, 0, 0] }, hips: [1.35, -0.68, 0] },
+      { t: 1.2, pose: { Hips: [0, 0, -80], LeftArm: [-10, 0, -60], RightArm: [-10, 0, -64] }, hips: [1.35, -0.68, 0] },
+      { t: 1.6, pose: {}, hips: [0, 0, 0] },
+    ],
+  },
+  /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */
+  retournee: {
+    name: 'retournee', duration: 1.35, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.22, pose: { LeftUpLeg: [-48, 0, 0], RightUpLeg: [-48, 0, 0], LeftLeg: [62, 0, 0], RightLeg: [62, 0, 0], Spine1: [14, 0, 0], LeftArm: [-25, 0, 45], RightArm: [-25, 0, 45] }, hips: [0, -0.22, 0] },
+      { t: 0.52, pose: { Hips: [-95, 0, 0], RightUpLeg: [-115, 0, 0], RightLeg: [18, 0, 0], LeftUpLeg: [-35, 0, 0], LeftLeg: [45, 0, 0], Spine1: [-10, 0, 0], Head: [-15, 0, 0], LeftArm: [-45, 0, 20], RightArm: [-45, 0, 20] }, hips: [0, 0.62, -0.18] },
+      { t: 0.8, pose: { Hips: [-60, 0, 0], RightUpLeg: [-55, 0, 0], RightLeg: [40, 0, 0], LeftUpLeg: [-60, 0, 0], LeftLeg: [30, 0, 0], LeftArm: [-25, 0, 35], RightArm: [-25, 0, 35] }, hips: [0, 0.1, -0.35] },
+      { t: 1.05, pose: { LeftUpLeg: [-45, 0, 0], RightUpLeg: [-45, 0, 0], LeftLeg: [60, 0, 0], RightLeg: [60, 0, 0], Spine1: [12, 0, 0] }, hips: [0, -0.2, -0.42] },
+      { t: 1.35, pose: {}, hips: [0, 0, -0.42] },
     ],
   },
   /** side-foot PASS (once): shorter, opened hip */

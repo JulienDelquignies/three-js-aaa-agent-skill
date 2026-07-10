@@ -370,6 +370,20 @@ frappe (armé-fouetté-accompagné + contre-bras), passe intérieur, célébrati
 poignée sur le joueur ET le PNJ (même clip, deux mixers), un record au circuit joue la célébration à
 la descente de voiture. Harnais animkit 16/16 ; headless PASS (geste réel + retour idle). Réf 42.
 
+⑫bis ✅ **Animkit root motion — talonnade, amorti, plongeon, retournée** *(fait, « tu peux tout
+faire en AAA ?? »)* — clés `hips: [droite, haut, avant]` en MÈTRES personnage + rotation du bassin →
+plongeon de gardien et retournée acrobatique possibles. Contrats racine : dy ∈ [−0,85, 1,1] (bassin
+debout ≈ 0,95 m, allongé ≈ 0,2 — ni sol traversé ni saut-fusée), vitesse linéaire ≤ 6,5 m/s, boucle
+ramène le bassin ; 3 sabotages. **Le piège d'axes, un cran plus profond que les bras** : l'armature
+Mixamo est TOURNÉE (−90° X) et en centimètres — sondé live, la base monde du parent du bassin avait
+scaleY = 0 (le Y local pointe à l'HORIZONTALE) ; le premier plongeon « jouait » avec le bassin figé à
+0,98 m (les rotations le faisaient PARAÎTRE en l'air) — c'est la sonde NUMÉRIQUE (hips.worldY dans le
+temps), pas le screenshot, qui l'a attrapé. Fix : delta transformé espace-personnage → monde (base du
+root, forward −Z) → local du parent du bassin (base parent INVERSE — absorbe rotation ET cm).
+Résultat mesuré : plongeon 0,96 → envol 1,06 → SOL 0,30 → relevé 0,97 ; retournée : corps renversé en
+l'air, jambe fouettée au-dessus de la tête (captures). Harnais animkit 23/23 ; headless PASS
+(10 moves compilés). Réf 42 § root motion.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

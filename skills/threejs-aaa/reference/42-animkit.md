@@ -51,3 +51,23 @@ the player and the NPC (each has a mixer — same clip, both rigs), and a new la
 plays `celebration` when you step out of the car. Pattern for a new move: author the spec →
 `checkClip` in the harness → screenshot the PEAK pose live (freeze mid-clip) → adjust degrees →
 wire with `this._gesture('name')`.
+
+## Root motion (v2): dives, jumps, bicycle kicks
+
+Acrobatic moves need the PELVIS to travel. Keys accept `hips: [right, up, forward]` in CHARACTER
+metres; contract additions: dy ∈ [−0.85, 1.1] (a standing hip ≈ 0.95 m, a lying hip ≈ 0.2 m — no
+floor clipping, no rocket jump), linear speed ≤ 6.5 m/s, looping moves bring the pelvis home.
+
+The axis trap, one level deeper than the arms: probed live, the Mixamo armature node comes ROTATED
+(−90° X) and in centimetres — the hips bone's parent world basis had **scaleY = 0** (bone-local Y
+points HORIZONTAL in the world). Authored deltas must therefore be transformed
+character-space → world (model root basis, forward = −Z) → hips-parent local (INVERSE parent basis,
+which absorbs both the rotation and the cm scale) before keying. The first dive "played" with the
+pelvis frozen at 0.98 m — rotations made it LOOK airborne while the root never moved; the numeric
+probe (hips world-Y over time), not the screenshot, is what caught it.
+
+New library moves: **talonnade** (backheel flick), **amorti** (chest control, arch + soft knees),
+**plongeon** (goalkeeper dive: crouch → lateral flight → laid out on the ground → spring up; hips
+world-Y measured 0.96 → 1.06 → 0.30 → 0.97), **retournee** (bicycle kick: launch, lay back mid-air,
+right leg scissors overhead). All under checkClip; sabotages: pelvis through the floor, rocket jump,
+hips teleport.

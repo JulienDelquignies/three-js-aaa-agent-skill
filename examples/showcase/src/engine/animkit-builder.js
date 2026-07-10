@@ -22,6 +22,28 @@ export function toClip(spec, model) {
     const values = new Float32Array(keys.flatMap((k) => k.q));
     tracks.push(new THREE.QuaternionKeyframeTrack(`${name}.quaternion`, times, values));
   }
+  // ROOT MOTION: hips deltas are authored in CHARACTER metres [right, up, forward]. The bone's local
+  // frame is NOTHING like that: Mixamo armatures come rotated (−90° X) and in centimetres — probed
+  // live, the hips' parent world basis had scaleY 0 (local Y points HORIZONTAL). So each delta goes
+  // character-space → world (the model's root basis, forward = −Z on this rig) → hips-parent local
+  // (inverse parent basis — which absorbs both the rotation and the cm scale) before keying.
+  if (r.hipsPos) {
+    const hipsName = find('Hips');
+    let hipsBone = null; model.traverse((o) => { if (o.isBone && o.name === hipsName && !hipsBone) hipsBone = o; });
+    if (hipsBone) {
+      model.updateMatrixWorld(true);
+      const toWorld = new THREE.Matrix3().setFromMatrix4(model.matrixWorld);
+      const toParent = new THREE.Matrix3().setFromMatrix4(hipsBone.parent.matrixWorld).invert();
+      const rest = hipsBone.position;
+      const d = new THREE.Vector3();
+      const times = new Float32Array(r.hipsPos.map((k) => k.t));
+      const values = new Float32Array(r.hipsPos.flatMap((k) => {
+        d.set(k.p[0], k.p[1], -k.p[2]).applyMatrix3(toWorld).applyMatrix3(toParent);   // forwardLocal = −Z
+        return [rest.x + d.x, rest.y + d.y, rest.z + d.z];
+      }));
+      tracks.push(new THREE.VectorKeyframeTrack(`${hipsName}.position`, times, values));
+    }
+  }
   const clip = new THREE.AnimationClip(r.name, r.duration, tracks);
   // ADDITIVE by default: converted to deltas vs frame 0 (= BASE pose), the gesture ADDS on top of
   // whatever locomotion is running — two normal-blend actions on the same bones just average 50/50
