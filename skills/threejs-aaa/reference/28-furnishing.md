@@ -56,3 +56,14 @@ Sabotage coverage (proven): furniture pushed through a wall → caught; wardrobe
 → caught (`blocks a door/stair clearance`); office chair turned away from the desk → caught
 (`does not face its desk`); press seat turned away → caught; sponsor backdrop moved in FRONT of the
 podium, or deleted → caught by name.
+
+## Soft parts come from meshkit (reference/40)
+
+`furniture-kit` is no longer boxes-only: anything SOFT or TURNED is meshkit geometry, cached per
+dimension so N same-size chairs share one pad. `pad(w,h,d,…)` = rounded-rect cage → Loop ×1
+(mattress, duvet, pillows, sofa seat/back cushions and arms, chair/office-chair pads, massage-table
+top); `turned(profile)` = lathe (plant pot, sink pedestal+basin as ONE profile, stool seat); the
+plant's foliage is three displaced-sphere blobs (seeded noise), and the CITY trees share one displaced
+sphere crown across all instances (organic skyline for zero extra draw calls). Boxes remain for what
+IS boxy — frames, shelves, lockers. Contracts/colliders are untouched (footprints unchanged); the
+upgrade is purely the meshes, verified on live screenshots through the play-mode MCP.

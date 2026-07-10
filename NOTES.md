@@ -301,9 +301,23 @@ checkMesh→buildParts→scene.add et le screenshot suivant juge — sculpter-re
 essais spawnés DANS la chambre puis DANS un mur → position dérivée du terrain, encore la leçon
 « dérivation > coordonnée »). Harnais meshkit 27/27. Réf 40 enrichie.
 
+⑩ ✅ **Meshkit partout** *(fait, « ok meshkit partout »)* — le mobilier-boîtes remplacé pièce par
+pièce dans `furniture-kit.js` via deux helpers cachés par dimension (N chaises partagent UNE
+géométrie) : `pad()` = cage roundedRect → Loop ×1 (matelas, couette, oreillers, coussins d'assise et
+de dossier + accoudoirs du canapé, galette de chaise, assise/dossier de fauteuil de bureau, plateau de
+table de massage) et `turned()` = lathe (pot de plante, lavabo pied+vasque en UN profil, assise de
+tabouret) ; feuillage des plantes = 3 blobs sphère-déplacée (bruit seedé) ; **arbres de la ville** :
+la couronne instanciée passe du cône au blob meshkit partagé (skyline organique, zéro draw call en
+plus). Les boîtes restent pour ce qui EST boxy (cadres, étagères, casiers). Contrats et colliders
+INTACTS (empreintes inchangées — verify-furnish 40/40 sans retouche) : l'upgrade est purement
+visuelle, jugée sur captures live au playmode (coussin de chaise au resto, plante organique, arbres).
+Perf notée : ~125 draws sur la vue resto (au-dessus du budget indicatif 100 — chaque coussin est un
+mesh de plus ; piste : fusionner les pads par pièce ou instancier par kind si ça devient un vrai
+problème). Réf 28 enrichie (« Soft parts come from meshkit »). Headless complet PASS.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
-→ meshkit partout (mobilier galbé via cages denses, lampadaires, végétation sweep, UVs/textures).
+→ meshkit : UVs/textures, fusion des pads par pièce (draw calls), lampadaires lathe.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

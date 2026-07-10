@@ -1,4 +1,6 @@
 import * as THREE from 'three/webgpu';
+import { sphere, displace, noise } from './meshkit.js';
+import { toGeometry } from './meshkit-builder.js';
 
 // city-builder — turn a city model (engine/city.js, pure data) into the world: asphalt street strips
 // (merged cell runs, dashed centre lines), INSTANCED buildings with per-instance color (one draw call
@@ -132,9 +134,13 @@ export function buildCity(city, { at = [0, 0, 0] } = {}) {
       bm.castShadow = bm.receiveShadow = true; group.add(bm); disposables.push(bm);
     }
   }
-  // trees: instanced trunk + foliage
+  // trees: instanced trunk + foliage — the foliage is ONE meshkit displaced sphere shared by every
+  // instance (organic crowns across the whole city for zero extra draw calls; cones read as toys)
   if (city.trees.length) {
-    const tg = new THREE.CylinderGeometry(0.09, 0.13, 1.1, 6), fg = new THREE.ConeGeometry(1.15, 2.6, 7);
+    const tg = new THREE.CylinderGeometry(0.09, 0.13, 1.1, 6);
+    const fN = noise(23);
+    const fg = toGeometry(displace(sphere(1.05, { segments: 16, rings: 11 }), (x, y, z) => fN(x * 1.8, y * 1.8, z * 1.8) * 0.34));
+    fg.scale(1, 1.18, 1);
     disposables.push(tg, fg);
     const tm = new THREE.InstancedMesh(tg, mat({ color: 0x6b4a2f, roughness: 0.9 }), city.trees.length);
     const fm = new THREE.InstancedMesh(fg, mat({ roughness: 0.85 }), city.trees.length);
