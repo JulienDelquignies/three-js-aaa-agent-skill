@@ -49,6 +49,7 @@ threejs-aaa/ (the skill)
 │   ├── 39-agent-editor.md      agent editor: play-mode MCP (live session tools) + ?debug=1 gizmos overlay
 │   ├── 40-meshkit.md           meshkit: Blender ops as data (lathe/sweep/loft/displace) + manifold contract
 │   ├── 41-driving-circuit.md   free driving (bicycle model + capsule collisions) + derived circuit & lap timer
+│   ├── 42-animkit.md           animkit: Mixamo moves as data (pose keys → additive clips) + anatomical contract
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -81,6 +82,7 @@ threejs-aaa/ (the skill)
 │   ├── meshkit-export.mjs     meshkit spec (JSON) → standard .glb (zero-dep glTF 2.0 writer)
 │   ├── verify-drive.mjs       free-driving controller: top speed, braking, turning circle, wall block
 │   ├── verify-circuit.mjs     derived track: drivable bends, no self-crossing, lap timer, sabotages
+│   ├── verify-animkit.mjs     movement kit: known bones, no limb teleport, loop seams, knee range
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project

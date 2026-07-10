@@ -350,6 +350,26 @@ lisait `down('sprint')` qui inclut l'AUTO-sprint du stick poussé à fond → su
 aurait freiné — nouveau `downStrict()` (appui explicite seulement). Test émulé tactile (hasTouch) :
 boutons présents, tap sur E → edge 'interact' déclenché ; headless PASS. Réf 22 enrichie.
 
+⑫ ✅ **Animkit — les moves du rig Mixamo comme données** *(fait, « un outil similaire pour les moves
+du rig / créer des animations foot »)* — le meshkit du mouvement : un move = POSES nommées (degrés
+par os, ordre XYZ, absolues — tout-zéro = T-pose, BASE_POSE bras baissés mergée sous chaque clé) sur
+une timeline → `resolveTracks` (quaternions inline, zéro dép, testé node) → `animkit-builder` compile
+en AnimationClip contre le VRAI rig (résolution des noms d'os par suffixe — les exports GLB
+renomment). **Contrat `checkClip`** : os Mixamo connus (une typo d'os = silence sinon), clés triées,
+quaternions normalisés, vitesse angulaire bornée (membre « téléporté » > 14 rad/s = le tell des anims
+générées cassées), couture de boucle continue, genoux/hanches dans leurs plages ; 5 sabotages nommés.
+**Leçon d'axes durement gagnée en live** (2 itérations playmode + une sonde des rotations réelles) :
+les bras de CE rig ne sont PAS en miroir (idle : z ≈ +60 des DEUX côtés) ; bras z : 0 = T-pose,
++60 = baissé, **−70 = levé**, +160 = croisé devant la poitrine (la 1re célébration s'auto-enlaçait,
+la 2e ne levait qu'un bras). **Lecture ADDITIVE obligatoire** : deux actions normales sur les mêmes
+os se moyennent 50/50 (célébration à mi-hauteur au 1er screenshot) → `makeClipAdditive` (deltas vs
+frame 0 = BASE) + AdditiveAnimationBlendMode, fade in/out auto — le geste roule PAR-DESSUS la
+locomotion et retombe sur l'idle (headless : Δ 2,27 rad au pic, Δ 0,02 après). **Bibliothèque** :
+frappe (armé-fouetté-accompagné + contre-bras), passe intérieur, célébration bras au ciel, salut
+(boucle), poignée de main, applaudissements. **En jeu** : la ligne 🤝 du rendez-vous d'agent joue la
+poignée sur le joueur ET le PNJ (même clip, deux mixers), un record au circuit joue la célébration à
+la descente de voiture. Harnais animkit 16/16 ; headless PASS (geste réel + retour idle). Réf 42.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

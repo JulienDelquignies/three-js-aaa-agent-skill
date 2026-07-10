@@ -1,0 +1,150 @@
+// animkit — Blender's ANIMATION side as data (the meshkit of movement, reference/42): author a move
+// as named POSES (degrees per Mixamo bone) on a timeline, resolve to quaternion tracks, prove it with
+// a contract, judge the gesture on a live screenshot. Dependency-free (quaternion math inline) →
+// node-testable by scripts/verify-animkit.mjs; animkit-builder.js turns resolved tracks into a
+// THREE.AnimationClip against a real rig (bone names resolved by suffix — GLB exports rename).
+//   spec = { name, duration, loop?, keys: [{ t, pose: { RightArm: [x°,y°,z°], … }, ease? }] }
+// Poses are ABSOLUTE local rotations (XYZ order). All-zero = the Mixamo T-POSE, so BASE_POSE
+// (arms lowered) is merged under every key — author only what MOVES.
+export const MIXAMO_BONES = [
+  'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head',
+  'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand',
+  'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand',
+  'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase',
+  'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase',
+];
+
+/** Neutral standing base: arms lowered from the T-pose, slight elbow relax. */
+export const BASE_POSE = {
+  LeftArm: [0, 0, 60], RightArm: [0, 0, 60],
+  LeftForeArm: [0, 0, 12], RightForeArm: [0, 0, 12],
+};
+
+const D2R = Math.PI / 180;
+export function eulerToQuat([x, y, z]) {                           // XYZ order (three.js convention)
+  const c1 = Math.cos(x * D2R / 2), s1 = Math.sin(x * D2R / 2);
+  const c2 = Math.cos(y * D2R / 2), s2 = Math.sin(y * D2R / 2);
+  const c3 = Math.cos(z * D2R / 2), s3 = Math.sin(z * D2R / 2);
+  return [
+    s1 * c2 * c3 + c1 * s2 * s3,
+    c1 * s2 * c3 - s1 * c2 * s3,
+    c1 * c2 * s3 + s1 * s2 * c3,
+    c1 * c2 * c3 - s1 * s2 * s3,
+  ];
+}
+export const quatAngle = (a, b) => {                               // shortest angle between rotations
+  const d = Math.min(1, Math.abs(a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]));
+  return 2 * Math.acos(d);
+};
+
+/** Resolve a spec → per-bone quaternion keyframes (BASE merged, every key stamps every used bone). */
+export function resolveTracks(spec) {
+  const bones = new Set(Object.keys(BASE_POSE));
+  for (const k of spec.keys) for (const b of Object.keys(k.pose)) bones.add(b);
+  const tracks = {};
+  for (const b of bones) {
+    tracks[b] = spec.keys.map((k) => ({
+      t: k.t,
+      e: k.pose[b] || BASE_POSE[b] || [0, 0, 0],
+      q: eulerToQuat(k.pose[b] || BASE_POSE[b] || [0, 0, 0]),
+    }));
+  }
+  return { name: spec.name, duration: spec.duration, loop: !!spec.loop, tracks };
+}
+
+/** The movement contract — a generated move must be an ANATOMICALLY SANE animation. */
+export function checkClip(resolved) {
+  const issues = [];
+  const { duration, loop, tracks } = resolved;
+  if (!(duration > 0)) issues.push('non-positive duration');
+  for (const [bone, keys] of Object.entries(tracks)) {
+    if (!MIXAMO_BONES.includes(bone)) { issues.push(`unknown bone "${bone}" (not on the Mixamo rig)`); continue; }
+    for (let i = 0; i < keys.length; i++) {
+      if (keys[i].t < 0 || keys[i].t > duration) issues.push(`${bone}: key outside [0, duration]`);
+      if (i && keys[i].t <= keys[i - 1].t) { issues.push(`${bone}: keys not strictly sorted`); break; }
+      const q = keys[i].q, n = Math.hypot(...q);
+      if (Math.abs(n - 1) > 1e-3) { issues.push(`${bone}: non-normalized quaternion`); break; }
+    }
+    // limbs must MOVE, not teleport: bounded angular velocity between consecutive keys
+    for (let i = 1; i < keys.length; i++) {
+      const w = quatAngle(keys[i - 1].q, keys[i].q) / Math.max(1e-4, keys[i].t - keys[i - 1].t);
+      if (w > 14) { issues.push(`${bone}: limb teleports (${w.toFixed(0)} rad/s between keys)`); break; }
+    }
+    // a looping move must land where it starts (the loop-seam pop, reference/20)
+    if (loop && keys.length > 1 && quatAngle(keys[0].q, keys[keys.length - 1].q) > 0.26) issues.push(`${bone}: loop seam pops (start ≠ end)`);
+    // hinge sanity where the axis is unambiguous on this rig: knees flex +x, hips −x (see the
+    // seated-teammates code) — a knee bent backwards is the classic broken-generated-anim tell
+    if (bone === 'LeftLeg' || bone === 'RightLeg') for (const k of keys) { if (k.e[0] < -8 || k.e[0] > 150) { issues.push(`${bone}: knee out of range (${k.e[0].toFixed(0)}°)`); break; } }
+    if (bone === 'LeftUpLeg' || bone === 'RightUpLeg') for (const k of keys) { if (k.e[0] < -130 || k.e[0] > 40) { issues.push(`${bone}: hip out of range (${k.e[0].toFixed(0)}°)`); break; } }
+  }
+  return { ok: issues.length === 0, issues };
+}
+
+// ---------- the MOVE LIBRARY (football + DS life) — data, judged live via the play-mode ----------
+export const MOVES = {
+  /** wave hello (loop): right arm raised, forearm swings */
+  salut: {
+    name: 'salut', duration: 1.4, loop: true,
+    keys: [
+      { t: 0.0, pose: { RightArm: [0, 0, -60], RightForeArm: [0, 0, -30], Head: [0, 0, 6] } },
+      { t: 0.35, pose: { RightArm: [0, 0, -60], RightForeArm: [0, 0, -65], Head: [0, 0, 6] } },
+      { t: 0.7, pose: { RightArm: [0, 0, -60], RightForeArm: [0, 0, -12], Head: [0, 0, 6] } },
+      { t: 1.05, pose: { RightArm: [0, 0, -60], RightForeArm: [0, 0, -65], Head: [0, 0, 6] } },
+      { t: 1.4, pose: { RightArm: [0, 0, -60], RightForeArm: [0, 0, -30], Head: [0, 0, 6] } },
+    ],
+  },
+  /** handshake (once): right arm forward, two pumps */
+  poignee: {
+    name: 'poignee', duration: 1.3, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.3, pose: { RightArm: [-55, 0, 25], RightForeArm: [0, -18, 14], Spine1: [6, 0, 0] } },
+      { t: 0.55, pose: { RightArm: [-48, 0, 25], RightForeArm: [0, -18, 14], Spine1: [8, 0, 0] } },
+      { t: 0.8, pose: { RightArm: [-58, 0, 25], RightForeArm: [0, -18, 14], Spine1: [6, 0, 0] } },
+      { t: 1.3, pose: {} },
+    ],
+  },
+  /** celebration (once): both arms punched to the sky, chest open */
+  celebration: {
+    name: 'celebration', duration: 1.6, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.25, pose: { LeftArm: [0, 0, 82], RightArm: [0, 0, 82], Spine1: [12, 0, 0], Head: [10, 0, 0] } },
+      { t: 0.55, pose: { LeftArm: [-12, 0, -70], RightArm: [-12, 0, -70], LeftForeArm: [0, 0, 18], RightForeArm: [0, 0, 18], Spine1: [-12, 0, 0], Head: [-18, 0, 0] } },
+      { t: 1.1, pose: { LeftArm: [-12, 0, -62], RightArm: [-12, 0, -62], LeftForeArm: [0, 0, 22], RightForeArm: [0, 0, 22], Spine1: [-10, 0, 0], Head: [-15, 0, 0] } },
+      { t: 1.6, pose: {} },
+    ],
+  },
+  /** applause (loop): hands together/apart in front of the chest */
+  applaudir: {
+    name: 'applaudir', duration: 0.9, loop: true,
+    keys: [
+      { t: 0.0, pose: { LeftArm: [-40, -20, 40], RightArm: [-40, 20, 40], LeftForeArm: [0, 55, 40], RightForeArm: [0, -55, 40] } },
+      { t: 0.22, pose: { LeftArm: [-40, -8, 38], RightArm: [-40, 8, 38], LeftForeArm: [0, 72, 40], RightForeArm: [0, -72, 40] } },
+      { t: 0.45, pose: { LeftArm: [-40, -20, 40], RightArm: [-40, 20, 40], LeftForeArm: [0, 55, 40], RightForeArm: [0, -55, 40] } },
+      { t: 0.67, pose: { LeftArm: [-40, -8, 38], RightArm: [-40, 8, 38], LeftForeArm: [0, 72, 40], RightForeArm: [0, -72, 40] } },
+      { t: 0.9, pose: { LeftArm: [-40, -20, 40], RightArm: [-40, 20, 40], LeftForeArm: [0, 55, 40], RightForeArm: [0, -55, 40] } },
+    ],
+  },
+  /** football KICK (once): plant left, right leg loads back then swings through, arms counter */
+  frappe: {
+    name: 'frappe', duration: 0.85, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.22, pose: { RightUpLeg: [28, 0, 0], RightLeg: [95, 0, 0], LeftArm: [-35, 0, 45], RightArm: [15, 0, 70], Spine1: [10, 0, 0] } },
+      { t: 0.42, pose: { RightUpLeg: [-85, 0, 0], RightLeg: [15, 0, 0], RightFoot: [30, 0, 0], LeftArm: [15, 0, 60], RightArm: [-45, 0, 50], Spine1: [-8, 0, 0] } },
+      { t: 0.6, pose: { RightUpLeg: [-60, 0, 0], RightLeg: [30, 0, 0], LeftArm: [0, 0, 55], RightArm: [-25, 0, 55], Spine1: [-4, 0, 0] } },
+      { t: 0.85, pose: {} },
+    ],
+  },
+  /** side-foot PASS (once): shorter, opened hip */
+  passe: {
+    name: 'passe', duration: 0.7, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.2, pose: { RightUpLeg: [18, -18, 0], RightLeg: [55, 0, 0], LeftArm: [-20, 0, 40], Spine1: [6, 0, 0] } },
+      { t: 0.38, pose: { RightUpLeg: [-45, -30, 0], RightLeg: [12, 0, 0], RightFoot: [0, 25, 0], LeftArm: [5, 0, 50], Spine1: [-4, 0, 0] } },
+      { t: 0.7, pose: {} },
+    ],
+  },
+};

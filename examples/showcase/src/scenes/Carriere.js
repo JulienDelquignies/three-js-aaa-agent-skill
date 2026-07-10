@@ -17,6 +17,8 @@ import { buildCabin } from '../engine/cabin-builder.js';
 import { generateBeach, checkBeach } from '../engine/beach.js';
 import { buildBeach } from '../engine/beach-builder.js';
 import { DriveController } from '../engine/drive.js';
+import { MOVES } from '../engine/animkit.js';
+import { toClip, playGesture } from '../engine/animkit-builder.js';
 import { generateCircuit, checkCircuit, makeLapTimer } from '../engine/circuit.js';
 import { buildCircuit } from '../engine/circuit-builder.js';
 import { makeGameState } from '../engine/game-state.js';
@@ -385,6 +387,12 @@ export class Carriere {
     this.ctrl.collide = (dx, dy, dz) => this.char.move(dx, dy, dz);
     this.ctrl.faceInstant(1, 0);
     this._soldierGltf = gltf;
+    this._mixer = mixer;
+    // GESTURES (animkit, reference/42): data-authored moves compiled against THIS rig — the tracks
+    // only claim the bones they pose, so a gesture plays OVER the locomotion (legs keep walking)
+    this._gestures = {};
+    for (const g of ['poignee', 'celebration', 'salut', 'applaudir', 'frappe']) this._gestures[g] = toClip(MOVES[g], model);
+    this._gesture = (name) => playGesture(this._mixer, this._gestures[name]);
 
     // THE TEAMMATES: three seated players (skinned clones, jersey-tinted) riding in the bus cabin
     this._extras = [];
@@ -414,6 +422,7 @@ export class Carriere {
         mixer: nmix, runClip: g2.animations.find((a) => /run/i.test(a.name)), idleClip: g2.animations.find((a) => /idle/i.test(a.name)),
         walkClip: g2.animations.find((a) => /walk/i.test(a.name)), legs: nlegs, forwardLocal: new THREE.Vector3(0, 0, -1),
       });
+      this._npcMixer = nmix;
       const m = this._meet, np = [m.at[0] + m.npcChair.x, 0, m.at[2] + m.npcChair.z];
       this.npc.pos.set(np[0], 0, np[2]); this.npc.model.position.copy(this.npc.pos);
       this.npc.sitAt({ pos: np, yaw: this.npc.yawFor(Math.sin(m.npcChair.yaw), Math.cos(m.npcChair.yaw)), seatH: 0.45 });
@@ -437,6 +446,8 @@ export class Carriere {
             if (this._meetIdx === this._meetLines.length && !this._meetDone) {   // the 3D pushes to the PHONE
               this._meetDone = true;
               this.state?.addMessage({ from: 'Agent', text: 'Accord de principe pour mon joueur. Envoyez l’offre écrite — on finalise cette semaine. 🤝' });
+              this._gesture?.('poignee');                                        // the deal is SHAKEN ON (animkit)
+              if (this._npcMixer && this._gestures) playGesture(this._npcMixer, this._gestures.poignee);
             }
           }
           else { if (dlg) dlg.style.opacity = '0'; this.ctrl.standUp(); this._syncBody(); }
@@ -704,6 +715,7 @@ export class Carriere {
     const side = [Math.cos(drv.yaw), -Math.sin(drv.yaw)];
     this._teleport([drv.pos[0] + side[0] * 1.7, 0, drv.pos[1] + side[1] * 1.7], drv.yaw);
     this.ctrl.model.visible = true;
+    if (this._celebrate) { this._celebrate = false; this._gesture?.('celebration'); }   // new lap record
     this._siteHudSafe();
   }
 
@@ -815,6 +827,7 @@ export class Carriere {
         if (el) el.textContent = `🏁 Tour : ${r.time.toFixed(1)} s${this.state.bestLap ? ' — record ' + this.state.bestLap.toFixed(2) + ' s' : ''} · vitesse ${(Math.abs(s.speed) * 3.6).toFixed(0)} km/h`;
         if (r.lap) {
           const rec = this.state.recordLap(r.lap);
+          if (rec.better) this._celebrate = true;                 // arms up when you step out
           const dlg = document.getElementById('dialog');
           if (dlg) { dlg.textContent = rec.better ? `🏁 ${r.lap.toFixed(2)} s — RECORD !` : `🏁 ${r.lap.toFixed(2)} s (record ${rec.best.toFixed(2)} s)`; dlg.style.opacity = '1'; clearTimeout(this._scoutT); this._scoutT = setTimeout(() => { dlg.style.opacity = '0'; }, 3000); }
         }
