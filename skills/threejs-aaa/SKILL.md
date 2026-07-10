@@ -58,6 +58,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Dealership: showroom grammar, derived catalogue (level-gated supercar), buy loop, GLB car** | [reference/36-dealership.md](reference/36-dealership.md) |
 | **Transport tiers + INTERIORS: bus livery & matchday ride, walkable train/jet cabins, scouting** | [reference/37-transport-tiers.md](reference/37-transport-tiers.md) |
 | **Vacation resort: derived beach/villa/palms, loungers-face-the-sea contract, the forme loop** | [reference/38-vacation-resort.md](reference/38-vacation-resort.md) |
+| **Agent editor: play-mode MCP (persistent live session, seconds not rebuilds) + debug gizmos** | [reference/39-agent-editor.md](reference/39-agent-editor.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -190,6 +191,14 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   npm run build && node ${CLAUDE_SKILL_DIR}/scripts/capture.mjs --dir ./dist --out shot.png --webgl --max-draws 100
   # then: Read shot.png → critique → fix → repeat
+  ```
+- **Live play mode (the agent editor)** — an MCP server that keeps ONE game session alive in headless
+  Chromium: `play_open/state/screenshot/eval/perf/close` — teleport, act, capture in seconds instead
+  of rebuild+relaunch minutes. Register in the project's `.mcp.json`; pair with `?debug=1` gizmos
+  (`engine/debug-gizmos.js`: collider wireframes, interaction rings, routes, live inspector panel —
+  works on the deployed site for human eyes too). See `reference/39`:
+  ```json
+  { "mcpServers": { "playmode": { "command": "node", "args": ["skills/threejs-aaa/scripts/playmode-mcp.mjs"] } } }
   ```
 - **Generate an AI 3D asset (OPTIONAL / paid)** — text/image → 3D via the Meshy API. Only if you
   choose to pay; needs `MESHY_API_KEY`. Prefer procedural + CC0 (above) for zero cost:

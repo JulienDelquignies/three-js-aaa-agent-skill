@@ -25,6 +25,7 @@ import { buildFurnishing } from '../engine/furniture-kit.js';
 import { buildStadium } from '../engine/stadium-builder.js';
 import { makeTheme } from '../engine/club-theme.js';
 import { InteractableSystem, doorsFromFloorplan, carryFollow } from '../engine/interactables.js';
+import { DebugGizmos } from '../engine/debug-gizmos.js';
 
 // Carrière — the career demo: ONE character, the SAME controls, across the three sites of a club level
 // (?niveau=1..4): the player's home (chambre d'hôtel → villa), the training centre (club T1→T4) and the
@@ -421,6 +422,15 @@ export class Carriere {
         },
       });
     }
+    // the AGENT-EDITOR scene view (?debug=1, works on the deployed site too): colliders, interaction
+    // rings, drivable routes, live panel — the human and the agent look at the SAME truth
+    if (new URLSearchParams(location.search).has('debug')) {
+      this.gizmos = new DebugGizmos(this.scene, {
+        phys: this.phys, sys: this.sys, city: this.city,
+        getState: () => ({ site: this.site, pos: [this.ctrl.pos.x, this.ctrl.pos.y, this.ctrl.pos.z] }),
+      });
+      this.disposables.push(this.gizmos);
+    }
     window.__carriere = this;                                     // for headless verification
     return true;
   }
@@ -720,6 +730,7 @@ export class Carriere {
     else this.phys.sync(this.ballBody, this.ballMesh);
 
     this.sys.update(this.ctrl.pos);
+    this.gizmos?.update(window.__engine?.renderer);
     const el = document.getElementById('prompt');
     if (el && el.textContent !== this.sys.promptText) { el.textContent = this.sys.promptText; el.style.opacity = this.sys.promptText ? '1' : '0'; }
     if (this._podium && this.ctrl.seated && this._pressShot) {  // seated at the podium → the TV shot

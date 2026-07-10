@@ -244,8 +244,28 @@ Attrapé au passage : la mer VISUELLE de la station (élargie symétriquement) i
 stade → extension côté large uniquement. Harnais 12/12 + stade 8/8 ; headless 73 checks verts. Réf 34
 enrichie.
 
+⑧ ✅ **Éditeur agent : play-mode MCP + gizmos de debug** *(fait — discussion « un Unity web pour
+three.js ? » : pas de fork, pas d'éditeur GUI — l'éditeur d'un agent c'est une session vivante
+requêtable + la scene view rendue dans ses captures ; et l'utilisateur voulait son œil/sa main →
+le même debug marche sur l'URL déployée)*. **(1) `scripts/playmode-mcp.mjs`** : serveur MCP stdio
+zéro-dépendance (JSON-RPC 2.0 à la main, ~60 lignes de protocole) qui garde UNE session Chromium
+persistante — outils `play_open` (dist + params, défaut niveau=3&debug=1), `play_state`,
+`play_screenshot` (N frames de sim + caméra libre {pos,look}), `play_eval` (JS async avec S/E liés —
+l'échappatoire universelle : téléporter, agir, lire un contrat), `play_perf`, `play_close`.
+Enregistré dans `.mcp.json` du repo (chargé aux prochaines sessions) ; playwright ajouté en devDep du
+showcase (chromium préinstallé dans l'env). Testé en VRAI JSON-RPC sur stdio : 10/10 (travelTo 3 ms,
+capture ~2-8 s — l'itération QA passe de la minute à la seconde). **(2) `engine/debug-gizmos.js`**
+(natif, `?debug=1` sur n'importe quelle URL y compris le site déployé) : colliders en wireframe
+(statiques ambre, cinématiques cyan suivis par frame — les portes), anneaux verts des interactables,
+routes de ville en bleu, panneau DOM live (site, pos, draw calls/tris, 4 interactables les plus
+proches avec distances). Un InstancedMesh par famille + depthTest:false ; registre `phys.boxes`
+ajouté dans physics.js (le monde Rapier n'est pas assez introspectable). Les bugs « données ≠ visuel »
+(allée du bus coincée, dossier de transat inversé) se voyaient chacun au prix d'un script de sonde —
+maintenant en un coup d'œil. Headless complet PASS ; réf 39 ; l'ordre compte : l'éditeur AVANT les
+gros chantiers de contenu (galeries de seeds, équilibrage statistique de saison, caméra de match).
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
-nuit) → échelle « dimensions PSG ».
+nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

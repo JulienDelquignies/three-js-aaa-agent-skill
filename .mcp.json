@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "playmode": {
+      "command": "node",
+      "args": ["skills/threejs-aaa/scripts/playmode-mcp.mjs"],
+      "env": {
+        "PLAYMODE_DIST": "examples/showcase/dist"
+      }
+    }
+  }
+}

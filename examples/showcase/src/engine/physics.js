@@ -15,7 +15,7 @@ export class Physics {
     await initPhysics();
     return new Physics(new RAPIER.World({ x: gravity[0], y: gravity[1], z: gravity[2] }));
   }
-  constructor(world) { this.world = world; this.R = RAPIER; }
+  constructor(world) { this.world = world; this.R = RAPIER; this.boxes = []; }   // boxes = debug registry (gizmos)
   step() { this.world.step(); }
 
   addGround(hx = 60, hz = 60, y = 0) {
@@ -29,12 +29,14 @@ export class Physics {
     if (rot) d = d.setRotation({ x: rot[0], y: rot[1], z: rot[2], w: rot[3] });
     const b = this.world.createRigidBody(d);
     this.world.createCollider(RAPIER.ColliderDesc.cuboid(half[0], half[1], half[2]).setFriction(0.9), b);
+    this.boxes.push({ pos: [...pos], half: [...half], rot: rot ? [...rot] : null, kind: 'static' });
     return b;
   }
   // kinematic box (animated obstacles: doors, platforms) — drive with setNextKinematicTranslation/Rotation
   addKinematicBox(pos, half) {
     const b = this.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(pos[0], pos[1], pos[2]));
     this.world.createCollider(RAPIER.ColliderDesc.cuboid(half[0], half[1], half[2]).setFriction(0.6), b);
+    this.boxes.push({ pos: [...pos], half: [...half], rot: null, kind: 'kinematic', body: b });
     return b;
   }
   addDynamicBox(pos, half, { density = 0.5, friction = 0.9 } = {}) {
