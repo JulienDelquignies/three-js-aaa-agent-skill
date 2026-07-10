@@ -24,7 +24,7 @@ export class Interieur {
   constructor(scene) {
     this.scene = scene; this.disposables = [];
     this._tmp = new THREE.Vector3(); this._fwd = new THREE.Vector3();
-    this.input = new Input(document.body, { keymap: { e: 'interact' }, padmap: { 2: 'interact' } });
+    this.input = new Input(document.body, { keymap: { e: 'interact' }, padmap: { 2: 'interact' }, touch: [{ label: 'E', action: 'interact', size: 76 }] });
     this.sys = new InteractableSystem();
     this.ready = this._load();
   }

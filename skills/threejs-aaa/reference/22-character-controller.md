@@ -103,3 +103,11 @@ low, goal detection + net ripple — playable on keyboard, gamepad, and phone.
    blends on start/stop; sprint/jump available.
 4. Third-person camera is **steerable** (mouse/right-stick/touch look + zoom) and damped, not a rigid rig.
 5. **Touch**: an on-screen joystick + buttons exist so it's playable on a phone (`Input` adds them).
+
+## Touch action buttons are DECLARED, not hardcoded
+
+`new Input(el, { touch: [{label: 'E', action: 'interact', size: 76}, …] })` — the scene declares its
+touch buttons next to its keymap/padmap (defaults keep the football TIR/CTR pair). Hardcoded buttons
+left Carrière with no way to interact on a phone. And for driving: `input.downStrict('sprint')` reads
+the brake — plain `down('sprint')` includes the stick-rim AUTO-sprint, so on touch, full throttle
+would brake.

@@ -341,6 +341,15 @@ bounds[2]+130 / bounds[1]−170 (loin de la ville ET de la plage). Harnais drive
 gamestate 15/15 ; headless complet PASS (section 18 : volant, GT achetée, grille, 48 km/h, retour) ;
 QA visuelle playmode (GT rouge en courbe, aérien du tracé). Réf 41.
 
+⑪bis ✅ **Boutons tactiles déclaratifs** *(fait, retour utilisateur « sur mobile il manque le bouton
+d'action »)* — les boutons tactiles étaient codés en dur TIR/CTR (démos foot) : Carrière n'avait AUCUN
+bouton E sur téléphone alors que tout passe par lui. `Input` accepte désormais
+`touch: [{label, action, size?}]` déclaré par la scène (défaut rétro-compatible TIR/CTR) ; Carrière
+déclare E (76 px) + FREIN, Intérieur déclare E. Piège attrapé au passage : en conduite, le frein
+lisait `down('sprint')` qui inclut l'AUTO-sprint du stick poussé à fond → sur tactile, accélérer
+aurait freiné — nouveau `downStrict()` (appui explicite seulement). Test émulé tactile (hasTouch) :
+boutons présents, tap sur E → edge 'interact' déclenché ; headless PASS. Réf 22 enrichie.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

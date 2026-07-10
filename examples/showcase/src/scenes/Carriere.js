@@ -45,7 +45,10 @@ export class Carriere {
   constructor(scene) {
     this.scene = scene; this.disposables = [];
     this._tmp = new THREE.Vector3(); this._fwd = new THREE.Vector3();
-    this.input = new Input(document.body, { keymap: { e: 'interact', t: 'phone', m: 'map' }, padmap: { 2: 'interact', 3: 'phone' } });
+    this.input = new Input(document.body, {
+      keymap: { e: 'interact', t: 'phone', m: 'map' }, padmap: { 2: 'interact', 3: 'phone' },
+      touch: [{ label: 'E', action: 'interact', size: 76 }, { label: 'FREIN', action: 'sprint' }],
+    });
     this.sys = new InteractableSystem();
     this.niveau = Math.max(1, Math.min(4, Number(new URLSearchParams(location.search).get('niveau')) || 2));
     this.ready = this._load();
@@ -803,7 +806,7 @@ export class Carriere {
     if (this._wheel) {                                          // AT THE WHEEL: free driving
       this.input.update();
       const mv = this.input.move();
-      const s = this._wheel.drv.update(dt, { throttle: mv.z, steer: mv.x, brake: this.input.down('sprint') });
+      const s = this._wheel.drv.update(dt, { throttle: mv.z, steer: mv.x, brake: this.input.downStrict('sprint') });
       this.car.group.position.set(s.x, 0, s.z); this.car.group.rotation.y = s.yaw;
       for (const w of this.car.wheels || []) w.rotation.x += s.wheelSpin * dt;
       if (this._wheel.timer) {                                  // circuit: live chrono + record

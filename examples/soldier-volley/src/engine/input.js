@@ -10,10 +10,13 @@ const KEY_MOVE = { w: [0, 1], z: [0, 1], arrowup: [0, 1], s: [0, -1], arrowdown:
 const KEY_ACTION = { ' ': 'shoot', e: 'cross', shift: 'sprint', j: 'jump' };
 
 export class Input {
-  constructor(el = document.body, { lookSensitivity = 0.005, keymap = {}, padmap = {} } = {}) {
+  constructor(el = document.body, { lookSensitivity = 0.005, keymap = {}, padmap = {}, touch = null } = {}) {
     this.el = el; this.sens = lookSensitivity;
     this.keyAction = { ...KEY_ACTION, ...keymap };
     this.padAction = { 0: 'shoot', 2: 'cross', 1: 'jump', ...padmap };
+    // touch action buttons are DECLARED by the scene ([{label, action, size?}]) — hardcoded football
+    // buttons left a game like Carrière with NO way to interact on a phone
+    this.touchButtons = touch || [{ label: 'TIR', action: 'shoot' }, { label: 'CTR', action: 'cross' }];
     this.keys = new Set(); this._look = { dx: 0, dy: 0 }; this._zoom = 0;
     this._held = new Set(); this._edge = new Set(); this._touchMove = { x: 0, z: 0 };
     this._dragId = null; this._lastPointer = null;
@@ -64,6 +67,9 @@ export class Input {
   consumeLook() { const l = { dx: this._look.dx, dy: this._look.dy }; this._look.dx = 0; this._look.dy = 0; return l; }
   consumeZoom() { const z = this._zoom; this._zoom = 0; return z; }
   down(a) { return this._held.has('k:' + a) || (a === 'sprint' && (this._gpSprint || Math.hypot(this._touchMove.x, this._touchMove.z) > 0.92)) || this._held.has('t:' + a); }
+  /** held by an EXPLICIT press only (key/button/pad) — no stick-rim auto-sprint. Driving reads the
+   *  brake with this: on touch, full throttle pushes the stick to the rim, which must not brake. */
+  downStrict(a) { return this._held.has('k:' + a) || this._held.has('t:' + a) || (a === 'sprint' && this._gpSprint); }
   pressed(a) { const p = this._edge.has(a); return p; }
   endFrame() { this._edge.clear(); }
 
@@ -82,14 +88,14 @@ export class Input {
     const rel = (e) => { if (e.pointerId === id) { id = null; this._touchMove = { x: 0, z: 0 }; setKnob(0, 0); } };
     base.addEventListener('pointerup', rel); base.addEventListener('pointercancel', rel);
     // right action buttons
-    const mkBtn = (label, action, right, bottom) => {
+    const mkBtn = (label, action, right, bottom, size = 64) => {
       const b = document.createElement('div'); b.dataset.ctl = action; b.textContent = label;
-      b.style.cssText = style + `right:${right}px;bottom:${bottom}px;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px system-ui;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);`;
+      b.style.cssText = style + `right:${right}px;bottom:${bottom}px;width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 ${size > 64 ? 16 : 12}px system-ui;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);`;
       b.addEventListener('pointerdown', (e) => { e.preventDefault(); this._edge.add(action); this._held.add('t:' + action); });
       const up = () => this._held.delete('t:' + action); b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
       el.appendChild(b);
     };
-    mkBtn('TIR', 'shoot', 26, 40); mkBtn('CTR', 'cross', 100, 90);
+    this.touchButtons.forEach((tb, i) => mkBtn(tb.label, tb.action, 26 + (i % 2) * 74, 40 + ((i / 2) | 0) * 78, tb.size));
   }
 
   dispose() {
