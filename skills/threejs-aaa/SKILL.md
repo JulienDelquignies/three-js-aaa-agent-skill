@@ -59,6 +59,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Transport tiers + INTERIORS: bus livery & matchday ride, walkable train/jet cabins, scouting** | [reference/37-transport-tiers.md](reference/37-transport-tiers.md) |
 | **Vacation resort: derived beach/villa/palms, loungers-face-the-sea contract, the forme loop** | [reference/38-vacation-resort.md](reference/38-vacation-resort.md) |
 | **Agent editor: play-mode MCP (persistent live session, seconds not rebuilds) + debug gizmos** | [reference/39-agent-editor.md](reference/39-agent-editor.md) |
+| **Meshkit — Blender ops as data: lathe/sweep/loft/displace, closed-manifold contract** | [reference/40-meshkit.md](reference/40-meshkit.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |

@@ -1,4 +1,6 @@
 import * as THREE from 'three/webgpu';
+import { sphere, displace, transform } from './meshkit.js';
+import { toGeometry } from './meshkit-builder.js';
 
 // beach-builder — turn a beach model (engine/beach.js) into the resort: the sand strip, the SEA
 // (a wide animated-feel water plane + a foam line at the waterline), procedural palm trees (leaning
@@ -97,6 +99,20 @@ export function buildBeach(beach, { theme = null } = {}) {
     colliders.push({ pos: [t.x, 0.3, t.z], half: [0.34, 0.3, 0.85], yaw: t.yaw });
     seats.push({ pos: [t.x, 0, t.z], yaw: t.yaw, seatH: 0.38 });
   }
+
+  // ROCKS at the waterline corners — meshkit displaced spheres (organic, seeded), not boxes
+  const rockM = mat({ color: 0x6f6a63, roughness: 0.95 });
+  const mul = (seed) => { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let x = Math.imul(t ^ (t >>> 15), 1 | t); x ^= x + Math.imul(x ^ (x >>> 7), 61 | x); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; };
+  [[S[0] + 1.6, S[3] - 1.2, 0.7], [S[0] + 3.1, S[3] - 0.6, 0.45], [S[2] - 1.8, S[3] - 1.0, 0.8], [S[2] - 3.4, S[3] - 0.5, 0.4]].forEach(([rx, rz, rs], ri) => {
+    const rnd = mul(97 + ri * 31);
+    const f = [rnd() * 4 + 2, rnd() * 4 + 2, rnd() * 4 + 2], ph = [rnd() * 7, rnd() * 7, rnd() * 7];
+    const rmesh = transform(
+      displace(sphere(0.5, { segments: 22, rings: 14 }), (x, y, z) => 0.1 * Math.sin(x * f[0] + ph[0]) * Math.sin(y * f[1] + ph[1]) + 0.06 * Math.sin(z * f[2] + ph[2])),
+      { at: [rx, rs * 0.3, rz], scale: [rs, rs * 0.7, rs] });
+    const rock = new THREE.Mesh(toGeometry(rmesh), rockM); rock.castShadow = rock.receiveShadow = true;
+    group.add(rock); disposables.push(rock.geometry);
+    colliders.push({ pos: [rx, rs * 0.3, rz], half: [rs * 0.5, rs * 0.35, rs * 0.5] });
+  });
 
   // PARASOLS: pole + a low cone canopy over every other lounger
   const poleGeo = new THREE.CylinderGeometry(0.03, 0.03, 2.1, 8);

@@ -264,8 +264,27 @@ ajouté dans physics.js (le monde Rapier n'est pas assez introspectable). Les bu
 maintenant en un coup d'œil. Headless complet PASS ; réf 39 ; l'ordre compte : l'éditeur AVANT les
 gros chantiers de contenu (galeries de seeds, équilibrage statistique de saison, caméra de match).
 
+⑨ ✅ **Meshkit — « un Blender three.js » pour modèles IA au-delà des boîtes** *(fait, question
+utilisateur)* — les opérateurs de Blender comme FONCTIONS PURES sur données (`engine/meshkit.js`,
+zéro dépendance → testé node) : `lathe` (révolution — vases, coupes, socles), `sweep` (section 2D le
+long d'une courbe 3D avec repères en transport parallèle/Rodrigues — tuyaux, anses), `loft` (coques),
+`sphere`+`displace` (champ seedé le long des normales — rochers), `transform/mirrorX/merge`
+(assemblage ; mirrorX inverse le winding sinon miroir retourné). Normales lisses pondérées par l'aire
+= le look organique. **Contrat `checkMesh`** : coordonnées finies, indices valides, pas de triangles
+dégénérés, budget tris, et pour les solides topologie FERMÉE (chaque arête partagée par exactement
+2 triangles) + VOLUME SIGNÉ POSITIF (théorème de la divergence — attrape les maillages retournés) ;
+surfaces ouvertes assumées via closed:false. Harnais verify-meshkit 17/17 (bibliothèque vase/
+bouteille/coupe/tuyau-S/coque/rocher/trophée + 5 sabotages nommés). `meshkit-builder.js` = seul
+fichier qui touche three. **En jeu** : trophée doré de la loge (coupe lathe + anses sweep miroir,
+socle) posé à un emplacement DÉRIVÉ (x le plus dégagé du mur du fond → pile sous le blason — « une
+coordonnée est une supposition, une dérivation est une décision »), vase terracotta sur la table du
+rendez-vous, rochers sur la plage (colliders). **Dogfooding éditeur agent** : toute l'itération
+(chope dorée → vraie coupe ; coin occupé par le bar puis le frigo → dérivation) faite au playmode MCP
+en secondes — v1 du trophée jugée et corrigée sur captures live sans un seul script jetable. Réf 40.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
-nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée.
+nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
+→ meshkit partout (mobilier galbé, lampadaires, végétation sweep).
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

@@ -26,6 +26,8 @@ import { buildStadium } from '../engine/stadium-builder.js';
 import { makeTheme } from '../engine/club-theme.js';
 import { InteractableSystem, doorsFromFloorplan, carryFollow } from '../engine/interactables.js';
 import { DebugGizmos } from '../engine/debug-gizmos.js';
+import { lathe, sweep, transform, mirrorX, merge, sphere, displace } from '../engine/meshkit.js';
+import { buildParts } from '../engine/meshkit-builder.js';
 
 // Carrière — the career demo: ONE character, the SAME controls, across the three sites of a club level
 // (?niveau=1..4): the player's home (chambre d'hôtel → villa), the training centre (club T1→T4) and the
@@ -153,6 +155,38 @@ export class Carriere {
           else this.ctrl.sitAt({ pos: [wp[0], 0, wp[2]], yaw: this.ctrl.yawFor(Math.sin(it.yaw), Math.cos(it.yaw)), seatH });
         },
       });
+    }
+
+    // MESHKIT set dressing — curved, organic models (no boxes): the club trophy on its pedestal in
+    // the loge (lathe cup + swept mirrored handles), a vase on the meeting table. See reference/40.
+    {
+      const lgr = lg.rect;
+      // derived spot: the clearest x along the loge's BACK wall (max distance to any loge item)
+      let bestX = 0, bestD = -1;
+      for (let x = lgr[0] + 0.6; x <= lgr[2] - 0.6; x += 0.15) {
+        const d = Math.min(...(lg.items || []).map((it) => Math.hypot(it.x - x, it.z - (lgr[1] + 0.5))));
+        if (d > bestD) { bestD = d; bestX = x; }
+      }
+      const trophyPos = [stad.at[0] + bestX, lg.floorY, stad.at[2] + lgr[1] + 0.5];
+      const cup = lathe([[0, 0], [0.09, 0], [0.11, 0.03], [0.09, 0.1], [0.2, 0.42], [0.24, 0.56], [0.23, 0.6], [0, 0.6]], { segments: 36 });
+      const hp = []; for (let i = 0; i <= 18; i++) { const a = (i / 18) * Math.PI; hp.push([0.2 + Math.sin(a) * 0.21, 0.6 - Math.cos(a) * 0.24, 0]); }
+      const circ = []; for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; circ.push([Math.cos(a) * 0.025, Math.sin(a) * 0.025]); }
+      const handle = sweep(circ, hp);
+      const foot = lathe([[0, 0], [0.2, 0], [0.2, 0.06], [0.07, 0.1], [0.05, 0.32], [0, 0.32]], { segments: 24 });
+      const trophyMesh = transform(merge([transform(cup, { at: [0, 0.3, 0] }), foot, handle, mirrorX(handle)]), { scale: 0.62 });
+      const pedestal = lathe([[0, 0], [0.26, 0], [0.24, 0.06], [0.2, 0.94], [0.24, 0.98], [0.24, 1.02], [0, 1.02]], { segments: 28 });
+      const trophy = buildParts([
+        { mesh: pedestal, color: 0x2c2f36, roughness: 0.4, at: trophyPos },
+        { mesh: trophyMesh, color: 0xd8a832, roughness: 0.25, metalness: 1, at: [trophyPos[0], trophyPos[1] + 1.02, trophyPos[2]] },
+      ]);
+      this.scene.add(trophy.group); this.disposables.push(trophy);
+      this.phys.addStaticBox([trophyPos[0], trophyPos[1] + 0.7, trophyPos[2]], [0.27, 0.7, 0.27]);
+      if (this._meet) {                                          // the centrepiece of the agent dinner
+        const vaseMesh = lathe([[0, 0], [0.16, 0], [0.2, 0.04], [0.14, 0.28], [0.26, 0.62], [0.18, 0.86], [0.2, 0.96], [0.19, 1.0], [0, 1.0]], { segments: 40 });
+        const m = this._meet;
+        const vase = buildParts([{ mesh: vaseMesh, color: 0xb35438, roughness: 0.55, at: [m.at[0] + m.table.x, 0.755, m.at[2] + m.table.z], scale: 0.42 }]);
+        this.scene.add(vase.group); this.disposables.push(vase);
+      }
     }
 
     // the CITY around the sites: streets carved between the derived curb stops, buildings/trees/lights
