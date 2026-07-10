@@ -39,6 +39,8 @@ ok('qualité d’effectif croissante avec le niveau', avg(1) < avg(2) && avg(2) 
   ok('vacances → forme restaurée + message', s3.forme === 100 && r.gained > 0 && s3.messages[0].text.includes('vacances'));
   for (let i = 0; i < 12; i++) s3.scoutTrip('jet');
   ok('forme bornée à 0 (jamais négative)', s3.forme === 0);
+  const r1 = s3.recordLap(48.31), r2 = s3.recordLap(52.0), r3 = s3.recordLap(45.7);
+  ok('chrono circuit : record gardé, amélioration détectée + message', r1.better && !r2.better && r3.better && s3.bestLap === 45.7 && s3.messages[0].from === 'Chrono circuit');
 }
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

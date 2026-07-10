@@ -44,6 +44,16 @@ export function makeGameState({ seed = 1, level = 1 } = {}) {
       state.addMessage({ from: 'Chef du scouting', text: `Rapport ${jet ? '✈️' : '🚆'} ${ville} : ${name} (${poste}, ${p.note} estimé) ajouté à la shortlist.` });
       return p;
     },
+    bestLap: null,                                               // track-day record (seconds)
+    /** A lap time at the circuit — keeps the best, celebrates a new record with a message. */
+    recordLap(t) {
+      const better = state.bestLap === null || t < state.bestLap;
+      if (better) {
+        state.bestLap = Math.round(t * 100) / 100;
+        state.addMessage({ from: 'Chrono circuit', text: `🏁 Nouveau record personnel : ${state.bestLap.toFixed(2)} s au tour !` });
+      }
+      return { better, best: state.bestLap };
+    },
     /** A vacation at the seaside resort: the DS's forme comes back to 100 (+ a message). */
     vacation() {
       const gained = 100 - state.forme;

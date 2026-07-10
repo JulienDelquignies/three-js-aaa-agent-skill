@@ -1,5 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { drawSponsorStrip, drawCrest } from './club-theme.js';
+import { loft, smooth } from './meshkit.js';
+import { toGeometry } from './meshkit-builder.js';
 
 // vehicle — a compact procedural car + a PathDriver that drives it along a street polyline
 // (engine/city.js routes). ONE system, several skins later (personal car, team bus, taxi): the driver
@@ -32,6 +34,7 @@ function extrudeProfile(pts, L, width, bevel) {
 }
 
 export function buildCar({ kind = 'berline', color = 0xb3252f } = {}) {
+  if (kind === 'gt') return buildGT({ color });                    // the meshkit-lofted sports coupé
   const d = DIMS[kind] || DIMS.berline;
   const group = new THREE.Group();
   const disposables = [];
@@ -85,6 +88,70 @@ export function buildCar({ kind = 'berline', color = 0xb3252f } = {}) {
   const plateMat = mat({ color: 0xe9ecef, roughness: 0.5 });
   for (const s of [1, -1]) { const p = new THREE.Mesh(plateGeo, plateMat); p.position.set(0, d.profile[0][1] + 0.02, s * (d.L / 2 + 0.02)); group.add(p); }
 
+  return { group, wheels, dispose: () => disposables.forEach((x) => x.dispose?.()) };
+}
+
+/** The GT — the CURVY car (meshkit, reference/40): body and greenhouse are LOFTED superellipse
+ *  sections (tail→nose so the winding faces out) put through one pass of Loop subdivision — real
+ *  haunches over the rear wheels, a low nose, no boxes. Same contract as every car: paint material
+ *  named 'body' (paintCar), spinning wheel groups, { group, wheels, dispose }. */
+export function buildGT({ color = 0xb3252f } = {}) {
+  const group = new THREE.Group();
+  const disposables = [];
+  const matP = (o) => { const m = new THREE.MeshPhysicalNodeMaterial(o); disposables.push(m); return m; };
+  const mat = (o) => { const m = new THREE.MeshStandardNodeMaterial(o); disposables.push(m); return m; };
+  const ring = (z, w, yBot, yTop, e = 3) => {                      // superellipse car section at z
+    const pts = [], M = 16, cy = (yTop + yBot) / 2, ry = (yTop - yBot) / 2, rx = w / 2;
+    for (let i = 0; i < M; i++) {
+      const a = (i / M) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+      pts.push([rx * Math.sign(c) * Math.abs(c) ** (2 / e), cy + ry * Math.sign(s) * Math.abs(s) ** (2 / e), z]);
+    }
+    return pts;
+  };
+  // BODY: tail → nose (rear haunches wider than the cabin, long low nose)
+  const bodyMesh = smooth(loft([
+    ring(-2.22, 1.5, 0.3, 0.62), ring(-1.9, 1.82, 0.16, 0.8), ring(-1.1, 1.9, 0.12, 0.82),
+    ring(0.2, 1.86, 0.12, 0.74), ring(1.2, 1.8, 0.13, 0.62), ring(1.95, 1.6, 0.18, 0.5), ring(2.24, 1.2, 0.26, 0.42),
+  ]), 1);
+  const paint = matP({ color, metalness: 0.55, roughness: 0.38, clearcoat: 0.8, clearcoatRoughness: 0.22 });
+  paint.name = 'body';
+  const body = new THREE.Mesh(toGeometry(bodyMesh), paint); body.castShadow = true; group.add(body);
+  disposables.push(body.geometry);
+  // GREENHOUSE: a narrower loft riding the beltline (fastback: long tail glass)
+  const glassMesh = smooth(loft([
+    ring(-1.75, 1.2, 0.72, 0.8, 2.2), ring(-1.2, 1.44, 0.72, 1.02, 2.2), ring(-0.3, 1.5, 0.72, 1.12, 2.2),
+    ring(0.5, 1.42, 0.72, 1.08, 2.2), ring(1.05, 1.2, 0.72, 0.8, 2.2),
+  ]), 1);
+  const glass = new THREE.Mesh(toGeometry(glassMesh), matP({ color: 0x0c1018, roughness: 0.35, clearcoat: 0.12, clearcoatRoughness: 0.3 }));
+  group.add(glass); disposables.push(glass.geometry);
+  // wheels (same recipe as buildCar, bigger rims), rocker, lights, spoiler lip
+  const wheelR = 0.34;
+  const tireGeo = new THREE.TorusGeometry(wheelR - 0.06, 0.09, 10, 20); tireGeo.rotateY(Math.PI / 2); disposables.push(tireGeo);
+  const rimGeo = new THREE.CylinderGeometry(wheelR - 0.12, wheelR - 0.12, 0.16, 16); rimGeo.rotateZ(Math.PI / 2); disposables.push(rimGeo);
+  const spokeGeo = new THREE.BoxGeometry(0.02, 0.05, (wheelR - 0.13) * 2); disposables.push(spokeGeo);
+  const tireMat = mat({ color: 0x15171a, roughness: 0.92 });
+  const rimMat = mat({ color: 0xd8dde4, metalness: 1, roughness: 0.22 });
+  const wheels = [];
+  for (const [sx, sz] of [[-1, 1.45], [1, 1.45], [-1, -1.42], [1, -1.42]]) {
+    const w = new THREE.Group();
+    const t = new THREE.Mesh(tireGeo, tireMat); t.castShadow = true; w.add(t);
+    w.add(new THREE.Mesh(rimGeo, rimMat));
+    for (const a of [0, Math.PI / 3, (2 * Math.PI) / 3]) { const s = new THREE.Mesh(spokeGeo, rimMat); s.rotation.x = a; w.add(s); }
+    w.position.set(sx * 0.88, wheelR, sz);                         // tucked under the haunches
+    group.add(w); wheels.push(w);
+  }
+  const rocker = new THREE.Mesh(new THREE.BoxGeometry(1.82, 0.1, 4.1), mat({ color: 0x121418, roughness: 0.9 }));
+  rocker.position.y = 0.16; group.add(rocker); disposables.push(rocker.geometry);
+  const hlMat = mat({ color: 0xfff6da, emissive: 0xffedb8, emissiveIntensity: 0.6, roughness: 0.2 });
+  const tlMat = mat({ color: 0x7a1016, emissive: 0xd91c25, emissiveIntensity: 0.6, roughness: 0.3 });
+  const hlGeo = new THREE.BoxGeometry(0.26, 0.06, 0.06), tlGeo = new THREE.BoxGeometry(0.5, 0.05, 0.06);
+  disposables.push(hlGeo, tlGeo);
+  for (const s of [-1, 1]) {
+    const h = new THREE.Mesh(hlGeo, hlMat); h.position.set(s * 0.42, 0.42, 2.2); h.rotation.y = s * 0.12; group.add(h);
+    const t = new THREE.Mesh(tlGeo, tlMat); t.position.set(s * 0.42, 0.62, -2.22); group.add(t);
+  }
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(1.46, 0.04, 0.26), paint);
+  lip.position.set(0, 0.72, -2.12); group.add(lip); disposables.push(lip.geometry);
   return { group, wheels, dispose: () => disposables.forEach((x) => x.dispose?.()) };
 }
 

@@ -7,6 +7,7 @@ const MODELS = [
   { kind: 'citadine', name: 'Citadine GO', price: 16, minLevel: 1 },
   { kind: 'berline', name: 'Berline GT', price: 42, minLevel: 1 },
   { kind: 'suv', name: 'SUV Prestige', price: 90, minLevel: 2 },
+  { kind: 'gt', name: 'GT Corsa', price: 240, minLevel: 2 },                 // the meshkit-lofted coupé
   { kind: 'ferrari', name: 'Ferrari 458 Italia', price: 690, minLevel: 3 },   // three.js demo model (CC-BY vicent091036)
 ];
 const COLORS = [0xb3252f, 0x14161a, 0xe8eaee, 0x1f3a93, 0xd4af37, 0x0b6e4f];

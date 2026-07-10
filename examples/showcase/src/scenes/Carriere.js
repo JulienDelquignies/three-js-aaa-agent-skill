@@ -16,6 +16,9 @@ import { generateCabin, checkCabin } from '../engine/cabin.js';
 import { buildCabin } from '../engine/cabin-builder.js';
 import { generateBeach, checkBeach } from '../engine/beach.js';
 import { buildBeach } from '../engine/beach-builder.js';
+import { DriveController } from '../engine/drive.js';
+import { generateCircuit, checkCircuit, makeLapTimer } from '../engine/circuit.js';
+import { buildCircuit } from '../engine/circuit-builder.js';
 import { makeGameState } from '../engine/game-state.js';
 import { Phone, PhoneApps } from '../engine/phone.js';
 import { CityView } from '../engine/city-view.js';
@@ -202,6 +205,13 @@ export class Carriere {
     this.car = buildCar({ color: 0xb3252f });
     this.scene.add(this.car.group); this.disposables.push(this.car);
     this._parkCar('home');
+    // FREE DRIVING: E at your own parked car → take the wheel (engine/drive.js, collisions via a
+    // kinematic capsule so buildings/barriers are REAL); E again to step out where you stopped
+    this.sys.add({
+      label: () => 'E — Prendre le volant 🚗',
+      pos: () => [this.car.group.position.x, 0, this.car.group.position.z], radius: 2.2,
+      onInteract: () => this._enterDrive(),
+    });
     // the TEAM BUS in club livery, parked at the club — matchday: ride it to the stadium
     // ...WITH its interior: the cabin (contract-checked) rides INSIDE the bus group, and the matchday
     // camera sits in the aisle among the seated teammates (the bus shell is invisible from inside —
@@ -229,6 +239,40 @@ export class Carriere {
       const pad = new THREE.Mesh(padGeo, pm); pad.position.set(t.pos[0], t.pos[1] + 0.03, t.pos[2]);
       this.scene.add(pad); this.disposables.push(pm);
       this.sys.add({ label: `E — ${t.label} 🚗`, pos: () => t.pos, radius: 1.5, onInteract: () => this.driveTo(t.to) });
+    }
+
+    // the CIRCUIT (level ≥ 2, once the dealership sells something worth driving): a derived racing
+    // loop far north-east of the city (engine/circuit.js — checkCircuit proves it drivable), reached
+    // via « Journée circuit » at the dealership. Lap timing is data (makeLapTimer) → game-state.
+    if (this.niveau >= 2) {
+      const circ = generateCircuit({ level: this.niveau, seed: 11 });
+      const cChk = checkCircuit(circ);
+      if (!cChk.ok) console.warn('checkCircuit:', cChk.issues);
+      const cAt = [this.city.bounds[2] + 130, 0, this.city.bounds[1] - 170];
+      const builtC = buildCircuit(circ, { theme: this.theme });
+      builtC.group.position.set(cAt[0], 0, cAt[2]);
+      this.scene.add(builtC.group); this.disposables.push(builtC);
+      for (const c of builtC.colliders) {
+        const rot = c.yaw ? [0, Math.sin(c.yaw / 2), 0, Math.cos(c.yaw / 2)] : undefined;
+        this.phys.addStaticBox([cAt[0] + c.pos[0], c.pos[1], cAt[2] + c.pos[2]], c.half, rot);
+      }
+      this._circuit = {
+        model: circ, at: cAt,
+        grid: [cAt[0] + circ.grid[0], cAt[2] + circ.grid[1]],
+        gridYaw: Math.atan2(circ.start.dir[0], circ.start.dir[1]),
+        spawn: [cAt[0] + circ.paddock.spawn[0], cAt[2] + circ.paddock.spawn[1]],
+        returnPad: [cAt[0] + circ.paddock.returnPad[0], cAt[2] + circ.paddock.returnPad[1]],
+      };
+      const rpm2 = new THREE.MeshStandardNodeMaterial({ color: 0x123a4a, emissive: 0x35c8ff, emissiveIntensity: 1.6, roughness: 0.4 });
+      const rp2 = new THREE.Mesh(padGeo, rpm2); rp2.position.set(this._circuit.returnPad[0], 0.03, this._circuit.returnPad[1]);
+      this.scene.add(rp2); this.disposables.push(rpm2);
+      this.sys.add({ label: 'E — Rentrer du circuit 🧳', pos: () => [this._circuit.returnPad[0], 0, this._circuit.returnPad[1]], radius: 1.6, onInteract: () => this.travelTo(this._circFrom || 'dealer') });
+      const de = this.career.sites.dealer;
+      this.sys.add({
+        label: () => `E — Journée circuit 🏁 (${this.state?.bestLap ? 'record ' + this.state.bestLap.toFixed(2) + ' s' : 'chrono au tour'})`,
+        pos: () => [de.spawn[0] + 1.6, 0, de.spawn[2] + 1.6], radius: 1.6,
+        onInteract: () => this._goCircuit(),
+      });
     }
 
     // the RESORT (level ≥ 3, with the gare): a seaside villa + beach far beyond the city — no street
@@ -437,8 +481,12 @@ export class Carriere {
       this._ferrari = (await gl2.loadAsync('ferrari.glb')).scene;
       this._ferrari.traverse((o) => { if (o.isMesh) o.castShadow = true; });
     }
+    // more models than podiums → the showroom displays the TOP of the range (the GT and the Ferrari
+    // must be in the window; the citadine sells itself)
+    const podOffset = Math.max(0, this.catalog.length - (this._podiumItems || []).length);
     for (let i = 0; i < (this._podiumItems || []).length && i < this.catalog.length; i++) {
-      const pod = this._podiumItems[i], entry = this.catalog[i];
+      const pod = this._podiumItems[i], entry = this.catalog[podOffset + i];
+      if (!entry) break;
       const group = this._buildCarMesh(entry.kind, entry.colors[0]);
       group.position.set(pod.at[0] + pod.x, 0.16, pod.at[2] + pod.z);
       this.scene.add(group);
@@ -630,6 +678,55 @@ export class Carriere {
     }
   }
 
+  /** Take the wheel of YOUR car (free driving): kinematic capsule = real collisions with the city. */
+  _enterDrive() {
+    if (this._wheel || this._drive) return;
+    if (this.ctrl.seated) { this.ctrl.standUp(); this._syncBody(); }
+    const cp = this.car.group.position;
+    if (!this._carBody) this._carBody = this.phys.addCharacter([cp.x, 0, cp.z], { radius: 0.95, height: 2.0 });
+    else { const t = { x: cp.x, y: 1.0, z: cp.z }; this._carBody.body.setTranslation(t, true); this._carBody.body.setNextKinematicTranslation(t); }
+    const drv = new DriveController({ pos: [cp.x, cp.z], yaw: this.car.group.rotation.y });
+    drv.collide = (dx, dz) => { const r = this._carBody.move(dx, -0.5 * (1 / 60), dz); return { dx: r.dx, dz: r.dz }; };
+    this._wheel = { drv };
+    this.ctrl.model.visible = false; this.ctrl.setMoveWorld(0, 0);
+    if (this._circuit && Math.hypot(cp.x - this._circuit.grid[0], cp.z - this._circuit.grid[1]) < 60) {
+      this._wheel.timer = makeLapTimer({ ...this._circuit.model, start: { pos: [this._circuit.at[0] + this._circuit.model.start.pos[0], this._circuit.at[2] + this._circuit.model.start.pos[1]], dir: this._circuit.model.start.dir } });
+    }
+    const el = document.getElementById('site'); if (el) el.textContent = '🚗 Au volant — ZQSD conduire · E descendre';
+  }
+
+  /** Step out: the car stays where you stopped, you appear at the driver's door. */
+  _exitDrive() {
+    const { drv } = this._wheel; this._wheel = null;
+    const side = [Math.cos(drv.yaw), -Math.sin(drv.yaw)];
+    this._teleport([drv.pos[0] + side[0] * 1.7, 0, drv.pos[1] + side[1] * 1.7], drv.yaw);
+    this.ctrl.model.visible = true;
+    this._siteHudSafe();
+  }
+
+  /** Track day: teleport your car to the circuit grid and take the wheel, chrono armed. */
+  _goCircuit() {
+    if (!this._circuit || this._wheel) return;
+    this._circFrom = this.site;
+    this.site = 'circuit';
+    this.car.group.position.set(this._circuit.grid[0], 0, this._circuit.grid[1]);
+    this.car.group.rotation.y = this._circuit.gridYaw;
+    this._teleport([this._circuit.spawn[0], 0, this._circuit.spawn[1]], this._circuit.gridYaw);
+    this._enterDrive();
+    const dlg = document.getElementById('dialog');
+    if (dlg) {
+      dlg.textContent = '🏁 Journée circuit — passez la ligne pour lancer le chrono. E pour descendre, pad bleu pour rentrer.';
+      dlg.style.opacity = '1';
+      clearTimeout(this._scoutT); this._scoutT = setTimeout(() => { dlg.style.opacity = '0'; }, 4500);
+    }
+  }
+
+  _siteHudSafe() {
+    const el = document.getElementById('site'); if (!el) return;
+    const s = this.career.sites[this.site];
+    el.textContent = s ? '📍 ' + s.label : (this.site === 'circuit' ? '🏁 Circuit — journée essais' : '🏖️ Station balnéaire — vacances');
+  }
+
   /** Off to the seaside resort (from the train or the jet lounge): land on the sand outside the
    *  villa, the forme comes back to 100 (game-state.vacation) — the return pad brings you back. */
   _goVacation() {
@@ -702,6 +799,32 @@ export class Carriere {
     for (const e of this._extras || []) {                       // seated teammates: idle anim + bent legs
       e.mixer.update(dt);
       e.legs.forEach((l, i) => { l.up.rotation.x = e.rests[i].up - 1.35; l.knee.rotation.x = e.rests[i].knee + 1.4; });
+    }
+    if (this._wheel) {                                          // AT THE WHEEL: free driving
+      this.input.update();
+      const mv = this.input.move();
+      const s = this._wheel.drv.update(dt, { throttle: mv.z, steer: mv.x, brake: this.input.down('sprint') });
+      this.car.group.position.set(s.x, 0, s.z); this.car.group.rotation.y = s.yaw;
+      for (const w of this.car.wheels || []) w.rotation.x += s.wheelSpin * dt;
+      if (this._wheel.timer) {                                  // circuit: live chrono + record
+        const r = this._wheel.timer.update(dt, s.x, s.z);
+        const el = document.getElementById('site');
+        if (el) el.textContent = `🏁 Tour : ${r.time.toFixed(1)} s${this.state.bestLap ? ' — record ' + this.state.bestLap.toFixed(2) + ' s' : ''} · vitesse ${(Math.abs(s.speed) * 3.6).toFixed(0)} km/h`;
+        if (r.lap) {
+          const rec = this.state.recordLap(r.lap);
+          const dlg = document.getElementById('dialog');
+          if (dlg) { dlg.textContent = rec.better ? `🏁 ${r.lap.toFixed(2)} s — RECORD !` : `🏁 ${r.lap.toFixed(2)} s (record ${rec.best.toFixed(2)} s)`; dlg.style.opacity = '1'; clearTimeout(this._scoutT); this._scoutT = setTimeout(() => { dlg.style.opacity = '0'; }, 3000); }
+        }
+      }
+      const cam = this.tpc.cam, k = 1 - Math.exp(-3.5 * dt);
+      const fx = Math.sin(s.yaw), fz = Math.cos(s.yaw);
+      this._tmp.set(s.x - fx * 7.5, 3.1, s.z - fz * 7.5);
+      cam.position.lerp(this._tmp, k);
+      cam.lookAt(s.x + fx * 6, 0.9, s.z + fz * 6);
+      if (this.input.pressed('interact')) this._exitDrive();
+      this.input.endFrame();
+      this.phys.step();
+      return;
     }
     if (this._drive) {                                          // EN ROUTE: the car drives the streets
       this.input.update();

@@ -315,9 +315,36 @@ Perf notée : ~125 draws sur la vue resto (au-dessus du budget indicatif 100 —
 mesh de plus ; piste : fusionner les pads par pièce ou instancier par kind si ça devient un vrai
 problème). Réf 28 enrichie (« Soft parts come from meshkit »). Headless complet PASS.
 
+⑪ ✅ **Conduite libre + circuit + GT meshkit** *(fait — « se déplacer en voiture… une virée sur un
+circuit »)* — **(1) `drive.js`** : contrôleur arcade MODÈLE BICYCLETTE sans dépendance (physique
+injectée via collide comme le character controller) — vitesse de pointe/freinage/traînée, braquage
+adouci par la vitesse, marche arrière juste par le signe de v ; capsule cinématique r 0,95 → immeubles
+et barrières RÉELS, drapeau `blocked` purge la vitesse au contact ; harnais 9/9 (cercle de braquage,
+mur, déterminisme). En jeu : « E — Prendre le volant 🚗 » sur SA voiture, ZQSD + Maj frein, caméra de
+chasse basse, E descend à la portière (premier test live : 3 m et l'immeuble d'en face — la collision
+marche). **(2) `circuit.js`** : boucle Catmull-Rom fermée sur points de contrôle à VARIATION RADIALE
+BASSE FRÉQUENCE (le jitter indépendant replie le tracé sur lui-même — attrapé par le contrat) ;
+génération AUTO-CORRECTIVE déterministe (re-seeds dérivés jusqu'à contrat vert) ; `checkCircuit` :
+rayon de courbure ≥ 9 m partout, pas d'auto-intersection/pincement (voisinage CIRCULAIRE —
+min(j−i, n−(j−i)), la version linéaire accusait la couture), paddock hors piste, grille sur la piste ;
+4 sabotages (piège : un pic radial fait un rebroussement à circumradius GÉANT — plier ⟂ à la tangente
+pour tester le rayon). `makeLapTimer` = franchissement de ligne en espace piste (along/lateral),
+testé node au rythme réaliste. Builder : ruban asphalte triangulé (DoubleSide ! — enroulé face au sol
+il était invisible du dessus), vibreurs et barrières instanciés (colliders yaw), portique damier.
+**(3) `buildGT`** (meshkit) : carrosserie + vitrage LOFTÉS en sections superellipse (queue→nez pour
+le winding) + Loop ×1 — hanches sur les roues arrière, nez bas, fastback ; contrat voiture habituel
+(matériau 'body', roues tournantes) ; catalogue `gt` 240 k€ dès le niveau 2, le showroom affiche
+désormais le HAUT de gamme (offset catalogue − podiums). **(4) Journée circuit** : au concessionnaire
+→ téléport voiture+DS sur la grille, chrono live au HUD (temps + record + km/h), record →
+`state.recordLap` + message « Chrono circuit » ; pad retour → site de départ. Site `circuit` à
+bounds[2]+130 / bounds[1]−170 (loin de la ville ET de la plage). Harnais drive 9/9, circuit 24/24,
+gamestate 15/15 ; headless complet PASS (section 18 : volant, GT achetée, grille, 48 km/h, retour) ;
+QA visuelle playmode (GT rouge en courbe, aérien du tracé). Réf 41.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
-→ meshkit : UVs/textures, fusion des pads par pièce (draw calls), lampadaires lathe.
+→ meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
+au parking, IA trafic, ghost du record au circuit.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 
