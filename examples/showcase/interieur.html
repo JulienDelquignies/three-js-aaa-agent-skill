@@ -34,6 +34,29 @@
       Centre d'entraînement généré (club T2) — 🎮 manette &amp; 📱 tactile OK.
     </div>
     <div id="loading">GÉNÉRATION DU CENTRE D'ENTRAÎNEMENT…</div>
+        <script>
+      // the HELP panel must be CLOSABLE — on a phone it swallowed the whole screen (user report):
+      // X folds it into a small ? button, and it starts folded on touch/small screens
+      (() => {
+        const h = document.querySelector('.help'); if (!h) return;
+        h.style.maxWidth = 'min(480px, 88vw)'; h.style.maxHeight = '56vh'; h.style.overflow = 'auto';
+        const x = document.createElement('button');
+        x.textContent = '\u2715';
+        x.style.cssText = 'position:absolute;top:6px;' + (getComputedStyle(h).textAlign === 'right' ? 'left:8px' : 'right:8px') +
+          ';width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font:700 12px system-ui';
+        h.appendChild(x);
+        const b = document.createElement('button');
+        b.textContent = '\u2753';
+        const topStack = document.getElementById('laptopbtn');           // stack under the HUD buttons if they exist
+        b.style.cssText = 'position:fixed;z-index:31;padding:9px 12px;border-radius:999px;font-size:15px;background:rgba(20,22,28,.72);border:1px solid rgba(255,255,255,.12);color:#fff;cursor:pointer;display:none;backdrop-filter:blur(8px);' +
+          (topStack ? 'right:16px;top:226px' : 'right:16px;bottom:16px');
+        document.body.appendChild(b);
+        const set = (open) => { h.style.display = open ? '' : 'none'; b.style.display = open ? 'none' : 'block'; };
+        x.addEventListener('click', () => set(false));
+        b.addEventListener('click', () => set(true));
+        if (matchMedia('(max-width: 900px)').matches || 'ontouchstart' in window || navigator.maxTouchPoints > 0) set(false);
+      })();
+    </script>
     <script type="module" src="/src/entry-interieur.js"></script>
   </body>
 </html>
