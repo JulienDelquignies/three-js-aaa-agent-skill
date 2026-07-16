@@ -203,6 +203,16 @@ export const MOVES = {
       { t: 1.35, pose: {}, hips: [0, 0, -0.42] },
     ],
   },
+  /** CONSULTING the laptop (loop, subtle sway): left forearm raised flat to carry it at chest
+   *  height, right hand over the keys, head down toward the screen */
+  consulter: {
+    name: 'consulter', duration: 2.4, loop: true,
+    keys: [
+      { t: 0.0, pose: { LeftArm: [-55, 0, 48], LeftForeArm: [-95, 0, 18], RightArm: [-55, 0, 40], RightForeArm: [-70, 0, 20], Head: [16, 0, 0], Spine1: [6, 0, 0] } },
+      { t: 1.2, pose: { LeftArm: [-57, 0, 48], LeftForeArm: [-97, 0, 18], RightArm: [-57, 0, 39], RightForeArm: [-72, 0, 20], Head: [18, 0, 0], Spine1: [7, 0, 0] } },
+      { t: 2.4, pose: { LeftArm: [-55, 0, 48], LeftForeArm: [-95, 0, 18], RightArm: [-55, 0, 40], RightForeArm: [-70, 0, 20], Head: [16, 0, 0], Spine1: [6, 0, 0] } },
+    ],
+  },
   /** side-foot PASS (once): shorter, opened hip */
   passe: {
     name: 'passe', duration: 0.7, loop: false,

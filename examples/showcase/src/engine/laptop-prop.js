@@ -7,6 +7,8 @@ import { toGeometry } from './meshkit-builder.js';
 // while walking; press O and the lid opens (eased) as the DS-OS overlay comes up (engine/laptop.js).
 // attachToHand() parents it to the rig's LeftHand bone — offsets are LOCAL to that bone and were
 // tuned live through the play-mode (the bone's frame is nothing like world axes; see reference/42).
+const _hq = new THREE.Quaternion(), _dq = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0);
+
 export function buildLaptopProp() {
   const group = new THREE.Group();
   const disposables = [];
@@ -58,9 +60,19 @@ export function buildLaptopProp() {
       hand.add(group);
       const s = 1 / (hand.getWorldScale(new THREE.Vector3()).x || 1);  // counter the rig's cm scale
       group.scale.setScalar(s);
-      group.position.set(0, 9, 3);                                     // hand-local (rig units ≈ cm)
-      group.rotation.set(-0.5, 0, 1.5);
+      this.setCarried();
       return true;
+    },
+    /** the folded carry pose (hand-local, rig units ≈ cm) — tuned live. */
+    setCarried() { group.position.set(0, 9, 3); group.rotation.set(-0.5, 0, 1.5); },
+    /** while OPEN in hand: don't fight the hand's frame — hold a WORLD-level orientation (base flat,
+     *  screen toward the face): local = handWorldQ⁻¹ × yaw(character forward). Call each frame. */
+    levelInHand(fx, fz) {
+      const hand = group.parent; if (!hand?.isBone) return;
+      hand.getWorldQuaternion(_hq);
+      _dq.setFromAxisAngle(_up, Math.atan2(fx, fz));
+      group.quaternion.copy(_hq.invert()).multiply(_dq);
+      group.position.set(1.5, 10, 2.5);
     },
     dispose: () => disposables.forEach((d) => d.dispose?.()),
   };

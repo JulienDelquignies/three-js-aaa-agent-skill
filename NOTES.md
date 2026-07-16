@@ -408,6 +408,17 @@ en petit bouton ❓ (empilé sous les boutons HUD quand ils existent, sinon bas-
 DÉFAUT sur tactile/petit écran, max-width/height + scroll quand ouvert. Vérifié en émulation mobile :
 fermé par défaut, commandes tactiles dégagées, toggle dans les deux sens.
 
+⑬ter ✅ **Tenue de l'ordinateur** *(fait, retour utilisateur : « il met pas l'ordi comme il faut »)*
+— ouvert, l'ordi pendouillait bras ballant à hauteur de cuisse. Deux mécanismes : **(1)** geste
+animkit « consulter » en BOUCLE tant que DS OS est ouvert (avant-bras gauche relevé ~95° porteur,
+main droite au clavier, tête baissée, micro-balancement) — stopGesture() au repli ; **(2)** le prop
+ne SUIT plus l'orientation de la main quand il est ouvert : `levelInHand()` recalcule chaque frame
+une orientation MONDE (base à plat, écran vers le visage) via local = handWorldQ⁻¹ × yaw(forward) —
+deviner la rotation locale d'un os de main est sans espoir (2 essais ratés : ordi de chant, puis
+vertical), la contrainte monde calculée est la bonne approche ; setCarried() restaure la pose de
+portage au repli. Assis, pas de geste (l'ordi sur les genoux). Harnais animkit 24/24 ; headless PASS
+(11 moves).
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

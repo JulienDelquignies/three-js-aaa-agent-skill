@@ -18,7 +18,7 @@ import { generateBeach, checkBeach } from '../engine/beach.js';
 import { buildBeach } from '../engine/beach-builder.js';
 import { DriveController } from '../engine/drive.js';
 import { MOVES } from '../engine/animkit.js';
-import { toClip, playGesture } from '../engine/animkit-builder.js';
+import { toClip, playGesture, stopGesture } from '../engine/animkit-builder.js';
 import { Laptop } from '../engine/laptop.js';
 import { buildLaptopProp } from '../engine/laptop-prop.js';
 import { generateCircuit, checkCircuit, makeLapTimer } from '../engine/circuit.js';
@@ -764,12 +764,24 @@ export class Carriere {
     if (kind === 'jet') this._jetCabin = { built, model, W, yaw, sh, meetSeats };
   }
 
-  /** Open/fold the laptop (O / 💻): the prop's hinge animates, DS OS opens once the lid is up. */
+  /** Open/fold the laptop (O / 💻): the prop's hinge animates, DS OS opens once the lid is up —
+   *  and the DS actually HOLDS it up to consult (the 'consulter' looping gesture: left forearm
+   *  flat at chest height, right hand over the keys, head down). */
   _toggleLaptop() {
     if (this._drive || this._wheel || !this.laptopProp) return;
     this._laptopOpen = !this._laptopOpen;
-    if (this._laptopOpen) { this.phone?.close(); this.laptopProp.group.visible = true; this._laptopUiPending = true; }
-    else { this._laptopUiPending = false; this.laptop?.close(); }
+    if (this._laptopOpen) {
+      this.phone?.close();
+      this.laptopProp.group.visible = true;
+      this._laptopUiPending = true;
+      if (this.ctrl.seated) return;                               // seated: the lap is the desk
+      this._laptopHold = this._gestures ? playGesture(this._mixer, this._gestures.consulter) : null;
+    } else {
+      this._laptopUiPending = false;
+      this.laptop?.close();
+      stopGesture(this._laptopHold); this._laptopHold = null;
+      this.laptopProp.setCarried();                               // back to the folded carry pose
+    }
   }
 
   /** Take the wheel of YOUR car (free driving): kinematic capsule = real collisions with the city. */
@@ -992,6 +1004,11 @@ export class Carriere {
     else this.phys.sync(this.ballBody, this.ballMesh);
 
     this.sys.update(this.ctrl.pos);
+    // held open: keep the laptop LEVEL (base flat, screen toward the face) whatever the hand does
+    if (this._laptopOpen && this.laptopProp?.group.visible && !this.ctrl.seated) {
+      const f = this.ctrl.forward(this._fwd);
+      this.laptopProp.levelInHand(f.x, f.z);
+    }
     this.gizmos?.update(window.__engine?.renderer);
     const el = document.getElementById('prompt');
     if (el && el.textContent !== this.sys.promptText) { el.textContent = this.sys.promptText; el.style.opacity = this.sys.promptText ? '1' : '0'; }

@@ -69,3 +69,10 @@ export function playGesture(mixer, clip, { fade = 0.18, weight = 1 } = {}) {
   }
   return action;
 }
+
+/** Wind a LOOPING gesture down cleanly (fade to zero, then stop so the mixer drops it). */
+export function stopGesture(action, { fade = 0.25 } = {}) {
+  if (!action) return;
+  action.fadeOut(fade);
+  setTimeout(() => action.stop(), fade * 1000 + 60);
+}
