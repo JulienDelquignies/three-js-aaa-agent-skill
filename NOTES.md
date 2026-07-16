@@ -402,6 +402,12 @@ coéquipiers) ; backlog : trajets train/jet cinématiques (le véhicule qui roul
 Headless PASS (section 20 : prop en main, charnière, DS OS ouvert, monde en pause, replié) ; QA live
 (DS OS, portable en main, rdv en vol avec plage par les hublots). Réfs 35 & 37 enrichies.
 
+⑬bis ✅ **Panneau d'aide fermable** *(fait, retour utilisateur mobile : le texte d'aide avalait tout
+l'écran)* — les 4 pages avec bloc `.help` (carrière, contrôles, intérieur, physique) : ✕ pour replier
+en petit bouton ❓ (empilé sous les boutons HUD quand ils existent, sinon bas-droite), REPLIÉ PAR
+DÉFAUT sur tactile/petit écran, max-width/height + scroll quand ouvert. Vérifié en émulation mobile :
+fermé par défaut, commandes tactiles dégagées, toggle dans les deux sens.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
