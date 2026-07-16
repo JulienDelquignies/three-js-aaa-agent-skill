@@ -44,3 +44,15 @@ THROUGH the club's curb stop.
   screenshots include it (Playwright captures DOM over canvas: free visual QA of UI + 3D together).
 - App badges refresh on the home screen each frame (cheap DOM); pins reproject every frame while the
   view is active (4 elements).
+
+## The laptop — the second diegetic screen (and a real prop)
+
+The DS's computer is BOTH halves at once: `engine/laptop-prop.js` builds a meshkit laptop (two
+rounded Loop-subdivided slabs on an animated HINGE, screen emissive lighting up late in the
+opening) attached to the rig's LEFT-HAND BONE — folded, it rides in the hand while walking; and
+`engine/laptop.js` is DS OS, a laptop-styled DOM window (menu bar, dock, wide content) rendering
+the SAME PhoneApps app objects as the phone — one game-state, two presentations, they can never
+disagree (Emails is laptop-exclusive). O / 💻 toggles: prop appears → hinge eases open (~0.4 s) →
+DS OS comes up once the lid is lit; the world pauses like the phone. Hand attachment notes: parent
+to the bone, counter the rig's cm scale (`1/hand.getWorldScale`), tune the LOCAL offset/rotation
+live through the play-mode — the bone's frame is nothing like world axes (reference/42).

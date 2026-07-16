@@ -384,6 +384,24 @@ Résultat mesuré : plongeon 0,96 → envol 1,06 → SOL 0,30 → relevé 0,97 ;
 l'air, jambe fouettée au-dessus de la tête (captures). Harnais animkit 23/23 ; headless PASS
 (10 moves compilés). Réf 42 § root motion.
 
+⑬ ✅ **Ordinateur portable + rendez-vous en vol** *(fait — « un ordinateur dans la main comme son
+téléphone » + « agir dans le bus/train/avion »)* — **(1) `laptop-prop.js`** : portable meshkit (deux
+dalles arrondies Loop sur CHARNIÈRE animée, écran émissif qui s'allume en fin d'ouverture) parenté à
+l'os LeftHand du rig — plié dans la main en marchant ; contre-échelle 1/getWorldScale (rig en cm),
+pose locale réglée en live au playmode. **(2) `laptop.js`** : DS OS — fenêtre façon macOS (barre,
+feux tricolores, dock, contenu large) qui rend LES MÊMES objets-apps que le téléphone (une couche de
+données, deux écrans diégétiques — jamais en désaccord) + app Emails exclusive. O / 💻 : prop visible
+→ charnière (~0,4 s) → DS OS ; monde en pause comme le téléphone. **(3) Rendez-vous EN VOL** (niveau
+4) : la 2e paire club du jet est RÉSERVÉE (exclue des sièges génériques — deux interactables sur le
+même siège se disputent le prompt), agent en costume sombre (_seatedExtra à teinte custom sans lerp
+maillot) ; « E — Rendez-vous en vol ✈️ » = la grammaire de rencontre du restaurant en altitude :
+s'asseoir face à lui, 4 répliques, accord → message + poignée de main sur LES DEUX rigs. Ordre de
+câblage : les cabines montent AVANT le rig → la cabine stocke ses réfs, le NPC se crée après.
+Rappel utilisateur : le bus matchday cinématique existait déjà (⑤bis, vécu de l'intérieur avec
+coéquipiers) ; backlog : trajets train/jet cinématiques (le véhicule qui roule/vole vraiment).
+Headless PASS (section 20 : prop en main, charnière, DS OS ouvert, monde en pause, replié) ; QA live
+(DS OS, portable en main, rdv en vol avec plage par les hublots). Réfs 35 & 37 enrichies.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

@@ -19,6 +19,8 @@ import { buildBeach } from '../engine/beach-builder.js';
 import { DriveController } from '../engine/drive.js';
 import { MOVES } from '../engine/animkit.js';
 import { toClip, playGesture } from '../engine/animkit-builder.js';
+import { Laptop } from '../engine/laptop.js';
+import { buildLaptopProp } from '../engine/laptop-prop.js';
 import { generateCircuit, checkCircuit, makeLapTimer } from '../engine/circuit.js';
 import { buildCircuit } from '../engine/circuit-builder.js';
 import { makeGameState } from '../engine/game-state.js';
@@ -48,7 +50,7 @@ export class Carriere {
     this.scene = scene; this.disposables = [];
     this._tmp = new THREE.Vector3(); this._fwd = new THREE.Vector3();
     this.input = new Input(document.body, {
-      keymap: { e: 'interact', t: 'phone', m: 'map' }, padmap: { 2: 'interact', 3: 'phone' },
+      keymap: { e: 'interact', t: 'phone', m: 'map', o: 'laptop' }, padmap: { 2: 'interact', 3: 'phone' },
       touch: [{ label: 'E', action: 'interact', size: 76 }, { label: 'FREIN', action: 'sprint' }],
     });
     this.sys = new InteractableSystem();
@@ -393,6 +395,14 @@ export class Carriere {
     this._gestures = {};
     for (const g of Object.keys(MOVES)) this._gestures[g] = toClip(MOVES[g], model);
     this._gesture = (name) => playGesture(this._mixer, this._gestures[name]);
+    // the LAPTOP (O / 💻): a real meshkit prop in the LEFT hand — folded while walking, the lid
+    // eases open and DS OS (laptop.js) comes up once it's lit. Same apps as the phone: one data
+    // layer, two diegetic screens.
+    this.laptopProp = buildLaptopProp();
+    this.laptopProp.attachToHand(model);
+    this.laptopProp.group.visible = false;
+    this.disposables.push(this.laptopProp);
+    this._laptopOpen = false;
 
     // THE TEAMMATES: three seated players (skinned clones, jersey-tinted) riding in the bus cabin
     this._extras = [];
@@ -401,6 +411,45 @@ export class Carriere {
       for (const idx of [0, 3, 9]) {
         const s = rows[idx]; if (!s) continue;
         this._seatedExtra(this._busCabin.built.group, [s.x, this._busCabin.model.shell.floorY, s.z], s.yaw + Math.PI);
+      }
+    }
+
+    // the FLYING RECRUITMENT ROOM (level 4): a suited agent waits at the jet's second lounge table —
+    // sit opposite him, talk (E), close the deal 🤝 (message + handshake on BOTH rigs). Acting DURING
+    // transport, not just travelling: the encounter grammar of the restaurant, airborne.
+    if (this._jetCabin) {
+      const { built, W, yaw: jyaw, sh, meetSeats: pair } = this._jetCabin;
+      if (pair.length >= 2) {
+        const npcSeat = pair[0], meSeat = pair[1];
+        this._seatedExtra(built.group, [npcSeat.x, sh.floorY, npcSeat.z], npcSeat.yaw + Math.PI, 0x565e6e);
+        this._jetMixer = this._extras[this._extras.length - 1]?.mixer;
+        const mwp = W([meSeat.x, 0, meSeat.z]);
+        const meYaw = jyaw + meSeat.yaw;
+        const lines = [
+          'Agent : Merci pour le vol — on n’est jamais mieux qu’à 10 000 mètres pour parler avenir.',
+          'Agent : Mon attaquant plaît en Italie. Mais il rêve de VOTRE projet.',
+          'Vous : Alors écrivons-le ici. Salaire cadré, temps de jeu réel, clause de départ raisonnable.',
+          'Agent : Banco. Posez ça sur papier à l’atterrissage. 🤝',
+        ];
+        let idx = 0;
+        this.sys.add({
+          label: () => (!this.ctrl?.seated ? 'E — Rendez-vous en vol ✈️' : (idx < lines.length ? 'E — Discuter' : 'E — Se lever')),
+          pos: () => mwp, radius: 1.0,
+          onInteract: () => {
+            const dlg = document.getElementById('dialog');
+            if (!this.ctrl.seated) { this.ctrl.sitAt({ pos: [mwp[0], sh.floorY, mwp[2]], yaw: this.ctrl.yawFor(Math.sin(meYaw), Math.cos(meYaw)), seatH: 0.47 }); idx = 0; }
+            else if (idx < lines.length) {
+              if (dlg) { dlg.textContent = lines[idx]; dlg.style.opacity = '1'; }
+              idx++;
+              if (idx === lines.length && !this._jetDealDone) {
+                this._jetDealDone = true;
+                this.state?.addMessage({ from: 'Agent', text: 'Accord trouvé en plein vol pour mon attaquant. L’écrit suit à l’atterrissage. ✈️🤝' });
+                this._gesture?.('poignee');
+                if (this._jetMixer && this._gestures) playGesture(this._jetMixer, this._gestures.poignee);
+              }
+            } else { if (dlg) dlg.style.opacity = '0'; this.ctrl.standUp(); this._syncBody(); }
+          },
+        });
       }
     }
 
@@ -482,6 +531,19 @@ export class Carriere {
     });
     this.disposables.push(this.phone);
     document.getElementById('phonebtn')?.addEventListener('click', () => this.phone.toggle());
+    // DS OS on the laptop — the SAME app objects as the phone (minus the phone-only Plan action)
+    this.laptop = new Laptop({
+      state: this.state,
+      apps: [
+        PhoneApps.messages(this.state),
+        PhoneApps.effectif(this.state),
+        PhoneApps.finances(this.state),
+        PhoneApps.transferts(this.state),
+        PhoneApps.placeholder('emails', 'Emails', '📧', 'Boîte du club — bientôt (offres écrites, clauses).'),
+      ],
+    });
+    this.disposables.push(this.laptop);
+    document.getElementById('laptopbtn')?.addEventListener('click', () => this._toggleLaptop());
 
     // the DEALERSHIP: catalogue derived from the level (checkCatalog = the contract), one car per
     // podium — slowly turning, paint cycling through the display colors; E buys AT the shown color,
@@ -632,10 +694,11 @@ export class Carriere {
     }
   }
 
-  /** A seated, jersey-tinted skinned clone (teammate) attached to a parent (e.g. the bus cabin). */
-  _seatedExtra(parent, seatLocal, yawLocal) {
+  /** A seated, tinted skinned clone attached to a parent — jersey teammate by default, dark suit
+   *  (custom tint, no white lerp) for agents. */
+  _seatedExtra(parent, seatLocal, yawLocal, tint = null) {
     const m = cloneSkinned(this._soldierGltf.scene);
-    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; if (o.material) { o.material = o.material.clone(); o.material.color = new THREE.Color(this.theme.primary).lerp(new THREE.Color(0xffffff), 0.45); } } });
+    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; if (o.material) { o.material = o.material.clone(); o.material.color = tint != null ? new THREE.Color(tint) : new THREE.Color(this.theme.primary).lerp(new THREE.Color(0xffffff), 0.45); } } });
     const box = new THREE.Box3().setFromObject(m); m.scale.setScalar(1.8 / box.getSize(new THREE.Vector3()).y);
     const bone = (re) => { let f = null; m.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
     const legs = [{ up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i) }, { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i) }];
@@ -677,8 +740,14 @@ export class Carriere {
       if (ti === 0) this.sys.add({ label: `E — Voyage de scouting ${emoji} (${mode === 'jet' ? 'étranger' : 'national'})`, pos: () => tw, radius: 1.1, onInteract: () => this._scoutTrip(mode) });
       else this.sys.add({ label: `E — Partir en vacances 🏖️ ${emoji}`, pos: () => tw, radius: 1.1, onInteract: () => this._goVacation() });
     });
+    // the jet's second lounge pair is reserved for the in-flight MEETING (wired after the rig loads)
+    let meetSeats = [];
+    if (kind === 'jet' && model.tables.length > 1) {
+      const mt = model.tables[1];
+      meetSeats = model.seats.filter((s) => !s.driver && Math.abs(s.x - mt.x) < 0.35 && Math.abs(s.z - mt.z) < 1.2).slice(0, 2);
+    }
     for (const s of model.seats) {                                        // the seats are sittable
-      if (s.driver) continue;
+      if (s.driver || meetSeats.includes(s)) continue;
       const swp = W([s.x, 0, s.z]);
       const fYaw = yaw + s.yaw;                                           // furniture yaw in world
       this.sys.add({
@@ -690,6 +759,17 @@ export class Carriere {
         },
       });
     }
+    // the FLYING RECRUITMENT ROOM: remember the jet cabin — the suited agent and his meeting are
+    // wired AFTER the character rig loads (the NPC is a skinned clone of it)
+    if (kind === 'jet') this._jetCabin = { built, model, W, yaw, sh, meetSeats };
+  }
+
+  /** Open/fold the laptop (O / 💻): the prop's hinge animates, DS OS opens once the lid is up. */
+  _toggleLaptop() {
+    if (this._drive || this._wheel || !this.laptopProp) return;
+    this._laptopOpen = !this._laptopOpen;
+    if (this._laptopOpen) { this.phone?.close(); this.laptopProp.group.visible = true; this._laptopUiPending = true; }
+    else { this._laptopUiPending = false; this.laptop?.close(); }
   }
 
   /** Take the wheel of YOUR car (free driving): kinematic capsule = real collisions with the city. */
@@ -876,14 +956,21 @@ export class Carriere {
     this.input.update();
     if (this.input.pressed('phone')) this.phone?.toggle();
     if (this.input.pressed('map')) this.toggleCityView();
-    this.phone?.update();
+    if (this.input.pressed('laptop')) this._toggleLaptop();
+    this.phone?.update(); this.laptop?.update();
+    // the laptop prop: ease the hinge; DS OS comes up once the lid is fully open (screen lit)
+    if (this.laptopProp) {
+      const moving = this.laptopProp.update(dt, this._laptopOpen);
+      if (this._laptopOpen && this._laptopUiPending && !moving) { this._laptopUiPending = false; this.laptop.open(); }
+      if (!this._laptopOpen && !moving) this.laptopProp.group.visible = false;
+    }
     if (this.cityView?.active) {                                // CITY VIEW: panorama + pins, world waits
       this.input.endFrame();
       this.cityView.update(this.tpc.cam, dt);
       this.ctrl.setMoveWorld(0, 0); this.ctrl.update(dt); this.npc?.update(dt); this.phys.step();
       return;
     }
-    if (this.phone?.isOpen) {                                   // phone open → the world waits
+    if (this.phone?.isOpen || this.laptop?.isOpen) {            // phone or DS OS open → the world waits
       this.input.endFrame();
       this.ctrl.setMoveWorld(0, 0); this.ctrl.update(dt); this.npc?.update(dt); this.phys.step();
       return;

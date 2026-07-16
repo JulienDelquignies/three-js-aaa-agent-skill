@@ -54,3 +54,13 @@ On the platform / apron: « E — Voyage de scouting » → `state.scoutTrip('tr
 sequence): a prospect (name/position/rating/city — jet trips reach abroad and scout better players) is
 pushed onto `state.shortlist` + a Chef-du-scouting message (phone badge). The Transferts app lists the
 shortlist. Harness: shortlist/report flow + determinism; headless: full ride + report + app content.
+
+## Acting DURING transport — the in-flight meeting
+
+The jet's second lounge pair is reserved (excluded from the generic sittable loop — two
+interactables on the same seat fight for the prompt): a dark-suited agent (a `_seatedExtra` clone
+with a custom tint, no jersey lerp) waits at the table, and « E — Rendez-vous en vol ✈️ » runs the
+restaurant's encounter grammar airborne — sit opposite, talk through the lines, close the deal
+(phone message + `poignee` handshake played on BOTH rigs). Wiring order matters: cabins are mounted
+before the character rig loads, so the cabin stores its refs and the NPC + interactable are created
+after `_soldierGltf`/gestures exist.
