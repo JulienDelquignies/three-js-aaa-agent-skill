@@ -419,6 +419,19 @@ vertical), la contrainte monde calculée est la bonne approche ; setCarried() re
 portage au repli. Assis, pas de geste (l'ordi sur les genoux). Harnais animkit 24/24 ; headless PASS
 (11 moves).
 
+⑭ ✅ **Stades signature** *(fait — « le repo football-stadium peut être mieux ? Camp Nou / Wembley /
+Parc des Princes ? »)* — verdict repo : NON (proof-of-concept 1 commit « où est mon siège », sans
+licence → inutilisable ; notre générateur paramétrique + contrat est plusieurs crans au-dessus).
+**Presets landmark** dans generateStadium({landmark}) : 'grandbol' (bol asymétrique géant, 4 VIRAGES
+pleins — surfaces gradins en quart d'arc + sièges instanciés face au centre, capacité créditée →
+18 669 places), 'arche' (tube meshkit balayé en parabole ENJAMBANT tout le bol au-dessus du toit —
+contrat : l'apex dégage le toit, la portée couvre le terrain), 'nervures' (~36 nervures béton — UN
+profil sweep meshkit instancié par yaw — sur l'ellipse englobante, penchées sur l'enceinte — contrat :
+assez de nervures pour lire la signature, aucune sur la pelouse). Signatures DÉRIVÉES de l'empreinte
+réelle (jamais de coordonnées en dur). Harnais stade 14/14 (3 presets + déterminisme + capacité +
+2 sabotages « arche écrasée », « nervure sur la pelouse ») ; galerie Stades passée à 5 enceintes
+(rapport : T1 855 · T5 13 536 · Grand Bol 18 669 · Arche 13 092 · Nervures 6 546). Réf 29 enrichie.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

@@ -14,11 +14,23 @@ const TIERS = {
   5: { main: 14, opp: 14, ends: 14, deck2: 10, roof: ['main', 'opp', 'endA', 'endB'] },
 };
 
-export function generateStadium({ tier = 1, seed = 1 } = {}) {
-  const t = TIERS[Math.max(1, Math.min(5, tier))];
+// LANDMARK presets — signature silhouettes inspired by iconic grounds, still the SAME parametric
+// data + contract (a landmark is stand numbers + ONE derived signature the builder knows how to
+// raise): 'grandbol' = the giant continuous asymmetric bowl (corner banks fill the four corners),
+// 'arche' = a full roof crowned by the great steel arch (a meshkit tube swept on a parabola),
+// 'nervures' = the concrete ribs rhythmically wrapping the rim.
+const LANDMARKS = {
+  grandbol: { label: 'Grand Bol', tiers: { main: 18, opp: 14, ends: 14, deck2: 14, deck2Main: 17, roof: ['main'] } },
+  arche: { label: "L'Arche", tiers: { main: 14, opp: 14, ends: 12, deck2: 10, roof: ['main', 'opp', 'endA', 'endB'] } },
+  nervures: { label: 'Les Nervures', tiers: { main: 12, opp: 12, ends: 11, deck2: 0, roof: ['main', 'opp', 'endA', 'endB'] } },
+};
+
+export function generateStadium({ tier = 1, seed = 1, landmark = null } = {}) {
+  const lm = LANDMARKS[landmark] || null;
+  const t = lm ? lm.tiers : TIERS[Math.max(1, Math.min(5, tier))];
   const stands = [];
   const mk = (id, along, sign, rows, len, deck2) => rows > 0 && stands.push({ id, along, sign, rows, len, deck2: deck2 || 0, roof: t.roof.includes(id) });
-  mk('main', 'x', -1, t.main, PITCH.L * 0.9, t.deck2);           // south touchline (z<0) — tribune principale
+  mk('main', 'x', -1, t.main, PITCH.L * 0.9, t.deck2Main ?? t.deck2);   // south touchline (z<0) — tribune principale
   mk('opp', 'x', 1, t.opp, PITCH.L * 0.9, t.deck2);
   mk('endA', 'z', -1, t.ends, PITCH.W * 0.9, t.deck2);
   mk('endB', 'z', 1, t.ends, PITCH.W * 0.9, t.deck2);
@@ -77,10 +89,37 @@ export function generateStadium({ tier = 1, seed = 1 } = {}) {
     ? { type: 'pylon', h: 12 + tier * 2.5, at: [[-(L / 2 + 9), -(Wp / 2 + 9)], [L / 2 + 9, -(Wp / 2 + 9)], [-(L / 2 + 9), Wp / 2 + 9], [L / 2 + 9, Wp / 2 + 9]] }
     : { type: 'roof' };
   const scoreboard = tier >= 3 ? { x: -(L / 2 + APRON + t.ends * ROW_D + 8), y: 7 + tier, w: 10 + tier * 1.5, h: 5 } : null;
-  const capacity = stands.reduce((s, st) => s + (st.rows + st.deck2) * Math.floor(st.len / SEAT_STEP), 0);
+  let capacity = stands.reduce((s, st) => s + (st.rows + st.deck2) * Math.floor(st.len / SEAT_STEP), 0);
+  // the SIGNATURE, derived from the actual footprint (never hardcoded coordinates)
+  let signature = null;
+  if (lm) {
+    const backOf = (s) => (s.along === 'x' ? PITCH.W / 2 : PITCH.L / 2) + APRON + (s.rows + (s.deck2 ? s.rows * 0.5 : 0)) * ROW_D + 2;
+    const exX = backOf(stands[2]), exZ = backOf(stands[0]);                         // outer half-extents
+    if (landmark === 'grandbol') {
+      const rows = Math.min(...stands.map((s) => s.rows));
+      const corners = [];
+      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+        corners.push({ cx: sx * (PITCH.L * 0.45), cz: sz * (PITCH.W * 0.45), sx, sz, rows, r0: APRON + 6 });
+      }
+      signature = { kind: 'bol', corners };
+      capacity += corners.length * rows * 30;                                       // the bowl seats the corners too
+    } else if (landmark === 'arche') {
+      const topRoof = (stands[0].rows + 1) * ROW_H + 3;
+      signature = { kind: 'arche', span: exX * 2 + 26, apex: topRoof + 34, z: -(exZ - 4), tube: 1.5 };
+    } else if (landmark === 'nervures') {
+      const count = 36, ribs = [];
+      const a = exX + 2.5, b = exZ + 2.5, top = (stands[0].rows + 1) * ROW_H + 4;
+      for (let i = 0; i < count; i++) {
+        const ang = (i / count) * Math.PI * 2;
+        ribs.push({ x: Math.cos(ang) * a, z: Math.sin(ang) * b, yaw: Math.atan2(Math.cos(ang) * b, -Math.sin(ang) * a) + Math.PI / 2, h: top });
+      }
+      signature = { kind: 'nervures', ribs, top };
+    }
+  }
   const eye = 1.6;
   return {
-    spec: { tier, seed }, pitch: PITCH, apron: APRON, rowD: ROW_D, rowH: ROW_H, seatStep: SEAT_STEP,
+    spec: { tier, seed, landmark }, landmark: lm ? { id: landmark, label: lm.label } : null, signature,
+    pitch: PITCH, apron: APRON, rowD: ROW_D, rowH: ROW_H, seatStep: SEAT_STEP,
     stands, loge, capacity, goals, boards, flags, dugouts, tunnel, lights, scoreboard,
     vantages: {
       loge: [0, floorY + eye, (loge.rect[1] + loge.rect[3]) / 2],
@@ -113,6 +152,20 @@ export function checkStadium(m) {
   }
   if (m.loge.terrace[3] > -(m.pitch.W / 2)) issues.push('terrace overhangs the pitch');
   if (m.capacity < 100) issues.push('capacity implausibly low');
+  // landmark contract: a signature stadium must actually CARRY its signature, and it must be sane
+  if (m.landmark) {
+    if (!m.signature) issues.push(`landmark ${m.landmark.id} has no signature`);
+    else if (m.signature.kind === 'arche') {
+      const roofTop = (m.stands[0].rows + 1) * m.rowH + 3;
+      if (m.signature.apex <= roofTop) issues.push('the arch does not clear the roof');
+      if (m.signature.span < m.pitch.L) issues.push('the arch does not span the bowl');
+    } else if (m.signature.kind === 'nervures') {
+      if (m.signature.ribs.length < 24) issues.push('too few ribs to read as the signature');
+      for (const r of m.signature.ribs) if (Math.abs(r.x) < m.pitch.L / 2 && Math.abs(r.z) < m.pitch.W / 2) { issues.push('a rib stands on the pitch'); break; }
+    } else if (m.signature.kind === 'bol') {
+      if (m.signature.corners.length !== 4) issues.push('the bowl is missing corner banks');
+    }
+  }
   // loge equipment: everything inside the room, VIP seats FACE the pitch, nothing glued to the glass
   // except the VIP row, bar against the back wall, no overlaps
   const lg = m.loge; const items = lg.items || [];

@@ -8,15 +8,19 @@ import { makeTheme } from '../engine/club-theme.js';
 // crest in the loge). The directors' LOGE + TERRACE vantage points are the playable "FM view" — the
 // verification renders from there. window.__stadiumsReport carries the contract results.
 const CLUBS = [
-  { spec: { tier: 1, seed: 3 }, theme: makeTheme({ seed: 3, name: 'AS Colline', primary: 0x0b6e4f, secondary: 0xffffff }), at: [-80, 0, 0] },
-  { spec: { tier: 5, seed: 3 }, theme: makeTheme({ seed: 9, name: 'Racing Métropole', primary: 0x1f3a93, secondary: 0xf8d210 }), at: [80, 0, 0] },
+  { spec: { tier: 1, seed: 3 }, theme: makeTheme({ seed: 3, name: 'AS Colline', primary: 0x0b6e4f, secondary: 0xffffff }), at: [-190, 0, 110] },
+  { spec: { tier: 5, seed: 3 }, theme: makeTheme({ seed: 9, name: 'Racing Métropole', primary: 0x1f3a93, secondary: 0xf8d210 }), at: [190, 0, 110] },
+  // LANDMARK presets — signature silhouettes inspired by iconic grounds (see reference/29)
+  { spec: { tier: 5, seed: 3, landmark: 'grandbol' }, theme: makeTheme({ seed: 5, name: 'Grand Bol', primary: 0x7a1f3d, secondary: 0x1f3a93 }), at: [-210, 0, -110] },
+  { spec: { tier: 5, seed: 3, landmark: 'arche' }, theme: makeTheme({ seed: 7, name: "L'Arche", primary: 0xb01e2e, secondary: 0xffffff }), at: [0, 0, -110] },
+  { spec: { tier: 4, seed: 3, landmark: 'nervures' }, theme: makeTheme({ seed: 11, name: 'Les Nervures', primary: 0x14315e, secondary: 0xc8102e }), at: [210, 0, -110] },
 ];
 
 export class Stadiums {
   constructor(scene) {
     this.scene = scene; this.disposables = [];
     this._prevFog = scene.fog; scene.fog = new THREE.FogExp2(0x9aa7b4, 0.0012);   // stadium scale ≫ indoor scale
-    const ggeo = new THREE.PlaneGeometry(560, 360); ggeo.rotateX(-Math.PI / 2);
+    const ggeo = new THREE.PlaneGeometry(1000, 620); ggeo.rotateX(-Math.PI / 2);
     const gmat = new THREE.MeshStandardNodeMaterial({ color: 0x33402f, roughness: 1 });
     const ground = new THREE.Mesh(ggeo, gmat); ground.position.y = -0.06; ground.receiveShadow = true;
     scene.add(ground); this.disposables.push(ggeo, gmat);
@@ -35,7 +39,7 @@ export class Stadiums {
   }
 
   camera(cam, controls) {
-    cam.position.set(-30, 90, 170); cam.lookAt(0, 0, -10);
+    cam.position.set(-40, 150, 320); cam.lookAt(0, 0, -40);
     if (controls) { controls.target.set(0, 4, -10); controls.minDistance = 30; controls.maxDistance = 400; controls.maxPolarAngle = Math.PI * 0.49; controls.update(); }
   }
   // helper for verification: put the camera at a stadium's terrace, looking at the pitch centre

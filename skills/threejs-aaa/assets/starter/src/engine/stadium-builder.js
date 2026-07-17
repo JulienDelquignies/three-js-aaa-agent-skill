@@ -1,6 +1,8 @@
 import * as THREE from 'three/webgpu';
 import { drawCrest, drawSponsorStrip } from './club-theme.js';
 import { buildFurnitureItem } from './furniture-kit.js';
+import { sweep } from './meshkit.js';
+import { toGeometry } from './meshkit-builder.js';
 
 // stadium-builder — turn a stadium model (engine/stadium.js) into the world, THEMED by the club:
 // pitch with markings, stepped stands with INSTANCED SEATS in the club colors (secondary-color end
@@ -229,6 +231,88 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   box([0, lg.floorY + lg.rail / 2, lg.terrace[3]], [lg.w / 2 + 0.3, lg.rail / 2, 0.03], railM, true);
   box([0, lg.floorY + lg.rail, lg.terrace[3]], [lg.w / 2 + 0.3, 0.03, 0.05], mat({ color: 0x30363d, roughness: 0.4, metalness: 0.7 }));
   for (const e of [-1, 1]) box([e * (lg.w / 2 + 0.26), lg.floorY + lg.rail / 2, tz], [0.03, lg.rail / 2, td], railM, true);
+
+
+  // ---- the SIGNATURE (landmark presets, reference/29): raised from derived data, never hardcoded
+  if (model.signature) {
+    const sig = model.signature;
+    if (sig.kind === 'arche') {                                 // the great arch: a meshkit tube on a parabola
+      const path = [];
+      for (let i = 0; i <= 48; i++) {
+        const u = i / 48, x = (u - 0.5) * sig.span;
+        path.push([x, sig.apex * (1 - (2 * u - 1) ** 2) + 0.4, sig.z]);
+      }
+      const circ = [];
+      for (let i = 0; i < 12; i++) { const a2 = (i / 12) * Math.PI * 2; circ.push([Math.cos(a2) * sig.tube, Math.sin(a2) * sig.tube]); }
+      const arch = new THREE.Mesh(toGeometry(sweep(circ, path)), mat({ color: 0xeef1f4, roughness: 0.35, metalness: 0.55 }));
+      arch.castShadow = true; group.add(arch); disposables.push(arch.geometry);
+      for (const sx of [-1, 1]) colliders.push({ pos: [sx * sig.span * 0.48, 2, sig.z], half: [2, 2, 2] });
+    }
+    if (sig.kind === 'nervures') {                              // the concrete ribs wrapping the rim
+      const path = [];
+      for (let i = 0; i <= 14; i++) {
+        const u = i / 14;
+        path.push([0, u * sig.top, -Math.sin(u * Math.PI / 2) * 4.5]);     // rises, leaning over the rim
+      }
+      const sect = [[0.55, 0], [0.38, 0.9], [-0.38, 0.9], [-0.55, 0], [-0.38, -0.9], [0.38, -0.9]];
+      const ribGeo = toGeometry(sweep(sect, path)); disposables.push(ribGeo);
+      const ribM = mat({ color: 0xd9d6cf, roughness: 0.85 });
+      const im = new THREE.InstancedMesh(ribGeo, ribM, sig.ribs.length);
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), one = new THREE.Vector3(1, 1, 1);
+      sig.ribs.forEach((r, k) => {
+        q.setFromAxisAngle(up, r.yaw);
+        m4.compose(new THREE.Vector3(r.x, 0, r.z), q, one);
+        im.setMatrixAt(k, m4);
+        colliders.push({ pos: [r.x, sig.top / 2, r.z], half: [0.6, sig.top / 2, 1.0], yaw: r.yaw });
+      });
+      im.instanceMatrix.needsUpdate = true; im.castShadow = true;
+      group.add(im); disposables.push(im);
+    }
+    if (sig.kind === 'bol') {                                   // corner banks close the bowl
+      const rowH2 = model.rowH, rowD2 = model.rowD;
+      const seatGeo2 = new THREE.BoxGeometry(0.42, 0.4, 0.44); disposables.push(seatGeo2);
+      const concrete2 = mat({ color: 0xb6b2a8, roughness: 0.95 });
+      for (const c of sig.corners) {
+        const rows = c.rows, segs = 20;
+        const pos2 = [], idx2 = [];
+        for (let i = 0; i <= rows; i++) {
+          const r = c.r0 + i * rowD2, y = i * rowH2;
+          for (let sgi = 0; sgi <= segs; sgi++) {
+            const a2 = (sgi / segs) * (Math.PI / 2);
+            pos2.push(c.cx + c.sx * Math.cos(a2) * r, y, c.cz + c.sz * Math.sin(a2) * r);
+          }
+        }
+        for (let i = 0; i < rows; i++) for (let sgi = 0; sgi < segs; sgi++) {
+          const a0 = i * (segs + 1) + sgi, b0 = (i + 1) * (segs + 1) + sgi;
+          idx2.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);
+        }
+        const bg2 = new THREE.BufferGeometry();
+        bg2.setAttribute('position', new THREE.Float32BufferAttribute(pos2, 3));
+        bg2.setIndex(idx2); bg2.computeVertexNormals(); disposables.push(bg2);
+        const bank = new THREE.Mesh(bg2, new THREE.MeshStandardNodeMaterial({ color: 0xb6b2a8, roughness: 0.95, side: THREE.DoubleSide }));
+        disposables.push(bank.material);
+        bank.receiveShadow = true; group.add(bank);
+        const nSeat = rows * (segs - 1);
+        const cornerSeatM = new THREE.MeshStandardNodeMaterial({ color: theme.primary, roughness: 0.7 });
+        disposables.push(cornerSeatM);
+        const sim = new THREE.InstancedMesh(seatGeo2, cornerSeatM, nSeat);
+        const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), one = new THREE.Vector3(1, 1, 1);
+        let n2 = 0;
+        for (let i = 0; i < rows; i++) {
+          const r = c.r0 + (i + 0.5) * rowD2, y = i * rowH2 + 0.25;
+          for (let sgi = 1; sgi < segs; sgi++) {
+            const a2 = (sgi / segs) * (Math.PI / 2);
+            const x = c.cx + c.sx * Math.cos(a2) * r, z = c.cz + c.sz * Math.sin(a2) * r;
+            q.setFromAxisAngle(up, Math.atan2(-x, -z));                    // face the pitch centre
+            m4.compose(new THREE.Vector3(x, y, z), q, one);
+            sim.setMatrixAt(n2++, m4);
+          }
+        }
+        sim.count = n2; sim.instanceMatrix.needsUpdate = true;
+        group.add(sim); disposables.push(sim);
+      }
+    }
+  }
 
   return { group, colliders, vantages: model.vantages, dispose: () => disposables.forEach((d) => d.dispose?.()) };
 }

@@ -31,5 +31,37 @@ sab('loge sans porte de terrasse', (m) => { delete m.loge.door; }, 'no doorway f
 sab('chaise VIP déplacée devant la porte de terrasse', (m) => { m.loge.items.find((i) => i.vip).x = m.loge.door.x; }, 'blocks the terrace doorway');
 sab('porte de terrasse trop étroite', (m) => { m.loge.door.w = 0.5; }, 'too narrow');
 
+
+// ---- LANDMARK presets: signature stadiums under the same contract + their own signature rules
+for (const lmk of ['grandbol', 'arche', 'nervures']) {
+  const m = generateStadium({ tier: 5, seed: 3, landmark: lmk });
+  const r = checkStadium(m);
+  const det = JSON.stringify(generateStadium({ tier: 5, seed: 3, landmark: lmk })) === JSON.stringify(m);
+  const good = r.ok && det;
+  (good ? pass++ : fail++);
+  console.log(`${good ? '✓' : '✗'} landmark « ${m.landmark.label} » sous contrat + déterministe (${m.capacity.toLocaleString('fr-FR')} places)${good ? '' : ' — ' + (r.issues[0] || 'non-déterministe')}`);
+}
+{
+  const up = generateStadium({ tier: 5, seed: 3, landmark: 'grandbol' }).capacity > generateStadium({ tier: 5, seed: 3 }).capacity;
+  (up ? pass++ : fail++);
+  console.log(`${up ? '✓' : '✗'} le Grand Bol dépasse le tier 5 en capacité`);
+}
+{
+  const m = generateStadium({ tier: 5, seed: 3, landmark: 'arche' });
+  m.signature.apex = 5;
+  const r = checkStadium(m);
+  const hit = !r.ok && r.issues.some((i) => i.includes('does not clear the roof'));
+  (hit ? pass++ : fail++);
+  console.log(`${hit ? '✓' : '✗'} sabotage « arche écrasée sous le toit » attrapé`);
+}
+{
+  const m = generateStadium({ tier: 5, seed: 3, landmark: 'nervures' });
+  m.signature.ribs[3].x = 0; m.signature.ribs[3].z = 0;
+  const r = checkStadium(m);
+  const hit = !r.ok && r.issues.some((i) => i.includes('rib stands on the pitch'));
+  (hit ? pass++ : fail++);
+  console.log(`${hit ? '✓' : '✗'} sabotage « nervure plantée sur la pelouse » attrapé`);
+}
+
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green (5 tiers + sabotages)`);
 process.exit(fail === 0 ? 0 : 1);

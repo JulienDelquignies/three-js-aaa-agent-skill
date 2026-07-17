@@ -64,3 +64,18 @@ in club offices (furnish adds `jersey-frame`/`crest-panel`; the kit draws them f
 ## Scale gotcha
 Stadium scenes are ~300 m across: the default indoor fog (`FogExp2 0.014`) will grey everything out —
 set `scene.fog = new FogExp2(color, ~0.0012)` (and mind `camera.far`).
+
+## Landmark presets — signature silhouettes
+
+`generateStadium({ tier, seed, landmark })` with `'grandbol' | 'arche' | 'nervures'`: the SAME
+parametric data + contract, plus ONE derived `signature` the builder knows how to raise —
+- **grandbol** (the giant asymmetric bowl): oversized stand counts, taller main deck, and four
+  CORNER BANKS (quarter-arc bleacher surfaces + instanced seats facing the pitch centre) that close
+  the bowl; capacity credits the corners.
+- **arche** (the great arch): a meshkit tube swept along a parabola spanning the whole bowl above
+  the roofline — contract: the apex must CLEAR the roof, the span must cover the pitch.
+- **nervures** (the concrete ribs): ~36 ribs (ONE meshkit swept profile, instanced with per-rib yaw)
+  around the stadium's bounding ellipse, leaning over the rim — contract: enough ribs to read as the
+  signature, none standing on the pitch.
+Signatures are DERIVED from the actual footprint (extents, roofline), never hardcoded coordinates —
+so they survive tier/seed changes. Sabotages: a crushed arch, a rib planted on the pitch.
