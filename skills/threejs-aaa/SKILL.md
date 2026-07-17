@@ -62,6 +62,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Meshkit — Blender ops as data: lathe/sweep/loft/displace, closed-manifold contract** | [reference/40-meshkit.md](reference/40-meshkit.md) |
 | **Free driving + circuit: bicycle-model controller, derived drivable track, lap timer** | [reference/41-driving-circuit.md](reference/41-driving-circuit.md) |
 | **Animkit — Mixamo moves as data: pose keys, anatomical contract, additive gestures** | [reference/42-animkit.md](reference/42-animkit.md) |
+| **Staged sculpt workflow: blockout → form → lookdev, double-gated (contract + screenshot)** | [reference/43-sculpt-workflow.md](reference/43-sculpt-workflow.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |

@@ -24,9 +24,24 @@ const DEMOS = {
   rock: { parts: [{ name: 'rocher', color: [0.45, 0.42, 0.39, 1], roughness: 0.95, ops: [{ op: 'sphere', radius: 0.5, segments: 24, rings: 16 }, { op: 'displaceNoise', seed: 7, amp: 0.14, freq: 3 }, { op: 'smooth', passes: 1 }] }] },
 };
 
+// the football boot from the staged sculpt workflow (reference/43) — sections computed here
+const bootSecs = [];
+for (const [z, w, h] of [[-0.135, 0.040, 0.052], [-0.08, 0.046, 0.056], [-0.01, 0.047, 0.048], [0.06, 0.043, 0.034], [0.11, 0.034, 0.020], [0.142, 0.022, 0.010]]) {
+  const ring = [];
+  for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2; ring.push([Math.cos(a) * w, 0.026 + h + Math.sin(a) * h * 0.85, z]); }
+  bootSecs.push(ring);
+}
+const bootOutline = [[-0.045, 0], [-0.05, 0.05], [-0.04, 0.10], [-0.035, 0.155], [-0.045, 0.21], [-0.035, 0.26], [0, 0.285], [0.04, 0.265], [0.05, 0.21], [0.042, 0.15], [0.045, 0.09], [0.04, 0.04], [0, -0.01]].map((p2) => [p2[0] * 1.15, p2[1] - 0.14]);
+DEMOS.crampon = {
+  parts: [
+    { name: 'semelle', color: [0.94, 0.93, 0.9, 1], roughness: 0.5, ops: [{ op: 'extrudePoly', outline: bootOutline, depth: 0.022, bevel: 0.006 }] },
+    { name: 'tige', color: [0.09, 0.095, 0.11, 1], roughness: 0.55, ops: [{ op: 'loft', sections: bootSecs }, { op: 'smooth', passes: 1 }] },
+  ],
+};
+
 const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : null; };
 if (process.argv.includes('--help') || (!arg('--spec') && !arg('--demo'))) {
-  console.log('usage: meshkit-export.mjs (--spec model.json | --demo vase|trophy|rock) --out model.glb');
+  console.log('usage: meshkit-export.mjs (--spec model.json | --demo vase|trophy|rock|crampon) --out model.glb');
   process.exit(0);
 }
 const spec = arg('--spec') ? JSON.parse(await readFile(arg('--spec'), 'utf8')) : DEMOS[arg('--demo')];

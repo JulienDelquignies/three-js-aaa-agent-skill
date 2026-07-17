@@ -432,6 +432,20 @@ réelle (jamais de coordonnées en dur). Harnais stade 14/14 (3 presets + déter
 2 sabotages « arche écrasée », « nervure sur la pelouse ») ; galerie Stades passée à 5 enceintes
 (rapport : T1 855 · T5 13 536 · Grand Bol 18 669 · Arche 13 092 · Nervures 6 546). Réf 29 enrichie.
 
+⑮ ✅ **Workflow de sculpture par étapes** *(fait — « vinhhien112/Object-Sculptor : est-ce qu'on est à
+ce niveau ? »)* — évaluation : repo SÉRIEUX (1,1k ⭐, MIT, image → three.js procédural avec passes
+blockout→form→lookdev et acceptation par vision IA). Notre vocabulaire d'opérateurs est identique
+(meshkit : lathe/sweep/loft/extrusion) et nos GARDES sont plus fortes (contrat manifold + volume EN
+PLUS du jugement visuel) — mais eux avaient formalisé la DISCIPLINE des passes. Adoptée (réf 43) et
+prouvée en sculptant une CHAUSSURE DE FOOT en live au playmode : blockout v1 rejeté à la porte
+(silhouette aileron de requin → proportions corrigées AVANT tout détail), passes forme+lookdev — les
+11 crampons nés retournés attrapés d'un coup par checkMesh (profil de lathe descendant), la rangée de
+crampons débordant de la semelle attrapée par la porte lookdev (l'œil attrape ce que le contrat ne
+voit pas, et réciproquement). Résultat : 19 pièces, 0 échec de contrat ; figé en spec `--demo
+crampon` de meshkit-export (GLB 20 ko standard). Reste d'eux à prendre (backlog) : la reconstruction
+PILOTÉE PAR IMAGE de référence (épingler une photo et comparer côte à côte à chaque porte — la
+mécanique existe déjà chez nous, il manque l'habitude).
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

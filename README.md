@@ -50,6 +50,7 @@ threejs-aaa/ (the skill)
 │   ├── 40-meshkit.md           meshkit: Blender ops as data (lathe/sweep/loft/displace) + manifold contract
 │   ├── 41-driving-circuit.md   free driving (bicycle model + capsule collisions) + derived circuit & lap timer
 │   ├── 42-animkit.md           animkit: Mixamo moves as data (pose keys → additive clips) + anatomical contract
+│   ├── 43-sculpt-workflow.md   staged sculpting: blockout → form → lookdev, gated by contract + screenshot
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
