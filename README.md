@@ -51,6 +51,7 @@ threejs-aaa/ (the skill)
 │   ├── 41-driving-circuit.md   free driving (bicycle model + capsule collisions) + derived circuit & lap timer
 │   ├── 42-animkit.md           animkit: Mixamo moves as data (pose keys → additive clips) + anatomical contract
 │   ├── 43-sculpt-workflow.md   staged sculpting: blockout → form → lookdev, gated by contract + screenshot
+│   ├── 44-character-swap.md    custom Mixamo player: world-delta retarget, dequantize, skinned long coat
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -84,6 +85,8 @@ threejs-aaa/ (the skill)
 │   ├── verify-drive.mjs       free-driving controller: top speed, braking, turning circle, wall block
 │   ├── verify-circuit.mjs     derived track: drivable bends, no self-crossing, lap timer, sabotages
 │   ├── verify-animkit.mjs     movement kit: known bones, no limb teleport, loop seams, knee range
+│   ├── verify-retarget.mjs    cross-rig transport: identity + cross-rig invariants, hips units, dequantize
+│   ├── verify-outfit.mjs      layered clothing: meshkit gate per part, weights, hem-below-knee coverage
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project

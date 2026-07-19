@@ -446,10 +446,32 @@ crampon` de meshkit-export (GLB 20 ko standard). Reste d'eux à prendre (backlog
 PILOTÉE PAR IMAGE de référence (épingler une photo et comparer côte à côte à chaque porte — la
 mécanique existe déjà chez nous, il manque l'habitude).
 
+⑯ ✅ **Shanon devient le joueur + manteau long** *(fait — « fais-lui des vêtements longs par-dessus
+sa tenue, et remplace Soldier par lui »)* — le GLB uploadé (rig Mixamo `mixamorig5`, quantifié
+glTF-Transform) remplace le Soldier comme directeur sportif ; le Soldier reste à bord comme DONNEUR
+de clips (idle/walk/run + TPose) et rig des NPC/extras. Trois briques natives : **`rig-retarget.js`**
+(transport bind-à-bind par delta MONDE racine-relatif — la copie naïve des quats locaux froisse le
+perso en boule, prouvé ; tracks position jetées sauf hanches (les proportions source fuient), track
+hanches convertie en unités destination ; contrat `checkRetarget` + invariants harnais identité ET
+cross-rig < 0,01°) ; **`dequantizeSkinned`** (les attributs normalisés int16/uint16 explosent le
+skinning GPU — poids ×65535, voiles à l'écran ; dénormalisés en float32, skinIndex reste ENTIER) ;
+**`outfit.js`** (manteau long meshkit skinné : loft monde au bind, carrure à hauteur d'épaule,
+manches jusqu'aux poignets, jupe à poids ADAPTATIFS hanches→jambes — le genou perçait l'ourlet en
+pleine foulée ; Skeleton neuf aux inverses du jour + bindMode attached DANS le wrapper → la
+conduite cache le manteau avec le joueur ; contrat `checkOutfit` : ourlet SOUS le genou, littéral).
+Piège d'orientation : Shanon regarde +Z, le Soldier −Z → wrapper avec l'intérieur tourné de π, tout
+le pipeline (forwardLocal −Z, root motion animkit) reste cohérent. Gestes : compilés ABSOLUS sur le
+donneur (`toClip {additive:false}`), retargetés, PUIS makeClipAdditive (un clip additif ne se
+transporte pas). Harnais verify-retarget 13/13, verify-outfit 14/14, suite headless sections 1–21
+PASS (nouvelle garde anti-explosion : tout vertex skinné CPU ≤ 2 m des hanches en course). Réf 44.
+Leçon playmode : ajouter/retirer des SkinnedMesh en live corrompt le skinning du renderer pour les
+AUTRES modèles (fausses « explosions ») — page vierge = vérité ; caméra libre : frames:0 obligatoire.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
-au parking, IA trafic, ghost du record au circuit.
+au parking, IA trafic, ghost du record au circuit → tenues : boutons/fentes du manteau, tenue match vs
+ville, manteau pour les NPC.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

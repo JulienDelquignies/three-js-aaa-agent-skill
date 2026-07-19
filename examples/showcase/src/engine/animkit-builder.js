@@ -10,8 +10,10 @@ export function resolveBoneNames(model) {
   return (canonical) => names.find((n) => n.toLowerCase().endsWith(canonical.toLowerCase())) || null;
 }
 
-/** Build an AnimationClip from an animkit spec against a model's rig. */
-export function toClip(spec, model) {
+/** Build an AnimationClip from an animkit spec against a model's rig.
+ *  { additive: false } keeps the clip ABSOLUTE — the form to feed rig-retarget (retarget first,
+ *  makeClipAdditive after: an additive delta clip cannot be transported bind-to-bind). */
+export function toClip(spec, model, { additive = true } = {}) {
   const find = resolveBoneNames(model);
   const r = resolveTracks(spec);
   const tracks = [];
@@ -48,8 +50,8 @@ export function toClip(spec, model) {
   // ADDITIVE by default: converted to deltas vs frame 0 (= BASE pose), the gesture ADDS on top of
   // whatever locomotion is running — two normal-blend actions on the same bones just average 50/50
   // and the gesture comes out half-raised (caught on the first live screenshot)
-  THREE.AnimationUtils.makeClipAdditive(clip);
-  clip.userData = { loop: r.loop, additive: true };
+  if (additive) THREE.AnimationUtils.makeClipAdditive(clip);
+  clip.userData = { loop: r.loop, additive };
   return clip;
 }
 

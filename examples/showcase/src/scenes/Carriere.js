@@ -35,6 +35,8 @@ import { InteractableSystem, doorsFromFloorplan, carryFollow } from '../engine/i
 import { DebugGizmos } from '../engine/debug-gizmos.js';
 import * as MESHKIT from '../engine/meshkit.js';
 import { buildParts, toGeometry } from '../engine/meshkit-builder.js';
+import { retargetClip, checkRetarget, dequantizeSkinned } from '../engine/rig-retarget.js';
+import { buildLongCoat } from '../engine/outfit.js';
 const { lathe, sweep, transform, mirrorX, merge, sphere, displace } = MESHKIT;
 
 // Carrière — the career demo: ONE character, the SAME controls, across the three sites of a club level
@@ -366,15 +368,36 @@ export class Carriere {
       },
     });
 
-    // the character — same Soldier, same controller, everywhere
+    // the character — SHANON (uploaded Mixamo rig, quantized GLB) as the directeur sportif; the
+    // Soldier stays aboard as CLIP DONOR (idle/walk/run + TPose bind) and as the NPC/extras rig.
+    // Her rig faces +Z where the Soldier faces −Z, so she rides INSIDE a wrapper group with the
+    // inner scene yawed π: root-relative, both binds are then the same posture and the whole
+    // pipeline (retarget, animkit root motion, controller forwardLocal −Z) stays coherent.
     const gltf = await new GLTFLoader().loadAsync('Soldier.glb');
-    const model = gltf.scene; model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+    const gShanon = await new GLTFLoader().loadAsync('shanon.glb');
+    dequantizeSkinned(gShanon.scene);
+    const model = new THREE.Group();
+    gShanon.scene.rotation.y = Math.PI;
+    model.add(gShanon.scene);
+    model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+    // retarget the donor's locomotion BEFORE either model is scaled or placed (both in bind pose)
+    const tposeClip = gltf.animations.find((a) => /tpose/i.test(a.name));
+    const clips = gltf.animations.filter((a) => !/tpose/i.test(a.name))
+      .map((c) => retargetClip(c, gltf.scene, model, { srcBindClip: tposeClip }));
+    this._retargetChecks = clips.map((c) => ({ name: c.name, ...checkRetarget(c, model) }));
+    for (const r of this._retargetChecks) if (!r.ok) console.warn('checkRetarget', r.name, r.issues);
     const box = new THREE.Box3().setFromObject(model); model.scale.setScalar(1.8 / box.getSize(new THREE.Vector3()).y);
     const b2 = new THREE.Box3().setFromObject(model);
     const start = this.career.sites.home.spawn;
     model.position.set(start[0], -b2.min.y, start[2]); this.scene.add(model);
+    // VÊTEMENTS LONGS (outfit.js): the DS's long coat, meshkit-built over the kit in world space
+    // and skinned to the SAME rig — it rides inside the wrapper so drive-mode hiding carries it
+    model.updateMatrixWorld(true);
+    const coat = buildLongCoat(model, { color: this.theme?.coat ?? 0x2a3140 });
+    if (!coat.check.ok) console.warn('checkOutfit', coat.check.issues);
+    if (coat.group) model.add(coat.group);
+    this._coat = coat;
     const mixer = new THREE.AnimationMixer(model);
-    const clips = gltf.animations;
     const bone = (re) => { let f = null; model.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
     const legs = [
       { up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i), foot: bone(/LeftFoot/i) },
@@ -392,8 +415,18 @@ export class Carriere {
     this._mixer = mixer;
     // GESTURES (animkit, reference/42): data-authored moves compiled against THIS rig — the tracks
     // only claim the bones they pose, so a gesture plays OVER the locomotion (legs keep walking)
-    this._gestures = {};
-    for (const g of Object.keys(MOVES)) this._gestures[g] = toClip(MOVES[g], model);
+    // The MOVES library is calibrated against the SOLDIER's bind frames (the axis map in
+    // reference/42), so each gesture is compiled ABSOLUTE on the donor rig, transported by
+    // rig-retarget onto Shanon, and only THEN made additive. NPC soldiers keep the direct build.
+    this._gestures = {}; this._gesturesSoldier = {};
+    for (const g of Object.keys(MOVES)) {
+      const raw = toClip(MOVES[g], gltf.scene, { additive: false });
+      const rc = retargetClip(raw, gltf.scene, model, { srcBindClip: tposeClip });
+      THREE.AnimationUtils.makeClipAdditive(rc);
+      rc.userData = { ...raw.userData, additive: true };
+      this._gestures[g] = rc;
+      this._gesturesSoldier[g] = toClip(MOVES[g], gltf.scene);
+    }
     this._gesture = (name) => playGesture(this._mixer, this._gestures[name]);
     // the LAPTOP (O / 💻): a real meshkit prop in the LEFT hand — folded while walking, the lid
     // eases open and DS OS (laptop.js) comes up once it's lit. Same apps as the phone: one data
@@ -445,7 +478,7 @@ export class Carriere {
                 this._jetDealDone = true;
                 this.state?.addMessage({ from: 'Agent', text: 'Accord trouvé en plein vol pour mon attaquant. L’écrit suit à l’atterrissage. ✈️🤝' });
                 this._gesture?.('poignee');
-                if (this._jetMixer && this._gestures) playGesture(this._jetMixer, this._gestures.poignee);
+                if (this._jetMixer && this._gesturesSoldier) playGesture(this._jetMixer, this._gesturesSoldier.poignee);
               }
             } else { if (dlg) dlg.style.opacity = '0'; this.ctrl.standUp(); this._syncBody(); }
           },
@@ -496,7 +529,7 @@ export class Carriere {
               this._meetDone = true;
               this.state?.addMessage({ from: 'Agent', text: 'Accord de principe pour mon joueur. Envoyez l’offre écrite — on finalise cette semaine. 🤝' });
               this._gesture?.('poignee');                                        // the deal is SHAKEN ON (animkit)
-              if (this._npcMixer && this._gestures) playGesture(this._npcMixer, this._gestures.poignee);
+              if (this._npcMixer && this._gesturesSoldier) playGesture(this._npcMixer, this._gesturesSoldier.poignee);
             }
           }
           else { if (dlg) dlg.style.opacity = '0'; this.ctrl.standUp(); this._syncBody(); }
@@ -592,6 +625,8 @@ export class Carriere {
     }
     window.__carriere = this;                                     // for headless verification
     window.__meshkit = { ...MESHKIT, buildParts, toGeometry };    // live modeling from the play-mode MCP
+    window.__three = THREE;                                       // live rigging/authoring from the play-mode MCP
+    window.__loadGLB = (url) => new GLTFLoader().loadAsync(url);
     return true;
   }
 
