@@ -493,12 +493,24 @@ et balaient avec la jambe) ; exclure la peau étrangère d'une tranche (bras hor
 torse, l'AUTRE jambe hors du jean) ; anneaux ajustés et analytiques partagent la base/phase de
 ring() pour se mélanger dans un même loft. verify-outfit 30/30, headless 1–21 PASS.
 
+⑯quater ✅ **Tissus procéduraux** *(fait — « les textures c'est abusé c'est nul »)* — les aplats de
+couleur faisaient plastique. `engine/fabric.js` : matériaux TISSU calculés dans le shader (TSL),
+zéro fichier texture — motif dérivé de `attribute('position')` (espace de bind, pré-skinning : le
+motif est COLLÉ au tissu, il ne nage pas à travers pendant l'animation). Genres : denim (délavage +
+soupçon de sergé), tricot chiné, laine. Deux règles gagnées à la sonde : (1) moduler la teinte en
+MULTIPLICATIF (`color(tint).mul(1+bruit)`) — le mélange entre bornes éclaircies/assombries se fait
+en espace linéaire où +0.07 sur un canal sombre le DOUBLE (jean bleu → poudre ; prouvé par un rendu
+A/B deux sphères) ; (2) fréquences BASSES — le procédural n'a pas de mips, les hautes fréquences
+rendent en moiré cotte de mailles (premier gros plan). Bonus : matités du perso lui-même (les maps
+metal/rough issues de la conversion « Glossiness » de Mixamo rendent brillant plastique → retirées,
+roughness 0.88, normal map conservée). verify-outfit 31/31, headless 1–21 PASS.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
 au parking, IA trafic, ghost du record au circuit → tenues : boutons/fentes du manteau, tenue match vs
 ville, manteau/tenues pour les NPC, sélecteur de tenue en jeu (appli téléphone « Dressing »), manteau
-repris en sur-mesure fitRing.
+repris en sur-mesure fitRing → fabric : coutures/surpiqûres, normal map procédurale.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

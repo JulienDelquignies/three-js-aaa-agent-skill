@@ -376,6 +376,12 @@ export class Carriere {
     const gltf = await new GLTFLoader().loadAsync('Soldier.glb');
     const gShanon = await new GLTFLoader().loadAsync('shanon.glb');
     dequantizeSkinned(gShanon.scene);
+    // the export's Glossiness-converted metal/rough maps render as shiny plastic — matte cloth/skin
+    gShanon.scene.traverse((o) => {
+      if (!o.isMesh || !o.material) return;
+      o.material.metalness = 0; o.material.metalnessMap = null;
+      o.material.roughnessMap = null; o.material.roughness = 0.88;
+    });
     const model = new THREE.Group();
     gShanon.scene.rotation.y = Math.PI;
     model.add(gShanon.scene);

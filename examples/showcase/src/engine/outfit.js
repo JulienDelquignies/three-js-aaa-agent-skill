@@ -1,5 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { loft, sphere, transform, checkMesh } from './meshkit.js';
+import { fabricMaterial } from './fabric.js';
 
 // outfit — LAYERED CLOTHING over a skinned character: a long coat (manteau long) built with
 // meshkit in WORLD space around the rig's bind pose, then SKINNED by proximity so it follows
@@ -255,8 +256,7 @@ export function buildLongCoat(model, { color = 0x2a3140, collar = 0x1e242f, roug
     }
     geo.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4));
     geo.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
-    const mat = new THREE.MeshStandardNodeMaterial({ color: p.color, roughness, metalness: 0.04 });
-    const mesh = new THREE.SkinnedMesh(geo, mat);
+    const mesh = new THREE.SkinnedMesh(geo, fabricMaterial({ kind: 'wool', tint: p.color, roughness }));
     mesh.name = `manteau_${p.name}`;
     mesh.castShadow = true; mesh.frustumCulled = false;
     mesh.bind(skeleton, new THREE.Matrix4());                      // identity bind + 'attached' mode
@@ -445,7 +445,8 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
     }
     geo.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4));
     geo.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
-    const mesh = new THREE.SkinnedMesh(geo, new THREE.MeshStandardNodeMaterial({ color: p.color, roughness, metalness: 0.02 }));
+    const kindOf = p.name.startsWith('jean') ? 'denim' : 'knit';
+    const mesh = new THREE.SkinnedMesh(geo, fabricMaterial({ kind: kindOf, tint: p.color, roughness }));
     mesh.name = `tenue_${p.name}`;
     mesh.castShadow = true; mesh.frustumCulled = false;
     mesh.bind(skeleton, new THREE.Matrix4());

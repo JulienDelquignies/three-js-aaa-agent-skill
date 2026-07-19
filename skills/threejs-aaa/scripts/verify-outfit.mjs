@@ -129,6 +129,11 @@ function makeRig() {
   for (let i = 0; i < chest.count; i++) { const y = chest.getY(i); if (y > 0.98 && y < 1.25) maxR = Math.max(maxR, Math.hypot(chest.getX(i), chest.getZ(i) - 0.01)); }
   ok(`sur-mesure : le sweat épouse le corps mesuré (rayon poitrine ${maxR.toFixed(3)} ≈ corps 0.09 + aisance)`, maxR > 0.1 && maxR < 0.15);
   ok('sur-mesure : contrat toujours OK', c.check.ok, c.check.issues.join(' | ') || '');
+  // fabric: every garment carries a PROCEDURAL cloth material (TSL colorNode), never a flat colour
+  ok('tissus procéduraux : jean=denim, sweat=knit, colorNode présent partout', c.meshes.every((p) => {
+    const f = p.mesh.material.userData.fabric;
+    return f && !!p.mesh.material.colorNode && (p.name.startsWith('jean') ? f.kind === 'denim' : f.kind === 'knit');
+  }));
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

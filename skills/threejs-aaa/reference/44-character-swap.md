@@ -83,6 +83,18 @@ clothes. The fit rules that took screenshots to learn:
 - leave under-layers visible at the seams on purpose (the shirt's white cuffs past the sweat
   sleeves read as real layering).
 
+**Fabric, not flat colour** (`fabric.js`): cloth materials are PROCEDURAL in the shader (TSL) —
+zero texture files. The pattern is computed from `attribute('position')` (bind space, pre-skinning)
+so it is glued to the cloth instead of swimming through it; kinds: denim (wash + twill hint),
+heather knit, wool nap. Two probe-won rules:
+- modulate the tint MULTIPLICATIVELY (`color(tint).mul(1 + noise)`) — mixing between
+  lerped-to-white/black endpoints happens in linear space, where +0.07 on a dark channel doubles
+  it and the jean turns powder (proved with a two-spheres A/B render).
+- keep frequencies LOW: procedural patterns have no mips — high-frequency sin/noise renders as
+  chainmail moiré (first close-up).
+Also matte the CHARACTER's own materials: Mixamo "Glossiness"-converted metal/rough maps render as
+shiny plastic — strip them (metalness 0, roughness ~0.88, keep the normal map).
+
 ## Play-mode caveats (learned the hard way)
 
 - **Adding/removing SkinnedMeshes live** (play_eval) corrupts the fallback renderer's skinning of
