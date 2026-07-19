@@ -54,6 +54,66 @@ function findBones(model) {
 }
 const wpos = (b) => { const v = new THREE.Vector3(); b.getWorldPosition(v); return [v.x, v.y, v.z]; };
 
+/** World-space point cloud of the character's SKIN at bind (skeletons force-updated — no render
+ *  has happened yet at build time). This is what garments are TAILORED against: guessing radii
+ *  makes a bonhomme Michelin; measuring the body makes clothes. */
+function bodyCloud(model) {
+  model.updateMatrixWorld(true);
+  const seen = new Set(), pts = [];
+  const v = new THREE.Vector3();
+  model.traverse((o) => {
+    if (!o.isSkinnedMesh || /^(manteau|tenue)_/.test(o.name)) return;
+    if (o.skeleton && !seen.has(o.skeleton)) { seen.add(o.skeleton); o.skeleton.update(); }
+    const n = o.geometry.attributes.position.count;
+    for (let i = 0; i < n; i += 2) { o.getVertexPosition(i, v).applyMatrix4(o.matrixWorld); pts.push(v.x, v.y, v.z); }
+  });
+  return pts;
+}
+
+/** A garment ring FITTED to the body: per angular sector, the body's max radial extent in a slab
+ *  around the station, plus a clearance. Empty sectors borrow neighbours; no body data at all
+ *  (e.g. a bones-only test rig) falls back to the analytic radius. */
+function fitRing(cloud, c, d, u, v, { clear = 0.02, slab = 0.05, maxR = 0.3, cap = Infinity, fallback = 0.08, exclude = null } = {}) {
+  const r = new Array(SEG).fill(0);
+  for (let i = 0; i < cloud.length; i += 3) {
+    const px = cloud[i] - c[0], py = cloud[i + 1] - c[1], pz = cloud[i + 2] - c[2];
+    const along = px * d[0] + py * d[1] + pz * d[2];
+    if (Math.abs(along) > slab) continue;
+    const rx = px - d[0] * along, ry = py - d[1] * along, rz = pz - d[2] * along;
+    const ru = rx * u[0] + ry * u[1] + rz * u[2], rv = rx * v[0] + ry * v[1] + rz * v[2];
+    const rad = Math.hypot(ru, rv);
+    if (rad > maxR || rad < 1e-4) continue;
+    if (exclude && exclude(cloud[i], cloud[i + 1], cloud[i + 2])) continue;
+    const sect = (Math.floor((Math.atan2(rv, ru) / (Math.PI * 2)) * SEG) + SEG * 2) % SEG;
+    if (rad > r[sect]) r[sect] = rad;
+  }
+  for (let pass = 0; pass < SEG; pass++) {
+    let empty = false;
+    for (let i = 0; i < SEG; i++) if (!r[i]) { const a = r[(i + 1) % SEG], b = r[(i - 1 + SEG) % SEG]; if (a || b) r[i] = Math.max(a, b) * 0.96; else empty = true; }
+    if (!empty) break;
+  }
+  const has = r.some((x) => x > 0);
+  const pts = []; let mean = 0;
+  for (let i = 0; i < SEG; i++) {
+    const smoothed = has ? Math.max(r[i], ((r[(i + 1) % SEG] + r[(i - 1 + SEG) % SEG]) / 2) * 0.92) : fallback;
+    const rr = Math.min(cap, smoothed + clear);
+    mean += rr / SEG;
+    const a = (i / SEG) * Math.PI * 2;
+    pts.push([c[0] + (u[0] * Math.cos(a) + v[0] * Math.sin(a)) * rr,
+              c[1] + (u[1] * Math.cos(a) + v[1] * Math.sin(a)) * rr,
+              c[2] + (u[2] * Math.cos(a) + v[2] * Math.sin(a)) * rr]);
+  }
+  return { pts, mean };
+}
+/** fitted VERTICAL ring in the same basis/phase as ring() — the two can share a loft */
+const fitRingY = (cloud, c, opts) => fitRing(cloud, c, [0, 1, 0], [1, 0, 0], [0, 0, 1], opts);
+/** fitted ring ⊥ an axis, same basis rule as ringAxis() */
+function fitRingAx(cloud, c, d, opts) {
+  const up = Math.abs(d[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0];
+  const u = norm(cross(d, up)), v = norm(cross(d, u));
+  return fitRing(cloud, c, d, u, v, opts);
+}
+
 /**
  * Build the long coat over a rig standing in bind pose (call at load, after scale/placement).
  * Returns { group, meshes, check } — add group under the model wrapper.
@@ -227,50 +287,75 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
   const shoulderHalf = Math.abs(P.LeftArm[0] - P.RightArm[0]) / 2;
   const cx = (P.LeftArm[0] + P.RightArm[0]) / 2, cz = P.Hips[2];
   const w = shoulderHalf + 0.06;
-  const hemY = sweatHem ?? hipsY - 0.05;
+  const hemY = sweatHem ?? hipsY - 0.06;
   // facing, derived from the rig (never assumed): forward = left-shoulder-axis × up
   const left = norm([P.LeftArm[0] - P.RightArm[0], 0, P.LeftArm[2] - P.RightArm[2]]);
   const back = norm(cross([0, 1, 0], left));                     // -forward
 
-  // ---- SWEAT: loose torso, ribbed hem at the hips
+  // ---- TAILORING: every ring is FITTED to the measured body + a small clearance (bodyCloud) —
+  // analytic radii only survive as fallbacks for bones-only rigs. Guessed radii = Michelin man.
+  const cloud = bodyCloud(model);
+  const armSegs = [[P.LeftArm, P.LeftHand], [P.RightArm, P.RightHand]];
+  // for torso rings: ignore skin that belongs to the ARMS (beyond ~12 cm from the shoulder joint
+  // along the arm — keeps the deltoids in the carrure, drops forearms/hands hanging in the slab)
+  const armSkin = (x, y, z) => {
+    for (const [a, h] of armSegs) {
+      const ab = [h[0] - a[0], h[1] - a[1], h[2] - a[2]];
+      const L = Math.hypot(...ab) || 1;
+      const t = ((x - a[0]) * ab[0] + (y - a[1]) * ab[1] + (z - a[2]) * ab[2]) / (L * L);
+      if (t * L > 0.12 && segDist([x, y, z], a, h) < 0.09) return true;
+    }
+    return false;
+  };
+
+  // ---- SWEAT: fitted torso, ribbed hem at the hips, closure derived from the fitted carrure
+  const rHem = fitRingY(cloud, [cx, hemY, cz], { clear: 0.028, cap: w * 1.05, fallback: w * 0.9, exclude: armSkin });
+  const rHip = fitRingY(cloud, [cx, hipsY + 0.09, cz], { clear: 0.026, cap: w * 1.05, fallback: w * 0.95, exclude: armSkin });
+  const rChest = fitRingY(cloud, [cx, (hipsY + neckY) / 2, cz], { clear: 0.024, cap: w * 1.05, fallback: w * 0.95, exclude: armSkin });
+  const rCarrure = fitRingY(cloud, [cx, shoulderY - 0.02, cz], { clear: 0.022, cap: shoulderHalf + 0.05, fallback: w * 1.05, exclude: armSkin });
+  const topR = rCarrure.mean;
   const storso = loft([
-    ring([cx, hemY, cz], w * 1.0, w * 0.78),
-    ring([cx, hipsY + 0.09, cz], w * 1.08, w * 0.84),
-    ring([cx, (hipsY + neckY) / 2, cz], w * 1.1, w * 0.82),
-    ring([cx, shoulderY - 0.02, cz], w * 1.2, w * 0.84),
-    ring([cx, shoulderY + 0.07, cz], w * 0.92, w * 0.68),
-    ring([cx, neckY + 0.02, cz], w * 0.52, w * 0.48),
+    rHem.pts, rHip.pts, rChest.pts, rCarrure.pts,
+    ring([cx, shoulderY + 0.07, cz], topR * 0.86, topR * 0.7),
+    ring([cx, neckY + 0.02, cz], Math.min(topR * 0.55, w * 0.5), Math.min(topR * 0.5, w * 0.46)),
   ]);
   const ssleeve = (side) => {
     const a = P[`${side}Arm`], f = P[`${side}ForeArm`], h = P[`${side}Hand`];
     const d1 = norm([f[0] - a[0], f[1] - a[1], f[2] - a[2]]);
     const d2 = norm([h[0] - f[0], h[1] - f[1], h[2] - f[2]]);
+    const st = (c, d, clear, fallback) => fitRingAx(cloud, c, d, { clear, slab: 0.04, maxR: 0.12, fallback }).pts;
     return loft([
-      ringAxis(lerp3(a, f, -0.3), d1, 0.088), ringAxis(lerp3(a, f, 0.5), d1, 0.08),
-      ringAxis(f, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.07),
-      ringAxis(lerp3(f, h, 0.5), d2, 0.062), ringAxis(lerp3(f, h, 0.82), d2, 0.05),   // ribbed cuff
+      st(lerp3(a, f, -0.28), d1, 0.02, 0.082),
+      st(lerp3(a, f, 0.5), d1, 0.016, 0.072),
+      st(f, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.016, 0.064),
+      st(lerp3(f, h, 0.5), d2, 0.013, 0.056),
+      st(lerp3(f, h, 0.8), d2, 0.011, 0.048),                    // ribbed cuff
     ]);
   };
   // ---- CAPUCHE BAISSÉE: a soft lump resting on the upper back, behind the neck
-  const hoodC = [P.Neck[0] + back[0] * 0.085, neckY, P.Neck[2] + back[2] * 0.085];
-  const hoodMesh = transform(sphere(1, { segments: 14, rings: 9 }), { at: hoodC, rotY: Math.atan2(back[0], back[2]), scale: [w * 0.6, 0.08, 0.1] });
-  // ---- JEAN: hip yoke + one straight tube per leg, down to the ankles (wider than the shorts
-  // underneath — the white kit poked through the first fitting, caught on screenshot)
+  const hoodC = [P.Neck[0] + back[0] * 0.08, neckY - 0.01, P.Neck[2] + back[2] * 0.08];
+  const hoodMesh = transform(sphere(1, { segments: 14, rings: 9 }), { at: hoodC, rotY: Math.atan2(back[0], back[2]), scale: [w * 0.5, 0.068, 0.09] });
+  // ---- JEAN: fitted hip yoke + one fitted tube per leg, down to the ankles. A leg's rings
+  // ignore skin that belongs to the OTHER leg (the thighs almost touch at the crotch).
+  const legSegs = { Left: [P.LeftUpLeg, P.LeftFoot], Right: [P.RightUpLeg, P.RightFoot] };
   const yoke = loft([
-    ring([cx, hipsY - 0.17, cz], w * 1.0, w * 0.8),
-    ring([cx, hipsY + 0.02, cz], w * 1.08, w * 0.86),
-    ring([cx, hipsY + 0.11, cz], w * 0.98, w * 0.76),
+    fitRingY(cloud, [cx, hipsY - 0.17, cz], { clear: 0.032, cap: w * 1.06, fallback: w * 0.9 }).pts,
+    fitRingY(cloud, [cx, hipsY + 0.02, cz], { clear: 0.028, cap: w * 1.05, fallback: w * 0.95 }).pts,
+    fitRingY(cloud, [cx, hipsY + 0.11, cz], { clear: 0.024, cap: w * 1.02, fallback: w * 0.88, exclude: armSkin }).pts,
   ]);
   const jeanLeg = (side) => {
     const u = P[`${side}UpLeg`], k = P[`${side}Leg`], f = P[`${side}Foot`];
+    const other = side === 'Left' ? 'Right' : 'Left';
+    const mine = (x, y, z) => segDist([x, y, z], legSegs[other][0], legSegs[other][1]) < segDist([x, y, z], legSegs[side][0], legSegs[side][1]);
     const d1 = norm([k[0] - u[0], k[1] - u[1], k[2] - u[2]]);
     const d2 = norm([f[0] - k[0], f[1] - k[1], f[2] - k[2]]);
+    const st = (c, d, clear, fallback) => fitRingAx(cloud, c, d, { clear, slab: 0.045, maxR: 0.13, fallback, exclude: mine }).pts;
     return loft([
-      ringAxis(lerp3(u, k, -0.18), d1, 0.108),
-      ringAxis(lerp3(u, k, 0.5), d1, 0.1),
-      ringAxis(k, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.09),
-      ringAxis(lerp3(k, f, 0.55), d2, 0.08),
-      ringAxis(lerp3(k, f, 0.9), d2, 0.075),                     // ankle, straight cut
+      st(lerp3(u, k, -0.18), d1, 0.03, 0.1),
+      st(lerp3(u, k, 0.5), d1, 0.021, 0.09),
+      st(k, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.019, 0.082),
+      st(lerp3(k, f, 0.55), d2, 0.017, 0.074),
+      st(lerp3(k, f, 0.9), d2, 0.015, 0.07),                     // ankle, straight cut
     ]);
   };
   const parts = [
@@ -327,13 +412,21 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
     }
     if (kind === 'yoke') {
       return top([
-        { i: B('Hips'), d: 0.04 },
-        { i: B('LeftUpLeg'), d: segDist(p, P.LeftUpLeg, P.LeftLeg) + 0.05 },
-        { i: B('RightUpLeg'), d: segDist(p, P.RightUpLeg, P.RightLeg) + 0.05 },
-      ]);
+        { i: B('Hips'), d: 0.055 },
+        { i: B('LeftUpLeg'), d: segDist(p, P.LeftUpLeg, P.LeftLeg) + 0.02 },
+        { i: B('RightUpLeg'), d: segDist(p, P.RightUpLeg, P.RightLeg) + 0.02 },
+      ], 3);
     }
     if (kind === 'hood') return [[B('Neck'), 0.5], [B('Spine2'), 0.5]];
-    return top(torsoSeg.map((s) => ({ i: B(s.b), d: segDist(p, s.a, s.c) + 1e-4 })));   // torso
+    // torso: spine links — and near the hem, a share of the nearest thigh so the fabric SWEEPS
+    // with a flexing leg (the kit's tail poked out at full stride, caught on screenshot)
+    const cands = torsoSeg.map((s) => ({ i: B(s.b), d: segDist(p, s.a, s.c) + 1e-4 }));
+    if (p[1] < hipsY + 0.02) {
+      cands.push({ i: B('LeftUpLeg'), d: segDist(p, P.LeftUpLeg, P.LeftLeg) + 0.025 });
+      cands.push({ i: B('RightUpLeg'), d: segDist(p, P.RightUpLeg, P.RightLeg) + 0.025 });
+      return top(cands, 3);
+    }
+    return top(cands);
   };
 
   const group = new THREE.Group(); group.name = 'tenue';

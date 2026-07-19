@@ -479,11 +479,26 @@ premier empiècement — vu au screenshot) ; laisser dépasser les sous-couches 
 blancs du maillot sous les manches du sweat = vraie superposition). verify-outfit 28/28, headless
 1–21 PASS (section 21 passée en casual).
 
+⑯ter ✅ **Sur-mesure anti-Michelin** *(fait — « c'est le bonhomme Michelin là, tu peux faire
+mieux »)* — les rayons devinés gonflaient le perso. Désormais chaque anneau de vêtement est AJUSTÉ
+AU CORPS MESURÉ : `bodyCloud` échantillonne les vertex skinnés du perso au bind (`skeleton.update()`
+forcé — aucun rendu n'a encore eu lieu), `fitRing` prend par SECTEUR ANGULAIRE l'extension radiale
+max du corps dans une tranche autour de la station + une aisance de 1-3 cm (secteurs vides empruntés
+aux voisins ; rig sans peau → repli analytique, les harnais à os nus passent toujours). Preuve
+harnais : corps-cylindre r=0,09 → rayon poitrine du sweat 0,126 (avant : ~0,28, le ballon). Leçons
+en réf 44 : l'aisance doit dépasser l'ÉCART DE DÉFORMATION (corps = poids d'auteur, vêtement =
+poids de proximité) ; au pli extrême (hanche en pleine foulée) aucune aisance raisonnable ne suffit
+— la solution est dans les POIDS (ourlet/empiècement prennent une part de la cuisse la plus proche
+et balaient avec la jambe) ; exclure la peau étrangère d'une tranche (bras hors des anneaux du
+torse, l'AUTRE jambe hors du jean) ; anneaux ajustés et analytiques partagent la base/phase de
+ring() pour se mélanger dans un même loft. verify-outfit 30/30, headless 1–21 PASS.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
 au parking, IA trafic, ghost du record au circuit → tenues : boutons/fentes du manteau, tenue match vs
-ville, manteau/tenues pour les NPC, sélecteur de tenue en jeu (appli téléphone « Dressing »).
+ville, manteau/tenues pour les NPC, sélecteur de tenue en jeu (appli téléphone « Dressing »), manteau
+repris en sur-mesure fitRing.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

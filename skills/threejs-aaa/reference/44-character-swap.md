@@ -67,9 +67,21 @@ other way; both sabotages are in verify-retarget). Same helper forces alpha-0 ma
 — the "sweat-robe" sabotage — and a jean REACHES the ankles). Same machinery, garment-true
 contracts (`checkOutfit` / `checkCasual` over shared `skinIssues`). Scene selection is a URL param
 (`?tenue=casual|manteau`, casual default) — outfits are DATA, adding one is a builder + a contract.
-Fit lessons: layered clothing must be WIDER than what it covers (the kit's shorts poked through the
-first jean yoke — caught on screenshot); leave under-layers visible at the seams on purpose (the
-shirt's white cuffs past the sweat sleeves read as real layering).
+**Tailoring, not guessing** (the bonhomme-Michelin lesson): garment rings are FITTED to the body —
+`bodyCloud` samples the character's skinned vertices at bind (force `skeleton.update()`, no render
+has happened yet), and `fitRing` takes, per angular sector, the body's max radial extent in a slab
+around the station + a clearance (1–3 cm). Guessed radii inflate the character; measured radii give
+clothes. The fit rules that took screenshots to learn:
+- clearance must exceed the DEFORMATION MISMATCH, not just the cloth thickness — the body deforms
+  with its authored weights, the garment with proximity weights; where flexion is extreme (hip
+  crease at full stride) no reasonable clearance suffices and the fix is WEIGHTS: give the hem and
+  yoke a share of the nearest thigh so the fabric sweeps with the leg.
+- exclude foreign skin from a ring's slab: arms out of torso rings (beyond ~12 cm from the shoulder
+  joint), the OTHER leg out of a jean leg's rings (thighs almost touch at the crotch).
+- fitted vertical rings share ring()'s basis/phase so fitted and analytic sections can mix in one
+  loft without twisting; bones-only rigs (test harnesses) fall back to analytic radii.
+- leave under-layers visible at the seams on purpose (the shirt's white cuffs past the sweat
+  sleeves read as real layering).
 
 ## Play-mode caveats (learned the hard way)
 

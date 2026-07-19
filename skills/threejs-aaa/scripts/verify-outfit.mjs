@@ -104,5 +104,32 @@ function makeRig() {
   }
 }
 
+// ---------- TAILORING: with a real body cloud the rings HUG the body (no bonhomme Michelin)
+{
+  const rig = makeRig();
+  const bones = []; rig.traverse((o) => { if (o.isBone) bones.push(o); });
+  rig.updateMatrixWorld(true);
+  const skel = new THREE.Skeleton(bones);
+  const RINGS = 12, SEGS = 16, pos = [], si = [], sw = [];
+  for (let r = 0; r <= RINGS; r++) for (let s = 0; s < SEGS; s++) {
+    const a = (s / SEGS) * Math.PI * 2, y = 0.55 + (r / RINGS) * 0.8;
+    pos.push(Math.cos(a) * 0.09, y, Math.sin(a) * 0.09);         // torso = cylinder r 0.09
+    si.push(0, 0, 0, 0); sw.push(1, 0, 0, 0);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+  geo.setAttribute('skinIndex', new THREE.BufferAttribute(new Float32Array(si), 4));
+  geo.setAttribute('skinWeight', new THREE.BufferAttribute(new Float32Array(sw), 4));
+  const body = new THREE.SkinnedMesh(geo, new THREE.MeshBasicMaterial());
+  body.bind(skel, new THREE.Matrix4());
+  rig.add(body);
+  const c = buildJeansSweat(rig);
+  const chest = c.meshes.find((p) => p.name === 'sweat').mesh.geometry.attributes.position;
+  let maxR = 0;
+  for (let i = 0; i < chest.count; i++) { const y = chest.getY(i); if (y > 0.98 && y < 1.25) maxR = Math.max(maxR, Math.hypot(chest.getX(i), chest.getZ(i) - 0.01)); }
+  ok(`sur-mesure : le sweat épouse le corps mesuré (rayon poitrine ${maxR.toFixed(3)} ≈ corps 0.09 + aisance)`, maxR > 0.1 && maxR < 0.15);
+  ok('sur-mesure : contrat toujours OK', c.check.ok, c.check.issues.join(' | ') || '');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
