@@ -60,6 +60,17 @@ other way; both sabotages are in verify-retarget). Same helper forces alpha-0 ma
 - `checkOutfit` is the double gate: weights normalized onto real bones, hem BELOW the knee
   (« vêtements longs », literally contract-tested), sleeves to the wrists + screenshots.
 
+## The wardrobe — outfits as styles
+
+`outfit.js` grew into a wardrobe: `buildLongCoat` (manteau long, contract: hem BELOW the knee) and
+`buildJeansSweat` (casual: sweat + capuche baissée + jean droit, contract: a sweat ENDS at the hips
+— the "sweat-robe" sabotage — and a jean REACHES the ankles). Same machinery, garment-true
+contracts (`checkOutfit` / `checkCasual` over shared `skinIssues`). Scene selection is a URL param
+(`?tenue=casual|manteau`, casual default) — outfits are DATA, adding one is a builder + a contract.
+Fit lessons: layered clothing must be WIDER than what it covers (the kit's shorts poked through the
+first jean yoke — caught on screenshot); leave under-layers visible at the seams on purpose (the
+shirt's white cuffs past the sweat sleeves read as real layering).
+
 ## Play-mode caveats (learned the hard way)
 
 - **Adding/removing SkinnedMeshes live** (play_eval) corrupts the fallback renderer's skinning of

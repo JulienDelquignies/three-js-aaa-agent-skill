@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { loft, checkMesh } from './meshkit.js';
+import { loft, sphere, transform, checkMesh } from './meshkit.js';
 
 // outfit — LAYERED CLOTHING over a skinned character: a long coat (manteau long) built with
 // meshkit in WORLD space around the rig's bind pose, then SKINNED by proximity so it follows
@@ -206,6 +206,221 @@ export function buildLongCoat(model, { color = 0x2a3140, collar = 0x1e242f, roug
   const measures = { hemY, kneeY, ankleY, neckY, wristX: Math.abs(P.LeftHand[0] - cx) };
   const check = checkOutfit(meshes, model, measures);
   return { group, meshes, check, measures };
+}
+
+/**
+ * Build the CASUAL outfit — sweat à capuche (baissée) + jean droit — over a rig in bind pose.
+ * Same machinery as the coat (world-space meshkit parts, proximity weights, fresh-inverse
+ * skeleton, 'attached' bind inside the wrapper), different garments and a different contract:
+ * a sweat STOPS at the hips and a jean REACHES the ankles — literally tested by checkCasual.
+ */
+export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hood = 0x7d838d, roughness = 0.85, sweatHem = null } = {}) {
+  model.updateMatrixWorld(true);
+  const by = findBones(model);
+  const need = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightArm', 'RightForeArm', 'RightHand', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'RightUpLeg', 'RightLeg', 'RightFoot', 'LeftShoulder', 'RightShoulder'];
+  for (const n of need) if (!by.has(n)) return { group: null, meshes: [], check: { ok: false, issues: [`os manquant: ${n}`] } };
+  const P = Object.fromEntries(need.map((n) => [n, wpos(by.get(n))]));
+
+  const neckY = P.Neck[1], hipsY = P.Hips[1];
+  const kneeY = (P.LeftLeg[1] + P.RightLeg[1]) / 2, ankleY = (P.LeftFoot[1] + P.RightFoot[1]) / 2;
+  const shoulderY = (P.LeftArm[1] + P.RightArm[1]) / 2;
+  const shoulderHalf = Math.abs(P.LeftArm[0] - P.RightArm[0]) / 2;
+  const cx = (P.LeftArm[0] + P.RightArm[0]) / 2, cz = P.Hips[2];
+  const w = shoulderHalf + 0.06;
+  const hemY = sweatHem ?? hipsY - 0.05;
+  // facing, derived from the rig (never assumed): forward = left-shoulder-axis × up
+  const left = norm([P.LeftArm[0] - P.RightArm[0], 0, P.LeftArm[2] - P.RightArm[2]]);
+  const back = norm(cross([0, 1, 0], left));                     // -forward
+
+  // ---- SWEAT: loose torso, ribbed hem at the hips
+  const storso = loft([
+    ring([cx, hemY, cz], w * 1.0, w * 0.78),
+    ring([cx, hipsY + 0.09, cz], w * 1.08, w * 0.84),
+    ring([cx, (hipsY + neckY) / 2, cz], w * 1.1, w * 0.82),
+    ring([cx, shoulderY - 0.02, cz], w * 1.2, w * 0.84),
+    ring([cx, shoulderY + 0.07, cz], w * 0.92, w * 0.68),
+    ring([cx, neckY + 0.02, cz], w * 0.52, w * 0.48),
+  ]);
+  const ssleeve = (side) => {
+    const a = P[`${side}Arm`], f = P[`${side}ForeArm`], h = P[`${side}Hand`];
+    const d1 = norm([f[0] - a[0], f[1] - a[1], f[2] - a[2]]);
+    const d2 = norm([h[0] - f[0], h[1] - f[1], h[2] - f[2]]);
+    return loft([
+      ringAxis(lerp3(a, f, -0.3), d1, 0.088), ringAxis(lerp3(a, f, 0.5), d1, 0.08),
+      ringAxis(f, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.07),
+      ringAxis(lerp3(f, h, 0.5), d2, 0.062), ringAxis(lerp3(f, h, 0.82), d2, 0.05),   // ribbed cuff
+    ]);
+  };
+  // ---- CAPUCHE BAISSÉE: a soft lump resting on the upper back, behind the neck
+  const hoodC = [P.Neck[0] + back[0] * 0.085, neckY, P.Neck[2] + back[2] * 0.085];
+  const hoodMesh = transform(sphere(1, { segments: 14, rings: 9 }), { at: hoodC, rotY: Math.atan2(back[0], back[2]), scale: [w * 0.6, 0.08, 0.1] });
+  // ---- JEAN: hip yoke + one straight tube per leg, down to the ankles (wider than the shorts
+  // underneath — the white kit poked through the first fitting, caught on screenshot)
+  const yoke = loft([
+    ring([cx, hipsY - 0.17, cz], w * 1.0, w * 0.8),
+    ring([cx, hipsY + 0.02, cz], w * 1.08, w * 0.86),
+    ring([cx, hipsY + 0.11, cz], w * 0.98, w * 0.76),
+  ]);
+  const jeanLeg = (side) => {
+    const u = P[`${side}UpLeg`], k = P[`${side}Leg`], f = P[`${side}Foot`];
+    const d1 = norm([k[0] - u[0], k[1] - u[1], k[2] - u[2]]);
+    const d2 = norm([f[0] - k[0], f[1] - k[1], f[2] - k[2]]);
+    return loft([
+      ringAxis(lerp3(u, k, -0.18), d1, 0.108),
+      ringAxis(lerp3(u, k, 0.5), d1, 0.1),
+      ringAxis(k, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.09),
+      ringAxis(lerp3(k, f, 0.55), d2, 0.08),
+      ringAxis(lerp3(k, f, 0.9), d2, 0.075),                     // ankle, straight cut
+    ]);
+  };
+  const parts = [
+    { name: 'sweat', mesh: storso, color: sweat },
+    { name: 'capuche', mesh: hoodMesh, color: hood },
+    { name: 'mancheG', mesh: ssleeve('Left'), color: sweat },
+    { name: 'mancheD', mesh: ssleeve('Right'), color: sweat },
+    { name: 'jeanBassin', mesh: yoke, color: jeans },
+    { name: 'jeanG', mesh: jeanLeg('Left'), color: jeans },
+    { name: 'jeanD', mesh: jeanLeg('Right'), color: jeans },
+  ];
+  for (const p of parts) {
+    let c = checkMesh(p.mesh, { maxTris: 4000 });
+    if (!c.ok && c.issues.some((i) => /volume/.test(i))) {
+      for (let i = 0; i < p.mesh.indices.length; i += 3) { const t = p.mesh.indices[i + 1]; p.mesh.indices[i + 1] = p.mesh.indices[i + 2]; p.mesh.indices[i + 2] = t; }
+      if (p.mesh.normals) for (let i = 0; i < p.mesh.normals.length; i++) p.mesh.normals[i] *= -1;
+      c = checkMesh(p.mesh, { maxTris: 4000 });
+    }
+    p.contract = c;
+  }
+
+  const bones = []; model.traverse((o) => { if (o.isBone) bones.push(o); });
+  const skeleton = new THREE.Skeleton(bones);
+  const idx = new Map(bones.map((b, i) => [b, i]));
+  const B = (suf) => idx.get(by.get(suf));
+  const torsoSeg = [
+    { b: 'Hips', a: P.Hips, c: lerp3(P.Hips, P.Neck, 0.25) },
+    { b: 'Spine', a: lerp3(P.Hips, P.Neck, 0.2), c: lerp3(P.Hips, P.Neck, 0.5) },
+    { b: 'Spine1', a: lerp3(P.Hips, P.Neck, 0.45), c: lerp3(P.Hips, P.Neck, 0.75) },
+    { b: 'Spine2', a: lerp3(P.Hips, P.Neck, 0.7), c: P.Neck },
+  ];
+  const top = (cands, keep = 2) => {
+    cands.sort((a, b) => a.d - b.d);
+    const kept = cands.slice(0, keep).map((c) => ({ i: c.i, w: 1 / (c.d * c.d + 1e-5) }));
+    const sum = kept.reduce((a, c) => a + c.w, 0);
+    return kept.map((c) => [c.i, c.w / sum]);
+  };
+  const weigh = (p, kind) => {
+    if (kind === 'sleeveL' || kind === 'sleeveR') {
+      const s = kind === 'sleeveL' ? 'Left' : 'Right';
+      return top([
+        { i: B(`${s}Shoulder`), d: segDist(p, P[`${s}Shoulder`], P[`${s}Arm`]) },
+        { i: B(`${s}Arm`), d: segDist(p, P[`${s}Arm`], P[`${s}ForeArm`]) },
+        { i: B(`${s}ForeArm`), d: segDist(p, P[`${s}ForeArm`], P[`${s}Hand`]) },
+      ], 3);
+    }
+    if (kind === 'jeanL' || kind === 'jeanR') {
+      const s = kind === 'jeanL' ? 'Left' : 'Right';
+      return top([
+        { i: B('Hips'), d: segDist(p, P.Hips, P[`${s}UpLeg`]) + 0.03 },
+        { i: B(`${s}UpLeg`), d: segDist(p, P[`${s}UpLeg`], P[`${s}Leg`]) },
+        { i: B(`${s}Leg`), d: segDist(p, P[`${s}Leg`], P[`${s}Foot`]) },
+      ]);
+    }
+    if (kind === 'yoke') {
+      return top([
+        { i: B('Hips'), d: 0.04 },
+        { i: B('LeftUpLeg'), d: segDist(p, P.LeftUpLeg, P.LeftLeg) + 0.05 },
+        { i: B('RightUpLeg'), d: segDist(p, P.RightUpLeg, P.RightLeg) + 0.05 },
+      ]);
+    }
+    if (kind === 'hood') return [[B('Neck'), 0.5], [B('Spine2'), 0.5]];
+    return top(torsoSeg.map((s) => ({ i: B(s.b), d: segDist(p, s.a, s.c) + 1e-4 })));   // torso
+  };
+
+  const group = new THREE.Group(); group.name = 'tenue';
+  const meshes = [];
+  const KIND = { sweat: 'torso', capuche: 'hood', mancheG: 'sleeveL', mancheD: 'sleeveR', jeanBassin: 'yoke', jeanG: 'jeanL', jeanD: 'jeanR' };
+  for (const p of parts) {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(p.mesh.positions, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(p.mesh.normals, 3));
+    geo.setIndex(new THREE.BufferAttribute(p.mesh.indices, 1));
+    const n = p.mesh.positions.length / 3;
+    const si = new Float32Array(n * 4), sw = new Float32Array(n * 4);
+    for (let i = 0; i < n; i++) {
+      const ws = weigh([p.mesh.positions[i * 3], p.mesh.positions[i * 3 + 1], p.mesh.positions[i * 3 + 2]], KIND[p.name]);
+      for (let k = 0; k < 4; k++) { si[i * 4 + k] = ws[k] ? ws[k][0] : 0; sw[i * 4 + k] = ws[k] ? ws[k][1] : 0; }
+    }
+    geo.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4));
+    geo.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
+    const mesh = new THREE.SkinnedMesh(geo, new THREE.MeshStandardNodeMaterial({ color: p.color, roughness, metalness: 0.02 }));
+    mesh.name = `tenue_${p.name}`;
+    mesh.castShadow = true; mesh.frustumCulled = false;
+    mesh.bind(skeleton, new THREE.Matrix4());
+    group.add(mesh);
+    meshes.push({ name: p.name, mesh, contract: p.contract });
+  }
+  const measures = { style: 'casual', hemY, hipsY, kneeY, ankleY, neckY, wristX: Math.abs(P.LeftHand[0] - cx) };
+  const check = checkCasual(meshes, model, measures);
+  return { group, meshes, check, measures };
+}
+
+/** Contract for the casual outfit: generic skinning gates + garment-true coverage —
+ *  a sweat ENDS at the hips (not a dress), a jean REACHES the ankles, sleeves the wrists. */
+export function checkCasual(meshes, model, m = {}) {
+  const issues = skinIssues(meshes, model);
+  const sweat = meshes.find((p) => p.name === 'sweat');
+  if (sweat && m.hipsY != null) {
+    let minY = Infinity, maxY = -Infinity;
+    const pos = sweat.mesh.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y < minY) minY = y; if (y > maxY) maxY = y; }
+    if (minY < m.hipsY - 0.14) issues.push(`sweat: ourlet à ${minY.toFixed(2)} — c'est une robe, pas un sweat (hanches ${m.hipsY.toFixed(2)})`);
+    if (minY > m.hipsY + 0.12) issues.push('sweat: ourlet au-dessus des hanches (crop-top)');
+    if (maxY < m.neckY - 0.12) issues.push('sweat: ne monte pas aux épaules');
+  }
+  const manche = meshes.find((p) => p.name === 'mancheG');
+  if (manche && m.wristX) {
+    const pos = manche.mesh.geometry.attributes.position;
+    let maxR = 0;
+    for (let i = 0; i < pos.count; i++) maxR = Math.max(maxR, Math.abs(pos.getX(i)));
+    if (maxR < m.wristX * 0.78) issues.push(`manche trop courte (${maxR.toFixed(2)} < poignet ${m.wristX.toFixed(2)})`);
+  }
+  for (const legName of ['jeanG', 'jeanD']) {
+    const leg = meshes.find((p) => p.name === legName);
+    if (!leg || m.ankleY == null) continue;
+    const pos = leg.mesh.geometry.attributes.position;
+    let minY = Infinity;
+    for (let i = 0; i < pos.count; i++) minY = Math.min(minY, pos.getY(i));
+    if (minY > m.ankleY + 0.1) issues.push(`${legName}: coupé à ${minY.toFixed(2)}, n'atteint pas la cheville (${m.ankleY.toFixed(2)})`);
+  }
+  const capuche = meshes.find((p) => p.name === 'capuche');
+  if (capuche && m.neckY != null) {
+    const pos = capuche.mesh.geometry.attributes.position;
+    let cy = 0; for (let i = 0; i < pos.count; i++) cy += pos.getY(i); cy /= pos.count;
+    if (Math.abs(cy - m.neckY) > 0.2) issues.push('capuche loin de la nuque');
+  }
+  return { ok: issues.length === 0, issues };
+}
+
+/** Generic skinning gates shared by every outfit: per-part meshkit contract, normalized
+ *  weights, valid bone indices. */
+function skinIssues(meshes, model) {
+  const issues = [];
+  let nBones = 0; model.traverse((o) => { if (o.isBone) nBones++; });
+  for (const part of meshes) {
+    if (part.contract && !part.contract.ok) issues.push(`${part.name}: ${part.contract.issues[0]}`);
+    const g = part.mesh.geometry;
+    const sw = g.attributes.skinWeight, si = g.attributes.skinIndex;
+    if (!sw || !si) { issues.push(`${part.name}: attributs de skin manquants`); continue; }
+    for (let i = 0; i < sw.count; i++) {
+      const s = sw.getX(i) + sw.getY(i) + sw.getZ(i) + sw.getW(i);
+      if (Math.abs(s - 1) > 0.02) { issues.push(`${part.name}: poids non normalisés (v${i}: ${s.toFixed(3)})`); break; }
+    }
+    for (let i = 0; i < si.count * 4; i++) {
+      const v = si.array[i];
+      if (v < 0 || v >= nBones || !Number.isFinite(v)) { issues.push(`${part.name}: index d'os invalide (${v})`); break; }
+    }
+  }
+  return issues;
 }
 
 /** Contract: coat geometry sane (per-part meshkit gate), weights normalized onto real bones,

@@ -467,11 +467,23 @@ PASS (nouvelle garde anti-explosion : tout vertex skinné CPU ≤ 2 m des hanche
 Leçon playmode : ajouter/retirer des SkinnedMesh en live corrompt le skinning du renderer pour les
 AUTRES modèles (fausses « explosions ») — page vierge = vérité ; caméra libre : frames:0 obligatoire.
 
+⑯bis ✅ **Garde-robe : jean + sweat** *(fait — « un jean avec un sweat c'est pas possible ? »)* —
+`buildJeansSweat` dans outfit.js : sweat ample à ourlet aux hanches + capuche BAISSÉE dans le dos
+(sphère meshkit posée derrière la nuque, direction dos DÉRIVÉE du rig : forward = axe-des-épaules ×
+up) + jean droit (empiècement bassin + un tube par jambe jusqu'aux chevilles). Contrats à la lettre
+du vêtement : « un sweat s'arrête aux hanches » (sabotage sweat-robe), « un jean atteint la
+cheville » (sabotage jean-coupé-au-genou) — `checkCasual` sur `skinIssues` partagé avec le manteau.
+Sélection par URL `?tenue=casual|manteau` (casual défaut) : les tenues sont des DONNÉES. Leçons de
+couture : un vêtement de couche DOIT être plus large que ce qu'il couvre (le short blanc perçait le
+premier empiècement — vu au screenshot) ; laisser dépasser les sous-couches aux coutures (poignets
+blancs du maillot sous les manches du sweat = vraie superposition). verify-outfit 28/28, headless
+1–21 PASS (section 21 passée en casual).
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
 au parking, IA trafic, ghost du record au circuit → tenues : boutons/fentes du manteau, tenue match vs
-ville, manteau pour les NPC.
+ville, manteau/tenues pour les NPC, sélecteur de tenue en jeu (appli téléphone « Dressing »).
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 

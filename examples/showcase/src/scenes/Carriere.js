@@ -36,7 +36,7 @@ import { DebugGizmos } from '../engine/debug-gizmos.js';
 import * as MESHKIT from '../engine/meshkit.js';
 import { buildParts, toGeometry } from '../engine/meshkit-builder.js';
 import { retargetClip, checkRetarget, dequantizeSkinned } from '../engine/rig-retarget.js';
-import { buildLongCoat } from '../engine/outfit.js';
+import { buildLongCoat, buildJeansSweat } from '../engine/outfit.js';
 const { lathe, sweep, transform, mirrorX, merge, sphere, displace } = MESHKIT;
 
 // Carrière — the career demo: ONE character, the SAME controls, across the three sites of a club level
@@ -390,11 +390,13 @@ export class Carriere {
     const b2 = new THREE.Box3().setFromObject(model);
     const start = this.career.sites.home.spawn;
     model.position.set(start[0], -b2.min.y, start[2]); this.scene.add(model);
-    // VÊTEMENTS LONGS (outfit.js): the DS's long coat, meshkit-built over the kit in world space
-    // and skinned to the SAME rig — it rides inside the wrapper so drive-mode hiding carries it
+    // LA TENUE (outfit.js): meshkit garments built over the kit in world space and skinned to the
+    // SAME rig — they ride inside the wrapper so drive-mode hiding carries them. Two styles:
+    // ?tenue=casual (défaut — jean + sweat, capuche baissée) | ?tenue=manteau (le manteau long).
     model.updateMatrixWorld(true);
-    const coat = buildLongCoat(model, { color: this.theme?.coat ?? 0x2a3140 });
-    if (!coat.check.ok) console.warn('checkOutfit', coat.check.issues);
+    const tenue = new URLSearchParams(location.search).get('tenue') || 'casual';
+    const coat = tenue === 'manteau' ? buildLongCoat(model) : buildJeansSweat(model);
+    if (!coat.check.ok) console.warn('checkOutfit', tenue, coat.check.issues);
     if (coat.group) model.add(coat.group);
     this._coat = coat;
     const mixer = new THREE.AnimationMixer(model);

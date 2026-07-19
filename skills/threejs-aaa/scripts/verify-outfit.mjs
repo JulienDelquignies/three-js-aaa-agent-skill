@@ -4,7 +4,7 @@
 // (closed, outward, budget) AND coverage/skinning contract (weights normalized onto real bones,
 // hem BELOW the knee = truly long, sleeves to the wrists). Named sabotages prove the gate bites.
 import * as THREE from '../../../examples/showcase/node_modules/three/build/three.webgpu.js';
-import { buildLongCoat, checkOutfit } from '../../../examples/showcase/src/engine/outfit.js';
+import { buildLongCoat, checkOutfit, buildJeansSweat, checkCasual } from '../../../examples/showcase/src/engine/outfit.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -73,6 +73,34 @@ function makeRig() {
     const rigless = new THREE.Group();                             // no bones at all
     const c2 = buildLongCoat(rigless);
     ok('rig sans os → refus propre (pas de crash)', !c2.check.ok && c2.group === null, c2.check.issues[0] || '');
+  }
+}
+
+// ---------- the CASUAL outfit: sweat (capuche baissée) + jean droit
+{
+  const rig = makeRig();
+  const c = buildJeansSweat(rig);
+  ok('tenue casual construite (7 pièces : sweat, capuche, 2 manches, bassin, 2 jambes)', c.meshes.length === 7, c.check.issues[0] || '');
+  ok('contrat casual OK (géométrie + poids + couverture)', c.check.ok, c.check.issues.join(' | ') || '');
+  for (const p of c.meshes) ok(`  pièce « ${p.name} » : contrat meshkit`, p.contract.ok, p.contract.issues[0] || '');
+  ok('le sweat s\'arrête aux hanches (pas une robe)', c.measures.hemY > c.measures.hipsY - 0.14 && c.measures.hemY < c.measures.hipsY + 0.12);
+  ok('déterministe (mêmes mesures au rebuild)', JSON.stringify(buildJeansSweat(makeRig()).measures) === JSON.stringify(c.measures));
+  {
+    const c2 = buildJeansSweat(makeRig(), { sweatHem: 0.45 });     // hem at the knee = a dress
+    ok('sabotage « sweat-robe » attrapé', !c2.check.ok && c2.check.issues.some((i) => i.includes('robe')), c2.check.issues[0] || 'RIEN');
+  }
+  {
+    const c2 = buildJeansSweat(makeRig());
+    const pos = c2.meshes.find((p) => p.name === 'jeanG').mesh.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) pos.setY(i, Math.max(pos.getY(i), 0.52));   // leg cut at the knee
+    const r = checkCasual(c2.meshes, makeRig(), c2.measures);
+    ok('sabotage « jean coupé au genou » attrapé', !r.ok && r.issues.some((i) => i.includes('cheville')), r.issues[0] || 'RIEN');
+  }
+  {
+    const c2 = buildJeansSweat(makeRig());
+    c2.meshes.find((p) => p.name === 'sweat').mesh.geometry.attributes.skinWeight.array[1] = 2;
+    const r = checkCasual(c2.meshes, makeRig(), c2.measures);
+    ok('sabotage « poids dénormalisés » (casual) attrapé', !r.ok && r.issues.some((i) => i.includes('normalisés')), r.issues[0] || 'RIEN');
   }
 }
 
