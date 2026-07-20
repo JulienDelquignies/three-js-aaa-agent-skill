@@ -95,6 +95,25 @@ heather knit, wool nap. Two probe-won rules:
 Also matte the CHARACTER's own materials: Mixamo "Glossiness"-converted metal/rough maps render as
 shiny plastic — strip them (metalness 0, roughness ~0.88, keep the normal map).
 
+**Construction detail is what reads as AAA** — smooth tubes with noise still look like tubes. The
+casual outfit grew from 7 to 11 pieces: ribbed waistband + cuffs (a tight ring under a wider one),
+a rolled-collar hood (a tube swept on a short arc TUCKED behind the neck — a squashed sphere read
+as a backpack, and an arc reaching the shoulders spiked over them), drawstrings, a kangaroo pocket
+and two back pockets (thin `extrudePoly` slabs `orient()`ed onto the body surface), and a knee-
+crease pinch. SEG went 14→24 for a smooth silhouette. Lessons: keep the armhole overlap SMALL
+(a deep sleeve-cap overlap balloons into a shoulder pad); draw hem/waistband edges as clean
+ellipses from the fitted MEAN (a per-sector fitted hem comes out scalloped).
+
+**Shader seams are a trap without a debug pass.** The denim seam material (`denimSeamMaterial`)
+localises angle around the leg with `cos(vertexAngle − seamAngle)` dot-math (no `atan` wrap). Two
+bugs cost a rebuild each: TSL's `x.smoothstep(a,b)` maps to `smoothstep(x,a,b)` (x becomes edge0),
+painting the whole leg gold — use explicit `clamp` math instead; and a topstitch `mix()` toward a
+bright thread colour is fragile (any mask leak floods the garment). The robust win was
+MULTIPLICATIVE-only seam shading: a dark crease valley flanked by a light felled-ridge — a shadow
+can never wash the base colour out. Debugging: output the raw mask as grayscale (`vec3(mask)`) on
+ONE piece and read it in play-mode — the gradient told us the angle math was right and the mix was
+the culprit, which no amount of static reasoning had settled.
+
 ## Play-mode caveats (learned the hard way)
 
 - **Adding/removing SkinnedMeshes live** (play_eval) corrupts the fallback renderer's skinning of

@@ -80,7 +80,8 @@ function makeRig() {
 {
   const rig = makeRig();
   const c = buildJeansSweat(rig);
-  ok('tenue casual construite (7 pièces : sweat, capuche, 2 manches, bassin, 2 jambes)', c.meshes.length === 7, c.check.issues[0] || '');
+  ok('tenue casual construite (11 pièces : sweat+poche+capuche+cordons, 2 manches, bassin+2 poches arr, 2 jambes)', c.meshes.length === 11, c.check.issues[0] || '');
+  for (const need of ['sweat', 'poche', 'capuche', 'cordons', 'mancheG', 'mancheD', 'jeanBassin', 'pocheArrG', 'pocheArrD', 'jeanG', 'jeanD']) ok(`  pièce « ${need} » présente`, c.meshes.some((p) => p.name === need));
   ok('contrat casual OK (géométrie + poids + couverture)', c.check.ok, c.check.issues.join(' | ') || '');
   for (const p of c.meshes) ok(`  pièce « ${p.name} » : contrat meshkit`, p.contract.ok, p.contract.issues[0] || '');
   ok('le sweat s\'arrête aux hanches (pas une robe)', c.measures.hemY > c.measures.hipsY - 0.14 && c.measures.hemY < c.measures.hipsY + 0.12);
@@ -130,10 +131,13 @@ function makeRig() {
   ok(`sur-mesure : le sweat épouse le corps mesuré (rayon poitrine ${maxR.toFixed(3)} ≈ corps 0.09 + aisance)`, maxR > 0.1 && maxR < 0.15);
   ok('sur-mesure : contrat toujours OK', c.check.ok, c.check.issues.join(' | ') || '');
   // fabric: every garment carries a PROCEDURAL cloth material (TSL colorNode), never a flat colour
-  ok('tissus procéduraux : jean=denim, sweat=knit, colorNode présent partout', c.meshes.every((p) => {
+  ok('tissus procéduraux : denim (jeans/poches) & knit (sweat), colorNode présent partout', c.meshes.every((p) => {
     const f = p.mesh.material.userData.fabric;
-    return f && !!p.mesh.material.colorNode && (p.name.startsWith('jean') ? f.kind === 'denim' : f.kind === 'knit');
+    const denim = p.name.startsWith('jean') || p.name.startsWith('pocheArr');
+    return f && !!p.mesh.material.colorNode && (denim ? f.kind === 'denim' : f.kind === 'knit');
   }));
+  // denim SEAMS: the jean legs carry stitched seam lines (outseam/inseam/crease)
+  ok('coutures denim : les jambes portent des coutures piquées', c.meshes.filter((p) => p.name === 'jeanG' || p.name === 'jeanD').every((p) => (p.mesh.material.userData.fabric.seams || 0) >= 2));
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

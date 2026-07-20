@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu';
-import { loft, sphere, transform, checkMesh } from './meshkit.js';
-import { fabricMaterial } from './fabric.js';
+import { loft, sphere, sweep, extrudePoly, roundedRect, transform, merge, checkMesh } from './meshkit.js';
+import { fabricMaterial, denimSeamMaterial } from './fabric.js';
 
 // outfit — LAYERED CLOTHING over a skinned character: a long coat (manteau long) built with
 // meshkit in WORLD space around the rig's bind pose, then SKINNED by proximity so it follows
@@ -13,7 +13,7 @@ import { fabricMaterial } from './fabric.js';
 // is pure world-space bone motion — the mesh can live INSIDE the model wrapper (so visibility
 // toggles like "hide the player while driving" carry the coat) at any transform.
 
-const SEG = 14;                                                    // ring segments (low-poly AAA)
+const SEG = 24;                                                    // ring segments — smooth silhouette
 
 /** ellipse ring around y axis at centre c, radii rx/rz — order matches an ascending lathe */
 const ring = (c, rx, rz) => {
@@ -40,6 +40,26 @@ const ringAxis = (c, d, r) => {
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const norm = (a) => { const l = Math.hypot(...a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
 const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const mergeMeshes = (arr) => merge(arr);
+const mixHex = (hex, toward, t) => new THREE.Color(hex).lerp(new THREE.Color(toward), t).getHex();
+
+/** Orient a meshkit mesh built in the XZ plane (thin along +Y, as extrudePoly makes it) onto a
+ *  surface: local x→U, local y→N (surface normal, the thin/depth axis), local z→V, then translate
+ *  to `at`. Used to lay flat pocket slabs onto the vertical body surface. */
+function orient(mesh, at, U, N, V) {
+  const p = mesh.positions, n = mesh.normals;
+  for (let i = 0; i < p.length; i += 3) {
+    const x = p[i], y = p[i + 1], z = p[i + 2];
+    p[i] = at[0] + U[0] * x + N[0] * y + V[0] * z;
+    p[i + 1] = at[1] + U[1] * x + N[1] * y + V[1] * z;
+    p[i + 2] = at[2] + U[2] * x + N[2] * y + V[2] * z;
+    if (n) { const nx = n[i], ny = n[i + 1], nz = n[i + 2];
+      n[i] = U[0] * nx + N[0] * ny + V[0] * nz;
+      n[i + 1] = U[1] * nx + N[1] * ny + V[1] * nz;
+      n[i + 2] = U[2] * nx + N[2] * ny + V[2] * nz; }
+  }
+  return mesh;
+}
 
 /** distance from point p to segment ab */
 function segDist(p, a, b) {
@@ -308,14 +328,25 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
     return false;
   };
 
-  // ---- SWEAT: fitted torso, ribbed hem at the hips, closure derived from the fitted carrure
-  const rHem = fitRingY(cloud, [cx, hemY, cz], { clear: 0.028, cap: w * 1.05, fallback: w * 0.9, exclude: armSkin });
-  const rHip = fitRingY(cloud, [cx, hipsY + 0.09, cz], { clear: 0.026, cap: w * 1.05, fallback: w * 0.95, exclude: armSkin });
-  const rChest = fitRingY(cloud, [cx, (hipsY + neckY) / 2, cz], { clear: 0.024, cap: w * 1.05, fallback: w * 0.95, exclude: armSkin });
-  const rCarrure = fitRingY(cloud, [cx, shoulderY - 0.02, cz], { clear: 0.022, cap: shoulderHalf + 0.05, fallback: w * 1.05, exclude: armSkin });
+  const forward = [-back[0], -back[1], -back[2]];
+  const up = [0, 1, 0];
+  const angleIn = (wv, U, V) => Math.atan2(wv[0] * V[0] + wv[1] * V[1] + wv[2] * V[2], wv[0] * U[0] + wv[1] * U[1] + wv[2] * U[2]);
+
+  // ---- SWEAT: fitted torso with a RIBBED WAISTBAND (the hem pulls in then blouses) + fitted
+  // carrure. The tight edge under a wider band reads as elastic ribbing.
+  const rHem = fitRingY(cloud, [cx, hemY, cz], { clear: 0.016, cap: w * 1.0, fallback: w * 0.86, exclude: armSkin });
+  const rHemBand = fitRingY(cloud, [cx, hemY + 0.045, cz], { clear: 0.03, cap: w * 1.07, fallback: w * 0.97, exclude: armSkin });
+  const rHip = fitRingY(cloud, [cx, hipsY + 0.1, cz], { clear: 0.028, cap: w * 1.07, fallback: w * 0.98, exclude: armSkin });
+  const rChest = fitRingY(cloud, [cx, (hipsY + neckY) / 2, cz], { clear: 0.026, cap: w * 1.07, fallback: w * 0.98, exclude: armSkin });
+  const rCarrure = fitRingY(cloud, [cx, shoulderY - 0.02, cz], { clear: 0.024, cap: shoulderHalf + 0.055, fallback: w * 1.07, exclude: armSkin });
   const topR = rCarrure.mean;
+  // the two hem rings are drawn as CLEAN ellipses (from the fitted means) so the bottom edge reads
+  // as a straight ribbed band — a per-sector fitted hem came out scalloped (back screenshot).
+  const hemR = rHemBand.mean, hemZ = hemR * 0.82;
   const storso = loft([
-    rHem.pts, rHip.pts, rChest.pts, rCarrure.pts,
+    ring([cx, hemY, cz], hemR * 0.93, hemZ * 0.93),              // tight ribbed edge, smooth
+    ring([cx, hemY + 0.045, cz], hemR, hemZ),                    // band blouses
+    rHip.pts, rChest.pts, rCarrure.pts,
     ring([cx, shoulderY + 0.07, cz], topR * 0.86, topR * 0.7),
     ring([cx, neckY + 0.02, cz], Math.min(topR * 0.55, w * 0.5), Math.min(topR * 0.5, w * 0.46)),
   ]);
@@ -325,24 +356,49 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
     const d2 = norm([h[0] - f[0], h[1] - f[1], h[2] - f[2]]);
     const st = (c, d, clear, fallback) => fitRingAx(cloud, c, d, { clear, slab: 0.04, maxR: 0.12, fallback }).pts;
     return loft([
-      st(lerp3(a, f, -0.28), d1, 0.02, 0.082),
-      st(lerp3(a, f, 0.5), d1, 0.016, 0.072),
+      st(lerp3(a, f, -0.14), d1, 0.016, 0.072),                  // armhole seam (light overlap, no cap ball)
+      st(lerp3(a, f, 0.22), d1, 0.018, 0.075),
+      st(lerp3(a, f, 0.6), d1, 0.017, 0.07),
       st(f, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.016, 0.064),
-      st(lerp3(f, h, 0.5), d2, 0.013, 0.056),
-      st(lerp3(f, h, 0.8), d2, 0.011, 0.048),                    // ribbed cuff
+      st(lerp3(f, h, 0.5), d2, 0.015, 0.057),
+      st(lerp3(f, h, 0.84), d2, 0.02, 0.052),                    // sleeve blouses just before the cuff
+      st(lerp3(f, h, 0.93), d2, 0.006, 0.046),                   // tight ribbed cuff edge
     ]);
   };
-  // ---- CAPUCHE BAISSÉE: a soft lump resting on the upper back, behind the neck
-  const hoodC = [P.Neck[0] + back[0] * 0.08, neckY - 0.01, P.Neck[2] + back[2] * 0.08];
-  const hoodMesh = transform(sphere(1, { segments: 14, rings: 9 }), { at: hoodC, rotY: Math.atan2(back[0], back[2]), scale: [w * 0.5, 0.068, 0.09] });
-  // ---- JEAN: fitted hip yoke + one fitted tube per leg, down to the ankles. A leg's rings
-  // ignore skin that belongs to the OTHER leg (the thighs almost touch at the crotch).
+  // ---- CAPUCHE ROULÉE: a real rolled hood collar — a tube swept on an arc behind the neck,
+  // dipping at the back, rising onto the shoulders. (A squashed sphere read as a backpack.)
+  const hoodPath = [];
+  const hoodR = w * 0.44;
+  for (let i = 0; i <= 10; i++) {
+    const th = -1.15 + (i / 10) * 2.3;                           // a short roll tucked behind the neck
+    const dir = [back[0] * Math.cos(th) + left[0] * Math.sin(th), 0, back[2] * Math.cos(th) + left[2] * Math.sin(th)];
+    hoodPath.push([P.Neck[0] + dir[0] * hoodR, neckY - 0.075 - 0.035 * Math.cos(th), P.Neck[2] + dir[2] * hoodR]);
+  }
+  const hoodProfile = []; for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; hoodProfile.push([Math.cos(a) * 0.05, Math.sin(a) * 0.032]); }
+  const hoodMesh = sweep(hoodProfile, hoodPath, { caps: true });
+  // ---- CORDONS: two drawstrings hanging from the front of the hood
+  const cordAt = (dx) => {
+    const c0 = [P.Neck[0] + forward[0] * hoodR * 0.55 + left[0] * dx, neckY - 0.03, P.Neck[2] + forward[2] * hoodR * 0.55 + left[2] * dx];
+    const path = [c0, [c0[0] + forward[0] * 0.02, c0[1] - 0.08, c0[2] + forward[2] * 0.02], [c0[0] + forward[0] * 0.015, c0[1] - 0.17, c0[2] + forward[2] * 0.015]];
+    const prof = []; for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; prof.push([Math.cos(a) * 0.008, Math.sin(a) * 0.008]); }
+    return sweep(prof, path, { caps: true });
+  };
+  const cordons = mergeMeshes([cordAt(0.03), cordAt(-0.03)]);
+  // ---- POCHE KANGOUROU: a slab laid flat on the lower-front torso (thin poking forward)
+  const frontD = rChest.mean * 0.74;
+  const pocketOutline = roundedRect(0.2, 0.135, 0.035, { cornerSegments: 3 });
+  const pocket = orient(extrudePoly(pocketOutline, { depth: 0.02, bevel: 0.005 }),
+    [cx + forward[0] * frontD, hipsY + 0.05, cz + forward[2] * frontD], left, forward, up);
+  // ---- JEAN: fitted hip yoke (with a waistband band on top) + one fitted tube per leg. A leg's
+  // rings ignore skin belonging to the OTHER leg (the thighs almost touch at the crotch).
   const legSegs = { Left: [P.LeftUpLeg, P.LeftFoot], Right: [P.RightUpLeg, P.RightFoot] };
   const yoke = loft([
     fitRingY(cloud, [cx, hipsY - 0.17, cz], { clear: 0.032, cap: w * 1.06, fallback: w * 0.9 }).pts,
     fitRingY(cloud, [cx, hipsY + 0.02, cz], { clear: 0.028, cap: w * 1.05, fallback: w * 0.95 }).pts,
-    fitRingY(cloud, [cx, hipsY + 0.11, cz], { clear: 0.024, cap: w * 1.02, fallback: w * 0.88, exclude: armSkin }).pts,
+    fitRingY(cloud, [cx, hipsY + 0.115, cz], { clear: 0.022, cap: w * 1.02, fallback: w * 0.9, exclude: armSkin }).pts,
+    fitRingY(cloud, [cx, hipsY + 0.14, cz], { clear: 0.03, cap: w * 1.04, fallback: w * 0.92, exclude: armSkin }).pts,   // waistband
   ]);
+  const yokeFrame = { c: [cx, hipsY, cz], u: [1, 0, 0], v: [0, 0, 1] };
   const jeanLeg = (side) => {
     const u = P[`${side}UpLeg`], k = P[`${side}Leg`], f = P[`${side}Foot`];
     const other = side === 'Left' ? 'Right' : 'Left';
@@ -350,29 +406,50 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
     const d1 = norm([k[0] - u[0], k[1] - u[1], k[2] - u[2]]);
     const d2 = norm([f[0] - k[0], f[1] - k[1], f[2] - k[2]]);
     const st = (c, d, clear, fallback) => fitRingAx(cloud, c, d, { clear, slab: 0.045, maxR: 0.13, fallback, exclude: mine }).pts;
-    return loft([
+    const mesh = loft([
       st(lerp3(u, k, -0.18), d1, 0.03, 0.1),
-      st(lerp3(u, k, 0.5), d1, 0.021, 0.09),
-      st(k, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.019, 0.082),
-      st(lerp3(k, f, 0.55), d2, 0.017, 0.074),
-      st(lerp3(k, f, 0.9), d2, 0.015, 0.07),                     // ankle, straight cut
+      st(lerp3(u, k, 0.5), d1, 0.022, 0.092),
+      st(lerp3(u, k, 0.9), d1, 0.014, 0.078),                    // knee crease pinch (fold shadow)
+      st(k, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.02, 0.084),
+      st(lerp3(k, f, 0.55), d2, 0.018, 0.076),
+      st(lerp3(k, f, 0.92), d2, 0.016, 0.072),                   // ankle, straight cut
     ]);
+    // seam frame: knee as origin, ring basis of the (nearly vertical) leg axis
+    const d = norm([f[0] - u[0], f[1] - u[1], f[2] - u[2]]);
+    const upv = Math.abs(d[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0];
+    const U = norm(cross(d, upv)), V = norm(cross(d, U));
+    const lat = side === 'Left' ? [1, 0, 0] : [-1, 0, 0];
+    const seams = [
+      { angle: angleIn(lat, U, V), stitch: true },               // outseam (side, felled + topstitch)
+      { angle: angleIn([-lat[0], 0, 0], U, V), stitch: true },   // inseam
+      { angle: angleIn(forward, U, V), stitch: false },          // pressed front crease
+    ];
+    return { mesh, frame: { c: k, u: U, v: V }, seams };
   };
+  const jg = jeanLeg('Left'), jd = jeanLeg('Right');
+  // ---- POCHES ARRIÈRE: two slabs on the seat, facing back
+  const backPocket = (dx) => orient(extrudePoly(roundedRect(0.11, 0.125, 0.02, { cornerSegments: 2 }), { depth: 0.014, bevel: 0.004 }),
+    [cx + left[0] * dx + back[0] * frontD * 0.95, hipsY - 0.12, cz + left[2] * dx + back[2] * frontD * 0.95], left, back, up);
   const parts = [
     { name: 'sweat', mesh: storso, color: sweat },
-    { name: 'capuche', mesh: hoodMesh, color: hood },
+    { name: 'poche', mesh: pocket, color: mixHex(sweat, 0x000000, 0.1), closed: false },
+    { name: 'capuche', mesh: hoodMesh, color: mixHex(sweat, 0x000000, 0.06), closed: false },
+    { name: 'cordons', mesh: cordons, color: 0xf0efe9, closed: false },
     { name: 'mancheG', mesh: ssleeve('Left'), color: sweat },
     { name: 'mancheD', mesh: ssleeve('Right'), color: sweat },
-    { name: 'jeanBassin', mesh: yoke, color: jeans },
-    { name: 'jeanG', mesh: jeanLeg('Left'), color: jeans },
-    { name: 'jeanD', mesh: jeanLeg('Right'), color: jeans },
+    { name: 'jeanBassin', mesh: yoke, color: jeans, denimFrame: yokeFrame, denimSeams: [{ angle: angleIn(forward, yokeFrame.u, yokeFrame.v), stitch: true }] },
+    { name: 'pocheArrG', mesh: backPocket(0.07), color: mixHex(jeans, 0xffffff, 0.06), closed: false },
+    { name: 'pocheArrD', mesh: backPocket(-0.07), color: mixHex(jeans, 0xffffff, 0.06), closed: false },
+    { name: 'jeanG', mesh: jg.mesh, color: jeans, denimFrame: jg.frame, denimSeams: jg.seams },
+    { name: 'jeanD', mesh: jd.mesh, color: jeans, denimFrame: jd.frame, denimSeams: jd.seams },
   ];
   for (const p of parts) {
-    let c = checkMesh(p.mesh, { maxTris: 4000 });
+    const opts = { maxTris: 4000, closed: p.closed !== false };
+    let c = checkMesh(p.mesh, opts);
     if (!c.ok && c.issues.some((i) => /volume/.test(i))) {
       for (let i = 0; i < p.mesh.indices.length; i += 3) { const t = p.mesh.indices[i + 1]; p.mesh.indices[i + 1] = p.mesh.indices[i + 2]; p.mesh.indices[i + 2] = t; }
       if (p.mesh.normals) for (let i = 0; i < p.mesh.normals.length; i++) p.mesh.normals[i] *= -1;
-      c = checkMesh(p.mesh, { maxTris: 4000 });
+      c = checkMesh(p.mesh, opts);
     }
     p.contract = c;
   }
@@ -431,7 +508,8 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
 
   const group = new THREE.Group(); group.name = 'tenue';
   const meshes = [];
-  const KIND = { sweat: 'torso', capuche: 'hood', mancheG: 'sleeveL', mancheD: 'sleeveR', jeanBassin: 'yoke', jeanG: 'jeanL', jeanD: 'jeanR' };
+  const KIND = { sweat: 'torso', poche: 'torso', capuche: 'hood', cordons: 'hood', mancheG: 'sleeveL', mancheD: 'sleeveR',
+    jeanBassin: 'yoke', pocheArrG: 'yoke', pocheArrD: 'yoke', jeanG: 'jeanL', jeanD: 'jeanR' };
   for (const p of parts) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(p.mesh.positions, 3));
@@ -445,8 +523,10 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
     }
     geo.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4));
     geo.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
-    const kindOf = p.name.startsWith('jean') ? 'denim' : 'knit';
-    const mesh = new THREE.SkinnedMesh(geo, fabricMaterial({ kind: kindOf, tint: p.color, roughness }));
+    const mat = p.denimFrame
+      ? denimSeamMaterial({ tint: p.color, roughness, frame: p.denimFrame, seams: p.denimSeams || [] })
+      : fabricMaterial({ kind: p.name.startsWith('jean') || p.name.startsWith('pocheArr') ? 'denim' : 'knit', tint: p.color, roughness });
+    const mesh = new THREE.SkinnedMesh(geo, mat);
     mesh.name = `tenue_${p.name}`;
     mesh.castShadow = true; mesh.frustumCulled = false;
     mesh.bind(skeleton, new THREE.Matrix4());

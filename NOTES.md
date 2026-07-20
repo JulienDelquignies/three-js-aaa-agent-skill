@@ -505,12 +505,28 @@ rendent en moiré cotte de mailles (premier gros plan). Bonus : matités du pers
 metal/rough issues de la conversion « Glossiness » de Mixamo rendent brillant plastique → retirées,
 roughness 0.88, normal map conservée). verify-outfit 31/31, headless 1–21 PASS.
 
+⑯quinquies ✅ **Upgrade AAA de la tenue** *(fait — « c'est pas du AAA ça »)* — les tubes lisses
+bruités restaient des tubes. La tenue casual passe de 7 à 11 pièces : bord-côte taille + poignets
+(anneau serré sous un plus large), capuche ROULÉE (tube balayé sur un arc court rentré derrière la
+nuque — une sphère aplatie faisait sac à dos, un arc trop large faisait des pics sur les épaules),
+cordons, poche kangourou + 2 poches arrière (slabs extrudePoly `orient()`és sur la surface du
+corps), pli au genou. SEG 14→24 (silhouette lisse). `denimSeamMaterial` : coutures denim par
+math d'angle `cos(θ−θ₀)` (creux d'ombre + arête felled, MULTIPLICATIF seulement). Leçons chèrement
+payées : (1) `x.smoothstep(a,b)` en TSL = `smoothstep(x,a,b)` (x devient edge0) → jambe entièrement
+DORÉE ; math `clamp` explicite à la place ; (2) un `mix()` de surpiqûre vers un fil clair est
+fragile (la moindre fuite de masque inonde le vêtement) → coutures en ombres/arêtes multiplicatives
+uniquement ; (3) déboguer un shader = sortir le masque en gris (`vec3(mask)`) sur UNE pièce et le
+lire au play-mode — le dégradé a tranché ce qu'aucun raisonnement statique n'avait résolu ; (4)
+chevauchement d'emmanchure PETIT (un cap de manche profond gonfle en épaulette), ourlets en ellipses
+propres depuis la moyenne ajustée (un ourlet ajusté par secteur sort en dents de scie).
+verify-outfit 47/47, headless 1–21 PASS.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
-au parking, IA trafic, ghost du record au circuit → tenues : boutons/fentes du manteau, tenue match vs
-ville, manteau/tenues pour les NPC, sélecteur de tenue en jeu (appli téléphone « Dressing »), manteau
-repris en sur-mesure fitRing → fabric : coutures/surpiqûres, normal map procédurale.
+au parking, IA trafic, ghost du record au circuit → tenues : surpiqûres en GÉOMÉTRIE (fil relief),
+capuche relevable, tenue match vs ville, manteau/tenues NPC, sélecteur en jeu (appli « Dressing »),
+manteau repris en sur-mesure fitRing + pièces (col, revers), normal map procédurale du tricot.
 Note échelle : les tiers actuels = base compacte ; le passage « dimensions PSG » est un changement de
 données (aires, terrains 105×68, T6 élite, stade 45–60k) — voir discussion du 03/07/2026.
 
