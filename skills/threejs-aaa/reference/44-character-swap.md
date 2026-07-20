@@ -124,6 +124,19 @@ the blob vanished, and the earlier "sleeve cap ball" that had forced a shallow a
 gap between the two separately-lofted tubes) with no bulge. Lesson: when a layered garment shows a
 lump or a seam gap, first raycast to check it isn't the under-layer, before reshaping the garment.
 
+**Relief is what sells "real cloth."** A flat-shaded tube with only colour noise still reads as
+plastic; a `bumpMap(heightNode, strength)` normal from a signed height field (soft fractal
+wrinkles + a fabric weave — diagonal twill for denim, knit courses for jersey) makes light catch
+folds and threads. Feed the SAME signed height into the colour value multiplicatively (raised =
+faded, folds = shaded) and denim reads as WORN — the single strongest realism jump after the
+construction pass. What did NOT survive: a shader CONTRAST topstitch (`col.mix(threadColour, mask)`)
+floods the whole leg gold — the `line()` angular mask that renders as a thin dark crease when used
+MULTIPLICATIVELY reads BROAD when used in a `mix` (a subtle broad darken is invisible; a broad
+mix-to-gold is not, and it compounds across seams). Topstitch belongs in GEOMETRY (a thin raised
+sweep along the seam), not the shader. Bisecting tip: gate each new shader term behind a `?flag`
+URL param and toggle them one at a time in play-mode — it localised the flood to the mix in
+minutes after static reasoning had stalled.
+
 ## Play-mode caveats (learned the hard way)
 
 - **Adding/removing SkinnedMeshes live** (play_eval) corrupts the fallback renderer's skinning of

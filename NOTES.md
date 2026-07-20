@@ -521,6 +521,25 @@ chevauchement d'emmanchure PETIT (un cap de manche profond gonfle en épaulette)
 propres depuis la moyenne ajustée (un ourlet ajusté par secteur sort en dents de scie).
 verify-outfit 47/47, headless 1–21 PASS.
 
+⑯septies ✅ **Revue critique des défauts** *(fait — « tu vois encore des défauts ? »)* — revue
+honnête sous plusieurs angles : (1) la « bosse d'épaule » = le MAILLOT de foot de Shanon
+(`Ch38_Shirt`) qui transperçait à l'emmanchure — identifié par RAYCAST du pixel du défaut, pas
+deviné ; la tenue remplace le kit → masquer Shirt/Shorts/Socks ; du coup la manche peut chevaucher
+profond et fermer le trou d'emmanchure (l'ancien « cap ball » était aussi le maillot) ; (2) ourlet
+en dents de scie = ceinture jean qui montait au nombril → abaissée à la hanche + sweat qui drape
+par-dessus ; (3) col béant → col rond ajusté qui épouse la nuque ; (4) poche kangourou enfoncée →
+frontD dégage la surface avant du sweat ; (5) capuche pastille → poche de capuchon effilée (scaleFn
+fond les bouts dans les épaules). Leçon : quand une couche montre bosse/trou, RAYCAST d'abord pour
+vérifier que ce n'est pas la sous-couche.
+
+⑯sexies-bis ✅ **Réalisme tissu : relief + patine** *(fait — « améliore encore pour ressembler à de
+vrais vêtements »)* — `bumpMap(height, force)` : normal map procédurale (plis fractals + armure :
+sergé denim, mailles tricot) → la lumière accroche plis et fils ; le MÊME champ de hauteur signé
+ombre la couleur en multiplicatif (reliefs délavés, creux sombres) → jean « usé/délavé ». Écarté :
+la surpiqûre contrastée en SHADER inonde la jambe en doré (le masque `line()` fin en multiplicatif
+rend LARGE en `mix`, et se compose entre coutures) → surpiqûre à faire en GÉOMÉTRIE. Bisection par
+`?flag` URL, un terme shader à la fois. verify-outfit 47/47, headless 1–21 PASS.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
