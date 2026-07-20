@@ -307,7 +307,7 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
   const shoulderHalf = Math.abs(P.LeftArm[0] - P.RightArm[0]) / 2;
   const cx = (P.LeftArm[0] + P.RightArm[0]) / 2, cz = P.Hips[2];
   const w = shoulderHalf + 0.06;
-  const hemY = sweatHem ?? hipsY - 0.06;
+  const hemY = sweatHem ?? hipsY - 0.1;                          // drapes lower, fully over the waistband
   // facing, derived from the rig (never assumed): forward = left-shoulder-axis × up
   const left = norm([P.LeftArm[0] - P.RightArm[0], 0, P.LeftArm[2] - P.RightArm[2]]);
   const back = norm(cross([0, 1, 0], left));                     // -forward
@@ -334,31 +334,32 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
 
   // ---- SWEAT: fitted torso with a RIBBED WAISTBAND (the hem pulls in then blouses) + fitted
   // carrure. The tight edge under a wider band reads as elastic ribbing.
-  const rHem = fitRingY(cloud, [cx, hemY, cz], { clear: 0.016, cap: w * 1.0, fallback: w * 0.86, exclude: armSkin });
-  const rHemBand = fitRingY(cloud, [cx, hemY + 0.045, cz], { clear: 0.03, cap: w * 1.07, fallback: w * 0.97, exclude: armSkin });
-  const rHip = fitRingY(cloud, [cx, hipsY + 0.1, cz], { clear: 0.028, cap: w * 1.07, fallback: w * 0.98, exclude: armSkin });
-  const rChest = fitRingY(cloud, [cx, (hipsY + neckY) / 2, cz], { clear: 0.026, cap: w * 1.07, fallback: w * 0.98, exclude: armSkin });
+  // the sweat's LOWER rings carry extra clearance so the grey ALWAYS covers the denim waistband
+  // underneath (blue was poking through in a ragged line — the worst defect on the close-up).
+  const rHip = fitRingY(cloud, [cx, hipsY + 0.02, cz], { clear: 0.05, cap: w * 1.12, fallback: w * 1.0, exclude: armSkin });
+  const rChest = fitRingY(cloud, [cx, (hipsY + neckY) / 2, cz], { clear: 0.03, cap: w * 1.08, fallback: w * 0.98, exclude: armSkin });
   const rCarrure = fitRingY(cloud, [cx, shoulderY - 0.02, cz], { clear: 0.024, cap: shoulderHalf + 0.055, fallback: w * 1.07, exclude: armSkin });
+  const rCollar = fitRingY(cloud, [cx, neckY + 0.035, cz], { clear: 0.014, cap: 0.09, fallback: 0.07, exclude: armSkin });   // crew collar hugs the neck (closes the gap)
   const topR = rCarrure.mean;
-  // the two hem rings are drawn as CLEAN ellipses (from the fitted means) so the bottom edge reads
-  // as a straight ribbed band — a per-sector fitted hem came out scalloped (back screenshot).
-  const hemR = rHemBand.mean, hemZ = hemR * 0.82;
+  // hem/band rings drawn as CLEAN ellipses (fitted MEAN) so the bottom edge is a straight ribbed
+  // band, not scalloped; sized ≥ the hip so grey drapes over the denim.
+  const hemR = rHip.mean * 0.98, hemZ = hemR * 0.84;
   const storso = loft([
-    ring([cx, hemY, cz], hemR * 0.93, hemZ * 0.93),              // tight ribbed edge, smooth
-    ring([cx, hemY + 0.045, cz], hemR, hemZ),                    // band blouses
+    ring([cx, hemY, cz], hemR * 0.94, hemZ * 0.94),             // tight ribbed edge
+    ring([cx, hemY + 0.05, cz], hemR, hemZ),                    // band blouses
     rHip.pts, rChest.pts, rCarrure.pts,
-    ring([cx, shoulderY + 0.07, cz], topR * 0.86, topR * 0.7),
-    ring([cx, neckY + 0.02, cz], Math.min(topR * 0.55, w * 0.5), Math.min(topR * 0.5, w * 0.46)),
+    ring([cx, shoulderY + 0.07, cz], topR * 0.82, topR * 0.66),
+    rCollar.pts,                                                 // closes around the neck
   ]);
   const ssleeve = (side) => {
     const a = P[`${side}Arm`], f = P[`${side}ForeArm`], h = P[`${side}Hand`];
     const d1 = norm([f[0] - a[0], f[1] - a[1], f[2] - a[2]]);
     const d2 = norm([h[0] - f[0], h[1] - f[1], h[2] - f[2]]);
-    const st = (c, d, clear, fallback) => fitRingAx(cloud, c, d, { clear, slab: 0.04, maxR: 0.12, fallback }).pts;
+    const st = (c, d, clear, fallback) => fitRingAx(cloud, c, d, { clear, slab: 0.04, maxR: 0.14, fallback }).pts;
     return loft([
-      st(lerp3(a, f, -0.14), d1, 0.016, 0.072),                  // armhole seam (light overlap, no cap ball)
-      st(lerp3(a, f, 0.22), d1, 0.018, 0.075),
-      st(lerp3(a, f, 0.6), d1, 0.017, 0.07),
+      st(lerp3(a, f, -0.32), d1, 0.03, 0.098),                   // DEEP overlap onto the shoulder — closes the armhole gap (the old 'cap ball' was the hidden jersey, not the sleeve)
+      st(lerp3(a, f, 0.02), d1, 0.022, 0.082),
+      st(lerp3(a, f, 0.45), d1, 0.018, 0.074),
       st(f, norm([d1[0] + d2[0], d1[1] + d2[1], d1[2] + d2[2]]), 0.016, 0.064),
       st(lerp3(f, h, 0.5), d2, 0.015, 0.057),
       st(lerp3(f, h, 0.84), d2, 0.02, 0.052),                    // sleeve blouses just before the cuff
@@ -367,36 +368,42 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
   };
   // ---- CAPUCHE ROULÉE: a real rolled hood collar — a tube swept on an arc behind the neck,
   // dipping at the back, rising onto the shoulders. (A squashed sphere read as a backpack.)
+  // a fat rolled COLLAR wrapping the back of the neck (a down hood bunches into a roll at the
+  // collar). Hugs the neck base, wider arc, oval profile — the thin flat version read as a pill.
   const hoodPath = [];
-  const hoodR = w * 0.44;
-  for (let i = 0; i <= 10; i++) {
-    const th = -1.15 + (i / 10) * 2.3;                           // a short roll tucked behind the neck
+  const rCol = fitRingY(cloud, [cx, neckY - 0.02, cz], { clear: 0.02, cap: 0.1, fallback: 0.075 }).mean;
+  for (let i = 0; i <= 14; i++) {
+    const th = -0.72 + (i / 14) * 1.44;                          // the NAPE only (a down hood bunches here)
     const dir = [back[0] * Math.cos(th) + left[0] * Math.sin(th), 0, back[2] * Math.cos(th) + left[2] * Math.sin(th)];
-    hoodPath.push([P.Neck[0] + dir[0] * hoodR, neckY - 0.075 - 0.035 * Math.cos(th), P.Neck[2] + dir[2] * hoodR]);
+    const r = rCol + 0.02;
+    hoodPath.push([P.Neck[0] + dir[0] * r, neckY - 0.075 - 0.03 * Math.cos(th), P.Neck[2] + dir[2] * r]);
   }
-  const hoodProfile = []; for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; hoodProfile.push([Math.cos(a) * 0.05, Math.sin(a) * 0.032]); }
-  const hoodMesh = sweep(hoodProfile, hoodPath, { caps: true });
-  // ---- CORDONS: two drawstrings hanging from the front of the hood
+  const hoodProfile = []; for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; hoodProfile.push([Math.cos(a) * 0.055, Math.sin(a) * 0.05]); }
+  // …but TAPER the tube to nothing at the ends so it melts into the shoulder seams instead of
+  // bulging into a lump on the shoulder (the persistent blob — isolated by hiding the piece).
+  const hoodMesh = sweep(hoodProfile, hoodPath, { caps: true, scaleFn: (t) => 0.12 + 0.88 * Math.sin(t * Math.PI) });
+  // ---- CORDONS: two drawstrings hanging from the front of the collar down the chest
   const cordAt = (dx) => {
-    const c0 = [P.Neck[0] + forward[0] * hoodR * 0.55 + left[0] * dx, neckY - 0.03, P.Neck[2] + forward[2] * hoodR * 0.55 + left[2] * dx];
-    const path = [c0, [c0[0] + forward[0] * 0.02, c0[1] - 0.08, c0[2] + forward[2] * 0.02], [c0[0] + forward[0] * 0.015, c0[1] - 0.17, c0[2] + forward[2] * 0.015]];
+    const c0 = [P.Neck[0] + forward[0] * (rCol + 0.01) + left[0] * dx, neckY - 0.04, P.Neck[2] + forward[2] * (rCol + 0.01) + left[2] * dx];
+    const path = [c0, [c0[0] + forward[0] * 0.015, c0[1] - 0.1, c0[2] + forward[2] * 0.015], [c0[0] + forward[0] * 0.01, c0[1] - 0.2, c0[2] + forward[2] * 0.01]];
     const prof = []; for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; prof.push([Math.cos(a) * 0.008, Math.sin(a) * 0.008]); }
     return sweep(prof, path, { caps: true });
   };
-  const cordons = mergeMeshes([cordAt(0.03), cordAt(-0.03)]);
-  // ---- POCHE KANGOUROU: a slab laid flat on the lower-front torso (thin poking forward)
-  const frontD = rChest.mean * 0.74;
-  const pocketOutline = roundedRect(0.2, 0.135, 0.035, { cornerSegments: 3 });
-  const pocket = orient(extrudePoly(pocketOutline, { depth: 0.02, bevel: 0.005 }),
-    [cx + forward[0] * frontD, hipsY + 0.05, cz + forward[2] * frontD], left, forward, up);
+  const cordons = mergeMeshes([cordAt(0.028), cordAt(-0.028)]);
+  // ---- POCHE KANGOUROU: a slab laid JUST PROUD of the sweat's front surface (frontD must clear
+  // the front z-radius, else it sinks inside the sweat — that's why it read as a buried patch).
+  const frontD = rChest.mean * 0.86 + 0.008;
+  const pocketOutline = roundedRect(0.17, 0.11, 0.03, { cornerSegments: 3 });
+  const pocket = orient(extrudePoly(pocketOutline, { depth: 0.014, bevel: 0.004 }),
+    [cx + forward[0] * frontD, hipsY + 0.02, cz + forward[2] * frontD], left, forward, up);
   // ---- JEAN: fitted hip yoke (with a waistband band on top) + one fitted tube per leg. A leg's
   // rings ignore skin belonging to the OTHER leg (the thighs almost touch at the crotch).
   const legSegs = { Left: [P.LeftUpLeg, P.LeftFoot], Right: [P.RightUpLeg, P.RightFoot] };
   const yoke = loft([
     fitRingY(cloud, [cx, hipsY - 0.17, cz], { clear: 0.032, cap: w * 1.06, fallback: w * 0.9 }).pts,
-    fitRingY(cloud, [cx, hipsY + 0.02, cz], { clear: 0.028, cap: w * 1.05, fallback: w * 0.95 }).pts,
-    fitRingY(cloud, [cx, hipsY + 0.115, cz], { clear: 0.022, cap: w * 1.02, fallback: w * 0.9, exclude: armSkin }).pts,
-    fitRingY(cloud, [cx, hipsY + 0.14, cz], { clear: 0.03, cap: w * 1.04, fallback: w * 0.92, exclude: armSkin }).pts,   // waistband
+    fitRingY(cloud, [cx, hipsY - 0.06, cz], { clear: 0.028, cap: w * 1.05, fallback: w * 0.95 }).pts,
+    fitRingY(cloud, [cx, hipsY + 0.015, cz], { clear: 0.024, cap: w * 1.02, fallback: w * 0.92 }).pts,
+    fitRingY(cloud, [cx, hipsY + 0.045, cz], { clear: 0.03, cap: w * 1.04, fallback: w * 0.94 }).pts,   // waistband at the hip, NOT the navel
   ]);
   const yokeFrame = { c: [cx, hipsY, cz], u: [1, 0, 0], v: [0, 0, 1] };
   const jeanLeg = (side) => {

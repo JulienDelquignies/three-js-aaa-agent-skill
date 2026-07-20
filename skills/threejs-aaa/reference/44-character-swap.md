@@ -114,6 +114,16 @@ can never wash the base colour out. Debugging: output the raw mask as grayscale 
 ONE piece and read it in play-mode — the gradient told us the angle math was right and the mix was
 the culprit, which no amount of static reasoning had settled.
 
+**Hide the layers the outfit replaces.** A persistent "blob" on one shoulder survived every hood
+and sleeve tweak. Guessing wasted three rebuilds; RAYCASTING through the defect pixel
+(`Raycaster.setFromCamera(ndc)` against the skinned meshes) named it in one shot: `Ch38_Shirt` —
+the character's own football jersey, poking through the armhole. The outfit REPLACES the strip, so
+hide the meshes it covers (`/Shirt|Shorts|Socks/` → `visible = false`). Two consequences fell out:
+the blob vanished, and the earlier "sleeve cap ball" that had forced a shallow armhole overlap was
+*also* the jersey — with it hidden, the sleeve can overlap the shoulder DEEPLY (closing the armhole
+gap between the two separately-lofted tubes) with no bulge. Lesson: when a layered garment shows a
+lump or a seam gap, first raycast to check it isn't the under-layer, before reshaping the garment.
+
 ## Play-mode caveats (learned the hard way)
 
 - **Adding/removing SkinnedMeshes live** (play_eval) corrupts the fallback renderer's skinning of

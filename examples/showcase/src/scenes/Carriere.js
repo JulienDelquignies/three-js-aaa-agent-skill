@@ -403,7 +403,12 @@ export class Carriere {
     const tenue = new URLSearchParams(location.search).get('tenue') || 'casual';
     const coat = tenue === 'manteau' ? buildLongCoat(model) : buildJeansSweat(model);
     if (!coat.check.ok) console.warn('checkOutfit', tenue, coat.check.issues);
-    if (coat.group) model.add(coat.group);
+    if (coat.group) {
+      model.add(coat.group);
+      // the outfit REPLACES the football kit — hide the strip meshes it covers, else the jersey
+      // and shorts poke through the sweat/jeans at seams (the shoulder "blob" was Ch38_Shirt).
+      gShanon.scene.traverse((o) => { if (o.isMesh && /Shirt|Shorts|Socks/i.test(o.name)) o.visible = false; });
+    }
     this._coat = coat;
     const mixer = new THREE.AnimationMixer(model);
     const bone = (re) => { let f = null; model.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
