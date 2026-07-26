@@ -1,0 +1,166 @@
+import { BALL, PITCH, stepBall } from './ball.js';
+
+// dribble — carrying the ball, the way it actually works. The tempting shortcut is to park the
+// ball at a fixed offset in front of the player (`ballPos = playerPos + heading * 0.85`). That is
+// why almost every hobby football game looks wrong: the ball is WELDED to the player, it never
+// runs, never lags, never gets away, and no defender can ever nick it.
+//
+// A real dribble is a sequence of TOUCHES. Once every stride or two the plant foot nudges the
+// ball; between touches the ball is FREE — it rolls under its own physics (ball.js: grass
+// resistance and air drag) while the player runs to catch it back up. Everything that makes
+// dribbling feel like football falls out of that loop:
+//   • the ball–player distance BREATHES instead of being constant (the single clearest tell),
+//   • sprinting forces long touches (the ball gets 3–4 m away) while close control keeps it under
+//     the foot — so pace and control genuinely trade off,
+//   • a touch that is too heavy for the current speed loses possession, which is what gives
+//     defenders something to win.
+//
+// Dependency-free and node-testable; feeds a ball state that ball.js integrates.
+
+/** How far ahead a touch should put the ball: close control ≈ 0.8 m, full sprint ≈ 2.4 m. */
+export function touchDistance(speed, { close = 0.5, perSpeed = 0.36, max = 3.0 } = {}) {
+  return Math.min(max, close + Math.max(0, speed - 1.5) * perSpeed);
+}
+
+/**
+ * Speed to leave on the ball so it gains exactly `lead` metres on a player running at `speed`
+ * before the grass hands it back. The ball decelerates at a ≈ rolling resistance + air drag, so
+ * relative to the player it gains (v₀−v)²/2a — invert that. Deriving the push instead of guessing
+ * a multiplier is what makes the dribble self-correcting at every pace: too strong and the ball
+ * runs away, too weak and it never leaves the foot.
+ */
+export function touchDecel(speed) {
+  return PITCH.rollResist * PITCH.gravity + BALL.k * 0.42 * Math.max(2, speed) ** 2 * 0.35;
+}
+export function pushSpeed(speed, lead) {
+  return speed + Math.sqrt(2 * touchDecel(speed) * Math.max(0.05, lead));
+}
+/** Seconds until the player is back on the ball after a touch of `lead` metres. */
+export function touchInterval(speed, lead) {
+  return 2 * Math.sqrt(2 * Math.max(0.05, lead) / touchDecel(speed));
+}
+
+/**
+ * The heading a dribbler must actually run to KEEP the ball while heading toward `want`. A player
+ * who runs their intended line and ignores where the ball went is not dribbling — that is exactly
+ * how a ball ends up 20 m away on a curved run. Real dribblers bend their path to their ball, more
+ * strongly the further off-line it has drifted. Feed the result to the character controller.
+ */
+export function dribbleSteer(ball, player, { pull = 0.6, reach = 1.15 } = {}) {
+  const wx = player.want ? player.want[0] : player.heading[0];
+  const wz = player.want ? player.want[1] : player.heading[1];
+  const bx = ball.p[0] - player.p[0], bz = ball.p[2] - player.p[1];
+  const d = Math.hypot(bx, bz);
+  if (d < reach * 0.9) return [wx, wz];                    // ball at the foot: just go where you want
+  const k = Math.min(1, (d - reach * 0.9) / 1.6) * pull;   // the further it drifted, the harder you chase
+  const hx = wx + (bx / d - wx) * k, hz = wz + (bz / d - wz) * k;
+  const l = Math.hypot(hx, hz) || 1;
+  return [hx / l, hz / l];
+}
+
+export function makeDribbler(cfg = {}) {
+  return {
+    sinceTouch: 0,          // metres of player travel since the last touch
+    touches: 0,
+    lost: false,
+    cfg: {
+      reach: 1.15,          // m — a foot can only touch a ball it can actually reach
+      minStride: 0.55,      // m of travel between touches (stride pacing, not per-frame)
+      minPush: 2.5,         // m/s — even a standing touch sends the ball on
+      controlRadius: 3.6,   // m — beyond this the ball has run away
+      steer: 0.8,           // how strongly a touch redirects the ball to the desired heading
+      ...cfg,
+    },
+  };
+}
+
+/**
+ * Advance one frame of a dribble. The player is driven by the game (controller/AI); this only
+ * decides WHEN a touch happens and what it does to the ball, then integrates the ball.
+ *
+ * @param {object} d       dribbler state from makeDribbler()
+ * @param {object} ball    { p:[x,y,z], v:[x,y,z], w:[x,y,z] } — mutated
+ * @param {object} player  { p:[x,z], speed, heading:[x,z] unit, want:[x,z] unit desired heading }
+ * @param {number} dt
+ * @returns {{touched:boolean, dist:number, ahead:number, control:number, lost:boolean}}
+ */
+export function dribbleStep(d, ball, player, dt) {
+  const c = d.cfg;
+  const [px, pz] = player.p;
+  const hx = player.heading[0], hz = player.heading[1];
+  const wantX = player.want ? player.want[0] : hx, wantZ = player.want ? player.want[1] : hz;
+
+  d.sinceTouch += player.speed * dt;
+
+  const bx = ball.p[0] - px, bz = ball.p[2] - pz;
+  const dist = Math.hypot(bx, bz);
+  const ahead = (bx * hx + bz * hz);                       // signed: how far in front the ball is
+
+  let touched = false;
+  // A touch lands when the foot actually REACHES the ball, stride-paced so it is not re-kicked
+  // every frame. Triggering on "distance travelled" instead was the bug that killed turns: once
+  // the ball escaped the trigger window it was never touched again and simply rolled away.
+  if (dist < c.reach && d.sinceTouch >= c.minStride) {
+    // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
+    // a 40° change of direction. This is real technique, and it is what makes curved runs work.
+    const turn = Math.abs(player.turnRate || 0);
+    const lead = touchDistance(player.speed) / (1 + turn * 1.9);
+    const sp = Math.max(c.minPush, pushSpeed(player.speed, lead));
+    // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
+    // blended with the ball's current line so a touch never teleports its direction
+    const cvx = ball.v[0], cvz = ball.v[2];
+    const cl = Math.hypot(cvx, cvz);
+    const curX = cl > 0.2 ? cvx / cl : wantX, curZ = cl > 0.2 ? cvz / cl : wantZ;
+    let dx = curX + (wantX - curX) * c.steer, dz = curZ + (wantZ - curZ) * c.steer;
+    const dl = Math.hypot(dx, dz) || 1; dx /= dl; dz /= dl;
+    // LEAD THE TURN: by the time the player catches this touch they will have rotated further, so
+    // aim inside the curve rather than down the current tangent. Touching the tangent is exactly
+    // what leaves the ball drifting to the outside and behind on a curved run.
+    if (turn > 1e-4) {
+      // rotate by HALF the turn the player will complete before catching this touch — aim at the
+      // middle of the arc. Using an eyeballed fraction of a stride instead was 13× too small and
+      // left the ball drifting to the outside of every curve.
+      const a = (player.turnRate || 0) * touchInterval(player.speed, lead) * 0.5;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const rx = dx * ca - dz * sa, rz = dx * sa + dz * ca;
+      dx = rx; dz = rz;
+    }
+    ball.v[0] = dx * sp; ball.v[2] = dz * sp;
+    ball.v[1] = Math.max(ball.v[1], 0);                     // a push along the ground, never a chip
+    ball.w[2] = -ball.v[0] / BALL.radius;                   // the foot rolls it: topspin, so it runs on
+    ball.w[0] = ball.v[2] / BALL.radius;
+    d.sinceTouch = 0; d.touches++; touched = true;
+  }
+
+  stepBall(ball, dt);
+
+  const nd = Math.hypot(ball.p[0] - px, ball.p[2] - pz);
+  d.lost = nd > c.controlRadius;
+  return { touched, dist: nd, ahead, control: Math.max(0, 1 - nd / c.controlRadius), lost: d.lost };
+}
+
+/**
+ * Contract for a dribble trace ([{t, dist, ahead, touched, speed}]). These rules are written
+ * against the FAILURE MODES of fake dribbling, not against the implementation:
+ *   glued      — a constant ball–player distance is the signature of a welded ball
+ *   runaway    — the ball must stay inside control range for a clean dribble
+ *   behind     — the ball must lead the player, not trail them
+ *   machine-gun— one touch per stride, not one per frame
+ */
+export function checkDribble(trace, { controlRadius = 4.2, minVariation = 0.15, maxTouchRate = 4 } = {}) {
+  const issues = [];
+  if (trace.length < 10) return { ok: false, issues: ['trace trop courte'] };
+  const dists = trace.map((s) => s.dist);
+  const mean = dists.reduce((a, b) => a + b, 0) / dists.length;
+  const sd = Math.sqrt(dists.reduce((a, b) => a + (b - mean) ** 2, 0) / dists.length);
+  if (sd < minVariation) issues.push(`ballon COLLÉ au joueur (écart-type ${sd.toFixed(3)} m — un vrai dribble respire)`);
+  const worst = Math.max(...dists);
+  if (worst > controlRadius) issues.push(`ballon perdu : ${worst.toFixed(2)} m > rayon de contrôle ${controlRadius} m`);
+  const behind = trace.filter((s) => s.ahead < -0.15).length / trace.length;
+  if (behind > 0.25) issues.push(`le ballon traîne DERRIÈRE le joueur ${(behind * 100).toFixed(0)}% du temps`);
+  const dur = trace[trace.length - 1].t - trace[0].t;
+  const touches = trace.filter((s) => s.touched).length;
+  if (dur > 0 && touches / dur > maxTouchRate) issues.push(`${(touches / dur).toFixed(1)} touches/s — le pied mitraille le ballon`);
+  if (touches === 0) issues.push('aucune touche : le ballon n\'est jamais joué');
+  return { ok: issues.length === 0, issues, stats: { mean: +mean.toFixed(2), sd: +sd.toFixed(2), worst: +worst.toFixed(2), touches } };
+}

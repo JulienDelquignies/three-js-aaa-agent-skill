@@ -52,6 +52,7 @@ threejs-aaa/ (the skill)
 │   ├── 42-animkit.md           animkit: Mixamo moves as data (pose keys → additive clips) + anatomical contract
 │   ├── 43-sculpt-workflow.md   staged sculpting: blockout → form → lookdev, gated by contract + screenshot
 │   ├── 44-character-swap.md    custom Mixamo player: world-delta retarget, dequantize, skinned long coat
+│   ├── 45-football-simulation.md  real ball flight (drag/Magnus/spin) + touch-based dribbling, and what's next
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -87,6 +88,8 @@ threejs-aaa/ (the skill)
 │   ├── verify-animkit.mjs     movement kit: known bones, no limb teleport, loop seams, knee range
 │   ├── verify-retarget.mjs    cross-rig transport: identity + cross-rig invariants, hips units, dequantize
 │   ├── verify-outfit.mjs      layered clothing: meshkit gate per part, weights, hem-below-knee coverage
+│   ├── verify-ball.mjs        football flight: drag crisis, Magnus bend, spin at bounce, no tunnelling
+│   ├── verify-dribble.mjs     dribbling: no welded ball, pace costs control, the ball follows a turn
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project

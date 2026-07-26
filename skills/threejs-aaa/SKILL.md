@@ -64,6 +64,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Animkit — Mixamo moves as data: pose keys, anatomical contract, additive gestures** | [reference/42-animkit.md](reference/42-animkit.md) |
 | **Staged sculpt workflow: blockout → form → lookdev, double-gated (contract + screenshot)** | [reference/43-sculpt-workflow.md](reference/43-sculpt-workflow.md) |
 | **Character swap: cross-rig retarget (world-delta), quantized GLBs, skinned layered clothing** | [reference/44-character-swap.md](reference/44-character-swap.md) |
+| **Football that feels real: ball aerodynamics (drag/Magnus/spin) + touch-based dribbling** | [reference/45-football-simulation.md](reference/45-football-simulation.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |

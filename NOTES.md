@@ -540,6 +540,29 @@ la surpiqûre contrastée en SHADER inonde la jambe en doré (le masque `line()`
 rend LARGE en `mix`, et se compose entre coutures) → surpiqûre à faire en GÉOMÉTRIE. Bisection par
 `?flag` URL, un terme shader à la fois. verify-outfit 47/47, headless 1–21 PASS.
 
+⑰ ✅ **Football qui sonne juste : ballon + dribble** *(fait — « physique de balle mauvaise, dribbles
+mauvais, comment atteindre du AAA ? »)* — diagnostic d'abord : il n'y avait PAS de physique de
+balle. Dans SoldierVolley la trajectoire est une parabole écrite à la main (`arc()`) et le dribble
+c'est `ballon = joueur + direction × 0.85` (ballon SOUDÉ au joueur) ; côté moteur `physics.js`
+crée une sphère Rapier nue (ni traînée, ni Magnus, ni spin). Deux modules natifs dep-free :
+**`engine/ball.js`** — masse/rayon FIFA, traînée (≈9,5 m/s² à 30 m/s, comparable à la gravité),
+CRISE DE TRAÎNÉE (Cd 0,47→0,17 vers 13 m/s), **effet MAGNUS** (Cl = 1/(2+v/ωr) — sans lui rien ne
+courbe jamais), décroissance du spin, rebond avec COUPLAGE spin↔vitesse (le rétro freine Δvₓ=−5,0
+m/s et revient, le lifté file), roulement, sous-pas anti-tunneling ; contrat `checkBallFlight`
+(énergie qui ne croît jamais, pas de téléport, pas sous la pelouse). **`engine/dribble.js`** — le
+dribble est une suite de TOUCHES : le pied pousse, le ballon est LIBRE entre deux touches, le
+joueur le rattrape ; `dribbleSteer` (un dribbleur court APRÈS son ballon), `pushSpeed` dérivée de
+la décélération réelle, touches raccourcies + anticipées en virage ; contrat `checkDribble` écrit
+contre les DÉFAUTS (distance constante = « ballon COLLÉ », ballon qui fuit, qui traîne, pied qui
+mitraille). Erreurs payées : (1) traînée de l'air OUBLIÉE au roulement → une passe à 15 m/s roulait
+153 m (39 m avec) ; (2) déclencheur de touche sur la distance parcourue → en virage le ballon
+s'échappait à 26 m, faute de pouvoir être retouché → déclencher sur la PORTÉE DU PIED ; (3)
+anticipation du virage 13× trop faible (une fraction de foulée au lieu de la vraie durée entre
+touches) → ballon à l'extérieur de chaque courbe ; (4) un test qui mesurait la fin du vol
+confondait Magnus et rebond — isoler le contact. verify-ball 27/27, verify-dribble 14/14. Réf 45
+(avec la suite : modèle de frappe, limites d'accélération/rayon de braquage, gardien, IA 11v11
+anti-« essaim », et l'ordre des chantiers graphiques).
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
