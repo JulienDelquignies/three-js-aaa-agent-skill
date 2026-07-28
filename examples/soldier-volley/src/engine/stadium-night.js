@@ -131,9 +131,19 @@ function nightSky() {
 /**
  * Light a built stadium for a night match. `at` MUST be the same array passed to buildStadium() and
  * `model` the generateStadium() output; `renderer` bakes the night IBL and gets shadows forced on.
- * @returns {{group:THREE.Group, sun:THREE.DirectionalLight, spots:THREE.SpotLight[], dispose:Function}}
+ *
+ * `keyLayer` is what makes it read as night at all. A DirectionalLight has no falloff, so a key strong
+ * enough to carry a crisp shadow on the grass also lights the far stand, the roof and the whole bowl at
+ * the same irradiance — and a bowl as bright as the pitch is a daytime picture whatever colour the sky
+ * is. Real floodlights are aimed AT THE PITCH; everything else lives on spill. So the key is masked to
+ * its own layer and only the playing surface and what stands on it are put on that layer, which is the
+ * physical truth expressed in the one mechanism three gives us. Measured, same frame, only this
+ * changing: mean 0.269 → 0.183, p05 0.021 → 0.000, clipped black 4.7 % → 13 %.
+ *
+ * Pass `keyLayer: 0` to switch the masking off (the key then lights everything, as before).
+ * @returns {{group, sun, spots, scene, doused, keyLayer, light:(o:THREE.Object3D)=>void, dispose:Function}}
  */
-export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, intensity = 1, shadowMapSize = 2048 } = {}) {
+export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, intensity = 1, shadowMapSize = 2048, keyLayer = 1 } = {}) {
   const L = model?.pitch?.L ?? 105, W = model?.pitch?.W ?? 68;
   const group = new THREE.Group(); group.name = 'stadium-night';
   group.position.set(at[0], at[1], at[2]);
@@ -190,6 +200,19 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   group.add(sun); group.add(sun.target);   // the target stays at local (0,0,0) = the centre spot
   fitShadowToPitch(sun, L, W);
 
+  // ---- the key is a PITCH light, not a world light (see the header). `light(o)` opts a subtree in;
+  // gameplay calls it for whatever it adds later (players, the ball, painted markings).
+  const light = (o) => { if (keyLayer) o?.traverse?.((n) => n.layers.enable(keyLayer)); };
+  if (keyLayer) {
+    // The failure mode of layer masking is a BLACK PITCH — mask the key and forget to opt the grass in
+    // and the scene loses the only light that reaches it. So: find the playing surface, and if there
+    // isn't one, refuse to mask at all rather than ship a black pitch. buildStadium names it.
+    const surfaces = [];
+    scene.traverse((o) => { if (o.isMesh && (o.name === 'pelouse' || o.name === 'abords')) surfaces.push(o); });
+    if (surfaces.length) { sun.layers.set(keyLayer); surfaces.forEach(light); }
+    else keyLayer = 0;                    // no named surface: fall back to lighting everything
+  }
+
   // FOUR FLOODLIGHT BANKS — visible pools + mast glow, no shadows (see the header).
   const spots = [];
   const headGeo = new THREE.PlaneGeometry(2.0, 1.15); disposables.push(headGeo);
@@ -229,6 +252,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
 
   return {
     group, sun, spots, scene, doused: doused.map(([l]) => l),
+    get keyLayer() { return keyLayer; }, light,
     dispose() {
       scene.remove(group);
       for (const [l, v] of doused) l.visible = v;
@@ -311,5 +335,18 @@ export function checkStadiumNight(result, model) {
   if (envI != null && envI > 0.3) issues.push(`environmentIntensity ${envI.toFixed(2)} : IBL de jour sur une scène de nuit, les tribunes seront lavées`);
   const fill = lights.filter((l) => l.isAmbientLight || l.isHemisphereLight).reduce((s, l) => s + (l.visible ? l.intensity : 0), 0);
   if (sun && fill > sun.intensity * 0.35) issues.push(`ambiance ${fill.toFixed(2)} contre une clé de ${sun.intensity.toFixed(2)} : trop plate, l'ombre ne se lira plus`);
+
+  // 7. LA CLÉ MASQUÉE ATTEINT BIEN LE TERRAIN. Masquer la clé sur un calque est ce qui fait la nuit
+  //    (le bol tombe sur le remplissage), mais son mode de panne est une PELOUSE NOIRE : on masque et
+  //    on oublie d'inscrire la surface de jeu, et plus rien n'éclaire l'endroit où se joue le match.
+  //    On vérifie donc l'aller ET le retour : la clé est masquée, et ce qu'elle doit éclairer l'est.
+  if (sun && result.scene) {
+    const mask = sun.layers.mask;
+    const need = [];
+    result.scene.traverse((o) => { if (o.isMesh && (o.name === 'pelouse' || o.name === 'abords')) need.push(o); });
+    const dark = need.filter((o) => !o.layers.test(sun.layers));
+    if (dark.length) issues.push(`la clé n'éclaire pas ${dark.map((o) => o.name).join(', ')} (masque ${mask}) — pelouse noire`);
+    if (need.length && mask === 1 && result.keyLayer) issues.push('clé non masquée alors qu\'un calque est demandé : le bol recevra la même lumière que la pelouse et l\'image rendra le jour');
+  }
   return { ok: issues.length === 0, issues };
 }

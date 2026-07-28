@@ -146,6 +146,37 @@ function makeRig() {
     ok('sabotage « ombre tronquée en bord de terrain » attrapé', has(checkStadiumNight(n, model), 'couvre pas')); n.dispose(); }
   { const n = rebuild(); for (const s of n.spots) s.visible = false; ok('sabotage « moins de 4 mâts allumés » attrapé', has(checkStadiumNight(n, model), 'dirigée')); n.dispose(); }
   { const n = rebuild(); n.sun.intensity = 2.4; ok('sabotage « clé au niveau du soleil (2,4) » attrapé', has(checkStadiumNight(n, model), 'SOLEIL')); n.dispose(); }
+
+  // ---- la clé masquée sur un calque : ce qui fait vraiment tomber le bol dans la nuit
+  {
+    const s = new THREE.Scene();
+    const pelouse = new THREE.Mesh(new THREE.PlaneGeometry(105, 68), new THREE.MeshBasicMaterial()); pelouse.name = 'pelouse'; s.add(pelouse);
+    const tribune = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 60), new THREE.MeshBasicMaterial()); tribune.name = 'tribune'; s.add(tribune);
+    const n = setupStadiumNight(s, null, { model });
+    ok('clé masquée sur son calque (le bol ne la reçoit plus)', n.sun.layers.mask !== 1 && n.keyLayer === 1, `masque ${n.sun.layers.mask}`);
+    ok('  la pelouse EST sur le calque de la clé', pelouse.layers.test(n.sun.layers));
+    ok('  la tribune ne l\'est PAS (c\'est tout le principe)', !tribune.layers.test(n.sun.layers));
+    ok('  contrat vert', checkStadiumNight(n, model).ok, checkStadiumNight(n, model).issues.join(' | '));
+    const joueur = new THREE.Group(); joueur.add(new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial()));
+    n.light(joueur);
+    ok('  light() inscrit tout un sous-arbre (joueur + maillot)', joueur.children.every((c) => c.layers.test(n.sun.layers)));
+    pelouse.layers.disable(1);
+    ok('sabotage « clé masquée, pelouse oubliée » attrapé (pelouse noire)', has(checkStadiumNight(n, model), 'pelouse noire'));
+    n.dispose();
+  }
+  {
+    const s = new THREE.Scene();                       // aucune surface nommée : on refuse de masquer
+    const n = setupStadiumNight(s, null, { model });
+    ok('sans surface nommée : pas de masquage (plutôt que de rendre une pelouse noire)', n.keyLayer === 0 && n.sun.layers.mask === 1);
+    n.dispose();
+  }
+  {
+    const s = new THREE.Scene();
+    const pelouse = new THREE.Mesh(new THREE.PlaneGeometry(105, 68), new THREE.MeshBasicMaterial()); pelouse.name = 'pelouse'; s.add(pelouse);
+    const n = setupStadiumNight(s, null, { model, keyLayer: 0 });
+    ok('keyLayer: 0 désactive le masquage (comportement d\'avant)', n.sun.layers.mask === 1 && checkStadiumNight(n, model).ok);
+    n.dispose();
+  }
   { const n = rebuild(); n.scene.environmentIntensity = 1.0; ok('sabotage « IBL de jour sous la nuit » attrapé', has(checkStadiumNight(n, model), 'IBL de jour')); n.dispose(); }
   { const n = rebuild(); n.group.traverse((o) => { if (o.isHemisphereLight) o.intensity = 1.2; });
     ok('sabotage « ambiance qui écrase la clé » attrapé', has(checkStadiumNight(n, model), 'trop plate')); n.dispose(); }

@@ -48,10 +48,14 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   }
   const ptex = new THREE.CanvasTexture(pc); ptex.colorSpace = THREE.SRGBColorSpace; disposables.push(ptex);
   const pgeo = new THREE.PlaneGeometry(PW2, PH2); pgeo.rotateX(-Math.PI / 2); disposables.push(pgeo);
-  const pitch = new THREE.Mesh(pgeo, mat({ map: ptex, roughness: 0.95 })); pitch.receiveShadow = true; group.add(pitch);
+  const pitch = new THREE.Mesh(pgeo, mat({ map: ptex, roughness: 0.95 })); pitch.receiveShadow = true;
+  pitch.name = 'pelouse';                                            // NAMED: stadium-night finds it to aim the key light at the pitch alone
+  group.add(pitch);
   const agеo = new THREE.PlaneGeometry(L + 2 * (model.apron + model.stands[0].rows * model.rowD + 8), W + 2 * (model.apron + model.stands[0].rows * model.rowD + 8));
   agеo.rotateX(-Math.PI / 2); disposables.push(agеo);
-  const apron = new THREE.Mesh(agеo, mat({ color: 0x596066, roughness: 1 })); apron.position.y = -0.03; apron.receiveShadow = true; group.add(apron);
+  const apron = new THREE.Mesh(agеo, mat({ color: 0x596066, roughness: 1 })); apron.position.y = -0.03; apron.receiveShadow = true;
+  apron.name = 'abords';
+  group.add(apron);
 
   // stands: stepped concrete rows + instanced seats in club colors
   const seatGeo = new THREE.BoxGeometry(0.42, 0.42, 0.4); disposables.push(seatGeo);

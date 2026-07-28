@@ -84,6 +84,30 @@ Each of these produced a *plausible-looking* game, and each was invisible withou
    | masts dominant (key 0.7, pools 2.2) | 0.279 | 0.020 | 0.398 | 5.3 % |
    | masts dominant (key 0.55, pools 2.8) | 0.295 | 0.019 | 0.424 | 5.6 % |
 
+   And the balance was not the last word either, because none of these rows makes the *bowl* dark —
+   they only trade brightness between the key and the masts. A `DirectionalLight` has **no falloff**:
+   a key strong enough to carve a crisp shadow on the grass lights the far stand at the same
+   irradiance, and a bowl as bright as the pitch is a daytime picture whatever colour the sky is.
+   Real floodlights are aimed *at the pitch*; everything else lives on spill. Masking the key to its
+   own layer and putting only the playing surface and what stands on it on that layer is that physical
+   truth, expressed in the one mechanism three gives us — and `light.layers` **is** honoured on the
+   WebGPU path (measured, not assumed):
+
+   | lever | mean | p05 | contrast | clipped black |
+   |---|---|---|---|---|
+   | night budget alone | 0.269 | 0.021 | 0.375 | 4.7 % |
+   | **key masked to the pitch layer** | **0.183** | **0.000** | **0.321** | **13.0 %** |
+   | bowl materials scaled ×0.35 instead | 0.164 | 0.008 | 0.261 | 8.6 % |
+   | both (mask + ×0.55) | 0.134 | 0.000 | 0.254 | 15.8 % |
+
+   Scaling the bowl's albedo gets to a similar mean, but it is a lighting-artist cheat that also
+   flattens the stands' own shading (contrast 0.261 against 0.321) — the seats go grey together
+   instead of falling off with the light. The layer mask is the one that is *true*, so it is the one
+   that shipped. Its failure mode is a **black pitch** — mask the key, forget to opt the grass in, and
+   nothing lights the place the match is played — so the contract checks both directions: the key is
+   masked, *and* everything it must reach is on its layer. With no named playing surface the module
+   refuses to mask at all rather than ship a black pitch.
+
    Which corrects the assumption behind the metric: **mean luminance alone is the wrong criterion.**
    Pushing light from the key into the masts *raises* the mean (the pitch fills most of the frame and
    gets brighter) while the frame gets *more* night-like on every other axis — darker darks, more
@@ -102,7 +126,7 @@ actually sees.
 
 | module | what it owns | the trap it exists to avoid |
 |---|---|---|
-| `stadium-night.js` | floodlit night: one shadow-casting directional + four non-shadow banks, night IBL, haze | keeping the daytime IBL underneath — the scene then reads as an overcast afternoon with lamps in it |
+| `stadium-night.js` | floodlit night: one shadow-casting directional **masked to the pitch layer** + four non-shadow banks, night IBL, haze | a key with no falloff lighting the whole bowl as brightly as the grass — which is a daytime picture whatever colour the sky is |
 | `render-pipeline.js` | the post chain by tier (`low` / `high` / `ultra`) | MSAA left on under TRAA/TAAU, GTAO **and** SSGI both writing AO, a second tonemap at the end |
 | `kit.js` | shirt/sleeves/shorts/socks/number generated on the rig at bind | a garment measured off the bones instead of the *skin*, which either floats or lets the body poke through |
 

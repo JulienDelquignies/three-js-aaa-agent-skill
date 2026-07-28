@@ -623,7 +623,20 @@ seule est le mauvais critère. Déplacer la lumière de la clé vers les mâts F
 pelouse occupe l'image et s'éclaircit) alors que l'image devient plus nocturne sur tous les autres
 axes — noirs plus noirs, plus de contraste. Une nuit sous projecteurs, c'est une pelouse claire dans
 un bol sombre : ça vit dans la FORME de l'histogramme, pas dans sa moyenne. On juge sur p05 et
-contraste, la moyenne ne sert qu'à attraper l'échec grossier (un après-midi à 0,43). verify-ball-predict 22/22,
+contraste, la moyenne ne sert qu'à attraper l'échec grossier (un après-midi à 0,43). Et l'équilibre
+n'était pas le dernier mot : aucune de ces lignes ne rend le BOL sombre, elles ne font que déplacer la
+lumière entre la clé et les mâts. Une DirectionalLight n'a AUCUNE atténuation : une clé assez forte
+pour tailler une ombre nette sur la pelouse éclaire la tribune du fond au même éclairement, et un bol
+aussi clair que la pelouse est une image de jour quelle que soit la couleur du ciel. Les vrais
+projecteurs visent LE TERRAIN, le reste vit de débordement. Masquer la clé sur son propre CALQUE et
+n'y inscrire que la surface de jeu et ce qui s'y tient, c'est cette vérité physique exprimée dans le
+seul mécanisme que three nous donne — et `light.layers` EST honoré sur le chemin WebGPU (mesuré, pas
+supposé) : 0,269 → 0,183 de moyenne, p05 0,021 → 0,000, noir 4,7 % → 13 %. L'alternative (baisser
+l'albédo du bol ×0,35) atteint une moyenne voisine mais aplatit l'ombrage propre des tribunes
+(contraste 0,261 contre 0,321) : les sièges grisent ensemble au lieu de décrocher avec la lumière.
+Le masque est celui qui est VRAI, c'est donc lui qui part. Son mode de panne est une PELOUSE NOIRE
+(masquer et oublier d'inscrire l'herbe), d'où un contrat qui vérifie l'aller ET le retour, et un repli
+« pas de masquage » quand aucune surface nommée n'existe. verify-ball-predict 22/22,
 verify-rondo 20/20, verify-matchday 72/72 (maillot sur le rig + rig de nuit sur le vrai stade + contrat
 de la chaîne post), animkit 30/30. Réf 46. Au passage : `stadium-night.js` n'a plus AUCUNE dépendance
 au DOM (ciel en `DataTexture`, IBL sautée sans renderer) — c'est ce qui permet de vérifier le contrat

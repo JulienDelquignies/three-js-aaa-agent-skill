@@ -67,6 +67,9 @@ export class Rondo {
 
     this.ball = ballMesh();
     this.scene.add(this.ball); this.disposables.push(this.ball);
+    // the key is masked to the pitch (that is what makes the bowl fall away into night), so anything
+    // standing ON the pitch has to be opted in or it goes unlit
+    this.night.light(this.grid.group); this.night.light(this.ball);
 
     // ---- the game itself
     this.state = makeRondo({ perTeam: 5, seed: Number(q.get('seed')) || 7 });
@@ -116,6 +119,7 @@ export class Rondo {
         legs, stride: 2.6, runSpeed: RONDO.speeds.chase,
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
+      this.night.light(model3d);            // opt the player (kit included) into the key's layer
       this.players.push({ sim: p, model: model3d, ctrl, mixer, groundY });
     }
 
