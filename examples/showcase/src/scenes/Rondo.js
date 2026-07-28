@@ -85,9 +85,12 @@ export class Rondo {
     // a strip over a body shaped like a person. He stays aboard as the clip DONOR, where his armour
     // costs nothing. ?rig=mix restores the two-body cast, ?rig=soldier the original single-rig one.
     setCloner(cloneSkinned);
-    const SHANON = { url: 'shanon.glb', faces: '+Z', name: 'shanon', dequantize: true, matte: true, hide: /Shirt|Shorts|Socks/i };
-    // Her shirt, skin and boots share ONE texture atlas and ONE material, so recolouring the jersey per
-    // team would tint her skin with it: hide her own strip, build the kit over the bare body instead.
+    // KITS OFF by default: the players wear Shanon's OWN strip, which is a real modelled football kit
+    // with proper collar, cuffs and sock ribs — the generated one is a set of lofted tubes and reads
+    // like it. ?kit=1 puts the generated strip back (and hides hers, since the two would fight).
+    // The cost is stated plainly below: with her own strip there is only one strip.
+    this.kits = q.get('kit') === '1';
+    const SHANON = { url: 'shanon.glb', faces: '+Z', name: 'shanon', dequantize: true, matte: true, ...(this.kits ? { hide: /Shirt|Shorts|Socks/i } : {}) };
     const SOLDIER = { url: 'Soldier.glb', faces: '-Z', name: 'soldier' };
     const rigParam = q.get('rig');
     const roster = rigParam === 'soldier' ? [SOLDIER] : rigParam === 'mix' ? [SHANON, SOLDIER] : [SHANON];
@@ -108,11 +111,13 @@ export class Rondo {
       model3d.updateMatrixWorld(true);
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands
-      const t = TEAMS[p.team];
-      const kit = buildKit(model3d, { shirt: t.primary, shorts: t.shorts, socks: t.socks, trim: t.secondary, number: p.id + 1 });
-      if (kit.group) model3d.add(kit.group);
-      else this._reports.kits.push(kit.check?.issues);
-      if (kit.check && !kit.check.ok) this._reports.kits.push(kit.check.issues);
+      if (this.kits) {
+        const t = TEAMS[p.team];
+        const kit = buildKit(model3d, { shirt: t.primary, shorts: t.shorts, socks: t.socks, trim: t.secondary, number: p.id + 1 });
+        if (kit.group) model3d.add(kit.group);
+        else this._reports.kits.push(kit.check?.issues);
+        if (kit.check && !kit.check.ok) this._reports.kits.push(kit.check.issues);
+      }
 
       const mixer = new THREE.AnimationMixer(model3d);
       const bone = (re) => { let f = null; model3d.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };

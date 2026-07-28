@@ -705,6 +705,16 @@ Contrat animkit : contact dans le clip, POSÉ SUR UNE CLÉ (pas dans une interpo
 conservé au miroir. verify-animkit 51/51. Reste ouvert : la frappe avec armé demande un modèle de
 conduite où le porteur suit son ballon (bug (c)) — c'est le vrai préalable, pas l'animation.
 
+㉒ ✅ **Tenues générées retirées : les joueurs portent le maillot de Shanon** *(fait — « enlever les
+tenues, juste mettre des Shanon ? »)* — le strip modélisé du personnage est un VRAI maillot (col,
+manches longues, écusson, numéro 7 dans le dos, short à bandes, chaussettes côtelées, crampons) ; le
+kit généré est un empilement de tubes loftés et se lit comme tel. `?kit=1` remet le kit généré (et
+remasque le sien, les deux se battraient). CONSÉQUENCE ASSUMÉE ET DITE : son maillot, sa peau et ses
+crampons partagent UN atlas et UN matériau, donc les dix joueurs sont identiques — plus moyen de
+distinguer les deux équipes. Le correctif juste, si on le veut, n'est pas de régénérer un kit mais une
+CHASUBLE : c'est ce qu'on porte à l'entraînement, et c'est une pièce de géométrie minimale par-dessus
+le maillot existant, pas un maillot de plus.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
