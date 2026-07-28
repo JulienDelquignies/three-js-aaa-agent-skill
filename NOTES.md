@@ -644,6 +644,39 @@ de la chaîne post), animkit 30/30. Réf 46. Au passage : `stadium-night.js` n'a
 au DOM (ciel en `DataTexture`, IBL sautée sans renderer) — c'est ce qui permet de vérifier le contrat
 sur les VRAIES lumières plutôt que sur une réplique écrite à la main, qui ne prouve que la réplique.
 
+⑳ ✅ **Les vrais persos Mixamo sur le terrain** *(fait — « et avec les persos mixamo ? »)* — la scène
+codait `Soldier.glb` en dur. **`engine/squad.js`** : un ROSTER de GLB Mixamo rendus interchangeables.
+Quatre choses sur lesquelles deux exports réels ne sont JAMAIS d'accord, et dont aucune ne casse
+bruyamment : **orientation** (bind en +Z ou −Z selon le FBX source → le modèle roule dans un wrapper
+yawé pour que « devant » soit toujours −Z, plutôt que de spécialiser le contrôleur : root motion,
+gestes et facing s'accordent alors gratuitement), **échelle** (mètres / centimètres / « unités
+Mixamo » → normalisée à une taille cible, sinon une équipe dépasse l'autre d'une tête et `stride`,
+qui est des mètres par cycle, ne veut plus rien dire), **clips** (la plupart des GLB de personnage
+n'en ont aucun → un rig est DONNEUR et sa locomotion est retargetée sur les autres), **attributs**
+(`KHR_mesh_quantization` → dequantize une fois, sur le template). L'ORDRE est tout le module :
+retarget en pose de bind → mesurer la SOURCE une seule fois → puis cloner/échelonner/placer.
+Contrat `checkSquad` : os requis, échelle, groundY, clips de locomotion, retarget — et surtout
+l'ORIENTATION MESURÉE sur les épaules (`across × up`) plutôt que crue sur le drapeau `faces`, parce
+que ce drapeau est la lecture humaine d'un fichier, donc le champ le plus susceptible d'être faux.
+Découvertes payées : (1) `GLTFLoader` fait passer chaque nom de nœud par
+`PropertyBinding.sanitizeNodeName`, qui supprime `[ ] . : /` — un os écrit « mixamorig5:Hips » dans
+le glTF s'appelle « mixamorig5Hips » une fois chargé, donc un rig de test qui reprend l'orthographe
+du fichier teste une convention que le moteur ne voit jamais ; (2) « bind = maintenant » encore :
+construire le `Skeleton` avant `updateMatrixWorld` donne des boneInverses identité et décale la
+géométrie skinnée de la position du premier os (0,93 m — un personnage qui flotte au-dessus de son
+repère) ; (3) les gestes se compilent PAR RIG : les pistes visent les os par NOM et deux exports ne
+partagent pas leur préfixe, donc un clip compilé sur Shanon ne se lie à rien sur le Soldier — le
+joueur ne frappe simplement pas, en silence ; (4) Shanon porte déjà un maillot, mais maillot, peau et
+crampons partagent UN atlas et UN matériau : recolorer le maillot par équipe teinterait sa peau. On
+masque son strip (`/Shirt|Shorts|Socks/`) et `buildKit` habille le corps nu — deux équipes, deux
+tenues. (5) l'idée « un corps par équipe » (Shanon vs Soldier, pour distinguer les camps avant même les
+couleurs) a été construite PUIS REGARDÉE, et elle est mauvaise : le Soldier est un personnage BLINDÉ,
+et `kit.js` ajuste ses anneaux au nuage de points du corps qu'on lui donne — épaulières et sac à dos
+transforment le maillot en sac. Un maillot généré ne se lit comme un maillot que sur un corps de forme
+humaine. Shanon joue donc les DEUX équipes, le Soldier reste donneur de clips (là son armure ne coûte
+rien). `?rig=mix` remet les deux corps, `?rig=soldier` le casting d'origine.
+verify-squad 22/22. Réf 44 (section « squad »).
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

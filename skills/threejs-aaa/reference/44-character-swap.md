@@ -145,3 +145,44 @@ minutes after static reasoning had stalled.
   by the CPU ground truth (`mesh.getVertexPosition` + `skeleton.update()`), not the frame.
 - **Free camera**: pass `camera` with `frames: 0` — advance the sim in a separate call first.
   With frames > 0 the third-person camera fights the free pose.
+
+## From one imported character to a whole SQUAD (`engine/squad.js`)
+
+Swapping the player is one rig. Filling a pitch is a *roster*, and a scene that hard-codes one GLB
+cannot cast anybody else. Four things two real Mixamo exports never agree on — and each of them,
+when it breaks, breaks **silently**:
+
+| what differs | what you see when it is wrong | how the module handles it |
+|---|---|---|
+| **facing** (+Z or −Z bind, depending on the source FBX) | half the squad moonwalks | the model rides inside a wrapper yawed so wrapper-forward is always −Z, so root motion, gestures and `forwardLocal` all agree for free |
+| **scale** (metres, centimetres, "Mixamo units") | one team a head taller; `stride` (metres per cycle) meaningless | normalised to a target height |
+| **clips** (most character GLBs ship with none) | a player who never leaves idle | one rig is the DONOR; its locomotion is retargeted onto every other rig |
+| **attributes** (`KHR_mesh_quantization`) | skinning reads normalized ints as garbage | `dequantizeSkinned` once, on the template |
+
+**The order is the whole module**: retarget in bind pose → measure the SOURCE box once → *then*
+clone, scale, place. Two traps live in that sentence. `Box3.setFromObject` on a freshly cloned
+`SkinnedMesh` returns a degenerate box (the clone's skeleton is not resolved yet), so measuring per
+clone scaled a player by 405×, which reads on screen as "the players are missing". And clip tracks
+address bones **by name**, so retargeting once on the template is enough — every clone inherits it.
+
+Three things worth stealing:
+
+- **Measure facing, don't trust the flag.** `checkSquad` reads the chest normal off the shoulders
+  (`across × up`, with `across` running right→left) and fails a rig that ends up pointing anywhere
+  but −Z. The `faces` flag is a human's reading of a file, which makes it the single most likely
+  field to be wrong — so it is the one thing the contract refuses to take on faith.
+- **A naïve clone shares the skeleton**, and ten players then move as one. `squad.js` refuses to
+  spawn without `SkeletonUtils.clone` rather than letting that render.
+- **One texture atlas can block per-team colours.** A real character export often bakes shirt, skin
+  and boots into *one* material — recolouring the jersey would tint the skin with it. The way to two
+  kits is to hide the character's own strip (`/Shirt|Shorts|Socks/`) and build `kit.js` over the bare
+  body, exactly as `outfit.js` does for the coat.
+
+One naming gotcha that costs an hour if you meet it in a test rather than in a file: `GLTFLoader`
+runs every node name through `PropertyBinding.sanitizeNodeName`, which strips `[ ] . : /`. A bone
+written `mixamorig5:Hips` in the glTF is called `mixamorig5Hips` once loaded — so a synthetic test
+rig that uses the file's spelling is testing a convention the engine never sees.
+
+Proved headless by `scripts/verify-squad.mjs` (22/22): a mixed roster, a centimetre-scale import,
+and named sabotages for a missing bone, a wrong facing flag, a missing run clip, a mis-scaled team,
+a sunken player and a shared skeleton.

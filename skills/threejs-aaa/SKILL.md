@@ -215,6 +215,17 @@ resolve regardless of install location. Each prints `--help`.
   node ${CLAUDE_SKILL_DIR}/scripts/verify-ball-predict.mjs && node ${CLAUDE_SKILL_DIR}/scripts/verify-rondo.mjs
   node ${CLAUDE_SKILL_DIR}/scripts/verify-matchday.mjs   # kit on the rig, night rig, post-chain contract
   ```
+- **Cast a whole team from arbitrary Mixamo GLBs** — `engine/squad.js`: a scene should not know which
+  file it is casting. A roster normalises the four things two real exports never agree on — FACING
+  (a +Z bind rides inside a yawed wrapper so the controller's one forward still holds), SCALE
+  (normalised to a target height, or one team towers over the other), CLIPS (most character GLBs ship
+  with none: one rig is the DONOR and its locomotion is retargeted onto the rest) and ATTRIBUTES
+  (`KHR_mesh_quantization` needs dequantizing or skinning reads garbage) — then hands the scene a
+  `spawn()`. `checkSquad` measures facing off the shoulders rather than trusting the flag. See
+  `reference/44` and `reference/46`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-squad.mjs
+  ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free
   (Playwright/Chromium pre-installed in the Claude Code env):

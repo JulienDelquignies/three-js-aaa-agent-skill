@@ -7,6 +7,7 @@ import { makeTheme } from '../engine/club-theme.js';
 import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js';
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
 import { buildKit } from '../engine/kit.js';
+import { loadSquad, setCloner } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js';
 import { toClip, playGesture } from '../engine/animkit-builder.js';
@@ -74,22 +75,33 @@ export class Rondo {
     // ---- the game itself
     this.state = makeRondo({ perTeam: 5, seed: Number(q.get('seed')) || 7 });
 
-    // ---- ten players. Order matters: scale and place BEFORE constructing the controller (it
-    // snapshots position/yaw/groundY and measures hip height and foot floors from the live rig).
-    const gltf = await new GLTFLoader().loadAsync('Soldier.glb');
-    const clips = gltf.animations;
-    // Measure the SOURCE once. Box3.setFromObject on a freshly cloned SkinnedMesh returns a
-    // degenerate box (the clone's skeleton has not been resolved yet) — doing it per clone scaled
-    // every player by 405×, which reads on screen as "the players are missing".
-    gltf.scene.updateMatrixWorld(true);
-    const srcBox = new THREE.Box3().setFromObject(gltf.scene);
-    const srcSize = srcBox.getSize(new THREE.Vector3());
-    const scale = 1.8 / srcSize.y;
-    const groundY = -srcBox.min.y * scale;
+    // ---- the squad. The scene no longer knows which GLB it is casting: squad.js loads a ROSTER,
+    // normalises facing/height, and transports the donor's locomotion onto every imported rig.
+    //
+    // Cast: SHANON for both sides, told apart by kit colour. The obvious idea — one body per team, so
+    // the sides read apart before the colours do — was built and looked at, and it is wrong here: the
+    // Soldier is an ARMOURED sci-fi character, and kit.js fits its rings to the body cloud it is given,
+    // so his shoulder plates and backpack turn the jersey into a sack. A generated strip only reads as
+    // a strip over a body shaped like a person. He stays aboard as the clip DONOR, where his armour
+    // costs nothing. ?rig=mix restores the two-body cast, ?rig=soldier the original single-rig one.
+    setCloner(cloneSkinned);
+    const SHANON = { url: 'shanon.glb', faces: '+Z', name: 'shanon', dequantize: true, matte: true, hide: /Shirt|Shorts|Socks/i };
+    // Her shirt, skin and boots share ONE texture atlas and ONE material, so recolouring the jersey per
+    // team would tint her skin with it: hide her own strip, build the kit over the bare body instead.
+    const SOLDIER = { url: 'Soldier.glb', faces: '-Z', name: 'soldier' };
+    const rigParam = q.get('rig');
+    const roster = rigParam === 'soldier' ? [SOLDIER] : rigParam === 'mix' ? [SHANON, SOLDIER] : [SHANON];
+    this.squad = await loadSquad(new GLTFLoader(), { rigs: roster, donor: 'Soldier.glb', height: 1.8 });
+    this._reports.squad = this.squad.check;
+    this.disposables.push(this.squad);
+    if (!this.squad.check.ok) console.warn('checkSquad', this.squad.check.issues);
+
+    // Order matters: scale and place BEFORE constructing the controller (it snapshots
+    // position/yaw/groundY and measures hip height and foot floors from the live rig).
     for (const p of this.state.players) {
-      const model3d = cloneSkinned(gltf.scene);
-      model3d.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
-      model3d.scale.setScalar(scale);
+      // one rig per TEAM rather than round-robin: the two sides must be told apart at a glance, and
+      // two different bodies do that even before the kit colours do
+      const { model: model3d, groundY, clips, rig } = this.squad.spawn(p.team);
       model3d.position.set(p.p[0], groundY, p.p[2]);
       model3d.rotation.y = 0;
       this.scene.add(model3d);
@@ -97,12 +109,9 @@ export class Rondo {
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands
       const t = TEAMS[p.team];
-      const kit = buildKit(model3d, { shirt: t.primary, shorts: t.shorts, socks: t.socks, trim: t.secondary });
-      if (kit.group) {
-        model3d.add(kit.group);
-        // the outfit replaces the soldier's own clothing where it would poke through
-        model3d.traverse((o) => { if (o.isMesh && /Soldier_Body|Vest|Pants/i.test(o.name || '')) o.visible = o.visible; });
-      } else this._reports.kits.push(kit.check?.issues);
+      const kit = buildKit(model3d, { shirt: t.primary, shorts: t.shorts, socks: t.socks, trim: t.secondary, number: p.id + 1 });
+      if (kit.group) model3d.add(kit.group);
+      else this._reports.kits.push(kit.check?.issues);
       if (kit.check && !kit.check.ok) this._reports.kits.push(kit.check.issues);
 
       const mixer = new THREE.AnimationMixer(model3d);
@@ -120,16 +129,23 @@ export class Rondo {
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer
-      this.players.push({ sim: p, model: model3d, ctrl, mixer, groundY });
+      this.players.push({ sim: p, model: model3d, ctrl, mixer, groundY, rig });
     }
 
     // ---- passing gestures, BOTH feet. Every strike in the library is right-footed; mirrorMove
     // gives the exact left-footed twin, so a player passing to his left uses the near foot.
-    this.gest = {
-      right: toClip(MOVES.passe, this.players[0].model),
-      left: toClip(mirrorMove(MOVES.passe), this.players[0].model),
-      control: toClip(MOVES.amorti, this.players[0].model),
-    };
+    // ONE SET PER RIG. Gesture tracks address bones by NAME, and two Mixamo exports rarely share a
+    // prefix (mixamorig… vs mixamorig5…), so a clip compiled against one rig binds to nothing on the
+    // other — the player would simply not swing his leg, silently. Compile per rig, look up per player.
+    this.gest = new Map();
+    for (const pl of this.players) {
+      if (this.gest.has(pl.rig)) continue;
+      this.gest.set(pl.rig, {
+        right: toClip(MOVES.passe, pl.model),
+        left: toClip(mirrorMove(MOVES.passe), pl.model),
+        control: toClip(MOVES.amorti, pl.model),
+      });
+    }
 
     this._hud = document.getElementById('score');
     // play-mode handles: runner.js sets window.__scene for every scene, and the MCP probes a
@@ -190,10 +206,12 @@ export class Rondo {
       const e = this.state.events[i];
       if (e.type === 'pass') {
         const pl = this.players[e.from];
-        if (pl) playGesture(pl.mixer, e.foot === 'left' ? this.gest.left : this.gest.right);
+        const g = pl && this.gest.get(pl.rig);
+        if (g) playGesture(pl.mixer, e.foot === 'left' ? g.left : g.right);
       } else if (e.type === 'receive') {
         const pl = this.players[e.by];
-        if (pl) playGesture(pl.mixer, this.gest.control);
+        const g = pl && this.gest.get(pl.rig);
+        if (g) playGesture(pl.mixer, g.control);
       }
     }
 
