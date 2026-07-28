@@ -17,7 +17,12 @@ ok(`120 s de jeu : contrat complet — record ${r.stats.best} passes, ${r.stats.
 ok(`l'attaque ENCHAÎNE (record ${st.best} passes consécutives)`, st.best >= 4, `best=${st.best}`);
 ok(`la défense RÉCUPÈRE (${st.turnovers} récupérations)`, st.turnovers >= 2);
 ok(`pas d'essaim (pic ${r.stats.swarm} défenseurs, mais seulement ${r.stats.crowdPct}% du temps)`, r.stats.crowdPct <= 25);
-ok(`le bloc en possession reste ÉCARTÉ (${r.stats.spread} m en moyenne)`, r.stats.spread >= 5);
+// le seuil suit la TAILLE DU CARRÉ, comme dans le contrat : 5 m absolus n'avaient de sens que pour
+// l'ancien carré de 34 x 26, et c'est ce genre de seuil figé qui empêchait de le resserrer
+{
+  const seuil = RONDO.spreadFrac * Math.min(...RONDO.area);
+  ok(`le bloc en possession reste ÉCARTÉ (${r.stats.spread} m ≥ ${seuil.toFixed(1)}, à l'échelle du carré)`, r.stats.spread >= seuil);
+}
 
 // ---------- possession really changes hands, both ways
 {

@@ -13,10 +13,15 @@ import { predictPath, solvePass, laneClearance, interceptPoint, PASS_STYLE } fro
 //   clearance geometry and by INVERSE BALLISTICS, so the chosen pass actually arrives.
 
 export const RONDO = {
-  area: [34, 26],          // m — the grid the game is played in (x, z half-extents ×2)
-  supportMin: 6.5,         // m — closer than this and you clog the carrier
-  supportMax: 13.5,        // m — further and the lane is too long to defend
-  passRange: [4, 20],      // m — receivable pass distance
+  // A RONDO IS A SMALL BOX. This was 34 x 26 m, which is a five-a-side PITCH, not a rondo — and that
+  // single number is why the ball read as far from everyone: at that size the supports stand 6.5–13.5 m
+  // out and the ball sits a mean 5.89 m from the players. A real "passe à dix" is played in 12–16 m.
+  // Measured over 3 seeds × 60 s: 34x26 → record 12, ball 5.89 m from the players; 22x18 → 13, 4.20 m;
+  // 16x14 → 18, 3.44 m; 12x11 → 8, 2.86 m (too tight, the defence just wins it). 16 x 14 it is.
+  area: [16, 14],          // m — the grid the game is played in (x, z half-extents ×2)
+  supportMin: 4.0,         // m — closer than this and you clog the carrier
+  supportMax: 7.5,         // m — further and the lane is too long to defend
+  passRange: [2.5, 13],    // m — receivable pass distance
   corridor: 1.25,          // m — a defender inside this of the line blocks the lane
   pressRadius: 9,          // m — inside this the presser commits to the carrier
   tackleRadius: 1.45,      // m
@@ -27,6 +32,8 @@ export const RONDO = {
   holdMax: 2.4,            // s — forced to release (no dwelling)
   speeds: { press: 6.6, support: 5.4, carry: 4.2, chase: 6.9 },
   accel: 9.5,              // m/s²
+  swarmFrac: 0.135,        // the beehive radius as a fraction of the box's short side (see checkRondo)
+  spreadFrac: 0.19,        // minimum team spread, likewise as a fraction of the box
 };
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);

@@ -157,6 +157,37 @@ needs a GPU) means `verify-matchday.mjs` runs the contract on the **real** rig, 
 plus six named sabotages. Watch the flip: row 0 of a `DataTexture` is `v = 0`, the *bottom* of the
 equirect, where a `CanvasTexture`'s row 0 is the top.
 
+## Thresholds written in metres only fit one box
+
+The grid was 34 × 26 m — which is a five-a-side **pitch**, not a rondo. A real *passe à dix* is played
+in 12–16 m. That one number is most of why the ball read as far from everyone: measured over three
+seeds, the ball sat a mean **5.89 m** from the players. And the reason it had never been tightened is
+that the contract *couldn't allow it*: two of its clauses were absolute metres fitted to that one box —
+a beehive radius of 3.5 m and a minimum team spread of 5 m. Shrink the box and both fire immediately,
+even though four defenders within 3.5 m of the ball in a 14 m square is the **definition** of a rondo,
+not a defect. Expressed as fractions of the box's short side (0.135 and 0.19), the same rules keep
+their meaning at any size — and the grid becomes a free parameter again:
+
+| box | record | turnovers | mean ball ↔ players |
+|---|---|---|---|
+| 34 × 26 (as shipped) | 12 | 63 | 5.89 m |
+| 22 × 18 | 13 | 80 | 4.20 m |
+| **16 × 14 (a real rondo)** | **18** | 86 | **3.44 m** |
+| 12 × 11 | 8 | 130 | 2.86 m (too tight — the defence simply wins it) |
+
+That is the third time in this scene that a *metric*, not the system, was the thing that was wrong.
+The pattern is worth naming: **a threshold in absolute units silently encodes the scale it was tuned
+at**, and from then on it does not measure the property, it measures the distance from that tuning.
+
+## The contract must judge the thing that ships
+
+The same game passed 20/20 in node and failed its own contract on screen. The live scene built its
+trace with `since: 99` hard-coded — the "seconds since the last turnover" field the shape clauses use
+to ignore unsettled play — so every frame counted as settled possession, including the kick-off
+seconds when the teams are still bunched on their starting ring. The headless run computed it
+properly. A contract is only as good as the trace it is handed, and a scene that fabricates a field to
+make the shape of the call work is a scene that is not being checked at all.
+
 ## Correct feet
 
 Every ball-contact move in the animkit library (`frappe`, `passe`, `talonnade`, `retournee`) is

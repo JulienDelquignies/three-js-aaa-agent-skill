@@ -154,7 +154,12 @@ export function checkRondo(st, trace, cfg = RONDO) {
   // is received is correct football, and a peak count cannot tell that apart from a real beehive.
   // A genuine beehive is permanent — the sabotage below sits at 100%.
   const settled = trace.filter((s) => (s.since ?? 99) > 1.5);
-  const nearCount = (s) => s.players.filter((p) => p.team !== s.team && Math.hypot(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < 3.5).length;
+  // The swarm radius is a FRACTION OF THE BOX, not a fixed 3.5 m. Third time this session that a
+  // metric, not the system, was the thing that was wrong: in a real rondo box (12–16 m) four defenders
+  // within 3.5 m of the ball is the DEFINITION of the exercise, not a defect, and an absolute radius
+  // called it a beehive 39% of the time. Scaled to the box, the same rule keeps its meaning at any size.
+  const swarmR = Math.min(3.5, cfg.swarmFrac * Math.min(st.area[0], st.area[1]));
+  const nearCount = (s) => s.players.filter((p) => p.team !== s.team && Math.hypot(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < swarmR).length;
   const crowded = settled.filter((s) => nearCount(s) > 3).length;
   const allIn = settled.filter((s) => nearCount(s) > 4).length;
   const worstSwarm = settled.length ? Math.max(...settled.map(nearCount)) : 0;
@@ -170,7 +175,11 @@ export function checkRondo(st, trace, cfg = RONDO) {
     for (let i = 0; i < team.length; i++) for (let j = i + 1; j < team.length; j++) { sum += Math.hypot(team[i].p[0] - team[j].p[0], team[i].p[1] - team[j].p[1]); k++; }
     if (k) minSpread = Math.min(minSpread, sum / k);
   }
-  if (settled.length && minSpread < 5) issues.push(`bloc trop compact en possession installée (écartement moyen ${minSpread.toFixed(1)} m)`);
+  // …and the same for spread: 5 m was written against a 26 m box. Both thresholds were absolute metres
+  // fitted to one box size, which is why the grid could never be tightened without the contract
+  // screaming — and a rondo played in a 34 x 26 m square is why the ball reads as far from everyone.
+  const spreadMin = cfg.spreadFrac * Math.min(st.area[0], st.area[1]);
+  if (settled.length && minSpread < spreadMin) issues.push(`bloc trop compact en possession installée (écartement moyen ${minSpread.toFixed(1)} m < ${spreadMin.toFixed(1)})`);
   // 4. nobody teleports
   const top = Math.max(...Object.values(cfg.speeds)) + 1.5;
   for (const s of trace) for (const p of s.players) if (p.speed > top) { issues.push(`joueur ${p.id} à ${p.speed} m/s (> ${top.toFixed(1)})`); break; }

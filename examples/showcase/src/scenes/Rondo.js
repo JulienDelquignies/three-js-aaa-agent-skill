@@ -168,8 +168,12 @@ export class Rondo {
     // a camera at z = -46 is INSIDE it, filming the underside of the seating. The broadcast rig
     // goes on the gantry over the touchline instead — clear of the stand, high enough to see the
     // far side of the grid.
-    cam.fov = 34; cam.updateProjectionMatrix();
-    cam.position.set(0, 16, -38);
+    // Framed for the BOX, not for the stadium. The grid is 16 x 14 m; the old rig sat 38 m out with a
+    // 34° lens because the grid used to be 34 x 26, and at that distance a 22 cm ball is about five
+    // pixels wide — which is most of why "the ball is far from the players" reads true even when the
+    // measurement says it is a metre from the nearest man.
+    cam.fov = 30; cam.updateProjectionMatrix();
+    cam.position.set(0, 8.5, -19);
     cam.lookAt(0, 1, 0);
     this.cam = cam;
     if (controls) {
@@ -191,12 +195,12 @@ export class Rondo {
     const b = this.state.ball.p;
     if (!this._look) this._look = new THREE.Vector3(0, 1, 0);
     if (!this._camV) this._camV = 0;
-    const targetX = THREE.MathUtils.clamp(b[0], -18, 18);
+    const targetX = THREE.MathUtils.clamp(b[0], -8, 8);
     this._look.x += (b[0] - this._look.x) * Math.min(1, dt * 2.4);      // lag
     this._look.z += (b[2] - this._look.z) * Math.min(1, dt * 2.4);
     this._look.y += (1 - this._look.y) * Math.min(1, dt * 3);
     const px = this.cam.position.x + (targetX * 0.55 - this.cam.position.x) * Math.min(1, dt * 1.5);
-    this.cam.position.set(px, 16, -38);
+    this.cam.position.set(px, 8.5, -19);
     this.cam.lookAt(this._look);
   }
 
@@ -204,7 +208,9 @@ export class Rondo {
     if (!this.state) return;
     const step = Math.min(dt, 1 / 30);
     const before = this.state.events.length;
+    const toBefore = this.state.turnovers;
     rondoStep(this.state, step);
+    this._since = this.state.turnovers !== toBefore ? 0 : (this._since ?? 0) + step;
 
     // ---- react to what the game just did: a pass fires the correct-foot strike on the passer
     for (let i = before; i < this.state.events.length; i++) {
@@ -245,7 +251,11 @@ export class Rondo {
     if (this._trace.length < 4000 && Math.floor(this._t * 10) !== Math.floor((this._t - step) * 10)) {
       this._trace.push({
         t: +this._t.toFixed(2), phase: this.state.phase, team: this.state.possession.team,
-        passes: this.state.passes, since: 99,
+        // seconds since the last turnover — the contract judges SHAPE on settled possession only, and
+        // a hard-coded 99 told it every frame was settled, including the kick-off seconds when the
+        // teams are still bunched on their starting ring. The headless run computes this properly;
+        // the live trace claiming otherwise is how the same game passed in node and failed on screen.
+        passes: this.state.passes, since: +this._since.toFixed(2),
         ball: this.state.ball.p.map((v) => +v.toFixed(2)),
         players: this.state.players.map((p) => ({ id: p.id, team: p.team, job: p.job, p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)], speed: +p.speed.toFixed(2) })),
       });

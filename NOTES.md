@@ -715,6 +715,32 @@ distinguer les deux équipes. Le correctif juste, si on le veut, n'est pas de r�
 CHASUBLE : c'est ce qu'on porte à l'entraînement, et c'est une pièce de géométrie minimale par-dessus
 le maillot existant, pas un maillot de plus.
 
+㉓ ✅ **« Le ballon est loin des joueurs »** *(corrigé — et le diagnostic a démenti l'hypothèse évidente)*
+— d'abord mesurer : dans la SIM, le ballon est à 1,07 m du joueur le plus proche en médiane, jamais
+au-delà de 4,7 m ; et la scène rendue colle à la simulation à **12 cm près** (position modèle =
+position sim au centième, centroïde du corps skinné à 4–12 cm). Donc ni la simulation ni l'habillage.
+Le vrai coupable : **le carré faisait 34 × 26 m**, c'est-à-dire un terrain de foot à 5, pas un rondo
+(un vrai « passe à dix » se joue dans 12–16 m). À cette taille les soutiens se tiennent à 6,5–13,5 m et
+le ballon est à **5,89 m de moyenne des joueurs**. Pourquoi ça n'avait jamais été resserré : **le
+contrat l'interdisait**. Deux de ses clauses étaient en mètres ABSOLUS, calibrées sur ce carré-là —
+rayon d'essaim 3,5 m, écartement minimal 5 m. Rétrécis le carré et les deux hurlent, alors que quatre
+défenseurs à moins de 3,5 m du ballon dans un carré de 14 m, c'est la DÉFINITION d'un rondo.
+Exprimés en fractions du petit côté (0,135 et 0,19), les mêmes règles gardent leur sens à toute
+échelle — et le carré redevient un paramètre libre. Mesuré, 3 graines × 60 s : 34×26 → record 12,
+ballon à 5,89 m ; 22×18 → 13, 4,20 m ; **16×14 → 18, 3,44 m** ; 12×11 → 8, 2,86 m (trop serré, la
+défense récupère tout). Livré en 16 × 14, caméra recadrée sur la boîte (8,5 m de haut, 19 m de recul,
+30° — l'ancienne était à 38 m pour un carré deux fois plus grand, où un ballon de 22 cm fait cinq
+pixels). TROISIÈME fois dans cette scène que c'est la MÉTRIQUE, pas le système, qui est fausse : un
+seuil en unités absolues encode en silence l'échelle à laquelle il a été réglé, et à partir de là il ne
+mesure plus la propriété, il mesure l'écart à ce réglage.
+Au passage, un défaut de contrat plus grave : le même jeu passait 20/20 en node et **échouait son
+propre contrat à l'écran**. La scène écrivait `since: 99` en dur dans sa trace — le champ « secondes
+depuis la dernière perte de balle » dont les clauses de forme se servent pour ignorer le jeu non
+installé — donc chaque frame comptait comme possession installée, y compris les secondes d'engagement
+où les équipes sont encore groupées sur leur cercle de départ. Un contrat ne vaut que la trace qu'on
+lui donne, et une scène qui fabrique un champ pour arranger la forme de l'appel n'est pas vérifiée du
+tout. Contrat live désormais vert. verify-rondo 20/20 (record 7–23 selon la graine). Réf 46.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
