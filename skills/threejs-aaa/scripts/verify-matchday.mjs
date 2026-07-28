@@ -145,7 +145,32 @@ function makeRig() {
     n.sun.shadow.updateMatrices = () => {};
     ok('sabotage « ombre tronquée en bord de terrain » attrapé', has(checkStadiumNight(n, model), 'couvre pas')); n.dispose(); }
   { const n = rebuild(); for (const s of n.spots) s.visible = false; ok('sabotage « moins de 4 mâts allumés » attrapé', has(checkStadiumNight(n, model), 'dirigée')); n.dispose(); }
+  { const n = rebuild(); n.sun.intensity = 2.4; ok('sabotage « clé au niveau du soleil (2,4) » attrapé', has(checkStadiumNight(n, model), 'SOLEIL')); n.dispose(); }
+  { const n = rebuild(); n.scene.environmentIntensity = 1.0; ok('sabotage « IBL de jour sous la nuit » attrapé', has(checkStadiumNight(n, model), 'IBL de jour')); n.dispose(); }
+  { const n = rebuild(); n.group.traverse((o) => { if (o.isHemisphereLight) o.intensity = 1.2; });
+    ok('sabotage « ambiance qui écrase la clé » attrapé', has(checkStadiumNight(n, model), 'trop plate')); n.dispose(); }
+  {
+    const n = rebuild();
+    const aim = Math.hypot(n.spots[0].position.x - n.spots[0].target.position.x, n.spots[0].position.y, n.spots[0].position.z - n.spots[0].target.position.z);
+    ok('les mâts éclairent VRAIMENT la pelouse (E = I/d² au point visé ≥ la clé)', n.spots[0].intensity / (aim * aim) >= n.sun.intensity,
+      `E=${(n.spots[0].intensity / (aim * aim)).toFixed(2)} vs clé ${n.sun.intensity}`);
+    n.dispose();
+  }
   { const n = rebuild(); n.spots[0].position.y = -5; ok('sabotage « projecteur sous la pelouse » attrapé', has(checkStadiumNight(n, model), 'sous la pelouse')); n.dispose(); }
+  // Celui-là est le bug RÉEL qu'on a payé : le boot du moteur (Lighting.js) laisse un soleil de jour
+  // dans la scène, hors du groupe de nuit — tous les autres contrats restaient verts et le « match en
+  // nocturne » se rendait en plein après-midi.
+  {
+    const s = new THREE.Scene();
+    const jour = new THREE.DirectionalLight(0xfff2e0, 2.4); s.add(jour);
+    const n = setupStadiumNight(s, null, { model });
+    ok('le rig de nuit ÉTEINT le soleil de jour laissé par le moteur', jour.visible === false);
+    ok('  contrat vert une fois le jour éteint', checkStadiumNight(n, model).ok, checkStadiumNight(n, model).issues.join(' | '));
+    jour.visible = true;
+    ok('sabotage « soleil de jour rallumé hors du rig » attrapé', has(checkStadiumNight(n, model), 'hors du rig'));
+    n.dispose();
+    ok('dispose() rend ses lumières à la scène', jour.visible === true);
+  }
   { ok('rien construit → refus propre', has(checkStadiumNight(null, model), 'aucun groupe')); }
   night.dispose();
   ok('dispose() rend la scène (fond, environnement, brouillard)', scene.fog === undefined || scene.fog === null);

@@ -38,7 +38,7 @@ only played into a lane that is open — a lofted ball is what beats a closed on
 being slower. And every pass is solved with **inverse ballistics**, so it arrives on the man at a
 playable pace instead of dying at his feet or burning past him.
 
-## Five bugs that only a contract finds
+## Six bugs that only a contract finds
 
 Each of these produced a *plausible-looking* game, and each was invisible without a measurement.
 
@@ -60,9 +60,26 @@ Each of these produced a *plausible-looking* game, and each was invisible withou
    beehive from four players converging for the instant a pass arrives — which is correct football.
    Measured in **time** instead: a true beehive sits at 100%, this game at 5.9%.
 
+6. **The night match rendered as a bright afternoon, with every contract green.** The engine's boot
+   lighting (`Lighting.js`) adds an analytic `DirectionalLight(0xfff2e0, 2.4)` straight to the scene.
+   `setupStadiumNight` swapped `scene.background` and `scene.environment` — which does *nothing* to an
+   analytic light — and its contract only ever traversed **its own group**, so the sun that was
+   out-lighting the entire floodlight rig was outside the contract's field of view. A rig that claims
+   to own the lighting must own the *scene's* lighting: douse every light it did not add (restoring
+   them on `dispose`), and **assert on the scene, not on the group**. And the fix was still not
+   enough: with the day sun off, the night key was itself at 2.0 against a daytime sun of 2.4, so the
+   frame stayed at mean luminance 0.42 where broadcast night sits near 0.15. **Night is not the colour
+   of the sky, it is the ratio between the key and everything else** — a floodlit pitch is ~1 500 lux,
+   open daylight ~100 000. The contract now asserts the budget itself (key ≤ 1.4, `environmentIntensity`
+   ≤ 0.3, fill ≤ 35 % of the key, and mast irradiance `I/d²` at the aim point ≥ the key), which is what
+   turns "it looks like daytime" from a matter of taste into a number a harness can fail on.
+
 The general lesson: when a metric fails, ask whether the *metric* is wrong before tuning the
-system. Two of the five "failures" above were the harness measuring the wrong thing, and tuning
-weights against them would have made the game worse.
+system. Two of the six "failures" above were the harness measuring the wrong thing, and tuning
+weights against them would have made the game worse. The sixth is the sharper version of the same
+point — a contract can only catch what it looks at, and "green" over too small a scope is worse than
+no contract at all, because it buys false confidence. Scope every check to the thing the user
+actually sees.
 
 ## The three modules that dress it
 

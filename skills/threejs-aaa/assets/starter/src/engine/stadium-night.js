@@ -25,8 +25,22 @@ const KEY_DIST = 90;    // m — a directional light has no falloff and no posit
 const KEY_ELEV = 0.62;  // this pair only fixes its DIRECTION (≈35° up) and where the frustum sits.
 const PITCH_PAD = 4;    // m of grass past the painted line — players and the ball live out there
 const SHADOW_TOP = 10;  // m — goals (2.44), players, headers. A ball 20 m up casts nothing anyone reads.
-const POOL_E = 0.9;     // target irradiance under a mast's aim point (candela derivation below)
+// THE NIGHT BUDGET, and why these numbers and not bigger ones. A floodlit pitch is ~1 500 lux; open
+// daylight is ~100 000. Nothing about "night" is in the colour of the sky — it is in the RATIO between
+// the key and everything else. The engine's daytime rig is directional 2.4 + environment 1.0; a night
+// rig that keeps a key of 2.0 renders an afternoon no matter how dark the background texture is, which
+// is exactly what shipped the first time (measured: mean frame luminance 0.42, broadcast night sits
+// near 0.15). So the key comes down to floodlight level and the AMBIENT terms come down much further —
+// dark stands around a bright pitch is the entire read.
+const KEY_I = 0.95;     // the dominant bank: bright enough to carry a crisp shadow, not a sun
+const HEMI_I = 0.10;    // just enough that the underside of the roof is not pure black
+const ENV_I = 0.12;     // night IBL: it exists so glass and metal have something to reflect
+const POOL_E = 1.6;     // target irradiance under a mast's aim point — ABOVE the key, so the pools read
+                        // as the source of the light on the grass instead of as faint decoration
 const UP = new THREE.Vector3(0, 1, 0);
+
+/** Is `o` inside the night rig's own group? (Used to tell OUR lights from the scene's.) */
+const isUnder = (o, root) => { for (let p = o; p; p = p.parent) if (p === root) return true; return false; };
 
 /**
  * The four mast heads in stadium-local metres. model.lights is AUTHORITATIVE: tiers 1-3 publish real
@@ -125,6 +139,15 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
 
   // Remember the daytime ambience so dispose() hands the scene back instead of leaving a black hole.
   const prev = { bg: scene.background, blur: scene.backgroundBlurriness, env: scene.environment, envI: scene.environmentIntensity, fog: scene.fog };
+
+  // TAKE OVER THE DAY. Swapping background/environment is not enough: the engine's own boot lighting
+  // adds an ANALYTIC sun straight to the scene (Lighting.js: DirectionalLight 0xfff2e0 at 2.4), and an
+  // analytic light does not care what the IBL says. Left on, it out-lights the whole floodlight rig and
+  // the "night match" renders as a bright afternoon with four lamps in it — with every contract still
+  // green, because a contract that only looks inside its own group cannot see it. So: hide every light
+  // already in the scene, and hand them back on dispose().
+  const doused = [];
+  scene.traverse((o) => { if (o.isLight && o.visible && !isUnder(o, group)) { doused.push([o, o.visible]); o.visible = false; } });
   const sky = nightSky(); disposables.push(sky);
   // The IBL is the one thing here that needs a live GPU (PMREMGenerator renders the convolution).
   // Skipping it when there is no renderer is what makes the whole rig constructible in node, so the
@@ -134,7 +157,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   const envTex = pmrem ? pmrem.fromEquirectangular(sky).texture : null;
   if (envTex) disposables.push(envTex);
   scene.background = sky; scene.backgroundBlurriness = 0;
-  scene.environment = envTex; scene.environmentIntensity = 0.4 * intensity;
+  scene.environment = envTex; scene.environmentIntensity = ENV_I * intensity;
   // Thin haze, not soup: dense night fog erases the far stand and flattens the depth contrast the
   // godrays pass raymarches against.
   scene.fog = new THREE.FogExp2(0x070c16, 0.0035);
@@ -146,7 +169,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   // underneath than on top, or the bowl flattens into one grey card. Sky is the real deep blue above,
   // ground the desaturated warm bounce coming back off the floodlit grass. Its position means nothing
   // to the shading, but it is kept above the grass so the contract's "no light underground" sweep stays honest.
-  const hemi = new THREE.HemisphereLight(0x2b3f66, 0x1a2015, 0.3 * intensity);
+  const hemi = new THREE.HemisphereLight(0x2b3f66, 0x1a2015, HEMI_I * intensity);
   hemi.position.set(0, 40, 0); group.add(hemi);
 
   const masts = mastPositions(model, L, W);
@@ -155,7 +178,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   // ~19° off that axis: a shadow running exactly parallel to the touchline reads as a CG turntable.
   const sx = Math.sign(masts[0].x) || -1, sz = Math.sign(masts[0].z) || -1;
   const hx = sx, hz = sz * 0.34, hl = Math.hypot(hx, hz), r = KEY_DIST * Math.cos(KEY_ELEV);
-  const sun = new THREE.DirectionalLight(0xdfe9ff, 2.0 * intensity);   // metal-halide: distinctly cool
+  const sun = new THREE.DirectionalLight(0xdfe9ff, KEY_I * intensity);   // metal-halide: distinctly cool
   sun.position.set((hx / hl) * r, KEY_DIST * Math.sin(KEY_ELEV), (hz / hl) * r);
   sun.castShadow = true;
   sun.shadow.mapSize.set(shadowMapSize, shadowMapSize);
@@ -202,9 +225,10 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   }
 
   return {
-    group, sun, spots,
+    group, sun, spots, scene, doused: doused.map(([l]) => l),
     dispose() {
       scene.remove(group);
+      for (const [l, v] of doused) l.visible = v;
       scene.background = prev.bg; scene.backgroundBlurriness = prev.blur;
       scene.environment = prev.env; scene.environmentIntensity = prev.envI; scene.fog = prev.fog;
       sun.shadow.dispose?.();      // the depth target: a leaked 2048² map per scene switch adds up fast
@@ -258,5 +282,31 @@ export function checkStadiumNight(result, model) {
     l.getWorldPosition(w);
     if (w.y < grassY - 1e-3) issues.push(`${l.type} sous la pelouse (y=${w.y.toFixed(2)} < ${grassY.toFixed(2)})`);
   }
+
+  // 5. NOBODY ELSE IS LIGHTING THIS SCENE. The check that was missing, and the reason a "night match"
+  //    rendered as a bright afternoon with every other assertion green: the engine's boot lighting had
+  //    left an analytic daytime sun in the scene, outside this group, where a contract scoped to its own
+  //    group is blind to it. Swapping the IBL does nothing to an analytic light. A single unhidden
+  //    DirectionalLight at 2.4 out-lights the entire floodlight rig.
+  //    Hemisphere/ambient fills are tolerated below a token intensity — they cost nothing and some
+  //    scenes add one; a directional or a spot is never innocent here.
+  const outside = [];
+  result.scene?.traverse((o) => {
+    if (!o.isLight || !o.visible || o.intensity <= 0 || isUnder(o, result.group)) return;
+    if ((o.isAmbientLight || o.isHemisphereLight) && o.intensity <= 0.15) return;
+    outside.push(o);
+  });
+  if (outside.length) issues.push(`${outside.length} lumière(s) hors du rig de nuit encore allumée(s) (${outside.map((l) => `${l.type}@${l.intensity}`).join(', ')}) — la nuit sera lavée en plein jour`);
+
+  // 6. LE BUDGET DE NUIT. Ce qui fait la nuit n'est pas la couleur du ciel, c'est le RAPPORT entre la
+  //    clé et l'ambiance : un stade éclairé fait ~1 500 lux, le plein jour ~100 000. Le premier rig
+  //    livré gardait une clé à 2,0 (le soleil du moteur est à 2,4) et rendait un après-midi malgré un
+  //    ciel noir et tous les autres contrats verts. Mesuré sur l'image : luminance moyenne 0,42, là où
+  //    une image de match en nocturne se tient vers 0,15. D'où une assertion sur les niveaux eux-mêmes.
+  if (sun && sun.intensity > 1.4) issues.push(`clé à ${sun.intensity.toFixed(2)} : c'est un niveau de SOLEIL (le rig de jour est à 2,4), la scène rendra un après-midi`);
+  const envI = result.scene?.environmentIntensity;
+  if (envI != null && envI > 0.3) issues.push(`environmentIntensity ${envI.toFixed(2)} : IBL de jour sur une scène de nuit, les tribunes seront lavées`);
+  const fill = lights.filter((l) => l.isAmbientLight || l.isHemisphereLight).reduce((s, l) => s + (l.visible ? l.intensity : 0), 0);
+  if (sun && fill > sun.intensity * 0.35) issues.push(`ambiance ${fill.toFixed(2)} contre une clé de ${sun.intensity.toFixed(2)} : trop plate, l'ombre ne se lira plus`);
   return { ok: issues.length === 0, issues };
 }

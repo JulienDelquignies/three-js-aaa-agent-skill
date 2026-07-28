@@ -602,7 +602,21 @@ quand une métrique échoue, se demander d'abord si c'est la MÉTRIQUE qui est f
 « échecs » étaient le harnais qui mesurait mal, et régler les poids contre eux aurait dégradé le jeu.
 Mesuré aussi : ancrer la défense sur le receveur pendant le vol (plus réaliste !) fait TOMBER la
 possession de 7 passes à 4 → reverté, la mesure laissée en commentaire. verify-ball-predict 22/22,
-verify-rondo 20/20, verify-matchday 64/64 (maillot sur le rig + rig de nuit sur le vrai stade + contrat
+(6) le « match en nocturne » se rendait EN PLEIN JOUR alors que tous les contrats étaient verts : le
+boot du moteur (`Lighting.js`) ajoute un soleil ANALYTIQUE (DirectionalLight 0xfff2e0 à 2,4) dans la
+scène, et échanger `background`/`environment` ne fait rien à une lumière analytique ; surtout, le
+contrat de nuit ne parcourait que SON PROPRE groupe, donc la lumière qui écrasait tout le rig était
+hors de son champ de vision. Un module qui prétend posséder l'éclairage doit posséder celui de la
+SCÈNE : éteindre tout ce qu'il n'a pas ajouté (et le rendre au `dispose`), et surtout ASSERTER SUR LA
+SCÈNE, pas sur le groupe. Un contrat vert sur un périmètre trop étroit est pire que pas de contrat :
+il achète de la fausse confiance. Et le correctif ne suffisait toujours pas : jour éteint, la CLÉ de
+nuit était elle-même à 2,0 face à un soleil de jour à 2,4 → luminance moyenne de l'image 0,42, quand
+une image de match en nocturne se tient vers 0,15. **La nuit n'est pas la couleur du ciel, c'est le
+RAPPORT entre la clé et le reste** (stade éclairé ≈ 1 500 lux, plein jour ≈ 100 000). Le contrat
+assère désormais le budget lui-même (clé ≤ 1,4, `environmentIntensity` ≤ 0,3, ambiance ≤ 35 % de la
+clé, et éclairement des mâts `I/d²` au point visé ≥ la clé) : « ça fait jour » cesse d'être une
+affaire de goût pour devenir un nombre sur lequel un harnais peut échouer. verify-ball-predict 22/22,
+verify-rondo 20/20, verify-matchday 72/72 (maillot sur le rig + rig de nuit sur le vrai stade + contrat
 de la chaîne post), animkit 30/30. Réf 46. Au passage : `stadium-night.js` n'a plus AUCUNE dépendance
 au DOM (ciel en `DataTexture`, IBL sautée sans renderer) — c'est ce qui permet de vérifier le contrat
 sur les VRAIES lumières plutôt que sur une réplique écrite à la main, qui ne prouve que la réplique.
