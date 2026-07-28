@@ -31,9 +31,20 @@ export const RONDO = {
   holdMin: 0.35,           // s — minimum on the ball before passing (no hot-potato)
   holdMax: 2.4,            // s — forced to release (no dwelling)
   speeds: { press: 6.6, support: 5.4, carry: 4.2, chase: 6.9 },
-  accel: 9.5,              // m/s²
+  accel: 9.5,              // m/s² along the direction of travel
+  turnAccel: 6.0,          // m/s² PERPENDICULAR to it — the angular rate is turnAccel/speed, so pace
+                           // costs agility and a dribbler can turn inside a sprinting defender
   swarmFrac: 0.135,        // the beehive radius as a fraction of the box's short side (see checkRondo)
   spreadFrac: 0.19,        // minimum team spread, likewise as a fraction of the box
+  harriedMax: 0.55,        // max share of carry time with a defender inside tackle range (see checkRondo)
+  // --- carrying the ball AWAY from pressure (evadeSpot). Weights, not rules: the answer is a
+  // compromise, so it is scored. `evadeKeep` is the one that turns a shuffle into a move.
+  evadeStep: 2.5,          // m — how far ahead the escape point is placed
+  evadeSamples: 24,        // directions sampled around the carrier
+  evadeFoe: 1.0,           // weight on getting away from the CLOSEST defender at the candidate
+  evadeMate: 0.35,         // …and on not running into your own supports
+  evadeEdge: 0.45,         // …and on not getting pinned against the chalk
+  evadeKeep: 1.1,          // …and on continuing the way you were already going
 };
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
@@ -150,6 +161,48 @@ function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [] 
   return best ? best.p : [...me.p];
 }
 
+/**
+ * WHERE TO TAKE THE BALL. The carrier used to run in a straight line directly away from the single
+ * nearest defender, 3.5 m, clamped to the box. Measured, that produced a carrier turning 4.3°/s — a
+ * straight line — with a defender inside 1.5 m of him HALF THE TIME, which is what an anthill feels
+ * like from the outside even when the defender COUNT is fine (mean 1.28 inside the swarm radius).
+ *
+ * Escaping one man is not dribbling. This scores candidate directions the way supportSpot scores
+ * candidate positions — the same pattern, for the same reason: the good answer is a compromise between
+ * things that pull in different directions, and a compromise is what a score is for.
+ *   + get away from EVERY defender, not the nearest one (their minimum, so a second man closing hurts)
+ *   + stay off the box edge — being pinned against the chalk is how possession is actually lost
+ *   + do not run into your own supports, they are the passing options
+ *   + keep going the way you were going, a little: without it the pick flips frame to frame and reads
+ *     as jitter rather than as a move. This term is the whole difference between evasion and a shuffle.
+ *
+ * Heading convention is THIS module's: `p.yaw = atan2(v[1], v[0])`, so forward is [cos, sin] — 90° off
+ * the project-wide atan2(x, z) used by world-basis.js and the CharacterController.
+ */
+export function evadeSpot(st, c, cfg = RONDO) {
+  const enemies = st.players.filter((p) => p.team !== c.team);
+  const mates = st.players.filter((p) => p.team === c.team && p.id !== c.id);
+  const hx = st.area[0] / 2, hz = st.area[1] / 2;
+  const hdx = Math.cos(c.yaw), hdz = Math.sin(c.yaw);
+  let best = null;
+  for (let i = 0; i < cfg.evadeSamples; i++) {
+    const a = (i / cfg.evadeSamples) * Math.PI * 2;
+    const dx = Math.cos(a), dz = Math.sin(a);
+    const x = c.p[0] + dx * cfg.evadeStep, z = c.p[2] + dz * cfg.evadeStep;
+    if (Math.abs(x) > hx - 0.6 || Math.abs(z) > hz - 0.6) continue;      // off the chalk: not an option
+    let foe = Infinity;
+    for (const f of enemies) foe = Math.min(foe, Math.hypot(f.p[0] - x, f.p[2] - z));
+    let mate = Infinity;
+    for (const m of mates) mate = Math.min(mate, Math.hypot(m.p[0] - x, m.p[2] - z));
+    const edge = Math.min(hx - Math.abs(x), hz - Math.abs(z));
+    const score = foe * cfg.evadeFoe + Math.min(mate, 4) * cfg.evadeMate
+      + edge * cfg.evadeEdge + (dx * hdx + dz * hdz) * cfg.evadeKeep;
+    if (!Number.isFinite(score)) throw new Error('evadeSpot: score non fini (positions corrompues)');
+    if (!best || score > best.score) best = { score, p: [x, 0, z] };
+  }
+  return best ? best.p : null;
+}
+
 /** Assign every player a job and a target. This is the anti-beehive layer. */
 export function assignJobs(st, cfg = RONDO) {
   const car = st.players[st.possession.carrier];
@@ -196,12 +249,7 @@ export function assignJobs(st, cfg = RONDO) {
         // which is what buys the extra half-second the pass needs
         p.job = 'carry';
         const near = foes(st, atkTeam).reduce((b, o) => (d2(o.p, car.p) < d2(b.p, car.p) ? o : b), foes(st, atkTeam)[0]);
-        if (near && d2(near.p, car.p) < cfg.pressRadius) {
-          const ax2 = st.area[0] / 2 - 1.5, az2 = st.area[1] / 2 - 1.5;
-          const ex = car.p[0] - near.p[0], ez = car.p[2] - near.p[2];
-          const l = Math.hypot(ex, ez) || 1;
-          p.target = [clamp(car.p[0] + (ex / l) * 3.5, -ax2, ax2), 0, clamp(car.p[2] + (ez / l) * 3.5, -az2, az2)];
-        } else p.target = null;
+        p.target = near && d2(near.p, car.p) < cfg.pressRadius ? evadeSpot(st, car, cfg) : null;
         continue;
       }
       // the intended receiver runs onto the ball; everyone else offers an angle
@@ -272,9 +320,27 @@ function movePlayers(st, dt, cfg) {
       const d = Math.hypot(dx, dz);
       if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
     }
-    const ax = clamp(wx - p.v[0], -cfg.accel * dt, cfg.accel * dt);
-    const az = clamp(wz - p.v[1], -cfg.accel * dt, cfg.accel * dt);
-    p.v[0] += ax; p.v[1] += az;
+    // TURNING COSTS, AND THE FASTER YOU GO THE WIDER YOU TURN. Acceleration used to be isotropic:
+    // 9.5 m/s² in any direction, so a defender at a full 6.6 m/s sprint could reverse as sharply as a
+    // man standing still. With no momentum to beat, a feint cannot pay — which is why scoring the
+    // carrier's escape direction changed nothing on its own (separation 1.67 → 1.64 m). Splitting the
+    // demand into ALONG the current velocity (drive/brake) and PERPENDICULAR to it (turn), and capping
+    // the perpendicular part, gives an angular rate of turnAccel/v for free: at 6.6 m/s that is 52°/s,
+    // at 3 m/s it is 115°/s. The slower carrier out-turns the quicker presser — which is the actual
+    // advantage a dribbler has over a defender, and now it exists in the model instead of in the prose.
+    const dvx = wx - p.v[0], dvz = wz - p.v[1];
+    const sp0 = Math.hypot(p.v[0], p.v[1]);
+    if (sp0 > 0.4) {
+      const ux = p.v[0] / sp0, uz = p.v[1] / sp0;
+      const along = clamp(dvx * ux + dvz * uz, -cfg.accel * dt, cfg.accel * dt);
+      let latx = dvx - (dvx * ux + dvz * uz) * ux, latz = dvz - (dvx * ux + dvz * uz) * uz;
+      const lat = Math.hypot(latx, latz), cap = cfg.turnAccel * dt;
+      if (lat > cap) { latx *= cap / lat; latz *= cap / lat; }
+      p.v[0] += along * ux + latx; p.v[1] += along * uz + latz;
+    } else {                                     // at a standstill there is no momentum to fight
+      p.v[0] += clamp(dvx, -cfg.accel * dt, cfg.accel * dt);
+      p.v[1] += clamp(dvz, -cfg.accel * dt, cfg.accel * dt);
+    }
     p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
     p.p[0] = clamp(p.p[0], -st.area[0] / 2, st.area[0] / 2);
     p.p[2] = clamp(p.p[2], -st.area[1] / 2, st.area[1] / 2);

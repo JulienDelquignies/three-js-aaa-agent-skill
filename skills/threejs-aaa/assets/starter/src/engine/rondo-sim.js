@@ -189,13 +189,25 @@ export function checkRondo(st, trace, cfg = RONDO) {
   // 6. both teams get to play
   const teams = new Set(trace.map((s) => s.team));
   if (teams.size < 2) issues.push('une seule équipe a eu le ballon');
-  // 7. jobs are distributed, not everyone on the same task
+  // 7. THE CARRIER IS NOT GLUED TO A DEFENDER. The crowd clauses count HOW MANY defenders are near the
+  //    ball, which a carrier being permanently harried does not trip — one man on him is not a crowd.
+  //    But that is exactly what reads as an anthill from the outside, and it was invisible: every
+  //    variant of the carry, good and bad, passed the contract. Measured as the share of carry time
+  //    with a defender inside tackle range: 50% before players had momentum, 30% after, 100% for the
+  //    sabotage. The threshold catches the pathology, not the tuning.
+  const carry = trace.filter((s) => s.phase === 'carry');
+  const harried = carry.filter((s) => s.players.some((p) => p.team !== s.team
+    && Math.hypot(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < cfg.tackleRadius)).length;
+  const harriedPct = carry.length ? harried / carry.length : 0;
+  if (carry.length > 30 && harriedPct > cfg.harriedMax) issues.push(`le porteur est collé par un défenseur ${(harriedPct * 100).toFixed(0)}% du temps de conduite — il ne s'échappe jamais`);
+
+  // 8. jobs are distributed, not everyone on the same task
   const jobs = new Set(trace[Math.floor(trace.length / 2)].players.map((p) => p.job));
   if (jobs.size < 3) issues.push(`rôles indifférenciés (${[...jobs].join(',')})`);
 
   return {
     ok: issues.length === 0, issues,
-    stats: { best: st.best, turnovers: st.turnovers, swarm: worstSwarm, crowdPct: +(crowdPct * 100).toFixed(1), spread: +minSpread.toFixed(1), settled: settled.length },
+    stats: { best: st.best, turnovers: st.turnovers, swarm: worstSwarm, crowdPct: +(crowdPct * 100).toFixed(1), spread: +minSpread.toFixed(1), settled: settled.length, harried: +(harriedPct * 100).toFixed(0) },
   };
 }
 

@@ -24,6 +24,37 @@ ok(`pas d'essaim (pic ${r.stats.swarm} défenseurs, mais seulement ${r.stats.cro
   ok(`le bloc en possession reste ÉCARTÉ (${r.stats.spread} m ≥ ${seuil.toFixed(1)}, à l'échelle du carré)`, r.stats.spread >= seuil);
 }
 
+// ---------- LE PORTEUR S'ÉCHAPPE (la clause que les compteurs d'essaim ne voient pas)
+ok(`le porteur n'est pas collé en permanence (${r.stats.harried}% du temps de conduite ≤ ${(RONDO.harriedMax * 100).toFixed(0)}%)`, r.stats.harried <= RONDO.harriedMax * 100);
+{
+  // UN SEUL défenseur collé au porteur : aucune clause d'essaim ne bronche (un homme n'est pas une
+  // foule) et pourtant c'est exactement ce qui se lit comme une fourmilière. C'est la raison d'être
+  // de la clause : elle attrape ce que les compteurs manquent.
+  const t2 = JSON.parse(JSON.stringify(trace));
+  for (const s2 of t2) {
+    if (s2.phase !== 'carry') continue;
+    const d = s2.players.find((p) => p.team !== s2.team);
+    if (d) d.p = [s2.ball[0] + 0.3, s2.ball[2]];
+  }
+  const c = checkRondo(st, t2);
+  ok('sabotage « un défenseur collé au porteur » attrapé', !c.ok && c.issues.some((i) => i.includes('collé')), c.issues[0] || 'RIEN');
+  const crowd = c.issues.filter((i) => i.includes('ESSAIM'));
+  ok('  …et AUCUNE clause d\'essaim ne le voit (un homme n\'est pas une foule)', crowd.length === 0, crowd[0] || '');
+}
+{
+  // l'inertie : sans elle un défenseur lancé fait demi-tour comme un joueur à l'arrêt, et l'esquive
+  // ne peut pas payer. Mesuré : séparation 1,67 → 2,33 m, essaim 1,28 → 0,70 défenseur.
+  const iso = playRondo(makeRondo({ perTeam: 5, seed: 4 }), 60, { cfg: { ...RONDO, turnAccel: RONDO.accel } });
+  const mom = playRondo(makeRondo({ perTeam: 5, seed: 4 }), 60);
+  const sep = (g) => {
+    const c = g.trace.filter((s2) => s2.phase === 'carry');
+    return c.reduce((a, s2) => a + Math.min(...s2.players.filter((p) => p.team !== s2.team)
+      .map((p) => Math.hypot(p.p[0] - s2.ball[0], p.p[1] - s2.ball[2]))), 0) / c.length;
+  };
+  ok(`l'inertie fait gagner de la séparation au porteur (${sep(iso).toFixed(2)} m → ${sep(mom).toFixed(2)} m)`, sep(mom) > sep(iso) * 1.15);
+  ok(`  le taux de virage est bien borné par la vitesse (turnAccel ${RONDO.turnAccel} < accel ${RONDO.accel})`, RONDO.turnAccel < RONDO.accel);
+}
+
 // ---------- possession really changes hands, both ways
 {
   const byTeam = trace.reduce((a, s) => { a[s.team] = (a[s.team] || 0) + 1; return a; }, {});

@@ -741,6 +741,30 @@ où les équipes sont encore groupées sur leur cercle de départ. Un contrat ne
 lui donne, et une scène qui fabrique un champ pour arranger la forme de l'appel n'est pas vérifiée du
 tout. Contrat live désormais vert. verify-rondo 20/20 (record 7–23 selon la graine). Réf 46.
 
+㉔ ✅ **Conduite d'esquive — et l'INERTIE qui la rend possible** *(fait — « un peu de conduite de balle
+d'esquive pour faire moins fourmilière ? »)* — d'abord nommer le défaut par la mesure : ce n'était pas
+le NOMBRE de défenseurs (moyenne 1,28 dans le rayon d'essaim, ≥3 seulement 13 % du temps) mais le fait
+que le porteur était **collé à un défenseur la moitié du temps** (séparation moyenne 1,67 m, sous
+1,5 m 50 % du temps) et qu'il tournait à **4,3°/s**, c'est-à-dire en ligne droite. `evadeSpot` : un
+point de fuite NOTÉ (s'éloigner de TOUS les défenseurs, pas du plus proche ; ne pas se faire coincer
+contre la craie ; ne pas percuter ses propres soutiens ; continuer un peu dans sa direction — ce
+dernier terme est toute la différence entre une esquive et un dandinement). Résultat seul : **rien**
+(1,67 → 1,64 m). Parce que l'accélération était ISOTROPE — 9,5 m/s² dans n'importe quelle direction,
+donc un défenseur lancé à 6,6 m/s faisait demi-tour aussi sec qu'un joueur à l'arrêt. Aucune inertie à
+battre ⇒ aucune feinte ne peut payer. Correctif : séparer l'accélération demandée en composante LE
+LONG de la vitesse (relance/freinage) et PERPENDICULAIRE (virage), et plafonner la seconde à part —
+le taux angulaire tombe alors tout seul à `turnAccel / vitesse` : 52°/s à 6,6 m/s, 115°/s à 3 m/s.
+**Le porteur, plus lent, tourne à l'intérieur du presseur plus rapide** — le vrai avantage d'un
+dribbleur, désormais dans le modèle et plus dans le commentaire. Mesuré, 3 graines × 60 s : record
+10 → 32, pertes 67 → 47, défenseurs dans le rayon 1,08 → 0,69, séparation 1,64 → 2,07 m. Plus
+d'inertie n'est PAS mieux (4,5 → record 15 : le porteur non plus ne peut plus tourner) ; il y a un
+optimum, trouvé en mesurant. **La clause qui manquait** : toutes ces variantes passaient le contrat, y
+compris celle qui fait fourmilière — les clauses d'essaim comptent COMBIEN de défenseurs sont près du
+ballon, et un porteur harcelé par UN seul homme ne les déclenche jamais. Nouvelle clause : part du
+temps de conduite avec un défenseur dans le rayon de tacle (50 % avant, 31 % après, 100 % au sabotage).
+Le sabotage « un seul défenseur collé » déclenche la nouvelle clause pendant qu'AUCUNE clause d'essaim
+ne voit quoi que ce soit — c'est exactement le trou qu'elle bouche. verify-rondo 25/25. Réf 46.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

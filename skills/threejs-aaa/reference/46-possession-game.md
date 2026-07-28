@@ -157,6 +157,38 @@ needs a GPU) means `verify-matchday.mjs` runs the contract on the **real** rig, 
 plus six named sabotages. Watch the flip: row 0 of a `DataTexture` is `v = 0`, the *bottom* of the
 equirect, where a `CanvasTexture`'s row 0 is the top.
 
+## Momentum is what makes evasion possible
+
+Adding an evasive carry — the carrier scoring escape directions instead of running straight away from
+the nearest defender — changed **nothing**: separation 1.67 m → 1.64 m. The reason is that
+acceleration was **isotropic**: 9.5 m/s² in any direction, so a defender at a full 6.6 m/s sprint
+could reverse as sharply as a man standing still. There was no momentum to beat, so a feint could not
+pay, and no amount of cleverness in choosing the direction mattered.
+
+Split the demanded acceleration into **along** the current velocity (drive/brake) and **perpendicular**
+to it (turn), and cap the perpendicular part separately. The angular rate then falls out as
+`turnAccel / speed` for free: at 6.6 m/s that is 52°/s, at 3 m/s it is 115°/s. **The slower carrier
+out-turns the quicker presser** — which is the actual advantage a dribbler has, now in the model
+rather than in the prose. Measured over three seeds × 60 s:
+
+| | record | turnovers | defenders in the swarm radius | carrier separation |
+|---|---|---|---|---|
+| isotropic accel (as shipped) | 10 | 67 | 1.08 | 1.64 m |
+| **momentum (turnAccel 6.0)** | **32** | **47** | **0.69** | **2.07 m** |
+| more inertia (4.5) | 15 | 72 | 0.73 | 1.97 m |
+| less inertia (7.5) | 29 | 52 | 0.83 | 1.92 m |
+
+More inertia is not better: at 4.5 the *carrier* cannot turn either and the attack collapses. There is
+an optimum, and it is found by measuring, not by reasoning about which way the arrow points.
+
+**The clause that was missing.** Every one of those rows passed the contract — including the one that
+reads as an anthill. The crowd clauses count *how many* defenders are near the ball, and a carrier
+being permanently harried by **one** man never trips them: one man is not a crowd. But that is exactly
+what an anthill looks like from the outside. The new clause measures the share of carry time with a
+defender inside tackle range — 50% before momentum, 30% after, 100% for a sabotage that glues a single
+defender to the carrier. That sabotage is the point: it fires the new clause while no swarm clause
+sees anything at all.
+
 ## Thresholds written in metres only fit one box
 
 The grid was 34 × 26 m — which is a five-a-side **pitch**, not a rondo. A real *passe à dix* is played
