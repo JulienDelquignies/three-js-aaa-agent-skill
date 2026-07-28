@@ -29,9 +29,12 @@ const SHADOW_TOP = 10;  // m — goals (2.44), players, headers. A ball 20 m up 
 // daylight is ~100 000. Nothing about "night" is in the colour of the sky — it is in the RATIO between
 // the key and everything else. The engine's daytime rig is directional 2.4 + environment 1.0; a night
 // rig that keeps a key of 2.0 renders an afternoon no matter how dark the background texture is, which
-// is exactly what shipped the first time (measured: mean frame luminance 0.42, broadcast night sits
-// near 0.15). So the key comes down to floodlight level and the AMBIENT terms come down much further —
-// dark stands around a bright pitch is the entire read.
+// is exactly what shipped the first time (measured on the frame: 0.433 mean luminance, and 0.306 with
+// only the day sun doused). So the key comes down to floodlight level and the AMBIENT terms come down
+// much further — a bright pitch inside a dark bowl is the entire read. Measured with these values:
+// mean 0.269, p05 0.021, contrast 0.375. Pushing further into the masts (key 0.55 / pool 2.8) gives
+// MORE contrast (0.424) at a HIGHER mean — the night lives in the histogram's shape, not its average —
+// but softens the one shadow the scene is built around, so it is left here. See reference/46.
 const KEY_I = 0.95;     // the dominant bank: bright enough to carry a crisp shadow, not a sun
 const HEMI_I = 0.10;    // just enough that the underside of the roof is not pure black
 const ENV_I = 0.12;     // night IBL: it exists so glass and metal have something to reflect
@@ -301,7 +304,7 @@ export function checkStadiumNight(result, model) {
   // 6. LE BUDGET DE NUIT. Ce qui fait la nuit n'est pas la couleur du ciel, c'est le RAPPORT entre la
   //    clé et l'ambiance : un stade éclairé fait ~1 500 lux, le plein jour ~100 000. Le premier rig
   //    livré gardait une clé à 2,0 (le soleil du moteur est à 2,4) et rendait un après-midi malgré un
-  //    ciel noir et tous les autres contrats verts. Mesuré sur l'image : luminance moyenne 0,42, là où
+  //    ciel noir et tous les autres contrats verts. Mesuré sur l'image : luminance moyenne mesurée 0,40, là où
   //    une image de match en nocturne se tient vers 0,15. D'où une assertion sur les niveaux eux-mêmes.
   if (sun && sun.intensity > 1.4) issues.push(`clé à ${sun.intensity.toFixed(2)} : c'est un niveau de SOLEIL (le rig de jour est à 2,4), la scène rendra un après-midi`);
   const envI = result.scene?.environmentIntensity;

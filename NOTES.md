@@ -610,12 +610,20 @@ hors de son champ de vision. Un module qui prétend posséder l'éclairage doit 
 SCÈNE : éteindre tout ce qu'il n'a pas ajouté (et le rendre au `dispose`), et surtout ASSERTER SUR LA
 SCÈNE, pas sur le groupe. Un contrat vert sur un périmètre trop étroit est pire que pas de contrat :
 il achète de la fausse confiance. Et le correctif ne suffisait toujours pas : jour éteint, la CLÉ de
-nuit était elle-même à 2,0 face à un soleil de jour à 2,4 → luminance moyenne de l'image mesurée 0,40, quand
+nuit était elle-même à 2,0 face à un soleil de jour à 2,4 → luminance moyenne mesurée 0,433, quand
 une image de match en nocturne se tient vers 0,15. **La nuit n'est pas la couleur du ciel, c'est le
 RAPPORT entre la clé et le reste** (stade éclairé ≈ 1 500 lux, plein jour ≈ 100 000). Le contrat
 assère désormais le budget lui-même (clé ≤ 1,4, `environmentIntensity` ≤ 0,3, ambiance ≤ 35 % de la
 clé, et éclairement des mâts `I/d²` au point visé ≥ la clé) : « ça fait jour » cesse d'être une
-affaire de goût pour devenir un nombre sur lequel un harnais peut échouer. verify-ball-predict 22/22,
+affaire de goût pour devenir un nombre sur lequel un harnais peut échouer. Balayage mesuré sur UNE
+image, seul l'éclairage changeant (`scripts/frame-stats.mjs`, lecteur PNG dep-free) : livré 0,433 →
+jour éteint 0,306 → budget de nuit 0,269 (contraste 0,375, noir 4,7 %) → mâts dominants 0,295
+(contraste 0,424, noir 5,6 %). Ce qui CORRIGE l'hypothèse derrière la métrique : la luminance moyenne
+seule est le mauvais critère. Déplacer la lumière de la clé vers les mâts FAIT MONTER la moyenne (la
+pelouse occupe l'image et s'éclaircit) alors que l'image devient plus nocturne sur tous les autres
+axes — noirs plus noirs, plus de contraste. Une nuit sous projecteurs, c'est une pelouse claire dans
+un bol sombre : ça vit dans la FORME de l'histogramme, pas dans sa moyenne. On juge sur p05 et
+contraste, la moyenne ne sert qu'à attraper l'échec grossier (un après-midi à 0,43). verify-ball-predict 22/22,
 verify-rondo 20/20, verify-matchday 72/72 (maillot sur le rig + rig de nuit sur le vrai stade + contrat
 de la chaîne post), animkit 30/30. Réf 46. Au passage : `stadium-night.js` n'a plus AUCUNE dépendance
 au DOM (ciel en `DataTexture`, IBL sautée sans renderer) — c'est ce qui permet de vérifier le contrat

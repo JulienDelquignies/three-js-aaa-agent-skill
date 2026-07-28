@@ -68,11 +68,28 @@ Each of these produced a *plausible-looking* game, and each was invisible withou
    to own the lighting must own the *scene's* lighting: douse every light it did not add (restoring
    them on `dispose`), and **assert on the scene, not on the group**. And the fix was still not
    enough: with the day sun off, the night key was itself at 2.0 against a daytime sun of 2.4, so the
-   frame still measured 0.40 mean luminance, where a floodlit broadcast frame sits near 0.15-0.25. **Night is not the colour
-   of the sky, it is the ratio between the key and everything else** — a floodlit pitch is ~1 500 lux,
-   open daylight ~100 000. The contract now asserts the budget itself (key ≤ 1.4, `environmentIntensity`
-   ≤ 0.3, fill ≤ 35 % of the key, and mast irradiance `I/d²` at the aim point ≥ the key), which is what
-   turns "it looks like daytime" from a matter of taste into a number a harness can fail on.
+   frame still measured 0.433 mean luminance. **Night is not the colour of the sky, it is the ratio
+   between the key and everything else** — a floodlit pitch is ~1 500 lux, open daylight ~100 000. The
+   contract now asserts the budget itself (key ≤ 1.4, `environmentIntensity` ≤ 0.3, fill ≤ 35 % of the
+   key, and mast irradiance `I/d²` at the aim point ≥ the key), which is what turns "it looks like
+   daytime" from a matter of taste into a number a harness can fail on.
+
+   Measured on one frame with only the lighting changing between renders (`frame-stats.mjs`):
+
+   | balance | mean | p05 | contrast (p95−p05) | clipped black |
+   |---|---|---|---|---|
+   | as shipped (key 2.0, day sun still on) | 0.433 | 0.047 | 0.490 | 0.1 % |
+   | day sun doused, nothing else changed | 0.306 | 0.035 | 0.379 | 0.4 % |
+   | **night budget (key 0.95, pools 1.6)** | **0.269** | **0.021** | **0.375** | **4.7 %** |
+   | masts dominant (key 0.7, pools 2.2) | 0.279 | 0.020 | 0.398 | 5.3 % |
+   | masts dominant (key 0.55, pools 2.8) | 0.295 | 0.019 | 0.424 | 5.6 % |
+
+   Which corrects the assumption behind the metric: **mean luminance alone is the wrong criterion.**
+   Pushing light from the key into the masts *raises* the mean (the pitch fills most of the frame and
+   gets brighter) while the frame gets *more* night-like on every other axis — darker darks, more
+   contrast, more clipped black. A floodlit night is a bright pitch inside a dark bowl, which lives in
+   the shape of the histogram, not its average. Both are reported; judge on p05 and contrast, and use
+   the mean only to catch the gross failure (an afternoon at 0.43).
 
 The general lesson: when a metric fails, ask whether the *metric* is wrong before tuning the
 system. Two of the six "failures" above were the harness measuring the wrong thing, and tuning
