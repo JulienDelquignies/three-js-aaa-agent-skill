@@ -53,6 +53,7 @@ threejs-aaa/ (the skill)
 │   ├── 43-sculpt-workflow.md   staged sculpting: blockout → form → lookdev, gated by contract + screenshot
 │   ├── 44-character-swap.md    custom Mixamo player: world-delta retarget, dequantize, skinned long coat
 │   ├── 45-football-simulation.md  real ball flight (drag/Magnus/spin) + touch-based dribbling, and what's next
+│   ├── 46-possession-game.md   5v5 passe à dix: jobs not urges, inverse ballistics, night stadium, both feet
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -90,6 +91,9 @@ threejs-aaa/ (the skill)
 │   ├── verify-outfit.mjs      layered clothing: meshkit gate per part, weights, hem-below-knee coverage
 │   ├── verify-ball.mjs        football flight: drag crisis, Magnus bend, spin at bounce, no tunnelling
 │   ├── verify-dribble.mjs     dribbling: no welded ball, pace costs control, the ball follows a turn
+│   ├── verify-ball-predict.mjs  prediction + inverse ballistics: pass arrives ON the man, lanes, interception
+│   ├── verify-rondo.mjs       5v5 possession AI played headless: no beehive, shape, correct foot, lanes
+│   ├── verify-matchday.mjs    kit on the rig + night rig on the real stadium + the post-chain contract
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project

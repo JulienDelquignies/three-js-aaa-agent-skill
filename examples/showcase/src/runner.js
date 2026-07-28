@@ -14,6 +14,9 @@ export async function run(SceneClass, opts = {}) {
   const scene = new SceneClass(engine.scene, engine.renderer);
   if (scene.ready) await scene.ready;
   if (scene.camera) scene.camera(engine.camera, engine.controls); // let the scene frame itself
+  // a scene may own its RENDER PIPELINE (it knows its own lighting and quality needs); it can only
+  // build one once it has the real camera, which is why this comes after scene.camera()
+  if (scene.postfx?.render) { engine.postfx?.dispose?.(); engine.postfx = scene.postfx; }
 
   const capture = new URLSearchParams(location.search).has('capture');
   if (capture) document.querySelectorAll('.hud').forEach((e) => { e.style.display = 'none'; }); // clean thumbnails

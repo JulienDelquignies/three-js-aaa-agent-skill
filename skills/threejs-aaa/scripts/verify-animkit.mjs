@@ -3,7 +3,7 @@
 // ANATOMICALLY SANE animation under checkClip — known Mixamo bones only, sorted keys, normalized
 // quaternions, bounded angular velocity (no teleporting limbs), looping moves land where they start,
 // knees/hips inside their range. Plus determinism and named sabotages.
-import { MOVES, resolveTracks, checkClip, eulerToQuat, quatAngle, MIXAMO_BONES } from '../assets/starter/src/engine/animkit.js';
+import { MOVES, resolveTracks, checkClip, eulerToQuat, quatAngle, MIXAMO_BONES, mirrorMove } from '../assets/starter/src/engine/animkit.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -25,6 +25,27 @@ ok('la base MERGE sous chaque clé (bras baissés partout)', (() => {
   ok('quatAngle symétrique et bornée', Math.abs(quatAngle(eulerToQuat([0, 0, 0]), eulerToQuat([45, 0, 0])) - Math.PI / 4) < 1e-6);
 }
 ok('les 22 os canoniques Mixamo déclarés', MIXAMO_BONES.length === 22);
+
+// ---------- MIRROR: the whole strike library is right-footed; a left-footed pass must be exact
+{
+  const left = mirrorMove(MOVES.passe);
+  const c = checkClip(resolveTracks(left));
+  ok('passe miroir (pied gauche) anatomiquement saine', c.ok, c.issues[0] || '');
+  const rightKey = MOVES.passe.keys.find((k) => k.pose.RightUpLeg);
+  const leftKey = left.keys.find((k) => k.pose.LeftUpLeg);
+  ok('la jambe de frappe a changé de côté', !!leftKey && !leftKey.pose.RightUpLeg);
+  ok('la flexion (x) est conservée, le lacet/roulis (y,z) sont inversés',
+    leftKey.pose.LeftUpLeg[0] === rightKey.pose.RightUpLeg[0] && leftKey.pose.LeftUpLeg[1] === -rightKey.pose.RightUpLeg[1]);
+  ok('miroir involutif (miroir du miroir = original)', JSON.stringify(mirrorMove(mirrorMove(MOVES.passe)).keys) === JSON.stringify(MOVES.passe.keys));
+  const dive = mirrorMove(MOVES.plongeon);
+  ok('root motion latéral inversé (plongeon de l\'autre côté)',
+    dive.keys.some((k, i) => k.hips && MOVES.plongeon.keys[i].hips && k.hips[0] === -MOVES.plongeon.keys[i].hips[0] && k.hips[1] === MOVES.plongeon.keys[i].hips[1]));
+  for (const [n, m] of Object.entries(MOVES)) {
+    const r = checkClip(resolveTracks(mirrorMove(m)));
+    if (!r.ok) ok(`miroir de « ${n} » sain`, false, r.issues[0]);
+  }
+  ok('les 11 moves supportent le miroir', Object.values(MOVES).every((m) => checkClip(resolveTracks(mirrorMove(m))).ok));
+}
 
 const sab = (name, mutate, expect) => {
   const spec = JSON.parse(JSON.stringify(MOVES.salut)); mutate(spec);

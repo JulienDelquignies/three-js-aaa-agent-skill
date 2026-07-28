@@ -65,6 +65,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Staged sculpt workflow: blockout → form → lookdev, double-gated (contract + screenshot)** | [reference/43-sculpt-workflow.md](reference/43-sculpt-workflow.md) |
 | **Character swap: cross-rig retarget (world-delta), quantized GLBs, skinned layered clothing** | [reference/44-character-swap.md](reference/44-character-swap.md) |
 | **Football that feels real: ball aerodynamics (drag/Magnus/spin) + touch-based dribbling** | [reference/45-football-simulation.md](reference/45-football-simulation.md) |
+| **A 5v5 possession game that plays itself: jobs not urges, inverse ballistics, both feet, night** | [reference/46-possession-game.md](reference/46-possession-game.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -199,6 +200,20 @@ resolve regardless of install location. Each prints `--help`.
   `examples/showcase` → **Carrière** (`?niveau=1..4`). See `reference/32`:
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-career.mjs --seeds 8
+  ```
+- **Play football, not football-shaped animation** — `engine/ball.js` (drag + drag crisis + Magnus +
+  spin-coupled bounce), `engine/dribble.js` (dribbling as a sequence of *touches*, the ball free in
+  between), `engine/ball-predict.js` (prediction + **inverse ballistics**: solve the strike so the pass
+  arrives ON the man at a playable pace; lane clearance; interception points), and
+  `engine/rondo.js` + `rondo-sim.js` (a 5v5 possession game where players do a **job** instead of
+  chasing the ball — the whole match is decided headless, the scene only dresses it). Dressed by
+  `engine/stadium-night.js` (floodlights, one pitch-fitted shadow), `engine/render-pipeline.js`
+  (low/high/ultra post chain) and `engine/kit.js` (shirt/shorts/socks generated on the rig). Playable:
+  `examples/showcase` → **Rondo** (`?seed=…&q=low|high|ultra`). See `reference/45` and `reference/46`:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-ball.mjs && node ${CLAUDE_SKILL_DIR}/scripts/verify-dribble.mjs
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-ball-predict.mjs && node ${CLAUDE_SKILL_DIR}/scripts/verify-rondo.mjs
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-matchday.mjs   # kit on the rig, night rig, post-chain contract
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

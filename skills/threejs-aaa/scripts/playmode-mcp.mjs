@@ -6,7 +6,7 @@
 //   play_open       start/replace the session on a built dist (?debug=1 gizmos included by default)
 //   play_state      site, character position, phone/game-state summary
 //   play_screenshot render N sim frames, save a PNG (optional free camera pose), return the path
-//   play_eval       run JS in the page against window.__carriere / __engine (the escape hatch)
+//   play_eval       run JS in the page against window.__scene (any scene) / __engine — the escape hatch
 //   play_perf       renderer.info snapshot (draw calls, triangles)
 //   play_close      shut the session down
 // Env: PLAYMODE_DIST (default dist), PLAYMODE_OUT (screenshot dir), PLAYWRIGHT chromium at
@@ -53,7 +53,7 @@ const TOOLS = [
   { name: 'play_open', description: 'Ouvre (ou remplace) la session de jeu persistante sur un build. args: {dist?: string (dossier dist), page?: string (défaut carriere.html), params?: string (défaut "niveau=3&debug=1"), width?, height?}. Toujours ?capture&webgl (boucle pilotée par play_screenshot).', inputSchema: { type: 'object', properties: { dist: { type: 'string' }, page: { type: 'string' }, params: { type: 'string' }, width: { type: 'number' }, height: { type: 'number' } } } },
   { name: 'play_state', description: 'État de la partie en cours : site, position du personnage, forme/cash, assis ou non, scène prête.', inputSchema: { type: 'object', properties: {} } },
   { name: 'play_screenshot', description: 'Avance la simulation de N frames (défaut 5) puis capture un PNG. args: {name?, frames?, camera?: {pos:[x,y,z], look:[x,y,z]} pour une caméra libre (sinon caméra du jeu)}. IMPORTANT: avec camera, passer frames:0 (avancer la sim dans un play_eval séparé) — sinon la caméra 3e personne se bat avec la pose libre. Retourne le chemin du PNG (à lire avec Read).', inputSchema: { type: 'object', properties: { name: { type: 'string' }, frames: { type: 'number' }, camera: { type: 'object', properties: { pos: { type: 'array', items: { type: 'number' } }, look: { type: 'array', items: { type: 'number' } } } } } } },
-  { name: 'play_eval', description: 'Exécute du JS dans la page (async supporté) avec S=window.__carriere, E=window.__engine déjà liés. Retourne le résultat JSON. Ex: "S.travelTo(\'club\'); return S.site". L\'échappatoire universelle : téléporter, interagir (S.sys.interact()), lire les contrats, régler un paramètre.', inputSchema: { type: 'object', properties: { code: { type: 'string' } }, required: ['code'] } },
+  { name: 'play_eval', description: 'Exécute du JS dans la page (async supporté) avec S=window.__scene (la scène courante), E=window.__engine déjà liés. Retourne le résultat JSON. Ex: "S.travelTo(\'club\'); return S.site". L\'échappatoire universelle : téléporter, interagir (S.sys.interact()), lire les contrats, régler un paramètre.', inputSchema: { type: 'object', properties: { code: { type: 'string' } }, required: ['code'] } },
   { name: 'play_perf', description: 'Instantané perf du renderer : draw calls, triangles, géométries/textures en mémoire.', inputSchema: { type: 'object', properties: {} } },
   { name: 'play_close', description: 'Ferme la session (navigateur + serveur).', inputSchema: { type: 'object', properties: {} } },
 ];
@@ -70,14 +70,15 @@ async function callTool(name, a = {}) {
     const params = a.params ?? 'niveau=3&debug=1';
     const url = `http://127.0.0.1:${port}/${a.page || 'carriere.html'}?${params}&capture&webgl`;
     await page.goto(url, { waitUntil: 'load' });
-    await page.waitForFunction(() => window.__carriere?.ctrl && window.__engine, null, { timeout: 120000 });
+    // any scene, not just Carrière: runner.js publishes window.__scene for every one of them
+    await page.waitForFunction(() => (window.__scene || window.__carriere) && window.__engine, null, { timeout: 120000 });
     opened = { url, dist };
     return { ok: true, url, dist };
   }
   needPage();
   if (name === 'play_state') {
     return page.evaluate(() => {
-      const S = window.__carriere;
+      const S = (window.__scene || window.__carriere);
       return {
         site: S.site, pos: [S.ctrl.pos.x, S.ctrl.pos.y, S.ctrl.pos.z].map((v) => +v.toFixed(2)),
         seated: !!S.ctrl.seated, driving: !!S._drive, phoneOpen: !!S.phone?.isOpen, cityView: !!S.cityView?.active,
@@ -89,7 +90,7 @@ async function callTool(name, a = {}) {
     await mkdir(OUT, { recursive: true });
     const file = join(OUT, `${a.name || 'shot'}.png`);
     await page.evaluate(async ({ frames, camera }) => {
-      const S = window.__carriere, E = window.__engine;
+      const S = window.__scene || window.__carriere, E = window.__engine;
       for (let i = 0; i < (frames ?? 5); i++) S.update(1 / 60);
       if (camera?.pos) { E.camera.position.set(...camera.pos); E.camera.lookAt(...(camera.look || [0, 0, 0])); }
       if (E.postfx) await E.postfx.render(); else E.renderer.render(E.scene, E.camera);
@@ -100,7 +101,7 @@ async function callTool(name, a = {}) {
   }
   if (name === 'play_eval') {
     const r = await page.evaluate(async (code) => {
-      const S = window.__carriere, E = window.__engine;
+      const S = window.__scene || window.__carriere, E = window.__engine;
       const f = new Function('S', 'E', `return (async () => { ${code} })()`);
       try { const v = await f(S, E); return { ok: true, value: v === undefined ? null : JSON.parse(JSON.stringify(v ?? null)) }; }
       catch (e) { return { ok: false, error: String(e) }; }

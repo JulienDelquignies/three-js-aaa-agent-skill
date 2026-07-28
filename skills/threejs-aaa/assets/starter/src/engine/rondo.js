@@ -147,7 +147,17 @@ function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [] 
 export function assignJobs(st, cfg = RONDO) {
   const car = st.players[st.possession.carrier];
   const atkTeam = st.possession.team;
-  const path = st.phase === 'flight' ? predictPath(st.ball, { dt: 1 / 45, maxT: 2.2 }) : null;
+  // The predicted path costs ~100 ball integrations. Recomputing it every frame is the single
+  // hottest thing in the game loop and buys nothing: a pass takes ~1 s and the prediction barely
+  // moves between frames. Refresh it ~8×/s, and always when a new pass starts.
+  let path = null;
+  if (st.phase === 'flight') {
+    if (!st._path || st._pathAt !== st.pass || st.t - st._pathT > 0.12) {
+      st._path = predictPath(st.ball, { dt: 1 / 45, maxT: 2.2 });
+      st._pathT = st.t; st._pathAt = st.pass;
+    }
+    path = st._path;
+  } else { st._path = null; }
   // While the ball is travelling there is no carrier, so everything anchors on the ball. (Shifting
   // the whole defence onto the INCOMING RECEIVER instead was tried and measured worse: the press
   // arrives with the ball and possession collapses — 4 passes per sequence instead of 7.)

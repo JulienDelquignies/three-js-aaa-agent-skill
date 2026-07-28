@@ -14,6 +14,7 @@ export default defineConfig({
         places: page('places'),
         interieur: page('interieur'),
         carriere: page('carriere'),
+        rondo: page('rondo'),
         stadiums: page('stadiums'),
         volley: page('volley'),
         materials: page('materials'),

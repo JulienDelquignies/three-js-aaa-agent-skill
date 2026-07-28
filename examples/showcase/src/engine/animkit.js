@@ -102,6 +102,27 @@ export function checkClip(resolved) {
   return { ok: issues.length === 0, issues };
 }
 
+/**
+ * Mirror a move across the sagittal plane, turning a right-footed action into a left-footed one.
+ * Every ball-contact move in the library (frappe, passe, talonnade, retournée) is authored on the
+ * RIGHT side, so a player asked to pass to his left either had to swivel his whole body or strike
+ * with the wrong foot — the single most visible tell of AI football. Mirroring is exact and free:
+ * swap the Left/Right bone names, and negate the Y and Z euler components (X, the flexion axis, is
+ * shared by both sides). Root motion is a character-space [right, up, forward] triple, so only the
+ * lateral component flips.
+ */
+export function mirrorMove(spec, name = `${spec.name}-gauche`) {
+  const flipBone = (b) => (b.startsWith('Left') ? `Right${b.slice(4)}` : b.startsWith('Right') ? `Left${b.slice(5)}` : b);
+  return {
+    ...spec, name,
+    keys: spec.keys.map((k) => ({
+      ...k,
+      pose: Object.fromEntries(Object.entries(k.pose).map(([b, [x, y, z]]) => [flipBone(b), [x, -y, -z]])),
+      ...(k.hips ? { hips: [-k.hips[0], k.hips[1], k.hips[2]] } : {}),
+    })),
+  };
+}
+
 // ---------- the MOVE LIBRARY (football + DS life) — data, judged live via the play-mode ----------
 export const MOVES = {
   /** wave hello (loop): right arm raised, forearm swings */

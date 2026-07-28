@@ -563,6 +563,50 @@ confondait Magnus et rebond — isoler le contact. verify-ball 27/27, verify-dri
 (avec la suite : modèle de frappe, limites d'accélération/rayon de braquage, gardien, IA 11v11
 anti-« essaim », et l'ordre des chantiers graphiques).
 
+⑱ 💬 **Trois questions de fond** *(répondues en conversation, matière des réfs 45–46)* — (a) « qu'est-ce
+qui fait de Unity/Godot un moteur ? » : pas le rendu, mais la BOUCLE (scene graph + sérialisation de
+scène-comme-donnée, ECS/composants, physique, anim graph, audio, input, asset pipeline, build,
+éditeur). Three.js couvre le rendu et rien d'autre — ce skill construit le reste par modules natifs
++ contrats. (b) « niveau moteur graphique en WebGPU » : la marche suivante est la chaîne de passes
+(GTAO/SSGI/SSR/TRAA/TAAU + tonemap AgX), pas des shaders isolés — d'où `render-pipeline.js`. (c)
+« ballon sous la semelle, dribbles chaloupés, jongles pied-genou-tête, amorti poitrine + volée » :
+tout ça est le MÊME objet — un modèle de contact (point de contact, impulsion, spin transmis) plus
+des cibles d'animation résolues par IK sur la position PRÉDITE du ballon, jamais l'inverse.
+
+⑲ ✅ **Passe à dix 5 v 5 dans le Grand Bol de nuit** *(fait — « ta plus belle scène, les bons pieds, les
+déplacements sans ballon pour conserver ET pour récupérer »)* — l'architecture qui fait tenir le
+truc : **le jeu se décide en headless, la scène ne fait que l'habiller**. `rondo-sim` joue le match
+sans renderer (contrat 20/20 : forme d'équipe, pas d'essaim, passes enchaînées, bon pied, couloirs
+dégagés) et `scenes/Rondo.js` prend ses positions comme vérité unique, en pilotant les
+`CharacterController` *pour qu'ils la suivent* (`setMoveWorld` → état de locomotion, cadence,
+foot-lock — puis snap sur la position prouvée). Laisser les contrôleurs intégrer leur propre
+mouvement, c'est faire tourner deux simulations qui divergent : l'IA testée n'est plus celle livrée.
+Cinq modules natifs : **`ball-predict.js`** (prédiction + BALISTIQUE INVERSE — deux régimes : au sol
+on bissecte sur la VITESSE D'ARRIVÉE, en l'air sur la DISTANCE D'ATTERRISSAGE ; `laneClearance`,
+`interceptPoint`), **`rondo.js`** (des MÉTIERS, pas des pulsions : carry/support/press/cover/mark/
+intercept — personne ne court au ballon), **`rondo-sim.js`**, **`stadium-night.js`** (une seule
+directionnelle porteuse d'ombre — frustum ajusté au TERRAIN, 108 m, pas au bol — + 4 bancs sans
+ombre ; godrays n'accepte que Directional/Point), **`render-pipeline.js`** (tiers low/high/ultra).
+`mirrorMove(spec)` donne le jumeau gaucher exact de chaque frappe (noms d'os échangés, Y et Z niés —
+X est l'axe de flexion, commun aux deux côtés) : le porteur frappe du pied le plus proche.
+Erreurs payées : (1) toute l'équipe agglutinée sur 0,6 m — `supportSpot` tenait des OBJETS joueur là
+où il fallait des positions, chaque distance valait `NaN`, et comme `NaN > NaN` est faux le « meilleur
+candidat » n'était jamais mis à jour : tous gardaient le PREMIER. Aucune erreur, aucun warning. Fix :
+un `.map(p => p.p)` + un `throw` sur score non fini ; (2) le passeur interceptait sa PROPRE passe
+0,02 s après la frappe (le ballon est encore à ses pieds) → 235 pertes pour 1 passe ; (3) un
+coéquipier qui reprend le ballon était compté comme une perte ; (4) secteurs distribués par numéro de
+maillot → tout le monde traversait le milieu, c'est-à-dire là où est le ballon → distribuer par ANGLE
+COURANT ; (5) l'essaim mesuré en PIC de défenseurs ne distingue pas un essaim d'une convergence
+normale à la réception → le mesurer en TEMPS (essaim saboté : 100 % ; ce jeu : 5,9 %). Leçon générale :
+quand une métrique échoue, se demander d'abord si c'est la MÉTRIQUE qui est fausse — deux des cinq
+« échecs » étaient le harnais qui mesurait mal, et régler les poids contre eux aurait dégradé le jeu.
+Mesuré aussi : ancrer la défense sur le receveur pendant le vol (plus réaliste !) fait TOMBER la
+possession de 7 passes à 4 → reverté, la mesure laissée en commentaire. verify-ball-predict 22/22,
+verify-rondo 20/20, verify-matchday 64/64 (maillot sur le rig + rig de nuit sur le vrai stade + contrat
+de la chaîne post), animkit 30/30. Réf 46. Au passage : `stadium-night.js` n'a plus AUCUNE dépendance
+au DOM (ciel en `DataTexture`, IBL sautée sans renderer) — c'est ce qui permet de vérifier le contrat
+sur les VRAIES lumières plutôt que sur une réplique écrite à la main, qui ne prouve que la réplique.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
