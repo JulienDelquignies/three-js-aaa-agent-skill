@@ -171,7 +171,7 @@ export const MOVES = {
   },
   /** football KICK (once): plant left, right leg loads back then swings through, arms counter */
   frappe: {
-    name: 'frappe', duration: 0.85, loop: false,
+    name: 'frappe', duration: 0.85, contact: 0.42, loop: false,
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.22, pose: { RightUpLeg: [28, 0, 0], RightLeg: [95, 0, 0], LeftArm: [-35, 0, 45], RightArm: [15, 0, 70], Spine1: [10, 0, 0] } },
@@ -182,7 +182,7 @@ export const MOVES = {
   },
   /** BACKHEEL (once): quick heel flick behind, shoulders stay square */
   talonnade: {
-    name: 'talonnade', duration: 0.65, loop: false,
+    name: 'talonnade', duration: 0.65, contact: 0.36, loop: false,
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.18, pose: { RightUpLeg: [-18, 0, 0], RightLeg: [25, 0, 0], Spine1: [4, 0, 0] } },
@@ -192,7 +192,7 @@ export const MOVES = {
   },
   /** CHEST CONTROL (once): arch back, chest puffed, arms open, soft knees */
   amorti: {
-    name: 'amorti', duration: 1.0, loop: false,
+    name: 'amorti', duration: 1.0, contact: 0.3, loop: false,
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.3, pose: { Spine1: [-18, 0, 0], Head: [-10, 0, 0], LeftArm: [-12, 0, 28], RightArm: [-12, 0, 28], LeftUpLeg: [-14, 0, 0], RightUpLeg: [-14, 0, 0], LeftLeg: [24, 0, 0], RightLeg: [24, 0, 0] }, hips: [0, -0.07, 0] },
@@ -214,7 +214,7 @@ export const MOVES = {
   },
   /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */
   retournee: {
-    name: 'retournee', duration: 1.35, loop: false,
+    name: 'retournee', duration: 1.35, contact: 0.52, loop: false,
     keys: [
       { t: 0.0, pose: {}, hips: [0, 0, 0] },
       { t: 0.22, pose: { LeftUpLeg: [-48, 0, 0], RightUpLeg: [-48, 0, 0], LeftLeg: [62, 0, 0], RightLeg: [62, 0, 0], Spine1: [14, 0, 0], LeftArm: [-25, 0, 45], RightArm: [-25, 0, 45] }, hips: [0, -0.22, 0] },
@@ -236,7 +236,11 @@ export const MOVES = {
   },
   /** side-foot PASS (once): shorter, opened hip */
   passe: {
-    name: 'passe', duration: 0.7, loop: false,
+    // `contact` = when in this clip the boot meets the ball. A ball-contact move is only worth
+    // anything if something can synchronise it with the ball, and that number is not derivable from
+    // the keys: it is the author's intent about which key IS the contact (here the through-swing at
+    // 0.38). Consumers start the clip there when the ball is already leaving.
+    name: 'passe', duration: 0.7, contact: 0.38, loop: false,
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.2, pose: { RightUpLeg: [18, -18, 0], RightLeg: [55, 0, 0], LeftArm: [-20, 0, 40], Spine1: [6, 0, 0] } },

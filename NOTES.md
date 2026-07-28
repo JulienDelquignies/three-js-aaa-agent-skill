@@ -677,6 +677,34 @@ humaine. Shanon joue donc les DEUX équipes, le Soldier reste donneur de clips (
 rien). `?rig=mix` remet les deux corps, `?rig=soldier` le casting d'origine.
 verify-squad 22/22. Réf 44 (section « squad »).
 
+㉑ ⚠️ **« La balle part pas vraiment du pied »** *(corrigé côté animation ; la version simulation a été
+CONSTRUITE, MESURÉE, puis JETÉE)* — diagnostic : `playPass` lançait le ballon la frame même de la
+décision et la scène ne déclenchait le geste qu'ensuite. Le ballon était donc parti AVANT que la jambe
+ne bouge. Aucun polish d'animation ne rattrape un ballon parti trop tôt.
+Tentative 1 — une vraie frappe dans la SIM (phase `strike`, armé de 0,38 s = la frame de contact de
+`MOVES.passe`, ballon frappé depuis le point de contact). Construite entièrement, avec contrat
+(« chaque passe précédée d'un armé », « écart ballon-pied au contact ») et sabotages. Puis mesurée :
+**record 6 → 2 passes, pertes 25 → 103**. Chemins essayés et chiffrés : joueur planté pendant l'armé
+(6→2), frappe en course sans garde (écart au pied 4,29 m — en plein dribble le ballon est à des mètres
+devant), garde au contact (44 armés abandonnés sur 52), garde à l'ouverture (8 passes en 60 s).
+Trois bugs trouvés en route, tous par la mesure : (a) **90° d'écart de convention** — `rondo.js` pose
+`yaw = atan2(vz, vx)`, donc « devant » y est `[cos, sin]`, alors que le reste du projet utilise
+`atan2(x, z)` ; mon point de contact était perpendiculaire au pied ; (b) `st.strike` jamais effacé au
+changement de main → dribble suspendu pour le reste du match ; (c) **le porteur ne suit pas son
+ballon** : `dribbleSteer` calcule la direction de poursuite et le résultat est JETÉ, le porteur court
+vers son espace pendant que le ballon part ailleurs. Invisible tant que les passes s'enchaînent (les
+conduites durent une touche) ; sur de longues conduites le ballon finit à 8,75 m de médiane du joueur
+censé le conduire. Décision : **ne pas livrer un jeu moins bon pour gagner un détail d'animation** —
+revert complet de la sim (revenue à 20/20, porteur à 0,86 m de son ballon).
+Ce qui EST livré : `contact` déclaré sur les cinq moves de contact (`frappe` 0,42, `passe` 0,38,
+`talonnade` 0,36, `amorti` 0,3, `retournee` 0,52), transporté dans `clip.userData` et par `mirrorMove`,
++ `playGesture(..., { from })` qui démarre un clip À SA FRAME DE CONTACT. L'événement « passe » dit que
+le ballon vient de partir : démarrer le clip à 0 mettait la jambe en armé alors que le ballon roulait
+déjà. On perd l'armé, on gagne ce qui compte — le pied EST sur le ballon à la frame où il part.
+Contrat animkit : contact dans le clip, POSÉ SUR UNE CLÉ (pas dans une interpolation), clé non vide,
+conservé au miroir. verify-animkit 51/51. Reste ouvert : la frappe avec armé demande un modèle de
+conduite où le porteur suit son ballon (bug (c)) — c'est le vrai préalable, pas l'animation.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

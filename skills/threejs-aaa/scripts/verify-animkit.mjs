@@ -72,5 +72,24 @@ sab('genou plié à l’envers', (s) => { s.keys[1].pose.RightLeg = [-60, 0, 0];
   sabH('bassin téléporté (1,3 m en 40 ms)', (s) => { s.keys[2].t = s.keys[1].t + 0.04; }, 'hips teleport');
 }
 
+
+// ---------- CONTACT : le seul nombre qui synchronise une frappe avec le ballon
+{
+  const strikes = ['frappe', 'passe', 'talonnade', 'amorti', 'retournee'];
+  for (const n of strikes) {
+    const m = MOVES[n];
+    ok(`« ${n} » déclare sa frame de contact`, typeof m.contact === 'number', `contact=${m.contact}`);
+    ok(`  contact dans le clip (0 < ${m.contact} < ${m.duration})`, m.contact > 0 && m.contact < m.duration);
+    // le contact doit tomber SUR une pose clé, pas dans une interpolation : c'est l'instant où le pied
+    // est le plus loin dans son geste, et une valeur "au milieu" est une intention perdue
+    const near = m.keys.reduce((b, k) => (Math.abs(k.t - m.contact) < Math.abs(b.t - m.contact) ? k : b), m.keys[0]);
+    ok(`  contact posé sur une clé (${near.t})`, Math.abs(near.t - m.contact) < 1e-6);
+    ok(`  la clé de contact pose vraiment quelque chose`, Object.keys(near.pose).length > 0);
+  }
+  // mirrorMove doit transporter le contact : sinon le pied gauche frappe à un autre instant que le droit
+  const mg = mirrorMove(MOVES.passe);
+  ok('mirrorMove conserve la frame de contact', mg.contact === MOVES.passe.contact, `${mg.contact}`);
+}
+
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

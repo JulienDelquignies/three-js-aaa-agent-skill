@@ -207,11 +207,16 @@ export class Rondo {
       if (e.type === 'pass') {
         const pl = this.players[e.from];
         const g = pl && this.gest.get(pl.rig);
-        if (g) playGesture(pl.mixer, e.foot === 'left' ? g.left : g.right);
+        // start the strike AT ITS CONTACT FRAME. The 'pass' event means the ball has just left, so a
+        // clip started at t=0 would put the leg into its backswing while the ball is already gone —
+        // which is precisely what reads as "the ball never really leaves his foot". Starting at contact
+        // costs the backswing and buys the thing that matters: boot on ball at the frame it goes.
+        const c = e.foot === 'left' ? g?.left : g?.right;
+        if (c) playGesture(pl.mixer, c, { from: c.userData?.contact ?? 0, fade: 0.06 });
       } else if (e.type === 'receive') {
         const pl = this.players[e.by];
         const g = pl && this.gest.get(pl.rig);
-        if (g) playGesture(pl.mixer, g.control);
+        if (g) playGesture(pl.mixer, g.control, { from: g.control.userData?.contact ?? 0, fade: 0.06 });
       }
     }
 
