@@ -213,6 +213,21 @@ export const MOVES = {
     ],
   },
   /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */
+  // LE TACLE GLISSÉ. Le seul geste du répertoire où le bassin quitte la verticale : on part en appui,
+  // la jambe d'attaque se tend vers le ballon, la hanche descend et le corps se couche sur le côté,
+  // puis on se relève. Sans le mouvement de bassin (hips), un tacle « glissé » est un joueur debout qui
+  // tend une jambe — ce qui est exactement le tell qu'on cherche à éviter.
+  tacle: {
+    name: 'tacle', duration: 1.25, contact: 0.34, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.18, pose: { RightUpLeg: [-25, 0, 0], RightLeg: [55, 0, 0], LeftUpLeg: [-12, 0, 0], Spine1: [16, 0, 0], LeftArm: [-30, 0, 40] }, hips: [0, -0.18, 0.15] },
+      { t: 0.34, pose: { RightUpLeg: [-58, 0, -18], RightLeg: [8, 0, 0], RightFoot: [18, 0, 0], LeftUpLeg: [15, 0, -25], LeftLeg: [95, 0, 0], Spine1: [8, 0, -28], Head: [0, 15, 0], LeftArm: [-55, 0, 25], RightArm: [-20, 0, 60] }, hips: [0.1, -0.62, 0.75] },
+      { t: 0.62, pose: { RightUpLeg: [-40, 0, -22], RightLeg: [22, 0, 0], LeftUpLeg: [5, 0, -30], LeftLeg: [80, 0, 0], Spine1: [4, 0, -32], LeftArm: [-60, 0, 20], RightArm: [-10, 0, 55] }, hips: [0.16, -0.66, 1.05] },
+      { t: 0.95, pose: { RightUpLeg: [-15, 0, -8], RightLeg: [45, 0, 0], LeftUpLeg: [-20, 0, -10], LeftLeg: [60, 0, 0], Spine1: [18, 0, -10] }, hips: [0.08, -0.42, 1.15] },
+      { t: 1.25, pose: {}, hips: [0, 0, 1.2] },
+    ],
+  },
   retournee: {
     name: 'retournee', duration: 1.35, contact: 0.52, loop: false,
     keys: [

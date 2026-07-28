@@ -14,6 +14,7 @@ import { toClip, playGesture } from '../engine/animkit-builder.js';
 import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
+import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights.
@@ -139,17 +140,20 @@ export class Rondo {
 
     // ---- passing gestures, BOTH feet. Every strike in the library is right-footed; mirrorMove
     // gives the exact left-footed twin, so a player passing to his left uses the near foot.
-    // ONE SET PER RIG. Gesture tracks address bones by NAME, and two Mixamo exports rarely share a
-    // prefix (mixamorig… vs mixamorig5…), so a clip compiled against one rig binds to nothing on the
-    // other — the player would simply not swing his leg, silently. Compile per rig, look up per player.
+    // ONE SET PER RIG, ONE CLIP PER MOVE, BOTH FEET. Gesture tracks address bones by NAME, and two
+    // Mixamo exports rarely share a prefix, so a clip compiled against one rig binds to nothing on the
+    // other — the player simply would not swing his leg, silently. And the gesture must be the one the
+    // TECHNIQUE named: a backheel and an inside pass are not the same movement, and at this camera
+    // distance playing one for the other is the difference between football and mime.
+    const MOVE_IDS = ['passe', 'frappe', 'talonnade', 'amorti', 'tacle'];
     this.gest = new Map();
     for (const pl of this.players) {
       if (this.gest.has(pl.rig)) continue;
-      this.gest.set(pl.rig, {
-        right: toClip(MOVES.passe, pl.model),
-        left: toClip(mirrorMove(MOVES.passe), pl.model),
-        control: toClip(MOVES.amorti, pl.model),
-      });
+      const set = {};
+      for (const id of MOVE_IDS) {
+        set[id] = { right: toClip(MOVES[id], pl.model), left: toClip(mirrorMove(MOVES[id]), pl.model) };
+      }
+      this.gest.set(pl.rig, set);
     }
 
     this._hud = document.getElementById('score');
@@ -188,6 +192,17 @@ export class Rondo {
     window.__rondoReport = this._reports;
   }
 
+  /** Play the gesture the technique named, on the foot it named, from its contact frame. Falls back to
+   *  the pass move when an action carries no technique — a mishit still has to look like something. */
+  _playTech(pl, e) {
+    const set = this.gest.get(pl.rig);
+    if (!set) return;
+    const move = (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
+    const pair = set[move] || set.passe;
+    const clip = e.foot === 'left' ? pair.left : pair.right;
+    if (clip) playGesture(pl.mixer, clip, { from: clip.userData?.contact ?? 0, fade: 0.06 });
+  }
+
   /** The broadcast camera: it TRACKS the ball with lag and a touch of overshoot, the way a real
    *  operator pans. Copying that lag buys more perceived realism than any shader. */
   _broadcast(dt) {
@@ -217,17 +232,17 @@ export class Rondo {
       const e = this.state.events[i];
       if (e.type === 'pass') {
         const pl = this.players[e.from];
-        const g = pl && this.gest.get(pl.rig);
-        // start the strike AT ITS CONTACT FRAME. The 'pass' event means the ball has just left, so a
-        // clip started at t=0 would put the leg into its backswing while the ball is already gone —
-        // which is precisely what reads as "the ball never really leaves his foot". Starting at contact
-        // costs the backswing and buys the thing that matters: boot on ball at the frame it goes.
-        const c = e.foot === 'left' ? g?.left : g?.right;
-        if (c) playGesture(pl.mixer, c, { from: c.userData?.contact ?? 0, fade: 0.06 });
+        // start the strike AT ITS CONTACT FRAME, with the clip the TECHNIQUE names. The 'pass' event
+        // means the ball has just left, so a clip started at t=0 would put the leg into its backswing
+        // while the ball is already gone — precisely what reads as "the ball never really leaves his
+        // foot". Starting at contact costs the backswing and buys the thing that matters.
+        this._playTech(pl, e);
+      } else if (e.type === 'control' || e.type === 'slide') {
+        const pl = this.players[e.by];
+        if (pl) this._playTech(pl, e);
       } else if (e.type === 'receive') {
         const pl = this.players[e.by];
-        const g = pl && this.gest.get(pl.rig);
-        if (g) playGesture(pl.mixer, g.control, { from: g.control.userData?.contact ?? 0, fade: 0.06 });
+        this._playTech(pl, e);
       }
     }
 

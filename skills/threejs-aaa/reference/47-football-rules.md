@@ -93,3 +93,60 @@ in Unity exactly as here. What the catalogue is, is the part people usually leav
 the rules of the thing being simulated, written down, executable, and each one proved to bite. That
 is the piece that makes a pile of systems into a game engine *for football* — and it is the piece
 you cannot buy.
+
+
+## Second pass: the gesture itself becomes data (`engine/technique.js`)
+
+> *"un ballon qui arrive sur le pied gauche doit être contrôlé pied gauche et passer pied gauche, ou
+> sinon extérieur du droit… il faut être exhaustif sur les gestes footballistiques."*
+
+The catalogue could say a strike was illegal. It could not say *which* gesture the situation called
+for — so the fix for a bad pass was always a tweak, never a derivation. The vocabulary is now a table.
+
+**A technique is a row**: which foot (`near` = the one on the ball's side, `far` = the other), which
+**surface** (inside / outside / laces / sole / heel / thigh / chest / head), the geometric windows it
+needs (bearing, distance, height), how far the body may open (`turn`), what it does to the ball
+(`power`), how reliable it is (`accuracy`), and which animkit move draws it. Thirteen rows: five ways
+to pass, five to control, two to win the ball, one to clear.
+
+**The user's sentence falls out of geometry, it is not a special case.** The inside of the LEFT foot
+faces the player's RIGHT, so it plays *across* the body; the outside of the left foot faces left, so
+it plays *away*. Therefore a ball on the left that must go left cannot be played with the inside of
+the left foot — you use an outside. And the inside of the **far** foot is never available at all,
+because that means crossing your legs over your own standing foot. `outWindow(surface, foot)` is four
+lines and it encodes all of it.
+
+Two measurements shaped the table:
+
+- Without the outgoing-direction windows, **every** pass came out of the inside of the near foot: the
+  selector was only ever asked "can the foot reach the ball", never "can this surface send it there".
+- With the windows but no `turn` term, **67 of 95** actions had no legal technique at all. You do not
+  have to face the receiver to pass to him — you open your hips — and `turn` is how far each technique
+  allows that. With it, the distribution becomes what a rondo actually looks like: inside passes,
+  pivots, one-touch lay-offs, a backheel, the occasional driven ball.
+
+**The slide tackle**, which did not exist: a ball running loose beyond standing reach could not be
+attacked at all — the game waited for someone to walk into it. `tacle-glisse` reaches 1–3.2 m and
+costs 1.2 s on the ground whether it wins the ball or not, and that cost is the whole decision. Three
+measurements to get it right: letting anyone in range slide gave **182 slides in 90 s** and possession
+collapsed (18 passes → 4); restricting it to "you are losing the race" still gave 157, because
+everybody dived at every pass in flight; restricting it to a ball that has **strayed** — a touch that
+got away, or a genuinely loose ball, which is the situation the request named — gives 14–37, and the
+game holds.
+
+And it exposed a rule that was missing entirely: **out of play was only tested while the ball was
+loose or in flight.** A ball dribbled over the line simply stayed out. Nobody had noticed because
+until the carrier began pushing the ball ahead of himself, carries never reached the line.
+
+Three rules were added and each has its sabotage: `technique-legal` (every action re-checked against
+its own row), `no-crossed-legs`, `slide-in-range`. Twenty-one rules now, 17 green on a live game, the
+rest under measured debt budgets.
+
+## What is still missing, honestly
+
+The table names one animkit clip per technique, and there are five clips for thirteen rows — an
+inside pass and a pivot pass currently draw the same movement, played from its contact frame. At this
+camera distance that is visible, and authoring a distinct pose-key move per technique is the next
+pass. The catalogue will not catch it: it rules on geometry, not on whether the animation is the
+right one. That is a job for the eye, and for `frame-stats`-style measurement of the render, not for
+these rules.

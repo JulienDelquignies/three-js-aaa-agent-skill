@@ -34,8 +34,10 @@ ok(`le porteur n'est pas collé en permanence (${r.stats.harried}% du temps de c
   for (const s2 of t2) {
     if (s2.phase !== 'carry') continue;
     const d = s2.players.find((p) => p.team !== s2.team);
+    // BATTU, pas seulement proche : depuis que le porteur protège son ballon, « collé » veut dire que
+    // l'adversaire est passé DEVANT lui, entre le corps et le ballon. Le sabotage doit donc l'y mettre.
     const car = s2.players.find((p) => p.id === s2.carrier);
-    if (d && car) d.p = [car.p[0] + 0.3, car.p[1]];
+    if (d && car) d.p = [s2.ball[0], s2.ball[2]];
   }
   const c = checkRondo(st, t2);
   ok('sabotage « un défenseur collé au porteur » attrapé', !c.ok && c.issues.some((i) => i.includes('collé')), c.issues[0] || 'RIEN');

@@ -3,6 +3,7 @@ import { predictPath } from './ball-predict.js';
 import { solvePass } from './ball-predict.js';
 import { makeDribbler, dribbleStep, dribbleSteer } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
+import { situation, chooseTechnique, checkAction } from './technique.js';
 
 // rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
 // "passe à dix" is won or lost happens here: when the carrier releases, whether the pass beats the
@@ -32,14 +33,23 @@ function playPass(st, choice, cfg) {
   // the contact frame entirely; a rule that re-measures later judges a different picture. Bearing is
   // the angle between where the player is FACING and where the ball is — 0 = ball straight ahead,
   // ±180° = ball behind him. That is the number that says whether this strike was possible at all.
-  const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);            // this module's convention: [cos, sin]
-  const bx = from[0] - c.p[0], bz = from[2] - c.p[2];
-  const bl = Math.hypot(bx, bz) || 1e-6;
+  const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
+  // where the pass has to GO, signed relative to his facing (positive = to his left). Without this the
+  // selector only ever answers "can the foot reach the ball", never "can this surface send it there",
+  // and every pass comes out of the inside of the near foot whatever the angle.
+  const tx = choice.lead[0] - c.p[0], tz = choice.lead[2] - c.p[2];
+  const fx2 = Math.cos(c.yaw), fz2 = Math.sin(c.yaw);
+  const outBearing = (Math.atan2(fx2 * tz - fz2 * tx, fx2 * tx + fz2 * tz) * 180) / Math.PI;
+  const opts = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing });
+  const pick = opts[0];
+  c.foot = pick ? pick.foot : c.foot;
   st.events.push({
     t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot,
     margin: +choice.lane.margin.toFixed(2),
-    bearing: +(Math.acos(Math.max(-1, Math.min(1, (fx * bx + fz * bz) / bl))) * 180 / Math.PI).toFixed(1),
-    ballDist: +bl.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
+    bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
+    // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure
+    // is a different picture, so the action carries its own justification
+    tech: pick?.tech.id ?? null, surface: pick?.surface ?? null, side: sit.side, dist: +sit.dist.toFixed(2), height: +from[1].toFixed(2), out: +outBearing.toFixed(1),
   });
   return true;
 }
@@ -58,9 +68,82 @@ function receive(st, id) {
     } else st.events.push({ t: +st.t.toFixed(2), type: 'loose-kept', by: id });
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
-    st.ball.v = [st.ball.v[0] * 0.12, 0, st.ball.v[2] * 0.12];   // first touch kills the pace
+    // WHICH CONTROL. A ball arriving on the left is taken with the left foot, or with the outside of
+    // the right — the technique table decides from the geometry, and the choice is recorded so the
+    // catalogue can rule on it. A ball nobody has a legal control for is simply not controlled: it
+    // runs, and that is a loose ball, which is correct football rather than a magic first touch.
+    const sit = situation(p.p, p.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
+    const pick = chooseTechnique(sit, 'control')[0];
+    if (pick) {
+      p.foot = pick.foot;
+      st.events.push({
+        t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
+        bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +st.ball.p[1].toFixed(2),
+        speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+      });
+      st.ball.v = [st.ball.v[0] * pick.tech.power, 0, st.ball.v[2] * pick.tech.power];
+    } else {
+      st.ball.v = [st.ball.v[0] * 0.12, 0, st.ball.v[2] * 0.12];
+    }
   } else {
     turnover(st, id, st.phase === 'flight' ? 'interception' : 'tackle');
+  }
+}
+
+/**
+ * THE SLIDE TACKLE — the action that was missing. A ball running loose beyond anyone's standing reach
+ * could not be attacked at all: the game simply waited for someone to walk into it. A slide is the
+ * only way to reach a ball 1 to 3 metres away, and it is a COMMITMENT — you go to ground, and if you
+ * do not get it you are out of the play while you get up. That cost is what makes it a decision
+ * rather than a free extra metre of reach.
+ */
+function trySlide(st, cfg) {
+  // WHEN. Not at a pass in flight — that is what the interception job is for, and letting anyone dive
+  // at a travelling ball produced 157 slides in 90 s. A slide is for a ball that has STRAYED: a touch
+  // that got away from the carrier, or a genuinely loose ball. That is the situation the request
+  // named, and restricting it to that situation is what makes the action rare enough to read.
+  const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+  const strayed = car ? d2(car.p, st.ball.p) > cfg.strikeReach : true;
+  if (!strayed) return;
+  if (st.ball.p[1] > 0.4) return;                               // you do not slide at a ball in the air
+  if (Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.slideMaxBall) return;   // nor at one going too fast to win
+  // A SLIDE IS A LAST RESORT, not a longer reach. Letting anyone within range go to ground produced
+  // 182 slides in 90 s and possession collapsed from 18 passes to 4: everybody dived at every loose
+  // ball. You slide when you are LOSING THE RACE — when the man who would otherwise get there is an
+  // opponent, and you cannot beat him on your feet. Everything else is a normal run.
+  let best = null;
+  for (const p of st.players) {
+    if (p.down > 0) continue;
+    const d = d2(p.p, st.ball.p);
+    if (d < cfg.slideRange[0] || d > cfg.slideRange[1]) continue;
+    const mine = st.players.filter((q) => q.team === p.team && q.id !== p.id && q.down <= 0);
+    const foes = st.players.filter((q) => q.team !== p.team && q.down <= 0);
+    if (mine.some((q) => d2(q.p, st.ball.p) < d)) continue;              // a team-mate is nearer: his ball
+    const rival = foes.reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
+    if (!rival) continue;
+    const dRival = d2(rival.p, st.ball.p);
+    // he only goes down if staying up loses it: the opponent is closer, or close enough to arrive first
+    if (dRival > d - cfg.slideMargin) continue;
+    if (!best || d < best.d) best = { p, d };
+  }
+  if (!best) return;
+  const p = best.p;
+  const sit = situation(p.p, p.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
+  const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
+  if (!pick || pick.tech.id !== 'tacle-glisse') return;
+  p.down = cfg.slideRecovery;                                  // he is on the ground either way
+  // he gets there if he is genuinely the first: an opponent already on the ball wins the duel
+  const rival = st.players.filter((q) => q.team !== p.team && q.down <= 0).reduce((b, q) => (d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), st.players.find((q) => q.team !== p.team));
+  const won = !rival || d2(rival.p, st.ball.p) > cfg.receiveRadius;
+  st.events.push({
+    t: +st.t.toFixed(2), type: 'slide', by: p.id, won, tech: 'tacle-glisse', foot: pick.foot, surface: pick.surface,
+    bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +st.ball.p[1].toFixed(2),
+    speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+  });
+  if (won) {
+    st.ball.p = [p.p[0] + (st.ball.p[0] - p.p[0]) * 0.2, BALL.radius, p.p[2] + (st.ball.p[2] - p.p[2]) * 0.2];
+    st.ball.v = [0, 0, 0]; st.ball.w = [0, 0, 0];
+    receive(st, p.id);
   }
 }
 
@@ -88,6 +171,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
     pl.heading = dribbleSteer(st.ball, pl);
     dribbleStep(st._drb, st.ball, pl, dt);
 
+    trySlide(st, cfg);                       // a touch that got away can be taken off him
+    if (st.phase !== 'carry') return st;      // …and if it was, the phase has already changed
     st.hold += dt;
     // pressure: a defender in the tackle zone long enough wins it
     // A tackle needs the defender ON the carrier. Requiring him to also get NEARER THE BALL than the
@@ -121,14 +206,18 @@ export function rondoStep(st, dt, cfg = RONDO) {
       }
     }
     if (taker >= 0) receive(st, taker);
-    else if (Math.abs(st.ball.p[0]) > st.area[0] / 2 || Math.abs(st.ball.p[2]) > st.area[1] / 2) {
-      // out of the grid: the other team restarts with it (a real rondo rule)
-      const other = st.players.filter((p) => p.team !== st.possession.team)
-        .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
-      st.ball.p = [Math.max(-st.area[0] / 2 + 1, Math.min(st.area[0] / 2 - 1, st.ball.p[0])), BALL.radius,
-        Math.max(-st.area[1] / 2 + 1, Math.min(st.area[1] / 2 - 1, st.ball.p[2]))];
-      turnover(st, other.id, 'out');
-    }
+  }
+  // OUT OF PLAY IS A RULE OF THE BALL, NOT OF A PHASE. This test only ran while the ball was loose or
+  // in flight, so a ball dribbled over the line simply stayed out — and once the carrier began pushing
+  // the ball ahead of himself, that is exactly what happened: the catalogue caught it as `ball-in-play`
+  // on seeds where a carry ran into the corner. The line does not care who has it.
+  if (Math.abs(st.ball.p[0]) > st.area[0] / 2 || Math.abs(st.ball.p[2]) > st.area[1] / 2) {
+    const other = st.players.filter((p) => p.team !== st.possession.team && p.down <= 0)
+      .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
+    st.ball.p = [Math.max(-st.area[0] / 2 + 1, Math.min(st.area[0] / 2 - 1, st.ball.p[0])), BALL.radius,
+      Math.max(-st.area[1] / 2 + 1, Math.min(st.area[1] / 2 - 1, st.ball.p[2]))];
+    st.ball.v = [0, 0, 0]; st.ball.w = [0, 0, 0];
+    if (other) turnover(st, other.id, 'out');
   }
   return st;
 }

@@ -792,6 +792,42 @@ Réf 47. Note honnête : le tacle qui exigerait de battre le bouclier (défenseu
 le porteur) est la bonne idée football, essayée et rendue — elle rend le tacle si rare que le porteur
 conduit jusqu'à sortir le ballon (record 0). Le bouclier demande un modèle de tacle fait pour lui.
 
+㉖ ✅ **Le GESTE devient une donnée + le tacle glissé** *(fait — « un ballon qui arrive sur le pied
+gauche doit être contrôlé pied gauche et passer pied gauche, ou sinon extérieur du droit… exhaustif
+sur les gestes footballistiques »)* — le catalogue savait dire qu'une frappe était illégale ; il ne
+savait pas dire QUEL geste la situation appelait, donc corriger une passe restait un réglage, jamais
+une dérivation. **`engine/technique.js`** : 13 techniques en table (5 passes, 5 contrôles, 2
+récupérations, 1 dégagement), chacune = pied (`near` = celui du côté du ballon / `far`), SURFACE
+(intérieur, extérieur, cou-de-pied, semelle, talon, cuisse, poitrine, tête), fenêtres géométriques
+(relèvement, distance, hauteur), ouverture du corps tolérée (`turn`), effet sur le ballon (`power`),
+fiabilité, et le move animkit qui la dessine. **Ta phrase se dérive de la géométrie au lieu d'être un
+cas particulier** : l'intérieur du pied GAUCHE regarde vers la DROITE du joueur, donc il joue EN
+TRAVERS ; l'extérieur du gauche regarde à gauche, donc il joue VERS L'EXTÉRIEUR. Un ballon à gauche
+qui doit partir à gauche ne peut donc PAS être joué de l'intérieur du gauche — et l'intérieur du pied
+OPPOSÉ n'est jamais disponible, parce que ça veut dire croiser les jambes par-dessus l'appui.
+`outWindow(surface, pied)` fait quatre lignes et encode tout ça. Deux mesures ont façonné la table :
+(1) sans fenêtre de sortie, TOUTES les passes sortaient de l'intérieur du pied proche — le sélecteur
+ne demandait que « le pied atteint-il le ballon », jamais « cette surface peut-elle l'envoyer là » ;
+(2) avec les fenêtres mais sans `turn`, **67 actions sur 95** n'avaient aucune technique légale : on
+n'a pas besoin de faire face au receveur, on OUVRE LES HANCHES. Avec, la distribution devient celle
+d'un vrai rondo (intérieur, pivot, remise de première, talonnade, cou-de-pied).
+**Le tacle glissé**, qui n'existait pas : un ballon qui traîne hors de portée debout ne pouvait pas
+être attaqué du tout, le jeu attendait que quelqu'un marche dessus. `tacle-glisse` atteint 1–3,2 m et
+coûte 1,2 s au sol qu'il réussisse ou non — ce coût EST la décision. Trois mesures pour le régler :
+tout le monde à portée qui se couche → **182 tacles en 90 s**, possession de 18 à 4 passes ; restreint
+à « tu perds la course » → encore 157, ils plongeaient sur chaque passe en vol ; restreint à un ballon
+qui a DÉVIÉ (touche ratée ou ballon libre, exactement la situation que tu décrivais) → 14–37, et le
+jeu tient. Move `tacle` écrit dans animkit (le seul du répertoire où le bassin quitte la verticale —
+sans mouvement de hanche, un « tacle glissé » est un joueur debout qui tend la jambe). Au passage, un
+trou entier : **la sortie de but n'était testée qu'en vol**, donc un ballon conduit par-dessus la
+ligne restait dehors — invisible tant que le porteur ne poussait pas son ballon devant lui.
+3 règles de plus au catalogue (`technique-legal`, `no-crossed-legs`, `slide-in-range`), chacune avec
+son sabotage : 21 règles, 50/50 au harnais, 17 vertes en jeu réel, le reste sous budget de dette.
+verify-rondo 25/25, verify-animkit 52/52, contrat live vert. Réf 47.
+Reste ouvert et dit : 5 clips animkit pour 13 techniques — une passe intérieur et une passe pivot
+dessinent le même mouvement. À cette distance de caméra ça se voit ; écrire un move par technique est
+la passe suivante, et le catalogue ne l'attrapera pas (il juge la géométrie, pas le choix du clip).
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue

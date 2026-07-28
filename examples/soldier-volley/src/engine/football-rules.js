@@ -1,4 +1,5 @@
 import { BALL } from './ball.js';
+import { checkAction, byId as TECH } from './technique.js';
 
 // football-rules — THE CATALOGUE OF THINGS THAT CANNOT HAPPEN IN FOOTBALL.
 //
@@ -57,15 +58,17 @@ export const FOOT_RULES = [
   },
   {
     id: 'carrier-owns-the-ball', scope: 'frame', when: (s) => s.phase === 'carry' && s.carrier >= 0,
-    title: 'le porteur est bien le joueur le plus proche du ballon',
-    why: 'Si un adversaire est plus près du ballon que celui qui est censé le conduire, la « possession » '
-      + 'est une étiquette, pas un fait — et c\'est ce qui se voit à l\'écran comme un ballon sans maître.',
+    title: 'la possession affichée est réelle : aucun ADVERSAIRE en position de jouer le ballon',
+    why: 'La question n\'est pas « qui est le plus près » — un porteur qui PROTÈGE son ballon se place '
+      + 'exprès derrière lui, donc il n\'en est pas le plus proche, et c\'est du bon football. La '
+      + 'question est de savoir si l\'étiquette « possession » ment : elle ment quand un adversaire est '
+      + 'à la fois plus près du ballon ET assez près pour le jouer. Le reste est un duel en cours.',
     check: (s, cfg) => {
       const c = s.players.find((p) => p.id === s.carrier);
       if (!c) return null;
       const b = ballXZ(s), mine = dist(c.p, b);
-      const closer = s.players.filter((p) => p.id !== c.id && dist(p.p, b) < mine - cfg.ownSlack);
-      return closer.length ? `${closer.length} joueur(s) plus près du ballon que le porteur (${mine.toFixed(2)} m)` : null;
+      const beaten = s.players.filter((p) => p.team !== c.team && dist(p.p, b) < mine - cfg.ownSlack && dist(p.p, b) < cfg.playable);
+      return beaten.length ? `adversaire ${beaten[0].id} à ${dist(beaten[0].p, b).toFixed(2)} m du ballon, porteur à ${mine.toFixed(2)} m` : null;
     },
   },
   {
@@ -89,6 +92,50 @@ export const FOOT_RULES = [
       if (s.ball[1] > 1.2) return null;                       // au-dessus de la taille : il passe par-dessus
       const inside = s.players.filter((p) => dist(p.p, b) < cfg.bodyRadius);
       return inside.length ? `ballon dans le corps du joueur ${inside[0].id} (${dist(inside[0].p, b).toFixed(2)} m)` : null;
+    },
+  },
+
+  {
+    id: 'technique-legal', scope: 'events', on: null,
+    title: 'chaque geste respecte les préconditions de SA technique',
+    why: 'Un geste n\'est pas « frapper le ballon » : c\'est une surface précise d\'un pied précis sur un '
+      + 'ballon placé quelque part de précis. Rejouer chaque action contre sa propre fiche technique, '
+      + 'c\'est transformer « il a contrôlé du mauvais pied » d\'un avis en une violation.',
+    check: (list) => {
+      for (const a of list) {
+        if (!a.tech) continue;
+        const bad = checkAction(a);
+        if (bad) return `t=${a.t} ${bad}`;
+      }
+      return null;
+    },
+  },
+  {
+    id: 'no-crossed-legs', scope: 'events', on: null,
+    title: 'jamais l\'intérieur du pied opposé sur un ballon latéral',
+    why: 'Un ballon qui arrive à gauche se joue du pied gauche, ou de l\'EXTÉRIEUR du droit — jamais de '
+      + 'l\'intérieur du droit, qui veut dire croiser les jambes par-dessus l\'appui. C\'est l\'un des '
+      + 'tells les plus visibles qu\'on n\'a pas modélisé le geste.',
+    check: (list) => {
+      for (const a of list) {
+        if (!a.tech || !a.side || !a.foot) continue;
+        const far = a.side === 'left' ? 'right' : 'left';
+        if (a.surface === 'inside' && a.foot === far && a.bearing > 25) {
+          return `t=${a.t} intérieur du pied ${a.foot} sur un ballon à ${a.side} (relèvement ${a.bearing}°)`;
+        }
+      }
+      return null;
+    },
+  },
+  {
+    id: 'slide-in-range', scope: 'event', on: 'slide',
+    title: 'un tacle glissé part de sa fenêtre de portée',
+    why: 'Le tacle glissé existe pour atteindre un ballon hors de portée debout. Plus près on le prend '
+      + 'sur ses appuis ; plus loin on n\'arrive pas. Hors de cette fenêtre, ce n\'est pas un tacle, '
+      + 'c\'est une glissade qui téléporte le joueur sur le ballon.',
+    check: (e) => {
+      const t = TECH['tacle-glisse'];
+      return e.dist < t.dist[0] || e.dist > t.dist[1] ? `tacle à ${e.dist} m (fenêtre [${t.dist[0]}, ${t.dist[1]}])` : null;
     },
   },
 
@@ -209,6 +256,7 @@ export const FOOT_LIMITS = {
   maxPlayer: 10,       // m/s — vitesse de pointe d'un sprinteur
   carryMax: 3.0,       // m — au-delà, le ballon n'est plus conduit
   ownSlack: 0.35,      // m — tolérance avant de dire qu'un autre est « plus près »
+  playable: 0.9,       // m — en-deçà, un adversaire peut réellement JOUER le ballon (pas juste être proche)
   bodyRadius: 0.16,    // m — un ballon plus près que ça traverse le corps
   minGap: 0.45,        // m — deux joueurs plus proches se traversent
   minTouchGap: 0.25,   // s — temps d'appui minimal entre deux contacts du même joueur
@@ -245,7 +293,7 @@ export function checkFootball(st, trace, limits = FOOT_LIMITS) {
         if (bad) { n++; if (!first) first = `t=${e.t} ${bad}`; }
       }
     } else if (rule.scope === 'events') {
-      const list = events.filter((e) => e.type === rule.on);
+      const list = rule.on ? events.filter((e) => e.type === rule.on) : events;
       total = list.length;
       const bad = rule.check(list, limits, ctx);
       if (bad) { n = 1; first = bad; }

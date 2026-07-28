@@ -40,6 +40,10 @@ export const RONDO = {
   minGap: 0.5,             // m — two players closer than this are pushed apart (they were interpenetrating)
   strikeReach: 1.25,       // m — a pass is only played off a ball the foot can reach
   shieldSlack: 0.15,       // m — how far past the shielding body a defender must get to win the ball
+  slideRange: [1.0, 3.2],  // m — the window a slide tackle can reach (nearer, you just take it standing)
+  slideRecovery: 1.2,      // s on the ground afterwards, won or lost: that cost is the whole decision
+  slideMargin: 0.15,        // m — how much closer the opponent must be before going to ground is worth it
+  slideMaxBall: 6.0,       // m/s — above this the ball is going too fast to be won by sliding at it
   carryStandoff: 0.4,      // m — how far BEHIND the ball the carrier places himself (0 = off)
   evadeAroundBall: true,   // sample the escape directions around the BALL rather than the player
   // --- carrying the ball AWAY from pressure (evadeSpot). Weights, not rules: the answer is a
@@ -68,6 +72,8 @@ export function makeRondo({ perTeam = 5, seed = 1, area = RONDO.area } = {}) {
         team: t, id: players.length,
         p: [Math.cos(a) * r + (rnd() - 0.5), 0, Math.sin(a) * r * 0.8 + (rnd() - 0.5)],
         v: [0, 0], speed: 0, yaw: a + Math.PI, job: 'support', target: null, foot: 'right',
+        down: 0,          // seconds still on the ground after a slide tackle
+        push: null,       // the direction the carrier wants his ball to go
       });
     }
   }
@@ -338,6 +344,8 @@ export function assignJobs(st, cfg = RONDO) {
 /** Move every player toward their target with real acceleration limits. */
 function movePlayers(st, dt, cfg) {
   for (const p of st.players) {
+    // a player on the ground after a slide does not run
+    if (p.down > 0) { p.down -= dt; p.v[0] = 0; p.v[1] = 0; p.speed = 0; continue; }
     const top = cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press' : 'support'] ?? cfg.speeds.support;
     let wx = 0, wz = 0;
