@@ -108,6 +108,10 @@ Each of these produced a *plausible-looking* game, and each was invisible withou
    masked, *and* everything it must reach is on its layer. With no named playing surface the module
    refuses to mask at all rather than ship a black pitch.
 
+   The frame that shipped, measured: **mean 0.168–0.191, p05 0.000, contrast 0.312–0.335, 10–20 %
+   clipped black** — a bright pitch inside a dark bowl, which is the thing the words were promising
+   three commits earlier.
+
    Which corrects the assumption behind the metric: **mean luminance alone is the wrong criterion.**
    Pushing light from the key into the masts *raises* the mean (the pitch fills most of the frame and
    gets brighter) while the frame gets *more* night-like on every other axis — darker darks, more

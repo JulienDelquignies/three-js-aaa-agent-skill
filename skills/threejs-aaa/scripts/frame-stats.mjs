@@ -16,6 +16,8 @@
 import { readFileSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';
 
+const FLAGS = new Set(['--selftest']);   // flags that take no value
+
 const PRESETS = {           // measured bands, not invented ones — see reference/46
   night: [0.05, 0.30],      // floodlit match: bright pitch, dark stands, black sky
   day: [0.30, 0.70],        // open daylight
@@ -148,8 +150,11 @@ function selfTest() {
 if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop())) {
   const args = process.argv.slice(2);
   if (args.includes('--selftest')) process.exit(selfTest() ? 0 : 1);
-  const files = args.filter((a) => !a.startsWith('--'));
   const opt = (k) => { const i = args.indexOf(`--${k}`); return i < 0 ? null : args[i + 1]; };
+  // a flag's VALUE is not a filename — `--preset night` was being read as a file called "night"
+  const taken = new Set();
+  args.forEach((a, i) => { if (a.startsWith('--') && !FLAGS.has(a)) taken.add(i + 1); });
+  const files = args.filter((a, i) => !a.startsWith('--') && !taken.has(i));
   const preset = opt('preset');
   const band = preset ? PRESETS[preset] : null;
   if (preset && !band) { console.error(`préréglage inconnu: ${preset} (${Object.keys(PRESETS).join(', ')})`); process.exit(2); }

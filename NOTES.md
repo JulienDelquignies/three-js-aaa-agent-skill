@@ -636,7 +636,9 @@ l'albédo du bol ×0,35) atteint une moyenne voisine mais aplatit l'ombrage prop
 (contraste 0,261 contre 0,321) : les sièges grisent ensemble au lieu de décrocher avec la lumière.
 Le masque est celui qui est VRAI, c'est donc lui qui part. Son mode de panne est une PELOUSE NOIRE
 (masquer et oublier d'inscrire l'herbe), d'où un contrat qui vérifie l'aller ET le retour, et un repli
-« pas de masquage » quand aucune surface nommée n'existe. verify-ball-predict 22/22,
+« pas de masquage » quand aucune surface nommée n'existe. Image livrée, mesurée : moyenne 0,168–0,191,
+p05 0,000, contraste 0,312–0,335, 10–20 % de noir — une pelouse claire dans un bol sombre, c'est-à-dire
+enfin ce que les mots promettaient trois commits plus tôt. verify-ball-predict 22/22,
 verify-rondo 20/20, verify-matchday 72/72 (maillot sur le rig + rig de nuit sur le vrai stade + contrat
 de la chaîne post), animkit 30/30. Réf 46. Au passage : `stadium-night.js` n'a plus AUCUNE dépendance
 au DOM (ciel en `DataTexture`, IBL sautée sans renderer) — c'est ce qui permet de vérifier le contrat
