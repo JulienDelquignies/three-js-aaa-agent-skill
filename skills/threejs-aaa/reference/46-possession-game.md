@@ -68,7 +68,7 @@ Each of these produced a *plausible-looking* game, and each was invisible withou
    to own the lighting must own the *scene's* lighting: douse every light it did not add (restoring
    them on `dispose`), and **assert on the scene, not on the group**. And the fix was still not
    enough: with the day sun off, the night key was itself at 2.0 against a daytime sun of 2.4, so the
-   frame stayed at mean luminance 0.42 where broadcast night sits near 0.15. **Night is not the colour
+   frame still measured 0.40 mean luminance, where a floodlit broadcast frame sits near 0.15-0.25. **Night is not the colour
    of the sky, it is the ratio between the key and everything else** — a floodlit pitch is ~1 500 lux,
    open daylight ~100 000. The contract now asserts the budget itself (key ≤ 1.4, `environmentIntensity`
    ≤ 0.3, fill ≤ 35 % of the key, and mast irradiance `I/d²` at the aim point ≥ the key), which is what

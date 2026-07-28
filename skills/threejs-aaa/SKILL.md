@@ -221,6 +221,10 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   npm run build && node ${CLAUDE_SKILL_DIR}/scripts/capture.mjs --dir ./dist --out shot.png --webgl --max-draws 100
   # then: Read shot.png → critique → fix → repeat
+  # …and MEASURE it, so "too dark" / "looks like daytime" is a number, not taste. A night scene once
+  # shipped with every light contract green and rendered a bright afternoon; this catches that in one
+  # line. (Read the PNG back — a WebGPU canvas reads as transparent black in-page.)
+  node ${CLAUDE_SKILL_DIR}/scripts/frame-stats.mjs shot.png --preset night
   ```
 - **Live play mode (the agent editor)** — an MCP server that keeps ONE game session alive in headless
   Chromium: `play_open/state/screenshot/eval/perf/close` — teleport, act, capture in seconds instead

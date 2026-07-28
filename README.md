@@ -95,6 +95,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-rondo.mjs       5v5 possession AI played headless: no beehive, shape, correct foot, lanes
 │   ├── verify-matchday.mjs    kit on the rig + night rig on the real stadium + the post-chain contract
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
+│   ├── frame-stats.mjs       measure a rendered PNG (mean luminance, contrast, clipping); --selftest proves the PNG filters
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
 └── assets/starter/           a complete, runnable WebGPU + IBL + post-processing project
 

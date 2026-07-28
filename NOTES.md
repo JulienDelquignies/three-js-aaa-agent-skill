@@ -610,7 +610,7 @@ hors de son champ de vision. Un module qui prétend posséder l'éclairage doit 
 SCÈNE : éteindre tout ce qu'il n'a pas ajouté (et le rendre au `dispose`), et surtout ASSERTER SUR LA
 SCÈNE, pas sur le groupe. Un contrat vert sur un périmètre trop étroit est pire que pas de contrat :
 il achète de la fausse confiance. Et le correctif ne suffisait toujours pas : jour éteint, la CLÉ de
-nuit était elle-même à 2,0 face à un soleil de jour à 2,4 → luminance moyenne de l'image 0,42, quand
+nuit était elle-même à 2,0 face à un soleil de jour à 2,4 → luminance moyenne de l'image mesurée 0,40, quand
 une image de match en nocturne se tient vers 0,15. **La nuit n'est pas la couleur du ciel, c'est le
 RAPPORT entre la clé et le reste** (stade éclairé ≈ 1 500 lux, plein jour ≈ 100 000). Le contrat
 assère désormais le budget lui-même (clé ≤ 1,4, `environmentIntensity` ≤ 0,3, ambiance ≤ 35 % de la
