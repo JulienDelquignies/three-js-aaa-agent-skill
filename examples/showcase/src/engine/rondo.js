@@ -37,9 +37,14 @@ export const RONDO = {
   swarmFrac: 0.135,        // the beehive radius as a fraction of the box's short side (see checkRondo)
   spreadFrac: 0.19,        // minimum team spread, likewise as a fraction of the box
   harriedMax: 0.55,        // max share of carry time with a defender inside tackle range (see checkRondo)
+  minGap: 0.5,             // m — two players closer than this are pushed apart (they were interpenetrating)
+  strikeReach: 1.25,       // m — a pass is only played off a ball the foot can reach
+  shieldSlack: 0.15,       // m — how far past the shielding body a defender must get to win the ball
+  carryStandoff: 0.4,      // m — how far BEHIND the ball the carrier places himself (0 = off)
+  evadeAroundBall: true,   // sample the escape directions around the BALL rather than the player
   // --- carrying the ball AWAY from pressure (evadeSpot). Weights, not rules: the answer is a
   // compromise, so it is scored. `evadeKeep` is the one that turns a shuffle into a move.
-  evadeStep: 2.5,          // m — how far ahead the escape point is placed
+  evadeStep: 1.2,          // m — how far ahead of the ball the escape point is placed
   evadeSamples: 24,        // directions sampled around the carrier
   evadeFoe: 1.0,           // weight on getting away from the CLOSEST defender at the candidate
   evadeMate: 0.35,         // …and on not running into your own supports
@@ -184,11 +189,17 @@ export function evadeSpot(st, c, cfg = RONDO) {
   const mates = st.players.filter((p) => p.team === c.team && p.id !== c.id);
   const hx = st.area[0] / 2, hz = st.area[1] / 2;
   const hdx = Math.cos(c.yaw), hdz = Math.sin(c.yaw);
+  // SAMPLED AROUND THE BALL, NOT AROUND THE PLAYER. Sampling around the player sends him to a point
+  // the ball is not on the way to, so he walks off and leaves it behind: measured, 65 % of passes were
+  // struck with the ball BEHIND the striker (bearing up to 180°) and 15 % of carry frames had an
+  // opponent closer to the ball than the man supposedly carrying it. Aiming past the ball is what
+  // keeps the ball between him and where he is going — which is the definition of carrying it.
+  const org = cfg.evadeAroundBall ? [st.ball.p[0], 0, st.ball.p[2]] : [c.p[0], 0, c.p[2]];
   let best = null;
   for (let i = 0; i < cfg.evadeSamples; i++) {
     const a = (i / cfg.evadeSamples) * Math.PI * 2;
     const dx = Math.cos(a), dz = Math.sin(a);
-    const x = c.p[0] + dx * cfg.evadeStep, z = c.p[2] + dz * cfg.evadeStep;
+    const x = org[0] + dx * cfg.evadeStep, z = org[2] + dz * cfg.evadeStep;
     if (Math.abs(x) > hx - 0.6 || Math.abs(z) > hz - 0.6) continue;      // off the chalk: not an option
     let foe = Infinity;
     for (const f of enemies) foe = Math.min(foe, Math.hypot(f.p[0] - x, f.p[2] - z));
@@ -221,7 +232,11 @@ export function assignJobs(st, cfg = RONDO) {
   // While the ball is travelling there is no carrier, so everything anchors on the ball. (Shifting
   // the whole defence onto the INCOMING RECEIVER instead was tried and measured worse: the press
   // arrives with the ball and possession collapses — 4 passes per sequence instead of 7.)
-  const anchor = car ? car.p : st.ball.p;
+  // The press attacks THE BALL, not the man. Aiming it at the carrier's body was fine while he stood
+  // on top of the ball; now that he shields it from behind, a presser aimed at his body walks into his
+  // back — measured as the carrier being inside tackle range 56 % of the carry, worse than before he
+  // shielded at all. What a defender actually goes for is the ball.
+  const anchor = st.ball.p;
   const carrierId = car ? car.id : -1;
 
   // supporters are assigned ONE AT A TIME, each holding its own angle of the rondo and avoiding the
@@ -249,7 +264,18 @@ export function assignJobs(st, cfg = RONDO) {
         // which is what buys the extra half-second the pass needs
         p.job = 'carry';
         const near = foes(st, atkTeam).reduce((b, o) => (d2(o.p, car.p) < d2(b.p, car.p) ? o : b), foes(st, atkTeam)[0]);
-        p.target = near && d2(near.p, car.p) < cfg.pressRadius ? evadeSpot(st, car, cfg) : null;
+        // THE CARRIER STANDS BEHIND HIS BALL. evadeSpot answers "which way should this ball go"; the
+        // player's own target is then that direction taken BACKWARDS from the ball, so the ball stays
+        // between him and where he is going. Sending him to the escape point itself makes him run PAST
+        // the ball (measured: an opponent closer to it than him 45 % of carry frames, and 45 % of passes
+        // still struck backwards). Standing off it by a boot's length is what dribbling actually is.
+        const goal = near && d2(near.p, car.p) < cfg.pressRadius ? evadeSpot(st, car, cfg) : null;
+        if (goal && cfg.carryStandoff > 0) {
+          const gx = goal[0] - st.ball.p[0], gz = goal[2] - st.ball.p[2];
+          const gl = Math.hypot(gx, gz) || 1;
+          p.target = [st.ball.p[0] - (gx / gl) * cfg.carryStandoff, 0, st.ball.p[2] - (gz / gl) * cfg.carryStandoff];
+          p.push = [gx / gl, gz / gl];                       // the direction the ball should be pushed
+        } else { p.target = goal; p.push = null; }
         continue;
       }
       // the intended receiver runs onto the ball; everyone else offers an angle
@@ -346,6 +372,21 @@ function movePlayers(st, dt, cfg) {
     p.p[2] = clamp(p.p[2], -st.area[1] / 2, st.area[1] / 2);
     p.speed = Math.hypot(p.v[0], p.v[1]);
     if (p.speed > 0.25) p.yaw = Math.atan2(p.v[1], p.v[0]);
+  }
+  // SEPARATION. Two players had nothing at all stopping them occupying the same point, and measured,
+  // 28 % of frames had a pair inside 45 cm — bodies visibly passing through each other, the cheapest
+  // defect in a crowd to see and to fix. One relaxation pass, each pushed half the overlap: enough to
+  // keep them apart without turning the shape into a physics toy.
+  for (let i = 0; i < st.players.length; i++) {
+    for (let j = i + 1; j < st.players.length; j++) {
+      const a = st.players[i], b = st.players[j];
+      const dx = b.p[0] - a.p[0], dz = b.p[2] - a.p[2];
+      const d = Math.hypot(dx, dz);
+      if (d >= cfg.minGap || d < 1e-6) continue;
+      const push = (cfg.minGap - d) / 2, ux = dx / d, uz = dz / d;
+      a.p[0] -= ux * push; a.p[2] -= uz * push;
+      b.p[0] += ux * push; b.p[2] += uz * push;
+    }
   }
 }
 

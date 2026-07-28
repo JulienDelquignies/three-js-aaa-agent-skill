@@ -28,7 +28,19 @@ function playPass(st, choice, cfg) {
   st.hold = 0; st.pressure = 0;
   // record the clearance the DECISION actually saw: a harness that re-measures it a frame later
   // is judging a different geometry (both the defenders and the ball have moved since)
-  st.events.push({ t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot, margin: +choice.lane.margin.toFixed(2) });
+  // RECORD THE GEOMETRY THE STRIKE ACTUALLY HAD. The trace is sampled every few frames and would miss
+  // the contact frame entirely; a rule that re-measures later judges a different picture. Bearing is
+  // the angle between where the player is FACING and where the ball is — 0 = ball straight ahead,
+  // ±180° = ball behind him. That is the number that says whether this strike was possible at all.
+  const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);            // this module's convention: [cos, sin]
+  const bx = from[0] - c.p[0], bz = from[2] - c.p[2];
+  const bl = Math.hypot(bx, bz) || 1e-6;
+  st.events.push({
+    t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot,
+    margin: +choice.lane.margin.toFixed(2),
+    bearing: +(Math.acos(Math.max(-1, Math.min(1, (fx * bx + fz * bz) / bl))) * 180 / Math.PI).toFixed(1),
+    ballDist: +bl.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
+  });
   return true;
 }
 
@@ -66,21 +78,29 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (!c) { st.phase = 'loose'; return st; }
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
     if (!st._drb) st._drb = makeDribbler();
-    const want = c.target ? (() => {
+    // where the BALL should be pushed — the escape direction assignJobs computed, not the direction of
+    // the player's own next step (those differ: he stands behind the ball, so his step is toward it)
+    const want = c.push || (c.target ? (() => {
       const dx = c.target[0] - c.p[0], dz = c.target[2] - c.p[2], l = Math.hypot(dx, dz) || 1;
       return [dx / l, dz / l];
-    })() : [Math.cos(c.yaw), Math.sin(c.yaw)];
+    })() : [Math.cos(c.yaw), Math.sin(c.yaw)]);
     const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading: [Math.cos(c.yaw), Math.sin(c.yaw)], want, turnRate: 0 };
     pl.heading = dribbleSteer(st.ball, pl);
     dribbleStep(st._drb, st.ball, pl, dt);
 
     st.hold += dt;
     // pressure: a defender in the tackle zone long enough wins it
+    // A tackle needs the defender ON the carrier. Requiring him to also get NEARER THE BALL than the
+    // shielding body was tried — it is the right football idea, and it made tackles so rare that the
+    // carrier dribbled until the ball left the box: record 0. The shielding model needs a tackle model
+    // built for it, and that is a bigger piece of work than a tighter condition here.
     const press = st.players.filter((p) => p.team !== c.team && d2(p.p, c.p) < cfg.tackleRadius);
     st.pressure = press.length ? st.pressure + dt : 0;
     if (st.pressure >= cfg.tackleTime) { receive(st, press[0].id); return st; }
-    // release
-    if (st.hold >= cfg.holdMin) {
+    // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 %
+    // of passes; the ball is not in front of him and the leg has nothing to hit.
+    const reachNow = d2(c.p, st.ball.p) <= cfg.strikeReach;
+    if (st.hold >= cfg.holdMin && reachNow) {
       const choice = choosePass(st, cfg);
       if (choice && (choice.score > 3.2 || st.hold >= cfg.holdMax)) playPass(st, choice, cfg);
       else if (st.hold >= cfg.holdMax && choice) playPass(st, choice, cfg);
@@ -123,9 +143,9 @@ export function playRondo(st, seconds, { dt = 1 / 60, cfg = RONDO, sample = 6 } 
     if (st.turnovers !== lastTO) { lastTO = st.turnovers; since = 0; } else since += dt;
     if (i % sample === 0) {
       trace.push({
-        t: +st.t.toFixed(2), phase: st.phase, team: st.possession.team, passes: st.passes, since: +since.toFixed(2),
+        t: +st.t.toFixed(2), phase: st.phase, team: st.possession.team, passes: st.passes, since: +since.toFixed(2), carrier: st.possession.carrier,
         ball: [+st.ball.p[0].toFixed(2), +st.ball.p[1].toFixed(2), +st.ball.p[2].toFixed(2)],
-        players: st.players.map((p) => ({ id: p.id, team: p.team, job: p.job, p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)], speed: +p.speed.toFixed(2) })),
+        players: st.players.map((p) => ({ id: p.id, team: p.team, job: p.job, p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)], speed: +p.speed.toFixed(2), yaw: +p.yaw.toFixed(3) })),
       });
     }
   }
@@ -195,9 +215,23 @@ export function checkRondo(st, trace, cfg = RONDO) {
   //    variant of the carry, good and bad, passed the contract. Measured as the share of carry time
   //    with a defender inside tackle range: 50% before players had momentum, 30% after, 100% for the
   //    sabotage. The threshold catches the pathology, not the tuning.
-  const carry = trace.filter((s) => s.phase === 'carry');
-  const harried = carry.filter((s) => s.players.some((p) => p.team !== s.team
-    && Math.hypot(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < cfg.tackleRadius)).length;
+  // Measured against the CARRIER'S BODY, not against the ball. They used to be the same point; they
+  // are not any more, now that he shields the ball from behind it — and a defender arriving at the
+  // ball with a body in the way is good football, not an anthill. The clause is named "glued to the
+  // carrier", so it measures the carrier. (Fourth time this scene that a metric, not the system, was
+  // the thing that needed fixing — the tell each time is a clause whose name and whose arithmetic
+  // have quietly drifted apart.)
+  const carry = trace.filter((s) => s.phase === 'carry' && s.carrier >= 0);
+  const harried = carry.filter((s) => {
+    const c = s.players.find((p) => p.id === s.carrier);
+    if (!c) return false;
+    const mine = Math.hypot(c.p[0] - s.ball[0], c.p[1] - s.ball[2]);
+    // …and BEATEN, not merely close. A defender touch-tight behind a man who is shielding the ball is
+    // normal football; what is not normal is a defender permanently between the carrier and his ball.
+    return s.players.some((p) => p.team !== s.team
+      && Math.hypot(p.p[0] - c.p[0], p.p[1] - c.p[1]) < cfg.tackleRadius
+      && Math.hypot(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < mine);
+  }).length;
   const harriedPct = carry.length ? harried / carry.length : 0;
   if (carry.length > 30 && harriedPct > cfg.harriedMax) issues.push(`le porteur est collé par un défenseur ${(harriedPct * 100).toFixed(0)}% du temps de conduite — il ne s'échappe jamais`);
 

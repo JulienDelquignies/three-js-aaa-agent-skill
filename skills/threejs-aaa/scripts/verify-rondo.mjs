@@ -34,7 +34,8 @@ ok(`le porteur n'est pas collé en permanence (${r.stats.harried}% du temps de c
   for (const s2 of t2) {
     if (s2.phase !== 'carry') continue;
     const d = s2.players.find((p) => p.team !== s2.team);
-    if (d) d.p = [s2.ball[0] + 0.3, s2.ball[2]];
+    const car = s2.players.find((p) => p.id === s2.carrier);
+    if (d && car) d.p = [car.p[0] + 0.3, car.p[1]];
   }
   const c = checkRondo(st, t2);
   ok('sabotage « un défenseur collé au porteur » attrapé', !c.ok && c.issues.some((i) => i.includes('collé')), c.issues[0] || 'RIEN');
@@ -46,10 +47,18 @@ ok(`le porteur n'est pas collé en permanence (${r.stats.harried}% du temps de c
   // ne peut pas payer. Mesuré : séparation 1,67 → 2,33 m, essaim 1,28 → 0,70 défenseur.
   const iso = playRondo(makeRondo({ perTeam: 5, seed: 4 }), 60, { cfg: { ...RONDO, turnAccel: RONDO.accel } });
   const mom = playRondo(makeRondo({ perTeam: 5, seed: 4 }), 60);
+  // séparation du PORTEUR au défenseur le plus proche (pas du ballon : depuis qu'il le protège en se
+  // plaçant derrière, les deux points ont divergé et la clause parle bien du porteur)
   const sep = (g) => {
-    const c = g.trace.filter((s2) => s2.phase === 'carry');
-    return c.reduce((a, s2) => a + Math.min(...s2.players.filter((p) => p.team !== s2.team)
-      .map((p) => Math.hypot(p.p[0] - s2.ball[0], p.p[1] - s2.ball[2]))), 0) / c.length;
+    const c = g.trace.filter((s2) => s2.phase === 'carry' && s2.carrier >= 0);
+    let sum = 0, n = 0;
+    for (const s2 of c) {
+      const car = s2.players.find((p) => p.id === s2.carrier);
+      if (!car) continue;
+      sum += Math.min(...s2.players.filter((p) => p.team !== s2.team).map((p) => Math.hypot(p.p[0] - car.p[0], p.p[1] - car.p[1])));
+      n++;
+    }
+    return sum / n;
   };
   ok(`l'inertie fait gagner de la séparation au porteur (${sep(iso).toFixed(2)} m → ${sep(mom).toFixed(2)} m)`, sep(mom) > sep(iso) * 1.15);
   ok(`  le taux de virage est bien borné par la vitesse (turnAccel ${RONDO.turnAccel} < accel ${RONDO.accel})`, RONDO.turnAccel < RONDO.accel);

@@ -765,6 +765,33 @@ temps de conduite avec un défenseur dans le rayon de tacle (50 % avant, 31 % ap
 Le sabotage « un seul défenseur collé » déclenche la nouvelle clause pendant qu'AUCUNE clause d'essaim
 ne voit quoi que ce soit — c'est exactement le trou qu'elle bouche. verify-rondo 25/25. Réf 46.
 
+㉕ ✅ **Le CATALOGUE des actions impossibles au foot** *(fait — « le ballon doit être devant le joueur…
+tu peux te mettre des contrôles sur toutes les actions du foot impossible ? c'est comme ça qu'on fera
+un moteur non ? il faut être exhaustif »)* — oui, c'est comme ça. **`engine/football-rules.js`** : 18
+règles GÉNÉRÉES depuis une grille relation × phase (réf 19), pas listées de mémoire — ballon↔porteur,
+ballon↔monde, joueur↔joueur, événement↔événement, croisés avec conduite / frappe / vol / réception /
+sortie. Chaque règle est une DONNÉE (id, portée, ce qu'elle interdit, POURQUOI, prédicat) : imprimable
+et relisible par quelqu'un qui connaît le foot mais pas le code, sabotable individuellement, et
+extensible sans toucher au moteur d'exécution. Premier passage sur le jeu livré, dont le contrat
+propre était vert 25/25 : **six règles violées**. `ball-ahead-at-strike` **64,9 %** (relèvement
+jusqu'à 180° : le ballon frappé dans le DOS), `players-not-overlapping` **28 %** (deux corps qui se
+traversent), `ball-in-reach-at-strike` 16,7 % (frappé jusqu'à 2,78 m du pied), `carrier-owns-the-ball`
+14,8 %, `carry-reach` 5,3 %, `not-inside-a-body` 0,8 %. Les douze autres vertes. C'est tout
+l'argument du catalogue : les règles que personne n'aurait pensé à écrire sont exactement celles qui
+sautaient. Quatre défauts sur six avaient UNE cause — le porteur ne courait pas sur son ballon.
+Correctifs : échapper en échantillonnant autour du BALLON puis se placer 0,4 m DERRIÈRE lui (le ballon
+reste entre lui et sa destination — c'est la définition de conduire) ; ne frapper qu'un ballon à
+portée de pied (les deux ne marchent qu'ENSEMBLE : la garde seule étrangle le jeu, record 6/239
+pertes) ; séparation des joueurs ; et le pressing attaque LE BALLON, pas le corps. Résultat :
+ball-ahead 64,9 → 3,5 %, chevauchement 28 → 0,1 %, portée à zéro, et le jeu s'améliore (record 32 →
+37). Modèle choisi par mesure sur cinq variantes, notées en violations cumulées : 702 / 401 / 332 /
+222 / **83**. Harnais `verify-football-rules.mjs` : **un sabotage nommé par règle** + une assertion
+qui interdit d'ajouter une règle sans sabotage, + la talonnade testée comme LA seule exception au
+cône avant. 44/44. Les trois règles encore rouges sont un BUDGET DE DETTE borné, pas une inconnue.
+Réf 47. Note honnête : le tacle qui exigerait de battre le bouclier (défenseur plus près du ballon que
+le porteur) est la bonne idée football, essayée et rendue — elle rend le tacle si rare que le porteur
+conduit jusqu'à sortir le ballon (record 0). Le bouclier demande un modèle de tacle fait pour lui.
+
 Backlog (suite) : packs CC0 véhicules (Kenney/Quaternius) → idées stade AAA (foule instanciée, mode
 nuit) → échelle « dimensions PSG » → saison simulée sous contrats statistiques → scène-comme-donnée
 → meshkit : UVs/textures, fusion des pads par pièce (draw calls) → conduite : voiture alignée à la rue
