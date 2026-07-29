@@ -52,7 +52,7 @@ export const TECHNIQUES = [
   {
     id: 'passe-exterieur', intent: 'pass', foot: 'far', surface: 'outside',
     side: [0, 60], dist: [0.15, 0.95], turn: 25, power: 0.7, accuracy: 0.75,
-    clip: 'passe', why: 'L\'extérieur du pied opposé : la réponse quand le ballon est du mauvais côté et qu\'on ne veut pas croiser les jambes ni se réorienter.',
+    clip: 'passeExterieur', why: 'L\'extérieur du pied opposé : la réponse quand le ballon est du mauvais côté et qu\'on ne veut pas croiser les jambes ni se réorienter.',
   },
   {
     id: 'passe-laces', intent: 'pass', foot: 'near', surface: 'laces',
@@ -67,13 +67,13 @@ export const TECHNIQUES = [
   {
     id: 'passe-pivot', intent: 'pass', foot: 'near', surface: 'inside',
     side: [0, 70], dist: [0.15, 1.0], turn: 150, power: 0.7, accuracy: 0.6,
-    clip: 'passe', why: 'Se retourner avec le ballon pour le rendre d\'où il vient : lent, contestable, mais c\'est la '
+    clip: 'passePivot', why: 'Se retourner avec le ballon pour le rendre d\'où il vient : lent, contestable, mais c\'est la '
       + 'seule façon de jouer vers l\'arrière sans talonnade — et sans elle un joueur ne rend jamais un ballon.',
   },
   {
     id: 'deviation', intent: 'pass', foot: 'near', surface: 'inside',
     side: [0, 90], dist: [0.15, 1.1], turn: 55, power: 0.9, accuracy: 0.7,
-    firstTime: true, clip: 'passe',
+    firstTime: true, clip: 'deviation',
     why: 'La remise de première : on ne contrôle pas, on redirige. Seule technique qui accepte un ballon rapide sans amorti.',
   },
 
@@ -81,17 +81,17 @@ export const TECHNIQUES = [
   {
     id: 'controle-interieur', intent: 'control', foot: 'near', surface: 'inside',
     side: [0, 80], dist: [0.15, 1.0], turn: 45, power: 0.12, accuracy: 1.0,
-    clip: 'amorti', why: 'Amorti de l\'intérieur : la surface la plus sûre, le ballon retombe devant le pied.',
+    clip: 'controleInterieur', why: 'Amorti de l\'intérieur : la surface la plus sûre, le ballon retombe devant le pied.',
   },
   {
     id: 'controle-exterieur', intent: 'control', foot: 'far', surface: 'outside',
     side: [0, 65], dist: [0.15, 0.9], turn: 25, power: 0.18, accuracy: 0.75,
-    clip: 'amorti', why: 'Contrôle extérieur du pied opposé : garde le corps ouvert et emmène le ballon dans le mouvement.',
+    clip: 'controleExterieur', why: 'Contrôle extérieur du pied opposé : garde le corps ouvert et emmène le ballon dans le mouvement.',
   },
   {
     id: 'controle-semelle', intent: 'control', foot: 'near', surface: 'sole',
     side: [0, 50], dist: [0.15, 0.7], turn: 20, power: 0.05, accuracy: 0.9,
-    clip: 'amorti', why: 'Semelle : le ballon s\'arrête net sous le pied. Le contrôle qui ne laisse rien courir.',
+    clip: 'controleSemelle', why: 'Semelle : le ballon s\'arrête net sous le pied. Le contrôle qui ne laisse rien courir.',
   },
   {
     id: 'amorti-poitrine', intent: 'control', foot: 'none', surface: 'chest',
@@ -101,14 +101,14 @@ export const TECHNIQUES = [
   {
     id: 'amorti-cuisse', intent: 'control', foot: 'near', surface: 'thigh',
     side: [0, 55], dist: [0.15, 0.8], turn: 30, power: 0.12, accuracy: 0.8,
-    clip: 'amorti', why: 'Entre le pied et la poitrine il y a la cuisse — sans elle, une hauteur entière du jeu manque.',
+    clip: 'amortiCuisse', why: 'Entre le pied et la poitrine il y a la cuisse — sans elle, une hauteur entière du jeu manque.',
   },
 
   // ---- WINNING THE BALL BACK
   {
     id: 'tacle-debout', intent: 'win', foot: 'near', surface: 'inside',
     side: [0, 90], dist: [0.2, 1.3], turn: 45, power: 0.6, accuracy: 0.8,
-    clip: 'passe', why: 'Le tacle debout : on reste sur ses appuis, on prend le ballon du pied le plus proche.',
+    clip: 'tacleDebout', why: 'Le tacle debout : on reste sur ses appuis, on prend le ballon du pied le plus proche.',
   },
   {
     id: 'tacle-glisse', intent: 'win', foot: 'near', surface: 'sole',

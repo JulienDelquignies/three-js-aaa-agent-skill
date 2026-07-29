@@ -7,6 +7,7 @@ import { makeTheme } from '../engine/club-theme.js';
 import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js';
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
 import { buildKit } from '../engine/kit.js';
+import { buildBib } from '../engine/bib.js';
 import { loadSquad, setCloner } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js';
@@ -110,6 +111,18 @@ export class Rondo {
       model3d.rotation.y = 0;
       this.scene.add(model3d);
       model3d.updateMatrixWorld(true);
+
+      // TWO SHIRT COLOURS, WITHOUT A SECOND SHIRT. The character's own strip is one texture atlas
+      // shared with his skin and boots, so it cannot be recoloured per team. What a rondo actually
+      // uses is a BIB: one team keeps its strip, the other pulls a coloured one over the top. Minimal
+      // geometry, one flat colour, nothing to get wrong — and it is the true answer rather than a
+      // workaround.
+      if (p.team === 1) {
+        const bib = buildBib(model3d, { color: TEAMS[1].primary });
+        if (bib.group) { model3d.add(bib.group); this.night.light(bib.group); }
+        if (bib.check && !bib.check.ok) this._reports.kits.push(bib.check.issues);
+        if (bib.contract && !bib.contract.ok) this._reports.kits.push(bib.contract.issues);
+      }
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands
       if (this.kits) {

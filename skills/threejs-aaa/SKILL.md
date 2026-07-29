@@ -231,6 +231,19 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-squad.mjs
   ```
+- **Tell two teams apart when the character cannot be recoloured** — `engine/bib.js`. A bought or
+  scanned character usually shares ONE atlas and ONE material between shirt, skin and boots, so
+  tinting the shirt tints the player. Regenerating a full kit gets you lofted tubes that read as
+  lofted tubes. A CHASUBLE is what the situation actually calls for and what a training ground
+  actually uses: sleeveless, collarless, one colour, skinned onto the same skeleton (bind = now,
+  identity bind matrix, `bindMode: 'attached'`), cut from the RIG's own measurements so it fits the
+  next character too. `checkBib` asserts it is a bib and not a shirt — hem at the waist, top at the
+  chest, no sleeves, normalised weights, valid bone indices, and **positive signed volume**, the
+  clause that catches an inside-out loft (a `+sin` instead of a `−sin` in one ring flips the whole
+  mesh, and from the front it just looks slightly wrong):
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-bib.mjs
+  ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free
   (Playwright/Chromium pre-installed in the Claude Code env):

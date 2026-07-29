@@ -42,11 +42,11 @@ console.log('\n— l\'état du jeu réel —');
   // les règles qui DOIVENT être vertes : ce sont des impossibilités physiques, pas des questions de style
   for (const id of ['ball-above-ground', 'ball-in-play', 'ball-no-teleport', 'player-top-speed',
     'players-in-the-box', 'one-carrier', 'pass-has-a-striker', 'correct-foot', 'strike-speed',
-    'foot-height', 'ball-in-reach-at-strike', 'no-machine-gun-touches']) {
+    'foot-height', 'ball-in-reach-at-strike', 'no-machine-gun-touches', 'control-at-foot', 'control-in-reach']) {
     ok(`  « ${id} » : aucune violation`, r.byRule[id].violations === 0, r.byRule[id].first || '');
   }
   // celles qui restent sont des dettes MESURÉES, pas des inconnues — on les borne pour éviter la dérive
-  const budget = { 'technique-legal': 1, 'no-crossed-legs': 1, 'slide-in-range': 1, 'ball-ahead-at-strike': 10, 'carrier-owns-the-ball': 30, 'carry-reach': 2, 'not-inside-a-body': 4, 'players-not-overlapping': 2, 'ball-no-free-energy': 1 };
+  const budget = { 'control-at-foot': 1, 'control-in-reach': 1, 'technique-legal': 1, 'no-crossed-legs': 1, 'slide-in-range': 1, 'ball-ahead-at-strike': 10, 'carrier-owns-the-ball': 30, 'carry-reach': 2, 'not-inside-a-body': 4, 'players-not-overlapping': 2, 'ball-no-free-energy': 1 };
   for (const [id, max] of Object.entries(budget)) {
     ok(`  « ${id} » sous son budget de dette (${r.byRule[id].pct}% ≤ ${max}%)`, r.byRule[id].pct <= max, r.byRule[id].first || '');
   }
@@ -104,6 +104,12 @@ sab('technique-legal', 'un amorti de la poitrine sur un ballon au sol',
   (g) => { for (const e of g.st.events) if (e.tech) { e.tech = 'amorti-poitrine'; e.surface = 'chest'; e.foot = 'none'; e.height = 0.11; } });
 sab('no-crossed-legs', 'intérieur du pied droit sur un ballon arrivant à gauche',
   (g) => { for (const e of g.st.events) if (e.tech) { e.side = 'left'; e.foot = 'right'; e.surface = 'inside'; e.bearing = 60; } });
+sab('control-at-foot', 'contrôle qui laisse le ballon à 2 m',
+  (g) => { let n = 0; for (const e of g.st.events) if (e.type === 'control') { e.settle = 2; n++; }
+    if (!n) g.st.events.push({ t: 1, type: 'control', by: 0, settle: 2, dist: 0.5 }); });
+sab('control-in-reach', 'contrôle déclenché à 3 m du ballon',
+  (g) => { let n = 0; for (const e of g.st.events) if (e.type === 'control') { e.dist = 3; n++; }
+    if (!n) g.st.events.push({ t: 1, type: 'control', by: 0, settle: 0.3, dist: 3 }); });
 sab('slide-in-range', 'tacle glissé déclenché à 12 m du ballon',
   (g) => { let n = 0; for (const e of g.st.events) if (e.type === 'slide') { e.dist = 12; n++; }
     if (!n) g.st.events.push({ t: 1, type: 'slide', by: 0, dist: 12, tech: 'tacle-glisse' }); });
@@ -113,7 +119,7 @@ sab('slide-in-range', 'tacle glissé déclenché à 12 m du ballon',
     'carrier-owns-the-ball', 'carry-reach', 'not-inside-a-body', 'ball-above-ground', 'ball-in-play',
     'ball-no-teleport', 'ball-no-free-energy', 'player-top-speed', 'players-not-overlapping',
     'players-in-the-box', 'one-carrier', 'pass-has-a-striker', 'correct-foot', 'no-machine-gun-touches',
-    'technique-legal', 'no-crossed-legs', 'slide-in-range']);
+    'technique-legal', 'no-crossed-legs', 'slide-in-range', 'control-at-foot', 'control-in-reach']);
   const missing = FOOT_RULES.map((r) => r.id).filter((id) => !covered.has(id));
   ok('AUCUNE règle sans sabotage (le catalogue ne peut pas grossir en silence)', missing.length === 0, missing.join(', '));
 }

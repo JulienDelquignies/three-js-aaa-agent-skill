@@ -128,6 +128,23 @@ export const FOOT_RULES = [
     },
   },
   {
+    id: 'control-at-foot', scope: 'event', on: 'control',
+    title: 'un contrôle AMÈNE le ballon au pied — il ne l\'arrête pas où il est',
+    why: 'Amortir, ce n\'est pas éteindre la vitesse du ballon là où il passe : c\'est le faire finir '
+      + 'devant son pied. Un contrôle qui laisse le ballon à un mètre se voit immédiatement — le joueur '
+      + 'a fait le geste, le ballon s\'est arrêté ailleurs, et plus personne ne croit à la scène.',
+    check: (e, cfg) => (e.settle != null && e.settle > cfg.settleMax
+      ? `ballon à ${e.settle} m du joueur après le contrôle (> ${cfg.settleMax} m)` : null),
+  },
+  {
+    id: 'control-in-reach', scope: 'event', on: 'control',
+    title: 'on ne contrôle que ce qu\'on atteint',
+    why: 'Le déclencheur de réception était plus large que la portée de TOUTES les techniques de '
+      + 'contrôle : la touche partait alors que le ballon était encore hors d\'atteinte. Le rayon de '
+      + 'réception doit tenir dans la fenêtre du geste, sinon le geste est une fiction.',
+    check: (e, cfg) => (e.dist > cfg.reach ? `contrôle déclenché à ${e.dist} m (> ${cfg.reach} m)` : null),
+  },
+  {
     id: 'slide-in-range', scope: 'event', on: 'slide',
     title: 'un tacle glissé part de sa fenêtre de portée',
     why: 'Le tacle glissé existe pour atteindre un ballon hors de portée debout. Plus près on le prend '
@@ -257,6 +274,7 @@ export const FOOT_LIMITS = {
   carryMax: 3.0,       // m — au-delà, le ballon n'est plus conduit
   ownSlack: 0.35,      // m — tolérance avant de dire qu'un autre est « plus près »
   playable: 0.9,       // m — en-deçà, un adversaire peut réellement JOUER le ballon (pas juste être proche)
+  settleMax: 0.6,      // m — où le ballon doit finir après un contrôle : devant le pied, pas ailleurs
   bodyRadius: 0.16,    // m — un ballon plus près que ça traverse le corps
   minGap: 0.45,        // m — deux joueurs plus proches se traversent
   minTouchGap: 0.25,   // s — temps d'appui minimal entre deux contacts du même joueur

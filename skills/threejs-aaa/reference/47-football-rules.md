@@ -139,7 +139,7 @@ loose or in flight.** A ball dribbled over the line simply stayed out. Nobody ha
 until the carrier began pushing the ball ahead of himself, carries never reached the line.
 
 Three rules were added and each has its sabotage: `technique-legal` (every action re-checked against
-its own row), `no-crossed-legs`, `slide-in-range`. Twenty-one rules now, 17 green on a live game, the
+its own row), `no-crossed-legs`, `slide-in-range`. Twenty-one rules at that point, 17 green on a live game, the
 rest under measured debt budgets.
 
 ## What is still missing, honestly
@@ -150,3 +150,110 @@ camera distance that is visible, and authoring a distinct pose-key move per tech
 pass. The catalogue will not catch it: it rules on geometry, not on whether the animation is the
 right one. That is a job for the eye, and for `frame-stats`-style measurement of the render, not for
 these rules.
+
+---
+
+# Troisième passe : les gestes manquants, la chasuble, et la forme du bloc
+
+## Les huit gestes qui manquaient
+
+La section précédente se terminait sur un aveu : treize techniques dans la table, cinq clips dans
+`animkit`, donc une passe intérieure et une passe en pivot jouaient le même mouvement. Huit moves ont
+été écrits pour combler exactement cet écart — `passeExterieur`, `passePivot`, `deviation`,
+`controleInterieur`, `controleExterieur`, `controleSemelle`, `amortiCuisse`, `tacleDebout` — chacun
+avec sa **frame de contact** (`clip.userData.contact`), et `playGesture` démarre l'action à cette
+frame plutôt qu'au début : c'est ce qui fait que le ballon part au moment où le pied le touche, et
+non une demi-seconde après.
+
+Un piège mesuré au passage : `mirrorMove` inverse Z, ce qui **double** l'amplitude d'un bras qui
+traverse déjà le corps. Le `passeExterieur` miroité téléportait le `RightArm` à 14 rad/s. La clause
+de vitesse angulaire de `verify-animkit` l'a attrapé ; le correctif est une clé intermédiaire à
+t=0,12. Une symétrie n'est pas une opération neutre sur une pose qui croise l'axe.
+
+## Deux couleurs de maillot sur un personnage qu'on ne peut pas recolorer
+
+Le personnage partage **un atlas et un matériau** entre maillot, peau et crampons : teinter le
+maillot teint le joueur. Les deux issues étaient de régénérer une tenue complète (des tubes loftés,
+qui se lisent comme des tubes loftés) ou de faire ce qu'un terrain d'entraînement fait vraiment —
+enfiler une **chasuble**. `engine/bib.js` la construit par loft de quatre anneaux dimensionnés sur le
+RIG (pas sur des constantes : une chasuble coupée pour un personnage flotte sur le suivant), skinnée
+par proximité aux trois os du buste, `bind = maintenant` avec `bindMatrix` identité.
+
+Le contrat en dit une chose qu'aucun coup d'œil ne dit : **le volume signé doit être positif**. Un
+`+sin` au lieu d'un `−sin` dans un anneau retourne la maille entière. De face, on voit des triangles
+de la bonne couleur au bon endroit — on regarde simplement l'intérieur du vêtement, l'éclairage est
+inversé, le tissu s'assombrit au lieu d'accrocher la lumière. C'est exactement le genre de défaut
+qu'un rendu ne signale pas et qu'une clause attrape en une ligne. Le sabotage retourne les triangles
+et vérifie que la clause crie.
+
+## La fourmilière n'était pas une histoire d'hystérésis
+
+Le bloc en possession n'occupait que **15,8 % du carré**. La clause d'écartement (distance moyenne
+par paire) était verte pendant tout ce temps — et elle a raison de l'être : un **anneau** et une
+**file indienne** ont exactement le même écartement moyen. Ce qui manquait, c'est l'**aire**. Clause 9
+de `checkRondo` : l'enveloppe convexe de l'équipe en possession, rapportée à l'aire du carré. Son
+sabotage est une file indienne, précisément parce que c'est la forme que la clause 3 laisse passer.
+
+L'hypothèse de départ était fausse et vaut d'être écrite. Un supporter se tenait en moyenne à 4,46 m
+de sa propre cible — aussi loin d'elle que du ballon — donc « il court après une station qui a déjà
+bougé, il faut de l'hystérésis ». Balayé sur 16 graines : **toute** valeur non nulle de
+`commitMargin` dégrade le résultat. Le vrai coupable était le **centre de l'anneau de soutien** :
+échantillonné sur le ballon, la garde de bord rejetait toute la moitié éloignée dès que le ballon
+dérivait, et les cinq joueurs étaient poussés du même côté. `stationBias` tire ce centre vers le
+milieu du carré :
+
+| `stationBias` | occupation | distance à sa station | record | passes réussies |
+|---|---|---|---|---|
+| 0 (l'ancien modèle) | 15,8 % | 4,36 m | 15,3 | 3,8 |
+| **0,45** | **20,2 %** | **3,95 m** | **17,2** | **4,5** |
+| 0,6 | 22,2 % | 3,52 m | 10,5 | 2,3 |
+
+0,6 écarte le plus et joue le plus mal : les hommes sont trop loin pour se relayer. 0,45 bat l'ancien
+modèle sur tous les axes à la fois.
+
+## Le porteur regarde son ballon — et les deux conséquences
+
+`p.yaw = atan2(v)` : on fait face à son déplacement. Vrai pour tout le monde **sauf le porteur**, qui
+se place `carryStandoff` DERRIÈRE son ballon : sa vitesse pointe vers un point situé derrière le
+ballon pendant que le ballon est devant. Son corps finit de travers. Corrigé, avec le même barème que
+le modèle d'inertie (`rate = turnAccel / speed`, la vitesse coûte l'agilité).
+
+Deux autres endroits lisaient ce `yaw` en croyant lire autre chose, et les deux ont cassé :
+
+1. `evadeKeep` veut dire **inertie** — « tu cours déjà par là, changer coûte ». Sur le yaw, il a
+   fermé une boucle : la poussée fixe l'orientation, l'orientation récompense la même poussée. Le
+   porteur est devenu littéralement imprenable — **63 passes et 0 récupération** sur la graine 6.
+   Une boucle de rétroaction se lit comme du génie jusqu'au moment où on remarque que la défense a
+   cessé d'exister.
+2. Le `heading` passé au modèle de dribble veut dire la même chose. Sur le yaw, chaque touche partait
+   à pleine puissance droit dans la direction de poussée et le ballon distançait un homme plafonné à
+   4,2 m/s.
+
+Les deux lisent désormais la vitesse. Une même variable, deux sens, deux corrections.
+
+## Une phase qui mentait
+
+`carry-reach` s'affolait à 5,6 % des frames de conduite. Diagnostic : le porteur était **au sol**,
+`down: 0.83`, ballon à 3,4 m roulant à 3,9 m/s. Un tacle glissé gagné appelait `receive()`, ce qui
+faisait du tacleur le porteur alors qu'il lui restait 1,2 s de `slideRecovery` à purger. Ce n'est pas
+une dette à budgéter, c'est une **phase fausse** : un ballon dégagé au sol est un ballon **libre**.
+Le premier debout le prend, lui compris. Meilleure règle, meilleur football — un tacle gagné est un
+50/50, pas un cadeau. `carry-reach` retombe à 1,2 %.
+
+## Le geste passe avant le ballon
+
+`chooseTechnique` était appelé **après** le coup de pied, uniquement pour étiqueter l'événement.
+Quand la table ne renvoyait RIEN — aucun pied, aucune surface, aucun geste capable d'atteindre ce
+ballon et de l'envoyer là — la passe partait quand même. C'est tout `ball-ahead-at-strike` : la
+frappe impossible n'est pas un mauvais choix parmi des choix légaux, c'est un choix illégal qu'on
+autorise. La sélection **conditionne** désormais la frappe : pas de technique, pas de passe. Le
+porteur garde le ballon et se retourne dessus (il regarde son ballon, la fenêtre s'ouvre en une
+foulée), ou il talonne — puisque c'est précisément le geste d'un ballon dans le dos.
+
+Au passage, `situation()` lisait `st.ball.v` **après** que le kick l'ait écrasée : elle décrivait le
+ballon qui part, pas le ballon qu'on frappe.
+
+**Vingt-trois règles, 56 assertions vertes, une par sabotage.** Et le catalogue a fait son travail
+dans les deux sens ce coup-ci : il a attrapé une régression que *j'avais introduite* en écartant le
+bloc (`ball-ahead-at-strike` 5,3 % → 12,9 %), ce qui est exactement ce à quoi sert un catalogue de
+règles qu'on ne peut pas satisfaire par hasard.

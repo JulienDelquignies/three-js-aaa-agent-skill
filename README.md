@@ -95,8 +95,9 @@ threejs-aaa/ (the skill)
 │   ├── verify-ball-predict.mjs  prediction + inverse ballistics: pass arrives ON the man, lanes, interception
 │   ├── verify-rondo.mjs       5v5 possession AI played headless: no beehive, shape, correct foot, lanes
 │   ├── verify-matchday.mjs    kit on the rig + night rig on the real stadium + the post-chain contract
-│   ├── verify-football-rules.mjs  the impossible-football catalogue: 18 rules, one named sabotage each
+│   ├── verify-football-rules.mjs  the impossible-football catalogue: 23 rules, one named sabotage each
 │   ├── verify-squad.mjs       a roster of Mixamo GLBs made interchangeable: facing, scale, clips, bones
+│   ├── verify-bib.mjs        the training bib: two shirt colours on one un-recolourable character atlas
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   ├── frame-stats.mjs       measure a rendered PNG (mean luminance, contrast, clipping); --selftest proves the PNG filters
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)

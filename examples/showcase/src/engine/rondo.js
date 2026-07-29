@@ -26,7 +26,11 @@ export const RONDO = {
   pressRadius: 9,          // m — inside this the presser commits to the carrier
   tackleRadius: 1.45,      // m
   tackleTime: 0.5,         // s of sustained pressure to win the ball
-  receiveRadius: 1.25,     // m — the receiver takes the ball
+  receiveRadius: 0.85,     // m — the receiver takes the ball. Was 1.25, which is BEYOND the reach of
+                           // every control in the technique table (widest window 1.0 m): the touch
+                           // fired while the ball was still out of reach, so it stopped a metre away.
+  controlSettle: 0.34,     // m — where the ball ends up in front of the foot after a touch
+  footSide: 0.11,          // m — and how far to the side of centre, on the controlling foot
   releaseClear: 1.8,       // m the ball must travel before ANYONE can take it (else the passer intercepts himself)
   holdMin: 0.35,           // s — minimum on the ball before passing (no hot-potato)
   holdMax: 2.4,            // s — forced to release (no dwelling)
@@ -37,6 +41,18 @@ export const RONDO = {
   swarmFrac: 0.135,        // the beehive radius as a fraction of the box's short side (see checkRondo)
   spreadFrac: 0.19,        // minimum team spread, likewise as a fraction of the box
   harriedMax: 0.55,        // max share of carry time with a defender inside tackle range (see checkRondo)
+  // OFF-BALL STATIONS (see supportSpot). stationBias pulls the support ring from the ball (0) toward
+  // the middle of the grid (1) so the ring stays inside the box wherever the ball is. Swept over 16
+  // seeds × 90 s: 0 → 15.8 % of the box occupied, 0.45 → 20.2 %, 0.6 → 22.2 %. 0.6 spreads the most and
+  // plays the worst (completed passes 4.5 → 2.3: the men are too far apart to link). 0.45 beats the old
+  // model on every axis at once — occupancy, distance-to-station, record AND completed passes.
+  stationBias: 0.45,
+  // How much better another spot must be before a man abandons the one he holds. Measured: every
+  // non-zero value made things WORSE (at 0.6 bias, margin 9 → occupancy 24.4→22.2, passes down), so it
+  // stays at 0 = ties go to the spot you already hold. Kept as a knob because the finding is worth
+  // holding onto: the anthill was the ring centring, not a lack of hysteresis.
+  commitMargin: 0,
+  occupyMin: 0.18,        // the possession team must span at least this fraction of the box (checkRondo clause 9)
   minGap: 0.5,             // m — two players closer than this are pushed apart (they were interpenetrating)
   strikeReach: 1.25,       // m — a pass is only played off a ball the foot can reach
   shieldSlack: 0.15,       // m — how far past the shielding body a defender must get to win the ball
@@ -145,31 +161,57 @@ function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [] 
   // onto one spot with no error anywhere. Guard the score below so it can never happen quietly.
   const others = mates(st, me.team).filter((p) => p.id !== me.id && p.id !== carrierId).map((p) => p.p);
   const [ax, az] = st.area;
+  // WHERE THE RING IS CENTRED. Sampling it on the ball looks right and measures wrong: when the ball
+  // drifts off centre, the edge guard below rejects the whole far half of the ring, so every supporter
+  // is forced onto the near side and the team folds onto the ball. Pulling the centre back toward the
+  // middle of the grid keeps the ring INSIDE the box at any ball position, which is what lets five men
+  // actually stand around it. (Occupancy of the box: 21% of the area with the ring on the ball.)
+  const cx = anchor[0] * (1 - cfg.stationBias), cz = anchor[2] * (1 - cfg.stationBias);
+  const scoreAt = (p, a) => {
+    if (Math.abs(p[0]) > ax / 2 - 1.2 || Math.abs(p[2]) > az / 2 - 1.2) return -Infinity;   // stay in the grid
+    const lane = laneClearance(anchor, p, opp, { corridor: cfg.corridor });
+    const nearFoe = Math.min(...opp.map((o) => d2(o, p)), 99);
+    const nearMate = Math.min(...others.map((o) => d2(o, p)), 99);
+    const nearClaim = Math.min(...claimed.map((c) => d2(c, p)), 99);
+    const s =
+      Math.min(lane.margin, 4) * 2.2                        // show for a clean lane
+      + Math.min(nearFoe, 8) * 0.95                         // get away from your marker
+      + Math.min(nearMate, 10) * 0.7                        // spread: don't stand on a team-mate
+      + Math.cos(a - sector) * 7.5                          // hold YOUR angle of the rondo — this IS the shape,
+      //                                                      and it must outweigh the convenience of standing still
+      + Math.min(nearClaim, 7) * 1.5                        // and never the spot a mate just claimed
+      - d2(me.p, p) * 0.22;                                 // mild: prefer the nearer of two equally good spots
+    if (!Number.isFinite(s) && s !== -Infinity) throw new Error('supportSpot: score non fini (positions corrompues)');
+    return s;
+  };
   let best = null;
   for (let ring = 0; ring < 3; ring++) {
     const r = cfg.supportMin + (cfg.supportMax - cfg.supportMin) * (ring / 2);
     for (let k = 0; k < 12; k++) {
       const a = (k / 12) * Math.PI * 2;
-      const p = [anchor[0] + Math.cos(a) * r, 0, anchor[2] + Math.sin(a) * r];
-      if (Math.abs(p[0]) > ax / 2 - 1.2 || Math.abs(p[2]) > az / 2 - 1.2) continue;   // stay in the grid
-      const lane = laneClearance(anchor, p, opp, { corridor: cfg.corridor });
-      const nearFoe = Math.min(...opp.map((o) => d2(o, p)), 99);
-      const nearMate = Math.min(...others.map((o) => d2(o, p)), 99);
-      const nearClaim = Math.min(...claimed.map((c) => d2(c, p)), 99);
-      const travel = d2(me.p, p);
-      const score =
-        Math.min(lane.margin, 4) * 2.2                      // show for a clean lane
-        + Math.min(nearFoe, 8) * 0.95                       // get away from your marker
-        + Math.min(nearMate, 10) * 0.7                      // spread: don't stand on a team-mate
-        + Math.cos(a - sector) * 7.5                        // hold YOUR angle of the rondo — this IS the shape,
-        //                                                    and it must outweigh the convenience of standing still
-        + Math.min(nearClaim, 7) * 1.5                      // and never the spot a mate just claimed
-        - travel * 0.22;                                    // mild: prefer the nearer of two equally good spots
-      if (!Number.isFinite(score)) throw new Error('supportSpot: score non fini (positions corrompues)');
+      const p = [cx + Math.cos(a) * r, 0, cz + Math.sin(a) * r];
+      const score = scoreAt(p, a);
+      if (score === -Infinity) continue;
       if (!best || score > best.score) best = { p, score };
     }
   }
-  return best ? best.p : [...me.p];
+
+  // COMMIT TO THE STATION — hold the spot you claimed unless another is better by `commitMargin`.
+  // Worth reading as a negative result: the anthill LOOKED like a hysteresis problem (a supporter sat
+  // 4.46 m from his own target on average, as far from it as he was from the ball, i.e. permanently in
+  // transit toward a station that had already moved). But swept, every non-zero margin measured worse.
+  // The distance-to-station fell because the ring stopped moving so much, not because men stopped
+  // re-deciding. Ties go to the held spot; the re-score is what stops you holding a place gone bad.
+  if (me.spotTeam !== st.possession.team) me.spot = null;      // stations do not survive a turnover
+  me.spotTeam = st.possession.team;
+  if (me.spot) {
+    const held = me.spot;
+    const a = Math.atan2(held[2] - cz, held[0] - cx);
+    const heldScore = scoreAt(held, a);
+    if (heldScore !== -Infinity && (!best || best.score < heldScore + cfg.commitMargin)) return held;
+  }
+  me.spot = best ? best.p : [...me.p];
+  return me.spot;
 }
 
 /**
@@ -194,7 +236,15 @@ export function evadeSpot(st, c, cfg = RONDO) {
   const enemies = st.players.filter((p) => p.team !== c.team);
   const mates = st.players.filter((p) => p.team === c.team && p.id !== c.id);
   const hx = st.area[0] / 2, hz = st.area[1] / 2;
-  const hdx = Math.cos(c.yaw), hdz = Math.sin(c.yaw);
+  // `evadeKeep` means MOMENTUM — "you are already running that way, it costs you to change" — so it
+  // must read the velocity, not the facing. It used to read `c.yaw`, which was the same thing back when
+  // facing was derived from the drift. It is not any more: the carrier now faces his ball, which is the
+  // direction he is PUSHING it. Left on yaw, the term closed a loop — push sets the facing, the facing
+  // rewards the same push — and the carrier became literally unbeatable: 63 passes and 0 turnovers on
+  // seed 6, versus 19 and 15 with the loop broken. A feedback loop reads as brilliance right up until
+  // you notice the defence has stopped existing.
+  const sp = Math.hypot(c.v[0], c.v[1]);
+  const hdx = sp > 0.4 ? c.v[0] / sp : Math.cos(c.yaw), hdz = sp > 0.4 ? c.v[1] / sp : Math.sin(c.yaw);
   // SAMPLED AROUND THE BALL, NOT AROUND THE PLAYER. Sampling around the player sends him to a point
   // the ball is not on the way to, so he walks off and leaves it behind: measured, 65 % of passes were
   // struck with the ball BEHIND the striker (bearing up to 180°) and 15 % of carry frames had an
@@ -380,6 +430,23 @@ function movePlayers(st, dt, cfg) {
     p.p[2] = clamp(p.p[2], -st.area[1] / 2, st.area[1] / 2);
     p.speed = Math.hypot(p.v[0], p.v[1]);
     if (p.speed > 0.25) p.yaw = Math.atan2(p.v[1], p.v[0]);
+    // A MAN CARRYING THE BALL FACES HIS BALL — not his drift. For everyone else, facing = direction of
+    // travel is right; for the carrier it is wrong, and wrong in the one place it shows. He stands
+    // `carryStandoff` BEHIND the ball, so his velocity points at a spot behind it while the ball is in
+    // front: derive his facing from the drift and his body ends up square to, or turned away from, the
+    // thing at his feet. Measured as the share of passes struck with the ball more than 75° off his
+    // shoulders — i.e. behind him — which the catalogue calls `ball-ahead-at-strike`.
+    // The slew is the same law as the momentum model above (rate = turnAccel / speed), so pace still
+    // costs agility: a man sprinting cannot snap his shoulders round onto the ball.
+    if (p.job === 'carry') {
+      const want = p.push ? Math.atan2(p.push[1], p.push[0])
+        : Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
+      let d = want - p.yaw;
+      while (d > Math.PI) d -= 2 * Math.PI;
+      while (d < -Math.PI) d += 2 * Math.PI;
+      const rate = cfg.turnAccel / Math.max(1, p.speed);
+      p.yaw += clamp(d, -rate * dt, rate * dt);
+    }
   }
   // SEPARATION. Two players had nothing at all stopping them occupying the same point, and measured,
   // 28 % of frames had a pair inside 45 cm — bodies visibly passing through each other, the cheapest

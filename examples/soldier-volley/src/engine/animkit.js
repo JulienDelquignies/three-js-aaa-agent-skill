@@ -213,6 +213,100 @@ export const MOVES = {
     ],
   },
   /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */
+  // ---- LES GESTES MANQUANTS. La table de technique.js compte 13 gestes ; il y avait 5 clips, donc une
+  // passe de l'intérieur et une passe en pivot dessinaient le même mouvement. À une caméra à 19 m ça se
+  // voit. Chacun de ces moves est écrit contre la MÉCANIQUE de son geste : quel appui, quelle rotation
+  // de bassin, quelle jambe passe devant l'autre — et `contact` marque la frame où le pied touche.
+  passeExterieur: {
+    // Extérieur du pied : la jambe reste sous le corps, la cheville se ferme vers l'intérieur et c'est
+    // le tibia qui pivote. Pas d'armé — c'est un geste court, presque une pichenette.
+    name: 'passeExterieur', duration: 0.5, contact: 0.24, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      // le bras suit en RAMPE : sans clé intermédiaire, le miroir double l'amplitude (Z est nié) et
+      // le bras franchit 76° en 0,12 s — un membre qui se téléporte, que le contrat anatomique attrape
+      { t: 0.12, pose: { RightUpLeg: [8, -6, 0], RightLeg: [38, 0, 0], RightFoot: [0, -18, 0], Spine1: [3, -6, 0], LeftArm: [-4, 0, 16] } },
+      { t: 0.24, pose: { RightUpLeg: [-22, 14, 0], RightLeg: [16, 0, 0], RightFoot: [-8, -32, 0], Spine1: [-2, 8, 0], LeftArm: [-10, 0, 38] } },
+      { t: 0.5, pose: {} },
+    ],
+  },
+  passePivot: {
+    // Se retourner AVEC le ballon : le bassin part en premier, les épaules suivent, et la frappe part
+    // du pied intérieur en fin de rotation. Sans la rotation du buste, un « pivot » est une passe normale.
+    name: 'passePivot', duration: 0.95, contact: 0.52, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.22, pose: { Spine: [0, -28, 0], Spine1: [4, -20, 0], Head: [0, -25, 0], LeftUpLeg: [-14, -18, 0], RightUpLeg: [10, -12, 0], LeftArm: [-20, 0, 42] } },
+      { t: 0.52, pose: { Spine: [0, -52, 0], Spine1: [2, -34, 0], Head: [0, -30, 0], RightUpLeg: [-34, -26, 0], RightLeg: [24, 0, 0], RightFoot: [0, 18, 0], LeftUpLeg: [12, -22, 0], LeftLeg: [30, 0, 0], LeftArm: [5, 0, 52], RightArm: [-15, 0, 44] } },
+      { t: 0.74, pose: { Spine: [0, -34, 0], Spine1: [0, -22, 0], RightUpLeg: [-16, -18, 0], RightLeg: [34, 0, 0], LeftArm: [-5, 0, 40] } },
+      { t: 0.95, pose: {} },
+    ],
+  },
+  deviation: {
+    // Remise de première : rien ne s'arme, le pied se pose sur la trajectoire et redirige. Le geste le
+    // plus court du répertoire — c'est ce qui le distingue à l'œil d'une passe classique.
+    name: 'deviation', duration: 0.38, contact: 0.16, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.16, pose: { RightUpLeg: [-18, -22, 0], RightLeg: [22, 0, 0], RightFoot: [0, 30, 0], Spine1: [-3, -8, 0], LeftArm: [-12, 0, 44] } },
+      { t: 0.38, pose: {} },
+    ],
+  },
+  controleInterieur: {
+    // Amorti de l'intérieur : le pied va CHERCHER le ballon puis recule avec lui pour absorber — le
+    // retrait est tout le geste, un pied qui reste tendu renvoie le ballon au lieu de l'amortir.
+    name: 'controleInterieur', duration: 0.62, contact: 0.2, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.2, pose: { RightUpLeg: [-26, -24, 0], RightLeg: [28, 0, 0], RightFoot: [0, 34, 0], Spine1: [6, -6, 0], LeftArm: [-16, 0, 40] } },
+      { t: 0.36, pose: { RightUpLeg: [6, -16, 0], RightLeg: [52, 0, 0], RightFoot: [0, 26, 0], Spine1: [10, -4, 0] } },
+      { t: 0.62, pose: {} },
+    ],
+  },
+  controleExterieur: {
+    // Contrôle extérieur : le corps reste ouvert, le ballon est emmené SUR LE CÔTÉ dans le mouvement.
+    name: 'controleExterieur', duration: 0.6, contact: 0.22, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.22, pose: { RightUpLeg: [-14, 18, 0], RightLeg: [30, 0, 0], RightFoot: [-6, -30, 0], Spine1: [4, 10, 0], Hips: [0, 12, 0] } },
+      { t: 0.4, pose: { RightUpLeg: [4, 22, 0], RightLeg: [48, 0, 0], RightFoot: [0, -20, 0], Hips: [0, 16, 0] } },
+      { t: 0.6, pose: {} },
+    ],
+  },
+  controleSemelle: {
+    // Semelle : la jambe se lève, la plante se pose SUR le ballon et l'arrête net. Le seul contrôle où
+    // le pied arrive par le dessus — et donc le seul qu'on reconnaît de loin.
+    name: 'controleSemelle', duration: 0.55, contact: 0.22, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.22, pose: { RightUpLeg: [-44, 0, 0], RightLeg: [30, 0, 0], RightFoot: [22, 0, 0], Spine1: [10, 0, 0], LeftArm: [-20, 0, 38], RightArm: [-10, 0, 40] }, hips: [0, -0.06, 0] },
+      { t: 0.38, pose: { RightUpLeg: [-20, 0, 0], RightLeg: [42, 0, 0], RightFoot: [10, 0, 0], Spine1: [6, 0, 0] }, hips: [0, -0.03, 0] },
+      { t: 0.55, pose: {}, hips: [0, 0, 0] },
+    ],
+  },
+  amortiCuisse: {
+    // Cuisse : la jambe monte à l'horizontale, le buste part en arrière pour amortir, et le ballon
+    // retombe devant. Entre le pied et la poitrine il manquait toute une hauteur de jeu.
+    name: 'amortiCuisse', duration: 0.8, contact: 0.3, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.3, pose: { RightUpLeg: [-78, 0, 0], RightLeg: [46, 0, 0], Spine1: [-14, 0, 0], Head: [-8, 0, 0], LeftArm: [-30, 0, 30], RightArm: [-30, 0, 30] }, hips: [0, -0.04, 0] },
+      { t: 0.5, pose: { RightUpLeg: [-46, 0, 0], RightLeg: [58, 0, 0], Spine1: [-6, 0, 0], LeftArm: [-15, 0, 36] } },
+      { t: 0.8, pose: {} },
+    ],
+  },
+  tacleDebout: {
+    // Tacle debout : on reste sur ses appuis, le corps se baisse, la jambe la plus proche se tend vers
+    // le ballon. Ce n'est PAS un tacle glissé — le bassin ne quitte jamais la verticale, et c'est
+    // exactement la différence qu'on doit voir.
+    name: 'tacleDebout', duration: 0.7, contact: 0.28, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.28, pose: { RightUpLeg: [-52, -10, 0], RightLeg: [20, 0, 0], RightFoot: [0, 26, 0], LeftUpLeg: [-8, 0, 0], LeftLeg: [58, 0, 0], Spine1: [24, -6, 0], Head: [-10, 0, 0], LeftArm: [-40, 0, 34], RightArm: [-18, 0, 46] }, hips: [0, -0.14, 0.1] },
+      { t: 0.48, pose: { RightUpLeg: [-24, -6, 0], RightLeg: [40, 0, 0], LeftLeg: [40, 0, 0], Spine1: [14, 0, 0] }, hips: [0, -0.06, 0.05] },
+      { t: 0.7, pose: {}, hips: [0, 0, 0] },
+    ],
+  },
   // LE TACLE GLISSÉ. Le seul geste du répertoire où le bassin quitte la verticale : on part en appui,
   // la jambe d'attaque se tend vers le ballon, la hanche descend et le corps se couche sur le côté,
   // puis on se relève. Sans le mouvement de bassin (hips), un tacle « glissé » est un joueur debout qui

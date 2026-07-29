@@ -911,6 +911,40 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    cinématique, `groundY` par site pour s'asseoir en hauteur — place VIP OK). Vérifié headless 13/13 :
    marche aux 3 sites, porte de terrasse franchissable, parapet bloque ailleurs, garde-corps retient.
 
+6. ✅ **Rondo 5v5 — troisième passe : deux couleurs, ballon au pied, forme du bloc** *(fait)*
+   - **Chasuble** (`engine/bib.js` + `verify-bib.mjs`, 16/16) : le perso partage UN atlas entre maillot,
+     peau et crampons, donc on ne peut pas le recolorer par équipe. Une chasuble loftée sur 4 anneaux
+     dimensionnés sur le RIG, skinnée sur le buste (`bind = maintenant`, bindMatrix identité). Clause
+     décisive : **volume signé positif** — un `+sin` au lieu d'un `−sin` retourne toute la maille et ça
+     ne se voit presque pas de face. Sabotage dédié.
+   - **Le ballon s'arrêtait loin du pied** : `receiveRadius` 1,25 → 0,85 m (1,25 était au-delà de la
+     fenêtre la plus large de la table des techniques : la touche partait alors que le ballon était
+     encore hors de portée). Un contrôle **amène** désormais le ballon au pied, et la touche est
+     **directionnelle**, à l'opposé du pressing, le corps tournant avec. Mesuré : le ballon se pose à
+     **0,36 m** (moyenne = p95 = max — c'est déterministe). Deux règles neuves : `control-at-foot`,
+     `control-in-reach`.
+   - **8 animations manquantes** (`animkit`) : passeExterieur, passePivot, deviation, controleInterieur,
+     controleExterieur, controleSemelle, amortiCuisse, tacleDebout — chacune avec sa frame de contact.
+     Piège : `mirrorMove` double l'amplitude d'un bras qui croise l'axe (RightArm à 14 rad/s sur le
+     passeExterieur miroité) → clé intermédiaire. verify-animkit 60/60.
+   - **La fourmilière** : le bloc en possession n'occupait que **15,8 %** du carré, avec la clause
+     d'écartement verte — un anneau et une file indienne ont le même écartement moyen. Clause 9 de
+     `checkRondo` = **aire de l'enveloppe convexe**, sabotage « file indienne ». Cause réelle : le centre
+     de l'anneau de soutien, échantillonné sur le ballon (la garde de bord rejetait la moitié éloignée).
+     `stationBias 0.45` → **20,2 %**, et bat l'ancien modèle sur tous les axes. **L'hystérésis, elle,
+     était une fausse piste** : toute valeur non nulle de `commitMargin` dégrade — gardé à 0 et documenté.
+   - **Le porteur regarde son ballon** (il se place derrière lui, donc sa vitesse ne dit pas son corps).
+     Deux consommateurs de `yaw` lisaient « inertie » : `evadeKeep` (boucle de rétroaction → porteur
+     imprenable, 63 passes / 0 récupération) et le `heading` du dribble (le ballon distançait le joueur).
+     Les deux lisent maintenant la vitesse.
+   - **Une phase qui mentait** : un tacle glissé gagné faisait du tacleur le porteur alors qu'il restait
+     1,2 s au sol → `carry-reach` 5,6 %. Un ballon dégagé au sol est **libre**. Retombé à 1,2 %.
+   - **Le geste conditionne la frappe** : `chooseTechnique` était appelé APRÈS le kick, pour étiqueter.
+     Quand la table ne renvoyait rien, la passe partait quand même — c'est tout `ball-ahead-at-strike`.
+     Désormais : pas de technique, pas de passe. (Et `situation()` lisait `st.ball.v` après le kick.)
+   - **23 règles, 56 assertions vertes.** Le catalogue a attrapé une régression que j'avais moi-même
+     introduite en écartant le bloc (5,3 % → 12,9 %). Suite complète verte, ALL-SYNC. Voir `reference/47`.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

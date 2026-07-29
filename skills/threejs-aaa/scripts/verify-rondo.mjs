@@ -127,6 +127,13 @@ ok(`le porteur n'est pas collé en permanence (${r.stats.harried}% du temps de c
     for (const s of t) for (const p of s.players) if (p.team !== s.team) { p.p = [s.ball[0], s.ball[2]]; }
   }, 'ESSAIM');
   sab('bloc massé', (t) => { for (const s of t) for (const p of s.players) p.p = [0, 0]; }, 'compact');
+  // LE sabotage qui sépare la clause 9 de la clause 3 : une FILE INDIENNE a un écartement moyen
+  // parfaitement correct (5,5 m de moyenne par paire) et une aire nulle. La clause d'écartement la
+  // laisse passer sans broncher — c'est précisément pourquoi elle a pu rester verte pendant que
+  // l'équipe n'occupait que 15 % du carré. L'aire, elle, ne peut pas être trompée par une file.
+  sab('équipe en file indienne (écartement correct, aire nulle)', (t) => {
+    for (const s of t) { let k = 0; for (const p of s.players) if (p.team === s.team) { p.p = [-6 + k * 3, 0]; k++; } }
+  }, 'recroquevillé');
   sab('joueur qui téléporte', (t) => { t[10].players[0].speed = 40; }, 'm/s');
   sab('ballon hors du carré', (t) => { t[10].ball = [90, 0.11, 0]; }, 'hors du carré');
 }

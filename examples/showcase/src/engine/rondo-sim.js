@@ -19,7 +19,29 @@ function playPass(st, choice, cfg) {
   const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
   const sol = solvePass(from, choice.lead, { style: choice.style });
   if (!sol) return false;
-  c.foot = strikingFoot(c.yaw, c.p, choice.lead);
+
+  // THE GESTURE COMES FIRST, AND IT CAN SAY NO.
+  // Bearing is the angle between where the player is FACING and where the ball is — 0 = straight ahead,
+  // ±180° = behind him. Together with the distance, the height and where the pass has to GO, that is
+  // the whole question "is this strike physically available to this body right now", and the technique
+  // table is what answers it. It was being asked AFTER the ball had already been kicked, purely to
+  // label the event: when the table returned NOTHING — no foot, no surface, no gesture that reaches
+  // this ball and sends it there — the pass went out anyway, off a ball the man could not have touched.
+  // That is the whole of `ball-ahead-at-strike`, and no amount of tuning elsewhere can fix it, because
+  // the impossible strike is not a bad choice among legal ones: it is an illegal one being allowed.
+  // Now the selection gates the kick. No technique, no pass — he keeps the ball and turns onto it
+  // (he faces his ball, so the window opens within a stride), or he backheels, which the table allows
+  // precisely because that IS the gesture for a ball behind you.
+  const tx = choice.lead[0] - c.p[0], tz = choice.lead[2] - c.p[2];
+  const fx2 = Math.cos(c.yaw), fz2 = Math.sin(c.yaw);
+  const outBearing = (Math.atan2(fx2 * tz - fz2 * tx, fx2 * tx + fz2 * tz) * 180) / Math.PI;
+  // measured on the ball AS IT LIES — this used to read st.ball.v after the kick had overwritten it,
+  // i.e. it described the ball leaving rather than the ball being struck
+  const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
+  const pick = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing })[0];
+  if (!pick) return false;
+
+  c.foot = pick.foot;
   const s = kick(from, { speed: sol.speed, dirYaw: sol.dirYaw, elevation: sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
   st.ball.p = s.p; st.ball.v = s.v; st.ball.w = s.w;
   st.phase = 'flight';
@@ -27,29 +49,13 @@ function playPass(st, choice, cfg) {
   st.lastPasser = c.id;
   st.possession.carrier = -1;
   st.hold = 0; st.pressure = 0;
-  // record the clearance the DECISION actually saw: a harness that re-measures it a frame later
-  // is judging a different geometry (both the defenders and the ball have moved since)
-  // RECORD THE GEOMETRY THE STRIKE ACTUALLY HAD. The trace is sampled every few frames and would miss
-  // the contact frame entirely; a rule that re-measures later judges a different picture. Bearing is
-  // the angle between where the player is FACING and where the ball is — 0 = ball straight ahead,
-  // ±180° = ball behind him. That is the number that says whether this strike was possible at all.
-  const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
-  // where the pass has to GO, signed relative to his facing (positive = to his left). Without this the
-  // selector only ever answers "can the foot reach the ball", never "can this surface send it there",
-  // and every pass comes out of the inside of the near foot whatever the angle.
-  const tx = choice.lead[0] - c.p[0], tz = choice.lead[2] - c.p[2];
-  const fx2 = Math.cos(c.yaw), fz2 = Math.sin(c.yaw);
-  const outBearing = (Math.atan2(fx2 * tz - fz2 * tx, fx2 * tx + fz2 * tz) * 180) / Math.PI;
-  const opts = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing });
-  const pick = opts[0];
-  c.foot = pick ? pick.foot : c.foot;
   st.events.push({
     t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot,
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure
     // is a different picture, so the action carries its own justification
-    tech: pick?.tech.id ?? null, surface: pick?.surface ?? null, side: sit.side, dist: +sit.dist.toFixed(2), height: +from[1].toFixed(2), out: +outBearing.toFixed(1),
+    tech: pick.tech.id, surface: pick.surface, side: sit.side, dist: +sit.dist.toFixed(2), height: +from[1].toFixed(2), out: +outBearing.toFixed(1),
   });
   return true;
 }
@@ -59,7 +65,7 @@ function playPass(st, choice, cfg) {
  * scores the pass; anyone else on the same shirt is a scuffed ball that stayed in the family.
  * An opponent taking it is the turnover.
  */
-function receive(st, id) {
+function receive(st, id, cfg = RONDO) {
   const p = st.players[id];
   if (p.team === st.possession.team) {
     if (st.pass && st.pass.to === id) {
@@ -76,14 +82,39 @@ function receive(st, id) {
     const pick = chooseTechnique(sit, 'control')[0];
     if (pick) {
       p.foot = pick.foot;
+      // A CONTROL BRINGS THE BALL TO THE FOOT. It used to only damp the velocity, so the ball stopped
+      // dead wherever it happened to be when the receive triggered — a metre from the man, which reads
+      // exactly as "it stops on the control while it is still far from his foot". Taking a touch means
+      // the ball ENDS UP at your feet; that is the whole point of the gesture.
+      // …AND IT IS A DIRECTIONAL TOUCH. Settling the ball along his CURRENT facing put it back where
+      // the pass came from — he was running to meet it, so "in front of him" pointed at the passer —
+      // and the next strike then had the ball behind him 55 % of the time. A first touch is taken INTO
+      // the direction you intend to go, and the body turns with it: away from the nearest opponent.
+      const foe = st.players.filter((q) => q.team !== p.team && q.down <= 0)
+        .reduce((b, q) => (!b || d2(q.p, p.p) < d2(b.p, p.p) ? q : b), null);
+      let tx = Math.cos(p.yaw), tz = Math.sin(p.yaw);
+      if (foe) {
+        const ax = p.p[0] - foe.p[0], az = p.p[2] - foe.p[2], al = Math.hypot(ax, az) || 1;
+        tx = ax / al; tz = az / al;
+      }
+      p.yaw = Math.atan2(tz, tx);                              // he turns with the touch
+      const lat = pick.foot === 'left' ? 1 : -1;               // left of forward is (fz, -fx) here
+      st.ball.p = [
+        p.p[0] + tx * cfg.controlSettle + tz * lat * cfg.footSide,
+        BALL.radius,
+        p.p[2] + tz * cfg.controlSettle - tx * lat * cfg.footSide,
+      ];
+      st.ball.v = [st.ball.v[0] * pick.tech.power, 0, st.ball.v[2] * pick.tech.power];
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
-        bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +st.ball.p[1].toFixed(2),
+        bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),
         speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+        // where the ball ENDED UP relative to the man who took the touch — the number the rule judges
+        settle: +d2(p.p, st.ball.p).toFixed(2),
       });
-      st.ball.v = [st.ball.v[0] * pick.tech.power, 0, st.ball.v[2] * pick.tech.power];
     } else {
-      st.ball.v = [st.ball.v[0] * 0.12, 0, st.ball.v[2] * 0.12];
+      // nobody had a legal touch for that ball: it is not magically killed, it runs
+      st.ball.v = [st.ball.v[0] * 0.75, 0, st.ball.v[2] * 0.75];
     }
   } else {
     turnover(st, id, st.phase === 'flight' ? 'interception' : 'tackle');
@@ -143,7 +174,14 @@ function trySlide(st, cfg) {
   if (won) {
     st.ball.p = [p.p[0] + (st.ball.p[0] - p.p[0]) * 0.2, BALL.radius, p.p[2] + (st.ball.p[2] - p.p[2]) * 0.2];
     st.ball.v = [0, 0, 0]; st.ball.w = [0, 0, 0];
-    receive(st, p.id);
+    receive(st, p.id, cfg);                       // bookkeeping: possession, turnover count, sequence reset
+    // …BUT A BALL WON ON THE GROUND IS LOOSE, NOT CARRIED. `receive` made the tackler the carrier while
+    // he was still lying in the grass with slideRecovery seconds left to serve, so the game spent those
+    // seconds calling it a carry with the ball sitting metres from a man who could not move — 5.6 % of
+    // all carry frames, which the catalogue reported as `carry-reach`. That is not a debt to budget: it
+    // is a phase that is false. He poked it away; whoever gets to his feet first takes it, him included.
+    // Which is also the better football — a won tackle is a 50/50, not a gift.
+    if (p.down > 0) { st.phase = 'loose'; st.pass = null; st.possession.carrier = -1; st.hold = 0; st.pressure = 0; }
   }
 }
 
@@ -167,7 +205,14 @@ export function rondoStep(st, dt, cfg = RONDO) {
       const dx = c.target[0] - c.p[0], dz = c.target[2] - c.p[2], l = Math.hypot(dx, dz) || 1;
       return [dx / l, dz / l];
     })() : [Math.cos(c.yaw), Math.sin(c.yaw)]);
-    const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading: [Math.cos(c.yaw), Math.sin(c.yaw)], want, turnRate: 0 };
+    // `heading` here is the body's MOMENTUM, like evadeKeep — how the dribble model decides how hard a
+    // touch may be. It read the facing, which was the drift until the carrier started facing his ball;
+    // after that, heading and `want` became the same vector and every touch went full strength straight
+    // down the push, so the ball simply outran a man capped at 4.2 m/s (`carry-reach` 0.4 % → 8.8 % of
+    // carry frames with the ball beyond 3 m). Two consumers of yaw, one meaning changed, both to fix.
+    const csp = Math.hypot(c.v[0], c.v[1]);
+    const heading = csp > 0.4 ? [c.v[0] / csp, c.v[1] / csp] : [Math.cos(c.yaw), Math.sin(c.yaw)];
+    const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0 };
     pl.heading = dribbleSteer(st.ball, pl);
     dribbleStep(st._drb, st.ball, pl, dt);
 
@@ -181,7 +226,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // built for it, and that is a bigger piece of work than a tighter condition here.
     const press = st.players.filter((p) => p.team !== c.team && d2(p.p, c.p) < cfg.tackleRadius);
     st.pressure = press.length ? st.pressure + dt : 0;
-    if (st.pressure >= cfg.tackleTime) { receive(st, press[0].id); return st; }
+    if (st.pressure >= cfg.tackleTime) { receive(st, press[0].id, cfg); return st; }
     // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 %
     // of passes; the ball is not in front of him and the leg has nothing to hit.
     const reachNow = d2(c.p, st.ball.p) <= cfg.strikeReach;
@@ -205,7 +250,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
       }
     }
-    if (taker >= 0) receive(st, taker);
+    if (taker >= 0) receive(st, taker, cfg);
   }
   // OUT OF PLAY IS A RULE OF THE BALL, NOT OF A PHASE. This test only ran while the ball was loose or
   // in flight, so a ball dribbled over the line simply stayed out — and once the carrier began pushing
@@ -328,10 +373,36 @@ export function checkRondo(st, trace, cfg = RONDO) {
   const jobs = new Set(trace[Math.floor(trace.length / 2)].players.map((p) => p.job));
   if (jobs.size < 3) issues.push(`rôles indifférenciés (${[...jobs].join(',')})`);
 
+  // 9. THE TEAM IN POSSESSION OCCUPIES THE GRID. Clause 3 measures mean pairwise distance, which a
+  //    RING and a LINE score identically — and it stayed green while the possession team spanned 15 %
+  //    of the box, i.e. while the thing looked like an anthill on screen. Area is what "occupying the
+  //    space" actually means: five men holding a shape have a convex hull, five men in a knot do not.
+  //    (Fifth time this scene that a green clause and a broken picture disagreed, and every time the
+  //    clause was measuring a proxy rather than the thing it was named after.)
+  const occ = settled.map((s) => hullArea(s.players.filter((p) => p.team === s.team).map((p) => p.p)));
+  const occupy = occ.length ? occ.reduce((a, b) => a + b, 0) / occ.length / (st.area[0] * st.area[1]) : 1;
+  if (settled.length > 60 && occupy < cfg.occupyMin) {
+    issues.push(`bloc recroquevillé : l'équipe en possession n'occupe que ${(occupy * 100).toFixed(0)} % du carré (< ${(cfg.occupyMin * 100).toFixed(0)} %)`);
+  }
+
   return {
     ok: issues.length === 0, issues,
-    stats: { best: st.best, turnovers: st.turnovers, swarm: worstSwarm, crowdPct: +(crowdPct * 100).toFixed(1), spread: +minSpread.toFixed(1), settled: settled.length, harried: +(harriedPct * 100).toFixed(0) },
+    stats: { best: st.best, turnovers: st.turnovers, swarm: worstSwarm, crowdPct: +(crowdPct * 100).toFixed(1), spread: +minSpread.toFixed(1), settled: settled.length, harried: +(harriedPct * 100).toFixed(0), occupy: +(occupy * 100).toFixed(1) },
   };
+}
+
+/** Convex-hull area of a set of [x, z] (monotone chain). The shape metric clause 3 cannot see. */
+function hullArea(pts) {
+  const p = pts.map((q) => [q[0], q[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (p.length < 3) return 0;
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], hi = [];
+  for (const q of p) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (hi.length >= 2 && cross(hi[hi.length - 2], hi[hi.length - 1], q) <= 0) hi.pop(); hi.push(q); }
+  const h = lo.slice(0, -1).concat(hi.slice(0, -1));
+  let s = 0;
+  for (let i = 0; i < h.length; i++) { const a = h[i], b = h[(i + 1) % h.length]; s += a[0] * b[1] - b[0] * a[1]; }
+  return Math.abs(s) / 2;
 }
 
 export { predictPath };
