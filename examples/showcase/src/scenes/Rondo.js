@@ -75,7 +75,11 @@ export class Rondo {
     this.night.light(this.grid.group); this.night.light(this.ball);
 
     // ---- the game itself
-    this.state = makeRondo({ perTeam: 5, seed: Number(q.get('seed')) || 7 });
+    // ?n=3 pour un 3 contre 3. Sur un téléphone, dix bonshommes dans un carré de 16 m sont dix taches
+    // de trois pixels ; à six, on voit ce que chacun fait — ce qui est tout l'intérêt de la scène.
+    const perTeam = Math.max(2, Math.min(6, Number(q.get('n')) || 5));
+    this.state = makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
+    this.perTeam = perTeam;
 
     // ---- the squad. The scene no longer knows which GLB it is casting: squad.js loads a ROSTER,
     // normalises facing/height, and transports the donor's locomotion onto every imported rig.
@@ -189,8 +193,14 @@ export class Rondo {
     // 34° lens because the grid used to be 34 x 26, and at that distance a 22 cm ball is about five
     // pixels wide — which is most of why "the ball is far from the players" reads true even when the
     // measurement says it is a metre from the nearest man.
-    cam.fov = 30; cam.updateProjectionMatrix();
-    cam.position.set(0, 8.5, -19);
+    // La caméra se rapproche quand il y a moins de monde ET quand l'écran est étroit : à 19 m sur un
+    // téléphone en portrait, le carré tient dans un tiers de la hauteur et on ne distingue plus un
+    // geste d'un autre. Le cadrage est dérivé, pas écrit en dur.
+    const narrow = typeof window !== 'undefined' && window.innerWidth < 700;
+    const back = 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
+    cam.fov = narrow ? 34 : 30; cam.updateProjectionMatrix();
+    cam.position.set(0, 8.5 - (narrow ? 1.2 : 0), -back);
+    this._camBack = back;
     cam.lookAt(0, 1, 0);
     this.cam = cam;
     if (controls) {
@@ -230,7 +240,7 @@ export class Rondo {
     this._look.z += (b[2] - this._look.z) * Math.min(1, dt * 2.4);
     this._look.y += (1 - this._look.y) * Math.min(1, dt * 3);
     const px = this.cam.position.x + (targetX * 0.55 - this.cam.position.x) * Math.min(1, dt * 1.5);
-    this.cam.position.set(px, 8.5, -19);
+    this.cam.position.set(px, this.cam.position.y, -this._camBack);
     this.cam.lookAt(this._look);
   }
 

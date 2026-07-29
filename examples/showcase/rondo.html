@@ -17,17 +17,32 @@
       .title { top: 16px; right: 16px; padding: 8px 14px; border-radius: 10px; text-align: right;
         background: rgba(20,22,28,.6); border: 1px solid rgba(255,255,255,.08); max-width: 52vw; }
       .title b { font-weight: 700; } .title span { color: #9aa2b1; font-weight: 400; }
+      /* Le pavé de six lignes couvrait la moitié d'un écran de téléphone : sur mobile on ne voyait plus
+         le terrain, c'est-à-dire la seule chose que la page a à montrer. Le titre reste, le reste passe
+         derrière un dépliant fermé par défaut — l'information n'est pas perdue, elle est à un appui. */
+      .title summary { cursor: pointer; list-style: none; color: #e8ebf2; font-weight: 700; }
+      .title summary::-webkit-details-marker { display: none; }
+      .title summary::after { content: ' ⌄'; color: #7c8698; font-weight: 400; }
+      .title details[open] summary::after { content: ' ⌃'; }
+      .title p { margin-top: 6px; color: #9aa2b1; font-weight: 400; }
+      @media (max-width: 700px) {
+        .title { top: 10px; right: 10px; left: 10px; max-width: none; font-size: 12px; padding: 7px 11px; }
+        .back { top: 10px; left: 10px; padding: 6px 11px; font-size: 12px; }
+        .title, .back { z-index: 20; }
+        #score { font-size: 12px; }
+      }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <a class="hud back" href="./index.html">← Galerie</a>
-    <div class="hud title"><b>Passe à dix — 5 contre 5</b><br>
-      <span>Le ballon vole pour de vrai (traînée, effet Magnus, spin au rebond) et les passes sont
-      résolues par <b>balistique inverse</b> : elles arrivent sur l'homme, à une vitesse jouable.
-      Chaque joueur a un <b>rôle</b> — porteur, soutiens qui tiennent leur angle, presseur, couverture,
-      marquage, intercepteur — jamais un essaim sur le ballon. Le porteur frappe du <b>bon pied</b>.
-      <code>?orbit</code> pour libérer la caméra, <code>?q=ultra</code> pour le rendu maximal.</span></div>
+    <div class="hud title"><details>
+      <summary>Passe à dix</summary>
+      <p>Vol de balle réel (traînée, Magnus, spin au rebond). Passes par <b>balistique inverse</b> :
+      elles arrivent sur l'homme, à une vitesse jouable. Chaque joueur tient un <b>rôle</b> — jamais un
+      essaim sur le ballon — et frappe du <b>bon pied</b>.<br>
+      <code>?n=3</code> 3 contre 3 · <code>?orbit</code> caméra libre · <code>?q=ultra</code> rendu max.</p>
+    </details></div>
     <div class="hud" id="score" style="left:16px; bottom:16px; padding:10px 14px; border-radius:10px;
       background:rgba(12,16,24,.72); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(8px); min-width:200px;">
       <b>0</b> passes</div>
