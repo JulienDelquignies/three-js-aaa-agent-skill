@@ -3,7 +3,7 @@
 // ANATOMICALLY SANE animation under checkClip — known Mixamo bones only, sorted keys, normalized
 // quaternions, bounded angular velocity (no teleporting limbs), looping moves land where they start,
 // knees/hips inside their range. Plus determinism and named sabotages.
-import { MOVES, resolveTracks, checkClip, eulerToQuat, quatAngle, MIXAMO_BONES, mirrorMove } from '../assets/starter/src/engine/animkit.js';
+import { MOVES, resolveTracks, checkClip, eulerToQuat, quatAngle, MIXAMO_BONES, mirrorMove, BASE_POSE, mirrorEuler } from '../assets/starter/src/engine/animkit.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -89,6 +89,46 @@ sab('genou plié à l’envers', (s) => { s.keys[1].pose.RightLeg = [-60, 0, 0];
   // mirrorMove doit transporter le contact : sinon le pied gauche frappe à un autre instant que le droit
   const mg = mirrorMove(MOVES.passe);
   ok('mirrorMove conserve la frame de contact', mg.contact === MOVES.passe.contact, `${mg.contact}`);
+}
+
+console.log('\n— la pose neutre est symétrique, et la loi du miroir est exacte —');
+{
+  // Deux clauses jumelles, et la seconde protège la première : une BASE_POSE asymétrique fige les bras
+  // en torsion sur TOUT geste qui ne les anime pas, et c'est invisible parce que ça ne bouge jamais.
+  const dq = (a, b) => Math.min(
+    Math.max(...a.map((v, i) => Math.abs(v - b[i]))),
+    Math.max(...a.map((v, i) => Math.abs(v + b[i]))),   // q et −q sont la MÊME rotation : nier le quaternion ENTIER
+  );                                                   // (une double-couverture composante par composante
+                                                       //  laisse passer un signe, et m'a donné une conclusion fausse)
+  const conj = ([x, y, z, w]) => [x, -y, -z, w];
+  const pairs = [['LeftArm', 'RightArm'], ['LeftForeArm', 'RightForeArm']];
+  let worstPose = 0;
+  for (const [L, R] of pairs) {
+    if (!BASE_POSE[L] || !BASE_POSE[R]) continue;
+    worstPose = Math.max(worstPose, dq(conj(eulerToQuat(BASE_POSE[L])), eulerToQuat(BASE_POSE[R])));
+  }
+  ok(`la pose neutre est symétrique (écart ${worstPose.toFixed(6)})`, worstPose < 1e-6);
+
+  // …et la loi utilisée par mirrorMove EST la conjugaison. Vérifié sur 20 000 poses aléatoires, parce
+  // qu'une loi de miroir fausse ne se voit que sur les gestes du pied gauche, soit une fois sur deux.
+  let worstLaw = 0;
+  for (let i = 0; i < 20000; i++) {
+    const e = [(Math.random() * 2 - 1) * 170, (Math.random() * 2 - 1) * 170, (Math.random() * 2 - 1) * 170];
+    worstLaw = Math.max(worstLaw, dq(eulerToQuat(mirrorEuler(e)), conj(eulerToQuat(e))));
+  }
+  ok(`mirrorEuler EST la conjugaison quaternion (écart max ${worstLaw.toFixed(6)} sur 20 000 poses)`, worstLaw < 1e-6);
+  // le sabotage : la variante plausible et fausse qu'on a failli livrer
+  const bad = ([x, y, z]) => [x, -y, z];
+  let worstBad = 0;
+  for (let i = 0; i < 2000; i++) {
+    const e = [(Math.random() * 2 - 1) * 170, (Math.random() * 2 - 1) * 170, (Math.random() * 2 - 1) * 170];
+    worstBad = Math.max(worstBad, dq(eulerToQuat(bad(e)), conj(eulerToQuat(e))));
+  }
+  ok(`sabotage « miroir [x,-y,z] » attrapé (écart ${worstBad.toFixed(2)})`, worstBad > 0.1);
+  // …et le sabotage de la pose neutre
+  const asym = { LeftArm: [0, 0, 60], RightArm: [0, 0, 60] };
+  ok('sabotage « pose neutre asymétrique (les deux bras du même côté) » attrapé',
+    dq(conj(eulerToQuat(asym.LeftArm)), eulerToQuat(asym.RightArm)) > 0.1);
 }
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);

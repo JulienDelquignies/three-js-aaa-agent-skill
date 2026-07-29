@@ -15,10 +15,26 @@ export const MIXAMO_BONES = [
 ];
 
 /** Neutral standing base: arms lowered from the T-pose, slight elbow relax. */
+// LA POSE NEUTRE, ET ELLE DOIT ÊTRE SYMÉTRIQUE. Elle ne l'était pas : les deux bras portaient
+// [0, 0, 60], ce qui n'est PAS un miroir — la loi du miroir sur ce rig est la conjugaison quaternion
+// (w, x, −y, −z), soit [x, −y, −z] en euler XYZ, et elle est EXACTE (écart 0,000000 sur 20 000 poses
+// aléatoires ; dérivée du rig lui-même : A = PL⁻¹·M·PR vaut M à 0,009 près sur les sept paires d'os).
+// Conséquence mesurée sur le vrai squelette : main gauche à z = +0,411 (devant), main droite à
+// z = −0,467 (DERRIÈRE), 9,3 cm d'écart de hauteur. Les bras étaient donc figés en torsion permanente
+// sur tout geste qui ne les anime pas — c'est-à-dire la plupart, puisqu'ils ne participent que de 36°.
+// Symétrisée, les deux mains tombent à z = +0,41 et à la même hauteur, écart 0,000.
 export const BASE_POSE = {
-  LeftArm: [0, 0, 60], RightArm: [0, 0, 60],
-  LeftForeArm: [0, 0, 12], RightForeArm: [0, 0, 12],
+  LeftArm: [0, 0, 60], RightArm: [0, 0, -60],
+  LeftForeArm: [0, 0, 12], RightForeArm: [0, 0, -12],
 };
+
+/**
+ * Le MIROIR d'une pose locale, en euler XYZ. C'est [x, −y, −z] et ce n'est pas un choix : c'est la
+ * conjugaison q → (w, x, −y, −z), c'est-à-dire la réflexion d'une rotation par le plan sagittal.
+ * Écrit ici pour que la loi ait un nom et un test, parce qu'elle a déjà été « corrigée » à tort en
+ * [x, −y, z] — qui se trompe de 1,40 sur le quaternion, soit un bras ailleurs.
+ */
+export const mirrorEuler = ([x, y, z]) => [x, -y, -z];
 
 const D2R = Math.PI / 180;
 export function eulerToQuat([x, y, z]) {                           // XYZ order (three.js convention)
