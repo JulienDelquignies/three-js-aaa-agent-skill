@@ -116,3 +116,32 @@ le gauche, et le piège est soudé dans le harnais.
 Piège de format rencontré : un os absent d'une clé retombe sur la POSE DE BASE, pas sur
 l'interpolation — le bras droit a fait 12° → −60° → −18° en 0,1 s (19 rad/s) au premier essai, attrapé
 par le contrat. Chaque os animé est donc keyé à chaque clé.
+
+---
+
+# Troisième passe : la leçon de la silhouette (l'utilisateur a vu ce que le contrat ne voyait pas)
+
+La capture montrait un bras tendu à la VERTICALE au-dessus de la tête pour une passe de huit mètres —
+et tous les contrats étaient verts. `checkStrike` mesurait des DEGRÉS par os (« le bras opposé a une
+excursion ≥ 25° ») : une clause-ombre, exactement celle que le réfuteur « contrat » avait dit de
+chercher. Elle vérifiait que le bras BOUGE, jamais OÙ IL FINIT. Un moulin à vent la passait.
+
+Trois causes empilées, toutes mesurées après coup :
+
+1. **Les axes étaient authorés à l'aveugle.** Sur ce rig, balayer chaque axe en FK donne : épaule
+   y = ±0,2 m sur la main (le grand leveur), épaule x = ±0,1, et surtout **le coude en −x MONTE la
+   main de 0,15 m** — je croyais plier le coude, je levais la main — pendant que **la flexion
+   visuelle du coude est z** (la base tient d'ailleurs le coude à z = 12). Mes « coudes pliés » en +x
+   étaient des torsions : bras tendu à l'écran, main basse en chiffre. Un auteur de poses doit balayer
+   les axes du rig AVANT d'écrire des angles.
+2. **La clause mesurait l'ombre.** La bonne clause fait la FK du vrai squelette (GLB parsé brut, sans
+   three) et borne le RÉSULTAT MONDE : aucune main au-dessus du cou sur un geste de football. Posée,
+   elle a immédiatement attrapé DEUX gestes de plus que personne n'avait regardés (`amortiCuisse`
+   +14 cm, `tacleDebout` +7 cm). Son sabotage est la version livrée la veille (+22 cm).
+3. **Trois sources de bras s'empilaient** : les bras du clip de course + le delta additif du geste +
+   le balancer de `gaitLayer`. Pendant un geste, le haut du corps appartient AU GESTE : la scène lève
+   `gestureHold` et la couche de course rend bras, cou et tête (elle garde jambes et bassin — la
+   course continue).
+
+La règle générale, ajoutée à la discipline du dépôt : **une clause d'animation qui ne regarde pas le
+résultat monde composé mesure une ombre.** Les degrés par os sont un moyen ; la silhouette est le fait.

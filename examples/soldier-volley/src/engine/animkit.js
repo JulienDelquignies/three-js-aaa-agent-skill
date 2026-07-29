@@ -176,7 +176,13 @@ export function checkStrike(resolved, { proximoDistal = true, flick = false } = 
   if (trunk < trunkMin) issues.push(`tronc figé (lacet cumulé ${trunk.toFixed(0)}° < ${trunkMin}°)`);
   const headDown = Math.max(...(T.Head || [{ e: [0, 0, 0] }]).map((k) => k.e[0]));
   if (headDown < 8) issues.push(`la tête n'est pas sur le ballon (tangage max ${headDown.toFixed(0)}° < 8°)`);
-  if (excursion('LeftArm') < 25) issues.push(`bras d'équilibre mort (excursion du bras OPPOSÉ ${excursion('LeftArm').toFixed(0)}° < 25°)`);
+  // le bras d'équilibre travaille de l'ÉPAULE ET DU COUDE — un bras plié qui s'écarte est un vrai
+  // bras d'équilibre, un bras tendu qui monte au ciel n'en est pas un (c'est l'aberration que
+  // l'utilisateur a vue sur capture pendant que cette clause, qui ne mesurait que l'épaule en degrés,
+  // était verte : elle vérifiait que le bras BOUGE, jamais OÙ il finit — la silhouette a sa propre
+  // clause dans verify-animkit, sur la FK du vrai squelette).
+  const balance = Math.max(excursion('LeftArm'), excursion('LeftForeArm'));
+  if (balance < 22) issues.push(`bras d'équilibre mort (excursion épaule+coude du bras OPPOSÉ ${balance.toFixed(0)}° < 22°)`);
   if (range('LeftLeg', 0) < 6) issues.push(`pas de jambe d'appui (genou gauche ${range('LeftLeg', 0).toFixed(0)}° < 6°)`);
   if (proximoDistal) {
     const peakSeg = (bone) => {
@@ -277,7 +283,7 @@ export const MOVES = {
         Hips: [0, -16, 0],
         Spine: [-4, -8, 0], Spine1: [-8, -8, 0], Spine2: [-4, -6, 0],
         Neck: [4, 0, 0], Head: [16, 0, 0],
-        LeftArm: [-38, 0, 52], LeftForeArm: [-20, 0, 20], RightArm: [22, 0, 55], RightForeArm: [0, 0, 18],
+        LeftArm: [-10, 8, 46], LeftForeArm: [8, 0, 48], RightArm: [18, -6, 55], RightForeArm: [8, 0, -42],
         LeftUpLeg: [-10, 0, 0], LeftLeg: [26, 0, 0], LeftFoot: [-8, 0, 0],
       }, hips: [0, -0.05, 0] },
       { t: 0.36, pose: {
@@ -285,7 +291,7 @@ export const MOVES = {
         Hips: [0, 6, 0],
         Spine: [-2, 6, 0], Spine1: [-4, 10, 0], Spine2: [-2, 8, 0],
         Neck: [4, 0, 0], Head: [17, 0, 0],
-        LeftArm: [-10, 0, 48], LeftForeArm: [-14, 0, 20], RightArm: [-8, 0, 52],
+        LeftArm: [-2, 4, 48], LeftForeArm: [8, 0, 42], RightArm: [-4, -2, 52], RightForeArm: [6, 0, -34],
         LeftUpLeg: [-8, 0, 0], LeftLeg: [20, 0, 0], LeftFoot: [-6, 0, 0],
       }, hips: [0, -0.02, 0] },
       { t: 0.42, pose: {
@@ -293,7 +299,7 @@ export const MOVES = {
         Hips: [0, 8, 0],
         Spine: [0, 8, 0], Spine1: [2, 14, 0], Spine2: [0, 10, 0],
         Neck: [3, 0, 0], Head: [18, 0, 0],
-        LeftArm: [4, 0, 46], LeftForeArm: [-12, 0, 20], RightArm: [-32, 0, 50],
+        LeftArm: [6, 2, 48], LeftForeArm: [8, 0, 34], RightArm: [-12, -3, 50], RightForeArm: [6, 0, -28],
         LeftUpLeg: [-6, 0, 0], LeftLeg: [14, 0, 0], LeftFoot: [-4, 0, 0],
       }, hips: [0, 0, 0] },
       { t: 0.62, pose: {
@@ -301,7 +307,7 @@ export const MOVES = {
         Hips: [0, 14, 0],
         Spine: [2, 6, 0], Spine1: [8, 10, 0], Spine2: [3, 6, 0],
         Head: [6, 0, 0],
-        LeftArm: [10, 0, 44], RightArm: [-30, 0, 48],
+        LeftArm: [10, 4, 50], LeftForeArm: [6, 0, 26], RightArm: [-14, -4, 48], RightForeArm: [5, 0, -24],
         LeftLeg: [12, 0, 0],
       }, hips: [0, 0.02, 0] },
       { t: 0.85, pose: {} },
@@ -379,7 +385,7 @@ export const MOVES = {
     name: 'deviation', duration: 0.38, contact: 0.16, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.16, pose: { RightUpLeg: [-18, -22, 0], RightLeg: [22, 0, 0], RightFoot: [0, 30, 0], Hips: [0, -7, 0], Spine1: [-3, -8, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-22, 0, 38], LeftForeArm: [-10, 0, 16], LeftLeg: [14, 0, 0] } },
+      { t: 0.16, pose: { RightUpLeg: [-18, -22, 0], RightLeg: [22, 0, 0], RightFoot: [0, 30, 0], Hips: [0, -7, 0], Spine1: [-3, -8, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-8, 5, 46], LeftForeArm: [8, 0, 42], LeftLeg: [14, 0, 0] } },
       { t: 0.38, pose: {} },
     ],
   },
@@ -421,8 +427,8 @@ export const MOVES = {
     name: 'amortiCuisse', duration: 0.8, contact: 0.3, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.3, pose: { RightUpLeg: [-78, 0, 0], RightLeg: [46, 0, 0], Spine1: [-14, 0, 0], Spine2: [-5, 0, 0], Neck: [-3, 0, 0], Head: [-8, 0, 0], LeftArm: [-30, 0, 30], RightArm: [-30, 0, 30], LeftLeg: [14, 0, 0] }, hips: [0, -0.04, 0] },
-      { t: 0.5, pose: { RightUpLeg: [-46, 0, 0], RightLeg: [58, 0, 0], Spine1: [-6, 0, 0], Spine2: [-2, 0, 0], Neck: [2, 0, 0], Head: [10, 0, 0], LeftArm: [-15, 0, 36], RightArm: [-15, 0, 34], LeftLeg: [16, 0, 0] } },
+      { t: 0.3, pose: { RightUpLeg: [-78, 0, 0], RightLeg: [46, 0, 0], Spine1: [-14, 0, 0], Spine2: [-5, 0, 0], Neck: [-3, 0, 0], Head: [-8, 0, 0], LeftArm: [-2, 10, 46], LeftForeArm: [8, 0, 38], RightArm: [-2, -10, 46], RightForeArm: [8, 0, -38], LeftLeg: [14, 0, 0] }, hips: [0, -0.04, 0] },
+      { t: 0.5, pose: { RightUpLeg: [-46, 0, 0], RightLeg: [58, 0, 0], Spine1: [-6, 0, 0], Spine2: [-2, 0, 0], Neck: [2, 0, 0], Head: [10, 0, 0], LeftArm: [-4, 4, 46], LeftForeArm: [6, 0, 32], RightArm: [-4, -4, 46], RightForeArm: [20, 0, 16], LeftLeg: [16, 0, 0] } },
       { t: 0.8, pose: {} },
     ],
   },
@@ -433,7 +439,7 @@ export const MOVES = {
     name: 'tacleDebout', duration: 0.7, contact: 0.28, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.28, pose: { RightUpLeg: [-52, -10, 0], RightLeg: [20, 0, 0], RightFoot: [0, 26, 0], LeftUpLeg: [-8, 0, 0], LeftLeg: [58, 0, 0], Spine1: [24, -6, 0], Head: [-10, 0, 0], LeftArm: [-40, 0, 34], RightArm: [-18, 0, 46] }, hips: [0, -0.14, 0.1] },
+      { t: 0.28, pose: { RightUpLeg: [-52, -10, 0], RightLeg: [20, 0, 0], RightFoot: [0, 26, 0], LeftUpLeg: [-8, 0, 0], LeftLeg: [58, 0, 0], Spine1: [24, -6, 0], Head: [-10, 0, 0], LeftArm: [-14, 8, 44], LeftForeArm: [8, 0, 45], RightArm: [-10, -4, 48], RightForeArm: [8, 0, -36] }, hips: [0, -0.14, 0.1] },
       { t: 0.48, pose: { RightUpLeg: [-24, -6, 0], RightLeg: [40, 0, 0], LeftLeg: [40, 0, 0], Spine1: [14, 0, 0] }, hips: [0, -0.06, 0.05] },
       { t: 0.7, pose: {}, hips: [0, 0, 0] },
     ],
@@ -492,7 +498,7 @@ export const MOVES = {
         Hips: [0, -8, 0],
         Spine: [-2, -4, 0], Spine1: [2, -6, 0], Spine2: [-2, -4, 0],
         Neck: [3, 0, 0], Head: [14, 0, 0],
-        LeftArm: [-24, 0, 44], LeftForeArm: [-12, 0, 18], RightArm: [12, 0, 50],
+        LeftArm: [-8, 6, 48], LeftForeArm: [8, 0, 45], RightArm: [12, -4, 54], RightForeArm: [8, 0, -36],
         LeftUpLeg: [-8, 0, 0], LeftLeg: [22, 0, 0], LeftFoot: [-6, 0, 0],
       }, hips: [0, -0.03, 0] },
       // CHAQUE os animé est keyé à CHAQUE clé : un os absent retombe sur la POSE DE BASE, pas sur
@@ -503,7 +509,7 @@ export const MOVES = {
         Hips: [0, 3, 0],
         Spine: [-1, 0, 0], Spine1: [-2, 4, 0], Spine2: [0, 4, 0],
         Neck: [3, 0, 0], Head: [15, 0, 0],
-        LeftArm: [-6, 0, 46], LeftForeArm: [-12, 0, 18], RightArm: [-4, 0, 49],
+        LeftArm: [-2, 3, 48], LeftForeArm: [8, 0, 40], RightArm: [-2, -2, 52], RightForeArm: [6, 0, -30],
         LeftUpLeg: [-6, 0, 0], LeftLeg: [18, 0, 0], LeftFoot: [-5, 0, 0],
       } },
       { t: 0.38, pose: {
@@ -511,7 +517,7 @@ export const MOVES = {
         Hips: [0, 4, 0],
         Spine: [0, 4, 0], Spine1: [-4, 8, 0], Spine2: [0, 6, 0],
         Neck: [2, 0, 0], Head: [16, 0, 0],
-        LeftArm: [6, 0, 48], RightArm: [-18, 0, 48],
+        LeftArm: [5, 2, 48], LeftForeArm: [6, 0, 30], RightArm: [-10, -3, 50], RightForeArm: [6, 0, -26],
         LeftUpLeg: [-5, 0, 0], LeftLeg: [12, 0, 0],
       }, hips: [0, 0, 0] },
       { t: 0.55, pose: {
@@ -519,7 +525,7 @@ export const MOVES = {
         Hips: [0, 7, 0],
         Spine: [0, 2, 0], Spine1: [2, 5, 0], Spine2: [0, 3, 0],
         Neck: [1, 0, 0], Head: [8, 0, 0],
-        LeftArm: [-4, 0, 42], LeftForeArm: [-8, 0, 16], RightArm: [-10, 0, 46],
+        LeftArm: [0, 2, 48], LeftForeArm: [6, 0, 26], RightArm: [-6, -2, 50], RightForeArm: [5, 0, -22],
         LeftUpLeg: [-4, 0, 0], LeftLeg: [14, 0, 0], LeftFoot: [-3, 0, 0],
       } },
       { t: 0.7, pose: {} },

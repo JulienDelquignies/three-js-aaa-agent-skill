@@ -297,6 +297,9 @@ export class Rondo {
       }
     }
 
+    // le haut du corps appartient au geste pendant qu'un geste tourne (voir _applyGaitLayer)
+    for (const pl of this.players) pl.ctrl.gestureHold = !!pl.sim.act;
+
     // ---- dress the simulation: the sim owns positions, the controller owns the locomotion state
     const top = RONDO.speeds.chase;
     for (const pl of this.players) {

@@ -191,6 +191,13 @@ export class CharacterController {
     if (!g) return;
     const D = Math.PI / 180;
     for (const [name, e] of Object.entries(g.euler)) {
+      // PENDANT UN GESTE, LE HAUT DU CORPS APPARTIENT AU GESTE. Les bras à l'écran étaient la SOMME de
+      // trois sources — les bras du clip de course, le delta additif du geste, et le balancer de cette
+      // couche — et la somme partait au ciel : bras tendu à la verticale sur une passe de huit mètres,
+      // vu par l'utilisateur sur capture pendant que tous les contrats étaient verts. La scène lève
+      // `gestureHold` pendant qu'un geste est actif : cette couche garde les jambes et le bassin (la
+      // course continue) et rend bras, cou et tête au geste, qui les a authorés pour être vus seuls.
+      if (this.gestureHold && /Arm|ForeArm|Neck|Head/.test(name)) continue;
       const bone = this._gaitBones.get(name);
       if (!bone) continue;
       this._gaitE.set(e[0] * D, e[1] * D, e[2] * D, 'XYZ');

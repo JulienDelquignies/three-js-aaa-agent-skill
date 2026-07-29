@@ -222,5 +222,65 @@ console.log('\n— l’expressivité des frappes : le corps entier, prouvé —'
 }
 
 
+console.log('\n— la SILHOUETTE : où finissent les mains, sur le vrai squelette —');
+{
+  // La leçon de cette clause : checkStrike mesurait des DEGRÉS par os et était vert pendant que la
+  // capture montrait un bras tendu à la verticale au-dessus de la tête pour une passe de huit mètres.
+  // Une clause d'animation qui ne regarde pas le RÉSULTAT MONDE mesure une ombre. Celle-ci fait la FK
+  // du vrai squelette (shanon.glb, parsé brut — pas de three, pas de textures) et exige qu'aucune
+  // main ne monte au-dessus du cou sur un geste de football. Les célébrations, elles, ont le droit.
+  import('node:fs').then(() => {});
+  const { readFileSync } = await import('node:fs');
+  const raw = readFileSync(new URL('../../../examples/showcase/public/shanon.glb', import.meta.url));
+  const dv = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+  let off = 12, json = null;
+  while (off < dv.byteLength) {
+    const l = dv.getUint32(off, true), ty = dv.getUint32(off + 4, true);
+    if (ty === 0x4E4F534A) json = JSON.parse(new TextDecoder().decode(raw.subarray(off + 8, off + 8 + l)));
+    off += 8 + l + ((4 - (l % 4)) % 4); if (json) break;
+  }
+  const N = json.nodes, parent = new Map(); N.forEach((n, i) => (n.children || []).forEach((c) => parent.set(c, i)));
+  const nIdx = new Map(); N.forEach((n, i) => nIdx.set(String(n.name || '').replace(/^mixamorig\d*[:_]?/i, ''), i));
+  const chain = (name) => { const out = []; let k = nIdx.get(name); while (k != null) { out.unshift(k); k = parent.get(k); } return out; };
+  const qm = (a, c) => [a[3] * c[0] + a[0] * c[3] + a[1] * c[2] - a[2] * c[1], a[3] * c[1] - a[0] * c[2] + a[1] * c[3] + a[2] * c[0],
+    a[3] * c[2] + a[0] * c[1] - a[1] * c[0] + a[2] * c[3], a[3] * c[3] - a[0] * c[0] - a[1] * c[1] - a[2] * c[2]];
+  const rv = (q, v) => { const [x, y, z, w] = q; const ux = y * v[2] - z * v[1], uy = z * v[0] - x * v[2], uz = x * v[1] - y * v[0];
+    return [v[0] + 2 * (w * ux + y * uz - z * uy), v[1] + 2 * (w * uy + z * ux - x * uz), v[2] + 2 * (w * uz + x * uy - y * ux)]; };
+  const world = (name, pose) => { let q = [0, 0, 0, 1], p = [0, 0, 0];
+    for (const k of chain(name)) { const nm = String(N[k].name || '').replace(/^mixamorig\d*[:_]?/i, '');
+      const t = N[k].translation || [0, 0, 0]; const rt = rv(q, t); p = [p[0] + rt[0], p[1] + rt[1], p[2] + rt[2]];
+      q = qm(q, pose[nm] || (N[k].rotation || [0, 0, 0, 1])); }
+    return p; };
+  const handsBelowNeck = (spec) => {
+    const r = resolveTracks(spec);
+    const times = [...new Set(Object.values(r.tracks).flatMap((ks) => ks.map((k) => k.t)))];
+    let worst = -Infinity, at = 0;
+    for (const t of times) {
+      const pose = {};
+      for (const [bone, ks] of Object.entries(r.tracks)) { const k = ks.find((k2) => Math.abs(k2.t - t) < 1e-9); if (k) pose[bone] = k.q; }
+      const neck = world('Neck', pose)[1];
+      for (const hand of ['LeftHand', 'RightHand']) {
+        const d = world(hand, pose)[1] - neck;
+        if (d > worst) { worst = d; at = t; }
+      }
+    }
+    return { worst, at };
+  };
+  const FOOT_MOVES = ['frappe', 'passe', 'passeExterieur', 'passePivot', 'deviation', 'talonnade',
+    'controleInterieur', 'controleExterieur', 'controleSemelle', 'amortiCuisse', 'amorti', 'tacleDebout'];
+  for (const id of FOOT_MOVES) {
+    const { worst, at } = handsBelowNeck(MOVES[id]);
+    ok(`« ${id} » : aucune main au-dessus du cou (pire ${(worst * 100).toFixed(0)} cm à t=${at})`, worst <= 0.02);
+  }
+  // LE SABOTAGE-RÉFÉRENCE : la frappe LIVRÉE la veille — bras d'équilibre à la verticale (main à
+  // +20 cm au-dessus du cou), verte sous checkStrike, dénoncée par l'utilisateur sur capture.
+  const skyArm = JSON.parse(JSON.stringify(MOVES.frappe));
+  for (const k of skyArm.keys) {
+    if (k.pose.LeftArm) { k.pose.LeftArm = [-38, 0, 52]; k.pose.LeftForeArm = [-20, 0, 20]; }
+  }
+  const sky = handsBelowNeck(skyArm);
+  ok(`sabotage « bras d'équilibre au ciel (la version livrée) » attrapé (main à +${(sky.worst * 100).toFixed(0)} cm)`, sky.worst > 0.05);
+}
+
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);

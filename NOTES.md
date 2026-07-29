@@ -999,6 +999,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    interpolation (19 rad/s attrapés au premier essai). Vérifié à l'écran : bras d'équilibre, tête
    baissée, poids sur l'appui.
 
+10. ✅ **Animation — la leçon de la silhouette** *(fait)* — l'utilisateur a vu sur capture un bras
+   tendu à la verticale pour une passe de 8 m pendant que TOUS les contrats étaient verts. Trois causes :
+   axes authorés à l'aveugle (sur ce rig le coude en −x MONTE la main de 0,15 m ; la flexion visuelle
+   du coude est Z), clause-ombre (checkStrike mesurait des degrés, jamais où finit la main), et TROIS
+   sources de bras empilées (course + geste additif + gaitLayer). Corrigé : balayage FK des axes avant
+   d'écrire des angles, clause de SILHOUETTE (FK du vrai GLB : aucune main au-dessus du cou, sabotage =
+   la version livrée, +22 cm) qui a attrapé DEUX gestes de plus (amortiCuisse +14 cm, tacleDebout
+   +7 cm), et `gestureHold` (pendant un geste, le haut du corps appartient au geste). verify-animkit
+   92/92. Règle ajoutée à la discipline : une clause d'animation qui ne regarde pas le résultat monde
+   composé mesure une ombre.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
