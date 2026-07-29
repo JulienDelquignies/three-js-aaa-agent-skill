@@ -3,7 +3,7 @@
 // The assertions are the things that make AI football look stupid when they are missing: the
 // BEEHIVE (everyone on the ball), a defence that never wins it, an attack that never strings a
 // pass, a compact blob instead of a shape, and passes played into covered lanes.
-import { makeRondo, choosePass, strikingFoot, assignJobs, RONDO } from '../assets/starter/src/engine/rondo.js';
+import { makeRondo, choosePass, strikingFoot, assignJobs, RONDO, rondoInternals } from '../assets/starter/src/engine/rondo.js';
 import { rondoStep, playRondo, checkRondo } from '../assets/starter/src/engine/rondo-sim.js';
 import { laneClearance } from '../assets/starter/src/engine/ball-predict.js';
 
@@ -45,24 +45,44 @@ ok(`le porteur n'est pas collé en permanence (${r.stats.harried}% du temps de c
   ok('  …et AUCUNE clause d\'essaim ne le voit (un homme n\'est pas une foule)', crowd.length === 0, crowd[0] || '');
 }
 {
-  // l'inertie : sans elle un défenseur lancé fait demi-tour comme un joueur à l'arrêt, et l'esquive
-  // ne peut pas payer. Mesuré : séparation 1,67 → 2,33 m, essaim 1,28 → 0,70 défenseur.
-  const iso = playRondo(makeRondo({ perTeam: 5, seed: 4 }), 60, { cfg: { ...RONDO, turnAccel: RONDO.accel } });
-  const mom = playRondo(makeRondo({ perTeam: 5, seed: 4 }), 60);
-  // séparation du PORTEUR au défenseur le plus proche (pas du ballon : depuis qu'il le protège en se
-  // plaçant derrière, les deux points ont divergé et la clause parle bien du porteur)
-  const sep = (g) => {
-    const c = g.trace.filter((s2) => s2.phase === 'carry' && s2.carrier >= 0);
-    let sum = 0, n = 0;
-    for (const s2 of c) {
-      const car = s2.players.find((p) => p.id === s2.carrier);
-      if (!car) continue;
-      sum += Math.min(...s2.players.filter((p) => p.team !== s2.team).map((p) => Math.hypot(p.p[0] - car.p[0], p.p[1] - car.p[1])));
-      n++;
+  // L'INERTIE, MESURÉE SUR SA LOI — pas sur une partie entière. Deux instruments sont morts avant
+  // celui-ci, et les deux morts valent d'être consignées : (1) l'A/B de PARTIES COMPLÈTES
+  // (turnAccel libre contre borné, séparation moyenne du porteur) — valide dans le monde qui
+  // dribblait toute sa possession, noyé quand la préparation de frappe a rendu la conduite à moitié
+  // statique, et de toute façon deux parties divergent chaotiquement : l'A/B comparait deux
+  // HISTOIRES, pas deux lois. (2) le DUEL en poursuite (crochet du porteur, presseur lancé) — la
+  // courbe de poursuite lisse la demande de virage au point que la borne perpendiculaire ne mord
+  // JAMAIS (ratio mesuré 1,00 sur tout déclencheur). La loi, elle, se mesure sans adversaire :
+  // taux angulaire = turnAccel / v. Un coureur lancé à qui on demande 90° —
+  //   « LA VITESSE COÛTE L'AGILITÉ » : à 6,9 m/s le virage prend 1,67 × le temps qu'à 4,2 m/s
+  //   (théorie : le rapport des vitesses, 1,64) ;
+  //   « TOURNER COÛTE PLUS QUE FREINER » : turnAccel < accel — la même demande en monde isotrope
+  //   (turnAccel = accel) va 1,47 × plus vite (théorie 1,58). C'est l'avantage réel du dribbleur
+  //   lent sur le presseur lancé, dans la loi de mouvement, pas dans la prose.
+  const { movePlayers } = rondoInternals;
+  const mk2 = (job) => ({ id: 0, team: 0, p: [0, 0, 0], v: [0, 0], speed: 0, yaw: 0, down: 0, act: null, job, target: null, push: null, yawWant: null });
+  const turnTime = (job, turnAccel) => {
+    const cfg2 = { ...RONDO, turnAccel };
+    const r2 = mk2(job);
+    const st2 = { players: [r2], area: [200, 200], t: 0, ball: { p: [0.4, 0.11, 0], v: [0, 0, 0] } };
+    for (let i = 0; i < 3 * 60; i++) { r2.target = [100, 0, 0]; movePlayers(st2, 1 / 60, cfg2); }
+    const v0 = r2.speed;
+    let t = 0;
+    for (let i = 0; i < 6 * 60; i++) {
+      r2.target = [r2.p[0], 0, 100];
+      movePlayers(st2, 1 / 60, cfg2);
+      t += 1 / 60;
+      if (Math.atan2(r2.v[1], r2.v[0]) > Math.PI / 3) break;
     }
-    return sum / n;
+    return { v0, t };
   };
-  ok(`l'inertie fait gagner de la séparation au porteur (${sep(iso).toFixed(2)} m → ${sep(mom).toFixed(2)} m)`, sep(mom) > sep(iso) * 1.15);
+  const lent = turnTime('carry', RONDO.turnAccel);
+  const rapide = turnTime('press', RONDO.turnAccel);
+  const rapideIso = turnTime('press', RONDO.accel);
+  ok(`la vitesse coûte l'agilité (60° : ${lent.t.toFixed(2)} s à ${lent.v0.toFixed(1)} m/s, ${rapide.t.toFixed(2)} s à ${rapide.v0.toFixed(1)} m/s)`,
+    rapide.t > lent.t * 1.35);
+  ok(`tourner coûte plus que freiner (60° à pleine vitesse : ${rapide.t.toFixed(2)} s borné vs ${rapideIso.t.toFixed(2)} s isotrope)`,
+    rapide.t > rapideIso.t * 1.25);
   ok(`  le taux de virage est bien borné par la vitesse (turnAccel ${RONDO.turnAccel} < accel ${RONDO.accel})`, RONDO.turnAccel < RONDO.accel);
 }
 

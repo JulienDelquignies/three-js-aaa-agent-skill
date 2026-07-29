@@ -49,6 +49,23 @@ export const FOOT_RULES = [
     check: (e, cfg) => (e.ballDist > cfg.reach ? `ballon à ${e.ballDist} m (> ${cfg.reach} m) : hors d\'atteinte` : null),
   },
   {
+    id: 'strike-stance', scope: 'event', on: 'pass',
+    title: 'la frappe se joue DEPUIS sa stance : le corps est arrivé là où le geste frappe',
+    why: 'L\'audit membre par membre avait le chiffre fondateur : pied de frappe à 1,00 m du ballon À '
+      + 'L\'INSTANT du contact — le clip jouait où le joueur se trouvait, la simulation frappait où '
+      + 'ELLE voulait, personne n\'alignait les deux. Chaque technique a une stance (approach.js) : où '
+      + 'est le ballon relativement au corps quand la surface le prend. e.stanceD / e.stanceB sont '
+      + 'l\'écart RÉALISÉ au contact contre cette table — mesurés sur l\'événement, dans la géométrie '
+      + 'où la frappe a réellement eu lieu. C\'est la clause qui juge aussi les préparations '
+      + 'une-touche que control-at-foot exempte : un instant, un contrat.',
+    check: (e, cfg) => {
+      if (e.stanceD == null || e.stanceB == null) return null;
+      if (e.stanceD > cfg.stanceDistMax) return `stance à ${e.stanceD} m de sa distance (> ${cfg.stanceDistMax} m)`;
+      if (Math.abs(e.stanceB) > cfg.stanceBearMax) return `relèvement de stance faussé de ${e.stanceB}° (> ${cfg.stanceBearMax}°)`;
+      return null;
+    },
+  },
+  {
     id: 'foot-height', scope: 'event', on: 'pass',
     title: 'un ballon frappé du pied est à hauteur de pied',
     why: 'Au-dessus du genou ce n\'est plus une passe du pied : c\'est une reprise de volée, une cuisse '
@@ -137,8 +154,13 @@ export const FOOT_RULES = [
     title: 'un contrôle AMÈNE le ballon au pied — il ne l\'arrête pas où il est',
     why: 'Amortir, ce n\'est pas éteindre la vitesse du ballon là où il passe : c\'est le faire finir '
       + 'devant son pied. Un contrôle qui laisse le ballon à un mètre se voit immédiatement — le joueur '
-      + 'a fait le geste, le ballon s\'est arrêté ailleurs, et plus personne ne croit à la scène.',
-    check: (e, cfg) => (e.settle != null && e.settle > cfg.settleMax
+      + 'a fait le geste, le ballon s\'est arrêté ailleurs, et plus personne ne croit à la scène. '
+      + 'EXCEPTION MESURÉE, PAS TOLÉRÉE : la préparation une-touche (e.oneTouche) — le corps est DÉJÀ '
+      + 'dans l\'armé de la frappe suivante quand la livraison arrive, et il marche VERS son ancre, pas '
+      + 'vers le point d\'assise. Cet instant appartient au contrat de la FRAPPE (strike-stance juge le '
+      + 'contact) : le juger deux fois avec deux géométries, c\'est condamner l\'un des deux gestes '
+      + 'quoi qu\'il fasse. Un instant, un contrat.',
+    check: (e, cfg) => (e.settle != null && !e.oneTouche && e.settle > cfg.settleMax
       ? `ballon à ${e.settle} m du joueur après le contrôle (> ${cfg.settleMax} m)` : null),
   },
   {
@@ -289,6 +311,12 @@ export const FOOT_LIMITS = {
   bodyRadius: 0.16,    // m — un ballon plus près que ça traverse le corps
   minGap: 0.45,        // m — deux joueurs plus proches se traversent
   minTouchGap: 0.25,   // s — temps d'appui minimal entre deux contacts du même joueur
+  // m / ° — écart toléré entre la stance de la technique et la géométrie réalisée au contact.
+  // Mesuré : p50 = 1 mm / 0,2°, p90 = 2 mm / 0,5° (le glissement livre la stance PAR CONSTRUCTION) ;
+  // le max observé, 0,224 m, est la clampe du mur (une ancre demandée hors du carré s'arrête à la
+  // craie — c'est du football, le seuil lui laisse la ligne). Avant l'approche : 1,00 m.
+  stanceDistMax: 0.25,
+  stanceBearMax: 25,
 };
 
 /**

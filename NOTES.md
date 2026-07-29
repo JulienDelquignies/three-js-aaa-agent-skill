@@ -1022,6 +1022,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    nativement animkit, + footLock coupé pendant le geste. Vérifié sur séquence : armé, contact,
    accompagnement — chaque membre appartient à la même action.
 
+12. **L'approche, et la fournée qui a écrit la charte (fournée « attaque »).** approach.js : STANCES
+   par clip (appui à 27-37 cm du ballon → corps à ~0,55 m), anchorFor/stanceOf (aller-retour exact ;
+   bug de signe du côté attrapé à la mesure — écart uniforme de 76°), glide (smoothstep borné), et
+   planStrike : la technique se choisit par ATTEIGNABILITÉ des stances, plus jamais sur la géométrie
+   transitoire (l'oscillateur : contourner son ballon ⇒ « ballon derrière » ⇒ talonnade ⇒ l'ancre
+   saute — pertes 67 → 192). La fournée a cassé le jeu quatre fois et chaque effondrement a produit
+   une LOI (reference/50) : refus nommés qui pilotent (st.deny + anchorHint — sans cap : p50 1,07 m
+   de l'ancre jusqu'au tacle) ; intention qui colle (décider→préparer→s'engager) ; l'assise
+   (escort→0) contre le tapis roulant (l'ancre soudée au ballon fuyait à la vitesse de la marche) ;
+   UNE autorité par corps/phase (double intégration glide+movePlayers = oscillateur 15,7 m/s contre
+   le mur ; touche d'évasion sur une livraison arrivée = control-at-foot 33 %) ; projections du monde
+   en DERNIER (séparation défaite par le glissement) ; courses-pas-photos (flightRace sur le vrai vol
+   — passes interceptées à 2,59 m de marge médiane, jusqu'à 7 m ; liberté du receveur PROJETÉE à
+   l'arrivée — la possession médiane mourait 0,76 s après la réception) ; un instant un contrat
+   (exemption une-touche bornée ≤ 40 %, strike-stance juge le contact) ; budgets statistiques (p95
+   binomial, chantier nommé). Résultat : stance p90 = 2 mm / 0,4° (avant : 1,00 m), record 8,8
+   (référence 8,4), +48 % de passes, 4 harnais verts (approach 21, rules 60, rondo 27, gesture 28).
+   L'audit composé (audit.mjs) : corps 0,58 m ✓ appui 0,30 m ✓ — le défaut restant est dans le CLIP
+   (passage avant du pied ~0,3 s après la frame contact déclarée, à 0,97 m du point de frappe) :
+   chantier suivant = re-calage du swing + warp du pied. Résultats négatifs consignés : A/B de
+   parties entières (chaotique), duel en poursuite (la borne ne mord jamais), défense d'oracles
+   (1 passe/partie), « ballon posé » comme condition de l'assise qui le pose.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

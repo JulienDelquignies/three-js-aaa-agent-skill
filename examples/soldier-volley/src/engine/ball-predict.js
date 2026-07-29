@@ -160,6 +160,31 @@ export function meetPoint(path, from, speed, opts = {}) {
   return i ? i.p : path[path.length - 1].p;
 }
 
+/**
+ * LA COURSE AU VOL. Un couloir de passe n'est pas une géométrie, c'est une COURSE : la question
+ * n'est jamais « à combien de mètres du segment est le défenseur » mais « peut-il rejoindre le vol
+ * AVANT le ballon ». La photo statique (laneClearance) a été mesurée mensongère au point d'en rire :
+ * des passes interceptées avec 2,6 m de marge médiane — et jusqu'à 7 m — parce qu'un ballon au sol
+ * met ~1 s à arriver et qu'un défenseur à 6,5 m/s traverse 6 m dans ce temps-là. L'outil exact
+ * existait déjà (interceptPoint, la course paramétrée en temps) : seul le RECEVEUR s'en servait.
+ * Celle-ci fait courir tout le monde sur le VRAI vol (fantôme intégré par ball.js, pas une droite).
+ * `headStart` donne aux coureurs de l'avance sur le départ du ballon — à n'utiliser QUE si la
+ * défense de ce monde lit l'armé : calibré trop généreux (armé complet, pleine vitesse), le modèle
+ * a étranglé le jeu à 1 passe par partie. La défense du rondo réagit AU DÉPART (assignJobs) ; le
+ * bon appel projette les POSITIONS au moment du départ et laisse headStart à zéro.
+ * @returns {{path, first:{idx,t,slack}|null}} le premier coureur qui gagne la course, et le vol.
+ */
+export function flightRace(from, sol, runners, { speed = 6.5, reaction = 0.18, headStart = 0, reach = 0.9, maxHeight = 2.2, dt = 1 / 30, maxT = 3 } = {}) {
+  const ghost = kick(from, { speed: sol.speed, dirYaw: sol.dirYaw, elevation: sol.elevation, spinAxis: sol.spinAxis ?? [0, 1, 0], spinRev: sol.spinRev ?? 0 });
+  const path = predictPath(ghost, { dt, maxT });
+  let first = null;
+  for (let i = 0; i < runners.length; i++) {
+    const hit = interceptPoint(path, runners[i], speed, { reaction: reaction - headStart, reach, maxHeight });
+    if (hit && (!first || hit.t < first.t)) first = { idx: i, ...hit };
+  }
+  return { path, first };
+}
+
 export { PITCH };
 
 /**

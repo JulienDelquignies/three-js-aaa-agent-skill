@@ -1,6 +1,7 @@
 import { BALL } from './ball.js';
 import { BallBody } from './ball-body.js';
 import { predictPath, solvePass, laneClearance, interceptPoint, PASS_STYLE } from './ball-predict.js';
+import { winding } from './gesture.js';
 
 // rondo — the brain of a "passe à dix": 5 v 5, the team in possession strings passes, the team out
 // of possession hunts the ball. Dependency-free (ball.js + ball-predict.js only) and fully
@@ -62,6 +63,7 @@ export const RONDO = {
   slideMargin: 0.15,        // m — how much closer the opponent must be before going to ground is worth it
   slideMaxBall: 6.0,       // m/s — above this the ball is going too fast to be won by sliding at it
   carryStandoff: 0.4,      // m — how far BEHIND the ball the carrier places himself (0 = off)
+  carrySideBias: 0.55,     // fraction of the standoff shifted to the STRIKING side (pre-aligns the stance)
   evadeAroundBall: true,   // sample the escape directions around the BALL rather than the player
   // --- carrying the ball AWAY from pressure (evadeSpot). Weights, not rules: the answer is a
   // compromise, so it is scored. `evadeKeep` is the one that turns a shuffle into a move.
@@ -76,6 +78,18 @@ export const RONDO = {
   // actually picked, which is the only correct number. See the carve-out in rondo-sim.
   windupBudget: 0.55,
   rushedRadius: 3.2,       // m — inside this, speed breaks ties between gestures (see beginPass)
+  // --- la COURSE au vol (beginPass) : un couloir n'est pas une géométrie, c'est une course.
+  raceSlack: 0.05,         // s — le défenseur qui arrive à ça du receveur gagne la course : passe refusée
+  vetoTtl: 0.6,            // s — un receveur perdu à la course n'est pas re-proposé pendant ce temps
+  intentTtl: 0.9,          // s — une intention de passe pilote l'approche AU PLUS ce temps avant de mourir
+  strikeBallMax: 1.5,      // m/s — une frappe PLANIFIÉE exige un ballon posé (l'assise d'abord, voir beginPass)
+  glideMax: 7.5,           // m/s — l'actionneur du glissement est borné (sous la clause des 8,4 m/s)
+  // le CONTESTE du ballon posé — miroir du prédicat de carrier-owns-the-ball (FOOT_LIMITS.playable /
+  // ownSlack) : l'adversaire conteste s'il est À PORTÉE DE JEU du ballon ET plus près que le porteur
+  // de plus que la tolérance. « Proche » tout court n'est pas un prédicat : le presseur d'un rondo
+  // vit à moins d'un mètre du ballon.
+  contestRadius: 0.9,      // m — portée de jeu (= playable de la règle)
+  contestSlack: 0.35,      // m — l'écart de tolérance (= ownSlack de la règle)
   rushedSlack: 0.5,        // …but only among options within this much of the best-scoring one
   windupCarve: 1,          // how much of it is taken OUT of the hold rather than added after it (0..1)
   // A TURN TAKES TIME. Bounded at turnAccel/speed rad/s like everything else that rotates here, with
@@ -137,26 +151,37 @@ export function strikingFoot(yaw, from, to) {
 export function choosePass(st, cfg = RONDO) {
   const c = st.players[st.possession.carrier];
   if (!c) return null;
-  const opp = foes(st, c.team).map((p) => p.p);
+  const foesL = foes(st, c.team);
+  const opp = foesL.map((p) => p.p);
   // the pass leaves the BALL, not the player's navel — the dribbler carries it a metre or two
   // ahead, and judging the lane from his hips is how a "clear" pass hits a defender's shin
   const origin = [st.ball.p[0], BALL.radius, st.ball.p[2]];
   let best = null;
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
+    // EN VETO : beginPass a fait courir la défense sur le vrai vol vers ce receveur (flightRace) et
+    // elle gagne — re-proposer la même ligne à l'image suivante, c'est mourir en boucle sur un refus.
+    // Le veto expire vite (la défense bouge), et tombe à holdMax : forcé, on joue le moins mauvais.
+    if (st.laneVeto?.[m.id] > st.t && st.hold < cfg.holdMax) continue;
     const d = d2(origin, m.p);
     if (d < cfg.passRange[0] || d > cfg.passRange[1]) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
     const lead = [m.p[0] + m.v[0] * 0.28, BALL.radius, m.p[2] + m.v[1] * 0.28];
     const lane = laneClearance(origin, lead, opp, { corridor: cfg.corridor });
-    const recvPressure = Math.min(...opp.map((o) => d2(o, m.p)), 99);
+    // LA LIBERTÉ DU RECEVEUR SE MESURE À L'ARRIVÉE, PAS SUR LA PHOTO. La pression « maintenant »
+    // notait libre un homme dont le marqueur arrivait pendant l'armé + le vol — mesuré : la
+    // possession médiane tacklée mourait 0,76 s APRÈS la réception, la pression commençait AVEC le
+    // ballon. Les défenseurs sont donc PROJETÉS au moment d'arrivée (armé ~0,4 s + vol au tempo du
+    // jeu) — même philosophie que la course du couloir : le temps, pas la géométrie figée.
+    const tArr = 0.4 + d / 9;
+    const recvPressure = Math.min(...foesL.map((o) => Math.hypot(o.p[0] + o.v[0] * tArr - lead[0], o.p[2] + o.v[1] * tArr - lead[2])), 99);
     // a lofted ball beats a blocked lane, at the cost of being slower and harder to control
     const style = lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
     const blocked = !lane.open && style !== 'lofted';
     if (blocked) continue;
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
-      + Math.min(recvPressure, 9) * 1.15                    // pass to the free man
+      + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
       - Math.abs(d - 10) * 0.32                             // 10 m is the sweet spot
       - (m.id === st.lastPasser ? 2.6 : 0)                  // don't ping-pong
       - (style === 'lofted' ? 2.2 : 0);                     // ground ball whenever possible
@@ -352,9 +377,39 @@ export function assignJobs(st, cfg = RONDO) {
         if (goal && cfg.carryStandoff > 0) {
           const gx = goal[0] - st.ball.p[0], gz = goal[2] - st.ball.p[2];
           const gl = Math.hypot(gx, gz) || 1;
-          p.target = [st.ball.p[0] - (gx / gl) * cfg.carryStandoff, 0, st.ball.p[2] - (gz / gl) * cfg.carryStandoff];
+          // …décalé CÔTÉ PIED FRAPPEUR : la stance d'une passe met le corps sur le côté du ballon, pas
+          // pile derrière. Se tenir derrière-décalé pendant la conduite, c'est arriver à l'engagement
+          // déjà à un demi-pas de l'ancre — mesuré, la porte d'atteignabilité refusait sinon assez
+          // d'engagements pour doubler les pertes (record 4,5 / pertes 64 contre 8,4 / 28).
+          const lat = (p.foot === 'left' ? 1 : -1) * cfg.carrySideBias;
+          const px = -(gx / gl), pz = -(gz / gl);
+          const lx = -pz * lat, lz = px * lat;               // perpendiculaire, côté frappeur
+          p.target = [st.ball.p[0] + (px + lx) * cfg.carryStandoff, 0, st.ball.p[2] + (pz + lz) * cfg.carryStandoff];
           p.push = [gx / gl, gz / gl];                       // the direction the ball should be pushed
         } else { p.target = goal; p.push = null; }
+        // L'INTENTION DE PASSE PILOTE L'APPROCHE. Quand l'engagement a été refusé (ancre hors
+        // d'atteinte, ou fenêtre pas encore ouverte), beginPass a déposé OÙ le geste veut le corps —
+        // derrière le ballon côté PASSE, pas côté fuite. Tant que cette intention est fraîche, c'est
+        // elle la destination : le standoff d'évasion la contredit (p50 = 1,07 m d'écart angulaire
+        // autour du ballon, un pas jamais fait — 122 pertes par tacle en 4 parties). Un joueur qui a
+        // choisi sa passe marche sur sa position de frappe ; l'évasion reprend si l'intention expire.
+        if (p.anchorHint && st.t - p.anchorHint.t < 0.4) {
+          let tx = p.anchorHint.p[0], tz = p.anchorHint.p[1];
+          // …EN CONTOURNANT SON BALLON : l'ancre est souvent de l'autre côté de lui, et la droite
+          // du pas le traverse (not-inside-a-body l'a compté). Si le segment corps→ancre passe dans
+          // le cercle du ballon, on vise un point de PASSAGE décalé perpendiculairement — le détour
+          // d'un pas que fait n'importe quel joueur autour d'un ballon posé.
+          const bx = st.ball.p[0], bz = st.ball.p[2];
+          const dxs = tx - p.p[0], dzs = tz - p.p[2], L2 = dxs * dxs + dzs * dzs || 1;
+          const u = Math.max(0, Math.min(1, ((bx - p.p[0]) * dxs + (bz - p.p[2]) * dzs) / L2));
+          const cx = p.p[0] + dxs * u - bx, cz = p.p[2] + dzs * u - bz;
+          const cd = Math.hypot(cx, cz), AVOID = 0.34;
+          if (u > 0 && u < 1 && cd < AVOID) {
+            const nx = cd > 1e-6 ? cx / cd : -dzs / Math.sqrt(L2), nz = cd > 1e-6 ? cz / cd : dxs / Math.sqrt(L2);
+            tx = bx + nx * AVOID; tz = bz + nz * AVOID;
+          }
+          p.target = [tx, 0, tz];
+        }
         continue;
       }
       // the intended receiver runs onto the ball; everyone else offers an angle
@@ -419,6 +474,15 @@ function movePlayers(st, dt, cfg) {
   for (const p of st.players) {
     // a player on the ground after a slide does not run
     if (p.down > 0) { p.down -= dt; p.v[0] = 0; p.v[1] = 0; p.speed = 0; continue; }
+    // UNE AUTORITÉ PAR CORPS. Pendant l'ARMÉ, c'est l'horloge de geste qui possède la POSITION
+    // (le glissement sur l'ancre, stepGestures) ; `p.v` n'est alors qu'un RAPPORT du mouvement réel
+    // (pour l'animation et l'inertie), pas un état à intégrer. L'intégrer quand même, c'est DEUX
+    // écrivains sur le même corps : position posée + vitesse ré-intégrée = double pas, et l'erreur
+    // se referme en oscillateur (v[n+1] = Δg/dt − v[n]) qui s'amplifie contre les bornes du carré —
+    // mesuré à 15,7 m/s sur un glissement de 28 cm, contre le mur, l'ancre 27 cm dehors. Le
+    // follow-through (après contact), lui, reste au modèle de course : l'élan se dissipe, il ne
+    // se fige pas. (Le lacet a la même loi depuis toujours : « A SWING OWNS THE BODY ».)
+    if (winding(p)) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
     const top = cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press' : 'support'] ?? cfg.speeds.support;
     let wx = 0, wz = 0;
@@ -485,10 +549,16 @@ function movePlayers(st, dt, cfg) {
       else p.yaw += Math.sign(d) * rate * dt;
     }
   }
-  // SEPARATION. Two players had nothing at all stopping them occupying the same point, and measured,
-  // 28 % of frames had a pair inside 45 cm — bodies visibly passing through each other, the cheapest
-  // defect in a crowd to see and to fix. One relaxation pass, each pushed half the overlap: enough to
-  // keep them apart without turning the shape into a physics toy.
+}
+
+// SEPARATION — une CONTRAINTE DU MONDE, pas un détail de la locomotion. Deux joueurs n'avaient
+// rien qui les empêche d'occuper le même point : 28 % des images avec une paire sous 45 cm. Une
+// passe de relaxation, chacun poussé de la moitié du chevauchement. ELLE SE PROJETTE EN DERNIER :
+// tant qu'elle vivait DANS movePlayers, le glissement d'armé (stepGestures, autorité de position
+// pendant le geste) réécrivait la position APRÈS elle et la défaisait — mesuré, le budget
+// players-not-overlapping crevait (2,6 % > 2). L'ordre est une loi de charte : les autorités
+// écrivent, puis le monde projette ses contraintes, une fois, à la fin.
+function separatePlayers(st, cfg) {
   for (let i = 0; i < st.players.length; i++) {
     for (let j = i + 1; j < st.players.length; j++) {
       const a = st.players[i], b = st.players[j];
@@ -519,4 +589,4 @@ function turnover(st, carrier, why) {
 }
 
 export { predictPath };
-export const rondoInternals = { supportSpot, movePlayers, turnover };
+export const rondoInternals = { supportSpot, movePlayers, separatePlayers, turnover };

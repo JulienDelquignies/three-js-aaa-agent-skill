@@ -93,3 +93,41 @@ l'**amplitude des poses** d'`animkit` : les moves sont lisibles mais discrets, e
 caméra un armé plus ample (épaule qui s'ouvre, bras d'équilibre, appui qui pivote) se verrait
 davantage. C'est un travail d'auteur sur les clés, pas de moteur — et le catalogue ne l'attrapera pas :
 il juge la géométrie, pas la beauté du mouvement.
+
+## L'approche (approach.js) : le geste se joue DEPUIS une position
+
+La ligne de temps répondait « quand » ; l'audit membre par membre a posé la question « d'où » avec un
+chiffre : **pied de frappe à 1,00 m du ballon à l'instant du contact** — le clip jouait où le joueur se
+trouvait, la simulation frappait où elle voulait, personne n'alignait les deux. La réponse tient en
+trois objets géométriques purs (tout se prouve dans node, `verify-approach.mjs`, 21 clauses) :
+
+- **LA STANCE** (par clip) : où est le ballon relativement au corps au contact. Fait biomécanique, pas
+  réglage — l'appui se plante à 27–37 cm latéralement du ballon (littérature instep kick), donc le
+  corps est à ~0,55 m, ouvert côté pied frappeur ; la talonnade a le ballon derrière (168°), c'est sa
+  définition.
+- **L'ANCRE** (`anchorFor`) : la position + le lacet qui réalisent cette stance pour CE ballon et CETTE
+  direction de sortie. Aller-retour exact prouvé (`stanceOf`), et le CÔTÉ suit la convention de
+  `situation()` (cross > 0 = ballon à gauche) — la première version avait le signe inverse : stance
+  réalisée au degré près… du mauvais côté du corps. Sabotage nommé depuis.
+- **LE GLISSEMENT** (`glide`) : pendant l'anticipation, le corps est amené sur l'ancre (smoothstep,
+  actionneur borné à `glideMax`), l'ancre recalculée sur le ballon vivant, le couple soudé (le ballon
+  s'assied par `escort`, l'intégrateur déplace, la continuité tient).
+
+Et le choix de technique a changé de nature : **`planStrike` choisit par ATTEIGNABILITÉ des stances**
+(la propre quand on peut la rejoindre dans l'anticipation, l'improvisée quand son ancre est la seule à
+portée, l'improvisation-du-réel à holdMax) — parce qu'une fois l'approche construite, le corps ARRIVE
+tourné vers la passe et la question « quelle surface est légale pour ce relèvement » se dissout. La
+géométrie transitoire d'une approche n'est pas une situation de frappe : interroger la table dessus
+était un oscillateur mesuré (le porteur qui contourne son ballon l'a « derrière lui », talonnade,
+l'ancre saute, le plan repart — pertes par tacle 67 → 192).
+
+Résultat mesuré en partie réelle : **écart de stance p50 = 1 mm, p90 = 2 mm / 0,4°** (contre 1,00 m),
+record de passes à parité (8,8 contre 8,4), +48 % de passes jouées, `strike-stance` au catalogue avec
+ses deux sabotages. L'audit composé confirme corps (0,58 m) et appui (0,30 m) au contact — et localise
+le défaut restant dans le CLIP : le passage avant du pied arrive ~0,3 s après la frame `contact`
+déclarée. C'est le chantier suivant (re-calage du swing + warp du pied), et il est à lui — pas au
+moteur.
+
+Le reste de la fournée est devenu des LOIS (voir **reference/50-charte-moteur.md**) : une autorité par
+corps et par phase, projections du monde en dernier, refus nommés qui pilotent l'approche, intention
+qui colle, courses-pas-photos (`flightRace`), un instant un contrat, budgets statistiques.

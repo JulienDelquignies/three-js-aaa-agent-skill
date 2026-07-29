@@ -1,11 +1,12 @@
 import { BALL, stepBall, kick } from './ball.js';
 import { predictPath } from './ball-predict.js';
-import { solvePass, solveGroundLeg } from './ball-predict.js';
+import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { makeDribbler, dribbleStep, dribbleSteer } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
-import { situation, chooseTechnique, checkAction } from './technique.js';
+import { situation, chooseTechnique, checkAction, TECHNIQUES } from './technique.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, checkGestures } from './gesture.js';
+import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 
 // rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
 // "passe à dix" is won or lost happens here: when the carrier releases, whether the pass beats the
@@ -13,7 +14,7 @@ import { startGesture, stepGesture, abortGesture, busy, winding, checkGestures }
 // renderer, the whole match can be proved in node (verify-rondo) before it is ever drawn.
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
-const { movePlayers, turnover } = rondoInternals;
+const { movePlayers, separatePlayers, turnover } = rondoInternals;
 
 // THE TIMING OF EVERY GESTURE, taken from the animation itself. `contact` is the frame at which the
 // boot meets the ball, so it IS the anticipation: the swing before the strike. Reading it from the
@@ -23,48 +24,101 @@ const MOVE_TIMING = Object.fromEntries(Object.entries(MOVES)
   .filter(([, m]) => m.contact != null)
   .map(([k, m]) => [k, { duration: m.duration, contact: m.contact }]));
 
-/** COMMIT to the chosen pass. Inverse ballistics decides it can be played; the gesture decides when. */
-function beginPass(st, choice, cfg) {
-  const c = st.players[st.possession.carrier];
-  const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
-  const sol = solvePass(from, choice.lead, { style: choice.style });
-  if (!sol) return false;
+/** Un refus a une CAUSE NOMMÉE, et elle se compte. C'est le seul moyen de voir un étranglement :
+ * quand le jeu s'effondre, le premier chiffre à lire est « qui dit non, et combien de fois ». */
+function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; }
 
-  // THE GESTURE COMES FIRST, AND IT CAN SAY NO.
-  // Bearing is the angle between where the player is FACING and where the ball is — 0 = straight ahead,
-  // ±180° = behind him. Together with the distance, the height and where the pass has to GO, that is
-  // the whole question "is this strike physically available to this body right now", and the technique
-  // table is what answers it. It was being asked AFTER the ball had already been kicked, purely to
-  // label the event: when the table returned NOTHING — no foot, no surface, no gesture that reaches
-  // this ball and sends it there — the pass went out anyway, off a ball the man could not have touched.
-  // That is the whole of `ball-ahead-at-strike`, and no amount of tuning elsewhere can fix it, because
-  // the impossible strike is not a bad choice among legal ones: it is an illegal one being allowed.
-  // Now the selection gates the kick. No technique, no pass — he keeps the ball and turns onto it
-  // (he faces his ball, so the window opens within a stride), or he backheels, which the table allows
-  // precisely because that IS the gesture for a ball behind you.
-  const tx = choice.lead[0] - c.p[0], tz = choice.lead[2] - c.p[2];
-  const fx2 = Math.cos(c.yaw), fz2 = Math.sin(c.yaw);
-  const outBearing = (Math.atan2(fx2 * tz - fz2 * tx, fx2 * tx + fz2 * tz) * 180) / Math.PI;
-  // measured on the ball AS IT LIES — this used to read st.ball.v after the kick had overwritten it,
-  // i.e. it described the ball leaving rather than the ball being struck
-  const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
-  const opts = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing });
-  if (!opts.length) return false;
-  // UNDER PRESSURE YOU PLAY QUICKER — BUT SPEED IS A TIEBREAK, NOT A CRITERION. The table ranks
-  // gestures by how well they fit the geometry, which is right with time and incomplete without it: it
-  // kept choosing `passePivot` (0.52 s of anticipation) with a man arriving, and 8 of 21 swings were
-  // tackled mid-windup. But "then take the quickest legal one" was worse in a way that is worth
-  // recording: the quickest legal gesture is almost always a flick or a BACKHEEL, so 19 of 32 passes
-  // came out as one-touch flicks and 9 as backheels struck at 175°. A rondo is not played entirely
-  // with the heel. Speed now breaks ties among gestures that are ALREADY good — within `rushedSlack`
-  // of the best score — which is what a player under pressure actually does: the simplest of his real
-  // options, not the fastest thing his body can do.
+/**
+ * COMMIT to the chosen pass. Inverse ballistics decides it can be played; the gesture decides when.
+ * PENDANT UNE LIVRAISON (contrôle en route vers le pied), tout se planifie contre le point
+ * d'ARRIVÉE du ballon (`opts.ballRef`), pas contre sa position de voyage : c'est ainsi qu'un vrai
+ * joueur prépare la suite pendant que le ballon vient à lui — et l'engagement n'est accordé que si
+ * le contact du geste tombe APRÈS l'arrivée (le pied et le ballon se rejoignent : la première
+ * intention du une-deux). Bloquer toute intention pendant la livraison a été mesuré : 4 109 refus,
+ * 0,3 s d'exposition de plus par possession, record 8,5 → 5 — on ne joue pas au rondo en
+ * attendant que le ballon soit mort pour commencer à penser.
+ */
+function beginPass(st, choice, cfg, opts = {}) {
+  const c = st.players[st.possession.carrier];
+  const bref = opts.ballRef ?? [st.ball.p[0], st.ball.p[2]];
+  const from = [bref[0], BALL.radius, bref[1]];
+  const sol = solvePass(from, choice.lead, { style: choice.style });
+  if (!sol) { c.intent = null; return deny(st, 'balistique'); }   // ce plan n'a pas de vol : il meurt
+
+  // QUELLE TECHNIQUE ? DEUX RÉGIMES, parce que le temps change la nature de la question.
+  //
+  // AVEC LE TEMPS (le cas normal) : le corps va REJOINDRE sa position de frappe avant de frapper —
+  // il arrivera tourné vers la passe, la stance réalisée par construction. Interroger la table sur
+  // la géométrie DU MOMENT pendant cette approche était l'oscillateur mesuré : en marchant autour
+  // de son ballon, le porteur l'a transitoirement derrière lui, la table basculait sur talonnade /
+  // déviation, l'ancre sautait de l'autre côté du corps, le plan repartait de zéro (refus d'ancre
+  // sans AUCUN progrès sur 1 971 images, pertes par tacle 67 → 192). La géométrie transitoire d'une
+  // approche n'est pas une situation de frappe : c'est le chemin vers elle. planStrike (approach.js)
+  // choisit donc par ATTEIGNABILITÉ : la stance propre quand on peut la rejoindre dans
+  // l'anticipation du geste, la surface improvisée quand son ancre est la seule à portée.
   const nearFoe = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
-  const antic = (o) => (MOVE_TIMING[o.tech.clip] || MOVE_TIMING.passe).contact;
-  let pick = opts[0];
-  if (nearFoe < cfg.rushedRadius) {
-    const good = opts.filter((o) => o.score >= opts[0].score - cfg.rushedSlack);
+  // l'urgence est TEMPORELLE (holdMax) ou SITUATIONNELLE (opts.forceUrgent : ballon contesté — un
+  // adversaire est en train de le gagner ; on le joue MAINTENANT, du geste légal le plus prompt)
+  const urgent = opts.forceUrgent || st.hold >= cfg.holdMax - 0.1;
+  const outYaw = Math.atan2(choice.lead[2] - bref[1], choice.lead[0] - bref[0]);
+  let pick, move, stance, anchor;
+  if (!urgent) {
+    // les surfaces de PLAN : jouables sur un ballon posé (une « première » sur un ballon qu'on
+    // s'est soi-même assis serait une contradiction — firstTime reste à l'improvisation)
+    const cands = TECHNIQUES.filter((t) => t.intent === 'pass' && !t.firstTime).map((t) => ({
+      clip: t.clip, pref: t.accuracy, antic: (MOVE_TIMING[t.clip] || MOVE_TIMING.passe).contact, data: t,
+    }));
+    // pendant une livraison, la MARCHE d'ici l'arrivée s'ajoute au chemin permis : le corps se
+    // place pendant que le ballon voyage — c'est tout l'intérêt de planifier contre l'arrivée.
+    // (rushedSlack N'EST PAS cfg.rushedSlack : celui-là vit sur l'échelle de score de la table des
+    // techniques ; planStrike note sur l'échelle des préférences 0–1 et porte son propre défaut.)
+    const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
+      { rushed: nearFoe < cfg.rushedRadius, extraReach: (opts.deliveryLeft ?? 0) * 3.0 });
+    // UN REFUS PILOTE L'APPROCHE : même sans stance atteignable, le plan dit OÙ MARCHER (steer) —
+    // sans ce cap, le porteur restait sur son standoff d'évasion à p50 = 1,07 m de l'ancre,
+    // image après image, jusqu'au tacle (1 573 refus, 122 tacles, médiane de possession 0 passe).
+    if (plan.steer) c.anchorHint = { p: plan.steer.anchor.p, t: st.t };
+    if (!plan.best) { st._denyD?.push(plan.steer?.d ?? -1); return deny(st, 'ancre'); }
+    // …ET LE PIED REJOINT UN BALLON POSÉ — OU QUI LE SERA À TEMPS. L'ancre est recalculée sur le
+    // ballon vivant : engagée sur un ballon encore lancé, elle FUYAIT pendant l'armé (glissement
+    // mesuré à 10,2 m/s). Donc, hors livraison : ballon posé (l'assise freine, le refus dure
+    // quelques images). PENDANT une livraison : l'engagement est TEMPOREL — le contact du geste
+    // doit tomber après l'arrivée du ballon au point contre lequel ce plan est construit ; l'armé
+    // commence pendant que le ballon finit d'arriver, c'est le une-touche préparé. (Bloquer tout
+    // engagement en livraison a été mesuré : +0,3 s d'exposition par possession, record 8,5 → 4.
+    // Le une-touche n'était PAS le coupable des contrôles morts — c'étaient la touche d'évasion
+    // du dribbleur sur la livraison et les hints survivants, corrigés par la chaîne d'autorité.)
+    if (opts.deliveryLeft != null) {
+      if (opts.deliveryLeft > (MOVE_TIMING[plan.best.clip] || MOVE_TIMING.passe).contact) return deny(st, 'livraison');
+    } else if (Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax) return deny(st, 'ballon-vif');
+    pick = { tech: plan.best.data, foot: plan.best.foot };
+    move = MOVE_TIMING[plan.best.clip] || MOVE_TIMING.passe;
+    stance = STANCES[plan.best.clip] || STANCES.passe;
+    anchor = plan.best.anchor;
+  } else {
+    // SANS LE TEMPS (holdMax) : plus d'approche possible — on improvise DEPUIS la géométrie réelle,
+    // et c'est ici que la table joue son vrai rôle : quelle surface atteint CE ballon-là, posé là où
+    // il est, dans ce regard-là. C'est la talonnade honnête, la déviation de première — pas un choix
+    // de confort mais le dernier geste légal disponible.
+    const tx = choice.lead[0] - c.p[0], tz = choice.lead[2] - c.p[2];
+    const fx2 = Math.cos(c.yaw), fz2 = Math.sin(c.yaw);
+    const outBearing = (Math.atan2(fx2 * tz - fz2 * tx, fx2 * tx + fz2 * tz) * 180) / Math.PI;
+    const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
+    const topts = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing });
+    if (!topts.length) return deny(st, 'technique');
+    // pressé (il l'est, par définition ici) : la vitesse départage les gestes DÉJÀ bons
+    const antic = (o) => (MOVE_TIMING[o.tech.clip] || MOVE_TIMING.passe).contact;
+    const good = topts.filter((o) => o.score >= topts[0].score - cfg.rushedSlack);
     pick = good.reduce((b, o) => (antic(o) < antic(b) ? o : b), good[0]);
+    move = MOVE_TIMING[pick.tech.clip] || MOVE_TIMING.passe;
+    stance = STANCES[pick.tech.clip] || STANCES.passe;
+    anchor = anchorFor(bref, outYaw, pick.foot, stance);
+    c.anchorHint = { p: anchor.p, t: st.t };
+    // borné même en urgence : l'inatteignable reste un téléport déguisé, donc refusé
+    if (!reachable([c.p[0], c.p[2]], anchor, move.contact, { adjustSpeed: 4.5, hardMax: 1.1 })) {
+      st._denyD?.push(Math.hypot(anchor.p[0] - c.p[0], anchor.p[1] - c.p[2]));
+      return deny(st, 'ancre');
+    }
   }
 
   // IS IT TIME? Only answerable once the gesture is known, because the carve is that gesture's OWN
@@ -72,8 +126,29 @@ function beginPass(st, choice, cfg) {
   // `passePivot` at 0.52, so carving an average left the pivot exposed for a quarter of a second it did
   // not have — 8 of 21 swings tackled mid-windup, and possession collapsed. He commits exactly early
   // enough that the ball still leaves at holdMin, whichever gesture he chose.
-  const move = MOVE_TIMING[pick.tech.clip] || MOVE_TIMING.passe;
-  if (st.hold < cfg.holdMin - move.contact * cfg.windupCarve) return false;
+  if (st.hold < cfg.holdMin - move.contact * cfg.windupCarve) return deny(st, 'timing');
+
+  // LA COURSE. Le couloir de choosePass est une photo (des mètres perpendiculaires, MAINTENANT) ;
+  // une interception est une COURSE (des secondes, pendant le vol). Mesuré sur 4 parties : les
+  // passes interceptées avaient 2,59 m de marge médiane à la décision — et jusqu'à 7 m. Sept mètres
+  // ne se ferment pas en 0,4 s d'armé : c'est le modèle qui était faux, pas la défense qui était
+  // rapide. On fait donc courir la défense sur le VRAI vol résolu (flightRace), EN MIROIR EXACT de
+  // ce qu'elle fera (assignJobs) : elle réagit AU DÉPART du ballon — pas pendant l'armé — depuis là
+  // où l'armé l'aura laissée (positions PROJETÉES de move.contact ; le premier modèle donnait à
+  // tous l'armé complet d'avance à pleine vitesse, et le jeu est tombé à 1 passe par partie — une
+  // défense d'oracles n'existe pas plus qu'une défense aveugle). Si elle gagne sur le receveur, la
+  // passe est REFUSÉE et le receveur mis en VETO un instant — sinon choosePass re-propose la même
+  // ligne condamnée image après image. À holdMax le veto tombe : forcé, on joue le moins mauvais.
+  const T = move.contact;
+  const defs = st.players.filter((q) => q.team !== c.team && q.down <= 0);
+  const race = flightRace(from, sol, defs.map((q) => [q.p[0] + q.v[0] * T, 0, q.p[2] + q.v[1] * T]), { speed: cfg.speeds.chase });
+  const rec = st.players[choice.to.id];
+  const meet = rec ? interceptPoint(race.path, [rec.p[0] + rec.v[0] * T, 0, rec.p[2] + rec.v[1] * T], cfg.speeds.chase, { reaction: 0 }) : null;
+  if (!urgent && st.hold < cfg.holdMax && race.first && (!meet || race.first.t < meet.t + cfg.raceSlack)) {
+    (st.laneVeto ??= {})[choice.to.id] = st.t + cfg.vetoTtl;
+    c.intent = null;                                        // course perdue : le plan meurt, on re-décide
+    return deny(st, 'course');
+  }
 
   // HE COMMITS TO THE GESTURE. The ball does NOT leave here — it leaves when the swing reaches its
   // contact frame, which is the whole inversion (see gesture.js). What used to happen was: strike the
@@ -81,7 +156,8 @@ function beginPass(st, choice, cfg) {
   // not still be winding up while the ball was already gone. That bought synchronisation by throwing
   // away the entire beginning of the movement — which is why there was no visible movement.
   c.foot = pick.foot;
-  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick }, log: st.gestures });
+  c.intent = null;                                          // l'intention a abouti : le geste prend le relais
+  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw }, log: st.gestures });
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, tech: pick.tech.id, move: pick.tech.clip, foot: pick.foot, anticipation: move.contact });
   return true;
 }
@@ -96,7 +172,7 @@ function beginPass(st, choice, cfg) {
  * the geometry recorded on the event is the geometry the strike actually had.
  */
 function strikeNow(st, c, cfg) {
-  const { choice, pick } = c.act.payload;
+  const { choice, pick, stance } = c.act.payload;
   const rec = st.players[choice.to.id];
   const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
   const lead = rec ? [rec.p[0] + rec.v[0] * 0.18, 0, rec.p[2] + rec.v[1] * 0.18] : choice.lead;
@@ -123,6 +199,14 @@ function strikeNow(st, c, cfg) {
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure
     // is a different picture, so the action carries its own justification
     tech: pick.tech.id, surface: pick.surface, side: sit.side, dist: +sit.dist.toFixed(2), height: +from[1].toFixed(2), out: +outBearing.toFixed(1),
+    // L'ÉCART DE STANCE RÉALISÉ — la question de l'audit (« le pied est-il là où le geste le suppose ? »)
+    // devenue un nombre sur chaque frappe. dist en m ; relèvement en °, signé côté pied frappeur.
+    stanceD: stance ? +Math.abs(sit.dist - stance.dist).toFixed(3) : null,
+    // « positif côté pied frappeur » se lit sur sit.side, pas sur une multiplication aveugle par le
+    // pied : pour un gaucher, un ballon à gauche EST côté frappeur (+24°), et l'ancienne formule le
+    // comptait −24 — 48° d'erreur fantôme sur la moitié des passes, attrapée à la première mesure.
+    // replié dans [−180, 180] : une talonnade à 168° comparée sans repli donnait −336°
+    stanceB: stance ? +((((sit.side === pick.foot ? 1 : -1) * sit.bearing - stance.bearing + 540) % 360) - 180).toFixed(1) : null,
   });
 }
 
@@ -152,11 +236,53 @@ function stepGestures(st, dt, cfg) {
       // he ran on — so the strike happened off a stale position and his separation fell from 2.09 m to
       // 1.53 m, which is the difference between passing on the move and being a statue. The ball is at
       // his feet: it goes where he goes until the boot sends it somewhere else.
-      // …ET C'EST UNE VITESSE, PAS UN DÉPLACEMENT. J'avais écrit `ball.p += v_joueur·dt`, ce qui
-      // fabrique un mouvement que rien ne justifie : 936 images d'advection fantôme jusqu'à 2,9 m/s,
-      // un ballon qui avance sans avoir de vitesse. `escort` donne au ballon la vitesse du porteur et
-      // laisse l'intégrateur faire le déplacement — continu par construction.
-      st.ball.escort([p.v[0], p.v[1]], dt);
+      // LE COUPLE CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ — dans les deux sens. Avant : le corps
+      // décélérait (il s'engage) pendant que le ballon gardait son inertie ; mesuré, le couple
+      // divergeait de 0,4 m pendant le geste et le pied frappait du vide. Maintenant :
+      //   le BALLON FREINE (escort vers zéro : un joueur qui plante son appui a posé son ballon —
+      //   c'est une vitesse relaxée, l'intégrateur déplace, la continuité tient) — SAUF si une
+      //   LIVRAISON de contrôle voyage encore vers lui : elle est l'autorité du ballon jusqu'à
+      //   l'arrivée (un armé une-touche commence pendant qu'elle finit — freiner ici la tuerait) ;
+      if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
+      //   et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se
+      //   règlent pendant l'armé, comme un vrai joueur ajuste ses derniers appuis. La vitesse écrite
+      //   est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
+      if (p.act.payload?.stance) {
+        const A = p.act.payload;
+        // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au
+        // début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
+        const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance);
+        // …et l'ancre reste DANS le carré : un ballon joué près de la ligne peut demander un corps
+        // de l'autre côté d'elle — le joueur s'arrête à la craie, il ne la traverse pas. Sans cette
+        // clampe, le glissement poussait dehors pendant que movePlayers replaquait dedans.
+        anchor.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, anchor.p[0]));
+        anchor.p[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, anchor.p[1]));
+        const t01 = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation));
+        const g = glide(A.from, A.fromYaw, anchor, t01);
+        // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : la droite d'un glissement peut passer
+        // par le point où le ballon est posé (l'ancre est de l'autre côté de lui) — le chemin est
+        // poussé radialement hors du cercle du ballon. Les stances finissent toutes au-delà de ce
+        // rayon (talonnade 0,38 m > 0,32), donc le contournement ne combat jamais l'arrivée.
+        {
+          const bx = g.p[0] - st.ball.p[0], bz = g.p[1] - st.ball.p[2];
+          const bd = Math.hypot(bx, bz), AVOID = 0.32;
+          if (bd < AVOID && bd > 1e-6) { g.p[0] = st.ball.p[0] + (bx / bd) * AVOID; g.p[1] = st.ball.p[2] + (bz / bd) * AVOID; }
+        }
+        // L'ACTIONNEUR EST BORNÉ : le corps rejoint la courbe du glissement à vitesse humaine au
+        // plus (même loi que le lacet : une demande, un taux borné). La borne rend STRUCTURELLE la
+        // clause « aucun joueur au-dessus de 8,4 m/s » — sans elle, une ancre qui fuit (ballon
+        // encore vivant, cas d'urgence) faisait poursuivre le glissement au-delà de 10 m/s.
+        {
+          const ex = g.p[0] - p.p[0], ez = g.p[1] - p.p[2];
+          const el = Math.hypot(ex, ez), cap = cfg.glideMax * dt;
+          const k = el > cap ? cap / el : 1;
+          p.v[0] = (ex * k) / Math.max(1e-4, dt);
+          p.v[1] = (ez * k) / Math.max(1e-4, dt);
+          p.p[0] += ex * k; p.p[2] += ez * k;
+        }
+        p.yaw = g.yaw; p.yawWant = null;
+        p.speed = Math.hypot(p.v[0], p.v[1]);
+      }
       if (st.pressure >= cfg.tackleTime) {
         abortGesture(p, 'fermé pendant l’armé', { log: st.gestures });
         receive(st, press[0].id, cfg);
@@ -181,6 +307,9 @@ function receive(st, id, cfg = RONDO) {
     } else st.events.push({ t: +st.t.toFixed(2), type: 'loose-kept', by: id });
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
+    p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — le plan
+    //                                        ET le cap de l'ancien plan (un hint survivant pilotait
+    //                                        la première demi-seconde vers l'ancre d'un autre monde)
     // WHICH CONTROL. A ball arriving on the left is taken with the left foot, or with the outside of
     // the right — the technique table decides from the geometry, and the choice is recorded so the
     // catalogue can rule on it. A ball nobody has a legal control for is simply not controlled: it
@@ -217,8 +346,14 @@ function receive(st, id, cfg = RONDO) {
       // ON VISE OÙ LE PIED SERA, PAS OÙ IL EST. Le ballon met le temps de l'accompagnement à arriver ;
       // pendant ce temps le joueur a couru. Viser sa position actuelle, c'est poser le ballon là où il
       // ÉTAIT — ce qui se voit exactement comme le défaut d'origine, en moins brutal.
-      const settleX = p.p[0] + p.v[0] * T + tx * cfg.controlSettle + tz * lat * cfg.footSide;
-      const settleZ = p.p[2] + p.v[1] * T + tz * cfg.controlSettle - tx * lat * cfg.footSide;
+      // …À 0,65 DE LA VITESSE, PAS 1,0 : le receveur DÉCÉLÈRE dans sa réception (l'amorti d'arrivée
+      // de movePlayers freine en approchant la cible), donc projeter sa vitesse INSTANTANÉE sur
+      // toute la durée du geste vise au-delà de lui — mesuré sur 6 graines : 5,2 % de contrôles
+      // finissant à plus d'un mètre, tous entre 1,0 et 1,2 m (le ballon dépasse l'homme qui
+      // ralentit). Le facteur est balayé, pas choisi : 1,0 → 5,2 %, 0,65 → 2,9 %, 0,45 → 3,7 %
+      // (trop court fait l'erreur inverse). 0,65 ≈ la vitesse moyenne d'un freinage linéaire.
+      const settleX = p.p[0] + p.v[0] * T * 0.65 + tx * cfg.controlSettle + tz * lat * cfg.footSide;
+      const settleZ = p.p[2] + p.v[1] * T * 0.65 + tz * cfg.controlSettle - tx * lat * cfg.footSide;
       const dx0 = settleX - st.ball.p[0], dz0 = settleZ - st.ball.p[2];
       const D = Math.hypot(dx0, dz0);
       const v0 = D > 0.02 ? solveGroundLeg(D, T) : 0;
@@ -230,7 +365,10 @@ function receive(st, id, cfg = RONDO) {
         const ux = D > 1e-6 ? dx0 / D : tx, uz = D > 1e-6 ? dz0 / D : tz;
         st.ball.impulse([ux * v0 - st.ball.v[0], -st.ball.v[1], uz * v0 - st.ball.v[2]]);
       }
-      st._settling = { ev: st.events.length, id, at: st.t + T };
+      // le point d'ARRIVÉE fait partie de l'état de la livraison : c'est contre LUI que le nouveau
+      // porteur planifie sa prochaine passe pendant que le ballon voyage (voir beginPass — un vrai
+      // joueur se place pour la suite pendant que le ballon vient à lui, pas après)
+      st._settling = { ev: st.events.length, id, at: st.t + T, p: [settleX, settleZ] };
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
         bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),
@@ -329,13 +467,25 @@ export function rondoStep(st, dt, cfg = RONDO) {
   assignJobs(st, cfg);
   movePlayers(st, dt, cfg);
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
+  // les contraintes du monde se projettent APRÈS toutes les autorités (locomotion PUIS glissement
+  // d'armé) — projetées avant, le dernier écrivain les défaisait (voir separatePlayers)
+  separatePlayers(st, cfg);
   // LA MESURE DU CONTRÔLE ARRIVE QUAND LE BALLON ARRIVE. Un contrôle continu n'a pas de résultat à
   // l'instant du contact ; l'écrire là reviendrait à noter l'intention. On remplit l'événement quand
   // le geste est fini, c'est-à-dire quand le fait existe.
   if (st._settling && st.t >= st._settling.at) {
     const pl = st.players[st._settling.id];
     const ev = st.events[st._settling.ev];
-    if (pl && ev) ev.settle = +d2(pl.p, st.ball.p).toFixed(2);
+    if (pl && ev) {
+      ev.settle = +d2(pl.p, st.ball.p).toFixed(2);
+      // une PRÉPARATION : au moment où la livraison arrive, une décision PLUS RÉCENTE possède déjà
+      // le corps — l'armé de la frappe suivante (winding), ou son intention en approche (intent).
+      // La promesse du contrôle (« le ballon finit au pied ») a été remplacée par un plan plus
+      // neuf ; la juger encore, c'est juger un geste contre le plan d'un autre. strike-stance juge
+      // le contact qui suit (un instant, un contrat), et l'exemption est elle-même BORNÉE dans le
+      // harnais (≤ 40 % des contrôles) pour qu'elle ne devienne pas la norme en silence.
+      if (winding(pl) || pl.intent) ev.oneTouche = true;
+    }
     st._settling = null;
   }
 
@@ -366,7 +516,26 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const heading = csp > 0.4 ? [c.v[0] / csp, c.v[1] / csp] : [Math.cos(c.yaw), Math.sin(c.yaw)];
     const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0 };
     pl.heading = dribbleSteer(st.ball, pl);
-    dribbleStep(st._drb, st.ball, pl, dt);
+    // LA TOUCHE SE POSE QUAND LA PASSE EST CHOISIE. Piloter le corps vers l'ancre sans poser le
+    // ballon était un TAPIS ROULANT, mesuré tel quel : l'ancre est soudée au ballon, la conduite
+    // poussait le ballon côté fuite à la vitesse où le corps marchait côté passe — la distance aux
+    // refus n'a pas bougé d'un centimètre (p50 1,07 → 1,09 m, 1 735 refus). Un joueur qui a choisi
+    // sa passe ne martèle pas son ballon vers l'avant pendant qu'il se place : il le POSE (escort
+    // vers zéro, relaxé — l'intégrateur déplace, la continuité tient), et l'armé continue ce même
+    // freinage. L'évasion reprend telle quelle si l'intention expire (0,4 s sans être rafraîchie).
+    // UNE AUTORITÉ PAR BALLON, PAR PHASE — la chaîne est explicite et exclusive :
+    //   1. LIVRAISON en vol (st._settling) → PERSONNE ne touche le ballon. Le contrôle a calculé sa
+    //      vitesse pour qu'il ARRIVE (solveGroundLeg) ; le freiner le tuait (17,6 % de contrôles
+    //      morts à 1 m), et le laisser au dribbleur était pire d'une façon qu'il a fallu TRACER
+    //      pour croire : le `want` du dribble est l'ÉVASION (c.push), pas le plan — la touche
+    //      renvoyait la livraison ARRIVÉE (d = 0,30 m) repartir à l'opposé du corps pendant que le
+    //      corps marchait vers la stance. Deux intentions sur un ballon = pantomime des deux.
+    //   2. INTENTION fraîche → l'ASSISE (escort vers zéro) : le ballon se pose pour la frappe.
+    //   3. Sinon → la CONDUITE (dribbleStep) : touches d'évasion, le jeu normal du porteur.
+    const delivering = st._settling && st.t < st._settling.at;
+    if (delivering) { /* la livraison est l'autorité : le ballon voyage, on se place (hint) */ }
+    else if (c.anchorHint && st.t - c.anchorHint.t < 0.4) st.ball.escort([0, 0], dt, { tau: 0.22 });
+    else dribbleStep(st._drb, st.ball, pl, dt);
 
     trySlide(st, cfg);                       // a touch that got away can be taken off him
     if (st.phase !== 'carry') return st;      // …and if it was, the phase has already changed
@@ -388,10 +557,58 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // time: it is the last part of the time he already had. He commits one anticipation EARLIER, so
     // the ball still leaves at holdMin. Same football, visible movement.
     // the earliest ANY gesture could need to start; beginPass then re-checks against the one it picked
+    // DÉCIDER → PRÉPARER → S'ENGAGER, et la décision COLLE. Re-choisir la passe à chaque image
+    // pendant que les portes disent non était un oscillateur, mesuré tel quel : le veto de course
+    // bascule le receveur, outYaw saute, l'ANCRE passe de l'autre côté du ballon, et le corps —
+    // piloté vers une cible qui change à 60 Hz — n'arrive jamais (refus d'ancre p50 = 1,02 m, sans
+    // AUCUN progrès sur 1 637 refus ; pertes par tacle 67 → 182). Un joueur choisit SA passe puis
+    // arrange ses appuis POUR ELLE : l'intention est adoptée une fois, elle pilote l'approche
+    // jusqu'à s'engager — et elle ne meurt que de sa mort propre (course perdue, balistique nulle,
+    // ou son délai : un plan qui n'a pas abouti en `intentTtl` est un plan mort, pas un dogme).
     if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && reachNow) {
-      const choice = choosePass(st, cfg);
-      if (choice && (choice.score > 3.2 || st.hold >= cfg.holdMax)) beginPass(st, choice, cfg);
-      else if (st.hold >= cfg.holdMax && choice) beginPass(st, choice, cfg);
+      // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
+      // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon
+      // mouvant : control-at-foot 1 % → 33 %), et pas rien du tout non plus (bloquer l'intention
+      // pendant la livraison : 4 109 refus, 0,3 s d'exposition en plus, record 8,5 → 5). Un vrai
+      // joueur pense sa suite pendant que le ballon vient : beginPass reçoit le point d'arrivée et
+      // le temps de livraison restant, et n'accorde l'engagement que si le contact tombe après.
+      const dlv = st._settling && st.t < st._settling.at && st._settling.id === c.id && st._settling.p ? st._settling : null;
+      if (c.intent && (c.intent.until < st.t || !st.players[c.intent.choice.to.id] || st.players[c.intent.choice.to.id].team !== c.team)) c.intent = null;
+      // ON NE POSE PAS SON BALLON SOUS UN ADVERSAIRE. L'assise freine le ballon ; un ballon
+      // immobile avec un défenseur DESSUS n'est plus une possession, c'est un duel — mesuré :
+      // l'adversaire venait se garer à 0,11 m du ballon posé (le modèle ne lui donne pas encore le
+      // vol de balle debout, c'est le chantier « duel/protection »), et carrier-owns-the-ball est
+      // monté à 58,6 % des images de conduite. Le prédicat est CELUI DE LA RÈGLE — l'adversaire
+      // BAT le porteur au ballon (plus près que lui de l'écart de tolérance, ET à portée de jeu) —
+      // pas « un adversaire est proche » : dans un rondo le presseur vit à moins d'un mètre du
+      // ballon, c'est sa définition, et ce prédicat-là a étranglé le jeu à 98 passes / 505 tacles
+      // (14 073 refus). Contesté ⇒ l'intention meurt et la CONDUITE reprend : les touches
+      // d'évasion emmènent le ballon hors de l'emprise — ce qu'un vrai porteur fait d'un ballon
+      // disputé.
+      const foeBall = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99);
+      const contested = foeBall < cfg.contestRadius && foeBall < d2(c.p, st.ball.p) - cfg.contestSlack;
+      if (contested) {
+        // UN BALLON CONTESTÉ SE JOUE MAINTENANT — pas « se re-dribble sur place ». Reprendre
+        // l'évasion laissait le cycle se répéter (le défenseur suit le ballon : garé, délogé,
+        // regaré — carrier-owns-the-ball 60,8 % en 5 c. 5). Un joueur de rondo dont le ballon est
+        // disputé le sort DU PREMIER GESTE LÉGAL (improvisation d'urgence, veto de course levé :
+        // le moins mauvais ballon vaut mieux que le duel qu'on est en train de perdre) ; s'il n'y a
+        // AUCUN geste légal, alors seulement l'évasion reprend.
+        if (c.intent) c.intent = null;
+        deny(st, 'contesté');
+        const choice = choosePass(st, cfg);
+        if (choice) beginPass(st, choice, cfg, { forceUrgent: true, ...(dlv ? { ballRef: dlv.p, deliveryLeft: dlv.at - st.t } : {}) });
+      } else if (!c.intent) {
+        const choice = choosePass(st, cfg);
+        if (choice && (choice.score > 3.2 || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
+      }
+      if (c.intent) {
+        // l'intention vise le receveur VIVANT : la mène se rafraîchit sur sa course réelle — c'est
+        // le même receveur, pas une re-décision (strikeNow re-résout de toute façon au contact)
+        const rec = st.players[c.intent.choice.to.id];
+        c.intent.choice.lead = [rec.p[0] + rec.v[0] * 0.28, BALL.radius, rec.p[2] + rec.v[1] * 0.28];
+        beginPass(st, c.intent.choice, cfg, dlv ? { ballRef: dlv.p, deliveryLeft: dlv.at - st.t } : {});
+      }
     }
   } else {
     st.ball.integrate(dt);

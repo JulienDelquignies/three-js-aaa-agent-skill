@@ -57,6 +57,7 @@ threejs-aaa/ (the skill)
 │   ├── 47-football-rules.md    impossible-football catalogue (23 rules) + the gesture vocabulary as data
 │   ├── 48-gesture-timeline.md  an action has a beginning and an end: the ball leaves at the contact frame
 │   ├── 49-gait-engine.md       the gait clock: one phase, slaved clips, measured cadence, whole-body layer
+│   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
