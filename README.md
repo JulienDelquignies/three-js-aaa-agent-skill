@@ -100,6 +100,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-squad.mjs       a roster of Mixamo GLBs made interchangeable: facing, scale, clips, bones
 │   ├── verify-bib.mjs        the training bib: two shirt colours on one un-recolourable character atlas
 │   ├── verify-gesture.mjs    an action has a beginning and an end: windup → contact → follow-through
+│   ├── verify-part-tint.mjs  recolour ONE part of a character whose parts share a single material
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   ├── frame-stats.mjs       measure a rendered PNG (mean luminance, contrast, clipping); --selftest proves the PNG filters
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)

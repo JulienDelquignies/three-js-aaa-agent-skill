@@ -245,6 +245,20 @@ resolve regardless of install location. Each prints `--help`.
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-bib.mjs
   ```
+  **…but check the file before you build a garment.** A bib is the right answer only when the shirt
+  genuinely cannot be addressed on its own. MEASURE THAT FIRST: in three.js the material is an
+  attribute of the DRAW CALL, so if the shirt is its own mesh — which it very often is, even when the
+  whole character shares one atlas and one material — cloning that mesh's material and setting
+  `.color` recolours the shirt and **cannot** reach the skin. `shanon.glb` turned out to have 7 meshes
+  for 2 materials, with `Ch38_Shirt` already separate; the bib was built to work around a premise that
+  a two-minute inspection would have refuted. `engine/part-tint.js` is that tool, and its contract's
+  load-bearing clause is not "the shirt changed colour" but "the tinted material is shared with
+  nothing else", which is a structural proof rather than a visual one. Use `.color` (it MULTIPLIES the
+  map) rather than replacing the texture, so folds, seams, crest and baked AO survive — a flat fill
+  gives the right colour and a cardboard garment:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-part-tint.mjs
+  ```
 - **Make an action have a beginning and an end** — `engine/gesture.js`. THE difference between a game
   and an illustrated simulation. The usual shape is: the sim strikes the ball, then asks the character
   for a pose — so the animation *comments on* the ball instead of producing it, and the only way to

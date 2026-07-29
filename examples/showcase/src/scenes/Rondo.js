@@ -7,7 +7,7 @@ import { makeTheme } from '../engine/club-theme.js';
 import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js';
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
 import { buildKit } from '../engine/kit.js';
-import { buildBib } from '../engine/bib.js';
+import { tintPart } from '../engine/part-tint.js';
 import { loadSquad, setCloner } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js';
@@ -60,7 +60,7 @@ export class Rondo {
     // ---- night: floodlights + one shadow-casting sun fitted to the pitch
     this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model });
     this.disposables.push(this.night);
-    this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [] };
+    this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [], gestes: [] };
 
     this._tier = q.get('q') || 'high';   // the post chain is built in camera(), once we have one
 
@@ -121,12 +121,13 @@ export class Rondo {
       // uses is a BIB: one team keeps its strip, the other pulls a coloured one over the top. Minimal
       // geometry, one flat colour, nothing to get wrong — and it is the true answer rather than a
       // workaround.
-      if (p.team === 1) {
-        const bib = buildBib(model3d, { color: TEAMS[1].primary });
-        if (bib.group) { model3d.add(bib.group); this.night.light(bib.group); }
-        if (bib.check && !bib.check.ok) this._reports.kits.push(bib.check.issues);
-        if (bib.contract && !bib.contract.ok) this._reports.kits.push(bib.contract.issues);
-      }
+      // DEUX COULEURS D'ÉQUIPE, SANS VÊTEMENT EN PLUS. La chasuble était un contournement d'une
+      // supposition fausse : j'avais écrit que maillot, peau et crampons partageaient un matériau et
+      // qu'on ne pouvait donc pas les séparer. Mesuré, le fichier contient SEPT meshes dont un
+      // `Ch38_Shirt`, et le matériau est un attribut du draw call — teindre le maillot ne peut pas
+      // atteindre la peau. Voir engine/part-tint.js.
+      const tint = tintPart(model3d, { match: /Shirt/i, color: TEAMS[p.team].primary });
+      if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands
       if (this.kits) {
@@ -162,7 +163,18 @@ export class Rondo {
     // other — the player simply would not swing his leg, silently. And the gesture must be the one the
     // TECHNIQUE named: a backheel and an inside pass are not the same movement, and at this camera
     // distance playing one for the other is the difference between football and mime.
-    const MOVE_IDS = ['passe', 'frappe', 'talonnade', 'amorti', 'tacle'];
+    // LES CLIPS SONT DÉRIVÉS DE LA TABLE DES TECHNIQUES, PAS ÉNUMÉRÉS À LA MAIN. Cette ligne tenait
+    // cinq noms écrits en dur, et `_playTech` retombe sur `set.passe` quand le clip demandé manque :
+    // mesuré, 502 gestes de ballon sur 876 (57,3 %) dessinaient une passe de l'intérieur QUELLE QUE
+    // SOIT la technique choisie. Les huit gestes ajoutés à la session précédente — passe en pivot,
+    // extérieur, déviation, contrôle semelle, amorti cuisse… — n'ont jamais été visibles une seule
+    // fois à l'écran. C'est la vraie raison de « ça se voit même pas le mouvement », bien avant
+    // l'amplitude des poses : on regardait le mauvais geste une fois sur deux.
+    // Dériver la liste de TECHNIQUES rend l'oubli impossible : ajouter une technique compile son clip.
+    const MOVE_IDS = [...new Set([
+      ...Object.values(TECHNIQUES_BY_ID).map((t) => t.clip).filter((c) => MOVES[c]),
+      'passe', 'frappe', 'amorti', 'tacle',
+    ])];
     this.gest = new Map();
     for (const pl of this.players) {
       if (this.gest.has(pl.rig)) continue;
@@ -171,6 +183,13 @@ export class Rondo {
         set[id] = { right: toClip(MOVES[id], pl.model), left: toClip(mirrorMove(MOVES[id]), pl.model) };
       }
       this.gest.set(pl.rig, set);
+    }
+    // …et on le prouve au démarrage plutôt qu'à l'usage : toute technique dont le clip n'est pas
+    // compilé est un geste que le joueur jouera sans qu'on le voie.
+    {
+      const set = this.gest.values().next().value || {};
+      const manquants = Object.values(TECHNIQUES_BY_ID).map((t) => t.clip).filter((c) => !set[c]);
+      if (manquants.length) this._reports.gestes.push(`techniques sans clip compilé : ${[...new Set(manquants)].join(', ')}`);
     }
 
     this._hud = document.getElementById('score');
@@ -223,7 +242,11 @@ export class Rondo {
     const set = this.gest.get(pl.rig);
     if (!set) return;
     const move = e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
-    const pair = set[move] || set.passe;
+    // UN CLIP MANQUANT DOIT SE VOIR. Ce repli était silencieux (`set[move] || set.passe`), et c'est
+    // exactement pourquoi 57 % des gestes ont pu dessiner le mauvais mouvement pendant toute une
+    // session sans qu'aucun contrat ne bronche : le jeu affichait quelque chose de plausible. Un repli
+    // qui se tait est pire qu'une erreur.
+    const pair = set[move] || (this._reports.gestes.push(`clip absent : ${move}`), set.passe);
     const clip = e.foot === 'left' ? pair.left : pair.right;
     if (clip) playGesture(pl.mixer, clip, { from: from === 'contact' ? (clip.userData?.contact ?? 0) : 0, fade: 0.06 });
   }
