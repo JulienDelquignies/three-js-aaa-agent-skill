@@ -987,6 +987,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    Reste (ordre validé) : approach (parité du pied), warp/gesture-warp, pose-warp, foot-plant,
    inertialize (x(h)/x(0)=0,597, pas 0,5), lean.
 
+9. ✅ **Animation — les gestes réécrits contre la biomécanique** *(fait)* — animkit refondu +
+   `checkStrike` + verify-animkit 79/79. Mesures : 9 os sur 22 jamais animés, bassin à 0° sur toutes
+   les frappes, séquence proximo-distale NULLE (cuisse et tibia sur la même clé), et le contrat
+   lui-même interdisait une frappe réaliste (plafond 14 rad/s contre 19,8–28 mesurés au genou d'élite
+   → plafond par chaîne : jambes 30, reste 14). Chaque frappe : bassin tôt puis figé (≤2° appui→contact),
+   buste −14° puis rotation 22°, tête sur le ballon (quiet eye), bras OPPOSÉ en équilibre (piège du
+   bras homolatéral soudé en sabotage), jambe d'appui 26°→14°, genou à 15 rad/s. Trois régimes
+   (frappe/pivot/pichenette), talonnade = exception littérale (bassin carré, tête HAUTE : la tromperie
+   est le geste, clauses propres). Piège de format : os absent d'une clé = pose de base, pas
+   interpolation (19 rad/s attrapés au premier essai). Vérifié à l'écran : bras d'équilibre, tête
+   baissée, poids sur l'appui.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

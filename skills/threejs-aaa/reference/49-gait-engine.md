@@ -80,3 +80,39 @@ gesture.js), `pose-warp.js` (stride/orientation warping : un clip avant → tout
 `foot-plant.js` (alpha lissé), `inertialize.js` (transitions ressort, demi-vie 0,05–0,25 s — attention :
 avec le ressort critique de Holden, x(h)/x(0) = 0,597, PAS 0,5 ; la clause naïve était fausse),
 `lean.js` (banking par accélération). Chacun avec contrat + sabotages, dans cet ordre.
+
+---
+
+# Deuxième passe : les gestes réécrits contre la biomécanique publiée
+
+Les 20 moves passaient le contrat anatomique — et restaient faux. Trois mesures le disaient :
+
+- **9 os sur 22 n'étaient animés dans AUCUN geste** (Spine2, Neck, clavicules, mains, orteils) ; le
+  bassin était à 0° sur toutes les frappes ; 6,7 os animés par geste sur 65 disponibles.
+- **La séquence proximo-distale de `frappe` était nulle** : cuisse et tibia atteignaient leur extrême
+  sur la même clé, là où la biomécanique exige cuisse PUIS tibia PUIS pied (Kellis & Katis) — le pic
+  du tibia tombe AU contact.
+- **Le contrat lui-même interdisait une frappe réaliste** : plafond uniforme de 14 rad/s (802°/s),
+  contre 19,8–28 rad/s (1134–1604°/s) mesurés au genou chez l'élite (Petrolo et al., revue
+  systématique). Nos frappes plafonnaient à 7,5 rad/s : 3,5 à 5 fois trop lent, une part directe du
+  rendu « mou ». Le plafond est désormais PAR CHAÎNE : jambes 30 rad/s, tout le reste 14 — un bras à
+  20 rad/s reste un bug.
+
+Chaque frappe porte maintenant : le bassin qui tourne tôt puis **se fige** (≤ 2° entre l'appui et le
+contact — c'est ce que fait l'élite), le buste en arrière de 13–17° à l'armé puis en rotation ~22°
+vers le côté non frappeur, la **tête sur le ballon** jusqu'au contact (quiet eye : la fixation finale
+dépasse 1 s chez ceux qui marquent) puis vers la cible, le **bras opposé** en équilibre, la **jambe
+d'appui** plantée genou fléchi ~26° qui s'étend au contact, et le genou frappeur à ~15 rad/s en phase
+d'accélération.
+
+`checkStrike` rend un geste plat impossible à livrer, en trois régimes — frappe armée (proximo-distale
+exigée), pivot, pichenette (extérieur/déviation : la jambe reste sous le corps PAR mécanique, le seuil
+suit le geste). La **talonnade est l'exception littérale** : bassin carré, tête HAUTE — la tromperie
+est le geste — et elle a ses propres clauses. Sabotages : l'ancienne `frappe` plate (condamnée sur
+5 clauses), et le **piège du bras homolatéral** trouvé par un réfuteur — tous les moves étant pied
+droit, une clause qui mesurerait le bras droit validerait un bras d'équilibre mort ; celle-ci mesure
+le gauche, et le piège est soudé dans le harnais.
+
+Piège de format rencontré : un os absent d'une clé retombe sur la POSE DE BASE, pas sur
+l'interpolation — le bras droit a fait 12° → −60° → −18° en 0,1 s (19 rad/s) au premier essai, attrapé
+par le contrat. Chaque os animé est donc keyé à chaque clé.

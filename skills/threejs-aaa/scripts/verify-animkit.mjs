@@ -3,7 +3,7 @@
 // ANATOMICALLY SANE animation under checkClip — known Mixamo bones only, sorted keys, normalized
 // quaternions, bounded angular velocity (no teleporting limbs), looping moves land where they start,
 // knees/hips inside their range. Plus determinism and named sabotages.
-import { MOVES, resolveTracks, checkClip, eulerToQuat, quatAngle, MIXAMO_BONES, mirrorMove, BASE_POSE, mirrorEuler } from '../assets/starter/src/engine/animkit.js';
+import { MOVES, resolveTracks, checkClip, checkStrike, eulerToQuat, quatAngle, MIXAMO_BONES, mirrorMove, BASE_POSE, mirrorEuler } from '../assets/starter/src/engine/animkit.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -31,9 +31,20 @@ ok('les 22 os canoniques Mixamo déclarés', MIXAMO_BONES.length === 22);
   const left = mirrorMove(MOVES.passe);
   const c = checkClip(resolveTracks(left));
   ok('passe miroir (pied gauche) anatomiquement saine', c.ok, c.issues[0] || '');
-  const rightKey = MOVES.passe.keys.find((k) => k.pose.RightUpLeg);
-  const leftKey = left.keys.find((k) => k.pose.LeftUpLeg);
-  ok('la jambe de frappe a changé de côté', !!leftKey && !leftKey.pose.RightUpLeg);
+  // « la jambe de frappe a changé de côté » se mesure à l'AMPLITUDE, plus à la présence : depuis que
+  // la jambe d'appui est animée (c'était une clause d'expressivité), TOUTES les clés keyent les deux
+  // jambes — l'ancienne version de cette clause, « la clé gauche ne doit pas keyer la droite »,
+  // condamnait donc précisément le progrès qu'elle était censée protéger.
+  const excur = (spec, bone) => {
+    const ks = resolveTracks(spec).tracks[bone] || [];
+    let w = 0; for (const k of ks) w = Math.max(w, quatAngle(ks[0].q, k.q));
+    return w;
+  };
+  ok('la jambe de frappe a changé de côté (l\'amplitude domine à GAUCHE dans le miroir)',
+    excur(left, 'LeftUpLeg') > excur(left, 'RightUpLeg') * 1.5
+    && Math.abs(excur(left, 'LeftUpLeg') - excur(MOVES.passe, 'RightUpLeg')) < 1e-6);
+  const rightKey = MOVES.passe.keys.find((k) => Math.abs(k.t - MOVES.passe.contact) < 1e-6);
+  const leftKey = left.keys.find((k) => Math.abs(k.t - left.contact) < 1e-6);
   ok('la flexion (x) est conservée, le lacet/roulis (y,z) sont inversés',
     leftKey.pose.LeftUpLeg[0] === rightKey.pose.RightUpLeg[0] && leftKey.pose.LeftUpLeg[1] === -rightKey.pose.RightUpLeg[1]);
   ok('miroir involutif (miroir du miroir = original)', JSON.stringify(mirrorMove(mirrorMove(MOVES.passe)).keys) === JSON.stringify(MOVES.passe.keys));
@@ -130,6 +141,86 @@ console.log('\n— la pose neutre est symétrique, et la loi du miroir est exact
   ok('sabotage « pose neutre asymétrique (les deux bras du même côté) » attrapé',
     dq(conj(eulerToQuat(asym.LeftArm)), eulerToQuat(asym.RightArm)) > 0.1);
 }
+
+console.log('\n— l’expressivité des frappes : le corps entier, prouvé —');
+{
+  // Trois régimes, comme au foot : la frappe armée (séquence proximo-distale exigée), le geste
+  // tournant (pivot, talonnade), la pichenette (extérieur, déviation — la jambe reste sous le corps
+  // PAR mécanique ; le seuil suit le geste, jamais l'inverse).
+  const FAMILIES = [
+    [['frappe', 'passe'], {}],
+    [['passePivot'], { proximoDistal: false }],
+    [['passeExterieur', 'deviation'], { proximoDistal: false, flick: true }],
+  ];
+  for (const [ids, opts] of FAMILIES) for (const id of ids) {
+    const r = checkStrike(resolveTracks(MOVES[id]), opts);
+    ok(`« ${id} » engage le corps entier`, r.ok, r.issues.join(' | '));
+  }
+  // LA TALONNADE EST L'EXCEPTION QUI CONFIRME — littéralement. Sa mécanique est l'INVERSE des clauses
+  // de frappe : bassin carré, épaules de face, tête HAUTE (regarder le ballon vendrait le geste ; la
+  // tromperie est le geste). La faire passer par checkStrike la falsifierait. Ses clauses à elle :
+  {
+    const T = resolveTracks(MOVES.talonnade).tracks;
+    const range = (b, a) => { const ks = T[b] || []; const vs = ks.map((k) => k.e[a]); return ks.length ? Math.max(...vs) - Math.min(...vs) : 0; };
+    ok('« talonnade » : le bassin RESTE carré (c\'est sa signature)', range('Hips', 1) < 6, `${range('Hips', 1).toFixed(0)}°`);
+    ok('« talonnade » : la tête reste HAUTE (la tromperie est le geste)',
+      Math.max(...(T.Head || [{ e: [0] }]).map((k) => k.e[0])) <= 0);
+    ok('« talonnade » : le genou fouette derrière', range('RightLeg', 0) >= 70, `${range('RightLeg', 0).toFixed(0)}°`);
+    ok('« talonnade » : un bras d\'équilibre existe quand même', (() => {
+      const ks = T.LeftArm || []; let w = 0;
+      for (const k of ks) w = Math.max(w, (quatAngle(ks[0].q, k.q) * 180) / Math.PI);
+      return w >= 15;
+    })());
+  }
+}
+{
+  // LE SABOTAGE-RÉFÉRENCE : l'ancienne frappe telle qu'elle était écrite — bassin à 0°, pas de tête,
+  // pas de jambe d'appui, cuisse et tibia à l'extrême SUR LA MÊME CLÉ. Elle a été livrée pendant des
+  // semaines ; le contrat doit la condamner sur PLUSIEURS clauses, sinon il n'aurait rien empêché.
+  const old = {
+    name: 'frappe-plate', duration: 0.85, contact: 0.42, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.22, pose: { RightUpLeg: [28, 0, 0], RightLeg: [95, 0, 0], LeftArm: [-35, 0, 45], RightArm: [15, 0, 70], Spine1: [10, 0, 0] } },
+      { t: 0.42, pose: { RightUpLeg: [-85, 0, 0], RightLeg: [15, 0, 0], RightFoot: [30, 0, 0], LeftArm: [15, 0, 60], RightArm: [-45, 0, 50], Spine1: [-8, 0, 0] } },
+      { t: 0.6, pose: { RightUpLeg: [-60, 0, 0], RightLeg: [30, 0, 0], LeftArm: [0, 0, 55], RightArm: [-25, 0, 55], Spine1: [-4, 0, 0] } },
+      { t: 0.85, pose: {} },
+    ],
+  };
+  const r = checkStrike(resolveTracks(old));
+  ok('sabotage « l’ancienne frappe plate » attrapé sur plusieurs clauses', !r.ok && r.issues.length >= 3,
+    `${r.issues.length} clauses`);
+  ok('  …dont la séquence proximo-distale absente', r.issues.some((i) => i.includes('proximo')));
+  ok('  …et le bassin figé', r.issues.some((i) => i.includes('bassin')));
+}
+{
+  // LE PIÈGE DU BRAS HOMOLATÉRAL (trouvé par un réfuteur) : tous les moves sont pied droit, donc le
+  // bras d'équilibre est le GAUCHE. Une clause qui mesurerait le droit validerait un geste au bras
+  // d'équilibre mort. On soude le piège : bras droit expressif + bras gauche mort DOIT échouer.
+  const trap = JSON.parse(JSON.stringify(MOVES.frappe));
+  for (const k of trap.keys) { if (k.pose.LeftArm) k.pose.LeftArm = [0, 0, 60]; if (k.pose.LeftForeArm) k.pose.LeftForeArm = [0, 0, 12]; }
+  const r = checkStrike(resolveTracks(trap));
+  ok('sabotage « bras homolatéral expressif, bras d’équilibre mort » attrapé', !r.ok && r.issues.some((i) => i.includes('OPPOSÉ')));
+}
+{
+  // …et le plafond PAR CHAÎNE : un genou à 17 rad/s est une frappe d'élite, un BRAS à 20 rad/s est un
+  // bug. L'ancien plafond unique (14) interdisait la frappe ; le nouveau ne doit pas tout permettre.
+  const armGun = { name: 'bras-fusil', duration: 0.3, loop: false, keys: [
+    { t: 0.0, pose: { RightArm: [0, 0, 60] } },
+    { t: 0.1, pose: { RightArm: [-115, 0, 60] } },
+    { t: 0.3, pose: { RightArm: [0, 0, 60] } },
+  ] };
+  ok('sabotage « bras à 20 rad/s » attrapé (le plafond des jambes ne vaut pas pour les bras)',
+    !checkClip(resolveTracks(armGun)).ok);
+  const legWhip = { name: 'fouet-jambe', duration: 0.3, loop: false, keys: [
+    { t: 0.0, pose: { RightLeg: [108, 0, 0] } },
+    { t: 0.1, pose: { RightLeg: [10, 0, 0] } },
+    { t: 0.3, pose: { RightLeg: [30, 0, 0] } },
+  ] };
+  ok('  …et le même fouet sur un GENOU passe (17 rad/s : une frappe d’élite)',
+    checkClip(resolveTracks(legWhip)).ok);
+}
+
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'}: ${pass}/${pass + fail} green`);
 process.exit(fail === 0 ? 0 : 1);
