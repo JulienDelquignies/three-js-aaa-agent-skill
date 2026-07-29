@@ -180,6 +180,14 @@ export class Rondo {
       if (this.gest.has(pl.rig)) continue;
       const set = {};
       for (const id of MOVE_IDS) {
+        // ADDITIF, posé sur L'IDLE FORCÉ (voir character-controller) : pendant un geste, la locomotion
+        // est ramenée à l'ancre idle — un clip RETARGETÉ, donc juste pour ce rig — et le delta du geste
+        // s'ajoute par-dessus des jambes immobiles : la somme est la pose authorée, transportée par
+        // delta. Les deux autres voies ont été essayées et vues à l'écran : additif sur jambes de
+        // course = « jambe de marche + delta de frappe », aucun membre cohérent ; clip ABSOLU plein
+        // corps = personnage plié en deux, parce que les quats absolus d'animkit supposent un repos en
+        // T-pose que ce rig retargeté n'a pas (la règle était écrite dans animkit-builder : un clip ne
+        // se transporte pas de bind en bind — elle vaut dans les deux sens).
         set[id] = { right: toClip(MOVES[id], pl.model), left: toClip(mirrorMove(MOVES[id]), pl.model) };
       }
       this.gest.set(pl.rig, set);

@@ -145,3 +145,26 @@ Trois causes empilées, toutes mesurées après coup :
 
 La règle générale, ajoutée à la discipline du dépôt : **une clause d'animation qui ne regarde pas le
 résultat monde composé mesure une ombre.** Les degrés par os sont un moyen ; la silhouette est le fait.
+
+---
+
+# Quatrième passe : le régime de composition on-ball
+
+« On-ball, aucun membre n'est cohérent » — exact, et la cause n'était plus les poses (validées en FK)
+mais le RÉGIME DE COMPOSITION à l'exécution. Trois régimes essayés, chacun vu à l'écran :
+
+1. **Delta additif sur les jambes de course** (l'existant) : jambe de marche + delta de frappe = un
+   membre qui n'est ni l'un ni l'autre. C'est la chimère signalée.
+2. **Clip absolu plein-corps, locomotion à zéro** : personnage plié en deux au-dessus du sol. Les
+   quaternions absolus d'animkit supposent un rig au repos en T-pose ; un rig piloté par des clips
+   RETARGETÉS a d'autres rotations de repos. La règle écrite dans animkit-builder — « un clip additif
+   ne se transporte pas de bind en bind » — vaut dans les deux sens : un clip absolu non plus.
+3. **Delta additif sur l'IDLE FORCÉ** (retenu) : pendant le geste, la vitesse d'animation est lissée
+   vers 0 (~80 ms) — le blend traverse walk sans échelon et se pose sur l'ancre idle, un clip
+   retargeté donc juste pour ce rig, quasi immobile. La somme idle + delta EST la pose authorée,
+   transportée par delta. Et des jambes plantées sont la vérité biomécanique d'une frappe — le
+   frappeur plante son appui, il ne court pas pendant son geste.
+
+Le foot-lock est coupé pendant le geste (l'IK n'a pas à disputer des jambes authorées), et la couche
+de foulée rend déjà le haut du corps (`gestureHold`). `toClip({ cover: true })` reste disponible et
+documenté pour les rigs NATIVEMENT à la convention animkit — il est faux sur un rig retargeté.

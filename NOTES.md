@@ -1010,6 +1010,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    92/92. Règle ajoutée à la discipline : une clause d'animation qui ne regarde pas le résultat monde
    composé mesure une ombre.
 
+11. ✅ **Animation on-ball — le régime de composition** *(fait)* — « on-ball aucun membre n'est
+   cohérent » : exact, et la cause était le RÉGIME, pas les poses. Trois compositions vues à l'écran :
+   (a) delta additif sur jambes de course = jambe de marche + delta de frappe, la chimère ; (b) clip
+   ABSOLU plein-corps + locomotion à zéro = personnage plié en deux (les quats absolus d'animkit
+   supposent un repos T-pose que le rig RETARGETÉ n'a pas — la règle « un clip ne se transporte pas de
+   bind en bind » vaut dans les deux sens) ; (c) retenue : delta additif sur IDLE FORCÉ (vitesse
+   d'anim lissée vers 0 pendant le geste, ~80 ms) — l'idle est un clip retargeté donc juste pour ce
+   rig, quasi immobile, la somme est la pose authorée transportée par delta, et des jambes plantées
+   sont la vérité biomécanique d'une frappe. + `toClip cover` (22 os) documenté pour les rigs
+   nativement animkit, + footLock coupé pendant le geste. Vérifié sur séquence : armé, contact,
+   accompagnement — chaque membre appartient à la même action.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

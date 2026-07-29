@@ -15,7 +15,14 @@ export { blend1dWeights } from './anim-blend.js';
 //   ]).clip('jump', jumpClip, { loop: false }).play('locomotion');
 //   // per frame: anim.set('speed', ctrl.speed).update(dt);   // (or anim.play('jump', 0.1) on an event)
 export class AnimationStateMachine {
-  constructor(mixer) { this.mixer = mixer; this.states = new Map(); this.params = {}; this.current = null; this.prev = null; this.blend = 1; this.fade = 0.2; }
+  constructor(mixer) {
+    this.mixer = mixer; this.states = new Map(); this.params = {}; this.current = null; this.prev = null; this.blend = 1; this.fade = 0.2;
+    // `duckW` multiplie TOUS les poids de locomotion. À 0, la locomotion se tait et un geste absolu
+    // plein-corps possède le squelette — c'est le mode frappe. Les os qu'aucune action ne touche
+    // gardent leur dernière pose (le mixer n'évalue pas une action à poids nul), donc rien ne
+    // s'effondre vers le T-pose. Lissé par l'appelant, jamais un échelon.
+    this.duckW = 1;
+  }
   set(p, v) { this.params[p] = v; return this; }
 
   clip(name, clip, { loop = true, timeScale = 1, clampWhenFinished = true } = {}) {
@@ -46,11 +53,11 @@ export class AnimationStateMachine {
 
   _apply(st, w) {
     if (!st) return;
-    if (st.kind === 'clip') { st.action.weight = w; st.action.timeScale = st.timeScale; return; }
+    if (st.kind === 'clip') { st.action.weight = w * this.duckW; st.action.timeScale = st.timeScale; return; }
     const ws = blend1dWeights(st.anchors, this.params[st.param] ?? 0);
     const speed = this.params.speed ?? this.params[st.param] ?? 0;
     st.anchors.forEach((an, i) => {
-      an.action.weight = w * ws[i];
+      an.action.weight = w * ws[i] * this.duckW;
       if (!an.stride) return;                                // l'idle garde sa propre horloge
       if (this.gait) {
         // LA PHASE APPARTIENT À L'ÉTAT, PAS AU CLIP. L'ancien code donnait à chaque ancre son propre

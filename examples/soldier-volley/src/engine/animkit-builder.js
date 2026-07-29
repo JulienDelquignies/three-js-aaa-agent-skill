@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { resolveTracks } from './animkit.js';
+import { resolveTracks, MIXAMO_BONES, BASE_POSE, eulerToQuat } from './animkit.js';
 
 // animkit-builder — resolved animkit tracks → a real THREE.AnimationClip on a real rig. GLB exports
 // rename bones ("mixamorigLeftArm", "LeftArm", …), so canonical names are resolved by SUFFIX against
@@ -13,7 +13,7 @@ export function resolveBoneNames(model) {
 /** Build an AnimationClip from an animkit spec against a model's rig.
  *  { additive: false } keeps the clip ABSOLUTE — the form to feed rig-retarget (retarget first,
  *  makeClipAdditive after: an additive delta clip cannot be transported bind-to-bind). */
-export function toClip(spec, model, { additive = true } = {}) {
+export function toClip(spec, model, { additive = true, cover = false } = {}) {
   const find = resolveBoneNames(model);
   const r = resolveTracks(spec);
   const tracks = [];
@@ -23,6 +23,23 @@ export function toClip(spec, model, { additive = true } = {}) {
     const times = new Float32Array(keys.map((k) => k.t));
     const values = new Float32Array(keys.flatMap((k) => k.q));
     tracks.push(new THREE.QuaternionKeyframeTrack(`${name}.quaternion`, times, values));
+  }
+  // `cover` : le clip revendique LES 22 OS CANONIQUES, pas seulement ceux que le geste pose. C'est le
+  // mode « le geste possède le corps » : joué ABSOLU pendant que la locomotion est mise à zéro, la
+  // pose affichée est EXACTEMENT la pose authorée (celle que la FK a validée). Sans ça, le geste était
+  // un DELTA ajouté par-dessus les jambes du clip de course — jambe de marche + delta de frappe = un
+  // membre qui n'est ni l'un ni l'autre, et c'est mot pour mot le retour utilisateur (« on-ball, aucun
+  // membre n'est cohérent »). Les os non authorés reçoivent la pose de base : le frappeur est PLANTÉ,
+  // et des jambes plantées sont la vérité biomécanique d'une frappe, pas un pis-aller.
+  if (cover) {
+    const covered = new Set(Object.keys(r.tracks));
+    for (const bone of MIXAMO_BONES) {
+      if (covered.has(bone)) continue;
+      const name = find(bone);
+      if (!name) continue;
+      const q = eulerToQuat(BASE_POSE[bone] || [0, 0, 0]);
+      tracks.push(new THREE.QuaternionKeyframeTrack(`${name}.quaternion`, new Float32Array([0]), new Float32Array(q)));
+    }
   }
   // ROOT MOTION: hips deltas are authored in CHARACTER metres [right, up, forward]. The bone's local
   // frame is NOTHING like that: Mixamo armatures come rotated (−90° X) and in centimetres — probed

@@ -171,15 +171,23 @@ export class CharacterController {
     if (this._useFsm) {
       const vGait = Math.max(this.speed, this.groundSpeed ?? 0);
       if (this.gait) this.gait.advance(vGait, dt);                   // l'horloge unique tourne AVANT le mixer
-      this.anim.set('speed', vGait).update(dt);                      // Idle→Walk→Run blend, phase-locked
-      this._applyGaitLayer(vGait);
+      // PENDANT UN GESTE, LA LOCOMOTION EST RAMENÉE À L'IDLE — pas coupée. Les trois compositions ont
+      // été vues à l'écran : delta additif sur jambes de course = aucun membre cohérent ; locomotion à
+      // zéro sous un clip absolu = personnage plié en deux (les quats absolus supposent un repos
+      // T-pose que ce rig retargeté n'a pas) ; delta additif sur IDLE = la pose authorée transportée
+      // par delta sur des jambes plantées, ce qui est aussi la vérité biomécanique d'une frappe. La
+      // vitesse d'animation est LISSÉE vers 0 (~80 ms) pour que le blend traverse walk sans échelon.
+      const vTarget = this.gestureHold ? 0 : vGait;
+      this._vAnim = (this._vAnim ?? vGait) + (vTarget - (this._vAnim ?? vGait)) * Math.min(1, dt / 0.08);
+      this.anim.set('speed', this._vAnim).update(dt);                // Idle→Walk→Run blend, phase-locked
+      this._applyGaitLayer(this._vAnim);
     } else {
       this.actRun.weight = run01; if (this.actIdle) this.actIdle.weight = 1 - run01;
       this.actRun.timeScale = Math.max(0.001, (this.speed / this.stride) * this.runDur); // cadence = ground speed
       this.mixer.update(dt);
     }
     this.model.updateWorldMatrix(true, true);
-    if (this.footLock && run01 > 0.25 && !this.airborne) this.footLock.solve();
+    if (this.footLock && run01 > 0.25 && !this.airborne && !this.gestureHold) this.footLock.solve();
   }
 
   /** Le corps accordé (gait.js) : deltas additifs appliqués APRÈS le mixer. Le mixer réécrit chaque os
