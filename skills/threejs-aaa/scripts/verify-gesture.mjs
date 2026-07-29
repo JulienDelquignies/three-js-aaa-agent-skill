@@ -76,12 +76,15 @@ console.log('\n— sur une PARTIE RÉELLE —');
 {
   const st = makeRondo({ perTeam: 5, seed: 4 });
   playRondo(st, 90);
-  const r = checkGestures(st.gestures, []);
+  // les gestes encore en cours à la 90ᵉ seconde sont coupés par l'arrêt de l'enregistrement, pas perdus
+  const inFlight = st.players.filter((p) => p.act).map((p) => p.id);
+  const r = checkGestures(st.gestures, [], { inFlight });
   ok('aucun geste orphelin sur 90 s de jeu', r.ok, r.issues.slice(0, 2).join(' | '));
   const n = (t) => st.gestures.filter((e) => e.type === t).length;
   ok(`des gestes ont été joués (${n('start')} armés, ${n('contact')} frappes, ${n('end')} fins, ${n('abort')} interrompus)`, n('start') > 10);
   // TOUT armé finit d'une façon ou d'une autre : c'est la clause qui interdit qu'un geste s'évapore.
-  ok('chaque armé se termine (fin ou interruption nommée)', n('start') === n('end') + n('abort'), `${n('start')} vs ${n('end')}+${n('abort')}`);
+  ok('chaque armé se termine (fin ou interruption nommée)', n('start') === n('end') + n('abort') + inFlight.length,
+    `${n('start')} vs ${n('end')}+${n('abort')}+${inFlight.length} en cours`);
   ok('les interruptions ont toutes une cause', st.gestures.filter((e) => e.type === 'abort').every((e) => !!e.reason));
   // LE BALLON PART AU CONTACT : autant de frappes que de passes, et jamais une passe sans geste.
   const passes = st.events.filter((e) => e.type === 'pass').length;

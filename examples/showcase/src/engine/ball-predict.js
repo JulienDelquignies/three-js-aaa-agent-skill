@@ -161,3 +161,30 @@ export function meetPoint(path, from, speed, opts = {}) {
 }
 
 export { PITCH };
+
+/**
+ * BALISTIQUE INVERSE AU SOL : quelle vitesse donner à un ballon posé pour qu'il parcoure `D` mètres en
+ * `T` secondes ? C'est ce dont un CONTRÔLE a besoin — amener le ballon au pied prend le temps du geste,
+ * ce n'est pas une téléportation. Il n'y a pas de forme fermée : ball.js a une traînée quadratique, une
+ * crise de traînée et un frottement de roulement. Un solveur avec son PROPRE modèle de frottement est
+ * un solveur qui ment ; celui-ci fait une bissection sur le vrai intégrateur.
+ * La distance est monotone en v0, donc la bissection converge toujours. `null` = « pas à cette
+ * distance dans ce temps-là », qui est une vraie réponse : ce contrôle-là n'existe pas, le ballon file,
+ * et c'est du football.
+ */
+export function solveGroundLeg(D, T, { vMax = 6, iters = 40, tol = 1e-3 } = {}) {
+  if (!(D > 0) || !(T > 0)) return null;
+  const reach = (v0) => {
+    const s = { p: [0, BALL.radius, 0], v: [v0, 0, 0], w: [0, 0, -v0 / BALL.radius] };
+    const n = Math.max(1, Math.ceil(T * 120));
+    for (let i = 0; i < n; i++) stepBall(s, T / n);
+    return s.p[0];
+  };
+  if (reach(vMax) < D - tol) return null;                    // hors d'atteinte dans ce temps
+  let lo = 0, hi = vMax;
+  for (let i = 0; i < iters && hi - lo > 1e-5; i++) {
+    const mid = (lo + hi) / 2;
+    if (reach(mid) < D) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}

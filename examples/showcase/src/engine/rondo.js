@@ -1,4 +1,5 @@
 import { BALL } from './ball.js';
+import { BallBody } from './ball-body.js';
 import { predictPath, solvePass, laneClearance, interceptPoint, PASS_STYLE } from './ball-predict.js';
 
 // rondo — the brain of a "passe à dix": 5 v 5, the team in possession strings passes, the team out
@@ -108,7 +109,10 @@ export function makeRondo({ perTeam = 5, seed = 1, area = RONDO.area } = {}) {
   const carrier = 0;
   return {
     t: 0, players, area,
-    ball: { p: [players[carrier].p[0] + 0.6, BALL.radius, players[carrier].p[2]], v: [0, 0, 0], w: [0, 0, 0] },
+    // LE BALLON EST UN CORPS, pas un objet nu. Sa position est en lecture seule : écrire `ball.p`
+    // LÈVE. C'est ce qui rend les 285 téléportations mesurées impossibles par construction plutôt
+    // qu'interdites par une règle qui, elle, était aveugle (voir ball-body.js).
+    ball: new BallBody([players[carrier].p[0] + 0.6, BALL.radius, players[carrier].p[2]]),
     possession: { team: 0, carrier }, hold: 0, pressure: 0,
     gestures: [],                    // the log every swing writes to (gesture.js) — the contract reads it
     passes: 0, best: 0, turnovers: 0,
@@ -506,7 +510,12 @@ function turnover(st, carrier, why) {
   st.passes = 0;
   st.possession = { team: st.players[carrier].team, carrier };
   st.phase = 'carry'; st.pass = null; st.hold = 0; st.pressure = 0; st.lastPasser = -1;
-  st.ball.v = [0, 0, 0]; st.ball.w = [0, 0, 0];
+  // LE BALLON N'EST PAS « REMIS À ZÉRO ». Cette ligne appelait rest(), qui plaquait au sol un ballon
+  // encore en l'air — et l'invariant de ball-body l'a refusé dès le premier essai, sur une
+  // interception à 0,80 m de haut. C'est du bon refus : intercepter un centre ne fait pas apparaître
+  // le ballon par terre. Le défenseur lui prend sa vitesse, et il RETOMBE — l'intégrateur s'en charge,
+  // donc on le voit descendre. La hauteur est conservée parce qu'elle est vraie.
+  st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.6, -st.ball.v[2]], [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]]);
 }
 
 export { predictPath };

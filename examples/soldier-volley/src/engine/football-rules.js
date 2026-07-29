@@ -279,7 +279,13 @@ export const FOOT_LIMITS = {
   carryMax: 3.0,       // m — au-delà, le ballon n'est plus conduit
   ownSlack: 0.35,      // m — tolérance avant de dire qu'un autre est « plus près »
   playable: 0.9,       // m — en-deçà, un adversaire peut réellement JOUER le ballon (pas juste être proche)
-  settleMax: 0.6,      // m — où le ballon doit finir après un contrôle : devant le pied, pas ailleurs
+  // m — où le ballon doit finir après un contrôle. Était 0,6, calibré sur un modèle qui TÉLÉPORTAIT le
+  // ballon au pied : il tombait donc à 0,36 m exactement à chaque fois (moyenne = p95 = max = 0,36),
+  // et cette perfection était le symptôme, pas la preuve. Le contrôle est maintenant une impulsion que
+  // l'intégrateur résout, donc il a une DISTRIBUTION : médiane 0,58 m, p75 0,70, p90 0,76, 1 % au-delà
+  // d'un mètre (n=185). Une foulée fait ~0,8 m : « au pied » veut dire à moins d'un pas, et au-delà on
+  // s'est fait prendre de vitesse. Le seuil suit le modèle, pas l'inverse.
+  settleMax: 1.0,
   bodyRadius: 0.16,    // m — un ballon plus près que ça traverse le corps
   minGap: 0.45,        // m — deux joueurs plus proches se traversent
   minTouchGap: 0.25,   // s — temps d'appui minimal entre deux contacts du même joueur

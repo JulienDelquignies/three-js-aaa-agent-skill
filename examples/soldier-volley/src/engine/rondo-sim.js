@@ -1,6 +1,6 @@
 import { BALL, stepBall, kick } from './ball.js';
 import { predictPath } from './ball-predict.js';
-import { solvePass } from './ball-predict.js';
+import { solvePass, solveGroundLeg } from './ball-predict.js';
 import { makeDribbler, dribbleStep, dribbleSteer } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction } from './technique.js';
@@ -101,9 +101,12 @@ function strikeNow(st, c, cfg) {
   const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
   const lead = rec ? [rec.p[0] + rec.v[0] * 0.18, 0, rec.p[2] + rec.v[1] * 0.18] : choice.lead;
   const sol = solvePass(from, lead, { style: choice.style }) || solvePass(from, choice.lead, { style: choice.style });
-  if (!sol) { st.ball.v = [st.ball.v[0] * 0.6, 0, st.ball.v[2] * 0.6]; return; }   // scuffed: it stays loose
-  const s = kick(from, { speed: sol.speed, dirYaw: sol.dirYaw, elevation: sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
-  st.ball.p = s.p; st.ball.v = s.v; st.ball.w = s.w;
+  if (!sol) { st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4]); return; }   // scuffed: it stays loose
+  // ON FRAPPE LE BALLON LÀ OÙ IL EST. `kick(from, …)` POSAIT le ballon sur `from`, et l'appelant
+  // construisait `from = [x, BALL.radius, z]` : un ballon en l'air était plaqué au sol avant d'être
+  // frappé — 13 fois par partie, jusqu'à 1,36 m de chute en une image. Purement vertical, donc
+  // invisible sur une trace vue de dessus. `strike()` ne touche qu'à la vitesse et à l'effet.
+  st.ball.strike({ speed: sol.speed, dirYaw: sol.dirYaw, elevation: sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
   st.phase = 'flight';
   st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
   st.lastPasser = c.id;
@@ -149,7 +152,11 @@ function stepGestures(st, dt, cfg) {
       // he ran on — so the strike happened off a stale position and his separation fell from 2.09 m to
       // 1.53 m, which is the difference between passing on the move and being a statue. The ball is at
       // his feet: it goes where he goes until the boot sends it somewhere else.
-      st.ball.p[0] += p.v[0] * dt; st.ball.p[2] += p.v[1] * dt;
+      // …ET C'EST UNE VITESSE, PAS UN DÉPLACEMENT. J'avais écrit `ball.p += v_joueur·dt`, ce qui
+      // fabrique un mouvement que rien ne justifie : 936 images d'advection fantôme jusqu'à 2,9 m/s,
+      // un ballon qui avance sans avoir de vitesse. `escort` donne au ballon la vitesse du porteur et
+      // laisse l'intégrateur faire le déplacement — continu par construction.
+      st.ball.escort([p.v[0], p.v[1]], dt);
       if (st.pressure >= cfg.tackleTime) {
         abortGesture(p, 'fermé pendant l’armé', { log: st.gestures });
         receive(st, press[0].id, cfg);
@@ -190,6 +197,8 @@ function receive(st, id, cfg = RONDO) {
       // the pass came from — he was running to meet it, so "in front of him" pointed at the passer —
       // and the next strike then had the ball behind him 55 % of the time. A first touch is taken INTO
       // the direction you intend to go, and the body turns with it: away from the nearest opponent.
+      const mv = MOVE_TIMING[pick.tech.clip];
+      const T = Math.max(0.12, (mv?.duration ?? 0.5) - (mv?.contact ?? 0.2));
       const foe = st.players.filter((q) => q.team !== p.team && q.down <= 0)
         .reduce((b, q) => (!b || d2(q.p, p.p) < d2(b.p, p.p) ? q : b), null);
       let tx = Math.cos(p.yaw), tz = Math.sin(p.yaw);
@@ -199,22 +208,43 @@ function receive(st, id, cfg = RONDO) {
       }
       p.yawWant = Math.atan2(tz, tx);              // he turns ONTO it — movePlayers slews, never snaps
       const lat = pick.foot === 'left' ? 1 : -1;               // left of forward is (fz, -fx) here
-      st.ball.p = [
-        p.p[0] + tx * cfg.controlSettle + tz * lat * cfg.footSide,
-        BALL.radius,
-        p.p[2] + tz * cfg.controlSettle - tx * lat * cfg.footSide,
-      ];
-      st.ball.v = [st.ball.v[0] * pick.tech.power, 0, st.ball.v[2] * pick.tech.power];
+      // UN CONTRÔLE EST UNE IMPULSION, PAS UNE TÉLÉPORTATION. C'était le pire des cinq sites : 208
+      // sauts par partie, 0,93 m en moyenne et 1,70 m au pire — le ballon APPARAISSAIT au pied. Un
+      // vrai contrôle amortit le ballon et l'envoie où le joueur le veut ; il y ARRIVE pendant
+      // l'accompagnement du geste, qui dure justement ce qu'il faut. `solveGroundLeg` inverse la
+      // balistique au sol sur ball.js lui-même (roulement + traînée), donc la vitesse donnée produit
+      // vraiment la distance voulue dans le temps voulu.
+      // ON VISE OÙ LE PIED SERA, PAS OÙ IL EST. Le ballon met le temps de l'accompagnement à arriver ;
+      // pendant ce temps le joueur a couru. Viser sa position actuelle, c'est poser le ballon là où il
+      // ÉTAIT — ce qui se voit exactement comme le défaut d'origine, en moins brutal.
+      const settleX = p.p[0] + p.v[0] * T + tx * cfg.controlSettle + tz * lat * cfg.footSide;
+      const settleZ = p.p[2] + p.v[1] * T + tz * cfg.controlSettle - tx * lat * cfg.footSide;
+      const dx0 = settleX - st.ball.p[0], dz0 = settleZ - st.ball.p[2];
+      const D = Math.hypot(dx0, dz0);
+      const v0 = D > 0.02 ? solveGroundLeg(D, T) : 0;
+      // `null` = ce ballon ne peut pas être amené là en si peu de temps. C'est une vraie réponse : le
+      // contrôle est manqué, le ballon file. Un solveur qui répondrait quand même mentirait.
+      if (v0 == null) {
+        st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), 0, -st.ball.v[2] * (1 - pick.tech.power)]);
+      } else {
+        const ux = D > 1e-6 ? dx0 / D : tx, uz = D > 1e-6 ? dz0 / D : tz;
+        st.ball.impulse([ux * v0 - st.ball.v[0], -st.ball.v[1], uz * v0 - st.ball.v[2]]);
+      }
+      st._settling = { ev: st.events.length, id, at: st.t + T };
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
         bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),
         speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
-        // where the ball ENDED UP relative to the man who took the touch — the number the rule judges
-        settle: +d2(p.p, st.ball.p).toFixed(2),
+        // OÙ LE BALLON A FINI, relativement au joueur — le nombre que la règle juge. Il n'existe PAS
+        // encore à cet instant : le contrôle est devenu continu, le ballon met l'accompagnement du
+        // geste à arriver. L'inscrire maintenant, ce serait inscrire l'intention à la place du
+        // résultat (mesuré : 0,8 m au contact contre 0,36 m à l'arrivée). Il est rempli plus bas,
+        // quand le ballon est vraiment arrivé.
+        settle: null,
       });
     } else {
       // nobody had a legal touch for that ball: it is not magically killed, it runs
-      st.ball.v = [st.ball.v[0] * 0.75, 0, st.ball.v[2] * 0.75];
+      st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25]);
     }
   } else {
     turnover(st, id, st.phase === 'flight' ? 'interception' : 'tackle');
@@ -272,8 +302,13 @@ function trySlide(st, cfg) {
     speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
   });
   if (won) {
-    st.ball.p = [p.p[0] + (st.ball.p[0] - p.p[0]) * 0.2, BALL.radius, p.p[2] + (st.ball.p[2] - p.p[2]) * 0.2];
-    st.ball.v = [0, 0, 0]; st.ball.w = [0, 0, 0];
+    // Un tacle ne fait pas APPARAÎTRE le ballon près du tacleur (39 sauts par partie, 1,77 m en
+    // moyenne, 2,56 m au pire) : le pied le RENVOIE vers lui. Une impulsion, dont l'intégrateur fait
+    // une course — on voit le ballon revenir, ce qui est le geste.
+    const bx = p.p[0] - st.ball.p[0], bz = p.p[2] - st.ball.p[2];
+    const bl = Math.hypot(bx, bz) || 1;
+    const back = Math.min(4.5, bl / 0.28);
+    st.ball.impulse([(bx / bl) * back - st.ball.v[0], -st.ball.v[1], (bz / bl) * back - st.ball.v[2]]);
     receive(st, p.id, cfg);                       // bookkeeping: possession, turnover count, sequence reset
     // …BUT A BALL WON ON THE GROUND IS LOOSE, NOT CARRIED. `receive` made the tackler the carrier while
     // he was still lying in the grass with slideRecovery seconds left to serve, so the game spent those
@@ -294,6 +329,15 @@ export function rondoStep(st, dt, cfg = RONDO) {
   assignJobs(st, cfg);
   movePlayers(st, dt, cfg);
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
+  // LA MESURE DU CONTRÔLE ARRIVE QUAND LE BALLON ARRIVE. Un contrôle continu n'a pas de résultat à
+  // l'instant du contact ; l'écrire là reviendrait à noter l'intention. On remplit l'événement quand
+  // le geste est fini, c'est-à-dire quand le fait existe.
+  if (st._settling && st.t >= st._settling.at) {
+    const pl = st.players[st._settling.id];
+    const ev = st.events[st._settling.ev];
+    if (pl && ev) ev.settle = +d2(pl.p, st.ball.p).toFixed(2);
+    st._settling = null;
+  }
 
   if (st.phase === 'carry') {
     const c = st.players[st.possession.carrier];
@@ -350,7 +394,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       else if (st.hold >= cfg.holdMax && choice) beginPass(st, choice, cfg);
     }
   } else {
-    stepBall(st.ball, dt);
+    st.ball.integrate(dt);
     st._drb = null;
     // first player within reach takes it — defenders included: that is the interception.
     // BUT the ball must have LEFT the passer first: for the first metres it is still at his feet,
@@ -373,9 +417,12 @@ export function rondoStep(st, dt, cfg = RONDO) {
   if (Math.abs(st.ball.p[0]) > st.area[0] / 2 || Math.abs(st.ball.p[2]) > st.area[1] / 2) {
     const other = st.players.filter((p) => p.team !== st.possession.team && p.down <= 0)
       .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
-    st.ball.p = [Math.max(-st.area[0] / 2 + 1, Math.min(st.area[0] / 2 - 1, st.ball.p[0])), BALL.radius,
-      Math.max(-st.area[1] / 2 + 1, Math.min(st.area[1] / 2 - 1, st.ball.p[2]))];
-    st.ball.v = [0, 0, 0]; st.ball.w = [0, 0, 0];
+    // LA seule discontinuité légitime — et elle se DÉCLARE. `restart()` lève si la cause est absente
+    // ou inconnue : ce qui est exceptionnel doit se nommer, sinon ça redevient le chemin normal.
+    st.ball.restart([
+      Math.max(-st.area[0] / 2 + 1, Math.min(st.area[0] / 2 - 1, st.ball.p[0])), BALL.radius,
+      Math.max(-st.area[1] / 2 + 1, Math.min(st.area[1] / 2 - 1, st.ball.p[2])),
+    ], { cause: 'sortie-de-but' });
     if (other) turnover(st, other.id, 'out');
   }
   return st;

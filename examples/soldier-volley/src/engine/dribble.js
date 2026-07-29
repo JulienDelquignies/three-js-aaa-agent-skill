@@ -1,5 +1,19 @@
 import { BALL, PITCH, stepBall } from './ball.js';
 
+// Le ballon peut être un BallBody (position en lecture seule, audit de continuité) ou un objet nu
+// `{p,v,w}` — les prédicteurs simulent des futurs sur des copies mutables, et c'est légitime. Ces deux
+// helpers font que le dribble marche sur les deux sans jamais écrire de position.
+const setVelocity = (ball, v, w) => {
+  if (typeof ball.impulse === 'function') {
+    ball.impulse([v[0] - ball.v[0], v[1] - ball.v[1], v[2] - ball.v[2]],
+      [w[0] - ball.w[0], w[1] - ball.w[1], w[2] - ball.w[2]]);
+  } else {
+    ball.v[0] = v[0]; ball.v[1] = v[1]; ball.v[2] = v[2];
+    ball.w[0] = w[0]; ball.w[1] = w[1]; ball.w[2] = w[2];
+  }
+};
+const advance = (ball, dt) => (typeof ball.integrate === 'function' ? ball.integrate(dt) : stepBall(ball, dt));
+
 // dribble — carrying the ball, the way it actually works. The tempting shortcut is to park the
 // ball at a fixed offset in front of the player (`ballPos = playerPos + heading * 0.85`). That is
 // why almost every hobby football game looks wrong: the ball is WELDED to the player, it never
@@ -125,14 +139,15 @@ export function dribbleStep(d, ball, player, dt) {
       const rx = dx * ca - dz * sa, rz = dx * sa + dz * ca;
       dx = rx; dz = rz;
     }
-    ball.v[0] = dx * sp; ball.v[2] = dz * sp;
-    ball.v[1] = Math.max(ball.v[1], 0);                     // a push along the ground, never a chip
-    ball.w[2] = -ball.v[0] / BALL.radius;                   // the foot rolls it: topspin, so it runs on
-    ball.w[0] = ball.v[2] / BALL.radius;
+    // UNE TOUCHE EST UNE VITESSE, JAMAIS UNE POSITION. `setVelocity` passe par le corps du ballon
+    // quand il y en a un (ball-body.js), et reste compatible avec un objet nu pour les prédicteurs et
+    // les harnais qui simulent des futurs sur une copie.
+    setVelocity(ball, [dx * sp, Math.max(ball.v[1], 0), dz * sp],
+      [ball.v[2] / BALL.radius, 0, -(dx * sp) / BALL.radius]);   // le pied la fait rouler : lift avant
     d.sinceTouch = 0; d.touches++; touched = true;
   }
 
-  stepBall(ball, dt);
+  advance(ball, dt);
 
   const nd = Math.hypot(ball.p[0] - px, ball.p[2] - pz);
   d.lost = nd > c.controlRadius;

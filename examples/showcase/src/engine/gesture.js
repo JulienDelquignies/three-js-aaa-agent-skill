@@ -105,7 +105,12 @@ export const following = (actor) => !!actor.act && actor.act.fired;
  * @param limits  { minAnticipation, minFollow }
  */
 export function checkGestures(log, moves = [], limits = {}) {
-  const { minAnticipation = 0.06, minFollow = 0.08 } = limits;
+  // `inFlight` : les acteurs dont le geste tournait ENCORE quand on a arrêté de regarder. Un geste
+  // coupé par la fin de l'enregistrement n'est pas un geste perdu, et l'accuser rend la clause
+  // dépendante du hasard de l'instant d'arrêt — elle passait ou non selon qu'un joueur était en train
+  // d'armer à la 90ᵉ seconde. L'appelant sait qui est en cours ; il le dit.
+  const { minAnticipation = 0.06, minFollow = 0.08, inFlight = [] } = limits;
+  const stillGoing = new Set(inFlight.map(String));
   const issues = [];
 
   // 1. UN MOUVEMENT SANS ARMÉ N'EST PAS UN MOUVEMENT. Contact à 0 = la pose commence déjà frappée ;
@@ -142,7 +147,10 @@ export function checkGestures(log, moves = [], limits = {}) {
       open.delete(key);
     }
   }
-  for (const [actor, o] of open) issues.push(`geste « ${o.id} » de l'acteur ${actor} n'a jamais fini (ni fin, ni interruption)`);
+  for (const [actor, o] of open) {
+    if (stillGoing.has(actor)) continue;                    // encore en cours : coupé, pas perdu
+    issues.push(`geste « ${o.id} » de l'acteur ${actor} n'a jamais fini (ni fin, ni interruption)`);
+  }
 
   return { ok: issues.length === 0, issues };
 }
