@@ -40,6 +40,10 @@ export class AnimationStateMachine {
   }
   get state() { return this.current?.name; }
 
+  /** Optional shared gait clock (engine/gait.js). When set, stride-bearing anchors are SLAVED to its
+   *  single phase instead of advancing at their own rate — see the drift measurement in gait.js. */
+  driveWithGait(clock) { this.gait = clock; return this; }
+
   _apply(st, w) {
     if (!st) return;
     if (st.kind === 'clip') { st.action.weight = w; st.action.timeScale = st.timeScale; return; }
@@ -47,7 +51,17 @@ export class AnimationStateMachine {
     const speed = this.params.speed ?? this.params[st.param] ?? 0;
     st.anchors.forEach((an, i) => {
       an.action.weight = w * ws[i];
-      if (an.stride) an.action.timeScale = Math.max(0.01, (speed / an.stride) * an.dur); // cadence = ground speed
+      if (!an.stride) return;                                // l'idle garde sa propre horloge
+      if (this.gait) {
+        // LA PHASE APPARTIENT À L'ÉTAT, PAS AU CLIP. L'ancien code donnait à chaque ancre son propre
+        // timeScale (v/strideᵢ) : à 3,7 m/s, marche et course déphasaient de 1,044 cycle/s et les
+        // pieds traversaient l'opposition dix fois en dix secondes — la jambe « flottait ». Chaque
+        // clip est désormais esclave de l'φ unique de l'horloge de foulée.
+        an.action.time = this.gait.timeFor(an);
+        an.action.timeScale = 0;
+      } else {
+        an.action.timeScale = Math.max(0.01, (speed / an.stride) * an.dur); // legacy: cadence = ground speed
+      }
     });
   }
 

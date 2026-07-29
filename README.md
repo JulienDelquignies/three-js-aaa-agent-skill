@@ -56,6 +56,7 @@ threejs-aaa/ (the skill)
 │   ├── 46-possession-game.md   5v5 passe à dix: jobs not urges, inverse ballistics, night stadium, both feet
 │   ├── 47-football-rules.md    impossible-football catalogue (23 rules) + the gesture vocabulary as data
 │   ├── 48-gesture-timeline.md  an action has a beginning and an end: the ball leaves at the contact frame
+│   ├── 49-gait-engine.md       the gait clock: one phase, slaved clips, measured cadence, whole-body layer
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -101,6 +102,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-bib.mjs        the training bib: two shirt colours on one un-recolourable character atlas
 │   ├── verify-gesture.mjs    an action has a beginning and an end: windup → contact → follow-through
 │   ├── verify-part-tint.mjs  recolour ONE part of a character whose parts share a single material
+│   ├── verify-gait.mjs       the single gait phase: no clip drift, Dorn cadence, idle unslaved, body layer
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   ├── frame-stats.mjs       measure a rendered PNG (mean luminance, contrast, clipping); --selftest proves the PNG filters
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)

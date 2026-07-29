@@ -972,6 +972,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    - **Reste** : l'amplitude des poses `animkit` — les moves sont lisibles mais discrets. Travail
      d'auteur sur les clés, que le catalogue n'attrapera pas (il juge la géométrie, pas la beauté).
 
+8. ✅ **Animation — l'horloge de foulée et le corps accordé** *(fait)* — `engine/gait.js` +
+   `verify-gait.mjs` (23/23) + `reference/49`. Recherche 5 axes + 3 réfuteurs (qui ont RELU les papiers
+   et corrigé Dorn 2012 et Pontzer 2009 cités de travers). Cause n°1 mesurée : chaque clip avançait à
+   SA cadence (`v/strideᵢ`) — dérive 1,044 cycle/s à 3,7 m/s, pieds en opposition 10× en 10 s, et le
+   mélange moyennait un pied planté avec un pied en vol. Désormais : UN φ, clips esclaves, idle libre
+   (asservi = statue), offsets mesurés sur le rig (φ=0 = contact gauche), cadence de la table de Dorn
+   (f·S=v), vitesse VRAIE lue sur le delta de position (le rondo écrase la position après ctrl.update —
+   dist mentait). Couche corps pure (φ,v) : bassin/colonne en contre-rotation ψ=149°→94° (Pontzer,
+   contrôle), bras antiphase, coudes, tête stabilisée ≤6°, rebond ×2/cycle. La veille : BASE_POSE
+   asymétrique corrigée (mains +0,41/−0,47 → 0,000) et mirrorMove PROUVÉ exact (la « correction »
+   proposée se trompait de 1,37 — c'est devenu le sabotage). Résultats négatifs écrits : motion
+   matching (500–900 clips requis), text-to-motion ; 100STYLE CC-BY noté pour la course arrière.
+   Reste (ordre validé) : approach (parité du pied), warp/gesture-warp, pose-warp, foot-plant,
+   inertialize (x(h)/x(0)=0,597, pas 0,5), lean.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

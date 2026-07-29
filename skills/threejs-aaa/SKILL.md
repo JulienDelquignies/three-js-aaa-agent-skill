@@ -68,6 +68,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **A 5v5 possession game that plays itself: jobs not urges, inverse ballistics, both feet, night** | [reference/46-possession-game.md](reference/46-possession-game.md) |
 | **IMPOSSIBLE football (21 rules, one sabotage each) + the GESTURE VOCABULARY as data (foot, surface, windows)** | [reference/47-football-rules.md](reference/47-football-rules.md) |
 | **A gesture with a beginning and an end: windup → contact → follow-through, the ball leaves at contact** | [reference/48-gesture-timeline.md](reference/48-gesture-timeline.md) |
+| **The gait clock: ONE locomotion phase, clips slaved to it, cadence from Dorn 2012, whole-body layer** | [reference/49-gait-engine.md](reference/49-gait-engine.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |

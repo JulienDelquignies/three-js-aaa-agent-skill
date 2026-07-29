@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu';
 import { FootLockIK } from './foot-lock.js';
 import { WORLD } from './world-basis.js';
 import { AnimationStateMachine } from './anim-state-machine.js';
+import { makeGaitClock, phaseOffset, gaitLayer } from './gait.js';
 
 // CharacterController — turn input into believable, correct movement. This is the point of the skill:
 // good controls. It couples player intent (a world-space move vector, 0..1) to:
@@ -26,6 +27,10 @@ export class CharacterController {
       this.anim.blend1d('locomotion', 'speed', [
         { clip: idleClip, at: 0 }, { clip: walkClip, at: walkSpeed, stride: walkStride }, { clip: runClip, at: runSpeed, stride: stride },
       ]).play('locomotion');
+      // L'HORLOGE DE FOULÉE (gait.js) : un seul φ pour tous les clips porteurs de foulée, avancé à la
+      // cadence de Dorn 2012 — les `stride` par clip ne servent plus qu'à marquer « porteur de foulée ».
+      this.gait = makeGaitClock();
+      this.anim.driveWithGait(this.gait);
     } else {
       this.actRun = mixer.clipAction(runClip); this.actRun.play(); this.actRun.weight = 0;
       this.actIdle = idleClip ? mixer.clipAction(idleClip) : null;
@@ -51,6 +56,41 @@ export class CharacterController {
       contactBand: 0.05,
       sampleClip: (p) => { this.mixer.setTime(p * this.runDur); this.model.updateWorldMatrix(true, true); },
     }) : null;
+    // φ = 0 est « contact du pied gauche » : chaque clip pose ce contact où son auteur l'a mis, donc
+    // l'offset de chaque ancre est MESURÉ sur le rig au chargement (minimum de hauteur du pied gauche).
+    // Sans ça, deux clips en phase parfaite peuvent lire « gauche » l'un où l'autre lit « droite ».
+    if (this.gait && legs) this._alignGaitOffsets();
+    // le corps accordé : bassin/colonne/bras/tête dérivés de (φ, v), appliqués APRÈS le mixer
+    this._gaitBones = null;
+    if (this.gait) {
+      const suffix = (n) => n.replace(/^mixamorig\d*/i, '');
+      const map = new Map();
+      model.traverse((o) => { if (o.isBone) { const s2 = suffix(o.name); if (!map.has(s2)) map.set(s2, o); } });
+      this._gaitBones = map;
+      this._gaitQ = new THREE.Quaternion(); this._gaitE = new THREE.Euler();
+    }
+  }
+
+  /** Mesure l'offset de phase de chaque ancre porteuse de foulée : le contact GAUCHE à φ = 0. */
+  _alignGaitOffsets() {
+    const loco = this.anim.states.get('locomotion');
+    if (!loco) return;
+    const foot = this.legs[0].foot;                            // legs[0] est la jambe gauche
+    const v = new THREE.Vector3();
+    const saved = loco.anchors.map((an) => ({ an, t: an.action.time, w: an.action.weight }));
+    for (const an of loco.anchors) {
+      if (!an.stride) continue;
+      for (const { an: o } of saved) o.action.weight = o === an ? 1 : 0;
+      an.gaitOffset = phaseOffset((u) => {
+        an.action.time = u * an.dur;
+        this.mixer.update(0);
+        this.model.updateWorldMatrix(true, true);
+        foot.getWorldPosition(v);
+        return v.y;
+      });
+    }
+    for (const { an, t, w } of saved) { an.action.time = t; an.action.weight = w; }
+    this.mixer.update(0);
   }
 
   // Desired move in world XZ (e.g. from camera-relative WASD / left stick). Magnitude 0..1 = walk..run.
@@ -90,6 +130,19 @@ export class CharacterController {
       this.model.updateWorldMatrix(true, true);
       return;
     }
+    // LA VITESSE VRAIE : mesurée sur le déplacement du modèle entre deux frames, PAS sur l'intention.
+    // Dans le rondo, la simulation écrase la position APRÈS ctrl.update : `this.dist` n'accumulait donc
+    // pas le mouvement réellement affiché, et la cadence suivait une fiction. Le delta de position du
+    // modèle, lu en début d'update, capture tout — y compris ce que la scène a imposé.
+    const wp = this.model.position;
+    if (this._lastW) {
+      const d = Math.hypot(wp.x - this._lastW.x, wp.z - this._lastW.z);
+      const cap = this.runSpeed * this.sprintMult * 1.5;      // au-delà : téléport de scène, pas une course
+      const inst = Math.min(d / Math.max(1e-4, dt), cap);
+      this.groundSpeed = (this.groundSpeed ?? inst) * 0.7 + inst * 0.3;
+    } else this.groundSpeed = 0;
+    this._lastW = { x: wp.x, z: wp.z };
+
     // smooth the input so starts/stops ease instead of snapping
     const k = 1 - Math.exp(-this.accel * dt);
     this._cur.lerp(this._move, k);
@@ -116,7 +169,10 @@ export class CharacterController {
     const runRef = this.runSpeed * (this._sprint ? this.sprintMult : 1);
     const run01 = Math.min(1, this.speed / runRef);
     if (this._useFsm) {
-      this.anim.set('speed', this.speed).update(dt);                 // Idle→Walk→Run blend, cadence-synced
+      const vGait = Math.max(this.speed, this.groundSpeed ?? 0);
+      if (this.gait) this.gait.advance(vGait, dt);                   // l'horloge unique tourne AVANT le mixer
+      this.anim.set('speed', vGait).update(dt);                      // Idle→Walk→Run blend, phase-locked
+      this._applyGaitLayer(vGait);
     } else {
       this.actRun.weight = run01; if (this.actIdle) this.actIdle.weight = 1 - run01;
       this.actRun.timeScale = Math.max(0.001, (this.speed / this.stride) * this.runDur); // cadence = ground speed
@@ -124,5 +180,24 @@ export class CharacterController {
     }
     this.model.updateWorldMatrix(true, true);
     if (this.footLock && run01 > 0.25 && !this.airborne) this.footLock.solve();
+  }
+
+  /** Le corps accordé (gait.js) : deltas additifs appliqués APRÈS le mixer. Le mixer réécrit chaque os
+   *  à chaque frame (les clips de locomotion en portent 65), donc rien ne s'accumule : la couche est une
+   *  fonction pure de (φ, v) et l'application est idempotente par construction. */
+  _applyGaitLayer(v) {
+    if (!this.gait || !this._gaitBones) return;
+    const g = gaitLayer(this.gait.phi, v);
+    if (!g) return;
+    const D = Math.PI / 180;
+    for (const [name, e] of Object.entries(g.euler)) {
+      const bone = this._gaitBones.get(name);
+      if (!bone) continue;
+      this._gaitE.set(e[0] * D, e[1] * D, e[2] * D, 'XYZ');
+      this._gaitQ.setFromEuler(this._gaitE);
+      bone.quaternion.multiply(this._gaitQ);
+    }
+    const hips = this._gaitBones.get('Hips');
+    if (hips && g.hipsY) hips.position.y += g.hipsY / Math.max(1e-6, this.model.scale.y);
   }
 }
