@@ -67,6 +67,7 @@ post-processing, and the Mixamo → glTF character pipeline.
 | **Football that feels real: ball aerodynamics (drag/Magnus/spin) + touch-based dribbling** | [reference/45-football-simulation.md](reference/45-football-simulation.md) |
 | **A 5v5 possession game that plays itself: jobs not urges, inverse ballistics, both feet, night** | [reference/46-possession-game.md](reference/46-possession-game.md) |
 | **IMPOSSIBLE football (21 rules, one sabotage each) + the GESTURE VOCABULARY as data (foot, surface, windows)** | [reference/47-football-rules.md](reference/47-football-rules.md) |
+| **A gesture with a beginning and an end: windup → contact → follow-through, the ball leaves at contact** | [reference/48-gesture-timeline.md](reference/48-gesture-timeline.md) |
 | Character↔object interaction + correctness verification (orientation, reach…) | [reference/15-interaction-alignment.md](reference/15-interaction-alignment.md) |
 | **Scene correctness (REQUIRED): door-in-wall, chair-faces-desk, no-clip, rests-on, ball-at-foot** | [reference/18-scene-correctness.md](reference/18-scene-correctness.md) |
 | **Correctness catalogue + how to reach exhaustiveness (the rule generator)** | [reference/19-correctness-catalogue.md](reference/19-correctness-catalogue.md) |
@@ -243,6 +244,23 @@ resolve regardless of install location. Each prints `--help`.
   mesh, and from the front it just looks slightly wrong):
   ```bash
   node ${CLAUDE_SKILL_DIR}/scripts/verify-bib.mjs
+  ```
+- **Make an action have a beginning and an end** — `engine/gesture.js`. THE difference between a game
+  and an illustrated simulation. The usual shape is: the sim strikes the ball, then asks the character
+  for a pose — so the animation *comments on* the ball instead of producing it, and the only way to
+  keep boot and ball together is to start the clip at its contact frame, which throws away the entire
+  backswing. The result reads as "you can't even see the movement", because you are watching the
+  second half of a gesture whose first half was deleted. Invert it: the actor COMMITS to a gesture,
+  the swing runs on its own clock, and the ball leaves at the clip's own contact frame.
+  `anticipation → contact → follow-through`, with three rules the contract enforces — the ball leaves
+  at contact and nowhere else; the actor is committed from the first frame (he does not re-decide, and
+  he *can be tackled mid-swing*, which is what makes pressing worth doing); and a gesture runs to its
+  own end or is interrupted with a NAMED cause. Two things to get right when wiring it: the windup must
+  be **carved out of** the time he already had, not added to it (adding it doubled turnovers), and it
+  must be the chosen gesture's own anticipation, not an average — a pivot pass winds up for 0.52 s and
+  a lay-off for 0.16:
+  ```bash
+  node ${CLAUDE_SKILL_DIR}/scripts/verify-gesture.mjs
   ```
 - **Capture the render + see it** — screenshot a build in headless Chromium and read a perf
   snapshot, then Read the PNG to critique it against the AAA rubric (`reference/16`). Free

@@ -127,7 +127,9 @@ sab('slide-in-range', 'tacle glissé déclenché à 12 m du ballon',
 console.log('\n— la talonnade est la seule exception au cône avant —');
 {
   const g = copy(base);
-  for (const e of g.st.events) if (e.type === 'pass') { e.bearing = 170; e.style = 'talonnade'; }
+  // `tech`, pas `style` : la fiche du GESTE. Cette ligne disait `style` — le champ qui porte 'ground'
+  // ou 'lofted' — donc le test passait en accord avec le bug plutôt qu'avec le football.
+  for (const e of g.st.events) if (e.type === 'pass') { e.bearing = 170; e.tech = 'talonnade'; }
   ok('un ballon frappé dans le dos EN TALONNADE est légal', !fires('ball-ahead-at-strike', g));
   const g2 = copy(base);
   for (const e of g2.st.events) if (e.type === 'pass') { e.bearing = 170; e.style = 'ground'; }

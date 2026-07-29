@@ -4,6 +4,8 @@ import { solvePass } from './ball-predict.js';
 import { makeDribbler, dribbleStep, dribbleSteer } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction } from './technique.js';
+import { MOVES } from './animkit.js';
+import { startGesture, stepGesture, abortGesture, busy, winding, checkGestures } from './gesture.js';
 
 // rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
 // "passe à dix" is won or lost happens here: when the carrier releases, whether the pass beats the
@@ -13,8 +15,16 @@ import { situation, chooseTechnique, checkAction } from './technique.js';
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const { movePlayers, turnover } = rondoInternals;
 
-/** Execute the chosen pass: inverse ballistics, so it arrives on the receiver at a playable pace. */
-function playPass(st, choice, cfg) {
+// THE TIMING OF EVERY GESTURE, taken from the animation itself. `contact` is the frame at which the
+// boot meets the ball, so it IS the anticipation: the swing before the strike. Reading it from the
+// clip rather than restating it here is what keeps the simulation and the picture the same event —
+// re-authoring these numbers by hand is how a ball starts leaving before the leg moves.
+const MOVE_TIMING = Object.fromEntries(Object.entries(MOVES)
+  .filter(([, m]) => m.contact != null)
+  .map(([k, m]) => [k, { duration: m.duration, contact: m.contact }]));
+
+/** COMMIT to the chosen pass. Inverse ballistics decides it can be played; the gesture decides when. */
+function beginPass(st, choice, cfg) {
   const c = st.players[st.possession.carrier];
   const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
   const sol = solvePass(from, choice.lead, { style: choice.style });
@@ -38,17 +48,71 @@ function playPass(st, choice, cfg) {
   // measured on the ball AS IT LIES — this used to read st.ball.v after the kick had overwritten it,
   // i.e. it described the ball leaving rather than the ball being struck
   const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
-  const pick = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing })[0];
-  if (!pick) return false;
+  const opts = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing });
+  if (!opts.length) return false;
+  // UNDER PRESSURE YOU PLAY QUICKER — BUT SPEED IS A TIEBREAK, NOT A CRITERION. The table ranks
+  // gestures by how well they fit the geometry, which is right with time and incomplete without it: it
+  // kept choosing `passePivot` (0.52 s of anticipation) with a man arriving, and 8 of 21 swings were
+  // tackled mid-windup. But "then take the quickest legal one" was worse in a way that is worth
+  // recording: the quickest legal gesture is almost always a flick or a BACKHEEL, so 19 of 32 passes
+  // came out as one-touch flicks and 9 as backheels struck at 175°. A rondo is not played entirely
+  // with the heel. Speed now breaks ties among gestures that are ALREADY good — within `rushedSlack`
+  // of the best score — which is what a player under pressure actually does: the simplest of his real
+  // options, not the fastest thing his body can do.
+  const nearFoe = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
+  const antic = (o) => (MOVE_TIMING[o.tech.clip] || MOVE_TIMING.passe).contact;
+  let pick = opts[0];
+  if (nearFoe < cfg.rushedRadius) {
+    const good = opts.filter((o) => o.score >= opts[0].score - cfg.rushedSlack);
+    pick = good.reduce((b, o) => (antic(o) < antic(b) ? o : b), good[0]);
+  }
 
+  // IS IT TIME? Only answerable once the gesture is known, because the carve is that gesture's OWN
+  // anticipation. A flat budget was wrong by more than a factor of two: `passe` contacts at 0.38 s and
+  // `passePivot` at 0.52, so carving an average left the pivot exposed for a quarter of a second it did
+  // not have — 8 of 21 swings tackled mid-windup, and possession collapsed. He commits exactly early
+  // enough that the ball still leaves at holdMin, whichever gesture he chose.
+  const move = MOVE_TIMING[pick.tech.clip] || MOVE_TIMING.passe;
+  if (st.hold < cfg.holdMin - move.contact * cfg.windupCarve) return false;
+
+  // HE COMMITS TO THE GESTURE. The ball does NOT leave here — it leaves when the swing reaches its
+  // contact frame, which is the whole inversion (see gesture.js). What used to happen was: strike the
+  // ball, then ask the character for a pose, and start that pose AT its contact frame so the leg would
+  // not still be winding up while the ball was already gone. That bought synchronisation by throwing
+  // away the entire beginning of the movement — which is why there was no visible movement.
   c.foot = pick.foot;
+  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick }, log: st.gestures });
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, tech: pick.tech.id, move: pick.tech.clip, foot: pick.foot, anticipation: move.contact });
+  return true;
+}
+
+/**
+ * THE CONTACT. Called by the gesture clock at the swing's contact frame — this is the instant the
+ * ball is struck, and the only instant it may be.
+ *
+ * The pass is re-solved HERE rather than reused from the decision: the receiver has been running for
+ * the length of the windup, and hitting the spot he occupied when the passer made up his mind is how
+ * you get a ball played behind a man. Aiming at where he is NOW is both more correct and more honest —
+ * the geometry recorded on the event is the geometry the strike actually had.
+ */
+function strikeNow(st, c, cfg) {
+  const { choice, pick } = c.act.payload;
+  const rec = st.players[choice.to.id];
+  const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
+  const lead = rec ? [rec.p[0] + rec.v[0] * 0.18, 0, rec.p[2] + rec.v[1] * 0.18] : choice.lead;
+  const sol = solvePass(from, lead, { style: choice.style }) || solvePass(from, choice.lead, { style: choice.style });
+  if (!sol) { st.ball.v = [st.ball.v[0] * 0.6, 0, st.ball.v[2] * 0.6]; return; }   // scuffed: it stays loose
   const s = kick(from, { speed: sol.speed, dirYaw: sol.dirYaw, elevation: sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
   st.ball.p = s.p; st.ball.v = s.v; st.ball.w = s.w;
   st.phase = 'flight';
-  st.pass = { from: c.id, to: choice.to.id, lead: choice.lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
+  st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
   st.lastPasser = c.id;
   st.possession.carrier = -1;
   st.hold = 0; st.pressure = 0;
+  const sit = situation(c.p, c.yaw, from, [0, 0, 0], from[1]);
+  const tx = lead[0] - c.p[0], tz = lead[2] - c.p[2];
+  const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
+  const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
     t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot,
     margin: +choice.lane.margin.toFixed(2),
@@ -57,7 +121,43 @@ function playPass(st, choice, cfg) {
     // is a different picture, so the action carries its own justification
     tech: pick.tech.id, surface: pick.surface, side: sit.side, dist: +sit.dist.toFixed(2), height: +from[1].toFixed(2), out: +outBearing.toFixed(1),
   });
-  return true;
+}
+
+/**
+ * THE GESTURE CLOCK — every actor, every phase. A follow-through does not stop because the ball has
+ * left or because possession changed; that is exactly the defect this runs outside the phase machine
+ * to avoid. The only thing that cuts a swing short is a named interruption.
+ */
+function stepGestures(st, dt, cfg) {
+  for (const p of st.players) {
+    if (!p.act) continue;
+    // CLOSED DOWN MID-SWING. The windup is a real window: a defender who arrives during it takes the
+    // ball off you. This is what makes pressing worth doing, and it did not exist while the ball left
+    // at the instant of the decision — there was no interval to attack.
+    if (winding(p) && st.phase === 'carry' && st.possession.carrier === p.id) {
+      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE. Standing near him is no longer
+      // enough — the defender has to have got to the BALL first. Without this the windup was simply
+      // fatal: pressure had already been accumulating through the dribble, so the extra 0.4 s of swing
+      // pushed every close defender past tackleTime and possession collapsed (record halved, turnovers
+      // doubled). A swing you have already started is not the same target as a man still dribbling,
+      // and the geometry says so: get to the ball or you do not get it.
+      const press = st.players.filter((q) => q.team !== p.team && q.down <= 0
+        && d2(q.p, p.p) < cfg.tackleRadius && d2(q.p, st.ball.p) < d2(p.p, st.ball.p));
+      st.pressure = press.length ? st.pressure + dt : 0;
+      // AND THE BALL TRAVELS WITH HIM. Nobody stops dead to pass. While the swing runs, the dribble is
+      // suspended (he is not taking new touches), and the ball was simply being left where it lay while
+      // he ran on — so the strike happened off a stale position and his separation fell from 2.09 m to
+      // 1.53 m, which is the difference between passing on the move and being a statue. The ball is at
+      // his feet: it goes where he goes until the boot sends it somewhere else.
+      st.ball.p[0] += p.v[0] * dt; st.ball.p[2] += p.v[1] * dt;
+      if (st.pressure >= cfg.tackleTime) {
+        abortGesture(p, 'fermé pendant l’armé', { log: st.gestures });
+        receive(st, press[0].id, cfg);
+        continue;
+      }
+    }
+    if (stepGesture(p, dt, { log: st.gestures }) === 'contact' && p.act?.payload?.kind === 'pass') strikeNow(st, p, cfg);
+  }
 }
 
 /**
@@ -97,7 +197,7 @@ function receive(st, id, cfg = RONDO) {
         const ax = p.p[0] - foe.p[0], az = p.p[2] - foe.p[2], al = Math.hypot(ax, az) || 1;
         tx = ax / al; tz = az / al;
       }
-      p.yaw = Math.atan2(tz, tx);                              // he turns with the touch
+      p.yawWant = Math.atan2(tz, tx);              // he turns ONTO it — movePlayers slews, never snaps
       const lat = pick.foot === 'left' ? 1 : -1;               // left of forward is (fz, -fx) here
       st.ball.p = [
         p.p[0] + tx * cfg.controlSettle + tz * lat * cfg.footSide,
@@ -193,10 +293,18 @@ export function rondoStep(st, dt, cfg = RONDO) {
   st.t += dt;
   assignJobs(st, cfg);
   movePlayers(st, dt, cfg);
+  stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
 
   if (st.phase === 'carry') {
     const c = st.players[st.possession.carrier];
     if (!c) { st.phase = 'loose'; return st; }
+
+    // A GESTURE IN PROGRESS OWNS THE PLAYER. He has committed: he does not re-decide and he does not
+    // dribble — he plants and swings, and the ball leaves at the CONTACT instant of that swing. The
+    // gesture itself is advanced by stepGestures(), for every actor and in every phase, because a
+    // follow-through does not stop because the ball has left.
+    if (busy(c)) { st.hold += dt; return st; }
+
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
     if (!st._drb) st._drb = makeDribbler();
     // where the BALL should be pushed — the escape direction assignJobs computed, not the direction of
@@ -230,10 +338,16 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 %
     // of passes; the ball is not in front of him and the leg has nothing to hit.
     const reachNow = d2(c.p, st.ball.p) <= cfg.strikeReach;
-    if (st.hold >= cfg.holdMin && reachNow) {
+    // THE WINDUP IS CARVED OUT OF THE HOLD, NOT ADDED TO IT. A first attempt at a windup simply
+    // delayed every release by its length and the game fell apart — record 6, turnovers 25 → 103,
+    // because every pass now had an extra beat for a defender to arrive in. The swing is not extra
+    // time: it is the last part of the time he already had. He commits one anticipation EARLIER, so
+    // the ball still leaves at holdMin. Same football, visible movement.
+    // the earliest ANY gesture could need to start; beginPass then re-checks against the one it picked
+    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && reachNow) {
       const choice = choosePass(st, cfg);
-      if (choice && (choice.score > 3.2 || st.hold >= cfg.holdMax)) playPass(st, choice, cfg);
-      else if (st.hold >= cfg.holdMax && choice) playPass(st, choice, cfg);
+      if (choice && (choice.score > 3.2 || st.hold >= cfg.holdMax)) beginPass(st, choice, cfg);
+      else if (st.hold >= cfg.holdMax && choice) beginPass(st, choice, cfg);
     }
   } else {
     stepBall(st.ball, dt);

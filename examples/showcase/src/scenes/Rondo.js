@@ -205,15 +205,17 @@ export class Rondo {
     window.__rondoReport = this._reports;
   }
 
-  /** Play the gesture the technique named, on the foot it named, from its contact frame. Falls back to
-   *  the pass move when an action carries no technique — a mishit still has to look like something. */
-  _playTech(pl, e) {
+  /** Play the gesture the technique named, on the foot it named. `from` is normally 0 — the beginning
+   *  of the movement — because the simulation now starts the swing BEFORE the ball leaves and the ball
+   *  leaves at the clip's own contact frame (engine/gesture.js). Only reactive gestures, the ones the
+   *  game reports after the fact, still start at contact. */
+  _playTech(pl, e, from = 0) {
     const set = this.gest.get(pl.rig);
     if (!set) return;
-    const move = (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
+    const move = e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
     const pair = set[move] || set.passe;
     const clip = e.foot === 'left' ? pair.left : pair.right;
-    if (clip) playGesture(pl.mixer, clip, { from: clip.userData?.contact ?? 0, fade: 0.06 });
+    if (clip) playGesture(pl.mixer, clip, { from: from === 'contact' ? (clip.userData?.contact ?? 0) : 0, fade: 0.06 });
   }
 
   /** The broadcast camera: it TRACKS the ball with lag and a touch of overshoot, the way a real
@@ -243,13 +245,16 @@ export class Rondo {
     // ---- react to what the game just did: a pass fires the correct-foot strike on the passer
     for (let i = before; i < this.state.events.length; i++) {
       const e = this.state.events[i];
-      if (e.type === 'pass') {
-        const pl = this.players[e.from];
-        // start the strike AT ITS CONTACT FRAME, with the clip the TECHNIQUE names. The 'pass' event
-        // means the ball has just left, so a clip started at t=0 would put the leg into its backswing
-        // while the ball is already gone — precisely what reads as "the ball never really leaves his
-        // foot". Starting at contact costs the backswing and buys the thing that matters.
-        this._playTech(pl, e);
+      if (e.type === 'windup') {
+        // THE SWING STARTS HERE, FROM FRAME 0 — and the ball is still at his feet. This event did not
+        // exist: the game used to strike the ball and then ask for a pose, so the only way to keep the
+        // boot and the ball together was to start the clip AT its contact frame, throwing away the
+        // entire backswing. That is why there was no visible movement — you were watching the second
+        // half of a gesture whose first half had been deleted. Now the simulation waits for the leg.
+        this._playTech(this.players[e.by], e);
+      } else if (e.type === 'pass') {
+        // the ball leaving is no longer a cue to animate: the swing that sent it started earlier and is
+        // still running, and it will finish on its own follow-through
       } else if (e.type === 'control' || e.type === 'slide') {
         const pl = this.players[e.by];
         if (pl) this._playTech(pl, e);

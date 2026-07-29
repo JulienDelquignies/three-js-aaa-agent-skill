@@ -54,7 +54,8 @@ threejs-aaa/ (the skill)
 │   ├── 44-character-swap.md    custom Mixamo player: world-delta retarget, dequantize, skinned long coat
 │   ├── 45-football-simulation.md  real ball flight (drag/Magnus/spin) + touch-based dribbling, and what's next
 │   ├── 46-possession-game.md   5v5 passe à dix: jobs not urges, inverse ballistics, night stadium, both feet
-│   ├── 47-football-rules.md    impossible-football catalogue (21 rules) + the gesture vocabulary as data
+│   ├── 47-football-rules.md    impossible-football catalogue (23 rules) + the gesture vocabulary as data
+│   ├── 48-gesture-timeline.md  an action has a beginning and an end: the ball leaves at the contact frame
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
 │   ├── 19-correctness-catalogue.md  exhaustiveness generator + full rule catalogue by relationship
@@ -98,6 +99,7 @@ threejs-aaa/ (the skill)
 │   ├── verify-football-rules.mjs  the impossible-football catalogue: 23 rules, one named sabotage each
 │   ├── verify-squad.mjs       a roster of Mixamo GLBs made interchangeable: facing, scale, clips, bones
 │   ├── verify-bib.mjs        the training bib: two shirt colours on one un-recolourable character atlas
+│   ├── verify-gesture.mjs    an action has a beginning and an end: windup → contact → follow-through
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   ├── frame-stats.mjs       measure a rendered PNG (mean luminance, contrast, clipping); --selftest proves the PNG filters
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)

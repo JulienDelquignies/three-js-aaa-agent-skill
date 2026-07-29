@@ -945,6 +945,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    - **23 règles, 56 assertions vertes.** Le catalogue a attrapé une régression que j'avais moi-même
      introduite en écartant le bloc (5,3 % → 12,9 %). Suite complète verte, ALL-SYNC. Voir `reference/47`.
 
+7. ✅ **Rondo 5v5 — le geste a un début et une fin** *(fait)* — `engine/gesture.js` + `verify-gesture.mjs`
+   (28/28) + `reference/48`. Retour utilisateur : « la façon du joueur de se retourner, c'est réaliste ?
+   et ensuite sa passe ? ça se voit même pas le mouvement / les mouvements ne s'arrêtent pas quand le
+   ballon part ». Trois reproches, une cause **architecturale** : la simulation frappait le ballon PUIS
+   demandait une pose, donc le clip démarrait à sa frame de contact et tout l'armé était supprimé — on
+   regardait la seconde moitié d'un geste. Et le retournement était un `p.yaw = atan2(...)` : 180° en
+   zéro seconde, aucun intervalle à animer.
+   - **Inversion** : `anticipation → contact → accompagnement`. L'acteur s'ENGAGE, le ballon part au
+     contact du clip, le geste va à son terme ou est interrompu **avec une cause nommée**. Timings lus
+     dans `animkit`, jamais ré-écrits.
+   - **Le retournement est une vraie rotation bornée** (`yawWant` + `turnRateMin`), plus jamais un snap.
+   - Quatre corrections mesurées pour que ce soit jouable (référence 8 graines × 60 s : record 11,1 /
+     22,0 récup) : armé **taillé dans** le temps déjà disponible et non ajouté ; anticipation **du geste
+     choisi** (0,38 s pour `passe`, 0,52 pour `passePivot` — un forfait se trompait du simple au double) ;
+     tacle pendant l'armé = **contre** (il faut atteindre le ballon) ; ballon qui **voyage avec lui**.
+     Résultat 8,4 / 27,9 — l'écart restant est le prix assumé d'un geste engagé de 0,4 s.
+   - **Deux fausses pistes gardées** : « sous pression joue le plus rapide » → 19 passes sur 32 en une
+     touche et 9 talonnades à 175° (la vitesse départage désormais des gestes déjà bons) ; verrouiller
+     le regard sans verrouiller les appuis → il contournait son propre ballon.
+   - **Bug de règle révélé** : `ball-ahead-at-strike` exemptait la talonnade via `e.style`, champ qui
+     porte `ground`/`lofted` — exemption morte depuis le premier jour, **chaque talonnade comptait comme
+     illégale**, et le test du harnais était écrit avec `style: 'talonnade'` donc passait. Le geste, c'est
+     `tech`. 41 % → 7,2 %.
+   - Suite complète verte (56/56 règles, 26/26 rondo, 28/28 gestes), ALL-SYNC.
+   - **Reste** : l'amplitude des poses `animkit` — les moves sont lisibles mais discrets. Travail
+     d'auteur sur les clés, que le catalogue n'attrapera pas (il juge la géométrie, pas la beauté).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

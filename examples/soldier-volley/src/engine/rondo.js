@@ -70,6 +70,16 @@ export const RONDO = {
   evadeMate: 0.35,         // …and on not running into your own supports
   evadeEdge: 0.45,         // …and on not getting pinned against the chalk
   evadeKeep: 1.1,          // …and on continuing the way you were already going
+  // The LONGEST anticipation any gesture has (animkit `passePivot`, 0.52 s). Only used to know how
+  // early to start asking the question — beginPass then carves the anticipation of the gesture it
+  // actually picked, which is the only correct number. See the carve-out in rondo-sim.
+  windupBudget: 0.55,
+  rushedRadius: 3.2,       // m — inside this, speed breaks ties between gestures (see beginPass)
+  rushedSlack: 0.5,        // …but only among options within this much of the best-scoring one
+  windupCarve: 1,          // how much of it is taken OUT of the hold rather than added after it (0..1)
+  // A TURN TAKES TIME. Bounded at turnAccel/speed rad/s like everything else that rotates here, with
+  // this floor so a man standing still still turns at a human rate instead of snapping.
+  turnRateMin: 4.5,        // rad/s at a standstill (~260°/s: a sharp but human pivot)
 };
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
@@ -90,6 +100,8 @@ export function makeRondo({ perTeam = 5, seed = 1, area = RONDO.area } = {}) {
         v: [0, 0], speed: 0, yaw: a + Math.PI, job: 'support', target: null, foot: 'right',
         down: 0,          // seconds still on the ground after a slide tackle
         push: null,       // the direction the carrier wants his ball to go
+        act: null,        // the gesture in progress (gesture.js) — it owns him while it runs
+        yawWant: null,    // a facing he is turning ONTO, at a bounded rate — never a snap
       });
     }
   }
@@ -98,6 +110,7 @@ export function makeRondo({ perTeam = 5, seed = 1, area = RONDO.area } = {}) {
     t: 0, players, area,
     ball: { p: [players[carrier].p[0] + 0.6, BALL.radius, players[carrier].p[2]], v: [0, 0, 0], w: [0, 0, 0] },
     possession: { team: 0, carrier }, hold: 0, pressure: 0,
+    gestures: [],                    // the log every swing writes to (gesture.js) — the contract reads it
     passes: 0, best: 0, turnovers: 0,
     phase: 'carry', pass: null, lastPasser: -1, events: [],
   };
@@ -316,6 +329,12 @@ export function assignJobs(st, cfg = RONDO) {
   for (const p of st.players) {
     if (p.team === atkTeam) {
       if (car && p.id === car.id) {
+        // A SWING PLANTS THE FEET TOO. Locking only the facing was half a lock and measurably worse:
+        // `assignJobs` kept re-targeting him to stand behind a ball whose push direction was still
+        // rotating, so he physically walked around his own ball while his shoulders stayed committed —
+        // and the ball finished at his side or behind him, which is how a rondo ends up being played
+        // with 18 backheels out of 38 passes. If the body is committed, so is where it is going.
+        if (p.act) { p.job = 'carry'; p.target = [p.p[0], 0, p.p[2]]; continue; }
         // the carrier does not stand still: he drifts off the presser's shoulder into space,
         // which is what buys the extra half-second the pass needs
         p.job = 'carry';
@@ -429,6 +448,12 @@ function movePlayers(st, dt, cfg) {
     p.p[0] = clamp(p.p[0], -st.area[0] / 2, st.area[0] / 2);
     p.p[2] = clamp(p.p[2], -st.area[1] / 2, st.area[1] / 2);
     p.speed = Math.hypot(p.v[0], p.v[1]);
+    // A SWING OWNS THE BODY. Once he has started it, his facing is locked: he does not re-aim with his
+    // drift and he does not keep turning onto a new target. Without this, the gesture gated the strike
+    // on the geometry at COMMIT and then let the body rotate for the whole 0.4 s of the windup, so the
+    // ball could be dead behind him by the time the boot arrived — `ball-ahead-at-strike` 16.7 %. You
+    // commit your body when you commit your gesture; that IS what committing means.
+    if (p.act) continue;
     if (p.speed > 0.25) p.yaw = Math.atan2(p.v[1], p.v[0]);
     // A MAN CARRYING THE BALL FACES HIS BALL — not his drift. For everyone else, facing = direction of
     // travel is right; for the carrier it is wrong, and wrong in the one place it shows. He stands
@@ -439,13 +464,21 @@ function movePlayers(st, dt, cfg) {
     // The slew is the same law as the momentum model above (rate = turnAccel / speed), so pace still
     // costs agility: a man sprinting cannot snap his shoulders round onto the ball.
     if (p.job === 'carry') {
-      const want = p.push ? Math.atan2(p.push[1], p.push[0])
+      p.yawWant = p.push ? Math.atan2(p.push[1], p.push[0])
         : Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
-      let d = want - p.yaw;
+    }
+    // A TURN TAKES TIME — this is the ONE place a facing may change, and it can only change at a
+    // bounded rate. A first touch used to write `p.yaw = atan2(...)` directly: the man was simply
+    // pointing somewhere else on the next frame, 180° in zero seconds. Nothing in the animation can
+    // rescue that, because there is no interval to animate. Now the touch asks for a facing and he
+    // turns ONTO it — which is also why he arrives at it a beat after the ball, like a real player.
+    if (p.yawWant != null) {
+      let d = p.yawWant - p.yaw;
       while (d > Math.PI) d -= 2 * Math.PI;
       while (d < -Math.PI) d += 2 * Math.PI;
-      const rate = cfg.turnAccel / Math.max(1, p.speed);
-      p.yaw += clamp(d, -rate * dt, rate * dt);
+      const rate = Math.max(cfg.turnRateMin, cfg.turnAccel / Math.max(1, p.speed));
+      if (Math.abs(d) <= rate * dt) { p.yaw = p.yawWant; p.yawWant = null; }
+      else p.yaw += Math.sign(d) * rate * dt;
     }
   }
   // SEPARATION. Two players had nothing at all stopping them occupying the same point, and measured,

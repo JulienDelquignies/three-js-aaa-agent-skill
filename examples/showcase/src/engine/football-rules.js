@@ -34,7 +34,12 @@ export const FOOT_RULES = [
       + 'joueur et la direction du ballon : 0° = pile devant, 180° = dans le dos. Un coup du pied '
       + 'droit ou gauche exige le ballon dans le cône avant ; seule la TALONNADE fait exception, et '
       + 'c\'est précisément pour ça qu\'elle porte un nom.',
-    check: (e, cfg) => (e.style === 'talonnade' ? null
+    // `e.tech`, NOT `e.style`. `style` is the BALLISTIC style of the pass — ground or lofted — and it
+    // has never once held the string 'talonnade', so this exemption was dead code from the day it was
+    // written: every backheel in the game was being counted as an illegal strike. Worse, the harness
+    // test for it built its fixture with `style: 'talonnade'` and therefore passed — a test written
+    // against the implementation instead of against the football. The gesture is `tech`.
+    check: (e, cfg) => (e.tech === 'talonnade' ? null
       : e.bearing > cfg.strikeCone ? `relèvement ${e.bearing}° (> ${cfg.strikeCone}°) : ballon dans le dos` : null),
   },
   {
