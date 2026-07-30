@@ -13,6 +13,7 @@
 // (pic 7,5 m/s) sous un corps déplacé à 5,2 m/s par le glissement, sur des jambes d'idle forcé.
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { extname, join } from 'node:path';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
@@ -51,6 +52,7 @@ const episodes = await page.evaluate(async () => {
     });
     const sim = S.state.players[by];
     return { t: +S.state.t.toFixed(3), bones, ball: S.state.ball.p.map((v) => +v.toFixed(3)),
+      bv: [+S.state.ball.v[0].toFixed(3), +S.state.ball.v[2].toFixed(3)],
       simP: [+sim.p[0].toFixed(3), +sim.p[2].toFixed(3)], yaw: +sim.yaw.toFixed(3), speed: +sim.speed.toFixed(2),
       act: sim.act ? { id: sim.act.id, t: +sim.act.t.toFixed(3), fired: !!sim.act.fired, antic: sim.act.anticipation } : null,
       hold: +S.state.hold.toFixed(2) };
@@ -70,7 +72,7 @@ const episodes = await page.evaluate(async () => {
       if (ring.length > 40) ring.shift();
       const w = S.state.events.slice(nEv).find((x) => x.type === 'windup');
       if (w && i > 300) {
-        current = { by: w.by, move: w.move, foot: w.foot, antic: w.anticipation, frames: [...ring], post: 0 };
+        current = { by: w.by, move: w.move, foot: w.foot, tech: w.tech, antic: w.anticipation, frames: [...ring], post: 0 };
       }
     } else if (current) {
       current.frames.push(snap(current.by));
@@ -124,6 +126,48 @@ for (const [ei, ep] of episodes.entries()) {
     for (let i = iStart; i < F.length; i++) angles.push(ang(F[i].bones[ep.foot === 'right' ? 'RightUpLeg' : 'LeftUpLeg'], F[i].bones[ep.foot === 'right' ? 'RightLeg' : 'LeftLeg'], F[i].bones[strike]));
     const amp = Math.max(...angles) - Math.min(...angles);
     ok(`  le genou frappeur a une amplitude (${amp.toFixed(0)}° ≥ 40)`, amp >= 40);
+    // LA SURFACE DU PIED — la question « le ballon tape-t-il la bonne surface ? », rendue
+    // géométrique. Au contact : l'axe du pied frappeur (Foot → ToeBase) contre la DIRECTION DE
+    // DÉPART du ballon (sa vitesse à l'image d'après — c'est la frappe qui l'a écrite). L'angle
+    // classe la face : ≤ 40° = coup de patte (laces), ≥ 140° = TALON, entre les deux c'est
+    // intérieur ou extérieur — et le côté MÉDIAL se définit sans convention de repère : c'est le
+    // côté où se trouve L'AUTRE pied. Clause DURE sur le grossier (une technique avant ne réalise
+    // pas une géométrie de talon, une talonnade en réalise une) ; la classe fine reste INFO tant
+    // que le swing des clips n'est pas re-calé (l'orientation du pied au contact vient du clip).
+    {
+      const fb = c.bones[strike], tb = c.bones[ep.foot === 'right' ? 'RightToeBase' : 'LeftToeBase'];
+      const sb = c.bones[support];
+      const post = F[iFire];
+      const dv = Math.hypot(post.bv[0], post.bv[1]);
+      const flHoriz = tb ? Math.hypot(tb[0] - fb[0], tb[2] - fb[2]) : 0;
+      // LE DOMAINE DE VALIDITÉ DE LA MESURE (loi 8, appliquée à l'auditeur lui-même) : au contact
+      // d'une frappe, le pied est souvent en FLEXION PLANTAIRE — la pointe vise le sol, la
+      // projection horizontale de l'axe des orteils devient minuscule et sa DIRECTION est
+      // du bruit : mesuré, l'angle « du même clip » errait de 88° à 178° d'un run à l'autre. Un
+      // pied qui pointe vers le bas ne peut pas mentir sur l'avant/arrière — mesuré : à 7 cm de projection, l'angle du même clip errait encore de 127° à 178° d'un run à
+      // l'autre. La clause ne juge que les pieds dont l'orientation est ÉCRITE (≥ 10 cm de
+      // projection) ; en deçà, l'avant/arrière est jugé côté sim (strike-stance, ball-ahead) et
+      // l'INFO garde les chiffres pour le chantier de re-calage — dont le critère d'acceptation
+      // inclut désormais « pied orienté au contact ».
+      if (tb && dv > 1 && flHoriz >= 0.10) {
+        const fx = tb[0] - fb[0], fz = tb[2] - fb[2], fl = Math.hypot(fx, fz) || 1;
+        const dx = post.bv[0] / dv, dz = post.bv[1] / dv;
+        const cosA = (fx / fl) * dx + (fz / fl) * dz;
+        const angle = Math.acos(Math.max(-1, Math.min(1, cosA))) * 180 / Math.PI;
+        // composante de d̂ perpendiculaire à l'axe du pied, comparée au vecteur vers l'appui (médial)
+        const px = dx - cosA * (fx / fl), pz = dz - cosA * (fz / fl);
+        const mx = sb[0] - fb[0], mz = sb[2] - fb[2];
+        const medial = (px * mx + pz * mz) > 0;
+        const realized = angle <= 40 ? 'laces' : angle >= 140 ? 'heel' : medial ? 'inside' : 'outside';
+        const declared = TECHNIQUES.find((t) => t.clip === ep.move)?.surface ?? '?';
+        const backDecl = declared === 'heel';
+        ok(`  la surface ne ment pas sur l'AVANT/ARRIÈRE (déclaré ${declared}, départ à ${angle.toFixed(0)}° de l'axe du pied)`,
+          backDecl ? angle >= 110 : angle < 140);
+        console.log(`  INFO surface: déclaré ${declared} | réalisé ${realized} (angle ${angle.toFixed(0)}°, côté ${medial ? 'médial' : 'latéral'}, axe horiz. ${(flHoriz * 100).toFixed(0)} cm) ${realized === declared ? '✓ concordant' : '≠ (re-calage du clip)'}`);
+      } else if (tb && dv > 1) {
+        console.log(`  INFO surface: pied en flexion plantaire au contact (axe horiz. ${(flHoriz * 100).toFixed(0)} cm < 10) — orientation indéterminée, jugé par strike-stance/ball-ahead côté sim`);
+      }
+    }
     // INFO — les chiffres du chantier clips (re-calage du swing), imprimés à chaque exécution
     const bAt = c.ball;
     let minD = 9; for (let i = iStart; i < Math.min(F.length, iFire + 6); i++) minD = Math.min(minD, H(F[i].bones[strike], bAt));

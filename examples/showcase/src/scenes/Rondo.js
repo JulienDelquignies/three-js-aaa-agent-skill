@@ -322,6 +322,10 @@ export class Rondo {
     // le haut du corps appartient au geste pendant qu'un geste tourne (voir _applyGaitLayer)
     for (const pl of this.players) {
       pl.ctrl.gestureHold = !!pl.sim.act;
+      // la fenêtre de PLANT : dernier quart de l'armé — la locomotion retourne à l'idle (double
+      // appui) pendant que les jambes du geste finissent d'arriver (voir character-controller)
+      const a = pl.sim.act;
+      pl.ctrl.plantHold = !!(a && a.anticipation && !a.fired && a.t > a.anticipation * 0.75);
       // LE POIDS DES JAMBES DU GESTE = L'ARRIVÉE. Mesuré à l'audit : le corps se déplace jusqu'à
       // 5,2 m/s pendant l'armé (le glissement d'approche) — des jambes de geste à poids plein
       // là-dessus, c'est la chimère ; l'idle forcé, c'est le patin. Le fondu suit la vitesse sol
@@ -338,7 +342,11 @@ export class Rondo {
         //     lieu des ~0,30 de la stance).
         const act = pl.sim.act;
         const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
-        const byContact = act && act.anticipation ? Math.min(1, Math.pow(act.t / act.anticipation, 1.5)) : 0;
+        // …plein À 80 % DE L'ARMÉ, pas au contact : avec le lissage (~0,05 s), une rampe qui vise
+        // le contact y arrive à ~0,85 — l'audit a surpris un pied d'appui à 0,20 m de haut et un
+        // pied frappeur en pleine foulée (départ à 153° de l'axe) À l'instant du contact. Le
+        // dernier cinquième de l'armé appartient au plant, entièrement.
+        const byContact = act && act.anticipation ? Math.min(1, Math.pow(act.t / (act.anticipation * 0.8), 1.5)) : 0;
         const target = Math.max(byArrive, byContact);
         const w = pl.gestureLegs.getEffectiveWeight();
         pl.gestureLegs.setEffectiveWeight(w + (target - w) * Math.min(1, dt / 0.05));

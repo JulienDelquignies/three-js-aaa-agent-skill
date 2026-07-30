@@ -531,4 +531,54 @@ export const MOVES = {
       { t: 0.7, pose: {} },
     ],
   },
+
+  // LA PASSE INTÉRIEURE RAPIDE — même surface, armé court. Le geste qui manquait : sous pression,
+  // le départage prenait la seule option prompte de la bibliothèque, l'EXTÉRIEUR du pied (0,24 s
+  // d'armé) — mesuré : 79,5 % des passes du rondo jouées de l'extérieur, l'inverse du football.
+  // Corriger le départage sans offrir de passe intérieure courte a produit l'inverse du problème :
+  // 89 % d'intérieur mais 0,38 s d'armé sous pression, record 8,4 → 5,8. Un pro pressé joue
+  // TOUJOURS l'intérieur — avec un armé de POUSSÉE, court (le push pass rapide a un backswing
+  // réduit, pas une autre surface). Dérivée de `passe` : phase d'armé compressée (0,38 → 0,22 s)
+  // avec un backswing RÉDUIT (cuisse 20° → 14°, genou 58° → 46° — un armé court est un armé plus
+  // PETIT, pas seulement plus vite : les vitesses angulaires restent ≤ 13 rad/s), pose de CONTACT
+  // identique (c'est la même frappe), accompagnement aux mêmes deltas.
+  passeRapide: {
+    name: 'passeRapide', duration: 0.54, contact: 0.22, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.13, pose: {
+        RightUpLeg: [14, -20, 0], RightLeg: [46, 0, 0], RightFoot: [8, 15, 0],
+        Hips: [0, -8, 0],
+        Spine: [-2, -4, 0], Spine1: [2, -6, 0], Spine2: [-2, -4, 0],
+        Neck: [3, 0, 0], Head: [14, 0, 0],
+        LeftArm: [-8, 6, 48], LeftForeArm: [8, 0, 45], RightArm: [10, -4, 0], RightForeArm: [8, 0, -24],
+        LeftUpLeg: [-8, 0, 0], LeftLeg: [22, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0, -0.03, 0] },
+      { t: 0.19, pose: {
+        RightUpLeg: [-26, -28, 0], RightLeg: [30, 0, 0], RightFoot: [0, 22, 0],
+        Hips: [0, 3, 0],
+        Spine: [-1, 0, 0], Spine1: [-2, 4, 0], Spine2: [0, 4, 0],
+        Neck: [3, 0, 0], Head: [15, 0, 0],
+        LeftArm: [-2, 3, 48], LeftForeArm: [8, 0, 40], RightArm: [-4, -2, 10], RightForeArm: [6, 0, -22],
+        LeftUpLeg: [-6, 0, 0], LeftLeg: [18, 0, 0], LeftFoot: [-5, 0, 0],
+      } },
+      { t: 0.22, pose: {
+        RightUpLeg: [-46, -30, 0], RightLeg: [10, 0, 0], RightFoot: [0, 26, 0],
+        Hips: [0, 4, 0],
+        Spine: [0, 4, 0], Spine1: [-4, 8, 0], Spine2: [0, 6, 0],
+        Neck: [2, 0, 0], Head: [16, 0, 0],
+        LeftArm: [5, 2, 48], LeftForeArm: [6, 0, 30], RightArm: [-10, -3, 16], RightForeArm: [6, 0, -22],
+        LeftUpLeg: [-5, 0, 0], LeftLeg: [12, 0, 0],
+      }, hips: [0, 0, 0] },
+      { t: 0.39, pose: {
+        RightUpLeg: [-30, -24, 0], RightLeg: [26, 0, 0], RightFoot: [0, 14, 0],
+        Hips: [0, 7, 0],
+        Spine: [0, 2, 0], Spine1: [2, 5, 0], Spine2: [0, 3, 0],
+        Neck: [1, 0, 0], Head: [8, 0, 0],
+        LeftArm: [0, 2, 48], LeftForeArm: [6, 0, 26], RightArm: [-6, -2, 4], RightForeArm: [5, 0, -20],
+        LeftUpLeg: [-4, 0, 0], LeftLeg: [14, 0, 0], LeftFoot: [-3, 0, 0],
+      } },
+      { t: 0.54, pose: {} },
+    ],
+  },
 };

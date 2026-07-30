@@ -182,8 +182,19 @@ export class CharacterController {
       // cette ligne : il vit dans le POIDS des canaux jambes du geste, fondu par l'arrivée
       // (Rondo : clip scindé haut/jambes — les bras s'arment pendant les pas, les jambes du geste
       // ne prennent que quand le corps est posé).
-      const vTarget = this.gestureHold ? Math.min(this.groundSpeed ?? 0, vGait) : vGait;
-      this._vAnim = (this._vAnim ?? vGait) + (vTarget - (this._vAnim ?? vGait)) * Math.min(1, dt / 0.08);
+      // …et la FENÊTRE DE PLANT (fin d'armé, `plantHold` levé par la scène) force le retour à
+      // l'idle : sans elle, la marche GÈLE à une phase arbitraire quand le glissement s'assied —
+      // l'audit a surpris le pied d'appui à 0,20 m de haut et l'axe du pied à 144° du départ AU
+      // CONTACT (un pied de pleine foulée sous un geste de frappe). L'arrêt d'un pas se FINIT en
+      // double appui ; le dernier quart de l'armé appartient au plant.
+      const vTarget = this.plantHold ? 0 : this.gestureHold ? Math.min(this.groundSpeed ?? 0, vGait) : vGait;
+      // le PLANT a sa propre constante de temps : pour un armé court (0,22 s) la fenêtre de plant
+      // (dernier quart) dure 0,055 s — plus COURT que le lissage de croisière (0,08 s), donc la
+      // marche restait ~30 % dans la pose au contact, à une phase arbitraire : l'axe du pied
+      // frappeur variait de 104° à 165° d'un épisode à l'autre du MÊME clip. Un plant, ça se
+      // plante — vite.
+      const tauV = this.plantHold ? 0.025 : 0.08;
+      this._vAnim = (this._vAnim ?? vGait) + (vTarget - (this._vAnim ?? vGait)) * Math.min(1, dt / tauV);
       this.anim.set('speed', this._vAnim).update(dt);                // Idle→Walk→Run blend, phase-locked
       this._applyGaitLayer(this._vAnim);
     } else {

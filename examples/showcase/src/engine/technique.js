@@ -50,6 +50,14 @@ export const TECHNIQUES = [
     clip: 'passe', why: 'La passe de base : le pied le plus proche du ballon, surface intérieure — la plus large et la plus précise.',
   },
   {
+    id: 'passe-rapide', intent: 'pass', foot: 'near', surface: 'inside',
+    side: [0, 75], dist: [0.15, 1.1], turn: 35, power: 0.75, accuracy: 0.9,
+    clip: 'passeRapide', why: 'La passe intérieure PRESSÉE : même surface que la passe de base, armé de poussée '
+      + 'court (0,22 s). C\'est le geste du rondo sous pression — un pro ne bascule pas sur l\'extérieur '
+      + 'parce qu\'on le presse, il raccourcit son armé. Sans elle, le départage de vitesse n\'avait que '
+      + 'le flick extérieur à offrir (mesuré : 79,5 % des passes).',
+  },
+  {
     id: 'passe-exterieur', intent: 'pass', foot: 'far', surface: 'outside',
     side: [0, 60], dist: [0.15, 0.95], turn: 25, power: 0.7, accuracy: 0.75,
     clip: 'passeExterieur', why: 'L\'extérieur du pied opposé : la réponse quand le ballon est du mauvais côté et qu\'on ne veut pas croiser les jambes ni se réorienter.',

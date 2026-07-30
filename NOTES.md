@@ -1065,6 +1065,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    CLIPS (chantier #18, chiffres imprimés en INFO à chaque exécution) : vitesse du pied au contact,
    mains du passe composé, appui exact de l'exterieur.
 
+14. **La surface du pied, verifiee — et le vrai visage des « talonnades ».** Question utilisateur :
+   « le ballon tape-t-il la bonne surface ? beaucoup de talonnades ». Mesure : ce n'etaient pas des
+   talonnades (6 %) mais **79,5 % de passes de l'EXTERIEUR du pied** — l'inverse du football — parce
+   que le departage « presse » de planStrike (marge 0,25 INCLUSIVE de la pref 0,75) faisait du flick
+   exterieur (arme 0,24 s) le standard sous pression, et un rondo est presse en permanence. Marge
+   0,2 seule : 89 % d'interieur mais record 8,4 → 5,8 (l'arme 0,38 s se fait tacler). Le geste
+   MANQUANT etait la **passe interieure rapide** (animkit `passeRapide` : arme de poussee 0,22 s,
+   backswing REDUIT — un arme court est un arme plus PETIT, vitesses ≤ 13 rad/s — contact identique
+   a `passe`) : distribution finale 79 % rapide + 14 % posee = 93 % interieur, 5 % talonnade, 0,5 %
+   exterieur. La VERIFICATION DE SURFACE vit dans audit-membres : au contact, l'axe du pied
+   (Foot→ToeBase) contre la DIRECTION DE DEPART du ballon classe la face (≤ 40° laces, ≥ 140°
+   talon, sinon interieur/exterieur — le cote MEDIAL defini sans convention : c'est le cote de
+   l'autre pied). Trois lecons d'instrument en route (loi 8 sur l'auditeur lui-meme) : l'arret d'un
+   pas se FINIT en double appui (plantHold : le gel de la marche a phase arbitraire mettait l'appui
+   a 0,20 m au contact), le plant a sa propre constante de temps (0,025 s — la fenetre d'un arme
+   court est plus courte que le lissage de croisiere), et un pied en FLEXION PLANTAIRE n'a pas
+   d'orientation horizontale mesurable (7 cm de projection → angle errant de 88° a 178° : la clause
+   ne s'arme qu'a ≥ 10 cm — en deca, strike-stance juge cote sim et l'INFO garde les chiffres pour
+   le re-calage des clips, dont le critere d'acceptation inclut desormais « pied oriente au
+   contact »). Budget control-at-foot 6 → 9 (p99 : processus multi-graines 3,4 %, mene 0,65
+   re-balayee optimale ; une queue d'UNE graine ne rougit pas le harnais, une derive si).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

@@ -32,6 +32,7 @@
  */
 export const STANCES = {
   passe: { dist: 0.55, bearing: 24 },
+  passeRapide: { dist: 0.55, bearing: 24 },   // même frappe, armé court : la stance est identique
   frappe: { dist: 0.62, bearing: 14 },
   passeExterieur: { dist: 0.50, bearing: 32 },
   passePivot: { dist: 0.60, bearing: 38 },
@@ -139,7 +140,7 @@ export function glide(from, fromYaw, anchor, t01) {
  */
 export function planStrike(playerP, ball, outYaw, candidates, {
   stances = STANCES, adjustSpeed = 3.6, hardMax = 0.6,
-  rushed = false, rushedSlack = 0.25, farCost = 0.35, extraReach = 0,
+  rushed = false, rushedSlack = 0.2, farCost = 0.35, extraReach = 0,
 } = {}) {
   const all = [];
   for (const cand of candidates) {
@@ -170,10 +171,14 @@ export function planStrike(playerP, ball, outYaw, candidates, {
   // (Le talon ne gagne le score que si la stance propre est à plus de ~2 m — pref 0,55 contre
   // 1 − 0,35·(fit−1) — c'est-à-dire une vraie géométrie d'urgence, sinon holdMax improvise déjà.)
   // PRESSÉ, la règle s'assouplit d'un cran EXACT : on s'engage sur la meilleure option DÉJÀ
-  // atteignable si elle vaut presque le plan (rushedSlack, sur l'échelle des préférences 0–1 —
-  // 0,25 garde l'extérieur et le coup de patte, exclut talon et pivot tant que la passe domine),
+  // atteignable si elle vaut presque le plan (rushedSlack, sur l'échelle des préférences 0–1),
   // la plus prompte d'entre elles. Attendre son plan parfait sous pression a été mesuré : le
   // record est retombé de 8,8 à 6,9 — un joueur pressé joue la plus simple de ses VRAIES options.
+  // LA MARGE EST 0,2, ET LA LIMITE EST EXCLUSIVE PAR CONSTRUCTION : à 0,25 elle incluait
+  // l'extérieur du pied (pref 0,75 ≥ 1,0 − 0,25) dont l'armé court (0,24 s) gagnait alors CHAQUE
+  // départage — mesuré : 79,5 % des passes du rondo jouées de l'extérieur, 13 % de l'intérieur,
+  // l'inverse du football réel (l'intérieur est LE geste standard, l'extérieur une surface de
+  // géométrie contrainte). « Presque aussi bon » doit exclure la surface de repli, pas l'inviter.
   let best = null;
   if (steer && steer.fit <= 1) best = steer;
   if (rushed && steer) {

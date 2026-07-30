@@ -55,7 +55,7 @@ ok('les 22 os canoniques Mixamo déclarés', MIXAMO_BONES.length === 22);
     const r = checkClip(resolveTracks(mirrorMove(m)));
     if (!r.ok) ok(`miroir de « ${n} » sain`, false, r.issues[0]);
   }
-  ok('les 11 moves supportent le miroir', Object.values(MOVES).every((m) => checkClip(resolveTracks(mirrorMove(m))).ok));
+  ok('les 12 moves supportent le miroir', Object.values(MOVES).every((m) => checkClip(resolveTracks(mirrorMove(m))).ok));
 }
 
 const sab = (name, mutate, expect) => {
