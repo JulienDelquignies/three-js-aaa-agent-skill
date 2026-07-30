@@ -17,6 +17,7 @@ import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js';
 import { warpEnvelope, planWarp, warpReach, twoBoneIK, checkStrikeWarp, WARP } from '../engine/strike-warp.js';
+import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
 import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 
@@ -172,9 +173,33 @@ export class Rondo {
       // repère contre lequel le banc de swing prouve les clips. Les deltas additifs sur l'idle
       // retargeté ont été mesurés : base tournée de 20-43° par os, le balayage partait DERRIÈRE.
       const entry = this.squad.entries.find((e) => (e.spec.name || e.spec.url) === rig);
-      const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones });
+      // L'ÉCRIVAIN DU BASSIN : les specs authorent le root motion en MÈTRES PERSONNAGE
+      // [droite, haut, avant] — la conversion vers le local du parent des hanches est celle de
+      // toClip (base du modèle → inverse du parent, qui absorbe la rotation d'armature ET les cm).
+      // Sans lui, la couche jetait le hips-motion des specs : le tacleur « glissait » DEBOUT,
+      // hanches à hauteur de marche (mesuré par deux sondes indépendantes du sweep).
+      const hipsBone = (() => { let b = null; model3d.traverse((o) => { if (o.isBone && /Hips$/i.test(o.name) && !b) b = o; }); return b; })();
+      const hipsWrite = (() => {
+        if (!hipsBone) return null;
+        model3d.updateMatrixWorld(true);
+        const toWorld = new THREE.Matrix3().setFromMatrix4(model3d.matrixWorld);
+        const toParent = new THREE.Matrix3().setFromMatrix4(hipsBone.parent.matrixWorld).invert();
+        const rest = hipsBone.position.clone();
+        const d = new THREE.Vector3();
+        return (delta, w) => {
+          d.set(delta[0], delta[1], -delta[2]).applyMatrix3(toWorld).applyMatrix3(toParent); // forward = −Z
+          hipsBone.position.set(rest.x + d.x * w, rest.y + d.y * w, rest.z + d.z * w);
+        };
+      })();
+      const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite });
+      // LE REGARD (engine/gaze.js) : la couche que le sweep a classée n°1 en manque de réalisme —
+      // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
+      // 5,2 % du vol. Politique par rôle (pure), mécanisme rate-limité, cible tenue EN MONDE.
+      const cloneBones = rigBones(model3d);
+      const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head') });
       this.players.push({
         sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer,
+        gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13),
         legs: { left: legs[0], right: legs[1] },
         legLens: { left: legLen(legs[0]), right: legLen(legs[1]) },
       });
@@ -204,6 +229,8 @@ export class Rondo {
     // l'auto-test du warp au démarrage, comme les autres contrats embarqués
     this._reports.warp = checkStrikeWarp();
     if (!this._reports.warp.ok) console.warn('checkStrikeWarp', this._reports.warp.issues);
+    this._reports.gaze = checkGaze();
+    if (!this._reports.gaze.ok) console.warn('checkGaze', this._reports.gaze.issues);
     this._warpStats = { n: 0, mags: [], denied: {} };
 
     this._hud = document.getElementById('score');
@@ -325,8 +352,18 @@ export class Rondo {
     this._wt.set(this._wf.x + plan.offset[0] * s, this._wf.y, this._wf.z + plan.offset[1] * s);
     leg.up.getWorldPosition(this._wh); leg.knee.getWorldPosition(this._wk);
     if (!warpReach([this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B)) {
-      this._warpStats.denied['warp-jambe-trop-courte'] = (this._warpStats.denied['warp-jambe-trop-courte'] ?? 0) + 1;
-      return;
+      // ÉCRÊTER, PAS REFUSER : le refus binaire annulait TOUTE la correction pile aux images où le
+      // pied est le plus tendu — c'est-à-dire exactement AU CONTACT (mesuré au sweep : 62 % des
+      // passes avec au moins un refus de portée dans ±0,05 s du contact). La fraction atteignable
+      // vaut mieux que rien ; le reliquat reste une dette NOMMÉE au registre.
+      const d = this._wh.distanceTo(this._wt);
+      const R = (lens.A + lens.B) * 0.995;
+      this._wt.set(
+        this._wh.x + (this._wt.x - this._wh.x) * (R / d),
+        this._wh.y + (this._wt.y - this._wh.y) * (R / d),
+        this._wh.z + (this._wt.z - this._wh.z) * (R / d),
+      );
+      this._warpStats.denied['warp-écrêté-portée'] = (this._warpStats.denied['warp-écrêté-portée'] ?? 0) + 1;
     }
     if (!a.fired && this._warpStats.mags.length < 4000) { this._warpStats.n++; this._warpStats.mags.push(plan.mag); }
     // même primitive que foot-lock : IK deux os, plan de pliage du genou = celui du clip
@@ -377,10 +414,16 @@ export class Rondo {
         // still running, and it will finish on its own follow-through
       } else if (e.type === 'control' || e.type === 'slide') {
         const pl = this.players[e.by];
-        if (pl) this._playTech(pl, e);
+        if (pl) { this._playTech(pl, e); pl._teched = this._t; if (e.type === 'control') pl._rxAt = this._t; }
       } else if (e.type === 'receive') {
+        // une RÉCEPTION n'est pas une passe : le repli par défaut de _playTech jouait le clip
+        // « passe » sur le receveur — mesuré au sweep, un armé fantôme à chaque réception, aussitôt
+        // écrasé par le contrôle (churn receive→passe→control dans la même seconde). Une réception
+        // sans technique nommée dessine un amorti ; et si un 'control' est arrivé dans la même
+        // rafale d'événements, il a déjà le membre — on ne le lui reprend pas.
         const pl = this.players[e.by];
-        this._playTech(pl, e);
+        if (pl) pl._rxAt = this._t;
+        if (pl && pl._teched !== this._t) this._playTech(pl, { ...e, move: e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || 'amorti' });
       }
     }
 
@@ -422,17 +465,48 @@ export class Rondo {
         const act = pl.sim.act;
         const v = pl.ctrl.groundSpeed ?? 0;
         const meta = pl._layerClock ?? { t0: this._t, offset: 0, dur: 0.6, antic: 0.2 };
-        const t = act ? act.t : (this._t - meta.t0 + meta.offset);
+        let t = act ? act.t : (this._t - meta.t0 + meta.offset);
+        // LE TACLEUR RESTE AU SOL tant que la sim le dit (p.down = récupération) : l'horloge du
+        // clip se GÈLE sur la pose couchée (clé « au sol ») au lieu de dérouler le relevé — le
+        // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
+        // les comptait encore à terre. Le relevé se joue quand la sim relève.
+        const lying = (pl.sim.down ?? 0) > 0 && /tacle/i.test(pl.gestureLayer.spec?.name ?? '');
+        if (lying) t = Math.min(t, pl.gestureLayer.duration * 0.55);
         const antic = act?.anticipation || meta.antic || 0.2;
         const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
         const byContact = Math.min(1, Math.pow(t / Math.max(1e-4, antic * 0.8), 1.5));
-        const done = act ? false : t >= meta.dur;
+        const done = !lying && !act && t >= meta.dur;
         const target = done ? 0 : Math.max(byArrive, byContact);
         pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, step / 0.05);
-        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - step / 0.12) : 1;
+        // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
+        // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à
+        // chaque geste. 0,12 s d'entrée = ≤ 25° par 50 ms, sous le seuil perceptible.
+        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - step / 0.12) : Math.min(1, (pl._wUp ?? 0) + step / 0.12);
         pl.gestureLayer.apply(t, pl._wLegs, pl._wUp);
         if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
-      } else { pl._wLegs = 0; pl._wUp = 1; }
+      } else { pl._wLegs = 0; pl._wUp = 0; }
+      // LE REGARD — après la couche (il compose par-dessus les clés Head du geste, fondu quand le
+      // clip possède la tête), avant le warp. La politique lit la photo sim que la scène a déjà.
+      {
+        const st = this.state;
+        const owner = st.ball.owner != null ? st.players[st.ball.owner] : null;
+        const a = s.act;
+        const targetP = a?.payload?.choice != null && st.players[a.payload.choice.to?.id ?? a.payload.choice]
+          ? (() => { const r = st.players[a.payload.choice.to?.id ?? a.payload.choice]; return [r.p[0], 1.5, r.p[2]]; })()
+          : (a?.payload?.outYaw != null ? [s.p[0] + Math.cos(a.payload.outYaw) * 6, 1.4, s.p[2] + Math.sin(a.payload.outYaw) * 6] : null);
+        const view = {
+          id: s.id, t: this._t, ball: st.ball.p, ownerId: st.ball.owner,
+          flightTo: st.pass?.to ?? null, justReceivedAt: pl._rxAt ?? null,
+          act: a ? { t: a.t, antic: a.anticipation, targetP } : null,
+          job: s.job, markP: null,   // le rondo ne marque pas à l'homme ; le scan va au porteur
+          carrierP: owner && owner.id !== s.id ? [owner.p[0], 1.5, owner.p[2]] : null,
+        };
+        const target = pickGazeTarget(view, pl._gazeSt, pl._gazeRng);
+        const gw = (pl.gestureLayer.active && pl.gestureLayer.tracks?.Head) ? 1 - 0.7 * (pl._wUp ?? 0) : 1;
+        pl.gaze.neck?.getWorldPosition?.(this._wv);
+        const hp = pl.gaze.head?.getWorldPosition ? pl.gaze.head.getWorldPosition(this._wv) : null;
+        pl.gaze.update(step, hp ? [hp.x, hp.y, hp.z] : [s.p[0], pl.groundY + 1.6, s.p[2]], target, s.yaw, gw);
+      }
       // l'autorité de la jambe frappeuse — après la couche, en dernier
       this._applyStrikeWarp(pl);
     }

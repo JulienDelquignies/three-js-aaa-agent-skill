@@ -1158,6 +1158,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    épisodes (la couche a changé la composition des bras — prochain lot), premier geste par
    clip × pied non calibré (mesure seule, par construction).
 
+18. **Le sweep de réalisme et sa première moitié — bras vrais, regard, tacle couché, warp écrêté.**
+   Onze sondes parallèles ont mesuré le jeu composé contre le vrai football (bras, regard, allures,
+   ballon, première touche, tempo, duels, frappes, appuis, un juge « téléspectateur » sur captures,
+   le moteur de match) ; synthèse en 6 chantiers pré-résolus + backlog ordonné de 13. Livré ici :
+   (1) **LES BRAS VRAIS** — double bug de fond : l'AXE d'abaissement était faux (tout le répertoire
+   écrivait Z = balancement horizontal ; sondé au rig : c'est X qui abaisse — bras en croix sur
+   94-100 % des images de geste, « des épouvantails à chaque passe ») ET la couche annulait la
+   BASE_POSE des bras (conjugaison q_spec(0)⁻¹, no-op jambes, fatale bras). Sémantique absolue
+   VRAIE (rest ⊗ q_spec(t), banc aligné), BASE_POSE re-axée [65,0,0], tables de bras RÉSOLUES au
+   rig (passe/passeRapide/frappe/controleInterieur/tacle), bras rendus à la locomotion ailleurs
+   (resolveTracks n'impose plus les os non authorés), rampe d'entrée wUp 0,12 s (le pop mesuré :
+   +54° en 50 ms, 122×/2 min), la réception ne joue plus un clip de passe. Composé avant → après :
+   élévation d'armé −14° → −61°, horizontal 94 % → 5 %, mains>cou 12,5 % → 0-3,7 %, direction
+   avant 1-9 % → 46-64 %. Clause de SILHOUETTE au banc (TENUE du coude/azimut couplée à
+   l'élévation — un bras qui pend presque droit est naturel, tendu-levé est l'épouvantail).
+   (2) **LE REGARD** (gaze.js, neuf) — il n'existait pas : médiane tête→ballon 49-65° partout,
+   0,7 % des réceptions regardées. Politique par rôle pure (receveur→ballon tout le vol+amorti ;
+   porteur→alternance cible/ballon, cible d'abord en armé ; presseur→ballon ; hors-ballon→scans
+   déterministes LCG) + mécanisme à état MONDE : le réflexe vestibulo-oculaire absorbe les pivots
+   du corps (clause dédiée — les têtes claquaient à 1 148°/s avec le lacet sim), saccade 600°/s /
+   poursuite 200°/s, clamps ±70°/[−55,+25], split cou 40/tête 60. Composé : réception 69° → 15,3°
+   (74 % sous 30°). verify-gaze : 12 clauses. (3) **LE TACLE COUCHÉ** — la couche porte le root
+   motion des specs (écrivain de bassin scène, conversion de toClip) et l'horloge gèle sur la pose
+   au sol tant que p.down > 0 : le tacleur ne « glissait » plus debout. (4) **LE WARP ÉCRÊTÉ** —
+   le refus binaire de portée annulait la correction pile au contact (62 % des passes touchées) :
+   projection sur la sphère atteignable, reliquat au registre ('warp-écrêté-portée'). Frappes
+   composées p90 0,33 m ≤ 0,35 ✓, audit 16/0, suite entière verte (36 bancs). En cours (agent
+   isolé) : duels honnêtes (tuer le flip de possession sans geste physique — 54 % des pertes) et
+   tempo/soutiens calmes, sous verrous de balance.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

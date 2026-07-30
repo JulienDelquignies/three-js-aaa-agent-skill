@@ -81,12 +81,12 @@ const poseAt = (tracks, t) => {
   }
   return pose;
 };
-/** les DELTAS additifs du clip à t : q_spec(0)⁻¹ ⊗ q_spec(t), par os (la sémantique du mixer). */
-const deltasAt = (tracks, q0, t) => {
-  const abs = poseAt(tracks, t), delta = {};
-  for (const [bone, q] of Object.entries(abs)) delta[bone] = qm(qinv(q0[bone]), q);
-  return delta;
-};
+/** la POSE ABSOLUE du clip à t : q_spec(t) tel quel, composé sur le rest par world() — LA sémantique
+ *  de la couche de geste (rest ⊗ q_spec(t) : ce qui est écrit est ce qui s'affiche). L'ancienne
+ *  conjugaison par q_spec(0)⁻¹ était un no-op pour les jambes (clé 0 = identité) mais ANNULAIT la
+ *  BASE_POSE des bras — le banc validait des bras que le jeu n'affichait pas, et inversement. Le
+ *  paramètre q0 est gardé pour la stabilité des appels ; il n'est plus consommé. */
+const deltasAt = (tracks, q0, t) => poseAt(tracks, t);
 
 // ---- LE REPÈRE SE DÉRIVE DU SQUELETTE, PAS DE LA FOI (loi 8, appliquée au banc lui-même) :
 // l'armature Mixamo est TOURNÉE (−90° X) — l'axe « y » des nœuds n'est pas le haut du monde. Le
@@ -222,6 +222,81 @@ for (const id of ['controleInterieur', 'controleExterieur', 'controleSemelle']) 
     const lbl = `« ${id} » pied ${foot === 'right' ? 'droit' : 'gauche'}`;
     ok(`${lbl} : le pied S'ÉTEND vers le ballon (excursion max ${(s.excMax * 100).toFixed(0)} cm ≥ 18)`, s.excMax >= 0.18);
     ok(`  …et REVIENT (fin à ${(s.endExc * 100).toFixed(0)} cm ≤ 60 % de l'excursion)`, s.endExc <= s.excMax * 0.6 + 0.02);
+  }
+}
+
+console.log('\n— la SILHOUETTE des bras : un balancier plié, jamais un épouvantail —');
+// La grandeur que quatre sessions n'ont pas mesurée (le sweep l'a payée en captures) : vitesse,
+// hauteur, direction du PIED étaient des clauses — les BRAS, jamais. Mesuré composé : bras en
+// croix sur 94-100 % des images de geste (coude 161-170°, main au-dessus du cou jusqu'à 12,5 %),
+// bras d'équilibre jeté DERRIÈRE tendu raide sur 100 % des frappes. Le vrai balancier : coude
+// plié (≤ 152° d'angle intérieur), le bras devant-latéral (|azimut| ≤ 125°), les mains SOUS le
+// cou. Jugé en FK sur toute la durée du clip, les deux pieds — le tacle (bras d'appui au sol,
+// levés en glissade) est l'exception assumée et n'est pas dans la liste.
+{
+  const az = (a, b) => {   // azimut du vecteur horizontal a−b vs l'AVANT (0 = devant, 180 = derrière)
+    const d = [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+    const k = d[0] * UP[0] + d[1] * UP[1] + d[2] * UP[2];
+    const h = [d[0] - k * UP[0], d[1] - k * UP[1], d[2] - k * UP[2]];
+    const n = Math.hypot(...h) || 1;
+    return Math.acos(Math.max(-1, Math.min(1, (h[0] * FORWARD[0] + h[1] * FORWARD[1] + h[2] * FORWARD[2]) / n))) * 180 / Math.PI;
+  };
+  const elbow = (sh, fo, ha) => {
+    const a = [sh[0] - fo[0], sh[1] - fo[1], sh[2] - fo[2]], b = [ha[0] - fo[0], ha[1] - fo[1], ha[2] - fo[2]];
+    const la = Math.hypot(...a) || 1, lb = Math.hypot(...b) || 1;
+    return Math.acos(Math.max(-1, Math.min(1, (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (la * lb)))) * 180 / Math.PI;
+  };
+  // La TENUE, pas l'instant : un vrai bras passe par le presque-tendu en route entre deux
+  // positions (une image ou deux d'interpolation) — le pathologique mesuré au sweep était la
+  // TENUE : 80-96 % des images à coude ≥ 150°, 46 % des vecteurs jetés derrière. On borne donc
+  // la FRACTION du temps, pas le pire échantillon.
+  for (const id of ['passe', 'passeRapide', 'frappe', 'controleInterieur']) {
+    for (const [foot, spec] of [['right', MOVES[id]], ['left', mirrorMove(MOVES[id])]]) {
+      const r = resolveTracks(spec);
+      const q0 = poseAt(r.tracks, 0);
+      let n = 0, locked = 0, behind = 0, worstHand = -Infinity;
+      for (let t = 0; t <= spec.duration + 1e-9; t += 1 / 60) {
+        const d = deltasAt(r.tracks, q0, t);
+        for (const side of ['Left', 'Right']) {
+          const sh = world(`${side}Arm`, d), fo = world(`${side}ForeArm`, d), ha = world(`${side}Hand`, d);
+          const nk = world('Neck', d);
+          n++;
+          // un bras qui PEND détendu est presque droit (~160°, la BASE même) et c'est naturel —
+          // l'épouvantail, c'est tendu ET LEVÉ : le verrou ne compte que bras au-dessus de −40°
+          const L = Math.hypot(ha[0] - sh[0], ha[1] - sh[1], ha[2] - sh[2]) || 1;
+          const elev = Math.asin(Math.max(-1, Math.min(1, (upOf(ha) - upOf(sh)) / L))) * 180 / Math.PI;
+          if (elbow(sh, fo, ha) >= 155 && elev > -40) locked++;
+          if (az(ha, sh) >= 130 && elev > -50) behind++;
+          worstHand = Math.max(worstHand, upOf(ha) - upOf(nk));
+        }
+      }
+      const lbl = `« ${id} » pied ${foot === 'right' ? 'droit' : 'gauche'}`;
+      ok(`${lbl} : le coude vit PLIÉ (verrouillé ≥ 155° sur ${(100 * locked / n).toFixed(0)} % des images ≤ 20 — avant le fix : 80-96 %)`,
+        locked / n <= 0.20);
+      ok(`  le bras vit DEVANT (jeté derrière ≥ 130° sur ${(100 * behind / n).toFixed(0)} % ≤ 10 — avant : 46 % des vecteurs)`,
+        behind / n <= 0.10);
+      ok(`  mains SOUS le cou (pire ${(worstHand * 100).toFixed(0)} cm ≤ +3)`, worstHand <= 0.03);
+    }
+  }
+  // sabotage : le bras LIVRÉ avant le sweep — tendu raide, jeté derrière à hauteur d'épaule
+  // (les valeurs mêmes de l'ancienne clé de récup de frappe, axe Z au lieu de X)
+  const flung = JSON.parse(JSON.stringify(MOVES.frappe));
+  for (const k of flung.keys) if (k.pose.RightArm) { k.pose.RightArm = [-14, -4, 48]; k.pose.RightForeArm = [5, 0, -24]; }
+  {
+    const r = resolveTracks(flung);
+    const q0 = poseAt(r.tracks, 0);
+    let n = 0, locked = 0, behind = 0;
+    for (let t = 0; t <= flung.duration; t += 1 / 60) {
+      const d = deltasAt(r.tracks, q0, t);
+      const sh = world('RightArm', d), fo = world('RightForeArm', d), ha = world('RightHand', d);
+      n++;
+      const L = Math.hypot(ha[0] - sh[0], ha[1] - sh[1], ha[2] - sh[2]) || 1;
+      const elev = Math.asin(Math.max(-1, Math.min(1, (upOf(ha) - upOf(sh)) / L))) * 180 / Math.PI;
+      if (elbow(sh, fo, ha) >= 155 && elev > -40) locked++;
+      if (az(ha, sh) >= 130 && elev > -50) behind++;
+    }
+    ok(`sabotage « bras d'épouvantail (la version livrée, axe Z) » attrapé par la TENUE (verrouillé ${(100 * locked / n).toFixed(0)} %, derrière ${(100 * behind / n).toFixed(0)} %)`,
+      locked / n > 0.20 || behind / n > 0.10);
   }
 }
 

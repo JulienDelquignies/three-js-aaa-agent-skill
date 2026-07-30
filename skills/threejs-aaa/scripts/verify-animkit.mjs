@@ -200,7 +200,7 @@ console.log('\n— l’expressivité des frappes : le corps entier, prouvé —'
   // bras d'équilibre est le GAUCHE. Une clause qui mesurerait le droit validerait un geste au bras
   // d'équilibre mort. On soude le piège : bras droit expressif + bras gauche mort DOIT échouer.
   const trap = JSON.parse(JSON.stringify(MOVES.frappe));
-  for (const k of trap.keys) { if (k.pose.LeftArm) k.pose.LeftArm = [0, 0, 60]; if (k.pose.LeftForeArm) k.pose.LeftForeArm = [0, 0, 12]; }
+  for (const k of trap.keys) { if (k.pose.LeftArm) k.pose.LeftArm = [...BASE_POSE.LeftArm]; if (k.pose.LeftForeArm) k.pose.LeftForeArm = [...BASE_POSE.LeftForeArm]; }
   const r = checkStrike(resolveTracks(trap));
   ok('sabotage « bras homolatéral expressif, bras d’équilibre mort » attrapé', !r.ok && r.issues.some((i) => i.includes('OPPOSÉ')));
 }

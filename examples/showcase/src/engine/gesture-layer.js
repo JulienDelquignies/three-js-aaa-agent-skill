@@ -76,35 +76,38 @@ export function samplePose(tracks, t) {
  *              est une contamination — d'où le template, pas le clone.
  */
 export class GestureLayer {
-  constructor({ bones, rest }) {
+  constructor({ bones, rest, hipsWrite = null }) {
     this.bones = bones;
     this.rest = new Map();
     for (const [name, r] of rest) {
       const q = r.quaternion ? [r.quaternion.x, r.quaternion.y, r.quaternion.z, r.quaternion.w] : r;
       this.rest.set(name, [q[0], q[1], q[2], q[3]]);
     }
-    this.spec = null; this.tracks = null; this.duration = 0; this.missing = [];
+    // le BASSIN VOYAGE (root motion des specs : tacle, plongeon…) — la scène fournit l'écriture
+    // (la conversion mètres-personnage → local-parent demande les matrices du modèle, qu'une
+    // couche pure ne possède pas). Sans écrivain : les gestes couchés restent debout — mesuré,
+    // le tacleur « glissait » à hauteur de hanches.
+    this.hipsWrite = hipsWrite;
+    this.spec = null; this.tracks = null; this.hipsPos = null; this.duration = 0; this.missing = [];
   }
 
   /** Prendre un geste. Renvoie { missing } — un os authoré absent du rig est un membre qui ne
    *  bougera pas : ça se DIT (la leçon du repli silencieux : 57 % des gestes jamais visibles). */
   begin(spec) {
     const r = resolveTracks(spec);
-    this.spec = spec; this.tracks = r.tracks; this.duration = spec.duration ?? 0;
-    // LA SÉMANTIQUE DU BANC, à l'identique : pose(t) = rest ⊗ q_spec(0)⁻¹ ⊗ q_spec(t). Les clés
-    // décrivent le mouvement RELATIF à la clé 0 (la posture de base) — le remplacer par un absolu
-    // brut a été mesuré : cuisses à ~180° détruites, frappes à 1,40 m de haut. Le q0 se conjugue
-    // ici, une fois, pas à chaque image.
-    this.q0inv = {};
-    for (const [b, keys] of Object.entries(r.tracks)) {
-      const q = keys[0]?.q ?? [0, 0, 0, 1];
-      this.q0inv[b] = [-q[0], -q[1], -q[2], q[3]];
-    }
+    this.spec = spec; this.tracks = r.tracks; this.hipsPos = r.hipsPos; this.duration = spec.duration ?? 0;
+    // SÉMANTIQUE ABSOLUE VRAIE : pose(t) = rest ⊗ q_spec(t) — ce qui est écrit EST ce qui
+    // s'affiche. La première version conjuguait par q_spec(0)⁻¹ « comme le banc » : pour les
+    // JAMBES c'était un no-op (leur clé 0 est l'identité), mais pour les BRAS la clé 0 vaut
+    // BASE_POSE — la conjugaison ANNULAIT la base des bras, et les valeurs authorées ne
+    // s'affichaient jamais (mesuré composé : bras en croix à hauteur d'épaule sur 94-100 % des
+    // images de geste pendant que les specs écrivaient un balancier). Deux instruments, une
+    // sémantique : le banc FK compose désormais pareil.
     this.missing = Object.keys(r.tracks).filter((b) => !this.bones.has(b) || !this.rest.has(b));
     return { missing: this.missing };
   }
 
-  end() { this.spec = null; this.tracks = null; }
+  end() { this.spec = null; this.tracks = null; this.hipsPos = null; }
 
   get active() { return !!this.tracks; }
 
@@ -115,16 +118,31 @@ export class GestureLayer {
    */
   apply(t, wLegs, wUp) {
     if (!this.tracks) return;
-    const pose = samplePose(this.tracks, Math.max(0, Math.min(this.duration, t)));
+    const tc = Math.max(0, Math.min(this.duration, t));
+    const pose = samplePose(this.tracks, tc);
     for (const [name, q] of Object.entries(pose)) {
       const w = UP_BONES.test(name) ? wUp : wLegs;
       if (w <= 1e-4) continue;
       const bone = this.bones.get(name), rest = this.rest.get(name);
       if (!bone || !rest) continue;
-      const target = qMul(rest, qMul(this.q0inv[name], q));
+      const target = qMul(rest, q);
       const bq = bone.quaternion;
       const out = w >= 1 ? target : qSlerp([bq.x, bq.y, bq.z, bq.w], target, w);
       bq.set(out[0], out[1], out[2], out[3]);
+    }
+    // le déplacement du bassin (mètres personnage [droite, haut, avant], lerp entre clés) — écrit
+    // par la scène, pondéré comme les jambes : un tacle à poids plein COUCHE le corps
+    if (this.hipsPos && this.hipsWrite && wLegs > 1e-4) {
+      const ks = this.hipsPos;
+      let d;
+      if (tc <= ks[0].t) d = ks[0].p;
+      else if (tc >= ks[ks.length - 1].t) d = ks[ks.length - 1].p;
+      else {
+        let i = 1; while (ks[i].t < tc) i++;
+        const a = ks[i - 1], b = ks[i], u = (tc - a.t) / Math.max(1e-9, b.t - a.t);
+        d = [a.p[0] + (b.p[0] - a.p[0]) * u, a.p[1] + (b.p[1] - a.p[1]) * u, a.p[2] + (b.p[2] - a.p[2]) * u];
+      }
+      this.hipsWrite(d, wLegs);
     }
   }
 }
@@ -147,8 +165,7 @@ export function checkGestureLayer() {
   const norm = (q) => { const n = Math.hypot(...q) || 1; return q.map((v) => v / n); };
   const qOf = (b) => [b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w];
   const angle = (a, b) => 2 * Math.acos(Math.min(1, Math.abs(a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]))) * 180 / Math.PI;
-  const attendu = (layer, t) => qMul(layer.rest.get('RightUpLeg'),
-    qMul(layer.q0inv.RightUpLeg, samplePose(layer.tracks, t).RightUpLeg));
+  const attendu = (layer, t) => qMul(layer.rest.get('RightUpLeg'), samplePose(layer.tracks, t).RightUpLeg);
   // deux bases très différentes : l'os au rest, et l'os dans un repère tourné de 43° (le bug vécu)
   const twisted = norm(qMul([0, Math.sin(0.375), 0, Math.cos(0.375)], rest));
   const b1 = mkBone(rest), b2 = mkBone(twisted);
