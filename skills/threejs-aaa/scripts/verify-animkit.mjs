@@ -69,7 +69,9 @@ sab('os inconnu (typo de rig)', (s) => { s.keys[1].pose.RigthArm = [0, 0, -90]; 
 sab('clés dans le désordre', (s) => { s.keys[2].t = 0.1; }, 'not strictly sorted');
 sab('membre téléporté (180° en 30 ms)', (s) => { s.keys[1].t = 0.03; s.keys[1].pose.RightForeArm = [0, 0, -178]; s.keys[0].pose.RightForeArm = [0, 0, 0]; }, 'teleports');
 sab('couture de boucle cassée (fin ≠ début)', (s) => { s.keys[s.keys.length - 1].pose.RightArm = [0, 0, -20]; }, 'loop seam');
-sab('genou plié à l’envers', (s) => { s.keys[1].pose.RightLeg = [-60, 0, 0]; s.keys[0].pose.RightLeg = [-50, 0, 0]; s.keys[s.keys.length - 1].pose.RightLeg = [-50, 0, 0]; }, 'knee out of range');
+// le signe est MESURÉ (sonde articulaire) : la flexion du genou est −x sur ce rig — un genou à
+// +60 plie VERS L'AVANT, et c'est ça, le genou à l'envers.
+sab('genou plié à l’envers', (s) => { s.keys[1].pose.RightLeg = [60, 0, 0]; s.keys[0].pose.RightLeg = [50, 0, 0]; s.keys[s.keys.length - 1].pose.RightLeg = [50, 0, 0]; }, 'knee out of range');
 {
   const sabH = (name, mutate, expect) => {
     const spec = JSON.parse(JSON.stringify(MOVES.plongeon)); mutate(spec);
@@ -213,9 +215,9 @@ console.log('\n— l’expressivité des frappes : le corps entier, prouvé —'
   ok('sabotage « bras à 20 rad/s » attrapé (le plafond des jambes ne vaut pas pour les bras)',
     !checkClip(resolveTracks(armGun)).ok);
   const legWhip = { name: 'fouet-jambe', duration: 0.3, loop: false, keys: [
-    { t: 0.0, pose: { RightLeg: [108, 0, 0] } },
-    { t: 0.1, pose: { RightLeg: [10, 0, 0] } },
-    { t: 0.3, pose: { RightLeg: [30, 0, 0] } },
+    { t: 0.0, pose: { RightLeg: [-108, 0, 0] } },
+    { t: 0.1, pose: { RightLeg: [-10, 0, 0] } },
+    { t: 0.3, pose: { RightLeg: [-30, 0, 0] } },
   ] };
   ok('  …et le même fouet sur un GENOU passe (17 rad/s : une frappe d’élite)',
     checkClip(resolveTracks(legWhip)).ok);

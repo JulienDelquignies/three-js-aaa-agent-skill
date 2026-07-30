@@ -20,6 +20,7 @@
 // Contrôles : le pied d'accueil s'étend vers le ballon puis revient (l'amorti est un geste, pas
 // une pose) — excursion ≥ 0,18 m et retour ≤ 60 % de l'excursion.
 import { MOVES, resolveTracks, mirrorMove } from '../assets/starter/src/engine/animkit.js';
+import { STANCES } from '../assets/starter/src/engine/approach.js';
 import { readFileSync } from 'node:fs';
 
 let pass = 0, fail = 0;
@@ -105,6 +106,19 @@ const horiz = (a, b) => {   // distance horizontale (composante ⊥ UP du vecteu
   const k = d[0] * UP[0] + d[1] * UP[1] + d[2] * UP[2];
   return Math.hypot(d[0] - k * UP[0], d[1] - k * UP[1], d[2] - k * UP[2]);
 };
+// L'AVANT du personnage, dérivé du squelette (épaules × up — même loi que checkSquad) : la
+// grandeur qu'aucune clause ne regardait. Ce banc a validé vitesse, pic, hauteur, orientation —
+// toutes AVEUGLES À LA DIRECTION — pendant que chaque frappe de la bibliothèque balayait vers
+// l'ARRIÈRE (passe : pied à −0,46 m d'avant au contact ; et la talonnade, seul geste censé aller
+// derrière, faisait 0,00). L'utilisateur l'a vu à l'œil : « beaucoup de talonnade ». Une passe EST
+// un pied qui traverse le ballon VERS LA CIBLE — c'est désormais une clause, plus une croyance.
+const FORWARD = (() => {
+  const l = world('LeftArm', restPose), r = world('RightArm', restPose);
+  const a = [l[0] - r[0], l[1] - r[1], l[2] - r[2]];
+  const f = [a[1] * UP[2] - a[2] * UP[1], a[2] * UP[0] - a[0] * UP[2], a[0] * UP[1] - a[1] * UP[0]];
+  const n = Math.hypot(...f); return [f[0] / n, f[1] / n, f[2] / n];
+})();
+const fwdOf = (a, b) => (a[0] - b[0]) * FORWARD[0] + (a[1] - b[1]) * FORWARD[1] + (a[2] - b[2]) * FORWARD[2];
 
 /** Le portrait dynamique d'un clip : trajectoire du pied à 240 Hz + les nombres du contact. */
 function swingPortrait(spec, foot) {
@@ -126,11 +140,17 @@ function swingPortrait(spec, foot) {
   const pC = pts[Math.min(iC, pts.length - 1)], toeC = toes[Math.min(iC, pts.length - 1)];
   const exc = horiz(pC, rest);
   let excMax = 0; for (const p of pts) excMax = Math.max(excMax, horiz(p, rest));
+  // la direction : où est le pied au contact (avant/arrière), et dans quel sens il TRAVERSE
+  // (composante avant de la vitesse au contact) — le miroir préserve l'avant, donc les deux pieds
+  // se jugent avec le même axe
+  const a = pts[Math.max(0, iC - 1)], b = pts[Math.min(pts.length - 1, iC + 1)];
   return {
     vContact: speed(iC), peak, tPeak: iPeak * h, height: upOf(pC) - GROUND,
     toeAxis: horiz(toeC, pC),
     exc, excMax,
     endExc: horiz(pts.at(-1), rest),
+    fwdAt: fwdOf(pC, rest),
+    vFwd: fwdOf(b, a) / (2 * h),
   };
 }
 
@@ -140,6 +160,10 @@ console.log('— les frappes : le pied PASSE À TRAVERS le contact —');
 // c'est le ballon qui a la vitesse. On exige seulement que le pied accompagne (≥ 2 m/s), pas qu'il
 // arme — exiger 8 m/s d'une remise de première en ferait une passe déguisée.
 const STRIKES = { passe: 10, passeRapide: 10, passeExterieur: 8, frappe: 12, talonnade: 6, passePivot: 8, deviation: 2 };
+// LA DIRECTION, par geste : vers où le pied traverse au contact (composante avant de sa vitesse).
+// Une frappe vers l'avant traverse vers l'avant ; la talonnade traverse vers l'ARRIÈRE (c'est sa
+// définition) ; la déviation présente la surface (direction libre, c'est le ballon qui a le sens).
+const DIRECTION = { passe: 1, passeRapide: 1, passeExterieur: 1, frappe: 1, passePivot: 1, talonnade: -1, deviation: 0 };
 for (const [id, vMin] of Object.entries(STRIKES)) {
   for (const [foot, spec] of [['right', MOVES[id]], ['left', mirrorMove(MOVES[id])]]) {
     const s = swingPortrait(spec, foot);
@@ -149,6 +173,45 @@ for (const [id, vMin] of Object.entries(STRIKES)) {
       Math.abs(s.tPeak - spec.contact) <= 0.035);
     ok(`  hauteur de frappe ${(s.height * 100).toFixed(0)} cm (≤ 30)`, s.height <= 0.30);
     ok(`  orientation du pied ÉCRITE au contact (axe orteils horiz. ${(s.toeAxis * 100).toFixed(0)} cm ≥ 8)`, s.toeAxis >= 0.08);
+    const dir = DIRECTION[id];
+    if (dir > 0) ok(`  le pied TRAVERSE VERS L'AVANT (v_avant ${s.vFwd.toFixed(1)} m/s ≥ 60 % de ${s.vContact.toFixed(1)})`,
+      s.vFwd >= 0.6 * s.vContact);
+    else if (dir < 0) ok(`  le talon TRAVERSE VERS L'ARRIÈRE (v_avant ${s.vFwd.toFixed(1)} m/s ≤ −60 % de ${s.vContact.toFixed(1)})`,
+      s.vFwd <= -0.6 * s.vContact);
+  }
+}
+
+console.log('\n— la CONCORDANCE stance ↔ clip : le ballon est porté là où le pied frappe —');
+// La stance (approach.js) dit au porté OÙ poser le ballon ; le clip dit où le pied frappe. Si les
+// deux divergent, le couple est soudé au mauvais point et le warp paie la différence — mesuré
+// composé : 0,45 m de résiduel avec l'ancienne table écrite à la main. La table est désormais
+// DÉRIVÉE (S = pied_contact + standoff · direction) et cette clause interdit qu'elle re-mente :
+// ré-authorer un clip sans re-mesurer sa stance fait refuser le banc.
+{
+  const rightAxis = (() => {
+    const f = FORWARD, u = UP;
+    const r = [f[1] * u[2] - f[2] * u[1], f[2] * u[0] - f[0] * u[2], f[0] * u[1] - f[1] * u[0]];
+    const n = Math.hypot(...r); return [r[0] / n, r[1] / n, r[2] / n];
+  })();
+  const h = 1 / 240;
+  for (const id of Object.keys(STRIKES)) {
+    const spec = MOVES[id];
+    const r = resolveTracks(spec);
+    const q0 = poseAt(r.tracks, 0);
+    const at = (t) => world('RightFoot', deltasAt(r.tracks, q0, t));
+    const hips = world('Hips', deltasAt(r.tracks, q0, spec.contact));
+    const c = at(spec.contact), a = at(spec.contact - h), b = at(spec.contact + h);
+    const v = [(b[0] - a[0]) / (2 * h), (b[1] - a[1]) / (2 * h), (b[2] - a[2]) / (2 * h)];
+    const vn = Math.hypot(...v) || 1;
+    const S = [c[0] + (v[0] / vn) * 0.18, c[1] + (v[1] / vn) * 0.18, c[2] + (v[2] / vn) * 0.18];
+    const d = [S[0] - hips[0], S[1] - hips[1], S[2] - hips[2]];
+    const fwd = fwdOf(S, hips);
+    const lat = d[0] * rightAxis[0] + d[1] * rightAxis[1] + d[2] * rightAxis[2];
+    const st = STANCES[id];
+    const sx = Math.cos(st.bearing * Math.PI / 180) * st.dist, sy = Math.sin(st.bearing * Math.PI / 180) * st.dist;
+    const gap = Math.hypot(fwd - sx, lat - sy);
+    ok(`« ${id} » : la stance de la table est celle du clip (écart ${(gap * 100).toFixed(0)} cm ≤ 8 — mesuré {dist ${Math.hypot(fwd, lat).toFixed(2)}, bearing ${(Math.atan2(lat, fwd) * 180 / Math.PI).toFixed(0)}°})`,
+      gap <= 0.08);
   }
 }
 

@@ -101,10 +101,15 @@ export function checkClip(resolved) {
     }
     // a looping move must land where it starts (the loop-seam pop, reference/20)
     if (loop && keys.length > 1 && quatAngle(keys[0].q, keys[keys.length - 1].q) > 0.26) issues.push(`${bone}: loop seam pops (start ≠ end)`);
-    // hinge sanity where the axis is unambiguous on this rig: knees flex +x, hips −x (see the
-    // seated-teammates code) — a knee bent backwards is the classic broken-generated-anim tell
-    if (bone === 'LeftLeg' || bone === 'RightLeg') for (const k of keys) { if (k.e[0] < -8 || k.e[0] > 150) { issues.push(`${bone}: knee out of range (${k.e[0].toFixed(0)}°)`); break; } }
-    if (bone === 'LeftUpLeg' || bone === 'RightUpLeg') for (const k of keys) { if (k.e[0] < -130 || k.e[0] > 40) { issues.push(`${bone}: hip out of range (${k.e[0].toFixed(0)}°)`); break; } }
+    // hinge sanity where the axis is unambiguous on this rig — et le signe est MESURÉ, plus cru :
+    // la sonde articulaire (FK nue sur shanon.glb) dit cuisse x = +45 → pied +0,56 m VERS L'AVANT
+    // (flexion = +x), genou x = −90 → talon vers la fesse (flexion = −x). L'ancienne croyance était
+    // l'inverse des DEUX : toutes les frappes de la bibliothèque balayaient vers l'arrière (passe :
+    // −0,46 m d'avant au contact) et le genou pliait vers l'avant — invisible pour toute clause en
+    // amplitude, vu par l'utilisateur (« beaucoup de talonnade »). Un genou plié en avant est LE
+    // signe de l'anim générée cassée ; maintenant la borne le dit dans le bon sens.
+    if (bone === 'LeftLeg' || bone === 'RightLeg') for (const k of keys) { if (k.e[0] < -150 || k.e[0] > 8) { issues.push(`${bone}: knee out of range (${k.e[0].toFixed(0)}°)`); break; } }
+    if (bone === 'LeftUpLeg' || bone === 'RightUpLeg') for (const k of keys) { if (k.e[0] < -40 || k.e[0] > 130) { issues.push(`${bone}: hip out of range (${k.e[0].toFixed(0)}°)`); break; } }
   }
   // ROOT MOTION sanity: the pelvis travels, it doesn't glitch — standing hip ≈ 0.95 m, a lying hip
   // ≈ 0.2 m, so dy stays in [−0.85, 1.1] (no floor clipping, no rocket jump); linear speed bounded;
@@ -279,38 +284,38 @@ export const MOVES = {
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.26, pose: {
-        RightUpLeg: [30, 0, 0], RightLeg: [108, 0, 0], RightFoot: [28, 0, 0],
+        RightUpLeg: [-30, 0, 0], RightLeg: [-108, 0, 0], RightFoot: [28, 0, 0],
         Hips: [0, -16, 0],
         Spine: [-4, -8, 0], Spine1: [-8, -8, 0], Spine2: [-4, -6, 0],
         Neck: [4, 0, 0], Head: [16, 0, 0],
         LeftArm: [-10, 8, 46], LeftForeArm: [8, 0, 48], RightArm: [18, -6, 55], RightForeArm: [8, 0, -42],
-        LeftUpLeg: [-10, 0, 0], LeftLeg: [26, 0, 0], LeftFoot: [-8, 0, 0],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-26, 0, 0], LeftFoot: [-8, 0, 0],
       }, hips: [0, -0.05, 0] },
       // la clé de traversée est POSÉE sur l'instant de contact (0,35) — le pied ne s'y arrête pas :
       // l'overshoot (0,41, cuisse −80°) continue le balayage au même rythme avant la récupération
       { t: 0.35, pose: {
-        RightUpLeg: [-62, 0, 0], RightLeg: [62, 0, 0], RightFoot: [30, 0, 0],
+        RightUpLeg: [62, 0, 0], RightLeg: [-62, 0, 0], RightFoot: [30, 0, 0],
         Hips: [0, 6, 0],
         Spine: [-2, 6, 0], Spine1: [-4, 10, 0], Spine2: [-2, 8, 0],
         Neck: [4, 0, 0], Head: [17, 0, 0],
         LeftArm: [-2, 4, 48], LeftForeArm: [8, 0, 42], RightArm: [-4, -2, 52], RightForeArm: [6, 0, -34],
-        LeftUpLeg: [-8, 0, 0], LeftLeg: [20, 0, 0], LeftFoot: [-6, 0, 0],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-20, 0, 0], LeftFoot: [-6, 0, 0],
       }, hips: [0, -0.02, 0] },
       { t: 0.4, pose: {
-        RightUpLeg: [-80, 0, 0], RightLeg: [10, 0, 0], RightFoot: [32, 0, 0],
+        RightUpLeg: [80, 0, 0], RightLeg: [-10, 0, 0], RightFoot: [32, 0, 0],
         Hips: [0, 8, 0],
         Spine: [0, 8, 0], Spine1: [2, 14, 0], Spine2: [0, 10, 0],
         Neck: [3, 0, 0], Head: [18, 0, 0],
         LeftArm: [6, 2, 48], LeftForeArm: [8, 0, 34], RightArm: [-12, -3, 50], RightForeArm: [6, 0, -28],
-        LeftUpLeg: [-6, 0, 0], LeftLeg: [14, 0, 0], LeftFoot: [-4, 0, 0],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-14, 0, 0], LeftFoot: [-4, 0, 0],
       }, hips: [0, 0, 0] },
       { t: 0.62, pose: {
-        RightUpLeg: [-58, 0, 0], RightLeg: [34, 0, 0],
+        RightUpLeg: [58, 0, 0], RightLeg: [-34, 0, 0],
         Hips: [0, 14, 0],
         Spine: [2, 6, 0], Spine1: [8, 10, 0], Spine2: [3, 6, 0],
         Head: [6, 0, 0],
         LeftArm: [10, 4, 50], LeftForeArm: [6, 0, 26], RightArm: [-14, -4, 48], RightForeArm: [5, 0, -24],
-        LeftLeg: [12, 0, 0],
+        LeftLeg: [-12, 0, 0],
       }, hips: [0, 0.02, 0] },
       { t: 0.85, pose: {} },
     ],
@@ -322,11 +327,11 @@ export const MOVES = {
       { t: 0.0, pose: {} },
       // les épaules restent de face et la tête reste HAUTE : c'est la tromperie du geste — regarder
       // le ballon vendrait la talonnade. Le bassin, lui, ne tourne pas ; c'est sa signature.
-      { t: 0.18, pose: { RightUpLeg: [-18, 0, 0], RightLeg: [25, 0, 0], Spine1: [4, 0, 0], Spine2: [2, 0, 0], Head: [-4, 0, 0], LeftLeg: [16, 0, 0], LeftArm: [-10, 0, 44] } },
+      { t: 0.18, pose: { RightUpLeg: [18, 0, 0], RightLeg: [-25, 0, 0], Spine1: [4, 0, 0], Spine2: [2, 0, 0], Head: [-4, 0, 0], LeftLeg: [-16, 0, 0], LeftArm: [-10, 0, 44] } },
       // clé de contact posée SUR la trajectoire (valeurs interpolées 0,18→0,36) : le talon frappe en
       // TRAVERSANT, à 0,19 le balayage arrière est lancé et ne s'arrête pas là
-      { t: 0.19, pose: { RightUpLeg: [-15.4, 0, 0], RightLeg: [29.4, 0, 0], Spine1: [4.3, 0, 0], Spine2: [2.1, 0, 0], Head: [-4.1, 0, 0], LeftLeg: [15.8, 0, 0], LeftArm: [-10.3, 0, 44.3] } },
-      { t: 0.36, pose: { RightUpLeg: [28, 0, 0], RightLeg: [105, 0, 0], RightFoot: [20, 0, 0], Spine1: [10, 0, 0], Spine2: [4, 0, 0], Head: [-6, 0, 0], LeftArm: [-15, 0, 50], RightArm: [10, 0, 68], LeftLeg: [12, 0, 0] } },
+      { t: 0.19, pose: { RightUpLeg: [15.4, 0, 0], RightLeg: [-29.4, 0, 0], Spine1: [4.3, 0, 0], Spine2: [2.1, 0, 0], Head: [-4.1, 0, 0], LeftLeg: [-15.8, 0, 0], LeftArm: [-10.3, 0, 44.3] } },
+      { t: 0.36, pose: { RightUpLeg: [-28, 0, 0], RightLeg: [-105, 0, 0], RightFoot: [20, 0, 0], Spine1: [10, 0, 0], Spine2: [4, 0, 0], Head: [-6, 0, 0], LeftArm: [-15, 0, 50], RightArm: [10, 0, 68], LeftLeg: [-12, 0, 0] } },
       { t: 0.65, pose: {} },
     ],
   },
@@ -335,8 +340,8 @@ export const MOVES = {
     name: 'amorti', duration: 1.0, contact: 0.3, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.3, pose: { Spine1: [-18, 0, 0], Head: [-10, 0, 0], LeftArm: [-12, 0, 28], RightArm: [-12, 0, 28], LeftUpLeg: [-14, 0, 0], RightUpLeg: [-14, 0, 0], LeftLeg: [24, 0, 0], RightLeg: [24, 0, 0] }, hips: [0, -0.07, 0] },
-      { t: 0.55, pose: { Spine1: [-6, 0, 0], LeftArm: [-5, 0, 45], RightArm: [-5, 0, 45], LeftLeg: [14, 0, 0], RightLeg: [14, 0, 0] }, hips: [0, -0.03, 0] },
+      { t: 0.3, pose: { Spine1: [-18, 0, 0], Head: [-10, 0, 0], LeftArm: [-12, 0, 28], RightArm: [-12, 0, 28], LeftUpLeg: [14, 0, 0], RightUpLeg: [14, 0, 0], LeftLeg: [-24, 0, 0], RightLeg: [-24, 0, 0] }, hips: [0, -0.07, 0] },
+      { t: 0.55, pose: { Spine1: [-6, 0, 0], LeftArm: [-5, 0, 45], RightArm: [-5, 0, 45], LeftLeg: [-14, 0, 0], RightLeg: [-14, 0, 0] }, hips: [0, -0.03, 0] },
       { t: 1.0, pose: {}, hips: [0, 0, 0] },
     ],
   },
@@ -345,9 +350,9 @@ export const MOVES = {
     name: 'plongeon', duration: 1.6, loop: false,
     keys: [
       { t: 0.0, pose: {}, hips: [0, 0, 0] },
-      { t: 0.25, pose: { LeftUpLeg: [-55, 0, 0], RightUpLeg: [-55, 0, 0], LeftLeg: [75, 0, 0], RightLeg: [75, 0, 0], Spine1: [16, 0, 0] }, hips: [0, -0.26, 0] },
-      { t: 0.55, pose: { Hips: [0, 0, -62], LeftArm: [-20, 0, -68], RightArm: [-20, 0, -72], LeftForeArm: [0, 0, 8], RightForeArm: [0, 0, 8], LeftUpLeg: [-12, 0, 0], RightUpLeg: [-16, 0, 0], LeftLeg: [12, 0, 0], RightLeg: [18, 0, 0], Spine1: [-6, 0, 0] }, hips: [0.85, 0.28, 0] },
-      { t: 0.9, pose: { Hips: [0, 0, -80], LeftArm: [-15, 0, -70], RightArm: [-15, 0, -74], LeftUpLeg: [-10, 0, 0], RightUpLeg: [-14, 0, 0], Spine1: [0, 0, 0] }, hips: [1.35, -0.68, 0] },
+      { t: 0.25, pose: { LeftUpLeg: [55, 0, 0], RightUpLeg: [55, 0, 0], LeftLeg: [-75, 0, 0], RightLeg: [-75, 0, 0], Spine1: [16, 0, 0] }, hips: [0, -0.26, 0] },
+      { t: 0.55, pose: { Hips: [0, 0, -62], LeftArm: [-20, 0, -68], RightArm: [-20, 0, -72], LeftForeArm: [0, 0, 8], RightForeArm: [0, 0, 8], LeftUpLeg: [12, 0, 0], RightUpLeg: [16, 0, 0], LeftLeg: [-12, 0, 0], RightLeg: [-18, 0, 0], Spine1: [-6, 0, 0] }, hips: [0.85, 0.28, 0] },
+      { t: 0.9, pose: { Hips: [0, 0, -80], LeftArm: [-15, 0, -70], RightArm: [-15, 0, -74], LeftUpLeg: [10, 0, 0], RightUpLeg: [14, 0, 0], Spine1: [0, 0, 0] }, hips: [1.35, -0.68, 0] },
       { t: 1.2, pose: { Hips: [0, 0, -80], LeftArm: [-10, 0, -60], RightArm: [-10, 0, -64] }, hips: [1.35, -0.68, 0] },
       { t: 1.6, pose: {}, hips: [0, 0, 0] },
     ],
@@ -365,11 +370,11 @@ export const MOVES = {
       { t: 0.0, pose: {} },
       // le bras suit en RAMPE : sans clé intermédiaire, le miroir double l'amplitude (Z est nié) et
       // le bras franchit 76° en 0,12 s — un membre qui se téléporte, que le contrat anatomique attrape
-      { t: 0.14, pose: { RightUpLeg: [16, -6, 0], RightLeg: [50, 0, 0], RightFoot: [0, -20, 0], Hips: [0, -5, 0], Spine1: [3, -6, 0], Spine2: [1, -4, 0], Neck: [2, 0, 0], Head: [13, 0, 0], LeftArm: [-4, 0, 16], LeftLeg: [16, 0, 0] } },
+      { t: 0.14, pose: { RightUpLeg: [-16, -6, 0], RightLeg: [-50, 0, 0], RightFoot: [0, -20, 0], Hips: [0, -5, 0], Spine1: [3, -6, 0], Spine2: [1, -4, 0], Neck: [2, 0, 0], Head: [13, 0, 0], LeftArm: [-4, 0, 16], LeftLeg: [-16, 0, 0] } },
       // le contact se TRAVERSE : la cuisse balaie 50° dans le segment d'approche et continue au même
       // rythme après — une clé de contact où le pied se gare mesure une vitesse nulle sur le ballon
-      { t: 0.24, pose: { RightUpLeg: [-38, 12, 0], RightLeg: [16, 0, 0], RightFoot: [-6, -34, 0], Hips: [0, 4, 0], Spine1: [-2, 8, 0], Spine2: [0, 5, 0], Neck: [2, 0, 0], Head: [15, 0, 0], LeftArm: [-8, 0, 30], LeftLeg: [12, 0, 0] } },
-      { t: 0.3, pose: { RightUpLeg: [-74, 14, 0], RightLeg: [14, 0, 0], RightFoot: [-6, -30, 0], Hips: [0, 5, 0], Spine1: [-3, 8, 0], Spine2: [0, 5, 0], Neck: [2, 0, 0], Head: [15, 0, 0], LeftArm: [-10, 0, 38], LeftLeg: [14, 0, 0] } },
+      { t: 0.24, pose: { RightUpLeg: [38, 12, 0], RightLeg: [-16, 0, 0], RightFoot: [-6, -34, 0], Hips: [0, 4, 0], Spine1: [-2, 8, 0], Spine2: [0, 5, 0], Neck: [2, 0, 0], Head: [15, 0, 0], LeftArm: [-8, 0, 30], LeftLeg: [-12, 0, 0] } },
+      { t: 0.3, pose: { RightUpLeg: [74, 14, 0], RightLeg: [-14, 0, 0], RightFoot: [-6, -30, 0], Hips: [0, 5, 0], Spine1: [-3, 8, 0], Spine2: [0, 5, 0], Neck: [2, 0, 0], Head: [15, 0, 0], LeftArm: [-10, 0, 38], LeftLeg: [-14, 0, 0] } },
       { t: 0.5, pose: {} },
     ],
   },
@@ -381,13 +386,13 @@ export const MOVES = {
       { t: 0.0, pose: {} },
       // le BASSIN mène la rotation (il n'y était pas : un « pivot » du seul buste est une torsion,
       // pas un demi-tour), les épaules suivent, la tête cherche le ballon puis la cible
-      { t: 0.22, pose: { Hips: [0, -22, 0], Spine: [0, -20, 0], Spine1: [4, -16, 0], Spine2: [2, -10, 0], Neck: [2, -8, 0], Head: [10, -18, 0], LeftUpLeg: [-14, -18, 0], RightUpLeg: [10, -12, 0], LeftLeg: [18, 0, 0], LeftArm: [-20, 0, 42], RightArm: [8, 0, 46] } },
+      { t: 0.22, pose: { Hips: [0, -22, 0], Spine: [0, -20, 0], Spine1: [4, -16, 0], Spine2: [2, -10, 0], Neck: [2, -8, 0], Head: [10, -18, 0], LeftUpLeg: [14, -18, 0], RightUpLeg: [-10, -12, 0], LeftLeg: [-18, 0, 0], LeftArm: [-20, 0, 42], RightArm: [8, 0, 46] } },
       // la jambe ATTEND pendant que le corps tourne : sans cette clé armée, la cuisse s'étale sur
       // 0,30 s (147°/s — une caresse) ; ici le balayage se concentre sur 0,44→0,52 puis TRAVERSE
-      { t: 0.44, pose: { Hips: [0, -34, 0], Spine: [0, -30, 0], Spine1: [2, -22, 0], Spine2: [0, -13, 0], Neck: [2, -7, 0], Head: [12, -15, 0], RightUpLeg: [12, -22, 0], RightLeg: [46, 0, 0], RightFoot: [0, 12, 0], LeftUpLeg: [4, -21, 0], LeftLeg: [27, 0, 0], LeftArm: [-2, 0, 49], RightArm: [-9, 0, 45] } },
-      { t: 0.52, pose: { Hips: [0, -38, 0], Spine: [0, -34, 0], Spine1: [2, -24, 0], Spine2: [0, -14, 0], Neck: [2, -6, 0], Head: [12, -14, 0], RightUpLeg: [-34, -26, 0], RightLeg: [24, 0, 0], RightFoot: [0, 18, 0], LeftUpLeg: [12, -22, 0], LeftLeg: [30, 0, 0], LeftArm: [5, 0, 52], RightArm: [-15, 0, 44] } },
-      { t: 0.585, pose: { Hips: [0, -40, 0], Spine: [0, -35, 0], Spine1: [0, -22, 0], Spine2: [0, -13, 0], Neck: [2, -6, 0], Head: [8, -10, 0], RightUpLeg: [-72, -26, 0], RightLeg: [20, 0, 0], RightFoot: [0, 16, 0], LeftUpLeg: [16, -20, 0], LeftLeg: [26, 0, 0], LeftArm: [8, 0, 50], RightArm: [-18, 0, 42] } },
-      { t: 0.74, pose: { Hips: [0, -24, 0], Spine: [0, -22, 0], Spine1: [0, -16, 0], Spine2: [0, -8, 0], Head: [4, -6, 0], RightUpLeg: [-16, -18, 0], RightLeg: [34, 0, 0], LeftLeg: [20, 0, 0], LeftArm: [-5, 0, 40], RightArm: [-10, 0, 44] } },
+      { t: 0.44, pose: { Hips: [0, -34, 0], Spine: [0, -30, 0], Spine1: [2, -22, 0], Spine2: [0, -13, 0], Neck: [2, -7, 0], Head: [12, -15, 0], RightUpLeg: [-12, -22, 0], RightLeg: [-58, 0, 0], RightFoot: [0, 12, 0], LeftUpLeg: [-2, -21, 0], LeftLeg: [-18, 0, 0], LeftArm: [-2, 0, 49], RightArm: [-9, 0, 45] } },
+      { t: 0.52, pose: { Hips: [0, -38, 0], Spine: [0, -34, 0], Spine1: [2, -24, 0], Spine2: [0, -14, 0], Neck: [2, -6, 0], Head: [12, -14, 0], RightUpLeg: [34, -26, 0], RightLeg: [-24, 0, 0], RightFoot: [0, 18, 0], LeftUpLeg: [-8, -22, 0], LeftLeg: [-20, 0, 0], LeftArm: [5, 0, 52], RightArm: [-15, 0, 44] } },
+      { t: 0.585, pose: { Hips: [0, -40, 0], Spine: [0, -35, 0], Spine1: [0, -22, 0], Spine2: [0, -13, 0], Neck: [2, -6, 0], Head: [8, -10, 0], RightUpLeg: [72, -26, 0], RightLeg: [-16, 0, 0], RightFoot: [0, 16, 0], LeftUpLeg: [-10, -20, 0], LeftLeg: [-18, 0, 0], LeftArm: [8, 0, 50], RightArm: [-18, 0, 42] } },
+      { t: 0.74, pose: { Hips: [0, -24, 0], Spine: [0, -22, 0], Spine1: [0, -16, 0], Spine2: [0, -8, 0], Head: [4, -6, 0], RightUpLeg: [16, -18, 0], RightLeg: [-34, 0, 0], LeftLeg: [-20, 0, 0], LeftArm: [-5, 0, 40], RightArm: [-10, 0, 44] } },
       { t: 0.95, pose: {} },
     ],
   },
@@ -399,9 +404,9 @@ export const MOVES = {
       { t: 0.0, pose: {} },
       // même une remise ACCOMPAGNE : la surface se présente (0→0,13) puis pousse À TRAVERS le point de
       // contact — un pied figé au contact rend une vitesse nulle et le ballon traverse une statue
-      { t: 0.13, pose: { RightUpLeg: [-8, -18, 0], RightLeg: [24, 0, 0], RightFoot: [0, 26, 0], Hips: [0, -6, 0], Spine1: [-3, -7, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-7, 4, 40], LeftForeArm: [7, 0, 36], LeftLeg: [13, 0, 0] } },
-      { t: 0.16, pose: { RightUpLeg: [-18, -22, 0], RightLeg: [22, 0, 0], RightFoot: [0, 30, 0], Hips: [0, -7, 0], Spine1: [-3, -8, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-8, 5, 46], LeftForeArm: [8, 0, 42], LeftLeg: [14, 0, 0] } },
-      { t: 0.21, pose: { RightUpLeg: [-31, -24, 0], RightLeg: [24, 0, 0], RightFoot: [0, 30, 0], Hips: [0, -7, 0], Spine1: [-3, -8, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-8, 5, 46], LeftForeArm: [8, 0, 42], LeftLeg: [14, 0, 0] } },
+      { t: 0.13, pose: { RightUpLeg: [8, -18, 0], RightLeg: [-24, 0, 0], RightFoot: [0, 26, 0], Hips: [0, -6, 0], Spine1: [-3, -7, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-7, 4, 40], LeftForeArm: [7, 0, 36], LeftLeg: [-13, 0, 0] } },
+      { t: 0.16, pose: { RightUpLeg: [18, -22, 0], RightLeg: [-22, 0, 0], RightFoot: [0, 30, 0], Hips: [0, -7, 0], Spine1: [-3, -8, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-8, 5, 46], LeftForeArm: [8, 0, 42], LeftLeg: [-14, 0, 0] } },
+      { t: 0.21, pose: { RightUpLeg: [31, -24, 0], RightLeg: [-24, 0, 0], RightFoot: [0, 30, 0], Hips: [0, -7, 0], Spine1: [-3, -8, 0], Spine2: [0, -4, 0], Head: [12, 0, 0], LeftArm: [-8, 5, 46], LeftForeArm: [8, 0, 42], LeftLeg: [-14, 0, 0] } },
       { t: 0.38, pose: {} },
     ],
   },
@@ -411,8 +416,8 @@ export const MOVES = {
     name: 'controleInterieur', duration: 0.62, contact: 0.2, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.2, pose: { RightUpLeg: [-26, -24, 0], RightLeg: [28, 0, 0], RightFoot: [0, 34, 0], Hips: [0, -6, 0], Spine1: [6, -6, 0], Spine2: [2, -4, 0], Neck: [3, 0, 0], Head: [16, 0, 0], LeftArm: [-16, 0, 40], LeftLeg: [18, 0, 0] } },
-      { t: 0.36, pose: { RightUpLeg: [6, -16, 0], RightLeg: [52, 0, 0], RightFoot: [0, 26, 0], Hips: [0, -3, 0], Spine1: [10, -4, 0], Spine2: [3, -2, 0], Neck: [3, 0, 0], Head: [17, 0, 0], LeftArm: [-8, 0, 42], LeftLeg: [22, 0, 0] } },
+      { t: 0.2, pose: { RightUpLeg: [26, -24, 0], RightLeg: [-28, 0, 0], RightFoot: [0, 34, 0], Hips: [0, -6, 0], Spine1: [6, -6, 0], Spine2: [2, -4, 0], Neck: [3, 0, 0], Head: [16, 0, 0], LeftArm: [-16, 0, 40], LeftLeg: [-18, 0, 0] } },
+      { t: 0.36, pose: { RightUpLeg: [-6, -16, 0], RightLeg: [-52, 0, 0], RightFoot: [0, 26, 0], Hips: [0, -3, 0], Spine1: [10, -4, 0], Spine2: [3, -2, 0], Neck: [3, 0, 0], Head: [17, 0, 0], LeftArm: [-8, 0, 42], LeftLeg: [-22, 0, 0] } },
       { t: 0.62, pose: {} },
     ],
   },
@@ -421,8 +426,8 @@ export const MOVES = {
     name: 'controleExterieur', duration: 0.6, contact: 0.22, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.22, pose: { RightUpLeg: [-14, 18, 0], RightLeg: [30, 0, 0], RightFoot: [-6, -30, 0], Spine1: [4, 10, 0], Spine2: [2, 6, 0], Hips: [0, 12, 0], Head: [14, 6, 0], LeftArm: [-18, 0, 42], LeftLeg: [16, 0, 0] } },
-      { t: 0.4, pose: { RightUpLeg: [4, 22, 0], RightLeg: [48, 0, 0], RightFoot: [0, -20, 0], Hips: [0, 16, 0], Spine1: [3, 8, 0], Spine2: [1, 5, 0], Head: [15, 8, 0], LeftArm: [-10, 0, 40], LeftLeg: [18, 0, 0] } },
+      { t: 0.22, pose: { RightUpLeg: [14, 18, 0], RightLeg: [-30, 0, 0], RightFoot: [-6, -30, 0], Spine1: [4, 10, 0], Spine2: [2, 6, 0], Hips: [0, 12, 0], Head: [14, 6, 0], LeftArm: [-18, 0, 42], LeftLeg: [-16, 0, 0] } },
+      { t: 0.4, pose: { RightUpLeg: [-4, 22, 0], RightLeg: [-48, 0, 0], RightFoot: [0, -20, 0], Hips: [0, 16, 0], Spine1: [3, 8, 0], Spine2: [1, 5, 0], Head: [15, 8, 0], LeftArm: [-10, 0, 40], LeftLeg: [-18, 0, 0] } },
       { t: 0.6, pose: {} },
     ],
   },
@@ -432,8 +437,8 @@ export const MOVES = {
     name: 'controleSemelle', duration: 0.55, contact: 0.22, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.22, pose: { RightUpLeg: [-44, 0, 0], RightLeg: [30, 0, 0], RightFoot: [22, 0, 0], Spine1: [10, 0, 0], Spine2: [4, 0, 0], Neck: [4, 0, 0], Head: [16, 0, 0], LeftArm: [-20, 0, 38], RightArm: [-10, 0, 40], LeftLeg: [14, 0, 0] }, hips: [0, -0.06, 0] },
-      { t: 0.38, pose: { RightUpLeg: [-20, 0, 0], RightLeg: [42, 0, 0], RightFoot: [10, 0, 0], Spine1: [6, 0, 0], Spine2: [2, 0, 0], Neck: [3, 0, 0], Head: [14, 0, 0], LeftArm: [-12, 0, 38], RightArm: [-8, 0, 40], LeftLeg: [16, 0, 0] }, hips: [0, -0.03, 0] },
+      { t: 0.22, pose: { RightUpLeg: [44, 0, 0], RightLeg: [-30, 0, 0], RightFoot: [22, 0, 0], Spine1: [10, 0, 0], Spine2: [4, 0, 0], Neck: [4, 0, 0], Head: [16, 0, 0], LeftArm: [-20, 0, 38], RightArm: [-10, 0, 40], LeftLeg: [-14, 0, 0] }, hips: [0, -0.06, 0] },
+      { t: 0.38, pose: { RightUpLeg: [20, 0, 0], RightLeg: [-42, 0, 0], RightFoot: [10, 0, 0], Spine1: [6, 0, 0], Spine2: [2, 0, 0], Neck: [3, 0, 0], Head: [14, 0, 0], LeftArm: [-12, 0, 38], RightArm: [-8, 0, 40], LeftLeg: [-16, 0, 0] }, hips: [0, -0.03, 0] },
       { t: 0.55, pose: {}, hips: [0, 0, 0] },
     ],
   },
@@ -443,8 +448,8 @@ export const MOVES = {
     name: 'amortiCuisse', duration: 0.8, contact: 0.3, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.3, pose: { RightUpLeg: [-78, 0, 0], RightLeg: [46, 0, 0], Spine1: [-14, 0, 0], Spine2: [-5, 0, 0], Neck: [-3, 0, 0], Head: [-8, 0, 0], LeftArm: [-2, 10, 46], LeftForeArm: [8, 0, 38], RightArm: [-2, -10, 46], RightForeArm: [8, 0, -38], LeftLeg: [14, 0, 0] }, hips: [0, -0.04, 0] },
-      { t: 0.5, pose: { RightUpLeg: [-46, 0, 0], RightLeg: [58, 0, 0], Spine1: [-6, 0, 0], Spine2: [-2, 0, 0], Neck: [2, 0, 0], Head: [10, 0, 0], LeftArm: [-4, 4, 46], LeftForeArm: [6, 0, 32], RightArm: [-4, -4, 46], RightForeArm: [20, 0, 16], LeftLeg: [16, 0, 0] } },
+      { t: 0.3, pose: { RightUpLeg: [78, 0, 0], RightLeg: [-46, 0, 0], Spine1: [-14, 0, 0], Spine2: [-5, 0, 0], Neck: [-3, 0, 0], Head: [-8, 0, 0], LeftArm: [-2, 10, 46], LeftForeArm: [8, 0, 38], RightArm: [-2, -10, 46], RightForeArm: [8, 0, -38], LeftLeg: [-14, 0, 0] }, hips: [0, -0.04, 0] },
+      { t: 0.5, pose: { RightUpLeg: [46, 0, 0], RightLeg: [-58, 0, 0], Spine1: [-6, 0, 0], Spine2: [-2, 0, 0], Neck: [2, 0, 0], Head: [10, 0, 0], LeftArm: [-4, 4, 46], LeftForeArm: [6, 0, 32], RightArm: [-4, -4, 46], RightForeArm: [20, 0, 16], LeftLeg: [-16, 0, 0] } },
       { t: 0.8, pose: {} },
     ],
   },
@@ -455,8 +460,8 @@ export const MOVES = {
     name: 'tacleDebout', duration: 0.7, contact: 0.28, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.28, pose: { RightUpLeg: [-52, -10, 0], RightLeg: [20, 0, 0], RightFoot: [0, 26, 0], LeftUpLeg: [-8, 0, 0], LeftLeg: [58, 0, 0], Spine1: [24, -6, 0], Head: [-10, 0, 0], LeftArm: [-14, 8, 44], LeftForeArm: [8, 0, 45], RightArm: [-10, -4, 48], RightForeArm: [8, 0, -36] }, hips: [0, -0.14, 0.1] },
-      { t: 0.48, pose: { RightUpLeg: [-24, -6, 0], RightLeg: [40, 0, 0], LeftLeg: [40, 0, 0], Spine1: [14, 0, 0] }, hips: [0, -0.06, 0.05] },
+      { t: 0.28, pose: { RightUpLeg: [52, -10, 0], RightLeg: [-20, 0, 0], RightFoot: [0, 26, 0], LeftUpLeg: [8, 0, 0], LeftLeg: [-58, 0, 0], Spine1: [24, -6, 0], Head: [-10, 0, 0], LeftArm: [-14, 8, 44], LeftForeArm: [8, 0, 45], RightArm: [-10, -4, 48], RightForeArm: [8, 0, -36] }, hips: [0, -0.14, 0.1] },
+      { t: 0.48, pose: { RightUpLeg: [24, -6, 0], RightLeg: [-40, 0, 0], LeftLeg: [-40, 0, 0], Spine1: [14, 0, 0] }, hips: [0, -0.06, 0.05] },
       { t: 0.7, pose: {}, hips: [0, 0, 0] },
     ],
   },
@@ -468,10 +473,10 @@ export const MOVES = {
     name: 'tacle', duration: 1.25, contact: 0.34, loop: false,
     keys: [
       { t: 0.0, pose: {}, hips: [0, 0, 0] },
-      { t: 0.18, pose: { RightUpLeg: [-25, 0, 0], RightLeg: [55, 0, 0], LeftUpLeg: [-12, 0, 0], Spine1: [16, 0, 0], LeftArm: [-30, 0, 40] }, hips: [0, -0.18, 0.15] },
-      { t: 0.34, pose: { RightUpLeg: [-58, 0, -18], RightLeg: [8, 0, 0], RightFoot: [18, 0, 0], LeftUpLeg: [15, 0, -25], LeftLeg: [95, 0, 0], Spine1: [8, 0, -28], Head: [0, 15, 0], LeftArm: [-55, 0, 25], RightArm: [-20, 0, 60] }, hips: [0.1, -0.62, 0.75] },
-      { t: 0.62, pose: { RightUpLeg: [-40, 0, -22], RightLeg: [22, 0, 0], LeftUpLeg: [5, 0, -30], LeftLeg: [80, 0, 0], Spine1: [4, 0, -32], LeftArm: [-60, 0, 20], RightArm: [-10, 0, 55] }, hips: [0.16, -0.66, 1.05] },
-      { t: 0.95, pose: { RightUpLeg: [-15, 0, -8], RightLeg: [45, 0, 0], LeftUpLeg: [-20, 0, -10], LeftLeg: [60, 0, 0], Spine1: [18, 0, -10] }, hips: [0.08, -0.42, 1.15] },
+      { t: 0.18, pose: { RightUpLeg: [25, 0, 0], RightLeg: [-55, 0, 0], LeftUpLeg: [12, 0, 0], Spine1: [16, 0, 0], LeftArm: [-30, 0, 40] }, hips: [0, -0.18, 0.15] },
+      { t: 0.34, pose: { RightUpLeg: [58, 0, -18], RightLeg: [-8, 0, 0], RightFoot: [18, 0, 0], LeftUpLeg: [-15, 0, -25], LeftLeg: [-95, 0, 0], Spine1: [8, 0, -28], Head: [0, 15, 0], LeftArm: [-55, 0, 25], RightArm: [-20, 0, 60] }, hips: [0.1, -0.62, 0.75] },
+      { t: 0.62, pose: { RightUpLeg: [40, 0, -22], RightLeg: [-22, 0, 0], LeftUpLeg: [-5, 0, -30], LeftLeg: [-80, 0, 0], Spine1: [4, 0, -32], LeftArm: [-60, 0, 20], RightArm: [-10, 0, 55] }, hips: [0.16, -0.66, 1.05] },
+      { t: 0.95, pose: { RightUpLeg: [15, 0, -8], RightLeg: [-45, 0, 0], LeftUpLeg: [20, 0, -10], LeftLeg: [-60, 0, 0], Spine1: [18, 0, -10] }, hips: [0.08, -0.42, 1.15] },
       { t: 1.25, pose: {}, hips: [0, 0, 1.2] },
     ],
   },
@@ -479,10 +484,10 @@ export const MOVES = {
     name: 'retournee', duration: 1.35, contact: 0.52, loop: false,
     keys: [
       { t: 0.0, pose: {}, hips: [0, 0, 0] },
-      { t: 0.22, pose: { LeftUpLeg: [-48, 0, 0], RightUpLeg: [-48, 0, 0], LeftLeg: [62, 0, 0], RightLeg: [62, 0, 0], Spine1: [14, 0, 0], LeftArm: [-25, 0, 45], RightArm: [-25, 0, 45] }, hips: [0, -0.22, 0] },
-      { t: 0.52, pose: { Hips: [-95, 0, 0], RightUpLeg: [-115, 0, 0], RightLeg: [18, 0, 0], LeftUpLeg: [-35, 0, 0], LeftLeg: [45, 0, 0], Spine1: [-10, 0, 0], Head: [-15, 0, 0], LeftArm: [-45, 0, 20], RightArm: [-45, 0, 20] }, hips: [0, 0.62, -0.18] },
-      { t: 0.8, pose: { Hips: [-60, 0, 0], RightUpLeg: [-55, 0, 0], RightLeg: [40, 0, 0], LeftUpLeg: [-60, 0, 0], LeftLeg: [30, 0, 0], LeftArm: [-25, 0, 35], RightArm: [-25, 0, 35] }, hips: [0, 0.1, -0.35] },
-      { t: 1.05, pose: { LeftUpLeg: [-45, 0, 0], RightUpLeg: [-45, 0, 0], LeftLeg: [60, 0, 0], RightLeg: [60, 0, 0], Spine1: [12, 0, 0] }, hips: [0, -0.2, -0.42] },
+      { t: 0.22, pose: { LeftUpLeg: [48, 0, 0], RightUpLeg: [48, 0, 0], LeftLeg: [-62, 0, 0], RightLeg: [-62, 0, 0], Spine1: [14, 0, 0], LeftArm: [-25, 0, 45], RightArm: [-25, 0, 45] }, hips: [0, -0.22, 0] },
+      { t: 0.52, pose: { Hips: [-95, 0, 0], RightUpLeg: [115, 0, 0], RightLeg: [-18, 0, 0], LeftUpLeg: [35, 0, 0], LeftLeg: [-45, 0, 0], Spine1: [-10, 0, 0], Head: [-15, 0, 0], LeftArm: [-45, 0, 20], RightArm: [-45, 0, 20] }, hips: [0, 0.62, -0.18] },
+      { t: 0.8, pose: { Hips: [-60, 0, 0], RightUpLeg: [55, 0, 0], RightLeg: [-40, 0, 0], LeftUpLeg: [60, 0, 0], LeftLeg: [-30, 0, 0], LeftArm: [-25, 0, 35], RightArm: [-25, 0, 35] }, hips: [0, 0.1, -0.35] },
+      { t: 1.05, pose: { LeftUpLeg: [45, 0, 0], RightUpLeg: [45, 0, 0], LeftLeg: [-60, 0, 0], RightLeg: [-60, 0, 0], Spine1: [12, 0, 0] }, hips: [0, -0.2, -0.42] },
       { t: 1.35, pose: {}, hips: [0, 0, -0.42] },
     ],
   },
@@ -510,43 +515,43 @@ export const MOVES = {
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.22, pose: {
-        RightUpLeg: [20, -20, 0], RightLeg: [58, 0, 0], RightFoot: [8, 15, 0],
+        RightUpLeg: [-20, -20, 0], RightLeg: [-58, 0, 0], RightFoot: [8, 15, 0],
         Hips: [0, -8, 0],
         Spine: [-2, -4, 0], Spine1: [2, -6, 0], Spine2: [-2, -4, 0],
         Neck: [3, 0, 0], Head: [14, 0, 0],
         LeftArm: [-8, 6, 48], LeftForeArm: [8, 0, 45], RightArm: [12, -4, 54], RightForeArm: [8, 0, -36],
-        LeftUpLeg: [-8, 0, 0], LeftLeg: [22, 0, 0], LeftFoot: [-6, 0, 0],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-22, 0, 0], LeftFoot: [-6, 0, 0],
       }, hips: [0, -0.03, 0] },
       // CHAQUE os animé est keyé à CHAQUE clé : un os absent retombe sur la POSE DE BASE, pas sur
       // l'interpolation — le bras droit faisait 12° → −60° (base) → −18° en 0,1 s, soit 19 rad/s de
       // téléportation que le contrat a attrapée au premier essai.
       { t: 0.32, pose: {
-        RightUpLeg: [2, -24, 0], RightLeg: [44, 0, 0], RightFoot: [4, 20, 0],
+        RightUpLeg: [-2, -24, 0], RightLeg: [-44, 0, 0], RightFoot: [4, 20, 0],
         Hips: [0, 0, 0],
         Spine: [-1, 0, 0], Spine1: [-2, 4, 0], Spine2: [0, 4, 0],
         Neck: [3, 0, 0], Head: [15, 0, 0],
         LeftArm: [-2, 3, 48], LeftForeArm: [8, 0, 40], RightArm: [-2, -2, 52], RightForeArm: [6, 0, -30],
-        LeftUpLeg: [-6, 0, 0], LeftLeg: [18, 0, 0], LeftFoot: [-5, 0, 0],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-18, 0, 0], LeftFoot: [-5, 0, 0],
       } },
       { t: 0.38, pose: {
-        RightUpLeg: [-46, -30, 0], RightLeg: [10, 0, 0], RightFoot: [28, 35, 0],
+        RightUpLeg: [46, -30, 0], RightLeg: [-10, 0, 0], RightFoot: [28, 35, 0],
         Hips: [0, 4, 0],
         Spine: [0, 4, 0], Spine1: [-4, 8, 0], Spine2: [0, 6, 0],
         Neck: [2, 0, 0], Head: [16, 0, 0],
         LeftArm: [5, 2, 48], LeftForeArm: [6, 0, 30], RightArm: [-10, -3, 50], RightForeArm: [6, 0, -26],
-        LeftUpLeg: [-5, 0, 0], LeftLeg: [12, 0, 0],
+        LeftUpLeg: [5, 0, 0], LeftLeg: [-12, 0, 0],
       }, hips: [0, 0, 0] },
       // L'OVERSHOOT : le swing CONTINUE après le contact (cuisse −46° → −72°) avant de récupérer.
       // Le banc de swing a mesuré l'ancienne forme : l'accompagnement RECULAIT (−46° → −30°), donc
       // la vitesse interpolée s'annulait pile sur la pose de contact — pied à 3 m/s au lieu de 12.
       // Un swing passe À TRAVERS sa pose de contact ; il ne se gare pas dessus.
       { t: 0.42, pose: {
-        RightUpLeg: [-76, -26, 0], RightLeg: [34, 0, 0], RightFoot: [30, 30, 0],
+        RightUpLeg: [76, -26, 0], RightLeg: [-34, 0, 0], RightFoot: [30, 30, 0],
         Hips: [0, 8, 0],
         Spine: [0, 4, 0], Spine1: [0, 6, 0], Spine2: [0, 4, 0],
         Neck: [1, 0, 0], Head: [10, 0, 0],
         LeftArm: [0, 2, 48], LeftForeArm: [6, 0, 26], RightArm: [-8, -2, 50], RightForeArm: [5, 0, -22],
-        LeftUpLeg: [-5, 0, 0], LeftLeg: [14, 0, 0], LeftFoot: [-3, 0, 0],
+        LeftUpLeg: [5, 0, 0], LeftLeg: [-14, 0, 0], LeftFoot: [-3, 0, 0],
       } },
       { t: 0.7, pose: {} },
     ],
@@ -567,36 +572,36 @@ export const MOVES = {
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.13, pose: {
-        RightUpLeg: [14, -20, 0], RightLeg: [46, 0, 0], RightFoot: [8, 15, 0],
+        RightUpLeg: [-14, -20, 0], RightLeg: [-46, 0, 0], RightFoot: [8, 15, 0],
         Hips: [0, -8, 0],
         Spine: [-2, -4, 0], Spine1: [2, -6, 0], Spine2: [-2, -4, 0],
         Neck: [3, 0, 0], Head: [14, 0, 0],
         LeftArm: [-8, 6, 48], LeftForeArm: [8, 0, 45], RightArm: [10, -4, 0], RightForeArm: [8, 0, -24],
-        LeftUpLeg: [-8, 0, 0], LeftLeg: [22, 0, 0], LeftFoot: [-6, 0, 0],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-22, 0, 0], LeftFoot: [-6, 0, 0],
       }, hips: [0, -0.03, 0] },
       { t: 0.19, pose: {
-        RightUpLeg: [-14, -28, 0], RightLeg: [34, 0, 0], RightFoot: [6, 22, 0],
+        RightUpLeg: [14, -28, 0], RightLeg: [-34, 0, 0], RightFoot: [6, 22, 0],
         Hips: [0, 3, 0],
         Spine: [-1, 0, 0], Spine1: [-2, 4, 0], Spine2: [0, 4, 0],
         Neck: [3, 0, 0], Head: [15, 0, 0],
         LeftArm: [-2, 3, 48], LeftForeArm: [8, 0, 40], RightArm: [-4, -2, 10], RightForeArm: [6, 0, -22],
-        LeftUpLeg: [-6, 0, 0], LeftLeg: [18, 0, 0], LeftFoot: [-5, 0, 0],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-18, 0, 0], LeftFoot: [-5, 0, 0],
       } },
       { t: 0.22, pose: {
-        RightUpLeg: [-46, -30, 0], RightLeg: [10, 0, 0], RightFoot: [28, 35, 0],
+        RightUpLeg: [46, -30, 0], RightLeg: [-10, 0, 0], RightFoot: [28, 35, 0],
         Hips: [0, 4, 0],
         Spine: [0, 4, 0], Spine1: [-4, 8, 0], Spine2: [0, 6, 0],
         Neck: [2, 0, 0], Head: [16, 0, 0],
         LeftArm: [5, 2, 48], LeftForeArm: [6, 0, 30], RightArm: [-10, -3, 16], RightForeArm: [6, 0, -22],
-        LeftUpLeg: [-5, 0, 0], LeftLeg: [12, 0, 0],
+        LeftUpLeg: [5, 0, 0], LeftLeg: [-12, 0, 0],
       }, hips: [0, 0, 0] },
       { t: 0.26, pose: {
-        RightUpLeg: [-72, -26, 0], RightLeg: [30, 0, 0], RightFoot: [30, 32, 0],
+        RightUpLeg: [72, -26, 0], RightLeg: [-30, 0, 0], RightFoot: [30, 32, 0],
         Hips: [0, 7, 0],
         Spine: [0, 3, 0], Spine1: [0, 5, 0], Spine2: [0, 3, 0],
         Neck: [1, 0, 0], Head: [9, 0, 0],
         LeftArm: [0, 2, 48], LeftForeArm: [6, 0, 26], RightArm: [-6, -2, 4], RightForeArm: [5, 0, -20],
-        LeftUpLeg: [-4, 0, 0], LeftLeg: [14, 0, 0], LeftFoot: [-3, 0, 0],
+        LeftUpLeg: [4, 0, 0], LeftLeg: [-14, 0, 0], LeftFoot: [-3, 0, 0],
       } },
       { t: 0.54, pose: {} },
     ],

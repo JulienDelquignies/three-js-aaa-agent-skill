@@ -166,6 +166,31 @@ vitesse plafonnée) : visuellement une attache, physiquement continu et contesta
   strike-stance (la trace : capture 0,82 → 0,26 m, armé soudé, passe partie AVANT la fin de la
   fenêtre — un une-touche légitime que l'ancienne mesure comptait comme un contrôle mort).
 
+## 12. La pose authorée se compose ABSOLUE, et la direction est une clause
+
+Un geste ne se joue pas en delta additif sur une base animée : un delta est une GRANDE rotation
+valable près de son repère d'authoring, et la base réelle (un idle retargeté) en était à 20–43°
+par os — le plan du balayage pivotait d'autant, chaque passe dessinait une talonnade. La couche de
+geste (gesture-layer.js) pose `rest ⊗ q_spec(0)⁻¹ ⊗ q_spec(t)` par membre, APRÈS le mixer : à
+poids 1, la pose affichée est PAR CONSTRUCTION celle que le banc FK valide — la base n'existe pas
+(clause reine, écart 0,0000° sur quatre bases). Corollaires, tous payés en mesure :
+
+- **les signes articulaires se SONDENT** (FK nue, une rotation à la fois) : sur ce rig, flexion de
+  hanche = +x, flexion de genou = −x, dorsiflexion = +x — les specs croyaient l'inverse pour hanche
+  ET genou, et aucune clause en amplitude (vitesse, hauteur, excursion, surface) ne pouvait le voir ;
+- **au moins une clause SIGNÉE par geste** : v_avant ≥ 60 % de v_contact pour les frappes avant,
+  ≤ −60 % pour la talonnade — la direction n'est plus une croyance ;
+- **la stance se DÉRIVE du clip** (S = pied_contact + standoff · direction, FK) avec clause de
+  concordance — la table écrite à la main divergeait de 0,10 à 0,45 m ;
+- **le visuel copie la sim, lacet compris** : le facing dérivé de la vitesse restait à 110° du yaw
+  sim au contact d'un pivot — position ET lacet sont snappés à la vérité prouvée ;
+- **la rencontre pied-ballon est une autorité de plus** (strike-warp.js, le Motion Warping de ce
+  moteur) : enveloppe C¹ à pente nulle au contact (position corrigée, vitesse du banc intacte),
+  bornée à refus nommés, standoff (jamais dans le ballon), gel au tir — calibrée EN LIGNE sur le
+  jeu composé, jamais par un probe hors pile (loi 8 : il mesurait une ombre).
+
+Voir reference/51 (la chasse complète, chiffrée).
+
 ## L'ordre d'évaluation canonique (une image)
 
 ```
@@ -174,11 +199,12 @@ simulation :  assignJobs (décisions) → movePlayers (locomotion, sauf corps po
               → separatePlayers (projections du monde)
               → ballon : PORTÉ (carry au pied / au point de stance) | CONDUITE (touches, libre)
                 | CONTESTÉ→libre (duel) | VOL (integrate) — un régime à la fois, sorties nommées
-visuel    :  gait clock (φ unique, vitesse SOL MESURÉE — jamais un zéro forcé) → mixer (clips
-              asservis à φ) → couches corps-entier (gaitLayer) → gestes additifs SCINDÉS
-              haut/jambes (le haut s'arme tout de suite ; les jambes fondues par max(arrivée,
-              approche du contact) — les bras s'arment pendant les pas, le plant émerge de la
-              mesure) → verrous (footLock hors geste) → rendu
+visuel    :  position + LACET snappés à la sim (un corps, une autorité) → gait clock (φ unique,
+              vitesse SOL MESURÉE — jamais un zéro forcé) → mixer (clips asservis à φ) → couches
+              corps-entier (gaitLayer) → COUCHE DE GESTE (pose absolue rest ⊗ spec, par membre :
+              le haut s'arme tout de suite ; les jambes fondues par max(arrivée, approche du
+              contact) — horloge = act.t) → WARP DE FRAPPE (jambe frappeuse, calibré en ligne) →
+              verrous (footLock hors geste) → rendu
 ```
 
 Le visuel LIT la simulation, ne la corrige jamais ; la simulation ne sait pas que le visuel existe.
@@ -194,4 +220,5 @@ pont, et il est en DONNÉES, pas en code.
 | 4-5 (refus, intention, plan) | approach.js (planStrike), rondo-sim.js (deny/intent) | verify-approach (21 clauses, oscillateur rejoué) |
 | 6 (courses) | ball-predict.js (flightRace), rondo.js (choosePass) | verify-ball-predict, verify-football-rules |
 | 7-9 (contrats, budgets) | football-rules.js (strike-stance, exemption bornée) | verify-football-rules (60 clauses, 2 sabotages neufs) |
-| 8 (monde composé) | scripts/audit-membres.mjs (l'instrument OFFICIEL, verdicts + INFO clips) | 13 clauses vertes |
+| 8 (monde composé) | scripts/audit-membres.mjs (l'instrument OFFICIEL, verdicts + INFO clips) | 16 clauses vertes |
+| 12 (pose absolue, direction) | gesture-layer.js, strike-warp.js, animkit (signes sondés), approach (stances dérivées) | verify-gesture-layer (clause reine + bug reconstitué 43°), verify-strike-warp (23), verify-swing (90 : direction + concordance) |

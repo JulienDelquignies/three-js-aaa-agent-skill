@@ -31,7 +31,7 @@ console.log('— le contrat (checkApproach) —');
   const r = checkApproach();
   ok('la table des stances et la géométrie passent leur propre contrat', r.ok, r.issues.join(' | '));
   ok('sabotage « stance dans le corps (0,1 m) » attrapé',
-    has(checkApproach({ stances: { ...STANCES, passe: { dist: 0.1, bearing: 24 } } }), 'hors [0,3'));
+    has(checkApproach({ stances: { ...STANCES, passe: { dist: 0.1, bearing: 24 } } }), 'hors [0,25'));
   ok('sabotage « geste avant sur ballon derrière (relèvement 120°) » attrapé',
     has(checkApproach({ stances: { ...STANCES, passe: { dist: 0.55, bearing: 120 } } }), 'ne se joue pas'));
   ok('sabotage « talonnade avec le ballon devant » attrapé',
@@ -56,7 +56,10 @@ console.log('\n— l’ancre réalise la stance, DU BON CÔTÉ —');
   // LE SABOTAGE FONDATEUR DU MODULE : le signe du côté. La première version avait side inversé —
   // stance réalisée au degré près… sur le MAUVAIS côté du corps (un gaucher avec le ballon à
   // droite), attrapée par la mesure (écart UNIFORME de ~2×bearing). On le rejoue tel quel.
-  const s = STANCES.passe;
+  // rejoué sur la stance au relèvement le plus marqué (le pivot, 72° mesurés) : l'inversion de
+  // côté y est flagrante (±72 → 144° d'écart) — sur la passe dérivée (11°) l'écart ne serait que
+  // de 22° et le sabotage passerait sous le seuil sans que le bug soit moins réel.
+  const s = STANCES.passePivot;
   const badAnchor = (ball, outYaw, foot) => {
     const side = foot === 'left' ? -1 : 1;              // ← le signe inversé du bug
     const a = outYaw + s.bearing * side * D2R;

@@ -30,14 +30,21 @@
  * Sources : pied d'appui à 27–37 cm latéral du ballon (revue instep kick) → corps à ~0,5–0,65 m ;
  * la talonnade a le ballon DERRIÈRE (c'est sa définition) ; le pivot l'a plus ouvert.
  */
+// LA STANCE SE DÉRIVE DU CLIP — une table écrite à la main ment. Ces valeurs sont MESURÉES par la
+// FK du banc de swing : S = pied_au_contact + standoff(0,18 m) · direction_du_pied, exprimé en
+// {dist, bearing} depuis les hanches et l'avant du rig (bearing + = côté du pied frappeur ; le
+// miroir transporte le signe). L'ancienne table divergeait de 0,10 à 0,45 m selon le geste — le
+// porté amenait donc le ballon À CÔTÉ de là où le clip frappe, et le warp payait la différence
+// (résiduel composé 0,45 m mesuré). verify-swing porte la clause de concordance : si un clip est
+// ré-authoré, la table DOIT être re-mesurée, sinon le banc refuse.
 export const STANCES = {
-  passe: { dist: 0.55, bearing: 24 },
-  passeRapide: { dist: 0.55, bearing: 24 },   // même frappe, armé court : la stance est identique
-  frappe: { dist: 0.62, bearing: 14 },
-  passeExterieur: { dist: 0.50, bearing: 32 },
-  passePivot: { dist: 0.60, bearing: 38 },
-  deviation: { dist: 0.45, bearing: 28 },
-  talonnade: { dist: 0.38, bearing: 168 },
+  passe: { dist: 0.58, bearing: 11 },
+  passeRapide: { dist: 0.58, bearing: 11 },   // même frappe, armé court : la stance est identique
+  frappe: { dist: 0.41, bearing: 11 },
+  passeExterieur: { dist: 0.45, bearing: 10 },
+  passePivot: { dist: 0.43, bearing: 72 },
+  deviation: { dist: 0.27, bearing: 62 },
+  talonnade: { dist: 0.32, bearing: 153 },
 };
 
 const D2R = Math.PI / 180;
@@ -197,8 +204,13 @@ export function checkApproach({ stances = STANCES } = {}) {
   const issues = [];
   // 1. les stances sont des géométries jouables : à portée de jambe, jamais dans le corps
   for (const [id, s] of Object.entries(stances)) {
-    if (!(s.dist >= 0.3 && s.dist <= 0.8)) issues.push(`stance « ${id} » : dist ${s.dist} m hors [0,3 ; 0,8] — hors de portée de jambe ou dans le corps`);
-    if (id !== 'talonnade' && Math.abs(s.bearing) > 60) issues.push(`stance « ${id} » : relèvement ${s.bearing}° — un geste avant ne se joue pas un ballon derrière`);
+    // bornes re-jugées à la MESURE (la table est dérivée des clips par FK, plus écrite à la main) :
+    // une déviation redirige un ballon qui passe À CÔTÉ (0,27 m, 62°), un pivot frappe en tournant
+    // (72°) — l'ancien plafond de 60° encodait la croyance de l'ancienne table, pas l'anatomie.
+    // Ce qui reste vrai : à portée de jambe (jamais dans le corps ni au-delà), et pas DERRIÈRE
+    // (> 100°) sauf la talonnade, dont c'est la définition.
+    if (!(s.dist >= 0.25 && s.dist <= 0.8)) issues.push(`stance « ${id} » : dist ${s.dist} m hors [0,25 ; 0,8] — hors de portée de jambe ou dans le corps`);
+    if (id !== 'talonnade' && Math.abs(s.bearing) > 100) issues.push(`stance « ${id} » : relèvement ${s.bearing}° — un geste avant ne se joue pas un ballon derrière`);
   }
   if (stances.talonnade && Math.abs(stances.talonnade.bearing) < 140) issues.push('la talonnade doit avoir le ballon DERRIÈRE (c\'est sa définition)');
   // 2. anchorFor réalise exactement la stance qu'on lui demande (aller-retour exact)

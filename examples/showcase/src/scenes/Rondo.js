@@ -8,14 +8,16 @@ import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
 import { buildKit } from '../engine/kit.js';
 import { tintPart } from '../engine/part-tint.js';
-import { loadSquad, setCloner } from '../engine/squad.js';
+import { loadSquad, setCloner, rigBones } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js';
-import { toClip, playGesture } from '../engine/animkit-builder.js';
+import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js';
+import { warpEnvelope, planWarp, warpReach, twoBoneIK, checkStrikeWarp, WARP } from '../engine/strike-warp.js';
+import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights.
@@ -41,6 +43,9 @@ export class Rondo {
     this.players = [];
     this._t = 0;
     this._lastEvent = 0;
+    // scratch du warp de frappe (zéro allocation par image)
+    this._wv = new THREE.Vector3(); this._wf = new THREE.Vector3(); this._wt = new THREE.Vector3();
+    this._wh = new THREE.Vector3(); this._wk = new THREE.Vector3(); this._wm = new THREE.Vector3();
     this.ready = this._build();
   }
 
@@ -153,59 +158,53 @@ export class Rondo {
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer
-      this.players.push({ sim: p, model: model3d, ctrl, mixer, groundY, rig });
+      // le warp de frappe a besoin des chaînes de jambe PAR PIED et de leurs longueurs (mesurées
+      // sur le rig posé, comme foot-lock) — l'autorité de la jambe frappeuse pendant l'armé
+      const _a = new THREE.Vector3(), _b = new THREE.Vector3();
+      const legLen = (l) => {
+        l.up.getWorldPosition(_a); l.knee.getWorldPosition(_b);
+        const A = _a.distanceTo(_b);
+        l.foot.getWorldPosition(_a);
+        return { A, B: _b.distanceTo(_a) };
+      };
+      // LA COUCHE DE GESTE (engine/gesture-layer) : la pose authorée posée ABSOLUE, par membre,
+      // après le mixer. Le rest vient du TEMPLATE de squad.js — jamais animé, donc exactement le
+      // repère contre lequel le banc de swing prouve les clips. Les deltas additifs sur l'idle
+      // retargeté ont été mesurés : base tournée de 20-43° par os, le balayage partait DERRIÈRE.
+      const entry = this.squad.entries.find((e) => (e.spec.name || e.spec.url) === rig);
+      const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones });
+      this.players.push({
+        sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer,
+        legs: { left: legs[0], right: legs[1] },
+        legLens: { left: legLen(legs[0]), right: legLen(legs[1]) },
+      });
     }
 
-    // ---- passing gestures, BOTH feet. Every strike in the library is right-footed; mirrorMove
-    // gives the exact left-footed twin, so a player passing to his left uses the near foot.
-    // ONE SET PER RIG, ONE CLIP PER MOVE, BOTH FEET. Gesture tracks address bones by NAME, and two
-    // Mixamo exports rarely share a prefix, so a clip compiled against one rig binds to nothing on the
-    // other — the player simply would not swing his leg, silently. And the gesture must be the one the
-    // TECHNIQUE named: a backheel and an inside pass are not the same movement, and at this camera
-    // distance playing one for the other is the difference between football and mime.
-    // LES CLIPS SONT DÉRIVÉS DE LA TABLE DES TECHNIQUES, PAS ÉNUMÉRÉS À LA MAIN. Cette ligne tenait
-    // cinq noms écrits en dur, et `_playTech` retombe sur `set.passe` quand le clip demandé manque :
-    // mesuré, 502 gestes de ballon sur 876 (57,3 %) dessinaient une passe de l'intérieur QUELLE QUE
-    // SOIT la technique choisie. Les huit gestes ajoutés à la session précédente — passe en pivot,
-    // extérieur, déviation, contrôle semelle, amorti cuisse… — n'ont jamais été visibles une seule
-    // fois à l'écran. C'est la vraie raison de « ça se voit même pas le mouvement », bien avant
-    // l'amplitude des poses : on regardait le mauvais geste une fois sur deux.
-    // Dériver la liste de TECHNIQUES rend l'oubli impossible : ajouter une technique compile son clip.
-    const MOVE_IDS = [...new Set([
-      ...Object.values(TECHNIQUES_BY_ID).map((t) => t.clip).filter((c) => MOVES[c]),
-      'passe', 'frappe', 'amorti', 'tacle',
-    ])];
-    this.gest = new Map();
-    for (const pl of this.players) {
-      if (this.gest.has(pl.rig)) continue;
-      const set = {};
-      // LE GESTE EST SCINDÉ EN DEUX ÉTAGES, parce que les deux moitiés du corps ne rejoignent pas le
-      // geste au même moment. L'audit membre par membre l'a mesuré : pendant l'approche, le corps se
-      // déplace (le glissement) — si les JAMBES du geste prennent tout de suite, c'est le delta de
-      // frappe sur des jambes qui marchent (la chimère, déjà vue) ; si on force l'idle, c'est du
-      // patin à glace (appui en translation 100 % des images de l'armé, pics 7,5 m/s — vu aussi).
-      // La vérité du footballeur : LES BRAS S'ARMENT PENDANT LES PAS, les jambes du geste ne
-      // prennent que quand le corps est POSÉ. Donc deux clips par geste (toClip { only }), deux
-      // poids : le haut à 1 dès l'engagement, les jambes fondues par l'ARRIVÉE (poids = 1 − v/vRef,
-      // recalculé chaque image dans update — la locomotion, pilotée par la vitesse sol MESURÉE,
-      // continue de faire marcher les jambes tant que le corps bouge).
-      const UP = /Shoulder|Arm|ForeArm|Hand|Spine|Neck|Head/;
-      const LEGS = /Hips|UpLeg|Leg|Foot|ToeBase/;
-      for (const id of MOVE_IDS) {
-        set[id] = {
-          right: { up: toClip(MOVES[id], pl.model, { only: UP }), legs: toClip(MOVES[id], pl.model, { only: LEGS }) },
-          left: { up: toClip(mirrorMove(MOVES[id]), pl.model, { only: UP }), legs: toClip(mirrorMove(MOVES[id]), pl.model, { only: LEGS }) },
-        };
-      }
-      this.gest.set(pl.rig, set);
-    }
-    // …et on le prouve au démarrage plutôt qu'à l'usage : toute technique dont le clip n'est pas
-    // compilé est un geste que le joueur jouera sans qu'on le voie.
+    // ---- les gestes : LA COUCHE, plus le mixer. Les clips additifs (toClip + makeClipAdditive)
+    // composaient le delta sur l'idle RETARGETÉ — base tournée de 20° (cuisse), 32° (tibia), 43°
+    // (bassin) par rapport au rest contre lequel les specs sont écrites et prouvées : le plan du
+    // balayage pivotait, la passe dessinait une talonnade (pied composé DERRIÈRE-HAUT au contact,
+    // mesuré [−0,27, 0,43, 0,57] local contre [·, 0,16, avant] au banc). La couche de geste
+    // (engine/gesture-layer) pose la pose authorée ABSOLUE — rest ⊗ q_spec(0)⁻¹ ⊗ q_spec(t) — par
+    // membre, après le mixer : à poids 1 la pose affichée est CELLE DU BANC, quelle que soit la
+    // base. L'horloge est act.t (la sim) : un seul instant, un seul contrat. Le scindé haut/jambes
+    // et ses lois de poids (bras tout de suite, jambes fondues par l'arrivée) sont inchangés — la
+    // couche ne décide pas QUAND le geste a les membres, seulement CE QUE les membres montrent.
+    // …et on prouve au démarrage que toute technique de la table a un geste authoré : un repli
+    // silencieux a déjà caché 57,3 % des gestes pendant une session entière.
     {
-      const set = this.gest.values().next().value || {};
-      const manquants = Object.values(TECHNIQUES_BY_ID).map((t) => t.clip).filter((c) => !set[c]);
-      if (manquants.length) this._reports.gestes.push(`techniques sans clip compilé : ${[...new Set(manquants)].join(', ')}`);
+      const manquants = Object.values(TECHNIQUES_BY_ID).map((t) => t.clip).filter((c) => !MOVES[c]);
+      if (manquants.length) this._reports.gestes.push(`techniques sans geste authoré : ${[...new Set(manquants)].join(', ')}`);
     }
+    // le point de contact du pied en espace personnage, CALIBRÉ EN LIGNE par (rig × clip × pied) —
+    // mesuré sur le jeu composé lui-même au passage du contact (un probe statique hors pile a été
+    // essayé et condamné : il mesurait une ombre — charte, loi 8). Premier geste : mesure ;
+    // suivants : warp.
+    this._contactLive = new Map();
+    // l'auto-test du warp au démarrage, comme les autres contrats embarqués
+    this._reports.warp = checkStrikeWarp();
+    if (!this._reports.warp.ok) console.warn('checkStrikeWarp', this._reports.warp.issues);
+    this._warpStats = { n: 0, mags: [], denied: {} };
 
     this._hud = document.getElementById('score');
     // play-mode handles: runner.js sets window.__scene for every scene, and the MCP probes a
@@ -254,23 +253,89 @@ export class Rondo {
    *  leaves at the clip's own contact frame (engine/gesture.js). Only reactive gestures, the ones the
    *  game reports after the fact, still start at contact. */
   _playTech(pl, e, from = 0) {
-    const set = this.gest.get(pl.rig);
-    if (!set) return;
     const move = e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
-    // UN CLIP MANQUANT DOIT SE VOIR. Ce repli était silencieux (`set[move] || set.passe`), et c'est
+    // UN GESTE MANQUANT DOIT SE VOIR. Ce repli était silencieux (`set[move] || set.passe`), et c'est
     // exactement pourquoi 57 % des gestes ont pu dessiner le mauvais mouvement pendant toute une
     // session sans qu'aucun contrat ne bronche : le jeu affichait quelque chose de plausible. Un repli
     // qui se tait est pire qu'une erreur.
-    const pair = set[move] || (this._reports.gestes.push(`clip absent : ${move}`), set.passe);
-    const duo = e.foot === 'left' ? pair.left : pair.right;
-    if (!duo) return;
-    // deux étages, deux actions : le HAUT s'arme tout de suite (les bras portent l'anticipation
-    // pendant les derniers pas) ; les JAMBES du geste démarrent à poids nul et sont fondues par
-    // l'ARRIVÉE dans update() — tant que le corps se déplace, ce sont les jambes de la locomotion
-    // (vitesse sol mesurée) qui marchent, et le plant émerge quand le glissement s'assied.
-    const f = (c) => (from === 'contact' ? (c.userData?.contact ?? 0) : 0);
-    playGesture(pl.mixer, duo.up, { from: f(duo.up), fade: 0.06 });
-    pl.gestureLegs = duo.legs ? playGesture(pl.mixer, duo.legs, { from: f(duo.legs), fade: 0.06, weight: 0 }) : null;
+    const spec = MOVES[move] || (this._reports.gestes.push(`geste absent : ${move}`), MOVES.passe);
+    const r = pl.gestureLayer.begin(e.foot === 'left' ? mirrorMove(spec) : spec);
+    if (r.missing.length) this._reports.gestes.push(`${move}: os absents du rig ${pl.rig} : ${r.missing.join(', ')}`);
+    // l'horloge de la couche : act.t quand la sim porte le geste (un seul instant, un seul
+    // contrat) ; sinon une horloge locale — les gestes réactifs (contrôle rapporté après coup)
+    // démarrent À leur frame de contact, comme avant.
+    pl._layerClock = { t0: this._t, offset: from === 'contact' ? (spec.contact ?? 0) : 0, dur: spec.duration ?? 0.6, antic: spec.contact ?? 0.2 };
+    pl._wLegs = pl._wLegs ?? 0;
+  }
+
+  /** LE WARP DE FRAPPE, appliqué. L'autorité de la jambe frappeuse pendant l'armé (foot-lock se
+   *  retire sur gestureHold — sans ceci, personne ne possède ce pied), projetée EN DERNIER :
+   *  mixer → poids des étages → warp (charte, loi 2). La correction est planaire (la hauteur reste
+   *  au clip), bornée (refus nommés au registre), pondérée par le poids RÉEL des jambes du geste
+   *  (le warp corrige la jambe du geste dans la proportion où le geste la possède — corriger une
+   *  jambe qui marche encore serait la chimère), et GELÉE à l'instant du tir (le ballon part : on
+   *  ne chasse pas un ballon en vol, on rend la jambe à l'accompagnement authoré). */
+  _applyStrikeWarp(pl) {
+    const a = pl.sim.act;
+    if (!a || a.payload?.kind !== 'pass' || !a.payload.pick) { pl._warp = null; pl._warpCal = null; return; }
+    const foot = a.payload.pick.foot === 'left' ? 'left' : 'right';
+    const clKey = `${pl.rig}:${a.id}:${foot}`;
+    const leg = pl.legs?.[foot], lens = pl.legLens?.[foot];
+    if (!leg?.up || !leg.knee || !leg.foot || !lens) return;
+
+    // ---- CALIBRATION EN LIGNE. Le pied lu ICI est la pose PURE du clip de cette image (le mixer
+    // ré-écrit chaque os à chaque update : le warp de l'image précédente est déjà effacé). On garde
+    // la dernière image d'avant-contact ; au passage du tir, on interpole les deux images qui
+    // encadrent l'instant exact et on verse en moyenne mobile — la vérité composée, mesurée sur le
+    // jeu réel, par (clip × pied × rig). Un probe hors pile a été essayé : il mesurait une ombre.
+    leg.foot.getWorldPosition(this._wf);
+    if (!a.fired) {
+      this._wv.copy(this._wf); pl.model.worldToLocal(this._wv);
+      pl._warpCal = { t: a.t, local: [this._wv.x, this._wv.y, this._wv.z] };
+    } else if (pl._warpCal && pl._warpCal.t < a.anticipation) {
+      const c0 = pl._warpCal; pl._warpCal = null;
+      this._wv.copy(this._wf); pl.model.worldToLocal(this._wv);
+      const u = Math.max(0, Math.min(1, (a.anticipation - c0.t) / Math.max(1e-4, a.t - c0.t)));
+      const at = [c0.local[0] + (this._wv.x - c0.local[0]) * u,
+                  c0.local[1] + (this._wv.y - c0.local[1]) * u,
+                  c0.local[2] + (this._wv.z - c0.local[2]) * u];
+      const prev = this._contactLive.get(clKey);
+      this._contactLive.set(clKey, prev ? prev.map((v, i) => v + (at[i] - v) * 0.4) : at);
+    }
+    const cl = this._contactLive.get(clKey);
+    if (!cl) { this._warpStats.denied['warp-non-calibré'] = (this._warpStats.denied['warp-non-calibré'] ?? 0) + 1; return; }
+
+    const env = warpEnvelope(a.t, a.anticipation);
+    if (env <= 0) { pl._warp = null; return; }
+    // le poids réel des jambes du geste module l'enveloppe : le warp corrige la jambe du geste
+    // dans la proportion où le geste la possède (pleine dès ~0,85 — au contact le poids y est)
+    const s = env * Math.min(1, (pl._wLegs ?? 1) / 0.85);
+    if (s <= 1e-3) return;
+    let plan = pl._warp;
+    if (!a.fired) {
+      // avant le contact : re-viser chaque image — les DEUX cibles convergent (le corps s'assied
+      // sur l'ancre, le ballon porté converge vers le point de stance), l'offset converge avec
+      this._wv.fromArray(cl); pl.model.localToWorld(this._wv);
+      const b = this.state.ball.p;
+      plan = planWarp([this._wv.x, this._wv.z], [b[0], b[2]]);
+      pl._warp = plan;
+      if (plan.denied) this._warpStats.denied[plan.denied] = (this._warpStats.denied[plan.denied] ?? 0) + 1;
+    }
+    if (!plan || (plan.denied && plan.mag <= 0)) return;
+    this._wt.set(this._wf.x + plan.offset[0] * s, this._wf.y, this._wf.z + plan.offset[1] * s);
+    leg.up.getWorldPosition(this._wh); leg.knee.getWorldPosition(this._wk);
+    if (!warpReach([this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B)) {
+      this._warpStats.denied['warp-jambe-trop-courte'] = (this._warpStats.denied['warp-jambe-trop-courte'] ?? 0) + 1;
+      return;
+    }
+    if (!a.fired && this._warpStats.mags.length < 4000) { this._warpStats.n++; this._warpStats.mags.push(plan.mag); }
+    // même primitive que foot-lock : IK deux os, plan de pliage du genou = celui du clip
+    const sol = twoBoneIK(
+      [this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B,
+      [this._wk.x - this._wh.x, this._wk.y - this._wh.y, this._wk.z - this._wh.z],
+    );
+    aimChildAt(leg.up, leg.knee, this._wm.fromArray(sol.mid));
+    aimChildAt(leg.knee, leg.foot, this._wm.fromArray(sol.end));
   }
 
   /** The broadcast camera: it TRACKS the ball with lag and a touch of overshoot, the way a real
@@ -321,36 +386,11 @@ export class Rondo {
 
     // le haut du corps appartient au geste pendant qu'un geste tourne (voir _applyGaitLayer)
     for (const pl of this.players) {
-      pl.ctrl.gestureHold = !!pl.sim.act;
+      pl.ctrl.gestureHold = !!pl.sim.act || pl.gestureLayer.active;
       // la fenêtre de PLANT : dernier quart de l'armé — la locomotion retourne à l'idle (double
       // appui) pendant que les jambes du geste finissent d'arriver (voir character-controller)
       const a = pl.sim.act;
       pl.ctrl.plantHold = !!(a && a.anticipation && !a.fired && a.t > a.anticipation * 0.75);
-      // LE POIDS DES JAMBES DU GESTE = L'ARRIVÉE. Mesuré à l'audit : le corps se déplace jusqu'à
-      // 5,2 m/s pendant l'armé (le glissement d'approche) — des jambes de geste à poids plein
-      // là-dessus, c'est la chimère ; l'idle forcé, c'est le patin. Le fondu suit la vitesse sol
-      // MESURÉE : au-dessus de 1,5 m/s le geste n'a pas les jambes (la locomotion marche), posé
-      // (→ 0 m/s) il les a pleines — le plant émerge de la mesure. Lissé pour ne pas pomper.
-      if (pl.gestureLegs) {
-        if (!pl.gestureLegs.isRunning()) { pl.gestureLegs = null; continue; }
-        const v = pl.ctrl.groundSpeed ?? 0;
-        // deux raisons de donner les jambes au geste, la PLUS FORTE gagne :
-        //   — le corps est posé (1 − v/2,5 : la marche a fini son travail) ;
-        //   — le CONTACT approche ((t/antic)^1.5 : le dernier pas EST le plant — sans ce terme,
-        //     l'ease-out du glissement gardait v > seuil presque tout l'armé des gestes courts et
-        //     le poids plafonnait à ~0,5 au contact : l'appui mesuré à 0,41–0,67 m du ballon au
-        //     lieu des ~0,30 de la stance).
-        const act = pl.sim.act;
-        const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
-        // …plein À 80 % DE L'ARMÉ, pas au contact : avec le lissage (~0,05 s), une rampe qui vise
-        // le contact y arrive à ~0,85 — l'audit a surpris un pied d'appui à 0,20 m de haut et un
-        // pied frappeur en pleine foulée (départ à 153° de l'axe) À l'instant du contact. Le
-        // dernier cinquième de l'armé appartient au plant, entièrement.
-        const byContact = act && act.anticipation ? Math.min(1, Math.pow(act.t / (act.anticipation * 0.8), 1.5)) : 0;
-        const target = Math.max(byArrive, byContact);
-        const w = pl.gestureLegs.getEffectiveWeight();
-        pl.gestureLegs.setEffectiveWeight(w + (target - w) * Math.min(1, dt / 0.05));
-      }
     }
 
     // ---- dress the simulation: the sim owns positions, the controller owns the locomotion state
@@ -361,6 +401,40 @@ export class Rondo {
       pl.ctrl.update(step);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);
+      // LE LACET AUSSI EST À LA SIM — même régime que la position. Le contrôleur dérive son facing
+      // de l'intention de vitesse : pendant un armé en pivot la vitesse est nulle et le modèle
+      // restait planté jusqu'à 110° du lacet sim AU CONTACT (mesuré épisode par épisode — le pied
+      // du clip vivait dans un repère qui n'était pas celui où la sim pose le ballon ; la surface
+      // « réalisée » variait de 22° à 133° d'un épisode à l'autre du MÊME clip). La sim tourne le
+      // corps avec ses lois d'inertie prouvées (verify-rondo) : le visuel les COPIE, il ne les
+      // ré-invente pas — un corps, une autorité, et le lissage est celui de la sim.
+      pl.ctrl.yaw = pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw));
+      pl.model.rotation.y = pl.ctrl.yaw;
+
+      // ---- LA COUCHE DE GESTE, après le mixer. Les poids restent les lois de composition :
+      // LE POIDS DES JAMBES = L'ARRIVÉE (corps posé : 1 − v/2,5 sur la vitesse sol MESURÉE — la
+      // chimère et le patin ont chacun leur loi) OU LE CONTACT QUI APPROCHE ((t/(antic·0,8))^1.5 —
+      // le dernier cinquième de l'armé appartient au plant, entièrement) ; le HAUT s'arme tout de
+      // suite (les bras portent l'anticipation pendant les derniers pas). L'horloge : act.t quand
+      // la sim porte le geste ; l'horloge locale pour les gestes réactifs (contrôles rapportés).
+      // Après la fin du geste, la couche REND les membres en fondu court — pas d'évaporation.
+      if (pl.gestureLayer.active) {
+        const act = pl.sim.act;
+        const v = pl.ctrl.groundSpeed ?? 0;
+        const meta = pl._layerClock ?? { t0: this._t, offset: 0, dur: 0.6, antic: 0.2 };
+        const t = act ? act.t : (this._t - meta.t0 + meta.offset);
+        const antic = act?.anticipation || meta.antic || 0.2;
+        const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
+        const byContact = Math.min(1, Math.pow(t / Math.max(1e-4, antic * 0.8), 1.5));
+        const done = act ? false : t >= meta.dur;
+        const target = done ? 0 : Math.max(byArrive, byContact);
+        pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, step / 0.05);
+        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - step / 0.12) : 1;
+        pl.gestureLayer.apply(t, pl._wLegs, pl._wUp);
+        if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
+      } else { pl._wLegs = 0; pl._wUp = 1; }
+      // l'autorité de la jambe frappeuse — après la couche, en dernier
+      this._applyStrikeWarp(pl);
     }
 
     // ---- the ball, spun by its own angular velocity

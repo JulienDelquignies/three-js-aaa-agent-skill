@@ -18,7 +18,9 @@ const _q = new THREE.Quaternion(), _wq = new THREE.Quaternion(), _pw = new THREE
 // Rotate `bone` (in world space) so that its `child` joint aims from the bone toward `worldTarget`.
 // Axis-agnostic: it measures the current world aim and rotates it onto the desired aim, so it works
 // for any rig's local bone orientation. Caller must updateMatrixWorld after.
-function aimChildAt(bone, child, worldTarget) {
+// Exported: strike-warp (the gesture-window leg authority) applies its IK with the SAME primitive —
+// one way to pose a leg in this engine, not two.
+export function aimChildAt(bone, child, worldTarget) {
   bone.getWorldPosition(_hip); child.getWorldPosition(_knee);
   _cur.copy(_knee).sub(_hip); _des.copy(worldTarget).sub(_hip);
   if (_cur.lengthSq() < 1e-10 || _des.lengthSq() < 1e-10) return;

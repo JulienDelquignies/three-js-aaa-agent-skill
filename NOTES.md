@@ -1130,6 +1130,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    derrière le ballon — une option qui n'existe pas). Reste ouvert : le warp composé du pied
    (min pied→frappe 0,19–0,56 m selon l'épisode — le clip est calé, l'alignement monde pas encore).
 
+17. **La rencontre du pied et du ballon — et le bug le plus profond du dépôt (loi 12).** Parti pour
+   fermer « pied ≤ 0,35 m du ballon au contact composé », le warp de frappe (strike-warp.js —
+   enveloppe C¹ à pente NULLE au contact : position corrigée, vitesse du banc intacte ; borné à
+   refus nommés ; standoff ; gel au tir) a servi de révélateur : son registre de refus plein
+   (`warp-hors-borne` permanent) a déroulé QUATRE bugs empilés. (1) Le probe statique du point de
+   contact mesurait une ombre (loi 8, encore) → calibration EN LIGNE sur le jeu composé (le mixer
+   ré-écrit la pose chaque image : le pied lu avant IK est déjà non-warpé). (2) Le LACET visuel
+   restait à 110° du yaw sim au contact d'un pivot (facing dérivé d'une vitesse nulle) → position
+   ET lacet snappés à la sim. (3) Les deltas ADDITIFS étaient conjugués sur l'idle retargeté —
+   20°/32°/43° d'écart au rest par os — le plan du balayage pivotait d'autant → LA COUCHE DE GESTE
+   (gesture-layer.js) : pose absolue `rest ⊗ q_spec(0)⁻¹ ⊗ q_spec(t)` par membre, après le mixer ;
+   clause reine : quatre bases très différentes ⇒ même pose au contact, 0,0000°. (4) Le repère
+   propre a mis à nu le vrai fond : TOUTES les frappes balayaient VERS L'ARRIÈRE (passe : −0,46 m
+   d'avant au contact ; la talonnade, seul geste censé aller derrière : 0,00) — la sonde
+   articulaire (FK nue, une rotation à la fois) dit flexion de hanche = +x et genou = −x sur ce
+   rig, l'inverse de la croyance des specs pour LES DEUX. Aucune clause en amplitude ne pouvait le
+   voir ; l'utilisateur l'a vu : « beaucoup de talonnade » — littéral. Flip mécanique des 170 clés,
+   bornes de charnière re-signées, clauses de DIRECTION au banc (v_avant ≥ 60 % de v_contact ;
+   talonnade ≤ −60 %). Puis la table des STANCES, écrite à la main, divergeait de 0,10–0,45 m des
+   clips → DÉRIVÉE par FK (S = pied_contact + standoff·direction) + clause de concordance.
+   Résultat composé (audit-membres 16/0) : frappe à **17,0 m/s** au contact (fourchette réelle
+   15–25, première fois), pied→frappe 0,19–0,30 m, surface laces/laces concordante à 29°.
+   final8 : 8,1 = parité exacte. Nouveaux harnais : verify-gesture-layer (10, sabotage = le bug
+   reconstitué à 43°), verify-strike-warp (23, mini-monde composé), verify-swing 71 → 90 (12
+   clauses de direction + 7 de concordance). Restent au registre : bras > cou 32-36 % sur deux
+   épisodes (la couche a changé la composition des bras — prochain lot), premier geste par
+   clip × pied non calibré (mesure seule, par construction).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
