@@ -115,7 +115,7 @@ function beginPass(st, choice, cfg, opts = {}) {
     anchor = anchorFor(bref, outYaw, pick.foot, stance);
     c.anchorHint = { p: anchor.p, t: st.t };
     // borné même en urgence : l'inatteignable reste un téléport déguisé, donc refusé
-    if (!reachable([c.p[0], c.p[2]], anchor, move.contact, { adjustSpeed: 4.5, hardMax: 1.1 })) {
+    if (!reachable([c.p[0], c.p[2]], anchor, move.contact, { adjustSpeed: 4.5, hardMax: 0.75 })) {
       st._denyD?.push(Math.hypot(anchor.p[0] - c.p[0], anchor.p[1] - c.p[2]));
       return deny(st, 'ancre');
     }
@@ -539,6 +539,17 @@ export function rondoStep(st, dt, cfg = RONDO) {
 
     trySlide(st, cfg);                       // a touch that got away can be taken off him
     if (st.phase !== 'carry') return st;      // …and if it was, the phase has already changed
+    // UN BALLON AU-DELÀ DE LA PORTÉE DE CONDUITE N'EST PLUS PORTÉ — IL EST LIBRE, ET LA PHASE LE
+    // DIT. Mesuré (carry-reach 1,2 % → 19,1 %) : après un tacle glissé perdu ou un renversement,
+    // le « porteur » est AU SOL avec le ballon à 3 m ; la phase disait encore carry, or le vol de
+    // balle exige la proximité du PORTEUR — le défenseur garé sur le ballon ne pouvait pas le
+    // réclamer, et l'impasse durait des secondes, étiquetée possession. Le seuil est CELUI DE LA
+    // RÈGLE (carryMax) : au-delà, l'étiquette est fausse — c'est un 50/50, la phase libre applique
+    // le premier-arrivé et l'impasse se dissout.
+    if (d2(c.p, st.ball.p) > cfg.carryLoose) {
+      st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+      return st;
+    }
     st.hold += dt;
     // pressure: a defender in the tackle zone long enough wins it
     // A tackle needs the defender ON the carrier. Requiring him to also get NEARER THE BALL than the

@@ -1045,6 +1045,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    parties entières (chaotique), duel en poursuite (la borne ne mord jamais), défense d'oracles
    (1 passe/partie), « ballon posé » comme condition de l'assise qui le pose.
 
+13. **La passe d'audit refaite (« tout est encore incorrect ») — et le patin à glace.** L'utilisateur
+   avait raison : l'instrument durci (audit 60 Hz, approche incluse, métriques par membre) a montré
+   que seul le CORPS était juste (Hips↔sim ≤ 0,08 m). Le reste : appui en translation au sol 100 %
+   des images de l'armé (pic 7,5 m/s), corps déplacé à 5,2 m/s sur jambes d'idle forcé (le régime
+   anti-chimère de l'entrée 11 avait créé le patinage), appui EN L'AIR au contact (0,19-0,22 m),
+   mains composées au-dessus du cou 41 % (le contrat silhouette juge le clip seul — composé sur
+   l'idle il ment), pied de frappe à 1 m/s au contact. Trois lois moteur : (1) vitesse d'anim =
+   vitesse SOL MESURÉE, jamais un zéro forcé — le plant émerge de la mesure ; (2) geste SCINDÉ
+   haut/jambes (toClip {only}) — le haut s'arme pendant les pas, les jambes fondues par
+   max(1 − v/2,5, (t/antic)^1,5) car le dernier pas EST le plant ; (3) le glissement ne couvre que
+   les derniers décimètres (hardMax 0,6 ; 0,5 mesuré trop serré : la rampe d'amorti coûtait +0,17
+   de taux de perte — la marche TRAVERSE le point de plant, cible +0,35 m). Deux artefacts
+   d'instrument attrapés en route (tampon mélangeant deux porteurs au changement de possession :
+   « Hips à 1,22 m », « pied à 117 m/s » ; métrique de patinage comptant les pas normaux —
+   remplacée par la GLISSADE stance-aware : corps > 0,8 m/s sans qu'aucun pied ne décolle).
+   Résultat : audit-membres.mjs OFFICIEL 13✓/0✗ (glissade 0 fenêtre, appui posé 0,09-0,11 m,
+   genou 69-75°), possession à parité (record 7,5-8,8 / taux 0,59), suite node verte. Reste aux
+   CLIPS (chantier #18, chiffres imprimés en INFO à chaque exécution) : vitesse du pied au contact,
+   mains du passe composé, appui exact de l'exterieur.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

@@ -171,13 +171,18 @@ export class CharacterController {
     if (this._useFsm) {
       const vGait = Math.max(this.speed, this.groundSpeed ?? 0);
       if (this.gait) this.gait.advance(vGait, dt);                   // l'horloge unique tourne AVANT le mixer
-      // PENDANT UN GESTE, LA LOCOMOTION EST RAMENÉE À L'IDLE — pas coupée. Les trois compositions ont
-      // été vues à l'écran : delta additif sur jambes de course = aucun membre cohérent ; locomotion à
-      // zéro sous un clip absolu = personnage plié en deux (les quats absolus supposent un repos
-      // T-pose que ce rig retargeté n'a pas) ; delta additif sur IDLE = la pose authorée transportée
-      // par delta sur des jambes plantées, ce qui est aussi la vérité biomécanique d'une frappe. La
-      // vitesse d'animation est LISSÉE vers 0 (~80 ms) pour que le blend traverse walk sans échelon.
-      const vTarget = this.gestureHold ? 0 : vGait;
+      // PENDANT UN GESTE, LES JAMBES SUIVENT LE CORPS RÉEL — jamais un zéro forcé. L'idle forcé
+      // (vTarget = 0) a été mesuré à l'audit membre par membre : le glissement d'approche translate
+      // le corps jusqu'à 5,2 m/s pendant l'armé, et des jambes d'idle sous un corps qui se déplace,
+      // c'est du PATIN À GLACE — pied d'appui « au sol » en translation 100 % des images de l'armé,
+      // pics à 7,5 m/s. La cible est donc la vitesse SOL MESURÉE (groundSpeed, le déplacement réel
+      // du modèle) : les pas portent l'approche, et quand le glissement s'assied (ease-out → 0) les
+      // jambes s'arrêtent d'elles-mêmes — le plant émerge de la mesure, il n'est pas décrété.
+      // L'anti-chimère (delta de frappe sur jambes de course = aucun membre cohérent) n'est PAS
+      // cette ligne : il vit dans le POIDS des canaux jambes du geste, fondu par l'arrivée
+      // (Rondo : clip scindé haut/jambes — les bras s'arment pendant les pas, les jambes du geste
+      // ne prennent que quand le corps est posé).
+      const vTarget = this.gestureHold ? Math.min(this.groundSpeed ?? 0, vGait) : vGait;
       this._vAnim = (this._vAnim ?? vGait) + (vTarget - (this._vAnim ?? vGait)) * Math.min(1, dt / 0.08);
       this.anim.set('speed', this._vAnim).update(dt);                // Idle→Walk→Run blend, phase-locked
       this._applyGaitLayer(this._vAnim);

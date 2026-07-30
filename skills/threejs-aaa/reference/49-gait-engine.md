@@ -168,3 +168,33 @@ mais le RÉGIME DE COMPOSITION à l'exécution. Trois régimes essayés, chacun 
 Le foot-lock est coupé pendant le geste (l'IK n'a pas à disputer des jambes authorées), et la couche
 de foulée rend déjà le haut du corps (`gestureHold`). `toClip({ cover: true })` reste disponible et
 documenté pour les rigs NATIVEMENT à la convention animkit — il est faux sur un rig retargeté.
+
+
+## Post-scriptum mesuré : le régime « idle forcé » était un patin à glace
+
+L'audit membre par membre (l'instrument est désormais officiel : `scripts/audit-membres.mjs`) a
+mesuré ce que le régime « geste additif sur idle forcé » faisait au monde composé : le glissement
+d'approche translate le corps jusqu'à 5,2 m/s pendant l'armé, et sur des jambes d'idle c'est une
+GLISSADE — pied d'appui « au sol » en translation 100 % des images de l'armé, pics à 7,5 m/s. Le
+régime final a trois pièces, chacune une loi :
+
+1. **La vitesse d'animation suit le corps RÉEL** (`vTarget = min(groundSpeed, vGait)` pendant un
+   geste — jamais un zéro forcé) : les pas portent l'approche, et quand le glissement s'assied
+   (ease-out → 0) les jambes s'arrêtent d'elles-mêmes. Le plant émerge de la mesure.
+2. **Le geste est SCINDÉ en deux étages** (`toClip { only }`) : haut du corps (épaules → mains,
+   colonne, tête) à poids plein dès l'engagement — les bras s'arment pendant les pas — et JAMBES
+   fondues par `max(arrivée, approche du contact)` : `1 − v/2,5` d'un côté, `(t/antic)^1,5` de
+   l'autre, parce que le dernier pas EST le plant (sans le second terme, l'ease-out gardait la
+   vitesse au-dessus du seuil presque tout l'armé des gestes courts et l'appui restait à 0,4-0,7 m
+   de sa stance au contact).
+3. **Le glissement ne couvre que les derniers décimètres** (hardMax 0,6 — mesuré : 0,9 permettait
+   un sprint sous l'armé, 0,5 faisait ramper l'engagement derrière l'amorti d'arrivée, +0,17 de
+   taux de perte) — et la marche pilotée TRAVERSE le point de plant (cible décalée de 0,35 m) pour
+   que l'amorti générique ne morde pas avant l'arrivée.
+
+Résultat (audit-membres, 13 clauses) : GLISSADE 0 fenêtre sur tous les épisodes, modèle sur la sim
+(≤ 0,08 m), appui posé au contact (0,09-0,11 m), genou frappeur 69-75° d'amplitude. Les chiffres
+restants sont imprimés en INFO par l'instrument et appartiennent aux CLIPS (chantier « re-calage du
+swing ») : vitesse du pied au contact 1-1,8 m/s (réel : 15-25), mains du `passe` composé au-dessus
+du cou 41 % (le contrat silhouette juge le clip seul — composé sur l'idle, il ment : une ombre de
+plus au tableau de la loi 8), appui de l'exterieur à 0,71 m de sa stance.

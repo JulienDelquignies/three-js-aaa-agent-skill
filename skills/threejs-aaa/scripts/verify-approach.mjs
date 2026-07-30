@@ -86,7 +86,9 @@ console.log('\n— atteignable : une borne de vitesse humaine, pas un vœu —')
   ok('une ancre à 2 m en 0,38 s est REFUSÉE (téléport déguisé)', !reachable([0, 0], { p: [2.0, 0] }, 0.38));
   ok('une ancre à 0,5 m en 0,38 s est ACCEPTÉE (le jeu peut frapper)', reachable([0, 0], { p: [0.5, 0] }, 0.38));
   ok('l’anticipation compte : la même ancre passe avec plus de temps',
-    !reachable([0, 0], { p: [0.8, 0] }, 0.1) && reachable([0, 0], { p: [0.8, 0] }, 0.4));
+    !reachable([0, 0], { p: [0.45, 0] }, 0.1) && reachable([0, 0], { p: [0.45, 0] }, 0.38));
+  ok('le glissement ne couvre JAMAIS plus que les derniers décimètres (hardMax ≤ 0,6 : à 0,8 m on marche d’abord)',
+    !reachable([0, 0], { p: [0.8, 0] }, 9));
 }
 
 console.log('\n— le PLAN : la stance propre quand on peut, l’improvisation quand il faut —');

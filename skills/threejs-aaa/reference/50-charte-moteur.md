@@ -143,8 +143,11 @@ mesuré, pas juste « ça n'a pas marché ».
 simulation :  assignJobs (décisions) → movePlayers (locomotion, sauf corps possédés par un geste)
               → stepGestures (horloges de geste : glissement borné, contact, frappe)
               → separatePlayers (projections du monde)  → phases du ballon (autorité exclusive)
-visuel    :  gait clock (φ unique) → mixer (clips asservis à φ) → couches corps-entier (gaitLayer)
-              → gestes additifs sur idle forcé (gestureHold) → verrous (footLock hors geste) → rendu
+visuel    :  gait clock (φ unique, vitesse SOL MESURÉE — jamais un zéro forcé) → mixer (clips
+              asservis à φ) → couches corps-entier (gaitLayer) → gestes additifs SCINDÉS
+              haut/jambes (le haut s'arme tout de suite ; les jambes fondues par max(arrivée,
+              approche du contact) — les bras s'arment pendant les pas, le plant émerge de la
+              mesure) → verrous (footLock hors geste) → rendu
 ```
 
 Le visuel LIT la simulation, ne la corrige jamais ; la simulation ne sait pas que le visuel existe.
@@ -160,4 +163,4 @@ pont, et il est en DONNÉES, pas en code.
 | 4-5 (refus, intention, plan) | approach.js (planStrike), rondo-sim.js (deny/intent) | verify-approach (21 clauses, oscillateur rejoué) |
 | 6 (courses) | ball-predict.js (flightRace), rondo.js (choosePass) | verify-ball-predict, verify-football-rules |
 | 7-9 (contrats, budgets) | football-rules.js (strike-stance, exemption bornée) | verify-football-rules (60 clauses, 2 sabotages neufs) |
-| 8 (monde composé) | scratchpad audit.mjs (l'instrument) | audit chiffré dans NOTES |
+| 8 (monde composé) | scripts/audit-membres.mjs (l'instrument OFFICIEL, verdicts + INFO clips) | 13 clauses vertes |

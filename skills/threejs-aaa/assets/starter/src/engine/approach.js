@@ -83,8 +83,15 @@ export function stanceOf(playerP, playerYaw, ball, foot) {
  * ATTEIGNABLE ? Les derniers décimètres se règlent pendant l'armé, pas les derniers mètres. La borne
  * est une vitesse d'ajustement humaine (des petits pas, pas un sprint) × la durée d'anticipation,
  * plafonnée : au-delà, l'engagement est un téléport déguisé et il est REFUSÉ.
+ * hardMax 0,9 → 0,6 : mesuré à l'audit membre par membre, un armé autorisé à couvrir ~1 m en
+ * 0,24 s translatait le corps à 5,2 m/s pendant le geste — un sprint sous un armé. Un joueur qui a
+ * un mètre à faire FAIT UN PAS (la marche pilotée par le refus l'amène — et elle TRAVERSE le point
+ * de plant, voir rondo.js), PUIS arme : le glissement règle les derniers décimètres (pic ≈ 3 m/s,
+ * une vraie fente d'ajustement — et les jambes MARCHENT dessous depuis le scindage haut/jambes,
+ * donc ces mètres-là sont des pas, pas une translation). 0,5 a aussi été mesuré : trop serré, la
+ * rampe d'arrivée faisait payer ~0,25 s par passe (taux de perte 0,58 → 0,75).
  */
-export function reachable(from, anchor, antic, { adjustSpeed = 3.0, hardMax = 0.9 } = {}) {
+export function reachable(from, anchor, antic, { adjustSpeed = 3.0, hardMax = 0.6 } = {}) {
   const d = Math.hypot(anchor.p[0] - from[0], anchor.p[1] - from[1]);
   return d <= Math.min(hardMax, adjustSpeed * Math.max(0.05, antic));
 }
@@ -131,7 +138,7 @@ export function glide(from, fromYaw, anchor, t01) {
  *          encore atteignable (un refus pilote l'approche, il ne laisse pas le corps sans cap).
  */
 export function planStrike(playerP, ball, outYaw, candidates, {
-  stances = STANCES, adjustSpeed = 3.6, hardMax = 0.9,
+  stances = STANCES, adjustSpeed = 3.6, hardMax = 0.6,
   rushed = false, rushedSlack = 0.25, farCost = 0.35, extraReach = 0,
 } = {}) {
   const all = [];

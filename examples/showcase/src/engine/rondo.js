@@ -90,6 +90,7 @@ export const RONDO = {
   // vit à moins d'un mètre du ballon.
   contestRadius: 0.9,      // m — portée de jeu (= playable de la règle)
   contestSlack: 0.35,      // m — l'écart de tolérance (= ownSlack de la règle)
+  carryLoose: 3.0,         // m — au-delà, le ballon n'est PLUS porté : phase libre (= carryMax de la règle)
   rushedSlack: 0.5,        // …but only among options within this much of the best-scoring one
   windupCarve: 1,          // how much of it is taken OUT of the hold rather than added after it (0..1)
   // A TURN TAKES TIME. Bounded at turnAccel/speed rad/s like everything else that rotates here, with
@@ -395,6 +396,20 @@ export function assignJobs(st, cfg = RONDO) {
         // choisi sa passe marche sur sa position de frappe ; l'évasion reprend si l'intention expire.
         if (p.anchorHint && st.t - p.anchorHint.t < 0.4) {
           let tx = p.anchorHint.p[0], tz = p.anchorHint.p[1];
+          // …ET ON MARCHE À TRAVERS LE POINT, PAS JUSQU'À LUI. L'amorti d'arrivée de movePlayers
+          // (s = d·2,6) fait ramper les derniers décimètres — mesuré : borner le glissement à
+          // 0,5 m a fait payer chaque passe ~0,25 s de rampe (taux de perte 0,58 → 0,75). Un
+          // joueur qui va planter son appui traverse le point à vitesse de pas : la cible de
+          // MARCHE dépasse l'ancre de 0,35 m dans la direction du chemin, et c'est l'engagement
+          // (reachable ≤ 0,5) puis le glissement qui règlent l'arrêt — pas l'amorti générique.
+          // …mais SEULEMENT TANT QU'ON EST LOIN (> 0,5 m) : en deçà, l'engagement (reachable ≤ 0,6)
+          // a déjà la main et viser au-delà de l'ancre ne fait que la TRAVERSER — mesuré : le
+          // receveur en livraison finissait 0,35 m PASSÉ son point d'assise (control-at-foot
+          // 2,9 % → 5,9 %) et le segment rasait le ballon (not-inside-a-body 4,9 %).
+          {
+            const ax = tx - p.p[0], az = tz - p.p[2], al = Math.hypot(ax, az);
+            if (al > 0.5) { tx += (ax / al) * 0.35; tz += (az / al) * 0.35; }
+          }
           // …EN CONTOURNANT SON BALLON : l'ancre est souvent de l'autre côté de lui, et la droite
           // du pas le traverse (not-inside-a-body l'a compté). Si le segment corps→ancre passe dans
           // le cercle du ballon, on vise un point de PASSAGE décalé perpendiculairement — le détour

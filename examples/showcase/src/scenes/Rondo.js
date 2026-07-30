@@ -179,16 +179,23 @@ export class Rondo {
     for (const pl of this.players) {
       if (this.gest.has(pl.rig)) continue;
       const set = {};
+      // LE GESTE EST SCINDÉ EN DEUX ÉTAGES, parce que les deux moitiés du corps ne rejoignent pas le
+      // geste au même moment. L'audit membre par membre l'a mesuré : pendant l'approche, le corps se
+      // déplace (le glissement) — si les JAMBES du geste prennent tout de suite, c'est le delta de
+      // frappe sur des jambes qui marchent (la chimère, déjà vue) ; si on force l'idle, c'est du
+      // patin à glace (appui en translation 100 % des images de l'armé, pics 7,5 m/s — vu aussi).
+      // La vérité du footballeur : LES BRAS S'ARMENT PENDANT LES PAS, les jambes du geste ne
+      // prennent que quand le corps est POSÉ. Donc deux clips par geste (toClip { only }), deux
+      // poids : le haut à 1 dès l'engagement, les jambes fondues par l'ARRIVÉE (poids = 1 − v/vRef,
+      // recalculé chaque image dans update — la locomotion, pilotée par la vitesse sol MESURÉE,
+      // continue de faire marcher les jambes tant que le corps bouge).
+      const UP = /Shoulder|Arm|ForeArm|Hand|Spine|Neck|Head/;
+      const LEGS = /Hips|UpLeg|Leg|Foot|ToeBase/;
       for (const id of MOVE_IDS) {
-        // ADDITIF, posé sur L'IDLE FORCÉ (voir character-controller) : pendant un geste, la locomotion
-        // est ramenée à l'ancre idle — un clip RETARGETÉ, donc juste pour ce rig — et le delta du geste
-        // s'ajoute par-dessus des jambes immobiles : la somme est la pose authorée, transportée par
-        // delta. Les deux autres voies ont été essayées et vues à l'écran : additif sur jambes de
-        // course = « jambe de marche + delta de frappe », aucun membre cohérent ; clip ABSOLU plein
-        // corps = personnage plié en deux, parce que les quats absolus d'animkit supposent un repos en
-        // T-pose que ce rig retargeté n'a pas (la règle était écrite dans animkit-builder : un clip ne
-        // se transporte pas de bind en bind — elle vaut dans les deux sens).
-        set[id] = { right: toClip(MOVES[id], pl.model), left: toClip(mirrorMove(MOVES[id]), pl.model) };
+        set[id] = {
+          right: { up: toClip(MOVES[id], pl.model, { only: UP }), legs: toClip(MOVES[id], pl.model, { only: LEGS }) },
+          left: { up: toClip(mirrorMove(MOVES[id]), pl.model, { only: UP }), legs: toClip(mirrorMove(MOVES[id]), pl.model, { only: LEGS }) },
+        };
       }
       this.gest.set(pl.rig, set);
     }
@@ -255,8 +262,15 @@ export class Rondo {
     // session sans qu'aucun contrat ne bronche : le jeu affichait quelque chose de plausible. Un repli
     // qui se tait est pire qu'une erreur.
     const pair = set[move] || (this._reports.gestes.push(`clip absent : ${move}`), set.passe);
-    const clip = e.foot === 'left' ? pair.left : pair.right;
-    if (clip) playGesture(pl.mixer, clip, { from: from === 'contact' ? (clip.userData?.contact ?? 0) : 0, fade: 0.06 });
+    const duo = e.foot === 'left' ? pair.left : pair.right;
+    if (!duo) return;
+    // deux étages, deux actions : le HAUT s'arme tout de suite (les bras portent l'anticipation
+    // pendant les derniers pas) ; les JAMBES du geste démarrent à poids nul et sont fondues par
+    // l'ARRIVÉE dans update() — tant que le corps se déplace, ce sont les jambes de la locomotion
+    // (vitesse sol mesurée) qui marchent, et le plant émerge quand le glissement s'assied.
+    const f = (c) => (from === 'contact' ? (c.userData?.contact ?? 0) : 0);
+    playGesture(pl.mixer, duo.up, { from: f(duo.up), fade: 0.06 });
+    pl.gestureLegs = duo.legs ? playGesture(pl.mixer, duo.legs, { from: f(duo.legs), fade: 0.06, weight: 0 }) : null;
   }
 
   /** The broadcast camera: it TRACKS the ball with lag and a touch of overshoot, the way a real
@@ -306,7 +320,30 @@ export class Rondo {
     }
 
     // le haut du corps appartient au geste pendant qu'un geste tourne (voir _applyGaitLayer)
-    for (const pl of this.players) pl.ctrl.gestureHold = !!pl.sim.act;
+    for (const pl of this.players) {
+      pl.ctrl.gestureHold = !!pl.sim.act;
+      // LE POIDS DES JAMBES DU GESTE = L'ARRIVÉE. Mesuré à l'audit : le corps se déplace jusqu'à
+      // 5,2 m/s pendant l'armé (le glissement d'approche) — des jambes de geste à poids plein
+      // là-dessus, c'est la chimère ; l'idle forcé, c'est le patin. Le fondu suit la vitesse sol
+      // MESURÉE : au-dessus de 1,5 m/s le geste n'a pas les jambes (la locomotion marche), posé
+      // (→ 0 m/s) il les a pleines — le plant émerge de la mesure. Lissé pour ne pas pomper.
+      if (pl.gestureLegs) {
+        if (!pl.gestureLegs.isRunning()) { pl.gestureLegs = null; continue; }
+        const v = pl.ctrl.groundSpeed ?? 0;
+        // deux raisons de donner les jambes au geste, la PLUS FORTE gagne :
+        //   — le corps est posé (1 − v/2,5 : la marche a fini son travail) ;
+        //   — le CONTACT approche ((t/antic)^1.5 : le dernier pas EST le plant — sans ce terme,
+        //     l'ease-out du glissement gardait v > seuil presque tout l'armé des gestes courts et
+        //     le poids plafonnait à ~0,5 au contact : l'appui mesuré à 0,41–0,67 m du ballon au
+        //     lieu des ~0,30 de la stance).
+        const act = pl.sim.act;
+        const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
+        const byContact = act && act.anticipation ? Math.min(1, Math.pow(act.t / act.anticipation, 1.5)) : 0;
+        const target = Math.max(byArrive, byContact);
+        const w = pl.gestureLegs.getEffectiveWeight();
+        pl.gestureLegs.setEffectiveWeight(w + (target - w) * Math.min(1, dt / 0.05));
+      }
+    }
 
     // ---- dress the simulation: the sim owns positions, the controller owns the locomotion state
     const top = RONDO.speeds.chase;

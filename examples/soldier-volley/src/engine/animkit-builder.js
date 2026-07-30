@@ -12,12 +12,17 @@ export function resolveBoneNames(model) {
 
 /** Build an AnimationClip from an animkit spec against a model's rig.
  *  { additive: false } keeps the clip ABSOLUTE — the form to feed rig-retarget (retarget first,
- *  makeClipAdditive after: an additive delta clip cannot be transported bind-to-bind). */
-export function toClip(spec, model, { additive = true, cover = false } = {}) {
+ *  makeClipAdditive after: an additive delta clip cannot be transported bind-to-bind).
+ *  { only: RegExp } ne garde que les canaux dont le nom CANONIQUE matche — c'est le SCINDAGE d'un
+ *  geste en étages (haut du corps / jambes) pour que chaque étage ait son propre poids au mixer :
+ *  les bras s'arment pendant les pas de l'approche, les jambes du geste ne prennent le relais que
+ *  quand le corps est posé. Un seul clip ne peut pas faire ça — un AnimationAction n'a qu'un poids. */
+export function toClip(spec, model, { additive = true, cover = false, only = null } = {}) {
   const find = resolveBoneNames(model);
   const r = resolveTracks(spec);
   const tracks = [];
   for (const [bone, keys] of Object.entries(r.tracks)) {
+    if (only && !only.test(bone)) continue;
     const name = find(bone);
     if (!name) continue;
     const times = new Float32Array(keys.map((k) => k.t));
@@ -34,7 +39,7 @@ export function toClip(spec, model, { additive = true, cover = false } = {}) {
   if (cover) {
     const covered = new Set(Object.keys(r.tracks));
     for (const bone of MIXAMO_BONES) {
-      if (covered.has(bone)) continue;
+      if (covered.has(bone) || (only && !only.test(bone))) continue;
       const name = find(bone);
       if (!name) continue;
       const q = eulerToQuat(BASE_POSE[bone] || [0, 0, 0]);
@@ -46,7 +51,7 @@ export function toClip(spec, model, { additive = true, cover = false } = {}) {
   // live, the hips' parent world basis had scaleY 0 (local Y points HORIZONTAL). So each delta goes
   // character-space → world (the model's root basis, forward = −Z on this rig) → hips-parent local
   // (inverse parent basis — which absorbs both the rotation and the cm scale) before keying.
-  if (r.hipsPos) {
+  if (r.hipsPos && (!only || only.test('Hips'))) {
     const hipsName = find('Hips');
     let hipsBone = null; model.traverse((o) => { if (o.isBone && o.name === hipsName && !hipsBone) hipsBone = o; });
     if (hipsBone) {
@@ -88,7 +93,10 @@ export function playGesture(mixer, clip, { fade = 0.18, weight = 1, from = 0 } =
   // move's own contact time costs the backswing and buys correct contact: the boot is ON the ball at
   // the frame it goes, and the follow-through plays out after.
   if (from > 0) action.time = Math.min(from, clip.duration - 1e-3);
-  action.fadeIn(fade).play();
+  // un étage démarré à poids nul (les JAMBES d'un geste scindé, fondues par l'arrivée) ne doit pas
+  // être écrasé par le fondu d'entrée : fadeIn programme 0 → 1 quel que soit le poids demandé
+  if (weight >= 1) action.fadeIn(fade);
+  action.play();
   if (!clip.userData?.loop) {
     const onDone = (e) => { if (e.action === action) { action.fadeOut(fade); mixer.removeEventListener('finished', onDone); } };
     mixer.addEventListener('finished', onDone);
