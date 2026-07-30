@@ -112,11 +112,19 @@ console.log('\n— le PLAN : la stance propre quand on peut, l’improvisation q
     ((mid.best ?? mid.steer)?.clip) !== 'talonnade');
   ok('…et le cap (steer) est TOUJOURS donné, même sans stance atteignable — un refus pilote l’approche',
     !!planStrike([9, 9], ball, outYaw, cands).steer);
-  // pressé : parmi les stances atteignables et bonnes, la plus PROMPTE gagne
+  // pressé : parmi les stances ATTEIGNABLES et bonnes, la plus prompte gagne. Le min se calcule
+  // sur les ancres qu'on peut rejoindre — depuis l'ancre de la passe, celle de la talonnade
+  // (antic 0,19 s, DERRIÈRE le ballon) est hors de portée : un min global sur la table mesure une
+  // option qui n'existe pas dans le monde composé, pas le choix du joueur.
   const rush = planStrike(aP.p, ball, outYaw, cands, { rushed: true, rushedSlack: 99 });
-  const fastest = Math.min(...cands.map((c) => c.antic));
-  ok(`pressé (marge infinie) : le plan prend l'anticipation la plus courte (${rush.best?.antic}s = min ${fastest}s)`,
+  const fastest = Math.min(...cands
+    .filter((c) => ['right', 'left'].some((f) =>
+      reachable(aP.p, anchorFor(ball, outYaw, f, STANCES[c.clip]), c.antic, { adjustSpeed: 3.6, hardMax: 0.6 })))
+    .map((c) => c.antic));
+  ok(`pressé (marge infinie) : le plan prend la plus prompte DES ATTEIGNABLES (${rush.best?.antic}s = min ${fastest}s)`,
     rush.best?.antic === fastest);
+  ok(`  …et la plus prompte tout court (${Math.min(...cands.map((c) => c.antic))}s, talonnade) reste HORS plan : son ancre est derrière le ballon`,
+    rush.best?.clip !== 'talonnade' && Math.min(...cands.map((c) => c.antic)) < fastest);
   // la marche acquise pendant une livraison élargit l'atteignable, jamais la borne du glissement
   const far = [ball[0] - Math.cos(outYaw) * 2.0, ball[1] - Math.sin(outYaw) * 2.0];
   ok('extraReach : une ancre hors d’atteinte devient planifiable avec la marche de la livraison',

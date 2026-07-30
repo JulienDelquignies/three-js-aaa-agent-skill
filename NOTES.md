@@ -1107,6 +1107,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    clauses (cycle possess/release, convergence continue, plafond qui mord, frappe/remise libèrent,
    sabotage cause-inventée-au-registre).
 
+16. **Le swing s'authore contre une loi : le contact se TRAVERSE.** Banc `verify-swing.mjs` — FK
+   node pur sur shanon.glb brut, slerp 240 Hz, et le piège d'instrument (loi 8, encore) : il
+   REMPLAÇAIT les rotations des nœuds par les quats de la spec, alors que le jeu joue des DELTAS
+   ADDITIFS (`q_rest ⊗ q_spec(0)⁻¹ ⊗ q_spec(t)`) — la cuisse au repos porte ~180° de Z, le banc
+   mesurait des frappes à 1,40 m de haut. Corrigé, il a condamné les clips livrés : la clé de
+   contact était un EXTREMUM (le pied s'y gare puis recule — vitesse au contact ≈ 0 par différence
+   centrée, la « caresse » que l'utilisateur voyait). La loi d'authoring qui en sort, appliquée aux
+   7 frappes × 2 pieds : segment d'approche rapide (400–1 000 °/s de cuisse), clé de contact POSÉE
+   sur l'instant déclaré (les deux contrats se rejoignent), clé d'OVERSHOOT qui continue au même
+   rythme (~25–40° de plus), récupération plus lente que la frappe (le pic reste SUR le contact).
+   Sur ce gabarit : passe 10,9 m/s, passeRapide 10,8, frappe 12,7, talonnade 6,4 (clé insérée SUR
+   la trajectoire interpolée : les vitesses ne bougent pas, le contact devient une pose écrite),
+   passeExterieur 0,9 → 8,4, passePivot 0,3 → 8,5 (la jambe ATTEND que le bassin tourne, puis
+   balaie 46° en 80 ms). Exception assumée : la déviation ne frappe pas, elle PRÉSENTE la surface
+   (seuil 2 m/s — exiger 8 d'une remise en ferait une passe déguisée). Cheville : +x = dorsiflexion
+   sur ce rig (mesuré, −18° empirait l'axe des orteils). Contrôles : excursion 33–40 cm, retour
+   ≤ 1 cm, les deux pieds. Composé (audit-membres 13/0) : surface déclarée inside / réalisée inside
+   à 133° côté médial, pied à 13,0 m/s au contact — le clip traverse jusqu'au monde rendu. Une
+   clause d'approche re-jugée par le monde composé : « pressé prend la plus prompte » se mesure sur
+   les ancres ATTEIGNABLES (le min global comptait la talonnade re-timée à 0,19 s dont l'ancre est
+   derrière le ballon — une option qui n'existe pas). Reste ouvert : le warp composé du pied
+   (min pied→frappe 0,19–0,56 m selon l'épisode — le clip est calé, l'alignement monde pas encore).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
