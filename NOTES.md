@@ -1087,6 +1087,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    contact »). Budget control-at-foot 6 → 9 (p99 : processus multi-graines 3,4 %, mene 0,65
    re-balayee optimale ; une queue d'UNE graine ne rougit pas le harnais, une derive si).
 
+15. **LE PORTÉ — la possession devient un régime du moteur (loi 11).** Idée utilisateur validée et
+   construite : « la physique de balle et le joueur en possession ne doivent faire qu'un ; c'est aux
+   tacles et duels que ça évolue ». ball-body : possess(owner)/carry(point,dt)/release(cause) —
+   servo de position PAR l'intégrateur (tau 0,04, vMax 9 : continu, borné, l'audit par sous-pas ne
+   voit AUCUNE brèche), sorties à cause nommée (RELEASES : frappe/touche/conduite/contesté/perte/
+   sortie/arrêt-de-jeu, registre lu par le contrat). Câblage : CAPTURE au contrôle (amorti +
+   possess — solveGroundLeg et toute la machinerie de livraison meurent), porté au point du pied
+   pendant l'intention, au POINT DE STANCE pendant l'armé (couple soudé par construction), release
+   vers la conduite (touches réelles, ballon libre interceptable) et vers le duel (contesté).
+   Résultats : **control-at-foot 3-9 % → 0,0 %** (6 graines — la dette de quatre correctifs meurt
+   par construction), record 8,8 (meilleure mesure du dépôt), un épisode d'audit au pied à
+   15,4 m/s au contact. Deux pièges mesurés en route : (1) l'ancre d'un ballon porté MARCHE avec le
+   porteur — la borne des ballons libres devenait un mur (6 495 refus, couple traîné hors du
+   carré) : porté, la stance se rejoint en ARRANGEANT LE COUPLE, la borne change de nature avec le
+   régime ; (2) la mesure d'assise doit suivre la possession — un ballon frappé avant la fin de la
+   fenêtre du contrôle est un une-touche jugé par strike-stance, pas un contrôle mort à 1,29 m
+   (l'ancienne mesure l'a compté tel quel : 36 % de fausses violations). verify-ball-body : 37 → 52
+   clauses (cycle possess/release, convergence continue, plafond qui mord, frappe/remise libèrent,
+   sabotage cause-inventée-au-registre).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

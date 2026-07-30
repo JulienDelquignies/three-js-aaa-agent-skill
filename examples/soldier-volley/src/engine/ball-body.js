@@ -40,6 +40,11 @@ export const CONTINUITY_SLACK = 1.35;
  *  demande d'y penser, ce qui est exactement le point. */
 export const RESTARTS = new Set(['sortie-de-but', 'coup-franc', 'touche', 'corner', 'engagement', 'penalty']);
 
+/** Les seules façons de PERDRE le ballon quand on le porte. Même loi que RESTARTS et que les
+ *  interruptions de geste : une sortie de possession se NOMME, sinon la perte silencieuse redevient
+ *  le chemin normal — c'est la possession-étiquette qu'on vient d'enterrer. */
+export const RELEASES = new Set(['frappe', 'touche', 'conduite', 'contesté', 'perte', 'sortie', 'arrêt-de-jeu']);
+
 /**
  * L'AUDIT, en fonction PURE — donc sabotable directement, ce qui est la seule façon de prouver qu'il
  * mord. Un sabotage qui injecte une ligne dans le registre prouve que le vérificateur sait lire un
@@ -64,11 +69,67 @@ const frozen = (arr, name) => new Proxy(arr, {
 export class BallBody {
   #s;
   #view;
+  #owner;
   constructor(p = [0, BALL.radius, 0], v = [0, 0, 0], w = [0, 0, 0]) {
     this.#s = { p: [...p], v: [...v], w: [...w] };
     this.#view = { p: frozen(this.#s.p, 'p'), v: frozen(this.#s.v, 'v'), w: frozen(this.#s.w, 'w') };
+    this.#owner = null;
     // LE REGISTRE. Ce que le corps a vécu, pour que le contrat lise des faits et non un échantillon.
-    this.ledger = { steps: 0, breaches: [], restarts: [], worst: 0 };
+    this.ledger = { steps: 0, breaches: [], restarts: [], worst: 0, possessions: 0, releases: [] };
+  }
+
+  /** Qui porte le ballon — `null` : personne, il est LIBRE (physique pure). Lecture seule : la
+   *  possession change par possess()/release(cause), jamais par affectation. */
+  get owner() { return this.#owner; }
+
+  /**
+   * LA CAPTURE : la possession devient un ÉTAT DU MOTEUR, pas une étiquette déduite (« c'est lui le
+   * plus près »). Toute la famille de bugs de la négociation — la touche de conduite qui repousse
+   * une livraison arrivée, l'assise qui tue un contrôle en route, control-at-foot à 33 % — venait
+   * d'un ballon qui n'appartenait jamais à personne. Un seul porteur à la fois : capturer un ballon
+   * porté par un AUTRE est un vol de balle, et un vol de balle passe par release('perte'|'contesté')
+   * d'abord — le duel est un événement du jeu, pas une écrasure silencieuse d'état.
+   */
+  possess(owner) {
+    if (owner == null) throw new Error('ballon : possess() sans porteur. La possession a un propriétaire, sinon c\'est l\'étiquette d\'avant.');
+    if (this.#owner != null && this.#owner !== owner) {
+      throw new Error(`ballon : possess(${owner}) alors que ${this.#owner} le porte. Un vol de balle se DÉCLARE : release('perte'|'contesté') d'abord — le duel est un événement, pas une écrasure.`);
+    }
+    if (this.#owner == null) this.ledger.possessions++;
+    this.#owner = owner;
+    return this;
+  }
+
+  /** LA SORTIE DE POSSESSION — à cause nommée, comme les remises en jeu et les gestes avortés. */
+  release(cause) {
+    if (this.#owner == null) return this;                       // déjà libre : sans effet
+    if (!cause) throw new Error('ballon : release() sans cause. Une perte de ballon se nomme — sinon la perte silencieuse redevient le chemin normal.');
+    if (!RELEASES.has(cause)) throw new Error(`ballon : cause de sortie de possession inconnue « ${cause} » (connues : ${[...RELEASES].join(', ')})`);
+    this.ledger.releases.push({ cause, by: this.#owner });
+    this.#owner = null;
+    return this;
+  }
+
+  /**
+   * LE PORTÉ : le ballon converge vers le point que le geste définit (le pied du contrôle, le point
+   * de stance de l'armé) — PAR l'intégrateur, jamais par écriture. C'est un servo de position :
+   * la vitesse désirée vise le point ((cible − p)/tau, PLAFONNÉE — un ballon porté va à la vitesse
+   * d'un pied, pas d'un vœu), la vitesse réelle s'y relaxe, et integrate() déplace. Continu par
+   * construction : l'audit de continuité tourne à chaque sous-pas comme pour tout le reste, et le
+   * plafond rend la clause structurelle. Réservé au porteur : porter un ballon libre est le retour
+   * de l'advection fantôme, donc c'est une erreur, pas un comportement.
+   */
+  carry(point, dt, { tau = 0.04, vMax = 9 } = {}) {
+    if (this.#owner == null) throw new Error('ballon : carry() sur un ballon LIBRE. Le porté appartient à un porteur — possess(owner) d\'abord.');
+    const s = this.#s;
+    let dx = (point[0] - s.p[0]) / Math.max(1e-3, tau);
+    let dz = (point[1] - s.p[2]) / Math.max(1e-3, tau);
+    const m = Math.hypot(dx, dz);
+    if (m > vMax) { dx *= vMax / m; dz *= vMax / m; }
+    const a = 1 - Math.exp(-dt / Math.max(1e-4, tau));
+    s.v[0] += (dx - s.v[0]) * a;
+    s.v[2] += (dz - s.v[2]) * a;
+    return this.integrate(dt);
   }
 
   // Lectures : des vues gelées. Tout le code existant (`b.p[0]`, `Math.hypot(...b.p)`, `[...b.p]`,
@@ -126,6 +187,7 @@ export class BallBody {
    * frapper (13 fois, jusqu'à 1,36 m de chute instantanée). On frappe le ballon LÀ OÙ IL EST.
    */
   strike({ speed, dirYaw, elevation, spinAxis = [0, 1, 0], spinRev = 0 }) {
+    this.release('frappe');                                     // une frappe LIBÈRE : le vol est physique
     const k = kick([...this.#s.p], { speed, dirYaw, elevation, spinAxis, spinRev });
     const s = this.#s;
     s.v[0] = k.v[0]; s.v[1] = k.v[1]; s.v[2] = k.v[2];
@@ -169,6 +231,7 @@ export class BallBody {
    * exceptionnel doit se déclarer, sinon ça redevient le chemin normal sous un autre nom.
    */
   restart(to, { cause } = {}) {
+    this.release('arrêt-de-jeu');                               // un ballon remis en jeu n'est porté par personne
     if (!cause) throw new Error('ballon : restart() sans cause. Une remise en jeu se justifie — sinon c\'est un téléport.');
     if (!RESTARTS.has(cause)) throw new Error(`ballon : cause de remise en jeu inconnue « ${cause} » (connues : ${[...RESTARTS].join(', ')})`);
     const s = this.#s;
@@ -200,8 +263,13 @@ export function checkBallBody(body, { restartMax = 30, restartsPerMin = 6, minut
     if (!RESTARTS.has(r.cause)) issues.push(`remise en jeu de cause inconnue « ${r.cause} »`);
     if (r.d > restartMax) issues.push(`remise en jeu de ${r.d} m — c'est un déménagement, pas une remise en jeu (max ${restartMax} m)`);
   }
+  // la possession aussi laisse des faits : chaque sortie a une cause connue, sinon la perte
+  // silencieuse est revenue par le registre (le sabotage injecte exactement ça)
+  for (const r of (L.releases ?? [])) {
+    if (!RELEASES.has(r.cause)) issues.push(`sortie de possession de cause inconnue « ${r.cause} »`);
+  }
   const perMin = minutes > 0 ? L.restarts.length / minutes : 0;
   if (perMin > restartsPerMin) issues.push(`${perMin.toFixed(1)} remises en jeu par minute — l'exception est devenue la règle (max ${restartsPerMin})`);
   if (L.steps < minSteps) issues.push(`seulement ${L.steps} pas d'intégration : un contrat vert sur un ballon qui n'a pas vécu n'a rien vérifié`);
-  return { ok: issues.length === 0, issues, stats: { steps: L.steps, breaches: L.breaches.length, worst: +L.worst.toFixed(3), restarts: L.restarts.length } };
+  return { ok: issues.length === 0, issues, stats: { steps: L.steps, breaches: L.breaches.length, worst: +L.worst.toFixed(3), restarts: L.restarts.length, possessions: L.possessions ?? 0, releases: (L.releases ?? []).length } };
 }

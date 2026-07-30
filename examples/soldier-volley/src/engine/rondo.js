@@ -91,6 +91,7 @@ export const RONDO = {
   contestRadius: 0.9,      // m — portée de jeu (= playable de la règle)
   contestSlack: 0.35,      // m — l'écart de tolérance (= ownSlack de la règle)
   carryLoose: 3.0,         // m — au-delà, le ballon n'est PLUS porté : phase libre (= carryMax de la règle)
+  captureRadius: 0.9,      // m — un ballon au pied, non contesté, se CAPTURE quand l'intention se forme (le porté)
   rushedSlack: 0.5,        // …but only among options within this much of the best-scoring one
   windupCarve: 1,          // how much of it is taken OUT of the hold rather than added after it (0..1)
   // A TURN TAKES TIME. Bounded at turnAccel/speed rad/s like everything else that rotates here, with

@@ -146,5 +146,70 @@ console.log('\n— sabotages du CONTRAT —');
   ok('  …et null aussi', !checkBallBody(null).ok);
 }
 
+
+console.log('\n— LE PORTÉ : la possession est un état du moteur, pas une étiquette —');
+{
+  const throws = (fn, needle) => { try { fn(); return false; } catch (e) { return String(e).includes(needle); } };
+  const b = new BallBody([0, BALL.radius, 0]);
+  ok('un ballon naît LIBRE (owner null)', b.owner === null);
+  b.possess(7);
+  ok('possess(7) : le porteur est déclaré', b.owner === 7);
+  b.possess(7);
+  ok('re-possess par le MÊME porteur : sans effet (idempotent)', b.owner === 7);
+  ok('possess par un AUTRE lève — un vol de balle se déclare (release d\'abord)',
+    throws(() => b.possess(3), 'se DÉCLARE'));
+  ok('release() sans cause lève', throws(() => b.release(), 'se nomme'));
+  ok('release(cause inventée) lève', throws(() => b.release('magie'), 'inconnue'));
+  b.release('conduite');
+  ok('release(\'conduite\') : le ballon est libre, la sortie est au registre',
+    b.owner === null && b.ledger.releases.at(-1)?.cause === 'conduite');
+  ok('carry() sur un ballon LIBRE lève — le porté appartient à un porteur',
+    throws(() => b.carry([1, 0], 1 / 60), 'LIBRE'));
+}
+{
+  // LE PORTÉ CONVERGE, EN CONTINU. C'est la promesse entière du régime : le ballon arrive au point
+  // que le geste définit PAR l'intégrateur — l'audit de continuité tourne à chaque sous-pas, et le
+  // plafond de vitesse rend la clause structurelle. (control-at-foot : 3-9 % de dette sur quatre
+  // correctifs de « négociation » → 0,0 % mesuré sur 6 graines dès la capture branchée.)
+  const b = new BallBody([0, BALL.radius, 0]);
+  b.possess(1);
+  let worstStep = 0;
+  let prev = [...b.p];
+  for (let i = 0; i < 30; i++) {
+    b.carry([0.6, 0.2], 1 / 60);
+    worstStep = Math.max(worstStep, Math.hypot(b.p[0] - prev[0], b.p[2] - prev[2]));
+    prev = [...b.p];
+  }
+  const d = Math.hypot(b.p[0] - 0.6, b.p[2] - 0.2);
+  ok(`le ballon porté CONVERGE (0,63 m → ${d.toFixed(3)} m en 0,5 s, ≤ 0,05)`, d <= 0.05);
+  ok('…sans UNE SEULE brèche de continuité (l\'audit par sous-pas a tout vu)', b.ledger.breaches.length === 0);
+  ok(`…et sans jamais dépasser le plafond (pire pas ${(worstStep * 60).toFixed(1)} m/s ≤ 9·1,35)`, worstStep * 60 <= 9 * 1.35);
+}
+{
+  // le plafond mord : une cible à 5 m ne fait PAS voler le ballon porté — il marche à vMax
+  const b = new BallBody([0, BALL.radius, 0]);
+  b.possess(1);
+  let vMaxSeen = 0;
+  for (let i = 0; i < 30; i++) { b.carry([5, 0], 1 / 60); vMaxSeen = Math.max(vMaxSeen, Math.hypot(b.v[0], b.v[2])); }
+  ok(`une cible à 5 m est poursuivie à vitesse HUMAINE (pic ${vMaxSeen.toFixed(1)} m/s ≤ 9,1)`, vMaxSeen <= 9.1);
+}
+{
+  const b = new BallBody([0, BALL.radius, 0]);
+  b.possess(4);
+  b.strike({ speed: 12, dirYaw: 0.3, elevation: 0.1 });
+  ok('une FRAPPE libère la possession (cause « frappe » au registre)',
+    b.owner === null && b.ledger.releases.at(-1)?.cause === 'frappe');
+  b.possess(4);
+  b.restart([2, BALL.radius, 2], { cause: 'touche' });
+  ok('une REMISE EN JEU libère la possession (« arrêt-de-jeu »)',
+    b.owner === null && b.ledger.releases.at(-1)?.cause === 'arrêt-de-jeu');
+}
+{
+  const b = new BallBody([0, 1, 0], [8, 2, 0]); b.integrate(2);
+  b.ledger.releases.push({ cause: 'magie', by: 9 });
+  ok('sabotage « sortie de possession de cause inventée AU REGISTRE » attrapé par le contrat',
+    has(checkBallBody(b), 'sortie de possession'));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

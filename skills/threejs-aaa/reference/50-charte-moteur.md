@@ -137,12 +137,43 @@ mesuré, pas juste « ça n'a pas marché ».
 
 ---
 
+## 11. La possession est un régime, pas une négociation
+
+Le ballon et le porteur NE FONT QU'UN pendant la possession propre — et c'est un ÉTAT DU MOTEUR
+(ball-body : `possess(owner)` / `carry(point)` / `release(cause)`), pas une étiquette déduite
+(« c'est lui le plus près »). Le PORTÉ est un servo de position à travers l'intégrateur (tau court,
+vitesse plafonnée) : visuellement une attache, physiquement continu et contestable à tout instant.
+
+- **La capture** : le contrôle PREND le ballon au contact (amorti + possess) au lieu de résoudre
+  une livraison vers le point où le pied SERA — la famille `control-at-foot` (33 % au pire, quatre
+  correctifs de négociation, une mène balayée à 0,65) est morte PAR CONSTRUCTION : 0,0 % mesuré
+  sur 6 graines dès la capture branchée.
+- **L'armé** : le ballon porté est porté AU POINT DE STANCE du corps qui glisse — le couple soudé
+  par construction, la stance vraie parce que le ballon est LÀ où le geste la définit.
+- **La conduite reste du football** : release('conduite') → touches réelles, ballon LIBRE entre
+  elles, interceptable — ce que l'attache dure de l'industrie tue et que ce régime garde.
+- **La frontière est le DUEL** : contesté (le prédicat de carrier-owns-the-ball) →
+  release('contesté') — le 50/50 se joue sur un ballon physique. Frappe, perte, sortie : chaque
+  sortie de possession a une CAUSE NOMMÉE au registre (même loi que RESTARTS et abortGesture),
+  et le contrat la lit.
+- **Le piège mesuré du régime** : un ballon porté est soudé au corps, donc l'ANCRE (calculée depuis
+  le ballon) marche AVEC le porteur — la borne d'atteignabilité des ballons libres devient un mur
+  (6 495 refus sans convergence, le couple traîné hors du carré). Porté, rejoindre la stance est un
+  ARRANGEMENT DU COUPLE (pivoter, un demi-pas), pas une marche vers un point du monde — la borne
+  change de nature avec le régime.
+- **Et la mesure suit la possession** (loi 7 appliquée) : l'assise d'un contrôle ne se juge que si
+  le ballon est ENCORE porté à la fin de sa fenêtre — un ballon déjà frappé a été jugé par
+  strike-stance (la trace : capture 0,82 → 0,26 m, armé soudé, passe partie AVANT la fin de la
+  fenêtre — un une-touche légitime que l'ancienne mesure comptait comme un contrôle mort).
+
 ## L'ordre d'évaluation canonique (une image)
 
 ```
 simulation :  assignJobs (décisions) → movePlayers (locomotion, sauf corps possédés par un geste)
               → stepGestures (horloges de geste : glissement borné, contact, frappe)
-              → separatePlayers (projections du monde)  → phases du ballon (autorité exclusive)
+              → separatePlayers (projections du monde)
+              → ballon : PORTÉ (carry au pied / au point de stance) | CONDUITE (touches, libre)
+                | CONTESTÉ→libre (duel) | VOL (integrate) — un régime à la fois, sorties nommées
 visuel    :  gait clock (φ unique, vitesse SOL MESURÉE — jamais un zéro forcé) → mixer (clips
               asservis à φ) → couches corps-entier (gaitLayer) → gestes additifs SCINDÉS
               haut/jambes (le haut s'arme tout de suite ; les jambes fondues par max(arrivée,
