@@ -54,6 +54,7 @@ export const MATCH = {
   carryLawLoose: true,    // la bascule carry→libre lit la LOI DE TOUCHE (jamais sur une touche légale) ; false : le rayon plat (sabotage nommé)
   shotVariety: true,      // le répertoire du tir (placé/croisé/puissance/mi-hauteur/lucarne) ; false : le rase-mottes unique (sabotage nommé)
   keeperClaim: true,      // la sortie dans les pieds : un ballon au sol à portée de gants se ramasse, même « porté » ; false : le label-bouclier (sabotage nommé)
+  carrySurge: { at: 1.25, top: 6.2 },  // le porteur COURT sur sa touche poussée (> 1,25 m → pointe libérée) ; null : le trottinement (sabotage nommé)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
@@ -69,6 +70,7 @@ export const MATCH = {
   // ballon DANS la course, pas sur les talons
   leadTime: (d, rec) => Math.min(0.4 + d / 9, 1.0) * ((rec && Math.hypot(rec.v?.[0] ?? 0, rec.v?.[1] ?? 0) > 1.6) ? 0.85 : 0.3),
   speeds: { ...RONDO.speeds, support: 4.9, mark: 5.6, keeper: 6.4, walk: 2.6, chase: 6.4 },  // le soutien OFFENSIF économise ;
+                          // walk = le pas de remise ; chase 6,4 : un press de MATCH se soutient
                           // walk = le pas de remise ; chase 6,4 : un press de MATCH se soutient
                           // sur la mi-temps (le 6,9 du duel de rondo poussait les corps à 9,7 km/h)
                           // (10 km/h mesurés, réel 7,2) — mais le MARQUAGE garde son pas : support
@@ -437,13 +439,22 @@ function assignMatchJobs(st, cfg) {
         p.job = 'cover'; p.target = [anchor[0] + (gx / gl) * dd, 0, anchor[2] + (gz / gl) * dd];
         return;
       }
-      // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT
+      // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT — re-visé PAR À-COUPS
+      // (0,5 s / 0,8 m, rupture immédiate > 3 m) : le miroir-suivi continu faisait travailler
+      // les marqueurs à 3,47 m/s de moyenne (2,7 des 9,8 km/h mesurés) et une défense qui
+      // vibre en continu ne ressemble pas à un BLOC qui tient ses lignes
       const marks = attackers.filter((a) => !carrier || a.id !== carrier.id);
       const m = marks.sort((a, b) => d2(a.p, p.p) - d2(b.p, p.p))[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? null;
       if (!m) { p.job = 'mark'; p.target = [p.p[0], 0, p.p[2]]; return; }
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
-      p.job = 'mark'; p.target = [m.p[0] + (gx / gl) * 1.4, 0, m.p[2] + (gz / gl) * 1.4];
+      p.job = 'mark';
+      const want = [m.p[0] + (gx / gl) * 1.4, m.p[2] + (gz / gl) * 1.4];
+      const drift = p._markT ? Math.hypot(want[0] - p._markT[0], want[1] - p._markT[1]) : Infinity;
+      if (!p._markT || drift > 3 || ((p._markAt ?? -1) <= st.t && drift > 0.8)) {
+        p._markT = want; p._markAt = st.t + 0.5;
+      }
+      p.target = [p._markT[0], 0, p._markT[1]];
     });
   }
 }

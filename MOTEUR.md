@@ -58,7 +58,9 @@ dompte avant de repartir), `speeds.walk` (le pas de remise — une remise est un
 `carryLawLoose` (la bascule carry→libre lit la LOI DE TOUCHE — jamais sur une touche légale),
 `shotVariety` (le répertoire du tir : l'espèce voyage dans `choice.shotKind`, exécutée par
 strikeNow — vitesse ET hauteur), `keeperClaim` (la sortie dans les pieds : un ballon au sol à
-portée de gants se ramasse, même « porté » — le label de conduite n'est pas un bouclier).
+portée de gants se ramasse, même « porté » — le label de conduite n'est pas un bouclier),
+`carrySurge` (le porteur COURT sur sa touche poussée : au-delà du rayon collé, la pointe se
+libère — le trottinement à 4 m/s derrière un ballon à 3 m était le « ballon loin des joueurs »).
 
 Chaque hook est un no-op absent — le rondo d'origine est inchangé au bit près quand `cfg` ne les
 porte pas (mesuré : verrou de balance identique).

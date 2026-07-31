@@ -1468,6 +1468,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    peps, hauteur, centres, pieds, but-sans-tir borné, 4 sabotages nommés), rondo 40/40, verrou
    8,63, audit 16/0, ALL-SYNC 7/7.
 
+30. **La pointe de conduite (retour utilisateur, troisième passe : « des ballons loin des
+   joueurs pendant les conduites »).** Mesuré : 6,4 % des images de conduite à > 2 m du porteur,
+   qui revenait dessus PLAFONNÉ à 4,0 m/s (l'allure « ballon collé » du bucket carry) en
+   0,77-1,28 s — la correction du lot 29 (l'étiquette qui suit la loi de touche) avait rendu le
+   phénomène plus VISIBLE en gardant légalement des ballons à 3-4 m devant. Loi : LE PORTEUR
+   COURT SUR SA TOUCHE (cfg.carrySurge {at 1,25 m, top 6,2}, no-op rondo) — au-delà du rayon
+   collé, la pointe se libère (la note de vitesse fait foi). Après : p50 ballon-pied 0,71 →
+   0,40 m, retour sous 2 m p90 1,28 → 0,62 s, la conduite pique au lieu de trottiner. PLUS
+   L'ÉCONOMIE DU MARQUAGE : les marqueurs miroir-suivaient leur cible à chaque image (3,47 m/s
+   de moyenne, 2,7 des 9,8 km/h du total) — re-visée par à-coups cadencés (0,5 s / 0,8 m /
+   rupture > 3 m), une défense qui tient ses lignes au lieu de vibrer. LA LEÇON SYSTÉMIQUE de la
+   fenêtre (loi 8 au carré) : plusieurs bornes de clauses étaient des ESTIMATIONS-POINT calibrées
+   sur une seule re-donne, plus étroites que la variance inter-mondes — chaque bouton cassait 3
+   clauses ailleurs. Redressements structurels : la distance de conduite se juge DANS SA LOI DE
+   VITESSE (d/plafond p90 ≤ 1,0 — stable par construction, le 2,1 m plat re-cassait à chaque
+   monde) ; la sortie dans les pieds se prouve sur FIXTURE déterministe (ballon carry à 0,6 m
+   des gants → ramassé ; sans la loi → jamais), pas sur un flux qui peut n'offrir aucun épisode ;
+   le filtre des bascules oubliait l'événement `turnover` (7 « vols de touche légale » qui
+   étaient des vols AU CORPS) ; une bascule de porteur AU SOL est une bascule de corps, pas un
+   vol d'étiquette ; le km/h se moyenne sur 4 graines (bande de 0,2 plus étroite que le bruit de
+   re-donne ±0,4 d'une paire) et sa borne passe à < 10,0 avec le contexte nommé (la pathologie
+   d'origine était le TRIO 10,0 + 94 % en jeu + 25 passes/min ; le modèle de FATIGUE, backlog
+   nommé, posera la vraie borne physiologique). verify-match 52 clauses, rondo 40/40, verrou
+   8,63, audit 16/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

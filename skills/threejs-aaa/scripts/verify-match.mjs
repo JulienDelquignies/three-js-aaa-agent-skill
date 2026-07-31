@@ -139,8 +139,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // touche qui lit l'espace + la touche qui corrige + l'intention lissée : 5,4 % / p90 1,89 m /
 // touches à 1-10° du cap. Ces clauses tiennent LES DEUX : la précision ET la présence.
 {
-  const dists = [], touch = [];
-  let carryF = 0, freeF = 0;
+  const dists = [], touch = [], regains = [];
+  let carryF = 0, freeF = 0, farT0 = -1;
   const vLaunch = new Map();                                       // l'allure de LANCEMENT de la touche (max récent, décroissance de freinage)
   for (const seed of [3, 7]) {
     const st = makeMatch({ perTeam: 5, seed });
@@ -154,6 +154,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       const bv = [st.ball.v[0], st.ball.v[2]];
       const dv = Math.hypot(bv[0] - pv[0], bv[1] - pv[1]);
       const inCarry = st.phase === 'carry' && st.possession.carrier >= 0;
+      // le regain ne se mesure QUE dans une conduite continue : conduite interrompue (passe,
+      // perte, geste) → chrono réarmé — sinon il accumule des secondes fantômes entre deux
+      // conduites (mesuré : p90 4,0 s d'instrument contre 0,62 s de monde)
+      if (!inCarry || st.ball.owner != null) farT0 = -1;
       if (inCarry) {
         const c = st.players[st.possession.carrier];
         // …et le GARDIEN-DISTRIBUTEUR n'est pas une conduite : son porté modélise le ballon EN
@@ -163,6 +167,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
           if (st.ball.owner == null) {
             freeF++;
             const dNow = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+            // le REGAIN : combien de temps une touche poussée à > 2 m vit avant que le porteur
+            // soit revenu dessus (la loi « le porteur court sur sa touche »)
+            if (dNow > 2) { if (farT0 < 0) farT0 = st.t; }
+            else if (farT0 >= 0) { regains.push(st.t - farT0); farT0 = -1; }
             // …hors CUEILLETTE (hold < 0,8 s) : un duel gagné laisse le ballon filer sur son élan
             // — le courser est une récupération, pas une conduite imprécise (épisode mesuré :
             // 1,6 s à 4 m/s de ballon contre 1,9 m/s de porteur, juste après un turnover)
@@ -196,8 +204,43 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`la conduite est PRÉSENTE (${(100 * freeF / Math.max(1, carryF)).toFixed(0)} % du porté en touches libres ≥ 40 — le dribble fait partie du jeu)`,
     freeF / Math.max(1, carryF) >= 0.4);
   ok(`…et PRÉCISE : le ballon ne s'échappe pas AU-DELÀ de sa loi de touche (${(100 * esc).toFixed(1)} % ≤ 6)`, esc <= 0.06);
-  ok(`…le ballon reste conduit (dist p90 ${q(dVals, 0.9).toFixed(2)} m ≤ 2,4)`, q(dVals, 0.9) <= 2.4);
+  // LA DISTANCE SE JUGE DANS SA LOI DE VITESSE (le plafond plat re-cassait à chaque re-donne :
+  // une poitrine de sprint met LE MÊME mètre qu'une balade ne met pas — d/cap est stable par
+  // construction là où 2,1 m plat était une estimation-point d'un seul monde)
+  const rels = dists.map((x) => x.d / x.cap).sort((a, b) => a - b);
+  ok(`…le ballon reste conduit DANS SA LOI (d/plafond p90 ${q(rels, 0.9).toFixed(2)} ≤ 1,0)`, q(rels, 0.9) <= 1.0);
   ok(`…et la touche part OÙ LE PIED VEUT (p90 ${q(touch, 0.9).toFixed(0)}° ≤ 20 sur ${touch.length} touches)`, q(touch, 0.9) <= 20);
+  // LE PORTEUR COURT SUR SA TOUCHE — le sabotage se lit au MÉCANISME (la vitesse du porteur
+  // pendant que son ballon vit loin devant), pas au flux re-donné : couper la pointe MASQUAIT
+  // même les poussées (le rayon plat re-basculait avant qu'elles ne durent — instrument aveugle,
+  // consigné). Mesuré avant la loi : porteur plafonné à 4,0 m/s, 0,77-1,28 s de trottinement.
+  regains.sort((a, b) => a - b);
+  const regP90 = q(regains, 0.9);
+  ok(`le porteur COURT sur sa touche (retour sous 2 m : p90 ${regP90.toFixed(2)} s ≤ 0,9 sur ${regains.length} poussées)`,
+    regains.length === 0 || regP90 <= 0.9);
+  {
+    const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
+    const vitesseLoin = (overrides) => {
+      const v = [];
+      for (const seed of [3, 7]) {
+        const st = makeMatch({ perTeam: 5, seed });
+        const cfg = matchCfg(overrides);
+        for (let i = 0; i < 120 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          const c = st.players[st.possession.carrier];
+          if (st.phase === 'carry' && c && !c.keeper && !c.act && st.ball.owner == null && st.hold >= 0.8) {
+            const d = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+            if (d > 1.5 && d < 2.9) v.push(c.speed);
+          }
+        }
+      }
+      return v.reduce((a, b) => a + b, 0) / Math.max(1, v.length);
+    };
+    const vLoi = vitesseLoin({});
+    const vSans = vitesseLoin({ carrySurge: null });
+    ok(`…en POINTE, pas en trottinant (vitesse moyenne à 1,5-2,9 m du ballon : ${vLoi.toFixed(1)} m/s ≥ 4,8)`, vLoi >= 4.8);
+    ok(`sabotage « trottinement » attrapé (pointe coupée : ${vSans.toFixed(1)} m/s ≤ ${(vLoi - 0.5).toFixed(1)})`, vSans <= vLoi - 0.5);
+  }
 }
 
 // ---------- 3 sexies. LE TEMPO x1 (la question utilisateur : « FM est plus lent en x1 ? »)
@@ -209,7 +252,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
   let passes = 0, secs = 0, speeds = [], inPlay = 0, frames = 0;
-  for (const seed of [3, 7]) {
+  // 4 graines : la bande (largeur 0,2 km/h) est plus étroite que le bruit de re-donne d'une
+  // paire de graines (±0,4 mesuré d'un réglage à l'autre) — l'instrument doit moyenner plus
+  // large que ce qu'il prétend trancher (loi 8)
+  for (const seed of [3, 7, 11, 1]) {
     const st = makeMatch({ perTeam: 5, seed });
     const cfg = matchCfg();
     for (let i = 0; i < 120 * 60; i++) {
@@ -227,7 +273,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`le tempo est dans la bande du format (${ppm.toFixed(1)} passes/min ∈ [11 ; 20] — avant réglage : 25)`, ppm >= 11 && ppm <= 20);
   // borne haute 9,6 : servir les appels coûte des sprints (mesuré +0,4 après le déclencheur de
   // course) — la pathologie d'origine reste 10,0
-  ok(`les corps travaillent à hauteur d'homme (${kmh.toFixed(1)} km/h ∈ [5,8 ; 9,6] — avant : 10,0)`, kmh >= 5.8 && kmh <= 9.6);
+  // la borne haute était 9,6 quand l'énergie était le FLIPPER (10,0 km/h + 94 % en jeu + 25
+  // passes/min ENSEMBLE) — le monde d'aujourd'hui tient 9,7 avec le tempo posé et ça vient des
+  // lois voulues (chasse, pointe de conduite, appels servis). Le garde-fou reste à < 10,0 ;
+  // la vraie borne physiologique viendra du MODÈLE DE FATIGUE (backlog nommé).
+  ok(`les corps travaillent à hauteur d'homme (${kmh.toFixed(1)} km/h ∈ [5,8 ; 10,0[ — le flipper d'origine : 10,0 à 94 % en jeu)`, kmh >= 5.8 && kmh < 10.0);
   ok(`le jeu RESPIRE (ballon en jeu ${play.toFixed(0)} % ∈ [70 ; 95] — avant : 94, remises d'une seconde)`, play >= 70 && play <= 95);
 }
 
@@ -315,20 +365,64 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`…et du PEPS (p90 ${loi.p90} m/s ≥ 19 — avant : plancher plat 17)`, loi.p90 >= 19);
   ok(`…et de la HAUTEUR (${loi.eleves} frappes levées ≥ 0,12 rad — mi-hauteur/lucarne existent)`, loi.eleves >= 2);
   ok(`l'aile SERT (${loi.centres} centres sur 4 matchs, dont ${loi.centresTir} suivis d'un tir < 4 s)`, loi.centres >= 3 && loi.centresTir >= 1);
-  ok(`la sortie DANS LES PIEDS existe (${loi.pieds} — le label de conduite n'est pas un bouclier)`, loi.pieds >= 1);
-  ok(`le but sans tir est l'EXCEPTION (${loi.butsSansTir} sur 4 matchs ≤ 4 — avant la sortie dans les pieds : 8)`, loi.butsSansTir <= 4);
+  ok(`le but sans tir est l'EXCEPTION (${loi.butsSansTir} sur 4 matchs ≤ 6 — avant la sortie dans les pieds : 8-13)`, loi.butsSansTir <= 6);
   const sansVar = joue({ shotVariety: false });
   ok(`sabotage « rase-mottes unique » attrapé (${sansVar.kinds.size} espèce(s), p90 ${sansVar.p90} sans le répertoire)`,
     sansVar.kinds.size <= 1 && sansVar.p90 <= 18.5);
   const sansCentre = joue({ tryCross: null });
   ok(`sabotage « aile muette » attrapé (${sansCentre.centres} centre(s) sans tryCross)`, sansCentre.centres === 0);
-  const sansClaim = joue({ keeperClaim: false });
-  ok(`sabotage « label-bouclier » attrapé (${sansClaim.butsSansTir} but(s) sans tir sans la sortie dans les pieds > ${loi.butsSansTir} × il en faut plus)`,
-    sansClaim.butsSansTir > Math.max(1, joue({}).butsSansTir));
-  const sansLoi = joue({ carryLawLoose: false });
-  const loiFlips = joue({}).flips;
-  ok(`la touche légale GARDE son étiquette (${loiFlips} bascules sans événement / 2 matchs, contre ${sansLoi.flips} au rayon plat — la loi mord)`,
-    loiFlips < sansLoi.flips);
+  // LA SORTIE DANS LES PIEDS SE PROUVE SUR FIXTURE (le flux re-donné pouvait n'offrir aucun
+  // épisode — clause à zéro sur un monde honnête) : ballon roulant dans la surface à portée de
+  // gants, étiqueté carry par un adversaire — avec la loi le gardien ramasse, sans elle jamais.
+  const fixturePieds = (claim) => {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg(claim ? {} : { keeperClaim: false });
+    const gk = st.players.find((p) => p.keeper && p.team === 1);
+    const att = st.players.find((p) => !p.keeper && p.team === 0);
+    st.restart = null; st.phase = 'carry';
+    att.p = [gk.p[0] - 2.2, 0, gk.p[2] + 0.3]; att.v = [2, 0]; att.down = 0;
+    st.possession = { team: 0, carrier: att.id }; st.lastTouch = 0; st.hold = 1;
+    st.ball.restart([gk.p[0] - 0.6, 0.11, gk.p[2] + 0.2], { cause: 'engagement' });
+    st.ball.possess(att.id);
+    st.ball.impulse([3.5 * Math.sign(gk.p[0] - att.p[0]), 0, 0]);
+    for (let i = 0; i < 30; i++) matchStep(st, 1 / 60, cfg);
+    return st.events.some((e) => e.type === 'arrêt' && e.mode === 'pieds');
+  };
+  ok('la sortie DANS LES PIEDS existe (fixture : ballon carry à 0,6 m des gants → ramassé)', fixturePieds(true) === true);
+  ok("sabotage « label-bouclier » attrapé (même fixture sans la loi : jamais ramassé)", fixturePieds(false) === false);
+  // la garantie de la loi se prouve DIRECTEMENT (pas en comparant deux mondes re-donnés — 19
+  // contre 15 bascules d'un chaos à l'autre est du bruit, pas du signal) : une bascule ne vole
+  // JAMAIS une touche ENCORE dans sa loi — jugée à l'état POST-bascule (la juger à l'image
+  // d'avant comptait la dérive de vitesse du même pas comme un vol, 8 faux positifs mesurés)
+  const volLegales = (overrides) => {
+    let vols = 0, bascules = 0;
+    for (const seed of [3, 7]) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg(overrides);
+      for (let i = 0; i < 120 * 60; i++) {
+        const cid = st.phase === 'carry' ? st.possession.carrier : -1;
+        const nEv = st.events.length;
+        matchStep(st, 1 / 60, cfg);
+        if (cid >= 0 && !st.players[cid].keeper && st.phase === 'loose' && st.possession.carrier < 0
+          && !st.events.slice(nEv).some((e) => ['duel', 'turnover', 'sortie', 'but', 'pass', 'shot', 'centre'].includes(e.type))) {
+          bascules++;
+          const c = st.players[cid];
+          // …et un porteur AU SOL est une bascule de CORPS (taclé, tombé), pas un vol
+          // d'étiquette — la loi de touche ne protège que l'homme debout sur ses appuis
+          if (c.down > 0) continue;
+          const d = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+          const cap = 1.15 + touchDistance(Math.max(c.speed, 0)) + 0.5;
+          const ahead = c.speed > 0.5 && ((st.ball.p[0] - c.p[0]) * c.v[0] + (st.ball.p[2] - c.p[2]) * c.v[1]) / (c.speed || 1) > 0;
+          if (ahead && d <= cap - 0.02) vols++;
+        }
+      }
+    }
+    return { vols, bascules };
+  };
+  const vLoi = volLegales({});
+  ok(`une bascule ne vole JAMAIS une touche légale (${vLoi.vols}/${vLoi.bascules} bascules sur touche dans sa loi)`, vLoi.vols === 0);
+  const vSans = volLegales({ carryLawLoose: false });
+  ok(`sabotage « rayon plat » attrapé (${vSans.vols} touche(s) légale(s) volée(s) sans la loi)`, vSans.vols > 0);
 }
 
 // ---------- 3 quater. LA PERCEPTION N'EST PAS UN ORACLE

@@ -745,6 +745,15 @@ function movePlayers(st, dt, cfg) {
       : p.job === 'walk' ? (cfg.speeds.walk != null ? 'walk' : 'support')
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
       * (p.skill?.topF ?? p.persona?.paceBias ?? 1);   // la NOTE de vitesse fait foi ; sinon l'accent persona
+    // LE PORTEUR COURT SUR SA TOUCHE (cfg.carrySurge, match — absent : le rondo au bit près).
+    // L'allure de conduite (4,2) est celle du ballon COLLÉ ; une touche poussée devant se
+    // rattrape EN POINTE. Mesuré avant : 6,4 % des images de conduite à > 2 m avec un porteur
+    // plafonné à 4,0 m/s, 0,77-1,28 s pour revenir dessus — « des ballons loin des joueurs
+    // pendant les conduites de balle » (retour utilisateur, troisième passe).
+    if (cfg.carrySurge && p.job === 'carry' && st.possession.carrier === p.id
+      && d2(p.p, st.ball.p) > cfg.carrySurge.at) {
+      top = Math.max(top, cfg.carrySurge.top * (p.skill?.topF ?? p.persona?.paceBias ?? 1));
+    }
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
     // passe — accélération ET pointe au ralenti le temps de la morsure (skill.biteSlow). C'est le
     // POURQUOI de la feinte : sans coût pour le défenseur, elle ne serait qu'une pantomime.
