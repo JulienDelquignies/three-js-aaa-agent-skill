@@ -17,12 +17,16 @@ const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const { movePlayers, separatePlayers, turnover } = rondoInternals;
 
 /** Le POINT DU PIED du porteur — où un ballon porté vit : devant le pied de contrôle, mêmes
- *  décalages que la touche directionnelle du receive (controlSettle devant, footSide côté pied). */
-const footPoint = (p, cfg) => {
+ *  décalages que la touche directionnelle du receive (controlSettle devant, footSide côté pied).
+ *  CLAMPÉ DANS LE CARRÉ : un porteur debout SUR la ligne portait son ballon 0,34 m dehors — mesuré,
+ *  6 sorties de but sur 3 graines avec un ballon PORTÉ (le porteur sortait son propre ballon en
+ *  le protégeant). Le joueur s'arrête à la craie ; son ballon aussi. */
+const footPoint = (st, p, cfg) => {
   const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
   const lat = p.foot === 'left' ? 1 : -1;
-  return [p.p[0] + fx * cfg.controlSettle + fz * lat * cfg.footSide,
-          p.p[2] + fz * cfg.controlSettle - fx * lat * cfg.footSide];
+  const m = BALL.radius + 0.02;
+  return [Math.max(-st.area[0] / 2 + m, Math.min(st.area[0] / 2 - m, p.p[0] + fx * cfg.controlSettle + fz * lat * cfg.footSide)),
+          Math.max(-st.area[1] / 2 + m, Math.min(st.area[1] / 2 - m, p.p[2] + fz * cfg.controlSettle - fx * lat * cfg.footSide))];
 };
 
 /** Le POINT DE STANCE : où le geste veut le ballon relativement à CE corps (l'inverse exact
@@ -120,6 +124,14 @@ function beginPass(st, choice, cfg, opts = {}) {
     const sit = situation(c.p, c.yaw, from, st.ball.v, from[1]);
     const topts = chooseTechnique(sit, 'pass', { firstTouch: false, outBearing });
     if (!topts.length) return deny(st, 'technique');
+    // MÊME L'URGENCE NE FRAPPE PAS UN BALLON QUI FILE. L'improvisation choisit sa surface sur la
+    // géométrie RÉELLE de l'engagement — mais le ballon libre d'un duel bouge encore pendant
+    // l'armé, et la géométrie du contact n'est plus celle du choix : mesuré (verify-approach),
+    // l'écart de stance p90 est monté de 0,05 à 0,104 m et le relèvement à 18° quand la patience
+    // du conteste a laissé les balles d'urgence partir de ballons dribblés à 2-4 m/s. La borne est
+    // plus lâche que celle du plan (l'urgence a moins le choix), mais elle existe : au-delà, on
+    // continue de conduire — le refus se nomme.
+    if (st.ball.owner !== c.id && Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax * 1.6) return deny(st, 'ballon-vif');
     // pressé (il l'est, par définition ici) : la vitesse départage les gestes DÉJÀ bons
     const antic = (o) => (MOVE_TIMING[o.tech.clip] || MOVE_TIMING.passe).contact;
     const good = topts.filter((o) => o.score >= topts[0].score - cfg.rushedSlack);
@@ -141,7 +153,9 @@ function beginPass(st, choice, cfg, opts = {}) {
   // `passePivot` at 0.52, so carving an average left the pivot exposed for a quarter of a second it did
   // not have — 8 of 21 swings tackled mid-windup, and possession collapsed. He commits exactly early
   // enough that the ball still leaves at holdMin, whichever gesture he chose.
-  if (st.hold < cfg.holdMin - move.contact * cfg.windupCarve) return deny(st, 'timing');
+  // …et le holdMin est CONDITIONNEL (st._holdMin, posé par la boucle de conduite) : 0,8-1,0 s au
+  // calme, l'ancien 0,35 s sous pression — le remède du hold p50 = 0,38 s du flipper mesuré.
+  if (st.hold < (st._holdMin ?? cfg.holdMin) - move.contact * cfg.windupCarve) return deny(st, 'timing');
 
   // LA COURSE. Le couloir de choosePass est une photo (des mètres perpendiculaires, MAINTENANT) ;
   // une interception est une COURSE (des secondes, pendant le vol). Mesuré sur 4 parties : les
@@ -170,9 +184,21 @@ function beginPass(st, choice, cfg, opts = {}) {
   // ball, then ask the character for a pose, and start that pose AT its contact frame so the leg would
   // not still be winding up while the ball was already gone. That bought synchronisation by throwing
   // away the entire beginning of the movement — which is why there was no visible movement.
+  // …ET UN BALLON LIBRE AU PIED, NON CONTESTÉ, EST CAPTURÉ À L'ENGAGEMENT. L'urgence frappait des
+  // ballons libres qui dérivaient pendant l'armé : la surface choisie sur la géométrie du commit ne
+  // trouvait plus la même au contact — mesuré (verify-approach), écart de relèvement p90 monté de
+  // 5° à 11-18°, tous sur des passe-rapide d'urgence. Si le ballon est à lui (à portée de capture,
+  // personne ne le bat au ballon), le porté du geste (carry au point de stance, stepGestures) rend
+  // la stance vraie PAR CONSTRUCTION — c'est le même régime que la passe planifiée. Un ballon
+  // réellement contesté, lui, reste libre : le duel a le droit de pourrir la géométrie.
+  if (st.ball.owner == null && d2(c.p, st.ball.p) < cfg.captureRadius) {
+    const foeBall = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99);
+    const beaten = foeBall < cfg.contestRadius && foeBall < d2(c.p, st.ball.p) - cfg.contestSlack;
+    if (!beaten) st.ball.possess(c.id);
+  }
   c.foot = pick.foot;
   c.intent = null;                                          // l'intention a abouti : le geste prend le relais
-  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw }, log: st.gestures });
+  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw }, log: st.gestures });
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, tech: pick.tech.id, move: pick.tech.clip, foot: pick.foot, anticipation: move.contact });
   return true;
 }
@@ -187,9 +213,28 @@ function beginPass(st, choice, cfg, opts = {}) {
  * the geometry recorded on the event is the geometry the strike actually had.
  */
 function strikeNow(st, c, cfg) {
-  const { choice, pick, stance } = c.act.payload;
+  const { choice, pick, stance, urgent } = c.act.payload;
   const rec = st.players[choice.to.id];
   const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
+  // LE PIED NE FRAPPE JUSTE QUE LÀ OÙ LE GESTE LE SUPPOSE. Deux façons d'arriver au contact avec un
+  // ballon qui n'est pas à sa stance : un ballon CONTESTÉ resté libre pendant l'armé (le duel a le
+  // droit de pourrir la géométrie), et un porté qui n'a pas eu le temps d'ARRANGER le couple (armé
+  // de 0,22 s juste après une remise en jeu : le servo n'a pas fini d'amener le ballon). Dans les
+  // deux cas la frappe n'est pas une passe propre : c'est un ballon VENDANGÉ, qui part mou et reste
+  // disputable. Mesuré avant cette porte : 2 passes/partie à 0,26 m / 46° de leur stance — la dette
+  // strike-stance crevait son budget de 2 %. Le refus se nomme au registre.
+  if (stance) {
+    const sitNow = situation(c.p, c.yaw, from, st.ball.v, from[1]);
+    const bNow = ((((sitNow.side === pick.foot ? 1 : -1) * sitNow.bearing - stance.bearing + 540) % 360) - 180);
+    // les seuils vivent SOUS ceux de la règle strike-stance (0,25 m / 25°) : la porte du moteur
+    // refuse AVANT que le catalogue ne condamne
+    if (Math.abs(sitNow.dist - stance.dist) > 0.22 || Math.abs(bNow) > 22) {
+      deny(st, 'stance-au-contact');
+      if (st.ball.owner === c.id) st.ball.release('perte');              // la touche ratée le lui échappe
+      st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4]);   // vendangé : le ballon reste libre
+      return;
+    }
+  }
   const lead = rec ? [rec.p[0] + rec.v[0] * 0.18, 0, rec.p[2] + rec.v[1] * 0.18] : choice.lead;
   const sol = solvePass(from, lead, { style: choice.style }) || solvePass(from, choice.lead, { style: choice.style });
   if (!sol) { st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4]); return; }   // scuffed: it stays loose
@@ -222,6 +267,10 @@ function strikeNow(st, c, cfg) {
     // comptait −24 — 48° d'erreur fantôme sur la moitié des passes, attrapée à la première mesure.
     // replié dans [−180, 180] : une talonnade à 168° comparée sans repli donnait −336°
     stanceB: stance ? +((((sit.side === pick.foot ? 1 : -1) * sit.bearing - stance.bearing + 540) % 360) - 180).toFixed(1) : null,
+    // le RÉGIME de la frappe : une passe PLANIFIÉE a marché sur sa stance (l'approche la réalise au
+    // degré près) ; une passe d'URGENCE improvise depuis la géométrie réelle d'un duel — deux
+    // contrats différents (charte, loi 7), et l'événement dit lequel le juge.
+    urgent: !!urgent,
   });
 }
 
@@ -243,8 +292,11 @@ function stepGestures(st, dt, cfg) {
       // pushed every close defender past tackleTime and possession collapsed (record halved, turnovers
       // doubled). A swing you have already started is not the same target as a man still dribbling,
       // and the geometry says so: get to the ball or you do not get it.
-      const press = st.players.filter((q) => q.team !== p.team && q.down <= 0
-        && d2(q.p, p.p) < cfg.tackleRadius && d2(q.p, st.ball.p) < d2(p.p, st.ball.p));
+      // …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le
+      // porteur au ballon — plus jamais « près du corps ». Le terme de la minuterie n'est plus une
+      // bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner
+      // (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
+      const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
       // AND THE BALL TRAVELS WITH HIM. Nobody stops dead to pass. While the swing runs, the dribble is
       // suspended (he is not taking new touches), and the ball was simply being left where it lay while
@@ -259,7 +311,11 @@ function stepGestures(st, dt, cfg) {
       //   geste la définit, plus parce qu'un frein l'a laissé à peu près au bon endroit. Un ballon
       //   NON porté (frappe d'urgence sur ballon libre) garde l'ancien frein d'assise ;
       if (st.ball.owner === p.id && p.act.payload?.stance) {
-        st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, { tau: 0.05 });
+        // tau 0,05 → 0,035 : l'armé le plus court du répertoire (passeRapide, contact 0,22 s) ne
+        // laissait pas au servo le temps de finir d'ARRANGER le couple — mesuré, les passes rapides
+        // planifiées partaient à 6-21° de leur stance (p90 du contrat d'approche 5° → 6,6). Le
+        // porté reste continu, borné (vMax du carry), et l'audit de continuité tourne inchangé.
+        st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, { tau: 0.035 });
       } else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
       //   et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se
       //   règlent pendant l'armé, comme un vrai joueur ajuste ses derniers appuis. La vitesse écrite
@@ -300,14 +356,80 @@ function stepGestures(st, dt, cfg) {
         p.yaw = g.yaw; p.yawWant = null;
         p.speed = Math.hypot(p.v[0], p.v[1]);
       }
-      if (st.pressure >= cfg.tackleTime) {
-        abortGesture(p, 'fermé pendant l’armé', { log: st.gestures });
-        receive(st, press[0].id, cfg);
-        continue;
-      }
+      if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], p, cfg);
     }
-    if (stepGesture(p, dt, { log: st.gestures }) === 'contact' && p.act?.payload?.kind === 'pass') strikeNow(st, p, cfg);
+    const evg = stepGesture(p, dt, { log: st.gestures });
+    if (evg === 'contact') {
+      if (p.act?.payload?.kind === 'pass') strikeNow(st, p, cfg);
+      else if (p.act?.payload?.kind === 'tacle-debout') standTackleNow(st, p, cfg);
+    }
   }
+}
+
+/**
+ * LE PRÉDICAT DU DUEL — qui a le droit de faire courir la minuterie de vol. L'ancien prédicat
+ * (« 1,45 m du CORPS pendant tackleTime ») a produit le chiffre fondateur de la sonde duels-tacles :
+ * 54 % des pertes étaient un flip d'étiquette, gagnant jusqu'à 2,33 m du ballon, 29 % au-delà du
+ * rayon de jeu. Le vrai prédicat est celui de carrier-owns-the-ball, ENFIN consommé côté attaque du
+ * ballon : à portée de jeu du BALLON (contestRadius) ET plus près de lui que le porteur de plus que
+ * shieldSlack — la protection de balle (le corps entre défenseur et ballon) devient une défense
+ * réelle, parce que le prédicat la regarde.
+ */
+function pressPredicate(st, c, cfg) {
+  const dc = d2(c.p, st.ball.p);
+  return st.players.filter((q) => q.team !== c.team && q.down <= 0 && !q.act
+    && (q.tackleCd ?? -1) <= st.t
+    && d2(q.p, st.ball.p) < cfg.contestRadius
+    && d2(q.p, st.ball.p) < dc - cfg.shieldSlack)
+    .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p));
+}
+
+/**
+ * LE VOL DEVIENT UN GESTE. La minuterie arrivée à terme n'est plus une bascule de possession en une
+ * image : le presseur S'ENGAGE dans un tacle-debout (armé 0,28 s, le clip tacleDebout qui existait
+ * depuis le début et n'était JAMAIS déclenché — technique.js:117 / animkit:456, mesuré 0 déclenchement
+ * en 8 min). Pendant l'armé, le porteur peut encore sortir le ballon — c'est le duel. Le transfert,
+ * s'il a lieu, se joue AU CONTACT du geste, sur un ballon à portée (standTackleNow).
+ */
+function beginStandTackle(st, q, victim, cfg) {
+  const move = MOVE_TIMING.tacleDebout;
+  st.pressure = 0;
+  q.tackleCd = st.t + cfg.standCooldown;              // manqué ou gagné : pas de mitraillette de duels
+  q.yawWant = Math.atan2(st.ball.p[2] - q.p[2], st.ball.p[0] - q.p[0]);
+  startGesture(q, { id: 'tacleDebout', ...move }, { payload: { kind: 'tacle-debout', victim: victim.id }, log: st.gestures });
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: 'tacleDebout', anticipation: move.contact });
+}
+
+/**
+ * LE CONTACT DU TACLE-DEBOUT. Le duel se juge ICI, sur la géométrie réelle du contact — pas sur
+ * celle d'il y a 0,28 s : si le porteur a sorti le ballon (passe partie, conduite hors de portée),
+ * le tacle mord dans le vide et le refus se NOMME au registre (tacle-manqué). S'il gagne, le
+ * transfert est PHYSIQUE : la technique de la table (tacle-debout) valide le contact, la première
+ * touche du gagnant amortit le ballon (résiduel dans turnover) — plus jamais un ballon gelé à
+ * distance ni une possession qui bascule sans événement.
+ */
+function standTackleNow(st, q, cfg) {
+  const victimId = q.act?.payload?.victim ?? -1;
+  const d = d2(q.p, st.ball.p);
+  const still = st.phase === 'carry' && st.possession.carrier === victimId;
+  const sit = situation(q.p, q.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
+  const pick = still && d <= cfg.receiveRadius ? chooseTechnique(sit, 'win', { bias: { 'tacle-debout': 1 } })[0] : null;
+  const won = !!pick && pick.tech.id === 'tacle-debout';
+  if (!won) {
+    // le refus a une cause nommée, et l'événement du duel perdu reste visible dans le flux
+    deny(st, still ? 'tacle-manqué' : 'tacle-orphelin');
+    st.events.push({ t: +st.t.toFixed(2), type: 'duel', by: q.id, won: false, dist: +d.toFixed(2) });
+    return;
+  }
+  // l'événement porte sa géométrie ET sa technique — checkAction peut le rejouer (technique-legal)
+  st.events.push({
+    t: +st.t.toFixed(2), type: 'duel', by: q.id, won: true, tech: 'tacle-debout', foot: pick.foot,
+    surface: pick.surface, bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2),
+    height: +st.ball.p[1].toFixed(2), speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+  });
+  const victim = st.players[victimId];
+  if (victim?.act && winding(victim)) abortGesture(victim, 'fermé pendant l’armé', { log: st.gestures });
+  receive(st, q.id, cfg);          // → turnover : amorti nommé (résiduel ~20 %), possession déclarée
 }
 
 /**
@@ -399,7 +521,11 @@ function receive(st, id, cfg = RONDO) {
       st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25]);
     }
   } else {
-    turnover(st, id, st.phase === 'flight' ? 'interception' : 'tackle');
+    // LA CAUSE DIT LE GESTE : une interception prend un ballon en vol, un tacle prend le ballon d'un
+    // porteur (duel debout ou glissade — la clause 10 de checkRondo exige l'événement physique
+    // correspondant), une récupération ramasse un ballon LIBRE au sol — trois football différents,
+    // et l'ancien étiquetage « tackle » pour un ramassage de ballon perdu mentait sur les deux.
+    turnover(st, id, st.phase === 'flight' ? 'interception' : st.phase === 'loose' ? 'récupération' : 'tackle');
   }
 }
 
@@ -418,15 +544,23 @@ function trySlide(st, cfg) {
   const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
   const strayed = car ? d2(car.p, st.ball.p) > cfg.strikeReach : true;
   if (!strayed) return;
+  if (st.ball.owner != null) return;                            // un ballon PORTÉ se dispute debout (le duel), pas au sol
   if (st.ball.p[1] > 0.4) return;                               // you do not slide at a ball in the air
   if (Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.slideMaxBall) return;   // nor at one going too fast to win
   // A SLIDE IS A LAST RESORT, not a longer reach. Letting anyone within range go to ground produced
   // 182 slides in 90 s and possession collapsed from 18 passes to 4: everybody dived at every loose
   // ball. You slide when you are LOSING THE RACE — when the man who would otherwise get there is an
   // opponent, and you cannot beat him on your feet. Everything else is a normal run.
+  // …ET C'EST UN GESTE DÉFENSIF. Mesuré (sonde duels-tacles) : 9,4 glissades/min, 69 % par l'équipe
+  // EN POSSESSION dont 49 % par le PORTEUR plongeant sur sa propre touche échappée — or un porteur
+  // dont la touche s'échappe la POURSUIT (c'est le travail du modèle de conduite), il ne se couche
+  // pas dessus. Seuls les défenseurs se jettent, chacun au plus une fois par slideCooldown, et
+  // seulement s'ils perdent NETTEMENT la course (slideMargin 0,15 → 0,4). Cible : ≤ 2/min.
   let best = null;
   for (const p of st.players) {
-    if (p.down > 0) continue;
+    if (p.down > 0 || p.act) continue;
+    if (p.team === st.possession.team) continue;                         // le tacle glissé est défensif
+    if ((p.slideCd ?? -1) > st.t) continue;                              // il vient déjà de se jeter
     const d = d2(p.p, st.ball.p);
     if (d < cfg.slideRange[0] || d > cfg.slideRange[1]) continue;
     const mine = st.players.filter((q) => q.team === p.team && q.id !== p.id && q.down <= 0);
@@ -437,32 +571,66 @@ function trySlide(st, cfg) {
     const dRival = d2(rival.p, st.ball.p);
     // he only goes down if staying up loses it: the opponent is closer, or close enough to arrive first
     if (dRival > d - cfg.slideMargin) continue;
+    // …mais pas si l'adversaire A DÉJÀ le ballon au pied : plonger sur un ballon contrôlé n'a plus
+    // rien à disputer — c'était la moitié du spam résiduel mesuré (3-6/min malgré cooldown+marge)
+    if (dRival < 0.55) continue;
+    // …et pas non plus si la menace n'est pas IMMINENTE : l'adversaire à plus d'un pas et demi du
+    // ballon laisse le temps de défendre debout — le plongeon préventif était le reste du spam
+    if (dRival > 1.6) continue;
     if (!best || d < best.d) best = { p, d };
   }
   if (!best) return;
   const p = best.p;
+  // UN SEUL PLONGEON PAR BALLON. Mesuré (seed 1) : trois défenseurs de la même équipe au sol sur le
+  // MÊME ballon en 0,3 s — le cooldown par joueur ne voit pas les coéquipiers, et un coéquipier DÉJÀ
+  // couché ne compte plus comme « plus proche » (filtre down). Le ballon qu'un partenaire attaque au
+  // sol est SON ballon : l'équipe espace ses plongeons.
+  const lastSlide = (st._slideT ??= {})[p.team] ?? -99;
+  if (st.t - lastSlide < 4) return;
   const sit = situation(p.p, p.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
   const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
   if (!pick || pick.tech.id !== 'tacle-glisse') return;
-  p.down = cfg.slideRecovery;                                  // he is on the ground either way
+  p.slideCd = st.t + cfg.slideCooldown;                        // gagné ou perdu : pas deux plongeons de suite
+  st._slideT[p.team] = st.t;
+  // le temps au sol n'est plus une constante d'horloger (mesuré : 1,200 s pile sur chaque tacle,
+  // référence réelle 0,5-1 s) — variance seedée ±10 % autour de slideRecovery
+  p.down = cfg.slideRecovery * (0.9 + 0.2 * (st.rnd ? st.rnd() : 0.5));  // he is on the ground either way
   // he gets there if he is genuinely the first: an opponent already on the ball wins the duel
   const rival = st.players.filter((q) => q.team !== p.team && q.down <= 0).reduce((b, q) => (d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), st.players.find((q) => q.team !== p.team));
   const won = !rival || d2(rival.p, st.ball.p) > cfg.receiveRadius;
   st.events.push({
     t: +st.t.toFixed(2), type: 'slide', by: p.id, won, tech: 'tacle-glisse', foot: pick.foot, surface: pick.surface,
+    // l'événement dit QUI a glissé et QUI avait le ballon : la clause de discipline de checkRondo
+    // (0 glissade de l'équipe en possession) le lit — et son sabotage l'injecte.
+    team: p.team, atk: st.possession.team,
     bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +st.ball.p[1].toFixed(2),
     speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
   });
   if (won) {
     // Un tacle ne fait pas APPARAÎTRE le ballon près du tacleur (39 sauts par partie, 1,77 m en
-    // moyenne, 2,56 m au pire) : le pied le RENVOIE vers lui. Une impulsion, dont l'intégrateur fait
-    // une course — on voit le ballon revenir, ce qui est le geste.
+    // moyenne, 2,56 m au pire) : le pied le RENVOIE. Une impulsion, dont l'intégrateur fait une
+    // course — on voit le ballon partir, ce qui est le geste.
     st.ball.release('perte');                  // un tacle qui gagne PREND — la sortie du porté se nomme
-    const bx = p.p[0] - st.ball.p[0], bz = p.p[2] - st.ball.p[2];
-    const bl = Math.hypot(bx, bz) || 1;
-    const back = Math.min(4.5, bl / 0.28);
-    st.ball.impulse([(bx / bl) * back - st.ball.v[0], -st.ball.v[1], (bz / bl) * back - st.ball.v[2]]);
     receive(st, p.id, cfg);                       // bookkeeping: possession, turnover count, sequence reset
+    // …ET LE POKE VISE UN PARTENAIRE DEBOUT, PAS SON PROPRE CORPS COUCHÉ. L'ancien poke renvoyait le
+    // ballon VERS le tacleur, au sol pour ~1 s, v = 0 : un adversaire debout le réclamait — mesuré,
+    // 36 tacles « gagnés » sur 37 rendaient le ballon à l'autre équipe (claim p50 0,2-0,5 s après).
+    // Un tacle réussi DÉGAGE le ballon vers le coéquipier debout le plus proche ; sans coéquipier,
+    // à l'opposé de l'adversaire le plus proche. (Le poke part APRÈS receive : l'amorti du turnover
+    // porte sur le ballon incident, l'impulsion du pied est le geste qui suit.)
+    const mate = st.players.filter((q) => q.team === p.team && q.id !== p.id && q.down <= 0)
+      .reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
+    const foe = st.players.filter((q) => q.team !== p.team && q.down <= 0)
+      .reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
+    let ux = 0, uz = 0;
+    if (mate) { ux = mate.p[0] - st.ball.p[0]; uz = mate.p[2] - st.ball.p[2]; }
+    else if (foe) { ux = st.ball.p[0] - foe.p[0]; uz = st.ball.p[2] - foe.p[2]; }
+    else { ux = p.p[0] - st.ball.p[0]; uz = p.p[2] - st.ball.p[2]; }
+    const ul = Math.hypot(ux, uz) || 1;
+    // 4,5 m/s envoyait le dégagement traverser le carré (et parfois la ligne) : 3,2 suffit à
+    // mettre le ballon hors de l'emprise sans le rendre au chaos
+    const back = Math.min(3.2, best.d / 0.28);
+    st.ball.impulse([(ux / ul) * back - st.ball.v[0], -st.ball.v[1], (uz / ul) * back - st.ball.v[2]]);
     // …BUT A BALL WON ON THE GROUND IS LOOSE, NOT CARRIED. `receive` made the tackler the carrier while
     // he was still lying in the grass with slideRecovery seconds left to serve, so the game spent those
     // seconds calling it a carry with the ball sitting metres from a man who could not move — 5.6 % of
@@ -513,16 +681,44 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // dribble — he plants and swings, and the ball leaves at the CONTACT instant of that swing. The
     // gesture itself is advanced by stepGestures(), for every actor and in every phase, because a
     // follow-through does not stop because the ball has left.
-    if (busy(c)) { st.hold += dt; return st; }
+    // …MAIS LE BALLON VIT PENDANT L'ACCOMPAGNEMENT. Un tacle-debout gagné fait du tacleur le porteur
+    // pendant ~0,4 s de follow EN PHASE CARRY — un cas que le porteur-passeur ne produit jamais (sa
+    // frappe bascule en flight). Pendant l'ARMÉ, l'autorité du ballon est stepGestures (porté au
+    // point de stance) ; pendant le FOLLOW en carry, personne n'écrivait : le ballon gelait sur
+    // place. Une autorité par phase : porté → carry au pied ; libre → physique.
+    if (busy(c)) {
+      st.hold += dt;
+      if (c.act.fired) {
+        if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt);
+        else st.ball.integrate(dt);
+      }
+      return st;
+    }
 
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
     if (!st._drb) st._drb = makeDribbler();
     // where the BALL should be pushed — the escape direction assignJobs computed, not the direction of
     // the player's own next step (those differ: he stands behind the ball, so his step is toward it)
-    const want = c.push || (c.target ? (() => {
+    let want = c.push || (c.target ? (() => {
       const dx = c.target[0] - c.p[0], dz = c.target[2] - c.p[2], l = Math.hypot(dx, dz) || 1;
       return [dx / l, dz / l];
     })() : [Math.cos(c.yaw), Math.sin(c.yaw)]);
+    // LA CONDUITE RENTRE SES TOUCHES PRÈS DE LA CRAIE. La sortie de but était devenue la première
+    // cause de perte (77/191 sur 8 graines), l'essentiel en phase carry : la poussée de conduite,
+    // décidée sur l'évasion, shave la ligne et la touche suivante sort. À moins de 1,3 m de la
+    // ligne, la demande de poussée est mélangée vers l'intérieur — le geste d'un joueur réel qui
+    // garde son ballon en jeu.
+    {
+      const mX = st.area[0] / 2 - Math.abs(st.ball.p[0]);
+      const mZ = st.area[1] / 2 - Math.abs(st.ball.p[2]);
+      let wx2 = want[0], wz2 = want[1];
+      if (mX < 1.3) { const k = (1.3 - mX) / 1.3; wx2 = wx2 * (1 - k) - Math.sign(st.ball.p[0]) * k; }
+      if (mZ < 1.3) { const k = (1.3 - mZ) / 1.3; wz2 = wz2 * (1 - k) - Math.sign(st.ball.p[2]) * k; }
+      if (wx2 !== want[0] || wz2 !== want[1]) {
+        const l2 = Math.hypot(wx2, wz2) || 1;
+        want = [wx2 / l2, wz2 / l2];
+      }
+    }
     // `heading` here is the body's MOMENTUM, like evadeKeep — how the dribble model decides how hard a
     // touch may be. It read the facing, which was the drift until the carrier started facing his ball;
     // after that, heading and `want` became the same vector and every touch went full strength straight
@@ -554,14 +750,14 @@ export function rondoStep(st, dt, cfg = RONDO) {
         st.ball.release('contesté');
         dribbleStep(st._drb, st.ball, pl, dt);                  // il tente de l'emmener hors du duel
       } else if (intentFresh || settling) {
-        st.ball.carry(footPoint(c, cfg), dt);                   // porté : le ballon au pied, continu
+        st.ball.carry(footPoint(st, c, cfg), dt);               // porté : le ballon au pied, continu
       } else {
         st.ball.release('conduite');
         dribbleStep(st._drb, st.ball, pl, dt);
       }
     } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius) {
       st.ball.possess(c.id);
-      st.ball.carry(footPoint(c, cfg), dt);
+      st.ball.carry(footPoint(st, c, cfg), dt);
     } else {
       dribbleStep(st._drb, st.ball, pl, dt);
     }
@@ -581,14 +777,19 @@ export function rondoStep(st, dt, cfg = RONDO) {
       return st;
     }
     st.hold += dt;
-    // pressure: a defender in the tackle zone long enough wins it
-    // A tackle needs the defender ON the carrier. Requiring him to also get NEARER THE BALL than the
-    // shielding body was tried — it is the right football idea, and it made tackles so rare that the
-    // carrier dribbled until the ball left the box: record 0. The shielding model needs a tackle model
-    // built for it, and that is a bigger piece of work than a tighter condition here.
-    const press = st.players.filter((p) => p.team !== c.team && d2(p.p, c.p) < cfg.tackleRadius);
+    // LA PRESSION EST UN DUEL, PAS UNE MINUTERIE DE VOISINAGE. L'ancien prédicat (« 1,45 m du corps
+    // pendant 0,5 s » → receive() instantané) était la cause n°1 de la non-forme du jeu : 54 % des
+    // pertes sans AUCUN geste, gagnant jusqu'à 2,33 m du ballon, ballon gelé net à distance,
+    // possession médiane 0,40 s (sonde duels-tacles). Le résultat négatif consigné ci-avant
+    // (« exiger d'être plus près du ballon que le corps-bouclier → record 0 ») valait pour un monde
+    // à tackleTime 0,5 SANS modèle de tacle : le bouclier demandait un modèle de tacle fait pour
+    // lui, et c'est ce que le tacle-debout est. Le prédicat regarde le BALLON (pressPredicate :
+    // contestRadius + shieldSlack), la minuterie s'engage dans un GESTE (beginStandTackle), le
+    // transfert se joue au contact — mesuré après bascule : turnover toutes les ~11 s au lieu de
+    // 1,6 s, et 0 flip sans événement physique (clause 10 de checkRondo).
+    const press = pressPredicate(st, c, cfg);
     st.pressure = press.length ? st.pressure + dt : 0;
-    if (st.pressure >= cfg.tackleTime) { receive(st, press[0].id, cfg); return st; }
+    if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], c, cfg);
     // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 %
     // of passes; the ball is not in front of him and the leg has nothing to hit.
     const reachNow = d2(c.p, st.ball.p) <= cfg.strikeReach;
@@ -606,7 +807,26 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // arrange ses appuis POUR ELLE : l'intention est adoptée une fois, elle pilote l'approche
     // jusqu'à s'engager — et elle ne meurt que de sa mort propre (course perdue, balistique nulle,
     // ou son délai : un plan qui n'a pas abouti en `intentTtl` est un plan mort, pas un dogme).
-    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && reachNow) {
+    // LA TENUE DÉLIBÉRÉE — le tempo d'un rondo n'est pas le minimum légal en boucle. Mesuré (sonde
+    // tempo-espaces / premiere-touche) : hold p50 = 0,38 s (= holdMin + armé), 0-1,6 % des
+    // inter-passes dans la bande 2-5 s du vrai rondo, contrôle→passe 0,39 s alors que 84 % des
+    // réceptions se font SANS presseur à 1,5 m. Un porteur au calme (adversaire > calmFoe) tient son
+    // ballon un temps tiré dans holdCalm — par st.rnd, le hasard SEEDÉ de la partie — avant
+    // d'adopter une intention ; pressé, l'urgence garde ses droits (holdMin, improvisation).
+    if (st._calmKey !== `${st.possession.carrier}:${st.turnovers}:${st.passes}`) {
+      st._calmKey = `${st.possession.carrier}:${st.turnovers}:${st.passes}`;
+      st._calmHold = cfg.holdCalm[0] + (st.rnd ? st.rnd() : 0.5) * (cfg.holdCalm[1] - cfg.holdCalm[0]);
+    }
+    const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
+    const calm = foeBody > cfg.calmFoe;
+    // …et beginPass lit CE holdMin-là (la porte 'timing') : au calme la fenêtre s'étire à 0,8-1,0 s,
+    // pressé elle retombe au holdMin d'origine — fixer puis donner.
+    st._holdMin = calm ? Math.min(1.0, st._calmHold) : cfg.holdMin;
+    // ON NE PASSE PAS UN BALLON QU'ON EST ENCORE EN TRAIN DE POSER : pas d'engagement avant la fin
+    // de la fenêtre du contrôle + settleExtra (70 % des contrôles étaient refrappés avant la fin du
+    // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.
+    const settleGate = st._settling && st._settling.id === c.id && st.t < st._settling.at + cfg.settleExtra;
+    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && reachNow && (!settleGate || contested)) {
       // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
       // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon
       // mouvant : control-at-foot 1 % → 33 %), et pas rien du tout non plus (bloquer l'intention
@@ -632,13 +852,26 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // disputé le sort DU PREMIER GESTE LÉGAL (improvisation d'urgence, veto de course levé :
         // le moins mauvais ballon vaut mieux que le duel qu'on est en train de perdre) ; s'il n'y a
         // AUCUN geste légal, alors seulement l'évasion reprend.
+        // …MAIS PAS AU PREMIER FRÔLEMENT. Depuis que le duel est un vrai geste (tacle-debout à
+        // tackleTime), le porteur a une fenêtre : jouer la panique dès la première image de
+        // conteste produisait le ping-pong mesuré (intervalle entre pertes p50 1,5-1,9 s, les
+        // possessions neuves mouraient sur des balles improvisées interceptées). Il laisse d'abord
+        // l'évasion travailler ; l'urgence ne prend la main que si le duel s'installe (pressure).
         if (c.intent) c.intent = null;
         deny(st, 'contesté');
-        const choice = choosePass(st, cfg);
-        if (choice) beginPass(st, choice, cfg, { forceUrgent: true });
+        if (st.pressure > 0.15) {
+          const choice = choosePass(st, cfg);
+          if (choice) beginPass(st, choice, cfg, { forceUrgent: true });
+        }
       } else if (!c.intent) {
         const choice = choosePass(st, cfg);
-        if (choice && (choice.score > 3.2 || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
+        // AU CALME, LA BARRE MONTE ET LA TENUE SE PAIE : l'intention ne s'adopte qu'au-delà de la
+        // tenue délibérée tirée pour CETTE possession (st._calmHold, seedée) et d'une barre de
+        // score relevée (intentBarCalm) — le porteur conduit, fixe, PUIS donne. Pressé, la barre
+        // et la tenue d'origine reprennent : l'urgence reste prompte.
+        const bar = calm ? cfg.intentBarCalm : 3.2;
+        const heldEnough = !calm || st.hold >= st._calmHold;
+        if (choice && ((choice.score > bar && heldEnough) || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
       }
       if (c.intent) {
         // l'intention vise le receveur VIVANT : la mène se rafraîchit sur sa course réelle — c'est
@@ -659,6 +892,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
     let taker = -1, bestD = Infinity;
     if (gone > cfg.releaseClear) {
       for (const p of st.players) {
+        // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON. La boucle sans garde donnait 3 prises de balle
+        // par des joueurs ENCORE couchés après leur tacle (sonde duels-tacles) — possession = homme
+        // DEBOUT au ballon, le temps au sol est le prix du plongeon.
+        if (p.down > 0) continue;
         const d = d2(p.p, st.ball.p);
         if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
       }
@@ -695,7 +932,7 @@ export function playRondo(st, seconds, { dt = 1 / 60, cfg = RONDO, sample = 6 } 
       trace.push({
         t: +st.t.toFixed(2), phase: st.phase, team: st.possession.team, passes: st.passes, since: +since.toFixed(2), carrier: st.possession.carrier,
         ball: [+st.ball.p[0].toFixed(2), +st.ball.p[1].toFixed(2), +st.ball.p[2].toFixed(2)],
-        players: st.players.map((p) => ({ id: p.id, team: p.team, job: p.job, p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)], speed: +p.speed.toFixed(2), yaw: +p.yaw.toFixed(3) })),
+        players: st.players.map((p) => ({ id: p.id, team: p.team, job: p.job, p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)], speed: +p.speed.toFixed(2), yaw: +p.yaw.toFixed(3), down: +p.down.toFixed(2) })),
       });
     }
   }
@@ -799,6 +1036,40 @@ export function checkRondo(st, trace, cfg = RONDO) {
   const occupy = occ.length ? occ.reduce((a, b) => a + b, 0) / occ.length / (st.area[0] * st.area[1]) : 1;
   if (settled.length > 60 && occupy < cfg.occupyMin) {
     issues.push(`bloc recroquevillé : l'équipe en possession n'occupe que ${(occupy * 100).toFixed(0)} % du carré (< ${(cfg.occupyMin * 100).toFixed(0)} %)`);
+  }
+
+  // 10. UN VOL DE BALLE EST UN GESTE, PAS UN FLIP D'ÉTIQUETTE. Le chiffre fondateur de la fournée
+  //     duels : 54 % des pertes (157/291) basculaient la possession sans AUCUN événement physique —
+  //     gagnant jusqu'à 2,33 m du ballon, premier geste du « voleur » : la passe suivante. Chaque
+  //     turnover par tacle doit être adossé à un duel GAGNÉ (tacle-debout, événement 'duel') ou à un
+  //     tacle glissé gagné (événement 'slide') dans la même fenêtre d'instant.
+  const evs = st.events ?? [];
+  const tackleTOs = evs.filter((e) => e.type === 'turnover' && e.why === 'tackle');
+  const orphans = tackleTOs.filter((e) => !evs.some((g) => (g.type === 'duel' || g.type === 'slide') && g.won && Math.abs(g.t - e.t) <= 0.15));
+  if (orphans.length) issues.push(`VOL SANS GESTE : ${orphans.length} bascule(s) de possession par tacle sans duel ni glissade gagné (t=${orphans[0].t})`);
+  // 11. PAS DE TÉLÉKINÉSIE : arrêter un ballon vivant exige d'être à sa portée. Mesuré avant : 39
+  //     arrêts d'un ballon > 1 m/s (jusqu'à 9,5 m/s) tué net avec un gagnant au-delà du rayon de jeu.
+  //     Le tacle glissé est exempté : son pied ATTEINT le ballon à 1-3,2 m, et l'événement le dit.
+  const teleki = tackleTOs.concat(evs.filter((e) => e.type === 'turnover' && e.why === 'interception'))
+    .filter((e) => (e.d ?? 0) > cfg.receiveRadius && (e.v0 ?? 0) > 1 && (e.v1 ?? 0) < 0.5 * (e.v0 ?? 0)
+      && !evs.some((g) => g.type === 'slide' && g.won && Math.abs(g.t - e.t) <= 0.15));
+  if (teleki.length) issues.push(`TÉLÉKINÉSIE : ${teleki.length} ballon(s) arrêté(s) à distance (t=${teleki[0].t}, ${teleki[0].v0}→${teleki[0].v1} m/s à ${teleki[0].d} m)`);
+  // 12. LE TACLE GLISSÉ EST RARE ET DÉFENSIF. Mesuré avant : 9,4/min, 69 % par l'équipe en
+  //     possession (49 % par le porteur sur son propre ballon). Budget : ≤ 3/min (cible de jeu
+  //     2/min, le seuil de contrat laisse la variance multi-graines), et ZÉRO par l'équipe qui a
+  //     déjà le ballon — courir derrière sa touche est le travail de la conduite.
+  const slideEvs = evs.filter((e) => e.type === 'slide');
+  const slideByAtk = slideEvs.filter((e) => e.team != null && e.atk != null && e.team === e.atk);
+  if (slideByAtk.length) issues.push(`GLISSADE DE POSSESSION : ${slideByAtk.length} tacle(s) glissé(s) par l'équipe qui avait le ballon (t=${slideByAtk[0].t})`);
+  // durée arrondie à la seconde ENTIÈRE : 119,9 s lus comme 1,998 min faisaient déclarer 3,0026/min
+  // pour 6 glissades en 2 minutes — le budget se juge sur la partie, pas sur l'artefact du dernier pas
+  const gameMin = trace.length ? Math.max(0.5, Math.ceil(trace[trace.length - 1].t) / 60) : 1;
+  if (slideEvs.length / gameMin > 3) issues.push(`SPAM DE GLISSADES : ${(slideEvs.length / gameMin).toFixed(1)}/min (max 3)`);
+  // 13. LA POSSESSION EST UN HOMME DEBOUT. 19 épisodes mesurés de phase carry avec porteur au sol
+  //     (jusqu'à 6,7 s, un « porteur » couché que la défense ne pouvait pas déposséder).
+  for (const s of carry) {
+    const cd = s.players.find((p) => p.id === s.carrier);
+    if (cd && (cd.down ?? 0) > 0) { issues.push(`PORTEUR AU SOL : phase carry à t=${s.t} avec porteur ${s.carrier} couché (down=${cd.down})`); break; }
   }
 
   return {

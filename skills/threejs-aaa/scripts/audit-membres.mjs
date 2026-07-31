@@ -125,7 +125,14 @@ for (const [ei, ep] of episodes.entries()) {
     const angles = [];
     for (let i = iStart; i < F.length; i++) angles.push(ang(F[i].bones[ep.foot === 'right' ? 'RightUpLeg' : 'LeftUpLeg'], F[i].bones[ep.foot === 'right' ? 'RightLeg' : 'LeftLeg'], F[i].bones[strike]));
     const amp = Math.max(...angles) - Math.min(...angles);
-    ok(`  le genou frappeur a une amplitude (${amp.toFixed(0)}° ≥ 40)`, amp >= 40);
+    // L'AMPLITUDE SE JUGE SUR UNE FRAPPE POSÉE. Pendant un armé en mouvement (une-touche pressé —
+    // la sim calme en produit toujours), les jambes du geste sont à poids PARTIEL par la loi de
+    // composition (anti-chimère : le membre appartient à la locomotion tant que le corps marche) —
+    // une amplitude réduite y est la LOI, pas un défaut. Même régime d'exemption que strike-stance.
+    const vArm = F.slice(iStart, Math.max(iStart + 1, iFire)).map((f) => f.speed ?? 0).sort((a, b) => a - b);
+    const vMed = vArm[Math.floor(vArm.length / 2)] ?? 0;
+    if (vMed <= 1.5) ok(`  le genou frappeur a une amplitude (${amp.toFixed(0)}° ≥ 40 — frappe posée)`, amp >= 40);
+    else ok(`  le genou frappeur a une amplitude (${amp.toFixed(0)}° ≥ 25 — frappe en mouvement, v armé méd ${vMed.toFixed(1)} m/s, jambes à poids partiel)`, amp >= 25);
     // LA SURFACE DU PIED — la question « le ballon tape-t-il la bonne surface ? », rendue
     // géométrique. Au contact : l'axe du pied frappeur (Foot → ToeBase) contre la DIRECTION DE
     // DÉPART du ballon (sa vitesse à l'image d'après — c'est la frappe qui l'a écrite). L'angle

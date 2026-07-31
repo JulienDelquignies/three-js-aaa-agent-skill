@@ -1188,6 +1188,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    isolé) : duels honnêtes (tuer le flip de possession sans geste physique — 54 % des pertes) et
    tempo/soutiens calmes, sous verrous de balance.
 
+19. **Sweep, seconde moitié — duels honnêtes et tempo de rondo (la sim).** Le flip de possession
+   sans geste physique (54 % des pertes, « gagnant » jusqu'à 2,33 m du ballon, ballon gelé à 0 m/s
+   en 1 image — le nexus mesuré par QUATRE sondes indépendantes) est mort : tout vol est désormais
+   un GESTE tacle-debout (prédicat de portée sur le BALLON, contestRadius + shieldSlack enfin
+   consommé, transfert par contact, refus nommés 'tacle-manqué'/'tacle-orphelin', clip tacleDebout
+   enfin déclenché) ; turnover() amortit à 20 % + possess + événement 'control' nommé — plus de
+   télékinésie (39 → 0). Tacles glissés 9,4/min (69 % par l'équipe EN POSSESSION !) → 1,9/min, 0 % ;
+   cooldowns joueur 12 s + équipe 4 s (les cascades de 3 plongeons en 0,3 s étaient mesurées) ;
+   gardes down partout (0 porté avec porteur au sol). Tempo : hold p50 0,38 → 1,04 s, inter-passes
+   0,9 → 1,67 s avec 34 % dans 2-5 s (était 0-1,6 %), soutiens 3,0-3,5 → 1,70 m/s (ring EMA τ 0,5 +
+   hystérésis + pénalité coéquipier < 2 m), angle press/cover 15-23° → 40-58°. Balance : record
+   9,25 (référence 8,1 — MIEUX en jouant plus calme), 47,6 passes/partie. Un deadlock découvert et
+   corrigé en route (presseur arrêté à 0,88 m d'un ballon mort, partie gelée 115 s). verify-rondo
+   27 → 40 clauses (+5 sabotages dont flip-sans-geste et spam de glissades, rejoués et attrapés) ;
+   checkRondo gagne les clauses 10-13 (VOL SANS GESTE, TÉLÉKINÉSIE, GLISSADE DE POSSESSION, PORTEUR
+   AU SOL). Compromis consignés en code avec leurs négatifs : cadence de pertes 6,3 s (cible 8-15 —
+   trois remèdes essayés ont tué le record : raceSlack 0,18 → 5,5, presseur collant → 6,8),
+   both&lt;2,5 m ~52 %, médiane passes/possession 0-1 (moyenne 1,4-1,9, les 50/50 de scramble
+   comptent). L'audit membre gagne le double plancher genou (posé ≥ 40°, en mouvement ≥ 25° —
+   l'anti-chimère rend l'amplitude partielle LÉGALE sur un une-touche pressé). Le lot entier
+   (18 + 19) mesuré ensemble : audit 16/0, 36 bancs verts, preuves-image dans le scratchpad.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

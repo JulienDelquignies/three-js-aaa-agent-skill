@@ -27,17 +27,45 @@ export const RONDO = {
   corridor: 1.25,          // m — a defender inside this of the line blocks the lane
   pressRadius: 9,          // m — inside this the presser commits to the carrier
   tackleRadius: 1.45,      // m
-  tackleTime: 0.5,         // s of sustained pressure to win the ball
+  // LE DUEL PREND LE TEMPS D'UN DUEL. À 0,5 s, le vol sous pression était un métronome : 19,6 vols/min,
+  // 54 % des pertes, possession médiane 0,40 s (sonde duels-tacles). Et la minuterie comptait la
+  // proximité du CORPS — le « gagnant » était jusqu'à 2,33 m du ballon au flip. Désormais elle ne court
+  // que si le défenseur BAT le porteur au ballon (contestRadius + shieldSlack, voir rondo-sim), et son
+  // terme n'est plus une bascule d'étiquette : c'est l'ENGAGEMENT d'un tacle-debout (0,28 s d'armé de
+  // plus, gagnable par le porteur qui sort le ballon pendant l'armé).
+  tackleTime: 0.9,         // s of sustained pressure to COMMIT to the standing tackle (was 0.5)
+  standCooldown: 1.5,      // s — un tacle-debout manqué ne se re-tente pas dans la seconde (anti-mitraillette)
   receiveRadius: 0.85,     // m — the receiver takes the ball. Was 1.25, which is BEYOND the reach of
                            // every control in the technique table (widest window 1.0 m): the touch
                            // fired while the ball was still out of reach, so it stopped a metre away.
   controlSettle: 0.34,     // m — where the ball ends up in front of the foot after a touch
   footSide: 0.11,          // m — and how far to the side of centre, on the controlling foot
   releaseClear: 1.8,       // m the ball must travel before ANYONE can take it (else the passer intercepts himself)
-  holdMin: 0.35,           // s — minimum on the ball before passing (no hot-potato)
-  holdMax: 2.4,            // s — forced to release (no dwelling)
+  holdMin: 0.4,            // s — minimum on the ball before passing (no hot-potato) — sous pression
+  //                          (0,35 → 0,40 : hold p50 mesuré 0,78 s pour une cible ≥ 0,8, le dixième manquant
+  //                          vient des passes pressées ; 0,45 balayé : p50 1,13 mais 43 % d'inter-passes en
+  //                          2-5 s (cible 20-35) et record moyen 9,3 → 7,1 — trop de duels subis)
+  // LA TENUE DÉLIBÉRÉE. holdMin seul faisait un métronome : hold p50 = 0,38 s (= holdMin + armé),
+  // 0-1,6 % des inter-passes dans la bande 2-5 s d'un vrai rondo, chaque passe au minimum légal
+  // (sonde tempo-espaces). Un porteur NON pressé (adversaire > calmFoe) tient son ballon un temps
+  // tiré dans holdCalm — SEEDÉ par st.rnd, jamais Math.random — avant d'adopter une intention ;
+  // pressé, l'ancien holdMin reprend : fixer puis donner, pas patate chaude puis patate chaude.
+  holdCalm: [0.8, 1.8],    // s — la fourchette de tenue délibérée d'un porteur au calme
+  calmFoe: 2.0,            // m — adversaire plus loin que ça = pas d'urgence à jouer
+  intentBarCalm: 3.6,      // barre d'adoption d'intention relevée au calme (3,2 pressé) — 3,9 affamait
+  //                          l'attaque une fois la pénalité de sortie ajoutée à choosePass (32 frappes/partie)
+  settleExtra: 0.25,       // s — pas de beginPass avant la fin de la fenêtre _settling + ce délai
+  holdMax: 3.0,            // s — forced to release (no dwelling). 2,4 → 3,0 : avec la tenue délibérée
+  //                          (jusqu'à 1,8 s) + l'armé (0,5 s), 2,4 forçait des balles « moins mauvaises »
+  //                          au veto levé — la moitié des interceptions ; un vrai rondo tient 2-5 s
   speeds: { press: 6.6, support: 5.4, carry: 4.2, chase: 6.9 },
-  accel: 9.5,              // m/s² along the direction of travel
+  // 9,5 m/s² dépassait le max humain (6-8) de 20-60 % et la locomotion vivait en bang-bang : 59 %
+  // des images joueur EXACTEMENT à la saturation du cap (sonde allures-inclinaison, p50 = p90 =
+  // 11,24 m/s² = √(9,5²+6²)). 7,5 rentre dans la plage humaine ; le low-pass sur la demande
+  // (wantTau, movePlayers) sort les soutiens du régime tout-ou-rien.
+  accel: 7.5,              // m/s² along the direction of travel (was 9.5 — above human max)
+  wantTau: 0.12,           // s — low-pass sur la DEMANDE de vitesse des rôles calmes (support/mark)
+  supportNearCap: 1.7,     // m/s — un soutien près de sa station ajuste par petits pas (p50 avant/après : 3,2 → 1,7)
   turnAccel: 6.0,          // m/s² PERPENDICULAR to it — the angular rate is turnAccel/speed, so pace
                            // costs agility and a dribbler can turn inside a sprinting defender
   swarmFrac: 0.135,        // the beehive radius as a fraction of the box's short side (see checkRondo)
@@ -49,19 +77,41 @@ export const RONDO = {
   // plays the worst (completed passes 4.5 → 2.3: the men are too far apart to link). 0.45 beats the old
   // model on every axis at once — occupancy, distance-to-station, record AND completed passes.
   stationBias: 0.45,
-  // How much better another spot must be before a man abandons the one he holds. Measured: every
-  // non-zero value made things WORSE (at 0.6 bias, margin 9 → occupancy 24.4→22.2, passes down), so it
-  // stays at 0 = ties go to the spot you already hold. Kept as a knob because the finding is worth
-  // holding onto: the anthill was the ring centring, not a lack of hysteresis.
-  commitMargin: 0,
+  // How much better another spot must be before a man abandons the one he holds. HISTOIRE EN DEUX
+  // TEMPS : à l'époque du ring recentré sur le ballon à chaque image, toute marge non nulle mesurait
+  // PIRE (à 0,6 de bias, marge 9 → occupation 24,4→22,2) — l'oscillation venait du RING, pas de la
+  // décision, et la marge ne faisait que retarder la correction. Le ring est depuis ANCRÉ EN EMA
+  // (ringTau) : la sonde tempo-espaces a mesuré la station qui saute > 1,5 m ~2,5 fois/s et des
+  // soutiens à p50 3,0-3,5 m/s en course perpétuelle — la marge + la tenure (spotTenure) redeviennent
+  // le bon outil une fois la cause racine (le ring mobile) traitée.
+  commitMargin: 2.0,
+  spotTenure: 1.0,         // s — une station adoptée se tient au moins ce temps avant re-décision
+  //                          (0,6 mesuré insuffisant : encore ~0,9 saut/s par soutien. Résultat négatif
+  //                          consigné : pousser à tenure 1,4 + marge 2,6 ne rend que 5 % de sauts en moins
+  //                          (157 → 149/min) et fait tomber le record moyen 9,3 → 6,2 — le résidu vient des
+  //                          re-formations LÉGITIMES (turnover ⇒ stations remises à zéro, éviction mateGap),
+  //                          pas de la décision qui flappe. 1,0/2,0 est l'optimum mesuré : 599 → ~150/min.)
+  ringTau: 0.5,            // s — EMA de l'ancre du ring de soutien : le ring ne re-tourne pas à chaque touche
+  mateGap: 2.0,            // m — candidat de station à moins de ça d'un coéquipier : REJETÉ (deux hommes = une ligne)
   occupyMin: 0.18,        // the possession team must span at least this fraction of the box (checkRondo clause 9)
   minGap: 0.5,             // m — two players closer than this are pushed apart (they were interpenetrating)
   strikeReach: 1.25,       // m — a pass is only played off a ball the foot can reach
   shieldSlack: 0.15,       // m — how far past the shielding body a defender must get to win the ball
-  slideRange: [1.0, 3.2],  // m — the window a slide tackle can reach (nearer, you just take it standing)
-  slideRecovery: 1.2,      // s on the ground afterwards, won or lost: that cost is the whole decision
-  slideMargin: 0.15,        // m — how much closer the opponent must be before going to ground is worth it
-  slideMaxBall: 6.0,       // m/s — above this the ball is going too fast to be won by sliding at it
+  slideRange: [1.4, 3.2],  // m — the window a slide tackle can reach. Plancher 1,0 → 1,4 : en deçà de 1,3 m
+  //                          le tacle-debout (table : dist 0,2-1,3) atteint le ballon SUR SES APPUIS — on ne se couche pas pour ça
+  // LE TACLE GLISSÉ EST RARE OU IL N'EST RIEN. Mesuré (sonde duels-tacles) : 9,4/min, joués à 69 %
+  // par l'équipe EN POSSESSION dont 49 % par le porteur plongeant sur sa propre touche — un rondo
+  // d'entraînement au sol en permanence. Le geste redevient défensif (trySlide exclut l'équipe en
+  // possession), coûteux (cooldown par joueur) et de dernier recours (marge 0,15 → 0,4 : on ne se
+  // jette que si on perd NETTEMENT la course). Recovery 1,2 s constant → 0,9 s ± variance seedée
+  // (référence réelle 0,5-1 s, mesuré figé à 1,200).
+  slideRecovery: 0.9,      // s on the ground afterwards (±10 % seeded), won or lost: that cost is the decision
+  slideMargin: 0.7,        // m — how much closer the opponent must be before going to ground is worth it
+  //                          (0,4 prescrit par la sonde laissait encore 3-3,5 glissades/min : on ne se couche
+  //                          que si la course est PERDUE d'un vrai pas, pas d'une épaule)
+  slideCooldown: 12,       // s — un joueur ne se jette pas deux fois dans la même séquence (8-12 s réel, haut de fourchette : 10 s mesurait encore 2,5-4,5 glissades/min)
+  slideMaxBall: 5.0,       // m/s — above this the ball is going too fast to be won by sliding at it
+  //                          (6,0 mesurait des plongeons sur des ballons à 5-6 m/s qui traversaient la surface de jeu)
   carryStandoff: 0.4,      // m — how far BEHIND the ball the carrier places himself (0 = off)
   carrySideBias: 0.55,     // fraction of the standoff shifted to the STRIKING side (pre-aligns the stance)
   evadeAroundBall: true,   // sample the escape directions around the BALL rather than the player
@@ -71,7 +121,9 @@ export const RONDO = {
   evadeSamples: 24,        // directions sampled around the carrier
   evadeFoe: 1.0,           // weight on getting away from the CLOSEST defender at the candidate
   evadeMate: 0.35,         // …and on not running into your own supports
-  evadeEdge: 0.45,         // …and on not getting pinned against the chalk
+  evadeEdge: 0.8,          // …and on not getting pinned against the chalk — 0,45 laissait la conduite
+  //                          pousser le ballon dehors : 13-14 sorties par partie DEPUIS la phase carry
+  //                          (mesuré après la tenue délibérée : le porteur vit plus longtemps près de la craie)
   evadeKeep: 1.1,          // …and on continuing the way you were already going
   // The LONGEST anticipation any gesture has (animkit `passePivot`, 0.52 s). Only used to know how
   // early to start asking the question — beginPass then carves the anticipation of the gesture it
@@ -79,7 +131,11 @@ export const RONDO = {
   windupBudget: 0.55,
   rushedRadius: 3.2,       // m — inside this, speed breaks ties between gestures (see beginPass)
   // --- la COURSE au vol (beginPass) : un couloir n'est pas une géométrie, c'est une course.
-  raceSlack: 0.05,         // s — le défenseur qui arrive à ça du receveur gagne la course : passe refusée
+  raceSlack: 0.08,         // s — le défenseur qui arrive à ça du receveur gagne la course : passe refusée
+  //                          (résultat négatif consigné : 0,18 « pour faire tomber les interceptions » étrangle
+  //                          l'attaque au lieu de la protéger — record moyen 8,1 → 5,5 sur 8 graines, glissades EN
+  //                          HAUSSE parce que le jeu se remplit de ballons rendus ; 0,08 garde la marge d'un
+  //                          passeur réel sans tuer les lignes jouables)
   vetoTtl: 0.6,            // s — un receveur perdu à la course n'est pas re-proposé pendant ce temps
   intentTtl: 0.9,          // s — une intention de passe pilote l'approche AU PLUS ce temps avant de mourir
   strikeBallMax: 1.5,      // m/s — une frappe PLANIFIÉE exige un ballon posé (l'assise d'abord, voir beginPass)
@@ -97,6 +153,18 @@ export const RONDO = {
   // A TURN TAKES TIME. Bounded at turnAccel/speed rad/s like everything else that rotates here, with
   // this floor so a man standing still still turns at a human rate instead of snapping.
   turnRateMin: 4.5,        // rad/s at a standstill (~260°/s: a sharp but human pivot)
+  // LE DUO PRESS/COVER NE CHASSE PAS EN FILE. Le cover à 0,42 × la ligne depuis le ballon vivait à
+  // 1,5-3 m du ballon = un DEUXIÈME presseur : les 2 défenseurs les plus proches étaient tous deux
+  // < 2,5 m du ballon 49-57 % du temps installé, angle de séparation p25 = 15-23° (sonde
+  // tempo-espaces, charges à trois colinéaires à l'écran). Le cover coupe la ligne aux 2/3 et sous
+  // un angle DISTINCT du presseur vu du ballon.
+  coverFrac: 0.68,         // fraction de la ligne ballon→meilleure option où le cover se poste (60-75 % réel)
+  coverMinAngle: 60,       // ° — angle minimal presseur/cover vus du ballon ; en deçà, le cover pivote
+  // …et un PLANCHER RADIAL : posté à 0,68 × une ligne courte (option à 4 m), le cover retombait à
+  // 2,7 m du ballon et l'amorti d'arrivée le faisait osciller SOUS 2,5 m — mesuré après le premier
+  // réglage : press+cover encore tous deux < 2,5 m du ballon 54 % du temps installé, à 715 échantillons
+  // sur 762 c'était bien LA paire press+cover. Le cover n'approche jamais à moins de ce rayon.
+  coverMinDist: 3.0,       // m — distance minimale cover→ballon
 };
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
@@ -125,6 +193,10 @@ export function makeRondo({ perTeam = 5, seed = 1, area = RONDO.area } = {}) {
   const carrier = 0;
   return {
     t: 0, players, area,
+    // LE HASARD DU JEU EST SEEDÉ, ET IL VIT SUR L'ÉTAT. La tenue délibérée du porteur et la variance
+    // du temps au sol d'un tacle tirent ici — jamais Math.random : même graine, même partie, et le
+    // contrat de déterminisme de verify-rondo le prouve à chaque run.
+    rnd,
     // LE BALLON EST UN CORPS, pas un objet nu. Sa position est en lecture seule : écrire `ball.p`
     // LÈVE. C'est ce qui rend les 285 téléportations mesurées impossibles par construction plutôt
     // qu'interdites par une règle qui, elle, était aveugle (voir ball-body.js).
@@ -181,12 +253,26 @@ export function choosePass(st, cfg = RONDO) {
     const style = lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
     const blocked = !lane.open && style !== 'lofted';
     if (blocked) continue;
+    // UNE PASSE MANQUÉE PRÈS DE LA LIGNE EST UNE SORTIE EN PRÉPARATION. Mesuré : la sortie de but
+    // était devenue la première cause de perte (77/191 sur 8 graines), dont un tiers en vol — le
+    // ballon dépasse son receveur et roule ~8 m. Si la ligne de sortie est à moins de 3 m DERRIÈRE
+    // le point de réception (dans l'axe de la passe), le ballon raté ne pardonne pas : pénalité.
+    let overrun = 99;
+    {
+      const ux = (lead[0] - origin[0]) / d, uz = (lead[2] - origin[2]) / d;
+      const hx = st.area[0] / 2, hz = st.area[1] / 2;
+      if (ux > 1e-6) overrun = Math.min(overrun, (hx - lead[0]) / ux);
+      else if (ux < -1e-6) overrun = Math.min(overrun, (-hx - lead[0]) / ux);
+      if (uz > 1e-6) overrun = Math.min(overrun, (hz - lead[2]) / uz);
+      else if (uz < -1e-6) overrun = Math.min(overrun, (-hz - lead[2]) / uz);
+    }
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
       - Math.abs(d - 10) * 0.32                             // 10 m is the sweet spot
       - (m.id === st.lastPasser ? 2.6 : 0)                  // don't ping-pong
-      - (style === 'lofted' ? 2.2 : 0);                     // ground ball whenever possible
+      - (style === 'lofted' ? 2.2 : 0)                      // ground ball whenever possible
+      - (overrun < 3 ? (3 - overrun) * 0.9 : 0);            // ne joue pas VERS la sortie toute proche
     if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d };
   }
   return best;
@@ -197,7 +283,7 @@ export function choosePass(st, cfg = RONDO) {
  * (the carrier, or the BALL while a pass is in flight — there is no carrier during those seconds
  * and everyone still has to keep moving).
  */
-function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [] } = {}) {
+function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [], ring = null, bias = cfg.stationBias } = {}) {
   const opp = foes(st, me.team).map((p) => p.p);
   // .map(p => p.p): these must be POSITIONS. Holding player objects here made every distance NaN,
   // and since `NaN > NaN` is false the "best" candidate never updated — every supporter silently
@@ -210,13 +296,24 @@ function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [] 
   // is forced onto the near side and the team folds onto the ball. Pulling the centre back toward the
   // middle of the grid keeps the ring INSIDE the box at any ball position, which is what lets five men
   // actually stand around it. (Occupancy of the box: 21% of the area with the ring on the ball.)
-  const cx = anchor[0] * (1 - cfg.stationBias), cz = anchor[2] * (1 - cfg.stationBias);
+  // …ET IL EST ANCRÉ SUR L'EMA DU BALLON (`ring`, assignJobs), pas sur le ballon de l'image : ancré
+  // brut, chaque touche re-tournait le ring entier et la station sautait > 1,5 m ~2,5 fois par
+  // seconde — les soutiens couraient en permanence à p50 3,0-3,5 m/s vers des points en fuite
+  // (sonde tempo-espaces). En phase loose, `bias` = 1 : les secteurs s'ancrent au CENTRE du carré,
+  // pour que le ring ne s'effondre pas du côté du scramble (deux soutiens mesurés à 0,50 m).
+  const rc = ring ?? anchor;
+  const cx = rc[0] * (1 - bias), cz = rc[2] * (1 - bias);
   const scoreAt = (p, a) => {
     if (Math.abs(p[0]) > ax / 2 - 1.2 || Math.abs(p[2]) > az / 2 - 1.2) return -Infinity;   // stay in the grid
-    const lane = laneClearance(anchor, p, opp, { corridor: cfg.corridor });
-    const nearFoe = Math.min(...opp.map((o) => d2(o, p)), 99);
     const nearMate = Math.min(...others.map((o) => d2(o, p)), 99);
     const nearClaim = Math.min(...claimed.map((c) => d2(c, p)), 99);
+    // PÉNALITÉ DURE, PAS UN TERME : deux coéquipiers à 0,5 m n'offrent qu'une seule ligne à eux
+    // deux, et le terme doux (×0,7) était DOMINÉ par le terme de secteur (×7,5) — mesuré : soutiens
+    // id5/id7 à 0,50 m l'un de l'autre, moitié du carré vide (seed 3, t=48,65 s). Un candidat qui
+    // marche sur un coéquipier n'est pas un mauvais candidat, c'est un non-candidat.
+    if (nearMate < cfg.mateGap || nearClaim < cfg.mateGap) return -Infinity;
+    const lane = laneClearance(anchor, p, opp, { corridor: cfg.corridor });
+    const nearFoe = Math.min(...opp.map((o) => d2(o, p)), 99);
     const s =
       Math.min(lane.margin, 4) * 2.2                        // show for a clean lane
       + Math.min(nearFoe, 8) * 0.95                         // get away from your marker
@@ -240,21 +337,24 @@ function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [] 
     }
   }
 
-  // COMMIT TO THE STATION — hold the spot you claimed unless another is better by `commitMargin`.
-  // Worth reading as a negative result: the anthill LOOKED like a hysteresis problem (a supporter sat
-  // 4.46 m from his own target on average, as far from it as he was from the ball, i.e. permanently in
-  // transit toward a station that had already moved). But swept, every non-zero margin measured worse.
-  // The distance-to-station fell because the ring stopped moving so much, not because men stopped
-  // re-deciding. Ties go to the held spot; the re-score is what stops you holding a place gone bad.
+  // COMMIT TO THE STATION — hold the spot you claimed unless another is better by `commitMargin`
+  // AND you have held this one at least `spotTenure`. Worth keeping the old negative result: with
+  // the ring re-centred on the raw ball every frame, every non-zero margin measured WORSE — the
+  // anthill was the ring moving, not the decision flapping. With the ring now EMA-anchored, the
+  // hysteresis bites on the right cause: station jumps > 1.5 m measured at ~2.5/s per supporter
+  // before, and the tenure is what turns "in transit forever" into "hold your angle, adjust by
+  // steps". The re-score is still what stops you holding a place gone bad (−Infinity evicts).
   if (me.spotTeam !== st.possession.team) me.spot = null;      // stations do not survive a turnover
   me.spotTeam = st.possession.team;
   if (me.spot) {
     const held = me.spot;
     const a = Math.atan2(held[2] - cz, held[0] - cx);
     const heldScore = scoreAt(held, a);
-    if (heldScore !== -Infinity && (!best || best.score < heldScore + cfg.commitMargin)) return held;
+    const tenure = st.t - (me.spotT ?? -99);
+    if (heldScore !== -Infinity && (tenure < cfg.spotTenure || !best || best.score < heldScore + cfg.commitMargin)) return held;
   }
   me.spot = best ? best.p : [...me.p];
+  me.spotT = st.t;
   return me.spot;
 }
 
@@ -300,7 +400,9 @@ export function evadeSpot(st, c, cfg = RONDO) {
     const a = (i / cfg.evadeSamples) * Math.PI * 2;
     const dx = Math.cos(a), dz = Math.sin(a);
     const x = org[0] + dx * cfg.evadeStep, z = org[2] + dz * cfg.evadeStep;
-    if (Math.abs(x) > hx - 0.6 || Math.abs(z) > hz - 0.6) continue;      // off the chalk: not an option
+    if (Math.abs(x) > hx - 1.0 || Math.abs(z) > hz - 1.0) continue;      // off the chalk: not an option
+    //  (0,6 → 1,0 : la touche de conduite porte le ballon ~1 m au-delà du point visé — une cible à
+    //  0,7 m de la ligne est déjà une sortie de but en préparation, 49 sorties sur 4 graines)
     let foe = Infinity;
     for (const f of enemies) foe = Math.min(foe, Math.hypot(f.p[0] - x, f.p[2] - z));
     let mate = Infinity;
@@ -339,6 +441,25 @@ export function assignJobs(st, cfg = RONDO) {
   const anchor = st.ball.p;
   const carrierId = car ? car.id : -1;
 
+  // L'ANCRE DU RING EN EMA (τ = ringTau). Le ring de soutien échantillonné sur le ballon BRUT
+  // re-tournait à chaque touche : la station sautait > 1,5 m ~2,5 fois/s et par soutien, la cible de
+  // marche bougeait > 3 m/s sur 10-11 % des images (churn 18-19 m/s : des téléports de cible), et
+  // les soutiens couraient en permanence à p50 3,0-3,5 m/s (sonde tempo-espaces). Le ring suit le
+  // ballon en ~0,5 s — la DÉFENSE, elle, attaque toujours le ballon réel (`anchor`).
+  {
+    const dtR = Math.max(0, st.t - (st._ringT ?? st.t));
+    st._ringT = st.t;
+    if (!st._ring) st._ring = [st.ball.p[0], st.ball.p[2]];
+    const aR = 1 - Math.exp(-dtR / Math.max(1e-3, cfg.ringTau ?? 0.5));
+    st._ring[0] += (st.ball.p[0] - st._ring[0]) * aR;
+    st._ring[1] += (st.ball.p[2] - st._ring[1]) * aR;
+  }
+  // …et en phase LOOSE, les secteurs s'ancrent au CENTRE du carré (bias 1) : ancrés sur le ballon
+  // d'un scramble, le ring s'effondrait du côté de la mêlée (deux soutiens à 0,50 m, moitié du
+  // carré vide — seed 3, t=48,65 s, sonde tempo-espaces).
+  const ringAnchor = st.phase === 'loose' ? [0, 0, 0] : [st._ring[0], 0, st._ring[1]];
+  const ringBias = st.phase === 'loose' ? 1 : cfg.stationBias;
+
   // supporters are assigned ONE AT A TIME, each holding its own angle of the rondo and avoiding the
   // spots its team-mates just claimed. Scoring them all independently in the same frame makes every
   // player pick the same "best" spot and the whole team collapses onto one point (measured: 0.6 m
@@ -350,7 +471,7 @@ export function assignJobs(st, cfg = RONDO) {
   // the ball is, so the whole team keeps funnelling past it. Sorting by angle and rotating the
   // whole ring to the best fit means nobody ever has to cross.
   const ring = supporters
-    .map((p) => ({ p, a: Math.atan2(p.p[2] - anchor[2], p.p[0] - anchor[0]) }))
+    .map((p) => ({ p, a: Math.atan2(p.p[2] - ringAnchor[2], p.p[0] - ringAnchor[0]) }))
     .sort((x, y) => x.a - y.a);
   let sx = 0, sz = 0;
   ring.forEach((e, i) => { const b = (i / Math.max(1, ring.length)) * Math.PI * 2; sx += Math.cos(e.a - b); sz += Math.sin(e.a - b); });
@@ -433,10 +554,18 @@ export function assignJobs(st, cfg = RONDO) {
         p.job = 'receive';
         const i = interceptPoint(path, p.p, cfg.speeds.chase, { reaction: 0 });
         p.target = i ? [i.p[0], 0, i.p[2]] : [st.pass.lead[0], 0, st.pass.lead[2]];
+      } else if (st.phase === 'loose' && p === supporters.reduce((b, q) => (!b || d2(q.p, anchor) < d2(b.p, anchor) ? q : b), null)) {
+        // UN BALLON LIBRE SE DISPUTE. L'équipe « en possession » d'un ballon perdu envoyait ses cinq
+        // hommes tenir le ring pendant que la défense ramassait gratuitement — et pire : quand
+        // PERSONNE n'allait au ballon, la partie gelait (mesuré, graine 11 : ballon posé à v=0
+        // pendant 115 s, le presseur arrêté à 0,88 m — voir le deadlock ci-dessous). Le plus proche
+        // court au ballon : c'est le 50/50 du vrai football.
+        p.job = 'receive';
+        p.target = [anchor[0], 0, anchor[2]];
       } else {
         p.job = 'support';
         const sector = sectorOf.get(p.id) ?? 0;
-        p.target = supportSpot(st, p, cfg, anchor, carrierId, { sector, claimed });
+        p.target = supportSpot(st, p, cfg, anchor, carrierId, { sector, claimed, ring: ringAnchor, bias: ringBias });
         claimed.push(p.target);
       }
     } else {
@@ -457,30 +586,92 @@ export function assignJobs(st, cfg = RONDO) {
   }
   {
     const rest = def.filter((p) => p.job !== 'intercept').sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor));
-    if (rest[0]) {
-      rest[0].job = 'press';
+    // (Résultat négatif consigné : un rôle de presseur COLLANT — gardé tant qu'un autre défenseur
+    // n'est pas 0,8 m plus près — visait à supprimer l'ex-presseur en transit, deuxième silhouette
+    // de l'essaim mesuré. Effet réel : essaim quasi inchangé (58 → 49-61 %) et pression continue
+    // qui étouffe l'attaque, record moyen 8,4 → 6,8 sur 8 graines. L'élection reste au plus près.)
+    const pr = rest[0] ?? null;
+    st._pressId = pr ? pr.id : -1;
+    if (pr) {
+      pr.job = 'press';
       // close the ball down, arriving on the touch-line side to cut the field in half
-      rest[0].target = [anchor[0] + (anchor[0] > 0 ? 0.7 : -0.7), 0, anchor[2]];
+      // …SAUF SUR BALLON LIBRE : le poste « côté ligne » (0,7 m latéral) + l'amorti d'arrivée
+      // (0,18 m) posaient le presseur à 0,88 m d'un ballon mort — 3 cm AU-DELÀ du receiveRadius
+      // (0,85), et la partie gelait pour toujours (mesuré, graine 11 : 115 s sans une passe,
+      // personne d'autre ne venant depuis que le ring de soutien s'ancre au centre en phase loose).
+      // Un ballon libre n'a pas de côté : on va LE CHERCHER.
+      pr.target = st.phase === 'loose' ? [anchor[0], 0, anchor[2]]
+        : [anchor[0] + (anchor[0] > 0 ? 0.7 : -0.7), 0, anchor[2]];
     }
     // cover: stand in the single most dangerous lane
     const options = mates(st, atkTeam).filter((m) => m.id !== carrierId)
       .map((m) => ({ m, margin: laneClearance(anchor, m.p, def.map((d) => d.p), { corridor: cfg.corridor }).margin }))
       .sort((a, b) => b.margin - a.margin);
-    if (rest[1] && options[0]) {
-      rest[1].job = 'cover';
+    let markers = rest.filter((q) => q !== pr);
+    if (markers.length && options[0]) {
       const m = options[0].m;
-      rest[1].target = [anchor[0] + (m.p[0] - anchor[0]) * 0.42, 0, anchor[2] + (m.p[2] - anchor[2]) * 0.42];
+      // LE COVER COUPE LA LIGNE, IL NE DOUBLE PAS LE PRESSEUR. À 0,42 × la ligne il vivait à
+      // 1,5-3 m du ballon : un deuxième presseur — les 2 défenseurs les plus proches tous deux
+      // < 2,5 m du ballon 49-57 % du temps installé, séparation p25 = 15-23° (sonde tempo-espaces).
+      // Il se poste aux 2/3 de la ligne (coverFrac), jamais à moins de coverMinDist du ballon, ET
+      // sous un angle minimal vu du ballon (coverMinAngle) : plus petit, il pivote latéralement
+      // autour du ballon — il coupe toujours la passe, mais depuis un cône DISTINCT du presseur.
+      let vx = (m.p[0] - anchor[0]) * cfg.coverFrac, vz = (m.p[2] - anchor[2]) * cfg.coverFrac;
+      {
+        const vl = Math.hypot(vx, vz);
+        if (vl > 1e-6 && vl < cfg.coverMinDist) { vx *= cfg.coverMinDist / vl; vz *= cfg.coverMinDist / vl; }
+      }
+      if (pr) {
+        const px = pr.p[0] - anchor[0], pz = pr.p[2] - anchor[2];
+        if (Math.hypot(px, pz) > 0.3) {                        // presseur SUR le ballon : angle indéfini
+          let dAng = Math.atan2(vz, vx) - Math.atan2(pz, px);
+          while (dAng > Math.PI) dAng -= 2 * Math.PI;
+          while (dAng < -Math.PI) dAng += 2 * Math.PI;
+          const minA = (cfg.coverMinAngle * Math.PI) / 180;
+          if (Math.abs(dAng) < minA) {
+            const rot = (dAng >= 0 ? 1 : -1) * (minA - Math.abs(dAng));
+            const cs = Math.cos(rot), sn = Math.sin(rot);
+            const nx = vx * cs - vz * sn, nz = vx * sn + vz * cs;
+            vx = nx; vz = nz;
+          }
+        }
+      }
+      const cp = [
+        clamp(anchor[0] + vx, -st.area[0] / 2, st.area[0] / 2), 0,
+        clamp(anchor[2] + vz, -st.area[1] / 2, st.area[1] / 2),
+      ];
+      // (Résultat négatif consigné : élire comme cover « l'homme le plus proche du POSTE » plutôt
+      // que le 2ᵉ plus près du ballon devait vider la zone du ballon — mesuré : essaim inchangé
+      // (le 2ᵉ corps collé est un marqueur/ex-presseur en transit, pas le cover), et les lignes
+      // les plus dangereuses héritaient des marqueurs les plus proches — record moyen 8,4 → 5,6,
+      // frappes 43,9 → 39,1, un porteur collé 62 % sur la graine 4. Le cover reste le 2ᵉ au ballon,
+      // qui SORT vers son poste par le plancher radial.)
+      const cov = markers[0] ?? null;
+      if (cov) {
+        cov.job = 'cover';
+        cov.target = cp;
+        markers = markers.filter((q) => q.id !== cov.id);
+      }
     }
     // markers: goal-side of their man, shading the lane
-    for (let i = 2; i < rest.length; i++) {
-      const m = options[i - 1]?.m || options[options.length - 1]?.m;
-      if (!m) { rest[i].target = [...rest[i].p]; continue; }
-      rest[i].job = 'mark';
+    markers.forEach((d, i) => {
+      const m = options[i + 1]?.m || options[options.length - 1]?.m;
+      if (!m) { d.target = [...d.p]; return; }
+      d.job = 'mark';
       const mx = anchor[0] - m.p[0], mz = anchor[2] - m.p[2];
       const ml = Math.hypot(mx, mz) || 1;
       const step = Math.min(2.2, ml * 0.3);                     // a step goal-side of your man…
-      rest[i].target = [m.p[0] + (mx / ml) * step, 0, m.p[2] + (mz / ml) * step];   // …not a walk to the ball
-    }
+      let tx = m.p[0] + (mx / ml) * step, tz = m.p[2] + (mz / ml) * step;      // …not a walk to the ball
+      // …et jamais un POSTE dans la zone du presseur : quand le porteur conduit VERS l'homme
+      // marqué, le pas côté ballon plaçait le marqueur sous 2,5 m — la deuxième silhouette de
+      // l'essaim mesuré. Le poste du marqueur garde un rayon de courtoisie autour du ballon.
+      {
+        const rx = tx - anchor[0], rz = tz - anchor[2];
+        const rl = Math.hypot(rx, rz);
+        if (rl > 1e-6 && rl < 2.8) { tx = anchor[0] + (rx / rl) * 2.8; tz = anchor[2] + (rz / rl) * 2.8; }
+      }
+      d.target = [tx, 0, tz];
+    });
   }
   return st;
 }
@@ -499,14 +690,36 @@ function movePlayers(st, dt, cfg) {
     // follow-through (après contact), lui, reste au modèle de course : l'élan se dissipe, il ne
     // se fige pas. (Le lacet a la même loi depuis toujours : « A SWING OWNS THE BODY ».)
     if (winding(p)) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
-    const top = cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
+    let top = cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press' : 'support'] ?? cfg.speeds.support;
+    // UN SOUTIEN PRÈS DE SA STATION AJUSTE PAR PETITS PAS. Mesuré (sonde tempo-espaces) : les
+    // non-porteurs vivaient à p50 3,0-3,5 m/s, sprint > 4,5 m/s un quart du temps, dans un carré de
+    // 16 × 14 m — la panique, pas du soutien. À moins de 3 m de sa station, la vitesse d'un soutien
+    // est celle d'un ajustement (supportNearCap), pas d'une course.
+    if (p.job === 'support' && p.target) {
+      const dS = Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]);
+      if (dS < 3) top = Math.min(top, cfg.supportNearCap);
+    }
     let wx = 0, wz = 0;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
       const d = Math.hypot(dx, dz);
       if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
     }
+    // LA DEMANDE DES RÔLES CALMES EST LISSÉE (τ = wantTau). La cible de marche des soutiens sautait
+    // de plusieurs mètres en une image (churn mesuré 18-19 m/s) et la locomotion vivait en
+    // bang-bang : 59 % des images joueur pile à la saturation du cap (sonde allures-inclinaison).
+    // Les rôles de course (press/intercept/receive/carry) gardent la demande vive — la course
+    // d'interception est le miroir exact du modèle que flightRace fait courir. (Résultat négatif
+    // consigné : exempter AUSSI le marqueur pour vider la zone du ballon n'a presque rien rendu sur
+    // l'essaim — both<2,5 m 58 → 49-61 % — et a durci la défense au point de faire tomber la
+    // balance : record moyen 8,4 → 6,8, frappes 43,9 → 40,3. Le marqueur reste lissé.)
+    if (p.job === 'support' || p.job === 'mark') {
+      const aW = 1 - Math.exp(-dt / Math.max(1e-3, cfg.wantTau ?? 0.12));
+      p._wx = (p._wx ?? wx) + (wx - (p._wx ?? wx)) * aW;
+      p._wz = (p._wz ?? wz) + (wz - (p._wz ?? wz)) * aW;
+      wx = p._wx; wz = p._wz;
+    } else { p._wx = wx; p._wz = wz; }
     // TURNING COSTS, AND THE FASTER YOU GO THE WIDER YOU TURN. Acceleration used to be isotropic:
     // 9.5 m/s² in any direction, so a defender at a full 6.6 m/s sprint could reverse as sharply as a
     // man standing still. With no momentum to beat, a feint cannot pay — which is why scoring the
@@ -592,16 +805,35 @@ function separatePlayers(st, cfg) {
 function turnover(st, carrier, why) {
   st.turnovers++;
   st.best = Math.max(st.best, st.passes);
-  st.events.push({ t: +st.t.toFixed(2), type: 'turnover', why, to: st.players[carrier].team, after: st.passes });
+  const w = st.players[carrier];
+  const sp0 = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  const dW = w ? d2(w.p, st.ball.p) : 99;
+  // l'événement porte SA géométrie (loi 8) : distance gagnant→ballon au flip, vitesse avant/après —
+  // c'est ce que les clauses « vol sans geste » et « télékinésie » de checkRondo lisent.
+  const ev = { t: +st.t.toFixed(2), type: 'turnover', why, to: st.players[carrier].team, by: carrier, after: st.passes, d: +dW.toFixed(2), v0: +sp0.toFixed(2), v1: +sp0.toFixed(2) };
+  st.events.push(ev);
   st.passes = 0;
   st.possession = { team: st.players[carrier].team, carrier };
   st.phase = 'carry'; st.pass = null; st.hold = 0; st.pressure = 0; st.lastPasser = -1;
-  // LE BALLON N'EST PAS « REMIS À ZÉRO ». Cette ligne appelait rest(), qui plaquait au sol un ballon
-  // encore en l'air — et l'invariant de ball-body l'a refusé dès le premier essai, sur une
-  // interception à 0,80 m de haut. C'est du bon refus : intercepter un centre ne fait pas apparaître
-  // le ballon par terre. Le défenseur lui prend sa vitesse, et il RETOMBE — l'intégrateur s'en charge,
-  // donc on le voit descendre. La hauteur est conservée parce qu'elle est vraie.
-  st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.6, -st.ball.v[2]], [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]]);
+  // LE BALLON N'EST PAS « REMIS À ZÉRO » — NI GELÉ À DISTANCE. Deux accidents fondateurs ici :
+  // (1) cette ligne appelait rest(), qui plaquait au sol un ballon encore en l'air — refusé par
+  // l'invariant de ball-body dès le premier essai (interception à 0,80 m de haut) ; (2) elle
+  // appliquait ensuite impulse(−v) : 100 % de la vitesse horizontale tuée en une image, mesuré
+  // 130-172 fois par 6 min, p50 = 4,19 m/s → 0,00 exactement, y compris quand le « gagnant » était
+  // à 2,33 m du ballon (sonde duels-tacles / ballon-vol : 39 arrêts télékinésiques). La règle est
+  // celle de BallBody étendue à la VITESSE : une impulsion d'arrêt n'est légale que si son auteur
+  // est À PORTÉE DE JEU du ballon — sa première touche l'amortit (résiduel ~20 %, comme les
+  // contrôles attaquants qui gardent 5-18 %) et se NOMME au registre (événement 'control').
+  // Hors portée : le ballon VIT, il continue sa course et le gagnant va le chercher.
+  if (w && w.down <= 0 && dW <= RONDO.receiveRadius) {
+    st.ball.impulse([-st.ball.v[0] * 0.8, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.8], [-st.ball.w[0] * 0.8, -st.ball.w[1], -st.ball.w[2] * 0.8]);
+    st.ball.possess(carrier);
+    if (sp0 > 0.5) {
+      st._settling = { ev: st.events.length, id: carrier, at: st.t + 0.3 };
+      st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), settle: null });
+    }
+  }
+  ev.v1 = +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(2);
 }
 
 export { predictPath };
