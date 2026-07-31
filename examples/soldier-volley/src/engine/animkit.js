@@ -351,7 +351,7 @@ export const MOVES = {
     ] },
   /** GOALKEEPER DIVE (once, root motion): crouch, launch to the right, lay out, spring back up */
   plongeon: {
-    name: 'plongeon', duration: 1.6, loop: false,
+    name: 'plongeon', duration: 1.6, contact: 0.55, loop: false,   // 0,55 = l'extension — le moment des gants
     keys: [
       { t: 0.0, pose: {}, hips: [0, 0, 0] },
       { t: 0.25, pose: { LeftUpLeg: [55, 0, 0], RightUpLeg: [55, 0, 0], LeftLeg: [-75, 0, 0], RightLeg: [-75, 0, 0], Spine1: [16, 0, 0] }, hips: [0, -0.26, 0] },

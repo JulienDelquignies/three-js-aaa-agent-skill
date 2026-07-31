@@ -155,7 +155,11 @@ function beginPass(st, choice, cfg, opts = {}) {
   // enough that the ball still leaves at holdMin, whichever gesture he chose.
   // …et le holdMin est CONDITIONNEL (st._holdMin, posé par la boucle de conduite) : 0,8-1,0 s au
   // calme, l'ancien 0,35 s sous pression — le remède du hold p50 = 0,38 s du flipper mesuré.
-  if (st.hold < (st._holdMin ?? cfg.holdMin) - move.contact * cfg.windupCarve) return deny(st, 'timing');
+  // …mais un TIR est un geste d'OPPORTUNITÉ : la tenue délibérée du jeu posé ne s'applique pas à
+  // une fenêtre de but (mesuré : 27 refus 'timing', 0 tir en 120 s — l'occasion fermait pendant
+  // que le porteur « posait » son ballon)
+  const holdGate = opts.shot ? cfg.holdMin : (st._holdMin ?? cfg.holdMin);
+  if (st.hold < holdGate - move.contact * cfg.windupCarve) return deny(st, 'timing');
 
   // LA COURSE. Le couloir de choosePass est une photo (des mètres perpendiculaires, MAINTENANT) ;
   // une interception est une COURSE (des secondes, pendant le vol). Mesuré sur 4 parties : les
@@ -173,7 +177,8 @@ function beginPass(st, choice, cfg, opts = {}) {
   const race = flightRace(from, sol, defs.map((q) => [q.p[0] + q.v[0] * T, 0, q.p[2] + q.v[1] * T]), { speed: cfg.speeds.chase });
   const rec = st.players[choice.to.id];
   const meet = rec ? interceptPoint(race.path, [rec.p[0] + rec.v[0] * T, 0, rec.p[2] + rec.v[1] * T], cfg.speeds.chase, { reaction: 0 }) : null;
-  if (!urgent && st.hold < cfg.holdMax && race.first && (!meet || race.first.t < meet.t + cfg.raceSlack)) {
+  // un TIR ne se refuse pas à la course : le défenseur qui coupe, c'est le duel du tir même
+  if (!opts.shot && !urgent && st.hold < cfg.holdMax && race.first && (!meet || race.first.t < meet.t + cfg.raceSlack)) {
     (st.laneVeto ??= {})[choice.to.id] = st.t + cfg.vetoTtl;
     c.intent = null;                                        // course perdue : le plan meurt, on re-décide
     return deny(st, 'course');
@@ -242,7 +247,16 @@ function strikeNow(st, c, cfg) {
   // construisait `from = [x, BALL.radius, z]` : un ballon en l'air était plaqué au sol avant d'être
   // frappé — 13 fois par partie, jusqu'à 1,36 m de chute en une image. Purement vertical, donc
   // invisible sur une trace vue de dessus. `strike()` ne touche qu'à la vitesse et à l'effet.
-  st.ball.strike({ speed: sol.speed, dirYaw: sol.dirYaw, elevation: sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
+  // UN TIR EST UN GESTE DE PUISSANCE : solvePass rend la vitesse d'ARRIVÉE (trop douce pour
+  // battre un gardien) — le tir prend un plancher (cfg.shotSpeed), même direction, vol tendu
+  const shot = !!choice.shot;
+  const speed = shot ? Math.max(sol.speed, cfg.shotSpeed ?? 17) : sol.speed;
+  st.ball.strike({ speed, dirYaw: sol.dirYaw, elevation: shot ? Math.min(sol.elevation, 0.10) : sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
+  if (shot) {
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
+      range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,
+      tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +speed.toFixed(1) });
+  }
   st.phase = 'flight';
   st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
   st.lastPasser = c.id;
@@ -367,7 +381,7 @@ function stepGestures(st, dt, cfg) {
     }
     // l'accompagnement possédé (râteau qui tourne, semelle qui tient) écrit corps ET ballon ICI —
     // movePlayers se tait (ownsBody), la branche busy du pas de jeu aussi : une autorité.
-    if (following(p) && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);
+    if ((following(p) || p.act?.payload?.skill === 'plongeon') && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
@@ -388,6 +402,8 @@ function stepGestures(st, dt, cfg) {
         });
       } else if (A.skill === 'semelle') {
         st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'semelle', by: p.id, maxV: +(A.maxV ?? 0).toFixed(2) });
+      } else if (A.skill === 'plongeon') {
+        if (!A.resolved) deny(st, 'plongeon-battu');              // la détente n'a rien trouvé : l'état se nomme
       } else if (A.skill === 'feinte') {
         st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'feinte', by: p.id });
       }
@@ -625,6 +641,23 @@ function skillFollowStep(st, p, dt, cfg) {
     const drag = 0.32 - 0.77 * e;
     st.ball.carry([p.p[0] + Math.cos(A.yaw0) * drag, p.p[2] + Math.sin(A.yaw0) * drag], dt, { tau: 0.05 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'plongeon') {
+    // LE PLONGEON EST UNE DÉTENTE : le corps part vers le point d'interception dès l'armé et
+    // glisse encore un peu après le contact — la seule écriture du corps pendant qu'il dure.
+    // …et LE TOUCHER EST CONTINU : tester le ballon à la frame de contact du clip (0,55 s) rate
+    // tout vol plus prompt — 2 arrêts sur 15 plongeons mesurés. Le gant rencontre le ballon à
+    // l'image où il PASSE, le clip n'est que le dessin de la détente.
+    if (!A.resolved && cfg.onDive && cfg.onDive(st, p, cfg)) A.resolved = true;
+    const T = p.act.anticipation + 0.25;
+    const k = p.act.t < p.act.anticipation ? 1 : Math.max(0, 1 - (p.act.t - p.act.anticipation) / 0.25);
+    if (p.act.t < T && A.lunge) {
+      p.p[0] += A.lunge[0] * A.speed * k * dt;
+      p.p[2] += A.lunge[1] * A.speed * k * dt;
+      p.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, p.p[0]));
+      p.p[2] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, p.p[2]));
+      p.v[0] = A.lunge[0] * A.speed * k; p.v[1] = A.lunge[1] * A.speed * k;
+      p.speed = Math.hypot(p.v[0], p.v[1]);
+    } else { p.v[0] = 0; p.v[1] = 0; p.speed = 0; }
   } else if (A.skill === 'semelle') {
     // LA SEMELLE SE DÉCOLLE QUAND ON VIENT LA PRESSER. Tenue quoi qu'il arrive, elle offrait le
     // temps « collé » mesuré (58 % — un presseur à 2,4 m couvre l'écart en 0,4 s et la tenue
@@ -644,6 +677,7 @@ function skillFollowStep(st, p, dt, cfg) {
 }
 
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, skillContactNow };
+export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a) };
 
 /**
  * Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
@@ -860,7 +894,7 @@ function trySlide(st, cfg) {
  */
 export function rondoStep(st, dt, cfg = RONDO) {
   st.t += dt;
-  assignJobs(st, cfg);
+  (cfg.assignJobs ?? assignJobs)(st, cfg);   // le match branche ici son attribution directionnelle
   movePlayers(st, dt, cfg);
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
   // les contraintes du monde se projettent APRÈS toutes les autorités (locomotion PUIS glissement
@@ -1067,6 +1101,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // (14 073 refus). Contesté ⇒ l'intention meurt et la CONDUITE reprend : les touches
       // d'évasion emmènent le ballon hors de l'emprise — ce qu'un vrai porteur fait d'un ballon
       // disputé.
+      // LE TIR — le geste du match (cfg.tryShot, match-sim) : évalué AVANT l'intention de
+      // passe, parce qu'une occasion de but domine une ligne de passe. Le rondo n'a pas de but :
+      // le hook n'y existe pas, et ce bloc est un no-op.
+      if (!contested && cfg.tryShot && cfg.tryShot(st, c, cfg)) return st;
       if (contested) {
         // UN BALLON CONTESTÉ SE JOUE MAINTENANT — pas « se re-dribble sur place ». Reprendre
         // l'évasion laissait le cycle se répéter (le défenseur suit le ballon : garé, délogé,
@@ -1130,13 +1168,16 @@ export function rondoStep(st, dt, cfg = RONDO) {
         if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
       }
     }
-    if (taker >= 0) receive(st, taker, cfg);
+    if (taker >= 0 && (!cfg.canTake || cfg.canTake(st, taker))) receive(st, taker, cfg);   // une remise a un ayant droit et une heure
   }
   // OUT OF PLAY IS A RULE OF THE BALL, NOT OF A PHASE. This test only ran while the ball was loose or
   // in flight, so a ball dribbled over the line simply stayed out — and once the carrier began pushing
   // the ball ahead of himself, that is exactly what happened: the catalogue caught it as `ball-in-play`
   // on seeds where a carry ran into the corner. The line does not care who has it.
   if (Math.abs(st.ball.p[0]) > st.area[0] / 2 || Math.abs(st.ball.p[2]) > st.area[1] / 2) {
+    // LE MATCH A DES LOIS DE SORTIE (but / touche / corner / sortie de but — cfg.onOut, match-sim) ;
+    // le rondo garde sa remise unique en jeu réduit
+    if (cfg.onOut) { cfg.onOut(st, cfg); return st; }
     const other = st.players.filter((p) => p.team !== st.possession.team && p.down <= 0)
       .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
     // LA seule discontinuité légitime — et elle se DÉCLARE. `restart()` lève si la cause est absente

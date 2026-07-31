@@ -15,6 +15,8 @@ import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
+import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
+import { buildGoal } from './goal.js';
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js';
 import { warpEnvelope, planWarp, warpReach, twoBoneIK, checkStrikeWarp, WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
@@ -71,8 +73,22 @@ export class Rondo {
     this._tier = q.get('q') || 'high';   // the post chain is built in camera(), once we have one
 
     // ---- the grid the game is played in, painted on the grass
-    this.grid = buildRondoGrid(RONDO.area);
+    this.grid = buildRondoGrid(this.matchMode ? MATCH.area : RONDO.area);
     this.scene.add(this.grid.group); this.disposables.push(this.grid);
+    if (this.matchMode) {
+      // les DEUX BUTS, aux lignes — le filet de goal.js (montants + filet en vrais segments)
+      const P = this.state.pitch;
+      this.goals = [];
+      for (const sign of [+1, -1]) {
+        const holder = new THREE.Group();
+        const g = buildGoal(holder, { X: sign * P.hx, W: P.dims.goal.width, H: P.dims.goal.height, D: sign * 1.5 });
+        holder.traverse((o) => { o.castShadow = false; });
+        this.scene.add(holder);
+        this.night.light(holder);
+        this.goals.push({ holder, g });
+        this.disposables.push({ dispose: () => g.dispose?.() });
+      }
+    }
 
     this.ball = ballMesh();
     this.scene.add(this.ball); this.disposables.push(this.ball);
@@ -84,7 +100,13 @@ export class Rondo {
     // ?n=3 pour un 3 contre 3. Sur un téléphone, dix bonshommes dans un carré de 16 m sont dix taches
     // de trois pixels ; à six, on voit ce que chacun fait — ce qui est tout l'intérêt de la scène.
     const perTeam = Math.max(2, Math.min(6, Number(q.get('n')) || 5));
-    this.state = makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
+    // ?match : LE MATCH RÉDUIT — deux buts, gardiens, tirs, remises (match-sim). Même scène, même
+    // pipeline visuel : le match est une CONFIGURATION du moteur, l'habillage ne change pas.
+    this.matchMode = q.has('match');
+    this._mcfg = this.matchMode ? matchCfg() : null;
+    this.state = this.matchMode
+      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7 })
+      : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
     this.perTeam = perTeam;
 
     // ---- the squad. The scene no longer knows which GLB it is casting: squad.js loads a ROSTER,
@@ -136,7 +158,8 @@ export class Rondo {
       // qu'on ne pouvait donc pas les séparer. Mesuré, le fichier contient SEPT meshes dont un
       // `Ch38_Shirt`, et le matériau est un attribut du draw call — teindre le maillot ne peut pas
       // atteindre la peau. Voir engine/part-tint.js.
-      const tint = tintPart(model3d, { match: /Shirt/i, color: TEAMS[p.team].primary });
+      // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe
+      const tint = tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : TEAMS[p.team].primary });
       if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands
@@ -262,9 +285,10 @@ export class Rondo {
     // téléphone en portrait, le carré tient dans un tiers de la hauteur et on ne distingue plus un
     // geste d'un autre. Le cadrage est dérivé, pas écrit en dur.
     const narrow = typeof window !== 'undefined' && window.innerWidth < 700;
-    const back = 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
-    cam.fov = narrow ? 34 : 30; cam.updateProjectionMatrix();
-    cam.position.set(0, 8.5 - (narrow ? 1.2 : 0), -back);
+    // le match cadre le TERRAIN (46 x 30), pas le carré : la caméra recule et ouvre
+    const back = this.matchMode ? (narrow ? 30 : 34) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
+    cam.fov = this.matchMode ? (narrow ? 40 : 36) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
+    cam.position.set(0, this.matchMode ? 14 : 8.5 - (narrow ? 1.2 : 0), -back);
     this._camBack = back;
     cam.lookAt(0, 1, 0);
     this.cam = cam;
@@ -401,7 +425,8 @@ export class Rondo {
     const step = Math.min(dt, 1 / 30);
     const before = this.state.events.length;
     const toBefore = this.state.turnovers;
-    rondoStep(this.state, step);
+    if (this.matchMode) matchStep(this.state, step, this._mcfg);
+    else rondoStep(this.state, step);
     this._since = this.state.turnovers !== toBefore ? 0 : (this._since ?? 0) + step;
 
     // ---- react to what the game just did: a pass fires the correct-foot strike on the passer
@@ -565,12 +590,14 @@ export class Rondo {
     if (this._hud && this._t - this._lastEvent > 0.15) {
       this._lastEvent = this._t;
       const teamName = TEAMS[this.state.possession.team].name;
-      this._hud.innerHTML = `<b>${this.state.passes}</b> passes <span>· record ${this.state.best} · ${this.state.turnovers} pertes</span><br><span>possession : ${teamName}</span>`;
+      this._hud.innerHTML = this.matchMode
+        ? `<b>${TEAMS[0].name} ${this.state.score[0]} : ${this.state.score[1]} ${TEAMS[1].name}</b><br><span>${this.state.events.filter((e) => e.type === 'shot').length} tirs · ${this.state.events.filter((e) => e.type === 'arrêt').length} arrêts · possession : ${teamName}</span>`
+        : `<b>${this.state.passes}</b> passes <span>· record ${this.state.best} · ${this.state.turnovers} pertes</span><br><span>possession : ${teamName}</span>`;
     }
   }
 
   /** The running game, judged by the same contract the headless harness uses. */
-  check() { return checkRondo(this.state, this._trace); }
+  check() { return this.matchMode ? checkMatch(this.state, this._trace, this._mcfg) : checkRondo(this.state, this._trace); }
 
   dispose() {
     this.pipeline?.dispose?.();

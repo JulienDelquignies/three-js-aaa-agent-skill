@@ -1259,6 +1259,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    (miroir compris), captures dans le scratchpad. Balance : record 9,1 | 52,8 actions | pertes
    14,1 (meilleur qu'avant le lot). Référence 52.
 
+22. **Le terrain, le gardien, le match réduit — « agrandir le terrain » (réf. 53).** Du carré au
+   MATCH : pitch.js (terrain-donnée, RÉDUIT 46 × 30 + PLEIN FORMAT Loi 1 déjà défini ; la sortie
+   jugée au franchissement INTERPOLÉ, première ligne croisée — un tir sorti en coin est une
+   sortie de but ; touche au pied = loi du FORMAT futsal, écrite), keeper.js (position sur la
+   ligne ballon-but qui coupe l'angle 0,45 → 1,97 m, re-recul sous 7 m ; plongeon sans oracle,
+   réflexe 0,12 s, envergure 2,1 m, BATTU nommé), match-sim.js — et l'architecture EST le
+   chapitre : UN SEUL game-loop (rondo-sim, 40 clauses), le match est une CONFIGURATION par six
+   hooks (assignJobs directionnel, tryShot, onOut, onDive, canTake, passBias). Duels, gestes,
+   personas : le même code — 49 gestes techniques comptés en 4 matchs. La chasse mesurée : tir
+   étouffé par la tenue calme (27 refus timing, 0 tir) → porte d'opportunité ; beginPass
+   inatteignable (rondoInternals au lieu de simInternals — toujours faux en silence) ; toucher du
+   plongeon à frame fixe (2 arrêts/15) → CONTINU (16/19) ; CSC du gardien porteur marchant sa
+   loi de position ballon en mains → distributeur + bucket vitesse keeper 6,4 (z=−4 mesuré sur
+   4 des 5 buts sans plongeon) ; match sans progression = rondo dans sa moitié (possession 191
+   c. 140 toute à x=−15) → passBias 0,22/m plafonné. Chiffres (4 × 120 s) : 33 tirs, 8 buts
+   (conversion 24 %), 16 arrêts/19 détentes, 4/4 contrats. verify-match (17 clauses, sabotages :
+   match sans tir, score trafiqué, remise volée). Scène : match.html = la MÊME scène Rondo en
+   ?match (buts goal.js, gardien jaune, HUD score, check() → checkMatch). Rondo intact (40/40),
+   43 bancs verts, audit 15/0, ALL-SYNC 7/7. Dettes nommées en réf. 53 (corner rare, pas de
+   hors-jeu ni de sortie du gardien, cérémonies, mi-temps/formations → 11c11).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

@@ -306,7 +306,11 @@ export function choosePass(st, cfg = RONDO) {
       - Math.abs(d - 10) * 0.32                             // 10 m is the sweet spot
       - (m.id === st.lastPasser ? 2.6 : 0)                  // don't ping-pong
       - (style === 'lofted' ? 2.2 : 0)                      // ground ball whenever possible
-      - (overrun < 3 ? (3 - overrun) * 0.9 : 0);            // ne joue pas VERS la sortie toute proche
+      - (overrun < 3 ? (3 - overrun) * 0.9 : 0)             // ne joue pas VERS la sortie toute proche
+      // LE MATCH A UN SENS DE JEU (cfg.passBias, match-sim) : le rondo conserve, une équipe
+      // PROGRESSE — sans ce terme, mesuré : possession dominante (191 c. 140 images de conduite)
+      // entièrement à x = −15, toutes les pertes entre −9 et −23, zéro sortie de camp en 120 s.
+      + (cfg.passBias ? cfg.passBias(st, c, { to: m, lead, lane, dist: d }) : 0);
     if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d };
   }
   return best;
@@ -728,7 +732,8 @@ function movePlayers(st, dt, cfg) {
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
     if (winding(p) || p.act?.payload?.ownsBody) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
     let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
-      : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press' : 'support'] ?? cfg.speeds.support)
+      : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press'
+      : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
       * (p.persona?.paceBias ?? 1);
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
     // passe — accélération ET pointe au ralenti le temps de la morsure (skill.biteSlow). C'est le
