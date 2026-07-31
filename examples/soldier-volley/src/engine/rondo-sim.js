@@ -1199,7 +1199,12 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // et la tenue d'origine reprennent : l'urgence reste prompte.
         const bar = calm ? cfg.intentBarCalm : 3.2;
         const heldEnough = !calm || st.hold >= st._calmHold;
-        if (choice && ((choice.score > bar && heldEnough) || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
+        // L'APPEL CASSE LA TENUE : au tempo posé, les tenues (1,5-2,5 s) et les courses (0,7-1,1 s)
+        // étaient désynchronisées — le temps d'avoir « assez tenu », la course était finie (3
+        // appels servis sur 41 mesurés). Au vrai foot, la course DÉCLENCHE le ballon : un coureur
+        // en rupture au bout d'une ligne qui score dispense de finir la tenue délibérée.
+        const runnerCall = choice && (st.players[choice.to.id]?._pace?.until ?? -1) > st.t;
+        if (choice && ((choice.score > bar && (heldEnough || runnerCall)) || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
         // LA SEMELLE VIT DANS LA TENUE : pas d'intention encore, du champ, du calme — le pied se
         // pose sur le ballon et la tête se lève. Le geste ALLONGE la tenue de sa durée (busy),
         // ce qui est exactement ce qu'il fait au vrai foot.

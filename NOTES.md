@@ -1373,6 +1373,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    Déterminisme prouvé : même graine + mêmes notes → même match. Le gauss d'exécution est seedé
    et borné (±2,1 σ). MOTEUR.md gagne sa section « contrat d'injection ». 44 bancs verts.
 
+27. **Le tempo x1 — « FM est plus lent en x1 ? » : oui, mesuré, réglé.** L'analyse (3 × 120 s
+   contre les références réelles) : 25 passes/min (11c11 : 9-11, futsal : 14-18), tenue
+   réception→passe 0,83 s, corps à 10 km/h de moyenne (réel 7,2), 195 m/min/joueur (réel
+   110-120), ballon en jeu 94 % (réel 55-65 — le calme de FM est à moitié du TEMPS MORT). Les
+   leviers, chacun mesuré : remises 1,1 → 4,0 s ; holdCalm [1,0 ; 2,2] + LE CALME SOUS MARQUAGE
+   LÉGER (calmFoe 1,8 — un joueur de match fixe avec un marqueur à 2 m) ; économie du soutien
+   OFFENSIF (support 4,9) avec bucket MARQUAGE dédié (support partagé ralentissait la défense :
+   conversion 71 % mesurée) ; intentBarCalm 4,8. Et LA LOI DE SYNCHRONISATION : l'appel CASSE la
+   tenue (les tenues 1,5-2,5 s et les courses 0,7-1,1 s étaient désynchronisées — 3 appels servis
+   sur 41 ; un coureur en rupture au bout d'une ligne qui score dispense de finir la tenue —
+   15 % servis après, rondo intact 40/40). APRÈS : 15-17 passes/min, 8,8-9,4 km/h, 120 m/min,
+   86-88 % en jeu — la bande FUTSAL assumée (le 46 × 30 est intrinsèquement plus vif qu'un 11c11 ;
+   le x1 « FM » complet viendra avec le plein format). 3 clauses de tempo verrouillées. DEUX
+   trouvailles en route : le prédicat « personne ne tire » devient « des OCCASIONS sans tir »
+   (1131 passages dans le tiers sans tir = cassé ; 0 tir sans visite = un 0-0 légitime) ; et un
+   BUG DORMANT débusqué — après une CLAQUETTE, st.pass gardait l'origine du tir et la porte
+   anti-auto-interception ne s'ouvrait jamais sur le ballon claqué retombé à 2 m : GEL INTÉGRAL
+   de 111 s mesuré (dernier événement t=8,45, fin t=120). Après le gant, le ballon est NEUF
+   (st.pass = null). 44 bancs verts, verrou rondo 8,63, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

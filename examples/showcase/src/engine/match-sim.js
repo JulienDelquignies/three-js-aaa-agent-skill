@@ -39,21 +39,32 @@ export const MATCH = {
                           // 0,75 n'existait JAMAIS devant une défense postée côté but — 0 tir mesuré)
   shotSpeed: 17,          // m/s — plancher de vitesse du tir
   shotHold: 0.25,         // s — pas de tir à la première image de possession
-  restartWait: 1.1,       // s — le temps de POSER une remise (placement + monde qui s'écarte)
+  // LE TEMPO x1 — mesuré contre le réel (3 × 120 s) : 25 passes/min (11c11 : 9-11, futsal :
+  // 14-18), tenue réception→passe 0,83 s, corps à 10 km/h de moyenne (réel 7,2), 195 m/min/joueur
+  // (réel 110-120), ballon en jeu 94 % (réel 55-65). « FM est plus lent en x1 » : oui — moitié
+  // TEMPS MORT (une touche réelle prend 15-25 s), moitié TENUE. Les remises respirent, le ballon
+  // se garde, le hors-ballon marche — les cibles : 15-18 passes/min, en-jeu ~80 %, corps ≤ 8,5 km/h.
+  restartWait: 4.0,       // s — une remise se POSE (était 1,1 : le jeu ne respirait jamais)
   restartClear: 3.0,      // m — les adversaires tiennent ce rayon à la remise (futsal Loi 15 : 5 m ; réduit ici à l'échelle)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
   // qui ne suivent pas l'appel » (retour utilisateur, mot pour mot ce que les chiffres disaient).
-  holdCalm: [0.6, 1.4],   // s — on fixe, on donne — SANS tuer la conduite : le dribble est
-                          // une partie du jeu, c'est sa PRÉCISION qui se corrige, pas sa présence
-  intentBarCalm: 4.2,     // la barre d'adoption au calme, plus prompte qu'au rondo
-  appelBonus: 2.0,        // le coureur en rupture est SERVI (terme de score de choosePass)
+  holdCalm: [1.0, 2.2],   // s — on FIXE vraiment avant de donner (0,83 s de tenue mesurée : le
+                          // flipper, pas FM) — la conduite et le dribble y gagnent leur place
+  intentBarCalm: 4.8,     // la barre d'adoption au calme — assez haute pour qu'on VOIE la tenue
+  appelBonus: 2.6,        // le coureur en rupture est SERVI — relevé avec intentBarCalm (4,8) :
+                          // au tempo posé, la course doit encore battre la barre d'adoption
   // la mène suit la course : temps d'arrivée estimé (0,4 + d/9, borné 1 s), amorti à 85 % — un
   // ballon DANS la course, pas sur les talons
   leadTime: (d, rec) => Math.min(0.4 + d / 9, 1.0) * ((rec && Math.hypot(rec.v?.[0] ?? 0, rec.v?.[1] ?? 0) > 1.6) ? 0.85 : 0.3),
-  speeds: { ...RONDO.speeds, keeper: 6.4 },  // le gardien REVIENT en pressant le pas (mesuré à z=−4,
-                          // hors cadre, sur 4 des 5 buts sans plongeon — il rentrait au pas de sénateur)
+  speeds: { ...RONDO.speeds, support: 4.9, mark: 5.6, keeper: 6.4 },  // le soutien OFFENSIF économise
+                          // (10 km/h mesurés, réel 7,2) — mais le MARQUAGE garde son pas : support
+                          // 4,9 partagé ralentissait la défense, conversion 71 % mesurée (réel ≤ 35)
+  // …et LE CALME SE GAGNE SOUS MARQUAGE LÉGER : holdCalm ne s'appliquait qu'à foeBody > calmFoe
+  // du rondo — sur 46 × 30 il y a presque toujours un corps à cette distance, la tenue restait
+  // 0,93 s (mesuré). Un joueur de match FIXE avec un marqueur à 2 m ; seul le vrai pressing rushe.
+  calmFoe: 1.8,
 };
 
 /**
@@ -409,6 +420,12 @@ function onDive(st, gk, cfg) {
     const side = Math.sign(gk.p[2] - 0) || 1;
     st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
     st.lastTouch = gk.team;
+    // APRÈS LE GANT, LE BALLON EST NEUF : st.pass gardait l'origine du tir, et la porte
+    // anti-auto-interception (gone > releaseClear) ne s'ouvrait JAMAIS sur un ballon claqué
+    // retombé à 2 m de cette origine — MESURÉ : gel intégral de 111 s (dernier événement t=8,45,
+    // fin de match t=120, personne n'a le DROIT de toucher un ballon mort). Le rondo ne pouvait
+    // pas le produire (une frappe voyage) ; la claquette, si.
+    st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette' });
     st._surprise = { t: st.t, seen: 0 };                          // une claquette ne s'anticipe pas
     return true;
@@ -500,7 +517,11 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   if (st.score[0] !== buts.filter((b) => b.team === 0).length || st.score[1] !== buts.filter((b) => b.team === 1).length) {
     issues.push(`score [${st.score}] ≠ événements de but (${buts.map((b) => b.team).join(',')})`);
   }
-  if (!shots.length) issues.push('PERSONNE NE TIRE — un match sans tir est un rondo décoré');
+  // un 0 tir sur une tranche courte est du VRAI football (des mi-temps finissent 0-0) — le
+  // défaut, c'est des OCCASIONS sans tir : le ballon a vécu dans le dernier tiers et personne
+  // n'a appuyé. Sans visite du tiers, le silence est légitime (la clause des camps veille déjà).
+  const thirdVisits = trace.filter((s) => Math.abs(s.ball[0]) > st.pitch.hx - st.pitch.dims.box.depth - 1).length;
+  if (!shots.length && thirdVisits > 25) issues.push(`PERSONNE NE TIRE malgré ${thirdVisits} passages dans le dernier tiers — un rondo décoré`);
   for (const s of shots) {
     if (s.range > cfg.shotRange + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
     // la clause connaît LA MÊME loi que le déclencheur : à bout portant (< 9 m), on tire dans le
