@@ -1304,6 +1304,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    broadcast DANS la tribune rapprochée (écran noir) → régie dérivée du modèle. 43 bancs verts,
    audit 15/0, stade 14/14, ALL-SYNC 7/7.
 
+24. **La conduite précise — « pas trop de conduite : trop de conduite IMPRÉCISE ».** La correction
+   du retour précédent avait trop rangé le dribble ; celui-ci le remet au centre et corrige sa
+   QUALITÉ. Mesuré : 11,4 % du temps de conduite avec le ballon échappé > 2,2 m (le porteur
+   courait après son ballon), poussée d'évasion re-échantillonnée à 60 Hz (zigzag d'intention).
+   Trois lois : (1) LA TOUCHE LIT L'ESPACE (dribble.js — un défenseur à 2 m raccourcit la touche,
+   close control ; seul, on pousse loin ; `player.space` fourni par la boucle de conduite, loi
+   neutre si absent) ; (2) LA TOUCHE QUI CORRIGE, CORRIGE (ligne du ballon divergée > 60° du cap
+   → le pied reprend plein cap au lieu de mélanger l'erreur) ; (3) L'INTENTION SE LISSE (EMA
+   τ 0,35 s sur la poussée du porteur de match). Après : échappées 5,1-5,4 %, dist p90 1,87 m,
+   touches à 1°/10° (p50/p90) du cap voulu — et la CONDUITE GARDE SA PLACE (63-65 % du porté en
+   touches libres, holdCalm rendu à [0,6 ; 1,4]). DEUX morts d'instrument (loi 8, encore) : le
+   « 90-111° d'imprécision » comparait la vitesse RÉSIDUELLE du ballon au push COURANT qui avait
+   déjà tourné — à l'instant de la touche, l'angle réel est 1-10° (et la conduite « propre » avait
+   la queue, le duel était précis : l'inversion qui a dénoncé l'ombre) ; puis le banc a recopié la
+   sonde en mutilant l'ordre des captures (97° mesurés à travers deux pas). 4 clauses verrouillent
+   présence ET précision (verify-match 24). Bonus mesuré : le rondo MONTE au verrou (record 10,13,
+   frappées 43,9 — la touche qui lit l'espace améliore aussi le jeu pressé). 43 bancs verts.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

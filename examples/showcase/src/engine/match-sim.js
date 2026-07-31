@@ -44,7 +44,8 @@ export const MATCH = {
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
   // qui ne suivent pas l'appel » (retour utilisateur, mot pour mot ce que les chiffres disaient).
-  holdCalm: [0.5, 1.2],   // s — on fixe, on donne (rondo : [0,8 ; 1,8])
+  holdCalm: [0.6, 1.4],   // s — on fixe, on donne — SANS tuer la conduite : le dribble est
+                          // une partie du jeu, c'est sa PRÉCISION qui se corrige, pas sa présence
   intentBarCalm: 4.2,     // la barre d'adoption au calme, plus prompte qu'au rondo
   appelBonus: 2.0,        // le coureur en rupture est SERVI (terme de score de choosePass)
   // la mène suit la course : temps d'arrivée estimé (0,4 + d/9, borné 1 s), amorti à 85 % — un
@@ -205,7 +206,14 @@ function assignMatchJobs(st, cfg) {
       let px = (gx / gl) * wGoal, pz = (gz / gl) * wGoal;
       if (ev) { const ex = ev[0] - p.p[0], ez = ev[2] - p.p[2]; const el = Math.hypot(ex, ez) || 1; px += (ex / el) * (1 - wGoal); pz += (ez / el) * (1 - wGoal); }
       const pl = Math.hypot(px, pz) || 1;
-      p.push = [px / pl, pz / pl];
+      // LA POUSSÉE SE LISSE (EMA τ 0,35 s) : l'évasion re-échantillonnée à 60 Hz faisait
+      // zigzaguer la demande — et chaque touche partait sur un cap différent du précédent.
+      // Une conduite précise est d'abord une INTENTION stable.
+      const raw = [px / pl, pz / pl];
+      const a = 1 - Math.exp(-(1 / 60) / 0.35);
+      p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
+      const sl = Math.hypot(p._pushS[0], p._pushS[1]) || 1;
+      p.push = [p._pushS[0] / sl, p._pushS[1] / sl];
       p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3];
       continue;
     }

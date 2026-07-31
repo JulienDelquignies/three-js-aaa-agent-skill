@@ -110,6 +110,55 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`on ne PORTE pas le ballon des heures (tenue p90 ${p90.toFixed(2)} s ≤ 2,6 — avant : 3,6)`, p90 <= 2.6);
 }
 
+// ---------- 3 ter. LA CONDUITE — présente ET précise (le retour utilisateur, deuxième passe :
+// « pas trop de conduite : trop de conduite IMPRÉCISE — c'est important qu'il y ait de la
+// conduite et des dribbles »). Mesuré avant : 11,4 % du temps de conduite avec le ballon échappé
+// au-delà de 2,2 m (le porteur courait après son ballon), poussée qui zigzague à 60 Hz. Après la
+// touche qui lit l'espace + la touche qui corrige + l'intention lissée : 5,4 % / p90 1,89 m /
+// touches à 1-10° du cap. Ces clauses tiennent LES DEUX : la précision ET la présence.
+{
+  const dists = [], touch = [];
+  let carryF = 0, freeF = 0;
+  for (const seed of [3, 7]) {
+    const st = makeMatch({ perTeam: 5, seed });
+    const cfg = matchCfg();
+    // le saut de vitesse se lit ENTRE DEUX FINS DE PAS (pv = v post-pas précédent) — la première
+    // version comparait à travers deux pas et mesurait 97° là où l'instant de touche donne 10
+    let pv = [0, 0];
+    const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
+    for (let i = 0; i < 120 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      const bv = [st.ball.v[0], st.ball.v[2]];
+      const dv = Math.hypot(bv[0] - pv[0], bv[1] - pv[1]);
+      const inCarry = st.phase === 'carry' && st.possession.carrier >= 0;
+      if (inCarry) {
+        const c = st.players[st.possession.carrier];
+        if (!c.act) {
+          carryF++;
+          if (st.ball.owner == null) {
+            freeF++;
+            const dNow = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+            dists.push(dNow);
+            if (dv > 1.5 && dNow < 1.3 && c.push) {
+              const l = Math.hypot(bv[0], bv[1]);
+              if (l > 1) touch.push(Math.acos(Math.max(-1, Math.min(1, (bv[0] * c.push[0] + bv[1] * c.push[1]) / l))) * 180 / Math.PI);
+            }
+          }
+        }
+      }
+      pv = bv;
+    }
+  }
+  dists.sort((a, b) => a - b); touch.sort((a, b) => a - b);
+  const q = (arr, p) => arr[Math.floor(arr.length * p)] ?? 0;
+  const esc = dists.filter((d) => d > 2.2).length / Math.max(1, dists.length);
+  ok(`la conduite est PRÉSENTE (${(100 * freeF / Math.max(1, carryF)).toFixed(0)} % du porté en touches libres ≥ 40 — le dribble fait partie du jeu)`,
+    freeF / Math.max(1, carryF) >= 0.4);
+  ok(`…et PRÉCISE : le ballon ne s'échappe pas (${(100 * esc).toFixed(1)} % > 2,2 m ≤ 7 — avant : 11,4)`, esc <= 0.07);
+  ok(`…le ballon reste conduit (dist p90 ${q(dists, 0.9).toFixed(2)} m ≤ 2,1 — avant : 2,23)`, q(dists, 0.9) <= 2.1);
+  ok(`…et la touche part OÙ LE PIED VEUT (p90 ${q(touch, 0.9).toFixed(0)}° ≤ 20 sur ${touch.length} touches)`, q(touch, 0.9) <= 20);
+}
+
 // ---------- 4. les sabotages
 {
   // un match SANS tir (le hook retiré) : la clause « rondo décoré » attrape

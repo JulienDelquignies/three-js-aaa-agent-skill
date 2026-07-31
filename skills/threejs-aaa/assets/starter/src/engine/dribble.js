@@ -118,14 +118,26 @@ export function dribbleStep(d, ball, player, dt) {
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);
-    const lead = touchDistance(player.speed) / (1 + turn * 1.9);
+    // LA TOUCHE LIT L'ESPACE : seul, on pousse loin ; un défenseur à 2 m raccourcit la touche
+    // (close control). Mesuré sans cette loi : 11,4 % du temps de conduite avec le ballon échappé
+    // au-delà de 2,2 m — le porteur courait après son propre ballon, la « conduite imprécise »
+    // que l'œil lit immédiatement. player.space = distance du plus proche adversaire (l'appelant
+    // la fournit ; absente, la loi est neutre — le rondo d'avant est inchangé au bit près).
+    const space = player.space ?? 99;
+    const kSpace = Math.max(0.5, Math.min(1, space / 4));
+    const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace;
     const sp = Math.max(c.minPush, pushSpeed(player.speed, lead));
     // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
     // blended with the ball's current line so a touch never teleports its direction
     const cvx = ball.v[0], cvz = ball.v[2];
     const cl = Math.hypot(cvx, cvz);
     const curX = cl > 0.2 ? cvx / cl : wantX, curZ = cl > 0.2 ? cvz / cl : wantZ;
-    let dx = curX + (wantX - curX) * c.steer, dz = curZ + (wantZ - curZ) * c.steer;
+    // UNE TOUCHE QUI CORRIGE, CORRIGE VRAIMENT : quand la ligne du ballon a divergé de plus de
+    // 60° du cap voulu (déviation, duel, rebond), le mélange avec la ligne courante perpétuait
+    // l'erreur — la queue de 111° d'écart mesurée. Ce cas-là, le pied REPREND le ballon plein cap.
+    const div = Math.acos(Math.max(-1, Math.min(1, curX * wantX + curZ * wantZ)));
+    const steerK = div > Math.PI / 3 ? 1 : c.steer;
+    let dx = curX + (wantX - curX) * steerK, dz = curZ + (wantZ - curZ) * steerK;
     const dl = Math.hypot(dx, dz) || 1; dx /= dl; dz /= dl;
     // LEAD THE TURN: by the time the player catches this touch they will have rotated further, so
     // aim inside the curve rather than down the current tangent. Touching the tangent is exactly
