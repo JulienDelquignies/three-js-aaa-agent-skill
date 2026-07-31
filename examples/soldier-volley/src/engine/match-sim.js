@@ -51,6 +51,9 @@ export const MATCH = {
   restartCarried: true,   // la remise se PORTE (le preneur va chercher le ballon — ballFetch) ; false : l'ancien snap (sabotage nommé)
   chaseLoose: true,       // le ballon libre est CHASSÉ par les deux camps ; false : la formation l'orbite (sabotage nommé)
   apron: 2.0,             // m — le tablier autour du terrain : un corps peut enjamber la ligne (chercher un ballon sorti)
+  carryLawLoose: true,    // la bascule carry→libre lit la LOI DE TOUCHE (jamais sur une touche légale) ; false : le rayon plat (sabotage nommé)
+  shotVariety: true,      // le répertoire du tir (placé/croisé/puissance/mi-hauteur/lucarne) ; false : le rase-mottes unique (sabotage nommé)
+  keeperClaim: true,      // la sortie dans les pieds : un ballon au sol à portée de gants se ramasse, même « porté » ; false : le label-bouclier (sabotage nommé)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
@@ -242,6 +245,24 @@ function assignMatchJobs(st, cfg) {
     const shotAge = st.pass ? st.t - st.pass.t : Infinity;
     // le GARDIEN NOTÉ : son envergure et son réflexe viennent de sa note (keeping) — sinon le métier moyen
     const K = gk.skill ? { ...KEEPER, diveReach: gk.skill.keeperReach, reflex: gk.skill.keeperReflex } : KEEPER;
+    // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté »
+    // par un attaquant. Le label de conduite n'est pas un bouclier contre un plongeon dans les
+    // pieds : la cueillette ne tournait qu'en phase libre, et 8 buts sans tir sont entrés à
+    // 3,5-4,3 m/s DANS LES PIEDS d'un gardien posté à 0,5-2 m sans aucun droit de prise.
+    if (cfg.keeperClaim !== false) {
+      const own = pitch.ownGoal(gk.team);
+      const bd = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
+      const bSpd = Math.hypot(st.ball.v[0], st.ball.v[2]);
+      const towardGoal = st.ball.v[0] * own.sign > 0.5;
+      const ownerP = st.ball.owner != null ? st.players[st.ball.owner] : null;
+      if (bd < 0.8 && st.ball.p[1] < 1.2 && bSpd < 8 && (towardGoal || bSpd < 2.5)
+        && pitch.inBox(st.ball.p[0], st.ball.p[2], own.sign)
+        && (!ownerP || ownerP.team !== gk.team)) {
+        simInternals.receive(st, gk.id, cfg);
+        st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'pieds' });
+        continue;
+      }
+    }
     // la MENACE se lit au dernier contact : un ballon de SA propre équipe se cueille, ne se plonge pas
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team);
     if (dec.mode === 'dive' && gk.down <= 0) {
@@ -337,13 +358,31 @@ function assignMatchJobs(st, cfg) {
   }
   {
     const sgn = Math.sign(goal.x || 1);
-    const slots = [
+    // L'AILE HAUTE REMPLIT LA SURFACE (« ça manque de centres ») : quand le ballon vit LARGE et
+    // HAUT, les couloirs génériques laissaient la boîte vide — personne à servir, aucun centre
+    // possible. Les postes deviennent ceux du centre : premier poteau, second poteau, point de
+    // penalty, plus la sécurité et le soutien de couloir.
+    // …les postes s'arment TÔT (dès l'aile au quart offensif) : le coureur de surface a besoin
+    // de sa course — des postes armés au moment du centre arrivent après le ballon
+    const wideDeep = Math.abs(anchor[2]) > pitch.hz * 0.38 && anchor[0] * sgn > pitch.hx * 0.25;
+    const zs = Math.sign(anchor[2] || 1);
+    // …et les postes vivent DEVANT le but, pas SUR la ligne : des coureurs à 2,4-2,8 m de la
+    // ligne faisaient de chaque phase d'aile un pinball de goal-mouth (13 buts sans tir mesurés
+    // — passes qui traversent, réceptions qui roulent au fond). Premier poteau à l'épaule de la
+    // surface de but, second au niveau du penalty.
+    const slots = (wideDeep ? [
+      [goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)],  // premier poteau
+      [goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2)],                      // second poteau
+      [goal.x - sgn * pitch.dims.spot, 0],                                     // le point de penalty
+      [anchor[0] - sgn * 7, anchor[2] * 0.5],                                  // la sécurité
+      [anchor[0] - sgn * 1.5, zs * pitch.hz * 0.6],                            // le soutien de couloir
+    ] : [
       [anchor[0] + sgn * 8, anchor[2] < 0 ? anchor[2] + 6 : anchor[2] - 6],   // lanceur intérieur
       [anchor[0] + sgn * 7, anchor[2] < 0 ? anchor[2] - 5 : anchor[2] + 5],   // lanceur opposé
       [anchor[0] - sgn * 6, anchor[2] * 0.5],                                  // la sécurité
       [anchor[0] + sgn * 2, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55], // la largeur
       [anchor[0] + sgn * 4, anchor[2] * -0.6],                                 // second rideau
-    ].map(([x, z]) => [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z))]);
+    ]).map(([x, z]) => [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z))]);
     const free = attackers.filter((p) => (!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter);
     const taken = new Set();
     for (const p of free) {
@@ -423,6 +462,10 @@ function tryShot(st, c, cfg) {
   if (dGoal > cfg.shotRange) return false;
   if (st.hold < cfg.shotHold) return false;
   if (Math.sign(c.p[0] - 0) !== Math.sign(goal.x) && dGoal > cfg.shotRange * 0.75) return false; // pas de sa moitié
+  // L'ANGLE FERMÉ N'EST PAS UN TIR, C'EST UN CENTRE RATÉ : l'aile voyait 15 m de « portée » et
+  // canonnait du couloir (0 centre mesuré — tryShot passait toujours avant tryCross). Au-delà de
+  // l'épaule de la surface et hors du bout portant, le refus se nomme et l'aile SERT.
+  if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && dGoal > 8.5) return deny(st, 'angle-fermé');
   const gk = st.players.find((p) => p.keeper && p.team !== c.team);
   // les DEUX coins s'essaient, le plus loin du gardien d'abord — et à bout portant, on tire dans
   // le trafic (0,75 m de couloir n'existait jamais devant une défense postée côté but : 135 refus,
@@ -438,8 +481,30 @@ function tryShot(st, c, cfg) {
     if (m > margin) { margin = m; if (m >= need) { tz = cz; break; } }
   }
   if (tz == null) return deny(st, 'tir-couloir-fermé');
+  // LE RÉPERTOIRE DU TIR (« les frappes manquent de peps et de diversité ») : l'espèce se choisit
+  // sur la GÉOMÉTRIE (près → on place, loin → on arme) + un tirage seedé + la note (une petite
+  // dispersion de finition ose la lucarne). L'élévation se calcule balistiquement pour la hauteur
+  // visée au plan du but — le gardien garde ses lois (gather ≤ 1,9 m, gant ≤ 2,1 m : une lucarne
+  // à 1,7 m est un arrêt de grande envergure, pas un but gratuit).
+  let shotKind = null;
+  if (cfg.shotVariety !== false) {
+    const u = (st.rnd ?? (() => 0.5))();
+    const fin = c.skill ? Math.max(0, Math.min(1, (0.9 - c.skill.shotSigma) / 0.9)) : 0.5;
+    const elevFor = (yT, v) => Math.min(0.32, (yT + 4.9 * (dGoal / v) * (dGoal / v)) / Math.max(1, dGoal));
+    if (dGoal < 8.5) {
+      shotKind = u < 0.55 ? { id: 'placé', speed: 16.5, elev: 0.05 }
+        : u < 0.8 ? { id: 'croisé', speed: 18, elev: 0.03 }
+        : { id: 'puissance', speed: 21, elev: 0.08 };
+    } else {
+      const pLuc = 0.08 + 0.12 * fin;
+      shotKind = u < 0.48 ? { id: 'puissance', speed: 21.5, elev: 0.09 }
+        : u < 0.76 ? { id: 'mi-hauteur', speed: 19, elev: elevFor(1.1, 19) }
+        : u < 0.76 + pLuc ? { id: 'lucarne', speed: 19.5, elev: elevFor(1.7, 19.5) }
+        : { id: 'placé', speed: 17.5, elev: 0.05 };
+    }
+  }
   const choice = {
-    to: { id: -2 }, lead: [goal.x, 0, tz], style: 'ground', shot: true,
+    to: { id: -2 }, lead: [goal.x, 0, tz], style: 'ground', shot: true, shotKind,
     lane: { margin: +margin.toFixed(2) },
     shotInfo: { range: +dGoal.toFixed(2), tz: +tz.toFixed(2), gkZ: gk ? +gk.p[2].toFixed(2) : null },
   };
@@ -448,6 +513,46 @@ function tryShot(st, c, cfg) {
 
 /** Un refus a une cause nommée (copie locale du registre du loop). */
 function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; }
+
+// ---------------------------------------------------------------- le centre
+/**
+ * LE CENTRE (« ça manque de centres ») — l'aile qui ne peut pas tirer SERT la surface : porteur
+ * LARGE (couloir) et HAUT (approche du dernier tiers), au moins une cible dans la boîte, le
+ * ballon enveloppe la défense par le HAUT (style lofted — le couloir au sol n'est pas requis,
+ * c'est le point du centre). La mène vise la COURSE du coureur de surface, tirée vers le point
+ * de penalty / second poteau. Cooldown d'équipe : le centre est une arme, pas une boucle.
+ */
+function tryCross(st, c, cfg) {
+  if (c.keeper) return false;
+  const { pitch } = st;
+  const goal = pitch.attackGoal(c.team);
+  const sgn = Math.sign(goal.x || 1);
+  if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - 9) return false;   // pas assez haut
+  if (Math.abs(c.p[2]) < pitch.hz * 0.38) return false;                    // pas dans le couloir
+  if (st.hold < 0.25) return false;
+  if ((st._crossCd?.[c.team] ?? -1) > st.t) return false;
+  const boxX = pitch.hx - pitch.dims.box.depth;
+  const inBox = st.players.filter((q) => q.team === c.team && !q.keeper && q.id !== c.id && q.down <= 0
+    && q.p[0] * sgn > boxX - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5);
+  if (!inBox.length) return false;
+  // la cible : le coureur le plus proche du POINT DE CHUTE utile (second poteau / penalty, côté
+  // opposé au centreur — là où un centre fait mal)
+  const spotZ = -Math.sign(c.p[2] || 1) * Math.max(2.0, pitch.goalHalf + 0.8);
+  const spot = [goal.x - sgn * Math.max(3.5, pitch.dims.spot * 0.7), spotZ];
+  const rec = inBox.sort((a, b) => Math.hypot(a.p[0] - spot[0], a.p[2] - spot[1]) - Math.hypot(b.p[0] - spot[0], b.p[2] - spot[1]))[0];
+  const tI = cfg.leadTime ? cfg.leadTime(Math.hypot(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.35;
+  let lead = [rec.p[0] + rec.v[0] * tI, 0, rec.p[2] + rec.v[1] * tI];
+  // …tirée vers le point utile (le centre arrive DEVANT le coureur, côté but)
+  lead = [lead[0] + (spot[0] - lead[0]) * 0.4, 0, lead[2] + (spot[1] - lead[2]) * 0.4];
+  lead = [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, lead[0])), 0,
+    Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, lead[2]))];
+  // un centre PART quand la fenêtre s'ouvre — les portes de posture d'une passe posée ne
+  // s'alignent jamais dans le couloir (mesuré : 286 fenêtres géométriques, 0 centre passé les
+  // portes ancre/technique/timing) : même régime d'urgence que le dégagement
+  const r = simInternals.beginPass(st, { to: { id: rec.id }, lead, style: 'lofted', cross: true, lane: { margin: 9 } }, cfg, { forceUrgent: true });
+  if (r) (st._crossCd ??= {})[c.team] = st.t + 5;
+  return r;
+}
 
 // ---------------------------------------------------------------- la sortie et les remises
 /**
@@ -654,7 +759,7 @@ function passBias(st, c, o) {
 }
 
 export function matchCfg(overrides = {}) {
-  return { ...MATCH, assignJobs: assignMatchJobs, tryShot, tryClear, onOut, onDive, canTake, passBias, ballFetch, ...overrides };
+  return { ...MATCH, assignJobs: assignMatchJobs, tryShot, tryCross, tryClear, onOut, onDive, canTake, passBias, ballFetch, ...overrides };
 }
 
 /** Avance le match d'un pas — le game-loop du rondo, configuré match. */
@@ -773,5 +878,5 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   return { ok: issues.length === 0, issues, stats: { shots: shots.length, buts: buts.length, arrets: evs.filter((e) => e.type === 'arrêt').length, sorties: sorties.length, score: [...st.score] } };
 }
 
-export const matchInternals = { assignMatchJobs, tryShot, onOut, onDive, canTake, placeKickoff, kickoffSpots, ballFetch };
+export const matchInternals = { assignMatchJobs, tryShot, tryCross, onOut, onDive, canTake, placeKickoff, kickoffSpots, ballFetch };
 export { checkRondo };

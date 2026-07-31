@@ -1,7 +1,7 @@
 import { BALL, stepBall, kick } from './ball.js';
 import { predictPath } from './ball-predict.js';
 import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { makeDribbler, dribbleStep, dribbleSteer } from './dribble.js';
+import { makeDribbler, dribbleStep, dribbleSteer, touchDistance } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { gauss } from './attributes.js';
@@ -266,14 +266,21 @@ function strikeNow(st, c, cfg) {
     dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1);
   }
   sol.dirYaw += dirNoise;
-  const speed = shot ? Math.max(sol.speed, cfg.shotSpeed ?? 17)
+  // LE RÉPERTOIRE DU TIR (choice.shotKind, posé par le match — le rondo n'en pose jamais) : le
+  // plancher plat 17 + élévation coupée à 0,10 faisaient de chaque frappe le MÊME rase-mottes.
+  // L'espèce décide la vitesse ET la hauteur ; sans espèce, l'ancien vol tendu, au bit près.
+  const kind = shot ? choice.shotKind : null;
+  const speed = shot ? Math.max(sol.speed, kind?.speed ?? cfg.shotSpeed ?? 17)
     : choice.clear ? Math.max(sol.speed, 13) : sol.speed;
-  st.ball.strike({ speed, dirYaw: sol.dirYaw, elevation: shot ? Math.min(sol.elevation, 0.10) : sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
+  const elev = shot ? (kind ? Math.max(Math.min(kind.elev, 0.32), 0.01) : Math.min(sol.elevation, 0.10)) : sol.elevation;
+  st.ball.strike({ speed, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: 0 });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
+  if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id });
   if (shot) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,
-      tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +speed.toFixed(1) });
+      tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +speed.toFixed(1),
+      kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2) });
   }
   // LA PERCEPTION A UNE HORLOGE : le départ du ballon est un événement — mais l'armé était
   // VISIBLE. La défense paie max(0, réaction perso − armé vu) : une passe téléphonée s'anticipe,
@@ -1085,7 +1092,19 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // réclamer, et l'impasse durait des secondes, étiquetée possession. Le seuil est CELUI DE LA
     // RÈGLE (carryMax) : au-delà, l'étiquette est fausse — c'est un 50/50, la phase libre applique
     // le premier-arrivé et l'impasse se dissout.
-    if (d2(c.p, st.ball.p) > cfg.carryLoose) {
+    // …ET LA BASCULE LIT LA LOI DE TOUCHE (cfg.carryLawLoose, match — absent : le rayon plat du
+    // rondo, au bit près). Une touche de course LÉGALE met le ballon à portée-de-pied +
+    // touchDistance(v) + marge DEVANT le corps — exactement la fenêtre que le banc de conduite
+    // reconnaît. La couper au rayon plat (3,0 m) arrachait l'étiquette au dribbleur en pleine
+    // foulée, et la chasse du ballon libre transformait sa touche en 50/50 offert : mesuré,
+    // 41 bascules sans événement / 4 matchs, 20 volées par l'adversaire, dont 4 touches
+    // parfaitement légales — « le joueur en perd possession alors que ce n'est pas normal ».
+    let looseAt = cfg.carryLoose;
+    if (cfg.carryLawLoose && c.speed > 0.5) {
+      const ahead = ((st.ball.p[0] - c.p[0]) * c.v[0] + (st.ball.p[2] - c.p[2]) * c.v[1]) / (c.speed || 1) > 0;
+      if (ahead) looseAt = Math.max(cfg.carryLoose, 1.15 + touchDistance(c.speed) + 0.5);
+    }
+    if (d2(c.p, st.ball.p) > looseAt) {
       st.ball.release('perte');
       st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
       return st;
@@ -1169,6 +1188,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // passe, parce qu'une occasion de but domine une ligne de passe. Le rondo n'a pas de but :
       // le hook n'y existe pas, et ce bloc est un no-op.
       if (!contested && cfg.tryShot && cfg.tryShot(st, c, cfg)) return st;
+      // LE CENTRE (cfg.tryCross, match) : l'aile qui ne peut pas tirer SERT la surface
+      if (!contested && cfg.tryCross && cfg.tryCross(st, c, cfg)) return st;
       // …et le DÉGAGEMENT se décide ICI aussi (pas seulement au duel installé : mesuré, la branche
       // contestée ne tournait que 17 fois en 120 s — l'équipe épinglée perdait le ballon par tacle
       // AVANT d'y entrer ; ses propres portes lisent l'étau)

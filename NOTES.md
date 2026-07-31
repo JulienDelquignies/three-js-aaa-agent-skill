@@ -1436,6 +1436,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    13, rondo INTACT 40/40 au bit près (tous les hooks absents = no-ops), verrou 8,63 identique,
    audit 16/0, ALL-SYNC 7/7.
 
+29. **Le répertoire offensif (retour utilisateur : conduite qui perd anormalement, frappes sans
+   peps ni diversité, zéro centre).** (1) LA TOUCHE LÉGALE GARDE SON ÉTIQUETTE : la bascule
+   carry→libre coupait au rayon plat (3,0 m) pendant que la loi de touche autorise portée-de-pied
+   + touchDistance(v) + marge devant le corps (~4,6 m au sprint) — et la chasse du ballon libre
+   transformait chaque foulée en 50/50 offert (mesuré : 41 bascules sans événement / 4 matchs,
+   20 volées, 4 sur touches parfaitement légales). cfg.carryLawLoose (match ; rondo au bit près) :
+   la bascule lit LA MÊME loi que le banc. Après : 31 bascules, 14 volées — le reste, des touches
+   lourdes contestées AU CORPS. (2) LE RÉPERTOIRE DU TIR (cfg.shotVariety) : le plancher plat
+   17 m/s + élévation coupée à 0,10 faisaient de chaque frappe le même rase-mottes. L'espèce se
+   choisit sur la GÉOMÉTRIE + un tirage seedé + la note (placé/croisé près ; puissance 21,5,
+   mi-hauteur, lucarne — élévation balistique pour la hauteur visée au plan). Mesuré : 4-5
+   espèces, vitesses p90 21,5, le gardien tient (arrêts sur lucarne/mi-hauteur, conversion 41 %).
+   (3) LE CENTRE (cfg.tryCross + postes de surface) : 0 centre avant — l'aile canonnait à angle
+   fermé (tryShot passait toujours) et la boîte était vide au moment voulu. Trois lois : L'ANGLE
+   FERMÉ N'EST PAS UN TIR (refus nommé « angle-fermé » → l'aile sert) ; L'AILE HAUTE REMPLIT LA
+   SURFACE (les couloirs deviennent premier poteau / second poteau / penalty dès le quart
+   offensif — armés TÔT, le coureur a besoin de sa course) ; LE CENTRE PART QUAND LA FENÊTRE
+   S'OUVRE (forceUrgent, comme le dégagement — mesuré : 286 fenêtres géométriques, 0 passé les
+   portes de posture d'une passe posée). Après : 6 centres / 4 matchs, 4 suivis d'un tir < 4 s.
+   (4) LA SORTIE DANS LES PIEDS (cfg.keeperClaim) — le bug le plus grave débusqué EN ROUTE :
+   8 buts « sans tir » à 3,5-4,3 m/s DANS LES PIEDS d'un gardien posté à 0,5-2 m — le ballon
+   étiqueté carry n'avait AUCUN mécanisme de prise (la cueillette ne tournait qu'en phase libre) ;
+   le label de conduite servait de bouclier. Un ballon au sol à portée de gants se ramasse, même
+   « porté ». Après : 3 buts sans tir (tap-ins hors de portée réelle), 6 sorties dans les pieds.
+   DEUX ombres d'instrument redressées : les postes de surface d'abord posés SUR la ligne
+   (2,4-2,8 m — pinball de goal-mouth, 13 buts sans tir : reculés à l'épaule des six / niveau
+   penalty) ; et la tenue p90 qui comptait la CONDUITE D'AILE comme statue (l'ailier refusé du
+   tir conduit 3-4 s vers la ligne en attendant ses coureurs — une tenue qui ACHÈTE ≥ 3,5 m est
+   exemptée : la clause chasse le porteur planté). verify-match 48 clauses (+10 : répertoire,
+   peps, hauteur, centres, pieds, but-sans-tir borné, 4 sabotages nommés), rondo 40/40, verrou
+   8,63, audit 16/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

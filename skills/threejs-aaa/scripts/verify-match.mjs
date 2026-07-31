@@ -105,10 +105,21 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       // porteur fixe 1-2 s avant de servir la course)
       if (evs.some((e) => e.type === 'pass' && e.to === b.by && e.t >= b.t && e.t <= b.t + 2.8)) servis++;
     }
-    let h0 = -1, c0 = -1;
+    let h0 = -1, c0 = -1, x0 = 0, team0 = 0;
     for (const s of trace) {
-      if (s.phase === 'carry' && c0 < 0) { h0 = s.t; c0 = s.carrier; }
-      if ((s.phase !== 'carry' || s.carrier !== c0) && c0 >= 0) { holds.push(s.t - h0); c0 = -1; }
+      const pl = c0 >= 0 ? s.players.find((q) => q.id === c0) : null;
+      if (s.phase === 'carry' && c0 < 0 && s.carrier >= 0) {
+        const q = s.players.find((w) => w.id === s.carrier);
+        h0 = s.t; c0 = s.carrier; x0 = q?.p[0] ?? 0; team0 = q?.team ?? 0;
+      }
+      if ((s.phase !== 'carry' || s.carrier !== c0) && c0 >= 0) {
+        // UNE TENUE QUI ACHÈTE DES MÈTRES N'EST PAS UNE STATUE (loi 8) : l'ailier refusé du tir
+        // (angle fermé) CONDUIT vers la ligne en attendant que la surface se remplisse — la
+        // patience à terrain gagné est le football voulu ; la clause chasse le porteur PLANTÉ
+        const gain = pl ? (pl.p[0] - x0) * (team0 === 0 ? 1 : -1) : 0;
+        if (gain < 3.5) holds.push(s.t - h0);
+        c0 = -1;
+      }
     }
   }
   holds.sort((a, b) => a - b);
@@ -261,6 +272,63 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sansChasse = mesure({ chaseLoose: false });
   ok(`sabotage « formation qui orbite » attrapé (p90 ${sansChasse.p90.toFixed(2)} s sans la chasse > ${(m.p90 * 1.15).toFixed(2)} — la mène mord)`,
     sansChasse.p90 > m.p90 * 1.15);
+}
+
+// ---------- 3 octies. LE RÉPERTOIRE OFFENSIF (le retour utilisateur : « les frappes manquent de
+// peps et de diversité, ça manque de centres, la conduite perd le ballon anormalement »).
+// Mesuré avant : 100 % des tirs = rase-mottes 17 m/s ; 0 centre (l'aile canonnait à angle fermé,
+// tryShot passait toujours avant) ; 41 bascules carry→libre sans événement dont 20 volées ; et
+// 8 buts SANS TIR — des roulements « portés » qui traversaient un gardien sans droit de prise.
+{
+  const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
+  const joue = (overrides, seeds = [3, 7]) => {
+    const out = { kinds: new Set(), speeds: [], eleves: 0, centres: 0, centresTir: 0, pieds: 0, butsSansTir: 0, flips: 0 };
+    for (const seed of seeds) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg(overrides);
+      let prevPhase = st.phase, prevCarrier = st.possession.carrier, prevEv = 0;
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        // bascule carry→libre sans événement du jeu (la touche « volée » par l'étiquette)
+        if (prevPhase === 'carry' && prevCarrier >= 0 && st.phase === 'loose' && st.possession.carrier < 0) {
+          const nv = st.events.slice(prevEv).map((e) => e.type);
+          if (!nv.some((t) => ['duel', 'sortie', 'but', 'pass', 'shot', 'centre'].includes(t))) out.flips++;
+        }
+        prevPhase = st.phase; prevCarrier = st.possession.carrier; prevEv = st.events.length;
+      }
+      for (const e of st.events) {
+        if (e.type === 'shot') { out.kinds.add(e.kind ?? 'tendu'); out.speeds.push(e.speed); if ((e.elev ?? 0) >= 0.12) out.eleves++; }
+        if (e.type === 'centre') {
+          out.centres++;
+          if (st.events.some((x) => x.type === 'shot' && x.t > e.t && x.t < e.t + 4)) out.centresTir++;
+        }
+        if (e.type === 'arrêt' && e.mode === 'pieds') out.pieds++;
+        if (e.type === 'but' && !st.events.some((x) => x.type === 'shot' && x.t <= e.t && x.t > e.t - 1.5)) out.butsSansTir++;
+      }
+    }
+    out.speeds.sort((a, b) => a - b);
+    out.p90 = out.speeds[Math.floor(out.speeds.length * 0.9)] ?? 0;
+    return out;
+  };
+  const loi = joue({}, [3, 7, 11, 1]);
+  ok(`les frappes ont un RÉPERTOIRE (${[...loi.kinds].join(', ')} — ≥ 3 espèces, avant : le rase-mottes unique)`, loi.kinds.size >= 3);
+  ok(`…et du PEPS (p90 ${loi.p90} m/s ≥ 19 — avant : plancher plat 17)`, loi.p90 >= 19);
+  ok(`…et de la HAUTEUR (${loi.eleves} frappes levées ≥ 0,12 rad — mi-hauteur/lucarne existent)`, loi.eleves >= 2);
+  ok(`l'aile SERT (${loi.centres} centres sur 4 matchs, dont ${loi.centresTir} suivis d'un tir < 4 s)`, loi.centres >= 3 && loi.centresTir >= 1);
+  ok(`la sortie DANS LES PIEDS existe (${loi.pieds} — le label de conduite n'est pas un bouclier)`, loi.pieds >= 1);
+  ok(`le but sans tir est l'EXCEPTION (${loi.butsSansTir} sur 4 matchs ≤ 4 — avant la sortie dans les pieds : 8)`, loi.butsSansTir <= 4);
+  const sansVar = joue({ shotVariety: false });
+  ok(`sabotage « rase-mottes unique » attrapé (${sansVar.kinds.size} espèce(s), p90 ${sansVar.p90} sans le répertoire)`,
+    sansVar.kinds.size <= 1 && sansVar.p90 <= 18.5);
+  const sansCentre = joue({ tryCross: null });
+  ok(`sabotage « aile muette » attrapé (${sansCentre.centres} centre(s) sans tryCross)`, sansCentre.centres === 0);
+  const sansClaim = joue({ keeperClaim: false });
+  ok(`sabotage « label-bouclier » attrapé (${sansClaim.butsSansTir} but(s) sans tir sans la sortie dans les pieds > ${loi.butsSansTir} × il en faut plus)`,
+    sansClaim.butsSansTir > Math.max(1, joue({}).butsSansTir));
+  const sansLoi = joue({ carryLawLoose: false });
+  const loiFlips = joue({}).flips;
+  ok(`la touche légale GARDE son étiquette (${loiFlips} bascules sans événement / 2 matchs, contre ${sansLoi.flips} au rayon plat — la loi mord)`,
+    loiFlips < sansLoi.flips);
 }
 
 // ---------- 3 quater. LA PERCEPTION N'EST PAS UN ORACLE
