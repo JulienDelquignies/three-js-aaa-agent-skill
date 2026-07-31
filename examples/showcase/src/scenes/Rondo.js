@@ -136,8 +136,10 @@ export class Rondo {
       const { model: model3d, groundY: groundY0, clips, rig } = this.squad.spawn(p.team);
       // la TAILLE de la persona (±4 %) — appliquée par-dessus la normalisation du squad, avec le
       // sol qui suit : c'est la première chose que l'œil lit pour distinguer deux corps
-      model3d.scale.multiplyScalar(p.persona?.scale ?? 1);
-      const groundY = groundY0 * (p.persona?.scale ?? 1);
+      // le LOOK injecté (attributes/squads : taille du projet amont) prime sur l'accent persona
+      const kScale = p.look?.scale ?? p.persona?.scale ?? 1;
+      model3d.scale.multiplyScalar(kScale);
+      const groundY = groundY0 * kScale;
       model3d.position.set(p.p[0], groundY, p.p[2]);
       model3d.rotation.y = 0;
       this.scene.add(model3d);
@@ -154,7 +156,7 @@ export class Rondo {
       // `Ch38_Shirt`, et le matériau est un attribut du draw call — teindre le maillot ne peut pas
       // atteindre la peau. Voir engine/part-tint.js.
       // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe
-      const tint = tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : TEAMS[p.team].primary });
+      const tint = tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) });
       if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands

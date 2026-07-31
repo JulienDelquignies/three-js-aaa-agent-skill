@@ -19,7 +19,7 @@ Démos vivantes : https://showcase-pi-mocha.vercel.app (rondo = `rondo.html`, ma
   ligne, verrou de pieds IK, regard (saccades/poursuite), inclinaison dans l'accélération,
   cadence de jambes asservie à la vitesse sol, stade paramétrique (tribunes, pelouse peinte,
   cages — tout suit `{pitch, goal}`).
-- **La preuve** : 43 bancs node (`skills/threejs-aaa/scripts/verify-*.mjs`), un audit composé
+- **La preuve** : 44 bancs node (`skills/threejs-aaa/scripts/verify-*.mjs`), un audit composé
   en navigateur headless (`audit-membres.mjs`), des sabotages nommés partout.
 
 ## La copie à consommer
@@ -87,10 +87,36 @@ stade paramétrique le construit (`generateStadium({ pitch, goal })` — défaut
 5. **22 corps à l'écran** : la scène (`Rondo.js`) est count-agnostique, mais mesurez le rendu —
    prévoir LOD/instancing si nécessaire.
 
+## Les attributs joueurs — le contrat d'injection (`attributes.js`)
+
+Les projets amont amènent des joueurs NOTÉS (0-100, type FM) qui changent les mécaniques de
+réussite et le rendu. Le contrat tient en trois lois, chacune une clause de `verify-attributes` :
+
+1. **Une note module dans la bande humaine** — chaque mapping est une interpolation bornée
+   (pace 100 = ×1,10, pas un surhomme ; le plafond absolu du monde reste souverain, et une note
+   de 400 est écrasée à la bande).
+2. **Sans notes, rien ne change, au bit près** — un joueur sans `ratings` ne tire aucun aléa ;
+   le monde d'aujourd'hui est le monde non noté (même règle que les hooks).
+3. **La note agit sur l'EXÉCUTION, pas sur la physique** — la balistique et les lois de
+   mouvement sont le monde ; les notes jouent l'erreur de LA frappe, la fermeté de LA touche,
+   la fenêtre DU tacle, le réflexe DU gant.
+
+Injection : `makeMatch({ squads: [[{ ratings, look, name, number }, …équipe 0], [...équipe 1]] })`
+(le dernier joueur de chaque équipe est le gardien). `look.scale` et `look.shirt` touchent déjà le
+rendu ; numéros/carnations par joueur sont une dette documentée (texture atlas partagée).
+Vocabulaire consommé aujourd'hui (la table `ATTRIBUTES` liste chaque note → son mécanisme → sa
+bande) : pace, acceleration, passing, control, dribbling, finishing, tackling, reactions,
+composure, keeping. Les clés inconnues sont ignorées — le projet amont peut en porter plus.
+Mesuré (3 × 120 s, élite 80-88 contre faible 30-35) : 3:0 au score cumulé, 86 % contre 80 % de
+passes arrivées — un ACCENT d'équipe, pas une arcade.
+
+La persona (`persona.js`) reste la couche ESTHÉTIQUE (silhouette, phase de cycle, tempérament
+seedés) ; quand les deux parlent du même levier (vitesse, réaction), la note fait foi.
+
 ## Vérifier ce qu'on touche
 
 ```bash
-# la suite complète (43 bancs, ~3 min)
+# la suite complète (44 bancs, ~3 min)
 for f in skills/threejs-aaa/scripts/verify-*.mjs; do node "$f" || echo "ÉCHEC $f"; done
 # le monde composé (navigateur headless, build requis)
 cd examples/showcase && npm run build && cd ../.. && node skills/threejs-aaa/scripts/audit-membres.mjs

@@ -1354,6 +1354,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    deux camps au tiers (une équipe dominée 120 s est un match légal). verify-match 30 clauses.
    43 bancs verts, audit 16/0, verrou rondo 10,0, ALL-SYNC 7/7.
 
+26. **Les attributs joueurs — le contrat d'injection (attributes.js, réponse à « les autres
+   projets vont amener des attributs »).** OUI — et c'est un contrat, pas un champ libre. Trois
+   lois (chacune une clause de verify-attributes, 13) : une note 0-100 module DANS la bande
+   humaine (pace 100 = ×1,10 ; note 400 écrasée ; le plafond absolu du monde reste souverain) ;
+   SANS notes rien ne change au bit près (aucun p.skill → aucun tirage d'erreur — même règle que
+   les hooks : le socle est sûr à reprendre) ; la note agit sur l'EXÉCUTION, pas la physique
+   (l'erreur de LA frappe, la fermeté de LA touche, la fenêtre DU tacle, le réflexe DU gant).
+   Dix notes consommées : pace/acceleration (movePlayers), passing (σ d'angle 6,0° → 0,5° à
+   l'exécution — 3,5° ne mordait pas les couloirs, mesuré), control (diviseur du contrôle-manqué),
+   dribbling (longueur de touche), finishing (dispersion du point visé), tackling (fenêtre du
+   duel), reactions (remplace l'axe persona), composure (l'erreur pressée), keeping (envergure +
+   réflexe du gardien). Injection : makeMatch({ squads }) — { ratings, look, name, number } par
+   joueur, gardien en dernier ; look.scale/look.shirt touchent déjà le rendu (numéros/carnation =
+   dette texture documentée). Persona = couche esthétique, note = couche capacité, la note fait
+   foi sur les leviers partagés. Mesuré (3 × 120 s, élite 80-88 c. faible 30-35) : 3:0 cumulé,
+   86 % c. 80 % de passes arrivées — un accent d'équipe, pas une arcade (clause ≤ 9 d'écart).
+   Déterminisme prouvé : même graine + mêmes notes → même match. Le gauss d'exécution est seedé
+   et borné (±2,1 σ). MOTEUR.md gagne sa section « contrat d'injection ». 44 bancs verts.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

@@ -125,7 +125,8 @@ export function dribbleStep(d, ball, player, dt) {
     // la fournit ; absente, la loi est neutre — le rondo d'avant est inchangé au bit près).
     const space = player.space ?? 99;
     const kSpace = Math.max(0.5, Math.min(1, space / 4));
-    const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace;
+    // …et la NOTE de dribble : le mauvais dribbleur pousse plus loin qu'il ne maîtrise
+    const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1);
     const sp = Math.max(c.minPush, pushSpeed(player.speed, lead));
     // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
     // blended with the ball's current line so a touch never teleports its direction

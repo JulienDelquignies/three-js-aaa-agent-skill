@@ -21,6 +21,7 @@ import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT } from './pitch.js';
 import { KEEPER, keeperSpot, keeperDecide } from './keeper.js';
+import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
 import { MOVES } from './animkit.js';
 
@@ -60,8 +61,26 @@ export const MATCH = {
  * terrain de pitch.js, coup d'envoi à l'équipe 0. L'état EST un état de rondo (mêmes joueurs,
  * même ballon, mêmes personas) : le loop ne voit pas la différence, c'est la config qui la fait.
  */
-export function makeMatch({ perTeam = 5, seed = 1, pitch = makePitch() } = {}) {
+export function makeMatch({ perTeam = 5, seed = 1, pitch = makePitch(), squads = null } = {}) {
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
+  // LES EFFECTIFS NOTÉS (attributes.js — le contrat avec les projets amont) : squads[team][i] =
+  // { ratings, look, name, number } appliqué dans l'ordre des joueurs de l'équipe (le DERNIER est
+  // le gardien). Sans squads : aucun p.skill, aucun tirage d'erreur — le monde d'aujourd'hui.
+  if (squads) {
+    for (const team of [0, 1]) {
+      const roster = squads[team] ?? [];
+      const mine = st.players.filter((q) => q.team === team);
+      mine.forEach((q, i) => {
+        const spec = roster[i];
+        if (!spec) return;
+        q.ratings = spec.ratings ?? null;
+        q.skill = spec.ratings ? makeProfile(spec.ratings) : null;
+        q.look = spec.look ?? null;
+        q.name = spec.name ?? q.name;
+        q.number = spec.number ?? null;
+      });
+    }
+  }
   st.pitch = pitch;
   st.score = [0, 0];
   st.lastTouch = 0;
@@ -159,7 +178,9 @@ function assignMatchJobs(st, cfg) {
     }
     if (busy(gk)) continue;                                        // un plongeon possède son corps
     const shotAge = st.pass ? st.t - st.pass.t : Infinity;
-    const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge);
+    // le GARDIEN NOTÉ : son envergure et son réflexe viennent de sa note (keeping) — sinon le métier moyen
+    const K = gk.skill ? { ...KEEPER, diveReach: gk.skill.keeperReach, reflex: gk.skill.keeperReflex } : KEEPER;
+    const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K);
     if (dec.mode === 'dive' && gk.down <= 0) {
       const cross = dec.cross;
       const move = { id: 'plongeon', duration: MOVES.plongeon.duration, contact: MOVES.plongeon.contact };

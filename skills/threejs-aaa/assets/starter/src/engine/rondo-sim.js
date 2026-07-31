@@ -4,6 +4,7 @@ import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-pr
 import { makeDribbler, dribbleStep, dribbleSteer } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
+import { gauss } from './attributes.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
@@ -243,7 +244,10 @@ function strikeNow(st, c, cfg) {
   // la re-mène du contact suit LA MÊME loi que le choix : une mène courte ici défaisait la mène
   // de course posée par choosePass (le tir garde sa cible fixe)
   const tRe = choice.shot ? 0 : (cfg.leadTime ? cfg.leadTime(Math.hypot((rec?.p[0] ?? 0) - from[0], (rec?.p[2] ?? 0) - from[2]), rec) : 0.18);
-  const lead = rec ? [rec.p[0] + rec.v[0] * tRe, 0, rec.p[2] + rec.v[1] * tRe] : choice.lead;
+  let lead = rec ? [rec.p[0] + rec.v[0] * tRe, 0, rec.p[2] + rec.v[1] * tRe] : choice.lead;
+  if (choice.shot && c.skill) {
+    lead = [lead[0], lead[1], lead[2] + gauss(st.rnd ?? (() => 0.5)) * c.skill.shotSigma];
+  }
   const sol = solvePass(from, lead, { style: choice.style }) || solvePass(from, choice.lead, { style: choice.style });
   if (!sol) { st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4]); return; }   // scuffed: it stays loose
   // ON FRAPPE LE BALLON LÀ OÙ IL EST. `kick(from, …)` POSAIT le ballon sur `from`, et l'appelant
@@ -252,7 +256,16 @@ function strikeNow(st, c, cfg) {
   // invisible sur une trace vue de dessus. `strike()` ne touche qu'à la vitesse et à l'effet.
   // UN TIR EST UN GESTE DE PUISSANCE : solvePass rend la vitesse d'ARRIVÉE (trop douce pour
   // battre un gardien) — le tir prend un plancher (cfg.shotSpeed), même direction, vol tendu
+  // L'ERREUR D'EXÉCUTION DU JOUEUR NOTÉ (attributes.js) : la planification est parfaite, la
+  // FRAPPE dévie — bruit d'angle σ(passing), amplifié sous pression par le sang-froid ; le tir
+  // disperse son point visé (σ(finishing), déjà appliqué sur lead avant la résolution). Un joueur
+  // SANS notes ne tire aucun aléa : le flux seedé d'un monde non noté ne bouge pas d'un bit.
   const shot = !!choice.shot;
+  let dirNoise = 0;
+  if (c.skill && !shot && !choice.clear) {
+    dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1);
+  }
+  sol.dirYaw += dirNoise;
   const speed = shot ? Math.max(sol.speed, cfg.shotSpeed ?? 17)
     : choice.clear ? Math.max(sol.speed, 13) : sol.speed;
   st.ball.strike({ speed, dirYaw: sol.dirYaw, elevation: shot ? Math.min(sol.elevation, 0.10) : sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
@@ -467,7 +480,7 @@ function standTackleNow(st, q, cfg) {
   const d = d2(q.p, st.ball.p);
   const still = st.phase === 'carry' && st.possession.carrier === victimId;
   const sit = situation(q.p, q.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
-  const pick = still && d <= cfg.receiveRadius ? chooseTechnique(sit, 'win', { bias: { 'tacle-debout': 1 } })[0] : null;
+  const pick = still && d <= cfg.receiveRadius + (q.skill?.tackleReach ?? 0) ? chooseTechnique(sit, 'win', { bias: { 'tacle-debout': 1 } })[0] : null;
   const won = !!pick && pick.tech.id === 'tacle-debout';
   if (!won) {
     // le refus a une cause nommée, et l'événement du duel perdu reste visible dans le flux
@@ -770,7 +783,7 @@ function receive(st, id, cfg = RONDO) {
       // passe trop appuyée. Le taux suit la vitesse et la précision de la surface (accuracy), le
       // tirage est seedé (le hasard de la partie, pas un dé caché).
       const arr = Math.hypot(st.ball.v[0], st.ball.v[2]);
-      const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy)));
+      const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy * (p.skill?.controlF ?? 1))));
       if (pMiss > 0 && (st.rnd ? st.rnd() : 0.5) < pMiss) {
         deny(st, 'contrôle-manqué');
         st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62]);
@@ -938,7 +951,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // passes — la loi ne mordait que sur les claquettes, mesuré p10 = 0 ms sur l'urgence.
       const k = ((p.id * 7919 + (st._surprise.n ?? 0) * 104729) % 97) / 97;
       const scanning = k < 0.35;
-      const base = p.persona?.reaction ?? 0.2;
+      const base = p.skill?.reaction ?? p.persona?.reaction ?? 0.2;
       const rt = scanning ? base : Math.max(0, base - (st._surprise.seen ?? 0));
       if (p.team !== st.possession.team && !p.keeper && st.t - st._surprise.t < rt) {
         if (p._heldT) p.target = p._heldT;
@@ -1026,7 +1039,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // carry frames with the ball beyond 3 m). Two consumers of yaw, one meaning changed, both to fix.
     const csp = Math.hypot(c.v[0], c.v[1]);
     const heading = csp > 0.4 ? [c.v[0] / csp, c.v[1] / csp] : [Math.cos(c.yaw), Math.sin(c.yaw)];
-    const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0,
+    const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF,
       space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99) };
     pl.heading = dribbleSteer(st.ball, pl);
     // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus une

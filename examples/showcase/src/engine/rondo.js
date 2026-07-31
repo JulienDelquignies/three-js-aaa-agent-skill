@@ -742,7 +742,7 @@ function movePlayers(st, dt, cfg) {
     let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press'
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
-      * (p.persona?.paceBias ?? 1);
+      * (p.skill?.topF ?? p.persona?.paceBias ?? 1);   // la NOTE de vitesse fait foi ; sinon l'accent persona
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
     // passe — accélération ET pointe au ralenti le temps de la morsure (skill.biteSlow). C'est le
     // POURQUOI de la feinte : sans coût pour le défenseur, elle ne serait qu'une pantomime.
@@ -825,7 +825,7 @@ function movePlayers(st, dt, cfg) {
     // le mordu paie AUSSI en actionneurs : son appui est parti du mauvais côté — freiner comme
     // tourner lui coûtent le facteur de morsure, en plus de la pointe (le modèle d'inertie fait le
     // reste : c'est lui que la feinte bat, exactement comme le commentaire ci-dessus l'annonçait)
-    const kBite = bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1;
+    const kBite = (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) * (p.skill?.accelF ?? 1);   // …et le DÉMARRAGE aussi
     if (sp0 > 0.4) {
       const ux = p.v[0] / sp0, uz = p.v[1] / sp0;
       const along = clamp(dvx * ux + dvz * uz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
