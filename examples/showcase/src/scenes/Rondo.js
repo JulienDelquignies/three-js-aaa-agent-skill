@@ -532,8 +532,18 @@ export class Rondo {
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
         // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à
         // chaque geste. 0,12 s d'entrée = ≤ 25° par 50 ms, sous le seuil perceptible.
-        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - step / 0.12) : Math.min(1, (pl._wUp ?? 0) + step / 0.12);
-        pl.gestureLayer.apply(t, pl._wLegs, pl._wUp);
+        // …ET LA RAMPE SUIT L'ALLURE : à 4+ m/s, quitter le balancé de course en 0,12 s reste un
+        // « changement de mouvement » (retour utilisateur — le geste doit être la CONTINUITÉ de la
+        // locomotion) : 0,12 → 0,18 s selon la vitesse sol, symétrique entrée/sortie.
+        const tauW = 0.12 + 0.06 * Math.min(1, v / 4);
+        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - step / tauW) : Math.min(1, (pl._wUp ?? 0) + step / tauW);
+        // L'ENTRÉE MÈNE L'HORLOGE DU CLIP : la clé t=0 d'un clip est la pose NEUTRE — pendant la
+        // rampe d'entrée, le haut se faisait tirer vers le « garde-à-vous » AVANT de s'armer (le
+        // hoquet mesuré entre locomotion et geste). On échantillonne EN AVANCE au début de l'armé
+        // (lead 0,3 × anticipation), convergence linéaire vers l'heure vraie AU CONTACT — le pied
+        // frappe exactement sur sa clé, l'entrée ne traverse plus le neutre.
+        const tSample = t < antic ? t + (0.3 * antic) * (1 - t / antic) : t;
+        pl.gestureLayer.apply(tSample, pl._wLegs, pl._wUp);
         if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
       } else { pl._wLegs = 0; pl._wUp = 0; }
       // LE REGARD — après la couche (il compose par-dessus les clés Head du geste, fondu quand le

@@ -145,7 +145,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       const inCarry = st.phase === 'carry' && st.possession.carrier >= 0;
       if (inCarry) {
         const c = st.players[st.possession.carrier];
-        if (!c.act) {
+        // …et le GARDIEN-DISTRIBUTEUR n'est pas une conduite : son porté modélise le ballon EN
+        // MAINS (prise → sortie de surface) — ses distances ne sont pas des touches de pied
+        if (!c.act && !c.keeper) {
           carryF++;
           if (st.ball.owner == null) {
             freeF++;
@@ -216,6 +218,49 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // course) — la pathologie d'origine reste 10,0
   ok(`les corps travaillent à hauteur d'homme (${kmh.toFixed(1)} km/h ∈ [5,8 ; 9,6] — avant : 10,0)`, kmh >= 5.8 && kmh <= 9.6);
   ok(`le jeu RESPIRE (ballon en jeu ${play.toFixed(0)} % ∈ [70 ; 95] — avant : 94, remises d'une seconde)`, play >= 70 && play <= 95);
+}
+
+// ---------- 3 septies. LE BALLON N'EST JAMAIS SEUL (le retour utilisateur : « des ballons se
+// déplacent sans joueur à proximité »). Mesuré avant les lois : 12 téléports de 4,7-23 m en une
+// image (remises snappées, engagement du filet au rond central) et 18 roulements orphelins
+// ≥ 0,7 s (dégagements et claquettes ORBITÉS par la formation, personne n'allait AU ballon).
+// Les lois : la remise se PORTE (ballFetch — freiné à la lisse, ramassé, porté, posé) et le
+// ballon libre est CHASSÉ par les deux camps (mène de poursuite). Chacune a son sabotage nommé.
+{
+  // L'INSTRUMENT MESURE LA RÉSOLUTION, PAS LA PROXIMITÉ (loi 8, encore) : la première clause
+  // comptait « ballon à > 3 m de tout corps » — et le SABOTAGE la battait, parce que l'orbiteur
+  // qui suit le ballon À LA TRACE reste près de lui, pendant que le chasseur de la loi coupe vers
+  // son FUTUR (mène) et s'en éloigne géométriquement. La grandeur honnête : combien de temps un
+  // ballon libre reste SANS MAÎTRE (hors remise administrée).
+  const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
+  const mesure = (overrides) => {
+    let jumps = 0, prises = 0;
+    const gaps = [];
+    for (const seed of [3, 7]) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg(overrides);
+      let g = 0;
+      for (let i = 0; i < 120 * 60; i++) {
+        const prev = [st.ball.p[0], st.ball.p[2]];
+        matchStep(st, 1 / 60, cfg);
+        if (Math.hypot(st.ball.p[0] - prev[0], st.ball.p[2] - prev[1]) > 1.2) jumps++;
+        if (st.possession.carrier < 0 && !st.restart) g++;
+        else { if (g > 0) gaps.push(g / 60); g = 0; }
+      }
+      prises += st.events.filter((e) => e.type === 'restart-pris').length;
+    }
+    gaps.sort((a, b) => a - b);
+    return { jumps, prises, p90: gaps[Math.floor(gaps.length * 0.9)] ?? 0 };
+  };
+  const m = mesure({});
+  ok(`le ballon ne se TÉLÉPORTE jamais (${m.jumps} saut(s) > 1,2 m/image sur 2 × 120 s — avant : 12)`, m.jumps === 0);
+  ok(`le ballon libre TROUVE UN MAÎTRE (p90 sans possession ${m.p90.toFixed(2)} s ≤ 1,5 — la chasse des deux camps)`, m.p90 <= 1.5);
+  ok(`…et les remises VIVENT toujours (${m.prises} prises — le porté n'a pas cassé la reprise)`, m.prises >= 6);
+  const sansPorte = mesure({ restartCarried: false });
+  ok(`sabotage « remise snappée » attrapé (${sansPorte.jumps} téléport(s) sans le porté)`, sansPorte.jumps > 0);
+  const sansChasse = mesure({ chaseLoose: false });
+  ok(`sabotage « formation qui orbite » attrapé (p90 ${sansChasse.p90.toFixed(2)} s sans la chasse > ${(m.p90 * 1.15).toFixed(2)} — la mène mord)`,
+    sansChasse.p90 > m.p90 * 1.15);
 }
 
 // ---------- 3 quater. LA PERCEPTION N'EST PAS UN ORACLE

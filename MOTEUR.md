@@ -42,10 +42,18 @@ hooks passés dans `cfg` :
 | `tryShot(st, c, cfg)` | avant l'intention de passe | tenter un tir (retourne true si un geste est engagé) |
 | `onOut(st, cfg)` | le ballon a quitté l'aire | quelle remise (but/touche/corner/sortie — `pitch.outRule`) |
 | `onDive(st, gk, cfg)` | chaque image d'un plongeon | le toucher du gant (prise/claquette), true quand résolu |
-| `canTake(st, id)` | un joueur veut ramasser | l'ayant droit et l'heure d'une remise |
+| `canTake(st, id)` | un joueur veut ramasser | l'ayant droit et l'heure d'une remise (et son POSÉ — remise portée) |
+| `ballFetch(st, dt)` | le pas du ballon LIBRE | la remise portée : le preneur ramasse, porte au pied, pose (true = « j'ai fait avancer le ballon ») |
+| `tryClear(st, c, cfg)` | avant l'intention de passe | le dégagement de l'étau (botté lointain, cooldown d'équipe) |
 | `passBias(st, c, o)` | terme du score de passe | le SENS du jeu (progression vers un but) |
 | `leadTime(d, rec)` | la mène d'une passe | ballon dans la course d'un coureur |
 | `appelBonus` | nombre | récompense du coureur en rupture |
+
+Clés de `cfg` posées par le match (chacune neutre absente — le rondo ne les porte pas) :
+`restartCarried` (la remise se PORTE, jamais snappée — sabotage nommé), `chaseLoose` (le ballon
+libre est chassé par les deux camps — sabotage nommé), `apron` (tablier des corps : enjamber la
+ligne pour chercher un ballon sorti ; 0 = les murs du rondo), `settleMin` (le ballon récupéré se
+dompte avant de repartir), `speeds.walk` (le pas de remise — une remise est une respiration).
 
 Chaque hook est un no-op absent — le rondo d'origine est inchangé au bit près quand `cfg` ne les
 porte pas (mesuré : verrou de balance identique).

@@ -742,6 +742,7 @@ function movePlayers(st, dt, cfg) {
     let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press'
       : p.job === 'mark' ? (cfg.speeds.mark != null ? 'mark' : 'support')
+      : p.job === 'walk' ? (cfg.speeds.walk != null ? 'walk' : 'support')
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
       * (p.skill?.topF ?? p.persona?.paceBias ?? 1);   // la NOTE de vitesse fait foi ; sinon l'accent persona
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
@@ -839,8 +840,14 @@ function movePlayers(st, dt, cfg) {
       p.v[1] += clamp(dvz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
     }
     p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
-    p.p[0] = clamp(p.p[0], -st.area[0] / 2, st.area[0] / 2);
-    p.p[2] = clamp(p.p[2], -st.area[1] / 2, st.area[1] / 2);
+    // LE TABLIER (cfg.apron, 0 par défaut — le rondo garde ses murs au bit près) : en match, un
+    // corps peut ENJAMBER la ligne — le preneur d'une remise va chercher un ballon sorti, le
+    // tireur de touche se poste dehors. Sans ça, le ballon freiné à 1 m derrière la ligne était
+    // INATTEIGNABLE (le preneur pédalait contre la borne, remise jamais posée, jeu gelé — mesuré :
+    // en-jeu 63 %, une graine sans une seule visite d'un camp).
+    const apron = cfg.apron ?? 0;
+    p.p[0] = clamp(p.p[0], -st.area[0] / 2 - apron, st.area[0] / 2 + apron);
+    p.p[2] = clamp(p.p[2], -st.area[1] / 2 - apron, st.area[1] / 2 + apron);
     p.speed = Math.hypot(p.v[0], p.v[1]);
     // A SWING OWNS THE BODY. Once he has started it, his facing is locked: he does not re-aim with his
     // drift and he does not keep turning onto a new target. Without this, the gesture gated the strike

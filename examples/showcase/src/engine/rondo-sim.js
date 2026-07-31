@@ -1198,7 +1198,11 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // score relevée (intentBarCalm) — le porteur conduit, fixe, PUIS donne. Pressé, la barre
         // et la tenue d'origine reprennent : l'urgence reste prompte.
         const bar = calm ? cfg.intentBarCalm : 3.2;
-        const heldEnough = !calm || st.hold >= st._calmHold;
+        // …ET LE BALLON RÉCUPÉRÉ SE DOMPTE (cfg.settleMin, match) : même pressé, on ne redonne
+        // pas à l'image de la prise — la course au ballon libre fabriquait un ping-pong de
+        // récupérations-éclair (23 passes/min mesurées, la bande futsal s'arrête à 20). L'appel
+        // en rupture (runnerCall) reste dispensé : servir une course EST une première touche.
+        const heldEnough = (!calm || st.hold >= st._calmHold) && st.hold >= (cfg.settleMin ?? 0);
         // L'APPEL CASSE LA TENUE : au tempo posé, les tenues (1,5-2,5 s) et les courses (0,7-1,1 s)
         // étaient désynchronisées — le temps d'avoir « assez tenu », la course était finie (3
         // appels servis sur 41 mesurés). Au vrai foot, la course DÉCLENCHE le ballon : un coureur
@@ -1224,7 +1228,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
       }
     }
   } else {
-    st.ball.integrate(dt);
+    // LA REMISE PORTÉE (match) : tant qu'elle n'est pas posée, le preneur peut posséder le pas du
+    // ballon (ramassage → porté au point de remise — cfg.ballFetch renvoie true quand il a fait
+    // avancer le ballon lui-même). Hook absent (rondo) : physique pure, à l'identique.
+    if (!(cfg.ballFetch && cfg.ballFetch(st, dt))) st.ball.integrate(dt);
     st._drb = null;
     // first player within reach takes it — defenders included: that is the interception.
     // BUT the ball must have LEFT the passer first: for the first metres it is still at his feet,

@@ -1393,6 +1393,49 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    de 111 s mesuré (dernier événement t=8,45, fin t=120). Après le gant, le ballon est NEUF
    (st.pass = null). 44 bancs verts, verrou rondo 8,63, ALL-SYNC 7/7.
 
+28. **Le lot des quatre incohérences (retour utilisateur mot pour mot).** (1) « LES GARDIENS
+   PLONGENT SUR DES PASSES EN RETRAIT » — mesuré : 10 plongeons sur 14 étaient des essuie-glaces
+   sur des ballons touchés par LEUR équipe. Loi : la MENACE se lit au dernier contact
+   (keeperDecide gagne un paramètre threat ; sans menace : cueillir ou poste, JAMAIS plonger).
+   Après : 5 plongeons, 0 ami — les « 2 amis » restants de la première mesure étaient l'ombre de
+   l'instrument (lastTouch lu APRÈS coup ; re-mesuré AU TEMPS DE DÉCISION : zéro). (2) « DES
+   BALLONS SE DÉPLACENT SANS JOUEUR À PROXIMITÉ » — deux espèces mesurées : 12 TÉLÉPORTS de
+   4,7-23 m en une image (remises snappées — l'engagement volait du filet au rond central, et
+   placeKickoff écrivait les DOUZE corps) et 18 roulements orphelins ≥ 0,7 s (dégagements et
+   claquettes ORBITÉS par la formation — les couloirs suivaient l'ancre à offsets fixes, personne
+   n'allait AU ballon). Deux lois : LA REMISE SE PORTE (onOut freine le ballon à la lisse — un
+   contact, pas une écriture ; le preneur STICKY va le chercher, le porte au pied — hook
+   cfg.ballFetch, no-op rondo —, le POSE ; canTake exige le posé ; après un but les deux équipes
+   REVIENNENT EN MARCHANT en formation pendant que le preneur sort le ballon du filet) et LE
+   BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS (mène de poursuite ~0,7 s re-résolue par image ;
+   trot si le 50/50 n'existe pas). Après : 0 téléport (ballon ET corps — clauses checkMatch sur
+   le registre BallBody et la trace), p90 sans-maître 1,33 s (orbite sabotée : 1,73 — la mène
+   mord). LE PIÈGE DE L'INSTRUMENT (loi 8, la plus belle de la fenêtre) : la clause « ballon à
+   > 3 m de tout corps » était BATTUE PAR LE SABOTAGE — l'orbiteur qui suit le ballon à la trace
+   reste près de lui, le chasseur de la loi coupe vers son FUTUR et s'en éloigne ; la grandeur
+   honnête est le TEMPS DE RÉSOLUTION. En route : tablier des corps (cfg.apron 2 m, 0 au rondo —
+   le preneur pédalait contre la borne du terrain, touche gelée 58 s mesurée), pose serrée
+   (0,12 m), gardien qui RAMASSE LA BALLE MOLLE (5 buts sans tir mesurés : roulements de 2-5 m/s
+   au fond pendant le poste-spectateur — sous 6 m/s qui coupe le plan → gather), gardien en mains
+   INATTAQUABLE (press au bord de la surface), remise = respiration (bucket walk 2,6), ballon
+   récupéré DOMPTÉ (settleMin 0,55 — le ping-pong de la chasse faisait 23 passes/min), économie
+   du hors-ballon par À-COUPS CADENCÉS (re-visée ≤ 1,4 Hz + 0,8 m de seuil ; l'hystérésis PURE a
+   d'abord GELÉ le bloc — tenues 4,8 s, 2 appels servis sur 45 : le mouvement qui nourrit les
+   passes doit vivre), instrument des occasions corrigé (zone QUE JE VISE pendant que JE l'ai +
+   refus nommés = pas muet), clause attributs re-instrumentée (la complétion ne discriminait plus
+   à 90 % contre 90 % — le receveur-en-vol rattrape l'erreur d'une note 30 ; la note se lit à la
+   DÉVIATION DU DÉPART, mesurée dans le monde). (3+4) « LA CONDUITE MANQUE DE BEAUTÉS / LES
+   ENCHAÎNEMENTS NE SONT PAS FLUIDES — les gestes sont censés être la CONTINUITÉ de la
+   locomotion » — côté scène : L'ENTRÉE MÈNE L'HORLOGE DU CLIP (la clé t=0 est la pose NEUTRE —
+   la rampe d'entrée tirait le haut vers le garde-à-vous AVANT de s'armer ; échantillonnage en
+   avance de 0,3 × anticipation, convergence linéaire vers l'heure vraie AU CONTACT — le pied
+   frappe sur sa clé) et LA RAMPE SUIT L'ALLURE (0,12 → 0,18 s selon la vitesse sol, symétrique).
+   Audit membres 16/0 (appuis posés, genou 68°, contact aligné). Bandes re-mesurées après la
+   re-donne : 17 passes/min, 9,4 km/h, 85 % en jeu, conversion 31-39 %. verify-match 38 clauses
+   (+ 3septies « le ballon n'est jamais seul » avec ses DEUX sabotages nommés), verify-attributes
+   13, rondo INTACT 40/40 au bit près (tous les hooks absents = no-ops), verrou 8,63 identique,
+   audit 16/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

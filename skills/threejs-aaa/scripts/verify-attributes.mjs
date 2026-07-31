@@ -51,21 +51,34 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const mk = (r) => Array.from({ length: 6 }, () => ({ ratings: r }));
   const elite = mk({ pace: 80, acceleration: 78, passing: 88, control: 85, finishing: 85, tackling: 80, reactions: 85, composure: 85, keeping: 88, dribbling: 82 });
   const faible = mk({ pace: 35, acceleration: 35, passing: 30, control: 35, finishing: 30, tackling: 35, reactions: 35, composure: 35, keeping: 30, dribbling: 35 });
-  let scores = [0, 0], comp = [[0, 0], [0, 0]];
+  let scores = [0, 0];
+  const dev = [[], []];                                            // déviation du DÉPART de passe, par équipe
+  const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
   for (const seed of [3, 7, 1]) {
     const st = makeMatch({ perTeam: 5, seed, squads: [elite, faible] });
-    const { st: s2 } = playMatch(st, 120);
-    scores[0] += s2.score[0]; scores[1] += s2.score[1];
-    for (const pss of s2.events.filter((e) => e.type === 'pass' && e.to >= 0)) {
-      const team = s2.players[pss.from].team;
-      comp[team][1]++;
-      if (s2.events.some((e) => e.type === 'receive' && e.by === pss.to && e.t >= pss.t && e.t < pss.t + 3.5)) comp[team][0]++;
+    const cfg = matchCfg();
+    let lastPass = -1;
+    for (let i = 0; i < 120 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      // LA COMPLÉTION NE DISCRIMINE PLUS (90 % contre 90 % mesurés) : le receveur-qui-attaque-
+      // son-vol rattrape les 0,6 m d'erreur d'une note 30 sur ce format court — c'est son métier.
+      // La note se lit là où elle agit : la DÉVIATION du départ (l'angle entre le vol réel et la
+      // ligne origine → mène), mesurée dans le monde à la première image de chaque vol.
+      if (st.phase === 'flight' && st.pass && st.pass.t !== lastPass && st.pass.to >= 0 && st.lastPasser >= 0) {
+        lastPass = st.pass.t;
+        const want = Math.atan2(st.pass.lead[2] - st.pass.origin[1], st.pass.lead[0] - st.pass.origin[0]);
+        const got = Math.atan2(st.ball.v[2], st.ball.v[0]);
+        let d = Math.abs(got - want) * 180 / Math.PI;
+        if (d > 180) d = 360 - d;
+        dev[st.players[st.lastPasser].team].push(d);
+      }
     }
+    scores[0] += st.score[0]; scores[1] += st.score[1];
   }
-  const pct = (t) => 100 * comp[t][0] / Math.max(1, comp[t][1]);
+  const mean = (a) => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
   ok(`l'élite domine au score (${scores[0]}:${scores[1]} cumulé sur 3 matchs)`, scores[0] > scores[1]);
-  ok(`l'élite passe mieux (${pct(0).toFixed(0)} % contre ${pct(1).toFixed(0)} % — l'écart est la note, pas un hasard)`,
-    pct(0) > pct(1) + 2);
+  ok(`l'élite EXÉCUTE mieux (déviation de départ ${mean(dev[0]).toFixed(1)}° contre ${mean(dev[1]).toFixed(1)}° sur ${dev[0].length}+${dev[1].length} passes — l'écart est la note, pas un hasard)`,
+    dev[0].length >= 20 && dev[1].length >= 20 && mean(dev[1]) > mean(dev[0]) + 0.8);
   // …mais la note est un ACCENT : l'équipe faible joue encore au football (pas un 15-0 d'arcade)
   ok(`la note ne crée pas d'arcade (écart cumulé ${scores[0] - scores[1]} ≤ 9 sur 3 matchs)`, scores[0] - scores[1] <= 9);
 }

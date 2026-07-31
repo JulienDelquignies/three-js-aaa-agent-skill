@@ -72,10 +72,24 @@ export function shotCross(pitch, team, ball, ballV, g = 9.81) {
  *   { mode: 'battu', cross }                     — hors de portée : l'état honnête
  * `shotAge` : depuis combien de temps ce vol existe (le réflexe n'est pas un oracle).
  */
-export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K = KEEPER) {
+export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K = KEEPER, threat = true) {
   const spot = keeperSpot(pitch, team, ball, K);
   const cross = shotCross(pitch, team, ball, ballV);
   const speed = Math.hypot(ballV[0], ballV[2]);
+  // UNE PASSE EN RETRAIT N'EST PAS UN TIR : sans menace (dernier contact = SA propre équipe), le
+  // gardien ne plonge JAMAIS — il vient CUEILLIR le ballon qui arrive vers lui (mesuré avant :
+  // 10 plongeons sur 14 étaient des essuie-glaces sur les retraits de ses défenseurs).
+  if (!threat) {
+    if (cross && speed >= 2 && cross.t < 1.4) return { mode: 'gather', spot: { x: spot.x, z: Math.max(-pitch.goalHalf + 0.2, Math.min(pitch.goalHalf - 0.2, cross.z)), depth: spot.depth } };
+    return { mode: 'poste', spot };
+  }
+  // UNE BALLE MOLLE QUI RENTRE SE RAMASSE. Sous le seuil de tir (6 m/s), un vol qui coupe quand
+  // même le plan du but n'est pas un « poste » : le gardien SORT DESSUS et s'en saisit — mesuré
+  // avant la loi : des roulements de 2-5 m/s (touche de conduite, poke de tacle, contrôle long)
+  // finissaient au fond pendant que le gardien tenait son spot en spectateur (5 buts sans tir).
+  if (cross && speed >= 1.5 && speed < 6 && cross.t < 2.2 && Math.abs(cross.z) <= pitch.goalHalf + 0.3 && cross.y < 1.2) {
+    return { mode: 'gather', spot: { x: spot.x, z: Math.max(-pitch.goalHalf + 0.2, Math.min(pitch.goalHalf - 0.2, cross.z)), depth: spot.depth } };
+  }
   if (!cross || speed < 6 || shotAge < K.reflex) return { mode: 'poste', spot };
   if (cross.t > K.diveTime) return { mode: 'poste', spot };                    // trop tôt : se replacer d'abord
   if (Math.abs(cross.z) > pitch.goalHalf + 0.6 || cross.y > pitch.goalH + 0.4) return { mode: 'poste', spot }; // non cadré
@@ -112,6 +126,13 @@ export function checkKeeper(pitch, K = KEEPER) {
   // 4. un tir cadré atteignable déclenche ; le même hors d'envergure est un état « battu »
   const onT = keeperDecide(pitch, 0, me, [me[0] + 9, 0.11, 1.6], [-14, 1.5, -1.0], 0.3, K);
   if (onT.mode !== 'dive' && onT.mode !== 'gather') issues.push(`tir cadré atteignable non traité (${onT.mode})`);
+  // une passe en retrait (menace = false), même rapide et cadrée, ne déclenche JAMAIS un plongeon
+  const retrait = keeperDecide(pitch, 0, me, [me[0] + 9, 0.11, 1.5], [-14, 1.5, -0.9], 0.3, K, false);
+  if (retrait.mode === 'dive') issues.push('le gardien plonge sur une passe en retrait de sa propre équipe');
+  // une balle MOLLE qui coupe le plan (roulement de 3 m/s vers le petit filet) se RAMASSE — le
+  // poste-spectateur laissait rentrer les touches de conduite et les pokes de tacle
+  const molle = keeperDecide(pitch, 0, me, [me[0] + 4, 0.11, 0.8], [-3, 0, 0], Infinity, K);
+  if (molle.mode !== 'gather') issues.push(`balle molle qui rentre non ramassée (${molle.mode} — le gardien regarde le ballon franchir sa ligne)`);
   const wide = keeperDecide(pitch, 0, me, [me[0] + 9, 0.11, pitch.goalHalf + 3], [-14, 0.5, 0], 0.3, K);
   if (wide.mode === 'dive') issues.push('plongeon sur un ballon non cadré');
   const far2 = keeperDecide(pitch, 0, [me[0], 0, -pitch.goalHalf + 0.3], [me[0] + 8, 0.11, pitch.goalHalf - 0.2], [-13, 1.2, 0.4], 0.3, K);
