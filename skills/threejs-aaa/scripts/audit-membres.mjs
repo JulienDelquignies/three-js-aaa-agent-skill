@@ -51,7 +51,9 @@ const episodes = await page.evaluate(async () => {
       }
     });
     const sim = S.state.players[by];
+    const flk = pl.ctrl.footLock?.state;
     return { t: +S.state.t.toFixed(3), bones, ball: S.state.ball.p.map((v) => +v.toFixed(3)),
+      lockW: flk ? [+flk[0].w.toFixed(2), +flk[1].w.toFixed(2)] : [0, 0],
       bv: [+S.state.ball.v[0].toFixed(3), +S.state.ball.v[2].toFixed(3)],
       simP: [+sim.p[0].toFixed(3), +sim.p[2].toFixed(3)], yaw: +sim.yaw.toFixed(3), speed: +sim.speed.toFixed(2),
       act: sim.act ? { id: sim.act.id, t: +sim.act.t.toFixed(3), fired: !!sim.act.fired, antic: sim.act.anticipation } : null,
@@ -118,6 +120,24 @@ for (const [ei, ep] of episodes.entries()) {
       if (disp / (W * dt) > 0.8) { n++; if (lift < 0.10) glisse++; }
     }
     ok(`  AUCUNE glissade armé/suite (corps en mouvement ⇒ un pied décolle) : ${glisse}/${n} fenêtres`, glisse === 0);
+  }
+  {
+    // LE VERROU TIENT : un pied que foot-lock déclare tenu (w > 0,9) ne se déplace pas — LA mesure
+    // honnête du patinage (les métriques « pied bas qui voyage » comptaient les swings rasants et
+    // les re-plants ; celle-ci ne peut pas mentir : elle lit le poids du verrou lui-même).
+    const slips = [];
+    for (let i = 1; i < F.length; i++) {
+      for (const [li, bn] of [[0, 'LeftFoot'], [1, 'RightFoot']]) {
+        if ((F[i].lockW?.[li] ?? 0) > 0.9 && (F[i - 1].lockW?.[li] ?? 0) > 0.9) {
+          slips.push(H(F[i].bones[bn], F[i - 1].bones[bn]));
+        }
+      }
+    }
+    if (slips.length >= 10) {
+      slips.sort((a, b) => a - b);
+      const p90 = slips[Math.floor(slips.length * 0.9)];
+      ok(`  un pied TENU ne bouge pas (glissement verrouillé p90 ${(p90 * 1000).toFixed(1)} mm/image ≤ 20 sur ${slips.length} images)`, p90 <= 0.02);
+    } else console.log(`  INFO verrou: ${slips.length} images tenues dans l'épisode (< 10 — pas de mesure)`);
   }
   if (iFire > 0) {
     const c = F[iFire-1];

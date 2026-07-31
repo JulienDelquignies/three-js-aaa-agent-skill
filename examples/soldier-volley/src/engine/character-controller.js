@@ -203,7 +203,12 @@ export class CharacterController {
       this.mixer.update(dt);
     }
     this.model.updateWorldMatrix(true, true);
-    if (this.footLock && run01 > 0.25 && !this.airborne && !this.gestureHold) this.footLock.solve();
+    // mode HABILLÉ (rondo) : la scène replaque position/yaw sim APRÈS cet update, donc le verrou
+    // interne travaillerait sur une position que la scène va déplacer une ligne plus bas — mesuré :
+    // 97 % des appuis glissaient. `lockExternal` : la scène appelle footLock.solve() en toute fin
+    // de pile, masque la jambe frappeuse, et le verrou vit à TOUTE allure (l'ancien run01 > 0,25
+    // excluait toute la plage marche — là où 12-14 % des fenêtres glissaient à lift nul).
+    if (this.footLock && !this.lockExternal && run01 > 0.25 && !this.airborne && !this.gestureHold) this.footLock.solve(dt);
   }
 
   /** Le corps accordé (gait.js) : deltas additifs appliqués APRÈS le mixer. Le mixer réécrit chaque os

@@ -41,9 +41,9 @@ export function aimChildAt(bone, child, worldTarget) {
  * to find each foot's floor). Without it, the floor is learned online (less robust on the first cycle).
  */
 export class FootLockIK {
-  constructor(legs, { contactBand = 0.05, sampleClip = null, samples = 40 } = {}) {
-    this.legs = legs; this.contactBand = contactBand;
-    this.state = legs.map(() => ({ grounded: false, lock: new THREE.Vector3(), floor: Infinity, online: true }));
+  constructor(legs, { contactBand = 0.05, sampleClip = null, samples = 40, fade = 0.09 } = {}) {
+    this.legs = legs; this.contactBand = contactBand; this.fade = fade;
+    this.state = legs.map(() => ({ grounded: false, lock: new THREE.Vector3(), floor: Infinity, online: true, w: 0 }));
     this.lens = legs.map((l) => {
       l.up.getWorldPosition(_hip); l.knee.getWorldPosition(_knee); l.foot.getWorldPosition(_foot);
       return { A: _hip.distanceTo(_knee), B: _knee.distanceTo(_foot) };
@@ -56,17 +56,88 @@ export class FootLockIK {
     }
   }
 
-  solve() {
+  /**
+   * v2, ré-écrit contre la sonde du sweep (97-98 % des appuis translataient > 0,15 m, médiane
+   * 0,77 m par appui — le patin généralisé qui fait LIRE le jeu trop vite) :
+   *   — le FONDU : la capture monte en ~0,09 s, la relâche REDESCEND au lieu de téléporter (le
+   *     retour sec lock→clip mesurait 0,4-0,6 m en une image à chaque recapture) ;
+   *   — hors de portée : le pied s'ÉCRÊTE sur la sphère de la jambe pendant que le fondu descend
+   *     (même loi que le warp de frappe : la fraction atteignable vaut mieux qu'un lâcher sec) ;
+   *   — le CLAMP SOL : la cible ne descend jamais sous le plancher calibré (orteils mesurés à
+   *     −12,9 cm sous la pelouse) ;
+   *   — le MASQUE par jambe : pendant un geste, la jambe frappeuse appartient à la couche de
+   *     geste + warp — mais le pied d'APPUI garde SON verrou (l'ancien tout-ou-rien coupait les
+   *     deux pendant chaque geste, pendant que le corps translatait jusqu'à 7 m/s).
+   * L'appelant décide QUAND (la scène l'appelle en toute FIN de pile, après le replaquage sim et
+   * toutes les couches — le résoudre avant le replaquage, c'était verrouiller une position que la
+   * scène allait déplacer une ligne plus bas).
+   */
+  /**
+   * @param dt    pas de temps
+   * @param mask  par jambe : false = jambe possédée par une autre autorité (geste/warp) — relâche
+   * @param bodyYaw lacet du corps (rad) — un pivot > ~25° depuis la capture RE-PLANTE le pied
+   *              (XZ tenu pendant que le corps tourne = jambes qui se vrillent — mesuré : 298
+   *              croisements de pieds en virage quand le lacet n'était pas écouté, 5 avant)
+   */
+  solve(dt = 1 / 60, mask = null, bodyYaw = null, bodySpeed = 0) {
     for (let i = 0; i < this.legs.length; i++) {
       const l = this.legs[i], st = this.state[i], { A, B } = this.lens[i];
       l.foot.getWorldPosition(_foot);
       if (st.online) st.floor = Math.min(st.floor, _foot.y);
-      const grounded = _foot.y <= st.floor + this.contactBand;
-      if (!grounded) { st.grounded = false; continue; }                  // swing: leave the clip pose
-      if (!st.grounded) { st.grounded = true; st.lock.copy(_foot); }     // touchdown: capture world XZ
-      _tgt.set(st.lock.x, _foot.y, st.lock.z);                           // hold XZ, clip drives foot height
+      // QUEL PIED EST L'APPUI ? Ni la hauteur seule (la marche a un swing rasant : le verrou le
+      // re-capturait en plein vol et le TRAÎNAIT — marche aplatie, +8 400 fenêtres de glisse
+      // officielles mesurées), ni un seuil fixe de vitesse monde (le pied d'appui QUI GLISSE bouge
+      // en monde — c'est le symptôme même : un seuil fixe rejette la capture pile quand il faut
+      // verrouiller). Le discriminant est RELATIF À L'ALLURE : en cycle vrai, l'appui est
+      // quasi-stationnaire en monde et le swing va à ~2× l'allure — un pied bas sous
+      // max(0,4 ; 0,6×allure) est un appui, même s'il dérape.
+      const vFoot = st.prev ? Math.hypot(_foot.x - st.prev.x, _foot.z - st.prev.z) / Math.max(1e-4, dt) : 0;
+      st.prev = st.prev ? st.prev.set(_foot.x, _foot.y, _foot.z) : _foot.clone();
+      const allowed = !mask || mask[i] !== false;
+      const low = _foot.y <= st.floor + this.contactBand;
+      const stanceV = Math.max(0.4, 0.6 * bodySpeed);
+      if (allowed && low && vFoot < stanceV && !st.grounded) {
+        st.grounded = true; st.lock.copy(_foot);                          // touchdown : capture monde
+        st.yaw0 = bodyYaw ?? 0;
+      }
+      if (st.grounded) {
+        const drift = Math.hypot(st.lock.x - _foot.x, st.lock.z - _foot.z);
+        const turned = bodyYaw != null && Math.abs(Math.atan2(Math.sin(bodyYaw - st.yaw0), Math.cos(bodyYaw - st.yaw0))) > 0.44;
+        // relâche : le clip a levé le pied (vrai swing : haut ou NET plus vite que l'allure), la
+        // dérive dépasse la borne d'un appui (0,45 m — au-delà le pied DOIT se re-planter, pas
+        // s'étirer), ou le corps a pivoté (> 25° : un vrai appui qui tourne se re-plante)
+        if (!allowed || !low || vFoot >= Math.max(1.0, 1.1 * bodySpeed) || drift > 0.45 || turned) st.grounded = false;
+      }
+      st.w = Math.max(0, Math.min(1, st.w + (st.grounded ? dt : -dt) / this.fade));
+      if (st.w <= 1e-3) {
+        // même un pied LIBRE (masqué, pose couchée, fondu de sortie) ne traverse pas la pelouse :
+        // clamp Y seul, XZ au clip — la pose de tacle composée plantait l'orteil à −0,26 m
+        if (_foot.y < st.floor - 0.02) {
+          _tgt.set(_foot.x, st.floor - 0.02, _foot.z);
+          l.up.getWorldPosition(_hip); l.knee.getWorldPosition(_knee);
+          const d0 = _hip.distanceTo(_tgt), R0 = (A + B) * 0.995;
+          if (d0 <= R0) {
+            const pole0 = [_knee.x - _hip.x, _knee.y - _hip.y, _knee.z - _hip.z];
+            const sol0 = twoBoneIK(_hip.toArray(), _tgt.toArray(), A, B, pole0);
+            aimChildAt(l.up, l.knee, _mid.fromArray(sol0.mid));
+            aimChildAt(l.knee, l.foot, _end.fromArray(sol0.end));
+          }
+        }
+        continue;                                                        // swing assumé : la pose du clip
+      }
+      // cible : XZ tenu au verrou (fondu vers la pose clip quand w < 1), hauteur = clip CLAMPÉE au sol
+      const y = Math.max(_foot.y, st.floor);
+      _tgt.set(
+        _foot.x + (st.lock.x - _foot.x) * st.w,
+        y,
+        _foot.z + (st.lock.z - _foot.z) * st.w,
+      );
       l.up.getWorldPosition(_hip); l.knee.getWorldPosition(_knee);
-      if (_hip.distanceTo(_tgt) > (A + B) * 0.995) { st.grounded = false; continue; } // out of reach → release, no splay
+      const d = _hip.distanceTo(_tgt), R = (A + B) * 0.995;
+      if (d > R) {                                                        // hors de portée : écrêter + relâcher
+        _tgt.set(_hip.x + (_tgt.x - _hip.x) * (R / d), _hip.y + (_tgt.y - _hip.y) * (R / d), _hip.z + (_tgt.z - _hip.z) * (R / d));
+        st.grounded = false;                                              // le fondu redescend au prochain pas
+      }
       const pole = [_knee.x - _hip.x, _knee.y - _hip.y, _knee.z - _hip.z]; // keep the clip's natural knee bend
       const sol = twoBoneIK(_hip.toArray(), _tgt.toArray(), A, B, pole);
       aimChildAt(l.up, l.knee, _mid.fromArray(sol.mid));

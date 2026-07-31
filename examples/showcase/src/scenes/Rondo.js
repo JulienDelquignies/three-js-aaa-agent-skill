@@ -192,6 +192,7 @@ export class Rondo {
         };
       })();
       const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite });
+      ctrl.lockExternal = true;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas)
       // LE REGARD (engine/gaze.js) : la couche que le sweep a classée n°1 en manque de réalisme —
       // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
       // 5,2 % du vol. Politique par rôle (pure), mécanisme rate-limité, cible tenue EN MONDE.
@@ -471,11 +472,23 @@ export class Rondo {
         // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
         // les comptait encore à terre. Le relevé se joue quand la sim relève.
         const lying = (pl.sim.down ?? 0) > 0 && /tacle/i.test(pl.gestureLayer.spec?.name ?? '');
-        if (lying) t = Math.min(t, pl.gestureLayer.duration * 0.55);
+        // le gel est un VRAI gel : l'horloge locale s'arrête avec le corps (t0 avance d'autant).
+        // La première version laissait t courir pendant down — au relevé, t sautait PAR-DESSUS le
+        // segment de relevé authoré (clé 0,95) et le fondu partait de la pose couchée : l'arc
+        // d'interpolation couché→debout creusait sous la pelouse (orteil mesuré à −0,41 m).
+        if (lying) { meta.t0 += step; t = Math.min(t, pl.gestureLayer.duration * 0.55); }
         const antic = act?.anticipation || meta.antic || 0.2;
         const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
-        const byContact = Math.min(1, Math.pow(t / Math.max(1e-4, antic * 0.8), 1.5));
-        const done = !lying && !act && t >= meta.dur;
+        // …et le contact ne possède les jambes QUE jusqu'à ~0,15 s après lui : au-delà, c'est le
+        // corps qui décide (byArrive). Sans cette borne, un tacleur relevé COURAIT à 3 m/s avec
+        // les jambes de la pose couchée à poids plein (byContact restait à 1 tout l'accompagnement
+        // du tacle, 0,9 s — orteil à −0,48 m, mesuré) ; pareil pour toute frappe dont la sim
+        // repart tôt.
+        const byContact = t < antic + 0.15 ? Math.min(1, Math.pow(t / Math.max(1e-4, antic * 0.8), 1.5)) : 0;
+        // …et un tacleur que la SIM a relevé et remis en course lâche sa pose tout de suite : le
+        // reste du clip couché n'a plus de corps à habiller (résidu mesuré : jambe fantôme à
+        // −0,28 m pendant le fondu tardif)
+        const done = !lying && !act && (t >= meta.dur || (/tacle/i.test(pl.gestureLayer.spec?.name ?? '') && (pl.sim.down ?? 0) <= 0 && v > 1));
         const target = done ? 0 : Math.max(byArrive, byContact);
         pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, step / 0.05);
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
@@ -507,7 +520,22 @@ export class Rondo {
         const hp = pl.gaze.head?.getWorldPosition ? pl.gaze.head.getWorldPosition(this._wv) : null;
         pl.gaze.update(step, hp ? [hp.x, hp.y, hp.z] : [s.p[0], pl.groundY + 1.6, s.p[2]], target, s.yaw, gw);
       }
-      // l'autorité de la jambe frappeuse — après la couche, en dernier
+      // LE VERROU DES PIEDS, en toute fin de pile — après le replaquage sim, la couche de geste et
+      // le regard, pour verrouiller la position FINALE (le résoudre dans ctrl.update verrouillait
+      // une position que le replaquage déplaçait juste après : 97 % des appuis glissaient, médiane
+      // 0,77 m par appui — le patin qui fait LIRE le jeu trop vite). Actif à toute allure ; la
+      // jambe frappeuse est MASQUÉE pendant un geste (elle appartient à la couche + au warp), le
+      // pied d'appui garde son verrou.
+      {
+        const act2 = pl.sim.act;
+        const striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;
+        // un corps COUCHÉ (tacle, down > 0) n'a pas de pied d'appui : verrouiller un pied de la
+        // pose couchée étirait la jambe SOUS terre en tenant son XZ pendant que le bassin
+        // descendait (orteil mesuré à −0,38 m — le pire du dépôt, créé par le verrou lui-même)
+        const lying2 = (pl.sim.down ?? 0) > 0;
+        if (!pl.ctrl.airborne && pl.ctrl.footLock) pl.ctrl.footLock.solve(step, [!lying2 && striking !== 0, !lying2 && striking !== 1], s.yaw, pl.ctrl.groundSpeed ?? 0);
+      }
+      // l'autorité de la jambe frappeuse — après le verrou, en dernier
       this._applyStrikeWarp(pl);
     }
 
