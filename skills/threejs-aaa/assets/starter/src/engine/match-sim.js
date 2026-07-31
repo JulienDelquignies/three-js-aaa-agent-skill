@@ -16,7 +16,7 @@
 //   — les remises placent le ballon et tiennent les adversaires à distance, sans cérémonie.
 
 import { BALL } from './ball.js';
-import { laneClearance } from './ball-predict.js';
+import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT } from './pitch.js';
@@ -56,6 +56,10 @@ export const MATCH = {
   keeperClaim: true,      // la sortie dans les pieds : un ballon au sol à portée de gants se ramasse, même « porté » ; false : le label-bouclier (sabotage nommé)
   carrySurge: { at: 1.25, top: 6.2 },  // le porteur COURT sur sa touche poussée (> 1,25 m → pointe libérée) ; null : le trottinement (sabotage nommé)
   carryTight: 0.62,       // la CONDUITE SERRÉE par défaut (la touche pleine est l'acte nommé d'un burst) ; 1 : le knock-on permanent (sabotage nommé)
+  meetBall: true,         // le receveur ATTAQUE son ballon (rencontre au plus tôt) ; false : la statue au point de chute (sabotage nommé)
+  meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)
+  meetStep: 1.3,          // m — UN PAS ET DEMI vers le ballon, sur l'axe de la livraison (pas un correcteur balistique)
+  execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
@@ -63,6 +67,8 @@ export const MATCH = {
   settleMin: 0.55,        // s — le ballon récupéré se DOMPTE avant de repartir, même pressé (le
                           // ping-pong des récupérations-éclair de la chasse : 23 passes/min)
   holdCalm: [1.0, 2.2],   // s — on FIXE vraiment avant de donner (0,83 s de tenue mesurée : le
+                          // flipper). NOTE mesurée deux fois : l'ALLONGER fait MONTER les passes/min
+                          // — la tenue attire le press, la part pressée explose (cycles éclair)
                           // flipper, pas FM) — la conduite et le dribble y gagnent leur place
   intentBarCalm: 4.8,     // la barre d'adoption au calme — assez haute pour qu'on VOIE la tenue
   appelBonus: 2.6,        // le coureur en rupture est SERVI — relevé avec intentBarCalm (4,8) :
@@ -362,7 +368,30 @@ function assignMatchJobs(st, cfg) {
   // couloirs : deux lanceurs devant-large, une sécurité derrière, le reste en largeur
   if (flightRec && !flightRec.keeper && flightRec.team === atk) {
     flightRec.job = 'receive';
-    flightRec.target = [st.pass.lead[0], 0, st.pass.lead[2]];
+    // LE RECEVEUR ATTAQUE SON BALLON (cfg.meetBall) — la loi du RONDO (interceptPoint sur la
+    // trajectoire) que le match avait régressée en point de chute STATIQUE : mesuré, 49 % du vol
+    // à < 0,5 m/s et p25 = 0,00 — la statue qui « attend le ballon », et la prise à bout de bras
+    // d'un corps planté. Le point de RENCONTRE le plus tôt, re-résolu par image : il VIENT au
+    // ballon, et la prise se fait dans le pas.
+    // …D'UN PAS VERS LE BALLON, SUR L'AXE DE LA LIVRAISON (cfg.meetZone/meetStep). Deux
+    // sur-corrections mesurées et consignées : la rencontre par interceptPoint suivait le vol
+    // RÉEL (bruit compris) — chaque receveur corrigeait jusqu'à 4,5 m d'erreur, TOUTE passe
+    // aboutissait (0 sortie en 4 matchs, 23-25 passes/min : le flipper par la réception
+    // parfaite) ; et la rencontre inconditionnelle l'aspirait vers le press. Le vrai geste :
+    // tenir sa position (le placement), puis UN PAS ET DEMI vers le ballon dans les derniers
+    // mètres — le corps s'anime, la prise se fait en mouvement, et l'erreur LATÉRALE de la
+    // passe continue d'échapper (c'est le football qui garde ses déchets).
+    let met = null;
+    const dInb = Math.hypot(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
+    if (cfg.meetBall !== false && dInb < (cfg.meetZone ?? 4.5)) {
+      const bx = st.ball.p[0] - st.pass.lead[0], bz = st.ball.p[2] - st.pass.lead[2];
+      const bl = Math.hypot(bx, bz);
+      if (bl > 0.3) {
+        const step = Math.min(cfg.meetStep ?? 1.3, dInb * 0.55);   // il avance ENCORE au contact
+        met = [st.pass.lead[0] + (bx / bl) * step, 0, st.pass.lead[2] + (bz / bl) * step];
+      }
+    }
+    flightRec.target = met ?? [st.pass.lead[0], 0, st.pass.lead[2]];
   }
   {
     const sgn = Math.sign(goal.x || 1);

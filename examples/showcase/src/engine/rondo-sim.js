@@ -261,9 +261,15 @@ function strikeNow(st, c, cfg) {
   // disperse son point visé (σ(finishing), déjà appliqué sur lead avant la résolution). Un joueur
   // SANS notes ne tire aucun aléa : le flux seedé d'un monde non noté ne bouge pas d'un bit.
   const shot = !!choice.shot;
+  // LE DÉCHET TECHNIQUE EXISTE SANS NOTES (cfg.execSigma, match — absent : le rondo au bit
+  // près). Le monde non noté exécutait PARFAITEMENT (zéro bruit hors attributs) : dès que les
+  // receveurs ont su faire un pas vers le ballon, la complétion est montée à ~100 % et le
+  // flipper est revenu par la réception parfaite (0 sortie en 4 matchs mesurée). Un joueur
+  // moyen rate aussi des passes ; la note RAFFINE ce déchet, elle ne l'invente pas.
   let dirNoise = 0;
-  if (c.skill && !shot && !choice.clear) {
-    dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1);
+  if (!shot && !choice.clear) {
+    if (c.skill) dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1);
+    else if (cfg.execSigma) dirNoise = gauss(st.rnd ?? (() => 0.5)) * cfg.execSigma * (urgent ? 1.25 : 1);
   }
   sol.dirYaw += dirNoise;
   // LE RÉPERTOIRE DU TIR (choice.shotKind, posé par le match — le rondo n'en pose jamais) : le

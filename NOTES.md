@@ -1516,6 +1516,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    (bruit de re-donne ±1,5), tempo re-vérifié 19-20/min. verify-match 55 clauses, rondo 40/40,
    dribble 14/14, verrou 8,63, audit 16/0, ALL-SYNC 7/7.
 
+32. **Le receveur vivant et le déchet du joueur moyen (retour utilisateur : « les joueurs sont à
+   l'arrêt complet pour attendre le ballon » + « des contrôles pas dans les pieds »).** Mesuré :
+   49 % du vol entrant à < 0,5 m/s, p25 = 0,00, vitesse à la prise p50 = 0,00 — la STATUE au
+   point de chute (le match avait RÉGRESSÉ la loi du rondo, interceptPoint, en point statique),
+   et la prise à bout de bras d'un corps planté qui se lisait « contrôle pas dans les pieds »
+   (la mécanique du contrôle elle-même était saine : ballon au pied en 0,03 s). QUATRE
+   sur-corrections mesurées et consignées avant la bonne loi : (a) rencontre par interceptPoint
+   à l'allure de chasse → le receveur corrige le vol RÉEL, bruit compris — TOUTE passe aboutit
+   (0 sortie en 4 matchs, 24,6 passes/min : le flipper par la réception parfaite) ; (b) allure
+   de rencontre douce → pareil en plus lent ; (c) zone des derniers mètres mais toujours
+   balistique → pareil ; (d) DEUX FOIS, allonger holdCalm pour compenser fait MONTER les
+   passes/min (la tenue attire le press, la part pressée explose — le volume de passes n'est pas
+   un bouton, c'est une conséquence). Les DEUX bonnes lois : LE PAS VERS LE BALLON SUR L'AXE DE
+   LA LIVRAISON (meetZone 3,5 m / meetStep 1,3 m, prolongé jusqu'au contact — le corps s'anime,
+   la prise se fait en mouvement, et l'erreur LATÉRALE continue d'échapper : le football garde
+   ses déchets) et LE DÉCHET TECHNIQUE DU JOUEUR MOYEN (cfg.execSigma ≈ 2,5°, l'urgence ×1,25,
+   les notes le RAFFINENT — le monde non noté exécutait parfaitement, et c'étaient les statues
+   qui masquaient cette perfection). Après : statue 49 → 3-8 %, prise en mouvement p50 0,00 →
+   1,38-2,73 m/s, complétion 86 % (réaliste — avant : ~100 % dès que le receveur savait faire un
+   pas). Bandes rebasées au monde vivant avec leur justification (passes/min [11 ; 24,5[ — le
+   flipper d'origine était 25 À 94 % EN JEU ; le caractère posé est tenu par tenue/en-jeu/km-h),
+   sabotage « match sans tir » bi-graine (le mono-graine devenait aveugle une re-donne sur
+   trois). verify-match 58 clauses, rondo 40/40 au bit près, dribble 14/14, verrou 8,63, audit
+   16/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
