@@ -654,6 +654,114 @@ export const MOVES = {
     ],
   },
 
+  passementJambes: {
+    // Le passement de jambes : la jambe DÉCRIT UN CERCLE PAR-DESSUS le ballon (extérieur →
+    // intérieur), le buste PLONGE du côté de la feinte — c'est le buste qui vend, pas le pied —
+    // puis le pied se PLANTE à côté du ballon et le poids repart de l'autre bord. Le ballon ne
+    // bouge pas d'un centimètre (pin au contact — c'est le seul geste où l'immobilité du ballon
+    // est la moitié du mensonge). L'appui reste fléchi et PLANTÉ tout du long (v = 0 en sim).
+    name: 'passementJambes', duration: 0.6, contact: 0.28, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.14, pose: {
+        RightUpLeg: [34, -10, 0], RightLeg: [-58, 0, 0], RightFoot: [18, 12, 0],
+        Hips: [0, -10, 0],
+        Spine: [-2, -5, 3], Spine1: [4, -8, 6], Spine2: [2, -5, 3],
+        Neck: [3, 0, 0], Head: [14, 0, 0],
+        LeftArm: [48, 0, 22], LeftForeArm: [20, 0, 30], RightArm: [45, 0, 18], RightForeArm: [-2, 0, -22],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-20, 0, 0], LeftFoot: [-5, 0, 0],
+      }, hips: [0, -0.03, 0] },
+      { t: 0.28, pose: {
+        RightUpLeg: [42, -24, 0], RightLeg: [-64, 0, 0], RightFoot: [22, 18, 0],
+        Hips: [0, -14, 0],
+        Spine: [-2, -6, 4], Spine1: [8, -10, 7], Spine2: [3, -6, 3],
+        Neck: [3, 0, 0], Head: [15, 0, 0],
+        LeftArm: [52, 0, 30], LeftForeArm: [22, 0, 32], RightArm: [40, 0, 28], RightForeArm: [-4, 0, -22],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-24, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0, -0.04, 0] },
+      { t: 0.42, pose: {
+        RightUpLeg: [18, -18, 0], RightLeg: [-30, 0, 0], RightFoot: [6, 8, 0],
+        Hips: [0, 6, 0],
+        Spine: [0, 3, -2], Spine1: [4, 6, -4], Spine2: [1, 3, -2],
+        Neck: [2, 0, 0], Head: [12, 0, 0],
+        LeftArm: [44, 0, 18], LeftForeArm: [12, 0, 24], RightArm: [50, 0, 8], RightForeArm: [4, 0, -18],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-20, 0, 0], LeftFoot: [-5, 0, 0],
+      }, hips: [0, -0.02, 0] },
+      { t: 0.6, pose: {} },
+    ],
+  },
+  crochet: {
+    // Le crochet : l'intérieur du pied va CHERCHER le ballon de l'autre côté du corps (contact
+    // 0,2 — l'adduction de hanche croise la ligne médiane) puis BALAIE — le lacet du pivot N'EST
+    // PAS DANS CES CLÉS (le corps est tourné par la SIM, exactement comme le râteau : c'est ce
+    // qui permet au même crochet de couper à 70° comme à 95° selon le défenseur). Le poids vit
+    // sur l'appui fléchi, le buste s'abaisse dans la coupe puis se relève dans la relance.
+    name: 'crochet', duration: 0.55, contact: 0.2, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.2, pose: {
+        RightUpLeg: [36, -28, 0], RightLeg: [-48, 0, 0], RightFoot: [12, 24, 0],
+        Hips: [0, -8, 0],
+        Spine: [-2, -5, 0], Spine1: [6, -8, 4], Spine2: [2, -5, 2],
+        Neck: [3, 0, 0], Head: [15, 0, 0],
+        LeftArm: [50, 0, 26], LeftForeArm: [18, 0, 30], RightArm: [46, 0, 20], RightForeArm: [0, 0, -22],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-24, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0, -0.04, 0] },
+      { t: 0.36, pose: {
+        RightUpLeg: [24, 10, 0], RightLeg: [-40, 0, 0], RightFoot: [16, -6, 0],
+        Hips: [0, 6, 0],
+        Spine: [0, 4, -2], Spine1: [8, 6, -4], Spine2: [2, 4, -2],
+        Neck: [2, 0, 0], Head: [13, 0, 0],
+        LeftArm: [40, 0, 18], LeftForeArm: [10, 0, 22], RightArm: [52, 0, 4], RightForeArm: [6, 0, -18],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-26, 0, 0], LeftFoot: [-7, 0, 0],
+      }, hips: [0, -0.05, 0] },
+      { t: 0.46, pose: {
+        RightUpLeg: [10, 0, 0], RightLeg: [-24, 0, 0], RightFoot: [4, 0, 0],
+        Hips: [0, 2, 0],
+        Spine1: [4, 2, 0], Head: [10, 0, 0],
+        LeftArm: [46, 0, 14], LeftForeArm: [8, 0, 20], RightArm: [50, 0, 8],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-18, 0, 0],
+      }, hips: [0, -0.02, 0] },
+      { t: 0.55, pose: {} },
+    ],
+  },
+  feinteFrappe: {
+    // La feinte de frappe VIT de sa ressemblance (même loi que feintePasse/passe — une clause du
+    // banc COMPARE) : l'armé est CELUI de `frappe`, clé pour clé (cuisse −30°, genou −108°, buste
+    // en arrière, bassin −16°), et au « contact » (0,3) le geste SE RETIENT — la cuisse meurt à
+    // 8° au lieu de traverser à 62°, le bassin ne tourne pas, le pied se relève. Le défenseur
+    // lancé pour contrer s'assoit (morsure LONGUE : on ne se jette pas devant une demi-frappe).
+    // Rétraction courte (0,14 s — la leçon de feintePasse : l'avantage doit survivre au geste).
+    name: 'feinteFrappe', duration: 0.55, contact: 0.3, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.2, pose: {
+        RightUpLeg: [-30, 0, 0], RightLeg: [-108, 0, 0], RightFoot: [28, 0, 0],
+        Hips: [0, -16, 0],
+        Spine: [-4, -8, 0], Spine1: [-8, -8, 0], Spine2: [-4, -6, 0],
+        Neck: [4, 0, 0], Head: [16, 0, 0],
+        LeftArm: [40, 0, 45], LeftForeArm: [35, 0, 35], RightArm: [40, 0, 40], RightForeArm: [-10, 0, -20],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-26, 0, 0], LeftFoot: [-8, 0, 0],
+      }, hips: [0, -0.05, 0] },
+      { t: 0.3, pose: {
+        RightUpLeg: [8, 0, 0], RightLeg: [-42, 0, 0], RightFoot: [2, 12, 0],
+        Hips: [0, -4, 0],
+        Spine: [-2, -2, 0], Spine1: [0, -2, 0], Spine2: [0, -1, 0],
+        Neck: [3, 0, 0], Head: [15, 0, 0],
+        LeftArm: [42, 0, 30], LeftForeArm: [25, 0, 32], RightArm: [45, 0, 22], RightForeArm: [-5, 0, -22],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-22, 0, 0], LeftFoot: [-6, 0, 0],
+      } },
+      { t: 0.4, pose: {
+        RightUpLeg: [14, -8, 0], RightLeg: [-30, 0, 0], RightFoot: [4, 6, 0],
+        Hips: [0, 2, 0],
+        Spine1: [2, 2, 0], Head: [12, 0, 0],
+        LeftArm: [46, 0, 22], LeftForeArm: [15, 0, 26], RightArm: [48, 0, 12], RightForeArm: [0, 0, -20],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-18, 0, 0],
+      }, hips: [0, -0.01, 0] },
+      { t: 0.55, pose: {} },
+    ],
+  },
+
   // LA PASSE INTÉRIEURE RAPIDE — même surface, armé court. Le geste qui manquait : sous pression,
   // le départage prenait la seule option prompte de la bibliothèque, l'EXTÉRIEUR du pied (0,24 s
   // d'armé) — mesuré : 79,5 % des passes du rondo jouées de l'extérieur, l'inverse du football.

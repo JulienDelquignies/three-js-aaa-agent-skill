@@ -635,6 +635,145 @@ function maybeSemelle(st, c, cfg, calm, foeBody) {
   return true;
 }
 
+/** Le passement de jambes : un jockey POSTÉ en face (pas une charge — le râteau possède la
+ *  charge), du champ d'un côté au moins — la jambe cercle par-dessus un ballon immobile, le
+ *  buste vend le mensonge, le jockey mord. Les clés K.passement* n'existent qu'au MATCH : sans
+ *  elles, refus immédiat AVANT tout tirage — le rondo est inchangé au bit près. */
+function maybePassement(st, c, cfg) {
+  const K = cfg.skill; if (!K || !K.passementFoe) return false;
+  if ((c._skillCd?.passement ?? -1) > st.t) return false;
+  if (c.speed > 2.5) return false;                                // le cercle se joue sur ballon calé, pas en sprint
+  if (d2(c.p, st.ball.p) > 0.6) return false;
+  let foe = null, fd = Infinity;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
+  }
+  if (!foe || fd < K.passementFoe[0] || fd > K.passementFoe[1]) return false;
+  const bear = situation(c.p, c.yaw, foe.p, [0, 0], 0.11).bearing;
+  if (bear > 70) return false;                                    // il jockeye le DEMI-FRONT (l'évasion fait
+  //                                                                 regarder un peu ailleurs — 55° ne laissait
+  //                                                                 que 6 images alignées en 120 s, mesuré)
+  const closing = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
+  if (closing > 1.5) return false;                                // il charge : c'est l'affaire du râteau
+  // une sortie latérale au moins est libre (le passement PRÉPARE un départ de côté)
+  const sides = [c.yaw + 0.9, c.yaw - 0.9].filter((a) => {
+    const ex = c.p[0] + Math.cos(a) * 1.5, ez = c.p[2] + Math.sin(a) * 1.5;
+    if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return false;
+    return !st.players.some((q) => q.team !== c.team && q.down <= 0 && Math.hypot(q.p[0] - ex, q.p[2] - ez) < 1.2);
+  });
+  if (!sides.length) return deny(st, 'passement-sans-issue');
+  if ((st.rnd ? st.rnd() : 0.5) > 0.25 + 0.4 * (c.persona?.flair ?? 0.5)) {
+    (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
+  }
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId['passement-jambes'], sit);
+  const move = MOVE_TIMING.passementJambes;
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  startGesture(c, { id: 'passementJambes', ...move }, {
+    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw: sides[0], foeId: foe.id, ballMax: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).passement = st.t + K.passementCd;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'passementJambes', foot, skill: 'passement', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
+  return true;
+}
+
+/** Le crochet : porteur LANCÉ, un défenseur qui ferme la course en avant-latéral — l'intérieur
+ *  du pied coupe le ballon à travers la course (70-95°), le lancé continue tout droit. Même
+ *  régime que le râteau (ownsBody, le lacet appartient au geste) mais LATÉRAL, en mouvement. */
+function maybeCrochet(st, c, cfg) {
+  const K = cfg.skill; if (!K || !K.crochetFoe) return false;
+  if ((c._skillCd?.crochet ?? -1) > st.t) return false;
+  if (c.speed < 1.2) return false;                                // un crochet REDIRIGE une course
+  if (d2(c.p, st.ball.p) > 0.65) return false;
+  let foe = null, fd = Infinity;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
+  }
+  if (!foe || fd < K.crochetFoe[0] || fd > K.crochetFoe[1]) return false;
+  // L'AILE SERT D'ABORD (même doctrine que le repique : LA BOÎTE COMMANDE L'AILE) : des coureurs
+  // dans la surface → le couloir appartient au CENTRE — le crochet vit dans l'axe et sur l'aile
+  // vide (mesuré : 23-27 crochets par lot mangeaient tous les duels d'aile, centres 6 → 1)
+  if (st.pitch?.attackGoal) {
+    const goalC = st.pitch.attackGoal(c.team); const sgnC = Math.sign(goalC.x || 1);
+    const wideDeepC = Math.abs(c.p[2]) > st.pitch.hz * 0.38 && c.p[0] * sgnC > st.pitch.hx - st.pitch.dims.box.depth - 9;
+    if (wideDeepC && st.players.some((q) => q.team === c.team && !q.keeper && q.id !== c.id && q.down <= 0
+      && q.p[0] * sgnC > st.pitch.hx - st.pitch.dims.box.depth - 1.5 && Math.abs(q.p[2]) < st.pitch.dims.box.width / 2 + 1.5)) return false;
+  }
+  const sitFoe = situation(c.p, c.yaw, foe.p, [0, 0], 0.11);
+  if (sitFoe.bearing > 75) return false;                          // il ferme DEVANT, pas dans le dos
+  // …et il FERME vraiment (vitesse de rapprochement) : le jockey posté appartient au passement
+  const closingC = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
+  if (closingC < 0.8) return false;
+  // on coupe DU CÔTÉ OPPOSÉ au défenseur ; la sortie doit être libre
+  const away = sitFoe.side === 'left' ? -1 : 1;                   // side = côté du foe → on part à l'opposé
+  const exitYaw = c.yaw + away * (K.crochetTurn ?? 1.4);
+  const ex = c.p[0] + Math.cos(exitYaw) * 1.5, ez = c.p[2] + Math.sin(exitYaw) * 1.5;
+  if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'crochet-hors-carré');
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
+  }
+  if ((st.rnd ? st.rnd() : 0.5) > 0.15 + 0.4 * (c.persona?.flair ?? 0.5)) {
+    (c._skillCd ??= {}).crochet = st.t + 2; return false;
+  }
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId.crochet, sit);
+  const move = MOVE_TIMING.crochet;
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  startGesture(c, { id: 'crochet', ...move }, {
+    payload: { kind: 'skill', skill: 'crochet', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, ballMax: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).crochet = st.t + K.crochetCd;
+  c.intent = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'crochet', foot, skill: 'crochet', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet', by: c.id, foe: +fd.toFixed(2), dYaw: +((exitYaw - c.yaw) * 180 / Math.PI).toFixed(0) });
+  return true;
+}
+
+/** La feinte de frappe : à portée de tir, un CONTREUR dans le cône du but — tout l'armé d'une
+ *  frappe, la retenue au contact, le contreur s'assoit LONGTEMPS (on ne se jette pas devant une
+ *  demi-frappe) — et la demi-seconde payée est l'angle qui manquait au tir. Match seulement
+ *  (st.pitch.attackGoal) ; le refus de situation ne consomme aucun tirage. */
+function maybeFeinteFrappe(st, c, cfg, contested) {
+  const K = cfg.skill; if (!K || !K.frappeFeinteCd || contested) return false;
+  if (!st.pitch?.attackGoal || c.keeper) return false;
+  if ((c._skillCd?.frappeFeinte ?? -1) > st.t) return false;
+  if (st.hold < 0.3 || d2(c.p, st.ball.p) > 0.65) return false;
+  const goal = st.pitch.attackGoal(c.team);
+  const dGoal = Math.hypot(goal.x - c.p[0], 0 - c.p[2]);
+  if (dGoal > (cfg.shotRange ?? 15) + 1) return false;            // hors zone : feinter quoi ?
+  const gYaw = Math.atan2(0 - c.p[2], goal.x - c.p[0]);
+  let blocker = null;
+  for (const q of st.players) {
+    if (q.team === c.team || q.keeper || q.down > 0) continue;
+    const d = d2(q.p, c.p);
+    if (d < K.frappeFeinteFoe[0] || d > K.frappeFeinteFoe[1]) continue;
+    if (situation(c.p, gYaw, q.p, [0, 0], 0.11).bearing <= K.frappeFeinteCone) { blocker = q; break; }
+  }
+  if (!blocker) return false;                                     // pas de contreur : on tire, on ne mime pas
+  if (pressPredicate(st, c, cfg).length) return false;            // en duel vivant, pas de pantomime
+  if ((st.rnd ? st.rnd() : 0.5) > 0.18 + 0.4 * (c.persona?.flair ?? 0.5)) {
+    (c._skillCd ??= {}).frappeFeinte = st.t + 2.5; return false;
+  }
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId['feinte-frappe'], sit);
+  const move = MOVE_TIMING.feinteFrappe;
+  startGesture(c, { id: 'feinteFrappe', ...move }, {
+    // outYaw : le REGARD vise le but — c'est lui qui vend la frappe
+    payload: { kind: 'skill', skill: 'frappeFeinte', pick: { foot }, fakeYaw: gYaw, outYaw: gYaw },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).frappeFeinte = st.t + K.frappeFeinteCd;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'feinteFrappe', foot, skill: 'frappeFeinte', anticipation: move.contact });
+  return true;
+}
+
 /** LE CONTACT D'UN GESTE TECHNIQUE — rien ne part : la semelle AGRIPPE (le point de départ du
  *  raclage se fige ici), la feinte SE VEND (les défenseurs lancés dans le cône mordent — leur
  *  ralenti est la loi de movePlayers), la plante SE POSE (le point de parking se fige). */
@@ -656,6 +795,31 @@ function skillContactNow(st, p, cfg) {
     A.from = [st.ball.p[0], st.ball.p[2]];
   } else if (A.skill === 'semelle') {
     A.pin = [st.ball.p[0], st.ball.p[2]];
+  } else if (A.skill === 'passement') {
+    // la jambe passe PAR-DESSUS : le ballon se fige, le jockey d'en face mord (le buste a vendu)
+    A.pin = [st.ball.p[0], st.ball.p[2]];
+    const K = cfg.skill;
+    const foe = st.players[A.foeId ?? -1];
+    const bitten = [];
+    if (foe && foe.down <= 0) { foe._bite = st.t + (K.passementBite ?? 0.4); bitten.push(foe.id); }
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement-vendu', by: p.id, bitten, foot: A.pick.foot });
+    // la sortie est un DÉPART : la prochaine touche a le droit d'être lancée (burst nommé)
+    p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + 0.5 };
+  } else if (A.skill === 'crochet') {
+    A.from = [st.ball.p[0], st.ball.p[2]];
+  } else if (A.skill === 'frappeFeinte') {
+    const K = cfg.skill;
+    const bitten = [];
+    for (const q of st.players) {
+      if (q.team === p.team || q.down > 0 || q.keeper) continue;
+      const d = d2(q.p, p.p);
+      if (d < K.frappeFeinteFoe[0] - 0.2 || d > K.frappeFeinteFoe[1] + 0.6) continue;
+      if (situation(p.p, A.fakeYaw, q.p, [0, 0], 0.11).bearing > K.frappeFeinteCone) continue;
+      q._bite = st.t + K.frappeFeinteBite;                        // on ne se jette pas devant une demi-frappe
+      bitten.push(q.id);
+    }
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'frappeFeinte', by: p.id, bitten, foot: A.pick.foot });
+    p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + 0.45 };  // le pas de côté qui ouvre l'angle
   }
 }
 
@@ -693,6 +857,32 @@ function skillFollowStep(st, p, dt, cfg) {
       p.v[0] = A.lunge[0] * A.speed * k; p.v[1] = A.lunge[1] * A.speed * k;
       p.speed = Math.hypot(p.v[0], p.v[1]);
     } else { p.v[0] = 0; p.v[1] = 0; p.speed = 0; }
+  } else if (A.skill === 'passement') {
+    // le corps reste PLANTÉ sur son appui, le ballon est FIGÉ sous le cercle de la jambe — la
+    // sortie se joue après le geste (le burst posé au contact rend la première touche lancée)
+    p.v[0] = 0; p.v[1] = 0; p.speed = 0;
+    if (A.pin) st.ball.carry([A.pin[0], A.pin[1]], dt, { tau: 0.04 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+    // …et le geste s'ABANDONNE si on vient le presser pendant le cercle (même loi que la semelle)
+    let foe = Infinity;
+    for (const q of st.players) if (q.team !== p.team && q.down <= 0) foe = Math.min(foe, d2(q.p, p.p));
+    if (foe < 0.9) {
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'passement', by: p.id, broke: 'pressé' });
+      abortGesture(p, 'pressé-pendant-passement', { log: st.gestures });
+      return;
+    }
+  } else if (A.skill === 'crochet') {
+    // le lacet BALAIE vers la sortie (ease), le ballon suit L'ARC — de 0,35 m devant l'ancien
+    // regard à 0,5 m devant le nouveau : la coupe à travers la course, jamais un téléport
+    const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
+    const e = u * u * (3 - 2 * u);
+    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
+    p.yawWant = null;
+    p.v[0] = 0; p.v[1] = 0; p.speed = 0.5;
+    const ang = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
+    const dist = 0.35 + 0.15 * e;
+    st.ball.carry([p.p[0] + Math.cos(ang) * dist, p.p[2] + Math.sin(ang) * dist], dt, { tau: 0.05 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'semelle') {
     // LA SEMELLE SE DÉCOLLE QUAND ON VIENT LA PRESSER. Tenue quoi qu'il arrive, elle offrait le
     // temps « collé » mesuré (58 % — un presseur à 2,4 m couvre l'écart en 0,4 s et la tenue
@@ -711,7 +901,7 @@ function skillFollowStep(st, p, dt, cfg) {
   }
 }
 
-export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, skillContactNow };
+export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeFeinteFrappe, skillContactNow };
 export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a) };
 
 /**
@@ -733,6 +923,18 @@ function receive(st, id, cfg = RONDO) {
     p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — le plan
     //                                        ET le cap de l'ancien plan (un hint survivant pilotait
     //                                        la première demi-seconde vers l'ancre d'un autre monde)
+    // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH, pas une touche orientée de joueur de
+    // champ. La table des contrôles (géométrie de pied) laissait un ballon « sans technique
+    // légale » filer NON AMORTI avec l'étiquette de porteur — et la branche distributeur marchait
+    // à l'opposé pendant que le ballon roulait au fond (le CSC de première touche : 5 des 6 buts
+    // sans tir mesurés). Les gardiens n'existent pas au rondo — aucune garde nécessaire.
+    if (p.keeper) {
+      st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92]);
+      if (st.ball.owner !== id) st.ball.possess(id);
+      st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'prise-gardien', foot: 'both',
+        surface: 'hands', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+      return;
+    }
     // WHICH CONTROL. A ball arriving on the left is taken with the left foot, or with the outside of
     // the right — the technique table decides from the geometry, and the choice is recorded so the
     // catalogue can rule on it. A ball nobody has a legal control for is simply not controlled: it
@@ -1172,6 +1374,12 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // pas (première version : contesté seulement — 0,2 râteau par partie, le geste que
     // l'utilisateur demandait restait invisible). Refus nommés quand la situation manque.
     if (!settleGate && maybeRateau(st, c, cfg)) return st;
+    // le crochet coupe une COURSE fermée, le passement ment à un jockey POSTÉ — deux situations
+    // disjointes du râteau (la charge frontale) ; leurs clés n'existent qu'au match
+    // …le passement s'enchaîne LIBREMENT sur un contrôle (le geste après la prise est du vrai
+    // football — l'assise bloquait pile la fenêtre du jockey posté, 6 fenêtres/4 matchs mesurées)
+    if (maybePassement(st, c, cfg)) return st;
+    if (!settleGate && maybeCrochet(st, c, cfg)) return st;
     if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && reachNow && (!settleGate || contested)) {
       // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
       // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon
@@ -1195,6 +1403,9 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // passe, parce qu'une occasion de but domine une ligne de passe. Le rondo n'a pas de but :
       // le hook n'y existe pas, et ce bloc est un no-op.
       if (!contested && cfg.tryShot && cfg.tryShot(st, c, cfg)) return st;
+      // ON TIRE SI ON PEUT ; ON FEINTE LA FRAPPE SI UN CONTREUR FERME (le refus du tir vient
+      // d'être nommé — la feinte achète l'angle qui manquait, le contreur s'assoit)
+      if (!contested && maybeFeinteFrappe(st, c, cfg, contested)) return st;
       // LE CENTRE (cfg.tryCross, match) : l'aile qui ne peut pas tirer SERT la surface
       if (!contested && cfg.tryCross && cfg.tryCross(st, c, cfg)) return st;
       // …et le DÉGAGEMENT se décide ICI aussi (pas seulement au duel installé : mesuré, la branche
@@ -1236,7 +1447,9 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // appels servis sur 41 mesurés). Au vrai foot, la course DÉCLENCHE le ballon : un coureur
         // en rupture au bout d'une ligne qui score dispense de finir la tenue délibérée.
         const runnerCall = choice && (st.players[choice.to.id]?._pace?.until ?? -1) > st.t;
-        if (choice && ((choice.score > bar && (heldEnough || runnerCall)) || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
+        // …une intention de CENTRE vivante ne se re-décide pas (le choix de passe l'écrasait à
+        // l'image suivante — 0 centre exécuté) : elle meurt de sa mort propre (TTL, receveur)
+        if (!c.intent?.choice?.cross && choice && ((choice.score > bar && (heldEnough || runnerCall)) || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
         // LA SEMELLE VIT DANS LA TENUE : pas d'intention encore, du champ, du calme — le pied se
         // pose sur le ballon et la tête se lève. Le geste ALLONGE la tenue de sa durée (busy),
         // ce qui est exactement ce qu'il fait au vrai foot.

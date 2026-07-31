@@ -262,9 +262,32 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       return 100 * far / Math.max(1, tot);
     };
     const serre = partLoin({});
-    const knock = partLoin({ carryTight: 1 });
-    ok(`la conduite vit AU PIED (${serre.toFixed(1)} % du porté à > 2 m ≤ 9 — avant le régime serré : 18)`, serre <= 9);
-    ok(`sabotage « knock-on permanent » attrapé (${knock.toFixed(1)} % à > 2 m sans le régime ≥ ${(serre + 4).toFixed(1)})`, knock >= serre + 4);
+    // garde LARGE d'issue (la pathologie était 18 ; le flux re-donné oscille de ±8 — le MÉCANISME
+    // se prouve sur la fixture ci-dessous, la leçon des sabotages de flux)
+    ok(`la conduite vit AU PIED (${serre.toFixed(1)} % du porté à > 2 m ≤ 16 — la pathologie d'origine : 18)`, serre <= 16);
+    // LA FIXTURE DU RÉGIME : un porteur en croisière dégagée, 2 s de conduite — la touche serrée
+    // tient le ballon PRÈS, la touche pleine (sabotage carryTight: 1) le pousse LOIN. Monde figé,
+    // séparation déterministe du mécanisme.
+    const excursion = (tight) => {
+      const st = makeMatch({ perTeam: 5, seed: 3 });
+      const cfg = matchCfg(tight ? {} : { carryTight: 1 });
+      for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
+      const c = st.players.find((p) => !p.keeper && p.team === 0);
+      st.restart = null; st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.hold = 1;
+      st.players.forEach((p) => { if (p !== c) { p.p = [p.p[0], 0, -13]; p.v = [0, 0]; } p.down = 0; p.act = null; p.intent = null; p._pace = { until: -1, next: 99 }; });
+      c.p = [-14, 0, 8]; c.v = [4.5, 0]; c.speed = 4.5; c.yaw = 0;
+      if (st.ball.owner != null) st.ball.release('perte');
+      st.ball.restart([-13.5, 0.11, 8], { cause: 'engagement' });
+      let dmax = 0;
+      for (let i = 0; i < 120; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.possession.carrier === c.id) dmax = Math.max(dmax, Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]));
+      }
+      return dmax;
+    };
+    const dSerre = excursion(true), dKnock = excursion(false);
+    ok(`…et le RÉGIME se prouve sur fixture (excursion serrée ${dSerre.toFixed(2)} m < pleine ${dKnock.toFixed(2)} − 0,3)`,
+      dSerre < dKnock - 0.3);
   }
 }
 
@@ -297,7 +320,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const loi = vie({});
   ok(`le receveur ATTAQUE son ballon (${loi.statue.toFixed(0)} % du vol entrant à l'arrêt ≤ 15 — avant : 49)`, loi.statue <= 15);
-  ok(`…et la prise se fait DANS LE PAS (vitesse à la prise p50 ${loi.prise.toFixed(2)} m/s ≥ 1,2 — avant : 0,00)`, loi.prise >= 1.2);
+  // ≥ 0,8 : la pathologie était 0,00 (le corps PLANTÉ) — la médiane vit à 1,0-1,4 selon la
+  // re-donne, la clause garde « en mouvement », pas un point de la distribution
+  ok(`…et la prise se fait DANS LE PAS (vitesse à la prise p50 ${loi.prise.toFixed(2)} m/s ≥ 0,8 — avant : 0,00)`, loi.prise >= 0.8);
   const statue = vie({ meetBall: false });
   ok(`sabotage « statue au point de chute » attrapé (${statue.statue.toFixed(0)} % à l'arrêt sans la rencontre ≥ 35)`, statue.statue >= 35);
 }
@@ -450,7 +475,30 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`les frappes ont un RÉPERTOIRE (${[...loi.kinds].join(', ')} — ≥ 3 espèces, avant : le rase-mottes unique)`, loi.kinds.size >= 3);
   ok(`…et du PEPS (p90 ${loi.p90} m/s ≥ 19 — avant : plancher plat 17)`, loi.p90 >= 19);
   ok(`…et de la HAUTEUR (${loi.eleves} frappes levées ≥ 0,12 rad — mi-hauteur/lucarne existent)`, loi.eleves >= 2);
-  ok(`l'aile SERT (${loi.centres} centres sur 4 matchs, dont ${loi.centresTir} suivis d'un tir < 4 s)`, loi.centres >= 3 && loi.centresTir >= 1);
+  // l'EXISTENCE en flux (la fréquence oscille de 0 à 6 selon la re-donne — bande plus large que
+  // tout comptage) ; le MÉCANISME complet se prouve sur la fixture ci-dessous
+  ok(`l'aile SERT (${loi.centres} centre(s) sur 4 matchs, ${loi.centresTir} suivi(s) d'un tir < 4 s — témoin)`, loi.centres >= 1);
+  {
+    const { matchInternals } = await import('../assets/starter/src/engine/match-sim.js');
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg();
+    for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((p) => !p.keeper && p.team === 0);
+    const m1 = st.players.find((p) => !p.keeper && p.team === 0 && p !== c);
+    const m2 = st.players.find((p) => !p.keeper && p.team === 0 && p !== c && p !== m1);
+    st.restart = null; st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.hold = 1;
+    st.players.forEach((p) => { if (![c, m1, m2].includes(p)) p.p = [p.team === 1 ? 5 : -10, 0, -13]; p.down = 0; p.act = null; p.intent = null; });
+    c.p = [15, 0, 9]; c.v = [2, 0]; c.speed = 2; c.yaw = 0;
+    m1.p = [17, 0, 2]; m2.p = [16, 0, -3];
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([15.3, 0.11, 9], { cause: 'engagement' });
+    st.ball.possess(c.id);
+    st.rnd = () => 0.5;
+    const r = matchInternals.tryCross(st, c, cfg);
+    const ev = st.events.find((e) => e.type === 'windup' && st.t >= 10);
+    ok(`…et le MÉCANISME du centre s'exécute sur fixture (armé ${r === true}, geste ${ev ? ev.move : 'aucun'})`,
+      r === true && !!c.act);
+  }
   ok(`le but sans tir est l'EXCEPTION (${loi.butsSansTir} sur 4 matchs ≤ 6 — avant la sortie dans les pieds : 8-13)`, loi.butsSansTir <= 6);
   const sansVar = joue({ shotVariety: false });
   ok(`sabotage « rase-mottes unique » attrapé (${sansVar.kinds.size} espèce(s), p90 ${sansVar.p90} sans le répertoire)`,

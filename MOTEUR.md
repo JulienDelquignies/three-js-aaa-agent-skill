@@ -12,8 +12,10 @@ Démos vivantes : https://showcase-pi-mocha.vercel.app (rondo = `rondo.html`, ma
 
 - **La sim** (`src/engine/`, ~80 modules sans dépendance three pour le cœur) : ballon physique
   (traînée, Magnus, rebond), balistique inverse des passes, duels (tacle debout/glissé), gestes
-  à trois temps (armé/contact/accompagnement), gestes techniques (râteau, feinte, semelle), tir,
-  gardien, remises selon la règle, personas (identité de mouvement par joueur), latence de
+  à trois temps (armé/contact/accompagnement), gestes techniques (râteau, feinte de passe, semelle,
+  passement de jambes, crochet, feinte de frappe), tir,
+  gardien (plongeon, sortie dans les pieds, un-contre-un, prise à deux mains), remises selon la
+  règle, personas (identité de mouvement par joueur), latence de
   perception, terrain-donnée (réduit ET Loi 1).
 - **L'habillage** : couche de geste absolue (pose = rest ⊗ spec), warp de frappe calibré en
   ligne, verrou de pieds IK, regard (saccades/poursuite), inclinaison dans l'accélération,

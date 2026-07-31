@@ -1541,6 +1541,42 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    trois). verify-match 58 clauses, rondo 40/40 au bit près, dribble 14/14, verrou 8,63, audit
    16/0, ALL-SYNC 7/7.
 
+33. **Le répertoire des gestes — passement de jambes, crochet, feinte de frappe (« fais-les à la
+   perfection, sans erreur de placement de membres »).** Trois gestes au niveau des trois
+   premiers, même grammaire (situation nommée → tirage flair → startGesture → contact →
+   accompagnement → abort nommé), clés de config AU MATCH SEULEMENT (le rondo refuse avant tout
+   tirage — clause « inertie du rondo » qui THROW si un tirage part). LE PASSEMENT : jambe qui
+   cercle PAR-DESSUS un ballon FIGÉ (pin), le buste ment, le jockey posté mord (0,4 s), sortie
+   en burst nommé ; s'enchaîne librement sur un contrôle (l'assise bloquait pile sa fenêtre — 6
+   fenêtres/4 matchs mesurées avant déblocage). LE CROCHET : course fermée (closing ≥ 0,8 — le
+   jockey statique appartient au passement, la charge au râteau) → coupe à l'opposé (~80°),
+   lacet balayé par la SIM (clip = membres seulement, comme le râteau), ballon en ARC 0,35 →
+   0,5 m devant le regard interpolé — couple soudé 0,52 m mesuré, sortie à 1° du lacet. LA
+   FEINTE DE FRAPPE : l'armé de `frappe` copié OS POUR OS (clause de ressemblance) puis la
+   RETENUE (cuisse morte à 8° au lieu de traverser à 62), morsure longue (0,7 s — on ne se jette
+   pas devant une demi-frappe), burst de sortie pour l'angle. En flux : crochet ~23, passement
+   ~4, feinte de frappe ~2-3 / 4 matchs. LE LOT A DÉBUSQUÉ UN CSC MÉCANIQUE : le gardien
+   « recevait » comme un joueur de champ — la table des contrôles sans technique légale pour sa
+   géométrie laissait le ballon filer NON AMORTI avec l'étiquette de porteur, et la branche
+   distributeur le faisait marcher À L'OPPOSÉ du ballon qui roulait au fond (5 des 6 buts sans
+   tir). Trois lois de métier : LE GARDIEN PREND À DEUX MAINS (sa prise est un catch —
+   tech 'prise-gardien', surface hands), LE DISTRIBUTEUR VÉRIFIE SES MAINS (ballon qui fuit vers
+   son but = étiquette mensongère → il se retourne et étouffe), et LE UN-CONTRE-UN (un ballon
+   lent DANS sa surface se CHARGE — sortie au-devant, keeperDecide mode 'sortie', l'extension
+   annoncée par MOTEUR.md ; hors surface : jamais, clause anti-libéro). PLUS LA DOCTRINE DE
+   L'AILE, née du diagnostic attributs (l'élite dominait possession 57 % et zone 609/378 mais
+   tirait 10-10 — 195 refus « angle-fermé » : elle insistait le long de la ligne) : L'AILIER À
+   ANGLE FERMÉ REPIQUE (le cut-inside — l'entrée de surface côté axe devient le point de mire),
+   et LA BOÎTE COMMANDE L'AILE (des coureurs dedans → on reste large et on SERT, le crochet cède
+   au centre ; boîte vide → on rentre). L'élite domine désormais AUX OCCASIONS (16-12) — et la
+   clause du verdict attributs se lit là (le score d'un échantillon court est un tirage, 4:4
+   mesuré deux fois). L'ESSAI CONSIGNÉ : le centre-intention (décider→préparer→s'engager posait
+   6 intentions, 0 exécutée — l'intention injectée en plein dribble d'aile ne trouve pas ses
+   portes dans son TTL ; l'approche pilotée du centre au backlog). verify-gestes 41 clauses
+   (ressemblance os-pour-os, couple soudé en monde réel, morsures, inertie rondo, fixtures de
+   déclenchement), verify-match 59, attributes 13, rondo 40/40 au bit près, verrou 8,63, audit
+   membres 16/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

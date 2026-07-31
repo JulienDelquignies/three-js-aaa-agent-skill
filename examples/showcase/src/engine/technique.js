@@ -136,6 +136,24 @@ export const TECHNIQUES = [
     clip: 'arretSemelle', why: 'Le ballon sous la semelle : le porteur au calme POSE le pied dessus et lève la tête. '
       + 'Ce n\'est pas un contrôle (le ballon est déjà à lui) — c\'est la ponctuation du jeu posé, celle qu\'on reconnaît de loin.',
   },
+  {
+    id: 'passement-jambes', intent: 'carry', foot: 'near', surface: 'laces',
+    side: [0, 60], dist: [0.15, 0.7], turn: 50, power: 0, accuracy: 1.0,
+    clip: 'passementJambes', why: 'Le passement de jambes : la jambe cercle PAR-DESSUS un ballon qui ne bouge pas — '
+      + 'c\'est le buste qui ment, pas le pied. Le jockey en face lance son appui du côté du mensonge, la sortie part de l\'autre.',
+  },
+  {
+    id: 'crochet', intent: 'carry', foot: 'near', surface: 'inside',
+    side: [0, 70], dist: [0.15, 0.8], turn: 110, power: 0.25, accuracy: 0.9,
+    clip: 'crochet', why: 'Le crochet : l\'intérieur du pied va chercher le ballon de l\'autre côté du corps et le COUPE '
+      + 'à travers la course — le changement de direction qui laisse un défenseur lancé continuer tout droit.',
+  },
+  {
+    id: 'feinte-frappe', intent: 'carry', foot: 'near', surface: 'laces',
+    side: [0, 60], dist: [0.15, 1.0], turn: 30, power: 0, accuracy: 0.9,
+    clip: 'feinteFrappe', why: 'La feinte de frappe : TOUT l\'armé d\'une frappe, zéro ballon parti. Le contreur se jette '
+      + 'ou s\'assoit — et la demi-seconde qu\'il paie est exactement l\'angle qui manquait au tir.',
+  },
 
   // ---- WINNING THE BALL BACK
   {

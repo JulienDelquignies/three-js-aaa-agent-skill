@@ -57,6 +57,22 @@ export const MATCH = {
   carrySurge: { at: 1.25, top: 6.2 },  // le porteur COURT sur sa touche poussée (> 1,25 m → pointe libérée) ; null : le trottinement (sabotage nommé)
   carryTight: 0.62,       // la CONDUITE SERRÉE par défaut (la touche pleine est l'acte nommé d'un burst) ; 1 : le knock-on permanent (sabotage nommé)
   meetBall: true,         // le receveur ATTAQUE son ballon (rencontre au plus tôt) ; false : la statue au point de chute (sabotage nommé)
+  // LES GESTES DU MATCH (passement, crochet, feinte de frappe) : leurs clés n'existent QU'ICI —
+  // les maybe* refusent AVANT tout tirage quand elles manquent, le rondo est inchangé au bit près
+  skill: {
+    ...RONDO.skill,
+    passementFoe: [0.9, 2.6],  // m — le jockey posté en face (pas une charge : le râteau possède la charge)
+    passementBite: 0.4,     // s — le mensonge du buste : le jockey lance son appui du mauvais côté
+    passementCd: 8,         // s
+    crochetFoe: [1.0, 2.3], // m — le défenseur qui ferme la course en avant-latéral
+    crochetTurn: 1.4,       // rad (~80°) — la coupe à travers la course
+    crochetClear: 1.2,      // m — la sortie du crochet doit être libre
+    crochetCd: 7,           // s
+    frappeFeinteFoe: [1.0, 2.8],  // m — le contreur à asseoir
+    frappeFeinteCone: 40,   // ° — demi-cône vers le but dans lequel le contreur mord
+    frappeFeinteBite: 0.7,  // s — on ne se jette pas devant une demi-frappe (plus long qu'une feinte de passe)
+    frappeFeinteCd: 9,      // s
+  },
   meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)
   meetStep: 1.3,          // m — UN PAS ET DEMI vers le ballon, sur l'axe de la livraison (pas un correcteur balistique)
   execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
@@ -245,6 +261,17 @@ function assignMatchJobs(st, cfg) {
     // passe du loop distribue (choosePass voit ses lanceurs).
     if (carrier && carrier.id === gk.id) {
       const g = pitch.ownGoal(gk.team);
+      // LE DISTRIBUTEUR VÉRIFIE SES MAINS : une étiquette de porteur sur un ballon qui FUIT vers
+      // son but est un mensonge (le CSC de première touche vivait ici — le gardien « distribuait »
+      // en marchant à l'opposé du ballon qui roulait au fond). Pas en mains → on se retourne et
+      // on l'étouffe.
+      const bdC = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
+      if (st.ball.owner !== gk.id && (bdC > 0.9 || st.ball.v[0] * g.sign > 1.5)) {
+        gk.job = 'keeper';
+        gk.target = [st.ball.p[0] + st.ball.v[0] * 0.25, 0, st.ball.p[2] + st.ball.v[2] * 0.25];
+        gk.push = null;
+        continue;
+      }
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       gk.push = [-g.sign, 0];
@@ -344,7 +371,21 @@ function assignMatchJobs(st, cfg) {
       // ~1,65 m à 6 m/s au lieu de 2,7)
       p.touchF = (p._pace?.until ?? -1) > st.t ? 1 : (cfg.carryTight ?? 1);
       const ev = evadeSpot(st, p, cfg);
-      const gx = goal.x - p.p[0], gz = 0 - p.p[2];
+      // L'AILIER À ANGLE FERMÉ REPIQUE DANS L'AXE (le cut-inside) : viser le centre du but depuis
+      // le couloir profond mène au poteau de corner — 195 refus « angle-fermé » par lot de matchs
+      // mesurés sur l'équipe qui construit par l'aile (l'élite dominait la zone 609 contre 378 et
+      // tirait 10-10). Le point de mire devient l'ENTRÉE DE SURFACE côté axe jusqu'à ce que
+      // l'angle s'ouvre — le tir, ou le centre, redeviennent des issues.
+      const sgnG = Math.sign(goal.x || 1);
+      const wideClosed = Math.abs(p.p[2]) > pitch.goalHalf + 3 && p.p[0] * sgnG > pitch.hx - pitch.dims.box.depth - 4;
+      // …et le repique choisit selon LA BOÎTE : des coureurs dedans → on reste large et on SERT
+      // (le centre) ; boîte vide → on rentre (le repique concurrençait le centre — 6 centres
+      // retombés à 2 quand le cut-inside aspirait toutes les ailes)
+      const boxXr = pitch.hx - pitch.dims.box.depth;
+      const boxMate = wideClosed && st.players.some((q) => q.team === p.team && !q.keeper && q.id !== p.id
+        && q.down <= 0 && q.p[0] * sgnG > boxXr - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5);
+      const aim = wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, 0];
+      const gx = aim[0] - p.p[0], gz = aim[1] - p.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       // devant dégagé → cap au but ; bouché → l'évasion du rondo garde le ballon
       const front = defenders.filter((q) => Math.sign(q.p[0] - p.p[0]) === Math.sign(gx) && Math.abs(q.p[0] - p.p[0]) < 6 && Math.abs(q.p[2] - p.p[2]) < 4).length;
@@ -592,9 +633,12 @@ function tryCross(st, c, cfg) {
   lead = [lead[0] + (spot[0] - lead[0]) * 0.4, 0, lead[2] + (spot[1] - lead[2]) * 0.4];
   lead = [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, lead[0])), 0,
     Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, lead[2]))];
-  // un centre PART quand la fenêtre s'ouvre — les portes de posture d'une passe posée ne
-  // s'alignent jamais dans le couloir (mesuré : 286 fenêtres géométriques, 0 centre passé les
-  // portes ancre/technique/timing) : même régime d'urgence que le dégagement
+  // un centre PART quand la fenêtre s'ouvre (même régime d'urgence que le dégagement). L'ESSAI
+  // CONSIGNÉ : le centre-intention (décider → préparer → s'engager) posait 6 intentions / 4
+  // matchs et n'en exécutait AUCUNE — l'intention injectée en plein dribble d'aile ne trouve pas
+  // ses portes (ballon-vif entre les touches serrées) dans son TTL ; l'approche pilotée du
+  // centre est au backlog nommé. Le départ immédiat servait 6 centres — le monde mesuré le
+  // meilleur.
   const r = simInternals.beginPass(st, { to: { id: rec.id }, lead, style: 'lofted', cross: true, lane: { margin: 9 } }, cfg, { forceUrgent: true });
   if (r) (st._crossCd ??= {})[c.team] = st.t + 5;
   return r;

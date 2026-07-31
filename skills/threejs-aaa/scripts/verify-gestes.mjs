@@ -184,5 +184,161 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   }
 }
 
+// ---------- 5. LE RÉPERTOIRE ÉLARGI (la demande utilisateur, deuxième vague : « passement de
+// jambes, crochet, feinte de frappe — à la perfection, sans erreur de placement de membres »).
+// Les clés de ces gestes n'existent qu'au MATCH (MATCH.skill) : le rondo est INERTE par
+// construction — c'est une clause, pas une promesse. Les déclenchements se prouvent sur
+// FIXTURES (la leçon des sabotages de flux), le placement de membres à l'audit composé.
+{
+  const { MATCH, makeMatch, matchCfg, matchStep } = await import('../assets/starter/src/engine/match-sim.js');
+  const { maybePassement, maybeCrochet, maybeFeinteFrappe } = skillInternals;
+  const wrapA = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+  const M = { ...RONDO, skill: MATCH.skill, shotRange: MATCH.shotRange };
+  const mk = (over = {}) => ({
+    id: 0, team: 0, p: [0, 0, 0], v: [0, 0], speed: 0, yaw: 0, down: 0, act: null,
+    job: 'carry', target: null, push: null, yawWant: null, persona: { flair: 1, calm: 1 }, ...over,
+  });
+  const world = (players) => ({
+    players, area: [46, 30], t: 10, phase: 'carry', possession: { carrier: 0, team: 0 }, hold: 1,
+    ball: { p: [0.35, 0.11, 0], v: [0, 0, 0], owner: 0, possess() {}, carry() {}, release() {}, escort() {} },
+    events: [], gestures: [], rnd: () => 0, deny: {},
+  });
+  // le vocabulaire : dans la table, clips déclarés
+  for (const id of ['passement-jambes', 'crochet', 'feinte-frappe']) {
+    const t = byId[id];
+    ok(`« ${id} » est dans la table (intent carry, clip ${t?.clip})`, !!t && t.intent === 'carry' && !!MOVES[t.clip]);
+  }
+  // LA RESSEMBLANCE DE L'ARMÉ : la feinte de frappe copie la clé de backswing de `frappe`, os
+  // pour os — un armé qui ne ressemble pas à la frappe ne fait asseoir personne
+  {
+    const armF = MOVES.frappe.keys[1].pose, armFF = MOVES.feinteFrappe.keys[1].pose;
+    const same = Object.keys(armF).every((b) => JSON.stringify(armF[b]) === JSON.stringify(armFF[b]));
+    ok('la feinte de frappe RESSEMBLE à la frappe (backswing identique os pour os)', same);
+    // …et LA RETENUE est la signature : la cuisse meurt à ≤ 12° là où la frappe traverse à 62°
+    const retenue = MOVES.feinteFrappe.keys[2].pose.RightUpLeg[0];
+    ok(`…et se RETIENT au contact (cuisse ${retenue}° ≤ 12 — la frappe traverse à 62)`, retenue <= 12);
+  }
+  // LE PASSEMENT : jockey POSTÉ en face → armé ; charge → refus (le râteau possède la charge) ;
+  // sorties bouchées → refus NOMMÉ
+  {
+    const c = mk({ speed: 0.5, v: [0.5, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.6, 0, 0.2], v: [0, 0] });
+    const st = world([c, foe]);
+    const r = maybePassement(st, c, M);
+    ok('le passement s\'arme sur le jockey posté (fixture)', r === true && c.act?.id === 'passementJambes'
+      && st.events.some((e) => e.type === 'skill' && e.kind === 'passement'));
+  }
+  {
+    const c = mk({ speed: 0.5, v: [0.5, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.6, 0, 0.2], v: [-2.5, 0] });        // il CHARGE
+    const st = world([c, foe]);
+    ok('sabotage « passement sous la charge » refusé (c\'est l\'affaire du râteau)', maybePassement(st, c, M) === false && !c.act);
+  }
+  {
+    const c = mk({ speed: 0.5, v: [0.5, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.6, 0, 0.2], v: [0, 0] });
+    const g1 = mk({ id: 2, team: 1, p: [c.p[0] + Math.cos(0.9) * 1.5, 0, c.p[2] + Math.sin(0.9) * 1.5], v: [0, 0] });
+    const g2 = mk({ id: 3, team: 1, p: [c.p[0] + Math.cos(-0.9) * 1.5, 0, c.p[2] + Math.sin(-0.9) * 1.5], v: [0, 0] });
+    const st = world([c, foe, g1, g2]);
+    const r = maybePassement(st, c, M);
+    ok('sabotage « passement sans issue » refusé ET NOMMÉ', r === false && (st.deny['passement-sans-issue'] ?? 0) >= 1);
+  }
+  // LE CROCHET : un défenseur qui FERME la course → la coupe part à l'opposé (60-95°) ; un
+  // jockey statique → refus (c'est l'affaire du passement)
+  {
+    const c = mk({ speed: 3, v: [3, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.5, 0, 0.4], v: [-2.2, 0] });
+    const st = world([c, foe]);
+    const r = maybeCrochet(st, c, M);
+    const dYaw = c.act ? Math.abs(wrapA(c.act.payload.exitYaw - 0)) * 180 / Math.PI : 0;
+    ok(`le crochet s'arme sur la course fermée et coupe à l'opposé (${dYaw.toFixed(0)}° ∈ [60 ; 95])`,
+      r === true && c.act?.id === 'crochet' && dYaw >= 60 && dYaw <= 95);
+  }
+  {
+    const c = mk({ speed: 3, v: [3, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.5, 0, 0.4], v: [0, 0] });           // posté, il ne ferme pas
+    const st = world([c, foe]);
+    ok('sabotage « crochet sur jockey statique » refusé', maybeCrochet(st, c, M) === false && !c.act);
+  }
+  // LE COUPLE SOUDÉ DU CROCHET, en monde réel : le ballon suit l'ARC (≤ 0,95 m du corps) et le
+  // lacet finit SUR la sortie — mesuré en jouant le geste dans un vrai match téléporté
+  {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg();
+    for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((p) => !p.keeper && p.team === 0);
+    const foe = st.players.find((p) => !p.keeper && p.team === 1);
+    st.restart = null; st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.hold = 1;
+    st.players.forEach((p) => { if (p !== c && p !== foe) p.p = [p.p[0], 0, -13]; p.down = 0; p.act = null; p._skillCd = {}; p.intent = null; });
+    c.p = [0, 0, 5]; c.v = [3, 0]; c.speed = 3; c.yaw = 0; c.persona = { ...(c.persona ?? {}), flair: 1 };
+    foe.p = [1.5, 0, 5.4]; foe.v = [-2.2, 0];
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([0.4, 0.11, 5], { cause: 'engagement' });
+    st.ball.possess(c.id);
+    st.rnd = () => 0.01;
+    const armed = skillInternals.maybeCrochet(st, c, cfg);
+    let ballMax = 0, exitYaw = c.act?.payload?.exitYaw ?? 0;
+    for (let i = 0; i < 45 && c.act; i++) {
+      matchStep(st, 1 / 60, cfg);
+      ballMax = Math.max(ballMax, Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]));
+    }
+    const dEnd = Math.abs(wrapA(c.yaw - exitYaw));
+    ok(`le crochet garde le couple soudé (ballon ≤ ${ballMax.toFixed(2)} m ≤ 0,95) et sort SUR son lacet (écart ${(dEnd * 180 / Math.PI).toFixed(0)}°)`,
+      armed === true && ballMax <= 0.95 && dEnd <= 0.25);
+  }
+  // LA FEINTE DE FRAPPE : à portée, un contreur dans le cône → armé ; sans contreur → refus ;
+  // et la MORSURE est longue (0,7 s — on ne se jette pas devant une demi-frappe)
+  {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg();
+    for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((p) => !p.keeper && p.team === 0);
+    const foe = st.players.find((p) => !p.keeper && p.team === 1);
+    st.restart = null; st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.hold = 1;
+    st.players.forEach((p) => { if (p !== c && p !== foe) p.p = [p.p[0] < 0 ? p.p[0] : -8, 0, -13]; p.down = 0; p.act = null; p._skillCd = {}; p.intent = null; });
+    const goal = st.pitch.attackGoal(c.team);
+    c.p = [goal.x - Math.sign(goal.x) * 11, 0, 1]; c.v = [0, 0]; c.speed = 0; c.yaw = Math.atan2(-1, Math.sign(goal.x)); c.persona = { ...(c.persona ?? {}), flair: 1 };
+    foe.p = [c.p[0] + Math.sign(goal.x) * 1.8, 0, 0.9]; foe.v = [0, 0]; foe._bite = -1;
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([c.p[0] + Math.sign(goal.x) * 0.4, 0.11, c.p[2]], { cause: 'engagement' });
+    st.ball.possess(c.id);
+    st.rnd = () => 0.01;
+    const armed = skillInternals.maybeFeinteFrappe(st, c, cfg, false);
+    let bit = -1;
+    for (let i = 0; i < 30 && c.act; i++) { matchStep(st, 1 / 60, cfg); if (foe._bite > 0 && bit < 0) bit = foe._bite - st.t; }
+    ok(`la feinte de frappe s'arme sur le contreur et le fait ASSEOIR longtemps (morsure ${bit.toFixed(2)} s ≥ 0,45)`,
+      armed === true && bit >= 0.45);
+    // …et l'événement porte ses mordus
+    ok('l\'événement « frappeFeinte » porte ses mordus', st.events.some((e) => e.kind === 'frappeFeinte' && (e.bitten ?? []).length >= 1));
+  }
+  // L'INERTIE DU RONDO est une clause : les MÊMES fixtures armées, jouées avec les clés du RONDO
+  // (sans le répertoire du match) → refus AVANT tout tirage
+  {
+    const c = mk({ speed: 0.5, v: [0.5, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.6, 0, 0.2], v: [0, 0] });
+    const st = world([c, foe]);
+    st.rnd = () => { throw new Error('le rondo ne tire JAMAIS pour un geste qu\'il ne connaît pas'); };
+    const r1 = maybePassement(st, c, RONDO);
+    const c2 = mk({ speed: 3, v: [3, 0] });
+    const foe2 = mk({ id: 1, team: 1, p: [1.5, 0, 0.4], v: [-2.2, 0] });
+    const st2 = world([c2, foe2]);
+    st2.rnd = st.rnd;
+    const r2 = maybeCrochet(st2, c2, RONDO);
+    ok('le RONDO est inerte pour le répertoire du match (refus sans tirage — au bit près)', r1 === false && r2 === false);
+  }
+  // EN FLUX (4 graines × 120 s) : le répertoire vit dans le match
+  {
+    const kinds = {};
+    for (const seed of [3, 7, 11, 1]) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg();
+      for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
+      for (const e of st.events.filter((x) => x.type === 'skill')) kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;
+    }
+    ok(`le répertoire élargi VIT en match (crochet ${kinds.crochet ?? 0} ≥ 3, passement ${kinds.passement ?? 0} ≥ 1, feinte de frappe ${kinds.frappeFeinte ?? 0} ≥ 1)`,
+      (kinds.crochet ?? 0) >= 3 && (kinds.passement ?? 0) >= 1 && (kinds.frappeFeinte ?? 0) >= 1);
+  }
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

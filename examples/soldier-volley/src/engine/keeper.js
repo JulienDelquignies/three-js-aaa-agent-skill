@@ -90,6 +90,18 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
   if (cross && speed >= 1.5 && speed < 6 && cross.t < 2.2 && Math.abs(cross.z) <= pitch.goalHalf + 0.3 && cross.y < 1.2) {
     return { mode: 'gather', spot: { x: spot.x, z: Math.max(-pitch.goalHalf + 0.2, Math.min(pitch.goalHalf - 0.2, cross.z)), depth: spot.depth } };
   }
+  // LE UN-CONTRE-UN : un ballon LENT (porté, conduit, roulant — pas un tir) DANS SA SURFACE se
+  // CHARGE — le gardien sort au-devant, sur la ligne ballon-but, à un pas du ballon. La sortie
+  // dans les pieds a besoin de jambes : posté à 2 m du trajet, il regardait le dribble du
+  // repique le traverser (7 buts sans tir mesurés après la loi du cut-inside).
+  {
+    const g = pitch.ownGoal(team);
+    if (speed < 6.5 && pitch.inBox(ball[0], ball[2], Math.sign(g.x)) ) {
+      const dx = g.x - ball[0], dz = 0 - ball[2];
+      const dl = Math.hypot(dx, dz) || 1;
+      return { mode: 'sortie', spot: { x: ball[0] + (dx / dl) * 0.55, z: Math.max(-pitch.goalHalf - 1.5, Math.min(pitch.goalHalf + 1.5, ball[2] + (dz / dl) * 0.55)), depth: spot.depth } };
+    }
+  }
   if (!cross || speed < 6 || shotAge < K.reflex) return { mode: 'poste', spot };
   if (cross.t > K.diveTime) return { mode: 'poste', spot };                    // trop tôt : se replacer d'abord
   if (Math.abs(cross.z) > pitch.goalHalf + 0.6 || cross.y > pitch.goalH + 0.4) return { mode: 'poste', spot }; // non cadré
@@ -132,7 +144,14 @@ export function checkKeeper(pitch, K = KEEPER) {
   // une balle MOLLE qui coupe le plan (roulement de 3 m/s vers le petit filet) se RAMASSE — le
   // poste-spectateur laissait rentrer les touches de conduite et les pokes de tacle
   const molle = keeperDecide(pitch, 0, me, [me[0] + 4, 0.11, 0.8], [-3, 0, 0], Infinity, K);
-  if (molle.mode !== 'gather') issues.push(`balle molle qui rentre non ramassée (${molle.mode} — le gardien regarde le ballon franchir sa ligne)`);
+  if (molle.mode !== 'gather' && molle.mode !== 'sortie') issues.push(`balle molle qui rentre non ramassée (${molle.mode} — le gardien regarde le ballon franchir sa ligne)`);
+  // le UN-CONTRE-UN : un ballon lent DANS la surface → il CHARGE (sortie au-devant, à un pas du
+  // ballon) ; le même ballon lent HORS surface → il tient son poste (pas un libéro)
+  const unContreUn = keeperDecide(pitch, 0, me, [me[0] + 5, 0.11, 2], [1.5, 0, 0.5], Infinity, K);
+  if (unContreUn.mode !== 'sortie') issues.push(`le gardien ne charge pas le un-contre-un dans sa surface (${unContreUn.mode})`);
+  else if (Math.hypot(unContreUn.spot.x - (me[0] + 5), unContreUn.spot.z - 2) > 1.2) issues.push('la charge du un-contre-un ne va pas AU ballon');
+  const loin = keeperDecide(pitch, 0, me, [me[0] + 14, 0.11, 2], [1.5, 0, 0.5], Infinity, K);
+  if (loin.mode === 'sortie') issues.push('le gardien charge hors de sa surface (libéro)');
   const wide = keeperDecide(pitch, 0, me, [me[0] + 9, 0.11, pitch.goalHalf + 3], [-14, 0.5, 0], 0.3, K);
   if (wide.mode === 'dive') issues.push('plongeon sur un ballon non cadré');
   const far2 = keeperDecide(pitch, 0, [me[0], 0, -pitch.goalHalf + 0.3], [me[0] + 8, 0.11, pitch.goalHalf - 0.2], [-13, 1.2, 0.4], 0.3, K);
