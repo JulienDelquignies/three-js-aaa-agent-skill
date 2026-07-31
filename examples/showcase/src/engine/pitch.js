@@ -84,7 +84,9 @@ export function outRule(pitch, p0, p1, lastTeam) {
   const Z = p0[2] + (p1[2] - p0[2]) * h.t;
   if (h.axis === 'z') {
     // TOUCHE (Loi 15 ; format réduit : remise au pied, sur la ligne, à l'équipe adverse)
-    return { type: 'touche', x: Math.max(-hx + 0.5, Math.min(hx - 0.5, X)), z: h.at, y: 0, team: 1 - lastTeam };
+    // posée 15 cm DANS le terrain : posée PILE sur la ligne, la remise re-déclenchait une sortie
+    // au pas suivant avec un segment dégénéré (p0 = p1 sur la craie) — mesuré en match
+    return { type: 'touche', x: Math.max(-hx + 0.5, Math.min(hx - 0.5, X)), z: Math.sign(h.at) * (hz - 0.15), y: 0, team: 1 - lastTeam };
   }
   // ligne de but : BUT si entre les montants et sous la barre
   const sign = h.at > 0 ? +1 : -1;

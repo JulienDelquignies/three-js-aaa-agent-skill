@@ -198,6 +198,7 @@ export class CharacterController {
       // marche restait ~30 % dans la pose au contact, à une phase arbitraire : l'axe du pied
       // frappeur variait de 104° à 165° d'un épisode à l'autre du MÊME clip. Un plant, ça se
       // plante — vite.
+      this._leanDt = dt;
       const tauV = this.plantHold ? 0.025 : 0.08;
       this._vAnim = (this._vAnim ?? vGait) + (vTarget - (this._vAnim ?? vGait)) * Math.min(1, dt / tauV);
       this.anim.set('speed', this._vAnim).update(dt);                // Idle→Walk→Run blend, phase-locked
@@ -239,6 +240,33 @@ export class CharacterController {
       this._gaitE.set(e[0] * D * kA, e[1] * D * kA, e[2] * D * kA, 'XYZ');
       this._gaitQ.setFromEuler(this._gaitE);
       bone.quaternion.multiply(this._gaitQ);
+    }
+    // L'INCLINAISON DANS L'ACCÉLÉRATION — le corps PENCHE dans ce qu'il fait : buste en avant
+    // quand on accélère, retenue en arrière au freinage, roulis DANS le virage (comme un cycliste).
+    // C'est le tell n°1 d'un corps qui a une masse ; sans lui, les changements d'allure lisent
+    // comme des translations de statue. Accélération lissée (τ 0,12 s), bornée (±9° tangage,
+    // ±7° roulis), exprimée dans le repère du CORPS (le lacet du modèle, pas celui du monde).
+    {
+      const now = this.pos ?? this.model.position;
+      if (!this._leanPrevV) { this._leanPrevV = [0, 0]; this._leanPrevP = [now.x, now.z]; this._lean = [0, 0]; }
+      const dtc = Math.max(1e-3, this._leanDt ?? 1 / 60);
+      const vx = (now.x - this._leanPrevP[0]) / dtc, vz = (now.z - this._leanPrevP[1]) / dtc;
+      const ax = (vx - this._leanPrevV[0]) / dtc, az = (vz - this._leanPrevV[1]) / dtc;
+      this._leanPrevP = [now.x, now.z]; this._leanPrevV = [vx, vz];
+      const yaw = this.yaw ?? this.model.rotation.y;
+      // repère corps : avant = (sin yaw, cos yaw) pour un modèle three tourné par rotation.y
+      const fx = Math.sin(yaw), fz = Math.cos(yaw);
+      const aF = Math.max(-14, Math.min(14, ax * fx + az * fz));       // accélération le long du regard
+      const aL = Math.max(-14, Math.min(14, ax * fz - az * fx));       // latérale (le virage)
+      const k = 1 - Math.exp(-dtc / 0.12);
+      this._lean[0] += (Math.max(-9, Math.min(9, aF * 0.85)) - this._lean[0]) * k;
+      this._lean[1] += (Math.max(-7, Math.min(7, aL * 0.7)) - this._lean[1]) * k;
+      const spL = this._gaitBones.get('Spine');
+      if (spL && (Math.abs(this._lean[0]) > 0.05 || Math.abs(this._lean[1]) > 0.05)) {
+        this._gaitE.set(this._lean[0] * D, 0, -this._lean[1] * D, 'XYZ');
+        this._gaitQ.setFromEuler(this._gaitE);
+        spL.quaternion.multiply(this._gaitQ);
+      }
     }
     // …et la SIGNATURE DE SILHOUETTE : une inclinaison propre du buste (1-3°) et une asymétrie
     // d'épaules constantes — c'est ce qui fait reconnaître un joueur de loin sans lire son numéro

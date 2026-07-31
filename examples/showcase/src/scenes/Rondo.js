@@ -408,12 +408,22 @@ export class Rondo {
     const b = this.state.ball.p;
     if (!this._look) this._look = new THREE.Vector3(0, 1, 0);
     if (!this._camV) this._camV = 0;
-    const targetX = THREE.MathUtils.clamp(b[0], -8, 8);
+    // le travelling suit l'ÉCHELLE du terrain (le ±8 était celui du carré) ; en match, la régie
+    // ZOOME dans le dernier tiers — la tension d'une attaque se lit aussi à la focale
+    const spanX = this.matchMode ? this.state.pitch.hx * 0.5 : 8;
+    const targetX = THREE.MathUtils.clamp(b[0], -spanX, spanX);
     this._look.x += (b[0] - this._look.x) * Math.min(1, dt * 2.4);      // lag
     this._look.z += (b[2] - this._look.z) * Math.min(1, dt * 2.4);
     this._look.y += (1 - this._look.y) * Math.min(1, dt * 3);
     const px = this.cam.position.x + (targetX * 0.55 - this.cam.position.x) * Math.min(1, dt * 1.5);
     this.cam.position.set(px, this.cam.position.y, -this._camBack);
+    if (this.matchMode) {
+      if (this._fovBase == null) this._fovBase = this.cam.fov;
+      const lastThird = Math.abs(b[0]) > this.state.pitch.hx - this.state.pitch.dims.box.depth - 3;
+      const want = this._fovBase - (lastThird ? 9 : 0);
+      const nf = this.cam.fov + (want - this.cam.fov) * Math.min(1, dt * 1.6);
+      if (Math.abs(nf - this.cam.fov) > 0.01) { this.cam.fov = nf; this.cam.updateProjectionMatrix(); }
+    }
     this.cam.lookAt(this._look);
   }
 

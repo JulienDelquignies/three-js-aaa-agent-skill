@@ -1322,6 +1322,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    présence ET précision (verify-match 24). Bonus mesuré : le rondo MONTE au verrou (record 10,13,
    frappées 43,9 — la touche qui lit l'espace améliore aussi le jeu pressé). 43 bancs verts.
 
+25. **Le lot de réalisme corps/perception + la passation (MOTEUR.md).** Décision : ce dépôt devient
+   LE socle fourni à l'autre projet (qui construira le 11c11 dessus) — lots 2-3 du plan + doc de
+   greffe. (1) LA PERCEPTION N'EST PLUS UN ORACLE : 10 % des défenseurs re-ciblaient dans l'image
+   du départ de passe (17 ms). Loi : la SURPRISE se stampe au contact (armé vu = seen), et QUI
+   REGARDAIT (part de la politique de regard, ~65 %, hachée joueur × passe — le flux seedé ne
+   bouge pas d'un bit) anticipe l'armé ; qui scannait paie sa réaction persona (nouvel axe
+   0,16-0,26 s) pleine. Après : 18 % < 50 ms, p50 183 ms, queue 400 ms — et la retenue prouvée en
+   LOI (cibles gelées 100 % avec réaction vs 20 % sans). Une claquette surprend tout le monde.
+   (2) LE POIDS DE LA PASSE : découverte mesurée — la balistique inverse livre déjà des ballons
+   jouables (7-10 m/s) ; la vraie conséquence d'une fusée est le CONTRÔLE MANQUÉ (pMiss ∝ (v−10),
+   ÷ accuracy, tirage seedé, ballon libre + refus nommé) — garde dormante prouvée sur fixture
+   (15 m/s au pire tirage → échappe ; 6 m/s → jamais ; bon tirage → dompté). (3) LE DÉGAGEMENT —
+   le foot manquant : graine 11 mesurée 391 images de possession épinglée sans JAMAIS franchir la
+   médiane (la table avait « degagement » depuis le premier jour, jamais déclenché). Hook
+   cfg.tryClear au niveau du tir (la branche contestée ne tournait que 17×/120 s — l'épinglé était
+   taclé avant), étau lu aux CORPS, botté lointain vers le flanc opposé, cooldown d'équipe.
+   2-4 dégagements/match, graine 11 respire. (4) Contact corps : MESURÉ INUTILE (pire
+   chevauchement 0,44 m = deux torses — les rayons de rôle tiennent déjà la séparation) — consigné,
+   pas implémenté. (5) L'INCLINAISON DANS L'ACCÉLÉRATION (contrôleur) : le buste penche dans ce
+   qu'il fait — avant/freinage ±9°, roulis de virage ±7°, τ 0,12 s, repère corps. (6) RÉGIE :
+   travelling à l'échelle du terrain + zoom de tension (−9° de focale) dans le dernier tiers.
+   (7) MOTEUR.md : le guide de greffe pour l'autre équipe — l'architecture un-loop + hooks, la
+   table des 8 points d'accroche, les invariants de la charte, le chemin balisé du 11c11
+   (formation dans assignJobs, hors-jeu dans beginPass/canTake, chrono autour de matchStep,
+   sorties gardien dans keeperDecide). QUATRE instruments redressés en route (loi 8) : touche
+   posée PILE sur la ligne (segment dégénéré → remise illisible), « échappée » qui comptait les
+   touches de sprint puis la cueillette post-turnover puis oubliait la PORTÉE du pied (plafond
+   final = reach 1,15 + touchDistance(allure de lancement) + marge → 0,4 % réel), balayage rondo
+   60 → 90 s (la fenêtre courte re-distribuée tombait sur des histoires à record 2), clause des
+   deux camps au tiers (une équipe dominée 120 s est un match légal). verify-match 30 clauses.
+   43 bancs verts, audit 16/0, verrou rondo 10,0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

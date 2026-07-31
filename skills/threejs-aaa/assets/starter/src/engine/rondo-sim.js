@@ -178,7 +178,7 @@ function beginPass(st, choice, cfg, opts = {}) {
   const rec = st.players[choice.to.id];
   const meet = rec ? interceptPoint(race.path, [rec.p[0] + rec.v[0] * T, 0, rec.p[2] + rec.v[1] * T], cfg.speeds.chase, { reaction: 0 }) : null;
   // un TIR ne se refuse pas à la course : le défenseur qui coupe, c'est le duel du tir même
-  if (!opts.shot && !urgent && st.hold < cfg.holdMax && race.first && (!meet || race.first.t < meet.t + cfg.raceSlack)) {
+  if (!opts.shot && !opts.clear && !urgent && st.hold < cfg.holdMax && race.first && (!meet || race.first.t < meet.t + cfg.raceSlack)) {
     (st.laneVeto ??= {})[choice.to.id] = st.t + cfg.vetoTtl;
     c.intent = null;                                        // course perdue : le plan meurt, on re-décide
     return deny(st, 'course');
@@ -253,13 +253,19 @@ function strikeNow(st, c, cfg) {
   // UN TIR EST UN GESTE DE PUISSANCE : solvePass rend la vitesse d'ARRIVÉE (trop douce pour
   // battre un gardien) — le tir prend un plancher (cfg.shotSpeed), même direction, vol tendu
   const shot = !!choice.shot;
-  const speed = shot ? Math.max(sol.speed, cfg.shotSpeed ?? 17) : sol.speed;
+  const speed = shot ? Math.max(sol.speed, cfg.shotSpeed ?? 17)
+    : choice.clear ? Math.max(sol.speed, 13) : sol.speed;
   st.ball.strike({ speed, dirYaw: sol.dirYaw, elevation: shot ? Math.min(sol.elevation, 0.10) : sol.elevation, spinAxis: [0, 1, 0], spinRev: 0 });
+  if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
   if (shot) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,
       tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +speed.toFixed(1) });
   }
+  // LA PERCEPTION A UNE HORLOGE : le départ du ballon est un événement — mais l'armé était
+  // VISIBLE. La défense paie max(0, réaction perso − armé vu) : une passe téléphonée s'anticipe,
+  // une urgence courte se subit. (Consommé par la retenue de cible dans rondoStep.)
+  st._surprise = { t: st.t, seen: c.act ? c.act.t : 0, n: (st._surprise?.n ?? 0) + 1 };
   st.phase = 'flight';
   st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
   st.lastPasser = c.id;
@@ -680,7 +686,7 @@ function skillFollowStep(st, p, dt, cfg) {
 }
 
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, skillContactNow };
-export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a) };
+export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a) };
 
 /**
  * Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
@@ -752,6 +758,26 @@ function receive(st, id, cfg = RONDO) {
       // La touche directionnelle survit entière : yawWant tourne le corps hors du presseur, et le
       // point du pied suit ce regard — le ballon vient AVEC la rotation, comme un vrai contrôle
       // orienté.
+      // LE POIDS DE LA PASSE SE PAIE AU CONTRÔLE : le résiduel d'amorti croît avec la vitesse
+      // d'arrivée (une passe douce se pose, une fusée REBONDIT du pied — mesuré avant : douce
+      // p50 0,22 m, fusée 0,29 — quasi identiques, le poids n'existait pas), et l'assise prend
+      // plus longtemps. Amplification bornée (×2,6 max) : le contrôle reste un geste maîtrisé,
+      // pas une roulette.
+      // LE POIDS DE LA PASSE SE PAIE AU CONTRÔLE — et il se paie en RISQUE, pas en lenteur (la
+      // première version allongeait l'assise : mesurée engloutie par l'urgence, une ombre). Un
+      // ballon au-delà de ~10 m/s peut ÉCHAPPER à la touche : le contrôle est manqué, le ballon
+      // reste LIBRE avec son résiduel — contestable, exactement ce qu'un défenseur attend d'une
+      // passe trop appuyée. Le taux suit la vitesse et la précision de la surface (accuracy), le
+      // tirage est seedé (le hasard de la partie, pas un dé caché).
+      const arr = Math.hypot(st.ball.v[0], st.ball.v[2]);
+      const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy)));
+      if (pMiss > 0 && (st.rnd ? st.rnd() : 0.5) < pMiss) {
+        deny(st, 'contrôle-manqué');
+        st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62]);
+        st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot,
+          surface: pick.surface, speed: +arr.toFixed(1), miss: true, settle: null });
+        return;                                                    // pas de possession : la touche a fui
+      }
       st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)]);
       st.ball.possess(id);
       st._settling = { ev: st.events.length, id, at: st.t + T };
@@ -898,6 +924,27 @@ function trySlide(st, cfg) {
 export function rondoStep(st, dt, cfg = RONDO) {
   st.t += dt;
   (cfg.assignJobs ?? assignJobs)(st, cfg);   // le match branche ici son attribution directionnelle
+  // LA LATENCE DE PERCEPTION — mesurée avant : 10 % des défenseurs re-ciblaient dans l'IMAGE du
+  // départ de passe (17 ms — surhumain). Après l'événement-surprise, un adversaire du porteur
+  // GARDE sa cible d'avant le temps de sa réaction résiduelle : il court sur l'ancienne image du
+  // monde, comme un vrai défenseur surpris. Son équipe à lui SAIT ce qu'elle joue (pas de délai).
+  if (st._surprise) {
+    for (const p of st.players) {
+      // QUI REGARDAIT ? La politique de regard (gaze.js) donne ~65 % des hors-ballon les yeux sur
+      // le ballon — CEUX-LÀ ont vu l'armé et le déduisent de leur réaction ; les ~35 % qui
+      // SCANNAIENT ailleurs paient leur réaction PLEINE. Part HACHÉE (joueur × passe), pas tirée :
+      // le flux seedé de la partie ne bouge pas d'un bit. Une claquette (seen = 0) surprend tout
+      // le monde. Première version sans le regard : l'armé vu annulait le délai de TOUTES les
+      // passes — la loi ne mordait que sur les claquettes, mesuré p10 = 0 ms sur l'urgence.
+      const k = ((p.id * 7919 + (st._surprise.n ?? 0) * 104729) % 97) / 97;
+      const scanning = k < 0.35;
+      const base = p.persona?.reaction ?? 0.2;
+      const rt = scanning ? base : Math.max(0, base - (st._surprise.seen ?? 0));
+      if (p.team !== st.possession.team && !p.keeper && st.t - st._surprise.t < rt) {
+        if (p._heldT) p.target = p._heldT;
+      } else p._heldT = p.target ? [...p.target] : null;
+    }
+  }
   movePlayers(st, dt, cfg);
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
   // les contraintes du monde se projettent APRÈS toutes les autorités (locomotion PUIS glissement
@@ -1109,6 +1156,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // passe, parce qu'une occasion de but domine une ligne de passe. Le rondo n'a pas de but :
       // le hook n'y existe pas, et ce bloc est un no-op.
       if (!contested && cfg.tryShot && cfg.tryShot(st, c, cfg)) return st;
+      // …et le DÉGAGEMENT se décide ICI aussi (pas seulement au duel installé : mesuré, la branche
+      // contestée ne tournait que 17 fois en 120 s — l'équipe épinglée perdait le ballon par tacle
+      // AVANT d'y entrer ; ses propres portes lisent l'étau)
+      if (cfg.tryClear && cfg.tryClear(st, c, cfg)) return st;
       if (contested) {
         // UN BALLON CONTESTÉ SE JOUE MAINTENANT — pas « se re-dribble sur place ». Reprendre
         // l'évasion laissait le cycle se répéter (le défenseur suit le ballon : garé, délogé,

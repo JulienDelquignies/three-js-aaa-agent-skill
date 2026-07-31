@@ -324,8 +324,14 @@ function onOut(st, cfg) {
   const p0 = st._ballPrev ?? st.ball.p;
   const r = outRule(pitch, p0, st.ball.p, st.lastTouch);
   if (!r) {
-    // sécurité : ballon dehors sans franchissement lisible (téléport ?) — remise du côté le plus proche
-    st.ball.restart([Math.max(-pitch.hx + 1, Math.min(pitch.hx - 1, st.ball.p[0])), BALL.radius, Math.max(-pitch.hz + 1, Math.min(pitch.hz - 1, st.ball.p[2]))], { cause: 'sortie-illisible' });
+    // sécurité : ballon dehors sans franchissement lisible (segment dégénéré) — remise en touche
+    // au point le plus proche, et le cas se COMPTE au registre (il doit rester exceptionnel)
+    deny(st, 'sortie-illisible');
+    const x = Math.max(-pitch.hx + 1, Math.min(pitch.hx - 1, st.ball.p[0]));
+    const z = Math.sign(st.ball.p[2] || 1) * (pitch.hz - 0.15);
+    st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + cfg.restartWait };
+    st.ball.restart([x, BALL.radius, z], { cause: 'touche' });
+    st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
     return true;
   }
   if (r.type === 'but') {
@@ -383,11 +389,37 @@ function onDive(st, gk, cfg) {
     st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
     st.lastTouch = gk.team;
     st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette' });
+    st._surprise = { t: st.t, seen: 0 };                          // une claquette ne s'anticipe pas
     return true;
   }
 }
 
 // ---------------------------------------------------------------- l'assemblage
+/** LE DÉGAGEMENT — sous siège dans son propre tiers, on met le ballon loin et haut, vers un
+ *  flanc : imprécis PAR NATURE (accuracy 0,3 dans la table — un dégagement rend souvent un
+ *  50/50), mais il sort l'équipe de l'étau. Cooldown d'équipe : un dégagement est un soupir,
+ *  pas un style de jeu. */
+function tryClear(st, c, cfg) {
+  const { pitch } = st;
+  if (c.keeper) return false;
+  const own = pitch.ownGoal(c.team);
+  const depth = (c.p[0] - own.x) * -own.sign;                      // profondeur depuis SA ligne
+  if (depth > pitch.hx * 0.66) return false;                       // pas dans son tiers : on joue
+  if ((st._clearCd?.[c.team] ?? -1) > st.t) return false;
+  // l'étau se lit aux CORPS, pas à la minuterie de duel (st.pressure ne s'accumule qu'en
+  // conteste installé — l'équipe épinglée était taclée avant) : deux corps à 2,6 m, ou un seul
+  // mais collé (1,4 m) profond dans le tiers
+  const near = st.players.filter((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 2.6).length;
+  const glued = st.players.some((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 1.4);
+  if (!(near >= 2 || (glued && depth < pitch.hx * 0.45))) return false;
+  const sgn = -own.sign;                                           // vers l'avant
+  const flank = c.p[2] >= 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55;  // le flanc OPPOSÉ à la mêlée
+  const lead = [c.p[0] + sgn * pitch.hx * 0.85, 0, flank];
+  const r = simInternals.beginPass(st, { to: { id: -2 }, lead, style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true });
+  if (r) (st._clearCd ??= {})[c.team] = st.t + 6;
+  return r;
+}
+
 /** LE SENS DU JEU — le terme de progression du choix de passe. Une passe qui gagne des mètres
  *  vers le but adverse vaut plus qu'une latérale, à sûreté égale ; une remise en retrait n'est
  *  pas interdite (elle garde 'clearance is king'), elle coûte juste son recul. Borné : la
@@ -399,7 +431,7 @@ function passBias(st, c, o) {
 }
 
 export function matchCfg(overrides = {}) {
-  return { ...MATCH, assignJobs: assignMatchJobs, tryShot, onOut, onDive, canTake, passBias, ...overrides };
+  return { ...MATCH, assignJobs: assignMatchJobs, tryShot, tryClear, onOut, onDive, canTake, passBias, ...overrides };
 }
 
 /** Avance le match d'un pas — le game-loop du rondo, configuré match. */
@@ -480,7 +512,10 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   // la clause vise le rond-central-perpétuel, pas l'équilibre des forces : une équipe dominée
   // 120 s durant est un MATCH (0-0 dominé mesuré, graine 5) — un ballon qui ne franchit jamais
   // les moitiés n'en est pas un
-  const third = st.pitch.hx / 2;
+  // …seuil au TIERS (hx/3) : à hx/2, la clause re-cassait à chaque re-donne de graine sur les
+  // matchs dominés (une équipe coincée 120 s dans sa moitié est un match légal — c'est le
+  // rond-central-perpétuel qu'on interdit, pas la domination)
+  const third = st.pitch.hx / 3;
   const visits = [trace.some((s) => s.ball[0] > third), trace.some((s) => s.ball[0] < -third)];
   if (!visits[0] || !visits[1]) issues.push(`le ballon ne visite pas les deux camps (au-delà de ±${third.toFixed(0)} m : +x ${visits[0]}, −x ${visits[1]})`);
   return { ok: issues.length === 0, issues, stats: { shots: shots.length, buts: buts.length, arrets: evs.filter((e) => e.type === 'arrêt').length, sorties: sorties.length, score: [...st.score] } };
