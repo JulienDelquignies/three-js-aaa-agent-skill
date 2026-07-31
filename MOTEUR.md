@@ -60,7 +60,9 @@ dompte avant de repartir), `speeds.walk` (le pas de remise — une remise est un
 strikeNow — vitesse ET hauteur), `keeperClaim` (la sortie dans les pieds : un ballon au sol à
 portée de gants se ramasse, même « porté » — le label de conduite n'est pas un bouclier),
 `carrySurge` (le porteur COURT sur sa touche poussée : au-delà du rayon collé, la pointe se
-libère — le trottinement à 4 m/s derrière un ballon à 3 m était le « ballon loin des joueurs »).
+libère — le trottinement à 4 m/s derrière un ballon à 3 m était le « ballon loin des joueurs »),
+`carryTight` (la CONDUITE SERRÉE par défaut : la touche pleine est l'acte nommé d'un burst —
+posé sur le porteur en touchF, consommé par dribble.js).
 
 Chaque hook est un no-op absent — le rondo d'origine est inchangé au bit près quand `cfg` ne les
 porte pas (mesuré : verrou de balance identique).

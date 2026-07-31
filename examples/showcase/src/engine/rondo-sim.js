@@ -1047,6 +1047,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const csp = Math.hypot(c.v[0], c.v[1]);
     const heading = csp > 0.4 ? [c.v[0] / csp, c.v[1] / csp] : [Math.cos(c.yaw), Math.sin(c.yaw)];
     const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF,
+      touchF: c.touchF,   // le RÉGIME de touche (serré/lancé — posé par le match, absent au rondo)
       space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99) };
     pl.heading = dribbleSteer(st.ball, pl);
     // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus une

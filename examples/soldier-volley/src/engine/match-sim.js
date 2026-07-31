@@ -55,6 +55,7 @@ export const MATCH = {
   shotVariety: true,      // le répertoire du tir (placé/croisé/puissance/mi-hauteur/lucarne) ; false : le rase-mottes unique (sabotage nommé)
   keeperClaim: true,      // la sortie dans les pieds : un ballon au sol à portée de gants se ramasse, même « porté » ; false : le label-bouclier (sabotage nommé)
   carrySurge: { at: 1.25, top: 6.2 },  // le porteur COURT sur sa touche poussée (> 1,25 m → pointe libérée) ; null : le trottinement (sabotage nommé)
+  carryTight: 0.62,       // la CONDUITE SERRÉE par défaut (la touche pleine est l'acte nommé d'un burst) ; 1 : le knock-on permanent (sabotage nommé)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
@@ -239,6 +240,7 @@ function assignMatchJobs(st, cfg) {
     if (carrier && carrier.id === gk.id) {
       const g = pitch.ownGoal(gk.team);
       gk.job = 'carry';
+      gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       gk.push = [-g.sign, 0];
       gk.target = [g.x - g.sign * 5, 0, gk.p[2] * 0.5];
       continue;
@@ -331,6 +333,10 @@ function assignMatchJobs(st, cfg) {
   for (const p of attackers) {
     if (carrier && p.id === carrier.id) {
       p.job = 'carry';
+      // LA CONDUITE SERRÉE PAR DÉFAUT : la touche pleine (régime du rondo) ne se sert qu'en
+      // rupture NOMMÉE (burst) — en croisière on garde le ballon sous la semelle (touchF 0,62 :
+      // ~1,65 m à 6 m/s au lieu de 2,7)
+      p.touchF = (p._pace?.until ?? -1) > st.t ? 1 : (cfg.carryTight ?? 1);
       const ev = evadeSpot(st, p, cfg);
       const gx = goal.x - p.p[0], gz = 0 - p.p[2];
       const gl = Math.hypot(gx, gz) || 1;
@@ -656,16 +662,19 @@ function ballFetch(st, dt) {
   if (!tk || tk.down > 0) return false;
   const bp = st.ball.p;
   if (!r.carried) {
-    // LA LISSE ABSORBE LE ROULEMENT : au-delà du tablier (1,2 m derrière la ligne), le ballon
-    // meurt contre la palissade — un CONTACT (impulse), pas une écriture ; le tablier des corps
-    // (cfg.apron 2 m) garantit que le preneur peut l'atteindre là où il s'arrête
+    // LA LISSE EST UN MUR : au-delà du tablier (1,2 m derrière la ligne), le ballon meurt contre
+    // la palissade — AUSSI en vol (la garde « au sol seulement » laissait un dégagement aérien
+    // atterrir à 3,1 m dehors, hors du tablier des corps ET du bras tendu : gel mesuré graine 3,
+    // sortie jamais reprise). Un CONTACT (impulse), pas une écriture ; la gravité fait retomber.
     const outX = Math.abs(bp[0]) - st.pitch.hx, outZ = Math.abs(bp[2]) - st.pitch.hz;
-    if ((outX > 1.2 || outZ > 1.2) && bp[1] < 0.6 && Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3) {
+    if ((outX > 1.2 || outZ > 1.2) && Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3) {
       st.ball.impulse([-st.ball.v[0], 0, -st.ball.v[2]]);
     }
     // pas encore à lui : le ballon FINIT DE ROULER (physique), le preneur marche dessus — et si
-    // la quête s'éternise (géométrie surprise), il TEND LE BRAS (rayon élargi, jamais de gel)
-    const reach = st.t > r.at + 5 ? 2.2 : 0.85;
+    // la QUÊTE échoue 2 s (au contact mais géométrie surprise), il TEND LE BRAS : le bras suivait
+    // l'horloge de la remise (at + 5), le gel vivait dans l'intervalle
+    if (r._fetchT0 == null) r._fetchT0 = st.t;
+    const reach = st.t - r._fetchT0 > 2 ? 2.2 : 0.85;
     const close = Math.hypot(tk.p[0] - bp[0], tk.p[2] - bp[2]) < reach;
     const slow = Math.hypot(st.ball.v[0], st.ball.v[2]) < 3.5 && bp[1] < 1.2;
     if (close && slow && st.ball.owner == null) { st.ball.possess(tk.id); r.carried = true; }

@@ -126,7 +126,13 @@ export function dribbleStep(d, ball, player, dt) {
     const space = player.space ?? 99;
     const kSpace = Math.max(0.5, Math.min(1, space / 4));
     // …et la NOTE de dribble : le mauvais dribbleur pousse plus loin qu'il ne maîtrise
-    const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1);
+    // …ET LE RÉGIME (player.touchF, posé par le match — absent : le rondo au bit près) : LA
+    // CONDUITE EST SERRÉE PAR DÉFAUT, la touche LANCÉE est l'acte nommé d'un démarrage. La
+    // poussée pleine (0,36 × v ≈ 2,7 m à 6 m/s) servie à toutes les croisières mettait 18 % du
+    // temps de conduite à > 2 m du ballon — le temps s'accumule sur le PLATEAU lointain de
+    // chaque poussée (homme et ballon filent à la même allure, la fermeture n'arrive qu'en fin
+    // de roulement). Mesuré : bursts nommés = 0,1 % du porté — le geste long était devenu la règle.
+    const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1) * (player.touchF ?? 1);
     const sp = Math.max(c.minPush, pushSpeed(player.speed, lead));
     // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
     // blended with the ball's current line so a touch never teleports its direction

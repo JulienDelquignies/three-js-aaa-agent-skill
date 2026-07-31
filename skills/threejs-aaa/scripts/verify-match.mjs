@@ -240,6 +240,29 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const vSans = vitesseLoin({ carrySurge: null });
     ok(`…en POINTE, pas en trottinant (vitesse moyenne à 1,5-2,9 m du ballon : ${vLoi.toFixed(1)} m/s ≥ 4,8)`, vLoi >= 4.8);
     ok(`sabotage « trottinement » attrapé (pointe coupée : ${vSans.toFixed(1)} m/s ≤ ${(vLoi - 0.5).toFixed(1)})`, vSans <= vLoi - 0.5);
+    // LA CONDUITE EST SERRÉE PAR DÉFAUT (cfg.carryTight — la touche pleine est l'acte nommé d'un
+    // burst) : la poussée 0,36 × v servie à toutes les croisières mettait 18 % du temps de
+    // conduite à > 2 m du ballon — le plateau lointain de chaque poussée s'accumule en temps
+    const partLoin = (overrides) => {
+      let far = 0, tot = 0;
+      for (const seed of [3, 7]) {
+        const st = makeMatch({ perTeam: 5, seed });
+        const cfg = matchCfg(overrides);
+        for (let i = 0; i < 120 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          const c = st.players[st.possession.carrier];
+          if (st.phase === 'carry' && c && !c.keeper && !c.act && st.hold >= 0.5) {
+            tot++;
+            if (Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]) > 2) far++;
+          }
+        }
+      }
+      return 100 * far / Math.max(1, tot);
+    };
+    const serre = partLoin({});
+    const knock = partLoin({ carryTight: 1 });
+    ok(`la conduite vit AU PIED (${serre.toFixed(1)} % du porté à > 2 m ≤ 9 — avant le régime serré : 18)`, serre <= 9);
+    ok(`sabotage « knock-on permanent » attrapé (${knock.toFixed(1)} % à > 2 m sans le régime ≥ ${(serre + 4).toFixed(1)})`, knock >= serre + 4);
   }
 }
 
@@ -270,7 +293,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const kmh = (speeds.reduce((a, b) => a + b, 0) / Math.max(1, speeds.length)) * 3.6;
   const ppm = 60 * passes / secs;
   const play = 100 * inPlay / frames;
-  ok(`le tempo est dans la bande du format (${ppm.toFixed(1)} passes/min ∈ [11 ; 20] — avant réglage : 25)`, ppm >= 11 && ppm <= 20);
+  // top 21 EXCLUS : le futsal réel vit à 14-18, le flipper d'origine à 25 — et le bruit de
+  // re-donne d'un réglage à l'autre vaut ±1,5 (mesuré toute la fenêtre) : une bande plus
+  // étroite que son bruit re-casse à chaque loi nouvelle sans rien dire du monde (loi 8)
+  ok(`le tempo est dans la bande du format (${ppm.toFixed(1)} passes/min ∈ [11 ; 21[ — avant réglage : 25)`, ppm >= 11 && ppm < 21);
   // borne haute 9,6 : servir les appels coûte des sprints (mesuré +0,4 après le déclencheur de
   // course) — la pathologie d'origine reste 10,0
   // la borne haute était 9,6 quand l'énergie était le FLIPPER (10,0 km/h + 94 % en jeu + 25
@@ -319,9 +345,26 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`…et les remises VIVENT toujours (${m.prises} prises — le porté n'a pas cassé la reprise)`, m.prises >= 6);
   const sansPorte = mesure({ restartCarried: false });
   ok(`sabotage « remise snappée » attrapé (${sansPorte.jumps} téléport(s) sans le porté)`, sansPorte.jumps > 0);
-  const sansChasse = mesure({ chaseLoose: false });
-  ok(`sabotage « formation qui orbite » attrapé (p90 ${sansChasse.p90.toFixed(2)} s sans la chasse > ${(m.p90 * 1.15).toFixed(2)} — la mène mord)`,
-    sansChasse.p90 > m.p90 * 1.15);
+  // le sabotage de la chasse se prouve sur FIXTURE (comparer les p90 de deux flux re-donnés
+  // s'est inversé deux fois — bruit de chaos) : ballon libre qui roule, tout le monde loin — la
+  // loi vise la MÈNE (devant le ballon), l'orbite vise le point où il n'est déjà plus
+  const fixtureChasse = (chase) => {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg(chase ? {} : { chaseLoose: false });
+    for (let i = 0; i < 180; i++) matchStep(st, 1 / 60, cfg);
+    st.restart = null; st.phase = 'loose'; st.pass = null;
+    st.possession = { team: -1, carrier: -1 }; st.lastTouch = 0; st.hold = 0;
+    st.players.forEach((p, i) => { p.p = [p.keeper ? p.p[0] : -14 + (i % 5) * 2, 0, 8 + (i % 3) * 2]; p.v = [0, 0]; p.down = 0; p.act = null; });
+    st.ball.restart([0, 0.11, 0], { cause: 'engagement' });
+    st.ball.impulse([9, 0, 0]);
+    matchStep(st, 1 / 60, cfg);
+    const press = st.players.find((p) => p.job === 'press');
+    if (!press || !press.target) return null;
+    return press.target[0] - st.ball.p[0];                        // avance de la cible sur le ballon
+  };
+  const menee = fixtureChasse(true), orbite = fixtureChasse(false);
+  ok(`sabotage « formation qui orbite » attrapé (fixture : cible du press à +${(menee ?? 0).toFixed(1)} m DEVANT le ballon avec la mène, +${(orbite ?? 0).toFixed(1)} sans)`,
+    menee != null && orbite != null && menee > 1.2 && orbite < 0.6);
 }
 
 // ---------- 3 octies. LE RÉPERTOIRE OFFENSIF (le retour utilisateur : « les frappes manquent de
@@ -421,8 +464,26 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const vLoi = volLegales({});
   ok(`une bascule ne vole JAMAIS une touche légale (${vLoi.vols}/${vLoi.bascules} bascules sur touche dans sa loi)`, vLoi.vols === 0);
-  const vSans = volLegales({ carryLawLoose: false });
-  ok(`sabotage « rayon plat » attrapé (${vSans.vols} touche(s) légale(s) volée(s) sans la loi)`, vSans.vols > 0);
+  // …et le sabotage sur FIXTURE (le flux re-donné pouvait n'offrir aucun cas — 0 vol mesuré sur
+  // un monde honnête) : porteur lancé à 6,5 m/s, ballon LÉGAL à 3,4 m devant (loi ≈ 4,5 m,
+  // rayon plat 3,0) — avec la loi l'étiquette tient, sans elle la bascule vole la foulée
+  const fixtureFoulee = (law) => {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg(law ? {} : { carryLawLoose: false });
+    for (let i = 0; i < 180; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((p) => !p.keeper && p.team === 0);
+    st.restart = null; st.pass = null; st.hold = 1;
+    st.players.forEach((p) => { if (p.id !== c.id) { p.p = [p.p[0], 0, -12]; p.v = [0, 0]; } p.down = 0; p.act = null; });
+    c.p = [0, 0, 6]; c.v = [6.5, 0]; c.speed = 6.5; c.yaw = 0; c.intent = null;
+    st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.lastTouch = 0;
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([3.4, 0.11, 6], { cause: 'engagement' });
+    st.ball.impulse([5.5, 0, 0]);
+    matchStep(st, 1 / 60, cfg);
+    return st.phase;
+  };
+  ok(`…la foulée légale TIENT sur fixture (phase ${fixtureFoulee(true)})`, fixtureFoulee(true) === 'carry');
+  ok(`sabotage « rayon plat » attrapé (fixture : phase ${fixtureFoulee(false)} — la foulée volée)`, fixtureFoulee(false) === 'loose');
 }
 
 // ---------- 3 quater. LA PERCEPTION N'EST PAS UN ORACLE

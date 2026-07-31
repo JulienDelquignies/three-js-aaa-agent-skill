@@ -1493,6 +1493,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    nommé, posera la vraie borne physiologique). verify-match 52 clauses, rondo 40/40, verrou
    8,63, audit 16/0, ALL-SYNC 7/7.
 
+31. **La conduite serrée par défaut (retour utilisateur, quatrième passe sur la conduite — le
+   signal le plus têtu du carnet).** La pointe (réf. 30) fermait vite les poussées, mais la
+   POUSSÉE elle-même restait celle du knock-on : 0,5 + 0,36 × v servie à toutes les croisières
+   (≈ 2,7 m à 6 m/s), et 18 % du temps de conduite vivait à > 2 m du ballon — le temps s'accumule
+   sur le PLATEAU lointain de chaque poussée (homme et ballon filent à la même allure, la
+   fermeture n'arrive qu'en fin de roulement). Et la part de conduite en burst NOMMÉ : 0,1 % —
+   le geste long était devenu la règle sans que personne ne le décide. Loi : LA CONDUITE EST
+   SERRÉE PAR DÉFAUT, LA TOUCHE LANCÉE EST L'ACTE NOMMÉ D'UN BURST (cfg.carryTight 0,62 → touchF
+   posé par le match sur le porteur, plombé jusqu'à dribble.js via la projection pl — le premier
+   essai ne mordait pas : la projection ne copiait pas le champ, mesuré 0 changement ; rondo au
+   bit près, touchF absent). Après : temps à > 2 m 18 → 4,8-6 %, plus une image au-delà de 3 m,
+   p50 ballon-pied 0,92 m. En route, un GEL débusqué (graine 3 : sortie jamais reprise) : la
+   lisse ne freinait que les ballons AU SOL — un dégagement aérien atterrissait à 3,1 m dehors,
+   hors du tablier des corps ET du bras tendu qui s'armait sur l'horloge de la remise. LA LISSE
+   EST UN MUR (elle arrête aussi les vols) et LE BRAS TENDU S'ARME SUR L'ÉCHEC DE LA QUÊTE
+   (2 s au contact), pas sur l'horloge. Et la leçon des sabotages FORMALISÉE : deux
+   sabotages-comparatifs de flux (« orbite », « rayon plat ») s'étaient inversés d'une re-donne à
+   l'autre — convertis en FIXTURES déterministes (ballon libre lancé → la cible du press est à
+   +5,9 m DEVANT avec la mène, −0,1 sans ; porteur lancé, ballon légal à 3,4 m → l'étiquette
+   tient avec la loi, volée sans). Bandes élargies à leur bruit mesuré : passes/min [11 ; 21[
+   (bruit de re-donne ±1,5), tempo re-vérifié 19-20/min. verify-match 55 clauses, rondo 40/40,
+   dribble 14/14, verrou 8,63, audit 16/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
