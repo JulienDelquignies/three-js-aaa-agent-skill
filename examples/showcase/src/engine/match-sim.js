@@ -41,6 +41,15 @@ export const MATCH = {
   restartWait: 1.1,       // s — le temps de POSER une remise (placement + monde qui s'écarte)
   restartClear: 3.0,      // m — les adversaires tiennent ce rayon à la remise (futsal Loi 15 : 5 m ; réduit ici à l'échelle)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
+  // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
+  // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
+  // qui ne suivent pas l'appel » (retour utilisateur, mot pour mot ce que les chiffres disaient).
+  holdCalm: [0.5, 1.2],   // s — on fixe, on donne (rondo : [0,8 ; 1,8])
+  intentBarCalm: 4.2,     // la barre d'adoption au calme, plus prompte qu'au rondo
+  appelBonus: 2.0,        // le coureur en rupture est SERVI (terme de score de choosePass)
+  // la mène suit la course : temps d'arrivée estimé (0,4 + d/9, borné 1 s), amorti à 85 % — un
+  // ballon DANS la course, pas sur les talons
+  leadTime: (d, rec) => Math.min(0.4 + d / 9, 1.0) * ((rec && Math.hypot(rec.v?.[0] ?? 0, rec.v?.[1] ?? 0) > 1.6) ? 0.85 : 0.3),
   speeds: { ...RONDO.speeds, keeper: 6.4 },  // le gardien REVIENT en pressant le pas (mesuré à z=−4,
                           // hors cadre, sur 4 des 5 buts sans plongeon — il rentrait au pas de sénateur)
 };
@@ -174,6 +183,11 @@ function assignMatchJobs(st, cfg) {
   const field = st.players.filter((p) => !p.keeper);
   const attackers = field.filter((p) => p.team === atk);
   const defenders = field.filter((p) => p.team !== atk);
+  // LE RECEVEUR ATTAQUE SA PASSE. Le trou fondateur du 21 % de passes reçues : pendant le vol,
+  // l'attribution envoyait TOUT LE MONDE aux couloirs — le destinataire trottait vers son slot
+  // pendant que le ballon passait à côté de lui. Le cerveau du rondo donnait ce job ; le match
+  // l'avait perdu en devenant directionnel.
+  const flightRec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
   const goal = pitch.attackGoal(atk);
   const own = pitch.ownGoal(atk === 0 ? 1 : 0);                    // le but que la défense protège
   void own;
@@ -198,6 +212,10 @@ function assignMatchJobs(st, cfg) {
     p.push = null;
   }
   // couloirs : deux lanceurs devant-large, une sécurité derrière, le reste en largeur
+  if (flightRec && !flightRec.keeper && flightRec.team === atk) {
+    flightRec.job = 'receive';
+    flightRec.target = [st.pass.lead[0], 0, st.pass.lead[2]];
+  }
   {
     const sgn = Math.sign(goal.x || 1);
     const slots = [
@@ -207,7 +225,7 @@ function assignMatchJobs(st, cfg) {
       [anchor[0] + sgn * 2, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55], // la largeur
       [anchor[0] + sgn * 4, anchor[2] * -0.6],                                 // second rideau
     ].map(([x, z]) => [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z))]);
-    const free = attackers.filter((p) => !carrier || p.id !== carrier.id);
+    const free = attackers.filter((p) => (!carrier || p.id !== carrier.id) && p !== flightRec);
     const taken = new Set();
     for (const p of free) {
       let best = -1, bd = Infinity;

@@ -1280,6 +1280,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    43 bancs verts, audit 15/0, ALL-SYNC 7/7. Dettes nommées en réf. 53 (corner rare, pas de
    hors-jeu ni de sortie du gardien, cérémonies, mi-temps/formations → 11c11).
 
+23. **La circulation et le stade paramétrique — « trop de conduite, des passes qui ne suivent pas
+   l'appel, le petit carré encore dessiné ».** Les chiffres disaient mot pour mot le retour :
+   21 % de passes reçues (18/84), 11 passes en sortie, 9 dans les gants, tenue p90 3,6 s, 5 appels
+   servis sur 74. LE TROU FONDATEUR : pendant le vol, l'attribution directionnelle envoyait tout le
+   monde aux couloirs — le DESTINATAIRE trottait vers son slot pendant que le ballon passait à côté
+   de lui (le cerveau du rondo donnait ce job, le match l'avait perdu). Trois lois : (1) le receveur
+   ATTAQUE sa passe (job 'receive' en vol → la mène) ; (2) LA MÈNE SUIT LA COURSE (cfg.leadTime —
+   0,4 + d/9 borné 1 s, amorti 85 % coureur / 30 % posé ; la mène figée 0,28 s posait le ballon 4 m
+   derrière un coureur — et la re-mène du contact lit LA MÊME loi, sinon elle défaisait celle du
+   choix) ; (3) L'APPEL EST SERVI (cfg.appelBonus 2,0 dans le score de choosePass). Circulation de
+   match : holdCalm [0,5 ; 1,2], intentBarCalm 4,2. APRÈS : 85-91 % de passes reçues, 0 en sortie,
+   tenue p90 1,5-1,7 s, 12-15 appels servis, deux fois plus de passes — verrouillé par 3 clauses
+   (verify-match 20). Rondo INTACT au bit près (hooks = no-ops sans config, verrou 9,13 inchangé).
+   LE STADE DEVIENT PARAMÉTRIQUE (la vraie réponse au « petit carré ») : generateStadium prend
+   {pitch, goal} — tribunes, pelouse PEINTE (surfaces du modèle, arc de réparation Loi 14
+   conditionnel), cages, panneaux, éclairage suivent le modèle. Le match se joue DANS un stade
+   construit autour du 46 × 30 : ses cages SONT les cages (alignées pitch.js), ses lignes SONT les
+   lignes — plus de superposition, plus de cônes, plus de buts décoratifs à 3 m des vrais.
+   checkStadium apprend le format (Loi 1 exigée seulement sur terrain ≥ 90 m ; cohérence cage/
+   surface sinon ; sabotage cage réduite sur terrain Loi 1 attrapé). Deux bugs de scène mesurés :
+   matchMode lu ligne 106, consommé ligne 77 (le carré se dessinait sur tous les matchs) ; caméra
+   broadcast DANS la tribune rapprochée (écran noir) → régie dérivée du modèle. 43 bancs verts,
+   audit 15/0, stade 14/14, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

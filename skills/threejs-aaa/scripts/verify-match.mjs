@@ -74,6 +74,42 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`le vocabulaire du rondo a survécu au match (${gestes} gestes techniques — râteaux/feintes/semelles en match)`, gestes >= 4);
 }
 
+// ---------- 3 bis. LA CIRCULATION (le retour utilisateur, verrouillé en clauses)
+// « Trop de conduite et des passes imprécises ou qui ne suivent pas l'appel » — mesuré tel quel :
+// 21 % de passes reçues (le receveur trottait vers son couloir pendant que le ballon passait),
+// mène figée 0,28 s (4 m derrière un coureur), tenue p90 3,6 s, 5 appels servis sur 74. Après le
+// job 'receive' en vol + la mène de course + l'appel récompensé : 85 % / 1,7 s / 15 sur 82.
+// Ces clauses tiennent le gain.
+{
+  let total = 0, recu = 0, appels = 0, servis = 0;
+  const holds = [];
+  for (const seed of [3, 7]) {
+    const st = makeMatch({ perTeam: 5, seed });
+    const { st: s2, trace } = playMatch(st, 120);
+    const evs = s2.events;
+    for (const p of evs.filter((e) => e.type === 'pass' && e.to >= 0)) {
+      total++;
+      if (evs.some((e) => e.type === 'receive' && e.by === p.to && e.t >= p.t && e.t < p.t + 3.5)) recu++;
+    }
+    for (const b of evs.filter((e) => e.type === 'burst' && e.kind === 'appel')) {
+      appels++;
+      if (evs.some((e) => e.type === 'pass' && e.to === b.by && e.t >= b.t && e.t <= b.t + 1.7)) servis++;
+    }
+    let h0 = -1, c0 = -1;
+    for (const s of trace) {
+      if (s.phase === 'carry' && c0 < 0) { h0 = s.t; c0 = s.carrier; }
+      if ((s.phase !== 'carry' || s.carrier !== c0) && c0 >= 0) { holds.push(s.t - h0); c0 = -1; }
+    }
+  }
+  holds.sort((a, b) => a - b);
+  const p90 = holds[Math.floor(holds.length * 0.9)] ?? 0;
+  ok(`les passes ARRIVENT (${recu}/${total} reçues = ${(100 * recu / Math.max(1, total)).toFixed(0)} % ≥ 60 — avant le receveur-en-vol : 21 %)`,
+    recu / Math.max(1, total) >= 0.6);
+  ok(`l'appel est SERVI (${servis}/${appels} = ${(100 * servis / Math.max(1, appels)).toFixed(0)} % ≥ 10 — avant : 7 %)`,
+    servis / Math.max(1, appels) >= 0.10);
+  ok(`on ne PORTE pas le ballon des heures (tenue p90 ${p90.toFixed(2)} s ≤ 2,6 — avant : 3,6)`, p90 <= 2.6);
+}
+
 // ---------- 4. les sabotages
 {
   // un match SANS tir (le hook retiré) : la clause « rondo décoré » attrape

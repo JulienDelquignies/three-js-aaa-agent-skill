@@ -25,18 +25,24 @@ const LANDMARKS = {
   nervures: { label: 'Les Nervures', tiers: { main: 12, opp: 12, ends: 11, deck2: 0, roof: ['main', 'opp', 'endA', 'endB'] } },
 };
 
-export function generateStadium({ tier = 1, seed = 1, landmark = null } = {}) {
+// LE STADE EST PARAMÉTRIQUE PAR SON TERRAIN. Le plein format (105 × 68, Loi 1) reste le défaut ;
+// un match réduit passe SON terrain et SES buts — les tribunes, la pelouse peinte, les cages, les
+// panneaux et l'éclairage suivent le modèle, jamais une constante. C'est ce qui fait qu'un seul
+// stade sert le rondo, le match réduit ET le 11c11 à venir (la promesse « importable/transposable »).
+export function generateStadium({ tier = 1, seed = 1, landmark = null, pitch = null, goal = null } = {}) {
+  const P = { ...PITCH, circle: 9.15, box: { d: 16.5, w: 40.32 }, six: { d: 5.5, w: 18.32 }, spot: 11, ...(pitch || {}) };
+  const G = { w: 7.32, h: 2.44, ...(goal || {}) };
   const lm = LANDMARKS[landmark] || null;
   const t = lm ? lm.tiers : TIERS[Math.max(1, Math.min(5, tier))];
   const stands = [];
   const mk = (id, along, sign, rows, len, deck2) => rows > 0 && stands.push({ id, along, sign, rows, len, deck2: deck2 || 0, roof: t.roof.includes(id) });
-  mk('main', 'x', -1, t.main, PITCH.L * 0.9, t.deck2Main ?? t.deck2);   // south touchline (z<0) — tribune principale
-  mk('opp', 'x', 1, t.opp, PITCH.L * 0.9, t.deck2);
-  mk('endA', 'z', -1, t.ends, PITCH.W * 0.9, t.deck2);
-  mk('endB', 'z', 1, t.ends, PITCH.W * 0.9, t.deck2);
+  mk('main', 'x', -1, t.main, P.L * 0.9, t.deck2Main ?? t.deck2);   // south touchline (z<0) — tribune principale
+  mk('opp', 'x', 1, t.opp, P.L * 0.9, t.deck2);
+  mk('endA', 'z', -1, t.ends, P.W * 0.9, t.deck2);
+  mk('endB', 'z', 1, t.ends, P.W * 0.9, t.deck2);
   const main = stands[0];
   const topY = main.rows * ROW_H;
-  const standInner = (s) => (s.along === 'x' ? PITCH.W / 2 : PITCH.L / 2) + APRON;   // distance pitch-centre → first row
+  const standInner = (s) => (s.along === 'x' ? P.W / 2 : P.L / 2) + APRON;   // distance pitch-centre → first row
   // loge at the top-centre of the main stand: glass room + terrace slab over the last rows
   const logeW = 8, logeD = 3, terrD = 1.7, floorY = topY + 0.05;
   const zIn = -(standInner(main));                                                   // inner edge (towards pitch) of first row
@@ -69,10 +75,10 @@ export function generateStadium({ tier = 1, seed = 1, landmark = null } = {}) {
   // deck 2 passes through the loge volume → the builder must NOTCH it (loges sit between the decks)
   if (t.deck2 > 0) loge.notchDeck2 = logeW / 2 + 0.6;
   // match furniture — all pure data, themed & built by stadium-builder, checked by the contract:
-  const L = PITCH.L, Wp = PITCH.W;
-  const goals = [                                                    // cages réglementaires, ouverture vers le centre
-    { x: -L / 2, sign: 1, w: 7.32, h: 2.44, depth: 2.0 },
-    { x: L / 2, sign: -1, w: 7.32, h: 2.44, depth: 2.0 },
+  const L = P.L, Wp = P.W;
+  const goals = [                                                    // cages du modèle, ouverture vers le centre
+    { x: -L / 2, sign: 1, w: G.w, h: G.h, depth: Math.min(2.0, G.w * 0.3) },
+    { x: L / 2, sign: -1, w: G.w, h: G.h, depth: Math.min(2.0, G.w * 0.3) },
   ];
   const boardSides = tier >= 4 ? ['main', 'opp', 'endA', 'endB'] : tier === 3 ? ['main', 'opp', 'endA'] : tier === 2 ? ['main', 'opp'] : ['opp'];
   const boards = [];                                                 // panneaux sponsors, 3 m derrière les lignes
@@ -93,13 +99,13 @@ export function generateStadium({ tier = 1, seed = 1, landmark = null } = {}) {
   // the SIGNATURE, derived from the actual footprint (never hardcoded coordinates)
   let signature = null;
   if (lm) {
-    const backOf = (s) => (s.along === 'x' ? PITCH.W / 2 : PITCH.L / 2) + APRON + (s.rows + (s.deck2 ? s.rows * 0.5 : 0)) * ROW_D + 2;
+    const backOf = (s) => (s.along === 'x' ? P.W / 2 : P.L / 2) + APRON + (s.rows + (s.deck2 ? s.rows * 0.5 : 0)) * ROW_D + 2;
     const exX = backOf(stands[2]), exZ = backOf(stands[0]);                         // outer half-extents
     if (landmark === 'grandbol') {
       const rows = Math.min(...stands.map((s) => s.rows));
       const corners = [];
       for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-        corners.push({ cx: sx * (PITCH.L * 0.45), cz: sz * (PITCH.W * 0.45), sx, sz, rows, r0: APRON + 6 });
+        corners.push({ cx: sx * (P.L * 0.45), cz: sz * (P.W * 0.45), sx, sz, rows, r0: APRON + 6 });
       }
       signature = { kind: 'bol', corners };
       capacity += corners.length * rows * 30;                                       // the bowl seats the corners too
@@ -119,7 +125,7 @@ export function generateStadium({ tier = 1, seed = 1, landmark = null } = {}) {
   const eye = 1.6;
   return {
     spec: { tier, seed, landmark }, landmark: lm ? { id: landmark, label: lm.label } : null, signature,
-    pitch: PITCH, apron: APRON, rowD: ROW_D, rowH: ROW_H, seatStep: SEAT_STEP,
+    pitch: P, apron: APRON, rowD: ROW_D, rowH: ROW_H, seatStep: SEAT_STEP,
     stands, loge, capacity, goals, boards, flags, dugouts, tunnel, lights, scoreboard,
     vantages: {
       loge: [0, floorY + eye, (loge.rect[1] + loge.rect[3]) / 2],
@@ -195,7 +201,11 @@ export function checkStadium(m) {
   // match furniture: regulation goals on the goal lines, boards clear & low, flags at corners, dugouts off-pitch
   for (const g of m.goals || []) {
     if (Math.abs(Math.abs(g.x) - m.pitch.L / 2) > 0.1) issues.push('goal not on the goal line');
-    if (Math.abs(g.w - 7.32) > 0.1 || Math.abs(g.h - 2.44) > 0.05) issues.push('goal not regulation size (7.32×2.44)');
+    // la Loi 1 ne s'exige QUE sur un terrain Loi 1 : un stade réduit a des cages réduites — sa loi
+    // est la COHÉRENCE (cage dans la surface de but, proportions humaines), pas l'absolu 7,32
+    if (m.pitch.L >= 90 && (Math.abs(g.w - 7.32) > 0.1 || Math.abs(g.h - 2.44) > 0.05)) issues.push('goal not regulation size (7.32×2.44)');
+    if (g.w >= (m.pitch.six?.w ?? 18.32)) issues.push('goal wider than the goal area');
+    if (g.h < 1.6 || g.h > 2.6 || g.w < 3) issues.push('goal outside human proportions');
     if (Math.sign(g.sign) !== -Math.sign(g.x)) issues.push('goal opening faces away from the pitch');
   }
   if ((m.goals || []).length !== 2) issues.push('a football pitch needs exactly 2 goals');

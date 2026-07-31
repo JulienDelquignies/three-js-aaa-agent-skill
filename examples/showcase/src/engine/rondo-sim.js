@@ -240,7 +240,10 @@ function strikeNow(st, c, cfg) {
       return;
     }
   }
-  const lead = rec ? [rec.p[0] + rec.v[0] * 0.18, 0, rec.p[2] + rec.v[1] * 0.18] : choice.lead;
+  // la re-mène du contact suit LA MÊME loi que le choix : une mène courte ici défaisait la mène
+  // de course posée par choosePass (le tir garde sa cible fixe)
+  const tRe = choice.shot ? 0 : (cfg.leadTime ? cfg.leadTime(Math.hypot((rec?.p[0] ?? 0) - from[0], (rec?.p[2] ?? 0) - from[2]), rec) : 0.18);
+  const lead = rec ? [rec.p[0] + rec.v[0] * tRe, 0, rec.p[2] + rec.v[1] * tRe] : choice.lead;
   const sol = solvePass(from, lead, { style: choice.style }) || solvePass(from, choice.lead, { style: choice.style });
   if (!sol) { st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4]); return; }   // scuffed: it stays loose
   // ON FRAPPE LE BALLON LÀ OÙ IL EST. `kick(from, …)` POSAIT le ballon sur `from`, et l'appelant
@@ -1141,7 +1144,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // l'intention vise le receveur VIVANT : la mène se rafraîchit sur sa course réelle — c'est
         // le même receveur, pas une re-décision (strikeNow re-résout de toute façon au contact)
         const rec = st.players[c.intent.choice.to.id];
-        c.intent.choice.lead = [rec.p[0] + rec.v[0] * 0.28, BALL.radius, rec.p[2] + rec.v[1] * 0.28];
+        const tI = cfg.leadTime ? cfg.leadTime(Math.hypot(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.28;
+        c.intent.choice.lead = [rec.p[0] + rec.v[0] * tI, BALL.radius, rec.p[2] + rec.v[1] * tI];
         // LA FEINTE AVANT LA PASSE : l'intention est prête, un défenseur vit dans le cône de la
         // fausse direction — tout l'armé se joue (volable !), le ballon reste, le mordu s'assoit,
         // et la VRAIE passe part au geste suivant sur une ligne morte. Une feinte par intention.

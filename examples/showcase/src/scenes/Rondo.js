@@ -16,7 +16,6 @@ import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
-import { buildGoal } from './goal.js';
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js';
 import { warpEnvelope, planWarp, warpReach, twoBoneIK, checkStrikeWarp, WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
@@ -55,9 +54,17 @@ export class Rondo {
   async _build() {
     const q = new URLSearchParams(location.search);
     this.free = q.has('orbit');
+    // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne
+    // 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
+    this.matchMode = q.has('match');
 
-    // ---- the stadium: pitch centre at the origin so sim space IS world space
-    const model = generateStadium({ tier: 5, landmark: 'grandbol' });
+    // ---- the stadium: pitch centre at the origin so sim space IS world space.
+    // EN MATCH, LE STADE SE CONSTRUIT AUTOUR DU TERRAIN RÉDUIT (stade paramétrique) : ses cages
+    // sont LES cages (mêmes lignes que pitch.js), sa pelouse peint LES surfaces — une seule vérité
+    // au sol, plus de carré superposé ni de buts décoratifs à 3 m des vrais.
+    const model = this.matchMode
+      ? generateStadium({ tier: 4, landmark: 'grandbol', pitch: { L: 46, W: 30, circle: 4, box: { d: 8, w: 15 }, six: { d: 3, w: 9 }, spot: 7.5 }, goal: { w: 5, h: 2 } })
+      : generateStadium({ tier: 5, landmark: 'grandbol' });
     const chk = checkStadium(model);
     if (!chk.ok) console.warn('checkStadium', chk.issues);
     const theme = makeTheme({ seed: 3, name: 'Grand Bol', primary: TEAMS[0].secondary, secondary: TEAMS[0].primary });
@@ -73,28 +80,17 @@ export class Rondo {
     this._tier = q.get('q') || 'high';   // the post chain is built in camera(), once we have one
 
     // ---- the grid the game is played in, painted on the grass
-    this.grid = buildRondoGrid(this.matchMode ? MATCH.area : RONDO.area);
-    this.scene.add(this.grid.group); this.disposables.push(this.grid);
-    if (this.matchMode) {
-      // les DEUX BUTS, aux lignes — le filet de goal.js (montants + filet en vrais segments)
-      const P = this.state.pitch;
-      this.goals = [];
-      for (const sign of [+1, -1]) {
-        const holder = new THREE.Group();
-        const g = buildGoal(holder, { X: sign * P.hx, W: P.dims.goal.width, H: P.dims.goal.height, D: sign * 1.5 });
-        holder.traverse((o) => { o.castShadow = false; });
-        this.scene.add(holder);
-        this.night.light(holder);
-        this.goals.push({ holder, g });
-        this.disposables.push({ dispose: () => g.dispose?.() });
-      }
-    }
+    // un ENTRAÎNEMENT a son carré et ses cônes ; un MATCH n'ajoute rien au sol — le stade
+    // paramétrique a déjà peint les lignes et posé les cages
+    this.grid = this.matchMode ? null : buildRondoGrid(RONDO.area);
+    if (this.grid) { this.scene.add(this.grid.group); this.disposables.push(this.grid); }
 
     this.ball = ballMesh();
     this.scene.add(this.ball); this.disposables.push(this.ball);
     // the key is masked to the pitch (that is what makes the bowl fall away into night), so anything
     // standing ON the pitch has to be opted in or it goes unlit
-    this.night.light(this.grid.group); this.night.light(this.ball);
+    if (this.grid) this.night.light(this.grid.group);
+    this.night.light(this.ball);
 
     // ---- the game itself
     // ?n=3 pour un 3 contre 3. Sur un téléphone, dix bonshommes dans un carré de 16 m sont dix taches
@@ -102,7 +98,6 @@ export class Rondo {
     const perTeam = Math.max(2, Math.min(6, Number(q.get('n')) || 5));
     // ?match : LE MATCH RÉDUIT — deux buts, gardiens, tirs, remises (match-sim). Même scène, même
     // pipeline visuel : le match est une CONFIGURATION du moteur, l'habillage ne change pas.
-    this.matchMode = q.has('match');
     this._mcfg = this.matchMode ? matchCfg() : null;
     this.state = this.matchMode
       ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7 })
@@ -285,10 +280,12 @@ export class Rondo {
     // téléphone en portrait, le carré tient dans un tiers de la hauteur et on ne distingue plus un
     // geste d'un autre. Le cadrage est dérivé, pas écrit en dur.
     const narrow = typeof window !== 'undefined' && window.innerWidth < 700;
-    // le match cadre le TERRAIN (46 x 30), pas le carré : la caméra recule et ouvre
-    const back = this.matchMode ? (narrow ? 30 : 34) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
-    cam.fov = this.matchMode ? (narrow ? 40 : 36) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
-    cam.position.set(0, this.matchMode ? 14 : 8.5 - (narrow ? 1.2 : 0), -back);
+    // le match cadre le TERRAIN, et la régie vit AU-DESSUS de la tribune — le stade réduit a
+    // rapproché le premier rang à 21 m du centre : l'ancienne position (z=−34) filmait l'intérieur
+    // du béton (écran noir mesuré). Passerelle haute, plongée douce, tout le terrain dans le cadre.
+    const back = this.matchMode ? (narrow ? 17 : 20) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
+    cam.fov = this.matchMode ? (narrow ? 56 : 50) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
+    cam.position.set(0, this.matchMode ? 19 : 8.5 - (narrow ? 1.2 : 0), -back);
     this._camBack = back;
     cam.lookAt(0, 1, 0);
     this.cam = cam;

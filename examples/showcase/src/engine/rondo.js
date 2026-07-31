@@ -274,7 +274,11 @@ export function choosePass(st, cfg = RONDO) {
     const d = d2(origin, m.p);
     if (d < cfg.passRange[0] || d > cfg.passRange[1]) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
-    const lead = [m.p[0] + m.v[0] * 0.28, BALL.radius, m.p[2] + m.v[1] * 0.28];
+    // LA MÈNE SUIT LA COURSE (cfg.leadTime — le match la dérive du temps de vol : un coureur à
+    // 6 m/s sur un vol d'une seconde reçoit 4 m derrière lui avec une mène figée de 0,28 s ;
+    // mesuré en match : 21 % de passes reçues). Le rondo garde sa mène courte (carré court).
+    const tLead = cfg.leadTime ? cfg.leadTime(d2(origin, m.p), m) : 0.28;
+    const lead = [m.p[0] + m.v[0] * tLead, BALL.radius, m.p[2] + m.v[1] * tLead];
     const lane = laneClearance(origin, lead, opp, { corridor: cfg.corridor });
     // LA LIBERTÉ DU RECEVEUR SE MESURE À L'ARRIVÉE, PAS SUR LA PHOTO. La pression « maintenant »
     // notait libre un homme dont le marqueur arrivait pendant l'armé + le vol — mesuré : la
@@ -310,7 +314,11 @@ export function choosePass(st, cfg = RONDO) {
       // LE MATCH A UN SENS DE JEU (cfg.passBias, match-sim) : le rondo conserve, une équipe
       // PROGRESSE — sans ce terme, mesuré : possession dominante (191 c. 140 images de conduite)
       // entièrement à x = −15, toutes les pertes entre −9 et −23, zéro sortie de camp en 120 s.
-      + (cfg.passBias ? cfg.passBias(st, c, { to: m, lead, lane, dist: d }) : 0);
+      + (cfg.passBias ? cfg.passBias(st, c, { to: m, lead, lane, dist: d }) : 0)
+      // …ET L'APPEL EST SERVI (cfg.appelBonus) : un coureur en rupture APPELLE le ballon — la
+      // passe qui le suit est la définition même de « suivre l'appel » (mesuré avant : 5 appels
+      // servis sur 74 — les ruptures étaient un décor)
+      + ((m._pace?.until ?? -1) > st.t ? (cfg.appelBonus ?? 0) : 0);
     if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d };
   }
   return best;

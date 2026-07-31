@@ -33,15 +33,25 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   pg.strokeStyle = '#eef4ee'; pg.lineWidth = Math.max(2, 0.12 * kx);
   pg.strokeRect(X(-L / 2), Z(-W / 2), L * kx, W * kz);                                   // lignes de touche + de but
   pg.beginPath(); pg.moveTo(X(0), Z(-W / 2)); pg.lineTo(X(0), Z(W / 2)); pg.stroke();    // médiane
-  pg.beginPath(); pg.arc(X(0), Z(0), 9.15 * kx, 0, 7); pg.stroke();                      // rond central
+  // les surfaces viennent DU MODÈLE (stade paramétrique : rond, boîtes, point — le réduit peint
+  // SES dimensions, le plein format les siennes ; plus une seule constante Loi 1 en dur ici)
+  const CIR = model.pitch.circle ?? 9.15;
+  const BOX = model.pitch.box ?? { d: 16.5, w: 40.32 };
+  const SIX = model.pitch.six ?? { d: 5.5, w: 18.32 };
+  const SPOT = model.pitch.spot ?? 11;
+  pg.beginPath(); pg.arc(X(0), Z(0), CIR * kx, 0, 7); pg.stroke();                       // rond central
   pg.fillStyle = '#eef4ee'; pg.beginPath(); pg.arc(X(0), Z(0), 0.25 * kx, 0, 7); pg.fill();
   for (const side of [-1, 1]) {
     const gx = side * L / 2, dir = -side;                                                // vers le centre
-    pg.strokeRect(Math.min(X(gx), X(gx + dir * 16.5)), Z(-20.16), 16.5 * kx, 40.32 * kz); // surface de réparation
-    pg.strokeRect(Math.min(X(gx), X(gx + dir * 5.5)), Z(-9.16), 5.5 * kx, 18.32 * kz);    // 5,5 m
-    pg.beginPath(); pg.arc(X(gx + dir * 11), Z(0), 0.25 * kx, 0, 7); pg.fill();           // point de penalty
-    const a0 = side < 0 ? -0.94 : Math.PI - 0.94, a1 = side < 0 ? 0.94 : Math.PI + 0.94;
-    pg.beginPath(); pg.arc(X(gx + dir * 11), Z(0), 9.15 * kx, a0, a1); pg.stroke();       // arc de réparation
+    pg.strokeRect(Math.min(X(gx), X(gx + dir * BOX.d)), Z(-BOX.w / 2), BOX.d * kx, BOX.w * kz); // surface de réparation
+    pg.strokeRect(Math.min(X(gx), X(gx + dir * SIX.d)), Z(-SIX.w / 2), SIX.d * kx, SIX.w * kz); // surface de but
+    pg.beginPath(); pg.arc(X(gx + dir * SPOT), Z(0), 0.25 * kx, 0, 7); pg.fill();        // point de penalty
+    // l'arc de réparation, seulement s'il déborde de la surface (Loi 14 — sinon il n'existe pas)
+    if (CIR > BOX.d - SPOT) {
+      const half = Math.acos(Math.max(-1, Math.min(1, (BOX.d - SPOT) / CIR)));
+      const a0 = side < 0 ? -half : Math.PI - half, a1 = side < 0 ? half : Math.PI + half;
+      pg.beginPath(); pg.arc(X(gx + dir * SPOT), Z(0), CIR * kx, a0, a1); pg.stroke();   // arc de réparation
+    }
   }
   for (const cx of [-L / 2, L / 2]) for (const cz of [-W / 2, W / 2]) {                   // arcs de corner (1 m)
     pg.beginPath(); pg.arc(X(cx), Z(cz), 1 * kx, 0, 7); pg.stroke();
