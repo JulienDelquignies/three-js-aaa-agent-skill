@@ -36,6 +36,8 @@ export function makePersona(id, seed = 0) {
     paceBias: span(r, 0.94, 1.06),       // allure de pointe personnelle
     burstiness: span(r, 0.7, 1.4),       // fréquence des ruptures de rythme (appels, chasses)
     calm: span(r, 0.85, 1.25),           // multiplicateur des tenues délibérées (le posé vs le vif)
+    flair: span(r, 0.15, 1.0),           // goût du geste technique (râteau, feinte, semelle) — le
+                                         // joueur à flair 1,0 tente ; celui à 0,15 joue simple
   };
 }
 
@@ -51,6 +53,7 @@ export function checkPersona({ n = 10, seed = 3 } = {}) {
   const axes = (p) => [
     (p.scale - 1) / 0.04, p.gaitPhase, (p.armSwingF - 1) / 0.18,
     p.posture.lean / 2.5, (p.paceBias - 1) / 0.06, (p.burstiness - 1) / 0.35, (p.calm - 1) / 0.2,
+    ((p.flair ?? 0.575) - 0.575) / 0.425,
   ];
   const ps = Array.from({ length: n }, (_, i) => makePersona(i, seed));
   // déterminisme : la même identité, image après image, partie après partie

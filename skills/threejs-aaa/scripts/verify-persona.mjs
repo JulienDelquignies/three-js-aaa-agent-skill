@@ -60,6 +60,14 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const bad = ps.some((p) => p.paceBias < 0.93 || p.paceBias > 1.07);
     ok('sabotage « borne crevée » détectable (paceBias 1,3 hors [0,93 ; 1,07])', bad);
   }
+  // le flair (goût du geste technique) est borné et VARIÉ — dix joueurs au même flair, c'est dix
+  // fois le même dribbleur
+  {
+    const ps = Array.from({ length: 10 }, (_, i) => makePersona(i, 3));
+    ok('flair borné [0,15 ; 1,0] et varié (écart ≥ 0,3)',
+      ps.every((p) => p.flair >= 0.15 && p.flair <= 1.0)
+      && Math.max(...ps.map((p) => p.flair)) - Math.min(...ps.map((p) => p.flair)) >= 0.3);
+  }
 }
 
 // ---------- 2. la persona et le rythme DANS LA SIM (la moitié qui compte — loi 8)

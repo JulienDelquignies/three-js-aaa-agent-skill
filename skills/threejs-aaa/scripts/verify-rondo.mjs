@@ -138,8 +138,11 @@ const g = playRondo(makeRondo({ perTeam: 5, seed: 3 }), 90);
     holdP50 >= 0.70 && holdP50 <= 2.0);
   const interP50 = q(inter, 0.5);
   const part25 = inter.length ? (100 * inter.filter((x) => x >= 2 && x <= 5).length) / inter.length : 0;
-  ok(`le tempo n'est plus un métronome (inter-passes p50 ${interP50.toFixed(2)} s ∈ [1,2, 2,2], bande 2-5 s ${part25.toFixed(0)} % ∈ [10, 45] — avant : 0,92 s et 0 %)`,
-    interP50 >= 1.2 && interP50 <= 2.2 && part25 >= 10 && part25 <= 45);
+  // le plafond de bande suit le monde : 45 % datait d'un monde sans jeu de rétention — depuis les
+  // gestes techniques (feinte 0,4 s, semelle tenue ~0,85 s), des inter-passes de 2-3 s LÉGITIMES
+  // existent en plus. Le plancher (10 % — le métronome mort) reste la pathologie que la clause vise.
+  ok(`le tempo n'est plus un métronome (inter-passes p50 ${interP50.toFixed(2)} s ∈ [1,2, 2,2], bande 2-5 s ${part25.toFixed(0)} % ∈ [10, 55] — avant : 0,92 s et 0 %)`,
+    interP50 >= 1.2 && interP50 <= 2.2 && part25 >= 10 && part25 <= 55);
   // COMPROMIS DOCUMENTÉ : la cible de la sonde était un turnover toutes les 8-15 s ; mesuré, le
   // moteur tient 4,5-6 s — pousser plus loin (raceSlack 0,18, presseur collant, cover élu au poste)
   // a été balayé et CHAQUE levier a fait tomber la balance sous le verrou (record moyen 8,4 → 5,5-6,8).

@@ -3,9 +3,9 @@ import { predictPath } from './ball-predict.js';
 import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { makeDribbler, dribbleStep, dribbleSteer } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
-import { situation, chooseTechnique, checkAction, TECHNIQUES } from './technique.js';
+import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { MOVES } from './animkit.js';
-import { startGesture, stepGesture, abortGesture, busy, winding, checkGestures } from './gesture.js';
+import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 
 // rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
@@ -357,11 +357,40 @@ function stepGestures(st, dt, cfg) {
         p.speed = Math.hypot(p.v[0], p.v[1]);
       }
       if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], p, cfg);
+    } else if (busy(p) && p.act?.payload?.kind === 'skill' && st.phase === 'carry' && st.possession.carrier === p.id) {
+      // LA FENÊTRE DE DUEL RESTE OUVERTE PENDANT TOUT LE GESTE TECHNIQUE — armé ET accompagnement.
+      // Sans elle, la semelle (1,0 s) et le raclage du râteau étaient des sanctuaires : un défenseur
+      // à 2,4 m couvre cette distance en 0,4 s et devait regarder. Un geste technique s'assume.
+      const press = pressPredicate(st, p, cfg);
+      st.pressure = press.length ? st.pressure + dt : 0;
+      if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], p, cfg);
     }
+    // l'accompagnement possédé (râteau qui tourne, semelle qui tient) écrit corps ET ballon ICI —
+    // movePlayers se tait (ownsBody), la branche busy du pas de jeu aussi : une autorité.
+    if (following(p) && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);
+    const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
       if (p.act?.payload?.kind === 'pass') strikeNow(st, p, cfg);
       else if (p.act?.payload?.kind === 'tacle-debout') standTackleNow(st, p, cfg);
+      else if (p.act?.payload?.kind === 'skill') skillContactNow(st, p, cfg);
+    } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
+      // la fin d'un geste technique STAMPE ses mesures — le banc juge des chiffres de la sim,
+      // pas une reconstruction de trace échantillonnée
+      const A = actBefore.payload;
+      if (A.skill === 'rateau') {
+        p.v[0] = Math.cos(A.exitYaw) * 1.6; p.v[1] = Math.sin(A.exitYaw) * 1.6;
+        p.push = [Math.cos(A.exitYaw), Math.sin(A.exitYaw)];
+        st.events.push({
+          t: +st.t.toFixed(2), type: 'skill-end', kind: 'rateau', by: p.id,
+          turned: +(Math.abs(wrapA(p.yaw - A.yaw0)) * 180 / Math.PI).toFixed(0),
+          ballMax: +(A.ballMax ?? 0).toFixed(2),
+        });
+      } else if (A.skill === 'semelle') {
+        st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'semelle', by: p.id, maxV: +(A.maxV ?? 0).toFixed(2) });
+      } else if (A.skill === 'feinte') {
+        st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'feinte', by: p.id });
+      }
     }
   }
 }
@@ -428,9 +457,193 @@ function standTackleNow(st, q, cfg) {
     height: +st.ball.p[1].toFixed(2), speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
   });
   const victim = st.players[victimId];
-  if (victim?.act && winding(victim)) abortGesture(victim, 'fermé pendant l’armé', { log: st.gestures });
+  // …et un geste TECHNIQUE se fait fermer à n'importe quel instant (la semelle tenue, le raclage
+  // du râteau) — pas seulement l'armé : sa fenêtre de duel est ouverte du début à la fin
+  if (victim?.act && (winding(victim) || victim.act.payload?.kind === 'skill')) abortGesture(victim, 'fermé pendant l’armé', { log: st.gestures });
   receive(st, q.id, cfg);          // → turnover : amorti nommé (résiduel ~20 %), possession déclarée
 }
+
+// ============================ LES GESTES TECHNIQUES ============================
+// Râteau, feinte de passe, arrêt semelle — les gestes qui manipulent le ballon SANS le libérer.
+// Trois lois partagées : (1) chaque déclenchement est SITUÉ (presseur frontal réel, défenseur à
+// tromper dans le cône, champ libre mesuré) et chaque refus de situation se NOMME ; (2) le geste
+// passe par la MÊME machine que les frappes (startGesture/stepGesture — armé volable, contact,
+// accompagnement, abort nommé) : un râteau mal timé se fait tacler pendant l'armé, exactement
+// comme une passe ; (3) le couple corps-ballon reste SOUDÉ (carry servo) — le ballon est raclé,
+// garé, jamais téléporté. La fréquence est une identité (persona.flair) sous cooldowns stricts :
+// un geste technique est un événement, pas un tic.
+
+const wrapA = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+
+/** Le râteau : presseur FRONTAL qui ferme → la semelle tire le ballon en arrière, le corps se
+ *  retourne par-dessus (le lacet appartient au geste pendant TOUT l'accompagnement — ownsBody). */
+function maybeRateau(st, c, cfg) {
+  const K = cfg.skill; if (!K) return false;
+  if ((c._skillCd?.rateau ?? -1) > st.t) return false;
+  if (d2(c.p, st.ball.p) > 0.55) return false;                    // sur SON ballon, au pied
+  let foe = null, fd = Infinity;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
+  }
+  if (!foe || fd > K.rateauFoe) return false;
+  const bear = situation(c.p, c.yaw, foe.p, [0, 0], 0.11).bearing;
+  if (bear > K.rateauFront) return false;                         // il presse la FACE, pas le dos
+  const closing = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
+  if (closing < 1.5) return false;                                // il ARRIVE lancé (une dérive n'est pas une charge)
+  // la sortie ARRIÈRE est libre — se retourner dans un second duel n'est pas une sortie
+  const exitYaw = c.yaw + Math.PI;
+  const ex = c.p[0] + Math.cos(exitYaw) * 1.2, ez = c.p[2] + Math.sin(exitYaw) * 1.2;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < K.rateauClear) return deny(st, 'rateau-sans-issue');
+  }
+  if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'rateau-hors-carré');
+  // QUI tente : le flair (tirage seedé) — un refus de tempérament re-tire dans 2 s, pas à 60 Hz
+  if ((st.rnd ? st.rnd() : 0.5) > 0.12 + 0.3 * (c.persona?.flair ?? 0.5)) {
+    (c._skillCd ??= {}).rateau = st.t + 2; return false;
+  }
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId.rateau, sit);
+  const move = MOVE_TIMING.rateau;
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);              // la semelle exige le couple soudé
+  startGesture(c, { id: 'rateau', ...move }, {
+    payload: { kind: 'skill', skill: 'rateau', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, ballMax: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).rateau = st.t + K.rateauCd;
+  c.intent = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'rateau', foot, skill: 'rateau', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'rateau', by: c.id, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
+  return true;
+}
+
+/** La feinte de passe : l'intention EXISTE (une vraie passe est prête), un défenseur est dans le
+ *  cône de la fausse direction — tout l'armé se joue, le ballon ne part pas, le mordu s'assoit. */
+function maybeFeinte(st, c, cfg, contested) {
+  const K = cfg.skill; if (!K || contested) return false;         // feinter sous conteste = offrir le ballon
+  if ((c._skillCd?.feinte ?? -1) > st.t) return false;
+  if (!c.intent || c.intent.feinted) return false;                // UNE feinte par intention
+  const rec = st.players[c.intent.choice.to.id]; if (!rec) return false;
+  const fakeYaw = Math.atan2(rec.p[2] - c.p[2], rec.p[0] - c.p[0]);
+  let mark = null;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    const d = d2(q.p, c.p);
+    if (d < K.feinteFoe[0] || d > K.feinteFoe[1]) continue;
+    if (situation(c.p, fakeYaw, q.p, [0, 0], 0.11).bearing <= K.feinteCone) { mark = q; break; }
+  }
+  if (!mark) return false;                                        // personne à tromper : on joue simple
+  // …et PERSONNE en duel vivant sur le ballon : se figer 0,4 s avec un homme à portée de vol,
+  // c'est offrir le tacle — la sonde des graines 2/4 a mesuré le temps « collé » gonfler de 10 %
+  if (pressPredicate(st, c, cfg).length) return false;
+  if ((st.rnd ? st.rnd() : 0.5) > 0.15 + 0.45 * (c.persona?.flair ?? 0.5)) { c.intent.feinted = true; return false; }
+  if (st.ball.owner !== c.id) {
+    if (d2(c.p, st.ball.p) > cfg.captureRadius) return false;
+    st.ball.possess(c.id);
+  }
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId['feinte-passe'], sit);
+  const move = MOVE_TIMING.feintePasse;
+  startGesture(c, { id: 'feintePasse', ...move }, {
+    // outYaw : le REGARD vend la feinte (la scène fait regarder la fausse cible pendant l'armé)
+    payload: { kind: 'skill', skill: 'feinte', pick: { foot }, fakeYaw, outYaw: fakeYaw },
+    log: st.gestures,
+  });
+  c.intent.feinted = true;                                        // l'intention SURVIT : la vraie passe suit
+  (c._skillCd ??= {}).feinte = st.t + K.feinteCd;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'feintePasse', foot, skill: 'feinte', anticipation: move.contact });
+  return true;
+}
+
+/** L'arrêt semelle : porteur au calme, champ libre — le pied se pose SUR le ballon et la tête se
+ *  lève. La ponctuation du jeu posé ; persona.calm et flair décident QUI la joue. */
+function maybeSemelle(st, c, cfg, calm, foeBody) {
+  const K = cfg.skill; if (!K || !calm) return false;
+  if ((c._skillCd?.semelle ?? -1) > st.t) return false;
+  if (foeBody < K.semelleFoe) return false;
+  // …dans la tenue délibérée, pas à sa toute fin (première version : fenêtre [0,35 ; calmHold−0,6]
+  // → pour une tenue de 1,0 s la fenêtre faisait 5 centièmes — 0 semelle en 6 minutes mesurées ;
+  // et le ballon de CONDUITE vit à 0,5-0,9 m entre deux touches — 0,6 m est le rayon du porté)
+  if (st.hold < 0.3 || st.hold > Math.max(0.5, (st._calmHold ?? 1) - 0.35)) return false;
+  if (d2(c.p, st.ball.p) > 0.6) return false;
+  if ((st.rnd ? st.rnd() : 0.5) > 0.2 + 0.5 * Math.max(0, (c.persona?.calm ?? 1) - 0.85) + 0.25 * (c.persona?.flair ?? 0.5)) {
+    (c._skillCd ??= {}).semelle = st.t + 1.2; return false;       // pas cette fois — on re-tire plus tard
+  }
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId['arret-semelle'], sit);
+  const move = MOVE_TIMING.arretSemelle;
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  startGesture(c, { id: 'arretSemelle', ...move }, {
+    payload: { kind: 'skill', skill: 'semelle', pick: { foot }, ownsBody: true, maxV: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).semelle = st.t + K.semelleCd;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'arretSemelle', foot, skill: 'semelle', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'semelle', by: c.id, foe: +foeBody.toFixed(2) });
+  return true;
+}
+
+/** LE CONTACT D'UN GESTE TECHNIQUE — rien ne part : la semelle AGRIPPE (le point de départ du
+ *  raclage se fige ici), la feinte SE VEND (les défenseurs lancés dans le cône mordent — leur
+ *  ralenti est la loi de movePlayers), la plante SE POSE (le point de parking se fige). */
+function skillContactNow(st, p, cfg) {
+  const A = p.act.payload;
+  if (A.skill === 'feinte') {
+    const K = cfg.skill;
+    const bitten = [];
+    for (const q of st.players) {
+      if (q.team === p.team || q.down > 0) continue;
+      const d = d2(q.p, p.p);
+      if (d < K.feinteFoe[0] - 0.2 || d > K.feinteFoe[1] + 0.6) continue;
+      if (situation(p.p, A.fakeYaw, q.p, [0, 0], 0.11).bearing > K.feinteCone) continue;
+      q._bite = st.t + K.feinteBite;
+      bitten.push(q.id);
+    }
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'feinte', by: p.id, bitten, foot: A.pick.foot });
+  } else if (A.skill === 'rateau') {
+    A.from = [st.ball.p[0], st.ball.p[2]];
+  } else if (A.skill === 'semelle') {
+    A.pin = [st.ball.p[0], st.ball.p[2]];
+  }
+}
+
+/** L'ACCOMPAGNEMENT POSSÉDÉ (ownsBody) — la seule écriture du corps pendant qu'il dure.
+ *  Râteau : le lacet balaie vers exitYaw (ease), le ballon RACLE tout droit en arrière le long de
+ *  l'ancien regard — 0,32 m devant → 0,45 m derrière, qui est 0,45 m DEVANT le nouveau regard.
+ *  Semelle : corps immobile, ballon garé au point d'agrippage. */
+function skillFollowStep(st, p, dt, cfg) {
+  const A = p.act.payload;
+  if (A.skill === 'rateau') {
+    const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
+    const e = u * u * (3 - 2 * u);
+    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
+    p.yawWant = null;
+    p.v[0] = 0; p.v[1] = 0; p.speed = 0.5;                        // le pivot n'est pas une course
+    // les cibles de carry sont 2D [x, z] — la sonde du premier essai a vu le [x, y, z] à trois
+    // termes envoyer le ballon vers la ligne z = 0,11 à la vMax du servo (3,99 m de « raclage »)
+    const drag = 0.32 - 0.77 * e;
+    st.ball.carry([p.p[0] + Math.cos(A.yaw0) * drag, p.p[2] + Math.sin(A.yaw0) * drag], dt, { tau: 0.05 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'semelle') {
+    // LA SEMELLE SE DÉCOLLE QUAND ON VIENT LA PRESSER. Tenue quoi qu'il arrive, elle offrait le
+    // temps « collé » mesuré (58 % — un presseur à 2,4 m couvre l'écart en 0,4 s et la tenue
+    // durait 1,0 s) : le vrai joueur relâche la pose et REJOUE dès que quelqu'un ferme. L'abandon
+    // est un abort NOMMÉ — le contrat des gestes le lit, rien ne s'évapore.
+    let foe = Infinity;
+    for (const q of st.players) if (q.team !== p.team && q.down <= 0) foe = Math.min(foe, d2(q.p, p.p));
+    if (foe < 2.0) {
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'semelle', by: p.id, maxV: +(A.maxV ?? 0).toFixed(2), broke: 'pressé' });
+      abortGesture(p, 'pressé-sous-semelle', { log: st.gestures });
+      return;
+    }
+    p.v[0] = 0; p.v[1] = 0; p.speed = 0;
+    if (A.pin) st.ball.carry([A.pin[0], A.pin[1]], dt, { tau: 0.04 });
+    A.maxV = Math.max(A.maxV ?? 0, Math.hypot(st.ball.v[0], st.ball.v[2]));
+  }
+}
+
+export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, skillContactNow };
 
 /**
  * Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
@@ -689,7 +902,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (busy(c)) {
       st.hold += dt;
       if (c.act.fired) {
-        if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt);
+        // un geste ownsBody (râteau, semelle) écrit son ballon dans skillFollowStep — une autorité ;
+        // la feinte, elle, garde le porté au pied ordinaire pendant sa rétraction
+        if (c.act.payload?.ownsBody) { /* stepGestures possède corps et ballon */ }
+        else if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt);
         else st.ball.integrate(dt);
       }
       return st;
@@ -827,6 +1043,11 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // de la fenêtre du contrôle + settleExtra (70 % des contrôles étaient refrappés avant la fin du
     // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.
     const settleGate = st._settling && st._settling.id === c.id && st.t < st._settling.at + cfg.settleExtra;
+    // LE RÂTEAU SE JOUE AVANT QUE LE DUEL S'INSTALLE : un presseur qui ferme la face avant, une
+    // sortie arrière libre — on se retourne PENDANT qu'on a encore le pas d'avance, contesté ou
+    // pas (première version : contesté seulement — 0,2 râteau par partie, le geste que
+    // l'utilisateur demandait restait invisible). Refus nommés quand la situation manque.
+    if (!settleGate && maybeRateau(st, c, cfg)) return st;
     if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && reachNow && (!settleGate || contested)) {
       // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
       // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon
@@ -873,12 +1094,20 @@ export function rondoStep(st, dt, cfg = RONDO) {
         const bar = calm ? cfg.intentBarCalm : 3.2;
         const heldEnough = !calm || st.hold >= st._calmHold;
         if (choice && ((choice.score > bar && heldEnough) || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
+        // LA SEMELLE VIT DANS LA TENUE : pas d'intention encore, du champ, du calme — le pied se
+        // pose sur le ballon et la tête se lève. Le geste ALLONGE la tenue de sa durée (busy),
+        // ce qui est exactement ce qu'il fait au vrai foot.
+        if (!c.intent && maybeSemelle(st, c, cfg, calm, foeBody)) return st;
       }
       if (c.intent) {
         // l'intention vise le receveur VIVANT : la mène se rafraîchit sur sa course réelle — c'est
         // le même receveur, pas une re-décision (strikeNow re-résout de toute façon au contact)
         const rec = st.players[c.intent.choice.to.id];
         c.intent.choice.lead = [rec.p[0] + rec.v[0] * 0.28, BALL.radius, rec.p[2] + rec.v[1] * 0.28];
+        // LA FEINTE AVANT LA PASSE : l'intention est prête, un défenseur vit dans le cône de la
+        // fausse direction — tout l'armé se joue (volable !), le ballon reste, le mordu s'assoit,
+        // et la VRAIE passe part au geste suivant sur une ligne morte. Une feinte par intention.
+        if (maybeFeinte(st, c, cfg, contested)) return st;
         beginPass(st, c.intent.choice, cfg);
       }
     }

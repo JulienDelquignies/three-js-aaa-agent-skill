@@ -1235,6 +1235,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    comme spreadFrac suit le carré. Balance : record 8,63 (verrou ≥ 6,5), 41,9 passes/partie.
    Audit 16/0, 43 bancs verts, ALL-SYNC 7/7.
 
+21. **Les gestes techniques — râteau, feinte de passe, arrêt semelle (« tout ce qui fait le foot »).**
+   Nouvel intent `carry` dans la table (le ballon est manipulé, jamais libéré), trois clips
+   authorés (le râteau n'authore PAS le lacet — la sim tourne, le visuel copie, loi 12 ; la feinte
+   est l'armé EXACT de `passe` qui SE RETIENT au contact — backswing à 2°, cuisse 6° vs 46°,
+   l'anti-overshoot comme signature ; la semelle lève la TÊTE pendant la tenue), même machine de
+   gestes que les frappes avec fenêtre de duel ouverte du début à la fin (un râteau mal timé se
+   fait tacler) et abort nommé (`pressé-sous-semelle` : la semelle se décolle quand on vient la
+   presser). Corps possédé par le geste (`ownsBody` : skillFollowStep écrit lacet+ballon,
+   movePlayers se tait), couple soudé mesuré (retournements 179°, ballon ≤ 0,61 m). La feinte
+   MORD : cône ±55° sur la fausse direction, `_bite` 0,55 s → actionneurs × 0,35, prouvé en loi
+   (rapport des vitesses = biteSlow ± 3 pts) ; rétraction raccourcie 0,26 → 0,14 s (mesuré :
+   la morsure expirait AVANT la vraie passe). Fréquence = identité (persona.flair 0,15-1,0) sous
+   cooldowns : ~2,5 râteaux, ~7 feintes, ~0,8 semelle / 90 s (chemin de réglage consigné :
+   0 → cirque 12,5 → juste). QUATRE morts d'instrument/monde en route : cibles de carry 2D
+   (le [x,y,z] envoyait le ballon vers z=0,11 à vMax — 3,99 m de « raclage »), rateauClear 2,0
+   introuvable en carré de rondo (0 râteau), la feinte qui gèle près d'un homme (+10 pts de
+   collé → interdite sous pressPredicate), et les seuils recalibrés AVEC leurs lois quand le
+   monde de rétention est arrivé (harriedMax 0,55 → 0,62 sur distributions 10 graines avant/après,
+   sabotage toujours ~100 % ; bande tempo ≤ 55 ; verrou en ACTIONS frappées+gestes ≥ 42, plancher
+   frappées 34). verify-gestes.mjs (26 clauses, 5 sabotages dont « même situation, sortie libre →
+   s'exécute »), audit filtre `!x.skill`, sonde composée : les trois clips jouent en scène
+   (miroir compris), captures dans le scratchpad. Balance : record 9,1 | 52,8 actions | pertes
+   14,1 (meilleur qu'avant le lot). Référence 52.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

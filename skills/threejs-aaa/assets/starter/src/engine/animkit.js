@@ -553,6 +553,107 @@ export const MOVES = {
     ],
   },
 
+  // ---- LES GESTES TECHNIQUES (intent 'carry' — le ballon ne part pas, il est manipulé) ----
+  // Le lacet du retournement N'EST PAS DANS CES CLÉS : le corps est tourné par la SIM (loi 12 — le
+  // visuel copie le lacet sim), le clip n'authore que les membres. C'est ce qui permet au même
+  // râteau de sortir à 140° comme à 200° selon la géométrie du pressing.
+  rateau: {
+    // Le râteau : le pied va se poser SUR le ballon (contact 0,22 = la semelle agrippe), puis la
+    // hanche BALAIE en arrière — extension + genou qui se plie : le ballon est raclé sous le corps
+    // pendant que le buste s'enroule. La jambe d'appui fléchit (tout le poids est dessus).
+    name: 'rateau', duration: 0.7, contact: 0.22, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.22, pose: {
+        RightUpLeg: [40, -6, 0], RightLeg: [-26, 0, 0], RightFoot: [24, 0, 0],
+        Hips: [0, -6, 0],
+        Spine: [-2, -3, 0], Spine1: [8, -5, 0], Spine2: [3, -3, 0],
+        Neck: [3, 0, 0], Head: [15, 0, 0],
+        LeftArm: [45, 0, 25], LeftForeArm: [20, 0, 30], RightArm: [50, 0, 15], RightForeArm: [5, 0, -20],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-22, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0, -0.04, 0] },
+      { t: 0.4, pose: {
+        RightUpLeg: [-22, -12, 0], RightLeg: [-72, 0, 0], RightFoot: [30, 0, 0],
+        Hips: [0, -14, 0],
+        Spine: [-2, -6, 0], Spine1: [12, -10, 0], Spine2: [4, -6, 0],
+        Neck: [3, 0, 0], Head: [16, 0, 0],
+        LeftArm: [35, 0, 35], LeftForeArm: [15, 0, 30], RightArm: [55, 0, -10], RightForeArm: [10, 0, -20],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-26, 0, 0], LeftFoot: [-7, 0, 0],
+      }, hips: [0, -0.05, 0] },
+      { t: 0.55, pose: {
+        RightUpLeg: [8, -4, 0], RightLeg: [-40, 0, 0], RightFoot: [12, 0, 0],
+        Hips: [0, -6, 0],
+        Spine1: [6, -4, 0], Spine2: [2, -2, 0], Head: [12, 0, 0],
+        LeftArm: [45, 0, 22], LeftForeArm: [15, 0, 25], RightArm: [50, 0, 5], RightForeArm: [5, 0, -20],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-22, 0, 0],
+      }, hips: [0, -0.02, 0] },
+      { t: 0.7, pose: {} },
+    ],
+  },
+  feintePasse: {
+    // La feinte de passe VIT de sa ressemblance : l'armé est CELUI de `passe` (mêmes clés de
+    // backswing — une clause du banc compare, un armé qui ne ressemble pas à la passe ne trompe
+    // personne), et au « contact » (0,26) le geste SE RETIENT : la cuisse s'arrête à 6° au lieu de
+    // traverser à 46°, le pied se relève — le swing meurt SUR le ballon au lieu de passer à
+    // travers. C'est l'anti-overshoot : la signature mécanique de la feinte.
+    // La rétraction est COURTE (0,14 s — mesuré : à 0,26 s de rétraction, la morsure du défenseur
+    // (0,55 s) expirait AVANT que la vraie passe parte — l'avantage s'évaporait pile au moment
+    // de servir ; à 0,14 s, le ballon part pendant que le mordu est encore assis).
+    name: 'feintePasse', duration: 0.4, contact: 0.26, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.18, pose: {
+        RightUpLeg: [-18, -20, 0], RightLeg: [-56, 0, 0], RightFoot: [8, 15, 0],
+        Hips: [0, -8, 0],
+        Spine: [-2, -4, 0], Spine1: [2, -6, 0], Spine2: [-2, -4, 0],
+        Neck: [3, 0, 0], Head: [14, 0, 0],
+        LeftArm: [50, 0, 30], LeftForeArm: [25, 0, 35], RightArm: [45, 0, 30], RightForeArm: [0, 0, -25],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-22, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0, -0.03, 0] },
+      { t: 0.26, pose: {
+        RightUpLeg: [6, -24, 0], RightLeg: [-38, 0, 0], RightFoot: [0, 18, 0],
+        Hips: [0, -2, 0],
+        Spine: [-1, -1, 0], Spine1: [0, 0, 0], Spine2: [0, 0, 0],
+        Neck: [3, 0, 0], Head: [15, 0, 0],
+        LeftArm: [40, 0, 25], LeftForeArm: [20, 0, 35], RightArm: [48, 0, 15], RightForeArm: [-2, 0, -25],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-18, 0, 0], LeftFoot: [-5, 0, 0],
+      } },
+      { t: 0.32, pose: {
+        RightUpLeg: [16, -14, 0], RightLeg: [-32, 0, 0], RightFoot: [4, 10, 0],
+        Hips: [0, 2, 0],
+        Spine1: [2, 2, 0], Head: [12, 0, 0],
+        LeftArm: [48, 0, 20], LeftForeArm: [15, 0, 30], RightArm: [50, 0, 10], RightForeArm: [0, 0, -22],
+        LeftLeg: [-16, 0, 0],
+      } },
+      { t: 0.4, pose: {} },
+    ],
+  },
+  arretSemelle: {
+    // Le ballon sous la semelle : la plante se POSE dessus (contact 0,24) et Y RESTE — deux clés
+    // quasi identiques font la tenue. Pendant qu'elle dure, la TÊTE SE LÈVE (14° → −2°, regard au
+    // jeu) : c'est exactement pour ça qu'un vrai joueur pose la semelle — le ballon est garé, les
+    // yeux sont libres. Le seul clip du répertoire dont le sens est l'immobilité.
+    name: 'arretSemelle', duration: 0.85, contact: 0.24, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.24, pose: {
+        RightUpLeg: [42, 0, 0], RightLeg: [-34, 0, 0], RightFoot: [22, 0, 0],
+        Hips: [0, -4, 0],
+        Spine1: [6, 0, 0], Spine2: [2, 0, 0], Neck: [3, 0, 0], Head: [14, 0, 0],
+        LeftArm: [55, 0, 12], LeftForeArm: [10, 0, 18], RightArm: [55, 0, 8], RightForeArm: [5, 0, -12],
+        LeftUpLeg: [4, 0, 0], LeftLeg: [-14, 0, 0], LeftFoot: [-4, 0, 0],
+      }, hips: [0, -0.05, 0] },
+      { t: 0.62, pose: {
+        RightUpLeg: [40, 0, 0], RightLeg: [-32, 0, 0], RightFoot: [20, 0, 0],
+        Hips: [0, -4, 0],
+        Spine1: [4, 0, 0], Spine2: [1, 0, 0], Neck: [-2, 0, 0], Head: [-2, 8, 0],
+        LeftArm: [55, 0, 12], LeftForeArm: [10, 0, 18], RightArm: [55, 0, 8], RightForeArm: [5, 0, -12],
+        LeftUpLeg: [4, 0, 0], LeftLeg: [-15, 0, 0], LeftFoot: [-4, 0, 0],
+      }, hips: [0, -0.05, 0] },
+      { t: 0.85, pose: {} },
+    ],
+  },
+
   // LA PASSE INTÉRIEURE RAPIDE — même surface, armé court. Le geste qui manquait : sous pression,
   // le départage prenait la seule option prompte de la bibliothèque, l'EXTÉRIEUR du pied (0,24 s
   // d'armé) — mesuré : 79,5 % des passes du rondo jouées de l'extérieur, l'inverse du football.

@@ -112,6 +112,31 @@ export const TECHNIQUES = [
     clip: 'amortiCuisse', why: 'Entre le pied et la poitrine il y a la cuisse — sans elle, une hauteur entière du jeu manque.',
   },
 
+  // ---- CARRYING THE BALL (les gestes techniques — ce qui fait le foot au pied)
+  // Un geste 'carry' ne LIBÈRE pas le ballon : il le manipule. Son « contact » de geste est
+  // l'instant où la manœuvre s'exécute (la semelle agrippe, la feinte se vend, le pied se pose) —
+  // le ballon reste au porteur du début à la fin. Ces lignes existent pour que le vocabulaire
+  // vive DANS LA TABLE (préconditions géométriques, pied, surface, clip) : checkAction peut
+  // rejuger chaque râteau exécuté, comme chaque passe.
+  {
+    id: 'rateau', intent: 'carry', foot: 'near', surface: 'sole',
+    side: [0, 70], dist: [0.15, 0.8], turn: 180, power: 0.3, accuracy: 0.85,
+    clip: 'rateau', why: 'Le râteau : la semelle tire le ballon en ARRIÈRE et le corps se retourne par-dessus — '
+      + 'LA sortie quand un presseur ferme la face avant. Le seul geste dont le tour complet est le but (turn 180).',
+  },
+  {
+    id: 'feinte-passe', intent: 'carry', foot: 'near', surface: 'inside',
+    side: [0, 75], dist: [0.15, 1.1], turn: 40, power: 0, accuracy: 0.9,
+    clip: 'feintePasse', why: 'La feinte de passe : TOUT l\'armé d\'une passe, zéro ballon parti. Elle ne joue pas '
+      + 'le ballon, elle joue le DÉFENSEUR — celui qui mord s\'assoit sur la ligne morte pendant que la vraie passe part.',
+  },
+  {
+    id: 'arret-semelle', intent: 'carry', foot: 'near', surface: 'sole',
+    side: [0, 55], dist: [0.15, 0.7], turn: 20, power: 0, accuracy: 1.0,
+    clip: 'arretSemelle', why: 'Le ballon sous la semelle : le porteur au calme POSE le pied dessus et lève la tête. '
+      + 'Ce n\'est pas un contrôle (le ballon est déjà à lui) — c\'est la ponctuation du jeu posé, celle qu\'on reconnaît de loin.',
+  },
+
   // ---- WINNING THE BALL BACK
   {
     id: 'tacle-debout', intent: 'win', foot: 'near', surface: 'inside',

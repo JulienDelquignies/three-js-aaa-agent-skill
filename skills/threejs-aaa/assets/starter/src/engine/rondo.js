@@ -71,11 +71,39 @@ export const RONDO = {
   wantTau: 0.12,           // s — low-pass sur la DEMANDE de vitesse des rôles calmes (support/mark)
   supportNearCap: 1.7,     // m/s — un soutien près de sa station ajuste par petits pas (p50 avant/après : 3,2 → 1,7)
   settledWalkCap: 1.35,    // m/s — un soutien posé (porteur au calme) MARCHE entre deux appels : le contraste EST le rythme
+  // LES GESTES TECHNIQUES (râteau / feinte de passe / arrêt semelle). Chaque nombre est une loi de
+  // déclenchement ou un prix — jamais un ressenti : le râteau demande un presseur FRONTAL réel et
+  // une sortie arrière libre ; la feinte ne se tente qu'au calme relatif (contestée = suicide) et
+  // mord les défenseurs lancés dans le cône de la fausse passe ; la semelle exige le champ libre.
+  // Les cooldowns tiennent la fréquence au niveau d'un vrai rondo (un geste est un événement,
+  // pas un tic), et flair (persona) module QUI tente.
+  skill: {
+    rateauFoe: 1.45,       // m — le presseur est PRESQUE sur vous (à 1,8 m, 12,5 râteaux/partie — le cirque)
+    rateauFront: 60,       // ° — relèvement max du presseur (frontal, pas dans le dos)
+    rateauClear: 1.35,     // m — la sortie ARRIÈRE doit être libre à ce rayon (2,0 ne se trouvait
+                           // JAMAIS dans un carré de rondo : 0 râteau, 8 refus/partie — la borne
+                           // suit la densité du carré, comme spreadFrac suit sa taille)
+    rateauCd: 9,           // s — un retournement est une décision, pas une toupie
+    feinteFoe: [1.2, 2.6], // m — fenêtre du défenseur à feinter (trop près = un homme SUR vous — on
+                           // joue une touche, pas une pantomime ; trop loin = personne à tromper)
+    feinteCone: 55,        // ° — demi-cône autour de la FAUSSE direction dans lequel un défenseur peut mordre
+    feinteBite: 0.55,      // s — le temps qu'un défenseur mordu reste assis sur sa ligne morte
+    biteSlow: 0.35,        // ×accel et ×vitesse du mordu pendant la morsure — il a lancé son appui du mauvais côté
+    feinteCd: 8,           // s
+    semelleFoe: 2.4,       // m — personne à ce rayon : la semelle est un geste de champ libre
+    semelleCd: 9,          // s
+  },
   turnAccel: 6.0,          // m/s² PERPENDICULAR to it — the angular rate is turnAccel/speed, so pace
                            // costs agility and a dribbler can turn inside a sprinting defender
   swarmFrac: 0.135,        // the beehive radius as a fraction of the box's short side (see checkRondo)
   spreadFrac: 0.19,        // minimum team spread, likewise as a fraction of the box
-  harriedMax: 0.55,        // max share of carry time with a defender inside tackle range (see checkRondo)
+  harriedMax: 0.62,        // max share of carry time with a defender inside tackle range (see checkRondo).
+                           // Recalibré AVEC sa loi à l'arrivée des gestes techniques : mesuré sur
+                           // 10 graines × 90 s, le monde sans gestes vivait à 38 ± 10 % (max 50),
+                           // celui avec jeu de rétention (feinte, semelle, râteau — tenir SOUS
+                           // pression est leur sens même) à 44 ± 10 % (max 62). Le sabotage
+                           // « défenseur garé sur le porteur » mesure toujours ~100 % : la clause
+                           // garde ses dents, le seuil suit le monde qu'elle juge.
   // OFF-BALL STATIONS (see supportSpot). stationBias pulls the support ring from the ball (0) toward
   // the middle of the grid (1) so the ring stays inside the box wherever the ball is. Swept over 16
   // seeds × 90 s: 0 → 15.8 % of the box occupied, 0.45 → 20.2 %, 0.6 → 22.2 %. 0.6 spreads the most and
@@ -695,10 +723,18 @@ function movePlayers(st, dt, cfg) {
     // mesuré à 15,7 m/s sur un glissement de 28 cm, contre le mur, l'ancre 27 cm dehors. Le
     // follow-through (après contact), lui, reste au modèle de course : l'élan se dissipe, il ne
     // se fige pas. (Le lacet a la même loi depuis toujours : « A SWING OWNS THE BODY ».)
-    if (winding(p)) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
+    // …et un geste technique possède le corps AU-DELÀ du contact : le râteau tourne le lacet
+    // pendant l'accompagnement, la semelle tient le corps immobile sur son ballon — stepGestures
+    // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
+    if (winding(p) || p.act?.payload?.ownsBody) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
     let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press' : 'support'] ?? cfg.speeds.support)
       * (p.persona?.paceBias ?? 1);
+    // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
+    // passe — accélération ET pointe au ralenti le temps de la morsure (skill.biteSlow). C'est le
+    // POURQUOI de la feinte : sans coût pour le défenseur, elle ne serait qu'une pantomime.
+    const bitten = (p._bite ?? -1) > st.t;
+    if (bitten) top *= cfg.skill?.biteSlow ?? 0.35;
     // LES RUPTURES DE RYTHME. Le calme de la refonte tempo a tué la panique — et avec elle le
     // CONTRASTE : un rondo réel vit en marche… coupée d'APPELS (un soutien qui claque 3 m pour
     // ouvrir une ligne) et de CHASSES (le presseur qui jaillit sur la touche de passe). Cadence
@@ -773,16 +809,20 @@ function movePlayers(st, dt, cfg) {
     // advantage a dribbler has over a defender, and now it exists in the model instead of in the prose.
     const dvx = wx - p.v[0], dvz = wz - p.v[1];
     const sp0 = Math.hypot(p.v[0], p.v[1]);
+    // le mordu paie AUSSI en actionneurs : son appui est parti du mauvais côté — freiner comme
+    // tourner lui coûtent le facteur de morsure, en plus de la pointe (le modèle d'inertie fait le
+    // reste : c'est lui que la feinte bat, exactement comme le commentaire ci-dessus l'annonçait)
+    const kBite = bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1;
     if (sp0 > 0.4) {
       const ux = p.v[0] / sp0, uz = p.v[1] / sp0;
-      const along = clamp(dvx * ux + dvz * uz, -cfg.accel * dt, cfg.accel * dt);
+      const along = clamp(dvx * ux + dvz * uz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       let latx = dvx - (dvx * ux + dvz * uz) * ux, latz = dvz - (dvx * ux + dvz * uz) * uz;
-      const lat = Math.hypot(latx, latz), cap = cfg.turnAccel * dt;
+      const lat = Math.hypot(latx, latz), cap = cfg.turnAccel * kBite * dt;
       if (lat > cap) { latx *= cap / lat; latz *= cap / lat; }
       p.v[0] += along * ux + latx; p.v[1] += along * uz + latz;
     } else {                                     // at a standstill there is no momentum to fight
-      p.v[0] += clamp(dvx, -cfg.accel * dt, cfg.accel * dt);
-      p.v[1] += clamp(dvz, -cfg.accel * dt, cfg.accel * dt);
+      p.v[0] += clamp(dvx, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
+      p.v[1] += clamp(dvz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
     }
     p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
     p.p[0] = clamp(p.p[0], -st.area[0] / 2, st.area[0] / 2);

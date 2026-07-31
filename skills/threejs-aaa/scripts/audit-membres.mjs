@@ -77,7 +77,9 @@ const episodes = await page.evaluate(async () => {
       // DÉFENSEUR, sans pied ni technique) collait des images du porteur à un geste du tacleur —
       // un épisode chimère où « l'appui posé » jugeait le pied lancé d'un tacle (loi 8 : encore
       // l'instrument). Le tacle aura SES clauses, pas celles d'une passe.
-      const w = S.state.events.slice(nEv).find((x) => x.type === 'windup' && x.by === carrier && x.foot);
+      // …ni les GESTES TECHNIQUES (x.skill : râteau/feinte/semelle — un pied déclaré mais pas de
+      // frappe : « l'appui posé au contact » et l'amplitude du genou sont des clauses de frappe)
+      const w = S.state.events.slice(nEv).find((x) => x.type === 'windup' && x.by === carrier && x.foot && !x.skill);
       if (w && i > 300) {
         current = { by: w.by, move: w.move, foot: w.foot, tech: w.tech, antic: w.anticipation, frames: [...ring], post: 0 };
       }
