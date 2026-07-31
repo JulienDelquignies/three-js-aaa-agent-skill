@@ -2,6 +2,7 @@ import { BALL } from './ball.js';
 import { BallBody } from './ball-body.js';
 import { predictPath, solvePass, laneClearance, interceptPoint, PASS_STYLE } from './ball-predict.js';
 import { winding } from './gesture.js';
+import { makePersona } from './persona.js';
 
 // rondo — the brain of a "passe à dix": 5 v 5, the team in possession strings passes, the team out
 // of possession hunts the ball. Dependency-free (ball.js + ball-predict.js only) and fully
@@ -59,6 +60,9 @@ export const RONDO = {
   //                          (jusqu'à 1,8 s) + l'armé (0,5 s), 2,4 forçait des balles « moins mauvaises »
   //                          au veto levé — la moitié des interceptions ; un vrai rondo tient 2-5 s
   speeds: { press: 6.6, support: 5.4, carry: 4.2, chase: 6.9 },
+  sprintMax: 8.0,          // m/s — plafond ABSOLU après paceBias × rupture : une chasse en rupture
+                           // composait 6,9 × 1,28 × 1,06 = 9,4 m/s (au-delà du sprint humain en
+                           // carré court) — le produit des accents se borne, comme tout actionneur
   // 9,5 m/s² dépassait le max humain (6-8) de 20-60 % et la locomotion vivait en bang-bang : 59 %
   // des images joueur EXACTEMENT à la saturation du cap (sonde allures-inclinaison, p50 = p90 =
   // 11,24 m/s² = √(9,5²+6²)). 7,5 rentre dans la plage humaine ; le low-pass sur la demande
@@ -66,6 +70,7 @@ export const RONDO = {
   accel: 7.5,              // m/s² along the direction of travel (was 9.5 — above human max)
   wantTau: 0.12,           // s — low-pass sur la DEMANDE de vitesse des rôles calmes (support/mark)
   supportNearCap: 1.7,     // m/s — un soutien près de sa station ajuste par petits pas (p50 avant/après : 3,2 → 1,7)
+  settledWalkCap: 1.35,    // m/s — un soutien posé (porteur au calme) MARCHE entre deux appels : le contraste EST le rythme
   turnAccel: 6.0,          // m/s² PERPENDICULAR to it — the angular rate is turnAccel/speed, so pace
                            // costs agility and a dribbler can turn inside a sprinting defender
   swarmFrac: 0.135,        // the beehive radius as a fraction of the box's short side (see checkRondo)
@@ -183,6 +188,7 @@ export function makeRondo({ perTeam = 5, seed = 1, area = RONDO.area } = {}) {
         team: t, id: players.length,
         p: [Math.cos(a) * r + (rnd() - 0.5), 0, Math.sin(a) * r * 0.8 + (rnd() - 0.5)],
         v: [0, 0], speed: 0, yaw: a + Math.PI, job: 'support', target: null, foot: 'right',
+        persona: makePersona(t * perTeam + i, seed),   // l'identité de mouvement — une source, sim ET visuel
         down: 0,          // seconds still on the ground after a slide tackle
         push: null,       // the direction the carrier wants his ball to go
         act: null,        // the gesture in progress (gesture.js) — it owns him while it runs
@@ -690,8 +696,45 @@ function movePlayers(st, dt, cfg) {
     // follow-through (après contact), lui, reste au modèle de course : l'élan se dissipe, il ne
     // se fige pas. (Le lacet a la même loi depuis toujours : « A SWING OWNS THE BODY ».)
     if (winding(p)) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
-    let top = cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
-      : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press' : 'support'] ?? cfg.speeds.support;
+    let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
+      : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press' : 'support'] ?? cfg.speeds.support)
+      * (p.persona?.paceBias ?? 1);
+    // LES RUPTURES DE RYTHME. Le calme de la refonte tempo a tué la panique — et avec elle le
+    // CONTRASTE : un rondo réel vit en marche… coupée d'APPELS (un soutien qui claque 3 m pour
+    // ouvrir une ligne) et de CHASSES (le presseur qui jaillit sur la touche de passe). Cadence
+    // tirée du rnd SEEDÉ, fréquence par persona.burstiness — chaque rupture est un ÉVÉNEMENT
+    // nommé, donc mesurable (clauses de bandes d'allure dans verify-rondo).
+    if (!p._pace) p._pace = { until: -1, next: 2 + (st.rnd ? st.rnd() : 0.5) * 5 };
+    const settled = st.phase === 'carry' && st.hold > 0.6;
+    if (st.t >= p._pace.next && p._pace.until < st.t) {
+      const bz = p.persona?.burstiness ?? 1;
+      if (p.job === 'support' && settled) {
+        p._pace.until = st.t + 0.7 + (st.rnd ? st.rnd() : 0.5) * 0.4;
+        p._pace.kind = 'appel';
+        st.events.push({ type: 'burst', kind: 'appel', by: p.id, t: +st.t.toFixed(2) });
+      }
+      p._pace.next = st.t + (6 + (st.rnd ? st.rnd() : 0.5) * 6) / Math.max(0.4, bz);
+    }
+    // …la chasse est l'affaire du PLUS PROCHE : première version, chaque presseur ET chaque
+    // intercepteur jaillissait sur chaque passe — 155 chasses en 120 s, 94 ruptures/min, la frénésie
+    // que la refonte tempo venait d'éteindre. Un seul défenseur claque sur la touche de passe.
+    if ((p.job === 'press' || p.job === 'intercept') && st.pass && st.t - st.pass.t < 0.5
+      && p._pace.until < st.t && !st.pass._chased) {
+      const dMe = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
+      const nearest = st.players.every((q) => q === p || q.team === p.team || q.down > 0
+        || (q.job !== 'press' && q.job !== 'intercept')
+        || Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) >= dMe - 1e-9);
+      if (nearest) {
+        st.pass._chased = true;
+        p._pace.until = st.t + 0.9;
+        p._pace.kind = 'chasse';
+        st.events.push({ type: 'burst', kind: 'chasse', by: p.id, t: +st.t.toFixed(2) });
+      }
+    }
+    const bursting = p._pace.until > st.t;
+    if (bursting) top = Math.min(top * 1.28, cfg.sprintMax ?? 8.0);
+    // …et entre les ruptures, un soutien posé MARCHE — le contraste EST le rythme
+    else if (p.job === 'support' && settled) top = Math.min(top, cfg.settledWalkCap ?? 1.35);
     // UN SOUTIEN PRÈS DE SA STATION AJUSTE PAR PETITS PAS. Mesuré (sonde tempo-espaces) : les
     // non-porteurs vivaient à p50 3,0-3,5 m/s, sprint > 4,5 m/s un quart du temps, dans un carré de
     // 16 × 14 m — la panique, pas du soutien. À moins de 3 m de sa station, la vitesse d'un soutien
@@ -714,7 +757,7 @@ function movePlayers(st, dt, cfg) {
     // consigné : exempter AUSSI le marqueur pour vider la zone du ballon n'a presque rien rendu sur
     // l'essaim — both<2,5 m 58 → 49-61 % — et a durci la défense au point de faire tomber la
     // balance : record moyen 8,4 → 6,8, frappes 43,9 → 40,3. Le marqueur reste lissé.)
-    if (p.job === 'support' || p.job === 'mark') {
+    if ((p.job === 'support' || p.job === 'mark') && !bursting) {
       const aW = 1 - Math.exp(-dt / Math.max(1e-3, cfg.wantTau ?? 0.12));
       p._wx = (p._wx ?? wx) + (wx - (p._wx ?? wx)) * aW;
       p._wz = (p._wz ?? wz) + (wz - (p._wz ?? wz)) * aW;

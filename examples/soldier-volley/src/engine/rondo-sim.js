@@ -815,7 +815,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // d'adopter une intention ; pressé, l'urgence garde ses droits (holdMin, improvisation).
     if (st._calmKey !== `${st.possession.carrier}:${st.turnovers}:${st.passes}`) {
       st._calmKey = `${st.possession.carrier}:${st.turnovers}:${st.passes}`;
-      st._calmHold = cfg.holdCalm[0] + (st.rnd ? st.rnd() : 0.5) * (cfg.holdCalm[1] - cfg.holdCalm[0]);
+      // × persona.calm : le posé et le vif ne tiennent pas le ballon pareil — l'identité au tempo
+      st._calmHold = (cfg.holdCalm[0] + (st.rnd ? st.rnd() : 0.5) * (cfg.holdCalm[1] - cfg.holdCalm[0])) * (c.persona?.calm ?? 1);
     }
     const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
     const calm = foeBody > cfg.calmFoe;

@@ -15,7 +15,7 @@ import { makeGaitClock, phaseOffset, gaitLayer } from './gait.js';
 const FWD = new THREE.Vector3(0, 0, -1);
 
 export class CharacterController {
-  constructor(model, { mixer, runClip, idleClip, walkClip = null, legs = null, stride = 2.6, walkStride = 1.5, walkSpeed = 1.9, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, forwardLocal = FWD } = {}) {
+  constructor(model, { mixer, runClip, idleClip, walkClip = null, legs = null, stride = 2.6, walkStride = 1.5, walkSpeed = 1.9, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, forwardLocal = FWD, persona = null } = {}) {
     this.model = model; this.mixer = mixer; this.runDur = runClip.duration;
     this.stride = stride; this.runSpeed = runSpeed; this.sprintMult = sprintMult; this.jumpSpeed = jumpSpeed; this.gravity = gravity;
     this.accel = accel; this.turnRate = turnRate;
@@ -60,6 +60,11 @@ export class CharacterController {
     // l'offset de chaque ancre est MESURÉ sur le rig au chargement (minimum de hauteur du pied gauche).
     // Sans ça, deux clips en phase parfaite peuvent lire « gauche » l'un où l'autre lit « droite ».
     if (this.gait && legs) this._alignGaitOffsets();
+    // L'IDENTITÉ DE MOUVEMENT (persona.js) : dix joueurs qui posent le pied gauche à la même
+    // milliseconde sont un ballet militaire, pas une équipe — le cycle part DÉPHASÉ par joueur ;
+    // le balancier et la posture prennent leur accent plus bas, dans la couche de gait.
+    this.persona = persona;
+    if (this.gait && persona?.gaitPhase != null) this.gait.phi = persona.gaitPhase % 1;
     // le corps accordé : bassin/colonne/bras/tête dérivés de (φ, v), appliqués APRÈS le mixer
     this._gaitBones = null;
     if (this.gait) {
@@ -229,9 +234,19 @@ export class CharacterController {
       if (this.gestureHold && /Arm|ForeArm|Neck|Head/.test(name)) continue;
       const bone = this._gaitBones.get(name);
       if (!bone) continue;
-      this._gaitE.set(e[0] * D, e[1] * D, e[2] * D, 'XYZ');
+      // l'accent de la persona : amplitude de balancier propre (bras seulement)
+      const kA = this.persona && /Arm|ForeArm/.test(name) ? this.persona.armSwingF : 1;
+      this._gaitE.set(e[0] * D * kA, e[1] * D * kA, e[2] * D * kA, 'XYZ');
       this._gaitQ.setFromEuler(this._gaitE);
       bone.quaternion.multiply(this._gaitQ);
+    }
+    // …et la SIGNATURE DE SILHOUETTE : une inclinaison propre du buste (1-3°) et une asymétrie
+    // d'épaules constantes — c'est ce qui fait reconnaître un joueur de loin sans lire son numéro
+    if (this.persona?.posture) {
+      const sp = this._gaitBones.get('Spine1');
+      if (sp) { this._gaitE.set(this.persona.posture.lean * D, 0, this.persona.posture.shoulder * D * 0.4, 'XYZ'); this._gaitQ.setFromEuler(this._gaitE); sp.quaternion.multiply(this._gaitQ); }
+      const sh = this._gaitBones.get('Spine2');
+      if (sh) { this._gaitE.set(0, 0, this.persona.posture.shoulder * D * 0.6, 'XYZ'); this._gaitQ.setFromEuler(this._gaitE); sh.quaternion.multiply(this._gaitQ); }
     }
     const hips = this._gaitBones.get('Hips');
     if (hips && g.hipsY) hips.position.y += g.hipsY / Math.max(1e-6, this.model.scale.y);

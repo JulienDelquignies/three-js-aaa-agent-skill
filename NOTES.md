@@ -1210,6 +1210,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    l'anti-chimère rend l'amplitude partielle LÉGALE sur un une-touche pressé). Le lot entier
    (18 + 19) mesuré ensemble : audit 16/0, 36 bancs verts, preuves-image dans le scratchpad.
 
+20. **La persona et les ruptures de rythme — dix joueurs, dix silhouettes, un jeu qui respire.**
+   Retour utilisateur : « il manque des changements de rythme et il faudrait instaurer différents
+   mouvements par joueur pour qu'ils ne se ressemblent pas tous ». (1) **persona.js** (neuf) :
+   l'identité de mouvement en fonction PURE de (id, graine) — taille ±4 %, déphasage du cycle de
+   jambes (dix joueurs posaient le pied gauche à la même milliseconde), amplitude du balancier
+   0,85-1,2, posture propre du buste (1-3°), paceBias ±6 %, burstiness 0,7-1,4, calm 0,85-1,25.
+   UNE source, DEUX consommateurs : la sim (paceBias/burstiness/calm) et le visuel (taille,
+   gaitPhase, balancier, posture) lisent la même persona. (2) **Les ruptures** (rondo.js) : des
+   APPELS (soutien posé qui claque 0,7-1,1 s, cadence par burstiness, 12/min mesuré) et des
+   CHASSES sur touche de passe (0,98 par passe tentée — première version : 155 en 120 s, TROIS
+   défenseurs par passe, la frénésie que la refonte tempo venait d'éteindre → seul le PLUS PROCHE
+   jaillit) ; entre les ruptures un soutien posé MARCHE (settledWalkCap 1,35 — le contraste EST le
+   rythme : 36 % de marche, 18 % de pointes) ; le produit des accents se borne (sprintMax 8,0 —
+   une chasse en rupture composait 6,9 × 1,28 × 1,06 = 9,4 m/s). (3) verify-persona (19 clauses) :
+   le paceBias prouvé comme une LOI (un coureur, deux personas, rapport des vitesses de régime
+   1,128 = théorie ±2 % — l'A/B de parties complètes re-mourait ici : bruit 0,49 m/s > accent
+   0,36) + sabotages (rng non seedé, tirage effondré, borne crevée). (4) Deux morts d'instrument
+   en route (loi 8, encore) : l'audit capturait le windup du TACLEUR avec les images du PORTEUR
+   (épisode chimère où « l'appui posé » jugeait le pied lancé d'un tacle → filtre porteur+pied) ;
+   et la clause « un pied tenu ne bouge pas » lisait 25-40 mm à w=1 sur L'IMAGE MÊME de l'écrêtage
+   de sphère → le verrou RELÂCHE À 92 % de la portée (le talon pèle avant l'extension complète),
+   plus une seule image traînée. Le seuil « appui posé » suit désormais le gabarit (×persona.scale),
+   comme spreadFrac suit le carré. Balance : record 8,63 (verrou ≥ 6,5), 41,9 passes/partie.
+   Audit 16/0, 43 bancs verts, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

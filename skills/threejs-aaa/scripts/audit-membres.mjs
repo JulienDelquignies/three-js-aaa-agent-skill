@@ -56,6 +56,7 @@ const episodes = await page.evaluate(async () => {
       lockW: flk ? [+flk[0].w.toFixed(2), +flk[1].w.toFixed(2)] : [0, 0],
       bv: [+S.state.ball.v[0].toFixed(3), +S.state.ball.v[2].toFixed(3)],
       simP: [+sim.p[0].toFixed(3), +sim.p[2].toFixed(3)], yaw: +sim.yaw.toFixed(3), speed: +sim.speed.toFixed(2),
+      scale: +(sim.persona?.scale ?? 1).toFixed(3),
       act: sim.act ? { id: sim.act.id, t: +sim.act.t.toFixed(3), fired: !!sim.act.fired, antic: sim.act.anticipation } : null,
       hold: +S.state.hold.toFixed(2) };
   };
@@ -72,7 +73,11 @@ const episodes = await page.evaluate(async () => {
       if (carrier !== ringBy) { ring = []; ringBy = carrier; }
       ring.push(snap(carrier));
       if (ring.length > 40) ring.shift();
-      const w = S.state.events.slice(nEv).find((x) => x.type === 'windup');
+      // UNIQUEMENT les frappes DU PORTEUR, avec un pied déclaré : le tacleDebout (windup du
+      // DÉFENSEUR, sans pied ni technique) collait des images du porteur à un geste du tacleur —
+      // un épisode chimère où « l'appui posé » jugeait le pied lancé d'un tacle (loi 8 : encore
+      // l'instrument). Le tacle aura SES clauses, pas celles d'une passe.
+      const w = S.state.events.slice(nEv).find((x) => x.type === 'windup' && x.by === carrier && x.foot);
       if (w && i > 300) {
         current = { by: w.by, move: w.move, foot: w.foot, tech: w.tech, antic: w.anticipation, frames: [...ring], post: 0 };
       }
@@ -129,7 +134,9 @@ for (const [ei, ep] of episodes.entries()) {
     for (let i = 1; i < F.length; i++) {
       for (const [li, bn] of [[0, 'LeftFoot'], [1, 'RightFoot']]) {
         if ((F[i].lockW?.[li] ?? 0) > 0.9 && (F[i - 1].lockW?.[li] ?? 0) > 0.9) {
-          slips.push(H(F[i].bones[bn], F[i - 1].bones[bn]));
+          const s = H(F[i].bones[bn], F[i - 1].bones[bn]);
+          slips.push(s);
+          if (s > 0.02) console.log(`  INFO slip: i=${i} ${bn} ${(s*1000).toFixed(0)}mm w=${F[i].lockW[li]} phase=${phase(i)} v=${F[i].speed} act=${F[i].act ? F[i].act.id + '@' + F[i].act.t : '-'}`);
         }
       }
     }
@@ -141,7 +148,12 @@ for (const [ei, ep] of episodes.entries()) {
   }
   if (iFire > 0) {
     const c = F[iFire-1];
-    ok(`  l'appui est POSÉ au contact (hauteur ${c.bones[support][1].toFixed(2)} m ≤ 0,15)`, c.bones[support][1] <= 0.15);
+    // en ÉCHELLE DU CORPS : la persona multiplie le modèle (±4 %) — un appui authoré à 0,15 m
+    // pile passe à 0,157 sur le grand gabarit sans qu'aucun pied ne flotte davantage. Le seuil
+    // suit le corps qu'il juge, comme spreadFrac suit le carré.
+    { const sc = c.scale ?? 1;
+      ok(`  l'appui est POSÉ au contact (hauteur ${c.bones[support][1].toFixed(2)} m ≤ ${(0.15 * sc).toFixed(3)}, gabarit ×${sc})`, c.bones[support][1] <= 0.15 * sc);
+      console.log(`  INFO contact: v=${c.speed} m/s lockW=[${c.lockW}] appui=${support} orteil=${c.bones[support.replace('Foot','ToeBase')]?.[1]} yAppui[armé→contact]=${F.slice(Math.max(iStart,iFire-8), iFire).map((f)=>f.bones[support][1].toFixed(2)).join(',')}`); }
     const angles = [];
     for (let i = iStart; i < F.length; i++) angles.push(ang(F[i].bones[ep.foot === 'right' ? 'RightUpLeg' : 'LeftUpLeg'], F[i].bones[ep.foot === 'right' ? 'RightLeg' : 'LeftLeg'], F[i].bones[strike]));
     const amp = Math.max(...angles) - Math.min(...angles);

@@ -116,7 +116,11 @@ export class Rondo {
     for (const p of this.state.players) {
       // one rig per TEAM rather than round-robin: the two sides must be told apart at a glance, and
       // two different bodies do that even before the kit colours do
-      const { model: model3d, groundY, clips, rig } = this.squad.spawn(p.team);
+      const { model: model3d, groundY: groundY0, clips, rig } = this.squad.spawn(p.team);
+      // la TAILLE de la persona (±4 %) — appliquée par-dessus la normalisation du squad, avec le
+      // sol qui suit : c'est la première chose que l'œil lit pour distinguer deux corps
+      model3d.scale.multiplyScalar(p.persona?.scale ?? 1);
+      const groundY = groundY0 * (p.persona?.scale ?? 1);
       model3d.position.set(p.p[0], groundY, p.p[2]);
       model3d.rotation.y = 0;
       this.scene.add(model3d);
@@ -155,7 +159,7 @@ export class Rondo {
         runClip: clips.find((a) => /run/i.test(a.name)),
         idleClip: clips.find((a) => /idle/i.test(a.name)),
         walkClip: clips.find((a) => /walk/i.test(a.name)),
-        legs, stride: 2.6, runSpeed: RONDO.speeds.chase,
+        legs, stride: 2.6, runSpeed: RONDO.speeds.chase, persona: p.persona,
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer
