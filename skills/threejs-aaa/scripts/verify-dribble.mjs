@@ -83,6 +83,30 @@ function run({ speed = 5, turn = 0, T = 6, dt = 1 / 120 } = {}) {
   const b = checkDribble(back);
   ok('sabotage « ballon qui traîne derrière » attrapé', !b.ok && b.issues.some((i) => i.includes('DERRIÈRE')), b.issues[0] || 'RIEN');
 }
+// ---------- 6 bis. LE RATIO DE TOUCHE (la contre-vérification croisée : purecontender, UE5,
+// tune ~1,27× à la main — « the ball has to leave the foot ~1.27× faster than you're running
+// just to stay ahead » ; nous DÉRIVONS la poussée de la friction (pushSpeed = v + √(2·a·lead)).
+// Mesuré en flux match (touches LIBRES, allure de course 3,5-5,2 m/s) : p50 1,26, p25-p75
+// 1,25-1,26 — deux moteurs, deux méthodes, la même constante à ±0,01. Ces clauses verrouillent
+// la DÉRIVATION elle-même (unitaires, pas de flux) : si touchDecel/pushSpeed/touchF régressent,
+// le ratio sort de la bande et le banc crie.
+{
+  const { pushSpeed } = await import('../assets/starter/src/engine/dribble.js');
+  const serre = 0.62;                                    // le régime de croisière du match (carryTight)
+  const ratios = [4.0, 4.5, 5.0].map((v) => pushSpeed(v, touchDistance(v) * serre) / v);
+  ok(`le ratio de touche en course vit autour du 1,27 d'UE (${ratios.map((r) => r.toFixed(2)).join(', ')} ∈ [1,15 ; 1,45])`,
+    ratios.every((r) => r >= 1.15 && r <= 1.45));
+  // …et il N'EST PAS une constante : au trot le décollage coûte relativement plus (la dérivation
+  // lit la friction — un multiplicateur plat ne le ferait pas ; mesuré en flux : 1,35 contre 1,26)
+  const trot = pushSpeed(2.5, touchDistance(2.5) * serre) / 2.5;
+  const course = pushSpeed(4.5, touchDistance(4.5) * serre) / 4.5;
+  ok(`…et n'est PAS un multiplicateur plat (trot ${trot.toFixed(2)} > course ${course.toFixed(2)} + 0,04)`, trot > course + 0.04);
+  // sabotage nommé « poussée plate » : servir un multiplicateur constant à la place de la
+  // dérivation doit sortir de la clause ci-dessus (la signature trot > course disparaît)
+  const plat = (v) => v * 1.27 / v;
+  ok('sabotage « poussée plate » attrapé (un ×1,27 constant perd la signature trot > course)', !(plat(2.5) > plat(4.5) + 0.04));
+}
+
 // ---------- 7. determinism
 {
   const j = () => JSON.stringify(run({ speed: 5, T: 3 }).ball);

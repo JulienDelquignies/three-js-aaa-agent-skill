@@ -1676,6 +1676,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    ticker peuplé). verify-match 67, gestes 41, rondo 40/40 au bit près, sync 7/7, audit-membres
    16/0, audit-gants 4/0 (p50 gant-ballon 0,20 sur cette re-donne).
 
+37. **Deux sondes avant toute loi (le fil UE5 de purecontender, jour 42 — validation croisée
+   demandée par l'utilisateur).** SONDE 1, le ratio de touche (sa loi : « the ball has to leave
+   the foot ~1.27× faster than you're running ») : sur 6 graines × 120 s, touches de conduite
+   LIBRES seulement (owner nul — la première passe de la sonde comptait les escorts du ballon
+   porté et inventait des ratios < 1), à l'allure de course (3,5-5,2 m/s) : n=163, p25 1,25 /
+   p50 1,26 / p75 1,26 / p90 1,31. SON 1,27 À ±0,01 — lui le tune à la main dans UE, nous le
+   DÉRIVONS de la friction (pushSpeed = v + √(2·a·lead), touchDecel lit rollResist + traînée) :
+   deux moteurs, deux méthodes, la même constante. Et la dérivation fait mieux qu'une constante :
+   au trot le ratio mesuré monte à 1,35 (décoller un ballon coûte relativement plus à basse
+   allure) — un ×1,27 plat y laisserait le ballon collé au pied. VERROUILLÉ en 3 clauses
+   UNITAIRES de verify-dribble (17 clauses) : la bande [1,15 ; 1,45] sur la dérivation au régime
+   serré, la signature « trot > course » (ce qu'un multiplicateur plat n'a pas), et le sabotage
+   nommé « poussée plate ». SONDE 2, le plafond anisotrope (« sideways keeps it, forward is how
+   you lose it ») : VERDICT PAS DE LOI. En touches libres, notre monde pousse à 92 % vers
+   l'AVANT (166/181) — la touche latérale vit dans les gestes nommés (crochet, passement,
+   râteau) et l'escort serré, pas dans la poussée libre (n=4 latérales : du bruit, mortalité
+   inversée non significative). La mortalité avant (10,2 %) est déjà l'objet nommé du régime
+   serré (carryTight : la touche pleine est un burst — Lot 3) ; un plafond directionnel
+   ajouterait de la machinerie sans pathologie mesurée à corriger. La leçon de méthode reste :
+   sa borne « avant ≠ latéral » est un bon instinct UE (l'avant change le timing effectif du
+   contact), et si un jour nos pertes de conduite re-deviennent un retour utilisateur, la
+   décomposition directionnelle de cette sonde est l'instrument à ressortir.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
