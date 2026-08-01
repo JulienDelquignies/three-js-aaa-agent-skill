@@ -1594,6 +1594,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    1,54, fixture aveugle). verify-match 61 clauses, rondo 40/40, gestes 41, verrou 8,63, audit
    16/0, ALL-SYNC 7/7.
 
+35. **Le Motion Warping devient une capacité moteur — et les gants du gardien la prouvent
+   (« motion wrapping, on utilise ça ? » puis « oui vas-y mais oubli pas qu'on veut être un
+   moteur comme unreal engine ou unity »).** Le warp de frappe (strike-warp) ÉTAIT du Motion
+   Warping — planaire, un seul consommateur (le pied). Généralisé : planWarp3 (3D, mêmes quatre
+   lois — enveloppe C¹, borné + refus nommé, standoff à la surface, dégénéré nommé) + HAND_WARP,
+   et TROIS consommateurs : le pied de frappe, LE GANT DU PLONGEON (IK deux os épaule-coude-
+   poignet, écrêtage de portée nommé), et LA RACINE (le bassin). Mesure fondatrice : à l'instant
+   de l'arrêt (prise/claquette au registre sim), le gant le plus proche était à p50 **1,67 m** du
+   ballon — l'arrêt était vrai en sim, faux aux gants. La chaîne des morts d'instruments, chacune
+   mesurée : (a) enveloppe temporelle → les prises précoces plafonnaient à env 0,06 → enveloppe
+   d'APPROCHE ; (b) l'arrêt sim se résolvait à l'entrée du rayon → résolution au PLUS-PRÈS
+   (onDive suit la distance, résout quand elle cesse de fermer) ; (c) l'heure de contact authorée
+   (0,55 s) ignorait celle du ballon → TIME-WARP du clip (l'autre moitié du Motion Warping,
+   rate ∈ [0,8 ; 2,2]) ; (d) le clip unique était AÉRIEN (hanches +0,28 à l'extension) →
+   l'espèce plongeonBas (hanches −0,5, bras rasants, choisie par cross.y) ; (e) LE PISTOLET
+   FUMANT, débusqué par la sonde d'état : spec=« amorti » sur 5/7 arrêts — la prise émettait une
+   réception, la scène jouait l'amorti PAR-DESSUS la détente, le gardien se REDRESSAIT à
+   l'instant de l'arrêt (garde : un acte ownsBody garde son clip, seul son propre windup passe —
+   charte loi 1) ; et wLegs 0,24 en pleine détente — byArrive lisait la détente (~6 m/s) comme
+   une course et éteignait les jambes du clip (loi : le plongeon possède ses jambes d'emblée, la
+   vitesse d'un corps balistique EST celle du geste) → p50 0,57 ; (f) l'enveloppe distance-clée
+   était CIRCULAIRE (gant loin → env faible → gant reste loin) → clée sur BALLON-ÉPAULE (la
+   vérité sim de l'arrêt) ; warpMax 1,1 mordait des arrêts légaux → 1,6 (la portée IK est la
+   borne physique, warpMax n'est que le plafond de santé) ; (g) le résidu était l'ANATOMIE :
+   bras à pleine extension, gant à dSB − portée exactement (0,68-0,88 m) — la portée sim de la
+   prise (1,1 m du corps) dépasse un bras seul → LE WARP DE RACINE : hipsNudge (écrivain ADDITIF
+   du bassin, delta monde converti par la matrice courante du parent), le bassin complète la
+   détente vers le ballon, borné 0,45 m, plancher au sol, gelé et fondu comme le plan du gant —
+   exactement le root-motion warping d'Unreal. APRÈS : p50 **0,27 m** (standoff 0,16 + rayon
+   0,11 = le gant TOUCHE), corps couché (hanches 0,2-0,3 m) ; résiduel connu : l'arrêt-réflexe
+   résolu à t = 0,03 (2 images de vol, claquette à 1,18 m — irréductible visuellement).
+   L'INSTRUMENT COMPOSÉ : audit-gants.mjs (frère d'audit-membres, match.html headless, 4
+   clauses — existence, gant ≤ 0,6 p50, corps couché sur les arrêts développés, sabotage nommé
+   window.__sabotage='warp-gant' → p50 re-flotte à 0,91). Clause en-flux du répertoire élargie
+   4 → 8 graines (la feinte de frappe sort ~0,5/graine : un échantillon de 4 est sous le
+   plancher de bruit — la doctrine des bandes, appliquée à sa propre clause). verify-strike-warp
+   23 (dont les lois 3D), gestes 41, match 61, rondo 40/40 au bit près, attributs 13, verrou
+   8,63, audit-membres 16/0, audit-gants 4/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

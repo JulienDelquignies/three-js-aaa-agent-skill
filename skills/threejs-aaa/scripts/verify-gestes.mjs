@@ -326,10 +326,14 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const r2 = maybeCrochet(st2, c2, RONDO);
     ok('le RONDO est inerte pour le répertoire du match (refus sans tirage — au bit près)', r1 === false && r2 === false);
   }
-  // EN FLUX (4 graines × 120 s) : le répertoire vit dans le match
+  // EN FLUX (8 graines × 120 s) : le répertoire vit dans le match. HUIT graines, pas quatre —
+  // la feinte de frappe sort ~0,5 fois par graine (mesuré : 4 sur 8 graines, dont 0 sur les
+  // 4 premières) : un échantillon de 4 est SOUS le plancher de bruit de re-distribution, la
+  // clause virait au rouge à chaque loi nouvelle sans qu'aucun mécanisme ne soit mort (la
+  // fixture, elle, le prouve à chaque run). La bande d'un flux se taille plus large que son bruit.
   {
     const kinds = {};
-    for (const seed of [3, 7, 11, 1]) {
+    for (const seed of [3, 7, 11, 1, 5, 9, 13, 2]) {
       const st = makeMatch({ perTeam: 5, seed });
       const cfg = matchCfg();
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);

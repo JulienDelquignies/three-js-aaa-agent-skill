@@ -361,6 +361,35 @@ export const MOVES = {
       { t: 1.6, pose: {}, hips: [0, 0, 0] },
     ],
   },
+  plongeonBas: {
+    // LE PLONGEON BAS — l'espèce qui manquait : le clip unique était AÉRIEN (hanches +0,28 à
+    // l'extension, un saut), donc sur un ballon AU SOL l'épaule restait à 1,2 m et aucun bras
+    // n'atteignait le ballon (mesuré au composé : gant à ~1,0 m à l'instant de la prise, warp
+    // saturé à sa borne). Ici les hanches DESCENDENT (−0,5 à l'extension, −0,72 au tapis), le
+    // corps se couche, les bras rasent le sol — la sim choisit l'espèce par cross.y.
+    name: 'plongeonBas', duration: 1.4, contact: 0.5, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.2, pose: {
+        LeftUpLeg: [62, 0, 0], RightUpLeg: [62, 0, 0], LeftLeg: [-84, 0, 0], RightLeg: [-84, 0, 0],
+        Spine1: [20, 0, 0], Head: [10, 0, 0],
+        LeftArm: [30, 0, -20], RightArm: [30, 0, -25], LeftForeArm: [15, 0, 10], RightForeArm: [15, 0, 10],
+      }, hips: [0, -0.34, 0] },
+      { t: 0.5, pose: {
+        Hips: [0, 0, -70],
+        LeftArm: [-10, 0, -58], RightArm: [-10, 0, -62], LeftForeArm: [0, 0, 8], RightForeArm: [0, 0, 8],
+        LeftUpLeg: [14, 0, 0], RightUpLeg: [18, 0, 0], LeftLeg: [-14, 0, 0], RightLeg: [-20, 0, 0],
+        Spine1: [-4, 0, 0], Head: [6, 0, 0],
+      }, hips: [0.8, -0.5, 0] },
+      { t: 0.85, pose: {
+        Hips: [0, 0, -82],
+        LeftArm: [-8, 0, -60], RightArm: [-8, 0, -64],
+        LeftUpLeg: [12, 0, 0], RightUpLeg: [16, 0, 0], Spine1: [0, 0, 0],
+      }, hips: [1.15, -0.72, 0] },
+      { t: 1.1, pose: { Hips: [0, 0, -82], LeftArm: [-6, 0, -52], RightArm: [-6, 0, -56] }, hips: [1.15, -0.72, 0] },
+      { t: 1.4, pose: {}, hips: [0, 0, 0] },
+    ],
+  },
   /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */
   // ---- LES GESTES MANQUANTS. La table de technique.js compte 13 gestes ; il y avait 5 clips, donc une
   // passe de l'intérieur et une passe en pivot dessinaient le même mouvement. À une caméra à 19 m ça se

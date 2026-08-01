@@ -17,12 +17,17 @@ Démos vivantes : https://showcase-pi-mocha.vercel.app (rondo = `rondo.html`, ma
   gardien (plongeon, sortie dans les pieds, un-contre-un, prise à deux mains), remises selon la
   règle, personas (identité de mouvement par joueur), latence de
   perception, terrain-donnée (réduit ET Loi 1).
-- **L'habillage** : couche de geste absolue (pose = rest ⊗ spec), warp de frappe calibré en
-  ligne, verrou de pieds IK, regard (saccades/poursuite), inclinaison dans l'accélération,
+- **L'habillage** : couche de geste absolue (pose = rest ⊗ spec), Motion Warping de contact
+  générique — TROIS consommateurs d'une même capacité : le pied de frappe (planaire, calibré en
+  ligne), le gant du plongeon (planWarp3, IK deux os, time-warp du clip vers l'heure du ballon)
+  et la racine (le bassin complète la détente, borné) —, verrou de pieds IK, regard
+  (saccades/poursuite), inclinaison dans l'accélération,
   cadence de jambes asservie à la vitesse sol, stade paramétrique (tribunes, pelouse peinte,
   cages — tout suit `{pitch, goal}`).
-- **La preuve** : 44 bancs node (`skills/threejs-aaa/scripts/verify-*.mjs`), un audit composé
-  en navigateur headless (`audit-membres.mjs`), des sabotages nommés partout.
+- **La preuve** : 44 bancs node (`skills/threejs-aaa/scripts/verify-*.mjs`), deux audits
+  composés en navigateur headless (`audit-membres.mjs` — les membres pendant les gestes,
+  `audit-gants.mjs` — le gant sur le ballon à l'instant de l'arrêt), des sabotages nommés
+  partout.
 
 ## La copie à consommer
 

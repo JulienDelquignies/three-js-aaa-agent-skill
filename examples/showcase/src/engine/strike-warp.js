@@ -80,6 +80,39 @@ export function planWarp(expectedXZ, ballXZ, { standoff = WARP.standoff, warpMax
   return { offset: [ox, oz], mag: Math.min(full, warpMax), full, denied };
 }
 
+/** LES BORNES DU GANT — le DEUXIÈME consommateur du warp de contact (la preuve que c'est une
+ *  capacité moteur, pas un cas spécial de la frappe — Unreal/Unity ont UN Motion Warping pour
+ *  tous les membres). La fenêtre couvre presque toute la détente (winIn 0,75 : un plongeon EST
+ *  une extension), la borne vaut l'envergure du bras (au-delà, la portée IK écrête et nomme). */
+export const HAND_WARP = {
+  winIn: 0.75,     // fraction finale de la détente pendant laquelle le gant monte vers le ballon
+  out: 0.15,       // s — après la résolution, on rend le bras au clip
+  standoff: 0.16,  // m — le gant s'arrête à la SURFACE du ballon (paume, pas poignet traversant)
+  warpMax: 1.6,    // m — au-delà de l'envergure : la portée IK écrête au réel, ceci n'est que le
+                   // plafond de santé (mesuré à 1,1 : la borne mordait sur des arrêts LÉGAUX —
+                   // main authorée à ~2 m d'un ballon à portée sim — et volait 0,5 m de pointage)
+};
+
+/**
+ * LE PLAN EN 3D — la même loi que planWarp, la hauteur en plus : un gant SE LÈVE vers un ballon
+ * qui vole (le pied de frappe reste planaire, sa hauteur appartient au clip — le banc la borne).
+ * Mêmes quatre lois : surface (standoff le long de l'approche), borné + refus nommé, dégénéré
+ * nommé, et l'enveloppe C¹ fait le reste.
+ */
+export function planWarp3(expected, ball, { standoff = HAND_WARP.standoff, warpMax = HAND_WARP.warpMax } = {}) {
+  const dx = expected[0] - ball[0], dy = expected[1] - ball[1], dz = expected[2] - ball[2];
+  const d = Math.hypot(dx, dy, dz);
+  if (d < 1e-6) return { offset: [0, 0, 0], mag: 0, full: 0, denied: 'warp-degenere' };
+  const k = standoff / d;
+  let ox = (ball[0] + dx * k) - expected[0];
+  let oy = (ball[1] + dy * k) - expected[1];
+  let oz = (ball[2] + dz * k) - expected[2];
+  const full = Math.hypot(ox, oy, oz);
+  let denied = null;
+  if (full > warpMax) { denied = 'warp-hors-borne'; const q = warpMax / full; ox *= q; oy *= q; oz *= q; }
+  return { offset: [ox, oy, oz], mag: Math.min(full, warpMax), full, denied };
+}
+
 /**
  * LA PORTÉE : une cible que la jambe ne peut pas atteindre ne se force pas — on n'étire pas un
  * genou (même garde-fou que foot-lock : au-delà de 99,5 % de l'extension, on REND le pied au clip
@@ -120,5 +153,13 @@ export function checkStrikeWarp(cfg = WARP) {
   // 5. dégénéré sans NaN
   const deg = planWarp([0, 0], [0, 0], cfg);
   if (!Number.isFinite(deg.offset[0]) || deg.denied !== 'warp-degenere') issues.push('cas dégénéré non nommé (pied sur le centre du ballon)');
+  // 6. LE PLAN 3D (le gant) obéit aux mêmes lois : surface en 3D, borne nommée, dégénéré nommé
+  const h = planWarp3([0, 1.6, 0.5], [0, 1.0, 0]);
+  const land3 = Math.hypot(0 + h.offset[0] - 0, 1.6 + h.offset[1] - 1.0, 0.5 + h.offset[2] - 0);
+  if (Math.abs(land3 - HAND_WARP.standoff) > 1e-6) issues.push(`le gant ne s'arrête pas à la surface (${land3.toFixed(3)} m vs ${HAND_WARP.standoff})`);
+  const far3 = planWarp3([HAND_WARP.warpMax + 2, 0, 0], [0, 0, 0]);
+  if (far3.mag > HAND_WARP.warpMax + 1e-9 || far3.denied !== 'warp-hors-borne') issues.push('la borne 3D ne mord pas ou ne se nomme pas');
+  const deg3 = planWarp3([1, 1, 1], [1, 1, 1]);
+  if (!Number.isFinite(deg3.offset[1]) || deg3.denied !== 'warp-degenere') issues.push('dégénéré 3D non nommé');
   return { ok: issues.length === 0, issues };
 }

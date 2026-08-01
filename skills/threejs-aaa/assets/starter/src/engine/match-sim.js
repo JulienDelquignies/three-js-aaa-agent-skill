@@ -305,7 +305,11 @@ function assignMatchJobs(st, cfg) {
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team);
     if (dec.mode === 'dive' && gk.down <= 0) {
       const cross = dec.cross;
-      const move = { id: 'plongeon', duration: MOVES.plongeon.duration, contact: MOVES.plongeon.contact };
+      // L'ESPÈCE DU PLONGEON SUIT LA HAUTEUR PRÉDITE (cross.y) : un ballon au ras se plonge BAS
+      // (hanches au sol, bras rasants — plongeonBas), un ballon levé se plonge en DÉTENTE
+      // (l'aérien). Le clip unique aérien laissait l'épaule à 1,2 m sur les rase-mottes.
+      const espece = (cross.y ?? 0) < 0.85 ? 'plongeonBas' : 'plongeon';
+      const move = { id: espece, duration: MOVES[espece].duration, contact: MOVES[espece].contact };
       const lunge = [(pitch.ownGoal(gk.team).x - gk.p[0]) * 0.2, cross.z - gk.p[2]];
       const L = Math.hypot(lunge[0], lunge[1]) || 1;
       startGesture(gk, move, {
@@ -314,7 +318,7 @@ function assignMatchJobs(st, cfg) {
         log: st.gestures,
       });
       gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
-      st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: 'plongeon', foot: cross.z > gk.p[2] ? 'left' : 'right', skill: 'plongeon', anticipation: move.contact });
+      st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: cross.z > gk.p[2] ? 'left' : 'right', skill: 'plongeon', anticipation: move.contact });
       st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2) });
       continue;
     }
@@ -801,7 +805,16 @@ function onDive(st, gk, cfg) {
   // résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
   const d = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
   const y = st.ball.p[1] ?? 0;
-  if (d > 1.7 || y > 2.1) return false;
+  if (d > 1.7 || y > 2.1) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
+  // LE GANT TOUCHE AU PLUS PRÈS : résoudre au PREMIER franchissement du rayon claquait le ballon
+  // à 1,5-1,7 m des mains — l'arrêt vrai en sim, faux aux gants (mesuré au composé : gant à
+  // 1,0-2,1 m du ballon à l'instant de l'arrêt, p50 1,67 — aucune anatomie de bras ne couvre ça).
+  // Tant que le ballon SE RAPPROCHE encore, le contact attend l'approche minimale ; le warp du
+  // gant (strike-warp, plan 3D) fait le reste du chemin visuel.
+  const pd = gk.act?.payload?._pd ?? Infinity;
+  const closing = d < pd - 1e-4;
+  if (gk.act?.payload) gk.act.payload._pd = d;
+  if (closing && d > 0.35) return false;
   gk.down = Math.max(gk.down, cfg.keeperDown);
   if (d <= 1.1 && y <= 1.9) {
     if (st.ball.owner != null) st.ball.release('perte');

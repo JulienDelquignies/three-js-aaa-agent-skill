@@ -17,7 +17,7 @@ import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js';
-import { warpEnvelope, planWarp, warpReach, twoBoneIK, checkStrikeWarp, WARP } from '../engine/strike-warp.js';
+import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
 import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
@@ -174,6 +174,11 @@ export class Rondo {
         { up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i), foot: bone(/LeftFoot/i) },
         { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i), foot: bone(/RightFoot/i) },
       ];
+      // …et les chaînes de BRAS, pour le warp du gant (le plongeon) — mêmes primitives que les jambes
+      const arms = [
+        { up: bone(/LeftArm$/i), elbow: bone(/LeftForeArm$/i), hand: bone(/LeftHand$/i) },
+        { up: bone(/RightArm$/i), elbow: bone(/RightForeArm$/i), hand: bone(/RightHand$/i) },
+      ];
       const ctrl = new CharacterController(model3d, {
         mixer,
         runClip: clips.find((a) => /run/i.test(a.name)),
@@ -215,6 +220,19 @@ export class Rondo {
           hipsBone.position.set(rest.x + d.x * w, rest.y + d.y * w, rest.z + d.z * w);
         };
       })();
+      // …et l'écrivain ADDITIF du bassin — le warp de translation racine (troisième consommateur
+      // du warp de contact : pied, gant, bassin). Delta en MONDE (mètres), converti par la
+      // matrice COURANTE du parent (contrairement à hipsWrite, l'entrée est monde : la capture
+      // statique serait fausse dès que le modèle tourne). S'ajoute PAR-DESSUS l'écriture du
+      // clip, une fois par image — la couche ré-écrit les hanches à chaque apply, pas de cumul.
+      const hipsNudge = (() => {
+        if (!hipsBone) return null;
+        const m = new THREE.Matrix3(); const d = new THREE.Vector3();
+        return (dw) => {
+          m.setFromMatrix4(hipsBone.parent.matrixWorld).invert();
+          d.set(dw[0], dw[1], dw[2]).applyMatrix3(m); hipsBone.position.add(d);
+        };
+      })();
       const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite });
       ctrl.lockExternal = true;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas)
       // LE REGARD (engine/gaze.js) : la couche que le sweep a classée n°1 en manque de réalisme —
@@ -223,10 +241,15 @@ export class Rondo {
       const cloneBones = rigBones(model3d);
       const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head') });
       this.players.push({
-        sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer,
+        sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge,
         gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13),
         legs: { left: legs[0], right: legs[1] },
         legLens: { left: legLen(legs[0]), right: legLen(legs[1]) },
+        arms: { left: arms[0], right: arms[1] },
+        armLens: {
+          left: arms[0].up && arms[0].elbow && arms[0].hand ? legLen({ up: arms[0].up, knee: arms[0].elbow, foot: arms[0].hand }) : null,
+          right: arms[1].up && arms[1].elbow && arms[1].hand ? legLen({ up: arms[1].up, knee: arms[1].elbow, foot: arms[1].hand }) : null,
+        },
       });
     }
 
@@ -308,6 +331,12 @@ export class Rondo {
    *  leaves at the clip's own contact frame (engine/gesture.js). Only reactive gestures, the ones the
    *  game reports after the fact, still start at contact. */
   _playTech(pl, e, from = 0) {
+    // UN ACTE ownsBody POSSÈDE LE CORPS (charte, loi 1) — jusqu'au bout de son accompagnement.
+    // La prise du gardien émet un événement de réception PENDANT le plongeon : la scène jouait
+    // « amorti » par-dessus la détente et le gardien se REDRESSAIT à l'instant de l'arrêt
+    // (mesuré : spec=amorti sur 5/7 arrêts, gant à ~1 m d'un ballon au sol). Un geste réactif
+    // ne reprend pas un corps qu'un acte possède ; seul le windup de l'acte lui-même passe.
+    if (pl.sim.act?.payload?.ownsBody && e.type !== 'windup' && pl.gestureLayer.active) return;
     const move = e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
     // UN GESTE MANQUANT DOIT SE VOIR. Ce repli était silencieux (`set[move] || set.passe`), et c'est
     // exactement pourquoi 57 % des gestes ont pu dessiner le mauvais mouvement pendant toute une
@@ -330,6 +359,95 @@ export class Rondo {
    *  (le warp corrige la jambe du geste dans la proportion où le geste la possède — corriger une
    *  jambe qui marche encore serait la chimère), et GELÉE à l'instant du tir (le ballon part : on
    *  ne chasse pas un ballon en vol, on rend la jambe à l'accompagnement authoré). */
+  /** LE WARP DU GANT — le DEUXIÈME consommateur du warp de contact (la preuve que c'est une
+   *  capacité moteur, pas un cas spécial de la frappe). Pendant la détente du plongeon, la main
+   *  du côté du geste est corrigée EN 3D vers la surface du ballon vivant — mêmes lois que le
+   *  pied de frappe (enveloppe C¹, borné + refus nommé, standoff à la surface, gel à la
+   *  résolution — après la claquette on ne chasse pas un ballon qui repart), même primitive
+   *  (IK deux os épaule-coude-poignet). Mesuré avant : gant à 1,0-2,1 m du ballon À L'INSTANT
+   *  DE L'ARRÊT (p50 1,67 m) — l'arrêt était vrai en sim, faux aux gants. */
+  _applyDiveWarp(pl) {
+    // l'interrupteur de SABOTAGE de l'instrument composé (audit-gants) : la clause doit mordre
+    if (typeof window !== 'undefined' && window.__sabotage === 'warp-gant') { pl._dwarp = null; return; }
+    const a = pl.sim.act;
+    if (!a || a.payload?.skill !== 'plongeon') { pl._dwarp = null; return; }
+    const side = a.payload.pick?.foot === 'left' ? 'left' : 'right';
+    const arm = pl.arms?.[side], lens = pl.armLens?.[side];
+    if (!arm?.up || !arm.elbow || !arm.hand || !lens) return;
+    // L'ENVELOPPE DU GANT EST DISTANCE-CLÉE — deuxième espèce d'enveloppe du warp : un contact
+    // de frappe a une HEURE authorée (clé du clip, enveloppe temporelle C¹) ; un plongeon n'a
+    // pas d'heure, il a une APPROCHE — le gant monte à mesure que le ballon arrive,
+    // avec une rampe d'amorçage (0,12 s) contre le pop de première image. Mesuré avec
+    // l'enveloppe temporelle : les prises précoces (a.t ≈ 0,2 < 40 % de l'armé) plafonnaient à
+    // env ≈ 0,06 — gant à 1,0 m du ballon à l'instant de l'arrêt.
+    let env;
+    const b = this.state.ball.p;
+    if (!a.payload.resolved) {
+      // …clée sur la distance BALLON-ÉPAULE (la vérité sim de l'arrêt : la prise se juge du
+      // corps), PAS gant-ballon — cette version-là était CIRCULAIRE : gant loin → enveloppe
+      // faible → gant reste loin (mesuré : env 0,54-0,64 sur les arrêts résolus, gant à 0,7-0,9 m).
+      arm.up.getWorldPosition(this._wh);
+      const dSB = Math.hypot(this._wh.x - b[0], this._wh.y - b[1], this._wh.z - b[2]);
+      // …plus le terme d'URGENCE : sur un ballon à bout portant (arrivée < 0,45 s), la main est
+      // une SACCADE — le seul membre où la montée en 2-3 images est la vérité biomécanique (les
+      // plongeons-réflexe restaient gant à 1 m : les deux enveloppes n'avaient pas le temps)
+      const bv = this.state.ball.v;
+      const tArr = dSB / Math.max(3, Math.hypot(bv[0], bv[1], bv[2]));
+      const envDist = Math.max(0, Math.min(1, (2.2 - dSB) / 1.2));
+      const envUrg = Math.max(0, Math.min(1, 1 - tArr / 0.45));
+      env = Math.max(envDist, envUrg) * Math.min(1, a.t / 0.06);
+      pl._dwEnv = env; pl._dwT = null;
+      // LE WARP DE RACINE — troisième consommateur du warp de contact : quand l'ÉPAULE est plus
+      // loin que bras + standoff, aucun membre ne peut couvrir (mesuré : bras à pleine extension,
+      // gant à 0,68-0,88 m = dSB − portée, exactement). Le bassin complète la détente vers le
+      // ballon : borné (0,45 m — un allongé, pas un téléport), enveloppé comme le gant, plancher
+      // au sol (le bassin ne creuse pas la pelouse). Unreal warpe la racine ; nous aussi.
+      const Rr = (lens.A + lens.B) * 0.995;
+      const need = Math.min(0.45, Math.max(0, dSB - (Rr + HAND_WARP.standoff)));
+      if (need > 1e-3 && pl.hipsNudge && dSB > 1e-6) {
+        const s = (need * env) / dSB;
+        const n = [(b[0] - this._wh.x) * s, (b[1] - this._wh.y) * s, (b[2] - this._wh.z) * s];
+        const floor = Math.max(0, this._wh.y - 0.3);
+        if (n[1] < -floor) n[1] = -floor;
+        pl._dwNudge = n; pl.hipsNudge(n);
+      } else pl._dwNudge = null;
+    } else {
+      pl._dwT = pl._dwT ?? a.t;
+      const k = Math.max(0, 1 - (a.t - pl._dwT) / HAND_WARP.out);
+      env = (pl._dwEnv ?? 0) * k;
+      // le nudge gèle et redescend avec la même loi que le plan du gant
+      if (pl._dwNudge && pl.hipsNudge && k > 1e-3) pl.hipsNudge([pl._dwNudge[0] * k, pl._dwNudge[1] * k, pl._dwNudge[2] * k]);
+    }
+    if (env <= 1e-3) { if (a.payload.resolved) pl._dwarp = null; return; }
+    arm.hand.getWorldPosition(this._wf);   // APRÈS le nudge : le plan du gant part du squelette déplacé
+    let plan = pl._dwarp;
+    if (!a.payload.resolved) {
+      plan = planWarp3([this._wf.x, this._wf.y, this._wf.z], [b[0], b[1], b[2]], HAND_WARP);
+      pl._dwarp = plan;
+      if (plan.denied) this._warpStats.denied[plan.denied + '-gant'] = (this._warpStats.denied[plan.denied + '-gant'] ?? 0) + 1;
+    }
+    if (!plan) return;
+    this._wt.set(this._wf.x + plan.offset[0] * env, this._wf.y + plan.offset[1] * env, this._wf.z + plan.offset[2] * env);
+    arm.up.getWorldPosition(this._wh); arm.elbow.getWorldPosition(this._wk);
+    const d = this._wh.distanceTo(this._wt);
+    const R = (lens.A + lens.B) * 0.995;
+    if (d > R) {
+      // écrêter, pas refuser — la fraction atteignable vaut mieux que rien (même leçon que la jambe)
+      this._wt.set(
+        this._wh.x + (this._wt.x - this._wh.x) * (R / d),
+        this._wh.y + (this._wt.y - this._wh.y) * (R / d),
+        this._wh.z + (this._wt.z - this._wh.z) * (R / d),
+      );
+      this._warpStats.denied['warp-écrêté-portée-gant'] = (this._warpStats.denied['warp-écrêté-portée-gant'] ?? 0) + 1;
+    }
+    const sol = twoBoneIK(
+      [this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B,
+      [this._wk.x - this._wh.x, this._wk.y - this._wh.y, this._wk.z - this._wh.z],
+    );
+    aimChildAt(arm.up, arm.elbow, this._wm.fromArray(sol.mid));
+    aimChildAt(arm.elbow, arm.hand, this._wm.fromArray(sol.end));
+  }
+
   _applyStrikeWarp(pl) {
     const a = pl.sim.act;
     if (!a || a.payload?.kind !== 'pass' || !a.payload.pick) { pl._warp = null; pl._warpCal = null; return; }
@@ -527,7 +645,12 @@ export class Rondo {
         // reste du clip couché n'a plus de corps à habiller (résidu mesuré : jambe fantôme à
         // −0,28 m pendant le fondu tardif)
         const done = !lying && !act && (t >= meta.dur || (/tacle/i.test(pl.gestureLayer.spec?.name ?? '') && (pl.sim.down ?? 0) <= 0 && v > 1));
-        const target = done ? 0 : Math.max(byArrive, byContact);
+        // LE PLONGEON POSSÈDE SES JAMBES D'EMBLÉE : byArrive/byContact sont des lois de FUSION
+        // pour les gestes en flux (le corps décélère dans son geste) — mais la détente lance le
+        // corps à ~6 m/s, donc byArrive lit « il court » et éteint les jambes du clip (mesuré :
+        // wLegs 0,24 à t=0,18, hanches DEBOUT à l'arrêt, gant à ~1 m d'un ballon au sol). La
+        // vitesse d'un corps en plongeon EST celle du geste, pas de la locomotion.
+        const target = done ? 0 : (act?.payload?.skill === 'plongeon' ? 1 : Math.max(byArrive, byContact));
         pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, step / 0.05);
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
         // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à
@@ -542,7 +665,18 @@ export class Rondo {
         // hoquet mesuré entre locomotion et geste). On échantillonne EN AVANCE au début de l'armé
         // (lead 0,3 × anticipation), convergence linéaire vers l'heure vraie AU CONTACT — le pied
         // frappe exactement sur sa clé, l'entrée ne traverse plus le neutre.
-        const tSample = t < antic ? t + (0.3 * antic) * (1 - t / antic) : t;
+        // …ET LE TEMPS-WARP DU PLONGEON (l'autre moitié du Motion Warping) : le clip a son heure
+        // de contact AUTHORÉE (0,55 s) mais le ballon a la SIENNE (cross.t, prédite au
+        // déclenchement) — on rejoue le clip à l'échelle pour que la pose de détente tombe quand
+        // le ballon arrive (borné ×0,8-2,2 : un plongeon s'ajuste, il ne téléporte pas sa
+        // biomécanique). Mesuré sans lui : à l'instant du contact réel le corps n'était pas
+        // couché (épaule haute) — gant à ~1,0 m d'un ballon au sol, hors de toute anatomie.
+        let tG = t;
+        if (act?.payload?.skill === 'plongeon' && act.payload.cross?.t > 0) {
+          const rate = Math.max(0.8, Math.min(2.2, antic / Math.max(0.15, act.payload.cross.t)));
+          tG = t * rate;
+        }
+        const tSample = tG < antic ? tG + (0.3 * antic) * (1 - tG / antic) : tG;
         pl.gestureLayer.apply(tSample, pl._wLegs, pl._wUp);
         if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
       } else { pl._wLegs = 0; pl._wUp = 0; }
@@ -585,6 +719,7 @@ export class Rondo {
       }
       // l'autorité de la jambe frappeuse — après le verrou, en dernier
       this._applyStrikeWarp(pl);
+      this._applyDiveWarp(pl);
     }
 
     // ---- the ball, spun by its own angular velocity
