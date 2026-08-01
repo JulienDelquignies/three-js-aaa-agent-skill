@@ -13,7 +13,8 @@ Démos vivantes : https://showcase-pi-mocha.vercel.app (rondo = `rondo.html`, ma
 - **La sim** (`src/engine/`, ~80 modules sans dépendance three pour le cœur) : ballon physique
   (traînée, Magnus, rebond), balistique inverse des passes, duels (tacle debout/glissé), gestes
   à trois temps (armé/contact/accompagnement), gestes techniques (râteau, feinte de passe, semelle,
-  passement de jambes, crochet, feinte de frappe), tir,
+  passement de jambes — simple/double, sorties fixer/contre-pied/temporiser —, crochet — court,
+  standard, chaloupé —, feinte de frappe ; l'engagement et la vente lisent la note dribbling), tir,
   gardien (plongeon, sortie dans les pieds, un-contre-un, prise à deux mains), remises selon la
   règle, personas (identité de mouvement par joueur), latence de
   perception, terrain-donnée (réduit ET Loi 1).

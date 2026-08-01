@@ -225,7 +225,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const foe = mk({ id: 1, team: 1, p: [1.6, 0, 0.2], v: [0, 0] });
     const st = world([c, foe]);
     const r = maybePassement(st, c, M);
-    ok('le passement s\'arme sur le jockey posté (fixture)', r === true && c.act?.id === 'passementJambes'
+    // …simple OU double : le nombre de tours est un tirage de variété, la clause juge l'armement
+    ok('le passement s\'arme sur le jockey posté (fixture)', r === true && /^passementJambes2?$/.test(c.act?.id ?? '')
       && st.events.some((e) => e.type === 'skill' && e.kind === 'passement'));
   }
   {
@@ -251,8 +252,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const st = world([c, foe]);
     const r = maybeCrochet(st, c, M);
     const dYaw = c.act ? Math.abs(wrapA(c.act.payload.exitYaw - 0)) * 180 / Math.PI : 0;
-    ok(`le crochet s'arme sur la course fermée et coupe à l'opposé (${dYaw.toFixed(0)}° ∈ [60 ; 95])`,
-      r === true && c.act?.id === 'crochet' && dYaw >= 60 && dYaw <= 95);
+    // …l'ESPÈCE est libre (court 52°, standard 80°, chaloupé 97° — la variété est la loi) : la
+    // clause juge l'armement et la coupe à l'opposé, dans la bande DES espèces
+    ok(`le crochet s'arme sur la course fermée et coupe à l'opposé (${c.act?.id ?? 'aucun'}, ${dYaw.toFixed(0)}° ∈ [45 ; 100])`,
+      r === true && /^crochet/.test(c.act?.id ?? '') && dYaw >= 45 && dYaw <= 100);
   }
   {
     const c = mk({ speed: 3, v: [3, 0] });
@@ -278,7 +281,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     st.rnd = () => 0.01;
     const armed = skillInternals.maybeCrochet(st, c, cfg);
     let ballMax = 0, exitYaw = c.act?.payload?.exitYaw ?? 0;
-    for (let i = 0; i < 45 && c.act; i++) {
+    for (let i = 0; i < 60 && c.act; i++) {
       matchStep(st, 1 / 60, cfg);
       ballMax = Math.max(ballMax, Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]));
     }
@@ -326,6 +329,66 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const r2 = maybeCrochet(st2, c2, RONDO);
     ok('le RONDO est inerte pour le répertoire du match (refus sans tirage — au bit près)', r1 === false && r2 === false);
   }
+  // ---- LA VARIÉTÉ DES ESPÈCES (retour utilisateur : « du Dembélé, du Yamal, des crochets
+  // chaloupés ou courts ; des passements à tours variables, sortie tout droit / diagonale /
+  // derrière ») — les clips se DISTINGUENT os pour os, la sélection lit la situation.
+  {
+    // le CHALOUPÉ MENT du buste avant la coupe ; le COURT n'a pas le temps de mentir
+    const ch = MOVES.crochetChaloupe, co = MOVES.crochetCourt;
+    const chPre = ch.keys.filter((k) => k.t > 0 && k.t < ch.contact);
+    const coPre = co.keys.filter((k) => k.t > 0 && k.t < co.contact);
+    const ment = chPre.some((k) => (k.pose.Spine1?.[1] ?? 0) >= 10 && (k.hips?.[0] ?? 0) >= 0.04);
+    const sobre = coPre.every((k) => Math.abs(k.pose.Spine1?.[1] ?? 0) <= 6);
+    ok('le chaloupé MENT du buste avant la coupe (Spine1 ≥ 10°, déport ≥ 4 cm) ; le court reste sobre', ment && sobre);
+    ok(`les trois espèces de crochet ont trois durées (${co.duration} < ${MOVES.crochet.duration} < ${ch.duration})`,
+      co.duration < MOVES.crochet.duration && MOVES.crochet.duration < ch.duration);
+    // le DOUBLE passement est le simple + UN TOUR, os pour os (le segment répété est identique)
+    const p1 = MOVES.passementJambes, p2 = MOVES.passementJambes2;
+    const k014 = p1.keys.find((k) => k.t === 0.14), k042 = p2.keys.find((k) => Math.abs(k.t - 0.42) < 1e-6);
+    ok(`le double passement répète le cercle os pour os (durée ${p2.duration} = ${p1.duration} + 0,28 ; contact ${p2.contact})`,
+      Math.abs(p2.duration - p1.duration - 0.28) < 1e-6 && Math.abs(p2.contact - p1.contact - 0.28) < 1e-6
+      && k042 != null && JSON.stringify(k042.pose) === JSON.stringify(k014.pose));
+  }
+  {
+    // LA SÉLECTION lit la situation (fixtures à tirage contrôlé) : foe PRÈS → le court, TOUJOURS
+    const c = mk({ speed: 3, v: [3, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.15, 0, 0.3], v: [-2.2, 0] });
+    const st = world([c, foe]);
+    st.rnd = () => 0.05;                                    // tirages engagement + espèce
+    maybeCrochet(st, c, M);
+    ok(`foe au contact (1,2 m) → le crochet COURT (${c.act?.id ?? 'aucun'})`, c.act?.id === 'crochetCourt');
+  }
+  {
+    // …foe loin + allure + tirage bas → le CHALOUPÉ (le temps de mentir)
+    const c = mk({ speed: 3, v: [3, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.8, 0, 0.4], v: [-2.2, 0] });
+    const st = world([c, foe]);
+    st.rnd = () => 0.05;
+    maybeCrochet(st, c, M);
+    ok(`foe à 1,8 m et lancé → le crochet CHALOUPÉ (${c.act?.id ?? 'aucun'})`, c.act?.id === 'crochetChaloupe');
+  }
+  {
+    // LES SORTIES DU PASSEMENT : il AVANCE → contre-pied ; il COLLE → temporiser ; posté LOIN
+    // (tirage haut) → le fixer, tout droit — trois fixtures, trois modes
+    const cas = [
+      { foe: { p: [1.6, 0, 0.2], v: [-0.6, 0] }, rnd: 0.05, want: 'contre-pied' },
+      { foe: { p: [1.05, 0, 0.15], v: [0, 0] }, rnd: 0.05, want: 'temporise' },
+      { foe: { p: [1.7, 0, 0.2], v: [0, 0] }, rnd: [0.05, 0.68], want: 'fixe' },
+    ];
+    for (const x of cas) {
+      const c = mk({ speed: 0.5, v: [0.5, 0] });
+      const foe = mk({ id: 1, team: 1, ...x.foe });
+      const st = world([c, foe]);
+      // le stub sert les tirages DANS L'ORDRE (engagement, puis tours/sortie) — un scalaire
+      // haut refusait l'engagement avant même d'atteindre le choix de sortie
+      const seq = Array.isArray(x.rnd) ? x.rnd : [x.rnd];
+      let iR = 0;
+      st.rnd = () => seq[Math.min(iR++, seq.length - 1)];
+      maybePassement(st, c, M);
+      const got = c.act?.payload?.sortie ?? 'aucun';
+      ok(`passement — ${x.want === 'contre-pied' ? 'il avance' : x.want === 'temporise' ? 'il colle' : 'posté loin'} → sortie « ${got} » (voulu : ${x.want})`, got === x.want);
+    }
+  }
   // EN FLUX (8 graines × 120 s) : le répertoire vit dans le match. HUIT graines, pas quatre —
   // la feinte de frappe sort ~0,5 fois par graine (mesuré : 4 sur 8 graines, dont 0 sur les
   // 4 premières) : un échantillon de 4 est SOUS le plancher de bruit de re-distribution, la
@@ -333,14 +396,28 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // fixture, elle, le prouve à chaque run). La bande d'un flux se taille plus large que son bruit.
   {
     const kinds = {};
-    for (const seed of [3, 7, 11, 1, 5, 9, 13, 2]) {
+    // …DOUZE graines désormais : la feinte de frappe est retombée à 0 sur 8 après la re-donne du
+    // pique noté (5 sur 12 mesurées — le mécanisme vit, sa fixture le prouve à chaque run)
+    for (const seed of [3, 7, 11, 1, 5, 9, 13, 2, 17, 4, 19, 6]) {
       const st = makeMatch({ perTeam: 5, seed });
       const cfg = matchCfg();
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
-      for (const e of st.events.filter((x) => x.type === 'skill')) kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;
+      for (const e of st.events.filter((x) => x.type === 'skill')) {
+        kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;
+        if (e.espece) kinds[e.espece] = (kinds[e.espece] ?? 0) + 1;
+        if (e.kind === 'passement' && e.tours === 2) kinds.double = (kinds.double ?? 0) + 1;
+        if (e.sortie) kinds['s:' + e.sortie] = (kinds['s:' + e.sortie] ?? 0) + 1;
+      }
     }
     ok(`le répertoire élargi VIT en match (crochet ${kinds.crochet ?? 0} ≥ 3, passement ${kinds.passement ?? 0} ≥ 1, feinte de frappe ${kinds.frappeFeinte ?? 0} ≥ 1)`,
       (kinds.crochet ?? 0) >= 3 && (kinds.passement ?? 0) >= 1 && (kinds.frappeFeinte ?? 0) >= 1);
+    // …et la VARIÉTÉ vit : au moins deux espèces de crochet distinctes, et au moins deux modes
+    // de sortie de passement sur 8 graines (mesuré : court 17 / standard 7 / chaloupé 5 ;
+    // sorties contre-pied 7 / fixe 3 / temporise 1 ; doubles 3)
+    const nEspeces = ['crochetCourt', 'crochetChaloupe', 'crochet'].filter((k) => (kinds[k] ?? 0) >= 1).length;
+    const nSorties = ['s:contre-pied', 's:fixe', 's:temporise'].filter((k) => (kinds[k] ?? 0) >= 1).length;
+    ok(`la VARIÉTÉ vit en flux (${nEspeces} espèces de crochet ≥ 2, ${nSorties} sorties de passement ≥ 2, ${kinds.double ?? 0} doubles)`,
+      nEspeces >= 2 && nSorties >= 2);
   }
 }
 

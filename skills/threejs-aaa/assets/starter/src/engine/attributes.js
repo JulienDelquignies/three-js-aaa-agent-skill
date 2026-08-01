@@ -28,7 +28,7 @@ export const ATTRIBUTES = {
   acceleration:'démarrage                → accel × [0,88 ; 1,12]',
   passing:     'erreur d\'exécution passe → bruit d\'angle [6,0° ; 0,5°] (σ), la vraie frappe dévie',
   control:     'fermeté du contrôle      → diviseur du contrôle-manqué [0,7 ; 1,6] (poids de passe)',
-  dribbling:   'longueur de touche       → lead × [1,08 ; 0,94] (le mauvais dribbleur pousse loin)',
+  dribbling:   'longueur de touche → lead × [1,08 ; 0,94] ; engagement et vente des gestes × [0,55 ; 1,10]',
   finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ)',
   tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m',
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
@@ -53,6 +53,9 @@ export function makeProfile(ratings = {}) {
                                                                   // à 10 m — mesuré : 3,5° ne mordait pas les couloirs)
     controlF: lerp(0.7, 1.6, r('control')),
     dribbleLeadF: lerp(1.08, 0.94, r('dribbling')),
+    gesteF: lerp(0.55, 1.10, r('dribbling')),                     // × sur l'ENGAGEMENT et la VENTE
+                                                                  // des gestes (un 35 tente peu et
+                                                                  // vend mal — la note joue l'exécution)
     shotSigma: lerp(0.55, 0.10, r('finishing')),                  // m — sur le point visé dans le but
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel
     reaction: lerp(0.30, 0.14, r('reactions')),                   // s

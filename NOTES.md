@@ -1743,6 +1743,48 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    sorties de dribble paramétrées (tout droit pour fixer, diagonale pour le contre-pied, arrière
    pour temporiser).
 
+39. **La variété visible des dribbles (cahier des charges utilisateur : « du Dembélé, du Yamal,
+   des crochets chaloupés ou courts ; des passements Mancini/Reveillère à tours variables, sortie
+   tout droit pour fixer, diagonale pour le contre-pied, derrière pour temporiser »).** TROIS
+   ESPÈCES DE CROCHET : le COURT (chop sec — 0,4 s, contact 0,14, la sim coupe ~52°, buste
+   sobre), le STANDARD (0,55 s, ~80°), le CHALOUPÉ (0,8 s, contact 0,42 — le buste MENT d'abord :
+   épaules/tête plongent du côté où il ne va pas, déport de bassin 6 cm en clés hips, PUIS
+   l'intérieur coupe ~97° ; le défenseur qui fermait s'assoit au contact — morsure 0,35 s, même
+   loi que le passement). Sélection par situation (le chaloupé veut du temps : foe ≥ 1,45 m et
+   de l'allure ; le court vit au contact) + tirage seedé + flair. LE DOUBLE PASSEMENT : généré
+   par RÉPÉTITION DE SEGMENT (repeatSegment — le cercle (0 ; 0,28] rejoué, durée/contact étendus
+   d'un tour, os pour os le même cercle : une clause le vérifie clé par clé) ; deux tours quand
+   le jockey est posté loin. LES SORTIES : il AVANCE → contre-pied (diagonale libre opposée) ;
+   il COLLE (< 1,25 m) → temporiser (retour ~140°, PAS de burst — on protège) ; posté LOIN →
+   le fixer (tout droit, burst renforcé 0,65 s) au tirage. En flux 8 graines : crochets 17
+   courts / 7 standards / 5 chaloupés ; passements 7 contre-pied / 3 fixe / 1 temporise, 3
+   doubles. Le ticker nomme tout (« crochet chaloupé », « passement ×2 (contre-pied) »).
+   LE LOT A DÉBUSQUÉ DEUX VRAIS TROUS DE LOI : (1) LES GESTES NE LISAIENT PAS LES NOTES — un
+   dribbling 35 tentait et vendait comme un 82, et les espèces amplifiaient ce pouvoir gratuit :
+   le verdict attributs s'est INVERSÉ (élite 61 tirs contre 69 sur 16 graines). Lois : gesteF
+   (attributs, dribbling → engagement × [0,55 ; 1,10] et durée de morsure), et LE PIQUE SE
+   RÉUSSIT À LA NOTE (tirage 0,5-0,95 par tackling — sans lui le pique offrait des récupérations
+   SANS duel à l'équipe qui défend le plus). Après : élite 70-45, score 11:8 (16 graines).
+   L'instrument du verdict passe à 10 graines (les tirs d'un échantillon court sont un tirage —
+   sa propre leçon, un cran plus loin). (2) LE PIQUE VOLAIT LE BALLON PENDANT UN ACTE ownsBody
+   (le pin du passement) → carry() sur ballon libre, la garde du BallBody a crié pendant le
+   sabotage sans-tir : le pique respecte l'acte (charte loi 1), et un geste dont le ballon a été
+   soufflé S'INTERROMPT nommé (ballon-souffle-pendant-crochet/passement — défense en
+   profondeur). MORTS D'INSTRUMENTS à la re-donne, réparées en conscience : fixtures crochet
+   élargies aux espèces (l'espèce est LIBRE, la clause juge l'armement et la coupe 45-100°) ;
+   fixture passement accepte simple/double ; le stub rnd des fixtures de sortie est SÉQUENTIEL
+   (un scalaire haut refusait l'engagement avant d'atteindre le choix) ; flux gestes 8 → 12
+   graines (la feinte de frappe : 5/12) ; « des remises existent » sur horizon élargi ET LE
+   DÉFICIT NOMMÉ : 4 sorties sur 24 min (le réel vit à une par 30-60 s — conduite serrée +
+   amorti + contre-press + pique gardent tout dedans ; chantier backlog : tirs hors cadre →
+   sortie de but, pique en touche) ; le sabotage trottinement en FIXTURE déterministe (regain
+   2,73 s avec la pointe, 2,92 sans — écart 0,19 s au bit près, pas de marge de bruit à payer ;
+   l'écart est modeste parce que carryViaBall borne la poursuite par l'amortissement d'arrivée).
+   Nouvelles clauses verify-gestes : 50 (chaloupé MENT/court sobre, trois durées, double os pour
+   os, 2 fixtures d'espèce, 3 fixtures de sortie, variété en flux ≥ 2 espèces + ≥ 2 sorties).
+   verify-match 73, attributs 13 (10 graines), rondo 40/40 au bit près, dribble 17, sync 7/7,
+   audit-membres 16/0, audit-gants 6/0.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

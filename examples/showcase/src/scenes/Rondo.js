@@ -636,13 +636,18 @@ export class Rondo {
         // de cet instant (_applyTouchWarp) — sans ça le contact réel restait invisible.
         const pl = this.players[e.by];
         if (pl) pl._touchT = this._t;
-      } else if (e.type === 'skill' && this._gesteHud && e.kind !== 'passement-vendu') {
+      } else if (e.type === 'skill' && this._gesteHud && !e.kind.endsWith('-vendu')) {
         // le ticker : l'événement du CONTACT du geste (skillContactNow), pas l'intention —
-        // 'passement-vendu' est le mordu du même passement, il n'est pas un second geste
+        // les '*-vendu' sont le mordu du même geste, pas un second geste. Les ESPÈCES se
+        // nomment (la variété doit se lire : crochet court ≠ chaloupé, passement ×2, sortie).
         const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe' };
+        let label = names[e.kind] ?? e.kind;
+        if (e.kind === 'crochet' && e.espece === 'crochetChaloupe') label = 'crochet chaloupé';
+        else if (e.kind === 'crochet' && e.espece === 'crochetCourt') label = 'crochet court';
+        else if (e.kind === 'passement') label = `passement${e.tours === 2 ? ' ×2' : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
         const q = this.state.players[e.by];
         const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
-        this._gesteLog.unshift(`<b style="color:#e8ebf2">${names[e.kind] ?? e.kind}</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
+        this._gesteLog.unshift(`<b style="color:#e8ebf2">${label}</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
         if (this._gesteLog.length > 5) this._gesteLog.pop();
         this._gesteHud.innerHTML = this._gesteLog.join('<br>');
       }

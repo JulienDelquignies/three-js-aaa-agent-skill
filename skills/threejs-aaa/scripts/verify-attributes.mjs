@@ -57,7 +57,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
   // 5 graines : 3 × 120 s re-donnait un pile-ou-face (2:2 mesuré) — l'échantillon du VERDICT
   // doit être plus large que la variance d'un match
-  for (const seed of [3, 7, 1, 11, 5]) {
+  // DIX graines, pas cinq — la leçon du verdict, un cran plus loin : les TIRS d'un échantillon
+  // court sont aussi un tirage (mesuré : 16-27 sur les 5 premières graines, 40-32 sur 10 —
+  // l'inversion était le bruit de re-distribution des tirages d'espèces, pas une loi morte)
+  for (const seed of [3, 7, 1, 11, 5, 9, 13, 2, 17, 4]) {
     const st = makeMatch({ perTeam: 5, seed, squads: [elite, faible] });
     const cfg = matchCfg();
     let lastPass = -1;

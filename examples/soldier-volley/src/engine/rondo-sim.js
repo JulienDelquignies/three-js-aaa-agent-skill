@@ -667,20 +667,37 @@ function maybePassement(st, c, cfg) {
     return !st.players.some((q) => q.team !== c.team && q.down <= 0 && Math.hypot(q.p[0] - ex, q.p[2] - ez) < 1.2);
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
-  if ((st.rnd ? st.rnd() : 0.5) > 0.25 + 0.4 * (c.persona?.flair ?? 0.5)) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.25 + 0.4 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
+  // LES TOURS ET LA SORTIE (la variété demandée : « Mancini, Reveillère… un nombre de tours
+  // variable, une sortie tout droit pour fixer, en diagonale pour le contre-pied, ou derrière
+  // pour temporiser ») : DEUX tours quand le jockey est posté loin (le temps du second
+  // mensonge) ; la sortie lit la situation — il AVANCE → contre-pied (diagonale libre) ; il
+  // COLLE → temporiser (retour, protéger) ; il est POSTÉ loin → le fixer (tout droit) ou le
+  // contre-pied, au tirage.
+  const uT = st.rnd ? st.rnd() : 0.5;
+  const tours = fd >= 1.55 && uT < 0.3 + 0.35 * (c.persona?.flair ?? 0.5) ? 2 : 1;
+  const cross = Math.sin(Math.atan2(foe.p[2] - c.p[2], foe.p[0] - c.p[0]) - c.yaw);
+  const awaySide = c.yaw + (cross > 0 ? -0.9 : 0.9);              // la diagonale OPPOSÉE au foe
+  const diag = sides.reduce((b, a) => Math.abs(wrapA(a - awaySide)) < Math.abs(wrapA(b - awaySide)) ? a : b, sides[0]);
+  let sortie, exitYaw;
+  if (closing > 0.35) { sortie = 'contre-pied'; exitYaw = diag; }
+  else if (fd < 1.25) { sortie = 'temporise'; exitYaw = c.yaw + (diag > c.yaw ? 2.4 : -2.4); }
+  else if (fd >= 1.5 && uT > 0.62) { sortie = 'fixe'; exitYaw = c.yaw; }
+  else { sortie = 'contre-pied'; exitYaw = diag; }
+  const clip = tours === 2 ? 'passementJambes2' : 'passementJambes';
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId['passement-jambes'], sit);
-  const move = MOVE_TIMING.passementJambes;
+  const move = MOVE_TIMING[clip];
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
-  startGesture(c, { id: 'passementJambes', ...move }, {
-    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw: sides[0], foeId: foe.id, ballMax: 0 },
+  startGesture(c, { id: clip, ...move }, {
+    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw, sortie, tours, foeId: foe.id, ballMax: 0 },
     log: st.gestures,
   });
   (c._skillCd ??= {}).passement = st.t + K.passementCd;
-  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'passementJambes', foot, skill: 'passement', anticipation: move.contact });
-  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: clip, foot, skill: 'passement', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours, sortie, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
   return true;
 }
 
@@ -722,21 +739,30 @@ function maybeCrochet(st, c, cfg) {
     if (q.team === c.team || q.down > 0) continue;
     if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
   }
-  if ((st.rnd ? st.rnd() : 0.5) > 0.15 + 0.4 * (c.persona?.flair ?? 0.5)) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
     (c._skillCd ??= {}).crochet = st.t + 2; return false;
   }
+  // L'ESPÈCE (la variété demandée : « du Dembélé, du Yamal ») : le CHALOUPÉ veut du TEMPS — le
+  // buste ment 0,42 s avant la coupe, il faut un défenseur à ≥ 1,45 m et de l'allure ; le COURT
+  // (chop sec, 0,14 s) vit près du contact ; le standard entre les deux. Un tirage seedé + le
+  // flair départagent quand la situation autorise plusieurs espèces.
+  const uE = st.rnd ? st.rnd() : 0.5;
+  const espece = fd >= 1.45 && c.speed >= 2.0 && uE < 0.4 + 0.35 * (c.persona?.flair ?? 0.5) ? 'crochetChaloupe'
+    : fd < 1.45 || uE > 0.75 ? 'crochetCourt' : 'crochet';
+  const turn = espece === 'crochetChaloupe' ? 1.7 : espece === 'crochetCourt' ? 0.9 : (K.crochetTurn ?? 1.4);
+  const exitYawE = c.yaw + away * turn;
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId.crochet, sit);
-  const move = MOVE_TIMING.crochet;
+  const move = MOVE_TIMING[espece];
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
-  startGesture(c, { id: 'crochet', ...move }, {
-    payload: { kind: 'skill', skill: 'crochet', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, ballMax: 0 },
+  startGesture(c, { id: espece, ...move }, {
+    payload: { kind: 'skill', skill: 'crochet', espece, pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw: exitYawE, foeId: foe.id, ballMax: 0 },
     log: st.gestures,
   });
   (c._skillCd ??= {}).crochet = st.t + K.crochetCd;
   c.intent = null;
-  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'crochet', foot, skill: 'crochet', anticipation: move.contact });
-  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet', by: c.id, foe: +fd.toFixed(2), dYaw: +((exitYaw - c.yaw) * 180 / Math.PI).toFixed(0) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: espece, foot, skill: 'crochet', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet', espece, by: c.id, foe: +fd.toFixed(2), dYaw: +((exitYawE - c.yaw) * 180 / Math.PI).toFixed(0) });
   return true;
 }
 
@@ -806,12 +832,23 @@ function skillContactNow(st, p, cfg) {
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];
-    if (foe && foe.down <= 0) { foe._bite = st.t + (K.passementBite ?? 0.4); bitten.push(foe.id); }
+    if (foe && foe.down <= 0) { foe._bite = st.t + (K.passementBite ?? 0.4) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
     st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement-vendu', by: p.id, bitten, foot: A.pick.foot });
-    // la sortie est un DÉPART : la prochaine touche a le droit d'être lancée (burst nommé)
-    p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + 0.5 };
+    // la sortie est un DÉPART… selon son MODE : le contre-pied et le fixer partent en burst
+    // nommé (le fixer PLUS fort — on fige puis on perce tout droit) ; TEMPORISER protège — pas
+    // de burst, on ressort en marchant, ballon sous la semelle
+    if (A.sortie !== 'temporise') p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + (A.sortie === 'fixe' ? 0.65 : 0.5) };
   } else if (A.skill === 'crochet') {
     A.from = [st.ball.p[0], st.ball.p[2]];
+    // le CHALOUPÉ a menti pendant 0,42 s : le défenseur qui fermait s'assoit sur la feinte de
+    // buste (même loi que le passement — sans coût pour lui, la chaloupe serait une pantomime)
+    if (A.espece === 'crochetChaloupe') {
+      const K = cfg.skill;
+      const foe = st.players[A.foeId ?? -1];
+      const bitten = [];
+      if (foe && foe.down <= 0) { foe._bite = st.t + 0.35 * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet-vendu', by: p.id, bitten, foot: A.pick.foot });
+    }
   } else if (A.skill === 'frappeFeinte') {
     const K = cfg.skill;
     const bitten = [];
@@ -872,6 +909,7 @@ function skillFollowStep(st, p, dt, cfg) {
   } else if (A.skill === 'passement') {
     // le corps reste PLANTÉ sur son appui, le ballon est FIGÉ sous le cercle de la jambe — la
     // sortie se joue après le geste (le burst posé au contact rend la première touche lancée)
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-passement', { log: st.gestures }); return; }
     p.v[0] = 0; p.v[1] = 0; p.speed = 0;
     if (A.pin) st.ball.carry([A.pin[0], A.pin[1]], dt, { tau: 0.04 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
@@ -884,6 +922,9 @@ function skillFollowStep(st, p, dt, cfg) {
       return;
     }
   } else if (A.skill === 'crochet') {
+    // …et si le ballon a été soufflé pendant la coupe (duel, rebond), le geste MEURT nommé —
+    // balayer un ballon qui n'est plus à soi serait un carry() sur ballon libre (garde BallBody)
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-crochet', { log: st.gestures }); return; }
     // le lacet BALAIE vers la sortie (ease), le ballon suit L'ARC — de 0,35 m devant l'ancien
     // regard à 0,5 m devant le nouveau : la coupe à travers la course, jamais un téléport
     const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
@@ -1311,12 +1352,22 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // corps, le ballon entre deux touches n'avait pas de loi. Gates : le défenseur bat vraiment
     // le porteur au point (marge 0,15 m), ballon au sol, cooldown par pied (le pique est un
     // geste, pas un aimant).
-    if (cfg.pokeReach && st.ball.owner == null && st.phase === 'carry' && st.ball.p[1] < 0.45) {
+    if (cfg.pokeReach && st.ball.owner == null && st.phase === 'carry' && st.ball.p[1] < 0.45
+      && !(c.act && c.act.payload?.ownsBody)) {
       for (const q of st.players) {
         if (q.team === c.team || q.keeper || q.down > 0) continue;
         if ((q._pokeCd ?? -1) > st.t) continue;
         const dq = d2(q.p, st.ball.p);
-        if (dq < cfg.pokeReach && dq < d2(c.p, st.ball.p) - 0.15) {
+        // …et la NOTE de tacle joue la portée du pique (loi attributs no 3 : la note agit sur
+        // l'EXÉCUTION) — sans elle, un défenseur faible piquait comme un fort et ÉGALISAIT le
+        // monde noté gratuitement (verdict attributs inversé mesuré : élite 16 tirs contre 27)
+        if (dq < cfg.pokeReach + (q.skill?.tackleReach ?? 0) && dq < d2(c.p, st.ball.p) - 0.15) {
+          // …et le pique SE RÉUSSIT à la note (loi attributs no 3) : un tackling bas manque son
+          // pied une fois sur deux — sans ce tirage, le pique offrait des récupérations SANS
+          // duel à l'équipe qui défend le plus, et le monde noté s'égalisait (61-69 mesuré,
+          // l'élite dominait 40-32 avant le pique). Le raté a un coût : le cooldown court.
+          const pokeSkill = 0.5 + 0.45 * Math.max(0, Math.min(1, ((q.skill ? (q.skill.tackleReach + 0.10) / 0.20 : 0.5))));
+          if ((st.rnd ? st.rnd() : 0.5) > pokeSkill) { q._pokeCd = st.t + 0.9; continue; }
           const ux = st.ball.p[0] - q.p[0], uz = st.ball.p[2] - q.p[2];
           const ul = Math.hypot(ux, uz) || 1;
           // le pique TRAVERSE le ballon : déviation franche loin du pied qui pique — un 50/50

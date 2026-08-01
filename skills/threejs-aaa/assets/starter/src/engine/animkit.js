@@ -80,6 +80,22 @@ export function resolveTracks(spec) {
   return { name: spec.name, duration: spec.duration, loop: !!spec.loop, tracks, hipsPos };
 }
 
+/** Répéter un segment (t0, t1] d'un clip `extra` fois — le MULTI-TOURS du passement (Mancini,
+ *  Reveillère) : les clés du segment sont rejouées décalées, la suite glisse, durée et contact
+ *  s'étendent d'autant. Pur : la variante passe le même checkClip que l'original. */
+export function repeatSegment(spec, t0, t1, extra) {
+  const seg = spec.keys.filter((k) => k.t > t0 && k.t <= t1);
+  const dur = t1 - t0;
+  const keys = [];
+  for (const k of spec.keys) {
+    if (k.t <= t1) keys.push({ ...k });
+    else keys.push({ ...k, t: +(k.t + extra * dur).toFixed(3) });
+  }
+  for (let i = 1; i <= extra; i++) for (const k of seg) keys.push({ ...k, t: +(k.t + i * dur).toFixed(3) });
+  keys.sort((a, b) => a.t - b.t);
+  return { ...spec, duration: +(spec.duration + extra * dur).toFixed(3), contact: +(spec.contact + extra * dur).toFixed(3), keys };
+}
+
 /** The movement contract — a generated move must be an ANATOMICALLY SANE animation. */
 export function checkClip(resolved) {
   const issues = [];
@@ -754,6 +770,80 @@ export const MOVES = {
       { t: 0.55, pose: {} },
     ],
   },
+  crochetCourt: {
+    // LE CROCHET COURT (le chop — Yamal) : même grammaire que le crochet mais SEC — le pied
+    // croise vite (contact 0,14), le buste n'a pas le temps de s'abaisser, la coupe est petite
+    // (la sim tourne ~50° au lieu de ~80-95). C'est l'espèce du contact proche : on sort du pied
+    // du défenseur en une demi-foulée, sans cérémonie.
+    name: 'crochetCourt', duration: 0.4, contact: 0.14, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.14, pose: {
+        RightUpLeg: [30, -22, 0], RightLeg: [-40, 0, 0], RightFoot: [10, 20, 0],
+        Hips: [0, -5, 0],
+        Spine1: [4, -5, 2],
+        Neck: [2, 0, 0], Head: [12, 0, 0],
+        LeftArm: [46, 0, 20], LeftForeArm: [14, 0, 26], RightArm: [44, 0, 14], RightForeArm: [0, 0, -20],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-20, 0, 0], LeftFoot: [-5, 0, 0],
+      }, hips: [0, -0.03, 0] },
+      { t: 0.26, pose: {
+        RightUpLeg: [18, 8, 0], RightLeg: [-30, 0, 0], RightFoot: [10, -4, 0],
+        Hips: [0, 4, 0],
+        Spine1: [5, 4, -2], Head: [11, 0, 0],
+        LeftArm: [42, 0, 16], RightArm: [48, 0, 8],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-20, 0, 0],
+      }, hips: [0, -0.03, 0] },
+      { t: 0.4, pose: {} },
+    ],
+  },
+  crochetChaloupe: {
+    // LE CROCHET CHALOUPÉ (Dembélé) : le buste MENT d'abord — épaules et tête plongent du côté
+    // où il ne va PAS (la chaloupe, 0-0,28, avec un vrai déport de bassin), le défenseur mord
+    // (la sim le fait asseoir au contact), PUIS l'intérieur coupe large (contact 0,42, la sim
+    // tourne ~95°). Le mensonge est dans les clés du HAUT : c'est lui qui vend, pas le pied.
+    name: 'crochetChaloupe', duration: 0.8, contact: 0.42, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.16, pose: {
+        Spine: [0, 8, -6], Spine1: [6, 12, -8], Spine2: [2, 8, -4],
+        Neck: [2, -6, 0], Head: [12, -8, 0],
+        Hips: [0, 6, 0],
+        RightUpLeg: [22, 14, 0], RightLeg: [-30, 0, 0], RightFoot: [8, -6, 0],
+        LeftArm: [40, 0, 30], LeftForeArm: [16, 0, 28], RightArm: [55, 0, -6], RightForeArm: [4, 0, -16],
+        LeftUpLeg: [12, 0, 0], LeftLeg: [-26, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0.06, -0.05, 0] },
+      { t: 0.28, pose: {
+        Spine: [0, 6, -4], Spine1: [4, 6, -4], Spine2: [1, 4, -2],
+        Neck: [2, -3, 0], Head: [12, -4, 0],
+        Hips: [0, 2, 0],
+        RightUpLeg: [30, -6, 0], RightLeg: [-40, 0, 0], RightFoot: [10, 8, 0],
+        LeftArm: [44, 0, 26], RightArm: [50, 0, 4],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-24, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0.04, -0.06, 0] },
+      { t: 0.42, pose: {
+        RightUpLeg: [36, -30, 0], RightLeg: [-50, 0, 0], RightFoot: [12, 26, 0],
+        Hips: [0, -10, 0],
+        Spine: [-2, -6, 2], Spine1: [6, -10, 5], Spine2: [2, -6, 3],
+        Neck: [3, 4, 0], Head: [14, 6, 0],
+        LeftArm: [52, 0, 28], LeftForeArm: [20, 0, 30], RightArm: [44, 0, 22], RightForeArm: [-2, 0, -22],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-24, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [-0.03, -0.05, 0] },
+      { t: 0.58, pose: {
+        RightUpLeg: [22, 12, 0], RightLeg: [-38, 0, 0], RightFoot: [14, -6, 0],
+        Hips: [0, 8, 0],
+        Spine1: [8, 8, -4], Head: [12, 0, 0],
+        LeftArm: [42, 0, 18], RightArm: [52, 0, 4],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-26, 0, 0],
+      }, hips: [-0.05, -0.04, 0] },
+      { t: 0.68, pose: {
+        RightUpLeg: [10, 0, 0], RightLeg: [-24, 0, 0],
+        Hips: [0, 2, 0], Spine1: [4, 2, 0],
+        LeftArm: [46, 0, 14], RightArm: [50, 0, 8],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-18, 0, 0],
+      }, hips: [-0.03, -0.02, 0] },
+      { t: 0.8, pose: {} },
+    ],
+  },
   feinteFrappe: {
     // La feinte de frappe VIT de sa ressemblance (même loi que feintePasse/passe — une clause du
     // banc COMPARE) : l'armé est CELUI de `frappe`, clé pour clé (cuisse −30°, genou −108°, buste
@@ -841,3 +931,8 @@ export const MOVES = {
     ],
   },
 };
+
+// LE DOUBLE PASSEMENT (deux tours autour du ballon) — généré par répétition du segment du
+// cercle (0 → 0,28] : mêmes clés, même anatomie, le plant et la sortie glissent d'un tour.
+MOVES.passementJambes2 = { ...repeatSegment(MOVES.passementJambes, 0, 0.28, 1), name: 'passementJambes2' };
+
