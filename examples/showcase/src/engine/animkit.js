@@ -374,7 +374,11 @@ export const MOVES = {
       { t: 0.55, pose: { Hips: [0, 0, -62], LeftArm: [-20, 0, -68], RightArm: [-20, 0, -72], LeftForeArm: [0, 0, 8], RightForeArm: [0, 0, 8], LeftUpLeg: [12, 0, 0], RightUpLeg: [16, 0, 0], LeftLeg: [-12, 0, 0], RightLeg: [-18, 0, 0], Spine1: [-6, 0, 0] }, hips: [0.85, 0.28, 0] },
       { t: 0.9, pose: { Hips: [0, 0, -80], LeftArm: [-15, 0, -70], RightArm: [-15, 0, -74], LeftUpLeg: [10, 0, 0], RightUpLeg: [14, 0, 0], Spine1: [0, 0, 0] }, hips: [1.35, -0.68, 0] },
       { t: 1.2, pose: { Hips: [0, 0, -80], LeftArm: [-10, 0, -60], RightArm: [-10, 0, -64] }, hips: [1.35, -0.68, 0] },
-      { t: 1.6, pose: {}, hips: [0, 0, 0] },
+      // le relevé se joue SUR PLACE : ramener les hanches à [0,0,0] faisait RECULER le corps
+      // rendu de 1,35 m pendant qu'il se relevait — « il ne se relève pas là où il devrait »
+      // (retour utilisateur ; la sim est transportée au même point par le lunge borné, et la
+      // scène réconcilie les deux voyages — le fondu de fin part d'un delta ≈ 0)
+      { t: 1.6, pose: {}, hips: [1.35, 0, 0] },
     ],
   },
   plongeonBas: {
@@ -403,7 +407,7 @@ export const MOVES = {
         LeftUpLeg: [12, 0, 0], RightUpLeg: [16, 0, 0], Spine1: [0, 0, 0],
       }, hips: [1.15, -0.72, 0] },
       { t: 1.1, pose: { Hips: [0, 0, -82], LeftArm: [-6, 0, -52], RightArm: [-6, 0, -56] }, hips: [1.15, -0.72, 0] },
-      { t: 1.4, pose: {}, hips: [0, 0, 0] },
+      { t: 1.4, pose: {}, hips: [1.15, 0, 0] },   // le relevé SUR PLACE (même loi que le plongeon aérien)
     ],
   },
   /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */

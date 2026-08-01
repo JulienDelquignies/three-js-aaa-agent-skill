@@ -879,6 +879,7 @@ function touchEvent(st, c) {
 function skillFollowStep(st, p, dt, cfg) {
   const A = p.act.payload;
   if (A.skill === 'rateau') {
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-rateau', { log: st.gestures }); return; }
     const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
     const e = u * u * (3 - 2 * u);
     p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
@@ -896,14 +897,23 @@ function skillFollowStep(st, p, dt, cfg) {
     // tout vol plus prompt — 2 arrêts sur 15 plongeons mesurés. Le gant rencontre le ballon à
     // l'image où il PASSE, le clip n'est que le dessin de la détente.
     if (!A.resolved && cfg.onDive && cfg.onDive(st, p, cfg)) A.resolved = true;
+    // …ET LA DÉTENTE S'ARRÊTE AU POINT : la vitesse était calée pour couvrir l'écart dans
+    // cross.t mais courait la durée PLEINE de l'armé — le corps TRAVERSAIT le point
+    // d'interception (voyage p50 2,37 m, p90 4,01 pour un écart de ~1,9 : le ballon finissait
+    // DERRIÈRE le gardien, de l'autre côté — « il se déplace plus loin que le ballon pour
+    // plonger à sa gauche », retour utilisateur). La détente couvre SA distance, puis s'éteint.
     const T = p.act.anticipation + 0.25;
     const k = p.act.t < p.act.anticipation ? 1 : Math.max(0, 1 - (p.act.t - p.act.anticipation) / 0.25);
-    if (p.act.t < T && A.lunge) {
-      p.p[0] += A.lunge[0] * A.speed * k * dt;
-      p.p[2] += A.lunge[1] * A.speed * k * dt;
+    A.lungeMax = A.lungeMax ?? Math.min(1.35, Math.hypot((A.cross?.z ?? p.p[2]) - p.p[2], (A.cross ? 0.35 : 0)) + 0.2);
+    A.lungeRun = A.lungeRun ?? 0;
+    if (p.act.t < T && A.lunge && A.lungeRun < A.lungeMax) {
+      const step = Math.min(A.speed * k * dt, A.lungeMax - A.lungeRun);
+      A.lungeRun += step;
+      p.p[0] += A.lunge[0] * step;
+      p.p[2] += A.lunge[1] * step;
       p.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, p.p[0]));
       p.p[2] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, p.p[2]));
-      p.v[0] = A.lunge[0] * A.speed * k; p.v[1] = A.lunge[1] * A.speed * k;
+      p.v[0] = A.lunge[0] * (step / dt); p.v[1] = A.lunge[1] * (step / dt);
       p.speed = Math.hypot(p.v[0], p.v[1]);
     } else { p.v[0] = 0; p.v[1] = 0; p.speed = 0; }
   } else if (A.skill === 'passement') {
@@ -937,6 +947,7 @@ function skillFollowStep(st, p, dt, cfg) {
     st.ball.carry([p.p[0] + Math.cos(ang) * dist, p.p[2] + Math.sin(ang) * dist], dt, { tau: 0.05 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'semelle') {
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-semelle', { log: st.gestures }); return; }
     // LA SEMELLE SE DÉCOLLE QUAND ON VIENT LA PRESSER. Tenue quoi qu'il arrive, elle offrait le
     // temps « collé » mesuré (58 % — un presseur à 2,4 m couvre l'écart en 0,4 s et la tenue
     // durait 1,0 s) : le vrai joueur relâche la pose et REJOUE dès que quelqu'un ferme. L'abandon

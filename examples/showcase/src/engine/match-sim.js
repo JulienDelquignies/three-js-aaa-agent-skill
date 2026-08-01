@@ -77,7 +77,9 @@ export const MATCH = {
   meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)
   meetStep: 1.3,          // m — UN PAS ET DEMI vers le ballon, sur l'axe de la livraison (pas un correcteur balistique)
   execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
-  keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
+  keeperDown: 1.15,       // s — le prix d'un plongeon (au sol après, gagné ou perdu) : couvre le
+                          // couché + relevé RÉEL du clip (~1,05 s après contact à vitesse 1 —
+                          // à 0,75 le corps sim repartait pendant que le rendu se relevait encore)
   pokeReach: 0.5,         // m — LE PIQUE : un ballon de conduite libre à portée de pied adverse
                           // se dévie (poke tackle) ; null : le défenseur-spectateur (sabotage nommé)
   prepTouch: true,        // LA TOUCHE DE PRÉPARATION avant la frappe (serre la touche quand le
@@ -384,13 +386,24 @@ function assignMatchJobs(st, cfg) {
       const move = { id: espece, duration: MOVES[espece].duration, contact: MOVES[espece].contact };
       const lunge = [(pitch.ownGoal(gk.team).x - gk.p[0]) * 0.2, cross.z - gk.p[2]];
       const L = Math.hypot(lunge[0], lunge[1]) || 1;
+      // LE CÔTÉ DU CLIP EST RELATIF AU REGARD RÉEL, pas au monde : « cross.z > gk.z → gauche »
+      // était vrai pour un gardien et inversé pour celui d'en face (la moitié des plongeons se
+      // jouaient mirrorés à l'envers — clip dessiné À L'OPPOSÉ du corps, hips à 2,5 m, « il
+      // plonge du mauvais côté », captures) ; et l'approximation au camp restait fausse dès que
+      // le regard suivait le ballon. Le côté est le produit vectoriel regard × détente.
+      const fxK = Math.cos(gk.yaw), fzK = Math.sin(gk.yaw);
+      const sideFoot = (fxK * (lunge[1] / L) - fzK * (lunge[0] / L)) > 0 ? 'left' : 'right';
       startGesture(gk, move, {
-        payload: { kind: 'skill', skill: 'plongeon', ownsBody: true, pick: { foot: cross.z > gk.p[2] ? 'left' : 'right' },
-          lunge: [lunge[0] / L, lunge[1] / L], speed: Math.min(6.5, (Math.abs(cross.z - gk.p[2]) / Math.max(0.15, cross.t)) * 1.1), cross },
+        payload: { kind: 'skill', skill: 'plongeon', ownsBody: true, pick: { foot: sideFoot },
+          lunge: [lunge[0] / L, lunge[1] / L], speed: Math.min(6.5, (Math.abs(cross.z - gk.p[2]) / Math.max(0.15, cross.t)) * 1.1), cross,
+          // la détente couvre SA distance (l'écart au point d'interception + l'allongé), jamais plus
+          // …bornée au ROOT MOTION du bassin (1,35 m — le clip) : l'envergure au-delà est le
+          // métier des BRAS (gants à 2,1 par l'IK + warp), pas un corps qui glisse plus loin
+          lungeMax: Math.min(1.35, Math.abs(cross.z - gk.p[2]) + 0.2) },
         log: st.gestures,
       });
       gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
-      st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: cross.z > gk.p[2] ? 'left' : 'right', skill: 'plongeon', anticipation: move.contact });
+      st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact });
       st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2) });
       continue;
     }

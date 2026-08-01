@@ -208,6 +208,12 @@ export class Rondo {
       // Sans lui, la couche jetait le hips-motion des specs : le tacleur « glissait » DEBOUT,
       // hanches à hauteur de marche (mesuré par deux sondes indépendantes du sweep).
       const hipsBone = (() => { let b = null; model3d.traverse((o) => { if (o.isBone && /Hips$/i.test(o.name) && !b) b = o; }); return b; })();
+      // …avec un canal de BIAIS (axes personnage) : LA RÉCONCILIATION DES DEUX VOYAGES du
+      // plongeon — la sim transporte le corps (lunge borné) ET le clip dessine son root motion ;
+      // sans soustraction, le rendu ADDITIONNAIT les deux (le corps couché 1,35 m plus loin que
+      // la sim, puis RECUL d'autant au fondu — la « téléportation » des captures). delta appliqué
+      // = clip − voyage sim : le dessin domine tôt, converge vers la sim, le fondu part de ≈ 0.
+      const hipsCtl = { bias: null };
       const hipsWrite = (() => {
         if (!hipsBone) return null;
         model3d.updateMatrixWorld(true);
@@ -216,7 +222,9 @@ export class Rondo {
         const rest = hipsBone.position.clone();
         const d = new THREE.Vector3();
         return (delta, w) => {
-          d.set(delta[0], delta[1], -delta[2]).applyMatrix3(toWorld).applyMatrix3(toParent); // forward = −Z
+          const b = hipsCtl.bias;
+          d.set(delta[0] - (b ? b[0] : 0), delta[1] - (b ? b[1] : 0), -(delta[2] - (b ? b[2] : 0)))
+            .applyMatrix3(toWorld).applyMatrix3(toParent); // forward = −Z
           hipsBone.position.set(rest.x + d.x * w, rest.y + d.y * w, rest.z + d.z * w);
         };
       })();
@@ -241,7 +249,7 @@ export class Rondo {
       const cloneBones = rigBones(model3d);
       const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head') });
       this.players.push({
-        sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge,
+        sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge, hipsCtl,
         gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13),
         legs: { left: legs[0], right: legs[1] },
         legLens: { left: legLen(legs[0]), right: legLen(legs[1]) },
@@ -348,7 +356,25 @@ export class Rondo {
     // session sans qu'aucun contrat ne bronche : le jeu affichait quelque chose de plausible. Un repli
     // qui se tait est pire qu'une erreur.
     const spec = MOVES[move] || (this._reports.gestes.push(`geste absent : ${move}`), MOVES.passe);
-    const r = pl.gestureLayer.begin(e.foot === 'left' ? mirrorMove(spec) : spec);
+    // LE MIROIR DU PLONGEON SE JUGE AU MODÈLE, pas à une convention monde : la sim ne connaît ni
+    // l'offset de facing du rig ni le lissage du regard rendu — « cross.z > gk.z → gauche »
+    // jouait la moitié des plongeons à l'envers (clip dessiné à l'opposé de la détente, hips à
+    // 2,5 m du corps — « il plonge du mauvais côté », captures). Ici : le lunge sim projeté sur
+    // la DROITE RÉELLE du modèle (colonne X de sa matrice monde) choisit le côté du clip.
+    let useMirror = e.foot === 'left';
+    if (/^plongeon/.test(move)) {
+      const lg = pl.sim.act?.payload?.lunge;
+      // l'interrupteur de SABOTAGE de l'instrument composé (audit-gants) : rejouer la convention
+      // monde naïve — la clause du relevé-au-lieu doit mordre
+      if (typeof window !== 'undefined' && window.__sabotage === 'plongeon-monde') { pl._diveMirror = useMirror; }
+      else if (lg) {
+        pl.model.updateMatrixWorld(true);
+        const me = pl.model.matrixWorld.elements;
+        useMirror = (lg[0] * me[0] + lg[1] * me[2]) < 0;
+        pl._diveMirror = useMirror;
+      } else pl._diveMirror = useMirror;
+    }
+    const r = pl.gestureLayer.begin(useMirror ? mirrorMove(spec) : spec);
     if (r.missing.length) this._reports.gestes.push(`${move}: os absents du rig ${pl.rig} : ${r.missing.join(', ')}`);
     // l'horloge de la couche : act.t quand la sim porte le geste (un seul instant, un seul
     // contrat) ; sinon une horloge locale — les gestes réactifs (contrôle rapporté après coup)
@@ -376,7 +402,7 @@ export class Rondo {
     if (typeof window !== 'undefined' && window.__sabotage === 'warp-gant') { pl._dwarp = null; return; }
     const a = pl.sim.act;
     if (!a || a.payload?.skill !== 'plongeon') { pl._dwarp = null; return; }
-    const side = a.payload.pick?.foot === 'left' ? 'left' : 'right';
+    const side = (pl._diveMirror ?? (a.payload.pick?.foot === 'left')) ? 'left' : 'right';
     const arm = pl.arms?.[side], lens = pl.armLens?.[side];
     if (!arm?.up || !arm.elbow || !arm.hand || !lens) return;
     // L'ENVELOPPE DU GANT EST DISTANCE-CLÉE — deuxième espèce d'enveloppe du warp : un contact
@@ -741,14 +767,43 @@ export class Rondo {
         // biomécanique). Mesuré sans lui : à l'instant du contact réel le corps n'était pas
         // couché (épaule haute) — gant à ~1,0 m d'un ballon au sol, hors de toute anatomie.
         let tG = t;
-        if (act?.payload?.skill === 'plongeon' && act.payload.cross?.t > 0) {
+        // LE CORPS DU PLONGEON, réconcilié — l'état vit tant que le LAYER joue un clip plongeon
+        // (l'act sim finit avant le fondu : nettoyer sur l'act laissait la fin du clip sans
+        // biais, écart 1,19 m mesuré à la sortie du geste).
+        const diveClip = /^plongeon/.test(pl.gestureLayer.spec?.name ?? '');
+        // un NOUVEL acte re-pose le départ (l'horloge repart de 0) — sans ça, deux plongeons
+        // enchaînés gardaient le départ du premier et le biais devenait un mensonge (écarts
+        // 2,5-2,7 m mesurés sur les enchaînements, pires que sans réconciliation)
+        const newDive = act?.payload?.skill === 'plongeon' && act.t < (pl._divePrevT ?? Infinity);
+        pl._divePrevT = act?.payload?.skill === 'plongeon' ? act.t : null;
+        if (act?.payload?.skill === 'plongeon' && act.payload.cross?.t > 0 && (!pl._diveStart || newDive)) {
+          // …le TIME-WARP JUSQU'AU CONTACT SEULEMENT : le rate calait la détente sur l'heure du
+          // ballon mais rejouait AUSSI le couché-relevé en accéléré (debout en ~0,5 s à ×2,2 —
+          // « ils se relèvent trop vite »). Après le contact du clip, l'horloge repasse à ×1.
           const rate = Math.max(0.8, Math.min(2.2, antic / Math.max(0.15, act.payload.cross.t)));
-          tG = t * rate;
+          pl._diveStart = { p: [pl.sim.p[0], pl.sim.p[2]], yaw: s.yaw, rate, tA: antic / rate, antic };
         }
+        if (diveClip && pl._diveStart) {
+          const D = pl._diveStart;
+          tG = t < D.tA ? t * D.rate : D.antic + (t - D.tA);
+          // LA RÉCONCILIATION : le voyage sim (axes personnage) au canal de biais de l'écrivain
+          // des hanches — le rendu dessine clip − voyage : le dessin domine tôt, converge vers
+          // la sim, le fondu de fin part d'un delta ≈ 0.
+          const vx = pl.sim.p[0] - D.p[0], vz = pl.sim.p[2] - D.p[1];
+          // …exprimé dans les axes RÉELS du modèle (colonnes de sa matrice monde) : la
+          // conversion par le yaw sim ignorait l'offset de facing du rig et la rotation rendue
+          // — deux populations mesurées : des plongeons parfaits (0,16 m) et des faux (2,7 m).
+          const me = pl.model.matrixWorld.elements;
+          const rl = Math.hypot(me[0], me[2]) || 1, fl = Math.hypot(me[8], me[10]) || 1;
+          if (pl.hipsCtl) pl.hipsCtl.bias = [(vx * me[0] + vz * me[2]) / rl, 0, -(vx * me[8] + vz * me[10]) / fl];
+        } else if (pl._diveStart) { pl._diveStart = null; if (pl.hipsCtl) pl.hipsCtl.bias = null; }
         const tSample = tG < antic ? tG + (0.3 * antic) * (1 - tG / antic) : tG;
         pl.gestureLayer.apply(tSample, pl._wLegs, pl._wUp);
         if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
-      } else { pl._wLegs = 0; pl._wUp = 0; }
+      } else {
+        pl._wLegs = 0; pl._wUp = 0;
+        if (pl._diveStart) { pl._diveStart = null; if (pl.hipsCtl) pl.hipsCtl.bias = null; }
+      }
       // LE REGARD — après la couche (il compose par-dessus les clés Head du geste, fondu quand le
       // clip possède la tête), avant le warp. La politique lit la photo sim que la scène a déjà.
       {

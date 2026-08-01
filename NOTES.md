@@ -1785,6 +1785,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    verify-match 73, attributs 13 (10 graines), rondo 40/40 au bit près, dribble 17, sync 7/7,
    audit-membres 16/0, audit-gants 6/0.
 
+40. **Le corps du plongeon (retour utilisateur : « beaucoup de glissades, les positions font
+   presque de la téléportation ; ils se relèvent trop vite ; pas au bon endroit ; il plonge du
+   mauvais côté »).** Mesuré AVANT, en composé : hanches rendues à 122 m/s (p50 du pic par
+   plongeon !), corps rendu à 1,19 m (p50) du corps sim à la fin du geste, et le voyage sim
+   pendant la détente p50 2,37 m / p90 4,01 pour un écart réel au ballon de ~1,9 — LE CORPS
+   TRAVERSAIT le point d'interception (la vitesse était calée pour couvrir l'écart dans cross.t
+   mais courait la durée pleine de l'armé) : le ballon finissait DERRIÈRE le gardien, de l'autre
+   côté — le « il se déplace plus loin que le ballon » des captures. CINQ LOIS : (a) LA DÉTENTE
+   S'ARRÊTE AU POINT (lungeMax = min(1,35, écart + 0,2) — 1,35 = le root motion du bassin ; au-
+   delà, l'envergure est le métier des BRAS : gants à 2,1 par l'IK + warp) ; (b) LES CLIPS SE
+   RELÈVENT SUR PLACE (les clés finales gardent le déport latéral — ramener les hanches à
+   [0,0,0] faisait RECULER le corps de 1,35 m pendant le relevé) ; (c) LA RÉCONCILIATION DES
+   DEUX VOYAGES : canal de biais dans l'écrivain des hanches (delta appliqué = clip − voyage
+   sim, en axes personnage) — le dessin domine tôt, converge vers la sim, le fondu part de ≈ 0 ;
+   l'état vit avec LE CLIP (pas l'acte — nettoyer sur l'acte laissait la fin sans biais) et se
+   re-pose sur acte jeune ; (d) LE TIME-WARP AVANT-CONTACT SEULEMENT (l'horloge repasse à ×1
+   après le contact — le rate ×2,2 rejouait le couché-relevé en accéléré : debout en ~0,5 s, le
+   « ils se relèvent trop vite ») + keeperDown 0,75 → 1,15 s (le sim couvre le relevé réel) ;
+   (e) LE MIROIR SE JUGE AU MODÈLE — la trouvaille du lot : « cross.z > gk.z → gauche » était
+   une convention MONDE, vraie pour un gardien et inversée pour celui d'en face — LA MOITIÉ DES
+   PLONGEONS SE JOUAIENT MIRRORÉS À L'ENVERS (clip dessiné à l'opposé de la détente, hips à
+   2,5 m du corps : le vrai « il plonge du mauvais côté », pendant que le CÔTÉ SIM était sain —
+   1/22). Deux conventions sim (camp, produit vectoriel au regard) ont encore échoué (offset de
+   facing du rig, lissage du regard rendu) ; le juge fiable est la scène : le lunge projeté sur
+   la DROITE RÉELLE du modèle (colonne X de sa matrice monde) choisit le côté du clip, et le
+   warp du gant suit le même côté. APRÈS : écart corps rendu-sim p50 1,19 → 0,28 m, vitesse
+   hanches p50 122 → 15,9 m/s (résiduel connu : les re-plongeons enchaînés — un changement de
+   clip sans blend). Le sabotage a aussi débusqué DEUX gardes manquantes : le râteau et la
+   semelle sans protection « ballon soufflé » (le claim du gardien peut souffler leur ballon en
+   plein geste — label-bouclier aboli, c'est voulu) → abort nommé uniforme sur les cinq gestes à
+   carry. CLAUSES : audit-gants 9 (relevé-au-lieu p50 ≤ 0,5, pas de téléport p50 ≤ 30 m/s,
+   sabotage nommé « plongeon-monde » : la convention naïve rejoue le mauvais côté, 2,39 vs
+   0,28) ; bandes re-calées en conscience : gant 0,6 → 0,65 (re-donne du miroir corrigé),
+   conversion plancher 8 → 5 % (le monde tire plus — 49 tirs/6 graines, 4 graines à 6 % vs 6 à
+   10 %), respiration plafond 95 → 98,5 AVEC la dette des sorties re-nommée (4/24 min — le
+   chantier du backlog borne l'extrême, la clause ne le remplace pas). verify-match 73, gestes
+   50, rondo 40/40 au bit près, attributs 13, sync 7/7, audit-membres 16/0.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
