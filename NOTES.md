@@ -1577,6 +1577,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    déclenchement), verify-match 59, attributes 13, rondo 40/40 au bit près, verrou 8,63, audit
    membres 16/0, ALL-SYNC 7/7.
 
+34. **Le porteur passe par son ballon (retour utilisateur en CAPTURES : « le joueur court et le
+   ballon est à sa droite, même un peu derrière lui »).** Le diagnostic que les captures rendaient
+   indiscutable : la cible de locomotion du porteur était la POUSSÉE PROJETÉE (p.target = corps +
+   push × 3) — le plan — jamais le ballon réel. Quand le plan (EMA but/évasion) divergeait du
+   ballon (pivot, déviation, touche contestée), le corps courait vers le plan et le ballon restait
+   — jusqu'au rayon plat de 3 m ; et la pointe carrySurge ne libérait que la VITESSE, pas la
+   direction : il courait plus vite du mauvais côté. Mesuré : 5,9 % du porté en course avec le
+   ballon HORS DU CÔNE AVANT (> 75°) à > 0,9 m, dont 323 images ballon DERRIÈRE le corps,
+   épisodes jusqu'à 1,2 s. Loi (cfg.carryViaBall, match) : au-delà de la portée de contrôle
+   (0,85 m), LA CIBLE EST LE BALLON — routé un demi-pas au-delà dans le sens du plan pour le
+   prendre dans la foulée ; le plan reprend au pied. Après : 0,6-0,7 % hors cône, derrière 323 →
+   50 images (transitoires de pivot). Clause + sabotage « cible-plan » (5,7 % sans la loi) ; et
+   la fixture du régime serré isole désormais LA TOUCHE en désactivant la collecte dans ses deux
+   bras (le porteur-qui-passe-par-son-ballon tronquait le plateau des deux régimes — 1,43 contre
+   1,54, fixture aveugle). verify-match 61 clauses, rondo 40/40, gestes 41, verrou 8,63, audit
+   16/0, ALL-SYNC 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

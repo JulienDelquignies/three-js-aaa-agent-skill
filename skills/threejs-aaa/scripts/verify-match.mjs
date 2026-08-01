@@ -270,7 +270,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // séparation déterministe du mécanisme.
     const excursion = (tight) => {
       const st = makeMatch({ perTeam: 5, seed: 3 });
-      const cfg = matchCfg(tight ? {} : { carryTight: 1 });
+      // …collecte désactivée dans LES DEUX bras : le porteur-qui-passe-par-son-ballon tronque
+      // le plateau des deux régimes (1,43 contre 1,54 mesuré) — la fixture isole LA TOUCHE
+      const cfg = matchCfg(tight ? { carryViaBall: false } : { carryTight: 1, carryViaBall: false });
       for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
       const c = st.players.find((p) => !p.keeper && p.team === 0);
       st.restart = null; st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.hold = 1;
@@ -288,6 +290,31 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const dSerre = excursion(true), dKnock = excursion(false);
     ok(`…et le RÉGIME se prouve sur fixture (excursion serrée ${dSerre.toFixed(2)} m < pleine ${dKnock.toFixed(2)} − 0,3)`,
       dSerre < dKnock - 0.3);
+    // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible-plan faisait courir le corps
+    // pendant que le ballon réel vivait à droite ou DERRIÈRE (captures utilisateur — mesuré :
+    // 5,9 % du porté en course hors du cône avant, 323 images ballon derrière, épisodes 1,2 s)
+    const horsCone = (overrides) => {
+      let cf = 0, hc = 0;
+      for (const seed of [3, 7]) {
+        const st = makeMatch({ perTeam: 5, seed });
+        const cfg = matchCfg(overrides);
+        for (let i = 0; i < 120 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          const c = st.players[st.possession.carrier];
+          if (st.phase === 'carry' && c && !c.keeper && !c.act && c.speed > 1.5) {
+            cf++;
+            const bx = st.ball.p[0] - c.p[0], bz = st.ball.p[2] - c.p[2];
+            const d = Math.hypot(bx, bz);
+            if (d > 0.9 && (bx * c.v[0] + bz * c.v[1]) / (d * (c.speed || 1)) < 0.26) hc++;
+          }
+        }
+      }
+      return 100 * hc / Math.max(1, cf);
+    };
+    const via = horsCone({});
+    const plan = horsCone({ carryViaBall: false });
+    ok(`le porteur PASSE PAR SON BALLON (${via.toFixed(1)} % du porté en course hors du cône avant ≤ 2,5 — avant la loi : 5,9)`, via <= 2.5);
+    ok(`sabotage « cible-plan » attrapé (${plan.toFixed(1)} % hors cône sans la loi ≥ ${(via + 2).toFixed(1)})`, plan >= via + 2);
   }
 }
 

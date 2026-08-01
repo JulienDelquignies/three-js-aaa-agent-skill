@@ -68,7 +68,10 @@ posé sur le porteur en touchF, consommé par dribble.js),
 `meetBall`/`meetZone`/`meetStep` (le receveur ATTAQUE son ballon d'un pas sur l'AXE de la
 livraison dans les derniers mètres — pas un correcteur balistique : l'erreur latérale échappe),
 `execSigma` (le déchet technique du joueur MOYEN, ≈ 2,5° — les notes le raffinent, l'urgence
-l'aggrave ; sans lui le monde non noté exécutait parfaitement).
+l'aggrave ; sans lui le monde non noté exécutait parfaitement),
+`carryViaBall` (le porteur PASSE PAR SON BALLON : au-delà de la portée de contrôle, la cible de
+locomotion est le ballon réel, pas la poussée projetée — le corps ne court jamais en laissant
+son ballon derrière).
 
 Chaque hook est un no-op absent — le rondo d'origine est inchangé au bit près quand `cfg` ne les
 porte pas (mesuré : verrou de balance identique).

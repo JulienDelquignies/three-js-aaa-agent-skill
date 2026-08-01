@@ -73,6 +73,7 @@ export const MATCH = {
     frappeFeinteBite: 0.7,  // s — on ne se jette pas devant une demi-frappe (plus long qu'une feinte de passe)
     frappeFeinteCd: 9,      // s
   },
+  carryViaBall: true,     // le porteur PASSE PAR SON BALLON (cible = ballon au-delà de la portée) ; false : la cible-plan (sabotage nommé)
   meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)
   meetStep: 1.3,          // m — UN PAS ET DEMI vers le ballon, sur l'axe de la livraison (pas un correcteur balistique)
   execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
@@ -401,7 +402,19 @@ function assignMatchJobs(st, cfg) {
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = Math.hypot(p._pushS[0], p._pushS[1]) || 1;
       p.push = [p._pushS[0] / sl, p._pushS[1] / sl];
-      p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3];
+      // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible de locomotion était la
+      // POUSSÉE PROJETÉE — le plan — même quand le ballon réel vivait à 2 m à droite ou DERRIÈRE
+      // le corps (captures utilisateur ; mesuré : 5,9 % du porté en course hors du cône avant,
+      // 323 images ballon derrière, épisodes de 1,2 s — et la pointe carrySurge ne libérait que
+      // la VITESSE : il courait plus vite du mauvais côté). Au-delà de la portée de contrôle, la
+      // cible EST le ballon — routé un demi-pas au-delà dans le sens du plan, pour le prendre
+      // dans la foulée ; le plan reprend au pied.
+      const dBall = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
+      if (cfg.carryViaBall !== false && dBall > 0.85) {
+        p.target = [st.ball.p[0] + p.push[0] * 0.4, 0, st.ball.p[2] + p.push[1] * 0.4];
+      } else {
+        p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3];
+      }
       continue;
     }
     p.push = null;
