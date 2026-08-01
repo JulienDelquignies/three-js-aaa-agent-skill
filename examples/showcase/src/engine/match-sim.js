@@ -78,6 +78,13 @@ export const MATCH = {
   meetStep: 1.3,          // m — UN PAS ET DEMI vers le ballon, sur l'axe de la livraison (pas un correcteur balistique)
   execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
+  pokeReach: 0.5,         // m — LE PIQUE : un ballon de conduite libre à portée de pied adverse
+                          // se dévie (poke tackle) ; null : le défenseur-spectateur (sabotage nommé)
+  prepTouch: true,        // LA TOUCHE DE PRÉPARATION avant la frappe (serre la touche quand le
+                          // couloir de tir est ouvert) ; false : l'empalement (sabotage nommé)
+  prepTouchF: 0.3,        // le régime de la touche de préparation (plus serré que carryTight)
+  prepDamp: 0.72,         // l'AMORTI de la touche de préparation (le ballon roule sous l'allure
+                          // du corps et se cale — sans lui, chaque touche relançait à v+1)
   gkRelease: 3.0,         // s — LA RÈGLE DES SIX SECONDES à l'échelle : passé ce délai, la
                           // distribution du gardien est FORCÉE (meilleure rampe, sinon punt) ;
                           // null : le gardien-attaquant (sabotage nommé — 87 m de dribble mesurés)
@@ -439,7 +446,11 @@ function assignMatchJobs(st, cfg) {
       // LA CONDUITE SERRÉE PAR DÉFAUT : la touche pleine (régime du rondo) ne se sert qu'en
       // rupture NOMMÉE (burst) — en croisière on garde le ballon sous la semelle (touchF 0,62 :
       // ~1,65 m à 6 m/s au lieu de 2,7)
-      p.touchF = (p._pace?.until ?? -1) > st.t ? 1 : (cfg.carryTight ?? 1);
+      p.touchF = (p._pace?.until ?? -1) > st.t ? 1
+        : (p._prepShot ?? -1) > st.t ? (cfg.prepTouchF ?? 0.3)   // la touche de préparation SERRE
+        : (cfg.carryTight ?? 1);
+      // …et AMORTIT (le canal vitesse de dribble.js) : le ballon se cale sous l'allure du corps
+      p.touchDamp = (p._prepShot ?? -1) > st.t ? (cfg.prepDamp ?? 0.72) : 1;
       const ev = evadeSpot(st, p, cfg);
       // L'AILIER À ANGLE FERMÉ REPIQUE DANS L'AXE (le cut-inside) : viser le centre du but depuis
       // le couloir profond mène au poteau de corner — 195 refus « angle-fermé » par lot de matchs
@@ -480,7 +491,13 @@ function assignMatchJobs(st, cfg) {
       // dans la foulée ; le plan reprend au pied.
       const dBall = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       if (cfg.carryViaBall !== false && dBall > 0.85) {
-        p.target = [st.ball.p[0] + p.push[0] * 0.4, 0, st.ball.p[2] + p.push[1] * 0.4];
+        // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà) :
+        // la cible à +0,4 m mettait l'amortissement d'arrivée du contrôleur en équilibre avec la
+        // décélération du ballon — bd cloué à 1,2-1,3 m, le pied n'entrait jamais en portée
+        // (mesuré : 58 refus 'prépare-frappe' sur une approche, zéro touche serrée). Le vrai
+        // geste accélère À TRAVERS le point de touche.
+        const over = (p._prepShot ?? -1) > st.t ? 2.2 : 0.4;
+        p.target = [st.ball.p[0] + p.push[0] * over, 0, st.ball.p[2] + p.push[1] * over];
       } else {
         p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3];
       }
@@ -673,6 +690,19 @@ function tryShot(st, c, cfg) {
     if (m > margin) { margin = m; if (m >= need) { tz = cz; break; } }
   }
   if (tz == null) return deny(st, 'tir-couloir-fermé');
+  // LA TOUCHE DE PRÉPARATION (cfg.prepTouch) : le ballon de course vit à 1,2-1,4 m — un poil
+  // AU-DELÀ de la portée d'armement des techniques de frappe. Sans cette loi, le tir tentait et
+  // se faisait refuser 'technique' EN BOUCLE (146 refus sur une seule course mesurés) jusqu'à
+  // s'empaler sur le gardien (11 approches < 4 m, 0 tir). Le vrai footballeur SERRE sa dernière
+  // touche avant la frappe : fenêtre de préparation posée sur le porteur (le régime de touche la
+  // lit : touchF ≈ 0,3), l'ancre rafraîchie pour que le retour du ballon se POSSÈDE — au pas où
+  // le ballon est au pied, la frappe arme.
+  const bdShot = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+  if (cfg.prepTouch !== false && bdShot > 0.95) {
+    c._prepShot = st.t + 0.9;
+    c.anchorHint = { t: st.t };
+    return deny(st, 'prépare-frappe');
+  }
   // LE RÉPERTOIRE DU TIR (« les frappes manquent de peps et de diversité ») : l'espèce se choisit
   // sur la GÉOMÉTRIE (près → on place, loin → on arme) + un tirage seedé + la note (une petite
   // dispersion de finition ose la lucarne). L'élévation se calcule balistiquement pour la hauteur

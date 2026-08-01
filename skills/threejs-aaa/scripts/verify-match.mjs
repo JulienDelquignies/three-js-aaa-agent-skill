@@ -228,8 +228,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     regains.length === 0 || regP90 <= 1.15);
   {
     const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
-    const vitesseLoin = (overrides) => {
-      const v = [];
+    // L'INSTRUMENT A SUIVI SON OBJET : la « vitesse moyenne à 1,5-2,9 m » n'a plus d'échantillon
+    // (0 image mesurée) — préparation de frappe + amorti referment ces écarts en croisière. La
+    // pointe se lit désormais à son EFFET : le TEMPS passé loin de sa touche par minute de
+    // conduite établie — la pointe le MANGE, le trottinement l'accumule.
+    const tempsLoin = (overrides) => {
+      let far = 0, tot = 0;
       for (const seed of [3, 7]) {
         const st = makeMatch({ perTeam: 5, seed });
         const cfg = matchCfg(overrides);
@@ -237,17 +241,18 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
           matchStep(st, 1 / 60, cfg);
           const c = st.players[st.possession.carrier];
           if (st.phase === 'carry' && c && !c.keeper && !c.act && st.ball.owner == null && st.hold >= 0.8) {
+            tot++;
             const d = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
-            if (d > 1.5 && d < 2.9) v.push(c.speed);
+            if (d > 1.5 && d < 2.9) far++;
           }
         }
       }
-      return v.reduce((a, b) => a + b, 0) / Math.max(1, v.length);
+      return { sMin: (far / 60) / Math.max(0.05, tot / 3600), far, tot };
     };
-    const vLoi = vitesseLoin({});
-    const vSans = vitesseLoin({ carrySurge: null });
-    ok(`…en POINTE, pas en trottinant (vitesse moyenne à 1,5-2,9 m du ballon : ${vLoi.toFixed(1)} m/s ≥ 4,8)`, vLoi >= 4.8);
-    ok(`sabotage « trottinement » attrapé (pointe coupée : ${vSans.toFixed(1)} m/s ≤ ${(vLoi - 0.5).toFixed(1)})`, vSans <= vLoi - 0.5);
+    const tLoi = tempsLoin({});
+    const tSans = tempsLoin({ carrySurge: null });
+    ok(`…la POINTE referme les écarts (${tLoi.sMin.toFixed(1)} s loin du ballon par min de conduite ≤ 2,5)`, tLoi.sMin <= 2.5);
+    ok(`sabotage « trottinement » attrapé (pointe coupée : ${tSans.sMin.toFixed(1)} s/min ≥ ${(tLoi.sMin + 1.5).toFixed(1)})`, tSans.sMin >= tLoi.sMin + 1.5);
     // LA CONDUITE EST SERRÉE PAR DÉFAUT (cfg.carryTight — la touche pleine est l'acte nommé d'un
     // burst) : la poussée 0,36 × v servie à toutes les croisières mettait 18 % du temps de
     // conduite à > 2 m du ballon — le plateau lointain de chaque poussée s'accumule en temps
@@ -578,7 +583,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         const nEv = st.events.length;
         matchStep(st, 1 / 60, cfg);
         if (cid >= 0 && !st.players[cid].keeper && st.phase === 'loose' && st.possession.carrier < 0
-          && !st.events.slice(nEv).some((e) => ['duel', 'turnover', 'sortie', 'but', 'pass', 'shot', 'centre'].includes(e.type))) {
+          && !st.events.slice(nEv).some((e) => ['duel', 'turnover', 'sortie', 'but', 'pass', 'shot', 'centre', 'pique'].includes(e.type))) {
           bascules++;
           const c = st.players[cid];
           // …et un porteur AU SOL est une bascule de CORPS (taclé, tombé), pas un vol
@@ -819,6 +824,101 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const cp = fixturePerte(true), cs = fixturePerte(false);
   ok(`le CONTRE-PRESS mord (fixture : l'ex-porteur chasse — job ${cp.job}, cible à ${cp.dT.toFixed(1)} m du ballon)`, cp.job === 'press' && cp.dT < 1);
   ok(`sabotage « course aveugle » attrapé (même fixture sans lossReact : job ${cs.job}, cible à ${cs.dT.toFixed(1)} m)`, !(cs.job === 'press' && cs.dT < 1));
+}
+
+// ---------- 3 undecies. LE CERVEAU ON-BALL DEVANT LE BUT ET LE PIQUE (retour utilisateur,
+// captures : « il va s'empaler dans le gardien sans rien tenter » ; « la défense n'arrive pas à
+// lui prendre la balle »)
+{
+  const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
+  // LA CONVERSION DES APPROCHES : une fenêtre de conduite dans les 14 m du but (≥ 0,6 s) doit
+  // SE RÉSOUDRE — tir, passe ou centre — pas s'empaler. Mesuré avant les lois : 41 % sans issue
+  // (le tir se faisait refuser 'technique' en boucle : ballon de course à 1,3 m, hors de portée
+  // d'armement) ; après (préparation + amorti + pointe étendue) : 13 %. Bande large : ≤ 30 %.
+  {
+    let windows = 0, muets = 0;
+    for (const seed of [3, 7, 11, 1]) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg();
+      let w = null;
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        const inCarry = st.phase === 'carry' && c && !c.keeper;
+        const goal = inCarry ? st.pitch.attackGoal(c.team) : null;
+        const dGoal = inCarry ? Math.hypot(goal.x - c.p[0], 0 - c.p[2]) : 99;
+        if (inCarry && dGoal < 14) {
+          if (!w || w.id !== c.id) w = { id: c.id, frames: 0, nEv: st.events.length };
+          w.frames++;
+        } else if (w) {
+          if (w.frames >= 36) {
+            windows++;
+            if (!st.events.slice(w.nEv).some((e) => ['shot', 'pass', 'centre'].includes(e.type))) muets++;
+          }
+          w = null;
+        }
+      }
+    }
+    ok(`une approche du but SE RÉSOUT (${muets}/${windows} fenêtres muettes ≤ 30 % — avant les lois : 41 %)`,
+      windows >= 8 && muets / windows <= 0.30);
+  }
+  // LA FIXTURE DE LA PRÉPARATION : porteur lancé plein axe à 12 m, ballon de course à 1,3 m,
+  // couloir libre — avec la loi, la chaîne préparation→amorti→possession→armé produit un TIR en
+  // ≤ 1,5 s ; sans elle (sabotage « empalement »), le refus 'technique' boucle et rien ne part.
+  const fixturePrep = (prep) => {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg(prep ? {} : { prepTouch: false });
+    for (let i = 0; i < 180; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((p) => !p.keeper && p.team === 0);
+    const goal = st.pitch.attackGoal(0);
+    st.restart = null; st.pass = null; st.hold = 2; st._settling = null;
+    st.players.forEach((p) => { if (p.id !== c.id && !p.keeper) { p.p = [-Math.sign(goal.x) * 10, 0, p.id - 5]; p.v = [0, 0]; } p.down = 0; p.act = null; p.intent = null; });
+    c.p = [goal.x - Math.sign(goal.x) * 12, 0, 0]; c.v = [Math.sign(goal.x) * 5.5, 0]; c.speed = 5.5;
+    c.yaw = Math.atan2(0, Math.sign(goal.x)); c._prepShot = null; c._skillCd = null;
+    st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.lastTouch = 0;
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([c.p[0] + Math.sign(goal.x) * 1.3, 0.11, 0], { cause: 'engagement' });
+    st.ball.impulse([Math.sign(goal.x) * 5.0, 0, 0]);
+    const nEv = st.events.length;
+    for (let i = 0; i < 90; i++) matchStep(st, 1 / 60, cfg);
+    return st.events.slice(nEv).some((e) => e.type === 'shot' || (e.type === 'windup' && e.move?.startsWith('frappe')));
+  };
+  ok('la TOUCHE DE PRÉPARATION arme le tir en course (fixture : ballon à 1,3 m → tir en ≤ 1,5 s)', fixturePrep(true) === true);
+  ok('sabotage « empalement » attrapé (même fixture sans prepTouch : aucun tir ne part)', fixturePrep(false) === false);
+  // LA FIXTURE DU PIQUE : ballon de conduite LIBRE à 0,4 m du pied d'un défenseur posé qui bat
+  // le porteur au point — avec la loi, le pied pique (événement nommé, ballon dévié, 50/50) ;
+  // sans elle (sabotage « défenseur-spectateur »), il regarde passer.
+  const fixturePique = (poke) => {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg(poke ? {} : { pokeReach: null });
+    for (let i = 0; i < 180; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((p) => !p.keeper && p.team === 0);
+    const q = st.players.find((p) => !p.keeper && p.team === 1);
+    st.restart = null; st.pass = null; st.hold = 1; st._settling = null;
+    st.players.forEach((p) => { if (p.id !== c.id && p.id !== q.id && !p.keeper) { p.p = [p.p[0], 0, -13]; p.v = [0, 0]; } p.down = 0; p.act = null; p.intent = null; });
+    c.p = [0, 0, 5]; c.v = [4, 0]; c.speed = 4; c.yaw = 0; c.intent = null;
+    q.p = [1.6, 0, 5.35]; q.v = [0, 0]; q._pokeCd = null;
+    st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.lastTouch = 0;
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([1.3, 0.11, 5.3], { cause: 'engagement' });
+    st.ball.impulse([2.5, 0, 0]);
+    const nEv = st.events.length;
+    for (let i = 0; i < 30; i++) matchStep(st, 1 / 60, cfg);
+    return st.events.slice(nEv).some((e) => e.type === 'pique');
+  };
+  ok('le PIQUE existe (fixture : pied adverse au ballon libre de conduite → dévié, événement nommé)', fixturePique(true) === true);
+  ok('sabotage « défenseur-spectateur » attrapé (même fixture sans pokeReach : il regarde passer)', fixturePique(false) === false);
+  // …et le pique VIT en flux sans dévorer la conduite : existence sur 4 graines, sobriété ≤ 30
+  {
+    let piques = 0;
+    for (const seed of [3, 7, 11, 1]) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg();
+      for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
+      piques += st.events.filter((e) => e.type === 'pique').length;
+    }
+    ok(`le pique VIT en flux, sobrement (${piques} sur 4 × 120 s ∈ [2 ; 30])`, piques >= 2 && piques <= 30);
+  }
 }
 
 // ---------- 4. les sabotages

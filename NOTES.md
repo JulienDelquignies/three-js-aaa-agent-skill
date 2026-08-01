@@ -1699,6 +1699,50 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    contact), et si un jour nos pertes de conduite re-deviennent un retour utilisateur, la
    décomposition directionnelle de cette sonde est l'instrument à ressortir.
 
+38. **La conduite qui se voit, le tir en course, le pique (retour utilisateur en captures : « il
+   ne touche jamais le ballon… la défense n'arrive pas à lui prendre la balle… il va s'empaler
+   dans le gardien sans rien tenter »).** La sonde a d'abord INNOCENTÉ le suspect : zéro image
+   de ballon « téléguidé » (le porté-owner vit toujours ≤ 1,3 m) — les touches EXISTENT (détectées
+   à ≤ 1,15 m, jambe tendue) mais AUCUN geste ne les montrait : le mensonge était au RENDU. Et
+   elle a confirmé le reste : 11 approches à < 4 m du gardien, 0 tir (41 % des fenêtres
+   d'approche muettes) ; le plus proche défenseur passait à 0,70 m du ballon (p50) sans aucun
+   mécanisme pour le jouer. LA CHAÎNE DU TIR EN COURSE, débusquée refus par refus : le tir se
+   faisait refuser 'technique' EN BOUCLE (146 fois sur une course — ballon de course à 1,2-1,4 m,
+   hors de portée d'armement) ; la touche de préparation v1 (serrer le lead) n'a RIEN changé —
+   frame-dump : la BANDE MORTE (entre la portée de touche 1,15 et le seuil de pointe 1,25,
+   personne ne referme), puis l'AMORTISSEMENT D'ARRIVÉE (cible carryViaBall à +0,4 m → équilibre
+   avec la décélération du ballon, bd cloué à 1,3), puis LA VRAIE NATURE DE LA TOUCHE : pushSpeed
+   lit la vitesse du corps, donc toute touche « courte » RELANÇAIT le ballon à v+1 (7,0 mesuré à
+   6,1 de course) — une touche de préparation n'est pas une poussée, c'est un AMORTI. Les lois :
+   cfg.prepTouch (tryShot pose la fenêtre quand le couloir est ouvert et le ballon hors
+   d'armement, refus nommé 'prépare-frappe'), le canal VITESSE touchDamp dans dribble.js (absent
+   = 1, bit-près — l'amorti cale le ballon sous l'allure du corps, plancher 2,0), prepDamp 0,72,
+   prepTouchF 0,3, la pointe s'arme à 0,95 pendant la fenêtre (la bande morte), la cible traverse
+   le ballon (+2,2 m). Frame-dump APRÈS : bd 1,24 → 0,85 → possession → ballon calé 0,56 → le
+   windup du tir démarre. Mesuré : 41 % → 13 % de fenêtres muettes (et les restantes finissent en
+   passe d'angle fermé — un choix, pas un mutisme). LE PIQUE (cfg.pokeReach 0,5) : un ballon de
+   conduite LIBRE est libre AUSSI pour l'adversaire — le pied qui le bat au point (marge 0,15 m,
+   cooldown 1,2 s, ballon au sol) le DÉVIE (impulse à travers, événement 'pique', phase loose,
+   50/50) ; 9 piques/4 matchs — le contest existe, sobre. LA TOUCHE QUI SE VOIT : l'événement
+   'touche' (émis par les trois sites dribbleStep — le rondo l'émet aussi, bit-près préservé :
+   40/40) + LE WARP DE TOUCHE dans la scène, QUATRIÈME consommateur du warp de contact (pied de
+   frappe, gant, racine, pied de conduite) : autour de chaque touche (0,2 s, enveloppe sin C¹),
+   le pied le plus proche est corrigé vers la surface (planWarp, IK deux os, écrêtage de portée,
+   interrupteur de sabotage 'warp-touche'). Mesuré composé : pied-ballon à la touche p50 0,48 →
+   0,32 m (322 touches). MORTS D'INSTRUMENTS À LA RE-DONNE, réparées : « vitesse moyenne à
+   1,5-2,9 m » n'avait PLUS D'ÉCHANTILLON (les lois ont refermé ces écarts en croisière) →
+   l'instrument suit son objet : TEMPS loin de sa touche par minute de conduite (0,0 avec la
+   pointe, 8,2 sans — le sabotage mord plus fort qu'avant) ; volLegales exempte le pique (un
+   acte adverse NOMMÉ n'est pas un vol d'étiquette). Clauses : 6 nouvelles verify-match (73 —
+   conversion des approches ≤ 30 %, fixture préparation → tir en ≤ 1,5 s + sabotage
+   « empalement », fixture pique + sabotage « défenseur-spectateur », sobriété du pique en flux),
+   2 nouvelles audit-gants (6 — pied AU ballon p50 ≤ 0,45 + sabotage 'warp-touche').
+   verify-rondo 40/40 au bit près, dribble 17, gestes 41, attributs 13, sync 7/7, audit-membres
+   16/0. RESTE NOMMÉ (le lot suivant, cahier des charges utilisateur) : la VARIÉTÉ des dribbles —
+   crochets chaloupés (Dembélé) et courts (Yamal), passements multi-tours (Mancini, Reveillère),
+   sorties de dribble paramétrées (tout droit pour fixer, diagonale pour le contre-pied, arrière
+   pour temporiser).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

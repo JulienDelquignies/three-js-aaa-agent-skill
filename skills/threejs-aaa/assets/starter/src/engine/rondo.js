@@ -752,8 +752,13 @@ function movePlayers(st, dt, cfg) {
     // pendant les conduites de balle » (retour utilisateur, troisième passe).
     // …mais JAMAIS le gardien : sa touche poussée se distribue, elle ne se sprinte pas (le
     // gardien-attaquant à 87 m vivait aussi de cette pointe ; champ absent au rondo — neutre)
+    // …et pendant la TOUCHE DE PRÉPARATION (p._prepShot, posé par tryShot), la pointe s'arme
+    // plus tôt (0,95 au lieu de 1,25) : la bande morte entre la portée de touche (1,15) et le
+    // seuil de pointe laissait le porteur plafonné à l'allure de conduite face à un ballon qui
+    // décélérait vers la même allure — bd cloué à 1,2-1,3 pendant TOUTE l'approche (mesuré),
+    // la touche serrée ne mordait jamais, le tir jamais armé.
     if (cfg.carrySurge && p.job === 'carry' && !p.keeper && st.possession.carrier === p.id
-      && d2(p.p, st.ball.p) > cfg.carrySurge.at) {
+      && d2(p.p, st.ball.p) > ((p._prepShot ?? -1) > st.t ? 0.95 : cfg.carrySurge.at)) {
       top = Math.max(top, cfg.carrySurge.top * (p.skill?.topF ?? p.persona?.paceBias ?? 1));
     }
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse

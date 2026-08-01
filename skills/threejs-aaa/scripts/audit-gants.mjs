@@ -51,12 +51,28 @@ async function mesurer(seed, secs, sabotage) {
   const rows = await page.evaluate(async (frames) => {
     const S = window.__rondo;
     const out = [];
+    const touches = [];
     let nEv = 0;
     for (let f = 0; f < frames; f++) {
       S.update(1 / 60);
       const evs = S.state.events;
+      // …les TOUCHES DE CONDUITE : mesurer le pied 0,1 s après l'événement (pic de l'enveloppe)
+      for (const pl of S.players) {
+        if (pl._auditTouchAt === f) {
+          const b = S.state.ball.p;
+          let best = 99;
+          pl.model.traverse((o) => { if (o.isBone && /Foot$/i.test(o.name)) { const w = new (Object.getPrototypeOf(pl.model.position).constructor)(); o.getWorldPosition(w); best = Math.min(best, Math.hypot(w.x - b[0], w.y - b[1], w.z - b[2])); } });
+          touches.push(+best.toFixed(2));
+          pl._auditTouchAt = null;
+        }
+      }
       for (; nEv < evs.length; nEv++) {
         const e = evs[nEv];
+        if (e.type === 'touche') {
+          const pl = S.players.find((q) => q.sim.id === e.by);
+          if (pl) pl._auditTouchAt = f + 6;
+          continue;
+        }
         if (e.type !== 'arrêt' || (e.mode !== 'prise' && e.mode !== 'claquette')) continue;
         const pl = S.players.find((q) => q.sim.id === e.by);
         if (!pl) continue;
@@ -73,7 +89,7 @@ async function mesurer(seed, secs, sabotage) {
         out.push({ mode: e.mode, d: +d.toFixed(2), at: pl.sim.act ? +pl.sim.act.t.toFixed(2) : null, hipsY: hipsY != null ? +hipsY.toFixed(2) : null });
       }
     }
-    return out;
+    return { rows: out, touches };
   }, Math.round(secs * 60));
   await page.close();
   return rows;
@@ -85,8 +101,8 @@ let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
 // ---- le monde vrai : 4 graines × 120 s (les mêmes que la sonde de développement)
-const vrais = [];
-for (const seed of [3, 7, 11, 1]) vrais.push(...await mesurer(seed, 120, null));
+const vrais = []; const touchesV = [];
+for (const seed of [3, 7, 11, 1]) { const m = await mesurer(seed, 120, null); vrais.push(...m.rows); touchesV.push(...m.touches); }
 const dsV = vrais.map((r) => r.d);
 console.log(`monde vrai : ${vrais.length} arrêts — ${JSON.stringify(vrais)}`);
 
@@ -105,9 +121,20 @@ ok('à l\'instant de l\'arrêt, le gant le plus proche touche le ballon (p50 ≤
 const devs = vrais.filter((r) => (r.at ?? 0) >= 0.3 && r.hipsY != null);
 ok('sur les arrêts développés (t ≥ 0,3), le corps est couché (hanches p50 ≤ 0,7 m)', devs.length === 0 || p50(devs.map((r) => r.hipsY)) <= 0.7, `p50 ${devs.length ? p50(devs.map((r) => r.hipsY)) : '—'} sur ${devs.length}`);
 
+// ---- LE PIED DE CONDUITE TOUCHE SON BALLON (le warp de touche — quatrième consommateur ;
+// retour utilisateur : « il ne touche jamais le ballon », le contact sim était invisible)
+ok(`aux touches de conduite, le pied le plus proche est AU ballon (p50 ${p50(touchesV)} ≤ 0,45 m sur ${touchesV.length})`,
+  touchesV.length >= 30 && p50(touchesV) <= 0.45);
+{
+  const tSab = [];
+  for (const seed of [3, 7]) tSab.push(...(await mesurer(seed, 120, 'warp-touche')).touches);
+  ok(`sabotage « warp-touche » : sans lui le pied re-flotte (p50 ${p50(tSab)} ≥ ${(p50(touchesV) + 0.06).toFixed(2)})`,
+    p50(tSab) != null && p50(tSab) >= p50(touchesV) + 0.06);
+}
+
 // ---- SABOTAGE NOMMÉ 'warp-gant' : couper le warp (gant + racine) doit ROUVRIR l'écart
 const sab = [];
-for (const seed of [3, 7]) sab.push(...await mesurer(seed, 120, 'warp-gant'));
+for (const seed of [3, 7]) sab.push(...(await mesurer(seed, 120, 'warp-gant')).rows);
 const dsS = sab.map((r) => r.d);
 console.log(`monde saboté : ${sab.length} arrêts — p50 ${p50(dsS)}`);
 ok('sabotage « warp-gant » : sans le warp, le gant re-flotte loin du ballon (p50 ≥ p50 vrai + 0,25)',

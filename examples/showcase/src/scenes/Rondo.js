@@ -453,6 +453,50 @@ export class Rondo {
     aimChildAt(arm.elbow, arm.hand, this._wm.fromArray(sol.end));
   }
 
+  /** LE WARP DE TOUCHE — quatrième consommateur du warp de contact (pied de frappe, gant,
+   *  racine, et maintenant LE PIED DE CONDUITE). La sim touche à ~1,15 m (jambe tendue) mais le
+   *  clip de course ne le sait pas : le contact restait invisible — « il ne touche jamais le
+   *  ballon » (retour utilisateur, captures). Autour de chaque événement 'touche' (0,2 s),
+   *  le pied le plus proche est corrigé vers la surface du ballon : même primitive (planWarp,
+   *  IK deux os), enveloppe sin C¹ (zéro aux deux bouts), borné, hors gestes (un act possède
+   *  déjà sa jambe). */
+  _applyTouchWarp(pl) {
+    if (typeof window !== 'undefined' && window.__sabotage === 'warp-touche') return;
+    const T = pl._touchT;
+    if (T == null || pl.sim.act) return;
+    const u = (this._t - T) / 0.2;
+    if (u <= 0 || u >= 1) return;
+    const b = this.state.ball.p;
+    if (b[1] > 0.6) return;
+    // le pied le plus proche du ballon fait la touche
+    let side = null, dBest = 1.8;
+    for (const f of ['left', 'right']) {
+      const leg = pl.legs?.[f];
+      if (!leg?.foot || !leg.up || !leg.knee || !pl.legLens?.[f]) continue;
+      leg.foot.getWorldPosition(this._wf);
+      const d = Math.hypot(this._wf.x - b[0], this._wf.y - b[1], this._wf.z - b[2]);
+      if (d < dBest) { dBest = d; side = f; }
+    }
+    if (!side) return;
+    const leg = pl.legs[side], lens = pl.legLens[side];
+    leg.foot.getWorldPosition(this._wf);
+    const plan = planWarp([this._wf.x, this._wf.z], [b[0], b[2]], { standoff: 0.13, warpMax: 0.42 });
+    const env = Math.sin(Math.PI * u);
+    this._wt.set(this._wf.x + plan.offset[0] * env, this._wf.y, this._wf.z + plan.offset[1] * env);
+    leg.up.getWorldPosition(this._wh); leg.knee.getWorldPosition(this._wk);
+    const dT = this._wh.distanceTo(this._wt);
+    const R = (lens.A + lens.B) * 0.995;
+    if (dT > R) {
+      this._wt.set(this._wh.x + (this._wt.x - this._wh.x) * (R / dT), this._wh.y + (this._wt.y - this._wh.y) * (R / dT), this._wh.z + (this._wt.z - this._wh.z) * (R / dT));
+    }
+    const sol = twoBoneIK(
+      [this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B,
+      [this._wk.x - this._wh.x, this._wk.y - this._wh.y, this._wk.z - this._wh.z],
+    );
+    aimChildAt(leg.up, leg.knee, this._wm.fromArray(sol.mid));
+    aimChildAt(leg.knee, leg.foot, this._wm.fromArray(sol.end));
+  }
+
   _applyStrikeWarp(pl) {
     const a = pl.sim.act;
     if (!a || a.payload?.kind !== 'pass' || !a.payload.pick) { pl._warp = null; pl._warpCal = null; return; }
@@ -586,6 +630,12 @@ export class Rondo {
         const pl = this.players[e.by];
         if (pl) pl._rxAt = this._t;
         if (pl && pl._teched !== this._t) this._playTech(pl, { ...e, move: e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || 'amorti' });
+      } else if (e.type === 'touche') {
+        // LA TOUCHE DE CONDUITE SE VOIT (retour utilisateur, captures : « il ne touche jamais le
+        // ballon ») : la sim inscrit chaque touche ; la scène tend le pied vers le ballon autour
+        // de cet instant (_applyTouchWarp) — sans ça le contact réel restait invisible.
+        const pl = this.players[e.by];
+        if (pl) pl._touchT = this._t;
       } else if (e.type === 'skill' && this._gesteHud && e.kind !== 'passement-vendu') {
         // le ticker : l'événement du CONTACT du geste (skillContactNow), pas l'intention —
         // 'passement-vendu' est le mordu du même passement, il n'est pas un second geste
@@ -734,6 +784,7 @@ export class Rondo {
       // l'autorité de la jambe frappeuse — après le verrou, en dernier
       this._applyStrikeWarp(pl);
       this._applyDiveWarp(pl);
+      this._applyTouchWarp(pl);
     }
 
     // ---- the ball, spun by its own angular velocity

@@ -18,9 +18,11 @@ Démos vivantes : https://showcase-pi-mocha.vercel.app (rondo = `rondo.html`, ma
   règle, personas (identité de mouvement par joueur), latence de
   perception, terrain-donnée (réduit ET Loi 1).
 - **L'habillage** : couche de geste absolue (pose = rest ⊗ spec), Motion Warping de contact
-  générique — TROIS consommateurs d'une même capacité : le pied de frappe (planaire, calibré en
-  ligne), le gant du plongeon (planWarp3, IK deux os, time-warp du clip vers l'heure du ballon)
-  et la racine (le bassin complète la détente, borné) —, verrou de pieds IK, regard
+  générique — QUATRE consommateurs d'une même capacité : le pied de frappe (planaire, calibré en
+  ligne), le gant du plongeon (planWarp3, IK deux os, time-warp du clip vers l'heure du ballon),
+  la racine (le bassin complète la détente, borné) et le pied de conduite (chaque événement
+  'touche' de la sim tend le pied vers le ballon — le contact invisible était lu « il ne touche
+  jamais le ballon ») —, verrou de pieds IK, regard
   (saccades/poursuite), inclinaison dans l'accélération,
   cadence de jambes asservie à la vitesse sol, stade paramétrique (tribunes, pelouse peinte,
   cages — tout suit `{pitch, goal}`).
@@ -82,7 +84,14 @@ de distribution — jamais vers l'avant — et passé le délai la distribution 
 rampe sinon punt ; sans elle le gardien-porteur dribblait 87 m — sabotage nommé),
 `lossReact` (LE DÉPOSSÉDÉ SE RETOURNE : pendant la fenêtre après sa perte, l'ex-porteur chasse
 son ballon au lieu de repartir en coureur de slot dos au jeu — le contre-press du métier ;
-sabotage nommé « course aveugle »).
+sabotage nommé « course aveugle »),
+`prepTouch`/`prepTouchF`/`prepDamp` (LA TOUCHE DE PRÉPARATION : quand le couloir de tir est
+ouvert et le ballon de course hors de portée d'armement, la touche suivante SERRE et AMORTIT —
+le canal vitesse `touchDamp` de dribble.js cale le ballon sous l'allure du corps, la pointe
+s'arme plus tôt, la cible traverse le point de touche ; sans elle, le tir se refusait
+'technique' en boucle jusqu'à l'empalement sur le gardien — sabotage nommé),
+`pokeReach` (LE PIQUE : un ballon de conduite LIBRE est libre aussi pour l'adversaire — le pied
+qui le bat au point le dévie, événement nommé, 50/50 réel ; sabotage « défenseur-spectateur »).
 
 Chaque hook est un no-op absent — le rondo d'origine est inchangé au bit près quand `cfg` ne les
 porte pas (mesuré : verrou de balance identique).

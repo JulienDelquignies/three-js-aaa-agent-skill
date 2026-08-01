@@ -133,7 +133,12 @@ export function dribbleStep(d, ball, player, dt) {
     // chaque poussée (homme et ballon filent à la même allure, la fermeture n'arrive qu'en fin
     // de roulement). Mesuré : bursts nommés = 0,1 % du porté — le geste long était devenu la règle.
     const lead = (touchDistance(player.speed) / (1 + turn * 1.9)) * kSpace * (player.leadF ?? 1) * (player.touchF ?? 1);
-    const sp = Math.max(c.minPush, pushSpeed(player.speed, lead));
+    // …et le canal VITESSE (player.touchDamp, absent = 1 : bit-près) : une touche d'AMORTI EN
+    // COURSE absorbe au lieu de relancer — le ballon roule SOUS l'allure du corps et se cale
+    // pour la frappe. Mesuré sans lui : pushSpeed lit la vitesse du porteur, donc chaque touche
+    // « courte » RELANÇAIT le ballon à v+1 (7,0 mesuré à 6,1 de course) — le ballon de course ne
+    // se posait jamais, le tir jamais armé (l'empalement sur le gardien).
+    const sp = Math.max(2.0, Math.max(c.minPush, pushSpeed(player.speed, lead)) * (player.touchDamp ?? 1));
     // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
     // blended with the ball's current line so a touch never teleports its direction
     const cvx = ball.v[0], cvz = ball.v[2];

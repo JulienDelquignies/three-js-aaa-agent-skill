@@ -828,6 +828,13 @@ function skillContactNow(st, p, cfg) {
   }
 }
 
+/** La touche de conduite S'INSCRIT (type 'touche') : le rendu dessine le pied qui joue, les
+ *  sondes comptent les vraies touches — un contact que personne ne voit était lu « il ne touche
+ *  jamais le ballon » (retour utilisateur, captures). Une par foulée : dribbleStep cadence. */
+function touchEvent(st, c) {
+  st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: c.id });
+}
+
 /** L'ACCOMPAGNEMENT POSSÉDÉ (ownsBody) — la seule écriture du corps pendant qu'il dure.
  *  Râteau : le lacet balaie vers exitYaw (ease), le ballon RACLE tout droit en arrière le long de
  *  l'ancien regard — 0,32 m devant → 0,45 m derrière, qui est 0,45 m DEVANT le nouveau regard.
@@ -1261,6 +1268,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const heading = csp > 0.4 ? [c.v[0] / csp, c.v[1] / csp] : [Math.cos(c.yaw), Math.sin(c.yaw)];
     const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF,
       touchF: c.touchF,   // le RÉGIME de touche (serré/lancé — posé par le match, absent au rondo)
+      touchDamp: c.touchDamp,   // le canal VITESSE (l'amorti de préparation — posé par le match)
       space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99) };
     pl.heading = dribbleSteer(st.ball, pl);
     // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus une
@@ -1283,18 +1291,43 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (st.ball.owner === c.id) {
       if (contested) {
         st.ball.release('contesté');
-        dribbleStep(st._drb, st.ball, pl, dt);                  // il tente de l'emmener hors du duel
+        if (dribbleStep(st._drb, st.ball, pl, dt).touched) touchEvent(st, c);  // il tente de l'emmener hors du duel
       } else if (intentFresh || settling) {
         st.ball.carry(footPoint(st, c, cfg), dt);               // porté : le ballon au pied, continu
       } else {
         st.ball.release('conduite');
-        dribbleStep(st._drb, st.ball, pl, dt);
+        if (dribbleStep(st._drb, st.ball, pl, dt).touched) touchEvent(st, c);
       }
     } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius) {
       st.ball.possess(c.id);
       st.ball.carry(footPoint(st, c, cfg), dt);
     } else {
-      dribbleStep(st._drb, st.ball, pl, dt);
+      if (dribbleStep(st._drb, st.ball, pl, dt).touched) touchEvent(st, c);
+    }
+    // LE PIQUE (cfg.pokeReach, match) : un ballon de conduite LIBRE est libre AUSSI pour
+    // l'adversaire — le pied qui l'atteint AVANT le porteur le dévie (poke tackle, sans duel de
+    // corps). Mesuré sans lui : le plus proche défenseur passait à 0,70 m du ballon (p50 des
+    // courses ≥ 6 m) sans AUCUN mécanisme pour le jouer — le tacle formel a ses fenêtres de
+    // corps, le ballon entre deux touches n'avait pas de loi. Gates : le défenseur bat vraiment
+    // le porteur au point (marge 0,15 m), ballon au sol, cooldown par pied (le pique est un
+    // geste, pas un aimant).
+    if (cfg.pokeReach && st.ball.owner == null && st.phase === 'carry' && st.ball.p[1] < 0.45) {
+      for (const q of st.players) {
+        if (q.team === c.team || q.keeper || q.down > 0) continue;
+        if ((q._pokeCd ?? -1) > st.t) continue;
+        const dq = d2(q.p, st.ball.p);
+        if (dq < cfg.pokeReach && dq < d2(c.p, st.ball.p) - 0.15) {
+          const ux = st.ball.p[0] - q.p[0], uz = st.ball.p[2] - q.p[2];
+          const ul = Math.hypot(ux, uz) || 1;
+          // le pique TRAVERSE le ballon : déviation franche loin du pied qui pique — un 50/50
+          st.ball.impulse([-st.ball.v[0] * 0.55 + (ux / ul) * 3.4, 0, -st.ball.v[2] * 0.55 + (uz / ul) * 3.4]);
+          q._pokeCd = st.t + 1.2;
+          st.lastTouch = q.team;
+          st.events.push({ t: +st.t.toFixed(2), type: 'pique', by: q.id, sur: c.id, dist: +dq.toFixed(2) });
+          st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+          return st;
+        }
+      }
     }
 
     trySlide(st, cfg);                       // a touch that got away can be taken off him
