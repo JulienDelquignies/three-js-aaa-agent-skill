@@ -750,7 +750,9 @@ function movePlayers(st, dt, cfg) {
     // rattrape EN POINTE. Mesuré avant : 6,4 % des images de conduite à > 2 m avec un porteur
     // plafonné à 4,0 m/s, 0,77-1,28 s pour revenir dessus — « des ballons loin des joueurs
     // pendant les conduites de balle » (retour utilisateur, troisième passe).
-    if (cfg.carrySurge && p.job === 'carry' && st.possession.carrier === p.id
+    // …mais JAMAIS le gardien : sa touche poussée se distribue, elle ne se sprinte pas (le
+    // gardien-attaquant à 87 m vivait aussi de cette pointe ; champ absent au rondo — neutre)
+    if (cfg.carrySurge && p.job === 'carry' && !p.keeper && st.possession.carrier === p.id
       && d2(p.p, st.ball.p) > cfg.carrySurge.at) {
       top = Math.max(top, cfg.carrySurge.top * (p.skill?.topF ?? p.persona?.paceBias ?? 1));
     }

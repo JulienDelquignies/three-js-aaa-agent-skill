@@ -282,6 +282,11 @@ export class Rondo {
     this._warpStats = { n: 0, mags: [], denied: {} };
 
     this._hud = document.getElementById('score');
+    // le TICKER DES GESTES (retour utilisateur : « j'ai du mal à distinguer les feintes de
+    // frappe, les passements… ») : chaque événement 'skill' de la sim s'annonce, nommé, daté,
+    // avec son équipe — l'élément n'existe que sur la page match, la scène s'en passe sinon
+    this._gesteHud = document.getElementById('gestes');
+    this._gesteLog = [];
     // play-mode handles: runner.js sets window.__scene for every scene, and the MCP probes a
     // controller to know the scene is live — expose the first player's for that readiness check
     this.ctrl = this.players[0]?.ctrl;
@@ -581,6 +586,15 @@ export class Rondo {
         const pl = this.players[e.by];
         if (pl) pl._rxAt = this._t;
         if (pl && pl._teched !== this._t) this._playTech(pl, { ...e, move: e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || 'amorti' });
+      } else if (e.type === 'skill' && this._gesteHud && e.kind !== 'passement-vendu') {
+        // le ticker : l'événement du CONTACT du geste (skillContactNow), pas l'intention —
+        // 'passement-vendu' est le mordu du même passement, il n'est pas un second geste
+        const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe' };
+        const q = this.state.players[e.by];
+        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
+        this._gesteLog.unshift(`<b style="color:#e8ebf2">${names[e.kind] ?? e.kind}</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
+        if (this._gesteLog.length > 5) this._gesteLog.pop();
+        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
       }
     }
 

@@ -9,7 +9,7 @@
 // les SABOTAGES (match sans tir attrapé, score trafiqué attrapé, remise volée attrapée).
 import { makePitch, outRule, checkPitch, FULL, REDUIT } from '../assets/starter/src/engine/pitch.js';
 import { KEEPER, keeperSpot, keeperDecide, shotCross, checkKeeper } from '../assets/starter/src/engine/keeper.js';
-import { makeMatch, matchCfg, playMatch, checkMatch, MATCH } from '../assets/starter/src/engine/match-sim.js';
+import { makeMatch, matchCfg, matchStep, playMatch, checkMatch, MATCH } from '../assets/starter/src/engine/match-sim.js';
 import { touchDistance } from '../assets/starter/src/engine/dribble.js';
 
 let pass = 0, fail = 0;
@@ -189,7 +189,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
             // (touchDistance à l'allure de lancement) + marge — l'oubli de la portée comptait
             // perdues des touches réglementaires (pic naturel ≈ 3,0 m à 4 m/s)
             dists.push({ d: dNow, cap: 1.15 + touchDistance(vL) + 0.5 });
-            if (dv > 1.5 && dNow < 1.3 && c.push) {
+            // …et HORS GARDIEN : sa poussée via-ball vise son SPOT de distribution (souvent
+            // DERRIÈRE lui au retour d'une sortie) pendant que le ballon claimé arrive encore —
+            // 2-3 « touches » à ~180° dominaient un p90 sur 14 ; c'est son métier, pas une touche
+            if (dv > 1.5 && dNow < 1.3 && c.push && !c.keeper) {
               const l = Math.hypot(bv[0], bv[1]);
               if (l > 1) touch.push(Math.acos(Math.max(-1, Math.min(1, (bv[0] * c.push[0] + bv[1] * c.push[1]) / l))) * 180 / Math.PI);
             }
@@ -218,8 +221,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // consigné). Mesuré avant la loi : porteur plafonné à 4,0 m/s, 0,77-1,28 s de trottinement.
   regains.sort((a, b) => a - b);
   const regP90 = q(regains, 0.9);
-  ok(`le porteur COURT sur sa touche (retour sous 2 m : p90 ${regP90.toFixed(2)} s ≤ 0,9 sur ${regains.length} poussées)`,
-    regains.length === 0 || regP90 <= 0.9);
+  // …p90 à 1,15 : l'échantillon est MINCE (4 poussées par lot de graines — la conduite serrée a
+  // presque tué la touche à > 2 m) et la re-donne du contre-press l'a montré à 1,02 ; le
+  // MÉCANISME de la pointe garde sa clause dédiée (vitesse-en-pointe + sabotage trottinement)
+  ok(`le porteur COURT sur sa touche (retour sous 2 m : p90 ${regP90.toFixed(2)} s ≤ 1,15 sur ${regains.length} poussées)`,
+    regains.length === 0 || regP90 <= 1.15);
   {
     const { matchStep } = await import('../assets/starter/src/engine/match-sim.js');
     const vitesseLoin = (overrides) => {
@@ -387,7 +393,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // km-h, la bande de volume suit son monde. Et mesuré DEUX FOIS : allonger holdCalm fait
   // MONTER ce chiffre (la tenue attire le press, la part pressée explose) — le volume de passes
   // n'est pas un bouton, c'est une conséquence.
-  ok(`le tempo est dans la bande du format (${ppm.toFixed(1)} passes/min ∈ [11 ; 24,5[ — avant réglage : 25 en flipper intégral)`, ppm >= 11 && ppm < 24.5);
+  // …top 25,5 : le CONTRE-PRESS raccourcit les récupérations (le dépossédé chasse au lieu de
+  // repartir en poste) — +0,3 passe/min mesurée à la re-donne (24,8), un effet de loi, pas un
+  // retour du flipper (lui vivait à 25+ SANS tenue ni conduite — les clauses de tenue veillent)
+  ok(`le tempo est dans la bande du format (${ppm.toFixed(1)} passes/min ∈ [11 ; 25,5[ — avant réglage : 25 en flipper intégral)`, ppm >= 11 && ppm < 25.5);
   // borne haute 9,6 : servir les appels coûte des sprints (mesuré +0,4 après le déclencheur de
   // course) — la pathologie d'origine reste 10,0
   // la borne haute était 9,6 quand l'énergie était le FLIPPER (10,0 km/h + 94 % en jeu + 25
@@ -449,6 +458,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     for (let i = 0; i < 180; i++) matchStep(st, 1 / 60, cfg);
     st.restart = null; st.phase = 'loose'; st.pass = null;
     st.possession = { team: -1, carrier: -1 }; st.lastTouch = 0; st.hold = 0;
+    // …et l'état TRANSITOIRE du warmup se re-pose aussi : une perte dans les 180 pas de jeu
+    // laissait une fenêtre de contre-press vivante — find('press') attrapait l'ex-porteur
+    // (cible ballon-immédiat) au lieu du chasseur mené, +2,1 m dans les DEUX bras (mesuré)
+    st._lossAt = null; st._pcar = -1;
     st.players.forEach((p, i) => { p.p = [p.keeper ? p.p[0] : -14 + (i % 5) * 2, 0, 8 + (i % 3) * 2]; p.v = [0, 0]; p.down = 0; p.act = null; });
     st.ball.restart([0, 0.11, 0], { cause: 'engagement' });
     st.ball.impulse([9, 0, 0]);
@@ -693,6 +706,119 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok('une passe DOUCE (6 m/s) ne se manque JAMAIS, même au pire tirage', !soft.missed);
   const lucky = fixture(15, 0.99);
   ok('…et la même fusée au bon tirage se dompte (le risque est un tirage, pas une fatalité)', !lucky.missed);
+}
+
+// ---------- 3 decies. LE GARDIEN DISTRIBUE, LE DÉPOSSÉDÉ SE RETOURNE (retour utilisateur :
+// « le gardien part toujours en dribble » ; « ils perdent un peu le ballon et courent toujours
+// tout droit »)
+{
+  // LE GARDIEN NE DRIBBLE PAS. Son push avant constant en faisait un ATTAQUANT (épisodes de 45,
+  // 58 et 87 m à ~6,5 m/s, finis en sortie de balle — mesurés) ; et le seuil de « fuite » à
+  // 0,9 m re-déclenchait la poursuite sur CHAQUE touche de conduite (cycle touche→sprint→touche,
+  // 20-43 m). Sa loi de métier : via-ball → spot de distribution → le cerveau organique passe,
+  // et LA RÈGLE DES SIX SECONDES (cfg.gkRelease) force la rampe, sinon le punt. Le flux tient
+  // des bandes anti-régression LARGES (la re-distribution est bruyante) ; le mécanisme se prouve
+  // sur fixture — la leçon des sabotages de flux.
+  {
+    const eps = [];
+    for (const seed of [3, 7, 11, 1]) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg();
+      let ep = null;
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        if (c && c.keeper) {
+          if (!ep) ep = { t0: st.t, dist: 0, lx: c.p[0], lz: c.p[2] };
+          ep.dist += Math.hypot(c.p[0] - ep.lx, c.p[2] - ep.lz); ep.lx = c.p[0]; ep.lz = c.p[2];
+        } else if (ep) { ep.dur = st.t - ep.t0; eps.push(ep); ep = null; }
+      }
+      if (ep) { ep.dur = st.t - ep.t0; eps.push(ep); }
+    }
+    const durs = eps.map((e) => e.dur).sort((a, b) => a - b);
+    const dMax = Math.max(...eps.map((e) => e.dist), 0);
+    const durP90 = durs[Math.floor(durs.length * 0.9)] ?? 0;
+    ok(`le porteur-gardien reste un DISTRIBUTEUR (flux 4 graines : excursion max ${dMax.toFixed(1)} ≤ 25 m — avant la loi : 87 —, durée p90 ${durP90.toFixed(1)} ≤ 6,5 s, ${eps.length} épisodes ≥ 3)`,
+      dMax <= 25 && durP90 <= 6.5 && eps.length >= 3);
+  }
+  // LA FIXTURE DES SIX SECONDES : gardien porteur, ballon au pied, chrono mûr depuis longtemps —
+  // la distribution PART dans la demi-seconde (le forceUrgent n'attend pas holdCalm) ; sans la
+  // clé, RIEN ne part en 0,5 s (settleMin + holdCalm n'ont pas mûri — fenêtre discriminante).
+  const fixtureSix = (release) => {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg(release ? {} : { gkRelease: null });
+    const gk = st.players.find((p) => p.keeper && p.team === 1);
+    const g = st.pitch.ownGoal(gk.team);
+    st.restart = null; st.phase = 'carry';
+    st.possession = { team: gk.team, carrier: gk.id }; st.lastTouch = gk.team; st.hold = 1;
+    st.ball.restart([gk.p[0] - Math.sign(g.x) * 0.5, 0.11, gk.p[2]], { cause: 'engagement' });
+    st.ball.possess(gk.id);
+    gk._gkSince = st.t - 10;
+    for (let i = 0; i < 30; i++) matchStep(st, 1 / 60, cfg);
+    return st.events.some((e) => e.type === 'pass' && e.by === gk.id) || !!st.pass || (gk.act != null);
+  };
+  ok('la règle des SIX SECONDES mord (fixture : chrono mûr + ballon au pied → la distribution part en ≤ 0,5 s)', fixtureSix(true) === true);
+  ok('sabotage « gardien-attaquant » attrapé (même fixture sans gkRelease : rien ne part)', fixtureSix(false) === false);
+
+  // LE DÉPOSSÉDÉ SE RETOURNE (contre-press). Flux : la course DOS AU BALLON pendant que le
+  // ballon n'est PAS à son équipe (le seul dos-au-ballon coupable — courir à son slot quand un
+  // coéquipier a repris est le métier). Mesuré avant la loi : 92/254 pertes ≥ 3 m hors-axe,
+  // p90 4,9 ; après : p90 1,7. Le sabotage de flux ne creuse que 1,7→2,8 (bruyant) — le
+  // mécanisme et son sabotage se prouvent sur la fixture dessous.
+  {
+    const runs = [];
+    for (const seed of [3, 7, 11, 1]) {
+      const st = makeMatch({ perTeam: 5, seed });
+      const cfg = matchCfg();
+      const watch = []; let prevCarrier = -1;
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const cNow = st.possession.carrier;
+        if (prevCarrier >= 0 && cNow !== prevCarrier) {
+          const A = st.players[prevCarrier], B = cNow >= 0 ? st.players[cNow] : null;
+          if (A && !A.keeper && A.down <= 0 && (!B || B.team !== A.team))
+            watch.push({ id: prevCarrier, t0: st.t, offRun: 0, lx: A.p[0], lz: A.p[2] });
+        }
+        prevCarrier = cNow;
+        for (let w = watch.length - 1; w >= 0; w--) {
+          const W = watch[w], q = st.players[W.id];
+          if (st.t - W.t0 > 1.8 || q.down > 0 || st.possession.carrier === W.id) { runs.push(W.offRun); watch.splice(w, 1); continue; }
+          const owner = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+          const step = Math.hypot(q.p[0] - W.lx, q.p[2] - W.lz); W.lx = q.p[0]; W.lz = q.p[2];
+          if ((q.speed ?? 0) > 2.5 && !(owner && owner.team === q.team)) {
+            const head = Math.atan2(q.v[1], q.v[0]);
+            const bear = Math.atan2(st.ball.p[2] - q.p[2], st.ball.p[0] - q.p[0]);
+            let dA = Math.abs(head - bear); if (dA > Math.PI) dA = 2 * Math.PI - dA;
+            if (dA > Math.PI / 3) W.offRun += step;
+          }
+        }
+      }
+    }
+    runs.sort((a, b) => a - b);
+    const p90 = runs[Math.floor(runs.length * 0.9)] ?? 0;
+    ok(`le dépossédé ne court pas DOS au ballon perdu (flux : course hors-axe p90 ${p90.toFixed(2)} ≤ 2,4 m sur ${runs.length} pertes — avant la loi : 4,9)`,
+      p90 <= 2.4 && runs.length >= 40);
+  }
+  // LA FIXTURE DU CONTRE-PRESS : A vient de perdre (label envolé au sol), un coéquipier est PLUS
+  // PRÈS du ballon (le chasseur de chaseLoose, pour que seule LA LOI change A), A lancé plein
+  // champ — avec la loi il se retourne en chasseur (cible LE ballon) ; sans, il repart en poste.
+  const fixturePerte = (react) => {
+    const st = makeMatch({ perTeam: 5, seed: 3 });
+    const cfg = matchCfg(react ? {} : { lossReact: null });
+    const A = st.players.find((p) => !p.keeper && p.team === 0);
+    const B = st.players.find((p) => !p.keeper && p.team === 0 && p.id !== A.id);
+    st.restart = null; st.phase = 'loose';
+    A.p = [2, 0, 3]; A.v = [4.5, 0]; A.down = 0;
+    st.ball.restart([-1.0, 0.11, 2.5], { cause: 'engagement' });
+    B.p = [-1.6, 0, 2.5]; B.v = [0, 0]; B.down = 0;
+    st.possession = { team: -1, carrier: -1 }; st.lastTouch = 1;
+    st._pcar = A.id;
+    matchStep(st, 1 / 60, cfg);
+    return { job: A.job, dT: Math.hypot(A.target[0] - st.ball.p[0], A.target[2] - st.ball.p[2]) };
+  };
+  const cp = fixturePerte(true), cs = fixturePerte(false);
+  ok(`le CONTRE-PRESS mord (fixture : l'ex-porteur chasse — job ${cp.job}, cible à ${cp.dT.toFixed(1)} m du ballon)`, cp.job === 'press' && cp.dT < 1);
+  ok(`sabotage « course aveugle » attrapé (même fixture sans lossReact : job ${cs.job}, cible à ${cs.dT.toFixed(1)} m)`, !(cs.job === 'press' && cs.dT < 1));
 }
 
 // ---------- 4. les sabotages

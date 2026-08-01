@@ -530,6 +530,7 @@ const wrapA = (a) => Math.atan2(Math.sin(a), Math.cos(a));
  *  retourne par-dessus (le lacet appartient au geste pendant TOUT l'accompagnement — ownsBody). */
 function maybeRateau(st, c, cfg) {
   const K = cfg.skill; if (!K) return false;
+  if (c.keeper) return false;                                      // un gardien distribue, il ne dribble pas (champ absent au rondo — neutre)
   if ((c._skillCd?.rateau ?? -1) > st.t) return false;
   if (d2(c.p, st.ball.p) > 0.55) return false;                    // sur SON ballon, au pied
   let foe = null, fd = Infinity;
@@ -573,6 +574,7 @@ function maybeRateau(st, c, cfg) {
  *  cône de la fausse direction — tout l'armé se joue, le ballon ne part pas, le mordu s'assoit. */
 function maybeFeinte(st, c, cfg, contested) {
   const K = cfg.skill; if (!K || contested) return false;         // feinter sous conteste = offrir le ballon
+  if (c.keeper) return false;
   if ((c._skillCd?.feinte ?? -1) > st.t) return false;
   if (!c.intent || c.intent.feinted) return false;                // UNE feinte par intention
   const rec = st.players[c.intent.choice.to.id]; if (!rec) return false;
@@ -611,6 +613,7 @@ function maybeFeinte(st, c, cfg, contested) {
  *  lève. La ponctuation du jeu posé ; persona.calm et flair décident QUI la joue. */
 function maybeSemelle(st, c, cfg, calm, foeBody) {
   const K = cfg.skill; if (!K || !calm) return false;
+  if (c.keeper) return false;
   if ((c._skillCd?.semelle ?? -1) > st.t) return false;
   if (foeBody < K.semelleFoe) return false;
   // …dans la tenue délibérée, pas à sa toute fin (première version : fenêtre [0,35 ; calmHold−0,6]
@@ -641,6 +644,7 @@ function maybeSemelle(st, c, cfg, calm, foeBody) {
  *  elles, refus immédiat AVANT tout tirage — le rondo est inchangé au bit près. */
 function maybePassement(st, c, cfg) {
   const K = cfg.skill; if (!K || !K.passementFoe) return false;
+  if (c.keeper) return false;
   if ((c._skillCd?.passement ?? -1) > st.t) return false;
   if (c.speed > 2.5) return false;                                // le cercle se joue sur ballon calé, pas en sprint
   if (d2(c.p, st.ball.p) > 0.6) return false;
@@ -685,6 +689,7 @@ function maybePassement(st, c, cfg) {
  *  régime que le râteau (ownsBody, le lacet appartient au geste) mais LATÉRAL, en mouvement. */
 function maybeCrochet(st, c, cfg) {
   const K = cfg.skill; if (!K || !K.crochetFoe) return false;
+  if (c.keeper) return false;
   if ((c._skillCd?.crochet ?? -1) > st.t) return false;
   if (c.speed < 1.2) return false;                                // un crochet REDIRIGE une course
   if (d2(c.p, st.ball.p) > 0.65) return false;

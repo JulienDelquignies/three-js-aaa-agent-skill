@@ -46,6 +46,12 @@
     <div class="hud" id="score" style="left:16px; bottom:16px; padding:10px 14px; border-radius:10px;
       background:rgba(12,16,24,.72); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(8px); min-width:200px;">
       <b>0 : 0</b></div>
+    <!-- le TICKER DES GESTES : chaque geste technique exécuté s'annonce (retour utilisateur :
+         « j'ai du mal à distinguer les feintes de frappe, les passements… ») -->
+    <div class="hud" id="gestes" style="right:16px; bottom:16px; padding:10px 14px; border-radius:10px;
+      background:rgba(12,16,24,.72); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(8px);
+      min-width:190px; max-width:44vw; text-align:right; color:#9aa2b1;">
+      <span style="color:#7c8698">gestes techniques…</span></div>
     <div id="loading">COUP D’ENVOI…</div>
     <script type="module" src="/src/entry-match.js"></script>
   </body>

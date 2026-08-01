@@ -78,6 +78,12 @@ export const MATCH = {
   meetStep: 1.3,          // m — UN PAS ET DEMI vers le ballon, sur l'axe de la livraison (pas un correcteur balistique)
   execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
   keeperDown: 0.75,       // s — le prix d'un plongeon (au sol après, gagné ou perdu)
+  gkRelease: 3.0,         // s — LA RÈGLE DES SIX SECONDES à l'échelle : passé ce délai, la
+                          // distribution du gardien est FORCÉE (meilleure rampe, sinon punt) ;
+                          // null : le gardien-attaquant (sabotage nommé — 87 m de dribble mesurés)
+  lossReact: 1.6,         // s — LE DÉPOSSÉDÉ SE RETOURNE (contre-press) : l'ex-porteur chasse son
+                          // ballon au lieu de repartir en coureur de slot ; null : la course
+                          // aveugle (sabotage nommé — 92/254 pertes suivies d'un dos-au-ballon)
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
   // qui ne suivent pas l'appel » (retour utilisateur, mot pour mot ce que les chiffres disaient).
@@ -205,6 +211,19 @@ function assignMatchJobs(st, cfg) {
   const carrier = st.players[st.possession.carrier] ?? null;
   const anchor = st.ball.p;
 
+  // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : mémoriser QUI vient de perdre son ballon — le
+  // label passe à l'adversaire ou au sol, le corps est debout. La fenêtre s'applique tout en
+  // bas, PAR-DESSUS les postes (un contre-press est un réflexe, pas un poste).
+  if (cfg.lossReact) {
+    const cNow = st.possession.carrier;
+    const prev = st._pcar ?? -1;
+    if (prev >= 0 && cNow !== prev) {
+      const A = st.players[prev], B = cNow >= 0 ? st.players[cNow] : null;
+      if (A && !A.keeper && A.down <= 0 && (!B || B.team !== A.team)) (st._lossAt ??= {})[A.id] = st.t;
+    }
+    st._pcar = cNow;
+  }
+
   // ---- LA REMISE EN JEU : un monde à part, court et légal
   if (st.restart) {
     const r = st.restart;
@@ -267,18 +286,64 @@ function assignMatchJobs(st, cfg) {
       // en marchant à l'opposé du ballon qui roulait au fond). Pas en mains → on se retourne et
       // on l'étouffe.
       const bdC = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
-      if (st.ball.owner !== gk.id && (bdC > 0.9 || st.ball.v[0] * g.sign > 1.5)) {
+      // …une FUITE est un ballon HORS DE PORTÉE DE TOUCHE (2,2 m) ou filant vers son but — pas
+      // la touche de conduite elle-même (0,9 m re-déclenchait la poursuite à CHAQUE touche : le
+      // cycle touche→« fuite »→sprint→touche traversait le terrain à 6,5 m/s, 20-43 m mesurés,
+      // et resettait le chrono de distribution au passage — la règle des six secondes ne
+      // mûrissait jamais).
+      if (st.ball.owner !== gk.id && (bdC > 2.2 || st.ball.v[0] * g.sign > 1.5)) {
         gk.job = 'keeper';
         gk.target = [st.ball.p[0] + st.ball.v[0] * 0.25, 0, st.ball.p[2] + st.ball.v[2] * 0.25];
         gk.push = null;
         continue;
       }
+      // LE GARDIEN NE DRIBBLE PAS — IL DISTRIBUE. Le push avant constant faisait du porteur-
+      // gardien un ATTAQUANT (le cerveau de conduite générique le menait au camp adverse —
+      // mesuré : épisodes de 45, 58 et 87 m à ~6,5 m/s, finis en sortie de balle). Sa loi de
+      // métier : il se porte sur son SPOT de distribution (devant sa ligne, jamais plus loin)…
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
-      gk.push = [-g.sign, 0];
-      gk.target = [g.x - g.sign * 5, 0, gk.p[2] * 0.5];
+      gk._gkSince = gk._gkSince ?? st.t;
+      const spotD = [g.x - g.sign * 4.5, Math.max(-3.5, Math.min(3.5, gk.p[2] * 0.4))];
+      if (bdC > 0.85) {
+        // LE GARDIEN AUSSI PASSE PAR SON BALLON (la loi du porteur, au métier près) : viser le
+        // spot en abandonnant le ballon à 2 m gelait le monde — ballon posé, label tenu, press
+        // au bord de la surface, distribution jamais armable (épisodes de 73 et 84 s mesurés).
+        const toS = [spotD[0] - st.ball.p[0], spotD[1] - st.ball.p[2]];
+        const dS = Math.hypot(toS[0], toS[1]) || 1;
+        gk.push = [toS[0] / dS, toS[1] / dS];
+        gk.target = [st.ball.p[0] + gk.push[0] * 0.4, 0, st.ball.p[2] + gk.push[1] * 0.4];
+      } else {
+        const toS = [spotD[0] - gk.p[0], spotD[1] - gk.p[2]];
+        const dS = Math.hypot(toS[0], toS[1]);
+        gk.push = dS > 0.6 ? [toS[0] / dS, toS[1] / dS] : [-g.sign, 0];
+        gk.target = [spotD[0], 0, spotD[1]];
+      }
+      // …ET LA RÈGLE DES SIX SECONDES (Loi 12.2, à l'échelle du réduit : cfg.gkRelease) : le
+      // cerveau de passe distribue organiquement quand une ligne s'ouvre ; passé le délai, la
+      // distribution est FORCÉE — la meilleure rampe (progression, couloir dégagé), sinon le
+      // PUNT au flanc opposé (le dégagement du gardien). Sans échéance, un gardien jamais posé
+      // ne passait jamais.
+      if (cfg.gkRelease && st.t - gk._gkSince > cfg.gkRelease && !busy(gk) && bdC < 1.1) {
+        const sgn = -g.sign;
+        const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
+        const scored = mates.map((m) => ({ m, s: (m.p[0] - gk.p[0]) * sgn - Math.abs(m.p[2]) * 0.15 }))
+          .sort((a, b) => b.s - a.s);
+        let served = false;
+        for (const { m } of scored.slice(0, 3)) {
+          const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
+          const tI = cfg.leadTime ? cfg.leadTime(dm, m) : 0.35;
+          const lead = [m.p[0] + m.v[0] * tI, 0, m.p[2] + m.v[1] * tI];
+          if (simInternals.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true })) { served = true; break; }
+        }
+        if (!served) {
+          const flank = gk.p[2] >= 0 ? -pitch.hz * 0.5 : pitch.hz * 0.5;
+          simInternals.beginPass(st, { to: { id: -2 }, lead: [gk.p[0] + sgn * pitch.hx * 0.8, 0, flank], style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true });
+        }
+      }
       continue;
     }
+    gk._gkSince = null;
     if (busy(gk)) continue;                                        // un plongeon possède son corps
     const shotAge = st.pass ? st.t - st.pass.t : Infinity;
     // le GARDIEN NOTÉ : son envergure et son réflexe viennent de sa note (keeping) — sinon le métier moyen
@@ -549,6 +614,29 @@ function assignMatchJobs(st, cfg) {
       }
       p.target = [p._markT[0], 0, p._markT[1]];
     });
+  }
+
+  // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER, par-dessus les postes : pendant
+  // cfg.lossReact s après sa perte, l'ex-porteur CHASSE son ballon. Sans elle, il redevenait
+  // coureur de slot À L'INSTANT de la perte et partait DOS au ballon (mesuré : 92 des 254
+  // pertes suivies d'une course ≥ 3 m à > 60° du ballon, p90 4,9 m — « ils perdent un peu le
+  // ballon et courent toujours tout droit », retour utilisateur). La chasse s'éteint dès que
+  // son équipe reprend, ou à la mort de la fenêtre.
+  if (cfg.lossReact && st._lossAt) {
+    for (const idS of Object.keys(st._lossAt)) {
+      const id = +idS, la = st._lossAt[id], p = st.players[id];
+      if (!p || st.t - la > cfg.lossReact) { delete st._lossAt[id]; continue; }
+      const ownerNow = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+      if (ownerNow && ownerNow.team === p.team) { delete st._lossAt[id]; continue; }
+      if (p.down > 0 || busy(p) || st.possession.carrier === p.id) continue;
+      // …et un joueur DÉJÀ en chasse garde sa cible (le chasseur de chaseLoose porte la MÈNE
+      // interceptPoint — l'écraser par le ballon-immédiat a rendu la fixture orbite aveugle :
+      // +2,1 m dans les deux bras, mesuré) ; le contre-press ne re-cible que le coureur de slot
+      if (p.job === 'press' || p.job === 'intercept') continue;
+      p.job = 'press';
+      p.target = [st.ball.p[0] + st.ball.v[0] * 0.25, 0, st.ball.p[2] + st.ball.v[2] * 0.25];
+      p.push = null;
+    }
   }
 }
 

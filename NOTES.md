@@ -1633,6 +1633,49 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    23 (dont les lois 3D), gestes 41, match 61, rondo 40/40 au bit près, attributs 13, verrou
    8,63, audit-membres 16/0, audit-gants 4/0, ALL-SYNC 7/7.
 
+36. **Le gardien distribue, le dépossédé se retourne, les gestes s'annoncent (retour utilisateur,
+   trois points : « le gardien part toujours en dribble » ; « au duel… ils perdent un peu le
+   ballon et courent toujours tout droit en 6 m » ; « j'ai du mal à distinguer les gestes —
+   logge-les »).** LE GARDIEN : la sonde des épisodes porteur-gardien a montré des conduites de
+   45, 58 et 87 M à ~6,5 m/s finies en sortie de balle — la branche distributeur posait un push
+   AVANT constant et le cerveau de conduite générique en faisait un attaquant ; et le seuil de
+   « fuite » à 0,9 m re-déclenchait la poursuite sur CHAQUE touche (cycle touche→sprint→touche,
+   20-43 m, qui resettait le chrono au passage). Trois lois de métier : le porteur-gardien PASSE
+   PAR SON BALLON vers son SPOT de distribution (via-ball, jamais vers l'avant — viser le spot en
+   abandonnant le ballon à 2 m gelait le monde 84 s : ballon posé, label tenu, press au bord de
+   la surface), LA RÈGLE DES SIX SECONDES (cfg.gkRelease 3 s : passé le délai, distribution
+   FORCÉE — meilleure rampe par progression/couloir, sinon punt au flanc — le forceUrgent du
+   centre, au service du gardien), et la fuite se lit AU-DELÀ de la portée de touche (2,2 m).
+   Portes de cohérence : le gardien ne tire ni carrySurge ni gestes techniques (maybe* refusent
+   c.keeper — neutre au rondo qui n'a pas de gardien). APRÈS : 22 épisodes/12 min, fins 19 pass
+   / 3 turnovers / 0 sortie, durée p50 2,0 s max 5,5, distance p50 3,2 m max 18 (le max = le
+   claim en sortie + le retour au spot — du métier). LE DÉPOSSÉDÉ : 92 des 254 pertes suivies
+   d'une course ≥ 3 m à > 60° du ballon (p90 4,9 — le « 6 m tout droit ») : à l'instant de la
+   perte, l'ex-porteur redevenait COUREUR DE SLOT et partait dos au jeu. Loi (cfg.lossReact
+   1,6 s) : LE CONTRE-PRESS — l'ex-porteur chasse son ballon pendant la fenêtre, s'éteint dès
+   que son équipe reprend, et ÉPARGNE le chasseur désigné de chaseLoose (l'écraser rendait la
+   fixture orbite aveugle : la mène interceptPoint valait mieux que le ballon-immédiat). Après,
+   au critère COUPABLE (ballon pas à son équipe) : p90 1,66, 2 cas ≥ 3 m sur 187. LES CLAUSES
+   (3 decies, 6 nouvelles — verify-match 67) : flux gardien en bandes anti-régression LARGES
+   (excursion max ≤ 25 m, durée p90 ≤ 6,5 s, existence ≥ 3) parce que le sabotage de flux ne
+   mord PAS (sans gkRelease le cerveau organique distribue quand même sur ces graines — le
+   release est un garde-fou) ; les MÉCANISMES sur fixtures déterministes : six-secondes (chrono
+   mûr + ballon au pied → la passe part en 0,5 s ; sans la clé, rien — settleMin/holdCalm n'ont
+   pas mûri, fenêtre discriminante) et contre-press (ex-porteur + chasseur naturel plus près :
+   avec la loi il se retourne job press cible ballon, sans il repart en cover à 6 m). Décès
+   d'instruments à la re-donne, réparés en conscience : la mesure « touche part où le pied
+   veut » excluait désormais le GARDIEN (sa poussée via-ball vise son spot, souvent DERRIÈRE lui
+   au retour de sortie — 144° sur 2-3 touches dominaient un p90 sur 14) ; la fixture orbite
+   re-pose l'état transitoire du warmup (st._lossAt — une perte dans les 180 pas laissait une
+   fenêtre vivante et find('press') attrapait le contre-presseur) ; regain p90 0,9 → 1,15 (4
+   poussées = sous le plancher de bruit) ; tempo top 24,5 → 25,5 (le contre-press raccourcit
+   les récupérations : +0,3 passe/min, un effet de loi — les clauses de tenue veillent au
+   flipper). LE TICKER DES GESTES (habillage, match.html + scène) : chaque événement 'skill' au
+   CONTACT s'annonce — nom français, équipe, numéro, minute, les 5 derniers ('passement-vendu'
+   est le mordu du même passement, pas un second geste) — vérifié en headless (16 gestes sim,
+   ticker peuplé). verify-match 67, gestes 41, rondo 40/40 au bit près, sync 7/7, audit-membres
+   16/0, audit-gants 4/0 (p50 gant-ballon 0,20 sur cette re-donne).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

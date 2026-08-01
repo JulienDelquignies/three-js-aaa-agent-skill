@@ -76,7 +76,13 @@ livraison dans les derniers mètres — pas un correcteur balistique : l'erreur 
 l'aggrave ; sans lui le monde non noté exécutait parfaitement),
 `carryViaBall` (le porteur PASSE PAR SON BALLON : au-delà de la portée de contrôle, la cible de
 locomotion est le ballon réel, pas la poussée projetée — le corps ne court jamais en laissant
-son ballon derrière).
+son ballon derrière),
+`gkRelease` (LA RÈGLE DES SIX SECONDES à l'échelle : le gardien porteur se porte sur son spot
+de distribution — jamais vers l'avant — et passé le délai la distribution est FORCÉE, meilleure
+rampe sinon punt ; sans elle le gardien-porteur dribblait 87 m — sabotage nommé),
+`lossReact` (LE DÉPOSSÉDÉ SE RETOURNE : pendant la fenêtre après sa perte, l'ex-porteur chasse
+son ballon au lieu de repartir en coureur de slot dos au jeu — le contre-press du métier ;
+sabotage nommé « course aveugle »).
 
 Chaque hook est un no-op absent — le rondo d'origine est inchangé au bit près quand `cfg` ne les
 porte pas (mesuré : verrou de balance identique).
