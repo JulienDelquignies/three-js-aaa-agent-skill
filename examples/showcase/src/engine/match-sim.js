@@ -11,7 +11,8 @@
 //
 // Ce qui est volontairement V1 (dettes nommées, pas des oublis) :
 //   — remise de touche AU PIED (loi du format réduit, comme au futsal — écrite dans pitch.js) ;
-//   — pas de hors-jeu (format réduit à 5+1, comme au futsal/five — loi du format) ;
+//   — pas de hors-jeu AU FORMAT RÉDUIT (5+1, comme au futsal/five — loi du format) ; le 11c11,
+//     lui, vit sous la Loi 11 (offside.js : cerveau, photo au départ, sifflet, calage des pointes) ;
 //   — le gardien ne sort pas de sa surface (keeper v1 : depthMax 2,6 m) ;
 //   — les remises placent le ballon et tiennent les adversaires à distance, sans cérémonie.
 
@@ -21,6 +22,7 @@ import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots } from './formation.js';
+import { offsideLine } from './offside.js';
 import { KEEPER, keeperSpot, keeperDecide } from './keeper.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
@@ -50,6 +52,13 @@ export const MATCH = {
                           // temps plein faisait double emploi : en-jeu mesuré 68 %, bande ≥ 70)
   restartClear: 3.0,      // m — les adversaires tiennent ce rayon à la remise (futsal Loi 15 : 5 m ; réduit ici à l'échelle)
   restartCarried: true,   // la remise se PORTE (le preneur va chercher le ballon — ballFetch) ; false : l'ancien snap (sabotage nommé)
+  offside: true,          // LA LOI 11 (11c11 seulement — st.full la garde : le réduit vit la loi du
+                          // futsal, sans hors-jeu). Quatre consommateurs (offside.js) : le cerveau
+                          // n'y sert personne (refus nommé 'hors-jeu'), la photo se prend au DÉPART
+                          // du ballon (strikeNow — l'appel timé vit dans l'armé), le premier toucher
+                          // siffle (coup franc adverse), et les pointes se CALENT sur la ligne, d'où
+                          // l'appel jaillit (servi par appelBonus). false : la ligne aveugle
+                          // (sabotage nommé — les pointes campent derrière la défense, injouables).
   chaseLoose: true,       // le ballon libre est CHASSÉ par les deux camps ; false : la formation l'orbite (sabotage nommé)
   apron: 2.0,             // m — le tablier autour du terrain : un corps peut enjamber la ligne (chercher un ballon sorti)
   carryLawLoose: true,    // la bascule carry→libre lit la LOI DE TOUCHE (jamais sur une touche légale) ; false : le rayon plat (sabotage nommé)
@@ -111,6 +120,10 @@ export const MATCH = {
   intentBarCalm: 4.8,     // la barre d'adoption au calme — assez haute pour qu'on VOIE la tenue
   appelBonus: 2.6,        // le coureur en rupture est SERVI — relevé avec intentBarCalm (4,8) :
                           // au tempo posé, la course doit encore battre la barre d'adoption
+  appelRange: 6,          // m — l'appel ÉTIRE l'enveloppe de passe (choosePass) : un ballon dans
+                          // la course est plus long qu'une passe de circulation. Mesuré sans lui :
+                          // le dart de l'appel profond sortait de passRange (13 m) en ~0,6 s — 11
+                          // appels, 1 servi (la décoration). Clé absente (rondo) : pas un bit.
   // la mène suit la course : temps d'arrivée estimé (0,4 + d/9, borné 1 s), amorti à 85 % — un
   // ballon DANS la course, pas sur les talons
   leadTime: (d, rec) => Math.min(0.4 + d / 9, 1.0) * ((rec && Math.hypot(rec.v?.[0] ?? 0, rec.v?.[1] ?? 0) > 1.6) ? 0.85 : 0.3),
@@ -234,6 +247,10 @@ function assignMatchJobs(st, cfg) {
   const atk = st.possession.team >= 0 ? st.possession.team : st.lastTouch;
   const carrier = st.players[st.possession.carrier] ?? null;
   const anchor = st.ball.p;
+
+  // le sifflet de la Loi 11 (receive) s'administre AVANT tout métier : le coup franc est posé
+  // ici même, et le bloc remise ci-dessous prend le relais dans la même image
+  if (st._whistle) administerWhistle(st, cfg);
 
   // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : mémoriser QUI vient de perdre son ballon — le
   // label passe à l'adversaire ou au sol, le corps est debout. La fenêtre s'applique tout en
@@ -612,6 +629,16 @@ function assignMatchJobs(st, cfg) {
       slotters = [...free].sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor)).slice(0, 4);
       posted = free.filter((p) => !slotters.includes(p));
       const spots = formationSpots(pitch, atk, anchor[0], true);
+      // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste offensif coulissé peut tomber DERRIÈRE
+      // la défense — un attaquant réel vit SUR la ligne, pas au-delà. Mesuré AVANT le calage : le
+      // bloc adverse recule si profond (slide borné, ligne de 4 devant sa surface) que le camping
+      // illicite est déjà rare (0-1,1 % du temps de possession, 4 graines × 180 s) — le calage
+      // n'est donc pas un remède, c'est la LOI : la borne qui garantit qu'AUCUNE hauteur de bloc
+      // future (ligne haute, pressing) ne rendra les pointes injouables. La ligne se relit CHAQUE
+      // image (elle bouge avec la défense) : l'à-coup cadencé garde le POSTE, le calage borne la
+      // CIBLE — reculer avec la ligne qui monte n'est pas un à-coup, c'est la règle.
+      const off = cfg.offside ? offsideLine(st, atk) : null;
+      const posé = carrier && !carrier.keeper && st.phase === 'carry' && st.hold > 0.6;
       for (const p of posted) {
         const want = spots[p.post ?? 0] ?? [p.p[0], p.p[2]];
         p.job = 'support';
@@ -619,7 +646,40 @@ function assignMatchJobs(st, cfg) {
         if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
           p._slotT = want; p._slotAt = st.t + 0.7;
         }
-        p.target = [p._slotT[0], 0, p._slotT[1]];
+        let tx = p._slotT[0], tz = p._slotT[1];
+        if (off && (p.post ?? 0) >= 7) {
+          // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE — depuis la PORTÉE DE PASSE, pas depuis l'autre
+          // bout du terrain. Première version mesurée : dart visant une ligne à ~16 m du poste,
+          // porteur à 30 m — 21-29 appels/180 s, 0-1 servi (la décoration déjà enterrée au rondo :
+          // « 5 servis sur 74 »). Un appel n'existe que s'il peut être SUIVI : pointe à portée de
+          // choosePass (passRange[1] = 13), DEVANT le ballon, porteur posé, couloir profond ouvert
+          // → elle darde 7 m vers la ligne (jamais au-delà : la photo se prend au départ du ballon,
+          // strikeNow), l'appelBonus la fait servir, la mène (leadTime) jette le ballon DERRIÈRE.
+          // Un appel par équipe à la fois — dix ruptures simultanées seraient un essaim.
+          if ((p._runT ?? -1) <= st.t && posé && (st._appelAt?.[atk] ?? -1) <= st.t && (p._appelCd ?? -1) <= st.t) {
+            const dB = d2(st.ball.p, p.p);
+            const myAdv = p.p[0] * off.sgn;
+            if (dB > 6 && dB < (cfg.passRange?.[1] ?? 13) - 0.5 && myAdv > st.ball.p[0] * off.sgn + 2) {
+              const deepZ = p.p[2] * 0.55;
+              const dartAdv = Math.min(off.adv - 0.15, myAdv + 7);
+              const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
+                defenders.map((q) => q.p), { corridor: 0.9 });
+              if (lane.open) {
+                p._runT = st.t + 1.7; p._runZ = deepZ; p._runAdv = dartAdv; p._appelCd = st.t + 10;
+                (st._appelAt ??= {})[atk] = st.t + 5;
+                // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s) : c'est elle qui porte le
+                // bonus ET l'extension de portée — expirer à mi-course re-fermait l'enveloppe
+                p._pace = { until: st.t + 1.6, kind: 'appel', next: p._pace?.next ?? st.t + 8 };
+                st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'appel-profond', by: p.id });
+              }
+            }
+          }
+          if ((p._runT ?? -1) > st.t) {
+            tx = off.sgn * Math.max(0, Math.min(p._runAdv ?? (off.adv - 0.15), off.adv - 0.15));
+            tz = p._runZ ?? tz;
+          } else if (tx * off.sgn > off.adv - 0.8) tx = off.sgn * Math.max(0, off.adv - 0.8);
+        }
+        p.target = [tx, 0, tz];
       }
     }
     const taken = new Set();
@@ -928,6 +988,32 @@ function canTake(st, takerId) {
   st.restart = null;                                               // la remise est PRISE — le jeu reprend
   st.events.push({ t: +st.t.toFixed(2), type: 'restart-pris', by: takerId });
   return true;
+}
+
+/**
+ * LE COUP FRANC DU HORS-JEU (Loi 11) : le drapeau s'est levé au toucher (receive → st._whistle) ;
+ * ici on ADMINISTRE, à l'image suivante — même cérémonie qu'une sortie : le ballon est arrêté par
+ * l'arbitre (freiné, pas écrit), le preneur ADVERSE vient le chercher et le porte au point de
+ * l'infraction (ballFetch). Un sifflet pendant une remise déjà en cours est caduc.
+ */
+function administerWhistle(st, cfg) {
+  const w = st._whistle; st._whistle = null;
+  if (st.restart) return;
+  const { pitch } = st;
+  const x = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, w.p[0]));
+  const z = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, w.p[1]));
+  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: 'coup-franc', team: w.team, p: [+x.toFixed(1), +z.toFixed(1)] });
+  st.restart = { type: 'coup-franc', p: [x, z], team: w.team, at: st.t + cfg.restartWait };
+  st.ball.release('arrêt-de-jeu');
+  st.ball.impulse([-st.ball.v[0] * 0.65, 0, -st.ball.v[2] * 0.65]);
+  if (cfg.restartCarried !== false) {
+    st.restart.placed = false;
+    const t = st.players.filter((p) => p.team === w.team && !p.keeper && p.down <= 0)
+      .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
+    st.restart.taker = t ? t.id : -1;
+  } else st.ball.restart([x, BALL.radius, z], { cause: 'coup-franc' });
+  st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+  for (const p of st.players) if (p.act && winding(p)) p.act = null;   // le sifflet annule les armés
 }
 
 /**

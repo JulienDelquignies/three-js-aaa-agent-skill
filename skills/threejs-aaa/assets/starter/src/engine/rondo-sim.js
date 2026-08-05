@@ -8,6 +8,7 @@ import { gauss } from './attributes.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
+import { offsideLine, isOffside } from './offside.js';
 
 // rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
 // "passe à dix" is won or lost happens here: when the carrier releases, whether the pass beats the
@@ -59,6 +60,15 @@ function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; 
  */
 function beginPass(st, choice, cfg, opts = {}) {
   const c = st.players[st.possession.carrier];
+  // LA PORTE DE LA LOI 11 (cfg.offside — 11c11 seulement, le réduit vit la loi du futsal) : le
+  // cerveau ne PLANIFIE pas une passe vers une position illicite. choosePass écarte déjà ses
+  // candidats ; la porte tient les AUTRES sources d'intention (centres, rampes de distribution).
+  // Les dégagements et les tirs passent (un dégagement vise une ZONE, un tir vise le but) — la
+  // photo de strikeNow les jugera comme tout le monde si un coupable touche.
+  if (cfg.offside && st.full && !opts.clear && !choice.clear && !choice.shot && choice.to && choice.to.id >= 0) {
+    const rec0 = st.players[choice.to.id];
+    if (rec0 && rec0.team === c.team && isOffside(st, rec0.team, rec0.p)) { c.intent = null; return deny(st, 'hors-jeu'); }
+  }
   const bref = [st.ball.p[0], st.ball.p[2]];
   const from = [bref[0], BALL.radius, bref[1]];
   const sol = solvePass(from, choice.lead, { style: choice.style });
@@ -294,6 +304,21 @@ function strikeNow(st, c, cfg) {
   st._surprise = { t: st.t, seen: c.act ? c.act.t : 0, n: (st._surprise?.n ?? 0) + 1 };
   st.phase = 'flight';
   st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
+  // LA PHOTO DE LA LOI 11 (cfg.offside — 11c11) : le hors-jeu se juge À L'INSTANT DE LA FRAPPE —
+  // pas au choix (le coureur gagne des mètres pendant l'armé : c'est TOUT l'appel timé), pas à
+  // la réception (le monde a bougé pendant le vol). On photographie ICI les coéquipiers en
+  // position illicite ; leur premier toucher SIFFLE (receive), l'adversaire qui joue le ballon
+  // efface l'ardoise (le turnover tue st.pass). Dégagements et tirs portent la même photo — le
+  // renvoi qui trouve un attaquant resté aux six mètres est LE hors-jeu classique.
+  if (cfg.offside && st.full) {
+    const L = offsideLine(st, c.team);
+    let off = null;
+    for (const q of st.players) {
+      if (q.team !== c.team || q.id === c.id || q.keeper || q.p[0] * L.sgn <= L.adv + 0.05) continue;
+      (off ??= {})[q.id] = [+q.p[0].toFixed(2), +q.p[2].toFixed(2)];
+    }
+    if (off) st.pass.off = off;
+  }
   st.lastPasser = c.id;
   st.possession.carrier = -1;
   st.hold = 0; st.pressure = 0;
@@ -992,6 +1017,16 @@ export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (
  */
 function receive(st, id, cfg = RONDO) {
   const p = st.players[id];
+  // LE SIFFLET DE LA LOI 11 : photographié hors-jeu au départ du ballon (st.pass.off, strikeNow),
+  // son PREMIER toucher est l'infraction — le drapeau se lève ICI, l'administration (coup franc
+  // adverse au point du toucher) est le métier du match (assignMatchJobs lit st._whistle). Un
+  // hors-jeu qui ne touche jamais le ballon n'existe pas : la position n'est pas une faute, la
+  // participation l'est. Le toucher est laissé s'accomplir (contrôle, prise) — le jeu s'arrête
+  // au sifflet, une image plus tard, comme sur un vrai terrain.
+  if (st.pass?.off?.[id] && cfg.offside && st.full && !st.restart) {
+    st.events.push({ t: +st.t.toFixed(2), type: 'hors-jeu', by: id, at: st.pass.off[id], p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)] });
+    st._whistle = { p: [p.p[0], p.p[2]], team: p.team === 0 ? 1 : 0 };
+  }
   // un ballon encore PORTÉ par un autre change de mains ici : la sortie se nomme (vol de balle)
   if (st.ball.owner != null && st.ball.owner !== id) st.ball.release('perte');
   if (p.team === st.possession.team) {

@@ -3,6 +3,7 @@ import { BallBody } from './ball-body.js';
 import { predictPath, solvePass, laneClearance, interceptPoint, PASS_STYLE } from './ball-predict.js';
 import { winding } from './gesture.js';
 import { makePersona } from './persona.js';
+import { offsideLine } from './offside.js';
 
 // rondo — the brain of a "passe à dix": 5 v 5, the team in possession strings passes, the team out
 // of possession hunts the ball. Dependency-free (ball.js + ball-predict.js only) and fully
@@ -264,6 +265,12 @@ export function choosePass(st, cfg = RONDO) {
   // the pass leaves the BALL, not the player's navel — the dribbler carries it a metre or two
   // ahead, and judging the lane from his hips is how a "clear" pass hits a defender's shin
   const origin = [st.ball.p[0], BALL.radius, st.ball.p[2]];
+  // LA LOI 11 EST DANS LE CERVEAU AVANT D'ÊTRE DANS LE SIFFLET (cfg.offside — 11c11 seulement) :
+  // on ne SERT pas un coéquipier en position de hors-jeu. La position se juge MAINTENANT ; la
+  // photo légale, elle, se prend au DÉPART du ballon (strikeNow) — entre les deux vit l'armé,
+  // et c'est exactement la fenêtre de l'appel timé : le coureur qui jaillit de la ligne pendant
+  // l'armé est servi LÉGALEMENT. Clé absente (rondo, réduit futsal) : pas un bit ne bouge.
+  const offL = cfg.offside && st.full ? offsideLine(st, c.team) : null;
   let best = null;
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
@@ -271,8 +278,15 @@ export function choosePass(st, cfg = RONDO) {
     // elle gagne — re-proposer la même ligne à l'image suivante, c'est mourir en boucle sur un refus.
     // Le veto expire vite (la défense bouge), et tombe à holdMax : forcé, on joue le moins mauvais.
     if (st.laneVeto?.[m.id] > st.t && st.hold < cfg.holdMax) continue;
+    if (offL && m.p[0] * offL.sgn > offL.adv + 0.05) continue;      // hors-jeu : on attend sa course
     const d = d2(origin, m.p);
-    if (d < cfg.passRange[0] || d > cfg.passRange[1]) continue;
+    // L'APPEL ÉTIRE LA PORTÉE (cfg.appelRange — PLEIN FORMAT seulement, comme toute la Loi 11) :
+    // un coureur en rupture se sert DANS la course, plus loin qu'une passe de circulation (le
+    // dart sortait de l'enveloppe en 0,6 s — mesuré : 11 appels, 1 servi). La garde st.full est
+    // une leçon MESURÉE : sans elle, les bursts cadencés du réduit héritaient de l'extension et
+    // un monde calibré 76 clauses a bougé (tempsLoin 4,6 > 2,5). Clé ou format absents : + 0.
+    const rMax = cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel' ? (cfg.appelRange ?? 0) : 0);
+    if (d < cfg.passRange[0] || d > rMax) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
     // LA MÈNE SUIT LA COURSE (cfg.leadTime — le match la dérive du temps de vol : un coureur à
     // 6 m/s sur un vol d'une seconde reçoit 4 m derrière lui avec une mène figée de 0,28 s ;

@@ -16,6 +16,8 @@
 import { makePitch, FULL } from '../assets/starter/src/engine/pitch.js';
 import { formationSpots, checkFormation } from '../assets/starter/src/engine/formation.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets/starter/src/engine/match-sim.js';
+import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
+import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -108,6 +110,108 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const avec = disp(true), sans = disp(false);
   ok(`sabotage « essaim » attrapé (dispersion du bloc ${avec.toFixed(1)} m avec les postes, ${sans.toFixed(1)} sans — la formation OCCUPE le terrain, ≥ +3 m)`,
     avec >= sans + 3);
+}
+
+// ---------- 5. LA LOI 11 (hors-jeu) — la ligne, la photo, le sifflet
+// Le mécanisme se prouve sur FIXTURES (doctrine : les sabotages comparatifs de flux mentent
+// à travers les re-distributions — mesuré 3× au Lot 8) ; le flux ne juge que l'EXISTENCE.
+{
+  // le contrat de la loi elle-même (avant-dernier, ballon, moitié, tolérance)
+  const c = checkOffside(makePitch(FULL));
+  ok(`le contrat de la Loi 11 tient (checkOffside : avant-dernier défenseur, ballon qui tient la ligne, moitié qui immunise, tolérance)`, c.ok, c.issues.join(' ; '));
+
+  // LA FIXTURE : une possession posée au rond central, la défense alignée à 18 m, la pointe
+  // plantée à 26 m — 8 m derrière l'avant-dernier. Déterministe, rejouable, sans re-distribution.
+  const fixture = (cfgOver = {}, recAdv = 26) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...cfgOver });
+    const sgn = -st.pitch.ownGoal(0).sign;
+    const c0 = st.players.find((p) => p.team === 0 && p.post === 5);        // le milieu axial porte
+    const rec = st.players.find((p) => p.team === 0 && p.post === 8);       // le 9 est la cible
+    c0.p[0] = 0; c0.p[2] = 0; c0.v = [0, 0];
+    for (const q of st.players.filter((q) => q.team === 1)) q.p[0] = sgn * (q.keeper ? 51 : 18);
+    for (const q of st.players.filter((q) => q.team === 0 && q !== c0 && q !== rec)) q.p[0] = -sgn * 8;
+    rec.p[0] = sgn * recAdv; rec.p[2] = 4; rec.v = [0, 0];
+    st.ball.restart([0, 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null;                                                       // fixture : le jeu est OUVERT
+    st.ball.possess(c0.id);
+    st.possession = { team: 0, carrier: c0.id };
+    st.phase = 'carry'; st.hold = 1.4; st.lastTouch = 0;
+    return { st, cfg, c0, rec, sgn };
+  };
+
+  // (a) le CERVEAU refuse — refus nommé 'hors-jeu' à la porte de beginPass
+  {
+    const { st, cfg, rec } = fixture();
+    const choice = { to: rec, lead: [rec.p[0] + 2, 0.11, rec.p[2]], style: 'ground', lane: { margin: 3, open: true }, dist: 26 };
+    const r = simInternals.beginPass(st, choice, cfg);
+    ok(`le cerveau REFUSE la passe vers un hors-jeu (beginPass → refus nommé, pointe à 26 m / ligne 18)`,
+      r === false && (st.deny?.['hors-jeu'] ?? 0) === 1, `deny=${JSON.stringify(st.deny ?? {})}`);
+  }
+  // (b) …mais un ONSIDE d'un cheveu passe la porte (la loi ne mord que derrière la ligne)
+  {
+    const { st, cfg, rec } = fixture({}, 17.8);
+    const choice = { to: rec, lead: [rec.p[0] + 2, 0.11, rec.p[2]], style: 'ground', lane: { margin: 3, open: true }, dist: 18 };
+    simInternals.beginPass(st, choice, cfg);
+    ok(`l'onside d'un cheveu N'EST PAS refusé pour hors-jeu (17,8 m / ligne 18 — la porte ne juge que la loi)`,
+      (st.deny?.['hors-jeu'] ?? 0) === 0, `deny=${JSON.stringify(st.deny ?? {})}`);
+  }
+  // (c) sabotage nommé « ligne aveugle » : offside:false → la porte de la LOI est morte (mesuré :
+  // la même passe meurt ensuite sur 'course' — les autres lois jugent encore, c'est le point)
+  {
+    const { st, cfg, rec } = fixture({ offside: false });
+    const choice = { to: rec, lead: [rec.p[0] + 2, 0.11, rec.p[2]], style: 'ground', lane: { margin: 3, open: true }, dist: 26 };
+    simInternals.beginPass(st, choice, cfg);
+    ok(`sabotage « ligne aveugle » attrapé (offside:false — la porte est morte, aucun refus 'hors-jeu')`,
+      (st.deny?.['hors-jeu'] ?? 0) === 0, `deny=${JSON.stringify(st.deny ?? {})}`);
+  }
+  // (d) le SIFFLET : une passe FORCÉE marquée par la photo (strikeNow) trouve le coupable —
+  // son premier toucher lève le drapeau (receive), l'image suivante pose le COUP FRANC ADVERSE
+  {
+    const { st, cfg, rec } = fixture();
+    st.possession = { team: 0, carrier: -1 }; st.phase = 'flight';
+    st.pass = { from: 0, to: rec.id, t: st.t, off: { [rec.id]: [+rec.p[0].toFixed(2), +rec.p[2].toFixed(2)] } };
+    simInternals.receive(st, rec.id, cfg);
+    const ev = st.events.filter((e) => e.type === 'hors-jeu');
+    matchStep(st, 1 / 60, cfg);
+    ok(`le premier toucher d'un hors-jeu SIFFLE (événement + coup franc ADVERSE au point de l'infraction)`,
+      ev.length === 1 && st.restart?.type === 'coup-franc' && st.restart?.team === 1 && st.ball.owner == null,
+      `evs=${ev.length} restart=${st.restart?.type}/${st.restart?.team}`);
+  }
+}
+
+// ---------- 6. les APPELS TIMÉS existent et sont SUIVIS (flux : existence, pas de bande fine)
+{
+  let appels = 0, servis = 0, offPct = [], denies = 0;
+  for (const seed of [1, 3, 4]) {
+    const st = makeMatch({ full: true, seed });
+    const cfg = matchCfg({ shotRange: 20 });
+    let fPoss = 0, fOff = 0;
+    for (let i = 0; i < 180 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      if (st.restart || st.possession.team < 0) continue;
+      const atk = st.possession.team;
+      const L = offsideLine(st, atk);
+      const trio = st.players.filter((p) => p.team === atk && !p.keeper && (p.post ?? 0) >= 7);
+      if (trio.length) { fPoss++; if (trio.some((p) => p.p[0] * L.sgn > L.adv + 0.05)) fOff++; }
+    }
+    const bursts = st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond');
+    const passes = st.events.filter((e) => e.type === 'pass');
+    appels += bursts.length;
+    servis += passes.filter((p) => bursts.some((b) => b.by === p.to && p.t - b.t >= 0 && p.t - b.t < 2.2)).length;
+    offPct.push(100 * fOff / Math.max(1, fPoss));
+    denies += st.deny?.['hors-jeu'] ?? 0;
+  }
+  // sobriété : 2-5 appels mesurés par 180 s — des ruptures, pas un essaim de sprints
+  ok(`les appels profonds VIVENT sans essaim (${appels} sur 3 graines × 180 s, bande [3 ; 36])`, appels >= 3 && appels <= 36);
+  // suivi : 3 servis mesurés sur 9 appels (27 % — un appel réel n'est pas toujours servi non
+  // plus) ; l'existence est la clause, le taux est une dette de réglage nommée
+  ok(`au moins un appel est SERVI (${servis} passes vers le coureur dans sa fenêtre — le mouvement nourrit le ballon)`, servis >= 1);
+  // le calage tient les pointes du BON côté : 0-2,2 % mesuré (le dart flirte avec la ligne —
+  // c'est son métier) ; sans calage le monde d'aujourd'hui vit aussi bas (bloc profond), la
+  // clause est donc ABSOLUE, pas comparative — le sabotage de la LOI vit en fixtures (§5)
+  const worst = Math.max(...offPct);
+  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 4)`, worst <= 4);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

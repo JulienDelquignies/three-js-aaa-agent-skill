@@ -1899,6 +1899,42 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    marche si un téléphone plafonne encore : le LOD des corps (1,14 M tris skinnés — dette
    nommée depuis le lot 9).
 
+44. **La Loi 11 et les appels timés (lot 10 — le premier étage d'intelligence off-ball).** Le
+   hors-jeu est UNE ligne (l'avant-dernier adversaire, tenue par le ballon, jamais dans sa
+   moitié — `offside.js`, pur, contrat `checkOffside`) et UN instant (le DÉPART du ballon :
+   `strikeNow`, pas le choix ni la réception — c'est ce qui rend l'appel timé possible). Quatre
+   consommateurs, tous gardés par `cfg.offside && st.full` (réduit = futsal sans hors-jeu, loi
+   du format ; rondo au bit près — 40/40) : le CERVEAU (choosePass écarte, beginPass refuse —
+   refus nommé 'hors-jeu'), la PHOTO (st.pass.off à la frappe, dégagements et tirs compris),
+   le SIFFLET (premier toucher d'un marqué → receive lève st._whistle → coup franc ADVERSE
+   administré par le match, même cérémonie portée qu'une sortie, cause de release
+   'arrêt-de-jeu'), le CALAGE (pointes 7-9 bornées à ligne − 0,8, relues chaque image). DEUX
+   mensonges a-priori corrigés par la mesure : (a) « le trio campe derrière la défense » —
+   faux, le bloc adverse recule si bas que le camping illicite vaut 0-1,1 % du temps de
+   possession AVANT calage (le calage n'est pas un remède, c'est la loi qui tiendra toute
+   hauteur de bloc future) ; (b) le premier appel profond était une DÉCORATION (dart visant une
+   ligne à ~16 m du poste, porteur hors portée : 21-29 appels/180 s, 0-1 servi — la maladie
+   déjà enterrée au rondo « 5 servis sur 74 »). Le remède mesuré : l'appel ne se déclenche que
+   SERVABLE (pointe à ≤ passRange − 0,5 du ballon ET devant lui, porteur posé, couloir profond
+   `laneClearance`, un par équipe, cooldown 10 s), le dart est borné (+7 m, jamais au-delà de
+   la ligne), et `appelRange: 6` étire l'enveloppe de choosePass pendant la fenêtre `_pace`
+   (un ballon dans la course est PLUS LONG qu'une passe de circulation — sans l'extension, le
+   coureur sortait de passRange 13 en 0,6 s). L'extension a d'abord FUI dans le réduit (les
+   bursts cadencés portent aussi kind 'appel' → un monde calibré 76 clauses a bougé, tempsLoin
+   4,6 > 2,5 — attrapé par la sentinelle, pas par moi) : garde st.full posée sur le terme, comme
+   sur toute pièce de la Loi 11. Après : 2-5 appels/180 s, 3 servis sur 10 (27 % —
+   un appel réel n'est pas toujours servi), pointes illicites ≤ 0,4 % pire graine, tirs stables,
+   gel ≤ 0,4 s. Banc : verify-match11 9 → 17 clauses (contrat de la loi, refus sur fixture
+   déterministe 26 m/ligne 18, onside d'un cheveu 17,8 non refusé, sabotage nommé « ligne
+   aveugle » offside:false — la porte meurt, les AUTRES lois jugent encore ('course') —,
+   sifflet → coup-franc/équipe adverse/ballon rendu, appels [3;36] + ≥ 1 servi + calage ≤ 4 %
+   absolu : la clause comparative de flux serait un mensonge ici, le bloc profond rend les deux
+   mondes semblables — doctrine du lot 8, les fixtures portent le sabotage). HUD : l'événement
+   'hors-jeu' entre au ticker des gestes (ambre) — un coup franc sorti de nulle part serait un
+   bug aux yeux de l'utilisateur. Suites : match 76/0, gestes 52/0, dribble 17/0, attributes
+   13/0, membres 16/0, gants 9/0, match11 17/0, sync 7/7 (82 modules — offside.js dans les
+   trois copies).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

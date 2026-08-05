@@ -125,9 +125,24 @@ marquage (4 marqueurs + press + cover) ; tout le reste tient SON poste — c'est
 du bloc s'effondre de 15,2 à 9,4 m). Mesuré : sim 22 joueurs 0,38-0,44 ms/step ; scène complète
 (couches de gestes + IK + warps × 22) 3,65 ms/image CPU ; fps 22 corps = 75 % du fps 12 corps en
 rasterisation CPU pure — l'architecture scale, le rendu n'a AUCUNE tuyauterie de plus que le
-réduit (même scène, même entrée à un paramètre près). Banc : `verify-match11.mjs` (9 clauses).
+réduit (même scène, même entrée à un paramètre près). Banc : `verify-match11.mjs` (17 clauses).
 Dette nommée : l'ÉQUILIBRE de jeu du plein format (tempo, portée de tir — `shotRange: 20` posé
 en override —, conversion : les bandes fines du réduit restent à calibrer pour le 105 m).
+
+Depuis le lot 10, le plein format vit sous **la Loi 11** (`offside.js` — pure, `checkOffside`) :
+UNE ligne (l'avant-dernier adversaire, tenue par le ballon, jamais dans sa moitié), UN instant
+(le DÉPART du ballon — `strikeNow`), et quatre consommateurs gardés par `cfg.offside && st.full`
+(le réduit reste futsal, le rondo au bit près) : le CERVEAU n'y sert personne (`choosePass`
+écarte, `beginPass` refuse — refus nommé `hors-jeu`), la PHOTO se prend à la frappe
+(`st.pass.off` — dégagements et tirs compris : le renvoi qui trouve un attaquant resté aux six
+mètres est LE hors-jeu classique), le premier toucher SIFFLE (`receive` → `st._whistle` →
+coup franc adverse administré par le match, même cérémonie portée qu'une sortie), et les
+POINTES SE CALENT sur la ligne (postes 7-9 bornés à ligne − 0,8, relus chaque image). L'appel
+timé en jaillit : pointe À PORTÉE DE PASSE et devant le ballon, porteur posé, couloir profond
+ouvert → dart de 7 m vers la ligne (jamais au-delà), servi par `appelBonus` + `appelRange`
+(l'appel ÉTIRE l'enveloppe de passe : un ballon dans la course est plus long qu'une passe de
+circulation — sans lui, mesuré : 11 appels, 1 servi, la décoration). Mesuré : 2-5 appels/180 s,
+~27 % servis, pointes en position illicite ≤ 0,4 % du temps de possession (pire graine).
 
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
@@ -138,10 +153,10 @@ stade paramétrique le construit (`generateStadium({ pitch, goal })` — défaut
    largeur/hauteur d'équipe) et le consommer dans VOTRE `assignJobs` — remplacez les 5 couloirs
    de `match-sim.js#assignMatchJobs` par vos postes. Tout le reste (duels, gestes, gardien,
    remises) est déjà branché.
-2. **Hors-jeu (Loi 11)** : la ligne se lit dans `st.players` ; le bon point d'application est
-   une porte dans `beginPass` (refus nommé `hors-jeu` à l'engagement) et/ou `canTake` (le
-   receveur en position illicite ne peut pas prendre) + un type de remise `coup-franc` dans
-   votre `onOut`/restart.
+2. **Hors-jeu (Loi 11)** : LIVRÉ (lot 10 — `offside.js`, voir plus haut). Pour VOTRE variante
+   (ligne haute, piège du hors-jeu) : tout passe par `offsideLine(st, team)` — le calage des
+   pointes et le déclencheur d'appel (`assignMatchJobs`, bloc des postés) sont les deux sites
+   à personnaliser ; la porte, la photo et le sifflet n'ont pas de raison de changer.
 3. **Chrono, mi-temps, score final** : envelopper `matchStep` (le patron : `playMatch`) — état
    de période, `placeKickoff(st, team)` existe pour l'engagement de seconde période.
 4. **Sorties du gardien** : `keeper.js#KEEPER.depthMax` borne la sortie ; le un-contre-un est
