@@ -1882,6 +1882,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    si un device réel plafonne (1,14 M tris). Le réduit INTACT : match 76/0, rondo 40/40 au bit
    près, sync 7/7 (formation.js dans les trois copies).
 
+43. **La fluidité du 11c11 au téléphone (« ça lag, c'est pas fluide — mais au moins il n'y a pas
+   de téléport »).** Le lag mobile était TROIS multiplicateurs cumulés, tous côté rendu (la sim
+   à 0,38 ms/step n'y était pour rien) : le pixel ratio (cap global 2 — un téléphone DPR 3
+   pousse 4× les fragments d'un laptop dans la chaîne de post), la passe d'OMBRE (squad.js pose
+   castShadow sur TOUS les meshes : 22 corps skinnés se re-déforment une DEUXIÈME fois par image
+   dans la shadow map 2048²), et le tier 'high' par défaut. Trois économies PLEIN FORMAT
+   SEULEMENT (le réduit intact) : (a) DPR capé à 1,5 (≈ 44 % de fragments rendus au GPU vs le
+   cap 2) ; (b) LE BUDGET DE CASTERS — à 2 Hz, seuls les 8 corps les plus près du ballon paient
+   la passe d'ombre (l'œil ne lit pas l'ombre d'un corps à 40 m dans un cadre de 105 m) + map
+   1024² (4× moins de texels) ; (c) tier 'low' par défaut sur écran étroit (?q=high le
+   rétablit). Vérifié ACTIF en conditions téléphone simulées (390 × 844, DPR 3) : tier low,
+   DPR 1,5, 8/22 corps casters (56/154 meshes dans la passe d'ombre). Le banc headless CPU-GL ne
+   peut PAS mesurer ces gains (DPR 1, 960 px, pas de GPU) — la sonde de conditions remplace la
+   mesure de fps là où l'instrument est aveugle, et le juge final est le device réel. Prochaine
+   marche si un téléphone plafonne encore : le LOD des corps (1,14 M tris skinnés — dette
+   nommée depuis le lot 9).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

@@ -78,11 +78,16 @@ export class Rondo {
     this.scene.fog = new THREE.FogExp2(0x0a1020, 0.0016);
 
     // ---- night: floodlights + one shadow-casting sun fitted to the pitch
-    this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model });
+    this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
+      // plein format : 22 corps skinnés se re-déforment dans la passe d'ombre — la map se
+      // resserre (1024²) et le BUDGET DE CASTERS (update) limite qui la paie
+      shadowMapSize: this.fullMode ? 1024 : 2048 });
     this.disposables.push(this.night);
     this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [], gestes: [] };
 
-    this._tier = q.get('q') || 'high';   // the post chain is built in camera(), once we have one
+    // plein format sur écran étroit : la chaîne 'low' par défaut (le post 'high' à DPR mobile
+    // sur 105 × 68 est le lag mesuré au téléphone) — ?q=high le rétablit explicitement
+    this._tier = q.get('q') || (this.fullMode && typeof window !== 'undefined' && window.innerWidth < 700 ? 'low' : 'high');
 
     // ---- the grid the game is played in, painted on the grass
     // un ENTRAÎNEMENT a son carré et ses cônes ; un MATCH n'ajoute rien au sol — le stade
@@ -326,6 +331,9 @@ export class Rondo {
     // téléphone en portrait, le carré tient dans un tiers de la hauteur et on ne distingue plus un
     // geste d'un autre. Le cadrage est dérivé, pas écrit en dur.
     const narrow = typeof window !== 'undefined' && window.innerWidth < 700;
+    // plein format : le DPR se cape à 1,5 (un téléphone à DPR 3 → 2 quadruple déjà les
+    // fragments du réduit ; à 22 corps + grand stade, 1,5 rend ~44 % des pixels au GPU)
+    if (this.fullMode && this.renderer?.setPixelRatio) this.renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, 1.5));
     // le match cadre le TERRAIN, et la régie vit AU-DESSUS de la tribune — le stade réduit a
     // rapproché le premier rang à 21 m du centre : l'ancienne position (z=−34) filmait l'intérieur
     // du béton (écran noir mesuré). Passerelle haute, plongée douce, tout le terrain dans le cadre.
@@ -873,6 +881,22 @@ export class Rondo {
         passes: this.state.passes, since: +this._since.toFixed(2),
         ball: this.state.ball.p.map((v) => +v.toFixed(2)),
         players: this.state.players.map((p) => ({ id: p.id, team: p.team, job: p.job, p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)], speed: +p.speed.toFixed(2) })),
+      });
+    }
+    // LE BUDGET D'OMBRES du plein format (2 Hz) : seuls les 8 corps les plus près du ballon
+    // paient la passe d'ombre — un caster skinné se déforme DEUX fois par image, et l'œil ne
+    // lit pas l'ombre d'un corps à 40 m dans un cadre de 105 m
+    if (this.fullMode && this._t - (this._shadowAt ?? -1) > 0.5) {
+      this._shadowAt = this._t;
+      const b = this.state.ball.p;
+      const order = [...this.players].sort((a, c) =>
+        (Math.hypot(a.sim.p[0] - b[0], a.sim.p[2] - b[2])) - (Math.hypot(c.sim.p[0] - b[0], c.sim.p[2] - b[2])));
+      order.forEach((pl, i) => {
+        const cast = i < 8;
+        if (pl._castShadow !== cast) {
+          pl._castShadow = cast;
+          pl.model.traverse((o) => { if (o.isMesh) o.castShadow = cast; });
+        }
       });
     }
     if (this._hud && this._t - this._lastEvent > 0.15) {
