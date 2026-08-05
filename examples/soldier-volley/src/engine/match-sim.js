@@ -19,7 +19,8 @@ import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
-import { makePitch, outRule, REDUIT } from './pitch.js';
+import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
+import { formationSpots } from './formation.js';
 import { KEEPER, keeperSpot, keeperDecide } from './keeper.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
@@ -130,8 +131,17 @@ export const MATCH = {
  * terrain de pitch.js, coup d'envoi à l'équipe 0. L'état EST un état de rondo (mêmes joueurs,
  * même ballon, mêmes personas) : le loop ne voit pas la différence, c'est la config qui la fait.
  */
-export function makeMatch({ perTeam = 5, seed = 1, pitch = makePitch(), squads = null } = {}) {
+export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null } = {}) {
+  // LE 11C11 EST UNE CONFIGURATION (full: true → terrain Loi 1, 10 + gardien par équipe, postes
+  // de formation) — même loop, mêmes lois, aucune tuyauterie nouvelle : la preuve du moteur.
+  pitch = pitch ?? makePitch(full ? FULL : undefined);
+  if (full && perTeam === 5) perTeam = 10;
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
+  st.full = pitch.dims.length > 60;
+  // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
+  for (const team of [0, 1]) {
+    st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; });
+  }
   // LES EFFECTIFS NOTÉS (attributes.js — le contrat avec les projets amont) : squads[team][i] =
   // { ratings, look, name, number } appliqué dans l'ordre des joueurs de l'équipe (le DERNIER est
   // le gardien). Sans squads : aucun p.skill, aucun tirage d'erreur — le monde d'aujourd'hui.
@@ -594,8 +604,26 @@ function assignMatchJobs(st, cfg) {
       [anchor[0] + sgn * 4, anchor[2] * -0.6],                                 // second rideau
     ]).map(([x, z]) => [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z))]);
     const free = attackers.filter((p) => (!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter);
+    // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les 4 plus près de
+    // l'ancre) — le reste du monde tient SON poste de formation coulissé (le bloc). Sans ça, les
+    // 5 slots du réduit laissaient 5 corps immobiles et l'essaim mangeait la lisibilité.
+    let slotters = free, posted = [];
+    if (st.full) {
+      slotters = [...free].sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor)).slice(0, 4);
+      posted = free.filter((p) => !slotters.includes(p));
+      const spots = formationSpots(pitch, atk, anchor[0], true);
+      for (const p of posted) {
+        const want = spots[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        p.job = 'support';
+        const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
+        if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
+          p._slotT = want; p._slotAt = st.t + 0.7;
+        }
+        p.target = [p._slotT[0], 0, p._slotT[1]];
+      }
+    }
     const taken = new Set();
-    for (const p of free) {
+    for (const p of slotters) {
       let best = -1, bd = Infinity;
       for (let i = 0; i < slots.length; i++) {
         if (taken.has(i)) continue;
@@ -645,6 +673,19 @@ function assignMatchJobs(st, cfg) {
         const gl = Math.hypot(gx, gz) || 1;
         const dd = Math.max(cfg.coverMinDist, Math.min(6, gl * 0.35));
         p.job = 'cover'; p.target = [anchor[0] + (gx / gl) * dd, 0, anchor[2] + (gz / gl) * dd];
+        return;
+      }
+      // EN 11C11 : quatre marqueurs suffisent — le reste tient le BLOC défensif à son poste
+      // (un marquage de dix serait un essaim ; un bloc qui coulisse est une défense lisible)
+      if (st.full && i >= 6) {
+        const spotsD = formationSpots(pitch, p.team, anchor[0], false);
+        const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        p.job = 'mark';
+        const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
+        if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
+          p._slotT = want; p._slotAt = st.t + 0.7;
+        }
+        p.target = [p._slotT[0], 0, p._slotT[1]];
         return;
       }
       // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT — re-visé PAR À-COUPS

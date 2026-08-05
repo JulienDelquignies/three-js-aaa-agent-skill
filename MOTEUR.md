@@ -6,7 +6,7 @@ mesurable et chaque régression bruyante. Il est fait pour être **repris par un
 ce guide dit quoi prendre, comment c'est architecturé, et où se greffe un moteur de match 11c11.
 
 Démos vivantes : https://showcase-pi-mocha.vercel.app (rondo = `rondo.html`, match réduit =
-`match.html`).
+`match.html`, **11 contre 11 plein format = `match11.html`**).
 
 ## Ce qu'il y a dans la boîte
 
@@ -114,7 +114,22 @@ porte pas (mesuré : verrou de balance identique).
 6. **Toute loi nouvelle arrive avec sa mesure avant/après et sa clause** (un banc `verify-*.mjs`
    ou une clause dans un contrat existant), plus un sabotage qui prouve que la clause mord.
 
-## Greffer le 11c11 (le chemin balisé)
+## Le 11c11 (le chemin balisé — ET PROUVÉ : `match11.html`)
+
+Depuis le lot 9, le plein format est une CONFIGURATION livrée : `makeMatch({ full: true })` —
+terrain Loi 1 (105 × 68), 10 + gardien par équipe, formation 4-3-3 (`formation.js` : postes en
+fractions du terrain, bloc qui COULISSE avec le ballon et respire avec la possession). Les
+couloirs dynamiques du réduit sont réservés au soutien rapproché (4 corps près de l'ancre) et au
+marquage (4 marqueurs + press + cover) ; tout le reste tient SON poste — c'est ce qui fait qu'un
+22-corps reste un bloc lisible, pas un essaim (sabotage nommé : sans les postes, la dispersion
+du bloc s'effondre de 15,2 à 9,4 m). Mesuré : sim 22 joueurs 0,38-0,44 ms/step ; scène complète
+(couches de gestes + IK + warps × 22) 3,65 ms/image CPU ; fps 22 corps = 75 % du fps 12 corps en
+rasterisation CPU pure — l'architecture scale, le rendu n'a AUCUNE tuyauterie de plus que le
+réduit (même scène, même entrée à un paramètre près). Banc : `verify-match11.mjs` (9 clauses).
+Dette nommée : l'ÉQUILIBRE de jeu du plein format (tempo, portée de tir — `shotRange: 20` posé
+en override —, conversion : les bandes fines du réduit restent à calibrer pour le 105 m).
+
+### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le
 stade paramétrique le construit (`generateStadium({ pitch, goal })` — défaut = plein format).

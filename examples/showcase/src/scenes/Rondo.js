@@ -57,14 +57,19 @@ export class Rondo {
     // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne
     // 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
     this.matchMode = q.has('match');
+    // LE 11C11 (?full) : terrain Loi 1, 10 + gardien par équipe, postes de formation — la même
+    // scène, le même moteur : une CONFIGURATION (la preuve que l'architecture scale à 22 corps)
+    this.fullMode = this.matchMode && q.has('full');
 
     // ---- the stadium: pitch centre at the origin so sim space IS world space.
     // EN MATCH, LE STADE SE CONSTRUIT AUTOUR DU TERRAIN RÉDUIT (stade paramétrique) : ses cages
     // sont LES cages (mêmes lignes que pitch.js), sa pelouse peint LES surfaces — une seule vérité
     // au sol, plus de carré superposé ni de buts décoratifs à 3 m des vrais.
-    const model = this.matchMode
-      ? generateStadium({ tier: 4, landmark: 'grandbol', pitch: { L: 46, W: 30, circle: 4, box: { d: 8, w: 15 }, six: { d: 3, w: 9 }, spot: 7.5 }, goal: { w: 5, h: 2 } })
-      : generateStadium({ tier: 5, landmark: 'grandbol' });
+    const model = this.fullMode
+      ? generateStadium({ tier: 4, landmark: 'grandbol' })   // défauts = plein format Loi 1
+      : this.matchMode
+        ? generateStadium({ tier: 4, landmark: 'grandbol', pitch: { L: 46, W: 30, circle: 4, box: { d: 8, w: 15 }, six: { d: 3, w: 9 }, spot: 7.5 }, goal: { w: 5, h: 2 } })
+        : generateStadium({ tier: 5, landmark: 'grandbol' });
     const chk = checkStadium(model);
     if (!chk.ok) console.warn('checkStadium', chk.issues);
     const theme = makeTheme({ seed: 3, name: 'Grand Bol', primary: TEAMS[0].secondary, secondary: TEAMS[0].primary });
@@ -95,12 +100,15 @@ export class Rondo {
     // ---- the game itself
     // ?n=3 pour un 3 contre 3. Sur un téléphone, dix bonshommes dans un carré de 16 m sont dix taches
     // de trois pixels ; à six, on voit ce que chacun fait — ce qui est tout l'intérêt de la scène.
-    const perTeam = Math.max(2, Math.min(6, Number(q.get('n')) || 5));
+    const perTeam = this.fullMode
+      ? Math.max(6, Math.min(10, Number(q.get('n')) || 10))
+      : Math.max(2, Math.min(6, Number(q.get('n')) || 5));
     // ?match : LE MATCH RÉDUIT — deux buts, gardiens, tirs, remises (match-sim). Même scène, même
     // pipeline visuel : le match est une CONFIGURATION du moteur, l'habillage ne change pas.
-    this._mcfg = this.matchMode ? matchCfg() : null;
+    // en plein format, la portée de tir suit l'échelle (les frappes du 11c11 partent de 16-25 m)
+    this._mcfg = this.fullMode ? matchCfg({ shotRange: 20 }) : this.matchMode ? matchCfg() : null;
     this.state = this.matchMode
-      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7 })
+      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode })
       : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
     this.perTeam = perTeam;
 
@@ -321,9 +329,10 @@ export class Rondo {
     // le match cadre le TERRAIN, et la régie vit AU-DESSUS de la tribune — le stade réduit a
     // rapproché le premier rang à 21 m du centre : l'ancienne position (z=−34) filmait l'intérieur
     // du béton (écran noir mesuré). Passerelle haute, plongée douce, tout le terrain dans le cadre.
-    const back = this.matchMode ? (narrow ? 17 : 20) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
+    const back = this.fullMode ? (narrow ? 42 : 47)
+      : this.matchMode ? (narrow ? 17 : 20) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
     cam.fov = this.matchMode ? (narrow ? 56 : 50) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
-    cam.position.set(0, this.matchMode ? 19 : 8.5 - (narrow ? 1.2 : 0), -back);
+    cam.position.set(0, this.fullMode ? 40 : this.matchMode ? 19 : 8.5 - (narrow ? 1.2 : 0), -back);
     this._camBack = back;
     cam.lookAt(0, 1, 0);
     this.cam = cam;

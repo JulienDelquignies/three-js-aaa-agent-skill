@@ -1853,6 +1853,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    prouvé à la sonde avant de re-caler — l'instrument suit son objet, pas l'inverse).
    audit-gants 9/0, audit-membres 16/0, rondo 40/40 au bit près, sync 7/7.
 
+42. **Le 11 contre 11 — la promesse tenue (« tu pourrais faire une autre version en 11v11 ? un
+   autre projet a une tuyauterie de match tellement complexe que le rendu 3D est horrible — je
+   veux m'assurer que 22 joueurs tournent de façon fluide »).** LA DÉMONSTRATION D'ARCHITECTURE :
+   makeMatch({ full: true }) et RIEN d'autre — terrain Loi 1 (pitch.js#FULL, qui attendait
+   depuis le début), 10 + gardien par équipe, et le SEUL module nouveau est formation.js (~70
+   lignes : postes 4-3-3 en fractions du terrain, bloc qui coulisse ± 18 % avec le ballon,
+   respiration attaque/défense ×1,05/×0,85, checkFormation — lignes ordonnées, largeur, bloc
+   mobile). La greffe dans assignMatchJobs : les couloirs dynamiques du réduit RÉSERVÉS au
+   soutien rapproché (4 plus près de l'ancre), le marquage borné à 4 + press + cover, tout le
+   reste TIENT SON POSTE coulissé (p.post posé à makeMatch — le 9 reste le 9) ; cadence à-coups
+   identique. La scène : ?full → stade paramétrique aux DÉFAUTS (déjà plein format), caméra
+   passerelle 47 m/40 m de haut, perTeam 10, matchCfg({ shotRange: 20 }) — une page
+   (match11.html) qui force la config comme match.html force la sienne. MESURES DE FLUIDITÉ (la
+   question du retour) : sim 22 joueurs 0,38-0,44 ms/step node ; update scène COMPLET (sim +
+   couches de gestes + IK + warps + regard × 22 corps) 3,65 ms/image ; fps 22 corps = 75 % du
+   fps 12 corps en rasterisation CPU headless (le pire cas absolu — 1,14 M triangles skinnés au
+   CPU ; sur GPU réel le skinning est trivial) ; draw calls 104 (MOINS que le réduit, 119 — le
+   stade domine). L'architecture scale : AUCUNE tuyauterie ajoutée, le rendu du 22-corps est le
+   rendu du 12-corps. verify-match11.mjs (9 clauses) : formations saines ×2, 22 joueurs Loi 1,
+   budget sim ≤ 1,5 ms/step, le jeu VIT (57 passes/3 min), jamais de gel > 25 s, checkMatch
+   tient à 22, le bloc tient ses postes (60 % couverts — les ~6 actifs par équipe désertent pour
+   JOUER, c'est le football ; la clause calibrée au monde mesuré, pas à l'a priori), et le
+   sabotage « essaim » (st.full coupé : dispersion 15,2 → 9,4 m — la formation OCCUPE le
+   terrain, les couloirs du réduit s'agglutinent). DETTES NOMMÉES du plein format : l'équilibre
+   de jeu (2 tirs/3 min — shotRange 20 posé mais le bloc de 10 étouffe l'approche : le réglage
+   du 105 m est un chantier à part), un but-sans-tir aperçu graine 3 (à sonder), LOD/instancing
+   si un device réel plafonne (1,14 M tris). Le réduit INTACT : match 76/0, rondo 40/40 au bit
+   près, sync 7/7 (formation.js dans les trois copies).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
