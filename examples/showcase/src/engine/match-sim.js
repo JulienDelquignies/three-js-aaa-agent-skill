@@ -56,6 +56,11 @@ export const MATCH = {
   keeperClaim: true,      // la sortie dans les pieds : un ballon au sol à portée de gants se ramasse, même « porté » ; false : le label-bouclier (sabotage nommé)
   carrySurge: { at: 1.25, top: 6.2 },  // le porteur COURT sur sa touche poussée (> 1,25 m → pointe libérée) ; null : le trottinement (sabotage nommé)
   carryTight: 0.62,       // la CONDUITE SERRÉE par défaut (la touche pleine est l'acte nommé d'un burst) ; 1 : le knock-on permanent (sabotage nommé)
+  carryGuard: 0.4,        // la CONDUITE PROTÉGÉE : défenseur à ≤ 2,2 m → le ballon COLLE au pied,
+                          // burst ou pas (le ballon lié tant que le défenseur n'intervient pas) ;
+                          // null : la touche de fuite (sabotage nommé)
+  guardDamp: 0.88,        // …et la touche protégée AMORTIT (le ballon roule SOUS l'allure — sans
+                          // ça le lead court partait quand même au-dessus de la vitesse du corps)
   meetBall: true,         // le receveur ATTAQUE son ballon (rencontre au plus tôt) ; false : la statue au point de chute (sabotage nommé)
   // LES GESTES DU MATCH (passement, crochet, feinte de frappe) : leurs clés n'existent QU'ICI —
   // les maybe* refusent AVANT tout tirage quand elles manquent, le rondo est inchangé au bit près
@@ -459,11 +464,26 @@ function assignMatchJobs(st, cfg) {
       // LA CONDUITE SERRÉE PAR DÉFAUT : la touche pleine (régime du rondo) ne se sert qu'en
       // rupture NOMMÉE (burst) — en croisière on garde le ballon sous la semelle (touchF 0,62 :
       // ~1,65 m à 6 m/s au lieu de 2,7)
-      p.touchF = (p._pace?.until ?? -1) > st.t ? 1
-        : (p._prepShot ?? -1) > st.t ? (cfg.prepTouchF ?? 0.3)   // la touche de préparation SERRE
+      // …et LA CONDUITE POURSUIVIE COLLE (cfg.carryGuard) : un défenseur à portée de duel
+      // (≤ 2,2 m) impose la touche PROTÉGÉE — mesuré avant : en course poursuivie (v > 4,5,
+      // foe ≤ 2,5), ballon à p50 1,37 m / 29 % du temps au-delà de 1,5 (« bien trop loin du
+      // pied… il devrait être lié à l'attaquant », retour utilisateur). Le burst garde son
+      // droit d'allonger UNIQUEMENT libre devant.
+      const foeGuard = Math.min(...st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0)
+        .map((q) => Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2])), 99);
+      p.touchF = (p._prepShot ?? -1) > st.t ? (cfg.prepTouchF ?? 0.3)   // la préparation SERRE
+        : foeGuard <= 2.2 ? (cfg.carryGuard ?? ((p._pace?.until ?? -1) > st.t ? 1 : (cfg.carryTight ?? 1)))
+        : (p._pace?.until ?? -1) > st.t ? 1
         : (cfg.carryTight ?? 1);
-      // …et AMORTIT (le canal vitesse de dribble.js) : le ballon se cale sous l'allure du corps
-      p.touchDamp = (p._prepShot ?? -1) > st.t ? (cfg.prepDamp ?? 0.72) : 1;
+      // …et AMORTIT (le canal vitesse de dribble.js) : le ballon se cale sous l'allure du corps.
+      // LA CONDUITE PROTÉGÉE AMORTIT AUSSI (guardDamp) : réduire le lead ne suffisait pas —
+      // pushSpeed ≥ v, le ballon partait au-dessus de l'allure et l'écart montait au roulement
+      // (p50 1,4 m mesuré poursuivi malgré carryGuard) ; amorti, il reste sous le pied.
+      // …EN COURSE seulement (v ≥ 4) : à basse allure, amortir sous l'allure créait des
+      // excursions LENTES (ballon à 3,6 contre corps à 3 — 4,5 s/min loin mesurés) ; au trot,
+      // le lead court du régime protégé suffit
+      p.touchDamp = (p._prepShot ?? -1) > st.t ? (cfg.prepDamp ?? 0.72)
+        : foeGuard <= 2.2 && p.speed >= 4 ? (cfg.guardDamp ?? 0.88) : 1;
       const ev = evadeSpot(st, p, cfg);
       // L'AILIER À ANGLE FERMÉ REPIQUE DANS L'AXE (le cut-inside) : viser le centre du but depuis
       // le couloir profond mène au poteau de corner — 195 refus « angle-fermé » par lot de matchs
@@ -919,8 +939,13 @@ function ballFetch(st, dt) {
   // au pied, cap sur le point de remise (droit sur le point quand on y est presque)
   const dSpot = Math.hypot(tk.p[0] - r.p[0], tk.p[2] - r.p[1]);
   const ux = (r.p[0] - tk.p[0]) / (dSpot || 1), uz = (r.p[1] - tk.p[2]) / (dSpot || 1);
-  const aim = dSpot < 0.55 ? [r.p[0], r.p[1]] : [tk.p[0] + ux * 0.35, tk.p[2] + uz * 0.35];
-  st.ball.carry(aim, dt, { tau: 0.06 });
+  // …porté DEVANT LES PIEDS (0,6 m), pas sous le corps : à 0,35 m le ballon vivait entre les
+  // pieds du marcheur et chaque foulée l'ENJAMBAIT — l'œil lisait des passements de jambes en
+  // boucle sur le retour d'engagement (retour utilisateur, confirmé : un artefact, pas un geste)
+  // …0,75 visé avec un servo vif : le ballon poursuit un point qui AVANCE — au tau 0,06 il
+  // traînait à ~0,3 du corps (le retard du servo), de nouveau sous les pieds du marcheur
+  const aim = dSpot < 0.9 ? [r.p[0], r.p[1]] : [tk.p[0] + ux * 0.75, tk.p[2] + uz * 0.75];
+  st.ball.carry(aim, dt, { tau: 0.045 });
   return true;
 }
 

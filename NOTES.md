@@ -1823,6 +1823,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    chantier du backlog borne l'extrême, la clause ne le remplace pas). verify-match 73, gestes
    50, rondo 40/40 au bit près, attributs 13, sync 7/7, audit-membres 16/0.
 
+41. **La conduite poursuivie colle, le passement lancé, la remise qui ne mime plus (trois
+   retours utilisateur).** (1) « Le ballon en contre-attaque avec un défenseur collé est bien
+   trop loin du pied — il devrait être LIÉ » : mesuré 29,4 % du temps poursuivi (v > 4,5,
+   foe ≤ 2,5) à plus de 1,5 m du ballon. Réduire le lead (cfg.carryGuard 0,4) n'a PAS suffi —
+   pushSpeed ≥ v, chaque touche « courte » repartait au-dessus de l'allure : LA TOUCHE PROTÉGÉE
+   AMORTIT (guardDamp 0,88, le canal touchDamp du lot 6a), en course seulement (v ≥ 4 — à basse
+   allure l'amorti créait des excursions lentes, 4,5 s/min mesurés). Les flux comparatifs ont
+   menti TROIS fois (n de 191 à 940 selon la re-donne) — la fixture déterministe a tranché :
+   poursuivi 200 images, ballon PLAQUÉ à max 1,06 m ; saboté (« touche de fuite ») : ballon
+   perdu en 31 images. La dérive après contact du défenseur reste LÉGITIME (le retour le disait
+   lui-même). (2) « Je n'ai toujours pas vu de passement » : l'espèce manquante était LE LANCÉ —
+   le cercle en course sur un jockey qui RECULE devant (2,5 < v ≤ 6, closing < 0,6), SANS pin
+   (on n'épingle pas un ballon en course : il roule sous le cercle, la conduite protégée le
+   garde devant), le corps glisse freiné à 45 %, jambes POSSÉDÉES (même loi que le plongeon —
+   la fusion locomotive aurait éteint le cercle) ; fréquence de base 0,25 → 0,32 : 18 passements
+   / 8 graines (4 lancés + 14 calés) contre 11 avant ; le ticker affiche « passement lancé ».
+   (3) LA CONFIRMATION DEMANDÉE (« quand il y a un but, le joueur ramène le ballon en faisant
+   des passements — c'est ça le mouvement ? ») : OUI, confirmé, et NON ce n'était pas un geste —
+   le porté de remise escortait le ballon à 0,35 m du corps, SOUS les pieds du marcheur : chaque
+   foulée l'ENJAMBAIT, l'œil lisait des passements en boucle. Le ballon roule désormais DEVANT
+   les pieds (0,75 visé, servo 0,045 — au tau 0,06 le ballon TRAÎNAIT derrière sa cible mouvante
+   et revenait sous le corps). Clauses : fixture poursuite + sabotage « touche de fuite »
+   (verify-match 76), porté de remise p25 ≥ 0,42 devant, passement lancé + « sprint refusé »
+   (verify-gestes 52). Instruments re-calés en conscience : « où le pied veut » gardé à ≥ 10
+   touches (le régime protégé raréfie les touches vives) ; audit-gants — gant 0,85 (re-donne),
+   touches jugées p50 ET p90 avec sabotage au p90 (la médiane est noyée par les touches
+   déjà-serrées du monde protégé, le warp agit sur les LOINTAINES : 0,75 avec / 1,14 sans,
+   prouvé à la sonde avant de re-caler — l'instrument suit son objet, pas l'inverse).
+   audit-gants 9/0, audit-membres 16/0, rondo 40/40 au bit près, sync 7/7.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

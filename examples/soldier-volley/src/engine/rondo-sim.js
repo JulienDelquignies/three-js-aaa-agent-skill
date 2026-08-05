@@ -646,7 +646,11 @@ function maybePassement(st, c, cfg) {
   const K = cfg.skill; if (!K || !K.passementFoe) return false;
   if (c.keeper) return false;
   if ((c._skillCd?.passement ?? -1) > st.t) return false;
-  if (c.speed > 2.5) return false;                                // le cercle se joue sur ballon calé, pas en sprint
+  // LE PASSEMENT LANCÉ (l'espèce qui manquait à l'œil — « je n'ai toujours pas vu de passement ») :
+  // en course sur un jockey qui RECULE devant, le cercle se joue PAR-DESSUS le ballon qui roule
+  // (pas de pin) ; à l'arrêt, le cercle classique sur ballon calé. Au-delà de 6 m/s : sprint, non.
+  const enCourse = c.speed > 2.5;
+  if (c.speed > 6.0) return false;
   if (d2(c.p, st.ball.p) > 0.6) return false;
   let foe = null, fd = Infinity;
   for (const q of st.players) {
@@ -667,7 +671,8 @@ function maybePassement(st, c, cfg) {
     return !st.players.some((q) => q.team !== c.team && q.down <= 0 && Math.hypot(q.p[0] - ex, q.p[2] - ez) < 1.2);
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
-  if ((st.rnd ? st.rnd() : 0.5) > (0.25 + 0.4 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
+  if (enCourse && closing > 0.6) return false;                    // lancé : le jockey RECULE devant, il ne charge pas
+  if ((st.rnd ? st.rnd() : 0.5) > (0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
   // LES TOURS ET LA SORTIE (la variété demandée : « Mancini, Reveillère… un nombre de tours
@@ -686,18 +691,18 @@ function maybePassement(st, c, cfg) {
   else if (fd < 1.25) { sortie = 'temporise'; exitYaw = c.yaw + (diag > c.yaw ? 2.4 : -2.4); }
   else if (fd >= 1.5 && uT > 0.62) { sortie = 'fixe'; exitYaw = c.yaw; }
   else { sortie = 'contre-pied'; exitYaw = diag; }
-  const clip = tours === 2 ? 'passementJambes2' : 'passementJambes';
+  const clip = tours === 2 && !enCourse ? 'passementJambes2' : 'passementJambes';   // le double exige le ballon calé
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId['passement-jambes'], sit);
   const move = MOVE_TIMING[clip];
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
   startGesture(c, { id: clip, ...move }, {
-    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw, sortie, tours, foeId: foe.id, ballMax: 0 },
+    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw, sortie, tours: enCourse ? 1 : tours, enCourse, v0: c.speed, foeId: foe.id, ballMax: 0 },
     log: st.gestures,
   });
   (c._skillCd ??= {}).passement = st.t + K.passementCd;
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: clip, foot, skill: 'passement', anticipation: move.contact });
-  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours, sortie, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: enCourse ? 1 : tours, sortie, enCourse, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
   return true;
 }
 
@@ -827,8 +832,9 @@ function skillContactNow(st, p, cfg) {
   } else if (A.skill === 'semelle') {
     A.pin = [st.ball.p[0], st.ball.p[2]];
   } else if (A.skill === 'passement') {
-    // la jambe passe PAR-DESSUS : le ballon se fige, le jockey d'en face mord (le buste a vendu)
-    A.pin = [st.ball.p[0], st.ball.p[2]];
+    // la jambe passe PAR-DESSUS : le ballon se fige (calé) ou ROULE (lancé — on n'épingle pas un
+    // ballon en course), le jockey d'en face mord (le buste a vendu)
+    if (!A.enCourse) A.pin = [st.ball.p[0], st.ball.p[2]];
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];
@@ -876,6 +882,8 @@ function touchEvent(st, c) {
  *  Râteau : le lacet balaie vers exitYaw (ease), le ballon RACLE tout droit en arrière le long de
  *  l'ancien regard — 0,32 m devant → 0,45 m derrière, qui est 0,45 m DEVANT le nouveau regard.
  *  Semelle : corps immobile, ballon garé au point d'agrippage. */
+const c_yaw = (p) => p.yaw;
+
 function skillFollowStep(st, p, dt, cfg) {
   const A = p.act.payload;
   if (A.skill === 'rateau') {
@@ -920,8 +928,17 @@ function skillFollowStep(st, p, dt, cfg) {
     // le corps reste PLANTÉ sur son appui, le ballon est FIGÉ sous le cercle de la jambe — la
     // sortie se joue après le geste (le burst posé au contact rend la première touche lancée)
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-passement', { log: st.gestures }); return; }
-    p.v[0] = 0; p.v[1] = 0; p.speed = 0;
-    if (A.pin) st.ball.carry([A.pin[0], A.pin[1]], dt, { tau: 0.04 });
+    if (A.enCourse) {
+      // LANCÉ : le corps glisse sur son élan (freiné à 45 %), le ballon roule libre sous le
+      // cercle — sa friction le garde devant le pied (conduite protégée en amont)
+      const vG = (A.v0 ?? 3) * 0.45;
+      p.v[0] = Math.cos(A.yaw0 ?? c_yaw(p)) * vG; p.v[1] = Math.sin(A.yaw0 ?? c_yaw(p)) * vG;
+      p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+      p.speed = vG;
+    } else {
+      p.v[0] = 0; p.v[1] = 0; p.speed = 0;
+      if (A.pin) st.ball.carry([A.pin[0], A.pin[1]], dt, { tau: 0.04 });
+    }
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
     // …et le geste s'ABANDONNE si on vient le presser pendant le cercle (même loi que la semelle)
     let foe = Infinity;

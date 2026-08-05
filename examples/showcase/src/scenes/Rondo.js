@@ -670,7 +670,7 @@ export class Rondo {
         let label = names[e.kind] ?? e.kind;
         if (e.kind === 'crochet' && e.espece === 'crochetChaloupe') label = 'crochet chaloupé';
         else if (e.kind === 'crochet' && e.espece === 'crochetCourt') label = 'crochet court';
-        else if (e.kind === 'passement') label = `passement${e.tours === 2 ? ' ×2' : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
+        else if (e.kind === 'passement') label = `passement${e.enCourse ? ' lancé' : ''}${e.tours === 2 ? ' ×2' : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
         const q = this.state.players[e.by];
         const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
         this._gesteLog.unshift(`<b style="color:#e8ebf2">${label}</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
@@ -745,7 +745,7 @@ export class Rondo {
         // corps à ~6 m/s, donc byArrive lit « il court » et éteint les jambes du clip (mesuré :
         // wLegs 0,24 à t=0,18, hanches DEBOUT à l'arrêt, gant à ~1 m d'un ballon au sol). La
         // vitesse d'un corps en plongeon EST celle du geste, pas de la locomotion.
-        const target = done ? 0 : (act?.payload?.skill === 'plongeon' ? 1 : Math.max(byArrive, byContact));
+        const target = done ? 0 : (act?.payload?.skill === 'plongeon' || act?.payload?.enCourse ? 1 : Math.max(byArrive, byContact));
         pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, step / 0.05);
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
         // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à

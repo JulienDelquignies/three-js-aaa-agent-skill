@@ -389,6 +389,25 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       ok(`passement — ${x.want === 'contre-pied' ? 'il avance' : x.want === 'temporise' ? 'il colle' : 'posté loin'} → sortie « ${got} » (voulu : ${x.want})`, got === x.want);
     }
   }
+  {
+    // LE PASSEMENT LANCÉ (l'espèce en course — « je n'ai toujours pas vu de passement ») : un
+    // porteur à 4,5 m/s, jockey qui RECULE devant → le cercle par-dessus le ballon qui roule
+    const c = mk({ speed: 4.5, v: [4.5, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.7, 0, 0.2], v: [3.8, 0] });   // il recule DEVANT (même sens)
+    const st = world([c, foe]);
+    st.rnd = () => 0.05;
+    const r = maybePassement(st, c, M);
+    ok(`le passement LANCÉ s'arme en course sur le jockey qui recule (${c.act?.id ?? 'aucun'}, enCourse ${c.act?.payload?.enCourse === true})`,
+      r === true && c.act?.id === 'passementJambes' && c.act?.payload?.enCourse === true);
+  }
+  {
+    // …et le SPRINT n'a pas de passement (> 6 m/s : on ne cercle pas à pleine pointe)
+    const c = mk({ speed: 6.4, v: [6.4, 0] });
+    const foe = mk({ id: 1, team: 1, p: [1.7, 0, 0.2], v: [5.5, 0] });
+    const st = world([c, foe]);
+    st.rnd = () => 0.05;
+    ok('sabotage « passement en sprint » refusé (6,4 m/s)', maybePassement(st, c, M) === false && !c.act);
+  }
   // EN FLUX (8 graines × 120 s) : le répertoire vit dans le match. HUIT graines, pas quatre —
   // la feinte de frappe sort ~0,5 fois par graine (mesuré : 4 sur 8 graines, dont 0 sur les
   // 4 premières) : un échantillon de 4 est SOUS le plancher de bruit de re-distribution, la
