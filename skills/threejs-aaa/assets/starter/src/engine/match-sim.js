@@ -71,6 +71,14 @@ export const MATCH = {
                           // soutien le plus dangereux (le corps dans la ligne de passe pendant
                           // l'approche — l'option profonde meurt sans un geste) ; à portée de duel
                           // l'ombre cède au tacle. false : le press en ligne droite (sabotage nommé).
+  moments: { win: 5 },    // LES QUATRE MOMENTS DU JEU (phases.js — le socle de la tactique) :
+                          // l'horloge du regain est tenue ici (st._possChangeAt), le moment se
+                          // DÉRIVE (momentDuJeu), les événements 'moment' le rendent mesurable.
+                          // Deux consommateurs (11c11 seulement, st.full) : le CONTRE-PRESS
+                          // d'équipe (perte haute < 2,5 s → fenêtre de pressing — Gegenpressing,
+                          // 3ᵉ signal) et la VERTICALITÉ du regain (cooldown d'appel profond
+                          // relâché pendant la transition offensive — les 5 s où le bloc adverse
+                          // est déformé). false : le jeu sans moments (sabotage nommé).
   chrono: null,           // LE CYCLE DE MATCH (l'enveloppe PRODUIT — un projet aval démarre un
                           // match, le joue, le FINIT, lit la feuille) : { periodes: 2, duree: s
                           // par période, pause: s de mi-temps }. Fin de période → sifflet,
@@ -296,6 +304,23 @@ function assignMatchJobs(st, cfg) {
 
   // …et le CHRONO siffle ses périodes au même étage (mi-temps, fin de match, possession)
   if (cfg.chrono) chronoStep(st, cfg);
+
+  // L'HORLOGE DU REGAIN (cfg.moments — phases.js) : le moment COLLECTIF se dérive de qui a le
+  // ballon et depuis quand (momentDuJeu) ; le changement s'événemente ('transition'), son
+  // installation aussi ('placée') — mesurable au banc, socle des consommateurs tactiques.
+  // Événements seuls ici : aucun comportement, le flux réduit/rondo ne bouge pas d'un bit.
+  if (cfg.moments) {
+    const poss = st.possession.team >= 0 ? st.possession.team : st.lastTouch;
+    if (poss === 0 || poss === 1) {
+      if (st._possTeam !== poss) {
+        st._possTeam = poss; st._possChangeAt = st.t; st._momentK = 'transition';
+        st.events.push({ t: +st.t.toFixed(2), type: 'moment', kind: 'transition', team: poss });
+      } else if (st._momentK === 'transition' && st.t - (st._possChangeAt ?? 0) >= (cfg.moments.win ?? 5)) {
+        st._momentK = 'placée';
+        st.events.push({ t: +st.t.toFixed(2), type: 'moment', kind: 'placée', team: poss });
+      }
+    }
+  }
 
   // UN VOL MORT EST UN BALLON LIBRE (cfg.deadFlight, 11c11) : la passe s'est arrêtée au sol
   // avant son receveur — personne ne « reçoit » un ballon immobile à 0,6 m du pied. La phase
@@ -731,6 +756,11 @@ function assignMatchJobs(st, cfg) {
       // CIBLE — reculer avec la ligne qui monte n'est pas un à-coup, c'est la règle.
       const off = cfg.offside ? offsideLine(st, atk) : null;
       const posé = carrier && !carrier.keeper && st.phase === 'carry' && st.hold > 0.6;
+      // LA VERTICALITÉ DU REGAIN (cfg.moments) : pendant la transition offensive (les win s où
+      // le bloc adverse est déformé), le cooldown d'équipe des appels profonds se relâche de
+      // 2,5 s — la profondeur se joue MAINTENANT, pas au tempo du jeu placé
+      const transOff = cfg.moments && st._possTeam === atk
+        && st.t - (st._possChangeAt ?? -99) < (cfg.moments.win ?? 5);
       for (const p of posted) {
         const want = spots[p.post ?? 0] ?? [p.p[0], p.p[2]];
         p.job = 'support';
@@ -748,7 +778,7 @@ function assignMatchJobs(st, cfg) {
           // → elle darde 7 m vers la ligne (jamais au-delà : la photo se prend au départ du ballon,
           // strikeNow), l'appelBonus la fait servir, la mène (leadTime) jette le ballon DERRIÈRE.
           // Un appel par équipe à la fois — dix ruptures simultanées seraient un essaim.
-          if ((p._runT ?? -1) <= st.t && posé && (st._appelAt?.[atk] ?? -1) <= st.t && (p._appelCd ?? -1) <= st.t) {
+          if ((p._runT ?? -1) <= st.t && posé && (st._appelAt?.[atk] ?? -1) - (transOff ? 2.5 : 0) <= st.t && (p._appelCd ?? -1) <= st.t) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
             if (dB > 6 && dB < (cfg.passRange?.[1] ?? 13) - 0.5 && myAdv > st.ball.p[0] * off.sgn + 2) {
@@ -823,6 +853,12 @@ function assignMatchJobs(st, cfg) {
       // …le retrait ne déclenche que dans la RELANCE BASSE (origine à 4 m dans leur camp) : la
       // première version sautait sur toute passe arrière — 16-18 fenêtres/180 s, 40 % du temps
       // sous pressing, un état permanent déguisé en réflexe (mesuré, 4 graines)
+      // (t3) LE CONTRE-PRESS D'ÉQUIPE (cfg.moments — la transition défensive du Gegenpressing) :
+      // la perte est JEUNE (< 2,5 s) et HAUTE (ballon dans le camp du nouveau porteur) — le bloc
+      // qui vient de perdre saute AVANT que l'adversaire ne s'organise. Le contre-press
+      // individuel (lossReact) chassait déjà l'ex-porteur ; ici c'est l'ÉQUIPE qui bascule.
+      else if (cfg.moments && st.t - (st._possChangeAt ?? -99) < 2.5
+        && st.ball.p[0] * sgnAtk < -4) kind = 'contre-press';
       if (kind) {
         st._press = { team: defTeam, until: st.t + (cfg.pressTriggers.win ?? 4.5), kind };
         (st._pressCd ??= {})[defTeam] = st.t + (cfg.pressTriggers.win ?? 4.5) + 6;

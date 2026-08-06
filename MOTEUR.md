@@ -165,6 +165,18 @@ anti-auto-interception a une horloge : une protection pensée pour l'instant du 
 verrouille pas l'éternité). Le gel est ressuscité en sabotage nommé au banc. Sabotages : « press
 sourd », « press en ligne droite », « gel ».
 
+### Les quatre moments du jeu (`phases.js` — lot 14, le socle tactique)
+
+`momentDuJeu(st, team)` → attaque-placée / transition-off / défense-placée / transition-def /
+arrêt — pur, dérivé de la possession et de l'horloge du regain (cfg.moments, événements
+'moment' mesurables). Les transitions sont les 5 s où le bloc adverse est déformé : le moteur
+y branche le CONTRE-PRESS d'équipe (perte jeune et haute → fenêtre de pressing, le
+Gegenpressing) et la verticalité du regain (appels profonds au cooldown relâché). Mesuré :
+48-54 % du jeu ouvert en transitions (réel ~40-50). C'est le « quand » que la tactique
+(`tactics.js`, à venir) et les rôles consommeront — un projet aval peut déjà lire le moment
+pour ses caméras, son commentaire, son HUD. Banc : `verify-moments.mjs` (8 clauses, sabotage
+« jeu sans moments »).
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

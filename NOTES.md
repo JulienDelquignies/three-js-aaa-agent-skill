@@ -2026,6 +2026,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    menace 11, match11 27, match 76, rondo 40/40 bit près, gestes 52, dribble 17, attributs 13,
    membres 16, gants 9, sync 7).
 
+48. **Les quatre moments du jeu (lot 14 — le socle de la tactique).** Réponse au cadrage
+   utilisateur (« poste, rôle, attributs, tâches — dans une tactique collective avec phases
+   offensives/défensives/transitions ») : le moment COLLECTIF devient une donnée dérivable.
+   phases.js pur : momentDuJeu(st, team, win) → attaque-placée / transition-off /
+   défense-placée / transition-def / arrêt — dérivé de QUI a le ballon et DEPUIS QUAND
+   (l'horloge du regain st._possChangeAt, tenue par match-sim sous cfg.moments {win:5},
+   événements 'moment' transition/placée — flux réduit/rondo inchangé d'un bit : événements
+   seuls, consommateurs gardés st.full). DEUX consommateurs mesurés : le CONTRE-PRESS d'ÉQUIPE
+   (3ᵉ signal du pressing du lot 11 — perte jeune < 2,5 s ET haute → fenêtre 'contre-press' ;
+   le Gegenpressing que lossReact ne faisait qu'individuellement) et la VERTICALITÉ du regain
+   (cooldown d'équipe des appels profonds relâché de 2,5 s en transition offensive). Mesuré
+   (3 graines × 180 s) : 48-54 % du jeu ouvert en transitions (réel ~40-50), 3-8 fenêtres
+   contre-press/match (12-13 fenêtres de press au total — cadence tenable), scores 1-2 buts,
+   gel ≤ 0,4 s ; les appels n'ont PAS augmenté (1-2 — la relaxation est douce : l'appel exige
+   un porteur posé, rare en transition ; honnête, gardé). verify-moments.mjs 8 clauses :
+   contrat pur (jeunesse, miroirs, arrêt, fenêtre paramétrée), miroirs conjugués en flux
+   (~60 lectures — la première borne exigeait > 300, erreur d'arithmétique du BANC consignée),
+   causalité transition→placée par équipe, distribution [30;65] %, contre-press ≥ 1, récit
+   déterministe octet pour octet, sabotage « jeu sans moments » (0 événement, 0 contre-press).
+   Chemin ouvert : tactics.js (lot 15) consommera les moments (hauteur/largeur/agressivité par
+   moment), les rôles (lot 16) aussi (qui contre-presse, qui reste). 287 clauses vertes.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
