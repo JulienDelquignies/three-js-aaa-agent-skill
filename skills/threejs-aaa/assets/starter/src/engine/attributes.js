@@ -60,7 +60,7 @@ export function makeProfile(ratings = {}) {
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel
     reaction: lerp(0.30, 0.14, r('reactions')),                   // s
     composureF: lerp(1.30, 0.85, r('composure')),                 // × sur l'erreur pressée
-    keeperReach: lerp(1.8, 2.5, r('keeping')),                    // m
+    keeperReach: lerp(2.55, 3.25, r('keeping')),                  // m — autour de l'envergure livrée (2,95)
     keeperReflex: lerp(0.16, 0.09, r('keeping')),                 // s
   });
 }
@@ -83,7 +83,7 @@ export function checkAttributes() {
   // 1. les bandes : jamais un surhomme
   if (hi.topF > 1.10 + 1e-9 || lo.topF < 0.90 - 1e-9) issues.push(`topF hors bande [0,90 ; 1,10] (${lo.topF}–${hi.topF})`);
   if (hi.accelF > 1.12 + 1e-9) issues.push('accelF hors bande');
-  if (hi.keeperReach > 2.5 + 1e-9) issues.push('keeperReach hors bande');
+  if (hi.keeperReach > 3.25 + 1e-9) issues.push('keeperReach hors bande');
   // 2. la monotonie : plus la note monte, meilleur le levier
   if (!(hi.passSigma < mid.passSigma && mid.passSigma < lo.passSigma)) issues.push('passing non monotone');
   if (!(hi.shotSigma < mid.shotSigma && mid.shotSigma < lo.shotSigma)) issues.push('finishing non monotone');

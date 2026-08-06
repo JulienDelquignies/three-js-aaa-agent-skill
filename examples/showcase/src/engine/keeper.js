@@ -23,7 +23,11 @@ export const KEEPER = {
   farBall: 24,          // m — au-delà, profondeur minimale
   nearBall: 7,          // m — en deçà, le gardien re-recule (le duel du réflexe)
   gatherHalf: 0.55,     // m — un vol qui coupe le plan à moins que ça : il se saisit sans plonger
-  diveReach: 2.1,       // m — l'envergure d'un plongeon (latéral, depuis la position au déclenchement)
+  diveReach: 2.95,      // m — l'envergure d'un plongeon : 1,35 de root motion (le clip) + ~1,6 de
+                        // bras (IK deux os + warp de gant, audit-gants). 2,1 déclarait « battu »
+                        // toute frappe aux coins du GRAND but (±3,11 depuis le centre) : mesuré
+                        // sur matchs complets — 3 plongeons sur 21 tirs, 0 arrêt, 13 buts. La
+                        // décision doit croire ce que le corps livré sait faire.
   diveTime: 0.9,        // s — le vol doit couper le plan dans ce délai pour déclencher (sinon on se replace)
   reflex: 0.12,         // s — le tir doit avoir volé au moins ça avant le déclenchement (pas d'oracle)
 };

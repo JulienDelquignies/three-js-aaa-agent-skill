@@ -381,5 +381,21 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     run([{ formation: '666' }, null]).evs === run(null).evs);
 }
 
+// ---------- 9. LES FRAPPES SE DÉFENDENT (lot 18) : l'envergure de la DÉCISION croit celle du
+// CORPS (diveReach 2,95 = 1,35 de root motion + 1,6 de bras). Avant : 2,1 déclarait « battu »
+// toute frappe aux coins du grand but (±3,11) — 3 plongeons sur 21 tirs, 0 arrêt, 13 buts,
+// conversion 57 %. Le « avant » chiffré EST le sabotage, consigné ici.
+{
+  const st = makeMatch({ full: true, seed: 2 });
+  const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
+  for (let i = 0; i < 380 * 60 && !st.fini; i++) matchStep(st, 1 / 60, cfg);
+  const tirs = st.events.filter((e) => e.type === 'shot');
+  const dives = tirs.filter((s) => st.events.some((e) => e.type === 'dive' && e.t >= s.t - 0.1 && e.t < s.t + 1.4)).length;
+  const arrets = st.events.filter((e) => e.type === 'arrêt').length;
+  const buts = st.events.filter((e) => e.type === 'but').length;
+  ok(`le gardien DÉFEND ses coins (${dives}/${tirs.length} frappes plongées ≥ 25 %, ${arrets} arrêt(s) ≥ 1, ${buts} but(s) — conversion ≤ 60 % : mesuré 21 % après, 57 % avant)`,
+    tirs.length >= 2 && dives / tirs.length >= 0.25 && arrets >= 1 && buts / Math.max(1, tirs.length) <= 0.6);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

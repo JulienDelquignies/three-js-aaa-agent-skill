@@ -2120,6 +2120,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    récit identique au défaut octet pour octet — pas de crash, pas de monde secret).
    verify-match11 27 → 31 ; 306 clauses vertes ; batterie 433 au bit près (l'identité tient).
 
+53. **Le gardien longue distance (lot 18 — la conversion).** La sonde par TIR (matchs complets)
+   a tout dit : 3 plongeons sur 21 tirs, 0 arrêt, 13 buts — le gardien bien placé (z≈0, sur sa
+   ligne) était déclaré « battu » PAR CONSTRUCTION : diveReach 2,1 m contre des coins visés à
+   ±3,11 m du centre du grand but (keeperDecide ligne « |dz| ≤ diveReach sinon battu »). La
+   constante datait du réduit. Le remède est une COHÉRENCE, pas un buff : l'envergure de la
+   DÉCISION doit croire celle du CORPS LIVRÉ — 1,35 m de root motion (clip) + ~1,6 m de bras
+   (IK deux os + warp de gant, prouvés par audit-gants) ≈ 2,95 m. diveReach 2,1 → 2,95 ;
+   attributes.keeperReach re-bandé (2,55…3,25) autour de l'envergure livrée. APRÈS (mêmes
+   graines) : 9 plongeons / 24 tirs (38 %), 9 ARRÊTS, 5 buts — conversion 57 % → 21 % (bande
+   réelle ~10-15 % : encore généreuse, dette affinée mais plus une plaie). Une leçon de sonde
+   consignée : mon premier filtre cherchait l'événement 'plongeon' — il s'appelle 'dive' — et
+   concluait « 0 plongeon » pour de mauvaises raisons avant de le conclure pour de bonnes.
+   Clause au banc (verify-match11 §9, 32 clauses) : ≥ 25 % des frappes plongées, ≥ 1 arrêt,
+   conversion ≤ 60 % — le « avant » chiffré est le sabotage, consigné dans la clause. Batterie
+   307 clauses vertes — le réduit (qui hérite de l'envergure) tient ses bandes.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
