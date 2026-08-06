@@ -14,7 +14,7 @@
 // budget tient). L'ÉQUILIBRE de jeu du plein format (tempo, tirs, conversion — les bandes fines
 // du réduit) est la dette nommée du backlog « réglage 11c11 ».
 import { makePitch, FULL } from '../assets/starter/src/engine/pitch.js';
-import { formationSpots, checkFormation } from '../assets/starter/src/engine/formation.js';
+import { formationSpots, checkFormation, premierOffensif } from '../assets/starter/src/engine/formation.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets/starter/src/engine/match-sim.js';
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
@@ -22,13 +22,16 @@ import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
-// ---------- 1. la formation est une donnée saine
+// ---------- 1. la formation est une donnée saine — TOUT le catalogue (lot 17)
 {
   const pitch = makePitch(FULL);
-  for (const team of [0, 1]) {
-    const c = checkFormation(pitch, team);
-    ok(`la formation 4-3-3 de l'équipe ${team} est SAINE (postes dans le terrain, lignes ordonnées, largeur, bloc qui coulisse)`, c.ok, c.issues.join(' ; '));
+  for (const name of ['433', '442', '352']) {
+    const c0 = checkFormation(pitch, 0, name), c1 = checkFormation(pitch, 1, name);
+    ok(`la formation ${name} est SAINE des deux côtés (postes dans le terrain, lignes ${'' + (name === '433' ? '4-3-3' : name === '442' ? '4-4-2' : '3-5-2')} ordonnées, largeur à l'échelle, bloc qui coulisse)`,
+      c0.ok && c1.ok, [...c0.issues, ...c1.issues].join(' ; '));
   }
+  ok(`les POINTES sont celles de LA formation (premierOffensif : 433 → 7, 442 → 8, 352 → 8 — le calage Loi 11 ne câble plus « ≥ 7 »)`,
+    premierOffensif('433') === 7 && premierOffensif('442') === 8 && premierOffensif('352') === 8 && premierOffensif('666') === 7);
 }
 
 // ---------- 2. le monde 22 corps tourne, contrat de base, budget
@@ -356,6 +359,26 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`au moins un RÉGAIN tombe dans une fenêtre (${regains} — le pressing gagne parfois, c'est son métier)`, regains >= 1);
     ok(`le monde ne gèle PLUS JAMAIS (gel max ${gelMax.toFixed(1)} s ≤ 25 — la graine du gel de 145 s, guérie)`, gelMax <= 25);
   }
+}
+
+// ---------- 8. le catalogue JOUE : 4-4-2 contre 3-5-2, un match qui vit — et le fantôme retombe en 433
+{
+  const run = (tactics) => {
+    const st = makeMatch({ full: true, seed: 3, tactics });
+    const cfg = matchCfg({ shotRange: 20 });
+    let gel = 0, gelMax = 0;
+    for (let i = 0; i < 60 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      const moving = Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3 || st.ball.owner != null;
+      gel = moving || st.restart ? 0 : gel + 1 / 60; gelMax = Math.max(gelMax, gel);
+    }
+    return { passes: st.events.filter((e) => e.type === 'pass').length, gelMax, evs: JSON.stringify(st.events) };
+  };
+  const duel = run([{ formation: '442' }, { formation: '352' }]);
+  ok(`4-4-2 contre 3-5-2 : le match VIT (${duel.passes} passes ≥ 12 en 60 s, gel ${duel.gelMax.toFixed(1)} s ≤ 25 — deux systèmes, un seul moteur)`,
+    duel.passes >= 12 && duel.gelMax <= 25);
+  ok(`sabotage « formation fantôme » attrapé (formation inconnue '666' → repli 433, récit identique au défaut octet pour octet — pas de crash, pas de monde secret)`,
+    run([{ formation: '666' }, null]).evs === run(null).evs);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -50,6 +50,9 @@ export function resoudreTactique(t) {
   return {
     hauteurBloc: base.hauteurBloc ?? 0.5, largeur: base.largeur ?? 0.5,
     pressing: base.pressing ?? 0.5, style: base.style ?? 0.5, transition: base.transition ?? 0.5,
+    // LA FORMATION est une donnée de la tactique (lot 17 — le catalogue : 433, 442, 352 ;
+    // formation.js/LIGNES généralise le calage Loi 11 et les clauses). Inconnue : 433.
+    formation: base.formation ?? '433',
     nom: typeof t === 'string' ? t : (base.nom ?? 'personnalisée'),
   };
 }

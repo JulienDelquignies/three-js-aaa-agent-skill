@@ -177,6 +177,17 @@ Gegenpressing) et la verticalité du regain (appels profonds au cooldown relâch
 pour ses caméras, son commentaire, son HUD. Banc : `verify-moments.mjs` (8 clauses, sabotage
 « jeu sans moments »).
 
+### Le catalogue de formations (`formation.js` — lot 17)
+
+Trois systèmes livrés — 4-3-3, 4-4-2, 3-5-2 — et surtout la GÉNÉRALISATION : les lignes sont
+une donnée (`LIGNES`), `premierOffensif(name)` remplace le « postes ≥ 7 » câblé (le calage
+Loi 11 et les appels s'adressent aux pointes de N'IMPORTE quelle formation), `checkFormation`
+juge tout le catalogue (lignes ordonnées par groupes, largeur à l'échelle — calibrée contre le
+réel : un trois arrière est étroit PAR CHOIX, les pistons donnent la largeur). La formation vit
+dans la tactique : `makeMatch({ tactics: [{ formation: '442' }, { formation: '352' }] })` —
+deux systèmes, un seul moteur ; inconnue → repli 433 prouvé octet pour octet (sabotage
+« formation fantôme »). Ajouter un système = ajouter DEUX tableaux (postes + lignes).
+
 ### La tactique d'équipe est un CONTRAT (`tactics.js` — lot 15)
 
 Cinq axes [0..1] génèrent l'espace des styles — `hauteurBloc`, `largeur`, `pressing`,

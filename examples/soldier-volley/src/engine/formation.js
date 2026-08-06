@@ -18,7 +18,35 @@ export const FORMATIONS = {
     // le trio offensif
     [0.52, -0.78], [0.56, 0.0], [0.52, 0.78],
   ],
+  442: [
+    // la ligne de quatre
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],
+    // le milieu à quatre (ailiers hauts et larges)
+    [0.36, -0.68], [0.30, -0.22], [0.30, 0.22], [0.36, 0.68],
+    // le duo de pointes
+    [0.55, -0.16], [0.55, 0.16],
+  ],
+  352: [
+    // la ligne de trois
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],
+    // le milieu à cinq (pistons très larges)
+    [0.34, -0.80], [0.30, -0.30], [0.26, 0.0], [0.30, 0.30], [0.34, 0.80],
+    // le duo de pointes
+    [0.54, -0.18], [0.54, 0.18],
+  ],
 };
+
+/** LES LIGNES sont une DONNÉE (défense, milieu, attaque) : c'est ce qui généralise le calage
+ *  Loi 11 (« postes ≥ 7 » n'était vrai qu'en 4-3-3), les clauses du contrat, et demain les
+ *  rôles par ligne. La somme fait toujours 10 (Loi 3 : onze joueurs, un gardien). */
+export const LIGNES = { 433: [4, 3, 3], 442: [4, 4, 2], 352: [3, 5, 2] };
+
+/** Le premier poste OFFENSIF de la formation (433 → 7, 442/352 → 8) — le calage Loi 11 et les
+ *  appels profonds s'adressent aux pointes, quelle que soit la formation. */
+export function premierOffensif(name = 433) {
+  const l = LIGNES[name] ?? LIGNES[433];
+  return 10 - l[2];
+}
 
 /**
  * Les dix postes de `team` en coordonnées monde, pour un ballon à `anchorX` et un état de
@@ -37,9 +65,13 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433) {
   });
 }
 
-/** Le contrat de la formation — un bloc est un bloc, pas un nuage. */
+/** Le contrat de la formation — un bloc est un bloc, pas un nuage. GÉNÉRIQUE : les lignes
+ *  viennent de LIGNES (la première version câblait 0-3/4-6/7-9 — vrai du seul 4-3-3). */
 export function checkFormation(pitch, team, name = 433) {
   const issues = [];
+  const lg = LIGNES[name] ?? LIGNES[433];
+  const idx = [[0, lg[0] - 1], [lg[0], lg[0] + lg[1] - 1], [lg[0] + lg[1], 9]];   // [début, fin] par ligne
+  if (lg[0] + lg[1] + lg[2] !== 10) issues.push(`lignes ${lg.join('-')} : la somme ne fait pas 10`);
   for (const [label, ax, atk] of [['repli', -pitch.hx * 0.3 * (team === 0 ? 1 : -1), false], ['projection', pitch.hx * 0.3 * (team === 0 ? 1 : -1), true]]) {
     const spots = formationSpots(pitch, team, ax, atk, name);
     if (spots.length !== 10) { issues.push(`${label} : ${spots.length} postes (≠ 10)`); continue; }
@@ -49,19 +81,26 @@ export function checkFormation(pitch, team, name = 433) {
     // les LIGNES restent ordonnées en profondeur (défense < milieu < attaque, vers l'avant)
     const sgn = -pitch.ownGoal(team).sign;
     const depth = (i) => spots[i][0] * sgn;
-    const dMax = Math.max(depth(0), depth(1), depth(2), depth(3));
-    const mMin = Math.min(depth(4), depth(5), depth(6)), mMax = Math.max(depth(4), depth(5), depth(6));
-    const aMin = Math.min(depth(7), depth(8), depth(9));
-    if (!(dMax < mMin && mMax < aMin)) issues.push(`${label} : lignes croisées (déf ${dMax.toFixed(1)} / mil ${mMin.toFixed(1)}-${mMax.toFixed(1)} / att ${aMin.toFixed(1)})`);
-    // la LARGEUR existe (la ligne de 4 couvre ≥ 55 % de la largeur ; le trio ≥ 65 %)
-    const span = (a, b) => Math.abs(spots[a][1] - spots[b][1]);
-    if (span(0, 3) < pitch.dims.width * 0.5) issues.push(`${label} : ligne de 4 étroite (${span(0, 3).toFixed(1)} m)`);
-    if (span(7, 9) < pitch.dims.width * 0.55) issues.push(`${label} : trio offensif étroit (${span(7, 9).toFixed(1)} m)`);
+    const rg = ([a, b]) => spots.slice(a, b + 1).map((_, k) => depth(a + k));
+    const [D, M, A] = idx.map(rg);
+    if (!(Math.max(...D) < Math.min(...M) && Math.max(...M) < Math.min(...A))) {
+      issues.push(`${label} : lignes croisées (déf ${Math.max(...D).toFixed(1)} / mil ${Math.min(...M).toFixed(1)}-${Math.max(...M).toFixed(1)} / att ${Math.min(...A).toFixed(1)})`);
+    }
+    // la LARGEUR existe, à l'échelle de la ligne : (n−1)/3 · 42 % de la largeur — calibré
+    // contre le catalogue RÉEL (0,5 exigeait 22,7 m d'un trois arrière qui en couvre 20 : son
+    // étroitesse est un CHOIX, les pistons donnent la largeur ; et 11,3 m d'un duo de pointes
+    // qui en couvre 10 — deux 9 vivent à dix mètres, pas en siamois)
+    for (const [li, [a, b]] of idx.entries()) {
+      const zs = spots.slice(a, b + 1).map((s) => s[1]);
+      const span = Math.max(...zs) - Math.min(...zs);
+      const need = pitch.dims.width * 0.42 * ((b - a) / 3);
+      if (span < need) issues.push(`${label} : ligne ${li} étroite (${span.toFixed(1)} m < ${need.toFixed(1)})`);
+    }
   }
-  // le BLOC COULISSE : l'ancre avancée pousse la ligne de 4 plus haut qu'en repli
+  // le BLOC COULISSE : l'ancre avancée pousse la ligne arrière plus haut qu'en repli
   const sgn = -pitch.ownGoal(team).sign;
   const repli = formationSpots(pitch, team, -sgn * pitch.hx * 0.4, false, name);
   const proj = formationSpots(pitch, team, sgn * pitch.hx * 0.4, true, name);
-  if (!(proj[0][0] * sgn > repli[0][0] * sgn + 3)) issues.push('le bloc ne coulisse pas (ligne de 4 immobile)');
+  if (!(proj[0][0] * sgn > repli[0][0] * sgn + 3)) issues.push('le bloc ne coulisse pas (ligne arrière immobile)');
   return { ok: issues.length === 0, issues };
 }

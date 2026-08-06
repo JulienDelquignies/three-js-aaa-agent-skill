@@ -21,7 +21,7 @@ import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
-import { formationSpots } from './formation.js';
+import { formationSpots, premierOffensif } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique } from './tactics.js';
 import { resoudreRole, role } from './roles.js';
@@ -726,7 +726,7 @@ function assignMatchJobs(st, cfg) {
     if (st.full) {
       slotters = [...free].sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor)).slice(0, 4);
       posted = free.filter((p) => !slotters.includes(p));
-      const spots = formationSpots(pitch, atk, anchor[0], true);
+      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation);
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste offensif coulissé peut tomber DERRIÈRE
       // la défense — un attaquant réel vit SUR la ligne, pas au-delà. Mesuré AVANT le calage : le
       // bloc adverse recule si profond (slide borné, ligne de 4 devant sa surface) que le camping
@@ -763,7 +763,8 @@ function assignMatchJobs(st, cfg) {
         if (pf) tx = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, tx + -pitch.ownGoal(atk).sign * pf));
         const wR = axe(R.largeurR, 0.9, 1.1);
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
-        if (off && (p.post ?? 0) >= 7) {
+        // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
+        if (off && (p.post ?? 0) >= premierOffensif(tac(st, atk).formation)) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE — depuis la PORTÉE DE PASSE, pas depuis l'autre
           // bout du terrain. Première version mesurée : dart visant une ligne à ~16 m du poste,
           // porteur à 30 m — 21-29 appels/180 s, 0-1 servi (la décoration déjà enterrée au rondo :
@@ -931,7 +932,7 @@ function assignMatchJobs(st, cfg) {
       // EN 11C11 : quatre marqueurs suffisent — le reste tient le BLOC défensif à son poste
       // (un marquage de dix serait un essaim ; un bloc qui coulisse est une défense lisible)
       if (st.full && i >= 6) {
-        const spotsD = formationSpots(pitch, p.team, anchor[0], false);
+        const spotsD = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation);
         const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
         // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : où l'équipe DÉFEND — le bloc posté se
         // décale de −6 (bloc bas, parqué devant sa surface) à +6 m (ligne haute — et la ligne

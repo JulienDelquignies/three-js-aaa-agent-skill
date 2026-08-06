@@ -2104,6 +2104,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    Dettes nommées : rôles de PRESSING (qui déclenche/couvre), formations 4-4-2/3-5-2 (lignes),
    presets tactiques portant leurs rôles par défaut.
 
+52. **Le catalogue de formations (lot 17 — 4-4-2, 3-5-2, lignes généralisées).** Un moteur foot
+   qui ne connaît que le 4-3-3 n'est pas exhaustif. Le geste : LES LIGNES deviennent une DONNÉE
+   (LIGNES = {433:[4,3,3], 442:[4,4,2], 352:[3,5,2]}), premierOffensif(name) remplace le
+   « postes ≥ 7 » câblé (vrai du seul 4-3-3) dans le calage Loi 11 et les appels, checkFormation
+   se GÉNÉRALISE (lignes ordonnées par groupes, largeur à l'échelle de la ligne), et la
+   formation entre dans la tactique (tactics.formation, '433' défaut — identité au bit près :
+   FORMATIONS['433'] === FORMATIONS[433]). makeMatch({ tactics: [{ formation: '442' },
+   { formation: '352' }] }) : deux systèmes, un seul moteur. UNE leçon de calibrage : ma largeur
+   générique (50 %·(n−1)/3) exigeait 22,7 m d'un trois arrière qui en couvre 20 — son étroitesse
+   est un CHOIX de design (les pistons donnent la largeur) — et 11,3 m d'un duo de pointes qui
+   vit à dix mètres : coefficient calibré 0,42 contre le catalogue RÉEL + trois arrière ±0,33.
+   Bench : contrat ×3 formations des deux côtés, premierOffensif (7/8/8, fantôme → 7), flux
+   4-4-2 c. 3-5-2 (17 passes/60 s, gel 0,3), sabotage « formation fantôme » ('666' → repli 433,
+   récit identique au défaut octet pour octet — pas de crash, pas de monde secret).
+   verify-match11 27 → 31 ; 306 clauses vertes ; batterie 433 au bit près (l'identité tient).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
