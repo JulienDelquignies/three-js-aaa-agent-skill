@@ -214,5 +214,149 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 4)`, worst <= 4);
 }
 
+// ---------- 7. LE PRESSING À DÉCLENCHEURS + L'OMBRE DE COUVERTURE (mécanismes sur fixtures,
+// existence en flux — la doctrine du lot 8, toujours)
+{
+  const mk = () => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const sgn = -st.pitch.ownGoal(0).sign;
+    for (const q of st.players.filter((q) => q.team === 1)) q.p[0] = sgn * (q.keeper ? 51 : 20);
+    for (const q of st.players.filter((q) => q.team === 0 && !q.keeper)) q.p[0] = -sgn * 8;
+    return { st, sgn };
+  };
+  // (a) LE SIGNAL « DOS AU BUT » : un porteur qui reçoit tourné vers son but, dans son camp →
+  // la fenêtre s'ouvre (événement nommé, état st._press posé)
+  {
+    const { st, sgn } = mk();
+    const cfg = matchCfg({ shotRange: 20 });
+    const c0 = st.players.find((p) => p.team === 0 && p.post === 5);
+    c0.p[0] = -sgn * 10; c0.p[2] = 0; c0.yaw = sgn > 0 ? Math.PI : 0;
+    st.ball.restart([c0.p[0], 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c0.id);
+    st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 0.3; st.lastTouch = 0;
+    matchStep(st, 1 / 60, cfg);
+    const ev = st.events.find((e) => e.type === 'press' && e.kind === 'dos-au-but');
+    ok(`le signal « dos au but » OUVRE la fenêtre (porteur retourné dans son camp → press d'équipe, événement nommé)`,
+      !!ev && st._press?.team === 1 && st._press.until > st.t, `press=${JSON.stringify(st._press)}`);
+  }
+  // (b) sabotage nommé « press sourd » : pressTriggers:false → le même monde n'ouvre RIEN
+  {
+    const { st, sgn } = mk();
+    const cfg = matchCfg({ shotRange: 20, pressTriggers: false });
+    const c0 = st.players.find((p) => p.team === 0 && p.post === 5);
+    c0.p[0] = -sgn * 10; c0.p[2] = 0; c0.yaw = sgn > 0 ? Math.PI : 0;
+    st.ball.restart([c0.p[0], 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c0.id);
+    st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 0.3; st.lastTouch = 0;
+    matchStep(st, 1 / 60, cfg);
+    ok(`sabotage « press sourd » attrapé (pressTriggers:false — aucun signal, aucune fenêtre)`,
+      !st._press && !st.events.some((e) => e.type === 'press'));
+  }
+  // (c) LE SIGNAL « PASSE EN RETRAIT » : un ballon qui recule de 3 m DANS la relance basse
+  // (le restart d'engagement de la construction se nettoie — une détection ne juge pas pendant
+  // une remise, et la première version de la fixture l'avait oublié : press=undefined)
+  {
+    const { st, sgn } = mk();
+    const cfg = matchCfg({ shotRange: 20 });
+    st.ball.restart([-sgn * 10, 0.11, 1], { cause: 'coup-franc' });
+    st.restart = null;
+    st.possession = { team: 0, carrier: -1 }; st.phase = 'flight'; st.lastTouch = 0;
+    st.pass = { from: 1, to: 2, t: st.t, origin: [-sgn * 8, 0], lead: [-sgn * 13, 0, 2] };
+    matchStep(st, 1 / 60, cfg);
+    ok(`le signal « passe en retrait » OUVRE la fenêtre (relance basse qui recule → la ligne monte dessus)`,
+      st.events.some((e) => e.type === 'press' && e.kind === 'passe-en-retrait'), `press=${JSON.stringify(st._press)}`);
+  }
+  // (d) L'OMBRE DE COUVERTURE : le presseur vise le COULOIR du soutien profond (le corps dans
+  // la ligne de passe), pas le ballon en ligne droite — et le sabotage le prouve par contraste
+  {
+    const shadow = (coverShadow) => {
+      const { st, sgn } = mk();
+      const cfg = matchCfg({ shotRange: 20, coverShadow });
+      const c0 = st.players.find((p) => p.team === 0 && p.post === 5);
+      const hot = st.players.find((p) => p.team === 0 && p.post === 8);
+      c0.p[0] = 0; c0.p[2] = 0; c0.yaw = 0;
+      hot.p[0] = sgn * 10; hot.p[2] = 3;
+      const presser = st.players.find((p) => p.team === 1 && p.post === 5);
+      presser.p[0] = sgn * 6; presser.p[2] = -5;                    // le plus près du ballon (les autres à 20)
+      st.ball.restart([0, 0.11, 0], { cause: 'coup-franc' });
+      st.restart = null; st.ball.possess(c0.id);
+      st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+      matchStep(st, 1 / 60, cfg);
+      return { presser, st, sgn, hot };
+    };
+    const avec = shadow(true);
+    const ux = (avec.hot.p[0] - avec.st.ball.p[0]), uz = (avec.hot.p[2] - avec.st.ball.p[2]);
+    const ul = Math.hypot(ux, uz) || 1;
+    const attendu = [avec.st.ball.p[0] + (ux / ul) * 1.15, avec.st.ball.p[2] + (uz / ul) * 1.15];
+    const dA = Math.hypot((avec.presser.target?.[0] ?? 99) - attendu[0], (avec.presser.target?.[2] ?? 99) - attendu[1]);
+    const sans = shadow(false);
+    const dB = Math.hypot((sans.presser.target?.[0] ?? 99) - sans.st.ball.p[0], (sans.presser.target?.[2] ?? 99) - sans.st.ball.p[2]);
+    ok(`l'OMBRE vit dans le couloir (cible du presseur à ${dA.toFixed(2)} m du point d'ombre ≤ 0,3) — sabotage « press en ligne droite » : cible = ballon (${dB.toFixed(2)} m ≤ 0,3)`,
+      dA <= 0.3 && dB <= 0.3);
+  }
+  // (e) LE GEL RESSUSCITÉ EN SABOTAGE : une passe MORTE près de son origine (le monde exact de
+  // la graine 3, t=33,85 — 3,3 m/s, arrêtée à 0,6 m du receveur). Avec les deux lois (vol-mort
+  // + releaseTtl) le monde se RÉSOUT en 2 s ; sans elles, il gèle — nommé, mesuré, attrapé.
+  {
+    // la clause juge LA RÉSOLUTION (quelqu'un a fini par posséder ce ballon), pas l'état à 2 s :
+    // le monde GUÉRI continue de jouer — à la 120ᵉ image il était reparti en contre, nouvelle
+    // passe en vol, et juger « phase ≠ flight » à cet instant condamnait la guérison même
+    const gel = (over) => {
+      const { st, sgn } = mk();
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      const rec = st.players.find((p) => p.team === 0 && p.post === 0);
+      const def = st.players.find((p) => p.team === 1 && p.post === 2);
+      st.ball.restart([sgn * 9, 0.11, 0], { cause: 'coup-franc' });
+      st.restart = null;
+      rec.p[0] = sgn * 9.3; rec.p[2] = 0.3; def.p[0] = sgn * 9.2; def.p[2] = -0.3;
+      st.possession = { team: 0, carrier: -1 }; st.phase = 'flight'; st.lastTouch = 0;
+      st.pass = { from: 1, to: rec.id, t: st.t, origin: [sgn * 9.2, 0], lead: [sgn * 9.3, 0, 0.3] };
+      let resolu = false;
+      for (let i = 0; i < 120; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.ball.owner != null) resolu = true;
+      }
+      return { st, resolu };
+    };
+    const sain = gel({});
+    ok(`un VOL MORT se résout (le ballon arrêté redevient LIBRE, quelqu'un le prend en ${sain.resolu ? '< 2 s' : 'jamais'} — événement vol-mort : ${sain.st.events.some((e) => e.type === 'vol-mort') ? 'oui' : 'non'})`,
+      sain.resolu && sain.st.events.some((e) => e.type === 'vol-mort'));
+    const fige = gel({ deadFlight: false, releaseTtl: null });
+    ok(`sabotage « gel » attrapé (sans vol-mort ni releaseTtl : personne ne prend jamais ce ballon — le monde de la graine 3 figé 145 s)`,
+      !fige.resolu && fige.st.phase === 'flight' && fige.st.ball.owner == null);
+  }
+  // (f) LE FLUX (graine 3, l'ex-gelée — sa guérison EST l'histoire) : des fenêtres sobres, la
+  // LIGNE qui monte pendant elles (l'instrument fort — la compression moyenne, diluée sur 10
+  // corps, ne bouge pas : mesuré et assumé), un régain dans une fenêtre, et plus jamais 145 s
+  {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20 });
+    let lineIn = 0, nIn = 0, lineOut = 0, nOut = 0, gel = 0, gelMax = 0;
+    let regains = 0, winTeam = -1, winStartPoss = -1, inWin = false;
+    for (let i = 0; i < 180 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      const moving = Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3 || st.ball.owner != null;
+      gel = moving || st.restart ? 0 : gel + 1 / 60; gelMax = Math.max(gelMax, gel);
+      const active = !!(st._press && st._press.until > st.t && !st.restart);
+      if (active && !inWin) { winTeam = st._press.team; winStartPoss = st.possession.team; }
+      if (!active && inWin && winTeam >= 0) {
+        if (st.possession.team === winTeam && winStartPoss !== winTeam) regains++;
+        winTeam = -1;
+      }
+      inWin = active;
+      if (!st.restart && st.possession.team >= 0) {
+        const L = offsideLine(st, st.possession.team);
+        if (active) { lineIn += L.adv; nIn++; } else { lineOut += L.adv; nOut++; }
+      }
+    }
+    const fen = st.events.filter((e) => e.type === 'press').length;
+    const li = nIn ? lineIn / nIn : 99, lo = nOut ? lineOut / nOut : 0;
+    ok(`les fenêtres de pressing VIVENT sobres (${fen} sur 180 s, bande [3 ; 20] — un réflexe, pas un état)`, fen >= 3 && fen <= 20);
+    ok(`la LIGNE MONTE en fenêtre (${li.toFixed(1)} m sous press, ${lo.toFixed(1)} au calme — écart ≥ 2 : le bloc qui monte fait exister la Loi 11)`, li <= lo - 2);
+    ok(`au moins un RÉGAIN tombe dans une fenêtre (${regains} — le pressing gagne parfois, c'est son métier)`, regains >= 1);
+    ok(`le monde ne gèle PLUS JAMAIS (gel max ${gelMax.toFixed(1)} s ≤ 25 — la graine du gel de 145 s, guérie)`, gelMax <= 25);
+  }
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

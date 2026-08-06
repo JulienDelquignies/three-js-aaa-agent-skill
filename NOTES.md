@@ -1935,6 +1935,40 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    13/0, membres 16/0, gants 9/0, match11 17/0, sync 7/7 (82 modules — offside.js dans les
    trois copies).
 
+45. **Le pressing à déclencheurs, l'ombre de couverture — et le gel de 145 s (lot 11).** Une
+   équipe ne presse pas TOUT LE TEMPS : elle presse SUR SIGNAL, en fenêtre bornée — le patron du
+   contre-press lossReact (un réflexe par-dessus les postes) porté à l'échelle de l'ÉQUIPE, gardé
+   cfg.pressTriggers && st.full. Deux signaux lisibles dans l'état sans oracle : la PRISE DOS AU
+   BUT (porteur reçu tourné vers son but, dans son camp, hold < 0,5) et la PASSE EN RETRAIT de
+   la relance basse. Effets de fenêtre : second presseur sur le pivot (le cover est LE pari
+   perdu du pressing — assumé et visible), marquages au demi-pas (1,4 → 0,95 m, cadence 0,35),
+   bloc posté +3,5 m vers le ballon. L'OMBRE (cfg.coverShadow) : le presseur arrive PAR le
+   couloir du soutien le plus profond — du POSITIONNEMENT (laneClearance mesure des corps
+   réels), pas une règle de plus ; à 2,6 m l'ombre cède au duel. TROIS leçons de mesure :
+   (a) le retrait déclenchait sur toute passe arrière — 16-18 fenêtres/180 s, 40 % du temps
+   sous press, un état permanent déguisé en réflexe → gate relance basse (origine < −4 m) :
+   6-11 fenêtres, ~2-4/min ; (b) la compression moyenne des 10 corps NE BOUGE PAS (diluée) —
+   l'instrument honnête du pressing est LA LIGNE : la ligne de hors-jeu adverse descend de 9 à
+   18 m pendant les fenêtres (23-27 m contre 35-41 au calme — le bloc qui monte fait exister la
+   Loi 11 en flux) ; (c) le pressing a EXPOSÉ un trou latent du moteur : une passe de 3,3 m/s
+   sous fenêtre meurt au sol à 0,6 m de son receveur — phase 'flight' sans sortie (le receveur
+   vise le rendez-vous d'un vol FINI, le presseur campe sur le ballon sans droit de prise :
+   freeBall exige 'loose', et la garde releaseClear — « le ballon doit quitter son origine » —
+   verrouillait la prise POUR TOUJOURS). Gel de 145 s, graine 3, au premier essai. DEUX lois le
+   ferment : deadFlight 0,55 (un vol mort — sol + arrêt 0,3 s — est un ballon LIBRE ; st.pass
+   SURVIT, la photo de la Loi 11 juge le premier toucher d'un ballon mort) et releaseTtl 0,5
+   (la garde anti-auto-interception a une HORLOGE — une protection pensée pour l'instant du
+   départ ne verrouille pas l'éternité ; absente au rondo : ∞, bit près prouvé). Le gel est
+   RESSUSCITÉ en sabotage nommé au banc (fixture du monde exact de la graine 3 : avec les lois,
+   résolution < 2 s et le monde repart en contre ; sans elles, personne ne prend jamais ce
+   ballon). Et une leçon de banc : juger l'état À 2 s condamnait la guérison (le monde guéri
+   était reparti jouer, nouvelle passe en vol) — la clause juge LA RÉSOLUTION, pas la photo
+   finale. verify-match11 17 → 27 clauses (signaux sur fixtures, sabotages « press sourd » /
+   « press en ligne droite » / « gel », flux graine 3 : fenêtres [3;20], ligne −14,9 m en
+   fenêtre, régain ≥ 1, gel max 0,3 s). HUD : événement 'press' au ticker (bleu). Suites :
+   rondo 40/40 bit près, match 76/0, gestes 52, dribble 17, attributs 13, membres 16, gants 9,
+   sync 7/7, build ✓.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

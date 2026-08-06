@@ -144,6 +144,27 @@ ouvert → dart de 7 m vers la ligne (jamais au-delà), servi par `appelBonus` +
 circulation — sans lui, mesuré : 11 appels, 1 servi, la décoration). Mesuré : 2-5 appels/180 s,
 ~27 % servis, pointes en position illicite ≤ 0,4 % du temps de possession (pire graine).
 
+Depuis le lot 11, la défense du plein format **presse SUR SIGNAL** (`pressTriggers`) : deux
+déclencheurs de l'école du pressing, lisibles dans l'état sans oracle — la PRISE DOS AU BUT
+(porteur qui reçoit tourné vers son but, dans son camp) et la PASSE EN RETRAIT de la relance
+basse (origine à 4 m dans leur camp, ballon qui recule de 3 m). La fenêtre est bornée (4,5 s,
+cooldown 6 s — le patron du contre-press `lossReact` à l'échelle de l'équipe) : second presseur
+sur le pivot (la couverture est LE pari perdu du pressing — assumé), marquages au demi-pas
+(1,4 → 0,95 m, cadence 0,35 s), bloc posté qui monte de 3,5 m. L'OMBRE DE COUVERTURE
+(`coverShadow`) fait arriver le presseur PAR le couloir du soutien le plus profond — son corps
+vit dans la ligne de passe pendant l'approche (`laneClearance` mesure des corps réels : l'ombre
+est du positionnement, pas une règle de plus) ; à portée de duel elle cède au tacle. Mesuré :
+6-11 fenêtres/180 s (~2-4/min), la LIGNE de hors-jeu adverse descend de 9 à 18 m pendant les
+fenêtres (23-27 m sous press contre 35-41 au calme — le bloc qui monte fait exister la Loi 11),
+régains en fenêtre 1-5 ; la compression moyenne des 10 corps, elle, ne bouge pas (diluée —
+mesuré et assumé : l'instrument du pressing est la ligne). Le pressing a aussi EXPOSÉ un trou
+latent du moteur : une passe trop molle mourait au sol avant son receveur et la phase `flight`
+n'avait plus de sortie (gel de 145 s, graine 3) — deux lois le ferment, `deadFlight` (un vol
+mort est un ballon LIBRE ; la photo de la Loi 11 survit au vol mort) et `releaseTtl` (la garde
+anti-auto-interception a une horloge : une protection pensée pour l'instant du départ ne
+verrouille pas l'éternité). Le gel est ressuscité en sabotage nommé au banc. Sabotages : « press
+sourd », « press en ligne droite », « gel ».
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

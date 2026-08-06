@@ -693,6 +693,14 @@ export class Rondo {
         this._gesteLog.unshift(`<b style="color:#e8ebf2">${label}</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
         if (this._gesteLog.length > 5) this._gesteLog.pop();
         this._gesteHud.innerHTML = this._gesteLog.join('<br>');
+      } else if (e.type === 'press' && this._gesteHud) {
+        // LA FENÊTRE DE PRESSING SE LIT : l'intelligence off-ball est invisible par nature (des
+        // corps qui se resserrent) — l'événement nommé la rend jugeable par l'utilisateur,
+        // exactement comme les gestes (« logge pour que je les distingue », NOTES 36).
+        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
+        this._gesteLog.unshift(`<b style="color:#8ecae6">pressing</b> <span>— ${TEAMS[e.team ?? 0].name} (${(e.kind ?? '').replace(/-/g, ' ')}) · ${mm}:${ss}</span>`);
+        if (this._gesteLog.length > 5) this._gesteLog.pop();
+        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
       } else if (e.type === 'hors-jeu' && this._gesteHud) {
         // LE SIFFLET SE LIT COMME UN GESTE : la Loi 11 est un événement de match, pas un secret
         // de simulation — sans cette ligne, un coup franc « sorti de nulle part » serait un bug

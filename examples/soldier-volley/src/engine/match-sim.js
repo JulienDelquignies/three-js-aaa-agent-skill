@@ -59,6 +59,30 @@ export const MATCH = {
                           // siffle (coup franc adverse), et les pointes se CALENT sur la ligne, d'où
                           // l'appel jaillit (servi par appelBonus). false : la ligne aveugle
                           // (sabotage nommé — les pointes campent derrière la défense, injouables).
+  pressTriggers: { win: 4.5, step: 3.5 },
+                          // LE PRESSING À DÉCLENCHEURS (11c11 seulement — st.full le garde) : une
+                          // équipe ne presse pas TOUT LE TEMPS, elle presse SUR SIGNAL, en fenêtre
+                          // bornée (win s) — le patron du contre-press lossReact, à l'échelle de
+                          // l'ÉQUIPE. Signaux : la prise DOS AU BUT et la PASSE EN RETRAIT. Effets :
+                          // second presseur sur le pivot (la couverture est le PARI perdu du
+                          // pressing), marquages au demi-pas, bloc posté qui monte de `step` m.
+                          // false : le press sourd (sabotage nommé — aucun signal, aucune fenêtre).
+  coverShadow: true,      // L'OMBRE DE COUVERTURE (11c11) : le presseur arrive PAR LE COULOIR du
+                          // soutien le plus dangereux (le corps dans la ligne de passe pendant
+                          // l'approche — l'option profonde meurt sans un geste) ; à portée de duel
+                          // l'ombre cède au tacle. false : le press en ligne droite (sabotage nommé).
+  releaseTtl: 0.5,        // s — la garde anti-auto-interception (releaseClear : le ballon doit
+                          // QUITTER son origine avant tout droit de prise) a une HORLOGE : passé
+                          // ce délai le ballon est à prendre où qu'il soit — une passe morte à
+                          // 0,4 m de son origine verrouillait la prise pour toujours (gel 145 s,
+                          // graine 3 ; la moitié du remède avec deadFlight). Absent (rondo) : ∞.
+  deadFlight: 0.55,       // m/s — UN VOL MORT EST UN BALLON LIBRE (11c11) : une passe trop molle
+                          // meurt au sol avant son receveur, et la phase 'flight' n'a plus d'objet
+                          // (le receveur vise le rendez-vous d'un vol FINI, le défenseur campe sur
+                          // le ballon sans droit de prise — gel de 145 s mesuré, graine 3, fenêtre
+                          // de press). Sol + arrêt ≥ 0,3 s → phase 'loose', la chasse reprend ses
+                          // droits. Jamais mesuré au réduit (sa sentinelle gel ≤ 25 s monte la
+                          // garde) : la loi est gardée st.full. false : le gel (sabotage nommé).
   chaseLoose: true,       // le ballon libre est CHASSÉ par les deux camps ; false : la formation l'orbite (sabotage nommé)
   apron: 2.0,             // m — le tablier autour du terrain : un corps peut enjamber la ligne (chercher un ballon sorti)
   carryLawLoose: true,    // la bascule carry→libre lit la LOI DE TOUCHE (jamais sur une touche légale) ; false : le rayon plat (sabotage nommé)
@@ -251,6 +275,21 @@ function assignMatchJobs(st, cfg) {
   // le sifflet de la Loi 11 (receive) s'administre AVANT tout métier : le coup franc est posé
   // ici même, et le bloc remise ci-dessous prend le relais dans la même image
   if (st._whistle) administerWhistle(st, cfg);
+
+  // UN VOL MORT EST UN BALLON LIBRE (cfg.deadFlight, 11c11) : la passe s'est arrêtée au sol
+  // avant son receveur — personne ne « reçoit » un ballon immobile à 0,6 m du pied. La phase
+  // bascule en 'loose' après ~0,3 s d'agonie (pas un rebond : une mort), et la chasse des deux
+  // camps reprend ses droits. st.pass SURVIT : la photo de la Loi 11 juge le PREMIER TOUCHER,
+  // même d'un ballon mort — le hors-jeu qui ramasse une passe morte est toujours hors-jeu.
+  if (cfg.deadFlight && st.full && st.phase === 'flight' && st.ball.owner == null
+    && st.ball.p[1] < 0.25 && Math.hypot(st.ball.v[0], st.ball.v[2]) < cfg.deadFlight) {
+    st._deadFlightN = (st._deadFlightN ?? 0) + 1;
+    if (st._deadFlightN >= 18) {
+      st.phase = 'loose';
+      st.events.push({ t: +st.t.toFixed(2), type: 'vol-mort', p: [+st.ball.p[0].toFixed(1), +st.ball.p[2].toFixed(1)] });
+      st._deadFlightN = 0;
+    }
+  } else st._deadFlightN = 0;
 
   // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : mémoriser QUI vient de perdre son ballon — le
   // label passe à l'adversaire ou au sol, le corps est debout. La fenêtre s'applique tout en
@@ -708,9 +747,43 @@ function assignMatchJobs(st, cfg) {
     }
   }
 
+  // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : une équipe ne presse pas TOUT
+  // LE TEMPS — elle presse SUR SIGNAL, en fenêtre bornée. C'est le patron du contre-press
+  // (lossReact : un réflexe par-dessus les postes) porté à l'échelle de l'ÉQUIPE. Deux signaux
+  // de l'école du pressing, lisibles dans l'état sans oracle : (t1) LA PRISE DOS AU BUT — un
+  // porteur qui reçoit tourné vers son propre but, dans son camp, ne voit pas la sortie ; (t2)
+  // LA PASSE EN RETRAIT — un ballon qui recule de 3 m invite la ligne à monter dessus. La
+  // fenêtre meurt au régain (objectif atteint — la détection voit W.team === atk), à la remise,
+  // ou à l'expiration ; cooldown d'équipe : un press permanent n'est ni lisible ni tenable
+  // (c'est la frénésie que la refonte tempo a enterrée).
+  if (cfg.pressTriggers && st.full) {
+    const defTeam = atk === 0 ? 1 : 0;
+    if (st._press && (st.t > st._press.until || st._press.team === atk || st.restart)) st._press = null;
+    const sgnAtk = -pitch.ownGoal(atk).sign;
+    if (!st._press && !st.restart && (st._pressCd?.[defTeam] ?? -1) <= st.t) {
+      let kind = null;
+      if (carrier && !carrier.keeper && st.phase === 'carry' && st.hold < 0.5
+        && carrier.p[0] * sgnAtk < -2 && Math.cos(carrier.yaw) * sgnAtk < -0.35) kind = 'dos-au-but';
+      else if (st.phase === 'flight' && st.pass && st.pass.lead && st.pass.origin
+        && st.pass.origin[0] * sgnAtk < -4
+        && (st.pass.lead[0] - st.pass.origin[0]) * sgnAtk < -3) kind = 'passe-en-retrait';
+      // …le retrait ne déclenche que dans la RELANCE BASSE (origine à 4 m dans leur camp) : la
+      // première version sautait sur toute passe arrière — 16-18 fenêtres/180 s, 40 % du temps
+      // sous pressing, un état permanent déguisé en réflexe (mesuré, 4 graines)
+      if (kind) {
+        st._press = { team: defTeam, until: st.t + (cfg.pressTriggers.win ?? 4.5), kind };
+        (st._pressCd ??= {})[defTeam] = st.t + (cfg.pressTriggers.win ?? 4.5) + 6;
+        st.events.push({ t: +st.t.toFixed(2), type: 'press', kind, team: defTeam });
+      }
+    }
+  }
+
   // ---- la défense : press sur le ballon, cover CÔTÉ BUT, marquage goal-side
   {
     const defGoal = pitch.ownGoal(atk === 0 ? 1 : 0);
+    const sgnAtk = -pitch.ownGoal(atk).sign;
+    const press = st.full && cfg.pressTriggers && st._press
+      && st._press.team === (atk === 0 ? 1 : 0) && st._press.until > st.t ? st._press : null;
     const byDist = [...defenders].sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor));
     byDist.forEach((p, i) => {
       if (i === 0) {
@@ -725,9 +798,34 @@ function assignMatchJobs(st, cfg) {
           p.job = 'press'; p.target = [edge, 0, carrier.p[2] * 0.6];
           return;
         }
+        // L'OMBRE DE COUVERTURE (cfg.coverShadow, 11c11) : le presseur n'arrive pas en ligne
+        // droite — il arrive PAR LE COULOIR du soutien le plus dangereux (le plus profond à
+        // portée de passe) : son corps vit DANS la ligne de passe pendant toute l'approche, et
+        // l'option qui progresse meurt sans un geste (laneClearance mesure des corps réels —
+        // l'ombre n'a besoin d'aucune règle de plus, c'est du POSITIONNEMENT). À portée de duel
+        // (< 2,6 m) l'ombre cède au tacle : le duel est le duel.
+        if (cfg.coverShadow && st.full && carrier && !freeBall && d2(p.p, anchor) > 2.6) {
+          const hot = attackers.filter((a) => a.id !== carrier.id && !a.keeper && d2(a.p, anchor) < 15)
+            .sort((a, b) => b.p[0] * sgnAtk - a.p[0] * sgnAtk)[0] ?? null;
+          if (hot) {
+            const hx2 = hot.p[0] - anchor[0], hz2 = hot.p[2] - anchor[2];
+            const hl = Math.hypot(hx2, hz2) || 1;
+            p.job = 'press'; p.target = [anchor[0] + (hx2 / hl) * 1.15, 0, anchor[2] + (hz2 / hl) * 1.15];
+            return;
+          }
+        }
         p.job = 'press'; p.target = freeBall ? [leadP[0], 0, leadP[1]] : [anchor[0], 0, anchor[2]]; return;
       }
       if (i === 1) {
+        // EN FENÊTRE DE PRESSING : le second défenseur ne couvre plus — il SAUTE sur le PIVOT
+        // (l'option courte du porteur). Presser à deux en abandonnant la couverture, c'est LE
+        // pari du pressing — le risque est le prix du régain haut, et il se voit (une passe qui
+        // casse la première ligne trouve le champ que le cover aurait fermé).
+        if (press && carrier) {
+          const outlet = attackers.filter((a) => a.id !== carrier.id && !a.keeper)
+            .sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor))[0] ?? null;
+          if (outlet) { p.job = 'press'; p.target = [outlet.p[0], 0, outlet.p[2]]; return; }
+        }
         // le cover coupe la ligne ballon → but défendu, au plancher radial du rondo
         const gx = defGoal.x - anchor[0], gz = 0 - anchor[2];
         const gl = Math.hypot(gx, gz) || 1;
@@ -740,6 +838,13 @@ function assignMatchJobs(st, cfg) {
       if (st.full && i >= 6) {
         const spotsD = formationSpots(pitch, p.team, anchor[0], false);
         const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        // EN FENÊTRE DE PRESSING : le bloc posté MONTE d'un cran (pressTriggers.step) vers le
+        // ballon — c'est la COMPRESSION qui fait exister la ligne (et le hors-jeu en flux : un
+        // bloc qui monte pousse la ligne de la Loi 11 devant les pointes adverses)
+        if (press) {
+          const sgnD = -pitch.ownGoal(p.team).sign;
+          want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * (cfg.pressTriggers.step ?? 3.5)));
+        }
         p.job = 'mark';
         const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
         if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
@@ -752,16 +857,19 @@ function assignMatchJobs(st, cfg) {
       // (0,5 s / 0,8 m, rupture immédiate > 3 m) : le miroir-suivi continu faisait travailler
       // les marqueurs à 3,47 m/s de moyenne (2,7 des 9,8 km/h mesurés) et une défense qui
       // vibre en continu ne ressemble pas à un BLOC qui tient ses lignes
+      // …EN FENÊTRE DE PRESSING : le demi-pas (1,4 → 0,95 m) et la cadence courte (0,35 s /
+      // 0,55 m) — on COLLE le temps du signal, puis le bloc respire à nouveau
       const marks = attackers.filter((a) => !carrier || a.id !== carrier.id);
       const m = marks.sort((a, b) => d2(a.p, p.p) - d2(b.p, p.p))[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? null;
       if (!m) { p.job = 'mark'; p.target = [p.p[0], 0, p.p[2]]; return; }
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       p.job = 'mark';
-      const want = [m.p[0] + (gx / gl) * 1.4, m.p[2] + (gz / gl) * 1.4];
+      const off = press ? 0.95 : 1.4;
+      const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
       const drift = p._markT ? Math.hypot(want[0] - p._markT[0], want[1] - p._markT[1]) : Infinity;
-      if (!p._markT || drift > 3 || ((p._markAt ?? -1) <= st.t && drift > 0.8)) {
-        p._markT = want; p._markAt = st.t + 0.5;
+      if (!p._markT || drift > 3 || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8))) {
+        p._markT = want; p._markAt = st.t + (press ? 0.35 : 0.5);
       }
       p.target = [p._markT[0], 0, p._markT[1]];
     });

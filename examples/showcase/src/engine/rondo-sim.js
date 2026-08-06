@@ -1631,8 +1631,15 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // and without this he is the closest player to it and "intercepts" his own pass 0.02 s after
     // striking it (measured: every single pass ended that way).
     const gone = st.pass ? Math.hypot(st.ball.p[0] - st.pass.origin[0], st.ball.p[2] - st.pass.origin[1]) : 99;
+    // …ET LA GARDE A UNE HORLOGE (cfg.releaseTtl, match) : une passe MORTE près de son origine
+    // (3,3 m/s sous pressing, arrêtée à 0,6 m du pied — graine 3) gardait `gone ≤ releaseClear`
+    // POUR TOUJOURS : personne n'a plus jamais eu le droit de prise, gel de 145 s. La protection
+    // anti-auto-interception ne vaut que l'instant du départ — passé le TTL, le ballon a
+    // définitivement quitté (ou n'a jamais quitté : c'est pareil, il est à prendre). Clé absente
+    // (rondo) : Infinity, pas un bit ne bouge.
+    const released = gone > cfg.releaseClear || (st.pass && st.t - st.pass.t > (cfg.releaseTtl ?? Infinity));
     let taker = -1, bestD = Infinity;
-    if (gone > cfg.releaseClear) {
+    if (released) {
       for (const p of st.players) {
         // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON. La boucle sans garde donnait 3 prises de balle
         // par des joueurs ENCORE couchés après leur tacle (sonde duels-tacles) — possession = homme
