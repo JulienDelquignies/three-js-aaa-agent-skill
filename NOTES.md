@@ -1996,6 +1996,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    règle pas la finition). Suites : rondo 40/40, match 76/0, match11 27/0, menace 11/0, gestes
    52, dribble 17, attributs 13, membres 16, gants 9, sync 7/7, build ✓.
 
+47. **Le cycle de match + la chasse aux buts fantômes (lot 13).** L'enveloppe PRODUIT :
+   cfg.chrono {periodes, duree, pause} — mi-temps sifflée à l'heure, l'AUTRE équipe engage
+   (Loi 8, alternance), sifflet final → st.fini + restart 'fin' (état terminal calme : 0
+   événement, 0 déplacement), possession accumulée en temps de sim (delta d'horloge, aucun dt
+   dans les hooks), et feuilleDeMatch(st) — score, buts à la minute, tirs/arrêts/passes/centres/
+   hors-jeu/coups francs/pressing par équipe, possession % — tout depuis les événements, aucune
+   seconde vérité, déterministe octet pour octet (verify-chrono, 11 clauses + sabotage « match
+   sans fin »). HUD : MT1 02:14 → TERMINÉ. Clé absente : les mondes d'aujourd'hui au bit près.
+   LA CONVERSION ensuite — trois « buts » sur quatre étaient des FANTÔMES, débusqués en chaîne
+   sur matchs complets (2×180 s) : (a) l'échappée ne PENSAIT jamais — tout le bloc de décision
+   du porteur exige reachNow (ballon au pied), et en course poussée le ballon vit à 1,2-1,4 m
+   devant : gachetteNear ouvre le bloc ballon-en-avant près du but (st.full — trois greffes
+   d'arbitre bit-identiques avant de trouver CETTE serrure, leçon : instrumenter la BRANCHE,
+   pas l'aval) ; (b) le CSC en fuite — l'évasion pure d'un porteur acculé pointait DANS son
+   propre filet : la poussée se rabat le long de la ligne près de son but (rayon à l'échelle du
+   terrain 0,42·hx — le 22 m plat étouffait le réduit, tempsLoin 7,1, attrapé par la
+   sentinelle) ; (c) le CSC du GARDIEN — son spot de distribution (z ±3,5) vivait DANS la
+   bouche du but (poteaux ±3,66) : le porté via-ball sur-vise (l'équilibre de NOTES 38), le
+   ballon déborde et roule entre les poteaux — le spot vit au COIN des six mètres désormais.
+   Après : scores 2-0, 1-0, 2-1, 2-1 (≈ 2 buts/match, du football), menaceConduite voit le
+   gardien dans son cône (filet-ouvert reste légitime), fenêtre sortie-reprise à l'échelle
+   (0,19·hx : un corner du 105 m se porte en 7,4 s). MÉTHODE : les chiffres du lot 12 (« 0
+   but ») venaient d'une sonde non reproduite par le code commité — cause non identifiée malgré
+   six isolations (déterminisme prouvé inter-runs, inter-configs, inter-commits) ; les chiffres
+   font foi ICI, re-mesurés à process frais. Dettes nommées : pas d'échange de camps ni de
+   temps additionnel ; conversion des tirs cadrés encore généreuse (~57 % — le gardien
+   n'arrête presque rien de loin) ; le réduit sans tir contesté. 279 clauses vertes (chrono 11,
+   menace 11, match11 27, match 76, rondo 40/40 bit près, gestes 52, dribble 17, attributs 13,
+   membres 16, gants 9, sync 7).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

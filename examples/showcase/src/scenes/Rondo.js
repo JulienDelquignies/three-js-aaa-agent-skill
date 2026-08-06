@@ -111,7 +111,10 @@ export class Rondo {
     // ?match : LE MATCH RÉDUIT — deux buts, gardiens, tirs, remises (match-sim). Même scène, même
     // pipeline visuel : le match est une CONFIGURATION du moteur, l'habillage ne change pas.
     // en plein format, la portée de tir suit l'échelle (les frappes du 11c11 partent de 16-25 m)
-    this._mcfg = this.fullMode ? matchCfg({ shotRange: 20 }) : this.matchMode ? matchCfg() : null;
+    // …et le CYCLE DE MATCH (chrono — l'enveloppe produit) : deux mi-temps de 3 min, sifflet
+    // final, feuille. Le réduit garde son monde sans fin (calibré 76 clauses).
+    this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } })
+      : this.matchMode ? matchCfg() : null;
     this.state = this.matchMode
       ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode })
       : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
@@ -919,8 +922,21 @@ export class Rondo {
     if (this._hud && this._t - this._lastEvent > 0.15) {
       this._lastEvent = this._t;
       const teamName = TEAMS[this.state.possession.team].name;
+      // LE CHRONO SE LIT (cfg.chrono, plein format) : période + temps écoulé dans la période,
+      // puis TERMINÉ au sifflet final — le cycle de match est un produit, il s'affiche
+      let chrono = '';
+      const ch = this._mcfg?.chrono;
+      if (ch && this.state._chrono) {
+        const C = this.state._chrono;
+        if (this.state.fini) chrono = ' · <b>TERMINÉ</b>';
+        else {
+          const tP = Math.max(0, Math.min(ch.duree, this.state.t - (C.periode - 1) * (ch.duree + (ch.pause ?? 6))));
+          const mm = Math.floor(tP / 60), ss = String(Math.floor(tP % 60)).padStart(2, '0');
+          chrono = ` · MT${C.periode} ${mm}:${ss}`;
+        }
+      }
       this._hud.innerHTML = this.matchMode
-        ? `<b>${TEAMS[0].name} ${this.state.score[0]} : ${this.state.score[1]} ${TEAMS[1].name}</b><br><span>${this.state.events.filter((e) => e.type === 'shot').length} tirs · ${this.state.events.filter((e) => e.type === 'arrêt').length} arrêts · possession : ${teamName}</span>`
+        ? `<b>${TEAMS[0].name} ${this.state.score[0]} : ${this.state.score[1]} ${TEAMS[1].name}</b><br><span>${this.state.events.filter((e) => e.type === 'shot').length} tirs · ${this.state.events.filter((e) => e.type === 'arrêt').length} arrêts · possession : ${teamName}${chrono}</span>`
         : `<b>${this.state.passes}</b> passes <span>· record ${this.state.best} · ${this.state.turnovers} pertes</span><br><span>possession : ${teamName}</span>`;
     }
   }

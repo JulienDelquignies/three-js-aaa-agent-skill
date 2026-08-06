@@ -71,6 +71,14 @@ export const MATCH = {
                           // soutien le plus dangereux (le corps dans la ligne de passe pendant
                           // l'approche — l'option profonde meurt sans un geste) ; à portée de duel
                           // l'ombre cède au tacle. false : le press en ligne droite (sabotage nommé).
+  chrono: null,           // LE CYCLE DE MATCH (l'enveloppe PRODUIT — un projet aval démarre un
+                          // match, le joue, le FINIT, lit la feuille) : { periodes: 2, duree: s
+                          // par période, pause: s de mi-temps }. Fin de période → sifflet,
+                          // l'AUTRE équipe engage (Loi 8, alternance) ; dernière période →
+                          // 'fin-de-match', st.fini, monde calme (restart 'fin', personne ne
+                          // joue un ballon mort). null (défaut) : les mondes d'aujourd'hui, sans
+                          // fin, au bit près — le chrono est une CONFIGURATION, pas une loi.
+                          // V1 : pas d'échange de camps ni de temps additionnel (dettes nommées).
   menace: { tir: 1, centre: 1, passe: 1, conduite: 1 },
                           // L'ARBITRE DE MENACE (11c11 seulement — st.full le garde) : les quatre
                           // options du porteur (tir/centre/passe/conduite) notées sur UNE échelle
@@ -286,6 +294,9 @@ function assignMatchJobs(st, cfg) {
   // ici même, et le bloc remise ci-dessous prend le relais dans la même image
   if (st._whistle) administerWhistle(st, cfg);
 
+  // …et le CHRONO siffle ses périodes au même étage (mi-temps, fin de match, possession)
+  if (cfg.chrono) chronoStep(st, cfg);
+
   // UN VOL MORT EST UN BALLON LIBRE (cfg.deadFlight, 11c11) : la passe s'est arrêtée au sol
   // avant son receveur — personne ne « reçoit » un ballon immobile à 0,6 m du pied. La phase
   // bascule en 'loose' après ~0,3 s d'agonie (pas un rebond : une mort), et la chasse des deux
@@ -317,6 +328,12 @@ function assignMatchJobs(st, cfg) {
   // ---- LA REMISE EN JEU : un monde à part, court et légal
   if (st.restart) {
     const r = st.restart;
+    // LE MATCH EST FINI (chrono) : plus d'ayant droit, plus de course — le monde SE TIENT (les
+    // chiffres sont sur la feuille de match ; un état terminal propre, pas un gel qui inquiète)
+    if (r.type === 'fin') {
+      for (const p of st.players) { p.job = 'walk'; p.target = [p.p[0], 0, p.p[2]]; }
+      return;
+    }
     // le rayon des adversaires se tient depuis le BALLON tant qu'il n'est pas posé (le preneur le
     // porte : on s'écarte de LUI), depuis le point de remise ensuite
     const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;
@@ -394,7 +411,13 @@ function assignMatchJobs(st, cfg) {
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       gk._gkSince = gk._gkSince ?? st.t;
-      const spotD = [g.x - g.sign * 4.5, Math.max(-3.5, Math.min(3.5, gk.p[2] * 0.4))];
+      // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe : z borné ±3,5 posait le point
+      // DANS la bouche du but (poteaux à ±3,66) — le porté via-ball sur-vise (l'équilibre
+      // d'amortissement de NOTES 38), le ballon déborde le spot et roule ENTRE les poteaux :
+      // CSC du gardien mesuré sur matchs complets (graine 1 t=14,9 : six touches de porté, puis
+      // le ballon seul dans son filet — le premier « but » du match). Hors de l'axe, le même
+      // débordement meurt en sortie de but, pas en but.
+      const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
       if (bdC > 0.85) {
         // LE GARDIEN AUSSI PASSE PAR SON BALLON (la loi du porteur, au métier près) : viser le
         // spot en abandonnant le ballon à 2 m gelait le monde — ballon posé, label tenu, press
@@ -591,6 +614,26 @@ function assignMatchJobs(st, cfg) {
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = Math.hypot(p._pushS[0], p._pushS[1]) || 1;
       p.push = [p._pushS[0] / sl, p._pushS[1] / sl];
+      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE : la fuite pure (0,75 d'évasion sous
+      // surnombre) d'un porteur pressé dans son camp pointait DANS son propre but — mesuré sur
+      // matchs complets : des CSC en conduite (t=14,9 graine 1, t=124 graine 3 — le premier
+      // « but » de 3 matchs sur 4, dGoal adverse ~100 m et CROISSANT pendant toute la course).
+      // Un défenseur acculé fuit LE LONG de la ligne, jamais dans son filet : à moins de 22 m de
+      // son but, la composante vers le but propre se PLAFONNE et la poussée se rabat sur la
+      // latérale — le signe de l'évasion garde le côté déjà choisi, le lissage repart de la loi
+      // (sinon l'EMA la combat image après image).
+      {
+        const og = pitch.ownGoal(p.team);
+        const sOwn = Math.sign(og.x || 1);
+        // …au rayon À L'ÉCHELLE DU TERRAIN (0,42·hx, plafonné 22) : le 22 m plat couvrait un
+        // TIERS du réduit et étouffait sa conduite (tempsLoin 7,1 > 2,5 — attrapé par la
+        // sentinelle, encore elle)
+        if (Math.hypot(og.x - p.p[0], p.p[2]) < Math.min(22, pitch.hx * 0.42) && p.push[0] * sOwn > 0.35) {
+          const lat = Math.sign(p.push[1] || (p.p[2] >= 0 ? 1 : -1));
+          p.push = [sOwn * 0.35, lat * Math.sqrt(1 - 0.35 * 0.35)];
+          p._pushS = [p.push[0], p.push[1]];
+        }
+      }
       // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible de locomotion était la
       // POUSSÉE PROJETÉE — le plan — même quand le ballon réel vivait à 2 m à droite ou DERRIÈRE
       // le corps (captures utilisateur ; mesuré : 5,9 % du porté en course hors du cône avant,
@@ -1109,6 +1152,72 @@ function canTake(st, takerId) {
 }
 
 /**
+ * LE CYCLE DE MATCH (cfg.chrono) : les sifflets de période. Coupe PROPRE (mêmes soins que le
+ * coup franc : ballon arrêté par l'arbitre, armés annulés, phase neutre), puis la mi-temps
+ * (l'équipe qui n'a PAS engagé la période 1 engage — Loi 8, et les périodes supplémentaires
+ * alternent) ou le sifflet FINAL (st.fini + restart 'fin' : un moteur rend un état terminal
+ * propre, pas un gel). La possession s'accumule ici en TEMPS DE SIM (delta d'horloge — aucun
+ * dt à faire transiter par les hooks).
+ */
+function chronoStep(st, cfg) {
+  const ch = cfg.chrono;
+  const C = (st._chrono ??= { periode: 1, poss: [0, 0], _pt: st.t });
+  const dt = st.t - C._pt; C._pt = st.t;
+  if (st.fini) return;
+  if (st.possession.team >= 0 && !st.restart && dt > 0) C.poss[st.possession.team] += dt;
+  const duree = ch.duree ?? 180, pause = ch.pause ?? 6, periodes = ch.periodes ?? 2;
+  if (st.t < C.periode * duree + (C.periode - 1) * pause) return;
+  st.ball.release('arrêt-de-jeu');
+  st.ball.impulse([-st.ball.v[0] * 0.8, 0, -st.ball.v[2] * 0.8]);
+  st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+  for (const p of st.players) if (p.act && winding(p)) p.act = null;
+  if (C.periode >= periodes) {
+    st.fini = true;
+    st.restart = { type: 'fin', p: [0, 0], team: -1, at: Infinity };
+    st.events.push({ t: +st.t.toFixed(2), type: 'fin-de-match', score: [...st.score] });
+    return;
+  }
+  C.periode += 1;
+  const team = C.periode % 2 === 0 ? 1 : 0;
+  st.events.push({ t: +st.t.toFixed(2), type: 'mi-temps', periode: C.periode, score: [...st.score] });
+  st.restart = { type: 'engagement', p: [0, 0], team, at: st.t + pause };
+  if (cfg.restartCarried !== false) {
+    st.restart.placed = false;
+    const taker = st.players.filter((p) => p.team === team && !p.keeper && p.down <= 0)
+      .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
+    st.restart.taker = taker ? taker.id : -1;
+    st.restart.spots = kickoffSpots(st, team, st.restart.taker);
+  } else {
+    placeKickoff(st, team);
+    st.ball.restart([0, BALL.radius, 0], { cause: 'engagement' });
+  }
+}
+
+/**
+ * LA FEUILLE DE MATCH — l'export PRODUIT : tout se lit des ÉVÉNEMENTS et des accumulateurs du
+ * chrono, rien ne se recompte ailleurs (une stat qui vivrait dans la scène serait une seconde
+ * vérité). Pure : un état entre, des chiffres sortent — benchable (verify-chrono).
+ */
+export function feuilleDeMatch(st) {
+  const evs = st.events;
+  const teamOf = (e) => e.team ?? (e.by != null ? st.players[e.by]?.team : (e.from != null ? st.players[e.from]?.team : null));
+  const paire = (type) => { const r = [0, 0]; for (const e of evs) if (e.type === type) { const t = teamOf(e); if (t === 0 || t === 1) r[t]++; } return r; };
+  const poss = st._chrono?.poss ?? [0, 0];
+  const tot = poss[0] + poss[1];
+  return {
+    score: [...st.score],
+    buts: evs.filter((e) => e.type === 'but').map((e) => ({ minute: Math.floor(e.t / 60) + 1, equipe: e.team })),
+    tirs: paire('shot'), arrets: paire('arrêt'), passes: paire('pass'), centres: paire('centre'),
+    horsJeu: paire('hors-jeu'),
+    coupsFrancs: (() => { const r = [0, 0]; for (const e of evs) if (e.type === 'sortie' && e.out === 'coup-franc' && (e.team === 0 || e.team === 1)) r[e.team]++; return r; })(),
+    pressing: paire('press'),
+    possession: tot > 0 ? [Math.round((100 * poss[0]) / tot), Math.round((100 * poss[1]) / tot)] : [50, 50],
+    periode: st._chrono?.periode ?? 1,
+    fini: !!st.fini,
+  };
+}
+
+/**
  * LE COUP FRANC DU HORS-JEU (Loi 11) : le drapeau s'est levé au toucher (receive → st._whistle) ;
  * ici on ADMINISTRE, à l'image suivante — même cérémonie qu'une sortie : le ballon est arrêté par
  * l'arbitre (freiné, pas écrit), le preneur ADVERSE vient le chercher et le porte au point de
@@ -1351,10 +1460,14 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   // clause d'inFlight que checkGestures : accuser le hasard de l'instant d'arrêt rend le contrat
   // dépendant du chronomètre.
   const lastT = trace.length ? trace[trace.length - 1].t : 0;
+  // …la fenêtre suit L'ÉCHELLE DU TERRAIN : 6 s suffisent au réduit ; un corner du 105 m se
+  // PORTE sur ~27 m le long de la ligne (7,4 s mesurés, graine 7) — la borne plate accusait un
+  // porté légal de gel
+  const winR = Math.max(6, (st.pitch?.hx ?? 0) * 0.19);
   for (const o of sorties) {
-    if (o.t > lastT - 6) continue;
-    const pr = prises.find((p) => p.t >= o.t && p.t <= o.t + 6);
-    if (!pr) { issues.push(`sortie « ${o.out} » à t=${o.t} jamais reprise`); continue; }
+    if (o.t > lastT - winR) continue;
+    const pr = prises.find((p) => p.t >= o.t && p.t <= o.t + winR);
+    if (!pr) { issues.push(`sortie « ${o.out} » à t=${o.t} jamais reprise (fenêtre ${winR.toFixed(0)} s)`); continue; }
     const taker = st.players[pr.by];
     if (taker && taker.team !== o.team) issues.push(`remise « ${o.out} » prise par l'équipe ${taker.team} (droit : ${o.team})`);
   }

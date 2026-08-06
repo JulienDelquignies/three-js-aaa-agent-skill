@@ -200,6 +200,19 @@ flux. Banc : `verify-menace.mjs` (11 clauses — quatre fixtures de gagnant, pur
 « cerveau d'un seul geste », contrat d'injection prouvé par contraste : un `decide` aval qui
 force la conduite ÉTEINT la machinerie de tir devant le but ouvert).
 
+### Le cycle de match est un produit (`cfg.chrono` + `feuilleDeMatch` — lot 13)
+
+`matchCfg({ chrono: { periodes: 2, duree: 180, pause: 6 } })` : mi-temps sifflée à l'heure,
+l'autre équipe engage (Loi 8, alternance), sifflet final → `st.fini` + monde calme, et
+`feuilleDeMatch(st)` rend score, buts à la minute, tirs/arrêts/passes/centres/hors-jeu/coups
+francs/pressing par équipe et la possession — tout depuis les événements, déterministe octet
+pour octet. Clé absente : les mondes sans fin d'aujourd'hui, au bit près. Un projet aval
+démarre un match, le joue, le finit, lit le résultat — c'est l'étape 3 du chemin balisé,
+LIVRÉE. Dettes nommées : échange de camps, temps additionnel. Banc : `verify-chrono.mjs`
+(11 clauses, sabotage « match sans fin »). Et la chasse aux buts fantômes du même lot
+(NOTES 47) a rendu les scores humains : ≈ 2 buts/match — l'échappée pense (gachetteNear),
+personne ne fuit dans son propre filet, le gardien distribue depuis le coin des six mètres.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

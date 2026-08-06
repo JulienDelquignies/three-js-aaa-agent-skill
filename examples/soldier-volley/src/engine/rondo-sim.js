@@ -1488,6 +1488,16 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 %
     // of passes; the ball is not in front of him and the leg has nothing to hit.
     const reachNow = d2(c.p, st.ball.p) <= cfg.strikeReach;
+    // …ET LA GÂCHETTE DU BUT NE DÉPEND PAS DU PIED (11c11) : en course poussée (carrySurge), le
+    // ballon vit à 1,2-1,4 m DEVANT — reachNow n'est vrai qu'à l'INSTANT de la touche, et la
+    // cadence de décision le rate : l'échappée ne PENSAIT jamais (mesuré : le porteur contesté
+    // portait le ballon DANS le but — 12 buts / 16 tirs sur 4 matchs complets, ~la moitié en
+    // conduite pure, des 2-2 systématiques ; trois greffes d'arbitre bit-identiques avant de
+    // trouver CETTE serrure). Près du but, le bloc de décision s'ouvre aussi ballon-en-avant —
+    // tryShot pose alors sa touche de préparation (lot 6a) et la frappe arme à la touche
+    // suivante. Réduit et rondo : inchangés au bit près (st.full + cfg.tryShot).
+    const gachetteNear = st.full && !!cfg.tryShot && !!st.pitch
+      && Math.hypot(st.pitch.attackGoal(c.team).x - c.p[0], c.p[2]) < (cfg.shotRange ?? 15);
     // THE WINDUP IS CARVED OUT OF THE HOLD, NOT ADDED TO IT. A first attempt at a windup simply
     // delayed every release by its length and the game fell apart — record 6, turnovers 25 → 103,
     // because every pass now had an extra beat for a defender to arrive in. The swing is not extra
@@ -1533,7 +1543,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // football — l'assise bloquait pile la fenêtre du jockey posté, 6 fenêtres/4 matchs mesurées)
     if (maybePassement(st, c, cfg)) return st;
     if (!settleGate && maybeCrochet(st, c, cfg)) return st;
-    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && reachNow && (!settleGate || contested)) {
+    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && (reachNow || gachetteNear) && (!settleGate || contested)) {
       // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
       // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon
       // mouvant : control-at-foot 1 % → 33 %), et pas rien du tout non plus (bloquer l'intention
@@ -1558,8 +1568,15 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // l'exécution et ses portes nommées). Mémoïsé 0,25 s : un arbitrage est une lecture du
       // monde, pas un tremblement à 60 Hz. Clé absente (rondo, réduit) : l'ancien ordre, au bit
       // près. L'événement 'arbitre' (au changement d'avis, dernier tiers) rend le choix LISIBLE.
+      // …ET LE DUEL N'ÉTEINT PAS LA GÂCHETTE PRÈS DU BUT (11c11) : l'attaquant lancé, défenseur
+      // dans le dos, est EXACTEMENT l'homme qui doit frapper — le régime d'urgence de beginPass
+      // existe pour ça. Mesuré avant : le porteur contesté n'avait AUCUN cerveau offensif (tout
+      // ce bloc sauté) et portait le ballon DANS le but — 12 buts / 16 tirs sur 4 matchs
+      // complets, ~la moitié en conduite pure, des 2-2 systématiques. Le réduit garde sa loi
+      // du duel (ses 76 clauses sont calibrées sans tir contesté — dette nommée).
+      const gachette = !contested || gachetteNear;
       let arb = null;
-      if (cfg.menace && st.full && !contested && (cfg.tryShot || cfg.tryCross)) {
+      if (cfg.menace && st.full && gachette && (cfg.tryShot || cfg.tryCross)) {
         if (!c._arb || st.t - c._arb.t > 0.25) c._arb = { t: st.t, r: (cfg.decide ?? arbitre)(st, c, cfg) };
         arb = c._arb.r;
         if (arb && arb.meilleure !== c._arbPrev) {
@@ -1574,7 +1591,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // LE TIR — le geste du match (cfg.tryShot, match-sim) : évalué AVANT l'intention de
       // passe, parce qu'une occasion de but domine une ligne de passe. Le rondo n'a pas de but :
       // le hook n'y existe pas, et ce bloc est un no-op. Sous arbitre : seulement s'il GAGNE.
-      if (!contested && cfg.tryShot && (!arb || arb.meilleure === 'tir') && cfg.tryShot(st, c, cfg)) return st;
+      if (gachette && cfg.tryShot && (!arb || arb.meilleure === 'tir') && cfg.tryShot(st, c, cfg)) return st;
       // ON TIRE SI ON PEUT ; ON FEINTE LA FRAPPE SI UN CONTREUR FERME (le refus du tir vient
       // d'être nommé — la feinte achète l'angle qui manquait, le contreur s'assoit)
       if (!contested && maybeFeinteFrappe(st, c, cfg, contested)) return st;

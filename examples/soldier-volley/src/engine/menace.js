@@ -86,7 +86,12 @@ export function menacePasse(st, c, cfg) {
 
 /** LA CONDUITE — l'espace RÉEL devant, dans le cône vers le but (~±35° sur 9 m) ; porter vaut
  *  plus loin du but (près, le tir et la passe doivent gagner — porter dans la surface est
- *  l'empalement déjà mesuré). */
+ *  l'empalement déjà mesuré). LE GARDIEN EST UN CORPS DU CÔNE : la première version l'excluait
+ *  (copie du filtre de tir, où c'est LUI qu'on défie) — le porteur ne le voyait pas comme
+ *  obstacle et MARCHAIT dans le but, ballon au pied (mesuré : 12 buts / 16 tirs sur 4 matchs
+ *  complets, dont ~la moitié en conduite pure — des scores 2-2 systématiques). Un gardien battu
+ *  ou hors position laisse le cône OUVERT : le but-cadeau porté reste légitime, c'est le cas
+ *  filet-ouvert — une seule loi couvre les deux mondes. */
 export function menaceConduite(st, c, cfg) {
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
@@ -95,7 +100,7 @@ export function menaceConduite(st, c, cfg) {
   const ux = gx / gl, uz = gz / gl;
   let espace = 9;
   for (const q of st.players) {
-    if (q.team === c.team || q.down > 0 || q.keeper) continue;
+    if (q.team === c.team || q.down > 0) continue;
     const vx = q.p[0] - c.p[0], vz = q.p[2] - c.p[2];
     const along = vx * ux + vz * uz;
     if (along < 0 || along > 9) continue;
