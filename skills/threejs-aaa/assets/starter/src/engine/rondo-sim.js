@@ -215,6 +215,68 @@ function standTackleNow(st, q, cfg) {
   receive(st, q.id, cfg);          // → turnover : amorti nommé (résiduel ~20 %), possession déclarée
 }
 
+/**
+ * LA CHARGE D'ÉPAULE (cfg.charge && st.full — lot 32). Le duel de CORPS, distinct du tacle
+ * (qui joue le BALLON) : un défenseur au corps du porteur (< dist) accumule une horloge de
+ * charge ; pleine, la charge SE JOUE. Par DERRIÈRE un porteur lancé : FAUTE (Loi 12 — la
+ * détection pose le fait, l'arbitre l'adjuge : avantage, coup franc, cartons). De côté ou de
+ * face : duel LOYAL — force contre force (note strength, l'élan du chargeur pèse, st.rnd
+ * seedé ; base 42 % : protéger son ballon est un métier). Gagné : le ballon JAILLIT
+ * (release('contesté') + poussée latérale — le 50/50 vit par la machinerie loose existante).
+ * Perdu : le chargeur REBONDIT (levier natif _bite : sa pointe s'assoit 0,45 s). Jamais sur
+ * le gardien porteur (charger le gardien est une faute réelle — v1 : on ne charge pas).
+ */
+function chargeStep(st, c, dt, cfg) {
+  if (c.keeper) return;
+  const B = cfg.charge;
+  const foe = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0 && !q.act
+    && d2(q.p, c.p) < (B.dist ?? 0.85) && (q._chgCd ?? 0) <= st.t)
+    .sort((a, b) => d2(a.p, c.p) - d2(b.p, c.p))[0];
+  if (!foe) { st._chgT = 0; return; }
+  st._chgT = (st._chgT ?? 0) + dt;
+  if (st._chgT < (B.time ?? 0.4)) return;
+  st._chgT = 0;
+  foe._chgCd = st.t + (B.cd ?? 2.5);
+  // l'angle du délit : DERRIÈRE n'est pas une faute — la FILATURE est le métier du défenseur
+  // (première version : 33 fautes / 9 min, toutes « par derrière », des 0-0 étouffés au
+  // sifflet — l'ombre de poursuite criminalisée). La faute par derrière est le PERCUTAGE :
+  // dans le dos, AU CONTACT (< 0,55 m) et en SURVITESSE (il lui rentre dedans, +0,6 m/s).
+  const vSpd = Math.hypot(c.v[0], c.v[1]);
+  const dxp = c.p[0] - foe.p[0], dzp = c.p[2] - foe.p[2];
+  const dp = Math.hypot(dxp, dzp) || 1;
+  const behind = vSpd > 1.5 && (dxp * c.v[0] + dzp * c.v[1]) / (dp * vSpd) > 0.55;
+  if (behind) {
+    // la vitesse D'ENTRÉE (projetée chargeur→porteur) : un crash, pas un pas plus vite —
+    // à +0,6 de survitesse brute il restait 16 fautes / 9 min (réel ≈ 2,5)
+    const vInto = (dxp * foe.v[0] + dzp * foe.v[1]) / dp;
+    if (dp < 0.5 && vInto > vSpd + 0.8 && cfg.loi12 && !st._faute) {
+      st._faute = { t: st.t, par: foe.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]] };
+      st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: foe.id, sur: c.id, kind: 'charge-derrière', p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
+    } else {
+      st._chgT = (B.time ?? 0.4) * 0.5;                           // la filature ré-arme, sans événement
+      foe._chgCd = st.t + 0.5;
+    }
+    return;
+  }
+  // …et l'ÉLAN DU PORTEUR PÈSE CONTRE (un homme lancé se charge mal — sans ce terme, 11
+  // ballons jaillis / 12 min étouffaient l'attaque : tirs 5 → 2,25 par match mesurés)
+  const edge = ((foe.skill?.chargeF ?? 1) - (c.skill?.chargeF ?? 1)) * 0.5
+    + Math.min(0.15, Math.hypot(foe.v[0], foe.v[1]) * 0.02)
+    - Math.min(0.14, vSpd * 0.022);
+  const won = (st.rnd ? st.rnd() : 0.5) < 0.40 + edge;
+  st.events.push({ t: +st.t.toFixed(2), type: 'duel', by: foe.id, won, kind: 'épaule', sur: c.id });
+  if (!won) { foe._bite = st.t + 0.45; return; }
+  // l'épaule a gagné : le ballon jaillit du pied — latéral à la course, côté seedé
+  if (c.act && winding(c)) abortGesture(c, 'chargé', { log: st.gestures });
+  const side = (st.rnd ? st.rnd() : 0.5) < 0.5 ? 1 : -1;
+  const ux = vSpd > 0.5 ? c.v[0] / vSpd : Math.cos(c.yaw), uz = vSpd > 0.5 ? c.v[1] / vSpd : Math.sin(c.yaw);
+  st.ball.release('contesté');
+  // …une bousculade, pas une passe à l'adversaire : le ballon s'écarte PEU (1,4 m/s — à
+  // 2,2 le 50/50 tournait turnover un coup sur deux : tirs 5 → 2,3/match, l'attaque étouffée)
+  st.ball.impulse([-uz * side * 1.4 + ux * 0.8, 0, ux * side * 1.4 + uz * 0.8]);
+  st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+}
+
 // ============================ LES GESTES TECHNIQUES ============================
 // Râteau, feinte de passe, arrêt semelle — les gestes qui manipulent le ballon SANS le libérer.
 // Trois lois partagées : (1) chaque déclenchement est SITUÉ (presseur frontal réel, défenseur à
@@ -226,7 +288,7 @@ function standTackleNow(st, q, cfg) {
 // un geste technique est un événement, pas un tic.
 
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeFeinteFrappe, skillContactNow };
-export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a) };
+export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a), chargeStep: (...a) => chargeStep(...a) };
 
 /**
  * Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
@@ -702,6 +764,17 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const press = pressPredicate(st, c, cfg);
     st.pressure = press.length ? st.pressure + dt : 0;
     if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], c, cfg);
+    // LE DUEL DE CORPS (cfg.charge && st.full — lot 32). Mesuré : l'adversaire vit à 1,28 m
+    // MÉDIAN du porteur mais la pression ballon ne s'accumule que 2,4 % du portage (le
+    // bouclier protège le BALLON — c'est son métier) → 1 duel / 9 min, un jeu sans contact.
+    // Le football réel se joue AU CORPS : la charge d'épaule loyale (le ballon peut jaillir),
+    // la charge PAR DERRIÈRE qui est une faute (Loi 12 — le flux naturel des coups francs).
+    // Un ballon jailli SORT du bloc de portage (le même return que la perte : le monde n'est
+    // plus en carry, le reste du bloc lirait un porteur qui n'existe plus).
+    if (cfg.charge && st.full) {
+      chargeStep(st, c, dt, cfg);
+      if (st.phase !== 'carry') return st;
+    }
     // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 %
     // of passes; the ball is not in front of him and the leg has nothing to hit.
     const reachNow = d2(c.p, st.ball.p) <= cfg.strikeReach;

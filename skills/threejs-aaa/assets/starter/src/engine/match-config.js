@@ -63,6 +63,15 @@ export const MATCH = {
                           // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
+  charge: { dist: 0.85, time: 0.4, cd: 3.0 },
+                          // LA CHARGE D'ÉPAULE (11c11, st.full — lot 32) : le duel de CORPS.
+                          // Un défenseur au corps du porteur (dist m) accumule une horloge
+                          // (time s) ; pleine, la charge se joue — par DERRIÈRE un porteur
+                          // lancé c'est une FAUTE (Loi 12, flux naturel des coups francs),
+                          // de côté un duel LOYAL (note strength ±, élan, seedé ; gagné :
+                          // le ballon JAILLIT en 50/50 ; perdu : le chargeur rebondit).
+                          // cd : anti-mitraillette par chargeur. Jamais sur le gardien
+                          // porteur. false : le jeu sans contact d'hier (sabotage nommé).
   fatigue: { horizon: null, cap: 0.15, pause: 0.25 },
                           // LA FATIGUE (11c11, st.full — lot 31) : q.stam ∈ [0;1], drainé
                           // par l'effort (au carré + socle, récup légère à l'arrêt) sur

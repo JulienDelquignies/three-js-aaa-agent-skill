@@ -2361,6 +2361,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    verify-fatigue 8/8, batterie 362 → 370, rondo/réduit bit-près (st.full). Dettes : sigma
    fatigué, pressing plié, récupération active, HUD d'essence (scène/projet).
 
+67. **Le duel de corps (lot 32 — la charge d'épaule, premier lot de l'ère qualité).** Le
+   diagnostic AVANT tout : probe-contact — l'adversaire à 1,28 m MÉDIAN du porteur (p10
+   0,50 !) mais pression ballon > 0 sur 2,4 % du portage seulement (rafales p50 0,13 s,
+   mortes avant tackleTime 0,5) → 1 duel / 9 min : les corps y sont, le duel n'existe pas,
+   le bouclier protège le ballon et le défenseur PLANE. La greffe : chargeStep dans le bloc
+   de portage (cfg.charge && st.full, famille standTackleNow) — horloge de CORPS (0,4 s à
+   < 0,85 m), résolution à maturité. TROIS géométries payées en mesure : (1) « derrière =
+   faute » criminalisait l'ombre de poursuite (33 fautes/9 min, TOUTES par derrière, des
+   0-0 étouffés au sifflet — un défenseur qui traque est derrière par définition) ; (2) la
+   survitesse brute (+0,6) en laissait 16 ; (3) la bonne serrure est la vitesse D'ENTRÉE
+   PROJETÉE chargeur→porteur (> fuite + 0,8, contact < 0,5 m) : le PERCUTAGE, 1,0 faute/
+   match — la bande réelle. La filature ré-arme sans événement. Le duel loyal de côté :
+   strength (nouvel attribut → chargeF ±15 %) + élan, base 40 %, st.rnd seedé — gagné, le
+   ballon JAILLIT en bousculade COURTE (1,4 m/s : à 2,2 le 50/50 tournait turnover un coup
+   sur deux, tirs 5 → 2,3/match, l'attaque étouffée) ; perdu, le chargeur s'assoit sur le
+   levier natif _bite. Le jailli SORT du bloc de portage par le même return que la perte
+   (leçon payée : crash « reading team of undefined » à t=63 — le bloc continuait sur un
+   monde plus en carry). Équilibre livré : 6,0 épaules/match, 0,8 faute/match, 3 buts /
+   4 matchs. Le terme d'élan du porteur s'est mesuré INERTE (bit-identique : les charges
+   mûrissent sur porteurs LENTS — les rapides distancent l'horloge) — gardé pour le cas
+   rare, documenté honnête. Re-fondation loi12 flux (graine 5 × 25 s : la détection a DEUX
+   sources désormais). verify-charge 8/8, batterie 378. Dettes : l'animation du contact,
+   le tacle glissé, l'obstruction, cartons quasi absents du flux court (récidive rare à
+   0,8 faute/match — c'est le format, pas un bug).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

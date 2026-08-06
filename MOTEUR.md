@@ -390,6 +390,29 @@ défaut DIVERGE le flux (papillon dès la première image) — deux clauses de f
 re-fondées sur des graines re-mesurées (le mécanisme des axes était intact : +6,1/+6,4/+8,5
 sur 3 graines).
 
+### Le duel de corps — la charge d'épaule (lot 32, l'ère qualité)
+
+`matchCfg` porte `charge: { dist: 0.85, time: 0.4, cd: 3.0 }` (gardé `st.full`). Diagnostic
+fondateur (probe-contact) : l'adversaire vivait à **1,28 m médian** du porteur mais la
+pression ballon ne mordait que **2,4 % du portage** — le bouclier protège le ballon, c'est
+son métier — d'où 1 duel / 9 min : un jeu sans contact. La charge est le duel de CORPS,
+distinct du tacle (qui joue le ballon) : un défenseur au corps du porteur mûrit une horloge ;
+pleine, la charge se joue. **De côté : duel loyal** (nouvel attribut `strength` → chargeF
+×[0,85 ; 1,15], l'élan du chargeur pèse, tirage `st.rnd` seedé, base 40 % — gagné : le
+ballon JAILLIT en bousculade courte (1,4 m/s — pas une passe à l'adversaire), perdu : le
+chargeur rebondit (levier natif `_bite` 0,45 s)). **Derrière : la filature est un métier**
+(aucun événement — l'horloge se ré-arme) et seul le **percutage** est une faute (contact
+< 0,5 m ET vitesse d'entrée > fuite + 0,8) qui alimente l'arbitre de la Loi 12 (avantage,
+coups francs, cartons — le flux disciplinaire naturel du football). Jamais sur le gardien
+porteur. Équilibre livré (4 × 180 s) : **6,0 épaules/match** (était 0,3 duel), **0,8
+faute/match** (bande réelle), scores humains. Deux géométries payées en mesure : la première
+criminalisait l'ombre de poursuite (33 fautes / 9 min, des 0-0 au sifflet), la seconde
+survitesse brute en laissait 16 — la vitesse d'ENTRÉE projetée est la bonne serrure. Banc :
+`verify-charge.mjs` (8 clauses — fort/faible déterministes à rnd fixé, percutage vs
+filature, anti-mitraillette, gardien, flux en bande, sabotage « jeu sans contact »).
+Dettes nommées : l'animation du contact (les corps se poussent sans clip d'épaule), le
+tacle glissé (source de duels et de fautes majeure), l'obstruction.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le
