@@ -52,13 +52,17 @@ export const MATCH = {
                           // 3ᵉ signal) et la VERTICALITÉ du regain (cooldown d'appel profond
                           // relâché pendant la transition offensive — les 5 s où le bloc adverse
                           // est déformé). false : le jeu sans moments (sabotage nommé).
-  loi12: { avantage: 1.8, contact: 0.9, mur: 9.15 },
+  loi12: { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 2 },
                           // LA LOI 12 (11c11 seulement — st.full la garde ; le réduit vit sans
                           // arbitre de fautes, dette nommée) : la fente qui rate le ballon et
                           // trouve le corps (contact m) est une FAUTE — l'AVANTAGE d'abord
                           // (fenêtre s : on ne siffle pas une équipe qui a gardé le ballon),
                           // penalty dans la surface du fautif, coup franc sinon, MUR Loi 13
-                          // (m). false : l'arbitre aveugle (sabotage nommé). Cartons : dette.
+                          // (m). false : l'arbitre aveugle (sabotage nommé). Et la DISCIPLINE :
+                          // la récidive (jaune fautes du même homme) vaut carton JAUNE, le
+                          // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
+                          // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
+                          // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
   loi14: true,            // LA LOI 14 (11c11, st.full) : la CÉRÉMONIE du penalty — tous les
                           // corps sauf le preneur et le gardien de la ligne HORS surface, HORS
                           // de l'arc (rayon loi12.mur autour du point), DERRIÈRE le ballon ;

@@ -200,6 +200,22 @@ export function adjugeFaute(st, cfg) {
   const perdu = holder != null && holder >= 0 && holder !== F.team && st.phase === 'carry';
   if (!fin && !perdu && fen > 0) return;
   st._faute = null;
+  // LE CARTON (discipline Loi 12) — dans les DEUX branches : le carton SURVIT à l'avantage
+  // (l'arbitre le montre, avantage joué ou pas). La faute est comptée à son HOMME ; la
+  // récidive (cfg.loi12.jaune fautes) vaut JAUNE, le second jaune vaut ROUGE — deux
+  // événements, comme les deux gestes de l'arbitre. L'expulsion PHYSIQUE est une dette
+  // nommée : le corps qui sort touche la formation (à 10), la ligne de hors-jeu et tous
+  // les cerveaux d'équipe — un chantier propre, pas un flag jeté ici.
+  const seuil = cfg.loi12.jaune ?? 2;
+  const fautif = st.players[F.par];
+  if (seuil > 0 && fautif) {
+    fautif._fautes = (fautif._fautes ?? 0) + 1;
+    if (fautif._fautes % seuil === 0) {
+      fautif._jaunes = (fautif._jaunes ?? 0) + 1;
+      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes });
+      if (fautif._jaunes === 2) st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par });
+    }
+  }
   if (fen > 0 && fin && !perdu && holder === F.team && st.possession.carrier >= 0) {
     st.events.push({ t: +st.t.toFixed(2), type: 'avantage', team: F.team });
     return;
@@ -242,6 +258,11 @@ export function feuilleDeMatch(st) {
     horsJeu: paire('hors-jeu'),
     coupsFrancs: (() => { const r = [0, 0]; for (const e of evs) if (e.type === 'sortie' && e.out === 'coup-franc' && (e.team === 0 || e.team === 1)) r[e.team]++; return r; })(),
     fautes: paire('faute'),
+    cartons: (() => {
+      const j = [0, 0], r = [0, 0];
+      for (const e of evs) if (e.type === 'carton') { const t = st.players[e.by]?.team; if (t === 0 || t === 1) (e.couleur === 'rouge' ? r : j)[t]++; }
+      return { jaunes: j, rouges: r };
+    })(),
     pressing: paire('press'),
     possession: tot > 0 ? [Math.round((100 * poss[0]) / tot), Math.round((100 * poss[1]) / tot)] : [50, 50],
     periode: st._chrono?.periode ?? 1,

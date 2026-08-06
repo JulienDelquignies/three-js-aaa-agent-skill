@@ -724,6 +724,15 @@ export class Rondo {
           : `<b style="color:#90be6d">avantage</b> <span>— ${TEAMS[q?.team ?? 0].name} joue · ${mm}:${ss}</span>`);
         if (this._gesteLog.length > 5) this._gesteLog.pop();
         this._gesteHud.innerHTML = this._gesteLog.join('<br>');
+      } else if (e.type === 'carton' && this._gesteHud) {
+        // LE CARTON SE MONTRE (Loi 12 discipline) : le geste de l'arbitre est un événement de
+        // match — jaune à la récidive, rouge au second jaune, dans les couleurs de l'objet.
+        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
+        this._gesteLog.unshift(e.couleur === 'rouge'
+          ? `<b style="color:#d62828">carton rouge</b> <span>— nº${e.by} · ${mm}:${ss}</span>`
+          : `<b style="color:#ffd60a">carton jaune</b> <span>— nº${e.by} (${e.cumul}ᵉ) · ${mm}:${ss}</span>`);
+        if (this._gesteLog.length > 5) this._gesteLog.pop();
+        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
       }
     }
 

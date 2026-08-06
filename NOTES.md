@@ -2255,6 +2255,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    conversion penalty (2/2 — à calibrer en qualité plus tard). Prochaines lois : les CARTONS
    (récidive → jaune, cumul → rouge, l'expulsé quitte le terrain — la feuille les compte).
 
+62. **Les cartons (lot 27 — la discipline de la Loi 12).** Le registre, pas l'humeur : chaque
+   adjudication (sifflet OU avantage — le carton SURVIT à l'avantage, l'arbitre le montre
+   dans les deux branches d'adjugeFaute) compte la faute à son HOMME (q._fautes) ; la
+   récidive (loi12.jaune = 2 fautes du même joueur) vaut carton JAUNE (événement 'carton'
+   {couleur, by, cumul}), le second jaune vaut ROUGE — DEUX événements au même instant,
+   comme les deux gestes de l'arbitre. La feuille compte cartons {jaunes, rouges} par équipe
+   (l'équipe du fautif), le ticker les montre (#ffd60a / #d62828). L'EXPULSION PHYSIQUE est
+   une dette NOMMÉE et CLAUSÉE comme telle (le banc vérifie que le corps RESTE) : sortir un
+   corps touche la formation (jouer à 10), la ligne de hors-jeu (l'avant-dernier défenseur
+   expulsé posté hors terrain fausserait la Loi 11) et tous les cerveaux d'équipe — un
+   chantier propre, pas un flag jeté dans referee.js. verify-cartons 6/6 (récidive : 1ʳᵉ
+   faute muette, 2ᵉ jaune ; 4ᵉ → 2ᵉ jaune PUIS rouge même t ; l'avantage carte aussi — 2
+   avantages joués, 0 sifflet, jaune quand même ; feuille [0,2]/[0,1] ; sabotage « arbitre
+   sans poches » jaune:0 → 4 sifflets 0 carton). Fixtures pures sur adjugeFaute (siffle() :
+   st._faute crafté + possession au fautif + hygiène st.restart=null entre les sifflets).
+   Batterie 333 → 339, rondo/réduit au bit près. Prochaines lois candidates : l'expulsion
+   physique (le chantier à 10), le différé du carton-sur-avantage (montré au prochain arrêt),
+   la touche jouée À LA MAIN (Loi 15 — aujourd'hui au pied, à l'échelle du format réduit).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

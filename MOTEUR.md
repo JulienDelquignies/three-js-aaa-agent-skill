@@ -293,10 +293,18 @@ FIXTURES (doctrine lot 8 : `st._faute` crafté à la main — avantage gardé/pe
 ouverte, penalty au point vs coup franc un mètre hors surface, mur mesuré 8,9 m avec meute
 posée à 2,6 m) + sabotages nommés « arbitre aveugle » (`loi12:false` → fait inerte),
 « avantage myope » (`avantage:0` → sifflet immédiat), « penalty déguisé » (sans mur, la
-meute reste à 2,8 m). Dettes nommées : cartons (récidive, DOGSO), fautes hors tacle (charge,
-obstruction, main), et le FLUX mince du 11c11 (~1 duel tenté / 9 min — le jeu vit
-d'interceptions ; enrichir les sources de duels est une dette de qualité football, pas de
-loi). La cérémonie stricte du penalty, dette du lot, est payée au lot 26 (Loi 14, ci-dessous).
+meute reste à 2,8 m). LA DISCIPLINE (lot 27) : chaque adjudication compte la faute à son
+HOMME ; la récidive (`loi12.jaune` fautes du même joueur, défaut 2) vaut carton JAUNE, le
+second jaune vaut ROUGE — deux événements `'carton'` (les deux gestes de l'arbitre), et le
+carton SURVIT à l'avantage. La feuille compte `cartons: { jaunes, rouges }` par équipe, le
+ticker les montre dans les couleurs de l'objet. Banc : `verify-cartons.mjs` (6 clauses —
+récidive, second-jaune-rouge, survie à l'avantage, feuille, sabotage « arbitre sans poches »
+`jaune:0`). Dettes nommées : l'EXPULSION physique du rouge (formation à 10, ligne de
+hors-jeu, cerveaux d'équipe — un chantier propre ; aujourd'hui le rouge est montré, le corps
+reste, et le banc le clause comme tel), fautes hors tacle (charge, obstruction, main), DOGSO,
+et le FLUX mince du 11c11 (~1 duel tenté / 9 min — le jeu vit d'interceptions ; enrichir les
+sources de duels est une dette de qualité football, pas de loi). La cérémonie stricte du
+penalty, dette du lot, est payée au lot 26 (Loi 14, ci-dessous).
 
 ### La Loi 14 — la cérémonie du penalty (lot 26)
 
