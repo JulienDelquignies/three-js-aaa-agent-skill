@@ -56,6 +56,47 @@ export function kickoffSpots(st, kickTeam, takerId = -1) {
   return spots;
 }
 
+/**
+ * LA LOI 15 — LA RENTRÉE DE TOUCHE SE LANCE À LA MAIN (cfg.onTake, prise d'une remise
+ * 'touche'). Le lanceur choisit un coéquipier À PORTÉE DE BRAS (loi15.range) et le ballon
+ * part EN CLOCHE (release('touche') nommé au grand livre, puis strike balistique — l'angle
+ * fait l'arc, ~32°). Et l'EXEMPTION DE LA LOI 11 EST STRUCTURELLE : pas de photo de
+ * hors-jeu (st.pass sans .off), pas de veto de cerveau — « il n'y a pas de hors-jeu sur
+ * une rentrée de touche » n'est pas un cas spécial du sifflet, c'est une photo qui n'a
+ * jamais été prise. Dettes nommées : le geste des deux mains (clip d'animation), le
+ * double-toucher du lanceur, la touche foireuse (foul throw).
+ */
+export function remiseEnTouche(st, id, cfg) {
+  const q = st.players[id];
+  const R = cfg.loi15?.range ?? 18;
+  const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
+  if (!mates.length) return;
+  const foes = st.players.filter((m) => m.team !== q.team && m.down <= 0);
+  const dOf = (m) => Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]);
+  let best = null, bestS = -Infinity;
+  for (const m of mates) {
+    const d = dOf(m);
+    if (d < 2 || d > R) continue;
+    const guard = Math.min(...foes.map((f) => Math.hypot(f.p[0] - m.p[0], f.p[2] - m.p[2])), 99);
+    const s = Math.min(guard, 8) - d * 0.08;                      // le plus démarqué, à portée
+    if (s > bestS) { bestS = s; best = m; }
+  }
+  best ??= mates.sort((a, b) => dOf(a) - dOf(b))[0];              // à défaut : le plus proche, court
+  const dx = best.p[0] - q.p[0], dz = best.p[2] - q.p[2];
+  const Rr = Math.min(Math.hypot(dx, dz), R);
+  const theta = 0.55;                                             // ~32° : la cloche de la touche
+  const speed = Math.sqrt(Math.max(4, Rr) * 9.81 / Math.sin(2 * theta));
+  st.ball.release('touche');                                      // la cause VRAIE au grand livre
+  st.ball.strike({ speed, dirYaw: Math.atan2(dz, dx), elevation: theta, spinAxis: [0, 1, 0], spinRev: 0 });
+  st.phase = 'flight';
+  st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
+  const T = 2 * speed * Math.sin(theta) / 9.81;
+  st.pass = { from: id, to: best.id, lead: [best.p[0], 0, best.p[2]], style: 'touche', t: st.t, flight: T, origin: [q.p[0], q.p[2]] };
+  // 'rentrée', pas 'touche' : l'événement 'touche' est le TOUCHER de balle (conduite) — un
+  // même mot, deux faits ; le registre les sépare
+  st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: id, to: best.id, range: +Rr.toFixed(1) });
+}
+
 // ---------------------------------------------------------------- la sortie et les remises
 /**
  * LA SORTIE DE BALLE, par la RÈGLE (pitch.outRule au point de franchissement interpolé).

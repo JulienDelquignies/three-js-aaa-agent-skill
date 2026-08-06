@@ -903,7 +903,14 @@ export function rondoStep(st, dt, cfg = RONDO) {
         if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
       }
     }
-    if (taker >= 0 && (!cfg.canTake || cfg.canTake(st, taker))) receive(st, taker, cfg);   // une remise a un ayant droit et une heure
+    // une remise a un ayant droit et une heure — et LA PRISE A UN MÉTIER (cfg.onTake, hook
+    // générique : la remise prise peut se jouer AUTREMENT qu'au pied — la touche de la Loi 15
+    // se LANCE à la main, un projet aval peut scripter les siennes). Clé absente : au bit près.
+    const priseT = st.restart?.type ?? null;
+    if (taker >= 0 && (!cfg.canTake || cfg.canTake(st, taker))) {
+      receive(st, taker, cfg);
+      if (priseT && !st.restart && cfg.onTake) cfg.onTake(st, taker, priseT, cfg);
+    }
   }
   // OUT OF PLAY IS A RULE OF THE BALL, NOT OF A PHASE. This test only ran while the ball was loose or
   // in flight, so a ball dribbled over the line simply stayed out — and once the carrier began pushing

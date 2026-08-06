@@ -27,7 +27,7 @@ import { tac, axe, resoudreTactique } from './tactics.js';
 import { resoudreRole, role } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide } from './keeper.js';
@@ -962,7 +962,12 @@ function passBias(st, c, o) {
 }
 
 export function matchCfg(overrides = {}) {
-  return { ...MATCH, assignJobs: assignMatchJobs, tryShot, tryCross, tryClear, onOut, onDive, canTake, passBias, ballFetch, ...overrides };
+  return {
+    ...MATCH, assignJobs: assignMatchJobs, tryShot, tryCross, tryClear, onOut, onDive, canTake, passBias, ballFetch,
+    // LA PRISE A UN MÉTIER (hook onTake du loop) : la touche du plein format se LANCE (Loi 15)
+    onTake: (st, id, type, cfg) => { if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg); },
+    ...overrides,
+  };
 }
 
 /** Avance le match d'un pas — le game-loop du rondo, configuré match. */

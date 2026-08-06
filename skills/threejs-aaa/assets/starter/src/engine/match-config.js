@@ -63,6 +63,14 @@ export const MATCH = {
                           // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
+  loi15: { range: 18 },   // LA LOI 15 (11c11, st.full) : la rentrée de TOUCHE se lance À LA
+                          // MAIN — à la prise (hook onTake), le lanceur sert un coéquipier à
+                          // portée de bras (range m) et le ballon part EN CLOCHE (~32°,
+                          // release('touche') au grand livre). L'exemption de la Loi 11 est
+                          // STRUCTURELLE : pas de photo de hors-jeu sur une touche (st.pass
+                          // sans .off — le sifflet n'a rien à lire). false : la touche au
+                          // pied d'hier (sabotage nommé). Dettes : le geste des deux mains
+                          // (clip), le double-toucher du lanceur, la touche foireuse.
   loi14: true,            // LA LOI 14 (11c11, st.full) : la CÉRÉMONIE du penalty — tous les
                           // corps sauf le preneur et le gardien de la ligne HORS surface, HORS
                           // de l'arc (rayon loi12.mur autour du point), DERRIÈRE le ballon ;

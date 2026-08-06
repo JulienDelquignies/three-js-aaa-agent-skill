@@ -331,6 +331,25 @@ mur Loi 13 du coup franc). Dettes nommées : l'empiètement APRÈS la prise (les
 re-rentrent pendant l'élan — un re-sifflet d'empiètement), le preneur identifié avant le
 sifflet, la conversion penalty à calibrer (2/2 sur fixtures — qualité, pas loi).
 
+### La Loi 15 — la rentrée de touche à la main (lot 29)
+
+`matchCfg` porte `loi15: { range: 18 }` (défaut ON, gardé `st.full` — le réduit joue sa
+touche au pied, loi du futsal, au bit près). Le mécanisme est un NOUVEAU POINT D'EXTENSION
+du loop : **`cfg.onTake(st, takerId, type, cfg)`** — la prise d'une remise a un métier, et
+un projet aval peut scripter les siennes (clé absente : au bit près). Le match y branche
+`referee.js#remiseEnTouche` : à la prise d'une 'touche', le lanceur sert le coéquipier le
+plus démarqué à portée de bras (`range` m) et le ballon part EN CLOCHE (~32°, apex mesuré
+2,6 m — `release('touche')` au grand livre du ballon, puis strike balistique). Et
+l'exemption de la Loi 11 est **STRUCTURELLE** : `st.pass` sans photo `.off`, aucun veto de
+cerveau — « il n'y a pas de hors-jeu sur une rentrée de touche » n'est pas un cas spécial
+du sifflet, c'est une photo qui n'a jamais été prise. L'événement est `'rentrée'` (le mot
+'touche' appartient au TOUCHER de balle — un même mot, deux faits, le registre les sépare).
+Banc : `verify-loi15.mjs` (6 clauses — la cloche, la reprise, l'appelé posté hors-jeu servi
+SANS sifflet avec `isOffside` vrai au lancer, sabotage « touche au pied » `loi15:false`).
+Mesure de flux consignée : 0 sortie latérale en 3 × 180 s (le jeu vit central) — la loi vit
+par fixtures. Dettes nommées : le geste des deux mains (clip d'animation), le double-toucher
+du lanceur, la touche foireuse (foul throw).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

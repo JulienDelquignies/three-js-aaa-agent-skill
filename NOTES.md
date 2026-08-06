@@ -2298,6 +2298,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    recomposée (les 9 tiennent leurs postes ; un resserrement de bloc à 10 est de la
    tactique, pas de la loi).
 
+64. **La Loi 15 (lot 29 — la rentrée de touche à la main).** Deux découvertes de moteur avant
+   la loi : 'touche' est DÉJÀ dans les deux listes blanches du ballon (RELEASES et RESTARTS —
+   le grand livre attendait sa loi), et l'événement 'touche' est déjà pris par le TOUCHER de
+   balle (329/match mesurés — l'événement du lancer s'appelle 'rentrée' : un même mot, deux
+   faits, le registre les sépare). Le mécanisme est un NOUVEAU POINT D'EXTENSION du loop :
+   cfg.onTake(st, taker, type, cfg) — la prise d'une remise a un métier (le site unique de
+   canTake dans rondo-sim capture le type AVANT la prise, appelle le hook APRÈS receive ;
+   clé absente = bit près, rondo sans onTake, réduit gardé st.full dans le câblage matchCfg).
+   remiseEnTouche (referee.js) : coéquipier le plus démarqué à portée de bras (range 18),
+   release('touche') PUIS strike (le release interne 'frappe' du strike devient no-op — la
+   cause VRAIE au grand livre), cloche à 32° (v = √(R·g/sin 2θ), apex mesuré 2,58 m),
+   st.pass complet (lead/origin/flight — les consommateurs du vol servis) SANS photo .off :
+   l'EXEMPTION de la Loi 11 est STRUCTURELLE, pas un if dans le sifflet. verify-loi15 6/6 :
+   la cloche (apex ∈ [1 ; 3,4]), la reprise (receive +2,3 s), et LA clause d'exemption —
+   l'appelé posté hors-jeu (isOffside=true au lancer, prouvé exercé) est servi et AUCUN
+   sifflet ne tombe ; sabotage « touche au pied » (loi15:false → apex 0,11). Une leçon de
+   banc : la clause « le jeu reprend » cherchait des événements aux mauvais noms ('touch'
+   n'existe pas ; 'pass' peut tarder) — sonder le VRAI flux d'événements avant de clauser
+   (receive@+2,3 était là). Mesure de flux consignée : 0 sortie latérale en 3×180 s (le jeu
+   vit central — corners et sorties de but dominent) ; la loi vit par fixtures, doctrine
+   lot 8. Dettes nommées : le geste des deux mains (clip), le double-toucher du lanceur, la
+   touche foireuse. Batterie 347 → 353.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
