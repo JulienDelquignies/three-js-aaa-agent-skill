@@ -185,6 +185,46 @@ export function chronoStep(st, cfg) {
 }
 
 /**
+ * LA LOI 12 S'ADJUGE ICI (lot 25) : L'AVANTAGE D'ABORD — on ne siffle pas une équipe qui a gardé
+ * le ballon (fenêtre cfg.loi12.avantage ; à 0, le sifflet est immédiat : le sabotage « avantage
+ * myope »). Perdu, ou fenêtre close sans le ballon : le SIFFLET — penalty si la faute vit dans
+ * la SURFACE DU FAUTIF (restart 'penalty' au point, la cause existe depuis ball-body), coup
+ * franc au point de la faute sinon — même cérémonie portée que la Loi 11. Cartons et cérémonie
+ * stricte du penalty (tous hors surface) : dettes nommées v1.
+ */
+export function adjugeFaute(st, cfg) {
+  const F = st._faute;
+  const fen = cfg.loi12.avantage ?? 1.8;
+  const holder = st.possession.team;
+  const fin = st.t - F.t >= fen;
+  const perdu = holder != null && holder >= 0 && holder !== F.team && st.phase === 'carry';
+  if (!fin && !perdu && fen > 0) return;
+  st._faute = null;
+  if (fen > 0 && fin && !perdu && holder === F.team && st.possession.carrier >= 0) {
+    st.events.push({ t: +st.t.toFixed(2), type: 'avantage', team: F.team });
+    return;
+  }
+  const { pitch } = st;
+  const own = pitch.ownGoal(1 - F.team);                            // le camp du FAUTIF
+  const dansSurface = pitch.inBox(F.p[0], F.p[1], Math.sign(own.x));
+  st.ball.release('arrêt-de-jeu');
+  st.ball.impulse([-st.ball.v[0] * 0.65, 0, -st.ball.v[2] * 0.65]);
+  const p = dansSurface ? [own.x - Math.sign(own.x) * pitch.dims.spot, 0]
+    : [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, F.p[0])), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, F.p[1]))];
+  const type = dansSurface ? 'penalty' : 'coup-franc';
+  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: type, team: F.team, p: [+p[0].toFixed(1), +p[1].toFixed(1)] });
+  st.restart = { type, p, team: F.team, at: st.t + cfg.restartWait + (dansSurface ? 1 : 0) };
+  if (cfg.restartCarried !== false) {
+    st.restart.placed = false;
+    const tk = st.players.filter((q) => q.team === F.team && !q.keeper && q.down <= 0)
+      .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
+    st.restart.taker = tk ? tk.id : -1;
+  } else st.ball.restart([p[0], BALL.radius, p[1]], { cause: type });
+  st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+  for (const q of st.players) if (q.act && winding(q)) q.act = null;
+}
+
+/**
  * LA FEUILLE DE MATCH — l'export PRODUIT : tout se lit des ÉVÉNEMENTS et des accumulateurs du
  * chrono, rien ne se recompte ailleurs (une stat qui vivrait dans la scène serait une seconde
  * vérité). Pure : un état entre, des chiffres sortent — benchable (verify-chrono).
@@ -201,6 +241,7 @@ export function feuilleDeMatch(st) {
     tirs: paire('shot'), arrets: paire('arrêt'), passes: paire('pass'), centres: paire('centre'),
     horsJeu: paire('hors-jeu'),
     coupsFrancs: (() => { const r = [0, 0]; for (const e of evs) if (e.type === 'sortie' && e.out === 'coup-franc' && (e.team === 0 || e.team === 1)) r[e.team]++; return r; })(),
+    fautes: paire('faute'),
     pressing: paire('press'),
     possession: tot > 0 ? [Math.round((100 * poss[0]) / tot), Math.round((100 * poss[1]) / tot)] : [50, 50],
     periode: st._chrono?.periode ?? 1,

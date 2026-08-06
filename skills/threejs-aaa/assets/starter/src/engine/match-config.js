@@ -52,6 +52,13 @@ export const MATCH = {
                           // 3ᵉ signal) et la VERTICALITÉ du regain (cooldown d'appel profond
                           // relâché pendant la transition offensive — les 5 s où le bloc adverse
                           // est déformé). false : le jeu sans moments (sabotage nommé).
+  loi12: { avantage: 1.8, contact: 0.9, mur: 9.15 },
+                          // LA LOI 12 (11c11 seulement — st.full la garde ; le réduit vit sans
+                          // arbitre de fautes, dette nommée) : la fente qui rate le ballon et
+                          // trouve le corps (contact m) est une FAUTE — l'AVANTAGE d'abord
+                          // (fenêtre s : on ne siffle pas une équipe qui a gardé le ballon),
+                          // penalty dans la surface du fautif, coup franc sinon, MUR Loi 13
+                          // (m). false : l'arbitre aveugle (sabotage nommé). Cartons : dette.
   chrono: null,           // LE CYCLE DE MATCH (l'enveloppe PRODUIT — un projet aval démarre un
                           // match, le joue, le FINIT, lit la feuille) : { periodes: 2, duree: s
                           // par période, pause: s de mi-temps }. Fin de période → sifflet,

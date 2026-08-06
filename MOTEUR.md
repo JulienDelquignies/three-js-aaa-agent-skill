@@ -258,10 +258,45 @@ l'autre équipe engage (Loi 8, alternance), sifflet final → `st.fini` + monde 
 francs/pressing par équipe et la possession — tout depuis les événements, déterministe octet
 pour octet. Clé absente : les mondes sans fin d'aujourd'hui, au bit près. Un projet aval
 démarre un match, le joue, le finit, lit le résultat — c'est l'étape 3 du chemin balisé,
-LIVRÉE. Dettes nommées : échange de camps, temps additionnel. Banc : `verify-chrono.mjs`
-(11 clauses, sabotage « match sans fin »). Et la chasse aux buts fantômes du même lot
-(NOTES 47) a rendu les scores humains : ≈ 2 buts/match — l'échappée pense (gachetteNear),
-personne ne fuit dans son propre filet, le gardien distribue depuis le coin des six mètres.
+LIVRÉE. Les dettes du lot ont été payées au lot 24 : `pitch.echangerCamps()` (une bascule en
+closure, tout le moteur suit par `ownGoal`/`attackGoal`) et le TEMPS ADDITIONNEL (les arrêts
+s'accumulent, l'arbitre rend ×0,35 plafonné 12 %, annonce `'temps-additionnel'`, HUD « MT2
+2:58 +2 »). Banc : `verify-chrono.mjs` (14 clauses, sabotages « match sans fin » et « montre
+truquée »). Et la chasse aux buts fantômes du même lot (NOTES 47) a rendu les scores
+humains : ≈ 2 buts/match — l'échappée pense (gachetteNear), personne ne fuit dans son
+propre filet, le gardien distribue depuis le coin des six mètres.
+
+### La Loi 12 — fautes, avantage, penalty, mur (lot 25)
+
+`matchCfg` porte `loi12: { avantage: 1.8, contact: 0.9, mur: 9.15 }` (défaut ON comme la
+Loi 11, gardé `st.full` — le réduit et le rondo vivent sans arbitre de fautes, au bit près).
+Trois étages, trois modules, une seule vérité :
+
+- **La détection vit au DUEL** (`rondo-sim.js#standTackleNow`) : la fente qui rate le ballon
+  et trouve le corps du porteur (< `contact` m) POSE le fait — `st._faute` {t, par, sur,
+  team, p} + événement `'faute'`. Une faute à la fois : l'arbitre aussi.
+- **L'adjudication est un module d'arbitrage** (`referee.js#adjugeFaute`, appelé par
+  `matchStep`) : l'AVANTAGE d'abord (Loi 5 — fenêtre `avantage` s : l'équipe lésée qui porte
+  encore le ballon à la fin de la fenêtre JOUE, événement `'avantage'`, pas de sifflet ; le
+  fautif qui récupère siffle AVANT la fin) ; le sifflet ensuite — coup franc au LIEU de la
+  faute (clampé au terrain), PENALTY au point (`dims.spot`, 11 m) si la faute vit dans la
+  surface du fautif (`pitch.inBox`, camps échangés compris) ; cérémonie complète (ballon
+  lâché, monde en loose, preneur du camp lésé, armés annulés).
+- **Le MUR est la Loi 13 à la remise** (`match-sim.js`, bloc remise) : coup franc et penalty
+  du plein format tiennent 9,15 m (pas le rayon réduit), et à moins de 30 m du but propre les
+  DEUX défenseurs les plus proches du but se POSENT sur la ligne ballon→but à 9,15 m, épaule
+  contre épaule (±0,35 m) — un coup franc sans mur est un penalty déguisé.
+
+La feuille compte les fautes par fautif (`fautes: paire('faute')`). Le ticker de la scène lit
+`'faute'` (rouge brique) et `'avantage'` (vert). Banc : `verify-loi12.mjs` — 13 clauses SUR
+FIXTURES (doctrine lot 8 : `st._faute` crafté à la main — avantage gardé/perdu/fenêtre
+ouverte, penalty au point vs coup franc un mètre hors surface, mur mesuré 8,9 m avec meute
+posée à 2,6 m) + sabotages nommés « arbitre aveugle » (`loi12:false` → fait inerte),
+« avantage myope » (`avantage:0` → sifflet immédiat), « penalty déguisé » (sans mur, la
+meute reste à 2,8 m). Dettes nommées : cartons (récidive, DOGSO), cérémonie stricte du
+penalty (tous hors surface, gardien sur sa ligne), fautes hors tacle (charge, obstruction,
+main), et le FLUX mince du 11c11 (~1 duel tenté / 9 min — le jeu vit d'interceptions ;
+enrichir les sources de duels est une dette de qualité football, pas de loi).
 
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 

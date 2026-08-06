@@ -2213,6 +2213,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    rondo intacts au bit près (l'échange n'existe que sous cfg.chrono). Le cycle de match est
    COMPLET : engagement, périodes, camps, additionnel, sifflet final, feuille.
 
+60. **La Loi 12 (lot 25 — fautes, avantage, penalty, mur).** Le fait, le jugement, la géométrie —
+   trois étages, chacun chez soi. La DÉTECTION vit au duel (standTackleNow : la fente qui rate
+   le ballon et trouve le corps < 0,9 m pose st._faute + événement 'faute' — une faute à la
+   fois, l'arbitre aussi) ; l'ADJUDICATION vit dans l'arbitrage (referee.adjugeFaute, appelé
+   par matchStep : l'AVANTAGE d'abord — Loi 5, fenêtre 1,8 s ; le lésé qui porte à la fin JOUE
+   ('avantage'), le fautif qui récupère siffle AVANT la fin ; puis coup franc au LIEU, PENALTY
+   au point si la faute vit dans la surface du fautif — pitch.inBox, camps échangés compris) ;
+   le MUR vit à la remise (match-sim : 9,15 m tenus, et < 30 m du but les DEUX défenseurs les
+   plus proches du but posés sur la ligne ballon→but, épaule contre épaule ±0,35). La clé
+   loi12 est un défaut de matchCfg comme la Loi 11, gardée st.full — batterie d'abord : rondo
+   40/40 et réduit 76/0 AU BIT PRÈS avec la clé active (la garde est la preuve). Banc
+   verify-loi12 13 clauses, doctrine lot 8 assumée : l'adjudication se juge sur st._faute
+   CRAFTÉ (avantage gardé/perdu/fenêtre ouverte, penalty au point ±0,01, un mètre hors
+   surface → coup franc au lieu), le flux ne fournit que l'existence (graine 1 : 1 faute,
+   avantage joué). DEUX leçons de banc payées : le sabotage « sans loi12 » doit être
+   loi12:false EXPLICITE (la clé est un défaut — un banc qui omet la clé teste le monde AVEC) ;
+   et la fixture du mur doit AMENER la meute au point (le bloc naturel se tenait déjà à 8,8 m
+   — le rayon n'avait rien à mordre ; posée à 2,6-3,2 m : 8,9 m tenus avec mur, 2,8 m sans,
+   le contraste nommé). Mesure de flux consignée : ~1 duel tenté / 9 min de 11c11 (le jeu vit
+   d'interceptions) — la Loi 12 vit surtout par fixtures ; enrichir les SOURCES de duels
+   (charge, obstruction, main) est une dette de qualité football, pas de loi. Cartons : dette.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

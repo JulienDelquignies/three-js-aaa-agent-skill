@@ -713,6 +713,17 @@ export class Rondo {
         this._gesteLog.unshift(`<b style="color:#f2c14e">hors-jeu</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
         if (this._gesteLog.length > 5) this._gesteLog.pop();
         this._gesteHud.innerHTML = this._gesteLog.join('<br>');
+      } else if ((e.type === 'faute' || e.type === 'avantage') && this._gesteHud) {
+        // LOI 12 AU TICKER : la faute nomme le fautif, l'avantage nomme la décision — sans
+        // ces deux lignes, un coup franc (ou un jeu qui continue sur un tacle raté) serait
+        // illisible, exactement le bug perçu qui a fait naître le ticker (NOTES 36).
+        const q = this.state.players[e.type === 'faute' ? e.by : e.sur];
+        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
+        this._gesteLog.unshift(e.type === 'faute'
+          ? `<b style="color:#e76f51">faute</b> <span>— nº${e.by} sur nº${e.sur} · ${mm}:${ss}</span>`
+          : `<b style="color:#90be6d">avantage</b> <span>— ${TEAMS[q?.team ?? 0].name} joue · ${mm}:${ss}</span>`);
+        if (this._gesteLog.length > 5) this._gesteLog.pop();
+        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
       }
     }
 

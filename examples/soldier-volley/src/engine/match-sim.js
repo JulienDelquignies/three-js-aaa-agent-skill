@@ -27,7 +27,7 @@ import { tac, axe, resoudreTactique } from './tactics.js';
 import { resoudreRole, role } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide } from './keeper.js';
@@ -131,6 +131,9 @@ function assignMatchJobs(st, cfg) {
   // …et le CHRONO siffle ses périodes au même étage (mi-temps, fin de match, possession)
   if (cfg.chrono) chronoStep(st, cfg);
 
+  // …et la LOI 12 s'adjuge au même étage (l'avantage d'abord, le sifflet ensuite)
+  if (cfg.loi12 && st._faute) adjugeFaute(st, cfg);
+
   // L'HORLOGE DU REGAIN (cfg.moments — phases.js) : le moment COLLECTIF se dérive de qui a le
   // ballon et depuis quand (momentDuJeu) ; le changement s'événemente ('transition'), son
   // installation aussi ('placée') — mesurable au banc, socle des consommateurs tactiques.
@@ -206,10 +209,31 @@ function assignMatchJobs(st, cfg) {
         p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]];
       } else {
         // l'adversaire TIENT LE RAYON de la remise (Loi 15/16/17 à l'échelle du format)
+        // …et le COUP FRANC du plein format tient LE MUR (Loi 13 — cfg.loi12.mur, 9,15 m) :
+        // rayon réel, et les deux défenseurs les plus proches de leur but se posent SUR la
+        // ligne ballon→but, épaule contre épaule — un coup franc sans mur est un penalty déguisé
+        const mur = cfg.loi12 && st.full && (r.type === 'coup-franc' || r.type === 'penalty') ? (cfg.loi12.mur ?? 9.15) : cfg.restartClear;
+        if (mur !== cfg.restartClear && r.type === 'coup-franc') {
+          const og = pitch.ownGoal(p.team);
+          if (Math.hypot(og.x - rp[0], rp[1]) < 30) {
+            r._mur ??= st.players.filter((q) => q.team !== r.team && !q.keeper && q.down <= 0)
+              .sort((a, b) => Math.hypot(og.x - a.p[0], a.p[2]) - Math.hypot(og.x - b.p[0], b.p[2]))
+              .slice(0, 2).map((q) => q.id);
+            const im = r._mur.indexOf(p.id);
+            if (im >= 0) {
+              const gx = og.x - rp[0], gz = 0 - rp[1];
+              const gl = Math.hypot(gx, gz) || 1;
+              const lat = im === 0 ? 0.35 : -0.35;
+              p.job = 'walk';
+              p.target = [rp[0] + (gx / gl) * mur - (gz / gl) * lat, 0, rp[1] + (gz / gl) * mur + (gx / gl) * lat];
+              continue;
+            }
+          }
+        }
         const dx = p.p[0] - rp[0], dz = p.p[2] - rp[1];
         const d = Math.hypot(dx, dz);
         p.job = 'walk';
-        p.target = d < cfg.restartClear ? [rp[0] + (dx / (d || 1)) * cfg.restartClear, 0, rp[1] + (dz / (d || 1)) * cfg.restartClear] : [p.p[0], 0, p.p[2]];
+        p.target = d < mur ? [rp[0] + (dx / (d || 1)) * mur, 0, rp[1] + (dz / (d || 1)) * mur] : [p.p[0], 0, p.p[2]];
       }
     }
     // LE PRENEUR EST STICKY (choisi à la sortie, re-choisi seulement s'il tombe) : il va CHERCHER

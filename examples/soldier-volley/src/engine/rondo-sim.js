@@ -191,6 +191,15 @@ function standTackleNow(st, q, cfg) {
     // le refus a une cause nommée, et l'événement du duel perdu reste visible dans le flux
     deny(st, still ? 'tacle-manqué' : 'tacle-orphelin');
     st.events.push({ t: +st.t.toFixed(2), type: 'duel', by: q.id, won: false, dist: +d.toFixed(2) });
+    // LA LOI 12 (cfg.loi12 && st.full — le réduit vit sans arbitre, dette nommée) : la fente qui
+    // rate le BALLON et trouve le CORPS est une FAUTE. Ici on MARQUE le fait (qui, sur qui, où) ;
+    // le match l'ADJUGE (referee.adjugeFaute : l'avantage d'abord — Loi 5 —, le sifflet ensuite,
+    // penalty si la faute vit dans la surface du fautif). Une faute à la fois : l'arbitre aussi.
+    const vic = st.players[victimId];
+    if (cfg.loi12 && st.full && still && vic && d2(q.p, vic.p) < (cfg.loi12.contact ?? 0.9) && !st._faute) {
+      st._faute = { t: st.t, par: q.id, sur: victimId, team: vic.team, p: [vic.p[0], vic.p[2]] };
+      st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: victimId, p: [+vic.p[0].toFixed(1), +vic.p[2].toFixed(1)] });
+    }
     return;
   }
   // l'événement porte sa géométrie ET sa technique — checkAction peut le rejouer (technique-legal)
