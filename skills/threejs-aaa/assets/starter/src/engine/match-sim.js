@@ -917,7 +917,9 @@ function assignMatchJobs(st, cfg) {
         // (l'option courte du porteur). Presser à deux en abandonnant la couverture, c'est LE
         // pari du pressing — le risque est le prix du régain haut, et il se voit (une passe qui
         // casse la première ligne trouve le champ que le cover aurait fermé).
-        if (press && carrier) {
+        // …et un rôle SANS jambes de press (press < 0,25 — le meneur replié) ne saute pas :
+        // il garde la couverture, le pari du pressing appartient à ceux qui en vivent
+        if (press && carrier && role(p).press >= 0.25) {
           const outlet = attackers.filter((a) => a.id !== carrier.id && !a.keeper)
             .sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor))[0] ?? null;
           if (outlet) { p.job = 'press'; p.target = [outlet.p[0], 0, outlet.p[2]]; return; }
@@ -966,7 +968,9 @@ function assignMatchJobs(st, cfg) {
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       p.job = 'mark';
-      const off = press ? 0.95 : 1.4;
+      // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le
+      // meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
+      const off = (press ? 0.95 : 1.4) * axe(role(p).press, 1.18, 0.82);
       const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
       const drift = p._markT ? Math.hypot(want[0] - p._markT[0], want[1] - p._markT[1]) : Infinity;
       if (!p._markT || drift > 3 || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8))) {

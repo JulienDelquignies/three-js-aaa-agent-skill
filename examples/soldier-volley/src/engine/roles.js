@@ -22,18 +22,21 @@
 // couvre) et le catalogue de formations 4-4-2 / 3-5-2 (généraliser « postes ≥ 7 » en lignes).
 
 export const ROLES = {
-  polyvalent:          { profondeur: 0.5, largeurR: 0.5, appel: 0.5, arbitre: { tir: 1, centre: 1, passe: 1, conduite: 1 } },
-  neufDeSurface:       { profondeur: 0.9, largeurR: 0.4, appel: 0.9, arbitre: { tir: 1.15, centre: 0.95, passe: 0.9, conduite: 0.95 } },
-  ailierDePercussion:  { profondeur: 0.55, largeurR: 0.9, appel: 0.6, arbitre: { tir: 0.95, centre: 1.12, passe: 0.9, conduite: 1.15 } },
-  meneur:              { profondeur: 0.15, largeurR: 0.45, appel: 0.2, arbitre: { tir: 0.9, centre: 0.95, passe: 1.15, conduite: 1 } },
-  piston:              { profondeur: 0.75, largeurR: 0.95, appel: 0.75, arbitre: { tir: 0.9, centre: 1.15, passe: 1, conduite: 1.05 } },
+  polyvalent:          { profondeur: 0.5, largeurR: 0.5, appel: 0.5, press: 0.5, arbitre: { tir: 1, centre: 1, passe: 1, conduite: 1 } },
+  neufDeSurface:       { profondeur: 0.9, largeurR: 0.4, appel: 0.9, press: 0.65, arbitre: { tir: 1.15, centre: 0.95, passe: 0.9, conduite: 0.95 } },
+  ailierDePercussion:  { profondeur: 0.55, largeurR: 0.9, appel: 0.6, press: 0.6, arbitre: { tir: 0.95, centre: 1.12, passe: 0.9, conduite: 1.15 } },
+  meneur:              { profondeur: 0.15, largeurR: 0.45, appel: 0.2, press: 0.25, arbitre: { tir: 0.9, centre: 0.95, passe: 1.15, conduite: 1 } },
+  piston:              { profondeur: 0.75, largeurR: 0.95, appel: 0.75, press: 0.7, arbitre: { tir: 0.9, centre: 1.15, passe: 1, conduite: 1.05 } },
+  // le 6 — le métier DÉFENSIF de la couche rôles (lot 19) : il colle son marquage, il saute
+  // en second presseur, il ne dérape pas en appels profonds
+  recuperateur:        { profondeur: 0.35, largeurR: 0.45, appel: 0.25, press: 0.95, arbitre: { tir: 0.85, centre: 0.9, passe: 1.08, conduite: 0.92 } },
 };
 
 /** Résout un nom ou un objet partiel en rôle complet (absent = polyvalent, l'identité). */
 export function resoudreRole(r) {
   const base = typeof r === 'string' ? (ROLES[r] ?? ROLES.polyvalent) : (r ?? {});
   return {
-    profondeur: base.profondeur ?? 0.5, largeurR: base.largeurR ?? 0.5, appel: base.appel ?? 0.5,
+    profondeur: base.profondeur ?? 0.5, largeurR: base.largeurR ?? 0.5, appel: base.appel ?? 0.5, press: base.press ?? 0.5,
     arbitre: { tir: 1, centre: 1, passe: 1, conduite: 1, ...(base.arbitre ?? {}) },
     nom: typeof r === 'string' ? r : (base.nom ?? 'personnalisé'),
   };
@@ -46,13 +49,13 @@ export function role(p) { return p?.role ?? ROLES.polyvalent; }
 export function checkRoles() {
   const issues = [];
   for (const [nom, r] of Object.entries(ROLES)) {
-    for (const k of ['profondeur', 'largeurR', 'appel']) {
+    for (const k of ['profondeur', 'largeurR', 'appel', 'press']) {
       if (r[k] < 0 || r[k] > 1) issues.push(`${nom}.${k} hors [0;1]`);
     }
     for (const [o, v] of Object.entries(r.arbitre)) if (v < 0.7 || v > 1.3) issues.push(`${nom}.arbitre.${o} = ${v} hors [0,7;1,3] — un rôle nuance, il n'écrase pas`);
   }
   const p = ROLES.polyvalent;
-  if (p.profondeur !== 0.5 || p.largeurR !== 0.5 || p.appel !== 0.5
+  if (p.profondeur !== 0.5 || p.largeurR !== 0.5 || p.appel !== 0.5 || p.press !== 0.5
     || Object.values(p.arbitre).some((v) => v !== 1)) issues.push('polyvalent n\'est pas l\'identité');
   const d = resoudreRole(undefined);
   if (d.profondeur !== 0.5 || d.arbitre.tir !== 1) issues.push('un rôle absent ne résout pas en identité');

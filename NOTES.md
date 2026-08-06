@@ -2136,6 +2136,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    conversion ≤ 60 % — le « avant » chiffré est le sabotage, consigné dans la clause. Batterie
    307 clauses vertes — le réduit (qui hérite de l'envergure) tient ses bandes.
 
+54. **Les rôles de pressing (lot 19 — la couche rôles complète).** Champ press [0..1] au
+   catalogue (+ le RÉCUPÉRATEUR, le 6 : press 0,95, appels 0,25, arbitre passe+), consommé à
+   DEUX organes du bloc défensif : le MARQUAGE (le demi-pas × axe(press, 1,18…0,82) — le
+   récupérateur colle, le meneur replié marque lâche ; milieu ×1, identité du polyvalent) et
+   l'ÉLIGIBILITÉ du second presseur (press < 0,25 → il ne saute pas sur le pivot, il garde la
+   couverture — le pari du pressing appartient à ceux qui en vivent ; 0,5 ≥ 0,25, identité).
+   Contrat renforcé (press borné + identité polyvalent y compris press). Batterie verte au bit
+   près (307 clauses) — la couche rôles couvre désormais l'attaque (profondeur/largeur/appels/
+   arbitre) ET la défense (marquage/second presseur). Dettes restantes : découpage de rondo-sim
+   (1 884 l.), conversion 21 % → ~12 %, temps additionnel/échange de camps, presets tactiques
+   portant leurs rôles par défaut.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
