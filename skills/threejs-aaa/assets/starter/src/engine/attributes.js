@@ -34,6 +34,7 @@ export const ATTRIBUTES = {
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
   composure:   'sang-froid sous pression → l\'erreur de passe pressée × [1,30 ; 0,85]',
   keeping:     'métier de gardien        → envergure [1,8 ; 2,5] m, réflexe [0,16 ; 0,09] s',
+  stamina:     'réserve d\'endurance      → drain de fatigue × [1,25 ; 0,75] (cfg.fatigue, lot 31)',
 };
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -62,6 +63,7 @@ export function makeProfile(ratings = {}) {
     composureF: lerp(1.30, 0.85, r('composure')),                 // × sur l'erreur pressée
     keeperReach: lerp(2.55, 3.25, r('keeping')),                  // m — autour de l'envergure livrée (2,95)
     keeperReflex: lerp(0.16, 0.09, r('keeping')),                 // s
+    stamF: lerp(1.25, 0.75, r('stamina')),                        // × sur le drain de fatigue (l'endurant tient)
   });
 }
 

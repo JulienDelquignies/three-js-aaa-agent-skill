@@ -63,6 +63,17 @@ export const MATCH = {
                           // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
+  fatigue: { horizon: null, cap: 0.15, pause: 0.25 },
+                          // LA FATIGUE (11c11, st.full — lot 31) : q.stam ∈ [0;1], drainé
+                          // par l'effort (au carré + socle, récup légère à l'arrêt) sur
+                          // l'HORIZON du format (null → periodes×duree du chrono, sinon
+                          // 360 s : l'échelle suit le match configuré, pas « 90 min » en
+                          // dur). UN effet v1 : la pointe plie (× 1−cap·(1−stam)) ; la
+                          // note stamina module le drain ; la pause rend `pause` d'essence
+                          // (vestiaires) ; l'entrant de la Loi 3 naît frais. q.stam est
+                          // l'API du projet (politique de banc). Événement 'fatigue' au
+                          // franchissement de 0,35. false : le moteur infatigable (sabotage
+                          // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
   loi3: { changements: 5 },
                           // LA LOI 3 (11c11, st.full) : les REMPLACEMENTS. La LOI est le
                           // mécanisme (limite de changements, exécution à l'ARRÊT DE JEU,

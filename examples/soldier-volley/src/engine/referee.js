@@ -115,6 +115,7 @@ export function stepRemplacements(st, cfg) {
         q.number = spec.number ?? null;
         if (spec.role != null) q.role = resoudreRole(spec.role);
         q._fautes = 0; q._jaunes = 0;                              // l'ardoise part avec l'homme
+        q.stam = 1; q._fatEv = null;                               // …et l'entrant a des JAMBES NEUVES (lot 31)
         st.events.push({ t: +st.t.toFixed(2), type: 'remplacement', team: q.team, id: q.id, minute: Math.floor(st.t / 60) + 1 });
         q._sub = { phase: 'in', entry: [q._exit[0], Math.sign(q.p[2]) * (st.pitch.hz - 3)] };
       }
@@ -289,6 +290,9 @@ export function chronoStep(st, cfg) {
   // ballon repart par une remise à cause nommée. (Le ballon, lui, ne se téléporte JAMAIS
   // hors remise — sa loi ne bouge pas.)
   if (ch.echangeCamps !== false && st.pitch?.echangerCamps) st.pitch.echangerCamps();
+  // …et les VESTIAIRES RENDENT DES JAMBES (cfg.fatigue, lot 31) : la pause récupère une
+  // fraction d'essence — pas tout (un match se gère, la seconde période se joue plus bas)
+  if (cfg.fatigue && st.full) for (const p of st.players) { p.stam = Math.min(1, (p.stam ?? 1) + (cfg.fatigue.pause ?? 0.25)); p._fatEv = p.stam < 0.35 ? p._fatEv : null; }
   st.restart = { type: 'engagement', p: [0, 0], team, at: st.t + pause };
   placeKickoff(st, team);
   st.ball.restart([0, BALL.radius, 0], { cause: 'engagement' });

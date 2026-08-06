@@ -2341,6 +2341,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    Batterie 353 → 362, rondo/réduit bit-près. Dettes nommées : banc incarné, fenêtres
    comptées, la FATIGUE (le déclencheur naturel de la politique — pas encore modélisée).
 
+66. **La fatigue (lot 31 — l'endurance, un état du corps à l'échelle du format).** q.stam
+   [0;1], drainé dans movement (effort² + socle, récup légère sous 1,5 m/s) sur l'HORIZON
+   du format (periodes×duree du chrono — pas « 90 min » en dur : l'échelle suit le match
+   configuré, le geste restartClear). UN effet v1, une autorité : la POINTE plie (× 1−0,15·
+   (1−stam) — p95 des courses ×0,92 mesuré à vide). La note stamina module (×[1,25 ; 0,75]),
+   les vestiaires rendent 0,25, l'entrant Loi 3 naît frais (et son trot d'entrée SE PAIE —
+   la clause qui exigeait 1,0 après l'entrée était fausse, pas la physique : 0,98 mesuré).
+   q.stam est l'API du projet : la politique de banc le lit, le moteur ne décide pas qui
+   sort. Drain calibré : à 90 s de match, gardiens 1,00, champ moyen 0,79, le plus usé 0,71
+   — projection fin de match ~0,4-0,5, bande visée. DEUX leçons de banc : (1) la fatigue
+   par défaut DIVERGE LE FLUX (le cap multiplie top dès la première image → papillon) — les
+   clauses de flux d'anciens lots calibrées graine par graine peuvent mal échantillonner le
+   nouveau monde SANS que le mécanisme soit touché (vérifié : axes tactiques +6,1/+6,4/+8,5
+   sur graines 1/5/7 contre +1,8 sur la graine 3 du banc ; loi12 graine 1 : la faute glisse
+   de 55,2 à 60,13 s) → re-fonder sur graines RE-MESURÉES, jamais élargir les seuils à
+   l'aveugle ; (2) l'écart d'un modulateur se mesure sur le CORPS QUI TRAVAILLE (poste 5,
+   90 s — l'écart stamina 90/10 sur un poste calme à 60 s : 0,03, sous le seuil rêvé).
+   verify-fatigue 8/8, batterie 362 → 370, rondo/réduit bit-près (st.full). Dettes : sigma
+   fatigué, pressing plié, récupération active, HUD d'essence (scène/projet).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

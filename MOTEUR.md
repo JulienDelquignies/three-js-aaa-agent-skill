@@ -369,6 +369,27 @@ limite, l'expulsé, sabotage « porte tournante fermée »). Dettes nommées : l
 comptées (3 + mi-temps), la fatigue (le déclencheur naturel de la politique — le moteur ne
 la modélise pas encore).
 
+### La fatigue — l'endurance, un état du corps à l'échelle du format (lot 31)
+
+`matchCfg` porte `fatigue: { horizon: null, cap: 0.15, pause: 0.25 }` (gardé `st.full`).
+`q.stam ∈ [0;1]` est drainé dans movement par l'effort (au carré + un socle, récup légère
+sous 1,5 m/s) sur l'**horizon du format** — `periodes × duree` du chrono configuré, 360 s à
+défaut : un moteur réutilisable ne code pas « 90 minutes » en dur, l'échelle suit le match
+demandé. **Un seul effet v1, une seule autorité** : la pointe plie (plafond de vitesse
+× 1 − cap·(1 − stam) — p95 des courses mesuré ×0,92 à essence vide). La note `stamina`
+(attributes.js) module le drain ×[1,25 ; 0,75] ; les vestiaires rendent `pause` d'essence ;
+l'entrant de la Loi 3 naît frais (et son trot d'entrée se paie, comme tout effort) ;
+événement `'fatigue'` au franchissement de 0,35, une fois par homme. **`q.stam` est l'API du
+projet** : la politique de banc le lit (`stam < 0,4 → remplacer(...)`) — le moteur ne décide
+toujours pas qui sort. Banc : `verify-fatigue.mjs` (8 clauses — frais au coup d'envoi, le
+drain corrèle au travail (gardiens ≥ 0,9, champ 0,79), la pointe plie, les vestiaires au
+chiffre sur 22 corps, la note module, le pont Loi 3, sabotage « moteur infatigable »).
+Dettes nommées : la précision fatiguée (sigma d'exécution), le pressing plié, la récupération
+active (marcher rend plus que sprinter ne coûte). Leçon de banc consignée : la fatigue par
+défaut DIVERGE le flux (papillon dès la première image) — deux clauses de flux d'anciens lots
+re-fondées sur des graines re-mesurées (le mécanisme des axes était intact : +6,1/+6,4/+8,5
+sur 3 graines).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

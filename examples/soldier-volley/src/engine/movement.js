@@ -48,6 +48,11 @@ export function movePlayers(st, dt, cfg) {
       && d2(p.p, st.ball.p) > ((p._prepShot ?? -1) > st.t ? 0.95 : cfg.carrySurge.at)) {
       top = Math.max(top, cfg.carrySurge.top * (p.skill?.topF ?? p.persona?.paceBias ?? 1));
     }
+    // LA FATIGUE PLIE LA POINTE (cfg.fatigue && st.full, lot 31) — UN effet v1, une autorité :
+    // le plafond de vitesse perd jusqu'à `cap` (15 %) quand l'essence est à zéro. Le drain vit
+    // en fin de pas (après l'intégration), l'attribut stamina le module, la précision fatiguée
+    // est une dette nommée. Clé absente : le rondo et le réduit d'hier, au bit près.
+    if (cfg.fatigue && st.full) top *= 1 - (cfg.fatigue.cap ?? 0.15) * (1 - (p.stam ?? 1));
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
     // passe — accélération ET pointe au ralenti le temps de la morsure (skill.biteSlow). C'est le
     // POURQUOI de la feinte : sans coût pour le défenseur, elle ne serait qu'une pantomime.
@@ -152,6 +157,20 @@ export function movePlayers(st, dt, cfg) {
     p.p[0] = clamp(p.p[0], -st.area[0] / 2 - apron, st.area[0] / 2 + apron);
     p.p[2] = clamp(p.p[2], -st.area[1] / 2 - apron, st.area[1] / 2 + apron);
     p.speed = Math.hypot(p.v[0], p.v[1]);
+    // LE DRAIN DE FATIGUE (cfg.fatigue && st.full, lot 31) : l'effort au carré + un socle,
+    // une récup légère sous 1,5 m/s — le tout À L'ÉCHELLE DU FORMAT (horizon = durée
+    // nominale du match configuré : un moteur réutilisable ne code pas « 90 minutes » en
+    // dur) ; l'endurance NOTÉE module (skill.stamF). L'état q.stam ∈ [0;1] est l'API du
+    // projet — la politique de banc (Loi 3) le lit, le moteur ne décide pas qui sort.
+    if (cfg.fatigue && st.full) {
+      const H = cfg.fatigue.horizon ?? ((cfg.chrono?.periodes ?? 2) * (cfg.chrono?.duree ?? 180));
+      p.stam ??= 1;
+      const eff = Math.min(1, p.speed / 6.5);
+      if (p.speed > 1.5) p.stam -= (2.2 * eff * eff + 0.35) * (dt / H) * (p.skill?.stamF ?? 1);
+      else p.stam += 0.15 * (dt / H);
+      p.stam = Math.max(0, Math.min(1, p.stam));
+      if (p.stam < 0.35 && !p._fatEv) { p._fatEv = 1; st.events.push({ t: +st.t.toFixed(2), type: 'fatigue', by: p.id, stam: +p.stam.toFixed(2) }); }
+    }
     // A SWING OWNS THE BODY. Once he has started it, his facing is locked: he does not re-aim with his
     // drift and he does not keep turning onto a new target. Without this, the gesture gated the strike
     // on the geometry at COMMIT and then let the body rotate for the whole 0.4 s of the windup, so the

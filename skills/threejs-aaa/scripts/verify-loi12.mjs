@@ -153,9 +153,10 @@ const meuteAuPoint = (st, rp, og) => {
   const st = makeMatch({ full: true, seed: 1 });
   const st0 = makeMatch({ full: true, seed: 1 });
   const cfg = CFG(), cfg0 = matchCfg({ shotRange: 20, loi12: false });
-  for (let i = 0; i < 60 * 60; i++) { matchStep(st, 1 / 60, cfg); matchStep(st0, 1 / 60, cfg0); }
+  // fenêtre 70 s (re-fondé lot 31 : la fatigue par défaut a décalé la faute de la graine 1 à t=60,13)
+  for (let i = 0; i < 70 * 60; i++) { matchStep(st, 1 / 60, cfg); matchStep(st0, 1 / 60, cfg0); }
   const n = st.events.filter((e) => e.type === 'faute').length;
-  ok(`la DÉTECTION vit en match (graine 1 × 60 s : ${n} faute(s) ≥ 1 — la fente qui trouve le corps se nomme ; loi12:false : ${st0.events.filter((e) => e.type === 'faute').length} = 0)`,
+  ok(`la DÉTECTION vit en match (graine 1 × 70 s : ${n} faute(s) ≥ 1 — la fente qui trouve le corps se nomme ; loi12:false : ${st0.events.filter((e) => e.type === 'faute').length} = 0)`,
     n >= 1 && st0.events.filter((e) => e.type === 'faute').length === 0);
   const f = feuilleDeMatch(st);
   const parEquipe = [0, 0];
