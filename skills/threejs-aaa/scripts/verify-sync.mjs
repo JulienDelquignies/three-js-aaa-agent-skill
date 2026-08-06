@@ -42,10 +42,13 @@ for (const copy of COPIES.slice(1)) {
 // 1 575 → 1 160 + referee 285 + shooting 158, au bit près). rondo-sim (1 884) est la dette
 // nommée : le cœur prouvé par 40 clauses se découpera avec le même soin, pas à la hache.
 {
-  const PLAFOND = 1250, EXCEPTION = { 'rondo-sim.js': 1950 };
+  // …l'exception rondo-sim (1950) est MORTE au lot 21 : le cœur découpé (1 885 → 1 092 +
+  // skills-sim 518 + strike-sim 313, au bit près) vit sous le plafond commun — plus de
+  // grand-père, une seule loi pour tous les modules.
+  const PLAFOND = 1250;
   const gros = files.map((f) => [f, readFileSync(join(ref, f), 'utf8').split('\n').length])
-    .filter(([f, n]) => n > (EXCEPTION[f] ?? PLAFOND));
-  ok(`aucun module au-delà du plafond de volumétrie (${PLAFOND} lignes ; rondo-sim toléré à 1950, dette nommée)`,
+    .filter(([, n]) => n > PLAFOND);
+  ok(`aucun module au-delà du plafond de volumétrie (${PLAFOND} lignes — sans exception depuis le découpage du cœur)`,
     gros.length === 0, gros.map(([f, n]) => `${f}: ${n}`).join(', '));
 }
 

@@ -5,12 +5,30 @@
 // (skillFollowStep), l'événement de touche (touchEvent) et l'horloge des clips (MOVE_TIMING —
 // lue de l'animation, jamais ré-écrite à la main). AUCUN comportement ne change : la batterie
 // (308 clauses, rondo 40/40 au bit près) est LA preuve.
+import { BALL } from './ball.js';
 import { MOVES } from './animkit.js';
 import { situation, footFor } from './technique.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+
+export const footPoint = (st, p, cfg) => {
+  const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
+  const lat = p.foot === 'left' ? 1 : -1;
+  const m = BALL.radius + 0.02;
+  return [Math.max(-st.area[0] / 2 + m, Math.min(st.area[0] / 2 - m, p.p[0] + fx * cfg.controlSettle + fz * lat * cfg.footSide)),
+          Math.max(-st.area[1] / 2 + m, Math.min(st.area[1] / 2 - m, p.p[2] + fz * cfg.controlSettle - fx * lat * cfg.footSide))];
+};
+
+/** Le POINT DE STANCE : où le geste veut le ballon relativement à CE corps (l'inverse exact
+ *  d'anchorFor — ballon = corps + R(yaw + β·côté)·dist, même convention de signe). */
+export const stanceBallPoint = (p, stance, foot) => {
+  const side = foot === 'left' ? 1 : -1;
+  const a = p.yaw + stance.bearing * side * (Math.PI / 180);
+  return [p.p[0] + Math.cos(a) * stance.dist, p.p[2] + Math.sin(a) * stance.dist];
+};
+
 /** Un refus a une cause nommée (copie locale du registre du loop). */
 const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; };
 

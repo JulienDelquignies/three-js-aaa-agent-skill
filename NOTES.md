@@ -2157,6 +2157,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    clauses vertes. Un projet aval écrit désormais `makeMatch({ tactics: ['gegenpressing',
    'blocBas'] })` et reçoit un football COMPLET — axes, formation, rôles — en un mot.
 
+56. **Le découpage du cœur (lot 21 — rondo-sim, bit-près, l'exception morte).** La dernière
+   grosse volumétrie, traitée à la méthode du lot 16a : rondo-sim 1 885 → 1 092 lignes +
+   skills-sim.js (518 — les gestes techniques : déclencheurs maybe*, contact, accompagnement,
+   touchEvent, pressPredicate, footPoint/stanceBallPoint, MOVE_TIMING l'horloge des clips) +
+   strike-sim.js (313 — la frappe : beginPass le plan/l'ancre/la course/la porte Loi 11, et
+   strikeNow le contact/la re-mène/le bruit/la photo). Sens d'import ACYCLIQUE : rondo-sim →
+   strike-sim → skills-sim ; skillInternals/simInternals préservés (l'API publique ne bouge
+   pas). DEUX extractions, DEUX commits, la batterie entre chaque — rondo 40/40 au bit près
+   les deux fois. Leçons d'extraction consignées : un grep d'appels rate les prédicats partagés
+   (pressPredicate dans maybeFeinte) et les accès par crochets (byId['feinte-passe']) — l'audit
+   d'identifiants libres se fait contre les DÉFINITIONS ET LES IMPORTS du module d'origine.
+   Et la récompense : l'exception de volumétrie de rondo-sim (1 950) est MORTE — le plafond de
+   1 250 lignes s'applique à TOUT le moteur, sans grand-père (verify-sync). 308 clauses vertes.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
