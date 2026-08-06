@@ -37,11 +37,18 @@ export const axe = (t, bas, haut) => {
 /** Les presets — des POINTS de l'espace, nommés par la culture football. */
 export const TACTIQUES = {
   equilibre:     { hauteurBloc: 0.5, largeur: 0.5, pressing: 0.5, style: 0.5, transition: 0.5 },
-  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9 },
-  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15 },
-  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0 },
-  direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7 },
-  largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5 },
+  // …chaque preset PORTE SES RÔLES par défaut (lot 20 — un système est des axes ET des hommes) ;
+  // les rôles explicites du projet aval GAGNENT toujours, poste par poste
+  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9,
+    roles: { 5: 'recuperateur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' } },
+  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15,
+    roles: { 5: 'meneur', 8: 'neufDeSurface' } },
+  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0,
+    roles: { 4: 'recuperateur', 5: 'recuperateur', 8: 'neufDeSurface' } },
+  direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7,
+    roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' } },
+  largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5,
+    roles: { 0: 'piston', 3: 'piston', 7: 'ailierDePercussion', 9: 'ailierDePercussion' } },
 };
 
 /** Résout un nom de preset ou un objet partiel en tactique complète (les axes absents = 0,5). */
@@ -53,6 +60,7 @@ export function resoudreTactique(t) {
     // LA FORMATION est une donnée de la tactique (lot 17 — le catalogue : 433, 442, 352 ;
     // formation.js/LIGNES généralise le calage Loi 11 et les clauses). Inconnue : 433.
     formation: base.formation ?? '433',
+    roles: base.roles ?? null,
     nom: typeof t === 'string' ? t : (base.nom ?? 'personnalisée'),
   };
 }

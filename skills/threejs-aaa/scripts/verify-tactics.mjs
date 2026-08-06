@@ -124,5 +124,16 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     recit(['gegenpressing', 'blocBas']) !== recit(['blocBas', 'gegenpressing']));
 }
 
+// ---------- 7. les presets PORTENT leurs rôles (lot 20) — et l'explicite gagne
+{
+  const st = makeMatch({ full: true, seed: 3, tactics: ['gegenpressing', null] });
+  const p5 = st.players.find((p) => p.team === 0 && p.post === 5);
+  const p8t1 = st.players.find((p) => p.team === 1 && p.post === 8);
+  const st2 = makeMatch({ full: true, seed: 3, tactics: ['gegenpressing', null], roles: [{ 5: 'meneur' }, null] });
+  const p5b = st2.players.find((p) => p.team === 0 && p.post === 5);
+  ok(`un preset amène SES hommes (gegenpressing → poste 5 « ${p5?.role?.nom} » ; équipe au défaut → aucun rôle) — et l'explicite GAGNE (roles:{5:'meneur'} → « ${p5b?.role?.nom} »)`,
+    p5?.role?.nom === 'recuperateur' && p8t1?.role == null && p5b?.role?.nom === 'meneur');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

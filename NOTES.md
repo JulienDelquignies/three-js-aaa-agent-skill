@@ -2148,6 +2148,15 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    (1 884 l.), conversion 21 % → ~12 %, temps additionnel/échange de camps, presets tactiques
    portant leurs rôles par défaut.
 
+55. **Les presets tactiques portent leurs rôles (lot 20).** Un système est des axes ET des
+   hommes : gegenpressing amène son récupérateur, ses ailiers de percussion et son 9 presseur ;
+   possession son meneur ; blocBas ses deux récupérateurs ; largeEtCentres ses pistons. Fusion
+   PRESET < EXPLICITE dans makeMatch (poste par poste — les rôles du projet aval gagnent
+   toujours), équilibre n'amène personne (identité, batterie au bit près). Clause verify-tactics
+   §7 : le preset pose ses hommes, l'équipe au défaut n'en a aucun, l'explicite écrase. 308
+   clauses vertes. Un projet aval écrit désormais `makeMatch({ tactics: ['gegenpressing',
+   'blocBas'] })` et reçoit un football COMPLET — axes, formation, rôles — en un mot.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

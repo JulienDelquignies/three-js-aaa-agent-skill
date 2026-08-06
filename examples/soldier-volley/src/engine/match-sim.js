@@ -219,12 +219,12 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   // {…équipe 1}] }) — clé = numéro de poste, valeur = nom ou objet partiel. APRÈS l'assignation
   // des postes (la première version lisait q.post avant qu'il existe : six sondes bit-identiques,
   // zéro rôle posé — attrapé à la mesure). Aucun rôle posé : polyvalent, pas un bit ne bouge.
-  if (roles) {
-    for (const team of [0, 1]) {
-      const spec = roles[team] ?? {};
-      for (const q of st.players.filter((q) => q.team === team)) {
-        if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]);
-      }
+  // …fusion PRESET < EXPLICITE (lot 20) : la tactique amène ses hommes (gegenpressing → son
+  // récupérateur), les rôles passés à makeMatch gagnent poste par poste. Vide : personne.
+  for (const team of [0, 1]) {
+    const spec = { ...(st.tactics[team].roles ?? {}), ...(roles?.[team] ?? {}) };
+    for (const q of st.players.filter((q) => q.team === team)) {
+      if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]);
     }
   }
   // LES EFFECTIFS NOTÉS (attributes.js — le contrat avec les projets amont) : squads[team][i] =
