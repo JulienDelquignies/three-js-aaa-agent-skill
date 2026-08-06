@@ -191,6 +191,19 @@ basculer les choix serrés de l'arbitre (possession → passe, direct → tir su
 Banc : `verify-tactics.mjs` (8 clauses, sabotage « tactique placebo »). Dettes nommées :
 instruments de flux pressing/style/transition, catalogue 4-4-2/3-5-2 (couche rôles).
 
+### Les rôles par poste (`roles.js` — lot 16b)
+
+Le poste dit OÙ, le rôle dit QUOI, l'attribut dit COMMENT ça réussit — trois couches composées.
+`makeMatch({ roles: [{ 8: 'neufDeSurface', 5: 'meneur' }, {…}] })` — catalogue (polyvalent,
+neufDeSurface, ailierDePercussion, meneur, piston) ou objets partiels ; chaque rôle = biais à
+identité par défaut : profondeur de poste ±2,5 m (le calage Loi 11 garde le dernier mot),
+largeur personnelle ×0,9…1,1, cadence d'appels 14…6 s, poids d'arbitre ±15 % composés avec le
+style d'équipe (un 9 direct dans une équipe possession reste un 9 — nuancé, pas écrasé : dans
+une équipe directe, le rôle ne renverse pas le style, c'est mesuré et c'est le contrat).
+Banc : `verify-roles.mjs` (6 clauses — mécanismes sur fixtures au chiffre près, sabotage
+« rôles placebo »). Dettes nommées : rôles de pressing, formations 4-4-2/3-5-2, presets
+tactiques portant leurs rôles.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

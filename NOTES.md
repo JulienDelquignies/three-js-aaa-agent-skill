@@ -2084,6 +2084,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    toléré 1 950 en dette nommée — le cœur prouvé par 40 clauses se découpera avec le même
    soin, pas à la hache. La volumétrie ne peut plus régresser en silence.
 
+51. **Les rôles par poste (lot 16b — roles.js).** La troisième couche du cadrage utilisateur :
+   le poste dit OÙ (formation), le RÔLE dit QUOI (biais persistants), l'attribut dit COMMENT ça
+   réussit — composées, jamais confondues. Catalogue (polyvalent, neufDeSurface,
+   ailierDePercussion, meneur, piston) — chaque rôle = profondeur de poste ±2,5 m (le calage
+   Loi 11 garde le DERNIER mot), largeur personnelle ×0,9…1,1 (composée avec la largeur
+   d'équipe), cadence d'appel personnelle (cooldown 14…6 s), poids d'arbitre ±15 % (composés
+   avec le style d'équipe ±35 % dans menace.js). makeMatch({ roles: [{ 8: 'neufDeSurface' },…] })
+   — clé = poste, valeur = nom ou objet partiel ; polyvalent = identité (pas un bit). DEUX
+   leçons : (a) mon bloc lisait q.post AVANT son assignation — six sondes bit-identiques, zéro
+   rôle posé, attrapé à la mesure (l'ordre d'initialisation est une loi comme une autre) ;
+   (b) les signatures de flux par joueur sont NOYÉES par l'effet papillon (un rôle re-distribue
+   tout le match) → doctrine lot 8, fixtures : même monde, seul le rôle change — profondeur
+   +2,0/−1,8 m au chiffre, largeur +2,0 m, et l'arbitre départage un monde à P/T = 1,03 (mesuré,
+   la fenêtre (1 ; 1,28) où ±15 % basculent : meneur → passe, 9 → tir). Et le contrat social du
+   rôle est PROUVÉ en creux : dans une équipe directe (±35 %), le rôle ne renverse PAS le style
+   — « un rôle nuance, il n'écrase pas ». Sabotage « rôles placebo » (trio de 9 ≠ trio de
+   meneurs). verify-roles 6 clauses ; 302 clauses vertes ; volumétrie tenue (roles.js 68 l.).
+   Dettes nommées : rôles de PRESSING (qui déclenche/couvre), formations 4-4-2/3-5-2 (lignes),
+   presets tactiques portant leurs rôles par défaut.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

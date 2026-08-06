@@ -139,9 +139,12 @@ export function arbitre(st, c, cfg) {
     tir: axe(T.style, 0.7, 1.3), centre: axe(T.style, 0.8, 1.2),
     passe: axe(T.style, 1.35, 0.65), conduite: axe(T.style, 0.85, 1.15),
   } : null;
+  // …ET LE RÔLE DU JOUEUR compose avec le style d'équipe (roles.js — ±15 % : un 9 direct dans
+  // une équipe possession reste un 9, nuancé, pas écrasé). Aucun rôle : ×1, pas un bit.
+  const rW = c.role?.arbitre;
   let meilleure = 'conduite', sMax = -Infinity;
   for (const k of ['tir', 'centre', 'passe', 'conduite']) {
-    const s = o[k].score * (w[k] ?? 1) * (sW ? sW[k] : 1);
+    const s = o[k].score * (w[k] ?? 1) * (sW ? sW[k] : 1) * (rW?.[k] ?? 1);
     if (s > sMax) { sMax = s; meilleure = k; }
   }
   return { ...o, meilleure, score: +sMax.toFixed(3) };

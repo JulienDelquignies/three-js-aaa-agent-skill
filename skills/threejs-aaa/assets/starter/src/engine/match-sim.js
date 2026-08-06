@@ -24,6 +24,7 @@ import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique } from './tactics.js';
+import { resoudreRole, role } from './roles.js';
 import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
@@ -198,7 +199,7 @@ export const MATCH = {
  * terrain de pitch.js, coup d'envoi à l'équipe 0. L'état EST un état de rondo (mêmes joueurs,
  * même ballon, mêmes personas) : le loop ne voit pas la différence, c'est la config qui la fait.
  */
-export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null, tactics = null } = {}) {
+export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null, tactics = null, roles = null } = {}) {
   // LE 11C11 EST UNE CONFIGURATION (full: true → terrain Loi 1, 10 + gardien par équipe, postes
   // de formation) — même loop, mêmes lois, aucune tuyauterie nouvelle : la preuve du moteur.
   pitch = pitch ?? makePitch(full ? FULL : undefined);
@@ -213,6 +214,18 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
   for (const team of [0, 1]) {
     st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; });
+  }
+  // LES RÔLES PAR POSTE (roles.js) : makeMatch({ roles: [{ 8: 'neufDeSurface', 5: 'meneur' },
+  // {…équipe 1}] }) — clé = numéro de poste, valeur = nom ou objet partiel. APRÈS l'assignation
+  // des postes (la première version lisait q.post avant qu'il existe : six sondes bit-identiques,
+  // zéro rôle posé — attrapé à la mesure). Aucun rôle posé : polyvalent, pas un bit ne bouge.
+  if (roles) {
+    for (const team of [0, 1]) {
+      const spec = roles[team] ?? {};
+      for (const q of st.players.filter((q) => q.team === team)) {
+        if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]);
+      }
+    }
   }
   // LES EFFECTIFS NOTÉS (attributes.js — le contrat avec les projets amont) : squads[team][i] =
   // { ratings, look, name, number } appliqué dans l'ordre des joueurs de l'équipe (le DERNIER est
@@ -741,6 +754,15 @@ function assignMatchJobs(st, cfg) {
         // (×0,85) ou écarter le bloc (×1,15, le jeu d'ailes). 0,5 = ×1, l'identité.
         const lF = axe(tac(st, atk).largeur, 0.85, 1.15);
         if (lF !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * lF));
+        // …ET LE RÔLE NUANCE SON POSTE (roles.js) : la profondeur (le 9 se tient haut, le 10
+        // décroche — ±2,5 m ; le calage Loi 11 garde le DERNIER mot : un 9 haut reste calé sur
+        // la ligne) et la largeur personnelle (craie la ligne ou repique — ×0,9…1,1, composée
+        // avec la largeur d'équipe). Aucun rôle : ±0 / ×1, pas un bit.
+        const R = role(p);
+        const pf = axe(R.profondeur, -2.5, 2.5);
+        if (pf) tx = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, tx + -pitch.ownGoal(atk).sign * pf));
+        const wR = axe(R.largeurR, 0.9, 1.1);
+        if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
         if (off && (p.post ?? 0) >= 7) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE — depuis la PORTÉE DE PASSE, pas depuis l'autre
           // bout du terrain. Première version mesurée : dart visant une ligne à ~16 m du poste,
@@ -763,7 +785,10 @@ function assignMatchJobs(st, cfg) {
               const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
                 defenders.map((q) => q.p), { corridor: 0.9 });
               if (lane.open) {
-                p._runT = st.t + 1.7; p._runZ = deepZ; p._runAdv = dartAdv; p._appelCd = st.t + 10;
+                // …la cadence personnelle est un RÔLE (le 9 vit de ses courses : 6 s ; le
+                // meneur vit du ballon : 14 s ; polyvalent : les 10 s mesurées du lot 10)
+                p._runT = st.t + 1.7; p._runZ = deepZ; p._runAdv = dartAdv;
+                p._appelCd = st.t + axe(role(p).appel, 14, 6);
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
                 // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s) : c'est elle qui porte le
                 // bonus ET l'extension de portée — expirer à mi-course re-fermait l'enveloppe
