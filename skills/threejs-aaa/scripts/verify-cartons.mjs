@@ -46,9 +46,9 @@ const siffle = (st, cfg, par) => {
   const rouges = st.events.filter((e) => e.type === 'carton' && e.couleur === 'rouge');
   ok(`le SECOND jaune vaut ROUGE (4ᵉ faute : jaune cumul ${jaunes[1]?.cumul} PUIS rouge — deux gestes, deux événements)`,
     jaunes.length === 2 && jaunes[1].cumul === 2 && rouges.length === 1 && rouges[0].by === par && rouges[0].t === jaunes[1].t);
-  // …et le corps RESTE (l'expulsion physique est une dette NOMMÉE, pas un demi-flag)
-  ok(`le rouge est MONTRÉ, le corps reste (dette d'expulsion nommée : nº${par} toujours dans st.players, down=${st.players[par].down})`,
-    !!st.players[par] && st.players[par].down <= 0);
+  // …et le rouge EXPULSE (lot 28 — la dette du lot 27 est payée : verify-expulsion juge le corps)
+  ok(`le rouge EXPULSE (nº${par} : expulse=${!!st.players[par].expulse}, événement 'expulsion', sortie posée [${st.players[par]._exit?.map((v) => +v.toFixed(0)).join(', ')}])`,
+    st.players[par].expulse === true && st.events.some((e) => e.type === 'expulsion' && e.by === par) && Array.isArray(st.players[par]._exit));
   const f = feuilleDeMatch(st);
   ok(`la FEUILLE compte la discipline (jaunes ${JSON.stringify(f.cartons.jaunes)} = [0,2], rouges ${JSON.stringify(f.cartons.rouges)} = [0,1])`,
     f.cartons.jaunes[0] === 0 && f.cartons.jaunes[1] === 2 && f.cartons.rouges[0] === 0 && f.cartons.rouges[1] === 1);

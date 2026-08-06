@@ -779,7 +779,9 @@ export class Rondo {
         // clip se GÈLE sur la pose couchée (clé « au sol ») au lieu de dérouler le relevé — le
         // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
         // les comptait encore à terre. Le relevé se joue quand la sim relève.
-        const lying = (pl.sim.down ?? 0) > 0 && /tacle/i.test(pl.gestureLayer.spec?.name ?? '');
+        // …et l'EXPULSÉ n'est PAS couché : son down géant est un drapeau d'inexistence pour les
+        // cerveaux (Loi 12) — le corps, lui, MARCHE vers sa sortie et se rend normalement
+        const lying = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse && /tacle/i.test(pl.gestureLayer.spec?.name ?? '');
         // le gel est un VRAI gel : l'horloge locale s'arrête avec le corps (t0 avance d'autant).
         // La première version laissait t courir pendant down — au relevé, t sautait PAR-DESSUS le
         // segment de relevé authoré (clé 0,95) et le fondu partait de la pose couchée : l'arc
@@ -895,7 +897,7 @@ export class Rondo {
         // un corps COUCHÉ (tacle, down > 0) n'a pas de pied d'appui : verrouiller un pied de la
         // pose couchée étirait la jambe SOUS terre en tenant son XZ pendant que le bassin
         // descendait (orteil mesuré à −0,38 m — le pire du dépôt, créé par le verrou lui-même)
-        const lying2 = (pl.sim.down ?? 0) > 0;
+        const lying2 = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse;   // l'expulsé marche (Loi 12)
         if (!pl.ctrl.airborne && pl.ctrl.footLock) pl.ctrl.footLock.solve(step, [!lying2 && striking !== 0, !lying2 && striking !== 1], s.yaw, pl.ctrl.groundSpeed ?? 0);
       }
       // l'autorité de la jambe frappeuse — après le verrou, en dernier

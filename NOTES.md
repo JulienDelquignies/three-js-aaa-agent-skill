@@ -2274,6 +2274,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    physique (le chantier à 10), le différé du carton-sur-avantage (montré au prochain arrêt),
    la touche jouée À LA MAIN (Loi 15 — aujourd'hui au pied, à l'échelle du format réduit).
 
+63. **L'expulsion physique (lot 28 — le rouge sort un corps, pas une étiquette).** Le chantier
+   « jouer à 10 » tenait en une question : comment faire OUBLIER un corps à ~30 cerveaux sans
+   toucher 30 filtres ? Par le levier NATIF : q.expulse + down GÉANT (9e9) — tous les filtres
+   down<=0 du moteur (mates de choosePass, press, hunter, preneurs de remise, mur, appels,
+   menace, shooting…) l'excluent d'office, zéro site touché, une autorité. Quatre sites le
+   sautent NOMMÉMENT parce qu'ils ne filtrent pas down : la boucle de jobs (court-circuit
+   premier — remises ET jeu ouvert : il marche vers sa sortie q._exit, la touche la plus
+   proche +2,5 m, et y RESTE) ; la Loi 11 (offsideLine ignorait le down par la loi réelle —
+   « tomber ne remet personne en jeu » — mais l'expulsé N'EST PLUS SUR LE TERRAIN : sans le
+   filtre, un rouge posté derrière sa ligne de touche ferait la ligne, fantôme de Loi 11) ;
+   placeKickoff/kickoffSpots (les vestiaires écrivent les corps ET remettaient down=0 — ils
+   l'auraient ressuscité ET téléporté sur le terrain) ; et movement + la scène (l'expulsé
+   n'est pas un corps au sol : il MARCHE — sans les deux gardes !expulse, il serait rendu
+   couché à jamais par les tests lying). verify-expulsion 8/8 : le corps sort (|z| 36 > 34)
+   et se tient à sa sortie (0,00 m de dérive en 4 s), l'équipe joue à 10 (9 + gants), le
+   monde continue (passes à 10), il est HORS DU MONDE (aucune passe de/vers lui), la ligne
+   de hors-jeu = l'avant-dernier VIVANT (39,4 pas 52), les vestiaires ne le ramènent pas,
+   arbitre sans poches. La clause « le corps reste » de verify-cartons (qui CLAUSAIT la
+   dette) retournée en « le rouge expulse ». Batterie 339 → 347, rondo/réduit bit-près
+   (expulse n'existe que sous loi12, jamais posé sans rouge). Dettes nommées : gardien
+   expulsé (pas de remplaçant aux gants — le poste reste vide), formation à 10 non
+   recomposée (les 9 tiennent leurs postes ; un resserrement de bloc à 10 est de la
+   tactique, pas de la loi).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

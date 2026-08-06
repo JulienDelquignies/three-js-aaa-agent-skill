@@ -18,7 +18,8 @@ export function placeKickoff(st, kickTeam) {
   const { pitch } = st;
   for (const team of [0, 1]) {
     const sign = pitch.ownGoal(team).sign;                        // le côté DÉFENDU
-    const field = st.players.filter((p) => p.team === team && !p.keeper);
+    // …et l'EXPULSÉ ne revient pas des vestiaires : l'écriture des corps le saute (Loi 12)
+    const field = st.players.filter((p) => p.team === team && !p.keeper && !p.expulse);
     field.forEach((p, i) => {
       const rows = [[0.28, 0], [0.42, -0.28], [0.42, 0.28], [0.62, -0.14], [0.62, 0.14], [0.75, 0]];
       const [fx, fz] = rows[i % rows.length];
@@ -30,7 +31,7 @@ export function placeKickoff(st, kickTeam) {
     });
     const gk = st.players.find((p) => p.team === team && p.keeper);
     const g = pitch.ownGoal(team);
-    gk.p = [g.x - g.sign * 0.8, 0, 0]; gk.v = [0, 0]; gk.act = null; gk.down = 0;
+    if (gk && !gk.expulse) { gk.p = [g.x - g.sign * 0.8, 0, 0]; gk.v = [0, 0]; gk.act = null; gk.down = 0; }
   }
 }
 
@@ -45,7 +46,7 @@ export function kickoffSpots(st, kickTeam, takerId = -1) {
     const sign = pitch.ownGoal(team).sign;
     const rows = [[0.28, 0], [0.42, -0.28], [0.42, 0.28], [0.62, -0.14], [0.62, 0.14], [0.75, 0]];
     let i = 0;
-    for (const p of st.players.filter((q) => q.team === team)) {
+    for (const p of st.players.filter((q) => q.team === team && !q.expulse)) {
       if (p.keeper) { const g = pitch.ownGoal(team); spots[p.id] = [g.x - g.sign * 0.8, 0]; continue; }
       if (team === kickTeam && p.id === takerId) { spots[p.id] = [sign * 1.2, 0.4]; continue; }
       const [fx, fz] = rows[i++ % rows.length];
@@ -213,7 +214,23 @@ export function adjugeFaute(st, cfg) {
     if (fautif._fautes % seuil === 0) {
       fautif._jaunes = (fautif._jaunes ?? 0) + 1;
       st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes });
-      if (fautif._jaunes === 2) st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par });
+      if (fautif._jaunes === 2) {
+        st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par });
+        // L'EXPULSION PHYSIQUE (lot 28) : le rouge SORT le corps. Il marche vers la ligne la
+        // plus proche et y RESTE — et il CESSE D'EXISTER pour les cerveaux par le levier natif :
+        // down géant (les ~30 filtres down<=0 du moteur le couvrent sans être touchés — une
+        // autorité, zéro seconde vérité) ; movement le laisse MARCHER (l'expulsé n'est pas un
+        // corps au sol), la Loi 11, placeKickoff/kickoffSpots et la boucle de jobs le sautent
+        // NOMMÉMENT. L'équipe joue à 10. Gardien expulsé : dette nommée (pas de remplaçant aux
+        // gants — le poste reste vide).
+        fautif.expulse = true;
+        fautif.down = 9e9;
+        fautif._exit = [Math.max(-st.pitch.hx + 2, Math.min(st.pitch.hx - 2, fautif.p[0])),
+          (fautif.p[2] >= 0 ? 1 : -1) * (st.pitch.hz + 2.5)];
+        fautif.job = 'walk'; fautif.target = [fautif._exit[0], 0, fautif._exit[1]];
+        fautif.act = null; fautif.intent = null;
+        st.events.push({ t: +st.t.toFixed(2), type: 'expulsion', by: F.par });
+      }
     }
   }
   if (fen > 0 && fin && !perdu && holder === F.team && st.possession.carrier >= 0) {

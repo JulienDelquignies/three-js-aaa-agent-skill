@@ -299,12 +299,19 @@ second jaune vaut ROUGE — deux événements `'carton'` (les deux gestes de l'a
 carton SURVIT à l'avantage. La feuille compte `cartons: { jaunes, rouges }` par équipe, le
 ticker les montre dans les couleurs de l'objet. Banc : `verify-cartons.mjs` (6 clauses —
 récidive, second-jaune-rouge, survie à l'avantage, feuille, sabotage « arbitre sans poches »
-`jaune:0`). Dettes nommées : l'EXPULSION physique du rouge (formation à 10, ligne de
-hors-jeu, cerveaux d'équipe — un chantier propre ; aujourd'hui le rouge est montré, le corps
-reste, et le banc le clause comme tel), fautes hors tacle (charge, obstruction, main), DOGSO,
-et le FLUX mince du 11c11 (~1 duel tenté / 9 min — le jeu vit d'interceptions ; enrichir les
-sources de duels est une dette de qualité football, pas de loi). La cérémonie stricte du
-penalty, dette du lot, est payée au lot 26 (Loi 14, ci-dessous).
+`jaune:0`). L'EXPULSION PHYSIQUE (lot 28) : le rouge SORT le corps. Le levier est natif —
+`q.expulse` + un down GÉANT : les ~30 filtres `down <= 0` du moteur (passes, press, preneurs,
+mur, appels…) oublient l'expulsé sans être touchés ; movement le laisse MARCHER vers sa
+sortie (il n'est pas un corps au sol) ; quatre sites le sautent NOMMÉMENT — la boucle de jobs
+(`field`, remises comprises), la Loi 11 (`offsideLine` : un rouge posté hors terrain ne fait
+pas la ligne), `placeKickoff`/`kickoffSpots` (les vestiaires ne le ramènent pas), et la scène
+(il marche, il n'est pas couché). L'équipe joue à 10 et le monde continue. Banc :
+`verify-expulsion.mjs` (8 clauses — le corps sort et reste, à 10, hors du monde, Loi 11,
+vestiaires, sabotage « arbitre sans poches »). Dettes nommées : gardien expulsé (pas de
+remplaçant aux gants), fautes hors tacle (charge, obstruction, main), DOGSO, et le FLUX mince
+du 11c11 (~1 duel tenté / 9 min — enrichir les sources de duels est une dette de qualité
+football, pas de loi). La cérémonie stricte du penalty, dette du lot, est payée au lot 26
+(Loi 14, ci-dessous).
 
 ### La Loi 14 — la cérémonie du penalty (lot 26)
 

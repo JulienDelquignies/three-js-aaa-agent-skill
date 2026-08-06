@@ -16,13 +16,15 @@
 /**
  * La ligne de hors-jeu de l'équipe QUI ATTAQUE `team`, dans l'espace d'attaque (adv = mètres
  * vers le but adverse depuis la médiane ; sgn ramène au monde : x_monde = adv · sgn).
- * Un défenseur au sol COMPTE (loi réelle — tomber ne remet personne en jeu).
+ * Un défenseur au sol COMPTE (loi réelle — tomber ne remet personne en jeu). Un défenseur
+ * EXPULSÉ ne compte PAS (loi réelle aussi — il n'est plus sur le terrain : un rouge posté
+ * derrière sa ligne de touche qui ferait la ligne serait un fantôme de Loi 11).
  */
 export function offsideLine(st, team) {
   const sgn = -st.pitch.ownGoal(team).sign;
   let last = -Infinity, second = -Infinity;
   for (const q of st.players) {
-    if (q.team === team) continue;
+    if (q.team === team || q.expulse) continue;
     const v = q.p[0] * sgn;
     if (v > last) { second = last; last = v; }
     else if (v > second) second = v;

@@ -209,6 +209,8 @@ function assignMatchJobs(st, cfg) {
       p.target = p.p[0] * sgn > sLim ? [sLim * sgn, 0, p.p[2]] : [p.p[0], 0, p.p[2]];
     };
     for (const p of st.players) {
+      // l'EXPULSÉ est hors du monde, remises comprises (Loi 12, lot 28) : il rejoint sa sortie
+      if (p.expulse) { p.job = 'walk'; p.target = [p._exit[0], 0, p._exit[1]]; continue; }
       // APRÈS UN BUT, ON REVIENT EN MARCHANT : les deux équipes rejoignent leur formation
       // d'engagement pendant que le preneur sort le ballon du filet (placeKickoff écrivait les
       // douze corps — jusqu'à 20 m en une image, mesuré à la sonde des téléports)
@@ -277,8 +279,13 @@ function assignMatchJobs(st, cfg) {
     return;
   }
 
+  // ---- l'EXPULSÉ (Loi 12, lot 28) : hors du monde — il marche vers sa sortie et y reste ;
+  // aucun cerveau d'équipe ne le voit (field et gardiens filtrent, la Loi 11 l'ignore,
+  // les preneurs/mur le sautent par leurs filtres down<=0 — le levier natif du down géant)
+  for (const p of st.players) if (p.expulse) { p.job = 'walk'; p.target = [p._exit[0], 0, p._exit[1]]; }
+
   // ---- les gardiens (toujours, toutes phases)
-  for (const gk of st.players.filter((p) => p.keeper)) {
+  for (const gk of st.players.filter((p) => p.keeper && !p.expulse)) {
     gk.job = 'keeper';
     // LE GARDIEN PORTEUR EST UN DISTRIBUTEUR, PAS UN POSTE. Sa loi de position l'a fait marcher
     // vers sa ligne EN PORTANT le ballon — CSC mesuré (graine 3, t=73,95 : « arrêt » puis « but »
@@ -415,7 +422,7 @@ function assignMatchJobs(st, cfg) {
     gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
   }
 
-  const field = st.players.filter((p) => !p.keeper);
+  const field = st.players.filter((p) => !p.keeper && !p.expulse);   // à 10 après un rouge (Loi 12)
   const attackers = field.filter((p) => p.team === atk);
   const defenders = field.filter((p) => p.team !== atk);
   // LE RECEVEUR ATTAQUE SA PASSE. Le trou fondateur du 21 % de passes reçues : pendant le vol,
