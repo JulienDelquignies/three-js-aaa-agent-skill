@@ -2185,6 +2185,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    garde moteur, à couvrir d'une garde propre), et pass-brain (choosePass/supportSpot/evadeSpot,
    ~220 l. dans rondo.js à 594 — sous le besoin : on ne découpe pas pour découper).
 
+58. **Le découpage, dernier étage (lot 23 — animkit-data + la garde des scènes).** Les clips
+   authorés sont des DONNÉES : animkit-data.js (721 l. — les 31 specs de gestes avec leurs
+   horloges, plus repeatSegment qui vit AVEC les données qu'il fabrique) ; animkit.js → 228 l.
+   (les os, les contrats checkClip/checkStrike, les outils de résolution), ré-exports en place,
+   sens d'import unique animkit → animkit-data. UNE leçon d'outillage payée cash : la première
+   extraction au REGEX gourmand a mangé resolveTracks au passage (attrapé par verify-gestes ET
+   rollup) — restauration git, re-découpe PAR LIGNES (les frontières de définitions se comptent,
+   elles ne se devinent pas au motif). Et la dette du lot 22 payée : LES SCÈNES ENTRENT SOUS LA
+   GARDE (verify-sync 9ᵉ clause, plafond 1 250 — Carriere 1 074 et Rondo 952 mesurées sous la
+   barre). État final de la volumétrie : AUCUN fichier du produit (moteur + scènes) au-dessus de
+   1 250 lignes, tout gardé au banc, zéro exception. Batterie 308 clauses au bit près + build.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

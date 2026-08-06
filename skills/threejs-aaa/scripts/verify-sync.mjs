@@ -52,5 +52,16 @@ for (const copy of COPIES.slice(1)) {
     gros.length === 0, gros.map(([f, n]) => `${f}: ${n}`).join(', '));
 }
 
+// ---- …ET LES SCÈNES VIVENT SOUS LA MÊME LOI (lot 23) : elles étaient hors garde — la
+// dette nommée du lot 22. Même plafond : une scène est aussi un produit qu'un projet aval lit.
+{
+  const scenes = new URL('../../../examples/showcase/src/scenes/', import.meta.url).pathname;
+  const gros = readdirSync(scenes).filter((f) => f.endsWith('.js'))
+    .map((f) => [f, readFileSync(join(scenes, f), 'utf8').split('\n').length])
+    .filter(([, n]) => n > 1250);
+  ok(`aucune SCÈNE au-delà du plafond (1250 lignes — Carriere 1074 et Rondo 952 mesurées sous la barre)`,
+    gros.length === 0, gros.map(([f, n]) => `${f}: ${n}`).join(', '));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
