@@ -1969,6 +1969,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    rondo 40/40 bit près, match 76/0, gestes 52, dribble 17, attributs 13, membres 16, gants 9,
    sync 7/7, build ✓.
 
+46. **L'arbitre de menace on-ball — le cerveau devient un contrat (lot 12).** La demande de
+   fond (« un moteur comme Unity/Unreal, réutilisable sur différents projets ») appliquée au
+   cerveau du porteur : QUATRE options (tir/centre/passe/conduite) notées sur UNE échelle
+   (menace.js, pur, chaque note porte son pourquoi), un gagnant, et le contrat d'injection —
+   cfg.decide remplace la POLITIQUE entière pendant que le moteur garde l'EXÉCUTION (les portes
+   nommées de tryShot, les couloirs de choosePass : l'arbitre propose, la loi dispose). Pas de
+   seconde vérité : menaceTir note avec laneClearance et les seuils de tryShot, menacePasse
+   note L'ÉLU du vrai choosePass (progression + liberté), menaceConduite mesure l'espace réel
+   du cône (±35°, 9 m), menaceCentre les portes de tryCross. Consommation chirurgicale :
+   l'ordre figé tir-puis-centre de la boucle porteur devient un choix (gardé cfg.menace &&
+   st.full — rondo ET réduit à l'ancien ordre, au bit près : 40/40 + 76/0), mémoïsé 0,25 s,
+   événement 'arbitre' au changement d'avis (dernier tiers) pour la lisibilité. MESURÉ
+   avant/après (4 graines × 180 s) : les refus « angle-fermé » s'effondrent de 18-171 par
+   match à ZÉRO partout (l'ailier du couloir ne canonne plus dans un mur — il sert la surface
+   ou il porte), prépare-frappe en baisse (~30-17), tirs STABLES (12→12 au total), les quatre
+   options gagnent chacune quelque part en flux (seed 4 : 6 tir / 10 conduite / 13 passe / 2
+   centre). Une leçon de fixture : mon premier « mur » était devant le but mais HORS de la
+   géométrie des couloirs de coin (0,71 m de marge restante — le tir gagnait quand même, et le
+   sabotage passait pour la mauvaise raison) → le mur du banc vit SUR les couloirs (z ±1,6 à
+   mi-distance), et le sabotage exige désormais « couloir-serré » (choisir un MAUVAIS tir, c'est
+   ça, la maladie du cerveau d'un seul geste). verify-menace.mjs : 11 clauses (quatre gagnants
+   en fixtures, pureté, sabotage nommé, injection prouvée par CONTRASTE — un decide aval qui
+   force la conduite éteint la machinerie de tir devant un but ouvert, 90 images). Buts
+   toujours 0 en 180 s (dette conversion nommée, inchangée — l'arbitre choisit MIEUX, il ne
+   règle pas la finition). Suites : rondo 40/40, match 76/0, match11 27/0, menace 11/0, gestes
+   52, dribble 17, attributs 13, membres 16, gants 9, sync 7/7, build ✓.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

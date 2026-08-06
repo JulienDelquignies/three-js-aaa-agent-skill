@@ -71,6 +71,16 @@ export const MATCH = {
                           // soutien le plus dangereux (le corps dans la ligne de passe pendant
                           // l'approche — l'option profonde meurt sans un geste) ; à portée de duel
                           // l'ombre cède au tacle. false : le press en ligne droite (sabotage nommé).
+  menace: { tir: 1, centre: 1, passe: 1, conduite: 1 },
+                          // L'ARBITRE DE MENACE (11c11 seulement — st.full le garde) : les quatre
+                          // options du porteur (tir/centre/passe/conduite) notées sur UNE échelle
+                          // (menace.js), l'ordre figé devient un choix, chaque note porte son
+                          // pourquoi. Les poids sont des multiplicateurs (le réglage d'équipe de
+                          // demain : une équipe joueuse monte passe, une directe monte tir). LE
+                          // CONTRAT EST INJECTABLE : cfg.decide = (st, c, cfg) => ({ meilleure,
+                          // … }) remplace la politique entière — le moteur garde l'exécution.
+                          // false : l'ordre figé d'hier (sabotage nommé « cerveau d'un geste »
+                          // via poids : { tir: 1, centre: 0, passe: 0, conduite: 0 }).
   releaseTtl: 0.5,        // s — la garde anti-auto-interception (releaseClear : le ballon doit
                           // QUITTER son origine avant tout droit de prise) a une HORLOGE : passé
                           // ce délai le ballon est à prendre où qu'il soit — une passe morte à

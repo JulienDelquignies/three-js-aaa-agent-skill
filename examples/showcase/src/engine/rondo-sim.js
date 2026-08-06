@@ -9,6 +9,7 @@ import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 import { offsideLine, isOffside } from './offside.js';
+import { arbitre } from './menace.js';
 
 // rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
 // "passe à dix" is won or lost happens here: when the carrier releases, whether the pass beats the
@@ -1551,15 +1552,34 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // (14 073 refus). Contesté ⇒ l'intention meurt et la CONDUITE reprend : les touches
       // d'évasion emmènent le ballon hors de l'emprise — ce qu'un vrai porteur fait d'un ballon
       // disputé.
+      // L'ARBITRE DE MENACE (cfg.menace, 11c11 — menace.js) : l'ordre figé tir-puis-centre
+      // devient un CHOIX sur une échelle unique, et le contrat est INJECTABLE — cfg.decide
+      // remplace la politique entière (un projet aval amène son cerveau, le moteur garde
+      // l'exécution et ses portes nommées). Mémoïsé 0,25 s : un arbitrage est une lecture du
+      // monde, pas un tremblement à 60 Hz. Clé absente (rondo, réduit) : l'ancien ordre, au bit
+      // près. L'événement 'arbitre' (au changement d'avis, dernier tiers) rend le choix LISIBLE.
+      let arb = null;
+      if (cfg.menace && st.full && !contested && (cfg.tryShot || cfg.tryCross)) {
+        if (!c._arb || st.t - c._arb.t > 0.25) c._arb = { t: st.t, r: (cfg.decide ?? arbitre)(st, c, cfg) };
+        arb = c._arb.r;
+        if (arb && arb.meilleure !== c._arbPrev) {
+          c._arbPrev = arb.meilleure;
+          const goal = st.pitch?.attackGoal?.(c.team);
+          if (goal && Math.abs(goal.x - c.p[0]) < st.pitch.hx * 0.67) {
+            st.events.push({ t: +st.t.toFixed(2), type: 'arbitre', by: c.id, choix: arb.meilleure,
+              tir: arb.tir?.score, centre: arb.centre?.score, passe: arb.passe?.score, conduite: arb.conduite?.score });
+          }
+        }
+      }
       // LE TIR — le geste du match (cfg.tryShot, match-sim) : évalué AVANT l'intention de
       // passe, parce qu'une occasion de but domine une ligne de passe. Le rondo n'a pas de but :
-      // le hook n'y existe pas, et ce bloc est un no-op.
-      if (!contested && cfg.tryShot && cfg.tryShot(st, c, cfg)) return st;
+      // le hook n'y existe pas, et ce bloc est un no-op. Sous arbitre : seulement s'il GAGNE.
+      if (!contested && cfg.tryShot && (!arb || arb.meilleure === 'tir') && cfg.tryShot(st, c, cfg)) return st;
       // ON TIRE SI ON PEUT ; ON FEINTE LA FRAPPE SI UN CONTREUR FERME (le refus du tir vient
       // d'être nommé — la feinte achète l'angle qui manquait, le contreur s'assoit)
       if (!contested && maybeFeinteFrappe(st, c, cfg, contested)) return st;
       // LE CENTRE (cfg.tryCross, match) : l'aile qui ne peut pas tirer SERT la surface
-      if (!contested && cfg.tryCross && cfg.tryCross(st, c, cfg)) return st;
+      if (!contested && cfg.tryCross && (!arb || arb.meilleure === 'centre') && cfg.tryCross(st, c, cfg)) return st;
       // …et le DÉGAGEMENT se décide ICI aussi (pas seulement au duel installé : mesuré, la branche
       // contestée ne tournait que 17 fois en 120 s — l'équipe épinglée perdait le ballon par tacle
       // AVANT d'y entrer ; ses propres portes lisent l'étau)

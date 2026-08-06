@@ -165,6 +165,41 @@ anti-auto-interception a une horloge : une protection pensée pour l'instant du 
 verrouille pas l'éternité). Le gel est ressuscité en sabotage nommé au banc. Sabotages : « press
 sourd », « press en ligne droite », « gel ».
 
+### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
+
+Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut
+remplacer la POLITIQUE.** Avant, le porteur vivait un ordre figé (tir, puis centre, puis passe,
+sinon conduite — trois heuristiques qui s'ignoraient) ; depuis le lot 12, les quatre options
+sont notées sur UNE échelle de menace (`arbitre(st, c, cfg)` → `{ tir, centre, passe,
+conduite, meilleure }`, chaque note portant son `pourquoi`) et l'ordre devient un choix.
+PAS DE SECONDE VÉRITÉ : chaque note se calcule avec les MÊMES primitives que son exécuteur
+(`laneClearance`, le vrai `choosePass`, les seuils de position de `tryShot`/`tryCross`) — et
+les exécuteurs GARDENT leurs portes nommées : l'arbitre propose, la loi dispose.
+
+**L'injection** (la réutilisabilité demandée) — un projet aval remplace la politique entière
+sans toucher une ligne du moteur :
+
+```js
+const cfg = matchCfg({
+  decide: (st, c, cfg) => {
+    // votre cerveau (arbre de comportement, ML, script de match…) — le moteur exécute
+    return maCoachIA.choisir(st, c) ?? { meilleure: 'conduite' };
+  },
+});
+```
+
+Le contrat de retour : `{ meilleure: 'tir'|'centre'|'passe'|'conduite' }` (les notes sont
+optionnelles — l'événement `arbitre` les logge si présentes). Les poids `cfg.menace`
+(`{ tir, centre, passe, conduite }`, multiplicateurs) sont le réglage d'équipe léger — une
+équipe directe monte `tir`, une joueuse monte `passe` — sans écrire de décideur. Gardé
+`cfg.menace && st.full` : le réduit et le rondo vivent l'ancien ordre au bit près. Mémoïsé
+0,25 s (un arbitrage est une lecture du monde, pas un tremblement à 60 Hz). Mesuré : les refus
+« angle-fermé » passent de 18-171 par match à ZÉRO (l'ailier ne canonne plus dans un mur — il
+sert ou il porte), prépare-frappe −30 %, tirs stables, les quatre options gagnent chacune en
+flux. Banc : `verify-menace.mjs` (11 clauses — quatre fixtures de gagnant, pureté, sabotage
+« cerveau d'un seul geste », contrat d'injection prouvé par contraste : un `decide` aval qui
+force la conduite ÉTEINT la machinerie de tir devant le but ouvert).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le
