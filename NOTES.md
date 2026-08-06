@@ -2171,6 +2171,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    Et la récompense : l'exception de volumétrie de rondo-sim (1 950) est MORTE — le plafond de
    1 250 lignes s'applique à TOUT le moteur, sans grand-père (verify-sync). 308 clauses vertes.
 
+57. **Le découpage, suite et fin de session (lot 22 — mouvement + configs-données).** Trois
+   extractions bit-près de plus, batterie entre chaque : movement.js (206 l. — movePlayers/
+   separatePlayers : le cerveau décide, le mouvement PORTE ; rondo.js 975 → 776) ; puis LE
+   PATRON UNITY « settings ≠ systems » : rondo-config.js (188 l. — RONDO, chaque nombre une loi
+   commentée) et match-config.js (163 l. — MATCH, chaque clé son sabotage nommé), les systèmes
+   restant dans rondo/match-sim avec ré-exports (aucun consommateur ne change ; le cfg = RONDO
+   par défaut de choosePass lit désormais la config sans cycle possible). Tailles finales du
+   moteur : match-sim 1 035, rondo-sim 1 092, rondo 594, animkit 942 — TOUT sous le plafond
+   commun de 1 250, sans exception. Une leçon de banc consignée : verify-rondo « vert » AVANT
+   sync validait l'ANCIEN monde (le banc lit la copie starter) — la batterie ne prouve qu'APRÈS
+   sync. Dettes de volumétrie restantes nommées : les SCÈNES (Carriere 1 074, Rondo 952 — hors
+   garde moteur, à couvrir d'une garde propre), et pass-brain (choosePass/supportSpot/evadeSpot,
+   ~220 l. dans rondo.js à 594 — sous le besoin : on ne découpe pas pour découper).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
