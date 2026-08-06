@@ -350,6 +350,25 @@ Mesure de flux consignée : 0 sortie latérale en 3 × 180 s (le jeu vit central
 par fixtures. Dettes nommées : le geste des deux mains (clip d'animation), le double-toucher
 du lanceur, la touche foireuse (foul throw).
 
+### La Loi 3 — les remplacements (lot 30)
+
+`matchCfg` porte `loi3: { changements: 5 }` (gardé `st.full`). LA LOI EST LE MÉCANISME, LA
+POLITIQUE EST AU PROJET : le moteur ne décide jamais QUI sort — un manager, une UI, une IA
+de banc appellent **`referee.remplacer(st, cfg, team, outId, inSpec)`** (comme Unity ne
+substitue pas à votre place). La file s'exécute À L'ARRÊT DE JEU (on ne change pas pendant
+que le ballon roule) : le sortant marche vers la touche par le levier de l'expulsion (down
+géant — les cerveaux l'oublient), à la ligne **l'identité change** (`inSpec` au format des
+squads : `{ ratings, name, number, look, role }` → `makeProfile`/`resoudreRole` — l'ardoise
+disciplinaire PART AVEC L'HOMME : le carton appartient à l'homme, pas au maillot), et le
+corps revient prendre ses postes. Limite `changements`, expulsé irremplaçable (l'équipe
+reste à 10), feuille `remplacements: [n0, n1]`, événement `'remplacement'` à la minute.
+Banc : `verify-loi3.mjs` (9 clauses — la file pendant le jeu, l'exécution à l'arrêt,
+l'identité, le retour, l'ardoise vierge — jaune → sub → 2 fautes → JAUNE pas rouge —, la
+limite, l'expulsé, sabotage « porte tournante fermée »). Dettes nommées : le banc INCARNÉ
+(des corps assis qui s'échauffent — aujourd'hui l'entrant naît à la ligne), les fenêtres
+comptées (3 + mi-temps), la fatigue (le déclencheur naturel de la politique — le moteur ne
+la modélise pas encore).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

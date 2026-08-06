@@ -63,6 +63,15 @@ export const MATCH = {
                           // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
+  loi3: { changements: 5 },
+                          // LA LOI 3 (11c11, st.full) : les REMPLACEMENTS. La LOI est le
+                          // mécanisme (limite de changements, exécution à l'ARRÊT DE JEU,
+                          // l'identité qui change à la ligne, l'ardoise disciplinaire qui
+                          // part avec l'homme) ; la POLITIQUE (qui sort, quand) est au
+                          // PROJET : referee.remplacer(st, cfg, team, outId, inSpec) — un
+                          // manager, une UI, une IA de banc. false : la porte tournante
+                          // fermée (sabotage nommé — remplacer() refuse tout). Dettes :
+                          // le banc incarné, les fenêtres comptées (3 + mi-temps).
   loi15: { range: 18 },   // LA LOI 15 (11c11, st.full) : la rentrée de TOUCHE se lance À LA
                           // MAIN — à la prise (hook onTake), le lanceur sert un coéquipier à
                           // portée de bras (range m) et le ballon part EN CLOCHE (~32°,

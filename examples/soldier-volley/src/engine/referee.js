@@ -8,6 +8,8 @@ import { BALL } from './ball.js';
 import { outRule } from './pitch.js';
 import { winding } from './gesture.js';
 import { keeperSpot } from './keeper.js';
+import { makeProfile } from './attributes.js';
+import { resoudreRole } from './roles.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -18,8 +20,9 @@ export function placeKickoff(st, kickTeam) {
   const { pitch } = st;
   for (const team of [0, 1]) {
     const sign = pitch.ownGoal(team).sign;                        // le côté DÉFENDU
-    // …et l'EXPULSÉ ne revient pas des vestiaires : l'écriture des corps le saute (Loi 12)
-    const field = st.players.filter((p) => p.team === team && !p.keeper && !p.expulse);
+    // …et l'EXPULSÉ ne revient pas des vestiaires (Loi 12), le REMPLACÉ en chemin non plus
+    // (Loi 3) : l'écriture des corps les saute
+    const field = st.players.filter((p) => p.team === team && !p.keeper && !p.expulse && !p._sub);
     field.forEach((p, i) => {
       const rows = [[0.28, 0], [0.42, -0.28], [0.42, 0.28], [0.62, -0.14], [0.62, 0.14], [0.75, 0]];
       const [fx, fz] = rows[i % rows.length];
@@ -31,7 +34,7 @@ export function placeKickoff(st, kickTeam) {
     });
     const gk = st.players.find((p) => p.team === team && p.keeper);
     const g = pitch.ownGoal(team);
-    if (gk && !gk.expulse) { gk.p = [g.x - g.sign * 0.8, 0, 0]; gk.v = [0, 0]; gk.act = null; gk.down = 0; }
+    if (gk && !gk.expulse && !gk._sub) { gk.p = [g.x - g.sign * 0.8, 0, 0]; gk.v = [0, 0]; gk.act = null; gk.down = 0; }
   }
 }
 
@@ -46,7 +49,7 @@ export function kickoffSpots(st, kickTeam, takerId = -1) {
     const sign = pitch.ownGoal(team).sign;
     const rows = [[0.28, 0], [0.42, -0.28], [0.42, 0.28], [0.62, -0.14], [0.62, 0.14], [0.75, 0]];
     let i = 0;
-    for (const p of st.players.filter((q) => q.team === team && !q.expulse)) {
+    for (const p of st.players.filter((q) => q.team === team && !q.expulse && !q._sub)) {
       if (p.keeper) { const g = pitch.ownGoal(team); spots[p.id] = [g.x - g.sign * 0.8, 0]; continue; }
       if (team === kickTeam && p.id === takerId) { spots[p.id] = [sign * 1.2, 0.4]; continue; }
       const [fx, fz] = rows[i++ % rows.length];
@@ -54,6 +57,71 @@ export function kickoffSpots(st, kickTeam, takerId = -1) {
     }
   }
   return spots;
+}
+
+/**
+ * LA LOI 3 — LES REMPLACEMENTS. La LOI est le mécanisme, la POLITIQUE est au projet (le
+ * moteur ne décide pas QUI sort — un manager, une UI, une IA de banc appellent l'API,
+ * comme Unity ne substitue pas à votre place) :
+ *   — `remplacer(st, cfg, team, outId, inSpec)` FILE le changement (refus nommés : limite
+ *     loi3.changements, expulsé irremplaçable, déjà en cours) ;
+ *   — il s'exécute À L'ARRÊT DE JEU (st.restart vivant — on ne change pas pendant que le
+ *     ballon roule, Loi 3.10) : le sortant marche vers la touche par le levier de
+ *     l'expulsion (down géant — les cerveaux l'oublient), et à la ligne, L'IDENTITÉ CHANGE
+ *     (ratings→makeProfile, nom, numéro, rôle — l'ardoise disciplinaire du sortant PART
+ *     AVEC LUI : le carton appartient à l'homme, pas au maillot) ; le corps revient sur le
+ *     terrain et les cerveaux le reprennent.
+ * Dettes nommées : le banc INCARNÉ (des corps assis qui s'échauffent — aujourd'hui l'entrant
+ * naît à la ligne), la fenêtre de remplacements comptée (3 fenêtres + mi-temps).
+ */
+export function remplacer(st, cfg, team, outId, inSpec = null) {
+  if (!cfg?.loi3 || !st.full) return false;                        // la porte de la loi
+  const q = st.players[outId];
+  if (!q || q.team !== team || q.expulse || q._sub) return false;
+  const S = (st._subs ??= [[], []]);
+  const faits = st.events.filter((e) => e.type === 'remplacement' && e.team === team).length;
+  if (faits + S[team].length >= (cfg.loi3.changements ?? 5)) return false;
+  if (S[team].some((s) => s.out === outId)) return false;
+  S[team].push({ out: outId, spec: inSpec });
+  return true;
+}
+
+/** Le tick des remplacements (appelé par matchStep sous cfg.loi3 && st.full) : l'exécution
+ *  à l'arrêt de jeu, la marche du sortant, l'échange d'identité à la ligne, le retour. */
+export function stepRemplacements(st, cfg) {
+  const S = st._subs;
+  if (S && st.restart) {
+    for (const team of [0, 1]) {
+      for (const sub of S[team].splice(0)) {
+        const q = st.players[sub.out];
+        if (!q || q.expulse || q._sub) continue;
+        q._sub = { phase: 'out', spec: sub.spec };
+        q.down = 9e9;                                              // le levier natif : les cerveaux l'oublient
+        q._exit = [Math.max(-st.pitch.hx + 2, Math.min(st.pitch.hx - 2, q.p[0])),
+          (q.p[2] >= 0 ? 1 : -1) * (st.pitch.hz + 2.0)];
+        q.act = null; q.intent = null;
+      }
+    }
+  }
+  for (const q of st.players) {
+    if (!q._sub) continue;
+    if (q._sub.phase === 'out') {
+      if (Math.hypot(q.p[0] - q._exit[0], q.p[2] - q._exit[1]) < 1.2) {
+        const spec = q._sub.spec ?? {};
+        q.ratings = spec.ratings ?? null;
+        q.skill = spec.ratings ? makeProfile(spec.ratings) : null;
+        q.look = spec.look ?? null;
+        q.name = spec.name ?? q.name;
+        q.number = spec.number ?? null;
+        if (spec.role != null) q.role = resoudreRole(spec.role);
+        q._fautes = 0; q._jaunes = 0;                              // l'ardoise part avec l'homme
+        st.events.push({ t: +st.t.toFixed(2), type: 'remplacement', team: q.team, id: q.id, minute: Math.floor(st.t / 60) + 1 });
+        q._sub = { phase: 'in', entry: [q._exit[0], Math.sign(q.p[2]) * (st.pitch.hz - 3)] };
+      }
+    } else if (q._sub.phase === 'in' && Math.abs(q.p[2]) < st.pitch.hz - 2.5) {
+      q.down = 0; q._sub = null; q._exit = null;                   // les cerveaux le reprennent
+    }
+  }
 }
 
 /**
@@ -316,6 +384,7 @@ export function feuilleDeMatch(st) {
     horsJeu: paire('hors-jeu'),
     coupsFrancs: (() => { const r = [0, 0]; for (const e of evs) if (e.type === 'sortie' && e.out === 'coup-franc' && (e.team === 0 || e.team === 1)) r[e.team]++; return r; })(),
     fautes: paire('faute'),
+    remplacements: (() => { const r = [0, 0]; for (const e of evs) if (e.type === 'remplacement' && (e.team === 0 || e.team === 1)) r[e.team]++; return r; })(),
     cartons: (() => {
       const j = [0, 0], r = [0, 0];
       for (const e of evs) if (e.type === 'carton') { const t = st.players[e.by]?.team; if (t === 0 || t === 1) (e.couleur === 'rouge' ? r : j)[t]++; }

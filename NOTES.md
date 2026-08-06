@@ -2321,6 +2321,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    lot 8. Dettes nommées : le geste des deux mains (clip), le double-toucher du lanceur, la
    touche foireuse. Batterie 347 → 353.
 
+65. **La Loi 3 (lot 30 — les remplacements).** LA LOI EST LE MÉCANISME, LA POLITIQUE EST AU
+   PROJET : remplacer(st, cfg, team, outId, inSpec) FILE le changement (refus nommés :
+   limite, expulsé irremplaçable — l'équipe reste à 10 —, déjà en cours, loi3 absent) ; il
+   s'exécute À L'ARRÊT DE JEU suivant (st.restart vivant — on ne change pas pendant que le
+   ballon roule) ; le sortant marche vers la touche par LE LEVIER DE L'EXPULSION (down géant,
+   les ~30 filtres l'oublient), à la ligne L'IDENTITÉ CHANGE (inSpec au format squads —
+   ratings→makeProfile, nom, numéro, rôle — et l'ardoise disciplinaire PART AVEC L'HOMME :
+   q._fautes/_jaunes remis à zéro, le carton appartient à l'homme, pas au maillot), puis le
+   corps REVIENT (3 m dedans → down 0, les cerveaux le reprennent). Événement 'remplacement'
+   {team, id, minute}, feuille remplacements [n0, n1]. UNE leçon payée : le sortant restait
+   GELÉ à 0,4 m de son départ — movement gelait tout down>0 sauf expulse (l'exception du lot
+   28 ne couvrait pas le nouveau marcheur) ; même faille dans les deux gardes « couché » de
+   la scène. La greffe d'un NOUVEAU marcheur hors-monde doit visiter LES TROIS SITES :
+   job-loops (court-circuit), movement (exception du gel), scène (gardes lying) — consigné
+   pour le prochain (blessé porté ? civière ?). verify-loi3 9/9 (la file pendant le jeu
+   roule, l'arrêt exécute, l'identité, le retour, l'ardoise vierge — jaune → sub → 2 fautes
+   → JAUNE pas rouge —, la limite 1 refuse le 2ᵉ, l'expulsé, porte tournante fermée).
+   Batterie 353 → 362, rondo/réduit bit-près. Dettes nommées : banc incarné, fenêtres
+   comptées, la FATIGUE (le déclencheur naturel de la politique — pas encore modélisée).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

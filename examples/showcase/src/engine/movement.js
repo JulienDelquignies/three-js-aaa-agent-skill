@@ -9,10 +9,11 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 /** Move every player toward their target with real acceleration limits. */
 export function movePlayers(st, dt, cfg) {
   for (const p of st.players) {
-    // a player on the ground after a slide does not run — mais l'EXPULSÉ n'est pas un corps au
-    // sol : son down géant est un drapeau d'inexistence pour les cerveaux (les filtres down<=0
-    // le couvrent sans être touchés), et LUI marche vers sa sortie (referee, Loi 12)
-    if (p.down > 0 && !p.expulse) { p.down -= dt; p.v[0] = 0; p.v[1] = 0; p.speed = 0; continue; }
+    // a player on the ground after a slide does not run — mais l'EXPULSÉ (Loi 12) et le
+    // REMPLACÉ en chemin (Loi 3) ne sont pas des corps au sol : leur down géant est un
+    // drapeau d'inexistence pour les cerveaux (les filtres down<=0 les couvrent sans être
+    // touchés), et EUX marchent vers leur sortie (referee)
+    if (p.down > 0 && !p.expulse && !p._sub) { p.down -= dt; p.v[0] = 0; p.v[1] = 0; p.speed = 0; continue; }
     // UNE AUTORITÉ PAR CORPS. Pendant l'ARMÉ, c'est l'horloge de geste qui possède la POSITION
     // (le glissement sur l'ancre, stepGestures) ; `p.v` n'est alors qu'un RAPPORT du mouvement réel
     // (pour l'animation et l'inertie), pas un état à intégrer. L'intégrer quand même, c'est DEUX
