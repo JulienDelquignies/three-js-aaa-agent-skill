@@ -36,6 +36,7 @@ export const REDUIT = {
  * helpers géométriques que sim et bancs partagent.
  */
 export function makePitch(dims = REDUIT) {
+  let swap = false;                                               // l'échange de camps (mi-temps)
   const hx = dims.length / 2, hz = dims.width / 2;
   const p = {
     dims, hx, hz,
@@ -47,9 +48,14 @@ export function makePitch(dims = REDUIT) {
     inBox: (x, z, sign) => (sign > 0 ? x >= hx - dims.box.depth : x <= -hx + dims.box.depth)
       && Math.abs(x) <= hx && Math.abs(z) <= dims.box.width / 2,
     /** le but que l'équipe `team` ATTAQUE (0 attaque +x, 1 attaque −x). */
-    attackGoal: (team) => (team === 0 ? { x: +hx, sign: +1 } : { x: -hx, sign: -1 }),
+    // L'ÉCHANGE DE CAMPS (lot 24) : la bascule vit en CLOSURE (le pitch est gelé — la
+    // discipline tient), TOUT le moteur lit les côtés par ces deux fonctions — une source,
+    // zéro consommateur à toucher. À faux (défaut) : l'identité, au bit près.
+    echangerCamps: () => { swap = !swap; return swap; },
+    campsEchanges: () => swap,
+    attackGoal: (team) => ((swap ? 1 - team : team) === 0 ? { x: +hx, sign: +1 } : { x: -hx, sign: -1 }),
     /** le but que l'équipe `team` DÉFEND. */
-    ownGoal: (team) => (team === 0 ? { x: -hx, sign: -1 } : { x: +hx, sign: +1 }),
+    ownGoal: (team) => ((swap ? 1 - team : team) === 0 ? { x: -hx, sign: -1 } : { x: +hx, sign: +1 }),
   };
   return Object.freeze(p);
 }
@@ -90,13 +96,16 @@ export function outRule(pitch, p0, p1, lastTeam) {
   }
   // ligne de but : BUT si entre les montants et sous la barre
   const sign = h.at > 0 ? +1 : -1;
+  // …les CAMPS se lisent sur ownGoal, jamais câblés (l'échange de la mi-temps — lot 24) :
+  // le défenseur du côté franchi est l'équipe dont le but propre y vit
+  const defenseur = pitch.ownGoal(0).x * sign > 0 ? 0 : 1;
   if (Math.abs(Z) <= goalHalf && Y <= goalH) {
     // l'équipe qui attaque ce côté marque ; celle qui encaisse engage (Loi 8)
-    const scorer = sign > 0 ? 0 : 1;
+    const scorer = 1 - defenseur;
     return { type: 'but', x: 0, z: 0, y: 0, team: 1 - scorer, scorer };
   }
   // hors des montants : CORNER si le dernier contact est au DÉFENSEUR de ce but, SORTIE DE BUT sinon
-  const defender = sign > 0 ? 1 : 0;                               // l'équipe 1 défend le but +x
+  const defender = defenseur;
   if (lastTeam === defender) {
     return { type: 'corner', x: sign * (hx - 0.4), z: Math.sign(Z || 1) * (hz - 0.4), y: 0, team: 1 - defender };
   }

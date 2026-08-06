@@ -930,9 +930,11 @@ export class Rondo {
         const C = this.state._chrono;
         if (this.state.fini) chrono = ' · <b>TERMINÉ</b>';
         else {
-          const tP = Math.max(0, Math.min(ch.duree, this.state.t - (C.periode - 1) * (ch.duree + (ch.pause ?? 6))));
+          const tR = Math.max(0, this.state.t - (C.periode - 1) * (ch.duree + (ch.pause ?? 6)));
+          const tP = Math.min(ch.duree, tR);
           const mm = Math.floor(tP / 60), ss = String(Math.floor(tP % 60)).padStart(2, '0');
-          chrono = ` · MT${C.periode} ${mm}:${ss}`;
+          // le TEMPS ADDITIONNEL se lit (lot 24) : « 3:00 +2 » — la montre de l'arbitre, pas un gel
+          chrono = ` · MT${C.periode} ${mm}:${ss}${tR > ch.duree ? ` +${Math.ceil(tR - ch.duree)}` : ''}`;
         }
       }
       this._hud.innerHTML = this.matchMode

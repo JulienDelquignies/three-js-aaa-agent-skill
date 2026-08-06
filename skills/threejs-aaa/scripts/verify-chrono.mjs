@@ -36,8 +36,11 @@ const joue = (seed, over = {}) => {
     !!mt && Math.abs(mt.t - 60) < 1.5 && mt.periode === 2);
   ok(`l'AUTRE équipe engage la seconde période (Loi 8 : engagement équipe ${miTempsRestart?.team})`,
     miTempsRestart?.type === 'engagement' && miTempsRestart?.team === 1);
-  ok(`le SIFFLET FINAL tombe (fin-de-match à t=${fin?.t} ≈ 125, st.fini=${st.fini}, score ${JSON.stringify(fin?.score)})`,
-    !!fin && Math.abs(fin.t - 125) < 1.5 && st.fini === true);
+  // …le sifflet tombe à la fin NOMINALE + l'ADDITIONNEL (lot 24 : ×0,35 des arrêts, plafonné
+  // 12 % — mesuré 126,7 : 1,7 s rendues sur ~5 s d'arrêts de P2)
+  const annonce = st.events.find((e) => e.type === 'temps-additionnel' && e.periode === 2);
+  ok(`le SIFFLET FINAL tombe dans la fenêtre additionnelle (t=${fin?.t} ∈ [125 ; ${(125 + 60 * 0.12).toFixed(1)}], annonce +${annonce?.sec} s)`,
+    !!fin && fin.t >= 124.5 && fin.t <= 125 + 60 * 0.12 + 0.5 && st.fini === true && !!annonce && annonce.sec >= 0);
   // l'état terminal est CALME : le monde tient, personne ne joue un ballon mort
   const evAvant = st.events.length;
   const pAvant = st.players.map((p) => [p.p[0], p.p[2]]);
@@ -68,7 +71,29 @@ const joue = (seed, over = {}) => {
     JSON.stringify(f) === JSON.stringify(feuilleDeMatch(st2)));
 }
 
-// ---------- 3. sabotage nommé « match sans fin » : chrono absent → le monde d'hier, qui ne finit pas
+// ---------- 3. l'ÉCHANGE DE CAMPS (Loi 8) + la MONTRE (lot 24)
+{
+  const st = makeMatch({ full: true, seed: 3 });
+  const avant = st.pitch.ownGoal(0).x;
+  const cfg = matchCfg({ shotRange: 20, chrono: CH });
+  for (let i = 0; i < 75 * 60 && !st.events.some((e) => e.type === 'mi-temps'); i++) matchStep(st, 1 / 60, cfg);
+  const apres = st.pitch.ownGoal(0).x;
+  ok(`les CAMPS s'échangent à la mi-temps (but propre de l'équipe 0 : x ${avant} → ${apres} — une bascule, tout le moteur suit par ownGoal)`,
+    avant === -apres && Math.abs(avant) > 10);
+  const st2 = makeMatch({ full: true, seed: 3 });
+  const cfg2 = matchCfg({ shotRange: 20, chrono: { ...CH, echangeCamps: false } });
+  for (let i = 0; i < 75 * 60 && !st2.events.some((e) => e.type === 'mi-temps'); i++) matchStep(st2, 1 / 60, cfg2);
+  ok(`…et refusent de s'échanger sur demande (echangeCamps:false → but propre inchangé ${st2.pitch.ownGoal(0).x})`,
+    st2.pitch.ownGoal(0).x === avant);
+  const st3 = makeMatch({ full: true, seed: 3 });
+  const cfg3 = matchCfg({ shotRange: 20, chrono: { ...CH, additionnel: false } });
+  let mt3 = null;
+  for (let i = 0; i < 75 * 60 && !mt3; i++) { matchStep(st3, 1 / 60, cfg3); mt3 = st3.events.find((e) => e.type === 'mi-temps'); }
+  ok(`sabotage « montre truquée » attrapé (additionnel:false — la période coupe PILE à ${mt3?.t} ≈ 60 : les remises ont mangé du jeu sans être rendues)`,
+    !!mt3 && Math.abs(mt3.t - 60) < 0.2);
+}
+
+// ---------- 4. sabotage nommé « match sans fin » : chrono absent → le monde d'hier, qui ne finit pas
 {
   const st = makeMatch({ full: true, seed: 3 });
   const cfg = matchCfg({ shotRange: 20 });

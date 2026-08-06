@@ -2197,6 +2197,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    barre). État final de la volumétrie : AUCUN fichier du produit (moteur + scènes) au-dessus de
    1 250 lignes, tout gardé au banc, zéro exception. Batterie 308 clauses au bit près + build.
 
+59. **Le chrono complet (lot 24 — l'échange de camps + le temps additionnel).** L'ÉCHANGE DE
+   CAMPS (Loi 8) tient en une bascule : `pitch.echangerCamps()` vit en CLOSURE (le pitch est
+   gelé — la discipline tient), et TOUT le moteur suit par ownGoal/attackGoal — une source,
+   zéro consommateur à toucher. Le câblage « équipe 1 défend +x » d'outRule est mort (défenseur
+   dérivé de pitch.ownGoal(0) — l'identité non-échangée prouvée par le réduit au bit près). La
+   mi-temps est LA discontinuité légitime des corps (les vestiaires — placeKickoff les pose
+   côté neuf, le ballon repart par remise à cause nommée ; SA loi anti-téléport ne bouge pas).
+   LE TEMPS ADDITIONNEL : les arrêts de la période s'accumulent, l'arbitre en rend ×0,35
+   (plafonné 12 %), l'annonce est un événement ('temps-additionnel', sec) — mesuré : +1,7 s
+   rendues sur ~5 s d'arrêts, sifflet final à 126,7 (la clause d'horaire du lot 13 datait
+   d'avant la loi : mise à jour en fenêtre nominale + additionnel). HUD : « MT2 2:58 +2 ».
+   Sabotages : « montre truquée » (additionnel:false → coupe PILE à 60,02) et refus d'échange
+   (echangeCamps:false → but propre inchangé). verify-chrono 11 → 14 ; batterie verte, réduit/
+   rondo intacts au bit près (l'échange n'existe que sous cfg.chrono). Le cycle de match est
+   COMPLET : engagement, périodes, camps, additionnel, sifflet final, feuille.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

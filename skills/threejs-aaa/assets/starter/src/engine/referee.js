@@ -147,7 +147,18 @@ export function chronoStep(st, cfg) {
   if (st.fini) return;
   if (st.possession.team >= 0 && !st.restart && dt > 0) C.poss[st.possession.team] += dt;
   const duree = ch.duree ?? 180, pause = ch.pause ?? 6, periodes = ch.periodes ?? 2;
-  if (st.t < C.periode * duree + (C.periode - 1) * pause) return;
+  // LE TEMPS ADDITIONNEL (ch.additionnel !== false) : les arrêts de jeu de LA période
+  // s'accumulent, l'arbitre en rend une fraction (×0,35, plafonnée à 12 % de la période) —
+  // et l'annonce est un événement quand la période nominale expire. false : la montre truquée
+  // (sabotage nommé — la période coupe pile, les remises ont mangé du jeu).
+  if (st.restart && dt > 0 && !st.fini) C.arrets = (C.arrets ?? 0) + dt;
+  const add = ch.additionnel !== false ? Math.min(duree * 0.12, (C.arrets ?? 0) * 0.35) : 0;
+  const finNominale = C.periode * duree + (C.periode - 1) * pause;
+  if (ch.additionnel !== false && !C.annonce && st.t >= finNominale) {
+    C.annonce = true;
+    st.events.push({ t: +st.t.toFixed(2), type: 'temps-additionnel', periode: C.periode, sec: +add.toFixed(1) });
+  }
+  if (st.t < finNominale + add) return;
   st.ball.release('arrêt-de-jeu');
   st.ball.impulse([-st.ball.v[0] * 0.8, 0, -st.ball.v[2] * 0.8]);
   st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
@@ -159,19 +170,18 @@ export function chronoStep(st, cfg) {
     return;
   }
   C.periode += 1;
+  C.arrets = 0; C.annonce = false;
   const team = C.periode % 2 === 0 ? 1 : 0;
   st.events.push({ t: +st.t.toFixed(2), type: 'mi-temps', periode: C.periode, score: [...st.score] });
+  // L'ÉCHANGE DE CAMPS (ch.echangeCamps !== false — Loi 8) : une bascule, TOUT suit (ownGoal
+  // est la source unique). La mi-temps est LA discontinuité légitime des CORPS — ils passent
+  // aux vestiaires, ils ne marchent pas 50 m en 6 s : placeKickoff les pose côté neuf, le
+  // ballon repart par une remise à cause nommée. (Le ballon, lui, ne se téléporte JAMAIS
+  // hors remise — sa loi ne bouge pas.)
+  if (ch.echangeCamps !== false && st.pitch?.echangerCamps) st.pitch.echangerCamps();
   st.restart = { type: 'engagement', p: [0, 0], team, at: st.t + pause };
-  if (cfg.restartCarried !== false) {
-    st.restart.placed = false;
-    const taker = st.players.filter((p) => p.team === team && !p.keeper && p.down <= 0)
-      .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0];
-    st.restart.taker = taker ? taker.id : -1;
-    st.restart.spots = kickoffSpots(st, team, st.restart.taker);
-  } else {
-    placeKickoff(st, team);
-    st.ball.restart([0, BALL.radius, 0], { cause: 'engagement' });
-  }
+  placeKickoff(st, team);
+  st.ball.restart([0, BALL.radius, 0], { cause: 'engagement' });
 }
 
 /**
