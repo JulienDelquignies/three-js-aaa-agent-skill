@@ -37,5 +37,17 @@ for (const copy of COPIES.slice(1)) {
   ok(`${label} : aucun module orphelin (présent là-bas, absent de la référence)`, extra.length === 0, extra.join(', '));
 }
 
+// ---- LA VOLUMÉTRIE EST UNE DETTE COMME UNE AUTRE (lot 16) : un module au-delà du plafond
+// n'est plus maintenable ni réutilisable — il se DÉCOUPE en familles cohésives (match-sim
+// 1 575 → 1 160 + referee 285 + shooting 158, au bit près). rondo-sim (1 884) est la dette
+// nommée : le cœur prouvé par 40 clauses se découpera avec le même soin, pas à la hache.
+{
+  const PLAFOND = 1250, EXCEPTION = { 'rondo-sim.js': 1950 };
+  const gros = files.map((f) => [f, readFileSync(join(ref, f), 'utf8').split('\n').length])
+    .filter(([f, n]) => n > (EXCEPTION[f] ?? PLAFOND));
+  ok(`aucun module au-delà du plafond de volumétrie (${PLAFOND} lignes ; rondo-sim toléré à 1950, dette nommée)`,
+    gros.length === 0, gros.map(([f, n]) => `${f}: ${n}`).join(', '));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

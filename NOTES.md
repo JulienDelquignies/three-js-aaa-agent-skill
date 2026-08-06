@@ -2072,6 +2072,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    4-4-2/3-5-2 (la couche RÔLES généralisera « postes ≥ 7 »). Sabotage « tactique placebo » :
    presets échangés ⇒ récits différents. verify-tactics 8 clauses ; 295 clauses vertes.
 
+50. **La volumétrie est une dette comme une autre (lot 16a — le découpage prouvé).** Demande
+   utilisateur : « éviter des fichiers d'une volumétrie non maintenable » — mesuré : match-sim
+   1 575 lignes (six lots de greffes accrétées), rondo-sim 1 884. Découpage de match-sim en
+   FAMILLES COHÉSIVES : referee.js (285 — tout ce qui ARRÊTE et REMET le jeu : onOut, canTake,
+   ballFetch, administerWhistle, chronoStep, feuilleDeMatch, engagements) et shooting.js (158 —
+   tir/centre/dégagement) ; match-sim → 1 160 (config, makeMatch, le cerveau des métiers,
+   contrat). Ré-exports en place : AUCUN consommateur ne change (bancs, scènes). La preuve
+   d'inoffensivité : les 295 clauses au bit près, y compris les récits déterministes. Et le
+   GARDE-FOU au banc (verify-sync 8ᵉ clause) : plafond 1 250 lignes par module, rondo-sim
+   toléré 1 950 en dette nommée — le cœur prouvé par 40 clauses se découpera avec le même
+   soin, pas à la hache. La volumétrie ne peut plus régresser en silence.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
