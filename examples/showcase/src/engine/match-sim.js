@@ -23,6 +23,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots } from './formation.js';
 import { offsideLine } from './offside.js';
+import { tac, axe, resoudreTactique } from './tactics.js';
 import { KEEPER, keeperSpot, keeperDecide } from './keeper.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
@@ -194,13 +195,18 @@ export const MATCH = {
  * terrain de pitch.js, coup d'envoi à l'équipe 0. L'état EST un état de rondo (mêmes joueurs,
  * même ballon, mêmes personas) : le loop ne voit pas la différence, c'est la config qui la fait.
  */
-export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null } = {}) {
+export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null, tactics = null } = {}) {
   // LE 11C11 EST UNE CONFIGURATION (full: true → terrain Loi 1, 10 + gardien par équipe, postes
   // de formation) — même loop, mêmes lois, aucune tuyauterie nouvelle : la preuve du moteur.
   pitch = pitch ?? makePitch(full ? FULL : undefined);
   if (full && perTeam === 5) perTeam = 10;
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
   st.full = pitch.dims.length > 60;
+  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : toujours résolue — absente, c'est « équilibre »
+  // (0,5 partout = l'IDENTITÉ : chaque axe module autour des constantes mesurées des lots
+  // 10-14, le monde d'aujourd'hui au bit près). makeMatch({ tactics: ['gegenpressing',
+  // 'blocBas'] }) ou objets partiels — le contrat d'injection de l'écran tactique aval.
+  st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
   for (const team of [0, 1]) {
     st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; });
@@ -769,6 +775,10 @@ function assignMatchJobs(st, cfg) {
           p._slotT = want; p._slotAt = st.t + 0.7;
         }
         let tx = p._slotT[0], tz = p._slotT[1];
+        // LA LARGEUR (tactics.largeur) : l'amplitude des postes offensifs — jouer dedans
+        // (×0,85) ou écarter le bloc (×1,15, le jeu d'ailes). 0,5 = ×1, l'identité.
+        const lF = axe(tac(st, atk).largeur, 0.85, 1.15);
+        if (lF !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * lF));
         if (off && (p.post ?? 0) >= 7) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE — depuis la PORTÉE DE PASSE, pas depuis l'autre
           // bout du terrain. Première version mesurée : dart visant une ligne à ~16 m du poste,
@@ -778,7 +788,11 @@ function assignMatchJobs(st, cfg) {
           // → elle darde 7 m vers la ligne (jamais au-delà : la photo se prend au départ du ballon,
           // strikeNow), l'appelBonus la fait servir, la mène (leadTime) jette le ballon DERRIÈRE.
           // Un appel par équipe à la fois — dix ruptures simultanées seraient un essaim.
-          if ((p._runT ?? -1) <= st.t && posé && (st._appelAt?.[atk] ?? -1) - (transOff ? 2.5 : 0) <= st.t && (p._appelCd ?? -1) <= st.t) {
+          // …style (cadence des appels : direct appelle plus) et transition (contre → la
+          // relaxation du regain va jusqu'à 5 s ; conservation → zéro) sont les axes tactiques
+          if ((p._runT ?? -1) <= st.t && posé
+            && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) <= st.t
+            && (p._appelCd ?? -1) <= st.t) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
             if (dB > 6 && dB < (cfg.passRange?.[1] ?? 13) - 0.5 && myAdv > st.ball.p[0] * off.sgn + 2) {
@@ -788,7 +802,7 @@ function assignMatchJobs(st, cfg) {
                 defenders.map((q) => q.p), { corridor: 0.9 });
               if (lane.open) {
                 p._runT = st.t + 1.7; p._runZ = deepZ; p._runAdv = dartAdv; p._appelCd = st.t + 10;
-                (st._appelAt ??= {})[atk] = st.t + 5;
+                (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
                 // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s) : c'est elle qui porte le
                 // bonus ET l'extension de portée — expirer à mi-course re-fermait l'enveloppe
                 p._pace = { until: st.t + 1.6, kind: 'appel', next: p._pace?.next ?? st.t + 8 };
@@ -843,12 +857,16 @@ function assignMatchJobs(st, cfg) {
     const defTeam = atk === 0 ? 1 : 0;
     if (st._press && (st.t > st._press.until || st._press.team === atk || st.restart)) st._press = null;
     const sgnAtk = -pitch.ownGoal(atk).sign;
+    // L'AGRESSIVITÉ (tactics.pressing) module les TROIS signaux et la fenêtre : à 0, un bloc
+    // qui n'accepte le press que sur signal criant ; à 1, l'école de la chasse — signaux
+    // permissifs, fenêtres longues, cooldown court. 0,5 = les constantes mesurées du lot 11.
+    const Tp = tac(st, defTeam).pressing;
     if (!st._press && !st.restart && (st._pressCd?.[defTeam] ?? -1) <= st.t) {
       let kind = null;
-      if (carrier && !carrier.keeper && st.phase === 'carry' && st.hold < 0.5
+      if (carrier && !carrier.keeper && st.phase === 'carry' && st.hold < axe(Tp, 0.2, 0.8)
         && carrier.p[0] * sgnAtk < -2 && Math.cos(carrier.yaw) * sgnAtk < -0.35) kind = 'dos-au-but';
       else if (st.phase === 'flight' && st.pass && st.pass.lead && st.pass.origin
-        && st.pass.origin[0] * sgnAtk < -4
+        && st.pass.origin[0] * sgnAtk < axe(Tp, -7, -1)
         && (st.pass.lead[0] - st.pass.origin[0]) * sgnAtk < -3) kind = 'passe-en-retrait';
       // …le retrait ne déclenche que dans la RELANCE BASSE (origine à 4 m dans leur camp) : la
       // première version sautait sur toute passe arrière — 16-18 fenêtres/180 s, 40 % du temps
@@ -857,11 +875,12 @@ function assignMatchJobs(st, cfg) {
       // la perte est JEUNE (< 2,5 s) et HAUTE (ballon dans le camp du nouveau porteur) — le bloc
       // qui vient de perdre saute AVANT que l'adversaire ne s'organise. Le contre-press
       // individuel (lossReact) chassait déjà l'ex-porteur ; ici c'est l'ÉQUIPE qui bascule.
-      else if (cfg.moments && st.t - (st._possChangeAt ?? -99) < 2.5
+      else if (cfg.moments && st.t - (st._possChangeAt ?? -99) < axe(Tp, 1, 4)
         && st.ball.p[0] * sgnAtk < -4) kind = 'contre-press';
       if (kind) {
-        st._press = { team: defTeam, until: st.t + (cfg.pressTriggers.win ?? 4.5), kind };
-        (st._pressCd ??= {})[defTeam] = st.t + (cfg.pressTriggers.win ?? 4.5) + 6;
+        const win = (cfg.pressTriggers.win ?? 4.5) + axe(Tp, -1.3, 1.3);
+        st._press = { team: defTeam, until: st.t + win, kind };
+        (st._pressCd ??= {})[defTeam] = st.t + win + axe(Tp, 10, 2);
         st.events.push({ t: +st.t.toFixed(2), type: 'press', kind, team: defTeam });
       }
     }
@@ -927,11 +946,16 @@ function assignMatchJobs(st, cfg) {
       if (st.full && i >= 6) {
         const spotsD = formationSpots(pitch, p.team, anchor[0], false);
         const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : où l'équipe DÉFEND — le bloc posté se
+        // décale de −6 (bloc bas, parqué devant sa surface) à +6 m (ligne haute — et la ligne
+        // de hors-jeu suit : la Loi 11 fait exister le pari). 0,5 = 0 m, l'identité.
+        const sgnD = -pitch.ownGoal(p.team).sign;
+        const haut = axe(tac(st, p.team).hauteurBloc, -6, 6);
+        if (haut) want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * haut));
         // EN FENÊTRE DE PRESSING : le bloc posté MONTE d'un cran (pressTriggers.step) vers le
         // ballon — c'est la COMPRESSION qui fait exister la ligne (et le hors-jeu en flux : un
         // bloc qui monte pousse la ligne de la Loi 11 devant les pointes adverses)
         if (press) {
-          const sgnD = -pitch.ownGoal(p.team).sign;
           want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * (cfg.pressTriggers.step ?? 3.5)));
         }
         p.job = 'mark';

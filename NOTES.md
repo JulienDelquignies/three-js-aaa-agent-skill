@@ -2048,6 +2048,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    Chemin ouvert : tactics.js (lot 15) consommera les moments (hauteur/largeur/agressivité par
    moment), les rôles (lot 16) aussi (qui contre-presse, qui reste). 287 clauses vertes.
 
+49. **La tactique d'équipe injectable (lot 15 — tactics.js).** « Penser à tous les styles » ne se
+   fait pas par une liste : par CINQ AXES orthogonaux [0..1] qui génèrent l'espace —
+   hauteurBloc (postes défensifs −6…+6 m), largeur (postes offensifs ×0,85…1,15), pressing
+   (sévérité des 3 signaux + durée/cooldown des fenêtres du lot 11), style possession↔direct
+   (poids de l'arbitre PAR ÉQUIPE ±30-35 %, cadence des appels), transition conservation↔contre
+   (la relaxation du regain du lot 14, 0…5 s). Les presets (equilibre, gegenpressing,
+   possession, blocBas, direct, largeEtCentres) ne sont que des points nommés ; un projet aval
+   en pose d'autres : makeMatch({ tactics: ['gegenpressing', 'blocBas'] }) ou objets partiels.
+   LE DÉFAUT EST L'IDENTITÉ : chaque paire (bas, haut) a pour MILIEU l'ancienne constante des
+   lots 10-14, et axe(0,5) rend le milieu EXACT — la forme bas+0,5·(haut−bas) rendait
+   1,0000000000000002 et l'identité au bit près mourait d'un ulp (attrapé avant le banc).
+   Toute la batterie 10-14 verte au bit près = la preuve d'identité. TROIS leçons de mesure :
+   (a) les signatures multi-axes se CONFONDENT (deux tactiques opposées changent QUI défend —
+   tout instrument non normalisé ment) → sondes mono-axe, adversaire au défaut ; (b) hauteur
+   (+8,3 m de ligne) et largeur (+4,2 m de trio) se prouvent en FLUX ; pressing et style ne s'y
+   prouvent PAS (les déclencheurs de la graine vivent aux extrêmes des bandes ; ±20 % de poids
+   n'a JAMAIS basculé un choix en 150 s — flux bit-identique) → preuve au MÉCANISME : fenêtres
+   3,2/5,8 s et retour 13,2/7,8 s sur fixture dos-au-but ; style sur monde à QUASI-ÉGALITÉ
+   (mur desserré ±2,05 : possession → passe, direct → tir — même monde, deux footballs ; un
+   choix dominant reste dominant, la tactique ORIENTE) ; (c) l'instrument de flux
+   pressing/style/transition reste une dette nommée, comme le catalogue de formations
+   4-4-2/3-5-2 (la couche RÔLES généralisera « postes ≥ 7 »). Sabotage « tactique placebo » :
+   presets échangés ⇒ récits différents. verify-tactics 8 clauses ; 295 clauses vertes.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

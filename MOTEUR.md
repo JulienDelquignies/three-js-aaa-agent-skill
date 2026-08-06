@@ -177,6 +177,20 @@ Gegenpressing) et la verticalité du regain (appels profonds au cooldown relâch
 pour ses caméras, son commentaire, son HUD. Banc : `verify-moments.mjs` (8 clauses, sabotage
 « jeu sans moments »).
 
+### La tactique d'équipe est un CONTRAT (`tactics.js` — lot 15)
+
+Cinq axes [0..1] génèrent l'espace des styles — `hauteurBloc`, `largeur`, `pressing`,
+`style` (possession↔direct), `transition` (conservation↔contre) — chacun branché sur des lois
+prouvées (formation, fenêtres du lot 11, arbitre de menace par équipe, relaxation du lot 14).
+`makeMatch({ tactics: ['gegenpressing', 'blocBas'] })`, presets dans `TACTIQUES`, objets
+partiels acceptés, `checkTactics` au banc. LE DÉFAUT (0,5 partout) EST L'IDENTITÉ : le milieu
+de chaque paire est l'ancienne constante mesurée, exact au bit (`axe(0,5)` rend le milieu sans
+ulp). Mesuré : la hauteur déplace la ligne de +8,3 m, la largeur le trio de +4,2 m, l'école de
+la chasse presse 5,8 s toutes les 7,8 s (contre 3,2/13,2 au bloc doux), et le style fait
+basculer les choix serrés de l'arbitre (possession → passe, direct → tir sur le même monde).
+Banc : `verify-tactics.mjs` (8 clauses, sabotage « tactique placebo »). Dettes nommées :
+instruments de flux pressing/style/transition, catalogue 4-4-2/3-5-2 (couche rôles).
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

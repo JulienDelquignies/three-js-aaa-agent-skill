@@ -18,6 +18,7 @@
 
 import { laneClearance } from './ball-predict.js';
 import { choosePass } from './rondo.js';
+import { axe } from './tactics.js';
 
 /** LE TIR — proximité × couloir réel vers le meilleur coin (les mêmes lois que tryShot : portée,
  *  moitié, angle fermé, coin choisi contre le gardien, trafic toléré à bout portant). */
@@ -127,9 +128,20 @@ export function arbitre(st, c, cfg) {
     passe: menacePasse(st, c, cfg),
     conduite: menaceConduite(st, c, cfg),
   };
+  // LE STYLE D'ÉQUIPE (tactics.style — possession ↔ direct) pèse les options PAR ÉQUIPE :
+  // possession monte la passe, direct monte tir/centre/conduite. Milieux = ×1 : la tactique
+  // absente (rondo, réduit, équilibre) ne bouge pas un bit.
+  // …±30-35 % aux extrêmes : la première paire (±20 %) ne faisait JAMAIS basculer un gagnant
+  // (150 s de flux bit-identiques entre style 0 et style 1, mesuré) — un axe qui ne bouge
+  // aucun choix est un placebo. Milieux exacts à 1 : l'identité du défaut tient au bit.
+  const T = st.tactics?.[c.team];
+  const sW = T ? {
+    tir: axe(T.style, 0.7, 1.3), centre: axe(T.style, 0.8, 1.2),
+    passe: axe(T.style, 1.35, 0.65), conduite: axe(T.style, 0.85, 1.15),
+  } : null;
   let meilleure = 'conduite', sMax = -Infinity;
   for (const k of ['tir', 'centre', 'passe', 'conduite']) {
-    const s = o[k].score * (w[k] ?? 1);
+    const s = o[k].score * (w[k] ?? 1) * (sW ? sW[k] : 1);
     if (s > sMax) { sMax = s; meilleure = k; }
   }
   return { ...o, meilleure, score: +sMax.toFixed(3) };
