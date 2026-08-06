@@ -2235,6 +2235,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    d'interceptions) — la Loi 12 vit surtout par fixtures ; enrichir les SOURCES de duels
    (charge, obstruction, main) est une dette de qualité football, pas de loi. Cartons : dette.
 
+61. **La Loi 14 (lot 26 — la cérémonie du penalty).** La remise 'penalty' née au lot 25 était
+   une touche déguisée : mesuré AVANT — gardien à 1,81 m DEVANT sa ligne (keeperSpot : sa loi
+   de position ne connaît pas la cérémonie), coéquipiers en MARCHE vers le point (la remise
+   générique `p.team === r.team → walk vers r.p`), 1 corps en surface / 1 dans l'arc / 1
+   devant le ballon à la prise. La loi en trois greffes dans le bloc remise (clé loi14 défaut
+   matchCfg, gardée st.full && type==='penalty') : le CLAMP de cérémonie en une passe (s-space
+   x·sgn — derrière le ballon −0,9, hors surface +0,8, hors arc +0,35, le plus contraignant
+   gagne, z conservé — les corps reculent droit), appliqué aux DEUX camps ; le gardien
+   défenseur SUR sa ligne (0,15 m, z=0) ; et RIEN sur la frappe — le cerveau normal du preneur
+   tire par le canal shot standard (+1,7 s après la prise, gachetteNear ouvert à 11 m), le
+   plongeon existant peut répondre. Mesuré APRÈS : 0,32 m / 0 / 0 / 0, frappe → but sur les
+   deux graines de fixture. verify-loi14 8/8 (cérémonie, ligne, le penalty SE JOUE, sabotage
+   « cérémonie foraine » loi14:false → 1,81 m et 3 violations nommées, et la Loi 14 ne mange
+   pas le mur Loi 13 du coup franc — clé DE TYPE, pas de régime). Batterie 325 → 333, rondo
+   40/40 et réduit 76/0 inchangés au bit près (la garde est la preuve). Dettes nommées :
+   l'empiètement après la prise (les corps re-rentrent LÉGALEMENT pendant l'élan du preneur —
+   le re-sifflet d'empiètement est une v2), le preneur identifié avant le sifflet, la
+   conversion penalty (2/2 — à calibrer en qualité plus tard). Prochaines lois : les CARTONS
+   (récidive → jaune, cumul → rouge, l'expulsé quitte le terrain — la feuille les compte).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

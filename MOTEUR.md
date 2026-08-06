@@ -293,10 +293,28 @@ FIXTURES (doctrine lot 8 : `st._faute` crafté à la main — avantage gardé/pe
 ouverte, penalty au point vs coup franc un mètre hors surface, mur mesuré 8,9 m avec meute
 posée à 2,6 m) + sabotages nommés « arbitre aveugle » (`loi12:false` → fait inerte),
 « avantage myope » (`avantage:0` → sifflet immédiat), « penalty déguisé » (sans mur, la
-meute reste à 2,8 m). Dettes nommées : cartons (récidive, DOGSO), cérémonie stricte du
-penalty (tous hors surface, gardien sur sa ligne), fautes hors tacle (charge, obstruction,
-main), et le FLUX mince du 11c11 (~1 duel tenté / 9 min — le jeu vit d'interceptions ;
-enrichir les sources de duels est une dette de qualité football, pas de loi).
+meute reste à 2,8 m). Dettes nommées : cartons (récidive, DOGSO), fautes hors tacle (charge,
+obstruction, main), et le FLUX mince du 11c11 (~1 duel tenté / 9 min — le jeu vit
+d'interceptions ; enrichir les sources de duels est une dette de qualité football, pas de
+loi). La cérémonie stricte du penalty, dette du lot, est payée au lot 26 (Loi 14, ci-dessous).
+
+### La Loi 14 — la cérémonie du penalty (lot 26)
+
+`matchCfg` porte `loi14: true` (défaut ON, gardé `st.full && r.type === 'penalty'`). À la
+remise penalty : tous les corps sauf le preneur et le gardien de la ligne se tiennent HORS
+surface, HORS de l'arc (rayon `loi12.mur` autour du POINT — pas du ballon porté) et DERRIÈRE
+le ballon — un clamp en UNE passe dans le bloc remise (pour un z donné, le x légal est le
+plus contraignant de la surface +0,8 et de l'arc +0,35, toujours côté champ du plan du
+ballon) qui vaut pour les DEUX camps (la remise générique faisait MARCHER les coéquipiers
+vers le point). Le gardien défenseur TIENT SA LIGNE (0,15 m, entre les poteaux — keeperSpot
+le posait à 1,81 m devant : sa loi de position ne connaît pas la cérémonie). La frappe est le
+cerveau NORMAL du preneur (canal shot standard, +1,7 s après la prise — le plongeon existant
+répond ; aucun script de tir). Mesuré avant/après : gardien 1,81 → 0,32 m ; violations de
+cérémonie à la prise 3 → 0. Banc : `verify-loi14.mjs` (8 clauses — cérémonie, ligne, le
+penalty SE JOUE, sabotage « cérémonie foraine » `loi14:false`, et la Loi 14 ne mange pas le
+mur Loi 13 du coup franc). Dettes nommées : l'empiètement APRÈS la prise (les corps
+re-rentrent pendant l'élan — un re-sifflet d'empiètement), le preneur identifié avant le
+sifflet, la conversion penalty à calibrer (2/2 sur fixtures — qualité, pas loi).
 
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 

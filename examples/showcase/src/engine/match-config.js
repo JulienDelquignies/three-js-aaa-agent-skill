@@ -59,6 +59,15 @@ export const MATCH = {
                           // (fenêtre s : on ne siffle pas une équipe qui a gardé le ballon),
                           // penalty dans la surface du fautif, coup franc sinon, MUR Loi 13
                           // (m). false : l'arbitre aveugle (sabotage nommé). Cartons : dette.
+  loi14: true,            // LA LOI 14 (11c11, st.full) : la CÉRÉMONIE du penalty — tous les
+                          // corps sauf le preneur et le gardien de la ligne HORS surface, HORS
+                          // de l'arc (rayon loi12.mur autour du point), DERRIÈRE le ballon ;
+                          // le gardien défenseur SUR sa ligne jusqu'à la frappe. La frappe
+                          // elle-même est le cerveau normal du preneur (canal shot standard —
+                          // le plongeon existant répond). false : la cérémonie foraine
+                          // (sabotage nommé — coéquipiers agglutinés au point, gardien avancé).
+                          // Dettes : l'empiètement APRÈS la prise (re-sifflet), l'ordre strict
+                          // preneur-identifié-avant-le-sifflet.
   chrono: null,           // LE CYCLE DE MATCH (l'enveloppe PRODUIT — un projet aval démarre un
                           // match, le joue, le FINIT, lit la feuille) : { periodes: 2, duree: s
                           // par période, pause: s de mi-temps }. Fin de période → sifflet,

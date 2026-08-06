@@ -191,6 +191,23 @@ function assignMatchJobs(st, cfg) {
     // le rayon des adversaires se tient depuis le BALLON tant qu'il n'est pas posé (le preneur le
     // porte : on s'écarte de LUI), depuis le point de remise ensuite
     const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;
+    // LA LOI 14 (cfg.loi14 && st.full) : la CÉRÉMONIE du penalty. Tous les corps sauf le preneur
+    // et le gardien de la ligne : HORS surface, HORS de l'arc (rayon du mur autour du POINT — pas
+    // du ballon porté), DERRIÈRE le ballon. Un clamp en UNE passe, ancré au point r.p : pour un z
+    // donné, le x légal est le plus contraignant de (surface + 0,8) et de l'arc (+ 0,35), toujours
+    // côté champ du plan du ballon — mesuré avant : gardien à 1,8 m DEVANT sa ligne, coéquipiers
+    // en marche VERS le point (la remise générique), corps en surface et dans l'arc à la prise.
+    const l14 = cfg.loi14 && st.full && r.type === 'penalty'
+      ? { own: pitch.ownGoal(1 - r.team), def: 1 - r.team, arc: (cfg.loi12?.mur ?? 9.15) + 0.35 } : null;
+    const l14clamp = (p) => {
+      const sgn = l14.own.sign;
+      const sSpot = r.p[0] * sgn;                               // tout se compte VERS le but (s = x·sgn)
+      let sLim = sSpot - 0.9;                                   // derrière le ballon
+      if (Math.abs(p.p[2]) < pitch.dims.box.width / 2 + 0.6) sLim = Math.min(sLim, pitch.hx - pitch.dims.box.depth - 0.8);
+      if (Math.abs(p.p[2]) < l14.arc) sLim = Math.min(sLim, sSpot - Math.sqrt(l14.arc * l14.arc - p.p[2] * p.p[2]));
+      p.job = 'walk';
+      p.target = p.p[0] * sgn > sLim ? [sLim * sgn, 0, p.p[2]] : [p.p[0], 0, p.p[2]];
+    };
     for (const p of st.players) {
       // APRÈS UN BUT, ON REVIENT EN MARCHANT : les deux équipes rejoignent leur formation
       // d'engagement pendant que le preneur sort le ballon du filet (placeKickoff écrivait les
@@ -198,8 +215,14 @@ function assignMatchJobs(st, cfg) {
       // UNE REMISE EST UNE RESPIRATION : tout le monde MARCHE (bucket walk 2,6 m/s) — on revenait
       // en trottinant à 4,9-5,6 et les corps travaillaient à 10,5 km/h sur la mi-temps
       if (r.spots && r.spots[p.id] && p.id !== r.taker) { p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]]; continue; }
-      if (p.keeper) { const s = keeperSpot(pitch, p.team, [rp[0], 0, rp[1]]); p.job = 'keeper'; p.target = [s.x, 0, s.z]; continue; }
+      if (p.keeper) {
+        // …le gardien de la LIGNE (Loi 14) : SUR sa ligne, entre les poteaux, jusqu'à la frappe —
+        // keeperSpot le posait à 1,8 m devant (sa loi de position ne connaît pas la cérémonie)
+        if (l14 && p.team === l14.def) { p.job = 'keeper'; p.target = [l14.own.x - l14.own.sign * 0.15, 0, 0]; continue; }
+        const s = keeperSpot(pitch, p.team, [rp[0], 0, rp[1]]); p.job = 'keeper'; p.target = [s.x, 0, s.z]; continue;
+      }
       if (p.id === r.taker) continue;                               // le preneur a son métier (plus bas)
+      if (l14) { l14clamp(p); continue; }                           // la cérémonie vaut pour les DEUX camps
       if (r.type === 'engagement') {
         // chacun DANS SA MOITIÉ (Loi 8) — les positions d'engagement ont été posées ; on les tient
         const sign = pitch.ownGoal(p.team).sign;
