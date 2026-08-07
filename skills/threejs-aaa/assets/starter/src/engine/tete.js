@@ -65,3 +65,49 @@ export function teteStep(st, cfg) {
     : null;
   st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'remise', to: mate?.m.id });
 }
+
+// LA VOLÉE (lot 40) — le pied joue le ballon EN VOL, sous la fenêtre de tête. Mesuré avant :
+// 4,4 s/12 min de fenêtres à hauteur de pied sur un corps, ZÉRO geste — et 0,0 s en surface
+// face au but, car la chaîne du centre ne produisait QUE des cloches (le centre BAS naît avec
+// ce lot, shooting.js). Deux métiers seulement : la REPRISE AU BUT en surface (l'espèce
+// 'volée' — 'demi-volée' si le ballon REMONTE de son rebond, vy > 0) et le DÉGAGEMENT
+// d'urgence près de son but. PAS de remise de volée : à hauteur de pied, hors de ces deux
+// urgences, le vrai geste est le CONTRÔLE — la prise au sol existante s'en charge. Entre
+// 1,15 et 1,5 m : la fenêtre MORTE (le contrôle de poitrine est une dette nommée). Le duel
+// aérien reste à la tête (au pied c'est le pique au sol qui arbitre). Gardé cfg.volee &&
+// st.full, cooldown partagé avec la tête (un contact aérien par fenêtre de vol).
+export function voleeStep(st, cfg) {
+  const V = cfg.volee;
+  const bp = st.ball.p;
+  if (bp[1] < (V.min ?? 0.25) || bp[1] > (V.max ?? 1.15)) return;
+  if ((st._teteCd ?? 0) > st.t) return;
+  const joueur = st.players.filter((q) => q.down <= 0 && !q.keeper && !q.act && d2(q.p, bp) < (V.reach ?? 1.1))
+    .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))[0];
+  if (!joueur) return;
+  const goal = st.pitch.attackGoal(joueur.team);
+  const own = st.pitch.ownGoal(joueur.team);
+  const sgn = Math.sign(goal.x || 1);
+  const dGoal = Math.hypot(goal.x - joueur.p[0], joueur.p[2]);
+  if (dGoal < (V.but ?? 14) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
+    // LA REPRISE DE VOLÉE : première intention, le canal shot standard — le plongeon répond
+    const demi = st.ball.v[1] > 0.3;
+    const tz = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (st.pitch.goalHalf - 0.6);
+    st._teteCd = st.t + 0.8;
+    st.lastTouch = joueur.team;
+    st.ball.strike({ speed: 17, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0.5 });
+    st.pass = null;
+    st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'but', demi });
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', range: +dGoal.toFixed(1), speed: 17 });
+    return;
+  }
+  if (Math.hypot(own.x - joueur.p[0], joueur.p[2]) < 24) {
+    // LE DÉGAGEMENT DE VOLÉE : le défenseur boxe le vol loin de son but, vers l'avant et le flanc
+    st._teteCd = st.t + 0.8;
+    st.lastTouch = joueur.team;
+    const fz = joueur.p[2] >= 0 ? 0.5 : -0.5;
+    st.ball.strike({ speed: 14, dirYaw: Math.atan2(fz, -Math.sign(own.x)), elevation: 0.38, spinAxis: [0, 1, 0], spinRev: 0 });
+    st.pass = null;
+    st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'dégagement' });
+  }
+  // sinon : ON NE VOLLEYE PAS — le contrôle au sol est le vrai geste du milieu de terrain
+}

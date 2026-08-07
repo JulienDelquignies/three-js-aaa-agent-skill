@@ -189,7 +189,19 @@ export function tryCross(st, c, cfg) {
     c.anchorHint = { t: st.t };
     return deny(st, 'prépare-centre');
   }
-  const r = simInternals.beginPass(st, { to: { id: rec.id }, lead, style: 'lofted', cross: true, lane: { margin: 9 } }, cfg, { forceUrgent: true });
+  // LE CENTRE BAS (lot 40) : au RAS DE LA LIGNE (les 9 derniers mètres — la zone du centre
+  // en retrait), la cloche n'a plus de sens (l'angle est nul, le gardien cueille tout) — le
+  // vrai geste est le centre FORT AU SOL vers le point de penalty, si le couloir existe
+  // (contrairement à la cloche, le ballon à ras se fait couper : laneClearance). C'est LUI
+  // qui donne son ballon à la reprise de volée (tete.js#voleeStep — mesuré avant : 0,0 s de
+  // fenêtre de volée en surface, la chaîne ne produisait que des cloches à hauteur de tête).
+  let bas = false;
+  if (cfg.centreBas !== false && st.full && c.p[0] * sgn > pitch.hx - 9) {
+    const blockers = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0).map((q) => q.p);
+    const clr = laneClearance([st.ball.p[0], 0, st.ball.p[2]], lead, blockers);
+    bas = (clr.margin ?? clr) >= 0.45;
+  }
+  const r = simInternals.beginPass(st, { to: { id: rec.id }, lead, style: bas ? 'ground' : 'lofted', cross: true, bas, lane: { margin: 9 } }, cfg, { forceUrgent: true });
   if (r) (st._crossCd ??= {})[c.team] = st.t + 5;
   return r;
 }

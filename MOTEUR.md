@@ -567,6 +567,27 @@ ballon EN VOL au pied — le canal tête existe, le pied non), la trivela, le
 pointu-sans-préparation (les portes d'armement n'ont pas la portée du geste), le wobble
 visuel de la flottante (scène).
 
+### La volée et le centre bas — le ciel du bas (lot 40)
+
+Le canal tête (lot 34) laissait un trou MESURÉ : 4,4 s/12 min de fenêtres de vol à hauteur
+de PIED sur un corps, zéro geste — et 0,0 s en surface face au but, la chaîne du centre ne
+produisant que des cloches. Deux greffes liées, gardées `st.full`. **`voleeStep`**
+(`tete.js` — même famille, cooldown partagé, `cfg.volee`) : fenêtre 0,25-1,15 m, deux
+métiers SEULEMENT — la REPRISE au but en surface (< 14 m : shot kind `'volée'`, ou
+`'demi-volée'` si le ballon REMONTE de son rebond — vy > 0) et le DÉGAGEMENT d'urgence à
+moins de 24 m de son but ; hors de ces urgences on ne volleye pas, le contrôle au sol est
+le vrai geste (l'asymétrie avec la remise de tête est football-vraie). Fenêtre morte
+1,15-1,5 m : la POITRINE, dette nommée. Sabotage « les pieds au sol » (`volee:false`).
+**Le CENTRE BAS** (`cfg.centreBas`, tryCross → strike-sim) : au ras de la ligne (9 derniers
+mètres), le centre part FORT AU SOL (θ 0,14, apogée ~0,3 m, le rebond en route est sa
+nature) vers le point de penalty — SI le couloir existe (`laneClearance` 0,45 : un ballon
+à ras se fait couper, contrairement à la cloche qui ignore les corps). Sabotage « que des
+cloches ». LA CHAÎNE prouvée au banc (`verify-frappes`, 13 clauses) : centre bas t 0,23 →
+un rebond → demi-volée t 1,08 à 11 m → but. Flux 20 × 300 s : 71 tirs / 22 buts — le ciel
+du bas ajoute ~12 tirs, les buts restent en bande ; 3 reprises + 17 dégagements de volée
+par 50 min (le défensif domine, comme au réel). Dettes : la poitrine, l'abondance du
+centre bas (l'approche pilotée), la volée hors surface.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

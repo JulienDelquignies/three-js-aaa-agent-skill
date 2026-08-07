@@ -2569,6 +2569,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     flottante (scène). Les 3 retours utilisateur du message sont livrés : conduite (72),
     receveur vivant (73), répertoire (74).
 
+75. **La volée, la demi-volée — et le centre bas qui les nourrit (lot 40).** La dette la
+    plus structurante du répertoire : seul le canal TÊTE savait jouer un ballon en vol
+    (fenêtre 1,5-2,2 m) — mesuré, 4,4 s/12 min de fenêtres à hauteur de PIED sur un corps,
+    zéro geste, et 0,0 s en surface face au but : la chaîne du centre ne produisait QUE des
+    cloches. DEUX greffes liées : (1) `voleeStep` (tete.js — la famille du ciel, une
+    autorité par corps) : fenêtre 0,25-1,15 m, DEUX métiers seulement — la REPRISE au but
+    en surface (shot kind 'volée', 'demi-volée' si le ballon REMONTE de son rebond, vy > 0)
+    et le DÉGAGEMENT d'urgence près de son but ; hors de ces urgences on ne volleye PAS,
+    le contrôle est le vrai geste (pas de remise de volée — l'asymétrie avec la tête est
+    football-vraie). Cooldown partagé avec la tête, fenêtre morte 1,15-1,5 m = la POITRINE,
+    dette nommée. (2) le CENTRE BAS (shooting.js/strike-sim) : au ras de la ligne (9
+    derniers mètres), la cloche n'a plus d'angle — le centre part FORT AU SOL (elev 0,14,
+    apogée ~0,3 m, un rebond en route est sa nature) vers le point de penalty, SI le couloir
+    existe (laneClearance 0,45 — un ballon à ras se fait couper, contrairement à la cloche).
+    LA CHAÎNE PROUVÉE au banc : centre bas t 0,23 → un rebond → DEMI-VOLÉE t 1,08 à 11 m →
+    BUT. Flux 20 × 300 s : 71 tirs / 22 buts (le ciel du bas AJOUTE ~12 tirs, buts dans la
+    bande) ; en match : 3 reprises + 17 dégagements de volée / 50 min (le défensif domine,
+    bande réelle), 1 centre bas (rare : exige ras de ligne + couloir — l'abondance viendra
+    avec l'« approche pilotée du centre », dette déjà nommée). verify-frappes 6 → 13
+    clauses (reprise, demi-volée nommée au vy, dégagement, fenêtre morte, chaîne complète,
+    2 sabotages « pieds au sol » / « que des cloches »). Leçons de fixture : un vol PLAT de
+    15 m retombe avant le corps (balistique — poser l'origine à 3,5 m), le droit de prise
+    veut le pass ANTIDATÉ (releaseTtl 0,5 s), et tryCross s'appelle en DIRECT comme tryShot
+    (le porteur posé à froid n'exécute pas par l'arbitre — il dérive hors couloir). Le
+    répertoire aérien du pied est complet ; dettes : poitrine, saut de tête (scène), volée
+    de gestes en dehors de la surface (la reprise de transition).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

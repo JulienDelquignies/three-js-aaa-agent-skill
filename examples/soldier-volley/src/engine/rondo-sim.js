@@ -5,7 +5,7 @@ import { makeDribbler, dribbleStep, dribbleSteer, touchDistance } from './dribbl
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { chargeStep, slideTackleStep } from './duel.js';
-import { teteStep } from './tete.js';
+import { teteStep, voleeStep } from './tete.js';
 import { gauss } from './attributes.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
@@ -952,6 +952,9 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // d'un corps se REPREND — au but, en dégagement, en remise ; à deux, le duel aérien
     // tranche (tete.js). Avant la prise au sol : la tête coupe ce que le pied attendait.
     if (cfg.tete && st.full && st.phase === 'flight' && released) teteStep(st, cfg);
+    // …et SOUS la fenêtre de tête, LA VOLÉE (lot 40) : la reprise en surface, le dégagement
+    // d'urgence — le pied joue le vol avant la prise au sol (tete.js, même famille du ciel)
+    if (cfg.volee && st.full && st.phase === 'flight' && released) voleeStep(st, cfg);
     let taker = -1, bestD = Infinity;
     if (released) {
       for (const p of st.players) {

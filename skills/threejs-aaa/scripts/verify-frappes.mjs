@@ -11,7 +11,7 @@
 // bandes (buts 30 → 15 mesurés au premier jet trop généreux), le piqué est RARE (37 % de
 // piqués n'est pas du football), le pointu-sans-préparation est une dette nommée.
 import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
-import { tryShot } from '../assets/starter/src/engine/shooting.js';
+import { tryShot, tryCross } from '../assets/starter/src/engine/shooting.js';
 import { KEEPER, keeperDecide } from '../assets/starter/src/engine/keeper.js';
 
 let pass = 0, fail = 0;
@@ -128,6 +128,139 @@ const frappe = (st, c, cfg, u, gkX = null) => {
   const spin = Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]);
   ok(`sabotage « pied unique » attrapé (shotVariety:false : kind=${r.shot?.kind}, courbe ${zLin != null && r.plane ? Math.abs(r.plane.z - zLin).toFixed(2) : '?'} m < 0,2 — le vol tendu d'hier, sans Magnus, nommé)`,
     r.shot?.kind === 'tendu' && !!r.plane && zLin != null && Math.abs(r.plane.z - zLin) < 0.2);
+}
+
+// ---------- 7. LA VOLÉE reprend le centre bas (lot 40) : le pied joue le ballon EN VOL
+{
+  const { st, sgn, goal, cfg } = mk();
+  const gk1 = st.players.find((q) => q.team === 1 && q.keeper);
+  gk1.p[0] = goal.x; gk1.p[2] = 0;
+  const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  c.p[0] = goal.x - sgn * 9; c.p[2] = 2; c.v = [0, 0]; c.act = null;  // posé au point de penalty
+  // un vol PLAT à hauteur de pied qui traverse sa position (la porte légale du restart, aucun
+  // v écrit) — de PRÈS : un plat de 15 m retombait au sol à 9,8 m, avant le corps (balistique) ;
+  // et le pass ANTIDATÉ (releaseTtl 0,5 s : le droit de prise doit être ouvert au contact)
+  st.ball.release('sortie');
+  st.ball.restart([goal.x - sgn * 12.5, 0.75, 2], { cause: 'touche' });
+  st.ball.strike({ speed: 12, dirYaw: Math.atan2(0, sgn), elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });
+  st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0; st._teteCd = 0;
+  st.pass = { from: 0, to: -2, lead: [goal.x - sgn * 9, 0, 2], t: st.t - 1, origin: [goal.x - sgn * 12.5, 2], flight: 0.6 };
+  st.rnd = () => 0.5;
+  for (let i = 0; i < 1.2 * 60 && !st.events.some((e) => e.type === 'volée'); i++) matchStep(st, 1 / 60, cfg);
+  const v = st.events.find((e) => e.type === 'volée');
+  const shot = st.events.find((e) => e.type === 'shot' && (e.kind === 'volée' || e.kind === 'demi-volée'));
+  ok(`la VOLÉE reprend (mode=${v?.mode} de nº${v?.by}, shot kind=${shot?.kind} portée ${shot?.range} m — première intention, le canal standard, le plongeon répond)`,
+    v?.mode === 'but' && !!shot && shot.range < 14.01);
+}
+
+// ---------- 8. LA DEMI-VOLÉE : le ballon qui REMONTE de son rebond porte son nom
+{
+  const { st, sgn, goal, cfg } = mk();
+  const gk1 = st.players.find((q) => q.team === 1 && q.keeper);
+  gk1.p[0] = goal.x; gk1.p[2] = 0;
+  const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  c.p[0] = goal.x - sgn * 10; c.p[2] = -1; c.v = [0, 0]; c.act = null;
+  // le ballon JAILLIT du sol devant lui (strike montant depuis le gazon : vy > 0 dans la fenêtre)
+  st.ball.release('sortie');
+  st.ball.restart([goal.x - sgn * 10.6, 0.11, -1], { cause: 'touche' });
+  st.ball.strike({ speed: 5, dirYaw: Math.atan2(0, sgn), elevation: 0.9, spinAxis: [0, 1, 0], spinRev: 0 });
+  st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0; st._teteCd = 0;
+  // le pass ANTIDATÉ : l'origine à 0,6 m du corps ne « released » jamais dans releaseClear —
+  // c'est le TTL qui ouvre le droit de prise, et le contact arrive à 0,2 s
+  st.pass = { from: 0, to: -2, lead: [goal.x - sgn * 10, 0, -1], t: st.t - 1, origin: [goal.x - sgn * 10.6, -1], flight: 0.4 };
+  st.rnd = () => 0.5;
+  for (let i = 0; i < 1.0 * 60 && !st.events.some((e) => e.type === 'volée'); i++) matchStep(st, 1 / 60, cfg);
+  const shot = st.events.find((e) => e.type === 'shot' && e.kind === 'demi-volée');
+  ok(`la DEMI-VOLÉE porte son nom (ballon MONTANT dans la fenêtre — vy > 0 au contact : kind=${shot?.kind})`,
+    !!shot);
+}
+
+// ---------- 9. LE DÉGAGEMENT DE VOLÉE : le défenseur boxe le vol loin de son but
+{
+  const { st, sgn, cfg } = mk();
+  const d = st.players.find((p) => p.team === 1 && !p.keeper);
+  const own1 = st.pitch.ownGoal(1);
+  d.p[0] = own1.x - Math.sign(own1.x) * 10; d.p[2] = 0; d.v = [0, 0]; d.act = null;
+  st.ball.release('sortie');
+  st.ball.restart([d.p[0] - Math.sign(own1.x) * 5, 0.9, 0], { cause: 'touche' });
+  st.ball.strike({ speed: 10, dirYaw: Math.atan2(0, Math.sign(own1.x)), elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });
+  st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0; st._teteCd = 0;
+  st.pass = { from: 0, to: -2, lead: [d.p[0], 0, 0], t: st.t, origin: [d.p[0] - Math.sign(own1.x) * 5, 0], flight: 0.55 };
+  for (let i = 0; i < 1.2 * 60 && !st.events.some((e) => e.type === 'volée'); i++) matchStep(st, 1 / 60, cfg);
+  const v = st.events.find((e) => e.type === 'volée' && e.mode === 'dégagement');
+  const fuit = st.ball.v[0] * Math.sign(own1.x) < -3;
+  ok(`le DÉGAGEMENT de volée vit (mode=${v?.mode} de nº${v?.by}, le ballon FUIT le but propre : vx·sgn=${(st.ball.v[0] * Math.sign(own1.x)).toFixed(1)} < −3)`,
+    !!v && fuit);
+}
+
+// ---------- 10. LA FENÊTRE MORTE (1,15-1,5 m) : ni pied ni tête — la poitrine est la dette
+{
+  const { st, sgn, goal, cfg } = mk();
+  const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  c.p[0] = goal.x - sgn * 9; c.p[2] = 2; c.v = [0, 0]; c.act = null;
+  // le vol doit être à 1,15-1,5 AU CORPS : parti de 13 m il DESCENDAIT dans la fenêtre de
+  // volée en route (mesuré — 1 contact) ; de 2 m, il arrive à ~1,25 m, dans la zone morte
+  st.ball.release('sortie');
+  st.ball.restart([goal.x - sgn * 11, 1.45, 2], { cause: 'touche' });
+  st.ball.strike({ speed: 10, dirYaw: Math.atan2(0, sgn), elevation: 0.0, spinAxis: [0, 1, 0], spinRev: 0 });
+  st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0; st._teteCd = 0;
+  st.pass = { from: 0, to: -2, lead: [goal.x - sgn * 9, 0, 2], t: st.t - 1, origin: [goal.x - sgn * 11, 2], flight: 0.25 };
+  for (let i = 0; i < 0.3 * 60; i++) matchStep(st, 1 / 60, cfg);
+  ok(`la fenêtre MORTE est morte (vol à 1,32 m sur le corps : ${st.events.filter((e) => e.type === 'volée' || e.type === 'tête').length} contact — la poitrine est la dette nommée)`,
+    !st.events.some((e) => e.type === 'volée' || e.type === 'tête'));
+}
+
+// ---------- 11. sabotage nommé « les pieds au sol » : volee:false → le même vol traverse
+{
+  const { st, sgn, goal } = mk();
+  const cfg0 = matchCfg({ shotRange: 20, volee: false });
+  const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  c.p[0] = goal.x - sgn * 9; c.p[2] = 2; c.v = [0, 0]; c.act = null;
+  st.ball.release('sortie');
+  st.ball.restart([goal.x - sgn * 12.5, 0.75, 2], { cause: 'touche' });
+  st.ball.strike({ speed: 12, dirYaw: Math.atan2(0, sgn), elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });
+  st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0; st._teteCd = 0;
+  st.pass = { from: 0, to: -2, lead: [goal.x - sgn * 9, 0, 2], t: st.t - 1, origin: [goal.x - sgn * 12.5, 2], flight: 0.6 };
+  for (let i = 0; i < 0.6 * 60; i++) matchStep(st, 1 / 60, cfg0);
+  ok(`sabotage « pieds au sol » attrapé (volee:false : le même vol à 0,75 m traverse — ${st.events.filter((e) => e.type === 'volée').length} volée, le monde d'hier attend que ça retombe, nommé)`,
+    !st.events.some((e) => e.type === 'volée'));
+}
+
+// ---------- 12. LE CENTRE BAS naît au ras de la ligne — et la CHAÎNE se boucle sur la reprise
+{
+  const { st, sgn, goal, cfg } = mk();
+  const gk1 = st.players.find((q) => q.team === 1 && q.keeper);
+  gk1.p[0] = goal.x; gk1.p[2] = 0;
+  const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  const rec = st.players.filter((p) => p.team === 0 && !p.keeper && p.id !== c.id)[0];
+  rec.p[0] = goal.x - sgn * st.pitch.dims.spot; rec.p[2] = -1.5; rec.v = [0, 0]; rec.act = null;  // au point de penalty
+  pose(st, c, goal.x - sgn * 3.5, st.pitch.hz * 0.5);               // l'ailier AU RAS de la ligne, large
+  st.rnd = () => 0.5;
+  tryCross(st, c, cfg);                                             // l'appel direct — le patron tryShot
+  let centre = null;
+  for (let i = 0; i < 1.5 * 60 && !(centre = st.events.find((e) => e.type === 'centre')); i++) matchStep(st, 1 / 60, cfg);
+  for (let i = 0; i < 2 * 60 && !st.events.some((e) => e.type === 'volée' || e.type === 'tête' || e.type === 'but'); i++) matchStep(st, 1 / 60, cfg);
+  const reprise = st.events.find((e) => e.type === 'volée' || e.type === 'shot' && (e.kind === 'volée' || e.kind === 'demi-volée'));
+  ok(`le CENTRE BAS naît au ras de la ligne (bas=${centre?.bas} vers nº${centre?.to}) et la CHAÎNE se boucle (reprise=${reprise?.mode ?? reprise?.kind ?? 'aucune'} — le ballon de la volée existe enfin ; mesuré : centre t 0,23, demi-volée t 1,08, but)`,
+    centre?.bas === true && !!reprise);
+}
+
+// ---------- 13. sabotage nommé « que des cloches » : centreBas:false → la même scène part en cloche
+{
+  const { st, sgn, goal } = mk();
+  const cfg0 = matchCfg({ shotRange: 20, centreBas: false });
+  const gk1 = st.players.find((q) => q.team === 1 && q.keeper);
+  gk1.p[0] = goal.x; gk1.p[2] = 0;
+  const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  const rec = st.players.filter((p) => p.team === 0 && !p.keeper && p.id !== c.id)[0];
+  rec.p[0] = goal.x - sgn * st.pitch.dims.spot; rec.p[2] = -1.5; rec.v = [0, 0]; rec.act = null;
+  pose(st, c, goal.x - sgn * 3.5, st.pitch.hz * 0.5);
+  st.rnd = () => 0.5;
+  tryCross(st, c, cfg0);
+  let centre = null;
+  for (let i = 0; i < 1.5 * 60 && !(centre = st.events.find((e) => e.type === 'centre')); i++) matchStep(st, 1 / 60, cfg0);
+  ok(`sabotage « que des cloches » attrapé (centreBas:false : la même scène au ras de la ligne part bas=${centre?.bas} — l'arc d'hier, nommé)`,
+    !!centre && !centre.bas);
 }
 
 // ---------- 6. le FLUX : le répertoire VIT en match (balayage coupe-circuit, doctrine lot 36)

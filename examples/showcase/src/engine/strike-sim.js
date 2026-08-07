@@ -262,7 +262,14 @@ export function strikeNow(st, c, cfg) {
   // premier rideau, pas une passe tendue (0 centre entré en surface sur 4 matchs mesurés —
   // mangés en route). La balistique de la rentrée : portée → vitesse, θ ~26°, et le temps
   // de vol re-solvé pour le receveur qui attaque sa mène.
-  if (choice.cross && cfg.tete && st.full) {
+  if (choice.cross && choice.bas && st.full) {
+    // LE CENTRE BAS (lot 40) : fort et À RAS vers le point de penalty — le ballon skim à
+    // hauteur de reprise (apogée ~0,3 m, un rebond en route est sa nature), la volée l'attend
+    const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+    elev = 0.14;
+    spd = Math.max(15, R * 1.25);
+    sol.flightTime = R / (spd * Math.cos(elev));
+  } else if (choice.cross && cfg.tete && st.full) {
     const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
     elev = 0.45;
     spd = Math.sqrt(Math.max(8, R) * 9.81 / Math.sin(2 * elev));
@@ -282,7 +289,7 @@ export function strikeNow(st, c, cfg) {
   // lisible (0,5), flottante/pointu quasi rien (le gardien les lit tard). Sans kind : 0, au bit près.
   st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: kind?.rev ?? 0 });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
-  if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id });
+  if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id, bas: !!choice.bas });
   if (shot) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,

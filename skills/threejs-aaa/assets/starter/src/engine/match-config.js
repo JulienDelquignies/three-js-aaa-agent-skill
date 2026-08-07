@@ -85,6 +85,19 @@ export const MATCH = {
                           // un centre est un arc par-dessus le premier rideau (0 centre
                           // entré en surface avant — mangés en route, vols tendus).
                           // false : le jeu au sol d'hier (sabotage nommé).
+  volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 },
+                          // LA VOLÉE (11c11, st.full — lot 40) : le pied joue le ballon EN VOL
+                          // sous la fenêtre de tête (min-max m, portée reach) — REPRISE au but
+                          // en surface (< but m : shot kind 'volée', 'demi-volée' si le ballon
+                          // remonte de son rebond) et DÉGAGEMENT d'urgence près de son but.
+                          // Hors de ces deux urgences on ne volleye PAS : le contrôle est le
+                          // vrai geste. Fenêtre morte 1,15-1,5 m : la poitrine, dette nommée.
+                          // false : les pieds au sol d'hier (sabotage nommé).
+  centreBas: true,        // LE CENTRE BAS (11c11, st.full — lot 40) : au ras de la ligne (les 9
+                          // derniers mètres), le centre part FORT AU SOL vers le point de
+                          // penalty si le couloir existe (laneClearance 0,45 — un ballon à ras
+                          // se fait couper, contrairement à la cloche) ; c'est LUI qui sert la
+                          // reprise de volée. false : que des cloches (sabotage nommé).
   charge: { dist: 0.85, time: 0.4, cd: 3.0 },
   slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 },
                           // LE TACLE GLISSÉ SUR PORTEUR (11c11, st.full — lot 33) : le pari
