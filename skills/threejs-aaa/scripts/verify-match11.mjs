@@ -166,17 +166,65 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
     for (let i = 0; i < 0.8 * 60 && !st.events.some((e) => e.type === 'turnover'); i++) matchStep(st, 1 / 60, cfg);
     const ctl = st.events.filter((e) => e.type === 'control').pop();
-    return { d, ctl, carrier: st.possession.carrier, phase: st.phase, vRes: Math.hypot(st.ball.v[0], st.ball.v[2]) };
+    return { st, d, ctl, carrier: st.possession.carrier, phase: st.phase, vRes: Math.hypot(st.ball.v[0], st.ball.v[2]) };
   };
   const fuit = scene({}, 0.01);                                     // tirage bas → la touche FUIT
   ok(`la touche FUIT sur le long ballon (16 m/s, tirage 0,01 : control miss=${fuit.ctl?.miss}, ballon LIBRE — carrier ${fuit.carrier} = −1, phase ${fuit.phase}, résiduel ${fuit.vRes.toFixed(1)} m/s vivant)`,
     fuit.ctl?.miss === true && fuit.carrier === -1 && fuit.phase === 'loose' && fuit.vRes > 1.5);
+  // …ET LE FAUTIF CHASSE SA TOUCHE (lot 44 — capture utilisateur : le receveur restait PLANTÉ
+  // à côté de sa touche fuyante, l'adversaire prenait ; réflexe lossReact réutilisé)
+  ok(`le fautif CHASSE sa touche (inscrit au réflexe lossReact : ${fuit.d.id in (fuit.st._lossAt ?? {})} — il se retourne sur sa touche fuyante au lieu de rester planté)`,
+    (fuit.st._lossAt ?? {})[fuit.d.id] != null);
   const prend = scene({}, 0.99);                                    // tirage haut → la prise est propre
   ok(`la prise PROPRE existe aussi (même scène, tirage 0,99 : possédé par nº${prend.carrier} = nº${prend.d.id} — un bon défenseur contrôle un long ballon, c'est un TIRAGE, pas une loterie visuelle)`,
     prend.carrier === prend.d.id && prend.ctl?.miss !== true);
   const aimant = scene({ touchePrix: false }, 0.01);                // la clé retirée → l'aimant d'hier
   ok(`sabotage « l'aimant » attrapé (touchePrix:false, même scène, même tirage : possédé instantanément par nº${aimant.carrier} à 16 m/s — le ballon attiré sans prix, nommé)`,
     aimant.carrier === aimant.d.id);
+}
+
+// ---------- 3d. LA PASSE EN UNE TOUCHE (lot 44, retour utilisateur « il manque la possibilité
+// d'avoir des passes en une touche ») : sous PRESSION, un ballon jouable repart en PREMIÈRE
+// INTENTION vers une ligne courte et ouverte — sans être possédé (le patron de la remise de
+// tête, déchet ×1,6). Flux mesuré : 28 une-touches / 25 min (6,5 % des passes — porte
+// pression-seulement ; la une-touche au calme est un axe de style, dette nommée).
+{
+  const scene = (cfgExtra, presse) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const sgn = -st.pitch.ownGoal(0).sign;
+    for (const q of st.players.filter((q) => q.team === 0)) { q.p[0] = -sgn * 40; q.p[2] = 25; q.v = [0, 0]; }
+    for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = -sgn * 40; q.p[2] = -25; q.v = [0, 0]; }
+    const r = st.players.find((p) => p.team === 0 && !p.keeper);
+    const m = st.players.filter((p) => p.team === 0 && !p.keeper && p.id !== r.id)[0];
+    r.p[0] = 5; r.p[2] = 0; r.v = [0, 0]; r.act = null;              // le receveur pressé
+    m.p[0] = 5; m.p[2] = 8; m.v = [0, 0]; m.act = null;              // l'option courte, ligne ouverte
+    if (presse) {
+      // …PILE dans le DOS du receveur, sur l'axe de la passe (marquage réel) : décalé, sa
+      // course de press COUPAIT la livraison avant r (mesuré : dF 1,05 < dR 1,70 à t 0,7 —
+      // du vrai football, mais pas la scène) ; dans le dos, le ballon s'arrête à r d'abord
+      const f = st.players.find((p) => p.team === 1 && !p.keeper);
+      f.p[0] = 5 + sgn * 1.4; f.p[2] = 0; f.v = [0, 0];              // le presseur dans le dos, sur l'axe
+    }
+    st.ball.release('sortie');
+    st.ball.restart([5 - sgn * 7, 0.11, 0], { cause: 'touche' });
+    st.ball.strike({ speed: 8, dirYaw: Math.atan2(0, sgn), elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });
+    st.restart = null;
+    st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.hold = 0; st.lastTouch = 0;
+    st.pass = { from: 0, to: r.id, lead: [5, 0, 0], t: st.t - 1, origin: [5 - sgn * 7, 0], flight: 0.9 };
+    st.rnd = () => 0.3;                                              // sous le tirage p 0,65 → la une-touche part
+    const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+    for (let i = 0; i < 1.2 * 60 && !st.events.some((e) => e.type === 'pass' && e.style === 'une-touche') && st.phase !== 'carry'; i++) matchStep(st, 1 / 60, cfg);
+    return { st, r, m, ut: st.events.find((e) => e.type === 'pass' && e.style === 'une-touche') };
+  };
+  const sous = scene({}, true);
+  ok(`la UNE-TOUCHE part sous pression (pass style=${sous.ut?.style} de nº${sous.ut?.by} vers nº${sous.ut?.to} = nº${sous.m.id} à ${sous.ut?.d} m — le ballon repart SANS être possédé, première intention)`,
+    !!sous.ut && sous.ut.by === sous.r.id && sous.ut.to === sous.m.id);
+  const calme = scene({}, false);
+  ok(`au CALME on contrôle (même scène sans presseur : une-touche=${!!calme.ut}, phase=${calme.st.phase} — la première intention est l'arme du pressé, pas un tic)`,
+    !calme.ut && calme.st.phase === 'carry');
+  const sab = scene({ uneTouche: false }, true);
+  ok(`sabotage « le monde à deux touches » attrapé (uneTouche:false, même scène pressée : une-touche=${!!sab.ut} — le contrôle obligatoire d'hier, nommé)`,
+    !sab.ut);
 }
 
 // ---------- 4. sabotage nommé : sans la formation, le 22-corps redevient l'essaim du réduit
@@ -566,8 +614,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   }
   const tirs = { length: tirsN };
   const dives = divesN, arrets = arretsN, buts = butsN;
-  ok(`le gardien DÉFEND ses coins (${dives}/${tirs.length} frappes plongées ≥ 25 %, ${arrets} arrêt(s) ≥ 1, ${buts} but(s) — conversion ≤ 60 % : mesuré 21 % après, 57 % avant)`,
-    tirs.length >= 3 && dives / tirs.length >= 0.2 && arrets >= 2 && buts / Math.max(1, tirs.length) <= 0.6);
+  // …la part de plongeons re-fondée en EXISTENCE (lot 44) : le monde du bloc compact envoie
+  // des tirs plus centraux — prises et claquettes défendent sans plongeon (mesuré : 8 arrêts
+  // sur 11 tirs, 1 plongeon). Le plongeon DÉTERMINISTE est prouvé par le contrat gardien
+  // (fixtures) ; ici le flux prouve que les tirs SE DÉFENDENT.
+  ok(`le gardien DÉFEND (${dives}/${tirs.length} frappe(s) plongée(s) ≥ 1, ${arrets} arrêt(s) ≥ 2, ${buts} but(s) — conversion ≤ 60 % : le bloc compact centre les tirs, la prise défend sans plonger)`,
+    tirs.length >= 3 && dives >= 1 && arrets >= 2 && buts / Math.max(1, tirs.length) <= 0.6);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -22,7 +22,12 @@ import * as THREE from 'three/webgpu';
 // the visible pools on the grass and the glow at the mast heads and cast nothing.
 
 const KEY_DIST = 90;    // m — a directional light has no falloff and no position in the shading maths;
-const KEY_ELEV = 0.62;  // this pair only fixes its DIRECTION (≈35° up) and where the frustum sits.
+const KEY_ELEV = 0.88;  // this pair only fixes its DIRECTION (≈50° up) and where the frustum sits.
+                        // 0,62 (35°) couchait l'OMBRE DE TRIBUNE en travers du terrain — toute la
+                        // moitié côté key mourait dans un coin noir (capture utilisateur : « la cage
+                        // est trop sombre pour voir ce qu'il se passe », lot 44). Plus haut = ombre
+                        // courte, la surface de but reste lisible ; la nuit vit dans le bol, pas sur
+                        // la pelouse — un match SE REGARDE.
 const PITCH_PAD = 4;    // m of grass past the painted line — players and the ball live out there
 const SHADOW_TOP = 10;  // m — goals (2.44), players, headers. A ball 20 m up casts nothing anyone reads.
 // THE NIGHT BUDGET, and why these numbers and not bigger ones. A floodlit pitch is ~1 500 lux; open
@@ -224,11 +229,14 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   for (const m of masts) {
     // Each mast washes ITS OWN quadrant. Four corner masts all aimed at the centre spot stack one hot
     // spot on the halfway line and leave the four corner flags in the dark.
-    const ax = Math.sign(m.x || 1) * L * 0.3, az = Math.sign(m.z || 1) * W * 0.25;
+    // …et le quadrant va JUSQU'À SA LIGNE (lot 44 — « la cage est trop sombre », capture
+    // utilisateur) : visée 0,30 → 0,36 L et cône 0,62 → 0,68 — à 0,30 les nappes s'arrêtaient
+    // à ±31 m et les 21 derniers mètres (la surface !) vivaient dans le noir entre elles.
+    const ax = Math.sign(m.x || 1) * L * 0.36, az = Math.sign(m.z || 1) * W * 0.25;
     const d = Math.hypot(m.x - ax, m.y, m.z - az);
     // distance 0 = no cutoff: a finite `distance` draws a visible ring across the grass where the
     // window function reaches zero, and at these ranges that ring always lands mid-pitch.
-    const spot = new THREE.SpotLight(0xf0f5ff, 1, 0, 0.62, 0.55, 2);
+    const spot = new THREE.SpotLight(0xf0f5ff, 1, 0, 0.68, 0.55, 2);
     // Intensity is CANDELA and decay is 2, so irradiance at the aim point is I/d². Deriving I from the
     // real mast distance is what keeps a tier-1 pylon (14.5 m, close in) and a tier-5 roof rig at the
     // same level on the grass instead of one of them being a white hole.
@@ -248,6 +256,21 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
     // add() first, and `at` added to the aim. The other order points every head at the world origin
     // as soon as the stadium is not at [0,0,0].
     head.lookAt(at[0] + ax, at[1], at[2] + az);
+  }
+  // LE LAVAGE DES CAGES (lot 44 — l'uniformité des vrais rigs UEFA : la surface de but est
+  // l'endroit du terrain qu'on doit VOIR). Deux nappes dédiées, une par but, tirées des deux
+  // mâts du côté : la bouche de but vivait dans le noir entre les quatre quadrants (capture
+  // utilisateur). Modestes (×0,55 du POOL) : la nuit reste une nuit, la cage se lit.
+  for (const gx of [-L / 2, L / 2]) {
+    const m = masts.reduce((b, q) => (!b || Math.hypot(q.x - gx, q.z) < Math.hypot(b.x - gx, b.z) ? q : b), null);
+    if (!m) continue;
+    const d = Math.hypot(m.x - gx, m.y, m.z);
+    const wash = new THREE.SpotLight(0xf0f5ff, 1, 0, 0.52, 0.6, 2);
+    wash.intensity = POOL_E * 0.55 * d * d * intensity;
+    wash.position.set(m.x, m.y, m.z);
+    wash.target.position.set(gx * 0.98, 0, 0);
+    wash.castShadow = false;
+    group.add(wash); group.add(wash.target); spots.push(wash);
   }
 
   return {

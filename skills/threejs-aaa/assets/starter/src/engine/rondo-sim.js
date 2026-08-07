@@ -1,6 +1,6 @@
 import { BALL, stepBall, kick } from './ball.js';
 import { predictPath } from './ball-predict.js';
-import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
+import { solvePass, solveGroundLeg, flightRace, interceptPoint, laneClearance } from './ball-predict.js';
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
@@ -250,6 +250,45 @@ function receive(st, id, cfg = RONDO) {
   // un ballon encore PORTÉ par un autre change de mains ici : la sortie se nomme (vol de balle)
   if (st.ball.owner != null && st.ball.owner !== id) st.ball.release('perte');
   if (p.team === st.possession.team) {
+    // LA PASSE EN UNE TOUCHE (lot 44, cfg.uneTouche && st.full — retour utilisateur « il
+    // manque la possibilité d'avoir des passes en une touche ») : sous PRESSION, la première
+    // intention — le ballon repart SANS être possédé (le patron de la remise de tête).
+    // Le vrai geste a ses conditions : un presseur dans les jambes (c'est LUI qui force la
+    // une-touche), un ballon jouable (≤ vmax, au sol), une ligne courte et OUVERTE — et le
+    // déchet MAJORÉ (×1,6 : jouer en première intention est le geste le plus dur du
+    // football). Tirage seedé, la note de contrôle module. Refusée ou pas d'option : le
+    // contrôle normal reprend, rien n'est dû. Dette nommée : la photo Loi 11 (comme la
+    // remise de tête). false : le monde à deux touches d'hier (sabotage nommé).
+    const UT = st.full && !p.keeper && st.pass && st.pass.to === id ? cfg.uneTouche : null;
+    if (UT) {
+      const arrU = Math.hypot(st.ball.v[0], st.ball.v[2]);
+      const foeU = st.players.filter((q) => q.team !== p.team && q.down <= 0)
+        .reduce((b, q) => (!b || d2(q.p, p.p) < d2(b.p, p.p) ? q : b), null);
+      if (foeU && d2(foeU.p, p.p) < (UT.press ?? 2.6) && arrU <= (UT.vmax ?? 9.5) && st.ball.p[1] < 0.5
+        && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * Math.min(1.2, p.skill?.controlF ?? 1)) {
+        const blockers = st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0).map((q) => q.p);
+        const mate = st.players
+          .filter((m) => m.team === p.team && m.id !== id && !m.keeper && m.down <= 0)
+          .map((m) => ({ m, d: d2(m.p, p.p) }))
+          .filter((x) => x.d > 3 && x.d < (UT.portee ?? 14))
+          .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.m.p[0], 0, x.m.p[2]], blockers).margin ?? 0 }))
+          .filter((x) => x.marge >= (UT.couloir ?? 0.5))
+          .sort((a, b) => b.marge - a.marge)[0];
+        if (mate) {
+          st.passes++; st.best = Math.max(st.best, st.passes);
+          st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: id, count: st.passes });
+          st.lastTouch = p.team;
+          const sigU = (p.skill?.passSigma ?? cfg.execSigma ?? 0.044) * 1.6;
+          const yawU = Math.atan2(mate.m.p[2] - p.p[2], mate.m.p[0] - p.p[0]) + gauss(st.rnd ?? (() => 0.5)) * sigU;
+          const spdU = Math.min(12, Math.max(6, mate.d * 0.85));
+          st.ball.strike({ speed: spdU, dirYaw: yawU, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
+          st.pass = { from: id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'une-touche', t: st.t, flight: mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
+          st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0;
+          st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: id, to: mate.m.id, d: +mate.d.toFixed(1) });
+          return;
+        }
+      }
+    }
     if (st.pass && st.pass.to === id) {
       st.passes++; st.best = Math.max(st.best, st.passes);
       st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: id, count: st.passes });
@@ -340,6 +379,15 @@ function receive(st, id, cfg = RONDO) {
         st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62]);
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot,
           surface: pick.surface, speed: +arr.toFixed(1), miss: true, settle: null });
+        // LE CONTRÔLE RATÉ TUE LA PASSE (lot 44, st.full — capture utilisateur : le receveur
+        // du long ballon restait PLANTÉ, ciblé sur son ancien point de chute par st.pass
+        // vivant, pendant que l'adversaire prenait sa touche fuyante). La livraison est MORTE
+        // — ballon libre — et le fautif CHASSE sa touche (réflexe lossReact). Le rondo garde
+        // son monde d'hier au bit près (doctrine).
+        if (st.full) {
+          st.pass = null; st.phase = 'loose'; st.possession.carrier = -1;
+          if (cfg.lossReact) (st._lossAt ??= {})[id] = st.t;
+        }
         return;                                                    // pas de possession : la touche a fui
       }
       st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)]);

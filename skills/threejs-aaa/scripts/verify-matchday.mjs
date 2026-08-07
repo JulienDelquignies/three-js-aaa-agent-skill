@@ -105,7 +105,7 @@ function makeRig() {
   ok('rig de nuit construit sans GPU (l\'IBL est la seule pièce qui en exige un)', !!night.group && !!night.sun);
   ok('contrat de nuit OK sur un tier 5 (toit)', r.ok, r.issues.join(' | ') || '');
   ok('`sun` est directionnelle et projette l\'ombre (exigence GodraysNode)', night.sun.isDirectionalLight && night.sun.castShadow);
-  ok('quatre bancs de projecteurs', night.spots.length === 4);
+  ok('six nappes de projecteurs (4 quadrants + 2 lavages de cage — lot 44 : « la cage est trop sombre », la surface de but se lit)', night.spots.length === 6);
   ok('aucun spot ne projette d\'ombre (une seule passe de profondeur)', night.spots.every((s) => !s.castShadow));
   ok('le brouillard de nuit est posé sur la scène', scene.fog instanceof THREE.FogExp2);
   {

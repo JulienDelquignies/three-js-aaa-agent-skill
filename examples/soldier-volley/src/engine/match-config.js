@@ -85,6 +85,14 @@ export const MATCH = {
                           // un centre est un arc par-dessus le premier rideau (0 centre
                           // entré en surface avant — mangés en route, vols tendus).
                           // false : le jeu au sol d'hier (sabotage nommé).
+  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65 },
+                          // LA PASSE EN UNE TOUCHE (11c11, st.full — lot 44, retour utilisateur) :
+                          // sous pression (presseur < press m), un ballon jouable (≤ vmax m/s, au
+                          // sol) repart en PREMIÈRE INTENTION vers une ligne courte et ouverte
+                          // (≤ portee m, couloir libre) — sans être possédé. Déchet ×1,6 (le geste
+                          // le plus dur du football), tirage seedé (p), controlF module. Dette
+                          // nommée : la photo Loi 11 (comme la remise de tête). false : le monde
+                          // à deux touches d'hier (sabotage nommé).
   touchePrix: { seuil: 10, taux: 0.07, max: 0.55 },
                           // LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet
                           // aimant sur les longs ballons ») : la prise de TURNOVER paie le même

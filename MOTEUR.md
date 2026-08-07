@@ -646,6 +646,24 @@ de services, jamais à la latence des survivants — sans urgence, seuls les ser
 instantanés aboutissent, et le biais du survivant rend le monde saboté « plus rapide »
 alors qu'il sert moitié moins.
 
+### La première intention et le rattrapage (lot 44)
+
+Trois retours utilisateur avec captures. **Le contrôle raté tue la passe** : un long ballon
+raté laissait `st.pass` vivant — le receveur restait PLANTÉ sur son ancien point de chute
+pendant que l'adversaire prenait sa touche fuyante. Désormais (st.full) : passe morte, ballon
+LIBRE, et le fautif CHASSE sa touche (le réflexe `lossReact`, réutilisé tel quel — une
+autorité). **La passe en une touche** (`cfg.uneTouche`) : sous pression, un ballon jouable
+repart en PREMIÈRE INTENTION vers une ligne courte et ouverte — sans être possédé (le patron
+de la remise de tête), déchet ×1,6, tirage seedé modulé `controlF`. 6,5 % des passes en flux
+(porte pression-seulement — la une-touche au calme est un axe de style, dette nommée ; photo
+Loi 11 : même dette que la remise de tête). Sabotage « le monde à deux touches ».
+**La cage éclairée** (`stadium-night`) : visée des nappes 0,30 → 0,36 L, cône 0,68, DEUX
+LAVAGES DE CAGE (rig 4 → 6 — l'uniformité UEFA, modestes pour que la nuit reste une nuit),
+key à 50° (l'ombre de tribune ne couche plus son coin noir sur la surface). Prouvé par
+capture avant/après (playmode) : le gardien se lit dans sa cage. Leçon de fixture : un
+presseur posé près d'une trajectoire de passe la PREND ou l'INTERCEPTE (receiveRadius, la
+course de press) — le marquage de fixture se pose dans le DOS du receveur, sur l'axe.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

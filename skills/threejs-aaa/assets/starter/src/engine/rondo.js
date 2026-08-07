@@ -625,6 +625,9 @@ function turnover(st, carrier, why, cfg = null) {
         st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62]);
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), miss: true, settle: null });
         st.phase = 'loose'; st.possession = { team: st.players[carrier].team, carrier: -1 };
+        // …et le fautif CHASSE sa touche (lot 44, réflexe lossReact — capture utilisateur :
+        // le receveur restait PLANTÉ à côté de sa touche fuyante, l'adversaire prenait)
+        if (cfg?.lossReact) (st._lossAt ??= {})[carrier] = st.t;
         ev.v1 = +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(2);
         return;
       }

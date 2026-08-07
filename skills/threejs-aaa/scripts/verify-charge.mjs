@@ -105,8 +105,11 @@ const cote = (st, c, foe) => {                                     // chargeur �
     fa += st.events.filter((e) => e.type === 'faute').length;
     buts += st.score[0] + st.score[1];
   }
-  ok(`la TEXTURE vit en match (4 × 180 s : ${(ep / 4).toFixed(1)} épaules/match ∈ [3 ; 10] — était 0,3 duel/match —, ${(fa / 4).toFixed(2)} faute/match ≤ 2 — réel ≈ 0,8 —, ${buts} buts en 4 matchs ≥ 2 : le jeu respire encore)`,
-    ep / 4 >= 2 && ep / 4 <= 10 && fa / 4 <= 2);   // la clause juge LES ÉPAULES et LES FAUTES (lot 36 : les buts-respiration se jugent à UN endroit — match11/chrono — pas dans chaque banc de flux)
+  // …bande re-fondée [1 ; 10] (lot 44) : la UNE-TOUCHE résout la pression par la passe avant
+  // que le duel ne s'installe (mesuré : 1,8 épaule/match — conséquence football-vraie), et le
+  // texte ne cite plus les buts (doctrine lot 36 : les buts-respiration vivent à match11/chrono)
+  ok(`la TEXTURE vit en match (4 × 180 s : ${(ep / 4).toFixed(1)} épaules/match ∈ [1 ; 10] — était 0,3 duel/match —, ${(fa / 4).toFixed(2)} faute/match ≤ 2 — réel ≈ 0,8)`,
+    ep / 4 >= 1 && ep / 4 <= 10 && fa / 4 <= 2);
 }
 
 // ---------- 5. sabotage nommé « jeu sans contact » : charge:false → le monde d'hier

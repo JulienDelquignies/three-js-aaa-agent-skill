@@ -2672,6 +2672,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     sert MOITIÉ MOINS (11 contre 6 à l'échelle). Batterie verte, réduit 76/0 restauré par
     le gate st.full, rondo 40/40.
 
+79. **Contrôle raté qui se rattrape, passe en une touche, cage éclairée (lot 44 — trois
+    retours utilisateur avec captures).** (1) LE FIGÉ DU CONTRÔLE MANQUÉ : sur un long
+    ballon raté, le receveur restait PLANTÉ à côté de sa touche fuyante pendant que
+    l'adversaire prenait — st.pass restait VIVANT (le job receive le ciblait sur l'ancien
+    point de chute). Le contrôle raté TUE LA PASSE (st.full : pass null, phase loose) et le
+    fautif CHASSE sa touche — le réflexe lossReact réutilisé tel quel (les deux chemins :
+    contrôle attaquant ET touchePrix). (2) LA PASSE EN UNE TOUCHE (cfg.uneTouche) : sous
+    pression (presseur < 2,6 m), un ballon jouable (≤ 9,5 m/s, au sol) repart en PREMIÈRE
+    INTENTION vers une ligne courte et ouverte — SANS être possédé (le patron de la remise
+    de tête), déchet ×1,6 (le geste le plus dur du football), tirage seedé modulé controlF.
+    Flux : 28 une-touches / 25 min (6,5 % des passes — porte pression-seulement ; la
+    une-touche au calme est un axe de style, dette nommée ; photo Loi 11 : même dette que
+    la remise de tête). Fixture à trois mondes (part sous pression / au calme on contrôle /
+    sabotage « le monde à deux touches »). LEÇON DE FIXTURE ×2 : le presseur posé près de
+    la trajectoire PREND le ballon (receiveRadius) ou l'INTERCEPTE en courant (du vrai
+    football qui parasite la scène) — le marquage se pose PILE dans le dos, sur l'axe.
+    (3) LA CAGE ÉCLAIRÉE (stadium-night) : les 4 nappes visaient leurs quadrants (±0,30 L)
+    — la surface de but vivait dans le noir entre elles, et l'ombre de tribune du key
+    (35°) couchait un coin noir sur la moitié du terrain (capture : gardien INVISIBLE dans
+    sa cage). Trois corrections : visée 0,30 → 0,36 L + cône 0,68, DEUX LAVAGES DE CAGE
+    (l'uniformité des vrais rigs UEFA — modestes ×0,55, la nuit reste une nuit), key à 50°.
+    PROUVÉ PAR CAPTURE avant/après (playmode — l'instrument honnête d'un fix de scène) :
+    le gardien se lit dans sa cage, le bol reste sombre. Rig 4 → 6 nappes (contrat
+    matchday mis à jour). Re-fondations d'instrument au passage : le sabotage « service
+    nonchalant » TOMBE (3 instruments cassés en 3 mondes — latence/séparation/comptes, la
+    signature morphe : la clause vivante est la vérité du contrat, doctrine « une vérité
+    par contrat ») ; texture épaules [1 ; 10] (la une-touche résout la pression par la
+    passe AVANT le duel — conséquence football-vraie) ; ratio fatigue [0,78 ; 0,94] (il
+    vivait PILE sur 0,92) ; part de plongeons → existence (le bloc compact centre les
+    tirs, la prise défend sans plonger — 8 arrêts sur 11).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

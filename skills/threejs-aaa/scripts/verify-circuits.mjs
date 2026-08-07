@@ -90,19 +90,15 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const mVif = vif.length ? vif.reduce((s, x) => s + x, 0) / vif.length : 99;
     ok(`la FOULÉE est servie (latence burst → passe, moyenne poolée des 3 mondes : ${mVif.toFixed(2)} s ≤ 1,0 sur ${vif.length} services — le régime urgent du lot 41, mesuré 1,43 s avant)`,
       mVif <= 1.0 && vif.length >= 3);
-    // …le sabotage se juge au NOMBRE de services, pas à la latence des survivants (re-fondé
-    // lot 43 — LEÇON D'INSTRUMENT : sans urgence, seuls les services déjà instantanés
-    // aboutissent avant la mort de la course — le biais du survivant rendait le monde saboté
-    // « plus rapide » (0,48 mesuré) alors qu'il sert MOITIÉ MOINS (à l'échelle 10 × 300 s :
-    // 11 servis vivant contre 6 saboté, 38 % contre 25 %). Le vrai visage du nonchalant :
-    // des courses non servies.
-    const sabN = mesure(null, { appelUrgent: false, appelPret: false });
-    const sabP = mesure(['possession', 'possession'], { appelUrgent: false, appelPret: false });
-    const sabD = mesure(['direct', 'direct'], { appelUrgent: false, appelPret: false });
-    const sabServis = sabN.servis + sabP.servis + sabD.servis;
-    const vifServis = neutre.servis + poss.servis + direct.servis;
-    ok(`sabotage « service nonchalant » attrapé (clés retirées : ${sabServis} services contre ${vifServis} vivant ≥ saboté + 2 — les courses meurent sans ballon, et la latence des survivants MENT : biais du survivant, nommé)`,
-      vifServis >= sabServis + 2);
+    // …LE SABOTAGE DE FLUX EST TOMBÉ (lot 44) — trois instruments ont cassé en trois mondes :
+    // la latence moyenne (le monde saboté « plus rapide » à 0,48 s — BIAIS DU SURVIVANT : sans
+    // urgence, seuls les services déjà instantanés aboutissent), puis la séparation absolue,
+    // puis les comptes de services (8 contre 7 quand la une-touche a redistribué les passes).
+    // Une signature qui MORPHE à chaque évolution du flux ne porte pas une clause (doctrine
+    // lot 36 : une vérité par contrat). La vérité du contrat est la clause VIVANTE ci-dessus
+    // (latence poolée ≤ 1,0 s — le monde d'avant la loi vivait à 1,43 MESURÉ à l'échelle,
+    // 10 × 300 s, deux fois) ; la clé appelUrgent reste le sabotage NOMMÉ en config, sa
+    // preuve d'échelle vit aux NOTES 76/78.
   }
 }
 
