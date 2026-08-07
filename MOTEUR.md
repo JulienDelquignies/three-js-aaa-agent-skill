@@ -75,6 +75,11 @@ libère — le trottinement à 4 m/s derrière un ballon à 3 m était le « bal
 posé sur le porteur en touchF, consommé par dribble.js),
 `meetBall`/`meetZone`/`meetStep` (le receveur ATTAQUE son ballon d'un pas sur l'AXE de la
 livraison dans les derniers mètres — pas un correcteur balistique : l'erreur latérale échappe),
+`meetWalk` (LE RECEVEUR VIVANT, st.full : sur une passe dans les pieds ≥ 7 m il VIENT AU-DEVANT
+sur l'axe NOMINAL à allure de marche, plafond 1,1 m — mesuré avant : p25 de vitesse 0,00 m/s,
+14 % des vols FIGÉS > 60 % du temps, la statue au point de chute ; après : 0-1 % et la prise
+dans le pas. Geste de CONSTRUCTION : à < `hold` m du but il tient son point de fixation — sans
+la porte l'attaque redescendait, tirs 27 → 16 ; sabotage nommé « pose figée »),
 `execSigma` (le déchet technique du joueur MOYEN, ≈ 2,5° — les notes le raffinent, l'urgence
 l'aggrave ; sans lui le monde non noté exécutait parfaitement),
 `carryViaBall` (le porteur PASSE PAR SON BALLON : au-delà de la portée de contrôle, la cible de

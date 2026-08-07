@@ -597,6 +597,29 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (bx / bl) * step, 0, st.pass.lead[2] + (bz / bl) * step];
       }
     }
+    // LE RECEVEUR VIVANT (retour utilisateur « cette pose statique en attendant le ballon ») :
+    // mesuré, p25 de vitesse = 0,00 m/s pendant le vol et 14 % des vols figés > 60 % du temps —
+    // loin du ballon, la rencontre n'existait pas encore, la statue au point de chute. Sur une
+    // passe DANS LES PIEDS (mène ≈ receveur) assez longue, il VIENT AU-DEVANT sur l'AXE NOMINAL
+    // de la livraison (mène → origine), à allure de marche, borné — le corps vit pendant TOUT le
+    // vol, la prise se fait dans le pas, et l'erreur latérale continue d'échapper (l'axe est
+    // NOMINAL, pas le vol réel : la leçon du flipper reste consignée). Le coureur d'appel garde
+    // sa course (_pace vivant = pas de retour vers l'origine), le réduit son monde (st.full).
+    // …ET LA ZONE EST LA LOI (cfg.meetWalk.hold) : venir au ballon est un geste de CONSTRUCTION —
+    // dans les ~30 derniers mètres le receveur TIENT son point de fixation (mesuré sans la porte :
+    // les prises < 22 m du but chutaient 12 → 5 et les tirs 27 → 16, l'attaque redescendait).
+    if (!met && st.full && cfg.meetWalk && dInb >= (cfg.meetZone ?? 4.5)
+      && !((flightRec._pace?.until ?? -1) > st.t)) {
+      const g = st.pitch.attackGoal(flightRec.team);
+      const dGoal = Math.hypot(st.pass.lead[0] - g.x, st.pass.lead[2] - (g.z ?? 0));
+      const ax = st.pass.origin[0] - st.pass.lead[0], az = st.pass.origin[1] - st.pass.lead[2];
+      const al = Math.hypot(ax, az);
+      const adv = Math.min(cfg.meetWalk.max ?? 2.2, (st.t - st.pass.t) * (cfg.meetWalk.pace ?? 1.8), al * 0.25);
+      const dLead = Math.hypot(flightRec.p[0] - st.pass.lead[0], flightRec.p[2] - st.pass.lead[2]);
+      if (dGoal > (cfg.meetWalk.hold ?? 32) && al > (cfg.meetWalk.min ?? 7) && dLead < 2.5 + adv) {
+        met = [st.pass.lead[0] + (ax / al) * adv, 0, st.pass.lead[2] + (az / al) * adv];
+      }
+    }
     flightRec.target = met ?? [st.pass.lead[0], 0, st.pass.lead[2]];
   }
   {

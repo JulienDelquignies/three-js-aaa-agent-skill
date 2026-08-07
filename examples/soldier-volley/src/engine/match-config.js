@@ -203,6 +203,12 @@ export const MATCH = {
   carryViaBall: true,     // le porteur PASSE PAR SON BALLON (cible = ballon au-delà de la portée) ; false : la cible-plan (sabotage nommé)
   meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)
   meetStep: 1.3,          // m — UN PAS ET DEMI vers le ballon, sur l'axe de la livraison (pas un correcteur balistique)
+  meetWalk: { min: 7, max: 1.1, pace: 1.6, hold: 32 },  // LE RECEVEUR VIVANT (st.full) : sur une passe dans
+                          // les pieds ≥ min m, il vient AU-DEVANT du ballon sur l'AXE NOMINAL à allure de
+                          // marche (pace m/s, plafond max m et 25 % de la passe). Geste de CONSTRUCTION :
+                          // à moins de hold m du but adverse il TIENT son point de fixation (sans la porte,
+                          // prises < 22 m : 12 → 5 et tirs 27 → 16 — l'attaque redescendait) ; false : la
+                          // statue au point de chute pendant tout le début du vol (sabotage nommé « pose figée »)
   execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
   keeperDown: 1.15,       // s — le prix d'un plongeon (au sol après, gagné ou perdu) : couvre le
                           // couché + relevé RÉEL du clip (~1,05 s après contact à vitesse 1 —

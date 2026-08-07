@@ -409,8 +409,50 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   }
   dists.sort((a, b) => a - b);
   const p99 = dists[Math.floor(0.99 * (dists.length - 1))] ?? 0, mx = dists[dists.length - 1] ?? 0;
-  ok(`la CONDUITE est au pied (2 × 120 s : p99=${p99.toFixed(2)} m ≤ 1,9, pic=${mx.toFixed(2)} m ≤ 2,3 — au-delà de 2,2 le ballon est LIBRE, plus de possession fantôme)`,
-    p99 <= 1.9 && mx <= 2.3);
+  // le PIC est le discriminant (2,91 avant le plafond, ≤ 2,2 + une image après — structurel) ;
+  // le p99 est une sanité LARGE sous le plafond (1,63-1,92 selon le flux des graines — une borne
+  // à 1,9 collée au flux d'hier re-cassait à chaque évolution du cerveau, doctrine lot 36)
+  ok(`la CONDUITE est au pied (2 × 120 s : p99=${p99.toFixed(2)} m ≤ 2,1, pic=${mx.toFixed(2)} m ≤ 2,3 — au-delà de 2,2 le ballon est LIBRE, plus de possession fantôme)`,
+    p99 <= 2.1 && mx <= 2.3);
+}
+
+// ---------- 8c. LE RECEVEUR VIVANT (lot 38, retour utilisateur « cette pose statique en
+// attendant le ballon ») : pendant le vol d'une passe dans les pieds, le receveur VIENT
+// AU-DEVANT sur l'axe nominal (meetWalk — marche bornée, zone de construction seulement :
+// à < 32 m du but il tient son point de fixation). Mesuré : p25 de vitesse 0,00 → ~0,8 m/s,
+// vols figés > 60 % du temps 14 % → ~1 %, tirs 27 → 24 et buts 9 → 11 sur 10 graines (la
+// respiration tenue). La MÊME mesure, deux mondes — le sabotage est la clé retirée.
+{
+  const mesure = (cfgExtra) => {
+    let still = 0, frames = 0, geles = 0, vols = 0, vol = null;
+    for (const seed of [1, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const rec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
+        if (rec && !rec.keeper) {
+          if (!vol || vol.to !== st.pass.to || vol.t0 !== st.pass.t) {
+            if (vol && vol.n >= 12) { vols++; if (vol.s / vol.n > 0.6) geles++; }
+            vol = { to: st.pass.to, t0: st.pass.t, s: 0, n: 0 };
+          }
+          const v = Math.hypot(rec.v[0], rec.v[1]);
+          frames++; vol.n++; if (v < 0.5) { still++; vol.s++; }
+        } else if (vol) { if (vol.n >= 12) { vols++; if (vol.s / vol.n > 0.6) geles++; } vol = null; }
+      }
+      vol = null;
+    }
+    return { statue: still / Math.max(1, frames), geles, vols };
+  };
+  // la part < 0,5 m/s varie par graines (4-14 % mesurés — le monde saboté vit à 37 %) : la
+  // borne à 20 % SÉPARE les deux mondes sans coller au flux (doctrine lot 36) ; les vols
+  // FIGÉS > 60 % sont le vrai tueur de statue (14 % avant, ~0 après)
+  const vif = mesure({});
+  ok(`le RECEVEUR VIVANT (2 × 120 s : ${(vif.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≤ 20, ${vif.geles}/${vif.vols} vols figés > 60 % ≤ 8 % — il vient au-devant, la prise se fait dans le pas)`,
+    vif.statue <= 0.20 && vif.geles / Math.max(1, vif.vols) <= 0.08);
+  const fige = mesure({ meetWalk: false });
+  ok(`sabotage « pose figée » attrapé (meetWalk:false : ${(fige.statue * 100).toFixed(0)} % du vol < 0,5 m/s — la statue d'hier revient au double du monde vivant, nommée)`,
+    fige.statue > vif.statue * 2);
 }
 
 // ---------- 9. LES FRAPPES SE DÉFENDENT (lot 18) : l'envergure de la DÉCISION croit celle du

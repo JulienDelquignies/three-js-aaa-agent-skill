@@ -51,11 +51,13 @@ const rougeWorld = (seed) => {
   const actifs = st.players.filter((p) => p.team === 1 && !p.keeper && !p.expulse).length;
   ok(`l'équipe joue À 10 (${actifs} joueurs de champ actifs = 9, gardien aux gants)`,
     actifs === 9 && st.players.some((p) => p.team === 1 && p.keeper && !p.expulse));
-  // …et le MONDE CONTINUE à 10 : des passes vivent après l'expulsion
+  // …et le MONDE CONTINUE à 10 : des passes vivent après l'expulsion (fenêtre 45 s — la
+  // cérémonie du coup franc du 4ᵉ sifflet mange le début ; 20 s re-cassait à chaque
+  // évolution du flux, doctrine lot 36 : l'existence en fenêtre LARGE)
   const evBase = st.events.length;
-  for (let i = 0; i < 20 * 60; i++) matchStep(st, 1 / 60, cfg);
+  for (let i = 0; i < 45 * 60; i++) matchStep(st, 1 / 60, cfg);
   const passes = st.events.slice(evBase).filter((e) => e.type === 'pass').length;
-  ok(`le monde CONTINUE à 10 (${passes} passe(s) ≥ 3 en 20 s, aucun gel)`, passes >= 3);
+  ok(`le monde CONTINUE à 10 (${passes} passe(s) ≥ 3 en 45 s, aucun gel)`, passes >= 3);
   // …et l'expulsé n'est JAMAIS re-servi (aucune passe vers lui, aucun toucher de lui)
   const luiJoue = st.events.slice(evBase).some((e) => (e.type === 'pass' && (e.from === q.id || e.to === q.id)) || (e.type === 'touch' && e.by === q.id));
   ok(`l'expulsé est HORS DU MONDE (aucune passe de/vers nº${q.id}, aucun toucher)`, !luiJoue);

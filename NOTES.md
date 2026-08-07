@@ -2511,6 +2511,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     venir AU ballon, ajuster les appuis) puis le RÉPERTOIRE DES FRAPPES (flottante,
     enroulée, puissante, ras-de-terre… — base : shot kinds placé/croisé/puissance + spin).
 
+73. **Le receveur vivant (lot 38 — retour utilisateur « cette pose statique en attendant le
+    ballon »).** MESURE (4 × 180 s, 181 vols) : p25 de vitesse du receveur pendant le vol =
+    0,00 m/s — un quart des images PÉTRIFIÉ — 14 % des vols figés > 60 % du temps, 0,62 m de
+    déplacement médian par vol. meetBall (le pas final) ne vivait que dans les 4,5 derniers
+    mètres ; avant ça, la statue au point de chute. Greffe `meetWalk` (match-sim, st.full) :
+    sur une passe DANS LES PIEDS ≥ 7 m, le receveur VIENT AU-DEVANT sur l'AXE NOMINAL de la
+    livraison (mène → origine) à allure de marche (1,6 m/s, plafond 1,1 m et 25 % de la
+    passe) — l'axe est nominal, PAS le vol réel : la leçon du flipper (réception parfaite =
+    0 déchet) reste consignée ; le coureur d'appel garde sa course (_pace vivant = pas de
+    retour). DEUX LEÇONS D'ÉQUILIBRE payées : (1) à 2,2 m de marche, l'attaque REDESCENDAIT
+    (~500 réceptions × 2 m de recul : tirs 27 → 16, prises < 22 m du but 12 → 5) → plafond
+    réduit à 1,1 m ; (2) venir au ballon est un geste de CONSTRUCTION → porte de zone
+    `hold: 32` (à < 32 m du but adverse le receveur TIENT son point de fixation — le pivot
+    ne décroche pas par défaut, le rôle false-9 sera un biais de roles.js). Après : p25
+    0,77-1,02 m/s, part figée 19 → 2-4 %, vols pétrifiés 14 → 0-1 %, déplacement médian
+    1,14 m — et la respiration TENUE : 24 tirs / 11 buts contre 27 / 9 (10 graines).
+    Clauses §8c (verify-match11) : monde vivant ≤ 20 % / vols figés ≤ 8 % + sabotage nommé
+    « pose figée » (meetWalk:false → 37 %, le DOUBLE du monde vivant). Deux clauses de flux
+    re-fondées doctrine 71 : le p99 de conduite borné LARGE sous le plafond (2,1 — le PIC
+    2,3 est le discriminant structurel), la fenêtre « le monde continue à 10 » 20 → 45 s
+    (la cérémonie du coup franc mangeait le début). Batterie ~60 bancs verte. Dette de
+    scène nommée : la prise d'appuis micro (shuffle du receveur à l'arrêt) — le sim bouge
+    le corps, le clip d'appuis raffinerait le dernier demi-mètre. Prochain (retour
+    utilisateur item 1) : le RÉPERTOIRE EXHAUSTIF DES FRAPPES.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
