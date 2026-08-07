@@ -671,7 +671,14 @@ function assignMatchJobs(st, cfg) {
       // image (elle bouge avec la défense) : l'à-coup cadencé garde le POSTE, le calage borne la
       // CIBLE — reculer avec la ligne qui monte n'est pas un à-coup, c'est la règle.
       const off = cfg.offside ? offsideLine(st, atk) : null;
-      const posé = carrier && !carrier.keeper && st.phase === 'carry' && st.hold > 0.6;
+      // …ET L'APPEL SE TIME SUR LE PASSEUR (lot 41, cfg.appelPret) : on appelle quand le
+      // porteur PEUT donner — le ballon au pied (≤ appelPret m), pas au milieu d'une touche
+      // poussée. Mesuré avant : latence burst → passe p50 1,43 s (le cycle de préparation
+      // mangeait la course — le ballon partait quand le dart FINISSAIT, l'enveloppe fermée
+      // à 0,6 s) ; le coureur du vrai football lit les APPUIS du passeur avant de partir.
+      // false : l'appel aveugle d'hier (sabotage nommé).
+      const posé = carrier && !carrier.keeper && st.phase === 'carry' && st.hold > 0.6
+        && (cfg.appelPret === false || d2(st.ball.p, carrier.p) <= (cfg.appelPret ?? 1.0));
       // LA VERTICALITÉ DU REGAIN (cfg.moments) : pendant la transition offensive (les win s où
       // le bloc adverse est déformé), le cooldown d'équipe des appels profonds se relâche de
       // 2,5 s — la profondeur se joue MAINTENANT, pas au tempo du jeu placé

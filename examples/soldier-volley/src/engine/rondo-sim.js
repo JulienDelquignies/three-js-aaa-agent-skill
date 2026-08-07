@@ -916,7 +916,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // ballon se serre, la passe arme au pas suivant, DANS la fenêtre.
         // …armée UNE fois par intention (la rafale re-serrait la touche en boucle : le porteur
         // n'avançait plus — la moitié du coût mesuré sur les tirs)
-        if (st.full && (rec?._pace?.until ?? -1) > st.t && rec._pace.kind === 'appel'
+        const runnerVif = st.full && (rec?._pace?.until ?? -1) > st.t && rec._pace.kind === 'appel';
+        if (runnerVif
           && cfg.prepTouch !== false && d2(c.p, st.ball.p) > 0.95 && !((c._prepShot ?? -1) > st.t)) {
           c._prepShot = st.t + 0.9;
           c.anchorHint ??= { t: st.t };
@@ -927,7 +928,15 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // fausse direction — tout l'armé se joue (volable !), le ballon reste, le mordu s'assoit,
         // et la VRAIE passe part au geste suivant sur une ligne morte. Une feinte par intention.
         if (maybeFeinte(st, c, cfg, contested)) return st;
-        beginPass(st, c.intent.choice, cfg);
+        // …ET LE SERVICE DU COUREUR S'EXÉCUTE EN URGENCE (lot 41, cfg.appelUrgent) : le
+        // commentaire du lot 36 le disait — « une urgence de timing » — mais l'engagement
+        // passait par le régime CALME (mesuré : latence burst → passe p50 1,43 s, le ballon
+        // partait quand la course FINISSAIT). Le régime urgent du contesté et du centre —
+        // portes courtes, armé prompt, et le déchet d'urgence qui va avec (execSigma ×1,25 :
+        // une passe pressée se rate plus). Après : p50 0,60 s — la foulée est servie —,
+        // service 32 → 48 % ; appelPret tient la QUEUE (p90 1,08 contre 1,50 en ablation).
+        // false : le service nonchalant d'hier (sabotage nommé).
+        beginPass(st, c.intent.choice, cfg, runnerVif && cfg.appelUrgent !== false ? { forceUrgent: true } : undefined);
       }
     }
   } else {

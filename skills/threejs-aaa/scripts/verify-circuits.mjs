@@ -59,23 +59,44 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- 3. les CIRCUITS PAR STYLE : possession bascule, direct va devant — et le service VIT
 {
-  const mesure = (tactics) => {
+  const mesure = (tactics, cfgExtra) => {
     let servis = 0, renv = 0;
+    const lat = [];
     for (const seed of [1, 3, 5]) {
       const st = makeMatch({ full: true, seed, tactics });
-      const cfg = matchCfg({ shotRange: 20 });
+      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
       const bursts = st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond');
-      servis += st.events.filter((e) => e.type === 'pass').filter((p) => bursts.some((b) => b.by === p.to && p.t - b.t >= 0 && p.t - b.t < 2.5)).length;
+      for (const p of st.events.filter((e) => e.type === 'pass')) {
+        const b = bursts.find((b) => b.by === p.to && p.t - b.t >= 0 && p.t - b.t < 2.5);
+        if (b) { servis++; lat.push(p.t - b.t); }
+      }
       renv += st.events.filter((e) => e.type === 'renversement').length;
     }
-    return { servis, renv };
+    return { servis, renv, lat };
   };
   const neutre = mesure(null), poss = mesure(['possession', 'possession']), direct = mesure(['direct', 'direct']);
   ok(`la SIGNATURE des circuits (3 graines × 180 s : possession ${poss.renv} renversements > direct ${direct.renv} × 1,5 — mesuré 20/7 : la possession recycle au large, le direct va devant)`,
     poss.renv > direct.renv * 1.5);
   ok(`le SERVICE du coureur VIT dans tous les mondes (neutre ${neutre.servis} + possession ${poss.servis} + direct ${direct.servis} = ${neutre.servis + poss.servis + direct.servis} ≥ 3 — était 0 partout : les portes d'engagement mangeaient la fenêtre)`,
     neutre.servis + poss.servis + direct.servis >= 3);
+  // ---------- 3b. LA FOULÉE EST SERVIE (lot 41) : l'appel s'exécute en URGENCE — le ballon part
+  // pendant la course, pas à sa fin. Latences POOLÉES des trois mondes (doctrine lot 36 : une
+  // borne sur 3 valeurs re-cassait — l'agrégat large juge ; mesuré à l'échelle : p50 0,60 s
+  // après, 1,43 s avant, l'enveloppe se ferme à ~0,6 s). Le sabotage se juge par SÉPARATION
+  // des moyennes poolées (mêmes mondes, clés retirées), pas par une borne absolue.
+  {
+    const vif = [...neutre.lat, ...poss.lat, ...direct.lat];
+    const mVif = vif.length ? vif.reduce((s, x) => s + x, 0) / vif.length : 99;
+    ok(`la FOULÉE est servie (latence burst → passe, moyenne poolée des 3 mondes : ${mVif.toFixed(2)} s ≤ 1,0 sur ${vif.length} services — le régime urgent du lot 41, mesuré 1,43 s avant)`,
+      mVif <= 1.0 && vif.length >= 3);
+    const sabN = mesure(null, { appelUrgent: false, appelPret: false });
+    const sabP = mesure(['possession', 'possession'], { appelUrgent: false, appelPret: false });
+    const sab = [...sabN.lat, ...sabP.lat];
+    const mSab = sab.length ? sab.reduce((s, x) => s + x, 0) / sab.length : 99;
+    ok(`sabotage « service nonchalant » attrapé (clés retirées : latence moyenne ${mSab.toFixed(2)} s sur ${sab.length} services ≥ vivant + 0,2 (${(mVif + 0.2).toFixed(2)}) — le ballon d'hier partait quand la course finissait, nommé)`,
+      mSab >= mVif + 0.2);
+  }
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -259,6 +259,15 @@ export const MATCH = {
   intentBarCalm: 4.8,     // la barre d'adoption au calme — assez haute pour qu'on VOIE la tenue
   appelBonus: 2.6,        // le coureur en rupture est SERVI — relevé avec intentBarCalm (4,8) :
                           // au tempo posé, la course doit encore battre la barre d'adoption
+  appelUrgent: true,      // LE SERVICE DU COUREUR S'EXÉCUTE EN URGENCE (lot 41) : portes courtes,
+                          // armé prompt, déchet d'urgence ×1,25 — latence burst → passe p50
+                          // 1,43 → 0,60 s (la foulée est servie), service 32 → 48 %.
+                          // false : le service nonchalant (sabotage nommé)
+  appelPret: 1.0,         // m — L'APPEL SE TIME SUR LE PASSEUR (lot 41) : le dart ne part que si
+                          // le porteur a le ballon AU PIED (≤ appelPret m) — au vrai football le
+                          // coureur lit les appuis du passeur. Mesuré avant : latence burst → passe
+                          // p50 1,43 s (le cycle de préparation mangeait la course, le ballon
+                          // partait quand le dart finissait) ; false : l'appel aveugle (sabotage nommé)
   appelRange: 6,          // m — l'appel ÉTIRE l'enveloppe de passe (choosePass) : un ballon dans
                           // la course est plus long qu'une passe de circulation. Mesuré sans lui :
                           // le dart de l'appel profond sortait de passRange (13 m) en ~0,6 s — 11

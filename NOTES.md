@@ -2596,6 +2596,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     répertoire aérien du pied est complet ; dettes : poitrine, saut de tête (scène), volée
     de gestes en dehors de la surface (la reprise de transition).
 
+76. **Le service du coureur profond : la foulée est servie (lot 41 — dette du lot 36).**
+    RE-MESURE d'abord (le monde avait bougé) : 32 % des appels profonds SERVIS (12/37 sur
+    10 × 300 s — bande réelle des passes en profondeur ; l'ère lot 36 était à ~0), MAIS
+    latence burst → passe p50 = 1,43 s : le ballon partait quand la course FINISSAIT
+    (fenêtre 1,9 s, enveloppe fermée à ~0,6 s) — le coureur recevait À L'ARRÊT, pas dans la
+    foulée. L'intention rivale n'était PAS le blocueur (5 % des bursts) ; le coût vivait
+    dans le PIPELINE d'exécution : le commentaire du lot 36 disait « le service du coureur
+    est une urgence de timing » mais beginPass partait en régime CALME (portes longues).
+    DEUX lois composées : (1) `appelUrgent` (rondo-sim) — le service d'un coureur vivant
+    s'exécute en RÉGIME URGENT (portes courtes, armé prompt, déchet ×1,25 : une passe
+    pressée se rate plus — le régime du contesté et du centre) ; (2) `appelPret` (match-sim,
+    la porte `posé` du dart) — on appelle quand le passeur PEUT donner, le ballon au pied
+    (≤ 1 m) : le coureur du vrai football lit les APPUIS du passeur. Mesures : urgence
+    seule p50 0,63 / p90 1,50 ; composé **p50 0,60 / p90 1,08** — appelPret tient la QUEUE
+    (ablation propre) — et service 32 → **48 %**. Flux 20 × 300 s : 67 tirs / 27 buts
+    (bande 59-71 / 22-30, respiration tenue). Clauses 3b (verify-circuits — la vérité du
+    service) : latences POOLÉES des 3 mondes tactiques ≤ 1,0 s + sabotage « service
+    nonchalant » par SÉPARATION des moyennes (vivant + 0,2 — une borne absolue sur 3
+    valeurs re-cassait, doctrine 71) ; clause stamina re-fondée fenêtre 90 → 180 s (le
+    drain cumulatif a la place de se voir, la borne ne re-cassera plus au prochain flux).
+    Leçon : les greffes du lot 36-38 avaient déjà relevé le service — TOUJOURS re-mesurer
+    la dette avant de la payer. Dettes : le renversement porté, l'approche pilotée du
+    centre, la poitrine.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

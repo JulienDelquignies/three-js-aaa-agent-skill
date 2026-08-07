@@ -588,6 +588,23 @@ du bas ajoute ~12 tirs, les buts restent en bande ; 3 reprises + 17 dégagements
 par 50 min (le défensif domine, comme au réel). Dettes : la poitrine, l'abondance du
 centre bas (l'approche pilotée), la volée hors surface.
 
+### Le service du coureur profond — la foulée est servie (lot 41)
+
+Dette du lot 36, RE-MESURÉE avant d'être payée (le monde avait bougé : 32 % des appels déjà
+servis — l'ère lot 36 était à ~0). Le vrai déficit restant : la LATENCE — burst → passe p50
+1,43 s, le ballon partait quand la course FINISSAIT ; le coureur recevait à l'arrêt. Deux
+lois composées, chacune sa clé et son sabotage : **`appelUrgent`** (rondo-sim) — le service
+d'un coureur vivant s'exécute en RÉGIME URGENT (les portes courtes du contesté et du centre,
+armé prompt, et le déchet d'urgence ×1,25 qui va avec : une passe pressée se rate plus) ;
+**`appelPret`** (match-sim, la porte `posé` du dart) — on appelle quand le passeur PEUT
+donner, le ballon au pied (≤ 1 m) : le coureur lit les APPUIS du passeur avant de partir.
+Mesuré (ablation propre) : urgence seule p50 0,63 / p90 1,50 ; composé **p50 0,60 / p90
+1,08** — la porte du passeur tient la queue — et service 32 → **48 %**, respiration tenue
+(67 tirs / 27 buts sur 20 × 300 s, bande). La vérité du service vit dans
+`verify-circuits` (clauses 3b : latences poolées des trois mondes tactiques, sabotage
+« service nonchalant » par séparation des moyennes). Leçon de méthode : toujours RE-MESURER
+une dette avant de la payer — trois lots avaient déjà bougé le terrain.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

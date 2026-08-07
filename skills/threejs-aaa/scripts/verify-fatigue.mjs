@@ -69,16 +69,19 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- 4. l'ATTRIBUT module : l'endurant tient, même match, même graine
 {
+  // fenêtre 90 → 180 s (doctrine lot 36) : le drain est cumulatif — à 90 s l'écart vivait à
+  // 0,02-0,04 selon ce que le flux fait courir au poste 5 (la borne re-cassait à chaque
+  // évolution du cerveau) ; à 180 s la modulation ×1,67 a la place de se voir
   const stamApres = (note) => {
     const st = makeMatch({ full: true, seed: 3 });
     const cfg = matchCfg({ shotRange: 20 });
     const q = st.players.find((p) => p.team === 0 && p.post === 5);   // le poste qui COURT (récupérateur)
     q.skill = makeProfile({ stamina: note });
-    for (let i = 0; i < 90 * 60; i++) matchStep(st, 1 / 60, cfg);
+    for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
     return st.players[q.id].stam ?? 1;
   };
   const endurant = stamApres(90), fragile = stamApres(10);
-  ok(`la note STAMINA module le drain (même graine, même homme au poste 5 : stamina 90 → ${endurant.toFixed(2)}, stamina 10 → ${fragile.toFixed(2)} — l'endurant garde ≥ 0,03 de plus, facteur ×1,67 sur le drain)`,
+  ok(`la note STAMINA module le drain (même graine, même homme au poste 5, 180 s : stamina 90 → ${endurant.toFixed(2)}, stamina 10 → ${fragile.toFixed(2)} — l'endurant garde ≥ 0,03 de plus, facteur ×1,67 sur le drain)`,
     endurant > fragile + 0.03);
 }
 
