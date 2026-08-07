@@ -520,6 +520,22 @@ banc juge SA métrique seule (les buts-respiration vivent à UN endroit — matc
 le service de l'appel a UNE vérité (verify-circuits). Dettes : le renversement porté, les
 poids de bascule par preset affinés, la portée de service du dart (79 % hors enveloppe).
 
+### La conduite au pied — le ballon près du corps (lot 37)
+
+Retour UTILISATEUR (« le ballon paraît loin du pied — de la magie »), chiffré avant de
+toucher : sur 12 min de portage (4 × 180 s), p50 = 0,33 m — la conduite ordinaire est
+saine — mais 12 épisodes au-delà de 1,8 m jusqu'à 2,91 m, presque tous en CROISIÈRE. Le
+coupable n'est pas la poussée : c'est la **fenêtre de perte en mouvement** (`looseAt =
+1.15 + touchDistance(v) + 0.5`) qui tolérait ~3,6 m d'écart à 4 m/s — l'étiquette
+« porté » mentait, le corps courait derrière un ballon de fait libre. Remède d'une ligne,
+gardé `st.full` : **la fenêtre est PLAFONNÉE à 2,2 m** — au-delà le ballon est LIBRE
+(phase loose), et la chasse existante (`carrySurge`, `carryViaBall`, le pique adverse)
+reprend ses droits. Mesuré après : pic 2,91 → 2,19 m, p99 1,63 m — et un effet de flux
+bienvenu, **16 → 27 tirs sur 10 graines à buts constants** (9 = 9, A/B git-stash) : les
+ballons trop poussés se DISPUTENT près de la surface au lieu de mourir en conduites
+fantômes. Clause §8b de `verify-match11` (p99 ≤ 1,9, max ≤ 2,3 sur 2 × 120 s) ; sabotage
+nommé = retirer le plafond. Le réduit et le rondo gardent la fenêtre d'origine au bit près.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

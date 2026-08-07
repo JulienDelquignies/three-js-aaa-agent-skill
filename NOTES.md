@@ -2491,6 +2491,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    verify-circuits 5/5, batterie 403. Dettes : le renversement porté, la portée du dart
    (79 % hors enveloppe — servir PLUS TÔT dans la course), les poids de bascule par preset.
 
+72. **La conduite au pied : l'honnêteté ravive le jeu (lot 37 — retour utilisateur « le
+    ballon paraît loin du pied… de la magie »).** MESURE d'abord (probe 4 × 180 s, 12 min
+    de portage) : p50 0,33 m — la conduite ordinaire est SAINE — mais 12 épisodes > 1,8 m
+    jusqu'à un pic de 2,91 m, 11 des 12 en CROISIÈRE. Le coupable n'est pas la poussée :
+    c'est la FENÊTRE DE PERTE en mouvement (`looseAt = 1.15 + touchDistance(v) + 0.5` —
+    à 4 m/s elle tolérait ~3,6 m d'écart : l'étiquette « porté » MENTAIT, le corps courait
+    derrière un ballon libre qu'on continuait d'appeler sien). Remède d'une ligne, plein
+    format : `if (st.full) looseAt = Math.min(looseAt, 2.2)` — au-delà de 2,2 m le ballon
+    est LIBRE (phase loose, la chasse carrySurge existait déjà et reprend le relais).
+    Re-mesure : pic 2,91 → 2,19, p99 1,63, épisodes > 1,8 m divisés. Effet de flux INATTENDU
+    et bienvenu : 16 → 27 tirs sur 10 graines à BUTS CONSTANTS (9 = 9, A/B git-stash) — les
+    ballons perdus tôt se disputent près de la surface au lieu de mourir en conduites
+    fantômes. Clause §8b (verify-match11) : p99 ≤ 1,9, max ≤ 2,3 sur 2 × 120 s ; sabotage
+    nommé = retirer le plafond. Au passage, deux clauses re-fondées façon doctrine 71 :
+    checkMatch 90 → 150 s (match11) et le flux du ciel en balayage coupe-circuit
+    (verify-tete, graines [1,3,5,7,2,4]). Batterie intégrale ~60 bancs verte. Prochain
+    (retour utilisateur, dans l'ordre) : le RECEVEUR VIVANT (l'attente figée du ballon —
+    venir AU ballon, ajuster les appuis) puis le RÉPERTOIRE DES FRAPPES (flottante,
+    enroulée, puissante, ras-de-terre… — base : shot kinds placé/croisé/puissance + spin).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

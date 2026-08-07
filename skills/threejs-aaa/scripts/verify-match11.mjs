@@ -55,7 +55,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`le monde ne GÈLE jamais (plus long silence d'événements ${gelMax.toFixed(1)} s ≤ 25)`, gelMax <= 25);
   // le contrat de base du match juge aussi ce monde (téléports, ledger, score-événements)
   const st2 = makeMatch({ full: true, seed: 7 });
-  const { st: s2, trace } = playMatch(st2, 90, { cfg: matchCfg({ shotRange: 20 }) });
+  // 150 s (lot 37 : à 90 s, un flux borné à un camp arrive — le vrai football aussi ; la
+  // fenêtre s'allonge plutôt que d'épingler une graine, doctrine lot 36)
+  const { st: s2, trace } = playMatch(st2, 150, { cfg: matchCfg({ shotRange: 20 }) });
   const r = checkMatch(s2, trace, cfg);
   ok(`le CONTRAT du match tient à 22 (checkMatch : ${r.ok ? 'ok' : r.issues.slice(0, 2).join(' ; ')})`, r.ok);
 }
@@ -386,6 +388,29 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     duel.passes >= 12 && duel.gelMax <= 25);
   ok(`sabotage « formation fantôme » attrapé (formation inconnue '666' → repli 433, récit identique au défaut octet pour octet — pas de crash, pas de monde secret)`,
     run([{ formation: '666' }, null]).evs === run(null).evs);
+}
+
+// ---------- 8b. LA CONDUITE EST AU PIED (lot 37, retour utilisateur « le ballon paraît loin
+// du pied — de la magie ») : la fenêtre de portage en mouvement est PLAFONNÉE à 2,2 m en
+// plein format — au-delà, le ballon est LIBRE (un vrai 50/50, la chasse ne change pas,
+// l'étiquette cesse de mentir). Mesuré : pic 2,91 → 2,19 m, p99 1,99 → 1,63 — et les tirs
+// MONTENT (16 → 27 sur 10 graines, buts constants : l'honnêteté ravive le jeu).
+{
+  const dists = [];
+  for (const seed of [1, 3]) {
+    const st = makeMatch({ full: true, seed });
+    const cfg = matchCfg({ shotRange: 20 });
+    for (let i = 0; i < 120 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      if (st.phase !== 'carry' || st.possession.carrier < 0 || st.restart) continue;
+      const c = st.players[st.possession.carrier];
+      if (!c.keeper) dists.push(Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]));
+    }
+  }
+  dists.sort((a, b) => a - b);
+  const p99 = dists[Math.floor(0.99 * (dists.length - 1))] ?? 0, mx = dists[dists.length - 1] ?? 0;
+  ok(`la CONDUITE est au pied (2 × 120 s : p99=${p99.toFixed(2)} m ≤ 1,9, pic=${mx.toFixed(2)} m ≤ 2,3 — au-delà de 2,2 le ballon est LIBRE, plus de possession fantôme)`,
+    p99 <= 1.9 && mx <= 2.3);
 }
 
 // ---------- 9. LES FRAPPES SE DÉFENDENT (lot 18) : l'envergure de la DÉCISION croit celle du

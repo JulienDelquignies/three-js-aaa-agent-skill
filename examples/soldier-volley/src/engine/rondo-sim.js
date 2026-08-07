@@ -684,6 +684,12 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (cfg.carryLawLoose && c.speed > 0.5) {
       const ahead = ((st.ball.p[0] - c.p[0]) * c.v[0] + (st.ball.p[2] - c.p[2]) * c.v[1]) / (c.speed || 1) > 0;
       if (ahead) looseAt = Math.max(cfg.carryLoose, 1.15 + touchDistance(c.speed) + 0.5);
+      // …PLAFONNÉE en plein format (lot 37, retour utilisateur « le ballon paraît loin du
+      // pied ») : à 4 m/s la fenêtre montait à 3,6 m devant — 12 épisodes de possession
+      // fantôme à 1,8-2,9 m mesurés en 12 min, 11 en croisière. Au-delà de 2,2 m, le ballon
+      // est LIBRE : un vrai 50/50 — la chasse (carrySurge) ne change pas, l'ÉTIQUETTE cesse
+      // de mentir. Le réduit garde sa loi (st.full).
+      if (st.full) looseAt = Math.min(looseAt, 2.2);
     }
     if (d2(c.p, st.ball.p) > looseAt) {
       st.ball.release('perte');

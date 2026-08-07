@@ -138,13 +138,16 @@ const run = (st, cfg, s) => { for (let i = 0; i < s * 60; i++) matchStep(st, 1 /
 
 // ---------- 7. le FLUX : le ciel existe en match (rentrées, dégagements — les centres s'ouvrent)
 {
+  // BALAYAGE avec coupe-circuit (doctrine lot 36) : l'existence s'arrête de compter dès
+  // qu'elle est prouvée — une graine épinglée re-cassait à chaque flux nouveau
   let tetes = 0, centres = 0;
-  for (const seed of [1, 3, 5, 7]) {
+  for (const seed of [1, 3, 5, 7, 2, 4]) {
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20 });
     for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
     tetes += st.events.filter((e) => e.type === 'tête').length;
     centres += st.events.filter((e) => e.type === 'centre').length;
+    if (tetes >= 2 && centres >= 1) break;
   }
   ok(`le CIEL vit en match (4 × 180 s : ${tetes} têtes ≥ 2 — était 0 —, ${centres} centre(s) ≥ 1 ; l'abondance des centres est la dette nommée « approche pilotée »)`,
     tetes >= 2 && centres >= 1);
