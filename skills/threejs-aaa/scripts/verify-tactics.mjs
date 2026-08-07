@@ -7,7 +7,8 @@
 // ne force pas un choix dominant). Dettes nommées : instruments de flux pressing/style/
 // transition, catalogue de formations (couche rôles).
 import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
-import { checkTactics, axe } from '../assets/starter/src/engine/tactics.js';
+import { checkTactics, axe, resoudreTactique } from '../assets/starter/src/engine/tactics.js';
+import { blocFor } from '../assets/starter/src/engine/formation.js';
 import { arbitre } from '../assets/starter/src/engine/menace.js';
 
 let pass = 0, fail = 0;
@@ -154,6 +155,25 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const p5b = st2.players.find((p) => p.team === 0 && p.post === 5);
   ok(`un preset amène SES hommes (gegenpressing → poste 5 « ${p5?.role?.nom} » ; équipe au défaut → aucun rôle) — et l'explicite GAGNE (roles:{5:'meneur'} → « ${p5b?.role?.nom} »)`,
     p5?.role?.nom === 'recuperateur' && p8t1?.role == null && p5b?.role?.nom === 'meneur');
+}
+
+// ---------- LE BLOC EST CELUI DE SA TACTIQUE (lot 43 — « les blocs sont bien liés à la
+// tactique ? c'est pas les mêmes pour tout le monde ? ») : blocFor, la vérité PURE partagée
+// moteur/banc — compacité serre la longueur, hauteurBloc rapproche la ligne du ballon, et le
+// défaut 0,5 est l'IDENTITÉ de la base moteur. Mesuré en match : gegenpressing 26,2 m /
+// défaut 28,6 / possession 29,1 (blocBas 38,6 : les retours de corner à pied + l'attaquant
+// d'outlet — le bus encaisse, c'est son football).
+{
+  const base = { long: 30, ligne: 27 };
+  const serre = blocFor(base, resoudreTactique({ compacite: 1 }));
+  const lache = blocFor(base, resoudreTactique({ compacite: 0 }));
+  const haut = blocFor(base, resoudreTactique({ hauteurBloc: 1 }));
+  const bas = blocFor(base, resoudreTactique({ hauteurBloc: 0 }));
+  const ident = blocFor(base, resoudreTactique(undefined));
+  const nul = blocFor(null, resoudreTactique(undefined));
+  ok(`le bloc est CELUI DE SA TACTIQUE (compacité 1 → ${serre.long} m serré, 0 → ${lache.long} relâché ; presse haute → ligne à ${haut.ligne} m du ballon, bloc bas → ${bas.ligne} ; défaut 0,5 → ${ident.long}/${ident.ligne} = la base ; bloc absent → null)`,
+    serre.long === 26 && lache.long === 34 && haut.ligne === 23 && bas.ligne === 31
+    && ident.long === 30 && ident.ligne === 27 && nul === null);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

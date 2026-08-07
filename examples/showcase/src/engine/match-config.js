@@ -85,6 +85,14 @@ export const MATCH = {
                           // un centre est un arc par-dessus le premier rideau (0 centre
                           // entré en surface avant — mangés en route, vols tendus).
                           // false : le jeu au sol d'hier (sabotage nommé).
+  touchePrix: { seuil: 10, taux: 0.07, max: 0.55 },
+                          // LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet
+                          // aimant sur les longs ballons ») : la prise de TURNOVER paie le même
+                          // contrat que le contrôle attaquant — au-delà de seuil m/s, la touche
+                          // peut FUIR (taux/m/s, plafond max, modulé controlF) : le ballon reste
+                          // LIBRE avec son résiduel, le récupérateur va le chercher. Mesuré
+                          // avant : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s possédé
+                          // instantanément. false : l'aimant d'hier (sabotage nommé).
   bloc: { long: 30, ligne: 27 },
                           // LE BLOC COMPACT (11c11, st.full — lot 42, retour utilisateur « les
                           // lignes sont trop espacées ») : l'équipe SANS ballon est chaînée au

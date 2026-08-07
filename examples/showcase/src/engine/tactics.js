@@ -39,11 +39,11 @@ export const TACTIQUES = {
   equilibre:     { hauteurBloc: 0.5, largeur: 0.5, pressing: 0.5, style: 0.5, transition: 0.5 },
   // …chaque preset PORTE SES RÔLES par défaut (lot 20 — un système est des axes ET des hommes) ;
   // les rôles explicites du projet aval GAGNENT toujours, poste par poste
-  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9,
+  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9, compacite: 0.7,
     roles: { 5: 'recuperateur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' } },
-  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15,
+  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15, compacite: 0.45,
     roles: { 5: 'meneur', 8: 'neufDeSurface' } },
-  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0,
+  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, compacite: 0.8,
     roles: { 4: 'recuperateur', 5: 'recuperateur', 8: 'neufDeSurface' } },
   direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7,
     roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' } },
@@ -57,6 +57,9 @@ export function resoudreTactique(t) {
   return {
     hauteurBloc: base.hauteurBloc ?? 0.5, largeur: base.largeur ?? 0.5,
     pressing: base.pressing ?? 0.5, style: base.style ?? 0.5, transition: base.transition ?? 0.5,
+    // LA COMPACITÉ (lot 43) : la longueur du bloc défendant est CELLE DE SA TACTIQUE
+    // (blocFor, formation.js — ±4 m autour de la base moteur). 0,5 = la base, pas un bit.
+    compacite: base.compacite ?? 0.5,
     // LA FORMATION est une donnée de la tactique (lot 17 — le catalogue : 433, 442, 352 ;
     // formation.js/LIGNES généralise le calage Loi 11 et les clauses). Inconnue : 433.
     formation: base.formation ?? '433',

@@ -2645,6 +2645,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     nommée : la largeur défensive (36,8 mesurée, réel 40-44 — le resserrement latéral
     côté ballon, v2 du bloc).
 
+78. **Le prix du premier toucher + le bloc par équipe (lot 43 — deux retours utilisateur).**
+    (1) « Effet AIMANT sur les longs ballons » — trouvé dans `turnover` (rondo.js) : le
+    gagnant à portée amortissait 80 % et POSSÉDAIT instantanément, quelle que soit la vitesse
+    (mesuré : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s aspiré au pied). Le chemin
+    attaquant avait sa loi d'échappée (pMiss > 10 m/s) depuis longtemps — le récupérateur ne
+    la payait pas. Greffe `touchePrix` (st.full — le réduit vit le monde d'hier, doctrine) :
+    LE MÊME CONTRAT — au-delà du seuil la touche peut FUIR (résiduel vivant, ballon LIBRE,
+    le récupérateur va le chercher), modulé controlF, plafond 0,55. Fixture à trois mondes
+    (verify-match11 §3c) : même scène à 16 m/s — tirage bas → la touche fuit ; tirage haut →
+    prise propre (un bon défenseur contrôle, c'est un TIRAGE) ; clé retirée → l'aimant nommé.
+    EFFET DE FLUX ASSUMÉ : buts 29 → 17 sur 20 × 300 s (conversion 49 → 29 % — les buts de
+    chaos de surface meurent, on se RAPPROCHE du réel ; le 49 % d'avant était arcade).
+    (2) « Les blocs sont bien liés à la tactique ? pas les mêmes pour tout le monde ? » —
+    maintenant OUI : `blocFor` (formation.js, pur, UNE vérité moteur/banc) — `compacite`
+    (nouvel axe tactics, ±4 m sur la longueur) et `hauteurBloc` (±4 m sur la distance
+    ligne-ballon) modulent la base moteur PAR ÉQUIPE ; presets différenciés (gegenpressing
+    0,7, blocBas 0,8, possession 0,45) ; 0,5 = identité de la base. Mesuré en match :
+    gegenpressing 26,2 m / défaut 28,6 / possession 29,1 (blocBas 38,6 : retours de corner
+    à pied + outlet — le football du bus). TROIS leçons d'instrument payées : le coup
+    d'envoi d'un makeMatch frais GÈLE canTake (st.restart à nettoyer en fixture) ; les
+    bornes du receveur vivant re-fondées en séparation ABSOLUE (le ×2 cassait dès que le
+    vivant montait) ; et le SABOTAGE du service nonchalant jugé au NOMBRE de services, pas
+    à la latence des survivants — sans urgence, seuls les services instantanés aboutissent :
+    le biais du survivant rendait le monde saboté « plus rapide » (0,48 s !) alors qu'il
+    sert MOITIÉ MOINS (11 contre 6 à l'échelle). Batterie verte, réduit 76/0 restauré par
+    le gate st.full, rondo 40/40.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

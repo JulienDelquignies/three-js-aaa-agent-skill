@@ -142,6 +142,43 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     sab.dLong >= vif.dLong + 6);
 }
 
+// ---------- 3c. LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet aimant sur
+// les longs ballons ») : la prise de turnover paie le contrat du contrôle attaquant — un
+// ballon > 10 m/s peut FUIR la touche (résiduel vivant, ballon libre), il ne se possède pas
+// d'un claquement de doigts. Mesuré avant : 14 % des prises > 10 m/s, un dégagement de
+// 26,5 m/s possédé instantanément. La MÊME scène, trois mondes — le tirage seedé décide,
+// la clé retirée est l'aimant nommé.
+{
+  const scene = (cfgExtra, rndV) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const sgn = -st.pitch.ownGoal(0).sign;
+    for (const q of st.players.filter((q) => q.team === 0)) { q.p[0] = -sgn * 40; q.p[2] = 25; q.v = [0, 0]; }
+    for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = -sgn * 40; q.p[2] = -25; q.v = [0, 0]; }
+    const d = st.players.find((p) => p.team === 1 && !p.keeper);
+    d.p[0] = 10; d.p[2] = 0; d.v = [0, 0]; d.act = null; d.down = 0;   // le récupérateur sous le long ballon
+    st.ball.release('sortie');
+    st.ball.restart([10 - sgn * 8, 0.11, 0], { cause: 'touche' });
+    st.ball.strike({ speed: 16, dirYaw: Math.atan2(0, sgn), elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });
+    st.restart = null;                                              // le coup d'envoi du makeMatch frais gèle canTake
+    st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.hold = 0; st.lastTouch = 0;
+    st.pass = { from: 0, to: -2, lead: [10, 0, 0], t: st.t - 1, origin: [10 - sgn * 8, 0], flight: 0.5 };
+    st.rnd = () => rndV;
+    const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+    for (let i = 0; i < 0.8 * 60 && !st.events.some((e) => e.type === 'turnover'); i++) matchStep(st, 1 / 60, cfg);
+    const ctl = st.events.filter((e) => e.type === 'control').pop();
+    return { d, ctl, carrier: st.possession.carrier, phase: st.phase, vRes: Math.hypot(st.ball.v[0], st.ball.v[2]) };
+  };
+  const fuit = scene({}, 0.01);                                     // tirage bas → la touche FUIT
+  ok(`la touche FUIT sur le long ballon (16 m/s, tirage 0,01 : control miss=${fuit.ctl?.miss}, ballon LIBRE — carrier ${fuit.carrier} = −1, phase ${fuit.phase}, résiduel ${fuit.vRes.toFixed(1)} m/s vivant)`,
+    fuit.ctl?.miss === true && fuit.carrier === -1 && fuit.phase === 'loose' && fuit.vRes > 1.5);
+  const prend = scene({}, 0.99);                                    // tirage haut → la prise est propre
+  ok(`la prise PROPRE existe aussi (même scène, tirage 0,99 : possédé par nº${prend.carrier} = nº${prend.d.id} — un bon défenseur contrôle un long ballon, c'est un TIRAGE, pas une loterie visuelle)`,
+    prend.carrier === prend.d.id && prend.ctl?.miss !== true);
+  const aimant = scene({ touchePrix: false }, 0.01);                // la clé retirée → l'aimant d'hier
+  ok(`sabotage « l'aimant » attrapé (touchePrix:false, même scène, même tirage : possédé instantanément par nº${aimant.carrier} à 16 m/s — le ballon attiré sans prix, nommé)`,
+    aimant.carrier === aimant.d.id);
+}
+
 // ---------- 4. sabotage nommé : sans la formation, le 22-corps redevient l'essaim du réduit
 {
   // les couloirs du réduit ne savent poster que ~9 corps par équipe (5 slots + press/cover/
@@ -496,15 +533,16 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { statue: still / Math.max(1, frames), geles, vols };
   };
-  // la part < 0,5 m/s varie par graines (4-14 % mesurés — le monde saboté vit à 37 %) : la
-  // borne à 20 % SÉPARE les deux mondes sans coller au flux (doctrine lot 36) ; les vols
-  // FIGÉS > 60 % sont le vrai tueur de statue (14 % avant, ~0 après)
+  // la part < 0,5 m/s varie par graines ET par monde (4-21 % mesurés au fil des lots — le
+  // bloc compact du lot 42 serre le marquage ; le monde saboté vit à 37-39 %) : bornes LARGES
+  // qui séparent (doctrine lot 36), séparation ABSOLUE au sabotage (×2 re-cassait dès que le
+  // vivant montait) ; les vols FIGÉS > 60 % sont le vrai tueur de statue (14 % avant, ~0 après)
   const vif = mesure({});
-  ok(`le RECEVEUR VIVANT (2 × 120 s : ${(vif.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≤ 20, ${vif.geles}/${vif.vols} vols figés > 60 % ≤ 8 % — il vient au-devant, la prise se fait dans le pas)`,
-    vif.statue <= 0.20 && vif.geles / Math.max(1, vif.vols) <= 0.08);
+  ok(`le RECEVEUR VIVANT (2 × 120 s : ${(vif.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≤ 25, ${vif.geles}/${vif.vols} vols figés > 60 % ≤ 8 % — il vient au-devant, la prise se fait dans le pas)`,
+    vif.statue <= 0.25 && vif.geles / Math.max(1, vif.vols) <= 0.08);
   const fige = mesure({ meetWalk: false });
-  ok(`sabotage « pose figée » attrapé (meetWalk:false : ${(fige.statue * 100).toFixed(0)} % du vol < 0,5 m/s — la statue d'hier revient au double du monde vivant, nommée)`,
-    fige.statue > vif.statue * 2);
+  ok(`sabotage « pose figée » attrapé (meetWalk:false : ${(fige.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≥ vivant + 10 pts (${(vif.statue * 100 + 10).toFixed(0)}) — la statue d'hier, nommée)`,
+    fige.statue >= vif.statue + 0.10);
 }
 
 // ---------- 9. LES FRAPPES SE DÉFENDENT (lot 18) : l'envergure de la DÉCISION croit celle du

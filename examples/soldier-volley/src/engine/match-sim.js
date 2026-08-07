@@ -21,7 +21,7 @@ import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
-import { formationSpots, premierOffensif } from './formation.js';
+import { formationSpots, premierOffensif, blocFor } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique } from './tactics.js';
 import { resoudreRole, role } from './roles.js';
@@ -877,8 +877,9 @@ function assignMatchJobs(st, cfg) {
       // (un marquage de dix serait un essaim ; un bloc qui coulisse est une défense lisible)
       if (st.full && i >= 6) {
         // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42 — formation.js) : ligne
-        // à ~27 m du ballon, longueur bornée 30 m — les lignes ne s'espacent plus
-        const spotsD = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation, cfg.bloc ?? null);
+        // à ~27 m du ballon, longueur bornée 30 m — les lignes ne s'espacent plus. Et le bloc
+        // est CELUI DE SA TACTIQUE (lot 43, blocFor) : compacité et hauteur PAR ÉQUIPE.
+        const spotsD = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation, blocFor(cfg.bloc ?? null, tac(st, p.team)));
         const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
         // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : où l'équipe DÉFEND — le bloc posté se
         // décale de −6 (bloc bas, parqué devant sa surface) à +6 m (ligne haute — et la ligne

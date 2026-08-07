@@ -365,7 +365,7 @@ function receive(st, id, cfg = RONDO) {
     // porteur (duel debout ou glissade — la clause 10 de checkRondo exige l'événement physique
     // correspondant), une récupération ramasse un ballon LIBRE au sol — trois football différents,
     // et l'ancien étiquetage « tackle » pour un ramassage de ballon perdu mentait sur les deux.
-    turnover(st, id, st.phase === 'flight' ? 'interception' : st.phase === 'loose' ? 'récupération' : 'tackle');
+    turnover(st, id, st.phase === 'flight' ? 'interception' : st.phase === 'loose' ? 'récupération' : 'tackle', cfg);
   }
 }
 

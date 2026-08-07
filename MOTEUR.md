@@ -627,6 +627,25 @@ re-fondées) : un axe qui gouverne des POSTES se juge en SCÈNE CONTRÔLÉE sur 
 posées (`p.target`), pas au flux — trois couches successives (renversement, slots, darts)
 avaient noyé la clause largeur.
 
+### Le prix du premier toucher et le bloc par équipe (lot 43)
+
+Deux retours utilisateur. **L'effet aimant des longs ballons** : `turnover` (rondo.js)
+possédait instantanément à toute vitesse — un dégagement de 26,5 m/s aspiré au pied sans
+geste. `cfg.touchePrix` (st.full) applique au RÉCUPÉRATEUR le contrat du contrôle attaquant :
+au-delà de `seuil` m/s, la touche peut FUIR (taux/m/s, plafond, modulé `controlF`) — le
+ballon reste LIBRE avec son résiduel, le récupérateur va le chercher. Un bon défenseur
+contrôle un long ballon LA PLUPART du temps : c'est un tirage seedé, pas une loterie
+visuelle. Effet de flux assumé : conversion 49 → 29 % (les buts de chaos de surface
+meurent — on se rapproche du réel). Sabotage « l'aimant ». **Le bloc par équipe** :
+`blocFor(bloc, tactique)` (formation.js — pur, UNE vérité moteur/banc) module la base
+moteur par LA TACTIQUE DE CHAQUE ÉQUIPE : `compacite` (nouvel axe, ±4 m de longueur) et
+`hauteurBloc` (±4 m de distance ligne-ballon) ; presets différenciés (gegenpressing serré
+26 m mesuré, blocBas 0,8, possession relâchée) ; 0,5 = l'identité de la base. Leçon
+d'instrument majeure (verify-circuits) : le sabotage d'une loi d'URGENCE se juge au NOMBRE
+de services, jamais à la latence des survivants — sans urgence, seuls les services
+instantanés aboutissent, et le biais du survivant rend le monde saboté « plus rapide »
+alors qu'il sert moitié moins.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

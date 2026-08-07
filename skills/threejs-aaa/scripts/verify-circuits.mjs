@@ -90,12 +90,19 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const mVif = vif.length ? vif.reduce((s, x) => s + x, 0) / vif.length : 99;
     ok(`la FOULÉE est servie (latence burst → passe, moyenne poolée des 3 mondes : ${mVif.toFixed(2)} s ≤ 1,0 sur ${vif.length} services — le régime urgent du lot 41, mesuré 1,43 s avant)`,
       mVif <= 1.0 && vif.length >= 3);
+    // …le sabotage se juge au NOMBRE de services, pas à la latence des survivants (re-fondé
+    // lot 43 — LEÇON D'INSTRUMENT : sans urgence, seuls les services déjà instantanés
+    // aboutissent avant la mort de la course — le biais du survivant rendait le monde saboté
+    // « plus rapide » (0,48 mesuré) alors qu'il sert MOITIÉ MOINS (à l'échelle 10 × 300 s :
+    // 11 servis vivant contre 6 saboté, 38 % contre 25 %). Le vrai visage du nonchalant :
+    // des courses non servies.
     const sabN = mesure(null, { appelUrgent: false, appelPret: false });
     const sabP = mesure(['possession', 'possession'], { appelUrgent: false, appelPret: false });
-    const sab = [...sabN.lat, ...sabP.lat];
-    const mSab = sab.length ? sab.reduce((s, x) => s + x, 0) / sab.length : 99;
-    ok(`sabotage « service nonchalant » attrapé (clés retirées : latence moyenne ${mSab.toFixed(2)} s sur ${sab.length} services ≥ vivant + 0,2 (${(mVif + 0.2).toFixed(2)}) — le ballon d'hier partait quand la course finissait, nommé)`,
-      mSab >= mVif + 0.2);
+    const sabD = mesure(['direct', 'direct'], { appelUrgent: false, appelPret: false });
+    const sabServis = sabN.servis + sabP.servis + sabD.servis;
+    const vifServis = neutre.servis + poss.servis + direct.servis;
+    ok(`sabotage « service nonchalant » attrapé (clés retirées : ${sabServis} services contre ${vifServis} vivant ≥ saboté + 2 — les courses meurent sans ballon, et la latence des survivants MENT : biais du survivant, nommé)`,
+      vifServis >= sabServis + 2);
   }
 }
 

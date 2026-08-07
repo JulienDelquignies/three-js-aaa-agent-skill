@@ -89,6 +89,22 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
   });
 }
 
+/** LE BLOC DE CETTE ÉQUIPE (lot 43 — réponse à « les blocs sont bien liés à la tactique ?
+ *  c'est pas les mêmes pour tout le monde ? ») : la base moteur (cfg.bloc) modulée par SA
+ *  tactique — `compacite` serre la longueur (±4 m : 1 = étau 26 m, 0 = relâché 34), et
+ *  `hauteurBloc` rapproche la ligne du ballon (±4 m : presse haute = ligne courte 23,
+ *  bloc bas = ligne longue 31 — le décalage ±6 m du bloc posté compose par-dessus).
+ *  À 0,5 EXACTEMENT : la base, pas un bit (l'identité au défaut). UNE vérité, partagée
+ *  moteur/banc — pur. */
+export function blocFor(bloc, tq) {
+  if (!bloc) return null;
+  const ax = (v, lo, hi) => lo + Math.max(0, Math.min(1, v ?? 0.5)) * (hi - lo);
+  return {
+    long: (bloc.long ?? 30) + ax(tq?.compacite, 4, -4),
+    ligne: (bloc.ligne ?? 27) + ax(tq?.hauteurBloc, 4, -4),
+  };
+}
+
 /** Le contrat de la formation — un bloc est un bloc, pas un nuage. GÉNÉRIQUE : les lignes
  *  viennent de LIGNES (la première version câblait 0-3/4-6/7-9 — vrai du seul 4-3-3). */
 export function checkFormation(pitch, team, name = 433) {

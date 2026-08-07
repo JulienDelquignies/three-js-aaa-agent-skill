@@ -586,7 +586,7 @@ export function assignJobs(st, cfg = RONDO) {
 }
 
 /** Hand the ball to `team` at `carrier` — the turnover, and the moment the score resets. */
-function turnover(st, carrier, why) {
+function turnover(st, carrier, why, cfg = null) {
   st.turnovers++;
   st.best = Math.max(st.best, st.passes);
   const w = st.players[carrier];
@@ -610,6 +610,25 @@ function turnover(st, carrier, why) {
   // contrôles attaquants qui gardent 5-18 %) et se NOMME au registre (événement 'control').
   // Hors portée : le ballon VIT, il continue sa course et le gagnant va le chercher.
   if (w && w.down <= 0 && dW <= RONDO.receiveRadius) {
+    // LE PRIX DU PREMIER TOUCHER (lot 43, cfg.touchePrix — match) : un ballon RAPIDE ne se
+    // possède pas d'un claquement de doigts. Mesuré avant (retour utilisateur « effet aimant
+    // sur les longs ballons ») : 14 % des prises de turnover au-delà de 10 m/s, un dégagement
+    // de 26,5 m/s possédé instantanément — le ballon ATTIRÉ au pied sans geste. Le MÊME
+    // contrat que le contrôle attaquant (pMiss) : au-delà du seuil, la touche peut FUIR — le
+    // résiduel reste vivant, le ballon est LIBRE, le récupérateur va le chercher. C'est
+    // exactement ce qu'un long ballon coûte au vrai football. Clé absente (rondo) : pas un bit.
+    const TP = st.full ? cfg?.touchePrix : null;   // le réduit vit le monde d'hier (doctrine st.full)
+    if (TP) {
+      const pMiss = Math.max(0, Math.min(TP.max ?? 0.55,
+        (sp0 - (TP.seuil ?? 10)) * (TP.taux ?? 0.07) / Math.max(0.5, w.skill?.controlF ?? 1)));
+      if (pMiss > 0 && (st.rnd ? st.rnd() : 0.5) < pMiss) {
+        st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62]);
+        st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), miss: true, settle: null });
+        st.phase = 'loose'; st.possession = { team: st.players[carrier].team, carrier: -1 };
+        ev.v1 = +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(2);
+        return;
+      }
+    }
     st.ball.impulse([-st.ball.v[0] * 0.8, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.8], [-st.ball.w[0] * 0.8, -st.ball.w[1], -st.ball.w[2] * 0.8]);
     st.ball.possess(carrier);
     if (sp0 > 0.5) {
