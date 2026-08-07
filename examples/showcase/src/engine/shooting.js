@@ -50,6 +50,10 @@ export function tryShot(st, c, cfg) {
   // lit : touchF ≈ 0,3), l'ancre rafraîchie pour que le retour du ballon se POSSÈDE — au pas où
   // le ballon est au pied, la frappe arme.
   const bdShot = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+  // (le POINTU DE NÉCESSITÉ — frapper du bout du pied SANS préparation le ballon à 1,3 m — est
+  // une dette nommée : les portes d'armement de beginPass n'ont pas la portée du geste tendu,
+  // et le premier jet mesuré tuait 37 % des tirs : le rush refusé en aval, le cerveau passait
+  // au lieu de préparer — 'prépare-frappe' 40 → 3, 'timing' 142 → 254 sur 5 graines.)
   if (cfg.prepTouch !== false && bdShot > 0.95) {
     c._prepShot = st.t + 0.9;
     c.anchorHint = { t: st.t };
@@ -61,24 +65,69 @@ export function tryShot(st, c, cfg) {
   // visée au plan du but — le gardien garde ses lois (gather ≤ 1,9 m, gant ≤ 2,1 m : une lucarne
   // à 1,7 m est un arrêt de grande envergure, pas un but gratuit).
   let shotKind = null;
+  let tzAim = tz;
   if (cfg.shotVariety !== false) {
     const u = (st.rnd ?? (() => 0.5))();
     const fin = c.skill ? Math.max(0, Math.min(1, (0.9 - c.skill.shotSigma) / 0.9)) : 0.5;
     const elevFor = (yT, v) => Math.min(0.32, (yT + 4.9 * (dGoal / v) * (dGoal / v)) / Math.max(1, dGoal));
-    if (dGoal < 8.5) {
-      shotKind = u < 0.55 ? { id: 'placé', speed: 16.5, elev: 0.05 }
-        : u < 0.8 ? { id: 'croisé', speed: 18, elev: 0.03 }
-        : { id: 'puissance', speed: 21, elev: 0.08 };
+    // LE RÉPERTOIRE EXHAUSTIF (lot 39, retour utilisateur « flottante, enroulée, puissante,
+    // ras-de-terre, etc ») : l'espèce se choisit sur la SITUATION — chaque frappe a sa loi.
+    // Le spin est en rev/s, signé plus bas pour l'enroulée (Magnus réel : le gardien projette
+    // LINÉAIREMENT — shotCross — et la courbe le bat, comme au vrai football). Les frappes de
+    // cou-de-pied portent une rotation LISIBLE (0,5 rev) ; flottante et pointu quasi rien
+    // (< 2 rad/s) — le gardien les lit TARD (floatRead, keeper.js).
+    const gkOff = gk ? Math.abs(gk.p[0] - goal.x) : 0;
+    const dGk = gk ? Math.hypot(gk.p[0] - c.p[0], gk.p[2] - c.p[2]) : 99;
+    if (gkOff >= 4.2 && dGk <= 8 && dGoal >= 9 && dGoal <= 21 && u < 0.3) {
+      // LE PIQUÉ est l'arme du UN-CONTRE-UN : le gardien sorti (≥ 4,2 m) et PRÈS du tireur
+      // (≤ 8 m), le but loin derrière lui — il ne recule pas plus vite que le vol. Sur un
+      // gardien LOIN du tireur, la cloche de 2 s se fait rattraper (prise à 1,65 m mesurée,
+      // le repli gagne) : ce piqué-là n'existe pas au vocabulaire. Tirage rare (0,3 — à 0,75
+      // le piqué dévorait 37 % du répertoire). L'élévation se RÉSOUT du duel : dégager 2,45 m
+      // au passage du corps (traînée ×1,25 — le θ figé 0,58 passait à 1,16 m mesuré), vitesse
+      // balistique EXACTE (un geste de toucher : ni plancher ni plafond de tir).
+      const dCl = Math.min(dGk + 0.3, dGoal * 0.6);
+      const el = Math.min(0.8, Math.max(0.5, Math.atan(1.25 * 2.45 / (dCl * (1 - dCl / dGoal)))));
+      // …et la PORTÉE se compense (×1,18) : la traînée raccourcit la cloche balistique — le
+      // ballon retombait 2,5 m AVANT la ligne, dans les gants du repli (mesuré au banc)
+      shotKind = { id: 'piqué', speed: Math.sqrt(Math.max(8, dGoal * 1.18) * 9.81 / Math.sin(2 * el)), elev: el, exact: true, rev: 0.5 };
+    } else if (dGoal < 8.5) {
+      shotKind = u < 0.5 ? { id: 'placé', speed: 16.5, elev: 0.05, rev: 0.5 }
+        : u < 0.72 ? { id: 'croisé', speed: 18, elev: 0.03, rev: 0.5 }
+        : u < 0.9 ? { id: 'puissance', speed: 21, elev: 0.08, rev: 0.5 }
+        // LE POINTU : le bout du pied, sans élan lisible — l'arme des petits espaces
+        : { id: 'pointu', speed: 18.5, elev: 0.04, rev: 0.25 };
     } else {
+      // …les FINISSEURS PROUVÉS gardent leurs bandes, les espèces prennent les MARGES
+      // (premier jet mesuré 20 × 300 s : bandes larges aux nouvelles espèces → buts 30 → 15,
+      // conversion 47 → 34 % — la variété ne doit pas dégrader la finition)
       const pLuc = 0.08 + 0.12 * fin;
-      shotKind = u < 0.48 ? { id: 'puissance', speed: 21.5, elev: 0.09 }
-        : u < 0.76 ? { id: 'mi-hauteur', speed: 19, elev: elevFor(1.1, 19) }
-        : u < 0.76 + pLuc ? { id: 'lucarne', speed: 19.5, elev: elevFor(1.7, 19.5) }
-        : { id: 'placé', speed: 17.5, elev: 0.05 };
+      const lateral = Math.abs(st.ball.p[2]) >= 4 && dGoal >= 13;
+      shotKind = u < 0.42 ? { id: 'puissance', speed: 21.5, elev: 0.09, rev: 0.5 }
+        // L'ENROULÉE : de l'angle du repique, la mène se décale VERS LE CENTRE et le Magnus
+        // la RAMÈNE au poteau (calibré : la courbe suit 1,44·(d/16)² au réel — arrivée à
+        // 0,65-1,04 m au coin) — la lecture linéaire du gardien sous-estime l'arrivée,
+        // c'est TOUT l'avantage du curler.
+        : (lateral && u < 0.56) ? { id: 'enroulée', speed: 18.5, elev: elevFor(1.35, 18.5), curl: 8 }
+        // LE RAS-DE-TERRE : le rasant appuyé au sol — sous le plongeon, mange les rebonds
+        : u < 0.5 ? { id: 'ras-de-terre', speed: 20, elev: 0.015, rev: 0.5 }
+        // LA FLOTTANTE : vite et SANS effet — pas d'axe à lire, le gardien part en retard
+        : (dGoal >= 15 && u < 0.62) ? { id: 'flottante', speed: 20.5, elev: elevFor(1.2, 20.5), rev: 0.2 }
+        : u < 0.78 ? { id: 'mi-hauteur', speed: 19, elev: elevFor(1.1, 19), rev: 0.5 }
+        : u < 0.78 + pLuc ? { id: 'lucarne', speed: 19.5, elev: elevFor(1.7, 19.5), rev: 0.5 }
+        : { id: 'placé', speed: 17.5, elev: 0.05, rev: 0.5 };
+    }
+    if (shotKind?.curl) {
+      // le décalage d'aim ÉGALE la courbe mesurée (1,44·(d/16)², plafond 2 — au plafond 1,5
+      // l'enroulée de 19 m dépassait son poteau de 0,54 m), jamais au-delà du milieu du cadre ;
+      // le spin SIGNÉ ramène vers le vrai poteau tz
+      const aimIn = Math.min(2.0, Math.max(0.7, 1.44 * (dGoal / 16) * (dGoal / 16)));
+      tzAim = tz - Math.sign(tz) * Math.min(aimIn, Math.abs(tz) * 0.7);
+      shotKind.rev = -Math.sign(goal.x) * Math.sign(tz) * shotKind.curl;
     }
   }
   const choice = {
-    to: { id: -2 }, lead: [goal.x, 0, tz], style: 'ground', shot: true, shotKind,
+    to: { id: -2 }, lead: [goal.x, 0, tzAim], style: 'ground', shot: true, shotKind,
     lane: { margin: +margin.toFixed(2) },
     shotInfo: { range: +dGoal.toFixed(2), tz: +tz.toFixed(2), gkZ: gk ? +gk.p[2].toFixed(2) : null },
   };

@@ -174,7 +174,15 @@ export const MATCH = {
   chaseLoose: true,       // le ballon libre est CHASSÉ par les deux camps ; false : la formation l'orbite (sabotage nommé)
   apron: 2.0,             // m — le tablier autour du terrain : un corps peut enjamber la ligne (chercher un ballon sorti)
   carryLawLoose: true,    // la bascule carry→libre lit la LOI DE TOUCHE (jamais sur une touche légale) ; false : le rayon plat (sabotage nommé)
-  shotVariety: true,      // le répertoire du tir (placé/croisé/puissance/mi-hauteur/lucarne) ; false : le rase-mottes unique (sabotage nommé)
+  shotVariety: true,      // le RÉPERTOIRE DU TIR (lot 39 — retour utilisateur « liste à compléter pour
+                          // être exhaustif ») : placé, croisé, puissance, mi-hauteur, lucarne, ENROULÉE
+                          // (Magnus signé — la courbe bat la lecture linéaire du gardien), RAS-DE-TERRE,
+                          // FLOTTANTE (sans axe de rotation → lue tard, keeper.js floatRead), POINTU
+                          // (petits espaces), PIQUÉ (le un-contre-un : gardien sorti PRÈS du tireur —
+                          // élévation résolue du duel, portée compensée de la traînée). L'espèce se
+                          // choisit sur la SITUATION dans shooting.js, s'exécute dans strike-sim (vitesse,
+                          // hauteur, spin). Dettes nommées : volée/demi-volée, trivela (extérieur du pied),
+                          // pointu-sans-préparation. false : le rase-mottes unique d'hier (sabotage nommé)
   keeperClaim: true,      // la sortie dans les pieds : un ballon au sol à portée de gants se ramasse, même « porté » ; false : le label-bouclier (sabotage nommé)
   carrySurge: { at: 1.25, top: 6.2 },  // le porteur COURT sur sa touche poussée (> 1,25 m → pointe libérée) ; null : le trottinement (sabotage nommé)
   carryTight: 0.62,       // la CONDUITE SERRÉE par défaut (la touche pleine est l'acte nommé d'un burst) ; 1 : le knock-on permanent (sabotage nommé)

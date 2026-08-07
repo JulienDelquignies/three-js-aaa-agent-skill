@@ -541,6 +541,32 @@ ballons trop poussés se DISPUTENT près de la surface au lieu de mourir en cond
 fantômes. Clause §8b de `verify-match11` (p99 ≤ 1,9, max ≤ 2,3 sur 2 × 120 s) ; sabotage
 nommé = retirer le plafond. Le réduit et le rondo gardent la fenêtre d'origine au bit près.
 
+### Le répertoire exhaustif des frappes (lot 39)
+
+Retour UTILISATEUR (« flottante, enroulée, puissante, ras de terre, etc — liste à compléter
+pour être exhaustif »). Le ballon savait déjà tout (`ball.js` : Magnus complet, spin en rev/s)
+— le répertoire ne l'exploitait pas. DIX ESPÈCES sous `cfg.shotVariety`, choisies sur la
+SITUATION (`shooting.js`), exécutées avec leur physique (`strike-sim` : vitesse, hauteur,
+spin) : les cinq finisseurs d'hier (placé, croisé, puissance, mi-hauteur, lucarne — bandes
+préservées : mesuré, des bandes trop généreuses aux nouveautés coûtaient la moitié des buts),
+l'**enroulée** (Magnus signé rev ±8, mène décalée vers le centre que la courbe RAMÈNE au
+poteau — calibrée 1,44·(d/16)² au ballon réel ; le gardien projette LINÉAIREMENT via
+`shotCross` : la courbe le bat de ~1 m, l'avantage du curler au vrai football), le
+**ras-de-terre** (le rasant sous le plongeon), la **flottante** (rapide et SANS axe de
+rotation : `keeper.js#floatRead` étire le réflexe ×2,4 — rien à lire, il part tard ; le fil
+du spin est gardé par la clé, le monde saboté lit comme hier), le **pointu** (petits espaces,
+rotation quasi nulle — lue tard aussi, vrai du bout du pied), le **piqué** (le UN-CONTRE-UN
+seulement : gardien sorti ≥ 4,2 m ET à ≤ 8 m du tireur — un piqué sur gardien lointain se
+fait rattraper, prise mesurée à 1,65 m ; élévation RÉSOLUE du duel — dégager 2,45 m au
+passage du corps, traînée ×1,25 — portée compensée ×1,18, vitesse exacte hors planchers).
+Banc : `verify-frappes.mjs` (6 clauses — la courbe contre la lecture linéaire, le piqué du
+un-contre-un en but, le rasant, la lecture tardive à trois mondes, sabotage « pied unique »,
+le flux ≥ 4 espèces). Flux prouvé 20 × 300 s : 59 tirs / 26 buts (hier 64 / 30 — dans le
+bruit), conversions 32-67 % par espèce. Dettes nommées : la volée/demi-volée (frapper un
+ballon EN VOL au pied — le canal tête existe, le pied non), la trivela, le
+pointu-sans-préparation (les portes d'armement n'ont pas la portée du geste), le wobble
+visuel de la flottante (scène).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

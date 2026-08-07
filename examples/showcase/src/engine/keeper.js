@@ -29,6 +29,8 @@ export const KEEPER = {
                         // sur matchs complets — 3 plongeons sur 21 tirs, 0 arrêt, 13 buts. La
                         // décision doit croire ce que le corps livré sait faire.
   diveTime: 0.9,        // s — le vol doit couper le plan dans ce délai pour déclencher (sinon on se replace)
+  floatRead: 2.4,       // × réflexe — la FLOTTANTE (vol > 18 m/s à < 2 rad/s de spin) se lit tard :
+                        // pas d'axe de rotation à deviner, le départ du plongeon se paie (lot 39)
   reflex: 0.12,         // s — le tir doit avoir volé au moins ça avant le déclenchement (pas d'oracle)
 };
 
@@ -76,7 +78,7 @@ export function shotCross(pitch, team, ball, ballV, g = 9.81) {
  *   { mode: 'battu', cross }                     — hors de portée : l'état honnête
  * `shotAge` : depuis combien de temps ce vol existe (le réflexe n'est pas un oracle).
  */
-export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K = KEEPER, threat = true) {
+export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K = KEEPER, threat = true, spin = null) {
   const spot = keeperSpot(pitch, team, ball, K);
   const cross = shotCross(pitch, team, ball, ballV);
   const speed = Math.hypot(ballV[0], ballV[2]);
@@ -106,7 +108,12 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
       return { mode: 'sortie', spot: { x: ball[0] + (dx / dl) * 0.55, z: Math.max(-pitch.goalHalf - 1.5, Math.min(pitch.goalHalf + 1.5, ball[2] + (dz / dl) * 0.55)), depth: spot.depth } };
     }
   }
-  if (!cross || speed < 6 || shotAge < K.reflex) return { mode: 'poste', spot };
+  // LA FLOTTANTE SE LIT TARD (lot 39) : un vol RAPIDE quasi SANS EFFET (< 2 rad/s — pas d'axe
+  // de rotation à lire, la trajectoire ne se « devine » pas) étire le réflexe (× floatRead) —
+  // le gardien part en retard, le plongeon se compresse. Les frappes de cou-de-pied portent
+  // leur rotation lisible (≥ 3 rad/s) : lecture d'hier, au bit près quand spin est absent.
+  const floaty = spin != null && spin < 2 && speed > 18;
+  if (!cross || speed < 6 || shotAge < K.reflex * (floaty ? (K.floatRead ?? 2.4) : 1)) return { mode: 'poste', spot };
   if (cross.t > K.diveTime) return { mode: 'poste', spot };                    // trop tôt : se replacer d'abord
   if (Math.abs(cross.z) > pitch.goalHalf + 0.6 || cross.y > pitch.goalH + 0.4) return { mode: 'poste', spot }; // non cadré
   const dz = cross.z - me[2];

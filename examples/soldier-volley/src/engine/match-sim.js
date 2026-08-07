@@ -394,7 +394,11 @@ function assignMatchJobs(st, cfg) {
       }
     }
     // la MENACE se lit au dernier contact : un ballon de SA propre équipe se cueille, ne se plonge pas
-    const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team);
+    // …et le SPIN du ballon se lit (lot 39) : la flottante — vite, sans axe — retarde le départ.
+    // Le fil passe par la clé du répertoire : shotVariety:false = la lecture d'hier, au bit près
+    // (sans la garde, un tendu > 18 m/s à spin nul déclenchait la lecture tardive dans le monde saboté)
+    const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
+      cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
     if (dec.mode === 'dive' && gk.down <= 0) {
       const cross = dec.cross;
       // L'ESPÈCE DU PLONGEON SUIT LA HAUTEUR PRÉDITE (cross.y) : un ballon au ras se plonge BAS

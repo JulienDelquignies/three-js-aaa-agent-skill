@@ -250,9 +250,13 @@ export function strikeNow(st, c, cfg) {
   // plancher plat 17 + élévation coupée à 0,10 faisaient de chaque frappe le MÊME rase-mottes.
   // L'espèce décide la vitesse ET la hauteur ; sans espèce, l'ancien vol tendu, au bit près.
   const kind = shot ? choice.shotKind : null;
-  const speed = shot ? Math.max(sol.speed, kind?.speed ?? cfg.shotSpeed ?? 17)
+  // …kind.exact (le piqué) : la vitesse balistique EST le geste — le plancher de puissance
+  // écraserait la cloche douce par-dessus le gardien sorti (lot 39)
+  const speed = shot ? (kind?.exact ? kind.speed : Math.max(sol.speed, kind?.speed ?? cfg.shotSpeed ?? 17))
     : choice.clear ? Math.max(sol.speed, 13) : sol.speed;
-  let elev = shot ? (kind ? Math.max(Math.min(kind.elev, 0.32), 0.01) : Math.min(sol.elevation, 0.10)) : sol.elevation;
+  // …kind.exact libère AUSSI l'élévation : le plafond 0,32 (anti-chandelle des frappes tendues)
+  // écrasait le θ 0,58 du piqué — apogée mesurée 0,91 m, le lob qui ne lobe pas (lot 39)
+  let elev = shot ? (kind ? (kind.exact ? kind.elev : Math.max(Math.min(kind.elev, 0.32), 0.01)) : Math.min(sol.elevation, 0.10)) : sol.elevation;
   let spd = speed;
   // LA CLOCHE DU CENTRE (cfg.tete && st.full — lot 34) : un centre est un ARC par-dessus le
   // premier rideau, pas une passe tendue (0 centre entré en surface sur 4 matchs mesurés —
@@ -273,7 +277,10 @@ export function strikeNow(st, c, cfg) {
     sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
     st.events.push({ t: +st.t.toFixed(2), type: 'renversement', by: c.id, to: choice.to.id, dz: +Math.abs(lead[2] - from[2]).toFixed(1) });
   }
-  st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: 0 });
+  // …le RÉPERTOIRE porte son effet (lot 39) : l'enroulée son Magnus signé (kind.rev ±8 — la
+  // courbe RAMÈNE la mène décalée au vrai poteau), les frappes de cou-de-pied leur rotation
+  // lisible (0,5), flottante/pointu quasi rien (le gardien les lit tard). Sans kind : 0, au bit près.
+  st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: kind?.rev ?? 0 });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
   if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id });
   if (shot) {

@@ -2536,6 +2536,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     le corps, le clip d'appuis raffinerait le dernier demi-mètre. Prochain (retour
     utilisateur item 1) : le RÉPERTOIRE EXHAUSTIF DES FRAPPES.
 
+74. **Le répertoire exhaustif des frappes (lot 39 — retour utilisateur « flottante enroulée
+    puissante ras terre etc, liste à compléter pour être exhaustif »).** Le ballon SAVAIT
+    déjà (ball.js : Magnus complet, spinAxis/spinRev, coefficient empirique standard) — le
+    répertoire n'exploitait rien. DIX ESPÈCES désormais, chacune SA loi de choix (situation)
+    et SA physique : placé, croisé, puissance, mi-hauteur, lucarne (les finisseurs d'hier,
+    bandes PRÉSERVÉES), + ENROULÉE (angle de repique : la mène se décale vers le centre,
+    le Magnus signé — rev ±8 — la RAMÈNE au poteau ; calibré au ballon réel : la courbe suit
+    1,44·(d/16)², fixture : arrivée 2,91 au poteau 3,11 quand la LECTURE LINÉAIRE du gardien
+    — shotCross, il ne projette pas le Magnus — disait 1,89 : battue de 1,01 m, l'avantage
+    du curler au vrai football), + RAS-DE-TERRE (20 m/s à 1,5 cm — apogée 0,11 m au banc),
+    + FLOTTANTE (20,5 m/s SANS axe de rotation < 2 rad/s : le gardien n'a rien à lire, son
+    réflexe s'étire ×2,4 — floatRead, keeper.js, fil du spin gardé par shotVariety), +
+    POINTU (petits espaces, rotation quasi nulle), + PIQUÉ (le UN-CONTRE-UN : gardien sorti
+    ≥ 4,2 m ET près du tireur ≤ 8 m — élévation RÉSOLUE du duel (dégager 2,45 m au passage
+    du corps, traînée ×1,25), portée compensée ×1,18, vitesse exacte hors planchers ; fixture :
+    3,02 m au-dessus du gardien rué, but — il ne recule pas plus vite que le vol). TROIS
+    LEÇONS D'ÉQUILIBRE payées et consignées : (1) le piqué à porte large (gkOff 3,5, tirage
+    0,75) dévorait 37 % du répertoire ; (2) le piqué sur gardien LOIN du tireur se fait
+    rattraper (prise à 1,65 m mesurée — la cloche de 2 s perd contre le repli) : ce piqué-là
+    n'existe pas au vocabulaire ; (3) les bandes larges aux nouvelles espèces coûtaient la
+    finition (20 × 300 s : buts 30 → 15) — les finisseurs prouvés gardent leurs bandes, les
+    espèces prennent les MARGES. Flux final : 59 tirs / 26 buts contre 64 / 30 (z ≈ 0,5,
+    dans le bruit), conversions par espèce 32-67 %. Et une leçon d'INSTRUMENT : à 1-5 tirs
+    par graine de 180 s, un A/B de comptage se juge sur 20 × 300 s — les bissections sur
+    5 graines chassaient des papillons. Banc verify-frappes (6 clauses : courbe contre
+    lecture linéaire, piqué du un-contre-un, rasant, lecture tardive à trois mondes,
+    sabotage « pied unique », flux ≥ 4 espèces). Le pointu-de-nécessité (frapper SANS
+    préparation le ballon à 1,3 m) est une dette nommée : refusé par les portes d'armement,
+    le premier jet faisait PASSER le cerveau au lieu de préparer (tirs −37 %). Autres dettes :
+    volée/demi-volée (frapper un ballon EN VOL au pied), trivela, wobble visuel de la
+    flottante (scène). Les 3 retours utilisateur du message sont livrés : conduite (72),
+    receveur vivant (73), répertoire (74).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
