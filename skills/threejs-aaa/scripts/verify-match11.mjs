@@ -74,7 +74,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // ≤ 12 m ? (les actifs — porteur, presseur, coureurs — désertent le leur : c'est le jeu)
     for (const team of [0, 1]) {
       const atk = st.possession.team === team;
-      const spots = formationSpots(st.pitch, team, st.ball.p[0], atk);
+      // …les postes JUGÉS sont ceux que le moteur SERT (lot 42 : le défendant vit au bloc
+      // compact — juger les vieux postes étirés comptait des déserteurs imaginaires)
+      const spots = formationSpots(st.pitch, team, st.ball.p[0], atk, undefined, atk ? null : cfg.bloc);
       const mine = st.players.filter((q) => q.team === team && !q.keeper && q.down <= 0);
       let covered = 0;
       for (const [x, z] of spots) {
@@ -88,6 +90,56 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // cover, marqueurs) désertent leur poste pour JOUER, c'est le football ; les postés tiennent
   // le reste. L'existence du bloc est prouvée par le sabotage dessous (dispersion +5,8 m).
   ok(`le bloc TIENT ses postes (${pct.toFixed(0)} % des postes couverts à ≤ 12 m ≥ 55 — un bloc lisible, pas un essaim)`, pct >= 55);
+}
+
+// ---------- 3b. LE BLOC COMPACT (lot 42, retour utilisateur « les lignes sont trop espacées,
+// les matchs ne sont pas réalistes ») : l'équipe SANS ballon est chaînée au ballon — ligne à
+// ~27 m derrière lui, bloc borné à ~30 m, interlignes comprimées. Mesuré : bloc défendant
+// p50 43 → 30,3 m (réel 25-40), interligne défense→milieu 25,5 → 14,7 m (réel 10-15), et
+// l'ASYMÉTRIE naît (attaque 42 m étirée) — flux tenu (70 tirs / 29 buts, 20 × 300 s).
+{
+  // la LOI PURE d'abord : ballon au rond central → la ligne défendante vit à ~ligne m du
+  // ballon (pas à ses postes absolus), et le bloc tient dans long m
+  const st0 = makeMatch({ full: true, seed: 1 });
+  const cfg0 = matchCfg({ shotRange: 20 });
+  const spots = formationSpots(st0.pitch, 1, 0, false, undefined, cfg0.bloc);
+  const sgn1 = -st0.pitch.ownGoal(1).sign;
+  const xs = spots.map(([x]) => x * sgn1);                          // axe d'attaque de l'équipe 1
+  const lignePos = Math.min(...xs), span = Math.max(...xs) - lignePos;
+  const dLigneBallon = 0 - lignePos;                                // ballon à l'avance 0 (rond central)
+  ok(`la LOI PURE du bloc (ballon au rond central : ligne défendante à ${dLigneBallon.toFixed(1)} m derrière le ballon ≈ ${cfg0.bloc.ligne}, longueur ${span.toFixed(1)} m ≤ ${cfg0.bloc.long} + 1)`,
+    Math.abs(dLigneBallon - cfg0.bloc.ligne) < 2 && span <= cfg0.bloc.long + 1);
+  // le FLUX ensuite : les bandes réelles en match (agrégat 2 × 120 s, doctrine lot 36)
+  const mesure = (cfgX) => {
+    const dLong = [], dInter = [], aLong = [];
+    for (const seed of [1, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...cfgX });
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (i % 30 !== 0 || st.restart) continue;
+        const poss = st.possession.carrier >= 0 ? st.players[st.possession.carrier].team : (st.lastTouch ?? 0);
+        for (const team of [0, 1]) {
+          const corps = st.players.filter((p) => p.team === team && !p.keeper && p.down <= 0 && !p.expulse && !p._sub);
+          if (corps.length < 8) continue;
+          const sgn = Math.sign(st.pitch.attackGoal(team).x || 1);
+          const xs2 = corps.map((p) => p.p[0] * sgn).sort((a, b) => a - b);
+          const L = xs2[xs2.length - 1] - xs2[0];
+          if (team === poss) { aLong.push(L); continue; }
+          dLong.push(L);
+          dInter.push((xs2[4] + xs2[5] + xs2[6]) / 3 - (xs2[0] + xs2[1] + xs2[2] + xs2[3]) / 4);
+        }
+      }
+    }
+    const p50 = (a) => { a.sort((x, y) => x - y); return a.length ? a[Math.floor(0.5 * (a.length - 1))] : 99; };
+    return { dLong: p50(dLong), dInter: p50(dInter), aLong: p50(aLong) };
+  };
+  const vif = mesure({});
+  ok(`le BLOC DÉFENDANT est court en match (longueur p50 ${vif.dLong.toFixed(1)} m ≤ 36 — réel 25-40 —, interligne défense→milieu ${vif.dInter.toFixed(1)} m ≤ 19 — réel 10-15 —, et l'ASYMÉTRIE vit : attaque ${vif.aLong.toFixed(1)} ≥ défense + 4)`,
+    vif.dLong <= 36 && vif.dInter <= 19 && vif.aLong >= vif.dLong + 4);
+  const sab = mesure({ bloc: false });
+  ok(`sabotage « bloc élastique » attrapé (bloc:false : longueur défendante p50 ${sab.dLong.toFixed(1)} m ≥ vivant + 6 (${(vif.dLong + 6).toFixed(1)}) — les lignes espacées d'hier, nommées)`,
+    sab.dLong >= vif.dLong + 6);
 }
 
 // ---------- 4. sabotage nommé : sans la formation, le 22-corps redevient l'essaim du réduit

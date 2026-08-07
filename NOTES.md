@@ -2620,6 +2620,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     la dette avant de la payer. Dettes : le renversement porté, l'approche pilotée du
     centre, la poitrine.
 
+77. **Le bloc compact : les distances entre lignes SONT la tactique (lot 42 — retour
+    utilisateur « les lignes sont trop espacées, les matchs ne sont pas réalistes »).**
+    Diagnostic CONFIRMÉ au chiffre (sonde bloc, 4 × 180 s, ~2 700 photos) : bloc défendant
+    p50 43,1 m / p90 58,1 (réel 25-40), interligne défense→milieu 25,5 m (réel 10-15), et
+    ZÉRO asymétrie attaque/défense (43,1 = 43,1 au dixième — le bloc ne se compactait
+    JAMAIS). Cause : formationSpots coulissait (±18 %) mais la ligne vivait à ses POSTES
+    ABSOLUS — ballon au rond central, ligne défensive parquée à 11 m de son but. LA LOI DU
+    VRAI FOOTBALL (formation.js, paramètre bloc — pur, testable) : l'équipe SANS ballon est
+    CHAÎNÉE AU BALLON — sa ligne tient `ligne` m (27) derrière lui (« on pousse ! » — elle
+    monte quand le ballon recule, plafond au rond central) et le bloc entier tient en `long`
+    m (30), interlignes comprimées d'un même facteur ; l'équipe qui ATTAQUE garde la
+    respiration étirée d'hier — L'ASYMÉTRIE EST LE RÉALISME. hauteurBloc (tactics) compose
+    par-dessus (±6 m), le pressing aussi (step). Après : bloc défendant p50 30,3 / p90
+    41,2 ✓, interligne 14,7 ✓, attaque 42,0 étirée ✓ — et le FLUX TENU (70 tirs / 29 buts
+    sur 20 × 300 s, bande 59-71 / 22-30 ; service du lot 41 intact à 45 %). Clauses §3b
+    (verify-match11) : loi PURE (ballon au rond central → ligne à 27,0 m, longueur 30,0),
+    bandes en match (≤ 36 / ≤ 19 / asymétrie ≥ +4), sabotage « bloc élastique » (+6 m).
+    DEUX instruments re-fondés au passage (le flux avait bougé sous eux) : la clause
+    largeur de verify-tactics passe en SCÈNE CONTRÔLÉE (lire les cibles p.target posées
+    aux ailiers — la juger au flux l'avait noyée TROIS fois : renversement, slots de
+    surface, darts ; écart restauré 20,7 vs 28,1) et le flux de verify-menace en balayage
+    coupe-circuit (une graine × 180 s pour « le tir vit » = la fragilité connue). Dette
+    nommée : la largeur défensive (36,8 mesurée, réel 40-44 — le resserrement latéral
+    côté ballon, v2 du bloc).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

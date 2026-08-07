@@ -605,6 +605,28 @@ Mesuré (ablation propre) : urgence seule p50 0,63 / p90 1,50 ; composé **p50 0
 « service nonchalant » par séparation des moyennes). Leçon de méthode : toujours RE-MESURER
 une dette avant de la payer — trois lots avaient déjà bougé le terrain.
 
+### Le bloc compact — les distances entre lignes sont la tactique (lot 42)
+
+Retour UTILISATEUR (« les lignes sont trop espacées, les matchs ne sont pas réalistes »),
+confirmé au chiffre : bloc défendant p50 43 m / p90 58 (réel 25-40), 25,5 m entre défense et
+milieu (réel 10-15), et ZÉRO asymétrie attaque/défense — `formationSpots` coulissait mais la
+ligne vivait à ses postes ABSOLUS (11 m de son but, ballon au rond central). La loi
+(formation.js, paramètre `bloc` — pur, testable au banc ; consommé par le bloc posté de
+match-sim sous `cfg.bloc`, st.full) : **l'équipe sans ballon est CHAÎNÉE AU BALLON** — sa
+ligne défensive tient `ligne` m (27) derrière lui, elle MONTE quand le ballon recule
+(plafond au rond central), et le bloc entier tient en `long` m (30) — les lignes s'empilent
+depuis la ligne basse, interlignes comprimées d'un même facteur. L'équipe qui ATTAQUE garde
+la respiration étirée : **l'asymétrie est le réalisme** (mesuré après : défense 30,3 m /
+attaque 42,0). `hauteurBloc` (tactics, ±6 m) et le cran de pressing composent par-dessus ;
+la Loi 11 suit toute seule (la ligne réelle FAIT la ligne de hors-jeu — un bloc qui monte
+pousse les pointes adverses). Flux prouvé tenu : 70 tirs / 29 buts (20 × 300 s), service
+des coureurs intact. Clauses §3b de `verify-match11` (loi pure au rond central, bandes en
+match, sabotage « bloc élastique »). Dette nommée : le resserrement LATÉRAL côté ballon
+(largeur défensive 36,8 mesurée, réel 40-44 — v2). Leçon d'instrument (deux clauses
+re-fondées) : un axe qui gouverne des POSTES se juge en SCÈNE CONTRÔLÉE sur les cibles
+posées (`p.target`), pas au flux — trois couches successives (renversement, slots, darts)
+avaient noyé la clause largeur.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

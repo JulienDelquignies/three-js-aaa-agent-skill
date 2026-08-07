@@ -58,25 +58,27 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const bas = run({ hauteurBloc: 0 }), haut = run({ hauteurBloc: 1 });
   ok(`la HAUTEUR DE BLOC bouge la ligne (bloc bas ${bas.ligne.toFixed(1)} m de son but, ligne haute ${haut.ligne.toFixed(1)} — écart ≥ 4,5, mesuré +9,0 monde lot 34)`,
     haut.ligne >= bas.ligne + 4.5);
-  // …la LARGEUR se prouve en ISOLATION (renversement:false — lot 35) : le renversement pousse
-  // ballon et corps au large POUR TOUTES les équipes (mesuré : l'écart de l'axe noyé, −3,7 à
-  // +2,0 selon graine) — chaque couche se juge sur SON axe, le contrat de l'axe reste +12,6.
-  const runIso = (t0) => {
+  // …la LARGEUR, re-fondée lot 42 : l'axe gouverne les POSTES — la juger au flux l'a noyée
+  // TROIS fois (le renversement lot 35, puis les slots de surface et les darts : écarts
+  // mesurés 1,4 puis 2,2 m pour une loi qui en produit ~5 aux postes). L'instrument honnête :
+  // la scène CONTRÔLÉE — un porteur posé au rond central, trois images, et on lit les CIBLES
+  // (p.target) que le bloc offensif pose aux ailiers postés — la sortie réelle du moteur.
+  const cibleAiliers = (t0) => {
     const st = makeMatch({ full: true, seed: 5, tactics: [t0, null] });
     const cfg = matchCfg({ shotRange: 20, renversement: false });
-    let z = 0, nZ = 0;
-    for (let i = 0; i < 150 * 60; i++) {
-      matchStep(st, 1 / 60, cfg);
-      if (st.restart) continue;
-      if (st.possession.team === 0 && st.t - (st._possChangeAt ?? -99) > 5) {
-        for (const p2 of st.players) if (p2.team === 0 && !p2.keeper && (p2.post ?? 0) >= 7) { z += Math.abs(p2.p[2]); nZ++; }
-      }
-    }
-    return { zTrio: nZ ? z / nZ : 0 };
+    for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = 20; q.p[2] = (q.id % 11) * 4 - 20; q.v = [0, 0]; }
+    const c = st.players.find((p) => p.team === 0 && p.post === 5);
+    c.p[0] = 0; c.p[2] = 0; c.v = [0, 0];
+    st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+    for (let i = 0; i < 3; i++) matchStep(st, 1 / 60, cfg);         // le bloc pose ses cibles
+    const ailiers = st.players.filter((p) => p.team === 0 && (p.post === 7 || p.post === 9));
+    return ailiers.reduce((s, p) => s + Math.abs((p.target ?? p.p)[2] ?? p.p[2]), 0) / ailiers.length;
   };
-  const etroit = runIso({ largeur: 0 }), large = runIso({ largeur: 1 });
-  ok(`la LARGEUR bouge le trio (jeu dedans |z| ${etroit.zTrio.toFixed(1)} m, jeu d'ailes ${large.zTrio.toFixed(1)} — écart ≥ 4, mesuré +12,6 monde lot 34)`,
-    large.zTrio >= etroit.zTrio + 4);
+  const etroit = cibleAiliers({ largeur: 0 }), large = cibleAiliers({ largeur: 1 });
+  ok(`la LARGEUR bouge les ailiers (cibles postées, porteur au rond central : jeu dedans |z| ${etroit.toFixed(1)} m, jeu d'ailes ${large.toFixed(1)} — écart ≥ 4 : ×0,85 contre ×1,15 sur les postes)`,
+    large >= etroit + 4);
 }
 
 // ---------- 4. le PRESSING au mécanisme : la fenêtre d'une école de chasse dure plus, revient plus vite

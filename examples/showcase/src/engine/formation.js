@@ -53,15 +53,39 @@ export function premierOffensif(name = 433) {
  * possession. Le bloc coulisse (± 18 % du terrain), la profondeur respire (× 1,05 en attaque,
  * × 0,85 sans le ballon — un bloc défensif est un bloc COURT).
  */
-export function formationSpots(pitch, team, anchorX, attacking, name = 433) {
+export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc = null) {
   const g = pitch.ownGoal(team);
   const sgn = -g.sign;                                            // vers l'avant
-  const slide = Math.max(-0.18, Math.min(0.18, (anchorX * sgn) / pitch.dims.length));
+  const L = pitch.dims.length;
+  const F = FORMATIONS[name] ?? FORMATIONS[433];
+  // LE BLOC DÉFENSIF EST CHAÎNÉ AU BALLON (lot 42, cfg.bloc — retour utilisateur « les lignes
+  // sont trop espacées, les matchs ne sont pas réalistes ») : mesuré avant, bloc défendant
+  // p50 43 m / p90 58 (réel 25-40), 25,5 m entre défense et milieu (réel 10-15), et AUCUNE
+  // asymétrie attaque/défense — la ligne vivait à ses POSTES (11 m de son but, ballon au
+  // centre), pas au ballon. La loi du vrai football : la LIGNE tient ~`ligne` m derrière le
+  // ballon (« on pousse ! » — elle monte quand le ballon recule, jamais au-delà du rond
+  // central), et le bloc défendant a une LONGUEUR bornée (`long` m) : les lignes s'empilent
+  // depuis la ligne basse, interlignes comprimées d'un même facteur. L'équipe qui ATTAQUE
+  // garde la respiration d'hier (étirée) — l'asymétrie est le réalisme. `bloc` absent :
+  // le monde d'hier, au bit près (sabotage nommé « bloc élastique »).
+  if (!attacking && bloc) {
+    const ballF = Math.max(0, Math.min(1, (anchorX * sgn) / L + 0.5));
+    const fMin = Math.min(...F.map(([f]) => f));
+    const span = Math.max(0.01, Math.max(...F.map(([f]) => f)) - fMin);
+    const ligneF = Math.max(0.05, Math.min(0.5, ballF - (bloc.ligne ?? 27) / L));
+    const squeeze = ((bloc.long ?? 30) / L) / span;
+    return F.map(([f, fz]) => {
+      const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * squeeze));
+      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92));
+      return [g.x + sgn * fx * L, z];
+    });
+  }
+  const slide = Math.max(-0.18, Math.min(0.18, (anchorX * sgn) / L));
   const breathe = attacking ? 1.05 : 0.85;
-  return (FORMATIONS[name] ?? FORMATIONS[433]).map(([f, fz]) => {
+  return F.map(([f, fz]) => {
     const fx = Math.max(0.04, Math.min(0.96, f * breathe + slide + (attacking ? 0.05 : 0)));
     const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92));
-    return [g.x + sgn * fx * pitch.dims.length, z];
+    return [g.x + sgn * fx * L, z];
   });
 }
 

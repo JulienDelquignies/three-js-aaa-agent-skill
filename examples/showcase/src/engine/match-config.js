@@ -85,6 +85,17 @@ export const MATCH = {
                           // un centre est un arc par-dessus le premier rideau (0 centre
                           // entré en surface avant — mangés en route, vols tendus).
                           // false : le jeu au sol d'hier (sabotage nommé).
+  bloc: { long: 30, ligne: 27 },
+                          // LE BLOC COMPACT (11c11, st.full — lot 42, retour utilisateur « les
+                          // lignes sont trop espacées ») : l'équipe SANS ballon est chaînée au
+                          // ballon — sa ligne défensive tient `ligne` m derrière lui (elle MONTE
+                          // quand le ballon recule, plafond au rond central) et le bloc entier
+                          // tient en `long` m (interlignes comprimées d'un même facteur — réel :
+                          // bloc 25-40 m, interlignes 10-15). Mesuré avant : 43 m p50 / 58 p90,
+                          // 25,5 m entre défense et milieu, zéro asymétrie attaque/défense.
+                          // L'attaque garde sa respiration étirée : l'asymétrie EST le réalisme.
+                          // hauteurBloc (tactics) compose par-dessus (±6 m). false : le bloc
+                          // élastique d'hier (sabotage nommé).
   volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 },
                           // LA VOLÉE (11c11, st.full — lot 40) : le pied joue le ballon EN VOL
                           // sous la fenêtre de tête (min-max m, portée reach) — REPRISE au but
