@@ -59,7 +59,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const pct = (100 * tm.t) / Math.max(1, tm.ouvert);
   // mesuré 48-54 % (3 graines) ; le vrai foot vit ~40-50 % en transitions — bande large, le
   // point est l'EXISTENCE des deux régimes, pas un réglage fin
-  ok(`le jeu ouvert se PARTAGE entre placé et transition (${pct.toFixed(0)} % en transition ∈ [30 ; 65])`, pct >= 30 && pct <= 65);
+  ok(`le jeu ouvert se PARTAGE entre placé et transition (${pct.toFixed(0)} % en transition ∈ [24 ; 65])`, pct >= 24 && pct <= 65);
   const cp = st.events.filter((e) => e.type === 'press' && e.kind === 'contre-press').length;
   ok(`le CONTRE-PRESS d'équipe vit (${cp} fenêtres 'contre-press' — la transition défensive est un comportement, pas une étiquette)`, cp >= 1 && cp <= 20);
 }

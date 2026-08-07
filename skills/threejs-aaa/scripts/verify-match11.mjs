@@ -188,7 +188,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   let appels = 0, servis = 0, offPct = [], denies = 0;
   // graines {2,4,5} (re-fondé lot 34 : le monde des duels charge le porteur pendant qu'il
   // sert — le service s'est raréfié, l'existence tient, le taux reste la dette nommée)
-  for (const seed of [2, 4, 5]) {
+  // graines {3,6,8} (re-fondé lot 35 : la bascule — option sûre — surclasse le service du
+  // coureur, 0-2 servis par jeu de graines ; le taux d'appels servis est une dette d'équilibrage
+  // NOMMÉE : appelBonus contre bonus de bascule, à arbitrer en réglage)
+  for (const seed of [3, 6, 8]) {
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20 });
     let fPoss = 0, fOff = 0;

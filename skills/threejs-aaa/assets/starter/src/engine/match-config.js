@@ -63,6 +63,17 @@ export const MATCH = {
                           // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
+  renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5 },
+                          // LE RENVERSEMENT (11c11, st.full — lot 35, diagnostic utilisateur
+                          // « densité du jeu axial ») : quand le bloc COMPRIME le côté ballon
+                          // (dense corps à rayon m), l'aile OPPOSÉE (Δz > dz, flanc à flanc)
+                          // entre au vocabulaire du cerveau de passe — portée étendue (portee
+                          // m au lieu de 13), point doux neutralisé, le lofted est sa NATURE,
+                          // et la diagonale vole EN CLOCHE par-dessus le bloc (strike-sim).
+                          // Mesuré avant : 76 % du jeu à |z| < 8, passe max 21,9 m, 1
+                          // renversement / 4 matchs (réel 3-8/match). Événement
+                          // 'renversement' {by, to, dz}. false : le jeu axial d'hier
+                          // (sabotage nommé).
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },
                           // LE JEU DE TÊTE (11c11, st.full — lot 34) : un vol à hauteur de
                           // tête (min-max m — la tête DEBOUT, le saut est une dette de

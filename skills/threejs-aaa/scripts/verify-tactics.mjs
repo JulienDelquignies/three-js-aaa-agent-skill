@@ -58,7 +58,23 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const bas = run({ hauteurBloc: 0 }), haut = run({ hauteurBloc: 1 });
   ok(`la HAUTEUR DE BLOC bouge la ligne (bloc bas ${bas.ligne.toFixed(1)} m de son but, ligne haute ${haut.ligne.toFixed(1)} — écart ≥ 4,5, mesuré +9,0 monde lot 34)`,
     haut.ligne >= bas.ligne + 4.5);
-  const etroit = run({ largeur: 0 }), large = run({ largeur: 1 });
+  // …la LARGEUR se prouve en ISOLATION (renversement:false — lot 35) : le renversement pousse
+  // ballon et corps au large POUR TOUTES les équipes (mesuré : l'écart de l'axe noyé, −3,7 à
+  // +2,0 selon graine) — chaque couche se juge sur SON axe, le contrat de l'axe reste +12,6.
+  const runIso = (t0) => {
+    const st = makeMatch({ full: true, seed: 5, tactics: [t0, null] });
+    const cfg = matchCfg({ shotRange: 20, renversement: false });
+    let z = 0, nZ = 0;
+    for (let i = 0; i < 150 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      if (st.restart) continue;
+      if (st.possession.team === 0 && st.t - (st._possChangeAt ?? -99) > 5) {
+        for (const p2 of st.players) if (p2.team === 0 && !p2.keeper && (p2.post ?? 0) >= 7) { z += Math.abs(p2.p[2]); nZ++; }
+      }
+    }
+    return { zTrio: nZ ? z / nZ : 0 };
+  };
+  const etroit = runIso({ largeur: 0 }), large = runIso({ largeur: 1 });
   ok(`la LARGEUR bouge le trio (jeu dedans |z| ${etroit.zTrio.toFixed(1)} m, jeu d'ailes ${large.zTrio.toFixed(1)} — écart ≥ 4, mesuré +12,6 monde lot 34)`,
     large.zTrio >= etroit.zTrio + 4);
 }

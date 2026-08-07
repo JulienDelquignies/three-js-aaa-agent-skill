@@ -90,6 +90,10 @@ export function choosePass(st, cfg = RONDO) {
   // et c'est exactement la fenêtre de l'appel timé : le coureur qui jaillit de la ligne pendant
   // l'armé est servi LÉGALEMENT. Clé absente (rondo, réduit futsal) : pas un bit ne bouge.
   const offL = cfg.offside && st.full ? offsideLine(st, c.team) : null;
+  // la DENSITÉ côté ballon, comptée une fois par appel : le bloc qui comprime est la
+  // CONDITION du renversement (clé absente ou monde réduit : jamais dense, pas un bit)
+  const _dense = !!(cfg.renversement && st.full)
+    && foesL.filter((q) => q.down <= 0 && d2(q.p, origin) < (cfg.renversement.rayon ?? 12)).length >= (cfg.renversement.dense ?? 5);
   let best = null;
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
@@ -99,12 +103,22 @@ export function choosePass(st, cfg = RONDO) {
     if (st.laneVeto?.[m.id] > st.t && st.hold < cfg.holdMax) continue;
     if (offL && m.p[0] * offL.sgn > offL.adv + 0.05) continue;      // hors-jeu : on attend sa course
     const d = d2(origin, m.p);
+    // LE RENVERSEMENT (cfg.renversement && st.full — lot 35, diagnostic utilisateur « densité
+    // du jeu axial ») : quand le bloc adverse COMPRIME le côté ballon, l'aile OPPOSÉE est la
+    // sortie — la diagonale longue, en cloche, PAR-DESSUS le bloc. Mesuré avant : 76 % du jeu
+    // à |z| < 8 (réel ~45), passe max du vocabulaire 21,9 m, 1 renversement / 4 matchs (réel
+    // 3-8). Le candidat de bascule se juge par SA loi : portée étendue, point doux neutralisé,
+    // le lofted est sa nature (pas une pénalité) — le reste du barème (pression à l'arrivée,
+    // sens du jeu) continue de parler.
+    const bascule = _dense && Math.sign(m.p[2] || 1) !== Math.sign(origin[2] || 1)
+      && Math.abs(m.p[2] - origin[2]) > (cfg.renversement.dz ?? 18);
     // L'APPEL ÉTIRE LA PORTÉE (cfg.appelRange — PLEIN FORMAT seulement, comme toute la Loi 11) :
     // un coureur en rupture se sert DANS la course, plus loin qu'une passe de circulation (le
     // dart sortait de l'enveloppe en 0,6 s — mesuré : 11 appels, 1 servi). La garde st.full est
     // une leçon MESURÉE : sans elle, les bursts cadencés du réduit héritaient de l'extension et
     // un monde calibré 76 clauses a bougé (tempsLoin 4,6 > 2,5). Clé ou format absents : + 0.
-    const rMax = cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel' ? (cfg.appelRange ?? 0) : 0);
+    const rMax = bascule ? (cfg.renversement.portee ?? 38)
+      : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel' ? (cfg.appelRange ?? 0) : 0);
     if (d < cfg.passRange[0] || d > rMax) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
     // LA MÈNE SUIT LA COURSE (cfg.leadTime — le match la dérive du temps de vol : un coureur à
@@ -121,7 +135,8 @@ export function choosePass(st, cfg = RONDO) {
     const tArr = 0.4 + d / 9;
     const recvPressure = Math.min(...foesL.map((o) => Math.hypot(o.p[0] + o.v[0] * tArr - lead[0], o.p[2] + o.v[1] * tArr - lead[2])), 99);
     // a lofted ball beats a blocked lane, at the cost of being slower and harder to control
-    const style = lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
+    const style = bascule ? 'lofted'                               // la diagonale VOLE par-dessus le bloc
+      : lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
     const blocked = !lane.open && style !== 'lofted';
     if (blocked) continue;
     // UNE PASSE MANQUÉE PRÈS DE LA LIGNE EST UNE SORTIE EN PRÉPARATION. Mesuré : la sortie de but
@@ -140,10 +155,11 @@ export function choosePass(st, cfg = RONDO) {
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
-      - Math.abs(d - 10) * 0.32                             // 10 m is the sweet spot
+      - (bascule ? 0.8 : Math.abs(d - 10) * 0.32)           // 10 m is the sweet spot — la bascule a SA loi
       - (m.id === st.lastPasser ? 2.6 : 0)                  // don't ping-pong
-      - (style === 'lofted' ? 2.2 : 0)                      // ground ball whenever possible
+      - (style === 'lofted' && !bascule ? 2.2 : 0)          // ground ball whenever possible — le lofted EST la bascule
       - (overrun < 3 ? (3 - overrun) * 0.9 : 0)             // ne joue pas VERS la sortie toute proche
+      + (bascule ? (cfg.renversement.bonus ?? 1.5) : 0)     // sortir de l'étau vaut la peine
       // LE MATCH A UN SENS DE JEU (cfg.passBias, match-sim) : le rondo conserve, une équipe
       // PROGRESSE — sans ce terme, mesuré : possession dominante (191 c. 140 images de conduite)
       // entièrement à x = −15, toutes les pertes entre −9 et −23, zéro sortie de camp en 120 s.
@@ -152,7 +168,7 @@ export function choosePass(st, cfg = RONDO) {
       // passe qui le suit est la définition même de « suivre l'appel » (mesuré avant : 5 appels
       // servis sur 74 — les ruptures étaient un décor)
       + ((m._pace?.until ?? -1) > st.t ? (cfg.appelBonus ?? 0) : 0);
-    if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d };
+    if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d, bascule };
   }
   return best;
 }

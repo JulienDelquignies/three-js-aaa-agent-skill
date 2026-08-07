@@ -264,6 +264,15 @@ export function strikeNow(st, c, cfg) {
     spd = Math.sqrt(Math.max(8, R) * 9.81 / Math.sin(2 * elev));
     sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
   }
+  // …et la DIAGONALE DU RENVERSEMENT vole PAR-DESSUS le bloc (lot 35) : la même cloche —
+  // c'est sa raison d'être au vrai football, le couloir 2D bouché n'existe pas à 5 m du sol
+  if (choice.bascule && cfg.renversement && st.full) {
+    const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+    elev = 0.42;
+    spd = Math.sqrt(Math.max(10, R) * 9.81 / Math.sin(2 * elev));
+    sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
+    st.events.push({ t: +st.t.toFixed(2), type: 'renversement', by: c.id, to: choice.to.id, dz: +Math.abs(lead[2] - from[2]).toFixed(1) });
+  }
   st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: 0 });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
   if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id });

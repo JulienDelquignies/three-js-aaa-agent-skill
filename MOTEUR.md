@@ -468,6 +468,34 @@ sabotage « jeu au sol », flux). Trois leçons de banc : la mène du vol doit p
 fixture se mesure (la tête tombe à t+1,05 — courir 0,9 s la ratait), et les corps DÉRIVENT
 pendant un vol (le duel à deux se juge en appel direct, pas en mise en scène de flux).
 
+### L'orientation du jeu — le renversement d'aile (lot 35)
+
+`matchCfg` porte `renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5 }`
+(gardé `st.full`). Diagnostic UTILISATEUR (« la densité du jeu axial — l'intelligence
+on-ball ne change pas d'aile ») chiffré sans appel : **76 % du jeu vivait à |z| < 8** (réel
+~45), la passe la plus longue du VOCABULAIRE faisait 21,9 m (`passRange [2.5, 13]` + appel),
+1 renversement / 4 matchs (réel 3-8/match), 5-6 adversaires compressés à 12 m du ballon. Le
+cerveau ne peut pas choisir ce qu'il ne peut pas dire. La bascule entre au vocabulaire de
+`choosePass` **sous condition de densité** (bloc ≥ `dense` corps à `rayon` m du ballon) : le
+candidat du flanc OPPOSÉ (Δz > 18, flanc à flanc) se juge par SA loi — portée étendue à
+38 m, point doux des 10 m neutralisé, le lofted est sa NATURE (pas une pénalité) — pendant
+que le reste du barème (pression à l'arrivée, sens du jeu) continue de parler. La diagonale
+**vole en cloche par-dessus le bloc** (strike-sim, le patron de la rentrée — le couloir 2D
+bouché n'existe pas à 5 m du sol : c'est la raison d'être du geste). Événement
+`'renversement' {by, to, dz}`. Mesuré après, transformation nette : **axial 76 → 49 %**
+(réel ~45), **ailes 9 → 29 %**, **~5 renversements/match** (bande réelle), portée max 38 m —
+et la **densité côté ballon p50 passe de 6 à 2 corps** : le bloc adverse doit couvrir la
+largeur, l'étau se desserre — l'effet SYSTÉMIQUE du renversement au vrai football. Banc :
+`verify-renversement.mjs` (5 clauses — l'étau choisit l'aile opposée, pas de forçage sans
+densité, la cloche vole et arrive, sabotage « jeu axial », flux). Effets systémiques
+assumés et re-bordés : moins de duels d'épaule (l'étau choisi diminue), transitions plus
+rares (la possession se stabilise), l'axe LARGEUR se prouve désormais en isolation
+(`renversement:false` — chaque couche sur son axe), et le service des appels profonds
+s'éteint (la bascule, option sûre, le surclasse — dette d'équilibrage NOMMÉE : appelBonus
+contre bonus de bascule). Leçon de fixture : LE BALLON est l'origine du cerveau — téléporter
+le porteur sans son ballon vise tout le crafting à côté (release → restart → possess, la
+séquence légale).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

@@ -2438,6 +2438,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    (clip), la Loi 11 sur reprise de tête (le sifflet vit à la prise au sol), l'approche
    pilotée du centre, le duel aérien du gardien (il ne saute pas — ses poings : dette).
 
+70. **Le renversement d'aile (lot 35 — l'orientation du jeu, diagnostic utilisateur).**
+   « La densité du jeu axial — l'intelligence on-ball ne change pas d'aile » : chiffré, le
+   diagnostic était exact au pourcent — 76 % du jeu à |z| < 8 (réel ~45), passe max du
+   VOCABULAIRE 21,9 m (passRange [2,5 ; 13]), 1 renversement / 4 matchs (réel 3-8), 5-6
+   adversaires à 12 m du ballon. LE CERVEAU NE PEUT PAS CHOISIR CE QU'IL NE PEUT PAS DIRE :
+   les trois verrous étaient le plafond de portée (13 m — la diagonale de 30 m hors
+   vocabulaire), le point doux des 10 m (−8 de score à 35 m) et la pénalité lofted (−2,2)
+   — pendant que le receveur LIBRE de l'aile opposée valait +10 de pression à l'arrivée.
+   La greffe (choosePass, cfg.renversement && st.full) : la BASCULE sous condition de
+   densité (≥ 5 corps à 12 m du ballon), jugée par SA loi (portée 38, point doux neutralisé,
+   lofted = sa nature, bonus modeste +1,5), la diagonale en CLOCHE par-dessus le bloc
+   (strike-sim, patron de la rentrée), événement 'renversement'. TRANSFORMATION NETTE DU
+   PREMIER COUP : axial 76 → 49 %, ailes 9 → 29 %, ~5 renversements/match, ET la densité
+   côté ballon p50 6 → 2 corps — l'étau se DESSERRE : le bloc doit couvrir la largeur,
+   l'effet systémique du vrai football. CINQ clauses de flux re-bordées d'un coup (le plus
+   gros papillon de la session), chacune avec sa CAUSE systémique nommée : moins d'épaules
+   (l'étau choisi diminue — plancher 3 → 2), transitions 29 % (possession stabilisée —
+   plancher 30 → 24), fautes raréfiées (graine 1 × 95 s), appels servis mourants (LA BASCULE
+   SURCLASSE LE SERVICE DU COUREUR — dette d'équilibrage nommée : appelBonus contre bonus de
+   bascule), et l'axe LARGEUR noyé par la couche (le renversement pousse TOUTES les équipes
+   au large) → l'axe se prouve désormais en ISOLATION (renversement:false, +12,6 intact —
+   chaque couche se juge sur SON axe, doctrine consolidée). Leçon de fixture : LE BALLON
+   est l'origine du cerveau — téléporter le porteur SANS son ballon vise tout le crafting à
+   côté (la séquence légale : release → restart → possess). verify-renversement 5/5,
+   batterie 397. Dettes : l'équilibrage bascule/appels, le renversement PORTÉ (aujourd'hui
+   une passe — le changement d'aile par la conduite est l'autre moitié), les circuits de
+   passe nommés (tiki-taka, jeu direct — les presets de style y gagneraient des poids de
+   bascule différenciés).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
