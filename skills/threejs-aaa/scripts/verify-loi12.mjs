@@ -150,14 +150,15 @@ const meuteAuPoint = (st, rp, og) => {
 
 // ---------- 5. le FLUX existe et la FEUILLE compte (détection réelle, graine 1)
 {
-  // graine 5 × 25 s (re-fondé lot 32 : la charge a re-divergé le flux — première faute
-  // mesurée à t=17,1, une charge-derrière : la détection de la Loi 12 a DEUX sources désormais)
-  const st = makeMatch({ full: true, seed: 5 });
-  const st0 = makeMatch({ full: true, seed: 5 });
+  // graine 9 × 25 s (re-fondé lot 32 : le glissé (lot 33) a re-divergé le flux — première faute
+  // mesurée à t=20,0 graine 9, une charge-derrière : la détection a TROIS sources (tacle raté,
+  // percutage, glissé fauché))
+  const st = makeMatch({ full: true, seed: 9 });
+  const st0 = makeMatch({ full: true, seed: 9 });
   const cfg = CFG(), cfg0 = matchCfg({ shotRange: 20, loi12: false });
   for (let i = 0; i < 25 * 60; i++) { matchStep(st, 1 / 60, cfg); matchStep(st0, 1 / 60, cfg0); }
   const n = st.events.filter((e) => e.type === 'faute').length;
-  ok(`la DÉTECTION vit en match (graine 5 × 25 s : ${n} faute(s) ≥ 1 — la fente qui trouve le corps se nomme ; loi12:false : ${st0.events.filter((e) => e.type === 'faute').length} = 0)`,
+  ok(`la DÉTECTION vit en match (graine 9 × 25 s : ${n} faute(s) ≥ 1 — la fente qui trouve le corps se nomme ; loi12:false : ${st0.events.filter((e) => e.type === 'faute').length} = 0)`,
     n >= 1 && st0.events.filter((e) => e.type === 'faute').length === 0);
   const f = feuilleDeMatch(st);
   const parEquipe = [0, 0];

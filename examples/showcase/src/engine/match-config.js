@@ -64,6 +64,16 @@ export const MATCH = {
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
   charge: { dist: 0.85, time: 0.4, cd: 3.0 },
+  slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 },
+                          // LE TACLE GLISSÉ SUR PORTEUR (11c11, st.full — lot 33) : le pari
+                          // du dernier recours. Un poursuivant lancé (speed m/s) au ballon
+                          // dans la fenêtre (at m) se couche ; la table technique juge la
+                          // géométrie réelle — ballon PRIS (dégagé fort, tacleur au sol :
+                          // le coût EST la décision), JAMBES trouvées (< body m : FAUTE, la
+                          // victime tombe trip s ; par DERRIÈRE c'est GRAVE — récidive ×2,
+                          // le jaune vient vite, penalty naturel en surface), ou le VIDE.
+                          // Anti-spam : slideCooldown partagé + un corps au sol par ballon
+                          // et par équipe. false : personne ne se couche (sabotage nommé).
                           // LA CHARGE D'ÉPAULE (11c11, st.full — lot 32) : le duel de CORPS.
                           // Un défenseur au corps du porteur (dist m) accumule une horloge
                           // (time s) ; pleine, la charge se joue — par DERRIÈRE un porteur

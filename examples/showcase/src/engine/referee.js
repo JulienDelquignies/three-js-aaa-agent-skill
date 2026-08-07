@@ -323,7 +323,9 @@ export function adjugeFaute(st, cfg) {
   const seuil = cfg.loi12.jaune ?? 2;
   const fautif = st.players[F.par];
   if (seuil > 0 && fautif) {
-    fautif._fautes = (fautif._fautes ?? 0) + 1;
+    // …et l'IMPRUDENCE compte DOUBLE (F.grave — le tacle glissé par derrière, lot 33) : le
+    // jaune vient vite sans être automatique, comme la vraie échelle des sanctions
+    fautif._fautes = (fautif._fautes ?? 0) + (F.grave ? 2 : 1);
     if (fautif._fautes % seuil === 0) {
       fautif._jaunes = (fautif._jaunes ?? 0) + 1;
       st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes });

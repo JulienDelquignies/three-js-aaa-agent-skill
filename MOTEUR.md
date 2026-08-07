@@ -410,8 +410,30 @@ criminalisait l'ombre de poursuite (33 fautes / 9 min, des 0-0 au sifflet), la s
 survitesse brute en laissait 16 — la vitesse d'ENTRÉE projetée est la bonne serrure. Banc :
 `verify-charge.mjs` (8 clauses — fort/faible déterministes à rnd fixé, percutage vs
 filature, anti-mitraillette, gardien, flux en bande, sabotage « jeu sans contact »).
-Dettes nommées : l'animation du contact (les corps se poussent sans clip d'épaule), le
-tacle glissé (source de duels et de fautes majeure), l'obstruction.
+Dettes nommées : l'animation du contact (les corps se poussent sans clip d'épaule),
+l'obstruction. Le tacle glissé, dette du lot, est payé au lot 33 (ci-dessous).
+
+### Le tacle glissé sur porteur (lot 33) — et la naissance de `duel.js`
+
+`matchCfg` porte `slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4,
+trip: 0.7 }` (gardé `st.full`). Le glissé sur ballon LIBRE existait (« un ballon qui
+traîne ») ; le glissé SUR PORTEUR est le pari du DERNIER RECOURS : un poursuivant lancé
+(≥ `speed`) sur un porteur LANCÉ (≥ `carrySpeed` — une construction lente se défend debout :
+sans cette porte, 20,8 glissés/match mesurés, la fête du tacle) se couche pour le ballon.
+La TABLE TECHNIQUE juge la géométrie réelle de l'instant, PUIS le JET (accuracy 0,6 ± la
+note tackling — sans lui, 83 glissés sur 83 prenaient le ballon : glisser était strictement
+optimal ; le RATÉ est ce qui produit fautes et vides). Trois issues : **PRIS** (dégagé fort
+dans la course — et le tacleur est AU SOL, gagné ou perdu : ce coût EST la décision) ;
+**FAUTE** (les jambes avant le ballon : la victime TOMBE, et par DERRIÈRE c'est GRAVE — la
+récidive compte DOUBLE dans `adjugeFaute`, un seul glissé par derrière vaut le jaune) ;
+**le VIDE** (le porteur file, refus nommé). Anti-spam : `slideCooldown` partagé + un corps
+au sol par ballon et par équipe (6 s). Équilibre livré (6 × 180 s) : 1,8 glissé/match,
+0,7 faute-tot/match (bande réelle), 3,0 tirs, 1,2 but. Et la volumétrie a mordu (rondo-sim
+1 263 > 1 250) : la famille des duels de corps (charge + glissé sur porteur — aucun appel à
+receive, pas de cycle) vit désormais dans **`duel.js`** (150 l.), le candidat nommé du
+backlog. Banc : `verify-slide.mjs` (8 clauses — pris/faute-grave-jaune/vide/pari
+déterministes par géométrie et jet fixé, dernier recours, flux en bande, sabotage
+« personne ne se couche »).
 
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 

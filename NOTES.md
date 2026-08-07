@@ -2386,6 +2386,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    le tacle glissé, l'obstruction, cartons quasi absents du flux court (récidive rare à
    0,8 faute/match — c'est le format, pas un bug).
 
+68. **Le tacle glissé sur porteur (lot 33) — et la naissance de duel.js.** Le moteur AVAIT
+   déjà la moitié du geste : 'tacle-glisse' dans la table technique (dist 1,0-3,2, commits),
+   le clip 'tacle' authoré, slideRecovery, et le glissé sur ballon LIBRE complet (anti-spam,
+   poke vers un partenaire) — il ne manquait que le glissé SUR PORTEUR, le dernier recours
+   qui fait les duels ET les fautes. DEUX leçons d'équilibrage payées en mesure : (1) sans
+   porte de dernier recours, 20,8 glissés/match TOUS réussis (la fenêtre de déclenchement
+   vivait entière dans la fenêtre de validité de la table : glisser était strictement
+   optimal) → la porte carrySpeed (le porteur doit être LANCÉ ≥ 4,4 — une construction
+   lente se défend debout) + le JET (accuracy 0,6 ± tackling ×2 : le raté EXISTE, et c'est
+   lui qui produit fautes et vides) ; (2) le premier compte de flux cachait les vides (le
+   filtre d'événements ne les voyait pas — toujours compter TOUTES les issues d'un pari).
+   Résolution en trois issues sur géométrie réelle : PRIS (dégagé fort, tacleur au sol —
+   le coût EST la décision), FAUTE (jambes trouvées < 1,1 m : victime couchée 0,7 s,
+   cérémonie loose complète — release + phase, la discipline du porteur couché ET du ballon
+   possédé —, grave par derrière → récidive ×2 dans adjugeFaute : UN glissé par derrière =
+   jaune), VIDE (refus nommé). Équilibre livré : 1,8 glissé/match, 0,7 faute-tot (bande
+   réelle), 3,0 tirs, 1,2 but sur 6 graines. LA VOLUMÉTRIE A MORDU : rondo-sim 1 263 >
+   1 250 → extraction PAR LIGNES de la famille duels de corps (chargeStep + slideTackleStep,
+   contiguës, AUCUN appel à receive — pas de cycle) vers duel.js (150 l.), le candidat
+   nommé du backlog #1 ; rondo-sim 1 128. Le tacle-debout et le glissé libre RESTENT dans
+   rondo-sim (ils appellent receive — les sortir ferait un cycle). Re-fondation loi12 flux
+   (graine 9 × 25 s — la détection a TROIS sources : tacle raté, percutage, glissé fauché).
+   verify-slide 8/8, batterie 386. Dettes : l'animation du glissé sur porteur (le clip
+   'tacle' du glissé libre sert-il ? à vérifier à l'œil), le jaune DIRECT configurable
+   (aujourd'hui récidive ×2), l'obstruction.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
