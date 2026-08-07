@@ -4,6 +4,7 @@ import { predictPath, solvePass, laneClearance, interceptPoint, PASS_STYLE } fro
 import { winding } from './gesture.js';
 import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
+import { tac, axe } from './tactics.js';
 import { movePlayers, separatePlayers } from './movement.js';
 import { RONDO } from './rondo-config.js';
 export { RONDO };
@@ -90,10 +91,17 @@ export function choosePass(st, cfg = RONDO) {
   // et c'est exactement la fenêtre de l'appel timé : le coureur qui jaillit de la ligne pendant
   // l'armé est servi LÉGALEMENT. Clé absente (rondo, réduit futsal) : pas un bit ne bouge.
   const offL = cfg.offside && st.full ? offsideLine(st, c.team) : null;
+  // LE STYLE ÉCRIT LES CIRCUITS (lot 36) : l'axe style [0..1] de la tactique (0 possession ↔
+  // 1 direct) module le VOCABULAIRE — la possession bascule tôt et volontiers (le jeu en U),
+  // le direct sert la PROFONDEUR (le coureur d'abord). À 0,5 : les valeurs d'aujourd'hui,
+  // EXACTEMENT (axe() au milieu exact — la leçon ulp de tactics). Rondo/réduit : st.full.
+  const _sty = (cfg.renversement || cfg.appelBonus) && st.full ? tac(st, c.team).style : 0.5;
+  const _appelEff = (cfg.appelBonus ?? 0) * axe(_sty, 0.7, 1.3);
   // la DENSITÉ côté ballon, comptée une fois par appel : le bloc qui comprime est la
   // CONDITION du renversement (clé absente ou monde réduit : jamais dense, pas un bit)
   const _dense = !!(cfg.renversement && st.full)
-    && foesL.filter((q) => q.down <= 0 && d2(q.p, origin) < (cfg.renversement.rayon ?? 12)).length >= (cfg.renversement.dense ?? 5);
+    && foesL.filter((q) => q.down <= 0 && d2(q.p, origin) < (cfg.renversement.rayon ?? 12)).length
+      >= (cfg.renversement.dense ?? 5) + axe(_sty, -1, 1);
   let best = null;
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
@@ -152,14 +160,20 @@ export function choosePass(st, cfg = RONDO) {
       if (uz > 1e-6) overrun = Math.min(overrun, (hz - lead[2]) / uz);
       else if (uz < -1e-6) overrun = Math.min(overrun, (-hz - lead[2]) / uz);
     }
+    // LE COUREUR VIVANT A SA LOI AUSSI (lot 36 — l'équilibrage nommé au lot 35 : la bascule,
+    // option sûre, avait tué le service de l'appel — 0-2 servis / 3 graines) : comme la
+    // bascule, la course profonde ne se juge pas au point doux des 10 m. Gardé st.full via
+    // le kind 'appel' (les bursts du réduit n'existent que sous st.full — miroirs intacts).
+    const servi = st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel';
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
-      - (bascule ? 0.8 : Math.abs(d - 10) * 0.32)           // 10 m is the sweet spot — la bascule a SA loi
+      - (bascule || servi ? 0.8 : Math.abs(d - 10) * 0.32)  // 10 m is the sweet spot — bascule et course ont LEUR loi
       - (m.id === st.lastPasser ? 2.6 : 0)                  // don't ping-pong
       - (style === 'lofted' && !bascule ? 2.2 : 0)          // ground ball whenever possible — le lofted EST la bascule
       - (overrun < 3 ? (3 - overrun) * 0.9 : 0)             // ne joue pas VERS la sortie toute proche
-      + (bascule ? (cfg.renversement.bonus ?? 1.5) : 0)     // sortir de l'étau vaut la peine
+      + (bascule ? (cfg.renversement.bonus ?? 1.5) + axe(_sty, 0.5, -0.5) : 0)   // sortir de l'étau — la possession y tient
+      + (servi ? _appelEff - (cfg.appelBonus ?? 0) : 0)     // le delta du style sur le service (le terme de base vit plus bas)
       // LE MATCH A UN SENS DE JEU (cfg.passBias, match-sim) : le rondo conserve, une équipe
       // PROGRESSE — sans ce terme, mesuré : possession dominante (191 c. 140 images de conduite)
       // entièrement à x = −15, toutes les pertes entre −9 et −23, zéro sortie de camp en 120 s.

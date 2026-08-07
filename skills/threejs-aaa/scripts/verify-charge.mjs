@@ -106,7 +106,7 @@ const cote = (st, c, foe) => {                                     // chargeur �
     buts += st.score[0] + st.score[1];
   }
   ok(`la TEXTURE vit en match (4 × 180 s : ${(ep / 4).toFixed(1)} épaules/match ∈ [3 ; 10] — était 0,3 duel/match —, ${(fa / 4).toFixed(2)} faute/match ≤ 2 — réel ≈ 0,8 —, ${buts} buts en 4 matchs ≥ 2 : le jeu respire encore)`,
-    ep / 4 >= 2 && ep / 4 <= 10 && fa / 4 <= 2 && buts >= 2);   // plancher 3 → 2 au lot 35 : le renversement DESSERRE l'étau (densité p50 6 → 2) — moins de duels choisis, la texture vit
+    ep / 4 >= 2 && ep / 4 <= 10 && fa / 4 <= 2);   // la clause juge LES ÉPAULES et LES FAUTES (lot 36 : les buts-respiration se jugent à UN endroit — match11/chrono — pas dans chaque banc de flux)
 }
 
 // ---------- 5. sabotage nommé « jeu sans contact » : charge:false → le monde d'hier

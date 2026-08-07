@@ -884,7 +884,16 @@ export function rondoStep(st, dt, cfg = RONDO) {
         const runnerCall = choice && (st.players[choice.to.id]?._pace?.until ?? -1) > st.t;
         // …une intention de CENTRE vivante ne se re-décide pas (le choix de passe l'écrasait à
         // l'image suivante — 0 centre exécuté) : elle meurt de sa mort propre (TTL, receveur)
-        if (!c.intent?.choice?.cross && choice && ((choice.score > bar && (heldEnough || runnerCall)) || st.hold >= cfg.holdMax)) c.intent = { choice, until: st.t + cfg.intentTtl };
+        // …et l'intention vers un COUREUR meurt AVEC la course (lot 36 : adoptées plus souvent
+        // par la loi du coureur, les intentions qui échouent à s'engager occupaient le porteur
+        // TTL plein — tirs 18 → 10 sur 10 graines mesurés ; on arrête de chercher le coureur
+        // quand la course est finie, c'est tout)
+        if (!c.intent?.choice?.cross && choice && ((choice.score > bar && (heldEnough || runnerCall)) || st.hold >= cfg.holdMax)) {
+          const paceTo = st.players[choice.to.id]?._pace;
+          const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
+            ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;
+          c.intent = { choice, until: ttl };
+        }
         // LA SEMELLE VIT DANS LA TENUE : pas d'intention encore, du champ, du calme — le pied se
         // pose sur le ballon et la tête se lève. Le geste ALLONGE la tenue de sa durée (busy),
         // ce qui est exactement ce qu'il fait au vrai foot.
@@ -894,6 +903,18 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // l'intention vise le receveur VIVANT : la mène se rafraîchit sur sa course réelle — c'est
         // le même receveur, pas une re-décision (strikeNow re-résout de toute façon au contact)
         const rec = st.players[c.intent.choice.to.id];
+        // LE SERVICE DU COUREUR EST UNE URGENCE DE TIMING (lot 36). La fenêtre de course vit
+        // 1,5-2 s et les portes d'engagement (technique 932 / ballon-vif 865 / ancre 642 refus
+        // mesurés) la mangeaient ENTIÈRE : 88 choix gagnés par le coureur, 0 passe partie. Le
+        // remède natif du tir (lot 6a) et du centre (lot 34) : la touche de PRÉPARATION — le
+        // ballon se serre, la passe arme au pas suivant, DANS la fenêtre.
+        // …armée UNE fois par intention (la rafale re-serrait la touche en boucle : le porteur
+        // n'avançait plus — la moitié du coût mesuré sur les tirs)
+        if (st.full && (rec?._pace?.until ?? -1) > st.t && rec._pace.kind === 'appel'
+          && cfg.prepTouch !== false && d2(c.p, st.ball.p) > 0.95 && !((c._prepShot ?? -1) > st.t)) {
+          c._prepShot = st.t + 0.9;
+          c.anchorHint ??= { t: st.t };
+        }
         const tI = cfg.leadTime ? cfg.leadTime(Math.hypot(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.28;
         c.intent.choice.lead = [rec.p[0] + rec.v[0] * tI, BALL.radius, rec.p[2] + rec.v[1] * tI];
         // LA FEINTE AVANT LA PASSE : l'intention est prête, un défenseur vit dans le cône de la

@@ -2467,6 +2467,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    passe nommés (tiki-taka, jeu direct — les presets de style y gagneraient des poids de
    bascule différenciés).
 
+71. **Les circuits par style (lot 36 — et la doctrine des clauses de flux).** (1) L'APPEL
+   SERVI : diagnostic en trois étages mesurés — 79 % des fenêtres hors portée (le dart sort
+   en 0,6 s, dette nommée), 37 % de choix GAGNÉS quand évaluable (la loi du coureur : point
+   doux neutralisé), 0 exécuté (les portes d'engagement — technique 932 / ballon-vif 865 /
+   ancre 642 refus — mangeaient la fenêtre de 1,5-2 s). Remède natif (le patron tir/centre) :
+   la touche de préparation sur intention-vers-coureur. MAIS le premier jet a coûté LA MOITIÉ
+   DES TIRS (18 → 10 sur 10 graines, A/B git-stash contre lot 35) : les intentions adoptées
+   plus souvent ÉCHOUAIENT et occupaient le porteur TTL plein, touche serrée en rafale. Deux
+   gardes football-vraies : l'INTENTION MEURT AVEC LA COURSE (until = min(ttl, pace.until +
+   0,3) — on arrête de chercher le coureur quand la course est finie) et la préparation
+   s'arme UNE fois par intention. A/B restauré : 9 buts = 9 buts, 16 tirs, 2 servis (était
+   0). (2) LE STYLE ÉCRIT LES CIRCUITS : l'axe style module densité de bascule (±1), bonus
+   (±0,5), service (×0,7-1,3) — identité au défaut PROUVÉE octet pour octet (équilibre
+   explicite ≡ défaut, 60 s d'événements). SIGNATURE : possession 20 renversements / direct
+   7 (×3) — les styles se VOIENT dans les circuits. (3) LA DOCTRINE DES CLAUSES DE FLUX,
+   consolidée après la 5ᵉ série de re-fondations : une graine épinglée re-casse à CHAQUE
+   évolution du cerveau → l'existence se juge par BALAYAGE-jusqu'à-trouvé (loi12 : première
+   graine qui montre une faute, coupe-circuit au sifflet), l'abondance par AGRÉGAT large,
+   chaque banc juge SA MÉTRIQUE SEULE (les buts-respiration vivent à UN endroit — les
+   clauses « et buts ≥ N » retirées de charge/slide/renversement), et une vérité par
+   contrat (le service : verify-circuits, 9 matchs agrégés ; la clause match11 déléguée).
+   verify-circuits 5/5, batterie 403. Dettes : le renversement porté, la portée du dart
+   (79 % hors enveloppe — servir PLUS TÔT dans la course), les poids de bascule par preset.
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

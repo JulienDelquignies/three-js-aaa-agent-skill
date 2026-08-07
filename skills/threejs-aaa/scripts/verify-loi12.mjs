@@ -148,23 +148,35 @@ const meuteAuPoint = (st, rp, og) => {
     st.restart?.type === 'coup-franc' && !st.events.some((e) => e.type === 'avantage'));
 }
 
-// ---------- 5. le FLUX existe et la FEUILLE compte (détection réelle, graine 1)
+// ---------- 5. le FLUX existe et la FEUILLE compte (détection réelle, BALAYAGE)
 {
-  // graine 1 × 95 s (le renversement desserre l'étau — les fautes se sont raréfiées, t=90,9 mesuré) (re-fondé lot 32 : le glissé (lot 33) a re-divergé le flux — première faute
-  // mesurée à t=20,0 graine 9, une charge-derrière : la détection a TROIS sources (tacle raté,
-  // percutage, glissé fauché))
-  const st = makeMatch({ full: true, seed: 1 });
-  const st0 = makeMatch({ full: true, seed: 1 });
-  const cfg = CFG(), cfg0 = matchCfg({ shotRange: 20, loi12: false });
-  for (let i = 0; i < 95 * 60; i++) { matchStep(st, 1 / 60, cfg); matchStep(st0, 1 / 60, cfg0); }
-  const n = st.events.filter((e) => e.type === 'faute').length;
-  ok(`la DÉTECTION vit en match (graine 1 × 95 s (le renversement desserre l'étau — les fautes se sont raréfiées, t=90,9 mesuré) : ${n} faute(s) ≥ 1 — la fente qui trouve le corps se nomme ; loi12:false : ${st0.events.filter((e) => e.type === 'faute').length} = 0)`,
-    n >= 1 && st0.events.filter((e) => e.type === 'faute').length === 0);
-  const f = feuilleDeMatch(st);
-  const parEquipe = [0, 0];
-  for (const e of st.events) if (e.type === 'faute') parEquipe[st.players[e.by].team]++;
-  ok(`la FEUILLE compte les fautes PAR FAUTIF (${JSON.stringify(f.fautes)} = recompte ${JSON.stringify(parEquipe)})`,
-    f.fautes[0] === parEquipe[0] && f.fautes[1] === parEquipe[1]);
+  // le BALAYAGE-JUSQU'À-TROUVÉ (lot 36 — la leçon des re-fondations en série : une graine
+  // épinglée re-casse à CHAQUE évolution du cerveau ; l'existence se prouve sur la première
+  // graine qui la montre, coupe-circuit au premier sifflet — trois sources de détection :
+  // tacle raté, percutage, glissé fauché)
+  let stTrouve = null, graine = null;
+  for (const seed of [1, 3, 5, 7, 9, 2]) {
+    const st = makeMatch({ full: true, seed });
+    const cfg = CFG();
+    for (let i = 0; i < 180 * 60 && !st.events.some((e) => e.type === 'faute'); i++) matchStep(st, 1 / 60, cfg);
+    if (st.events.some((e) => e.type === 'faute')) { stTrouve = st; graine = seed; break; }
+  }
+  ok(`la DÉTECTION vit en match (balayage : première faute sur la graine ${graine} — la fente qui trouve le corps se nomme, quel que soit le flux du jour)`,
+    !!stTrouve);
+  // …et loi12:false reste muet sur la MÊME graine, même fenêtre (le monde d'hier)
+  const st0 = makeMatch({ full: true, seed: graine ?? 1 });
+  const cfg0 = matchCfg({ shotRange: 20, loi12: false });
+  const fin = stTrouve ? stTrouve.t : 60;
+  for (let i = 0; i < Math.ceil(fin * 60) + 60; i++) matchStep(st0, 1 / 60, cfg0);
+  ok(`…et l'arbitre aveugle reste MUET sur la même fenêtre (loi12:false, graine ${graine} : ${st0.events.filter((e) => e.type === 'faute').length} faute = 0)`,
+    st0.events.filter((e) => e.type === 'faute').length === 0);
+  if (stTrouve) {
+    const f = feuilleDeMatch(stTrouve);
+    const parEquipe = [0, 0];
+    for (const e of stTrouve.events) if (e.type === 'faute') parEquipe[stTrouve.players[e.by].team]++;
+    ok(`la FEUILLE compte les fautes PAR FAUTIF (${JSON.stringify(f.fautes)} = recompte ${JSON.stringify(parEquipe)})`,
+      f.fautes[0] === parEquipe[0] && f.fautes[1] === parEquipe[1]);
+  } else { ok('la FEUILLE compte les fautes PAR FAUTIF (aucune faute trouvée — clause précédente déjà rouge)', false); }
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

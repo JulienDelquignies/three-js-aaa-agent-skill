@@ -496,6 +496,30 @@ contre bonus de bascule). Leçon de fixture : LE BALLON est l'origine du cerveau
 le porteur sans son ballon vise tout le crafting à côté (release → restart → possess, la
 séquence légale).
 
+### Les circuits par style — l'axe tactique pilote le vocabulaire de passe (lot 36)
+
+Deux chantiers liés. **(1) L'appel servi retrouvé** : la bascule (lot 35), option sûre, avait
+tué le service du coureur profond. Diagnostic en trois étages, chacun mesuré : 79 % des
+fenêtres de course HORS PORTÉE (le dart sort de l'enveloppe en 0,6 s) ; quand il est
+évaluable, le coureur GAGNE 37 % des choix (la loi du coureur au barème — point doux
+neutralisé, comme la bascule) ; et pourtant 0 passe partait — les portes d'ENGAGEMENT
+(technique 932 / ballon-vif 865 / ancre 642 refus) mangeaient la fenêtre entière. Le remède
+natif du tir (lot 6a) et du centre (lot 34) : la **touche de préparation** quand l'intention
+vise un coureur vivant — armée UNE fois par intention, et **l'intention meurt AVEC la
+course** (les intentions échouées occupaient le porteur TTL plein : tirs 18 → 10 sur 10
+graines mesurés, restaurés à 16 par ces deux gardes ; A/B git-stash contre le monde du
+lot 35 — 9 buts = 9 buts). **(2) Le style écrit les circuits** : l'axe `style` [0..1] de la
+tactique (0 possession ↔ 1 direct) module le vocabulaire de `choosePass` — densité de
+bascule ±1 corps, bonus ±0,5, service ×[0,7 ; 1,3] — à 0,5 EXACTEMENT les valeurs
+d'aujourd'hui (axe() au milieu exact, prouvé octet pour octet : équilibre explicite ≡
+défaut). **Signature mesurée : possession 20 renversements / direct 7** sur 3 graines — les
+styles produisent des circuits mesurablement différents. Banc : `verify-circuits.mjs`
+(5 clauses). Et une DOCTRINE DE BANC consolidée après la 5ᵉ série de re-fondations : les
+clauses de flux se jugent par BALAYAGE-jusqu'à-trouvé (loi12) ou par AGRÉGAT large, chaque
+banc juge SA métrique seule (les buts-respiration vivent à UN endroit — match11/chrono), et
+le service de l'appel a UNE vérité (verify-circuits). Dettes : le renversement porté, les
+poids de bascule par preset affinés, la portée de service du dart (79 % hors enveloppe).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

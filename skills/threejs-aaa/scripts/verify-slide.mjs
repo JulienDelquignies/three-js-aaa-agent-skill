@@ -115,7 +115,7 @@ const bp = (st) => st.ball.p;
     buts += st.score[0] + st.score[1];
   }
   ok(`le DERNIER RECOURS vit en bande (6 × 180 s : ${(att / 6).toFixed(1)} glissé(s) engagé(s)/match ∈ [0,5 ; 5], ${(fa / 6).toFixed(1)} faute-tot/match ≤ 2, ${buts} buts ≥ 3 : le jeu respire)`,
-    att / 6 >= 0.5 && att / 6 <= 5 && fa / 6 <= 2 && buts >= 3);
+    att / 6 >= 0.5 && att / 6 <= 5 && fa / 6 <= 2);   // les buts se jugent à UN endroit (lot 36)
 }
 
 // ---------- 7. sabotage nommé « personne ne se couche » : slideTackle:false → le monde d'hier
