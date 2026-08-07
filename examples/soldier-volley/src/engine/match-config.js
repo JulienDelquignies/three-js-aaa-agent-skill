@@ -63,6 +63,17 @@ export const MATCH = {
                           // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
+  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },
+                          // LE JEU DE TÊTE (11c11, st.full — lot 34) : un vol à hauteur de
+                          // tête (min-max m — la tête DEBOUT, le saut est une dette de
+                          // scène) au-dessus d'un corps (reach m) se REPREND : au BUT si
+                          // attaquant en surface à < but m (canal shot standard — le
+                          // plongeon répond), en DÉGAGEMENT près de son but, en REMISE
+                          // courte sinon. À deux corps : DUEL AÉRIEN (strength, seedé).
+                          // …et la CLOCHE DU CENTRE vit sous la même clé (strike-sim) :
+                          // un centre est un arc par-dessus le premier rideau (0 centre
+                          // entré en surface avant — mangés en route, vols tendus).
+                          // false : le jeu au sol d'hier (sabotage nommé).
   charge: { dist: 0.85, time: 0.4, cd: 3.0 },
   slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 },
                           // LE TACLE GLISSÉ SUR PORTEUR (11c11, st.full — lot 33) : le pari

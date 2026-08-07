@@ -435,6 +435,39 @@ backlog. Banc : `verify-slide.mjs` (8 clauses — pris/faute-grave-jaune/vide/pa
 déterministes par géométrie et jet fixé, dernier recours, flux en bande, sabotage
 « personne ne se couche »).
 
+### Le jeu de tête — le ciel du match (lot 34, `tete.js`)
+
+`matchCfg` porte `tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 }` (gardé `st.full`).
+Mesuré avant : le jeu aérien manquait ENTIER — 0 centre entré en surface sur 4 matchs (vols
+tendus mangés par le premier rideau), 0,8 s/match de fenêtre de tête avec un corps dessous.
+Livré, QUATRE serrures ouvertes dans la chaîne du ciel :
+
+- **Le contact de tête** (`tete.js`) : un vol à hauteur de tête au-dessus d'un corps se
+  reprend — au BUT si attaquant en surface (< 12 m — canal shot standard `kind: 'tête'`, le
+  plongeon du gardien répond à la physique), en DÉGAGEMENT près de son but (loin, vers
+  l'avant et le flanc), en REMISE courte sinon (le coéquipier proche, cloche raccourcie). À
+  deux corps dans la fenêtre : le **duel aérien** tranche (note `strength` — le même levier
+  que l'épaule —, jet seedé, événement `'duel'` kind aérien). La tête se joue DEBOUT (le
+  saut authoré est une dette de scène).
+- **La cloche du centre** (strike-sim) : un centre est un ARC par-dessus le premier rideau —
+  la balistique de la rentrée (θ 26°, portée → vitesse, temps de vol re-solvé).
+- **La gâchette du centre** (rondo-sim) : l'ailier au couloir vit à ~21 m du but —
+  `gachetteNear` ne s'ouvrait jamais pour lui, `tryCross` n'était JAMAIS appelé en course
+  (la serrure du lot 13, encore).
+- **La touche de préparation du centre** (shooting) : `beginPass` refusait 169 centres sur
+  170 — le ballon d'aile vit à 1,2-1,4 m en course ; le centreur SERRE sa touche (le patron
+  du tir, lot 6a) et le centre arme au pas suivant.
+
+Flux : 0 → 3-5 têtes / 12 min, centres 0,3 → 0,5/match — l'EXISTENCE ; l'abondance des
+centres est la dette nommée « approche pilotée » (l'ailier qui porte jusqu'à la ligne et
+lève la tête). Banc : `verify-tete.mjs` (7 clauses — fixtures balistiques : de VRAIS arcs
+lancés par `strike` redescendent sur des corps posés, aucune écriture de ballon ; reprise
+au but, dégagement, remise, duel aérien en appel DIRECT une image, fenêtre de hauteur,
+sabotage « jeu au sol », flux). Trois leçons de banc : la mène du vol doit pointer LE CORPS
+(lead [0,0,0] faisait fuir le receveur vers le rond central), la fenêtre de course d'une
+fixture se mesure (la tête tombe à t+1,05 — courir 0,9 s la ratait), et les corps DÉRIVENT
+pendant un vol (le duel à deux se juge en appel direct, pas en mise en scène de flux).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

@@ -2412,6 +2412,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
    'tacle' du glissé libre sert-il ? à vérifier à l'œil), le jaune DIRECT configurable
    (aujourd'hui récidive ×2), l'obstruction.
 
+69. **Le jeu de tête (lot 34 — le ciel du match, tete.js).** Mesuré avant : la dimension
+   aérienne manquait ENTIÈRE (0 centre entré en surface / 4 matchs, 0,8 s/match de fenêtre
+   de tête avec un corps dessous). La chaîne du ciel avait QUATRE serrures, chacune trouvée
+   à la mesure : (1) le CONTACT n'existait pas → tete.js (but en surface / dégagement /
+   remise + duel aérien sur strength, gardé cfg.tete && st.full, appelé avant la prise au
+   sol — la tête coupe ce que le pied attendait) ; (2) les centres volaient TENDUS (solveur
+   de passe) → la cloche (balistique de la rentrée, θ 26°) ; (3) l'ailier au couloir vit à
+   21 m du but → gachetteNear ne s'ouvrait JAMAIS pour lui, tryCross jamais appelé en course
+   (la serrure du lot 13, deuxième récidive — instrumenter la BRANCHE) → gachetteCentre ;
+   (4) beginPass refusait 169/170 centres (ballon d'aile à 1,2-1,4 m) → la touche de
+   préparation du centre (le patron _prepShot du tir, lot 6a). Flux : 0 → 3-5 têtes/12 min,
+   centres 0,3 → 0,5/match — l'existence ; l'abondance = dette « approche pilotée ». UNE
+   FUITE DE GARDE PAYÉE CHER : la touche de préparation SANS st.full a fait bouger le RÉDUIT
+   (verify-match 75/1 — la sentinelle a fait exactement son métier) → gardée, réduit
+   restauré au bit près. QUATRE re-fondations de flux d'un coup (tactics graine 1→5 —
+   troisième re-fondation : chaque défaut nouveau diverge le flux, le mécanisme se re-vérifie
+   à CHAQUE fois, +9,0/+12,6 mesurés —, loi12 déjà graine 9, match11 appels graines {2,4,5}
+   et gardien passé en AGRÉGAT 3 graines : l'échantillon d'UNE graine ne porte plus une
+   clause de flux dans un monde à duels). TROIS leçons de fixtures balistiques : la mène
+   pointe LE CORPS (lead [0,0,0] faisait fuir le receveur), la fenêtre de course se MESURE
+   (tête à t+1,05, courir 0,9 s la ratait), les corps DÉRIVENT pendant un vol (le duel à
+   deux se juge en appel DIRECT de teteStep — ballon posé à 1,85 m par la porte légale du
+   restart, une image, zéro dérive). verify-tete 7/7, batterie 392. Dettes : le saut authoré
+   (clip), la Loi 11 sur reprise de tête (le sifflet vit à la prise au sol), l'approche
+   pilotée du centre, le duel aérien du gardien (il ne saute pas — ses poings : dette).
+
 ## État actuel (rappel)
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.

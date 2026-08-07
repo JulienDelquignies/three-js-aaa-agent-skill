@@ -252,8 +252,19 @@ export function strikeNow(st, c, cfg) {
   const kind = shot ? choice.shotKind : null;
   const speed = shot ? Math.max(sol.speed, kind?.speed ?? cfg.shotSpeed ?? 17)
     : choice.clear ? Math.max(sol.speed, 13) : sol.speed;
-  const elev = shot ? (kind ? Math.max(Math.min(kind.elev, 0.32), 0.01) : Math.min(sol.elevation, 0.10)) : sol.elevation;
-  st.ball.strike({ speed, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: 0 });
+  let elev = shot ? (kind ? Math.max(Math.min(kind.elev, 0.32), 0.01) : Math.min(sol.elevation, 0.10)) : sol.elevation;
+  let spd = speed;
+  // LA CLOCHE DU CENTRE (cfg.tete && st.full — lot 34) : un centre est un ARC par-dessus le
+  // premier rideau, pas une passe tendue (0 centre entré en surface sur 4 matchs mesurés —
+  // mangés en route). La balistique de la rentrée : portée → vitesse, θ ~26°, et le temps
+  // de vol re-solvé pour le receveur qui attaque sa mène.
+  if (choice.cross && cfg.tete && st.full) {
+    const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+    elev = 0.45;
+    spd = Math.sqrt(Math.max(8, R) * 9.81 / Math.sin(2 * elev));
+    sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
+  }
+  st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: 0 });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
   if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id });
   if (shot) {

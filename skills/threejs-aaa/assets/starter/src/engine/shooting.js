@@ -101,8 +101,12 @@ export function tryCross(st, c, cfg) {
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
   const sgn = Math.sign(goal.x || 1);
-  if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - 9) return false;   // pas assez haut
-  if (Math.abs(c.p[2]) < pitch.hz * 0.38) return false;                    // pas dans le couloir
+  // …les portes du plein format s'ouvrent au VRAI football (lot 34) : le centre part aussi
+  // des DEMI-ESPACES (couloir 0,30) et de plus profond (le centre tôt, −13 m) — mesuré :
+  // à 0,38/−9, la fenêtre géométrique n'existait que 2,4 % du portage, ~1 centre / 2 matchs.
+  // Le réduit garde ses portes d'hier (st.full), au bit près.
+  if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - (st.full ? 13 : 9)) return false;   // pas assez haut
+  if (Math.abs(c.p[2]) < pitch.hz * (st.full ? 0.30 : 0.38)) return false;                 // pas dans le couloir
   if (st.hold < 0.25) return false;
   if ((st._crossCd?.[c.team] ?? -1) > st.t) return false;
   const boxX = pitch.hx - pitch.dims.box.depth;
@@ -126,6 +130,16 @@ export function tryCross(st, c, cfg) {
   // ses portes (ballon-vif entre les touches serrées) dans son TTL ; l'approche pilotée du
   // centre est au backlog nommé. Le départ immédiat servait 6 centres — le monde mesuré le
   // meilleur.
+  // …ET LA TOUCHE DE PRÉPARATION DU CENTRE (lot 34 — le patron du tir, lot 6a) : le ballon
+  // d'aile vit à 1,2-1,4 m en course — beginPass refusait 169 centres sur 170 mesurés
+  // (l'engagement veut le ballon au pied ; la gâchette du lot 13 ne suffisait pas, il fallait
+  // AUSSI la touche). Le centreur SERRE sa touche ; au pas suivant, le centre arme.
+  const bdC = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+  if (st.full && cfg.prepTouch !== false && bdC > 0.95) {          // st.full : le réduit centre comme hier, au bit près
+    c._prepShot = st.t + 0.9;
+    c.anchorHint = { t: st.t };
+    return deny(st, 'prépare-centre');
+  }
   const r = simInternals.beginPass(st, { to: { id: rec.id }, lead, style: 'lofted', cross: true, lane: { margin: 9 } }, cfg, { forceUrgent: true });
   if (r) (st._crossCd ??= {})[c.team] = st.t + 5;
   return r;

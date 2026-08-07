@@ -5,6 +5,7 @@ import { makeDribbler, dribbleStep, dribbleSteer, touchDistance } from './dribbl
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { chargeStep, slideTackleStep } from './duel.js';
+import { teteStep } from './tete.js';
 import { gauss } from './attributes.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
@@ -735,6 +736,14 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // suivante. Réduit et rondo : inchangés au bit près (st.full + cfg.tryShot).
     const gachetteNear = st.full && !!cfg.tryShot && !!st.pitch
       && Math.hypot(st.pitch.attackGoal(c.team).x - c.p[0], c.p[2]) < (cfg.shotRange ?? 15);
+    // …et la GÂCHETTE DU CENTRE (lot 34) : l'ailier au couloir vit à ~21 m du centre du but —
+    // gachetteNear ne s'ouvrait jamais pour lui, tryCross n'était JAMAIS appelé en course
+    // (mesuré : 1 centre / 2 matchs malgré des portes géométriques élargies — la même serrure
+    // que la découverte du lot 13 : instrumenter la BRANCHE). La géométrie de centre vivante
+    // ouvre le bloc de décision, comme le but l'ouvre.
+    const gachetteCentre = st.full && !!cfg.tryCross && !!st.pitch
+      && c.p[0] * Math.sign(st.pitch.attackGoal(c.team).x || 1) > st.pitch.hx - st.pitch.dims.box.depth - 13
+      && Math.abs(c.p[2]) > st.pitch.hz * 0.30;
     // THE WINDUP IS CARVED OUT OF THE HOLD, NOT ADDED TO IT. A first attempt at a windup simply
     // delayed every release by its length and the game fell apart — record 6, turnovers 25 → 103,
     // because every pass now had an extra beat for a defender to arrive in. The swing is not extra
@@ -780,7 +789,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // football — l'assise bloquait pile la fenêtre du jockey posté, 6 fenêtres/4 matchs mesurées)
     if (maybePassement(st, c, cfg)) return st;
     if (!settleGate && maybeCrochet(st, c, cfg)) return st;
-    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && (reachNow || gachetteNear) && (!settleGate || contested)) {
+    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && (reachNow || gachetteNear || gachetteCentre) && (!settleGate || contested)) {
       // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
       // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon
       // mouvant : control-at-foot 1 % → 33 %), et pas rien du tout non plus (bloquer l'intention
@@ -811,7 +820,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // ce bloc sauté) et portait le ballon DANS le but — 12 buts / 16 tirs sur 4 matchs
       // complets, ~la moitié en conduite pure, des 2-2 systématiques. Le réduit garde sa loi
       // du duel (ses 76 clauses sont calibrées sans tir contesté — dette nommée).
-      const gachette = !contested || gachetteNear;
+      const gachette = !contested || gachetteNear || gachetteCentre;
       let arb = null;
       if (cfg.menace && st.full && gachette && (cfg.tryShot || cfg.tryCross)) {
         if (!c._arb || st.t - c._arb.t > 0.25) c._arb = { t: st.t, r: (cfg.decide ?? arbitre)(st, c, cfg) };
@@ -912,6 +921,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // définitivement quitté (ou n'a jamais quitté : c'est pareil, il est à prendre). Clé absente
     // (rondo) : Infinity, pas un bit ne bouge.
     const released = gone > cfg.releaseClear || (st.pass && st.t - st.pass.t > (cfg.releaseTtl ?? Infinity));
+    // LE CIEL SE JOUE (cfg.tete && st.full — lot 34) : un vol à hauteur de tête au-dessus
+    // d'un corps se REPREND — au but, en dégagement, en remise ; à deux, le duel aérien
+    // tranche (tete.js). Avant la prise au sol : la tête coupe ce que le pied attendait.
+    if (cfg.tete && st.full && st.phase === 'flight' && released) teteStep(st, cfg);
     let taker = -1, bestD = Infinity;
     if (released) {
       for (const p of st.players) {
