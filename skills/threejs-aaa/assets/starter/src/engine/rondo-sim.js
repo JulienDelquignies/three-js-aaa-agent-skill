@@ -86,6 +86,20 @@ function stepGestures(st, dt, cfg) {
         // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au
         // début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
         const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance);
+        // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full — « un joueur ne s'arrête
+        // pas pour tirer », mesuré 0,63 m/s p50 au tir) : l'élan du commit se porte dans le
+        // geste — l'ancre avance d'un incrément décroissant (v0·e^(−t/τ)) dans la direction de
+        // la course, le couple entier voyage (un écrivain — la boucle du porté fait le reste),
+        // strikeNow re-résout au contact. Plafond cumulé. Clé absente : le gel d'hier, au bit près.
+        if (cfg.strideStrike && st.full && (A.v0 ?? 0) > 1) {
+          const tau = cfg.strideStrike.tau ?? 0.6;
+          const pas = A.v0 * Math.exp(-p.act.t / tau) * dt;
+          A._foulee = (A._foulee ?? 0) + pas;
+          if (A._foulee <= (cfg.strideStrike.max ?? 2.2)) {
+            anchor.p[0] += Math.cos(A.vYaw ?? A.outYaw) * pas;
+            anchor.p[1] += Math.sin(A.vYaw ?? A.outYaw) * pas;
+          }
+        }
         // …et l'ancre reste DANS le carré : un ballon joué près de la ligne peut demander un corps
         // de l'autre côté d'elle — le joueur s'arrête à la craie, il ne la traverse pas. Sans cette
         // clampe, le glissement poussait dehors pendant que movePlayers replaquait dedans.
@@ -925,7 +939,13 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // tenue délibérée tirée pour CETTE possession (st._calmHold, seedée) et d'une barre de
         // score relevée (intentBarCalm) — le porteur conduit, fixe, PUIS donne. Pressé, la barre
         // et la tenue d'origine reprennent : l'urgence reste prompte.
-        const bar = calm ? cfg.intentBarCalm : 3.2;
+        // L'ENGAGEMENT EST UNE PASSE (lot 45, cfg.engagementPasse && st.full) : pendant la
+        // fenêtre après le coup d'envoi, le preneur DONNE — barre abaissée, tenue dispensée
+        // (le monde entier est devant lui : la barre calme refusait la passe courte et il
+        // partait en conduite — retour utilisateur). false : l'engagement porté d'hier.
+        const engagementCall = st.full && cfg.engagementPasse !== false
+          && st._engagement && st._engagement.by === c.id && st.t - st._engagement.t < 2.5;
+        const bar = calm ? (engagementCall ? 0.2 : cfg.intentBarCalm) : 3.2;
         // …ET LE BALLON RÉCUPÉRÉ SE DOMPTE (cfg.settleMin, match) : même pressé, on ne redonne
         // pas à l'image de la prise — la course au ballon libre fabriquait un ping-pong de
         // récupérations-éclair (23 passes/min mesurées, la bande futsal s'arrête à 20). L'appel
@@ -942,7 +962,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // par la loi du coureur, les intentions qui échouent à s'engager occupaient le porteur
         // TTL plein — tirs 18 → 10 sur 10 graines mesurés ; on arrête de chercher le coureur
         // quand la course est finie, c'est tout)
-        if (!c.intent?.choice?.cross && choice && ((choice.score > bar && (heldEnough || runnerCall)) || st.hold >= cfg.holdMax)) {
+        if (!c.intent?.choice?.cross && choice && ((choice.score > bar && (heldEnough || runnerCall || engagementCall)) || st.hold >= cfg.holdMax)) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;

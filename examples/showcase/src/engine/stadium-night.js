@@ -232,7 +232,9 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
     // …et le quadrant va JUSQU'À SA LIGNE (lot 44 — « la cage est trop sombre », capture
     // utilisateur) : visée 0,30 → 0,36 L et cône 0,62 → 0,68 — à 0,30 les nappes s'arrêtaient
     // à ±31 m et les 21 derniers mètres (la surface !) vivaient dans le noir entre elles.
-    const ax = Math.sign(m.x || 1) * L * 0.36, az = Math.sign(m.z || 1) * W * 0.25;
+    // …et jusqu'à SA TOUCHE (lot 45 — « les bords à côté de la ligne médiane sont trop
+    // sombres ») : visée z 0,25 → 0,31 W — les flancs médians vivaient entre les quadrants
+    const ax = Math.sign(m.x || 1) * L * 0.36, az = Math.sign(m.z || 1) * W * 0.31;
     const d = Math.hypot(m.x - ax, m.y, m.z - az);
     // distance 0 = no cutoff: a finite `distance` draws a visible ring across the grass where the
     // window function reaches zero, and at these ranges that ring always lands mid-pitch.

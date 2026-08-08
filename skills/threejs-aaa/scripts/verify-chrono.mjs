@@ -32,8 +32,12 @@ const joue = (seed, over = {}) => {
   const { st, miTempsRestart } = joue(3);
   const mt = st.events.find((e) => e.type === 'mi-temps');
   const fin = st.events.find((e) => e.type === 'fin-de-match');
-  ok(`la MI-TEMPS siffle à l'heure (événement à t=${mt?.t} ≈ 60, période ${mt?.periode})`,
-    !!mt && Math.abs(mt.t - 60) < 1.5 && mt.periode === 2);
+  // …le sifflet vit à 60 + ADDITIONNEL (re-fondé lot 45) : la borne ±1,5 supposait une
+  // mi-temps sans arrêts — le monde de l'engagement-passe en accumule ~4 s, et c'est le
+  // temps additionnel du lot 24 qui fait SON métier ; la clause juge la COHÉRENCE
+  const add1 = st.events.find((e) => e.type === 'temps-additionnel' && (e.periode ?? 1) === 1);
+  ok(`la MI-TEMPS siffle à l'heure PLUS l'additionnel (événement à t=${mt?.t}, annoncé +${add1?.sec ?? '?'} s — cohérent à ±1,5, période ${mt?.periode})`,
+    !!mt && mt.t >= 59.5 && mt.t <= 60 + 9 && (!add1 || Math.abs(mt.t - (60 + (add1.sec ?? 0))) < 1.5) && mt.periode === 2);
   ok(`l'AUTRE équipe engage la seconde période (Loi 8 : engagement équipe ${miTempsRestart?.team})`,
     miTempsRestart?.type === 'engagement' && miTempsRestart?.team === 1);
   // …le sifflet tombe à la fin NOMINALE + l'ADDITIONNEL (lot 24 : ×0,35 des arrêts, plafonné

@@ -85,6 +85,17 @@ export const MATCH = {
                           // un centre est un arc par-dessus le premier rideau (0 centre
                           // entré en surface avant — mangés en route, vols tendus).
                           // false : le jeu au sol d'hier (sabotage nommé).
+  strideStrike: { tau: 0.9, max: 2.2 },
+                          // LA FOULÉE DE FRAPPE (11c11, st.full — lot 45, retour utilisateur « un
+                          // joueur ne s'arrête pas pour tirer ») : l'élan du commit se porte DANS
+                          // l'armé — le couple corps-ballon avance (v0·e^(−t/τ), plafond cumulé
+                          // max m) au lieu de freiner dans l'ancre. Mesuré avant : tirs frappés à
+                          // 0,63 m/s p50 (réel 3-6, dans la foulée). false : le gel d'hier
+                          // (sabotage nommé « la statue qui frappe »).
+  engagementPasse: true,  // L'ENGAGEMENT EST UNE PASSE (11c11, st.full — lot 45) : fenêtre de 2,5 s
+                          // après le coup d'envoi où le preneur DONNE (barre abaissée, tenue
+                          // dispensée — la barre calme refusait la passe courte, il partait en
+                          // conduite). false : l'engagement porté d'hier (sabotage nommé).
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65 },
                           // LA PASSE EN UNE TOUCHE (11c11, st.full — lot 44, retour utilisateur) :
                           // sous pression (presseur < press m), un ballon jouable (≤ vmax m/s, au

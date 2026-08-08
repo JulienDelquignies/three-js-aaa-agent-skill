@@ -227,6 +227,63 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     !sab.ut);
 }
 
+// ---------- 3e. LA FOULÉE DE FRAPPE (lot 45, retour utilisateur « un joueur ne s'arrête pas
+// pour tirer ») : l'élan du commit se porte DANS l'armé — le couple corps-ballon avance au
+// lieu de geler dans l'ancre. Mesuré : tirs frappés à 0,63 m/s p50 avant, 1,90 après (réel
+// 3-6 — le frein AMONT de la touche de préparation est la dette nommée « la préparation
+// dans la foulée »). La MÊME mesure poolée (passes + tirs), deux mondes.
+{
+  const corps = (cfgExtra) => {
+    const vs = [];
+    for (const seed of [1, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (const e of st.events) {
+          if (e._vuF) continue; e._vuF = true;
+          if ((e.type === 'shot' || e.type === 'pass') && (e.by ?? e.from) != null) {
+            const p = st.players[e.by ?? e.from];
+            if (p && !p.keeper) vs.push(Math.hypot(p.v[0], p.v[1]));
+          }
+        }
+      }
+    }
+    vs.sort((a, b) => a - b);
+    return { p50: vs.length ? vs[Math.floor(0.5 * (vs.length - 1))] : 0, n: vs.length };
+  };
+  const vif = corps({});
+  const gel = corps({ strideStrike: false });
+  ok(`la FOULÉE de frappe vit (corps à ${vif.p50.toFixed(2)} m/s p50 au strike sur ${vif.n} gestes ≥ 0,95 — et le monde gelé frappe à ${gel.p50.toFixed(2)} ≤ vivant − 0,12 : sabotage « la statue qui frappe » nommé)`,
+    vif.p50 >= 0.95 && gel.p50 <= vif.p50 - 0.12);
+}
+
+// ---------- 3f. L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le
+// joueur part en dribble ») : fenêtre de 2,5 s après le coup d'envoi — barre abaissée, tenue
+// dispensée. Mesuré : délai prise → passe 1,7 s sur la plupart des graines (2,1-2,8 sans).
+{
+  const delai = (cfgExtra) => {
+    const ds = [];
+    for (const seed of [2, 3, 5, 6]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      let pris = null;
+      for (let i = 0; i < 30 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const rp = st.events.find((e) => e.type === 'restart-pris');
+        if (rp && pris == null) pris = rp;
+        const p = pris && st.events.find((e) => e.type === 'pass' && e.from === pris.by && e.t > pris.t);
+        if (p) { ds.push(p.t - pris.t); break; }
+      }
+    }
+    return ds.length ? ds.reduce((s, x) => s + x, 0) / ds.length : 99;
+  };
+  const avec = delai({});
+  const sans = delai({ engagementPasse: false });
+  ok(`l'ENGAGEMENT est une passe (délai moyen prise → passe ${avec.toFixed(2)} s ≤ 2,2 sur 4 graines — et sans la clé ${sans.toFixed(2)} ≥ avec + 0,3 : l'engagement porté d'hier, sabotage nommé)`,
+    avec <= 2.2 && sans >= avec + 0.3);
+}
+
 // ---------- 4. sabotage nommé : sans la formation, le 22-corps redevient l'essaim du réduit
 {
   // les couloirs du réduit ne savent poster que ~9 corps par équipe (5 slots + press/cover/

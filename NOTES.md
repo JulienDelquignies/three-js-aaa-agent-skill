@@ -2703,7 +2703,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     vivait PILE sur 0,92) ; part de plongeons → existence (le bloc compact centre les
     tirs, la prise défend sans plonger — 8 arrêts sur 11).
 
-## État actuel (rappel)
+80. **La foulée de frappe, l'engagement-passe, les bords médians (lot 45 — trois retours
+    utilisateur).** (1) LE STOP AVANT LA FRAPPE, chiffré : tirs frappés à 0,63 m/s p50
+    (réel 3-6 — « un joueur ne s'arrête pas pour tirer »), 21 stops nets mesurés (courait
+    > 3 m/s à 0,7 s du strike, arrêté < 1). Le frein : la glisse d'armé converge vers une
+    ancre STATIQUE (le couple corps-ballon freine dedans — glideEase s'aplatit). La greffe
+    `strideStrike` (st.full, UN SEUL ÉCRIVAIN préservé — leçon oscillateur) : l'ancre
+    AVANCE d'un incrément décroissant (v0·e^(−t/τ), τ 0,9, plafond cumulé 2,2 m) dans la
+    direction de la course du commit — le ballon porté suit le corps, l'ancre suit le
+    ballon, LE COUPLE ENTIER voyage ; strikeNow re-résout au contact, le warp couvre.
+    Après : corps à 1,91 m/s p50 au strike (poolé passes+tirs, 69 gestes — monde gelé
+    1,17). Dette nommée : « la préparation dans la foulée » (le frein AMONT — la touche de
+    préparation décélère avant le commit ; v0 bas = foulée bornée). (2) L'ENGAGEMENT EST
+    UNE PASSE (cfg.engagementPasse) : la barre calme (4,8) refusait la passe courte du coup
+    d'envoi → conduite systématique. Mémo posé par canTake (type engagement), fenêtre
+    2,5 s : barre 0,2 + tenue dispensée — délai prise→passe 1,68 s moyen (2,49 sans la
+    clé). LEÇON DE SONDE : l'événement passe porte `from`, pas `by` — la première sonde
+    mesurait 0 partout et la clé semblait inerte (elle l'était AUSSI à barre 1,0 : le score
+    d'une passe arrière d'engagement vit sous 1). (3) LES BORDS MÉDIANS : visée z des
+    nappes 0,25 → 0,31 W — les flancs à la médiane vivaient entre les quadrants (capture
+    avant/après playmode : joueurs lisibles des deux flancs). Quatre clauses re-fondées
+    par le nouveau flux : mi-temps à 60 + ADDITIONNEL (le lot 24 fait son métier — la
+    borne ±1,5 supposait un match sans arrêts), signature des circuits en séparation
+    ABSOLUE (+5 — le ratio ×1,5 tombé quand le direct s'est mis à renverser), diagonale
+    du renversement en balayage (l'étau de 6 peut GAGNER avant la bascule — crochet mordu,
+    charge perdue à 2,05 s : du football), volumétrie rondo-sim 1251 → 1248 (commentaire
+    resserré — la pression du plafond est réelle, le prochain gros lot devra extraire).
 
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,

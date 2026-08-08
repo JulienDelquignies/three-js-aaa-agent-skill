@@ -664,6 +664,22 @@ capture avant/après (playmode) : le gardien se lit dans sa cage. Leçon de fixt
 presseur posé près d'une trajectoire de passe la PREND ou l'INTERCEPTE (receiveRadius, la
 course de press) — le marquage de fixture se pose dans le DOS du receveur, sur l'axe.
 
+### La foulée de frappe et l'engagement-passe (lot 45)
+
+Trois retours utilisateur. **`strideStrike`** (st.full) : le stop avant la frappe, chiffré —
+tirs frappés à 0,63 m/s p50 (réel 3-6), la glisse d'armé convergeait vers une ancre STATIQUE.
+La loi : l'ancre AVANCE d'un incrément décroissant (v0·e^(−t/τ), plafond cumulé) dans la
+direction de la course du commit — le ballon porté suit le corps, l'ancre suit le ballon, le
+couple ENTIER voyage (un seul écrivain — la leçon de l'oscillateur tient), strikeNow re-résout
+au contact. Après : 1,91 m/s p50 au strike. Dette nommée « la préparation dans la foulée »
+(le frein amont de la touche de préparation). Sabotage « la statue qui frappe ».
+**`engagementPasse`** : le coup d'envoi partait en conduite (la barre calme refusait la passe
+courte — son score vit sous 1) ; mémo posé par canTake, fenêtre 2,5 s, barre abaissée + tenue
+dispensée — délai prise→passe 1,68 s (2,49 sans). Sabotage « l'engagement porté ».
+**Les bords médians** (stadium-night) : visée z 0,25 → 0,31 W — les flancs à la médiane
+vivaient entre les quadrants (captures avant/après). Leçon de sonde : l'événement passe porte
+`from`, pas `by` — une sonde au mauvais champ rend une clé INERTE qui ne l'est pas.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

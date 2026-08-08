@@ -238,8 +238,14 @@ export function canTake(st, takerId) {
   if (st.restart.placed === false) return false;
   if (st.t < st.restart.at - 0.25) return false;
   if (p.team !== st.restart.team) return false;
+  const ty = st.restart.type;
   st.restart = null;                                               // la remise est PRISE — le jeu reprend
   st.events.push({ t: +st.t.toFixed(2), type: 'restart-pris', by: takerId });
+  // L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le joueur part
+  // en dribble ») : le monde ENTIER est devant le preneur — la barre calme (4,8) refusait la
+  // passe courte de l'engagement et il partait en conduite. Le mémo est lu par la décision
+  // (rondo-sim : barre abaissée + tenue dispensée pendant la fenêtre).
+  if (ty === 'engagement') st._engagement = { t: st.t, by: takerId };
   return true;
 }
 
