@@ -2730,6 +2730,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     charge perdue à 2,05 s : du football), volumétrie rondo-sim 1251 → 1248 (commentaire
     resserré — la pression du plafond est réelle, le prochain gros lot devra extraire).
 
+81. **Lot de mesure : la théorie du frein amont est morte aux chiffres (lot 46).** La dette
+    du lot 45 disait « la touche de préparation décélère le corps avant le commit » — RE-
+    MESURÉ d'abord (doctrine du lot 41) : v0 au commit = 3,68 m/s p50 (495 gestes), et
+    4,67 APRÈS une préparation récente — le corps arrive LANCÉ, la préparation porte déjà
+    l'élan (cible au travers, +2,2 m). Le résiduel (corps au strike 1,91-2,00 contre 3-6
+    réel) vit dans le COUPLAGE de l'armé : τ monté à 1,3 n'a rendu que +0,09 (le carry du
+    couple mange l'avance — lag du porté) et a re-cassé deux fenêtres de flux — REVERT au
+    monde prouvé du lot 45 (0,9/2,2 : +0,09 ne paie pas un reshuffle). LA VRAIE DETTE,
+    nommée : l'EASE DE GLISSE s'aplatit au contact (glideEase, dérivée nulle à t01=1 — le
+    corps converge vers l'ancre au lieu de la TRAVERSER) ; la refonte est un chantier
+    d'approche (un ease à vitesse terminale non nulle + le contrat de stance re-calibré),
+    pas un réglage. Leçon répétée : TOUJOURS re-mesurer une dette avant de la payer —
+    deuxième théorie de frein morte à la mesure en trois lots.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
