@@ -85,6 +85,15 @@ export const MATCH = {
                           // un centre est un arc par-dessus le premier rideau (0 centre
                           // entré en surface avant — mangés en route, vols tendus).
                           // false : le jeu au sol d'hier (sabotage nommé).
+  evadeGoal: 1.3,         // LA CONDUITE A UN SENS (11c11 — lot 47) : terme de PROGRESSION au
+                          // barème d'évasion du porteur (vers le but adverse ; l'échelle des
+                          // autres termes vit à 0,8-1,1). Clé absente (rondo) : pas un but,
+                          // pas un bit. 0 : l'errance d'hier (sabotage nommé).
+  wingDrive: true,        // …ET L'AILIER PERCE (lot 47 — l'approche pilotée du centre) : en
+                          // couloir offensif, la progression vise la LIGNE DE FOND (hx−6),
+                          // pas l'axe — mesuré avant : 105 portages d'aile, 4 en zone de
+                          // centre, avance max p50 12,4 m (l'évasion recyclait vers la
+                          // médiane). false : l'aile qui recycle (sabotage nommé).
   strideStrike: { tau: 0.9, max: 2.2 },
                           // LA FOULÉE DE FRAPPE (11c11, st.full — lot 45, retour utilisateur « un
                           // joueur ne s'arrête pas pour tirer ») : l'élan du commit se porte DANS
@@ -112,7 +121,7 @@ export const MATCH = {
                           // LIBRE avec son résiduel, le récupérateur va le chercher. Mesuré
                           // avant : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s possédé
                           // instantanément. false : l'aimant d'hier (sabotage nommé).
-  bloc: { long: 30, ligne: 27 },
+  bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8 },
                           // LE BLOC COMPACT (11c11, st.full — lot 42, retour utilisateur « les
                           // lignes sont trop espacées ») : l'équipe SANS ballon est chaînée au
                           // ballon — sa ligne défensive tient `ligne` m derrière lui (elle MONTE
@@ -121,8 +130,12 @@ export const MATCH = {
                           // bloc 25-40 m, interlignes 10-15). Mesuré avant : 43 m p50 / 58 p90,
                           // 25,5 m entre défense et milieu, zéro asymétrie attaque/défense.
                           // L'attaque garde sa respiration étirée : l'asymétrie EST le réalisme.
-                          // hauteurBloc (tactics) compose par-dessus (±6 m). false : le bloc
-                          // élastique d'hier (sabotage nommé).
+                          // hauteurBloc (tactics) compose par-dessus (±6 m). ET LE BLOC COULISSE
+                          // (lot 47, la v2 nommée au lot 42) : ballon à l'aile → le bloc entier
+                          // glisse de lateral × z-ballon (borné slideMax m — réel 6-10) : le
+                          // couloir se referme. Mesuré avant : couloir indéfendu, la perce du
+                          // wingDrive convertissait à 73 %. false : le bloc élastique d'hier
+                          // (sabotage nommé).
   volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 },
                           // LA VOLÉE (11c11, st.full — lot 40) : le pied joue le ballon EN VOL
                           // sous la fenêtre de tête (min-max m, portée reach) — REPRISE au but

@@ -53,7 +53,7 @@ export function premierOffensif(name = 433) {
  * possession. Le bloc coulisse (± 18 % du terrain), la profondeur respire (× 1,05 en attaque,
  * × 0,85 sans le ballon — un bloc défensif est un bloc COURT).
  */
-export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc = null) {
+export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc = null, anchorZ = 0) {
   const g = pitch.ownGoal(team);
   const sgn = -g.sign;                                            // vers l'avant
   const L = pitch.dims.length;
@@ -74,9 +74,14 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     const span = Math.max(0.01, Math.max(...F.map(([f]) => f)) - fMin);
     const ligneF = Math.max(0.05, Math.min(0.5, ballF - (bloc.ligne ?? 27) / L));
     const squeeze = ((bloc.long ?? 30) / L) / span;
+    // …ET LE BLOC COULISSE LATÉRALEMENT (lot 47, bloc.lateral — la v2 nommée au lot 42) :
+    // le bloc entier GLISSE vers le côté ballon (réel : 6-10 m) — sans lui, le couloir d'aile
+    // restait indéfendu et la perce du wingDrive convertissait à 73 % (mesuré : 38 buts sur
+    // 20 × 300 s, bande 17-30 — l'ailier passait dans un couloir vide).
+    const zShift = Math.max(-(bloc.slideMax ?? 8), Math.min(bloc.slideMax ?? 8, anchorZ * (bloc.lateral ?? 0.35)));
     return F.map(([f, fz]) => {
       const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * squeeze));
-      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92));
+      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 + zShift));
       return [g.x + sgn * fx * L, z];
     });
   }
@@ -100,6 +105,7 @@ export function blocFor(bloc, tq) {
   if (!bloc) return null;
   const ax = (v, lo, hi) => lo + Math.max(0, Math.min(1, v ?? 0.5)) * (hi - lo);
   return {
+    ...bloc,                                                       // lateral/slideMax passent tels quels
     long: (bloc.long ?? 30) + ax(tq?.compacite, 4, -4),
     ligne: (bloc.ligne ?? 27) + ax(tq?.hauteurBloc, 4, -4),
   };

@@ -2744,6 +2744,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     pas un réglage. Leçon répétée : TOUJOURS re-mesurer une dette avant de la payer —
     deuxième théorie de frein morte à la mesure en trois lots.
 
+82. **L'approche pilotée du centre + le coulissement latéral du bloc (lot 47 — la dette
+    nommée du lot 40, ET la v2 du bloc nommée au lot 42, tombées ENSEMBLE).** La chaîne du
+    centre existait (ras de ligne → centre bas → volée) mais l'AMONT manquait : l'ailier
+    n'ALLAIT jamais au ras (105 portages d'aile mesurés, 4 atteignaient la zone de centre —
+    l'évasion pure recyclait vers la médiane, avance max p50 12,4 m). (1) LA CONDUITE A UN
+    SENS (cfg.evadeGoal 1,3, match seulement — le rondo sans but au bit près) : le spot
+    d'évasion gagne un terme de PROGRESSION vers le but adverse ; et l'AILIER en moitié
+    offensive vise la ligne de fond (cfg.wingDrive : cible hx−6, largeur tenue — l'approche
+    qui ARME le centre). Le terme foe arbitre naturellement les directions bouchées. (2) Le
+    couloir percé CONVERTISSAIT À 73 % (38 buts / 20 × 300 s, bande 17-30 explosée) — le
+    couloir d'aile n'était PAS défendu (la dette v2 du lot 42, re-mesurée avant d'être
+    payée) : LE BLOC COULISSE (bloc.lateral 0,35, borne slideMax 8) — le bloc défendant
+    entier glisse de lateral × z-ballon côté ballon (réel 6-10 m). La STRUCTURE mesurée :
+    le couloir n'est jamais nu (p50 2 déf — marquage + press y vivent déjà) ; le vrai effet
+    est la GARDE CÔTÉ FAIBLE qui rentre défendre le second poteau (24,4 → 17,4 m). Après :
+    70 tirs / 32 buts (conversion 45,7 %, gardien 40 % au banc) ≈ baseline 29 — et la perce
+    SURVIT au couloir défendu (10 × 300 s vs errance : zone 9 → 11, ras 5 → 8, centres bas
+    2 → 4, tirs 27 → 34). LEÇON D'INSTRUMENT répétée en dur : 6 × 180 s classait lateral
+    0,15/0,2/0,25/0,3 dans un ordre ALÉATOIRE (zone 1-2 partout, buts 1-5) — la structure
+    (positions à 2 Hz, centaines de photos) a diagnostiqué, le flux à 10-20 × 300 s a jugé.
+    Quatre clauses §3g : loi pure du coulissement (zShift exact, borne, identité anchorZ
+    absent), blocFor PROPAGE lateral/slideMax (sans ça le site d'appel perdait la clé),
+    « la conduite a un SENS » (fixture calme : l'évasion progresse de +0,25 m vs
+    « l'errance » evadeGoal:0), « l'ailier ARME » (au ras, z tenu vs « l'aile qui
+    recycle » wingDrive:false qui rentre vers l'axe — marges mesurées 0,31, figées).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

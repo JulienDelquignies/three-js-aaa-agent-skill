@@ -304,6 +304,24 @@ export function evadeSpot(st, c, cfg = RONDO) {
   // opponent closer to the ball than the man supposedly carrying it. Aiming past the ball is what
   // keeps the ball between him and where he is going — which is the definition of carrying it.
   const org = cfg.evadeAroundBall ? [st.ball.p[0], 0, st.ball.p[2]] : [c.p[0], 0, c.p[2]];
+  // LA CONDUITE A UN SENS (lot 47, cfg.evadeGoal — match seulement ; clé absente : le rondo
+  // sans but, au bit près). Le porteur de champ PROGRESSE vers le but adverse — et l'AILIER
+  // en moitié offensive PERCE VERS LA LIGNE DE FOND (cfg.wingDrive : l'approche pilotée du
+  // centre — mesuré avant : 105 portages d'aile, 4 atteignaient la zone de centre, avance
+  // max p50 12,4 m — l'évasion pure recyclait vers la médiane ; le terme foe arbitre
+  // naturellement les directions bouchées). evadeGoal:0 : l'errance d'hier (sabotage nommé).
+  let gxu = 0, gzu = 0;
+  if (cfg.evadeGoal && st.full && st.pitch && !c.keeper) {
+    const goal = st.pitch.attackGoal(c.team);
+    const sgnG = Math.sign(goal.x || 1);
+    let tx = goal.x, tz = 0;
+    if (cfg.wingDrive !== false && Math.abs(c.p[2]) > st.pitch.hz * 0.30 && c.p[0] * sgnG > 0) {
+      tx = sgnG * (st.pitch.hx - 6);
+      tz = Math.sign(c.p[2]) * Math.min(Math.abs(c.p[2]), st.pitch.hz * 0.42);
+    }
+    const gl = Math.hypot(tx - c.p[0], tz - c.p[2]) || 1;
+    gxu = (tx - c.p[0]) / gl; gzu = (tz - c.p[2]) / gl;
+  }
   let best = null;
   for (let i = 0; i < cfg.evadeSamples; i++) {
     const a = (i / cfg.evadeSamples) * Math.PI * 2;
@@ -318,7 +336,8 @@ export function evadeSpot(st, c, cfg = RONDO) {
     for (const m of mates) mate = Math.min(mate, Math.hypot(m.p[0] - x, m.p[2] - z));
     const edge = Math.min(hx - Math.abs(x), hz - Math.abs(z));
     const score = foe * cfg.evadeFoe + Math.min(mate, 4) * cfg.evadeMate
-      + edge * cfg.evadeEdge + (dx * hdx + dz * hdz) * cfg.evadeKeep;
+      + edge * cfg.evadeEdge + (dx * hdx + dz * hdz) * cfg.evadeKeep
+      + (dx * gxu + dz * gzu) * (cfg.evadeGoal ?? 0);
     if (!Number.isFinite(score)) throw new Error('evadeSpot: score non fini (positions corrompues)');
     if (!best || score > best.score) best = { score, p: [x, 0, z] };
   }

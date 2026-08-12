@@ -14,7 +14,8 @@
 // budget tient). L'ÉQUILIBRE de jeu du plein format (tempo, tirs, conversion — les bandes fines
 // du réduit) est la dette nommée du backlog « réglage 11c11 ».
 import { makePitch, FULL } from '../assets/starter/src/engine/pitch.js';
-import { formationSpots, checkFormation, premierOffensif } from '../assets/starter/src/engine/formation.js';
+import { formationSpots, checkFormation, premierOffensif, blocFor } from '../assets/starter/src/engine/formation.js';
+import { evadeSpot } from '../assets/starter/src/engine/rondo.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets/starter/src/engine/match-sim.js';
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
@@ -140,6 +141,58 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab = mesure({ bloc: false });
   ok(`sabotage « bloc élastique » attrapé (bloc:false : longueur défendante p50 ${sab.dLong.toFixed(1)} m ≥ vivant + 6 (${(vif.dLong + 6).toFixed(1)}) — les lignes espacées d'hier, nommées)`,
     sab.dLong >= vif.dLong + 6);
+}
+
+// ---------- 3g. L'APPROCHE PILOTÉE DU CENTRE + LE COULISSEMENT (lot 47) : la conduite a un
+// SENS (le porteur progresse vers le but adverse, l'ailier en moitié offensive perce vers la
+// ligne de fond pour armer le centre), et le bloc défendant COULISSE côté ballon — la v2
+// nommée au lot 42. Mesuré : couloir nu, la perce convertissait à 73 % (38 buts / 20 × 300 s) ;
+// coulissé, 70 tirs / 32 buts et la perce SURVIT (zone de centre 9 → 11, ras 5 → 8, centres
+// bas 2 → 4 vs errance, 10 × 300 s). Lois PURES et fixtures posées — le flux d'aile à
+// l'échelle d'un banc est du bruit (leçon d'instrument : 6 × 180 s ne classe rien).
+{
+  // la LOI PURE du coulissement : ballon à z = 20 → le bloc glisse de 20 × lateral m côté
+  // ballon ; à z = 34 la borne slideMax prend la main ; anchorZ absent = l'identité d'hier.
+  const st0 = makeMatch({ full: true, seed: 1 });
+  const b47 = matchCfg({ shotRange: 20 }).bloc;
+  const mz = (S) => S.reduce((s, [, z]) => s + z, 0) / S.length;
+  const base = mz(formationSpots(st0.pitch, 1, 0, false, undefined, b47));
+  const d20 = mz(formationSpots(st0.pitch, 1, 0, false, undefined, b47, 20)) - base;
+  const d34 = mz(formationSpots(st0.pitch, 1, 0, false, undefined, b47, 34)) - base;
+  ok(`la LOI PURE du coulissement (ballon z=20 → bloc décalé de ${d20.toFixed(1)} m = 20 × ${b47.lateral} ; z=34 → ${d34.toFixed(1)} m = borne slideMax ${b47.slideMax} ; anchorZ absent = 0, l'identité)`,
+    Math.abs(d20 - 20 * b47.lateral) < 0.5 && Math.abs(d34 - b47.slideMax) < 0.5 && b47.lateral > 0);
+  // blocFor PROPAGE le coulissement (la tactique module long/ligne, lateral/slideMax passent
+  // tels quels — sans ça le site d'appel match perdait la clé et le couloir restait nu)
+  const bf = blocFor(b47, { compacite: 0.9, hauteurBloc: 0.1 });
+  ok(`blocFor propage lateral/slideMax (${bf.lateral}/${bf.slideMax}) en modulant long/ligne (${bf.long.toFixed(1)}/${bf.ligne.toFixed(1)})`,
+    bf.lateral === b47.lateral && bf.slideMax === b47.slideMax && bf.long < b47.long && bf.ligne > b47.ligne);
+  // l'APPROCHE PILOTÉE, pure : un ailier posé large, mondes calmes identiques (tous les corps
+  // parqués loin derrière-axe : gradients foe/mate/keep IDENTIQUES dans les trois mondes — la
+  // seule différence est la clé). Le spot d'évasion PROGRESSE (vs « l'errance », evadeGoal:0)
+  // et TIENT LA LARGEUR au ras de la ligne (vs « l'aile qui recycle », wingDrive:false, qui
+  // rentre vers l'axe). Fixture déterministe, marges mesurées 0,31 m.
+  const spotAile = (wx, wz, over) => {
+    const st = makeMatch({ full: true, seed: 2 });
+    st.restart = null;
+    const sgn = -st.pitch.ownGoal(0).sign;
+    for (const q of st.players) { q.v = [0, 0]; q.act = null; }
+    for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = -sgn * 20; q.p[2] = -10; }
+    for (const q of st.players.filter((q) => q.team === 0)) { q.p[0] = -sgn * 25; q.p[2] = -15; }
+    const w = st.players.find((p) => p.team === 0 && !p.keeper);
+    w.p[0] = sgn * wx; w.p[2] = wz; w.yaw = Math.PI / 2;            // face à la touche : keep neutre en x
+    st.ball.release('sortie');
+    st.ball.restart([w.p[0], 0.11, wz], { cause: 'touche' });
+    st.restart = null;
+    const s = evadeSpot(st, w, matchCfg({ shotRange: 20, ...over }));
+    return s ? { adv: (s[0] - w.p[0]) * sgn, z: Math.abs(s[2]) } : null;
+  };
+  const postes = [[12, 24], [20, 22], [35, 26]];
+  const sens = postes.every(([x, z]) => spotAile(x, z, {}).adv >= spotAile(x, z, { evadeGoal: 0 }).adv + 0.25);
+  ok(`la conduite a un SENS (l'évasion du porteur progresse de ≥ 0,25 m de plus que « l'errance » (evadeGoal:0) aux trois postes d'aile — le sabotage nommé recycle)`,
+    sens);
+  const ras = spotAile(35, 26, {}), rasRec = spotAile(35, 26, { wingDrive: false });
+  ok(`l'ailier ARME au ras de la ligne (z tenu ${ras.z.toFixed(2)} ≥ ${(rasRec.z + 0.25).toFixed(2)} : « l'aile qui recycle » (wingDrive:false) rentre vers l'axe au lieu d'armer le centre)`,
+    ras.z >= rasRec.z + 0.25);
 }
 
 // ---------- 3c. LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet aimant sur

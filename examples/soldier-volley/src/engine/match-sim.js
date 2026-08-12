@@ -879,7 +879,7 @@ function assignMatchJobs(st, cfg) {
         // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42 — formation.js) : ligne
         // à ~27 m du ballon, longueur bornée 30 m — les lignes ne s'espacent plus. Et le bloc
         // est CELUI DE SA TACTIQUE (lot 43, blocFor) : compacité et hauteur PAR ÉQUIPE.
-        const spotsD = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation, blocFor(cfg.bloc ?? null, tac(st, p.team)));
+        const spotsD = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation, blocFor(cfg.bloc ?? null, tac(st, p.team)), anchor[2]);
         const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
         // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : où l'équipe DÉFEND — le bloc posté se
         // décale de −6 (bloc bas, parqué devant sa surface) à +6 m (ligne haute — et la ligne

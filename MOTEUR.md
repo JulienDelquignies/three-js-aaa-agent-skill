@@ -680,6 +680,26 @@ dispensée — délai prise→passe 1,68 s (2,49 sans). Sabotage « l'engagement
 vivaient entre les quadrants (captures avant/après). Leçon de sonde : l'événement passe porte
 `from`, pas `by` — une sonde au mauvais champ rend une clé INERTE qui ne l'est pas.
 
+### L'approche pilotée du centre et le coulissement du bloc (lot 47)
+
+La chaîne du centre existait (ras de ligne → centre bas → volée) mais l'amont manquait :
+sur 105 portages d'aile, 4 atteignaient la zone de centre — l'évasion pure RECYCLAIT vers la
+médiane. **La conduite a un sens** (`cfg.evadeGoal`, match seulement — le rondo reste sans
+but au bit près) : le spot d'évasion gagne un terme de progression vers le but adverse, et
+l'AILIER en moitié offensive vise la ligne de fond (`cfg.wingDrive` : cible hx−6, largeur
+tenue — l'approche qui ARME le centre) ; le terme foe arbitre naturellement les directions
+bouchées. La perce nue convertissait à 73 % (38 buts / 20 × 300 s) : le couloir d'aile
+n'était pas défendu. **Le bloc coulisse** (`bloc.lateral` 0,35, borne `slideMax` 8 m,
+propagé par `blocFor`) : le bloc défendant entier glisse de lateral × z-ballon côté ballon
+(réel 6-10 m). La structure mesurée dit le vrai mécanisme : le couloir n'est jamais NU
+(marquage + press y vivent, p50 2 déf) — c'est la garde côté faible qui rentre défendre le
+second poteau (24,4 → 17,4 m). Après : 70 tirs / 32 buts (conversion 45,7 %) et la perce
+SURVIT (vs errance, 10 × 300 s : zone 9 → 11, ras 5 → 8, centres bas 2 → 4, tirs 27 → 34).
+Sabotages nommés « l'errance » (evadeGoal:0) et « l'aile qui recycle » (wingDrive:false) —
+fixtures pures, marges figées. Leçon d'instrument répétée en dur : 6 × 180 s classait les
+valeurs de lateral dans un ordre aléatoire ; la STRUCTURE (positions 2 Hz) diagnostique,
+le flux 10-20 × 300 s juge.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le
