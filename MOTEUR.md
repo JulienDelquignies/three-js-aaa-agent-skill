@@ -700,6 +700,23 @@ fixtures pures, marges figées. Leçon d'instrument répétée en dur : 6 × 180
 valeurs de lateral dans un ordre aléatoire ; la STRUCTURE (positions 2 Hz) diagnostique,
 le flux 10-20 × 300 s juge.
 
+### La foulée porte les deux bouts (lot 48)
+
+Le résiduel du « stop marqué » diagnostiqué et clos. L'autopsie : le corps accélérait
+jusqu'à 4,95 m/s au 3ᵉ quart de l'armé puis tombait à ~0 LA FRAME MÊME DU COMMIT — et deux
+refontes d'ease (u², mélange linéaire) sont mortes à la mesure avant le vrai coupable :
+l'offset commit→ancre d'un porteur lancé est quasi nul (le ballon est à ses pieds),
+l'interpolation n'a rien à distribuer et multiplie le mouvement d'ancre (strideStrike) par
+ep(t01) ≈ 0 en début d'armé. Falaise structurelle, quel que soit l'ease : 112 stops nets sur
+127 frappes en course. **Le fix** (`strideStrike.ride`) : `from` avance du même pas que
+l'ancre — la foulée porte les DEUX bouts du segment, le corps continue sa course à v0 plein
+dès la frame 1, l'ease ne règle que l'offset (l'ease doux reste la loi de l'ajustement posé).
+Après : creux pré-contact p50 0,0 → 1,9 m/s, stops nets 17 %, flux tenu (62 tirs / 24 buts,
+20 × 300 s). Sabotage nommé « l'élan retenu » (ride:false). Leçon d'instrument : la frame de
+l'ÉVÉNEMENT échantillonne l'instant post-courbe — elle ne peut structurellement pas bouger
+avec l'ease ; le stop visible est le CREUX pré-contact des frappes en course, et les frappes
+posées (tenue à l'arrêt) sont une autre population.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

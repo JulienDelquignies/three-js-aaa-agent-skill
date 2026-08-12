@@ -311,6 +311,49 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif.p50 >= 0.95 && gel.p50 <= vif.p50 - 0.12);
 }
 
+// ---------- 3h. LA COURSE TRAVERSE LA FRAPPE (lot 48, le résiduel du stop) : l'offset
+// commit→ancre d'un porteur lancé est quasi nul — l'interpolation multipliait le mouvement
+// d'ancre par ep(t01)≈0 en début d'armé, et la frame même du commit tombait à 0,0 m/s (la
+// FALAISE : 112 stops nets sur 127 frappes en course, quel que soit l'ease — deux refontes
+// d'ease mortes à la mesure avant le vrai coupable). `from` avance du même pas que l'ancre
+// (strideStrike.ride) : le corps continue sa course dès la frame 1. Le creux PRÉ-contact des
+// frappes en course (corps > 3 m/s à 0,7 s du contact) est la métrique — la frame de
+// l'événement échantillonne l'instant post-courbe, elle ne peut structurellement pas bouger.
+{
+  const stops = (cfgExtra) => {
+    const W = 42; let net = 0, tot = 0;
+    for (const seed of [1, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      const hist = new Map();
+      let evCount = 0;
+      for (let i = 0; i < 180 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (const p of st.players) {
+          const h = hist.get(p.id) ?? [];
+          h.push(Math.hypot(p.v[0], p.v[1]));
+          if (h.length > W) h.shift();
+          hist.set(p.id, h);
+        }
+        while (evCount < st.events.length) {
+          const e = st.events[evCount++];
+          if (e.type !== 'pass' && e.type !== 'shot') continue;
+          const p = st.players[e.from ?? e.by ?? -1];
+          if (!p || p.keeper) continue;
+          const h = hist.get(p.id) ?? [];
+          if (h.length < W || h[0] < 3) continue;                   // il COURAIT à 0,7 s du contact
+          tot++; if (Math.min(...h.slice(-15)) < 1) net++;          // creux < 1 m/s dans les 0,25 s pré-contact
+        }
+      }
+    }
+    return { net, tot, part: tot ? net / tot : 1 };
+  };
+  const vif = stops({});
+  const sab = stops({ strideStrike: { tau: 0.9, max: 2.2, ride: false } });
+  ok(`la course TRAVERSE la frappe (${vif.net} stop(s) net(s) sur ${vif.tot} frappes en course ≤ 35 % — et « l'élan retenu » (ride:false) s'arrête ${sab.net}/${sab.tot} ≥ vivant + 30 pts : la falaise du commit, nommée)`,
+    vif.part <= 0.35 && sab.part >= vif.part + 0.30);
+}
+
 // ---------- 3f. L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le
 // joueur part en dribble ») : fenêtre de 2,5 s après le coup d'envoi — barre abaissée, tenue
 // dispensée. Mesuré : délai prise → passe 1,7 s sur la plupart des graines (2,1-2,8 sans).

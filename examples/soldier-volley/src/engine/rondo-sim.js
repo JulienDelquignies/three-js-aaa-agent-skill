@@ -86,25 +86,26 @@ function stepGestures(st, dt, cfg) {
         // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au
         // début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
         const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance);
-        // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full — « un joueur ne s'arrête
-        // pas pour tirer », mesuré 0,63 m/s p50 au tir) : l'élan du commit se porte dans le
-        // geste — l'ancre avance d'un incrément décroissant (v0·e^(−t/τ)) dans la direction de
-        // la course, le couple entier voyage (un écrivain — la boucle du porté fait le reste),
-        // strikeNow re-résout au contact. Plafond cumulé. Clé absente : le gel d'hier, au bit près.
+        // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full) : l'ancre avance de
+        // v0·e^(−t/τ), plafond cumulé, strikeNow re-résout. ET ELLE PORTE LES DEUX BOUTS (ride,
+        // lot 48) : l'offset commit→ancre d'un porteur lancé est quasi nul — l'ease multipliait
+        // le pas d'ancre par ~0 en début d'armé (falaise). Doc : match-config, NOTES 83.
         if (cfg.strideStrike && st.full && (A.v0 ?? 0) > 1) {
           const tau = cfg.strideStrike.tau ?? 0.6;
           const pas = A.v0 * Math.exp(-p.act.t / tau) * dt;
           A._foulee = (A._foulee ?? 0) + pas;
           if (A._foulee <= (cfg.strideStrike.max ?? 2.2)) {
-            anchor.p[0] += Math.cos(A.vYaw ?? A.outYaw) * pas;
-            anchor.p[1] += Math.sin(A.vYaw ?? A.outYaw) * pas;
+            const cx = Math.cos(A.vYaw ?? A.outYaw), sx = Math.sin(A.vYaw ?? A.outYaw);
+            anchor.p[0] += cx * pas; anchor.p[1] += sx * pas;
+            if (cfg.strideStrike.ride !== false) { A.from[0] += cx * pas; A.from[1] += sx * pas; }
           }
         }
-        // …et l'ancre reste DANS le carré : un ballon joué près de la ligne peut demander un corps
-        // de l'autre côté d'elle — le joueur s'arrête à la craie, il ne la traverse pas. Sans cette
-        // clampe, le glissement poussait dehors pendant que movePlayers replaquait dedans.
+        // …et le segment ENTIER (ancre ET from porté) reste DANS le carré : le joueur s'arrête à
+        // la craie, il ne la traverse pas — sans la clampe le glissement poussait dehors.
         anchor.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, anchor.p[0]));
         anchor.p[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, anchor.p[1]));
+        A.from[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, A.from[0]));
+        A.from[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, A.from[1]));
         const t01 = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation));
         const g = glide(A.from, A.fromYaw, anchor, t01);
         // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : la droite d'un glissement peut passer

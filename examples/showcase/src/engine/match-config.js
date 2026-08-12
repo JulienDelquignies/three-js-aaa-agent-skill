@@ -94,13 +94,21 @@ export const MATCH = {
                           // pas l'axe — mesuré avant : 105 portages d'aile, 4 en zone de
                           // centre, avance max p50 12,4 m (l'évasion recyclait vers la
                           // médiane). false : l'aile qui recycle (sabotage nommé).
-  strideStrike: { tau: 0.9, max: 2.2 },
+  strideStrike: { tau: 0.9, max: 2.2, ride: true },
                           // LA FOULÉE DE FRAPPE (11c11, st.full — lot 45, retour utilisateur « un
                           // joueur ne s'arrête pas pour tirer ») : l'élan du commit se porte DANS
                           // l'armé — le couple corps-ballon avance (v0·e^(−t/τ), plafond cumulé
                           // max m) au lieu de freiner dans l'ancre. Mesuré avant : tirs frappés à
-                          // 0,63 m/s p50 (réel 3-6, dans la foulée). false : le gel d'hier
-                          // (sabotage nommé « la statue qui frappe »).
+                          // 0,63 m/s p50 (réel 3-6, dans la foulée). ET LA FOULÉE PORTE LES DEUX
+                          // BOUTS (ride, lot 48) : l'offset commit→ancre d'un porteur lancé est
+                          // quasi nul — l'interpolation multipliait le mouvement d'ancre par
+                          // ep(t01)≈0 en début d'armé (falaise mesurée : 0,0 m/s la frame même
+                          // du commit, 112 stops nets / 127 frappes en course, quel que soit
+                          // l'ease — deux refontes d'ease mortes à la mesure). `from` avance du
+                          // même pas : le corps continue sa course dès la frame 1 (creux p50
+                          // 0,0 → 1,9 m/s, stops nets 112 → 19). false : le gel d'hier (« la
+                          // statue qui frappe ») ; ride:false : l'élan retenu (la falaise du
+                          // commit, sabotage nommé).
   engagementPasse: true,  // L'ENGAGEMENT EST UNE PASSE (11c11, st.full — lot 45) : fenêtre de 2,5 s
                           // après le coup d'envoi où le preneur DONNE (barre abaissée, tenue
                           // dispensée — la barre calme refusait la passe courte, il partait en

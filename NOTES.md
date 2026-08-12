@@ -2770,6 +2770,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     « l'errance » evadeGoal:0), « l'ailier ARME » (au ras, z tenu vs « l'aile qui
     recycle » wingDrive:false qui rentre vers l'axe — marges mesurées 0,31, figées).
 
+83. **La foulée porte les deux bouts : la falaise du commit (lot 48 — le résiduel du « stop
+    marqué », clos).** Doctrine du re-mesurer appliquée trois fois AVANT de toucher au code :
+    (a) la dette « poitrine » (fenêtre morte 1,15-1,5 m) est MORTE à la mesure — 222 frames
+    sur 43 110 (0,5 %), zéro attente figée : le ballon traverse la fenêtre en route vers le
+    sol, pas de lot. (b) Le profil de l'armé (230 strikes) : le corps ACCÉLÈRE jusqu'à
+    4,95 m/s au 3ᵉ quart puis s'effondre à 1,87 au strike — j'ai cru à l'ease (smoothstep,
+    dérivée nulle à 1) et DEUX refontes sont mortes à la mesure (ease-in u² : déplace le
+    creux vers l'entrée, armé 0-75 % 2,96 → 1,78 ; mélange linéaire : creux p50 toujours
+    0,00). (c) L'instrument affiné (creux PRÉ-contact des frappes EN COURSE — corps > 3 m/s
+    à 0,7 s du contact ; la frame de l'événement échantillonne l'instant post-courbe et ne
+    PEUT structurellement pas bouger avec l'ease ; les frappes posées sont une autre
+    population) a localisé le zéro : 14 frames avant l'événement = LA FRAME MÊME DU COMMIT,
+    état « pass ». LE VRAI COUPABLE : l'offset commit→ancre d'un porteur lancé est quasi NUL
+    (le ballon est à ses pieds) — l'interpolation n'a rien à distribuer et MULTIPLIE le
+    mouvement d'ancre (strideStrike) par ep(t01)≈0 en début d'armé : falaise à 0,0 m/s,
+    112 stops nets sur 127 frappes en course, quel que soit l'ease. LE FIX (une ligne de
+    loi) : `strideStrike.ride` — `from` avance du même pas que l'ancre, la foulée porte les
+    DEUX bouts du segment, le corps continue sa course à v0 plein dès la frame 1, l'ease ne
+    règle que l'offset (« un pas, pas un rail » reste la loi de l'ajustement posé —
+    approach.js revient au bit près). Après : creux p50 0,00 → 1,91 m/s, stops nets
+    112/127 → 19/110 (17 %), corps au strike 1,90 → 2,31 p50, flux tenu 62 tirs / 24 buts
+    (20 × 300 s). Clause §3h « la course TRAVERSE la frappe » (vivant ≤ 35 %, sabotage
+    « l'élan retenu » ride:false ≥ vivant + 30 pts — mesuré 17 % vs 89 %). Le glidePunch
+    essayé puis RETIRÉ (le sweep l'a montré inerte une fois le ride posé : 1,91/1,76/1,94 =
+    bruit) — une clé qui ne paie pas sa doc n'entre pas dans le moteur.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

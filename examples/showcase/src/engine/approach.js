@@ -110,6 +110,11 @@ export const glideEase = (t) => { const u = Math.max(0, Math.min(1, t)); return 
 /**
  * LE GLISSEMENT : position et lacet du corps à la fraction `t01` de l'anticipation. Pure — la
  * simulation l'échantillonne, elle ne tient aucun état. Le lacet tourne par le plus court chemin.
+ * (Lot 48, l'autopsie du « stop marqué » : DEUX refontes d'ease — ease-in u², mélange linéaire —
+ * sont mortes à la mesure ici. Le coupable n'était pas la forme de l'ease : l'offset commit→ancre
+ * d'un porteur lancé est quasi nul, l'interpolation n'a rien à distribuer — c'est la FOULÉE qui
+ * doit porter les deux bouts du segment, voir strideStrike.ride dans rondo-sim. L'ease doux reste
+ * la bonne loi de l'ajustement : un pas, pas un rail.)
  */
 export function glide(from, fromYaw, anchor, t01) {
   const e = glideEase(t01);
