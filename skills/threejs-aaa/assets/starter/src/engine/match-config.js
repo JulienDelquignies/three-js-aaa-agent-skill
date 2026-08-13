@@ -123,9 +123,12 @@ export const MATCH = {
                           // la joue par CHOIX — porte sans presseur, pCalme = calme × (1−2·style)
                           // borné à 0 (possession 0,1 → 0,4 ; défaut 0,5 → 0, aucun tirage
                           // consommé : l'identité), déchet ×1,3 (choisie, préparée). L'événement
-                          // porte calme:true. Dette nommée : la photo Loi 11 (comme la remise de
-                          // tête). false : le monde à deux touches d'hier (sabotage nommé) ;
-                          // calme:0 : le réflexe seul (sabotage nommé).
+                          // porte calme:true. ET ELLE SURPREND (lot 50) : pas d'armé → la fenêtre
+                          // aveugle se pose avec seen 0 (le contrat de strikeNow, complété — même
+                          // loi pour les redirections de la tête et de la volée). Dette nommée :
+                          // la photo Loi 11 (comme la remise de tête). false : le monde à deux
+                          // touches d'hier (sabotage nommé) ; calme:0 : le réflexe seul (sabotage
+                          // nommé).
   touchePrix: { seuil: 10, taux: 0.07, max: 0.55 },
                           // LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet
                           // aimant sur les longs ballons ») : la prise de TURNOVER paie le même

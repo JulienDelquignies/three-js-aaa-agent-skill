@@ -2815,6 +2815,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     greffe calme. Clause verify-tactics : trois mondes, une clause (possession ≥ 2 calmes,
     défaut = 0 exact, sabotage « le réflexe seul » calme:0 → 0 en monde possession).
 
+85. **La surprise complète son répertoire : la première intention n'a pas d'armé (lot 50 —
+    le chantier « latence de perception » du backlog, re-mesuré d'abord).** La doctrine a
+    encore payé : LA LOI EXISTAIT DÉJÀ — st._surprise (le contrat de strikeNow : « le départ
+    du ballon est un événement, la défense paie max(0, réaction perso − armé vu) », retenue
+    de cible dans rondoStep, politique de regard 65/35 hachée joueur×passe, équipe du passeur
+    exempte, gardien exclu, note reactions → skill.reaction [0,30 ; 0,14 s]). Le lot 50 tel
+    que rêvé (« aujourd'hui les défenseurs re-ciblent la frame même ») était FAUX pour les
+    passes armées. Mesuré au MÉCANISME (la fraîcheur de st._surprise à la frame de l'événement
+    — l'instrument de flux « cibles tenues » confondait le gel avec la stabilité naturelle du
+    bloc posté, 59-77 % partout) : armée 135/135 fenêtres posées… une-touche 0/39, tête 0,
+    volée 0. LE TROU : les redirections de première intention — les départs les MOINS lisibles
+    du football (pas d'armé !) — étaient les seuls que la défense lisait instantanément. Le
+    fix au modèle des poses existantes (strikeNow, claquette — la loi cœur est non-gatée) :
+    st._surprise seen 0 posé par la une-touche (premiere-intention.js) et les 5 redirections
+    de tete.js (tête but/dégagement/remise, volée reprise/dégagement, helper surprend()).
+    Après : armée 131/131, une-touche 36/36, tête 7/7, volée 5/5 — TOUT départ ouvre la
+    fenêtre ; seen 0 = tout le monde paie sa réaction pleine (l'armée rembourse les
+    regardeurs — c'est la hiérarchie du lisible). Issue une-touche : arrivées 63 → 67 %
+    (0 interception avant comme après — le gain est le TIMING du bloc, pas le vol). Flux :
+    81 tirs / 29 buts (20 × 300 s, bande 17-30 — le bloc qui paie sa réaction libère un peu
+    d'attaque, conversion 35,8 % saine). Clause §3d « …et elle SURPREND » (53 ✓). Dettes
+    nommées : le crochet/la feinte ne posent pas de surprise (le duel les lit au corps — à
+    mesurer avant de payer), la touche fuyante du turnover non plus.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

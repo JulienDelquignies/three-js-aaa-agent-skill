@@ -730,6 +730,22 @@ passage, l'extraction de volumétrie promise : rondo-sim (1250/1250 pile) cède 
 « première intention » au nouveau module — 1214 lignes, bit-exact prouvé avant la greffe.
 Sabotage nommé « le réflexe seul » (calme:0).
 
+### La surprise complète son répertoire (lot 50)
+
+La latence de perception existait déjà (le contrat de strikeNow : le départ du ballon est un
+ÉVÉNEMENT — chaque adversaire garde sa cible d'avant pendant max(0, sa réaction − l'armé
+qu'il a vu) ; politique de regard 65/35, équipe du passeur exempte, gardien exclu, note
+`reactions` → 0,30-0,14 s). Le trou, prouvé au mécanisme : les redirections de PREMIÈRE
+INTENTION — une-touche, tête, volée, les départs les moins lisibles du football — ne
+posaient pas la fenêtre (0/39 contre 135/135 pour les passes armées) : la défense les lisait
+la frame même. Complété au modèle des poses existantes : `seen 0` — pas d'armé à lire, toute
+la défense paie sa réaction pleine. Tout départ de ballon ouvre désormais la fenêtre ; une
+passe téléphonée s'anticipe, une première intention se subit — la hiérarchie du lisible.
+Flux tenu (81 tirs / 29 buts, 20 × 300 s). Leçon d'instrument : mesurer la LOI (fraîcheur de
+la fenêtre à l'événement), pas son ombre en flux (« cibles tenues » confondait le gel avec la
+stabilité naturelle du bloc posté). Dettes nommées : le crochet/la feinte (le duel lit le
+corps — re-mesurer avant), la touche fuyante du turnover.
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

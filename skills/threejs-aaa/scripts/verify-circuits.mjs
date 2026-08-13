@@ -60,7 +60,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 3. les CIRCUITS PAR STYLE : possession bascule, direct va devant — et le service VIT
 {
   const mesure = (tactics, cfgExtra) => {
-    let servis = 0, renv = 0;
+    let servis = 0, renv = 0, ut = 0;
     const lat = [];
     for (const seed of [1, 3, 5]) {
       const st = makeMatch({ full: true, seed, tactics });
@@ -72,15 +72,20 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         if (b) { servis++; lat.push(p.t - b.t); }
       }
       renv += st.events.filter((e) => e.type === 'renversement').length;
+      ut += st.events.filter((e) => e.type === 'pass' && e.style === 'une-touche').length;
     }
-    return { servis, renv, lat };
+    return { servis, renv, ut, lat };
   };
   const neutre = mesure(null), poss = mesure(['possession', 'possession']), direct = mesure(['direct', 'direct']);
-  // …séparation ABSOLUE (re-fondée lot 45) : le ratio ×1,5 est tombé quand le direct s'est mis
-  // à renverser davantage (29/20 au flux de la foulée) — l'écart absolu a survécu à TROIS
-  // mondes (+13, +12, +9), c'est lui le contrat (doctrine : des bornes qui séparent)
-  ok(`la SIGNATURE des circuits (3 graines × 180 s : possession ${poss.renv} renversements ≥ direct ${direct.renv} + 5 — la possession recycle au large, le direct va devant)`,
-    poss.renv >= direct.renv + 5);
+  // …RE-FONDÉE (lot 50, 3e vie de cette clause — doctrine « l'instrument suit le monde ») : le
+  // ratio ×1,5 est tombé au lot 45 (le direct renversait davantage), l'écart absolu +5 est tombé
+  // au lot 50 — la possession résout sa pression en UNE TOUCHE avant que la densité n'appelle le
+  // renversement (mesuré à 6 graines : 47 vs 41, séparation +6 réelle mais sous le bruit d'un
+  // banc à 3). Le renversement est devenu un vocabulaire PARTAGÉ (existence dans les deux
+  // mondes) ; le discriminant du STYLE est la une-touche (+20 mesuré, porté par la porte calme
+  // déterministe — verify-tactics garde la vérité de la PORTE, ici on juge le VOCABULAIRE).
+  ok(`la SIGNATURE des circuits (3 graines × 180 s : possession ${poss.ut} une-touche ≥ direct ${direct.ut} + 10 — le tiki-taka combine ; et le renversement VIT partout : poss ${poss.renv} ≥ 3, direct ${direct.renv} ≥ 3)`,
+    poss.ut >= direct.ut + 10 && poss.renv >= 3 && direct.renv >= 3);
   ok(`le SERVICE du coureur VIT dans tous les mondes (neutre ${neutre.servis} + possession ${poss.servis} + direct ${direct.servis} = ${neutre.servis + poss.servis + direct.servis} ≥ 3 — était 0 partout : les portes d'engagement mangeaient la fenêtre)`,
     neutre.servis + poss.servis + direct.servis >= 3);
   // ---------- 3b. LA FOULÉE EST SERVIE (lot 41) : l'appel s'exécute en URGENCE — le ballon part

@@ -53,6 +53,11 @@ export function uneTouche(st, p, cfg) {
       const yawU = Math.atan2(mate.m.p[2] - p.p[2], mate.m.p[0] - p.p[0]) + gauss(st.rnd ?? (() => 0.5)) * sigU;
       const spdU = Math.min(12, Math.max(6, mate.d * 0.85));
       st.ball.strike({ speed: spdU, dirYaw: yawU, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
+      // LA PERCEPTION A UNE HORLOGE (le contrat de strikeNow, complété lot 50) : une première
+      // intention n'a PAS d'armé — seen 0, TOUT LE MONDE paie sa réaction pleine. Mesuré avant :
+      // 0/39 fenêtres posées — la passe la moins lisible du football était la seule que la
+      // défense lisait instantanément (armée : 135/135, l'armé vu remboursait les regardeurs).
+      st._surprise = { t: st.t, seen: 0, n: (st._surprise?.n ?? 0) + 1 };
       st.pass = { from: p.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'une-touche', t: st.t, flight: mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
       st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0;
       st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(pressOk ? {} : { calme: true }) });

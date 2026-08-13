@@ -239,8 +239,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 3d. LA PASSE EN UNE TOUCHE (lot 44, retour utilisateur « il manque la possibilité
 // d'avoir des passes en une touche ») : sous PRESSION, un ballon jouable repart en PREMIÈRE
 // INTENTION vers une ligne courte et ouverte — sans être possédé (le patron de la remise de
-// tête, déchet ×1,6). Flux mesuré : 28 une-touches / 25 min (6,5 % des passes — porte
-// pression-seulement ; la une-touche au calme est un axe de style, dette nommée).
+// tête, déchet ×1,6). Flux mesuré : 28 une-touches / 25 min (6,5 % des passes ; au calme par
+// STYLE depuis le lot 49 — clause verify-tactics). ET ELLE SURPREND (lot 50) : une première
+// intention n'a pas d'armé — la fenêtre aveugle se pose avec seen 0, tout le monde paie sa
+// réaction pleine (mesuré avant : 0/39 fenêtres posées, armée 135/135 — la passe la moins
+// lisible du football était la seule lue instantanément).
 {
   const scene = (cfgExtra, presse) => {
     const st = makeMatch({ full: true, seed: 5 });
@@ -272,6 +275,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sous = scene({}, true);
   ok(`la UNE-TOUCHE part sous pression (pass style=${sous.ut?.style} de nº${sous.ut?.by} vers nº${sous.ut?.to} = nº${sous.m.id} à ${sous.ut?.d} m — le ballon repart SANS être possédé, première intention)`,
     !!sous.ut && sous.ut.by === sous.r.id && sous.ut.to === sous.m.id);
+  ok(`…et elle SURPREND (lot 50 : fenêtre aveugle posée à l'instant du départ, seen=${sous.st._surprise?.seen} — pas d'armé à lire, toute la défense paie sa réaction pleine)`,
+    !!sous.ut && !!sous.st._surprise && Math.abs(sous.st._surprise.t - sous.ut.t) < 0.02 && sous.st._surprise.seen === 0);
   const calme = scene({}, false);
   ok(`au CALME on contrôle (même scène sans presseur : une-touche=${!!calme.ut}, phase=${calme.st.phase} — la première intention est l'arme du pressé, pas un tic)`,
     !calme.ut && calme.st.phase === 'carry');

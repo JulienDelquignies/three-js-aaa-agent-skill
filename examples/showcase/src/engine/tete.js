@@ -12,6 +12,11 @@
 // tête (le sifflet vit à la prise au sol — une redirection de la tête n'appelle pas receive).
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 
+/** LA PERCEPTION A UNE HORLOGE (le contrat de strikeNow, complété lot 50) : une redirection
+ *  de première intention n'a PAS d'armé — seen 0, tout le monde paie sa réaction pleine
+ *  (mesuré : les redirections étaient les seuls départs sans fenêtre aveugle). */
+const surprend = (st) => { st._surprise = { t: st.t, seen: 0, n: (st._surprise?.n ?? 0) + 1 }; };
+
 export function teteStep(st, cfg) {
   const T = cfg.tete;
   const bp = st.ball.p;
@@ -39,6 +44,7 @@ export function teteStep(st, cfg) {
     // LA TÊTE AU BUT : piquée vers un point du cadre seedé — canal shot standard
     const tz = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (st.pitch.goalHalf - 0.5);
     st.ball.strike({ speed: 12.5, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
+    surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'but' });
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', range: +dGoal.toFixed(1), speed: 12.5 });
@@ -48,6 +54,7 @@ export function teteStep(st, cfg) {
     // LE DÉGAGEMENT DE LA TÊTE : loin de son but, vers l'avant et le flanc
     const fz = joueur.p[2] >= 0 ? 0.45 : -0.45;
     st.ball.strike({ speed: 11.5, dirYaw: Math.atan2(fz, -Math.sign(own.x)), elevation: 0.42, spinAxis: [0, 1, 0], spinRev: 0 });
+    surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'dégagement' });
     return;
@@ -60,6 +67,7 @@ export function teteStep(st, cfg) {
   const theta = 0.4;
   const speed = Math.sqrt(Math.max(4, mate ? mate.d : 9) * 9.81 / Math.sin(2 * theta)) * 0.85;
   st.ball.strike({ speed, dirYaw: dir, elevation: theta, spinAxis: [0, 1, 0], spinRev: 0 });
+  surprend(st);
   st.pass = mate
     ? { from: joueur.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'tête', t: st.t, flight: 2 * speed * Math.sin(theta) / 9.81, origin: [joueur.p[0], joueur.p[2]] }
     : null;
@@ -95,6 +103,7 @@ export function voleeStep(st, cfg) {
     st._teteCd = st.t + 0.8;
     st.lastTouch = joueur.team;
     st.ball.strike({ speed: 17, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0.5 });
+    surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'but', demi });
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', range: +dGoal.toFixed(1), speed: 17 });
@@ -106,6 +115,7 @@ export function voleeStep(st, cfg) {
     st.lastTouch = joueur.team;
     const fz = joueur.p[2] >= 0 ? 0.5 : -0.5;
     st.ball.strike({ speed: 14, dirYaw: Math.atan2(fz, -Math.sign(own.x)), elevation: 0.38, spinAxis: [0, 1, 0], spinRev: 0 });
+    surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'dégagement' });
   }
