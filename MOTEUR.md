@@ -717,6 +717,19 @@ l'ÉVÉNEMENT échantillonne l'instant post-courbe — elle ne peut structurelle
 avec l'ease ; le stop visible est le CREUX pré-contact des frappes en course, et les frappes
 posées (tenue à l'arrêt) sont une autre population.
 
+### La une-touche au calme : le style choisit (lot 49)
+
+La une-touche du lot 44 n'existait que sous pression (le presseur force le réflexe — ouvert
+à toutes les équipes). Le tiki-taka la joue par CHOIX : une deuxième porte dans la même
+mécanique (`premiere-intention.js`), pilotée par l'axe `tactics.style` — pCalme = calme ×
+(1 − 2·style) borné à 0 : possession (0,1) → 40 % de la clé, défaut (0,5) → zéro, aucun
+tirage consommé (l'identité au bit près par court-circuit). Déchet ×1,3 au calme contre
+×1,6 pressée. Mesuré : possession 19,2 % de passes en une touche dont 62 % au calme (la
+bande réelle), défaut 7,8 % dont zéro calme. L'événement pass porte `calme: true`. Au
+passage, l'extraction de volumétrie promise : rondo-sim (1250/1250 pile) cède la famille
+« première intention » au nouveau module — 1214 lignes, bit-exact prouvé avant la greffe.
+Sabotage nommé « le réflexe seul » (calme:0).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

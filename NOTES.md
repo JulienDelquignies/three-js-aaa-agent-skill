@@ -2796,6 +2796,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     essayé puis RETIRÉ (le sweep l'a montré inerte une fois le ride posé : 1,91/1,76/1,94 =
     bruit) — une clé qui ne paie pas sa doc n'entre pas dans le moteur.
 
+84. **La une-touche au calme : le tiki-taka est un CHOIX, pas un réflexe (lot 49 — la dette
+    de style nommée au lot 44).** La une-touche n'existait que SOUS PRESSION (presseur
+    < 2,6 m : le réflexe de survie, ouvert à tous). Le vrai tiki-taka la joue par CHOIX au
+    calme. La greffe : une deuxième porte dans la même mécanique — pCalme = calme (0,5) ×
+    max(0, 1 − 2·style) : possession (style 0,1) → 0,4, défaut (0,5) → 0 EXACTEMENT avec
+    AUCUN tirage consommé (le court-circuit `pressOk || (pCalme > 0 && rnd < pCalme)` est
+    la preuve d'identité — l'ordre de consommation du rnd est inchangé dans tous les mondes
+    par défaut). Déchet ×1,3 au calme (choisie, préparée) contre ×1,6 pressée. Mesuré
+    (6 × 180 s) : possession 19,2 % de passes en une touche (68, dont 42 au calme, 62 %
+    d'arrivées — la bande réelle du Barça 15-20 %), défaut 7,8 % dont ZÉRO calme, direct
+    zéro calme mais 10,1 % pressées (il subit plus de press — cohérent). L'événement porte
+    calme:true par spread conditionnel (zéro clé en monde pressé — Object.keys identique,
+    la leçon de pureté). ET L'EXTRACTION DE VOLUMÉTRIE : rondo-sim était à 1250/1250 PILE —
+    le bloc une-touche part dans `premiere-intention.js` (la famille « jouer le ballon sans
+    le posséder » : la remise de tête et la volée vivent dans tete.js, la une-touche au sol
+    ici), rondo-sim 1250 → 1214, identité au bit près prouvée par les 4 gardes AVANT la
+    greffe calme. Clause verify-tactics : trois mondes, une clause (possession ≥ 2 calmes,
+    défaut = 0 exact, sabotage « le réflexe seul » calme:0 → 0 en monde possession).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

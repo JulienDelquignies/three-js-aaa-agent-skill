@@ -113,14 +113,19 @@ export const MATCH = {
                           // après le coup d'envoi où le preneur DONNE (barre abaissée, tenue
                           // dispensée — la barre calme refusait la passe courte, il partait en
                           // conduite). false : l'engagement porté d'hier (sabotage nommé).
-  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65 },
-                          // LA PASSE EN UNE TOUCHE (11c11, st.full — lot 44, retour utilisateur) :
-                          // sous pression (presseur < press m), un ballon jouable (≤ vmax m/s, au
-                          // sol) repart en PREMIÈRE INTENTION vers une ligne courte et ouverte
-                          // (≤ portee m, couloir libre) — sans être possédé. Déchet ×1,6 (le geste
-                          // le plus dur du football), tirage seedé (p), controlF module. Dette
-                          // nommée : la photo Loi 11 (comme la remise de tête). false : le monde
-                          // à deux touches d'hier (sabotage nommé).
+  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
+                          // LA PASSE EN UNE TOUCHE (11c11, st.full — lot 44, retour utilisateur ;
+                          // premiere-intention.js) : sous pression (presseur < press m), un ballon
+                          // jouable (≤ vmax m/s, au sol) repart en PREMIÈRE INTENTION vers une
+                          // ligne courte et ouverte (≤ portee m, couloir libre) — sans être
+                          // possédé. Déchet ×1,6 (le geste le plus dur du football), tirage seedé
+                          // (p), controlF module. ET AU CALME PAR STYLE (lot 49) : le tiki-taka
+                          // la joue par CHOIX — porte sans presseur, pCalme = calme × (1−2·style)
+                          // borné à 0 (possession 0,1 → 0,4 ; défaut 0,5 → 0, aucun tirage
+                          // consommé : l'identité), déchet ×1,3 (choisie, préparée). L'événement
+                          // porte calme:true. Dette nommée : la photo Loi 11 (comme la remise de
+                          // tête). false : le monde à deux touches d'hier (sabotage nommé) ;
+                          // calme:0 : le réflexe seul (sabotage nommé).
   touchePrix: { seuil: 10, taux: 0.07, max: 0.55 },
                           // LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet
                           // aimant sur les longs ballons ») : la prise de TURNOVER paie le même

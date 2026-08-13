@@ -176,5 +176,28 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     && ident.long === 30 && ident.ligne === 27 && nul === null);
 }
 
+// ---------- LA UNE-TOUCHE AU CALME EST UN CHOIX DE STYLE (lot 49 — la dette « tiki-taka »
+// du lot 44) : l'axe style < 0,5 ouvre la porte de la première intention SANS presseur
+// (pCalme = calme × (1−2·style), premiere-intention.js). Mesuré (6 × 180 s) : possession
+// 19,2 % de passes en une touche dont 42 au calme, défaut 7,8 % dont ZÉRO calme (l'identité
+// de la porte — aucun tirage consommé), direct 0 calme. Trois mondes, la même graine.
+{
+  const utDe = (tactics, cfgX) => {
+    let calme = 0, ut = 0;
+    for (const seed of [1, 3]) {
+      const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
+      const cfg = matchCfg({ shotRange: 20, ...cfgX });
+      for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
+      for (const e of st.events) if (e.type === 'pass' && e.style === 'une-touche') { ut++; if (e.calme) calme++; }
+    }
+    return { calme, ut };
+  };
+  const poss = utDe(['possession', 'possession'], {});
+  const defo = utDe(null, {});
+  const sab = utDe(['possession', 'possession'], { uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0 } });
+  ok(`la une-touche au calme est un CHOIX de style (possession : ${poss.calme} calme(s) ≥ 2 sur ${poss.ut} une-touche ; défaut : ${defo.calme} = 0 EXACTEMENT — la porte identitaire ; sabotage « le réflexe seul » (calme:0) : ${sab.calme} = 0 en monde possession)`,
+    poss.calme >= 2 && defo.calme === 0 && sab.calme === 0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
