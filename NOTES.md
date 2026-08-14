@@ -2901,6 +2901,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     qui inverse à 0,3-0,9 m du pied reste sans animation de frappe — l'œil lit encore de la
     magie : chantier scène) ; « l'instrument du contrôle propre » (churn/warp de prise).
 
+88. **Le long ballon se reçoit à sa chute (lot 52a — retour utilisateur « les contrôles sur
+    les passes longues sont tous ratés »).** La mesure a démonté la plainte en couches :
+    ZÉRO raté de la loi pMiss (les longs n'arrivent presque jamais par le contrôle propre) —
+    le vrai chemin : 56/82 passes longues finissaient en CHASSE AU REBOND (p90 5 rebonds,
+    9 m roulés, 2,8 s de poursuite). Puis la chaîne des causes, chacune mesurée : (a) le
+    quart-de-touche du « pas de contrôle légal » relançait le ballon à 75 % à chaque
+    rattrapage → L'AMORTI DE POURSUITE (cfg.amortiPoursuite 0,82 : à portée d'un ballon non
+    contesté, la première touche l'écrase — le contesté garde son 50/50) ; (b) la branche
+    d'amorti à la RETOMBÉE manquait à voleeStep (la loi nommée au lot 40 : « le contrôle est
+    le vrai geste ») → V.amorti : le destinataire joue le vol descendant à portée, la touche
+    tue (−85 % H/V, controlF module) ; (c) LE PLACEMENT, la vraie racine : le receveur match
+    est ancré au point NOMINAL (la leçon anti-flipper) mais vivait à 4,3 m p50 / 14 p90 de
+    la chute RÉELLE — ET le premier fix (rondo.js assignJobs/maxT) était MORT-NÉ : le match
+    injecte assignMatchJobs, le code de rondo n'y tourne pas (leçon d'architecture répétée).
+    Le vrai site : le bloc flightRec de match-sim → cfg.chutePredite (st.full) : sur un vol
+    > 1,1 s encore haut, le receveur court vers le premier point JOUABLE (y ≤ 1,2, vy < 0)
+    du chemin prédit, à vitesse humaine — le déchet reste ce que ses jambes ne couvrent pas
+    (les livraisons à 14 m de la cible RESTENT perdues : le football garde ses mauvaises
+    passes). Après : contrôles propres 22 → 30, chasse 57 → 43, rebonds p90 5 → 2, poursuite
+    p90 2,6 → 1,3 s, receveur p10 à 0,5 m de la chute. Isolation d'instrument : le sabotage
+    « pose figée » coupe AUSSI chutePredite (elle animait le monde saboté plus que le
+    vivant). Dettes vivantes du lot 52 : l'attaque asséchée (calibrage), le geste de la
+    touche (anim), la précision des LIVRAISONS longues (p90 14 m de la cible — la moitié
+    des chasses restantes).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

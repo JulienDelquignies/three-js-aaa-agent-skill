@@ -118,6 +118,26 @@ export function voleeStep(st, cfg) {
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'dégagement' });
+    return;
+  }
+  // L'AMORTI DE LA RETOMBÉE (lot 52, V.amorti — retour utilisateur « les contrôles sur les
+  // passes longues sont tous ratés ») : le DESTINATAIRE de la passe joue le ballon EN
+  // DESCENTE, à portée, hors des deux urgences — la première touche du pied/de la cuisse TUE
+  // le vol (le ballon meurt à ses pieds, la prise suit au pas d'après). Mesuré avant : 56/82
+  // passes longues finissaient en chasse au rebond (le vol retombait, cabriolait — p90
+  // 5 rebonds, 9 m, 2,8 s — et le receveur poursuivait). C'était la loi manquante nommée au
+  // lot 40 (« le contrôle est le vrai geste ») : LE VOICI. La note de contrôle module le
+  // résiduel (un mauvais premier toucher laisse le ballon vivre un peu).
+  if (V.amorti !== false && st.pass && st.pass.to === joueur.id && st.ball.v[1] < -0.4) {
+    st._teteCd = st.t + 0.8;
+    st.lastTouch = joueur.team;
+    const ctl = Math.min(1.2, joueur.skill?.controlF ?? 1);
+    const k = (V.amortiK ?? 0.85) * ctl;
+    st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.85, -st.ball.v[2] * k]);
+    st.pass = null;
+    st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'amorti-retombée', foot: 'any',
+      surface: bp[1] > 0.7 ? 'thigh' : 'instep', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+    return;
   }
   // sinon : ON NE VOLLEYE PAS — le contrôle au sol est le vrai geste du milieu de terrain
 }

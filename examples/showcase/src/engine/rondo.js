@@ -109,6 +109,11 @@ export function choosePass(st, cfg = RONDO) {
     // elle gagne — re-proposer la même ligne à l'image suivante, c'est mourir en boucle sur un refus.
     // Le veto expire vite (la défense bouge), et tombe à holdMax : forcé, on joue le moins mauvais.
     if (st.laneVeto?.[m.id] > st.t && st.hold < cfg.holdMax) continue;
+    // UN CORPS QUI NE PEUT PAS JOUER N'EST PAS UNE OPTION (lot 52 — exposé par le banc de
+    // l'expulsion : le cerveau a servi un expulsé en marche vers sa sortie). Au sol, expulsé,
+    // remplacé : hors barème. Le réduit garde son étalon au bit près (dette nommée : ses
+    // corps au sol d'un tacle restent techniquement visables ~1 s).
+    if (st.full && (m.down > 0 || m.expulse || m._sub)) continue;
     if (offL && m.p[0] * offL.sgn > offL.adv + 0.05) continue;      // hors-jeu : on attend sa course
     const d = d2(origin, m.p);
     // LE RENVERSEMENT (cfg.renversement && st.full — lot 35, diagnostic utilisateur « densité
@@ -354,7 +359,11 @@ export function assignJobs(st, cfg = RONDO) {
   let path = null;
   if (st.phase === 'flight') {
     if (!st._path || st._pathAt !== st.pass || st.t - st._pathT > 0.12) {
-      st._path = predictPath(st.ball, { dt: 1 / 45, maxT: 2.2 });
+      // …et la prédiction couvre le VOL ENTIER en plein format (lot 52) : maxT figé à 2,2 s
+      // tronquait le chemin d'un renversement (~2,5 s de vol) — le receveur visait un chemin
+      // coupé avant la CHUTE et courait après le rebond. Le réduit garde 2,2 au bit près.
+      const maxT = st.full ? Math.max(2.2, (st.pass?.flight ?? 0) + 0.6) : 2.2;
+      st._path = predictPath(st.ball, { dt: 1 / 45, maxT });
       st._pathT = st.t; st._pathAt = st.pass;
     }
     path = st._path;
@@ -480,7 +489,12 @@ export function assignJobs(st, cfg = RONDO) {
       // the intended receiver runs onto the ball; everyone else offers an angle
       if (path && st.pass && st.pass.to === p.id) {
         p.job = 'receive';
-        const i = interceptPoint(path, p.p, cfg.speeds.chase, { reaction: 0 });
+        // …et un vol HAUT se reçoit À LA CHUTE (lot 52, match — mesuré : le receveur visait le
+        // premier point atteignable EN TEMPS, ballon à 2 m au-dessus de sa tête ; il regardait
+        // le vol le survoler, la chute vivait 5-10 m plus loin — receveur à 4,3 m p50 de la
+        // chute, 68 % des longs en chasse au rebond). En plein format on ne vise que les
+        // points JOUABLES (≤ 1,2 m) ; le réduit garde sa fenêtre d'hier au bit près.
+        const i = interceptPoint(path, p.p, cfg.speeds.chase, { reaction: 0, maxHeight: st.full ? 1.2 : 2.2 });
         p.target = i ? [i.p[0], 0, i.p[2]] : [st.pass.lead[0], 0, st.pass.lead[2]];
       } else if (st.phase === 'loose' && p === supporters.reduce((b, q) => (!b || d2(q.p, anchor) < d2(b.p, anchor) ? q : b), null)) {
         // UN BALLON LIBRE SE DISPUTE. L'équipe « en possession » d'un ballon perdu envoyait ses cinq

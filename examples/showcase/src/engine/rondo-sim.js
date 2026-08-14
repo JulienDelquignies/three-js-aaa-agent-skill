@@ -385,8 +385,17 @@ function receive(st, id, cfg = RONDO) {
         settle: null,
       });
     } else {
-      // nobody had a legal touch for that ball: it is not magically killed, it runs
-      st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25]);
+      // L'AMORTI DE POURSUITE (lot 52, cfg.amortiPoursuite && st.full) : le quart-de-touche
+      // relançait le ballon rattrapé à 75 % (le flipper — 56/82 longs en chasse au rebond).
+      // À portée d'un ballon NON CONTESTÉ, la première touche l'ÉCRASE ; le contesté garde
+      // son 50/50. Doc et mesures : match-config, NOTES 88.
+      const AP = st.full ? cfg.amortiPoursuite : null;
+      const foeAP = AP ? Math.min(...st.players.filter((q) => q.team !== p.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99) : 99;
+      if (AP && foeAP > cfg.contestRadius) {
+        st.ball.impulse([-st.ball.v[0] * AP, -st.ball.v[1] * 0.6, -st.ball.v[2] * AP]);
+        st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'amorti-poursuite', foot: 'any',
+          surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+      } else st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25]);
     }
   } else {
     // LA CAUSE DIT LE GESTE : une interception prend un ballon en vol, un tacle prend le ballon d'un

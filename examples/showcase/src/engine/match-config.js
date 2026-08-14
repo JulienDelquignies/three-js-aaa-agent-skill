@@ -129,6 +129,23 @@ export const MATCH = {
                           // la photo Loi 11 (comme la remise de tête). false : le monde à deux
                           // touches d'hier (sabotage nommé) ; calme:0 : le réflexe seul (sabotage
                           // nommé).
+  chutePredite: true,     // UN VOL LONG SE REÇOIT À SA CHUTE (11c11 — lot 52, retour utilisateur
+                          // « les contrôles sur les passes longues sont tous ratés ») : le
+                          // receveur d'un vol > 1,1 s court vers le premier point JOUABLE
+                          // (y ≤ 1,2 m, descendant) du chemin prédit, à vitesse humaine — ancré
+                          // au point nominal il vivait à 4,3 m p50 de la chute (le vol le
+                          // survolait, 68 % des longs en chasse au rebond). false : l'ancre
+                          // nominale d'hier (sabotage nommé).
+  amortiPoursuite: 0.82,  // L'AMORTI DE POURSUITE (11c11, st.full — lot 52, retour utilisateur
+                          // « les contrôles sur les passes longues sont tous ratés ») : 56/82
+                          // passes longues finissaient en chasse au rebond (p90 : 5 rebonds,
+                          // 9 m, 2,8 s) — le « pas de contrôle légal » relançait le ballon à
+                          // 75 % à chaque rattrapage (le flipper). À portée d'un ballon NON
+                          // CONTESTÉ, la première touche l'ÉCRASE (−82 % H, −60 % V, événement
+                          // control 'amorti-poursuite') ; contesté : le 50/50 d'hier. Et la
+                          // prédiction de vol couvre le vol ENTIER (maxT suit pass.flight —
+                          // le receveur vise la CHUTE, pas un chemin tronqué à 2,2 s).
+                          // false : le flipper d'hier (sabotage nommé).
   marquageRayon: 22,      // ON MARQUE DANS LA ZONE DE DANGER (11c11, st.full — lot 51b, vu en
                           // playmode) : un attaquant à plus de rayon m du ballon n'est pas
                           // marqué HOMME — il est couvert par le BLOC (le marqueur sans homme

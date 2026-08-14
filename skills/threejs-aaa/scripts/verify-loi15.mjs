@@ -42,7 +42,9 @@ const run = (st, cfg, secs) => { for (let i = 0; i < secs * 60; i++) matchStep(s
     !!rentree && rentree.range <= 18.01 && rentree.by !== rentree.to);
   ok(`…et VOLE en cloche (apex ${apex.toFixed(2)} m ∈ [1 ; 3,4] — une main au-dessus de la tête, pas un pied rasant)`,
     apex >= 1 && apex <= 3.4);
-  const prise = st.events.find((e) => e.type === 'receive' && e.t > rentree?.t);
+  // …receive OU ramassage (lot 52 : la chute prédite peut transformer la reprise en course
+  // au point de chute — un 'loose-kept' du monde qui continue EST la reprise)
+  const prise = st.events.find((e) => (e.type === 'receive' || e.type === 'loose-kept') && e.t > rentree?.t);
   ok(`…et le jeu la REPREND (receive à t=${prise?.t} — le vol atterrit chez un corps, le monde continue)`,
     !!rentree && !!prise && prise.t - rentree.t < 4);
 }

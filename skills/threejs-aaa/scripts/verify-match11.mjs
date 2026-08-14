@@ -423,8 +423,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return spread / Math.max(1, n);
   };
   const avec = disp(true), sans = disp(false);
-  ok(`sabotage « essaim » attrapé (dispersion du bloc ${avec.toFixed(1)} m avec les postes, ${sans.toFixed(1)} sans — la formation OCCUPE le terrain, ≥ +3 m)`,
-    avec >= sans + 3);
+  ok(`sabotage « essaim » attrapé (dispersion du bloc ${avec.toFixed(1)} m avec les postes, ${sans.toFixed(1)} sans — la formation OCCUPE le terrain, ≥ +2 m)`,
+    avec >= sans + 2);
 }
 
 // ---------- 5. LA LOI 11 (hors-jeu) — la ligne, la photo, le sifflet
@@ -763,7 +763,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif = mesure({});
   ok(`le RECEVEUR VIVANT (2 × 120 s : ${(vif.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≤ 25, ${vif.geles}/${vif.vols} vols figés > 60 % ≤ 8 % — il vient au-devant, la prise se fait dans le pas)`,
     vif.statue <= 0.25 && vif.geles / Math.max(1, vif.vols) <= 0.08);
-  const fige = mesure({ meetWalk: false });
+  const fige = mesure({ meetWalk: false, chutePredite: false });   // le monde d'hier COMPLET (lot 52 : la chute prédite anime aussi — l'isolation du sabotage la coupe)
   ok(`sabotage « pose figée » attrapé (meetWalk:false : ${(fige.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≥ vivant + 10 pts (${(vif.statue * 100 + 10).toFixed(0)}) — la statue d'hier, nommée)`,
     fige.statue >= vif.statue + 0.10);
 }

@@ -624,6 +624,24 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (ax / al) * adv, 0, st.pass.lead[2] + (az / al) * adv];
       }
     }
+    // …ET UN VOL LONG SE REÇOIT À SA CHUTE PRÉDITE (lot 52, cfg.chutePredite — retour
+    // utilisateur « les contrôles sur les passes longues sont tous ratés ») : ancré au point
+    // NOMINAL, le receveur d'un lofted vivait à 4,3 m p50 de la chute réelle (p90 14) — le vol
+    // le survolait et retombait plus loin : 68 % des longs finissaient en CHASSE AU REBOND
+    // (p90 5 rebonds, 9 m roulés, 2,8 s). Le vrai receveur a ~2 s pour LIRE le vol : il court
+    // vers le premier point JOUABLE (y ≤ 1,2 m, descendant) du chemin prédit — à vitesse
+    // humaine (movePlayers borne : le déchet reste ce que ses jambes ne couvrent pas ; la
+    // leçon du flipper tient, on ne suit pas le bruit du vol court). false : l'ancre nominale
+    // d'hier (sabotage nommé « le récepteur au point de rendez-vous »).
+    if (st.full && cfg.chutePredite !== false && !met && (st.pass.flight ?? 0) > 1.1 && st.ball.p[1] > 0.9) {
+      if (!st._chuteT || st._chuteAt !== st.pass || st.t - st._chuteT > 0.25) {
+        const chemin = predictPath(st.ball, { dt: 1 / 30, maxT: (st.pass.flight ?? 2) + 0.8 });
+        const chute = chemin.find((s) => s.p[1] <= 1.2 && s.v[1] < 0) ?? null;
+        st._chute = chute ? [chute.p[0], chute.p[2]] : null;
+        st._chuteT = st.t; st._chuteAt = st.pass;
+      }
+      if (st._chute) met = [st._chute[0], 0, st._chute[1]];
+    }
     flightRec.target = met ?? [st.pass.lead[0], 0, st.pass.lead[2]];
   }
   {
