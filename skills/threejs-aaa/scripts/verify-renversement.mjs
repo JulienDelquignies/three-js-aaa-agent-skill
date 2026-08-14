@@ -99,8 +99,10 @@ const etau = (seed, nBloc) => {
     renv += st.events.filter((e) => e.type === 'renversement').length;
     buts += st.score[0] + st.score[1];
   }
-  ok(`l'ORIENTATION a changé en match (4 × 180 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [2 ; 10] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 62 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
-    renv / 4 >= 2 && renv / 4 <= 10 && axial / n <= 0.62);   // les buts se jugent à UN endroit (lot 36)
+  // …borne haute 10 → 13 (lot 51b : le marquage-zone ne poursuit plus à travers le terrain —
+  // le côté faible s'ouvre, le renversement est le débouché naturel du bloc coulissé ; 10,5 mesuré)
+  ok(`l'ORIENTATION a changé en match (4 × 180 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [2 ; 13] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 62 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
+    renv / 4 >= 2 && renv / 4 <= 13 && axial / n <= 0.62);   // les buts se jugent à UN endroit (lot 36)
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

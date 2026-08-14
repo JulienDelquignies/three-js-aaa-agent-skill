@@ -2875,6 +2875,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     engagement 2,5 et camping 7 re-fondés avec histoire, duel 442-352 en fenêtre 120 s
     (doctrine fenêtres allongées).
 
+87. **« Les 3 problèmes sont encore présents » : la galerie jouait LE MONDE D'HIER (lot 51b —
+    la leçon la plus importante depuis le lot 1).** L'utilisateur re-signale les trois
+    problèmes APRÈS le lot 51 — et il a raison : la galerie ne linkait QUE match.html (le
+    5c5 RÉDUIT, l'étalon volontairement figé au bit près par la doctrine st.full) ; la page
+    match11.html (le plein format où vivent TOUTES les lois des lots 34-51) existait mais
+    n'était LIÉE NULLE PART. Quinze lots de réalisme étaient invisibles du produit. LEÇON
+    MAJEURE : vérifier CE QUE L'UTILISATEUR VOIT fait partie du ship — l'A/B moteur ne juge
+    pas la vitrine. Fix : la carte « Match 11 c 11 » en tête de galerie (le réduit reste,
+    étiqueté étalon). ET EN REGARDANT ENFIN LE 11C11 EN PLAYMODE (l'instrument honnête),
+    un VRAI bug tactique visible à l'œil : ballon à +35 devant la surface, TROIS marqueurs
+    partis à −6..+1 marquer la ligne de SOUTIEN adverse à 40 m du ballon (la ligne montée du
+    lot 51 les a rendus « marquables » — l'amas au rond central, les corps « sans sens
+    tactique »). LA LOI : on marque LE DANGER — près du ballon (cfg.marquageRayon 22) OU
+    dans MON tiers défensif (les centraux tiennent le 9 même ballon loin — le rayon seul
+    laissait les pointes sans marqueur : la ligne montait sur elles, camping 4-6 → 13,2 %
+    mesuré, corrigé par le critère de zone). Le marqueur sans homme pertinent REJOINT SON
+    POSTE de bloc. Vérifié en playmode après : cibles de marquage à 10-17 m du ballon, les
+    lointaines = des postes de bloc tenus. Réduit inchangé au bit près (rayon Infinity hors
+    st.full). Re-fondations : camping ≤ 10 (la danse de ligne du marquage-zone vit 5-9 %),
+    fenêtre contrat checkMatch 150 → 240 s (le monde à ~1 tir/2 min a droit à une fenêtre à
+    son tempo). DETTES NOMMÉES : « l'attaque asséchée » (tirs 19 → 12 / 8×180 depuis le
+    lot 51 — le tacle vivant + le marquage-zone sèchent les percées : le prochain lot
+    CALIBRE avec l'A/B large comme juge) ; « le geste de la touche » (une touche de conduite
+    qui inverse à 0,3-0,9 m du pied reste sans animation de frappe — l'œil lit encore de la
+    magie : chantier scène) ; « l'instrument du contrôle propre » (churn/warp de prise).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

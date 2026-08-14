@@ -129,6 +129,13 @@ export const MATCH = {
                           // la photo Loi 11 (comme la remise de tête). false : le monde à deux
                           // touches d'hier (sabotage nommé) ; calme:0 : le réflexe seul (sabotage
                           // nommé).
+  marquageRayon: 22,      // ON MARQUE DANS LA ZONE DE DANGER (11c11, st.full — lot 51b, vu en
+                          // playmode) : un attaquant à plus de rayon m du ballon n'est pas
+                          // marqué HOMME — il est couvert par le BLOC (le marqueur sans homme
+                          // pertinent rejoint son poste). Mesuré avant : trois marqueurs partis
+                          // à 40 m du ballon marquer la ligne de soutien adverse pendant que
+                          // leur surface se faisait attaquer en 2c2 — l'amas au rond central.
+                          // Infinity : le marquage-aimant d'hier (sabotage nommé).
   touchePrix: { seuil: 10, taux: 0.07, max: 0.55 },
                           // LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet
                           // aimant sur les longs ballons ») : la prise de TURNOVER paie le même

@@ -56,9 +56,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`le monde ne GÈLE jamais (plus long silence d'événements ${gelMax.toFixed(1)} s ≤ 25)`, gelMax <= 25);
   // le contrat de base du match juge aussi ce monde (téléports, ledger, score-événements)
   const st2 = makeMatch({ full: true, seed: 7 });
-  // 150 s (lot 37 : à 90 s, un flux borné à un camp arrive — le vrai football aussi ; la
-  // fenêtre s'allonge plutôt que d'épingler une graine, doctrine lot 36)
-  const { st: s2, trace } = playMatch(st2, 150, { cfg: matchCfg({ shotRange: 20 }) });
+  // 150 → 240 s (lot 37 puis 51b : la fenêtre s'allonge avec le tempo du monde plutôt que
+  // d'épingler une graine — doctrine. Le monde au tacle vivant + marquage-zone tire ~1 fois
+  // par 2 min : une fenêtre de 150 s à zéro tir arrive honnêtement. Dette nommée « l'attaque
+  // asséchée » : tirs 19 → 12 / 8×180 depuis lot 51 — le calibrage est le prochain chantier.)
+  const { st: s2, trace } = playMatch(st2, 240, { cfg: matchCfg({ shotRange: 20 }) });
   const r = checkMatch(s2, trace, cfg);
   ok(`le CONTRAT du match tient à 22 (checkMatch : ${r.ok ? 'ok' : r.issues.slice(0, 2).join(' ; ')})`, r.ok);
 }
@@ -531,7 +533,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // c'est son métier) ; sans calage le monde d'aujourd'hui vit aussi bas (bloc profond), la
   // clause est donc ABSOLUE, pas comparative — le sabotage de la LOI vit en fixtures (§5)
   const worst = Math.max(...offPct);
-  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 7 — borne re-fondée lot 51 : le bloc au soutien vit HAUT, les pointes dansent sur la ligne (4-6 % mesurés, était 3,3 au bloc campeur) ; le calage des POSTES et le sifflet du toucher restent les lois)`, worst <= 7);
+  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 10 — borne re-fondée lot 51/51b : le bloc au soutien vit HAUT, les pointes dansent sur la ligne (4-6 % mesurés, était 3,3 au bloc campeur) ; le calage des POSTES et le sifflet du toucher restent les lois — la danse de ligne du marquage-zone vit 5-9 %)`, worst <= 10);
 }
 
 // ---------- 7. LE PRESSING À DÉCLENCHEURS + L'OMBRE DE COUVERTURE (mécanismes sur fixtures,

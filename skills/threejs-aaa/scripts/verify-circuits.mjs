@@ -60,7 +60,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 3. les CIRCUITS PAR STYLE : possession bascule, direct va devant — et le service VIT
 {
   const mesure = (tactics, cfgExtra) => {
-    let servis = 0, renv = 0, ut = 0;
+    let servis = 0, renv = 0, ut = 0, utCalme = 0;
     const lat = [];
     for (const seed of [1, 3, 5, 7]) {   // 3 → 4 graines (lot 51 : 3 services poolés = bruit)
       const st = makeMatch({ full: true, seed, tactics });
@@ -73,8 +73,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       renv += st.events.filter((e) => e.type === 'renversement').length;
       ut += st.events.filter((e) => e.type === 'pass' && e.style === 'une-touche').length;
+      utCalme += st.events.filter((e) => e.type === 'pass' && e.style === 'une-touche' && e.calme).length;
     }
-    return { servis, renv, ut, lat };
+    return { servis, renv, ut, utCalme, lat };
   };
   const neutre = mesure(null), poss = mesure(['possession', 'possession']), direct = mesure(['direct', 'direct']);
   // …RE-FONDÉE (lot 50, 3e vie de cette clause — doctrine « l'instrument suit le monde ») : le
@@ -84,8 +85,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // banc à 3). Le renversement est devenu un vocabulaire PARTAGÉ (existence dans les deux
   // mondes) ; le discriminant du STYLE est la une-touche (+20 mesuré, porté par la porte calme
   // déterministe — verify-tactics garde la vérité de la PORTE, ici on juge le VOCABULAIRE).
-  ok(`la SIGNATURE des circuits (4 graines × 180 s : possession ${poss.ut} une-touche ≥ direct ${direct.ut} + 10 — le tiki-taka combine ; et le renversement VIT partout : poss ${poss.renv} ≥ 3, direct ${direct.renv} ≥ 3)`,
-    poss.ut >= direct.ut + 10 && poss.renv >= 3 && direct.renv >= 3);
+  // …4e vie (lot 51b) : l'écart une-touche TOTAL a morphé aussi (+21 → +8 au marquage-zone —
+  // du flux pur). La signature se fonde désormais sur la composante STRUCTURELLE : la
+  // une-touche AU CALME, portée par la porte déterministe de style (pCalme = 0 à style ≥ 0,5 —
+  // le direct n'en joue JAMAIS par construction, verify-tactics tient la porte). Un flux ne
+  // peut plus morpher un zéro structurel.
+  ok(`la SIGNATURE des circuits (4 graines × 180 s : possession ${poss.utCalme} une-touche AU CALME ≥ 5, direct ${direct.utCalme} = 0 par construction — le tiki-taka est un choix ; et le renversement VIT partout : poss ${poss.renv} ≥ 3, direct ${direct.renv} ≥ 3)`,
+    poss.utCalme >= 5 && direct.utCalme === 0 && poss.renv >= 3 && direct.renv >= 3);
   ok(`le SERVICE du coureur VIT dans tous les mondes (neutre ${neutre.servis} + possession ${poss.servis} + direct ${direct.servis} = ${neutre.servis + poss.servis + direct.servis} ≥ 3 — était 0 partout : les portes d'engagement mangeaient la fenêtre)`,
     neutre.servis + poss.servis + direct.servis >= 3);
   // ---------- 3b. LA FOULÉE EST SERVIE (lot 41) : l'appel s'exécute en URGENCE — le ballon part

@@ -908,8 +908,26 @@ function assignMatchJobs(st, cfg) {
       // vibre en continu ne ressemble pas à un BLOC qui tient ses lignes
       // …EN FENÊTRE DE PRESSING : le demi-pas (1,4 → 0,95 m) et la cadence courte (0,35 s /
       // 0,55 m) — on COLLE le temps du signal, puis le bloc respire à nouveau
-      const marks = attackers.filter((a) => !carrier || a.id !== carrier.id);
+      // …ET ON MARQUE DANS LA ZONE DE DANGER SEULEMENT (lot 51b, cfg.marquageRayon — vu en
+      // playmode : ballon à +35 devant la surface, TROIS marqueurs partis à −6..+1 marquer la
+      // ligne de SOUTIEN adverse à 40 m du ballon — l'amas au rond central, les corps « sans
+      // sens tactique » du retour utilisateur ; la ligne montée du lot 51 les a rendus
+      // « marquables »). Un homme à plus de rayon m du ballon est couvert par le BLOC — le
+      // marqueur sans homme pertinent REJOINT SON POSTE. Le réduit garde le monde d'hier.
+      // On marque LE DANGER : près du ballon (rayon), OU dans MON tiers défensif (les centraux
+      // tiennent le 9 même ballon loin — le rayon seul laissait les pointes sans marqueur et la
+      // ligne montait sur elles : camping 4-6 → 13,2 % mesuré, corrigé ici).
+      const rayonM = st.full ? (cfg.marquageRayon ?? 22) : Infinity;
+      const sgnDef = Math.sign(defGoal.x || 1);
+      const marks = attackers.filter((a) => (!carrier || a.id !== carrier.id)
+        && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)));
       const m = marks.sort((a, b) => d2(a.p, p.p) - d2(b.p, p.p))[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? null;
+      if (!m && st.full) {
+        const spotsM = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation, blocFor(cfg.bloc ?? null, tac(st, p.team)), anchor[2]);
+        const wM = spotsM[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        p.job = 'mark'; p.target = [wM[0], 0, wM[1]];
+        return;
+      }
       if (!m) { p.job = 'mark'; p.target = [p.p[0], 0, p.p[2]]; return; }
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
