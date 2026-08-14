@@ -311,6 +311,23 @@ export class Rondo {
     // avec son équipe — l'élément n'existe que sur la page match, la scène s'en passe sinon
     this._gesteHud = document.getElementById('gestes');
     this._gesteLog = [];
+    // LE SIFFLET SE VOIT (lot 59 — capture utilisateur : un hors-jeu sifflé lu comme « le
+    // receveur ne va pas au ballon », le ticker étant coupé au zoom mobile). Un flash central
+    // bref NOMME chaque décision d'arbitrage, à n'importe quel zoom. Créé ici, pas dans le
+    // HTML : toute page qui monte la scène l'a d'office — le moteur porte sa lisibilité.
+    this._flash = document.createElement('div');
+    this._flash.style.cssText = 'position:fixed;top:11%;left:50%;transform:translateX(-50%);padding:.3em .85em;'
+      + 'font:700 clamp(18px,4vw,34px)/1.2 system-ui,sans-serif;letter-spacing:.08em;color:#fff;'
+      + 'background:rgba(10,14,12,.74);border-left:.22em solid #f2c14e;border-radius:.3em;opacity:0;'
+      + 'transition:opacity .25s;pointer-events:none;z-index:40;text-transform:uppercase;white-space:nowrap';
+    document.body.appendChild(this._flash);
+    this._sifflet = (txt, couleur = '#f2c14e') => {
+      this._flash.textContent = txt;
+      this._flash.style.borderLeftColor = couleur;
+      this._flash.style.opacity = '1';
+      clearTimeout(this._flashT);
+      this._flashT = setTimeout(() => { this._flash.style.opacity = '0'; }, 1600);
+    };
     // play-mode handles: runner.js sets window.__scene for every scene, and the MCP probes a
     // controller to know the scene is live — expose the first player's for that readiness check
     this.ctrl = this.players[0]?.ctrl;
@@ -716,12 +733,21 @@ export class Rondo {
         this._gesteLog.unshift(`<b style="color:#8ecae6">pressing</b> <span>— ${TEAMS[e.team ?? 0].name} (${(e.kind ?? '').replace(/-/g, ' ')}) · ${mm}:${ss}</span>`);
         if (this._gesteLog.length > 5) this._gesteLog.pop();
         this._gesteHud.innerHTML = this._gesteLog.join('<br>');
+      } else if (e.type === 'but') {
+        this._sifflet('but !', '#90be6d');
+      } else if (e.type === 'carton') {
+        this._sifflet(`carton ${e.couleur}`, e.couleur === 'rouge' ? '#d62828' : '#f2c14e');
+      } else if (e.type === 'mi-temps') {
+        this._sifflet('mi-temps');
+      } else if (e.type === 'fin-de-match') {
+        this._sifflet('coup de sifflet final');
       } else if (e.type === 'hors-jeu' && this._gesteHud) {
         // LE SIFFLET SE LIT COMME UN GESTE : la Loi 11 est un événement de match, pas un secret
         // de simulation — sans cette ligne, un coup franc « sorti de nulle part » serait un bug
         // aux yeux de l'utilisateur (le ticker est né exactement de ce besoin, NOTES 36).
         const q = this.state.players[e.by];
         const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
+        this._sifflet(`hors-jeu — nº${e.by}`);
         this._gesteLog.unshift(`<b style="color:#f2c14e">hors-jeu</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
         if (this._gesteLog.length > 5) this._gesteLog.pop();
         this._gesteHud.innerHTML = this._gesteLog.join('<br>');
@@ -731,6 +757,7 @@ export class Rondo {
         // illisible, exactement le bug perçu qui a fait naître le ticker (NOTES 36).
         const q = this.state.players[e.type === 'faute' ? e.by : e.sur];
         const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
+        if (e.type === 'faute') this._sifflet(`faute — nº${e.by}`, '#e76f51');
         this._gesteLog.unshift(e.type === 'faute'
           ? `<b style="color:#e76f51">faute</b> <span>— nº${e.by} sur nº${e.sur} · ${mm}:${ss}</span>`
           : `<b style="color:#90be6d">avantage</b> <span>— ${TEAMS[q?.team ?? 0].name} joue · ${mm}:${ss}</span>`);
