@@ -409,8 +409,12 @@ export function skillContactNow(st, p, cfg) {
 /** La touche de conduite S'INSCRIT (type 'touche') : le rendu dessine le pied qui joue, les
  *  sondes comptent les vraies touches — un contact que personne ne voit était lu « il ne touche
  *  jamais le ballon » (retour utilisateur, captures). Une par foulée : dribbleStep cadence. */
-export function touchEvent(st, c) {
-  st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: c.id });
+export function touchEvent(st, c, ev = null) {
+  // …la touche PORTE SA GÉOMÉTRIE (lot 55) : dev = cassure entrant→sortant en degrés, spd = la
+  // vitesse du kick — la scène en fait un geste (crochet court au demi-tour), un projet aval
+  // n'a rien à recalculer. Champs additifs : les mondes d'hier lisent les mêmes types, au bit près.
+  st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: c.id,
+    ...(ev ? { dev: +ev.dev.toFixed(0), spd: +ev.spd.toFixed(1) } : {}) });
 }
 
 /** L'ACCOMPAGNEMENT POSSÉDÉ (ownsBody) — la seule écriture du corps pendant qu'il dure.

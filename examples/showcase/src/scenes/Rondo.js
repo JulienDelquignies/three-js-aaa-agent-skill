@@ -682,6 +682,18 @@ export class Rondo {
         // de cet instant (_applyTouchWarp) — sans ça le contact réel restait invisible.
         const pl = this.players[e.by];
         if (pl) pl._touchT = this._t;
+        // …ET LA TOUCHE FORTE A UN CORPS (lot 55, retour utilisateur : le demi-tour à 0,3-0,9 m
+        // sans AUCUNE frappe) : l'événement porte sa cassure (dev°, dribble.js) — au-delà de 60°
+        // la couche de geste joue une frappe courte (crochet court au demi-tour ≥ 110°, extérieur
+        // du pied à la cassure), miroir au pied CÔTÉ BALLON (le même choix que l'IK de la touche).
+        // Cadencé (0,35 s) : une relance n'est pas une mitraille. Sabotage nommé : 'touche-plate'.
+        if (pl && (e.dev ?? 0) >= 60 && this._t - (pl._swingT ?? -9) >= 0.35
+          && !(typeof window !== 'undefined' && window.__sabotage === 'touche-plate')) {
+          const q = this.state.players[e.by], b = this.state.ball.p;
+          const lat = q ? (b[0] - q.p[0]) * Math.sin(q.yaw) - (b[2] - q.p[2]) * Math.cos(q.yaw) : 0;
+          this._playTech(pl, { ...e, move: e.dev >= 110 ? 'crochetCourt' : 'passeExterieur', foot: lat > 0 ? 'left' : 'right' });
+          pl._swingT = this._t;
+        }
       } else if (e.type === 'skill' && this._gesteHud && !e.kind.endsWith('-vendu')) {
         // le ticker : l'événement du CONTACT du geste (skillContactNow), pas l'intention —
         // les '*-vendu' sont le mordu du même geste, pas un second geste. Les ESPÈCES se

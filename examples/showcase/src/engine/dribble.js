@@ -110,7 +110,7 @@ export function dribbleStep(d, ball, player, dt) {
   const dist = Math.hypot(bx, bz);
   const ahead = (bx * hx + bz * hz);                       // signed: how far in front the ball is
 
-  let touched = false;
+  let touched = false, ev = null;
   // A touch lands when the foot actually REACHES the ball, stride-paced so it is not re-kicked
   // every frame. Triggering on "distance travelled" instead was the bug that killed turns: once
   // the ball escaped the trigger window it was never touched again and simply rolled away.
@@ -169,13 +169,17 @@ export function dribbleStep(d, ball, player, dt) {
     setVelocity(ball, [dx * sp, Math.max(ball.v[1], 0), dz * sp],
       [ball.v[2] / BALL.radius, 0, -(dx * sp) / BALL.radius]);   // le pied la fait rouler : lift avant
     d.sinceTouch = 0; d.touches++; touched = true;
+    // LA TOUCHE PORTE SA GÉOMÉTRIE (lot 55) : l'angle entrant→sortant et la vitesse du kick —
+    // l'événement les inscrit, la scène en fait un GESTE (une cassure de 110° n'est pas une
+    // caresse de course). Calcul pur sur des valeurs déjà là : la physique ne bouge pas d'un bit.
+    ev = { dev: cl > 0.2 ? Math.acos(Math.max(-1, Math.min(1, curX * dx + curZ * dz))) * 180 / Math.PI : 0, spd: sp };
   }
 
   advance(ball, dt);
 
   const nd = Math.hypot(ball.p[0] - px, ball.p[2] - pz);
   d.lost = nd > c.controlRadius;
-  return { touched, dist: nd, ahead, control: Math.max(0, 1 - nd / c.controlRadius), lost: d.lost };
+  return { touched, ev, dist: nd, ahead, control: Math.max(0, 1 - nd / c.controlRadius), lost: d.lost };
 }
 
 /**

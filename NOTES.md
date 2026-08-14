@@ -3006,6 +3006,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     effet (l'exécutant lifte — micro-écart d'observation) ; le centre BAS garde sa glissade
     (sa nature) ; 6 ré-accélérations résiduelles (déviations claquette/tacle à gros spin).
 
+92. **Le geste de la touche : la cassure de conduite a un corps qui frappe (lot 55 — retour
+    utilisateur, dette lot 52).** Le demi-tour de conduite (174° mesurés à t=3,53 s — l'exact
+    moment que la télémétrie voyait) n'avait AUCUNE frappe : seul l'IK du warp-touche tendait le
+    pied. Loi en deux étages : (1) L'ÉVÉNEMENT PORTE SA GÉOMÉTRIE — dribble.js calcule au site du
+    kick l'angle entrant→sortant (dev°) et la vitesse (spd), touchEvent les inscrit (champs
+    additifs : les mondes d'hier lisent les mêmes types, physique intouchée au bit — un renderer
+    aval n'a rien à recalculer) ; (2) LA SCÈNE EN FAIT UN GESTE (Rondo.js) — dev ≥ 110° →
+    crochetCourt, ≥ 60° → passeExterieur, sur la COUCHE de geste (miroir au pied côté ballon,
+    même convention (fz,−fx) que la sim), cadencé 0,35 s, sabotage nommé 'touche-plate'. PROUVÉ
+    EN PLAYMODE : 8 touches fortes → 8 swings engagés (100 %), sabotage 5 → 0 (discriminant
+    _swingT, écrit par la seule loi) ; capture du crochet plein envoyée. Fréquence saine :
+    ~14 fortes/180 s dont 7-8 demi-tours (~4-5 gestes/min). Bancs : verify-dribble +2 clauses
+    (0 touche nue sur 174 ; les fortes existent). LES DEUX RETOURS MID-LOT INSTRUMENTÉS dans la
+    même sonde (probe-saccade-fourmi) : (a) « ÇA SACCADE » — solvePass 6,4-7,6 ms/APPEL, rafales
+    de frames sim 10-18 ms (6 d'affilée à t=32,2) : la planification crève le budget 16,7 ms,
+    indépendant du GPU → lot 56 nommé « le budget de la frame » (dt de résolution grossier +
+    amorce analytique + cache) ; (b) « FOURMILIÈRE off-ball » — PAS du zigzag (inversions de cap
+    0,03 %) mais l'absence d'ÉCONOMIE : 32 % du temps off-ball en course > 4,5 m/s, 11/20 corps
+    lancés simultanément p50 (p90 18 !) — le vrai football marche à 70-80 % → lot 57 nommé
+    « l'économie de course » (le suivi de poste à la MARCHE, la course est un acte nommé).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

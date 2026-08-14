@@ -678,18 +678,18 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (st.ball.owner === c.id) {
       if (contested) {
         st.ball.release('contesté');
-        if (dribbleStep(st._drb, st.ball, pl, dt).touched) touchEvent(st, c);  // il tente de l'emmener hors du duel
+        { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }  // il tente de l'emmener hors du duel
       } else if (intentFresh || settling) {
         st.ball.carry(footPoint(st, c, cfg), dt);               // porté : le ballon au pied, continu
       } else {
         st.ball.release('conduite');
-        if (dribbleStep(st._drb, st.ball, pl, dt).touched) touchEvent(st, c);
+        { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }
       }
     } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius) {
       st.ball.possess(c.id);
       st.ball.carry(footPoint(st, c, cfg), dt);
     } else {
-      if (dribbleStep(st._drb, st.ball, pl, dt).touched) touchEvent(st, c);
+      const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev);
     }
     // LE PIQUE (cfg.pokeReach, match) : un ballon de conduite LIBRE est libre AUSSI pour
     // l'adversaire — le pied qui l'atteint AVANT le porteur le dévie (poke tackle, sans duel de

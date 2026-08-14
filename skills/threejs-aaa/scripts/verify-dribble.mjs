@@ -113,5 +113,22 @@ function run({ speed = 5, turn = 0, T = 6, dt = 1 / 120 } = {}) {
   ok('déterministe (même course → même ballon)', j() === j());
 }
 
+// ---------- 8. lot 55 — la touche PORTE SA GÉOMÉTRIE (dev°, spd) : la scène en fait un geste
+{
+  const { makeMatch, matchCfg, matchStep } = await import('../assets/starter/src/engine/match-sim.js');
+  const st = makeMatch({ full: true, seed: 1 });
+  const cfg = matchCfg({ shotRange: 20 });
+  for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
+  const touches = st.events.filter((e) => e.type === 'touche');
+  const nues = touches.filter((e) => e.dev == null || e.spd == null || !Number.isFinite(e.dev));
+  ok(`chaque touche de conduite porte sa cassure (${touches.length} touches, ${nues.length} nue(s) — un renderer aval n'a rien à recalculer)`,
+    touches.length >= 30 && nues.length === 0);
+  // …et les touches FORTES existent (le demi-tour que l'utilisateur voyait sans frappe) : la
+  // scène joue crochetCourt ≥ 110° / passeExterieur ≥ 60° sur ce signal (Rondo.js, sabotage
+  // 'touche-plate' — prouvé en playmode : 8 fortes → 8 swings, sabotage → 0)
+  const fortes = touches.filter((e) => e.dev >= 60);
+  ok(`les touches fortes VIVENT (${fortes.length} à ≥ 60° sur 120 s, existence ≥ 1 — le signal du geste de scène)`, fortes.length >= 1);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
