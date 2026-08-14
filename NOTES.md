@@ -3112,6 +3112,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     d'urgence du vrai sprint (pokes à pleine allonge) restent rares dans le flux économe —
     la conduite lancée longue (contre-attaque de 40 m) mérite sa photo playmode un jour.
 
+96. **Le receveur innocenté, le sifflet rendu visible (lot 59 — capture utilisateur : « le
+    receveur du ballon long ne va pas au ballon »).** LA MESURE A INNOCENTÉ LE MONDE : sur 65
+    ballons longs (4 graines × 240 s), 54 pris par le receveur nommé, 2 par un coéquipier,
+    ZÉRO abandon (receveur ≤ 15 m qui s'éloigne d'un ballon libre posé), et le ballon mort ne
+    reste JAMAIS sans preneur (p50 0,0 s). La capture montrait autre chose — sa signature le
+    disait : ballon parfaitement immobile, les DEUX corps qui s'en détournent = UN COUP DE
+    SIFFLET (hors-jeu du receveur : la Loi le fait repartir en position licite pendant que le
+    preneur de la remise arrive d'ailleurs, hors cadre). Du football correct, ILLISIBLE au zoom
+    mobile : le ticker est coupé. LA LOI DE SCÈNE : le sifflet SE VOIT — un bandeau central
+    bref (1,6 s) nomme chaque décision d'arbitrage (BUT, HORS-JEU — nºX, FAUTE — nºX, CARTON
+    JAUNE/ROUGE, MI-TEMPS, SIFFLET FINAL), créé par la scène elle-même (pas dans le HTML :
+    toute page qui monte la scène l'a d'office — le moteur porte sa lisibilité). Câblage prouvé
+    en flux réel (le « mi-temps » a flashé de lui-même pendant l'avance playmode) + capture DOM.
+    Leçon d'instrument : play_screenshot ne capture QUE le canvas — les preuves DOM se prennent
+    en Playwright pleine page, avec un rendu forcé (le mode capture ne peint pas seul).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
