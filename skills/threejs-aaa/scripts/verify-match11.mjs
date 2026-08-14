@@ -811,5 +811,38 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     tirs.length >= 3 && dives >= 1 && arrets >= 2 && buts / Math.max(1, tirs.length) <= 0.6);
 }
 
+// ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche
+{
+  const { momentDuJeu } = await import('../assets/starter/src/engine/phases.js');
+  const franches = (overrides) => {
+    const out = [];
+    for (const seed of [2, 5]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...overrides });
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (i % 6) continue;
+        const m0 = momentDuJeu(st, 0);
+        if (!(m0 === 'attaque-placée' || m0 === 'défense-placée') || (st._press && st._press.until > st.t)) continue;
+        let n = 0;
+        for (const p of st.players) {
+          if (p._sub || p.keeper || p.id === st.possession.carrier) continue;
+          if (Math.hypot(p.v[0], p.v[1]) > 3.5) n++;
+        }
+        out.push(n);
+      }
+    }
+    out.sort((a, b) => a - b);
+    return out.length ? out[Math.floor(out.length / 2)] : 99;
+  };
+  // le vrai football placé : 3-6 courses franches simultanées — la fourmilière en vivait 11
+  const eco = franches({});
+  ok(`l'ÉCONOMIE DE COURSE tient le jeu placé (p50 ${eco} corps > 3,5 m/s hors fenêtres, ≤ 6 sur 2 graines — le off-ball marche, les courses s'échelonnent ; transitions et pressing gardent leur plein régime par construction)`, eco <= 6);
+  // sabotage nommé : sans la loi, la cour de récréation d'hier (mesuré 11/20 p50 au seuil 2,5,
+  // ~8-10 au seuil franc) — la clause est STRUCTURELLE : la clé coupe la loi entière
+  const sab = franches({ allure: false });
+  ok(`sabotage « allure:false » attrapé (p50 ${sab} ≥ ${eco + 2} — la fourmilière d'hier revient sans la loi)`, sab >= eco + 2);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

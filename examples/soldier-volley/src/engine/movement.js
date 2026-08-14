@@ -2,6 +2,7 @@
 // chasses), séparation des corps. Sorti de rondo.js au lot 22 (volumétrie) — au bit près, la
 // batterie est la preuve. Une famille par fichier : le cerveau décide, le mouvement PORTE.
 import { winding } from './gesture.js';
+import { momentDuJeu } from './phases.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -119,6 +120,55 @@ export function movePlayers(st, dt, cfg) {
     if (p.job === 'support' && p.target) {
       const dS = Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]);
       if (dS < 3) top = Math.min(top, cfg.supportNearCap);
+    }
+    // L'ÉCONOMIE DE COURSE (cfg.allure && st.full — lot 57, retour utilisateur « fourmilière ») :
+    // l'allure est une DÉCISION TACTIQUE, pas un plafond. La loi tient en une phrase : EN JEU
+    // PLACÉ, ON SUIT LE JEU À LA VITESSE DU JEU — un suiveur (marqueur, poste qui coulisse,
+    // couverture) est plafonné par la vitesse de SA CIBLE, et la COURSE reste entière pour tout
+    // ce qui est nommé : les TRANSITIONS (phases.js, 5 s — le contre et le contre-press SONT des
+    // courses), la FENÊTRE DE PRESSING de mon équipe (l'acte est collectif : tout le bloc monte),
+    // les BURSTS (appel/chasse), le porteur, le receveur, le gardien, et l'URGENCE locale — mon
+    // territoire attaqué (ballon à < chaud, vol qui retombe chez moi) ou mon homme qui claque
+    // (> manRun ; le coulissement d'urgence du renversement passe par là : les spots sautent).
+    // Un corps à cible posée + ballon loin (> calme) MARCHE. Mesuré avant : 32 % du off-ball en
+    // course > 4,5 m/s, 11/20 corps lancés simultanés p50 (p90 18). Doc : match-config.
+    if (st.full && cfg.allure !== false && !p.keeper && p.down <= 0
+      && p.job !== 'carry' && p.job !== 'receive' && p.job !== 'walk'
+      && !((p._pace?.until ?? -1) > st.t)) {
+      const A = cfg.allure === true || cfg.allure == null ? {} : cfg.allure;
+      const enPress = st._press && st._press.until > st.t && st._press.team === p.team;
+      const moment = momentDuJeu(st, p.team, A.fenetre ?? 5);
+      if (!enPress && (moment === 'attaque-placée' || moment === 'défense-placée')) {
+        const dB = d2(p.p, st.ball.p);
+        let tSpd = 0;
+        if (p.target) {
+          const pv = p._tgtPrev;
+          if (pv && pv.t < st.t) tSpd = Math.hypot(p.target[0] - pv.x, p.target[2] - pv.z) / Math.max(1e-3, st.t - pv.t);
+          p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
+          if (tSpd > 9) tSpd = 0;   // un saut de cible est une RÉAFFECTATION, pas le jeu qui bouge : on y va au trot
+        }
+        const volVersMoi = st.pass && st.pass.lead
+          && Math.hypot(p.p[0] - st.pass.lead[0], p.p[2] - st.pass.lead[2]) < (A.chaud ?? 14);
+        if (!(dB < (A.chaud ?? 14) || volVersMoi || tSpd > (A.manRun ?? 3.5))) {
+          // …à la vitesse du jeu, LITTÉRALEMENT : le plafond suit la cible (+15 % et 0,4 m/s de
+          // convergence), borné [marche, trot] — un bloc qui coulisse sur une circulation lente
+          // se déplace en marchant, pas au trot réglementaire (mesuré : p50 8 corps > 2,5 m/s
+          // en placé calme avec le trot fixe — le pas suivait le plafond, pas le jeu).
+          // …ET LOIN DE SON POSTE, ON TROTTE (rattrape 12 m ≈ p75 de l'équilibre mesuré — un
+          // suiveur de spot qui coulisse VIT à 6-11 m de sa cible, ce n'est pas du retard) : le
+          // DÉPLACÉ structurel (queue p90 20 m : l'étirement offensif, la montée de ligne,
+          // l'occupation des postes — 3 clauses tactiques rouges à 6 m près) rejoint au trot.
+          // …et l'économie est ASYMÉTRIQUE comme le bloc : en ATTAQUE placée on OCCUPE vite la
+          // largeur et la profondeur (trotAtk — se démarquer est une intention), en défense on
+          // économise (le bloc compact n'a pas 12 m à faire). Mesuré sans : l'étirement offensif
+          // fondait (asymétrie attaque 30,9 < défense + 4, la clause du bloc court).
+          const trotB = moment === 'attaque-placée' ? (A.trotAtk ?? 3.9) : (A.trot ?? 3.4);
+          const dTgt = p.target ? Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]) : 0;
+          const suivre = dTgt > (A.rattrape ?? 12) ? trotB
+            : clamp(tSpd * 1.15 + 0.4, A.marche ?? 2.1, trotB);
+          top = Math.min(top, tSpd < 1.0 && dTgt <= (A.rattrape ?? 12) && dB > (A.calme ?? 24) ? (A.marche ?? 2.1) : suivre);
+        }
+      } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }
     let wx = 0, wz = 0;
     if (p.target) {

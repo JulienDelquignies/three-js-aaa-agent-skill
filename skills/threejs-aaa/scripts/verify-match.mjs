@@ -1135,11 +1135,29 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     for (let i = 0; i < dur * 60; i++) matchStep(st, 1 / 60, cfg);
     return st.events.filter((e) => e.type === 'control' && e.tech === 'quart-de-touche').length;
   };
-  // le geste est RARE par nature (l'amorti-poursuite mange les poursuites non contestées ;
-  // ne reste que le rattrapage contesté, ~1 par match) — la clause est une EXISTENCE sur
-  // deux matchs complets, pas une cadence
-  const q11 = quarts(true, 1, 300) + quarts(true, 2, 300), qRed = quarts(false, 1, 180);
-  ok('le quart-de-touche émet son événement en 11c11 (≥ 1 sur 2 × 300 s)', q11 >= 1, `${q11} événements`);
+  // le geste est RARE en flux (~1/match — et l'économie de course du lot 57 l'a raréfié encore :
+  // 0 sur graines 1-2, l'existence de flux est morte deux fois) : la FIXTURE remplace le flux
+  // (doctrine — fixtures déterministes > sabotages de flux). Un ballon à hauteur de poitrine
+  // (aucune technique de contrôle légale), receveur au contact, adversaire à portée (contesté :
+  // l'amorti-poursuite s'efface) → la branche du quart DOIT tirer, et se nommer.
+  const quartFixture = () => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ uneTouche: false });
+    st.ball.impulse([1.2 - st.ball.v[0], 8.0 - st.ball.v[1], -st.ball.v[2]]);
+    let garde = 0;
+    while (st.ball.p[1] < 1.6 && garde++ < 600) st.ball.integrate(1 / 120);  // au-dessus de la poitrine : la table sait contrôler jusqu'à ~1,4 (amorti-poitrine découvert par cette fixture)
+    const p = st.players[0];
+    p.p = [st.ball.p[0] - 0.3, 0, st.ball.p[2]]; p.down = 0;
+    const foe = st.players.find((q) => q.team !== p.team && !q.keeper);
+    foe.p = [st.ball.p[0] + 0.7, 0, st.ball.p[2]]; foe.down = 0;
+    st.possession = { team: p.team, carrier: -1 }; st.phase = 'loose'; st.pass = null;
+    const evLen = st.events.length;
+    simInternals.receive(st, p.id, cfg);
+    return st.events.slice(evLen).find((e) => e.type === 'control' && e.tech === 'quart-de-touche') ?? null;
+  };
+  const qF = quartFixture();
+  ok(`le quart-de-touche émet son événement en 11c11 (fixture : ballon haut contesté → control:quart-de-touche${qF ? ', v ' + qF.speed + ' m/s' : ''})`, !!qF);
+  const qRed = quarts(false, 1, 180);
   ok('…et JAMAIS au réduit (porte st.full — le monde d\'hier au bit près)', qRed === 0, `${qRed} événements`);
 }
 

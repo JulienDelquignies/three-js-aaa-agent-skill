@@ -3027,6 +3027,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     lancés simultanément p50 (p90 18 !) — le vrai football marche à 70-80 % → lot 57 nommé
     « l'économie de course » (le suivi de poste à la MARCHE, la course est un acte nommé).
 
+93. **L'économie de course : l'allure est une décision tactique (lot 57 — retour utilisateur
+    « fourmilière/maternelle off-ball », avec l'exigence « tactiquement ça a un sens »).** La
+    fourmilière n'était pas du zigzag (inversions de cap 0,03 %) mais l'absence de HIÉRARCHIE
+    d'effort : 32 % du off-ball en course > 4,5 m/s, 11/20 corps lancés p50. LA LOI (movement.js,
+    cfg.allure, st.full) tient en une phrase : EN JEU PLACÉ, ON SUIT LE JEU À LA VITESSE DU JEU —
+    le suiveur est plafonné par la vitesse de SA CIBLE (tSpd×1,15+0,4, borné [marche 2,1 ;
+    trot]), et la course reste entière pour tout ce qui est NOMMÉ : transitions (phases.js — le
+    moment du jeu est enfin CONSOMMÉ par un système), fenêtre de pressing de MON équipe (l'acte
+    est collectif), bursts, porteur/receveur/gardien, urgence locale (ballon < chaud 14 m, vol
+    qui retombe chez moi, homme qui claque > 3,5). CALIBRÉE EN TROIS LEÇONS, les bancs comme
+    juges : (1) rattrape 12 m ≈ p75 de l'ÉQUILIBRE mesuré (un suiveur de spot VIT à 6-11 m de sa
+    cible — le seuil à 6 re-trottait tout le monde) — loin de son poste on trotte, le retard
+    structurel n'est pas du calme ; (2) l'économie est ASYMÉTRIQUE comme le bloc : en ATTAQUE
+    placée on occupe vite (trotAtk 3,9 — se démarquer est une intention), en défense on économise
+    — sans ça l'étirement offensif fondait (asymétrie du bloc < déf+4) ; (3) un saut de cible est
+    une RÉAFFECTATION, pas le jeu qui bouge (tSpd > 9 → trot). RÉSULTAT : courses franches
+    (> 3,5 m/s) en placé calme p50 11 → 3-4 (p90 7-9 — le chiffre du vrai football), transitions
+    p50 8-9 (elles COURENT, c'est leur définition), marche+arrêt 41 → 50 %, la course résiduelle
+    vit aux ¾ en transitions/press (légitime). GARDES TACTIQUES TOUTES VERTES : press
+    fenêtres/ligne/régain, coulissement, bloc court + asymétrie, hauteur de bloc (mécanisme
+    re-mesuré PLUS FORT que lot 34 : +13,3/+12,6/+14,1 sur graines 3/7/1 — la graine 5 du banc
+    s'était effondrée seule, re-fondée graine 3 selon le précédent documenté de la clause),
+    circuits/appels, renversement (bande 13 → 16 : l'économie OUVRE l'aile opposée, 14,5/match,
+    axial 48 %), slide. A/B : 63 tirs / 25 buts — EN PLEIN CŒUR de la bande (le 31 du lot 54
+    retombe). Bancs : match11 +2 clauses (p50 ≤ 6 + sabotage allure:false → 8) ; fatigue isolée
+    à effort d'hier (allure:false — la loi stamF se juge à effort égal, l'économie compressait
+    l'écart sous la marge) ; le quart-de-touche passe en FIXTURE (ballon au-dessus de la
+    poitrine, contesté — l'existence de flux est morte deux fois ; la fixture a DÉCOUVERT
+    l'amorti-poitrine dans la table à 1,2 m). Dettes nommées : le press-job hors fenêtre reste
+    vif par dB<chaud (jockey non modélisé) ; la marche pourrait lire la fatigue (marcher pour
+    récupérer) ; turnover toutes les ~11 s = 45 % du temps en transition (la vraie source du
+    tumulte résiduel — l'axe qualité de possession).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

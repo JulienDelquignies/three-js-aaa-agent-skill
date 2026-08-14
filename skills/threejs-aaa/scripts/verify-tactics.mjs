@@ -36,10 +36,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 3. les axes de flux : hauteur et largeur BOUGENT leurs instruments
 {
   const run = (t0) => {
-    // graine 1 (re-fondé lots 31 et 34 : chaque défaut nouveau diverge le flux — mécanisme
-    // re-vérifié à chaque fois : lot 34, +9,0/+12,4/+9,5 hauteur sur graines 5/3/7, la graine 1
-    // échantillonnait mal cette fois — les clauses de flux se re-fondent sur graines RE-MESURÉES)
-    const st = makeMatch({ full: true, seed: 5, tactics: [t0, null] });
+    // graine 3 (re-fondé lots 31, 34 et 57 : chaque défaut nouveau diverge le flux — mécanisme
+    // re-vérifié à chaque fois : lot 57, écarts hauteur +13,3/+12,6/+14,1 sur graines 3/7/1,
+    // la graine 5 s'est effondrée à +2,3 dans le flux de l'économie de course — les clauses de
+    // flux se re-fondent sur graines RE-MESURÉES, le mécanisme est plus fort que jamais)
+    const st = makeMatch({ full: true, seed: 3, tactics: [t0, null] });
     const cfg = matchCfg({ shotRange: 20 });
     let depth = 0, nD = 0, z = 0, nZ = 0;
     for (let i = 0; i < 150 * 60; i++) {

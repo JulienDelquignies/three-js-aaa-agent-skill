@@ -146,6 +146,18 @@ export const MATCH = {
                           // prédiction de vol couvre le vol ENTIER (maxT suit pass.flight —
                           // le receveur vise la CHUTE, pas un chemin tronqué à 2,2 s).
                           // false : le flipper d'hier (sabotage nommé).
+  allure: true,           // L'ÉCONOMIE DE COURSE (11c11, st.full — lot 57, retour utilisateur
+                          // « fourmilière/maternelle off-ball ») : EN JEU PLACÉ, ON SUIT LE JEU À
+                          // LA VITESSE DU JEU — le suiveur (marqueur, poste, couverture) est
+                          // plafonné par la vitesse de sa CIBLE ; la course reste entière pour
+                          // tout ce qui est NOMMÉ : transitions (5 s, phases.js), fenêtre de
+                          // pressing de mon équipe, bursts, porteur/receveur/gardien, urgence
+                          // locale (ballon < chaud 14 m, vol qui retombe chez moi, homme qui
+                          // claque > manRun 3,5). Cible posée + ballon > calme (24 m) → MARCHE.
+                          // Réglages : { marche: 2,1, trot: 3,4, chaud: 14, calme: 24,
+                          // manRun: 3,5, fenetre: 5 }. Mesuré avant : 32 % du off-ball en course,
+                          // 11/20 corps lancés p50 (p90 18) — la cour de récréation. false : la
+                          // fourmilière d'hier (sabotage nommé).
   amortiSpin: true,       // L'AMORTI AMORTIT AUSSI LA ROTATION (11c11, st.full — lot 54, audit
                           // télémétrie) : les impulsions d'amorti tuaient v en laissant w ORPHELIN
                           // — mesuré au tick : 65-70 rad/s sur un ballon à 1,3 m/s, et la friction

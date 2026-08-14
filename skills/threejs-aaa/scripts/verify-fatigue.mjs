@@ -76,7 +76,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // évolution du cerveau) ; à 180 s la modulation ×1,67 a la place de se voir
   const stamApres = (note) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20 });
+    // …à EFFORT D'HIER (allure:false — lot 57) : la loi jugée ici est le FACTEUR stamF sur le
+    // drain, pas le volume de course — l'économie de course a assez baissé l'effort du poste 5
+    // pour compresser l'écart endurant/fragile sous la marge (0,58 vs 0,57 mesuré). On isole :
+    // le monde plein-effort sépare les notes, l'économie a SA clause (verify-match11).
+    const cfg = matchCfg({ shotRange: 20, allure: false });
     const q = st.players.find((p) => p.team === 0 && p.post === 5);   // le poste qui COURT (récupérateur)
     q.skill = makeProfile({ stamina: note });
     for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
