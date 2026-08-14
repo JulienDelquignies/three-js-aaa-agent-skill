@@ -51,7 +51,14 @@ export function uneTouche(st, p, cfg) {
       st.lastTouch = p.team;
       const sigU = (p.skill?.passSigma ?? cfg.execSigma ?? 0.044) * (pressOk ? 1.6 : 1.3);
       const yawU = Math.atan2(mate.m.p[2] - p.p[2], mate.m.p[0] - p.p[0]) + gauss(st.rnd ?? (() => 0.5)) * sigU;
-      const spdU = Math.min(12, Math.max(6, mate.d * 0.85));
+      // …ET LE RENVOI S'AMORTIT (lot 51 — « des contrôles pas beaux ») : une première intention
+      // DÉVIE le flux, elle ne le renverse pas pleine vitesse (mesuré : un vol de 7 m/s renvoyé
+      // à ~180° instantanément — physiquement absurde, visuellement du ping-pong). La vitesse
+      // sortante se borne à l'angle de déviation : dans le flux → pleine (12), perpendiculaire
+      // → 8, à contre-courant → 4 (le LAYOFF du vrai football : la remise en retrait est douce).
+      const bvl = Math.hypot(st.ball.v[0], st.ball.v[2]) || 1;
+      const cosDev = ((mate.m.p[0] - p.p[0]) * st.ball.v[0] + (mate.m.p[2] - p.p[2]) * st.ball.v[2]) / (mate.d * bvl);
+      const spdU = Math.min(Math.min(12, Math.max(6, mate.d * 0.85)), 4 + 8 * (0.5 + 0.5 * cosDev));
       st.ball.strike({ speed: spdU, dirYaw: yawU, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
       // LA PERCEPTION A UNE HORLOGE (le contrat de strikeNow, complété lot 50) : une première
       // intention n'a PAS d'armé — seen 0, TOUT LE MONDE paie sa réaction pleine. Mesuré avant :

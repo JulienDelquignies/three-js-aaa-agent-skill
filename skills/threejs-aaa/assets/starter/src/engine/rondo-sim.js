@@ -4,7 +4,7 @@ import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-pr
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
-import { chargeStep, slideTackleStep } from './duel.js';
+import { chargeStep, slideTackleStep, slideResolve } from './duel.js';
 import { teteStep, voleeStep } from './tete.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
@@ -404,6 +404,60 @@ function receive(st, id, cfg = RONDO) {
  * do not get it you are out of the play while you get up. That cost is what makes it a decision
  * rather than a free extra metre of reach.
  */
+/** LA RÉSOLUTION D'UN GLISSÉ sur ballon libre — partagée entre l'instantané (réduit, le monde
+ *  d'hier au bit près) et le CONTACT différé (match, lot 51) : l'événement, la prise (release +
+ *  receive), le poke vers un partenaire debout, la phase loose du corps couché. */
+function resoudreGlisse(st, cfg, p, pick, sit, dEvent, dPoke, won) {
+  st.events.push({
+    t: +st.t.toFixed(2), type: 'slide', by: p.id, won, tech: 'tacle-glisse', foot: pick.foot, surface: pick.surface,
+    // l'événement dit QUI a glissé et QUI avait le ballon : la clause de discipline de checkRondo
+    // (0 glissade de l'équipe en possession) le lit — et son sabotage l'injecte.
+    team: p.team, atk: st.possession.team,
+    bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +dEvent.toFixed(2), height: +st.ball.p[1].toFixed(2),
+    speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+  });
+  if (!won) return;
+  // Un tacle ne fait pas APPARAÎTRE le ballon près du tacleur : le pied le RENVOIE — une
+  // impulsion, dont l'intégrateur fait une course. Le poke vise un PARTENAIRE DEBOUT (sans
+  // lui : à l'opposé de l'adversaire), et un ballon gagné au sol est LOOSE, pas porté (le
+  // tacleur purge sa glissade — le 50/50 du vrai football).
+  st.ball.release('perte');                  // un tacle qui gagne PREND — la sortie du porté se nomme
+  receive(st, p.id, cfg);                       // bookkeeping: possession, turnover count, sequence reset
+  const mate = st.players.filter((q) => q.team === p.team && q.id !== p.id && q.down <= 0)
+    .reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
+  const foe = st.players.filter((q) => q.team !== p.team && q.down <= 0)
+    .reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
+  let ux = 0, uz = 0;
+  if (mate) { ux = mate.p[0] - st.ball.p[0]; uz = mate.p[2] - st.ball.p[2]; }
+  else if (foe) { ux = st.ball.p[0] - foe.p[0]; uz = st.ball.p[2] - foe.p[2]; }
+  else { ux = p.p[0] - st.ball.p[0]; uz = p.p[2] - st.ball.p[2]; }
+  const ul = Math.hypot(ux, uz) || 1;
+  const back = Math.min(3.2, dPoke / 0.28);
+  st.ball.impulse([(ux / ul) * back - st.ball.v[0], -st.ball.v[1], (uz / ul) * back - st.ball.v[2]]);
+  if (p.down > 0) { st.phase = 'loose'; st.pass = null; st.possession.carrier = -1; st.hold = 0; st.pressure = 0; }
+}
+
+/** LE CONTACT DU PLONGEON (lot 51, match — « le ballon part dans le sens opposé tout seul ») :
+ *  le plongeon PART au déclenchement (trySlide — corps au sol, cooldowns), le ballon se joue
+ *  quand le pied ARRIVE (~0,1-0,4 s), géométrie RE-JUGÉE — un ballon parti, pris ou monté fait
+ *  un plongeon dans le VIDE. Appelé CHAQUE image (rondoStep — trySlide ne tourne qu'en carry,
+ *  un contact en attente doit résoudre dans TOUTES les phases). Aucun _slideL hors match. */
+function resolveSlideL(st, cfg) {
+  for (const p of st.players) {
+    const gL = p._slideL;
+    if (!gL || st.t < gL.at) continue;
+    const d = d2(p.p, st.ball.p);
+    const touche = d <= 1.0 && st.ball.p[1] < 0.6 && st.ball.owner == null;
+    // le pied BALAYE pendant la glisse — le contact se prend dans la fenêtre [at ; until]
+    if (!touche && st.t < (gL.until ?? gL.at)) continue;
+    p._slideL = null;
+    const rival = st.players.filter((q) => q.team !== p.team && q.down <= 0)
+      .reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
+    const won = touche && (!rival || d2(rival.p, st.ball.p) > cfg.receiveRadius);
+    resoudreGlisse(st, cfg, p, gL.pick, gL.sit, d, d, won);
+  }
+}
+
 function trySlide(st, cfg) {
   // WHEN. Not at a pass in flight — that is what the interception job is for, and letting anyone dive
   // at a travelling ball produced 157 slides in 90 s. A slide is for a ball that has STRAYED: a touch
@@ -463,50 +517,19 @@ function trySlide(st, cfg) {
   // le temps au sol n'est plus une constante d'horloger (mesuré : 1,200 s pile sur chaque tacle,
   // référence réelle 0,5-1 s) — variance seedée ±10 % autour de slideRecovery
   p.down = cfg.slideRecovery * (0.9 + 0.2 * (st.rnd ? st.rnd() : 0.5));  // he is on the ground either way
+  // LE MATCH JOUE LE CONTACT (lot 51) : le pied arrive dans ~0,1-0,4 s, la géométrie re-jugée
+  // au sommet de trySlide — le réduit garde l'instantané d'hier, au bit près (doctrine st.full).
+  if (st.full) {
+    p._slideL = { at: st.t + Math.min(0.4, Math.max(0.1, (best.d - 0.35) / 5)), until: st.t + 0.55, pick, sit };
+    const vL = Math.hypot(p.v[0], p.v[1]);
+    const dirL = vL > 0.5 ? [p.v[0] / vL, p.v[1] / vL] : [Math.cos(p.yaw), Math.sin(p.yaw)];
+    p._glisse = { v: [dirL[0] * Math.max(4, vL), dirL[1] * Math.max(4, vL)] };   // la glissade porte le corps
+    return;
+  }
   // he gets there if he is genuinely the first: an opponent already on the ball wins the duel
   const rival = st.players.filter((q) => q.team !== p.team && q.down <= 0).reduce((b, q) => (d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), st.players.find((q) => q.team !== p.team));
   const won = !rival || d2(rival.p, st.ball.p) > cfg.receiveRadius;
-  st.events.push({
-    t: +st.t.toFixed(2), type: 'slide', by: p.id, won, tech: 'tacle-glisse', foot: pick.foot, surface: pick.surface,
-    // l'événement dit QUI a glissé et QUI avait le ballon : la clause de discipline de checkRondo
-    // (0 glissade de l'équipe en possession) le lit — et son sabotage l'injecte.
-    team: p.team, atk: st.possession.team,
-    bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +st.ball.p[1].toFixed(2),
-    speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
-  });
-  if (won) {
-    // Un tacle ne fait pas APPARAÎTRE le ballon près du tacleur (39 sauts par partie, 1,77 m en
-    // moyenne, 2,56 m au pire) : le pied le RENVOIE. Une impulsion, dont l'intégrateur fait une
-    // course — on voit le ballon partir, ce qui est le geste.
-    st.ball.release('perte');                  // un tacle qui gagne PREND — la sortie du porté se nomme
-    receive(st, p.id, cfg);                       // bookkeeping: possession, turnover count, sequence reset
-    // …ET LE POKE VISE UN PARTENAIRE DEBOUT, PAS SON PROPRE CORPS COUCHÉ. L'ancien poke renvoyait le
-    // ballon VERS le tacleur, au sol pour ~1 s, v = 0 : un adversaire debout le réclamait — mesuré,
-    // 36 tacles « gagnés » sur 37 rendaient le ballon à l'autre équipe (claim p50 0,2-0,5 s après).
-    // Un tacle réussi DÉGAGE le ballon vers le coéquipier debout le plus proche ; sans coéquipier,
-    // à l'opposé de l'adversaire le plus proche. (Le poke part APRÈS receive : l'amorti du turnover
-    // porte sur le ballon incident, l'impulsion du pied est le geste qui suit.)
-    const mate = st.players.filter((q) => q.team === p.team && q.id !== p.id && q.down <= 0)
-      .reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
-    const foe = st.players.filter((q) => q.team !== p.team && q.down <= 0)
-      .reduce((b, q) => (!b || d2(q.p, st.ball.p) < d2(b.p, st.ball.p) ? q : b), null);
-    let ux = 0, uz = 0;
-    if (mate) { ux = mate.p[0] - st.ball.p[0]; uz = mate.p[2] - st.ball.p[2]; }
-    else if (foe) { ux = st.ball.p[0] - foe.p[0]; uz = st.ball.p[2] - foe.p[2]; }
-    else { ux = p.p[0] - st.ball.p[0]; uz = p.p[2] - st.ball.p[2]; }
-    const ul = Math.hypot(ux, uz) || 1;
-    // 4,5 m/s envoyait le dégagement traverser le carré (et parfois la ligne) : 3,2 suffit à
-    // mettre le ballon hors de l'emprise sans le rendre au chaos
-    const back = Math.min(3.2, best.d / 0.28);
-    st.ball.impulse([(ux / ul) * back - st.ball.v[0], -st.ball.v[1], (uz / ul) * back - st.ball.v[2]]);
-    // …BUT A BALL WON ON THE GROUND IS LOOSE, NOT CARRIED. `receive` made the tackler the carrier while
-    // he was still lying in the grass with slideRecovery seconds left to serve, so the game spent those
-    // seconds calling it a carry with the ball sitting metres from a man who could not move — 5.6 % of
-    // all carry frames, which the catalogue reported as `carry-reach`. That is not a debt to budget: it
-    // is a phase that is false. He poked it away; whoever gets to his feet first takes it, him included.
-    // Which is also the better football — a won tackle is a 50/50, not a gift.
-    if (p.down > 0) { st.phase = 'loose'; st.pass = null; st.possession.carrier = -1; st.hold = 0; st.pressure = 0; }
-  }
+  resoudreGlisse(st, cfg, p, pick, sit, sit.dist, best.d, won);
 }
 
 /**
@@ -538,6 +561,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
     }
   }
   movePlayers(st, dt, cfg);
+  slideResolve(st, cfg);               // le contact du glissé sur porteur (lot 51) — duel.js
+  resolveSlideL(st, cfg);              // …et sur ballon libre (aucun _slideL hors match)
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
   // les contraintes du monde se projettent APRÈS toutes les autorités (locomotion PUIS glissement
   // d'armé) — projetées avant, le dernier écrivain les défaisait (voir separatePlayers)

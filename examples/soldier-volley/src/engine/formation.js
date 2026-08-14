@@ -85,6 +85,32 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
       return [g.x + sgn * fx * L, z];
     });
   }
+  // LA LIGNE ARRIÈRE ATTAQUANTE EST CHAÎNÉE AU BALLON AUSSI (lot 51, bloc.soutien — retour
+  // utilisateur « des défenseurs bien trop bas par rapport à l'équipe, sans sens tactique ») :
+  // mesuré avant, la ligne arrière de l'équipe EN POSSESSION campait p10 à 6 m de son but
+  // (traînard p90 25,5 m derrière la ligne p25 de sa propre équipe) — le slide ±18 % d'origine
+  // clampait fx à 0,04 en construction basse. La loi du vrai football : quand l'équipe a le
+  // ballon, sa ligne arrière MONTE en soutien (~`soutien` m derrière le ballon, réel 15-25),
+  // plancher 0,12·L (jamais campée), plafond au rond central — et le bloc attaquant garde sa
+  // LONGUEUR étirée (`longAtk` m, réel 35-50 : la respiration offensive d'hier, en mieux tenu).
+  // `soutien` absent : le monde d'hier, au bit près (la clé gate la greffe).
+  if (attacking && bloc && bloc.soutien != null) {
+    const ballF = Math.max(0, Math.min(1, (anchorX * sgn) / L + 0.5));
+    const fMin = Math.min(...F.map(([f]) => f));
+    const span = Math.max(0.01, Math.max(...F.map(([f]) => f)) - fMin);
+    const ligneF = Math.max(0.12, Math.min(0.5, ballF - bloc.soutien / L));
+    const stretch = ((bloc.longAtk ?? 42) / L) / span;
+    return F.map(([f, fz]) => {
+      // …le FRONT reste LIBRE (0,96 comme partout) : un plafond à 0,80 essayé exilait les
+      // pointes à 31 m du but — tirs effondrés (13 sur 8 × 180 s, deux graines à zéro). Les
+      // pointes DANSENT sur la ligne (calage Loi 11 sur les postes) — le temps illicite
+      // transitoire monte à 4-6 % (borne re-fondée), c'est le prix du bloc haut du vrai
+      // football, pas du camping injouable.
+      const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * stretch));
+      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92));
+      return [g.x + sgn * fx * L, z];
+    });
+  }
   const slide = Math.max(-0.18, Math.min(0.18, (anchorX * sgn) / L));
   const breathe = attacking ? 1.05 : 0.85;
   return F.map(([f, fz]) => {

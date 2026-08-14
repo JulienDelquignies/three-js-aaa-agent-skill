@@ -661,7 +661,8 @@ function assignMatchJobs(st, cfg) {
     if (st.full) {
       slotters = [...free].sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor)).slice(0, 4);
       posted = free.filter((p) => !slotters.includes(p));
-      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation);
+      // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien — la ligne arrière monte)
+      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)));
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste offensif coulissé peut tomber DERRIÈRE
       // la défense — un attaquant réel vit SUR la ligne, pas au-delà. Mesuré AVANT le calage : le
       // bloc adverse recule si profond (slide borné, ligne de 4 devant sa surface) que le camping

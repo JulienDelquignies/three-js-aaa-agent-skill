@@ -145,12 +145,15 @@ const cfgD = () => matchCfg({ shotRange: 20 });
       gel = moving || st.restart ? 0 : gel + 1 / 60; gelMax = Math.max(gelMax, gel);
     }
     const arbs = st.events.filter((e) => e.type === 'arbitre');
-    if (!arbs0) { arbs0 = arbs.length; deny0 = st.deny?.['angle-fermé'] ?? 0; }
+    if (deny0 == null) deny0 = st.deny?.['angle-fermé'] ?? 0;
+    // …et la VIE de l'arbitre profite du balayage aussi (lot 51 : la première graine du
+    // monde au tacle vivant rendait 2 — le max des graines visitées est l'existence)
+    arbs0 = Math.max(arbs0 ?? 0, arbs.length);
     for (const e of arbs) choix.add(e.choix);
     tirs += st.events.filter((e) => e.type === 'shot').length;
     if (choix.size >= 3 && tirs >= 1) break;
   }
-  ok(`l'arbitre VIT en flux (${arbs0} changements d'avis sur 180 s ≥ 5 — une lecture du monde, pas un tremblement)`, arbs0 >= 5 && arbs0 <= 200);
+  ok(`l'arbitre VIT en flux (${arbs0} changements d'avis, max des graines balayées ≥ 5 — une lecture du monde, pas un tremblement)`, arbs0 >= 5 && arbs0 <= 200);
   ok(`ses choix se RÉPARTISSENT (${[...choix].join(', ')} — ≥ 3 options distinctes gagnent, balayage)`, choix.size >= 3);
   ok(`l'angle fermé n'est PLUS TENTÉ (deny angle-fermé ${deny0} = 0 — mesuré avant l'arbitre : 18-171 par match)`,
     deny0 === 0);

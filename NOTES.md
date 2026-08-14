@@ -2839,6 +2839,42 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     nommées : le crochet/la feinte ne posent pas de surprise (le duel les lit au corps — à
     mesurer avant de payer), la touche fuyante du turnover non plus.
 
+86. **L'aimant inverse, la ligne campeuse, le tacle au contact (lot 51 — trois retours
+    utilisateur).** (1) « LE BALLON LIBRE PART DANS LE SENS OPPOSÉ TOUT SEUL » — l'autopsie
+    frame par frame a trouvé DEUX écrivains fantômes, et ni l'un ni l'autre n'était la
+    conduite (le budget d'impulsion toucheDelta essayé sur théorie a été RETIRÉ, mesuré
+    non-coupable — doctrine glidePunch) : le TACLE GLISSÉ résolvait sa déviation à l'INSTANT
+    du déclenchement, tacleur encore à 1,3-2,6 m du ballon (et movement.js CLOUAIT le corps
+    down sur place — la glisse physique n'existait pas : le monde d'hier masquait l'absence
+    en téléportant la déviation) ; et la UNE-TOUCHE renvoyait un vol de 7 m/s à ~180° pleine
+    vitesse sans geste. Les fixes : LE GLISSÉ EN DEUX TEMPS (lancement → le corps GLISSE
+    réellement, ~1,4-1,8 m décélérés dans movement.js — puis CONTACT re-jugé dans une fenêtre
+    [at ; +0,55 s] : un ballon parti fait un tacle dans le VIDE, le prix du pari) pour les
+    DEUX variantes (porteur duel.js / ballon libre rondo-sim, resolver partagé, réduit gardé
+    instantané au bit près) — taux de prise porteur 11 → 40 % (le vide-lourd du libre 2/19 =
+    le vrai 50/50, le rival debout prend pendant la glisse) ; et LE RENVOI AMORTI de la
+    une-touche (vitesse bornée par l'angle de déviation : flux 12, perpendiculaire 8,
+    contre-courant 4 — le layoff du vrai football). Après : ZÉRO inversion sans acteur au
+    pied (les restantes : touches de conduite à 0,3-0,9 m et volées défensives, éventées).
+    LEÇON DE CHAÎNE : trois « coupables » se cachaient l'un derrière l'autre — résolution
+    instantanée → corps cloué → fenêtre ponctuelle ; chaque fix a révélé le suivant à la
+    mesure. (2) « DES DÉFENSEURS BIEN TROP BAS, SANS SENS TACTIQUE » — la ligne arrière de
+    l'équipe EN POSSESSION campait p10 à 6 m de son but (le chemin attaquant de
+    formationSpots n'avait jamais reçu la loi lot 42) : bloc.soutien (20 m derrière le
+    ballon, plancher 0,12·L, longAtk 42) — p10 12,7, p50 30,9 m, traînard attaquant p90
+    25,5 → 17,2. Le FRONT reste LIBRE : un plafond à 0,80 essayé exilait les pointes à 31 m
+    du but (tirs effondrés 13/8×180, deux graines à zéro — mesuré puis revert) ; les pointes
+    dansent sur la ligne, camping transitoire 4-6 % (borne re-fondée 7, était 4 au bloc
+    campeur). (3) Les contrôles laids : PARTIEL — la une-touche amortie et le glissé au
+    contact sont les gains visuels ; le churn de prise (41 % — l'instrument confond les
+    cycles de conduite même-joueur) et la queue de warp (prise à 2,1 m max) restent la DETTE
+    NOMMÉE « l'instrument du contrôle propre ». Flux : 45 tirs / 18 buts (20 × 300 s — buts
+    en bande, les tirs baissent : le tacle qui MARCHE mange les percées, du football).
+    Clauses : verify-slide re-fondé (9 ✓ — pari au lancement sans événement, prise au
+    contact, bande 1,2/match), soutien pur + sabotage « la ligne d'hier » (match11 54 ✓),
+    engagement 2,5 et camping 7 re-fondés avec histoire, duel 442-352 en fenêtre 120 s
+    (doctrine fenêtres allongées).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

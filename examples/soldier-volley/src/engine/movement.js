@@ -13,7 +13,25 @@ export function movePlayers(st, dt, cfg) {
     // REMPLACÉ en chemin (Loi 3) ne sont pas des corps au sol : leur down géant est un
     // drapeau d'inexistence pour les cerveaux (les filtres down<=0 les couvrent sans être
     // touchés), et EUX marchent vers leur sortie (referee)
-    if (p.down > 0 && !p.expulse && !p._sub) { p.down -= dt; p.v[0] = 0; p.v[1] = 0; p.speed = 0; continue; }
+    if (p.down > 0 && !p.expulse && !p._sub) {
+      p.down -= dt;
+      // …ET LA GLISSADE PORTE LE CORPS (lot 51, match — p._glisse posé au lancement du tacle) :
+      // un corps cloué SUR PLACE à 1,3-2,6 m du ballon rendait le contact impossible (1 pris/9
+      // mesurés) — et le monde d'hier masquait l'absence de glisse en téléportant la déviation
+      // pendant que le corps restait derrière (« le ballon part tout seul »). Lancé à sa vitesse
+      // de déclenchement, freiné exponentiellement (~1,4-1,8 m parcourus) — le pied ARRIVE.
+      const g = p._glisse;
+      if (g && st.full) {
+        const k = Math.exp(-2.5 * dt);
+        g.v[0] *= k; g.v[1] *= k;
+        p.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, p.p[0] + g.v[0] * dt));
+        p.p[2] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, p.p[2] + g.v[1] * dt));
+        p.v[0] = g.v[0]; p.v[1] = g.v[1]; p.speed = Math.hypot(g.v[0], g.v[1]);
+        if (p.speed < 0.4) p._glisse = null;
+        continue;
+      }
+      p.v[0] = 0; p.v[1] = 0; p.speed = 0; continue;
+    }
     // UNE AUTORITÉ PAR CORPS. Pendant l'ARMÉ, c'est l'horloge de geste qui possède la POSITION
     // (le glissement sur l'ancre, stepGestures) ; `p.v` n'est alors qu'un RAPPORT du mouvement réel
     // (pour l'animation et l'inertie), pas un état à intégrer. L'intégrer quand même, c'est DEUX

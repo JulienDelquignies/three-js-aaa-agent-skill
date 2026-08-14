@@ -54,14 +54,27 @@ export function slideTackleStep(st, c, cfg) {
   const won = !!pick && pick.tech.id === 'tacle-glisse'
     && roll < (pick.tech.accuracy ?? 0.6) + (foe.skill ? foe.skill.tackleReach * 2 : 0);
   if (won) {
-    // le ballon est PRIS : dégagé dans la course du tacleur (une frappe du sol, pas une prise)
-    if (c.act && winding(c)) abortGesture(c, 'fauché', { log: st.gestures });
-    st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: foe.id, won: true, tech: 'tacle-glisse',
-      foot: pick.foot, surface: pick.surface, team: foe.team, atk: c.team, sur: c.id, dist: +sit.dist.toFixed(2) });
+    // LE BALLON SE PREND AU CONTACT, PAS AU LANCEMENT (lot 51, S.contact — retour utilisateur
+    // « le ballon libre part dans le sens opposé tout seul ») : la déviation se résolvait à
+    // l'INSTANT du déclenchement, tacleur encore à 1,3-2,6 m — le ballon s'inversait à côté
+    // d'un corps qui commençait à peine à glisser. Le glissé est DEUX temps : le lancement
+    // (ici — le pari est pris, le corps part au sol), le CONTACT (slideResolve, ~0,1-0,4 s
+    // plus tard, géométrie RE-JUGÉE : un ballon qui s'est échappé fait un tacle dans le
+    // vide — c'est le prix du pari). contact:false : l'instantané d'hier (sabotage nommé
+    // « le tacle télékinésiste »).
     const vq = Math.hypot(foe.v[0], foe.v[1]) || 1;
-    st.ball.release('contesté');
-    st.ball.impulse([(foe.v[0] / vq) * 3.2, 0.4, (foe.v[1] / vq) * 3.2]);
-    st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+    if (S.contact === false) {
+      if (c.act && winding(c)) abortGesture(c, 'fauché', { log: st.gestures });
+      st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: foe.id, won: true, tech: 'tacle-glisse',
+        foot: pick.foot, surface: pick.surface, team: foe.team, atk: c.team, sur: c.id, dist: +sit.dist.toFixed(2) });
+      st.ball.release('contesté');
+      st.ball.impulse([(foe.v[0] / vq) * 3.2, 0.4, (foe.v[1] / vq) * 3.2]);
+      st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+      return;
+    }
+    foe._slide = { at: st.t + Math.min(0.4, Math.max(0.1, (sit.dist - 0.35) / Math.max(3.5, vq))),
+      until: st.t + 0.55, sur: c.id, foot: pick.foot, surface: pick.surface, dir: [foe.v[0] / vq, foe.v[1] / vq] };
+    foe._glisse = { v: [foe.v[0], foe.v[1]] };   // la glissade PORTE le corps (movement.js)
     return;
   }
   const dBody = d2(foe.p, c.p);
@@ -85,6 +98,35 @@ export function slideTackleStep(st, c, cfg) {
   // la glissade dans le vide : le porteur file, le pari est perdu au sol
   deny(st, 'glissé-dans-le-vide');
   st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: foe.id, won: false, tech: 'tacle-glisse', team: foe.team, atk: c.team, dist: +sit.dist.toFixed(2) });
+}
+
+/** LE CONTACT DU GLISSÉ (lot 51) : résout les tacles lancés — le pied ARRIVE sur le ballon
+ *  (dégagé dans la course de glisse, comme avant), ou le ballon n'y est plus (le vide — la
+ *  géométrie re-jugée est ce qui rend le glissé esquivable). Appelé chaque image (rondo-sim) ;
+ *  aucun _slide n'existe hors match : boucle vide, pas un bit ailleurs. */
+export function slideResolve(st, cfg) {
+  for (const q of st.players) {
+    const g = q._slide;
+    if (!g || st.t < g.at) continue;
+    const S = cfg.slideTackle ?? {};
+    const d = d2(q.p, st.ball.p);
+    // le pied BALAYE pendant la glisse : le contact se prend n'importe quand dans la fenêtre
+    // [at ; until] — passé `until` sans ballon, c'est le vide (le prix du pari)
+    if (!(d <= (S.win ?? 1.0) && st.ball.p[1] < 0.6) && st.t < (g.until ?? g.at)) continue;
+    q._slide = null;
+    if (d <= (S.win ?? 1.0) && st.ball.p[1] < 0.6) {
+      const c = st.players[g.sur];
+      if (c?.act && winding(c)) abortGesture(c, 'fauché', { log: st.gestures });
+      st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: q.id, won: true, tech: 'tacle-glisse',
+        foot: g.foot, surface: g.surface, team: q.team, atk: c?.team, sur: g.sur, dist: +d.toFixed(2) });
+      if (st.ball.owner != null) st.ball.release('contesté');
+      st.ball.impulse([g.dir[0] * 3.2, 0.4, g.dir[1] * 3.2]);
+      st.lastTouch = q.team;
+      st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
+    } else {
+      st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: q.id, won: false, tech: 'tacle-glisse', vide: true, team: q.team, dist: +d.toFixed(2) });
+    }
+  }
 }
 
 /**

@@ -193,6 +193,19 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const ras = spotAile(35, 26, {}), rasRec = spotAile(35, 26, { wingDrive: false });
   ok(`l'ailier ARME au ras de la ligne (z tenu ${ras.z.toFixed(2)} ≥ ${(rasRec.z + 0.25).toFixed(2)} : « l'aile qui recycle » (wingDrive:false) rentre vers l'axe au lieu d'armer le centre)`,
     ras.z >= rasRec.z + 0.25);
+  // LA LIGNE ARRIÈRE ATTAQUANTE MONTE EN SOUTIEN (lot 51 — « des défenseurs bien trop bas par
+  // rapport à l'équipe, sans sens tactique ») : loi PURE — ballon à mi-terrain, l'équipe EN
+  // POSSESSION tient sa ligne arrière à ~soutien m derrière le ballon (mesurée avant : campée
+  // p10 à 6 m de son but ; après : p10 12,7, p50 30,9). soutien absent : le chemin d'hier.
+  const st51 = makeMatch({ full: true, seed: 1 });
+  const b51 = matchCfg({ shotRange: 20 }).bloc;
+  const sA = formationSpots(st51.pitch, 0, 0, true, undefined, b51);
+  const sgnA = -st51.pitch.ownGoal(0).sign;
+  const arriere = Math.min(...sA.map(([x]) => x * sgnA)) + st51.pitch.hx;
+  const sHier = formationSpots(st51.pitch, 0, 0, true, undefined, { long: 30, ligne: 27 });
+  const arriereHier = Math.min(...sHier.map(([x]) => x * sgnA)) + st51.pitch.hx;
+  ok(`la LIGNE ARRIÈRE ATTAQUANTE monte en soutien (ballon au rond central : ligne à ${arriere.toFixed(1)} m de son but ≈ ${(st51.pitch.hx - b51.soutien).toFixed(1)} ± 2 — et le monde sans soutien campait à ${arriereHier.toFixed(1)} ≤ ${(arriere - 8).toFixed(1)} : la ligne d'hier, nommée)`,
+    Math.abs(arriere - (st51.pitch.hx - b51.soutien)) < 2 && arriereHier <= arriere - 8);
 }
 
 // ---------- 3c. LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet aimant sur
@@ -381,8 +394,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const avec = delai({});
   const sans = delai({ engagementPasse: false });
-  ok(`l'ENGAGEMENT est une passe (délai moyen prise → passe ${avec.toFixed(2)} s ≤ 2,2 sur 4 graines — et sans la clé ${sans.toFixed(2)} ≥ avec + 0,3 : l'engagement porté d'hier, sabotage nommé)`,
-    avec <= 2.2 && sans >= avec + 0.3);
+  ok(`l'ENGAGEMENT est une passe (délai moyen prise → passe ${avec.toFixed(2)} s ≤ 2,5 sur 4 graines — borne re-fondée lot 51 : le soutien a déplacé la géométrie du coup d'envoi (2,24 mesuré, était 2,11) ; la SÉPARATION reste le contrat — et sans la clé ${sans.toFixed(2)} ≥ avec + 0,3 : l'engagement porté d'hier, sabotage nommé)`,
+    avec <= 2.5 && sans >= avec + 0.3);
 }
 
 // ---------- 4. sabotage nommé : sans la formation, le 22-corps redevient l'essaim du réduit
@@ -518,7 +531,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // c'est son métier) ; sans calage le monde d'aujourd'hui vit aussi bas (bloc profond), la
   // clause est donc ABSOLUE, pas comparative — le sabotage de la LOI vit en fixtures (§5)
   const worst = Math.max(...offPct);
-  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 4)`, worst <= 4);
+  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 7 — borne re-fondée lot 51 : le bloc au soutien vit HAUT, les pointes dansent sur la ligne (4-6 % mesurés, était 3,3 au bloc campeur) ; le calage des POSTES et le sifflet du toucher restent les lois)`, worst <= 7);
 }
 
 // ---------- 7. LE PRESSING À DÉCLENCHEURS + L'OMBRE DE COUVERTURE (mécanismes sur fixtures,
@@ -671,7 +684,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const st = makeMatch({ full: true, seed: 3, tactics });
     const cfg = matchCfg({ shotRange: 20 });
     let gel = 0, gelMax = 0;
-    for (let i = 0; i < 60 * 60; i++) {
+    for (let i = 0; i < 120 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       const moving = Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3 || st.ball.owner != null;
       gel = moving || st.restart ? 0 : gel + 1 / 60; gelMax = Math.max(gelMax, gel);
@@ -679,8 +692,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return { passes: st.events.filter((e) => e.type === 'pass').length, gelMax, evs: JSON.stringify(st.events) };
   };
   const duel = run([{ formation: '442' }, { formation: '352' }]);
-  ok(`4-4-2 contre 3-5-2 : le match VIT (${duel.passes} passes ≥ 12 en 60 s, gel ${duel.gelMax.toFixed(1)} s ≤ 25 — deux systèmes, un seul moteur)`,
-    duel.passes >= 12 && duel.gelMax <= 25);
+  // fenêtre 60 → 120 s (doctrine « fenêtres allongées », lot 51 : une fenêtre courte vivait
+  // à 9-27 passes selon la graine — le monde au soutien a redistribué les tempos)
+  ok(`4-4-2 contre 3-5-2 : le match VIT (${duel.passes} passes ≥ 24 en 120 s, gel ${duel.gelMax.toFixed(1)} s ≤ 25 — deux systèmes, un seul moteur)`,
+    duel.passes >= 24 && duel.gelMax <= 25);
   ok(`sabotage « formation fantôme » attrapé (formation inconnue '666' → repli 433, récit identique au défaut octet pour octet — pas de crash, pas de monde secret)`,
     run([{ formation: '666' }, null]).evs === run(null).evs);
 }

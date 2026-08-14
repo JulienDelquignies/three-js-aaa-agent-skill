@@ -746,6 +746,25 @@ la fenêtre à l'événement), pas son ombre en flux (« cibles tenues » confon
 stabilité naturelle du bloc posté). Dettes nommées : le crochet/la feinte (le duel lit le
 corps — re-mesurer avant), la touche fuyante du turnover.
 
+### Le tacle au contact, la ligne en soutien, le renvoi amorti (lot 51)
+
+Trois retours utilisateur. **« Le ballon libre part dans le sens opposé tout seul »** : le
+tacle glissé résolvait sa déviation à l'instant du DÉCLENCHEMENT (tacleur à 1,3-2,6 m du
+ballon) pendant que movement.js clouait le corps au sol SUR PLACE — la glisse physique
+n'existait pas, la déviation se téléportait. Désormais le glissé est DEUX temps : lancement
+(le pari est pris, le corps part au sol et GLISSE réellement — ~1,5 m décélérés), puis
+CONTACT re-jugé dans une fenêtre — un ballon qui s'est échappé fait un tacle dans le vide,
+ce qui rend le glissé esquivable et honnête (taux de prise sur porteur 11 → 40 %). Et la
+une-touche borne sa vitesse sortante à l'angle de déviation (contre-courant → 4 m/s, le
+layoff — plus de boulet inversé sans geste). Zéro inversion sans acteur au pied après.
+**« Des défenseurs bien trop bas, sans sens tactique »** : la ligne arrière de l'équipe EN
+POSSESSION campait à 6 m de son but — `bloc.soutien` (20 m derrière le ballon, plancher
+0,12·L) la fait monter (p50 30,9 m, p10 12,7). Le front reste libre : un plafond essayé
+exilait les pointes à 31 m du but (tirs effondrés — mesuré puis revert) ; les pointes
+dansent sur la ligne (camping transitoire 4-6 %, le prix du bloc haut). Dette nommée :
+« l'instrument du contrôle propre » (churn de prise et queue de warp — le front (1) des
+contrôles laids reste à payer proprement).
+
 ### Le chemin d'origine (toujours valable pour VOTRE greffe)
 
 Le terrain Loi 1 existe déjà : `pitch.js#FULL` (105 × 68, surfaces 16,50, but 7,32 × 2,44) et le

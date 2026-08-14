@@ -137,7 +137,7 @@ export const MATCH = {
                           // LIBRE avec son résiduel, le récupérateur va le chercher. Mesuré
                           // avant : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s possédé
                           // instantanément. false : l'aimant d'hier (sabotage nommé).
-  bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8 },
+  bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42 },
                           // LE BLOC COMPACT (11c11, st.full — lot 42, retour utilisateur « les
                           // lignes sont trop espacées ») : l'équipe SANS ballon est chaînée au
                           // ballon — sa ligne défensive tient `ligne` m derrière lui (elle MONTE
@@ -150,8 +150,13 @@ export const MATCH = {
                           // (lot 47, la v2 nommée au lot 42) : ballon à l'aile → le bloc entier
                           // glisse de lateral × z-ballon (borné slideMax m — réel 6-10) : le
                           // couloir se referme. Mesuré avant : couloir indéfendu, la perce du
-                          // wingDrive convertissait à 73 %. false : le bloc élastique d'hier
-                          // (sabotage nommé).
+                          // wingDrive convertissait à 73 %. ET LA LIGNE ARRIÈRE ATTAQUANTE MONTE
+                          // (lot 51, soutien — « des défenseurs bien trop bas, sans sens
+                          // tactique ») : l'équipe EN POSSESSION tient sa ligne arrière à
+                          // ~soutien m derrière le ballon (réel 15-25, plancher 0,12·L — mesuré
+                          // avant : campée p10 à 6 m de son but), bloc offensif étiré à longAtk m
+                          // (réel 35-50). false : le bloc élastique d'hier (sabotage nommé) ;
+                          // soutien absent : la ligne campeuse d'hier.
   volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 },
                           // LA VOLÉE (11c11, st.full — lot 40) : le pied joue le ballon EN VOL
                           // sous la fenêtre de tête (min-max m, portée reach) — REPRISE au but

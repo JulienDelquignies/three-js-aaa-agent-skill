@@ -32,16 +32,23 @@ const chase = (seed, arrange) => {
 };
 const bp = (st) => st.ball.p;
 
-// ---------- 1. le PRIS : géométrie valide + jet réussi → le ballon part, le tacleur au sol
+// ---------- 1. le PRIS : géométrie valide + jet réussi → le pari part, le CONTACT prend
+// (lot 51 : la déviation se résolvait à l'instant du déclenchement, tacleur encore à
+// 1,3-2,6 m — le ballon s'inversait « tout seul » à côté d'un corps qui commençait à peine
+// à glisser. Désormais : lancement → glisse du corps (movement.js) → contact re-jugé dans
+// la fenêtre. La fixture est FRONTALE : le tacleur coupe la route du ballon.)
 {
   const { st, cfg, c, foe } = chase(3, (st, c, foe) => {
-    foe.p[0] = bp(st)[0] - 1.8; foe.p[2] = bp(st)[2]; foe.v = [5.5, 0]; foe.yaw = 0;
+    foe.p[0] = bp(st)[0] + 1.6; foe.p[2] = bp(st)[2]; foe.v = [-5.5, 0]; foe.yaw = Math.PI;
   });
   st.rnd = () => 0.3;
   slideTackleStep(st, c, cfg);
-  const ev = st.events[st.events.length - 1];
-  ok(`le ballon est PRIS (glissé valide + jet 0,3 < 0,6 : 'slide' won=${ev?.won} sur nº${ev?.sur}, ballon parti — phase ${st.phase}) et le tacleur PAIE LE SOL (down ${foe.down.toFixed(2)} s > 0, gagné ou perdu : le coût est la décision)`,
-    ev?.type === 'slide' && ev.won === true && ev.sur === c.id && st.phase === 'loose' && foe.down > 0);
+  ok(`le PARI part au lancement (corps au sol down ${foe.down.toFixed(2)} s > 0, contact armé ${!!foe._slide} — pas encore d'événement : le ballon se joue quand le pied ARRIVE)`,
+    foe.down > 0 && !!foe._slide && !st.events.some((e) => e.type === 'slide'));
+  for (let i = 0; i < 0.8 * 60 && !st.events.some((e) => e.type === 'slide'); i++) matchStep(st, 1 / 60, cfg);
+  const ev = st.events.find((e) => e.type === 'slide');
+  ok(`…et le ballon est PRIS AU CONTACT ('slide' won=${ev?.won} sur nº${ev?.sur} à ${ev?.dist} m ≤ 1 — le monde peut déjà avoir re-pris le ballon libéré : la phase instantanée n'est pas la clause)`,
+    ev?.type === 'slide' && ev.won === true && ev.sur === c.id && ev.dist <= 1.0);
 }
 
 // ---------- 2. la FAUTE : le ballon protégé, les jambes trouvées — et DERRIÈRE c'est GRAVE
