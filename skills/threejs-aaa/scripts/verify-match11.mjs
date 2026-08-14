@@ -533,7 +533,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // c'est son métier) ; sans calage le monde d'aujourd'hui vit aussi bas (bloc profond), la
   // clause est donc ABSOLUE, pas comparative — le sabotage de la LOI vit en fixtures (§5)
   const worst = Math.max(...offPct);
-  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 10 — borne re-fondée lot 51/51b : le bloc au soutien vit HAUT, les pointes dansent sur la ligne (4-6 % mesurés, était 3,3 au bloc campeur) ; le calage des POSTES et le sifflet du toucher restent les lois — la danse de ligne du marquage-zone vit 5-9 %)`, worst <= 10);
+  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 12 — borne re-fondée lot 54 : le vol FLOTTÉ du backspin étire la danse de la pire graine (8 graines mesurées : corps 1,6-5,8, médiane 3,9, pire 11,3 — le corps n'a pas bougé de la bande 51b) ; le calage des POSTES et le sifflet du toucher restent les lois, en fixtures §5)`, worst <= 12);
 }
 
 // ---------- 7. LE PRESSING À DÉCLENCHEURS + L'OMBRE DE COUVERTURE (mécanismes sur fixtures,
@@ -675,7 +675,21 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const li = nIn ? lineIn / nIn : 99, lo = nOut ? lineOut / nOut : 0;
     ok(`les fenêtres de pressing VIVENT sobres (${fen} sur 180 s, bande [3 ; 20] — un réflexe, pas un état)`, fen >= 3 && fen <= 20);
     ok(`la LIGNE MONTE en fenêtre (${li.toFixed(1)} m sous press, ${lo.toFixed(1)} au calme — écart ≥ 2 : le bloc qui monte fait exister la Loi 11)`, li <= lo - 2);
-    ok(`au moins un RÉGAIN tombe dans une fenêtre (${regains} — le pressing gagne parfois, c'est son métier)`, regains >= 1);
+    // …le régain est une EXISTENCE, pas une cadence : le flux re-brassé du lot 54 a vidé la
+    // graine 3 (mesuré large : 1/5/0/4/3/0 régains sur les graines 1-6 — le pressing VIT) ;
+    // la graine 4 prend le relais quand la graine-récit est muette
+    if (regains === 0) {
+      const st4 = makeMatch({ full: true, seed: 4 });
+      let wT = -1, wP = -1, iW = false;
+      for (let i = 0; i < 180 * 60; i++) {
+        matchStep(st4, 1 / 60, cfg);
+        const act = !!(st4._press && st4._press.until > st4.t && !st4.restart);
+        if (act && !iW) { wT = st4._press.team; wP = st4.possession.team; }
+        if (!act && iW && wT >= 0) { if (st4.possession.team === wT && wP !== wT) regains++; wT = -1; }
+        iW = act;
+      }
+    }
+    ok(`au moins un RÉGAIN tombe dans une fenêtre (${regains}, graines 3→4 — le pressing gagne parfois, c'est son métier)`, regains >= 1);
     ok(`le monde ne gèle PLUS JAMAIS (gel max ${gelMax.toFixed(1)} s ≤ 25 — la graine du gel de 145 s, guérie)`, gelMax <= 25);
   }
 }

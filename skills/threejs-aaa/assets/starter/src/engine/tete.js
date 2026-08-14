@@ -133,7 +133,9 @@ export function voleeStep(st, cfg) {
     st.lastTouch = joueur.team;
     const ctl = Math.min(1.2, joueur.skill?.controlF ?? 1);
     const k = (V.amortiK ?? 0.85) * ctl;
-    st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.85, -st.ball.v[2] * k]);
+    // …et l'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config)
+    st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.85, -st.ball.v[2] * k],
+      st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'amorti-retombée', foot: 'any',
       surface: bp[1] > 0.7 ? 'thigh' : 'instep', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });

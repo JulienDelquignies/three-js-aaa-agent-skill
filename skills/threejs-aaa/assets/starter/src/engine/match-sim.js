@@ -1011,7 +1011,8 @@ function onDive(st, gk, cfg) {
   gk.down = Math.max(gk.down, cfg.keeperDown);
   if (d <= 1.1 && y <= 1.9) {
     if (st.ball.owner != null) st.ball.release('perte');
-    st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]]);      // mort dans les gants
+    st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
+      st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)
     st.ball.possess(gk.id);
     st.possession = { team: gk.team, carrier: gk.id };
     st.phase = 'carry'; st.pass = null; st.hold = 0; st.pressure = 0;

@@ -14,6 +14,8 @@ import { TECHNIQUES, chooseTechnique, situation } from './technique.js';
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 /** Un refus a une cause nommée (copie locale du registre du loop). */
 const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; };
+/** L'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config). */
+const dW = (st, cfg, k) => (st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null);
 
 /**
  * COMMIT to the chosen pass. Inverse ballistics decides it can be played; the gesture decides when.
@@ -213,7 +215,7 @@ export function strikeNow(st, c, cfg) {
     if (Math.abs(sitNow.dist - stance.dist) > 0.22 || Math.abs(bNow) > 22) {
       deny(st, 'stance-au-contact');
       if (st.ball.owner === c.id) st.ball.release('perte');              // la touche ratée le lui échappe
-      st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4]);   // vendangé : le ballon reste libre
+      st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4], dW(st, cfg, 0.4));   // vendangé : le ballon reste libre
       return;
     }
   }
@@ -224,8 +226,24 @@ export function strikeNow(st, c, cfg) {
   if (choice.shot && c.skill) {
     lead = [lead[0], lead[1], lead[2] + gauss(st.rnd ?? (() => 0.5)) * c.skill.shotSigma];
   }
-  const sol = solvePass(from, lead, { style: choice.style }) || solvePass(from, choice.lead, { style: choice.style });
-  if (!sol) { st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4]); return; }   // scuffed: it stays loose
+  // LE BACKSPIN DE LA PASSE LEVÉE (lot 54, cfg.passeSpin && st.full) : lofted/chip se coupent SOUS le
+  // ballon — l'effet rétro PORTE le vol (Magnus) et ASSIED la retombée : le premier rebond mord le
+  // glissement accru au lieu de laisser filer un roulement qui fabriquait ~100 rad/s de spin orphelin.
+  // Le solveur reçoit LE MÊME effet : la balistique inverse reste honnête (elle simule ball.js avec la
+  // vraie rotation). Sans clé ni st.full : zéro effet, au bit près. Doc et mesures : match-config.
+  // …et sur les CLOCHES MAISON (diagonale de renversement, centre aérien), l'effet exige la
+  // balistique HONNÊTE : leurs formules du vide sur-portaient un ballon qui flotte (Magnus) —
+  // mesuré : la diagonale n'arrivait plus (4 bancs rouges en cascade), puis SANS effet la
+  // retombée redevenait la glissade à spin orphelin (chasse 13 % → 61 %). Chaque cloche liftée
+  // re-résout vitesse ET temps de vol par solvePass sur la vraie physique, effet compris.
+  const liftYaw = Math.atan2(lead[2] - from[2], lead[0] - from[0]);
+  const liftSpin = st.full && cfg.passeSpin !== false && !choice.shot && !choice.clear
+    ? { spinRev: cfg.passeSpin ?? 4.5, spinAxis: [-Math.sin(liftYaw), 0, Math.cos(liftYaw)] } : null;
+  const lift = liftSpin && !choice.cross && !choice.bascule
+    && (choice.style === 'lofted' || choice.style === 'chip') ? liftSpin : null;
+  let liftAtStrike = lift;   // les cloches re-résolues (dessous) frappent AUSSI avec leur effet
+  const sol = solvePass(from, lead, { style: choice.style, ...(lift ?? {}) }) || solvePass(from, choice.lead, { style: choice.style, ...(lift ?? {}) });
+  if (!sol) { st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4], dW(st, cfg, 0.4)); return; }   // scuffed: it stays loose
   // ON FRAPPE LE BALLON LÀ OÙ IL EST. `kick(from, …)` POSAIT le ballon sur `from`, et l'appelant
   // construisait `from = [x, BALL.radius, z]` : un ballon en l'air était plaqué au sol avant d'être
   // frappé — 13 fois par partie, jusqu'à 1,36 m de chute en une image. Purement vertical, donc
@@ -274,22 +292,31 @@ export function strikeNow(st, c, cfg) {
   } else if (choice.cross && cfg.tete && st.full) {
     const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
     elev = 0.45;
-    spd = Math.sqrt(Math.max(8, R) * 9.81 / Math.sin(2 * elev));
-    sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
+    const solC = liftSpin ? solvePass(from, lead, { style: elev, ...liftSpin }) : null;
+    if (solC) { spd = solC.speed; sol.flightTime = solC.flightTime; liftAtStrike = liftSpin; }
+    else {
+      spd = Math.sqrt(Math.max(8, R) * 9.81 / Math.sin(2 * elev));
+      sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
+    }
   }
   // …et la DIAGONALE DU RENVERSEMENT vole PAR-DESSUS le bloc (lot 35) : la même cloche —
   // c'est sa raison d'être au vrai football, le couloir 2D bouché n'existe pas à 5 m du sol
   if (choice.bascule && cfg.renversement && st.full) {
     const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
     elev = 0.42;
-    spd = Math.sqrt(Math.max(10, R) * 9.81 / Math.sin(2 * elev));
-    sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
+    const solB = liftSpin ? solvePass(from, lead, { style: elev, ...liftSpin }) : null;
+    if (solB) { spd = solB.speed; sol.flightTime = solB.flightTime; liftAtStrike = liftSpin; }
+    else {
+      spd = Math.sqrt(Math.max(10, R) * 9.81 / Math.sin(2 * elev));
+      sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
+    }
     st.events.push({ t: +st.t.toFixed(2), type: 'renversement', by: c.id, to: choice.to.id, dz: +Math.abs(lead[2] - from[2]).toFixed(1) });
   }
   // …le RÉPERTOIRE porte son effet (lot 39) : l'enroulée son Magnus signé (kind.rev ±8 — la
   // courbe RAMÈNE la mène décalée au vrai poteau), les frappes de cou-de-pied leur rotation
   // lisible (0,5), flottante/pointu quasi rien (le gardien les lit tard). Sans kind : 0, au bit près.
-  st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev, spinAxis: [0, 1, 0], spinRev: kind?.rev ?? 0 });
+  st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev,
+    spinAxis: liftAtStrike ? liftAtStrike.spinAxis : [0, 1, 0], spinRev: liftAtStrike ? liftAtStrike.spinRev : (kind?.rev ?? 0) });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
   if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id, bas: !!choice.bas });
   if (shot) {

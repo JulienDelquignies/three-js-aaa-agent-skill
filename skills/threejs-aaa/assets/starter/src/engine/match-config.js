@@ -146,6 +146,23 @@ export const MATCH = {
                           // prédiction de vol couvre le vol ENTIER (maxT suit pass.flight —
                           // le receveur vise la CHUTE, pas un chemin tronqué à 2,2 s).
                           // false : le flipper d'hier (sabotage nommé).
+  amortiSpin: true,       // L'AMORTI AMORTIT AUSSI LA ROTATION (11c11, st.full — lot 54, audit
+                          // télémétrie) : les impulsions d'amorti tuaient v en laissant w ORPHELIN
+                          // — mesuré au tick : 65-70 rad/s sur un ballon à 1,3 m/s, et la friction
+                          // au sol reconvertissait ce spin périmé en vitesse (backspin → inversion
+                          // cos = −1 « le ballon repart tout seul » ; topspin → ré-accélération
+                          // depuis l'arrêt, personne à moins de 2,4 m — 18 fantômes/match). Chaque
+                          // amorti pince w DU MÊME facteur que v (prise-gardien, capture, contrôle
+                          // manqué, amorti-poursuite, quart-de-touche, amorti-retombée, gants,
+                          // vendangé). false : le spin orphelin d'hier (sabotage nommé).
+  passeSpin: 4.5,         // LE BACKSPIN DE LA PASSE LEVÉE (11c11, st.full — lot 54) : lofted/chip
+                          // partaient SANS rotation — l'atterrissage glissait plein fer dans la
+                          // friction Coulomb (×0,6 de vitesse en UN tick, ~25/match, « le ballon
+                          // freine tout seul »), puis le roulement fabriquait le spin que l'amorti
+                          // laissait orphelin. Coupée SOUS le ballon (rev/s, axe horizontal ⟂ au
+                          // vol) : l'effet rétro PORTE le vol et ASSIED la retombée. solvePass
+                          // reçoit le même effet — la balistique inverse reste honnête.
+                          // false : la passe plate d'hier (sabotage nommé).
   marquageRayon: 22,      // ON MARQUE DANS LA ZONE DE DANGER (11c11, st.full — lot 51b, vu en
                           // playmode) : un attaquant à plus de rayon m du ballon n'est pas
                           // marqué HOMME — il est couvert par le BLOC (le marqueur sans homme

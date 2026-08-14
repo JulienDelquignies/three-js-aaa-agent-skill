@@ -69,11 +69,15 @@ const etau = (seed, nBloc) => {
       matchStep(st, 1 / 60, cfg);
       renv ??= st.events.find((e) => e.type === 'renversement');
       if (renv) apex = Math.max(apex, st.ball.p[1]);
-      recu ??= st.events.find((e) => e.type === 'receive' && renv && e.t > renv.t);
+      // la PRISE de la diagonale a trois visages depuis les lots 52/54 : le receive d'hier, ou
+      // l'amorti (retombée/poursuite) qui TUE st.pass avant la prise — la possession s'étiquette
+      // alors loose-kept (le même angle mort que verify-loi15 avait déjà instruit)
+      recu ??= st.events.find((e) => renv && e.t > renv.t && (e.type === 'receive' || e.type === 'loose-kept'
+        || (e.type === 'control' && (e.tech === 'amorti-retombée' || e.tech === 'amorti-poursuite'))));
     }
     if (renv && apex >= 2.5 && recu) break;
   }
-  ok(`la diagonale VOLE en cloche (événement 'renversement' Δz=${renv?.dz} m, apex ${apex.toFixed(1)} m ≥ 2,5 — par-dessus le bloc) et ARRIVE (receive à +${recu && renv ? (recu.t - renv.t).toFixed(1) : '∅'} s ≤ 3,5)`,
+  ok(`la diagonale VOLE en cloche (événement 'renversement' Δz=${renv?.dz} m, apex ${apex.toFixed(1)} m ≥ 2,5 — par-dessus le bloc) et ARRIVE (prise ${recu ? recu.type + (recu.tech ? ':' + recu.tech : '') : ''} à +${recu && renv ? (recu.t - renv.t).toFixed(1) : '∅'} s ≤ 3,5)`,
     !!renv && renv.dz >= 18 && apex >= 2.5 && !!recu && recu.t - renv.t <= 3.5);
 }
 

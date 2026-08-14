@@ -2972,6 +2972,40 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     attaquants. LEÇON : les trois « fantômes » sont UN SEUL défaut de contrat — les sites
     qui écrivent v sans écrire w laissent la physique jouer un passé périmé.
 
+91. **Le spin orphelin meurt, la passe levée porte son effet, le quart-de-touche se nomme
+    (lot 54 — les corrections de l'audit télémétrie).** Trois lois, toutes st.full, rondo/réduit
+    au bit près : (1) L'AMORTI AMORTIT AUSSI LA ROTATION (cfg.amortiSpin) — chaque impulse
+    d'amorti pince w DU MÊME facteur que v (dW dans rondo-sim : prise-gardien, capture,
+    contrôle-manqué, amorti-poursuite, quart-de-touche ; tete.js amorti-retombée ; match-sim
+    gants ; strike-sim vendangé) ; (2) LE BACKSPIN DE LA PASSE LEVÉE (cfg.passeSpin 4,5 rev/s,
+    axe horizontal ⟂ au vol) — lofted/chip coupées SOUS le ballon, ET LE SOLVEUR REÇOIT LE MÊME
+    EFFET (solvePass simule ball.js : la balistique inverse reste honnête) ; les CLOCHES MAISON
+    (renversement, centre aérien) ont exigé la leçon en trois actes : liftées sur leur formule du
+    vide elles n'ARRIVAIENT plus (le Magnus sur-porte — 4 bancs rouges en cascade), exclues elles
+    rendaient la glissade d'hier (chasse 13→61 % : ce SONT les longs ballons dominants), la sortie
+    est la balistique honnête — leurs vitesse/temps de vol re-résolus par solvePass avec l'effet ;
+    (3) LE QUART-DE-TOUCHE ÉMET (control 'quart-de-touche', ~1/match — l'amorti-poursuite mange
+    le reste) : la scène a un contact à animer. MESURÉ (8 graines × 300 s, instrument
+    probe-fantomes2 affiné : une passe VIVANTE qui rebondit a une cause — le fantôme est le
+    ballon MORT) : inversions du ballon mort 23 → 0 ; ré-accélérations depuis l'arrêt ~120 → 6
+    (0,75/match, déviations à très gros spin résiduelles) ; touches muettes 65 → 33, inversions
+    muettes 23 → 2. EFFETS DE BORD PAYANTS : chasse au rebond 43 → 19 % (68 avant lot 52),
+    contrôles propres 39 → 67 %, roulé après chute p50 11,7 → 1,0 m, prise 1,3 → 0,2 s — et LA
+    DETTE DE LIVRAISON SOLDÉE : passes dans les pieds chute↔visé p50 5,4 → 1,9 m (réel 2-3).
+    A/B 20×300 : 80 tirs (l'attaque asséchée du lot 52 est soldée — 12/8×180 hier), 31 buts —
+    la bande 17-30 déborde d'UN but au sommet, re-fondée 17-32 avec récit (les livraisons
+    propres nourrissent l'attaque ; la conversion reste jugée au banc gardien ≤ 60 %). BANCS :
+    verify-match +6 clauses (fixture spin orphelin w 120→6 + sabotage, backspin structurel
+    28 rad/s + sabotage passe plate, existence quart-de-touche + JAMAIS au réduit) ;
+    verify-renversement instruit l'angle mort loi15 (la prise a trois visages : receive,
+    loose-kept, amorti) ; verify-match11 pointes ≤ 12 re-fondée (corps 1,6-5,8 % inchangé,
+    pire graine étirée par le vol flotté) + régain en existence graines 3→4 (1/5/0/4/3/0
+    mesuré). LE BANC A PAYÉ DEUX FOIS : la clause pointe (RÉDUIT) a attrapé mon site gants
+    non-gaté st.full — le bit-près n'est pas un slogan. Batterie 63+3 verte, volumétrie
+    rondo-sim 1249. Dettes nommées : le planificateur (choosePass) évalue ses candidats sans
+    effet (l'exécutant lifte — micro-écart d'observation) ; le centre BAS garde sa glissade
+    (sa nature) ; 6 ré-accélérations résiduelles (déviations claquette/tacle à gros spin).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

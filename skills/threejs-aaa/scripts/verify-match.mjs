@@ -11,6 +11,7 @@ import { makePitch, outRule, checkPitch, FULL, REDUIT } from '../assets/starter/
 import { KEEPER, keeperSpot, keeperDecide, shotCross, checkKeeper } from '../assets/starter/src/engine/keeper.js';
 import { makeMatch, matchCfg, matchStep, playMatch, checkMatch, MATCH } from '../assets/starter/src/engine/match-sim.js';
 import { touchDistance } from '../assets/starter/src/engine/dribble.js';
+import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -1073,6 +1074,73 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const r3 = checkMatch(s4, t4);
     ok('sabotage « remise volée » attrapé (mauvaise équipe à la reprise)', !r3.ok && r3.issues.some((i) => i.includes('prise par')));
   } else ok('sabotage « remise volée » (aucune sortie sur cette graine — sabotage sans objet)', true);
+}
+
+// ---------- 5. lot 54 — le spin orphelin, le backspin des passes levées, le quart-de-touche nommé
+{
+  // L'AMORTI AMORTIT AUSSI LA ROTATION. Fixture : un ballon libre arrive au pied avec un spin
+  // énorme (l'orphelin d'hier) — receive() doit pincer w du même geste qui pince v. Sabotage
+  // amortiSpin:false : le spin traverse l'amorti intact et la friction le reconvertira.
+  const spinFixture = (cfgOver) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg(cfgOver);
+    const p = st.players[0];
+    p.p = [st.ball.p[0] - 0.35, 0, st.ball.p[2]]; p.v = [0, 0]; p.down = 0;
+    st.possession = { team: p.team, carrier: -1 }; st.phase = 'loose'; st.pass = null;
+    for (const q of st.players) if (q.team !== p.team) q.p = [q.p[0] + 30, 0, q.p[2]]; // personne ne conteste
+    st.ball.impulse([6 - st.ball.v[0], 0, -st.ball.v[2]], [-st.ball.w[0], -st.ball.w[1], 120 - st.ball.w[2]]);
+    const w0 = Math.hypot(st.ball.w[0], st.ball.w[2]);
+    simInternals.receive(st, p.id, cfg);
+    return { w0, w1: Math.hypot(st.ball.w[0], st.ball.w[2]) };
+  };
+  const amorti = spinFixture({});
+  ok('l\'amorti pince la ROTATION avec la vitesse (spin orphelin ≤ 50 %)', amorti.w1 <= amorti.w0 * 0.5,
+    `w ${amorti.w0.toFixed(0)} → ${amorti.w1.toFixed(0)} rad/s`);
+  const sab1 = spinFixture({ amortiSpin: false });
+  ok('sabotage « amortiSpin:false » : le spin traverse l\'amorti intact', sab1.w1 > sab1.w0 * 0.8,
+    `w ${sab1.w0.toFixed(0)} → ${sab1.w1.toFixed(0)} rad/s`);
+
+  // LE BACKSPIN DE LA PASSE LEVÉE : à la première passe lofted/chip du flux, le ballon en vol
+  // porte une rotation HORIZONTALE franche ; passeSpin:false la coupe à zéro (structurel).
+  const premierLift = (cfgOver) => {
+    const st = makeMatch({ full: true, seed: 2 });
+    const cfg = matchCfg(cfgOver);
+    for (let i = 0; i < 120 * 60; i++) {
+      const n = st.events.length;
+      matchStep(st, 1 / 60, cfg);
+      const nouv = st.events.slice(n);
+      // …hors DÉGAGEMENTS (clear : exclus du lift par construction, ils s'annoncent par
+      // l'événement clearance au même tick) — centres et renversements liftent désormais
+      // par leur solveur honnête, ils comptent
+      if (nouv.some((e) => e.type === 'pass' && (e.style === 'lofted' || e.style === 'chip'))
+        && !nouv.some((e) => e.type === 'clearance')) {
+        return Math.hypot(st.ball.w[0], st.ball.w[2]);
+      }
+    }
+    return null;
+  };
+  const wLift = premierLift({});
+  ok('la passe levée porte son backspin (rotation horizontale ≥ 15 rad/s au départ)', wLift != null && wLift >= 15,
+    wLift == null ? 'aucune passe levée en 120 s' : `${wLift.toFixed(0)} rad/s`);
+  const wPlat = premierLift({ passeSpin: false });
+  ok('sabotage « passeSpin:false » : la passe levée d\'hier part plate', wPlat != null && wPlat < 5,
+    wPlat == null ? 'aucune passe levée en 120 s' : `${wPlat.toFixed(0)} rad/s`);
+
+  // LE QUART-DE-TOUCHE SE NOMME (st.full) : le contact qui écrasait le ballon en silence émet son
+  // événement control — la scène a un geste à animer. Et JAMAIS au réduit : la porte st.full est
+  // la preuve que le monde d'hier n'a pas bougé d'un bit.
+  const quarts = (full, seed, dur) => {
+    const st = full ? makeMatch({ full: true, seed }) : makeMatch({ perTeam: 5, seed });
+    const cfg = full ? matchCfg({ shotRange: 20 }) : matchCfg();
+    for (let i = 0; i < dur * 60; i++) matchStep(st, 1 / 60, cfg);
+    return st.events.filter((e) => e.type === 'control' && e.tech === 'quart-de-touche').length;
+  };
+  // le geste est RARE par nature (l'amorti-poursuite mange les poursuites non contestées ;
+  // ne reste que le rattrapage contesté, ~1 par match) — la clause est une EXISTENCE sur
+  // deux matchs complets, pas une cadence
+  const q11 = quarts(true, 1, 300) + quarts(true, 2, 300), qRed = quarts(false, 1, 180);
+  ok('le quart-de-touche émet son événement en 11c11 (≥ 1 sur 2 × 300 s)', q11 >= 1, `${q11} événements`);
+  ok('…et JAMAIS au réduit (porte st.full — le monde d\'hier au bit près)', qRed === 0, `${qRed} événements`);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

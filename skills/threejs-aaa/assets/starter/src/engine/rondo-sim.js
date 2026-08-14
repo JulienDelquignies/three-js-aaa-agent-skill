@@ -250,6 +250,7 @@ export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (
  * scores the pass; anyone else on the same shirt is a scuffed ball that stayed in the family.
  * An opponent taking it is the turnover.
  */
+const dW = (st, cfg, k) => (st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null); // l'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config)
 function receive(st, id, cfg = RONDO) {
   const p = st.players[id];
   // LE SIFFLET DE LA LOI 11 : photographié hors-jeu au départ du ballon (st.pass.off, strikeNow),
@@ -275,16 +276,15 @@ function receive(st, id, cfg = RONDO) {
     } else st.events.push({ t: +st.t.toFixed(2), type: 'loose-kept', by: id });
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
-    p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — le plan
-    //                                        ET le cap de l'ancien plan (un hint survivant pilotait
-    //                                        la première demi-seconde vers l'ancre d'un autre monde)
+    p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — plan ET cap
+    //                             (un hint survivant pilotait la demi-seconde vers l'ancre d'un autre monde)
     // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH, pas une touche orientée de joueur de
     // champ. La table des contrôles (géométrie de pied) laissait un ballon « sans technique
     // légale » filer NON AMORTI avec l'étiquette de porteur — et la branche distributeur marchait
     // à l'opposé pendant que le ballon roulait au fond (le CSC de première touche : 5 des 6 buts
     // sans tir mesurés). Les gardiens n'existent pas au rondo — aucune garde nécessaire.
     if (p.keeper) {
-      st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92]);
+      st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92], dW(st, cfg, 0.92));
       if (st.ball.owner !== id) st.ball.possess(id);
       st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'prise-gardien', foot: 'both',
         surface: 'hands', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
@@ -356,7 +356,7 @@ function receive(st, id, cfg = RONDO) {
       const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy * (p.skill?.controlF ?? 1))));
       if (pMiss > 0 && (st.rnd ? st.rnd() : 0.5) < pMiss) {
         deny(st, 'contrôle-manqué');
-        st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62]);
+        st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62], dW(st, cfg, 0.62));
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot,
           surface: pick.surface, speed: +arr.toFixed(1), miss: true, settle: null });
         // LE CONTRÔLE RATÉ TUE LA PASSE (lot 44, st.full — capture utilisateur : le receveur
@@ -370,7 +370,7 @@ function receive(st, id, cfg = RONDO) {
         }
         return;                                                    // pas de possession : la touche a fui
       }
-      st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)]);
+      st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)], dW(st, cfg, 1 - pick.tech.power));
       st.ball.possess(id);
       st._settling = { ev: st.events.length, id, at: st.t + T };
       st.events.push({
@@ -392,10 +392,11 @@ function receive(st, id, cfg = RONDO) {
       const AP = st.full ? cfg.amortiPoursuite : null;
       const foeAP = AP ? Math.min(...st.players.filter((q) => q.team !== p.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99) : 99;
       if (AP && foeAP > cfg.contestRadius) {
-        st.ball.impulse([-st.ball.v[0] * AP, -st.ball.v[1] * 0.6, -st.ball.v[2] * AP]);
+        st.ball.impulse([-st.ball.v[0] * AP, -st.ball.v[1] * 0.6, -st.ball.v[2] * AP], dW(st, cfg, AP));
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'amorti-poursuite', foot: 'any',
           surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
-      } else st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25]);
+      } else { st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25], dW(st, cfg, 0.25)); if (st.full) st.events.push({ // la touche muette se nomme (lot 54) : la scène a un contact à animer
+        t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: 'any', surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
     }
   } else {
     // LA CAUSE DIT LE GESTE : une interception prend un ballon en vol, un tacle prend le ballon d'un
