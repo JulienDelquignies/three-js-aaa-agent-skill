@@ -2926,6 +2926,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     touche (anim), la précision des LIVRAISONS longues (p90 14 m de la cible — la moitié
     des chasses restantes).
 
+89. **La profondeur n'est pas une erreur, et le rond central s'éclaire (lot 52b — deux
+    retours).** (1) L'objection utilisateur « une passe à 14 m de la cible peut exister si
+    c'est un ballon en profondeur » est JUSTE — l'instrument décomposé : en PROFONDEUR
+    (point visé ≥ 6 m devant le receveur, ou coureur en appel), receveur↔chute 12,5 m p50 =
+    L'ESPACE de la course, normal ; DANS LES PIEDS, l'erreur de LIVRAISON (chute↔visé) p50
+    5,4 m — ça c'est la dette (réel 2-3 m pour du 20-30 m), re-nommée « la précision des
+    livraisons longues dans les pieds » (le p90 23 m inclut des déviations en route —
+    l'instrument du calibrage les séparera). (2) « Le terrain est trop sombre au milieu » :
+    les 4 nappes visent les quadrants, les lavages les cages — le ROND CENTRAL vivait entre
+    tous. Deux nappes médianes (les 2 mâts côté médiane, ×0,55 comme les cages) — 8 nappes
+    au contrat matchday, capture playmode à l'appui : la médiane se lit, la nuit reste une
+    nuit.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

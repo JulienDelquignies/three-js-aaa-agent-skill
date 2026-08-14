@@ -274,6 +274,23 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
     wash.castShadow = false;
     group.add(wash); group.add(wash.target); spots.push(wash);
   }
+  // …ET LE LAVAGE DU ROND CENTRAL (lot 52 — retour utilisateur « le terrain est trop sombre
+  // au milieu ») : les quatre nappes visent les quadrants (0,36 L / 0,31 W) et les lavages
+  // les cages — le CENTRE vivait entre tous. Deux nappes médianes, une par flanc (les deux
+  // mâts les plus proches de la médiane), tirées vers le rond central — même sobriété que
+  // les cages (×0,55) : la nuit reste une nuit, la médiane se lit.
+  {
+    const cotes = [...masts].sort((a, b) => Math.abs(a.x) - Math.abs(b.x)).slice(0, 2);
+    for (const m of cotes) {
+      const d = Math.hypot(m.x, m.y, m.z);
+      const wash = new THREE.SpotLight(0xf0f5ff, 1, 0, 0.52, 0.6, 2);
+      wash.intensity = POOL_E * 0.55 * d * d * intensity;
+      wash.position.set(m.x, m.y, m.z);
+      wash.target.position.set(0, 0, m.z * 0.12);
+      wash.castShadow = false;
+      group.add(wash); group.add(wash.target); spots.push(wash);
+    }
+  }
 
   return {
     group, sun, spots, scene, doused: doused.map(([l]) => l),
