@@ -77,17 +77,20 @@ export class Rondo {
     this.scene.add(built.group); this.disposables.push(built);
     this.scene.fog = new THREE.FogExp2(0x0a1020, 0.0016);
 
+    // plein format sur écran étroit : la chaîne 'low' par défaut (le post 'high' à DPR mobile
+    // sur 105 × 68 est le lag mesuré au téléphone) — ?q=high le rétablit explicitement.
+    // Calculé AVANT le stade : la taille de la shadow map en dépend (lot 61).
+    this._tier = q.get('q') || (this.fullMode && typeof window !== 'undefined' && window.innerWidth < 700 ? 'low' : 'high');
+
     // ---- night: floodlights + one shadow-casting sun fitted to the pitch
     this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
       // plein format : 22 corps skinnés se re-déforment dans la passe d'ombre — la map se
-      // resserre (1024²) et le BUDGET DE CASTERS (update) limite qui la paie
-      shadowMapSize: this.fullMode ? 1024 : 2048 });
+      // resserre (1024², 512² au tier low : après le bloom, la passe d'ombre est le deuxième
+      // poste GPU du téléphone) et le BUDGET DE CASTERS (update) limite qui la paie
+      shadowMapSize: this.fullMode ? (this._tier === 'low' ? 512 : 1024) : 2048 });
     this.disposables.push(this.night);
     this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [], gestes: [] };
 
-    // plein format sur écran étroit : la chaîne 'low' par défaut (le post 'high' à DPR mobile
-    // sur 105 × 68 est le lag mesuré au téléphone) — ?q=high le rétablit explicitement
-    this._tier = q.get('q') || (this.fullMode && typeof window !== 'undefined' && window.innerWidth < 700 ? 'low' : 'high');
     // LE LOD D'ANIMATION (lot 60) est actif par défaut — ?animlod=0 le coupe (sabotage nommé) ;
     // et le tier low PLAFONNE le pixel ratio à 1,75 (un écran 2,6× DPR paie 6,8 fragments pour 1 —
     // à 412 px de large, 1,75 est indiscernable et rend ~30 % du budget GPU).
@@ -95,6 +98,9 @@ export class Rondo {
     if (this._tier === 'low' && this.renderer?.setPixelRatio && typeof window !== 'undefined') {
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     }
+    // …ET LA RÉSOLUTION EST DYNAMIQUE EN PLEIN FORMAT (lot 61) : le tier se choisit à l'ouverture,
+    // le GPU réel ne se voit qu'en jouant — update() mesure le fps mural et ajuste. ?dynres=0 coupe.
+    this._dynRes = this.fullMode && q.get('dynres') !== '0';
 
     // ---- the grid the game is played in, painted on the grass
     // un ENTRAÎNEMENT a son carré et ses cônes ; un MATCH n'ajoute rien au sol — le stade
@@ -359,8 +365,13 @@ export class Rondo {
     // geste d'un autre. Le cadrage est dérivé, pas écrit en dur.
     const narrow = typeof window !== 'undefined' && window.innerWidth < 700;
     // plein format : le DPR se cape à 1,5 (un téléphone à DPR 3 → 2 quadruple déjà les
-    // fragments du réduit ; à 22 corps + grand stade, 1,5 rend ~44 % des pixels au GPU)
-    if (this.fullMode && this.renderer?.setPixelRatio) this.renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, 1.5));
+    // fragments du réduit ; à 22 corps + grand stade, 1,5 rend ~44 % des pixels au GPU).
+    // Ce cap devient le PLAFOND de la résolution dynamique (lot 61) : elle peut rendre des
+    // pixels sous la charge, jamais en offrir plus qu'à l'ouverture.
+    if (this.fullMode && this.renderer?.setPixelRatio) {
+      this._dprCap = Math.min(window.devicePixelRatio ?? 1, 1.5);
+      this.renderer.setPixelRatio(this._dprCap);
+    }
     // le match cadre le TERRAIN, et la régie vit AU-DESSUS de la tribune — le stade réduit a
     // rapproché le premier rang à 21 m du centre : l'ancienne position (z=−34) filmait l'intérieur
     // du béton (écran noir mesuré). Passerelle haute, plongée douce, tout le terrain dans le cadre.
@@ -668,6 +679,26 @@ export class Rondo {
 
   update(dt) {
     if (!this.state) return;
+    // LA RÉSOLUTION SUIT LE TÉLÉPHONE (lot 61 — « toujours saccadé » après le CPU réglé au
+    // lot 60) : le tier se choisit à l'ouverture, le GPU réel ne se voit qu'en jouant. Fenêtre
+    // de 2 s au chrono MURAL (dt est clampé à 1/30, il ment sous la charge) : < 45 fps → −0,25
+    // de pixel ratio (plancher 1,0), > 55 fps → +0,25 (jamais au-delà du cap d'ouverture, posé
+    // dans camera()). Le post relit getDrawingBufferSize à chaque frame : le changement se
+    // propage seul, sans resize. Une fenêtre gelée (onglet caché, chargement, GC massif) se
+    // REJETTE au lieu de se lire comme de la lenteur. ?dynres=0 coupe (sabotage nommé).
+    if (this._dynRes && typeof performance !== 'undefined') {
+      const nowW = performance.now();
+      if (this._drT0 == null) { this._drT0 = nowW; this._drN = 0; }
+      else if (++this._drN && nowW - this._drT0 >= 2000) {
+        const win = nowW - this._drT0, fps = this._drN * 1000 / win;
+        const cur = this.renderer?.getPixelRatio?.() ?? 0;
+        if (win < 4000 && cur > 0) {
+          if (fps < 45 && cur > 1.0) this.renderer.setPixelRatio(Math.max(1.0, cur - 0.25));
+          else if (fps > 55 && this._dprCap && cur < this._dprCap) this.renderer.setPixelRatio(Math.min(this._dprCap, cur + 0.25));
+        }
+        this._drT0 = nowW; this._drN = 0;
+      }
+    }
     const step = Math.min(dt, 1 / 30);
     const before = this.state.events.length;
     const toBefore = this.state.turnovers;

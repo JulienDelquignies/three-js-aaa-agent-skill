@@ -3148,6 +3148,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     sim — le « pas fluide » du téléphone vivait pour moitié dans la couche squelettique de la
     scène, que seul le CDP Profiler du navigateur bridé a montrée.
 
+98. **Le GPU du téléphone : bloom low OFF, ombres 512, résolution dynamique (lot 61 — retour
+    utilisateur « toujours saccadé », après le CPU réglé au lot 60).** Le banc simule le CPU
+    (bridage ×4) mais PAS le GPU du téléphone (SwiftShader ne mesure rien d'utile) — ce lot
+    s'argumente PAR CONSTRUCTION, sur les trois postes plein écran du tier mobile :
+    (1) LE BLOOM TOURNAIT AU TIER LOW (render-pipeline.js construisait la passe sans condition
+    depuis toujours) — sa chaîne de downsample est une série de passes plein écran, la plus
+    chère du tier censé être léger ; le low n'a PLUS de bloom (TIERS.low.bloom:false, declared
+    et construction conditionnés — le contrat declared↔passes reste cohérent). Le low promet
+    la LISIBILITÉ, pas la photométrie : capture de sanité faite, la nuit de stade reste lisible
+    (AgX tient l'exposition, seuls les halos partent). (2) LES OMBRES 512² EN LOW (Rondo.js) :
+    la passe d'ombre re-déforme chaque rig skinné — le calcul de _tier REMONTE au-dessus du
+    setupStadiumNight pour que shadowMapSize puisse en dépendre (1024 high, 512 low, 2048
+    réduit). (3) LA RÉSOLUTION DYNAMIQUE (Rondo.update, plein format) : le tier se choisit à
+    l'ouverture, le GPU réel ne se voit qu'en jouant — fenêtre de 2 s au chrono MURAL (dt est
+    clampé à 1/30, il ment sous la charge) : < 45 fps → pixel ratio −0,25 (plancher 1,0),
+    > 55 fps → +0,25, jamais au-delà du cap d'ouverture (1,5 plein format, posé dans camera()
+    et stocké _dprCap) ; une fenêtre gelée (onglet caché, GC massif) se REJETTE (win ≥ 4 s)
+    au lieu de se lire comme de la lenteur ; le post relit getDrawingBufferSize à chaque frame
+    donc le changement se propage sans resize ; ?dynres=0 = sabotage nommé. PROUVÉ en RAF
+    réelle (Playwright sans ?capture, CPU ×4, DPR 2,6) : le pixel ratio descend 1,5 → 1,0 par
+    paliers de 0,25, une décision par fenêtre. Leçon d'architecture : un moteur réutilisable ne
+    devine pas le GPU de l'appareil — il choisit un tier à l'ouverture PUIS écoute la frame
+    réelle et rend des pixels avant de rendre des fps.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

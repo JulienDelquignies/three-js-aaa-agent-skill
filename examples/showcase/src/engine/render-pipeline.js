@@ -31,7 +31,10 @@ import { dof } from 'three/addons/tsl/display/DepthOfFieldNode.js';
 
 /** What each tier promises. `ao` is a SINGLE source on purpose — see trap 3. */
 const TIERS = {
-  low:   { ao: null,   ssr: false, godrays: false, temporal: null,   fxaa: true,  sharpen: false, lut: false },
+  // …low SANS bloom (lot 61 — « toujours saccadé » au téléphone) : la chaîne de downsample du
+  // bloom est une série de passes plein écran — sur un GPU mobile c'était la passe la plus chère
+  // du tier censé être léger. Le low promet la LISIBILITÉ, pas la photométrie.
+  low:   { ao: null,   ssr: false, godrays: false, temporal: null,   fxaa: true,  sharpen: false, lut: false, bloom: false },
   high:  { ao: 'gtao', ssr: true,  godrays: false, temporal: 'traa', fxaa: false, sharpen: true,  lut: false },
   ultra: { ao: 'ssgi', ssr: true,  godrays: true,  temporal: 'taau', fxaa: false, sharpen: true,  lut: true },
 };
@@ -55,7 +58,7 @@ const usableSun = (l) => !!l && (l.isDirectionalLight === true || l.isPointLight
  * issue instead of an effect nobody notices is missing.
  */
 function buildGraph(renderer, scene, camera, state) {
-  const cfg = TIERS[state.tier], passes = {}, declared = ['bloom'];
+  const cfg = TIERS[state.tier], passes = {}, declared = cfg.bloom === false ? [] : ['bloom'];
 
   // MSAA must die BEFORE the pass is constructed: the sample count is baked into its render target.
   if (cfg.temporal) forceNoMSAA(renderer);
@@ -137,8 +140,10 @@ function buildGraph(renderer, scene, camera, state) {
   }
 
   // Threshold 1.0 keeps bloom on genuinely over-white HDR values instead of hazing the whole frame.
-  passes.bloom = bloom(hdr, 0.35, 0.5, 1.0);
-  hdr = hdr.add(passes.bloom);
+  if (cfg.bloom !== false) {
+    passes.bloom = bloom(hdr, 0.35, 0.5, 1.0);
+    hdr = hdr.add(passes.bloom);
+  }
 
   // TRAP 6 — the single tonemap. AgX unless the renderer was explicitly set to something else;
   // NoToneMapping would ship raw HDR floats to an sRGB buffer, i.e. a blown-out image.

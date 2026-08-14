@@ -219,8 +219,10 @@ function makeRig() {
   });
   const R0 = { samples: 0 };
   ok('chaîne ultra saine acceptée', checkRenderPipeline(good(), R0).ok, checkRenderPipeline(good(), R0).issues.join(' | '));
-  ok('chaîne low saine acceptée (pas de temporel exigé)',
-    checkRenderPipeline(good({ tier: 'low', declared: ['bloom', 'fxaa'], passes: { bloom: {}, fxaa: {} } }), R0).ok);
+  // le low du lot 61 n'a PLUS de bloom (la chaîne de downsample était la passe la plus chère
+  // du tier mobile) : le mock décrit le monde tel qu'il est — fxaa seul.
+  ok('chaîne low saine acceptée (pas de temporel exigé, pas de bloom)',
+    checkRenderPipeline(good({ tier: 'low', declared: ['fxaa'], passes: { fxaa: {} } }), R0).ok);
 
   // ---- sabotages nommés : chacun est un bug qu'on a déjà payé une fois
   ok('sabotage « MSAA + passe temporelle » attrapé (TRAA/TAAU exigent les samples jitterés bruts)',
