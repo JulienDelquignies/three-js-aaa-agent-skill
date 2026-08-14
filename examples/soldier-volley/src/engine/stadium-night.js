@@ -94,6 +94,15 @@ function fitShadowToPitch(sun, L, W) {
   const c = sun.shadow.camera;
   c.left = x0; c.right = x1; c.bottom = y0; c.top = y1;
   c.near = Math.max(0.5, n - 2); c.far = f + 2; c.updateProjectionMatrix();
+  // LE BIAIS SUIT LE TEXEL (lot 62 — capture utilisateur : des BANDES régulières sur la pelouse
+  // au tier low). bias/normalBias étaient des CONSTANTES calibrées à 2048² — et 0,03 m est très
+  // exactement un demi-texel de ce frustum-là (113 m / 2048 / 2). À 512² le texel mondial est 4×
+  // plus gros : 3 cm ne couvrent plus la pente d'un texel de ~22 cm → acné d'ombre en bandes.
+  // La loi native, pas une constante par tier : un demi-texel du frustum RÉEL, quelle que soit
+  // la map. À 2048 elle redonne le 0,03 historique au centimètre près.
+  const texel = Math.max(x1 - x0, y1 - y0) / (sun.shadow.mapSize.x || 2048);
+  sun.shadow.normalBias = texel / 2;
+  sun.shadow.bias = -0.0004 * (2048 / (sun.shadow.mapSize.x || 2048));
 }
 
 /**
@@ -200,8 +209,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   sun.position.set((hx / hl) * r, KEY_DIST * Math.sin(KEY_ELEV), (hz / hl) * r);
   sun.castShadow = true;
   sun.shadow.mapSize.set(shadowMapSize, shadowMapSize);
-  sun.shadow.bias = -0.0004;
-  sun.shadow.normalBias = 0.03;   // grass and roof slabs are huge flat quads — normalBias kills the acne
+  // bias/normalBias : posés par fitShadowToPitch — la loi suit le texel du frustum réel (lot 62)
   group.add(sun); group.add(sun.target);   // the target stays at local (0,0,0) = the centre spot
   fitShadowToPitch(sun, L, W);
 

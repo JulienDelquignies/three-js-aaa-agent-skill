@@ -1,7 +1,7 @@
 import { BALL, stepBall, kick } from './ball.js';
 import { predictPath } from './ball-predict.js';
 import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { makeDribbler, dribbleStep, dribbleSteer, touchDistance } from './dribble.js';
+import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { chargeStep, slideTackleStep, slideResolve } from './duel.js';
@@ -679,15 +679,15 @@ export function rondoStep(st, dt, cfg = RONDO) {
       if (contested) {
         st.ball.release('contesté');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }  // il tente de l'emmener hors du duel
-      } else if (intentFresh || settling) {
-        st.ball.carry(footPoint(st, c, cfg), dt);               // porté : le ballon au pied, continu
+      } else if (intentFresh || settling) {   // porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas
+        st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
       } else {
         st.ball.release('conduite');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }
       }
-    } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius) {
+    } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5))) {
       st.ball.possess(c.id);
-      st.ball.carry(footPoint(st, c, cfg), dt);
+      st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
     } else {
       const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev);
     }

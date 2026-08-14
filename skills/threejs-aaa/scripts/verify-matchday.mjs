@@ -205,6 +205,21 @@ function makeRig() {
   { ok('rien construit → refus propre', has(checkStadiumNight(null, model), 'aucun groupe')); }
   night.dispose();
   ok('dispose() rend la scène (fond, environnement, brouillard)', scene.fog === undefined || scene.fog === null);
+
+  // LE BIAIS D'OMBRE SUIT LE TEXEL (lot 62 — capture utilisateur : des bandes régulières sur la
+  // pelouse au tier low). Les constantes 2048² (normalBias 0,03 = un demi-texel de CE frustum)
+  // laissaient l'acné apparaître dès que la map rétrécissait : à 512² le texel mondial est 4×
+  // plus gros, le biais doit l'être aussi — la loi vit dans fitShadowToPitch.
+  {
+    const n512 = setupStadiumNight(new THREE.Scene(), null, { model, shadowMapSize: 512 });
+    const n2048 = setupStadiumNight(new THREE.Scene(), null, { model, shadowMapSize: 2048 });
+    const r = n512.sun.shadow.normalBias / Math.max(1e-9, n2048.sun.shadow.normalBias);
+    ok(`le biais d'ombre suit le texel (normalBias 512² = ${n512.sun.shadow.normalBias.toFixed(3)} m, ${r.toFixed(1)}× celui de 2048² = ${n2048.sun.shadow.normalBias.toFixed(3)})`,
+      r > 3.5 && r < 4.5 && n512.sun.shadow.normalBias > 0.08);
+    ok(`…et le bias de profondeur aussi (512² : ${n512.sun.shadow.bias} = 4× ${n2048.sun.shadow.bias})`,
+      Math.abs(n512.sun.shadow.bias / n2048.sun.shadow.bias - 4) < 0.1);
+    n512.dispose(); n2048.dispose();
+  }
 }
 
 // ---------------------------------------------------------------- 3. PIPELINE

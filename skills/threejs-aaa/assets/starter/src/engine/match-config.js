@@ -155,6 +155,19 @@ export const MATCH = {
                           // pleine allonge reste quand le ballon fuit plus vite qu'on ne
                           // referme (le poke du sprint). false : la jambe tendue d'hier
                           // (sabotage nommé). Le rondo/réduit gardent reach, au bit près.
+  prisePied: 0.5,         // LA POSSESSION NE SE PREND PAS DE LOIN (11c11, st.full — lot 62,
+                          // capture utilisateur : « le ballon change de sens sans être touché »).
+                          // Mesuré (3 graines × 300 s) : 80 des 105 captures accordaient la
+                          // possession à un ballon qui FUYAIT (jusqu'à 0,9 m — captureRadius), et
+                          // le servo du porté le retournait le tick même : 39 des 42 demi-tours
+                          // sans contact du match venaient de ce seul site. Désormais la capture
+                          // exige un ballon PRENABLE (balPrenable, dribble.js) : au pied
+                          // (< prisePied) ou convergent (pas fuyant > 0,5 m/s) ; sinon le porteur
+                          // COURT et la touche réelle le joue (lot 58). Et le rassemblement du
+                          // porté au-delà de 0,45 m COURBE (τ 0,12, vMax 6,5 — un pied, pas un
+                          // aimant : 665 à-coups sans événement en 900 s avant, v 2,4→0,4 en un
+                          // tick). false : l'aimant d'hier (sabotage nommé). Rondo/réduit : au
+                          // bit près (gates st.full).
   allure: true,           // L'ÉCONOMIE DE COURSE (11c11, st.full — lot 57, retour utilisateur
                           // « fourmilière/maternelle off-ball ») : EN JEU PLACÉ, ON SUIT LE JEU À
                           // LA VITESSE DU JEU — le suiveur (marqueur, poste, couverture) est

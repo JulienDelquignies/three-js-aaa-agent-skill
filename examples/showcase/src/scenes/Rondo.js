@@ -693,8 +693,13 @@ export class Rondo {
         const win = nowW - this._drT0, fps = this._drN * 1000 / win;
         const cur = this.renderer?.getPixelRatio?.() ?? 0;
         if (win < 4000 && cur > 0) {
-          if (fps < 45 && cur > 1.0) this.renderer.setPixelRatio(Math.max(1.0, cur - 0.25));
-          else if (fps > 55 && this._dprCap && cur < this._dprCap) this.renderer.setPixelRatio(Math.min(this._dprCap, cur + 0.25));
+          if (fps < 45 && cur > 1.0) { this.renderer.setPixelRatio(Math.max(1.0, cur - 0.25)); this._drUp = 0; }
+          else if (fps > 55 && this._dprCap && cur < this._dprCap) {
+            // REMONTER exige DEUX fenêtres rapides consécutives (lot 62 — hystérésis) : chaque
+            // changement réalloue les cibles du post, osciller 1,25↔1,5 toutes les 2 s SERAIT
+            // une saccade. Descendre reste immédiat : on rend des pixels, jamais des à-coups.
+            if ((this._drUp = (this._drUp ?? 0) + 1) >= 2) { this.renderer.setPixelRatio(Math.min(this._dprCap, cur + 0.25)); this._drUp = 0; }
+          } else this._drUp = 0;
         }
         this._drT0 = nowW; this._drN = 0;
       }

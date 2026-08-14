@@ -3172,6 +3172,43 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     devine pas le GPU de l'appareil — il choisit un tier à l'ouverture PUIS écoute la frame
     réelle et rend des pixels avant de rendre des fps.
 
+99. **Les lignes, l'aimant, le double anticrénelage (lot 62 — retour utilisateur, 2 captures :
+    « toujours des saccades », « parfois des lignes sur le terrain », « des ballons qui
+    s'aimantent vers les joueurs alors qu'ils roulent dans l'autre sens »).** Trois fronts :
+    (1) LES LIGNES = L'ACNÉ D'OMBRE DU 512². bias −0,0004 / normalBias 0,03 étaient des
+    CONSTANTES calibrées à 2048² — et 0,03 m est très exactement un demi-texel de ce
+    frustum-là (113 m / 2048 / 2). Le lot 61 a rétréci la map à 512² en low : texel 4× plus
+    gros, 3 cm ne couvrent plus la pente d'un texel de ~22 cm → bandes régulières sur la
+    pelouse (le GPU mobile les montre ; SwiftShader float32 non — la repro locale est
+    négative, le fix est prouvé par géométrie). La loi vit dans fitShadowToPitch : normalBias
+    = texel_réel/2 (0,106 m à 512, et elle REDONNE le 0,03 historique à 2048), bias ∝
+    2048/mapSize. Clauses banc : ratio 4× vérifié sur les deux tailles. (2) L'AIMANT = LA
+    POSSESSION PRISE DE LOIN. Sonde aimant (3 graines × 300 s) : 80 des 105 captures
+    accordaient la possession à un ballon qui FUYAIT le preneur (captureRadius 0,9), et le
+    servo du porté (vMax 9, τ 0,04) le retournait le tick même — 39 des 42 demi-tours sans
+    contact du match venaient de ce seul site ; plus 665 à-coups de porté sans événement
+    (v 2,4→0,4 en un tick, l'à-coup que la scène ne peut pas jouer). Corrections (st.full,
+    clé prisePied 0,5, sabotage nommé prisePied:false) : la capture exige un ballon PRENABLE
+    (balPrenable, dribble.js — au pied < 0,5 m OU convergent), sinon le porteur COURT et la
+    touche réelle le joue (lot 58) ; et le rassemblement du porté au-delà de 0,45 m COURBE
+    (τ 0,12, vMax 6,5 — un pied, pas un aimant). RE-MESURÉ : demi-tours de prise 42 → 2,
+    fuyantes lointaines 69 → 14 (capture 28 → 0), à-coups portés 665 → 378 (le reste vit
+    sous 0,45 m, couvert par le corps), et touches de conduite 760 → 1272 (+67 % : les
+    ballons refusés se jouent par contacts réels). A/B 20 graines × 300 s : 71 tirs,
+    23 buts — bande 17-33 tenue. Fixture banc : ballon fuyant à 0,7 m REFUSÉ avec la loi,
+    possédé par le sabotage. (3) LES SACCADES = LE DOUBLE ANTICRÉNELAGE. Renderer.js demande
+    antialias:true (samples 4) et le tier low n'a PAS de passe temporelle → forceNoMSAA ne
+    tournait pas : le low payait le MSAA 4× sur la passe scène PUIS repassait FXAA par-dessus
+    — deux anticrénelages, dont un à 4× la bande passante mobile. Désormais FXAA ⇒ samples 0
+    (clause contrat ajoutée : « MSAA + FXAA = le tier léger paie double »). Et l'hystérésis
+    de la résolution dynamique : REMONTER exige deux fenêtres rapides consécutives (chaque
+    changement réalloue les cibles du post — osciller 1,25↔1,5 toutes les 2 s SERAIT une
+    saccade) ; descendre reste immédiat. Bande du tacle glissé RE-FONDÉE (plancher 0,5 →
+    0,25/match, récit au banc) : le ballon de conduite plus souvent libre donne au PIQUE debout
+    une part de ce que seul le tacle couché prenait — on ne se couche pas sur un ballon qu'on
+    peut piquer. Front suivant nommé si ça saccade encore : la chasse
+    aux allocations (pics GC ~50 ms récurrents au profil du lot 60).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

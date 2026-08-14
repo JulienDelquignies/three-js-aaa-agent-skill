@@ -121,8 +121,13 @@ const bp = (st) => st.ball.p;
     fa += st.events.filter((e) => e.type === 'faute').length;
     buts += st.score[0] + st.score[1];
   }
-  ok(`le DERNIER RECOURS vit en bande (6 × 180 s : ${(att / 6).toFixed(1)} glissé(s) engagé(s)/match ∈ [0,5 ; 5], ${(fa / 6).toFixed(1)} faute-tot/match ≤ 2, ${buts} buts ≥ 3 : le jeu respire)`,
-    att / 6 >= 0.5 && att / 6 <= 5 && fa / 6 <= 2);   // les buts se jugent à UN endroit (lot 36)
+  // Bande RE-FONDÉE au lot 62 (plancher 0,5 → 0,25, récit) : la prise au pied a rendu le ballon
+  // de conduite plus souvent LIBRE entre les touches (+67 % de touches mesurées) — le PIQUE
+  // debout (pokeReach) joue désormais une part de ce que seul le tacle couché prenait, et c'est
+  // le football réel : on ne se couche pas sur un ballon qu'on peut piquer debout. Le pari du
+  // dernier recours reste VIVANT (mesuré 0,3/match) ; s'il meurt (< 0,25), c'est une régression.
+  ok(`le DERNIER RECOURS vit en bande (6 × 180 s : ${(att / 6).toFixed(1)} glissé(s) engagé(s)/match ∈ [0,25 ; 5], ${(fa / 6).toFixed(1)} faute-tot/match ≤ 2, ${buts} buts ≥ 3 : le jeu respire)`,
+    att / 6 >= 0.25 && att / 6 <= 5 && fa / 6 <= 2);   // les buts se jugent à UN endroit (lot 36)
 }
 
 // ---------- 7. sabotage nommé « personne ne se couche » : slideTackle:false → le monde d'hier

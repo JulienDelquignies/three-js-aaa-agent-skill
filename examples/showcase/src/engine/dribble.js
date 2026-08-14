@@ -72,6 +72,19 @@ export function dribbleSteer(ball, player, { pull = 0.6, reach = 1.15 } = {}) {
   return [hx / l, hz / l];
 }
 
+/**
+ * LA PRISE A UNE PORTÉE DE PIED (lot 62 — capture utilisateur : « le ballon change de sens sans
+ * être touché »). Mesuré (3 graines × 300 s) : 80 des 105 captures accordaient la possession à un
+ * ballon qui FUYAIT le preneur (jusqu'à 0,9 m), et le servo du porté le retournait le tick même —
+ * 39 des 42 demi-tours sans contact du match venaient de ce seul site. La règle du réel : on
+ * possède un ballon AU pied (< prise) ou qui VIENT au pied (pas fuyant) ; un ballon qui fuit se
+ * court — et la touche réelle le jouera quand le pied l'atteint (dribbleStep, lot 58).
+ */
+export function balPrenable(ball, px, pz, prise = 0.5, fuite = 0.5) {
+  const bx = ball.p[0] - px, bz = ball.p[2] - pz, dd = Math.hypot(bx, bz);
+  return dd < prise || (dd > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dd : 0) < fuite;
+}
+
 export function makeDribbler(cfg = {}) {
   return {
     sinceTouch: 0,          // metres of player travel since the last touch

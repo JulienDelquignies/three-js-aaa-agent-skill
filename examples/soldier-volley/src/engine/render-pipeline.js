@@ -61,8 +61,11 @@ function buildGraph(renderer, scene, camera, state) {
   const cfg = TIERS[state.tier], passes = {}, declared = cfg.bloom === false ? [] : ['bloom'];
 
   // MSAA must die BEFORE the pass is constructed: the sample count is baked into its render target.
-  if (cfg.temporal) forceNoMSAA(renderer);
-  const scenePass = cfg.temporal ? pass(scene, camera, { samples: 0 }) : pass(scene, camera);
+  // …and it dies on the FXAA tier too (lot 62 — « toujours saccadé » au téléphone) : Renderer.js
+  // demande antialias:true → samples 4, donc le tier low payait MSAA 4× sur la passe scène PUIS
+  // repassait FXAA dessus — deux anticrénelages, dont un à 4× la bande passante mobile. FXAA seul.
+  if (cfg.temporal || cfg.fxaa) forceNoMSAA(renderer);
+  const scenePass = (cfg.temporal || cfg.fxaa) ? pass(scene, camera, { samples: 0 }) : pass(scene, camera);
 
   // G-buffer. Every attachment is RGBA16F = 8 bytes/sample and WebGPU's default
   // maxColorAttachmentBytesPerSample is 32 — so FOUR attachments is the hard ceiling. That is why
@@ -219,6 +222,7 @@ export function checkRenderPipeline(pipeline, renderer) {
 
   const temporal = !!(p.traa || p.taau), tm = pipeline?.toneMapping;
   if (temporal && renderer?.samples !== 0) issues.push(`MSAA actif (samples=${renderer?.samples}) avec une passe temporelle : TRAA/TAAU exigent les échantillons jitterés bruts, le MSAA les résout avant`);
+  if (p.fxaa && renderer?.samples !== 0 && !temporal) issues.push(`MSAA actif (samples=${renderer?.samples}) avec FXAA : deux anticrénelages, dont un à 4× la bande passante — le tier léger paie double`);
   if (p.gtao && p.ssgi) issues.push('double occlusion ambiante (GTAO + SSGI) : les deux termes se multiplient et écrasent les contacts');
   if (pipeline?.tier === 'low' && p.ssgi) issues.push('SSGI actif sur le tier low : sans resolutionScale il tourne en pleine résolution, c’est la passe la plus chère');
   if (pipeline?.tier !== 'low' && !temporal) issues.push(`tier « ${pipeline?.tier} » sans passe temporelle : SSR et SSGI sont bruités et exigent un débruitage temporel`);

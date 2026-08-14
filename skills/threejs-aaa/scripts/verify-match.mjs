@@ -679,6 +679,31 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   ok(`…la foulée légale TIENT sur fixture (phase ${fixtureFoulee(true)})`, fixtureFoulee(true) === 'carry');
   ok(`sabotage « rayon plat » attrapé (fixture : phase ${fixtureFoulee(false)} — la foulée volée)`, fixtureFoulee(false) === 'loose');
+
+  // LA POSSESSION NE SE PREND PAS DE LOIN (lot 62, st.full — capture utilisateur : « le ballon
+  // change de sens sans être touché »). Fixture : porteur avec intention fraîche, ballon à 0,7 m
+  // qui FUIT à 3 m/s — hier la capture l'aurait possédé (captureRadius 0,9) et le servo l'aurait
+  // retourné le tick même ; désormais la possession attend un ballon PRENABLE (au pied ou
+  // convergent — balPrenable, dribble.js). Sabotage nommé prisePied:false = l'aimant d'hier.
+  const fixturePrise = (aimant) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg(aimant ? { prisePied: false } : {});
+    for (let i = 0; i < 180; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((p) => !p.keeper && p.team === 0);
+    st.restart = null; st.pass = null; st.hold = 1; st._settling = null;
+    st.players.forEach((p) => { if (p.id !== c.id) { p.p = [p.p[0], 0, -30]; p.v = [0, 0]; } p.down = 0; p.act = null; p.intent = null; });
+    c.p = [0, 0, 6]; c.v = [0, 0]; c.speed = 0; c.yaw = 0;
+    c.intent = { until: st.t + 0.5, choice: { to: st.players.find((p) => p.team === 0 && p.id !== c.id && !p.keeper) } };
+    c.anchorHint = { t: st.t };
+    st.phase = 'carry'; st.possession = { team: 0, carrier: c.id }; st.lastTouch = 0;
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([0.7, 0.11, 6], { cause: 'engagement' });
+    st.ball.impulse([3.0, 0, 0]);
+    matchStep(st, 1 / 60, cfg);
+    return st.ball.owner;
+  };
+  ok(`la prise attend le pied : ballon fuyant à 0,7 m REFUSÉ (owner ${fixturePrise(false) ?? 'libre'})`, fixturePrise(false) == null);
+  ok(`sabotage « prisePied:false » attrapé (l'aimant d'hier possède le fuyant : owner ${fixturePrise(true) ?? 'libre'})`, fixturePrise(true) != null);
 }
 
 // ---------- 3 quater. LA PERCEPTION N'EST PAS UN ORACLE
