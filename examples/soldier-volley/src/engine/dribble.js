@@ -79,6 +79,10 @@ export function makeDribbler(cfg = {}) {
     lost: false,
     cfg: {
       reach: 1.15,          // m — a foot can only touch a ball it can actually reach
+      prise: null,          // m — LA TOUCHE SE PREND AU PIED (lot 58) : on REJOINT le ballon à
+      //                       ≤ prise avant de le repousser (absent : la touche d'hier part dès
+      //                       reach — la jambe tendue). La touche d'URGENCE à pleine allonge
+      //                       reste quand le ballon fuit plus vite qu'on ne referme (le poke).
       minStride: 0.55,      // m of travel between touches (stride pacing, not per-frame)
       minPush: 2.5,         // m/s — even a standing touch sends the ball on
       controlRadius: 3.6,   // m — beyond this the ball has run away
@@ -114,7 +118,14 @@ export function dribbleStep(d, ball, player, dt) {
   // A touch lands when the foot actually REACHES the ball, stride-paced so it is not re-kicked
   // every frame. Triggering on "distance travelled" instead was the bug that killed turns: once
   // the ball escaped the trigger window it was never touched again and simply rolled away.
-  if (dist < c.reach && d.sinceTouch >= c.minStride) {
+  // …ET LA TOUCHE SE PREND AU PIED (cfg.prise, lot 58 — captures utilisateur : « le ballon ne
+  // touche jamais le pied », touches de sprint mesurées à 1,07 m p50 = la jambe tendue) : le
+  // corps REJOINT son ballon avant de le repousser. L'exception est réelle : un ballon qui FUIT
+  // plus vite qu'on ne le referme se joue à pleine allonge (le poke de la course).
+  const prise = c.prise ?? c.reach;
+  const bvAway = dist > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dist : 0;
+  const auPied = dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach);
+  if (auPied && d.sinceTouch >= c.minStride) {
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);
@@ -172,7 +183,9 @@ export function dribbleStep(d, ball, player, dt) {
     // LA TOUCHE PORTE SA GÉOMÉTRIE (lot 55) : l'angle entrant→sortant et la vitesse du kick —
     // l'événement les inscrit, la scène en fait un GESTE (une cassure de 110° n'est pas une
     // caresse de course). Calcul pur sur des valeurs déjà là : la physique ne bouge pas d'un bit.
-    ev = { dev: cl > 0.2 ? Math.acos(Math.max(-1, Math.min(1, curX * dx + curZ * dz))) * 180 / Math.PI : 0, spd: sp };
+    // …un ballon RASSEMBLÉ (quasi posé au pied — la prise du lot 58) n'a plus de ligne : sa
+    // cassure se lit contre le CAP DU CORPS (heading → kick), le vrai angle du demi-tour.
+    ev = { dev: Math.acos(Math.max(-1, Math.min(1, (cl > 0.2 ? curX : hx) * dx + (cl > 0.2 ? curZ : hz) * dz))) * 180 / Math.PI, spd: sp };
   }
 
   advance(ball, dt);

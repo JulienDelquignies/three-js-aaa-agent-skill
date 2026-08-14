@@ -623,7 +623,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     }
 
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
-    if (!st._drb) st._drb = makeDribbler();
+    if (!st._drb) st._drb = makeDribbler(st.full && cfg.prise !== false ? { prise: cfg.prise ?? 0.62 } : {}); // la touche au pied (lot 58) — doc : match-config
     // where the BALL should be pushed — the escape direction assignJobs computed, not the direction of
     // the player's own next step (those differ: he stands behind the ball, so his step is toward it)
     let want = c.push || (c.target ? (() => {

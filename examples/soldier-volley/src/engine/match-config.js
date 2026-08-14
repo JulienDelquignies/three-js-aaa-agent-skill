@@ -146,6 +146,15 @@ export const MATCH = {
                           // prédiction de vol couvre le vol ENTIER (maxT suit pass.flight —
                           // le receveur vise la CHUTE, pas un chemin tronqué à 2,2 s).
                           // false : le flipper d'hier (sabotage nommé).
+  prise: 0.8,             // LA TOUCHE SE PREND AU PIED (11c11, st.full — lot 58, captures
+                          // utilisateur : « le ballon est trop loin et ne touche jamais le
+                          // pied » en conduite de course, alors que le porté cérémonial est
+                          // correct). Mesuré : la touche partait dès la portée de jambe tendue
+                          // (reach 1,15 — sprint p50 1,07 m du corps). Le corps REJOINT son
+                          // ballon (≤ prise) avant de le repousser ; la touche d'urgence à
+                          // pleine allonge reste quand le ballon fuit plus vite qu'on ne
+                          // referme (le poke du sprint). false : la jambe tendue d'hier
+                          // (sabotage nommé). Le rondo/réduit gardent reach, au bit près.
   allure: true,           // L'ÉCONOMIE DE COURSE (11c11, st.full — lot 57, retour utilisateur
                           // « fourmilière/maternelle off-ball ») : EN JEU PLACÉ, ON SUIT LE JEU À
                           // LA VITESSE DU JEU — le suiveur (marqueur, poste, couverture) est

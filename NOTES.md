@@ -3091,6 +3091,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     le solveur tourne AUSSI au rondo/réduit (numérique prouvé équivalent, PAS gaté st.full — la
     première entorse assumée, l'équivalence mesurée est la garde).
 
+95. **Le ballon au pied de la conduite : la touche se prend SOUS le corps (lot 58 — captures
+    utilisateur : « le ballon est trop loin et ne touche jamais le pied » en course, alors que
+    le porté cérémonial est correct).** Le contraste des captures POINTAIT le mécanisme :
+    dribbleStep re-poussait le ballon dès la portée de jambe tendue (reach 1,15 — MESURÉ à
+    l'instant de touche : p50 0,77 m, sprint p50 1,07 = le pied ne rejoignait jamais son
+    ballon). LA LOI (dribble.js, cfg.prise, câblée st.full — le rondo garde reach au bit
+    près) : le corps REJOINT son ballon (≤ prise) avant de le repousser ; l'exception est
+    réelle — un ballon qui FUIT plus vite qu'on ne le referme se joue à pleine allonge (le
+    poke du sprint, bvAway > vitesse + 0,3). LE PENDULE S'EST CALIBRÉ À LA BANDE : prise 0,62
+    collait magnifiquement (sprint p90 1,35 → 0,61) mais ÉTOUFFAIT l'attaque (A/B 36 tirs,
+    13 buts — sous la bande ! — le temps de rassemblement cassait le tempo) ET éteignait le
+    signal du geste de touche (ballon rassemblé quasi posé → cl < 0,2 → dev retombait sur
+    want : zéro touche forte au banc). Deux corrections : prise 0,8 (touche p50 0,48, sprint
+    p90 1,04 vs 1,35 — le contact est net, le tempo respire : A/B 52 tirs / 26 buts EN BANDE)
+    et l'angle d'une touche sur ballon LENT se lit contre le CAP DU CORPS (heading → kick, le
+    vrai angle du demi-tour — la géométrie de l'événement reste vraie à toute prise).
+    Batterie 66 bancs ENTIÈREMENT verte sans retoucher une clause. Capture playmode envoyée :
+    porteur à 4,2 m/s, ballon à 0,20 m, le pied SUR le ballon. Dette nommée : les touches
+    d'urgence du vrai sprint (pokes à pleine allonge) restent rares dans le flux économe —
+    la conduite lancée longue (contre-attaque de 40 m) mérite sa photo playmode un jour.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
