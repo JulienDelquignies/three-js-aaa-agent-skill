@@ -3128,6 +3128,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     Leçon d'instrument : play_screenshot ne capture QUE le canvas — les preuves DOM se prennent
     en Playwright pleine page, avec un rendu forcé (le mode capture ne peint pas seul).
 
+97. **La fluidité mobile : la frame du téléphone est tenue (lot 60 — retour utilisateur « pas
+    fluide »).** MESURÉ en conditions téléphone (CPU ×4, 412×915, DPR 2,6, tier low déjà actif) :
+    S.update seul p50 12,1 ms / p90 16,5 sur un budget de 16,7 — la sim+scène mangeait la frame
+    avant même le rendu. DEUX PROFILS, DEUX ÉTAGES : (1) headless, assignMatchJobs — formationSpots
+    reconstruit PAR DÉFENSEUR (~20 formations complètes/frame, arguments identiques) + tris à
+    clés recalculées (hypot dans les comparateurs) → hoist spotsBloc 1×/frame + tris à clés
+    pré-calculées, IDENTITÉ BIT-EXACTE PROUVÉE (hash d'événements identique, 2 graines × 120 s :
+    82e078ae/c2ac2ed4) ; (2) navigateur bridé (CDP Profiler), LE SQUELETTE : updateWorldMatrix
+    14,5 % + slerpFlat 8,8 % + matrices ~12 % — 22 rigs × ~50 os à 60 Hz, arbres recalculés
+    plusieurs fois par frame (warps/IK/regard). LA RÉPONSE MOTEUR : LE LOD D'ANIMATION
+    (Rondo.js) — la RACINE (position, lacet) reste à 60 Hz (le corps glisse fluide), les MEMBRES
+    (mixer, couche de geste, regard, verrou de pieds, warps) battent à 1/2 (22-40 m caméra en
+    low) ou 1/3 (au-delà) avec dt ACCUMULÉ (la bonne vitesse, moins souvent) ; JAMAIS ralenti :
+    porteur, receveur, corps en geste/au sol, gardiens, proches ; ?animlod=0 = sabotage nommé.
+    + le tier low PLAFONNE le DPR à 1,75 (2,6× payait 6,8 fragments pour 1 — ~30 % de budget GPU
+    rendus, indiscernable à 412 px). RÉSULTAT : p50 12,1 → 6,6 ms, p90 16,5 → 10,8 sous ×4 —
+    la place du 60 fps existe à nouveau. Leçon d'instrument : le profil headless ne voit QUE la
+    sim — le « pas fluide » du téléphone vivait pour moitié dans la couche squelettique de la
+    scène, que seul le CDP Profiler du navigateur bridé a montrée.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
