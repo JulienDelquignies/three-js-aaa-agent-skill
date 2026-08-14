@@ -88,6 +88,13 @@ export class Rondo {
     // plein format sur écran étroit : la chaîne 'low' par défaut (le post 'high' à DPR mobile
     // sur 105 × 68 est le lag mesuré au téléphone) — ?q=high le rétablit explicitement
     this._tier = q.get('q') || (this.fullMode && typeof window !== 'undefined' && window.innerWidth < 700 ? 'low' : 'high');
+    // LE LOD D'ANIMATION (lot 60) est actif par défaut — ?animlod=0 le coupe (sabotage nommé) ;
+    // et le tier low PLAFONNE le pixel ratio à 1,75 (un écran 2,6× DPR paie 6,8 fragments pour 1 —
+    // à 412 px de large, 1,75 est indiscernable et rend ~30 % du budget GPU).
+    this._animLod = q.get('animlod') !== '0';
+    if (this._tier === 'low' && this.renderer?.setPixelRatio && typeof window !== 'undefined') {
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    }
 
     // ---- the grid the game is played in, painted on the grass
     // un ENTRAÎNEMENT a son carré et ses cônes ; un MATCH n'ajoute rien au sol — le stade
@@ -788,8 +795,31 @@ export class Rondo {
     const top = RONDO.speeds.chase;
     for (const pl of this.players) {
       const s = pl.sim;
+      // LE LOD D'ANIMATION (lot 60 — profil téléphone : le SQUELETTE mange la frame, 40 % en
+      // updateWorldMatrix/slerp/matrices pour 22 rigs à 60 Hz). La racine (position, lacet)
+      // reste à 60 Hz — le corps GLISSE fluide ; les MEMBRES (mixer, couche de geste, regard,
+      // verrou de pieds, warps) battent à 1/2 ou 1/3 de cadence quand le corps est LOIN de la
+      // caméra (invisible à 3 pixels), avec dt ACCUMULÉ (la bonne vitesse, moins souvent).
+      // JAMAIS ralenti : le porteur, le receveur, un corps en geste/au sol, les gardiens, les
+      // proches. ?animlod=0 le coupe (sabotage nommé).
+      const stx = this.state;
+      const exemptLod = !this._animLod || pl.gestureLayer.active || s.act || (s.down ?? 0) > 0
+        || s.id === stx.possession.carrier || s.id === (stx.pass?.to ?? -99) || s.keeper;
+      const dCamL = exemptLod ? 0 : Math.hypot(this.cam.position.x - s.p[0], this.cam.position.z - s.p[2]);
+      const nearL = this._tier === 'low' ? 22 : 30, midL = this._tier === 'low' ? 40 : 55;
+      const strideL = exemptLod || dCamL < nearL ? 1 : dCamL < midL ? 2 : 3;
+      pl._lodPhase = (pl._lodPhase ?? s.id) + 1;
+      pl._lodAcc = (pl._lodAcc ?? 0) + step;
+      if (strideL > 1 && (pl._lodPhase % strideL) !== 0) {
+        pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);
+        pl.model.position.copy(pl.ctrl.pos);
+        pl.ctrl.yaw = pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw));
+        pl.model.rotation.y = pl.ctrl.yaw;
+        continue;
+      }
+      const dtP = pl._lodAcc; pl._lodAcc = 0;
       pl.ctrl.setMoveWorld(s.v[0] / top, s.v[1] / top);       // magnitude picks idle / walk / run
-      pl.ctrl.update(step);
+      pl.ctrl.update(dtP);
       pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);            // then snap to the proven truth
       pl.model.position.copy(pl.ctrl.pos);
       // LE LACET AUSSI EST À LA SIM — même régime que la position. Le contrôleur dérive son facing
@@ -825,7 +855,7 @@ export class Rondo {
         // La première version laissait t courir pendant down — au relevé, t sautait PAR-DESSUS le
         // segment de relevé authoré (clé 0,95) et le fondu partait de la pose couchée : l'arc
         // d'interpolation couché→debout creusait sous la pelouse (orteil mesuré à −0,41 m).
-        if (lying) { meta.t0 += step; t = Math.min(t, pl.gestureLayer.duration * 0.55); }
+        if (lying) { meta.t0 += dtP; t = Math.min(t, pl.gestureLayer.duration * 0.55); }
         const antic = act?.anticipation || meta.antic || 0.2;
         const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
         // …et le contact ne possède les jambes QUE jusqu'à ~0,15 s après lui : au-delà, c'est le
@@ -844,7 +874,7 @@ export class Rondo {
         // wLegs 0,24 à t=0,18, hanches DEBOUT à l'arrêt, gant à ~1 m d'un ballon au sol). La
         // vitesse d'un corps en plongeon EST celle du geste, pas de la locomotion.
         const target = done ? 0 : (act?.payload?.skill === 'plongeon' || act?.payload?.enCourse ? 1 : Math.max(byArrive, byContact));
-        pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, step / 0.05);
+        pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, dtP / 0.05);
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
         // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à
         // chaque geste. 0,12 s d'entrée = ≤ 25° par 50 ms, sous le seuil perceptible.
@@ -852,7 +882,7 @@ export class Rondo {
         // « changement de mouvement » (retour utilisateur — le geste doit être la CONTINUITÉ de la
         // locomotion) : 0,12 → 0,18 s selon la vitesse sol, symétrique entrée/sortie.
         const tauW = 0.12 + 0.06 * Math.min(1, v / 4);
-        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - step / tauW) : Math.min(1, (pl._wUp ?? 0) + step / tauW);
+        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - dtP / tauW) : Math.min(1, (pl._wUp ?? 0) + dtP / tauW);
         // L'ENTRÉE MÈNE L'HORLOGE DU CLIP : la clé t=0 d'un clip est la pose NEUTRE — pendant la
         // rampe d'entrée, le haut se faisait tirer vers le « garde-à-vous » AVANT de s'armer (le
         // hoquet mesuré entre locomotion et geste). On échantillonne EN AVANCE au début de l'armé
@@ -922,7 +952,7 @@ export class Rondo {
         const gw = (pl.gestureLayer.active && pl.gestureLayer.tracks?.Head) ? 1 - 0.7 * (pl._wUp ?? 0) : 1;
         pl.gaze.neck?.getWorldPosition?.(this._wv);
         const hp = pl.gaze.head?.getWorldPosition ? pl.gaze.head.getWorldPosition(this._wv) : null;
-        pl.gaze.update(step, hp ? [hp.x, hp.y, hp.z] : [s.p[0], pl.groundY + 1.6, s.p[2]], target, s.yaw, gw);
+        pl.gaze.update(dtP, hp ? [hp.x, hp.y, hp.z] : [s.p[0], pl.groundY + 1.6, s.p[2]], target, s.yaw, gw);
       }
       // LE VERROU DES PIEDS, en toute fin de pile — après le replaquage sim, la couche de geste et
       // le regard, pour verrouiller la position FINALE (le résoudre dans ctrl.update verrouillait
@@ -937,7 +967,7 @@ export class Rondo {
         // pose couchée étirait la jambe SOUS terre en tenant son XZ pendant que le bassin
         // descendait (orteil mesuré à −0,38 m — le pire du dépôt, créé par le verrou lui-même)
         const lying2 = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse && !pl.sim._sub;   // l'expulsé (Loi 12) et le remplacé (Loi 3) marchent
-        if (!pl.ctrl.airborne && pl.ctrl.footLock) pl.ctrl.footLock.solve(step, [!lying2 && striking !== 0, !lying2 && striking !== 1], s.yaw, pl.ctrl.groundSpeed ?? 0);
+        if (!pl.ctrl.airborne && pl.ctrl.footLock) pl.ctrl.footLock.solve(dtP, [!lying2 && striking !== 0, !lying2 && striking !== 1], s.yaw, pl.ctrl.groundSpeed ?? 0);
       }
       // l'autorité de la jambe frappeuse — après le verrou, en dernier
       this._applyStrikeWarp(pl);

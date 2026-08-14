@@ -677,7 +677,9 @@ function assignMatchJobs(st, cfg) {
     // 5 slots du réduit laissaient 5 corps immobiles et l'essaim mangeait la lisibilité.
     let slotters = free, posted = [];
     if (st.full) {
-      slotters = [...free].sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor)).slice(0, 4);
+      // tri à clés PRÉ-CALCULÉES (lot 60, profil mobile : d2/hypot recalculé dans chaque
+      // comparaison à 60 Hz) — mêmes clés, tri stable, même ordre : le flux au bit près
+      slotters = free.map((q) => [d2(q.p, anchor), q]).sort((a, b) => a[0] - b[0]).slice(0, 4).map((x) => x[1]);
       posted = free.filter((p) => !slotters.includes(p));
       // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien — la ligne arrière monte)
       const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)));
@@ -841,7 +843,14 @@ function assignMatchJobs(st, cfg) {
     const sgnAtk = -pitch.ownGoal(atk).sign;
     const press = st.full && cfg.pressTriggers && st._press
       && st._press.team === (atk === 0 ? 1 : 0) && st._press.until > st.t ? st._press : null;
-    const byDist = [...defenders].sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor));
+    // LE BLOC SE CALCULE UNE FOIS PAR FRAME (lot 60 — profil mobile : formationSpots était
+    // reconstruit PAR DÉFENSEUR, ~20 formations complètes par frame, arguments identiques
+    // pour tous ; hoisté ici, valeurs identiques — le flux est au bit près). Et le tri des
+    // défenseurs vit sur clés pré-calculées (d2 recalculé dans chaque comparaison, mesuré).
+    const defTeamB = atk === 0 ? 1 : 0;
+    const spotsBloc = st.full
+      ? formationSpots(pitch, defTeamB, anchor[0], false, tac(st, defTeamB).formation, blocFor(cfg.bloc ?? null, tac(st, defTeamB)), anchor[2]) : null;
+    const byDist = defenders.map((q) => [d2(q.p, anchor), q]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
     byDist.forEach((p, i) => {
       if (i === 0) {
         // LE GARDIEN EN MAINS EST INATTAQUABLE (futsal Loi 12 à l'échelle : on ne charge pas le
@@ -898,7 +907,7 @@ function assignMatchJobs(st, cfg) {
         // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42 — formation.js) : ligne
         // à ~27 m du ballon, longueur bornée 30 m — les lignes ne s'espacent plus. Et le bloc
         // est CELUI DE SA TACTIQUE (lot 43, blocFor) : compacité et hauteur PAR ÉQUIPE.
-        const spotsD = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation, blocFor(cfg.bloc ?? null, tac(st, p.team)), anchor[2]);
+        const spotsD = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
         const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
         // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : où l'équipe DÉFEND — le bloc posté se
         // décale de −6 (bloc bas, parqué devant sa surface) à +6 m (ligne haute — et la ligne
@@ -939,9 +948,10 @@ function assignMatchJobs(st, cfg) {
       const sgnDef = Math.sign(defGoal.x || 1);
       const marks = attackers.filter((a) => (!carrier || a.id !== carrier.id)
         && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)));
-      const m = marks.sort((a, b) => d2(a.p, p.p) - d2(b.p, p.p))[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? null;
+      const mTri = marks.map((a) => [d2(a.p, p.p), a]).sort((x, y) => x[0] - y[0]);
+      const m = (mTri[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? [])[1] ?? null;
       if (!m && st.full) {
-        const spotsM = formationSpots(pitch, p.team, anchor[0], false, tac(st, p.team).formation, blocFor(cfg.bloc ?? null, tac(st, p.team)), anchor[2]);
+        const spotsM = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
         const wM = spotsM[p.post ?? 0] ?? [p.p[0], p.p[2]];
         p.job = 'mark'; p.target = [wM[0], 0, wM[1]];
         return;
