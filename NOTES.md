@@ -2939,6 +2939,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     au contrat matchday, capture playmode à l'appui : la médiane se lit, la nuit reste une
     nuit.
 
+90. **La télémétrie de match : le jeu sous instrument, le « ballon seul » élucidé (lot 53 —
+    demande utilisateur d'analyse).** probe-telemetrie.mjs (8 graines × 300 s, 1,29 M ticks) :
+    possession 55/45 (l'axe possession possède, l'axe direct tire — 19 fins-de-séquence en
+    tir contre 13), séquences 3,2 passes p50 (réel 3-5), 4-3-3 tenu des deux côtés, ballon
+    au pied p50 0,49 m / >1,5 m sur 0,56 % des images (la queue de warp est résorbée),
+    prise de balle à 0,80 m p50 / max 0,97 (la portée du pied, pas un aimant), ZÉRO
+    téléport en jeu (1 écart >0,35 m en 40 min — les remises sont PORTÉES). L'audit du
+    ballon libre (chaque tick, vitesse vs physique attendue + joueur le plus proche +
+    événements du tick) : 81 % des changements attribués à un geste au contact, et le reste
+    en TROIS MÉCANISMES NOMMÉS, confirmés en piégeant les méthodes du ballon (pile d'appel
+    au tick fautif) puis en lisant w au tick exact : (1) L'ATTERRISSAGE SANS EFFET
+    (~25/match) — la passe tendue levée atterrit spin nul, la friction Coulomb de
+    resolveGround mord d'un coup : ×0,6 de vitesse en UN tick, direction conservée
+    (physique honnête, geste incomplet — un vrai passeur met du lift) ; (2) LE SPIN
+    ORPHELIN (~18/match) — les amortis (impulse) tuent v mais PAS w : mesuré 65-70 rad/s
+    sur un ballon à 1,3 m/s, u=8-9 m/s — la friction reconvertit le spin périmé :
+    backspin → INVERSION cos=−1 (« le ballon repart tout seul en sens opposé »), topspin →
+    ré-accélération depuis l'arrêt (l'« aimantation ») ; (3) LA TOUCHE MUETTE (~8/match) —
+    le quart-de-touche (impulse −0,25, rondo-sim receive() branche else) est un vrai
+    contact SANS événement → la scène n'anime rien. Télékinésie : 2/8 matchs (gant du
+    plongeon, rayon 1,7). Audit de code parallèle (13 fichiers, 161 sites écrivant l'état
+    du ballon) : sains sauf 2 trous théoriques jamais vus tirer (uneTouche gardée par
+    st.pass pas par la distance ; turnover à preneur lointain) + le sifflet qui freine le
+    ballon à 65 % où qu'il soit (convention ballon mort, visible). Lectures tactiques
+    « pas concret » : les GESTES vivent à l'envers (défenseurs 2-2,4/match > attaquants
+    0,6-1,8 — déclenchés par le press subi, pas par l'envie de percer) ; côté possession le
+    DG tire autant que l'AC (0,4) ; conversion 45 % (arcade ×4). Rapport artifact
+    « Télémétrie du 11 contre 11 » publié. Dettes candidates nommées : amortir w dans les
+    amortis (l'impulse devrait pincer la rotation), le spin naturel des passes tendues,
+    l'événement du quart-de-touche (pour l'animer), re-concentrer gestes et tirs chez les
+    attaquants. LEÇON : les trois « fantômes » sont UN SEUL défaut de contrat — les sites
+    qui écrivent v sans écrire w laissent la physique jouer un passé périmé.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
