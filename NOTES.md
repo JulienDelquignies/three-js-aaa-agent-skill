@@ -3060,6 +3060,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     récupérer) ; turnover toutes les ~11 s = 45 % du temps en transition (la vraie source du
     tumulte résiduel — l'axe qualité de possession).
 
+94. **Le budget de la frame : le solveur rapide, et la vérité du deuxième arc (lot 56 — retour
+    utilisateur « ça saccade », question posée « ça va pas changer le gameplay ? »).** La saccade
+    était SIM, pas GPU : solvePass 6,4-7,6 ms/appel (bissection aveugle 24 itérations × essais
+    240 Hz), rafales de frames à 10-18 ms aux moments de passe. TROIS REMÈDES dans le solveur
+    (ball-predict, parametrés — un projet aval choisit sa précision) : le pas d'essai suit le
+    régime (roulé 1/60, aérien 1/96 — stepBall sous-échantillonne DÉJÀ par demi-rayon : seul le
+    surcoût de boucle tombe, le roulé payait 1 680 itérations), l'AMORCE ANALYTIQUE (roulé :
+    v² = arrivée² + 2·(résistance+traînée)·d itéré ; aérien : portée du vide ; panier VÉRIFIÉ
+    par deux essais), la sortie à 2 cm/s. LA RÉPONSE À LA QUESTION EST UN BANC : la référence
+    d'hier reste appelable ({dt:1/240, tol:0, seed:false}), 36 cas comparés — pire Δvitesse
+    0,037 m/s, et la vitesse du rapide REJOUÉE en 240 Hz atterrit à 8 cm du point visé (pire
+    cas). Résultat : 1,5-3 ms/appel, ZÉRO frame sim > 8 ms sur 120 s. MAIS l'instrument a
+    DÉTERRÉ un bug de vérité : la détection d'atterrissage (« premier échantillon descendant
+    sous le rayon ») ratait un rebond survenu ENTRE deux échantillons et résolvait parfois sur
+    le DEUXIÈME arc — à 240 Hz aussi (mesuré : vol « 2,87 s » pour un premier contact à 1,7 s).
+    Corrigée AU REBOND (vy s'inverse — exact à tout pas), les passes levées d'hier, qui
+    atterrissaient SYSTÉMATIQUEMENT courtes, pénètrent leur vraie profondeur → tirs construits
+    91, buts 44 : l'A/B a explosé PARCE QUE l'attaque est devenue vraie. RECALIBRAGE au levier
+    balayé : marquageRayon 22→44 buts, 24→37, 26→33 (le point doux), 28→41 (trop large ouvre
+    des trous) — 26 posé, bande re-fondée 17-33 AVEC récit (l'instrument suit le monde qui a
+    objectivement changé ; les juges qualité tiennent tous : chasse au rebond 5 %, livraison
+    p50 1,7 m, économie placé p50 4). BANCS re-fondés en instruments STRUCTURELS : ball-predict
+    +2 clauses (fidélité 36 cas + atterrissage 8 cm ≤ 35), tactics hauteur en MÉDIANE DE TROIS
+    GRAINES (4 re-fondations de graine unique : la graine élue s'effondrait pendant que les
+    autres montraient +12-14 m — fini), essaim en COUVERTURE DES POSTES (la dispersion s'écrasait
+    des deux côtés dans un monde qui marche — 3 passages à la marge), cible-plan 4 graines +
+    plancher au ratio (le monde calmé vire moins), chrono terminal ≤ 2 m (les corps FINISSENT en
+    marchant), fatigue isolée allure:false (la loi stamF se juge à effort égal). Dette nommée :
+    le solveur tourne AUSSI au rondo/réduit (numérique prouvé équivalent, PAS gaté st.full — la
+    première entorse assumée, l'équivalence mesurée est la garde).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

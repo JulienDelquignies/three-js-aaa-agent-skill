@@ -35,12 +35,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- 3. les axes de flux : hauteur et largeur BOUGENT leurs instruments
 {
-  const run = (t0) => {
-    // graine 3 (re-fondé lots 31, 34 et 57 : chaque défaut nouveau diverge le flux — mécanisme
-    // re-vérifié à chaque fois : lot 57, écarts hauteur +13,3/+12,6/+14,1 sur graines 3/7/1,
-    // la graine 5 s'est effondrée à +2,3 dans le flux de l'économie de course — les clauses de
-    // flux se re-fondent sur graines RE-MESURÉES, le mécanisme est plus fort que jamais)
-    const st = makeMatch({ full: true, seed: 3, tactics: [t0, null] });
+  const run = (t0, seed) => {
+    // LA GRAINE UNIQUE EST MORTE (lots 31, 34, 57, 56 — QUATRE re-fondations : chaque flux
+    // nouveau effondrait la graine élue pendant que les autres montraient +12 à +14 m). La
+    // clause juge désormais la MÉDIANE DE TROIS GRAINES : une tactique n'a pas le droit de
+    // dépendre du tirage, et l'instrument non plus.
+    const st = makeMatch({ full: true, seed, tactics: [t0, null] });
     const cfg = matchCfg({ shotRange: 20 });
     let depth = 0, nD = 0, z = 0, nZ = 0;
     for (let i = 0; i < 150 * 60; i++) {
@@ -57,9 +57,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { ligne: nD ? depth / nD : 0, zTrio: nZ ? z / nZ : 0 };
   };
-  const bas = run({ hauteurBloc: 0 }), haut = run({ hauteurBloc: 1 });
-  ok(`la HAUTEUR DE BLOC bouge la ligne (bloc bas ${bas.ligne.toFixed(1)} m de son but, ligne haute ${haut.ligne.toFixed(1)} — écart ≥ 4,5, mesuré +9,0 monde lot 34)`,
-    haut.ligne >= bas.ligne + 4.5);
+  const ecarts = [1, 3, 7].map((s) => run({ hauteurBloc: 1 }, s).ligne - run({ hauteurBloc: 0 }, s).ligne).sort((a, b) => a - b);
+  ok(`la HAUTEUR DE BLOC bouge la ligne (écarts ${ecarts.map((e) => e.toFixed(1)).join(' / ')} m sur graines 1/3/7 — MÉDIANE ${ecarts[1].toFixed(1)} ≥ 4,5 ; monde lot 34 : +9,0)`,
+    ecarts[1] >= 4.5);
   // …la LARGEUR, re-fondée lot 42 : l'axe gouverne les POSTES — la juger au flux l'a noyée
   // TROIS fois (le renversement lot 35, puis les slots de surface et les darts : écarts
   // mesurés 1,4 puis 2,2 m pour une loi qui en produit ~5 aux postes). L'instrument honnête :

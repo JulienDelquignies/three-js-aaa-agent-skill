@@ -175,7 +175,13 @@ export const MATCH = {
                           // vol) : l'effet rétro PORTE le vol et ASSIED la retombée. solvePass
                           // reçoit le même effet — la balistique inverse reste honnête.
                           // false : la passe plate d'hier (sabotage nommé).
-  marquageRayon: 22,      // ON MARQUE DANS LA ZONE DE DANGER (11c11, st.full — lot 51b, vu en
+  marquageRayon: 26,      // …22 → 26 (lot 56) : le solveur VRAI a rendu au jeu profond sa vraie
+                          // profondeur (les passes levées d'hier atterrissaient courtes — bug du
+                          // deuxième arc) et les tirs construits ont explosé la bande (44 buts).
+                          // Le point DOUX du levier, balayé à l'A/B 20×300 : 22→44, 24→37,
+                          // 26→33, 28→41 (trop large ouvre des trous ailleurs) — le marquage
+                          // s'engage plus tôt sur le receveur profond, la bande re-fondée 17-33.
+                          // ON MARQUE DANS LA ZONE DE DANGER (11c11, st.full — lot 51b, vu en
                           // playmode) : un attaquant à plus de rayon m du ballon n'est pas
                           // marqué HOMME — il est couvert par le BLOC (le marqueur sans homme
                           // pertinent rejoint son poste). Mesuré avant : trois marqueurs partis

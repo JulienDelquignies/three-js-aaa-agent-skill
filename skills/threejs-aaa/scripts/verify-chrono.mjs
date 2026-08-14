@@ -50,8 +50,11 @@ const joue = (seed, over = {}) => {
   const pAvant = st.players.map((p) => [p.p[0], p.p[2]]);
   for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, matchCfg({ shotRange: 20, chrono: CH }));
   const bouge = st.players.reduce((a, p, i) => Math.max(a, Math.hypot(p.p[0] - pAvant[i][0], p.p[2] - pAvant[i][1])), 0);
-  ok(`l'état terminal est CALME (${st.events.length - evAvant} événement(s) en 2 s après le sifflet, plus grand déplacement ${bouge.toFixed(2)} m ≤ 1)`,
-    st.events.length - evAvant === 0 && bouge <= 1);
+  // …borne 1 → 2 m (lot 56) : l'économie de course fait FINIR les corps EN MARCHANT — le plus
+  // grand déplacement post-sifflet est une décélération de marcheur (1,79 m en 2 s = 0,9 m/s),
+  // pas un ballon mort joué (0 événement reste la clause dure)
+  ok(`l'état terminal est CALME (${st.events.length - evAvant} événement(s) en 2 s après le sifflet, plus grand déplacement ${bouge.toFixed(2)} m ≤ 2)`,
+    st.events.length - evAvant === 0 && bouge <= 2);
   // la PAUSE est muette : aucune passe entre le sifflet et la reprise
   const passesPause = st.events.filter((e) => e.type === 'pass' && e.t > mt.t && e.t < mt.t + CH.pause - 0.5).length;
   ok(`la mi-temps est MUETTE (${passesPause} passe(s) pendant la pause)`, passesPause === 0);

@@ -87,5 +87,42 @@ const at = (x, z, y = BALL.radius) => [x, y, z];
   ok('déterministe (même passe → même solution)', j() === j());
 }
 
+// ---------- lot 56 — LE SOLVEUR RAPIDE NE CHANGE PAS LE JEU (le contrat de la saccade)
+{
+  const { kick, stepBall, BALL } = await import('../assets/starter/src/engine/ball.js');
+  // la référence d'hier au paramètre près — le banc compare CAS PAR CAS : la vitesse résolue
+  // par le rapide, REJOUÉE en physique 240 Hz, doit atterrir sur la cible (l'assiette du
+  // gameplay, pas une promesse). La détection d'atterrissage se lit au REBOND (vy s'inverse)
+  // — l'ancienne lecture attrapait parfois le DEUXIÈME arc, à 240 Hz aussi (bug d'hier, mesuré
+  // 2,87 s de « vol » pour un premier contact à 1,7 s).
+  const REF = { dt: 1 / 240, iterations: 24, tol: 0, seed: false };
+  let worstDv = 0, worstLand = 0, nCas = 0;
+  for (const style of ['ground', 'driven', 'lofted', 'chip', 0.42, 0.45]) {
+    for (const d of [8, 18, 28]) {
+      for (const spin of [null, { spinRev: 4.5, spinAxis: [0, 0, 1] }]) {
+        const from = [0, BALL.radius, 0], to = [d, 0, 0];
+        const fast = solvePass(from, to, { style, ...(spin ?? {}) });
+        const ref = solvePass(from, to, { style, ...(spin ?? {}), ...REF });
+        if (!fast || !ref) continue;
+        nCas++;
+        worstDv = Math.max(worstDv, Math.abs(fast.speed - ref.speed));
+        const elev = typeof style === 'number' ? style : { ground: 0, driven: 0.13, lofted: 0.42, chip: 0.72 }[style];
+        if (elev >= 0.2) {
+          const s = kick(from, { speed: fast.speed, dirYaw: 0, elevation: elev, spinAxis: spin?.spinAxis ?? [0, 1, 0], spinRev: spin?.spinRev ?? 0 });
+          let pv = s.v[1], land = null;
+          for (let t = 0; t < 7 && land == null; t += 1 / 240) {
+            stepBall(s, 1 / 240);
+            if (t > 0.08 && pv < 0 && s.v[1] >= 0) land = Math.hypot(s.p[0] - to[0], s.p[2] - to[2]);
+            pv = s.v[1];
+          }
+          if (land != null) worstLand = Math.max(worstLand, land);
+        }
+      }
+    }
+  }
+  ok(`le solveur RAPIDE rejoue le même football (${nCas} cas, pire Δvitesse ${worstDv.toFixed(3)} m/s ≤ 0,15 — amorce analytique + pas par régime + sortie à 2 cm/s)`, nCas >= 30 && worstDv <= 0.15);
+  ok(`…et sa vitesse, rejouée en 240 Hz, ATTERRIT sur la cible (pire écart ${worstLand.toFixed(2)} m ≤ 0,35 — l'assiette du gameplay est un contrat, pas une promesse)`, worstLand <= 0.35);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

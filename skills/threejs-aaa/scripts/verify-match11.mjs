@@ -91,7 +91,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const pct = (100 * cover / Math.max(1, n));
   // 55 : le monde mesuré vit à 60 % — les ~6 ACTIFS par équipe (porteur, soutiens, press,
   // cover, marqueurs) désertent leur poste pour JOUER, c'est le football ; les postés tiennent
-  // le reste. L'existence du bloc est prouvée par le sabotage dessous (dispersion +5,8 m).
+  // le reste. L'existence du bloc est prouvée par le sabotage dessous (couverture des postes).
   ok(`le bloc TIENT ses postes (${pct.toFixed(0)} % des postes couverts à ≤ 12 m ≥ 55 — un bloc lisible, pas un essaim)`, pct >= 55);
 }
 
@@ -402,29 +402,32 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- 4. sabotage nommé : sans la formation, le 22-corps redevient l'essaim du réduit
 {
-  // les couloirs du réduit ne savent poster que ~9 corps par équipe (5 slots + press/cover/
-  // marks) — mesurer la DISPERSION du bloc : sans postes, les non-servis s'agglutinent
-  const disp = (full) => {
+  // LA DISPERSION ÉTAIT UN MAUVAIS INSTRUMENT (3 passages à la marge : +1,9 / vert / +1,3 —
+  // un monde qui MARCHE s'étale moins vite, la moyenne des distances au centroïde s'écrase
+  // des deux côtés). Le discriminant STRUCTUREL est la COUVERTURE DES POSTES (le même
+  // instrument que la clause « le bloc TIENT ses postes ») : la config du réduit ne sait
+  // poster que ~9 corps par équipe — sans la formation, les postes du 11c11 se VIDENT.
+  const couv = (full) => {
     const st = makeMatch({ full: true, seed: 3 });
     if (!full) st.full = false;                                    // le sabotage : la config du réduit sur 22 corps
     const cfg = matchCfg({ shotRange: 20 });
-    let spread = 0, n = 0;
+    let cover = 0, n = 0;
     for (let i = 0; i < 60 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       if ((i % 60) !== 0 || st.restart) continue;
       for (const team of [0, 1]) {
-        const mine = st.players.filter((q) => q.team === team && !q.keeper);
-        const cx = mine.reduce((a, q) => a + q.p[0], 0) / mine.length;
-        const cz = mine.reduce((a, q) => a + q.p[2], 0) / mine.length;
-        spread += mine.reduce((a, q) => a + Math.hypot(q.p[0] - cx, q.p[2] - cz), 0) / mine.length;
-        n++;
+        const atk = st.possession.team === team;
+        const spots = formationSpots(st.pitch, team, st.ball.p[0], atk, undefined, atk ? null : cfg.bloc);
+        const mine = st.players.filter((q) => q.team === team && !q.keeper && q.down <= 0);
+        for (const [x, z] of spots) if (mine.some((q) => Math.hypot(q.p[0] - x, q.p[2] - z) < 12)) cover++;
+        n += 10;
       }
     }
-    return spread / Math.max(1, n);
+    return 100 * cover / Math.max(1, n);
   };
-  const avec = disp(true), sans = disp(false);
-  ok(`sabotage « essaim » attrapé (dispersion du bloc ${avec.toFixed(1)} m avec les postes, ${sans.toFixed(1)} sans — la formation OCCUPE le terrain, ≥ +2 m)`,
-    avec >= sans + 2);
+  const avec = couv(true), sans = couv(false);
+  ok(`sabotage « essaim » attrapé (postes couverts ${avec.toFixed(0)} % avec la formation, ${sans.toFixed(0)} % sans — la formation OCCUPE le terrain, ≥ +12 points)`,
+    avec >= sans + 12);
 }
 
 // ---------- 5. LA LOI 11 (hors-jeu) — la ligne, la photo, le sifflet

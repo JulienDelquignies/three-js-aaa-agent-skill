@@ -1,4 +1,4 @@
-import { BALL, PITCH, kick, stepBall } from './ball.js';
+import { BALL, PITCH, kick, stepBall, dragCoefficient } from './ball.js';
 
 // ball-predict — the ball's FUTURE, and how to aim at it. Two jobs, both essential to a football
 // that plays itself well:
@@ -68,7 +68,7 @@ export const PASS_STYLE = {
  * horizontal distance at the moment it comes back down to the target's height.
  * @returns {{speed, dirYaw, elevation, flightTime, arrivalSpeed, error}|null}
  */
-export function solvePass(from, to, { style = 'ground', arrival = 6.5, spinRev = 0, spinAxis = [0, 1, 0], maxSpeed = 34, iterations = 24 } = {}) {
+export function solvePass(from, to, { style = 'ground', arrival = 6.5, spinRev = 0, spinAxis = [0, 1, 0], maxSpeed = 34, iterations = 24, dt = null, tol = 0.02, seed = true } = {}) {
   const elevation = typeof style === 'number' ? style : (PASS_STYLE[style] ?? 0);
   const d = dist2(from, to);
   if (d < 1e-3) return null;
@@ -79,22 +79,39 @@ export function solvePass(from, to, { style = 'ground', arrival = 6.5, spinRev =
   // receiver's feet at 0.2 m/s, which is exactly the limp AI pass we are trying to eliminate. A
   // ball in the air must LAND on the target. Both are monotone in launch speed, so both bisect.
   const rolling = elevation < 0.2;
+  // LE BUDGET DE LA FRAME (lot 56 — « ça saccade ») : 6-7 ms PAR APPEL à 240 Hz × 24 bissections
+  // aveugles — des rafales de frames à 10-18 ms au moment des passes. Trois remèdes, MÊME loi :
+  // (1) le pas d'essai suit le régime (roulé 1/60, aérien 1/96) — stepBall sous-échantillonne
+  //     DÉJÀ par demi-rayon dès que le ballon est rapide : la précision d'intégration tient,
+  //     seul le surcoût de boucle tombe (le roulé payait 1 680 itérations pleines) ;
+  // (2) l'AMORCE ANALYTIQUE (seed) resserre le panier de bissection — roulé : v² = arrivée² +
+  //     2·(résistance + traînée moyenne)·d, itéré deux fois ; aérien : la portée du vide.
+  //     Le panier se VÉRIFIE (deux essais) : trop étroit, il redevient celui d'hier ;
+  // (3) la sortie anticipée (tol 2 cm/s) — la précision utile, pas un compte fixe.
+  // La RÉFÉRENCE d'hier reste appelable au paramètre près ({ dt: 1/240, tol: 0, seed: false }) —
+  // le banc compare les deux mondes cas par cas : l'atterrissage ne bouge pas de 0,35 m.
+  const h = dt ?? (rolling ? 1 / 60 : 1 / 96);
 
   const trial = (v) => {
     const s = kick(from, { speed: v, dirYaw, elevation, spinAxis, spinRev });
-    const dt = 1 / 240;
-    let prevY = s.p[1];
-    for (let t = 0; t < 7; t += dt) {
-      stepBall(s, dt);
+    let prevY = s.p[1], prevVy = s.v[1];
+    for (let t = 0; t < 7; t += h) {
+      stepBall(s, h);
       const travelled = dist2(from, s.p);
       const sp = Math.hypot(s.v[0], s.v[1], s.v[2]);
       if (rolling) {
-        if (travelled >= d) return { metric: sp, t: t + dt, r: travelled, sp };
-        if (sp < 0.2) return { metric: 0, t: t + dt, r: travelled, sp: 0 };
-      } else if (s.p[1] < prevY && s.p[1] <= targetY && t > 0.08) {
-        return { metric: travelled, t: t + dt, r: travelled, sp };
+        if (travelled >= d) return { metric: sp, t: t + h, r: travelled, sp };
+        if (sp < 0.2) return { metric: 0, t: t + h, r: travelled, sp: 0 };
+      } else if (t > 0.08 && ((prevVy < 0 && s.v[1] >= 0 && targetY <= BALL.radius + 0.02)
+        || (s.p[1] < prevY && s.p[1] <= targetY))) {
+        // L'ATTERRISSAGE SE LIT AU REBOND (vy s'inverse — resolveGround l'a retourné DANS le pas),
+        // pas au « premier échantillon descendant sous le rayon » : cette lecture-là ratait un
+        // rebond survenu entre deux échantillons et attrapait le DEUXIÈME arc (mesuré : des vols
+        // « résolus » à 2,87 s pour un premier contact à 1,7 s — à 240 Hz aussi). Une cible EN
+        // HAUTEUR (targetY > rayon : un receveur aérien) garde la traversée de hauteur.
+        return { metric: travelled, t: t + h, r: travelled, sp };
       }
-      prevY = s.p[1];
+      prevY = s.p[1]; prevVy = s.v[1];
     }
     const r = dist2(from, s.p);
     return { metric: rolling ? 0 : r, t: 7, r, sp: Math.hypot(s.v[0], s.v[2]) };
@@ -102,7 +119,21 @@ export function solvePass(from, to, { style = 'ground', arrival = 6.5, spinRev =
 
   const target = rolling ? arrival : d;
   let lo = 0.5, hi = maxSpeed, best = null;
-  for (let i = 0; i < iterations; i++) {
+  if (seed) {
+    let est;
+    if (rolling) {
+      let a = 2.5;
+      for (let k = 0; k < 2; k++) {
+        est = Math.sqrt(Math.max(1, arrival * arrival + 2 * a * d));
+        const vm = (est + arrival) / 2;
+        a = PITCH.rollResist * PITCH.gravity + BALL.k * dragCoefficient(vm) * vm * vm;
+      }
+    } else est = Math.sqrt(d * PITCH.gravity / Math.max(0.2, Math.sin(2 * elevation)));
+    lo = Math.max(0.5, est * 0.7); hi = Math.min(maxSpeed, Math.max(est * 1.45, lo + 2));
+    if (hi < maxSpeed && trial(hi).metric < target) hi = maxSpeed;
+    if (lo > 0.6 && trial(lo).metric > target) lo = 0.5;
+  }
+  for (let i = 0; i < iterations && (tol === 0 || hi - lo > tol || !best); i++) {
     const mid = (lo + hi) / 2;
     const got = trial(mid);
     best = { speed: mid, ...got };
