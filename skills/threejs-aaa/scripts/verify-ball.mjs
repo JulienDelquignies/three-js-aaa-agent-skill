@@ -98,7 +98,10 @@ let bend = 0;
   };
   const plain = acrossBounce(0, [0, 0, 1]), back = acrossBounce(11, [0, 0, 1]), top = acrossBounce(11, [0, 0, -1]);
   const d = (r) => r.after - r.before;
-  ok(`rétro : le rebond FREINE le ballon (Δvₓ = ${d(back).toFixed(2)} m/s, sans effet ${d(plain).toFixed(2)})`, d(back) < d(plain) - 1.0);
+  // seuil 1,0 → 0,7 (lot 65, récit) : la couche gazon pince le spin dès le premier contact —
+  // l'écart backspin/neutre reste net (mesuré 0,95 m/s) mais une part du freinage est désormais
+  // portée par l'herbe, commune aux deux ballons. Le SENS de la clause est inchangé.
+  ok(`rétro : le rebond FREINE le ballon (Δvₓ = ${d(back).toFixed(2)} m/s, sans effet ${d(plain).toFixed(2)})`, d(back) < d(plain) - 0.7);
   ok(`lifté : le rebond RELANCE le ballon (Δvₓ = ${d(top).toFixed(2)} m/s)`, d(top) > d(plain) + 0.5);
   ok('sans effet, le rebond ne fait que freiner un peu', d(plain) <= 0.01);
 }
@@ -154,6 +157,16 @@ let bend = 0;
   for (let i = 0; i < 240; i++) stepBall(chandelle, 1 / 60);
   ok(`une chandelle ne se propulse pas toute seule (|v| après 4 s de rebonds : ${Math.hypot(chandelle.v[0], chandelle.v[2]).toFixed(2)} ≤ 0,6)`,
     Math.hypot(chandelle.v[0], chandelle.v[2]) <= 0.6);
+  // LA COUCHE GAZON (lot 65 — « la balle avance plus vite après les rebonds ») : la friction
+  // Coulomb seule est une surface DURE — le topspin y RELANCE légitimement le ballon au rebond
+  // (mesuré en match : 8 rebonds/52 accéléraient, jusqu'à +9 %). Une pelouse avale ce kick :
+  // un rebond FREINE, toujours (accélérés 8 → 0, courses post-atterrissage p90 18,8 → 10,4 m).
+  const roulant = { p: [0, 0.15, 0], v: [8, -4, 0], w: [0, 0, -8 / R] };
+  stepBall(roulant, 0.05);
+  ok(`un ballon ROULANT-accordé ne gagne jamais de vitesse au rebond (8 → ${roulant.v[0].toFixed(1)} m/s ≤ 8)`, roulant.v[0] <= 8);
+  const surTop = { p: [0, 0.15, 0], v: [8, -4, 0], w: [0, 0, -9.6 / R] };
+  stepBall(surTop, 0.05);
+  ok(`…et le « kick » du topspin sur-tourné (1,2× le roulement — la borne du répertoire : une frappe liftée fait 8-10 rev/s) est mangé par l'herbe (8 → ${surTop.v[0].toFixed(1)} m/s < 8)`, surTop.v[0] < 8);
 }
 
 // ---------- 13. Magnus coefficient sanity

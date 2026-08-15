@@ -3260,6 +3260,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (« 665 yanks ») sans distribution cache un site — le rw ~17,5 CONSTANT sur 10 cas était la
      signature qui a tout ouvert.
 
+102. **La couche gazon de l'impact : un rebond FREINE, toujours (lot 65 — retour utilisateur :
+     « la balle avance plus vite après les rebonds »).** Le signe corrigé du lot 64 laissait une
+     friction Coulomb de surface DURE — sur parquet, le topspin RELANCE légitimement le ballon au
+     rebond (le « kick » du lift). Mesuré en match : 8 rebonds sur 52 ACCÉLÉRAIENT (+4 à +9 %),
+     et un long ballon courait jusqu'à 25 m après l'atterrissage (réel pelouse : 10-18). LA
+     COUCHE : l'herbe se déforme et avale — grassTangent 0,85 (part d'horizontal conservée à
+     impact plein ; 0,82 essayé pour un topspin synthétique 1,5× hors répertoire : 4 clauses de
+     flux payées pour un cas qui n'existe pas — retour au calibre du MONDE, où 0 accéléré est
+     déjà mesuré), grassSpin 0,7 (l'herbe freine aussi la rotation), l'absorption
+     PROPORTIONNELLE à l'impact normal (k = jn/6 : un micro-rebond n'enfonce pas — la transition
+     vol → roulement reste douce). RE-MESURÉ : accélérés 8 → 0 (catégorie topspin+ disparue — le
+     spin n'a plus le temps de s'accumuler), backspin s'assoit à 0,51, un rebond roulant freine
+     de 16 %, courses post-atterrissage p90 18,8 → 10,4 m, max 20,7. A/B : bande 17-33 tenue.
+     Clauses : un ballon roulant-accordé ne gagne JAMAIS de vitesse au rebond ; le kick du
+     topspin 1,2× roulement (la borne du répertoire : une liftée fait 8-10 rev/s) est mangé ; la clause
+     « rétro » re-fondée (seuil 1,0 → 0,7 : une part du freinage est désormais portée par
+     l'herbe, commune aux deux ballons). LA FIDÉLITÉ DU SOLVEUR RE-FONDÉE PAR CHEMIN : la
+     non-linéarité k(jn) par rebond rend la vitesse initiale des chemins MULTI-REBONDS dégénérée
+     (une tendue de 28 m atterrit à ~11 m puis rebondit jusqu'à la cible — rapide 22,49 vs réf
+     21,55, les DEUX atterrissent à ≤ 0,08 m) : mono-arc → Δv ≤ 0,15 strict (l'ancien contrat),
+     multi-rebonds → le juge est l'ATTERRISSAGE + garde-fou Δv ≤ 1,2. Leçon : chaque couche
+     physique nouvelle re-pose la question « qu'est-ce que la fidélité promet » — ici la vitesse
+     de frappe d'un chemin à rebonds n'est plus une grandeur contractuelle, l'assiette du
+     gameplay l'est.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

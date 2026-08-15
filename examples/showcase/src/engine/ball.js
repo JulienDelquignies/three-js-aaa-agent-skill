@@ -36,6 +36,17 @@ export const PITCH = {
   friction: 0.55,        // boot/ball and ball/grass tangential friction
   rollResist: 0.12,      // rolling resistance coefficient on cut grass (tuned so a 15 m/s pass dies ~40 m)
   spinDecay: 20,         // s — aerodynamic spin damping time constant in flight
+  // LA COUCHE GAZON DE L'IMPACT (lot 65 — retour utilisateur : « la balle avance plus vite après
+  // les rebonds »). La friction Coulomb corrigée (lot 64) est celle d'une surface DURE : rien ne
+  // modélisait l'herbe qui se déforme et avale l'horizontal à l'impact. Mesuré sans elle : 8
+  // rebonds sur 52 ACCÉLÉRAIENT le ballon (+4 à +9 % — le « kick » du topspin, réel sur parquet,
+  // mangé par une pelouse), et un long ballon courait jusqu'à 25 m après l'atterrissage (réel :
+  // 10-18). L'absorption est PROPORTIONNELLE à l'impact normal (un micro-rebond n'enfonce pas).
+  grassTangent: 0.85,    // part de vitesse horizontale conservée par un impact PLEIN (jn ≥ 6) —
+                         // au monde réel du match ça suffit : 0 rebond accélérateur mesuré (0,82
+                         // essayé pour un topspin synthétique 1,5× hors répertoire : 4 clauses de
+                         // flux payées pour un cas qui n'existe pas — retour au calibre du monde)
+  grassSpin: 0.7,        // part de spin conservée — l'herbe freine aussi la rotation à l'impact
 };
 
 const len = (a) => Math.hypot(a[0], a[1], a[2]);
@@ -93,7 +104,7 @@ export function aeroAccel(v, w, { gravity = PITCH.gravity, drag = true, magnus =
  * A sliding contact gets a Coulomb impulse μ·Jn; a gripping contact gets exactly the impulse that
  * kills the slip (for I = α·m·r², that is α/(1+α)·m·|u| — 0.4·m·|u| for a football shell).
  */
-function resolveGround(s, { restitution, friction }) {
+function resolveGround(s, { restitution, friction, grassTangent = 1, grassSpin = 1 }) {
   const r = BALL.radius, a = BALL.inertiaFactor;
   s.p[1] = r;
   const jn = Math.abs(s.v[1]) * (1 + restitution);          // normal impulse per unit mass
@@ -117,6 +128,12 @@ function resolveGround(s, { restitution, friction }) {
   // TUER u exactement, ce qui n'est vrai qu'avec Δu = −(1+1/a)·j.
   s.w[0] += (j * nz) / (a * r);
   s.w[2] -= (j * nx) / (a * r);
+  // La couche gazon (voir PITCH) : l'absorption suit l'ENFONCEMENT — pleine à jn ≥ 6 (une chute
+  // d'apogée ≥ ~0,7 m), quasi nulle sur un micro-rebond (la transition vol → roulement reste douce).
+  const k = Math.min(1, jn / 6);
+  const fT = 1 - (1 - grassTangent) * k, fS = 1 - (1 - grassSpin) * k;
+  s.v[0] *= fT; s.v[2] *= fT;
+  s.w[0] *= fS; s.w[1] *= fS; s.w[2] *= fS;
 }
 
 /**
