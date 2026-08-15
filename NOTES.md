@@ -3308,6 +3308,55 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      — le raté sec absurde, le jet perdu, l'esquive subie, la faute d'imprudence ; la signature
      de l'événement (bearing, dist, faute) les sépare, et chacun a EU son traitement propre.
 
+104. **La possession commence par l'off-ball — le diagnostic et la première moitié (lot 67a,
+     question utilisateur : « avant de régler ça, il ne faut pas régler les déplacements
+     défensifs et offensifs off-ball ? » — SI, et la mesure le prouve).** LE DIAGNOSTIC
+     (3 graines × 300 s, sonde offre/pression/choix) : le porteur avait UNE option sûre en
+     médiane et ZÉRO 44 % du temps (option sûre = coéquipier à 6-20 m, non marqué < 2,5 m,
+     ligne de passe dégagée à 1,3 m) ; 18 des 27 passes fatales n'avaient AUCUNE option
+     arrière (la conservation du vrai foot n'était pas offerte) ; pression au passeur p50
+     1,2-1,3 m IDENTIQUE pour les passes qui vivent et qui meurent → le choix du passeur
+     n'est PAS le discriminant, l'ENVIRONNEMENT l'est. LA CAUSE OFFENSIVE : les couloirs de
+     soutien (5 slots relatifs à l'ancre) et les postes coulissés sont des positions
+     GÉOMÉTRIQUES AVEUGLES aux défenseurs — un slot dans l'ombre est un slot mort. LA
+     CORRECTION 67a « SE MONTRER » (match-sim, st.full, cfg.demarque, sabotage nommé) : à
+     chaque cadence de re-visée (0,7 s — la ligne bouge avec les défenseurs, un slot immobile
+     mais fermé doit se ré-ouvrir), si la ligne porteur→slot est coupée ou le point marqué,
+     le slotter décale perpendiculairement (±2,5 puis ±5 m) vers le premier point OUVERT ;
+     rien d'ouvert → le couloir tactique reste (la structure prime). MESURÉ : 0-option 44 %
+     → 34 %, passes fatales sans option 13 → 6, sans-arrière 18 → 11 — l'offre s'ouvre, MAIS
+     les chaînes restent à p50 1 : l'autre moitié est DÉFENSIVE. LE COUPABLE 67b IDENTIFIÉ
+     (sonde pression par moment) : en jeu PLACÉ, le plus proche du porteur est le job PRESS
+     dans 957/1065 échantillons à p50 1,07 m (p10 0,50 !) — le presseur désigné COLLE en
+     permanence, hors de toute fenêtre de pressing (la dette « press-job hors fenêtre vif »
+     était déjà nommée). Le vrai foot JOCKEYE à 2-3 m en placé et ne croque que sur
+     déclencheur (lot 11) — LE CONTAIN est le prochain paquet : cible de contention à ~2,2 m
+     côté but hors fenêtre/transition/zone dangereuse. Un défenseur sous 3 m en médiane : le
+     RESTE du bloc est sain, c'est le press seul qui étouffe.
+
+105. **La possession commence par l'off-ball, 2e moitié : se montrer VERS le but, la gâchette
+     qui prime, le presseur cadré (lot 67a complet).** Suite de la note 104. LE SE-MONTRER v1
+     (premier point ouvert) a payé son effet pervers MESURÉ : l'offre latérale toujours
+     disponible faisait TOURNER le ballon autour du bloc au lieu de le percer — seed 7 passait
+     de 5 tirs à 0 en 330 s (temps en zone de frappe 22 → 11 s, élections de tir 5 → 2). LE FIX :
+     parmi les points ouverts, LE PLUS AVANCÉ gagne (on tourne pour déplacer le bloc, puis on
+     joue vertical) — seed 7 revient à 5 tirs (7 élections), l'offre reste ouverte (0-option
+     44 % → 33 %). L'OCCASION SE PREND (menace.js, cfg.tirFranc/tirTente, sabotage nommé) :
+     cadre en vue à ≤ 0,8·R → le score de tir plancherisé 0,72 (seule une passe qui vaut MIEUX
+     qu'une occasion la vole) ; demi-couloir à ≤ 0,6·R → 0,55 (le tir contré/dévié fait vivre
+     la surface). LES REFUS NOMMÉS ONT TOUT DIT : st.deny sur seed 7 = 1476 « ballon-vif »
+     (structurel — la porte d'armé de frappe contre le monde des touches libres : DETTE 67b
+     nommée « la gâchette du monde des touches ») ; le registre du patron referee est l'outil
+     de diagnostic le plus rentable de la session. Le glissé re-durci une fois de plus (le
+     se-montrer multiplie les ballons libres EN MOUVEMENT : le couloir du glissé-libre passe au
+     ballon PRÉDIT — ratés secs 11 → 1) ; l'imprudence a sa retenue (70 %) ; re-fondations avec
+     récit : garde-fou fautes 2 → 2,5 (dont 1,3 de charges-derrière, dette nommée), conversion
+     gardien 60 → 65 % (quantum de 12,5 %/tir), fenêtre du contrat 240 → 330 s (doctrine « la
+     fenêtre suit le tempo »), libellé 'occasion-franche'. Leçon de méthode : trois fois dans
+     ce lot, la première version d'une correction a créé le défaut suivant (latéral-sûr →
+     stérilité ; instantané → ratés secs ; chaque-jambes-part → fautes) — le CYCLE
+     mesure→correction→re-mesure à CHAQUE étage est ce qui a permis de les attraper avant le ship.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

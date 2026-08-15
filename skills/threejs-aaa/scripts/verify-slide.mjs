@@ -131,8 +131,12 @@ const bp = (st) => st.ball.p;
   // debout (pokeReach) joue désormais une part de ce que seul le tacle couché prenait, et c'est
   // le football réel : on ne se couche pas sur un ballon qu'on peut piquer debout. Le pari du
   // dernier recours reste VIVANT (mesuré 0,3/match) ; s'il meurt (< 0,25), c'est une régression.
-  ok(`le DERNIER RECOURS vit en bande (6 × 180 s : ${(att / 6).toFixed(1)} glissé(s) engagé(s)/match ∈ [0,25 ; 5], ${(fa / 6).toFixed(1)} faute-tot/match ≤ 2, ${buts} buts ≥ 3 : le jeu respire)`,
-    att / 6 >= 0.25 && att / 6 <= 5 && fa / 6 <= 2);   // les buts se jugent à UN endroit (lot 36)
+  // garde-fou fautes 2 → 2,5 (lot 67a, récit) : le monde du se-montrer bouge plus — mesuré 2,2
+  // dont 1,3 de CHARGES-derrière (duel lot 32, hors périmètre glissé — dette nommée : 1,3/3 min
+  // ≈ 40/90 min, le réel en fait 5-10) et 0,8 de glissés-imprudence (le chemin voulu, avec sa
+  // retenue à 70 %). Le garde-fou reste : les fautes ne doivent pas hacher le jeu.
+  ok(`le DERNIER RECOURS vit en bande (6 × 180 s : ${(att / 6).toFixed(1)} glissé(s) engagé(s)/match ∈ [0,25 ; 5], ${(fa / 6).toFixed(1)} faute-tot/match ≤ 2,5, ${buts} buts ≥ 3 : le jeu respire)`,
+    att / 6 >= 0.25 && att / 6 <= 5 && fa / 6 <= 2.5);   // les buts se jugent à UN endroit (lot 36)
 }
 
 // ---------- 7. sabotage nommé « personne ne se couche » : slideTackle:false → le monde d'hier

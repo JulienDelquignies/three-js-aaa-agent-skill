@@ -42,10 +42,20 @@ export function menaceTir(st, c, cfg) {
   }
   const laneF = Math.max(0, Math.min(1, margin / (need * 2)));      // 2× le besoin = pleine confiance
   const nearF = 1 - d / (R + 2);
+  // L'OCCASION FRANCHE SE PREND (lot 67a — l'attaque asséchée d'un cran : le se-montrer offre
+  // toujours une passe sûre et la circulation VOLAIT la frappe — mesuré : 0 tir en 330 s pour
+  // 267 entrées de dernier tiers, seed 7). Cadre en vue à distance franche ⇒ le score de tir
+  // est PLANCHERISÉ : seule une passe qui vaut MIEUX qu'une occasion (le caviar de surface)
+  // peut encore la voler. cfg.tirFranc:false = la circulation stérile d'hier (sabotage nommé).
+  const franc = margin >= need && d <= R * 0.8 && cfg.tirFranc !== false;
+  // …et LE TIR SE TENTE en zone chaude même à demi-couloir (d ≤ 0,6·R, marge ≥ 0,4·need) : le
+  // tir contré/dévié fait vivre la surface (corners, rebonds) — sans lui, un bloc hermétique
+  // rend l'attaque STÉRILE (seed 7 : 0 tir en 330 s malgré le plancher franc, tous couloirs < need).
+  const tente = !franc && margin >= need * 0.4 && d <= R * 0.6 && cfg.tirFranc !== false;
   return {
-    score: +((0.30 + 0.62 * nearF) * (0.25 + 0.75 * laneF)).toFixed(3),
+    score: +Math.max((0.30 + 0.62 * nearF) * (0.25 + 0.75 * laneF), franc ? (cfg.tirFranc ?? 0.72) : tente ? (cfg.tirTente ?? 0.55) : 0).toFixed(3),
     d: +d.toFixed(1), marge: +margin.toFixed(2), tz: +tz.toFixed(1),
-    pourquoi: margin < need ? 'couloir-serré' : 'cadre-en-vue',
+    pourquoi: franc ? 'occasion-franche' : tente ? 'tir-tenté' : margin < need ? 'couloir-serré' : 'cadre-en-vue',
   };
 }
 

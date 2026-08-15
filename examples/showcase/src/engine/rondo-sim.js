@@ -469,9 +469,7 @@ function resolveSlideL(st, cfg) {
 }
 
 function trySlide(st, cfg) {
-  // WHEN. Not at a pass in flight (the interception job — anyone diving at a travelling ball made
-  // 157 slides in 90 s). A slide is for a ball that has STRAYED: a touch that got away, or a
-  // genuinely loose ball — restricting it there is what makes the action rare enough to read.
+  // WHEN. Not at a pass in flight (interception's job — 157/90 s otherwise) : a slide is for a STRAYED ball, which keeps it rare enough to read.
   const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
   const strayed = car ? d2(car.p, st.ball.p) > cfg.strikeReach : true;
   if (!strayed) return;
@@ -481,10 +479,9 @@ function trySlide(st, cfg) {
   // A SLIDE IS A LAST RESORT, not a longer reach (anyone-in-range going down = 182 slides in 90 s,
   // possession 18 passes → 4). You slide when you are LOSING THE RACE to an opponent — everything
   // else is a normal run.
-  // …ET C'EST UN GESTE DÉFENSIF. Mesuré : 9,4 glissades/min, 69 % par l'équipe EN POSSESSION dont
-  // 49 % par le porteur plongeant sur sa propre touche échappée — or il la POURSUIT (conduite), il
-  // ne se couche pas. Seuls les défenseurs se jettent, une fois par slideCooldown, et seulement
-  // s'ils perdent NETTEMENT la course (slideMargin 0,15 → 0,4). Cible : ≤ 2/min.
+  // …ET C'EST UN GESTE DÉFENSIF (mesuré : 9,4/min dont 69 % par l'équipe en possession — or un
+  // porteur POURSUIT sa touche échappée, il ne se couche pas). Seuls les défenseurs se jettent,
+  // une fois par slideCooldown, et seulement s'ils perdent NETTEMENT la course (slideMargin 0,4).
   let best = null;
   for (const p of st.players) {
     if (p.down > 0 || p.act) continue;
@@ -519,9 +516,12 @@ function trySlide(st, cfg) {
   const sit = situation(p.p, p.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
   const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
   if (!pick || pick.tech.id !== 'tacle-glisse') return;
-  // LE COULOIR ET LA COURSE SE LISENT DEBOUT (lot 66, st.full — 14 ratés secs/6 matchs, doc ecartCouloir duel.js) ; predit:false = hier
-  if (st.full && cfg.slideTackle?.predit !== false
-    && (ecartCouloir(p, st.ball.p) > 0.85 || (best.d - 0.35) / 5 > best.dRival / 2.5 + 0.1)) return;
+  // LE COULOIR (ballon PRÉDIT à mi-fenêtre — l'instantané a re-cassé au se-montrer 67a : 11 secs) ET LA COURSE SE LISENT DEBOUT (lot 66, doc ecartCouloir duel.js) ; predit:false = hier
+  if (st.full && cfg.slideTackle?.predit !== false) {
+    const tMid = Math.min(0.5, (Math.min(0.4, Math.max(0.1, (best.d - 0.35) / 5)) + 0.55) / 2);
+    if (ecartCouloir(p, predictPath(st.ball.snapshot(), { maxT: tMid + 0.05 })[Math.round(tMid * 60)]?.p ?? st.ball.p) > 0.85
+      || (best.d - 0.35) / 5 > best.dRival / 2.5 + 0.1) return;
+  }
   p.slideCd = st.t + cfg.slideCooldown;                        // gagné ou perdu : pas deux plongeons de suite
   st._slideT[p.team] = st.t;
   // le temps au sol n'est plus une constante d'horloger (mesuré : 1,200 s pile sur chaque tacle,

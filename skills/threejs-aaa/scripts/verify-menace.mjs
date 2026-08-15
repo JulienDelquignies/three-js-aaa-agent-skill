@@ -38,8 +38,10 @@ const cfgD = () => matchCfg({ shotRange: 20 });
   const c = st.players.find((p) => p.team === 0 && p.post === 8);
   pose(st, c, goal.x - sgn * 10, 0);
   const a = arbitre(st, c, cfgD());
+  // 'cadre-en-vue' → 'occasion-franche' (lot 67a) : à 10 m cadre ouvert, le tir est désormais
+  // une occasion PLANCHERISÉE (0,72) — le libellé suit, le verdict (le TIR gagne) est le même.
   ok(`but ouvert à 10 m → le TIR gagne (tir ${a.tir.score} · passe ${a.passe.score} · conduite ${a.conduite.score}, pourquoi « ${a.tir.pourquoi} »)`,
-    a.meilleure === 'tir' && a.tir.pourquoi === 'cadre-en-vue');
+    a.meilleure === 'tir' && a.tir.pourquoi === 'occasion-franche');
 }
 {
   // (b) MUR devant les deux coins + coéquipier DÉMARQUÉ qui progresse → la PASSE gagne

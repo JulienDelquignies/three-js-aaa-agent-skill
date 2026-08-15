@@ -71,6 +71,9 @@ export function slideTackleStep(st, c, cfg) {
   let couloirBallon = true;
   if (S.predit !== false) {
     if (!tableOk && !jambes) return;                        // rien à toucher : un pro reste debout
+    // …et l'imprudence est l'EXCEPTION, pas la règle (mesuré : chaque situation jambes partait —
+    // fautes 2,5/match, réel ~0,8/3 min) : 70 % du temps, le pro retient ce tacle-là aussi.
+    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > 0.3) return;
     if (tableOk) {
       const tc = Math.min(0.4, Math.max(0.1, (sit.dist - 0.35) / Math.max(3.5, vq0)));
       const tMid = Math.min(0.5, (tc + 0.55) / 2);

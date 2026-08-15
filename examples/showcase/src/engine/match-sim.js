@@ -769,6 +769,42 @@ function assignMatchJobs(st, cfg) {
         p.target = [tx, 0, tz];
       }
     }
+    const seMontrer = (p, want) => {
+      // SE MONTRER (lot 67, st.full — diagnostic : le porteur avait 0 option sûre 44 % du temps,
+      // 1 en médiane ; 18 des 27 passes fatales n'avaient AUCUNE option arrière). Les couloirs
+      // étaient des positions AVEUGLES aux défenseurs — un slot dans l'ombre est un slot mort.
+      // À chaque cadence de re-visée, si la ligne porteur→slot est coupée ou le point marqué, le
+      // soutien DÉCALE perpendiculairement (±2,5 puis ±5 m) vers le premier point qui OUVRE sa
+      // ligne — le démarquage du vrai football. Rien d'ouvert : le couloir tactique reste (la
+      // structure prime). cfg.demarque:false = les statues d'hier (sabotage nommé).
+      const foes = st.players.filter((q) => q.team !== p.team && q.down <= 0 && !q._sub);
+      const ouvert = (wx, wz) => {
+        const dx0 = wx - carrier.p[0], dz0 = wz - carrier.p[2], L = Math.hypot(dx0, dz0);
+        if (L < 4) return false;
+        const ux = dx0 / L, uz = dz0 / L;
+        for (const f of foes) {
+          if (Math.hypot(f.p[0] - wx, f.p[2] - wz) < 2.2) return false;
+          const rx = f.p[0] - carrier.p[0], rz = f.p[2] - carrier.p[2], al = rx * ux + rz * uz;
+          if (al > 0.5 && al < L && Math.hypot(rx - al * ux, rz - al * uz) < 1.2) return false;
+        }
+        return true;
+      };
+      if (ouvert(want[0], want[1])) return want;
+      const dx = want[0] - carrier.p[0], dz = want[1] - carrier.p[2], L = Math.hypot(dx, dz) || 1;
+      const px = -dz / L, pz = dx / L;
+      // …et parmi les points ouverts, LE PLUS AVANCÉ gagne (mesuré : le premier-ouvert offrait du
+      // latéral sûr et la circulation REMPLAÇAIT la percée — seed 7 passait de 5 tirs à 0 en 330 s,
+      // temps en zone de frappe 22 s → 11). On se démarque VERS le but quand un point ouvert y existe.
+      const gx = pitch.attackGoal(atk).x;
+      let bestPt = null, bestProg = -Infinity;
+      for (const off of [2.5, -2.5, 5, -5]) {
+        const wx = want[0] + px * off, wz = want[1] + pz * off;
+        if (Math.abs(wx) >= pitch.hx - 1.2 || Math.abs(wz) >= pitch.hz - 1.2 || !ouvert(wx, wz)) continue;
+        const prog = -Math.abs(gx - wx);
+        if (prog > bestProg) { bestProg = prog; bestPt = [wx, wz]; }
+      }
+      return bestPt ?? want;
+    };
     const taken = new Set();
     for (const p of slotters) {
       let best = -1, bd = Infinity;
@@ -786,7 +822,10 @@ function assignMatchJobs(st, cfg) {
       // seulement si le couloir vaut le pas (0,8 m) — une transition franche (> 3,5 m) part tout
       // de suite. L'hystérésis PURE (2 m sans cadence) gelait le bloc : lignes mortes, tenues à
       // 4,8 s, 2 appels servis sur 45 — le mouvement qui NOURRIT les passes doit vivre.
-      const want = [slots[best][0], slots[best][1]];
+      let want = [slots[best][0], slots[best][1]];
+      // le se-montrer s'évalue À CHAQUE cadence (la ligne bouge avec les défenseurs — un slot
+      // immobile mais fermé doit se ré-ouvrir), et sa cible ajustée passe par la même hystérésis
+      if (st.full && cfg.demarque !== false && carrier && !carrier.keeper && (p._slotAt ?? -1) <= st.t) want = seMontrer(p, want);
       const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
       if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
         p._slotT = want; p._slotAt = st.t + 0.7;
