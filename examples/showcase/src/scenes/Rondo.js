@@ -728,7 +728,10 @@ export class Rondo {
         // still running, and it will finish on its own follow-through
       } else if (e.type === 'control' || e.type === 'slide') {
         const pl = this.players[e.by];
-        if (pl) { this._playTech(pl, e); pl._teched = this._t; if (e.type === 'control') pl._rxAt = this._t; }
+        // …et le CONTRÔLE arme le warp du pied comme la touche de conduite (lot 70 — mesuré :
+        // pied réel à p90 1,13 m du ballon à l'instant du control ; le clip seul ne sait pas
+        // où le ballon est vraiment)
+        if (pl) { this._playTech(pl, e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; pl._touchT = this._t; } }
       } else if (e.type === 'receive') {
         // une RÉCEPTION n'est pas une passe : le repli par défaut de _playTech jouait le clip
         // « passe » sur le receveur — mesuré au sweep, un armé fantôme à chaque réception, aussitôt

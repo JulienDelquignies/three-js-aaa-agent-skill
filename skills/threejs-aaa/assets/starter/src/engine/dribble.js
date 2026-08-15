@@ -80,6 +80,17 @@ export function dribbleSteer(ball, player, { pull = 0.6, reach = 1.15 } = {}) {
  * possède un ballon AU pied (< prise) ou qui VIENT au pied (pas fuyant) ; un ballon qui fuit se
  * court — et la touche réelle le jouera quand le pied l'atteint (dribbleStep, lot 58).
  */
+/** LE CÔNE AVANT (lot 70) : une touche de PIED n'existe que si le ballon est DEVANT le corps
+ *  (relèvement ≤ cone°). Les chemins sans géométrie (amorti-poursuite, quart-de-touche, capture)
+ *  écrasaient des ballons DANS LE DOS — mesuré : 54 % des amortis-poursuite à > 100°, prises à
+ *  p90 107° — « le joueur se réoriente avec la balle sans la toucher » (retour utilisateur).
+ *  La table des techniques (technique.js) porte déjà ses fenêtres ; ce cône est la même loi
+ *  pour les touches HORS table. cfg.priseCone:false = la touche omnisciente d'hier (sabotage). */
+export const dansCone = (yaw, px, pz, bx, bz, cone = 100) => {
+  const a = Math.atan2(bz - pz, bx - px) - yaw;
+  return Math.abs(((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) <= cone * Math.PI / 180;
+};
+
 export function balPrenable(ball, px, pz, prise = 0.5, fuite = 0.5) {
   const bx = ball.p[0] - px, bz = ball.p[2] - pz, dd = Math.hypot(bx, bz);
   return dd < prise || (dd > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dd : 0) < fuite;

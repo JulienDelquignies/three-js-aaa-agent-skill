@@ -1,7 +1,7 @@
 import { BALL, stepBall, kick } from './ball.js';
 import { predictPath } from './ball-predict.js';
 import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable } from './dribble.js';
+import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { chargeStep, slideTackleStep, slideResolve, ecartCouloir } from './duel.js';
@@ -245,11 +245,8 @@ function standTackleNow(st, q, cfg) {
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeFeinteFrappe, skillContactNow };
 export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a), chargeStep: (...a) => chargeStep(...a), slideTackleStep: (...a) => slideTackleStep(...a) };
 
-/**
- * Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
- * scores the pass; anyone else on the same shirt is a scuffed ball that stayed in the family.
- * An opponent taking it is the turnover.
- */
+/** Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
+ *  scores the pass; any other shirt-mate is a scuffed ball kept in the family. Opponent = turnover. */
 const dW = (st, cfg, k) => (st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null); // l'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config)
 function receive(st, id, cfg = RONDO) {
   const p = st.players[id];
@@ -385,17 +382,19 @@ function receive(st, id, cfg = RONDO) {
         settle: null,
       });
     } else {
-      // L'AMORTI DE POURSUITE (lot 52, cfg.amortiPoursuite && st.full) : le quart-de-touche
-      // relançait le ballon rattrapé à 75 % (le flipper — 56/82 longs en chasse au rebond).
-      // À portée d'un ballon NON CONTESTÉ, la première touche l'ÉCRASE ; le contesté garde
-      // son 50/50. Doc et mesures : match-config, NOTES 88.
+      // LE CÔNE AVANT D'ABORD (lot 70, cfg.priseCone — doc dansCone/match-config) : hors cône en
+      // match, PAS de touche — le ballon COURT (le pivot en cours reprend à la capture ; le vrai dos se chasse)
+      if (st.full && cfg.priseCone !== false && !dansCone(p.yaw, p.p[0], p.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100)) {
+        deny(st, 'controle-dos'); st.pass = null; st.phase = 'loose'; st.possession.carrier = -1; return;
+      }
+      // L'AMORTI DE POURSUITE (lot 52, st.full) : non contesté → la touche ÉCRASE (doc match-config, NOTES 88)
       const AP = st.full ? cfg.amortiPoursuite : null;
       const foeAP = AP ? Math.min(...st.players.filter((q) => q.team !== p.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99) : 99;
       if (AP && foeAP > cfg.contestRadius) {
         st.ball.impulse([-st.ball.v[0] * AP, -st.ball.v[1] * 0.6, -st.ball.v[2] * AP], dW(st, cfg, AP));
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'amorti-poursuite', foot: 'any',
           surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
-      } else { st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25], dW(st, cfg, 0.25)); if (st.full) st.events.push({ // la touche muette se nomme (lot 54) : la scène a un contact à animer
+      } else { st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25], dW(st, cfg, 0.25)); if (st.full) st.events.push({ // la touche muette se nomme (lot 54)
         t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: 'any', surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
     }
   } else {
@@ -685,7 +684,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         st.ball.release('conduite');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }
       }
-    } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5))) {
+    } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5)) && (!st.full || cfg.priseCone === false || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100))) {
       st.ball.possess(c.id);
       st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
     } else {

@@ -3426,6 +3426,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Si les bandes persistent au retest : pistes GPU pures (géométrie du stade au tier low,
      plancher DPR, format du canvas).
 
+108. **Lot 70 : la physique de contact joueur/ballon — le contrôle se prend DE FACE, au pied
+     (le grand pas du moteur nommé par l'utilisateur).** Retour : « l'endroit de contact
+     ballon-joueur n'est pas bon… le corps et les pieds ne touchent pas le ballon sur les
+     contrôles et le joueur se réoriente avec la balle sans la toucher ». MESURÉ (3 graines ×
+     300 s, angle corps→ballon à l'instant de chaque événement) : 54 % des amortis-poursuite
+     DANS LE DOS (> 100°), 26 % des réceptions (p90 160°), prises p90 107° — et 76 % des dos
+     avec le corps DÉJÀ en rotation : l'intention tournait, la sim consommait 2-5 frames trop
+     tôt. TROIS LOIS : (1) LE CÔNE AVANT (dansCone, dribble.js ; cfg.priseCone 100°, st.full)
+     — les touches HORS TABLE (amorti-poursuite, quart-de-touche, capture) exigent le ballon
+     devant, comme la table des techniques l'exigeait déjà pour les siennes (fenêtres ≤ 80°) ;
+     hors cône : refus nommé 'controle-dos', le ballon COURT, le pivot en cours reprend à la
+     capture (le différé émerge sans horloge). (2) LE RECEVEUR SE PRÉSENTE (cfg.sePresente,
+     movement.js) : quasi statique avec un vol pour lui → yawWant vers le ballon (slew borné) ;
+     v1 ratée CONSIGNÉE : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à
+     sa dérive chaque frame et le slew ne gagnait jamais (24 % dos après v1) — pendant la
+     présentation, l'AUTORITÉ du cap est le ballon, pas la dérive. (3) LE WARP DU CONTRÔLE
+     (Rondo.js) : l'événement 'control' arme _touchT — le warp de pied de la conduite (lot 58)
+     s'applique au contrôle (le clip seul ne sait pas où le ballon est). RÉSULTATS : dos aux
+     réceptions 26 → 2 % (angle p50 2°, p90 47°), contrôles 20 → 2 %, prises 12 → 4 %,
+     amorti-poursuite 54 → 0 % ; pied RÉEL (os, playmode, min sur la fenêtre du geste) :
+     contrôles p50 0,60 → 0,10 m / p90 1,13 → 0,69, réceptions p50 0,06. RONDO ET RÉDUIT AU
+     BIT (empreinte sha256 inchangée) ; A/B 20 × 300 s : 67 tirs / 27 buts (bande 17-33) ;
+     4 clauses match11 (géométrie pure + amorti-dos 0 + présentation ≤ 8 % + sabotage
+     « touche omnisciente + dos fossile ») ; batterie 30 bancs + match11 62/62. DETTE NOMMÉE :
+     la touche de conduite passe 6 → 12 % dos au re-brassage (l'aimant du porté pendant les
+     pivots serrés — le prochain étage du contact), et rondo.js émet des 'control' sans tech
+     (6 % dos, n=68). La volumétrie a plié deux fois (rondo-sim 1253 → 1248 par compression
+     de commentaires, match-sim déjà au plafond).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

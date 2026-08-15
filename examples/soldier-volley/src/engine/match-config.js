@@ -350,6 +350,18 @@ export const MATCH = {
                           // droits. Jamais mesuré au réduit (sa sentinelle gel ≤ 25 s monte la
                           // garde) : la loi est gardée st.full. false : le gel (sabotage nommé).
   chaseLoose: true,       // le ballon libre est CHASSÉ par les deux camps ; false : la formation l'orbite (sabotage nommé)
+  priseCone: 100,         // LE CÔNE AVANT DU CONTACT (lot 70, st.full — retour utilisateur « le
+                          // corps et les pieds ne touchent pas le ballon sur les contrôles ») :
+                          // une touche de pied hors table (amorti-poursuite, quart-de-touche,
+                          // capture) n'existe que ballon DEVANT (relèvement ≤ 100°) — mesuré
+                          // avant : 54 % des amortis-poursuite dans le dos, prises p90 107°.
+                          // Hors cône : le ballon COURT (refus nommé 'controle-dos'), le pivot
+                          // en cours reprend à la capture. false : la touche omnisciente d'hier.
+  sePresente: true,       // LE RECEVEUR SE PRÉSENTE (lot 70, st.full) : quasi statique (< 2,2
+                          // m/s) avec un vol pour lui → yawWant vers le ballon (slew borné de
+                          // movePlayers — le corps s'ouvre AVANT l'arrivée). Mesuré avant :
+                          // 23 % des vols dans le dos à 4 m de l'arrivée, 51/80 sur des
+                          // immobiles au cap fossile. false : le dos fossile (sabotage nommé).
   apron: 2.0,             // m — le tablier autour du terrain : un corps peut enjamber la ligne (chercher un ballon sorti)
   carryLawLoose: true,    // la bascule carry→libre lit la LOI DE TOUCHE (jamais sur une touche légale) ; false : le rayon plat (sabotage nommé)
   shotVariety: true,      // le RÉPERTOIRE DU TIR (lot 39 — retour utilisateur « liste à compléter pour

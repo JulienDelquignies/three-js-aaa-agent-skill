@@ -855,6 +855,46 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     tirs.length >= 3 && dives >= 1 && arrets >= 2 && buts / Math.max(1, buts + arrets) <= 0.65);
 }
 
+// ---------- lot 70 — LE CONTACT SE PREND DE FACE : cône avant + le receveur se présente
+// (retour utilisateur : « le corps et les pieds ne touchent pas le ballon sur les contrôles —
+// le joueur se réoriente avec la balle sans la toucher »). Mesuré avant : 54 % des
+// amortis-poursuite dans le dos (> 100°), 26 % des réceptions, prises p90 107°. Après :
+// amorti-poursuite 0 %, réceptions 2 % (p50 2°), prises 4 % — rondo/réduit au bit (empreinte).
+{
+  const { dansCone } = await import('../assets/starter/src/engine/dribble.js');
+  ok(`la GÉOMÉTRIE du cône (devant 0° ✓, flanc 99° ✓, dos 145° ✗, la borne 100° exacte ✓)`,
+    dansCone(0, 0, 0, 5, 0, 100) && dansCone(0, 0, 0, 0.1, 5.5, 100) && !dansCone(0, 0, 0, -4, 3, 100)
+    && dansCone(Math.PI / 2, 2, 2, 2, 7, 100));
+  const anglesDe = (over) => {
+    const st = makeMatch({ full: true, seed: 2 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    let nEv = 0; const dosParTech = { 'amorti-poursuite': 0, autres: 0 }; let recDos = 0, recN = 0, denyDos = 0;
+    for (let i = 0; i < 240 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      while (nEv < st.events.length) {
+        const e = st.events[nEv++];
+        if (e.type !== 'control' && e.type !== 'receive') continue;
+        const p = st.players[e.by];
+        if (!p || p.keeper) continue;
+        const a = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]) - p.yaw;
+        const deg = Math.abs(((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI;
+        if (e.type === 'receive') { recN++; if (deg > 100) recDos++; }
+        else if (deg > 100) { if (e.tech === 'amorti-poursuite') dosParTech['amorti-poursuite']++; else dosParTech.autres++; }
+      }
+    }
+    denyDos = st.deny?.['controle-dos'] ?? 0;
+    return { ap: dosParTech['amorti-poursuite'], recDos, recN, denyDos };
+  };
+  const vif70 = anglesDe({});
+  ok(`l'amorti-poursuite ne touche PLUS dans le dos (${vif70.ap} = 0 sur 240 s) et le refus est NOMMÉ (deny controle-dos ${vif70.denyDos} ≥ 1 — le ballon court, il n'obéit pas)`,
+    vif70.ap === 0 && vif70.denyDos >= 1);
+  ok(`le RECEVEUR SE PRÉSENTE (${vif70.recDos}/${vif70.recN} réceptions dos ≤ ${Math.max(1, Math.round(vif70.recN * 0.08))} — le corps s'ouvre au ballon qui arrive)`,
+    vif70.recDos <= Math.max(1, Math.round(vif70.recN * 0.08)));
+  const sab70 = anglesDe({ priseCone: false, sePresente: false });
+  ok(`sabotage « touche omnisciente + dos fossile » attrapé (cône coupé : ${sab70.ap + sab70.recDos} touches/réceptions dos ≥ ${vif70.ap + vif70.recDos + 4} — le monde d'hier, nommé)`,
+    sab70.ap + sab70.recDos >= vif70.ap + vif70.recDos + 4);
+}
+
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche
 {
   const { momentDuJeu } = await import('../assets/starter/src/engine/phases.js');

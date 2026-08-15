@@ -256,7 +256,12 @@ export function movePlayers(st, dt, cfg) {
     // ball could be dead behind him by the time the boot arrived — `ball-ahead-at-strike` 16.7 %. You
     // commit your body when you commit your gesture; that IS what committing means.
     if (p.act) continue;
-    if (p.speed > 0.25) p.yaw = Math.atan2(p.v[1], p.v[0]);
+    // …pendant la PRÉSENTATION (lot 70, plus bas), l'autorité du cap est le BALLON, pas la
+    // dérive : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à chaque
+    // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la
+    // v1 de la loi (p90 156° au contact).
+    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && p.speed < 2.2;
+    if (p.speed > 0.25 && !sePres) p.yaw = Math.atan2(p.v[1], p.v[0]);
     // A MAN CARRYING THE BALL FACES HIS BALL — not his drift. For everyone else, facing = direction of
     // travel is right; for the carrier it is wrong, and wrong in the one place it shows. He stands
     // `carryStandoff` BEHIND the ball, so his velocity points at a spot behind it while the ball is in
@@ -268,6 +273,14 @@ export function movePlayers(st, dt, cfg) {
     if (p.job === 'carry') {
       p.yawWant = p.push ? Math.atan2(p.push[1], p.push[0])
         : Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
+    } else if (sePres) {
+      // …ET UN RECEVEUR SE PRÉSENTE (lot 70) : le corps s'OUVRE au ballon qui arrive — un
+      // statique gardait son cap fossile (yaw ne bouge qu'au-dessus de 0,25 m/s) : mesuré,
+      // 23 % des vols arrivaient DANS LE DOS du receveur, 51/80 sur des immobiles — puis la
+      // touche fantôme « le réoriente avec la balle sans le toucher » (retour utilisateur).
+      // Même slew borné qu'en dessous (un demi-tour prend son temps), st.full — le rondo au
+      // bit près. false : le dos fossile d'hier (sabotage nommé).
+      p.yawWant = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
     }
     // A TURN TAKES TIME — this is the ONE place a facing may change, and it can only change at a
     // bounded rate. A first touch used to write `p.yaw = atan2(...)` directly: the man was simply
