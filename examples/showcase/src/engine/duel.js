@@ -7,8 +7,20 @@
 // AUCUN comportement ne change : la batterie au bit près est LA preuve.
 import { situation, chooseTechnique } from './technique.js';
 import { winding, abortGesture } from './gesture.js';
+import { predictPath } from './ball-predict.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+
+/** L'ÉCART DU BALLON AU RAYON DE GLISSE (lot 66) — le corps part DROIT dans sa course : si cette
+ *  droite ne passe pas au ballon (cible instantanée ou prédite), le pied ne peut pas l'atteindre.
+ *  Lu DEBOUT par les deux déclencheurs (porteur ici, ballon libre dans rondo-sim) : une glisse qui
+ *  ne passe pas au ballon ne part pas — mesuré avant : 14 ratés secs/6 matchs, le corps couché à
+ *  plus d'un mètre d'un ballon assis. */
+export function ecartCouloir(p, bp, portee = 2.6) {
+  const v = Math.hypot(p.v[0], p.v[1]), dx = v > 0.5 ? p.v[0] / v : Math.cos(p.yaw), dz = v > 0.5 ? p.v[1] / v : Math.sin(p.yaw);
+  const rx = bp[0] - p.p[0], rz = bp[2] - p.p[2], al = Math.max(0.35, Math.min(portee, rx * dx + rz * dz));
+  return Math.hypot(rx - al * dx, rz - al * dz);
+}
 
 /** Un refus a une cause nommée (copie locale du registre du loop — le patron referee). */
 const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; };
@@ -42,17 +54,42 @@ export function slideTackleStep(st, c, cfg) {
     .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))[0];
   if (!foe) return;
   if (st.t - ((st._slideT ??= {})[foe.team] ?? -99) < 6) return;
+  const sit = situation(foe.p, foe.yaw, bp, st.ball.v, bp[1]);
+  const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
+  // LA TABLE ET LE COULOIR SE LISENT DEBOUT (lot 66 — mesuré post-gazon : 21 des 38 glissés
+  // partaient au sol sur une table qui REFUSAIT, 10 de plus sur un point FIGÉ que le ballon
+  // assis avait déjà quitté — 82 % de corps couchés pour rien). Un pro RETIENT son tacle :
+  // la situation (table technique) et le ballon PRÉDIT au milieu de la fenêtre de balayage
+  // (predictPath — la physique réelle, gazon compris) valident le couloir AVANT que le corps
+  // parte. Le JET, lui, reste le pari de l'engagé (accuracy 0,6 ± tackling — sans lui, 83
+  // glissés sur 83 prenaient le ballon). S.predit:false = les plongeons d'hier (sabotage nommé).
+  const tableOk = !!pick && pick.tech.id === 'tacle-glisse';
+  const vq0 = Math.hypot(foe.v[0], foe.v[1]) || 1;
+  // …mais l'IMPRUDENCE reste un chemin du réel : un couloir qui trouve les JAMBES du porteur
+  // part même table refusée — c'est le tacle dangereux, la faute, le jaune.
+  const jambes = d2(foe.p, c.p) < 2.2 && ecartCouloir(foe, [c.p[0], 0, c.p[2]], 0.35 + vq0 * 0.45) <= (S.body ?? 1.1);
+  let couloirBallon = true;
+  if (S.predit !== false) {
+    if (!tableOk && !jambes) return;                        // rien à toucher : un pro reste debout
+    if (tableOk) {
+      const tc = Math.min(0.4, Math.max(0.1, (sit.dist - 0.35) / Math.max(3.5, vq0)));
+      const tMid = Math.min(0.5, (tc + 0.55) / 2);
+      const path = predictPath(st.ball.snapshot(), { maxT: tMid + 0.05 });
+      const fut = path[Math.min(path.length - 1, Math.round(tMid * 60))]?.p ?? bp;
+      couloirBallon = ecartCouloir(foe, fut, 0.35 + vq0 * 0.45) <= (S.win ?? 1.0);
+      if (!couloirBallon && !jambes) return;
+    }
+  }
   foe.slideCd = st.t + cfg.slideCooldown;
   st._slideT[foe.team] = st.t;
   foe.down = cfg.slideRecovery * (0.9 + 0.2 * (st.rnd ? st.rnd() : 0.5));
-  const sit = situation(foe.p, foe.yaw, bp, st.ball.v, bp[1]);
-  const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
-  // la géométrie VALIDE ne suffit pas : le glissé est un PARI (accuracy de la table 0,6,
-  // modulée par la note tackling ±0,2) — sans le jet, 83 glissés sur 83 prenaient le ballon
-  // et glisser était strictement optimal ; le RATÉ est ce qui produit fautes et vides
   const roll = st.rnd ? st.rnd() : 0.5;
-  const won = !!pick && pick.tech.id === 'tacle-glisse'
-    && roll < (pick.tech.accuracy ?? 0.6) + (foe.skill ? foe.skill.tackleReach * 2 : 0);
+  // +0,15 : l'accuracy 0,6 de la table couvrait AUSSI l'incertitude géométrique — désormais
+  // validée AVANT l'engagement (table + couloir prédit). Le jet ne porte plus que l'exécution
+  // (mesuré à 0,6 post-validation : 65 % d'échecs, un pro engagé sur bonne géométrie touche ~75 %).
+  // …et un couloir qui ne trouve que l'HOMME ne gagne jamais le ballon : son issue est la faute
+  // (dBody) ou le vide — jamais la prise.
+  const won = tableOk && couloirBallon && roll < (pick.tech.accuracy ?? 0.6) + 0.15 + (foe.skill ? foe.skill.tackleReach * 2 : 0);
   if (won) {
     // LE BALLON SE PREND AU CONTACT, PAS AU LANCEMENT (lot 51, S.contact — retour utilisateur
     // « le ballon libre part dans le sens opposé tout seul ») : la déviation se résolvait à

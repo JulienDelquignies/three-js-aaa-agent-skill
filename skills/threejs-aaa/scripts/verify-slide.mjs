@@ -112,15 +112,20 @@ const bp = (st) => st.ball.p;
 
 // ---------- 6. le FLUX : la texture en bande, le jeu respire
 {
-  let att = 0, fa = 0, buts = 0;
+  let att = 0, fa = 0, buts = 0, secs = 0;
   for (const seed of [1, 2, 3, 4, 5, 7]) {
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20 });
     for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
     att += st.events.filter((e) => e.type === 'slide' && (e.sur != null || e.faute)).length;
     fa += st.events.filter((e) => e.type === 'faute').length;
+    secs += st.events.filter((e) => e.type === 'slide' && e.bearing !== undefined && !e.won && !e.faute && e.dist > 1).length;
     buts += st.score[0] + st.score[1];
   }
+  // LE CORPS NE SE COUCHE PLUS À CÔTÉ (lot 66) : post-gazon, 14 ratés secs/6 matchs — le glissé
+  // sur ballon libre partait dans SA course, le pied passait à > 1 m du ballon assis. Le couloir
+  // se lit DEBOUT (ecartCouloir) ; le vide résiduel est l'esquive/le jet, pas l'absurde.
+  ok(`le corps ne se couche plus à côté (${(secs / 6).toFixed(1)} raté(s) sec(s) libre(s)/match ≤ 1 — le couloir se lit debout)`, secs / 6 <= 1);
   // Bande RE-FONDÉE au lot 62 (plancher 0,5 → 0,25, récit) : la prise au pied a rendu le ballon
   // de conduite plus souvent LIBRE entre les touches (+67 % de touches mesurées) — le PIQUE
   // debout (pokeReach) joue désormais une part de ce que seul le tacle couché prenait, et c'est

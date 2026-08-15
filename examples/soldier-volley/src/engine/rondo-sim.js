@@ -4,7 +4,7 @@ import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-pr
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
-import { chargeStep, slideTackleStep, slideResolve } from './duel.js';
+import { chargeStep, slideTackleStep, slideResolve, ecartCouloir } from './duel.js';
 import { teteStep, voleeStep } from './tete.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
@@ -469,25 +469,22 @@ function resolveSlideL(st, cfg) {
 }
 
 function trySlide(st, cfg) {
-  // WHEN. Not at a pass in flight — that is what the interception job is for, and letting anyone dive
-  // at a travelling ball produced 157 slides in 90 s. A slide is for a ball that has STRAYED: a touch
-  // that got away from the carrier, or a genuinely loose ball. That is the situation the request
-  // named, and restricting it to that situation is what makes the action rare enough to read.
+  // WHEN. Not at a pass in flight (the interception job — anyone diving at a travelling ball made
+  // 157 slides in 90 s). A slide is for a ball that has STRAYED: a touch that got away, or a
+  // genuinely loose ball — restricting it there is what makes the action rare enough to read.
   const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
   const strayed = car ? d2(car.p, st.ball.p) > cfg.strikeReach : true;
   if (!strayed) return;
   if (st.ball.owner != null) return;                            // un ballon PORTÉ se dispute debout (le duel), pas au sol
   if (st.ball.p[1] > 0.4) return;                               // you do not slide at a ball in the air
   if (Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.slideMaxBall) return;   // nor at one going too fast to win
-  // A SLIDE IS A LAST RESORT, not a longer reach. Letting anyone within range go to ground produced
-  // 182 slides in 90 s and possession collapsed from 18 passes to 4: everybody dived at every loose
-  // ball. You slide when you are LOSING THE RACE — when the man who would otherwise get there is an
-  // opponent, and you cannot beat him on your feet. Everything else is a normal run.
-  // …ET C'EST UN GESTE DÉFENSIF. Mesuré (sonde duels-tacles) : 9,4 glissades/min, 69 % par l'équipe
-  // EN POSSESSION dont 49 % par le PORTEUR plongeant sur sa propre touche échappée — or un porteur
-  // dont la touche s'échappe la POURSUIT (c'est le travail du modèle de conduite), il ne se couche
-  // pas dessus. Seuls les défenseurs se jettent, chacun au plus une fois par slideCooldown, et
-  // seulement s'ils perdent NETTEMENT la course (slideMargin 0,15 → 0,4). Cible : ≤ 2/min.
+  // A SLIDE IS A LAST RESORT, not a longer reach (anyone-in-range going down = 182 slides in 90 s,
+  // possession 18 passes → 4). You slide when you are LOSING THE RACE to an opponent — everything
+  // else is a normal run.
+  // …ET C'EST UN GESTE DÉFENSIF. Mesuré : 9,4 glissades/min, 69 % par l'équipe EN POSSESSION dont
+  // 49 % par le porteur plongeant sur sa propre touche échappée — or il la POURSUIT (conduite), il
+  // ne se couche pas. Seuls les défenseurs se jettent, une fois par slideCooldown, et seulement
+  // s'ils perdent NETTEMENT la course (slideMargin 0,15 → 0,4). Cible : ≤ 2/min.
   let best = null;
   for (const p of st.players) {
     if (p.down > 0 || p.act) continue;
@@ -509,7 +506,7 @@ function trySlide(st, cfg) {
     // …et pas non plus si la menace n'est pas IMMINENTE : l'adversaire à plus d'un pas et demi du
     // ballon laisse le temps de défendre debout — le plongeon préventif était le reste du spam
     if (dRival > 1.6) continue;
-    if (!best || d < best.d) best = { p, d };
+    if (!best || d < best.d) best = { p, d, dRival };
   }
   if (!best) return;
   const p = best.p;
@@ -522,6 +519,9 @@ function trySlide(st, cfg) {
   const sit = situation(p.p, p.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
   const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
   if (!pick || pick.tech.id !== 'tacle-glisse') return;
+  // LE COULOIR ET LA COURSE SE LISENT DEBOUT (lot 66, st.full — 14 ratés secs/6 matchs, doc ecartCouloir duel.js) ; predit:false = hier
+  if (st.full && cfg.slideTackle?.predit !== false
+    && (ecartCouloir(p, st.ball.p) > 0.85 || (best.d - 0.35) / 5 > best.dRival / 2.5 + 0.1)) return;
   p.slideCd = st.t + cfg.slideCooldown;                        // gagné ou perdu : pas deux plongeons de suite
   st._slideT[p.team] = st.t;
   // le temps au sol n'est plus une constante d'horloger (mesuré : 1,200 s pile sur chaque tacle,

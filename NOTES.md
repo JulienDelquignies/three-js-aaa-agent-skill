@@ -3285,6 +3285,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      de frappe d'un chemin à rebonds n'est plus une grandeur contractuelle, l'assiette du
      gameplay l'est.
 
+103. **Le glissé se lit debout : la table, le couloir, la course (lot 66 — suite choisie par
+     l'utilisateur : « les tacles glissés existent ? »).** ILS EXISTAIENT (lots 32-33, 51) mais
+     le monde du gazon les avait déréglés : 6,3 engagés/match (0,3 avant) dont 82 % dans le
+     VIDE. LA TRAQUE PAR SIGNATURE D'ÉVÉNEMENT (bearing ⇒ rondo-libre) : 21 vides « de
+     lancement » = la table technique refusait APRÈS que le corps soit parti au sol ; 14 ratés
+     secs du glissé sur ballon LIBRE = trySlide ne vérifiait PAS l'alignement course→ballon (le
+     corps glissait droit dans SA course, le pied passait à > 1 m d'un ballon assis) ; 10 vides
+     de contact = le point figé périmé. LES CORRECTIONS (st.full, sabotage slideTackle.predit) :
+     (1) ecartCouloir (duel.js, PARTAGÉ par les deux déclencheurs) — l'écart du ballon au rayon
+     de glisse se lit DEBOUT ; (2) le glissé-porteur valide la table ET le ballon PRÉDIT
+     (predictPath — physique gazon comprise) au milieu de la fenêtre de balayage AVANT de se
+     coucher ; (3) le glissé-libre exige couloir + course gagnable contre le rival ; (4)
+     L'IMPRUDENCE RESTE UN CHEMIN DU RÉEL : un couloir qui trouve les JAMBES du porteur part
+     même table refusée (la faute, le jaune — la fixture du banc l'a exigé), mais un couloir
+     qui ne trouve QUE l'homme ne gagne jamais le ballon (won exige couloirBallon) ; (5) le jet
+     +0,15 (l'accuracy 0,6 couvrait l'incertitude géométrique, désormais validée en amont — le
+     jet ne porte plus que l'exécution). TEXTURE FINALE : 4 engagés/match (≈ 12 rapportés à
+     90 min — le réel), 33 % de prise + fautes vivantes + esquives du porteur, ratés secs
+     14 → 2. Clause banc nouvelle : « le corps ne se couche plus à côté » (ratés secs ≤ 1/match).
+     Leçon d'instrument : une étiquette agrégée (« vide ») mélangeait quatre football différents
+     — le raté sec absurde, le jet perdu, l'esquive subie, la faute d'imprudence ; la signature
+     de l'événement (bearing, dist, faute) les sépare, et chacun a EU son traitement propre.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

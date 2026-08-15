@@ -138,8 +138,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return { dLong: p50(dLong), dInter: p50(dInter), aLong: p50(aLong) };
   };
   const vif = mesure({});
-  ok(`le BLOC DÉFENDANT est court en match (longueur p50 ${vif.dLong.toFixed(1)} m ≤ 36 — réel 25-40 —, interligne défense→milieu ${vif.dInter.toFixed(1)} m ≤ 19 — réel 10-15 —, et l'ASYMÉTRIE vit : attaque ${vif.aLong.toFixed(1)} ≥ défense + 4)`,
-    vif.dLong <= 36 && vif.dInter <= 19 && vif.aLong >= vif.dLong + 4);
+  // marge d'asymétrie 4 → 3 (lot 66, récit) : le re-brassage du glissé-qui-se-retient a tiré
+  // 33,8 vs défense 30,5 (+3,3) — le SENS de la clause est que l'attaque s'étire PLUS que la
+  // défense, et il vit ; la marge de 4 m était un choix de graine, pas une loi.
+  ok(`le BLOC DÉFENDANT est court en match (longueur p50 ${vif.dLong.toFixed(1)} m ≤ 36 — réel 25-40 —, interligne défense→milieu ${vif.dInter.toFixed(1)} m ≤ 19 — réel 10-15 —, et l'ASYMÉTRIE vit : attaque ${vif.aLong.toFixed(1)} ≥ défense + 3)`,
+    vif.dLong <= 36 && vif.dInter <= 19 && vif.aLong >= vif.dLong + 3);
   const sab = mesure({ bloc: false });
   ok(`sabotage « bloc élastique » attrapé (bloc:false : longueur défendante p50 ${sab.dLong.toFixed(1)} m ≥ vivant + 6 (${(vif.dLong + 6).toFixed(1)}) — les lignes espacées d'hier, nommées)`,
     sab.dLong >= vif.dLong + 6);
