@@ -85,9 +85,11 @@ export class Rondo {
     // ---- night: floodlights + one shadow-casting sun fitted to the pitch
     this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
       // plein format : 22 corps skinnés se re-déforment dans la passe d'ombre — la map se
-      // resserre (1024², 512² au tier low : après le bloom, la passe d'ombre est le deuxième
-      // poste GPU du téléphone) et le BUDGET DE CASTERS (update) limite qui la paie
-      shadowMapSize: this.fullMode ? (this._tier === 'low' ? 512 : 1024) : 2048 });
+      // resserre (1024²) et le BUDGET DE CASTERS (update) limite qui la paie. Le 512² du lot 61
+      // est REVENU à 1024 (lot 63 — « encore un peu les traits », capture) : son texel de 22 cm
+      // reste au bord de l'acné sur les depth-buffers mobiles même sous la loi du biais, et le
+      // budget GPU est rendu ailleurs (bloom OFF + MSAA OFF au tier low, lots 61-62).
+      shadowMapSize: this.fullMode ? 1024 : 2048 });
     this.disposables.push(this.night);
     this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [], gestes: [] };
 

@@ -3209,6 +3209,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
     peut piquer. Front suivant nommé si ça saccade encore : la chasse
     aux allocations (pics GC ~50 ms récurrents au profil du lot 60).
 
+100. **La balle qui « revient toute seule » = le rassemblement d'armé ; les traits résiduels =
+     le 512 au bord de l'acné mobile (lot 63 — retour utilisateur, 5 captures d'une séquence
+     0:18-0:22).** LE FILM REJOUÉ : la sim est déterministe, mais le navigateur intègre au dt
+     RÉEL de chaque frame — le même seed y vit donc une autre micro-histoire : on ne rejoue pas
+     LA partie de l'utilisateur, on rejoue SES LOIS (seed 7, config scène exacte, 1/60). Verdict
+     du film : TOUS les virages sans contact restants (post-lot-62) vivaient à ±0,05 s d'un
+     windup — cos jusqu'à −0,32 à 0,79 m du corps. LE SITE MANQUANT : le carry d'ARMÉ (rondo-sim
+     stepGestures, τ 0,035 raide pour souder le couple des passes rapides) n'était PAS couvert
+     par la douceur du lot 62 (qui ne gatait que le porté) — au windup, le ballon REBROUSSAIT sec
+     vers le point de stance depuis ~0,8 m : à 20 px de haut l'armé du corps ne se lit pas, on ne
+     voit que le ballon qui revient tout seul. Correction (st.full) : même médecine que le porté
+     — ballon > 0,45 m du corps → τ 0,12 / vMax 6,5 (le rassemblement COURBE à vitesse de pied),
+     ≤ 0,45 m → τ 0,035 intact (l'armé court garde son couple soudé, contrat d'approche sauf).
+     RE-MESURÉ : le film n'a PLUS un seul rebroussement d'armé (les cos négatifs restants sont
+     des passes en une touche, contact réel) ; yanks portés 378 → 313, tous au pied (< 0,45,
+     accélérations alignées — la texture du servo, pas de la télékinésie). LES TRAITS : l'acné
+     résiduelle du 512² sur GPU mobile (depth-buffer moins précis que le float32 de SwiftShader
+     — la loi du biais ne couvre que la pente géométrique, pas la quantification). Ombres low
+     REVENUES à 1024² en gardant la loi (normalBias 0,053 = 2× l'ancienne constante) : le budget
+     GPU est rendu ailleurs (bloom OFF lot 61 + MSAA OFF lot 62, les deux vrais postes). Leçon
+     d'instrument : une classe agrégée (« porte : 378 ») sans distribution des distances cache
+     son site — 0,79 m et 0,09 m ne sont pas le même bug ; le FILM les sépare.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

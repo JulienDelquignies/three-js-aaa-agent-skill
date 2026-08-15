@@ -72,11 +72,11 @@ function stepGestures(st, dt, cfg) {
       //   geste la définit, plus parce qu'un frein l'a laissé à peu près au bon endroit. Un ballon
       //   NON porté (frappe d'urgence sur ballon libre) garde l'ancien frein d'assise ;
       if (st.ball.owner === p.id && p.act.payload?.stance) {
-        // tau 0,05 → 0,035 : l'armé le plus court du répertoire (passeRapide, contact 0,22 s) ne
-        // laissait pas au servo le temps de finir d'ARRANGER le couple — mesuré, les passes rapides
-        // planifiées partaient à 6-21° de leur stance (p90 du contrat d'approche 5° → 6,6). Le
-        // porté reste continu, borné (vMax du carry), et l'audit de continuité tourne inchangé.
-        st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, { tau: 0.035 });
+        // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite
+        // soudé (les passes partaient à 6-21° de leur stance). MAIS un ballon encore à > 0,45 m du
+        // corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant
+        // vivait à ±0,05 s d'un windup, le ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
+        st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });
       } else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
       //   et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se
       //   règlent pendant l'armé, comme un vrai joueur ajuste ses derniers appuis. La vitesse écrite
