@@ -3512,6 +3512,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      pas un hasard de formation — quand une clause dépend d'un couloir accidentel, poser le
      placement que le vrai foot prescrit.
 
+111. **Lot 73 : la QUATRIÈME espèce de trait — le battement du canvas fractionnaire.** Nouvelles
+     captures utilisateur (00:11/00:15) : les traits persistent APRÈS le dither du lot 71 —
+     et le compteur confirme au passage que le volet chaleur du lot 72 a mordu (CPU 9,15 →
+     11,34 ms sur 4 min contre 7,32 → 19,70 avant ; fps 44 → 49). Le dither était HORS DE
+     CAUSE : vérifié présent dans le graphe de tous les tiers. La vraie fabrique : le
+     COMPOSITEUR du navigateur étire notre canvas (backing = CSS × pixelRatio) vers l'écran
+     physique d'un facteur devicePixelRatio/pixelRatio — FRACTIONNAIRE avec le cap 1,5 sur un
+     écran 2,625 (facteur 1,75). Un bilinéaire à facteur fractionnaire produit un battement
+     périodique de rangées nettes/floues (période ≈ q pixels pour un facteur p/q) — des
+     stries horizontales fines, régulières, dès la PREMIÈRE minute, insensibles au dither
+     (elles naissent APRÈS notre pipeline). REPRODUIT ET MESURÉ en playmode (même scène figée,
+     3 ratios) : autocorrélation des rangées de pelouse détrendées — facteur 1,75 : pic
+     +0,638 à la période du battement ; facteur 2 ENTIER : −0,105 (rien) ; natif : +0,098.
+     La loi (Rondo.js) : LE RATIO S'ACCROCHE AUX DIVISEURS ENTIERS DU DPR — _drRungs()
+     = dpr/1..dpr/4, _snapDpr() aux caps d'ouverture (1,5 plein format, 1,75 low), et
+     l'échelle dynamique MARCHE SUR LES CRANS (_snapUp — le pas arithmétique −0,25/+0,25
+     d'hier retombait sur le battement ; la montée par pas se serait même coincée sous le
+     cran suivant). Sur le téléphone type : 1,3125 (étirement 2,0) ↔ 0,875 (étirement 3,0),
+     le cran 0,656 refusé sous le plancher 0,75. ?drsnap=0 : l'échelle lisse d'hier,
+     sabotage nommé — vérifié bit à bit dans le bundle (1,5/1,25 restitués). Leçons : quand
+     un remède PROUVÉ (dither mesuré au pixel) ne change RIEN au symptôme, le symptôme vit
+     dans un AUTRE étage de la chaîne — chercher l'étage, pas doser le remède ; le
+     compositeur du navigateur fait partie du pipeline de rendu du moteur, même si on ne
+     l'a pas écrit ; les espèces de traits sont maintenant QUATRE (ombres 68, présentation
+     69, banding 71, battement 73), chacune avec sa physique et son instrument.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

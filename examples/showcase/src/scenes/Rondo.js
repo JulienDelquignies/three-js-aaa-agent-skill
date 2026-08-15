@@ -104,8 +104,15 @@ export class Rondo {
     // et le tier low PLAFONNE le pixel ratio à 1,75 (un écran 2,6× DPR paie 6,8 fragments pour 1 —
     // à 412 px de large, 1,75 est indiscernable et rend ~30 % du budget GPU).
     this._animLod = q.get('animlod') !== '0';
+    // LE RATIO S'ACCROCHE AUX DIVISEURS ENTIERS DU DPR (lot 73 — les « traits » des captures,
+    // 4e espèce) : un canvas que le compositeur étire d'un facteur FRACTIONNAIRE (DPR 2,625 /
+    // ratio 1,5 = 1,75) fabrique un battement bilinéaire de rangées nettes/floues — mesuré :
+    // autocorr +0,64 à la période du battement au facteur 1,75, ~0 au facteur ENTIER (2×) et
+    // au natif, même scène, même dither. dpr/n est invisible pour le compositeur : on ne rend
+    // jamais un ratio dont l'étirement n'est pas entier. ?drsnap=0 : l'échelle lisse d'hier.
+    this._drSnap = q.get('drsnap') !== '0';
     if (this._tier === 'low' && this.renderer?.setPixelRatio && typeof window !== 'undefined') {
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+      this.renderer.setPixelRatio(this._snapDpr(Math.min(window.devicePixelRatio || 1, 1.75)));
     }
     // …ET LA RÉSOLUTION EST DYNAMIQUE EN PLEIN FORMAT (lot 61) : le tier se choisit à l'ouverture,
     // le GPU réel ne se voit qu'en jouant — update() mesure le fps mural et ajuste. ?dynres=0 coupe.
@@ -359,6 +366,24 @@ export class Rondo {
     return true;
   }
 
+  // L'échelle des ratios PROPRES (lot 73) : dpr/n (n=1..4) sont les seuls ratios que le
+  // compositeur étire d'un facteur ENTIER — tout autre canvas bat (rangées nettes/floues).
+  _drRungs() { const d = (typeof window !== 'undefined' && window.devicePixelRatio) || 1; return [d, d / 2, d / 3, d / 4]; }
+
+  /** Le plus grand cran propre ≤ want (?drsnap=0 : want inchangé — l'échelle lisse d'hier). */
+  _snapDpr(want) {
+    if (this._drSnap === false) return want;
+    const r = this._drRungs();
+    return r.find((x) => x <= want + 1e-3) ?? r[3];
+  }
+
+  /** Le cran propre juste AU-DESSUS de cur, borné au cap (?drsnap=0 : le pas +0,25 d'hier). */
+  _snapUp(cur, cap) {
+    if (this._drSnap === false) return Math.min(cap, cur + 0.25);
+    const above = this._drRungs().filter((x) => x > cur + 1e-3 && x <= cap + 1e-3);
+    return above.length ? above[above.length - 1] : cur;
+  }
+
   camera(cam, controls) {
     // broadcast framing: long lens, low, from the main stand side (negative Z)
     // The main stand (and its roof) sits on the NEGATIVE z side and begins at z = -(34 + apron 6):
@@ -378,7 +403,7 @@ export class Rondo {
     // Ce cap devient le PLAFOND de la résolution dynamique (lot 61) : elle peut rendre des
     // pixels sous la charge, jamais en offrir plus qu'à l'ouverture.
     if (this.fullMode && this.renderer?.setPixelRatio) {
-      this._dprCap = Math.min(window.devicePixelRatio ?? 1, 1.5);
+      this._dprCap = this._snapDpr(Math.min(window.devicePixelRatio ?? 1, 1.5));
       this.renderer.setPixelRatio(this._dprCap);
     }
     // le match cadre le TERRAIN, et la régie vit AU-DESSUS de la tribune — le stade réduit a
@@ -710,12 +735,17 @@ export class Rondo {
           // de chaleur — DPR 1,0 sur un écran dense ≈ 2,6 Mpx ; 0,75 en retire 44 %. Les tiers
           // hauts gardent le plancher net de 1,0.
           const drMin = this._tier === 'low' ? 0.75 : 1.0;
-          if (fps < 45 && cur > drMin) { this.renderer.setPixelRatio(Math.max(drMin, cur - 0.25)); this._drUp = 0; }
-          else if (fps > 55 && this._dprCap && cur < this._dprCap) {
+          // …et l'échelle MARCHE SUR LES DIVISEURS (lot 73) : chaque cran reste un étirement
+          // entier du compositeur — un pas arithmétique (−0,25) retomberait sur le battement.
+          // Sous ?drsnap=0, les deux branches restituent l'arithmétique d'hier à l'identique.
+          const down = this._drSnap ? this._snapDpr(cur - 0.25) : Math.max(drMin, cur - 0.25);
+          const okDown = this._drSnap ? (down >= drMin - 1e-3 && down < cur - 1e-3) : cur > drMin;
+          if (fps < 45 && okDown) { this.renderer.setPixelRatio(down); this._drUp = 0; }
+          else if (fps > 55 && this._dprCap && cur < this._dprCap - 1e-3) {
             // REMONTER exige DEUX fenêtres rapides consécutives (lot 62 — hystérésis) : chaque
             // changement réalloue les cibles du post, osciller 1,25↔1,5 toutes les 2 s SERAIT
             // une saccade. Descendre reste immédiat : on rend des pixels, jamais des à-coups.
-            if ((this._drUp = (this._drUp ?? 0) + 1) >= 2) { this.renderer.setPixelRatio(Math.min(this._dprCap, cur + 0.25)); this._drUp = 0; }
+            if ((this._drUp = (this._drUp ?? 0) + 1) >= 2) { this.renderer.setPixelRatio(this._snapUp(cur, this._dprCap)); this._drUp = 0; }
           } else this._drUp = 0;
         }
         this._drT0 = nowW; this._drN = 0;
