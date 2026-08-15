@@ -3396,6 +3396,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      multi-lois avant de tourner un bouton global ; l'émulation « hier » doit être le sabotage
      EXACT (rattrapeAtk 99 ≠ ratt 12 d'hier — trois A/B faussés avant de le voir).
 
+107. **Lot 69 : les traits horizontaux sont le SYMPTÔME de la frame longue — la sim passe en
+     zéro-allocation, l'empreinte au bit (et deux instruments démasqués).** Capture 22:04 :
+     « joueur sous le terrain ou coupé et trait sur l'écran donc saccade ». Les traits de CETTE
+     capture sont HORIZONTAUX ÉCRAN (parfaitement droits, ils traversent lignes blanches et
+     pelouse) — pas les ombres diagonales du lot 68 : un artefact de PRÉSENTATION du GPU mobile
+     à tuiles quand la frame dépasse le budget — l'utilisateur a fait le lien lui-même (« donc
+     saccade »). Le « joueur coupé » : NON REPRODUIT — l'instrument os de pied sous dt CHAOTIQUE
+     seedé (154 s : 60 % 16 ms / 25 % 50-150 ms / 15 % 300-700 ms) donne min −0,08 m, zéro
+     épisode — la couche de geste tient les grosses frames ; le corps de la capture est un
+     tacleur au sol légitime, minuscule en DPR 1 (surveillé, pas de fix aveugle). LE REFACTOR :
+     la boucle chaude de match-sim ne construit plus le monde à chaque frame — buffers
+     réutilisés (st._bField/_bAtk/_bDef/_bFree/_bSlotters/_bPosted/_bFoes/_bByDist/_bMarks/
+     _bMTri/_bSlots), boucles inline (hunter/foeD/foeGuard/front/hot/outlet argmin-argmax :
+     l'égalité va au premier comme le sort stable d'hier), clés de tri TRANSIENTES sur le
+     joueur (_dAnc/_dMark — l'ordre de départ préservé pour les égalités), marks hoisté (le
+     prédicat ne dépend pas du marqueur), formationSpots(out) muté en place (sans out : les
+     bancs d'hier au bit), st._slotT COPIÉ (aucune référence de buffer ne survit à la frame).
+     PREUVE : empreinte sha256 (positions 4 décimales + events + score, 2 matchs × 120 s +
+     rondo 90 s + réduit 90 s) IDENTIQUE avant/après. DEUX INSTRUMENTS DÉMASQUÉS : (1) le
+     delta usedJSHeapSize est QUANTIFIÉ par Chrome — 158-187 « Ko/frame » fantômes selon la
+     session (l'avant/après inter-sessions ne se compare pas) ; (2) le sampling heap profiler
+     V8 n'attribue que ~0,2 Ko/frame à la sim. LE juge fiable est la DISTRIBUTION DES TEMPS DE
+     FRAME : p50 0,90 / p90 2,00 / p99 3,70 / max 5,6 ms sur 3600 frames (sim + couche visuelle
+     complète, tier low) — ZÉRO frame > 16 ms, donc zéro pause GC majeure en 60 s : le CPU JS
+     n'est PAS le goulot des bandes du téléphone. Ce qui reste : GPU/compositor mobile — le
+     build s'allège encore (lot 68 : ~13k sièges hors passe d'ombre ; ici : pression GC réduite)
+     et ?fps=1 affiche le compteur (le prochain retour se date avec un chiffre à l'écran).
+     Si les bandes persistent au retest : pistes GPU pures (géométrie du stade au tier low,
+     plancher DPR, format du canvas).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

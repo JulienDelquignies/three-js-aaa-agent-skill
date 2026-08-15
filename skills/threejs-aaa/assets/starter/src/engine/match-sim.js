@@ -435,9 +435,11 @@ function assignMatchJobs(st, cfg) {
     gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
   }
 
-  const field = st.players.filter((p) => !p.keeper && !p.expulse && !p._sub);   // à 10 après un rouge (Loi 12) ; le remplacé en chemin est hors des postes (Loi 3)
-  const attackers = field.filter((p) => p.team === atk);
-  const defenders = field.filter((p) => p.team !== atk);
+  // LA BOUCLE CHAUDE N'ALLOUE PLUS (lot 69 — les filter/map/sort par frame nourrissaient le
+  // GC du téléphone : buffers réutilisés + boucles inline, flux au bit près — empreinte sha256)
+  const field = st._bField ??= [], attackers = st._bAtk ??= [], defenders = st._bDef ??= []; field.length = 0; attackers.length = 0; defenders.length = 0;
+  // à 10 après un rouge (Loi 12) ; le remplacé en chemin est hors des postes (Loi 3)
+  for (const p of st.players) if (!p.keeper && !p.expulse && !p._sub) { field.push(p); (p.team === atk ? attackers : defenders).push(p); }
   // LE RECEVEUR ATTAQUE SA PASSE. Le trou fondateur du 21 % de passes reçues : pendant le vol,
   // l'attribution envoyait TOUT LE MONDE aux couloirs — le destinataire trottait vers son slot
   // pendant que le ballon passait à côté de lui. Le cerveau du rondo donnait ce job ; le match
@@ -462,12 +464,12 @@ function assignMatchJobs(st, cfg) {
     : [anchor[0], anchor[2]];
   let hunter = null;
   if (freeBall) {
-    hunter = attackers.filter((p) => p.down <= 0).sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0] ?? null;
+    let hD = Infinity; for (const p of attackers) if (p.down <= 0) { const d = d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
     if (hunter) {
       // une cueillette SANS course adverse se trotte (bucket support) : le sprint systématique à
       // 6,9 poussait les corps à 9,9 km/h — on ne pique un sprint que si le 50/50 est réel
-      const foeD = defenders.filter((q) => q.down <= 0)
-        .reduce((m, q) => Math.min(m, Math.hypot(q.p[0] - leadP[0], q.p[2] - leadP[1])), Infinity);
+      let foeD = Infinity;
+      for (const q of defenders) if (q.down <= 0) foeD = Math.min(foeD, Math.hypot(q.p[0] - leadP[0], q.p[2] - leadP[1]));
       const myD = Math.hypot(hunter.p[0] - leadP[0], hunter.p[2] - leadP[1]);
       hunter.job = foeD > myD + 2.5 ? 'support' : 'receive';
       hunter.target = [leadP[0], 0, leadP[1]];
@@ -486,8 +488,8 @@ function assignMatchJobs(st, cfg) {
       // foe ≤ 2,5), ballon à p50 1,37 m / 29 % du temps au-delà de 1,5 (« bien trop loin du
       // pied… il devrait être lié à l'attaquant », retour utilisateur). Le burst garde son
       // droit d'allonger UNIQUEMENT libre devant.
-      const foeGuard = Math.min(...st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0)
-        .map((q) => Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2])), 99);
+      let foeGuard = 99;
+      for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) foeGuard = Math.min(foeGuard, Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]));
       p.touchF = (p._prepShot ?? -1) > st.t ? (cfg.prepTouchF ?? 0.3)   // la préparation SERRE
         : foeGuard <= 2.2 ? (cfg.carryGuard ?? ((p._pace?.until ?? -1) > st.t ? 1 : (cfg.carryTight ?? 1)))
         : (p._pace?.until ?? -1) > st.t ? 1
@@ -519,7 +521,8 @@ function assignMatchJobs(st, cfg) {
       const gx = aim[0] - p.p[0], gz = aim[1] - p.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       // devant dégagé → cap au but ; bouché → l'évasion du rondo garde le ballon
-      const front = defenders.filter((q) => Math.sign(q.p[0] - p.p[0]) === Math.sign(gx) && Math.abs(q.p[0] - p.p[0]) < 6 && Math.abs(q.p[2] - p.p[2]) < 4).length;
+      let front = 0;
+      for (const q of defenders) if (Math.sign(q.p[0] - p.p[0]) === Math.sign(gx) && Math.abs(q.p[0] - p.p[0]) < 6 && Math.abs(q.p[2] - p.p[2]) < 4) front++;
       const wGoal = front === 0 ? 0.8 : front === 1 ? 0.5 : 0.25;
       let px = (gx / gl) * wGoal, pz = (gz / gl) * wGoal;
       if (ev) { const ex = ev[0] - p.p[0], ez = ev[2] - p.p[2]; const el = Math.hypot(ex, ez) || 1; px += (ex / el) * (1 - wGoal); pz += (ez / el) * (1 - wGoal); }
@@ -658,20 +661,17 @@ function assignMatchJobs(st, cfg) {
     // ligne faisaient de chaque phase d'aile un pinball de goal-mouth (13 buts sans tir mesurés
     // — passes qui traversent, réceptions qui roulent au fond). Premier poteau à l'épaule de la
     // surface de but, second au niveau du penalty.
-    const slots = (wideDeep ? [
-      [goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)],  // premier poteau
-      [goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2)],                      // second poteau
-      [goal.x - sgn * pitch.dims.spot, 0],                                     // le point de penalty
-      [anchor[0] - sgn * 7, anchor[2] * 0.5],                                  // la sécurité
-      [anchor[0] - sgn * 1.5, zs * pitch.hz * 0.6],                            // le soutien de couloir
-    ] : [
-      [anchor[0] + sgn * 8, anchor[2] < 0 ? anchor[2] + 6 : anchor[2] - 6],   // lanceur intérieur
-      [anchor[0] + sgn * 7, anchor[2] < 0 ? anchor[2] - 5 : anchor[2] + 5],   // lanceur opposé
-      [anchor[0] - sgn * 6, anchor[2] * 0.5],                                  // la sécurité
-      [anchor[0] + sgn * 2, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55], // la largeur
-      [anchor[0] + sgn * 4, anchor[2] * -0.6],                                 // second rideau
-    ]).map(([x, z]) => [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z))]);
-    const free = attackers.filter((p) => (!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter);
+    const slots = st._bSlots ??= [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];   // 5 paires réutilisées (lot 69)
+    const S5 = (i, x, z) => { slots[i][0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)); slots[i][1] = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z)); };
+    if (wideDeep) {   // premier/second poteau, penalty, sécurité, soutien de couloir
+      S5(0, goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)); S5(1, goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2));
+      S5(2, goal.x - sgn * pitch.dims.spot, 0); S5(3, anchor[0] - sgn * 7, anchor[2] * 0.5); S5(4, anchor[0] - sgn * 1.5, zs * pitch.hz * 0.6);
+    } else {          // lanceur intérieur/opposé, sécurité, largeur, second rideau
+      S5(0, anchor[0] + sgn * 8, anchor[2] < 0 ? anchor[2] + 6 : anchor[2] - 6); S5(1, anchor[0] + sgn * 7, anchor[2] < 0 ? anchor[2] - 5 : anchor[2] + 5);
+      S5(2, anchor[0] - sgn * 6, anchor[2] * 0.5); S5(3, anchor[0] + sgn * 2, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, anchor[0] + sgn * 4, anchor[2] * -0.6);
+    }
+    const free = st._bFree ??= []; free.length = 0;
+    for (const p of attackers) if ((!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter) free.push(p);
     // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les 4 plus près de
     // l'ancre) — le reste du monde tient SON poste de formation coulissé (le bloc). Sans ça, les
     // 5 slots du réduit laissaient 5 corps immobiles et l'essaim mangeait la lisibilité.
@@ -679,8 +679,13 @@ function assignMatchJobs(st, cfg) {
     if (st.full) {
       // tri à clés PRÉ-CALCULÉES (lot 60, profil mobile : d2/hypot recalculé dans chaque
       // comparaison à 60 Hz) — mêmes clés, tri stable, même ordre : le flux au bit près
-      slotters = free.map((q) => [d2(q.p, anchor), q]).sort((a, b) => a[0] - b[0]).slice(0, 4).map((x) => x[1]);
-      posted = free.filter((p) => !slotters.includes(p));
+      // clé de tri TRANSIENTE + tri du buffer (sort stable, mêmes clés → l'ordre d'hier)
+      const bs = st._bSlotters ??= []; bs.length = 0;
+      for (const q of free) { q._dAnc = d2(q.p, anchor); bs.push(q); }
+      bs.sort((a, b) => a._dAnc - b._dAnc);
+      if (bs.length > 4) bs.length = 4;                              // = slice(0, 4)
+      slotters = bs; posted = st._bPosted ??= []; posted.length = 0;
+      for (const p of free) if (!slotters.includes(p)) posted.push(p);
       // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien — la ligne arrière monte),
       // et LATÉRALEMENT (lot 68, bloc.rentre — le latéral opposé rentre et monte, formation.js).
       // L'ANCRE DE LA RENTRÉE EST LENTE (τ = 2 s de temps sim ; le x du bloc reste VIF — l'ancre
@@ -691,7 +696,7 @@ function assignMatchJobs(st, cfg) {
       // engager, ~2,5 s pleine), pas sur chaque passe qui traverse l'axe.
       const tz = st._tuckZ ??= { v: 0, t: st.t };
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
-      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v);
+      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v, st._outAtk ??= []);
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste offensif coulissé peut tomber DERRIÈRE
       // la défense — un attaquant réel vit SUR la ligne, pas au-delà. Mesuré AVANT le calage : le
       // bloc adverse recule si profond (slide borné, ligne de 4 devant sa surface) que le camping
@@ -719,7 +724,7 @@ function assignMatchJobs(st, cfg) {
         p.job = 'support';
         const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
         if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
-          p._slotT = want; p._slotAt = st.t + 0.7;
+          p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
         let tx = p._slotT[0], tz = p._slotT[1];
         // LA LARGEUR (tactics.largeur) : l'amplitude des postes offensifs — jouer dedans
@@ -786,7 +791,8 @@ function assignMatchJobs(st, cfg) {
       // soutien DÉCALE perpendiculairement (±2,5 puis ±5 m) vers le premier point qui OUVRE sa
       // ligne — le démarquage du vrai football. Rien d'ouvert : le couloir tactique reste (la
       // structure prime). cfg.demarque:false = les statues d'hier (sabotage nommé).
-      const foes = st.players.filter((q) => q.team !== p.team && q.down <= 0 && !q._sub);
+      const foes = st._bFoes ??= []; foes.length = 0;   // buffer (lot 69)
+      for (const q of st.players) if (q.team !== p.team && q.down <= 0 && !q._sub) foes.push(q);
       const ouvert = (wx, wz) => {
         const dx0 = wx - carrier.p[0], dz0 = wz - carrier.p[2], L = Math.hypot(dx0, dz0);
         if (L < 4) return false;
@@ -837,7 +843,7 @@ function assignMatchJobs(st, cfg) {
       if (st.full && cfg.demarque !== false && carrier && !carrier.keeper && (p._slotAt ?? -1) <= st.t) want = seMontrer(p, want);
       const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
       if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
-        p._slotT = want; p._slotAt = st.t + 0.7;
+        p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
       }
       p.target = [p._slotT[0], 0, p._slotT[1]];
     }
@@ -897,8 +903,14 @@ function assignMatchJobs(st, cfg) {
     // défenseurs vit sur clés pré-calculées (d2 recalculé dans chaque comparaison, mesuré).
     const defTeamB = atk === 0 ? 1 : 0;
     const spotsBloc = st.full
-      ? formationSpots(pitch, defTeamB, anchor[0], false, tac(st, defTeamB).formation, blocFor(cfg.bloc ?? null, tac(st, defTeamB)), anchor[2]) : null;
-    const byDist = defenders.map((q) => [d2(q.p, anchor), q]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+      ? formationSpots(pitch, defTeamB, anchor[0], false, tac(st, defTeamB).formation, blocFor(cfg.bloc ?? null, tac(st, defTeamB)), anchor[2], st._outDef ??= []) : null;
+    const byDist = st._bByDist ??= []; byDist.length = 0;
+    for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
+    // …les MARQUABLES une fois par frame (lot 69 — le prédicat ignore le marqueur ; seul le tri est personnel)
+    const rayonM = st.full ? (cfg.marquageRayon ?? 22) : Infinity;
+    const sgnDef = Math.sign(defGoal.x || 1);
+    const marks = st._bMarks ??= [], mTri = st._bMTri ??= []; marks.length = 0;
+    for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3))) marks.push(a);
     byDist.forEach((p, i) => {
       if (i === 0) {
         // LE GARDIEN EN MAINS EST INATTAQUABLE (futsal Loi 12 à l'échelle : on ne charge pas le
@@ -919,8 +931,10 @@ function assignMatchJobs(st, cfg) {
         // l'ombre n'a besoin d'aucune règle de plus, c'est du POSITIONNEMENT). À portée de duel
         // (< 2,6 m) l'ombre cède au tacle : le duel est le duel.
         if (cfg.coverShadow && st.full && carrier && !freeBall && d2(p.p, anchor) > 2.6) {
-          const hot = attackers.filter((a) => a.id !== carrier.id && !a.keeper && d2(a.p, anchor) < 15)
-            .sort((a, b) => b.p[0] * sgnAtk - a.p[0] * sgnAtk)[0] ?? null;
+          let hot = null, hotAdv = -Infinity;
+          for (const a of attackers) if (a.id !== carrier.id && !a.keeper && d2(a.p, anchor) < 15) {
+            const adv = a.p[0] * sgnAtk; if (adv > hotAdv) { hotAdv = adv; hot = a; }
+          }
           if (hot) {
             const hx2 = hot.p[0] - anchor[0], hz2 = hot.p[2] - anchor[2];
             const hl = Math.hypot(hx2, hz2) || 1;
@@ -938,8 +952,10 @@ function assignMatchJobs(st, cfg) {
         // …et un rôle SANS jambes de press (press < 0,25 — le meneur replié) ne saute pas :
         // il garde la couverture, le pari du pressing appartient à ceux qui en vivent
         if (press && carrier && role(p).press >= 0.25) {
-          const outlet = attackers.filter((a) => a.id !== carrier.id && !a.keeper)
-            .sort((a, b) => d2(a.p, anchor) - d2(b.p, anchor))[0] ?? null;
+          let outlet = null, outD = Infinity;
+          for (const a of attackers) if (a.id !== carrier.id && !a.keeper) {
+            const d = d2(a.p, anchor); if (d < outD) { outD = d; outlet = a; }
+          }
           if (outlet) { p.job = 'press'; p.target = [outlet.p[0], 0, outlet.p[2]]; return; }
         }
         // le cover coupe la ligne ballon → but défendu, au plancher radial du rondo
@@ -972,7 +988,7 @@ function assignMatchJobs(st, cfg) {
         p.job = 'mark';
         const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
         if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
-          p._slotT = want; p._slotAt = st.t + 0.7;
+          p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
         p.target = [p._slotT[0], 0, p._slotT[1]];
         return;
@@ -992,12 +1008,9 @@ function assignMatchJobs(st, cfg) {
       // On marque LE DANGER : près du ballon (rayon), OU dans MON tiers défensif (les centraux
       // tiennent le 9 même ballon loin — le rayon seul laissait les pointes sans marqueur et la
       // ligne montait sur elles : camping 4-6 → 13,2 % mesuré, corrigé ici).
-      const rayonM = st.full ? (cfg.marquageRayon ?? 22) : Infinity;
-      const sgnDef = Math.sign(defGoal.x || 1);
-      const marks = attackers.filter((a) => (!carrier || a.id !== carrier.id)
-        && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)));
-      const mTri = marks.map((a) => [d2(a.p, p.p), a]).sort((x, y) => x[0] - y[0]);
-      const m = (mTri[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? [])[1] ?? null;
+      mTri.length = 0;                                             // copie depuis `marks` : le départ du tri stable reste l'ordre d'hier
+      for (const a of marks) { a._dMark = d2(a.p, p.p); mTri.push(a); } mTri.sort((x, y) => x._dMark - y._dMark);
+      const m = mTri[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? null;
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
         const wM = spotsM[p.post ?? 0] ?? [p.p[0], p.p[2]];

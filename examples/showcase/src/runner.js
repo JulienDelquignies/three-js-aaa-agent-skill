@@ -9,7 +9,10 @@ export async function run(SceneClass, opts = {}) {
   const app = document.getElementById('app');
   const engine = new Engine(app);
   await engine.boot();
-  if (engine.stats?.dom) engine.stats.dom.style.display = 'none';
+  // ?fps=1 : le compteur reste visible (lot 69 — le diagnostic à distance des saccades
+  // téléphone : « trait sur l'écran donc saccade » se date avec un chiffre à l'écran)
+  const showFps = new URLSearchParams(location.search).has('fps');
+  if (engine.stats?.dom) engine.stats.dom.style.display = showFps ? 'block' : 'none';
 
   const scene = new SceneClass(engine.scene, engine.renderer);
   if (scene.ready) await scene.ready;

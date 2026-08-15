@@ -53,11 +53,16 @@ export function premierOffensif(name = 433) {
  * possession. Le bloc coulisse (± 18 % du terrain), la profondeur respire (× 1,05 en attaque,
  * × 0,85 sans le ballon — un bloc défensif est un bloc COURT).
  */
-export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc = null, anchorZ = 0) {
+export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc = null, anchorZ = 0, out = null) {
   const g = pitch.ownGoal(team);
   const sgn = -g.sign;                                            // vers l'avant
   const L = pitch.dims.length;
   const F = FORMATIONS[name] ?? FORMATIONS[433];
+  // `out` (lot 69 — le GC du téléphone) : un buffer fourni est RÉUTILISÉ (10 paires mutées en
+  // place, zéro allocation par frame — le moteur appelle 2×/frame) ; sans lui, des tableaux
+  // neufs aux mêmes valeurs (les bancs et les appels ponctuels ne changent pas d'un bit).
+  const res = out ?? [];
+  const emit = (i, x, z) => { const s = res[i] ??= [0, 0]; s[0] = x; s[1] = z; };
   // LE BLOC DÉFENSIF EST CHAÎNÉ AU BALLON (lot 42, cfg.bloc — retour utilisateur « les lignes
   // sont trop espacées, les matchs ne sont pas réalistes ») : mesuré avant, bloc défendant
   // p50 43 m / p90 58 (réel 25-40), 25,5 m entre défense et milieu (réel 10-15), et AUCUNE
@@ -79,11 +84,13 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     // restait indéfendu et la perce du wingDrive convertissait à 73 % (mesuré : 38 buts sur
     // 20 × 300 s, bande 17-30 — l'ailier passait dans un couloir vide).
     const zShift = Math.max(-(bloc.slideMax ?? 8), Math.min(bloc.slideMax ?? 8, anchorZ * (bloc.lateral ?? 0.35)));
-    return F.map(([f, fz]) => {
+    for (let i = 0; i < F.length; i++) {
+      const [f, fz] = F[i];
       const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * squeeze));
-      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 + zShift));
-      return [g.x + sgn * fx * L, z];
-    });
+      emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 + zShift)));
+    }
+    res.length = F.length;
+    return res;
   }
   // LA LIGNE ARRIÈRE ATTAQUANTE EST CHAÎNÉE AU BALLON AUSSI (lot 51, bloc.soutien — retour
   // utilisateur « des défenseurs bien trop bas par rapport à l'équipe, sans sens tactique ») :
@@ -112,7 +119,8 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     // `rentre` absent : le latéral abandonné d'hier, au bit près (sabotage nommé).
     const lgD = (LIGNES[name] ?? LIGNES[433])[0];
     const wFar = bloc.rentre != null ? Math.max(0, Math.min(1, (Math.abs(anchorZ) - 6) / 8)) : 0;
-    return F.map(([f, fz], i) => {
+    for (let i = 0; i < F.length; i++) {
+      const [f, fz] = F[i];
       const rentre = i < lgD && Math.abs(fz) >= 0.5 && fz * anchorZ < 0 ? wFar : 0;
       // …le FRONT reste LIBRE (0,96 comme partout) : un plafond à 0,80 essayé exilait les
       // pointes à 31 m du but — tirs effondrés (13 sur 8 × 180 s, deux graines à zéro). Les
@@ -120,17 +128,20 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
       // transitoire monte à 4-6 % (borne re-fondée), c'est le prix du bloc haut du vrai
       // football, pas du camping injouable.
       const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * stretch + rentre * (bloc.rentre ?? 9) / L));
-      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 * (1 - 0.5 * rentre)));
-      return [g.x + sgn * fx * L, z];
-    });
+      emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 * (1 - 0.5 * rentre))));
+    }
+    res.length = F.length;
+    return res;
   }
   const slide = Math.max(-0.18, Math.min(0.18, (anchorX * sgn) / L));
   const breathe = attacking ? 1.05 : 0.85;
-  return F.map(([f, fz]) => {
+  for (let i = 0; i < F.length; i++) {
+    const [f, fz] = F[i];
     const fx = Math.max(0.04, Math.min(0.96, f * breathe + slide + (attacking ? 0.05 : 0)));
-    const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92));
-    return [g.x + sgn * fx * L, z];
-  });
+    emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92)));
+  }
+  res.length = F.length;
+  return res;
 }
 
 /** LE BLOC DE CETTE ÉQUIPE (lot 43 — réponse à « les blocs sont bien liés à la tactique ?
