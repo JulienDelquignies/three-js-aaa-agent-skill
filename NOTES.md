@@ -3481,6 +3481,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Bancs 62/40/84 verts. La dette #73 (aimant du porté, touches conduite 11 % dos) reste le
      prochain étage du contact.
 
+110. **Lot 72 : la chaleur du téléphone, les tas de marqueurs, l'arbitre qui tient le rond,
+     le coup d'envoi à deux.** Captures ?fps=1 (CPU 7,32 ms à 0:33 puis 19,70 ms à 1:41) +
+     « tas de joueurs » + traits résiduels. (a) LE CPU QUI CROÎT N'EST PAS UNE FUITE : la sim
+     locale est PLATE (1,0-1,1 ms sur 240 s, scène 1945 objets stable, DOM stable) — la
+     croissance 7→20 ms sur téléphone est du THERMAL THROTTLING (le SoC réduit sa fréquence
+     sous la chaleur). On ne « répare » pas un throttling, on produit MOINS DE CHALEUR :
+     plancher de résolution dynamique 0,75 au tier low (drMin — était 0,55 implicite) et
+     tribunes ÷2 au low (InstancedMesh count>800 → count/2, `?seats=full` restaure). (b) LES
+     TAS DE 4-5 CORPS (34 % des photos avec ≥3 corps à <1,2 m) : les marqueurs SURNUMÉRAIRES
+     de mTri allaient chacun sur SON plus-proche — trois voisins élisaient le même homme.
+     UN MARQUEUR PAR HOMME en 11c11 : le surplus rejoint son poste (le réduit garde le
+     doublement d'hier au bit — marquer à deux est son monde). (c) Le fix (b) a RÉVÉLÉ une
+     régression d'engagement (14 s avant la première passe, graine 1 : l'attaquant du but
+     précédent TRAVERSAIT le rond et contestait le preneur — ping-pong possess/release, 63
+     refus ballon-vif) : deux fixes posés PUIS RETIRÉS faute d'effet mesuré (pas de loi
+     morte) ; le vrai remède est la Loi 8 elle-même — canTake (referee) REFUSE la reprise
+     d'engagement tant qu'un adversaire de champ est à <0,9×circle du point. 14 s → 1,2 s.
+     (d) La clause match11 « l'engagement est une passe » restait rouge (7,46 s de moyenne) :
+     la graine 5 seule crevait tout — le preneur du coup d'envoi N'A PAS DE PASSE : son plus
+     proche soutien est à 14,7 m, HORS passRange [2,5-13] — choosePass rendait NULL toute la
+     fenêtre (les autres graines passaient par accident : un coéquipier ENTRAIT dans les 13 m
+     pendant la fenêtre, et le fix (b) a déplacé les ombres de couverture sur la 5). Le vrai
+     foot le dit : LE COUP D'ENVOI SE JOUE À DEUX — placeKickoff/kickoffSpots posent le
+     second homme au bord du rond ([sign×2,6, −2,4], 3,5 m du ballon, dans son camp, même
+     clé engagementPasse), et la première passe EXISTE toujours : délai 1,01 s sur les 4
+     graines de la clause, uniforme. Leçons : le throttling se mesure en ÉLIMINANT la fuite
+     (sonde de croissance locale d'abord) ; un fix qui retire une pression accidentelle
+     (mTri) peut révéler un vice plus ancien ; la géométrie d'une remise est une LOI DU JEU,
+     pas un hasard de formation — quand une clause dépend d'un couloir accidentel, poser le
+     placement que le vrai foot prescrit.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

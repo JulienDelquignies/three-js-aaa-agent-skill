@@ -1,20 +1,13 @@
 // match-sim — LE MATCH RÉDUIT : deux buts, des gardiens, des tirs, des remises en jeu, un score.
-//
 // L'architecture est celle d'un moteur, pas d'un fork : il n'y a QU'UN game-loop (rondo-sim,
 // prouvé par 40 clauses) et le match est une CONFIGURATION de ce loop — quatre points d'accroche
 // (`assignJobs`, `tryShot`, `onOut`, `onDive`, `canTake`) posés là où le rondo disait « carré
 // abstrait » : l'attribution des rôles devient directionnelle (on attaque UN but), la sortie de
 // balle devient une RÈGLE (pitch.outRule : but / touche / corner / sortie de but), le porteur
-// gagne LE geste qui n'existait pas (le tir), et le gardien gagne son métier (keeper.js).
-// Duels, gestes techniques, personas, tempo, balistique : tout le reste est le MÊME code que le
-// rondo — c'est le point.
-//
-// Ce qui est volontairement V1 (dettes nommées, pas des oublis) :
-//   — remise de touche AU PIED (loi du format réduit, comme au futsal — écrite dans pitch.js) ;
-//   — pas de hors-jeu AU FORMAT RÉDUIT (5+1, comme au futsal/five — loi du format) ; le 11c11,
-//     lui, vit sous la Loi 11 (offside.js : cerveau, photo au départ, sifflet, calage des pointes) ;
-//   — le gardien ne sort pas de sa surface (keeper v1 : depthMax 2,6 m) ;
-//   — les remises placent le ballon et tiennent les adversaires à distance, sans cérémonie.
+// gagne LE geste qui n'existait pas (le tir), le gardien son métier (keeper.js). Le reste est le
+// MÊME code que le rondo — c'est le point. V1 volontaire (dettes nommées) : touche au pied
+// (format réduit, futsal — pitch.js) ; pas de hors-jeu au réduit (le 11c11 vit sous la Loi 11,
+// offside.js) ; gardien dans sa surface (depthMax 2,6) ; remises sans cérémonie.
 
 import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
@@ -1010,7 +1003,10 @@ function assignMatchJobs(st, cfg) {
       // ligne montait sur elles : camping 4-6 → 13,2 % mesuré, corrigé ici).
       mTri.length = 0;                                             // copie depuis `marks` : le départ du tri stable reste l'ordre d'hier
       for (const a of marks) { a._dMark = d2(a.p, p.p); mTri.push(a); } mTri.sort((x, y) => x._dMark - y._dMark);
-      const m = mTri[i - 2 < marks.length ? Math.min(i - 2, marks.length - 1) : 0] ?? null;
+      // …UN MARQUEUR PAR HOMME (lot 72, captures : tas de 4-5 corps, 34 % des photos) : le
+      // surnuméraire allait sur SON plus-proche — trois voisins élisaient le même homme. En
+      // 11c11 le surplus rejoint son poste (chemin !m) ; le réduit garde le doublement au bit.
+      const m = i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
         const wM = spotsM[p.post ?? 0] ?? [p.p[0], p.p[2]];

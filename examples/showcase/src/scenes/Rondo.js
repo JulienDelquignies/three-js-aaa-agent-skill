@@ -81,6 +81,13 @@ export class Rondo {
     // sur 105 × 68 est le lag mesuré au téléphone) — ?q=high le rétablit explicitement.
     // Calculé AVANT le stade : la taille de la shadow map en dépend (lot 61).
     this._tier = q.get('q') || (this.fullMode && typeof window !== 'undefined' && window.innerWidth < 700 ? 'low' : 'high');
+    // MOINS DE CHALEUR AU TIER LOW (lot 72 — le compteur ?fps=1 : CPU 7,3 → 19,7 ms en 70 s =
+    // thermal throttling, pas une fuite — sim locale plate, scène et DOM stables) : la moitié
+    // des sièges instanciés suffit à peupler la nuit (les derniers rangs se vident — un soir de
+    // semaine) ; ~6-7k boîtes de moins dans chaque frame. ?seats=full les rétablit.
+    if (this._tier === 'low' && q.get('seats') !== 'full') {
+      built.group.traverse((o) => { if (o.isInstancedMesh && o.count > 800) o.count = Math.floor(o.count / 2); });
+    }
 
     // ---- night: floodlights + one shadow-casting sun fitted to the pitch
     this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
@@ -697,7 +704,13 @@ export class Rondo {
         const win = nowW - this._drT0, fps = this._drN * 1000 / win;
         const cur = this.renderer?.getPixelRatio?.() ?? 0;
         if (win < 4000 && cur > 0) {
-          if (fps < 45 && cur > 1.0) { this.renderer.setPixelRatio(Math.max(1.0, cur - 0.25)); this._drUp = 0; }
+          // …plancher 0,75 au tier LOW (lot 72 — le compteur ?fps=1 du téléphone : CPU 7,3 →
+          // 19,7 ms en 70 s de jeu = THERMAL THROTTLING, pas une fuite (sim locale plate à
+          // 1,0 ms/frame sur 240 s, scène et DOM stables). La réponse moteur : produire moins
+          // de chaleur — DPR 1,0 sur un écran dense ≈ 2,6 Mpx ; 0,75 en retire 44 %. Les tiers
+          // hauts gardent le plancher net de 1,0.
+          const drMin = this._tier === 'low' ? 0.75 : 1.0;
+          if (fps < 45 && cur > drMin) { this.renderer.setPixelRatio(Math.max(drMin, cur - 0.25)); this._drUp = 0; }
           else if (fps > 55 && this._dprCap && cur < this._dprCap) {
             // REMONTER exige DEUX fenêtres rapides consécutives (lot 62 — hystérésis) : chaque
             // changement réalloue les cibles du post, osciller 1,25↔1,5 toutes les 2 s SERAIT

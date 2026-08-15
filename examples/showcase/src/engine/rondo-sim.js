@@ -243,7 +243,7 @@ function standTackleNow(st, q, cfg) {
 // un geste technique est un événement, pas un tic.
 
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeFeinteFrappe, skillContactNow };
-export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a), chargeStep: (...a) => chargeStep(...a), slideTackleStep: (...a) => slideTackleStep(...a) };
+export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a), chargeStep: (...a) => chargeStep(...a), slideTackleStep: (...a) => slideTackleStep(...a), choosePass: (...a) => choosePass(...a) };
 
 /** Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
  *  scores the pass; any other shirt-mate is a scuffed ball kept in the family. Opponent = turnover. */
@@ -980,13 +980,9 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // l'intention vise le receveur VIVANT : la mène se rafraîchit sur sa course réelle — c'est
         // le même receveur, pas une re-décision (strikeNow re-résout de toute façon au contact)
         const rec = st.players[c.intent.choice.to.id];
-        // LE SERVICE DU COUREUR EST UNE URGENCE DE TIMING (lot 36). La fenêtre de course vit
-        // 1,5-2 s et les portes d'engagement (technique 932 / ballon-vif 865 / ancre 642 refus
-        // mesurés) la mangeaient ENTIÈRE : 88 choix gagnés par le coureur, 0 passe partie. Le
-        // remède natif du tir (lot 6a) et du centre (lot 34) : la touche de PRÉPARATION — le
-        // ballon se serre, la passe arme au pas suivant, DANS la fenêtre.
-        // …armée UNE fois par intention (la rafale re-serrait la touche en boucle : le porteur
-        // n'avançait plus — la moitié du coût mesuré sur les tirs)
+        // LE SERVICE DU COUREUR EST UNE URGENCE DE TIMING (lot 36) : les portes (technique 932 /
+        // ballon-vif 865 / ancre 642 refus) mangeaient la fenêtre de course ENTIÈRE — le remède
+        // natif du tir (lot 6a) : la touche de PRÉPARATION, armée UNE fois par intention
         const runnerVif = st.full && (rec?._pace?.until ?? -1) > st.t && rec._pace.kind === 'appel';
         if (runnerVif
           && cfg.prepTouch !== false && d2(c.p, st.ball.p) > 0.95 && !((c._prepShot ?? -1) > st.t)) {

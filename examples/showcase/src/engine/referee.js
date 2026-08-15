@@ -16,7 +16,7 @@ const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 /** Un refus a une cause nommée (copie locale du registre du loop). */
 const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; };
 
-export function placeKickoff(st, kickTeam) {
+export function placeKickoff(st, kickTeam, cfg) {
   const { pitch } = st;
   for (const team of [0, 1]) {
     const sign = pitch.ownGoal(team).sign;                        // le côté DÉFENDU
@@ -29,6 +29,11 @@ export function placeKickoff(st, kickTeam) {
       p.p = [sign * pitch.hx * fx, 0, fz * pitch.dims.width];
       // l'engageur : le premier joueur de l'équipe qui engage, au ballon
       if (team === kickTeam && i === 0) p.p = [sign * 1.2, 0, 0.4];
+      // LE COUP D'ENVOI SE JOUE À DEUX (lot 72, même clé que la fenêtre « l'engagement est une
+      // passe ») : le second homme au bord du rond, dans son camp — la première passe EXISTE
+      // toujours (3,5 m, dans passRange [2,5-13]). Sans lui le preneur était seul : plus proche
+      // soutien 14,7 m HORS enveloppe, choosePass NULL toute la fenêtre (graine 5 mesurée).
+      if (st.full && cfg?.engagementPasse !== false && team === kickTeam && i === 1) p.p = [sign * 2.6, 0, -2.4];
       p.v = [0, 0]; p.yaw = Math.atan2(0 - p.p[2], 0 - p.p[0]);
       p.act = null; p.intent = null; p.down = 0;
     });
@@ -42,7 +47,7 @@ export function placeKickoff(st, kickTeam) {
  *  placeKickoff écrivait les douze corps (jusqu'à 20 m en une image) ; ici on ne pose que des
  *  CIBLES, et movePlayers fait le trajet. Le preneur — parti chercher le ballon dans le filet —
  *  reçoit la place de l'engageur. */
-export function kickoffSpots(st, kickTeam, takerId = -1) {
+export function kickoffSpots(st, kickTeam, takerId = -1, cfg) {
   const { pitch } = st;
   const spots = {};
   for (const team of [0, 1]) {
@@ -52,6 +57,8 @@ export function kickoffSpots(st, kickTeam, takerId = -1) {
     for (const p of st.players.filter((q) => q.team === team && !q.expulse && !q._sub)) {
       if (p.keeper) { const g = pitch.ownGoal(team); spots[p.id] = [g.x - g.sign * 0.8, 0]; continue; }
       if (team === kickTeam && p.id === takerId) { spots[p.id] = [sign * 1.2, 0.4]; continue; }
+      // le second homme du rond (voir placeKickoff) CONSOMME sa rangée : le reste garde ses places
+      if (st.full && cfg?.engagementPasse !== false && team === kickTeam && i === 0) { i++; spots[p.id] = [sign * 2.6, -2.4]; continue; }
       const [fx, fz] = rows[i++ % rows.length];
       spots[p.id] = [sign * pitch.hx * fx, fz * pitch.dims.width];
     }
@@ -214,9 +221,9 @@ export function onOut(st, cfg) {
       brake(0.15);
       st.restart.placed = false;
       st.restart.taker = nearTaker(r.team);
-      st.restart.spots = kickoffSpots(st, r.team, st.restart.taker);
+      st.restart.spots = kickoffSpots(st, r.team, st.restart.taker, cfg);
     } else {
-      placeKickoff(st, r.team);
+      placeKickoff(st, r.team, cfg);
       st.ball.restart([0, BALL.radius, 0], { cause: 'engagement' });
     }
   } else {
@@ -239,6 +246,17 @@ export function canTake(st, takerId) {
   if (st.t < st.restart.at - 0.25) return false;
   if (p.team !== st.restart.team) return false;
   const ty = st.restart.type;
+  // L'ARBITRE TIENT LE COUP D'ENVOI (Loi 8, lot 72) : la reprise ATTEND que le rond central
+  // soit vide d'adversaires — l'expulsé du rond (l'attaquant du but d'avant) traversait le
+  // preneur à 1,1 m et CONTESTAIT la première passe : release en ping-pong, 63 refus
+  // ballon-vif, 14 s avant que l'engagement parte (mesuré graine 1, engagement de la 64e s).
+  if (ty === 'engagement' && st.full) {
+    const R = (st.pitch?.dims?.circle ?? 9.15) * 0.9;
+    for (const q of st.players) {
+      if (q.team === p.team || q._sub || q.expulse || q.keeper || q.down > 0) continue;
+      if (Math.hypot(q.p[0] - st.restart.p[0], q.p[2] - st.restart.p[1]) < R) return false;
+    }
+  }
   st.restart = null;                                               // la remise est PRISE — le jeu reprend
   st.events.push({ t: +st.t.toFixed(2), type: 'restart-pris', by: takerId });
   // L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le joueur part
@@ -300,7 +318,7 @@ export function chronoStep(st, cfg) {
   // fraction d'essence — pas tout (un match se gère, la seconde période se joue plus bas)
   if (cfg.fatigue && st.full) for (const p of st.players) { p.stam = Math.min(1, (p.stam ?? 1) + (cfg.fatigue.pause ?? 0.25)); p._fatEv = p.stam < 0.35 ? p._fatEv : null; }
   st.restart = { type: 'engagement', p: [0, 0], team, at: st.t + pause };
-  placeKickoff(st, team);
+  placeKickoff(st, team, cfg);
   st.ball.restart([0, BALL.radius, 0], { cause: 'engagement' });
 }
 
