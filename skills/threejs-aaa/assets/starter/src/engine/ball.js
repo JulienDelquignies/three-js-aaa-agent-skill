@@ -106,9 +106,17 @@ function resolveGround(s, { restitution, friction }) {
   const j = Math.min(friction * jn, jStick);                // Coulomb cone
   const nx = ux / u, nz = uz / u;                           // slip direction (friction opposes it)
   s.v[0] -= j * nx; s.v[2] -= j * nz;
-  // Δω = (r_c × J)/I with r_c = (0,−r,0), J/m = −j·(nx,0,nz), I/m = a·r²
-  s.w[0] -= (j * nz) / (a * r);
-  s.w[2] += (j * nx) / (a * r);
+  // Δω = (r_c × J)/I with r_c = (0,−r,0), J/m = −j·(nx,0,nz), I/m = a·r² — signes du produit
+  // vectoriel : Δω = (+j·nz, 0, −j·nx)/(a·r). ILS ÉTAIENT INVERSÉS (lot 64, capture utilisateur
+  // « le ballon s'arrête puis repart en arrière ») : la friction d'impact AMPLIFIAIT le
+  // glissement (+1,5·j par sous-pas au lieu de −3,5·j) — un backspin de passe levée (28 rad/s)
+  // explosait à ~160 rad/s au premier rebond puis repoussait le ballon en ARRIÈRE ; une
+  // chandelle immobile se propulsait de rebond en rebond (mesuré : 4,3 inversions/match).
+  // Trois preuves du bon signe : le produit vectoriel ; rollGround (w2 = −v/r : un tir tendu
+  // crée du TOPSPIN, le code créait du backspin) ; et jStick = (a/(1+a))·u — dimensionné pour
+  // TUER u exactement, ce qui n'est vrai qu'avec Δu = −(1+1/a)·j.
+  s.w[0] += (j * nz) / (a * r);
+  s.w[2] -= (j * nx) / (a * r);
 }
 
 /**

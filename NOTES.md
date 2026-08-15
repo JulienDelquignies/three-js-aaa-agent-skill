@@ -3232,6 +3232,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      d'instrument : une classe agrégée (« porte : 378 ») sans distribution des distances cache
      son site — 0,79 m et 0,09 m ne sont pas le même bug ; le FILM les sépare.
 
+101. **Le couple de friction du rebond avait les signes inversés — le ballon repartait en
+     arrière tout seul (lot 64, capture utilisateur : « ballon long vers la touche, s'arrête,
+     repart en arrière », ballon SEUL à l'image → pas un contact, la physique).** LA TRAQUE :
+     sonde d'atterrissages (3 graines × 300 s) → deux populations d'inversions sans contact
+     (4,3/match) : des levées arrivant avec rw ~17,5 m/s de vitesse de surface (≈ 160 rad/s —
+     pour 28 semés au départ !) qui rebroussent à cos −1, et des chandelles quasi immobiles qui
+     se propulsent de rebond en rebond. LE BUG : resolveGround (ball.js) — Δω = (r_c × J)/I
+     donne (+j·nz, −j·nx)/(a·r), le code faisait (−j·nz, +j·nx) : la friction d'impact
+     AMPLIFIAIT le glissement (+1,5·j par sous-pas au lieu de −3,5·j). Trois preuves du bon
+     signe : le produit vectoriel ; rollGround (w2 = −v/r ⇒ un tir tendu prend du TOPSPIN, le
+     code buggé créait du backspin) ; jStick = (a/(1+a))·u, dimensionné pour TUER u exactement
+     — vrai seulement avec Δu = −(1+1/a)·j. IDENTITÉ AU DÉFAUT : corrigé PARTOUT (ball.js, le
+     cœur partagé — le prédicteur suit par construction, il importe stepBall). APRÈS : tir
+     tendu u 12 → 0 en un rebond (topspin de roulement −65) ; la levée backspin S'ASSOIT
+     (7 → 3 m/s, jamais négative — le « checks up » du vrai football) ; chandelle immobile ;
+     inversions de match 4,3 → 0. Bancs : 4 clauses re-fondées avec récit — la chasse s'allonge
+     (p90 2,2 → 3,2 : un ballon qui roule se court), le sabotage remise-snappée sur 4 graines,
+     l'existence des centres sur 6 (le canal vit : 6/8 graines), et « l'élite domine aux
+     OCCASIONS » re-fondée au TERRITOIRE (possession 57,4 % ≥ 54 — les tirs du format court ne
+     convergent pas : 25:26 et 25:28 sur 2 × 10 graines post-fix ; l'avantage élite aux tirs
+     passait EN PARTIE par l'artefact des ballons morts ramassés à la technique → dette nommée
+     « le poids des notes aux occasions »). A/B 20 × 300 s : 61 tirs, 27 buts — bande 17-33
+     tenue. + 4 clauses banc rebond (verify-ball 31 ✓). Leçon : quand un module REVENDIQUE un
+     comportement (« backspin checks up and comes back »), vérifier que ses équations le font
+     VRAIMENT — le commentaire décrivait la physique, le signe la niait ; et une mesure agrégée
+     (« 665 yanks ») sans distribution cache un site — le rw ~17,5 CONSTANT sur 10 cas était la
+     signature qui a tout ouvert.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

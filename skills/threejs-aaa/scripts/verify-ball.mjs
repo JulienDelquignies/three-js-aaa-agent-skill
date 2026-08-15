@@ -136,6 +136,26 @@ let bend = 0;
   sab('énergie créée', (b) => { for (let i = 40; i < b.length; i++) b[i].v[1] += 30; }, 'énergie');
   sab('vitesse irréaliste', (b) => { b[30].v[0] = 200; }, 'irréaliste');
 }
+// ---------- 12 bis. LE REBOND CONVERGE VERS LE ROULEMENT (lot 64 — capture utilisateur : « le
+// ballon s'arrête puis repart en arrière »). Le couple de friction d'impact avait les signes du
+// produit vectoriel INVERSÉS : la friction amplifiait le glissement (+1,5·j par sous-pas au lieu
+// de −3,5·j) — le backspin d'une levée explosait de 28 à ~160 rad/s au premier rebond et le
+// ballon repartait en ARRIÈRE (mesuré : 4,3 inversions/match, 0 après). Trois faits du réel :
+{
+  const R = BALL.radius, slip = (s) => Math.hypot(s.v[0] + R * s.w[2], s.v[2] - R * s.w[0]);
+  const tendu = { p: [0, 0.15, 0], v: [12, -6, 0], w: [0, 0, 0] };
+  const u0 = slip(tendu); stepBall(tendu, 0.05);
+  ok(`la friction d'impact TUE le glissement (tir tendu : u ${u0.toFixed(1)} → ${slip(tendu).toFixed(2)})`, slip(tendu) < u0 * 0.2);
+  ok(`…et fabrique le TOPSPIN du roulement (w2 = ${tendu.w[2].toFixed(0)} < 0 pour une marche +x)`, tendu.w[2] < -20);
+  const levee = { p: [0, 0.15, 0], v: [7, -7, 0], w: [0, 0, 28] };
+  stepBall(levee, 0.05);
+  ok(`la passe levée backspin S'ASSOIT sans s'inverser (v 7 → ${levee.v[0].toFixed(1)} : freinée, jamais négative)`, levee.v[0] > 0.5 && levee.v[0] < 5.5);
+  const chandelle = { p: [0, 4, 0], v: [0.3, -1, 0], w: [0, 0, 3] };
+  for (let i = 0; i < 240; i++) stepBall(chandelle, 1 / 60);
+  ok(`une chandelle ne se propulse pas toute seule (|v| après 4 s de rebonds : ${Math.hypot(chandelle.v[0], chandelle.v[2]).toFixed(2)} ≤ 0,6)`,
+    Math.hypot(chandelle.v[0], chandelle.v[2]) <= 0.6);
+}
+
 // ---------- 13. Magnus coefficient sanity
 ok(`Cl réaliste (25 m/s, 9 tr/s → ${magnusCoefficient(25, 9 * 2 * Math.PI).toFixed(3)})`,
   magnusCoefficient(25, 9 * 2 * Math.PI) > 0.1 && magnusCoefficient(25, 9 * 2 * Math.PI) < 0.3);
