@@ -100,14 +100,27 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     const span = Math.max(0.01, Math.max(...F.map(([f]) => f)) - fMin);
     const ligneF = Math.max(0.12, Math.min(0.5, ballF - bloc.soutien / L));
     const stretch = ((bloc.longAtk ?? 42) / L) / span;
-    return F.map(([f, fz]) => {
+    // LE LATÉRAL CÔTÉ FAIBLE RENTRE ET MONTE (lot 68, bloc.rentre — retour utilisateur « je vois
+    // toujours le latéral opposé de l'équipe en possession des dizaines de mètres derrière les
+    // autres joueurs » : mesuré, retard sur la médiane d'équipe p50 10,4 / p90 22,0 m, 3 graines
+    // × 300 s — large ET bas, isolé de tous). Le vrai football en possession : le latéral côté
+    // ballon vit haut dans son couloir, le latéral OPPOSÉ referme la « ligne de 3 » — il rentre
+    // vers l'axe (z × ~0,5) et monte de ~rentre m vers le milieu (jamais au-dessus : sa ligne
+    // reste ordonnée sous les milieux à stretch réel). Ne touche que les ARRIÈRES LARGES
+    // (|fz| ≥ 0,5 de la ligne basse — un 3-5-2 n'en a pas, ses pistons sont des milieux) du côté
+    // opposé au ballon (fz·anchorZ < 0), montée progressive dès |z ballon| > 6 m (pleine à 14).
+    // `rentre` absent : le latéral abandonné d'hier, au bit près (sabotage nommé).
+    const lgD = (LIGNES[name] ?? LIGNES[433])[0];
+    const wFar = bloc.rentre != null ? Math.max(0, Math.min(1, (Math.abs(anchorZ) - 6) / 8)) : 0;
+    return F.map(([f, fz], i) => {
+      const rentre = i < lgD && Math.abs(fz) >= 0.5 && fz * anchorZ < 0 ? wFar : 0;
       // …le FRONT reste LIBRE (0,96 comme partout) : un plafond à 0,80 essayé exilait les
       // pointes à 31 m du but — tirs effondrés (13 sur 8 × 180 s, deux graines à zéro). Les
       // pointes DANSENT sur la ligne (calage Loi 11 sur les postes) — le temps illicite
       // transitoire monte à 4-6 % (borne re-fondée), c'est le prix du bloc haut du vrai
       // football, pas du camping injouable.
-      const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * stretch));
-      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92));
+      const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * stretch + rentre * (bloc.rentre ?? 9) / L));
+      const z = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 * (1 - 0.5 * rentre)));
       return [g.x + sgn * fx * L, z];
     });
   }

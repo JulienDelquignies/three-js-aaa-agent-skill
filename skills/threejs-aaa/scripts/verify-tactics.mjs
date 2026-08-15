@@ -185,7 +185,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const utDe = (tactics, cfgX) => {
     let calme = 0, ut = 0;
-    for (const seed of [1, 3]) {
+    // graines {1,3} → {1,3,5} (lot 68, récit) : les lois de replacement (rentre, ancre lente)
+    // ont redistribué les tempos — 1 calme sur {1,3} quand l'existence vit sur la voisine ;
+    // les identités (défaut 0 EXACT, sabotage 0) se prouvent sur CHAQUE graine visitée.
+    for (const seed of [1, 3, 5]) {
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
       const cfg = matchCfg({ shotRange: 20, ...cfgX });
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);

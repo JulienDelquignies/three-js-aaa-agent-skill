@@ -164,9 +164,20 @@ export function movePlayers(st, dt, cfg) {
           // fondait (asymétrie attaque 30,9 < défense + 4, la clause du bloc court).
           const trotB = moment === 'attaque-placée' ? (A.trotAtk ?? 3.9) : (A.trot ?? 3.4);
           const dTgt = p.target ? Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]) : 0;
-          const suivre = dTgt > (A.rattrape ?? 12) ? trotB
+          // …ET LE RATTRAPAGE OFFENSIF EST UN LEVIER, PAS UNE LOI DU DÉFAUT (lot 68,
+          // A.rattrapeAtk — résultat négatif CONSIGNÉ) : pour guérir « le latéral opposé des
+          // dizaines de mètres derrière », on a d'abord raccourci le rattrapage d'attaque
+          // (6, puis 8 — le latéral trottait vers son poste au lieu d'y marcher)… et la MARÉE
+          // (tout le bloc posté au trot) a suralimenté le siège : décomposé sur 20 graines ×
+          // 300 s, rattrapeAtk seul = 33 buts, avec rentre = 37-39 (bande 17-33 crevée), rentre
+          // SEUL = 22 (l'innocent). La vraie guérison du transit était l'ANCRE LENTE du tuck :
+          // un poste STABLE se rejoint même au pas (2,1 m/s × 5 s = 10 m), et le latéral qui
+          // referme GLISSE, il ne sprinte pas. Défaut 12 = symétrique de la défense (neutre) ;
+          // la clé reste injectable pour un style d'occupation agressif aval.
+          const ratt = moment === 'attaque-placée' ? (A.rattrapeAtk ?? A.rattrape ?? 12) : (A.rattrape ?? 12);
+          const suivre = dTgt > ratt ? trotB
             : clamp(tSpd * 1.15 + 0.4, A.marche ?? 2.1, trotB);
-          top = Math.min(top, tSpd < 1.0 && dTgt <= (A.rattrape ?? 12) && dB > (A.calme ?? 24) ? (A.marche ?? 2.1) : suivre);
+          top = Math.min(top, tSpd < 1.0 && dTgt <= ratt && dB > (A.calme ?? 24) ? (A.marche ?? 2.1) : suivre);
         }
       } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }

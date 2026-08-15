@@ -681,8 +681,17 @@ function assignMatchJobs(st, cfg) {
       // comparaison à 60 Hz) — mêmes clés, tri stable, même ordre : le flux au bit près
       slotters = free.map((q) => [d2(q.p, anchor), q]).sort((a, b) => a[0] - b[0]).slice(0, 4).map((x) => x[1]);
       posted = free.filter((p) => !slotters.includes(p));
-      // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien — la ligne arrière monte)
-      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)));
+      // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien — la ligne arrière monte),
+      // et LATÉRALEMENT (lot 68, bloc.rentre — le latéral opposé rentre et monte, formation.js).
+      // L'ANCRE DE LA RENTRÉE EST LENTE (τ = 2 s de temps sim ; le x du bloc reste VIF — l'ancre
+      // lente en x essayée faisait TRAÎNER toute la ligne postée derrière le jeu qui avance,
+      // retard médiane p50 8→11 m, résultat négatif consigné) : sur le ballon brut, la bande
+      // d'engagement (6-14 m) clignotait à chaque transversale et le poste du latéral faible se
+      // téléportait. La ligne de 3 se referme sur une possession d'aile INSTALLÉE (~1 s pour
+      // engager, ~2,5 s pleine), pas sur chaque passe qui traverse l'axe.
+      const tz = st._tuckZ ??= { v: 0, t: st.t };
+      tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
+      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v);
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste offensif coulissé peut tomber DERRIÈRE
       // la défense — un attaquant réel vit SUR la ligne, pas au-delà. Mesuré AVANT le calage : le
       // bloc adverse recule si profond (slide borné, ligne de 4 devant sa surface) que le camping

@@ -257,5 +257,42 @@ function makeRig() {
   ok('rien construit → refus propre', has(checkRenderPipeline(null, R0), 'pipeline invalide'));
 }
 
+// ---------- lot 68 — L'ARCHITECTURE NE S'IMPRIME PAS DANS LA CLÉ (« il y a encore les traits
+// sur l'écran », 3e signalement téléphone). La clé nocturne est UNE directionnelle (proxy des
+// 4 nappes croisées) : mâts, panneaux, cages, sièges et toits y projetaient des ombres RÉELLES
+// — lignes fines diagonales, transversale en travers de la surface, terminateur de toit —
+// qu'AUCUN biais ne retire (les lots 62-63 ne pouvaient qu'amincir). Sous un vrai rig la
+// pelouse est UNIFORME : seuls les corps du jeu impriment leur contact. Le stade se construit
+// ici en node avec un canvas 2d FACTICE : aucun pixel n'est lu au build (les textures ne
+// s'uploadent qu'au GPU) — la géométrie et les drapeaux d'ombre SONT le contrat.
+{
+  const ctx2d = () => new Proxy({}, {
+    get: (t, k) => {
+      if (k === 'measureText') return () => ({ width: 10 });
+      if (k === 'createLinearGradient' || k === 'createRadialGradient') return () => ({ addColorStop: () => {} });
+      if (k === 'getImageData') return (x, y, w, h) => ({ data: new Uint8ClampedArray(w * h * 4) });
+      return typeof t[k] !== 'undefined' ? t[k] : () => {};
+    },
+    set: () => true,
+  });
+  const prevDoc = globalThis.document;
+  globalThis.document = { createElement: () => ({ width: 0, height: 0, getContext: () => ctx2d() }) };
+  const { buildStadium } = await import('../../../examples/showcase/src/engine/stadium-builder.js');
+  const theme68 = { primary: 0x8a1538, secondary: 0xf2c94c, accent: 0x1c2c4a, shorts: 0xffffff, socks: 0x8a1538, initials: 'FC', name: 'FC Banc', sponsors: ['ACME', 'ORBIT'] };
+  const casters = (opts) => {
+    const b = buildStadium(generateStadium({ tier: 5, seed: 3 }), theme68, { at: [0, 0, 0], ...opts });
+    let c = 0, m = 0;
+    b.group.traverse((o) => { if (o.isMesh) { m++; if (o.castShadow) c++; } });
+    b.dispose();
+    return { c, m };
+  };
+  const def = casters({}), sab68 = casters({ archCast: true });
+  ok(`l'ARCHITECTURE ne projette pas dans la clé (0/${def.m} meshes casters au tier 5 — mobilier de loge compris ; et les ~13k sièges quittent la passe d'ombre : le gain mobile est structurel)`,
+    def.c === 0 && def.m > 150);
+  ok(`sabotage « le stade au soleil unique » attrapé (archCast:true → ${sab68.c} casters — les traits d'hier, nommés)`,
+    sab68.c > 100);
+  globalThis.document = prevDoc;
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

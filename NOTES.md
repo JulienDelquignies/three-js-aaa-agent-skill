@@ -3357,6 +3357,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      stérilité ; instantané → ratés secs ; chaque-jambes-part → fautes) — le CYCLE
      mesure→correction→re-mesure à CHAQUE étage est ce qui a permis de les attraper avant le ship.
 
+106. **Lot 68 : les traits étaient de VRAIES ombres, le « sous terrain » était l'éclairage, le
+     latéral rentre (et le rattrapage retiré).** Trois observations utilisateur (captures MT1
+     0:56-0:59). (a) « DES JOUEURS PASSENT SOUS LE TERRAIN ? » — instrument playmode (os
+     Foot/Toe des 22 rigs, 176 s vivantes : 5 tacles, 2 plongeons, 1 but) : y minimal −0,116 m,
+     zéro épisode — les corps ne s'enfoncent plus. Le vécu était l'ÉCLAIRAGE : pelouse-île sur
+     noir (abords jamais nappés, CLAMPÉS dans l'ombre des tribunes hors frustum) — un corps en
+     touche (Loi 15) posait sur du vide noir. Panneaux LED (0,25 → 1,0) + l'effet de bord de
+     (b) : sans architecture dans la carte, le clamp hors-frustum devient ÉCLAIRÉ. (b) LES
+     TRAITS : pas de l'acné — les VRAIES ombres de l'architecture sous la clé unique (mât =
+     ligne diagonale, TRANSVERSALE en travers de la surface — pile la zone des captures,
+     terminateur de toit au coin). « normalBias ignoré en WebGPU » INFIRMÉ (ShadowNode r185 :
+     bias l.345/374, normalBias l.45137) ; une vraie ombre ne cède à aucun biais — les lots
+     62-63 ne pouvaient qu'amincir. LOI : buildStadium archCast=false — seuls les corps du jeu
+     s'impriment (rig UEFA = pelouse uniforme) ; 0/225 casters au défaut, 208 au sabotage nommé
+     (verify-matchday) ; ~13k sièges quittent la passe d'ombre (gain mobile structurel).
+     (c) LE LATÉRAL OPPOSÉ : mesuré p50 10,4 / p90 22,0 m derrière la médiane — trois causes
+     empilées : poste STROBOSCOPE (_slotT cumulé 12-23 m/s, ancre = ballon brut), marche à
+     2,10 m/s vers un poste à 8 m (économie lot 57), et pas de loi de rentrée. Retenu :
+     bloc.rentre 9 (formation.js — ligne de 3 : z demi + 9 m plus haut, arrières larges côté
+     faible seulement, 3-5-2 = identité, 2 clauses verify-match11) + ANCRE LENTE du tuck
+     (τ = 2 s sim, st._tuckZ ; l'ancre lente en X essayée a fait traîner la ligne — négatif
+     consigné). RÉSULTAT NÉGATIF MAJEUR : rattrapeAtk (6 puis 8) — la marée du bloc au trot a
+     SURALIMENTÉ le siège : A/B 20 × 300 s à 37-39 buts (bande 17-33 crevée) ; décomposé,
+     rattrapeAtk seul = 33, rentre seul = 22 (innocent) → défaut final 12 (la vitesse d'hier),
+     clé-levier documentée. Le vécu réparé SANS lui : isolement du latéral faible p50 12,5 →
+     8,2 m, |z| tenu 18,0 → 10,0, retard 14,3 → 8,4 — et les buts de transition encaissés
+     BAISSENT (10 → 6-7 : la ligne de 3 coupe les contres). ÉQUILIBRE FINAL : 64 tirs / 31 buts
+     (bande OK). Re-fondations d'instruments avec récit : 442v352 en balayage graines 3→5
+     (22/27/38 passes) ; « postes tenus » juge les postes que le moteur SERT (soutien+rentre+z —
+     le chemin legacy comptait le latéral rentré comme déserteur) ; asymétrie de bloc ≥ +1,5
+     (le rentre raccourcit l'arrière attaquant de ~1 m, le sens vit à +2,0) ; conversion
+     gardien = buts/(buts+arrêts) (buts/type-shot mélangeait reprises au numérateur et tirs
+     seuls au dénominateur : 86 % affiché pour 32 % réel) ; une-touche calme sur {1,3,5}.
+     LEÇONS : l'instrument du VÉCU (isolement) ≠ celui du système (retard médiane — criait
+     encore quand le vécu était guéri) ; chercher LE CASTER avant de tourner un biais ; mesurer
+     dans le monde SHIPPÉ (shotRange 20 — le défaut m'a d'abord menti) ; DÉCOMPOSER un lot
+     multi-lois avant de tourner un bouton global ; l'émulation « hier » doit être le sabotage
+     EXACT (rattrapeAtk 99 ≠ ratt 12 d'hier — trois A/B faussés avant de le voir).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

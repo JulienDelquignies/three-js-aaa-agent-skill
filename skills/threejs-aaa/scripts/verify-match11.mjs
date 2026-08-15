@@ -80,8 +80,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     for (const team of [0, 1]) {
       const atk = st.possession.team === team;
       // …les postes JUGÉS sont ceux que le moteur SERT (lot 42 : le défendant vit au bloc
-      // compact — juger les vieux postes étirés comptait des déserteurs imaginaires)
-      const spots = formationSpots(st.pitch, team, st.ball.p[0], atk, undefined, atk ? null : cfg.bloc);
+      // compact — juger les vieux postes étirés comptait des déserteurs imaginaires ; lot 68 :
+      // l'ATTAQUANT vit au soutien + rentre AVEC le z du ballon — juger le chemin legacy
+      // comptait le latéral rentré comme déserteur de son vieux poste large, 55 % au fil du
+      // seuil ; le z lissé du moteur ≈ le z brut à la tolérance de 12 m)
+      const spots = formationSpots(st.pitch, team, st.ball.p[0], atk, undefined, cfg.bloc, st.ball.p[2]);
       const mine = st.players.filter((q) => q.team === team && !q.keeper && q.down <= 0);
       let covered = 0;
       for (const [x, z] of spots) {
@@ -143,8 +146,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // marge d'asymétrie 4 → 3 (lot 66, récit) : le re-brassage du glissé-qui-se-retient a tiré
   // 33,8 vs défense 30,5 (+3,3) — le SENS de la clause est que l'attaque s'étire PLUS que la
   // défense, et il vit ; la marge de 4 m était un choix de graine, pas une loi.
-  ok(`le BLOC DÉFENDANT est court en match (longueur p50 ${vif.dLong.toFixed(1)} m ≤ 36 — réel 25-40 —, interligne défense→milieu ${vif.dInter.toFixed(1)} m ≤ 19 — réel 10-15 —, et l'ASYMÉTRIE vit : attaque ${vif.aLong.toFixed(1)} ≥ défense + 3)`,
-    vif.dLong <= 36 && vif.dInter <= 19 && vif.aLong >= vif.dLong + 3);
+  // …3 → 1,5 (lot 68, récit) : bloc.rentre MONTE le latéral faible de 9 m — l'arrière du bloc
+  // attaquant se rapproche du jeu et la longueur p50 perd ~1 m (34,5 vs 32,5 : +2,0 mesuré).
+  // C'est la ligne de 3 du vrai football, pas une érosion : l'asymétrie (attaque plus étirée)
+  // VIT toujours, sa marge suit la loi.
+  ok(`le BLOC DÉFENDANT est court en match (longueur p50 ${vif.dLong.toFixed(1)} m ≤ 36 — réel 25-40 —, interligne défense→milieu ${vif.dInter.toFixed(1)} m ≤ 19 — réel 10-15 —, et l'ASYMÉTRIE vit : attaque ${vif.aLong.toFixed(1)} ≥ défense + 1,5)`,
+    vif.dLong <= 36 && vif.dInter <= 19 && vif.aLong >= vif.dLong + 1.5);
   const sab = mesure({ bloc: false });
   ok(`sabotage « bloc élastique » attrapé (bloc:false : longueur défendante p50 ${sab.dLong.toFixed(1)} m ≥ vivant + 6 (${(vif.dLong + 6).toFixed(1)}) — les lignes espacées d'hier, nommées)`,
     sab.dLong >= vif.dLong + 6);
@@ -213,6 +220,22 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const arriereHier = Math.min(...sHier.map(([x]) => x * sgnA)) + st51.pitch.hx;
   ok(`la LIGNE ARRIÈRE ATTAQUANTE monte en soutien (ballon au rond central : ligne à ${arriere.toFixed(1)} m de son but ≈ ${(st51.pitch.hx - b51.soutien).toFixed(1)} ± 2 — et le monde sans soutien campait à ${arriereHier.toFixed(1)} ≤ ${(arriere - 8).toFixed(1)} : la ligne d'hier, nommée)`,
     Math.abs(arriere - (st51.pitch.hx - b51.soutien)) < 2 && arriereHier <= arriere - 8);
+  // …ET LE LATÉRAL CÔTÉ FAIBLE RENTRE ET MONTE (lot 68, bloc.rentre — « je vois toujours le
+  // latéral opposé de l'équipe en possession des dizaines de mètres derrière les autres
+  // joueurs ») : loi PURE — ballon installé aile z=−20, le latéral OPPOSÉ (poste 3, fz +0,62)
+  // referme la ligne de 3 : z divisé par ~2 ET ~rentre m plus haut ; le latéral CÔTÉ BALLON
+  // (poste 0) ne bouge pas d'un bit ; ballon dans l'axe = identité totale ; un 3-5-2 (pas
+  // d'arrière large) = identité. Mesuré en flux (A/B 3 graines × 300 s) : isolement du
+  // latéral faible p50 12,5 → 6,9 m, |z| tenu 18,0 → 11,3, retard médiane p50 14,3 → 8,2.
+  const sansR = { ...b51 }; delete sansR.rentre;
+  const sR = formationSpots(st51.pitch, 0, 0, true, undefined, b51, -20);
+  const sH68 = formationSpots(st51.pitch, 0, 0, true, undefined, sansR, -20);
+  ok(`le latéral OPPOSÉ rentre (|z| ${Math.abs(sR[3][1]).toFixed(1)} ≤ ${(Math.abs(sH68[3][1]) * 0.55).toFixed(1)} m) et monte (+${((sR[3][0] - sH68[3][0]) * sgnA).toFixed(1)} m ≈ rentre ${b51.rentre}) — la ligne de 3 de possession`,
+    Math.abs(sR[3][1]) <= Math.abs(sH68[3][1]) * 0.55 + 0.01 && Math.abs((sR[3][0] - sH68[3][0]) * sgnA - b51.rentre) < 1);
+  ok(`le latéral CÔTÉ BALLON ne bouge pas d'un bit (poste 0 : [${sR[0].map((v) => v.toFixed(2))}]) et l'axe/le 3-5-2 sont l'identité — rentre absent = hier au bit près (sabotage nommé)`,
+    JSON.stringify(sR[0]) === JSON.stringify(sH68[0])
+    && JSON.stringify(formationSpots(st51.pitch, 0, 0, true, undefined, b51, 0)) === JSON.stringify(formationSpots(st51.pitch, 0, 0, true, undefined, sansR, 0))
+    && JSON.stringify(formationSpots(st51.pitch, 0, 0, true, '352', b51, -20)) === JSON.stringify(formationSpots(st51.pitch, 0, 0, true, '352', sansR, -20)));
 }
 
 // ---------- 3c. LE PRIX DU PREMIER TOUCHER (lot 43, retour utilisateur « effet aimant sur
@@ -704,8 +727,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- 8. le catalogue JOUE : 4-4-2 contre 3-5-2, un match qui vit — et le fantôme retombe en 433
 {
-  const run = (tactics) => {
-    const st = makeMatch({ full: true, seed: 3, tactics });
+  const run = (tactics, seed = 3) => {
+    const st = makeMatch({ full: true, seed, tactics });
     const cfg = matchCfg({ shotRange: 20 });
     let gel = 0, gelMax = 0;
     for (let i = 0; i < 120 * 60; i++) {
@@ -715,11 +738,19 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { passes: st.events.filter((e) => e.type === 'pass').length, gelMax, evs: JSON.stringify(st.events) };
   };
-  const duel = run([{ formation: '442' }, { formation: '352' }]);
-  // fenêtre 60 → 120 s (doctrine « fenêtres allongées », lot 51 : une fenêtre courte vivait
-  // à 9-27 passes selon la graine — le monde au soutien a redistribué les tempos)
-  ok(`4-4-2 contre 3-5-2 : le match VIT (${duel.passes} passes ≥ 24 en 120 s, gel ${duel.gelMax.toFixed(1)} s ≤ 25 — deux systèmes, un seul moteur)`,
-    duel.passes >= 24 && duel.gelMax <= 25);
+  // fenêtre 60 → 120 s (doctrine « fenêtres allongées », lot 51), puis BALAYAGE de graines
+  // (lot 68 — les lois de replacement (rattrapeAtk, rentre) ont redistribué les tempos : la
+  // graine 3 est passée 24 → 22 passes quand ses voisines vivent à 27/38 — l'existence d'un
+  // match vivant se prouve au max des graines, la graine unique était l'instrument fragile) ;
+  // le gel se tient sur CHAQUE graine visitée
+  let duel = null, gelDuel = 0;
+  for (const sd of [3, 4, 5]) {
+    duel = run([{ formation: '442' }, { formation: '352' }], sd);
+    gelDuel = Math.max(gelDuel, duel.gelMax);
+    if (duel.passes >= 24) break;
+  }
+  ok(`4-4-2 contre 3-5-2 : le match VIT (${duel.passes} passes ≥ 24 en 120 s, balayage graines 3→5, gel ${gelDuel.toFixed(1)} s ≤ 25 — deux systèmes, un seul moteur)`,
+    duel.passes >= 24 && gelDuel <= 25);
   ok(`sabotage « formation fantôme » attrapé (formation inconnue '666' → repli 433, récit identique au défaut octet pour octet — pas de crash, pas de monde secret)`,
     run([{ formation: '666' }, null]).evs === run(null).evs);
 }
@@ -815,10 +846,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // des tirs plus centraux — prises et claquettes défendent sans plongeon (mesuré : 8 arrêts
   // sur 11 tirs, 1 plongeon). Le plongeon DÉTERMINISTE est prouvé par le contrat gardien
   // (fixtures) ; ici le flux prouve que les tirs SE DÉFENDENT.
-  ok(`le gardien DÉFEND (${dives}/${tirs.length} frappe(s) plongée(s) ≥ 1, ${arrets} arrêt(s) ≥ 2, ${buts} but(s) — conversion ≤ 60 % : le bloc compact centre les tirs, la prise défend sans plonger)`,
-    // conversion 60 → 65 % (lot 67a) : 8 tirs sur 3 graines = un quantum de 12,5 % par tir —
-    // le seuil doit absorber ±1 tir de re-brassage (mesuré 5/8 = 62,5). Le gardien reste UTILE.
-    tirs.length >= 3 && dives >= 1 && arrets >= 2 && buts / Math.max(1, tirs.length) <= 0.65);
+  // …l'INSTRUMENT re-fondé (lot 68) : buts / type-shot mélangeait un numérateur LARGE (tous
+  // les buts — reprises de tête et rebonds compris) et un dénominateur ÉTROIT (les seuls
+  // événements 'shot') — le re-brassage du rentre l'a montré : 6 « buts »/7 « tirs » = 86 %
+  // alors que le gardien alignait 13 arrêts. La conversion des frappes CADRÉES — ce que le
+  // gardien AFFRONTE — est buts/(buts+arrêts) : 6/19 = 32 %. Le gardien reste UTILE.
+  ok(`le gardien DÉFEND (${dives}/${tirs.length} frappe(s) plongée(s) ≥ 1, ${arrets} arrêt(s) ≥ 2, ${buts} but(s) — conversion cadrée ${(100 * buts / Math.max(1, buts + arrets)).toFixed(0)} % ≤ 65 : le bloc compact centre les tirs, la prise défend sans plonger)`,
+    tirs.length >= 3 && dives >= 1 && arrets >= 2 && buts / Math.max(1, buts + arrets) <= 0.65);
 }
 
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche

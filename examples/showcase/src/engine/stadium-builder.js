@@ -9,13 +9,27 @@ import { toGeometry } from './meshkit-builder.js';
 // blocks), roofs on columns, and the directors' LOGE: glass front, terrace slab + railing, the club
 // crest on the back wall. Returns colliders for the loge/terrace floors + rails (walkable later) and
 // the vantage points passthrough. One InstancedMesh per stand → tier-5 (~13k seats) stays cheap.
-export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
+// L'ARCHITECTURE NE S'IMPRIME PAS DANS LA LUMIÈRE CLÉ (lot 68 — « il y a encore les traits sur
+// l'écran », captures téléphone, 3e signalement). La clé nocturne est UNE directionnelle : proxy
+// artistique des 4 nappes croisées d'un vrai rig. Or mâts, panneaux, toits, sièges et cages
+// projetaient dedans — des ombres RÉELLES : lignes fines diagonales (poteau de mât), transversale
+// en travers de la surface de but, terminateur de toit sur un coin de pelouse. AUCUN biais ne
+// retire une vraie ombre — les lots 62-63 (texel, map 1024) amincissaient les traits sans pouvoir
+// les tuer, sur tous les backends (le téléphone rend en WebGPU, biais/normalBias y sont bien
+// consommés — vérifié dans ShadowNode). Sous un vrai rig UEFA la pelouse est UNIFORME : aucune
+// structure ne raye le jeu, seuls les CORPS (joueurs, ballon) posent leur ombre de contact.
+// Bonus mobile : ~13k sièges instanciés + toits quittent la passe d'ombre à chaque frame.
+// Effet de bord voulu : hors frustum d'ombre (calé pelouse), l'échantillon clampé ne lit plus
+// l'ombre des tribunes → les abords redeviennent ÉCLAIRÉS par la clé (le « vide noir » où un
+// corps en touche semblait passer sous le terrain, capture lot 68). archCast:true = le stade au
+// soleil unique d'hier (sabotage nommé, verify-stadium).
+export function buildStadium(model, theme, { at = [0, 0, 0], archCast = false } = {}) {
   const group = new THREE.Group(); group.position.set(at[0], at[1], at[2]);
   const disposables = [], colliders = [];
   const mat = (o) => { const m = new THREE.MeshStandardNodeMaterial(o); disposables.push(m); return m; };
   const box = (c, h, m, solid = false) => {
     const g = new THREE.BoxGeometry(h[0] * 2, h[1] * 2, h[2] * 2); disposables.push(g);
-    const mesh = new THREE.Mesh(g, m); mesh.position.set(c[0], c[1], c[2]); mesh.castShadow = mesh.receiveShadow = true; group.add(mesh);
+    const mesh = new THREE.Mesh(g, m); mesh.position.set(c[0], c[1], c[2]); mesh.castShadow = archCast; mesh.receiveShadow = true; group.add(mesh);
     if (solid) colliders.push({ pos: [at[0] + c[0], at[1] + c[1], at[2] + c[2]], half: [...h] });
     return mesh;
   };
@@ -103,7 +117,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
       }
     }
     seats.count = n; seats.instanceMatrix.needsUpdate = true; seats.instanceColor.needsUpdate = true;
-    seats.castShadow = true; group.add(seats); disposables.push(seats);
+    seats.castShadow = archCast; group.add(seats); disposables.push(seats);
     if (s.roof) {                                                                              // roof slab on back columns
       const top = ((s.deck2 ? s.rows + 2 + s.deck2 : s.rows) + 1) * model.rowH + 3;
       const back = inner + (s.deck2 ? s.rows + 2 + s.deck2 : s.rows) * model.rowD + 0.6;
@@ -121,8 +135,8 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
     const gg = new THREE.Group(); gg.position.set(gl.x, 0, 0);
     const post = new THREE.CylinderGeometry(0.06, 0.06, gl.h, 10), bar = new THREE.CylinderGeometry(0.06, 0.06, gl.w + 0.12, 10);
     disposables.push(post, bar);
-    for (const e of [-1, 1]) { const p = new THREE.Mesh(post, white); p.position.set(0, gl.h / 2, e * gl.w / 2); p.castShadow = true; gg.add(p); }
-    const cb = new THREE.Mesh(bar, white); cb.rotation.x = Math.PI / 2; cb.position.set(0, gl.h, 0); cb.castShadow = true; gg.add(cb);
+    for (const e of [-1, 1]) { const p = new THREE.Mesh(post, white); p.position.set(0, gl.h / 2, e * gl.w / 2); p.castShadow = archCast; gg.add(p); }
+    const cb = new THREE.Mesh(bar, white); cb.rotation.x = Math.PI / 2; cb.position.set(0, gl.h, 0); cb.castShadow = archCast; gg.add(cb);
     const bx = -gl.sign * gl.depth;                                   // net back x (local)
     const verts = [];
     const seg = (a, c) => verts.push(a[0], a[1], a[2], c[0], c[1], c[2]);
@@ -142,13 +156,16 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
     stex.wrapS = THREE.RepeatWrapping; disposables.push(stex);
     for (const bd of model.boards) {
       const dx = bd.b[0] - bd.a[0], dz = bd.b[1] - bd.a[1]; const len = Math.hypot(dx, dz);
-      const m2 = mat({ map: stex, roughness: 0.6, emissive: 0xffffff, emissiveMap: stex, emissiveIntensity: 0.25 });
+      // LED la nuit (lot 68) : 0,25 laissait le cadre publicitaire dans le noir — le vrai stade
+      // nocturne est CEINT de panneaux qui brillent ; c'est eux qui tiennent lisible un corps
+      // sorti pour la touche (le « vide noir » des captures). 1,0 : lumineux, sous le bloom (1,6).
+      const m2 = mat({ map: stex, roughness: 0.6, emissive: 0xffffff, emissiveMap: stex, emissiveIntensity: 1.0 });
       const geo = new THREE.BoxGeometry(len, bd.h, 0.08); disposables.push(geo);
       const mesh = new THREE.Mesh(geo, m2);
       mesh.position.set((bd.a[0] + bd.b[0]) / 2, bd.h / 2 + 0.02, (bd.a[1] + bd.b[1]) / 2);
       mesh.rotation.y = Math.abs(dz) > Math.abs(dx) ? Math.PI / 2 : 0;
       mesh.rotation.x = (bd.face || 1) * -0.12 * (Math.abs(dz) > Math.abs(dx) ? 0 : 1);
-      mesh.castShadow = true; group.add(mesh);
+      mesh.castShadow = archCast; group.add(mesh);
       colliders.push({ pos: [at[0] + mesh.position.x, at[1] + bd.h / 2, at[2] + mesh.position.z], half: Math.abs(dz) > Math.abs(dx) ? [0.05, bd.h / 2, len / 2] : [len / 2, bd.h / 2, 0.05] });
     }
   }
@@ -175,7 +192,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   if (model.lights?.type === 'pylon') {                              // pylônes champêtres/L2
     for (const p of model.lights.at) {
       const pole = new THREE.CylinderGeometry(0.18, 0.3, model.lights.h, 8); disposables.push(pole);
-      const pm = new THREE.Mesh(pole, concrete); pm.position.set(p[0], model.lights.h / 2, p[1]); pm.castShadow = true; group.add(pm);
+      const pm = new THREE.Mesh(pole, concrete); pm.position.set(p[0], model.lights.h / 2, p[1]); pm.castShadow = archCast; group.add(pm);
       const head = mat({ color: 0xffffff, emissive: 0xf4f8ff, emissiveIntensity: 3.2, roughness: 0.3 });
       const hg = new THREE.BoxGeometry(2.4, 1.5, 0.3); disposables.push(hg);
       const hm = new THREE.Mesh(hg, head); hm.position.set(p[0] * 0.96, model.lights.h + 0.7, p[1] * 0.96);
@@ -234,6 +251,8 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
   const kitCache = {};
   for (const it of lg.items || []) {
     const sub = buildFurnitureItem(it, kitCache, theme);
+    // le kit garde SA loi (les intérieurs carrière vivent de leurs ombres) — ici, l'architecture
+    if (!archCast) sub.traverse((o) => { if (o.isMesh) o.castShadow = false; });
     sub.position.set(it.x, lg.floorY, it.z); group.add(sub);
     colliders.push({ pos: [at[0] + it.x, at[1] + lg.floorY + it.h / 2, at[2] + it.z], half: [it.w / 2, it.h / 2, it.d / 2] });
   }
@@ -259,7 +278,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
       const circ = [];
       for (let i = 0; i < 12; i++) { const a2 = (i / 12) * Math.PI * 2; circ.push([Math.cos(a2) * sig.tube, Math.sin(a2) * sig.tube]); }
       const arch = new THREE.Mesh(toGeometry(sweep(circ, path)), mat({ color: 0xeef1f4, roughness: 0.35, metalness: 0.55 }));
-      arch.castShadow = true; group.add(arch); disposables.push(arch.geometry);
+      arch.castShadow = archCast; group.add(arch); disposables.push(arch.geometry);
       for (const sx of [-1, 1]) colliders.push({ pos: [sx * sig.span * 0.48, 2, sig.z], half: [2, 2, 2] });
     }
     if (sig.kind === 'nervures') {                              // the concrete ribs wrapping the rim
@@ -279,7 +298,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0] } = {}) {
         im.setMatrixAt(k, m4);
         colliders.push({ pos: [r.x, sig.top / 2, r.z], half: [0.6, sig.top / 2, 1.0], yaw: r.yaw });
       });
-      im.instanceMatrix.needsUpdate = true; im.castShadow = true;
+      im.instanceMatrix.needsUpdate = true; im.castShadow = archCast;
       group.add(im); disposables.push(im);
     }
     if (sig.kind === 'bol') {                                   // corner banks close the bowl

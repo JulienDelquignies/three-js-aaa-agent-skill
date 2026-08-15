@@ -180,6 +180,13 @@ export const MATCH = {
                           // manRun: 3,5, fenetre: 5 }. Mesuré avant : 32 % du off-ball en course,
                           // 11/20 corps lancés p50 (p90 18) — la cour de récréation. false : la
                           // fourmilière d'hier (sabotage nommé).
+                          // …rattrapeAtk (lot 68) : LEVIER de rattrapage en attaque placée,
+                          // NEUTRE au défaut (12, symétrique défense). Essayé en loi (6 puis 8)
+                          // contre le latéral-flâneur : la marée du bloc au trot suralimentait
+                          // le siège (décomposé 20 graines : rattrapeAtk seul 33 buts, bande
+                          // 17-33 crevée à 37-39 avec rentre ; rentre seul 22 — l'innocent).
+                          // La guérison du transit est l'ancre lente du tuck (poste stable) —
+                          // résultat négatif consigné ; la clé reste pour un style aval.
   amortiSpin: true,       // L'AMORTI AMORTIT AUSSI LA ROTATION (11c11, st.full — lot 54, audit
                           // télémétrie) : les impulsions d'amorti tuaient v en laissant w ORPHELIN
                           // — mesuré au tick : 65-70 rad/s sur un ballon à 1,3 m/s, et la friction
@@ -218,7 +225,12 @@ export const MATCH = {
                           // LIBRE avec son résiduel, le récupérateur va le chercher. Mesuré
                           // avant : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s possédé
                           // instantanément. false : l'aimant d'hier (sabotage nommé).
-  bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42 },
+  bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
+                          // rentre (lot 68) : en possession, le latéral CÔTÉ FAIBLE referme la
+                          // ligne de 3 — il rentre (z demi) et monte de ~9 m vers le milieu
+                          // (mesuré avant : p50 10,4 / p90 22,0 m derrière la médiane d'équipe,
+                          // « des dizaines de mètres derrière les autres » — retour utilisateur).
+                          // Absent : le latéral abandonné d'hier (sabotage nommé, formation.js).
                           // LE BLOC COMPACT (11c11, st.full — lot 42, retour utilisateur « les
                           // lignes sont trop espacées ») : l'équipe SANS ballon est chaînée au
                           // ballon — sa ligne défensive tient `ligne` m derrière lui (elle MONTE
