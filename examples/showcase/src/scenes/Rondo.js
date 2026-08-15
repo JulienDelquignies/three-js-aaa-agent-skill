@@ -390,7 +390,9 @@ export class Rondo {
       this.controls = controls;
     }
     // AAA post chain, built here because it needs the real camera. runner.js adopts scene.postfx.
-    this.pipeline = createRenderPipeline(this.renderer, this.scene, cam, { tier: this._tier, sun: this.night?.sun });
+    // ?dither=0 : la sortie nue (l'A/B téléphone du banding — lot 71)
+    const q2 = new URLSearchParams(location.search);
+    this.pipeline = createRenderPipeline(this.renderer, this.scene, cam, { tier: this._tier, sun: this.night?.sun, dither: q2.get('dither') !== '0' });
     this.postfx = this.pipeline;
     if (this._reports) this._reports.pipeline = checkRenderPipeline(this.pipeline, this.renderer);
     window.__rondoReport = this._reports;

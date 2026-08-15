@@ -398,6 +398,9 @@ function receive(st, id, cfg = RONDO) {
         t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: 'any', surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
     }
   } else {
+    // LE CÔNE VAUT AUSSI POUR L'ADVERSAIRE (lot 71, contrat zéro-contact-fantôme) : une
+    // interception/récupération est une touche de PIED — dos = le ballon file, le vol continue
+    if (st.full && cfg.priseCone !== false && !dansCone(p.yaw, p.p[0], p.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100)) { deny(st, 'controle-dos'); return; }
     // LA CAUSE DIT LE GESTE : une interception prend un ballon en vol, un tacle prend le ballon d'un
     // porteur (duel debout ou glissade — la clause 10 de checkRondo exige l'événement physique
     // correspondant), une récupération ramasse un ballon LIBRE au sol — trois football différents,

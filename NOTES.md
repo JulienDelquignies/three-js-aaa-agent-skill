@@ -3455,6 +3455,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (6 % dos, n=68). La volumétrie a plié deux fois (rondo-sim 1253 → 1248 par compression
      de commentaires, match-sim déjà au plafond).
 
+109. **Lot 71 : le banding dithéré, le faux-cull innocenté, le contrat zéro-contact étendu aux
+     turnovers.** Trois demandes utilisateur (captures 23:02-23:03 + « on doit arriver à 0 % de
+     contrôle sans toucher un membre non ? »). (a) LES TRAITS : fins, horizontaux, parfaitement
+     RÉGULIERS et périodiques À L'ÉCRAN sur les deux captures = le COLOR BANDING de la
+     quantification 8 bits du dégradé vertical d'éclairage de la pelouse (OLED + DPR 1 le
+     crient ; l'écran de bureau le cache) — ni une ombre (lot 68), ni du tearing (lot 69) :
+     la TROISIÈME espèce de « trait », chacune avec sa physique. Remède du métier : ±½ niveau
+     d'interleaved gradient noise (Jimenez) AVANT quantification, en bout de chaîne
+     (render-pipeline, tous tiers, coût arithmétique nul), déclaré au contrat (declared/passes)
+     et débrayable ?dither=0 — le sabotage nommé ET l'A/B téléphone. (b) JOUEURS
+     INVISIBLES/COUPÉS : l'hypothèse frustum-culling des SkinnedMesh (boundings de bind pose,
+     frustum portrait étroit) était belle — INFIRMÉE par l'instrument : 5775 corps-dans-le-champ
+     échantillonnés en 412×915, ZÉRO faux-cull, et frustumCulled=false déjà posé partout
+     (154/154 meshes — squad.js l'avait fait). Le phénomène rejoint la famille présentation-
+     sous-frame-longue du lot 69 (une bande de tuiles qui montre la frame N−1 sans le joueur =
+     coupé en 2/invisible) — le remède reste la frame courte (lots 68-69) + le retest téléphone
+     datera avec ?fps=1. (c) LE CONTRAT ZÉRO : le cône avant étendu aux DEUX chemins de prise
+     restants — la branche turnover de receive() (interception/récupération/tackle, rondo-sim)
+     et la prise de turnover du « prix du premier toucher » (rondo.js l.645, la SEULE possession
+     hors cône qui restait) ; hors cône : le ballon VIT (le chemin hors-portée déjà prouvé du
+     lot 43), refus 'controle-dos'. Mesuré après : CONTRÔLES 0 % dos (p90 80°), prises 4 → 2 %
+     (le résiduel = ramassages de REMISE à la main, légitimes), réceptions p50 2°/p90 46°
+     (4 cas « > 100° » = biais d'instrument post-settle). Rondo et réduit AU BIT (empreinte).
+     Bancs 62/40/84 verts. La dette #73 (aimant du porté, touches conduite 11 % dos) reste le
+     prochain étage du contact.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

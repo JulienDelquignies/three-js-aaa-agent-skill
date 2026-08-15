@@ -6,6 +6,7 @@ import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
 import { tac, axe } from './tactics.js';
 import { movePlayers, separatePlayers } from './movement.js';
+import { dansCone } from './dribble.js';
 import { RONDO } from './rondo-config.js';
 export { RONDO };
 
@@ -642,7 +643,14 @@ function turnover(st, carrier, why, cfg = null) {
   // est À PORTÉE DE JEU du ballon — sa première touche l'amortit (résiduel ~20 %, comme les
   // contrôles attaquants qui gardent 5-18 %) et se NOMME au registre (événement 'control').
   // Hors portée : le ballon VIT, il continue sa course et le gagnant va le chercher.
-  if (w && w.down <= 0 && dW <= RONDO.receiveRadius) {
+  // …ET LE CÔNE AVANT VAUT POUR LA PRISE DE TURNOVER (lot 71 — le contrat « zéro contrôle sans
+  // membre ») : dos au ballon, l'amorti n'existe pas — le ballon VIT (le chemin hors-portée
+  // ci-dessous, déjà prouvé) et le gagnant se retourne pour aller le chercher. st.full : le
+  // rondo d'hier au bit près.
+  const coneOk = !st.full || cfg?.priseCone === false
+    || (w && dansCone(w.yaw, w.p[0], w.p[2], st.ball.p[0], st.ball.p[2], cfg?.priseCone ?? 100));
+  if (!coneOk && st.deny) st.deny['controle-dos'] = (st.deny['controle-dos'] ?? 0) + 1;
+  if (w && w.down <= 0 && dW <= RONDO.receiveRadius && coneOk) {
     // LE PRIX DU PREMIER TOUCHER (lot 43, cfg.touchePrix — match) : un ballon RAPIDE ne se
     // possède pas d'un claquement de doigts. Mesuré avant (retour utilisateur « effet aimant
     // sur les longs ballons ») : 14 % des prises de turnover au-delà de 10 m/s, un dégagement

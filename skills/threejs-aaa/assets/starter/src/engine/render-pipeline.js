@@ -16,7 +16,7 @@
 //   6. Tonemap once, at the end, with AgX (or ACES).
 
 import * as THREE from 'three/webgpu';
-import { pass, mrt, output, transformedNormalView, velocity, metalness, roughness, vec3, vec4, renderOutput } from 'three/tsl';
+import { pass, mrt, output, transformedNormalView, velocity, metalness, roughness, vec3, vec4, renderOutput, screenCoordinate, fract } from 'three/tsl';
 import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { ao } from 'three/addons/tsl/display/GTAONode.js';
@@ -58,7 +58,7 @@ const usableSun = (l) => !!l && (l.isDirectionalLight === true || l.isPointLight
  * issue instead of an effect nobody notices is missing.
  */
 function buildGraph(renderer, scene, camera, state) {
-  const cfg = TIERS[state.tier], passes = {}, declared = cfg.bloom === false ? [] : ['bloom'];
+  const cfg = { ...TIERS[state.tier], dither: state.dither }, passes = {}, declared = cfg.bloom === false ? [] : ['bloom'];
 
   // MSAA must die BEFORE the pass is constructed: the sample count is baked into its render target.
   // …and it dies on the FXAA tier too (lot 62 — « toujours saccadé » au téléphone) : Renderer.js
@@ -167,6 +167,20 @@ function buildGraph(renderer, scene, camera, state) {
     ldr = passes.lut;
   }
 
+  // LE DITHER DE SORTIE (lot 71 — « toujours des traits », captures téléphone) : des bandes
+  // fines HORIZONTALES parfaitement régulières et périodiques À L'ÉCRAN = le COLOR BANDING de
+  // la quantification 8 bits du dégradé vertical d'éclairage de la pelouse — criant sur OLED
+  // à DPR 1, invisible sur un écran de bureau. Ni une ombre (lot 68) ni du tearing : un motif
+  // d'espace écran. Le remède du métier : ±½ niveau de bruit AVANT la quantification —
+  // interleaved gradient noise (Jimenez), sans structure visible, coût arithmétique nul.
+  // dither:false (?dither=0) = la sortie nue d'hier — le sabotage nommé ET l'A/B téléphone.
+  if (cfg.dither !== false) {
+    declared.push('dither');
+    const ign = fract(fract(screenCoordinate.x.mul(0.06711056).add(screenCoordinate.y.mul(0.00583715))).mul(52.9829189));
+    ldr = ldr.add(vec4(vec3(ign.sub(0.5).mul(1 / 255)), 0));
+    passes.dither = ldr;
+  }
+
   return { scenePass, passes, declared, outputNode: ldr, toneMapping };
 }
 
@@ -176,14 +190,14 @@ function buildGraph(renderer, scene, camera, state) {
  *
  * @param {{tier?:'low'|'high'|'ultra', sun?:THREE.Light, lut?:{texture:THREE.Data3DTexture,size?:number,intensity?:number}, dof?:object}} [options]
  */
-export function createRenderPipeline(renderer, scene, camera, { tier = 'high', sun = null, lut = null, dof: dofOptions = null } = {}) {
+export function createRenderPipeline(renderer, scene, camera, { tier = 'high', sun = null, lut = null, dof: dofOptions = null, dither = true } = {}) {
   const Pipeline = THREE.RenderPipeline ?? THREE.PostProcessing; // r185 renamed PostProcessing → RenderPipeline
   const postProcessing = new Pipeline(renderer);
   // The pipeline applies renderOutput() itself when this is true — with our own explicit tonemap in
   // the graph that would tonemap the image TWICE (washed-out, crushed blacks). Ours is the only one.
   postProcessing.outputColorTransform = false;
 
-  const state = { tier: TIERS[tier] ? tier : 'high', sun, lut, dof: dofOptions };
+  const state = { tier: TIERS[tier] ? tier : 'high', sun, lut, dof: dofOptions, dither };
   const api = { postProcessing, passes: {}, declared: [], tier: state.tier, toneMapping: THREE.NoToneMapping };
   const free = () => { for (const p of Object.values(api.passes)) p?.dispose?.(); api.scenePass?.dispose?.(); };
 
