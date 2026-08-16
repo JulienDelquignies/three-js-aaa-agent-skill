@@ -482,7 +482,7 @@ export class Rondo {
       : this.matchMode ? (narrow ? 17 : 20) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
     cam.fov = this.matchMode ? (narrow ? 56 : 50) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
     cam.position.set(0, this.fullMode ? 40 : this.matchMode ? 19 : 8.5 - (narrow ? 1.2 : 0), -back);
-    this._camBack = back;
+    this._camBack = back; this._camH = cam.position.y;
     cam.lookAt(0, 1, 0);
     this.cam = cam;
     if (controls) {
@@ -771,20 +771,25 @@ export class Rondo {
     this._look.z += (b[2] - this._look.z) * Math.min(1, dt * 2.4);
     this._look.y += (1 - this._look.y) * Math.min(1, dt * 3);
     const px = this.cam.position.x + (targetX * 0.55 - this.cam.position.x) * Math.min(1, dt * 1.5);
-    // LE PLANCHER D'ANGLE (lot 80 — « joueurs invisibles » encore : la régie passait au ZÉNITH
-    // quand le jeu venait à la touche côté caméra — Δz 8 m sous 40 m de haut = plongée à ~79°,
-    // des têtes écrasées de 4 px, capture au flagrant). Une vraie régie garde son RASANT : si
-    // la distance horizontale au point regardé tombe sous h/tan(55°), la caméra RECULE le long
-    // de z, lissée comme le reste du travelling. ?camfloor=0 : le zénith d'hier, sabotage nommé.
-    let bz = -this._camBack;
-    if (this._camFloor !== false) {
-      const dMin = this.cam.position.y / Math.tan(THREE.MathUtils.degToRad(55));
-      const dx = px - this._look.x;
-      const need = Math.sqrt(Math.max(0, dMin * dMin - dx * dx));
-      if (Math.abs(bz - this._look.z) < need) bz = this._look.z - need;
+    // LE RAIL DE RÉGIE (lot 80b — « joueurs invisibles » : la régie passait au ZÉNITH quand le
+    // jeu venait à la touche côté caméra — plongée ~79°, un corps debout n'y projette que ses
+    // ÉPAULES : têtes de 4 px). Ni reculer (80 : cadre élargi = 60 → 27 fps mesurés ET corps
+    // minuscules), ni descendre à z fixe (le TOIT de la tribune main — slab à 20,1 m, arête
+    // avant z=−39 — bouche le cadre dès y<31, mesuré en capture). La régie DESCEND ET AVANCE
+    // sur un rail qui passe 50 cm devant l'arête du toit : (camH, −back) → (12 m, −back+5),
+    // la grue de bord de terrain au-dessus des panneaux. h = dH·tan(55°) pilote la descente,
+    // z = rail(h) RIGIDE (une seule variable lissée : jamais hors rail, jamais dans le béton).
+    // Angle ET distance s'améliorent ensemble : taille apparente ×3,5 au point bas vs zénith.
+    // ?camfloor=0 : le zénith d'hier, sabotage nommé.
+    let hWant = this._camH ?? this.cam.position.y;
+    if (this._camFloor !== false && this._camH && this.fullMode) {
+      const dH = Math.hypot(px - this._look.x, this.cam.position.z - this._look.z);
+      hWant = Math.max(Math.min(12, this._camH), Math.min(this._camH, dH * Math.tan(THREE.MathUtils.degToRad(55))));
     }
-    const pz = this.cam.position.z + (bz - this.cam.position.z) * Math.min(1, dt * 1.5);
-    this.cam.position.set(px, this.cam.position.y, pz);
+    const py = this.cam.position.y + (hWant - this.cam.position.y) * Math.min(1, dt * 1.5);
+    const pz = this.fullMode && this._camH > 12
+      ? -this._camBack + 5 * (this._camH - py) / (this._camH - 12) : -this._camBack;
+    this.cam.position.set(px, py, pz);
     if (this.matchMode) {
       if (this._fovBase == null) this._fovBase = this.cam.fov;
       const lastThird = Math.abs(b[0]) > this.state.pitch.hx - this.state.pitch.dims.box.depth - 3;

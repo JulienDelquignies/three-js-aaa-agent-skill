@@ -3723,6 +3723,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      zénith de régie) — un même mot utilisateur ≠ une même cause, TOUJOURS re-diagnostiquer ;
      et le cadrage est une LOI du moteur comme les autres : bornée, injectable, sabotable.
 
+120. **Lot 80b : le recul du lot 80 était le MAUVAIS remède — la régie descend ET avance
+     sur un RAIL qui contourne le toit de la tribune.** Les captures utilisateur (19:01) ont
+     jugé le lot 80 : 27 fps (60 avant), CPU 15,7 ms (9,9 avant), et des joueurs minuscules
+     pixelisés — RECULER élargit le cadre (toute la tribune entre dans le champ = frame
+     chère) ET rétrécit les corps : le remède aggravait LES DEUX symptômes qu'il visait.
+     Premier jet 80b (descendre à z fixe) : la capture playmode a montré les 2/3 du cadre
+     bouchés par du gris — le TOIT de la tribune main (slab à 20,1 m, arête avant z=−39,
+     grandbol 18+17 rangs) : depuis z=−42, voir la touche proche par-dessus l'arête impose
+     y≥31,6 m, soit ~76° de plongée — le zénith géométriquement INCONTOURNABLE à z fixe.
+     LA LOI (Rondo._broadcast) : le rail de régie (camH, −back)→(12 m, −back+5) passe 50 cm
+     devant l'arête du toit ; h = dH·tan(55°) pilote la descente, z = rail(h) RIGIDE — une
+     seule variable lissée, la caméra ne quitte jamais le rail (railErr 0 sur 14 400 frames
+     rejouées, seed 3) ; plein format seul (fullMode), ?camfloor=0 = zénith d'hier vérifié
+     (y 40 constant, z −42 constant). Mesuré : plongée max 60,0° (79° hier), yMin 18,3,
+     z∈[−42, −38,1], et la capture au moment touche-proche : zéro béton, corps ~×3, cadre
+     serré quasi sans tribunes (la frame la moins chère). Physique de l'image : à plongée θ
+     et distance d, la taille apparente ∝ (1,8·cosθ + 0,5·sinθ)/d — descendre-avancer
+     améliore θ ET d ensemble (×3,5 au point bas vs zénith), reculer dégrade d pour
+     améliorer θ : perdant par construction. Leçons : vérifier le remède SUR LE SYMPTÔME
+     (le lot 80 avait validé l'angle, pas la taille des corps ni la frame) ; et la caméra vit
+     dans la GÉOMÉTRIE du stade — une loi de cadrage se vérifie contre les occlusions
+     (toit, façade, panneaux), pas seulement contre un angle cible.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
