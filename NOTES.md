@@ -3684,6 +3684,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      point de filature transforme le même servo en jockey ; chaque sabotage vieillit avec le
      monde : l'émulation d'hier se met à jour à chaque loi nouvelle.
 
+118. **Lot 79 : le poids des notes aux occasions — soldé PAR ÉMERGENCE, zéro ligne de moteur.**
+     La dette du lot 64 : après la physique honnête du rebond, l'élite ne dominait plus les
+     TIRS (25:26 et 25:28 sur 2×10 graines — la clause s'était repliée sur le territoire, et
+     la dette désignait deux fils : « la chasse doit favoriser pace, le premier toucher sous
+     pression control »). RE-MESURE D'ABORD (la doctrine) : les deux fils étaient DÉJÀ câblés
+     (topF/accelF dans movement, controlF au contrôle-manqué et au couple) — et dans le monde
+     des lots 76-78, la mesure historique refaite donne élite **69 % des tirs** sur les 10
+     graines du banc, **66 %** sur 10 fraîches (buts 8:2 et 3:1, possession 57-58 % stable).
+     Les lots récents ont fait le travail : la conduite LIBRE du lot 76 a rendu la chasse au
+     ballon vif omniprésente (et c'est pace qui la court), le couple du lot 77 fait frapper
+     ceux qui savent (controlF gradue l'enveloppe), le contain du 78 fait des duels un métier.
+     Fait : AUCUN mécanisme ajouté — la clause du banc attributes resserrée (le témoin
+     redevient CONTRAT : part de tirs élite ≥ 58 %, mesurée 60-69 selon les runs), la clause
+     territoire conservée. verify-attributes 14/0. Leçon (la plus économe du projet) : une
+     dette se RE-MESURE avant de se payer — trois lots de flux peuvent la solder mieux qu'une
+     loi neuve ; et un banc hors batterie habituelle (attributes) se relit à chaque virage de
+     flux, sinon ses témoins vieillissent en silence.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

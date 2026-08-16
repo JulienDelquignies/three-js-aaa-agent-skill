@@ -93,8 +93,15 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // convergent là où 50 tirs tirent au sort). Tirs et score restent affichés en témoins ; le
   // POIDS des notes aux occasions est une dette nommée (la chasse doit favoriser pace, le
   // premier toucher sous pression control).
-  ok(`l'élite domine le TERRITOIRE (possession ${(100 * poss[0] / Math.max(1, poss[0] + poss[1])).toFixed(1)} % ≥ 54 — témoins : ${tirs[0]} tirs contre ${tirs[1]}, score ${scores[0]}:${scores[1]})`,
+  ok(`l'élite domine le TERRITOIRE (possession ${(100 * poss[0] / Math.max(1, poss[0] + poss[1])).toFixed(1)} % ≥ 54 — témoins : score ${scores[0]}:${scores[1]})`,
     poss[0] / Math.max(1, poss[0] + poss[1]) >= 0.54);
+  // …ET LES OCCASIONS (dette du lot 64 SOLDÉE PAR ÉMERGENCE au lot 79) : dans le monde des
+  // lots 76-78 — conduite LIBRE (la chasse au ballon vif, que pace pilote via topF/accelF),
+  // premier toucher sous controlF, frappes du couple — l'élite domine les tirs 69 % sur les
+  // 10 graines du banc ET 66 % sur 10 fraîches (historique : 49 %/47 %, la clause s'était
+  // repliée au territoire). Le témoin redevient CONTRAT ; aucun mécanisme ajouté.
+  ok(`l'élite domine les OCCASIONS (${tirs[0]} tirs contre ${tirs[1]} — part élite ${(100 * tirs[0] / Math.max(1, tirs[0] + tirs[1])).toFixed(0)} % ≥ 58 : pace chasse, control garde, le couple frappe — la dette du lot 64, soldée par émergence)`,
+    tirs[0] / Math.max(1, tirs[0] + tirs[1]) >= 0.58);
   ok(`l'élite EXÉCUTE mieux (déviation de départ ${mean(dev[0]).toFixed(1)}° contre ${mean(dev[1]).toFixed(1)}° sur ${dev[0].length}+${dev[1].length} passes — l'écart est la note, pas un hasard)`,
     dev[0].length >= 20 && dev[1].length >= 20 && mean(dev[1]) > mean(dev[0]) + 0.8);
   // …mais la note est un ACCENT : l'équipe faible joue encore au football (pas un 15-0 d'arcade)
