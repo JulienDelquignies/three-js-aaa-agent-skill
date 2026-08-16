@@ -3660,6 +3660,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      calibration → clés de FORMAT (holdCalmFull) quand les mondes divergent ; l'attribut
      (controlF) gradue l'enveloppe du geste, pas la décision.
 
+117. **Lot 78 : le contain — le press file au lieu de percuter.** La dette #68 (« la
+     charge-derrière trop fréquente ») re-mesurée dans le monde des lots 76-77 : la FAUTE
+     arbitrale était morte toute seule (0 sur 4×180 s — les flux ont changé les situations),
+     mais le PERCUTAGE visuel demeurait : 23 % des images de poursuite dans le dos en
+     SURVITESSE d'entrée (~27 s de bélier par match) — le poursuivant courait sur la POSITION
+     du porteur et lui rentrait dedans. C'était le vécu de la dette, et c'était la dette 67c
+     (« contain du press ») en un chantier. LA LOI (cfg.contain, st.full, match-sim) : dans le
+     dos d'un porteur lancé (v > 1,5, dot > 0,4, d < 2,2), la cible du press devient le point
+     de FILATURE (0,9 m derrière lui SUR sa course — une cible qui recule avec lui : le servo
+     de mouvement fait le jockey naturellement) ; le duel se joue à distance de tacle/poke.
+     L'AXE DE RÔLE press module la distance (× 1,25 − 0,5·press : récupérateur 0,95 au
+     contact, meneur 0,25 contient) — le rôle gradue la loi, pas de branche. Résultat :
+     bélier ÷5 (1 605 → 319 images), poursuites collées ÷3,7, les duels d'épaule VIVENT (14),
+     A/B 59 tirs / 29 buts (bande tenue). Sabotage contain:false : 750 images contre 106 —
+     la cible au corps, nommée. Une re-fondation en chemin (doctrine lot 77 réappliquée) :
+     le sabotage « statue qui frappe » (strideStrike:false) devait émuler le monde d'hier EN
+     ENTIER (+ frappeConduite:false) — le couple frappe lancé sans strideStrike et le pool
+     saboté ne retombait plus (2,01 → 1,57 une fois l'émulation exacte). Batterie 68/84/40/
+     8/14/88/9, zéro rouge, empreintes bit-près. Leçons : re-mesurer une dette AVANT de la
+     payer (la faute avait disparu, le vécu restait — le chantier réel était le mouvement,
+     pas l'arbitre) ; une cible de poursuite posée SUR le corps est un bélier — viser le
+     point de filature transforme le même servo en jockey ; chaque sabotage vieillit avec le
+     monde : l'émulation d'hier se met à jour à chaque loi nouvelle.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

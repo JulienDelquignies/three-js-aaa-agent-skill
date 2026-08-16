@@ -442,12 +442,10 @@ function assignMatchJobs(st, cfg) {
   const own = pitch.ownGoal(atk === 0 ? 1 : 0);                    // le but que la défense protège
   void own;
 
-  // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS. Sans porteur ni receveur vivant
-  // (dégagement, claquette, contrôle manqué), la formation l'ORBITAIT : les couloirs suivaient
-  // l'ancre à offsets fixes et le press visait le point où le ballon N'ÉTAIT DÉJÀ PLUS — mesuré :
-  // 14 épisodes ≥ 0,7 s de ballon à > 3 m de tout corps (jusqu'à 2,7 s et 13,8 m de solitude).
-  // Le plus proche de chaque camp court à l'INTERCEPTION : une mène de poursuite (~0,7 s de
-  // route, bornée au terrain), re-résolue à chaque image — elle converge quand le ballon ralentit.
+  // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS. Sans porteur ni receveur vivant, la
+  // formation l'ORBITAIT (14 épisodes ≥ 0,7 s de ballon à > 3 m de tout corps mesurés). Le
+  // plus proche de chaque camp court à l'INTERCEPTION : mène ~0,7 s bornée au terrain,
+  // re-résolue chaque image — elle converge quand le ballon ralentit.
   const bSpd = Math.hypot(st.ball.v[0], st.ball.v[2]);
   const freeBall = cfg.chaseLoose !== false && !carrier && (st.phase === 'loose' || !st.pass || st.pass.to < 0);
   const leadK = Math.min(6, bSpd * 0.7);
@@ -473,14 +471,11 @@ function assignMatchJobs(st, cfg) {
   for (const p of attackers) {
     if (carrier && p.id === carrier.id) {
       p.job = 'carry';
-      // LA CONDUITE SERRÉE PAR DÉFAUT : la touche pleine (régime du rondo) ne se sert qu'en
-      // rupture NOMMÉE (burst) — en croisière on garde le ballon sous la semelle (touchF 0,62 :
-      // ~1,65 m à 6 m/s au lieu de 2,7)
-      // …et LA CONDUITE POURSUIVIE COLLE (cfg.carryGuard) : un défenseur à portée de duel
-      // (≤ 2,2 m) impose la touche PROTÉGÉE — mesuré avant : en course poursuivie (v > 4,5,
-      // foe ≤ 2,5), ballon à p50 1,37 m / 29 % du temps au-delà de 1,5 (« bien trop loin du
-      // pied… il devrait être lié à l'attaquant », retour utilisateur). Le burst garde son
-      // droit d'allonger UNIQUEMENT libre devant.
+      // LA CONDUITE SERRÉE PAR DÉFAUT : la touche pleine ne se sert qu'en rupture NOMMÉE
+      // (burst) — en croisière, semelle (touchF 0,62 : ~1,65 m à 6 m/s au lieu de 2,7). …et LA
+      // CONDUITE POURSUIVIE COLLE (cfg.carryGuard) : un défenseur ≤ 2,2 m impose la touche
+      // PROTÉGÉE (mesuré : p50 1,37 m, 29 % > 1,5 — « bien trop loin du pied », retour
+      // utilisateur). Le burst n'allonge que libre devant.
       let foeGuard = 99;
       for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) foeGuard = Math.min(foeGuard, Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]));
       p.touchF = (p._prepShot ?? -1) > st.t ? (cfg.prepTouchF ?? 0.3)   // la préparation SERRE
@@ -528,14 +523,11 @@ function assignMatchJobs(st, cfg) {
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = Math.hypot(p._pushS[0], p._pushS[1]) || 1;
       p.push = [p._pushS[0] / sl, p._pushS[1] / sl];
-      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE : la fuite pure (0,75 d'évasion sous
-      // surnombre) d'un porteur pressé dans son camp pointait DANS son propre but — mesuré sur
-      // matchs complets : des CSC en conduite (t=14,9 graine 1, t=124 graine 3 — le premier
-      // « but » de 3 matchs sur 4, dGoal adverse ~100 m et CROISSANT pendant toute la course).
-      // Un défenseur acculé fuit LE LONG de la ligne, jamais dans son filet : à moins de 22 m de
-      // son but, la composante vers le but propre se PLAFONNE et la poussée se rabat sur la
-      // latérale — le signe de l'évasion garde le côté déjà choisi, le lissage repart de la loi
-      // (sinon l'EMA la combat image après image).
+      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE : la fuite pure d'un porteur pressé
+      // dans son camp pointait DANS son propre but (CSC en conduite mesurés, t=14,9 g1, t=124
+      // g3). Un acculé fuit LE LONG de la ligne : à < 22 m de son but, la composante vers le
+      // but propre se PLAFONNE, la poussée se rabat en latérale — le signe garde le côté, le
+      // lissage repart de la loi (sinon l'EMA la combat).
       {
         const og = pitch.ownGoal(p.team);
         const sOwn = Math.sign(og.x || 1);
@@ -932,6 +924,18 @@ function assignMatchJobs(st, cfg) {
             const hx2 = hot.p[0] - anchor[0], hz2 = hot.p[2] - anchor[2];
             const hl = Math.hypot(hx2, hz2) || 1;
             p.job = 'press'; p.target = [anchor[0] + (hx2 / hl) * 1.15, 0, anchor[2] + (hz2 / hl) * 1.15];
+            return;
+          }
+        }
+        // LE CONTAIN (cfg.contain, lot 78 — 67c « le press percute » : 23 % des poursuites
+        // dos en survitesse, ~27 s de bélier/match) : dans le dos d'un porteur lancé on vise
+        // la FILATURE, pas le corps ; l'axe de rôle press module. Doc : match-config.
+        if (cfg.contain !== false && st.full && carrier && !freeBall) {
+          const cv = Math.hypot(carrier.v[0], carrier.v[1]);
+          const dxb = carrier.p[0] - p.p[0], dzb = carrier.p[2] - p.p[2], db = Math.hypot(dxb, dzb);
+          if (cv > 1.5 && db < 2.2 && (dxb * carrier.v[0] + dzb * carrier.v[1]) / ((db || 1) * cv) > 0.4) {
+            const cd = (cfg.contain?.dist ?? 0.9) * (1.25 - 0.5 * role(p).press);
+            p.job = 'press'; p.target = [carrier.p[0] - (carrier.v[0] / cv) * cd, 0, carrier.p[2] - (carrier.v[1] / cv) * cd];
             return;
           }
         }

@@ -354,7 +354,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return { p50: vs.length ? vs[Math.floor(0.5 * (vs.length - 1))] : 0, n: vs.length };
   };
   const vif = corps({});
-  const gel = corps({ strideStrike: false });
+  // …le sabotage émule le monde d'HIER EN ENTIER (doctrine lot 77) : le couple (frappeConduite)
+  // frappe lancé SANS strideStrike — gelé seul, le pool restait à 2,0 et l'écart ne parlait plus.
+  const gel = corps({ strideStrike: false, frappeConduite: false });
   ok(`la FOULÉE de frappe vit (corps à ${vif.p50.toFixed(2)} m/s p50 au strike sur ${vif.n} gestes ≥ 0,95 — et le monde gelé frappe à ${gel.p50.toFixed(2)} ≤ vivant − 0,12 : sabotage « la statue qui frappe » nommé)`,
     vif.p50 >= 0.95 && gel.p50 <= vif.p50 - 0.12);
 }
@@ -958,6 +960,43 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab77 = vifDe({ frappeConduite: false });
   ok(`sabotage « la disette d'hier » attrapé (frappeConduite:false : ${sab77.deny} refus ≥ ${vif77.deny * 3} — la borne absolue sur le ballon du couple, nommée)`,
     sab77.deny >= vif77.deny * 3);
+}
+
+// ---------- lot 78 — LE CONTAIN : le poursuivant dans le dos d'un porteur lancé se cale au
+// point de FILATURE au lieu de lui rentrer dedans. Mesuré avant : 23 % des images de
+// poursuite dos en SURVITESSE d'entrée (~27 s de bélier par match) — le percutage que l'œil
+// lisait « charge dans le dos » (la faute arbitrale, elle, était déjà morte : 0 sur 4×180 s).
+// L'axe de RÔLE press module la distance (récupérateur au contact, meneur à distance).
+{
+  const belier = (over) => {
+    let percut = 0, duels = 0;
+    for (const seed of [1, 5]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 150 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.restart || st.possession.carrier < 0) continue;
+        const c = st.players[st.possession.carrier];
+        if (!c || c.keeper) continue;
+        const vSpd = Math.hypot(c.v[0], c.v[1]);
+        if (vSpd < 1.5) continue;
+        for (const q of st.players) {
+          if (q.team === c.team || q.keeper || q.down > 0) continue;
+          const dxp = c.p[0] - q.p[0], dzp = c.p[2] - q.p[2], dp = Math.hypot(dxp, dzp);
+          if (dp > 1.2 || (dxp * c.v[0] + dzp * c.v[1]) / ((dp || 1) * vSpd) <= 0.55) continue;
+          if ((dxp * q.v[0] + dzp * q.v[1]) / (dp || 1) > vSpd + 0.3) percut++;
+        }
+      }
+      duels += st.events.filter((e) => e.type === 'duel' && e.kind === 'épaule').length;
+    }
+    return { percut, duels };
+  };
+  const vif78 = belier({});
+  ok(`le PRESS FILE au lieu de percuter (${vif78.percut} images de bélier ≤ 400 sur 2 graines × 150 s — le jockey est le métier ; et le duel d'épaule VIT : ${vif78.duels} ≥ 1)`,
+    vif78.percut <= 400 && vif78.duels >= 1);
+  const sab78 = belier({ contain: false });
+  ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 2)} — la cible au corps, nommée)`,
+    sab78.percut >= vif78.percut * 2);
 }
 
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche

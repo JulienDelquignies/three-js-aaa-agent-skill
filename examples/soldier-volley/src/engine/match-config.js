@@ -364,6 +364,13 @@ export const MATCH = {
                           // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
                           // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
                           // le nombre.
+  contain: { dist: 0.9 }, // LE CONTAIN (lot 78, st.full — dette 67c « le press percute ») : le
+                          // poursuivant dans le DOS d'un porteur lancé se cale au point de
+                          // FILATURE (dist m derrière lui sur sa course) au lieu de viser le
+                          // corps — mesuré avant : 23 % des images de poursuite dos en
+                          // SURVITESSE d'entrée (~27 s de bélier par match), le percutage que
+                          // l'œil lit « charge dans le dos ». L'axe de RÔLE press module
+                          // (récupérateur au contact, meneur à distance). false : le bélier.
   frappeConduite: true,   // LE BALLON DE CONDUITE EST UN BALLON DU COUPLE (lot 77, st.full —
                           // la gâchette : 3 401 refus ballon-vif pour 4 tirs sur 4×180 s). Un
                           // ballon qui roule AVEC son homme ne fuit l'ancre de personne : la
