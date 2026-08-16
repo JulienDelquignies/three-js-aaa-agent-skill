@@ -3538,6 +3538,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      l'a pas écrit ; les espèces de traits sont maintenant QUATRE (ombres 68, présentation
      69, banding 71, battement 73), chacune avec sa physique et son instrument.
 
+112. **Lot 74 : les 60 fps du téléphone — l'inventaire, la cuisson expérimentale, la sonde
+     embarquée.** Retour utilisateur : « chute de fps autour de 30 en permanence, il faut 60
+     sans restreindre la qualité ». D'abord la lecture des captures : les traits ont DISPARU
+     (loi des diviseurs lot 73 confirmée sur l'appareil) ; le 33-34 fps stable = verrou vsync
+     un-sur-trois d'un écran 100 Hz (l'ancien monde accrochait un-sur-deux ≈ 50 : son plancher
+     dynres 0,75 rendait moins de pixels que le cran propre 0,875 — la frame est passée juste
+     au-dessus de 20 ms). L'INVENTAIRE (playmode, renderer.info) : 244 draw calls, 1,13 M
+     de triangles dont 924 396 SKINNÉS (82 %) — chaque joueur pèse 42 018 tri (corps 12 933
+     dessiné ENTIER sous maillot/short/chaussettes, cheveux 9 524 = 23 %, cils 960), coût
+     vertex INDÉPENDANT de la résolution — voilà pourquoi baisser les pixels n'a jamais donné
+     60. Et 11 lumières forward par fragment (8 SpotLights statiques de mâts + 2 dir + hémi).
+     Fait : (a) cils invisibles à 20 m → cachés au match (?cils=1 les rend) ; (b) CUISSON des
+     flaques de mâts (stadium-night, bake/dynLayer) : texture d'irradiance demi-flottante par
+     la MÊME formule analytique que le shader (candela/d², fenêtre smoothstep, Lambert),
+     lightMap+uv1 planaire sur pelouse/abords, spots basculés couche 3 — MAIS la couche
+     dynamique ne sert PAS les spots aux corps sous WebGPU (joueurs noirs mesurés : ils vivent
+     des nappes, 1600-4300 cd contre une clé 0,95) et le débordement des nappes éclairait
+     réellement les tribunes (−66 % de luminance sans). La cuisson reste dans le moteur
+     DERRIÈRE ?bakelight=1 (expérimentale, calibrée pelouse à 1,002 près au global via
+     lmI 2,5) — PAS de loi non prouvée au défaut : identité au pixel vérifiée (ratios 1,000
+     pelouse/tribunes/bord). (c) LA SONDE EMBARQUÉE ?probe=1 : le GPU du téléphone est
+     invisible d'ici (pas de timestamp queries) — le téléphone DEVIENT l'instrument : quatre
+     configurations cyclées 4 s (tout / sans nappes / sans corps / basse déf), fps médian
+     affiché à demeure — UNE capture utilisateur dira où vivent les millisecondes, et
+     l'investissement suivant (refaire la cuisson par un autre mécanisme, ou LOD de maillage
+     des corps par décimation hors-ligne) se choisira sur PREUVE. Leçons : le coût vertex ne
+     se voit pas dans un compteur de pixels ; une optimisation « évidente » (layers) peut
+     buter sur la sémantique du backend — la garder derrière une clé et instrumenter plutôt
+     que forcer ; quand l'appareil qui souffre est hors de portée, EMBARQUER l'instrument.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

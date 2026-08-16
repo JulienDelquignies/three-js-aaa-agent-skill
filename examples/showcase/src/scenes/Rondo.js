@@ -96,7 +96,12 @@ export class Rondo {
       // est REVENU à 1024 (lot 63 — « encore un peu les traits », capture) : son texel de 22 cm
       // reste au bord de l'acné sur les depth-buffers mobiles même sous la loi du biais, et le
       // budget GPU est rendu ailleurs (bloom OFF + MSAA OFF au tier low, lots 61-62).
-      shadowMapSize: this.fullMode ? 1024 : 2048 });
+      shadowMapSize: this.fullMode ? 1024 : 2048,
+      // l'éclairage MIXTE (lot 74) reste EXPÉRIMENTAL (?bakelight=1) : la cuisson des flaques
+      // marche (texture posée, spots layerisés hors pelouse) mais la couche dynamique ne SERT
+      // PAS les spots aux corps sous WebGPU (joueurs noirs mesurés — ils vivent des nappes,
+      // 1600-4300 cd contre une clé 0,95). La sonde ?probe=1 arbitre le prochain investissement.
+      bake: q.get('bakelight') === '1' });
     this.disposables.push(this.night);
     this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [], gestes: [] };
 
@@ -117,6 +122,11 @@ export class Rondo {
     // …ET LA RÉSOLUTION EST DYNAMIQUE EN PLEIN FORMAT (lot 61) : le tier se choisit à l'ouverture,
     // le GPU réel ne se voit qu'en jouant — update() mesure le fps mural et ajuste. ?dynres=0 coupe.
     this._dynRes = this.fullMode && q.get('dynres') !== '0';
+    // LA SONDE EMBARQUÉE (lot 74, ?probe=1) : le GPU du téléphone est invisible d'ici (pas de
+    // timestamp queries — compteur GPU 0.00) ; le téléphone DEVIENT l'instrument. Quatre
+    // configurations cyclées 4 s (tout / sans nappes / sans corps / basse déf), fps affiché à
+    // demeure : UNE capture utilisateur dit où vivent les millisecondes.
+    this._probe = q.get('probe') === '1' ? { phase: -1, t0: 0, n: 0, res: [] } : null;
 
     // ---- the grid the game is played in, painted on the grass
     // un ENTRAÎNEMENT a son carré et ses cônes ; un MATCH n'ajoute rien au sol — le stade
@@ -233,6 +243,9 @@ export class Rondo {
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer
+      // LES CILS NE SE VOIENT PAS À 20 M (lot 74) : 960 tri × 22 corps re-skinnés chaque frame
+      // pour un détail sub-pixel à la caméra de match. ?cils=1 les rend (gros plans, carrière).
+      if (q.get('cils') !== '1') model3d.traverse((o) => { if (/eyelash/i.test(o.name)) o.visible = false; });
       // le warp de frappe a besoin des chaînes de jambe PAR PIED et de leurs longueurs (mesurées
       // sur le rig posé, comme foot-lock) — l'autorité de la jambe frappeuse pendant l'armé
       const _a = new THREE.Vector3(), _b = new THREE.Vector3();
@@ -364,6 +377,41 @@ export class Rondo {
     // a live trace, so the contract can be checked on the REAL running game at any moment
     this._trace = [];
     return true;
+  }
+
+  // La sonde des millisecondes (lot 74, ?probe=1) — cycle 4 configurations et affiche le fps
+  // de chacune ; l'overlay reste à l'écran pour la capture. Voir le commentaire du constructeur.
+  _probeStep() {
+    const P = this._probe, now = performance.now();
+    const NAMES = ['tout', 'sans nappes', 'sans corps', 'basse déf'];
+    const root = this.scene;
+    if (!P.div && typeof document !== 'undefined') {
+      P.div = document.createElement('div');
+      P.div.style.cssText = 'position:fixed;top:96px;left:8px;z-index:9999;background:rgba(0,0,0,.78);color:#9f9;font:700 15px/1.5 monospace;padding:8px 10px;border-radius:8px;white-space:pre';
+      document.body.appendChild(P.div);
+      P.cap = this.renderer?.getPixelRatio?.() ?? 1;
+    }
+    if (P.phase >= NAMES.length) return;
+    if (P.t0 === 0) {
+      P.phase += 1;
+      if (P.phase >= NAMES.length) {                                 // fin : tout restaurer, verdict à demeure
+        for (const s of this.night?.spots ?? []) s.visible = true;
+        for (const b of P.bodies ?? []) b.visible = true;
+        this.renderer?.setPixelRatio?.(P.cap);
+        P.div.textContent = 'sonde GPU — verdict\n' + P.res.map((r, i) => `${NAMES[i]}: ${r} fps`).join('\n');
+        return;
+      }
+      P.bodies ??= (() => { const set = new Set(); root.traverse((o) => { if (o.isSkinnedMesh) { let n = o; while (n.parent && n.parent !== root) n = n.parent; set.add(n); } }); return [...set]; })();
+      for (const s of this.night?.spots ?? []) s.visible = P.phase !== 1;
+      for (const b of P.bodies) b.visible = P.phase !== 2;
+      this.renderer?.setPixelRatio?.(P.phase === 3 ? ((typeof window !== 'undefined' && window.devicePixelRatio) || 1) / 4 : P.cap);
+      P.t0 = now; P.n = 0;
+      P.div.textContent = `sonde GPU… ${NAMES[P.phase]} (${P.phase + 1}/4)\n` + P.res.map((r, i) => `${NAMES[i]}: ${r} fps`).join('\n');
+      return;
+    }
+    const el = now - P.t0;
+    if (el > 1000) P.n += 1;                                         // la 1re seconde se jette (réallocations)
+    if (el >= 4000) { P.res.push(Math.round(P.n * 1000 / (el - 1000))); P.t0 = 0; }
   }
 
   // L'échelle des ratios PROPRES (lot 73) : dpr/n (n=1..4) sont les seuls ratios que le
@@ -722,7 +770,8 @@ export class Rondo {
     // dans camera()). Le post relit getDrawingBufferSize à chaque frame : le changement se
     // propage seul, sans resize. Une fenêtre gelée (onglet caché, chargement, GC massif) se
     // REJETTE au lieu de se lire comme de la lenteur. ?dynres=0 coupe (sabotage nommé).
-    if (this._dynRes && typeof performance !== 'undefined') {
+    if (this._probe && typeof performance !== 'undefined') this._probeStep();
+    if (this._dynRes && !this._probe && typeof performance !== 'undefined') {
       const nowW = performance.now();
       if (this._drT0 == null) { this._drT0 = nowW; this._drN = 0; }
       else if (++this._drN && nowW - this._drT0 >= 2000) {

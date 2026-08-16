@@ -157,7 +157,7 @@ function nightSky() {
  * Pass `keyLayer: 0` to switch the masking off (the key then lights everything, as before).
  * @returns {{group, sun, spots, scene, doused, keyLayer, light:(o:THREE.Object3D)=>void, dispose:Function}}
  */
-export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, intensity = 1, shadowMapSize = 2048, keyLayer = 1 } = {}) {
+export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, intensity = 1, shadowMapSize = 2048, keyLayer = 1, bake = true, dynLayer = 3 } = {}) {
   const L = model?.pitch?.L ?? 105, W = model?.pitch?.W ?? 68;
   const group = new THREE.Group(); group.name = 'stadium-night';
   group.position.set(at[0], at[1], at[2]);
@@ -215,7 +215,9 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
 
   // ---- the key is a PITCH light, not a world light (see the header). `light(o)` opts a subtree in;
   // gameplay calls it for whatever it adds later (players, the ball, painted markings).
-  const light = (o) => { if (keyLayer) o?.traverse?.((n) => n.layers.enable(keyLayer)); };
+  // …et light() abonne AUSSI les corps dynamiques à la couche des spots (lot 74 : sous la
+  // cuisson, seuls eux paient encore les 8 nappes — le sol lit sa texture).
+  const light = (o) => { o?.traverse?.((n) => { if (keyLayer) n.layers.enable(keyLayer); if (bake && dynLayer) n.layers.enable(dynLayer); }); };
   if (keyLayer) {
     // The failure mode of layer masking is a BLACK PITCH — mask the key and forget to opt the grass in
     // and the scene loses the only light that reaches it. So: find the playing surface, and if there
@@ -297,6 +299,63 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
       wash.target.position.set(0, 0, m.z * 0.12);
       wash.castShadow = false;
       group.add(wash); group.add(wash.target); spots.push(wash);
+    }
+  }
+
+  // L'ÉCLAIRAGE MIXTE (lot 74 — 33 fps téléphone, 11 lumières par fragment en forward) : les
+  // 8 nappes sont STATIQUES et visent le SOL — leur diffus sur pelouse/abords est une TEXTURE.
+  // On la cuit par la MÊME formule analytique que le shader (candela/d², fenêtre de cône
+  // smoothstep, Lambert), puis les spots passent sur la couche dynamique (dynLayer) : seuls
+  // les corps (light() ci-dessous) les paient encore — la pelouse, des millions de fragments,
+  // n'évalue plus que la clé et l'hémisphère. bake:false (?bakelight=0) : le forward d'hier.
+  if (bake && dynLayer) {
+    const grounds = [];
+    scene.traverse((o) => { if (o.isMesh && (o.name === 'pelouse' || o.name === 'abords')) grounds.push(o); });
+    if (grounds.length) {
+      // l'empreinte commune : la boîte des abords (la plus large) en coordonnées locales stade
+      let minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9;
+      for (const g of grounds) {
+        g.geometry.computeBoundingBox();
+        const b = g.geometry.boundingBox;
+        minX = Math.min(minX, b.min.x); maxX = Math.max(maxX, b.max.x);
+        minZ = Math.min(minZ, b.min.z); maxZ = Math.max(maxZ, b.max.z);
+      }
+      const SZ = 512, data = new Uint16Array(SZ * SZ * 4);
+      const col = new THREE.Color(0xf0f5ff), f16 = THREE.DataUtils.toHalfFloat;
+      const P = spots.map((s) => {
+        const dir = new THREE.Vector3().subVectors(s.target.position, s.position).normalize();
+        return { p: s.position, dir, i: s.intensity, cosA: Math.cos(s.angle), cosP: Math.cos(s.angle * (1 - s.penumbra)) };
+      });
+      for (let ty = 0; ty < SZ; ty++) {
+        const z = minZ + (ty + 0.5) / SZ * (maxZ - minZ);
+        for (let tx = 0; tx < SZ; tx++) {
+          const x = minX + (tx + 0.5) / SZ * (maxX - minX);
+          let e = 0;
+          for (const s of P) {
+            const dx = s.p.x - x, dy = s.p.y, dz = s.p.z - z, d2 = dx * dx + dy * dy + dz * dz, d = Math.sqrt(d2);
+            const cosT = -(dx * s.dir.x + dy * s.dir.y + dz * s.dir.z) / d;    // angle au cône (vers le sol)
+            if (cosT <= s.cosA) continue;
+            const t = Math.min(1, Math.max(0, (cosT - s.cosA) / (s.cosP - s.cosA)));
+            e += s.i * t * t * (3 - 2 * t) * (dy / d) / d2;                    // fenêtre smoothstep × Lambert × décroissance²
+          }
+          const k = (ty * SZ + tx) * 4;
+          data[k] = f16(e * col.r); data[k + 1] = f16(e * col.g); data[k + 2] = f16(e * col.b); data[k + 3] = f16(1);
+        }
+      }
+      const tex = new THREE.DataTexture(data, SZ, SZ, THREE.RGBAFormat, THREE.HalfFloatType);
+      tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true; disposables.push(tex);
+      for (const g of grounds) {
+        // uv1 planaire sur l'empreinte commune : les deux plans lisent LA même carte, alignée monde
+        const pos = g.geometry.attributes.position, uv1 = new Float32Array(pos.count * 2);
+        for (let i = 0; i < pos.count; i++) {
+          uv1[i * 2] = (pos.getX(i) - minX) / (maxX - minX);
+          uv1[i * 2 + 1] = (pos.getZ(i) - minZ) / (maxZ - minZ);
+        }
+        g.geometry.setAttribute('uv1', new THREE.BufferAttribute(uv1, 2));
+        g.material.lightMap = tex; g.material.lightMapIntensity = Math.PI;     // l'irradiance cuite rend ce que le direct rendait
+        g.material.needsUpdate = true;
+      }
+      for (const s of spots) { s.layers.set(dynLayer); s.target.layers.set(dynLayer); }
     }
   }
 
