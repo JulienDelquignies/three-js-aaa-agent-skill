@@ -3791,6 +3791,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      d'échelle — re-mesurer les vieilles lois dans le monde neuf ; et livrer une clé éteinte
      documentée vaut mieux qu'un calibrage bâclé de 4 clauses.
 
+123. **Lot 83 : l'espacement est une TACTIQUE, pas une constante — l'axe relation
+     (recadrage utilisateur).** « On ne doit pas juste espacer les joueurs : tout a un sens —
+     le Barça de Guardiola pouvait coller ses trois milieux, le jeu positionnel écarte, le
+     relationnel existe toujours, on doit TOUS les matérialiser. » Le scalaire du lot 82
+     (supportSpanFull) devenait un choix de moteur ; c'est un choix d'ENTRAÎNEUR. L'axe
+     relation [0..1] rejoint les six de tactics.js : positionnel (0 → rayons de slots ×1,35)
+     ↔ relationnel (1 → ×0,65, les triangles courts), 0,5 = identité au bit (le contrat des
+     axes), PAR ÉQUIPE (tac(st, atk) — les deux équipes d'un match peuvent vivre deux
+     philosophies). Presets placés dans la culture : possession 0,7 (le Barça), gegenpressing
+     0,55, blocBas 0,35, direct 0,3, largeEtCentres 0,25. supportSpanFull reste l'override de
+     format (débogage/sabotage). Empreintes lot 81 au bit, 68+88 clauses vertes. Dettes
+     nommées lot 84 : la TRIANGULATION du relationnel (les proches doivent OFFRIR des angles
+     ≥ 35° vus du porteur — la proximité sans intention est la seule vraie fourmilière),
+     settledNear (trot au poste) encore éteint, et les 4 clauses de flux à re-fonder pour
+     activer les mondes non-défauts en continu. Leçon : quand une correction « de moteur »
+     encode un CHOIX DE JEU, elle appartient à la couche tactique — le moteur fournit l'axe,
+     le projet choisit le point.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

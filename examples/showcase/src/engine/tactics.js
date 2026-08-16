@@ -15,6 +15,12 @@
 //                          et la cadence des appels profonds
 //   transition   [0..1] — conservation ↔ contre : la verticalité du regain (relaxation des
 //                          appels pendant la transition offensive, lot 14)
+//   relation     [0..1] — positionnel ↔ relationnel (lot 83) : l'ESPACEMENT des soutiens est
+//                          une expression tactique, pas une constante — le jeu de position
+//                          écarte les slots (rayons ×1,35 à 0), le jeu relationnel les
+//                          resserre en triangles courts autour du porteur (×0,65 à 1 — le
+//                          Barça des trois milieux collés). La triangulation par ANGLES
+//                          (les proches doivent OFFRIR des lignes) : dette nommée lot 84.
 //
 // LE DÉFAUT EST L'IDENTITÉ : à 0,5 partout, chaque modulation vaut exactement les constantes
 // mesurées des lots 10-14 — le monde d'aujourd'hui au bit près (clause du banc). Les
@@ -39,15 +45,15 @@ export const TACTIQUES = {
   equilibre:     { hauteurBloc: 0.5, largeur: 0.5, pressing: 0.5, style: 0.5, transition: 0.5 },
   // …chaque preset PORTE SES RÔLES par défaut (lot 20 — un système est des axes ET des hommes) ;
   // les rôles explicites du projet aval GAGNENT toujours, poste par poste
-  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9, compacite: 0.7,
+  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9, compacite: 0.7, relation: 0.55,
     roles: { 5: 'recuperateur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' } },
-  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15, compacite: 0.45,
+  possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15, compacite: 0.45, relation: 0.7,
     roles: { 5: 'meneur', 8: 'neufDeSurface' } },
-  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, compacite: 0.8,
+  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, compacite: 0.8, relation: 0.35,
     roles: { 4: 'recuperateur', 5: 'recuperateur', 8: 'neufDeSurface' } },
-  direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7,
+  direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7, relation: 0.3,
     roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' } },
-  largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5,
+  largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5, relation: 0.25,
     roles: { 0: 'piston', 3: 'piston', 7: 'ailierDePercussion', 9: 'ailierDePercussion' } },
 };
 
@@ -60,6 +66,8 @@ export function resoudreTactique(t) {
     // LA COMPACITÉ (lot 43) : la longueur du bloc défendant est CELLE DE SA TACTIQUE
     // (blocFor, formation.js — ±4 m autour de la base moteur). 0,5 = la base, pas un bit.
     compacite: base.compacite ?? 0.5,
+    // LE RELATIONNEL (lot 83) : l'espacement des soutiens est un CHOIX de tactique — 0,5 = identité.
+    relation: base.relation ?? 0.5,
     // LA FORMATION est une donnée de la tactique (lot 17 — le catalogue : 433, 442, 352 ;
     // formation.js/LIGNES généralise le calage Loi 11 et les clauses). Inconnue : 433.
     formation: base.formation ?? '433',

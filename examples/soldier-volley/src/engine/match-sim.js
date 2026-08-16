@@ -650,8 +650,8 @@ function assignMatchJobs(st, cfg) {
       S5(0, goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)); S5(1, goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2));
       S5(2, goal.x - sgn * pitch.dims.spot, 0); S5(3, anchor[0] - sgn * 7, anchor[2] * 0.5); S5(4, anchor[0] - sgn * 1.5, zs * pitch.hz * 0.6);
     } else {          // lanceur intérieur/opposé, sécurité, largeur, second rideau
-      // L'ÉCHELLE DU SOUTIEN SUIT LE FORMAT (lot 82, clé supportSpanFull, 0 = identité) — doc : config.
-      const K = (st.full && cfg.supportSpanFull) || 1;
+      // L'ÉCHELLE DU SOUTIEN EST TACTIQUE (lot 83, axe relation : positionnel 1,35 ↔ relationnel 0,65, 0,5 = identité)
+      const K = st.full ? (cfg.supportSpanFull || axe(tac(st, atk).relation, 1.35, 0.65)) : 1;
       S5(0, anchor[0] + sgn * 8 * K, anchor[2] < 0 ? anchor[2] + 6 * K : anchor[2] - 6 * K); S5(1, anchor[0] + sgn * 7 * K, anchor[2] < 0 ? anchor[2] - 5 * K : anchor[2] + 5 * K);
       S5(2, anchor[0] - sgn * 6 * K, anchor[2] * 0.5); S5(3, anchor[0] + sgn * 2 * K, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, anchor[0] + sgn * 4 * K, anchor[2] * -0.6);
     }
