@@ -364,6 +364,11 @@ export const MATCH = {
                           // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
                           // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
                           // le nombre.
+  supportSpanFull: 0,   // L'ÉCHELLE DU SOUTIEN (lot 82, st.full — clé de FORMAT : le réduit au
+                          // bit — 0 = identité, HORS-DÉFAUT tant que les clauses de flux ne sont pas re-fondées ; 1,5-1,6 mesuré : pics ≥ 7 corps −35 %). Slots du réduit
+                          // (6-8 m) en 11c11 mettaient 4 soutiens + leurs 4 marqueurs dans le
+                          // cercle du ballon (88 % des pics ≥ 7 corps au centre). ×1,5 : la
+                          // ligne de passe courte réelle (10-14 m) — l'espace pour recevoir.
   attaquePasse: { marge: 2 }, // LA PASSE CONTESTÉE S'ATTAQUE (lot 81, st.full — « il reste figé
                           // et l'adversaire récupère avant lui ») : 18 volées receveur-plus-
                           // proche / 15 min mesurées, receveur à 1,3 m/s. Un adversaire à la

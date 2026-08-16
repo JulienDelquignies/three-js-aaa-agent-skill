@@ -549,9 +549,8 @@ function assignMatchJobs(st, cfg) {
   // couloirs : deux lanceurs devant-large, une sécurité derrière, le reste en largeur
   if (flightRec && !flightRec.keeper && flightRec.team === atk) {
     flightRec.job = 'receive';
-    // LE PAS AU CONTACT (cfg.meetBall/meetZone/meetStep) : un pas et demi sur l'AXE NOMINAL
-    // dans les derniers mètres. Leçon du flipper : suivre le vol RÉEL corrigeait 4,5 m
-    // d'erreur, toute passe aboutissait — l'axe nominal garde le déchet latéral du football.
+    // LE PAS AU CONTACT (cfg.meetBall/meetZone/meetStep) : un pas et demi sur l'AXE NOMINAL —
+    // le flipper consigné : suivre le vol réel corrigeait tout, l'axe garde le déchet latéral.
     let met = null;
     const dInb = Math.hypot(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
     if (cfg.meetBall !== false && dInb < (cfg.meetZone ?? 4.5)) {
@@ -651,8 +650,10 @@ function assignMatchJobs(st, cfg) {
       S5(0, goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)); S5(1, goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2));
       S5(2, goal.x - sgn * pitch.dims.spot, 0); S5(3, anchor[0] - sgn * 7, anchor[2] * 0.5); S5(4, anchor[0] - sgn * 1.5, zs * pitch.hz * 0.6);
     } else {          // lanceur intérieur/opposé, sécurité, largeur, second rideau
-      S5(0, anchor[0] + sgn * 8, anchor[2] < 0 ? anchor[2] + 6 : anchor[2] - 6); S5(1, anchor[0] + sgn * 7, anchor[2] < 0 ? anchor[2] - 5 : anchor[2] + 5);
-      S5(2, anchor[0] - sgn * 6, anchor[2] * 0.5); S5(3, anchor[0] + sgn * 2, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, anchor[0] + sgn * 4, anchor[2] * -0.6);
+      // L'ÉCHELLE DU SOUTIEN SUIT LE FORMAT (lot 82, clé supportSpanFull, 0 = identité) — doc : config.
+      const K = (st.full && cfg.supportSpanFull) || 1;
+      S5(0, anchor[0] + sgn * 8 * K, anchor[2] < 0 ? anchor[2] + 6 * K : anchor[2] - 6 * K); S5(1, anchor[0] + sgn * 7 * K, anchor[2] < 0 ? anchor[2] - 5 * K : anchor[2] + 5 * K);
+      S5(2, anchor[0] - sgn * 6 * K, anchor[2] * 0.5); S5(3, anchor[0] + sgn * 2 * K, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, anchor[0] + sgn * 4 * K, anchor[2] * -0.6);
     }
     const free = st._bFree ??= []; free.length = 0;
     for (const p of attackers) if ((!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter) free.push(p);

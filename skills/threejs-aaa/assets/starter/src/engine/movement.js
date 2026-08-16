@@ -116,8 +116,11 @@ export function movePlayers(st, dt, cfg) {
     }
     const bursting = p._pace.until > st.t;
     if (bursting) top = Math.min(top * 1.28, cfg.sprintMax ?? 8.0);
-    // …et entre les ruptures, un soutien posé MARCHE — le contraste EST le rythme
-    else if (p.job === 'support' && settled) top = Math.min(top, cfg.settledWalkCap ?? 1.35);
+    // …et entre les ruptures, un soutien posé MARCHE — QUAND IL EST À SON POSTE (lot 82,
+    // clé settledNear, défaut Infinity = marche d'hier au bit : mesuré 10,7 m p50 du slot,
+    // le soutien vivait à mi-chemin près du ballon — activer 5 le fait trotter au poste).
+    else if (p.job === 'support' && settled
+      && (!st.full || !p.target || d2(p.p, p.target) < (cfg.settledNear ?? Infinity))) top = Math.min(top, cfg.settledWalkCap ?? 1.35);
     // UN SOUTIEN PRÈS DE SA STATION AJUSTE PAR PETITS PAS. Mesuré (sonde tempo-espaces) : les
     // non-porteurs vivaient à p50 3,0-3,5 m/s, sprint > 4,5 m/s un quart du temps, dans un carré de
     // 16 × 14 m — la panique, pas du soutien. À moins de 3 m de sa station, la vitesse d'un soutien

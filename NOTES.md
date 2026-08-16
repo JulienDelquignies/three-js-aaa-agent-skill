@@ -3773,6 +3773,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      PAIRES (donner une réaction à un camp sans l'autre crée un monde truqué) ; « il était
      seul » à la mène ne dit rien de la LIGNE (l'interception amont est un autre football).
 
+122. **Lot 82 : la fourmilière autopsiée — deux lois trouvées, livrées EN CLÉS ÉTEINTES
+     (la re-fondation des clauses de flux mérite son propre lot).** Autopsie des pics ≥ 7
+     corps < 6 m du ballon (4,6 % du temps, 88 % au centre) : les présents sont SUPPORT (242)
+     + MARK (191) — pas le pressing. Mécanique : les slots de soutien hérités du réduit
+     (6-8 m de l'ancre) attirent chacun SON marqueur dans le même cercle ; et la marche du
+     soutien posé (lot 57) le laissait à 10,7 m p50 de son slot — l'anti-essaim d'hier
+     nourrissait l'essaim d'aujourd'hui. Deux lois : supportSpanFull (rayons des slots ×K en
+     11c11, clé de FORMAT) et settledNear (marcher SEULEMENT à moins de N m de son poste,
+     sinon trotter). Mesuré à 1,6/5 : pics 4,6 → 3,0 % (−35 %), soutiens 2,4 → 3,0 m/s vers
+     leurs postes. MAIS le flux déplacé casse 4 clauses calibrées fin (frappes en course 42 %
+     vs 40, pic de conduite 2,9 vs 2,3, deux sabotages resserrés) — à 3 % de contexte, le
+     choix honnête : défauts à l'IDENTITÉ (supportSpanFull: 0, settledNear ?? Infinity),
+     empreintes lot 81 au bit, batterie verte, et le PROCHAIN lot active les clés en
+     re-fondant les clauses avec du temps devant lui. Leçons : une loi anti-symptôme
+     (marcher contre l'essaim) peut devenir la cause du même symptôme quand le monde change
+     d'échelle — re-mesurer les vieilles lois dans le monde neuf ; et livrer une clé éteinte
+     documentée vaut mieux qu'un calibrage bâclé de 4 clauses.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
