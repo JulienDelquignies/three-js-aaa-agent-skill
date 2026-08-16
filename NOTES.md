@@ -3592,6 +3592,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      quasi uniforme (mesuré) autorise l'émissif constant pour les corps ; calibrer sur
      l'instrument du banc (zones + masques de kits), pas à l'œil.
 
+114. **La capture de validation : 60 fps verrouillé sur l'appareil.** Capture utilisateur
+     post-lot 75 (?fps=1, 55 s de match) : **60 FPS (60-61), CPU 9,93 ms plat (9,93-10,9)**,
+     aucun trait, flaques cuites visibles et douces, kits lisibles — et la barre système est
+     neutre (sans le filtre ambre des captures précédentes). Le fil complet du chantier fps,
+     pour mémoire : 18 fps (8 nappes forward) → diagnostic par SONDE EMBARQUÉE sur l'appareil
+     (lot 74) → éclairage cuit v2 (lot 75) → 60. Et le fil des traits : ombres (68),
+     présentation (69), banding (71), battement du compositeur (73) — quatre espèces, quatre
+     physiques, écran propre. Les réserves de performance identifiées par la recherche
+     (LOD des corps par meshoptimizer, BundleGroup r185 sur le stade statique, KTX2) sont
+     classées en dettes nommées (#78, #79) — à activer sur preuve quand une scène future du
+     moteur les exigera, pas avant. Leçon de clôture : l'instrument embarqué chez
+     l'utilisateur a transformé trois allers-retours d'hypothèses en UN verdict — pour un
+     moteur réutilisable, la sonde fait partie du produit.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
