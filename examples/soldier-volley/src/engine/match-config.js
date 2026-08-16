@@ -357,6 +357,21 @@ export const MATCH = {
                           // avant : 54 % des amortis-poursuite dans le dos, prises p90 107°.
                           // Hors cône : le ballon COURT (refus nommé 'controle-dos'), le pivot
                           // en cours reprend à la capture. false : la touche omnisciente d'hier.
+  holdCalmFull: [0.9, 1.9],
+                          // s — LA TENUE DU PLEIN FORMAT (lot 77, st.full — une clé de FORMAT :
+                          // le réduit 84 clauses garde holdCalm au bit). Depuis que le porté
+                          // SURVIT aux pivots (lot 76), la tenue [1,0;2,2] s'exprimait en entier
+                          // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
+                          // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
+                          // le nombre.
+  frappeConduite: true,   // LE BALLON DE CONDUITE EST UN BALLON DU COUPLE (lot 77, st.full —
+                          // la gâchette : 3 401 refus ballon-vif pour 4 tirs sur 4×180 s). Un
+                          // ballon qui roule AVEC son homme ne fuit l'ancre de personne : la
+                          // frappe se planifie comme sur ballon porté quand la vitesse RELATIVE
+                          // tient dans strikeBallRel × controlF (l'attribut technique gradue
+                          // l'enveloppe). false : la disette d'hier (sabotage nommé).
+  strikeBallRel: 2.2,     // m/s — l'enveloppe RELATIVE du couple (la borne ABSOLUE strikeBallMax
+                          // 1,5 reste la loi du ballon vraiment libre, hors couple)
   porteCone: 120,         // LE CÔNE DU PORTÉ (lot 76, st.full — l'AIMANT : le servo de porté
                           // faisait orbiter le ballon au pivot sans pied, 7,2 % des images
                           // portées dos, 18 % des touches de conduite au kick). Ni carry ni

@@ -3632,6 +3632,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      itération sous batterie complète, pas de loi posée sans re-mesurer ses voisines ; les
      attributs entrent dans les lois par des FACTEURS, pas par des branches.
 
+116. **Lot 77 : le ballon de conduite est un ballon du couple — la gâchette meurt, les tirs
+     renaissent, la clé de format naît.** La dette #69 : la porte ballon-vif (strike-sim,
+     borne ABSOLUE de vitesse du ballon libre) refusait l'armé sur le ballon de conduite —
+     3 401 refus pour 4 tirs sur 4×180 s depuis que la conduite vit libre (lot 76 l'a nourrie).
+     LA LOI : un ballon qui roule AVEC son homme ne fuit l'ancre de personne — si la vitesse
+     RELATIVE porteur-ballon tient dans strikeBallRel (2,2) × controlF (l'ATTRIBUT technique
+     gradue l'enveloppe), la frappe se planifie comme sur ballon porté (la machinerie du
+     couple existait : hardMax/adjustSpeed) ; la borne absolue reste la loi du ballon
+     VRAIMENT libre. Refus ÷38 (3 401 → 90), passes 167 → 229 (+37 %). MAIS les tirs n'ont
+     pas suivi (4 → 5) : l'ancienne porte FORÇAIT accidentellement la progression (passe
+     refusée → le porteur continuait d'avancer) — la libérer a montré le vrai réglage : la
+     TENUE CALME [1,0;2,2], calibrée quand le porté ne survivait pas aux pivots, s'exprimait
+     en entier depuis le lot 76 et paralysait la pénétration (1-3 s/180 s à portée de tir,
+     tryShot appelé 0 fois graine 5, hold p50 1,72). PREMIÈRE TENTATIVE FAUTIVE : re-calibrer
+     holdCalm partagé — le RÉDUIT calibré 84 clauses a cassé (3 rouges) → naissance de la
+     CLÉ DE FORMAT holdCalmFull [0,9;1,9] consommée sous st.full seulement, le réduit garde
+     holdCalm [1,0;2,2] au bit (empreintes re-prouvées). Résultat final : clause gardien
+     12 tirs (était 1), A/B 20×300 s : 72 tirs / 29 buts (les tirs d'avant-lot-76 RETROUVÉS,
+     bande 17-33 tenue). Deux re-fondations avec récit : le sabotage de l'orbite (lot 76)
+     redevient EXACT (porteCone:false + holdCalmFull d'hier — un sabotage émule le monde
+     ENTIER d'hier) ; la borne traverse 35 → 40 % (le couple a ouvert les frappes de
+     CONDUITE, population nouvelle 34 → 70 frappes en course — le contrat reste le sabotage
+     ride:false à +30 pts). Batterie 66/84/40/8/14/88/9, zéro rouge. Leçons : une porte
+     technique peut être un ÉCHAFAUDAGE comportemental accidentel — la retirer exige de
+     re-régler ce qu'elle étayait ; les clés PARTAGÉES entre formats sont des pièges de
+     calibration → clés de FORMAT (holdCalmFull) quand les mondes divergent ; l'attribut
+     (controlF) gradue l'enveloppe du geste, pas la décision.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

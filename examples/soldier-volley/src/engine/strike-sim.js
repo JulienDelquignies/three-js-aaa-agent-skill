@@ -56,6 +56,15 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // adversaire est en train de le gagner ; on le joue MAINTENANT, du geste légal le plus prompt)
   const urgent = opts.forceUrgent || st.hold >= cfg.holdMax - 0.1;
   const outYaw = Math.atan2(choice.lead[2] - bref[1], choice.lead[0] - bref[0]);
+  // LE BALLON DE CONDUITE EST UN BALLON DU COUPLE (lot 77 — la gâchette : 3 401 refus
+  // ballon-vif pour 4 tirs sur 4×180 s depuis que la conduite vit libre). Un ballon qui roule
+  // AVEC son homme ne fuit l'ancre de personne : si la vitesse RELATIVE porteur-ballon tient
+  // dans l'enveloppe de TECHNIQUE (strikeBallRel × controlF — l'attribut gradue la loi), la
+  // frappe se planifie comme sur ballon porté (le couple s'arrange : hardMax/adjustSpeed).
+  // La borne ABSOLUE d'hier reste la loi du ballon VRAIMENT libre. false : la disette d'hier.
+  const relV = Math.hypot(st.ball.v[0] - (c.v?.[0] ?? 0), st.ball.v[2] - (c.v?.[1] ?? 0));
+  const couple = st.ball.owner === c.id || (st.full && cfg.frappeConduite !== false
+    && relV <= (cfg.strikeBallRel ?? 2.2) * (c.skill?.controlF ?? 1));
   let pick, move, stance, anchor;
   if (!urgent) {
     // les surfaces de PLAN : jouables sur un ballon posé (une « première » sur un ballon qu'on
@@ -72,9 +81,8 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // (75 sorties). Rejoindre la stance d'un ballon porté n'est pas une marche vers un point du
     // monde : c'est ARRANGER LE COUPLE (pivoter, un demi-pas) — corps et ballon glissent ensemble,
     // le glissement de l'armé fait les deux, et la borne est celle d'un ajustement à deux pas.
-    const carried = st.ball.owner === c.id;
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
-      { rushed: nearFoe < cfg.rushedRadius, ...(carried ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
+      { rushed: nearFoe < cfg.rushedRadius, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
     // UN REFUS PILOTE L'APPROCHE : même sans stance atteignable, le plan dit OÙ MARCHER (steer) —
     // sans ce cap, le porteur restait sur son standoff d'évasion à p50 = 1,07 m de l'ancre,
     // image après image, jusqu'au tacle (1 573 refus, 122 tacles, médiane de possession 0 passe).
@@ -85,7 +93,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // porte ballon-vif ne concerne que les ballons LIBRES, dont l'ancre fuyait pendant l'armé
     // (glissement mesuré à 10,2 m/s avant la porte). La branche « livraison » est morte avec la
     // capture : le contrôle possède le ballon dès le contact, il n'y a plus de vol à attendre.
-    if (st.ball.owner !== c.id && Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax) return deny(st, 'ballon-vif');
+    if (!couple && Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax) return deny(st, 'ballon-vif');
     pick = { tech: plan.best.data, foot: plan.best.foot };
     move = MOVE_TIMING[plan.best.clip] || MOVE_TIMING.passe;
     stance = STANCES[plan.best.clip] || STANCES.passe;
@@ -108,7 +116,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // du conteste a laissé les balles d'urgence partir de ballons dribblés à 2-4 m/s. La borne est
     // plus lâche que celle du plan (l'urgence a moins le choix), mais elle existe : au-delà, on
     // continue de conduire — le refus se nomme.
-    if (st.ball.owner !== c.id && Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax * 1.6) return deny(st, 'ballon-vif');
+    if (!couple && Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax * 1.6) return deny(st, 'ballon-vif');
     // pressé (il l'est, par définition ici) : la vitesse départage les gestes DÉJÀ bons
     const antic = (o) => (MOVE_TIMING[o.tech.clip] || MOVE_TIMING.passe).contact;
     const good = topts.filter((o) => o.score >= topts[0].score - cfg.rushedSlack);

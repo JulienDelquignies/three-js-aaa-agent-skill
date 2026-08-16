@@ -398,8 +398,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const vif = stops({});
   const sab = stops({ strideStrike: { tau: 0.9, max: 2.2, ride: false } });
-  ok(`la course TRAVERSE la frappe (${vif.net} stop(s) net(s) sur ${vif.tot} frappes en course ≤ 35 % — et « l'élan retenu » (ride:false) s'arrête ${sab.net}/${sab.tot} ≥ vivant + 30 pts : la falaise du commit, nommée)`,
-    vif.part <= 0.35 && sab.part >= vif.part + 0.30);
+  // …borne re-fondée lot 77 (35 → 40 %) : le COUPLE a ouvert les frappes de CONDUITE (la
+  // gâchette les refusait toutes — frappes en course mesurées 34 → 70) et une part de cette
+  // population nouvelle freine pour s'armer, légitimement. Le contrat de la falaise reste le
+  // SABOTAGE (+30 pts) : le geste ne régresse pas, la population a changé.
+  ok(`la course TRAVERSE la frappe (${vif.net} stop(s) net(s) sur ${vif.tot} frappes en course ≤ 40 % — et « l'élan retenu » (ride:false) s'arrête ${sab.net}/${sab.tot} ≥ vivant + 30 pts : la falaise du commit, nommée)`,
+    vif.part <= 0.40 && sab.part >= vif.part + 0.30);
 }
 
 // ---------- 3f. L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le
@@ -927,9 +931,33 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false });
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2] });   // l'HIER exact : son cône ET sa tenue
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
+}
+
+// ---------- lot 77 — LE BALLON DE CONDUITE EST UN BALLON DU COUPLE : la gâchette ballon-vif
+// refusait l'armé sur le ballon libre de la conduite (il roule AVEC son homme, il ne fuit
+// l'ancre de personne). Mesuré avant : 3 401 refus pour 4 tirs sur 4×180 s ; après : 90, et
+// les passes 167 → 229. L'enveloppe est RELATIVE et graduée par la technique (× controlF).
+{
+  const vifDe = (over) => {
+    let deny = 0, passes = 0;
+    for (const seed of [1, 5]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 150 * 60; i++) matchStep(st, 1 / 60, cfg);
+      deny += st.deny?.['ballon-vif'] ?? 0;
+      passes += st.events.filter((e) => e.type === 'pass').length;
+    }
+    return { deny, passes };
+  };
+  const vif77 = vifDe({});
+  ok(`la GÂCHETTE ne s'étouffe plus (${vif77.deny} refus ballon-vif ≤ 400 sur 2 graines × 150 s — le couple frappe son ballon de conduite ; ${vif77.passes} passes ≥ 70 : le jeu circule)`,
+    vif77.deny <= 400 && vif77.passes >= 70);
+  const sab77 = vifDe({ frappeConduite: false });
+  ok(`sabotage « la disette d'hier » attrapé (frappeConduite:false : ${sab77.deny} refus ≥ ${vif77.deny * 3} — la borne absolue sur le ballon du couple, nommée)`,
+    sab77.deny >= vif77.deny * 3);
 }
 
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche
