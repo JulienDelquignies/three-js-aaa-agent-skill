@@ -127,6 +127,7 @@ export class Rondo {
     // configurations cyclées 4 s (tout / sans nappes / sans corps / basse déf), fps affiché à
     // demeure : UNE capture utilisateur dit où vivent les millisecondes.
     this._probe = q.get('probe') === '1' ? { phase: -1, t0: 0, n: 0, res: [] } : null;
+    this._camFloor = q.get('camfloor') !== '0';   // le plancher d'angle de la régie (lot 80)
 
     // ---- the grid the game is played in, painted on the grass
     // un ENTRAÎNEMENT a son carré et ses cônes ; un MATCH n'ajoute rien au sol — le stade
@@ -770,7 +771,20 @@ export class Rondo {
     this._look.z += (b[2] - this._look.z) * Math.min(1, dt * 2.4);
     this._look.y += (1 - this._look.y) * Math.min(1, dt * 3);
     const px = this.cam.position.x + (targetX * 0.55 - this.cam.position.x) * Math.min(1, dt * 1.5);
-    this.cam.position.set(px, this.cam.position.y, -this._camBack);
+    // LE PLANCHER D'ANGLE (lot 80 — « joueurs invisibles » encore : la régie passait au ZÉNITH
+    // quand le jeu venait à la touche côté caméra — Δz 8 m sous 40 m de haut = plongée à ~79°,
+    // des têtes écrasées de 4 px, capture au flagrant). Une vraie régie garde son RASANT : si
+    // la distance horizontale au point regardé tombe sous h/tan(55°), la caméra RECULE le long
+    // de z, lissée comme le reste du travelling. ?camfloor=0 : le zénith d'hier, sabotage nommé.
+    let bz = -this._camBack;
+    if (this._camFloor !== false) {
+      const dMin = this.cam.position.y / Math.tan(THREE.MathUtils.degToRad(55));
+      const dx = px - this._look.x;
+      const need = Math.sqrt(Math.max(0, dMin * dMin - dx * dx));
+      if (Math.abs(bz - this._look.z) < need) bz = this._look.z - need;
+    }
+    const pz = this.cam.position.z + (bz - this.cam.position.z) * Math.min(1, dt * 1.5);
+    this.cam.position.set(px, this.cam.position.y, pz);
     if (this.matchMode) {
       if (this._fovBase == null) this._fovBase = this.cam.fov;
       const lastThird = Math.abs(b[0]) > this.state.pitch.hx - this.state.pitch.dims.box.depth - 3;

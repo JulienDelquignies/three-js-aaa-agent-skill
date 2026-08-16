@@ -3702,6 +3702,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      loi neuve ; et un banc hors batterie habituelle (attributes) se relit à chaque virage de
      flux, sinon ses témoins vieillissent en silence.
 
+119. **Lot 80 : les « joueurs invisibles » du retour utilisateur — c'était la RÉGIE au zénith,
+     et trois faux instruments avant la vraie preuve.** Retour : « j'ai vu des joueurs
+     invisibles encore ». La chasse : (a) trois détecteurs de pixels successifs ont MENTI —
+     le readback d'un canvas WebGPU (drawImage) est asynchrone : il lit des frames vides ou
+     DÉCALÉES du paquet d'updates (72 frames de sim entre l'image affichée et l'état lu →
+     les fenêtres visaient les positions neuves sur une image ancienne : 314 « invisibles »
+     sur 466, tous faux) ; leçon d'instrument — seul play_screenshot (capture composited
+     Playwright) fait foi pour les pixels. (b) La vérité STRUCTURELLE d'abord : les 22 meshes
+     exactement sur leurs positions sim (écart 0,0), visible=true, échelle 1 — le monde 3D
+     sain. (c) LA CAPTURE au flagrant : en portrait, quand le jeu vient à la touche CÔTÉ
+     caméra, la régie broadcast (z fixé à −back, h=40, lookAt ballon) passe en plongée quasi
+     VERTICALE (Δz≈8 m sous 40 m = ~79°) — des têtes écrasées de 4 px sur pelouse sombre :
+     « invisibles ». LA LOI (lot 80, Rondo._broadcast) : LE PLANCHER D'ANGLE de la régie —
+     si la distance horizontale au point regardé tombe sous h/tan(55°), la caméra RECULE le
+     long de z (lissée comme le travelling). ?camfloor=0 : le zénith d'hier, sabotage nommé.
+     Mesuré après : plongée max 58,8° sur 238 s rejoués (le lissage laisse ~4° de dépassement
+     transitoire), corps lisibles à la touche. Leçons : les « joueurs invisibles » ont eu
+     QUATRE causes en cinq lots (frustum innocenté, fondu de geste, corps noirs du bake v1,
+     zénith de régie) — un même mot utilisateur ≠ une même cause, TOUJOURS re-diagnostiquer ;
+     et le cadrage est une LOI du moteur comme les autres : bornée, injectable, sabotable.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
