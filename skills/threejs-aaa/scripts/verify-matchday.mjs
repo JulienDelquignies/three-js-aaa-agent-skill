@@ -132,6 +132,26 @@ function makeRig() {
     ok('stade décalé/surélevé : contrat toujours vert (frame locale)', checkStadiumNight(n3, model).ok);
     n3.dispose();
   }
+  // le MONDE CUIT (lot 75 — verdict de la sonde SUR l'appareil : 8 nappes forward = 18 fps,
+  // sans elles 60) : les flaques vivent en lightMap, les spots restent CONSTRUITS mais éteints,
+  // le bain rend le débordement aux tribunes — le contrat connaît cette forme-là du rig.
+  {
+    const s4 = new THREE.Scene();
+    const pel = new THREE.Mesh(new THREE.PlaneGeometry(113, 76).rotateX(-Math.PI / 2), new THREE.MeshStandardNodeMaterial());
+    pel.name = 'pelouse'; s4.add(pel);
+    const ab = new THREE.Mesh(new THREE.PlaneGeometry(160, 120).rotateX(-Math.PI / 2), new THREE.MeshStandardNodeMaterial());
+    ab.name = 'abords'; s4.add(ab);
+    const n4 = setupStadiumNight(s4, null, { model, bake: true });
+    const c4 = checkStadiumNight(n4, model);
+    ok('monde CUIT (bake) : contrat vert — spots construits mais ÉTEINTS, la clé (ombre) vivante', n4.baked && c4.ok && n4.spots.every((sp) => !sp.visible), c4.issues.join(' | ') || '');
+    ok('  la lightMap couvre pelouse ET abords (uv1 planaires posés)', !!pel.material.lightMap && !!ab.material.lightMap && !!pel.geometry.attributes.uv1);
+    { const dirs = []; n4.group.traverse((o) => { if (o.isDirectionalLight) dirs.push(o); });
+      ok('  le bain des tribunes existe (2 directionnelles : la clé + le bain)', dirs.length === 2); }
+    n4.dispose();
+    const n5 = setupStadiumNight(new THREE.Scene(), null, { model });
+    ok('  sabotage « forward d\'hier » (bake absent) : 8 nappes visibles, pas de flag baked', !n5.baked && n5.spots.every((sp) => sp.visible));
+    n5.dispose();
+  }
 
   // ---- sabotages nommés
   const rebuild = () => setupStadiumNight(new THREE.Scene(), null, { model });

@@ -3568,6 +3568,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      buter sur la sémantique du backend — la garder derrière une clé et instrumenter plutôt
      que forcer ; quand l'appareil qui souffre est hors de portée, EMBARQUER l'instrument.
 
+113. **Lot 75 : l'éclairage cuit v2 — la sonde a désigné les nappes, le tier low les cuit.**
+     Capture-verdict utilisateur (?probe=1) : tout 18 fps / SANS NAPPES 60 / sans corps 48 /
+     basse déf 60 — les 8 SpotLights forward coûtaient ~40 ms/frame de fragment sur l'appareil
+     (et « basse déf 60 » prouve le lien : coût par-fragment). V2 SANS layers (leçon 112) :
+     (a) pelouse+abords portent la lightMap analytique des 8 nappes (formule du shader :
+     candela/d², fenêtre smoothstep, Lambert — plus une FUITE isotrope 0,14 hors cône : le
+     bord vivant gagne du spéculaire rasant des mâts opposés, dépendant de la vue, non
+     cuisable) ; (b) les spots restent CONSTRUITS mais s'éteignent (plus aucun coût) ; (c) les
+     TRIBUNES reçoivent un BAIN calibré (directionnelle 0,35 + hémisphère 0,11 — elles
+     vivaient du débordement latéral, −66 % sans) ; (d) les CORPS et le BALLON reçoivent
+     l'émissif calibré (_bakeCorps : emissiveMap = leur diffuse, émissif = teinte d'équipe ×
+     teinte des mâts, intensité 0,42) — le rendu émis EST le diffus teinté, le MODELÉ reste
+     à la clé et son ombre. Calibration par zones contre le monde vivant (page fraîche, 62
+     pas, mêmes trames) : pelouse 0,96 / centre 1,04 / kits blancs 1,05 — écarts ASSUMÉS et
+     documentés : gradins +35 %, bord bas −24 %, kits rouges +37 % (le prix du tier
+     téléphone ; le desktop/high garde le forward exact). Défaut : tier LOW seulement ;
+     ?bakelight=1 force partout, =0 coupe partout ; bake opt-in dans la signature (les autres
+     appelants gardent le monde d'hier). Contrat re-fondé : sous result.baked, la clause des
+     faisceaux vérifie spots construits+éteints, lightMap posée, clé vivante — verify-matchday
+     88/0 (4 clauses neuves dont le sabotage « forward d'hier »). Leçons : la caméra broadcast
+     BOUGE — toute comparaison de zones exige page fraîche et pas de sim identiques ; un champ
+     quasi uniforme (mesuré) autorise l'émissif constant pour les corps ; calibrer sur
+     l'instrument du banc (zones + masques de kits), pas à l'œil.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

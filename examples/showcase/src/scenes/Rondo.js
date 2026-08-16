@@ -97,11 +97,11 @@ export class Rondo {
       // reste au bord de l'acné sur les depth-buffers mobiles même sous la loi du biais, et le
       // budget GPU est rendu ailleurs (bloom OFF + MSAA OFF au tier low, lots 61-62).
       shadowMapSize: this.fullMode ? 1024 : 2048,
-      // l'éclairage MIXTE (lot 74) reste EXPÉRIMENTAL (?bakelight=1) : la cuisson des flaques
-      // marche (texture posée, spots layerisés hors pelouse) mais la couche dynamique ne SERT
-      // PAS les spots aux corps sous WebGPU (joueurs noirs mesurés — ils vivent des nappes,
-      // 1600-4300 cd contre une clé 0,95). La sonde ?probe=1 arbitre le prochain investissement.
-      bake: q.get('bakelight') === '1' });
+      // l'éclairage MIXTE v2 (lot 75) : le verdict de la sonde SUR L'APPAREIL (tout 18 fps /
+      // sans nappes 60) a désigné les 8 spots forward (~40 ms/frame de fragment). Au tier low
+      // les nappes vivent en TEXTURE (spots éteints + bain calibré) ; ?bakelight=1 force
+      // partout, =0 coupe partout (le forward d'hier, sabotage nommé).
+      bake: q.get('bakelight') === '1' || (this._tier === 'low' && q.get('bakelight') !== '0') });
     this.disposables.push(this.night);
     this._reports = { stadium: chk, night: checkStadiumNight(this.night, model), kits: [], gestes: [] };
 
@@ -140,6 +140,7 @@ export class Rondo {
     // standing ON the pitch has to be opted in or it goes unlit
     if (this.grid) this.night.light(this.grid.group);
     this.night.light(this.ball);
+    if (this.night.baked) this._bakeCorps(this.ball);   // le ballon vivait des nappes lui aussi (l'objet le plus regardé)
 
     // ---- the game itself
     // ?n=3 pour un 3 contre 3. Sur un téléphone, dix bonshommes dans un carré de 16 m sont dix taches
@@ -246,6 +247,11 @@ export class Rondo {
       // LES CILS NE SE VOIENT PAS À 20 M (lot 74) : 960 tri × 22 corps re-skinnés chaque frame
       // pour un détail sub-pixel à la caméra de match. ?cils=1 les rend (gros plans, carrière).
       if (q.get('cils') !== '1') model3d.traverse((o) => { if (/eyelash/i.test(o.name)) o.visible = false; });
+      // LES CORPS SOUS LA CUISSON (lot 75) : les nappes éteintes leur donnaient 1 600-4 300 cd —
+      // ni le bain (calibré tribunes) ni les couches (cassées sous WebGPU) ne peuvent les servir.
+      // L'ÉMISSIF CALIBRÉ le fait : emissiveMap = leur diffuse, émissif = teinte d'équipe × teinte
+      // des mâts — le rendu émis EST le diffus teinté, et le MODELÉ reste à la clé et son ombre.
+      if (this.night.baked) this._bakeCorps(model3d);
       // le warp de frappe a besoin des chaînes de jambe PAR PIED et de leurs longueurs (mesurées
       // sur le rig posé, comme foot-lock) — l'autorité de la jambe frappeuse pendant l'armé
       const _a = new THREE.Vector3(), _b = new THREE.Vector3();
@@ -377,6 +383,20 @@ export class Rondo {
     // a live trace, so the contract can be checked on the REAL running game at any moment
     this._trace = [];
     return true;
+  }
+
+  // L'émissif des corps sous la cuisson (lot 75) — le champ des nappes est quasi uniforme
+  // (mesuré) : une intensité constante rend aux corps ce que les spots éteints leur donnaient.
+  _bakeCorps(root3d) {
+    root3d.traverse((o) => {
+      const m = o.material;
+      if (!(o.isMesh || o.isSkinnedMesh) || !m || m._corpsCuit) return;
+      m._corpsCuit = true;
+      if (m.map) m.emissiveMap = m.map;
+      m.emissive = (m.color?.clone?.() ?? new THREE.Color(0xffffff)).multiply(new THREE.Color(0xf0f5ff));
+      m.emissiveIntensity = 0.42;
+      m.needsUpdate = true;
+    });
   }
 
   // La sonde des millisecondes (lot 74, ?probe=1) — cycle 4 configurations et affiche le fps
