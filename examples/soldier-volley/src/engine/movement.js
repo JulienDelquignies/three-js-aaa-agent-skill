@@ -96,7 +96,12 @@ export function movePlayers(st, dt, cfg) {
     // …la chasse est l'affaire du PLUS PROCHE : première version, chaque presseur ET chaque
     // intercepteur jaillissait sur chaque passe — 155 chasses en 120 s, 94 ruptures/min, la frénésie
     // que la refonte tempo venait d'éteindre. Un seul défenseur claque sur la touche de passe.
-    if ((p.job === 'press' || p.job === 'intercept') && st.pass && st.t - st.pass.t < 0.5
+    // …APRÈS SA RÉACTION (lot 81, même clé que la loi du receveur — l'équité de lecture EST la
+    // loi) : la gâchette instantanée donnait au voleur 2 m d'avance sur le receveur qui, lui,
+    // paie sa latence ; les deux corps lisent le départ du ballon au prix du même attribut.
+    const chR = st.full && cfg.attaquePasse !== false ? (p.skill?.reaction ?? 0.18) : 0;
+    if ((p.job === 'press' || p.job === 'intercept') && st.pass
+      && st.t - st.pass.t > chR && st.t - st.pass.t < 0.5 + chR
       && p._pace.until < st.t && !st.pass._chased) {
       const dMe = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       const nearest = st.players.every((q) => q === p || q.team === p.team || q.down > 0

@@ -3746,6 +3746,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      dans la GÉOMÉTRIE du stade — une loi de cadrage se vérifie contre les occlusions
      (toit, façade, panneaux), pas seulement contre un angle cible.
 
+121. **Lot 81 : la passe contestée s'attaque — trois faux coupables avant les deux vrais.**
+     Retour : « des joueurs qui reçoivent des ballons restent figés, au lieu d'aller le
+     chercher ils s'arrêtent et l'adversaire récupère avant eux alors qu'ils étaient seuls ».
+     Sonde : 18 volées receveur-plus-proche / 15 min, receveur à 1,3 m/s pendant le vol. La
+     chasse au mécanisme a réfuté DEUX remèdes plausibles avant les bons : (a) sprinter vers
+     la rencontre nominale anticipée (+0,4 s) — zéro effet ; (b) viser le ballon réel avec
+     mène 0,35 s — le receveur court mais perd ENCORE (filmé : sa cible est 2 m DEVANT le
+     ballon, le voleur va AU ballon). LES FILMS frame-par-frame ont montré les deux vrais
+     mécanismes : (1) L'ASYMÉTRIE DE LATENCE — le burst de chasse défensif (movement) part
+     SANS délai quand la loi 50 fait payer une latence à toute perception : 2 m d'avance
+     gratuite au voleur ; les deux corps paient désormais le MÊME attribut reaction
+     [0,30 ; 0,14 s] — l'élite lit plus vite, des deux côtés du duel. (2) LA PASSE MOURANTE —
+     une passe trop courte meurt à 2 m du receveur PLANTÉ des secondes, cible verrouillée sur
+     une mène que le ballon n'atteindra jamais (le vécu mot pour mot) : ballon au sol, lent,
+     loin de sa mène → cible = POINT D'ARRÊT (v²/2a). Clé attaquePasse {marge 2, mort 2,8},
+     burst 'attaque' par le canal existant, mène de course 0,12 s, st.full, sabotage
+     attaquePasse:false = la marche ET la gâchette instantanée d'hier (même clé : l'équité de
+     lecture EST la loi). Résultat : plus AUCUNE statue (vols au corps restants tous receveur
+     lancé 1,8-5,7 m/s, 10 → 6), les 9 vols amont restants sont le PRESSING QUI PAIE (passes
+     dans une ligne couverte — sain, chantier du choix de passe s'il enfle). Empreintes rondo
+     c775c81e62592d4d / réduit 65d2b2fa94744840 au bit ; A/B 20 × 300 s : 62 tirs, 32 buts
+     (bande 17-33) ; clause gardien re-élargie {2..5} (13 cadrées, 46 % — balayé 8 graines :
+     35 % agrégé, la dispersion par graine ne porte plus 6 cadrées). Leçons : FILMER avant de
+     corriger (deux remèdes plausibles réfutés par le film) ; les latences se calibrent en
+     PAIRES (donner une réaction à un camp sans l'autre crée un monde truqué) ; « il était
+     seul » à la mène ne dit rien de la LIGNE (l'interception amont est un autre football).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

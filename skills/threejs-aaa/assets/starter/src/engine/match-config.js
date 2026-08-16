@@ -364,6 +364,12 @@ export const MATCH = {
                           // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
                           // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
                           // le nombre.
+  attaquePasse: { marge: 2 }, // LA PASSE CONTESTÉE S'ATTAQUE (lot 81, st.full — « il reste figé
+                          // et l'adversaire récupère avant lui ») : 18 volées receveur-plus-
+                          // proche / 15 min mesurées, receveur à 1,3 m/s. Un adversaire à la
+                          // mène plus tôt que lui (à la marge, m) : le receveur SPRINTE à la
+                          // rencontre (burst 'attaque') après son temps de RÉACTION (attribut).
+                          // false : la marche d'hier.
   contain: { dist: 0.9 }, // LE CONTAIN (lot 78, st.full — dette 67c « le press percute ») : le
                           // poursuivant dans le DOS d'un porteur lancé se cale au point de
                           // FILATURE (dist m derrière lui sur sa course) au lieu de viser le

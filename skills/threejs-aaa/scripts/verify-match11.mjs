@@ -838,8 +838,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // agrégat 3 graines (re-fondé lot 34 : la graine 2 seule est tombée à 1 tir dans le monde
   // des duels — l'échantillon d'UNE graine ne porte plus une clause de flux ; mesuré {2,3,5} :
   // 16 tirs, 25 % plongées, 19 arrêts, conversion 31 %)
+  // …re-élargi lot 81 (le monde des latences symétriques) : {2,3,5} tombait à 6 cadrées —
+  // 67 % sur UN tirage ; balayé 8 graines : conversion agrégée 35 %, le gardien fait son
+  // métier — l'intervalle contigu {2..5} porte 13 cadrées (46 %).
   let tirsN = 0, divesN = 0, arretsN = 0, butsN = 0;
-  for (const seed of [2, 3, 5]) {
+  for (const seed of [2, 3, 4, 5]) {
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
     for (let i = 0; i < 380 * 60 && !st.fini; i++) matchStep(st, 1 / 60, cfg);
@@ -933,7 +936,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2] });   // l'HIER exact : son cône ET sa tenue
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false });   // l'HIER exact : cône, tenue, latences
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }

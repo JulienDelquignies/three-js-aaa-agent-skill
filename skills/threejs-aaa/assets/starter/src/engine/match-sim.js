@@ -1,13 +1,8 @@
-// match-sim — LE MATCH RÉDUIT : deux buts, des gardiens, des tirs, des remises en jeu, un score.
-// L'architecture est celle d'un moteur, pas d'un fork : il n'y a QU'UN game-loop (rondo-sim,
-// prouvé par 40 clauses) et le match est une CONFIGURATION de ce loop — quatre points d'accroche
-// (`assignJobs`, `tryShot`, `onOut`, `onDive`, `canTake`) posés là où le rondo disait « carré
-// abstrait » : l'attribution des rôles devient directionnelle (on attaque UN but), la sortie de
-// balle devient une RÈGLE (pitch.outRule : but / touche / corner / sortie de but), le porteur
-// gagne LE geste qui n'existait pas (le tir), le gardien son métier (keeper.js). Le reste est le
-// MÊME code que le rondo — c'est le point. V1 volontaire (dettes nommées) : touche au pied
-// (format réduit, futsal — pitch.js) ; pas de hors-jeu au réduit (le 11c11 vit sous la Loi 11,
-// offside.js) ; gardien dans sa surface (depthMax 2,6) ; remises sans cérémonie.
+// match-sim — LE MATCH : UN seul game-loop (rondo-sim, 40 clauses) dont le match est une
+// CONFIGURATION par points d'accroche (`assignJobs`, `tryShot`, `onOut`, `onDive`, `canTake`) :
+// rôles directionnels, sorties en RÈGLE (pitch.outRule), le tir, le gardien (keeper.js). Le
+// reste est le MÊME code que le rondo — c'est le point. Dettes v1 nommées : touche au pied au
+// réduit (futsal), hors-jeu 11c11 seulement (offside.js), gardien dans sa surface.
 
 import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
@@ -433,19 +428,15 @@ function assignMatchJobs(st, cfg) {
   const field = st._bField ??= [], attackers = st._bAtk ??= [], defenders = st._bDef ??= []; field.length = 0; attackers.length = 0; defenders.length = 0;
   // à 10 après un rouge (Loi 12) ; le remplacé en chemin est hors des postes (Loi 3)
   for (const p of st.players) if (!p.keeper && !p.expulse && !p._sub) { field.push(p); (p.team === atk ? attackers : defenders).push(p); }
-  // LE RECEVEUR ATTAQUE SA PASSE. Le trou fondateur du 21 % de passes reçues : pendant le vol,
-  // l'attribution envoyait TOUT LE MONDE aux couloirs — le destinataire trottait vers son slot
-  // pendant que le ballon passait à côté de lui. Le cerveau du rondo donnait ce job ; le match
-  // l'avait perdu en devenant directionnel.
+  // LE RECEVEUR ATTAQUE SA PASSE (le trou fondateur du 21 % de passes reçues : le destinataire
+  // trottait vers son slot pendant que le ballon passait à côté de lui).
   const flightRec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
   const goal = pitch.attackGoal(atk);
   const own = pitch.ownGoal(atk === 0 ? 1 : 0);                    // le but que la défense protège
   void own;
 
-  // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS. Sans porteur ni receveur vivant, la
-  // formation l'ORBITAIT (14 épisodes ≥ 0,7 s de ballon à > 3 m de tout corps mesurés). Le
-  // plus proche de chaque camp court à l'INTERCEPTION : mène ~0,7 s bornée au terrain,
-  // re-résolue chaque image — elle converge quand le ballon ralentit.
+  // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS (la formation l'orbitait : 14 épisodes
+  // mesurés) : le plus proche de chaque camp court à l'interception, mène ~0,7 s re-résolue.
   const bSpd = Math.hypot(st.ball.v[0], st.ball.v[2]);
   const freeBall = cfg.chaseLoose !== false && !carrier && (st.phase === 'loose' || !st.pass || st.pass.to < 0);
   const leadK = Math.min(6, bSpd * 0.7);
@@ -471,24 +462,16 @@ function assignMatchJobs(st, cfg) {
   for (const p of attackers) {
     if (carrier && p.id === carrier.id) {
       p.job = 'carry';
-      // LA CONDUITE SERRÉE PAR DÉFAUT : la touche pleine ne se sert qu'en rupture NOMMÉE
-      // (burst) — en croisière, semelle (touchF 0,62 : ~1,65 m à 6 m/s au lieu de 2,7). …et LA
-      // CONDUITE POURSUIVIE COLLE (cfg.carryGuard) : un défenseur ≤ 2,2 m impose la touche
-      // PROTÉGÉE (mesuré : p50 1,37 m, 29 % > 1,5 — « bien trop loin du pied », retour
-      // utilisateur). Le burst n'allonge que libre devant.
+      // CONDUITE SERRÉE PAR DÉFAUT : touche pleine en rupture nommée (burst) seulement ; et
+      // POURSUIVIE (défenseur ≤ 2,2 m) elle COLLE (cfg.carryGuard — « bien trop loin du pied »).
       let foeGuard = 99;
       for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) foeGuard = Math.min(foeGuard, Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]));
       p.touchF = (p._prepShot ?? -1) > st.t ? (cfg.prepTouchF ?? 0.3)   // la préparation SERRE
         : foeGuard <= 2.2 ? (cfg.carryGuard ?? ((p._pace?.until ?? -1) > st.t ? 1 : (cfg.carryTight ?? 1)))
         : (p._pace?.until ?? -1) > st.t ? 1
         : (cfg.carryTight ?? 1);
-      // …et AMORTIT (le canal vitesse de dribble.js) : le ballon se cale sous l'allure du corps.
-      // LA CONDUITE PROTÉGÉE AMORTIT AUSSI (guardDamp) : réduire le lead ne suffisait pas —
-      // pushSpeed ≥ v, le ballon partait au-dessus de l'allure et l'écart montait au roulement
-      // (p50 1,4 m mesuré poursuivi malgré carryGuard) ; amorti, il reste sous le pied.
-      // …EN COURSE seulement (v ≥ 4) : à basse allure, amortir sous l'allure créait des
-      // excursions LENTES (ballon à 3,6 contre corps à 3 — 4,5 s/min loin mesurés) ; au trot,
-      // le lead court du régime protégé suffit
+      // …et la PROTÉGÉE AMORTIT (guardDamp) EN COURSE seulement (v ≥ 4) : amorti, le ballon
+      // reste sous le pied ; au trot, amortir créait des excursions lentes (4,5 s/min mesurés).
       p.touchDamp = (p._prepShot ?? -1) > st.t ? (cfg.prepDamp ?? 0.72)
         : foeGuard <= 2.2 && p.speed >= 4 ? (cfg.guardDamp ?? 0.88) : 1;
       const ev = evadeSpot(st, p, cfg);
@@ -566,19 +549,9 @@ function assignMatchJobs(st, cfg) {
   // couloirs : deux lanceurs devant-large, une sécurité derrière, le reste en largeur
   if (flightRec && !flightRec.keeper && flightRec.team === atk) {
     flightRec.job = 'receive';
-    // LE RECEVEUR ATTAQUE SON BALLON (cfg.meetBall) — la loi du RONDO (interceptPoint sur la
-    // trajectoire) que le match avait régressée en point de chute STATIQUE : mesuré, 49 % du vol
-    // à < 0,5 m/s et p25 = 0,00 — la statue qui « attend le ballon », et la prise à bout de bras
-    // d'un corps planté. Le point de RENCONTRE le plus tôt, re-résolu par image : il VIENT au
-    // ballon, et la prise se fait dans le pas.
-    // …D'UN PAS VERS LE BALLON, SUR L'AXE DE LA LIVRAISON (cfg.meetZone/meetStep). Deux
-    // sur-corrections mesurées et consignées : la rencontre par interceptPoint suivait le vol
-    // RÉEL (bruit compris) — chaque receveur corrigeait jusqu'à 4,5 m d'erreur, TOUTE passe
-    // aboutissait (0 sortie en 4 matchs, 23-25 passes/min : le flipper par la réception
-    // parfaite) ; et la rencontre inconditionnelle l'aspirait vers le press. Le vrai geste :
-    // tenir sa position (le placement), puis UN PAS ET DEMI vers le ballon dans les derniers
-    // mètres — le corps s'anime, la prise se fait en mouvement, et l'erreur LATÉRALE de la
-    // passe continue d'échapper (c'est le football qui garde ses déchets).
+    // LE PAS AU CONTACT (cfg.meetBall/meetZone/meetStep) : un pas et demi sur l'AXE NOMINAL
+    // dans les derniers mètres. Leçon du flipper : suivre le vol RÉEL corrigeait 4,5 m
+    // d'erreur, toute passe aboutissait — l'axe nominal garde le déchet latéral du football.
     let met = null;
     const dInb = Math.hypot(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
     if (cfg.meetBall !== false && dInb < (cfg.meetZone ?? 4.5)) {
@@ -589,17 +562,50 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (bx / bl) * step, 0, st.pass.lead[2] + (bz / bl) * step];
       }
     }
-    // LE RECEVEUR VIVANT (retour utilisateur « cette pose statique en attendant le ballon ») :
-    // mesuré, p25 de vitesse = 0,00 m/s pendant le vol et 14 % des vols figés > 60 % du temps —
-    // loin du ballon, la rencontre n'existait pas encore, la statue au point de chute. Sur une
-    // passe DANS LES PIEDS (mène ≈ receveur) assez longue, il VIENT AU-DEVANT sur l'AXE NOMINAL
-    // de la livraison (mène → origine), à allure de marche, borné — le corps vit pendant TOUT le
-    // vol, la prise se fait dans le pas, et l'erreur latérale continue d'échapper (l'axe est
-    // NOMINAL, pas le vol réel : la leçon du flipper reste consignée). Le coureur d'appel garde
-    // sa course (_pace vivant = pas de retour vers l'origine), le réduit son monde (st.full).
-    // …ET LA ZONE EST LA LOI (cfg.meetWalk.hold) : venir au ballon est un geste de CONSTRUCTION —
-    // dans les ~30 derniers mètres le receveur TIENT son point de fixation (mesuré sans la porte :
-    // les prises < 22 m du but chutaient 12 → 5 et les tirs 27 → 16, l'attaque redescendait).
+    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81 — « il reste figé et l'adversaire vient récupérer
+    // le ballon avant lui alors qu'il était seul » : 18 volées receveur-plus-proche / 15 min,
+    // receveur à 1,3 m/s pendant que le voleur sprinte — l'asymétrie exacte du vécu, et le pas
+    // nominal ne couvre pas l'écart latéral d'une passe imprécise depuis que la prise exige le
+    // CONTACT). Menace lue (un adversaire à la mène aussi tôt que lui) après son temps de
+    // RÉACTION (attribut — l'élite part plus tôt) : il SPRINTE (burst 'attaque') au BALLON
+    // RÉEL — un vrai 50/50 de course (le déchet devient un duel ; le flipper ne revient pas :
+    // les passes NON contestées gardent l'axe nominal). Le vol en cloche garde chutePredite.
+    // Sabotage : attaquePasse:false = la marche d'hier.
+    let menace = false;
+    if (st.full && cfg.attaquePasse !== false && (st.pass.flight ?? 0) > 0
+      && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18)) {
+      let dFoe = 99;
+      for (const q of st.players) if (q.team !== flightRec.team && !q.keeper && q.down <= 0)
+        dFoe = Math.min(dFoe, Math.hypot(q.p[0] - st.pass.lead[0], q.p[2] - st.pass.lead[2]));
+      const dRec = Math.hypot(flightRec.p[0] - st.pass.lead[0], flightRec.p[2] - st.pass.lead[2]);
+      menace = dFoe < dRec + (cfg.attaquePasse?.marge ?? 2);
+      if (menace && !st.pass._attacked && (flightRec._pace?.until ?? -1) < st.t) {
+        st.pass._attacked = true; flightRec._pace ??= { until: -1, next: 0 };
+        flightRec._pace.until = st.t + 0.8; flightRec._pace.kind = 'attaque';
+        st.events.push({ type: 'burst', kind: 'attaque', by: flightRec.id, t: +st.t.toFixed(2) });
+      }
+    }
+    // …ET LA PASSE MOURANTE SE VA CHERCHER (filmé : passe trop courte morte à 2 m du receveur
+    // PLANTÉ des secondes, cible verrouillée sur une mène que le ballon n'atteindra jamais —
+    // le vécu mot pour mot). Ballon au sol, lent, loin de sa mène : cible = POINT D'ARRÊT.
+    const bSp = Math.hypot(st.ball.v[0], st.ball.v[2]);
+    if (st.full && cfg.attaquePasse !== false && st.ball.p[1] < 0.5
+      && bSp < (cfg.attaquePasse?.mort ?? 2.8)
+      && Math.hypot(st.ball.p[0] - st.pass.lead[0], st.ball.p[2] - st.pass.lead[2]) > 1.5
+      && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18)) {
+      const stop = Math.min(3, bSp * bSp / 3.6);
+      met = bSp > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bSp) * stop, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * stop]
+        : [st.ball.p[0], 0, st.ball.p[2]];
+    } else if (menace && st.ball.p[1] < 0.9) {
+      // sous menace on court AU ballon (mène 0,12 s — 0,35 visait le point futur : filmé
+      // perdant la course d'un cheveu, le voleur au ballon, le receveur 2 m devant)
+      const mk = Math.min(1.2, bSp * 0.12);
+      met = bSp > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bSp) * mk, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * mk]
+        : [st.ball.p[0], 0, st.ball.p[2]];
+    }
+    // LE RECEVEUR VIVANT (cfg.meetWalk — « pose statique en attendant le ballon ») : sur une
+    // passe dans les pieds assez longue il vient AU-DEVANT, allure de marche, borné. hold :
+    // aux ~30 derniers mètres il TIENT sa fixation (sans : prises < 22 m 12 → 5, tirs 27 → 16).
     if (!met && st.full && cfg.meetWalk && dInb >= (cfg.meetZone ?? 4.5)
       && !((flightRec._pace?.until ?? -1) > st.t)) {
       const g = st.pitch.attackGoal(flightRec.team);
@@ -612,15 +618,9 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (ax / al) * adv, 0, st.pass.lead[2] + (az / al) * adv];
       }
     }
-    // …ET UN VOL LONG SE REÇOIT À SA CHUTE PRÉDITE (lot 52, cfg.chutePredite — retour
-    // utilisateur « les contrôles sur les passes longues sont tous ratés ») : ancré au point
-    // NOMINAL, le receveur d'un lofted vivait à 4,3 m p50 de la chute réelle (p90 14) — le vol
-    // le survolait et retombait plus loin : 68 % des longs finissaient en CHASSE AU REBOND
-    // (p90 5 rebonds, 9 m roulés, 2,8 s). Le vrai receveur a ~2 s pour LIRE le vol : il court
-    // vers le premier point JOUABLE (y ≤ 1,2 m, descendant) du chemin prédit — à vitesse
-    // humaine (movePlayers borne : le déchet reste ce que ses jambes ne couvrent pas ; la
-    // leçon du flipper tient, on ne suit pas le bruit du vol court). false : l'ancre nominale
-    // d'hier (sabotage nommé « le récepteur au point de rendez-vous »).
+    // UN VOL LONG SE REÇOIT À SA CHUTE PRÉDITE (lot 52, cfg.chutePredite — « les contrôles
+    // longs tous ratés » : 68 % des longs en chasse au rebond). Il court au premier point
+    // JOUABLE (y ≤ 1,2, descendant) du chemin prédit, à vitesse humaine. false : hier.
     if (st.full && cfg.chutePredite !== false && !met && (st.pass.flight ?? 0) > 1.1 && st.ball.p[1] > 0.9) {
       if (!st._chuteT || st._chuteAt !== st.pass || st.t - st._chuteT > 0.25) {
         const chemin = predictPath(st.ball, { dt: 1 / 30, maxT: (st.pass.flight ?? 2) + 0.8 });
@@ -638,8 +638,7 @@ function assignMatchJobs(st, cfg) {
     // HAUT, les couloirs génériques laissaient la boîte vide — personne à servir, aucun centre
     // possible. Les postes deviennent ceux du centre : premier poteau, second poteau, point de
     // penalty, plus la sécurité et le soutien de couloir.
-    // …les postes s'arment TÔT (dès l'aile au quart offensif) : le coureur de surface a besoin
-    // de sa course — des postes armés au moment du centre arrivent après le ballon
+    // …armés TÔT (dès l'aile au quart offensif) : des postes armés au centre arrivent après.
     const wideDeep = Math.abs(anchor[2]) > pitch.hz * 0.38 && anchor[0] * sgn > pitch.hx * 0.25;
     const zs = Math.sign(anchor[2] || 1);
     // …et les postes vivent DEVANT le but, pas SUR la ligne : des coureurs à 2,4-2,8 m de la
