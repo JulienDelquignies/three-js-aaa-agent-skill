@@ -3606,6 +3606,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      l'utilisateur a transformé trois allers-retours d'hypothèses en UN verdict — pour un
      moteur réutilisable, la sonde fait partie du produit.
 
+115. **Lot 76 : l'aimant du porté est mort — le cône du porté, avec sa grâce et son exemption
+     d'arrêt.** La dette #73, dernière violation du contrat « zéro contact fantôme » (lot 70) :
+     le servo de porté (ball.carry vers footPoint, un point qui TOURNE avec le yaw) faisait
+     orbiter le ballon autour du corps au pivot, sans pied — mesuré : 18 % des touches de
+     conduite données dos (> 100°) au kick, 7,2 % des images portées dos, orbite caractérisée
+     1,06 % du porté. LA LOI (porteCone 120, st.full) : ni servo ni touche hors du cône avant
+     EN COURSE — dansCone partagé avec le lot 70, le talent élargit (× 2−dribbleLeadF : ±7°,
+     les ATTRIBUTS parlent à la loi), la touche de dribbleStep exige coneOk (dribble.js), le
+     release 'porte-dos' est enregistré au vocabulaire de ball-body. DEUX ITÉRATIONS SOUS
+     CONTRAT : (1) le release STRICT a cassé la famille frappe-dans-la-foulée (l'approche
+     ARQUE le corps autour du ballon : 55 tirs contre 70 A/B, foulée cassée) → LA GRÂCE :
+     0,3 s de servo MOU hors cône (traverser le dos est un pas réel, l'orbite durable non) ;
+     (2) l'exemption D'ARRÊT (< 1,5 m/s) : la tenue qui scanne tourne ballon sous la semelle
+     — geste réel (sans elle : hold jamais > 0,6 s). Résultat : touches dos 18 → 0,8-1,4 %,
+     orbite 0,71 %, empreintes rondo/réduit AU BIT PRÈS, sabotage porteCone:false à 22 %
+     attrapé. LE FLUX A CHANGÉ, assumé avec récit : hold p50 0,87 → 1,72 s (un socle posé
+     DOUBLÉ — le vrai foot tient le ballon), tirs A/B 70 → 37 sur 20×300 s (3,5/5 min était
+     irréaliste, le réel est ~1 ; la bande de buts 17-33 tient : 20), et les graines de la
+     clause d'appels profonds re-fondées {2,3,7} (balayage 8 graines : 3 appels dont 2 servis
+     — le mécanisme vit, l'abondance reste la dette d'équilibrage du lot 35). Le critère
+     deny ≥ 1 retiré de la clause aimant : la grâce fait PRÉVENIR la loi plutôt que punir
+     (le sabotage est la preuve). Leçons : une loi de contact peut casser une chorégraphie
+     LÉGITIME deux étages plus haut (l'approche de frappe, la tenue qui scanne) — chaque
+     itération sous batterie complète, pas de loi posée sans re-mesurer ses voisines ; les
+     attributs entrent dans les lois par des FACTEURS, pas par des branches.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

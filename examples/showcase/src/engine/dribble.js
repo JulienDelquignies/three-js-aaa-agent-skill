@@ -149,7 +149,9 @@ export function dribbleStep(d, ball, player, dt) {
   const prise = c.prise ?? c.reach;
   const bvAway = dist > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dist : 0;
   const auPied = dist < prise || (bvAway > player.speed + 0.3 && dist < c.reach);
-  if (auPied && d.sinceTouch >= c.minStride) {
+  // …ET LA TOUCHE EXIGE LE CÔNE AVANT (player.coneOk, lot 76 — posé par le match ; absent :
+  // bit-près) : un pied ne pousse pas un ballon dans le dos — le corps le contourne d'abord.
+  if (auPied && player.coneOk !== false && d.sinceTouch >= c.minStride) {
     // turning shortens the touch — you cannot push the ball 3 m ahead and still be with it after
     // a 40° change of direction. This is real technique, and it is what makes curved runs work.
     const turn = Math.abs(player.turnRate || 0);

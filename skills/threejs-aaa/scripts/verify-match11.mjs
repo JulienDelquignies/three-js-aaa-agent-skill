@@ -534,7 +534,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // graines {3,6,8} (re-fondé lot 35 : la bascule — option sûre — surclasse le service du
   // coureur, 0-2 servis par jeu de graines ; le taux d'appels servis est une dette d'équilibrage
   // NOMMÉE : appelBonus contre bonus de bascule, à arbitrer en réglage)
-  for (const seed of [3, 6, 8]) {
+  // graines {2,3,7} (re-fondé lot 76 : le cône du porté RALLONGE les tenues — hold p50 0,87 →
+  // 1,72, un MEILLEUR socle posé — et déplace quelles graines produisent : balayage 8 graines,
+  // 3 appels dont 2 SERVIS sur la 7 — le mécanisme vit, l'abondance reste la dette du lot 35)
+  for (const seed of [2, 3, 7]) {
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20 });
     let fPoss = 0, fOff = 0;
@@ -893,6 +896,40 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab70 = anglesDe({ priseCone: false, sePresente: false });
   ok(`sabotage « touche omnisciente + dos fossile » attrapé (cône coupé : ${sab70.ap + sab70.recDos} touches/réceptions dos ≥ ${vif70.ap + vif70.recDos + 4} — le monde d'hier, nommé)`,
     sab70.ap + sab70.recDos >= vif70.ap + vif70.recDos + 4);
+}
+
+// ---------- lot 76 — L'AIMANT DU PORTÉ : ni servo ni touche hors du cône avant — le corps
+// CONTOURNE son ballon, le pivot dos l'expose. Mesuré avant : 18 % des touches de conduite
+// données dos (> 100°) au kick, orbite au pivot 1,06 % du porté. Après : 1,4 % — et les
+// mondes rondo/réduit au bit près (empreintes, la loi est st.full).
+{
+  const touchesDos = (over) => {
+    let n = 0, dos = 0, deny = 0;
+    for (const seed of [2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let nEv = 0;
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        while (nEv < st.events.length) {
+          const e = st.events[nEv++];
+          if (e.type !== 'touche') continue;
+          const p = st.players[e.by]; if (!p || p.keeper) continue;
+          const a = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]) - p.yaw;
+          const deg = Math.abs(((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI;
+          n++; if (deg > 100) dos++;
+        }
+      }
+      deny += st.deny?.['porte-dos'] ?? 0;
+    }
+    return { n, dos, deny, part: n ? dos / n : 0 };
+  };
+  const vif76 = touchesDos({});
+  ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
+    vif76.part <= 0.04);
+  const sab76 = touchesDos({ porteCone: false });
+  ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
+    sab76.part >= vif76.part + 0.08);
 }
 
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche

@@ -655,24 +655,22 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // carry frames with the ball beyond 3 m). Two consumers of yaw, one meaning changed, both to fix.
     const csp = Math.hypot(c.v[0], c.v[1]);
     const heading = csp > 0.4 ? [c.v[0] / csp, c.v[1] / csp] : [Math.cos(c.yaw), Math.sin(c.yaw)];
+    // LE CÔNE DU PORTÉ (lot 76 — l'aimant : 18 % des touches au kick dos) : ni servo ni touche
+    // hors du cône avant EN COURSE — le corps CONTOURNE son ballon ; à l'ARRÊT (< 1,5) la
+    // semelle tourne avec (réel — sinon hold jamais > 0,6, zéro appel). Talent : ±7°. false : hier.
+    const coneP = () => !st.full || cfg.porteCone === false || c.speed < 1.5
+      || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], (cfg.porteCone ?? 120) * (2 - (c.skill?.dribbleLeadF ?? 1)));
     const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF,
-      touchF: c.touchF,   // le RÉGIME de touche (serré/lancé — posé par le match, absent au rondo)
+      touchF: c.touchF, coneOk: coneP(),   // le RÉGIME de touche + le cône (posés par le match, absents au rondo)
       touchDamp: c.touchDamp,   // le canal VITESSE (l'amorti de préparation — posé par le match)
       space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99) };
     pl.heading = dribbleSteer(st.ball, pl);
-    // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus une
-    // négociation. L'historique de cette chaîne est le meilleur argument du régime : quatre
-    // autorités successives (livraison, assise, conduite, plus leurs gardes) se sont fait la guerre
-    // ici — la touche d'évasion renvoyait une livraison arrivée, l'assise tuait un contrôle en
-    // route, control-at-foot est monté à 33 %. Désormais :
-    //   PORTÉ (owner = porteur) : le ballon converge vers le POINT DU PIED par l'intégrateur
-    //     (carry — servo borné, continu). Contrôle et préparation de frappe ne font qu'un avec le
-    //     joueur : le ballon est à lui, au pied, par définition.
-    //   CONDUITE : le porté se RELÂCHE (release('conduite')) — touches réelles, ballon libre entre
-    //     elles, interceptable : le football contestable qu'une attache dure aurait tué.
+    // LE PORTÉ — la possession est un ÉTAT DU MOTEUR (ball-body : possess/carry/release), plus
+    // une négociation (l'historique : quatre autorités en guerre ici, control-at-foot à 33 %).
+    //   PORTÉ (owner = porteur) : le ballon converge vers le POINT DU PIED (carry, servo borné).
+    //   CONDUITE : release('conduite') — touches réelles, ballon libre entre elles, interceptable.
     //   CONTESTÉ : release('contesté') — le duel se joue sur un ballon PHYSIQUE, le 50/50 est réel.
-    //   La re-capture (l'ancienne « assise ») : quand l'intention se forme et que le ballon est au
-    //   pied, non contesté — possess() + porté.
+    //   Re-capture : intention formée + ballon au pied non contesté — possess() + porté.
     const foeBall = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99);
     const contested = foeBall < cfg.contestRadius && foeBall < d2(c.p, st.ball.p) - cfg.contestSlack;
     const intentFresh = !!c.intent || (c.anchorHint && st.t - c.anchorHint.t < 0.4);
@@ -682,7 +680,11 @@ export function rondoStep(st, dt, cfg = RONDO) {
         st.ball.release('contesté');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }  // il tente de l'emmener hors du duel
       } else if (intentFresh || settling) {   // porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas
-        st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
+        // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du
+        // ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
+        if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
+        else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
+        else { deny(st, 'porte-dos'); st.ball.release('porte-dos'); }   // l'orbite durable : le ballon vit, le corps se retourne
       } else {
         st.ball.release('conduite');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }
