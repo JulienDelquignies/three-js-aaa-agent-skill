@@ -62,3 +62,27 @@ export function checkRoles() {
   if (resoudreRole('meneur').arbitre.passe !== 1.15) issues.push('resoudreRole ne résout pas un nom');
   return { ok: issues.length === 0, issues };
 }
+
+/** LE DÉDOUBLEMENT (lot 88, cfg.deborde — la course de rôle du couloir) : porteur LARGE et
+ *  offensif → son LATÉRAL (posts 0/3, même côté) dépasse par l'extérieur, par le canal des
+ *  appels (_pace 'deborde' : le porteur voit les coureurs). La cadence est le RÔLE (piston
+ *  souvent, récupérateur presque jamais) ; l'ailier INVERSÉ (lot 87) qui repique LIBÈRE ce
+ *  couloir. Retourne la cible de course ou null. false : le latéral qui reste chez lui. */
+export function deborde(st, p, carrier, pitch, atk, cfg, axe) {
+  if (!st.full || cfg.deborde === false || !carrier || carrier.keeper) return null;
+  if (p.post !== 0 && p.post !== 3) return null;
+  const sg = -pitch.ownGoal(atk).sign;
+  if ((p._ovT ?? -1) <= st.t
+    && Math.abs(carrier.p[2]) > pitch.hz * 0.42
+    && Math.sign(p.p[2] || 1) === Math.sign(carrier.p[2] || 1)
+    && carrier.p[0] * sg > pitch.hx * 0.1) {
+    p._ovT = st.t + 8 / Math.max(0.3, axe(role(p).appel, 0.4, 1.6));
+    p._ovUntil = st.t + 1.6;
+    p._pace = { until: st.t + 1.5, kind: 'deborde', next: p._pace?.next ?? st.t + 8 };
+    st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'deborde', by: p.id });
+  }
+  if ((p._ovUntil ?? -1) > st.t) return [
+    Math.max(-pitch.hx + 1.5, Math.min(pitch.hx - 1.5, carrier.p[0] + sg * 9)),
+    Math.sign(carrier.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(carrier.p[2]) + 4)];
+  return null;
+}

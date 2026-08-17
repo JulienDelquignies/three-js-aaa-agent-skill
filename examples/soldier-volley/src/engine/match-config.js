@@ -364,6 +364,10 @@ export const MATCH = {
                           // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
                           // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
                           // le nombre.
+  deborde: true,          // LE DÉDOUBLEMENT (lot 88, st.full — la paire du couloir) : porteur
+                          // large et offensif → son latéral (posts 0/3) dépasse par l'extérieur
+                          // (course _pace 'deborde', cadence du RÔLE — piston souvent). false :
+                          // le latéral qui reste chez lui (sabotage nommé).
   patte: true,            // LA PATTE (lot 87, st.full — shooting) : la latéralité module la
                           // fenêtre de l'enroulée (inversé ×1,6, débordement ×0,55, both ×1,2).
                           // L'attribut naît au corps (hash seed/id 72/23/5, ratings.foot le

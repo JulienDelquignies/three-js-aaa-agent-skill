@@ -3892,6 +3892,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (bande 17-33). Prochain consommateur de la patte : le CENTRE du pied de débordement et
      le choix de côté du repique — puis le dédoublement (le piston dans le couloir libéré).
 
+128. **Lot 88 : le dédoublement — la paire du couloir, une course de RÔLE (roles.deborde).**
+     Le latéral du côté du porteur large et offensif fait la course de DÉPASSEMENT par
+     l'extérieur — le canal des appels existant (_pace 'deborde' : le porteur voit les
+     coureurs, la mène se rafraîchit sur la course réelle), cible carrier + 9 m vers le but,
+     collée à la touche. La CADENCE est le rôle (axe appel : piston ~6 s de cooldown,
+     récupérateur ~16) ; l'ailier INVERSÉ du lot 87 qui repique libère exactement ce couloir
+     — les deux lots forment la paire tactique réelle. La fonction vit dans roles.js (88 l.
+     — son foyer : une course de rôle, pas une loi de couloirs), match-sim l'appelle en 3
+     lignes (volumétrie 1249 tenue par l'extraction, la doctrine du découpage en familles).
+     Mesuré : 3,5 dédoublements/match de 5 min, 1 servi en 4 matchs (le service viendra du
+     baromètre quand la course sera plus souvent la meilleure option — dette d'observation,
+     pas de mécanique). Sabotage orbite re-fondé 6e fois (+ deborde/patte:false — « l'hier
+     EN ENTIER » est un rituel désormais). Batterie 68+88+84+14+9 verte, A/B 54 tirs / 19
+     buts (bande 17-33), réduit/rondo intacts (b8b0/c775). Le trio variété offensive
+     avance : patte ✓, enroulée de l'inversé ✓, dédoublement ✓ — reste la discipline
+     défensive (« se jette moins », composure dans le tacle) et le centre du pied de
+     débordement.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

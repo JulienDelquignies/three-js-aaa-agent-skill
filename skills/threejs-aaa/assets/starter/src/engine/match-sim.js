@@ -11,7 +11,7 @@ import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots, premierOffensif, blocFor } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique, triangule } from './tactics.js';
-import { resoudreRole, role } from './roles.js';
+import { resoudreRole, role, deborde } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
 import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
@@ -59,8 +59,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
       if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]);
     }
   }
-  // LA PATTE (lot 87) : née au CORPS — hash (seed, id), 72/23/5, zéro st.rnd ; ratings.foot
-  // surclasse (contrat aval) ; consommateurs gatés st.full — le réduit au bit.
+  // LA PATTE (lot 87) : née au CORPS — hash (seed, id), 72/23/5, zéro st.rnd ; ratings.foot surclasse.
   for (const q of st.players) {
     const h = ((seed * 31 + q.id * 37) % 100 + 100) % 100;
     q.strongFoot = h < 72 ? 'right' : h < 95 ? 'left' : 'both';
@@ -564,9 +563,8 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (bx / bl) * step, 0, st.pass.lead[2] + (bz / bl) * step];
       }
     }
-    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81 — 18 volées receveur-plus-proche / 15 min) : menace
-    // lue après sa RÉACTION (attribut), il SPRINTE (burst 'attaque') au BALLON RÉEL — un vrai
-    // 50/50 ; les passes non contestées gardent l'axe nominal. attaquePasse:false = hier.
+    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81) : menace lue après sa RÉACTION (attribut), il
+    // SPRINTE (burst 'attaque') au BALLON RÉEL — un vrai 50/50. attaquePasse:false = hier.
     let menace = false;
     if (st.full && cfg.attaquePasse !== false && (st.pass.flight ?? 0) > 0
       && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18)) {
@@ -599,8 +597,7 @@ function assignMatchJobs(st, cfg) {
       met = bSp > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bSp) * mk, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * mk]
         : [st.ball.p[0], 0, st.ball.p[2]];
     }
-    // LE RECEVEUR VIVANT (cfg.meetWalk) : passe longue dans les pieds → il vient AU-DEVANT en
-    // marchant, borné ; hold ~30 derniers mètres : il TIENT sa fixation (sans : tirs 27 → 16).
+    // LE RECEVEUR VIVANT (meetWalk) : il vient AU-DEVANT en marchant ; hold ~30 derniers m : il TIENT (tirs 27 → 16 sans).
     if (!met && st.full && cfg.meetWalk && dInb >= (cfg.meetZone ?? 4.5)
       && !((flightRec._pace?.until ?? -1) > st.t)) {
       const g = st.pitch.attackGoal(flightRec.team);
@@ -768,6 +765,9 @@ function assignMatchJobs(st, cfg) {
             tz = p._runZ ?? tz;
           } else if (tx * off.sgn > off.adv - 0.8) tx = off.sgn * Math.max(0, off.adv - 0.8);
         }
+        // LE DÉDOUBLEMENT (lot 88, roles.deborde — la course de rôle du couloir) : doc roles.js
+        const ov = deborde(st, p, carrier, pitch, atk, cfg, axe);
+        if (ov) { tx = ov[0]; tz = ov[1]; }
         p.target = [tx, 0, tz];
       }
     }
