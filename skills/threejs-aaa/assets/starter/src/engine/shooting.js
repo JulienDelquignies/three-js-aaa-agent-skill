@@ -103,12 +103,21 @@ export function tryShot(st, c, cfg) {
       // conversion 47 → 34 % — la variété ne doit pas dégrader la finition)
       const pLuc = 0.08 + 0.12 * fin;
       const lateral = Math.abs(st.ball.p[2]) >= 4 && dGoal >= 13;
+      // LA PATTE FAIT L'ENROULÉE (lot 87, cfg.patte && st.full — le geste Robben) : l'AILIER
+      // INVERSÉ (pied fort opposé à son côté : Robben, Messi) rentre SUR son pied — l'enroulée
+      // est SON tir (fenêtre ×1,6) ; sur le pied de débordement elle se raréfie (×0,55, il
+      // rase/centre) ; des deux pieds ×1,2. Facteur de fenêtre, physique intacte — le réduit
+      // garde la fenêtre plate d'hier au bit. false : le tireur sans patte (sabotage nommé).
+      const side = Math.sign(st.ball.p[2] * -(goal.x || 1));
+      const sf = st.full && cfg.patte !== false ? (c.strongFoot ?? 'right') : null;
+      // (l'ulp : 0,42+0,14 ≠ 0,56 au bit — sans patte la borne d'hier reste LITTÉRALE)
+      const wIn = !sf ? 1 : sf === 'both' ? 1.2 : (side > 0) === (sf === 'right') ? 1.6 : 0.55;
       shotKind = u < 0.42 ? { id: 'puissance', speed: 21.5, elev: 0.09, rev: 0.5 }
         // L'ENROULÉE : de l'angle du repique, la mène se décale VERS LE CENTRE et le Magnus
         // la RAMÈNE au poteau (calibré : la courbe suit 1,44·(d/16)² au réel — arrivée à
         // 0,65-1,04 m au coin) — la lecture linéaire du gardien sous-estime l'arrivée,
         // c'est TOUT l'avantage du curler.
-        : (lateral && u < 0.56) ? { id: 'enroulée', speed: 18.5, elev: elevFor(1.35, 18.5), curl: 8 }
+        : (lateral && u < (sf ? 0.42 + 0.14 * wIn : 0.56)) ? { id: 'enroulée', speed: 18.5, elev: elevFor(1.35, 18.5), curl: 8 }
         // LE RAS-DE-TERRE : le rasant appuyé au sol — sous le plongeon, mange les rebonds
         : u < 0.5 ? { id: 'ras-de-terre', speed: 20, elev: 0.015, rev: 0.5 }
         // LA FLOTTANTE : vite et SANS effet — pas d'axe à lire, le gardien part en retard

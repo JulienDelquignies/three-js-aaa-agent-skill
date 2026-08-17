@@ -59,6 +59,12 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
       if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]);
     }
   }
+  // LA PATTE (lot 87) : née au CORPS — hash (seed, id), 72/23/5, zéro st.rnd ; ratings.foot
+  // surclasse (contrat aval) ; consommateurs gatés st.full — le réduit au bit.
+  for (const q of st.players) {
+    const h = ((seed * 31 + q.id * 37) % 100 + 100) % 100;
+    q.strongFoot = h < 72 ? 'right' : h < 95 ? 'left' : 'both';
+  }
   // LES EFFECTIFS NOTÉS (attributes.js — le contrat avec les projets amont) : squads[team][i] =
   // { ratings, look, name, number } appliqué dans l'ordre des joueurs de l'équipe (le DERNIER est
   // le gardien). Sans squads : aucun p.skill, aucun tirage d'erreur — le monde d'aujourd'hui.
@@ -71,6 +77,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
         if (!spec) return;
         q.ratings = spec.ratings ?? null;
         q.skill = spec.ratings ? makeProfile(spec.ratings) : null;
+        if (spec.ratings?.foot) q.strongFoot = spec.ratings.foot;
         q.look = spec.look ?? null;
         q.name = spec.name ?? q.name;
         q.number = spec.number ?? null;
@@ -547,8 +554,7 @@ function assignMatchJobs(st, cfg) {
   // couloirs : deux lanceurs devant-large, une sécurité derrière, le reste en largeur
   if (flightRec && !flightRec.keeper && flightRec.team === atk) {
     flightRec.job = 'receive';
-    // LE PAS AU CONTACT (meetBall/meetZone/meetStep) : un pas et demi sur l'AXE NOMINAL (flipper consigné).
-    let met = null;
+    let met = null;   // le pas au contact (meetBall) : un pas et demi sur l'AXE NOMINAL (flipper consigné)
     const dInb = Math.hypot(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
     if (cfg.meetBall !== false && dInb < (cfg.meetZone ?? 4.5)) {
       const bx = st.ball.p[0] - st.pass.lead[0], bz = st.ball.p[2] - st.pass.lead[2];
@@ -558,11 +564,9 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (bx / bl) * step, 0, st.pass.lead[2] + (bz / bl) * step];
       }
     }
-    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81 — 18 volées receveur-plus-proche / 15 min, receveur
-    // à 1,3 m/s pendant que le voleur sprinte). Menace lue (un adversaire à la mène aussi tôt
-    // que lui) après son temps de RÉACTION (attribut — l'élite part plus tôt) : il SPRINTE
-    // (burst 'attaque') au BALLON RÉEL — un vrai 50/50 (les passes non contestées gardent
-    // l'axe nominal ; le vol en cloche garde chutePredite). attaquePasse:false = hier.
+    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81 — 18 volées receveur-plus-proche / 15 min) : menace
+    // lue après sa RÉACTION (attribut), il SPRINTE (burst 'attaque') au BALLON RÉEL — un vrai
+    // 50/50 ; les passes non contestées gardent l'axe nominal. attaquePasse:false = hier.
     let menace = false;
     if (st.full && cfg.attaquePasse !== false && (st.pass.flight ?? 0) > 0
       && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18)) {
@@ -595,9 +599,8 @@ function assignMatchJobs(st, cfg) {
       met = bSp > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bSp) * mk, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * mk]
         : [st.ball.p[0], 0, st.ball.p[2]];
     }
-    // LE RECEVEUR VIVANT (cfg.meetWalk — « pose statique en attendant le ballon ») : sur une
-    // passe dans les pieds assez longue il vient AU-DEVANT, allure de marche, borné. hold :
-    // aux ~30 derniers mètres il TIENT sa fixation (sans : prises < 22 m 12 → 5, tirs 27 → 16).
+    // LE RECEVEUR VIVANT (cfg.meetWalk) : passe longue dans les pieds → il vient AU-DEVANT en
+    // marchant, borné ; hold ~30 derniers mètres : il TIENT sa fixation (sans : tirs 27 → 16).
     if (!met && st.full && cfg.meetWalk && dInb >= (cfg.meetZone ?? 4.5)
       && !((flightRec._pace?.until ?? -1) > st.t)) {
       const g = st.pitch.attackGoal(flightRec.team);
@@ -626,8 +629,7 @@ function assignMatchJobs(st, cfg) {
   }
   {
     const sgn = Math.sign(goal.x || 1);
-    // L'ANCRE LENTE DES SOUTIENS (lot 85, clé slotAnchor ÉTEINTE — doc et cartographie : config).
-    let sa = anchor;
+    let sa = anchor;   // ancre lente des soutiens (lot 85, slotAnchor ÉTEINTE — doc : config)
     if (st.full && cfg.slotAnchor !== false) {
       const A = st._sAnc ??= { x: anchor[0], z: anchor[2], t: st.t };
       const k = Math.min(1, Math.max(0, st.t - A.t) / (cfg.slotAnchor?.tau ?? 1.5));
@@ -651,13 +653,11 @@ function assignMatchJobs(st, cfg) {
       S5(0, goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)); S5(1, goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2));
       S5(2, goal.x - sgn * pitch.dims.spot, 0); S5(3, sa[0] - sgn * 7, sa[2] * 0.5); S5(4, sa[0] - sgn * 1.5, zs * pitch.hz * 0.6);
     } else {          // lanceur intérieur/opposé, sécurité, largeur, second rideau
-      // L'ÉCHELLE DU SOUTIEN EST TACTIQUE (lot 83, axe relation : positionnel 1,35 ↔ relationnel 0,65, 0,5 = identité)
-      const K = st.full ? (cfg.supportSpanFull || axe(tac(st, atk).relation, 1.35, 0.65)) : 1;
+      const K = st.full ? (cfg.supportSpanFull || axe(tac(st, atk).relation, 1.35, 0.65)) : 1;   // échelle tactique (lot 83), 0,5 = identité
       S5(0, sa[0] + sgn * 8 * K, sa[2] < 0 ? sa[2] + 6 * K : sa[2] - 6 * K); S5(1, sa[0] + sgn * 7 * K, sa[2] < 0 ? sa[2] - 5 * K : sa[2] + 5 * K);
       S5(2, sa[0] - sgn * 6 * K, sa[2] * 0.5); S5(3, sa[0] + sgn * 2 * K, sa[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, sa[0] + sgn * 4 * K, sa[2] * -0.6);
     }
-    // LA TRIANGULATION (lot 84, tactics.triangule) : les soutiens proches OFFRENT des angles
-    if (st.full && cfg.triangle !== false && !wideDeep) triangule(slots, sa, cfg.triangle?.min ?? 35, pitch.hx, pitch.hz);
+    if (st.full && cfg.triangle !== false && !wideDeep) triangule(slots, sa, cfg.triangle?.min ?? 35, pitch.hx, pitch.hz);   // lot 84, ÉTEINTE
     const free = st._bFree ??= []; free.length = 0;
     for (const p of attackers) if ((!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter) free.push(p);
     // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les 4 plus près de

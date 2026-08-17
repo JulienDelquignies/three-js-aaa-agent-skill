@@ -364,6 +364,10 @@ export const MATCH = {
                           // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
                           // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
                           // le nombre.
+  patte: true,            // LA PATTE (lot 87, st.full — shooting) : la latéralité module la
+                          // fenêtre de l'enroulée (inversé ×1,6, débordement ×0,55, both ×1,2).
+                          // L'attribut naît au corps (hash seed/id 72/23/5, ratings.foot le
+                          // surclasse). false : le tireur sans patte (sabotage nommé).
   social: 0.9,            // LA DISTANCE SOCIALE DES COÉQUIPIERS (lot 86, st.full — movement) :
                           // deux coéquipiers debout, hors remise/geste, tiennent ce rayon (m,
                           // poussée douce). Mesuré avant : 1584 paires < 1,2 m / 15 min, 52 %

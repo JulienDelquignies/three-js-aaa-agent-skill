@@ -3872,6 +3872,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (bande 17-33). Le chantier « se marchent dessus » est fermé par la loi qui portait
      vraiment le vécu.
 
+127. **Lot 87 : la PATTE — la latéralité entre au moteur, et l'enroulée devient le tir de
+     l'ailier inversé.** L'enroulée existait (lot 39) à fenêtre PLATE : tout tireur latéral,
+     14 %. Le vrai football la donne à l'AILIER INVERSÉ (pied fort opposé au côté — Robben,
+     Messi : rentrer met le ballon sur le bon pied). L'ATTRIBUT : strongFoot naît au CORPS
+     (hash déterministe seed/id — 72 % droitiers, 23 % gauchers, 5 % des deux, mesuré
+     190/60/14 — ZÉRO consommation de st.rnd : le flux ne diverge qu'aux consommateurs),
+     ratings.foot le surclasse (contrat projet aval). LA CONSOMMATION (shooting, cfg.patte,
+     st.full) : fenêtre de l'enroulée ×1,6 inversé / ×0,55 débordement / ×1,2 both. Sonde
+     12 matchs : l'inversé enroule 2/3 de ses tirs latéraux, le débordement 0/11 — le geste
+     Robben vit, l'ailier de son pied rase ou centre. DEUX pièges à graver : (a) L'ULP —
+     0,42+0,14 = 0,5599999999999999 ≠ 0,56 : la borne re-composée faisait diverger le RÉDUIT
+     d'un bit (déjà consigné dans tactics.axe, revenu par ailleurs) — sans patte la borne
+     d'hier reste LITTÉRALE ; (b) L'EMPREINTE PAR L'INSTRUMENT — le champ z ajouté à l'event
+     shot change le hash du réduit VIA JSON.stringify(events) alors que le FLUX est intact
+     (84+40 clauses vertes, positions identiques, rondo sans tir inchangé) : les références
+     deviennent réduit b8b0493e0007f972, match s3 0573cc5f60429a5a / s7 b86bc1d2181ad0f6
+     (rondo c775c81e62592d4d inchangé). Batterie 68+88+14+9 verte, A/B 57 tirs / 20 buts
+     (bande 17-33). Prochain consommateur de la patte : le CENTRE du pied de débordement et
+     le choix de côté du repique — puis le dédoublement (le piston dans le couloir libéré).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
