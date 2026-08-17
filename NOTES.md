@@ -3945,6 +3945,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (l'intérieur qui enveloppe), frappePointu (courte) ; parade1main/parade2mains/
      priseAerienne pour le gardien — un lot de bibliothèque dédié, scène comprise.
 
+131. **Lot 90b : la VÉRIFICATION au squelette des arrêts (question utilisateur : « la balle
+     touche-t-elle la partie du corps attendue ? ») — le relevé est SAIN, le CONTACT ment
+     d'un mètre.** Mesuré en playmode au bone près (seed 5, la prise de t=67,98, positions
+     monde de mixamorig5LeftHand/RightHand/Hips à 60 Hz) : (a) LE RELEVÉ ✓ — hips 0,81 →
+     1,15 m en continu sur 0,2 s, aucun téléport, la retombée pose bien le corps bas ;
+     (b) LE CONTACT ✗ — à l'instant où la sim déclare la PRISE, la main la plus proche est à
+     1,06 m du ballon (minimum de la fenêtre : 0,96 m) : la géométrie sim mesure le CENTRE
+     du corps (gk.p, seuil 1,1 = l'anatomie du bras tendu) mais l'ANIMATION ne tend pas le
+     bras vers le ballon à cet instant — le strike-warp du gant ne mord pas assez ici ;
+     (c) PIRE : après la prise, le ballon possédé FLOTTE à 1,34 m de haut en s'ÉLOIGNANT des
+     mains (1,06 → 1,39 m sur 8 frames) pendant que le corps se relève — la transition
+     prise→porté laisse le ballon en l'air sans main dessus. LE PLAN (prochain lot, scène) :
+     (1) le warp de gant renforcé sur la fenêtre du contact (viser le ballon RÉEL, bras
+     étendu — l'infrastructure strike-warp existe) ; (2) la prise TIENT le ballon aux mains
+     pendant le relevé (l'ancre du porté gardien = la main, pas le pied) puis le pose ;
+     (3) les parades du buste et du pied nommées (le mode 'pieds' sim existe — le corps de
+     scène doit le jouer ; le buste est une espèce à créer). La question utilisateur était
+     la bonne : le point de contact n'est pas garanti par le corps aujourd'hui.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
