@@ -3964,6 +3964,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      scène doit le jouer ; le buste est une espèce à créer). La question utilisateur était
      la bonne : le point de contact n'est pas garanti par le corps aujourd'hui.
 
+132. **Lot 90c : le relevé du gardien MESURÉ aux angles (question utilisateur « pas trop
+     rapide ? les angles sont corrects ? ») — la descente est vraie, le relevé est une
+     CATAPULTE.** Instrument : positions monde de Hips/Spine2 à 60 Hz, l'inclinaison du
+     tronc = angle (hips→spine2, verticale), sur le plongeon seed 3 t=24,93 (gardien 10).
+     LA DESCENTE ✓ : hips 0,80 → 0,22 m en ~1,0 s, tronc 3° → 82° PROGRESSIF — le corps se
+     couche vraiment (la pose finale du lot 7 est juste). LE TEMPS AU SOL ✗ : 0,3 s
+     seulement (réel : 0,5-1,5 s — amortir, lire le jeu, pousser sur le bras). LE RELEVÉ
+     ✗✗ : couché (0,22 m / 82°) → debout (0,97 m / 1°) en 0,15-0,27 s — vitesse verticale
+     de pointe 11 m/s (un humain : 1-2), vitesse angulaire du tronc 700°/s (un redressement
+     rapide réel : 150-250°/s). Le corps se CATAPULTE debout — vraisemblablement le blend
+     court vers la pose debout quand keeperDown expire, sans phase de relevé authored. LE
+     PLAN (avec 90b, un seul lot scène gardien) : (1) allonger la phase sol (+0,4-0,8 s
+     lisant la situation) ; (2) un relevé PAR ÉTAPES (rouler → appui bras → genou → debout)
+     borné ~250°/s de tronc soit 1,2-1,5 s, l'attribut d'agilité modulant (0,9-1,6 s selon
+     la note) ; (3) le warp de gant + l'ancre du ballon à la main (90b). Le keeperDown sim
+     (le prix du plongeon) devra couvrir la durée du relevé réel — cohérence sim/scène.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
