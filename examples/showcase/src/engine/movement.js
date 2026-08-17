@@ -314,13 +314,23 @@ export function movePlayers(st, dt, cfg) {
 // players-not-overlapping crevait (2,6 % > 2). L'ordre est une loi de charte : les autorités
 // écrivent, puis le monde projette ses contraintes, une fois, à la fin.
 export function separatePlayers(st, cfg) {
+  // …ET LA DISTANCE SOCIALE DES COÉQUIPIERS (lot 86, cfg.social && st.full — mesuré : 1584
+  // paires même équipe < 1,2 m / 15 min dont 52 % mark+mark, épisodes jusqu'à 11,5 s — « ils
+  // se marchent dessus »). Deux coéquipiers DEBOUT, hors remise (le mur de la Loi 13 se serre),
+  // hors geste, tiennent une distance de JEU — poussée DOUCE (≤ 0,04 m/frame : on s'écarte en
+  // marchant, pas en téléportant). Le duel ADVERSE garde son contact (minGap physique seul).
+  // false : les grappes d'hier (sabotage nommé).
+  const social = st.full && cfg.social !== false && cfg.social != null ? cfg.social : 0;
   for (let i = 0; i < st.players.length; i++) {
     for (let j = i + 1; j < st.players.length; j++) {
       const a = st.players[i], b = st.players[j];
       const dx = b.p[0] - a.p[0], dz = b.p[2] - a.p[2];
       const d = Math.hypot(dx, dz);
-      if (d >= cfg.minGap || d < 1e-6) continue;
-      const push = (cfg.minGap - d) / 2, ux = dx / d, uz = dz / d;
+      const gap = social && a.team === b.team && !st.restart && a.down <= 0 && b.down <= 0
+        && !a.act && !b.act ? social : cfg.minGap;
+      if (d >= gap || d < 1e-6) continue;
+      const push = gap > cfg.minGap ? Math.min((gap - d) / 2, 0.04) : (gap - d) / 2;
+      const ux = dx / d, uz = dz / d;
       a.p[0] -= ux * push; a.p[2] -= uz * push;
       b.p[0] += ux * push; b.p[2] += uz * push;
     }

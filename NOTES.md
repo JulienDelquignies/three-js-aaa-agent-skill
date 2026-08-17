@@ -3852,6 +3852,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      l'optimum qu'on cherche à construire ; savoir FERMER un chantier sur une cartographie
      négative complète vaut un lot réussi.
 
+126. **Lot 86 : la distance sociale des coéquipiers — le vrai levier du « ils se marchent
+     dessus », et l'instrument recalibré.** L'autopsie des paires collées (< 1,2 m : 1584
+     même équipe / 15 min, 52 % mark+mark, épisodes jusqu'à 11,5 s ; 1442 contacts < 0,7 m
+     — l'interpénétration visuelle, minGap physique 0,5 seulement) : deux coéquipiers n'ont
+     AUCUNE raison d'être à moins d'un mètre hors mur/geste — le duel ADVERSE, lui, a droit
+     au contact. LA LOI (separatePlayers, cfg.social 0,9, st.full) : les coéquipiers debout,
+     hors remise (le mur de la Loi 13 se serre), hors geste, tiennent la distance — poussée
+     DOUCE ≤ 0,04 m/frame (on s'écarte en marchant), le minGap physique inchangé pour les
+     adverses. RÉSULTAT : corps quasi superposés ÷4-7 (774 → 255 et 831 → 109 sur deux jeux
+     de graines). ET LA LEÇON D'INSTRUMENT à graver : la densité ≥ 7 corps varie de ±3 pts
+     ENTRE JEUX DE GRAINES en identité pure (4,6 % sur {2,3,7}, 7,5 % sur {4,5,8}) — les
+     micro-comparaisons des lots 82-85 baignaient dans ce bruit (leurs verdicts « rien
+     n'améliore significativement » tiennent, mais les « aggravations » de 2-3 pts étaient
+     pour partie du chaos divergent) ; toute métrique de flux se compare désormais sur DEUX
+     jeux de graines minimum, et seuls les effets ×2+ font foi. Sabotage orbite re-fondé
+     (+ social:false — 5ᵉ application de la doctrine « le monde d'hier EN ENTIER »).
+     Batterie 68+84+88+14+40+9+14+8+9 verte, réduit/rondo au bit, A/B 57 tirs / 21 buts
+     (bande 17-33). Le chantier « se marchent dessus » est fermé par la loi qui portait
+     vraiment le vécu.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
