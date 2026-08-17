@@ -364,6 +364,16 @@ export const MATCH = {
                           // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
                           // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
                           // le nombre.
+  triangle: false,        // LA TRIANGULATION (lot 84, st.full — tactics.triangule) : vus du
+                          // porteur, deux soutiens à < min° se masquent. ÉTEINTE : les deux
+                          // formes mesurées NUISENT (pivot-par-paires 11,8 % de pics ≥ 7 corps,
+                          // éventail isotone 6,4 % — le recentrage tire les slots ÉCARTÉS vers
+                          // le groupe ; base 4,6 %). La v3 devra contraindre les PROCHES sans
+                          // toucher la largeur/sécurité. { min: 35 } pour l'activer.
+  settledNear: Infinity,  // LE TROT AU POSTE (lot 84, st.full — movement) : le soutien posé ne
+                          // marche QUE placé (< m de son slot) ; loin, il trotte s'y mettre.
+                          // Mesuré sans : 10,7 m p50 du slot, l'essaim permanent près du
+                          // ballon. Infinity : la marche inconditionnelle d'hier.
   supportSpanFull: 0,   // L'ÉCHELLE DU SOUTIEN (lot 82, st.full — clé de FORMAT : le réduit au
                           // bit — 0 = identité, HORS-DÉFAUT tant que les clauses de flux ne sont pas re-fondées ; 1,5-1,6 mesuré : pics ≥ 7 corps −35 %). Slots du réduit
                           // (6-8 m) en 11c11 mettaient 4 soutiens + leurs 4 marqueurs dans le

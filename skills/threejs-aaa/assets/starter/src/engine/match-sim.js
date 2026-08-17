@@ -1,8 +1,7 @@
 // match-sim — LE MATCH : UN seul game-loop (rondo-sim, 40 clauses) dont le match est une
-// CONFIGURATION par points d'accroche (`assignJobs`, `tryShot`, `onOut`, `onDive`, `canTake`) :
-// rôles directionnels, sorties en RÈGLE (pitch.outRule), le tir, le gardien (keeper.js). Le
-// reste est le MÊME code que le rondo — c'est le point. Dettes v1 nommées : touche au pied au
-// réduit (futsal), hors-jeu 11c11 seulement (offside.js), gardien dans sa surface.
+// CONFIGURATION par points d'accroche (`assignJobs`, `tryShot`, `onOut`, `onDive`, `canTake`) —
+// le MÊME code que le rondo, c'est le point. Dettes v1 : touche au pied au réduit (futsal),
+// hors-jeu 11c11 seulement (offside.js), gardien dans sa surface.
 
 import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
@@ -11,7 +10,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots, premierOffensif, blocFor } from './formation.js';
 import { offsideLine } from './offside.js';
-import { tac, axe, resoudreTactique } from './tactics.js';
+import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
@@ -428,8 +427,7 @@ function assignMatchJobs(st, cfg) {
   const field = st._bField ??= [], attackers = st._bAtk ??= [], defenders = st._bDef ??= []; field.length = 0; attackers.length = 0; defenders.length = 0;
   // à 10 après un rouge (Loi 12) ; le remplacé en chemin est hors des postes (Loi 3)
   for (const p of st.players) if (!p.keeper && !p.expulse && !p._sub) { field.push(p); (p.team === atk ? attackers : defenders).push(p); }
-  // LE RECEVEUR ATTAQUE SA PASSE (le trou fondateur du 21 % de passes reçues : le destinataire
-  // trottait vers son slot pendant que le ballon passait à côté de lui).
+  // LE RECEVEUR ATTAQUE SA PASSE (le trou fondateur : il trottait vers son slot, 21 % reçues).
   const flightRec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
   const goal = pitch.attackGoal(atk);
   const own = pitch.ownGoal(atk === 0 ? 1 : 0);                    // le but que la défense protège
@@ -655,6 +653,8 @@ function assignMatchJobs(st, cfg) {
       S5(0, anchor[0] + sgn * 8 * K, anchor[2] < 0 ? anchor[2] + 6 * K : anchor[2] - 6 * K); S5(1, anchor[0] + sgn * 7 * K, anchor[2] < 0 ? anchor[2] - 5 * K : anchor[2] + 5 * K);
       S5(2, anchor[0] - sgn * 6 * K, anchor[2] * 0.5); S5(3, anchor[0] + sgn * 2 * K, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, anchor[0] + sgn * 4 * K, anchor[2] * -0.6);
     }
+    // LA TRIANGULATION (lot 84, tactics.triangule) : les soutiens proches OFFRENT des angles
+    if (st.full && cfg.triangle !== false && !wideDeep) triangule(slots, anchor, cfg.triangle?.min ?? 35, pitch.hx, pitch.hz);
     const free = st._bFree ??= []; free.length = 0;
     for (const p of attackers) if ((!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter) free.push(p);
     // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les 4 plus près de

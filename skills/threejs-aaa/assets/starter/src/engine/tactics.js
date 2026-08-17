@@ -98,3 +98,34 @@ export function checkTactics() {
   if (Object.entries(d).some(([k, v]) => typeof v === 'number' && v !== 0.5)) issues.push('la tactique par défaut n\'est pas l\'identité (0,5 partout)');
   return { ok: issues.length === 0, issues };
 }
+
+/** LA TRIANGULATION (lot 84) : être proche doit vouloir dire OFFRIR UN ANGLE — la proximité
+ *  sans ligne de passe est la seule vraie fourmilière. v3 : SEULES les paires de slots
+ *  PROCHES de l'ancre (r < 10 m) se contraignent, par écartement SYMÉTRIQUE (chacun ±(min−d)/2,
+ *  point fixe à min°) — pas de recentrage global, les slots écartés (largeur, sécurité)
+ *  intouchés. TROIS versions mesurées, TROIS échecs (pics ≥ 7 corps : v1 pivot-par-paires
+ *  11,8 %, v2 éventail recentré 6,4 %, v3 paires proches 8,4 % — base 4,6) : toute contrainte
+ *  géométrique PAR FRAME fait bouger les cibles, et des cibles mobiles créent plus de densité
+ *  qu'elles n'en retirent (les corps convergent en transit). ÉTEINTE (cfg.triangle: false) —
+ *  la v4 vivra dans l'ASSIGNATION slot→joueur avec hystérésis, pas en post-traitement. */
+export function triangule(slots, anchor, minDeg = 35, hx = 1e9, hz = 1e9) {
+  const min = (minDeg * Math.PI) / 180;
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      const ri = Math.hypot(slots[i][0] - anchor[0], slots[i][1] - anchor[2]);
+      const rj = Math.hypot(slots[j][0] - anchor[0], slots[j][1] - anchor[2]);
+      if (ri >= 10 || rj >= 10) continue;                      // la largeur et la sécurité ne bougent pas
+      const ai = Math.atan2(slots[i][1] - anchor[2], slots[i][0] - anchor[0]);
+      const aj = Math.atan2(slots[j][1] - anchor[2], slots[j][0] - anchor[0]);
+      let d = aj - ai; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      if (Math.abs(d) >= min) continue;
+      const h = (min - Math.abs(d)) / 2, s = d >= 0 ? 1 : -1;
+      const a2i = ai - s * h, a2j = aj + s * h;
+      slots[i][0] = Math.max(-hx + 1.2, Math.min(hx - 1.2, anchor[0] + Math.cos(a2i) * ri));
+      slots[i][1] = Math.max(-hz + 1.2, Math.min(hz - 1.2, anchor[2] + Math.sin(a2i) * ri));
+      slots[j][0] = Math.max(-hx + 1.2, Math.min(hx - 1.2, anchor[0] + Math.cos(a2j) * rj));
+      slots[j][1] = Math.max(-hz + 1.2, Math.min(hz - 1.2, anchor[2] + Math.sin(a2j) * rj));
+    }
+  }
+  return slots;
+}

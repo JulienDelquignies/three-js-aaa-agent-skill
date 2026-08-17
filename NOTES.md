@@ -3809,6 +3809,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      encode un CHOIX DE JEU, elle appartient à la couche tactique — le moteur fournit l'axe,
      le projet choisit le point.
 
+124. **Lot 84 : la triangulation — trois versions, trois échecs MESURÉS, une loi d'architecture
+     en sort.** Le programme : les soutiens proches doivent OFFRIR des angles (le sens du
+     relationnel, dette lot 83). v1 pivot-par-paires : les cibles SAUTENT par frame, pics
+     ≥ 7 corps 4,6 → 11,8 % — divergence pure. v2 éventail isotone recentré (projection
+     stable) : le recentrage TIRE les slots écartés (largeur, sécurité) vers le groupe —
+     6,4 %. v3 paires proches seules (r < 10 m), écartement symétrique sans recentrage :
+     8,4 % — encore pire que la base. LE VERDICT STRUCTUREL commun : toute contrainte
+     géométrique appliquée aux SLOTS par frame augmente le MOUVEMENT des cibles, et des
+     cibles mobiles créent plus de densité qu'elles n'en retirent — les corps convergent
+     vers la zone du ballon EN TRANSIT permanent (settledNear actif aggravait encore :
+     11,8 % — le trot au poste vers des slots mouvants = tout le monde court). Même
+     l'écartement du lot 82 ne mordait qu'à moitié pour la même raison (corps à 10,7 m p50
+     de slots re-assignés chaque frame par le tri de proximité). LA V4 IDENTIFIÉE : le
+     levier n'est pas la géométrie des slots mais l'ASSIGNATION slot→joueur avec HYSTÉRÉSIS
+     (un slot assigné COLLE ~2-3 s ; le tri par _dAnc re-brasse aujourd'hui à 60 Hz) — c'est
+     elle qui stabilisera d'un coup l'écartement (82), le trot au poste ET la triangulation.
+     Livré : triangule() v3 dans tactics.js avec les trois leçons dans son commentaire,
+     clés triangle/settledNear documentées éteintes, identité lot 81 au bit (empreintes),
+     batterie verte. Leçon de méthode : trois hypothèses tuées par la mesure en une session
+     valent mieux qu'une « amélioration » non mesurée shippée — et un échec structurel
+     répété désigne toujours la MAUVAISE COUCHE, pas le mauvais réglage.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
