@@ -3926,6 +3926,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      servir, ou écarter). Batterie 68+88+84+9 verte, A/B 52 tirs / 17 buts (borne basse de
      la bande — la relance vive assèche les cafouillages, à surveiller au prochain A/B).
 
+130. **Lot 90 : l'audit tirs/arrêts — la SIM est complète, l'ANIMATION est le gap ; les
+     arrêts se nomment entiers (le contrat d'animation posé).** L'AUDIT (question
+     utilisateur « toutes les animations sont-elles présentes ? ») : côté SIM, 11 espèces de
+     tir (piqué, placé, croisé, puissance, pointu, enroulée, ras-de-terre, flottante,
+     mi-hauteur, lucarne, tendu) + tête/volée/demi-volée, et 4 issues gardien (pieds, prise,
+     claquette, plongeon-battu) — COMPLET. Côté ANIMATION : la bibliothèque procédurale
+     (technique.js/animkit) a ~20 clips de champ (passes, contrôles, dribbles, tacles) mais
+     UNE SEULE 'frappe' pour les 11 espèces, et le gardien a le plongeon (corps du lot 7 :
+     glissades, relevé, côté) + la prise — SANS distinction visuelle une main / deux mains /
+     capture aérienne. LE LOT : la sim nomme désormais l'arrêt ENTIER — prise {aerienne:
+     y > 1,2}, claquette {mains: d ≤ 1,35 ? 2 : 1, cote} — la géométrie du contact décide,
+     et l'événement est le CONTRAT que la scène consommera (le patron moteur : la sim dit le
+     QUOI, la scène joue le COMMENT). Bancs 68+88+84+9 verts ; l'empreinte réduit évolue par
+     l'instrument (d1c0c1171e6f876c — 2e application du précédent lot 87, events enrichis,
+     flux intact prouvé par les clauses). DETTES D'ANIMATION NOMMÉES (l'authoring animkit
+     est procédural, donc faisable en code) : frappePuissante (élan ample), frappeEnroulee
+     (l'intérieur qui enveloppe), frappePointu (courte) ; parade1main/parade2mains/
+     priseAerienne pour le gardien — un lot de bibliothèque dédié, scène comprise.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

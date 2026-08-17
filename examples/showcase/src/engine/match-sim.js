@@ -1058,12 +1058,8 @@ function assignMatchJobs(st, cfg) {
 }
 
 // ---------------------------------------------------------------- l'arrêt du gardien
-/**
- * LE CONTACT DU PLONGEON. La géométrie du contact décide — pas celle du déclenchement : ballon
- * dans les gants (≤ 1,1 m) → PRISE (possession gardien, le jeu repart de lui) ; à bout de gants
- * (≤ 1,7 m) → CLAQUETTE (dévié, dampé, côté) ; sinon le plongeon est BATTU et se nomme.
- * Dans tous les cas le gardien paie : au sol (keeperDown).
- */
+/** LE CONTACT DU PLONGEON — la géométrie du CONTACT décide : gants (≤ 1,1 m) → PRISE ;
+ *  bout de gants (≤ 1,7) → CLAQUETTE ; sinon BATTU. Le gardien paie toujours (keeperDown). */
 function onDive(st, gk, cfg) {
   // appelé CHAQUE IMAGE de la détente (rondo-sim, skillFollowStep) : renvoie true quand le gant a
   // résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
@@ -1088,7 +1084,8 @@ function onDive(st, gk, cfg) {
     st.possession = { team: gk.team, carrier: gk.id };
     st.phase = 'carry'; st.pass = null; st.hold = 0; st.pressure = 0;
     st.lastTouch = gk.team;
-    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'prise' });
+    // …la prise se NOMME entière (lot 90, contrat d'animation) : aérienne > 1,2 m ou au sol.
+    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'prise', aerienne: y > 1.2 });
     return true;
   } else {
     const side = Math.sign(gk.p[2] - 0) || 1;
@@ -1100,7 +1097,8 @@ function onDive(st, gk, cfg) {
     // fin de match t=120, personne n'a le DROIT de toucher un ballon mort). Le rondo ne pouvait
     // pas le produire (une frappe voyage) ; la claquette, si.
     st.pass = null;
-    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette' });
+    // …et la claquette dit SES MAINS (lot 90) : deux dans l'envergure courte (≤ 1,35), une au bout.
+    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette', mains: d <= 1.35 ? 2 : 1, cote: side });
     st._surprise = { t: st.t, seen: 0 };                          // une claquette ne s'anticipe pas
     return true;
   }
