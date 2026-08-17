@@ -289,22 +289,15 @@ function assignMatchJobs(st, cfg) {
   // ---- les gardiens (toujours, toutes phases)
   for (const gk of st.players.filter((p) => p.keeper && !p.expulse && !p._sub)) {
     gk.job = 'keeper';
-    // LE GARDIEN PORTEUR EST UN DISTRIBUTEUR, PAS UN POSTE. Sa loi de position l'a fait marcher
-    // vers sa ligne EN PORTANT le ballon — CSC mesuré (graine 3, t=73,95 : « arrêt » puis « but »
-    // encaissé par sa propre équipe). Ballon en mains : il s'écarte de son but et le cerveau de
-    // passe du loop distribue (choosePass voit ses lanceurs).
+    // LE GARDIEN PORTEUR EST UN DISTRIBUTEUR, PAS UN POSTE (CSC mesuré quand sa loi de position
+    // le faisait marcher vers sa ligne en portant) : il s'écarte du but, le cerveau distribue.
     if (carrier && carrier.id === gk.id) {
       const g = pitch.ownGoal(gk.team);
-      // LE DISTRIBUTEUR VÉRIFIE SES MAINS : une étiquette de porteur sur un ballon qui FUIT vers
-      // son but est un mensonge (le CSC de première touche vivait ici — le gardien « distribuait »
-      // en marchant à l'opposé du ballon qui roulait au fond). Pas en mains → on se retourne et
-      // on l'étouffe.
+      // LE DISTRIBUTEUR VÉRIFIE SES MAINS : porteur d'un ballon qui FUIT vers son but = mensonge
+      // (le CSC de première touche vivait ici) — pas en mains, on se retourne et on l'étouffe.
       const bdC = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
-      // …une FUITE est un ballon HORS DE PORTÉE DE TOUCHE (2,2 m) ou filant vers son but — pas
-      // la touche de conduite elle-même (0,9 m re-déclenchait la poursuite à CHAQUE touche : le
-      // cycle touche→« fuite »→sprint→touche traversait le terrain à 6,5 m/s, 20-43 m mesurés,
-      // et resettait le chrono de distribution au passage — la règle des six secondes ne
-      // mûrissait jamais).
+      // …une FUITE = hors portée de touche (2,2 m) ou filant vers son but — PAS la touche de
+      // conduite (0,9 re-déclenchait la poursuite à chaque touche, 20-43 m mesurés).
       if (st.ball.owner !== gk.id && (bdC > 2.2 || st.ball.v[0] * g.sign > 1.5)) {
         gk.job = 'keeper';
         gk.target = [st.ball.p[0] + st.ball.v[0] * 0.25, 0, st.ball.p[2] + st.ball.v[2] * 0.25];
@@ -318,12 +311,9 @@ function assignMatchJobs(st, cfg) {
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       gk._gkSince = gk._gkSince ?? st.t;
-      // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe : z borné ±3,5 posait le point
-      // DANS la bouche du but (poteaux à ±3,66) — le porté via-ball sur-vise (l'équilibre
-      // d'amortissement de NOTES 38), le ballon déborde le spot et roule ENTRE les poteaux :
-      // CSC du gardien mesuré sur matchs complets (graine 1 t=14,9 : six touches de porté, puis
-      // le ballon seul dans son filet — le premier « but » du match). Hors de l'axe, le même
-      // débordement meurt en sortie de but, pas en but.
+      // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 posait le point dans
+      // la bouche du but : le porté sur-vise, débordement = CSC mesuré ; hors axe il meurt en
+      // sortie de but).
       const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
       if (bdC > 0.85) {
         // LE GARDIEN AUSSI PASSE PAR SON BALLON (la loi du porteur, au métier près) : viser le
@@ -344,7 +334,15 @@ function assignMatchJobs(st, cfg) {
       // distribution est FORCÉE — la meilleure rampe (progression, couloir dégagé), sinon le
       // PUNT au flanc opposé (le dégagement du gardien). Sans échéance, un gardien jamais posé
       // ne passait jamais.
-      if (cfg.gkRelease && st.t - gk._gkSince > cfg.gkRelease && !busy(gk) && bdC < 1.1) {
+      // …ET L'ESPACE PRESSE LA RELANCE (lot 89, st.full — « il récupère et ne fait rien ») :
+      // sans presseur à 12 m, le vrai gardien relance en un temps (1,2 s), il ne trottine pas
+      // au spot d'abord ; pressé, il garde son délai plein pour chercher l'option.
+      let gkDue = cfg.gkRelease;
+      if (st.full && cfg.gkRelease) {
+        let pr = 99; for (const q of st.players) if (q.team !== gk.team && !q.keeper && q.down <= 0) pr = Math.min(pr, Math.hypot(q.p[0] - gk.p[0], q.p[2] - gk.p[2]));
+        if (pr > 12) gkDue = Math.min(cfg.gkRelease, 1.2);
+      }
+      if (cfg.gkRelease && st.t - gk._gkSince > gkDue && !busy(gk) && bdC < 1.1) {
         const sgn = -g.sign;
         const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
         const scored = mates.map((m) => ({ m, s: (m.p[0] - gk.p[0]) * sgn - Math.abs(m.p[2]) * 0.15 }))
@@ -450,7 +448,9 @@ function assignMatchJobs(st, cfg) {
     : [anchor[0], anchor[2]];
   let hunter = null;
   if (freeBall) {
-    let hD = Infinity; for (const p of attackers) if (p.down <= 0) { const d = d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
+    // …JAMAIS le gardien (lot 89, st.full — un ballon de champ n'est pas le sien : le hunter
+    // l'envoyait chasser à 20-30 m puis porter au coin des six, « il court en corner »)
+    let hD = Infinity; for (const p of attackers) if (p.down <= 0 && !(st.full && p.keeper)) { const d = d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
     if (hunter) {
       // une cueillette SANS course adverse se trotte (bucket support) : le sprint systématique à
       // 6,9 poussait les corps à 9,9 km/h — on ne pique un sprint que si le 50/50 est réel

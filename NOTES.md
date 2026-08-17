@@ -3910,6 +3910,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      défensive (« se jette moins », composure dans le tacle) et le centre du pied de
      débordement.
 
+129. **Lot 89 : le gardien tient son métier — plus de chasse de champ, la relance pressée
+     par l'espace (retour utilisateur : « il sort en courant, récupère sans rien faire et
+     court en corner »).** Deux lois : (a) le HUNTER de ballon libre n'envoie JAMAIS le
+     gardien (st.full — le code l'y autorisait : chasse à 20-30 m puis portage au coin des
+     six, la « traversée vers le corner » ; rare sur les graines sondées mais prouvé par
+     lecture, l'exclusion est préventive et juste) ; (b) L'ESPACE PRESSE LA RELANCE — sans
+     presseur à 12 m, la distribution part dès 1,2 s (le vrai gardien tranquille relance en
+     un temps, il ne trottine pas d'abord vers son spot) ; pressé, il garde son délai plein
+     (3 s, la règle des six secondes à l'échelle). Portages mesurés 9 → 5 / 4 matchs, zéro
+     > 6 m. Le réduit garde son gardien d'hier au bit (b8b0/c775 intacts). ET LA MOITIÉ
+     ATTAQUANTE du vécu mesurée : 6-7 conduites de +18 m SANS lâcher par 4 matchs — les
+     « attaquants qui avancent juste » existent : dette nommée du prochain lot (le baromètre
+     du porteur doit dévaluer la conduite muette qui s'approche du gardien : tirer tôt,
+     servir, ou écarter). Batterie 68+88+84+9 verte, A/B 52 tirs / 17 buts (borne basse de
+     la bande — la relance vive assèche les cafouillages, à surveiller au prochain A/B).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
