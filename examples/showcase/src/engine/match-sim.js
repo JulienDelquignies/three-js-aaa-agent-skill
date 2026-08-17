@@ -547,8 +547,7 @@ function assignMatchJobs(st, cfg) {
   // couloirs : deux lanceurs devant-large, une sécurité derrière, le reste en largeur
   if (flightRec && !flightRec.keeper && flightRec.team === atk) {
     flightRec.job = 'receive';
-    // LE PAS AU CONTACT (cfg.meetBall/meetZone/meetStep) : un pas et demi sur l'AXE NOMINAL —
-    // le flipper consigné : suivre le vol réel corrigeait tout, l'axe garde le déchet latéral.
+    // LE PAS AU CONTACT (meetBall/meetZone/meetStep) : un pas et demi sur l'AXE NOMINAL (flipper consigné).
     let met = null;
     const dInb = Math.hypot(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
     if (cfg.meetBall !== false && dInb < (cfg.meetZone ?? 4.5)) {
@@ -559,15 +558,11 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (bx / bl) * step, 0, st.pass.lead[2] + (bz / bl) * step];
       }
     }
-    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81 — « il reste figé et l'adversaire vient récupérer
-    // le ballon avant lui alors qu'il était seul » : 18 volées receveur-plus-proche / 15 min,
-    // receveur à 1,3 m/s pendant que le voleur sprinte — l'asymétrie exacte du vécu, et le pas
-    // nominal ne couvre pas l'écart latéral d'une passe imprécise depuis que la prise exige le
-    // CONTACT). Menace lue (un adversaire à la mène aussi tôt que lui) après son temps de
-    // RÉACTION (attribut — l'élite part plus tôt) : il SPRINTE (burst 'attaque') au BALLON
-    // RÉEL — un vrai 50/50 de course (le déchet devient un duel ; le flipper ne revient pas :
-    // les passes NON contestées gardent l'axe nominal). Le vol en cloche garde chutePredite.
-    // Sabotage : attaquePasse:false = la marche d'hier.
+    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81 — 18 volées receveur-plus-proche / 15 min, receveur
+    // à 1,3 m/s pendant que le voleur sprinte). Menace lue (un adversaire à la mène aussi tôt
+    // que lui) après son temps de RÉACTION (attribut — l'élite part plus tôt) : il SPRINTE
+    // (burst 'attaque') au BALLON RÉEL — un vrai 50/50 (les passes non contestées gardent
+    // l'axe nominal ; le vol en cloche garde chutePredite). attaquePasse:false = hier.
     let menace = false;
     if (st.full && cfg.attaquePasse !== false && (st.pass.flight ?? 0) > 0
       && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18)) {
@@ -631,13 +626,21 @@ function assignMatchJobs(st, cfg) {
   }
   {
     const sgn = Math.sign(goal.x || 1);
+    // L'ANCRE LENTE DES SOUTIENS (lot 85, clé slotAnchor ÉTEINTE — doc et cartographie : config).
+    let sa = anchor;
+    if (st.full && cfg.slotAnchor !== false) {
+      const A = st._sAnc ??= { x: anchor[0], z: anchor[2], t: st.t };
+      const k = Math.min(1, Math.max(0, st.t - A.t) / (cfg.slotAnchor?.tau ?? 1.5));
+      A.x += (anchor[0] - A.x) * k; A.z += (anchor[2] - A.z) * k; A.t = st.t;
+      sa = st._sAncP ??= [0, 0, 0]; sa[0] = A.x; sa[2] = A.z;
+    }
     // L'AILE HAUTE REMPLIT LA SURFACE (« ça manque de centres ») : quand le ballon vit LARGE et
     // HAUT, les couloirs génériques laissaient la boîte vide — personne à servir, aucun centre
     // possible. Les postes deviennent ceux du centre : premier poteau, second poteau, point de
     // penalty, plus la sécurité et le soutien de couloir.
     // …armés TÔT (dès l'aile au quart offensif) : des postes armés au centre arrivent après.
-    const wideDeep = Math.abs(anchor[2]) > pitch.hz * 0.38 && anchor[0] * sgn > pitch.hx * 0.25;
-    const zs = Math.sign(anchor[2] || 1);
+    const wideDeep = Math.abs(sa[2]) > pitch.hz * 0.38 && sa[0] * sgn > pitch.hx * 0.25;
+    const zs = Math.sign(sa[2] || 1);
     // …et les postes vivent DEVANT le but, pas SUR la ligne : des coureurs à 2,4-2,8 m de la
     // ligne faisaient de chaque phase d'aile un pinball de goal-mouth (13 buts sans tir mesurés
     // — passes qui traversent, réceptions qui roulent au fond). Premier poteau à l'épaule de la
@@ -646,15 +649,15 @@ function assignMatchJobs(st, cfg) {
     const S5 = (i, x, z) => { slots[i][0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)); slots[i][1] = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z)); };
     if (wideDeep) {   // premier/second poteau, penalty, sécurité, soutien de couloir
       S5(0, goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)); S5(1, goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2));
-      S5(2, goal.x - sgn * pitch.dims.spot, 0); S5(3, anchor[0] - sgn * 7, anchor[2] * 0.5); S5(4, anchor[0] - sgn * 1.5, zs * pitch.hz * 0.6);
+      S5(2, goal.x - sgn * pitch.dims.spot, 0); S5(3, sa[0] - sgn * 7, sa[2] * 0.5); S5(4, sa[0] - sgn * 1.5, zs * pitch.hz * 0.6);
     } else {          // lanceur intérieur/opposé, sécurité, largeur, second rideau
       // L'ÉCHELLE DU SOUTIEN EST TACTIQUE (lot 83, axe relation : positionnel 1,35 ↔ relationnel 0,65, 0,5 = identité)
       const K = st.full ? (cfg.supportSpanFull || axe(tac(st, atk).relation, 1.35, 0.65)) : 1;
-      S5(0, anchor[0] + sgn * 8 * K, anchor[2] < 0 ? anchor[2] + 6 * K : anchor[2] - 6 * K); S5(1, anchor[0] + sgn * 7 * K, anchor[2] < 0 ? anchor[2] - 5 * K : anchor[2] + 5 * K);
-      S5(2, anchor[0] - sgn * 6 * K, anchor[2] * 0.5); S5(3, anchor[0] + sgn * 2 * K, anchor[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, anchor[0] + sgn * 4 * K, anchor[2] * -0.6);
+      S5(0, sa[0] + sgn * 8 * K, sa[2] < 0 ? sa[2] + 6 * K : sa[2] - 6 * K); S5(1, sa[0] + sgn * 7 * K, sa[2] < 0 ? sa[2] - 5 * K : sa[2] + 5 * K);
+      S5(2, sa[0] - sgn * 6 * K, sa[2] * 0.5); S5(3, sa[0] + sgn * 2 * K, sa[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, sa[0] + sgn * 4 * K, sa[2] * -0.6);
     }
     // LA TRIANGULATION (lot 84, tactics.triangule) : les soutiens proches OFFRENT des angles
-    if (st.full && cfg.triangle !== false && !wideDeep) triangule(slots, anchor, cfg.triangle?.min ?? 35, pitch.hx, pitch.hz);
+    if (st.full && cfg.triangle !== false && !wideDeep) triangule(slots, sa, cfg.triangle?.min ?? 35, pitch.hx, pitch.hz);
     const free = st._bFree ??= []; free.length = 0;
     for (const p of attackers) if ((!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter) free.push(p);
     // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les 4 plus près de
@@ -666,7 +669,7 @@ function assignMatchJobs(st, cfg) {
       // comparaison à 60 Hz) — mêmes clés, tri stable, même ordre : le flux au bit près
       // clé de tri TRANSIENTE + tri du buffer (sort stable, mêmes clés → l'ordre d'hier)
       const bs = st._bSlotters ??= []; bs.length = 0;
-      for (const q of free) { q._dAnc = d2(q.p, anchor); bs.push(q); }
+      for (const q of free) { q._dAnc = d2(q.p, sa); bs.push(q); }
       bs.sort((a, b) => a._dAnc - b._dAnc);
       if (bs.length > 4) bs.length = 4;                              // = slice(0, 4)
       slotters = bs; posted = st._bPosted ??= []; posted.length = 0;
@@ -806,6 +809,7 @@ function assignMatchJobs(st, cfg) {
       return bestPt ?? want;
     };
     const taken = new Set();
+    // greedy vif = OPTIMUM LOCAL prouvé (lot 85 : bail 7,3 %, ancre 8,6, combiné 6,4 — base 4,6)
     for (const p of slotters) {
       let best = -1, bd = Infinity;
       for (let i = 0; i < slots.length; i++) {
@@ -816,12 +820,8 @@ function assignMatchJobs(st, cfg) {
       if (best < 0) { p.job = 'support'; p.target = [p.p[0], 0, p.p[2]]; continue; }
       taken.add(best);
       p.job = 'support';
-      // L'ÉCONOMIE DU HORS-BALLON : le couloir re-calculé à chaque image suivait l'ancre en
-      // continu — huit corps en trottinement-miroir perpétuel (10,1 km/h mesurés, bande ≤ 9,6).
-      // Un joueur SE REPLACE PAR À-COUPS CADENCÉS : re-visée au plus toutes les 0,7 s, et
-      // seulement si le couloir vaut le pas (0,8 m) — une transition franche (> 3,5 m) part tout
-      // de suite. L'hystérésis PURE (2 m sans cadence) gelait le bloc : lignes mortes, tenues à
-      // 4,8 s, 2 appels servis sur 45 — le mouvement qui NOURRIT les passes doit vivre.
+      // L'ÉCONOMIE DU HORS-BALLON : re-visée cadencée (0,7 s, pas de 0,8 m, transition > 3,5 m
+      // immédiate) — l'hystérésis PURE gelait le bloc (2 appels servis sur 45, consigné).
       let want = [slots[best][0], slots[best][1]];
       // le se-montrer s'évalue À CHAQUE cadence (la ligne bouge avec les défenseurs — un slot
       // immobile mais fermé doit se ré-ouvrir), et sa cible ajustée passe par la même hystérésis

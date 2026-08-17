@@ -364,6 +364,14 @@ export const MATCH = {
                           // (hold p50 0,87 → 1,72) et l'attaque ne pénétrait plus (1-3 s/180 s à
                           // portée de tir, clause gardien 1 tir). La cible VÉCUE d'origine, pas
                           // le nombre.
+  slotAnchor: false,
+                          // L'ANCRE LENTE DES SOUTIENS (lot 85, st.full). ÉTEINTE — la
+                          // cartographie complète (pics ≥ 7 corps, base 4,6 %) : bail seul
+                          // 7,3, ancre+bail 6,4, ancre seule 8,6 (99 % au milieu : la
+                          // moyenne lissée AIMANTE au barycentre). Le re-brassage greedy vif
+                          // est un OPTIMUM LOCAL : les cibles sautent (583/min) mais les
+                          // corps ne courent pas plus (greedy = slot d'à côté). { tau: 1.5 }
+                          // pour l'activer.
   triangle: false,        // LA TRIANGULATION (lot 84, st.full — tactics.triangule) : vus du
                           // porteur, deux soutiens à < min° se masquent. ÉTEINTE : les deux
                           // formes mesurées NUISENT (pivot-par-paires 11,8 % de pics ≥ 7 corps,

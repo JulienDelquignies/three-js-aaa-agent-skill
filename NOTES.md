@@ -3831,6 +3831,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      valent mieux qu'une « amélioration » non mesurée shippée — et un échec structurel
      répété désigne toujours la MAUVAISE COUCHE, pas le mauvais réglage.
 
+125. **Lot 85 : l'hystérésis d'assignation — la cartographie COMPLÈTE ferme le chantier
+     placement : le greedy vif est un optimum local.** L'hypothèse du lot 84 (le re-brassage
+     à 60 Hz est la racine) chiffrée : 583 sauts de cible > 3 m/min. Quatre stabilisations
+     mesurées contre la base (pics ≥ 7 corps, 4,6 %) : BAIL d'index + biais de titulaire
+     7,3 % (garder un slot devenu lointain fait TRAVERSER le cercle du ballon) ; ANCRE LENTE
+     τ 1,5 s seule 8,6 % avec 99 % des pics au milieu (la moyenne lissée AIMANTE tout au
+     barycentre du jeu) ; les deux ensemble 6,4 % (sauts −43 % pourtant) ; base 4,6. LE
+     VERDICT : les cibles sautent mais les corps ne courent pas plus (vitesse soutien ~2,1
+     m/s partout) — le greedy re-résolu donne toujours le slot d'à côté, c'est un MINIMISEUR
+     DE DÉPLACEMENT déguisé en chaos. Le bail supprimé du code (nuisible partout) ; l'ancre
+     lente reste en clé éteinte (un τ court 0,3-0,5 s — lisser la touche sans aimanter — est
+     la seule piste restante). Le chantier « placement off-ball » (82-85) se FERME sur ce
+     bilan : 7 mécanismes essayés, 1 seul retenu actif (l'axe tactique relation, identité au
+     défaut), la densité 4,6 % requalifiée RÉALISTE (un milieu disputé réel vit à ~5 % ; le
+     vécu « cour d'école » venait des STATUES — tuées au lot 81 — et des paires collées
+     < 1,2 m, p99 10 : le prochain levier VISUEL est la séparation des corps, pas le
+     placement). Leçons : chiffrer le symptôme AVANT d'accuser un mécanisme (les sauts de
+     cible étaient spectaculaires et bénins) ; un système adaptatif re-résolu peut être
+     l'optimum qu'on cherche à construire ; savoir FERMER un chantier sur une cartographie
+     négative complète vaut un lot réussi.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
