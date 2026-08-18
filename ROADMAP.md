@@ -49,7 +49,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-133) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 134.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 135.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -85,11 +85,11 @@
    du gant (envGo) + warp de prise debout (_applyCatchWarp). Mesuré après aux mêmes bones :
    sol 1,87 s, tronc 156°/s max, mains-ballon ≤ 0,56 m tout le relevé. Reste au lot 93 : le
    premier contact des prises-réflexe aériennes (~0,96 m — clip priseAerienne, épaule qui monte).
-2. **L'ATTAQUANT MUET (lot 92, sim)** — mesuré : 6-7 conduites de +18 m sans décision / 4
-   matchs. Le baromètre du porteur dévalue la conduite muette à l'approche de la surface :
-   tirer tôt (finishing), servir (vision — les dédoublements sont des options), écarter — par
-   attributs ET rôle (le 9 tente, le meneur sert). Sonde de départ : probe-gk89.mjs
-   (conduites > 18 m) à recréer.
+2. ~~**L'ATTAQUANT MUET (lot 92, sim)**~~ — **LIVRÉ** (note 134) : zone grise du tir
+   (menace.grise 1,35, pondérée finishing, shooting.js même porte), conduite muette dévaluée
+   (muteD 10, plancher 0,32), le muet rend le cap (wGoal ×0,25 + evadeSpot ×0,15, rayon
+   muteD × composureF), _takeP persistant entre touches. Requalifié : porter dans l'espace
+   LIBRE est sain — résiduel = espace fermé (esp < 6), métrique pour un futur lot.
 3. **LES ANIMATIONS DIFFÉRENCIÉES (lot 93, scène/animkit)** — les contrats d'events sont posés
    (lot 90 : arrêt {mode, mains, cote, aerienne}, shot {kind, z}) : frappePuissante (élan
    ample), frappeEnroulée (l'intérieur enveloppe), frappePointu ; parade1main/parade2mains/
