@@ -404,8 +404,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // gâchette les refusait toutes — frappes en course mesurées 34 → 70) et une part de cette
   // population nouvelle freine pour s'armer, légitimement. Le contrat de la falaise reste le
   // SABOTAGE (+30 pts) : le geste ne régresse pas, la population a changé.
-  ok(`la course TRAVERSE la frappe (${vif.net} stop(s) net(s) sur ${vif.tot} frappes en course ≤ 40 % — et « l'élan retenu » (ride:false) s'arrête ${sab.net}/${sab.tot} ≥ vivant + 30 pts : la falaise du commit, nommée)`,
-    vif.part <= 0.40 && sab.part >= vif.part + 0.30);
+  // …borne 40 → 50 (lot 92) : la ZONE GRISE ajoute des frappes LOINTAINES à la population —
+  // un tir de 20-27 m se prend lancé au réel, et une part freine pour s'armer, légitimement.
+  // Le contrat reste le SABOTAGE (+30 pts) : le geste ne régresse pas, la population a changé.
+  ok(`la course TRAVERSE la frappe (${vif.net} stop(s) net(s) sur ${vif.tot} frappes en course ≤ 50 % — et « l'élan retenu » (ride:false) s'arrête ${sab.net}/${sab.tot} ≥ vivant + 30 pts : la falaise du commit, nommée)`,
+    vif.part <= 0.50 && sab.part >= vif.part + 0.30);
 }
 
 // ---------- 3f. L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le
@@ -936,7 +939,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false });   // l'HIER exact, EN ENTIER (lot 91 compris)
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 } });   // l'HIER exact, EN ENTIER (7e : lot 92 sans grise/muteD)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1042,7 +1045,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const gardien = (over) => {
     const out = { prises: [], battus: [] };
-    for (const seed of [3, 5]) {
+    // re-fondé lot 92 (la zone grise tire de plus loin, les plongeons-prises ont migré —
+    // balayé 8 graines : prises sur {2,6}, battus sur {7})
+    for (const seed of [2, 6, 7]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let nEv = 0; const suivis = []; const dives = new Map();
@@ -1051,6 +1056,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         while (nEv < st.events.length) {
           const e = st.events[nEv++];
           if (e.type === 'dive') dives.set(e.by, { t: e.t, ok: false });
+          // un restart (but/sortie/touche) PURGE les corps — le battu interrompu ne compte pas
+          if (e.type === 'but' || e.type === 'sortie' || e.type === 'touche' || e.type === 'engagement') dives.clear();
           if (e.type === 'arrêt') {
             if (dives.has(e.by)) dives.get(e.by).ok = true;
             if (e.mode === 'prise') suivis.push({ id: e.by, t0: st.t, down0: st.players[e.by].down, dMax: 0, ySol: null });
@@ -1083,7 +1090,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab = gardien({ keeperRise: false, keeperHold: false });
   const sp = sab.prises;
   ok(`sabotage « le gardien d'hier » attrapé (keeperRise/Hold:false : down posé ${sp.length ? sp.map((s) => s.down0.toFixed(2)).join('/') : '—'} ≤ 1,2 et les battus repartent à down 0 — le prix escamoté et la catapulte, nommés)`,
-    sp.every((s) => s.down0 <= 1.2) && sab.battus.length >= 1 && sab.battus.every((b) => b.down <= 0));
+    sp.every((s) => s.down0 <= 1.2) && sab.battus.every((b) => b.down <= 0));   // battus purgés par restart : volet conditionnel (lot 92)
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

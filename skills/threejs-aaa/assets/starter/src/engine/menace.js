@@ -27,7 +27,13 @@ export function menaceTir(st, c, cfg) {
   const goal = pitch.attackGoal(c.team);
   const d = Math.hypot(goal.x - c.p[0], c.p[2]);
   const R = cfg.shotRange ?? 15;
-  if (c.keeper || d > R) return { score: 0, d: +d.toFixed(1), pourquoi: 'hors-portée' };
+  // LA PORTÉE DE TIR EST L'ATTRIBUT, PAS UN MUR (lot 92, cfg.menace.grise && st.full — mesuré :
+  // 8 conduites muettes / 4 matchs, tir « hors-portée » 8/8 à 21-31 m, l'une jusqu'aux pieds du
+  // gardien). Entre R et R×grise, le tir EXISTE, dégressif, pondéré par le FINISHING (facteur :
+  // l'élite tente à 25 m, le fini de 30 jamais — shotSigma inversé, défaut 0,5 sans effectif).
+  // false : le mur binaire d'hier (sabotage nommé).
+  const grise = st.full && cfg.menace?.grise ? R * cfg.menace.grise : R;
+  if (c.keeper || d > grise) return { score: 0, d: +d.toFixed(1), pourquoi: 'hors-portée' };
   if (Math.sign(c.p[0] || goal.x) !== Math.sign(goal.x) && d > R * 0.75) return { score: 0, d: +d.toFixed(1), pourquoi: 'sa-moitié' };
   if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && d > 8.5) return { score: 0, d: +d.toFixed(1), pourquoi: 'angle-fermé' };
   const gk = st.players.find((p) => p.keeper && p.team !== c.team);
@@ -52,11 +58,15 @@ export function menaceTir(st, c, cfg) {
   // tir contré/dévié fait vivre la surface (corners, rebonds) — sans lui, un bloc hermétique
   // rend l'attaque STÉRILE (seed 7 : 0 tir en 330 s malgré le plancher franc, tous couloirs < need).
   const tente = !franc && margin >= need * 0.4 && d <= R * 0.6 && cfg.tirFranc !== false;
-  return {
-    score: +Math.max((0.30 + 0.62 * nearF) * (0.25 + 0.75 * laneF), franc ? (cfg.tirFranc ?? 0.72) : tente ? (cfg.tirTente ?? 0.55) : 0).toFixed(3),
-    d: +d.toFixed(1), marge: +margin.toFixed(2), tz: +tz.toFixed(1),
-    pourquoi: franc ? 'occasion-franche' : tente ? 'tir-tenté' : margin < need ? 'couloir-serré' : 'cadre-en-vue',
-  };
+  let sc = Math.max((0.30 + 0.62 * nearF) * (0.25 + 0.75 * laneF), franc ? (cfg.tirFranc ?? 0.72) : tente ? (cfg.tirTente ?? 0.55) : 0);
+  let why = franc ? 'occasion-franche' : tente ? 'tir-tenté' : margin < need ? 'couloir-serré' : 'cadre-en-vue';
+  if (d > R) {
+    const finF = c.skill ? Math.max(0, Math.min(1, (0.55 - c.skill.shotSigma) / 0.45)) : 0.5;
+    sc = Math.max(0.12, (0.30 + 0.62 * Math.max(0, nearF)) * (0.25 + 0.75 * laneF))
+      * Math.max(0, 1 - (d - R) / Math.max(0.5, grise - R)) * (0.3 + 0.6 * finF);
+    why = 'zone-grise';
+  }
+  return { score: +sc.toFixed(3), d: +d.toFixed(1), marge: +margin.toFixed(2), tz: +tz.toFixed(1), pourquoi: why };
 }
 
 /** LE CENTRE — les portes de position de tryCross (haut, large, boîte peuplée, cooldown), la
@@ -118,11 +128,16 @@ export function menaceConduite(st, c, cfg) {
     if (Math.abs(vx * uz - vz * ux) < 1.4 + along * 0.7) espace = Math.min(espace, along);
   }
   const farF = Math.min(1, gl / pitch.hx);
-  return {
-    score: +(0.14 + 0.5 * (espace / 9) * (0.55 + 0.45 * farF)).toFixed(3),
-    espace: +espace.toFixed(1),
-    pourquoi: espace < 3 ? 'fermé-devant' : 'champ-devant',
-  };
+  let sc = 0.14 + 0.5 * (espace / 9) * (0.55 + 0.45 * farF);
+  let why = espace < 3 ? 'fermé-devant' : 'champ-devant';
+  // LA CONDUITE MUETTE SE PAIE (lot 92, cfg.menace.muteD && st.full — la conduite gagnait PAR
+  // DÉFAUT : « aucune-ligne » 6/8, l'arbitre n'avait rien d'autre). Au-delà de muteD m conduits
+  // depuis la prise (c._takeP, posé par receive), le score décroît (plancher 0,32×) — la passe
+  // de CIRCULATION redevient le bon choix : rendre le ballon quand rien ne s'ouvre EST le
+  // football. false : la conduite gratuite d'hier (sabotage nommé).
+  const mD = st.full && cfg.menace?.muteD && c._takeP ? Math.hypot(c.p[0] - c._takeP[0], c.p[2] - c._takeP[1]) : 0;
+  if (mD > (cfg.menace?.muteD ?? 10)) { sc *= Math.max(0.32, 1 - (mD - (cfg.menace?.muteD ?? 10)) * 0.07); why = 'conduite-muette'; }
+  return { score: +sc.toFixed(3), espace: +espace.toFixed(1), pourquoi: why };
 }
 
 /**

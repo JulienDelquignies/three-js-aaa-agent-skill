@@ -20,7 +20,9 @@ export function tryShot(st, c, cfg) {
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
   const dGoal = Math.hypot(goal.x - c.p[0], 0 - c.p[2]);
-  if (dGoal > cfg.shotRange) return false;
+  // …la même portée grise que l'arbitre (lot 92 — une seule vérité) : le tir lointain choisi
+  // par la menace ne se fait pas refuser à la porte.
+  if (dGoal > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1)) return false;
   if (st.hold < cfg.shotHold) return false;
   if (Math.sign(c.p[0] - 0) !== Math.sign(goal.x) && dGoal > cfg.shotRange * 0.75) return false; // pas de sa moitié
   // L'ANGLE FERMÉ N'EST PAS UN TIR, C'EST UN CENTRE RATÉ : l'aile voyait 15 m de « portée » et

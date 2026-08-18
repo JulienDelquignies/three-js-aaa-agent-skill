@@ -327,7 +327,13 @@ export const MATCH = {
                           // joue un ballon mort). null (défaut) : les mondes d'aujourd'hui, sans
                           // fin, au bit près — le chrono est une CONFIGURATION, pas une loi.
                           // V1 : pas d'échange de camps ni de temps additionnel (dettes nommées).
-  menace: { tir: 1, centre: 1, passe: 1, conduite: 1 },
+  menace: { tir: 1, centre: 1, passe: 1, conduite: 1, grise: 1.35, muteD: 10 },
+                          // …grise (lot 92) : la portée de tir × ce facteur = la ZONE GRISE où
+                          // le tir existe dégressif, pondéré FINISHING (l'attribut, pas un mur —
+                          // 8 conduites muettes / 4 matchs dont une jusqu'aux pieds du gardien).
+                          // muteD (lot 92) : au-delà de ce rayon conduit depuis la prise, la
+                          // conduite se DÉVALUE (plancher 0,32×) — la circulation redevient le
+                          // choix. grise:false / muteD:false : le mur et la conduite gratuite.
                           // L'ARBITRE DE MENACE (11c11 seulement — st.full le garde) : les quatre
                           // options du porteur (tir/centre/passe/conduite) notées sur UNE échelle
                           // (menace.js), l'ordre figé devient un choix, chaque note porte son

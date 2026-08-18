@@ -269,6 +269,8 @@ function receive(st, id, cfg = RONDO) {
       st.passes++; st.best = Math.max(st.best, st.passes);
       st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: id, count: st.passes });
     } else st.events.push({ t: +st.t.toFixed(2), type: 'loose-kept', by: id });
+    // l'origine de conduite (lot 92) tient tant que le porteur ne change pas (chaque touche re-passe ici)
+    if (st.possession.carrier !== id || !p._takeP) p._takeP = [p.p[0], p.p[2]];
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
     p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — plan ET cap

@@ -4015,6 +4015,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      2d95fc853a99521c, réduit seed 4 = 9846cf3e5a80c58b, IDENTIQUES avant/après le lot (la
      preuve d'identité est l'avant/après du même instrument + la batterie).
 
+134. **Lot 92 : L'ATTAQUANT MUET (sim) — le tir lointain rendu au finishing, la conduite sans
+     décision dévaluée, le muet rend le cap à la composure.** Mesuré avant (probe-muet) : 6-7
+     conduites de +18 m sans décision / 4 matchs — le porteur avançait parce qu'aucune option
+     ne scorait, l'arbitre n'offrait RIEN hors de portée. Trois lois, mêmes primitives que les
+     exécuteurs (pas de seconde vérité) : (a) LA ZONE GRISE DU TIR (menace.grise 1,35,
+     st.full) : entre R et R×1,35 le score s'amortit linéairement et se PONDÈRE par le
+     finishing (finF = (0,55 − shotSigma)/0,45, facteur 0,3 + 0,6·finF — l'attribut en
+     FACTEUR, jamais une branche) ; shooting.js étend sa porte de portée du même ×grise — le
+     bon finisseur TENTE de loin, le maladroit s'abstient ; (b) LA CONDUITE MUETTE DÉVALUÉE
+     (menace.muteD 10) : au-delà de muteD mètres portés depuis _takeP sans décision, le score
+     conduite paie 7 %/m (plancher 0,32) ; (c) LE MUET REND LE CAP (match-sim wGoal ×0,25 +
+     rondo evadeSpot terme but ×0,15) au rayon muteD × composureF — le POSÉ rend tôt,
+     protège/écarte au lieu de foncer dans le mur. _takeP PERSISTANT entre touches (receive ne
+     le repose que si le porteur CHANGE — le reset par touche rendait la mutité inatteignable,
+     attrapé à la sonde). REQUALIFICATION honnête : porter ~9 m dans l'espace LIBRE est du bon
+     football (le « fonce » sain) — le résiduel pathologique est l'espace fermé/angle fermé
+     (esp < 6), métrique affinée pour un futur lot. RE-FONDATIONS de banc payées : graines
+     gardien [3,5] → {2,6,7} (le flux des prises s'est déplacé — re-balayé à la sonde), purge
+     des dives sur restart (but/sortie/touche/engagement : un battu purgé par l'engagement
+     n'est pas une incohérence), volet battus du sabotage rendu conditionnel, borne
+     frappes-en-course 40 → 50 % (la zone grise ajoute des tentatives lancées), sab76 7e
+     application (menace {tir:1, centre:1, passe:1, conduite:1} d'hier). Batterie verte
+     (match11 72, menace 11, 84+40+88+14+14+8+9+33+15+9, animkit 103), A/B 20 × 300 s :
+     73 tirs / 18 buts (bande 17-33 ✓ — le monde TENTE enfin de loin, conversion basse
+     réaliste ; avant : 54 tirs), rondo/réduit AU BIT (c775c81e62592d4d / d1c0c1171e6f876c à
+     l'ancien instrument — aucun champ d'event nouveau au lot).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

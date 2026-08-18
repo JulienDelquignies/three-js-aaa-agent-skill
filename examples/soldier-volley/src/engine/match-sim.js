@@ -497,16 +497,16 @@ function assignMatchJobs(st, cfg) {
       const aim = wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, 0];
       const gx = aim[0] - p.p[0], gz = aim[1] - p.p[2];
       const gl = Math.hypot(gx, gz) || 1;
-      // devant dégagé → cap au but ; bouché → l'évasion du rondo garde le ballon
+      // devant dégagé → cap au but ; bouché → l'évasion garde ; LE MUET REND LE CAP (lot 92, menace.muteD × COMPOSURE — le posé rend tôt) : ×0,25, protéger/écarter.
       let front = 0;
       for (const q of defenders) if (Math.sign(q.p[0] - p.p[0]) === Math.sign(gx) && Math.abs(q.p[0] - p.p[0]) < 6 && Math.abs(q.p[2] - p.p[2]) < 4) front++;
-      const wGoal = front === 0 ? 0.8 : front === 1 ? 0.5 : 0.25;
+      let wGoal = front === 0 ? 0.8 : front === 1 ? 0.5 : 0.25;
+      const mR92 = st.full && cfg.menace?.muteD ? cfg.menace.muteD * (p.skill?.composureF ?? 1) : 0;
+      if (mR92 && p._takeP && Math.hypot(p.p[0] - p._takeP[0], p.p[2] - p._takeP[1]) > mR92) wGoal *= 0.25;
       let px = (gx / gl) * wGoal, pz = (gz / gl) * wGoal;
       if (ev) { const ex = ev[0] - p.p[0], ez = ev[2] - p.p[2]; const el = Math.hypot(ex, ez) || 1; px += (ex / el) * (1 - wGoal); pz += (ez / el) * (1 - wGoal); }
       const pl = Math.hypot(px, pz) || 1;
-      // LA POUSSÉE SE LISSE (EMA τ 0,35 s) : l'évasion re-échantillonnée à 60 Hz faisait
-      // zigzaguer la demande — et chaque touche partait sur un cap différent du précédent.
-      // Une conduite précise est d'abord une INTENTION stable.
+      // LA POUSSÉE SE LISSE (EMA τ 0,35 s) : l'évasion 60 Hz zigzaguait — l'intention d'abord.
       const raw = [px / pl, pz / pl];
       const a = 1 - Math.exp(-(1 / 60) / 0.35);
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;

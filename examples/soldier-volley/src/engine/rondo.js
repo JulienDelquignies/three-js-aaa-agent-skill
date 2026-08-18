@@ -327,6 +327,15 @@ export function evadeSpot(st, c, cfg = RONDO) {
     }
     const gl = Math.hypot(tx - c.p[0], tz - c.p[2]) || 1;
     gxu = (tx - c.p[0]) / gl; gzu = (tz - c.p[2]) / gl;
+    // …ET LE MUET N'A PLUS DE SENS UNIQUE (lot 92, même clé menace.muteD — la dévaluation
+    // d'arbitre ne suffisait pas : sans AUCUNE option (passe 0,08 plancher), la conduite
+    // misérable gagnait encore et le porteur FONÇAIT 18 m dans le bloc, parfois jusqu'aux
+    // pieds du gardien). Passé le rayon muet × COMPOSURE (le posé temporise tôt, l'impulsif
+    // fonce plus longtemps — l'attribut en facteur), la PROGRESSION s'éteint (×0,15) :
+    // l'évasion redevient protection/écart, le corps attend le soutien.
+    const mR = (cfg.menace?.muteD ?? 0) * (c.skill?.composureF ?? 1);
+    const mD = mR && c._takeP ? Math.hypot(c.p[0] - c._takeP[0], c.p[2] - c._takeP[1]) : 0;
+    if (mR && mD > mR) { gxu *= 0.15; gzu *= 0.15; }
   }
   let best = null;
   for (let i = 0; i < cfg.evadeSamples; i++) {
