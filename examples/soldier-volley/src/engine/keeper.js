@@ -32,7 +32,35 @@ export const KEEPER = {
   floatRead: 2.4,       // × réflexe — la FLOTTANTE (vol > 18 m/s à < 2 rad/s de spin) se lit tard :
                         // pas d'axe de rotation à deviner, le départ du plongeon se paie (lot 39)
   reflex: 0.12,         // s — le tir doit avoir volé au moins ça avant le déclenchement (pas d'oracle)
+  groundTime: 0.65,     // s — le temps AU SOL après le plongeon (amortir, lire le jeu — réel 0,5-1,5 ;
+                        // mesuré avant : 0,3 s, le corps repartait sans avoir touché terre — note 132)
+  riseTime: 1.25,       // s — le relevé PAR ÉTAPES (rouler → appui bras → genou → debout), tronc borné
+                        // ~250°/s (mesuré avant : 0,15-0,27 s, 700°/s, 11 m/s vertical — la catapulte)
+  fallRest: 0.55,       // s — le reste de la CHUTE après la résolution du gant : le contact vit en l'air,
+                        // le corps retombe encore (clip : contact 0,55 → couché 1,2)
 };
+
+/**
+ * LE RELEVÉ A UN PRIX (lot 91). Un plongeon couche le corps ; se relever = sol (lire le jeu) +
+ * étapes, et l'AGILITÉ est un FACTEUR (attributes.getupF [0,72 ; 1,28] → 0,9-1,6 s de relevé —
+ * sans note : 1, le monde moyen). `resolved` : un arrêt paie AUSSI le reste de sa chute (le gant
+ * résout en l'air) ; le battu a déjà fini de tomber quand son geste meurt.
+ */
+export function keeperRise(getupF = 1, resolved = true, K = KEEPER) {
+  const getup = K.riseTime * Math.max(0.5, Math.min(2, getupF));
+  return { ground: K.groundTime, getup, total: K.groundTime + getup + (resolved ? K.fallRest : 0) };
+}
+
+/**
+ * OÙ VIVENT LES GANTS (lot 91). Le point du ballon TENU après une prise : contre la poitrine,
+ * AU SOL pendant le couché, remonté avec le relevé — la sim énonce le profil (le QUOI), la scène
+ * ancre les mains dessus (le COMMENT). `u` : 0 couché → 1 debout, lu de gk.down contre le relevé.
+ */
+export function keeperHoldPoint(gk, K = KEEPER) {
+  const u = gk.rise && gk.down > 0 ? Math.max(0, Math.min(1, 1 - gk.down / gk.rise.getup)) : 1;
+  const y = 0.24 + 0.71 * u * u;                       // l'écrasement au sol, la remontée avec le tronc
+  return [gk.p[0] + Math.cos(gk.yaw) * 0.32, y, gk.p[2] + Math.sin(gk.yaw) * 0.32];
+}
 
 /**
  * LA POSITION. Renvoie le point où le gardien de `team` doit être, pour un ballon en `ball` (xz).
@@ -169,5 +197,17 @@ export function checkKeeper(pitch, K = KEEPER) {
   if (far2.mode === 'dive' && Math.abs((shotCross(pitch, 0, [me[0] + 8, 0.11, pitch.goalHalf - 0.2], [-13, 1.2, 0.4])?.z ?? 0) - (-pitch.goalHalf + 0.3)) > K.diveReach) {
     issues.push('aimant à ballon : plongeon déclaré au-delà de l\'envergure');
   }
+  // 5. LE RELEVÉ (lot 91) : borné à la bande humaine, monotone à l'agilité, et le battu paie MOINS
+  //    (sa chute est déjà consommée) mais paie — un plongeon sans prix est la catapulte d'hier
+  const rMid = keeperRise(1, true, K), rAgile = keeperRise(0.72, true, K), rRaide = keeperRise(1.28, true, K);
+  if (!(rAgile.getup >= 0.85 && rRaide.getup <= 1.65)) issues.push(`relevé hors bande humaine (${rAgile.getup.toFixed(2)}–${rRaide.getup.toFixed(2)} s, attendu ~0,9-1,6)`);
+  if (!(rAgile.getup < rMid.getup && rMid.getup < rRaide.getup)) issues.push('l\'agilité ne module pas le relevé (non monotone)');
+  if (!(rMid.ground >= 0.5 && rMid.ground <= 1.0)) issues.push(`temps au sol hors bande (${rMid.ground} s, réel 0,5-1,0)`);
+  const rBattu = keeperRise(1, false, K);
+  if (!(rBattu.total < rMid.total && rBattu.total >= rMid.ground + rMid.getup - 1e-9)) issues.push('le battu ne paie pas sol + relevé (ou re-paie une chute déjà tombée)');
+  // …et le point du tenu suit le corps : couché au sol, debout à hauteur de porté
+  const bas = keeperHoldPoint({ p: [0, 0, 0], yaw: 0, down: 2, rise: { ground: 0.65, getup: 1.25 } }, K);
+  const haut = keeperHoldPoint({ p: [0, 0, 0], yaw: 0, down: 0 }, K);
+  if (!(bas[1] < 0.35 && haut[1] > 0.85)) issues.push(`le ballon tenu ne suit pas le corps (couché ${bas[1].toFixed(2)}, debout ${haut[1].toFixed(2)})`);
   return { ok: issues.length === 0, issues };
 }

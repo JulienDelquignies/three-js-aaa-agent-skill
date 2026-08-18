@@ -166,6 +166,7 @@ function stepGestures(st, dt, cfg) {
         st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'semelle', by: p.id, maxV: +(A.maxV ?? 0).toFixed(2) });
       } else if (A.skill === 'plongeon') {
         if (!A.resolved) deny(st, 'plongeon-battu');              // la détente n'a rien trouvé : l'état se nomme
+        cfg.onDiveEnd?.(st, p, A, cfg);                           // …et le corps TOMBÉ paie sa chute (hook match, lot 91)
       } else if (A.skill === 'feinte') {
         st.events.push({ t: +st.t.toFixed(2), type: 'skill-end', kind: 'feinte', by: p.id });
       }
@@ -233,14 +234,11 @@ function standTackleNow(st, q, cfg) {
 }
 
 // ============================ LES GESTES TECHNIQUES ============================
-// Râteau, feinte de passe, arrêt semelle — les gestes qui manipulent le ballon SANS le libérer.
-// Trois lois partagées : (1) chaque déclenchement est SITUÉ (presseur frontal réel, défenseur à
-// tromper dans le cône, champ libre mesuré) et chaque refus de situation se NOMME ; (2) le geste
-// passe par la MÊME machine que les frappes (startGesture/stepGesture — armé volable, contact,
-// accompagnement, abort nommé) : un râteau mal timé se fait tacler pendant l'armé, exactement
-// comme une passe ; (3) le couple corps-ballon reste SOUDÉ (carry servo) — le ballon est raclé,
-// garé, jamais téléporté. La fréquence est une identité (persona.flair) sous cooldowns stricts :
-// un geste technique est un événement, pas un tic.
+// Râteau, feinte, semelle — les gestes qui manipulent le ballon SANS le libérer. Trois lois :
+// (1) chaque déclenchement est SITUÉ et chaque refus se NOMME ; (2) le geste passe par la MÊME
+// machine que les frappes (armé volable, contact, accompagnement, abort nommé) ; (3) le couple
+// corps-ballon reste SOUDÉ (carry servo) — raclé, garé, jamais téléporté. La fréquence est une
+// identité (persona.flair) sous cooldowns stricts : un geste technique est un événement, pas un tic.
 
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeFeinteFrappe, skillContactNow };
 export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a), chargeStep: (...a) => chargeStep(...a), slideTackleStep: (...a) => slideTackleStep(...a), choosePass: (...a) => choosePass(...a) };
@@ -295,14 +293,10 @@ function receive(st, id, cfg = RONDO) {
     const pick = chooseTechnique(sit, 'control')[0];
     if (pick) {
       p.foot = pick.foot;
-      // A CONTROL BRINGS THE BALL TO THE FOOT. It used to only damp the velocity, so the ball stopped
-      // dead wherever it happened to be when the receive triggered — a metre from the man, which reads
-      // exactly as "it stops on the control while it is still far from his foot". Taking a touch means
-      // the ball ENDS UP at your feet; that is the whole point of the gesture.
-      // …AND IT IS A DIRECTIONAL TOUCH. Settling the ball along his CURRENT facing put it back where
-      // the pass came from — he was running to meet it, so "in front of him" pointed at the passer —
-      // and the next strike then had the ball behind him 55 % of the time. A first touch is taken INTO
-      // the direction you intend to go, and the body turns with it: away from the nearest opponent.
+      // A CONTROL BRINGS THE BALL TO THE FOOT (damping alone stopped it dead a metre away — the
+      // ball must END UP at your feet, that is the gesture). AND IT IS DIRECTIONAL: settling on
+      // the CURRENT facing pointed back at the passer (ball behind the man 55 % of next strikes) —
+      // a first touch is taken INTO the direction you intend to go, away from the nearest opponent.
       const mv = MOVE_TIMING[pick.tech.clip];
       const T = Math.max(0.12, (mv?.duration ?? 0.5) - (mv?.contact ?? 0.2));
       const foe = st.players.filter((q) => q.team !== p.team && q.down <= 0)
@@ -623,6 +617,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
       }
       return st;
     }
+
+    // LE TENU DU GARDIEN (hook heldBall — match, lot 91) : après la prise, le ballon vit aux
+    // GANTS tant que le corps se relève — ni conduite, ni duel sur un ballon tenu (Loi 12).
+    if (cfg.heldBall?.(st, c, dt, cfg)) { st.hold += dt; return st; }
 
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
     if (!st._drb) st._drb = makeDribbler(st.full && cfg.prise !== false ? { prise: cfg.prise ?? 0.62 } : {}); // la touche au pied (lot 58) — doc : match-config

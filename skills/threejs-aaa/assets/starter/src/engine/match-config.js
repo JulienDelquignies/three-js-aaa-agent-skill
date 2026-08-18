@@ -478,9 +478,16 @@ export const MATCH = {
                           // prises < 22 m : 12 → 5 et tirs 27 → 16 — l'attaque redescendait) ; false : la
                           // statue au point de chute pendant tout le début du vol (sabotage nommé « pose figée »)
   execSigma: 0.044,       // rad (≈ 2,5°) — le déchet technique du joueur MOYEN (les notes le raffinent, l'urgence l'aggrave ×1,25)
-  keeperDown: 1.15,       // s — le prix d'un plongeon (au sol après, gagné ou perdu) : couvre le
-                          // couché + relevé RÉEL du clip (~1,05 s après contact à vitesse 1 —
-                          // à 0,75 le corps sim repartait pendant que le rendu se relevait encore)
+  keeperDown: 1.15,       // s — le PLANCHER du prix d'un plongeon (au sol après, gagné ou perdu)
+  keeperRise: true,       // LE RELEVÉ RÉEL (st.full, lot 91) : down = chute + sol + relevé par
+                          // étapes (keeper.keeperRise — l'AGILITÉ en facteur, ~2,45 s au joueur
+                          // moyen), le battu paie AUSSI sa chute, gk.rise = le contrat que la
+                          // scène anime ; false : le prix d'hier (1,15 s à l'arrêt, RIEN au battu
+                          // — le corps se catapultait debout à 700°/s, sabotage nommé)
+  keeperHold: true,       // LE BALLON PRIS RESTE AUX GANTS (st.full, lot 91) : tenu au corps
+                          // pendant couché + relevé (ball.hold — intouchable, Loi 12), posé aux
+                          // pieds une fois debout ; false : le ballon GELÉ en l'air d'hier
+                          // (mesuré : 1,34 m de haut, 8 images en s'éloignant des mains)
   pokeReach: 0.5,         // m — LE PIQUE : un ballon de conduite libre à portée de pied adverse
                           // se dévie (poke tackle) ; null : le défenseur-spectateur (sabotage nommé)
   prepTouch: true,        // LA TOUCHE DE PRÉPARATION avant la frappe (serre la touche quand le

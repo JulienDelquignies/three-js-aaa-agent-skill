@@ -148,16 +148,21 @@ export const MOVES = {
   /** GOALKEEPER DIVE (once, root motion): crouch, launch to the right, lay out, spring back up */
   plongeon: {
     name: 'plongeon', duration: 1.6, contact: 0.55, loop: false,   // 0,55 = l'extension — le moment des gants
+    rise: 1.2,   // l'instant où le RELEVÉ commence — la scène gèle ici pendant le sol (gk.rise), puis
+                 // rejoue la queue sur la durée du relevé sim (0,9-1,6 s selon l'agilité — lot 91)
     keys: [
       { t: 0.0, pose: {}, hips: [0, 0, 0] },
       { t: 0.25, pose: { LeftUpLeg: [55, 0, 0], RightUpLeg: [55, 0, 0], LeftLeg: [-75, 0, 0], RightLeg: [-75, 0, 0], Spine1: [16, 0, 0] }, hips: [0, -0.26, 0] },
       { t: 0.55, pose: { Hips: [0, 0, -62], LeftArm: [-20, 0, -68], RightArm: [-20, 0, -72], LeftForeArm: [0, 0, 8], RightForeArm: [0, 0, 8], LeftUpLeg: [12, 0, 0], RightUpLeg: [16, 0, 0], LeftLeg: [-12, 0, 0], RightLeg: [-18, 0, 0], Spine1: [-6, 0, 0] }, hips: [0.85, 0.28, 0] },
       { t: 0.9, pose: { Hips: [0, 0, -80], LeftArm: [-15, 0, -70], RightArm: [-15, 0, -74], LeftUpLeg: [10, 0, 0], RightUpLeg: [14, 0, 0], Spine1: [0, 0, 0] }, hips: [1.35, -0.68, 0] },
       { t: 1.2, pose: { Hips: [0, 0, -80], LeftArm: [-10, 0, -60], RightArm: [-10, 0, -64] }, hips: [1.35, -0.68, 0] },
-      // le relevé se joue SUR PLACE : ramener les hanches à [0,0,0] faisait RECULER le corps
-      // rendu de 1,35 m pendant qu'il se relevait — « il ne se relève pas là où il devrait »
-      // (retour utilisateur ; la sim est transportée au même point par le lunge borné, et la
-      // scène réconcilie les deux voyages — le fondu de fin part d'un delta ≈ 0)
+      // le relevé se joue SUR PLACE (hanches x tenues à 1,35 : les ramener à 0 faisait RECULER le
+      // corps rendu — la sim est transportée au même point par le lunge, le fondu part d'un delta
+      // ≈ 0) ET PAR ÉTAPES (lot 91) : rouler → appui bras → genou → debout. La catapulte d'hier :
+      // couché → debout en UN segment, fondu de couche par-dessus (700°/s de tronc mesurés).
+      { t: 1.28, pose: { Hips: [0, 0, -60], LeftArm: [-40, 0, -30], RightArm: [-40, 0, -34], LeftForeArm: [-20, 0, 10], RightForeArm: [-20, 0, 10], LeftUpLeg: [30, 0, 0], RightUpLeg: [34, 0, 0], LeftLeg: [-45, 0, 0], RightLeg: [-50, 0, 0], Spine1: [10, 0, 0] }, hips: [1.35, -0.6, 0] },
+      { t: 1.4, pose: { Hips: [0, 0, -35], Spine1: [22, 0, 0], LeftArm: [30, 0, -10], RightArm: [30, 0, -12], LeftForeArm: [-16, 0, 9], RightForeArm: [-16, 0, 9], LeftUpLeg: [58, 0, 0], RightUpLeg: [40, 0, 0], LeftLeg: [-74, 0, 0], RightLeg: [-58, 0, 0], Head: [8, 0, 0] }, hips: [1.35, -0.42, 0] },
+      { t: 1.51, pose: { Hips: [0, 0, -13], Spine1: [12, 0, 0], LeftArm: [52, 0, -4], RightArm: [52, 0, -5], LeftUpLeg: [66, 0, 0], RightUpLeg: [26, 0, 0], LeftLeg: [-84, 0, 0], RightLeg: [-34, 0, 0], Head: [4, 0, 0] }, hips: [1.35, -0.2, 0] },
       { t: 1.6, pose: {}, hips: [1.35, 0, 0] },
     ],
   },
@@ -168,6 +173,7 @@ export const MOVES = {
     // saturé à sa borne). Ici les hanches DESCENDENT (−0,5 à l'extension, −0,72 au tapis), le
     // corps se couche, les bras rasent le sol — la sim choisit l'espèce par cross.y.
     name: 'plongeonBas', duration: 1.4, contact: 0.5, loop: false,
+    rise: 1.1,   // le début du relevé (même loi que l'aérien — la scène gèle/rejoue par gk.rise)
     keys: [
       { t: 0.0, pose: {}, hips: [0, 0, 0] },
       { t: 0.2, pose: {
@@ -187,7 +193,11 @@ export const MOVES = {
         LeftUpLeg: [12, 0, 0], RightUpLeg: [16, 0, 0], Spine1: [0, 0, 0],
       }, hips: [1.15, -0.72, 0] },
       { t: 1.1, pose: { Hips: [0, 0, -82], LeftArm: [-6, 0, -52], RightArm: [-6, 0, -56] }, hips: [1.15, -0.72, 0] },
-      { t: 1.4, pose: {}, hips: [1.15, 0, 0] },   // le relevé SUR PLACE (même loi que le plongeon aérien)
+      // le relevé SUR PLACE et PAR ÉTAPES (lot 91) : rouler → appui bras → genou → debout
+      { t: 1.18, pose: { Hips: [0, 0, -62], LeftArm: [-38, 0, -28], RightArm: [-38, 0, -32], LeftForeArm: [-18, 0, 10], RightForeArm: [-18, 0, 10], LeftUpLeg: [32, 0, 0], RightUpLeg: [36, 0, 0], LeftLeg: [-48, 0, 0], RightLeg: [-52, 0, 0], Spine1: [8, 0, 0] }, hips: [1.15, -0.62, 0] },
+      { t: 1.27, pose: { Hips: [0, 0, -36], Spine1: [20, 0, 0], LeftArm: [20, 0, -12], RightArm: [20, 0, -14], LeftForeArm: [-15, 0, 9], RightForeArm: [-15, 0, 9], LeftUpLeg: [56, 0, 0], RightUpLeg: [38, 0, 0], LeftLeg: [-72, 0, 0], RightLeg: [-56, 0, 0], Head: [8, 0, 0] }, hips: [1.15, -0.44, 0] },
+      { t: 1.34, pose: { Hips: [0, 0, -13], Spine1: [11, 0, 0], LeftArm: [50, 0, -5], RightArm: [50, 0, -6], LeftUpLeg: [64, 0, 0], RightUpLeg: [24, 0, 0], LeftLeg: [-82, 0, 0], RightLeg: [-32, 0, 0] }, hips: [1.15, -0.21, 0] },
+      { t: 1.4, pose: {}, hips: [1.15, 0, 0] },
     ],
   },
   /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */

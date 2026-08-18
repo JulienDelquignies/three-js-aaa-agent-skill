@@ -17,7 +17,7 @@ export { MATCH };
 import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide } from './keeper.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint } from './keeper.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
 import { MOVES } from './animkit.js';
@@ -310,10 +310,10 @@ function assignMatchJobs(st, cfg) {
       // métier : il se porte sur son SPOT de distribution (devant sa ligne, jamais plus loin)…
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
-      gk._gkSince = gk._gkSince ?? st.t;
-      // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 posait le point dans
-      // la bouche du but : le porté sur-vise, débordement = CSC mesuré ; hors axe il meurt en
-      // sortie de but).
+      // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol
+      gk._gkSince = (st.full && cfg.keeperRise !== false && gk.down > 0) ? st.t : (gk._gkSince ?? st.t);
+      // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 posait le point dans la
+      // bouche du but : porté sur-visé, débordement = CSC mesuré ; hors axe il meurt en sortie de but).
       const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
       if (bdC > 0.85) {
         // LE GARDIEN AUSSI PASSE PAR SON BALLON (la loi du porteur, au métier près) : viser le
@@ -384,10 +384,8 @@ function assignMatchJobs(st, cfg) {
         continue;
       }
     }
-    // la MENACE se lit au dernier contact : un ballon de SA propre équipe se cueille, ne se plonge pas
-    // …et le SPIN du ballon se lit (lot 39) : la flottante — vite, sans axe — retarde le départ.
-    // Le fil passe par la clé du répertoire : shotVariety:false = la lecture d'hier, au bit près
-    // (sans la garde, un tendu > 18 m/s à spin nul déclenchait la lecture tardive dans le monde saboté)
+    // la MENACE se lit au dernier contact (le ballon de SA propre équipe se cueille) ; le SPIN se
+    // lit (lot 39 : la flottante retarde le départ) — shotVariety:false = la lecture d'hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
     if (dec.mode === 'dive' && gk.down <= 0) {
@@ -416,6 +414,10 @@ function assignMatchJobs(st, cfg) {
         log: st.gestures,
       });
       gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
+      // le contrat du relevé (gk.rise) se stampe DÈS LE DÉPART : la queue du clip attend le
+      // down, qui n'arrive qu'à la FIN du geste pour un battu (mesuré sans ça : 2 453°/s — le
+      // clip jouait son relevé pendant l'acte puis le down le claquait au sol en une image)
+      if (st.full && cfg.keeperRise !== false) { const R = keeperRise(gk.skill?.getupF ?? 1, true); gk.rise = { ground: R.ground, getup: R.getup }; }
       st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact });
       st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2) });
       continue;
@@ -528,11 +530,10 @@ function assignMatchJobs(st, cfg) {
         }
       }
       // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible de locomotion était la
-      // POUSSÉE PROJETÉE — le plan — même quand le ballon réel vivait à 2 m à droite ou DERRIÈRE
-      // le corps (captures utilisateur ; mesuré : 5,9 % du porté en course hors du cône avant,
-      // 323 images ballon derrière, épisodes de 1,2 s — et la pointe carrySurge ne libérait que
-      // la VITESSE : il courait plus vite du mauvais côté). Au-delà de la portée de contrôle, la
-      // cible EST le ballon — routé un demi-pas au-delà dans le sens du plan, pour le prendre
+      // POUSSÉE PROJETÉE — le plan — même ballon réel à 2 m à droite ou DERRIÈRE (mesuré : 5,9 %
+      // du porté hors du cône avant, 323 images ballon derrière ; carrySurge ne libérait que la
+      // VITESSE — plus vite du mauvais côté). Au-delà de la portée de contrôle, la cible EST le
+      // ballon — routé un demi-pas au-delà dans le sens du plan, pour le prendre
       // dans la foulée ; le plan reprend au pied.
       const dBall = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       if (cfg.carryViaBall !== false && dBall > 0.85) {
@@ -671,14 +672,11 @@ function assignMatchJobs(st, cfg) {
       if (bs.length > 4) bs.length = 4;                              // = slice(0, 4)
       slotters = bs; posted = st._bPosted ??= []; posted.length = 0;
       for (const p of free) if (!slotters.includes(p)) posted.push(p);
-      // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien — la ligne arrière monte),
-      // et LATÉRALEMENT (lot 68, bloc.rentre — le latéral opposé rentre et monte, formation.js).
-      // L'ANCRE DE LA RENTRÉE EST LENTE (τ = 2 s de temps sim ; le x du bloc reste VIF — l'ancre
-      // lente en x essayée faisait TRAÎNER toute la ligne postée derrière le jeu qui avance,
-      // retard médiane p50 8→11 m, résultat négatif consigné) : sur le ballon brut, la bande
-      // d'engagement (6-14 m) clignotait à chaque transversale et le poste du latéral faible se
-      // téléportait. La ligne de 3 se referme sur une possession d'aile INSTALLÉE (~1 s pour
-      // engager, ~2,5 s pleine), pas sur chaque passe qui traverse l'axe.
+      // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien) et LATÉRALEMENT (lot 68,
+      // bloc.rentre, formation.js). L'ANCRE DE LA RENTRÉE EST LENTE (τ = 2 s de temps sim ; le x
+      // du bloc reste VIF — l'ancre lente en x traînait toute la ligne, p50 8→11 m, négatif
+      // consigné) : la ligne de 3 se referme sur une possession d'aile INSTALLÉE (~1 s engager,
+      // ~2,5 s pleine), pas sur chaque transversale qui faisait clignoter la bande d'engagement.
       const tz = st._tuckZ ??= { v: 0, t: st.t };
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
       const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v, st._outAtk ??= []);
@@ -727,16 +725,11 @@ function assignMatchJobs(st, cfg) {
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
         // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
         if (off && (p.post ?? 0) >= premierOffensif(tac(st, atk).formation)) {
-          // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE — depuis la PORTÉE DE PASSE, pas depuis l'autre
-          // bout du terrain. Première version mesurée : dart visant une ligne à ~16 m du poste,
-          // porteur à 30 m — 21-29 appels/180 s, 0-1 servi (la décoration déjà enterrée au rondo :
-          // « 5 servis sur 74 »). Un appel n'existe que s'il peut être SUIVI : pointe à portée de
-          // choosePass (passRange[1] = 13), DEVANT le ballon, porteur posé, couloir profond ouvert
-          // → elle darde 7 m vers la ligne (jamais au-delà : la photo se prend au départ du ballon,
-          // strikeNow), l'appelBonus la fait servir, la mène (leadTime) jette le ballon DERRIÈRE.
-          // Un appel par équipe à la fois — dix ruptures simultanées seraient un essaim.
-          // …style (cadence des appels : direct appelle plus) et transition (contre → la
-          // relaxation du regain va jusqu'à 5 s ; conservation → zéro) sont les axes tactiques
+          // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE, depuis la PORTÉE DE PASSE (mesuré : un dart à
+          // 16 m du poste, porteur à 30 → 21-29 appels/180 s, 0-1 servi). Un appel n'existe que
+          // s'il peut être SUIVI : pointe à portée (passRange[1] = 13), DEVANT le ballon, porteur
+          // posé, couloir ouvert → dart de 7 m, l'appelBonus le fait servir, leadTime jette
+          // DERRIÈRE. Un appel par équipe (dix ruptures = un essaim) ; style et transition modulent
           if ((p._runT ?? -1) <= st.t && posé
             && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) <= st.t
             && (p._appelCd ?? -1) <= st.t) {
@@ -834,15 +827,12 @@ function assignMatchJobs(st, cfg) {
     }
   }
 
-  // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : une équipe ne presse pas TOUT
-  // LE TEMPS — elle presse SUR SIGNAL, en fenêtre bornée. C'est le patron du contre-press
-  // (lossReact : un réflexe par-dessus les postes) porté à l'échelle de l'ÉQUIPE. Deux signaux
-  // de l'école du pressing, lisibles dans l'état sans oracle : (t1) LA PRISE DOS AU BUT — un
-  // porteur qui reçoit tourné vers son propre but, dans son camp, ne voit pas la sortie ; (t2)
-  // LA PASSE EN RETRAIT — un ballon qui recule de 3 m invite la ligne à monter dessus. La
-  // fenêtre meurt au régain (objectif atteint — la détection voit W.team === atk), à la remise,
-  // ou à l'expiration ; cooldown d'équipe : un press permanent n'est ni lisible ni tenable
-  // (c'est la frénésie que la refonte tempo a enterrée).
+  // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : on presse SUR SIGNAL, en
+  // fenêtre bornée — le patron du contre-press porté à l'ÉQUIPE. Deux signaux sans oracle :
+  // (t1) LA PRISE DOS AU BUT (porteur reçu tourné vers son but, dans son camp) ; (t2) LA PASSE
+  // EN RETRAIT (un ballon qui recule de 3 m invite la ligne à monter). La fenêtre meurt au
+  // régain (W.team === atk), à la remise ou à l'expiration ; cooldown d'équipe — un press
+  // permanent est la frénésie que la refonte tempo a enterrée.
   if (cfg.pressTriggers && st.full) {
     const defTeam = atk === 0 ? 1 : 0;
     if (st._press && (st.t > st._press.until || st._press.team === atk || st.restart)) st._press = null;
@@ -991,20 +981,12 @@ function assignMatchJobs(st, cfg) {
         return;
       }
       // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT — re-visé PAR À-COUPS
-      // (0,5 s / 0,8 m, rupture immédiate > 3 m) : le miroir-suivi continu faisait travailler
-      // les marqueurs à 3,47 m/s de moyenne (2,7 des 9,8 km/h mesurés) et une défense qui
-      // vibre en continu ne ressemble pas à un BLOC qui tient ses lignes
-      // …EN FENÊTRE DE PRESSING : le demi-pas (1,4 → 0,95 m) et la cadence courte (0,35 s /
-      // 0,55 m) — on COLLE le temps du signal, puis le bloc respire à nouveau
-      // …ET ON MARQUE DANS LA ZONE DE DANGER SEULEMENT (lot 51b, cfg.marquageRayon — vu en
-      // playmode : ballon à +35 devant la surface, TROIS marqueurs partis à −6..+1 marquer la
-      // ligne de SOUTIEN adverse à 40 m du ballon — l'amas au rond central, les corps « sans
-      // sens tactique » du retour utilisateur ; la ligne montée du lot 51 les a rendus
-      // « marquables »). Un homme à plus de rayon m du ballon est couvert par le BLOC — le
-      // marqueur sans homme pertinent REJOINT SON POSTE. Le réduit garde le monde d'hier.
-      // On marque LE DANGER : près du ballon (rayon), OU dans MON tiers défensif (les centraux
-      // tiennent le 9 même ballon loin — le rayon seul laissait les pointes sans marqueur et la
-      // ligne montait sur elles : camping 4-6 → 13,2 % mesuré, corrigé ici).
+      // (0,5 s / 0,8 m, rupture > 3 m ; le miroir continu vibrait à 3,47 m/s — un bloc tient) ;
+      // en fenêtre de pressing : demi-pas (0,95 m) et cadence courte (0,35 s / 0,55 m).
+      // …ET ON MARQUE LE DANGER SEULEMENT (lot 51b, cfg.marquageRayon) : près du ballon (rayon)
+      // OU dans MON tiers défensif (les centraux tiennent le 9 ballon loin — le rayon seul
+      // laissait les pointes libres, camping 4-6 → 13,2 % mesuré). Un homme au-delà est couvert
+      // par le BLOC, le marqueur sans homme REJOINT SON POSTE. Le réduit garde le monde d'hier.
       mTri.length = 0;                                             // copie depuis `marks` : le départ du tri stable reste l'ordre d'hier
       for (const a of marks) { a._dMark = d2(a.p, p.p); mTri.push(a); } mTri.sort((x, y) => x._dMark - y._dMark);
       // …UN MARQUEUR PAR HOMME (lot 72, captures : tas de 4-5 corps, 34 % des photos) : le
@@ -1058,6 +1040,17 @@ function assignMatchJobs(st, cfg) {
 }
 
 // ---------------------------------------------------------------- l'arrêt du gardien
+/** LE PRIX RÉEL DU PLONGEON (lot 91, st.full) : keeperDown couvrait 1,15 s quand le corps livré
+ *  met chute + sol + relevé par étapes (keeper.keeperRise — l'AGILITÉ en facteur, getupF). Un
+ *  gardien lent à se relever = fenêtre de rebond VRAIE ; le BATTU paie aussi (mesuré : down=0,
+ *  catapulte — note 132). gk.rise = le contrat que la scène anime. false = le prix d'hier au bit. */
+function riseDown(st, gk, cfg, resolved) {
+  if (!(st.full && cfg.keeperRise !== false)) { if (resolved) gk.down = Math.max(gk.down, cfg.keeperDown); return; }
+  const R = keeperRise(gk.skill?.getupF ?? 1, resolved);
+  gk.rise = { ground: R.ground, getup: R.getup };
+  gk.down = Math.max(gk.down, resolved ? cfg.keeperDown : 0, R.total);
+}
+
 /** LE CONTACT DU PLONGEON — la géométrie du CONTACT décide : gants (≤ 1,1 m) → PRISE ;
  *  bout de gants (≤ 1,7) → CLAQUETTE ; sinon BATTU. Le gardien paie toujours (keeperDown). */
 function onDive(st, gk, cfg) {
@@ -1075,7 +1068,7 @@ function onDive(st, gk, cfg) {
   const closing = d < pd - 1e-4;
   if (gk.act?.payload) gk.act.payload._pd = d;
   if (closing && d > 0.35) return false;
-  gk.down = Math.max(gk.down, cfg.keeperDown);
+  riseDown(st, gk, cfg, true);
   if (d <= 1.1 && y <= 1.9) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
@@ -1119,6 +1112,15 @@ export function matchCfg(overrides = {}) {
     ...MATCH, assignJobs: assignMatchJobs, tryShot, tryCross, tryClear, onOut, onDive, canTake, passBias, ballFetch,
     // LA PRISE A UN MÉTIER (hook onTake du loop) : la touche du plein format se LANCE (Loi 15)
     onTake: (st, id, type, cfg) => { if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg); },
+    // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
+    onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },
+    // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91,
+    // keeperHold:false = le ballon gelé d'hier) : intouchable tenu, posé une fois debout
+    heldBall: (st, c, dt, cfg) => {
+      if (!(st.full && cfg.keeperHold !== false) || !c.keeper || c.down <= 0 || st.ball.owner !== c.id) return false;
+      st.ball.hold(keeperHoldPoint(c), dt);
+      return true;
+    },
     ...overrides,
   };
 }

@@ -34,6 +34,7 @@ export const ATTRIBUTES = {
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
   composure:   'sang-froid sous pression → l\'erreur de passe pressée × [1,30 ; 0,85]',
   keeping:     'métier de gardien        → envergure [1,8 ; 2,5] m, réflexe [0,16 ; 0,09] s',
+  agility:     'souplesse du corps       → durée du relevé après plongeon × [1,28 ; 0,72] (lot 91)',
   stamina:     'réserve d\'endurance      → drain de fatigue × [1,25 ; 0,75] (cfg.fatigue, lot 31)',
   strength:    'force dans le duel       → charge d\'épaule × [0,85 ; 1,15] (cfg.charge, lot 32)',
 };
@@ -64,6 +65,8 @@ export function makeProfile(ratings = {}) {
     composureF: lerp(1.30, 0.85, r('composure')),                 // × sur l'erreur pressée
     keeperReach: lerp(2.55, 3.25, r('keeping')),                  // m — autour de l'envergure livrée (2,95)
     keeperReflex: lerp(0.16, 0.09, r('keeping')),                 // s
+    getupF: lerp(1.28, 0.72, r('agility')),                       // × sur le relevé (keeper.keeperRise —
+                                                                  // le félin en 0,9 s, le raide en 1,6)
     stamF: lerp(1.25, 0.75, r('stamina')),                        // × sur le drain de fatigue (l'endurant tient)
     chargeF: lerp(0.85, 1.15, r('strength')),                     // × dans la charge d'épaule (les deux côtés du duel)
   });
@@ -94,6 +97,9 @@ export function checkAttributes() {
   if (!(hi.controlF > mid.controlF && mid.controlF > lo.controlF)) issues.push('control non monotone');
   if (!(hi.reaction < lo.reaction)) issues.push('reactions non monotone');
   if (!(hi.tackleReach > lo.tackleReach)) issues.push('tackling non monotone');
+  if (!(hi.getupF < mid.getupF && mid.getupF < lo.getupF)) issues.push('agility non monotone (le souple doit se relever plus vite)');
+  if (hi.getupF < 0.72 - 1e-9 || lo.getupF > 1.28 + 1e-9) issues.push('getupF hors bande [0,72 ; 1,28]');
+  if (Math.abs(mid.getupF - 1) > 1e-9) issues.push('agility 50 ne vaut pas 1,0 — le no-op du relevé est violé');
   // 3. le joueur moyen = le moteur d'aujourd'hui (le no-op numérique)
   if (Math.abs(mid.topF - 1) > 1e-9 || Math.abs(mid.accelF - 1) > 1e-9) issues.push('le 50 partout ne vaut pas 1,0 — le no-op est violé');
   if (Math.abs(mid.composureF - 1.075) > 1e-9) issues.push('composure 50 hors centre');

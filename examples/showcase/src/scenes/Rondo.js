@@ -23,15 +23,10 @@ import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights.
-//
-// The split that makes this work: the GAME is decided by rondo-sim (proved headless, 20/20 —
-// jobs, lane-scored passing, inverse ballistics, tackles, interceptions), and this file only
-// DRESSES it. Player positions come from the simulation; the CharacterControllers are driven so
-// their locomotion state, cadence and foot-lock follow those positions instead of inventing a
-// second, disagreeing motion. One source of truth, two consumers.
-//
-// The stadium places pitch centre at the world origin (grass Y = 0, long axis X), so the rondo
-// grid's own coordinates are already world coordinates — no frame conversion anywhere.
+// The split that makes this work: the GAME is decided by rondo-sim (proved headless), and this
+// file only DRESSES it — the CharacterControllers follow the sim positions instead of inventing
+// a second, disagreeing motion. One source of truth, two consumers. The stadium places pitch
+// centre at the world origin (grass Y = 0, long axis X): grid coordinates ARE world coordinates.
 
 const TEAMS = [
   { name: 'Grand Bol', primary: 0xe8ecf2, secondary: 0x16233f, shorts: 0x16233f, socks: 0xe8ecf2 },
@@ -161,15 +156,10 @@ export class Rondo {
       : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
     this.perTeam = perTeam;
 
-    // ---- the squad. The scene no longer knows which GLB it is casting: squad.js loads a ROSTER,
-    // normalises facing/height, and transports the donor's locomotion onto every imported rig.
-    //
-    // Cast: SHANON for both sides, told apart by kit colour. The obvious idea — one body per team, so
-    // the sides read apart before the colours do — was built and looked at, and it is wrong here: the
-    // Soldier is an ARMOURED sci-fi character, and kit.js fits its rings to the body cloud it is given,
-    // so his shoulder plates and backpack turn the jersey into a sack. A generated strip only reads as
-    // a strip over a body shaped like a person. He stays aboard as the clip DONOR, where his armour
-    // costs nothing. ?rig=mix restores the two-body cast, ?rig=soldier the original single-rig one.
+    // ---- the squad (squad.js loads a ROSTER, normalises facing/height, transports the donor's
+    // locomotion). Cast: SHANON both sides, told apart by kit colour — the armoured Soldier turns
+    // a fitted jersey into a sack (built, looked at, rejected) and stays aboard as clip DONOR.
+    // ?rig=mix restores the two-body cast, ?rig=soldier the original single-rig one.
     setCloner(cloneSkinned);
     // KITS OFF by default: the players wear Shanon's OWN strip, which is a real modelled football kit
     // with proper collar, cuffs and sock ribs — the generated one is a set of lofted tubes and reads
@@ -202,16 +192,10 @@ export class Rondo {
       this.scene.add(model3d);
       model3d.updateMatrixWorld(true);
 
-      // TWO SHIRT COLOURS, WITHOUT A SECOND SHIRT. The character's own strip is one texture atlas
-      // shared with his skin and boots, so it cannot be recoloured per team. What a rondo actually
-      // uses is a BIB: one team keeps its strip, the other pulls a coloured one over the top. Minimal
-      // geometry, one flat colour, nothing to get wrong — and it is the true answer rather than a
-      // workaround.
-      // DEUX COULEURS D'ÉQUIPE, SANS VÊTEMENT EN PLUS. La chasuble était un contournement d'une
-      // supposition fausse : j'avais écrit que maillot, peau et crampons partageaient un matériau et
-      // qu'on ne pouvait donc pas les séparer. Mesuré, le fichier contient SEPT meshes dont un
-      // `Ch38_Shirt`, et le matériau est un attribut du draw call — teindre le maillot ne peut pas
-      // atteindre la peau. Voir engine/part-tint.js.
+      // DEUX COULEURS D'ÉQUIPE, SANS VÊTEMENT EN PLUS. La chasuble était le contournement d'une
+      // supposition fausse (« maillot, peau et crampons partagent un matériau ») : mesuré, le
+      // fichier contient SEPT meshes dont `Ch38_Shirt`, et le matériau est un attribut du draw
+      // call — teindre le maillot n'atteint pas la peau. Voir engine/part-tint.js.
       // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe
       const tint = tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) });
       if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
@@ -326,16 +310,12 @@ export class Rondo {
       });
     }
 
-    // ---- les gestes : LA COUCHE, plus le mixer. Les clips additifs (toClip + makeClipAdditive)
-    // composaient le delta sur l'idle RETARGETÉ — base tournée de 20° (cuisse), 32° (tibia), 43°
-    // (bassin) par rapport au rest contre lequel les specs sont écrites et prouvées : le plan du
-    // balayage pivotait, la passe dessinait une talonnade (pied composé DERRIÈRE-HAUT au contact,
-    // mesuré [−0,27, 0,43, 0,57] local contre [·, 0,16, avant] au banc). La couche de geste
-    // (engine/gesture-layer) pose la pose authorée ABSOLUE — rest ⊗ q_spec(0)⁻¹ ⊗ q_spec(t) — par
-    // membre, après le mixer : à poids 1 la pose affichée est CELLE DU BANC, quelle que soit la
-    // base. L'horloge est act.t (la sim) : un seul instant, un seul contrat. Le scindé haut/jambes
-    // et ses lois de poids (bras tout de suite, jambes fondues par l'arrivée) sont inchangés — la
-    // couche ne décide pas QUAND le geste a les membres, seulement CE QUE les membres montrent.
+    // ---- les gestes : LA COUCHE, plus le mixer. Les clips additifs composaient le delta sur
+    // l'idle RETARGETÉ (base tournée de 20-43° du rest prouvé : le balayage pivotait, la passe
+    // dessinait une talonnade — mesuré au banc). La couche (engine/gesture-layer) pose la pose
+    // authorée ABSOLUE par membre après le mixer : à poids 1, la pose affichée est CELLE DU BANC,
+    // quelle que soit la base. L'horloge est act.t (la sim) ; le scindé haut/jambes et ses lois de
+    // poids sont inchangés — la couche décide CE QUE les membres montrent, jamais QUAND.
     // …et on prouve au démarrage que toute technique de la table a un geste authoré : un repli
     // silencieux a déjà caché 57,3 % des gestes pendant une session entière.
     {
@@ -454,18 +434,11 @@ export class Rondo {
   }
 
   camera(cam, controls) {
-    // broadcast framing: long lens, low, from the main stand side (negative Z)
-    // The main stand (and its roof) sits on the NEGATIVE z side and begins at z = -(34 + apron 6):
-    // a camera at z = -46 is INSIDE it, filming the underside of the seating. The broadcast rig
-    // goes on the gantry over the touchline instead — clear of the stand, high enough to see the
-    // far side of the grid.
-    // Framed for the BOX, not for the stadium. The grid is 16 x 14 m; the old rig sat 38 m out with a
-    // 34° lens because the grid used to be 34 x 26, and at that distance a 22 cm ball is about five
-    // pixels wide — which is most of why "the ball is far from the players" reads true even when the
-    // measurement says it is a metre from the nearest man.
-    // La caméra se rapproche quand il y a moins de monde ET quand l'écran est étroit : à 19 m sur un
-    // téléphone en portrait, le carré tient dans un tiers de la hauteur et on ne distingue plus un
-    // geste d'un autre. Le cadrage est dérivé, pas écrit en dur.
+    // broadcast framing: long lens, low, from the main stand side (negative Z) — on the gantry
+    // over the touchline (a camera at z = -46 is INSIDE the stand, filming the seating). Framed
+    // for the BOX, not the stadium: at 38 m a 22 cm ball is ~5 px — "the ball is far from the
+    // players" reads true even when it is a metre from the nearest man. La caméra se rapproche
+    // quand il y a moins de monde ET quand l'écran est étroit — le cadrage est dérivé, pas écrit.
     const narrow = typeof window !== 'undefined' && window.innerWidth < 700;
     // plein format : le DPR se cape à 1,5 (un téléphone à DPR 3 → 2 quadruple déjà les
     // fragments du réduit ; à 22 corps + grand stade, 1,5 rend ~44 % des pixels au GPU).
@@ -550,18 +523,25 @@ export class Rondo {
    *  (le warp corrige la jambe du geste dans la proportion où le geste la possède — corriger une
    *  jambe qui marche encore serait la chimère), et GELÉE à l'instant du tir (le ballon part : on
    *  ne chasse pas un ballon en vol, on rend la jambe à l'accompagnement authoré). */
-  /** LE WARP DU GANT — le DEUXIÈME consommateur du warp de contact (la preuve que c'est une
-   *  capacité moteur, pas un cas spécial de la frappe). Pendant la détente du plongeon, la main
-   *  du côté du geste est corrigée EN 3D vers la surface du ballon vivant — mêmes lois que le
-   *  pied de frappe (enveloppe C¹, borné + refus nommé, standoff à la surface, gel à la
-   *  résolution — après la claquette on ne chasse pas un ballon qui repart), même primitive
-   *  (IK deux os épaule-coude-poignet). Mesuré avant : gant à 1,0-2,1 m du ballon À L'INSTANT
-   *  DE L'ARRÊT (p50 1,67 m) — l'arrêt était vrai en sim, faux aux gants. */
-  _applyDiveWarp(pl) {
+  /** LE WARP DU GANT — le DEUXIÈME consommateur du warp de contact (une capacité moteur, pas un
+   *  cas spécial de la frappe). Pendant la détente, la main du côté du geste est corrigée EN 3D
+   *  vers la surface du ballon vivant — mêmes lois (enveloppe, borné + refus nommé, standoff,
+   *  gel à la résolution), même primitive (IK deux os). Mesuré avant : gant à 1,0-2,1 m du
+   *  ballon à l'instant de l'arrêt (p50 1,67) — l'arrêt vrai en sim, faux aux gants. */
+  _applyDiveWarp(pl, dtP = 1 / 60) {
     // l'interrupteur de SABOTAGE de l'instrument composé (audit-gants) : la clause doit mordre
     if (typeof window !== 'undefined' && window.__sabotage === 'warp-gant') { pl._dwarp = null; return; }
     const a = pl.sim.act;
-    if (!a || a.payload?.skill !== 'plongeon') { pl._dwarp = null; return; }
+    const diveAct = a?.payload?.skill === 'plongeon';
+    // LA PRISE TIENT AUX DEUX GANTS (lot 91) : tant que le corps tient SON ballon au sol/au
+    // relevé (la sim le vit au corps — heldBall), les DEUX mains vivent SUR le ballon sim,
+    // entrée/sortie fondues (0,12 s — pas de pop au relâcher). Mesuré avant : le ballon possédé
+    // s'éloignait des mains 1,06 → 1,39 m pendant le relevé, aucune main dessus.
+    const holding = this.state.ball.owner === pl.sim.id && (pl.sim.down ?? 0) > 0
+      && /^plongeon/.test(pl.gestureLayer.spec?.name ?? '') && (!diveAct || a.payload.resolved);
+    pl._holdW = Math.max(0, Math.min(1, (pl._holdW ?? 0) + (holding ? dtP : -dtP) / 0.12));
+    if (pl._holdW > 1e-3) { this._armsToBall(pl, pl._holdW); pl._dwarp = null; return; }   // les gants tiennent — le warp d'approche n'a plus d'objet
+    if (!diveAct) { pl._dwarp = null; return; }
     const side = (pl._diveMirror ?? (a.payload.pick?.foot === 'left')) ? 'left' : 'right';
     const arm = pl.arms?.[side], lens = pl.armLens?.[side];
     if (!arm?.up || !arm.elbow || !arm.hand || !lens) return;
@@ -586,7 +566,11 @@ export class Rondo {
       const tArr = dSB / Math.max(3, Math.hypot(bv[0], bv[1], bv[2]));
       const envDist = Math.max(0, Math.min(1, (2.2 - dSB) / 1.2));
       const envUrg = Math.max(0, Math.min(1, 1 - tArr / 0.45));
-      env = Math.max(envDist, envUrg) * Math.min(1, a.t / 0.06);
+      // …ET L'ENGAGEMENT DU CONTACT (lot 91) : à l'approche de l'ARRIVÉE PRÉDITE, le gant
+      // s'engage à PLEIN — l'enveloppe distance plafonnait sous 1 à l'instant même de l'arrêt
+      // (épaule à 1,2-1,5 m → env 0,58-0,83 : main mesurée à 0,96-1,06 m du ballon à la prise)
+      const envGo = Math.max(0, Math.min(1, 1 - (tArr - 0.05) / 0.22));
+      env = Math.max(envDist, envUrg, envGo) * Math.min(1, a.t / 0.06);
       pl._dwEnv = env; pl._dwT = null;
       // LE WARP DE RACINE — troisième consommateur du warp de contact : quand l'ÉPAULE est plus
       // loin que bras + standoff, aucun membre ne peut couvrir (mesuré : bras à pleine extension,
@@ -637,6 +621,44 @@ export class Rondo {
     );
     aimChildAt(arm.up, arm.elbow, this._wm.fromArray(sol.mid));
     aimChildAt(arm.elbow, arm.hand, this._wm.fromArray(sol.end));
+  }
+
+  /** LES DEUX GANTS SUR LE BALLON — le résolveur partagé du TENU (plongeon) et de la PRISE
+   *  DEBOUT : chaque main va à SON flanc du ballon sim (±grip sur l'axe droite du modèle),
+   *  fondue par w, écrêtée à la portée du bras — la primitive du warp de contact (IK deux os). */
+  _armsToBall(pl, w, grip = 0.12) {
+    const b = this.state.ball.p;
+    const me = pl.model.matrixWorld.elements;
+    const rl = Math.hypot(me[0], me[1], me[2]) || 1;
+    for (const side of ['left', 'right']) {
+      const arm = pl.arms?.[side], lens = pl.armLens?.[side];
+      if (!arm?.up || !arm.elbow || !arm.hand || !lens) continue;
+      const sgn = side === 'left' ? -1 : 1;
+      this._wt.set(b[0] + (me[0] / rl) * sgn * grip, b[1] + (me[1] / rl) * sgn * grip, b[2] + (me[2] / rl) * sgn * grip);
+      arm.hand.getWorldPosition(this._wf);
+      this._wt.set(this._wf.x + (this._wt.x - this._wf.x) * w, this._wf.y + (this._wt.y - this._wf.y) * w, this._wf.z + (this._wt.z - this._wf.z) * w);
+      arm.up.getWorldPosition(this._wh); arm.elbow.getWorldPosition(this._wk);
+      const dR = this._wh.distanceTo(this._wt);
+      const R = (lens.A + lens.B) * 0.995;
+      if (dR > R) this._wt.set(this._wh.x + (this._wt.x - this._wh.x) * (R / dR), this._wh.y + (this._wt.y - this._wh.y) * (R / dR), this._wh.z + (this._wt.z - this._wh.z) * (R / dR));
+      const sol = twoBoneIK([this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B,
+        [this._wk.x - this._wh.x, this._wk.y - this._wh.y, this._wk.z - this._wh.z]);
+      aimChildAt(arm.up, arm.elbow, this._wm.fromArray(sol.mid));
+      aimChildAt(arm.elbow, arm.hand, this._wm.fromArray(sol.end));
+    }
+  }
+
+  /** LE WARP DE PRISE DEBOUT (lot 91) — le gardien qui cueille SANS plonger jouait « amorti » :
+   *  aucun bras vers le ballon, main mesurée à 0,96-1,06 m à l'instant où la sim déclare la
+   *  prise. Autour de 'control prise-gardien' (0,35 s), les deux mains vont à la surface du
+   *  ballon RÉEL — enveloppe sin C¹. Hors plongeon et hors tenu (ils ont déjà les gants). */
+  _applyCatchWarp(pl) {
+    if (typeof window !== 'undefined' && window.__sabotage === 'warp-prise') return;
+    const T = pl._catchT;
+    if (T == null || (pl._holdW ?? 0) > 1e-3) return;
+    const u = (this._t - T) / 0.35;
+    if (u <= 0 || u >= 1) return;
+    this._armsToBall(pl, Math.sin(Math.PI * u));
   }
 
   /** LE WARP DE TOUCHE — quatrième consommateur du warp de contact (pied de frappe, gant,
@@ -771,16 +793,11 @@ export class Rondo {
     this._look.z += (b[2] - this._look.z) * Math.min(1, dt * 2.4);
     this._look.y += (1 - this._look.y) * Math.min(1, dt * 3);
     const px = this.cam.position.x + (targetX * 0.55 - this.cam.position.x) * Math.min(1, dt * 1.5);
-    // LE RAIL DE RÉGIE (lot 80b — « joueurs invisibles » : la régie passait au ZÉNITH quand le
-    // jeu venait à la touche côté caméra — plongée ~79°, un corps debout n'y projette que ses
-    // ÉPAULES : têtes de 4 px). Ni reculer (80 : cadre élargi = 60 → 27 fps mesurés ET corps
-    // minuscules), ni descendre à z fixe (le TOIT de la tribune main — slab à 20,1 m, arête
-    // avant z=−39 — bouche le cadre dès y<31, mesuré en capture). La régie DESCEND ET AVANCE
-    // sur un rail qui passe 50 cm devant l'arête du toit : (camH, −back) → (12 m, −back+5),
-    // la grue de bord de terrain au-dessus des panneaux. h = dH·tan(55°) pilote la descente,
-    // z = rail(h) RIGIDE (une seule variable lissée : jamais hors rail, jamais dans le béton).
-    // Angle ET distance s'améliorent ensemble : taille apparente ×3,5 au point bas vs zénith.
-    // ?camfloor=0 : le zénith d'hier, sabotage nommé.
+    // LE RAIL DE RÉGIE (lot 80b — « joueurs invisibles » : plongée ~79° au zénith, têtes de
+    // 4 px). Ni reculer (60 → 27 fps mesurés), ni z fixe (le TOIT de la tribune bouche le cadre
+    // dès y<31). La régie DESCEND ET AVANCE sur un rail 50 cm devant l'arête du toit :
+    // (camH, −back) → (12 m, −back+5). h = dH·tan(55°) pilote, z = rail(h) RIGIDE (une seule
+    // variable lissée). Taille apparente ×3,5 au point bas. ?camfloor=0 : le zénith d'hier.
     let hWant = this._camH ?? this.cam.position.y;
     if (this._camFloor !== false && this._camH && this.fullMode) {
       const dH = Math.hypot(px - this._look.x, this.cam.position.z - this._look.z);
@@ -864,7 +881,9 @@ export class Rondo {
         // …et le CONTRÔLE arme le warp du pied comme la touche de conduite (lot 70 — mesuré :
         // pied réel à p90 1,13 m du ballon à l'instant du control ; le clip seul ne sait pas
         // où le ballon est vraiment)
-        if (pl) { this._playTech(pl, e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; pl._touchT = this._t; } }
+        // …la PRISE DU GARDIEN arme les MAINS, pas le pied (lot 91 — mesuré : main à 1,06 m du
+        // ballon à l'instant de la prise debout, l'amorti ne tend aucun bras) : _applyCatchWarp
+        if (pl) { this._playTech(pl, e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
       } else if (e.type === 'receive') {
         // une RÉCEPTION n'est pas une passe : le repli par défaut de _playTech jouait le clip
         // « passe » sur le receveur — mesuré au sweep, un armé fantôme à chaque réception, aussitôt
@@ -1030,6 +1049,12 @@ export class Rondo {
         // segment de relevé authoré (clé 0,95) et le fondu partait de la pose couchée : l'arc
         // d'interpolation couché→debout creusait sous la pelouse (orteil mesuré à −0,41 m).
         if (lying) { meta.t0 += dtP; t = Math.min(t, pl.gestureLayer.duration * 0.55); }
+        // LE GARDIEN AU SOL VIT À L'HORLOGE DE LA SIM (lot 91) : gk.rise pilote la QUEUE du clip
+        // — sol : tenir la pose couchée (patron du tacleur) ; relevé : rejouer le segment authoré
+        // sur la durée sim. La catapulte d'hier : acte mort → done → fondu 0,15 s depuis la pose
+        // couchée (700°/s de tronc, 11 m/s mesurés — note 132).
+        const diveDown = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse && !pl.sim._sub && pl.sim.rise
+          && /^plongeon/.test(pl.gestureLayer.spec?.name ?? '');
         const antic = act?.anticipation || meta.antic || 0.2;
         const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
         // …et le contact ne possède les jambes QUE jusqu'à ~0,15 s après lui : au-delà, c'est le
@@ -1041,7 +1066,7 @@ export class Rondo {
         // …et un tacleur que la SIM a relevé et remis en course lâche sa pose tout de suite : le
         // reste du clip couché n'a plus de corps à habiller (résidu mesuré : jambe fantôme à
         // −0,28 m pendant le fondu tardif)
-        const done = !lying && !act && (t >= meta.dur || (/tacle/i.test(pl.gestureLayer.spec?.name ?? '') && (pl.sim.down ?? 0) <= 0 && v > 1));
+        const done = !lying && !diveDown && !act && (t >= meta.dur || (/tacle/i.test(pl.gestureLayer.spec?.name ?? '') && (pl.sim.down ?? 0) <= 0 && v > 1));
         // LE PLONGEON POSSÈDE SES JAMBES D'EMBLÉE : byArrive/byContact sont des lois de FUSION
         // pour les gestes en flux (le corps décélère dans son geste) — mais la détente lance le
         // corps à ~6 m/s, donc byArrive lit « il court » et éteint les jambes du clip (mesuré :
@@ -1057,17 +1082,12 @@ export class Rondo {
         // locomotion) : 0,12 → 0,18 s selon la vitesse sol, symétrique entrée/sortie.
         const tauW = 0.12 + 0.06 * Math.min(1, v / 4);
         pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - dtP / tauW) : Math.min(1, (pl._wUp ?? 0) + dtP / tauW);
-        // L'ENTRÉE MÈNE L'HORLOGE DU CLIP : la clé t=0 d'un clip est la pose NEUTRE — pendant la
-        // rampe d'entrée, le haut se faisait tirer vers le « garde-à-vous » AVANT de s'armer (le
-        // hoquet mesuré entre locomotion et geste). On échantillonne EN AVANCE au début de l'armé
-        // (lead 0,3 × anticipation), convergence linéaire vers l'heure vraie AU CONTACT — le pied
-        // frappe exactement sur sa clé, l'entrée ne traverse plus le neutre.
-        // …ET LE TEMPS-WARP DU PLONGEON (l'autre moitié du Motion Warping) : le clip a son heure
-        // de contact AUTHORÉE (0,55 s) mais le ballon a la SIENNE (cross.t, prédite au
-        // déclenchement) — on rejoue le clip à l'échelle pour que la pose de détente tombe quand
-        // le ballon arrive (borné ×0,8-2,2 : un plongeon s'ajuste, il ne téléporte pas sa
-        // biomécanique). Mesuré sans lui : à l'instant du contact réel le corps n'était pas
-        // couché (épaule haute) — gant à ~1,0 m d'un ballon au sol, hors de toute anatomie.
+        // L'ENTRÉE MÈNE L'HORLOGE DU CLIP (la clé t=0 est la pose NEUTRE — le haut se faisait
+        // tirer au garde-à-vous avant de s'armer) : on échantillonne EN AVANCE (lead 0,3 ×
+        // anticipation), convergence linéaire vers l'heure vraie AU CONTACT.
+        // …ET LE TEMPS-WARP DU PLONGEON : le clip a son heure de contact AUTHORÉE (0,55) mais le
+        // ballon a la SIENNE (cross.t) — le clip se rejoue à l'échelle (borné ×0,8-2,2) pour que
+        // la détente tombe quand le ballon arrive (sans lui : gant à ~1,0 m, épaule haute, mesuré).
         let tG = t;
         // LE CORPS DU PLONGEON, réconcilié — l'état vit tant que le LAYER joue un clip plongeon
         // (l'act sim finit avant le fondu : nettoyer sur l'act laissait la fin du clip sans
@@ -1099,6 +1119,15 @@ export class Rondo {
           const rl = Math.hypot(me[0], me[2]) || 1, fl = Math.hypot(me[8], me[10]) || 1;
           if (pl.hipsCtl) pl.hipsCtl.bias = [(vx * me[0] + vz * me[2]) / rl, 0, -(vx * me[8] + vz * me[10]) / fl];
         } else if (pl._diveStart) { pl._diveStart = null; if (pl.hipsCtl) pl.hipsCtl.bias = null; }
+        // …et la QUEUE du plongeon appartient à gk.rise (lot 91) : l'acte vivant sans down (le
+        // battu paie à la FIN du geste) ATTEND à la pose couchée ; le sol TIENT (gel, patron du
+        // tacleur) ; le relevé REJOUE le segment authoré sur la durée sim (down 0 ↔ clé finale).
+        if (pl.sim.rise && /^plongeon/.test(pl.gestureLayer.spec?.name ?? '')) {
+          const tR = pl.gestureLayer.spec?.rise ?? meta.dur * 0.77;
+          if ((pl.sim.down ?? 0) <= 0) { if (act) tG = Math.min(tG, tR); }
+          else if (pl.sim.down > pl.sim.rise.getup) { tG = Math.min(tG, tR); if (!act && t >= tR) meta.t0 += dtP; }
+          else tG = tR + (1 - pl.sim.down / pl.sim.rise.getup) * (meta.dur - tR);
+        }
         const tSample = tG < antic ? tG + (0.3 * antic) * (1 - tG / antic) : tG;
         pl.gestureLayer.apply(tSample, pl._wLegs, pl._wUp);
         if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
@@ -1145,7 +1174,8 @@ export class Rondo {
       }
       // l'autorité de la jambe frappeuse — après le verrou, en dernier
       this._applyStrikeWarp(pl);
-      this._applyDiveWarp(pl);
+      this._applyDiveWarp(pl, dtP);
+      this._applyCatchWarp(pl);
       this._applyTouchWarp(pl);
     }
 

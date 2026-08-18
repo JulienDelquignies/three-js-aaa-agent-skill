@@ -3981,6 +3981,40 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la note) ; (3) le warp de gant + l'ancre du ballon à la main (90b). Le keeperDown sim
      (le prix du plongeon) devra couvrir la durée du relevé réel — cohérence sim/scène.
 
+133. **Lot 91 : LE GARDIEN COMPLET (scène + sim) — le ballon tenu aux gants, le relevé par
+     étapes à l'agilité, le plongeon paie son prix réel.** Les quatre volets des notes 131-132,
+     livrés ensemble : (a) LE TENU (sim ball.hold, 3 axes sans pesanteur par l'intégrateur —
+     continuité auditée — + hook heldBall du loop ; scène _armsToBall : les DEUX gants sur le
+     ballon, fondus 0,12 s) — mesuré après : mains-ballon 0,39-0,56 m pendant TOUT le
+     couché+relevé, ballon au sol avec le corps (y 0,12-0,26) puis remonté avec lui (keeperHold —
+     avant : gelé à 1,34 m, 1,06 → 1,39 m des mains) ; (b) LE PRIX RÉEL (keeperRise, st.full) :
+     down = chute 0,55 + sol 0,65 + relevé 1,25 × getupF — l'AGILITÉ en attribut (agility →
+     getupF [1,28 ; 0,72], no-op à 50), le BATTU paie aussi (loi keeper.keeperRise, hook
+     onDiveEnd), l'échéance des six secondes court DEBOUT (le down rallongé faisait punt du
+     sol) ; (c) LE RELEVÉ PAR ÉTAPES (scène) : queues des clips re-authorées à durée constante
+     (rouler → appui bras → genou → debout, champ spec.rise), gk.rise stampé DÈS le départ du
+     plongeon pilote la queue — sol : gel sur la pose couchée (patron du tacleur) ; relevé :
+     segment rejoué sur la durée sim — mesuré après (mêmes bones, seed 3 t=24,93) : sol 1,87 s
+     (était 0,3), tronc 82° → 11° en ~1,1 s PROGRESSIF, pic 156°/s (était 700), vertical ≤ 2,2 m/s
+     et c'est la détente (était 11 au relevé) ; (d) L'ENGAGEMENT du gant (envGo sur l'arrivée
+     prédite — l'enveloppe distance plafonnait sous 1 à l'instant de l'arrêt) + le warp de PRISE
+     DEBOUT (_applyCatchWarp sur 'control prise-gardien', les mains, plus le pied). Batterie
+     verte (72 match11 dont 4 clauses lot 91 + sabotage « le gardien d'hier » ; 84+40+88+14+14+
+     8+9+33+52+15+9 ; animkit 103), A/B 20 × 300 s : 56 tirs / 22 buts / 26 arrêts (bande 17-33),
+     rondo/réduit AU BIT. DEUX pièges payés : (1) le battu ne paie qu'à la FIN du geste → gk.rise
+     doit exister dès le DÉPART sinon le clip joue son relevé pendant l'acte puis le down le
+     claque au sol en une image (2 453°/s mesurés — la queue ATTEND le down quand l'acte vit) ;
+     (2) la clé finale pose:{} d'un clip vaut BASE_POSE (bras [65,0,0]) — un segment court vers
+     {} téléporte le bras (17-25 rad/s au banc) : ramener les bras PAR les étapes. DETTES
+     NOMMÉES : le premier contact des prises-RÉFLEXE aériennes reste à ~0,96 m (0,26 s d'acte —
+     l'épaule du clip de détente ne peut pas y être : le clip priseAerienne du lot 93, épaule qui
+     monte, fermera le vrai contact) ; verify-frappes 12/13 (l'enroulée kind=mi-hauteur) est un
+     rouge PRÉEXISTANT au lot (vérifié sur le commit de base, hors batterie des 11). INSTRUMENT :
+     la recette exacte de l'empreinte historique est morte avec la session — recréée (dense :
+     positions joueurs+ballon par pas à 4 déc + events, 90 s) et consignée : rondo seed 5 =
+     2d95fc853a99521c, réduit seed 4 = 9846cf3e5a80c58b, IDENTIQUES avant/après le lot (la
+     preuve d'identité est l'avant/après du même instrument + la batterie).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

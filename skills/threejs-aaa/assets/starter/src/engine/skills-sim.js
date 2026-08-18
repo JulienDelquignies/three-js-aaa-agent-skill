@@ -444,6 +444,9 @@ export function skillFollowStep(st, p, dt, cfg) {
     // tout vol plus prompt — 2 arrêts sur 15 plongeons mesurés. Le gant rencontre le ballon à
     // l'image où il PASSE, le clip n'est que le dessin de la détente.
     if (!A.resolved && cfg.onDive && cfg.onDive(st, p, cfg)) A.resolved = true;
+    // …et la PRISE TIENT (hook heldBall — match, lot 91) : le ballon résolu aux gants suit le
+    // corps qui tombe et se relève — mesuré avant : il FLOTTAIT à 1,34 m, gelé, personne n'écrivait
+    if (A.resolved) cfg.heldBall?.(st, p, dt, cfg);
     // …ET LA DÉTENTE S'ARRÊTE AU POINT : la vitesse était calée pour couvrir l'écart dans
     // cross.t mais courait la durée PLEINE de l'armé — le corps TRAVERSAIT le point
     // d'interception (voyage p50 2,37 m, p90 4,01 pour un écart de ~1,9 : le ballon finissait

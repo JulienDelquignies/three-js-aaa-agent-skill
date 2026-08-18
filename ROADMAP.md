@@ -16,11 +16,13 @@
   verify-match11).
 - **Identité au défaut** : une clé absente/défaut = le monde d'hier au bit près. Clé de FORMAT
   quand les mondes réduit/11c11 divergent (patron holdCalmFull).
-- **Empreintes bit-près** (scratchpad fingerprint.mjs à recréer — il hash positions ET events) :
-  rondo seed 5 = `c775c81e62592d4d`, réduit seed 4 = `d1c0c1171e6f876c` (dernière évolution :
-  events enrichis lot 90 — le FLUX réduit est celui du lot 62-hérité, seuls les champs d'events
-  ont bougé aux lots 87/90). Si l'empreinte bouge : prouver flux-intact par les bancs 84+40
-  AVANT d'accepter une nouvelle référence, et la consigner.
+- **Empreintes bit-près** (scratchpad fingerprint.mjs à recréer ; recette CONSIGNÉE lot 91 —
+  l'ancienne est morte avec sa session : sha256 tronqué 16, par pas de 1/60 sur 90 s, positions
+  joueurs (x,z) + ballon (x,y,z) à 4 décimales jointes par virgule, puis JSON des events ;
+  rondo = makeRondo({seed:5}) via rondoStep, réduit = makeMatch({perTeam:5, seed:4}) via
+  matchStep) : rondo seed 5 = `2d95fc853a99521c`, réduit seed 4 = `9846cf3e5a80c58b`
+  (identiques avant/après lot 91). Si l'empreinte bouge : prouver flux-intact par les bancs
+  84+40 AVANT d'accepter une nouvelle référence, et la consigner.
 - **Volumétrie** : tout module ≤ 1249 lignes wc (le banc compte split('\n') = wc+1, plafond
   1250). Compenser chaque ajout par compression de commentaires ou EXTRACTION vers le fichier
   de sa famille (patron : deborde → roles.js).
@@ -46,8 +48,8 @@
   + une clé du lot grepable dans le chunk minifié.
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
-- NOTES.md : journal complet (notes 1-132) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 133.
+- NOTES.md : journal complet (notes 1-133) — insérer avant le marqueur
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 134.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -64,7 +66,11 @@
 - Prod : https://showcase-pi-mocha.vercel.app/match11.html — 60 FPS validé sur l'appareil
   utilisateur, rail de régie (lot 80b), receveurs vivants (81), distance sociale (86),
   patte + enroulée de l'inversé (87), dédoublement (88), gardien-métier + relance vive (89),
-  arrêts nommés entiers (90).
+  arrêts nommés entiers (90), gardien complet : tenu aux gants + relevé par étapes à l'agilité
+  + prix réel du plongeon (91 — note 133 ; dette nommée : premier contact des prises-réflexe
+  aériennes ~0,96 m, fermé par le clip priseAerienne du lot 93).
+- verify-frappes 12/13 (l'enroulée kind=mi-hauteur) : rouge PRÉEXISTANT hors batterie des 11,
+  vérifié identique sur le commit de base au lot 91 — à reprendre un jour de flux calme.
 - Clés ÉTEINTES documentées (activation = re-fonder les clauses de flux) : supportSpanFull (0),
   settledNear (Infinity), triangle (false — 3 échecs mesurés consignés dans tactics.js,
   la v4 = assignation avec hystérésis PAS en post-traitement géométrique), slotAnchor (false).
@@ -73,16 +79,12 @@
   de stabilisation géométrique par frame.
 
 ## LE PLAN (validé utilisateur) — dans l'ordre
-1. **LE GARDIEN COMPLET (lot 91, scène)** — tout est mesuré (notes 131-132) :
-   (a) warp de gant : le bras vise le ballon RÉEL au contact (écart mesuré 1,06 m à la prise,
-   min 0,96 — l'infra strike-warp existe, elle sert les pieds) ; (b) le ballon TENU À LA MAIN
-   pendant le relevé (mesuré : il flotte à 1,34 m en s'éloignant des mains 1,06→1,39 m) ;
-   (c) le relevé PAR ÉTAPES : sol 0,5-1 s (mesuré 0,3), rouler→appui bras→genou→debout borné
-   ~250°/s de tronc (mesuré 700°/s, 11 m/s vertical — catapulte), l'AGILITÉ en facteur
-   (0,9-1,6 s selon la note) ; (d) keeperDown sim couvre la durée réelle — un gardien lent à
-   se relever = fenêtre de rebond offensif. Vérif : les mêmes mesures bones avant/après
-   (Hips/Spine2/mains, inclinaison tronc vs verticale, plongeon seed 3 t=24,93 gardien 10 ;
-   prise seed 5 t=67,98 gardien 21).
+1. ~~**LE GARDIEN COMPLET (lot 91)**~~ — **LIVRÉ** (note 133) : tenu aux gants (ball.hold +
+   heldBall + _armsToBall), prix réel du plongeon (keeperRise, agilité getupF, battu paie,
+   six-secondes debout), relevé par étapes (queues re-authorées + gk.rise pilote), engagement
+   du gant (envGo) + warp de prise debout (_applyCatchWarp). Mesuré après aux mêmes bones :
+   sol 1,87 s, tronc 156°/s max, mains-ballon ≤ 0,56 m tout le relevé. Reste au lot 93 : le
+   premier contact des prises-réflexe aériennes (~0,96 m — clip priseAerienne, épaule qui monte).
 2. **L'ATTAQUANT MUET (lot 92, sim)** — mesuré : 6-7 conduites de +18 m sans décision / 4
    matchs. Le baromètre du porteur dévalue la conduite muette à l'approche de la surface :
    tirer tôt (finishing), servir (vision — les dédoublements sont des options), écarter — par

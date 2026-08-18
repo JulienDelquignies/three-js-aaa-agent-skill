@@ -936,7 +936,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false });   // l'HIER exact, EN ENTIER
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false });   // l'HIER exact, EN ENTIER (lot 91 compris)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1033,6 +1033,57 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // ~8-10 au seuil franc) — la clause est STRUCTURELLE : la clé coupe la loi entière
   const sab = franches({ allure: false });
   ok(`sabotage « allure:false » attrapé (p50 ${sab} ≥ ${eco + 2} — la fourmilière d'hier revient sans la loi)`, sab >= eco + 2);
+}
+
+// ---------- lot 91 — LE GARDIEN COMPLET (sim) : la prise TIENT son ballon (hold aux gants,
+// au sol pendant le couché — mesuré avant : gelé à 1,34 m en s'éloignant des mains), et le
+// plongeon paie son PRIX RÉEL (chute + sol + relevé par étapes ~2,45 s au joueur moyen,
+// l'agilité en facteur ; le BATTU paie aussi — mesuré avant : down=0, la catapulte).
+{
+  const gardien = (over) => {
+    const out = { prises: [], battus: [] };
+    for (const seed of [3, 5]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let nEv = 0; const suivis = []; const dives = new Map();
+      for (let i = 0; i < 220 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        while (nEv < st.events.length) {
+          const e = st.events[nEv++];
+          if (e.type === 'dive') dives.set(e.by, { t: e.t, ok: false });
+          if (e.type === 'arrêt') {
+            if (dives.has(e.by)) dives.get(e.by).ok = true;
+            if (e.mode === 'prise') suivis.push({ id: e.by, t0: st.t, down0: st.players[e.by].down, dMax: 0, ySol: null });
+          }
+        }
+        for (const s of suivis) {
+          const gk = st.players[s.id];
+          if (st.ball.owner !== s.id || gk.down <= 0 || st.t - s.t0 <= 0.5) continue;   // 0,5 s : le servo ramène la prise (saisie sim à ≤ 1,1 du centre)
+          s.dMax = Math.max(s.dMax, Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]));
+          // la fenêtre du COUCHÉ (down au-delà du relevé) : le ballon tenu vit à ras de pelouse
+          if (gk.rise && gk.down > gk.rise.getup) s.ySol = Math.max(s.ySol ?? 0, st.ball.p[1]);
+        }
+        for (const [id, d] of dives) {
+          if (d.ok) { dives.delete(id); continue; }
+          if (st.t - d.t > 2) { out.battus.push({ down: st.players[id].down }); dives.delete(id); }
+        }
+      }
+      out.prises.push(...suivis);
+    }
+    return out;
+  };
+  const vif = gardien({});
+  const pr = vif.prises;
+  ok(`la PRISE TIENT SON BALLON (${pr.length} prises : écart corps-ballon max ${pr.length ? Math.max(...pr.map((s) => s.dMax)).toFixed(2) : '—'} m ≤ 0,6 pendant le down — plus de ballon gelé loin des mains)`,
+    pr.length >= 1 && pr.every((s) => s.dMax <= 0.6));
+  ok(`…et vit À RAS DE PELOUSE pendant le couché (y max ${pr.length ? pr.map((s) => (s.ySol ?? 0).toFixed(2)).join('/') : '—'} ≤ 0,5 — le corps couché tient le ballon au sol, pas en l'air)`,
+    pr.every((s) => (s.ySol ?? 0) <= 0.5));
+  ok(`le plongeon paie son PRIX RÉEL (prises : down posé ${pr.map((s) => s.down0.toFixed(2)).join('/')} ≥ 2,2 ; battus : ${vif.battus.length} tous down > 0,5 au bout du geste — la fenêtre de rebond est vraie)`,
+    pr.every((s) => s.down0 >= 2.2) && vif.battus.length >= 1 && vif.battus.every((b) => b.down > 0.5));
+  const sab = gardien({ keeperRise: false, keeperHold: false });
+  const sp = sab.prises;
+  ok(`sabotage « le gardien d'hier » attrapé (keeperRise/Hold:false : down posé ${sp.length ? sp.map((s) => s.down0.toFixed(2)).join('/') : '—'} ≤ 1,2 et les battus repartent à down 0 — le prix escamoté et la catapulte, nommés)`,
+    sp.every((s) => s.down0 <= 1.2) && sab.battus.length >= 1 && sab.battus.every((b) => b.down <= 0));
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

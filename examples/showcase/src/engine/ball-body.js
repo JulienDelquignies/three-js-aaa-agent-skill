@@ -172,6 +172,27 @@ export class BallBody {
     return this;
   }
 
+  /**
+   * LE TENU (lot 91) : un ballon dans les GANTS ne vole pas et ne tombe pas — les mains sont son
+   * support. Servo de position 3 AXES vers le point des mains (le profil vient de la loi gardien,
+   * keeperHoldPoint), PAR l'intégrateur, pesanteur et aéro coupées, sol ignoré (le corps couché
+   * tient le ballon à ras de pelouse) — la continuité reste auditée à chaque sous-pas. Le spin
+   * meurt dans les gants. Réservé au porteur, comme carry : tenir un ballon libre est une erreur.
+   */
+  hold(point, dt, { tau = 0.12, vMax = 6 } = {}) {
+    if (this.#owner == null) throw new Error('ballon : hold() sur un ballon LIBRE. Le tenu appartient à un porteur — possess(owner) d\'abord.');
+    const s = this.#s;
+    let dx = (point[0] - s.p[0]) / Math.max(1e-3, tau);
+    let dy = (point[1] - s.p[1]) / Math.max(1e-3, tau);
+    let dz = (point[2] - s.p[2]) / Math.max(1e-3, tau);
+    const m = Math.hypot(dx, dy, dz);
+    if (m > vMax) { dx *= vMax / m; dy *= vMax / m; dz *= vMax / m; }
+    const a = 1 - Math.exp(-dt / Math.max(1e-4, tau));
+    s.v[0] += (dx - s.v[0]) * a; s.v[1] += (dy - s.v[1]) * a; s.v[2] += (dz - s.v[2]) * a;
+    s.w[0] = 0; s.w[1] = 0; s.w[2] = 0;
+    return this.integrate(dt, { gravity: 0, drag: false, magnus: false, ground: false });
+  }
+
   /** Un contact qui MODIFIE la trajectoire (déviation, amorti) : on ajoute à la vitesse. */
   impulse(dv, dw = null) {
     const s = this.#s;
