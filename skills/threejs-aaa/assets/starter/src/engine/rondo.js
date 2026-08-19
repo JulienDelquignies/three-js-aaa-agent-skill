@@ -144,12 +144,38 @@ export function choosePass(st, cfg = RONDO) {
     // sens du jeu) continue de parler.
     const bascule = _dense && Math.sign(m.p[2] || 1) !== Math.sign(origin[2] || 1)
       && Math.abs(m.p[2] - origin[2]) > (cfg.renversement.dz ?? 18);
+    // LE COULOIR OUVERT (lot 99, cfg.couloir && st.full — la dette du lot 98 : le jeu vivait
+    // 65 % dans l'axe, réel ~35, et 4 % des ailiers LIBRES étaient servis). Deux verrous
+    // tenaient l'aile hors du jeu : la passe d'ÉCARTEMENT (15-25 m latérale) vivait HORS
+    // PORTÉE (passRange ~13 — le même verrou que la bascule avant sa loi), et le barème
+    // n'avait aucune valeur de position. Le vrai football SAIT qu'un ailier lancé dans un
+    // couloir libre est une RAMPE (débordement lot 87, centre lot 47) : l'option d'AILE
+    // (|z| > largeur/4) en zone offensive avec DU CHAMP devant elle (aucun adversaire à
+    // moins de `champ` m dans sa bande ± large m) ÉTEND la portée (couloir.portee) et vaut
+    // un bonus — modulé par l'axe tactique LARGEUR (×0,6…1,4 ; 0,5 = ×1 exact) et la POINTE
+    // DE VITESSE du receveur (topF 0,9…1,1 → ×0,7…1,3 ; 1 = ×1 exact — l'ailier rapide dans
+    // l'espace est LE danger). Clé absente : 0 et portée d'hier, pas un bit.
+    let couloirB = 0;
+    if (st.full && cfg.couloir && Math.abs(m.p[2]) > st.area[1] * 0.25) {
+      const _g = st.pitch.attackGoal(c.team), _sg = Math.sign(_g.x || 1);
+      if (_sg * m.p[0] > -5) {
+        let champ = 99;
+        for (const o of foesL) {
+          if (o.down > 0 || Math.abs(o.p[2] - m.p[2]) > (cfg.couloir.large ?? 6)) continue;
+          if (_sg * (o.p[0] - m.p[0]) > -1) champ = Math.min(champ, Math.hypot(o.p[0] - m.p[0], o.p[2] - m.p[2]));
+        }
+        if (champ > (cfg.couloir.champ ?? 8))
+          couloirB = (cfg.couloir.bonus ?? 2.2) * axe(tac(st, c.team).largeur, 0.6, 1.4)
+            * (0.7 + 3 * Math.max(0, Math.min(0.2, (m.skill?.topF ?? 1) - 0.9)));
+      }
+    }
     // L'APPEL ÉTIRE LA PORTÉE (cfg.appelRange — PLEIN FORMAT seulement, comme toute la Loi 11) :
     // un coureur en rupture se sert DANS la course, plus loin qu'une passe de circulation (le
     // dart sortait de l'enveloppe en 0,6 s — mesuré : 11 appels, 1 servi). La garde st.full est
     // une leçon MESURÉE : sans elle, les bursts cadencés du réduit héritaient de l'extension et
     // un monde calibré 76 clauses a bougé (tempsLoin 4,6 > 2,5). Clé ou format absents : + 0.
     const rMax = bascule ? (cfg.renversement.portee ?? 38)
+      : couloirB > 0 ? Math.max(cfg.passRange[1], cfg.couloir.portee ?? 24)   // la passe d'ÉCARTEMENT a sa porte (lot 99)
       : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel' ? (cfg.appelRange ?? 0) : 0);
     if (d < cfg.passRange[0] || d > rMax) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
@@ -205,7 +231,8 @@ export function choosePass(st, cfg = RONDO) {
       // …ET L'APPEL EST SERVI (cfg.appelBonus) : un coureur en rupture APPELLE le ballon — la
       // passe qui le suit est la définition même de « suivre l'appel » (mesuré avant : 5 appels
       // servis sur 74 — les ruptures étaient un décor)
-      + ((m._pace?.until ?? -1) > st.t ? (cfg.appelBonus ?? 0) : 0);
+      + ((m._pace?.until ?? -1) > st.t ? (cfg.appelBonus ?? 0) : 0)
+      + couloirB;                                            // le couloir ouvert (lot 99) — la rampe d'aile
     if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d, bascule };
   }
   return best;

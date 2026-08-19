@@ -110,6 +110,22 @@ const etau = (seed, nBloc) => {
   // le côté faible s'ouvre, le renversement est le débouché naturel du bloc coulissé ; 10,5 mesuré)
   ok(`l'ORIENTATION a changé en match (4 × 180 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [1 ; 16] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 70 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
     renv / 4 >= 1 && renv / 4 <= 16 && axial / n <= 0.70);   // les buts se jugent à UN endroit (lot 36)
+  // ---------- 5b. lot 99 : LE COULOIR OUVERT change la GÉOGRAPHIE du jeu (sonde : axe 65 →
+  // 46 %, ailes 16 → 30, ailiers libres servis 4 → 11 %) — l'écart au sabotage fait foi
+  // (le patron : les bornes absolues morphent, les effets nets restent).
+  {
+    let axSab = 0, nSab = 0;
+    for (const seed of [1, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, couloir: false });
+      for (let i = 0; i < 180 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (!st.restart && i % 30 === 0) { nSab++; if (Math.abs(st.ball.p[2]) < 8) axSab++; }
+      }
+    }
+    ok(`lot 99 — le couloir ouvert élargit le jeu (axial vif ${Math.round(100 * axial / n)} % ; sabotage couloir:false : ${Math.round(100 * axSab / nSab)} % ≥ vif + 6 pts — l'aile invisible d'hier, nommée)`,
+      axSab / nSab >= axial / n + 0.06);
+  }
     // …bande haute 13 → 16 (lot 57) : l'économie de course OUVRE l'aile opposée (le bloc
     // économe coulisse moins vite), le renversement est le bon choix plus souvent — 14,5/match
     // mesuré, l'axial 48 % ≤ 62 confirme que c'est de l'ORIENTATION, pas du ping-pong
@@ -117,6 +133,36 @@ const etau = (seed, nBloc) => {
     // bascule EXIGE la fixation (n passes même côté) + respiration 45 s + densité 6 → le
     // débit tombe à ~2/match (bande basse 2 → 1) et le jeu vit côté ballon PAR CHOIX
     // (axial 66 % mesuré : la construction voulue, pas le tic — borne 62 → 68)
+}
+
+// ---------- 6. lot 99 : LE COULOIR OUVERT — l'ailier seul avec du champ ENTRE au vocabulaire
+// (la passe d'écartement 15-24 m a sa porte), et couloir:false le rend invisible (l'hier).
+{
+  const aile = (over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players[st.possession.carrier];
+    st.ball.release('perte');
+    st.ball.restart([0, 0.11, 0], { cause: 'touche' });
+    st.ball.possess(c.id);
+    c.p[0] = 0; c.p[2] = 0; c.v = [0, 0];                          // le porteur au rond central, sur son ballon
+    const sg = Math.sign(st.pitch.attackGoal(c.team).x || 1);
+    for (const q of st.players) if (q.id !== c.id) { q.p[0] = -sg * 30; q.p[2] = (q.id % 11) * 2 - 10; q.v = [0, 0]; q.act = null; q.down = 0; }
+    // un rideau adverse de 3 (PAS un étau — la bascule n'a pas voix) et l'ailier SEUL au large
+    st.players.filter((q) => q.team !== c.team && !q.keeper).slice(0, 3).forEach((q, i) => { q.p[0] = sg * 5; q.p[2] = (i - 1) * 4; });
+    const ailier = st.players.find((q) => q.team === c.team && !q.keeper && q.id !== c.id);
+    ailier.p[0] = sg * 4; ailier.p[2] = 20;                        // l'aile vraie (|z| 20), moitié offensive, ~20 m du porteur — UN PAS DERRIÈRE la ligne du rideau (la Loi 11 veto sinon, leçon de fixture)
+    return { st, cfg, ailier };
+  };
+  const { st, cfg, ailier } = aile({});
+  const choix = choosePass(st, cfg);
+  ok(`lot 99 — le COULOIR OUVERT entre au vocabulaire (ailier seul à ${choix?.dist?.toFixed(1)} m, |z| 20 : choix=${choix?.to?.id} = ailier nº${ailier.id} — la passe d'écartement a sa porte, hors passRange 13 d'hier)`,
+    choix?.to?.id === ailier.id && choix?.dist > 15);
+  const s2 = aile({ couloir: false });
+  const choix2 = choosePass(s2.st, s2.cfg);
+  ok(`sabotage « l'aile invisible » attrapé (couloir:false, MÊME monde : choix=${choix2 ? `nº${choix2.to.id} à ${choix2.dist.toFixed(1)} m` : 'aucun'} — jamais l'ailier à 20 m, le vocabulaire d'hier)`,
+    !choix2 || choix2.to.id !== s2.ailier.id);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

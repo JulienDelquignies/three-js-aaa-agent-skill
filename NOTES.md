@@ -4265,6 +4265,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      l'axe sur-vit encore (chantier largeur/circuits d'aile). sab76 13e application (fix:false
      + bloc sans surcharge + dense 5). Empreintes rondo/réduit AU BIT.
 
+141. **Lot 99 : LE COULOIR OUVERT — la largeur offensive (la dette nommée du lot 98 : « l'axe
+     sur-vit »).** Sondé AVANT (6 × 220 s) : ballon 65 % dans l'axe |z| < 8 / 16 % aux ailes
+     (réel ~35/25), réceptions offensives 174 axe contre 21 aile, et LE chiffre : 223 options
+     d'aile LIBRES (démarquée 3 m, moitié offensive) repérées, 9 servies — 4 %. DEUX verrous
+     tenaient l'aile hors du jeu : la passe d'ÉCARTEMENT (15-25 m latérale) vivait HORS PORTÉE
+     (passRange ~13 — exactement le verrou de la bascule avant le lot 35 : la première version
+     de la loi, bonus seul au barème, n'a RIEN changé, 4 % → 4 % — mesuré, la leçon), et le
+     barème n'avait aucune valeur de position (la passe d'aile ne « progresse » pas, passBias
+     est axial). LA LOI (rondo.js, cfg.couloir && st.full) : l'option d'AILE (|z| > largeur/4)
+     en zone offensive avec DU CHAMP devant elle (aucun adversaire à moins de `champ` 8 m dans
+     sa bande ± `large` 6 m) ÉTEND la portée (couloir.portee 24) et vaut un bonus (2,2) au
+     barème — la rampe du débordement (lot 87) et du centre (lot 47). Modulé par l'axe
+     tactique LARGEUR (×0,6…1,4 ; 0,5 = ×1 exact) et la POINTE DE VITESSE du receveur (topF
+     0,9…1,1 → ×0,7…1,3 ; 1 = ×1 exact — l'ailier rapide dans l'espace est LE danger). APRÈS
+     (mêmes graines) : ballon axe 46 % / demi 25 / ailes 30 (réel ~35/40/25 — la géographie
+     crédible), réceptions d'aile 21 → 38, ailiers libres servis 4 → 11 %, centres 3 → 5,
+     buts stables-positifs. A/B 20 × 300 s : 84 tirs / 23 buts ∈ [17 ; 33] ✓ au premier
+     calibrage. Clauses (verify-renversement — le banc de l'ORIENTATION) : le couloir entre au
+     vocabulaire (fixture « l'aile ouverte », patron de l'étau — leçon : l'ailier un pas
+     DERRIÈRE la ligne du rideau, la Loi 11 veto sinon) + sabotage « l'aile invisible »
+     (couloir:false : jamais l'ailier à 20 m) + le flux (axial vif 52 % contre 59 sabotage —
+     l'écart fait foi, pas la borne). sab76 14e application (couloir:false), fixture bélier
+     étendu pareil. Empreintes rondo/réduit AU BIT (clé MATCH, st.full). Batterie verte
+     (match11 89/0, match 84/0, rondo 40/0, matchday 88/0). Dette nommée : les demi-espaces
+     restent sous le réel (25 vs 40) — le jeu entre les lignes (la zone 14, le passeur entre
+     les lignes) est un chantier propre.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

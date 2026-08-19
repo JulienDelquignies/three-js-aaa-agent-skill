@@ -49,7 +49,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 141.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 142.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -131,10 +131,17 @@
    elle le dosage fait reculer le jeu). 12,3 → 2 bascules/match (fix moyen 4,8), surface 22 →
    26 %, A/B 92 tirs/27 buts ∈ bande (l'attaque 19 → 27). Dette nommée : l'axe sur-vit
    (69 % à |z| < 8 — chantier largeur/circuits d'aile). sab76 13e.
-9. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
+9. ~~**LA LARGEUR OFFENSIVE : LE COULOIR OUVERT (lot 99, dette lot 98)**~~ — **LIVRÉ**
+   (note 141) : l'option d'aile avec du champ (8 m dans sa bande) étend la portée de passe
+   (24 m — le verrou : l'écartement vivait hors passRange, le bonus seul n'a RIEN changé,
+   mesuré) et vaut bonus au barème, modulé largeur (×0,6…1,4) et topF du receveur
+   (×0,7…1,3). Ballon axe 65 → 46 %, ailes 16 → 30 (réel 35/25), ailiers libres servis
+   4 → 11 %, A/B 84 tirs/23 buts ∈ bande. sab76 14e. Dette nommée : les demi-espaces
+   sous le réel (25 vs 40) — le jeu entre les lignes (zone 14), chantier propre.
+10. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
    la patte) ; re-fonder les 4 clauses de flux pour activer l'écartement en continu ;
-   réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2) ; la largeur
-   offensive (l'axe sur-vit — dette lot 98).
+   réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2) ; le jeu entre
+   les lignes (demi-espaces 25 vs réel 40 — dette lot 99).
 
 ## Backlog long terme (inchangé)
 Corners travaillés, gardien relanceur avancé, formations 442/352

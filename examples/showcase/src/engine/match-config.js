@@ -85,6 +85,16 @@ export const MATCH = {
                           // RESPIRATION d'équipe entre deux diagonales (respire s). Mesuré
                           // avant : 12,3 renversements / 220 s (réel 0,3-0,9), 30 % sans une
                           // passe de fixation. fix:false : les bascules libres d'hier.
+  couloir: { champ: 8, large: 6, bonus: 2.2, portee: 24 },
+                          // LE COULOIR OUVERT (11c11, st.full — lot 99, dette du lot 98 :
+                          // « l'axe sur-vit », 65 % du jeu à |z| < 8, réel ~35, et 4 % des
+                          // ailiers LIBRES servis). L'option d'AILE en zone offensive avec
+                          // DU CHAMP devant elle (aucun adversaire à champ m dans sa bande
+                          // de couloir ± large m) vaut bonus au barème de passe — la rampe
+                          // du débordement (lot 87) et du centre (lot 47). Modulé par l'axe
+                          // tactique largeur (×0,6…1,4) et la pointe de vitesse du receveur
+                          // (topF → ×0,7…1,3). Absent : l'aile invisible d'hier (sabotage
+                          // nommé — le barème sans valeur de position).
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },
                           // LE JEU DE TÊTE (11c11, st.full — lot 34) : un vol à hauteur de
                           // tête (min-max m — la tête DEBOUT, le saut est une dette de
