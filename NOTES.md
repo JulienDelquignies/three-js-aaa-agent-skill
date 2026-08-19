@@ -4075,6 +4075,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      20 × 300 s : 67 tirs / 20 buts (bande 17-33 ✓), rondo/réduit AU BIT (c775c81e62592d4d /
      d1c0c1171e6f876c — tout le lot est gated st.full).
 
+136. **Lot 94 : LES APPUIS DU GARDIEN (sim) — la bissectrice, le set, le duel posé, les coups
+     de pied arrêtés ; le placement enfin aux attributs, au style et au rôle.** Mesuré avant
+     (probe-94) : le spot vivait sur la ligne ballon-CENTRE — 0,3-0,7 m laissés au PREMIER
+     POTEAU sur tout ballon excentré (l'erreur classique) ; 38 % des tirs < 13 m partaient sur
+     un gardien EN COURSE à 4,4-6 m/s qui plongeait comme un posé (un tir encaissé avec le
+     gardien à 0,5 m du ballon, sorti à 9 m) ; au corner et au coup franc le gardien s'alignait
+     ballon-centre COMME le mur (personne ne couvrait le côté ouvert) ; AUCUN attribut, style
+     ou rôle ne touchait la position. SIX LOIS (cfg.appuis && st.full — le K du call-site les
+     arme, keeper.js reste pur) : (a) LA BISSECTRICE des poteaux est l'axe (écart mesuré après :
+     0,000) — la JUSTESSE est un attribut (posMixF = min(1, lerp(0,4 ; 1,6, keeping)) : saturé
+     à 1 dès 50 — no-op exact —, le faible DÉRIVE vers la ligne du centre d'hier) ; (b) la
+     PROFONDEUR au rôle (axe `garde` [0..1] — gardienDeLigne 0,15 / gardienLibero 0,9, ×[0,7 ;
+     1,3] sur depthMax : cibles 1,42/1,97/2,52 m au ballon à 12 m) et à la note (depthKF ±15 %) ;
+     (c) LE SET : un gardien LANCÉ (> 2,2 m/s) lit le tir ×1,35 plus tard — les appuis posés
+     sont LA base du métier ; (d) le DUEL POSÉ : la sortie 1v1 s'arrête à 1,15 m d'un ballon
+     PORTÉ (se grandir, fermer l'angle, retarder le geste) et ne charge à 0,55 m que le ballon
+     LIBRE ; (e) le POSTE DE CORNER : 0,8 m devant sa ligne, moitié LOINTAINE (mesuré posé :
+     0,78 m / z −1,12) — jamais collé au premier poteau, face au jeu ; (f) le COUP FRANC
+     adverse < 28 m : le MUR a le côté du ballon, le gardien couvre le CÔTÉ OUVERT (posé :
+     z −1,30 pour un ballon à +8), près de sa ligne. Bancs : checkKeeper +6 clauses (bissectrice
+     tenue / identité d'hier sans clé / posMixF entre les deux / corner / garde monotone / set
+     dive-vs-poste / duel posé-vs-charge), match11 78/0 (2 clauses CPA POSÉES — le patron du
+     banc Loi 14 — + sabotage « le gardien d'hier aux CPA » : appuis:false → il revient côté
+     ballon), sab76 9e application, re-fondation des graines gardien {2,6,9} → {2,6,12} (la
+     bissectrice déplace le flux — re-balayé). REQUALIFICATION honnête : la profondeur p50 de
+     flux ne sépare PAS les rôles (le ballon vit loin — depthMin pour tous — et le gardien
+     court entre ses cibles) : la preuve du rôle est la CIBLE unitaire ; le style se VERRA aux
+     consommateurs futurs (sorties hautes du libéro sur ballons profonds). Batterie verte
+     (78+84+40+88+14+11+6+11+14+8+9+33+15+9, animkit 110, gestes 52), A/B 20 × 300 s : 62 tirs /
+     25 buts (bande 17-33 ✓ — le set rend des buts aux tirs sur gardien lancé, réaliste),
+     rondo/réduit AU BIT (c775c81e62592d4d / d1c0c1171e6f876c — st.full garde les deux mondes).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

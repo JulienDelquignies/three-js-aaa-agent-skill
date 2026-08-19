@@ -113,21 +113,15 @@ function assignMatchJobs(st, cfg) {
   const carrier = st.players[st.possession.carrier] ?? null;
   const anchor = st.ball.p;
 
-  // le sifflet de la Loi 11 (receive) s'administre AVANT tout métier : le coup franc est posé
-  // ici même, et le bloc remise ci-dessous prend le relais dans la même image
+  // le sifflet de la Loi 11 s'administre AVANT tout métier ; le CHRONO et la LOI 12 (l'avantage
+  // d'abord, le sifflet ensuite) s'adjugent au même étage
   if (st._whistle) administerWhistle(st, cfg);
-
-  // …et le CHRONO siffle ses périodes au même étage (mi-temps, fin de match, possession)
   if (cfg.chrono) chronoStep(st, cfg);
-
-  // …et la LOI 12 s'adjuge au même étage (l'avantage d'abord, le sifflet ensuite)
   if (cfg.loi12 && st._faute) adjugeFaute(st, cfg);
   if (cfg.loi3 && st.full) stepRemplacements(st, cfg);
 
   // L'HORLOGE DU REGAIN (cfg.moments — phases.js) : le moment COLLECTIF se dérive de qui a le
-  // ballon et depuis quand (momentDuJeu) ; le changement s'événemente ('transition'), son
-  // installation aussi ('placée') — mesurable au banc, socle des consommateurs tactiques.
-  // Événements seuls ici : aucun comportement, le flux réduit/rondo ne bouge pas d'un bit.
+  // ballon et depuis quand ; events 'transition'/'placée' SEULS — aucun comportement, pas un bit.
   if (cfg.moments) {
     const poss = st.possession.team >= 0 ? st.possession.team : st.lastTouch;
     if (poss === 0 || poss === 1) {
@@ -169,21 +163,16 @@ function assignMatchJobs(st, cfg) {
   // ---- LA REMISE EN JEU : un monde à part, court et légal
   if (st.restart) {
     const r = st.restart;
-    // LE MATCH EST FINI (chrono) : plus d'ayant droit, plus de course — le monde SE TIENT (les
-    // chiffres sont sur la feuille de match ; un état terminal propre, pas un gel qui inquiète)
+    // LE MATCH EST FINI (chrono) : plus d'ayant droit — le monde SE TIENT (un état terminal propre)
     if (r.type === 'fin') {
       for (const p of st.players) { p.job = 'walk'; p.target = [p.p[0], 0, p.p[2]]; }
       return;
     }
-    // le rayon des adversaires se tient depuis le BALLON tant qu'il n'est pas posé (le preneur le
-    // porte : on s'écarte de LUI), depuis le point de remise ensuite
+    // le rayon des adversaires : depuis le BALLON porté tant qu'il n'est pas posé, du point ensuite
     const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;
-    // LA LOI 14 (cfg.loi14 && st.full) : la CÉRÉMONIE du penalty. Tous les corps sauf le preneur
-    // et le gardien de la ligne : HORS surface, HORS de l'arc (rayon du mur autour du POINT — pas
-    // du ballon porté), DERRIÈRE le ballon. Un clamp en UNE passe, ancré au point r.p : pour un z
-    // donné, le x légal est le plus contraignant de (surface + 0,8) et de l'arc (+ 0,35), toujours
-    // côté champ du plan du ballon — mesuré avant : gardien à 1,8 m DEVANT sa ligne, coéquipiers
-    // en marche VERS le point (la remise générique), corps en surface et dans l'arc à la prise.
+    // LA LOI 14 (cfg.loi14 && st.full) : la CÉRÉMONIE du penalty — tous les corps sauf preneur
+    // et gardien de ligne HORS surface, HORS de l'arc (9,15 autour du POINT), DERRIÈRE le
+    // ballon. Un clamp en UNE passe ancré à r.p (le x légal = le plus contraignant des trois).
     const l14 = cfg.loi14 && st.full && r.type === 'penalty'
       ? { own: pitch.ownGoal(1 - r.team), def: 1 - r.team, arc: (cfg.loi12?.mur ?? 9.15) + 0.35 } : null;
     const l14clamp = (p) => {
@@ -196,8 +185,7 @@ function assignMatchJobs(st, cfg) {
       p.target = p.p[0] * sgn > sLim ? [sLim * sgn, 0, p.p[2]] : [p.p[0], 0, p.p[2]];
     };
     for (const p of st.players) {
-      // l'EXPULSÉ est hors du monde, remises comprises (Loi 12, lot 28) : il rejoint sa sortie —
-      // et le REMPLACÉ marche le même chemin (Loi 3 : sortie puis entrée du nouvel homme)
+      // l'EXPULSÉ est hors du monde, remises comprises (Loi 12) ; le REMPLACÉ marche le même chemin
       if (p.expulse || p._sub) {
         const to = p._sub?.phase === 'in' ? p._sub.entry : p._exit;
         p.job = 'walk'; p.target = [to[0], 0, to[1]]; continue;
@@ -207,10 +195,18 @@ function assignMatchJobs(st, cfg) {
       // RESPIRATION : tout le monde MARCHE (2,6 m/s) — on revenait en trottinant à 4,9-5,6.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) { p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]]; continue; }
       if (p.keeper) {
-        // …le gardien de la LIGNE (Loi 14) : SUR sa ligne, entre les poteaux, jusqu'à la frappe —
-        // keeperSpot le posait à 1,8 m devant (sa loi de position ne connaît pas la cérémonie)
+        // …le gardien de la LIGNE (Loi 14) : SUR sa ligne, entre les poteaux, jusqu'à la frappe
         if (l14 && p.team === l14.def) { p.job = 'keeper'; p.target = [l14.own.x - l14.own.sign * 0.15, 0, 0]; continue; }
-        const s = keeperSpot(pitch, p.team, [rp[0], 0, rp[1]]); p.job = 'keeper'; p.target = [s.x, 0, s.z]; continue;
+        // LE COUP FRANC ADVERSE PROCHE (lot 94, cfg.appuis && st.full) : le MUR couvre le côté
+        // du ballon — le gardien couvre le CÔTÉ OUVERT, près de sa ligne (le direct se lit tard)
+        const ogK = pitch.ownGoal(p.team);
+        if (st.full && cfg.appuis !== false && r.type === 'coup-franc' && r.team !== p.team
+          && Math.hypot(rp[0] - ogK.x, rp[1]) < 28) {
+          p.job = 'keeper'; p.target = [ogK.x - ogK.sign * 0.7, 0, -Math.sign(rp[1] || 1) * pitch.goalHalf * 0.4];
+          p.yawWant = Math.atan2(rp[1] - p.p[2], rp[0] - p.p[0]); continue;
+        }
+        const s = keeperSpot(pitch, p.team, [rp[0], 0, rp[1]], st.full && cfg.appuis !== false ? { ...KEEPER, appuis: true } : KEEPER);
+        p.job = 'keeper'; p.target = [s.x, 0, s.z]; continue;
       }
       if (p.id === r.taker) continue;                               // le preneur a son métier (plus bas)
       if (l14) { l14clamp(p); continue; }                           // la cérémonie vaut pour les DEUX camps
@@ -223,7 +219,7 @@ function assignMatchJobs(st, cfg) {
         p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]];
       } else {
         // l'adversaire TIENT LE RAYON de la remise (Loi 15/16/17 à l'échelle du format)
-        // …et le COUP FRANC du plein format tient LE MUR (Loi 13 — cfg.loi12.mur, 9,15 m) :
+        // …le COUP FRANC du plein format tient LE MUR (Loi 13 — cfg.loi12.mur, 9,15 m) :
         // rayon réel, et les deux défenseurs les plus proches de leur but se posent SUR la
         // ligne ballon→but, épaule contre épaule — un coup franc sans mur est un penalty déguisé
         const mur = cfg.loi12 && st.full && (r.type === 'coup-franc' || r.type === 'penalty') ? (cfg.loi12.mur ?? 9.15) : cfg.restartClear;
@@ -356,7 +352,14 @@ function assignMatchJobs(st, cfg) {
     if (busy(gk)) continue;                                        // un plongeon possède son corps
     const shotAge = st.pass ? st.t - st.pass.t : Infinity;
     // le GARDIEN NOTÉ : son envergure et son réflexe viennent de sa note (keeping) — sinon le métier moyen
-    const K = gk.skill ? { ...KEEPER, diveReach: gk.skill.keeperReach, reflex: gk.skill.keeperReflex } : KEEPER;
+    let K = gk.skill ? { ...KEEPER, diveReach: gk.skill.keeperReach, reflex: gk.skill.keeperReflex } : KEEPER;
+    // LES APPUIS (lot 94, cfg.appuis && st.full) : bissectrice à la justesse de la note, profondeur
+    // au rôle garde + depthKF, le SET (lancé = lit tard), duel POSÉ sur porté. false : hier au bit.
+    if (st.full && cfg.appuis !== false) {
+      const ownr = st.ball.owner != null ? st.players[st.ball.owner] : null;
+      K = { ...K, appuis: true, posMixF: gk.skill?.posMixF ?? 1, depthF: gk.skill?.depthKF ?? 1,
+        gardeF: axe(role(gk).garde, 0.7, 1.3), vGk: Math.hypot(gk.v[0], gk.v[1]), porte: !!ownr && ownr.team !== gk.team };
+    }
     // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté »
     // par un attaquant. Le label de conduite n'est pas un bouclier contre un plongeon dans les
     // pieds : la cueillette ne tournait qu'en phase libre, et 8 buts sans tir sont entrés à
@@ -382,9 +385,8 @@ function assignMatchJobs(st, cfg) {
     if (dec.mode === 'dive' && gk.down <= 0) {
       const cross = dec.cross;
       // L'ESPÈCE DE LA PARADE (lot 93, cfg.parades && st.full) : la GÉOMÉTRIE PRÉDITE choisit —
-      // haut (≥ 1,35) → plongeonPrise (détente verticale, épaule qui monte, retombe SUR SES APPUIS) ;
-      // ras (< 0,85) → plongeonBas ; loin (> 1,35 m) → plongeonUneMain (le bout de gants) ; sinon
-      // le plongeon à deux mains. Hier (clé/format éteints) : bas/aérien seulement, au bit près.
+      // haut ≥ 1,35 → plongeonPrise (retombe debout) ; ras < 0,85 → plongeonBas ; loin > 1,35 m
+      // → plongeonUneMain ; sinon le plongeon à deux mains. Clé éteinte : bas/aérien d'hier.
       const par93 = st.full && cfg.parades !== false;
       const espece = par93 && (cross.y ?? 0) >= 1.35 ? 'plongeonPrise'
         : (cross.y ?? 0) < 0.85 ? 'plongeonBas'
@@ -575,9 +577,8 @@ function assignMatchJobs(st, cfg) {
         st.events.push({ type: 'burst', kind: 'attaque', by: flightRec.id, t: +st.t.toFixed(2) });
       }
     }
-    // …ET LA PASSE MOURANTE SE VA CHERCHER (filmé : passe trop courte morte à 2 m du receveur
-    // PLANTÉ des secondes, cible verrouillée sur une mène que le ballon n'atteindra jamais —
-    // le vécu mot pour mot). Ballon au sol, lent, loin de sa mène : cible = POINT D'ARRÊT.
+    // …ET LA PASSE MOURANTE SE VA CHERCHER (filmé : morte à 2 m d'un receveur PLANTÉ, cible
+    // verrouillée sur une mène jamais atteinte). Ballon au sol, lent, loin : cible = POINT D'ARRÊT.
     const bSp = Math.hypot(st.ball.v[0], st.ball.v[2]);
     if (st.full && cfg.attaquePasse !== false && st.ball.p[1] < 0.5
       && bSp < (cfg.attaquePasse?.mort ?? 2.8)

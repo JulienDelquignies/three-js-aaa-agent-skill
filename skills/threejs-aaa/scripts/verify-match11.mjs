@@ -939,7 +939,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false });   // l'HIER exact, EN ENTIER (8e : lot 93 sans gestes différenciés)
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false });   // l'HIER exact, EN ENTIER (9e : lot 94 sans appuis)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1045,11 +1045,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const gardien = (over) => {
     const out = { prises: [], battus: [] };
-    // re-fondé lot 93 (les espèces de parade déplacent le flux — balayé 18 graines : prises sur
-    // {6, 9}, battu sur {6} à la purge). Le BATTU se mesure AU MOMENT du restart qui le purge,
-    // seulement passé la durée du geste (~1,4 s — avant, l'acte possède le corps et down 0 est
-    // le contrat lot 91 : le battu paie à la FIN du geste, onDiveEnd).
-    for (const seed of [2, 6, 9]) {
+    // re-fondé lot 94 (la bissectrice des appuis déplace le flux — re-balayé : prise sur {6},
+    // battu PROPRE sur {12}). Le BATTU se mesure au restart qui le purge passé la durée du
+    // geste (~1,4 s — avant, l'acte possède le corps : down 0 est le contrat lot 91, le battu
+    // paie à la FIN du geste) — ou au chemin des 2 s sans restart quand le flux l'offre.
+    for (const seed of [2, 6, 12]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let nEv = 0; const suivis = []; const dives = new Map(); const lastEsp = {};
@@ -1143,6 +1143,38 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`sabotage « les gestes d'hier » attrapé (gesteTir/parades:false : ${sab.tirs.filter((s) => /^frappe(Puissante|Enroulee|Pointu)/.test(s.clip)).length} clip d'espèce, ${sab.mains.length} mains, 0 plongeonUneMain/Prise — l'armé de passe et le plongeon générique, nommés)`,
     sab.tirs.every((s) => !/^frappe(Puissante|Enroulee|Pointu)/.test(s.clip)) && sab.mains.length === 0
     && !sab.plonges.plongeonUneMain && !sab.plonges.plongeonPrise);
+}
+
+// ---------------------------------------------------------------- lot 94 : LES APPUIS DU
+// GARDIEN aux coups de pied arrêtés — situations POSÉES (le patron du banc Loi 14) : le corner
+// se garde de la moitié LOINTAINE devant sa ligne, le coup franc proche laisse le MUR couvrir
+// le côté du ballon et le gardien prend le CÔTÉ OUVERT. Sabotage : le gardien d'hier s'aligne
+// ballon-centre (côté ballon) dans les deux cas. Les lois unitaires (bissectrice, SET, duel
+// posé, rôle garde) vivent dans checkKeeper (verify-match).
+{
+  const poser = (type, over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg(over);
+    for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const og = st.pitch.ownGoal(0);
+    // le point : le COIN du camp défendu (0,4 m dans le champ) ou 20 m devant la ligne, z +8
+    const p = type === 'corner' ? [og.x - og.sign * 0.4, st.pitch.hz - 0.4] : [og.x - og.sign * 20, 8];
+    st.restart = { type, p, team: 1, at: st.t + 2.2 };
+    st.ball.restart([p[0], 0.11, p[1]], { cause: type });
+    for (let i = 0; i < 2 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const gk = st.players.find((q) => q.keeper && q.team === 0);
+    return { x: Math.abs(gk.p[0] - og.x), z: gk.p[2] };
+  };
+  const co = poser('corner', {});
+  ok(`lot 94 — le CORNER se garde de la moitié lointaine (gardien à ${co.x.toFixed(2)} m de sa ligne, z ${co.z.toFixed(2)} — ballon au coin z > 0)`,
+    co.x <= 1.3 && co.z < -0.5 && co.z > -2.2);
+  const cf = poser('coup-franc', {});
+  ok(`lot 94 — le COUP FRANC proche se garde du CÔTÉ OUVERT (gardien z ${cf.z.toFixed(2)}, ballon z +8 : le mur a le premier poteau, le gardien le second)`,
+    cf.x <= 1.4 && cf.z < -0.7 && cf.z > -2.4);
+  const coSab = poser('corner', { appuis: false });
+  const cfSab = poser('coup-franc', { appuis: false });
+  ok(`sabotage « le gardien d'hier aux CPA » attrapé (appuis:false : corner z ${coSab.z.toFixed(2)} côté ballon, coup franc z ${cfSab.z.toFixed(2)} aligné centre — les postes dédiés, nommés)`,
+    coSab.z > -0.1 && cfSab.z > -0.5);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -48,8 +48,8 @@
   + une clé du lot grepable dans le chunk minifié.
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
-- NOTES.md : journal complet (notes 1-135) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 136.
+- NOTES.md : journal complet (notes 1-136) — insérer avant le marqueur
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 137.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -95,10 +95,15 @@
    premier contact aérien du lot 91 —, paradePieds, paradeBuste), clés gesteTir + parades,
    busteBlock sim (keeper.js, prouvé unitaire, rare en flux), scène joue les arrêts nommés.
    Le kind→clip au PLAN seulement : l'urgence improvise (10/17 tirs d'espèce au banc).
-4. **LA DISCIPLINE DÉFENSIVE (lot 94, sim)** — « la défense se jette en permanence » : la
+4. ~~**LES APPUIS DU GARDIEN (lot 94, demandé utilisateur)**~~ — **LIVRÉ** (note 136) :
+   bissectrice des poteaux (justesse = keeping/posMixF), profondeur au rôle `garde`
+   (gardienDeLigne/gardienLibero) + depthKF, le SET (lancé > 2,2 m/s → lit ×1,35 plus tard),
+   duel posé à 1,15 m du porté, poste de corner (moitié lointaine), coup franc < 28 m côté
+   OUVERT (le mur a le côté du ballon). Clé cfg.appuis, sab76 9e, graines gardien {2,6,12}.
+5. **LA DISCIPLINE DÉFENSIVE (lot 95, sim)** — « la défense se jette en permanence » : la
    décision de tacle par la COMPOSURE (le discipliné jockey, l'impulsif plonge), le rôle
    module. Mesurer d'abord : tacles tentés là où le contain suffisait.
-5. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
+6. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
    la patte) ; re-fonder les 4 clauses de flux pour activer l'écartement en continu ;
    réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
 

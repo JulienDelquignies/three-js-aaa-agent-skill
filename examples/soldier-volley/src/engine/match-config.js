@@ -504,6 +504,15 @@ export const MATCH = {
                           // le corps à hauteur de poitrine ≥ busteV → BLOCAGE du buste (arrêt
                           // {mode:'buste'}, keeper.busteBlock). false : le plongeon d'hier.
   busteV: 12,             // m/s — le seuil du blocage : sous lui, la prise en mains d'hier
+  appuis: true,           // LES APPUIS DU GARDIEN (st.full, lot 94) : position sur la BISSECTRICE
+                          // des poteaux (mesuré avant : la ligne du centre laissait 0,3-0,7 m au
+                          // premier poteau) à la justesse de keeping (posMixF), profondeur au rôle
+                          // garde (×[0,7 ; 1,3]) et à la note (depthKF ±15 %) ; le SET — un gardien
+                          // lancé (> 2,2 m/s) lit le tir ×1,35 plus tard (38 % des tirs proches
+                          // partaient sur un gardien en course) ; le 1v1 POSÉ à 1,15 m du ballon
+                          // porté (plus de charge dans le pied) ; poste de CORNER (0,8 m devant sa
+                          // ligne, moitié lointaine) ; coup franc < 28 m : le gardien couvre le
+                          // CÔTÉ OUVERT (le mur a le côté du ballon). false : le gardien d'hier.
                           // (mesuré : 1,34 m de haut, 8 images en s'éloignant des mains)
   pokeReach: 0.5,         // m — LE PIQUE : un ballon de conduite libre à portée de pied adverse
                           // se dévie (poke tackle) ; null : le défenseur-spectateur (sabotage nommé)

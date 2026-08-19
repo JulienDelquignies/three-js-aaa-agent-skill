@@ -83,20 +83,43 @@ export function keeperHoldPoint(gk, K = KEEPER) {
 
 /**
  * LA POSITION. Renvoie le point où le gardien de `team` doit être, pour un ballon en `ball` (xz).
- * Sur le segment ballon → centre du but, à `depth` du but, borné latéralement à l'ouverture
- * (un gardien ne couvre pas le poteau depuis l'extérieur du poteau).
+ * Historique : segment ballon → CENTRE du but. LES APPUIS (lot 94, K.appuis — le call-site les
+ * arme st.full && cfg.appuis) : l'axe devient la BISSECTRICE des poteaux (mesuré avant : la
+ * ligne du centre laissait le premier poteau ouvert de 0,3-0,7 m sur tout ballon excentré) —
+ * K.posMixF (keeping) est le FACTEUR de justesse (1 = bissectrice tenue, < 1 = dérive vers la
+ * ligne du centre d'hier), K.depthF/K.gardeF (note + rôle garde) modulent la profondeur max.
+ * Et LE CORNER a son poste : ballon rasant la ligne de but au coin → devant sa ligne (0,8 m),
+ * entre le centre et le SECOND poteau — jamais collé au premier, face au jeu.
  */
 export function keeperSpot(pitch, team, ball, K = KEEPER) {
   const g = pitch.ownGoal(team);
   const dx = ball[0] - g.x, dz = ball[2] - 0;
   const d = Math.hypot(dx, dz) || 1e-6;
+  if (K.appuis && Math.abs(dx) < 3 && Math.abs(ball[2]) > pitch.goalHalf + 5) {
+    // LE POSTE DE CORNER : voir venir le centre, couvrir la moitié lointaine
+    const sg = Math.sign(g.x || 1);
+    return { x: g.x - sg * 0.8, z: -Math.sign(ball[2] || 1) * pitch.goalHalf * 0.35, depth: 0.8, corner: true };
+  }
   const t = Math.max(0, Math.min(1, (K.farBall - d) / (K.farBall - K.nearBall)));
+  const dMax = K.depthMax * (K.appuis ? (K.depthF ?? 1) * (K.gardeF ?? 1) : 1);
   // approche → sort ; très près (sous nearBall) → re-recule linéairement vers depthMin
-  let depth = K.depthMin + (K.depthMax - K.depthMin) * t;
-  if (d < K.nearBall) depth = K.depthMin + (K.depthMax - K.depthMin) * Math.max(0, d / K.nearBall) * (K.nearBall - K.depthMin) / K.nearBall;
-  depth = Math.max(K.depthMin, Math.min(K.depthMax, depth));
+  let depth = K.depthMin + (dMax - K.depthMin) * t;
+  if (d < K.nearBall) depth = K.depthMin + (dMax - K.depthMin) * Math.max(0, d / K.nearBall) * (K.nearBall - K.depthMin) / K.nearBall;
+  depth = Math.max(K.depthMin, Math.min(dMax, depth));
   const x = g.x + (dx / d) * depth;
-  const z = (dz / d) * depth;
+  let z = (dz / d) * depth;
+  if (K.appuis) {
+    // LA BISSECTRICE : direction moyenne des unitaires ballon → poteaux, coupée à la même
+    // profondeur x — le z juste ; posMixF mélange depuis la ligne du centre (le placement
+    // est un MÉTIER : le gardien moyen la tient, le faible dérive vers l'erreur d'hier)
+    const u = (pz) => { const ux = g.x - ball[0], uz = pz - ball[2]; const l = Math.hypot(ux, uz) || 1; return [ux / l, uz / l]; };
+    const u1 = u(pitch.goalHalf), u2 = u(-pitch.goalHalf);
+    const bx = u1[0] + u2[0], bz = u1[1] + u2[1];
+    if (Math.abs(bx) > 1e-6) {
+      const zBis = ball[2] + (bz / bx) * (x - ball[0]);
+      z = z + (zBis - z) * (K.posMixF ?? 1);
+    }
+  }
   return { x, z: Math.max(-pitch.goalHalf + 0.2, Math.min(pitch.goalHalf - 0.2, z)), depth };
 }
 
@@ -144,15 +167,18 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
     return { mode: 'gather', spot: { x: spot.x, z: Math.max(-pitch.goalHalf + 0.2, Math.min(pitch.goalHalf - 0.2, cross.z)), depth: spot.depth } };
   }
   // LE UN-CONTRE-UN : un ballon LENT (porté, conduit, roulant — pas un tir) DANS SA SURFACE se
-  // CHARGE — le gardien sort au-devant, sur la ligne ballon-but, à un pas du ballon. La sortie
-  // dans les pieds a besoin de jambes : posté à 2 m du trajet, il regardait le dribble du
-  // repique le traverser (7 buts sans tir mesurés après la loi du cut-inside).
+  // CHARGE — le gardien sort au-devant, sur la ligne ballon-but. LES APPUIS (lot 94, K.appuis) :
+  // sur un ballon PORTÉ (K.porte — le duel), il se POSE À DISTANCE DE DUEL (1,15 m — se grandir,
+  // fermer l'angle, retarder le geste : le vrai 1v1) au lieu de charger dans le pied (0,55 —
+  // mesuré avant : un tir encaissé avec le gardien à 0,5 m du ballon, sorti à 9 m, lancé à
+  // 4,4 m/s). Le ballon LIBRE se charge comme hier : il faut le GAGNER.
   {
     const g = pitch.ownGoal(team);
     if (speed < 6.5 && pitch.inBox(ball[0], ball[2], Math.sign(g.x)) ) {
+      const standoff = K.appuis && K.porte ? 1.15 : 0.55;
       const dx = g.x - ball[0], dz = 0 - ball[2];
       const dl = Math.hypot(dx, dz) || 1;
-      return { mode: 'sortie', spot: { x: ball[0] + (dx / dl) * 0.55, z: Math.max(-pitch.goalHalf - 1.5, Math.min(pitch.goalHalf + 1.5, ball[2] + (dz / dl) * 0.55)), depth: spot.depth } };
+      return { mode: 'sortie', spot: { x: ball[0] + (dx / dl) * standoff, z: Math.max(-pitch.goalHalf - 1.5, Math.min(pitch.goalHalf + 1.5, ball[2] + (dz / dl) * standoff)), depth: spot.depth }, set: standoff > 1 };
     }
   }
   // LA FLOTTANTE SE LIT TARD (lot 39) : un vol RAPIDE quasi SANS EFFET (< 2 rad/s — pas d'axe
@@ -160,7 +186,12 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
   // le gardien part en retard, le plongeon se compresse. Les frappes de cou-de-pied portent
   // leur rotation lisible (≥ 3 rad/s) : lecture d'hier, au bit près quand spin est absent.
   const floaty = spin != null && spin < 2 && speed > 18;
-  if (!cross || speed < 6 || shotAge < K.reflex * (floaty ? (K.floatRead ?? 2.4) : 1)) return { mode: 'poste', spot };
+  // LES APPUIS PAS POSÉS PAIENT (lot 94, K.appuis) : un gardien LANCÉ (K.vGk > 2,2 m/s) au
+  // départ du tir n'a pas ses appuis — le réflexe s'étire (×1,35, cumule avec la flottante).
+  // Mesuré avant : 38 % des tirs proches partaient sur un gardien en course à 4,4-6 m/s qui
+  // plongeait comme un gardien posé. Le SET est LA base du métier.
+  const setF = K.appuis && (K.vGk ?? 0) > 2.2 ? 1.35 : 1;
+  if (!cross || speed < 6 || shotAge < K.reflex * (floaty ? (K.floatRead ?? 2.4) : 1) * setF) return { mode: 'poste', spot };
   if (cross.t > K.diveTime) return { mode: 'poste', spot };                    // trop tôt : se replacer d'abord
   if (Math.abs(cross.z) > pitch.goalHalf + 0.6 || cross.y > pitch.goalH + 0.4) return { mode: 'poste', spot }; // non cadré
   const dz = cross.z - me[2];
@@ -228,5 +259,40 @@ export function checkKeeper(pitch, K = KEEPER) {
   const bas = keeperHoldPoint({ p: [0, 0, 0], yaw: 0, down: 2, rise: { ground: 0.65, getup: 1.25 } }, K);
   const haut = keeperHoldPoint({ p: [0, 0, 0], yaw: 0, down: 0 }, K);
   if (!(bas[1] < 0.35 && haut[1] > 0.85)) issues.push(`le ballon tenu ne suit pas le corps (couché ${bas[1].toFixed(2)}, debout ${haut[1].toFixed(2)})`);
+  // 6. LES APPUIS (lot 94) — la BISSECTRICE tenue sous la clé, la ligne du centre sans elle
+  {
+    const KA = { ...K, appuis: true, posMixF: 1 };
+    const ball = [pitch.ownGoal(0).x + 11, 0, 8];
+    const s = keeperSpot(pitch, 0, ball, KA);
+    const g0 = pitch.ownGoal(0);
+    const u = (pz) => { const ux = g0.x - ball[0], uz = pz - ball[2]; const l = Math.hypot(ux, uz) || 1; return [ux / l, uz / l]; };
+    const u1 = u(pitch.goalHalf), u2 = u(-pitch.goalHalf);
+    const zBis = ball[2] + ((u1[1] + u2[1]) / (u1[0] + u2[0])) * (s.x - ball[0]);
+    if (Math.abs(s.z - zBis) > 0.02) issues.push(`la bissectrice n'est pas tenue (z ${s.z.toFixed(2)} vs ${zBis.toFixed(2)})`);
+    const sHier = keeperSpot(pitch, 0, ball, K);
+    if (Math.abs(sHier.z - zBis) < 0.15) issues.push('sans la clé, le spot suit déjà la bissectrice — l\'identité d\'hier est morte');
+    const sFaible = keeperSpot(pitch, 0, ball, { ...KA, posMixF: 0.55 });
+    if (!(sFaible.z > sHier.z && sFaible.z < s.z)) issues.push('posMixF ne dérive pas ENTRE la ligne du centre et la bissectrice');
+    // le poste de CORNER : devant sa ligne, moitié LOINTAINE
+    const sc = keeperSpot(pitch, 0, [g0.x + 0.4, 0, pitch.hz - 0.4], KA);
+    if (!(sc.corner && Math.abs(Math.abs(sc.x - g0.x) - 0.8) < 0.05 && sc.z < -0.6 && sc.z > -pitch.goalHalf))
+      issues.push(`le poste de corner n'est pas tenu (x-ligne ${Math.abs(sc.x - g0.x).toFixed(2)}, z ${sc.z.toFixed(2)})`);
+    // le rôle garde : la profondeur MONOTONE (ligne < identité < libéro) au ballon à 12 m
+    const dOf = (gf) => keeperSpot(pitch, 0, [g0.x + 12, 0, 0], { ...KA, gardeF: gf }).depth;
+    if (!(dOf(0.7) < dOf(1) && dOf(1) < dOf(1.3))) issues.push('le rôle garde ne module pas la profondeur (non monotone)');
+    // le SET : un gardien LANCÉ lit le même tir PLUS TARD (posé : plongeon ; lancé : poste)
+    const meS = [g0.x + 0.6, 0, 0];
+    const tir = [meS[0] + 9, 0.11, 1.5], vTir = [-14, 1.5, -0.9];
+    const pose = keeperDecide(pitch, 0, meS, tir, vTir, 0.14, { ...KA, vGk: 0 });
+    const lance = keeperDecide(pitch, 0, meS, tir, vTir, 0.14, { ...KA, vGk: 5 });
+    if (!(pose.mode === 'dive' && lance.mode === 'poste')) issues.push(`le SET ne paie pas (posé ${pose.mode}, lancé ${lance.mode} — attendu dive/poste à 0,14 s)`);
+    // le DUEL POSÉ : la sortie s'arrête à distance de duel sur ballon PORTÉ, charge le libre
+    const bDuel = [g0.x + 5, 0.11, 2];
+    const sPorte = keeperDecide(pitch, 0, meS, bDuel, [1.5, 0, 0.5], Infinity, { ...KA, porte: true });
+    const sLibre = keeperDecide(pitch, 0, meS, bDuel, [1.5, 0, 0.5], Infinity, { ...KA, porte: false });
+    const dOfSpot = (m) => Math.hypot(m.spot.x - bDuel[0], m.spot.z - bDuel[2]);
+    if (!(sPorte.mode === 'sortie' && sPorte.set && dOfSpot(sPorte) > 1.0 && sLibre.mode === 'sortie' && dOfSpot(sLibre) < 0.7))
+      issues.push(`le duel posé ne tient pas (porté ${dOfSpot(sPorte).toFixed(2)} m, libre ${dOfSpot(sLibre).toFixed(2)} m)`);
+  }
   return { ok: issues.length === 0, issues };
 }

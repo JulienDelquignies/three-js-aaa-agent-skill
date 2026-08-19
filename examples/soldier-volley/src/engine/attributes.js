@@ -65,6 +65,11 @@ export function makeProfile(ratings = {}) {
     composureF: lerp(1.30, 0.85, r('composure')),                 // × sur l'erreur pressée
     keeperReach: lerp(2.55, 3.25, r('keeping')),                  // m — autour de l'envergure livrée (2,95)
     keeperReflex: lerp(0.16, 0.09, r('keeping')),                 // s
+    posMixF: Math.min(1, lerp(0.4, 1.6, r('keeping'))),           // le PLACEMENT (lot 94) : 1 = bissectrice
+                                                                  // tenue (dès 50 — no-op), < 1 = dérive vers
+                                                                  // la ligne du centre (l'erreur du faible)
+    depthKF: lerp(0.85, 1.15, r('keeping')),                      // × sur la profondeur max (le bon gardien
+                                                                  // ose sortir — no-op exact à 50)
     getupF: lerp(1.28, 0.72, r('agility')),                       // × sur le relevé (keeper.keeperRise —
                                                                   // le félin en 0,9 s, le raide en 1,6)
     stamF: lerp(1.25, 0.75, r('stamina')),                        // × sur le drain de fatigue (l'endurant tient)
@@ -100,6 +105,10 @@ export function checkAttributes() {
   if (!(hi.getupF < mid.getupF && mid.getupF < lo.getupF)) issues.push('agility non monotone (le souple doit se relever plus vite)');
   if (hi.getupF < 0.72 - 1e-9 || lo.getupF > 1.28 + 1e-9) issues.push('getupF hors bande [0,72 ; 1,28]');
   if (Math.abs(mid.getupF - 1) > 1e-9) issues.push('agility 50 ne vaut pas 1,0 — le no-op du relevé est violé');
+  // …le PLACEMENT du gardien (lot 94) : à 50 la bissectrice est TENUE (no-op), le faible dérive
+  if (Math.abs(mid.posMixF - 1) > 1e-9 || Math.abs(mid.depthKF - 1) > 1e-9) issues.push('keeping 50 ne tient pas la bissectrice/profondeur (no-op violé)');
+  if (!(lo.posMixF < mid.posMixF - 1e-9 && lo.posMixF >= 0.4 - 1e-9 && Math.abs(hi.posMixF - 1) < 1e-9)) issues.push('posMixF hors contrat [0,4 ; 1], saturé à 1 dès 50');
+  if (!(hi.depthKF > mid.depthKF && mid.depthKF > lo.depthKF)) issues.push('depthKF non monotone');
   // 3. le joueur moyen = le moteur d'aujourd'hui (le no-op numérique)
   if (Math.abs(mid.topF - 1) > 1e-9 || Math.abs(mid.accelF - 1) > 1e-9) issues.push('le 50 partout ne vaut pas 1,0 — le no-op est violé');
   if (Math.abs(mid.composureF - 1.075) > 1e-9) issues.push('composure 50 hors centre');
