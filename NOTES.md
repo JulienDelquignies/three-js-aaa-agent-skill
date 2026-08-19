@@ -4137,6 +4137,40 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Batterie verte (match11 80, 84+40+88+14+11+14+8+9+33+15+9+52, loi12 14 re-fondé), A/B
      20 × 300 s : 64 tirs / 24 buts (bande ✓), rondo/réduit AU BIT (c775c81e / d1c0c117).
 
+138. **Lot 96 : LE BLOC ENTIER JOUE L'ACTION (sim) — la zone ballside, la ligne-bande, le côté
+     faible qui pince, la couverture qui survit au pressing.** Mesuré avant (probe-96, défense
+     sur porteur possédé, 4 matchs) : le bloc était de l'HOMME-À-HOMME INTÉGRAL — 80 % des
+     échantillons en job mark (suivre son homme partout), le coulissement latéral des slots ne
+     pilotait personne (gain z_bloc/z_ballon 0,08 pour un zShift câblé à 0,35 — écrasé par les
+     marquages), le côté FAIBLE restait à 17,3 m de l'axe (réel 8-14 : le latéral collait sa
+     craie), la « ligne » arrière vivait à 19-22 m d'ÉCART DE PROFONDEUR en défense placée
+     (réel 2-5 — chacun à la hauteur de son homme), et 58 % seulement des press couverts.
+     QUATRE LOIS (clé cfg.zone, st.full) + UN AXE TACTIQUE : (a) l'axe `marquage` [0..1]
+     (tactics.js — zone 0 ↔ homme 1, identité 0,5 = le ballside standard ; presets :
+     gegenpressing 0,65, blocBas 0,35) ; (b) LE MARQUAGE BALLSIDE (formation.ballsideTrim,
+     appelé sur les marks) : l'homme du côté faible (écart latéral au ballon > ballLim =
+     axe(marquage, 8, 30), HORS surface) n'a PAS de marqueur — la ZONE le couvre ; (c) LE CÔTÉ
+     FAIBLE PINCE (formation.blocFor → bloc.pince = axe(marquage, 0,62, 1,0), gate au
+     call-site) : ballon large → slots opposés contractés vers l'axe ; (d) LA LIGNE ARRIÈRE
+     EST UNE BANDE (posts < 4) : le marqueur de ligne ne DESCEND pas sous son slot (la Loi 11
+     est le piège — l'homme bas est hors-jeu s'il reçoit ; exemption ballon profond) et ne
+     MONTE pas marquer à plus de 6 m devant (l'homme haut appartient au bloc) — il suit EN
+     LATÉRAL ; (e) LA COUVERTURE SURVIT AU PRESSING : i===1 saute au pivot en fenêtre —
+     l'ASSURANCE glisse à i===2 (coverSpot extrait dans formation.js, la famille). Mesuré
+     après (A/B à clé, mêmes graines) : ligne placée 22,4 → 5,2-6,9 m, côté faible 16,6-17,3
+     → 13,5-14,1 m, coulissement 0,08 → 0,15, covers délibérés 634 → 917. CALIBRAGE de bande :
+     la v1 (bande 4 m, pince 0,55) étouffait — A/B 15 buts < 17 : bande 6 m (le central sort
+     dans le trou), pince 0,62 → 59 tirs / 18 buts (bande ✓ — une défense organisée concède
+     MOINS, c'est le réalisme, mais le monde reste vivant). REQUALIFICATION honnête : la
+     couverture mesurée reste ~54-58 % (la zone retire la couverture ACCIDENTELLE par densité
+     du marquage intégral que la délibérée ne compense pas encore — dette nommée : le cover
+     d'aile à l'angle du cône). RE-FONDATIONS : le sabotage du bélier (lot 78) éteint AUSSI
+     jockey/zone ; le volet BATTU de la clause gardien devient CONDITIONNEL (5 migrations de
+     flux en 3 lots — l'existence du battu payant est UNITAIRE, keeperRise au banc match ;
+     prises {5, 7} dont la plongeonPrise exemptée). sab76 11e. Batterie verte (match11 82,
+     84+40+88+14+11+11+6+14+8+9+33+15+9+14+8+6+52), A/B 20 × 300 s : 59 tirs / 18 buts,
+     rondo/réduit AU BIT (c775c81e / d1c0c117).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

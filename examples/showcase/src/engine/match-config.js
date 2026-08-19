@@ -504,6 +504,13 @@ export const MATCH = {
                           // le corps à hauteur de poitrine ≥ busteV → BLOCAGE du buste (arrêt
                           // {mode:'buste'}, keeper.busteBlock). false : le plongeon d'hier.
   busteV: 12,             // m/s — le seuil du blocage : sous lui, la prise en mains d'hier
+  zone: true,             // LE BLOC EST BALLSIDE (st.full, lot 96 — l'axe tactics.marquage) :
+                          // l'homme du côté FAIBLE n'a pas de marqueur (ballLim 8…30 m selon
+                          // l'axe), la ZONE le couvre — slots du côté faible PINCÉS vers l'axe
+                          // (formation.blocFor ×0,55…1,0) ; et la COUVERTURE survit au pressing
+                          // (i===2 assure derrière le pivot-jump — mesuré avant : 58 % couvert,
+                          // coulissement 0,08, ligne arrière à 13,5 m d'écart, côté faible à
+                          // 17,3 m : l'homme-à-homme intégral). false : le marquage d'hier.
   jockey: { dist: 1.0, at: 4.2, cap: 2.9, force: 1.5 },
                           // LES APPUIS DU DÉFENSEUR (st.full, lot 95) : face à un porteur POSSÉDÉ,
                           // la cible de press vit ENTRE ballon et but (dist — l'appui-position, on

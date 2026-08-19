@@ -15,6 +15,10 @@
 //                          et la cadence des appels profonds
 //   transition   [0..1] — conservation ↔ contre : la verticalité du regain (relaxation des
 //                          appels pendant la transition offensive, lot 14)
+//   marquage     [0..1] — zone ↔ homme-à-homme (lot 96, cfg.zone) : jusqu'où on SUIT son
+//                          homme loin du ballon (ballLim 8…30 m — à 1, l'homme se suit partout :
+//                          le monde d'hier) et combien le côté FAIBLE pince vers l'axe
+//                          (slots ×0,55…1,0 — la zone pince, l'homme tient sa craie)
 //   relation     [0..1] — positionnel ↔ relationnel (lot 83) : l'ESPACEMENT des soutiens est
 //                          une expression tactique, pas une constante — le jeu de position
 //                          écarte les slots (rayons ×1,35 à 0), le jeu relationnel les
@@ -45,11 +49,11 @@ export const TACTIQUES = {
   equilibre:     { hauteurBloc: 0.5, largeur: 0.5, pressing: 0.5, style: 0.5, transition: 0.5 },
   // …chaque preset PORTE SES RÔLES par défaut (lot 20 — un système est des axes ET des hommes) ;
   // les rôles explicites du projet aval GAGNENT toujours, poste par poste
-  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9, compacite: 0.7, relation: 0.55,
+  gegenpressing: { hauteurBloc: 0.85, largeur: 0.45, pressing: 1.0, style: 0.6, transition: 0.9, compacite: 0.7, relation: 0.55, marquage: 0.65,
     roles: { 5: 'recuperateur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' } },
   possession:    { hauteurBloc: 0.75, largeur: 0.7, pressing: 0.7, style: 0.1, transition: 0.15, compacite: 0.45, relation: 0.7,
     roles: { 5: 'meneur', 8: 'neufDeSurface' } },
-  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, compacite: 0.8, relation: 0.35,
+  blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, compacite: 0.8, relation: 0.35, marquage: 0.35,
     roles: { 4: 'recuperateur', 5: 'recuperateur', 8: 'neufDeSurface' } },
   direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7, relation: 0.3,
     roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' } },
@@ -68,6 +72,9 @@ export function resoudreTactique(t) {
     compacite: base.compacite ?? 0.5,
     // LE RELATIONNEL (lot 83) : l'espacement des soutiens est un CHOIX de tactique — 0,5 = identité.
     relation: base.relation ?? 0.5,
+    // ZONE ↔ HOMME (lot 96) : le rayon de suivi du marquage et la pince du côté faible — 0,5 = le
+    // ballside standard du moteur (cfg.zone:false rend le marquage intégral d'hier, au bit).
+    marquage: base.marquage ?? 0.5,
     // LA FORMATION est une donnée de la tactique (lot 17 — le catalogue : 433, 442, 352 ;
     // formation.js/LIGNES généralise le calage Loi 11 et les clauses). Inconnue : 433.
     formation: base.formation ?? '433',

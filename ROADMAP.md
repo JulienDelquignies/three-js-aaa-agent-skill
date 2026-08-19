@@ -48,8 +48,8 @@
   + une clé du lot grepable dans le chunk minifié.
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
-- NOTES.md : journal complet (notes 1-137) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 138.
+- NOTES.md : journal complet (notes 1-138) — insérer avant le marqueur
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 139.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -106,7 +106,13 @@
    1,5). Clé cfg.jockey, sab76 10e. DETTE NOMMÉE : la sous-production de FAUTES est
    préexistante (~0,1/match vs réel 3-6/220 s) — sources manquantes (accrochages, obstruction,
    épaule mistimée) = prochain chantier Loi 12.
-6. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
+6. ~~**LE BLOC ENTIER (lot 96, demandé utilisateur)**~~ — **LIVRÉ** (note 138) : l'axe tactique
+   `marquage` (zone ↔ homme), le ballside (l'homme du côté faible n'a pas de marqueur — la zone
+   le couvre), la pince du côté faible (slots ×0,62…1), la LIGNE-BANDE (ne descend pas sous son
+   slot — la Loi 11 piège —, ne monte pas à + de 6 m), l'assurance i===2 en fenêtre de pressing.
+   Ligne placée 22,4 → 5,2 m, côté faible 17,3 → 13,5. Dette nommée : la couverture délibérée
+   (~55 %) — le cover d'aile à l'angle du cône. Clé cfg.zone, sab76 11e.
+7. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
    la patte) ; re-fonder les 4 clauses de flux pour activer l'écartement en continu ;
    réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
 

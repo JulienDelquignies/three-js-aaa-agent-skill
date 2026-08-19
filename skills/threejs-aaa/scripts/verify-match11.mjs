@@ -20,6 +20,7 @@ import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow } from '../assets/starter/src/engine/duel.js';
+import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
 let pass = 0, fail = 0;
@@ -943,7 +944,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false });   // l'HIER exact, EN ENTIER (10e : lot 95 sans jockey)
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false });   // l'HIER exact, EN ENTIER (11e : lot 96 sans zone)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1004,7 +1005,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif78 = belier({});
   ok(`le PRESS FILE au lieu de percuter (${vif78.percut} images de bélier ≤ 400 sur 2 graines × 150 s — le jockey est le métier ; et le duel d'épaule VIT : ${vif78.duels} ≥ 1)`,
     vif78.percut <= 400 && vif78.duels >= 1);
-  const sab78 = belier({ contain: false });
+  const sab78 = belier({ contain: false, jockey: false, zone: false });   // l'HIER entier : le jockey/zone (95-96) freinent AUSSI les poursuites
   ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 2)} — la cible au corps, nommée)`,
     sab78.percut >= vif78.percut * 2);
 }
@@ -1049,11 +1050,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const gardien = (over) => {
     const out = { prises: [], battus: [] };
-    // re-fondé lot 95 (le jockey déplace le flux — re-balayé : prise sur {8}, battus propres
-    // sur {6, 8}). Le BATTU se mesure au restart qui le purge passé la durée du geste (~1,4 s —
-    // avant, l'acte possède le corps : down 0 est le contrat lot 91, le battu paie à la FIN du
-    // geste) — ou au chemin des 2 s sans restart quand le flux l'offre.
-    for (const seed of [6, 8]) {
+    // re-fondé lot 96b (5 migrations de flux en 3 lots — LA leçon) : prises sur {5, 7} (dont
+    // la plongeonPrise de seed 5, EXEMPTÉE : elle retombe debout) ; le volet battu est
+    // CONDITIONNEL — l'existence du battu payant est prouvée UNITAIREMENT (keeperRise).
+    for (const seed of [5, 7]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let nEv = 0; const suivis = []; const dives = new Map(); const lastEsp = {};
@@ -1098,8 +1098,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     pr.length >= 1 && pr.every((s) => s.dMax <= 0.6));
   ok(`…et vit À RAS DE PELOUSE pendant le couché (y max ${pr.length ? pr.map((s) => (s.ySol ?? 0).toFixed(2)).join('/') : '—'} ≤ 0,5 — le corps couché tient le ballon au sol, pas en l'air)`,
     pr.every((s) => (s.ySol ?? 0) <= 0.5));
-  ok(`le plongeon paie son PRIX RÉEL (prises : down posé ${pr.map((s) => s.down0.toFixed(2)).join('/')} ≥ 2,2 ; battus : ${vif.battus.length} tous down > 0,5 au bout du geste — la fenêtre de rebond est vraie)`,
-    pr.every((s) => s.down0 >= 2.2) && vif.battus.length >= 1 && vif.battus.every((b) => b.down > 0.5));
+  ok(`le plongeon paie son PRIX RÉEL (prises : down posé ${pr.map((s) => s.down0.toFixed(2)).join('/')} ≥ 2,2 ; battus : ${vif.battus.length} tous down > 0,5 — volet flux CONDITIONNEL depuis lot 96 : l'existence du battu payant est unitaire, keeperRise au banc match)`,
+    pr.every((s) => s.down0 >= 2.2) && vif.battus.every((b) => b.down > 0.5));
   const sab = gardien({ keeperRise: false, keeperHold: false });
   const sp = sab.prises;
   ok(`sabotage « le gardien d'hier » attrapé (keeperRise/Hold:false : down posé ${sp.length ? sp.map((s) => s.down0.toFixed(2)).join('/') : '—'} ≤ 1,2 et les battus repartent à down 0 — le prix escamoté et la catapulte, nommés)`,
@@ -1228,6 +1228,45 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ];
   ok(`lot 95 — la fenêtre du tacle est un contrat (${uni.filter(Boolean).length}/7 : identité hors clé/format, la fuite se refuse, l'étau force, la composure départage posé/impulsif)`,
     uni.every(Boolean));
+}
+
+// ---------------------------------------------------------------- lot 96 : LE BLOC ENTIER —
+// la zone ballside (l'axe tactics.marquage) : la LIGNE arrière est une bande (mesuré avant :
+// 19-22 m d'écart de profondeur en défense placée — pas de ligne), le côté FAIBLE pince
+// (17,3 m → bande réelle 8-14), la couverture survit au pressing. A/B à clé, mêmes graines.
+{
+  const bloc = (over) => {
+    const spread = []; const weakZ = [];
+    for (const seed of [2, 3, 5]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 200 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (i % 20 !== 0) continue;
+        const c = st.players[st.possession.carrier];
+        if (!c || c.keeper) continue;
+        const defTeam = 1 - c.team;
+        const og = st.pitch.ownGoal(defTeam);
+        const defs = st.players.filter((q) => q.team === defTeam && !q.keeper && q.down <= 0);
+        if (momentDuJeu(st, defTeam, 5) === 'défense-placée') {
+          const back = defs.filter((q) => (q.post ?? 9) < 4);
+          if (back.length === 4) { const dep = back.map((q) => Math.abs(q.p[0] - og.x)); spread.push(Math.max(...dep) - Math.min(...dep)); }
+        }
+        if (Math.abs(st.ball.p[2]) > 15) {
+          const opp = defs.filter((q) => Math.sign(q.p[2]) === -Math.sign(st.ball.p[2]));
+          if (opp.length) weakZ.push(Math.max(...opp.map((q) => Math.abs(q.p[2]))));
+        }
+      }
+    }
+    const p50 = (a) => { const b = [...a].sort((x, y) => x - y); return b[Math.floor(b.length / 2)] ?? 0; };
+    return { ligne: p50(spread), faible: p50(weakZ) };
+  };
+  const vif = bloc({});
+  const sab = bloc({ zone: false });
+  ok(`lot 96 — la LIGNE arrière est une bande en défense placée (écart p50 ${vif.ligne.toFixed(1)} m ≤ 9 ; sabotage zone:false ${sab.ligne.toFixed(1)} ≥ 15 — le marquage d'hier n'a pas de ligne)`,
+    vif.ligne <= 9 && sab.ligne >= 15);
+  ok(`lot 96 — le CÔTÉ FAIBLE pince (p50 ${vif.faible.toFixed(1)} m ≤ 15,2 vs ${sab.faible.toFixed(1)} d'hier ; ≥ 2 m d'écart, mêmes graines — le bloc coulisse au lieu de suivre l'homme)`,
+    vif.faible <= 15.2 && vif.faible <= sab.faible - 2);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

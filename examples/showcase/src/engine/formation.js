@@ -87,7 +87,12 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     for (let i = 0; i < F.length; i++) {
       const [f, fz] = F[i];
       const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * squeeze));
-      emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 + zShift)));
+      // …ET LE CÔTÉ FAIBLE PINCE (lot 96, bloc.pince — l'axe tactics.marquage via blocFor,
+      // gate cfg.zone au call-site) : ballon large → le slot du côté OPPOSÉ rentre vers l'axe
+      // (réel : le latéral faible vit à 8-14 m de l'axe, mesuré avant à 17,3). Absent : 1, hier.
+      let pz = fz * pitch.hz * 0.92;
+      if (bloc.pince != null && Math.abs(anchorZ) > 6 && Math.sign(fz || 1) !== Math.sign(anchorZ)) pz *= bloc.pince;
+      emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, pz + zShift)));
     }
     res.length = F.length;
     return res;
@@ -151,14 +156,38 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
  *  bloc bas = ligne longue 31 — le décalage ±6 m du bloc posté compose par-dessus).
  *  À 0,5 EXACTEMENT : la base, pas un bit (l'identité au défaut). UNE vérité, partagée
  *  moteur/banc — pur. */
-export function blocFor(bloc, tq) {
+export function blocFor(bloc, tq, zone = false) {
   if (!bloc) return null;
   const ax = (v, lo, hi) => lo + Math.max(0, Math.min(1, v ?? 0.5)) * (hi - lo);
   return {
     ...bloc,                                                       // lateral/slideMax passent tels quels
     long: (bloc.long ?? 30) + ax(tq?.compacite, 4, -4),
     ligne: (bloc.ligne ?? 27) + ax(tq?.hauteurBloc, 4, -4),
+    // la PINCE du côté faible (lot 96) ne vit que sous cfg.zone (le call-site la gate) —
+    // l'axe marquage : la zone pince fort (0,62), l'homme-à-homme tient sa craie (1,0)
+    ...(zone ? { pince: ax(tq?.marquage, 0.62, 1.0) } : {}),
   };
+}
+
+/** LE POINT DE COUVERTURE (lots 11/96) : sur l'axe ballon → but défendu, borné [coverMinDist ; 6]
+ *  à 35 % du chemin — la cible du cover ET de l'assurance de pressing (i===2, lot 96). */
+export function coverSpot(defGoal, anchor, cfg) {
+  const gx = defGoal.x - anchor[0], gz = 0 - anchor[2];
+  const gl = Math.hypot(gx, gz) || 1;
+  const dd = Math.max(cfg.coverMinDist, Math.min(6, gl * 0.35));
+  return [anchor[0] + (gx / gl) * dd, 0, anchor[2] + (gz / gl) * dd];
+}
+
+/** LE MARQUAGE BALLSIDE (lot 96, cfg.zone — l'axe tactics.marquage) : retire des marques les
+ *  hommes du CÔTÉ FAIBLE (écart latéral au ballon > bLim, HORS surface) — la ZONE les couvre
+ *  (slots pincés + coulissement). Mesuré avant : 80 % du bloc en homme-à-homme intégral,
+ *  coulissement 0,08, ligne arrière à 13,5 m d'écart. Le renversement est l'arme honnête contre. */
+export function ballsideTrim(marks, anchorZ, pitch, sgnDef, bLim) {
+  for (let k = marks.length - 1; k >= 0; k--) {
+    const a = marks[k];
+    const enSurface = a.p[0] * sgnDef > pitch.hx - pitch.dims.box.depth - 2 && Math.abs(a.p[2]) < pitch.dims.box.width / 2 + 3;
+    if (!enSurface && Math.abs(a.p[2] - anchorZ) > bLim) marks.splice(k, 1);
+  }
 }
 
 /** Le contrat de la formation — un bloc est un bloc, pas un nuage. GÉNÉRIQUE : les lignes

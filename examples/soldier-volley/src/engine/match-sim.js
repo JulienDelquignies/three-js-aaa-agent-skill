@@ -8,7 +8,7 @@ import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
-import { formationSpots, premierOffensif, blocFor } from './formation.js';
+import { formationSpots, premierOffensif, blocFor, coverSpot, ballsideTrim } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
@@ -45,10 +45,8 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   for (const team of [0, 1]) {
     st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; });
   }
-  // LES RÔLES PAR POSTE (roles.js) : makeMatch({ roles: [{ 8: 'neufDeSurface' }, {…éq. 1}] }) —
-  // clé = poste, valeur = nom/objet partiel. APRÈS l'assignation des postes (la v1 lisait q.post
-  // avant qu'il existe — attrapé à la mesure). Aucun rôle : polyvalent, pas un bit ne bouge.
-  // Fusion PRESET < EXPLICITE (lot 20) : la tactique amène ses hommes, l'explicite gagne.
+  // LES RÔLES PAR POSTE (roles.js) : clé = poste, valeur = nom/objet — APRÈS l'assignation des
+  // postes. Aucun rôle : polyvalent, pas un bit. Fusion PRESET < EXPLICITE (lot 20).
   for (const team of [0, 1]) {
     const spec = { ...(st.tactics[team].roles ?? {}), ...(roles?.[team] ?? {}) };
     for (const q of st.players.filter((q) => q.team === team)) {
@@ -113,15 +111,13 @@ function assignMatchJobs(st, cfg) {
   const carrier = st.players[st.possession.carrier] ?? null;
   const anchor = st.ball.p;
 
-  // le sifflet de la Loi 11 s'administre AVANT tout métier ; le CHRONO et la LOI 12 (l'avantage
-  // d'abord, le sifflet ensuite) s'adjugent au même étage
+  // le sifflet de la Loi 11 AVANT tout métier ; le CHRONO et la LOI 12 au même étage
   if (st._whistle) administerWhistle(st, cfg);
   if (cfg.chrono) chronoStep(st, cfg);
   if (cfg.loi12 && st._faute) adjugeFaute(st, cfg);
   if (cfg.loi3 && st.full) stepRemplacements(st, cfg);
 
-  // L'HORLOGE DU REGAIN (cfg.moments — phases.js) : le moment COLLECTIF se dérive de qui a le
-  // ballon et depuis quand ; events 'transition'/'placée' SEULS — aucun comportement, pas un bit.
+  // L'HORLOGE DU REGAIN (cfg.moments — phases.js) : events 'transition'/'placée' SEULS, pas un bit.
   if (cfg.moments) {
     const poss = st.possession.team >= 0 ? st.possession.team : st.lastTouch;
     if (poss === 0 || poss === 1) {
@@ -148,8 +144,7 @@ function assignMatchJobs(st, cfg) {
     }
   } else st._deadFlightN = 0;
 
-  // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : mémoriser QUI vient de perdre son ballon — la
-  // fenêtre s'applique tout en bas, PAR-DESSUS les postes (le contre-press est un réflexe).
+  // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : la fenêtre s'applique PAR-DESSUS les postes.
   if (cfg.lossReact) {
     const cNow = st.possession.carrier;
     const prev = st._pcar ?? -1;
@@ -360,8 +355,7 @@ function assignMatchJobs(st, cfg) {
       K = { ...K, appuis: true, posMixF: gk.skill?.posMixF ?? 1, depthF: gk.skill?.depthKF ?? 1,
         gardeF: axe(role(gk).garde, 0.7, 1.3), vGk: Math.hypot(gk.v[0], gk.v[1]), porte: !!ownr && ownr.team !== gk.team };
     }
-    // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté »
-    // (8 buts sans tir entrés à 3,5-4,3 m/s dans les pieds d'un gardien sans droit de prise).
+    // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté ».
     if (cfg.keeperClaim !== false) {
       const own = pitch.ownGoal(gk.team);
       const bd = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
@@ -867,7 +861,7 @@ function assignMatchJobs(st, cfg) {
     // défenseurs vit sur clés pré-calculées (d2 recalculé dans chaque comparaison, mesuré).
     const defTeamB = atk === 0 ? 1 : 0;
     const spotsBloc = st.full
-      ? formationSpots(pitch, defTeamB, anchor[0], false, tac(st, defTeamB).formation, blocFor(cfg.bloc ?? null, tac(st, defTeamB)), anchor[2], st._outDef ??= []) : null;
+      ? formationSpots(pitch, defTeamB, anchor[0], false, tac(st, defTeamB).formation, blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), anchor[2], st._outDef ??= []) : null;
     const byDist = st._bByDist ??= []; byDist.length = 0;
     for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
     // …les MARQUABLES une fois par frame (lot 69 — le prédicat ignore le marqueur ; seul le tri est personnel)
@@ -875,6 +869,9 @@ function assignMatchJobs(st, cfg) {
     const sgnDef = Math.sign(defGoal.x || 1);
     const marks = st._bMarks ??= [], mTri = st._bMTri ??= []; marks.length = 0;
     for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3))) marks.push(a);
+    // LE MARQUAGE EST BALLSIDE (lot 96, cfg.zone — formation.ballsideTrim, l'axe marquage) :
+    // l'homme du côté FAIBLE n'a pas de marqueur, la ZONE le couvre (slots pincés + coulissement).
+    if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
     byDist.forEach((p, i) => {
       if (i === 0) {
         // LE GARDIEN EN MAINS EST INATTAQUABLE (futsal Loi 12 à l'échelle : on ne charge pas le
@@ -918,9 +915,7 @@ function assignMatchJobs(st, cfg) {
             return;
           }
         }
-        // LE JOCKEY (lot 95, cfg.jockey && st.full) : face au porteur POSSÉDÉ on se place ENTRE
-        // ballon et SON but (l'appui-position — on ne court plus AU ballon), l'approche finale
-        // SOUS CONTRÔLE (movement.js). Le ballon LIBRE se gagne plein fer. Doc : match-config.
+          // LE JOCKEY (lot 95) : cible ENTRE ballon et SON but, approche SOUS CONTRÔLE (movement.js).
         if (cfg.jockey !== false && st.full && carrier && !freeBall && st.ball.owner === carrier.id) {
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = Math.hypot(gxJ, gzJ) || 1;
@@ -942,23 +937,23 @@ function assignMatchJobs(st, cfg) {
           if (outlet) { p.job = 'press'; p.target = [outlet.p[0], 0, outlet.p[2]]; return; }
         }
         // le cover coupe la ligne ballon → but défendu, au plancher radial du rondo
-        const gx = defGoal.x - anchor[0], gz = 0 - anchor[2];
-        const gl = Math.hypot(gx, gz) || 1;
-        const dd = Math.max(cfg.coverMinDist, Math.min(6, gl * 0.35));
-        p.job = 'cover'; p.target = [anchor[0] + (gx / gl) * dd, 0, anchor[2] + (gz / gl) * dd];
+        p.job = 'cover'; p.target = coverSpot(defGoal, anchor, cfg);
+        return;
+      }
+      // LA COUVERTURE NE MEURT PAS EN FENÊTRE (lot 96) : l'ASSURANCE glisse à i===2 (58 % couverts avant).
+      if (st.full && cfg.zone !== false && press && i === 2 && carrier) {
+        p.job = 'cover'; p.target = coverSpot(defGoal, anchor, cfg);
         return;
       }
       // EN 11C11 : quatre marqueurs suffisent — le reste tient le BLOC défensif à son poste
       // (un marquage de dix serait un essaim ; un bloc qui coulisse est une défense lisible)
       if (st.full && i >= 6) {
-        // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42 — formation.js) : ligne
-        // à ~27 m du ballon, longueur bornée 30 m — les lignes ne s'espacent plus. Et le bloc
-        // est CELUI DE SA TACTIQUE (lot 43, blocFor) : compacité et hauteur PAR ÉQUIPE.
+        // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42) : ligne ~27 m du ballon,
+        // longueur 30 — et le bloc est CELUI DE SA TACTIQUE (blocFor : compacité, hauteur).
         const spotsD = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
         const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
-        // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : où l'équipe DÉFEND — le bloc posté se
-        // décale de −6 (bloc bas, parqué devant sa surface) à +6 m (ligne haute — et la ligne
-        // de hors-jeu suit : la Loi 11 fait exister le pari). 0,5 = 0 m, l'identité.
+        // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : le bloc posté se décale de −6 à +6 m —
+        // la ligne de hors-jeu suit (Loi 11 fait exister le pari). 0,5 = 0 m, l'identité.
         const sgnD = -pitch.ownGoal(p.team).sign;
         const haut = axe(tac(st, p.team).hauteurBloc, -6, 6);
         if (haut) want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * haut));
@@ -977,17 +972,13 @@ function assignMatchJobs(st, cfg) {
         return;
       }
       // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT — re-visé PAR À-COUPS
-      // (0,5 s / 0,8 m, rupture > 3 m ; le miroir continu vibrait à 3,47 m/s — un bloc tient) ;
-      // en fenêtre de pressing : demi-pas (0,95 m) et cadence courte (0,35 s / 0,55 m).
-      // …ET ON MARQUE LE DANGER SEULEMENT (lot 51b, cfg.marquageRayon) : près du ballon (rayon)
-      // OU dans MON tiers défensif (les centraux tiennent le 9 ballon loin — le rayon seul
-      // laissait les pointes libres, camping 4-6 → 13,2 % mesuré). Un homme au-delà est couvert
-      // par le BLOC, le marqueur sans homme REJOINT SON POSTE. Le réduit garde le monde d'hier.
+      // (0,5 s / 0,8 m ; le miroir continu vibrait) ; en pressing : demi-pas, cadence courte.
+      // ON MARQUE LE DANGER SEULEMENT (lot 51b) : près du ballon OU dans mon tiers défensif —
+      // au-delà, le BLOC couvre ; le marqueur sans homme rejoint son poste. Réduit : hier.
       mTri.length = 0;                                             // copie depuis `marks` : le départ du tri stable reste l'ordre d'hier
       for (const a of marks) { a._dMark = d2(a.p, p.p); mTri.push(a); } mTri.sort((x, y) => x._dMark - y._dMark);
-      // …UN MARQUEUR PAR HOMME (lot 72, captures : tas de 4-5 corps, 34 % des photos) : le
-      // surnuméraire allait sur SON plus-proche — trois voisins élisaient le même homme. En
-      // 11c11 le surplus rejoint son poste (chemin !m) ; le réduit garde le doublement au bit.
+      // …UN MARQUEUR PAR HOMME (lot 72 : trois voisins élisaient le même homme, tas de 4-5
+      // corps) : en 11c11 le surplus rejoint son poste (!m) ; le réduit garde le doublement.
       const m = i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
@@ -1003,6 +994,16 @@ function assignMatchJobs(st, cfg) {
       // meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
       const off = (press ? 0.95 : 1.4) * axe(role(p).press, 1.18, 0.82);
       const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
+      // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — mesuré avant : « ligne » à
+      // 19-22 m d'écart de profondeur en défense placée, réel 2-5) : le marqueur de la ligne
+      // ne descend ni ne monte hors de sa bande — il suit son homme EN LATÉRAL (bande 6 m — le central sort dans le trou).
+      if (st.full && cfg.zone !== false && (p.post ?? 9) < 4 && spotsBloc) {
+        const xL = spotsBloc[p.post]?.[0], sL = (xL ?? 0) * sgnDef;
+        // …ne descend pas SOUS elle (le piège Loi 11 couvre l'homme bas) sauf ballon déjà profond…
+        if (xL != null && anchor[0] * sgnDef < sL - 2 && want[0] * sgnDef > sL) want[0] = xL;
+        // …et ne MONTE pas marquer à plus de 4 m devant elle (l'homme haut appartient au bloc)
+        if (xL != null && want[0] * sgnDef < sL - 6) want[0] = sgnDef * (sL - 6);
+      }
       const drift = p._markT ? Math.hypot(want[0] - p._markT[0], want[1] - p._markT[1]) : Infinity;
       if (!p._markT || drift > 3 || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8))) {
         p._markT = want; p._markAt = st.t + (press ? 0.35 : 0.5);
@@ -1064,8 +1065,7 @@ function onDive(st, gk, cfg) {
   const closing = d < pd - 1e-4;
   if (gk.act?.payload) gk.act.payload._pd = d;
   if (closing && d > 0.35) return false;
-  // …la détente de prise (plongeonPrise, lot 93) retombe SUR SES APPUIS : le prix est un temps
-  // d'atterrissage, pas un couché + relevé — gk.rise n'existe pas sur cette espèce.
+  // …la détente de prise (plongeonPrise, lot 93) retombe SUR SES APPUIS : pas de gk.rise.
   if (gk.act?.id === 'plongeonPrise') gk.down = Math.max(gk.down, 0.5);
   else riseDown(st, gk, cfg, true);
   if (d <= 1.1 && y <= 1.9) {
