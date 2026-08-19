@@ -63,7 +63,11 @@ export const MATCH = {
                           // second jaune vaut ROUGE — le carton SURVIT à l'avantage. jaune:0 :
                           // l'arbitre sans poches (sabotage nommé). L'expulsion physique du
                           // rouge (formation à 10, hors-jeu, cerveaux) : dette nommée.
-  renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5 },
+  renversement: { dense: 6, rayon: 12, dz: 18, portee: 38, bonus: 1.5, respire: 45, ouvre: 1.2 },
+                          // ouvre (lot 98) : la fixation MÛRE (≥ 3 passes du même côté)
+                          // multiplie le poids du service au coureur profond (lot 41) — le
+                          // bloc attiré libère la rupture : le dividende premier de la
+                          // fixation, avant l'aile opposée. 1 : rien (sabotage nommé).
                           // LE RENVERSEMENT (11c11, st.full — lot 35, diagnostic utilisateur
                           // « densité du jeu axial ») : quand le bloc COMPRIME le côté ballon
                           // (dense corps à rayon m), l'aile OPPOSÉE (Δz > dz, flanc à flanc)
@@ -72,8 +76,15 @@ export const MATCH = {
                           // et la diagonale vole EN CLOCHE par-dessus le bloc (strike-sim).
                           // Mesuré avant : 76 % du jeu à |z| < 8, passe max 21,9 m, 1
                           // renversement / 4 matchs (réel 3-8/match). Événement
-                          // 'renversement' {by, to, dz}. false : le jeu axial d'hier
+                          // 'renversement' {by, to, dz, fix}. false : le jeu axial d'hier
                           // (sabotage nommé).
+                          // …ET LA FIXATION D'ABORD (lot 98, retour utilisateur « fixer côté
+                          // ballon avant de changer ») : la bascule EXIGE n passes conclues
+                          // du même côté (st._fix — possession 5, direct 3 via l'axe style ;
+                          // le passeur d'élite, passSigma < 2°, un temps plus tôt) et une
+                          // RESPIRATION d'équipe entre deux diagonales (respire s). Mesuré
+                          // avant : 12,3 renversements / 220 s (réel 0,3-0,9), 30 % sans une
+                          // passe de fixation. fix:false : les bascules libres d'hier.
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },
                           // LE JEU DE TÊTE (11c11, st.full — lot 34) : un vol à hauteur de
                           // tête (min-max m — la tête DEBOUT, le saut est une dette de
@@ -225,7 +236,14 @@ export const MATCH = {
                           // LIBRE avec son résiduel, le récupérateur va le chercher. Mesuré
                           // avant : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s possédé
                           // instantanément. false : l'aimant d'hier (sabotage nommé).
-  bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
+  bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9, surcharge: 0.2, surMax: 6 },
+                          // surcharge (lot 98) : EN POSSESSION les postes intérieurs (|fz| <
+                          // 0,5) glissent vers le couloir ballon (anchorZ × surcharge, ≤
+                          // surMax m) — le surnombre qui FIXE ; les larges tiennent (l'ailier
+                          // faible = la sortie du renversement gagné). Modulée par relation
+                          // (×1,4 triangles) et largeur (×0,7 amplitude) via blocFor. Mesuré
+                          // avant : 57/96 possessions mortes au médian, offre courte p50 2.
+                          // Absente : les postes symétriques d'hier (sabotage nommé).
                           // rentre (lot 68) : en possession, le latéral CÔTÉ FAIBLE referme la
                           // ligne de 3 — il rentre (z demi) et monte de ~9 m vers le milieu
                           // (mesuré avant : p50 10,4 / p90 22,0 m derrière la médiane d'équipe,

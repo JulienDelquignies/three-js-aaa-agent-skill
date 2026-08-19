@@ -66,6 +66,14 @@ export function uneTouche(st, p, cfg) {
       // défense lisait instantanément (armée : 135/135, l'armé vu remboursait les regardeurs).
       st._surprise = { t: st.t, seen: 0, n: (st._surprise?.n ?? 0) + 1 };
       st.pass = { from: p.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'une-touche', t: st.t, flight: mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
+      // …la une-touche NOURRIT LA FIXATION aussi (lot 98 — le même registre que beginPass) :
+      // c'est même LA passe qui fixe le mieux (le une-deux côté ballon du vrai football)
+      if (cfg.renversement && st.full) {
+        const zS = Math.abs(p.p[2]) < 4 ? 0 : Math.sign(p.p[2]);
+        const F = st._fix;
+        st._fix = F && F.team === p.team && (zS === 0 || F.side === 0 || F.side === zS)
+          ? { team: p.team, side: zS || F.side, n: F.n + 1 } : { team: p.team, side: zS, n: 1 };
+      }
       st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0;
       st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(pressOk ? {} : { calme: true }) });
       return true;

@@ -4225,6 +4225,46 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le plein format à clés off (accroche+cfDirect false) rend 59/18 : L'HIER EXACT, la preuve
      du contrat d'identité sur le monde entier.
 
+140. **Lot 98 : LA FIXATION AVANT LE RENVERSEMENT + le gardien hors cadre (retour utilisateur
+     ×3 : « un joueur de l'équipe blanche invisible », « trop de changements d'aile — le
+     football fixe côté ballon d'abord », « la défense semble trop forte »).** L'INVISIBLE
+     D'ABORD, au banc playmode (le match complet piloté S.update, audits logiques 22 corps
+     toutes les 30 s + pixel-diff corps par corps) : AUCUN corps non rendu — mais le GARDIEN
+     du côté opposé au regard projetait à 1431 px pour un cadre de 1280 (fov 50) : HORS CHAMP
+     toute la 1re période (en 2e, camps échangés, il revient — « un joueur blanc invisible »
+     dit exactement ça). Le fix est du CADRAGE : fov full 50 → 54 (narrow 60), rail de régie
+     0,55 → 0,62 (Rondo.js) — au coup d'envoi les DEUX gardiens vivent dans le cadre (1189 px
+     et −14 : le délaissé sort ponctuellement du lag du regard), ballon profond le gardien du
+     côté du jeu est plein cadre (774 px mesuré). Et un blindage produit : Engine.resize
+     ignore 0×0 (l'onglet minimisé écrivait camera.aspect = NaN — DÉFINITIF faute de resize au
+     retour, l'écran mort). LE JEU OFFENSIF ensuite, sondé AVANT (6 × 220 s) : 12,3
+     renversements/match (réel 0,3-0,9) dont 30 % sans UNE passe du même côté, 57/96
+     possessions mortes au médian, surface 22 % — le diagnostic utilisateur au chiffre près.
+     TROIS lois : (1) LA FIXATION (st._fix — beginPass et la une-touche enregistrent les
+     passes conclues du même côté, l'axe central |z| < 4 prolonge, le turnover reset) : la
+     bascule lot 35 EXIGE n passes (possession 5 ↔ direct 3 via l'axe style ; le passeur
+     d'élite passSigma < 2° un temps plus tôt — l'attribut passing au poste de la vision),
+     une RESPIRATION d'équipe (renversement.respire 45 s, st._basculeAt) et une densité plus
+     dure (dense 5 → 6). (2) LA SURCHARGE CÔTÉ BALLON (formation, bloc.surcharge 0,2 ≤ surMax
+     6 m) : en possession les postes INTÉRIEURS (|fz| < 0,5) glissent vers le couloir ballon,
+     les LARGES tiennent (l'ailier faible = la sortie du renversement GAGNÉ ; l'arrière faible
+     rentre déjà) — modulée relation ×1,4 / largeur ×0,7 (blocFor, identité 0,5). (3) LA
+     FIXATION MÛRE OUVRE LA PROFONDEUR (renversement.ouvre 1,2) : ≥ 3 passes du même côté →
+     le service au coureur (lot 41) pèse plus — mesuré SANS elle, le dosage seul faisait
+     RECULER le jeu (tiers 42 → 37 %, fins basses 12 → 20) : la bascule libre était le
+     perce-bloc artificiel, le dividende de la fixation doit se rendre en PROFONDEUR. APRÈS
+     (mêmes graines) : 2 bascules/match à fixation moyenne 4,8, surface 26 %, une-deux 30 →
+     44, tirs 18,5 → 27 et buts 5 → 8 par 6 × 220 s. A/B FINAL 20 × 300 s : 92 tirs, 27 buts
+     ∈ [17 ; 33] ✓ (lot 97 : 85/19 — l'attaque respire, le vœu utilisateur). Calibrage :
+     ouvre 1,35 → 1,25 → 1,2 (35 puis 34 buts — la bande est un gate, deux crans). Clauses :
+     le renversement se GAGNE (débit + fix moyen ≥ 3), sabotage « bascules libres »
+     (fix:false dense 5 : le débit d'hier ≥ 2×), la surcharge en GÉOMÉTRIE PURE
+     (formationSpots ±clé, larges stables) ; verify-renversement : l'étau forge désormais sa
+     fixation (le patron du banc : l'état requis se construit), bornes re-fondées débit
+     [2 ; 16] → [1 ; 16] et axial 62 → 70 avec DETTE NOMMÉE : le jeu vit 69 % à |z| < 8 —
+     l'axe sur-vit encore (chantier largeur/circuits d'aile). sab76 13e application (fix:false
+     + bloc sans surcharge + dense 5). Empreintes rondo/réduit AU BIT.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

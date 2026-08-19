@@ -97,10 +97,28 @@ export function choosePass(st, cfg = RONDO) {
   // le direct sert la PROFONDEUR (le coureur d'abord). À 0,5 : les valeurs d'aujourd'hui,
   // EXACTEMENT (axe() au milieu exact — la leçon ulp de tactics). Rondo/réduit : st.full.
   const _sty = (cfg.renversement || cfg.appelBonus) && st.full ? tac(st, c.team).style : 0.5;
-  const _appelEff = (cfg.appelBonus ?? 0) * axe(_sty, 0.7, 1.3);
+  // …ET LA FIXATION MÛRE OUVRE LA PROFONDEUR (lot 98, renversement.ouvre) : le bloc attiré côté
+  // ballon (≥ 3 passes conclues) libère la course de rupture — le service du coureur (lot 41)
+  // pèse plus au barème. C'est le VRAI dividende de la fixation au football : la profondeur
+  // d'abord, l'aile opposée ensuite. Mesuré avant la loi : le dosage du renversement seul
+  // faisait RECULER le jeu (dernier tiers 42 → 37 %, fins basses 12 → 20). ouvre absent : 1.
+  const _fixMur = st.full && cfg.renversement && (st._fix?.team === c.team ? st._fix.n : 0) >= 3;
+  const _appelEff = (cfg.appelBonus ?? 0) * axe(_sty, 0.7, 1.3) * (_fixMur ? (cfg.renversement.ouvre ?? 1) : 1);
   // la DENSITÉ côté ballon, comptée une fois par appel : le bloc qui comprime est la
   // CONDITION du renversement (clé absente ou monde réduit : jamais dense, pas un bit)
-  const _dense = !!(cfg.renversement && st.full)
+  // …ET LA FIXATION D'ABORD (lot 98, renversement.fix — retour utilisateur « le football passe
+  // d'abord par les une-deux du même côté avant de changer : il faut fixer côté ballon ») :
+  // mesuré, 12,3 renversements / 220 s (réel 0,3-0,9), 30 % sans UNE passe du même côté. Le
+  // droit à la diagonale se GAGNE : n passes conclues du même côté (st._fix, beginPass) —
+  // possession 5 (elle déforme avant d'ouvrir), direct 3 (il joue vite) ; le grand passeur
+  // (passSigma < 2°) la voit un temps plus tôt ; et pas deux diagonales dans la même
+  // respiration (respire s d'équipe — à 20 s le monde rendait encore 5,3 bascules/220 s,
+  // réel 0,3-0,9). fix:false : les bascules libres d'hier, au bit près.
+  const _fixOK = cfg.renversement?.fix === false
+    || ((st._fix?.team === c.team ? st._fix.n : 0)
+        >= Math.max(1, Math.round(3 + axe(_sty, 2, 0)) - ((c.skill?.passSigma ?? 1) < 0.035 ? 1 : 0))
+      && (st._basculeAt?.[c.team] ?? -99) < st.t - (cfg.renversement?.respire ?? 20));
+  const _dense = !!(cfg.renversement && st.full) && _fixOK
     && foesL.filter((q) => q.down <= 0 && d2(q.p, origin) < (cfg.renversement.rayon ?? 12)).length
       >= (cfg.renversement.dense ?? 5) + axe(_sty, -1, 1);
   let best = null;

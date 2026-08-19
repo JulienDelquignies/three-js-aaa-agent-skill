@@ -329,7 +329,8 @@ export function strikeNow(st, c, cfg) {
       spd = Math.sqrt(Math.max(10, R) * 9.81 / Math.sin(2 * elev));
       sol.flightTime = 2 * spd * Math.sin(elev) / 9.81;
     }
-    st.events.push({ t: +st.t.toFixed(2), type: 'renversement', by: c.id, to: choice.to.id, dz: +Math.abs(lead[2] - from[2]).toFixed(1) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'renversement', by: c.id, to: choice.to.id, dz: +Math.abs(lead[2] - from[2]).toFixed(1), fix: st._fix?.team === c.team ? st._fix.n : 0 });
+    st._basculeAt = { ...(st._basculeAt ?? {}), [c.team]: st.t };  // la respiration (lot 98) : pas deux diagonales coup sur coup
   }
   // …le RÉPERTOIRE porte son effet (lot 39) : l'enroulée son Magnus signé (kind.rev ±8 — la
   // courbe RAMÈNE la mène décalée au vrai poteau), les frappes de cou-de-pied leur rotation
@@ -366,6 +367,16 @@ export function strikeNow(st, c, cfg) {
     if (off) st.pass.off = off;
   }
   st.lastPasser = c.id;
+  // LA FIXATION S'ENREGISTRE (lot 98, cfg.renversement && st.full) : les passes conclues du
+  // même côté nourrissent le DROIT au renversement (rondo.js l'exige — on ne renverse pas un
+  // bloc qu'on n'a pas déformé). L'axe central (|z| < 4) prolonge sans casser ; le côté
+  // opposé repart à 1 (cette passe fixe le nouveau côté) ; le turnover reset (team change).
+  if (cfg.renversement && st.full) {
+    const zSide = Math.abs(from[2]) < 4 ? 0 : Math.sign(from[2]);
+    const F = st._fix;
+    st._fix = F && F.team === c.team && (zSide === 0 || F.side === 0 || F.side === zSide)
+      ? { team: c.team, side: zSide || F.side, n: F.n + 1 } : { team: c.team, side: zSide, n: 1 };
+  }
   st.possession.carrier = -1;
   st.hold = 0; st.pressure = 0;
   const sit = situation(c.p, c.yaw, from, [0, 0, 0], from[1]);

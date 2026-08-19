@@ -65,6 +65,7 @@ export class Engine {
 
   resize() {
     const w = window.innerWidth, h = window.innerHeight;
+    if (!w || !h) return;      // onglet caché/minimisé : 0×0 écrirait aspect NaN — définitif faute de resize au retour
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);

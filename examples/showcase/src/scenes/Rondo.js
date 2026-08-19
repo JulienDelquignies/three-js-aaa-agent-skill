@@ -451,7 +451,10 @@ export class Rondo {
     // du béton (écran noir mesuré). Passerelle haute, plongée douce, tout le terrain dans le cadre.
     const back = this.fullMode ? (narrow ? 42 : 47)
       : this.matchMode ? (narrow ? 17 : 20) : 19 - (5 - this.perTeam) * 1.6 - (narrow ? 3.5 : 0);
-    cam.fov = this.matchMode ? (narrow ? 56 : 50) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
+    // fov full 50 → 54 (retour utilisateur « un joueur blanc invisible » : mesuré, le gardien du
+    // côté opposé au regard projetait à 1431 px pour un cadre de 1280 — TOUTE la 1re période hors
+    // champ ; à 54° les deux gardiens vivent dans le cadre au coup d'envoi, corps ~7 % plus petits)
+    cam.fov = this.fullMode ? (narrow ? 60 : 54) : this.matchMode ? (narrow ? 56 : 50) : (narrow ? 34 : 30); cam.updateProjectionMatrix();
     cam.position.set(0, this.fullMode ? 40 : this.matchMode ? 19 : 8.5 - (narrow ? 1.2 : 0), -back);
     this._camBack = back; this._camH = cam.position.y;
     cam.lookAt(0, 1, 0);
@@ -786,7 +789,9 @@ export class Rondo {
     this._look.x += (b[0] - this._look.x) * Math.min(1, dt * 2.4);      // lag
     this._look.z += (b[2] - this._look.z) * Math.min(1, dt * 2.4);
     this._look.y += (1 - this._look.y) * Math.min(1, dt * 3);
-    const px = this.cam.position.x + (targetX * 0.55 - this.cam.position.x) * Math.min(1, dt * 1.5);
+    // le rail suit plus loin en full (0,62) : à 0,55 le gardien du côté du jeu restait au bord/hors
+    // cadre même ballon dans le dernier tiers (retour utilisateur — le 11e homme jamais montré)
+    const px = this.cam.position.x + (targetX * (this.fullMode ? 0.62 : 0.55) - this.cam.position.x) * Math.min(1, dt * 1.5);
     // LE RAIL DE RÉGIE (lot 80b — « joueurs invisibles » : plongée ~79° au zénith, têtes de
     // 4 px). Ni reculer (60 → 27 fps mesurés), ni z fixe (le TOIT de la tribune bouche le cadre
     // dès y<31). La régie DESCEND ET AVANCE sur un rail 50 cm devant l'arête du toit :

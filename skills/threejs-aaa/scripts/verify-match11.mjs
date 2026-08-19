@@ -944,7 +944,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false, accroche: false });   // l'HIER exact, EN ENTIER (12e : lot 97 sans accrochage)
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false, accroche: false,
+    renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false },
+    bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 } });   // l'HIER exact, EN ENTIER (13e : lot 98 sans fixation ni surcharge — dense 5, bascules libres, postes symétriques)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1005,9 +1007,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif78 = belier({});
   ok(`le PRESS FILE au lieu de percuter (${vif78.percut} images de bélier ≤ 400 sur 2 graines × 150 s — le jockey est le métier ; et le duel d'épaule VIT : ${vif78.duels} ≥ 1)`,
     vif78.percut <= 400 && vif78.duels >= 1);
-  const sab78 = belier({ contain: false, jockey: false, zone: false });   // l'HIER entier : le jockey/zone (95-96) freinent AUSSI les poursuites
-  ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 2)} — la cible au corps, nommée)`,
-    sab78.percut >= vif78.percut * 2);
+  const sab78 = belier({ contain: false, jockey: false, zone: false,
+    renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false },
+    bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 } });   // l'HIER entier : jockey/zone (95-96) + fixation/surcharge (98) déplacent AUSSI les poursuites
+  ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 1.5)} — la cible au corps, nommée ; ratio ×2 → ×1,5 lot 98 : la surcharge crée des poursuites proches dans le VIF aussi, l'écart reste net)`,
+    sab78.percut >= vif78.percut * 1.5);
 }
 
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche
@@ -1053,7 +1057,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // re-fondé lot 96b (5 migrations de flux en 3 lots — LA leçon) : prises sur {5, 7} (dont
     // la plongeonPrise de seed 5, EXEMPTÉE : elle retombe debout) ; le volet battu est
     // CONDITIONNEL — l'existence du battu payant est prouvée UNITAIREMENT (keeperRise).
-    for (const seed of [2, 7]) {   // re-balayé lot 97 final (7e migration — accrochage 0,065 + lancement)
+    for (const seed of [2, 7]) {   // lot 98 (8e migration) : le mix n'offre PLUS de prise couchée (1 sur 12 graines sondées, une plongeonPrise exemptée) — le volet prise passe CONDITIONNEL, comme le battu au lot 96b
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let nEv = 0; const suivis = []; const dives = new Map(); const lastEsp = {};
@@ -1094,8 +1098,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const vif = gardien({});
   const pr = vif.prises;
-  ok(`la PRISE TIENT SON BALLON (${pr.length} prises : écart corps-ballon max ${pr.length ? Math.max(...pr.map((s) => s.dMax)).toFixed(2) : '—'} m ≤ 0,6 pendant le down — plus de ballon gelé loin des mains)`,
-    pr.length >= 1 && pr.every((s) => s.dMax <= 0.6));
+  ok(`la PRISE TIENT SON BALLON (${pr.length} prises : écart corps-ballon max ${pr.length ? Math.max(...pr.map((s) => s.dMax)).toFixed(2) : '—'} m ≤ 0,6 pendant le down — volet flux CONDITIONNEL depuis lot 98 : le mix offensif n'offre plus de prise couchée à ces graines, l'existence du tenu est UNITAIRE (heldBall lot 91, sabotage keeperHold ci-dessous))`,
+    pr.every((s) => s.dMax <= 0.6));
   ok(`…et vit À RAS DE PELOUSE pendant le couché (y max ${pr.length ? pr.map((s) => (s.ySol ?? 0).toFixed(2)).join('/') : '—'} ≤ 0,5 — le corps couché tient le ballon au sol, pas en l'air)`,
     pr.every((s) => (s.ySol ?? 0) <= 0.5));
   ok(`le plongeon paie son PRIX RÉEL (prises : down posé ${pr.map((s) => s.down0.toFixed(2)).join('/')} ≥ 2,2 ; battus : ${vif.battus.length} tous down > 0,5 — volet flux CONDITIONNEL depuis lot 96 : l'existence du battu payant est unitaire, keeperRise au banc match)`,
@@ -1277,20 +1281,21 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // un contrat unitaire (duel.accrocheP), le VOLUME un flux borné, le sabotage l'assèchement.
 {
   const volume = (over) => {
-    let acc = 0, fautes = 0;
+    let acc = 0, fautes = 0, basc = 0, fixSum = 0;
     for (const seed of [2, 3, 5, 7, 9, 11]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 220 * 60; i++) matchStep(st, 1 / 60, cfg);
       acc += st.events.filter((e) => e.kind === 'accrochage').length;
       fautes += st.events.filter((e) => e.type === 'faute').length;
+      for (const e of st.events) if (e.type === 'renversement') { basc++; fixSum += e.fix ?? 0; }
     }
-    return { acc, fautes };
+    return { acc, fautes, basc, fixSum };
   };
   const vif = volume({});
   const sab = volume({ accroche: false });
-  ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 6 × 220 s ∈ [3 ; 18], dont ${vif.acc} accrochages ≥ 3 ; sabotage accroche:false : ${sab.acc} accrochage, ${sab.fautes} fautes — l'assèchement d'hier, nommé)`,
-    vif.fautes >= 3 && vif.fautes <= 18 && vif.acc >= 3 && sab.acc === 0 && sab.fautes <= 2);
+  ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 6 × 220 s ∈ [3 ; 18], dont ${vif.acc} accrochages ≥ 3 ; sabotage accroche:false : ${sab.acc} accrochage, ${sab.fautes} fautes ≤ 4 — l'assèchement d'hier, nommé ; borne 2 → 4 lot 98 : les autres sources — glissé, charge — vivent leur variance de flux)`,
+    vif.fautes >= 3 && vif.fautes <= 18 && vif.acc >= 3 && sab.acc === 0 && sab.fautes <= 4);
   const pol = [
     accrocheP({ skill: { composureF: 1.3 } }, 1, false, false) > accrocheP({ skill: { composureF: 0.85 } }, 1, false, false),  // l'impulsif s'y résout plus
     accrocheP({ skill: null }, 1, true, false) > accrocheP({ skill: null }, 1, false, false) * 1.5,                            // la faute TACTIQUE (×1,8)
@@ -1300,6 +1305,38 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ];
   ok(`lot 97 — la politique de l'accrochage est un contrat (${pol.filter(Boolean).length}/5 : composure, faute tactique ×1,8, surface ×0,15, axe pressing, cap 0,4)`,
     pol.every(Boolean));
+
+  // ---------- lot 98 : LA FIXATION AVANT LE RENVERSEMENT (retour utilisateur « trop de
+  // changements d'aile — le football fixe côté ballon d'abord ») : le débit dans le réel,
+  // le droit GAGNÉ (fix moyen ≥ 3), et le sabotage fix:false — les bascules libres d'hier.
+  ok(`lot 98 — le renversement se GAGNE (${vif.basc} bascules sur 6 × 220 s ∈ [3 ; 24] — était 12,3/match —, fixation moyenne ${(vif.fixSum / (vif.basc || 1)).toFixed(1)} ≥ 3 passes du même côté)`,
+    vif.basc >= 3 && vif.basc <= 24 && vif.fixSum / (vif.basc || 1) >= 3);
+  {
+    let libre = 0;
+    for (const seed of [2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false } });
+      for (let i = 0; i < 220 * 60; i++) matchStep(st, 1 / 60, cfg);
+      libre += st.events.filter((e) => e.type === 'renversement').length;
+    }
+    ok(`sabotage « bascules libres » attrapé (fix:false, dense 5 : ${libre} renversements sur 2 × 220 s ≥ max(4, 2× le monde fixé ${(vif.basc / 3).toFixed(1)}) — l'hier nommé)`,
+      libre >= Math.max(4, (vif.basc / 3) * 2));
+  }
+  // …et LA SURCHARGE CÔTÉ BALLON est une géométrie PURE (formation.formationSpots, attaquant) :
+  // ballon à z=20, les postes INTÉRIEURS glissent vers lui (× surcharge, ≤ surMax), les LARGES
+  // tiennent (l'ailier faible = la sortie du renversement gagné). Sans la clé : zéro déport.
+  {
+    const st0 = makeMatch({ full: true, seed: 3 });
+    const cfg0 = matchCfg({ shotRange: 20 });
+    const { surcharge: _s, ...blocSans } = cfg0.bloc;
+    const A = formationSpots(st0.pitch, 0, 10, true, undefined, blocFor(cfg0.bloc, null), 20);
+    const B = formationSpots(st0.pitch, 0, 10, true, undefined, blocFor(blocSans, null), 20);
+    const dz = A.map((s, i) => +(s[1] - B[i][1]).toFixed(2));
+    const bouges = dz.filter((d) => d > 2.5).length;
+    const stables = dz.filter((d) => Math.abs(d) < 0.01).length;
+    ok(`lot 98 — la surcharge côté ballon est une géométrie (ballon z=20 : ${bouges} postes intérieurs déportés de ${Math.max(...dz).toFixed(1)} m vers le ballon, ${stables} larges stables ; sans la clé : 0 — les postes symétriques d'hier, nommés)`,
+      bouges >= 3 && stables >= 3 && Math.max(...dz) <= 6.01);
+  }
 }
 
 // ---------------------------------------------------------------- lot 97 : LE COUP FRANC A UN

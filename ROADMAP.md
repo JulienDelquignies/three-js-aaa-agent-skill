@@ -49,7 +49,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 140.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 141.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -121,9 +121,20 @@
    lob dans la boîte, la conversion sort de la physique). A/B 85 tirs/19 buts ∈ bande, 20
    fautes/20 matchs. Charges d'épaule : toutes à distance de jeu (pas de loi — on ne légifère
    pas le vide). Clés cfg.accroche + cfg.cfDirect, sab76 12e. Dette : photo Loi 11 du lancement.
-8. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
+8. ~~**LE JEU OFFENSIF : FIXER AVANT DE RENVERSER (lot 98, retour utilisateur ×3)**~~ —
+   **LIVRÉ** (note 140) : le GARDIEN HORS CADRE (« un joueur blanc invisible » : projeté à
+   1431 px pour 1280 toute une période) → fov full 54 + rail 0,62 + resize 0×0 blindé (aspect
+   NaN définitif) ; LA FIXATION (st._fix : la bascule exige n passes du même côté — 5
+   possession ↔ 3 direct, passeur d'élite −1 —, respiration 45 s, densité 6) ; LA SURCHARGE
+   côté ballon (postes intérieurs vers le couloir ballon, ≤ 6 m, relation/largeur) ; LA
+   FIXATION MÛRE OUVRE LA PROFONDEUR (ouvre 1,2 sur le service du coureur — mesuré : sans
+   elle le dosage fait reculer le jeu). 12,3 → 2 bascules/match (fix moyen 4,8), surface 22 →
+   26 %, A/B 92 tirs/27 buts ∈ bande (l'attaque 19 → 27). Dette nommée : l'axe sur-vit
+   (69 % à |z| < 8 — chantier largeur/circuits d'aile). sab76 13e.
+9. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
    la patte) ; re-fonder les 4 clauses de flux pour activer l'écartement en continu ;
-   réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
+   réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2) ; la largeur
+   offensive (l'axe sur-vit — dette lot 98).
 
 ## Backlog long terme (inchangé)
 Corners travaillés, gardien relanceur avancé, formations 442/352

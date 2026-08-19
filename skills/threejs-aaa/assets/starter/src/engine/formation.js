@@ -124,6 +124,16 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     // `rentre` absent : le latéral abandonné d'hier, au bit près (sabotage nommé).
     const lgD = (LIGNES[name] ?? LIGNES[433])[0];
     const wFar = bloc.rentre != null ? Math.max(0, Math.min(1, (Math.abs(anchorZ) - 6) / 8)) : 0;
+    // LA SURCHARGE CÔTÉ BALLON (lot 98, bloc.surcharge — retour utilisateur « il faut fixer du
+    // côté ballon » : mesuré, 57 possessions sur 96 meurent au médian, offre courte p50 2).
+    // Le vrai football EN possession SURNOMBRE le côté ballon : les postes INTÉRIEURS
+    // (|fz| < 0,5 — relayeurs, pointe axiale) glissent vers le couloir du ballon (≤ surMax) ;
+    // les LARGES tiennent leur rôle structurel — l'ailier côté ballon EST déjà le couloir,
+    // l'ailier faible garde la largeur (la sortie du renversement GAGNÉ, lot 98a ; l'arrière
+    // faible rentre déjà par `rentre`). L'axe relation surcharge plus (les triangles), l'axe
+    // largeur moins (l'amplitude d'abord) — via blocFor. Absent : les postes d'hier, au bit.
+    const zSur = bloc.surcharge != null
+      ? Math.max(-(bloc.surMax ?? 6), Math.min(bloc.surMax ?? 6, anchorZ * bloc.surcharge)) : 0;
     for (let i = 0; i < F.length; i++) {
       const [f, fz] = F[i];
       const rentre = i < lgD && Math.abs(fz) >= 0.5 && fz * anchorZ < 0 ? wFar : 0;
@@ -133,7 +143,8 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
       // transitoire monte à 4-6 % (borne re-fondée), c'est le prix du bloc haut du vrai
       // football, pas du camping injouable.
       const fx = Math.max(0.04, Math.min(0.96, ligneF + (f - fMin) * stretch + rentre * (bloc.rentre ?? 9) / L));
-      emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 * (1 - 0.5 * rentre))));
+      const sur = Math.abs(fz) < 0.5 ? zSur : 0;                  // les intérieurs convergent, les larges tiennent
+      emit(i, g.x + sgn * fx * L, Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, fz * pitch.hz * 0.92 * (1 - 0.5 * rentre) + sur)));
     }
     res.length = F.length;
     return res;
@@ -166,6 +177,9 @@ export function blocFor(bloc, tq, zone = false) {
     // la PINCE du côté faible (lot 96) ne vit que sous cfg.zone (le call-site la gate) —
     // l'axe marquage : la zone pince fort (0,62), l'homme-à-homme tient sa craie (1,0)
     ...(zone ? { pince: ax(tq?.marquage, 0.62, 1.0) } : {}),
+    // la SURCHARGE côté ballon (lot 98) : le jeu de relation surnombre (×1,4), l'équipe
+    // d'amplitude garde ses postes (×0,7) — à 0,5/0,5 : la base exactement
+    ...(bloc.surcharge != null ? { surcharge: bloc.surcharge * ax(tq?.relation, 0.6, 1.4) * ax(tq?.largeur, 1.3, 0.7) } : {}),
   };
 }
 

@@ -90,8 +90,14 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // une-touche AU CALME, portée par la porte déterministe de style (pCalme = 0 à style ≥ 0,5 —
   // le direct n'en joue JAMAIS par construction, verify-tactics tient la porte). Un flux ne
   // peut plus morpher un zéro structurel.
-  ok(`la SIGNATURE des circuits (4 graines × 180 s : possession ${poss.utCalme} une-touche AU CALME ≥ 5, direct ${direct.utCalme} = 0 par construction — le tiki-taka est un choix ; et le renversement VIT partout : poss ${poss.renv} ≥ 3, direct ${direct.renv} ≥ 3)`,
-    poss.utCalme >= 5 && direct.utCalme === 0 && poss.renv >= 3 && direct.renv >= 3);
+  // …5e vie (lot 98 — la FIXATION) : la bascule se GAGNE (n passes du même côté, respiration
+  // 45 s, densité 6±1 au style) — le débit neutre tombe de 12 à ~2/match, et le DIRECT ne
+  // renverse plus par construction (densité requise 7, fixation 3 sur un jeu vertical) : son
+  // arme est la PROFONDEUR (lot 41 — le service du coureur, jugé à la clause suivante), pas
+  // le jeu en U. Le renversement reste le dialecte de la POSSESSION (existence ≥ 1 par style
+  // qui le parle : possession + neutre) — c'est le vrai football, pas un vocabulaire perdu.
+  ok(`la SIGNATURE des circuits (4 graines × 180 s : possession ${poss.utCalme} une-touche AU CALME ≥ 5, direct ${direct.utCalme} = 0 par construction — le tiki-taka est un choix ; et le renversement GAGNÉ vit chez qui le parle : poss ${poss.renv} + neutre ${neutre.renv} ≥ 2, direct ${direct.renv} informatif — il verticalise)`,
+    poss.utCalme >= 5 && direct.utCalme === 0 && poss.renv + neutre.renv >= 2);
   ok(`le SERVICE du coureur VIT dans tous les mondes (neutre ${neutre.servis} + possession ${poss.servis} + direct ${direct.servis} = ${neutre.servis + poss.servis + direct.servis} ≥ 3 — était 0 partout : les portes d'engagement mangeaient la fenêtre)`,
     neutre.servis + poss.servis + direct.servis >= 3);
   // ---------- 3b. LA FOULÉE EST SERVIE (lot 41) : l'appel s'exécute en URGENCE — le ballon part

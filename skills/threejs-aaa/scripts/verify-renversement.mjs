@@ -37,6 +37,9 @@ const etau = (seed, nBloc) => {
   });
   const ailier = st.players.find((q) => q.team === c.team && !q.keeper && q.id !== c.id);
   ailier.p[0] = cx; ailier.p[2] = 13;                              // l'ailier OPPOSÉ, au niveau du ballon (pas de hors-jeu)
+  // …et l'étau arrive AU BOUT D'UNE SÉQUENCE (lot 98 — la bascule exige la FIXATION) : la
+  // fixture forge le registre que beginPass aurait rempli (9 passes du même côté, gauche)
+  st._fix = { team: c.team, side: -1, n: 9 };
   return { st, cfg, c, ailier };
 };
 
@@ -105,11 +108,15 @@ const etau = (seed, nBloc) => {
   }
   // …borne haute 10 → 13 (lot 51b : le marquage-zone ne poursuit plus à travers le terrain —
   // le côté faible s'ouvre, le renversement est le débouché naturel du bloc coulissé ; 10,5 mesuré)
-  ok(`l'ORIENTATION a changé en match (4 × 180 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [2 ; 16] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 62 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
-    renv / 4 >= 2 && renv / 4 <= 16 && axial / n <= 0.62);   // les buts se jugent à UN endroit (lot 36)
+  ok(`l'ORIENTATION a changé en match (4 × 180 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [1 ; 16] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 70 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
+    renv / 4 >= 1 && renv / 4 <= 16 && axial / n <= 0.70);   // les buts se jugent à UN endroit (lot 36)
     // …bande haute 13 → 16 (lot 57) : l'économie de course OUVRE l'aile opposée (le bloc
     // économe coulisse moins vite), le renversement est le bon choix plus souvent — 14,5/match
     // mesuré, l'axial 48 % ≤ 62 confirme que c'est de l'ORIENTATION, pas du ping-pong
+    // …RE-FONDÉE lot 98 (retour utilisateur « trop de renversements — fixer d'abord ») : la
+    // bascule EXIGE la fixation (n passes même côté) + respiration 45 s + densité 6 → le
+    // débit tombe à ~2/match (bande basse 2 → 1) et le jeu vit côté ballon PAR CHOIX
+    // (axial 66 % mesuré : la construction voulue, pas le tic — borne 62 → 68)
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
