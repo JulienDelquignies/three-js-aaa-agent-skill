@@ -48,8 +48,8 @@
   + une clé du lot grepable dans le chunk minifié.
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
-- NOTES.md : journal complet (notes 1-133) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 135.
+- NOTES.md : journal complet (notes 1-135) — insérer avant le marqueur
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 136.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -90,12 +90,11 @@
    (muteD 10, plancher 0,32), le muet rend le cap (wGoal ×0,25 + evadeSpot ×0,15, rayon
    muteD × composureF), _takeP persistant entre touches. Requalifié : porter dans l'espace
    LIBRE est sain — résiduel = espace fermé (esp < 6), métrique pour un futur lot.
-3. **LES ANIMATIONS DIFFÉRENCIÉES (lot 93, scène/animkit)** — les contrats d'events sont posés
-   (lot 90 : arrêt {mode, mains, cote, aerienne}, shot {kind, z}) : frappePuissante (élan
-   ample), frappeEnroulée (l'intérieur enveloppe), frappePointu ; parade1main/parade2mains/
-   priseAérienne/paradeBuste (à créer aussi côté sim : blocage poitrine)/paradePieds (mode sim
-   existant). La bibliothèque est procédurale (authored en code, vérifiable par checkMove
-   et screenshot). La partie du corps touchée = TOUJOURS la géométrie, jamais l'aléatoire.
+3. ~~**LES ANIMATIONS DIFFÉRENCIÉES (lot 93)**~~ — **LIVRÉ** (note 135) : 7 clips authored
+   (frappePuissante/Enroulee/Pointu ; plongeonUneMain, plongeonPrise — ferme la dette du
+   premier contact aérien du lot 91 —, paradePieds, paradeBuste), clés gesteTir + parades,
+   busteBlock sim (keeper.js, prouvé unitaire, rare en flux), scène joue les arrêts nommés.
+   Le kind→clip au PLAN seulement : l'urgence improvise (10/17 tirs d'espèce au banc).
 4. **LA DISCIPLINE DÉFENSIVE (lot 94, sim)** — « la défense se jette en permanence » : la
    décision de tacle par la COMPOSURE (le discipliné jockey, l'impulsif plonge), le rôle
    module. Mesurer d'abord : tacles tentés là où le contain suffisait.

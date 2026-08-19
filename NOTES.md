@@ -4042,6 +4042,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      réaliste ; avant : 54 tirs), rondo/réduit AU BIT (c775c81e62592d4d / d1c0c1171e6f876c à
      l'ancien instrument — aucun champ d'event nouveau au lot).
 
+135. **Lot 93 : LES ANIMATIONS DIFFÉRENCIÉES (sim + animkit + scène) — le tir s'habille de SON
+     espèce, la parade de SA géométrie.** Mesuré avant (probe-93, 4 matchs ×2 jeux) : 13/16 tirs
+     DESSINÉS en passeRapide/passePivot — la frappe de 21 m/s avec l'armé d'une petite passe
+     pressée (le « manque de peps » vu à l'écran) ; plongeons sans variantes de bras ; 0 candidat
+     buste. SEPT CLIPS procéduraux authored (bornes checkClip : jambes ≤ 30 rad/s, bras ≤ 14 ;
+     miroirs sains — animkit 110/110) : frappePuissante (1,0 s/0,45 — l'élan AMPLE, cuisse −38,
+     buste −20, overshoot 88), frappeEnroulee (0,9/0,38 — l'intérieur ENVELOPPE, adduction z,
+     hanches qui tournent, traversée croisée), frappePointu (0,5/0,18 — SANS élan lisible),
+     plongeonUneMain (le bras du dessus seul tendu, +0,15 m, l'autre replié — root 1,5 m),
+     plongeonPrise (détente VERTICALE, l'ÉPAULE MONTE, bras au-dessus de la tête AVANT le
+     contact — ferme la dette du premier contact aérien ~0,96 m du lot 91 ; retombe SUR SES
+     APPUIS : down 0,5, pas de gk.rise), paradePieds, paradeBuste. DEUX CLÉS : (a) gesteTir
+     (strike-sim beginPass, plan seulement — l'URGENCE improvise, son contrat d'hier) :
+     kind→clip (puissance/lucarne → frappePuissante ; enroulée/placé/croisé → frappeEnroulee ;
+     pointu/piqué → frappePointu ; tendues → frappe), rangées TECHNIQUES intent 'shot'
+     (invisibles au filtre des passes), STANCES propres ; (b) parades (match-sim, l'espèce à la
+     GÉOMÉTRIE PRÉDITE : y ≥ 1,35 → plongeonPrise ; reach > 1,35 → plongeonUneMain ; windup
+     nomme mains 1|2) + busteBlock (keeper.js, appelé par receive : tir dans le corps ≥ busteV 12
+     à hauteur poitrine → le buste ENCAISSE, rebond ×0,55 inversé, arrêt {mode:'buste'} — prouvé
+     UNITAIRE ; 0 occurrence en flux mesurée : une loi de répertoire honnête, rare comme au
+     réel) ; la scène joue paradePieds/paradeBuste sur l'arrêt nommé (contrat lot 90 : la sim
+     dit le QUOI). RÉPARÉ en chemin : checkMatch jugeait la portée à la borne d'HIER (la zone
+     grise du lot 92 n'était pas dans le contrat — démasqué par le nouveau flux, 22,2 m > 20).
+     RE-FONDATIONS de banc : graines gardien {2,6,7} → {2,6,9} (balayé 18), le BATTU se mesure À
+     LA PURGE passé 1,4 s (le battu paie à la FIN du geste — lot 91 ; le but qui suit purgeait
+     tous les battus « propres »), exemption plongeonPrise du contrat « prix du plongeon »,
+     sab76 8e application (gesteTir/parades:false). Mesure après : puissance → frappePuissante
+     6/6, 10/17 tirs d'espèce au banc (le reste = urgence, improvisation légitime), les 3
+     espèces de plongeon VUES en flux. Batterie verte (match11 75 dont 3 clauses lot 93 +
+     sabotage « les gestes d'hier », animkit 110, 84+40+88+14+11+14+8+9+33+15+9+52), A/B
+     20 × 300 s : 67 tirs / 20 buts (bande 17-33 ✓), rondo/réduit AU BIT (c775c81e62592d4d /
+     d1c0c1171e6f876c — tout le lot est gated st.full).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

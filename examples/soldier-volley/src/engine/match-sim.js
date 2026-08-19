@@ -38,21 +38,17 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   if (full && perTeam === 5) perTeam = 10;
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
   st.full = pitch.dims.length > 60;
-  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : toujours résolue — absente, c'est « équilibre »
-  // (0,5 partout = l'IDENTITÉ : chaque axe module autour des constantes mesurées des lots
-  // 10-14, le monde d'aujourd'hui au bit près). makeMatch({ tactics: ['gegenpressing',
-  // 'blocBas'] }) ou objets partiels — le contrat d'injection de l'écran tactique aval.
+  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : toujours résolue — absente = « équilibre » (0,5 partout,
+  // l'IDENTITÉ au bit près). makeMatch({ tactics: ['gegenpressing', 'blocBas'] }) ou objets partiels.
   st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
   for (const team of [0, 1]) {
     st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; });
   }
-  // LES RÔLES PAR POSTE (roles.js) : makeMatch({ roles: [{ 8: 'neufDeSurface', 5: 'meneur' },
-  // {…équipe 1}] }) — clé = numéro de poste, valeur = nom ou objet partiel. APRÈS l'assignation
-  // des postes (la première version lisait q.post avant qu'il existe : six sondes bit-identiques,
-  // zéro rôle posé — attrapé à la mesure). Aucun rôle posé : polyvalent, pas un bit ne bouge.
-  // …fusion PRESET < EXPLICITE (lot 20) : la tactique amène ses hommes (gegenpressing → son
-  // récupérateur), les rôles passés à makeMatch gagnent poste par poste. Vide : personne.
+  // LES RÔLES PAR POSTE (roles.js) : makeMatch({ roles: [{ 8: 'neufDeSurface' }, {…éq. 1}] }) —
+  // clé = poste, valeur = nom/objet partiel. APRÈS l'assignation des postes (la v1 lisait q.post
+  // avant qu'il existe — attrapé à la mesure). Aucun rôle : polyvalent, pas un bit ne bouge.
+  // Fusion PRESET < EXPLICITE (lot 20) : la tactique amène ses hommes, l'explicite gagne.
   for (const team of [0, 1]) {
     const spec = { ...(st.tactics[team].roles ?? {}), ...(roles?.[team] ?? {}) };
     for (const q of st.players.filter((q) => q.team === team)) {
@@ -145,11 +141,9 @@ function assignMatchJobs(st, cfg) {
     }
   }
 
-  // UN VOL MORT EST UN BALLON LIBRE (cfg.deadFlight, 11c11) : la passe s'est arrêtée au sol
-  // avant son receveur — personne ne « reçoit » un ballon immobile à 0,6 m du pied. La phase
-  // bascule en 'loose' après ~0,3 s d'agonie (pas un rebond : une mort), et la chasse des deux
-  // camps reprend ses droits. st.pass SURVIT : la photo de la Loi 11 juge le PREMIER TOUCHER,
-  // même d'un ballon mort — le hors-jeu qui ramasse une passe morte est toujours hors-jeu.
+  // UN VOL MORT EST UN BALLON LIBRE (cfg.deadFlight, 11c11) : la passe morte au sol bascule en
+  // 'loose' (~0,3 s d'agonie) et la chasse reprend. st.pass SURVIT : la photo de la Loi 11 juge
+  // le PREMIER TOUCHER même d'un ballon mort — ramasser une passe morte hors-jeu reste hors-jeu.
   if (cfg.deadFlight && st.full && st.phase === 'flight' && st.ball.owner == null
     && st.ball.p[1] < 0.25 && Math.hypot(st.ball.v[0], st.ball.v[2]) < cfg.deadFlight) {
     st._deadFlightN = (st._deadFlightN ?? 0) + 1;
@@ -160,9 +154,8 @@ function assignMatchJobs(st, cfg) {
     }
   } else st._deadFlightN = 0;
 
-  // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : mémoriser QUI vient de perdre son ballon — le
-  // label passe à l'adversaire ou au sol, le corps est debout. La fenêtre s'applique tout en
-  // bas, PAR-DESSUS les postes (un contre-press est un réflexe, pas un poste).
+  // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : mémoriser QUI vient de perdre son ballon — la
+  // fenêtre s'applique tout en bas, PAR-DESSUS les postes (le contre-press est un réflexe).
   if (cfg.lossReact) {
     const cNow = st.possession.carrier;
     const prev = st._pcar ?? -1;
@@ -209,11 +202,9 @@ function assignMatchJobs(st, cfg) {
         const to = p._sub?.phase === 'in' ? p._sub.entry : p._exit;
         p.job = 'walk'; p.target = [to[0], 0, to[1]]; continue;
       }
-      // APRÈS UN BUT, ON REVIENT EN MARCHANT : les deux équipes rejoignent leur formation
-      // d'engagement pendant que le preneur sort le ballon du filet (placeKickoff écrivait les
-      // douze corps — jusqu'à 20 m en une image, mesuré à la sonde des téléports)
-      // UNE REMISE EST UNE RESPIRATION : tout le monde MARCHE (bucket walk 2,6 m/s) — on revenait
-      // en trottinant à 4,9-5,6 et les corps travaillaient à 10,5 km/h sur la mi-temps
+      // APRÈS UN BUT, ON REVIENT EN MARCHANT vers la formation d'engagement (placeKickoff
+      // écrivait les douze corps — 20 m en une image, sonde des téléports). UNE REMISE EST UNE
+      // RESPIRATION : tout le monde MARCHE (2,6 m/s) — on revenait en trottinant à 4,9-5,6.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) { p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]]; continue; }
       if (p.keeper) {
         // …le gardien de la LIGNE (Loi 14) : SUR sa ligne, entre les poteaux, jusqu'à la frappe —
@@ -390,10 +381,14 @@ function assignMatchJobs(st, cfg) {
       cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
     if (dec.mode === 'dive' && gk.down <= 0) {
       const cross = dec.cross;
-      // L'ESPÈCE DU PLONGEON SUIT LA HAUTEUR PRÉDITE (cross.y) : un ballon au ras se plonge BAS
-      // (hanches au sol, bras rasants — plongeonBas), un ballon levé se plonge en DÉTENTE
-      // (l'aérien). Le clip unique aérien laissait l'épaule à 1,2 m sur les rase-mottes.
-      const espece = (cross.y ?? 0) < 0.85 ? 'plongeonBas' : 'plongeon';
+      // L'ESPÈCE DE LA PARADE (lot 93, cfg.parades && st.full) : la GÉOMÉTRIE PRÉDITE choisit —
+      // haut (≥ 1,35) → plongeonPrise (détente verticale, épaule qui monte, retombe SUR SES APPUIS) ;
+      // ras (< 0,85) → plongeonBas ; loin (> 1,35 m) → plongeonUneMain (le bout de gants) ; sinon
+      // le plongeon à deux mains. Hier (clé/format éteints) : bas/aérien seulement, au bit près.
+      const par93 = st.full && cfg.parades !== false;
+      const espece = par93 && (cross.y ?? 0) >= 1.35 ? 'plongeonPrise'
+        : (cross.y ?? 0) < 0.85 ? 'plongeonBas'
+        : par93 && Math.abs(cross.z - gk.p[2]) > 1.35 ? 'plongeonUneMain' : 'plongeon';
       const move = { id: espece, duration: MOVES[espece].duration, contact: MOVES[espece].contact };
       const lunge = [(pitch.ownGoal(gk.team).x - gk.p[0]) * 0.2, cross.z - gk.p[2]];
       const L = Math.hypot(lunge[0], lunge[1]) || 1;
@@ -417,8 +412,8 @@ function assignMatchJobs(st, cfg) {
       // le contrat du relevé (gk.rise) se stampe DÈS LE DÉPART : la queue du clip attend le
       // down, qui n'arrive qu'à la FIN du geste pour un battu (mesuré sans ça : 2 453°/s — le
       // clip jouait son relevé pendant l'acte puis le down le claquait au sol en une image)
-      if (st.full && cfg.keeperRise !== false) { const R = keeperRise(gk.skill?.getupF ?? 1, true); gk.rise = { ground: R.ground, getup: R.getup }; }
-      st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact });
+      if (st.full && cfg.keeperRise !== false && espece !== 'plongeonPrise') { const R = keeperRise(gk.skill?.getupF ?? 1, true); gk.rise = { ground: R.ground, getup: R.getup }; }
+      st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact, ...(par93 ? { mains: espece === 'plongeonUneMain' ? 1 : 2 } : {}) });
       st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2) });
       continue;
     }
@@ -1068,7 +1063,10 @@ function onDive(st, gk, cfg) {
   const closing = d < pd - 1e-4;
   if (gk.act?.payload) gk.act.payload._pd = d;
   if (closing && d > 0.35) return false;
-  riseDown(st, gk, cfg, true);
+  // …la détente de prise (plongeonPrise, lot 93) retombe SUR SES APPUIS : le prix est un temps
+  // d'atterrissage, pas un couché + relevé — gk.rise n'existe pas sur cette espèce.
+  if (gk.act?.id === 'plongeonPrise') gk.down = Math.max(gk.down, 0.5);
+  else riseDown(st, gk, cfg, true);
   if (d <= 1.1 && y <= 1.9) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
@@ -1183,7 +1181,8 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   const denied = (st.deny?.['tir-couloir-fermé'] ?? 0) > 0;
   if (!shots.length && !denied && thirdVisits > 25) issues.push(`PERSONNE NE TIRE malgré ${thirdVisits} passages dans le dernier tiers — un rondo décoré`);
   for (const s of shots) {
-    if (s.range > cfg.shotRange + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
+    // …la portée déclarée porte la ZONE GRISE (lot 92) : le tir lointain du finisseur est légal
+    if (s.range > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
     // la clause connaît LA MÊME loi que le déclencheur : à bout portant (< 9 m), on tire dans le
     // trafic (0,25 m) — juger tous les tirs au couloir de loin re-créerait l'attaquant muet
     const need = (s.range ?? 99) < 9 ? 0.25 : cfg.shotClear - 0.05;

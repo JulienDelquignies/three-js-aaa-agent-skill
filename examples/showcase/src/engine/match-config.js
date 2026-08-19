@@ -493,6 +493,17 @@ export const MATCH = {
   keeperHold: true,       // LE BALLON PRIS RESTE AUX GANTS (st.full, lot 91) : tenu au corps
                           // pendant couché + relevé (ball.hold — intouchable, Loi 12), posé aux
                           // pieds une fois debout ; false : le ballon GELÉ en l'air d'hier
+  gesteTir: true,         // LE GESTE DU TIR (st.full, lot 93) : l'espèce s'habille de SON clip —
+                          // puissance/lucarne → frappePuissante (élan ample), enroulée/placé/
+                          // croisé → frappeEnroulee (l'intérieur enveloppe), pointu/piqué →
+                          // frappePointu (sans élan lisible), le reste garde le cou-de-pied.
+                          // false : l'armé de passe d'hier (13/16 tirs en passeRapide, mesuré).
+  parades: true,          // LES ESPÈCES DE PARADE (st.full, lot 93) : détente haute (≥ 1,35 m)
+                          // → plongeonPrise (épaule qui monte, retombe debout), loin (> 1,35 m)
+                          // → plongeonUneMain (le bout de gants, windup mains:1), et le tir dans
+                          // le corps à hauteur de poitrine ≥ busteV → BLOCAGE du buste (arrêt
+                          // {mode:'buste'}, keeper.busteBlock). false : le plongeon d'hier.
+  busteV: 12,             // m/s — le seuil du blocage : sous lui, la prise en mains d'hier
                           // (mesuré : 1,34 m de haut, 8 images en s'éloignant des mains)
   pokeReach: 0.5,         // m — LE PIQUE : un ballon de conduite libre à portée de pied adverse
                           // se dévie (poke tackle) ; null : le défenseur-spectateur (sabotage nommé)

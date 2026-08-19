@@ -172,6 +172,23 @@ export const TECHNIQUES = [
     side: [0, 60], dist: [0.2, 1.2], turn: 60, power: 1.3, accuracy: 0.3,
     clip: 'frappe', why: 'Le dégagement : quand il n\'y a pas de solution, on met le ballon loin. Puissance maximale, précision nulle.',
   },
+  // ---- SHOOTING (lot 93) — l'espèce du tir (shooting.js, choice.shotKind) s'habille de SON geste :
+  // intent 'shot' pour que le filtre des passes ne les voie jamais (le flux d'hier au bit près).
+  {
+    id: 'frappe-puissante', intent: 'shot', foot: 'near', surface: 'laces',
+    side: [0, 60], dist: [0.15, 1.1], turn: 40, power: 1.15, accuracy: 0.75,
+    clip: 'frappePuissante', why: 'La frappe de puissance : l\'élan ample du cou-de-pied — tout le corps arme, la précision paie l\'amplitude.',
+  },
+  {
+    id: 'frappe-enroulee', intent: 'shot', foot: 'near', surface: 'inside',
+    side: [0, 70], dist: [0.15, 1.1], turn: 45, power: 0.95, accuracy: 0.9,
+    clip: 'frappeEnroulee', why: 'L\'enroulée / le placé : l\'intérieur du pied enveloppe le ballon, le corps s\'ouvre — le geste du curler et du plat du pied croisé.',
+  },
+  {
+    id: 'frappe-pointu', intent: 'shot', foot: 'near', surface: 'laces',
+    side: [0, 50], dist: [0.15, 1.2], turn: 25, power: 0.9, accuracy: 0.6,
+    clip: 'frappePointu', why: 'Le pointu : le bout du pied sans élan lisible — l\'arme des petits espaces et du piqué, rien à lire pour personne.',
+  },
 ];
 
 /**

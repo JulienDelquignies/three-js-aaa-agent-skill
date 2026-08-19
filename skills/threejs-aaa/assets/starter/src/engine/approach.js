@@ -41,6 +41,9 @@ export const STANCES = {
   passe: { dist: 0.58, bearing: 11 },
   passeRapide: { dist: 0.58, bearing: 11 },   // même frappe, armé court : la stance est identique
   frappe: { dist: 0.41, bearing: 11 },
+  frappePuissante: { dist: 0.41, bearing: 11 },   // le cou-de-pied ample : même ballon que frappe
+  frappeEnroulee: { dist: 0.55, bearing: 16 },    // l'intérieur : ballon un peu plus loin, plus ouvert
+  frappePointu: { dist: 0.62, bearing: 4 },       // le bout du pied : ballon devant, presque dans l'axe
   passeExterieur: { dist: 0.45, bearing: 10 },
   passePivot: { dist: 0.43, bearing: 72 },
   deviation: { dist: 0.27, bearing: 62 },

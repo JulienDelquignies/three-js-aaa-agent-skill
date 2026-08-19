@@ -23,10 +23,8 @@ import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights.
-// The split that makes this work: the GAME is decided by rondo-sim (proved headless), and this
-// file only DRESSES it — the CharacterControllers follow the sim positions instead of inventing
-// a second, disagreeing motion. One source of truth, two consumers. The stadium places pitch
-// centre at the world origin (grass Y = 0, long axis X): grid coordinates ARE world coordinates.
+// The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of
+// truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
 
 const TEAMS = [
   { name: 'Grand Bol', primary: 0xe8ecf2, secondary: 0x16233f, shorts: 0x16233f, socks: 0xe8ecf2 },
@@ -477,11 +475,9 @@ export class Rondo {
    *  leaves at the clip's own contact frame (engine/gesture.js). Only reactive gestures, the ones the
    *  game reports after the fact, still start at contact. */
   _playTech(pl, e, from = 0) {
-    // UN ACTE ownsBody POSSÈDE LE CORPS (charte, loi 1) — jusqu'au bout de son accompagnement.
-    // La prise du gardien émet un événement de réception PENDANT le plongeon : la scène jouait
-    // « amorti » par-dessus la détente et le gardien se REDRESSAIT à l'instant de l'arrêt
-    // (mesuré : spec=amorti sur 5/7 arrêts, gant à ~1 m d'un ballon au sol). Un geste réactif
-    // ne reprend pas un corps qu'un acte possède ; seul le windup de l'acte lui-même passe.
+    // UN ACTE ownsBody POSSÈDE LE CORPS (charte, loi 1) : la prise du gardien émettait une
+    // réception PENDANT le plongeon et la scène jouait « amorti » par-dessus la détente (mesuré :
+    // 5/7 arrêts) — un geste réactif ne reprend pas un corps possédé ; seul son windup passe.
     if (pl.sim.act?.payload?.ownsBody && e.type !== 'windup' && pl.gestureLayer.active) return;
     const move = e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
     // UN GESTE MANQUANT DOIT SE VOIR. Ce repli était silencieux (`set[move] || set.passe`), et c'est
@@ -489,11 +485,9 @@ export class Rondo {
     // session sans qu'aucun contrat ne bronche : le jeu affichait quelque chose de plausible. Un repli
     // qui se tait est pire qu'une erreur.
     const spec = MOVES[move] || (this._reports.gestes.push(`geste absent : ${move}`), MOVES.passe);
-    // LE MIROIR DU PLONGEON SE JUGE AU MODÈLE, pas à une convention monde : la sim ne connaît ni
-    // l'offset de facing du rig ni le lissage du regard rendu — « cross.z > gk.z → gauche »
-    // jouait la moitié des plongeons à l'envers (clip dessiné à l'opposé de la détente, hips à
-    // 2,5 m du corps — « il plonge du mauvais côté », captures). Ici : le lunge sim projeté sur
-    // la DROITE RÉELLE du modèle (colonne X de sa matrice monde) choisit le côté du clip.
+    // LE MIROIR DU PLONGEON SE JUGE AU MODÈLE, pas à une convention monde : « cross.z > gk.z →
+    // gauche » jouait la moitié des plongeons à l'envers (« il plonge du mauvais côté », captures).
+    // Ici : le lunge sim projeté sur la DROITE RÉELLE du modèle (matrice monde) choisit le côté.
     let useMirror = e.foot === 'left';
     if (/^plongeon/.test(move)) {
       const lg = pl.sim.act?.payload?.lunge;
@@ -884,6 +878,11 @@ export class Rondo {
         // …la PRISE DU GARDIEN arme les MAINS, pas le pied (lot 91 — mesuré : main à 1,06 m du
         // ballon à l'instant de la prise debout, l'amorti ne tend aucun bras) : _applyCatchWarp
         if (pl) { this._playTech(pl, e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
+      } else if (e.type === 'arrêt' && (e.mode === 'pieds' || e.mode === 'buste')) {
+        // L'ARRÊT NOMMÉ S'HABILLE (lot 93, contrat lot 90) : pieds → paradePieds, buste →
+        // paradeBuste ; les modes de plongeon appartiennent à l'acte qui possède déjà le corps.
+        const pl = this.players[e.by];
+        if (pl) { this._playTech(pl, { ...e, move: e.mode === 'pieds' ? 'paradePieds' : 'paradeBuste' }); pl._teched = this._t; }
       } else if (e.type === 'receive') {
         // une RÉCEPTION n'est pas une passe : le repli par défaut de _playTech jouait le clip
         // « passe » sur le receveur — mesuré au sweep, un armé fantôme à chaque réception, aussitôt

@@ -200,6 +200,184 @@ export const MOVES = {
       { t: 1.4, pose: {}, hips: [1.15, 0, 0] },
     ],
   },
+  /** LA FRAPPE PUISSANTE (lot 93) : l'élan AMPLE — 13/16 tirs mesurés s'habillaient en passeRapide
+   *  (l'armé court d'une petite passe pour un ballon à 21 m/s). Ici : armé plus profond que `frappe`
+   *  (cuisse −38, genou −120), buste plus arrière (−20), bras plus hauts, traversée qui EMMÈNE le
+   *  corps (overshoot cuisse 88) — la même biomécanique proximo-distale, amplifiée. */
+  frappePuissante: {
+    name: 'frappePuissante', duration: 1.0, contact: 0.45, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.32, pose: {
+        RightUpLeg: [-38, 0, 0], RightLeg: [-120, 0, 0], RightFoot: [30, 0, 0],
+        Hips: [0, -18, 0],
+        Spine: [-6, -9, 0], Spine1: [-11, -9, 0], Spine2: [-5, -7, 0],
+        Neck: [5, 0, 0], Head: [17, 0, 0],
+        LeftArm: [52, 0, 52], LeftForeArm: [40, 0, 38], RightArm: [46, 0, 44], RightForeArm: [-12, 0, -22],
+        LeftUpLeg: [12, 0, 0], LeftLeg: [-30, 0, 0], LeftFoot: [-9, 0, 0],
+      }, hips: [0, -0.07, 0] },
+      // la clé de contact SUR la trajectoire — le pied traverse, l'overshoot (0,52) continue le balayage
+      { t: 0.45, pose: {
+        RightUpLeg: [66, 0, 0], RightLeg: [-58, 0, 0], RightFoot: [32, 0, 0],
+        Hips: [0, 7, 0],
+        Spine: [-2, 7, 0], Spine1: [-4, 11, 0], Spine2: [-2, 9, 0],
+        Neck: [4, 0, 0], Head: [18, 0, 0],
+        LeftArm: [16, 0, 38], LeftForeArm: [6, 0, -22], RightArm: [48, 0, 6], RightForeArm: [-6, 0, 16],
+        LeftUpLeg: [9, 0, 0], LeftLeg: [-22, 0, 0], LeftFoot: [-7, 0, 0],
+      }, hips: [0, -0.03, 0] },
+      { t: 0.52, pose: {
+        RightUpLeg: [88, 0, 0], RightLeg: [-8, 0, 0], RightFoot: [34, 0, 0],
+        Hips: [0, 10, 0],
+        Spine: [0, 9, 0], Spine1: [3, 16, 0], Spine2: [1, 11, 0],
+        Neck: [3, 0, 0], Head: [18, 0, 0],
+        LeftArm: [22, 0, 26], LeftForeArm: [-6, 0, -32], RightArm: [54, 0, -24], RightForeArm: [12, 0, -14],
+        LeftUpLeg: [7, 0, 0], LeftLeg: [-15, 0, 0], LeftFoot: [-5, 0, 0],
+      }, hips: [0, 0.01, 0] },
+      { t: 0.74, pose: {
+        RightUpLeg: [60, 0, 0], RightLeg: [-36, 0, 0],
+        Hips: [0, 16, 0],
+        Spine: [2, 7, 0], Spine1: [9, 11, 0], Spine2: [3, 7, 0],
+        Head: [7, 0, 0],
+        LeftArm: [42, 0, 16], LeftForeArm: [-10, 0, -26], RightArm: [62, 0, -36], RightForeArm: [22, 0, -16],
+        LeftLeg: [-13, 0, 0],
+      }, hips: [0, 0.02, 0] },
+      { t: 1.0, pose: {} },
+    ],
+  },
+  /** LA FRAPPE ENROULÉE (lot 93) : l'INTÉRIEUR ENVELOPPE — le corps s'ouvre et penche du côté
+   *  opposé, la jambe balaye EN TRAVERS (adduction z), la traversée finit CROISÉE devant le corps
+   *  avec les hanches qui tournent — la signature du curler (placé/croisé/enroulée). */
+  frappeEnroulee: {
+    name: 'frappeEnroulee', duration: 0.9, contact: 0.38, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.27, pose: {
+        RightUpLeg: [-28, 0, -10], RightLeg: [-100, 0, 0], RightFoot: [24, 0, 0],
+        Hips: [0, -14, 0],
+        Spine: [-4, -7, -6], Spine1: [-7, -7, -8], Spine2: [-3, -5, -5],
+        Neck: [4, 0, 0], Head: [15, 0, 4],
+        LeftArm: [45, 0, 48], LeftForeArm: [32, 0, 34], RightArm: [38, 0, 36], RightForeArm: [-8, 0, -18],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-25, 0, 0], LeftFoot: [-8, 0, 0],
+      }, hips: [0, -0.05, 0] },
+      // contact SUR la trajectoire : l'intérieur du pied, jambe qui traverse VERS L'INTÉRIEUR
+      { t: 0.38, pose: {
+        RightUpLeg: [50, 0, -22], RightLeg: [-55, 0, 0], RightFoot: [26, 12, 0],
+        Hips: [0, 10, 0],
+        Spine: [-2, 8, -8], Spine1: [-4, 12, -10], Spine2: [-2, 9, -6],
+        Neck: [4, 0, 0], Head: [16, 0, 5],
+        LeftArm: [18, 0, 40], LeftForeArm: [4, 0, -20], RightArm: [44, 0, 8], RightForeArm: [-4, 0, 14],
+        LeftUpLeg: [8, 0, 0], LeftLeg: [-18, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0, -0.02, 0] },
+      { t: 0.46, pose: {
+        RightUpLeg: [64, 0, -34], RightLeg: [-14, 0, 0], RightFoot: [28, 16, 0],
+        Hips: [0, 22, 0],
+        Spine: [0, 12, -9], Spine1: [2, 18, -11], Spine2: [0, 12, -7],
+        Head: [14, 0, 6],
+        LeftArm: [24, 0, 28], LeftForeArm: [-6, 0, -28], RightArm: [50, 0, -18], RightForeArm: [10, 0, -12],
+        LeftUpLeg: [6, 0, 0], LeftLeg: [-13, 0, 0],
+      }, hips: [0, 0, 0] },
+      { t: 0.66, pose: {
+        RightUpLeg: [46, 0, -20], RightLeg: [-30, 0, 0],
+        Hips: [0, 26, 0],
+        Spine: [2, 9, -5], Spine1: [7, 13, -6], Spine2: [3, 8, -4],
+        Head: [6, 0, 3],
+        LeftArm: [40, 0, 16], LeftForeArm: [-8, 0, -24], RightArm: [56, 0, -30], RightForeArm: [18, 0, -14],
+        LeftLeg: [-12, 0, 0],
+      }, hips: [0, 0.02, 0] },
+      { t: 0.9, pose: {} },
+    ],
+  },
+  /** LE POINTU (lot 93) : le bout du pied SANS élan lisible — l'arme des petits espaces. Armé
+   *  minuscule (cuisse −14), extension sèche du genou, corps droit, récupération courte : rien
+   *  à lire pour le gardien ni pour le contreur — c'est TOUT le geste. */
+  frappePointu: {
+    name: 'frappePointu', duration: 0.5, contact: 0.18, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.11, pose: {
+        RightUpLeg: [-14, 0, 0], RightLeg: [-48, 0, 0], RightFoot: [18, 0, 0],
+        Spine1: [-4, -3, 0], Head: [12, 0, 0],
+        LeftArm: [40, 0, 22], RightArm: [42, 0, 12],
+        LeftLeg: [-16, 0, 0],
+      }, hips: [0, -0.03, 0] },
+      // le contact : genou qui claque, pointe tendue — la traversée est COURTE (0,24) par nature
+      { t: 0.18, pose: {
+        RightUpLeg: [26, 0, 0], RightLeg: [-16, 0, 0], RightFoot: [34, 0, 0],
+        Spine1: [-1, 2, 0], Head: [14, 0, 0],
+        LeftArm: [28, 0, 26], RightArm: [46, 0, 2],
+        LeftLeg: [-14, 0, 0],
+      }, hips: [0, -0.02, 0] },
+      { t: 0.24, pose: {
+        RightUpLeg: [36, 0, 0], RightLeg: [-10, 0, 0], RightFoot: [30, 0, 0],
+        Spine1: [1, 3, 0], LeftArm: [30, 0, 20], RightArm: [48, 0, -6],
+        LeftLeg: [-12, 0, 0],
+      }, hips: [0, -0.01, 0] },
+      { t: 0.5, pose: {} },
+    ],
+  },
+  /** LA PARADE À UNE MAIN (lot 93) : le plongeon LOIN — même corps que `plongeon` (détente,
+   *  couché, relevé par étapes lot 91), mais le bras du DESSUS seul est tendu à fond (+0,15 m
+   *  d'envergure) et l'autre replié sur la poitrine : l'espèce du bout de gants (mains: 1). */
+  plongeonUneMain: {
+    name: 'plongeonUneMain', duration: 1.6, contact: 0.55, loop: false,
+    rise: 1.2,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.25, pose: { LeftUpLeg: [55, 0, 0], RightUpLeg: [55, 0, 0], LeftLeg: [-75, 0, 0], RightLeg: [-75, 0, 0], Spine1: [16, 0, 0] }, hips: [0, -0.26, 0] },
+      { t: 0.55, pose: { Hips: [0, 0, -64], RightArm: [-24, 0, -86], RightForeArm: [0, 0, 2], LeftArm: [-6, 0, -22], LeftForeArm: [0, 55, 24], LeftUpLeg: [12, 0, 0], RightUpLeg: [16, 0, 0], LeftLeg: [-12, 0, 0], RightLeg: [-18, 0, 0], Spine1: [-6, 0, 0] }, hips: [0.95, 0.26, 0] },
+      { t: 0.9, pose: { Hips: [0, 0, -82], RightArm: [-18, 0, -84], LeftArm: [-4, 0, -20], LeftForeArm: [0, 50, 22], LeftUpLeg: [10, 0, 0], RightUpLeg: [14, 0, 0], Spine1: [0, 0, 0] }, hips: [1.5, -0.68, 0] },
+      { t: 1.2, pose: { Hips: [0, 0, -82], RightArm: [-12, 0, -70], LeftArm: [-2, 0, -18], LeftForeArm: [0, 45, 20] }, hips: [1.5, -0.68, 0] },
+      // le relevé SUR PLACE et PAR ÉTAPES (lot 91) : rouler → appui bras → genou → debout
+      { t: 1.28, pose: { Hips: [0, 0, -60], RightArm: [-40, 0, -34], LeftArm: [-38, 0, -28], LeftForeArm: [-18, 0, 10], RightForeArm: [-20, 0, 10], LeftUpLeg: [30, 0, 0], RightUpLeg: [34, 0, 0], LeftLeg: [-45, 0, 0], RightLeg: [-50, 0, 0], Spine1: [10, 0, 0] }, hips: [1.5, -0.6, 0] },
+      { t: 1.4, pose: { Hips: [0, 0, -35], Spine1: [22, 0, 0], LeftArm: [30, 0, -10], RightArm: [30, 0, -12], LeftForeArm: [-16, 0, 9], RightForeArm: [-16, 0, 9], LeftUpLeg: [58, 0, 0], RightUpLeg: [40, 0, 0], LeftLeg: [-74, 0, 0], RightLeg: [-58, 0, 0], Head: [8, 0, 0] }, hips: [1.5, -0.42, 0] },
+      { t: 1.51, pose: { Hips: [0, 0, -13], Spine1: [12, 0, 0], LeftArm: [52, 0, -4], RightArm: [52, 0, -5], LeftUpLeg: [66, 0, 0], RightUpLeg: [26, 0, 0], LeftLeg: [-84, 0, 0], RightLeg: [-34, 0, 0], Head: [4, 0, 0] }, hips: [1.5, -0.2, 0] },
+      { t: 1.6, pose: {}, hips: [1.5, 0, 0] },
+    ],
+  },
+  /** LA PRISE AÉRIENNE (lot 93) : la DÉTENTE VERTICALE de prise — l'ÉPAULE MONTE avec le saut,
+   *  les DEUX bras au-dessus de la tête AVANT le contact (la dette des prises-réflexe : premier
+   *  contact des gants à ~0,96 m parce que le clip de détente latérale n'avait pas les bras en
+   *  l'air à temps). Retombe SUR SES APPUIS : pas de couché, pas de relevé (pas de champ rise). */
+  plongeonPrise: {
+    name: 'plongeonPrise', duration: 1.3, contact: 0.5, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.2, pose: { LeftUpLeg: [50, 0, 0], RightUpLeg: [50, 0, 0], LeftLeg: [-70, 0, 0], RightLeg: [-70, 0, 0], Spine1: [14, 0, 0], LeftArm: [30, 0, -20], RightArm: [30, 0, -24] }, hips: [0, -0.3, 0] },
+      // l'extension : les bras PASSENT au-dessus de la tête pendant la montée — l'épaule y est déjà
+      { t: 0.38, pose: { LeftArm: [-24, 0, -66], RightArm: [-24, 0, -70], LeftForeArm: [0, 0, 6], RightForeArm: [0, 0, 6], LeftUpLeg: [16, 0, 0], RightUpLeg: [20, 0, 0], LeftLeg: [-20, 0, 0], RightLeg: [-26, 0, 0], Spine1: [-8, 0, 0], Head: [10, 0, 0] }, hips: [0.3, 0.3, 0] },
+      { t: 0.5, pose: { LeftArm: [-32, 0, -78], RightArm: [-32, 0, -82], LeftForeArm: [0, 0, 4], RightForeArm: [0, 0, 4], LeftUpLeg: [14, 0, 0], RightUpLeg: [18, 0, 0], LeftLeg: [-16, 0, 0], RightLeg: [-22, 0, 0], Spine1: [-10, 0, 0], Head: [12, 0, 0] }, hips: [0.5, 0.55, 0] },
+      // la retombée : les gants REDESCENDENT AVEC le ballon tenu, genoux qui absorbent
+      { t: 0.85, pose: { LeftArm: [10, 0, -30], RightArm: [10, 0, -34], LeftForeArm: [-40, 0, 14], RightForeArm: [-40, 0, 14], LeftUpLeg: [34, 0, 0], RightUpLeg: [34, 0, 0], LeftLeg: [-48, 0, 0], RightLeg: [-48, 0, 0], Spine1: [8, 0, 0] }, hips: [0.72, 0, 0] },
+      { t: 1.05, pose: { LeftArm: [28, 0, -14], RightArm: [28, 0, -16], LeftForeArm: [-52, 0, 16], RightForeArm: [-52, 0, 16], LeftLeg: [-24, 0, 0], RightLeg: [-24, 0, 0], Spine1: [4, 0, 0] }, hips: [0.72, -0.04, 0] },
+      { t: 1.3, pose: {}, hips: [0.72, 0, 0] },
+    ],
+  },
+  /** LA PARADE DES PIEDS (lot 93, arrêt {mode:'pieds'}) : la jambe CLAQUE latérale tendue, le
+   *  corps contre-penche, les bras équilibrent — le réflexe du bout portant au ras du sol. */
+  paradePieds: {
+    name: 'paradePieds', duration: 0.7, contact: 0.22, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.12, pose: { RightUpLeg: [16, 0, -14], RightLeg: [-30, 0, 0], LeftLeg: [-18, 0, 0], Spine1: [6, 0, 6], LeftArm: [50, 0, 26], RightArm: [50, 0, -18] }, hips: [0, -0.05, 0] },
+      { t: 0.22, pose: { RightUpLeg: [30, 0, -34], RightLeg: [-6, 0, 0], RightFoot: [22, 0, 0], LeftLeg: [-22, 0, 0], Spine1: [8, 0, 10], Head: [8, 0, -4], LeftArm: [58, 0, 34], LeftForeArm: [20, 0, 20], RightArm: [54, 0, -28] }, hips: [0, -0.08, 0] },
+      { t: 0.4, pose: { RightUpLeg: [22, 0, -20], RightLeg: [-16, 0, 0], LeftLeg: [-18, 0, 0], Spine1: [6, 0, 5], LeftArm: [52, 0, 24], RightArm: [50, 0, -16] }, hips: [0, -0.05, 0] },
+      { t: 0.7, pose: {} },
+    ],
+  },
+  /** LE BLOCAGE DU BUSTE (lot 93, arrêt {mode:'buste'}) : la poitrine ENCAISSE le tir dans le
+   *  corps — buste bombé, coudes serrés DEVANT (les avant-bras protègent, ils ne tendent pas),
+   *  genoux souples ; le recul au contact, puis on se rassemble. Le patron inverse de l'amorti. */
+  paradeBuste: {
+    name: 'paradeBuste', duration: 0.8, contact: 0.3, loop: false,
+    keys: [
+      { t: 0.0, pose: {} },
+      { t: 0.18, pose: { Spine1: [-12, 0, 0], Head: [-6, 0, 0], LeftArm: [26, 0, 30], RightArm: [26, 0, 28], LeftForeArm: [70, 0, 30], RightForeArm: [70, 0, -30], LeftUpLeg: [12, 0, 0], RightUpLeg: [12, 0, 0], LeftLeg: [-20, 0, 0], RightLeg: [-20, 0, 0] }, hips: [0, -0.06, 0] },
+      // le contact : le buste prend, le corps RECULE d'un souffle — pas un geste de bras
+      { t: 0.3, pose: { Spine1: [4, 0, 0], Head: [-2, 0, 0], LeftArm: [30, 0, 32], RightArm: [30, 0, 30], LeftForeArm: [76, 0, 32], RightForeArm: [76, 0, -32], LeftUpLeg: [14, 0, 0], RightUpLeg: [14, 0, 0], LeftLeg: [-24, 0, 0], RightLeg: [-24, 0, 0] }, hips: [-0.05, -0.08, 0] },
+      { t: 0.52, pose: { Spine1: [-2, 0, 0], LeftArm: [34, 0, 24], RightArm: [34, 0, 22], LeftForeArm: [50, 0, 24], RightForeArm: [50, 0, -24], LeftLeg: [-16, 0, 0], RightLeg: [-16, 0, 0] }, hips: [0, -0.04, 0] },
+      { t: 0.8, pose: {} },
+    ],
+  },
   /** BICYCLE KICK (once, root motion): crouch, launch, lay back mid-air, right leg scissors overhead */
   // ---- LES GESTES MANQUANTS. La table de technique.js compte 13 gestes ; il y avait 5 clips, donc une
   // passe de l'intérieur et une passe en pivot dessinaient le même mouvement. À une caméra à 19 m ça se

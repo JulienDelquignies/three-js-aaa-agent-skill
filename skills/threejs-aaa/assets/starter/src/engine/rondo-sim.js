@@ -11,6 +11,7 @@ import { startGesture, stepGesture, abortGesture, busy, winding, following, chec
 import { uneTouche } from './premiere-intention.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 import { offsideLine, isOffside } from './offside.js';
+import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
 import { beginPass, strikeNow } from './strike-sim.js';
 import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
@@ -273,14 +274,13 @@ function receive(st, id, cfg = RONDO) {
     if (st.possession.carrier !== id || !p._takeP) p._takeP = [p.p[0], p.p[2]];
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
-    p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — plan ET cap
-    //                             (un hint survivant pilotait la demi-seconde vers l'ancre d'un autre monde)
-    // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH, pas une touche orientée de joueur de
-    // champ. La table des contrôles (géométrie de pied) laissait un ballon « sans technique
-    // légale » filer NON AMORTI avec l'étiquette de porteur — et la branche distributeur marchait
-    // à l'opposé pendant que le ballon roulait au fond (le CSC de première touche : 5 des 6 buts
-    // sans tir mesurés). Les gardiens n'existent pas au rondo — aucune garde nécessaire.
+    p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — plan ET cap (le hint survivant pilotait vers l'ancre d'un autre monde)
+    // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH, pas une touche orientée de joueur
+    // de champ (la table des contrôles laissait filer un ballon « sans technique légale » — le
+    // CSC de première touche). Les gardiens n'existent pas au rondo — aucune garde nécessaire.
+    // …sauf le tir DANS LE CORPS à hauteur de poitrine : le buste ENCAISSE (lot 93, keeper.js).
     if (p.keeper) {
+      if (st.full && cfg.parades !== false && busteBlock(st, p, cfg)) return;
       st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92], dW(st, cfg, 0.92));
       if (st.ball.owner !== id) st.ball.possess(id);
       st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'prise-gardien', foot: 'both',

@@ -939,7 +939,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 } });   // l'HIER exact, EN ENTIER (7e : lot 92 sans grise/muteD)
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false });   // l'HIER exact, EN ENTIER (8e : lot 93 sans gestes différenciés)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1045,22 +1045,31 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const gardien = (over) => {
     const out = { prises: [], battus: [] };
-    // re-fondé lot 92 (la zone grise tire de plus loin, les plongeons-prises ont migré —
-    // balayé 8 graines : prises sur {2,6}, battus sur {7})
-    for (const seed of [2, 6, 7]) {
+    // re-fondé lot 93 (les espèces de parade déplacent le flux — balayé 18 graines : prises sur
+    // {6, 9}, battu sur {6} à la purge). Le BATTU se mesure AU MOMENT du restart qui le purge,
+    // seulement passé la durée du geste (~1,4 s — avant, l'acte possède le corps et down 0 est
+    // le contrat lot 91 : le battu paie à la FIN du geste, onDiveEnd).
+    for (const seed of [2, 6, 9]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
-      let nEv = 0; const suivis = []; const dives = new Map();
+      let nEv = 0; const suivis = []; const dives = new Map(); const lastEsp = {};
       for (let i = 0; i < 220 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         while (nEv < st.events.length) {
           const e = st.events[nEv++];
+          if (e.type === 'windup' && e.skill === 'plongeon') lastEsp[e.by] = e.move;
           if (e.type === 'dive') dives.set(e.by, { t: e.t, ok: false });
-          // un restart (but/sortie/touche) PURGE les corps — le battu interrompu ne compte pas
-          if (e.type === 'but' || e.type === 'sortie' || e.type === 'touche' || e.type === 'engagement') dives.clear();
+          // un restart PURGE les corps — le battu encore DANS son geste ne compte pas ; celui
+          // dont le geste est fini doit être couché (down > 0,5) à l'instant de la purge
+          if (e.type === 'but' || e.type === 'sortie' || e.type === 'touche' || e.type === 'engagement') {
+            for (const [id, d] of dives) if (!d.ok && e.t - d.t > 1.4) out.battus.push({ down: st.players[id].down });
+            dives.clear();
+          }
           if (e.type === 'arrêt') {
             if (dives.has(e.by)) dives.get(e.by).ok = true;
-            if (e.mode === 'prise') suivis.push({ id: e.by, t0: st.t, down0: st.players[e.by].down, dMax: 0, ySol: null });
+            // …la détente de prise (plongeonPrise, lot 93) retombe DEBOUT : son prix est
+            // l'atterrissage (0,5 s), pas le couché — hors du contrat « prix du plongeon »
+            if (e.mode === 'prise' && lastEsp[e.by] !== 'plongeonPrise') suivis.push({ id: e.by, t0: st.t, down0: st.players[e.by].down, dMax: 0, ySol: null });
           }
         }
         for (const s of suivis) {
@@ -1091,6 +1100,49 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sp = sab.prises;
   ok(`sabotage « le gardien d'hier » attrapé (keeperRise/Hold:false : down posé ${sp.length ? sp.map((s) => s.down0.toFixed(2)).join('/') : '—'} ≤ 1,2 et les battus repartent à down 0 — le prix escamoté et la catapulte, nommés)`,
     sp.every((s) => s.down0 <= 1.2) && sab.battus.every((b) => b.down <= 0));   // battus purgés par restart : volet conditionnel (lot 92)
+}
+
+// ---------------------------------------------------------------- lot 93 : LES ANIMATIONS
+// DIFFÉRENCIÉES — le tir s'habille de SON espèce (mesuré avant : 13/16 tirs en passeRapide),
+// la parade nomme sa géométrie au windup (mains 1/2, espèces plongeonUneMain/plongeonPrise).
+// Contrat lot 90 : la sim dit le QUOI — ici on prouve que le QUOI se nomme et se sabote.
+{
+  const especes = (over) => {
+    const out = { tirs: [], mains: [], sansMains: 0, plonges: {} };
+    for (const seed of [2, 3, 6, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let nEv = 0; const lastW = {};
+      for (let i = 0; i < 220 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        while (nEv < st.events.length) {
+          const e = st.events[nEv++];
+          if (e.type === 'windup') {
+            lastW[e.by] = e;
+            if (e.skill === 'plongeon') { out.plonges[e.move] = (out.plonges[e.move] ?? 0) + 1; if (e.mains) out.mains.push(e); else out.sansMains++; }
+          }
+          // la corrélation CONSOMME son windup (un tir par armé — la tête/volée sans windup
+          // propre ne peut pas hériter d'un clip de frappe consommé plus tôt)
+          if (e.type === 'shot') { out.tirs.push({ kind: e.kind, clip: lastW[e.by]?.move ?? '?' }); delete lastW[e.by]; }
+        }
+      }
+    }
+    return out;
+  };
+  const CLIP93 = { puissance: 'frappePuissante', lucarne: 'frappePuissante', 'enroulée': 'frappeEnroulee', 'placé': 'frappeEnroulee', 'croisé': 'frappeEnroulee', pointu: 'frappePointu', 'piqué': 'frappePointu' };
+  const vif = especes({});
+  // un tir PLANIFIÉ porte le clip de son espèce ; l'URGENCE improvise (son contrat d'hier) —
+  // la preuve : chaque clip frappe* précède un tir de SA famille, et le répertoire EXISTE.
+  const nouveaux = vif.tirs.filter((s) => /^frappe(Puissante|Enroulee|Pointu)/.test(s.clip));
+  ok(`lot 93 — le tir s'habille de son espèce (${nouveaux.length} tirs frappePuissante/Enroulee/Pointu sur ${vif.tirs.length}, chacun de la famille de son clip ; l'urgence garde l'improvisation)`,
+    nouveaux.length >= 3 && nouveaux.every((s) => CLIP93[s.kind] === s.clip));
+  ok(`lot 93 — le windup du plongeon nomme ses MAINS (${vif.mains.length} windups mains ∈ {1,2}, ${vif.sansMains} sans ; plongeonUneMain ⇔ mains:1 ; espèces vues : ${Object.keys(vif.plonges).join('/') || '—'})`,
+    vif.mains.length >= 1 && vif.sansMains === 0
+    && vif.mains.every((e) => ((e.move === 'plongeonUneMain') === (e.mains === 1)) && (e.mains === 1 || e.mains === 2)));
+  const sab = especes({ gesteTir: false, parades: false });
+  ok(`sabotage « les gestes d'hier » attrapé (gesteTir/parades:false : ${sab.tirs.filter((s) => /^frappe(Puissante|Enroulee|Pointu)/.test(s.clip)).length} clip d'espèce, ${sab.mains.length} mains, 0 plongeonUneMain/Prise — l'armé de passe et le plongeon générique, nommés)`,
+    sab.tirs.every((s) => !/^frappe(Puissante|Enroulee|Pointu)/.test(s.clip)) && sab.mains.length === 0
+    && !sab.plonges.plongeonUneMain && !sab.plonges.plongeonPrise);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -69,9 +69,20 @@ export function beginPass(st, choice, cfg, opts = {}) {
   if (!urgent) {
     // les surfaces de PLAN : jouables sur un ballon posé (une « première » sur un ballon qu'on
     // s'est soi-même assis serait une contradiction — firstTime reste à l'improvisation)
-    const cands = TECHNIQUES.filter((t) => t.intent === 'pass' && !t.firstTime).map((t) => ({
+    let cands = TECHNIQUES.filter((t) => t.intent === 'pass' && !t.firstTime).map((t) => ({
       clip: t.clip, pref: t.accuracy, antic: (MOVE_TIMING[t.clip] || MOVE_TIMING.passe).contact, data: t,
     }));
+    // LE GESTE DU TIR (lot 93, cfg.gesteTir && st.full) : l'espèce s'habille de SON clip — mesuré
+    // avant : 13/16 tirs dessinés en passeRapide/passePivot (l'armé d'une petite passe pour un
+    // ballon à 21 m/s). La puissance arme AMPLE, l'enroulée ENVELOPPE de l'intérieur, le pointu
+    // part SANS élan lisible ; les frappes tendues (ras-de-terre, flottante, mi-hauteur) gardent
+    // le cou-de-pied `frappe`. La géométrie du plan (ancre, stance, atteignabilité) reste LA loi.
+    if (opts.shot && choice.shotKind && st.full && cfg.gesteTir !== false) {
+      const K93 = { puissance: 'frappePuissante', lucarne: 'frappePuissante', 'enroulée': 'frappeEnroulee', 'placé': 'frappeEnroulee', 'croisé': 'frappeEnroulee', pointu: 'frappePointu', 'piqué': 'frappePointu' };
+      const cl = K93[choice.shotKind.id] ?? 'frappe';
+      const row = TECHNIQUES.find((t) => t.clip === cl && t.intent !== 'clear');
+      cands = [{ clip: cl, pref: 1, antic: (MOVE_TIMING[cl] || MOVE_TIMING.frappe).contact, data: row }];
+    }
     // (rushedSlack N'EST PAS cfg.rushedSlack : celui-là vit sur l'échelle de score de la table des
     // techniques ; planStrike note sur l'échelle des préférences 0–1 et porte son propre défaut.)
     // UN BALLON PORTÉ CHANGE LA NATURE DE L'ANCRE. Porté, le ballon est soudé au corps : l'ancre

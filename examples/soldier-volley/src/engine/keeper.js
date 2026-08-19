@@ -52,6 +52,25 @@ export function keeperRise(getupF = 1, resolved = true, K = KEEPER) {
 }
 
 /**
+ * LE BLOCAGE DU BUSTE (lot 93, st.full && cfg.parades — appelé par receive, branche gardien).
+ * Un tir DANS LE CORPS, rapide (≥ cfg.busteV) et à hauteur de POITRINE, ne se cueille pas en
+ * mains : le buste ENCAISSE, le ballon rebondit devant (un 50/50 honnête — le vrai football des
+ * frappes dans le gardien), l'arrêt se nomme {mode:'buste'} pour la scène (clip paradeBuste).
+ * Sous le seuil ou hors de la fenêtre : false — la prise d'hier, au bit près.
+ */
+export function busteBlock(st, gk, cfg) {
+  const vIn = Math.hypot(st.ball.v[0], st.ball.v[1] ?? 0, st.ball.v[2]);
+  const y = st.ball.p[1] ?? 0;
+  if (vIn < (cfg.busteV ?? 12) || y < 0.85 || y > 1.45) return false;
+  st.ball.impulse([-st.ball.v[0] * 1.55, -(st.ball.v[1] ?? 0) * 0.8, -st.ball.v[2] * 1.55]);
+  if (st.ball.owner != null) st.ball.release('perte');
+  st.possession.carrier = -1; st.phase = 'loose'; st.hold = 0; st.pressure = 0;
+  st.lastTouch = gk.team; st.pass = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'buste' });
+  return true;
+}
+
+/**
  * OÙ VIVENT LES GANTS (lot 91). Le point du ballon TENU après une prise : contre la poitrine,
  * AU SOL pendant le couché, remonté avec le relevé — la sim énonce le profil (le QUOI), la scène
  * ancre les mains dessus (le COMMENT). `u` : 0 couché → 1 debout, lu de gk.down contre le relevé.
