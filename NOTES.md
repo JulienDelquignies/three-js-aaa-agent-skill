@@ -4171,6 +4171,60 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      84+40+88+14+11+11+6+14+8+9+33+15+9+14+8+6+52), A/B 20 × 300 s : 59 tirs / 18 buts,
      rondo/réduit AU BIT (c775c81e / d1c0c117).
 
+139. **Lot 97 : L'ACCROCHAGE DU BATTU (sim, Loi 12) — le monde retrouve ses fautes, ses coups
+     francs et ses cartons.** Mesuré avant (probe-97) : 0,08 faute/match (réel 1,2-1,5 par
+     220 s) — le tacle à la fenêtre (lot 95) avait asséché la dernière source ; or les charges
+     d'épaule mesurées sont TOUTES à distance de jeu (0,2-1,3 m — pas de loi à construire là,
+     leçon des lots 84-85 : on ne légifère pas le vide) ; la vraie population est LE
+     DÉPASSEMENT : 32 épisodes/match où le porteur lancé BAT son défenseur (le battu dans le
+     dos < 1,5 m) — la situation de l'accrochage réel, la faute n°1 du football. LA LOI
+     (cfg.accroche && cfg.loi12 && st.full — duel.accrocheStep, la famille) : le battu décide
+     UNE fois par épisode (cooldown 6 s, tirage st.rnd seedé) d'accrocher — la POLITIQUE est
+     pure et exportée (duel.accrocheP) : base × COMPOSURE (l'impulsif 1,3 s'y résout, le
+     posé 0,85 court — l'attribut en facteur) × axe PRESSING de l'équipe (0,7…1,3 — l'équipe
+     agressive assume ses fautes, passé par le hook cfg.accrocheMod : match-sim module, la
+     famille duel reste pure) × rôle press (0,8…1,2) × 1,8 si transition PROMETTEUSE (< 2
+     défenseurs restants — la faute TACTIQUE, grave : le jaune vient vite par le pipeline
+     lot 27) × 0,15 dans SA surface (un penalty ne s'offre pas). L'accroché casse sa course
+     (fauché 0,6 s si tactique), LE BALLON VIT — l'avantage (Loi 5, adjugeFaute)
+     départage, la récidive fait les cartons. CALIBRAGE mesuré (l'instrumentation a payé) :
+     la loi ne voit que ~34 % des frames de carry (le pas porteur early-return ailleurs) —
+     fenêtre élargie (1,6 m, dot −0,05, cv 2,6) → 11 décisions/match, base 0,8 accrochage/match
+     + coups francs et cartons de retour. LA V2 PAR L'ISOLATION À CLÉ (mêmes 20 graines) : la
+     v1 cassait TOUTES les courses accrochées — 59/18 → 50/13 ; au réel le battu qui retient ne
+     stoppe pas toujours → LE PORTEUR S'ARRACHE une fois sur deux (la faute est POSÉE —
+     l'avantage la joue, le porteur file — la course VIT). ET LA LEÇON D'INSTRUMENT QUI VAUT
+     LOI D'ARCHITECTURE : les tirages consommaient st.rnd GLOBAL — chaque décision décalait
+     TOUT le mix aval (espèces de tir, duels : tirs stables 59-60 mais conversion −7 pts, un
+     faux « effet causal ») → le FLUX AUXILIAIRE st.rnd2 (makeMatch, sous-seed indépendant —
+     le contrat de rng.js : « un sous-seed par sous-système ») : le flux principal reste
+     INTACT au bit, l'A/B mesure la LOI seule. LE VERDICT PROPRE : 54/14 contre 59/18 — l'effet
+     est purement causal, la faute ASSÈCHE (chaque accrochage coupe une transition), et rien
+     ne la compense : LE COUP FRANC NE RENDAIT RIEN. Sondé : le CF le plus proche du but sur
+     8 matchs naît à 26,7 m, la médiane à ~52 m (l'accrochage vit AU MILIEU — le dépassement
+     lancé, pas la surface). Donc DEUX lois de la prise (referee, hook onTake, clé cfg.cfDirect) :
+     le COUP FRANC DIRECT à portée (14-30 m, |z| ≤ 15 — l'enroulée par-dessus le mur, balayage
+     balistique : passer 2,35 m à 9,15 m, retomber sous la barre ; v 18,5 → 19,5 au-delà de
+     27 m, Magnus signé vers le coin loin du gardien lot 94) ; et le LANCEMENT (30-55 m — le
+     ballon lobé DANS LA BOÎTE : cible ~10,5 m devant le but ±z seedé rnd2, cloche calculée
+     θ 0,62 + backspin lot 54, le coéquipier le plus proche du point de chute finit sa course
+     lot 59 ; la conversion sort de la PHYSIQUE : premier toucher, têtes lot 34, gardien du
+     corner lot 94 ; cause 'coup-franc' au grand livre RELEASES). RECALIBRAGE final au réel :
+     base 0,065 (à 0,09 le monde tenait ~24 accrochages/90 min extrapolés, le réel en siffle
+     10-15), la course cassée v ×0,5 (deux foulées perdues, pas un arrêt — ×0,3 sur-punissait
+     le NON-arraché). A/B FINAL (20 × 300 s, mêmes graines) : 85 tirs, 19 buts ∈ [17 ; 33] ✓,
+     15 accrochages, 20 fautes, 1 CF direct, 6 lancements — le monde a ses fautes ET ses buts
+     (l'ampleur du delta de tirs 60→85 est la variance de bifurcation, pas la taille de la
+     cause : le gate est une bande pour ça). Dettes nommées : pas de photo Loi 11 sur le
+     lancement (comme la rentrée de touche), le mur face au lancement lointain non spécifique.
+     Clauses : le VOLUME (fautes ∈ [3 ; 18] sur 6 matchs, accrochages ≥ 3, sabotage
+     accroche:false = l'assèchement nommé) + la POLITIQUE unitaire 5/5 (composure, tactique
+     ×1,8, surface ×0,15, axe pressing, cap 0,4) + LE PRIX DU COUP FRANC posé (21 m TIRÉ /
+     40 m LANCÉ / 60 m court ; sabotage cfDirect:false muet aux deux). sab76 12e application.
+     Batterie verte, A/B en bande, rondo/réduit AU BIT (st.full + cfg.loi12 les gardent) — et
+     le plein format à clés off (accroche+cfDirect false) rend 59/18 : L'HIER EXACT, la preuve
+     du contrat d'identité sur le monde entier.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

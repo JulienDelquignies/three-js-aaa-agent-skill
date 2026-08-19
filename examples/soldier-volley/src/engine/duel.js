@@ -8,6 +8,7 @@
 import { situation, chooseTechnique } from './technique.js';
 import { winding, abortGesture } from './gesture.js';
 import { predictPath } from './ball-predict.js';
+import { role } from './roles.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 
@@ -244,4 +245,63 @@ export function tackleWindow(st, q, cfg, balPrenable) {
   if (!st.full || cfg.jockey === false) return true;                // la minuterie d'hier, au bit
   if (st.pressure >= cfg.tackleTime * (cfg.jockey?.force ?? 1.5)) return true;
   return balPrenable(st.ball, q.p[0], q.p[2], 0.55 * (q.skill?.composureF ?? 1), 0.5);
+}
+
+/**
+ * LA POLITIQUE DE L'ACCROCHAGE (lot 97) — la probabilité par ÉPISODE de dépassement, pure et
+ * testable : le BATTU (dans le dos du porteur lancé) accroche-t-il ? La COMPOSURE est LE
+ * facteur (l'impulsif 1,3 s'y résout, le posé 0,85 court — attributes.composureF), l'équipe
+ * agressive (axe pressing) et le rôle qui presse assument plus de fautes ; la transition
+ * PROMETTEUSE (< 2 défenseurs restants) fait la faute TACTIQUE (×1,8 — on la commet exprès,
+ * et elle est GRAVE : le jaune vient vite) ; dans SA surface on n'offre pas un penalty (×0,15).
+ * Base 0,065 : mesurée à 0,09 le monde rendait ~24 accrochages/90 min extrapolés — le réel en
+ * siffle 10-15 ; à 0,065 il en tient ~17 et l'attaque respire (le gate des buts, A/B lot 97).
+ */
+export function accrocheP(q, pressAxe, danger, enSurface) {
+  const base = 0.065 * (q.skill?.composureF ?? 1) * pressAxe * (danger ? 1.8 : 1);
+  return Math.min(0.4, base * (enSurface ? 0.15 : 1));
+}
+
+/**
+ * L'ACCROCHAGE DU BATTU (lot 97, st.full && cfg.accroche && cfg.loi12 — appelé au pas du
+ * porteur, le site de chargeStep). Mesuré avant : 0,08 faute/match (réel 1,2-1,5 par 220 s) —
+ * le tacle discipliné (lot 95) a asséché la dernière source ; or le monde réel tient ses
+ * coups francs et ses cartons de LA faute du battu : le défenseur dépassé qui retient.
+ * L'épisode se décide UNE fois (cooldown 6 s par homme, tirage st.rnd2 seedé) ; l'accroché
+ * casse sa course (v ×0,5 — il s'arrache de la prise en perdant deux foulées, pas en
+ * s'arrêtant ; tombé 0,6 s si faute tactique), le ballon VIT — l'avantage (Loi 5,
+ * adjugeFaute) départage, le carton suit la récidive (grave compte double).
+ */
+export function accrocheStep(st, c, cfg, pressAxe = 1) {
+  if (st.ball.owner !== c.id) return;
+  const cv = Math.hypot(c.v[0], c.v[1]);
+  if (cv < 2.6) return;
+  const { pitch } = st;
+  const og = pitch.ownGoal(1 - c.team);
+  const gx = og.x - c.p[0], gz = 0 - c.p[2]; const gl = Math.hypot(gx, gz) || 1;
+  for (const q of st.players) {
+    if (q.team === c.team || q.keeper || q.down > 0 || (q._accCd ?? -1) > st.t || st._faute) continue;
+    const d = d2(q.p, c.p);
+    if (d > 1.6) continue;
+    if (((q.p[0] - c.p[0]) * gx + (q.p[2] - c.p[2]) * gz) / (gl * (d || 1)) > -0.05) continue;  // pas dans le dos/à l'épaule
+    if (Math.hypot(q.v[0], q.v[1]) > cv + 0.5) continue;                                        // pas battu de vitesse
+    q._accCd = st.t + 6;                                            // une décision par épisode
+    const restants = st.players.filter((r) => r.team === q.team && !r.keeper && r.down <= 0
+      && ((r.p[0] - c.p[0]) * gx + (r.p[2] - c.p[2]) * gz) / gl > 0.5).length;
+    const danger = restants < 2;
+    const enSurface = pitch.inBox(q.p[0], q.p[2], Math.sign(pitch.ownGoal(q.team).x || 1));
+    if ((st.rnd2 ?? st.rnd ?? (() => 0.5))() >= accrocheP(q, pressAxe, danger, enSurface) * (0.8 + 0.4 * role(q).press)) continue;
+    st._faute = { t: st.t, par: q.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave: danger };
+    // …ET LE PORTEUR S'ARRACHE UNE FOIS SUR DEUX (v2, mesuré : la v1 cassait TOUTES les courses
+    // accrochées — A/B 18 → 13 buts, l'occasion supprimée chirurgicalement ; au réel le battu
+    // qui retient ne stoppe pas toujours) : la faute est POSÉE (l'avantage la jouera — le
+    // porteur qui file garde le ballon, l'arbitre laisse), la course VIT.
+    const arrache = (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5;
+    st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: c.id, kind: 'accrochage', prometteur: danger, arrache, p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
+    if (!arrache) {
+      c.v[0] *= 0.5; c.v[1] *= 0.5;                                 // la course cassée — deux foulées, pas un arrêt
+      if (danger) c.down = Math.max(c.down, 0.6);                   // la faute tactique le fauche
+    }
+    return;
+  }
 }

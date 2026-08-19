@@ -173,6 +173,83 @@ export function remiseEnTouche(st, id, cfg) {
   st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: id, to: best.id, range: +Rr.toFixed(1) });
 }
 
+/**
+ * LE COUP FRANC DIRECT (lot 97, cfg.cfDirect && st.full — la SANCTION qui manquait : mesuré,
+ * l'accrochage rendait 42 fautes / 20 matchs mais les coups francs joués en passe ne rendaient
+ * RIEN — la faute ne coûtait pas, A/B 18 → 14). À la PRISE d'un coup franc à portée (< 30 m du
+ * but, angle raisonnable — v montée à 19,5 au-delà de 27 m, la fenêtre balistique l'exige), le
+ * preneur ENROULE PAR-DESSUS LE MUR : l'élévation se RÉSOUT (petit balayage : passer ≥ 2,35 m
+ * à 9,15 m — le mur saute à 2,2 —, retomber sous la barre au but), le Magnus signé ramène au
+ * poteau (la lecture linéaire du gardien sous-estime l'arrivée — l'avantage du curler, lot
+ * 39). Hors fenêtre : le LANCEMENT (ci-dessous) ou la remise en passe d'hier. La CONVERSION
+ * sort de la PHYSIQUE (mur réel, gardien lot 94 posté côté ouvert, poteaux).
+ */
+export function coupFrancDirect(st, id, cfg) {
+  const q = st.players[id];
+  const { pitch } = st;
+  const goal = pitch.attackGoal(q.team);
+  const dx = goal.x - q.p[0], dzB = 0 - q.p[2];
+  const d = Math.hypot(dx, dzB);
+  if (d > 30 || d < 14 || Math.abs(q.p[2]) > 15) return false;     // trop loin, trop près (mur infranchissable), trop excentré
+  const gk = st.players.find((p) => p.keeper && p.team !== q.team);
+  const tz = (gk ? -Math.sign(gk.p[2] || 1) : (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5 ? -1 : 1) * (pitch.goalHalf - 0.7);
+  const yaw = Math.atan2(tz - q.p[2], goal.x - q.p[0]);
+  const dT = Math.hypot(goal.x - q.p[0], tz - q.p[2]);
+  const v = d > 27 ? 19.5 : 18.5;
+  let theta = null;
+  for (let t = 0.30; t <= 0.52; t += 0.02) {                       // le balayage : mur passé, barre respectée
+    const y = (x) => x * Math.tan(t) - (9.81 * x * x) / (2 * v * v * Math.cos(t) * Math.cos(t));
+    if (y(9.15) >= 2.35 && y(dT) <= 2.05 && y(dT) >= 0.2) { theta = t; break; }
+  }
+  if (theta == null) return false;                                 // pas de fenêtre balistique : on joue
+  st.ball.release('frappe');
+  st.ball.strike({ speed: v, dirYaw: yaw, elevation: theta,
+    spinAxis: [0, 1, 0], spinRev: -Math.sign(goal.x || 1) * Math.sign(tz) * 6 });
+  st.phase = 'flight';
+  st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
+  st.pass = { from: id, to: -2, lead: [goal.x, 0, tz], style: 'cf-direct', t: st.t, flight: dT / (v * Math.cos(theta)), origin: [q.p[0], q.p[2]] };
+  st.lastPasser = id;
+  st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: id, foot: q.foot ?? 'right', kind: 'coup-franc-direct',
+    range: +d.toFixed(1), tz: +tz.toFixed(2), speed: v, elev: +theta.toFixed(2), z: +q.p[2].toFixed(1), clear: null, gkZ: gk ? +gk.p[2].toFixed(2) : null });
+  return true;
+}
+
+/**
+ * LE LANCEMENT DE COUP FRANC (lot 97, même clé cfg.cfDirect — le CF LOINTAIN met le ballon
+ * DANS LA BOÎTE). Mesuré : 10 des 11 coups francs naissent au-delà de 30 m (l'accrochage vit
+ * au milieu — sonde 8 × 300 s) et la remise courte d'hier ne rendait RIEN : la faute ne
+ * coûtait pas. Au réel, la vraie sanction d'une faute à 35-55 m est un COUP DE PIED ARRÊTÉ :
+ * le ballon lobé vers la surface, le duel aérien. Le tireur vise l'ESPACE devant le but
+ * (~10,5 m, ±z seedé rnd2) ; le coéquipier le plus proche du point de chute finit sa course
+ * (lot 59), la cloche se calcule (portée → v à θ 0,62, backspin des passes levées lot 54), le
+ * reste est PHYSIQUE : l'aimant du premier toucher, le gardien du corner (lot 94), les têtes
+ * (lot 34). Dette nommée : pas de photo Loi 11 sur la remise (comme la rentrée de touche).
+ */
+export function coupFrancLance(st, id, cfg) {
+  const q = st.players[id];
+  const { pitch } = st;
+  const goal = pitch.attackGoal(q.team);
+  const d = Math.hypot(goal.x - q.p[0], 0 - q.p[2]);
+  if (d > 55 || d <= 30) return false;                             // trop loin pour la boîte ; à portée, le direct s'en charge
+  const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
+  const sg = Math.sign(goal.x || 1);
+  const tx = goal.x - sg * 10.5, tz = (rnd() < 0.5 ? -1 : 1) * (2 + 5 * rnd());
+  const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
+  if (!mates.length) return false;
+  const best = mates.sort((a, b) => Math.hypot(a.p[0] - tx, a.p[2] - tz) - Math.hypot(b.p[0] - tx, b.p[2] - tz))[0];
+  const R = Math.hypot(tx - q.p[0], tz - q.p[2]);
+  const theta = 0.62, v = Math.sqrt(R * 9.81 / Math.sin(2 * theta));
+  const yaw = Math.atan2(tz - q.p[2], tx - q.p[0]);
+  st.ball.release('coup-franc');                                   // la cause VRAIE au grand livre
+  st.ball.strike({ speed: v, dirYaw: yaw, elevation: theta, spinAxis: [-Math.sin(yaw), 0, Math.cos(yaw)], spinRev: 3.5 });
+  st.phase = 'flight';
+  st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
+  st.pass = { from: id, to: best.id, lead: [tx, 0, tz], style: 'cf-lancement', t: st.t, flight: 2 * v * Math.sin(theta) / 9.81, origin: [q.p[0], q.p[2]] };
+  st.lastPasser = id;
+  st.events.push({ t: +st.t.toFixed(2), type: 'lancement', by: id, to: best.id, range: +d.toFixed(1), lead: [+tx.toFixed(1), +tz.toFixed(1)] });
+  return true;
+}
+
 // ---------------------------------------------------------------- la sortie et les remises
 /**
  * LA SORTIE DE BALLE, par la RÈGLE (pitch.outRule au point de franchissement interpolé).

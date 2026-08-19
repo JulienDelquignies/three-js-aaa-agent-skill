@@ -48,8 +48,8 @@
   + une clé du lot grepable dans le chunk minifié.
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
-- NOTES.md : journal complet (notes 1-138) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 139.
+- NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 140.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -112,11 +112,20 @@
    slot — la Loi 11 piège —, ne monte pas à + de 6 m), l'assurance i===2 en fenêtre de pressing.
    Ligne placée 22,4 → 5,2 m, côté faible 17,3 → 13,5. Dette nommée : la couverture délibérée
    (~55 %) — le cover d'aile à l'angle du cône. Clé cfg.zone, sab76 11e.
-7. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
+7. ~~**LES FAUTES DU VRAI FOOTBALL (lot 97, chantier Loi 12)**~~ — **LIVRÉ** (note 139) :
+   l'ACCROCHAGE DU BATTU (duel.accrocheStep/accrocheP — politique pure testée) : le dépassé
+   retient, composure × axe pressing × rôle press × faute tactique ×1,8 (grave → jaune) ×
+   surface ×0,15, base 0,065 au réel ; le porteur s'arrache 1×/2 (l'avantage joue), st.rnd2
+   (flux auxiliaire — le contrat rng). ET LE COUP FRANC A UN PRIX (referee, clé cfg.cfDirect) :
+   DIRECT 14-30 m (l'enroulée par-dessus le mur, balayage balistique), LANCEMENT 30-55 m (le
+   lob dans la boîte, la conversion sort de la physique). A/B 85 tirs/19 buts ∈ bande, 20
+   fautes/20 matchs. Charges d'épaule : toutes à distance de jeu (pas de loi — on ne légifère
+   pas le vide). Clés cfg.accroche + cfg.cfDirect, sab76 12e. Dette : photo Loi 11 du lancement.
+8. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
    la patte) ; re-fonder les 4 clauses de flux pour activer l'écartement en continu ;
    réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
 
 ## Backlog long terme (inchangé)
-Corners travaillés, coups francs directs, gardien relanceur avancé, formations 442/352
+Corners travaillés, gardien relanceur avancé, formations 442/352
 complètes (la couche LIGNES existe), le troisième homme / rotations relationnelles,
 triangulation v4 (assignation, hystérésis), expulsion physique complète, saut du jeu de tête.

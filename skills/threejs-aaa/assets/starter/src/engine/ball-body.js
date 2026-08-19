@@ -43,7 +43,7 @@ export const RESTARTS = new Set(['sortie-de-but', 'coup-franc', 'touche', 'corne
 /** Les seules façons de PERDRE le ballon quand on le porte. Même loi que RESTARTS et que les
  *  interruptions de geste : une sortie de possession se NOMME, sinon la perte silencieuse redevient
  *  le chemin normal — c'est la possession-étiquette qu'on vient d'enterrer. */
-export const RELEASES = new Set(['frappe', 'touche', 'conduite', 'contesté', 'perte', 'sortie', 'arrêt-de-jeu', 'porte-dos']);
+export const RELEASES = new Set(['frappe', 'touche', 'conduite', 'contesté', 'perte', 'sortie', 'arrêt-de-jeu', 'porte-dos', 'coup-franc']);
 
 /**
  * L'AUDIT, en fonction PURE — donc sabotable directement, ce qui est la seule façon de prouver qu'il

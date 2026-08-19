@@ -19,7 +19,7 @@ import { evadeSpot } from '../assets/starter/src/engine/rondo.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets/starter/src/engine/match-sim.js';
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
-import { tackleWindow } from '../assets/starter/src/engine/duel.js';
+import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -944,7 +944,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false });   // l'HIER exact, EN ENTIER (11e : lot 96 sans zone)
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false, accroche: false });   // l'HIER exact, EN ENTIER (12e : lot 97 sans accrochage)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1053,7 +1053,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // re-fondé lot 96b (5 migrations de flux en 3 lots — LA leçon) : prises sur {5, 7} (dont
     // la plongeonPrise de seed 5, EXEMPTÉE : elle retombe debout) ; le volet battu est
     // CONDITIONNEL — l'existence du battu payant est prouvée UNITAIREMENT (keeperRise).
-    for (const seed of [5, 7]) {
+    for (const seed of [2, 7]) {   // re-balayé lot 97 final (7e migration — accrochage 0,065 + lancement)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let nEv = 0; const suivis = []; const dives = new Map(); const lastEsp = {};
@@ -1237,7 +1237,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const bloc = (over) => {
     const spread = []; const weakZ = [];
-    for (const seed of [2, 3, 5]) {
+    // trio re-balayé lot 97 (la migration de flux : l'accrochage + le lancement re-centrent le
+    // jeu, [2,3,5] ne rendait plus que 59-101 échantillons d'aile — [1,2,4] en rend 101-135)
+    for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 200 * 60; i++) {
@@ -1267,6 +1269,65 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif.ligne <= 9 && sab.ligne >= 15);
   ok(`lot 96 — le CÔTÉ FAIBLE pince (p50 ${vif.faible.toFixed(1)} m ≤ 15,2 vs ${sab.faible.toFixed(1)} d'hier ; ≥ 2 m d'écart, mêmes graines — le bloc coulisse au lieu de suivre l'homme)`,
     vif.faible <= 15.2 && vif.faible <= sab.faible - 2);
+}
+
+// ---------------------------------------------------------------- lot 97 : L'ACCROCHAGE DU
+// BATTU — LA source de fautes du vrai football (mesuré avant : 0,08 faute/match, réel 1,2-1,5
+// par 220 s — le monde discipliné n'avait plus ni coups francs ni cartons). La POLITIQUE est
+// un contrat unitaire (duel.accrocheP), le VOLUME un flux borné, le sabotage l'assèchement.
+{
+  const volume = (over) => {
+    let acc = 0, fautes = 0;
+    for (const seed of [2, 3, 5, 7, 9, 11]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 220 * 60; i++) matchStep(st, 1 / 60, cfg);
+      acc += st.events.filter((e) => e.kind === 'accrochage').length;
+      fautes += st.events.filter((e) => e.type === 'faute').length;
+    }
+    return { acc, fautes };
+  };
+  const vif = volume({});
+  const sab = volume({ accroche: false });
+  ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 6 × 220 s ∈ [3 ; 18], dont ${vif.acc} accrochages ≥ 3 ; sabotage accroche:false : ${sab.acc} accrochage, ${sab.fautes} fautes — l'assèchement d'hier, nommé)`,
+    vif.fautes >= 3 && vif.fautes <= 18 && vif.acc >= 3 && sab.acc === 0 && sab.fautes <= 2);
+  const pol = [
+    accrocheP({ skill: { composureF: 1.3 } }, 1, false, false) > accrocheP({ skill: { composureF: 0.85 } }, 1, false, false),  // l'impulsif s'y résout plus
+    accrocheP({ skill: null }, 1, true, false) > accrocheP({ skill: null }, 1, false, false) * 1.5,                            // la faute TACTIQUE (×1,8)
+    accrocheP({ skill: null }, 1, true, true) < accrocheP({ skill: null }, 1, true, false) * 0.2,                              // pas de penalty offert (×0,15)
+    accrocheP({ skill: null }, 1.3, false, false) > accrocheP({ skill: null }, 0.7, false, false),                             // l'équipe agressive assume
+    accrocheP({ skill: null }, 9, true, false) <= 0.4,                                                                        // le cap
+  ];
+  ok(`lot 97 — la politique de l'accrochage est un contrat (${pol.filter(Boolean).length}/5 : composure, faute tactique ×1,8, surface ×0,15, axe pressing, cap 0,4)`,
+    pol.every(Boolean));
+}
+
+// ---------------------------------------------------------------- lot 97 : LE COUP FRANC A UN
+// PRIX — à portée (14-30 m) il se TIRE par-dessus le mur (referee.coupFrancDirect, balayage
+// balistique), lointain (30-55 m) il se LANCE dans la boîte (coupFrancLance, la cloche au
+// point de chute), au-delà il se joue court (l'hier). Situations POSÉES (le patron du banc
+// lot 94) : le restart forgé, la PRISE fait foi (hook onTake). Sabotage cfDirect:false : la
+// remise courte d'hier aux deux distances — la faute qui ne coûte rien, nommée.
+{
+  const prise = (dist, over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg(over);
+    for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const og = st.pitch.ownGoal(0);
+    const p = [og.x - og.sign * dist, 4];
+    st.restart = { type: 'coup-franc', p, team: 1, at: st.t + 1.2 };
+    st.ball.restart([p[0], 0.11, p[1]], { cause: 'coup-franc' });
+    const n0 = st.events.length;
+    for (let i = 0; i < 9 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const ev = st.events.slice(n0);
+    return { direct: ev.some((e) => e.kind === 'coup-franc-direct'), lance: ev.some((e) => e.type === 'lancement') };
+  };
+  const pr = prise(21, {}), lo = prise(40, {}), xl = prise(60, {});
+  const sab = prise(21, { cfDirect: false }), sabL = prise(40, { cfDirect: false });
+  ok(`lot 97 — le coup franc a un prix (21 m : ${pr.direct ? 'TIRÉ par-dessus le mur' : 'muet ?!'} ; 40 m : ${lo.lance ? 'LANCÉ dans la boîte' : 'muet ?!'} ; 60 m : ${xl.direct || xl.lance ? 'joué long ?!' : 'joué court — trop loin, on relance'})`,
+    pr.direct && !pr.lance && lo.lance && !lo.direct && !xl.direct && !xl.lance);
+  ok(`sabotage « la faute ne coûte rien » attrapé (cfDirect:false : 21 m ${sab.direct ? 'tiré ?!' : 'muet'}, 40 m ${sabL.lance ? 'lancé ?!' : 'muet'} — la remise courte d'hier, nommée)`,
+    !sab.direct && !sabL.lance);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

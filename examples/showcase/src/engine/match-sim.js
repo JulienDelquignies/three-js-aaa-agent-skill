@@ -14,10 +14,11 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint } from './keeper.js';
+import { accrocheStep } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
 import { MOVES } from './animkit.js';
@@ -38,15 +39,15 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   if (full && perTeam === 5) perTeam = 10;
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
   st.full = pitch.dims.length > 60;
-  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : toujours résolue — absente = « équilibre » (0,5 partout,
-  // l'IDENTITÉ au bit près). makeMatch({ tactics: ['gegenpressing', 'blocBas'] }) ou objets partiels.
+  // le FLUX AUXILIAIRE (lot 97, contrat rng.js : un sous-seed par sous-système) : l'accrochage tire sur st.rnd2 — consommer st.rnd décalait tout le mix aval au bit (mesuré)
+  { let s2 = (seed * 7919 + 13) >>> 0; st.rnd2 = () => ((s2 = (s2 * 1664525 + 1013904223) >>> 0) / 4294967296); }
+  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : toujours résolue — absente = équilibre (l'IDENTITÉ au bit).
   st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
   for (const team of [0, 1]) {
     st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; });
   }
-  // LES RÔLES PAR POSTE (roles.js) : clé = poste, valeur = nom/objet — APRÈS l'assignation des
-  // postes. Aucun rôle : polyvalent, pas un bit. Fusion PRESET < EXPLICITE (lot 20).
+  // LES RÔLES PAR POSTE (roles.js) : APRÈS l'assignation des postes ; PRESET < EXPLICITE (lot 20).
   for (const team of [0, 1]) {
     const spec = { ...(st.tactics[team].roles ?? {}), ...(roles?.[team] ?? {}) };
     for (const q of st.players.filter((q) => q.team === team)) {
@@ -58,9 +59,8 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
     const h = ((seed * 31 + q.id * 37) % 100 + 100) % 100;
     q.strongFoot = h < 72 ? 'right' : h < 95 ? 'left' : 'both';
   }
-  // LES EFFECTIFS NOTÉS (attributes.js — le contrat avec les projets amont) : squads[team][i] =
-  // { ratings, look, name, number } appliqué dans l'ordre des joueurs de l'équipe (le DERNIER est
-  // le gardien). Sans squads : aucun p.skill, aucun tirage d'erreur — le monde d'aujourd'hui.
+  // LES EFFECTIFS NOTÉS (attributes.js) : squads[team][i] appliqué dans l'ordre (le DERNIER =
+  // gardien). Sans squads : aucun p.skill, aucun tirage — le monde d'aujourd'hui.
   if (squads) {
     for (const team of [0, 1]) {
       const roster = squads[team] ?? [];
@@ -111,7 +111,6 @@ function assignMatchJobs(st, cfg) {
   const carrier = st.players[st.possession.carrier] ?? null;
   const anchor = st.ball.p;
 
-  // le sifflet de la Loi 11 AVANT tout métier ; le CHRONO et la LOI 12 au même étage
   if (st._whistle) administerWhistle(st, cfg);
   if (cfg.chrono) chronoStep(st, cfg);
   if (cfg.loi12 && st._faute) adjugeFaute(st, cfg);
@@ -190,8 +189,7 @@ function assignMatchJobs(st, cfg) {
       // RESPIRATION : tout le monde MARCHE (2,6 m/s) — on revenait en trottinant à 4,9-5,6.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) { p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]]; continue; }
       if (p.keeper) {
-        // …le gardien de la LIGNE (Loi 14) : SUR sa ligne, entre les poteaux, jusqu'à la frappe
-        if (l14 && p.team === l14.def) { p.job = 'keeper'; p.target = [l14.own.x - l14.own.sign * 0.15, 0, 0]; continue; }
+          if (l14 && p.team === l14.def) { p.job = 'keeper'; p.target = [l14.own.x - l14.own.sign * 0.15, 0, 0]; continue; }
         // LE COUP FRANC ADVERSE PROCHE (lot 94, cfg.appuis && st.full) : le MUR couvre le côté
         // du ballon — le gardien couvre le CÔTÉ OUVERT, près de sa ligne (le direct se lit tard)
         const ogK = pitch.ownGoal(p.team);
@@ -348,8 +346,7 @@ function assignMatchJobs(st, cfg) {
     const shotAge = st.pass ? st.t - st.pass.t : Infinity;
     // le GARDIEN NOTÉ : son envergure et son réflexe viennent de sa note (keeping) — sinon le métier moyen
     let K = gk.skill ? { ...KEEPER, diveReach: gk.skill.keeperReach, reflex: gk.skill.keeperReflex } : KEEPER;
-    // LES APPUIS (lot 94, cfg.appuis && st.full) : bissectrice à la justesse de la note, profondeur
-    // au rôle garde + depthKF, le SET (lancé = lit tard), duel POSÉ sur porté. false : hier au bit.
+    // LES APPUIS (lot 94) : bissectrice à la note, profondeur au rôle garde, SET, duel posé.
     if (st.full && cfg.appuis !== false) {
       const ownr = st.ball.owner != null ? st.players[st.ball.owner] : null;
       K = { ...K, appuis: true, posMixF: gk.skill?.posMixF ?? 1, depthF: gk.skill?.depthKF ?? 1,
@@ -375,9 +372,8 @@ function assignMatchJobs(st, cfg) {
       cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
     if (dec.mode === 'dive' && gk.down <= 0) {
       const cross = dec.cross;
-      // L'ESPÈCE DE LA PARADE (lot 93, cfg.parades && st.full) : la GÉOMÉTRIE PRÉDITE choisit —
-      // haut ≥ 1,35 → plongeonPrise (retombe debout) ; ras < 0,85 → plongeonBas ; loin > 1,35 m
-      // → plongeonUneMain ; sinon le plongeon à deux mains. Clé éteinte : bas/aérien d'hier.
+      // L'ESPÈCE DE LA PARADE (lot 93) : haut ≥ 1,35 → plongeonPrise (retombe debout) ; ras
+      // < 0,85 → plongeonBas ; loin > 1,35 m → plongeonUneMain ; sinon deux mains. Éteinte : hier.
       const par93 = st.full && cfg.parades !== false;
       const espece = par93 && (cross.y ?? 0) >= 1.35 ? 'plongeonPrise'
         : (cross.y ?? 0) < 0.85 ? 'plongeonBas'
@@ -940,7 +936,6 @@ function assignMatchJobs(st, cfg) {
         p.job = 'cover'; p.target = coverSpot(defGoal, anchor, cfg);
         return;
       }
-      // LA COUVERTURE NE MEURT PAS EN FENÊTRE (lot 96) : l'ASSURANCE glisse à i===2 (58 % couverts avant).
       if (st.full && cfg.zone !== false && press && i === 2 && carrier) {
         p.job = 'cover'; p.target = coverSpot(defGoal, anchor, cfg);
         return;
@@ -1109,8 +1104,14 @@ function passBias(st, c, o) {
 export function matchCfg(overrides = {}) {
   return {
     ...MATCH, assignJobs: assignMatchJobs, tryShot, tryCross, tryClear, onOut, onDive, canTake, passBias, ballFetch,
+    // l'accrochage MODULÉ par la tactique du camp défendant (axe pressing — lot 97, duel.js)
+    accrocheMod: (st, c, cfg) => accrocheStep(st, c, cfg, axe(tac(st, 1 - c.team).pressing, 0.7, 1.3)),
     // LA PRISE A UN MÉTIER (hook onTake du loop) : la touche du plein format se LANCE (Loi 15)
-    onTake: (st, id, type, cfg) => { if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg); },
+    onTake: (st, id, type, cfg) => {
+      if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg);
+      // …et le COUP FRANC a un prix (lot 97, cfg.cfDirect) : à portée il se TIRE, lointain il se LANCE dans la boîte
+      else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
+    },
     // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },
     // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91,
@@ -1182,7 +1183,6 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   const denied = (st.deny?.['tir-couloir-fermé'] ?? 0) > 0;
   if (!shots.length && !denied && thirdVisits > 25) issues.push(`PERSONNE NE TIRE malgré ${thirdVisits} passages dans le dernier tiers — un rondo décoré`);
   for (const s of shots) {
-    // …la portée déclarée porte la ZONE GRISE (lot 92) : le tir lointain du finisseur est légal
     if (s.range > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
     // la clause connaît LA MÊME loi que le déclencheur : à bout portant (< 9 m), on tire dans le
     // trafic (0,25 m) — juger tous les tirs au couloir de loin re-créerait l'attaquant muet

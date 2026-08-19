@@ -4,7 +4,7 @@ import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-pr
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
-import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow } from './duel.js';
+import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep } from './duel.js';
 import { teteStep, voleeStep } from './tete.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
@@ -275,10 +275,8 @@ function receive(st, id, cfg = RONDO) {
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
     p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — plan ET cap (le hint survivant pilotait vers l'ancre d'un autre monde)
-    // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH, pas une touche orientée de joueur
-    // de champ (la table des contrôles laissait filer un ballon « sans technique légale » — le
-    // CSC de première touche). Les gardiens n'existent pas au rondo — aucune garde nécessaire.
-    // …sauf le tir DANS LE CORPS à hauteur de poitrine : le buste ENCAISSE (lot 93, keeper.js).
+    // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH (les gardiens n'existent pas au
+    // rondo) ; le tir DANS LE CORPS à hauteur de poitrine : le buste ENCAISSE (lot 93).
     if (p.keeper) {
       if (st.full && cfg.parades !== false && busteBlock(st, p, cfg)) return;
       st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92], dW(st, cfg, 0.92));
@@ -781,13 +779,14 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // MÉDIAN du porteur mais la pression ballon ne s'accumule que 2,4 % du portage (le
     // bouclier protège le BALLON — c'est son métier) → 1 duel / 9 min, un jeu sans contact.
     // Le football réel se joue AU CORPS : la charge d'épaule loyale (le ballon peut jaillir),
-    // la charge PAR DERRIÈRE qui est une faute (Loi 12 — le flux naturel des coups francs).
-    // Un ballon jailli SORT du bloc de portage (le même return que la perte : le monde n'est
-    // plus en carry, le reste du bloc lirait un porteur qui n'existe plus).
+    // la charge PAR DERRIÈRE est une faute (Loi 12) ; un ballon jailli SORT du bloc de portage.
     if (cfg.charge && st.full) {
       chargeStep(st, c, dt, cfg);
       if (st.phase !== 'carry') return st;
     }
+    // …et L'ACCROCHAGE DU BATTU (lot 97, cfg.accroche && loi12 — duel.js : LA source de fautes
+    // du vrai football, le dépassé qui retient ; modulations tactique/rôle passées par le hook)
+    if (st.full && cfg.accroche !== false && cfg.loi12 && !st._faute) cfg.accrocheMod ? cfg.accrocheMod(st, c, cfg) : accrocheStep(st, c, cfg);
     // …et le TACLE GLISSÉ SUR PORTEUR (cfg.slideTackle && st.full — lot 33) : le pari du
     // dernier recours. Le glissé sur ballon LIBRE existait (« un ballon qui traîne ») ; sur
     // porteur, la table technique juge la géométrie réelle — ballon pris, jambes fauchées

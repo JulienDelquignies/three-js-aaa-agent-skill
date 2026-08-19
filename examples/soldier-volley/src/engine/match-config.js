@@ -504,6 +504,22 @@ export const MATCH = {
                           // le corps à hauteur de poitrine ≥ busteV → BLOCAGE du buste (arrêt
                           // {mode:'buste'}, keeper.busteBlock). false : le plongeon d'hier.
   busteV: 12,             // m/s — le seuil du blocage : sous lui, la prise en mains d'hier
+  cfDirect: true,         // LE COUP FRANC A UN PRIX (st.full, lot 97 — referee.coupFrancDirect
+                          // + coupFrancLance) : pris à 14-30 m (|z| ≤ 15) il s'ENROULE par-dessus
+                          // le mur (élévation au balayage balistique, Magnus signé vers le poteau
+                          // loin du gardien) ; à 30-55 m il se LANCE dans la boîte (le lob au point
+                          // de chute, la conversion sort de la physique) — LA SANCTION de la faute
+                          // (sans elle : des fautes qui ne coûtaient rien, A/B 18 → 14 buts).
+                          // false : la remise en passe d'hier aux deux distances.
+  accroche: true,         // L'ACCROCHAGE DU BATTU (st.full, lot 97 — duel.accrocheStep, requiert
+                          // loi12) : LA source de fautes du vrai football — le défenseur DÉPASSÉ
+                          // (dans le dos du porteur lancé) qui retient. Une décision par épisode
+                          // (tirage seedé, cooldown 6 s), la COMPOSURE en facteur (l'impulsif s'y
+                          // résout, le posé court), l'axe pressing et le rôle press assument,
+                          // la transition PROMETTEUSE fait la faute TACTIQUE (grave — jaune vite),
+                          // ~×0,15 dans sa surface. L'accroché casse sa course, le ballon VIT
+                          // (l'avantage départage). false : le monde sans fautes d'hier (0,08/match
+                          // mesuré — réel 1,2-1,5 par 220 s).
   zone: true,             // LE BLOC EST BALLSIDE (st.full, lot 96 — l'axe tactics.marquage) :
                           // l'homme du côté FAIBLE n'a pas de marqueur (ballLim 8…30 m selon
                           // l'axe), la ZONE le couvre — slots du côté faible PINCÉS vers l'axe
