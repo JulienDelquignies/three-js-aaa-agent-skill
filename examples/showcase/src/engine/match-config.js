@@ -504,6 +504,15 @@ export const MATCH = {
                           // le corps à hauteur de poitrine ≥ busteV → BLOCAGE du buste (arrêt
                           // {mode:'buste'}, keeper.busteBlock). false : le plongeon d'hier.
   busteV: 12,             // m/s — le seuil du blocage : sous lui, la prise en mains d'hier
+  jockey: { dist: 1.0, at: 4.2, cap: 2.9, force: 1.5 },
+                          // LES APPUIS DU DÉFENSEUR (st.full, lot 95) : face à un porteur POSSÉDÉ,
+                          // la cible de press vit ENTRE ballon et but (dist — l'appui-position, on
+                          // ne court plus AU ballon) ; sous `at` mètres l'approche est SOUS CONTRÔLE
+                          // (plafond cap × agilité — mesuré avant : 70 % des entrées en duel lancées
+                          // > 3,5 m/s) ; et le TACLE attend sa FENÊTRE (duel.tackleWindow : ballon
+                          // prenable jugé à la COMPOSURE — le posé exige net, l'impulsif s'élance ;
+                          // l'étau mord quand même à minuterie × force). false : la minuterie sèche
+                          // et la course au ballon d'hier, au bit près.
   appuis: true,           // LES APPUIS DU GARDIEN (st.full, lot 94) : position sur la BISSECTRICE
                           // des poteaux (mesuré avant : la ligne du centre laissait 0,3-0,7 m au
                           // premier poteau) à la justesse de keeping (posMixF), profondeur au rôle

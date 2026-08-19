@@ -361,9 +361,7 @@ function assignMatchJobs(st, cfg) {
         gardeF: axe(role(gk).garde, 0.7, 1.3), vGk: Math.hypot(gk.v[0], gk.v[1]), porte: !!ownr && ownr.team !== gk.team };
     }
     // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté »
-    // par un attaquant. Le label de conduite n'est pas un bouclier contre un plongeon dans les
-    // pieds : la cueillette ne tournait qu'en phase libre, et 8 buts sans tir sont entrés à
-    // 3,5-4,3 m/s DANS LES PIEDS d'un gardien posté à 0,5-2 m sans aucun droit de prise.
+    // (8 buts sans tir entrés à 3,5-4,3 m/s dans les pieds d'un gardien sans droit de prise).
     if (cfg.keeperClaim !== false) {
       const own = pitch.ownGoal(gk.team);
       const bd = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
@@ -378,8 +376,7 @@ function assignMatchJobs(st, cfg) {
         continue;
       }
     }
-    // la MENACE se lit au dernier contact (le ballon de SA propre équipe se cueille) ; le SPIN se
-    // lit (lot 39 : la flottante retarde le départ) — shotVariety:false = la lecture d'hier au bit
+    // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
     if (dec.mode === 'dive' && gk.down <= 0) {
@@ -394,11 +391,8 @@ function assignMatchJobs(st, cfg) {
       const move = { id: espece, duration: MOVES[espece].duration, contact: MOVES[espece].contact };
       const lunge = [(pitch.ownGoal(gk.team).x - gk.p[0]) * 0.2, cross.z - gk.p[2]];
       const L = Math.hypot(lunge[0], lunge[1]) || 1;
-      // LE CÔTÉ DU CLIP EST RELATIF AU REGARD RÉEL, pas au monde : « cross.z > gk.z → gauche »
-      // était vrai pour un gardien et inversé pour celui d'en face (la moitié des plongeons se
-      // jouaient mirrorés à l'envers — clip dessiné À L'OPPOSÉ du corps, hips à 2,5 m, « il
-      // plonge du mauvais côté », captures) ; et l'approximation au camp restait fausse dès que
-      // le regard suivait le ballon. Le côté est le produit vectoriel regard × détente.
+      // LE CÔTÉ DU CLIP EST RELATIF AU REGARD RÉEL, pas au monde (« cross.z > gk.z → gauche »
+      // jouait la moitié des plongeons à l'envers) : le produit vectoriel regard × détente.
       const fxK = Math.cos(gk.yaw), fzK = Math.sin(gk.yaw);
       const sideFoot = (fxK * (lunge[1] / L) - fzK * (lunge[0] / L)) > 0 ? 'left' : 'right';
       startGesture(gk, move, {
@@ -436,8 +430,7 @@ function assignMatchJobs(st, cfg) {
   const own = pitch.ownGoal(atk === 0 ? 1 : 0);                    // le but que la défense protège
   void own;
 
-  // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS (la formation l'orbitait : 14 épisodes
-  // mesurés) : le plus proche de chaque camp court à l'interception, mène ~0,7 s re-résolue.
+  // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS : le plus proche de chaque camp court.
   const bSpd = Math.hypot(st.ball.v[0], st.ball.v[2]);
   const freeBall = cfg.chaseLoose !== false && !carrier && (st.phase === 'loose' || !st.pass || st.pass.to < 0);
   const leadK = Math.min(6, bSpd * 0.7);
@@ -925,15 +918,22 @@ function assignMatchJobs(st, cfg) {
             return;
           }
         }
+        // LE JOCKEY (lot 95, cfg.jockey && st.full) : face au porteur POSSÉDÉ on se place ENTRE
+        // ballon et SON but (l'appui-position — on ne court plus AU ballon), l'approche finale
+        // SOUS CONTRÔLE (movement.js). Le ballon LIBRE se gagne plein fer. Doc : match-config.
+        if (cfg.jockey !== false && st.full && carrier && !freeBall && st.ball.owner === carrier.id) {
+          const ogJ = pitch.ownGoal(p.team);
+          const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = Math.hypot(gxJ, gzJ) || 1;
+          const jd = cfg.jockey?.dist ?? 1.0;
+          p.job = 'press'; p.target = [anchor[0] + (gxJ / glJ) * jd, 0, anchor[2] + (gzJ / glJ) * jd];
+          return;
+        }
         p.job = 'press'; p.target = freeBall ? [leadP[0], 0, leadP[1]] : [anchor[0], 0, anchor[2]]; return;
       }
       if (i === 1) {
-        // EN FENÊTRE DE PRESSING : le second défenseur ne couvre plus — il SAUTE sur le PIVOT
-        // (l'option courte du porteur). Presser à deux en abandonnant la couverture, c'est LE
-        // pari du pressing — le risque est le prix du régain haut, et il se voit (une passe qui
-        // casse la première ligne trouve le champ que le cover aurait fermé).
-        // …et un rôle SANS jambes de press (press < 0,25 — le meneur replié) ne saute pas :
-        // il garde la couverture, le pari du pressing appartient à ceux qui en vivent
+        // EN FENÊTRE DE PRESSING : le second défenseur SAUTE sur le PIVOT (le pari du pressing —
+        // le régain haut se paie en couverture abandonnée) ; un rôle sans jambes de press
+        // (press < 0,25 — le meneur replié) ne saute pas : il garde la couverture.
         if (press && carrier && role(p).press >= 0.25) {
           let outlet = null, outD = Infinity;
           for (const a of attackers) if (a.id !== carrier.id && !a.keeper) {

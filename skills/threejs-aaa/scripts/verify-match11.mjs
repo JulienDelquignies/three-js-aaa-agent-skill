@@ -19,6 +19,8 @@ import { evadeSpot } from '../assets/starter/src/engine/rondo.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets/starter/src/engine/match-sim.js';
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
+import { tackleWindow } from '../assets/starter/src/engine/duel.js';
+import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -636,7 +638,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   {
     const shadow = (coverShadow) => {
       const { st, sgn } = mk();
-      const cfg = matchCfg({ shotRange: 20, coverShadow });
+      // …jockey OFF dans CE banc-fixture : la clause juge l'OMBRE (couloir vs ligne droite) —
+      // la cible jockey du lot 95 (entre ballon et but) est une TROISIÈME cible, hors sujet ici
+      const cfg = matchCfg({ shotRange: 20, coverShadow, jockey: false });
       const c0 = st.players.find((p) => p.team === 0 && p.post === 5);
       const hot = st.players.find((p) => p.team === 0 && p.post === 8);
       c0.p[0] = 0; c0.p[2] = 0; c0.yaw = 0;
@@ -939,7 +943,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vif76 = touchesDos({});
   ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 4 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif : la grâce et l'exemption d'arrêt font PRÉVENIR la loi plutôt que punir)`,
     vif76.part <= 0.04);
-  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false });   // l'HIER exact, EN ENTIER (9e : lot 94 sans appuis)
+  const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false });   // l'HIER exact, EN ENTIER (10e : lot 95 sans jockey)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1045,11 +1049,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const gardien = (over) => {
     const out = { prises: [], battus: [] };
-    // re-fondé lot 94 (la bissectrice des appuis déplace le flux — re-balayé : prise sur {6},
-    // battu PROPRE sur {12}). Le BATTU se mesure au restart qui le purge passé la durée du
-    // geste (~1,4 s — avant, l'acte possède le corps : down 0 est le contrat lot 91, le battu
-    // paie à la FIN du geste) — ou au chemin des 2 s sans restart quand le flux l'offre.
-    for (const seed of [2, 6, 12]) {
+    // re-fondé lot 95 (le jockey déplace le flux — re-balayé : prise sur {8}, battus propres
+    // sur {6, 8}). Le BATTU se mesure au restart qui le purge passé la durée du geste (~1,4 s —
+    // avant, l'acte possède le corps : down 0 est le contrat lot 91, le battu paie à la FIN du
+    // geste) — ou au chemin des 2 s sans restart quand le flux l'offre.
+    for (const seed of [6, 8]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let nEv = 0; const suivis = []; const dives = new Map(); const lastEsp = {};
@@ -1175,6 +1179,55 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const cfSab = poser('coup-franc', { appuis: false });
   ok(`sabotage « le gardien d'hier aux CPA » attrapé (appuis:false : corner z ${coSab.z.toFixed(2)} côté ballon, coup franc z ${cfSab.z.toFixed(2)} aligné centre — les postes dédiés, nommés)`,
     coSab.z > -0.1 && cfSab.z > -0.5);
+}
+
+// ---------------------------------------------------------------- lot 95 : LES APPUIS DU
+// DÉFENSEUR — le presseur arrive SOUS CONTRÔLE sur un porteur possédé (mesuré avant : 60 % des
+// entrées en duel lancées > 3,5 m/s — « la défense se jette »), sa cible vit ENTRE ballon et
+// but, et le TACLE attend sa FENÊTRE (duel.tackleWindow, composure en facteur). L'A/B se joue
+// À CLÉ sur les mêmes graines : l'effet est attribuable, pas un hasard de flux.
+{
+  const entrees = (over) => {
+    const out = [];
+    for (const seed of [2, 3, 5, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      const inD = new Set();
+      for (let i = 0; i < 200 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const c = st.players[st.possession.carrier];
+        if (!c || c.keeper || st.ball.owner !== c.id) { inD.clear(); continue; }
+        for (const q of st.players) {
+          if (q.team === c.team || q.keeper || q.down > 0 || q.job !== 'press') continue;
+          const d = Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]);
+          if (d < 1.6 && !inD.has(q.id)) { inD.add(q.id); out.push(Math.hypot(q.v[0], q.v[1])); }
+          else if (d >= 2.2) inD.delete(q.id);
+        }
+      }
+    }
+    const lances = out.filter((v) => v > 3.5).length;
+    return { n: out.length, part: lances / (out.length || 1), p50: [...out].sort((a, b) => a - b)[Math.floor(out.length / 2)] ?? 0 };
+  };
+  const vif = entrees({});
+  const sab = entrees({ jockey: false });
+  ok(`lot 95 — le presseur arrive SOUS CONTRÔLE (${(vif.part * 100).toFixed(0)} % lancés vs ${(sab.part * 100).toFixed(0)} % la minuterie d'hier, p50 ${vif.p50.toFixed(1)} vs ${sab.p50.toFixed(1)} m/s — ≥ 12 pts d'écart, même graines)`,
+    vif.part <= sab.part - 0.12 && vif.p50 < sab.p50);
+  // la FENÊTRE DU TACLE, unitaire (le patron checkKeeper) : identité hors match/clé, l'étau
+  // force à ×2,2, la fuite se refuse, et la COMPOSURE départage le posé de l'impulsif
+  const stF = (pressure, bv) => ({ full: true, pressure, ball: { p: [1.0, 0.11, 0], v: [bv, 0, 0] }, players: [] });
+  const q0 = { p: [0, 0, 0], skill: null };
+  const cfgJ = { jockey: {}, tackleTime: 1.1 };
+  const uni = [
+    tackleWindow({ ...stF(1.2, 3), full: false }, q0, cfgJ, balPrenable) === true,          // hors 11c11 : la minuterie d'hier
+    tackleWindow(stF(1.2, 3), q0, { ...cfgJ, jockey: false }, balPrenable) === true,        // clé éteinte : identité
+    tackleWindow(stF(1.2, 3), q0, cfgJ, balPrenable) === false,                             // ballon qui FUIT à 3 m/s : pas de fenêtre — on jockey
+    tackleWindow(stF(2.5, 3), q0, cfgJ, balPrenable) === true,                              // l'étau force (≥ ×2,2) : le porteur n'est pas intouchable
+    tackleWindow(stF(1.2, 0.2), q0, cfgJ, balPrenable) === true,                            // ballon posé au pied : fenêtre franche
+    tackleWindow(stF(1.2, 3), { ...q0, p: [0.5, 0, 0], skill: { composureF: 1.3 } }, cfgJ, balPrenable) === true,   // l'IMPULSIF s'élance (prise élargie 0,72)
+    tackleWindow(stF(1.2, 3), { ...q0, p: [0.5, 0, 0], skill: { composureF: 0.85 } }, cfgJ, balPrenable) === false, // le POSÉ attend (prise 0,47)
+  ];
+  ok(`lot 95 — la fenêtre du tacle est un contrat (${uni.filter(Boolean).length}/7 : identité hors clé/format, la fuite se refuse, l'étau force, la composure départage posé/impulsif)`,
+    uni.every(Boolean));
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

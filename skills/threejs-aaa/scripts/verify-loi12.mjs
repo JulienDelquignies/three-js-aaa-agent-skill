@@ -154,11 +154,15 @@ const meuteAuPoint = (st, rp, og) => {
   // épinglée re-casse à CHAQUE évolution du cerveau ; l'existence se prouve sur la première
   // graine qui la montre, coupe-circuit au premier sifflet — trois sources de détection :
   // tacle raté, percutage, glissé fauché)
+  // re-fondé lot 95 : le tacle discipliné (jockey) assèche les fautes de tacle — la première
+  // faute du flux vit sur la graine 12 à ~220 s (balayé 12 graines). La SOUS-PRODUCTION de
+  // fautes du monde propre (mesuré ~0,1/match vs réel 3-6 sur 220 s) est une dette NOMMÉE
+  // (ROADMAP : accrochages, obstructions, épaule mistimée — les sources manquantes).
   let stTrouve = null, graine = null;
-  for (const seed of [1, 3, 5, 7, 9, 2]) {
+  for (const seed of [12, 1, 3, 5, 7, 9, 2]) {
     const st = makeMatch({ full: true, seed });
     const cfg = CFG();
-    for (let i = 0; i < 180 * 60 && !st.events.some((e) => e.type === 'faute'); i++) matchStep(st, 1 / 60, cfg);
+    for (let i = 0; i < 240 * 60 && !st.events.some((e) => e.type === 'faute'); i++) matchStep(st, 1 / 60, cfg);
     if (st.events.some((e) => e.type === 'faute')) { stTrouve = st; graine = seed; break; }
   }
   ok(`la DÉTECTION vit en match (balayage : première faute sur la graine ${graine} — la fente qui trouve le corps se nomme, quel que soit le flux du jour)`,

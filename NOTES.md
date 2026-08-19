@@ -4107,6 +4107,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      25 buts (bande 17-33 ✓ — le set rend des buts aux tirs sur gardien lancé, réaliste),
      rondo/réduit AU BIT (c775c81e62592d4d / d1c0c1171e6f876c — st.full garde les deux mondes).
 
+137. **Lot 95 : LES APPUIS DU DÉFENSEUR (sim) — le jockey, l'approche sous contrôle, le tacle
+     à la fenêtre.** Mesuré avant (probe-95, populations propres — presseurs seuls, A/B à clé
+     sur mêmes graines) : 60 % des entrées en duel LANCÉES (> 3,5 m/s, p50 3,9) — « la défense
+     se jette » ; le presseur de face courait AU ballon ; 6 des 8 tacles-debout partaient de
+     DERRIÈRE le porteur, 3/8 sur ballon NON prenable (la minuterie sèche tacle à l'heure, pas
+     à la fenêtre). TROIS LOIS (clé cfg.jockey {dist 1,0 ; at 4,2 ; cap 2,9 ; force 1,5},
+     st.full) : (a) LE JOCKEY — face à un porteur POSSÉDÉ la cible de press vit ENTRE ballon
+     et SON but (l'appui-position, le patron de la bissectrice du lot 94) — on ne court plus
+     au ballon ; (b) L'APPROCHE SOUS CONTRÔLE (movement.js, le patron supportNearCap) : sous
+     `at` mètres du porteur possédé, plafond cap × agilité (2 − getupF : le souple ajuste plus
+     vite en restant posé) — `at` élargi 3,0 → 4,2 à la mesure (l'inertie de freinage demande
+     2-3 m depuis 6 m/s : décélérer À 3 m arrivait encore lancé) ; le ballon LIBRE se gagne
+     plein fer, la chasse (burst) reste entière ; (c) LE TACLE À LA FENÊTRE (duel.tackleWindow,
+     la famille) : la minuterie n'arme le tacle que sur fenêtre FRANCHE — balPrenable jugé à
+     la COMPOSURE (prise 0,55 × composureF : le posé exige net 0,47, l'impulsif s'élance à
+     0,72) — ou à l'étau forcé (minuterie × force : le porteur pressé n'est jamais intouchable).
+     Mesuré après : presseurs lancés 60 → 39-40 % (p50 3,9 → 3,0), tacles 100 % sur fenêtre
+     franche (6/6, 4/4), duels d'épaule vivants (21). RE-FONDATIONS : le banc-fixture de
+     l'OMBRE (lot 11) éteint jockey (il juge couloir vs ligne droite — la cible jockey est une
+     3e cible hors sujet) ; graines gardien {6, 8} (3e migration de flux) ; la clause
+     d'EXISTENCE loi12 balaie 12 graines × 240 s (graine 12 en tête). DETTE NOMMÉE (ROADMAP) :
+     la SOUS-PRODUCTION de fautes est PRÉEXISTANTE (~0,25/match avant le lot, ~0,08 après,
+     réel 3-6 par 220 s) — le tacle discipliné assèche la dernière source ; les sources
+     manquantes (accrochages, obstructions, épaule mistimée) sont le prochain chantier Loi 12 ;
+     force posé à 1,5 (2,2 n'arrivait jamais : le porteur joue avant). Clauses lot 95 : l'A/B
+     à clé (≥ 12 pts d'écart de lancés, mêmes graines) + tackleWindow unitaire 7/7 (identité
+     hors clé/format, la fuite se refuse, l'étau force, la composure départage). sab76 10e.
+     Batterie verte (match11 80, 84+40+88+14+11+14+8+9+33+15+9+52, loi12 14 re-fondé), A/B
+     20 × 300 s : 64 tirs / 24 buts (bande ✓), rondo/réduit AU BIT (c775c81e / d1c0c117).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

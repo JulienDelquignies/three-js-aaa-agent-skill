@@ -230,3 +230,18 @@ export function chargeStep(st, c, dt, cfg) {
   st.ball.impulse([-uz * side * 1.4 + ux * 0.8, 0, ux * side * 1.4 + uz * 0.8]);
   st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
 }
+
+/**
+ * LA FENÊTRE DU TACLE (lot 95, st.full && cfg.jockey — les appuis du défenseur). La minuterie
+ * d'hier tacle À L'HEURE ; le défenseur DISCIPLINÉ tacle À LA FENÊTRE : le ballon prenable
+ * (touche longue, ballon qui s'éloigne du pied porteur) jugé à la COMPOSURE — le posé exige
+ * une fenêtre NETTE (prise serrée), l'impulsif s'élance sur du flou (mesuré avant : 6 des 8
+ * tacles-debout partaient de DERRIÈRE le porteur, minuterie sèche). L'étau finit par mordre
+ * (force ×2,2 sur la minuterie : un porteur pressé n'est jamais intouchable — le flux vit).
+ * balPrenable est passé par l'appelant (rondo-sim) : le sens d'import reste acyclique.
+ */
+export function tackleWindow(st, q, cfg, balPrenable) {
+  if (!st.full || cfg.jockey === false) return true;                // la minuterie d'hier, au bit
+  if (st.pressure >= cfg.tackleTime * (cfg.jockey?.force ?? 1.5)) return true;
+  return balPrenable(st.ball, q.p[0], q.p[2], 0.55 * (q.skill?.composureF ?? 1), 0.5);
+}

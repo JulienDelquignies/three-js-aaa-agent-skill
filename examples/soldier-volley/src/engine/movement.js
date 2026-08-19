@@ -129,6 +129,18 @@ export function movePlayers(st, dt, cfg) {
       const dS = Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]);
       if (dS < 3) top = Math.min(top, cfg.supportNearCap);
     }
+    // LES APPUIS DU DÉFENSEUR (lot 95, cfg.jockey && st.full — le même patron côté duel) : un
+    // presseur PRÈS d'un porteur POSSÉDÉ arrive SOUS CONTRÔLE (appuis courts — 70 % des entrées
+    // en duel mesurées lancées > 3,5 m/s : le crochet offert, « la défense se jette »). L'AGILITÉ
+    // est le facteur (le souple ajuste plus vite en restant posé) ; le ballon LIBRE se gagne
+    // plein fer, et le mordu d'une feinte paie DÉJÀ sa morsure (biteSlow — les lois se composent).
+    if (st.full && cfg.jockey !== false && p.job === 'press' && !p.keeper) {
+      const cJ = st.players[st.possession.carrier];
+      if (cJ && cJ.team !== p.team && st.ball.owner === cJ.id
+        && d2(p.p, cJ.p) < ((cfg.jockey === true ? null : cfg.jockey)?.at ?? 3.0)) {
+        top = Math.min(top, (((cfg.jockey === true ? null : cfg.jockey)?.cap ?? 2.9)) * (2 - (p.skill?.getupF ?? 1)));
+      }
+    }
     // L'ÉCONOMIE DE COURSE (cfg.allure && st.full — lot 57, retour utilisateur « fourmilière ») :
     // l'allure est une DÉCISION TACTIQUE, pas un plafond. La loi tient en une phrase : EN JEU
     // PLACÉ, ON SUIT LE JEU À LA VITESSE DU JEU — un suiveur (marqueur, poste qui coulisse,

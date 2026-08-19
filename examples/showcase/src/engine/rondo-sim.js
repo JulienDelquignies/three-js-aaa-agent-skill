@@ -4,7 +4,7 @@ import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-pr
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
-import { chargeStep, slideTackleStep, slideResolve, ecartCouloir } from './duel.js';
+import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow } from './duel.js';
 import { teteStep, voleeStep } from './tete.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
@@ -133,14 +133,14 @@ function stepGestures(st, dt, cfg) {
         p.yaw = g.yaw; p.yawWant = null;
         p.speed = Math.hypot(p.v[0], p.v[1]);
       }
-      if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], p, cfg);
+      if (st.pressure >= cfg.tackleTime && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     } else if (busy(p) && p.act?.payload?.kind === 'skill' && st.phase === 'carry' && st.possession.carrier === p.id) {
       // LA FENÊTRE DE DUEL RESTE OUVERTE PENDANT TOUT LE GESTE TECHNIQUE — armé ET accompagnement.
       // Sans elle, la semelle (1,0 s) et le raclage du râteau étaient des sanctuaires : un défenseur
       // à 2,4 m couvre cette distance en 0,4 s et devait regarder. Un geste technique s'assume.
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
-      if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], p, cfg);
+      if (st.pressure >= cfg.tackleTime && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     }
     // l'accompagnement possédé (râteau qui tourne, semelle qui tient) écrit corps ET ballon ICI —
     // movePlayers se tait (ownsBody), la branche busy du pas de jeu aussi : une autorité.
@@ -776,7 +776,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // 1,6 s, et 0 flip sans événement physique (clause 10 de checkRondo).
     const press = pressPredicate(st, c, cfg);
     st.pressure = press.length ? st.pressure + dt : 0;
-    if (st.pressure >= cfg.tackleTime) beginStandTackle(st, press[0], c, cfg);
+    if (st.pressure >= cfg.tackleTime && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], c, cfg);
     // LE DUEL DE CORPS (cfg.charge && st.full — lot 32). Mesuré : l'adversaire vit à 1,28 m
     // MÉDIAN du porteur mais la pression ballon ne s'accumule que 2,4 % du portage (le
     // bouclier protège le BALLON — c'est son métier) → 1 duel / 9 min, un jeu sans contact.
