@@ -4348,6 +4348,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      graines — la cohérence). Dette nommée : le PLACEMENT des corps au corner (les grands qui
      montent, le marquage dédié — aujourd'hui les slots génériques mettent 3-5 corps en boîte).
 
+144. **Lot 102 : LE PLACEMENT DU CORNER — les grands montent, le marquage homme, le premier
+     poteau (la dette du lot 101).** Mesuré sur corner posé : 0 attaquant en boîte, le premier
+     poteau gardé à 24-27 m — la branche générique des remises faisait marcher TOUTE l'attaque
+     VERS LE COIN (target = r.p). LA LOI (referee.cornerSpots, cfg.corner && st.full — hooké
+     dans le monde des remises de match-sim, avant les branches génériques) : le PLAN se
+     calcule UNE fois par remise (r.at le date, st._cornerPlan) — les GRANDS de l'attaque
+     (le tri chargeF, l'attribut du duel aérien lot 34 ; le roster par défaut est uniforme,
+     le PROJET paramètre — le contrat moteur) montent aux POSTES de la boîte (premier poteau,
+     point de penalty, second poteau, axe 9 m, retrait 16,5 m — les cibles mêmes de
+     cornerTrav) ; la défense répond HOMME : chaque monteur a son marqueur GOAL-SIDE (greedy
+     au poste), un défenseur garde le PREMIER POTEAU ; le reste des corps garde les lois
+     d'hier. Les corps COURENT en place (pas de téléport — la leçon des remises lot 30) et LA
+     POSE S'ALLONGE (corner.pose 10 s, onOut : le vrai corner prend 20-40 s à se poser).
+     MESURÉ en flux (10 graines) : 1-4 attaquants en boîte par corner, marquage à 0,5-2 m sur
+     la moitié, le poteau tenu ; A/B 20 × 300 s : 93 tirs / 20 buts ∈ [17 ; 33] ✓, 25 corners
+     dont 22 joués en boîte (~1,25/match — la gamme réelle dense). Clauses (match11 94/0,
+     ratings FORGÉS — 4 attaquants à strength 92) : 5 en boîte dont 3 des 4 grands (le tri
+     prouvé), marqueurs ≤ 3 m, poteau 0,2 m ; sabotage corner:false — le poteau à 12,3 m,
+     personne ne le garde (les corps comptés en boîte de l'hier sont EN TRANSIT vers le coin,
+     informatif — la leçon du discriminant NET). Leçon de fixture : l'attaque VIENT (28-40 m),
+     la défense est DÉJÀ massée chez elle (12-20 m) — le fixture reflète le monde, pas le
+     froid. Empreintes rondo/réduit ET match seed 3/7 au bit (aucun corner dans leurs 90
+     premières secondes). Dettes nommées : le TROT de placement (speeds.place — la marche 2,6
+     laisse ~40 % des monteurs en route à la prise ; le réel trotte se placer), les
+     variantes de plan (le corner court a ses postes propres, la surcharge du second poteau).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

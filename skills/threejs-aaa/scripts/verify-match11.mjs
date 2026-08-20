@@ -22,6 +22,7 @@ import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
+import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1452,6 +1453,48 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`sabotage « le corner court d'hier » attrapé (corner:false, restart posé et pris : ${st.events.filter((e) => e.type === 'corner-joué').length} mise en boîte — la remise courte, nommée)`,
       st.events.filter((e) => e.type === 'corner-joué').length === 0);
   }
+}
+
+// ---------------------------------------------------------------- lot 102 : LE PLACEMENT DU
+// CORNER — les GRANDS montent (le tri chargeF : les ratings forgés le prouvent — le roster
+// par défaut est uniforme, le projet paramètre), le marquage HOMME goal-side, le PREMIER
+// POTEAU gardé. Corner posé (pose 10 s), corps pré-placés à distance de course réaliste.
+{
+  const placer = (over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const og = st.pitch.ownGoal(0), sg = Math.sign(og.x || 1);      // team 1 attaque og(0)
+    // les GRANDS forgés : 4 attaquants à strength 92, le reste à 35 — le tri doit choisir EUX
+    const atk = st.players.filter((q) => q.team === 1 && !q.keeper);
+    atk.forEach((q, i) => { q.skill = makeProfile({ strength: i < 4 ? 92 : 35, pace: 55, passing: 55 }); });
+    const grands = new Set(atk.slice(0, 4).map((q) => q.id));
+    // les corps à distance de course (mi-terrain côté attaque) — le monde réel a le bloc haut
+    for (const q of st.players) if (!q.keeper) {
+      // l'attaque VIENT (28-40 m — les monteurs en course), la défense est DÉJÀ massée chez
+      // elle (12-20 m — le repli du corner réel) : le fixture reflète le monde, pas le froid
+      q.p[0] = og.x - sg * (q.team === 1 ? 28 + (q.id % 5) * 3 : 12 + (q.id % 5) * 2);
+      q.p[2] = (q.id % 7) * 4 - 12; q.v = [0, 0]; q.down = 0; q.act = null;
+    }
+    st.restart = { type: 'corner', p: [og.x - sg * 0.4, st.pitch.hz - 0.4], team: 1, at: st.t + 10 };
+    st.ball.restart([og.x - sg * 0.4, 0.11, st.pitch.hz - 0.4], { cause: 'corner' });
+    for (let i = 0; i < 16 * 60; i++) { const had = !!st.restart; matchStep(st, 1 / 60, cfg); if (had && !st.restart) break; }
+    const boxX = st.pitch.hx - st.pitch.dims.box.depth;
+    const dedans = st.players.filter((q) => q.team === 1 && !q.keeper && q.down <= 0
+      && q.p[0] * sg > boxX && Math.abs(q.p[2]) < st.pitch.dims.box.width / 2);
+    const marques = dedans.map((a) => Math.min(...st.players.filter((d) => d.team === 0 && !d.keeper && d.down <= 0)
+      .map((d) => Math.hypot(d.p[0] - a.p[0], d.p[2] - a.p[2]))));
+    const pot = [og.x - sg * 0.6, (st.pitch.goalHalf - 0.4)];
+    const gardePot = Math.min(...st.players.filter((d) => d.team === 0 && !d.keeper)
+      .map((d) => Math.hypot(d.p[0] - pot[0], d.p[2] - pot[1])));
+    return { n: dedans.length, grands: dedans.filter((q) => grands.has(q.id)).length, marques, gardePot };
+  };
+  const vif = placer({});
+  ok(`lot 102 — le corner se PLACE (${vif.n} attaquants en boîte ≥ 3, dont ${vif.grands} des 4 GRANDS forgés ≥ 3 — le tri chargeF ; marqueurs [${vif.marques.map((m) => m.toFixed(1)).join(', ')}] m, ≥ 2 sous 3 m ; premier poteau gardé à ${vif.gardePot.toFixed(1)} m ≤ 3)`,
+    vif.n >= 3 && vif.grands >= 3 && vif.marques.filter((m) => m <= 3).length >= 2 && vif.gardePot <= 3);
+  const sab = placer({ corner: false });
+  ok(`sabotage « le monde du coin d'hier » attrapé (corner:false, MÊME pose : premier poteau à ${sab.gardePot.toFixed(1)} m ≥ 6 — personne ne le garde ; ${sab.n} corps en boîte, EN TRANSIT vers le coin, informatif : l'hier converge au point de remise)`,
+    sab.gardePot >= 6);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

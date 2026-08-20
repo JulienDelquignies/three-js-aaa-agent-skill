@@ -14,7 +14,7 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint } from './keeper.js';
@@ -161,8 +161,7 @@ function assignMatchJobs(st, cfg) {
       for (const p of st.players) { p.job = 'walk'; p.target = [p.p[0], 0, p.p[2]]; }
       return;
     }
-    // le rayon des adversaires : depuis le BALLON porté tant qu'il n'est pas posé, du point ensuite
-    const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;
+    const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;   // le rayon : depuis le ballon porté tant que pas posé, du point ensuite
     // LA LOI 14 (cfg.loi14 && st.full) : la CÉRÉMONIE du penalty — tous les corps sauf preneur
     // et gardien de ligne HORS surface, HORS de l'arc (9,15 autour du POINT), DERRIÈRE le
     // ballon. Un clamp en UNE passe ancré à r.p (le x légal = le plus contraignant des trois).
@@ -183,9 +182,7 @@ function assignMatchJobs(st, cfg) {
         const to = p._sub?.phase === 'in' ? p._sub.entry : p._exit;
         p.job = 'walk'; p.target = [to[0], 0, to[1]]; continue;
       }
-      // APRÈS UN BUT, ON REVIENT EN MARCHANT vers la formation d'engagement (placeKickoff
-      // écrivait les douze corps — 20 m en une image, sonde des téléports). UNE REMISE EST UNE
-      // RESPIRATION : tout le monde MARCHE (2,6 m/s) — on revenait en trottinant à 4,9-5,6.
+      // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) { p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]]; continue; }
       if (p.keeper) {
           if (l14 && p.team === l14.def) { p.job = 'keeper'; p.target = [l14.own.x - l14.own.sign * 0.15, 0, 0]; continue; }
@@ -201,6 +198,9 @@ function assignMatchJobs(st, cfg) {
         p.job = 'keeper'; p.target = [s.x, 0, s.z]; continue;
       }
       if (p.id === r.taker) continue;                               // le preneur a son métier (plus bas)
+      // LE PLACEMENT DU CORNER (lot 102, referee.cornerSpots) : les grands montent, le marquage homme, le premier poteau — les corps COURENT en place pendant la pose allongée
+      const cSpot = st.full && cfg.corner && r.type === 'corner' ? cornerSpots(st, r, p, cfg) : null;
+      if (cSpot) { p.job = 'walk'; p.target = [cSpot[0], 0, cSpot[1]]; continue; }
       if (l14) { l14clamp(p); continue; }                           // la cérémonie vaut pour les DEUX camps
       if (r.type === 'engagement') {
         // chacun DANS SA MOITIÉ (Loi 8) — les positions d'engagement ont été posées ; on les tient

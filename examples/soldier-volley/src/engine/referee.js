@@ -295,6 +295,40 @@ export function cornerTrav(st, id, cfg) {
   return true;
 }
 
+/**
+ * LE PLACEMENT DU CORNER (lot 102, cfg.corner && st.full — la dette du lot 101 : mesuré sur
+ * corner posé, 0 attaquant en boîte et le premier poteau gardé à 24-27 m — la branche
+ * générique faisait marcher TOUTE l'attaque vers le coin). Le PLAN se calcule UNE fois par
+ * remise (r.at la date) : les GRANDS de l'attaque (chargeF — l'attribut du duel aérien lot
+ * 34) montent aux POSTES de la boîte (premier poteau, point de penalty, second poteau,
+ * axe 9 m, retrait 16,5 m — les cibles mêmes de cornerTrav) ; la défense répond HOMME :
+ * chaque monteur a son marqueur GOAL-SIDE (le plus proche, greedy), un défenseur garde le
+ * PREMIER POTEAU (le poste classique). Le reste des corps garde les lois d'hier (le rayon,
+ * la couverture). Les corps COURENT en place (pas de téléport) — la POSE du corner s'allonge
+ * (corner.pose, onOut) : le vrai corner prend 20-40 s à se poser. Clé absente : hier au bit.
+ */
+export function cornerSpots(st, r, p, cfg) {
+  const P = st._cornerPlan?.at === r.at ? st._cornerPlan : (st._cornerPlan = (() => {
+    const g = st.pitch.attackGoal(r.team), sg = Math.sign(g.x || 1), cz = Math.sign(r.p[1] || 1);
+    const gh = st.pitch.goalHalf, spot = st.pitch.dims.spot ?? 11;
+    const posts = [[g.x - sg * 5.5, cz * (gh - 1)], [g.x - sg * spot, 0], [g.x - sg * 5.5, -cz * (gh - 1)], [g.x - sg * 9, cz * 5], [g.x - sg * 16.5, -cz * 2]];
+    const atk = st.players.filter((q) => q.team === r.team && !q.keeper && q.id !== r.taker && q.down <= 0 && !q.expulse && !q._sub)
+      .sort((a, b) => (b.skill?.chargeF ?? 1) - (a.skill?.chargeF ?? 1)).slice(0, posts.length);
+    const map = {};
+    atk.forEach((q, i) => { map[q.id] = posts[i]; });
+    const defs = st.players.filter((q) => q.team !== r.team && !q.keeper && q.down <= 0 && !q.expulse && !q._sub);
+    const pris = new Set();
+    atk.forEach((q, i) => {
+      const m = defs.filter((d) => !pris.has(d.id)).sort((a, b) => d2(a.p, posts[i]) - d2(b.p, posts[i]))[0];
+      if (m) { pris.add(m.id); map[m.id] = [posts[i][0] + sg * 0.9, posts[i][1] * 0.92]; }   // goal-side, un demi-pas vers l'axe
+    });
+    const pot = defs.filter((d) => !pris.has(d.id)).sort((a, b) => Math.hypot(a.p[0] - g.x, a.p[2] - cz * gh) - Math.hypot(b.p[0] - g.x, b.p[2] - cz * gh))[0];
+    if (pot) map[pot.id] = [g.x - sg * 0.6, cz * (gh - 0.4)];
+    return { at: r.at, map };
+  })());
+  return P.map[p.id] ?? null;
+}
+
 // ---------------------------------------------------------------- la sortie et les remises
 /**
  * LA SORTIE DE BALLE, par la RÈGLE (pitch.outRule au point de franchissement interpolé).
@@ -351,6 +385,9 @@ export function onOut(st, cfg) {
   } else {
     st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: r.type, team: r.team, p: [+r.x.toFixed(1), +r.z.toFixed(1)] });
     st.restart = { type: r.type, p: [r.x, r.z], team: r.team, at: st.t + cfg.restartWait };
+    // LA POSE DU CORNER S'ALLONGE (lot 102, cfg.corner.pose — le vrai corner prend 20-40 s) :
+    // les monteurs partent de 30-40 m, la marche de remise demande son temps (cornerSpots)
+    if (r.type === 'corner' && st.full && cfg.corner) st.restart.at = st.t + (cfg.corner.pose ?? 10);
     if (carried) { brake(0.35); st.restart.placed = false; st.restart.taker = nearTaker(r.team); }
     else st.ball.restart([r.x, BALL.radius, r.z], { cause: r.type });
   }
