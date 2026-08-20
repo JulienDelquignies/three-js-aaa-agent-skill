@@ -85,6 +85,17 @@ export const MATCH = {
                           // RESPIRATION d'équipe entre deux diagonales (respire s). Mesuré
                           // avant : 12,3 renversements / 220 s (réel 0,3-0,9), 30 % sans une
                           // passe de fixation. fix:false : les bascules libres d'hier.
+  corner: { claqueV: 13, priseV: 16 }, // LES CORNERS (11c11, st.full — lot 101) : la NAISSANCE — la
+                          // claquette du tir fort au bout de l'envergure DÉVIE derrière la
+                          // ligne (≥ claqueV m/s, 1 main : « en corner ! », outRule juge —
+                          // mesuré avant : 1 corner / 8 matchs) — et LE TRAVAIL (hook
+                          // onTake, referee.cornerTrav) : la mise dans la boîte (cibles
+                          // seedées rnd2 : premier poteau 40 %, penalty 30 %, second 30 %),
+                          // la PATTE du tireur fait le genre (rentrant/sortant/tendu — les
+                          // lots 87/100), la branche courte à l'axe style (possession 35 %,
+                          // direct 5 %). Conversion par la PHYSIQUE (têtes 34, volées 40,
+                          // gardien du corner 94). Événement 'corner-joué' {genre, cible}.
+                          // false/absent : la claquette renversée + remise courte d'hier.
   couloir: { champ: 8, large: 6, bonus: 2.2, portee: 24 },
                           // LE COULOIR OUVERT (11c11, st.full — lot 99, dette du lot 98 :
                           // « l'axe sur-vit », 65 % du jeu à |z| < 8, réel ~35, et 4 % des

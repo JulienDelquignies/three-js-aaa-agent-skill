@@ -49,7 +49,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 143.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 144.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -149,7 +149,16 @@
 11. **Fond de roulement** : re-fonder les 4 clauses de flux pour activer l'écartement en
    continu ; réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
 
+11b. ~~**LES CORNERS : NAISSANCE + TRAVAIL (lot 101, backlog)**~~ — **LIVRÉ** (note 143) :
+   3 sources de naissance (claquette-corner ≥ 13 m/s au bout de l'envergure ou missile
+   ≥ 16 imprennable ; tête défensive pressée < 12 m sécurise derrière ; clear en
+   catastrophe épinglé profond, 45 %) — outRule juge, aucune règle écrite ; et la mise en
+   boîte à la prise (cornerTrav : cibles rnd2 premier/penalty/second, GENRE à la patte
+   rentrant/sortant/tendu, branche courte au style). A/B : 19 corners/20 matchs (15 en
+   boîte), 99 tirs/20 buts ∈ bande, match11 92/0. Dette nommée : le PLACEMENT des corps
+   au corner (les grands montent, marquage dédié).
+
 ## Backlog long terme (inchangé)
-Corners travaillés, gardien relanceur avancé, formations 442/352
+Gardien relanceur avancé, formations 442/352
 complètes (la couche LIGNES existe), le troisième homme / rotations relationnelles,
 triangulation v4 (assignation, hystérésis), expulsion physique complète, saut du jeu de tête.

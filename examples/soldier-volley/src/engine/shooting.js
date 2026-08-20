@@ -245,8 +245,17 @@ export function tryClear(st, c, cfg) {
   const glued = st.players.some((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 1.4);
   if (!(near >= 2 || (glued && depth < pitch.hx * 0.45))) return false;
   const sgn = -own.sign;                                           // vers l'avant
+  // LE DÉGAGEMENT EN CATASTROPHE (lot 101, cfg.corner && st.full — la 3e source de corners,
+  // mesurée la plus volumineuse : 8 clears < 12 m de la ligne / 8 matchs) : épinglé PROFOND
+  // (< 12 m) et collé, le vrai défenseur SÉCURISE DERRIÈRE — n'importe où sauf devant son but,
+  // le corner concédé est le moindre danger. Tirage rnd2 45 % ; sinon (ou clé absente) : le
+  // dégagement au flanc d'hier, au bit près.
+  const panique = st.full && cfg.corner && depth < 12 && (glued || near >= 2)
+    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.45;
   const flank = c.p[2] >= 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55;  // le flanc OPPOSÉ à la mêlée
-  const lead = [c.p[0] + sgn * pitch.hx * 0.85, 0, flank];
+  const lead = panique
+    ? [own.x + own.sign * 8, 0, Math.sign(c.p[2] || 1) * pitch.hz * 0.75]  // DERRIÈRE la ligne, écarté du but : la sortie assumée (le vol croise la ligne de fond avant la touche)
+    : [c.p[0] + sgn * pitch.hx * 0.85, 0, flank];
   const r = simInternals.beginPass(st, { to: { id: -2 }, lead, style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true });
   if (r) (st._clearCd ??= {})[c.team] = st.t + 6;
   return r;

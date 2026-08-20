@@ -4317,6 +4317,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      et pz suit le sens d'attaque (la chiralité du side). Le seuil gardien 65 → 70 re-fondé
      (6 cadrées d'échantillon, le bruit de graine). Empreintes rondo/réduit AU BIT.
 
+143. **Lot 101 : LES CORNERS — la naissance ET le travail (le backlog « corners travaillés »).**
+     Sondé AVANT : 1 corner sur 8 × 220 s (réel dense 8-12) — le déficit n'était pas la
+     qualité du corner mais son EXISTENCE : la claquette RENVERSAIT toujours le ballon vers le
+     champ (−v ×1,4 — physiquement généreux), la tête défensive dégageait toujours vers
+     l'avant, le clear visait toujours les flancs. TROIS SOURCES DE NAISSANCE (cfg.corner &&
+     st.full, chacune l'anatomie du vrai geste, outRule juge la sortie — AUCUNE règle de
+     corner écrite, le système existant fait foi) : (1) LA CLAQUETTE EN CORNER — le tir fort
+     (≥ claqueV 13) au bout de l'envergure OU trop vif pour les gants (≥ priseV 16, d > 0,75 :
+     le missile ne se PREND pas) se DÉVIE derrière la ligne (« en corner ! ») au lieu de se
+     renverser ; (2) LA TÊTE SÉCURISÉE — le dégagement de tête pressé (< 12 m de sa ligne,
+     adversaire < 3,5 m, tirage rnd2 50 %) part vers son propre coin : le danger d'abord ;
+     (3) LE DÉGAGEMENT EN CATASTROPHE (la source la plus volumineuse mesurée : 8 clears
+     < 12 m / 8 matchs) — épinglé profond, le clear vise DERRIÈRE-latéral (le vol croise la
+     ligne de fond avant la touche — la géométrie du lead réglée : le premier jet sortait en
+     touche), tirage 45 %. ET LE CORNER SE TRAVAILLE (referee.cornerTrav, hook onTake — le
+     patron du lancement lot 97) : la mise dans la boîte (cibles seedées rnd2 : premier poteau
+     40 %, penalty 30 %, second 30 %), LA PATTE DU TIREUR fait le GENRE (les lots 87/100 :
+     pied fort opposé au côté = RENTRANT spin 5 — le corner dangereux —, pied du côté =
+     SORTANT spin 3, both = tendu), la branche COURTE à l'axe style (possession 35 %, direct
+     5 % — return false = la remise d'hier), le coéquipier le plus proche de la cible finit sa
+     course. Conversion par la PHYSIQUE (têtes 34, volées 40, gardien du corner 94). MESURÉ
+     (A/B 20 × 300 s) : 19 corners (~1/match, la gamme réelle dense) dont 15 joués en boîte ;
+     99 tirs / 20 buts ∈ [17 ; 33] ✓. Clauses (match11 92/0) : le genre à la patte (rentrant/
+     sortant/tendu posés, appel direct — style direct forcé contre la branche courte) +
+     sabotage « le corner court d'hier » (corner:false : restart pris, 0 mise en boîte) ; la
+     clause de flux lot 99 re-fondée (échantillons symétriques 4/4 graines, borne 6 → 4 pts —
+     l'asymétrie 4/2 vivait dans le bruit). Empreintes rondo/réduit AU BIT ; match seed 3/7
+     inchangées aussi (les corners n'apparaissent pas dans les 90 premières secondes de ces
+     graines — la cohérence). Dette nommée : le PLACEMENT des corps au corner (les grands qui
+     montent, le marquage dédié — aujourd'hui les slots génériques mettent 3-5 corps en boîte).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

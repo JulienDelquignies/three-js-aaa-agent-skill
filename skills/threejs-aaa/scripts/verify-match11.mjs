@@ -21,6 +21,7 @@ import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
+import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1410,6 +1411,47 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab = centre('left', { patte: false });
   ok(`lot 100 — la patte du centreur (même aile : débordeur 'right' σ ×${deb.patte} = 0,85 centré=${deb.r} ; inversé 'left' ×${inv.patte} = 1,9 ; sabotage patte:false ×${sab.patte} = 1 — le centreur ambidextre d'hier, nommé)`,
     deb.r && deb.patte === 0.85 && inv.patte === 1.9 && sab.patte === 1);
+}
+
+// ---------------------------------------------------------------- lot 101 : LE CORNER SE
+// TRAVAILLE — la mise dans la boîte à la prise (referee.cornerTrav), le GENRE à la patte du
+// tireur (rentrant = pied fort opposé au côté, sortant = pied du côté, tendu = both/sans
+// patte — les lots 87/100). Appel DIRECT sur état forgé (le patron du banc CF lot 97) ; le
+// style direct force le jeu long (la branche courte vit à l'axe style, 5 % en direct).
+{
+  const coin = (foot, over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((q) => !q.keeper && q.down <= 0);
+    const goal = st.pitch.attackGoal(c.team), sg = Math.sign(goal.x || 1);
+    c.strongFoot = foot;
+    st.tactics[c.team] = { ...st.tactics[c.team], style: 1 };      // direct : le court à 5 %
+    st.ball.release('perte');
+    st.ball.restart([goal.x - sg * 0.3, 0.11, st.pitch.hz - 0.3], { cause: 'corner' });
+    st.ball.possess(c.id);
+    c.p[0] = goal.x - sg * 0.3; c.p[2] = st.pitch.hz - 0.3; c.v = [0, 0];
+    for (let k = 0; k < 4; k++) { if (cornerTrav(st, c.id, cfg)) break; st.ball.possess(c.id); st.phase = 'carry'; }
+    return st.events.filter((e) => e.type === 'corner-joué').pop();
+  };
+  // au coin z = +hz, attaque vers +sg : side = sign(z × −goal.x) < 0 → 'right' = pied DU CÔTÉ
+  // (sortant), 'left' = pied OPPOSÉ (rentrant) — la même chiralité que le fixture du centreur
+  const evR = coin('left', {});
+  const evS = coin('right', {});
+  const evT = coin('left', { patte: false });
+  ok(`lot 101 — le corner se travaille à la patte (pied opposé : ${evR?.genre} = rentrant, cible ${evR?.cible} ; pied du côté : ${evS?.genre} = sortant ; sabotage patte:false : ${evT?.genre} = tendu — le tireur sans patte)`,
+    evR?.genre === 'rentrant' && evS?.genre === 'sortant' && evT?.genre === 'tendu');
+  {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, corner: false });
+    for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const og = st.pitch.ownGoal(0);
+    st.restart = { type: 'corner', p: [og.x - og.sign * 0.4, st.pitch.hz - 0.4], team: 1, at: st.t + 2.2 };
+    st.ball.restart([og.x - og.sign * 0.4, 0.11, st.pitch.hz - 0.4], { cause: 'corner' });
+    for (let i = 0; i < 8 * 60; i++) matchStep(st, 1 / 60, cfg);
+    ok(`sabotage « le corner court d'hier » attrapé (corner:false, restart posé et pris : ${st.events.filter((e) => e.type === 'corner-joué').length} mise en boîte — la remise courte, nommée)`,
+      st.events.filter((e) => e.type === 'corner-joué').length === 0);
+  }
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

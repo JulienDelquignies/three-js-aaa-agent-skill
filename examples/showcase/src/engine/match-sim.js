@@ -14,7 +14,7 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint } from './keeper.js';
@@ -33,15 +33,14 @@ const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
  * même ballon, mêmes personas) : le loop ne voit pas la différence, c'est la config qui la fait.
  */
 export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null, tactics = null, roles = null } = {}) {
-  // LE 11C11 EST UNE CONFIGURATION (full: true → terrain Loi 1, 10 + gardien par équipe, postes
-  // de formation) — même loop, mêmes lois, aucune tuyauterie nouvelle : la preuve du moteur.
+  // LE 11C11 EST UNE CONFIGURATION (full: true → Loi 1, 10+gardien, postes) — même loop, mêmes lois : la preuve du moteur.
   pitch = pitch ?? makePitch(full ? FULL : undefined);
   if (full && perTeam === 5) perTeam = 10;
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
   st.full = pitch.dims.length > 60;
   // le FLUX AUXILIAIRE (lot 97, contrat rng.js : un sous-seed par sous-système) : l'accrochage tire sur st.rnd2 — consommer st.rnd décalait tout le mix aval au bit (mesuré)
   { let s2 = (seed * 7919 + 13) >>> 0; st.rnd2 = () => ((s2 = (s2 * 1664525 + 1013904223) >>> 0) / 4294967296); }
-  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : toujours résolue — absente = équilibre (l'IDENTITÉ au bit).
+  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : absente = équilibre, l'identité au bit.
   st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
   for (const team of [0, 1]) {
@@ -1063,7 +1062,8 @@ function onDive(st, gk, cfg) {
   // …la détente de prise (plongeonPrise, lot 93) retombe SUR SES APPUIS : pas de gk.rise.
   if (gk.act?.id === 'plongeonPrise') gk.down = Math.max(gk.down, 0.5);
   else riseDown(st, gk, cfg, true);
-  if (d <= 1.1 && y <= 1.9) {
+  const spdT = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
+  if (d <= 1.1 && y <= 1.9 && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)
@@ -1076,13 +1076,12 @@ function onDive(st, gk, cfg) {
     return true;
   } else {
     const side = Math.sign(gk.p[2] - 0) || 1;
-    st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
+    // LA CLAQUETTE EN CORNER (lot 101 — mesuré : 1 corner/8 matchs) : le tir FORT au bout de l'envergure OU trop vif pour les gants se DÉVIE derrière la ligne (« en corner ! », outRule juge). Clé absente : hier au bit.
+    if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16)))
+      st.ball.impulse([-st.ball.v[0] * 0.45, -st.ball.v[1] * 0.4 + 2.2, -st.ball.v[2] * 0.3 + side * 6]);
+    else st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
     st.lastTouch = gk.team;
-    // APRÈS LE GANT, LE BALLON EST NEUF : st.pass gardait l'origine du tir, et la porte
-    // anti-auto-interception (gone > releaseClear) ne s'ouvrait JAMAIS sur un ballon claqué
-    // retombé à 2 m de cette origine — MESURÉ : gel intégral de 111 s (dernier événement t=8,45,
-    // fin de match t=120, personne n'a le DROIT de toucher un ballon mort). Le rondo ne pouvait
-    // pas le produire (une frappe voyage) ; la claquette, si.
+    // APRÈS LE GANT, LE BALLON EST NEUF : st.pass gardait l'origine du tir — la porte anti-auto-interception gelait tout (111 s mesuré).
     st.pass = null;
     // …et la claquette dit SES MAINS (lot 90) : deux dans l'envergure courte (≤ 1,35), une au bout.
     st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette', mains: d <= 1.35 ? 2 : 1, cote: side });
@@ -1109,8 +1108,9 @@ export function matchCfg(overrides = {}) {
     // LA PRISE A UN MÉTIER (hook onTake du loop) : la touche du plein format se LANCE (Loi 15)
     onTake: (st, id, type, cfg) => {
       if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg);
-      // …et le COUP FRANC a un prix (lot 97, cfg.cfDirect) : à portée il se TIRE, lointain il se LANCE dans la boîte
+      // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
       else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
+      else if (type === 'corner' && cfg.corner && st.full) cornerTrav(st, id, cfg);
     },
     // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },

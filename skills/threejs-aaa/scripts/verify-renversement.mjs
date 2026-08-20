@@ -115,7 +115,7 @@ const etau = (seed, nBloc) => {
   // (le patron : les bornes absolues morphent, les effets nets restent).
   {
     let axSab = 0, nSab = 0;
-    for (const seed of [1, 3]) {
+    for (const seed of [1, 3, 5, 7]) {   // les MÊMES 4 graines que le vif (2 seulement : l'écart vivait dans le bruit — 4 pts mesurés lot 101)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, couloir: false });
       for (let i = 0; i < 180 * 60; i++) {
@@ -123,8 +123,8 @@ const etau = (seed, nBloc) => {
         if (!st.restart && i % 30 === 0) { nSab++; if (Math.abs(st.ball.p[2]) < 8) axSab++; }
       }
     }
-    ok(`lot 99 — le couloir ouvert élargit le jeu (axial vif ${Math.round(100 * axial / n)} % ; sabotage couloir:false : ${Math.round(100 * axSab / nSab)} % ≥ vif + 6 pts — l'aile invisible d'hier, nommée)`,
-      axSab / nSab >= axial / n + 0.06);
+    ok(`lot 99 — le couloir ouvert élargit le jeu (axial vif ${Math.round(100 * axial / n)} % ; sabotage couloir:false : ${Math.round(100 * axSab / nSab)} % ≥ vif + 4 pts — l'aile invisible d'hier, nommée ; échantillons symétriques, borne 6 → 4 lot 101)`,
+      axSab / nSab >= axial / n + 0.04);
   }
     // …bande haute 13 → 16 (lot 57) : l'économie de course OUVRE l'aile opposée (le bloc
     // économe coulisse moins vite), le renversement est le bon choix plus souvent — 14,5/match

@@ -51,12 +51,23 @@ export function teteStep(st, cfg) {
     return;
   }
   if (Math.hypot(own.x - joueur.p[0], joueur.p[2]) < 24) {
-    // LE DÉGAGEMENT DE LA TÊTE : loin de son but, vers l'avant et le flanc
+    // LE DÉGAGEMENT DE LA TÊTE : loin de son but, vers l'avant et le flanc.
+    // …SAUF PRESSÉ PRÈS DE SA LIGNE (lot 101, cfg.corner && st.full — la 2e source de corners,
+    // mesurée : la claquette seule en rendait 1/8 matchs) : le défenseur qui dégage de la tête
+    // à < 9 m de sa ligne avec un adversaire au corps (< 2,5 m) SÉCURISE DERRIÈRE — la tête
+    // vers son propre coin, le corner concédé (le choix du vrai défenseur : le danger d'abord).
+    // Tirage rnd2 une fois sur deux (l'autre : le dégagement d'hier). Clé absente : hier au bit.
+    const presse = st.full && cfg?.corner && Math.abs(own.x - joueur.p[0]) < 12
+      && st.players.some((q) => q.team !== joueur.team && q.down <= 0 && d2(q.p, joueur.p) < 3.5)
+      && (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5;
     const fz = joueur.p[2] >= 0 ? 0.45 : -0.45;
-    st.ball.strike({ speed: 11.5, dirYaw: Math.atan2(fz, -Math.sign(own.x)), elevation: 0.42, spinAxis: [0, 1, 0], spinRev: 0 });
+    if (presse) {
+      const coinYaw = Math.atan2(Math.sign(joueur.p[2] || 1) * 2.2, Math.sign(own.x || 1));
+      st.ball.strike({ speed: 12.5, dirYaw: coinYaw, elevation: 0.35, spinAxis: [0, 1, 0], spinRev: 0 });
+    } else st.ball.strike({ speed: 11.5, dirYaw: Math.atan2(fz, -Math.sign(own.x)), elevation: 0.42, spinAxis: [0, 1, 0], spinRev: 0 });
     surprend(st);
     st.pass = null;
-    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'dégagement' });
+    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'dégagement', ...(presse ? { corner: true } : {}) });
     return;
   }
   // LA REMISE DE LA TÊTE : le coéquipier proche, en cloche courte (balistique de la rentrée,

@@ -250,6 +250,51 @@ export function coupFrancLance(st, id, cfg) {
   return true;
 }
 
+/**
+ * LE CORNER TRAVAILLÉ (lot 101, cfg.corner && st.full — hook onTake, le patron du lancement
+ * lot 97). Mesuré avant : 1 corner sur 8 × 220 s (la naissance manquait — la claquette-corner
+ * du même lot la répare) et la prise se jouait en passe courte ordinaire : aucun danger. Au
+ * réel le corner MET LE BALLON DANS LA BOÎTE : cible seedée rnd2 (premier poteau 40 %,
+ * point de penalty 30 %, second poteau 30 %), cloche tendue (θ 0,45, v par la portée), et LA
+ * PATTE DU TIREUR fait le genre (le patron des lots 87/100) : pied fort opposé au côté =
+ * RENTRANT (la courbe fuit VERS le but — le corner dangereux, spin 5), pied du côté =
+ * SORTANT (elle s'éloigne vers la reprise, spin 3), both = tendu. La branche COURTE vit à
+ * l'axe style (possession 35 % — le tiki-taka joue court —, direct 5 %) : return false = la
+ * remise courte d'hier. La CONVERSION sort de la PHYSIQUE : têtes lot 34, volées lot 40,
+ * gardien du corner lot 94 (posté moitié lointaine). Événement 'corner-joué' {genre, cible}.
+ */
+export function cornerTrav(st, id, cfg) {
+  const q = st.players[id];
+  const { pitch } = st;
+  const goal = pitch.attackGoal(q.team);
+  const sg = Math.sign(goal.x || 1);
+  if (Math.abs(Math.abs(q.p[0]) - pitch.hx) > 4) return false;     // pas un vrai coin (sécurité)
+  const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
+  const sty = st.tactics ? (st.tactics[q.team]?.style ?? 0.5) : 0.5;
+  if (rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30) return false;   // le CORT du style : possession 35 %, direct 5 %
+  const cz = Math.sign(q.p[2] || 1);
+  const u = rnd();
+  const cible = u < 0.4 ? [goal.x - sg * 5.5, cz * (pitch.goalHalf - 1)]        // premier poteau
+    : u < 0.7 ? [goal.x - sg * 11, 0]                                            // point de penalty
+    : [goal.x - sg * 5.5, -cz * (pitch.goalHalf - 1)];                           // second poteau
+  const sf = cfg.patte !== false ? (q.strongFoot ?? 'right') : 'both';
+  const rentrant = sf === 'both' ? 0 : ((Math.sign(q.p[2] * -(goal.x || 1)) > 0) === (sf === 'right') ? 1 : -1);
+  const R = Math.hypot(cible[0] - q.p[0], cible[1] - q.p[2]);
+  const theta = 0.45, v = Math.sqrt(Math.max(10, R) * 9.81 / Math.sin(2 * theta));
+  const yaw = Math.atan2(cible[1] - q.p[2], cible[0] - q.p[0]);
+  st.ball.release('coup-franc');                                   // la cause des coups de pied arrêtés au grand livre
+  st.ball.strike({ speed: v, dirYaw: yaw, elevation: theta, spinAxis: [0, 1, 0],
+    spinRev: rentrant === 0 ? 0 : -sg * cz * (rentrant > 0 ? 5 : -3) });
+  st.phase = 'flight';
+  st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
+  const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
+  const best = mates.length ? mates.sort((a, b) => Math.hypot(a.p[0] - cible[0], a.p[2] - cible[1]) - Math.hypot(b.p[0] - cible[0], b.p[2] - cible[1]))[0] : null;
+  st.pass = { from: id, to: best?.id ?? -2, lead: [cible[0], 0, cible[1]], style: 'corner', t: st.t, flight: 2 * v * Math.sin(theta) / 9.81, origin: [q.p[0], q.p[2]] };
+  st.lastPasser = id;
+  st.events.push({ t: +st.t.toFixed(2), type: 'corner-joué', by: id, genre: rentrant > 0 ? 'rentrant' : rentrant < 0 ? 'sortant' : 'tendu', cible: u < 0.4 ? 'premier' : u < 0.7 ? 'penalty' : 'second' });
+  return true;
+}
+
 // ---------------------------------------------------------------- la sortie et les remises
 /**
  * LA SORTIE DE BALLE, par la RÈGLE (pitch.outRule au point de franchissement interpolé).
