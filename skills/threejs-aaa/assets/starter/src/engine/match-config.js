@@ -441,15 +441,24 @@ export const MATCH = {
                           // éventail isotone 6,4 % — le recentrage tire les slots ÉCARTÉS vers
                           // le groupe ; base 4,6 %). La v3 devra contraindre les PROCHES sans
                           // toucher la largeur/sécurité. { min: 35 } pour l'activer.
-  settledNear: Infinity,  // LE TROT AU POSTE (lot 84, st.full — movement) : le soutien posé ne
-                          // marche QUE placé (< m de son slot) ; loin, il trotte s'y mettre.
-                          // Mesuré sans : 10,7 m p50 du slot, l'essaim permanent près du
-                          // ballon. Infinity : la marche inconditionnelle d'hier.
-  supportSpanFull: 0,   // L'ÉCHELLE DU SOUTIEN (lot 82, st.full — clé de FORMAT : le réduit au
-                          // bit — 0 = identité, HORS-DÉFAUT tant que les clauses de flux ne sont pas re-fondées ; 1,5-1,6 mesuré : pics ≥ 7 corps −35 %). Slots du réduit
-                          // (6-8 m) en 11c11 mettaient 4 soutiens + leurs 4 marqueurs dans le
-                          // cercle du ballon (88 % des pics ≥ 7 corps au centre). ×1,5 : la
-                          // ligne de passe courte réelle (10-14 m) — l'espace pour recevoir.
+  settledNear: 6,         // LE TROT AU POSTE (lot 84 posée, lot 103 ACTIVÉE — st.full,
+                          // movement) : le soutien posé ne marche QUE placé (< m de son
+                          // slot) ; loin, il TROTTE s'y mettre. Mesuré sans : p50 11 m du
+                          // slot, l'essaim au ballon — le posté large n'arrivait jamais à
+                          // l'aile à 1,35 m/s. Infinity : la marche inconditionnelle d'hier.
+  supportSpanFull: 1.25,  // L'AMPLITUDE DU SOUTIEN (lot 82 posée, lot 103 ACTIVÉE en défaut —
+                          // « le jeu ne respire pas ») : multiplicateur des couloirs S5 en
+                          // 11c11 (×l'axe relation 1,35-0,65). Les slots du réduit (6-8 m)
+                          // mettaient soutiens + marqueurs dans le cercle du ballon ; ×1,25 :
+                          // la ligne de passe courte réelle (~8-11 m). 0/absente : ×1 d'hier.
+  soutienN: 2,            // LE COMITÉ DE SOUTIEN (lot 103, st.full — « densité beaucoup trop
+                          // élevée au milieu ») : nb de corps aux couloirs dynamiques S5,
+                          // modulé par relation (1..3 à 2 : le direct soutient peu et vise
+                          // long, le jeu de position s'offre 3 appuis). AVANT : les 4 plus
+                          // proches + porteur = 5 au ballon, largeur possession 38 m (réel
+                          // 45-60), postes larges tenus 24 %. Le libéré tient SON poste de
+                          // formation : la structure respire (calibré vs 3 : centre p90
+                          // 12 vs 13, proche p50 8,7 vs 8,3). null/absente : les 4 d'hier.
   attaquePasse: { marge: 2 }, // LA PASSE CONTESTÉE S'ATTAQUE (lot 81, st.full — « il reste figé
                           // et l'adversaire récupère avant lui ») : 18 volées receveur-plus-
                           // proche / 15 min mesurées, receveur à 1,3 m/s. Un adversaire à la

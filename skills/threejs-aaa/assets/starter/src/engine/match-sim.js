@@ -629,32 +629,32 @@ function assignMatchJobs(st, cfg) {
       S5(0, goal.x - sgn * (pitch.dims.six.depth + 1.5), zs * (pitch.goalHalf + 0.6)); S5(1, goal.x - sgn * 5.5, -zs * (pitch.goalHalf + 1.2));
       S5(2, goal.x - sgn * pitch.dims.spot, 0); S5(3, sa[0] - sgn * 7, sa[2] * 0.5); S5(4, sa[0] - sgn * 1.5, zs * pitch.hz * 0.6);
     } else {          // lanceur intérieur/opposé, sécurité, largeur, second rideau
-      const K = st.full ? (cfg.supportSpanFull || axe(tac(st, atk).relation, 1.35, 0.65)) : 1;   // échelle tactique (lot 83), 0,5 = identité
+      // …l'AMPLITUDE du soutien (lot 103 : supportSpanFull réactivée en MULTIPLICATEUR — 0/absente = ×1 l'identité au bit ; 1,25 = l'air autour du ballon) × l'axe relation (lot 83)
+      const K = st.full ? (cfg.supportSpanFull || 1) * axe(tac(st, atk).relation, 1.35, 0.65) : 1;
       S5(0, sa[0] + sgn * 8 * K, sa[2] < 0 ? sa[2] + 6 * K : sa[2] - 6 * K); S5(1, sa[0] + sgn * 7 * K, sa[2] < 0 ? sa[2] - 5 * K : sa[2] + 5 * K);
       S5(2, sa[0] - sgn * 6 * K, sa[2] * 0.5); S5(3, sa[0] + sgn * 2 * K, sa[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, sa[0] + sgn * 4 * K, sa[2] * -0.6);
     }
     if (st.full && cfg.triangle !== false && !wideDeep) triangule(slots, sa, cfg.triangle?.min ?? 35, pitch.hx, pitch.hz);   // lot 84, ÉTEINTE
     const free = st._bFree ??= []; free.length = 0;
     for (const p of attackers) if ((!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter) free.push(p);
-    // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les 4 plus près de
-    // l'ancre) — le reste du monde tient SON poste de formation coulissé (le bloc). Sans ça, les
-    // 5 slots du réduit laissaient 5 corps immobiles et l'essaim mangeait la lisibilité.
+    // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les plus près de
+    // l'ancre) — le reste du monde tient SON poste de formation coulissé (le bloc).
     let slotters = free, posted = [];
     if (st.full) {
-      // tri à clés PRÉ-CALCULÉES (lot 60, profil mobile : d2/hypot recalculé dans chaque
-      // comparaison à 60 Hz) — mêmes clés, tri stable, même ordre : le flux au bit près
-      // clé de tri TRANSIENTE + tri du buffer (sort stable, mêmes clés → l'ordre d'hier)
+      // tri à clés TRANSIENTES pré-calculées (lot 60 — d2 recalculé par comparaison à 60 Hz) ; sort stable, mêmes clés → l'ordre d'hier
       const bs = st._bSlotters ??= []; bs.length = 0;
       for (const q of free) { q._dAnc = d2(q.p, sa); bs.push(q); }
       bs.sort((a, b) => a._dAnc - b._dAnc);
-      if (bs.length > 4) bs.length = 4;                              // = slice(0, 4)
+      // LE SOUTIEN EST UN PETIT COMITÉ (lot 103, cfg.soutienN — « trop dense au milieu » : 4 slotters + porteur = 5 corps au ballon, largeur
+      // 38 m vs 45-60 réel ; le réel soutient à 2-3, les libérés TIENNENT LA STRUCTURE — relation module ±1). Absente : les 4 d'hier au bit.
+      const nSout = cfg.soutienN != null ? Math.round(axe(tac(st, atk).relation, cfg.soutienN - 1, cfg.soutienN + 1)) : 4;
+      if (bs.length > nSout) bs.length = nSout;
       slotters = bs; posted = st._bPosted ??= []; posted.length = 0;
       for (const p of free) if (!slotters.includes(p)) posted.push(p);
-      // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien) et LATÉRALEMENT (lot 68,
-      // bloc.rentre, formation.js). L'ANCRE DE LA RENTRÉE EST LENTE (τ = 2 s de temps sim ; le x
-      // du bloc reste VIF — l'ancre lente en x traînait toute la ligne, p50 8→11 m, négatif
-      // consigné) : la ligne de 3 se referme sur une possession d'aile INSTALLÉE (~1 s engager,
-      // ~2,5 s pleine), pas sur chaque transversale qui faisait clignoter la bande d'engagement.
+      // …chaînée au ballon AUSSI en attaque (lot 51, bloc.soutien) et LATÉRALEMENT (lot 68, bloc.rentre,
+      // formation.js). L'ANCRE DE LA RENTRÉE EST LENTE (τ = 2 s de temps sim ; le x du bloc reste VIF — l'ancre
+      // lente en x traînait toute la ligne, négatif consigné) : la ligne de 3 se referme sur une possession
+      // d'aile INSTALLÉE (~1 s engager, ~2,5 s pleine), pas sur chaque transversale qui la faisait clignoter.
       const tz = st._tuckZ ??= { v: 0, t: st.t };
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
       const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v, st._outAtk ??= []);

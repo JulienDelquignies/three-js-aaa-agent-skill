@@ -49,7 +49,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 145.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 146.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -146,8 +146,10 @@
    REQUALIFIÉ : sondé à 35 % des passes offensives dans l'intervalle (réel 15-25), offre
    80 % — déjà au-dessus du réel, pas de loi (la dette lot 99 confondait la bande z et
    l'intervalle en profondeur).
-11. **Fond de roulement** : re-fonder les 4 clauses de flux pour activer l'écartement en
-   continu ; réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
+11. **Fond de roulement** : ~~re-fonder les clauses de flux pour activer l'écartement en
+   continu~~ — **LIVRÉ** (lot 103, note 145 : supportSpanFull 1,25 + settledNear 6 activées
+   en défaut, soutienN 2, la clause « pose figée » re-fondée par neutralisation symétrique) ;
+   réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
 
 11b. ~~**LES CORNERS : NAISSANCE + TRAVAIL (lot 101, backlog)**~~ — **LIVRÉ** (note 143) :
    3 sources de naissance (claquette-corner ≥ 13 m/s au bout de l'envergure ou missile

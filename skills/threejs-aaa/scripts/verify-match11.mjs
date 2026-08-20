@@ -833,10 +833,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // bloc compact du lot 42 serre le marquage ; le monde saboté vit à 37-39 %) : bornes LARGES
   // qui séparent (doctrine lot 36), séparation ABSOLUE au sabotage (×2 re-cassait dès que le
   // vivant montait) ; les vols FIGÉS > 60 % sont le vrai tueur de statue (14 % avant, ~0 après)
-  const vif = mesure({});
+  // settledNear: Infinity ÉPINGLÉ DES DEUX CÔTÉS (lot 103 : le trot au poste anime AUSSI le
+  // monde sans meetWalk — la statue trottait à son slot, l'écart net tombait de 25 à 4 pts ;
+  // la clause isole meetWalk, la variable orthogonale se neutralise symétriquement)
+  const vif = mesure({ settledNear: Infinity });
   ok(`le RECEVEUR VIVANT (2 × 120 s : ${(vif.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≤ 25, ${vif.geles}/${vif.vols} vols figés > 60 % ≤ 8 % — il vient au-devant, la prise se fait dans le pas)`,
     vif.statue <= 0.25 && vif.geles / Math.max(1, vif.vols) <= 0.08);
-  const fige = mesure({ meetWalk: false, chutePredite: false });   // le monde d'hier COMPLET (lot 52 : la chute prédite anime aussi — l'isolation du sabotage la coupe)
+  const fige = mesure({ meetWalk: false, chutePredite: false, settledNear: Infinity });   // le monde d'hier COMPLET (lot 52 : la chute prédite anime aussi — l'isolation du sabotage la coupe)
   ok(`sabotage « pose figée » attrapé (meetWalk:false : ${(fige.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≥ vivant + 10 pts (${(vif.statue * 100 + 10).toFixed(0)}) — la statue d'hier, nommée)`,
     fige.statue >= vif.statue + 0.10);
 }
@@ -949,7 +952,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif76.part <= 0.04);
   const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false, accroche: false,
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
-    bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 } });   // l'HIER exact, EN ENTIER (14e : lot 98 sans fixation ni surcharge, lot 99 sans couloir ouvert)
+    bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
+    soutienN: null, supportSpanFull: 0, settledNear: Infinity });   // l'HIER exact, EN ENTIER (15e : lot 103 sans comité ni amplitude ni trot au poste)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1495,6 +1499,44 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab = placer({ corner: false });
   ok(`sabotage « le monde du coin d'hier » attrapé (corner:false, MÊME pose : premier poteau à ${sab.gardePot.toFixed(1)} m ≥ 6 — personne ne le garde ; ${sab.n} corps en boîte, EN TRANSIT vers le coin, informatif : l'hier converge au point de remise)`,
     sab.gardePot >= 6);
+}
+
+// ---------------------------------------------------------------- lot 103 : LA RESPIRATION —
+// « densité beaucoup trop élevée au milieu ». Le soutien est un PETIT COMITÉ (soutienN, modulé
+// relation), l'amplitude des couloirs S5 respire (supportSpanFull) et le posté TROTTE à son
+// poste (settledNear — sans lui, l'ailier marchait 25 m à 1,35 m/s et n'arrivait jamais).
+// Effets NETS, échantillons symétriques (mêmes graines, même durée) : la largeur de l'équipe
+// en possession et la distance au plus proche coéquipier — l'hier vivait superposé (38 m).
+{
+  const respire = (over) => {
+    const larg = [], proche = [];
+    for (const seed of [2, 3, 5, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 150 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.restart || i % 30 !== 0) continue;
+        const team = st.possession.team;
+        if (team == null || team < 0) continue;
+        const vifs = st.players.filter((q) => !q.keeper && q.down <= 0 && !q.expulse && !q._sub);
+        const atk = vifs.filter((q) => q.team === team);
+        larg.push(Math.max(...atk.map((q) => q.p[2])) - Math.min(...atk.map((q) => q.p[2])));
+        for (const q of atk) {
+          let m = 99;
+          for (const o of atk) if (o.id !== q.id) m = Math.min(m, Math.hypot(o.p[0] - q.p[0], o.p[2] - q.p[2]));
+          proche.push(m);
+        }
+      }
+    }
+    const p50 = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
+    return { larg: p50(larg), proche: p50(proche) };
+  };
+  const vif = respire({});
+  const sab = respire({ soutienN: null, supportSpanFull: 0, settledNear: Infinity });
+  ok(`lot 103 — le jeu RESPIRE (largeur en possession p50 ${vif.larg.toFixed(0)} m ≥ hier + 2 ; plus proche coéquipier p50 ${vif.proche.toFixed(1)} m ≥ hier + 0,6 — le comité de soutien, l'amplitude, le trot au poste)`,
+    vif.larg >= sab.larg + 2 && vif.proche >= sab.proche + 0.6);
+  ok(`sabotage « l'essaim d'hier » attrapé (soutienN:null + supportSpanFull:0 + settledNear:Infinity : largeur ${sab.larg.toFixed(0)} m, proche ${sab.proche.toFixed(1)} m — les 4 au ballon et la marche qui n'arrive jamais, nommés)`,
+    sab.larg <= vif.larg - 2 && sab.proche <= vif.proche - 0.6);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

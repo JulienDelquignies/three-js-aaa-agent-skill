@@ -4374,6 +4374,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      laisse ~40 % des monteurs en route à la prise ; le réel trotte se placer), les
      variantes de plan (le corner court a ses postes propres, la surcharge du second poteau).
 
+145. **Lot 103 : LA RESPIRATION — le comité de soutien, l'amplitude, le trot au poste (retour
+     utilisateur : « densité beaucoup trop élevée au milieu, le jeu ne respire pas — sans
+     brider les mouvements »).** Mesuré AVANT (4 graines × 220 s, hors restart) : plus proche
+     coéquipier p50 6,9 m (réel 9-12), corps à 8 m du ballon p90 9 (réel 3-5), largeur de
+     l'équipe EN POSSESSION 38 m (réel 45-60) — superposée à la défense (35), postes larges
+     occupés 24 % (corps le plus proche du slot p50 11,9 m). LA CAUSE ARCHITECTURALE : les
+     slotters = les 4 plus proches de l'ancre → 5 corps au ballon en permanence, et le posté
+     large MARCHAIT (1,35 m/s inconditionnel) vers un poste à 25 m — il n'y arrivait jamais.
+     TROIS LOIS D'OCCUPATION (aucun bridage — on rend du mouvement) : (1) LE COMITÉ
+     (cfg.soutienN 2, match-sim) — le soutien rapproché est un petit comité modulé par l'axe
+     relation (1..3 : le direct soutient peu et vise long, le jeu de position s'offre 3
+     appuis) ; le libéré tient SON poste de formation ; (2) L'AMPLITUDE (supportSpanFull 1,25
+     — la clé de format du lot 82 enfin ACTIVÉE en multiplicateur, ×axe relation) : les
+     couloirs S5 s'écartent à la ligne de passe courte réelle ; (3) LE TROT AU POSTE
+     (settledNear 6 — la clé du lot 84 enfin ACTIVÉE) : le soutien posé ne marche QUE placé
+     (< 6 m de son slot), loin il TROTTE s'y mettre. APRÈS (mêmes sondes) : proche p50
+     8,7 m, ball8 p90 7, largeur possession 43 m, postes larges 33 % (p50 9,0 m), convergents
+     du porteur INTACTS (2/3 — le duel n'est pas touché). Calibré soutienN 2 vs 3 (2 gagne
+     partout : centre p90 12 vs 13) ; span 1,4 n'apporte rien (le clamp mange l'excès).
+     A/B 20 × 300 s : 69 tirs / 18 buts ∈ [17 ; 33] ✓ — le bord bas assumé : l'espace se paie
+     en combinaisons courtes mécaniques, le jeu y gagne la lisibilité. Clauses (match11
+     96/0) : « le jeu RESPIRE » (largeur 43 ≥ hier + 2, proche 10,4 ≥ hier + 0,6 — effets
+     nets, échantillons symétriques 4/4) + sabotage « l'essaim d'hier » (soutienN:null +
+     supportSpanFull:0 + settledNear:Infinity : 38 m / 7,5 m) ; sab76 15e application (les
+     3 clés) ; la clause « pose figée » RE-FONDÉE par neutralisation symétrique
+     (settledNear:Infinity épinglé des DEUX côtés — le trot animait aussi la statue sans
+     meetWalk, l'écart net tombait de 25 à 4 pts : la variable orthogonale se neutralise, ne
+     se re-borne pas). Empreintes rondo/réduit AU BIT (c775c81e / d1c0c117) ; match seed 3/7
+     = nouvelle référence (2dc8a7b4aeda1b73 / 4233374aec9be6ec). Dette nommée : le trot de
+     placement des remises (speeds.place — les monteurs de corner sont job walk, pas
+     support : le settledNear ne les couvre pas).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
