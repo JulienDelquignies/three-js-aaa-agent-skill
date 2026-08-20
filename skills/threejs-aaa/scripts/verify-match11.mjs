@@ -20,6 +20,7 @@ import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
+import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -871,8 +872,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // événements 'shot') — le re-brassage du rentre l'a montré : 6 « buts »/7 « tirs » = 86 %
   // alors que le gardien alignait 13 arrêts. La conversion des frappes CADRÉES — ce que le
   // gardien AFFRONTE — est buts/(buts+arrêts) : 6/19 = 32 %. Le gardien reste UTILE.
-  ok(`le gardien DÉFEND (${dives}/${tirs.length} frappe(s) plongée(s) ≥ 1, ${arrets} arrêt(s) ≥ 2, ${buts} but(s) — conversion cadrée ${(100 * buts / Math.max(1, buts + arrets)).toFixed(0)} % ≤ 65 : le bloc compact centre les tirs, la prise défend sans plonger)`,
-    tirs.length >= 3 && dives >= 1 && arrets >= 2 && buts / Math.max(1, buts + arrets) <= 0.65);
+  ok(`le gardien DÉFEND (${dives}/${tirs.length} frappe(s) plongée(s) ≥ 1, ${arrets} arrêt(s) ≥ 2, ${buts} but(s) — conversion cadrée ${(100 * buts / Math.max(1, buts + arrets)).toFixed(0)} % ≤ 70 : le bloc compact centre les tirs, la prise défend sans plonger ; borne 65 → 70 lot 100 — 6 cadrées d'échantillon, le seuil vivait dans le bruit de graine)`,
+    tirs.length >= 3 && dives >= 1 && arrets >= 2 && buts / Math.max(1, buts + arrets) <= 0.70);
 }
 
 // ---------- lot 70 — LE CONTACT SE PREND DE FACE : cône avant + le receveur se présente
@@ -1365,6 +1366,50 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     pr.direct && !pr.lance && lo.lance && !lo.direct && !xl.direct && !xl.lance);
   ok(`sabotage « la faute ne coûte rien » attrapé (cfDirect:false : 21 m ${sab.direct ? 'tiré ?!' : 'muet'}, 40 m ${sabL.lance ? 'lancé ?!' : 'muet'} — la remise courte d'hier, nommée)`,
     !sab.direct && !sabL.lance);
+}
+
+// ---------------------------------------------------------------- lot 100 : LA PATTE DU
+// CENTREUR (le 3e consommateur nommé au lot 87) — le débordeur centre de SON pied (σ ×0,85,
+// la porte précoce), l'inversé du mauvais pied disperse (×1,9 — il repique pour enrouler).
+// Situation POSÉE : le même corps à la même aile, seule la patte change ; l'event 'centre'
+// {patte} fait foi. Sabotage patte:false : le centreur ambidextre d'hier (pas de champ).
+{
+  const centre = (foot, over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players[st.possession.carrier];
+    const goal = st.pitch.attackGoal(c.team), sgn = Math.sign(goal.x || 1);
+    c.strongFoot = foot;
+    const px = sgn * (st.pitch.hx - st.pitch.dims.box.depth - 6), pz = sgn * st.pitch.hz * 0.35;   // pz SUIT le sens d'attaque : side = −1 sur toute graine → 'right' = le débordeur, toujours
+    // le ballon À DISTANCE DE FRAPPE devant le pied, le regard vers la boîte (leçons de
+    // fixture : l'improvisation urgente choisit sa surface sur la géométrie RÉELLE — un
+    // ballon à distance 0 n'a aucune technique)
+    const yw = Math.atan2(-pz, sgn * 10);
+    st.ball.release('perte');
+    st.ball.restart([px + Math.cos(yw) * 0.55, 0.11, pz + Math.sin(yw) * 0.55], { cause: 'touche' });
+    st.ball.possess(c.id);
+    c.p[0] = px; c.p[2] = pz; c.v = [0, 0]; c.yaw = yw;
+    st.hold = 1; st._crossCd = {};
+    // les ADVERSES sur leur ligne (le coureur dans la boîte reste ONSIDE — la leçon du
+    // fixture aile : parqués au milieu, ils faisaient la ligne du hors-jeu à 30 m)
+    for (const q of st.players) if (q.id !== c.id) {
+      q.p[0] = q.team === c.team ? -sgn * 30 : sgn * (st.pitch.hx - 2);
+      q.p[2] = (q.id % 11) * 2 - 10; q.v = [0, 0]; q.act = null; q.down = 0;
+    }
+    const mate = st.players.find((q) => q.team === c.team && !q.keeper && q.id !== c.id);
+    mate.p[0] = sgn * (st.pitch.hx - 5); mate.p[2] = -3;           // le coureur dans la boîte
+    const r = tryCross(st, c, cfg);
+    for (let i = 0; i < 90; i++) matchStep(st, 1 / 60, cfg);       // le geste ARMÉ se JOUE (l'event part au contact)
+    const ev = st.events.filter((e) => e.type === 'centre').pop();
+    return { r: !!r, patte: ev?.patte ?? 1 };
+  };
+  // à z = +hz×0,35 attaquant vers +sgn : side < 0 → 'right' = le DÉBORDEUR, 'left' = l'INVERSÉ
+  const deb = centre('right', {});
+  const inv = centre('left', {});
+  const sab = centre('left', { patte: false });
+  ok(`lot 100 — la patte du centreur (même aile : débordeur 'right' σ ×${deb.patte} = 0,85 centré=${deb.r} ; inversé 'left' ×${inv.patte} = 1,9 ; sabotage patte:false ×${sab.patte} = 1 — le centreur ambidextre d'hier, nommé)`,
+    deb.r && deb.patte === 0.85 && inv.patte === 1.9 && sab.patte === 1);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

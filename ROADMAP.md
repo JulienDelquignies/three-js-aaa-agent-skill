@@ -49,7 +49,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 142.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 143.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -138,10 +138,16 @@
    (×0,7…1,3). Ballon axe 65 → 46 %, ailes 16 → 30 (réel 35/25), ailiers libres servis
    4 → 11 %, A/B 84 tirs/23 buts ∈ bande. sab76 14e. Dette nommée : les demi-espaces
    sous le réel (25 vs 40) — le jeu entre les lignes (zone 14), chantier propre.
-10. **Fond de roulement** : le centre préférentiel du pied de débordement (3e consommateur de
-   la patte) ; re-fonder les 4 clauses de flux pour activer l'écartement en continu ;
-   réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2) ; le jeu entre
-   les lignes (demi-espaces 25 vs réel 40 — dette lot 99).
+10. ~~**LA PATTE DU CENTREUR (lot 100, 3e consommateur — dette lot 87)**~~ — **LIVRÉ**
+   (note 142) : le débordeur centre de SON pied (σ ×0,85, porte précoce +3 m), l'inversé
+   disperse (×1,9) ; contrat générique choice.sigmaF de beginPass (le multiplicateur de
+   dispersion du geste, aucun tirage de plus), event 'centre' {patte}. 5 bons pieds / 1
+   mauvais sur 8 matchs, A/B 96 tirs/27 buts ∈ bande. ET le « jeu entre les lignes »
+   REQUALIFIÉ : sondé à 35 % des passes offensives dans l'intervalle (réel 15-25), offre
+   80 % — déjà au-dessus du réel, pas de loi (la dette lot 99 confondait la bande z et
+   l'intervalle en profondeur).
+11. **Fond de roulement** : re-fonder les 4 clauses de flux pour activer l'écartement en
+   continu ; réserves perf sur preuve (LOD corps 42k→12k tri, BundleGroup r185, KTX2).
 
 ## Backlog long terme (inchangé)
 Corners travaillés, gardien relanceur avancé, formations 442/352

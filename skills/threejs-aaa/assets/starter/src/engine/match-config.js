@@ -406,6 +406,11 @@ export const MATCH = {
                           // fenêtre de l'enroulée (inversé ×1,6, débordement ×0,55, both ×1,2).
                           // L'attribut naît au corps (hash seed/id 72/23/5, ratings.foot le
                           // surclasse). false : le tireur sans patte (sabotage nommé).
+                          // …3e CONSOMMATEUR (lot 100 — le CENTRE) : le débordeur centre de
+                          // SON pied (σ ×0,85, porte 3 m plus profonde — le centre précoce
+                          // est son arme), l'inversé du mauvais pied disperse (×1,9 — il
+                          // repique pour enrouler). Contrat choice.sigmaF de beginPass,
+                          // event 'centre' {patte}. false : le centreur ambidextre d'hier.
   social: 0.9,            // LA DISTANCE SOCIALE DES COÉQUIPIERS (lot 86, st.full — movement) :
                           // deux coéquipiers debout, hors remise/geste, tiennent ce rayon (m,
                           // poussée douce). Mesuré avant : 1584 paires < 1,2 m / 15 min, 52 %

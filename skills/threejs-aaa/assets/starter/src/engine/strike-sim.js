@@ -281,8 +281,11 @@ export function strikeNow(st, c, cfg) {
   // moyen rate aussi des passes ; la note RAFFINE ce déchet, elle ne l'invente pas.
   let dirNoise = 0;
   if (!shot && !choice.clear) {
-    if (c.skill) dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1);
-    else if (cfg.execSigma) dirNoise = gauss(st.rnd ?? (() => 0.5)) * cfg.execSigma * (urgent ? 1.25 : 1);
+    // choice.sigmaF (lot 100 — contrat générique) : le multiplicateur de dispersion DU GESTE,
+    // posé par l'appelant (le centre du mauvais pied ×1,9, du pied de débordement ×0,85 —
+    // shooting.tryCross). Absent : 1, le σ d'hier au bit — aucun tirage de plus.
+    if (c.skill) dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1) * (choice.sigmaF ?? 1);
+    else if (cfg.execSigma) dirNoise = gauss(st.rnd ?? (() => 0.5)) * cfg.execSigma * (urgent ? 1.25 : 1) * (choice.sigmaF ?? 1);
   }
   sol.dirYaw += dirNoise;
   // LE RÉPERTOIRE DU TIR (choice.shotKind, posé par le match — le rondo n'en pose jamais) : le
@@ -338,7 +341,7 @@ export function strikeNow(st, c, cfg) {
   st.ball.strike({ speed: spd, dirYaw: sol.dirYaw, elevation: elev,
     spinAxis: liftAtStrike ? liftAtStrike.spinAxis : [0, 1, 0], spinRev: liftAtStrike ? liftAtStrike.spinRev : (kind?.rev ?? 0) });
   if (choice.clear) st.events.push({ t: +st.t.toFixed(2), type: 'clearance', by: c.id, foot: c.foot });
-  if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id, bas: !!choice.bas });
+  if (choice.cross) st.events.push({ t: +st.t.toFixed(2), type: 'centre', by: c.id, foot: c.foot, to: choice.to.id, bas: !!choice.bas, ...(choice.sigmaF != null && choice.sigmaF !== 1 ? { patte: choice.sigmaF } : {}) });
   if (shot) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,

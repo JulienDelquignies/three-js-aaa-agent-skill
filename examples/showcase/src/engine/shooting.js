@@ -165,7 +165,16 @@ export function tryCross(st, c, cfg) {
   // des DEMI-ESPACES (couloir 0,30) et de plus profond (le centre tôt, −13 m) — mesuré :
   // à 0,38/−9, la fenêtre géométrique n'existait que 2,4 % du portage, ~1 centre / 2 matchs.
   // Le réduit garde ses portes d'hier (st.full), au bit près.
-  if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - (st.full ? 13 : 9)) return false;   // pas assez haut
+  // LA PATTE DU CENTREUR (lot 100, cfg.patte && st.full — le 3e consommateur nommé au lot
+  // 87) : le DÉBORDEUR (pied fort côté aile — le miroir de l'inversé) centre de SON pied :
+  // précision pleine (sigmaF 0,85) et le centre PRÉCOCE est son arme (porte 3 m plus
+  // profonde) ; l'INVERSÉ qui centre du mauvais pied disperse (×1,9 — au réel il repique
+  // pour enrouler, lot 87) ; des deux pieds ×1. Le facteur voyage par choice.sigmaF
+  // (contrat générique de beginPass : la dispersion DU geste) — physique intacte, aucun
+  // tirage de plus (le σ existant se module). patte:false : le centreur sans patte d'hier.
+  const sfC = st.full && cfg.patte !== false ? (c.strongFoot ?? 'right') : null;
+  const piedsF = !sfC ? 1 : sfC === 'both' ? 1 : (Math.sign(c.p[2] * -(goal.x || 1)) > 0) === (sfC === 'right') ? 1.9 : 0.85;
+  if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - (st.full ? 13 + (piedsF < 1 ? 3 : 0) : 9)) return false;   // pas assez haut (le débordeur centre tôt)
   if (Math.abs(c.p[2]) < pitch.hz * (st.full ? 0.30 : 0.38)) return false;                 // pas dans le couloir
   if (st.hold < 0.25) return false;
   if ((st._crossCd?.[c.team] ?? -1) > st.t) return false;
@@ -212,7 +221,7 @@ export function tryCross(st, c, cfg) {
     const clr = laneClearance([st.ball.p[0], 0, st.ball.p[2]], lead, blockers);
     bas = (clr.margin ?? clr) >= 0.45;
   }
-  const r = simInternals.beginPass(st, { to: { id: rec.id }, lead, style: bas ? 'ground' : 'lofted', cross: true, bas, lane: { margin: 9 } }, cfg, { forceUrgent: true });
+  const r = simInternals.beginPass(st, { to: { id: rec.id }, lead, style: bas ? 'ground' : 'lofted', cross: true, bas, sigmaF: piedsF, lane: { margin: 9 } }, cfg, { forceUrgent: true });
   if (r) (st._crossCd ??= {})[c.team] = st.t + 5;
   return r;
 }

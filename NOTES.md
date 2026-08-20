@@ -4292,6 +4292,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      restent sous le réel (25 vs 40) — le jeu entre les lignes (la zone 14, le passeur entre
      les lignes) est un chantier propre.
 
+142. **Lot 100 : LA PATTE DU CENTREUR (le 3e consommateur nommé au lot 87) + le jeu entre les
+     lignes REQUALIFIÉ.** D'abord la REQUALIFICATION honnête (le patron du lot 92) : la dette
+     du lot 99 disait « demi-espaces 25 % vs réel 40 » — sondé, le jeu ENTRE LES LIGNES (le
+     receveur dans l'intervalle milieux-défense adverses, en profondeur) vit DÉJÀ au-dessus du
+     réel : 35 % des passes offensives le trouvent (réel ~15-25), l'offre y est 80 % du temps,
+     l'écart entre lignes 16,9 m. La bande latérale z 8-16 n'est PAS l'intervalle — pas de
+     manque fonctionnel, pas de loi (on ne légifère pas le plein). LA LOI du lot : le CENTRE
+     PRÉFÉRENTIEL (shooting.tryCross, cfg.patte && st.full) — le DÉBORDEUR (pied fort côté
+     aile, le miroir de l'inversé lot 87) centre de SON pied : dispersion ×0,85 et la porte
+     PRÉCOCE (3 m plus profonde — le centre tôt est son arme) ; l'INVERSÉ qui centre du
+     mauvais pied disperse (×1,9 — au réel il repique pour enrouler, sa loi lot 87) ; both ×1.
+     Le facteur voyage par choice.sigmaF — CONTRAT GÉNÉRIQUE de beginPass (le multiplicateur
+     de dispersion DU geste, réutilisable par tout projet amont), appliqué sur le σ EXISTANT
+     (passSigma × composureF) : AUCUN tirage de plus, pas un bit de flux décalé hors la loi.
+     Event 'centre' {patte} (banc + télémétrie). Mesuré : 6 centres/8 × 220 s — 5 du bon pied,
+     1 du mauvais (le débordement du pied fort domine, le réalisme voulu), 4 tirs dans les
+     6 s. A/B 20 × 300 s : 96 tirs / 27 buts ∈ [17 ; 33] ✓. Clause POSÉE (match11 90/0) :
+     même aile, seule la patte change — débordeur ×0,85 centré, inversé ×1,9, sabotage
+     patte:false ×1 (le centreur ambidextre d'hier). TROIS leçons de fixture payées : le
+     coureur de boîte ONSIDE (les adverses parqués au milieu faisaient la ligne à 30 m), le
+     ballon À DISTANCE DE FRAPPE (l'improvisation urgente n'a aucune surface pour un ballon à
+     distance 0), le geste ARMÉ SE JOUE (l'event part au contact, 90 frames après tryCross) —
+     et pz suit le sens d'attaque (la chiralité du side). Le seuil gardien 65 → 70 re-fondé
+     (6 cadrées d'échantillon, le bruit de graine). Empreintes rondo/réduit AU BIT.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
