@@ -3,6 +3,7 @@
 // batterie est la preuve. Une famille par fichier : le cerveau décide, le mouvement PORTE.
 import { winding } from './gesture.js';
 import { momentDuJeu } from './phases.js';
+import { dansCone } from './dribble.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -128,6 +129,17 @@ export function movePlayers(st, dt, cfg) {
     if (p.job === 'support' && p.target) {
       const dS = Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]);
       if (dS < 3) top = Math.min(top, cfg.supportNearCap);
+    }
+    // LE PIVOT DE REPRISE (lot 104, cfg.pivotReprise && st.full — « la balle échappe au porteur
+    // sans être gêné ») : le ballon de conduite passé DANS LE DOS ne se reprend pas en ORBITE
+    // (mesuré : 2 s à tourner autour à 2-3 m/s, cône 150-170°, l'adversaire cueille) — le vrai
+    // corps FREINE, pivote face au ballon (le slew gagne dès que le drift cesse), reprend.
+    // Clé absente/false : l'orbite d'hier au bit.
+    if (st.full && cfg.pivotReprise && p.job === 'carry' && st.ball.owner == null && !p.keeper) {
+      const dB = Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]);
+      if (dB < (cfg.pivotReprise.d ?? 1.9)
+        && !dansCone(p.yaw, p.p[0], p.p[2], st.ball.p[0], st.ball.p[2], cfg.pivotReprise.cone ?? 110))
+        top = Math.min(top, cfg.pivotReprise.cap ?? 0.8);
     }
     // LES APPUIS DU DÉFENSEUR (lot 95, cfg.jockey && st.full — le même patron côté duel) : un
     // presseur PRÈS d'un porteur POSSÉDÉ arrive SOUS CONTRÔLE (appuis courts — 70 % des entrées

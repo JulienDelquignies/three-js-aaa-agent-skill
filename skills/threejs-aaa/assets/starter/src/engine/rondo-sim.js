@@ -758,6 +758,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     }
     if (d2(c.p, st.ball.p) > looseAt) {
       st.ball.release('perte');
+      st._exCarrier = { id: c.id, t: st.t };   // lot 104 : la conduite qui vient de fuir a un nom (lu sous cfg.tenue seulement)
       st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
       return st;
     }

@@ -23,6 +23,7 @@ import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
+import { KEEPER, keeperDecide } from '../assets/starter/src/engine/keeper.js';
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -953,7 +954,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false, accroche: false,
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
-    soutienN: null, supportSpanFull: 0, settledNear: Infinity });   // l'HIER exact, EN ENTIER (15e : lot 103 sans comité ni amplitude ni trot au poste)
+    soutienN: null, supportSpanFull: 0, settledNear: Infinity,
+    tenue: false, pivotReprise: false, sortie1v1: false });   // l'HIER exact, EN ENTIER (16e : lot 104 sans tenure, pivot ni cône de sortie)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1089,6 +1091,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         }
         for (const s of suivis) {
           const gk = st.players[s.id];
+          if (s.done) continue;
+          // le RELEVÉ CLÔT L'ÉPISODE (lot 104, 9e migration : le suivi sans fin mesurait le
+          // couché d'un DEUXIÈME plongeon du même gardien, servo en descente → y 1,28 fantôme)
+          if (st.t - s.t0 > 0.5 && gk.down <= 0) { s.done = true; continue; }
           if (st.ball.owner !== s.id || gk.down <= 0 || st.t - s.t0 <= 0.5) continue;   // 0,5 s : le servo ramène la prise (saisie sim à ≤ 1,1 du centre)
           s.dMax = Math.max(s.dMax, Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]));
           // la fenêtre du COUCHÉ (down au-delà du relevé) : le ballon tenu vit à ras de pelouse
@@ -1537,6 +1543,68 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif.larg >= sab.larg + 2 && vif.proche >= sab.proche + 0.6);
   ok(`sabotage « l'essaim d'hier » attrapé (soutienN:null + supportSpanFull:0 + settledNear:Infinity : largeur ${sab.larg.toFixed(0)} m, proche ${sab.proche.toFixed(1)} m — les 4 au ballon et la marche qui n'arrive jamais, nommés)`,
     sab.larg <= vif.larg - 2 && sab.proche <= vif.proche - 0.6);
+}
+
+// ---------------------------------------------------------------- lot 104 : LE CÔNE DE SORTIE
+// — « le gardien sort aux 16 m sur un ailier en position Robben ». La charge du 1v1 exige un
+// danger DE FACE et PERSONNE pour couvrir ; sinon le poste (premier poteau). Fixture pure.
+{
+  const pitch = makePitch(FULL);
+  const g = pitch.ownGoal(0), sg = Math.sign(g.x || 1);
+  const me = [g.x - sg * 0.6, 0, 0];
+  const KC = { ...KEEPER, cone: { zMax: 9, near: 8, couvert: 4 }, couvertD: Infinity };
+  const robben = keeperDecide(pitch, 0, me, [g.x - sg * 13, 0.11, 15], [sg * 1.2, 0, 0.6], Infinity, KC);
+  const un = keeperDecide(pitch, 0, me, [g.x - sg * 10, 0.11, 2], [sg * 1.2, 0, 0.3], Infinity, KC);
+  const couvert = keeperDecide(pitch, 0, me, [g.x - sg * 10, 0.11, 2], [sg * 1.2, 0, 0.3], Infinity, { ...KC, couvertD: 2.5 });
+  ok(`lot 104 — la sortie a un CÔNE (Robben excentré |z|=15 : ${robben.mode} = poste, le premier poteau répond ; le VRAI 1v1 axial seul : ${un.mode} = sortie ; couvert (défenseur goal-side à 2,5 m) : ${couvert.mode} = poste — le défenseur gère)`,
+    robben.mode === 'poste' && un.mode === 'sortie' && couvert.mode === 'poste');
+  const hier = keeperDecide(pitch, 0, me, [g.x - sg * 13, 0.11, 15], [sg * 1.2, 0, 0.6], Infinity, KEEPER);
+  ok(`sabotage « la charge aveugle d'hier » attrapé (K.cone absent, MÊME ballon excentré : ${hier.mode} = sortie — le gardien qui traverse sa surface vers le coin, nommé)`,
+    hier.mode === 'sortie');
+}
+
+// ---------------------------------------------------------------- lot 104b : LA BALLE NE
+// S'ÉCHAPPE PLUS SEULE — la tenure de conduite (le hunter revient à l'ex-porteur) + le pivot
+// de reprise (le dos freine et se retourne au lieu d'orbiter). Épisodes suivis 2 s : une perte
+// SANS pression (échappée > 2,2 m ou cueillie par l'adversaire) est LE symptôme utilisateur.
+{
+  const pertes = (over) => {
+    let n = 0;
+    for (const seed of [2, 3, 5, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let prev = null, enc = null;
+      for (let i = 0; i < 180 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const ownId = st.ball.owner;
+        if (enc) {
+          const p = st.players[enc.id];
+          enc.dMax = Math.max(enc.dMax, Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]));
+          let fin = null;
+          if (st.restart) fin = 'restart';
+          else if (ownId != null) fin = ownId === enc.id ? (enc.dMax > 2.2 ? 'echappee' : 'ok') : (st.players[ownId].team === p.team ? 'coeq' : 'adv');
+          else if (st.t - enc.t0 > 2) fin = enc.dMax > 2.2 ? 'echappee' : 'ok';
+          if (fin) { if ((fin === 'echappee' || fin === 'adv') && !enc.press) n++; enc = null; }
+        }
+        if (prev != null && ownId == null && enc == null && !st.restart && !st.pass && st.phase !== 'flight') {
+          const p = st.players[prev];
+          if (p && !p.keeper) {
+            const press = st.players.some((q) => q.team !== p.team && !q.keeper && q.down <= 0
+              && Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]) < 2.5);
+            enc = { id: prev, t0: st.t, press, dMax: 0 };
+          }
+        }
+        prev = ownId != null && !st.players[ownId].keeper ? ownId : null;
+      }
+    }
+    return n;
+  };
+  const vif = pertes({});
+  const sab = pertes({ tenue: false, pivotReprise: false });
+  ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 12 min ≤ 6 — la tenure rend la chasse au conducteur, le pivot reprend le dos)`,
+    vif <= 6);
+  ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant + 4 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
+    sab >= vif + 4);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

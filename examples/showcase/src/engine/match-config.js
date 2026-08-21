@@ -601,6 +601,27 @@ export const MATCH = {
                           // (mesuré : 1,34 m de haut, 8 images en s'éloignant des mains)
   pokeReach: 0.5,         // m — LE PIQUE : un ballon de conduite libre à portée de pied adverse
                           // se dévie (poke tackle) ; null : le défenseur-spectateur (sabotage nommé)
+  sortie1v1: { zMax: 9, near: 8, couvert: 4 },
+                          // LE CÔNE DE SORTIE (lot 104, st.full — « le gardien sort aux 16 m sur
+                          // un ailier en position Robben ») : la charge du 1v1 (ballon lent dans
+                          // la surface) exige un danger DE FACE — ballon axial (|z| ≤ zMax m) ou
+                          // déjà proche (≤ near m du but) — ET personne pour couvrir (défenseur
+                          // goal-side à ≤ couvert m du ballon → il gère, le gardien tient son
+                          // poteau via keeperSpot). Mesuré avant : pics de sortie à 11,6 m sur
+                          // conduite excentrée en boîte. false : la charge d'hier au bit.
+  tenue: { temps: 1.5, portee: 6, marge: 2.5 },
+                          // LA CONDUITE SE TIENT (lot 104, st.full — « la balle échappe au
+                          // porteur sans être gêné ») : le ballon poussé > 2,2 m démet le porteur
+                          // (l'étiquette cesse de mentir, lot 37) mais la CHASSE lui revient
+                          // (temps s, à portee m) sauf VRAIE avance d'un autre (marge m). Mesuré
+                          // avant : démis pour 0,1 m, reclassé posté, son ballon roulait seul —
+                          // 39 échappées/90 min sans pression. false : la démission d'hier.
+  pivotReprise: { d: 1.9, cap: 0.8, cone: 110 },
+                          // LE PIVOT DE REPRISE (lot 104, st.full — movement) : le ballon de
+                          // conduite passé DANS LE DOS ne se reprend pas en ORBITE (mesuré : 2 s
+                          // autour à 2-3 m/s, cône 150-170°, l'adversaire cueille) — sous d m et
+                          // hors cône avant (cone°), le corps FREINE (cap m/s), le slew pivote
+                          // face au ballon, la conduite reprend. false : l'orbite d'hier.
   prepTouch: true,        // LA TOUCHE DE PRÉPARATION avant la frappe (serre la touche quand le
                           // couloir de tir est ouvert) ; false : l'empalement (sabotage nommé)
   prepTouchF: 0.3,        // le régime de la touche de préparation (plus serré que carryTight)

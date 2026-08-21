@@ -123,6 +123,17 @@ export function keeperSpot(pitch, team, ball, K = KEEPER) {
   return { x, z: Math.max(-pitch.goalHalf + 0.2, Math.min(pitch.goalHalf - 0.2, z)), depth };
 }
 
+/** LA COUVERTURE (lot 104 — le call-site du cône de sortie la mesure ici, la famille gardien) :
+ * la distance au ballon du défenseur de champ goal-side le plus proche ; Infinity si personne
+ * n'est entre le ballon et le but. Le cône la compare à K.cone.couvert : couvert → le poste. */
+export function keeperCouvert(players, gk, goal, ball) {
+  const dBut = Math.hypot(ball[0] - goal.x, ball[2]);
+  let cv = Infinity;
+  for (const q of players) if (q.team === gk.team && !q.keeper && q.down <= 0
+    && Math.hypot(q.p[0] - goal.x, q.p[2]) < dBut) cv = Math.min(cv, Math.hypot(q.p[0] - ball[0], q.p[2] - ball[2]));
+  return cv;
+}
+
 /**
  * LE VOL COUPE-T-IL MON PLAN ? Balistique plate (la traînée du vrai vol est faible sur 10-20 m ;
  * le banc borne l'erreur) : renvoie { t, z, y } au franchissement du plan x = ligne de but du
@@ -175,10 +186,21 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
   {
     const g = pitch.ownGoal(team);
     if (speed < 6.5 && pitch.inBox(ball[0], ball[2], Math.sign(g.x)) ) {
-      const standoff = K.appuis && K.porte ? 1.15 : 0.55;
-      const dx = g.x - ball[0], dz = 0 - ball[2];
-      const dl = Math.hypot(dx, dz) || 1;
-      return { mode: 'sortie', spot: { x: ball[0] + (dx / dl) * standoff, z: Math.max(-pitch.goalHalf - 1.5, Math.min(pitch.goalHalf + 1.5, ball[2] + (dz / dl) * standoff)), depth: spot.depth }, set: standoff > 1 };
+      // LE CÔNE DE SORTIE (lot 104, K.cone — « le gardien sort aux 16 m sur un ailier en
+      // position Robben ») : la surface fait 40 m de large — la charge du 1v1 exige un danger
+      // DE FACE (ballon axial |z| ≤ zMax, ou déjà proche d ≤ near : au petit rectangle on
+      // ferme même excentré) ET personne pour couvrir (K.couvertD, mesuré au call-site : le
+      // défenseur goal-side ≤ couvert m du ballon GÈRE — le gardien tient son poteau, c'est
+      // le poste de keeperSpot qui répond). Clé absente : la charge d'hier au bit.
+      const coneOk = !K.cone
+        || ((Math.abs(ball[2]) <= (K.cone.zMax ?? 9) || Math.hypot(ball[0] - g.x, ball[2]) <= (K.cone.near ?? 8))
+          && (K.couvertD ?? Infinity) > (K.cone.couvert ?? 4));
+      if (coneOk) {
+        const standoff = K.appuis && K.porte ? 1.15 : 0.55;
+        const dx = g.x - ball[0], dz = 0 - ball[2];
+        const dl = Math.hypot(dx, dz) || 1;
+        return { mode: 'sortie', spot: { x: ball[0] + (dx / dl) * standoff, z: Math.max(-pitch.goalHalf - 1.5, Math.min(pitch.goalHalf + 1.5, ball[2] + (dz / dl) * standoff)), depth: spot.depth }, set: standoff > 1 };
+      }
     }
   }
   // LA FLOTTANTE SE LIT TARD (lot 39) : un vol RAPIDE quasi SANS EFFET (< 2 rad/s — pas d'axe

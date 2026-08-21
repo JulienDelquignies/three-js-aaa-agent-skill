@@ -17,7 +17,7 @@ export { MATCH };
 import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint } from './keeper.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert } from './keeper.js';
 import { accrocheStep } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
@@ -308,14 +308,11 @@ function assignMatchJobs(st, cfg) {
         gk.push = dS > 0.6 ? [toS[0] / dS, toS[1] / dS] : [-g.sign, 0];
         gk.target = [spotD[0], 0, spotD[1]];
       }
-      // …ET LA RÈGLE DES SIX SECONDES (Loi 12.2, à l'échelle du réduit : cfg.gkRelease) : le
-      // cerveau de passe distribue organiquement quand une ligne s'ouvre ; passé le délai, la
-      // distribution est FORCÉE — la meilleure rampe (progression, couloir dégagé), sinon le
-      // PUNT au flanc opposé (le dégagement du gardien). Sans échéance, un gardien jamais posé
-      // ne passait jamais.
-      // …ET L'ESPACE PRESSE LA RELANCE (lot 89, st.full — « il récupère et ne fait rien ») :
-      // sans presseur à 12 m, le vrai gardien relance en un temps (1,2 s), il ne trottine pas
-      // au spot d'abord ; pressé, il garde son délai plein pour chercher l'option.
+      // …ET LA RÈGLE DES SIX SECONDES (Loi 12.2, échelle du réduit : cfg.gkRelease) : passe
+      // organique quand une ligne s'ouvre ; passé le délai, distribution FORCÉE — meilleure
+      // rampe, sinon PUNT au flanc opposé. Sans échéance, un gardien jamais posé ne passait jamais.
+      // …ET L'ESPACE PRESSE LA RELANCE (lot 89, st.full) : sans presseur à 12 m, la relance
+      // part en un temps (1,2 s) ; pressé, il garde son délai plein pour chercher l'option.
       let gkDue = cfg.gkRelease;
       if (st.full && cfg.gkRelease) {
         let pr = 99; for (const q of st.players) if (q.team !== gk.team && !q.keeper && q.down <= 0) pr = Math.min(pr, Math.hypot(q.p[0] - gk.p[0], q.p[2] - gk.p[2]));
@@ -351,6 +348,8 @@ function assignMatchJobs(st, cfg) {
       K = { ...K, appuis: true, posMixF: gk.skill?.posMixF ?? 1, depthF: gk.skill?.depthKF ?? 1,
         gardeF: axe(role(gk).garde, 0.7, 1.3), vGk: Math.hypot(gk.v[0], gk.v[1]), porte: !!ownr && ownr.team !== gk.team };
     }
+    // LE CÔNE DE SORTIE (lot 104, cfg.sortie1v1 && st.full) : K.cone + la couverture goal-side mesurée (keeper.js)
+    if (st.full && cfg.sortie1v1) K = { ...K, cone: cfg.sortie1v1, couvertD: keeperCouvert(st.players, gk, pitch.ownGoal(gk.team), st.ball.p) };
     // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté ».
     if (cfg.keeperClaim !== false) {
       const own = pitch.ownGoal(gk.team);
@@ -432,6 +431,16 @@ function assignMatchJobs(st, cfg) {
     // …JAMAIS le gardien (lot 89, st.full — un ballon de champ n'est pas le sien : le hunter
     // l'envoyait chasser à 20-30 m puis porter au coin des six, « il court en corner »)
     let hD = Infinity; for (const p of attackers) if (p.down <= 0 && !(st.full && p.keeper)) { const d = d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
+    // LA CONDUITE SE TIENT (lot 104, cfg.tenue && st.full — « la balle échappe au porteur ») : le ballon qu'il vient de pousser
+    // reste SA course (< temps s, à portée) — un coéquipier ne la vole qu'avec une VRAIE avance (marge ; mesuré avant : démis
+    // pour 0,1 m, reclassé posté, il trottait à son poste pendant que son ballon roulait seul). Absente : l'hier au bit.
+    if (st.full && cfg.tenue && st._exCarrier && st.t - st._exCarrier.t < (cfg.tenue.temps ?? 1.5)) {
+      const ex = st.players[st._exCarrier.id];
+      if (ex && ex.team === atk && ex.down <= 0 && !ex.keeper && !ex.expulse) {
+        const dEx = d2(ex.p, st.ball.p);
+        if (dEx < (cfg.tenue.portee ?? 6) && hD > dEx - (cfg.tenue.marge ?? 2.5)) hunter = ex;
+      }
+    }
     if (hunter) {
       // une cueillette SANS course adverse se trotte (bucket support) : le sprint systématique à
       // 6,9 poussait les corps à 9,9 km/h — on ne pique un sprint que si le 50/50 est réel
@@ -517,10 +526,8 @@ function assignMatchJobs(st, cfg) {
       const dBall = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       if (cfg.carryViaBall !== false && dBall > 0.85) {
         // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà) :
-        // la cible à +0,4 m mettait l'amortissement d'arrivée du contrôleur en équilibre avec la
-        // décélération du ballon — bd cloué à 1,2-1,3 m, le pied n'entrait jamais en portée
-        // (mesuré : 58 refus 'prépare-frappe' sur une approche, zéro touche serrée). Le vrai
-        // geste accélère À TRAVERS le point de touche.
+        // à +0,4 m l'amorti d'arrivée s'équilibrait avec la décélération du ballon — bd cloué à
+        // 1,2-1,3 m, le pied jamais en portée. Le vrai geste accélère À TRAVERS le point de touche.
         const over = (p._prepShot ?? -1) > st.t ? 2.2 : 0.4;
         p.target = [st.ball.p[0] + p.push[0] * over, 0, st.ball.p[2] + p.push[1] * over];
       } else {
@@ -658,14 +665,10 @@ function assignMatchJobs(st, cfg) {
       const tz = st._tuckZ ??= { v: 0, t: st.t };
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
       const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v, st._outAtk ??= []);
-      // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste offensif coulissé peut tomber DERRIÈRE
-      // la défense — un attaquant réel vit SUR la ligne, pas au-delà. Mesuré AVANT le calage : le
-      // bloc adverse recule si profond (slide borné, ligne de 4 devant sa surface) que le camping
-      // illicite est déjà rare (0-1,1 % du temps de possession, 4 graines × 180 s) — le calage
-      // n'est donc pas un remède, c'est la LOI : la borne qui garantit qu'AUCUNE hauteur de bloc
-      // future (ligne haute, pressing) ne rendra les pointes injouables. La ligne se relit CHAQUE
-      // image (elle bouge avec la défense) : l'à-coup cadencé garde le POSTE, le calage borne la
-      // CIBLE — reculer avec la ligne qui monte n'est pas un à-coup, c'est la règle.
+      // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste coulissé peut tomber DERRIÈRE la
+      // défense — l'attaquant réel vit SUR la ligne. Mesuré avant : camping illicite déjà rare
+      // (0-1,1 %) — le calage n'est pas un remède, c'est la LOI (aucune hauteur de bloc future
+      // ne rendra les pointes injouables). La ligne se relit CHAQUE image ; le calage borne la CIBLE.
       const off = cfg.offside ? offsideLine(st, atk) : null;
       // …ET L'APPEL SE TIME SUR LE PASSEUR (lot 41, cfg.appelPret) : on appelle quand le
       // porteur PEUT donner — le ballon au pied (≤ appelPret m), pas au milieu d'une touche
@@ -743,13 +746,10 @@ function assignMatchJobs(st, cfg) {
       }
     }
     const seMontrer = (p, want) => {
-      // SE MONTRER (lot 67, st.full — diagnostic : le porteur avait 0 option sûre 44 % du temps,
-      // 1 en médiane ; 18 des 27 passes fatales n'avaient AUCUNE option arrière). Les couloirs
-      // étaient des positions AVEUGLES aux défenseurs — un slot dans l'ombre est un slot mort.
-      // À chaque cadence de re-visée, si la ligne porteur→slot est coupée ou le point marqué, le
-      // soutien DÉCALE perpendiculairement (±2,5 puis ±5 m) vers le premier point qui OUVRE sa
-      // ligne — le démarquage du vrai football. Rien d'ouvert : le couloir tactique reste (la
-      // structure prime). cfg.demarque:false = les statues d'hier (sabotage nommé).
+      // SE MONTRER (lot 67, st.full — le porteur avait 0 option sûre 44 % du temps : les couloirs
+      // étaient AVEUGLES aux défenseurs). À chaque cadence de re-visée, ligne coupée ou point
+      // marqué → le soutien DÉCALE perpendiculairement (±2,5 puis ±5 m) vers le premier point qui
+      // OUVRE sa ligne ; rien d'ouvert : le couloir tactique reste. false : les statues d'hier.
       const foes = st._bFoes ??= []; foes.length = 0;   // buffer (lot 69)
       for (const q of st.players) if (q.team !== p.team && q.down <= 0 && !q._sub) foes.push(q);
       const ouvert = (wx, wz) => {

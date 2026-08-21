@@ -4406,6 +4406,47 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      placement des remises (speeds.place — les monteurs de corner sont job walk, pas
      support : le settledNear ne les couvre pas).
 
+146. **Lot 104 : LA BALLE NE S'ÉCHAPPE PLUS SEULE + LE CÔNE DE SORTIE DU GARDIEN (retour
+     utilisateur ×2 : « beaucoup de contrôles ratés ou de balle qui échappe au porteur même
+     sans être gêné » ; « des gardiens qui sortent au niveau de leurs 16 m alors qu'un ailier
+     est en position Robben »).** MESURÉ AVANT par épisodes suivis 2 s (le cycle de conduite
+     — owner null entre les touches — polluait la mesure naïve : 231 « pertes » qui étaient
+     des reprises invisibles) : 16 pertes SANS pression / 16 min (~90/90 min, réel 0-5) —
+     signature 14/16 à age < 0,5 s (le premier toucher), deux familles : (1) LE DOS-ORBITE
+     (ballon passé derrière le corps dès la prise, le cône avant refuse la reprise, le corps
+     ORBITE 2 s à 2-3 m/s autour — le drift re-colle le yaw à chaque frame, le slew ne gagne
+     jamais — l'adversaire cueille à 1,1 m) ; (2) LA DÉMISSION DU CONDUCTEUR (ballon poussé
+     > 2,2 m → l'étiquette tombe, loi 37 — et le hunter « le plus proche » VOLE la chasse
+     pour 0,1 m : le conducteur démis est reclassé posté et TROTTE à son poste — le lot 103
+     a rendu VISIBLE cette faille ancienne — pendant que son ballon roule seul). Le gardien :
+     la charge du 1v1 (ballon lent dans la surface) était SANS CONDITION D'ANGLE NI DE
+     COUVERTURE — la surface fait 40 m de large : pics de sortie mesurés à 11,6 m sur
+     conduite excentrée en boîte, l'axial couvert sortait p90 9,7 m. TROIS LOIS : (1) LA
+     TENURE (cfg.tenue {temps 1,5, portee 6, marge 2,5}, match-sim + marqueur st._exCarrier
+     posé au point de démission, rondo-sim — neutre sans la clé) : la chasse revient à
+     l'ex-porteur sauf VRAIE avance d'un autre ; (2) LE PIVOT DE REPRISE (cfg.pivotReprise
+     {d 1,9, cap 0,8, cone 110}, movement) : ballon proche hors cône avant → le corps FREINE
+     (le slew gagne dès que le drift cesse), pivote face au ballon, reprend — on rend un
+     GESTE, pas un bridage ; (3) LE CÔNE DE SORTIE (cfg.sortie1v1 {zMax 9, near 8, couvert
+     4}, keeper.js K.cone + keeperCouvert extrait — la famille) : la charge exige un danger
+     DE FACE (axial OU ≤ 8 m du but) ET personne pour couvrir (défenseur goal-side ≤ 4 m du
+     ballon → il gère) ; sinon le poste keeperSpot (premier poteau). APRÈS : pertes sans
+     pression 16 → 4 (90 → 22/90 min), pics excentrés 11,6 → 0,7 m, axial couvert p90 9,7
+     → 2,1 (le VRAI 1v1 seul sort toujours — fixture). A/B 20 × 300 s : 85 tirs / 28 buts
+     ∈ [17 ; 33] ✓ — les tirs REMONTENT (69 lot 103 → 85 : moins de pertes, plus d'attaques
+     abouties). Clauses (match11 100/0) : le cône fixture pure (Robben excentré → poste,
+     vrai 1v1 → sortie, couvert → poste) + sabotage « la charge aveugle d'hier » ; la clause
+     de flux pertes (4 vif ≤ 6 vs 14 hier ≥ +4) + sabotage « la démission d'hier » ; sab76
+     16e application (3 clés). Deux re-fondations de banc honnêtes : le suivi de la prise
+     couchée CLÔT à son relevé (9e migration — le suivi sans fin mesurait le servo en
+     descente d'un 2e plongeon, y 1,28 fantôme) ; la clause d'orientation passe à 300 s
+     (contrôle consigné : le taux de fond est INCHANGÉ, 1,9 vif vs 2,1 hier sur 8 × 300 —
+     la fenêtre 180 s n'échantillonnait que l'ouverture). Empreintes rondo/réduit AU BIT
+     (le marqueur est neutre, prouvé) ; match seed 3/7 : c81d82573157960b /
+     b59c3864397fdd72. Dette nommée : l'amorti de prise ORIENTÉ (le premier toucher lancé
+     amortit mort sous le corps qui le dépasse — la racine de la famille dos-orbite ; le
+     pivot la répare, l'amorti orienté l'éviterait).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

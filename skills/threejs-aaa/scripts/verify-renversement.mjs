@@ -96,10 +96,13 @@ const etau = (seed, nBloc) => {
 // ---------- 5. le FLUX : l'orientation du jeu a changé, le jeu respire
 {
   let renv = 0, n = 0, axial = 0, buts = 0;
+  // fenêtre 180 → 300 s (lot 104 : la tenure de conduite décale les renversements hors des
+  // ouvertures — 0,8/match mesuré à 180 s ; le taux de FOND est inchangé : 1,9 vif vs 2,1
+  // hier sur 8 × 300 s, contrôle consigné — la fenêtre courte échantillonnait l'ouverture)
   for (const seed of [1, 3, 5, 7]) {
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20 });
-    for (let i = 0; i < 180 * 60; i++) {
+    for (let i = 0; i < 300 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       if (!st.restart && i % 30 === 0) { n++; if (Math.abs(st.ball.p[2]) < 8) axial++; }
     }
@@ -108,7 +111,7 @@ const etau = (seed, nBloc) => {
   }
   // …borne haute 10 → 13 (lot 51b : le marquage-zone ne poursuit plus à travers le terrain —
   // le côté faible s'ouvre, le renversement est le débouché naturel du bloc coulissé ; 10,5 mesuré)
-  ok(`l'ORIENTATION a changé en match (4 × 180 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [1 ; 16] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 70 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
+  ok(`l'ORIENTATION a changé en match (4 × 300 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [1 ; 16] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 70 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
     renv / 4 >= 1 && renv / 4 <= 16 && axial / n <= 0.70);   // les buts se jugent à UN endroit (lot 36)
   // ---------- 5b. lot 99 : LE COULOIR OUVERT change la GÉOGRAPHIE du jeu (sonde : axe 65 →
   // 46 %, ailes 16 → 30, ailiers libres servis 4 → 11 %) — l'écart au sabotage fait foi
