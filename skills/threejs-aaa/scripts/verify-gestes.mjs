@@ -344,10 +344,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       co.duration < MOVES.crochet.duration && MOVES.crochet.duration < ch.duration);
     // le DOUBLE passement est le simple + UN TOUR, os pour os (le segment répété est identique)
     const p1 = MOVES.passementJambes, p2 = MOVES.passementJambes2;
-    const k014 = p1.keys.find((k) => k.t === 0.14), k042 = p2.keys.find((k) => Math.abs(k.t - 0.42) < 1e-6);
-    ok(`le double passement répète le cercle os pour os (durée ${p2.duration} = ${p1.duration} + 0,28 ; contact ${p2.contact})`,
-      Math.abs(p2.duration - p1.duration - 0.28) < 1e-6 && Math.abs(p2.contact - p1.contact - 0.28) < 1e-6
-      && k042 != null && JSON.stringify(k042.pose) === JSON.stringify(k014.pose));
+    // …littéraux raccordés au ré-authoring lot 110 (le tour vaut 0,3 : clés 0,15/0,3/0,46)
+    const k015 = p1.keys.find((k) => Math.abs(k.t - 0.15) < 1e-6), k045 = p2.keys.find((k) => Math.abs(k.t - 0.45) < 1e-6);
+    ok(`le double passement répète le cercle os pour os (durée ${p2.duration} = ${p1.duration} + 0,3 ; contact ${p2.contact})`,
+      Math.abs(p2.duration - p1.duration - 0.3) < 1e-6 && Math.abs(p2.contact - p1.contact - 0.3) < 1e-6
+      && k045 != null && JSON.stringify(k045.pose) === JSON.stringify(k015.pose));
   }
   {
     // LA SÉLECTION lit la situation (fixtures à tirage contrôlé) : foe PRÈS → le court, TOUJOURS

@@ -649,6 +649,12 @@ export const MATCH = {
                           // × inverse — il rentre sur son bon pied, la chiralité shooting),
                           // le rôle largeurR (craie 0,8-1,2) et l'axe tactique largeur.
                           // false : l'aim au centre d'hier au bit.
+  chaloupe: { foe: 4, v: 1.5, freq: 8.5, amp: 0.55 },
+                          // LA CHALOUPE (lot 110, st.full — « la conduite est rarement droite,
+                          // surtout pour déstabiliser ») : en 1c1 (déf < foe m, lancé > v m/s),
+                          // le cap de conduite OSCILLE (sin freq rad/s, amplitude ~28°), seedé
+                          // par identité — × gesteF (dribbling) × arbitre.conduite (rôle : le
+                          // percuteur chaloupe, le récupérateur non). false : le cap droit d'hier.
   pivotReprise: { d: 1.9, cap: 0.8, cone: 110 },
                           // LE PIVOT DE REPRISE (lot 104, st.full — movement) : le ballon de
                           // conduite passé DANS LE DOS ne se reprend pas en ORBITE (mesuré : 2 s

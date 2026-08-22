@@ -37,6 +37,13 @@
 - Métriques de flux : la densité varie de ±3 pts entre jeux de graines en identité pure —
   comparer sur DEUX jeux de graines minimum, seuls les effets ×2+ font foi.
 
+## Le jouable (contrainte de DESIGN consignée — utilisateur, lot 110)
+- Le contrôle humain N'EST PAS obligatoire : l'IA face à IA reste le cœur. Le jouable sera
+  pensé comme une COUCHE D'INTENTIONS injectables (peut-être UN joueur, peut-être des menus
+  d'action, sans joystick — rien n'est défini). Le moteur doit rester pilotable par
+  intentions (le patron cfg.decide de menace.js est la porte) — ne jamais construire une
+  dépendance à une manette.
+
 ## Process / déploiement
 - Le token Vercel n'est JAMAIS committé. **À re-fournir en début de session** (l'ancien vivait
   dans le scratchpad de session, mort avec elle). Le stocker hors repo, filtrer les sorties.
@@ -49,7 +56,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 152.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 153.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)

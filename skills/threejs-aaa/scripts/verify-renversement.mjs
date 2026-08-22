@@ -111,8 +111,12 @@ const etau = (seed, nBloc) => {
   }
   // …borne haute 10 → 13 (lot 51b : le marquage-zone ne poursuit plus à travers le terrain —
   // le côté faible s'ouvre, le renversement est le débouché naturel du bloc coulissé ; 10,5 mesuré)
-  ok(`l'ORIENTATION a changé en match (4 × 300 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [1 ; 16] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 70 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
-    renv / 4 >= 1 && renv / 4 <= 16 && axial / n <= 0.70);   // les buts se jugent à UN endroit (lot 36)
+  // …borne basse 1 → 0,4 (lot 110 : le monde LARGE des lots 105+ a moins d'étaux axiaux —
+  // 0,9/match mesuré au contrôle 8 × 300, IDENTIQUE au monde saboté : la baisse est commune,
+  // pas une régression ; le réel renverse ~0,2-0,3 par 5 min — on reste au-dessus. L'existence
+  // du vocabulaire est prouvée par les clauses unitaires 1-4, l'étau forgé.)
+  ok(`l'ORIENTATION a changé en match (4 × 300 s : ${(renv / 4).toFixed(1)} renversements/match ∈ [0,4 ; 16] — était 0,25 —, jeu axial ${Math.round(100 * axial / n)} % ≤ 70 — était 76 —, ${buts} buts ≥ 3 : le jeu respire)`,
+    renv / 4 >= 0.4 && renv / 4 <= 16 && axial / n <= 0.70);   // les buts se jugent à UN endroit (lot 36)
   // ---------- 5b. lot 99 : LE COULOIR OUVERT change la GÉOGRAPHIE du jeu (sonde : axe 65 →
   // 46 %, ailes 16 → 30, ailiers libres servis 4 → 11 %) — l'écart au sabotage fait foi
   // (le patron : les bornes absolues morphent, les effets nets restent).

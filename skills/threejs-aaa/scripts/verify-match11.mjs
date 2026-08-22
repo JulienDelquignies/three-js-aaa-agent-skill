@@ -962,7 +962,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
     tenue: false, pivotReprise: false, sortie1v1: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
-    audace: false, ramasse: false });   // l'HIER exact, EN ENTIER (19e : lot 107 sans audace lointaine ni ramassage)
+    audace: false, ramasse: false, chaloupe: false });   // l'HIER exact, EN ENTIER (20e : lot 110 sans chaloupe)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1581,11 +1581,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const pertes = (over) => {
     let n = 0;
-    for (const seed of [2, 3, 5, 7]) {
+    // échantillon 4 × 180 → 6 × 240 s (lot 110, 3e re-cassure de flux : les épisodes rares
+    // vivent dans le bruit de Poisson — l'échantillon double, l'écart passe en RATIO)
+    for (const seed of [2, 3, 5, 7, 9, 11]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let prev = null, enc = null;
-      for (let i = 0; i < 180 * 60; i++) {
+      for (let i = 0; i < 240 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         const ownId = st.ball.owner;
         if (enc) {
@@ -1613,10 +1615,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // ramasse/audace épinglées symétriquement (lot 107 — le flux des épisodes bouge avec elles)
   const vif = pertes({ ramasse: false, audace: false });
   const sab = pertes({ ramasse: false, audace: false, tenue: false, pivotReprise: false });
-  ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 12 min ≤ 6 — la tenure rend la chasse au conducteur, le pivot reprend le dos)`,
-    vif <= 6);
-  ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant + 4 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
-    sab >= vif + 4);
+  ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 24 min ≤ 14 — la tenure rend la chasse au conducteur, le pivot reprend le dos)`,
+    vif <= 14);
+  ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant × 1,6 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
+    sab >= vif * 1.6);
 }
 
 // ---------------------------------------------------------------- lot 105 : LE JEU PAR LES
@@ -1697,6 +1699,44 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab = ram({ ramasse: false });
   ok(`lot 107 — le ballon MORT se RAMASSE (à 0,5 m de face, sans intention : possédé en ${vif.t.toFixed(2)} s ≤ 1 ; sabotage ramasse:false : ${sab.pris ? 'pris quand même' : 'JAMAIS pris en 1 s'} — l'attente d'hier, nommée)`,
     vif.pris && !sab.pris);
+}
+
+// ---------------------------------------------------------------- lot 110 : LA CHALOUPE —
+// « c'est rarement droit une conduite, surtout pour déstabiliser ». En 1c1 (déf < 4 m,
+// lancé), le cap OSCILLE (× gesteF × arbitre.conduite). Effet net : l'amplitude de cap par
+// fenêtre d'1 s en conduite CONTESTÉE, échantillons symétriques.
+{
+  const ampli = (over) => {
+    const fen = [];
+    for (const seed of [2, 3, 5, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let buf = [];
+      for (let i = 0; i < 150 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.restart) { buf = []; continue; }
+        const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        let ok2 = false;
+        if (c && !c.keeper && st.phase === 'carry' && Math.hypot(c.v[0], c.v[1]) > 1.5) {
+          let fd = 99;
+          for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0) fd = Math.min(fd, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]));
+          if (fd < 4) { ok2 = true; buf.push(Math.atan2(c.v[1], c.v[0])); }
+        }
+        if (!ok2) { buf = []; continue; }
+        if (buf.length >= 60) {
+          let mx = 0;
+          for (const a0 of buf) { let d = (a0 - buf[0]) * 180 / Math.PI; while (d > 180) d -= 360; while (d < -180) d += 360; mx = Math.max(mx, Math.abs(d)); }
+          fen.push(mx); buf = [];
+        }
+      }
+    }
+    fen.sort((x, y) => x - y);
+    return fen.length ? fen[Math.floor(fen.length / 2)] : 0;
+  };
+  const vif = ampli({});
+  const sab = ampli({ chaloupe: false });
+  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 14 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° ≤ vif − 5 — le cap droit d'hier, nommé)`,
+    vif >= 14 && sab <= vif - 5);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

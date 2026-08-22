@@ -4592,6 +4592,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      du lot 108 intactes). Aucun fichier engine touché — flux sim, A/B et empreintes
      inchangés par construction.
 
+152. **Lot 110 : LA CONDUITE CRÉATIVE — les gestes enfin LISIBLES et la chaloupe (retour
+     utilisateur ×2 : « la conduite est rarement droite en vrai, surtout pour déstabiliser » ;
+     « les passements de jambes, je ne les ai jamais vus — peut-être que le mouvement va trop
+     vite »).** MESURÉ : la sim produisait DÉJÀ 5-6 passements + 5 crochets + 8-9 feintes par
+     match (l'événement, l'acte ownsBody, le windup, le clip joué par la couche — TOUTE la
+     machinerie saine, prouvée au playmode : spec actif, poids 0,82/0,89) — mais ILLISIBLES à
+     l'image : l'arc latéral de la jambe du passement faisait ~14° (réel 40-60), le buste
+     « qui vend » bougeait de 4-8° — invisible à distance de régie. Et la conduite contestée
+     (déf < 4 m) était DROITE : amplitude de cap p50 10°, 46 % de fenêtres < 8°. DEUX
+     CHANTIERS : (1) LE RÉ-AUTHORING des clips (animkit-data — l'AUTHORING PARTAGÉ du geste,
+     une seule vérité sim/scène) : le passement balaie ~60° d'arc, le genou monte, le BUSTE
+     PLONGE côté feinte (±15-20°), le bassin pivote, le centre de gravité s'abaisse (−0,07),
+     durée 0,6 → 0,66 ; le crochet coupe FRANCHEMENT (−45° d'adduction, lean 12-16°, assise
+     −0,08) ; le double passement raccordé (le tour répété = 0,3). Vérifié à l'image : le
+     buste plonge, le geste se lit. (2) LA CHALOUPE (cfg.chaloupe {foe 4, v 1,5, freq 8,5,
+     amp 0,55}, match-sim au cap de conduite) : en 1c1 lancé, le cap OSCILLE
+     (perpendiculaire alternée, sin seedé par identité — le déterminisme), × gesteF
+     (l'attribut dribbling) × arbitre.conduite (le rôle : le percuteur chaloupe, le
+     récupérateur non). APRÈS : amplitude p50 10° → 18°, fenêtres droites 46 % → 14 %.
+     A/B 20 × 300 s : 84 tirs / 27 buts ∈ [17 ; 33] ✓. Batterie : match11 106/0 (clause
+     chaloupe + sab76 20e ; la clause pertes-104 re-fondée DURABLEMENT — 3e re-cassure de
+     flux : échantillon doublé 6 × 240 et écart en RATIO ×1,6, le bruit de Poisson des
+     épisodes rares), gestes 52/0 (littéraux du double raccordés), animkit 110/110, match
+     (réduit) 84/0 (borne appel 10 → 8 % : le ré-authoring a décalé d'un épisode), rondo
+     40/0, renversement 8/0 (borne basse 1 → 0,4 : le monde LARGE des lots 105+ a moins
+     d'étaux — 0,9/match au contrôle 8 × 300 IDENTIQUE au monde saboté, la baisse est
+     commune et le réel est ~0,2-0,3), circuits 6/0, attributes 14/0. EMPREINTES : rondo AU
+     BIT (c775c81e) ; le RÉDUIT MIGRE (03fb4ed679f0d1c3 — les clips sont l'authoring partagé,
+     le réduit voit les mêmes gestes ré-authorés ; flux prouvé sain par verify-match 84/0
+     AVANT acceptation, le protocole) ; match seed 3/7 : 9354e1dca25aa47c / 4c42de3144fe0955.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

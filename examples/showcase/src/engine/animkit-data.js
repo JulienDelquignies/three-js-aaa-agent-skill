@@ -677,34 +677,39 @@ export const MOVES = {
     // puis le pied se PLANTE à côté du ballon et le poids repart de l'autre bord. Le ballon ne
     // bouge pas d'un centimètre (pin au contact — c'est le seul geste où l'immobilité du ballon
     // est la moitié du mensonge). L'appui reste fléchi et PLANTÉ tout du long (v = 0 en sim).
-    name: 'passementJambes', duration: 0.6, contact: 0.28, loop: false,
+    // …RÉ-AUTHORÉ lot 110 (« les passements jamais vus » — le clip jouait mais illisible :
+    // arc latéral de jambe ~14° et buste 4-8°, invisibles à distance de régie). Le cercle
+    // balaie large (~60° d'arc), le genou MONTE (le pied passe clairement au-dessus), le
+    // BUSTE PLONGE côté feinte (±15° — c'est lui qui vend), le bassin pivote, le centre de
+    // gravité s'abaisse (−0,07). Durée 0,66 : le tour respire sans casser le lancé.
+    name: 'passementJambes', duration: 0.66, contact: 0.3, loop: false,
     keys: [
       { t: 0.0, pose: {} },
-      { t: 0.14, pose: {
-        RightUpLeg: [34, -10, 0], RightLeg: [-58, 0, 0], RightFoot: [18, 12, 0],
-        Hips: [0, -10, 0],
-        Spine: [-2, -5, 3], Spine1: [4, -8, 6], Spine2: [2, -5, 3],
-        Neck: [3, 0, 0], Head: [14, 0, 0],
-        LeftArm: [48, 0, 22], LeftForeArm: [20, 0, 30], RightArm: [45, 0, 18], RightForeArm: [-2, 0, -22],
+      { t: 0.15, pose: {
+        RightUpLeg: [52, -30, 0], RightLeg: [-72, 0, 0], RightFoot: [24, 16, 0],
+        Hips: [0, -18, 0],
+        Spine: [-4, -10, 9], Spine1: [10, -16, 12], Spine2: [4, -9, 6],
+        Neck: [4, 4, 0], Head: [15, 5, 0],
+        LeftArm: [58, 0, 38], LeftForeArm: [26, 0, 36], RightArm: [38, 0, 30], RightForeArm: [-6, 0, -26],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-24, 0, 0], LeftFoot: [-6, 0, 0],
+      }, hips: [0, -0.05, 0] },
+      { t: 0.3, pose: {
+        RightUpLeg: [58, -58, 0], RightLeg: [-76, 0, 0], RightFoot: [26, 22, 0],
+        Hips: [0, -24, 0],
+        Spine: [-4, -12, 11], Spine1: [14, -20, 15], Spine2: [5, -10, 7],
+        Neck: [4, 5, 0], Head: [16, 6, 0],
+        LeftArm: [62, 0, 44], LeftForeArm: [28, 0, 38], RightArm: [34, 0, 34], RightForeArm: [-8, 0, -26],
+        LeftUpLeg: [12, 0, 0], LeftLeg: [-28, 0, 0], LeftFoot: [-7, 0, 0],
+      }, hips: [0, -0.07, 0] },
+      { t: 0.46, pose: {
+        RightUpLeg: [20, 8, 0], RightLeg: [-32, 0, 0], RightFoot: [6, -6, 0],
+        Hips: [0, 12, 0],
+        Spine: [0, 6, -6], Spine1: [6, 12, -10], Spine2: [2, 6, -4],
+        Neck: [2, -3, 0], Head: [12, -4, 0],
+        LeftArm: [44, 0, 18], LeftForeArm: [12, 0, 24], RightArm: [54, 0, 8], RightForeArm: [6, 0, -18],
         LeftUpLeg: [8, 0, 0], LeftLeg: [-20, 0, 0], LeftFoot: [-5, 0, 0],
       }, hips: [0, -0.03, 0] },
-      { t: 0.28, pose: {
-        RightUpLeg: [42, -24, 0], RightLeg: [-64, 0, 0], RightFoot: [22, 18, 0],
-        Hips: [0, -14, 0],
-        Spine: [-2, -6, 4], Spine1: [8, -10, 7], Spine2: [3, -6, 3],
-        Neck: [3, 0, 0], Head: [15, 0, 0],
-        LeftArm: [52, 0, 30], LeftForeArm: [22, 0, 32], RightArm: [40, 0, 28], RightForeArm: [-4, 0, -22],
-        LeftUpLeg: [10, 0, 0], LeftLeg: [-24, 0, 0], LeftFoot: [-6, 0, 0],
-      }, hips: [0, -0.04, 0] },
-      { t: 0.42, pose: {
-        RightUpLeg: [18, -18, 0], RightLeg: [-30, 0, 0], RightFoot: [6, 8, 0],
-        Hips: [0, 6, 0],
-        Spine: [0, 3, -2], Spine1: [4, 6, -4], Spine2: [1, 3, -2],
-        Neck: [2, 0, 0], Head: [12, 0, 0],
-        LeftArm: [44, 0, 18], LeftForeArm: [12, 0, 24], RightArm: [50, 0, 8], RightForeArm: [4, 0, -18],
-        LeftUpLeg: [8, 0, 0], LeftLeg: [-20, 0, 0], LeftFoot: [-5, 0, 0],
-      }, hips: [0, -0.02, 0] },
-      { t: 0.6, pose: {} },
+      { t: 0.66, pose: {} },
     ],
   },
   crochet: {
@@ -713,25 +718,28 @@ export const MOVES = {
     // PAS DANS CES CLÉS (le corps est tourné par la SIM, exactement comme le râteau : c'est ce
     // qui permet au même crochet de couper à 70° comme à 95° selon le défenseur). Le poids vit
     // sur l'appui fléchi, le buste s'abaisse dans la coupe puis se relève dans la relance.
+    // …RÉ-AUTHORÉ lot 110 (même verdict que le passement : la coupe était timide). L'adduction
+    // croise FRANCHEMENT (−45° d'arc), le buste S'ABAISSE dans la coupe (lean 12-16°), le
+    // bassin s'assoit (−0,08) — le crochet se lit comme une cassure, pas comme un pas.
     name: 'crochet', duration: 0.55, contact: 0.2, loop: false,
     keys: [
       { t: 0.0, pose: {} },
       { t: 0.2, pose: {
-        RightUpLeg: [36, -28, 0], RightLeg: [-48, 0, 0], RightFoot: [12, 24, 0],
-        Hips: [0, -8, 0],
-        Spine: [-2, -5, 0], Spine1: [6, -8, 4], Spine2: [2, -5, 2],
-        Neck: [3, 0, 0], Head: [15, 0, 0],
-        LeftArm: [50, 0, 26], LeftForeArm: [18, 0, 30], RightArm: [46, 0, 20], RightForeArm: [0, 0, -22],
-        LeftUpLeg: [8, 0, 0], LeftLeg: [-24, 0, 0], LeftFoot: [-6, 0, 0],
-      }, hips: [0, -0.04, 0] },
+        RightUpLeg: [46, -45, 0], RightLeg: [-56, 0, 0], RightFoot: [16, 30, 0],
+        Hips: [0, -16, 0],
+        Spine: [-4, -9, 8], Spine1: [10, -14, 12], Spine2: [4, -8, 6],
+        Neck: [4, 3, 0], Head: [15, 4, 0],
+        LeftArm: [58, 0, 36], LeftForeArm: [24, 0, 34], RightArm: [40, 0, 28], RightForeArm: [-4, 0, -24],
+        LeftUpLeg: [10, 0, 0], LeftLeg: [-28, 0, 0], LeftFoot: [-7, 0, 0],
+      }, hips: [0, -0.06, 0] },
       { t: 0.36, pose: {
-        RightUpLeg: [24, 10, 0], RightLeg: [-40, 0, 0], RightFoot: [16, -6, 0],
-        Hips: [0, 6, 0],
-        Spine: [0, 4, -2], Spine1: [8, 6, -4], Spine2: [2, 4, -2],
-        Neck: [2, 0, 0], Head: [13, 0, 0],
-        LeftArm: [40, 0, 18], LeftForeArm: [10, 0, 22], RightArm: [52, 0, 4], RightForeArm: [6, 0, -18],
-        LeftUpLeg: [10, 0, 0], LeftLeg: [-26, 0, 0], LeftFoot: [-7, 0, 0],
-      }, hips: [0, -0.05, 0] },
+        RightUpLeg: [26, 16, 0], RightLeg: [-42, 0, 0], RightFoot: [18, -10, 0],
+        Hips: [0, 12, 0],
+        Spine: [0, 7, -6], Spine1: [10, 12, -9], Spine2: [3, 7, -4],
+        Neck: [2, -2, 0], Head: [13, -3, 0],
+        LeftArm: [40, 0, 18], LeftForeArm: [10, 0, 22], RightArm: [56, 0, 4], RightForeArm: [8, 0, -18],
+        LeftUpLeg: [12, 0, 0], LeftLeg: [-30, 0, 0], LeftFoot: [-8, 0, 0],
+      }, hips: [0, -0.08, 0] },
       { t: 0.46, pose: {
         RightUpLeg: [10, 0, 0], RightLeg: [-24, 0, 0], RightFoot: [4, 0, 0],
         Hips: [0, 2, 0],
@@ -906,4 +914,4 @@ export const MOVES = {
 
 // LE DOUBLE PASSEMENT (deux tours autour du ballon) — généré par répétition du segment du
 // cercle (0 → 0,28] : mêmes clés, même anatomie, le plant et la sortie glissent d'un tour.
-MOVES.passementJambes2 = { ...repeatSegment(MOVES.passementJambes, 0, 0.28, 1), name: 'passementJambes2' };
+MOVES.passementJambes2 = { ...repeatSegment(MOVES.passementJambes, 0, 0.3, 1), name: 'passementJambes2' };   // le tour = 0,3 depuis le ré-authoring lot 110
