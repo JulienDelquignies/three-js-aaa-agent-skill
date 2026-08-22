@@ -441,5 +441,24 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   }
 }
 
+// ---- LOT 112 : LE SAUT DE TÊTE SE DESSINE (la dette du ciel payée — le clip authoré)
+{
+  const T = MOVES.tete;
+  const pic = T.keys.find((k) => k.t === T.contact);
+  ok(`le saut de tête MONTE (hanches +${pic?.hips?.[1] ?? 0} m au contact ≥ 0,3 — la détente se voit, pas un fouetté à plat)`,
+    (pic?.hips?.[1] ?? 0) >= 0.3);
+  const arme = T.keys.find((k) => (k.pose.Spine1?.[0] ?? 0) < 0 && k.t < T.contact);
+  ok(`le fouetté S'ARME en montant (buste cambré ${arme?.pose.Spine1?.[0]} < 0 avant le contact, puis frappe ${pic?.pose.Head?.[0]} ≥ 18 — le cou joue le ballon)`,
+    !!arme && (pic?.pose.Head?.[0] ?? 0) >= 18);
+  const impulse = T.keys.find((k) => (k.hips?.[1] ?? 0) < -0.1);
+  ok(`l'impulsion PLIE avant de monter (hanches ${impulse?.hips?.[1]} ≤ −0,1 et genoux ${impulse?.pose.LeftLeg?.[0]} ≤ −40 — un saut part du sol)`,
+    !!impulse && (impulse.pose.LeftLeg?.[0] ?? 0) <= -40);
+  const D = MOVES.teteDebout;
+  const picD = D.keys.find((k) => k.t === D.contact);
+  ok(`la tête DEBOUT fouette court sans sauter (Head ${picD?.pose.Head?.[0]} ≥ 18 au contact, hanches |${picD?.hips?.[1] ?? 0}| ≤ 0,05, aucune clé de jambe — la locomotion garde les jambes)`,
+    (picD?.pose.Head?.[0] ?? 0) >= 18 && Math.abs(picD?.hips?.[1] ?? 0) <= 0.05
+    && D.keys.every((k) => !k.pose.LeftUpLeg && !k.pose.RightUpLeg));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

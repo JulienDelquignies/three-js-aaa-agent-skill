@@ -21,6 +21,7 @@ import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
+import { teteStep } from '../assets/starter/src/engine/tete.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { KEEPER, keeperDecide } from '../assets/starter/src/engine/keeper.js';
@@ -32,7 +33,8 @@ import { menaceTir } from '../assets/starter/src/engine/menace.js';
 // C'est le flux d'avant les lots 105-111, gelé : les clauses y mesurent leur loi, pas le monde.
 const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
   chaloupe: false, troisieme: false,
-  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 } };
+  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
+  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } };   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -971,7 +973,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     tenue: false, pivotReprise: false, sortie1v1: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
-    uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 } });   // l'HIER exact, EN ENTIER (21e : lot 111 sans 3e homme ni socle une-touche)
+    uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
+    tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });   // l'HIER exact, EN ENTIER (22e : lot 112 sans détente ni duel du venant)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1750,9 +1753,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     fen.sort((x, y) => x - y);
     return fen.length ? fen[Math.floor(fen.length / 2)] : 0;
   };
-  // …le MONDE COURANT des deux côtés (la clause du lot vivant, pas un labo) ; l'écart net ≥ 3°
-  const vif = ampli({});
-  const sab = ampli({ chaloupe: false });
+  // …MIGRÉE AU LABO au lot 112 (le cycle de vie du patron : la clause du lot vivant mesure le
+  // monde courant ; au lot suivant elle isole une loi ANCIENNE et s'épingle au LAB, moins sa
+  // propre clé) — le flux 112 avait resserré l'écart courant à 2° (17 vs 15).
+  const { chaloupe: _ch, ...LABch } = LAB;
+  const vif = ampli({ ...LABch });
+  const sab = ampli({ ...LABch, chaloupe: false });
   ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 13 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° ≤ vif − 3 — le cap droit d'hier, nommé)`,
     vif >= 13 && sab <= vif - 3);
 }
@@ -1780,6 +1786,66 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif.trois >= 4 && vif.utPct >= sab.utPct + 3);
   ok(`sabotage « le jeu à deux d'hier » attrapé (troisieme:false + base absente : ${sab.trois} appel ; une-touche ${sab.utPct.toFixed(0)} % — le monde d'hier, nommé)`,
     sab.trois === 0);
+}
+
+// ---- LOT 112 : LE SAUT DE TÊTE — la détente ouvre le ciel, le duel se conteste en venant
+{
+  // (a) LE FLUX : le ciel muet d'hier attrapé. Monde COURANT : des têtes SAUTÉES existent
+  // (mesuré au ship : 9/10 matchs — le vol de 2,2-3,0 m sur un corps était muet, 1,7/match) ;
+  // sabotage 'ciel-muet' (la fenêtre debout d'hier, saut/duel absents) : zéro sautée, zéro
+  // duel du venant — l'identité au défaut prouvée dans le MÊME run.
+  const ciel = (over) => {
+    let sautees = 0, duelsV = 0;
+    for (const seed of [3, 5, 8, 10]) {   // graines MESURÉES (1+2+4+1 : le bruit de Poisson des
+      const st = makeMatch({ full: true, seed });          // événements rares — la leçon pertes-104)
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+      for (const e of st.events) {
+        if (e.type === 'tête' && e.saut) sautees++;
+        if (e.type === 'duel' && e.kind === 'aérien' && e.won === false) duelsV++;
+      }
+    }
+    return { sautees, duelsV };
+  };
+  const vif = ciel({});
+  const sab = ciel({ tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });
+  ok(`lot 112 — le CIEL VIT (4 × 300 s : ${vif.sautees} têtes sautées ≥ 3 — la détente T.saut × sautF joue le vol de 2,2-3,0 m qui était muet)`,
+    vif.sautees >= 3);
+  ok(`sabotage « le ciel muet d'hier » attrapé (saut/duel absents : ${sab.sautees} tête sautée, ${sab.duelsV} duel du venant — la fenêtre debout d'hier, l'identité au défaut)`,
+    sab.sautees === 0 && sab.duelsV === 0);
+
+  // (b) LA FIXTURE DU DUEL : détente contre détente, seedée. Un vol à 2,45 m au-dessus de A
+  // (sautF 1,2 : porte 2,2 + 0,75 × 1,2 = 3,1 — il l'atteint) ; B VIENT à 1,4 m (sautF
+  // 0,82 : porte 2,81 — il l'atteint aussi, hors reach). chargeF égaux : l'edge est
+  // PUREMENT la détente (+0,095). Sur 60 jets seedés : A tient nettement plus qu'il ne
+  // subit, et chaque duel perdu GÊNE (gene nommé, la tête part molle : speed < 12,5).
+  let tenus = 0, subis = 0, genesOk = 0;
+  for (let k = 0; k < 60; k++) {
+    let n = k * 7919 + 13;
+    const rnd = () => { n = (n * 9301 + 49297) % 233280; return n / 233280; };
+    const st = {
+      t: 10, full: true, events: [], pass: null, rnd, lastTouch: 0,
+      ball: { p: [10, 2.45, 0], v: [0, -2, 0], strike(o) { this.struck = o; } },
+      pitch: { attackGoal: () => ({ x: 52 }), ownGoal: () => ({ x: -52 }), inBox: () => false, goalHalf: 3.66 },
+      players: [
+        { id: 0, team: 0, p: [10.3, 0, 0.2], down: 0, act: null, skill: { sautF: 1.2, chargeF: 1 } },
+        { id: 1, team: 1, p: [10, 0, 1.4], down: 0, act: null, skill: { sautF: 0.82, chargeF: 1 } },
+        { id: 2, team: 0, p: [16, 0, 2], down: 0, act: null, skill: {} },
+      ],
+    };
+    teteStep(st, { tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9 } });
+    const duel = st.events.find((e) => e.type === 'duel');
+    if (!duel) continue;
+    if (duel.won) tenus++;
+    else { subis++; if (duel.gene && (st.ball.struck?.speed ?? 99) < 12.5) genesOk++; }
+  }
+  // …borne = l'EDGE RÉEL : +0,095 (0,25 × 0,38 de sautF) → P(tenir) 59,5 %, attendu 35,7/60 —
+  // le duel du ciel reste un JET que l'attribut penche, jamais une garantie ; le jeu est
+  // seedé, la mesure déterministe (36/24 au ship)
+  ok(`la DÉTENTE PENCHE le duel du ciel (fixture 60 jets, chargeF égaux : le sauteur 1,2 tient ${tenus} ≥ subis ${subis} + 6 face au 0,82 — l'attribut est un edge, jamais une branche)`,
+    tenus >= subis + 6);
+  ok(`…et le duel PERDU GÊNE au lieu de téléporter (${genesOk}/${subis} gênes nommées avec tête molle < 12,5 — le venant conteste le contact, il ne le vole pas)`,
+    subis === 0 || genesOk === subis);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

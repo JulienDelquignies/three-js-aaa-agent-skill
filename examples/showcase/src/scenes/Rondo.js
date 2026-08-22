@@ -21,6 +21,7 @@ import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWar
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
 import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
+import { makeTicker } from './ticker.js';
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights.
 // The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of
@@ -333,28 +334,12 @@ export class Rondo {
     this._warpStats = { n: 0, mags: [], denied: {} };
 
     this._hud = document.getElementById('score');
-    // le TICKER DES GESTES (retour utilisateur : « j'ai du mal à distinguer les feintes de
-    // frappe, les passements… ») : chaque événement 'skill' de la sim s'annonce, nommé, daté,
-    // avec son équipe — l'élément n'existe que sur la page match, la scène s'en passe sinon
-    this._gesteHud = document.getElementById('gestes');
-    this._gesteLog = [];
-    // LE SIFFLET SE VOIT (lot 59 — capture utilisateur : un hors-jeu sifflé lu comme « le
-    // receveur ne va pas au ballon », le ticker étant coupé au zoom mobile). Un flash central
-    // bref NOMME chaque décision d'arbitrage, à n'importe quel zoom. Créé ici, pas dans le
-    // HTML : toute page qui monte la scène l'a d'office — le moteur porte sa lisibilité.
-    this._flash = document.createElement('div');
-    this._flash.style.cssText = 'position:fixed;top:11%;left:50%;transform:translateX(-50%);padding:.3em .85em;'
-      + 'font:700 clamp(18px,4vw,34px)/1.2 system-ui,sans-serif;letter-spacing:.08em;color:#fff;'
-      + 'background:rgba(10,14,12,.74);border-left:.22em solid #f2c14e;border-radius:.3em;opacity:0;'
-      + 'transition:opacity .25s;pointer-events:none;z-index:40;text-transform:uppercase;white-space:nowrap';
-    document.body.appendChild(this._flash);
-    this._sifflet = (txt, couleur = '#f2c14e') => {
-      this._flash.textContent = txt;
-      this._flash.style.borderLeftColor = couleur;
-      this._flash.style.opacity = '1';
-      clearTimeout(this._flashT);
-      this._flashT = setTimeout(() => { this._flash.style.opacity = '0'; }, 1600);
-    };
+    // le TICKER DU MATCH (famille extraite — scenes/ticker.js : le journal des gestes ET le
+    // flash du sifflet, la présentation pure des événements nommés ; le paiement de la dette
+    // de volumétrie, la scène avait crevé le plafond des 1250 lignes)
+    this._ticker = makeTicker(TEAMS);
+    this._gesteHud = this._ticker.hud;
+    this._sifflet = this._ticker.sifflet;
     // play-mode handles: runner.js sets window.__scene for every scene, and the MCP probes a
     // controller to know the scene is live — expose the first player's for that readiness check
     this.ctrl = this.players[0]?.ctrl;
@@ -514,7 +499,10 @@ export class Rondo {
     // l'horloge de la couche : act.t quand la sim porte le geste (un seul instant, un seul
     // contrat) ; sinon une horloge locale — les gestes réactifs (contrôle rapporté après coup)
     // démarrent À leur frame de contact, comme avant.
-    pl._layerClock = { t0: this._t, offset: from === 'contact' ? (spec.contact ?? 0) : 0, dur: spec.duration ?? 0.6, antic: spec.contact ?? 0.2 };
+    // …offset NUMÉRIQUE (lot 112) : la tête est rapportée À son contact sim mais son clip
+    // porte une impulsion authorée — démarrer DANS la montée (offset s) garde le décollage
+    // synchrone du ballon sans jeter tout l'élan (le pré-saut anticipé est la dette nommée).
+    pl._layerClock = { t0: this._t, offset: typeof from === 'number' && from > 0 ? from : from === 'contact' ? (spec.contact ?? 0) : 0, dur: spec.duration ?? 0.6, antic: spec.contact ?? 0.2 };
     pl._wLegs = pl._wLegs ?? 0;
   }
 
@@ -931,68 +919,19 @@ export class Rondo {
           this._playTech(pl, { ...e, move: e.dev >= 110 ? 'crochetCourt' : 'passeExterieur', foot: lat > 0 ? 'left' : 'right' });
           pl._swingT = this._t;
         }
-      } else if (e.type === 'skill' && this._gesteHud && !e.kind.endsWith('-vendu')) {
-        // le ticker : l'événement du CONTACT du geste (skillContactNow), pas l'intention —
-        // les '*-vendu' sont le mordu du même geste, pas un second geste. Les ESPÈCES se
-        // nomment (la variété doit se lire : crochet court ≠ chaloupé, passement ×2, sortie).
-        const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe' };
-        let label = names[e.kind] ?? e.kind;
-        if (e.kind === 'crochet' && e.espece === 'crochetChaloupe') label = 'crochet chaloupé';
-        else if (e.kind === 'crochet' && e.espece === 'crochetCourt') label = 'crochet court';
-        else if (e.kind === 'passement') label = `passement${e.enCourse ? ' lancé' : ''}${e.tours === 2 ? ' ×2' : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
-        const q = this.state.players[e.by];
-        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
-        this._gesteLog.unshift(`<b style="color:#e8ebf2">${label}</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
-        if (this._gesteLog.length > 5) this._gesteLog.pop();
-        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
-      } else if (e.type === 'press' && this._gesteHud) {
-        // LA FENÊTRE DE PRESSING SE LIT : l'intelligence off-ball est invisible par nature (des
-        // corps qui se resserrent) — l'événement nommé la rend jugeable par l'utilisateur,
-        // exactement comme les gestes (« logge pour que je les distingue », NOTES 36).
-        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
-        this._gesteLog.unshift(`<b style="color:#8ecae6">pressing</b> <span>— ${TEAMS[e.team ?? 0].name} (${(e.kind ?? '').replace(/-/g, ' ')}) · ${mm}:${ss}</span>`);
-        if (this._gesteLog.length > 5) this._gesteLog.pop();
-        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
-      } else if (e.type === 'but') {
-        this._sifflet('but !', '#90be6d');
-      } else if (e.type === 'carton') {
-        this._sifflet(`carton ${e.couleur}`, e.couleur === 'rouge' ? '#d62828' : '#f2c14e');
-      } else if (e.type === 'mi-temps') {
-        this._sifflet('mi-temps');
-      } else if (e.type === 'fin-de-match') {
-        this._sifflet('coup de sifflet final');
-      } else if (e.type === 'hors-jeu' && this._gesteHud) {
-        // LE SIFFLET SE LIT COMME UN GESTE : la Loi 11 est un événement de match, pas un secret
-        // de simulation — sans cette ligne, un coup franc « sorti de nulle part » serait un bug
-        // aux yeux de l'utilisateur (le ticker est né exactement de ce besoin, NOTES 36).
-        const q = this.state.players[e.by];
-        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
-        this._sifflet(`hors-jeu — nº${e.by}`);
-        this._gesteLog.unshift(`<b style="color:#f2c14e">hors-jeu</b> <span>— ${TEAMS[q?.team ?? 0].name} nº${e.by} · ${mm}:${ss}</span>`);
-        if (this._gesteLog.length > 5) this._gesteLog.pop();
-        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
-      } else if ((e.type === 'faute' || e.type === 'avantage') && this._gesteHud) {
-        // LOI 12 AU TICKER : la faute nomme le fautif, l'avantage nomme la décision — sans
-        // ces deux lignes, un coup franc (ou un jeu qui continue sur un tacle raté) serait
-        // illisible, exactement le bug perçu qui a fait naître le ticker (NOTES 36).
-        const q = this.state.players[e.type === 'faute' ? e.by : e.sur];
-        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
-        if (e.type === 'faute') this._sifflet(`faute — nº${e.by}`, '#e76f51');
-        this._gesteLog.unshift(e.type === 'faute'
-          ? `<b style="color:#e76f51">faute</b> <span>— nº${e.by} sur nº${e.sur} · ${mm}:${ss}</span>`
-          : `<b style="color:#90be6d">avantage</b> <span>— ${TEAMS[q?.team ?? 0].name} joue · ${mm}:${ss}</span>`);
-        if (this._gesteLog.length > 5) this._gesteLog.pop();
-        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
-      } else if (e.type === 'carton' && this._gesteHud) {
-        // LE CARTON SE MONTRE (Loi 12 discipline) : le geste de l'arbitre est un événement de
-        // match — jaune à la récidive, rouge au second jaune, dans les couleurs de l'objet.
-        const mm = Math.floor(e.t / 60), ss = String(Math.floor(e.t % 60)).padStart(2, '0');
-        this._gesteLog.unshift(e.couleur === 'rouge'
-          ? `<b style="color:#d62828">carton rouge</b> <span>— nº${e.by} · ${mm}:${ss}</span>`
-          : `<b style="color:#ffd60a">carton jaune</b> <span>— nº${e.by} (${e.cumul}ᵉ) · ${mm}:${ss}</span>`);
-        if (this._gesteLog.length > 5) this._gesteLog.pop();
-        this._gesteHud.innerHTML = this._gesteLog.join('<br>');
-      }
+      } else if (e.type === 'tête' || e.type === 'volée') {
+        // LE CIEL A UN CORPS (lot 112) : la tête SAUTÉE joue le saut authoré (démarré dans
+        // la montée — offset 0,24 : le décollage vit à l'instant du contact sim), la tête
+        // debout joue le fouetté court, la volée réutilise la frappe (le pied en l'air est
+        // déjà son geste). Le journal du ticker nomme le contact (saut/demi se lisent).
+        const pl = this.players[e.by];
+        if (pl) {
+          this._playTech(pl, { ...e, move: e.type === 'volée' ? 'frappe' : e.saut ? 'tete' : 'teteDebout' },
+            e.type === 'volée' ? 'contact' : e.saut ? 0.24 : 0.1);
+          pl._teched = this._t;
+        }
+        this._ticker.event(e, this.state);
+      } else this._ticker.event(e, this.state);
     }
 
     // le haut du corps appartient au geste pendant qu'un geste tourne (voir _applyGaitLayer)

@@ -4665,6 +4665,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      fixtures purgent l'état hérité (st.restart = null, c.act = null — le carrier hérité
      frappait le ballon posé de la fixture).
 
+154. **Lot 112 : LE SAUT DE TÊTE — la détente ouvre le ciel, le duel aérien se conteste, le
+     corps monte (plan validé, 1er chantier).** MESURÉ AVANT : 2,1 têtes + 2,2 volées/match
+     et AUCUN corps à l'image (aucune branche de dispatch — le ballon « rebondissait » à
+     1,8 m au-dessus d'un joueur planté) ; 1,7 vol/match traversait 2,2-3,0 m sur un corps,
+     MUET (la fenêtre debout s'arrêtait à 2,2) ; et 0 duel aérien sur 10 matchs (le rival
+     devait partager le même mètre). TROIS ÉTAGES : (1) LA DÉTENTE (tete.js, T.saut 0,75 m +
+     attribut jumping → sautF [0,75 ; 1,25], le 50 vaut 1 exact) : la fenêtre devient PAR
+     JOUEUR [min ; max + saut × sautF] — le contact au-dessus de 2,2 m est une tête SAUTÉE
+     (event saut:true, h) ; au ciel le duel se gagne autant à l'impulsion qu'au corps (edge
+     0,25 chargeF + 0,25 sautF). (2) LE DUEL SE CONTESTE EN VENANT (T.duel 1,9 m) : le
+     venant hors de portée ne JOUE pas le ballon (pas de téléport) — s'il gagne le jet il
+     GÊNE : la tête contestée part bruitée (±0,35 rad) et molle (×0,8), event gene:true.
+     (3) LE CORPS (animkit-data + Rondo.js) : clip `tete` authoré (impulsion accroupie
+     −0,14, extension +0,38 au pic = contact, buste cambré −14° puis FOUETTÉ +16°/Head +22°,
+     bras en balancier, réception fléchie) + `teteDebout` (fouetté court sans clé de jambe)
+     + la volée habillée (clip frappe) ; dispatch offset NUMÉRIQUE (démarrer dans la montée,
+     0,24 : le décollage vit à l'instant du contact sim — le PRÉ-SAUT anticipé est la dette
+     nommée). AUDIT VISUEL (playmode seed 8, t=15,8 — déterminisme node↔build confirmé à la
+     frame) : les hanches rendues montent 0,842 → 1,295 m (+0,45) pendant le clip, photo au
+     pic pieds décollés. APRÈS : 27 têtes/10 matchs dont 9 SAUTÉES, les 2 premiers duels du
+     venant (2 gênes). LA DETTE DE VOLUMÉTRIE DÉCOUVERTE ET PAYÉE : Rondo.js scène avait
+     crevé le plafond (1296 > 1250) pendant que verify-sync dormait HORS batterie — le
+     TICKER extrait (scenes/ticker.js, 92 l. : présentation pure, flash + journal), qui a
+     RÉVÉLÉ un doublon mort (deux branches 'carton', la 2e masquée — fusionnées) ; Rondo.js
+     1219, verify-sync 9/0 REJOINT LA BATTERIE de chaque lot (la leçon). Bancs : le LAB
+     gagne tete d'hier ; la clause chaloupe-110 MIGRE au labo (le cycle de vie du patron :
+     la clause du lot vivant mesure le monde courant, au lot suivant elle isole une loi
+     ancienne et s'épingle au LAB moins sa propre clé) ; sab76 22e ; fixture du duel 60
+     jets seedés (36 tenus/24 subis = l'edge exact +0,095 — la borne est l'ÉCART, pas un
+     ratio dur : l'attribut penche un jet, jamais une garantie) ; graines MESURÉES [3,5,8,
+     10] pour le flux (Poisson des rares). Batterie : match11 112/0, rondo 40/0, match
+     84/0, renversement 8/0, circuits 6/0, menace 11/0, sync 9/0, attributes 14/0 (jumping
+     monotone + identité), gestes 56/0 (4 clauses clips), animkit 112/112. A/B 20 × 300 s :
+     85 tirs / 25 buts ∈ [17 ; 33]. EMPREINTES : LES QUATRE AU BIT (rondo c775c81e62592d4d,
+     réduit 2b6a8c8b283d342b, match 46c07e9cebb1c858 / 3fda02d403610e9c — les sautées de
+     seeds 3/7 vivent à 225/211 s, HORS la fenêtre de 120 s de l'instrument ; vérifié en
+     horodatant, pas supposé). Dettes nommées : le pré-saut anticipé (windup de tête),
+     le calibrage duel aux corners (T.duel 1,9 conservateur — 0,2 duel/match).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

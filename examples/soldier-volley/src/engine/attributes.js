@@ -38,6 +38,7 @@ export const ATTRIBUTES = {
   agility:     'souplesse du corps       → durée du relevé après plongeon × [1,28 ; 0,72] (lot 91)',
   stamina:     'réserve d\'endurance      → drain de fatigue × [1,25 ; 0,75] (cfg.fatigue, lot 31)',
   strength:    'force dans le duel       → charge d\'épaule × [0,85 ; 1,15] (cfg.charge, lot 32)',
+  jumping:     'détente verticale        → hauteur de saut de tête × [0,75 ; 1,25] (cfg.tete.saut, lot 112)',
 };
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -76,6 +77,8 @@ export function makeProfile(ratings = {}) {
                                                                   // le félin en 0,9 s, le raide en 1,6)
     stamF: lerp(1.25, 0.75, r('stamina')),                        // × sur le drain de fatigue (l'endurant tient)
     chargeF: lerp(0.85, 1.15, r('strength')),                     // × dans la charge d'épaule (les deux côtés du duel)
+    sautF: lerp(0.75, 1.25, r('jumping')),                        // × sur la DÉTENTE de tête (le 50 vaut 1 exact
+                                                                  // — et l'autre moitié du duel aérien, lot 112)
   });
 }
 
@@ -106,6 +109,8 @@ export function checkAttributes() {
   if (!(hi.tackleReach > lo.tackleReach)) issues.push('tackling non monotone');
   if (!(hi.longF > mid.longF && mid.longF > lo.longF)) issues.push('longShots non monotone');
   if (Math.abs(mid.longF - 1) > 1e-9) issues.push('longF au 50 doit valoir 1 exact (l\'identité du monde moyen)');
+  if (!(hi.sautF > mid.sautF && mid.sautF > lo.sautF)) issues.push('jumping non monotone');
+  if (Math.abs(mid.sautF - 1) > 1e-9) issues.push('sautF au 50 doit valoir 1 exact (l\'identité du monde moyen)');
   if (!(hi.getupF < mid.getupF && mid.getupF < lo.getupF)) issues.push('agility non monotone (le souple doit se relever plus vite)');
   if (hi.getupF < 0.72 - 1e-9 || lo.getupF > 1.28 + 1e-9) issues.push('getupF hors bande [0,72 ; 1,28]');
   if (Math.abs(mid.getupF - 1) > 1e-9) issues.push('agility 50 ne vaut pas 1,0 — le no-op du relevé est violé');

@@ -110,10 +110,9 @@ export const MATCH = {
                           // tactique largeur (×0,6…1,4) et la pointe de vitesse du receveur
                           // (topF → ×0,7…1,3). Absent : l'aile invisible d'hier (sabotage
                           // nommé — le barème sans valeur de position).
-  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },
+  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9 },
                           // LE JEU DE TÊTE (11c11, st.full — lot 34) : un vol à hauteur de
-                          // tête (min-max m — la tête DEBOUT, le saut est une dette de
-                          // scène) au-dessus d'un corps (reach m) se REPREND : au BUT si
+                          // tête (min-max m) au-dessus d'un corps (reach m) se REPREND : au BUT si
                           // attaquant en surface à < but m (canal shot standard — le
                           // plongeon répond), en DÉGAGEMENT près de son but, en REMISE
                           // courte sinon. À deux corps : DUEL AÉRIEN (strength, seedé).
@@ -121,6 +120,14 @@ export const MATCH = {
                           // un centre est un arc par-dessus le premier rideau (0 centre
                           // entré en surface avant — mangés en route, vols tendus).
                           // false : le jeu au sol d'hier (sabotage nommé).
+                          // LA DÉTENTE (lot 112, saut m — hauteur du saut moyen) : le ciel
+                          // [max ; max + saut × sautF] s'atteint EN SAUTANT (attribut
+                          // jumping, event tête saut:true — mesuré avant : 1,7 vol/match
+                          // muet à 2,2-3,0 m). Et le DUEL SE CONTESTE EN VENANT (duel m,
+                          // rayon) : le rival d'hier devait partager le même mètre (0 duel
+                          // sur 10 matchs) — le venant qui gagne le jet GÊNE la tête
+                          // (±gene rad, ×geneV vitesse), il ne la joue pas (pas de
+                          // téléport). saut/duel absents : hier au bit.
   evadeGoal: 1.3,         // LA CONDUITE A UN SENS (11c11 — lot 47) : terme de PROGRESSION au
                           // barème d'évasion du porteur (vers le but adverse ; l'échelle des
                           // autres termes vit à 0,8-1,1). Clé absente (rondo) : pas un but,

@@ -504,6 +504,33 @@ export const MOVES = {
       { t: 1.05, pose: { LeftUpLeg: [45, 0, 0], RightUpLeg: [45, 0, 0], LeftLeg: [-60, 0, 0], RightLeg: [-60, 0, 0], Spine1: [12, 0, 0] }, hips: [0, -0.2, -0.42] },
       { t: 1.35, pose: {}, hips: [0, 0, -0.42] },
     ] },
+  /** LE SAUT DE TÊTE (lot 112) — la dette du ciel payée : impulsion accroupie, extension
+   *  verticale (hanches +0,38 au pic — la DÉTENTE se voit), le buste se CAMBRE en montant
+   *  (l'armé du fouetté) puis FOUETTE au contact (Spine1 −14 → +16, Head −12 → +22 : c'est
+   *  le cou qui frappe), bras en balancier, réception fléchie. Contact 0,42 = le pic. */
+  tete: {
+    name: 'tete', duration: 0.9, contact: 0.42, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.14, pose: { LeftUpLeg: [32, 0, 0], RightUpLeg: [32, 0, 0], LeftLeg: [-48, 0, 0], RightLeg: [-48, 0, 0], Spine1: [18, 0, 0], LeftArm: [22, 0, -8], RightArm: [22, 0, 8] }, hips: [0, -0.14, 0] },
+      { t: 0.3, pose: { LeftUpLeg: [12, 0, 0], RightUpLeg: [12, 0, 0], LeftLeg: [-18, 0, 0], RightLeg: [-18, 0, 0], Spine1: [-14, 0, 0], Head: [-12, 0, 0], LeftArm: [-38, 0, 28], RightArm: [-38, 0, -28], LeftForeArm: [0, 0, 24], RightForeArm: [0, 0, -24] }, hips: [0, 0.22, 0] },
+      { t: 0.42, pose: { LeftUpLeg: [4, 0, 0], RightUpLeg: [4, 0, 0], LeftLeg: [-8, 0, 0], RightLeg: [-8, 0, 0], Spine1: [16, 0, 0], Head: [22, 0, 0], LeftArm: [-8, 0, 18], RightArm: [-8, 0, -18] }, hips: [0, 0.38, 0] },
+      { t: 0.56, pose: { LeftUpLeg: [18, 0, 0], RightUpLeg: [18, 0, 0], LeftLeg: [-26, 0, 0], RightLeg: [-26, 0, 0], Spine1: [8, 0, 0], Head: [6, 0, 0] }, hips: [0, 0.16, 0] },
+      { t: 0.72, pose: { LeftUpLeg: [30, 0, 0], RightUpLeg: [30, 0, 0], LeftLeg: [-42, 0, 0], RightLeg: [-42, 0, 0], Spine1: [12, 0, 0] }, hips: [0, -0.1, 0] },
+      { t: 0.9, pose: {}, hips: [0, 0, 0] },
+    ] },
+  /** LA TÊTE DEBOUT (lot 112) — le contact sous 2,2 m n'a pas besoin de détente : le buste
+   *  se cambre court (l'armé), le cou fouette, l'accompagnement retombe. Les jambes restent
+   *  à la locomotion (aucune clé de jambe : la couche fond le haut du corps seulement). */
+  teteDebout: {
+    name: 'teteDebout', duration: 0.55, contact: 0.22, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.1, pose: { Spine1: [-12, 0, 0], Head: [-14, 0, 0] }, hips: [0, -0.02, 0] },
+      { t: 0.22, pose: { Spine1: [14, 0, 0], Head: [20, 0, 0] }, hips: [0, 0.01, 0] },
+      { t: 0.38, pose: { Spine1: [8, 0, 0], Head: [8, 0, 0] }, hips: [0, 0, 0] },
+      { t: 0.55, pose: {}, hips: [0, 0, 0] },
+    ] },
   /** CONSULTING the laptop (loop, subtle sway): left forearm raised flat to carry it at chest
    *  height, right hand over the keys, head down toward the screen */
   consulter: {
