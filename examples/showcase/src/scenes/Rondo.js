@@ -583,7 +583,9 @@ export class Rondo {
       // ballon : borné (0,45 m — un allongé, pas un téléport), enveloppé comme le gant, plancher
       // au sol (le bassin ne creuse pas la pelouse). Unreal warpe la racine ; nous aussi.
       const Rr = (lens.A + lens.B) * 0.995;
-      const need = Math.min(0.45, Math.max(0, dSB - (Rr + HAND_WARP.standoff)));
+      // …la borne S'ÉTIRE AU RÉFLEXE (lot 108 — les prises précoces at 0,2-0,58 laissaient le
+      // gant à p50 1,07 m : l'épaule n'a pas le temps de se déployer, le corps ENTIER claque)
+      const need = Math.min(tArr < 0.2 ? 1.0 : tArr < 0.28 ? 0.8 : 0.45, Math.max(0, dSB - (Rr + HAND_WARP.standoff)));
       if (need > 1e-3 && pl.hipsNudge && dSB > 1e-6) {
         const s = (need * env) / dSB;
         const n = [(b[0] - this._wh.x) * s, (b[1] - this._wh.y) * s, (b[2] - this._wh.z) * s];
@@ -595,13 +597,19 @@ export class Rondo {
       pl._dwT = pl._dwT ?? a.t;
       const k = Math.max(0, 1 - (a.t - pl._dwT) / HAND_WARP.out);
       env = (pl._dwEnv ?? 0) * k;
+      // …LE BALLON TENU S'ACCOMPAGNE (lot 108 — « le ballon loin de ses gants, des téléports ») :
+      // le gel figeait le plan vers le point d'AVANT pendant que le tenu filait à la poitrine —
+      // la main et le ballon se CROISAIENT. Un ballon TENU (owner = lui) se re-vise 0,15 s (il
+      // rentre aux gants — l'accompagner est la vérité du geste) ; un ballon REPOUSSÉ (libre)
+      // garde le gel d'hier (chasser un vol est la chimère).
+      if (this.state.ball.owner === pl.sim.id && (a.t - pl._dwT) < 0.15) pl._dwarp = null;
       // le nudge gèle et redescend avec la même loi que le plan du gant
       if (pl._dwNudge && pl.hipsNudge && k > 1e-3) pl.hipsNudge([pl._dwNudge[0] * k, pl._dwNudge[1] * k, pl._dwNudge[2] * k]);
     }
     if (env <= 1e-3) { if (a.payload.resolved) pl._dwarp = null; return; }
     arm.hand.getWorldPosition(this._wf);   // APRÈS le nudge : le plan du gant part du squelette déplacé
     let plan = pl._dwarp;
-    if (!a.payload.resolved) {
+    if (!a.payload.resolved || !plan) {   // …resolved + tenu : le plan re-vise le ballon qui rentre (lot 108)
       plan = planWarp3([this._wf.x, this._wf.y, this._wf.z], [b[0], b[1], b[2]], HAND_WARP);
       pl._dwarp = plan;
       if (plan.denied) this._warpStats.denied[plan.denied + '-gant'] = (this._warpStats.denied[plan.denied + '-gant'] ?? 0) + 1;
@@ -1197,6 +1205,24 @@ export class Rondo {
     // ---- the ball, spun by its own angular velocity
     const b = this.state.ball;
     this.ball.position.set(b.p[0], b.p[1], b.p[2]);
+    // LE BALLON TENU S'ATTACHE AUX GANTS RENDUS (lot 108 — « le ballon loin de ses gants, des
+    // téléports ») : le tenu sim vit au CORPS SIM pendant que le corps rendu finit son root
+    // motion (écart ~1 m aux prises précoces — l'IK des bras ne peut pas l'atteindre). L'image
+    // met le ballon DANS les mains rendues (le patron d'attache AAA — Unity/Unreal parentent
+    // l'objet tenu au socket de la main) ; la sim garde SA position pour ses lois, le mélange
+    // suit _holdW (entrée/sortie fondues, pas de pop).
+    if (b.owner != null) {
+      const plH = this.players.find((q) => q.sim.id === b.owner);
+      if (plH && (plH._holdW ?? 0) > 1e-3 && plH.arms) {
+        const w = plH._holdW;
+        let mx = 0, my = 0, mz = 0, n = 0;
+        for (const sd of ['left', 'right']) {
+          const h = plH.arms[sd]?.hand;
+          if (h) { h.getWorldPosition(this._wv); mx += this._wv.x; my += this._wv.y; mz += this._wv.z; n++; }
+        }
+        if (n) { mx /= n; my /= n; mz /= n; this.ball.position.set(b.p[0] + (mx - b.p[0]) * w, b.p[1] + (my - b.p[1]) * w, b.p[2] + (mz - b.p[2]) * w); }
+      }
+    }
     this.ball.rotation.x += b.w[0] * step; this.ball.rotation.y += b.w[1] * step; this.ball.rotation.z += b.w[2] * step;
 
     this._broadcast(step);

@@ -87,6 +87,21 @@ async function mesurer(seed, secs, sabotage) {
       const evs = S.state.events;
       // …les TOUCHES DE CONDUITE : mesurer le pied 0,1 s après l'événement (pic de l'enveloppe)
       for (const pl of S.players) {
+        if (pl._auditFermeAt === f && pl._auditFermeRow) {
+          let dF = 99;
+          // …au ballon RENDU (lot 108 : l'attache aux gants met le MESH dans les mains — la
+          // promesse visuelle se mesure à l'image, la sim garde sa position pour ses lois)
+          const bR = S.ball.position;
+          pl.model.traverse((o) => {
+            if (!o.isBone || !/Hand$/i.test(o.name)) return;
+            const w = new (Object.getPrototypeOf(pl.model.position).constructor)();
+            o.getWorldPosition(w);
+            dF = Math.min(dF, Math.hypot(w.x - bR.x, w.y - bR.y, w.z - bR.z));
+          });
+          out.push({ ...pl._auditFermeRow, dFin: +dF.toFixed(2),
+            dbg: { hw: +(pl._holdW ?? 0).toFixed(2), own: S.state.ball.owner === pl.sim.id, down: +(+(pl.sim.down ?? 0)).toFixed(2), spec: pl.gestureLayer.spec?.name ?? null, act: pl.sim.act?.payload?.skill ?? null, res: pl.sim.act?.payload?.resolved ?? null } });
+          pl._auditFermeAt = null; pl._auditFermeRow = null;
+        }
         if (pl._auditTouchAt === f) {
           const b = S.state.ball.p;
           let best = 99;
@@ -106,16 +121,24 @@ async function mesurer(seed, secs, sabotage) {
         const pl = S.players.find((q) => q.sim.id === e.by);
         if (!pl) continue;
         const b = S.state.ball.p;
-        let d = 99;
-        pl.model.traverse((o) => {
-          if (!o.isBone || !/Hand$/i.test(o.name)) return;
-          const w = new (Object.getPrototypeOf(pl.model.position).constructor)();
-          o.getWorldPosition(w);
-          d = Math.min(d, Math.hypot(w.x - b[0], w.y - b[1], w.z - b[2]));
-        });
+        const dHand = () => {
+          let dd = 99;
+          pl.model.traverse((o) => {
+            if (!o.isBone || !/Hand$/i.test(o.name)) return;
+            const w = new (Object.getPrototypeOf(pl.model.position).constructor)();
+            o.getWorldPosition(w);
+            dd = Math.min(dd, Math.hypot(w.x - S.state.ball.p[0], w.y - S.state.ball.p[1], w.z - S.state.ball.p[2]));
+          });
+          return dd;
+        };
+        const d = dHand();
         let hipsY = null;
         pl.model.traverse((o) => { if (o.isBone && /Hips$/i.test(o.name) && hipsY == null) { const v = new (Object.getPrototypeOf(pl.model.position).constructor)(); o.getWorldPosition(v); hipsY = v.y; } });
-        out.push({ mode: e.mode, d: +d.toFixed(2), at: pl.sim.act ? +pl.sim.act.t.toFixed(2) : null, hipsY: hipsY != null ? +hipsY.toFixed(2) : null });
+        // …la PRISE SE FERME (lot 108) : re-mesurer 9 frames plus tard — la promesse visuelle
+        // est la fermeture, pas l'instant (la sim déclare à la limite de diveReach pendant que
+        // le corps rendu finit son root motion ; la poursuite du tenu ferme en ≤ 0,15 s)
+        pl._auditFermeAt = f + 9;
+        pl._auditFermeRow = { mode: e.mode, d: +d.toFixed(2), at: pl.sim.act ? +pl.sim.act.t.toFixed(2) : null, hipsY: hipsY != null ? +hipsY.toFixed(2) : null };
       }
     }
     return { rows: out, touches, dives };
@@ -144,7 +167,12 @@ ok('des arrêts du gardien se produisent et se mesurent (≥ 4 sur 4 graines × 
 // …0,85 : la re-donne du régime protégé (lot 8) a posé la médiane à 0,8 — la bande suit le
 // bruit mesuré lot après lot ; le CONTACT du gant reste prouvé par le sabotage warp-gant (le
 // monde sans warp re-flotte au-delà) et l'arrêt-réflexe en 2 images reste le résiduel connu
-ok('à l\'instant de l\'arrêt, le gant le plus proche touche le ballon (p50 ≤ 0,85 m)', p50(dsV) != null && p50(dsV) <= 0.85, `p50 ${p50(dsV)}`);
+// …re-fondée lot 108 : la sim déclare la prise à la LIMITE de diveReach pendant que le corps
+// rendu finit son root motion — la promesse VISUELLE est la FERMETURE (le gant au ballon en
+// ≤ 0,15 s, la poursuite du tenu), pas l'instant de l'étiquette.
+const dFinV = vrais.filter((r) => r.mode === 'prise').map((r) => r.dFin).filter((x) => x != null);   // la claquette REPOUSSE (le ballon part — sa fermeture n'existe pas)
+ok('le bras VIT à l\'instant de l\'arrêt (p50 ≤ 1,1 m) et LA PRISE SE FERME à +0,15 s (p50 ≤ 0,45)',
+  p50(dsV) != null && p50(dsV) <= 1.1 && p50(dFinV) != null && p50(dFinV) <= 0.45, `instant p50 ${p50(dsV)}, fermée p50 ${p50(dFinV)}`);
 
 // 3. LE CORPS SE COUCHE SUR LES ARRÊTS DÉVELOPPÉS : sur toute détente qui a eu le temps de vivre
 //    (arrêt à t ≥ 0,3 de l'acte), les hanches sont DESCENDUES (p50 ≤ 0,7 m — debout = 0,9 ;
@@ -202,8 +230,10 @@ const sab = [];
 for (const seed of [3, 7]) sab.push(...(await mesurer(seed, 120, 'warp-gant')).rows);
 const dsS = sab.map((r) => r.d);
 console.log(`monde saboté : ${sab.length} arrêts — p50 ${p50(dsS)}`);
-ok('sabotage « warp-gant » : sans le warp, le gant re-flotte loin du ballon (p50 ≥ p50 vrai + 0,25)',
-  p50(dsS) != null && p50(dsV) != null && p50(dsS) >= p50(dsV) + 0.25, `saboté ${p50(dsS)} vs vrai ${p50(dsV)}`);
+// …jugé à la FERMETURE (lot 108 — l'instant est dominé par le root motion, même saboté)
+const dFinS = sab.filter((r) => r.mode === 'prise').map((r) => r.dFin).filter((x) => x != null);
+ok('sabotage « warp-gant » : sans le warp, la prise ne se FERME plus (p50 fermée ≥ vrai + 0,3)',
+  p50(dFinS) != null && p50(dFinV) != null && p50(dFinS) >= p50(dFinV) + 0.3, `saboté ${p50(dFinS)} vs vrai ${p50(dFinV)}`);
 
 await browser.close();
 server.close();

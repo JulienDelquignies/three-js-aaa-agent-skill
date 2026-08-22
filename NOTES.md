@@ -4545,6 +4545,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      en zone (15/46 < 1,2 s — le réel ne frappe pas plus vite) ; le vrai manque était la
      PORTE (les acquisitions à 20-24 m ne POUVAIENT pas tirer — l'audace les libère).
 
+150. **Lot 108 : LE BALLON DANS LES GANTS — la dette payée (retour utilisateur : « le gardien
+     a encore le ballon loin de ses gants parfois, ça donne des téléports »).** La dette
+     chiffrée au lot 106 (gant p50 1,07 m à l'instant de l'arrêt) DISSÉQUÉE en trois vérités :
+     (1) le hold sim est DÉJÀ un servo (tau 0,12, vMax 6 — pas un téléport sim) ; (2) la sim
+     déclare la prise à la LIMITE de diveReach (2,95 m du corps) pendant que le corps RENDU
+     finit son root motion — la mesure « à l'instant » est structurellement en retard d'un
+     demi-geste ; (3) le ballon TENU file au point des gants du corps SIM pendant que le corps
+     rendu est encore en route (écart ~1 m aux prises précoces, at 0,2-0,32) — l'IK des bras
+     rendus ne PEUT PAS l'atteindre (dFin 0,82-0,97 mesuré aux bones, debug consigné). TROIS
+     CORRECTIONS (scène seule — aucun fichier engine, le flux sim intact par construction) :
+     la borne du warp racine S'ÉTIRE AU RÉFLEXE (0,45 → 0,8/1,0 sous tArr 0,28/0,2 — le
+     plongeon-réflexe claque le corps entier) ; le plan du gant RE-VISE le ballon TENU 0,15 s
+     après la résolution (le gel figeait vers le point d'avant pendant que le tenu rentrait —
+     main et ballon se CROISAIENT ; un ballon REPOUSSÉ garde le gel d'hier : chasser un vol
+     est la chimère) ; et LE BALLON TENU S'ATTACHE AUX GANTS RENDUS (le patron d'attache AAA —
+     Unity/Unreal parentent l'objet tenu au socket de la main) : l'image met le MESH ballon
+     dans les mains rendues (mélange _holdW, entrée/sortie fondues), la sim garde SA position
+     pour ses lois. L'AUDIT RE-FONDÉ sur la promesse VISUELLE : le bras VIT à l'instant
+     (p50 0,99 ≤ 1,1 — le root motion en cours est la physique du geste) et LA PRISE SE FERME
+     à +0,15 s (p50 0,14 ≤ 0,45, mesurée au ballon RENDU, prises seules — la claquette
+     REPOUSSE, sa fermeture n'existe pas) ; le sabotage warp-gant re-mord (1,05 vs 0,14 —
+     couper le warp coupe toute la chaîne, rampe comprise). audit-gants 10 ✓ / 0 ✗ — les
+     2 rouges hérités REVERDIS. L'anti-téléport tient (hanches p50 24,6 ≤ 30). Aucun A/B ni
+     empreinte à re-tirer : zéro fichier engine touché (le contrat scène/sim).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
