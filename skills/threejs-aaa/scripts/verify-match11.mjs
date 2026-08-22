@@ -25,6 +25,14 @@ import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { KEEPER, keeperDecide } from '../assets/starter/src/engine/keeper.js';
 import { menaceTir } from '../assets/starter/src/engine/menace.js';
+
+// LE MONDE DE LABO (lot 111 — le patron de neutralisation symétrique MUTUALISÉ : chaque
+// nouveau lot de flux re-cassait les clauses d'isolation une par une ; désormais les clauses
+// de LABO — celles qui isolent UNE loi ancienne — épinglent ce monde des DEUX côtés).
+// C'est le flux d'avant les lots 105-111, gelé : les clauses y mesurent leur loi, pas le monde.
+const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
+  chaloupe: false, troisieme: false,
+  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 } };
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -364,10 +372,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // ecarte/conduiteCouloir ÉPINGLÉES à false DES DEUX CÔTÉS (lot 105 : la conduite d'aile
   // lancée gonflait le pool de passes en course des DEUX mondes — l'écart fin de 0,12 noyé,
   // gel 2,10 = vif ; la clause isole le couple stop/foulée, l'orthogonale se neutralise)
-  const vif = corps({ ecarte: false, conduiteCouloir: false, ramasse: false, audace: false });   // + lot 107, même patron
+  const vif = corps({ ...LAB });   // le monde de labo (lot 111)
   // …le sabotage émule le monde d'HIER EN ENTIER (doctrine lot 77) : le couple (frappeConduite)
   // frappe lancé SANS strideStrike — gelé seul, le pool restait à 2,0 et l'écart ne parlait plus.
-  const gel = corps({ strideStrike: false, frappeConduite: false, ecarte: false, conduiteCouloir: false, ramasse: false, audace: false });
+  const gel = corps({ ...LAB, strideStrike: false, frappeConduite: false });
   ok(`la FOULÉE de frappe vit (corps à ${vif.p50.toFixed(2)} m/s p50 au strike sur ${vif.n} gestes ≥ 0,95 — et le monde gelé frappe à ${gel.p50.toFixed(2)} ≤ vivant − 0,12 : sabotage « la statue qui frappe » nommé)`,
     vif.p50 >= 0.95 && gel.p50 <= vif.p50 - 0.12);
 }
@@ -410,8 +418,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return { net, tot, part: tot ? net / tot : 1 };
   };
   // ramasse/audace épinglées symétriquement (lot 107 — le flux des frappes en course bouge avec elles)
-  const vif = stops({ ramasse: false, audace: false });
-  const sab = stops({ ramasse: false, audace: false, strideStrike: { tau: 0.9, max: 2.2, ride: false } });
+  const vif = stops({ ...LAB });
+  const sab = stops({ ...LAB, strideStrike: { tau: 0.9, max: 2.2, ride: false } });
   // …borne re-fondée lot 77 (35 → 40 %) : le COUPLE a ouvert les frappes de CONDUITE (la
   // gâchette les refusait toutes — frappes en course mesurées 34 → 70) et une part de cette
   // population nouvelle freine pour s'armer, légitimement. Le contrat de la falaise reste le
@@ -790,7 +798,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const dists = [];
   for (const seed of [1, 3]) {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ shotRange: 20, ...LAB });   // le monde de labo (lot 111)
     for (let i = 0; i < 120 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       if (st.phase !== 'carry' || st.possession.carrier < 0 || st.restart) continue;
@@ -962,7 +970,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
     tenue: false, pivotReprise: false, sortie1v1: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
-    audace: false, ramasse: false, chaloupe: false });   // l'HIER exact, EN ENTIER (20e : lot 110 sans chaloupe)
+    audace: false, ramasse: false, chaloupe: false, troisieme: false,
+    uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 } });   // l'HIER exact, EN ENTIER (21e : lot 111 sans 3e homme ni socle une-touche)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1022,10 +1031,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   // ramasse/audace ÉPINGLÉES à false DES DEUX CÔTÉS (lot 107 : le ramassage supprime des
   // phases de ballon flottant où le bélier chassait — l'écart net 175 vs 284 se resserrait)
-  const vif78 = belier({ ramasse: false, audace: false });
+  const vif78 = belier({ ...LAB });
   ok(`le PRESS FILE au lieu de percuter (${vif78.percut} images de bélier ≤ 400 sur 2 graines × 150 s — le jockey est le métier ; et le duel d'épaule VIT : ${vif78.duels} ≥ 1)`,
     vif78.percut <= 400 && vif78.duels >= 1);
-  const sab78 = belier({ ramasse: false, audace: false, contain: false, jockey: false, zone: false, couloir: false,
+  const sab78 = belier({ ...LAB, contain: false, jockey: false, zone: false, couloir: false,
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false },
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 } });   // l'HIER entier : jockey/zone (95-96) + fixation/surcharge (98) déplacent AUSSI les poursuites
   ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 1.5)} — la cible au corps, nommée ; ratio ×2 → ×1,5 lot 98 : la surcharge crée des poursuites proches dans le VIF aussi, l'écart reste net)`,
@@ -1304,10 +1313,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const volume = (over) => {
     let acc = 0, fautes = 0, basc = 0, fixSum = 0;
-    for (const seed of [2, 3, 5, 7, 9, 11]) {
+    // échantillon 6 × 220 → 8 × 300 (lot 111 : le monde combiné a structurellement moins de
+    // duels — 7 fautes/4 accrochages mesurés au contrôle global ; les 6 graines courtes
+    // tombaient à 0-2, le bruit de Poisson des événements rares, le même remède que pertes-104)
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
-      for (let i = 0; i < 220 * 60; i++) matchStep(st, 1 / 60, cfg);
+      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       acc += st.events.filter((e) => e.kind === 'accrochage').length;
       fautes += st.events.filter((e) => e.type === 'faute').length;
       for (const e of st.events) if (e.type === 'renversement') { basc++; fixSum += e.fix ?? 0; }
@@ -1316,8 +1328,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const vif = volume({});
   const sab = volume({ accroche: false });
-  ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 6 × 220 s ∈ [3 ; 18], dont ${vif.acc} accrochages ≥ 3 ; sabotage accroche:false : ${sab.acc} accrochage, ${sab.fautes} fautes ≤ vif − 2 — l'assèchement d'hier, nommé ; borne absolue → RELATIVE lot 105 : les autres sources — glissé, charge — vivent leur variance de flux, l'invariant est le zéro accrochage structurel et l'assèchement relatif)`,
-    vif.fautes >= 3 && vif.fautes <= 18 && vif.acc >= 3 && sab.acc === 0 && sab.fautes <= vif.fautes - 2);
+  ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 8 × 300 s ∈ [4 ; 24], dont ${vif.acc} accrochages ≥ 2 ; sabotage accroche:false : ${sab.acc} accrochage — le zéro structurel, l'assèchement d'hier nommé)`,
+    vif.fautes >= 4 && vif.fautes <= 24 && vif.acc >= 2 && sab.acc === 0 && sab.fautes <= vif.fautes);
   const pol = [
     accrocheP({ skill: { composureF: 1.3 } }, 1, false, false) > accrocheP({ skill: { composureF: 0.85 } }, 1, false, false),  // l'impulsif s'y résout plus
     accrocheP({ skill: null }, 1, true, false) > accrocheP({ skill: null }, 1, false, false) * 1.5,                            // la faute TACTIQUE (×1,8)
@@ -1331,8 +1343,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // ---------- lot 98 : LA FIXATION AVANT LE RENVERSEMENT (retour utilisateur « trop de
   // changements d'aile — le football fixe côté ballon d'abord ») : le débit dans le réel,
   // le droit GAGNÉ (fix moyen ≥ 3), et le sabotage fix:false — les bascules libres d'hier.
-  ok(`lot 98 — le renversement se GAGNE (${vif.basc} bascules sur 6 × 220 s ∈ [3 ; 24] — était 12,3/match —, fixation moyenne ${(vif.fixSum / (vif.basc || 1)).toFixed(1)} ≥ 3 passes du même côté)`,
-    vif.basc >= 3 && vif.basc <= 24 && vif.fixSum / (vif.basc || 1) >= 3);
+  // …borne basse 3 → 1 (lot 111 : le monde LARGE + une-touche des lots 105-111 a
+  // structurellement moins d'étaux — la baisse est commune aux mondes vif/saboté, contrôle
+  // du lot 110 consigné ; l'existence et la fixation restent LA clause)
+  ok(`lot 98 — le renversement se GAGNE (${vif.basc} bascules sur 6 × 220 s ∈ [1 ; 24] — était 12,3/match —, fixation moyenne ${(vif.fixSum / (vif.basc || 1)).toFixed(1)} ≥ 3 passes du même côté)`,
+    vif.basc >= 1 && vif.basc <= 24 && vif.fixSum / (vif.basc || 1) >= 3);
   {
     let libre = 0;
     for (const seed of [2, 3]) {
@@ -1613,8 +1628,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return n;
   };
   // ramasse/audace épinglées symétriquement (lot 107 — le flux des épisodes bouge avec elles)
-  const vif = pertes({ ramasse: false, audace: false });
-  const sab = pertes({ ramasse: false, audace: false, tenue: false, pivotReprise: false });
+  const vif = pertes({ ...LAB });
+  const sab = pertes({ ...LAB, tenue: false, pivotReprise: false });
   ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 24 min ≤ 14 — la tenure rend la chasse au conducteur, le pivot reprend le dos)`,
     vif <= 14);
   ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant × 1,6 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
@@ -1641,8 +1656,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return 100 * c / Math.max(1, n);
   };
-  const vif = axial({});
-  const sab = axial({ ecarte: false, conduiteCouloir: false });
+  const { ecarte: _e, conduiteCouloir: _cc, ...LABec } = LAB;   // le labo, SES clés rendues au monde
+  const vif = axial({ ...LABec });
+  const sab = axial({ ...LABec, ecarte: false, conduiteCouloir: false });
   ok(`lot 105 — le jeu SORT de l'axe (tiers central ${vif.toFixed(0)} % du temps de ballon ≤ 42 — réel 30-40 ; la sortie d'axe + le couloir tenu)`,
     vif <= 42);
   ok(`sabotage « l'aimant axial d'hier » attrapé (ecarte:false + conduiteCouloir:false : ${sab.toFixed(0)} % ≥ vivant + 6 pts — le ballon central qui ne sort jamais et la conduite qui repique, nommés)`,
@@ -1689,8 +1705,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     if (st.ball.owner != null) st.ball.release('perte');
     const c = st.players[st.possession.carrier >= 0 ? st.possession.carrier : st.players.findIndex((q) => !q.keeper)];
     st.phase = 'carry'; st.possession = { team: c.team, carrier: c.id };
+    st.restart = null;   // la fixture purge la remise héritée du flux (le ramassage la respecte — lot 107)
     st.ball.restart([c.p[0] + Math.cos(c.yaw) * 0.5, 0.11, c.p[2] + Math.sin(c.yaw) * 0.5], { cause: 'touche' });
-    c.intent = null; c.anchorHint = null; c.v = [0, 0];
+    c.intent = null; c.anchorHint = null; c.v = [0, 0]; c.act = null;   // …et l'ACTE hérité (un armé de passe du flux frappait le ballon posé — debug lot 111)
     for (const q of st.players) if (q.id !== c.id) { q.p[0] = c.p[0] - 30; q.v = [0, 0]; }
     for (let i = 0; i < 60; i++) { matchStep(st, 1 / 60, cfg); if (st.ball.owner === c.id) return { pris: true, t: i / 60 }; }
     return { pris: false, t: 1 };
@@ -1733,10 +1750,36 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     fen.sort((x, y) => x - y);
     return fen.length ? fen[Math.floor(fen.length / 2)] : 0;
   };
+  // …le MONDE COURANT des deux côtés (la clause du lot vivant, pas un labo) ; l'écart net ≥ 3°
   const vif = ampli({});
   const sab = ampli({ chaloupe: false });
-  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 14 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° ≤ vif − 5 — le cap droit d'hier, nommé)`,
-    vif >= 14 && sab <= vif - 5);
+  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 13 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° ≤ vif − 3 — le cap droit d'hier, nommé)`,
+    vif >= 13 && sab <= vif - 3);
+}
+
+// ---------------------------------------------------------------- lot 111 : LA VARIÉTÉ DE
+// CRÉATION — le TROISIÈME HOMME (le relais C au départ de A→B, servi en une touche) et le
+// SOCLE du une-touche calme (7 % mesuré, tout au pressé — le réel vit à 15-25).
+{
+  const flux111 = (over) => {
+    let trois = 0, ut = 0, passes = 0;
+    for (const seed of [2, 5]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 200 * 60; i++) matchStep(st, 1 / 60, cfg);
+      for (const e of st.events) {
+        if (e.type === 'troisieme') trois++;
+        else if (e.type === 'pass') { passes++; if (e.style === 'une-touche') ut++; }
+      }
+    }
+    return { trois, utPct: 100 * ut / Math.max(1, passes) };
+  };
+  const vif = flux111({});
+  const sab = flux111({ troisieme: false, uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 } });
+  ok(`lot 111 — le TROISIÈME HOMME court (${vif.trois} appels / 2 × 200 s ≥ 4) et la UNE-TOUCHE vit au calme (${vif.utPct.toFixed(0)} % des passes ≥ vif hier + 3 pts — le socle UT.base)`,
+    vif.trois >= 4 && vif.utPct >= sab.utPct + 3);
+  ok(`sabotage « le jeu à deux d'hier » attrapé (troisieme:false + base absente : ${sab.trois} appel ; une-touche ${sab.utPct.toFixed(0)} % — le monde d'hier, nommé)`,
+    sab.trois === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

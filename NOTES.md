@@ -4623,6 +4623,48 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le réduit voit les mêmes gestes ré-authorés ; flux prouvé sain par verify-match 84/0
      AVANT acceptation, le protocole) ; match seed 3/7 : 9354e1dca25aa47c / 4c42de3144fe0955.
 
+153. **Lot 111 : LA VARIÉTÉ DE CRÉATION — le troisième homme, le socle une-touche et la
+     verticalité du regain (retour utilisateur : « les actions vivent trop par les longs
+     ballons en profondeur sur les côtés alors que le foot est bien plus varié »).** MESURÉ
+     (sonde du MIX des origines de tirs, 10 × 300 s, chaîne des 7 s avant chaque tir) : la
+     perception ≠ la production — les LANCEMENTS ne produisaient que ~4 % des tirs (et 0 tir
+     direct d'un lancement servi) ; le vrai déséquilibre était la CIRCULATION à 47 % (réel
+     10-15) et la une-touche quasi absente. TROIS LOIS : (1) LE TROISIÈME HOMME (strike-sim,
+     hook sur st.pass ; cfg.troisieme {min 6, max 16, p 0,5, dur 1,1}, flux auxiliaire
+     st.rnd2) : quand A passe à B, un candidat C côté but (6-16 m du receveur, ≥ 1 m de
+     projection vers l'avant) part en RELAIS (_pace troisieme + _troisT), tiré ×
+     axe(relation) × axe(role.appel) — 12,8 appels/match, ~12 % servis dans la foulée ;
+     (2) LE SOCLE UNE-TOUCHE (premiere-intention, cfg.uneTouche + base 0,25/relais 2,2/
+     bonus3 1,5/seenCalme 0,3) : la première intention au calme n'est plus l'exclusivité du
+     tiki-taka — max(base, pente de style), DOPÉE ×2,2 quand un relais 3e homme court (et le
+     receveur du relais bonifié +1,5 au tri) ; LA LEÇON seenCalme : le socle à seen 0 dopait
+     +11 buts/20 matchs (la défense éternellement surprise) — la sémantique juste : LE CALME
+     SE LIT comme une passe armée (seen 0,3 s ≥ réaction max = lecture pleine, seul le
+     réflexe pressé surprend) ; (3) LA VERTICALITÉ DU REGAIN (rondo barème choosePass,
+     cfg.moments {win 5, vertical 0,5}) : dans les 5 s d'un changement de possession, la
+     passe qui gagne ≥ 8 m vers le but adverse est bonifiée — le contre a le droit d'être
+     direct. ISOLATION A/B par monde (20 graines) : le socle est le moteur du mix, le
+     troisième homme l'anime, le vertical est un souffle. APRÈS : circulation 47 → 38 %,
+     une-touche 7 → 13 %, percussion 7 → 13 %, combinaisons stables — la création respire
+     par les enchaînements, plus par l'attente. A/B final 20 × 300 s : 82 tirs / 27 buts
+     ∈ [17 ; 33] ✓ (milieu de bande). LE PATRON « LAB » MUTUALISÉ (verify-match11) : le
+     monde de labo gelé en tête de banc — les clauses qui ISOLENT une loi ancienne épinglent
+     LAB des deux côtés (la clause axiale 105 raccordée : LAB moins ses propres clés), les
+     clauses du lot courant mesurent le monde COURANT ; sab76 21e (uneTouche d'hier +
+     troisieme:false + chaloupe:false). La clause « SIGNATURE des circuits » RE-FONDÉE :
+     « direct = 0 une-touche par construction » n'est plus vrai PAR DESIGN (le socle donne
+     ses remises en une touche au direct — le réel) ; la signature devient l'ÉCART :
+     possession ≥ 2× direct (26 vs 7). La clause fautes-97 re-fondée (8 × 300, bande [4;24],
+     acc ≥ 2 — le socle assèche les fautes de pressing de 40 %, cohérent : le ballon part
+     avant le contact). Batterie : match11 108/0, rondo 40/0, renversement 8/0, circuits
+     6/0, match (réduit) 84/0, gestes 52/0, attributes 14/0, menace 11/0. EMPREINTES :
+     rondo AU BIT (c775c81e62592d4d) ; réduit 2b6a8c8b283d342b, match seed 3/7
+     46c07e9cebb1c858 / 3fda02d403610e9c (nouvelles références du calibrage final ; flux
+     prouvé sain par la batterie complète AVANT acceptation, le protocole). Pièges
+     d'instrument consignés : e.d absent des events pass (recalculer des positions) ; les
+     fixtures purgent l'état hérité (st.restart = null, c.act = null — le carrier hérité
+     frappait le ballon posé de la fixture).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

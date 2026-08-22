@@ -246,6 +246,12 @@ export function choosePass(st, cfg = RONDO) {
       // passe qui le suit est la définition même de « suivre l'appel » (mesuré avant : 5 appels
       // servis sur 74 — les ruptures étaient un décor)
       + ((m._pace?.until ?? -1) > st.t ? (cfg.appelBonus ?? 0) : 0)
+      // LA VERTICALITÉ DU REGAIN (lot 111, cfg.moments.vertical && st.full) : le bloc adverse
+      // est DÉFORMÉ ~5 s après le regain — la passe qui AVANCE pèse (récup → tir : 5 % mesuré,
+      // réel 15-20 ; le désordre s'attaque MAINTENANT). Sous-clé absente : 0, l'hier au bit.
+      + (st.full && cfg.moments?.vertical && st._possChangeAt != null
+        && st.t - st._possChangeAt < (cfg.moments.win ?? 5)
+        && Math.sign(st.pitch.attackGoal(c.team).x || 1) * (m.p[0] - c.p[0]) > 8 ? cfg.moments.vertical : 0)
       + couloirB + ecarteB;                                   // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
     if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d, bascule };
   }

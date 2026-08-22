@@ -56,7 +56,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 153.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 154.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -173,5 +173,6 @@
 
 ## Backlog long terme (inchangé)
 Gardien relanceur avancé, formations 442/352
-complètes (la couche LIGNES existe), le troisième homme / rotations relationnelles,
-triangulation v4 (assignation, hystérésis), expulsion physique complète, saut du jeu de tête.
+complètes (la couche LIGNES existe), le troisième homme v2 (v1 livrée note 153 — reste :
+courses dédiées vers l'intervalle), triangulation v4 (assignation, hystérésis), expulsion
+physique complète, saut du jeu de tête.

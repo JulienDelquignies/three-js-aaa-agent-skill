@@ -33,7 +33,13 @@ export function uneTouche(st, p, cfg) {
   const foeU = st.players.filter((q) => q.team !== p.team && q.down <= 0)
     .reduce((b, q) => (!b || d2(q.p, p.p) < d2(b.p, p.p) ? q : b), null);
   const pressOk = foeU && d2(foeU.p, p.p) < (UT.press ?? 2.6);
-  const pCalme = (UT.calme ?? 0.5) * Math.max(0, 1 - 2 * (tac(st, p.team).style ?? 0.5));
+  // …LE SOCLE (lot 111, UT.base — « ça manque de une-deux » : 7 % de une-touche mesuré, tout
+  // au pressé ; la pente 1−2×style s'annulait au défaut 0,5). Le une-touche calme du VRAI
+  // football existe à tout style (~15-25 % des passes) : base = le plancher, la pente du
+  // possession-style monte AU-DESSUS. base absente : 0, la pente seule d'hier au bit.
+  // …et LE RELAIS DU TROISIÈME HOMME (lot 111) force presque la tentative : un C en course.
+  const relais3 = st.players.some((q) => q.team === p.team && (q._troisT ?? -1) > st.t);
+  const pCalme = (UT.calme ?? 0.5) * Math.max(UT.base ?? 0, 1 - 2 * (tac(st, p.team).style ?? 0.5)) * (relais3 ? (UT.relais ?? 2.2) : 1);
   if ((pressOk || (pCalme > 0 && (st.rnd ? st.rnd() : 0.5) < pCalme)) && arrU <= (UT.vmax ?? 9.5)
     && st.ball.p[1] < 0.5
     && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * Math.min(1.2, p.skill?.controlF ?? 1)) {
@@ -44,7 +50,8 @@ export function uneTouche(st, p, cfg) {
       .filter((x) => x.d > 3 && x.d < (UT.portee ?? 14))
       .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.m.p[0], 0, x.m.p[2]], blockers).margin ?? 0 }))
       .filter((x) => x.marge >= (UT.couloir ?? 0.5))
-      .sort((a, b) => b.marge - a.marge)[0];
+      .sort((a, b) => (b.marge + ((b.m._troisT ?? -1) > st.t ? (UT.bonus3 ?? 1.5) : 0))
+        - (a.marge + ((a.m._troisT ?? -1) > st.t ? (UT.bonus3 ?? 1.5) : 0)))[0];   // le coureur du relais d'abord (lot 111)
     if (mate) {
       st.passes++; st.best = Math.max(st.best, st.passes);
       st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: p.id, count: st.passes });
@@ -64,7 +71,10 @@ export function uneTouche(st, p, cfg) {
       // intention n'a PAS d'armé — seen 0, TOUT LE MONDE paie sa réaction pleine. Mesuré avant :
       // 0/39 fenêtres posées — la passe la moins lisible du football était la seule que la
       // défense lisait instantanément (armée : 135/135, l'armé vu remboursait les regardeurs).
-      st._surprise = { t: st.t, seen: 0, n: (st._surprise?.n ?? 0) + 1 };
+      // …le CALME SE LIT (lot 111 — l'isolation A/B : le socle à seen 0 dopait de +11 buts/
+      // 20 matchs) : la une-touche CHOISIE s'oriente avant — elle se lit comme une passe armée
+      // (seenCalme ≥ la réaction max = lecture pleine) ; SEUL le réflexe pressé surprend.
+      st._surprise = { t: st.t, seen: pressOk ? 0 : (UT.seenCalme ?? 0.3), n: (st._surprise?.n ?? 0) + 1 };
       st.pass = { from: p.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'une-touche', t: st.t, flight: mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
       // …la une-touche NOURRIT LA FIXATION aussi (lot 98 — le même registre que beginPass) :
       // c'est même LA passe qui fixe le mieux (le une-deux côté ballon du vrai football)

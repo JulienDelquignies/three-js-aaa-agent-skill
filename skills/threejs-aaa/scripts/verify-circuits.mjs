@@ -96,8 +96,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // arme est la PROFONDEUR (lot 41 — le service du coureur, jugé à la clause suivante), pas
   // le jeu en U. Le renversement reste le dialecte de la POSSESSION (existence ≥ 1 par style
   // qui le parle : possession + neutre) — c'est le vrai football, pas un vocabulaire perdu.
-  ok(`la SIGNATURE des circuits (4 graines × 180 s : possession ${poss.utCalme} une-touche AU CALME ≥ 5, direct ${direct.utCalme} = 0 par construction — le tiki-taka est un choix ; et le renversement GAGNÉ vit chez qui le parle : poss ${poss.renv} + neutre ${neutre.renv} ≥ 2, direct ${direct.renv} informatif — il verticalise)`,
-    poss.utCalme >= 5 && direct.utCalme === 0 && poss.renv + neutre.renv >= 2);
+  // …« direct = 0 » re-fondé (lot 111 : le SOCLE UT.base donne le une-touche calme à TOUT
+  // style — le direct fait ses REMISES en une touche, le réel ; le contrat devient l'ÉCART :
+  // la possession en fait NETTEMENT plus que le direct, ×2)
+  ok(`la SIGNATURE des circuits (4 graines × 180 s : possession ${poss.utCalme} une-touche AU CALME ≥ 5 et ≥ 2× le direct (${direct.utCalme}) — le tiki-taka est un choix ; et le renversement GAGNÉ vit chez qui le parle : poss ${poss.renv} + neutre ${neutre.renv} ≥ 2, direct ${direct.renv} informatif — il verticalise)`,
+    poss.utCalme >= 5 && poss.utCalme >= 2 * Math.max(1, direct.utCalme) && poss.renv + neutre.renv >= 2);
   ok(`le SERVICE du coureur VIT dans tous les mondes (neutre ${neutre.servis} + possession ${poss.servis} + direct ${direct.servis} = ${neutre.servis + poss.servis + direct.servis} ≥ 3 — était 0 partout : les portes d'engagement mangeaient la fenêtre)`,
     neutre.servis + poss.servis + direct.servis >= 3);
   // ---------- 3b. LA FOULÉE EST SERVIE (lot 41) : l'appel s'exécute en URGENCE — le ballon part

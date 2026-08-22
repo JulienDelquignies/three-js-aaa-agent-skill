@@ -10,6 +10,8 @@ import { startGesture } from './gesture.js';
 import { isOffside, offsideLine } from './offside.js';
 import { MOVE_TIMING } from './skills-sim.js';
 import { TECHNIQUES, chooseTechnique, situation } from './technique.js';
+import { axe, tac } from './tactics.js';
+import { role } from './roles.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 /** Un refus a une cause nommée (copie locale du registre du loop). */
@@ -354,6 +356,28 @@ export function strikeNow(st, c, cfg) {
   st._surprise = { t: st.t, seen: c.act ? c.act.t : 0, n: (st._surprise?.n ?? 0) + 1 };
   st.phase = 'flight';
   st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
+  // LE TROISIÈME HOMME (lot 111, cfg.troisieme && st.full — « le foot est plus varié dans la
+  // création ») : au DÉPART de A→B, le relais C (côté but de B, à portée de une-touche) pique
+  // un appel court dans l'intervalle — la passe que B peut remettre en première intention
+  // SANS que le presseur de A la voie venir. Le candidat se tire sur rnd2 (le flux auxiliaire),
+  // × l'axe relation (le jeu combiné) × le rôle appel de C. Absente : le monde à deux d'hier.
+  if (st.full && cfg.troisieme && choice.to?.p && !choice.shot) {
+    const g3 = st.pitch.attackGoal(c.team), sg3 = Math.sign(g3.x || 1);
+    let C = null, bs = -1;
+    for (const q of st.players) {
+      if (q.team !== c.team || q.keeper || q.down > 0 || q.expulse || q._sub || q.id === c.id || q.id === choice.to.id) continue;
+      const dB = Math.hypot(q.p[0] - choice.to.p[0], q.p[2] - choice.to.p[2]);
+      if (dB < (cfg.troisieme.min ?? 6) || dB > (cfg.troisieme.max ?? 16)) continue;
+      if (sg3 * (q.p[0] - choice.to.p[0]) < 1) continue;
+      const sc3 = (20 - dB) + sg3 * (q.p[0] - choice.to.p[0]);
+      if (sc3 > bs) { bs = sc3; C = q; }
+    }
+    if (C && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.troisieme.p ?? 0.5) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(C).appel, 0.7, 1.3)) {
+      C._pace = { until: st.t + (cfg.troisieme.dur ?? 1.1), kind: 'troisieme', next: C._pace?.next ?? st.t + 6 };
+      C._troisT = st.t + (cfg.troisieme.dur ?? 1.6);
+      st.events.push({ t: +st.t.toFixed(2), type: 'troisieme', a: c.id, b: choice.to.id, c: C.id });
+    }
+  }
   // LA PHOTO DE LA LOI 11 (cfg.offside — 11c11) : le hors-jeu se juge À L'INSTANT DE LA FRAPPE —
   // pas au choix (le coureur gagne des mètres pendant l'armé : c'est TOUT l'appel timé), pas à
   // la réception (le monde a bougé pendant le vol). On photographie ICI les coéquipiers en

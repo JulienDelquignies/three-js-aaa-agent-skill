@@ -44,7 +44,11 @@ export const MATCH = {
                           // soutien le plus dangereux (le corps dans la ligne de passe pendant
                           // l'approche — l'option profonde meurt sans un geste) ; à portée de duel
                           // l'ombre cède au tacle. false : le press en ligne droite (sabotage nommé).
-  moments: { win: 5 },    // LES QUATRE MOMENTS DU JEU (phases.js — le socle de la tactique) :
+  moments: { win: 5, vertical: 0.5 },
+                          // LES QUATRE MOMENTS DU JEU (phases.js — le socle de la tactique) ;
+                          // + vertical (lot 111) : pendant la fenêtre win du regain, la passe
+                          // qui AVANCE (> 8 m vers le but) pèse au barème — le désordre
+                          // s'attaque (récup → tir : 5 % mesuré, réel 15-20). Absente : 0.
                           // l'horloge du regain est tenue ici (st._possChangeAt), le moment se
                           // DÉRIVE (momentDuJeu), les événements 'moment' le rendent mesurable.
                           // Deux consommateurs (11c11 seulement, st.full) : le CONTRE-PRESS
@@ -145,7 +149,10 @@ export const MATCH = {
                           // après le coup d'envoi où le preneur DONNE (barre abaissée, tenue
                           // dispensée — la barre calme refusait la passe courte, il partait en
                           // conduite). false : l'engagement porté d'hier (sabotage nommé).
-  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
+  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, base: 0.25, relais: 2.2, seenCalme: 0.3, bonus3: 1.5 },
+                          // + base (lot 111) : le SOCLE du une-touche calme à tout style (0,28 calibré : 0,35 asséchait les fautes de 40 % ; 7 %
+                          // mesuré, tout au pressé — la pente s'annulait au style 0,5 ; le réel
+                          // vit à 15-25 %) ; relais ×2,2 quand un 3e homme court ; bonus3 au tri.
                           // LA PASSE EN UNE TOUCHE (11c11, st.full — lot 44, retour utilisateur ;
                           // premiere-intention.js) : sous pression (presseur < press m), un ballon
                           // jouable (≤ vmax m/s, au sol) repart en PREMIÈRE INTENTION vers une
@@ -649,6 +656,11 @@ export const MATCH = {
                           // × inverse — il rentre sur son bon pied, la chiralité shooting),
                           // le rôle largeurR (craie 0,8-1,2) et l'axe tactique largeur.
                           // false : l'aim au centre d'hier au bit.
+  troisieme: { min: 6, max: 16, p: 0.5, dur: 1.1 },
+                          // LE TROISIÈME HOMME (lot 111, st.full — strike-sim au départ de
+                          // passe) : le relais C côté but du receveur pique un appel court dans
+                          // l'intervalle ; la une-touche de B le sert en priorité (UT.bonus3).
+                          // Tiré sur rnd2, × axe relation × rôle appel. false : le jeu à deux.
   chaloupe: { foe: 4, v: 1.5, freq: 8.5, amp: 0.55 },
                           // LA CHALOUPE (lot 110, st.full — « la conduite est rarement droite,
                           // surtout pour déstabiliser ») : en 1c1 (déf < foe m, lancé > v m/s),
