@@ -4570,6 +4570,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      2 rouges hérités REVERDIS. L'anti-téléport tient (hanches p50 24,6 ≤ 30). Aucun A/B ni
      empreinte à re-tirer : zéro fichier engine touché (le contrat scène/sim).
 
+151. **Lot 109 : LE TACLE GLISSÉ SE DESSINE — l'invisible depuis toujours (retour utilisateur :
+     « je ne crois pas avoir déjà vu de tacle glissé en match ? »).** MESURÉ : la SIM en
+     produit (24-28 slides sur 6-8 × 300 s, ~4/match de 5 min — gagnés/perdus/vides, config
+     défaut comme banc), l'event porte tech 'tacle-glisse' → clip 'tacle' (1,25 s, hips
+     motion), le gestureLayer le JOUE (active, spec 'tacle')… et le corps restait DEBOUT à
+     l'image (captures avant/après consignées). LA RACINE, prouvée au playmode par l'horloge :
+     le _layerClock.t0 poursuivi de 3,15 → 3,80 SANS _playTech — LE GEL DE LA POSE COUCHÉE
+     (« le tacleur reste au sol tant que la sim le dit », l'anti-catapulte d'époque) s'armait
+     dès la frame 1 : la sim pose down AU LANCEMENT du glissé (le corps s'engage — c'est le
+     prix), le gel voyait down > 0 immédiatement et FIGEAIT le clip à sa pose DE DÉPART
+     (debout) pendant toute la glissade — le geste ne s'est jamais dessiné, sur tous les
+     matchs, depuis la migration sim qui a avancé le down. LE FIX (scène seule, une ligne de
+     loi) : le gel n'arme qu'À LA POSE COUCHÉE ATTEINTE (t ≥ 55 % du clip) — avant, le clip
+     DÉROULE sa glissade ; après, la pose tient tant que la sim tient le down, puis le relevé
+     authoré (le contrat d'époque intact). VÉRIFIÉ à l'image (le même slide seed 1 t 3,15 :
+     corps au sol jambe repliée en glissade, puis relevé — cycle ~1 s) et à l'AUDIT
+     instrumenté : les hanches DESCENDENT (minY 0,27-0,29 sur 6 slides, ≤ 0,55) ; le
+     sabotage 'tacle-gel' (rejouer l'armement frame 1) refige le debout d'hier (minY 0,85 ≥
+     vif + 0,2 — l'invisible nommé et attrapé). audit-gants 12 ✓ / 0 ✗ (les clauses gant/côté
+     du lot 108 intactes). Aucun fichier engine touché — flux sim, A/B et empreintes
+     inchangés par construction.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

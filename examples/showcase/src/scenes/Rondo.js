@@ -1068,7 +1068,12 @@ export class Rondo {
         // La première version laissait t courir pendant down — au relevé, t sautait PAR-DESSUS le
         // segment de relevé authoré (clé 0,95) et le fondu partait de la pose couchée : l'arc
         // d'interpolation couché→debout creusait sous la pelouse (orteil mesuré à −0,41 m).
-        if (lying) { meta.t0 += dtP; t = Math.min(t, pl.gestureLayer.duration * 0.55); }
+        // …et le gel n'arme qu'À LA POSE COUCHÉE ATTEINTE (lot 109 — « je n'ai jamais vu de
+        // tacle glissé » : la sim pose down AU LANCEMENT du glissé, le gel voyait down > 0 dès
+        // la frame 1 et FIGEAIT le clip à sa pose DEBOUT de départ — t0 poursuivi 3,15 → 3,80
+        // mesuré, la glissade ne s'est jamais dessinée). Avant 55 %, le clip DÉROULE.
+        if (lying) { const hold = pl.gestureLayer.duration * 0.55;
+          if (t >= hold || (typeof window !== 'undefined' && window.__sabotage === 'tacle-gel')) { meta.t0 += dtP; t = Math.min(t, hold); } }
         // LE GARDIEN AU SOL VIT À L'HORLOGE DE LA SIM (lot 91) : gk.rise pilote la QUEUE du clip
         // — sol : tenir la pose couchée (patron du tacleur) ; relevé : rejouer le segment authoré
         // sur la durée sim. La catapulte d'hier : acte mort → done → fondu 0,15 s depuis la pose

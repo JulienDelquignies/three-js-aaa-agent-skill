@@ -52,6 +52,7 @@ async function mesurer(seed, secs, sabotage) {
     const S = window.__rondo;
     const out = [];
     const touches = [];
+    const tacles = [];
     const dives = [];
     const V = () => new (Object.getPrototypeOf(S.players[0].model.position).constructor)();
     const dstate = new Map();
@@ -84,6 +85,15 @@ async function mesurer(seed, secs, sabotage) {
           if (st.after >= 48) { st.ep.vMax = +st.vMax.toFixed(1); dives.push(st.ep); dstate.delete(pl); }
         }
       }
+      // LE TACLE GLISSÉ SE DESSINE (lot 109) : à l'event slide, suivre les hanches rendues
+      // 0,6 s — le corps DESCEND (minY). L'hier (gel dès la frame 1) restait debout (~0,85).
+      for (const pl of S.players) {
+        if (pl._auditTkl && f <= pl._auditTkl.until) {
+          let hy = null; pl.model.traverse((o) => { if (hy == null && o.isBone && /Hips$/i.test(o.name)) { const v = new (Object.getPrototypeOf(pl.model.position).constructor)(); o.getWorldPosition(v); hy = v.y; } });
+          if (hy != null) pl._auditTkl.minY = Math.min(pl._auditTkl.minY, hy);
+          if (f === pl._auditTkl.until) { tacles.push(+pl._auditTkl.minY.toFixed(2)); pl._auditTkl = null; }
+        }
+      }
       const evs = S.state.events;
       // …les TOUCHES DE CONDUITE : mesurer le pied 0,1 s après l'événement (pic de l'enveloppe)
       for (const pl of S.players) {
@@ -112,6 +122,11 @@ async function mesurer(seed, secs, sabotage) {
       }
       for (; nEv < evs.length; nEv++) {
         const e = evs[nEv];
+        if (e.type === 'slide') {
+          const pl = S.players.find((q) => q.sim.id === e.by);
+          if (pl && !pl._auditTkl) pl._auditTkl = { until: f + 36, minY: 9 };
+          continue;
+        }
         if (e.type === 'touche') {
           const pl = S.players.find((q) => q.sim.id === e.by);
           if (pl) pl._auditTouchAt = f + 6;
@@ -141,7 +156,7 @@ async function mesurer(seed, secs, sabotage) {
         pl._auditFermeRow = { mode: e.mode, d: +d.toFixed(2), at: pl.sim.act ? +pl.sim.act.t.toFixed(2) : null, hipsY: hipsY != null ? +hipsY.toFixed(2) : null };
       }
     }
-    return { rows: out, touches, dives };
+    return { rows: out, touches, dives, tacles };
   }, Math.round(secs * 60));
   await page.close();
   return rows;
@@ -153,8 +168,8 @@ let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
 // ---- le monde vrai : 4 graines × 120 s (les mêmes que la sonde de développement)
-const vrais = []; const touchesV = []; const divesV = [];
-for (const seed of [3, 7, 11, 1]) { const m = await mesurer(seed, 120, null); vrais.push(...m.rows); touchesV.push(...m.touches); divesV.push(...m.dives); }
+const vrais = []; const touchesV = []; const divesV = []; const taclesV = [];
+for (const seed of [3, 7, 11, 1]) { const m = await mesurer(seed, 120, null); vrais.push(...m.rows); touchesV.push(...m.touches); divesV.push(...m.dives); taclesV.push(...(m.tacles ?? [])); }
 const dsV = vrais.map((r) => r.d);
 console.log(`monde vrai : ${vrais.length} arrêts — ${JSON.stringify(vrais)}`);
 
@@ -209,6 +224,17 @@ ok(`aux touches de conduite, le pied le plus proche est AU ballon (p50 ${p50(tou
     ec.length >= 3 && p50(ec) <= 0.5);
   ok(`le plongeon ne TÉLÉPORTE pas (vitesse hanches p50 ${p50(vm)} ≤ 30 m/s — avant : 122 ; les re-plongeons enchaînés restent le résiduel connu)`,
     vm.length >= 3 && p50(vm) <= 30);
+  // LE TACLE GLISSÉ SE DESSINE (lot 109 — « je n'ai jamais vu de tacle glissé » : le gel de
+  // la pose couchée s'armait dès la frame 1 — la sim pose down AU LANCEMENT — et figeait le
+  // clip DEBOUT ; il n'arme plus qu'à la pose atteinte). Les hanches DESCENDENT (minY ≤ 0,55).
+  ok(`le tacle glissé SE DESSINE (hanches minY sur 0,6 s : [${taclesV.join(', ')}] — p50 ≤ 0,55 sur ${taclesV.length} slides)`,
+    taclesV.length >= 2 && p50(taclesV) <= 0.55);
+  {
+    const tSab = [];
+    for (const seed of [3, 7, 11, 1]) tSab.push(...((await mesurer(seed, 120, 'tacle-gel')).tacles ?? []));
+    ok(`sabotage « tacle-gel » : le gel dès la frame 1 refige le tacleur DEBOUT (minY p50 ${p50(tSab)} ≥ vif + 0,2 — l'invisible d'hier, nommé)`,
+      tSab.length >= 2 && p50(tSab) >= (p50(taclesV) ?? 0) + 0.2);
+  }
   // LE CORPS S'ÉTALE DU CÔTÉ DU LUNGE (lot 106 — « il plonge du mauvais côté », re-vu en
   // capture : le signe du miroir s'était inversé au retarget et l'écart final ne le voyait pas)
   const sides = divesV.map((d) => d.side).filter((x) => x != null);
