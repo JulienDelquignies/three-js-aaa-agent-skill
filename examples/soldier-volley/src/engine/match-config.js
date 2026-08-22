@@ -616,6 +616,26 @@ export const MATCH = {
                           // (temps s, à portee m) sauf VRAIE avance d'un autre (marge m). Mesuré
                           // avant : démis pour 0,1 m, reclassé posté, son ballon roulait seul —
                           // 39 échappées/90 min sans pression. false : la démission d'hier.
+  releveTrot: { dur: 2, cap: 3.2 },
+                          // LE RELEVÉ REPART AU TROT (lot 106, st.full — movement) : le gardien
+                          // relevé de son plongeon TROTTE dur s (cap m/s) au lieu de sprinter
+                          // se replacer (mesuré : p90 4,1 m/s la seconde d'après), sauf ballon
+                          // vivant dans SA surface. false : la course d'hier au bit.
+  ecarte: { z: 12, dz: 6, calme: 0.4, marque: 2.5, bonus: 1.4, portee: 32 },
+                          // L'ÉCART DE CIRCULATION (lot 105, st.full — « encore trop axial » :
+                          // le ballon central ne SORTAIT jamais, C→W 2 %/s mesuré ; le couloir
+                          // lot 99 exige un couloir VIDE, jamais ouvert en bloc organisé). La
+                          // sortie d'axe réelle : porteur POSÉ (pressure < calme), cible plus
+                          // large de dz m au-delà de z, marquée à distance raisonnable
+                          // (> marque m — le 1c1 commence), bonus × axe largeur, portée 32.
+                          // false : le vocabulaire d'hier au bit.
+  conduiteCouloir: { z: 12, tient: 0.75, inverse: 0.55 },
+                          // LE COULOIR SE TIENT (lot 105, st.full — la conduite d'aile REPIQUAIT
+                          // 67 % vers l'axe : l'aim [but, 0] aspire tout cap). En bande > z m,
+                          // l'aim z TIENT la bande (part `tient`), modulé par la patte (inversé
+                          // × inverse — il rentre sur son bon pied, la chiralité shooting),
+                          // le rôle largeurR (craie 0,8-1,2) et l'axe tactique largeur.
+                          // false : l'aim au centre d'hier au bit.
   pivotReprise: { d: 1.9, cap: 0.8, cone: 110 },
                           // LE PIVOT DE REPRISE (lot 104, st.full — movement) : le ballon de
                           // conduite passé DANS LE DOS ne se reprend pas en ORBITE (mesuré : 2 s

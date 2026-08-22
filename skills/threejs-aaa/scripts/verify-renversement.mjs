@@ -117,17 +117,26 @@ const etau = (seed, nBloc) => {
   // 46 %, ailes 16 → 30, ailiers libres servis 4 → 11 %) — l'écart au sabotage fait foi
   // (le patron : les bornes absolues morphent, les effets nets restent).
   {
-    let axSab = 0, nSab = 0;
-    for (const seed of [1, 3, 5, 7]) {   // les MÊMES 4 graines que le vif (2 seulement : l'écart vivait dans le bruit — 4 pts mesurés lot 101)
-      const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, couloir: false });
-      for (let i = 0; i < 180 * 60; i++) {
-        matchStep(st, 1 / 60, cfg);
-        if (!st.restart && i % 30 === 0) { nSab++; if (Math.abs(st.ball.p[2]) < 8) axSab++; }
+    // …AUTONOME et NEUTRALISÉE depuis le lot 105 : ecarte/conduiteCouloir couvrent le même
+    // symptôme (la largeur) — le sabotage couloir SEUL était noyé (27 % sab vs 31 vif,
+    // inversé) ; et le vif partagé avec la clause 5 (fenêtre 300) cassait la symétrie.
+    // Les DEUX mondes épinglent les clés 105 à false, mêmes graines, même fenêtre 180 s.
+    const ax99 = (over) => {
+      let ax = 0, nn = 0;
+      for (const seed of [1, 3, 5, 7]) {
+        const st = makeMatch({ full: true, seed });
+        const cfg = matchCfg({ shotRange: 20, ecarte: false, conduiteCouloir: false, ...over });
+        for (let i = 0; i < 180 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          if (!st.restart && i % 30 === 0) { nn++; if (Math.abs(st.ball.p[2]) < 8) ax++; }
+        }
       }
-    }
-    ok(`lot 99 — le couloir ouvert élargit le jeu (axial vif ${Math.round(100 * axial / n)} % ; sabotage couloir:false : ${Math.round(100 * axSab / nSab)} % ≥ vif + 4 pts — l'aile invisible d'hier, nommée ; échantillons symétriques, borne 6 → 4 lot 101)`,
-      axSab / nSab >= axial / n + 0.04);
+      return ax / nn;
+    };
+    const vif99 = ax99({});
+    const sab99 = ax99({ couloir: false });
+    ok(`lot 99 — le couloir ouvert élargit le jeu (axial vif isolé ${Math.round(100 * vif99)} % ; sabotage couloir:false : ${Math.round(100 * sab99)} % ≥ vif + 4 pts — l'aile invisible d'hier, nommée ; clés 105 neutralisées symétriquement)`,
+      sab99 >= vif99 + 0.04);
   }
     // …bande haute 13 → 16 (lot 57) : l'économie de course OUVRE l'aile opposée (le bloc
     // économe coulisse moins vite), le renversement est le bon choix plus souvent — 14,5/match
@@ -162,9 +171,9 @@ const etau = (seed, nBloc) => {
   const choix = choosePass(st, cfg);
   ok(`lot 99 — le COULOIR OUVERT entre au vocabulaire (ailier seul à ${choix?.dist?.toFixed(1)} m, |z| 20 : choix=${choix?.to?.id} = ailier nº${ailier.id} — la passe d'écartement a sa porte, hors passRange 13 d'hier)`,
     choix?.to?.id === ailier.id && choix?.dist > 15);
-  const s2 = aile({ couloir: false });
+  const s2 = aile({ couloir: false, ecarte: false });   // le vocabulaire d'hier ENTIER (lot 105 : la sortie d'axe étend AUSSI la portée)
   const choix2 = choosePass(s2.st, s2.cfg);
-  ok(`sabotage « l'aile invisible » attrapé (couloir:false, MÊME monde : choix=${choix2 ? `nº${choix2.to.id} à ${choix2.dist.toFixed(1)} m` : 'aucun'} — jamais l'ailier à 20 m, le vocabulaire d'hier)`,
+  ok(`sabotage « l'aile invisible » attrapé (couloir:false + ecarte:false, MÊME monde : choix=${choix2 ? `nº${choix2.to.id} à ${choix2.dist.toFixed(1)} m` : 'aucun'} — jamais l'ailier à 20 m, le vocabulaire d'hier)`,
     !choix2 || choix2.to.id !== s2.ailier.id);
 }
 

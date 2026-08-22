@@ -496,11 +496,16 @@ export class Rondo {
       const lg = pl.sim.act?.payload?.lunge;
       // l'interrupteur de SABOTAGE de l'instrument composé (audit-gants) : rejouer la convention
       // monde naïve — la clause du relevé-au-lieu doit mordre
-      if (typeof window !== 'undefined' && window.__sabotage === 'plongeon-monde') { pl._diveMirror = useMirror; }
-      else if (lg) {
+      if (lg) {
         pl.model.updateMatrixWorld(true);
         const me = pl.model.matrixWorld.elements;
-        useMirror = (lg[0] * me[0] + lg[1] * me[2]) < 0;
+        // …SIGNE re-mesuré aux BONES (lot 106, capture seed 1 t=160 : lg·X=+0,13, corps rendu
+        // à l'OPPOSÉ du lunge — l'audit d'époque jugeait l'écart FINAL des hanches, symétrique
+        // au miroir : le côté visuel n'était pas jugé, la régression a survécu au retarget).
+        // Le clip de base s'étale du côté −X du modèle : lunge du côté +X → miroir. Le
+        // SABOTAGE 'plongeon-monde' rejoue le signe d'HIER (le bug corrigé, nommé).
+        const proj = lg[0] * me[0] + lg[1] * me[2];
+        useMirror = (typeof window !== 'undefined' && window.__sabotage === 'plongeon-monde') ? proj < 0 : proj > 0;
         pl._diveMirror = useMirror;
       } else pl._diveMirror = useMirror;
     }
@@ -539,7 +544,10 @@ export class Rondo {
     pl._holdW = Math.max(0, Math.min(1, (pl._holdW ?? 0) + (holding ? dtP : -dtP) / 0.12));
     if (pl._holdW > 1e-3) { this._armsToBall(pl, pl._holdW); pl._dwarp = null; return; }   // les gants tiennent — le warp d'approche n'a plus d'objet
     if (!diveAct) { pl._dwarp = null; return; }
-    const side = (pl._diveMirror ?? (a.payload.pick?.foot === 'left')) ? 'left' : 'right';
+    // …mapping RE-SIGNÉ avec le miroir corrigé (lot 106) : la main du geste suivait la
+    // convention de l'ancien monde compensé — mesuré après le fix du côté : gant p50 1,04 m
+    // (la largeur du corps : le warp corrigeait la main OPPOSÉE au ballon).
+    const side = (pl._diveMirror ?? (a.payload.pick?.foot !== 'left')) ? 'right' : 'left';
     const arm = pl.arms?.[side], lens = pl.armLens?.[side];
     if (!arm?.up || !arm.elbow || !arm.hand || !lens) return;
     // L'ENVELOPPE DU GANT EST DISTANCE-CLÉE — deuxième espèce d'enveloppe du warp : un contact
@@ -1121,7 +1129,10 @@ export class Rondo {
           // — deux populations mesurées : des plongeons parfaits (0,16 m) et des faux (2,7 m).
           const me = pl.model.matrixWorld.elements;
           const rl = Math.hypot(me[0], me[2]) || 1, fl = Math.hypot(me[8], me[10]) || 1;
-          if (pl.hipsCtl) pl.hipsCtl.bias = [(vx * me[0] + vz * me[2]) / rl, 0, -(vx * me[8] + vz * me[10]) / fl];
+          // …X RE-SIGNÉ avec le miroir corrigé (lot 106) : l'ancien monde tenait par DEUX
+          // erreurs compensées — clip à l'envers + biais signé pour lui (écart hanches petit,
+          // pose fausse). Le côté réparé, le biais suit la même convention que les hips du clip.
+          if (pl.hipsCtl) pl.hipsCtl.bias = [-(vx * me[0] + vz * me[2]) / rl, 0, -(vx * me[8] + vz * me[10]) / fl];
         } else if (pl._diveStart) { pl._diveStart = null; if (pl.hipsCtl) pl.hipsCtl.bias = null; }
         // …et la QUEUE du plongeon appartient à gk.rise (lot 91) : l'acte vivant sans down (le
         // battu paie à la FIN du geste) ATTEND à la pose couchée ; le sol TIENT (gel, patron du

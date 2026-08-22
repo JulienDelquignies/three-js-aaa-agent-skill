@@ -4447,6 +4447,66 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      amortit mort sous le corps qui le dépasse — la racine de la famille dos-orbite ; le
      pivot la répare, l'amorti orienté l'éviterait).
 
+147. **Lot 105 : LE JEU PAR LES AILES — la sortie d'axe et le couloir qui se tient (retour
+     utilisateur : « encore beaucoup trop de densité et jeu axial »).** Mesuré AVANT : tiers
+     central 49 % du temps de ballon (réel 30-40), conduite axiale 55 %, et la MATRICE de
+     transition qui signe la cause — C→W 2 %/s (le ballon central ne SORT jamais vers l'aile ;
+     l'aile, elle, TIENT : W→W 83 %) et la conduite d'aile qui REPIQUE 67 % (l'aim de conduite
+     [but, 0] vise le CENTRE du but : tout porteur qui progresse converge par construction).
+     Le couloir du lot 99 exige un couloir VIDE (champ 8 m — le débordement lancé) : en bloc
+     organisé avec marquage, il ne s'ouvre jamais depuis l'axe. DEUX LOIS : (1) L'ÉCART DE
+     CIRCULATION (cfg.ecarte {z 12, dz 6, calme 0,4, marque 2,5, bonus 1,4, portee 32},
+     rondo.js à côté du couloirB) — la sortie d'axe du VRAI football sert l'ailier MARQUÉ À
+     DISTANCE RAISONNABLE (> 2,5 m : le un-contre-un commence) : porteur posé, cible
+     nettement plus large, bonus × axe largeur et portée 32 ; (2) LE COULOIR SE TIENT
+     (cfg.conduiteCouloir {z 12, tient 0,75, inverse 0,55}, match-sim à l'aim) — le porteur
+     en bande latérale progresse DANS son couloir (l'aim z tient la bande), modulé par la
+     PATTE (l'inversé rentre sur son bon pied — la chiralité de shooting.js), le rôle
+     largeurR (la craie 0,8-1,2) et l'axe tactique largeur. APRÈS : tiers central 36 %
+     (réel ✓), ailes 43 %, C→W ×3, repique d'aile 67 → 56 % (l'inversé rentre toujours —
+     voulu), carré central p50 6, corps à 8 m du ballon p50 3/p90 6. A/B 20 × 300 s : 85
+     tirs / 28 buts ∈ [17 ; 33] ✓ — les tirs REMONTENT (69 lot 103 → 85 : le jeu large crée).
+     Clauses (match11 102/0) : « le jeu SORT de l'axe » (38 % ≤ 42 vs sabotage 51 % ≥ +6,
+     échantillons symétriques) + sabotage « l'aimant axial d'hier » ; sab76 17e. Trois
+     re-fondations honnêtes : la clause foulée NEUTRALISE les clés 105 des deux côtés (la
+     conduite d'aile lancée gonflait le pool des deux mondes, l'écart fin de 0,12 noyé) ;
+     la clause fautes passe en borne RELATIVE (l'invariant = zéro accrochage structurel) ;
+     la clause 5b du banc renversement devient AUTONOME et neutralisée (le sabotage couloir
+     seul était couvert par les clés cousines — 27 vs 31 inversé — et le vif partagé avec la
+     clause 5 avait perdu la symétrie de fenêtre). Empreintes rondo/réduit AU BIT ; match
+     seed 3/7 : 906b821e8e25b6c6 / 97be76c9aa6bcdd7.
+
+148. **Lot 106 : LE PLONGEON DU BON CÔTÉ — le miroir du clip, le biais compensé, la main du
+     gant, le relevé au trot (retour utilisateur : « les gardiens plongeon et pour se relever
+     pas du tout réaliste — mauvais côté, vitesse irréaliste »).** La SIM était innocente
+     (sonde 8 × 300 s : 0 % de mauvais côté au side du lunge, glisse au sol p90 0,48) — le
+     bug était SCÉNIQUE, prouvé par capture au playmode (seed 1, t = 160,05 : lunge vers
+     z −3, le CORPS rendu s'étale vers +z — bras tendu à l'opposé du ballon) puis aux BONES
+     (lg·X_local = +0,13 → le code `< 0` choisissait le clip de base ; tête à Δ+1,03 z du
+     root, l'opposé du lunge). LA RÉGRESSION SILENCIEUSE : le signe de la projection
+     miroir (Rondo.js scenes, posé à l'audit-gants d'époque) s'était inversé au retarget —
+     et l'audit d'époque jugeait l'ÉCART FINAL des hanches, SYMÉTRIQUE au miroir (le biais
+     de réconciliation compensait) : le côté visuel n'était pas jugé, le bug a survécu.
+     TROIS CORRECTIONS EN CHAÎNE (scenes) : le signe du miroir (`> 0`), le biais X de la
+     réconciliation RE-SIGNÉ (l'ancien monde tenait par DEUX erreurs compensées — côté
+     corrigé seul : écart 0,36 → 2,39, hanches 54 m/s ; re-signé : 0,36 / 16 ✓), la main du
+     warp de gant re-mappée. + LE RELEVÉ AU TROT (cfg.releveTrot {dur 2, cap 3,2}, movement
+     + marqueur p._upAt) : le gardien relevé TROTTE au lieu de sprinter se replacer (p90
+     4,1 → le cap ; l'urgence = ballon LIBRE dans sa surface, le ballon qu'il TIENT n'en
+     est pas une). L'AUDIT INSTRUMENTÉ : la mesure du CÔTÉ ajoutée (hanches→tête · lunge à
+     mi-geste — ce que l'écart ne voyait pas) : 19/19 du bon côté (un −0,07
+     quasi-perpendiculaire toléré) ; le sabotage « plongeon-monde » re-fondé pour rejouer
+     LE SIGNE D'HIER (l'ancienne convention naïve est redevenue correcte — indiscernable) :
+     sides sabotés TOUS négatifs (−0,21…−0,57), le miroir d'hier nommé et attrapé. LA
+     PREUVE FONCTIONNELLE : au rejeu du même tir (seed 1, t 160), l'ancien monde encaissait
+     — le monde corrigé fait ARRÊT:CLAQUETTE (le gant du bon côté dévie le ballon).
+     audit-gants 8/10 — les 2 rouges = LA DETTE DU GANT DES PRISES (p50 1,07 m à l'instant
+     de l'arrêt, ≤ 0,85 attendu ; PRÉEXISTANTE : 1,02 mesuré AVANT les fixes de ce lot,
+     l'audit n'avait pas tourné depuis des lots), nommée pour un lot dédié. A/B 20 × 300 :
+     88 tirs / 31 buts ∈ [17 ; 33] ✓ ; match11 102/0 (sab76 18e : releveTrot), renversement
+     8/0, rondo 40/0. Empreintes rondo/réduit AU BIT ; match seed 3/7 INCHANGÉES vs lot 105
+     (aucun plongeon dans leurs 90 premières secondes — la cohérence).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

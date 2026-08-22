@@ -169,6 +169,19 @@ export function choosePass(st, cfg = RONDO) {
             * (0.7 + 3 * Math.max(0, Math.min(0.2, (m.skill?.topF ?? 1) - 0.9)));
       }
     }
+    // L'ÉCART DE CIRCULATION (lot 105, cfg.ecarte — « encore trop axial » : C→W 2 % mesuré,
+    // le ballon central ne SORT jamais). Le couloir (lot 99) exige un couloir VIDE (champ 8 —
+    // le débordement lancé) : en bloc organisé il ne s'ouvre pas. La sortie d'axe du VRAI
+    // football sert l'ailier MARQUÉ À DISTANCE RAISONNABLE (> marque m — le un-contre-un
+    // commence) : porteur POSÉ (pressure < calme), cible NETTEMENT plus large (Δ|z| > dz),
+    // bonus × axe largeur et portée étendue. Clé absente : 0 et la porte d'hier, pas un bit.
+    let ecarteB = 0;
+    if (st.full && cfg.ecarte && couloirB === 0 && Math.abs(m.p[2]) > (cfg.ecarte.z ?? 12)
+      && Math.abs(m.p[2]) - Math.abs(c.p[2]) > (cfg.ecarte.dz ?? 6) && st.pressure < (cfg.ecarte.calme ?? 0.4)) {
+      let marque = 99;
+      for (const o of foesL) if (o.down <= 0) marque = Math.min(marque, d2(o.p, m.p));
+      if (marque > (cfg.ecarte.marque ?? 2.5)) ecarteB = (cfg.ecarte.bonus ?? 1.4) * axe(tac(st, c.team).largeur, 0.6, 1.4);
+    }
     // L'APPEL ÉTIRE LA PORTÉE (cfg.appelRange — PLEIN FORMAT seulement, comme toute la Loi 11) :
     // un coureur en rupture se sert DANS la course, plus loin qu'une passe de circulation (le
     // dart sortait de l'enveloppe en 0,6 s — mesuré : 11 appels, 1 servi). La garde st.full est
@@ -176,6 +189,7 @@ export function choosePass(st, cfg = RONDO) {
     // un monde calibré 76 clauses a bougé (tempsLoin 4,6 > 2,5). Clé ou format absents : + 0.
     const rMax = bascule ? (cfg.renversement.portee ?? 38)
       : couloirB > 0 ? Math.max(cfg.passRange[1], cfg.couloir.portee ?? 24)   // la passe d'ÉCARTEMENT a sa porte (lot 99)
+      : ecarteB > 0 ? Math.max(cfg.passRange[1], cfg.ecarte.portee ?? 32)     // la sortie d'axe a la sienne (lot 105)
       : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel' ? (cfg.appelRange ?? 0) : 0);
     if (d < cfg.passRange[0] || d > rMax) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
@@ -232,7 +246,7 @@ export function choosePass(st, cfg = RONDO) {
       // passe qui le suit est la définition même de « suivre l'appel » (mesuré avant : 5 appels
       // servis sur 74 — les ruptures étaient un décor)
       + ((m._pace?.until ?? -1) > st.t ? (cfg.appelBonus ?? 0) : 0)
-      + couloirB;                                            // le couloir ouvert (lot 99) — la rampe d'aile
+      + couloirB + ecarteB;                                   // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
     if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d, bascule };
   }
   return best;

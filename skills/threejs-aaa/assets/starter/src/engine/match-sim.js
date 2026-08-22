@@ -482,7 +482,19 @@ function assignMatchJobs(st, cfg) {
       const boxXr = pitch.hx - pitch.dims.box.depth;
       const boxMate = wideClosed && st.players.some((q) => q.team === p.team && !q.keeper && q.id !== p.id
         && q.down <= 0 && q.p[0] * sgnG > boxXr - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5);
-      const aim = wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, 0];
+      // LE COULOIR SE TIENT (lot 105, cfg.conduiteCouloir — « encore trop axial » : 67 % des
+      // touches d'aile REPIQUAIENT, le but au centre aspire tout cap). Le porteur en bande
+      // latérale progresse DANS son couloir (l'aim z tient la bande) ; le PIED module (l'inversé
+      // — la chiralité de shooting.js — rentre sur son bon pied), le rôle largeurR et l'axe
+      // tactique largeur aussi. Clé absente : l'aim [but, 0] d'hier au bit.
+      let aimZ = 0;
+      if (st.full && cfg.conduiteCouloir && Math.abs(p.p[2]) > (cfg.conduiteCouloir.z ?? 12) && !wideClosed) {
+        const inv = (Math.sign(p.p[2] * -(goal.x || 1)) > 0) === ((p.strongFoot ?? 'right') === 'right');
+        const tient = (cfg.conduiteCouloir.tient ?? 0.75) * (inv ? (cfg.conduiteCouloir.inverse ?? 0.55) : 1)
+          * axe(role(p).largeurR, 0.8, 1.2) * axe(tac(st, atk).largeur, 0.85, 1.15);
+        aimZ = Math.sign(p.p[2]) * Math.min(Math.abs(p.p[2]), pitch.hz * 0.55) * Math.max(0, Math.min(1, tient));
+      }
+      const aim = wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, aimZ];
       const gx = aim[0] - p.p[0], gz = aim[1] - p.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       // devant dégagé → cap au but ; bouché → l'évasion garde ; LE MUET REND LE CAP (lot 92, menace.muteD × COMPOSURE — le posé rend tôt) : ×0,25, protéger/écarter.
@@ -518,11 +530,9 @@ function assignMatchJobs(st, cfg) {
         }
       }
       // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible de locomotion était la
-      // POUSSÉE PROJETÉE — le plan — même ballon réel à 2 m à droite ou DERRIÈRE (mesuré : 5,9 %
-      // du porté hors du cône avant, 323 images ballon derrière ; carrySurge ne libérait que la
-      // VITESSE — plus vite du mauvais côté). Au-delà de la portée de contrôle, la cible EST le
-      // ballon — routé un demi-pas au-delà dans le sens du plan, pour le prendre
-      // dans la foulée ; le plan reprend au pied.
+      // POUSSÉE PROJETÉE — le plan — même ballon réel derrière (mesuré : 5,9 % du porté hors
+      // cône avant). Au-delà de la portée de contrôle, la cible EST le ballon — routé un
+      // demi-pas au-delà dans le sens du plan ; le plan reprend au pied.
       const dBall = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       if (cfg.carryViaBall !== false && dBall > 0.85) {
         // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà) :
@@ -671,11 +681,9 @@ function assignMatchJobs(st, cfg) {
       // ne rendra les pointes injouables). La ligne se relit CHAQUE image ; le calage borne la CIBLE.
       const off = cfg.offside ? offsideLine(st, atk) : null;
       // …ET L'APPEL SE TIME SUR LE PASSEUR (lot 41, cfg.appelPret) : on appelle quand le
-      // porteur PEUT donner — le ballon au pied (≤ appelPret m), pas au milieu d'une touche
-      // poussée. Mesuré avant : latence burst → passe p50 1,43 s (le cycle de préparation
-      // mangeait la course — le ballon partait quand le dart FINISSAIT, l'enveloppe fermée
-      // à 0,6 s) ; le coureur du vrai football lit les APPUIS du passeur avant de partir.
-      // false : l'appel aveugle d'hier (sabotage nommé).
+      // porteur PEUT donner — le ballon au pied (≤ appelPret m). Mesuré avant : latence
+      // burst → passe p50 1,43 s, le ballon partait quand le dart FINISSAIT ; le coureur
+      // réel lit les APPUIS du passeur. false : l'appel aveugle d'hier (sabotage nommé).
       const posé = carrier && !carrier.keeper && st.phase === 'carry' && st.hold > 0.6
         && (cfg.appelPret === false || d2(st.ball.p, carrier.p) <= (cfg.appelPret ?? 1.0));
       // LA VERTICALITÉ DU REGAIN (cfg.moments) : pendant la transition offensive (les win s où
@@ -826,9 +834,8 @@ function assignMatchJobs(st, cfg) {
       else if (st.phase === 'flight' && st.pass && st.pass.lead && st.pass.origin
         && st.pass.origin[0] * sgnAtk < axe(Tp, -7, -1)
         && (st.pass.lead[0] - st.pass.origin[0]) * sgnAtk < -3) kind = 'passe-en-retrait';
-      // …le retrait ne déclenche que dans la RELANCE BASSE (origine à 4 m dans leur camp) : la
-      // première version sautait sur toute passe arrière — 16-18 fenêtres/180 s, 40 % du temps
-      // sous pressing, un état permanent déguisé en réflexe (mesuré, 4 graines)
+      // …le retrait ne déclenche qu'en RELANCE BASSE (origine à 4 m dans leur camp) : sur
+      // toute passe arrière, 40 % du temps sous pressing — un état permanent déguisé en réflexe
       // (t3) LE CONTRE-PRESS D'ÉQUIPE (cfg.moments — la transition défensive du Gegenpressing) :
       // la perte est JEUNE (< 2,5 s) et HAUTE (ballon dans le camp du nouveau porteur) — le bloc
       // qui vient de perdre saute AVANT que l'adversaire ne s'organise. Le contre-press
@@ -880,12 +887,10 @@ function assignMatchJobs(st, cfg) {
           p.job = 'press'; p.target = [edge, 0, carrier.p[2] * 0.6];
           return;
         }
-        // L'OMBRE DE COUVERTURE (cfg.coverShadow, 11c11) : le presseur n'arrive pas en ligne
-        // droite — il arrive PAR LE COULOIR du soutien le plus dangereux (le plus profond à
-        // portée de passe) : son corps vit DANS la ligne de passe pendant toute l'approche, et
-        // l'option qui progresse meurt sans un geste (laneClearance mesure des corps réels —
-        // l'ombre n'a besoin d'aucune règle de plus, c'est du POSITIONNEMENT). À portée de duel
-        // (< 2,6 m) l'ombre cède au tacle : le duel est le duel.
+        // L'OMBRE DE COUVERTURE (cfg.coverShadow, 11c11) : le presseur arrive PAR LE COULOIR
+        // du soutien le plus dangereux — son corps vit DANS la ligne de passe (laneClearance
+        // mesure des corps réels : aucune règle de plus, du POSITIONNEMENT). À portée de
+        // duel (< 2,6 m) l'ombre cède au tacle.
         if (cfg.coverShadow && st.full && carrier && !freeBall && d2(p.p, anchor) > 2.6) {
           let hot = null, hotAdv = -Infinity;
           for (const a of attackers) if (a.id !== carrier.id && !a.keeper && d2(a.p, anchor) < 15) {
@@ -1007,11 +1012,9 @@ function assignMatchJobs(st, cfg) {
   }
 
   // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER, par-dessus les postes : pendant
-  // cfg.lossReact s après sa perte, l'ex-porteur CHASSE son ballon. Sans elle, il redevenait
-  // coureur de slot À L'INSTANT de la perte et partait DOS au ballon (mesuré : 92 des 254
-  // pertes suivies d'une course ≥ 3 m à > 60° du ballon, p90 4,9 m — « ils perdent un peu le
-  // ballon et courent toujours tout droit », retour utilisateur). La chasse s'éteint dès que
-  // son équipe reprend, ou à la mort de la fenêtre.
+  // cfg.lossReact s après sa perte, l'ex-porteur CHASSE son ballon (sans elle il repartait
+  // DOS au ballon à l'instant de la perte — mesuré 92/254, retour utilisateur). La chasse
+  // s'éteint dès que son équipe reprend, ou à la mort de la fenêtre.
   if (cfg.lossReact && st._lossAt) {
     for (const idS of Object.keys(st._lossAt)) {
       const id = +idS, la = st._lossAt[id], p = st.players[id];
@@ -1214,13 +1217,10 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
     const med = ds[Math.floor(ds.length / 2)] ?? 0;
     if (med > 6) issues.push(`le gardien ${team} erre (médiane à ${med.toFixed(1)} m de son but)`);
   }
-  // le jeu PROGRESSE : le ballon visite les deux tiers offensifs (pas un rond central perpétuel)
-  // la clause vise le rond-central-perpétuel, pas l'équilibre des forces : une équipe dominée
-  // 120 s durant est un MATCH (0-0 dominé mesuré, graine 5) — un ballon qui ne franchit jamais
-  // les moitiés n'en est pas un
-  // …seuil au TIERS (hx/3) : à hx/2, la clause re-cassait à chaque re-donne de graine sur les
-  // matchs dominés (une équipe coincée 120 s dans sa moitié est un match légal — c'est le
-  // rond-central-perpétuel qu'on interdit, pas la domination)
+  // le jeu PROGRESSE : le ballon visite les deux tiers offensifs — la clause vise le
+  // rond-central-perpétuel, PAS l'équilibre des forces (une équipe dominée 120 s est un
+  // match légal, 0-0 dominé mesuré graine 5) ; seuil au TIERS (à hx/2 elle re-cassait
+  // à chaque re-donne de graine sur les matchs dominés)
   const third = st.pitch.hx / 3;
   const visits = [trace.some((s) => s.ball[0] > third), trace.some((s) => s.ball[0] < -third)];
   if (!visits[0] || !visits[1]) issues.push(`le ballon ne visite pas les deux camps (au-delà de ±${third.toFixed(0)} m : +x ${visits[0]}, −x ${visits[1]})`);

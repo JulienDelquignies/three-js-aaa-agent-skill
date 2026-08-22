@@ -65,8 +65,18 @@ async function mesurer(seed, secs, sabotage) {
         const diving = a && a.payload?.skill === 'plongeon';
         let st = dstate.get(pl);
         let hips = null; pl.model.traverse((o) => { if (o.isBone && /Hips$/i.test(o.name) && !hips) { hips = V(); o.getWorldPosition(hips); } });
-        if (diving && !st) { st = { vMax: 0, prev: hips, after: -1, ep: {} }; dstate.set(pl, st); }
+        if (diving && !st) { st = { vMax: 0, prev: hips, after: -1, n: 0, ep: {} }; dstate.set(pl, st); }
         if (st) {
+          // LE CÔTÉ DU CORPS (lot 106 — le miroir inversé passait sous le radar : l'écart
+          // final des hanches est symétrique au miroir) : à mi-geste, l'axe hanches→tête
+          // projeté sur le lunge sim doit être POSITIF (le corps s'étale du côté du plongeon)
+          if (diving) {
+            st.n++;
+            if (st.n === 18 && a.payload?.lunge) {
+              let head = null; pl.model.traverse((o) => { if (o.isBone && /Head$/i.test(o.name) && !head) { head = V(); o.getWorldPosition(head); } });
+              if (head && hips) st.ep.side = +(((head.x - hips.x) * a.payload.lunge[0] + (head.z - hips.z) * a.payload.lunge[1])).toFixed(2);
+            }
+          }
           const v = st.prev ? Math.hypot(hips.x - st.prev.x, hips.z - st.prev.z) * 60 : 0;
           st.vMax = Math.max(st.vMax, v); st.prev = hips;
           if (!diving) st.after++;
@@ -171,11 +181,20 @@ ok(`aux touches de conduite, le pied le plus proche est AU ballon (p50 ${p50(tou
     ec.length >= 3 && p50(ec) <= 0.5);
   ok(`le plongeon ne TÉLÉPORTE pas (vitesse hanches p50 ${p50(vm)} ≤ 30 m/s — avant : 122 ; les re-plongeons enchaînés restent le résiduel connu)`,
     vm.length >= 3 && p50(vm) <= 30);
+  // LE CORPS S'ÉTALE DU CÔTÉ DU LUNGE (lot 106 — « il plonge du mauvais côté », re-vu en
+  // capture : le signe du miroir s'était inversé au retarget et l'écart final ne le voyait pas)
+  const sides = divesV.map((d) => d.side).filter((x) => x != null);
+  // …tolérance du QUASI-PERPENDICULAIRE (un plongeon presque vertical a tête-hanches ⊥ lunge :
+  // −0,07 mesuré — pas un « mauvais côté » visuel) : aucun < −0,15 et 80 % nettement positifs
+  ok(`le corps plonge DU CÔTÉ du lunge (hanches→tête · lunge à mi-geste : [${sides.join(', ')}] — aucun < −0,15, ≥ 80 % > 0,1 sur ${sides.length})`,
+    sides.length >= 1 && sides.every((x) => x > -0.15) && sides.filter((x) => x > 0.1).length >= sides.length * 0.8);
   const dSab = [];
   for (const seed of [3, 7]) dSab.push(...(await mesurer(seed, 120, 'plongeon-monde')).dives);
-  const eS = dSab.map((d) => d.ecart).filter((x) => x != null);
-  ok(`sabotage « plongeon-monde » : la convention monde naïve rejoue le mauvais côté (écart p50 ${p50(eS)} ≥ ${((p50(ec) ?? 0) + 0.3).toFixed(2)})`,
-    eS.length >= 2 && p50(eS) >= (p50(ec) ?? 0) + 0.3);
+  // …jugé au CÔTÉ désormais (lot 106 : l'écart des hanches est réconcilié par le biais quel
+  // que soit le miroir — il ne voyait pas le corps à l'envers, c'est TOUTE l'histoire du bug)
+  const sS = dSab.map((d) => d.side).filter((x) => x != null);
+  ok(`sabotage « plongeon-monde » : la convention monde naïve rejoue le mauvais côté (sides sabotés [${sS.join(', ')}] — au moins un < −0,15)`,
+    sS.length >= 1 && sS.some((x) => x < -0.15));
 }
 
 // ---- SABOTAGE NOMMÉ 'warp-gant' : couper le warp (gant + racine) doit ROUVRIR l'écart

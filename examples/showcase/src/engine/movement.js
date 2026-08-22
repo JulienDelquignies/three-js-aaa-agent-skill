@@ -17,6 +17,7 @@ export function movePlayers(st, dt, cfg) {
     // touchés), et EUX marchent vers leur sortie (referee)
     if (p.down > 0 && !p.expulse && !p._sub) {
       p.down -= dt;
+      if (p.down <= 0 && p.keeper && st.full) p._upAt = st.t;   // le relevé DATÉ (lot 106 — lu sous cfg.releveTrot seulement)
       // …ET LA GLISSADE PORTE LE CORPS (lot 51, match — p._glisse posé au lancement du tacle) :
       // un corps cloué SUR PLACE à 1,3-2,6 m du ballon rendait le contact impossible (1 pris/9
       // mesurés) — et le monde d'hier masquait l'absence de glisse en téléportant la déviation
@@ -129,6 +130,16 @@ export function movePlayers(st, dt, cfg) {
     if (p.job === 'support' && p.target) {
       const dS = Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]);
       if (dS < 3) top = Math.min(top, cfg.supportNearCap);
+    }
+    // LE RELEVÉ REPART AU TROT (lot 106, cfg.releveTrot && st.full — « la vitesse du relevé
+    // pas réaliste ») : le gardien qui vient de se relever TROTTE (dur s), sauf ballon vivant
+    // dans SA surface (l'urgence reste l'urgence). Mesuré avant : p90 4,1 m/s dans la seconde
+    // suivant le relevé — le sprint de replacement. Absente : la course d'hier au bit.
+    if (st.full && cfg.releveTrot && p.keeper && p._upAt != null && st.t - p._upAt < (cfg.releveTrot.dur ?? 2)) {
+      const ogR = st.pitch?.ownGoal?.(p.team);
+      // l'urgence = le ballon LIBRE dans sa surface (le ballon qu'il TIENT n'en est pas une)
+      const urg = ogR && st.ball.owner !== p.id && st.pitch.inBox(st.ball.p[0], st.ball.p[2], Math.sign(ogR.x));
+      if (!urg) top = Math.min(top, cfg.releveTrot.cap ?? 3.2);
     }
     // LE PIVOT DE REPRISE (lot 104, cfg.pivotReprise && st.full — « la balle échappe au porteur
     // sans être gêné ») : le ballon de conduite passé DANS LE DOS ne se reprend pas en ORBITE

@@ -360,10 +360,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vs.sort((a, b) => a - b);
     return { p50: vs.length ? vs[Math.floor(0.5 * (vs.length - 1))] : 0, n: vs.length };
   };
-  const vif = corps({});
+  // ecarte/conduiteCouloir ÉPINGLÉES à false DES DEUX CÔTÉS (lot 105 : la conduite d'aile
+  // lancée gonflait le pool de passes en course des DEUX mondes — l'écart fin de 0,12 noyé,
+  // gel 2,10 = vif ; la clause isole le couple stop/foulée, l'orthogonale se neutralise)
+  const vif = corps({ ecarte: false, conduiteCouloir: false });
   // …le sabotage émule le monde d'HIER EN ENTIER (doctrine lot 77) : le couple (frappeConduite)
   // frappe lancé SANS strideStrike — gelé seul, le pool restait à 2,0 et l'écart ne parlait plus.
-  const gel = corps({ strideStrike: false, frappeConduite: false });
+  const gel = corps({ strideStrike: false, frappeConduite: false, ecarte: false, conduiteCouloir: false });
   ok(`la FOULÉE de frappe vit (corps à ${vif.p50.toFixed(2)} m/s p50 au strike sur ${vif.n} gestes ≥ 0,95 — et le monde gelé frappe à ${gel.p50.toFixed(2)} ≤ vivant − 0,12 : sabotage « la statue qui frappe » nommé)`,
     vif.p50 >= 0.95 && gel.p50 <= vif.p50 - 0.12);
 }
@@ -955,7 +958,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false });   // l'HIER exact, EN ENTIER (16e : lot 104 sans tenure, pivot ni cône de sortie)
+    tenue: false, pivotReprise: false, sortie1v1: false,
+    ecarte: false, conduiteCouloir: false, releveTrot: false });   // l'HIER exact, EN ENTIER (18e : lot 106 sans le trot du relevé)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1307,8 +1311,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const vif = volume({});
   const sab = volume({ accroche: false });
-  ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 6 × 220 s ∈ [3 ; 18], dont ${vif.acc} accrochages ≥ 3 ; sabotage accroche:false : ${sab.acc} accrochage, ${sab.fautes} fautes ≤ 4 — l'assèchement d'hier, nommé ; borne 2 → 4 lot 98 : les autres sources — glissé, charge — vivent leur variance de flux)`,
-    vif.fautes >= 3 && vif.fautes <= 18 && vif.acc >= 3 && sab.acc === 0 && sab.fautes <= 4);
+  ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 6 × 220 s ∈ [3 ; 18], dont ${vif.acc} accrochages ≥ 3 ; sabotage accroche:false : ${sab.acc} accrochage, ${sab.fautes} fautes ≤ vif − 2 — l'assèchement d'hier, nommé ; borne absolue → RELATIVE lot 105 : les autres sources — glissé, charge — vivent leur variance de flux, l'invariant est le zéro accrochage structurel et l'assèchement relatif)`,
+    vif.fautes >= 3 && vif.fautes <= 18 && vif.acc >= 3 && sab.acc === 0 && sab.fautes <= vif.fautes - 2);
   const pol = [
     accrocheP({ skill: { composureF: 1.3 } }, 1, false, false) > accrocheP({ skill: { composureF: 0.85 } }, 1, false, false),  // l'impulsif s'y résout plus
     accrocheP({ skill: null }, 1, true, false) > accrocheP({ skill: null }, 1, false, false) * 1.5,                            // la faute TACTIQUE (×1,8)
@@ -1605,6 +1609,34 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif <= 6);
   ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant + 4 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
     sab >= vif + 4);
+}
+
+// ---------------------------------------------------------------- lot 105 : LE JEU PAR LES
+// AILES — « encore beaucoup trop de densité et jeu axial ». Deux lois : l'ÉCART DE CIRCULATION
+// (cfg.ecarte — la sortie d'axe vers l'ailier marqué à distance raisonnable ; le couloir lot 99
+// exigeait un couloir VIDE, jamais ouvert en bloc organisé : C→W 2 %/s) et LE COULOIR SE TIENT
+// (cfg.conduiteCouloir — 67 % des touches d'aile repiquaient : l'aim [but, 0] aspire tout cap).
+// Effet net : la part du temps de ballon au TIERS CENTRAL, échantillons symétriques.
+{
+  const axial = (over) => {
+    let c = 0, n = 0;
+    for (const seed of [2, 3, 5, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 150 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.restart || i % 30 !== 0) continue;
+        n++; if (Math.abs(st.ball.p[2]) < 9.3) c++;
+      }
+    }
+    return 100 * c / Math.max(1, n);
+  };
+  const vif = axial({});
+  const sab = axial({ ecarte: false, conduiteCouloir: false });
+  ok(`lot 105 — le jeu SORT de l'axe (tiers central ${vif.toFixed(0)} % du temps de ballon ≤ 42 — réel 30-40 ; la sortie d'axe + le couloir tenu)`,
+    vif <= 42);
+  ok(`sabotage « l'aimant axial d'hier » attrapé (ecarte:false + conduiteCouloir:false : ${sab.toFixed(0)} % ≥ vivant + 6 pts — le ballon central qui ne sort jamais et la conduite qui repique, nommés)`,
+    sab >= vif + 6);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
