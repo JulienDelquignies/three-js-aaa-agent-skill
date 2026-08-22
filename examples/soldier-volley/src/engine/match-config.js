@@ -346,6 +346,19 @@ export const MATCH = {
                           // l'API du projet (politique de banc). Événement 'fatigue' au
                           // franchissement de 0,35. false : le moteur infatigable (sabotage
                           // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
+  coach: { each: 20, fenetre: 60, orage: 3, horizon: null },
+                          // LE CERVEAU DE COACH (11c11, st.full — lot 113) : toutes les
+                          // `each` s, il lit score/chrono/momentum et DÉPLACE les axes
+                          // tactiques de son équipe par paliers — le mené POUSSE après la
+                          // mi-temps (pressing/bloc/style +, × l'urgence du chrono), le
+                          // menant GÈRE au money-time (bloc/pressing −), l'ORAGE (≥ orage
+                          // tirs subis / fenetre s) fait RECULER d'un cran. Deltas bornés
+                          // ±0,3 sur la BASE du projet (jamais une dérive), axes rendus
+                          // [0,05 ; 0,95], event 'coach' au changement de posture. La
+                          // POLITIQUE est injectable (coach.decide(ctx, K) — le pattern
+                          // menace.js) ; l'horizon suit le format (null → chrono, sinon
+                          // 360 s — le motif fatigue). Clé absente : les axes gelés
+                          // d'hier, au bit (sabotage nommé).
   loi3: { changements: 5 },
                           // LA LOI 3 (11c11, st.full) : les REMPLACEMENTS. La LOI est le
                           // mécanisme (limite de changements, exécution à l'ARRÊT DE JEU,

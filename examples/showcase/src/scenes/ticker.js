@@ -55,6 +55,11 @@ export function makeTicker(TEAMS) {
       if (!hud) return true;
       const l = e.type === 'tête' ? `tête${e.saut ? ' (saut)' : ''} — ${e.mode}` : `volée — ${e.mode}${e.demi ? ' (demi)' : ''}`;
       pousse(`<b style="color:#e8ebf2">${l}</b> <span>— ${team(state, e.by)} nº${e.by} · ${mmss(e.t)}</span>`);
+    } else if (e.type === 'coach' && hud) {
+      // LE COACH SE LIT (lot 113) : le changement de posture est une décision de banc —
+      // sans cette ligne, un bloc qui monte « tout seul » à la 70e serait illisible.
+      const noms = { pousse: 'le coach pousse', gere: 'le coach gère', recule: 'le bloc recule', base: 'retour au plan' };
+      pousse(`<b style="color:#f4a261">${noms[e.posture] ?? e.posture}</b> <span>— ${TEAMS[e.team ?? 0].name} · ${mmss(e.t)}</span>`);
     } else if (e.type === 'press' && hud) {
       // la fenêtre de pressing se lit : l'intelligence off-ball est invisible par nature —
       // l'événement nommé la rend jugeable, exactement comme les gestes (NOTES 36).

@@ -6,6 +6,7 @@ import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './r
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep } from './duel.js';
 import { teteStep, voleeStep } from './tete.js';
+import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
 import { uneTouche } from './premiere-intention.js';
@@ -1026,12 +1027,11 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // définitivement quitté (ou n'a jamais quitté : c'est pareil, il est à prendre). Clé absente
     // (rondo) : Infinity, pas un bit ne bouge.
     const released = gone > cfg.releaseClear || (st.pass && st.t - st.pass.t > (cfg.releaseTtl ?? Infinity));
-    // LE CIEL SE JOUE (cfg.tete && st.full — lot 34) : un vol à hauteur de tête au-dessus
-    // d'un corps se REPREND — au but, en dégagement, en remise ; à deux, le duel aérien
-    // tranche (tete.js). Avant la prise au sol : la tête coupe ce que le pied attendait.
+    // LE COACH LIT LE MATCH (lot 113) : score/chrono/momentum → axes par paliers (coach.js)
+    if (cfg.coach && st.full) coachStep(st, cfg);
+    // LE CIEL SE JOUE (cfg.tete && st.full — lot 34) : un vol à hauteur de tête sur un corps se REPREND — but/dégagement/remise ; à deux, le duel aérien (tete.js)
     if (cfg.tete && st.full && st.phase === 'flight' && released) teteStep(st, cfg);
-    // …et SOUS la fenêtre de tête, LA VOLÉE (lot 40) : la reprise en surface, le dégagement
-    // d'urgence — le pied joue le vol avant la prise au sol (tete.js, même famille du ciel)
+    // …et SOUS la fenêtre, LA VOLÉE (lot 40) : reprise en surface / dégagement d'urgence — le pied joue le vol avant la prise au sol (tete.js)
     if (cfg.volee && st.full && st.phase === 'flight' && released) voleeStep(st, cfg);
     let taker = -1, bestD = Infinity;
     if (released) {

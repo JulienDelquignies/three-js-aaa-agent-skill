@@ -4704,6 +4704,43 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      horodatant, pas supposé). Dettes nommées : le pré-saut anticipé (windup de tête),
      le calibrage duel aux corners (T.duel 1,9 conservateur — 0,2 duel/match).
 
+155. **Lot 113 : LE CERVEAU DE COACH — score, chrono et momentum déplacent les axes
+     tactiques (plan validé, 2e chantier).** MESURÉ AVANT : st.tactics est écrit UNE fois
+     (makeMatch:44, prouvé au grep) puis GELÉ tout le match — le mené à la 200e (11/20
+     matchs) ne change RIEN et ne tire que 0,64 fois dans le dernier tiers. LA LOI
+     (coach.js, cfg.coach {each 20, fenetre 60, orage 3, horizon null} actif par défaut,
+     gardé st.full) : toutes les `each` s, le coach de CHAQUE équipe lit le match — écart
+     au score, urgence du chrono ((t/horizon − 0,5) × 2 : 0 à la mi-temps → 1 au bout ;
+     l'horizon suit le FORMAT, le motif de la fatigue : chrono s'il existe, sinon 360 s),
+     momentum (tirs subis dans la fenêtre) — et DÉPLACE les axes par PALIERS (un coach
+     gesticule toutes les 20 s, pas par frame). QUATRE postures natives : POUSSE (mené
+     après la mi-temps : pressing +0,2/bloc +0,15/style +0,15/transition/largeur, × urgence,
+     +0,35 à 2 buts d'écart), GÈRE (menant au money-time : bloc/pressing −), RECULE
+     (l'orage : ≥ 3 tirs subis/60 s → bloc −0,12, compacité +0,12), BASE (retour au plan).
+     LE CONTRAT MOTEUR : deltas bornés ±0,3 PAR CLÉ, appliqués sur la BASE du projet copiée
+     une fois (jamais une dérive cumulée), axes rendus [0,05 ; 0,95], roles/formation/nom
+     traversent, événement 'coach' {posture, ecart} au CHANGEMENT seulement (le ticker le
+     lit : « le coach pousse »). LA POLITIQUE EST INJECTABLE : cfg.coach.decide(ctx, K) —
+     le pattern menace.js, le projet aval remplace le cerveau, le moteur garde le contrat ;
+     la native est elle-même paramétrée (K.postures — deltas et facteurs). APRÈS : 35
+     changements de posture/20 matchs (16 pousse, 16 gère, 2 recule) ; la leçon de mesure :
+     « le mené tire plus » N'EST PAS un contrat — 3 vs 7 événements = Poisson pur, et le
+     menant qui met le bus est AUSSI du vrai football (les effets se compensent PAR DESIGN) ;
+     le contrat du banc est L'ÉTAT : fixture SÈCHE sur coachStep pur (t 270, mené 0-1 →
+     pressing 0,60 ≥ 0,58 et bloc 0,57 chez le mené, bloc 0,44 ≤ 0,46 chez le menant, les
+     2 events nommés), checkCoach à sec (5 contrats), flux vivant (2 paliers/2 × 300 s) et
+     sabotage « les axes gelés d'hier » (coach:false : 0 event — l'identité au défaut).
+     LE LAB GAGNE coach:false (l'hier du 113) — les clauses démission-104 et chaloupe-110
+     re-cassées par les paliers du labo, re-vertes d'un seul gel : LE PATRON PAIE. A/B
+     20 × 300 s : 81 tirs / 25 buts ∈ [17 ; 33]. Batterie : match11 117/0, rondo 40/0,
+     match 84/0, renversement 8/0, circuits 6/0, menace 11/0, sync 9/0 (rondo-sim recompressé
+     1249 — le banc compte split('\n') = wc+1), attributes 14/0, gestes 56/0, animkit
+     112/112. EMPREINTES : rondo/réduit/match-3 AU BIT ; match seed 7 f34280703c55a63e —
+     le POURQUOI horodaté (l'équipe 1 subit l'orage à la 60e, « recule », retour « base »
+     à la 100e : le coach agit dans la fenêtre des 120 s), pas supposé. Dettes nommées :
+     la possession au momentum, les consignes individuelles (rôle changé, remplacement
+     tactique Loi 3).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

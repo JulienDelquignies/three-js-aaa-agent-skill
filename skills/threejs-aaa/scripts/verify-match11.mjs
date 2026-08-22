@@ -22,6 +22,8 @@ import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
+import { coachStep, checkCoach } from '../assets/starter/src/engine/coach.js';
+import { resoudreTactique } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { KEEPER, keeperDecide } from '../assets/starter/src/engine/keeper.js';
@@ -34,7 +36,8 @@ import { menaceTir } from '../assets/starter/src/engine/menace.js';
 const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
   chaloupe: false, troisieme: false,
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
-  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } };   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
+  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
+  coach: false };                                       // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1846,6 +1849,47 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     tenus >= subis + 6);
   ok(`…et le duel PERDU GÊNE au lieu de téléporter (${genesOk}/${subis} gênes nommées avec tête molle < 12,5 — le venant conteste le contact, il ne le vole pas)`,
     subis === 0 || genesOk === subis);
+}
+
+// ---- LOT 113 : LE CERVEAU DE COACH — score/chrono/momentum déplacent les axes, par paliers
+{
+  // (a) LE CONTRAT à sec (checkCoach : postures natives au bon monde, deltas bornés ±0,3,
+  // la base est l'identité du calme)
+  const cc = checkCoach();
+  ok(`le contrat du coach tient à sec (postures natives, deltas bornés, base au calme${cc.issues.length ? ' — ' + cc.issues.join(' ; ') : ''})`, cc.ok);
+
+  // (b) LA FIXTURE D'ÉTAT (coachStep est PUR sur st — pas besoin d'un match) : à t=270
+  // (urgence 0,5 sur horizon 360), mené 0-1 → le palier POUSSE le mené (pressing +0,10 sur
+  // la base) et fait GÉRER le menant (bloc −0,07) ; la base du projet est PRÉSERVÉE
+  // (roles/formation/nom copiés, les axes rendus dans [0,05 ; 0,95]).
+  const stF = { t: 270, score: [0, 1], events: [], players: [],
+    tactics: [resoudreTactique(undefined), resoudreTactique(undefined)] };
+  coachStep(stF, { coach: { each: 20, fenetre: 60, orage: 3, horizon: null } });
+  const mene = stF.tactics[0], menant = stF.tactics[1];
+  ok(`le MENÉ POUSSE au palier (pressing ${mene.pressing.toFixed(2)} ≥ 0,58 et bloc ${mene.hauteurBloc.toFixed(2)} ≥ 0,56 — l'urgence du chrono × les deltas natifs, sur la BASE 0,5)`,
+    mene.pressing >= 0.58 && mene.hauteurBloc >= 0.56);
+  ok(`…le MENANT GÈRE (bloc ${menant.hauteurBloc.toFixed(2)} ≤ 0,46, pressing ${menant.pressing.toFixed(2)} ≤ 0,47) et la base est préservée (formation ${mene.formation} — les clés non-axes traversent)`,
+    menant.hauteurBloc <= 0.46 && menant.pressing <= 0.47 && mene.formation === '433');
+  const evC = stF.events.filter((e) => e.type === 'coach');
+  ok(`…les DEUX postures s'ÉVÉNEMENTIALISENT (${evC.map((e) => e.posture).join(' + ')} — le changement se nomme, le ticker le lit)`,
+    evC.length === 2 && evC.some((e) => e.posture === 'pousse') && evC.some((e) => e.posture === 'gere'));
+
+  // (c) LE FLUX : le coach vit en match (2 × 300 s) — des paliers se prennent ; et le
+  // sabotage « les axes gelés d'hier » (coach:false) : zéro événement, l'identité au défaut.
+  const flux = (over) => {
+    let n = 0;
+    for (const seed of [1, 2]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+      n += st.events.filter((e) => e.type === 'coach').length;
+    }
+    return n;
+  };
+  const vifC = flux({});
+  const sabC = flux({ coach: false });
+  ok(`le coach VIT en flux (${vifC} changements de posture / 2 × 300 s ≥ 1) ; sabotage « les axes gelés d'hier » attrapé (coach:false : ${sabC} — le monde qui ne réagit jamais au score, nommé)`,
+    vifC >= 1 && sabC === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
