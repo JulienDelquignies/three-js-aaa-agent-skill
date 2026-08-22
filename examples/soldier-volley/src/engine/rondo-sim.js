@@ -48,23 +48,17 @@ function stepGestures(st, dt, cfg) {
     // ball off you. This is what makes pressing worth doing, and it did not exist while the ball left
     // at the instant of the decision — there was no interval to attack.
     if (winding(p) && st.phase === 'carry' && st.possession.carrier === p.id) {
-      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE. Standing near him is no longer
-      // enough — the defender has to have got to the BALL first. Without this the windup was simply
-      // fatal: pressure had already been accumulating through the dribble, so the extra 0.4 s of swing
-      // pushed every close defender past tackleTime and possession collapsed (record halved, turnovers
-      // doubled). A swing you have already started is not the same target as a man still dribbling,
-      // and the geometry says so: get to the ball or you do not get it.
+      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to
+      // get to the BALL first (sans ça le windup était fatal — record halved, turnovers doubled).
       // …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le
       // porteur au ballon — plus jamais « près du corps ». Le terme de la minuterie n'est plus une
       // bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner
       // (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
-      // AND THE BALL TRAVELS WITH HIM. Nobody stops dead to pass. While the swing runs, the dribble is
-      // suspended (he is not taking new touches), and the ball was simply being left where it lay while
-      // he ran on — so the strike happened off a stale position and his separation fell from 2.09 m to
-      // 1.53 m, which is the difference between passing on the move and being a statue. The ball is at
-      // his feet: it goes where he goes until the boot sends it somewhere else.
+      // AND THE BALL TRAVELS WITH HIM. While the swing runs the dribble is suspended, and the
+      // ball was left where it lay — the strike happened off a stale position (separation
+      // 2,09 → 1,53 m). The ball is at his feet: it goes where he goes until the boot sends it.
       // LE COUPLE CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ — dans les deux sens. Avant : le corps
       // décélérait (il s'engage) pendant que le ballon gardait son inertie ; mesuré, le couple
       // divergeait de 0,4 m pendant le geste et le pied frappait du vide. Maintenant :
@@ -687,8 +681,14 @@ export function rondoStep(st, dt, cfg = RONDO) {
         st.ball.release('conduite');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }
       }
-    } else if (intentFresh && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5)) && (!st.full || cfg.priseCone === false || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100))) {
+    // LE RAMASSAGE DU BALLON MORT (lot 107, cfg.ramasse && st.full — « des ballons qui traînent » :
+    // mesuré, des loose de 2+ s avec un corps à 0,1 m — la re-capture exigeait une INTENTION ;
+    // le vrai joueur POSE le pied sur un ballon lent à portée). Le cône et le prenable tiennent.
+    } else if ((intentFresh || (st.full && cfg.ramasse && !st.restart && Math.hypot(st.ball.v[0], st.ball.v[2]) < (cfg.ramasse.v ?? 1.5)
+      && dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.ramasse.cone ?? 80))) && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5)) && (!st.full || cfg.priseCone === false || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100))) {
       st.ball.possess(c.id);
+      // …le ramassage SE POSE (lot 107 — sans ça la branche du porté re-lâchait la frame d'après, cap non aligné : touches dos) ; jamais pendant une remise (le taker court-circuitait le CF).
+      if (st.full && cfg.ramasse && !intentFresh) st._settling = { ev: st.events.length, id: c.id, at: st.t + (cfg.ramasse.pose ?? 0.3) };
       st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
     } else {
       const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev);

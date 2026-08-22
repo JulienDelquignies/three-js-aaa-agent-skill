@@ -28,7 +28,9 @@ export function tryShot(st, c, cfg) {
   // L'ANGLE FERMÉ N'EST PAS UN TIR, C'EST UN CENTRE RATÉ : l'aile voyait 15 m de « portée » et
   // canonnait du couloir (0 centre mesuré — tryShot passait toujours avant tryCross). Au-delà de
   // l'épaule de la surface et hors du bout portant, le refus se nomme et l'aile SERT.
-  if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && dGoal > 8.5) return deny(st, 'angle-fermé');
+  // …la MÊME excuse de loin que l'arbitre (lot 107, cfg.audace — une seule vérité)
+  if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && dGoal > 8.5
+    && !(st.full && cfg.audace && dGoal >= (cfg.audace.deLoin ?? 18) && Math.abs(c.p[2]) <= (cfg.audace.zMax ?? 12))) return deny(st, 'angle-fermé');
   const gk = st.players.find((p) => p.keeper && p.team !== c.team);
   // les DEUX coins s'essaient, le plus loin du gardien d'abord — et à bout portant, on tire dans
   // le trafic (0,75 m de couloir n'existait jamais devant une défense postée côté but : 135 refus,

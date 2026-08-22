@@ -30,6 +30,7 @@ export const ATTRIBUTES = {
   control:     'fermeté du contrôle      → diviseur du contrôle-manqué [0,7 ; 1,6] (poids de passe)',
   dribbling:   'longueur de touche → lead × [1,08 ; 0,94] ; engagement et vente des gestes × [0,55 ; 1,10]',
   finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ)',
+  longShots:   'frappe de loin           → audace lointaine × [0,75 ; 1,25] (cfg.audace, lot 107)',
   tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m',
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
   composure:   'sang-froid sous pression → l\'erreur de passe pressée × [1,30 ; 0,85]',
@@ -60,6 +61,7 @@ export function makeProfile(ratings = {}) {
                                                                   // des gestes (un 35 tente peu et
                                                                   // vend mal — la note joue l'exécution)
     shotSigma: lerp(0.55, 0.10, r('finishing')),                  // m — sur le point visé dans le but
+    longF: lerp(0.75, 1.25, r('longShots')),                      // × sur l'AUDACE lointaine (le 50 vaut 1 exact — l'identité du monde moyen)
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel
     reaction: lerp(0.30, 0.14, r('reactions')),                   // s
     composureF: lerp(1.30, 0.85, r('composure')),                 // × sur l'erreur pressée
@@ -102,6 +104,8 @@ export function checkAttributes() {
   if (!(hi.controlF > mid.controlF && mid.controlF > lo.controlF)) issues.push('control non monotone');
   if (!(hi.reaction < lo.reaction)) issues.push('reactions non monotone');
   if (!(hi.tackleReach > lo.tackleReach)) issues.push('tackling non monotone');
+  if (!(hi.longF > mid.longF && mid.longF > lo.longF)) issues.push('longShots non monotone');
+  if (Math.abs(mid.longF - 1) > 1e-9) issues.push('longF au 50 doit valoir 1 exact (l\'identité du monde moyen)');
   if (!(hi.getupF < mid.getupF && mid.getupF < lo.getupF)) issues.push('agility non monotone (le souple doit se relever plus vite)');
   if (hi.getupF < 0.72 - 1e-9 || lo.getupF > 1.28 + 1e-9) issues.push('getupF hors bande [0,72 ; 1,28]');
   if (Math.abs(mid.getupF - 1) > 1e-9) issues.push('agility 50 ne vaut pas 1,0 — le no-op du relevé est violé');

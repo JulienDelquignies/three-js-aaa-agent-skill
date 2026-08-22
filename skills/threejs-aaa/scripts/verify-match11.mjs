@@ -24,6 +24,7 @@ import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { KEEPER, keeperDecide } from '../assets/starter/src/engine/keeper.js';
+import { menaceTir } from '../assets/starter/src/engine/menace.js';
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -363,10 +364,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // ecarte/conduiteCouloir ÉPINGLÉES à false DES DEUX CÔTÉS (lot 105 : la conduite d'aile
   // lancée gonflait le pool de passes en course des DEUX mondes — l'écart fin de 0,12 noyé,
   // gel 2,10 = vif ; la clause isole le couple stop/foulée, l'orthogonale se neutralise)
-  const vif = corps({ ecarte: false, conduiteCouloir: false });
+  const vif = corps({ ecarte: false, conduiteCouloir: false, ramasse: false, audace: false });   // + lot 107, même patron
   // …le sabotage émule le monde d'HIER EN ENTIER (doctrine lot 77) : le couple (frappeConduite)
   // frappe lancé SANS strideStrike — gelé seul, le pool restait à 2,0 et l'écart ne parlait plus.
-  const gel = corps({ strideStrike: false, frappeConduite: false, ecarte: false, conduiteCouloir: false });
+  const gel = corps({ strideStrike: false, frappeConduite: false, ecarte: false, conduiteCouloir: false, ramasse: false, audace: false });
   ok(`la FOULÉE de frappe vit (corps à ${vif.p50.toFixed(2)} m/s p50 au strike sur ${vif.n} gestes ≥ 0,95 — et le monde gelé frappe à ${gel.p50.toFixed(2)} ≤ vivant − 0,12 : sabotage « la statue qui frappe » nommé)`,
     vif.p50 >= 0.95 && gel.p50 <= vif.p50 - 0.12);
 }
@@ -408,8 +409,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { net, tot, part: tot ? net / tot : 1 };
   };
-  const vif = stops({});
-  const sab = stops({ strideStrike: { tau: 0.9, max: 2.2, ride: false } });
+  // ramasse/audace épinglées symétriquement (lot 107 — le flux des frappes en course bouge avec elles)
+  const vif = stops({ ramasse: false, audace: false });
+  const sab = stops({ ramasse: false, audace: false, strideStrike: { tau: 0.9, max: 2.2, ride: false } });
   // …borne re-fondée lot 77 (35 → 40 %) : le COUPLE a ouvert les frappes de CONDUITE (la
   // gâchette les refusait toutes — frappes en course mesurées 34 → 70) et une part de cette
   // population nouvelle freine pour s'armer, légitimement. Le contrat de la falaise reste le
@@ -959,7 +961,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
     tenue: false, pivotReprise: false, sortie1v1: false,
-    ecarte: false, conduiteCouloir: false, releveTrot: false });   // l'HIER exact, EN ENTIER (18e : lot 106 sans le trot du relevé)
+    ecarte: false, conduiteCouloir: false, releveTrot: false,
+    audace: false, ramasse: false });   // l'HIER exact, EN ENTIER (19e : lot 107 sans audace lointaine ni ramassage)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 8 pts — le servo omniscient qui suivait le pivot, nommé)`,
     sab76.part >= vif76.part + 0.08);
 }
@@ -1017,10 +1020,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { percut, duels };
   };
-  const vif78 = belier({});
+  // ramasse/audace ÉPINGLÉES à false DES DEUX CÔTÉS (lot 107 : le ramassage supprime des
+  // phases de ballon flottant où le bélier chassait — l'écart net 175 vs 284 se resserrait)
+  const vif78 = belier({ ramasse: false, audace: false });
   ok(`le PRESS FILE au lieu de percuter (${vif78.percut} images de bélier ≤ 400 sur 2 graines × 150 s — le jockey est le métier ; et le duel d'épaule VIT : ${vif78.duels} ≥ 1)`,
     vif78.percut <= 400 && vif78.duels >= 1);
-  const sab78 = belier({ contain: false, jockey: false, zone: false, couloir: false,
+  const sab78 = belier({ ramasse: false, audace: false, contain: false, jockey: false, zone: false, couloir: false,
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false },
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 } });   // l'HIER entier : jockey/zone (95-96) + fixation/surcharge (98) déplacent AUSSI les poursuites
   ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 1.5)} — la cible au corps, nommée ; ratio ×2 → ×1,5 lot 98 : la surcharge crée des poursuites proches dans le VIF aussi, l'écart reste net)`,
@@ -1371,9 +1376,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const p = [og.x - og.sign * dist, 4];
     st.restart = { type: 'coup-franc', p, team: 1, at: st.t + 1.2 };
     st.ball.restart([p[0], 0.11, p[1]], { cause: 'coup-franc' });
-    const n0 = st.events.length;
+    const n0 = st.events.length, tCF = st.restart.at;
     for (let i = 0; i < 9 * 60; i++) matchStep(st, 1 / 60, cfg);
-    const ev = st.events.slice(n0);
+    // …fenêtre d'ATTRIBUTION 4 s après la pose (lot 107 : à 9 s la fixture imputait au CF un
+    // lancement du FLUX AVAL — le CF court se joue en 2-3 s, le reste est du match ordinaire)
+    const ev = st.events.slice(n0).filter((e) => e.t <= tCF + 4);
     return { direct: ev.some((e) => e.kind === 'coup-franc-direct'), lance: ev.some((e) => e.type === 'lancement') };
   };
   const pr = prise(21, {}), lo = prise(40, {}), xl = prise(60, {});
@@ -1603,8 +1610,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return n;
   };
-  const vif = pertes({});
-  const sab = pertes({ tenue: false, pivotReprise: false });
+  // ramasse/audace épinglées symétriquement (lot 107 — le flux des épisodes bouge avec elles)
+  const vif = pertes({ ramasse: false, audace: false });
+  const sab = pertes({ ramasse: false, audace: false, tenue: false, pivotReprise: false });
   ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 12 min ≤ 6 — la tenure rend la chasse au conducteur, le pivot reprend le dos)`,
     vif <= 6);
   ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant + 4 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
@@ -1637,6 +1645,58 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif <= 42);
   ok(`sabotage « l'aimant axial d'hier » attrapé (ecarte:false + conduiteCouloir:false : ${sab.toFixed(0)} % ≥ vivant + 6 pts — le ballon central qui ne sort jamais et la conduite qui repique, nommés)`,
     sab >= vif + 6);
+}
+
+// ---------------------------------------------------------------- lot 107 : L'AUDACE
+// LOINTAINE (« ça manque de tir lointain » : max 18,3 m mesuré — la zone grise ne gagnait
+// jamais l'arbitrage, et la porte angle-fermé exécutait la frappe de 22 m à |z| 9) + LE
+// RAMASSAGE DU BALLON MORT (« des ballons qui traînent » : des loose de 2+ s avec un corps
+// à 0,1 m — la re-capture exigeait une INTENTION).
+{
+  // la fixture de l'audace : porteur seul à 22 m dans l'axe, couloir vide — l'arbitre PLANCHERISE
+  const st = makeMatch({ full: true, seed: 3 });
+  const cfg = matchCfg({ shotRange: 20 });
+  for (let i = 0; i < 3 * 60; i++) matchStep(st, 1 / 60, cfg);
+  const c = st.players.find((q) => q.team === 0 && !q.keeper);
+  const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
+  st.ball.release('perte'); st.ball.restart([g.x - sg * 22, 0.11, 2], { cause: 'touche' }); st.ball.possess(c.id);
+  c.p[0] = g.x - sg * 22; c.p[2] = 2; c.v = [0, 0];
+  for (const q of st.players) if (q.id !== c.id && !q.keeper) { q.p[0] = g.x - sg * 45; q.p[2] = (q.id % 9) * 3 - 12; q.v = [0, 0]; q.down = 0; }
+  const mAud = menaceTir(st, c, cfg);
+  c.skill = makeProfile({ longShots: 92 }); const mFort = menaceTir(st, c, cfg);
+  c.skill = makeProfile({ longShots: 15 }); const mFaible = menaceTir(st, c, cfg);
+  c.skill = null;
+  const cfg0 = matchCfg({ shotRange: 20, audace: false });
+  const mSab = menaceTir(st, c, cfg0);
+  ok(`lot 107 — l'AUDACE LOINTAINE entre à l'arbitrage (22 m, couloir vide : ${mAud.pourquoi} score ${mAud.score} ≥ 0,4 ; longShots 92 → ${mFort.score} > longShots 15 → ${mFaible.score} — l'attribut fait foi ; sabotage audace:false : ${mSab.pourquoi} ${mSab.score} ≤ 0,3 — le mur d'hier, nommé)`,
+    mAud.pourquoi === 'audace' && mAud.score >= 0.4 && mFort.score > mFaible.score && mSab.score <= 0.3);
+  // …et l'angle-fermé s'assouplit DE LOIN : 21 m à |z| 9 = un tir ; 12 m à |z| 9 = un centre (hier)
+  c.p[0] = g.x - sg * 19; c.p[2] = 9; st.ball.release('perte'); st.ball.restart([c.p[0], 0.11, 9], { cause: 'touche' }); st.ball.possess(c.id);
+  const mExc = menaceTir(st, c, cfg);
+  c.p[0] = g.x - sg * 12; st.ball.release('perte'); st.ball.restart([c.p[0], 0.11, 9], { cause: 'touche' }); st.ball.possess(c.id);
+  const mPres = menaceTir(st, c, cfg);
+  ok(`lot 107 — l'angle fermé s'assouplit DE LOIN (21 m |z|=9 : ${mExc.pourquoi} ≠ angle-fermé ; 12 m |z|=9 : ${mPres.pourquoi} = angle-fermé — près du but l'excentré reste un centre)`,
+    mExc.pourquoi !== 'angle-fermé' && mPres.pourquoi === 'angle-fermé');
+}
+{
+  // la fixture du ramassage : ballon MORT à 0,5 m devant un joueur sans intention
+  const ram = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 3 * 60; i++) matchStep(st, 1 / 60, cfg);
+    if (st.ball.owner != null) st.ball.release('perte');
+    const c = st.players[st.possession.carrier >= 0 ? st.possession.carrier : st.players.findIndex((q) => !q.keeper)];
+    st.phase = 'carry'; st.possession = { team: c.team, carrier: c.id };
+    st.ball.restart([c.p[0] + Math.cos(c.yaw) * 0.5, 0.11, c.p[2] + Math.sin(c.yaw) * 0.5], { cause: 'touche' });
+    c.intent = null; c.anchorHint = null; c.v = [0, 0];
+    for (const q of st.players) if (q.id !== c.id) { q.p[0] = c.p[0] - 30; q.v = [0, 0]; }
+    for (let i = 0; i < 60; i++) { matchStep(st, 1 / 60, cfg); if (st.ball.owner === c.id) return { pris: true, t: i / 60 }; }
+    return { pris: false, t: 1 };
+  };
+  const vif = ram({});
+  const sab = ram({ ramasse: false });
+  ok(`lot 107 — le ballon MORT se RAMASSE (à 0,5 m de face, sans intention : possédé en ${vif.t.toFixed(2)} s ≤ 1 ; sabotage ramasse:false : ${sab.pris ? 'pris quand même' : 'JAMAIS pris en 1 s'} — l'attente d'hier, nommée)`,
+    vif.pris && !sab.pris);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

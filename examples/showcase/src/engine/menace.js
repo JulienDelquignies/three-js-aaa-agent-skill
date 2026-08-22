@@ -35,7 +35,11 @@ export function menaceTir(st, c, cfg) {
   const grise = st.full && cfg.menace?.grise ? R * cfg.menace.grise : R;
   if (c.keeper || d > grise) return { score: 0, d: +d.toFixed(1), pourquoi: 'hors-portée' };
   if (Math.sign(c.p[0] || goal.x) !== Math.sign(goal.x) && d > R * 0.75) return { score: 0, d: +d.toFixed(1), pourquoi: 'sa-moitié' };
-  if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && d > 8.5) return { score: 0, d: +d.toFixed(1), pourquoi: 'angle-fermé' };
+  // …l'angle fermé s'assouplit DE LOIN (lot 107, cfg.audace) : la porte tuait la frappe de
+  // 22 m à |z| 9 — un tir réel (l'angle but reste ouvert à distance) ; près du but l'excentré
+  // reste un centre. Clé absente : la porte d'hier au bit.
+  const excuse = st.full && cfg.audace && d >= (cfg.audace.deLoin ?? 18) && Math.abs(c.p[2]) <= (cfg.audace.zMax ?? 12);
+  if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && d > 8.5 && !excuse) return { score: 0, d: +d.toFixed(1), pourquoi: 'angle-fermé' };
   const gk = st.players.find((p) => p.keeper && p.team !== c.team);
   const corners = [pitch.goalHalf - 0.55, -(pitch.goalHalf - 0.55)]
     .sort((a, b) => (gk ? Math.abs(b - gk.p[2]) - Math.abs(a - gk.p[2]) : 0));
@@ -65,6 +69,20 @@ export function menaceTir(st, c, cfg) {
     sc = Math.max(0.12, (0.30 + 0.62 * Math.max(0, nearF)) * (0.25 + 0.75 * laneF))
       * Math.max(0, 1 - (d - R) / Math.max(0.5, grise - R)) * (0.3 + 0.6 * finF);
     why = 'zone-grise';
+    // L'AUDACE LOINTAINE (lot 107, cfg.audace && st.full — « ça manque de tir lointain » :
+    // max 18,3 m mesuré, la zone grise ne GAGNAIT jamais l'arbitrage). Le vrai tir de loin
+    // se tente quand on a LE TEMPS D'ARMER (aucun adversaire à < esp m du tireur) et le
+    // couloir plein : le score se PLANCHERISE, pondéré par l'ATTRIBUT longShots (longF —
+    // le monde note SES frappeurs de loin) et dégressif doux vers la grise. false : hier.
+    if (st.full && cfg.audace && margin >= need * 0.8) {
+      let charge = 99;
+      for (const b of blockers) { const db = Math.hypot(b[0] - c.p[0], b[2] - c.p[2]); if (db < charge) charge = db; }
+      if (charge >= (cfg.audace.esp ?? 5)) {
+        sc = Math.max(sc, (cfg.audace.bonus ?? 0.55) * (c.skill?.longF ?? 1)
+          * Math.max(0, 1 - ((d - R) / Math.max(0.5, grise - R)) * 0.5));
+        why = 'audace';
+      }
+    }
   }
   return { score: +sc.toFixed(3), d: +d.toFixed(1), marge: +margin.toFixed(2), tz: +tz.toFixed(1), pourquoi: why };
 }

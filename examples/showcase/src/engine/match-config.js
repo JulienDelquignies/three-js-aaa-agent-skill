@@ -616,6 +616,19 @@ export const MATCH = {
                           // (temps s, à portee m) sauf VRAIE avance d'un autre (marge m). Mesuré
                           // avant : démis pour 0,1 m, reclassé posté, son ballon roulait seul —
                           // 39 échappées/90 min sans pression. false : la démission d'hier.
+  audace: { esp: 2, bonus: 0.55, deLoin: 18, zMax: 12 },
+                          // L'AUDACE LOINTAINE (lot 107, st.full — menace : « ça manque de tir
+                          // lointain », max 18,3 m mesuré, la zone grise ne gagnait jamais
+                          // l'arbitrage). Le temps d'ARMER (aucun adversaire < esp m) + le
+                          // couloir plein → le score de tir grise se plancherise (bonus ×
+                          // longF, l'attribut longShots [0,75 ; 1,25] — le monde note SES
+                          // frappeurs de loin ; le rôle arbitre.tir multiplie en aval).
+                          // false : le mur de la circulation d'hier au bit.
+  ramasse: { v: 1.5 },    // LE RAMASSAGE DU BALLON MORT (lot 107, st.full — rondo-sim : « des
+                          // ballons qui traînent » : des loose de 2+ s avec un corps à 0,1 m,
+                          // la re-capture exigeait une INTENTION). Un ballon plus lent que
+                          // v m/s à portée, non contesté, de face : le pied le POSSÈDE.
+                          // false : l'attente d'hier au bit.
   releveTrot: { dur: 2, cap: 3.2 },
                           // LE RELEVÉ REPART AU TROT (lot 106, st.full — movement) : le gardien
                           // relevé de son plongeon TROTTE dur s (cap m/s) au lieu de sprinter

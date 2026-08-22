@@ -4507,6 +4507,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      8/0, rondo 40/0. Empreintes rondo/réduit AU BIT ; match seed 3/7 INCHANGÉES vs lot 105
      (aucun plongeon dans leurs 90 premières secondes — la cohérence).
 
+149. **Lot 107 : L'AUDACE LOINTAINE + LE RAMASSAGE DU BALLON MORT (retour utilisateur ×3 :
+     « des ballons qui traînent ou le joueur le plus proche part à l'opposé », « ça manque de
+     tir en une touche quand un ballon traîne », « ça manque de tir lointain »).** MESURES
+     AVANT : le tir lointain N'EXISTAIT PAS (max 18,3 m, p90 17,1 — deux verrous : la zone
+     grise de menace ne GAGNAIT jamais l'arbitrage, et la porte angle-fermé exécutait la
+     frappe de 22 m à |z| 9, 8/9 des refus en zone 20-27) ; l'espace exigible mesuré (le plus
+     proche adversaire du porteur en zone grise : p50 1,9/p90 4,3 — le vrai tireur frappe
+     avec un défenseur à 2-3 m qui ferme en retard) ; les « ballons qui traînent » requalifiés
+     par épisodes : les longs (5,6-8,8 s, corps à 0,2 m) étaient la CONDUITE CONTINUE normale
+     (owner null entre les touches — l'artefact) ; le vrai signal = des loose de 2+ s avec un
+     corps à 0,1 m (la re-capture exigeait une INTENTION) ; « part à l'opposé » : 0 épisode
+     mesuré sur 16 min — requalifié (le ressenti vient des postés lot 103 qui partent à leur
+     poste pendant qu'un AUTRE chasse). TROIS OUTILS MOTEUR (le mantra : des clés + attributs
+     + rôles, jamais des comportements câblés) : (1) L'ATTRIBUT longShots (attributes.js —
+     longF [0,75 ; 1,25], le 50 vaut 1 EXACT, selfTest monotone + identité) ; (2) L'AUDACE
+     (cfg.audace {esp 2, bonus 0,55, deLoin 18, zMax 12}, menace.js + shooting.js même porte)
+     — en zone grise, le couloir plein + personne SUR le tireur → le score se plancherise ×
+     longF (le rôle arbitre.tir multiplie en aval) ; et l'angle-fermé s'assouplit DE LOIN
+     (d ≥ 18, |z| ≤ 12 : la frappe excentrée lointaine est un tir, près du but l'excentré
+     reste un centre) ; (3) LE RAMASSAGE (cfg.ramasse {v 1,5, cone 80, pose 0,3}, rondo-sim)
+     — un ballon plus lent que v à portée, de face, non contesté se POSSÈDE sans intention ;
+     il SE POSE (le settling du contrôle — sans lui la branche du porté re-lâchait la frame
+     d'après cap non aligné : touches dos), et JAMAIS pendant une remise (le taker
+     court-circuitait le CF — attrapé par le banc). APRÈS : A/B 20 × 300 s = 95 tirs / 30
+     buts ∈ [17 ; 33] ✓, TIRS > 20 M : 15 (16 % — réel 10-15), p90 21,2, MAX 29,4 m ; le
+     ramassage : plus aucun loose > 2 s hors duel contesté (le 50/50 légitime). Clauses
+     (match11 105/0) : l'audace fixture pure (22 m couloir vide → 'audace' 0,468 ; longShots
+     92 → 0,566 vs 15 → 0,386 — L'ATTRIBUT DÉPARTAGE ; sabotage audace:false → 'zone-grise'
+     0,126) ; l'angle assoupli (21 m |z| 9 = tir, 12 m |z| 9 = centre) ; le ramassage
+     (possédé en 0,00 s vs JAMAIS en 1 s saboté) ; sab76 19e (audace + ramasse). Cinq
+     re-fondations de banc au patron symétrique (foulée, traverse, bélier, pertes-104 :
+     ramasse/audace épinglées des deux côtés) + la fenêtre d'ATTRIBUTION du CF resserrée à
+     4 s (à 9 s la fixture imputait au CF un lancement du flux aval). Empreintes rondo/réduit
+     AU BIT ; match seed 3/7 : 7db3c6fe224b62a8 / 063533d15a70399a. Requalification
+     honnête : le tir en une touche sur ballon traînant existe déjà à 33 % des acquisitions
+     en zone (15/46 < 1,2 s — le réel ne frappe pas plus vite) ; le vrai manque était la
+     PORTE (les acquisitions à 20-24 m ne POUVAIENT pas tirer — l'audace les libère).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
