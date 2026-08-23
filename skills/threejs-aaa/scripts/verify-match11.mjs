@@ -39,7 +39,8 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
   coach: false,                                         // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
-  skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null } };   // …le répertoire pré-114/115 (ni croqueta ni petit pont)
+  skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null },   // …le répertoire pré-114/115 (ni croqueta ni petit pont)
+  filet: false, bordure: false, celebration: false };               // …le sifflet d'hier (pré-116 : brakes ponctuels, engagement à 3,8 s)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -879,7 +880,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   let tirsN = 0, divesN = 0, arretsN = 0, butsN = 0;
   for (const seed of [2, 3, 4, 5]) {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
+    // …au LAB (lot 116 — le fix DURABLE annoncé au 3e élargissement : la clause isole le
+    // gardien, une loi ancienne ; son échantillon de 6-11 cadrées restait la proie de chaque
+    // flux nouveau — gelée au labo, elle ne re-cassera plus)
+    const cfg = matchCfg({ shotRange: 20, ...LAB, chrono: { periodes: 2, duree: 180, pause: 6 } });
     for (let i = 0; i < 380 * 60 && !st.fini; i++) matchStep(st, 1 / 60, cfg);
     const T = st.events.filter((e) => e.type === 'shot');
     tirsN += T.length;
@@ -1338,8 +1342,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { acc, fautes, basc, fixSum };
   };
-  const vif = volume({});
-  const sab = volume({ accroche: false });
+  // …épinglées au LAB (lot 116 — le cycle de vie du patron : 97/98 isolent des lois anciennes,
+  // le flux courant les re-cassait à chaque lot)
+  const vif = volume({ ...LAB });
+  const sab = volume({ ...LAB, accroche: false });
   ok(`lot 97 — le monde a retrouvé ses fautes (${vif.fautes} sur 8 × 300 s ∈ [4 ; 24], dont ${vif.acc} accrochages ≥ 2 ; sabotage accroche:false : ${sab.acc} accrochage — le zéro structurel, l'assèchement d'hier nommé)`,
     vif.fautes >= 4 && vif.fautes <= 24 && vif.acc >= 2 && sab.acc === 0 && sab.fautes <= vif.fautes);
   const pol = [
@@ -1364,7 +1370,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let libre = 0;
     for (const seed of [2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false } });
+      const cfg = matchCfg({ shotRange: 20, ...LAB, renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false } });
       for (let i = 0; i < 220 * 60; i++) matchStep(st, 1 / 60, cfg);
       libre += st.events.filter((e) => e.type === 'renversement').length;
     }
@@ -2018,6 +2024,87 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabP = fluxP({ skill: { ...matchCfg().skill, pontFoe: null } });
   ok(`lot 115 — le PETIT PONT vit (${vifP} / 4 × 300 s ≥ 4, réussite ~47 % mesurée — un pari, pas un gain gratuit) ; sabotage « le glisseur intraversable d'hier » attrapé (pontFoe absent : ${sabP})`,
     vifP >= 4 && sabP === 0);
+}
+
+// ---- LOT 116 : LE BUT VIT — le filet gonfle, la fête a lieu, l'élan survit au sifflet
+{
+  // (a) LE FILET : un but frappé fort VOYAGE dans la cage (mesuré avant : mort à 0,27-0,79 m
+  // derrière la ligne — brake 85 % en UNE frame ; le fond est à 2 m). Fixture : une frappe
+  // de 15 m/s posée à 9 m de la cage → la profondeur MAX ∈ [0,95 ; 2,3] (le filet se gonfle
+  // ET la maille le tient) ; sabotage « le mur invisible d'hier » (filet:false) : ≤ 0,85.
+  const cage = (over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
+    st.ball.release('fixture');
+    for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }   // la trajectoire vide (le gardien attrapait la fixture)
+    st.ball.impulse([-st.ball.v[0], -st.ball.v[1], -st.ball.v[2]]);
+    st.ball.restart([st.pitch.hx - 9, 0.11, 0], { cause: 'engagement' });
+    st.ball.strike({ speed: 15, dirYaw: 0, elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0 });
+    st.restart = null;
+    let depth = 0;
+    for (let i = 0; i < 100; i++) { matchStep(st, 1 / 60, cfg); depth = Math.max(depth, Math.abs(st.ball.p[0]) - st.pitch.hx); }
+    return +depth.toFixed(2);
+  };
+  const vifG = cage({});
+  const sabG = cage({ filet: false, bordure: false });   // l'HIER complet : la palissade de ballFetch + le brake du but
+  // …sabotage re-mesuré : l'hier (palissade ballFetch à 1,2 m + brake 0,15) meurt à ~1,15 —
+  // le contrat : le vif atteint le FOND (≥ 1,7), l'hier reste sous la palissade (≤ 1,4)
+  ok(`lot 116 — le FILET GONFLE (frappe 15 m/s : profondeur max ${vifG} m ∈ [1,7 ; 2,3] — le fond se gonfle) ; sabotage « la palissade d'hier » attrapé (filet+bordure:false : ${sabG} ≤ 1,4 — le mur à 1,2 m, nommé)`,
+    vifG >= 1.7 && vifG <= 2.3 && sabG <= 1.4 && vifG >= sabG + 0.5);
+
+  // (b) LA CÉLÉBRATION : chaque but a sa fête (event nommé), l'engagement ATTEND (wait ≥
+  // dur + le 3,8 d'hier − marge), et le BUTEUR COURT AU COIN (à mi-fenêtre il s'en est
+  // rapproché) ; sabotage celebration:false : zéro fête, l'engagement d'hier.
+  const fete = (over) => {
+    let buts2 = 0, celebs2 = 0, wait2 = 0, rapproche = 0, d0 = 0, d1 = 0;
+    for (const seed of [1, 2, 4]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let cursor = 0, watch2 = null;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'but') { buts2++; if (st.restart) wait2 = Math.max(wait2, st.restart.at - e.t); }
+          if (e.type === 'celebration') { celebs2++; const b = st.players[e.by]; watch2 = { by: e.by, t: e.t, d: Math.hypot(b.p[0] - st._celeb.corner[0], b.p[2] - st._celeb.corner[1]) }; }
+        }
+        if (watch2 && st.t >= watch2.t + 2.5) {
+          const b = st.players[watch2.by];
+          const dNow = st._celeb ? Math.hypot(b.p[0] - st._celeb.corner[0], b.p[2] - st._celeb.corner[1]) : 0;
+          d0 = watch2.d; d1 = dNow;
+          if (st._celeb && dNow < watch2.d - 2) rapproche++;
+          watch2 = null;
+        }
+      }
+    }
+    return { buts2, celebs2, wait2: +wait2.toFixed(1), rapproche, d0: +d0.toFixed(1), d1: +d1.toFixed(1) };
+  };
+  const vifF = fete({});
+  const sabF = fete({ celebration: false });
+  ok(`…la FÊTE A LIEU (${vifF.celebs2}/${vifF.buts2} buts célébrés, l'engagement attend ${vifF.wait2} s ≥ 9,5, le buteur COURT au coin : ${vifF.rapproche} rapprochements ≥ 2 m mesurés, ${vifF.d0} → ${vifF.d1} m) ; sabotage « l'engagement expéditif d'hier » attrapé (celebration:false : ${sabF.celebs2} fête, wait ${sabF.wait2} ≤ 5)`,
+    vifF.celebs2 >= vifF.buts2 && vifF.wait2 >= 9.5 && vifF.rapproche >= 1 && sabF.celebs2 === 0 && sabF.wait2 <= 5);
+
+  // (c) LES PANNEAUX : l'élan d'une sortie SURVIT (la course après la ligne dépasse le mort
+  // d'hier) ET reste borné (le panneau à d m rend mou). Fixture : un dégagement de 20 m/s
+  // qui sort en touche — la distance de course hors terrain.
+  const course = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
+    st.ball.release('fixture');
+    for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }
+    st.ball.restart([0, 0.11, st.pitch.hz - 2], { cause: 'engagement' });
+    st.ball.strike({ speed: 20, dirYaw: Math.PI / 2, elevation: 0.12, spinAxis: [0, 1, 0], spinRev: 0 });
+    st.restart = null;
+    let zMax = 0;
+    for (let i = 0; i < 160; i++) { matchStep(st, 1 / 60, cfg); zMax = Math.max(zMax, Math.abs(st.ball.p[2]) - st.pitch.hz); }
+    return +zMax.toFixed(2);
+  };
+  const vifB = course({});
+  const sabB = course({ bordure: false, filet: false });   // l'HIER complet : la palissade à 1,2 m + le brake de sortie
+  ok(`…et L'ÉLAN SURVIT AU SIFFLET (sortie à 20 m/s : course hors terrain ${vifB} m ≥ sabotée + 1 et ≤ 7 — le panneau borne, le brake d'hier tuait : bordure:false ${sabB} m)`,
+    vifB >= sabB + 1 && vifB <= 7);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

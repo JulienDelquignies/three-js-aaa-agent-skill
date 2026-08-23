@@ -14,7 +14,7 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert } from './keeper.js';
@@ -58,8 +58,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
     const h = ((seed * 31 + q.id * 37) % 100 + 100) % 100;
     q.strongFoot = h < 72 ? 'right' : h < 95 ? 'left' : 'both';
   }
-  // LES EFFECTIFS NOTÉS (attributes.js) : squads[team][i] appliqué dans l'ordre (le DERNIER =
-  // gardien). Sans squads : aucun p.skill, aucun tirage — le monde d'aujourd'hui.
+  // LES EFFECTIFS NOTÉS (attributes.js) : squads[team][i] dans l'ordre (le DERNIER = gardien). Sans squads : aucun p.skill — le monde d'aujourd'hui.
   if (squads) {
     for (const team of [0, 1]) {
       const roster = squads[team] ?? [];
@@ -129,9 +128,7 @@ function assignMatchJobs(st, cfg) {
     }
   }
 
-  // UN VOL MORT EST UN BALLON LIBRE (cfg.deadFlight, 11c11) : la passe morte au sol bascule en
-  // 'loose' (~0,3 s d'agonie) et la chasse reprend. st.pass SURVIT : la photo de la Loi 11 juge
-  // le PREMIER TOUCHER même d'un ballon mort — ramasser une passe morte hors-jeu reste hors-jeu.
+  // UN VOL MORT EST UN BALLON LIBRE (cfg.deadFlight, 11c11) : la passe morte bascule en 'loose' (~0,3 s), la chasse reprend ; st.pass SURVIT — la Loi 11 juge le premier toucher même d'un ballon mort.
   if (cfg.deadFlight && st.full && st.phase === 'flight' && st.ball.owner == null
     && st.ball.p[1] < 0.25 && Math.hypot(st.ball.v[0], st.ball.v[2]) < cfg.deadFlight) {
     st._deadFlightN = (st._deadFlightN ?? 0) + 1;
@@ -162,9 +159,8 @@ function assignMatchJobs(st, cfg) {
       return;
     }
     const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;   // le rayon : depuis le ballon porté tant que pas posé, du point ensuite
-    // LA LOI 14 (cfg.loi14 && st.full) : la CÉRÉMONIE du penalty — tous les corps sauf preneur
-    // et gardien de ligne HORS surface, HORS de l'arc (9,15 autour du POINT), DERRIÈRE le
-    // ballon. Un clamp en UNE passe ancré à r.p (le x légal = le plus contraignant des trois).
+    // LA LOI 14 (cfg.loi14 && st.full) : la CÉRÉMONIE du penalty — tous les corps sauf preneur et gardien de ligne HORS surface,
+    // HORS de l'arc (9,15 du POINT), DERRIÈRE le ballon. Un clamp en UNE passe ancré à r.p (le x légal = le plus contraignant).
     const l14 = cfg.loi14 && st.full && r.type === 'penalty'
       ? { own: pitch.ownGoal(1 - r.team), def: 1 - r.team, arc: (cfg.loi12?.mur ?? 9.15) + 0.35 } : null;
     const l14clamp = (p) => {
@@ -182,6 +178,10 @@ function assignMatchJobs(st, cfg) {
         const to = p._sub?.phase === 'in' ? p._sub.entry : p._exit;
         p.job = 'walk'; p.target = [to[0], 0, to[1]]; continue;
       }
+      // …MAIS D'ABORD ON CÉLÈBRE (lot 116) : le buteur file au coin, les proches le rejoignent (st._celeb, referee)
+      if (st._celeb && st.t >= st._celeb.until) st._celeb = null;
+      if (st._celeb && p.id === st._celeb.by) { p.job = 'walk'; p.target = [st._celeb.corner[0], 0, st._celeb.corner[1]]; continue; }
+      if (st._celeb && st._celeb.avec.includes(p.id)) { const bC = st.players[st._celeb.by]; p.job = 'walk'; p.target = [bC.p[0], 0, bC.p[2]]; continue; }
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) { p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]]; continue; }
       if (p.keeper) {
@@ -238,9 +238,7 @@ function assignMatchJobs(st, cfg) {
         p.target = d < mur ? [rp[0] + (dx / (d || 1)) * mur, 0, rp[1] + (dz / (d || 1)) * mur] : [p.p[0], 0, p.p[2]];
       }
     }
-    // LE PRENEUR EST STICKY (choisi à la sortie, re-choisi seulement s'il tombe) : il va CHERCHER
-    // le ballon là où il s'est arrêté, le PORTE au point de remise (ballFetch tient le porté du
-    // pas), puis le joue. L'ancien preneur « le plus proche du point » re-triait à chaque image.
+    // LE PRENEUR EST STICKY (re-choisi s'il tombe) : il CHERCHE le ballon où il meurt, le PORTE au point (ballFetch), puis le joue — l'ancien « plus proche du point » re-triait à chaque image.
     let taker = st.players[r.taker ?? -1] ?? null;
     if (!taker || taker.down > 0 || taker.team !== r.team || taker.keeper) {
       taker = st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0)
@@ -1130,6 +1128,7 @@ export function matchCfg(overrides = {}) {
 
 /** Avance le match d'un pas — le game-loop du rondo, configuré match. */
 export function matchStep(st, dt, cfg = matchCfg()) {
+  if (st.full && (cfg.filet || cfg.bordure)) bordFiletStep(st, dt, cfg);   // la cage et les panneaux sont un matériau (lot 116)
   // le dernier contact d'équipe : le porteur en carry, le frappeur en vol (st.lastPasser)
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;

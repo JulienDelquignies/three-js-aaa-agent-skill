@@ -56,6 +56,9 @@ export function makeTicker(TEAMS) {
       if (!hud) return true;
       const l = e.type === 'tête' ? `tête${e.saut ? ' (saut)' : ''} — ${e.mode}` : `volée — ${e.mode}${e.demi ? ' (demi)' : ''}`;
       pousse(`<b style="color:#e8ebf2">${l}</b> <span>— ${team(state, e.by)} nº${e.by} · ${mmss(e.t)}</span>`);
+    } else if (e.type === 'celebration' && hud) {
+      // LE BUT SE FÊTE (lot 116) : l'événement nomme le buteur et ses compagnons de course
+      pousse(`<b style="color:#90be6d">il célèbre !</b> <span>— nº${e.by} et ${e.avec?.length ?? 0} coéquipiers · ${mmss(e.t)}</span>`);
     } else if (e.type === 'coach' && hud) {
       // LE COACH SE LIT (lot 113) : le changement de posture est une décision de banc —
       // sans cette ligne, un bloc qui monte « tout seul » à la 70e serait illisible.

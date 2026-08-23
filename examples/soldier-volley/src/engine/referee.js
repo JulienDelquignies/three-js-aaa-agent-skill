@@ -334,6 +334,47 @@ export function cornerSpots(st, r, p, cfg) {
  * LA SORTIE DE BALLE, par la RÈGLE (pitch.outRule au point de franchissement interpolé).
  * But → score + engagement ; touche/corner/sortie de but → remise placée, adversaires au rayon.
  */
+/** LE FILET ET LES PANNEAUX (lot 116, retour utilisateur : « le ballon s'arrête dans la
+ *  cage au lieu d'aller au fond des filets » — mesuré : mort à 0,27-0,79 m derrière la
+ *  ligne, le fond est à ~2 m ; le coupable était brake(0,15) : 85 % de la vitesse mangée
+ *  en UNE frame au sifflet). Ici la CAGE est un matériau CONTINU : la maille draine fort
+ *  (drag/s — 15 m/s meurent en ~0,5 s sur ~1,8 m : le fond se gonfle), le fond et les
+ *  côtés rendent mou (×rebond). Et HORS du terrain, les PANNEAUX bornent la course à
+ *  bordure.d m des lignes (rebond mou vers le terrain — le ballon FINIT sa course, le
+ *  taker va le chercher où il meurt : le portage de remise existe déjà). Un ballon POSSÉDÉ
+ *  est exempt (le gardien qui tient sa prise dans la cage n'est pas dans la maille).
+ *  Clés absentes : les brakes d'hier au sifflet, au bit. */
+export function bordFiletStep(st, dt, cfg) {
+  if (st.ball.owner != null) return;
+  const bp = st.ball.p, bv = st.ball.v;
+  const { hx, hz, goalHalf } = st.pitch;
+  const F = cfg.filet;
+  if (F && Math.abs(bp[0]) > hx && Math.abs(bp[2]) < goalHalf + 0.4 && bp[1] < 2.6) {
+    // le ballon vole LIBRE dans la cage — c'est LA MAILLE qui l'attrape (fond/côtés/toit,
+    // à < 0,3 m ou au-delà) : drag violent au contact + renvoi quasi nul, il retombe et
+    // roule. La v1 au drag volumique freinait AVANT la maille (profondeur max 1,2-1,34 m,
+    // le fond jamais gonflé) — physiquement faux, mesuré, re-fondé.
+    const fond = hx + (F.fond ?? 2);
+    const sgn = Math.sign(bp[0]);
+    const auFond = Math.abs(bp[0]) > fond - 0.3, auCote = Math.abs(bp[2]) > goalHalf - 0.05, auToit = bp[1] > 2.2;
+    if (auFond || auCote || auToit) {
+      const k = Math.min(0.8, (F.drag ?? 5) * 2.4 * dt);
+      st.ball.impulse([-bv[0] * k, -(bv[1] > 0 ? bv[1] * k : 0), -bv[2] * k]);
+      if (Math.abs(bp[0]) > fond && bv[0] * sgn > 0) st.ball.impulse([-bv[0] * (1 + (F.rebond ?? 0.15)), 0, 0]);
+      if (Math.abs(bp[2]) > goalHalf + 0.25 && Math.sign(bv[2]) === Math.sign(bp[2])) st.ball.impulse([0, 0, -bv[2] * (1 + (F.rebond ?? 0.15))]);
+      if (bp[1] > 2.5 && bv[1] > 0) st.ball.impulse([0, -bv[1] * (1 + (F.rebond ?? 0.15)), 0]);
+    }
+    return;
+  }
+  const B = cfg.bordure;
+  if (!B) return;
+  const d = B.d ?? 4, r = B.rebond ?? 0.3;
+  if (Math.abs(bp[0]) > hx + d && Math.sign(bv[0]) === Math.sign(bp[0]) && (Math.abs(bp[2]) > goalHalf + 0.4 || Math.abs(bp[0]) > hx + d + 1))
+    st.ball.impulse([-bv[0] * (1 + r), 0, 0]);
+  if (Math.abs(bp[2]) > hz + d && Math.sign(bv[2]) === Math.sign(bp[2]))
+    st.ball.impulse([0, 0, -bv[2] * (1 + r)]);
+}
+
 export function onOut(st, cfg) {
   const { pitch } = st;
   // une sortie déjà ADMINISTRÉE ne se rejuge pas : le ballon vit dehors (freiné, puis porté au
@@ -372,12 +413,31 @@ export function onOut(st, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'but', team: r.scorer, score: [...st.score] });
     st.restart = { type: 'engagement', p: [0, 0], team: r.team, at: st.t + cfg.restartWait + 0.6 };
     if (carried) {
-      // le filet mange la vitesse ; un joueur de l'équipe qui engage vient sortir le ballon du
+      // le filet mange la vitesse — EN CONTINU si cfg.filet (bordFiletStep : le ballon va au
+      // FOND, lot 116) ; sinon le brake ponctuel d'hier. Un joueur vient sortir le ballon du
       // but et le porte au rond central pendant que les deux équipes REVIENNENT EN MARCHANT
-      brake(0.15);
+      if (!(st.full && cfg.filet)) brake(0.15);   // la matière est 11c11 (st.full) — le réduit garde son brake d'hier, au bit
       st.restart.placed = false;
       st.restart.taker = nearTaker(r.team);
       st.restart.spots = kickoffSpots(st, r.team, st.restart.taker, cfg);
+      // LA CÉLÉBRATION (lot 116, cfg.celebration && st.full — « laisser l'équipe qui a
+      // marqué célébrer avant de reprendre ») : le BUTEUR (le dernier tireur de l'équipe,
+      // fenêtre 6 s) file au coin le plus proche, les n coéquipiers les PLUS PROCHES le
+      // rejoignent en courant, le reste marche à l'engagement ; l'engagement attend dur s
+      // (le chrono les compte déjà en arrêts de jeu). Événement nommé — le ticker le lit.
+      if (st.full && cfg.celebration) {
+        const C = cfg.celebration;
+        st.restart.at += C.dur ?? 6;
+        const shot = [...st.events].reverse().find((e) => e.type === 'shot' && st.t - e.t < 6 && st.players[e.by]?.team === r.scorer);
+        const by = shot?.by ?? nearTaker(r.scorer);
+        const bp2 = st.players[by].p;
+        const avec = st.players.filter((q) => q.team === r.scorer && q.id !== by && !q.keeper && q.down <= 0)
+          .sort((a2, b2) => d2(a2.p, bp2) - d2(b2.p, bp2)).slice(0, C.n ?? 3).map((q) => q.id);
+        st._celeb = { by, avec, until: st.t + (C.dur ?? 6) - 1.2,
+          corner: [Math.sign(bp2[0] || 1) * (st.pitch.hx - 4), Math.sign(bp2[2] || 1) * (st.pitch.hz - 5)] };
+        st.players[by]._pace = { ...(st.players[by]._pace ?? { next: 3 }), until: st.t + 1.6, kind: 'celebration' };
+        st.events.push({ t: +st.t.toFixed(2), type: 'celebration', by, avec });
+      }
     } else {
       placeKickoff(st, r.team, cfg);
       st.ball.restart([0, BALL.radius, 0], { cause: 'engagement' });
@@ -388,7 +448,7 @@ export function onOut(st, cfg) {
     // LA POSE DU CORNER S'ALLONGE (lot 102, cfg.corner.pose — le vrai corner prend 20-40 s) :
     // les monteurs partent de 30-40 m, la marche de remise demande son temps (cornerSpots)
     if (r.type === 'corner' && st.full && cfg.corner) st.restart.at = st.t + (cfg.corner.pose ?? 10);
-    if (carried) { brake(0.35); st.restart.placed = false; st.restart.taker = nearTaker(r.team); }
+    if (carried) { if (!(st.full && cfg.bordure)) brake(0.35); st.restart.placed = false; st.restart.taker = nearTaker(r.team); }
     else st.ball.restart([r.x, BALL.radius, r.z], { cause: r.type });
   }
   st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
@@ -619,20 +679,22 @@ export function administerWhistle(st, cfg) {
  * et le POSE (release à cause nommée + rest) — zéro discontinuité, le registre du BallBody en
  * témoigne. Renvoie true quand le porté a fait avancer le ballon (le loop ne double-intègre pas).
  */
-export function ballFetch(st, dt) {
+export function ballFetch(st, dt, cfg) {
   const r = st.restart;
   if (!r || r.placed !== false) return false;
   const tk = st.players[r.taker ?? -1];
   if (!tk || tk.down > 0) return false;
   const bp = st.ball.p;
   if (!r.carried) {
-    // LA LISSE EST UN MUR : au-delà du tablier (1,2 m derrière la ligne), le ballon meurt contre
-    // la palissade — AUSSI en vol (la garde « au sol seulement » laissait un dégagement aérien
-    // atterrir à 3,1 m dehors, hors du tablier des corps ET du bras tendu : gel mesuré graine 3,
-    // sortie jamais reprise). Un CONTACT (impulse), pas une écriture ; la gravité fait retomber.
-    const outX = Math.abs(bp[0]) - st.pitch.hx, outZ = Math.abs(bp[2]) - st.pitch.hz;
-    if ((outX > 1.2 || outZ > 1.2) && Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3) {
-      st.ball.impulse([-st.ball.v[0], 0, -st.ball.v[2]]);
+    // LA LISSE ÉTAIT UN MUR (à 1,2 m derrière la ligne, le ballon mourait d'un impulse total —
+    // AUSSI en vol) : c'était LE stop que l'utilisateur voyait au but (lot 116). Quand le
+    // FILET et les PANNEAUX existent (bordFiletStep — la maille au fond de cage, les panneaux
+    // à bordure.d), la matière remplace le mur ; clés absentes : la palissade d'hier, au bit.
+    if (!(st.full && cfg && (cfg.filet || cfg.bordure))) {   // la matière (bordFiletStep, gardé st.full) remplace le mur — au réduit la palissade d'hier reste, au bit
+      const outX = Math.abs(bp[0]) - st.pitch.hx, outZ = Math.abs(bp[2]) - st.pitch.hz;
+      if ((outX > 1.2 || outZ > 1.2) && Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3) {
+        st.ball.impulse([-st.ball.v[0], 0, -st.ball.v[2]]);
+      }
     }
     // pas encore à lui : le ballon FINIT DE ROULER (physique), le preneur marche dessus — et si
     // la QUÊTE échoue 2 s (au contact mais géométrie surprise), il TEND LE BRAS : le bras suivait

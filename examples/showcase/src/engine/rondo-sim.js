@@ -1013,7 +1013,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // LA REMISE PORTÉE (match) : tant qu'elle n'est pas posée, le preneur peut posséder le pas du
     // ballon (ramassage → porté au point de remise — cfg.ballFetch renvoie true quand il a fait
     // avancer le ballon lui-même). Hook absent (rondo) : physique pure, à l'identique.
-    if (!(cfg.ballFetch && cfg.ballFetch(st, dt))) st.ball.integrate(dt);
+    if (!(cfg.ballFetch && cfg.ballFetch(st, dt, cfg))) st.ball.integrate(dt);
     st._drb = null;
     // first player within reach takes it — defenders included: that is the interception.
     // BUT the ball must have LEFT the passer first: for the first metres it is still at his feet,

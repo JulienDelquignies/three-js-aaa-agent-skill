@@ -359,6 +359,25 @@ export const MATCH = {
                           // menace.js) ; l'horizon suit le format (null → chrono, sinon
                           // 360 s — le motif fatigue). Clé absente : les axes gelés
                           // d'hier, au bit (sabotage nommé).
+  filet: { drag: 5, fond: 2, rebond: 0.15 },
+                          // LE FILET (11c11, st.full — lot 116, retour utilisateur : « le
+                          // ballon s'arrête dans la cage au lieu d'aller au fond ») : la
+                          // cage est un MATÉRIAU CONTINU — la maille draine (drag/s : 15
+                          // m/s meurent en ~0,5 s sur ~1,8 m, le fond se gonfle), fond et
+                          // côtés rendent mou (×rebond). Mesuré avant : mort à 0,27-0,79 m
+                          // derrière la ligne (brake 85 % en UNE frame). Absent : hier.
+  bordure: { d: 4, rebond: 0.3 },
+                          // LES PANNEAUX (lot 116) : hors du terrain le ballon FINIT SA
+                          // COURSE (le brake 0,35 des sorties meurt) — les panneaux à d m
+                          // des lignes le bornent, rebond mou vers le terrain ; le preneur
+                          // va le chercher où il meurt (portage existant). Absent : hier.
+  celebration: { dur: 6.5, n: 3 },
+                          // LA CÉLÉBRATION (11c11, st.full — lot 116) : le BUTEUR file au
+                          // coin le plus proche, les n coéquipiers les PLUS PROCHES le
+                          // rejoignent en courant, le reste marche à l'engagement — qui
+                          // attend dur s de plus (le chrono les compte en arrêts). Le clip
+                          // celebration (bras au ciel) se joue à l'événement nommé.
+                          // Absent : l'engagement d'hier, 3,8 s après le but.
   loi3: { changements: 5 },
                           // LA LOI 3 (11c11, st.full) : les REMPLACEMENTS. La LOI est le
                           // mécanisme (limite de changements, exécution à l'ARRÊT DE JEU,

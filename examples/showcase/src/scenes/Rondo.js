@@ -919,6 +919,14 @@ export class Rondo {
           this._playTech(pl, { ...e, move: e.dev >= 110 ? 'crochetCourt' : 'passeExterieur', foot: lat > 0 ? 'left' : 'right' });
           pl._swingT = this._t;
         }
+      } else if (e.type === 'celebration') {
+        // LE CORPS DE LA JOIE (lot 116) : le buteur lève les bras (clip celebration existant
+        // — il court au coin pendant que la couche haute joue), ses compagnons pareil à
+        // mi-chemin ; le ticker nomme la fête.
+        const pl = this.players[e.by];
+        if (pl) this._playTech(pl, { ...e, move: 'celebration' });
+        for (const id of e.avec ?? []) { const q = this.players[id]; if (q) this._playTech(q, { ...e, by: id, move: 'celebration' }); }
+        this._ticker.event(e, this.state);
       } else if (e.type === 'tête' || e.type === 'volée') {
         // LE CIEL A UN CORPS (lot 112) : la tête SAUTÉE joue le saut authoré (démarré dans
         // la montée — offset 0,24 : le décollage vit à l'instant du contact sim), la tête

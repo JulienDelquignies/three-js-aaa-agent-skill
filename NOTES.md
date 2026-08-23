@@ -4820,6 +4820,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ~4 % des frames) : le clip joue (miroir compris), photo de la pichenette. Dettes :
      la roulette, la talonnade jouée, le une-deux, le lob (la liste utilisateur continue).
 
+158. **Lot 116 : LE BUT VIT — le filet gonfle, la fête a lieu, l'élan survit au sifflet
+     (retour utilisateur ×3 : « le ballon s'arrête dans la cage au lieu d'aller au fond des
+     filets », « laisser l'équipe célébrer avant de reprendre », « toutes les frappes
+     doivent continuer leur élan »).** MESURÉ AVANT : le ballon de but mourait à 0,27-0,79 m
+     derrière la ligne (le fond est à ~2 m), 3,8 s entre but et engagement — DEUX tueurs
+     nommés : brake(0,15) au sifflet (85 % de la vitesse en UNE frame) et « LA LISSE EST UN
+     MUR » (ballFetch : impulse TOTAL à 1,2 m derrière toute ligne, vol compris — le stop
+     que l'utilisateur voyait). TROIS LOIS 11c11 (st.full, referee.js) : (1) LE FILET
+     (cfg.filet {drag 5, fond 2, rebond 0,15}) — la cage est un MATÉRIAU : le ballon vole
+     LIBRE dedans, c'est LA MAILLE qui l'attrape (fond/côtés/toit à < 0,3 m : drag violent
+     + renvoi quasi nul, il retombe et roule) ; la v1 au drag volumique freinait AVANT la
+     maille (1,2-1,34 max), re-fondée au contact ; mesuré en flux : les buts gonflent à
+     1,12-2,06 m — le fond ATTEINT par les frappes fortes. (2) LES PANNEAUX (cfg.bordure
+     {d 4, rebond 0,3}) : hors du terrain le ballon FINIT SA COURSE, les panneaux le
+     bornent en rendant mou — le preneur va le chercher où il meurt (le portage existant) ;
+     fixture : sortie à 20 m/s → course 4,1 m (l'hier complet — palissade + brake : 1,15).
+     (3) LA CÉLÉBRATION (cfg.celebration {dur 6,5, n 3}) : le BUTEUR (le dernier tireur de
+     l'équipe) file au coin le plus proche, les n coéquipiers les PLUS PROCHES le
+     rejoignent, le reste marche à l'engagement — qui attend 10,3 s (le chrono compte en
+     arrêts) ; event 'celebration' nommé (ticker « il célèbre ! », la scène joue le clip
+     celebration existant sur le buteur et les compagnons) ; 8/8 buts célébrés en flux,
+     le buteur mesuré − 4,8 m vers le coin à +2,5 s. LES GARDES D'IDENTITÉ (la doctrine
+     11c11) : bordFiletStep gardé st.full ; la palissade et les brakes d'hier ne s'effacent
+     que si LA MATIÈRE les remplace (st.full && filet/bordure) — le réduit est REVENU AU BIT
+     (e81af1c6d2a76caf, la référence 115 exacte) après que la première garde (clé seule) l'a
+     fait dériver, leçon consignée. LE LAB GAGNE l'hier du 116 (filet/bordure/celebration
+     false) ET trois clauses anciennes migrent au labo (97-fautes, 98-renversement,
+     gardien-DÉFEND — la 4e re-cassure de cette dernière : le fix durable annoncé au 3e
+     élargissement, tenu). A/B 20 × 300 s : 91 tirs / 33 buts — au plafond de bande,
+     TRIANGULÉ (40 graines : 32/20 ; isolations filet/bordure/celebration OFF toutes dans
+     ±3 : le bruit, aucun mécanisme ne crée de buts). Batterie : match11 126/0, rondo 40/0,
+     match 84/0 (le réduit re-vert après la garde full), renversement 8/0, circuits 6/0,
+     menace 11/0, sync 9/0, attributes 14/0, gestes 59/0, animkit 114/114. EMPREINTES :
+     rondo c775c81e62592d4d et réduit e81af1c6d2a76caf AU BIT ; match 3/7
+     5f8e49ed637d832f / 9fa91139532953e4 (références 116). Photos : la course au coin à
+     trois. Dettes nommées : les variantes de célébration (genoux, groupe au corner), la
+     déception de l'encaisseur (les têtes basses), le filet RENDU (la maille visuelle qui
+     ondule — la scène).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
