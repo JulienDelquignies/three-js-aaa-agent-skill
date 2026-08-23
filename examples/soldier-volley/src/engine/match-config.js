@@ -346,6 +346,16 @@ export const MATCH = {
                           // l'API du projet (politique de banc). Événement 'fatigue' au
                           // franchissement de 0,35. false : le moteur infatigable (sabotage
                           // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
+  talonnade: { press: 2.8, cone: 130, bonus: 0.4, seen: 0.18 },
+                          // LA TALONNADE DE CHOIX (11c11, st.full — lot 118) : le clip
+                          // dormait (0,5/match — le plan MARCHAIT son demi-tour). Pressé
+                          // de face (< press m) avec une cible ARRIÈRE (> cone°), le talon
+                          // gagne sa préférence (+bonus au plan — son ancre est déjà sous
+                          // le pied) ; et il NE SE LIT PAS (le bassin ne tourne pas, sa
+                          // signature) : seen plafonné 0,18 — le PRESSEUR est surpris,
+                          // pas toute la surface (0,08 mesuré : +8 buts/20 matchs, les
+                          // remises talonnées dans la boîte devenaient des caviars).
+                          // Absente : le demi-tour d'hier, au bit.
   coach: { each: 20, fenetre: 60, orage: 3, horizon: null },
                           // LE CERVEAU DE COACH (11c11, st.full — lot 113) : toutes les
                           // `each` s, il lit score/chrono/momentum et DÉPLACE les axes

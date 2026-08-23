@@ -4894,6 +4894,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (+ le jockey posté → passement). Restent de la liste : la talonnade (le clip existe,
      aucune loi), le une-deux, le lob du gardien avancé.
 
+160. **Lot 118 : LA TALONNADE DE CHOIX — la passe arrière sans se retourner (liste
+     utilisateur, le clip orphelin réveillé).** MESURÉ AVANT : le clip talonnade ET sa ligne
+     de TECHNIQUES existaient depuis toujours — 0,5 exécution/match : le plan (planStrike)
+     préférait MARCHER son demi-tour (la passe propre reste mieux notée jusqu'à ~1,4 m de
+     marche), et l'improvisation d'urgence n'y accédait que sur un ballon déjà derrière le
+     corps. DEUX LOIS (cfg.talonnade {press 2,8, cone 130, bonus 0,4, seen 0,18}, st.full,
+     strike-sim) : (1) LE CHOIX — pressé de FACE (< press m) avec une cible DERRIÈRE
+     (> cone°), le demi-tour est un CADEAU au presseur : le talon gagne sa préférence
+     (+bonus au plan — son ancre est déjà sous le pied, fit ≈ 0) ; (2) LA SURPRISE — la
+     signature du clip est un bassin qui ne tourne pas : l'armé ne téléphone rien, seen
+     plafonné à 0,18 (le presseur paie presque plein tarif). LE CALIBRAGE EN DEUX COUPS
+     (les pièges mesurés) : (a) seen 0,08 = +8 buts/20 matchs — la surprise TOTALE
+     transformait les remises talonnées de la boîte en caviars : le presseur est surpris,
+     pas toute la surface → 0,18 ; (b) LE DÉFENSEUR PRESSÉ TALONNAIT VERS SON GARDIEN
+     (molle, power 0,45, interceptée : le cadeau) → le bonus SEULEMENT en camp ADVERSE —
+     la talonnade est un geste de CRÉATION, le défenseur garde son demi-tour prudent.
+     APRÈS : 2,3 talonnades/match (toutes offensives), A/B 88 tirs / 30 buts ∈ [17 ; 33]
+     (triangulé 30 graines ~30,7/20 — le régime du monde depuis le 116). LE CRASH ATTRAPÉ
+     PAR LE PROTOCOLE : sgn118 lisait st.pitch AVANT la garde — le RONDO n'a pas de pitch,
+     l'empreinte a crashé AVANT le ship (le fingerprint est un banc). Deux pièges
+     d'instrument re-consignés : events[length-1] recompte le même windup (le curseur
+     d'index, 3e fois — désormais le réflexe) ; la clause CIEL-112 élargie à HUIT graines
+     mesurées (fini le re-choix par lot, l'échantillon absorbe le Poisson). Clauses : le
+     flux (vif ≥ sabotée + 3 — l'impro d'hier joue le talon partout depuis toujours, le
+     CHOIX s'ajoute par-dessus ; ≥ 60 % offensives ; seen ≤ 0,18), la fixture du plan
+     (avec bonus le talon gagne, sans bonus l'hier marche), LAB += talonnade:false.
+     Batterie : match11 130/0, rondo 40/0, match 84/0, renversement 8/0, circuits 6/0,
+     menace 11/0, sync 9/0, attributes 14/0, gestes 60/0, animkit 115/115. EMPREINTES :
+     rondo c775c81e62592d4d ET réduit 860254b902bdf58b AU BIT (la loi est full-only) ;
+     match 3 9396195d5c3703a3 (nouvelle), match 7 4054563bf8925f87 (INTACTE — aucun talon
+     avant 120 s sur cette graine). Restent de la liste : le une-deux, le lob du gardien
+     avancé.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

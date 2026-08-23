@@ -21,6 +21,8 @@ import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
+import { planStrike } from '../assets/starter/src/engine/approach.js';
+import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
 import { coachStep, checkCoach } from '../assets/starter/src/engine/coach.js';
 import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
@@ -40,7 +42,8 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
   coach: false,                                         // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
   skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null },   // …le répertoire pré-114/115/117 (ni croqueta, ni pont, ni roulette)
-  filet: false, bordure: false, celebration: false };               // …le sifflet d'hier (pré-116 : brakes ponctuels, engagement à 3,8 s)
+  filet: false, bordure: false, celebration: false,                 // …le sifflet d'hier (pré-116 : brakes ponctuels, engagement à 3,8 s)
+  talonnade: false };                                               // …le demi-tour d'hier (pré-118 : le talon dormait)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1811,7 +1814,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // duel du venant — l'identité au défaut prouvée dans le MÊME run.
   const ciel = (over) => {
     let sautees = 0, duelsV = 0;
-    for (const seed of [1, 4, 11, 12]) {   // graines RE-MESURÉES au flux 115 (2+2+3+2 : Poisson des
+    for (const seed of [1, 3, 5, 6, 7, 9, 10, 12]) {   // HUIT graines (flux 118 : 1+1+3+2+3+1+1+1 = 13 — l'échantillon élargi absorbe enfin le Poisson, fini le re-choix par lot)
       const st = makeMatch({ full: true, seed });          // événements rares — la leçon pertes-104)
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -1824,8 +1827,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const vif = ciel({});
   const sab = ciel({ tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });
-  ok(`lot 112 — le CIEL VIT (4 × 300 s : ${vif.sautees} têtes sautées ≥ 3 — la détente T.saut × sautF joue le vol de 2,2-3,0 m qui était muet)`,
-    vif.sautees >= 3);
+  ok(`lot 112 — le CIEL VIT (8 × 300 s : ${vif.sautees} têtes sautées ≥ 5 — la détente T.saut × sautF joue le vol de 2,2-3,0 m qui était muet)`,
+    vif.sautees >= 5);
   ok(`sabotage « le ciel muet d'hier » attrapé (saut/duel absents : ${sab.sautees} tête sautée, ${sab.duelsV} duel du venant — la fenêtre debout d'hier, l'identité au défaut)`,
     sab.sautees === 0 && sab.duelsV === 0);
 
@@ -2188,6 +2191,59 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabR = fluxR({ skill: { ...matchCfg().skill, rouletteFoe: null } });
   ok(`lot 117 — la ROULETTE vit et TOURNE (${vifR.n3} / 4 × 300 s ≥ 3, ${vifR.tours} tours pleins mesurés au yaw ≥ ${Math.max(1, Math.floor(vifR.n3 * 0.6))}, garde ${vifR.gardes}/${vifR.n3} ≥ 60 % — elle PRÉSERVE : la v1 à +14 buts/20 matchs perforait, nerfée sur mesure) ; sabotage « le poursuivant sans réponse d'hier » attrapé (${sabR.n3})`,
     vifR.n3 >= 3 && vifR.tours >= Math.max(1, Math.floor(vifR.n3 * 0.6)) && vifR.gardes >= vifR.n3 * 0.6 && sabR.n3 === 0);
+}
+
+// ---- LOT 118 : LA TALONNADE DE CHOIX — la passe arrière sans se retourner, offensive
+{
+  // LE FLUX : le talon vit (2,3/match — était 0,5 : le plan marchait son demi-tour), TOUTES
+  // dans le camp ADVERSE (le défenseur pressé qui talonnait vers son gardien offrait +8
+  // buts/20 matchs — le cadeau mesuré, la borne posée) et la SURPRISE plafonnée (seen ≤
+  // 0,18 : le presseur est surpris, pas toute la surface — 0,08 : +8 buts aussi, l'autre
+  // moitié du calibrage) ; sabotage talonnade:false : le clip dormant d'hier (≤ 2).
+  const talon = (over) => {
+    let n5 = 0, offensives = 0, seenMax = -1;
+    for (const seed of [1, 2, 3, 4]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let armTalon = false, cursor = 0;   // le CURSEUR d'index — events[length-1] recompte le même windup à chaque frame (le piège, re-frappé et consigné)
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'windup' && e.move === 'talonnade') {
+            n5++; armTalon = true;
+            const p = st.players[e.by];
+            if (p.p[0] * Math.sign(st.pitch.attackGoal(p.team).x || 1) > 0) offensives++;
+          }
+        }
+        if (armTalon && st.phase === 'flight' && st._surprise && st.t - st._surprise.t < 0.05) {
+          seenMax = Math.max(seenMax, st._surprise.seen ?? 0); armTalon = false;
+        }
+      }
+    }
+    return { n5, offensives, seenMax: +seenMax.toFixed(2) };
+  };
+  const vifT = talon({});
+  const sabT = talon({ talonnade: false });
+  // …l'IMPROVISATION d'urgence joue le talon PARTOUT depuis toujours (le ballon derrière le
+  // corps — la géométrie honnête) : le CHOIX du 118 s'AJOUTE par-dessus — le contrat est
+  // l'écart vif − sabotée ≥ 3 et la part offensive ≥ 60 % (le bonus n'existe qu'en camp adverse)
+  ok(`lot 118 — la TALONNADE DE CHOIX vit (${vifT.n5} / 4 × 300 s ≥ sabotée ${sabT.n5} + 3 — le choix s'ajoute à l'impro d'hier —, ${vifT.offensives}/${vifT.n5} offensives ≥ 60 %) et SURPREND juste (seen max ${vifT.seenMax} ≤ 0,18)`,
+    vifT.n5 >= sabT.n5 + 3 && vifT.offensives >= vifT.n5 * 0.6 && vifT.seenMax <= 0.18);
+
+  // LA FIXTURE DU PLAN : cible DERRIÈRE + bonus → planStrike retient le talon (son ancre est
+  // sous le pied) ; SANS bonus (l'hier), le même monde retient une passe qui marche.
+  const mk = (bonus) => {
+    const ball = [10.3, 0];
+    const cands = TECHNIQUES.filter((t) => t.intent === 'pass' && !t.firstTime).map((t) => ({
+      clip: t.clip, pref: t.accuracy + (bonus && t.clip === 'talonnade' ? 0.4 : 0), antic: 0.3, data: t,
+    }));
+    // le porteur regarde +x (yaw 0 → il est à [10,0]), la cible est DERRIÈRE (outYaw = π)
+    return planStrike([10, 0], ball, Math.PI, cands, {});
+  };
+  const avec = mk(true), sans = mk(false);
+  ok(`…la FIXTURE du plan (cible derrière : avec bonus le talon gagne — ${avec.best?.clip ?? avec.steer?.clip} ; sans bonus l'hier marche son demi-tour — ${sans.best?.clip ?? 'marche vers ' + (sans.steer?.clip ?? '?')})`,
+    (avec.best?.clip === 'talonnade') && (sans.best?.clip !== 'talonnade'));
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

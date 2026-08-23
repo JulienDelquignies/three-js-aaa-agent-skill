@@ -74,6 +74,24 @@ export function beginPass(st, choice, cfg, opts = {}) {
     let cands = TECHNIQUES.filter((t) => t.intent === 'pass' && !t.firstTime).map((t) => ({
       clip: t.clip, pref: t.accuracy, antic: (MOVE_TIMING[t.clip] || MOVE_TIMING.passe).contact, data: t,
     }));
+    // LA TALONNADE DE CHOIX (lot 118, cfg.talonnade && st.full — le clip dormait : 0,5
+    // exécution/match, le plan préférait MARCHER son demi-tour). PRESSÉ de face avec une
+    // cible DERRIÈRE (> cone°), le demi-tour est un CADEAU au presseur — le talon gagne sa
+    // préférence (+bonus) et le plan le retient (son ancre est déjà sous le pied, fit ≈ 0).
+    // Clé absente : le demi-tour d'hier, au bit.
+    // …et SEULEMENT dans le camp ADVERSE (mesuré : le défenseur pressé talonnait vers son
+    // gardien — molle, power 0,45, interceptée : +8 buts/20 matchs de cadeaux ; le vrai
+    // défenseur pressé garde son demi-tour prudent, la talonnade est un geste de CRÉATION)
+    if (st.full && cfg.talonnade && !opts.shot
+      && c.p[0] * Math.sign(st.pitch?.attackGoal?.(c.team).x || 1) > 0) {
+      let dYaw118 = Math.abs(outYaw - c.yaw); while (dYaw118 > Math.PI) dYaw118 = Math.abs(dYaw118 - 2 * Math.PI);
+      if (dYaw118 * 180 / Math.PI > (cfg.talonnade.cone ?? 130)
+        && st.players.some((q) => q.team !== c.team && q.down <= 0
+          && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.talonnade.press ?? 2.8)
+          && situation(c.p, c.yaw, q.p, [0, 0], 0.11).bearing < 70)) {
+        for (const cd of cands) if (cd.clip === 'talonnade') cd.pref += cfg.talonnade.bonus ?? 0.4;
+      }
+    }
     // LE GESTE DU TIR (lot 93, cfg.gesteTir && st.full) : l'espèce s'habille de SON clip — mesuré
     // avant : 13/16 tirs dessinés en passeRapide/passePivot (l'armé d'une petite passe pour un
     // ballon à 21 m/s). La puissance arme AMPLE, l'enroulée ENVELOPPE de l'intérieur, le pointu
@@ -353,7 +371,11 @@ export function strikeNow(st, c, cfg) {
   // LA PERCEPTION A UNE HORLOGE : le départ du ballon est un événement — mais l'armé était
   // VISIBLE. La défense paie max(0, réaction perso − armé vu) : une passe téléphonée s'anticipe,
   // une urgence courte se subit. (Consommé par la retenue de cible dans rondoStep.)
-  st._surprise = { t: st.t, seen: c.act ? c.act.t : 0, n: (st._surprise?.n ?? 0) + 1 };
+  // …et LA TALONNADE NE SE LIT PAS (lot 118) : sa signature est un bassin qui ne tourne pas
+  // — l'armé visible ne téléphone rien, la défense paie presque plein tarif (seen plafonné)
+  const seen118 = st.full && cfg.talonnade && pick?.tech?.clip === 'talonnade'
+    ? Math.min(c.act ? c.act.t : 0, cfg.talonnade.seen ?? 0.08) : (c.act ? c.act.t : 0);
+  st._surprise = { t: st.t, seen: seen118, n: (st._surprise?.n ?? 0) + 1 };
   st.phase = 'flight';
   st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]] };
   // LE TROISIÈME HOMME (lot 111, cfg.troisieme && st.full — « le foot est plus varié dans la
