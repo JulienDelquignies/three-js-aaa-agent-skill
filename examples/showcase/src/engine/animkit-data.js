@@ -518,6 +518,20 @@ export const MOVES = {
       { t: 0.26, pose: { LeftUpLeg: [16, 0, 6], LeftLeg: [-28, 0, 0], RightUpLeg: [12, 0, 0], Spine1: [8, 0, 0] }, hips: [0, -0.03, 0] },
       { t: 0.36, pose: {}, hips: [0, 0, 0] },
     ] },
+  /** LA ROULETTE (lot 117) — le HAUT du tour (le yaw du corps est écrit par la sim,
+   *  ownsBody) : la semelle TIRE le ballon (jambe droite en flexion-adduction dès l'entrée,
+   *  contact 0,1), le corps s'abaisse, les bras s'ouvrent en balancier de pivot, la 2e
+   *  semelle (l'autre pied dans le réel — ici la même jambe se relâche) raccompagne, tout
+   *  se referme à la sortie. 0,7 s — le tour du corps est dessiné par la rotation sim. */
+  roulette: {
+    name: 'roulette', duration: 0.7, contact: 0.1, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.1, pose: { RightUpLeg: [26, 0, 0], RightLeg: [-34, 0, 0], Spine1: [14, 0, 0], LeftArm: [0, 0, 38], RightArm: [0, 0, -34] }, hips: [0, -0.06, 0] },
+      { t: 0.32, pose: { RightUpLeg: [12, 0, 0], RightLeg: [-16, 0, 0], Spine1: [10, 0, 4], LeftArm: [0, 0, 46], RightArm: [0, 0, -40] }, hips: [0, -0.08, 0] },
+      { t: 0.52, pose: { RightUpLeg: [18, 0, 0], RightLeg: [-24, 0, 0], Spine1: [12, 0, -4], LeftArm: [0, 0, 34], RightArm: [0, 0, -30] }, hips: [0, -0.06, 0] },
+      { t: 0.7, pose: {}, hips: [0, 0, 0] },
+    ] },
   /** LE PETIT PONT (lot 115) — la pichenette : le pied pousse SEC entre les jambes du
    *  fermeur (extension rapide dès 0,12), le corps DÉJÀ bas et penché du côté du
    *  contournement (l'appui est pris avant le contact — le pont est un départ, pas une

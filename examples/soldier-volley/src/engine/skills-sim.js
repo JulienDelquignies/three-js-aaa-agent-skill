@@ -419,6 +419,54 @@ export function maybePetitPont(st, c, cfg) {
   return true;
 }
 
+/** LA ROULETTE (lot 117, liste utilisateur) — le 360 qui PROTÈGE. Sa niche, disjointe des
+ *  frères : le POURSUIVANT en diagonale-dos (bearing 55-140° — le frontal appartient au
+ *  râteau/à la croqueta, le plein dos à la tenure) qui ferme sur un porteur LANCÉ. Le corps
+ *  ENROULE : le ballon sous la semelle, 360° autour, le corps s'interpose TOUT le tour — le
+ *  poursuivant prend l'épaule, pas le ballon. Mesuré avant : 52,3 fenêtres/match (le monde
+ *  le plus fréquent des cinq niches), 95 % sans geste. La roulette réelle est RARE : le
+ *  tirage est le plus sobre du répertoire, et l'AGILITÉ filtre (× (2 − getupF) : le souple
+ *  roule, le raide s'abstient — l'attribut est un facteur, jamais une branche). Clés au
+ *  match seulement (rouletteFoe absent : le rondo d'hier). */
+export function maybeRoulette(st, c, cfg) {
+  const K = cfg.skill; if (!K || !K.rouletteFoe) return false;
+  if (c.keeper) return false;
+  if ((c._skillCd?.roulette ?? -1) > st.t) return false;
+  if (c.speed < (K.rouletteV ?? 1.5)) return false;               // un 360 s'enroule sur un élan
+  if (d2(c.p, st.ball.p) > 0.6) return false;
+  let foe = null, fd = Infinity, side = 1;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    const d = d2(q.p, c.p);
+    if (d < K.rouletteFoe[0] || d > K.rouletteFoe[1] || d >= fd) continue;
+    const closing = ((c.p[0] - q.p[0]) * q.v[0] + (c.p[2] - q.p[2]) * q.v[1]) / Math.max(1e-4, d);
+    if (closing < (K.rouletteClosing ?? 0.8)) continue;
+    const sit = situation(c.p, c.yaw, q.p, [0, 0], 0.11);
+    if (sit.bearing < (K.rouletteBear?.[0] ?? 55) || sit.bearing > (K.rouletteBear?.[1] ?? 140)) continue;
+    foe = q; fd = d; side = sit.side === 'left' ? 1 : -1;         // on tourne du côté OPPOSÉ au poursuivant
+  }
+  if (!foe) return false;
+  // …tirage 0,08 → 0,05 et sortie 0,35 → 0,15 de l'élan (calibrage mesuré : la v1 ajoutait
+  // +33 tirs/+14 buts sur 20 matchs — le porteur intouchable qui AVANCE perforait la ligne ;
+  // le vrai 360 se fait quasi SUR PLACE et préserve, il ne crée pas)
+  if ((st.rnd ? st.rnd() : 0.5) > (0.05 + 0.15 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1) * (2 - (c.skill?.getupF ?? 1))) {
+    (c._skillCd ??= {}).roulette = st.t + 3; return false;
+  }
+  const sit2 = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId.rateau, sit2);                        // la semelle — la patte du râteau
+  const move = MOVE_TIMING.roulette;
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  startGesture(c, { id: 'roulette', ...move }, {
+    payload: { kind: 'skill', skill: 'roulette', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw: c.yaw, spin: side, v0: c.speed, foeId: foe.id, ballMax: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).roulette = st.t + (K.rouletteCd ?? 12);
+  c.intent = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'roulette', foot, skill: 'roulette', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'roulette', by: c.id, foe: +fd.toFixed(2) });
+  return true;
+}
+
 /** La feinte de frappe : à portée de tir, un CONTREUR dans le cône du but — tout l'armé d'une
  *  frappe, la retenue au contact, le contreur s'assoit LONGTEMPS (on ne se jette pas devant une
  *  demi-frappe) — et la demi-seconde payée est l'angle qui manquait au tir. Match seulement
@@ -528,6 +576,13 @@ export function skillContactNow(st, p, cfg) {
       A.reussi = false;
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'petitPont', by: p.id, reussi: false, foot: A.pick.foot });
     }
+  } else if (A.skill === 'roulette') {
+    // le poursuivant PREND L'ÉPAULE : le corps s'interpose tout le tour — sa course se casse
+    const K = cfg.skill;
+    const foe = st.players[A.foeId ?? -1];
+    const bitten = [];
+    if (foe && foe.down <= 0) { foe._bite = st.t + (K.rouletteBite ?? 0.3) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'roulette-vendu', by: p.id, bitten, foot: A.pick.foot });
   } else if (A.skill === 'doubleContact') {
     // le TRANSFERT échappe au tacle : le jeté traverse l'endroit où le ballon N'EST PLUS —
     // il paie sa morsure (même loi que le mordu de feinte), × la note du dribbleur
@@ -655,6 +710,36 @@ export function skillFollowStep(st, p, dt, cfg) {
     const dist = 0.35 + 0.15 * e;
     st.ball.carry([p.p[0] + Math.cos(ang) * dist, p.p[2] + Math.sin(ang) * dist], dt, { tau: 0.05 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'roulette') {
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roulette', { log: st.gestures }); return; }
+    // LE 360 : le cap tourne d'un tour PLEIN (signé côté opposé au poursuivant), le corps
+    // glisse sur ~35 % de son élan, le ballon reste SOUS la semelle (0,18 m devant le cap
+    // COURANT — il décrit le petit cercle du tour avec le pied) ; la sortie = l'entrée.
+    const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
+    const e3 = u * u * (3 - 2 * u);
+    p.yaw = wrapA(A.yaw0 + (A.spin ?? 1) * 2 * Math.PI * e3);
+    p.yawWant = null;
+    const vG = (A.v0 ?? 2) * 0.15;
+    p.v[0] = Math.cos(A.yaw0) * vG; p.v[1] = Math.sin(A.yaw0) * vG;
+    p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+    p.speed = vG;
+    st.ball.carry([p.p[0] + Math.cos(p.yaw) * 0.18, p.p[2] + Math.sin(p.yaw) * 0.18], dt, { tau: 0.05 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'roulette') {
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roulette', { log: st.gestures }); return; }
+    // LE 360 : le cap tourne d'un tour PLEIN (signé côté opposé au poursuivant), le corps
+    // glisse sur ~35 % de son élan, le ballon reste SOUS la semelle (0,18 m devant le cap
+    // COURANT — il décrit le petit cercle du tour avec le pied) ; la sortie = l'entrée.
+    const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
+    const e3 = u * u * (3 - 2 * u);
+    p.yaw = wrapA(A.yaw0 + (A.spin ?? 1) * 2 * Math.PI * e3);
+    p.yawWant = null;
+    const vG = (A.v0 ?? 2) * 0.15;
+    p.v[0] = Math.cos(A.yaw0) * vG; p.v[1] = Math.sin(A.yaw0) * vG;
+    p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+    p.speed = vG;
+    st.ball.carry([p.p[0] + Math.cos(p.yaw) * 0.18, p.p[2] + Math.sin(p.yaw) * 0.18], dt, { tau: 0.05 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'petitPont') {
     // avant le contact : le corps se cale (le ballon est à lui) ; APRÈS : le ballon est
     // PARTI (strike au contact — pas d'abort-souffle : c'est le geste qui l'a lâché), le
@@ -693,6 +778,21 @@ export function skillFollowStep(st, p, dt, cfg) {
     const lat = (A.away ?? 1) * 0.32 * Math.cos(Math.PI * u) * (1 - e);
     const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
     st.ball.carry([p.p[0] + fx * (0.35 + 0.1 * e) + fz * lat, p.p[2] + fz * (0.35 + 0.1 * e) - fx * lat], dt, { tau: 0.045 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'roulette') {
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roulette', { log: st.gestures }); return; }
+    // LE 360 : le cap tourne d'un tour PLEIN (signé côté opposé au poursuivant), le corps
+    // glisse sur ~35 % de son élan, le ballon reste SOUS la semelle (0,18 m devant le cap
+    // COURANT — il décrit le petit cercle du tour avec le pied) ; la sortie = l'entrée.
+    const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
+    const e3 = u * u * (3 - 2 * u);
+    p.yaw = wrapA(A.yaw0 + (A.spin ?? 1) * 2 * Math.PI * e3);
+    p.yawWant = null;
+    const vG = (A.v0 ?? 2) * 0.15;
+    p.v[0] = Math.cos(A.yaw0) * vG; p.v[1] = Math.sin(A.yaw0) * vG;
+    p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+    p.speed = vG;
+    st.ball.carry([p.p[0] + Math.cos(p.yaw) * 0.18, p.p[2] + Math.sin(p.yaw) * 0.18], dt, { tau: 0.05 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'petitPont') {
     // avant le contact : le corps se cale (le ballon est à lui) ; APRÈS : le ballon est

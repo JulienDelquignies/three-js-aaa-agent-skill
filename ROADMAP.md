@@ -56,7 +56,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 159.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 160.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)

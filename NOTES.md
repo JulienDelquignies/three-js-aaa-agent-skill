@@ -4859,6 +4859,41 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      déception de l'encaisseur (les têtes basses), le filet RENDU (la maille visuelle qui
      ondule — la scène).
 
+159. **Lot 117 : LA ROULETTE — le 360 qui PROTÈGE le ballon du poursuivant (liste
+     utilisateur, 2e geste).** MESURÉ AVANT : 52,3 fenêtres du POURSUIVANT-DIAGONALE par
+     match (bearing 55-140°, closing ≥ 0,8, porteur lancé ≥ 1,5 m/s — le monde le plus
+     fréquent des cinq niches du 1c1), 95 % sans geste. LA NICHE, disjointe des frères :
+     le frontal appartient au râteau/à la croqueta, le plein dos à la tenure — la roulette
+     répond à la POURSUITE : le corps ENROULE (yaw fait un tour PLEIN signé côté opposé au
+     poursuivant, ownsBody), le ballon reste SOUS la semelle (0,18 m devant le cap courant —
+     il décrit le petit cercle du tour avec le pied), le corps s'interpose TOUT le tour, le
+     poursuivant prend l'ÉPAULE (bite 0,3 × gesteF), la sortie = l'entrée. LE MANTRA :
+     tirage flair × gesteF × (2 − getupF) — L'AGILITÉ FILTRE (le souple roule, le raide
+     s'abstient : 36 vs 18 tentatives sur 200 tirages, l'attribut est un facteur, jamais
+     une branche). LE CALIBRAGE MESURÉ (la leçon du lot) : la v1 (bite 0,5, sortie à 35 %
+     de l'élan) ajoutait +33 tirs / +14 buts sur 20 matchs — LE PORTEUR INTOUCHABLE QUI
+     AVANCE perforait la ligne ; le vrai 360 se fait quasi SUR PLACE et PRÉSERVE (bite 0,3,
+     sortie 15 %, tirage 0,05 base — le plus sobre du répertoire, cd 12 s) → A/B revenu
+     à 94 tirs / 25 buts ∈ [17 ; 33], 2,8 roulettes/match, GARDE 26/28 (93 % — elle
+     protège, c'est sa nature). Clip haut-du-corps (le tour est SIM) : semelle armée
+     (−34° au contact), pivot bas (hanches −0,08), bras en balancier (46°), 0,7 s.
+     Clauses : la niche sèche (diagonale ✓ / frontal ✗ / lent ✗), l'agilité aux 200
+     tirages, le flux qui TOURNE (10/10 tours pleins mesurés au yaw ∈ [2,4 ; π] rad de
+     déviation max), le sabotage « le poursuivant sans réponse d'hier » (rouletteFoe
+     absent : 0). LE GEL PRÉ-114 GÉNÉRALISÉ : les clauses de FLUX du réduit (verify-match
+     « ça marque »/« la pointe », verify-attributes « territoire ») gelées à skill sans
+     doubleFoe/pontFoe/rouletteFoe — 3 re-cassures en 4 lots de gestes, le patron LAB
+     étendu aux bancs du réduit (les gestes eux-mêmes se testent dans verify-gestes, en
+     monde courant, à dessein) ; le LAB de match11 gagne rouletteFoe null. Batterie :
+     match11 129/0, rondo 40/0, match 84/0, renversement 8/0, circuits 6/0, menace 11/0,
+     sync 9/0, attributes 14/0, gestes 60/0, animkit 115/115. EMPREINTES : rondo AU BIT
+     (c775c81e62592d4d) ; réduit 860254b902bdf58b, match 3/7 d2ca3157459e47ad /
+     4054563bf8925f87 (références 117 — batterie complète verte avant acceptation).
+     LE RÉPERTOIRE DU 1c1 EST COMPLET À CINQ : la charge → râteau, le jeté → croqueta,
+     le glisseur → petit pont, la poursuite → roulette, la fermeture de course → crochet
+     (+ le jockey posté → passement). Restent de la liste : la talonnade (le clip existe,
+     aucune loi), le une-deux, le lob du gardien avancé.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

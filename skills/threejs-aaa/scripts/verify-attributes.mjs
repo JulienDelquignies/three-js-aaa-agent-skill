@@ -62,7 +62,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // l'inversion était le bruit de re-distribution des tirages d'espèces, pas une loi morte)
   for (const seed of [3, 7, 1, 11, 5, 9, 13, 2, 17, 4]) {
     const st = makeMatch({ perTeam: 5, seed, squads: [elite, faible] });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null } });   // le gel 114-117 : les 50/50 des gestes re-battaient la possession
     let lastPass = -1;
     for (let i = 0; i < 120 * 60; i++) {
       matchStep(st, 1 / 60, cfg);

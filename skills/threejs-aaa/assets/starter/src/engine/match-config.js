@@ -594,6 +594,15 @@ export const MATCH = {
                             // raté tape la jambe et revient en 50/50 — le pari est réel)
     pontBite: 0.7,          // s — se retourner contre son pas chassé coûte, × gesteF
     pontCd: 10,             // s
+    rouletteFoe: [0.8, 1.8],// m — LA ROULETTE (lot 117) : le POURSUIVANT en diagonale-dos
+    rouletteBear: [55, 140],// ° — le frontal appartient au râteau/à la croqueta, le plein
+                            // dos à la tenure (mesuré : 52 fenêtres/match, 95 % muettes)
+    rouletteClosing: 0.8,   // m/s — il ferme
+    rouletteV: 1.5,         // m/s — un 360 s'enroule sur un élan
+    rouletteBite: 0.3,      // s — le poursuivant prend l'ÉPAULE, sa course accroche (× gesteF ;
+                            // 0,5 le cassait : +14 buts/20 matchs mesurés, la roulette perforait)
+    rouletteCd: 12,         // s — le geste le plus rare du répertoire (tirage le plus sobre,
+                            // × (2−getupF) : l'agilité filtre — le raide s'abstient)
   },
   carryViaBall: true,     // le porteur PASSE PAR SON BALLON (cible = ballon au-delà de la portée) ; false : la cible-plan (sabotage nommé)
   meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)

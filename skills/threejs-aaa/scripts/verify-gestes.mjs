@@ -478,5 +478,14 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     (arme?.pose.RightLeg?.[0] ?? 0) <= -25 && (pousse2?.pose.RightLeg?.[0] ?? -99) >= -8 && (pousse2?.pose.Spine1?.[2] ?? 0) !== 0 && P.duration <= 0.35);
 }
 
+// ---- LOT 117 : LE HAUT DE LA ROULETTE SE DESSINE (le tour du corps est sim — yaw ownsBody)
+{
+  const R = MOVES.roulette;
+  const semelle = R.keys.find((k) => k.t === R.contact);
+  const pivot = R.keys.find((k) => k.t === 0.32);
+  ok(`la roulette ARME la semelle (jambe ${semelle?.pose.RightLeg?.[0]} ≤ −28 au contact), PIVOTE bas (hanches ${pivot?.hips?.[1]} ≤ −0,07, bras ouverts ${pivot?.pose.LeftArm?.[2]} ≥ 40) et reste sobre (${R.duration} s ≤ 0,8)`,
+    (semelle?.pose.RightLeg?.[0] ?? 0) <= -28 && (pivot?.hips?.[1] ?? 0) <= -0.07 && (pivot?.pose.LeftArm?.[2] ?? 0) >= 40 && R.duration <= 0.8);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

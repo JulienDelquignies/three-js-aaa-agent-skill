@@ -23,7 +23,7 @@ import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
 import { coachStep, checkCoach } from '../assets/starter/src/engine/coach.js';
-import { maybeDoubleContact, maybePetitPont, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
+import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
 import { resoudreTactique } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
@@ -39,7 +39,7 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
   coach: false,                                         // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
-  skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null },   // …le répertoire pré-114/115 (ni croqueta ni petit pont)
+  skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null },   // …le répertoire pré-114/115/117 (ni croqueta, ni pont, ni roulette)
   filet: false, bordure: false, celebration: false };               // …le sifflet d'hier (pré-116 : brakes ponctuels, engagement à 3,8 s)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
@@ -2105,6 +2105,89 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabB = course({ bordure: false, filet: false });   // l'HIER complet : la palissade à 1,2 m + le brake de sortie
   ok(`…et L'ÉLAN SURVIT AU SIFFLET (sortie à 20 m/s : course hors terrain ${vifB} m ≥ sabotée + 1 et ≤ 7 — le panneau borne, le brake d'hier tuait : bordure:false ${sabB} m)`,
     vifB >= sabB + 1 && vifB <= 7);
+}
+
+// ---- LOT 117 : LA ROULETTE — le 360 qui protège, l'agilité filtre
+{
+  const KR = { rouletteFoe: [0.8, 1.8], rouletteBear: [55, 140], rouletteClosing: 0.8, rouletteV: 1.5, rouletteBite: 0.3, rouletteCd: 12 };
+  // (a) LA NICHE à sec : le POURSUIVANT en diagonale déclenche ; le FRONTAL refuse (le
+  // râteau/la croqueta possèdent la face) ; le porteur LENT refuse (un 360 s'enroule sur
+  // un élan). rnd → 0 : le tirage passe toujours — la géométrie seule est jugée.
+  const fxR = (foeP, foeV, speed) => {
+    const st = { t: 10, events: [], gestures: [], area: [105, 68], rnd: () => 0,
+      ball: { p: [10.35, 0.11, 0], owner: 0, possess() {} },
+      players: [
+        { id: 0, team: 0, keeper: false, p: [10, 0, 0], v: [speed, 0], yaw: 0, speed, down: 0, act: null, persona: { flair: 0.5 }, skill: { gesteF: 1, getupF: 1 } },
+        { id: 1, team: 1, keeper: false, p: foeP, v: foeV, yaw: Math.PI, speed: Math.hypot(...foeV), down: 0, act: null, skill: {} },
+      ] };
+    return { ok4: maybeRoulette(st, st.players[0], { skill: KR }), act: st.players[0].act?.payload?.skill ?? null, spin: st.players[0].act?.payload?.spin };
+  };
+  const diag = fxR([10.4, 0, 1.2], [-0.5, -1.6], 2.5);
+  const frontal = fxR([11.3, 0, 0.1], [-2, 0], 2.5);
+  const lent = fxR([10.4, 0, 1.2], [-0.5, -1.6], 0.8);
+  ok(`la NICHE de la roulette (le poursuivant-diagonale déclenche : ${diag.ok4} + acte ${diag.act} ; le frontal refuse : ${frontal.ok4} — la face appartient au râteau/à la croqueta ; le porteur lent refuse : ${lent.ok4})`,
+    diag.ok4 === true && diag.act === 'roulette' && frontal.ok4 === false && lent.ok4 === false);
+
+  // (b) L'AGILITÉ FILTRE (le mantra : l'attribut est un facteur du tirage — × (2 − getupF)) :
+  // 200 tirages seedés sur la même géométrie — le souple (getupF 0,72) tente NETTEMENT plus
+  // que le raide (1,28) : P ×1,78 par la formule.
+  const tentes = (getupF) => {
+    let n2 = 0;
+    for (let k = 0; k < 200; k++) {
+      let seed2 = k * 4241 + 11;
+      const rnd = () => { seed2 = (seed2 * 9301 + 49297) % 233280; return seed2 / 233280; };
+      const st = { t: 10, events: [], gestures: [], area: [105, 68], rnd,
+        ball: { p: [10.35, 0.11, 0], owner: 0, possess() {} },
+        players: [
+          { id: 0, team: 0, keeper: false, p: [10, 0, 0], v: [2.5, 0], yaw: 0, speed: 2.5, down: 0, act: null, persona: { flair: 0.5 }, skill: { gesteF: 1, getupF } },
+          { id: 1, team: 1, keeper: false, p: [10.4, 0, 1.2], v: [-0.5, -1.6], yaw: Math.PI, speed: 1.7, down: 0, act: null, skill: {} },
+        ] };
+      if (maybeRoulette(st, st.players[0], { skill: KR })) n2++;
+    }
+    return n2;
+  };
+  const souple = tentes(0.72), raide = tentes(1.28);
+  ok(`…l'AGILITÉ filtre la roulette (200 tirages : le souple tente ${souple} ≥ raide ${raide} + 12 — getupF est un facteur, le raide s'abstient, jamais une branche)`,
+    souple >= raide + 12);
+
+  // (c) LE FLUX : la roulette vit, TOURNE (l'acte fait un tour plein — yaw mesuré) et GARDE ;
+  // sabotage « le poursuivant sans réponse d'hier » (rouletteFoe absent : 0).
+  const fluxR = (over) => {
+    let n3 = 0, tours = 0, gardes = 0;
+    for (const seed of [1, 2, 5, 8]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      const marks = [];
+      let spinWatch = null;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const e = st.events[st.events.length - 1];
+        if (e && e.type === 'skill' && e.kind === 'roulette' && !marks.some((m) => m.t === e.t)) {
+          marks.push({ t: e.t, team: st.players[e.by].team, done: false }); n3++;
+          spinWatch = { by: e.by, yaw0: st.players[e.by].yaw, maxDev: 0, t: e.t };
+        }
+        if (spinWatch && st.t < spinWatch.t + 0.75) {
+          const p = st.players[spinWatch.by];
+          let d = Math.abs(p.yaw - spinWatch.yaw0); if (d > Math.PI) d = 2 * Math.PI - d;
+          spinWatch.maxDev = Math.max(spinWatch.maxDev, d);
+        } else if (spinWatch) { if (spinWatch.maxDev > 2.4) tours++; spinWatch = null; }
+        for (const m of marks) {
+          if (!m.done && st.t >= m.t + 2) {
+            m.done = true;
+            const own = st.ball.owner;
+            if (own != null) { if (st.players[own].team === m.team) gardes++; }
+            else if (st.pass && st.players[st.pass.from]?.team === m.team) gardes++;
+            else { const near = st.players.filter((q) => q.down <= 0).sort((a2, b2) => Math.hypot(a2.p[0] - st.ball.p[0], a2.p[2] - st.ball.p[2]) - Math.hypot(b2.p[0] - st.ball.p[0], b2.p[2] - st.ball.p[2]))[0]; if (near && near.team === m.team && Math.hypot(near.p[0] - st.ball.p[0], near.p[2] - st.ball.p[2]) < 2.5) gardes++; }
+          }
+        }
+      }
+    }
+    return { n3, tours, gardes };
+  };
+  const vifR = fluxR({});
+  const sabR = fluxR({ skill: { ...matchCfg().skill, rouletteFoe: null } });
+  ok(`lot 117 — la ROULETTE vit et TOURNE (${vifR.n3} / 4 × 300 s ≥ 3, ${vifR.tours} tours pleins mesurés au yaw ≥ ${Math.max(1, Math.floor(vifR.n3 * 0.6))}, garde ${vifR.gardes}/${vifR.n3} ≥ 60 % — elle PRÉSERVE : la v1 à +14 buts/20 matchs perforait, nerfée sur mesure) ; sabotage « le poursuivant sans réponse d'hier » attrapé (${sabR.n3})`,
+    vifR.n3 >= 3 && vifR.tours >= Math.max(1, Math.floor(vifR.n3 * 0.6)) && vifR.gardes >= vifR.n3 * 0.6 && sabR.n3 === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

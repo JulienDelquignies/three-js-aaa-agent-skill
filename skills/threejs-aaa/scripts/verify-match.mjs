@@ -13,6 +13,10 @@ import { makeMatch, matchCfg, matchStep, playMatch, checkMatch, MATCH } from '..
 import { touchDistance } from '../assets/starter/src/engine/dribble.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 
+// LE GEL DES GESTES 114-117 pour les clauses de FLUX du réduit (le patron LAB — la croqueta,
+// le pont et la roulette re-battaient ces bandes à CHAQUE lot : 3 re-cassures en 4 lots) ;
+// les gestes eux-mêmes se testent dans verify-gestes, en monde courant, à dessein.
+const PRE114 = { skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null } };
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
@@ -58,7 +62,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const SEEDS = [3, 7, 11, 1];
   for (const seed of SEEDS) {
     const st = makeMatch({ perTeam: 5, seed });
-    const { st: s2, trace } = playMatch(st, 120);
+    const { st: s2, trace } = playMatch(st, 120, { cfg: matchCfg({ ...PRE114 }) });
     const r = checkMatch(s2, trace);
     if (r.ok) contratsOk++;
     else console.log(`  (graine ${seed} : ${r.issues[0]})`);
@@ -114,7 +118,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const holds = [];
   for (const seed of [3, 7]) {
     const st = makeMatch({ perTeam: 5, seed });
-    const { st: s2, trace } = playMatch(st, 120);
+    const { st: s2, trace } = playMatch(st, 120, { cfg: matchCfg({ ...PRE114 }) });
     const evs = s2.events;
     for (const p of evs.filter((e) => e.type === 'pass' && e.to >= 0)) {
       total++;
@@ -260,7 +264,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let far = 0, tot = 0;
       for (const seed of [3, 7]) {
         const st = makeMatch({ perTeam: 5, seed });
-        const cfg = matchCfg(overrides);
+        const cfg = matchCfg({ ...PRE114, ...overrides });
         for (let i = 0; i < 120 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           const c = st.players[st.possession.carrier];
@@ -316,7 +320,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let far = 0, tot = 0;
       for (const seed of [3, 7]) {
         const st = makeMatch({ perTeam: 5, seed });
-        const cfg = matchCfg(overrides);
+        const cfg = matchCfg({ ...PRE114, ...overrides });
         for (let i = 0; i < 120 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           const c = st.players[st.possession.carrier];
