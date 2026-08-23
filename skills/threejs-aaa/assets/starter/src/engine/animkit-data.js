@@ -518,6 +518,20 @@ export const MOVES = {
       { t: 0.26, pose: { LeftUpLeg: [16, 0, 6], LeftLeg: [-28, 0, 0], RightUpLeg: [12, 0, 0], Spine1: [8, 0, 0] }, hips: [0, -0.03, 0] },
       { t: 0.36, pose: {}, hips: [0, 0, 0] },
     ] },
+  /** LE PETIT PONT (lot 115) — la pichenette : le pied pousse SEC entre les jambes du
+   *  fermeur (extension rapide dès 0,12), le corps DÉJÀ bas et penché du côté du
+   *  contournement (l'appui est pris avant le contact — le pont est un départ, pas une
+   *  passe). Les BRAS restent à la locomotion (0,3 s : pas le temps de gesticuler — le cap
+   *  de vitesse angulaire des bras l'a rappelé, 16-20 rad/s aux essais de balancier). */
+  petitPont: {
+    name: 'petitPont', duration: 0.3, contact: 0.12, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.07, pose: { RightUpLeg: [22, 0, 0], RightLeg: [-30, 0, 0], Spine1: [10, 0, -8] }, hips: [0, -0.05, 0] },
+      { t: 0.12, pose: { RightUpLeg: [-6, 0, 0], RightLeg: [-4, 0, 0], Spine1: [12, 0, -10] }, hips: [0, -0.06, 0] },
+      { t: 0.2, pose: { RightUpLeg: [6, 0, 0], RightLeg: [-12, 0, 0], Spine1: [10, 0, -6] }, hips: [0, -0.04, 0] },
+      { t: 0.3, pose: {}, hips: [0, 0, 0] },
+    ] },
   /** LE SAUT DE TÊTE (lot 112) — la dette du ciel payée : impulsion accroupie, extension
    *  verticale (hanches +0,38 au pic — la DÉTENTE se voit), le buste se CAMBRE en montant
    *  (l'armé du fouetté) puis FOUETTE au contact (Spine1 −14 → +16, Head −12 → +22 : c'est

@@ -470,5 +470,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     Math.sign(t1?.pose.Spine1?.[2] ?? 0) !== Math.sign(t2?.pose.Spine1?.[2] ?? 0) && (t1?.pose.Spine1?.[2] ?? 0) !== 0 && D.duration <= 0.4);
 }
 
+// ---- LOT 115 : LA PICHENETTE DU PONT SE DESSINE
+{
+  const P = MOVES.petitPont;
+  const arme = P.keys.find((k) => k.t === 0.07), pousse2 = P.keys.find((k) => k.t === P.contact);
+  ok(`le petit pont POUSSE SEC (jambe armée ${arme?.pose.RightLeg?.[0]} ≤ −25 puis tendue ${pousse2?.pose.RightLeg?.[0]} ≥ −8 en 0,05 s) et le corps est DÉJÀ au contournement (lean ${pousse2?.pose.Spine1?.[2]} ≠ 0), sec (${P.duration} s ≤ 0,35)`,
+    (arme?.pose.RightLeg?.[0] ?? 0) <= -25 && (pousse2?.pose.RightLeg?.[0] ?? -99) >= -8 && (pousse2?.pose.Spine1?.[2] ?? 0) !== 0 && P.duration <= 0.35);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

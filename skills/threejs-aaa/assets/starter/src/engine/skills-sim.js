@@ -338,8 +338,11 @@ export function maybeDoubleContact(st, c, cfg) {
     if (q.team === c.team || q.down > 0 || q === foe) continue;   // le jeté lui-même sera mordu, pas un mur
     if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < (K.doubleClear ?? 1.1)) return deny(st, 'double-sans-issue');
   }
-  // QUI le tente : flair × la note de dribble (le régime de la famille — attributs en facteurs)
-  if ((st.rnd ? st.rnd() : 0.5) > (0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
+  // QUI le tente : flair × la note de dribble AU CARRÉ — un geste de RISQUE (le 50/50 du
+  // duel nivelle les notes : mesuré, les faibles tentaient autant que l'élite car les
+  // fenêtres leur arrivent plus souvent, et la part de tirs élite tombait de 49 à 33 % sur
+  // un jeu de graines ; le joueur limité ne tente pas la croqueta, il dégage)
+  if ((st.rnd ? st.rnd() : 0.5) > (0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {
     (c._skillCd ??= {}).double = st.t + 2; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -354,6 +357,65 @@ export function maybeDoubleContact(st, c, cfg) {
   c.intent = null;
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'doubleContact', foot, skill: 'doubleContact', anticipation: move.contact });
   st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'doubleContact', by: c.id, foe: +fd.toFixed(2), closing: +closing.toFixed(1) });
+  return true;
+}
+
+/** LE PETIT PONT (lot 115, suite foot validée). Le SEUL geste qui joue À TRAVERS le
+ *  défenseur — tous les autres l'évitent. Sa niche : le GLISSEUR — le jockey en pas chassés
+ *  (vitesse PERPENDICULAIRE à l'axe du duel ≥ pontLatV : les appuis sont ouverts par
+ *  biomécanique), de face, avec l'espace DERRIÈRE lui libre. Mesuré avant : 18,5 fenêtres
+ *  du glisseur par match, 89 % sans réponse. Le ballon est POUSSÉ entre les jambes (strike
+ *  doux — le vol est physique, interceptable), le porteur CONTOURNE côté CONTRE l'élan du
+ *  glisseur (il ne peut pas se retourner contre son pas chassé) et rechasse ; le RISQUE est
+ *  réel : la réussite se tire AU CONTACT — gesteF du ponteur CONTRE reactions du fermeur
+ *  (l'attribut des deux côtés, jamais une branche) ; raté, le ballon TAPE LA JAMBE et
+ *  revient en 50/50. Clés au match seulement (pontFoe absent : le rondo d'hier). */
+export function maybePetitPont(st, c, cfg) {
+  const K = cfg.skill; if (!K || !K.pontFoe) return false;
+  if (c.keeper) return false;
+  if ((c._skillCd?.pont ?? -1) > st.t) return false;
+  if (d2(c.p, st.ball.p) > 0.6) return false;
+  let foe = null, fd = Infinity, ux = 0, uz = 0, latS = 0;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    const d = d2(q.p, c.p);
+    if (d < K.pontFoe[0] || d > K.pontFoe[1] || d >= fd) continue;
+    const vx = (q.p[0] - c.p[0]) / d, vz = (q.p[2] - c.p[2]) / d;
+    const lat = -vz * q.v[0] + vx * q.v[1];                       // sa vitesse PERPENDICULAIRE, signée
+    if (Math.abs(lat) < (K.pontLatV ?? 1.2)) continue;            // il glisse — les appuis ouverts
+    const bear = situation(c.p, c.yaw, q.p, [0, 0], 0.11).bearing;
+    if (bear > (K.pontCone ?? 40)) continue;
+    foe = q; fd = d; ux = vx; uz = vz; latS = Math.sign(lat);
+  }
+  if (!foe) return false;
+  // l'espace DERRIÈRE le glisseur (le ballon doit avoir où aller — pas un 2e rideau)
+  const bx = foe.p[0] + ux * (K.pontDepth ?? 2.5), bz = foe.p[2] + uz * (K.pontDepth ?? 2.5);
+  if (Math.abs(bx) > st.area[0] / 2 - 0.8 || Math.abs(bz) > st.area[1] / 2 - 0.8) return deny(st, 'pont-hors-carré');
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0 || q === foe) continue;
+    if (Math.hypot(q.p[0] - bx, q.p[2] - bz) < (K.pontClear ?? 1.5)) return deny(st, 'pont-second-rideau');
+  }
+  // QUI le tente : flair × la note AU CARRÉ — le pont est le PARI le plus cher du
+  // répertoire (47 % de réussite) : la note filtre fort (le même contrat de risque que la
+  // croqueta — les gestes de contrôle restent en gesteF simple)
+  if ((st.rnd ? st.rnd() : 0.5) > (0.15 + 0.35 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {
+    (c._skillCd ??= {}).pont = st.t + 2.5; return false;
+  }
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId.crochet, sit);
+  const move = MOVE_TIMING.petitPont;
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  // le contournement va CONTRE l'élan du glisseur (latS > 0 = son élan vers la GAUCHE du
+  // porteur, convention (fz,−fx) — le porteur passe à droite : exitYaw NÉGATIF… le signe
+  // suit la même algèbre que la croqueta : yaw + d tourne vers −(fz,−fx))
+  const exitYaw = c.yaw + latS * (K.pontTurn ?? 0.85);
+  startGesture(c, { id: 'petitPont', ...move }, {
+    payload: { kind: 'skill', skill: 'petitPont', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, foeId: foe.id, through: [bx, bz], v0: c.speed, ballMax: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).pont = st.t + (K.pontCd ?? 10);
+  c.intent = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'petitPont', foot, skill: 'petitPont', anticipation: move.contact });
   return true;
 }
 
@@ -440,6 +502,31 @@ export function skillContactNow(st, p, cfg) {
       const bitten = [];
       if (foe && foe.down <= 0) { foe._bite = st.t + 0.35 * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet-vendu', by: p.id, bitten, foot: A.pick.foot });
+    }
+  } else if (A.skill === 'petitPont') {
+    // LA RÉUSSITE SE TIRE AU CONTACT (le windup a laissé au fermeur sa chance) : la note du
+    // ponteur CONTRE les réflexes du fermeur — le lent se fait ponter, le vif ferme
+    const K = cfg.skill;
+    const foe = st.players[A.foeId ?? -1];
+    const pOk = Math.max(0.25, Math.min(0.85,
+      (K.pontP ?? 0.55) * (p.skill?.gesteF ?? 1) + (((foe?.skill?.reaction ?? 0.22) - 0.22) * 1.2)));
+    const reussi = (st.rnd ? st.rnd() : 0.5) < pOk;
+    if (reussi && foe && foe.down <= 0) {
+      // le ballon TRAVERSE (strike doux — release intégré, le vol est physique) ; le fermeur
+      // MORD (se retourner contre son pas chassé coûte) ; le contournement est LANCÉ
+      st.ball.strike({ speed: K.pontV ?? 6.5, dirYaw: Math.atan2(A.through[1] - st.ball.p[2], A.through[0] - st.ball.p[0]), elevation: 0.01, spinAxis: [0, 1, 0], spinRev: 0 });
+      st.pass = null;
+      foe._bite = st.t + (K.pontBite ?? 0.7) * (p.skill?.gesteF ?? 1);
+      p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + 0.9, kind: 'sortie' };
+      A.reussi = true;
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'petitPont', by: p.id, reussi: true, bitten: [foe.id], foot: A.pick.foot });
+    } else {
+      // FERMÉ : le ballon tape la jambe et revient court, à hauteur du duel — le 50/50 du pari
+      const back = Math.atan2(p.p[2] - (foe?.p[2] ?? p.p[2]), p.p[0] - (foe?.p[0] ?? p.p[0]));
+      st.ball.strike({ speed: 3.5, dirYaw: back + ((st.rnd ? st.rnd() : 0.5) - 0.5) * 1.4, elevation: 0.05, spinAxis: [0, 1, 0], spinRev: 0 });
+      st.pass = null;
+      A.reussi = false;
+      st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'petitPont', by: p.id, reussi: false, foot: A.pick.foot });
     }
   } else if (A.skill === 'doubleContact') {
     // le TRANSFERT échappe au tacle : le jeté traverse l'endroit où le ballon N'EST PLUS —
@@ -568,6 +655,23 @@ export function skillFollowStep(st, p, dt, cfg) {
     const dist = 0.35 + 0.15 * e;
     st.ball.carry([p.p[0] + Math.cos(ang) * dist, p.p[2] + Math.sin(ang) * dist], dt, { tau: 0.05 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'petitPont') {
+    // avant le contact : le corps se cale (le ballon est à lui) ; APRÈS : le ballon est
+    // PARTI (strike au contact — pas d'abort-souffle : c'est le geste qui l'a lâché), le
+    // corps s'oriente au contournement et son burst l'emmène — la chasse standard reprend
+    if (p.act.t < p.act.anticipation) {
+      if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-pont', { log: st.gestures }); return; }
+      p.v[0] *= 0.8; p.v[1] *= 0.8; p.speed = Math.hypot(p.v[0], p.v[1]);
+    } else if (A.reussi) {
+      const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
+      const e2 = u * u * (3 - 2 * u);
+      p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e2;
+      p.yawWant = null;
+      const vC = Math.max(2.5, (A.v0 ?? 2)) * (0.7 + 0.5 * e2);
+      p.v[0] = Math.cos(p.yaw) * vC; p.v[1] = Math.sin(p.yaw) * vC;
+      p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+      p.speed = vC;
+    } else { p.v[0] *= 0.7; p.v[1] *= 0.7; p.speed = Math.hypot(p.v[0], p.v[1]); }
   } else if (A.skill === 'doubleContact') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-double', { log: st.gestures }); return; }
     // le corps GLISSE sur son élan freiné et le cap TOURNE À PEINE vers la sortie (ease —
@@ -590,6 +694,23 @@ export function skillFollowStep(st, p, dt, cfg) {
     const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
     st.ball.carry([p.p[0] + fx * (0.35 + 0.1 * e) + fz * lat, p.p[2] + fz * (0.35 + 0.1 * e) - fx * lat], dt, { tau: 0.045 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'petitPont') {
+    // avant le contact : le corps se cale (le ballon est à lui) ; APRÈS : le ballon est
+    // PARTI (strike au contact — pas d'abort-souffle : c'est le geste qui l'a lâché), le
+    // corps s'oriente au contournement et son burst l'emmène — la chasse standard reprend
+    if (p.act.t < p.act.anticipation) {
+      if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-pont', { log: st.gestures }); return; }
+      p.v[0] *= 0.8; p.v[1] *= 0.8; p.speed = Math.hypot(p.v[0], p.v[1]);
+    } else if (A.reussi) {
+      const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
+      const e2 = u * u * (3 - 2 * u);
+      p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e2;
+      p.yawWant = null;
+      const vC = Math.max(2.5, (A.v0 ?? 2)) * (0.7 + 0.5 * e2);
+      p.v[0] = Math.cos(p.yaw) * vC; p.v[1] = Math.sin(p.yaw) * vC;
+      p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+      p.speed = vC;
+    } else { p.v[0] *= 0.7; p.v[1] *= 0.7; p.speed = Math.hypot(p.v[0], p.v[1]); }
   } else if (A.skill === 'doubleContact') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-double', { log: st.gestures }); return; }
     // le corps GLISSE sur son élan freiné et le cap TOURNE À PEINE vers la sortie (ease —

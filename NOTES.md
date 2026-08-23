@@ -4782,6 +4782,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      croqueta EN COURSE (v1 : le cap tenu à vitesse modérée ; la version pleine course
      type Iniesta-2009 demandera l'élan préservé du passement enCourse).
 
+157. **Lot 115 : LE PETIT PONT — le ballon À TRAVERS le glisseur, un pari aux attributs
+     (suite foot validée) ; et L'AFFAIRE DE L'ÉLITE (l'enquête du banc).** MESURÉ AVANT :
+     18,5 fenêtres du GLISSEUR par match (le jockey en pas chassés — vitesse PERPENDICULAIRE
+     ≥ 1,2 m/s : les appuis ouverts par biomécanique — de face, l'espace derrière libre),
+     89 % sans réponse. LE SEUL GESTE QUI TRAVERSE (skills-sim, clés cfg.skill.pont* au
+     match) : le ballon est POUSSÉ entre les jambes (strike doux 6,5 m/s — un vol PHYSIQUE,
+     interceptable), le porteur CONTOURNE contre l'élan du glisseur (il ne peut pas se
+     retourner contre son pas chassé — exitYaw 0,85 rad + burst) et rechasse ; LE RISQUE
+     EST RÉEL : la réussite se tire AU CONTACT (le windup laisse au fermeur sa chance) —
+     pOk = pontP × gesteF + (reaction_foe − 0,22) × 1,2 ∈ [0,25 ; 0,85] : le lent se fait
+     ponter, le vif ferme ; RATÉ, le ballon TAPE LA JAMBE et revient en 50/50. APRÈS :
+     1,5 pont/match, 47 % de réussite (le pari du réel), garde 5/7 sur les réussis.
+     Fixture sèche de la niche (glisseur ✓ / radial ✗ — la croqueta possède le jeté / statique ✗),
+     fixture du PARI 60 jets × 2 profils (le fermeur lent ponté ≥ vif + 6 — piège consigné :
+     ids = INDICES, le moteur adresse st.players[id]), flux graines mesurées + sabotage
+     « le glisseur intraversable d'hier » (pontFoe absent : 0). LE CLIP : la pichenette
+     (0,3 s, contact 0,12 — l'extension rapide, le corps déjà penché au contournement) ;
+     les BRAS restent à la locomotion (16-20 rad/s aux essais de balancier > cap 14 —
+     0,3 s ne laissent pas le temps de gesticuler). L'AFFAIRE DE L'ÉLITE : la clause
+     « l'élite domine les OCCASIONS » (58 %) re-cassée — l'enquête à 4 × 10 graines dit
+     46-52-33-61 % (±19 pts entre jeux : le format court ne converge pas) et l'A/B APPARIÉ
+     INNOCENTE les gestes 114/115 (46 % avec, 47 % sans, mêmes graines) : l'avantage élite
+     aux tirs a ÉRODÉ de 69/66 % (lot 79) à ~49 % à travers ~36 lots — chaque loi nouvelle
+     redistribue des 50/50. La clause REDEVIENT TÉMOIN (2e repli — le contrat reste au
+     territoire et à l'exécution, qui convergent) ; LE POIDS DES NOTES v2 est la dette
+     nommée du ROADMAP (sonde par mécanisme, re-concentration). En chemin : le tirage des
+     gestes de RISQUE passe en gesteF² (croqueta + pont — le joueur limité ne tente pas,
+     il dégage ; les gestes de contrôle restent en simple) ; la clause gardien-DÉFEND
+     re-fondée (70 → 75 : ±1 but = ±9 pts à cet échantillon, le fix durable est nommé) ;
+     les graines du CIEL-112 re-mesurées au flux courant ([1,4,11,12] — le cycle Poisson).
+     Batterie : match11 123/0, rondo 40/0, match 84/0, renversement 8/0, circuits 6/0,
+     menace 11/0, sync 9/0, attributes 14/0, gestes 59/0, animkit 114/114. A/B 20 × 300 s :
+     86 tirs / 24 buts ∈ [17 ; 33]. EMPREINTES : rondo AU BIT (c775c81e62592d4d) ; réduit
+     e81af1c6d2a76caf, match 3/7 a0956157131fb3cd / 999e9833bd0427ef (références 115).
+     AUDIT VISUEL (labo vivant, glisseur maintenu — la fenêtre naturelle n'est vraie que
+     ~4 % des frames) : le clip joue (miroir compris), photo de la pichenette. Dettes :
+     la roulette, la talonnade jouée, le une-deux, le lob (la liste utilisateur continue).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

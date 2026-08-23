@@ -56,7 +56,7 @@
 - Commits : trailers Co-Authored-By + Claude-Session habituels ; branche
   `claude/ai-agent-threejs-aaa-tool-dyrrb0` ; jamais d'identifiant de modèle dans le code/commits.
 - NOTES.md : journal complet (notes 1-139) — insérer avant le marqueur
-  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 157.
+  « - Skill `threejs-aaa` : refs 01–22 ». Prochaine note : 158.
 
 ## Pièges d'instrument (payés cher, ne pas ré-apprendre)
 - Le readback pixel d'un canvas WebGPU (drawImage) MENT — seul play_screenshot (composited)
@@ -172,6 +172,10 @@
    les variantes de plan (corner court, surcharge du second poteau).
 
 ## Backlog long terme (inchangé)
+LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36
+lots — chaque loi nouvelle redistribue des 50/50 ; sonde PAR MÉCANISME puis re-concentration
+de l'avantage : chasse × pace, premier toucher × control, duels × strength/tackling).
+
 Gardien relanceur avancé, formations 442/352
 complètes (la couche LIGNES existe), le troisième homme v2 (v1 livrée note 153 — reste :
 courses dédiées vers l'intervalle), triangulation v4 (assignation, hystérésis), expulsion

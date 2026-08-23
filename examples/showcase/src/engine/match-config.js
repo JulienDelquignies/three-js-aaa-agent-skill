@@ -562,6 +562,19 @@ export const MATCH = {
     doubleClear: 1.1,       // m — la sortie doit être libre d'un AUTRE corps (le jeté mord, lui)
     doubleBite: 0.55,       // s — le jeté traverse là où le ballon n'est plus, × gesteF
     doubleCd: 8,            // s
+    pontFoe: [0.8, 1.8],    // m — LE PETIT PONT (lot 115) : le GLISSEUR en pas chassés
+    pontLatV: 1.2,          // m/s — sa vitesse perpendiculaire (les appuis ouverts par
+                            // biomécanique ; mesuré : 18,5 fenêtres/match, 89 % muettes)
+    pontCone: 40,           // ° — de face
+    pontDepth: 2.5,         // m — où le ballon traverse (derrière lui)
+    pontClear: 1.5,         // m — pas de 2e rideau sur le point de sortie
+    pontTurn: 0.85,         // rad — le contournement, CONTRE l'élan du glisseur
+    pontV: 6.5,             // m/s — la pichenette (un vol physique, interceptable)
+    pontP: 0.55,            // — la base de réussite, × gesteF CONTRE reactions du fermeur
+                            // (tirée AU CONTACT : le windup laisse au vif sa chance ; le
+                            // raté tape la jambe et revient en 50/50 — le pari est réel)
+    pontBite: 0.7,          // s — se retourner contre son pas chassé coûte, × gesteF
+    pontCd: 10,             // s
   },
   carryViaBall: true,     // le porteur PASSE PAR SON BALLON (cible = ballon au-delà de la portée) ; false : la cible-plan (sabotage nommé)
   meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)

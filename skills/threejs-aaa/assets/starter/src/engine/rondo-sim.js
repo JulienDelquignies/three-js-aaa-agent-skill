@@ -15,7 +15,7 @@ import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
 import { beginPass, strikeNow } from './strike-sim.js';
-import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
+import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
 
 // rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
 // "passe à dix" is won or lost happens here: when the carrier releases, whether the pass beats the
@@ -236,7 +236,7 @@ function standTackleNow(st, q, cfg) {
 // corps-ballon reste SOUDÉ (carry servo) — raclé, garé, jamais téléporté. La fréquence est une
 // identité (persona.flair) sous cooldowns stricts : un geste technique est un événement, pas un tic.
 
-export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybeFeinteFrappe, skillContactNow };
+export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeFeinteFrappe, skillContactNow };
 export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a), chargeStep: (...a) => chargeStep(...a), slideTackleStep: (...a) => slideTackleStep(...a), choosePass: (...a) => choosePass(...a) };
 
 /** Give the ball to `id`. A team-mate taking it keeps possession — only the INTENDED receiver
@@ -852,10 +852,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // de la fenêtre du contrôle + settleExtra (70 % des contrôles étaient refrappés avant la fin du
     // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.
     const settleGate = st._settling && st._settling.id === c.id && st.t < st._settling.at + cfg.settleExtra;
-    // LE DOUBLE CONTACT D'ABORD (lot 114) : le jeté FRANC se perfore vers l'avant — sortie fermée : le râteau (charge, sortie arrière) reprend
+    // LE DOUBLE CONTACT D'ABORD (lot 114) : le jeté FRANC se perfore vers l'avant — sortie fermée : le râteau (charge, sortie arrière) reprend ; puis LE PETIT PONT (lot 115) : le glisseur latéral se traverse
     if (!settleGate && maybeDoubleContact(st, c, cfg)) return st;
-    // LE RÂTEAU AVANT QUE LE DUEL S'INSTALLE : presseur qui ferme la face, sortie arrière
-    // libre — on se retourne pendant qu'on a le pas d'avance (refus nommés sinon)
+    if (!settleGate && maybePetitPont(st, c, cfg)) return st;
+    // LE RÂTEAU AVANT QUE LE DUEL S'INSTALLE : presseur qui ferme la face, sortie arrière libre — on se retourne avec le pas d'avance (refus nommés sinon)
     if (!settleGate && maybeRateau(st, c, cfg)) return st;
     // le crochet coupe une COURSE fermée, le passement ment à un jockey POSTÉ — deux situations
     // disjointes du râteau (la charge frontale) ; leurs clés n'existent qu'au match

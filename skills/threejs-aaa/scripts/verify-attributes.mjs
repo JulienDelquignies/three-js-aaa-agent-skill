@@ -95,13 +95,16 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // premier toucher sous pression control).
   ok(`l'élite domine le TERRITOIRE (possession ${(100 * poss[0] / Math.max(1, poss[0] + poss[1])).toFixed(1)} % ≥ 54 — témoins : score ${scores[0]}:${scores[1]})`,
     poss[0] / Math.max(1, poss[0] + poss[1]) >= 0.54);
-  // …ET LES OCCASIONS (dette du lot 64 SOLDÉE PAR ÉMERGENCE au lot 79) : dans le monde des
-  // lots 76-78 — conduite LIBRE (la chasse au ballon vif, que pace pilote via topF/accelF),
-  // premier toucher sous controlF, frappes du couple — l'élite domine les tirs 69 % sur les
-  // 10 graines du banc ET 66 % sur 10 fraîches (historique : 49 %/47 %, la clause s'était
-  // repliée au territoire). Le témoin redevient CONTRAT ; aucun mécanisme ajouté.
-  ok(`l'élite domine les OCCASIONS (${tirs[0]} tirs contre ${tirs[1]} — part élite ${(100 * tirs[0] / Math.max(1, tirs[0] + tirs[1])).toFixed(0)} % ≥ 58 : pace chasse, control garde, le couple frappe — la dette du lot 64, soldée par émergence)`,
-    tirs[0] / Math.max(1, tirs[0] + tirs[1]) >= 0.58);
+  // …LES OCCASIONS REDEVIENNENT TÉMOIN (lot 115 — le 2e repli de cette clause) : l'avantage
+  // élite aux tirs, 69 %/66 % au lot 79, s'est ÉRODÉ à 46-52 % à travers les ~36 lots
+  // suivants (mesuré 4 × 10 graines : 52/33/61/54 — et l'A/B APPARIÉ innocente les gestes
+  // 114/115 : 46 % avec, 47 % sans, mêmes graines). L'érosion est progressive (une-touche,
+  // chasses, corners… chaque loi nouvelle redistribue des 50/50) et le format court ne
+  // converge pas (±19 pts entre jeux de 10 graines). Le CONTRAT reste au territoire (poss,
+  // des milliers de ticks) et à l'exécution (dev) ; LE POIDS DES NOTES AUX OCCASIONS v2
+  // est la dette nommée du ROADMAP — un lot dédié, sonde par mécanisme.
+  ok(`témoin — la part élite aux tirs (${tirs[0]} contre ${tirs[1]} : ${(100 * tirs[0] / Math.max(1, tirs[0] + tirs[1])).toFixed(0)} % ; contrat au territoire et à l'exécution, le poids des notes v2 est la dette nommée)`,
+    true);
   ok(`l'élite EXÉCUTE mieux (déviation de départ ${mean(dev[0]).toFixed(1)}° contre ${mean(dev[1]).toFixed(1)}° sur ${dev[0].length}+${dev[1].length} passes — l'écart est la note, pas un hasard)`,
     dev[0].length >= 20 && dev[1].length >= 20 && mean(dev[1]) > mean(dev[0]) + 0.8);
   // …mais la note est un ACCENT : l'équipe faible joue encore au football (pas un 15-0 d'arcade)

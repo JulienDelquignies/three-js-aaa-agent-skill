@@ -42,11 +42,12 @@ export function makeTicker(TEAMS) {
       // le ticker des gestes : l'événement du CONTACT (skillContactNow), pas l'intention —
       // les '*-vendu' sont le mordu du même geste. Les ESPÈCES se nomment (crochet court ≠
       // chaloupé, passement ×2, sortie) : la variété doit se lire.
-      const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe', doubleContact: 'double contact' };
+      const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe', doubleContact: 'double contact', petitPont: 'petit pont' };
       let label = names[e.kind] ?? e.kind;
       if (e.kind === 'crochet' && e.espece === 'crochetChaloupe') label = 'crochet chaloupé';
       else if (e.kind === 'crochet' && e.espece === 'crochetCourt') label = 'crochet court';
       else if (e.kind === 'passement') label = `passement${e.enCourse ? ' lancé' : ''}${e.tours === 2 ? ' ×2' : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
+      else if (e.kind === 'petitPont' && e.reussi === false) label = 'petit pont (fermé)';
       pousse(`<b style="color:#e8ebf2">${label}</b> <span>— ${team(state, e.by)} nº${e.by} · ${mmss(e.t)}</span>`);
     } else if (e.type === 'tête' || e.type === 'volée') {
       // LE CIEL AU JOURNAL (lot 112) : le contact aérien est un geste comme un autre — la
