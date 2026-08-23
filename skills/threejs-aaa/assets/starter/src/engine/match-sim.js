@@ -208,7 +208,12 @@ function assignMatchJobs(st, cfg) {
         const tx = Math.abs(p.p[0]) < 1 && p.team !== r.team ? sign * 4 : p.p[0];
         p.job = 'walk'; p.target = [tx, 0, p.p[2]];
       } else if (p.team === r.team) {
-        p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]];
+        // …MAIS PAS AU CORNER (lot 119, capture : le TAS au coin — les sans-spot marchaient AU POINT) :
+        // ils tiennent les SECONDS BALLONS à l'entrée de surface, étagés — le coin au seul tireur.
+        if (st.full && cfg.corner && r.type === 'corner') {
+          const gC = pitch.attackGoal(p.team), sgC = Math.sign(gC.x || 1), czC = Math.sign(r.p[1] || 1);
+          p.job = 'walk'; p.target = [gC.x - sgC * (23 + (p.id % 2) * 5), 0, czC * (3 + ((p.id % 3) - 1) * 8)];
+        } else { p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]]; }
       } else {
         // l'adversaire TIENT LE RAYON de la remise (Loi 15/16/17 à l'échelle du format)
         // …le COUP FRANC du plein format tient LE MUR (Loi 13 — cfg.loi12.mur, 9,15 m) :
@@ -254,10 +259,7 @@ function assignMatchJobs(st, cfg) {
     return;
   }
 
-  // ---- l'EXPULSÉ (Loi 12, lot 28) : hors du monde — il marche vers sa sortie et y reste ;
-  // aucun cerveau d'équipe ne le voit (field et gardiens filtrent, la Loi 11 l'ignore,
-  // les preneurs/mur le sautent par leurs filtres down<=0 — le levier natif du down géant).
-  // Le REMPLACÉ (Loi 3) marche le même chemin : sortie, échange d'identité, entrée.
+  // ---- l'EXPULSÉ (Loi 12) : hors du monde, il marche vers sa sortie (filtres down<=0 partout) ; le REMPLACÉ (Loi 3) marche le même chemin — sortie, échange d'identité, entrée.
   for (const p of st.players) if (p.expulse || p._sub) {
     const to = p._sub?.phase === 'in' ? p._sub.entry : p._exit;
     p.job = 'walk'; p.target = [to[0], 0, to[1]];
@@ -281,10 +283,8 @@ function assignMatchJobs(st, cfg) {
         gk.push = null;
         continue;
       }
-      // LE GARDIEN NE DRIBBLE PAS — IL DISTRIBUE. Le push avant constant faisait du porteur-
-      // gardien un ATTAQUANT (le cerveau de conduite générique le menait au camp adverse —
-      // mesuré : épisodes de 45, 58 et 87 m à ~6,5 m/s, finis en sortie de balle). Sa loi de
-      // métier : il se porte sur son SPOT de distribution (devant sa ligne, jamais plus loin)…
+      // LE GARDIEN NE DRIBBLE PAS — IL DISTRIBUE. Le push avant constant en faisait un ATTAQUANT (épisodes
+      // de 45-87 m mesurés, finis en sortie). Sa loi : le SPOT de distribution devant sa ligne, jamais plus loin…
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol

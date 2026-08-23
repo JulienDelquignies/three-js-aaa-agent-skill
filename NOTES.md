@@ -4927,6 +4927,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      avant 120 s sur cette graine). Restent de la liste : le une-deux, le lob du gardien
      avancé.
 
+161. **Lot 119 : LE UNE-DEUX (le mur) + LE COIN AU SEUL TIREUR (capture utilisateur).**
+     LE TAS DU COIN, mesuré : 3/4 corners avec DEUX corps à < 2,5 m du coin à la frappe et
+     des corps hors limites — la cause NOMMÉE : la règle générique des remises (« les
+     coéquipiers marchent vers le point ») s'appliquait au corner — tous les SANS-SPOT de
+     cornerSpots convergeaient au coin. LE FIX : au corner, les sans-spot tiennent les
+     SECONDS BALLONS à l'entrée de surface (étagés par identité) — le coin appartient au
+     seul tireur. Mesuré après : 0 tas sur 7 corners, et PLUS de corners joués (les seconds
+     ballons relancent). Les corps hors limites restants = le PRENEUR en quête du ballon
+     mort derrière les panneaux (légitime, lot 116). LE UNE-DEUX (cfg.unDeux {press 2,5,
+     dist 13, p 0,18, dur 1,2}, st.full, strike-sim — le hook du départ de passe, comme le
+     3e homme) : sur une passe COURTE d'un passeur PRESSÉ, le passeur ENCHAÎNE SA COURSE
+     (donne-et-va — _pace burst) et porte LE MÊME MARQUEUR que le relais du 3e homme
+     (_troisT) : le receveur le sert en PREMIÈRE INTENTION (premiere-intention bonifie déjà
+     les coureurs marqués — ZÉRO consommateur nouveau, l'infrastructure du lot 111 paye).
+     Tiré sur rnd2 × axe(relation) × rôle appel DU PASSEUR (le mantra). LE CALIBRAGE
+     MESURÉ en deux temps : p 0,55 → 15,2 lancés/match (réel 4-6) → 0,25 ; puis +6 buts/20
+     matchs isolés causaux (~20 % des retours = but : la course dans le dos du presseur
+     sans défense dédiée — LE MARQUAGE DU COUREUR DE MUR est la dette v2 nommée) → p 0,18,
+     fenêtre 1,2 s. APRÈS : 4,8 lancés/match, 25 % de retours servis (1,2 mur bouclé/match),
+     A/B 75 tirs / 22 buts ∈ [17 ; 33] (le cœur de bande). Événement 'un-deux' {a, b} au
+     ticker (« une-deux lancé »). Clauses : le coin au seul tireur (≤ 2 frames de tas /
+     4 × 300 s — était 3/4 corners), le flux (lancés ≥ 6, retours ≥ 2), le sabotage « le
+     donne-sans-va d'hier » (unDeux:false : 0) ; LAB += unDeux:false. Batterie : match11
+     132/0, rondo 40/0, match 84/0, renversement 8/0, circuits 6/0, menace 11/0, sync 9/0,
+     attributes 14/0, gestes 60/0, animkit 115/115. EMPREINTES : rondo c775c81e62592d4d ET
+     réduit 860254b902bdf58b AU BIT (les deux lois sont full-only) ; match 3/7
+     a5f3f0345da8e6b8 / 6fad65e9109a10cf (références 119). LA LISTE UTILISATEUR EST SOLDÉE
+     à un près : reste LE LOB DU GARDIEN AVANCÉ.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

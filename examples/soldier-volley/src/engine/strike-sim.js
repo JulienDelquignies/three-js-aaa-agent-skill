@@ -400,6 +400,23 @@ export function strikeNow(st, c, cfg) {
       st.events.push({ t: +st.t.toFixed(2), type: 'troisieme', a: c.id, b: choice.to.id, c: C.id });
     }
   }
+  // LE UNE-DEUX (lot 119, cfg.unDeux && st.full — la liste utilisateur : le MUR). Sur une
+  // passe COURTE d'un passeur PRESSÉ, le passeur ENCHAÎNE SA COURSE dans le dos de son
+  // presseur (donne-et-va) — le même marqueur que le relais du 3e homme (_troisT) : le
+  // receveur le SERT en première intention (premiere-intention bonifie déjà les coureurs
+  // marqués, zéro consommateur nouveau). Tiré sur rnd2 × l'axe relation (le jeu combiné
+  // aime le une-deux) × le rôle appel DU PASSEUR. Absente : le monde d'hier au bit.
+  if (st.full && cfg.unDeux && choice.to?.p && !choice.shot && !c.keeper) {
+    const dAB = Math.hypot(choice.to.p[0] - c.p[0], choice.to.p[2] - c.p[2]);
+    const presse2 = st.players.some((q) => q.team !== c.team && q.down <= 0
+      && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.unDeux.press ?? 2.5));
+    if (dAB < (cfg.unDeux.dist ?? 13) && presse2
+      && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.unDeux.p ?? 0.55) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(c).appel, 0.7, 1.3)) {
+      c._pace = { until: st.t + (cfg.unDeux.dur ?? 1.5), kind: 'un-deux', next: c._pace?.next ?? st.t + 6 };
+      c._troisT = st.t + (cfg.unDeux.dur ?? 1.5);
+      st.events.push({ t: +st.t.toFixed(2), type: 'un-deux', a: c.id, b: choice.to.id });
+    }
+  }
   // LA PHOTO DE LA LOI 11 (cfg.offside — 11c11) : le hors-jeu se juge À L'INSTANT DE LA FRAPPE —
   // pas au choix (le coureur gagne des mètres pendant l'armé : c'est TOUT l'appel timé), pas à
   // la réception (le monde a bougé pendant le vol). On photographie ICI les coéquipiers en

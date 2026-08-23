@@ -346,6 +346,17 @@ export const MATCH = {
                           // l'API du projet (politique de banc). Événement 'fatigue' au
                           // franchissement de 0,35. false : le moteur infatigable (sabotage
                           // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
+  unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 1.2 },
+                          // LE UNE-DEUX (11c11, st.full — lot 119) : sur une passe COURTE
+                          // (< dist m) d'un passeur PRESSÉ (< press m), le passeur ENCHAÎNE
+                          // sa course (donne-et-va, burst dur s) et porte le marqueur du
+                          // relais — le receveur le sert en PREMIÈRE INTENTION (le même
+                          // canal que le 3e homme). Tiré sur rnd2 × relation × rôle appel.
+                          // Calibré MESURÉ : p 0,55 → 15 lancés/match (réel 4-6) ; la
+                          // fenêtre 1,5 s et p 0,25 rendaient +6 buts/20 matchs (~20 %
+                          // des retours = but : la course du mur sans défense dédiée —
+                          // le marquage du coureur est la dette v2). p 0,18, dur 1,2.
+                          // Absente : le monde d'hier, au bit.
   talonnade: { press: 2.8, cone: 130, bonus: 0.4, seen: 0.18 },
                           // LA TALONNADE DE CHOIX (11c11, st.full — lot 118) : le clip
                           // dormait (0,5/match — le plan MARCHAIT son demi-tour). Pressé

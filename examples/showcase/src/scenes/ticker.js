@@ -56,6 +56,9 @@ export function makeTicker(TEAMS) {
       if (!hud) return true;
       const l = e.type === 'tête' ? `tête${e.saut ? ' (saut)' : ''} — ${e.mode}` : `volée — ${e.mode}${e.demi ? ' (demi)' : ''}`;
       pousse(`<b style="color:#e8ebf2">${l}</b> <span>— ${team(state, e.by)} nº${e.by} · ${mmss(e.t)}</span>`);
+    } else if (e.type === 'un-deux' && hud) {
+      // LE MUR SE LIT (lot 119) : donne-et-va — le passeur repart, la remise se prépare
+      pousse(`<b style="color:#8ecae6">une-deux lancé</b> <span>— nº${e.a} avec nº${e.b} · ${mmss(e.t)}</span>`);
     } else if (e.type === 'celebration' && hud) {
       // LE BUT SE FÊTE (lot 116) : l'événement nomme le buteur et ses compagnons de course
       pousse(`<b style="color:#90be6d">il célèbre !</b> <span>— nº${e.by} et ${e.avec?.length ?? 0} coéquipiers · ${mmss(e.t)}</span>`);
