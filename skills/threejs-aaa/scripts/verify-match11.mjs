@@ -23,6 +23,7 @@ import { tackleWindow, accrocheP } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
 import { coachStep, checkCoach } from '../assets/starter/src/engine/coach.js';
+import { maybeDoubleContact } from '../assets/starter/src/engine/skills-sim.js';
 import { resoudreTactique } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
@@ -37,7 +38,8 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   chaloupe: false, troisieme: false,
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
-  coach: false };                                       // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
+  coach: false,                                         // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
+  skill: { ...matchCfg().skill, doubleFoe: null } };    // …le jeté sans réponse (pré-114 : le répertoire sans croqueta)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1890,6 +1892,64 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabC = flux({ coach: false });
   ok(`le coach VIT en flux (${vifC} changements de posture / 2 × 300 s ≥ 1) ; sabotage « les axes gelés d'hier » attrapé (coach:false : ${sabC} — le monde qui ne réagit jamais au score, nommé)`,
     vifC >= 1 && sabC === 0);
+}
+
+// ---- LOT 114 : LE DOUBLE CONTACT (la croqueta) — l'élimination de celui qui se jette
+{
+  // (a) LA FIXTURE SÈCHE DE LA NICHE (maybeDoubleContact est pur sur st) : le JETÉ franc
+  // (closing 3 m/s, de face, 1,5 m) déclenche ; le JOCKEY posté (closing 0,3 — il appartient
+  // au passement) refuse ; le DOS (bearing ~180°) refuse — la niche est la niche.
+  const fx = (foeV, foeP) => {
+    const st = { t: 10, events: [], gestures: [], area: [105, 68], rnd: () => 0,
+      ball: { p: [10.35, 0.11, 0], owner: 5, possess() {} },
+      players: [
+        { id: 5, team: 0, keeper: false, p: [10, 0, 0], v: [2, 0], yaw: 0, speed: 2, down: 0, act: null, persona: { flair: 0.5 }, skill: { gesteF: 1 } },
+        { id: 6, team: 1, keeper: false, p: foeP, v: foeV, yaw: Math.PI, speed: Math.hypot(...foeV), down: 0, act: null, skill: {} },
+      ] };
+    const okD = maybeDoubleContact(st, st.players[0], { skill: { doubleFoe: [0.9, 2.1], doubleClosing: 2.2, doubleCone: 55, doubleTurn: 0.45, doubleClear: 1.1, doubleCd: 8 } });
+    return { okD, ev: st.events.filter((e) => e.type === 'skill' && e.kind === 'doubleContact').length, act: st.players[0].act?.payload?.skill ?? null };
+  };
+  const jete = fx([-3, 0], [11.5, 0, 0.15]);
+  const jockey = fx([-0.3, 0], [11.5, 0, 0.15]);
+  const dos = fx([3, 0], [8.5, 0, 0.15]);
+  ok(`la NICHE du double contact (le jeté franc déclenche : ${jete.okD} + acte ${jete.act} + event ${jete.ev} ; le jockey posté refuse : ${jockey.okD} — il appartient au passement ; le dos refuse : ${dos.okD} — il appartient à la tenure)`,
+    jete.okD === true && jete.act === 'doubleContact' && jete.ev === 1 && jockey.okD === false && dos.okD === false);
+
+  // (b) LE FLUX : la croqueta vit en match ET GARDE son ballon. La mesure JUSTE (le piège
+  // d'instrument consigné : owner null ≠ perte — la CONDUITE du moteur roule owner-less
+  // entre les touches ; la garde = l'équipe contrôle à +1,5 s, conduite et vol compris).
+  const flux = (over) => {
+    let n = 0, gardes = 0;
+    for (const seed of [1, 2, 3, 4]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      const marks = [];
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const e = st.events[st.events.length - 1];
+        if (e && e.type === 'skill' && e.kind === 'doubleContact' && !marks.some((m) => m.t === e.t)) { marks.push({ t: e.t, team: st.players[e.by].team, done: false }); n++; }
+        for (const m of marks) {
+          if (!m.done && st.t >= m.t + 1.5) {
+            m.done = true;
+            const own = st.ball.owner;
+            if (own != null) { if (st.players[own].team === m.team) gardes++; }
+            else if (st.pass && st.players[st.pass.from]?.team === m.team) gardes++;
+            else {
+              const near = st.players.filter((q) => q.down <= 0).sort((a, b) => Math.hypot(a.p[0] - st.ball.p[0], a.p[2] - st.ball.p[2]) - Math.hypot(b.p[0] - st.ball.p[0], b.p[2] - st.ball.p[2]))[0];
+              if (near && near.team === m.team && Math.hypot(near.p[0] - st.ball.p[0], near.p[2] - st.ball.p[2]) < 2.5) gardes++;
+            }
+          }
+        }
+      }
+    }
+    return { n, gardes };
+  };
+  const vifD = flux({});
+  const sabD = flux({ skill: { ...matchCfg().skill, doubleFoe: null } });
+  ok(`lot 114 — la CROQUETA vit (${vifD.n} / 4 × 300 s ≥ 4) et GARDE le ballon (${vifD.gardes}/${vifD.n} ≥ 60 % — l'élimination sert l'équipe : mesuré 87 % au ship, dont la moitié relancée en passe)`,
+    vifD.n >= 4 && vifD.gardes >= vifD.n * 0.6);
+  ok(`sabotage « le jeté sans réponse d'hier » attrapé (doubleFoe absent : ${sabD.n} double contact — 27 fenêtres/match muettes à 94 %, le monde d'avant, nommé)`,
+    sabD.n === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

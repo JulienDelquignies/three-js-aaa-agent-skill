@@ -306,6 +306,57 @@ export function maybeCrochet(st, c, cfg) {
   return true;
 }
 
+/** LE DOUBLE CONTACT — la croqueta (lot 114, retour utilisateur). Sa niche, disjointe des
+ *  frères : le défenseur SE JETTE (closing ≥ doubleClosing — plus franc que la charge du
+ *  râteau, 1,5, et que la fermeture du crochet, 0,8), de FACE (≤ doubleCone), dans la fenêtre
+ *  courte — et le porteur GARDE SON CAP : le ballon TRANSFÈRE d'un pied à l'autre sous le
+ *  corps (le jeté traverse là où il était), la sortie est à peine diagonale (doubleTurn
+ *  ~26°, pas la coupe à 80° du crochet). Mesuré avant : 27,2 fenêtres du jeté par match,
+ *  94 % sans AUCUNE réponse du répertoire. Iniesta la sortait à l'arrêt comme lancé :
+ *  aucune exigence de vitesse. Clés au match seulement (doubleFoe absent : le rondo d'hier). */
+export function maybeDoubleContact(st, c, cfg) {
+  const K = cfg.skill; if (!K || !K.doubleFoe) return false;
+  if (c.keeper) return false;
+  if ((c._skillCd?.double ?? -1) > st.t) return false;
+  if (d2(c.p, st.ball.p) > 0.6) return false;                     // sur SON ballon
+  let foe = null, fd = Infinity;
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0) continue;
+    const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
+  }
+  if (!foe || fd < K.doubleFoe[0] || fd > K.doubleFoe[1]) return false;
+  const closing = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
+  if (closing < (K.doubleClosing ?? 2.2)) return false;           // il SE JETTE — pas une dérive, pas un jockey
+  const sitFoe = situation(c.p, c.yaw, foe.p, [0, 0], 0.11);
+  if (sitFoe.bearing > (K.doubleCone ?? 55)) return false;        // de FACE (le dos appartient à la tenure)
+  // la sortie garde le cap, à peine décalée du CÔTÉ OPPOSÉ au foe — et elle doit être libre
+  const away = sitFoe.side === 'left' ? -1 : 1;
+  const exitYaw = c.yaw + away * (K.doubleTurn ?? 0.45);
+  const ex = c.p[0] + Math.cos(exitYaw) * 1.6, ez = c.p[2] + Math.sin(exitYaw) * 1.6;
+  if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'double-hors-carré');
+  for (const q of st.players) {
+    if (q.team === c.team || q.down > 0 || q === foe) continue;   // le jeté lui-même sera mordu, pas un mur
+    if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < (K.doubleClear ?? 1.1)) return deny(st, 'double-sans-issue');
+  }
+  // QUI le tente : flair × la note de dribble (le régime de la famille — attributs en facteurs)
+  if ((st.rnd ? st.rnd() : 0.5) > (0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
+    (c._skillCd ??= {}).double = st.t + 2; return false;
+  }
+  const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
+  const foot = footFor(byId.crochet, sit);                        // le même choix de patte que la coupe
+  const move = MOVE_TIMING.doubleContact;
+  if (st.ball.owner !== c.id) st.ball.possess(c.id);
+  startGesture(c, { id: 'doubleContact', ...move }, {
+    payload: { kind: 'skill', skill: 'doubleContact', pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw, away, v0: c.speed, foeId: foe.id, ballMax: 0 },
+    log: st.gestures,
+  });
+  (c._skillCd ??= {}).double = st.t + (K.doubleCd ?? 8);
+  c.intent = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: 'doubleContact', foot, skill: 'doubleContact', anticipation: move.contact });
+  st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'doubleContact', by: c.id, foe: +fd.toFixed(2), closing: +closing.toFixed(1) });
+  return true;
+}
+
 /** La feinte de frappe : à portée de tir, un CONTREUR dans le cône du but — tout l'armé d'une
  *  frappe, la retenue au contact, le contreur s'assoit LONGTEMPS (on ne se jette pas devant une
  *  demi-frappe) — et la demi-seconde payée est l'angle qui manquait au tir. Match seulement
@@ -390,6 +441,18 @@ export function skillContactNow(st, p, cfg) {
       if (foe && foe.down <= 0) { foe._bite = st.t + 0.35 * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet-vendu', by: p.id, bitten, foot: A.pick.foot });
     }
+  } else if (A.skill === 'doubleContact') {
+    // le TRANSFERT échappe au tacle : le jeté traverse l'endroit où le ballon N'EST PLUS —
+    // il paie sa morsure (même loi que le mordu de feinte), × la note du dribbleur
+    const K = cfg.skill;
+    const foe = st.players[A.foeId ?? -1];
+    const bitten = [];
+    if (foe && foe.down <= 0) { foe._bite = st.t + (K.doubleBite ?? 0.55) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    // …et LA SORTIE EST LANCÉE (le même burst que le passement) : l'élimination réelle est
+    // l'accélération — sans elle, le porteur freiné restait dans la zone du duel et le
+    // ballon jaillissait en 50/50 (mesuré : 32/45 ballons libres à +1,5 s)
+    p._pace = { ...(p._pace ?? { next: 3 }), until: st.t + 0.55, kind: 'sortie' };
+    st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'doubleContact-vendu', by: p.id, bitten, foot: A.pick.foot });
   } else if (A.skill === 'frappeFeinte') {
     const K = cfg.skill;
     const bitten = [];
@@ -504,6 +567,50 @@ export function skillFollowStep(st, p, dt, cfg) {
     const ang = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
     const dist = 0.35 + 0.15 * e;
     st.ball.carry([p.p[0] + Math.cos(ang) * dist, p.p[2] + Math.sin(ang) * dist], dt, { tau: 0.05 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'doubleContact') {
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-double', { log: st.gestures }); return; }
+    // le corps GLISSE sur son élan freiné et le cap TOURNE À PEINE vers la sortie (ease —
+    // ~26°, pas la coupe à 80° du crochet) ; le ballon TRANSFÈRE d'un pied à l'autre (cos :
+    // deux touches sèches, jamais un téléport) et FINIT DEVANT LE NOUVEAU CAP — la première
+    // version le déposait latéral à 0,53 m sur l'ANCIEN cap : 37/43 ballons orphelins,
+    // le geste réussissait sa feinte et perdait son ballon
+    const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
+    const e = u * u * (3 - 2 * u);
+    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
+    p.yawWant = null;
+    const vG = (A.v0 ?? 2) * 0.55;
+    p.v[0] = Math.cos(p.yaw) * vG; p.v[1] = Math.sin(p.yaw) * vG;
+    p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+    p.speed = vG;
+    // signe : yaw + away tourne vers −(fz,−fx) — lat POSITIF au départ = le côté du jeté
+    // (le ballon exposé) ; l'amplitude MEURT avec u : à la fin lat = 0, le ballon pile
+    // devant le cap de sortie (la conduite le reprend sans un pas de plus)
+    const lat = (A.away ?? 1) * 0.32 * Math.cos(Math.PI * u) * (1 - e);
+    const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
+    st.ball.carry([p.p[0] + fx * (0.35 + 0.1 * e) + fz * lat, p.p[2] + fz * (0.35 + 0.1 * e) - fx * lat], dt, { tau: 0.045 });
+    A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
+  } else if (A.skill === 'doubleContact') {
+    if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-double', { log: st.gestures }); return; }
+    // le corps GLISSE sur son élan freiné et le cap TOURNE À PEINE vers la sortie (ease —
+    // ~26°, pas la coupe à 80° du crochet) ; le ballon TRANSFÈRE d'un pied à l'autre (cos :
+    // deux touches sèches, jamais un téléport) et FINIT DEVANT LE NOUVEAU CAP — la première
+    // version le déposait latéral à 0,53 m sur l'ANCIEN cap : 37/43 ballons orphelins,
+    // le geste réussissait sa feinte et perdait son ballon
+    const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
+    const e = u * u * (3 - 2 * u);
+    p.yaw = A.yaw0 + wrapA(A.exitYaw - A.yaw0) * e;
+    p.yawWant = null;
+    const vG = (A.v0 ?? 2) * 0.55;
+    p.v[0] = Math.cos(p.yaw) * vG; p.v[1] = Math.sin(p.yaw) * vG;
+    p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
+    p.speed = vG;
+    // signe : yaw + away tourne vers −(fz,−fx) — lat POSITIF au départ = le côté du jeté
+    // (le ballon exposé) ; l'amplitude MEURT avec u : à la fin lat = 0, le ballon pile
+    // devant le cap de sortie (la conduite le reprend sans un pas de plus)
+    const lat = (A.away ?? 1) * 0.32 * Math.cos(Math.PI * u) * (1 - e);
+    const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
+    st.ball.carry([p.p[0] + fx * (0.35 + 0.1 * e) + fz * lat, p.p[2] + fz * (0.35 + 0.1 * e) - fx * lat], dt, { tau: 0.045 });
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'semelle') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-semelle', { log: st.gestures }); return; }

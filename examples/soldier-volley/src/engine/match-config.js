@@ -553,6 +553,15 @@ export const MATCH = {
     frappeFeinteCone: 40,   // ° — demi-cône vers le but dans lequel le contreur mord
     frappeFeinteBite: 0.7,  // s — on ne se jette pas devant une demi-frappe (plus long qu'une feinte de passe)
     frappeFeinteCd: 9,      // s
+    doubleFoe: [0.9, 2.1],  // m — LE DOUBLE CONTACT (croqueta, lot 114) : le défenseur SE JETTE
+    doubleClosing: 2.2,     // m/s — l'engagement franc (le râteau possède la charge à 1,5, le
+                            // crochet la fermeture à 0,8 — la croqueta répond au TACLE lancé ;
+                            // mesuré : 27 fenêtres/match, 94 % sans réponse du répertoire)
+    doubleCone: 55,         // ° — de face (le dos appartient à la tenure)
+    doubleTurn: 0.45,       // rad (~26°) — le cap se GARDE : le ballon transfère, pas la course
+    doubleClear: 1.1,       // m — la sortie doit être libre d'un AUTRE corps (le jeté mord, lui)
+    doubleBite: 0.55,       // s — le jeté traverse là où le ballon n'est plus, × gesteF
+    doubleCd: 8,            // s
   },
   carryViaBall: true,     // le porteur PASSE PAR SON BALLON (cible = ballon au-delà de la portée) ; false : la cible-plan (sabotage nommé)
   meetZone: 3.5,          // m — la rencontre vit dans les DERNIERS mètres du vol (avant : tenir sa position)

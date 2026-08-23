@@ -4741,6 +4741,47 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la possession au momentum, les consignes individuelles (rôle changé, remplacement
      tactique Loi 3).
 
+156. **Lot 114 : LE DOUBLE CONTACT (la croqueta) — l'élimination de celui qui se jette
+     (retour utilisateur : « est-ce que le double contact existe ? » — non).** MESURÉ AVANT :
+     27,2 fenêtres du JETÉ par match (foe closing ≥ 2,2 m/s, de face, 0,9-2,1 m) et 94 %
+     sans AUCUNE réponse du répertoire (râteau 3, crochet 5, rien 154/163) — le moment
+     exact où le vrai joueur sort la croqueta était muet. LA NICHE, disjointe des frères
+     (skills-sim, clés cfg.skill.double* au match seulement — le rondo d'hier par absence) :
+     le râteau possède la CHARGE (closing 1,5, sortie arrière), le crochet la FERMETURE
+     (0,8, coupe à 80°), la croqueta répond au TACLE LANCÉ (≥ 2,2) et GARDE LE CAP — le
+     ballon TRANSFÈRE d'un pied à l'autre sous le corps (cos, deux touches sèches, 0,36 s),
+     la sortie à peine diagonale (0,45 rad), et le JETÉ MORD au contact (foe._bite × gesteF
+     — il traverse là où le ballon n'est plus, event doubleContact-vendu). Tirage flair ×
+     gesteF (le régime de la famille — attributs en facteurs, jamais des branches).
+     DEUX RE-FONDATIONS EN CHEMIN : (1) le follow v1 déposait le ballon LATÉRAL à 0,53 m
+     sur l'ANCIEN cap — 37/43 ballons orphelins (le geste réussissait sa feinte et perdait
+     son ballon) → le cap tourne en ease vers la sortie et l'amplitude du transfert MEURT
+     avec u (le ballon finit PILE devant le nouveau cap) ; (2) la sortie est LANCÉE (le
+     burst du passement posé au contact — l'élimination réelle est l'accélération).
+     LE PIÈGE D'INSTRUMENT CONSIGNÉ : owner null ≠ perte — la CONDUITE du moteur roule
+     owner-less entre les touches par design ; la garde se mesure à l'ÉQUIPE qui contrôle
+     (conduite et vol compris). APRÈS : 4,7 croquetas/match, 47/47 mordus, 87 % de GARDE
+     (dont la moitié relancée en passe — il élimine PUIS joue). Clip authoré (les jambes
+     ALTERNENT : abduction −26° puis réception +20°, le buste change de côté, 0,36 s) ;
+     ticker « double contact » ; dispatcher AVANT le râteau (le jeté franc se perfore vers
+     l'avant ; sortie fermée → le râteau reprend). Bancs : fixture SÈCHE de la niche (le
+     jeté déclenche, le jockey refuse — il appartient au passement —, le dos refuse — la
+     tenure), flux 21/4 × 300 s avec garde 18/21, sabotage « le jeté sans réponse d'hier »
+     (doubleFoe absent : 0) ; LE LAB GAGNE skill pré-114 ({...matchCfg().skill, doubleFoe:
+     null} — 5e gel, la clause axiale-105 re-verte) ; la clause pointe du réduit re-fondée
+     (2,5 → 2,8 : les croquetas du réduit décalent la conduite, la pointe elle-même
+     inchangée). Batterie : match11 120/0, rondo 40/0, match 84/0, renversement 8/0,
+     circuits 6/0, menace 11/0, sync 9/0, attributes 14/0, gestes 58/0, animkit 113/113.
+     A/B 20 × 300 s : 94 tirs / 28 buts ∈ [17 ; 33]. EMPREINTES : rondo AU BIT
+     (c775c81e62592d4d — les clés vivent dans le skill match) ; réduit 322fd90fd9dec0a7,
+     match 3/7 361a85e95e465ae5 / a6ac7e0bef99f12c (nouvelles références — les croquetas
+     dans le flux, batterie complète verte avant acceptation). AUDIT VISUEL (playmode,
+     laboratoire vivant — le monde d'app aux attributs réels produit des fenêtres plus
+     rares que le node : un jeté FORCÉ à 1,4 m) : le clip joue, photo du transfert (le
+     ballon sous le corps entre les deux appuis, le jeté qui arrive). Dette nommée : la
+     croqueta EN COURSE (v1 : le cap tenu à vitesse modérée ; la version pleine course
+     type Iniesta-2009 demandera l'élan préservé du passement enCourse).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

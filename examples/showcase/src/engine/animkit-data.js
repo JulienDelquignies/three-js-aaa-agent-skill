@@ -504,6 +504,20 @@ export const MOVES = {
       { t: 1.05, pose: { LeftUpLeg: [45, 0, 0], RightUpLeg: [45, 0, 0], LeftLeg: [-60, 0, 0], RightLeg: [-60, 0, 0], Spine1: [12, 0, 0] }, hips: [0, -0.2, -0.42] },
       { t: 1.35, pose: {}, hips: [0, 0, -0.42] },
     ] },
+  /** LE DOUBLE CONTACT — la croqueta (lot 114) : deux touches sèches qui transfèrent le
+   *  ballon d'un pied à l'autre sous le corps. Le pied fort S'ABDUCTE pour pousser latéral
+   *  (t 0,10), le poids TRANSFÈRE (le contact 0,18 = la 2e touche : le pied receveur), la
+   *  relance vers l'avant (0,26), les épaules penchent à l'OPPOSÉ du transfert (le corps
+   *  vend la direction gardée). Miroir au pied (la scène retourne au pick). */
+  doubleContact: {
+    name: 'doubleContact', duration: 0.36, contact: 0.18, loop: false,
+    keys: [
+      { t: 0.0, pose: {}, hips: [0, 0, 0] },
+      { t: 0.1, pose: { RightUpLeg: [10, 0, -26], RightLeg: [-16, 0, 0], LeftUpLeg: [6, 0, 4], Spine1: [4, 0, 9], Head: [0, 0, -4] }, hips: [0, -0.03, 0] },
+      { t: 0.18, pose: { LeftUpLeg: [10, 0, 20], LeftLeg: [-18, 0, 0], RightUpLeg: [4, 0, -6], Spine1: [7, 0, -7], Head: [0, 0, 3] }, hips: [0, -0.05, 0] },
+      { t: 0.26, pose: { LeftUpLeg: [16, 0, 6], LeftLeg: [-28, 0, 0], RightUpLeg: [12, 0, 0], Spine1: [8, 0, 0] }, hips: [0, -0.03, 0] },
+      { t: 0.36, pose: {}, hips: [0, 0, 0] },
+    ] },
   /** LE SAUT DE TÊTE (lot 112) — la dette du ciel payée : impulsion accroupie, extension
    *  verticale (hanches +0,38 au pic — la DÉTENTE se voit), le buste se CAMBRE en montant
    *  (l'armé du fouetté) puis FOUETTE au contact (Spine1 −14 → +16, Head −12 → +22 : c'est

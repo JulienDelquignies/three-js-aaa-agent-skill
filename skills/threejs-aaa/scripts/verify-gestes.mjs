@@ -460,5 +460,15 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     && D.keys.every((k) => !k.pose.LeftUpLeg && !k.pose.RightUpLeg));
 }
 
+// ---- LOT 114 : LE DOUBLE CONTACT SE DESSINE (le transfert pied-à-pied a un corps)
+{
+  const D = MOVES.doubleContact;
+  const t1 = D.keys.find((k) => k.t === 0.1), t2 = D.keys.find((k) => k.t === D.contact);
+  ok(`le double contact ALTERNE les jambes (pousse : jambe droite abduite ${t1?.pose.RightUpLeg?.[2]} ≤ −20 ; reçoit au contact : jambe gauche ${t2?.pose.LeftUpLeg?.[2]} ≥ 16 — deux touches, deux pieds)`,
+    (t1?.pose.RightUpLeg?.[2] ?? 0) <= -20 && (t2?.pose.LeftUpLeg?.[2] ?? 0) >= 16);
+  ok(`…le BUSTE VEND le transfert (lean ${t1?.pose.Spine1?.[2]} puis ${t2?.pose.Spine1?.[2]} — il change de côté) et le geste est SEC (${D.duration} s ≤ 0,4 : deux touches, pas une danse)`,
+    Math.sign(t1?.pose.Spine1?.[2] ?? 0) !== Math.sign(t2?.pose.Spine1?.[2] ?? 0) && (t1?.pose.Spine1?.[2] ?? 0) !== 0 && D.duration <= 0.4);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

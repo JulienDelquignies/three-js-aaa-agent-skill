@@ -42,7 +42,7 @@ export function makeTicker(TEAMS) {
       // le ticker des gestes : l'événement du CONTACT (skillContactNow), pas l'intention —
       // les '*-vendu' sont le mordu du même geste. Les ESPÈCES se nomment (crochet court ≠
       // chaloupé, passement ×2, sortie) : la variété doit se lire.
-      const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe' };
+      const names = { rateau: 'râteau', semelle: 'semelle', feinte: 'feinte de passe', passement: 'passement de jambes', crochet: 'crochet', frappeFeinte: 'feinte de frappe', doubleContact: 'double contact' };
       let label = names[e.kind] ?? e.kind;
       if (e.kind === 'crochet' && e.espece === 'crochetChaloupe') label = 'crochet chaloupé';
       else if (e.kind === 'crochet' && e.espece === 'crochetCourt') label = 'crochet court';
