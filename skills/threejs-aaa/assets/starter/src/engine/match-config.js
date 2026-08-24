@@ -347,6 +347,7 @@ export const MATCH = {
                           // franchissement de 0,35. false : le moteur infatigable (sabotage
                           // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
   libero: { far: 34, max: 10, rampe: 8, retour: 3.5 },
+  contreAppel: { marque: 1.5, p: 0.5 },  // LE CONTRE-APPEL (122) : la course profonde marquée casse aux pieds (× rôle appel) ; absent : la course droite d'hier
                           // LE GARDIEN-LIBÉRO (11c11, st.full — lot 120, la dette v1 de
                           // depthMax) : ballon CHEZ L'ADVERSAIRE (> far m), le gardien MONTE
                           // couper la profondeur (progressif jusqu'à max × depthKF ×
@@ -630,6 +631,7 @@ export const MATCH = {
     pontCd: 10,             // s
     rouletteFoe: [0.8, 1.8],// m — LA ROULETTE (lot 117) : le POURSUIVANT en diagonale-dos
     rouletteRoule: 0.5,     // part d'élan conservée PENDANT le tour (121, la Zidane traverse — 0,15 : la toupie d'hier)
+    sortieBurst: { dur: 1.2, top: 1.45 }, // s — LA SORTIE EXPLOSE (122) : l'élimination au bout débouche sur une pointe (_pace ×1,28, durée × accelF) ; absent : les sorties plantées d'hier
     rouletteBear: [55, 140],// ° — le frontal appartient au râteau/à la croqueta, le plein
                             // dos à la tenure (mesuré : 52 fenêtres/match, 95 % muettes)
     rouletteClosing: 0.8,   // m/s — il ferme

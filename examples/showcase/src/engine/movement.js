@@ -128,7 +128,9 @@ export function movePlayers(st, dt, cfg) {
       }
     }
     const bursting = p._pace.until > st.t;
-    if (bursting) top = Math.min(top * 1.28, cfg.sprintMax ?? 8.0);
+    // …la SORTIE DE GESTE explose plus fort que la rupture ordinaire (122, sortieBurst.top —
+    // l'élimination réussie ouvre l'espace : le corps le PREND ; clé absente : le ×1,28 d'hier)
+    if (bursting) top = Math.min(top * (p._pace.kind === 'sortie-geste' ? (cfg.skill?.sortieBurst?.top ?? 1.28) : 1.28), cfg.sprintMax ?? 8.0);
     // …et entre les ruptures, un soutien posé MARCHE — QUAND IL EST À SON POSTE (lot 82,
     // clé settledNear, défaut Infinity = marche d'hier au bit : mesuré 10,7 m p50 du slot,
     // le soutien vivait à mi-chemin près du ballon — activer 5 le fait trotter au poste).

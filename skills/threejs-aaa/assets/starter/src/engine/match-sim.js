@@ -27,14 +27,10 @@ const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
 /** La configuration du MATCH — le RONDO plus les lois du but. */
 
-/**
- * makeMatch — l'état d'un match réduit : perTeam joueurs de champ + 1 gardien par équipe, sur un
- * terrain de pitch.js, coup d'envoi à l'équipe 0. L'état EST un état de rondo (mêmes joueurs,
- * même ballon, mêmes personas) : le loop ne voit pas la différence, c'est la config qui la fait.
- */
+/** makeMatch — perTeam joueurs de champ + 1 gardien par équipe, terrain de pitch.js, coup d'envoi
+ *  équipe 0. L'état EST un état de rondo (mêmes joueurs/ballon/personas) : la config fait la différence. */
 export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null, tactics = null, roles = null } = {}) {
-  // LE 11C11 EST UNE CONFIGURATION (full: true → Loi 1, 10+gardien, postes) — même loop, mêmes lois : la preuve du moteur.
-  pitch = pitch ?? makePitch(full ? FULL : undefined);
+  pitch = pitch ?? makePitch(full ? FULL : undefined);   // full = une CONFIGURATION (Loi 1, 10+gardien, postes) : même loop, la preuve du moteur
   if (full && perTeam === 5) perTeam = 10;
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
   st.full = pitch.dims.length > 60;
@@ -95,14 +91,9 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
 }
 
 // ---------------------------------------------------------------- l'attribution directionnelle
-/**
- * Les rôles du match. La grammaire du rondo (press/cover/mark/support/carry) reste — c'est elle
- * qui a tué l'essaim — mais elle devient DIRECTIONNELLE : le porteur pousse VERS LE BUT (mélange
- * évasion ↔ but selon le surnombre devant), les soutiens tiennent des couloirs ORIENTÉS (deux
- * lanceurs devant, une largeur, un soutien de sécurité), la défense se poste CÔTÉ BUT (le cover
- * coupe la ligne ballon-but, le marquage se met goal-side). Les gardiens vivent leur loi
- * (keeper.js) et déclenchent leur plongeon ici.
- */
+/** Les rôles du match. La grammaire du rondo (press/cover/mark/support/carry) reste — elle a tué
+ *  l'essaim — mais devient DIRECTIONNELLE : porteur vers LE BUT, soutiens en couloirs orientés,
+ *  défense CÔTÉ BUT (cover sur la ligne ballon-but, marquage goal-side) ; les gardiens (keeper.js). */
 function assignMatchJobs(st, cfg) {
   const { pitch } = st;
   const atk = st.possession.team >= 0 ? st.possession.team : st.lastTouch;
@@ -745,6 +736,18 @@ function assignMatchJobs(st, cfg) {
             }
           }
           if ((p._runT ?? -1) > st.t) {
+            // LE CONTRE-APPEL (122, cfg.contreAppel && st.full) : la course profonde MARQUÉE de
+            // près CASSE aux pieds — l'appel contre-appel du vrai attaquant (retour utilisateur) ;
+            // une fois par dart, tiré au RÔLE appel ; la latence de perception du marqueur (lot 50)
+            // paie la cassure — aucun bite artificiel. Clé absente : la course droite d'hier.
+            if (st.full && cfg.contreAppel && p._counter !== p._runT && st.t > p._runT - 1.0
+              && st.players.some((q) => q.team !== p.team && q.down <= 0 && d2(q.p, p.p) < (cfg.contreAppel.marque ?? 1.5))
+              && (st.rnd ? st.rnd() : 0.5) < (cfg.contreAppel.p ?? 0.5) * axe(role(p).appel, 0.6, 1.4)) {
+              p._counter = p._runT; p._runT = st.t + 1.1;
+              p._runAdv = Math.max(2, p.p[0] * off.sgn - 5); p._runZ = p.p[2] + Math.sign(st.ball.p[2] - p.p[2] || 1) * 2;
+              p._pace = { until: st.t + 1.0, kind: 'contre-appel', next: p._pace?.next ?? st.t + 8 };
+              st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'contre-appel', by: p.id });
+            }
             tx = off.sgn * Math.max(0, Math.min(p._runAdv ?? (off.adv - 0.15), off.adv - 0.15));
             tz = p._runZ ?? tz;
           } else if (tx * off.sgn > off.adv - 0.8) tx = off.sgn * Math.max(0, off.adv - 0.8);
@@ -1157,11 +1160,8 @@ export function playMatch(st, seconds, { dt = 1 / 60, cfg = matchCfg(), sample =
   return { st, trace };
 }
 
-/**
- * CONTRAT DU MATCH. Par-dessus la santé du loop (checkRondo tient téléports/essaims), les façons
- * dont un MATCH redevient un rondo décoré : personne ne tire, score ≠ buts, sorties sans remise
- * nommée, gardien errant, remises volées, un jeu qui ne progresse jamais vers les buts.
- */
+/** CONTRAT DU MATCH — par-dessus checkRondo (téléports/essaims) : personne ne tire, score ≠ buts,
+ *  sorties sans remise nommée, gardien errant, remises volées, un jeu qui ne progresse jamais. */
 export function checkMatch(st, trace, cfg = matchCfg()) {
   const issues = [];
   const evs = st.events ?? [];

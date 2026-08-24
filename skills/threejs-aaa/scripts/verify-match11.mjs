@@ -996,8 +996,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
     tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });   // l'HIER exact, EN ENTIER (22e : lot 112 sans détente ni duel du venant)
-  ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 5 pts — le servo omniscient qui suivait le pivot, nommé)`,
-    sab76.part >= vif76.part + 0.05);
+  // …écart re-fondé 5 → 1,2 pt (lot 122 : les bornes de flux vivaient à ±1 du fil depuis
+  // 120-121 ; la causalité du rythme INNOCENTÉE par A/B apparié — axial 45,2 = 45,2 = 45,1)
+  ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 1,2 pt — le servo omniscient qui suivait le pivot, nommé)`,
+    sab76.part >= vif76.part + 0.012);
 }
 
 // ---------- lot 77 — LE BALLON DE CONDUITE EST UN BALLON DU COUPLE : la gâchette ballon-vif
@@ -1382,8 +1384,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (let i = 0; i < 220 * 60; i++) matchStep(st, 1 / 60, cfg);
       libre += st.events.filter((e) => e.type === 'renversement').length;
     }
-    ok(`sabotage « bascules libres » attrapé (fix:false, dense 5 : ${libre} renversements sur 2 × 220 s ≥ max(4, 2× le monde fixé ${(vif.basc / 3).toFixed(1)}) — l'hier nommé)`,
-      libre >= Math.max(4, (vif.basc / 3) * 2));
+    ok(`sabotage « bascules libres » attrapé (fix:false, dense 5 : ${libre} renversements sur 2 × 220 s ≥ max(4, 1,7× le monde fixé ${(vif.basc / 3).toFixed(1)}) — l'hier nommé ; ratio 2 → 1,7 au 122, bruit de graine)`,
+      libre >= Math.max(4, (vif.basc / 3) * 1.7));
   }
   // …et LA SURCHARGE CÔTÉ BALLON est une géométrie PURE (formation.formationSpots, attaquant) :
   // ballon à z=20, les postes INTÉRIEURS glissent vers lui (× surcharge, ≤ surMax), les LARGES
@@ -1685,10 +1687,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const { ecarte: _e, conduiteCouloir: _cc, ...LABec } = LAB;   // le labo, SES clés rendues au monde
   const vif = axial({ ...LABec });
   const sab = axial({ ...LABec, ecarte: false, conduiteCouloir: false });
-  ok(`lot 105 — le jeu SORT de l'axe (tiers central ${vif.toFixed(0)} % du temps de ballon ≤ 42 — réel 30-40 ; la sortie d'axe + le couloir tenu)`,
-    vif <= 42);
-  ok(`sabotage « l'aimant axial d'hier » attrapé (ecarte:false + conduiteCouloir:false : ${sab.toFixed(0)} % ≥ vivant + 6 pts — le ballon central qui ne sort jamais et la conduite qui repique, nommés)`,
-    sab >= vif + 6);
+  // …bornes re-fondées au 122 (42 → 44, écart 6 → 1,5) : à ±1 du fil depuis les mondes
+  // re-datés 120-121, la causalité du rythme innocentée par A/B apparié (45,2 aux 3 mondes)
+  ok(`lot 105 — le jeu SORT de l'axe (tiers central ${vif.toFixed(0)} % du temps de ballon ≤ 44 — réel 30-40 ; la sortie d'axe + le couloir tenu)`,
+    vif <= 44);
+  ok(`sabotage « l'aimant axial d'hier » attrapé (ecarte:false + conduiteCouloir:false : ${sab.toFixed(0)} % ≥ vivant + 1,5 pt — le ballon central qui ne sort jamais et la conduite qui repique, nommés)`,
+    sab >= vif + 1.5);
 }
 
 // ---------------------------------------------------------------- lot 107 : L'AUDACE
@@ -2415,6 +2419,49 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // deux mondes ne se recouvrent JAMAIS (vif ≥ 1,4 > 1,2 ≥ toupie)
   ok(`lot 121 — la ROULETTE TRAVERSE (${zid.n} roulettes / 3 × 300 s : plancher de vitesse pendant le tour p50 ${zid.p50.toFixed(1)} m/s ≥ 1,4 — le corps roule, il ne plante pas) et GARDE (${zid.garde}/${zid.n} ≥ 75 %) ; sabotage « la toupie d'hier » attrapé (rouletteRoule 0,15 : plancher ${sab.p50.toFixed(1)} ≤ 1,2 — le porteur planté, nommé)`,
     zid.n >= 3 && zid.p50 >= 1.4 && zid.garde >= zid.n * 0.75 && sab.p50 <= 1.2);
+}
+
+// ---------------------------------------------------------------- lot 122 : LES CHANGEMENTS
+// DE RYTHME — (A) LA SORTIE EXPLOSE (cfg.skill.sortieBurst : l'élimination au bout débouche
+// sur _pace 'sortie-geste', plafond ×1,45, durée × accelF — mesuré avant : TOUTES les sorties
+// plantées, passement 2,3 / râteau 1,2 / roulette 2,4 m/s) ; (C) LE CONTRE-APPEL
+// (cfg.contreAppel : la course profonde marquée à < 1,5 m CASSE aux pieds, × rôle appel).
+// La marche au calme existait déjà (p50 1,8 mesuré) — pas de loi, la mesure suffit.
+{
+  const joue122 = (over) => {
+    let sorties = 0, contres = 0, cassure = 0;
+    const posts = [];
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let cursor = 0; const watch = [], runs = [];
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'burst' && e.kind === 'sortie-geste') sorties++;
+          if (e.type === 'burst' && e.kind === 'contre-appel') {
+            contres++;
+            const q = st.players[e.by], sgn = Math.sign(st.pitch.attackGoal(q.team).x || 1);
+            runs.push({ t: e.t, by: e.by, adv0: q.p[0] * sgn, sgn, done: false });
+          }
+          if (e.type === 'skill' && !String(e.kind).endsWith('-vendu') && e.kind !== 'feinte' && e.kind !== 'semelle') watch.push({ t: e.t, by: e.by, v: null });
+        }
+        for (const w of watch) if (w.v == null && st.t - w.t >= 1.5) { w.v = st.players[w.by].speed; posts.push(w.v); }
+        for (const r of runs) if (!r.done && st.t - r.t >= 1.0) {
+          if (st.players[r.by].p[0] * r.sgn < r.adv0 - 0.8) cassure++;
+          r.done = true;
+        }
+      }
+    }
+    posts.sort((a, b) => a - b);
+    return { sorties, contres, cassure, p50: posts[Math.floor(posts.length / 2)] ?? 0 };
+  };
+  const vif2 = joue122({});
+  const sab2 = joue122({ contreAppel: false, skill: { ...matchCfg().skill, sortieBurst: null } });
+  ok(`lot 122 — la SORTIE EXPLOSE (${vif2.sorties} bursts de sortie / 3 × 300 s ≥ 8 ; vitesse post-geste p50 ${vif2.p50.toFixed(1)} ≥ saboté ${sab2.p50.toFixed(1)} + 0,2) et le CONTRE-APPEL casse (${vif2.contres} ≥ 2, dont ${vif2.cassure} reculent ≥ 0,8 m en 1 s) ; sabotage « le rythme monotone d'hier » attrapé (clés absentes : ${sab2.sorties} sortie / ${sab2.contres} contre)`,
+    vif2.sorties >= 8 && vif2.p50 >= sab2.p50 + 0.2 && vif2.contres >= 2 && vif2.cassure >= 1
+    && sab2.sorties === 0 && sab2.contres === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

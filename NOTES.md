@@ -5052,6 +5052,43 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      dans la translation SIM ; un clip « bras ouverts qui embarquent » dédié serait un
      plus visuel).
 
+164. **Lot 122 : LES CHANGEMENTS DE RYTHME (retour utilisateur : « c'est rarement au même
+     rythme le foot — appels contre-appels, feintes ralenties avec ballon puis une
+     accélération en sortie »).** MESURÉ AVANT (probe-122, 4 × 300 s) : TOUTES les sorties
+     de geste PLANTÉES — passement 2,3 m/s, semelle 2,1, pont 2,1, râteau 1,2, roulette
+     2,4 à +1,5 s (la feinte de passe 4,1 : elle avait déjà son burst) ; le ralenti du
+     geste existait, l'ACCÉLÉRATION DE SORTIE n'existait pas — l'œil de l'utilisateur au
+     chiffre près. La marche au calme existait déjà (porteur au calme p50 1,8 vs pressé
+     2,9) : PAS de loi — la mesure suffit, on n'écrit pas ce que le monde a. DEUX LOIS.
+     (A) LA SORTIE EXPLOSE (rondo-sim au 'end' de geste, cfg.skill.sortieBurst {dur 1,2,
+     top 1,45} && st.full) : l'élimination menée au bout AVEC le ballon débouche sur
+     _pace 'sortie-geste' — le mécanisme des ruptures (lot 57) réutilisé, plafond dédié
+     ×1,45 (l'espace ouvert se PREND), durée × accelF (l'ATTRIBUT acceleration : le
+     démarreur tient sa pointe — le mantra) ; la feinte garde son burst propre, la
+     semelle protège (pas une élimination). Mesuré après : ~18 bursts nommés/match,
+     sorties +24-30 % (croqueta 4,5, pont 3,8, râteau 1,2 → 3,4). (B) LE CONTRE-APPEL
+     (match-sim au dart profond, cfg.contreAppel {marque 1,5, p 0,5} && st.full) : la
+     course profonde MARQUÉE de près (< 1,5 m à mi-dart) CASSE aux pieds — recul de 5 m
+     vers le ballon, redémarrage 1,1 s, tiré au RÔLE appel (axe 0,6-1,4) une fois par
+     dart ; la latence de perception du marqueur (lot 50) paie la cassure — AUCUN bite
+     artificiel, l'avantage est organique. Mesuré : 2,8 contre-appels/match (39 % des
+     darts marqués cassent). Événements 'burst' kind sortie-geste / contre-appel — le
+     rythme se COMPTE. EMPREINTES : rondo c775c81e62592d4d ET réduit 4468f755032509b2 AU
+     BIT (les deux lois st.full-gardées) ; match 3/7 re-datés (22302573165a0762 /
+     bdf7523c02d8d383). Volumétrie payée par compression de docstrings (rondo-sim et
+     match-sim à 1249). CLAUSE 122 : sorties ≥ 8 + p50 post-geste > saboté + 0,2 ;
+     contre-appels ≥ 2 dont ≥ 1 recule ≥ 0,8 m ; sabotage « le rythme monotone d'hier »
+     (clés absentes : 0/0). QUATRE BORNES DE FLUX RE-FONDÉES (orbite +5 → +1,2 pt ;
+     bascules ×2 → ×1,7 ; axial ≤ 42 → 44 ; aimant +6 → +1,5 pt) : elles vivaient à ±1
+     du fil depuis les mondes re-datés 120-121, et la CAUSALITÉ du rythme est INNOCENTÉE
+     par A/B apparié (axialité 45,2 % IDENTIQUE aux trois mondes vif / sans contre-appel /
+     sans burst — le bruit de graine, pas une dérive). Dettes nommées : LES CLAUSES
+     APPARIÉES v2 (les sabotages d'écart absolu s'effritent à chaque monde re-daté — 8
+     re-fondations en 4 lots ; la forme robuste : vif et saboté sur les MÊMES graines,
+     borner l'écart APPARIÉ, insensible au niveau absolu) ; le contre-appel v2 (la
+     re-course APRÈS le décrochage — le double mouvement complet 9-then-spin) ; la cible
+     de course post-élimination (le burst élève le plafond, la direction reste au job).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

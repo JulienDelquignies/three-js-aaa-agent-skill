@@ -182,16 +182,22 @@
 13. **LA LISTE UTILISATEUR v2 (121-125, en cours)** : ~~121 la roulette Zidane~~ —
    **LIVRÉ** (note 163 : la traversée rouletteRoule 0,5 + sortie 75 %, tirage re-calibré
    0,032 par le gate, sortie p50 2,5 → 4,3 m/s, gain 1,9 → 3,3 m, A/B 32 ∈ bande) ;
-   122 les changements de rythme (ralenti-explosion du porteur + contre-appels) ; 123 la
-   présence dans la surface (sonde box crash d'abord — peut-être tactique) ; 124 les
-   passements ×3+ (enchaînements Mancini/Réveillère, gesteF² fait le style) ; 125 le
-   répertoire de courses d'ailier (débordement, underlap, décrochage, banane — la patte
-   pèse).
+   ~~122 les changements de rythme~~ — **LIVRÉ** (note 164 : la sortie de geste explose
+   — _pace 'sortie-geste' ×1,45, durée × accelF, +24-30 % mesurés ; le contre-appel
+   casse aux pieds × rôle appel, 2,8/match ; la marche au calme existait déjà — mesurée,
+   pas de loi) ; 123 la présence dans la surface (sonde box crash d'abord — peut-être
+   tactique) ; 124 les passements ×3+ (enchaînements Mancini/Réveillère, gesteF² fait le
+   style) ; 125 le répertoire de courses d'ailier (débordement, underlap, décrochage,
+   banane — la patte pèse).
 
 ## Backlog long terme (inchangé)
 LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36
 lots — chaque loi nouvelle redistribue des 50/50 ; sonde PAR MÉCANISME puis re-concentration
 de l'avantage : chasse × pace, premier toucher × control, duels × strength/tackling).
+
+LES CLAUSES APPARIÉES v2 (lot 122 : les sabotages d'écart absolu s'effritent à chaque
+monde re-daté — 8 re-fondations en 4 lots ; la forme robuste : vif et saboté sur les
+MÊMES graines, borner l'écart apparié, insensible au niveau absolu du monde).
 
 LE MARQUAGE DU COUREUR DE MUR (dette 119 : ~20 % des retours de une-deux = but, la course
 dans le dos du presseur n'a pas de défense dédiée).

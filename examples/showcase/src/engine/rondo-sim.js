@@ -25,11 +25,9 @@ import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle,
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const { movePlayers, separatePlayers, turnover } = rondoInternals;
 
-/** Le POINT DU PIED du porteur — où un ballon porté vit : devant le pied de contrôle, mêmes
- *  décalages que la touche directionnelle du receive (controlSettle devant, footSide côté pied).
- *  CLAMPÉ DANS LE CARRÉ : un porteur debout SUR la ligne portait son ballon 0,34 m dehors — mesuré,
- *  6 sorties de but sur 3 graines avec un ballon PORTÉ (le porteur sortait son propre ballon en
- *  le protégeant). Le joueur s'arrête à la craie ; son ballon aussi. */
+/** Le POINT DU PIED du porteur — devant le pied de contrôle (mêmes décalages que la touche du receive),
+ *  CLAMPÉ DANS LE CARRÉ : un porteur SUR la ligne portait son ballon 0,34 m dehors (6 sorties de but
+ *  mesurées sur 3 graines). Le joueur s'arrête à la craie ; son ballon aussi. */
 
 
 
@@ -37,11 +35,8 @@ const { movePlayers, separatePlayers, turnover } = rondoInternals;
  * quand le jeu s'effondre, le premier chiffre à lire est « qui dit non, et combien de fois ». */
 function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; }
 
-/**
- * THE GESTURE CLOCK — every actor, every phase. A follow-through does not stop because the ball has
- * left or because possession changed; that is exactly the defect this runs outside the phase machine
- * to avoid. The only thing that cuts a swing short is a named interruption.
- */
+/** THE GESTURE CLOCK — every actor, every phase. A follow-through does not stop because the ball has
+ *  left or possession changed; only a named interruption cuts a swing short (runs outside the phase machine). */
 function stepGestures(st, dt, cfg) {
   for (const p of st.players) {
     if (!p.act) continue;
@@ -150,6 +145,15 @@ function stepGestures(st, dt, cfg) {
       // la fin d'un geste technique STAMPE ses mesures — le banc juge des chiffres de la sim,
       // pas une reconstruction de trace échantillonnée
       const A = actBefore.payload;
+      // LA SORTIE EXPLOSE (122, cfg.skill.sortieBurst && st.full) : l'élimination menée au bout AVEC le
+      // ballon débouche sur une accélération franche (_pace ×1,28) — mesuré avant : TOUTES les sorties
+      // plantées (passement 2,3, râteau 1,2, roulette 2,4 m/s à +1,5 s), le ralenti existait, l'explosion
+      // jamais. Durée × accelF (l'attribut) ; la feinte garde son burst propre, la semelle protège. Absente : hier.
+      const SB = st.full && cfg.skill?.sortieBurst;
+      if (SB && (st.ball.owner === p.id || A.reussi) && A.skill !== 'plongeon' && A.skill !== 'semelle' && A.skill !== 'feinte') {
+        p._pace = { until: st.t + (SB.dur ?? 1.2) * (p.skill?.accelF ?? 1), kind: 'sortie-geste', next: p._pace?.next ?? 0 };
+        st.events.push({ type: 'burst', kind: 'sortie-geste', by: p.id, t: +st.t.toFixed(2) });
+      }
       if (A.skill === 'rateau') {
         p.v[0] = Math.cos(A.exitYaw) * 1.6; p.v[1] = Math.sin(A.exitYaw) * 1.6;
         p.push = [Math.cos(A.exitYaw), Math.sin(A.exitYaw)];
@@ -170,13 +174,9 @@ function stepGestures(st, dt, cfg) {
   }
 }
 
-/**
- * LE VOL DEVIENT UN GESTE. La minuterie arrivée à terme n'est plus une bascule de possession en une
- * image : le presseur S'ENGAGE dans un tacle-debout (armé 0,28 s, le clip tacleDebout qui existait
- * depuis le début et n'était JAMAIS déclenché — technique.js:117 / animkit:456, mesuré 0 déclenchement
- * en 8 min). Pendant l'armé, le porteur peut encore sortir le ballon — c'est le duel. Le transfert,
- * s'il a lieu, se joue AU CONTACT du geste, sur un ballon à portée (standTackleNow).
- */
+/** LE VOL DEVIENT UN GESTE : le presseur S'ENGAGE dans un tacle-debout (armé 0,28 s — le clip tacleDebout
+ *  jamais déclenché avant, mesuré 0 en 8 min). Pendant l'armé le porteur peut sortir le ballon (le duel) ;
+ *  le transfert se joue AU CONTACT, sur un ballon à portée (standTackleNow). */
 function beginStandTackle(st, q, victim, cfg) {
   const move = MOVE_TIMING.tacleDebout;
   st.pressure = 0;
