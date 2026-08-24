@@ -629,6 +629,7 @@ export const MATCH = {
     pontBite: 0.7,          // s — se retourner contre son pas chassé coûte, × gesteF
     pontCd: 10,             // s
     rouletteFoe: [0.8, 1.8],// m — LA ROULETTE (lot 117) : le POURSUIVANT en diagonale-dos
+    rouletteRoule: 0.5,     // part d'élan conservée PENDANT le tour (121, la Zidane traverse — 0,15 : la toupie d'hier)
     rouletteBear: [55, 140],// ° — le frontal appartient au râteau/à la croqueta, le plein
                             // dos à la tenure (mesuré : 52 fenêtres/match, 95 % muettes)
     rouletteClosing: 0.8,   // m/s — il ferme

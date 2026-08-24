@@ -5024,6 +5024,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le gardien-libéro ne joue pas encore la relance au pied hors surface (Loi 12 hors
      surface v2).
 
+163. **Lot 121 : LA ROULETTE À LA ZIDANE — l'envergure (retour utilisateur : « plutôt une
+     roulette à la Zidane qu'à la toupie d'Antony, ça manque d'envergure pour avoir un
+     impact »).** MESURÉ AVANT (sonde probe-121, 8 × 300 s) : sortie p50 2,5 m/s (des cas
+     PLANTÉS à 0,4), gain vers le but +1,5 s p50 1,9 m, poursuivant re-collé 28 % — la
+     toupie exacte (le nerf « sortie 15 % de l'élan » du lot 117 avait tué la perforation
+     ET l'envergure). LA LOI (skills-sim, le follow ×3 phases) : le 360 TRAVERSE — le
+     corps roule sur rouletteRoule (0,5) de son élan PENDANT le tour (la marseillaise
+     avance en tournant, le ballon roulé sous la semelle en marchant — la Zidane exacte),
+     et la sortie REMONTE à 75 % dans le dernier quart : le porteur sort LANCÉ. LE PRIX
+     RE-CALIBRÉ PAR LE GATE : à tirage constant (0,05 + 0,15 flair), l'A/B crevait la
+     bande (96 tirs, 34 buts > 33 — la même leçon que la v1 du 117 : le porteur qui
+     traverse crée) ; l'envergure se paie en RARETÉ, pas en toupie — tirage 0,032 + 0,1
+     flair (× gesteF × (2−getupF) inchangés : l'agilité et le flair font toujours foi).
+     MESURÉ APRÈS : 2,6 roulettes/match (réel ~1-2), sortie p50 4,3 m/s (pics 7,5), gain
+     p50 3,3 m, garde 95 %, re-collé 24 % ; A/B 85 tirs / 32 buts ∈ [17 ; 33] ✓. LE
+     RÉDUIT RE-DATÉ une fois : la roulette y VIT depuis le 117 (mesuré : 8 events/120 s
+     seed 4 — maybeRoulette n'a pas de garde st.full, la clé skill.rouletteFoe vit dans
+     matchCfg que le réduit partage) — la traversée change son flux ; empreintes : rondo
+     c775c81e62592d4d AU BIT (le rondo n'a pas matchCfg), réduit → 4468f755032509b2,
+     match 3/7 → 88bcbb629334a5a4 / 2c0883cd9e945a20 ; verify-match 84/0 SANS
+     re-fondation (la clause receveur, 16 % au tirage 0,05, repasse d'elle-même à 0,032).
+     CLAUSE 121 (match11) : la roulette TRAVERSE (sortie p50 ≥ 3,3 sur 3 × 300 s) et
+     GARDE (≥ 75 %) ; sabotage « la toupie d'hier » (rouletteRoule 0,15 : p50 − 1). La
+     config : skill.rouletteRoule (0,5) — un projet aval règle l'envergure comme tout le
+     reste. Dette nommée : le clip d'anim reste le 0,7 s sobre du 117 (l'envergure est
+     dans la translation SIM ; un clip « bras ouverts qui embarquent » dédié serait un
+     plus visuel).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

@@ -446,10 +446,11 @@ export function maybeRoulette(st, c, cfg) {
     foe = q; fd = d; side = sit.side === 'left' ? 1 : -1;         // on tourne du côté OPPOSÉ au poursuivant
   }
   if (!foe) return false;
-  // …tirage 0,08 → 0,05 et sortie 0,35 → 0,15 de l'élan (calibrage mesuré : la v1 ajoutait
-  // +33 tirs/+14 buts sur 20 matchs — le porteur intouchable qui AVANCE perforait la ligne ;
-  // le vrai 360 se fait quasi SUR PLACE et préserve, il ne crée pas)
-  if ((st.rnd ? st.rnd() : 0.5) > (0.05 + 0.15 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1) * (2 - (c.skill?.getupF ?? 1))) {
+  // …tirage re-calibré au lot 121 (0,05 → 0,032) : la Zidane TRAVERSE désormais (rouletteRoule
+  // 0,5, sortie 0,75 — retour utilisateur « ça manque d'envergure ») et l'A/B à tirage constant
+  // crevait la bande (34 buts > 33) — l'envergure se paie en RARETÉ, pas en toupie : la
+  // roulette réelle est un éclair (~1-2/match), et chacune qui part GAGNE ses mètres.
+  if ((st.rnd ? st.rnd() : 0.5) > (0.032 + 0.1 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1) * (2 - (c.skill?.getupF ?? 1))) {
     (c._skillCd ??= {}).roulette = st.t + 3; return false;
   }
   const sit2 = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -712,14 +713,19 @@ export function skillFollowStep(st, p, dt, cfg) {
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'roulette') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roulette', { log: st.gestures }); return; }
-    // LE 360 : le cap tourne d'un tour PLEIN (signé côté opposé au poursuivant), le corps
-    // glisse sur ~35 % de son élan, le ballon reste SOUS la semelle (0,18 m devant le cap
-    // COURANT — il décrit le petit cercle du tour avec le pied) ; la sortie = l'entrée.
+    // LA ZIDANE (121) : le 360 TRAVERSE — le corps roule sur ~la moitié de son élan pendant
+    // le tour (la marseillaise avance, elle ne toupille pas : retour utilisateur « plutôt
+    // Zidane qu'Antony, ça manque d'envergure ») et la SORTIE REMONTE vers 75 % de l'élan
+    // dans le dernier quart du geste — le porteur sort LANCÉ, le poursuivant mordu est
+    // derrière. Mesuré avant : sortie p50 2,5 m/s (des cas plantés à 0,4), gain 1,9 m,
+    // re-collé 28 %. Le ballon reste SOUS la semelle (0,18 m devant le cap COURANT — le
+    // petit cercle roulé en marchant, la Zidane exacte) ; le cap de sortie = l'entrée.
     const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
     const e3 = u * u * (3 - 2 * u);
     p.yaw = wrapA(A.yaw0 + (A.spin ?? 1) * 2 * Math.PI * e3);
     p.yawWant = null;
-    const vG = (A.v0 ?? 2) * 0.15;
+    const roule = cfg.skill?.rouletteRoule ?? 0.5;
+    const vG = (A.v0 ?? 2) * (roule + (0.75 - roule) * Math.max(0, (u - 0.7) / 0.3));
     p.v[0] = Math.cos(A.yaw0) * vG; p.v[1] = Math.sin(A.yaw0) * vG;
     p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
     p.speed = vG;
@@ -727,14 +733,19 @@ export function skillFollowStep(st, p, dt, cfg) {
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'roulette') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roulette', { log: st.gestures }); return; }
-    // LE 360 : le cap tourne d'un tour PLEIN (signé côté opposé au poursuivant), le corps
-    // glisse sur ~35 % de son élan, le ballon reste SOUS la semelle (0,18 m devant le cap
-    // COURANT — il décrit le petit cercle du tour avec le pied) ; la sortie = l'entrée.
+    // LA ZIDANE (121) : le 360 TRAVERSE — le corps roule sur ~la moitié de son élan pendant
+    // le tour (la marseillaise avance, elle ne toupille pas : retour utilisateur « plutôt
+    // Zidane qu'Antony, ça manque d'envergure ») et la SORTIE REMONTE vers 75 % de l'élan
+    // dans le dernier quart du geste — le porteur sort LANCÉ, le poursuivant mordu est
+    // derrière. Mesuré avant : sortie p50 2,5 m/s (des cas plantés à 0,4), gain 1,9 m,
+    // re-collé 28 %. Le ballon reste SOUS la semelle (0,18 m devant le cap COURANT — le
+    // petit cercle roulé en marchant, la Zidane exacte) ; le cap de sortie = l'entrée.
     const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
     const e3 = u * u * (3 - 2 * u);
     p.yaw = wrapA(A.yaw0 + (A.spin ?? 1) * 2 * Math.PI * e3);
     p.yawWant = null;
-    const vG = (A.v0 ?? 2) * 0.15;
+    const roule = cfg.skill?.rouletteRoule ?? 0.5;
+    const vG = (A.v0 ?? 2) * (roule + (0.75 - roule) * Math.max(0, (u - 0.7) / 0.3));
     p.v[0] = Math.cos(A.yaw0) * vG; p.v[1] = Math.sin(A.yaw0) * vG;
     p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
     p.speed = vG;
@@ -781,14 +792,19 @@ export function skillFollowStep(st, p, dt, cfg) {
     A.ballMax = Math.max(A.ballMax ?? 0, d2(p.p, st.ball.p));
   } else if (A.skill === 'roulette') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-roulette', { log: st.gestures }); return; }
-    // LE 360 : le cap tourne d'un tour PLEIN (signé côté opposé au poursuivant), le corps
-    // glisse sur ~35 % de son élan, le ballon reste SOUS la semelle (0,18 m devant le cap
-    // COURANT — il décrit le petit cercle du tour avec le pied) ; la sortie = l'entrée.
+    // LA ZIDANE (121) : le 360 TRAVERSE — le corps roule sur ~la moitié de son élan pendant
+    // le tour (la marseillaise avance, elle ne toupille pas : retour utilisateur « plutôt
+    // Zidane qu'Antony, ça manque d'envergure ») et la SORTIE REMONTE vers 75 % de l'élan
+    // dans le dernier quart du geste — le porteur sort LANCÉ, le poursuivant mordu est
+    // derrière. Mesuré avant : sortie p50 2,5 m/s (des cas plantés à 0,4), gain 1,9 m,
+    // re-collé 28 %. Le ballon reste SOUS la semelle (0,18 m devant le cap COURANT — le
+    // petit cercle roulé en marchant, la Zidane exacte) ; le cap de sortie = l'entrée.
     const u = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation + p.act.follow));
     const e3 = u * u * (3 - 2 * u);
     p.yaw = wrapA(A.yaw0 + (A.spin ?? 1) * 2 * Math.PI * e3);
     p.yawWant = null;
-    const vG = (A.v0 ?? 2) * 0.15;
+    const roule = cfg.skill?.rouletteRoule ?? 0.5;
+    const vG = (A.v0 ?? 2) * (roule + (0.75 - roule) * Math.max(0, (u - 0.7) / 0.3));
     p.v[0] = Math.cos(A.yaw0) * vG; p.v[1] = Math.sin(A.yaw0) * vG;
     p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
     p.speed = vG;

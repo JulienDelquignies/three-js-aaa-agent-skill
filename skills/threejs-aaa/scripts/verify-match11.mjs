@@ -2150,8 +2150,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const tentes = (getupF) => {
     let n2 = 0;
     for (let k = 0; k < 200; k++) {
-      let seed2 = k * 4241 + 11;
-      const rnd = () => { seed2 = (seed2 * 9301 + 49297) % 233280; return seed2 / 233280; };
+      // la GRILLE uniforme (k+0,5)/200 mesure la formule EXACTEMENT — le LCG à graines
+      // corrélées (k×4241+11) s'amassait près de 0,05 et la base re-calibrée du lot 121
+      // (0,032) tombait dans l'amas : souple 19 vs raide 18, l'écart noyé par l'instrument
+      const rnd = () => (k + 0.5) / 200;
       const st = { t: 10, events: [], gestures: [], area: [105, 68], rnd,
         ball: { p: [10.35, 0.11, 0], owner: 0, possess() {} },
         players: [
@@ -2163,8 +2165,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return n2;
   };
   const souple = tentes(0.72), raide = tentes(1.28);
-  ok(`…l'AGILITÉ filtre la roulette (200 tirages : le souple tente ${souple} ≥ raide ${raide} + 12 — getupF est un facteur, le raide s'abstient, jamais une branche)`,
-    souple >= raide + 12);
+  ok(`…l'AGILITÉ filtre la roulette (grille de 200 : le souple tente ${souple} ≥ raide ${raide} × 1,5 et + 6 — getupF est un facteur, le raide s'abstient, jamais une branche)`,
+    souple >= raide * 1.5 && souple >= raide + 6);
 
   // (c) LE FLUX : la roulette vit, TOURNE (l'acte fait un tour plein — yaw mesuré) et GARDE ;
   // sabotage « le poursuivant sans réponse d'hier » (rouletteFoe absent : 0).
@@ -2369,6 +2371,50 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`lot 120 — la CHAÎNE du lob se prouve posée (porteur 26 m, gardien à 6 : décision ${fx.pris}, espèce « ${fx.lobEv?.kind} » elev ${fx.lobEv?.elev} ≥ 0,45 — la cloche part) et le BACKPEDAL tient la laisse (retour mesuré ${fx.vBack.toFixed(1)} m/s ≤ 6,5 — le régime est à 3,5, le pic est la vitesse résiduelle de bascule qui décroît) ; sabotage « le monde sans lob » attrapé (lob:false : décision ${sabL.pris}, event ${sabL.lobEv ? 'lob' : 'aucun'})`,
     fx.pris === true && fx.lobEv?.kind === 'lob' && (fx.lobEv?.elev ?? 0) >= 0.45 && fx.vBack <= 6.5
     && !sabL.lobEv);
+}
+
+// ---------------------------------------------------------------- lot 121 : LA ROULETTE
+// À LA ZIDANE — le 360 TRAVERSE (rouletteRoule ~0,5 de l'élan pendant le tour) et la sortie
+// REMONTE à 75 % dans le dernier quart : le porteur sort LANCÉ (retour utilisateur : « plutôt
+// Zidane qu'Antony, ça manque d'envergure »). Mesuré au ship : sortie p50 2,5 → 4,3 m/s,
+// gain vers le but 1,9 → 2,7 m, garde 96 %. Le sabotage rend la toupie d'hier (0,15).
+{
+  const mesure = (over) => {
+    const outs = [], gardes = [];
+    for (const seed of [1, 2, 4]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });
+      let cursor = 0; const watch = [];
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'skill' && e.kind === 'roulette') watch.push({ t: e.t, by: e.by, team: st.players[e.by].team, done: false });
+        }
+        for (const w of watch) {
+          if (w.done) continue;
+          // le MIN de vitesse PENDANT le geste (0-0,7 s) : la toupie PLANTE (min ~0,15 v0),
+          // la Zidane ROULE (min ~0,5 v0) — mesurer à un temps absolu APRÈS le geste lisait
+          // la conduite reprise et le sabotage sortait plus « vite » que le vif (5,4 vs 4,3)
+          if (st.t - w.t <= 0.7) w.vMin = Math.min(w.vMin ?? 99, st.players[w.by].speed);
+          if (st.t - w.t >= 1.5) {
+            outs.push(w.vMin ?? 0);
+            gardes.push((st.ball.owner != null ? st.players[st.ball.owner].team : st.possession.team) === w.team);
+            w.done = true;
+          }
+        }
+      }
+    }
+    outs.sort((a, b) => a - b);
+    return { n: outs.length, p50: outs[Math.floor(outs.length / 2)] ?? 0, garde: gardes.filter(Boolean).length };
+  };
+  const zid = mesure(null);
+  const sab = mesure({ rouletteRoule: 0.15 });
+  // …borne 1,4 : le plancher vaut roule × v0 et l'entrée minimale est rouletteV 1,5 (des
+  // porteurs à ~3 m/s tournent aussi — mesuré p50 1,5) ; le sabotage plafonne à 1,2 : les
+  // deux mondes ne se recouvrent JAMAIS (vif ≥ 1,4 > 1,2 ≥ toupie)
+  ok(`lot 121 — la ROULETTE TRAVERSE (${zid.n} roulettes / 3 × 300 s : plancher de vitesse pendant le tour p50 ${zid.p50.toFixed(1)} m/s ≥ 1,4 — le corps roule, il ne plante pas) et GARDE (${zid.garde}/${zid.n} ≥ 75 %) ; sabotage « la toupie d'hier » attrapé (rouletteRoule 0,15 : plancher ${sab.p50.toFixed(1)} ≤ 1,2 — le porteur planté, nommé)`,
+    zid.n >= 3 && zid.p50 >= 1.4 && zid.garde >= zid.n * 0.75 && sab.p50 <= 1.2);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

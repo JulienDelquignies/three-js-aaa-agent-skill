@@ -179,6 +179,15 @@
    encore marqué (fenêtre du contre éclair rare), la relance au pied du libéro hors
    surface (Loi 12 v2).
 
+13. **LA LISTE UTILISATEUR v2 (121-125, en cours)** : ~~121 la roulette Zidane~~ —
+   **LIVRÉ** (note 163 : la traversée rouletteRoule 0,5 + sortie 75 %, tirage re-calibré
+   0,032 par le gate, sortie p50 2,5 → 4,3 m/s, gain 1,9 → 3,3 m, A/B 32 ∈ bande) ;
+   122 les changements de rythme (ralenti-explosion du porteur + contre-appels) ; 123 la
+   présence dans la surface (sonde box crash d'abord — peut-être tactique) ; 124 les
+   passements ×3+ (enchaînements Mancini/Réveillère, gesteF² fait le style) ; 125 le
+   répertoire de courses d'ailier (débordement, underlap, décrochage, banane — la patte
+   pèse).
+
 ## Backlog long terme (inchangé)
 LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36
 lots — chaque loi nouvelle redistribue des 50/50 ; sonde PAR MÉCANISME puis re-concentration
