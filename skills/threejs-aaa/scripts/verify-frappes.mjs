@@ -62,9 +62,13 @@ const frappe = (st, c, cfg, u, gkX = null) => {
   const gk1 = st.players.find((q) => q.team === 1 && q.keeper);
   gk1.p[0] = -sgn * 30; gk1.p[2] = -20;                              // pas de gardien : on juge la BALISTIQUE
   const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  // le PIED est posé (lot 120 — l'instrument dormait hors batterie et dépendait du pied tiré
+  // par la seed : un droitier côté débordement rétrécit la fenêtre patte à 0,497 et u=0,5 la
+  // rate d'un cheveu ; l'ailier INVERSÉ est le contexte que la clause raconte depuis le lot 87)
+  c.strongFoot = 'left';
   const z = 5.5, dx = Math.sqrt(15 * 15 - z * z);
   pose(st, c, goal.x - sgn * dx, z);                                  // dGoal 15, angle de repique
-  const r = frappe(st, c, cfg, 0.5);                                  // u 0,5 ∈ [0,42 ; 0,56) latéral → enroulée
+  const r = frappe(st, c, cfg, 0.5);                                  // u 0,5 ∈ [0,42 ; 0,64) inversé → enroulée
   const zLin = r.launch && r.plane ? r.launch.p[2] + r.launch.v[2] * ((goal.x - r.launch.p[0]) / r.launch.v[0]) : null;
   const corner = st.pitch.goalHalf - 0.55;
   ok(`l'ENROULÉE courbe (kind=${r.shot?.kind}, arrivée z=${r.plane?.z.toFixed(2)} au poteau ${corner.toFixed(2)}, ` +

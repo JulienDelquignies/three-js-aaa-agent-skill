@@ -346,6 +346,19 @@ export const MATCH = {
                           // l'API du projet (politique de banc). Événement 'fatigue' au
                           // franchissement de 0,35. false : le moteur infatigable (sabotage
                           // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
+  libero: { far: 34, max: 10, rampe: 8, retour: 3.5 },
+                          // LE GARDIEN-LIBÉRO (11c11, st.full — lot 120, la dette v1 de
+                          // depthMax) : ballon CHEZ L'ADVERSAIRE (> far m), le gardien MONTE
+                          // couper la profondeur (progressif jusqu'à max × depthKF ×
+                          // gardeF — la note keeping et le rôle garde osent). Mesuré
+                          // avant : gkOff p50 0,4 m, la ligne collée en permanence.
+                          // Absente : hier au bit.
+  lob: { out: 4, min: 18, max: 38, p: 0.25 },
+                          // LE LOB DU GARDIEN AVANCÉ (lot 120, dernier de la liste
+                          // utilisateur) : le libéro monté (≥ out m) se pique de LOIN
+                          // (min-max m) — la cloche haute vise la ligne, le retour est
+                          // plus lent que le vol. L'audace × longF (l'attribut longShots).
+                          // Absente : le gardien avancé impuni d'hier.
   unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 1.2 },
                           // LE UNE-DEUX (11c11, st.full — lot 119) : sur une passe COURTE
                           // (< dist m) d'un passeur PRESSÉ (< press m), le passeur ENCHAÎNE

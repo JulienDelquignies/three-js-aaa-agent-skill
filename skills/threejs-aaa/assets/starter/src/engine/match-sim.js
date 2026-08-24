@@ -336,13 +336,14 @@ function assignMatchJobs(st, cfg) {
     gk._gkSince = null;
     if (busy(gk)) continue;                                        // un plongeon possède son corps
     const shotAge = st.pass ? st.t - st.pass.t : Infinity;
-    // le GARDIEN NOTÉ : son envergure et son réflexe viennent de sa note (keeping) — sinon le métier moyen
-    let K = gk.skill ? { ...KEEPER, diveReach: gk.skill.keeperReach, reflex: gk.skill.keeperReflex } : KEEPER;
+    let K = gk.skill ? { ...KEEPER, diveReach: gk.skill.keeperReach, reflex: gk.skill.keeperReflex } : KEEPER;   // le GARDIEN NOTÉ (keeping) — sinon le métier moyen
     // LES APPUIS (lot 94) : bissectrice à la note, profondeur au rôle garde, SET, duel posé.
     if (st.full && cfg.appuis !== false) {
       const ownr = st.ball.owner != null ? st.players[st.ball.owner] : null;
       K = { ...K, appuis: true, posMixF: gk.skill?.posMixF ?? 1, depthF: gk.skill?.depthKF ?? 1,
-        gardeF: axe(role(gk).garde, 0.7, 1.3), vGk: Math.hypot(gk.v[0], gk.v[1]), porte: !!ownr && ownr.team !== gk.team };
+        gardeF: axe(role(gk).garde, 0.7, 1.3), vGk: Math.hypot(gk.v[0], gk.v[1]), porte: !!ownr && ownr.team !== gk.team,
+        // …libéro (120) : une LECTURE — jamais sur CPA (le corner défensif vit à 34 m) ; SA possession : plein ; adverse LOINTAINE (> tient 48 m) : demi-garde 0,6 ; adverse qui avance : cible basse, le backpedal fait la fenêtre du lob
+        libero: cfg.libero, liberoGate: st.restart ? 0 : st.possession.team === gk.team ? 1 : Math.hypot(st.ball.p[0] - pitch.ownGoal(gk.team).x, st.ball.p[2]) > (cfg.libero?.tient ?? 48) ? 0.6 : 0 };
     }
     // LE CÔNE DE SORTIE (lot 104, cfg.sortie1v1 && st.full) : K.cone + la couverture goal-side mesurée (keeper.js)
     if (st.full && cfg.sortie1v1) K = { ...K, cone: cfg.sortie1v1, couvertD: keeperCouvert(st.players, gk, pitch.ownGoal(gk.team), st.ball.p) };
@@ -1157,10 +1158,9 @@ export function playMatch(st, seconds, { dt = 1 / 60, cfg = matchCfg(), sample =
 }
 
 /**
- * CONTRAT DU MATCH. Par-dessus la santé du loop (pas de téléport, pas d'essaim — checkRondo les
- * tient), les façons dont un MATCH redevient un rondo décoré : personne ne tire, un score qui ne
- * correspond pas aux buts, des sorties sans remise nommée, un gardien qui erre loin de son but,
- * des remises volées par l'adversaire, un jeu qui ne progresse jamais vers les buts.
+ * CONTRAT DU MATCH. Par-dessus la santé du loop (checkRondo tient téléports/essaims), les façons
+ * dont un MATCH redevient un rondo décoré : personne ne tire, score ≠ buts, sorties sans remise
+ * nommée, gardien errant, remises volées, un jeu qui ne progresse jamais vers les buts.
  */
 export function checkMatch(st, trace, cfg = matchCfg()) {
   const issues = [];
@@ -1185,9 +1185,9 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   const denied = (st.deny?.['tir-couloir-fermé'] ?? 0) > 0;
   if (!shots.length && !denied && thirdVisits > 25) issues.push(`PERSONNE NE TIRE malgré ${thirdVisits} passages dans le dernier tiers — un rondo décoré`);
   for (const s of shots) {
-    if (s.range > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
-    // la clause connaît LA MÊME loi que le déclencheur : à bout portant (< 9 m), on tire dans le
-    // trafic (0,25 m) — juger tous les tirs au couloir de loin re-créerait l'attaquant muet
+    const okLob = st.full && cfg.lob && s.kind === 'lob' && s.range <= (cfg.lob.max ?? 38) + 0.6;   // le lob du gardien avancé (120) vit AU-DELÀ de la grise
+    if (!okLob && s.range > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
+    // la clause connaît LA MÊME loi que le déclencheur : à bout portant (< 9 m) on tire dans le trafic (0,25 m) — juger tous les tirs au couloir de loin re-créerait l'attaquant muet
     const need = (s.range ?? 99) < 9 ? 0.25 : cfg.shotClear - 0.05;
     if (s.clear != null && s.clear < need) issues.push(`tir à travers un mur (couloir ${s.clear} m < ${need})`);
   }
@@ -1214,7 +1214,8 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
     const ds = trace.map((s) => s.players.find((q) => q.id === gk.id)).filter(Boolean)
       .map((q) => Math.hypot(q.p[0] - g.x, q.p[1] - 0)).sort((a, b) => a - b);
     const med = ds[Math.floor(ds.length / 2)] ?? 0;
-    if (med > 6) issues.push(`le gardien ${team} erre (médiane à ${med.toFixed(1)} m de son but)`);
+    const bLib = st.full && cfg.libero ? (cfg.libero.max ?? 10) + 2 : 6;   // le libéro (120) POSSÈDE sa hauteur — la clause borne au plafond de la loi
+    if (med > bLib) issues.push(`le gardien ${team} erre (médiane à ${med.toFixed(1)} m de son but)`);
   }
   // le jeu PROGRESSE : le ballon visite les deux tiers offensifs — la clause vise le
   // rond-central-perpétuel, PAS l'équilibre des forces (une équipe dominée 120 s est un

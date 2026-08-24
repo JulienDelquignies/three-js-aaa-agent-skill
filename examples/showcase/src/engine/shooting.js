@@ -22,14 +22,27 @@ export function tryShot(st, c, cfg) {
   const dGoal = Math.hypot(goal.x - c.p[0], 0 - c.p[2]);
   // …la même portée grise que l'arbitre (lot 92 — une seule vérité) : le tir lointain choisi
   // par la menace ne se fait pas refuser à la porte.
-  if (dGoal > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1)) return false;
+  // LE LOB OUVRE SA PROPRE PORTE (lot 120) : le gardien-libéro MONTÉ (≥ lob.out de sa ligne)
+  // rend le tir de 18-38 m une OCCASION — la fenêtre du contre, pendant sa course de retour
+  // (mesuré : 0 lob sans cette porte — la décision ne se posait jamais au-delà de la grise).
+  const gkL = st.full && cfg.lob ? st.players.find((p) => p.keeper && p.team !== c.team) : null;
+  // …et le DÉCOLLAGE LIBRE : on ne lobe pas par-dessus un corps à portée de tête — la cloche
+  // ne dépasse 2,2 m qu'à ~3,5 m du pied (mesuré seed 6 : lob coupé net à 1,66 m par la
+  // remise de tête du défenseur posté à 2 m). Le cône ±0,6 rad vers le but doit être vide.
+  const capL = gkL ? Math.atan2(0 - c.p[2], goal.x - c.p[0]) : 0;
+  const decolle = !gkL || !st.players.some((q) => q.team !== c.team && q.down <= 0
+    && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.lob.decolle ?? 3.5)
+    && Math.abs((Math.atan2(q.p[2] - c.p[2], q.p[0] - c.p[0]) - capL + 3 * Math.PI) % (2 * Math.PI) - Math.PI) < 0.6);
+  const porteLob = gkL && decolle && Math.abs(gkL.p[0] - goal.x) >= (cfg.lob.out ?? 4)
+    && dGoal >= (cfg.lob.min ?? 18) && dGoal <= (cfg.lob.max ?? 38) && Math.abs(c.p[2]) <= 14;
+  if (dGoal > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) && !porteLob) return false;
   if (st.hold < cfg.shotHold) return false;
   if (Math.sign(c.p[0] - 0) !== Math.sign(goal.x) && dGoal > cfg.shotRange * 0.75) return false; // pas de sa moitié
   // L'ANGLE FERMÉ N'EST PAS UN TIR, C'EST UN CENTRE RATÉ : l'aile voyait 15 m de « portée » et
   // canonnait du couloir (0 centre mesuré — tryShot passait toujours avant tryCross). Au-delà de
   // l'épaule de la surface et hors du bout portant, le refus se nomme et l'aile SERT.
   // …la MÊME excuse de loin que l'arbitre (lot 107, cfg.audace — une seule vérité)
-  if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && dGoal > 8.5
+  if (Math.abs(c.p[2]) > pitch.goalHalf + 3 && dGoal > 8.5 && !porteLob
     && !(st.full && cfg.audace && dGoal >= (cfg.audace.deLoin ?? 18) && Math.abs(c.p[2]) <= (cfg.audace.zMax ?? 12))) return deny(st, 'angle-fermé');
   const gk = st.players.find((p) => p.keeper && p.team !== c.team);
   // les DEUX coins s'essaient, le plus loin du gardien d'abord — et à bout portant, on tire dans
@@ -82,7 +95,25 @@ export function tryShot(st, c, cfg) {
     // (< 2 rad/s) — le gardien les lit TARD (floatRead, keeper.js).
     const gkOff = gk ? Math.abs(gk.p[0] - goal.x) : 0;
     const dGk = gk ? Math.hypot(gk.p[0] - c.p[0], gk.p[2] - c.p[2]) : 99;
-    if (gkOff >= 4.2 && dGk <= 8 && dGoal >= 9 && dGoal <= 21 && u < 0.3) {
+    if (st.full && cfg.lob && decolle && gkOff >= (cfg.lob.out ?? 4) && dGoal >= (cfg.lob.min ?? 18) && dGoal <= (cfg.lob.max ?? 38)
+      && u < (cfg.lob.p ?? 0.25) * (c.skill?.longF ?? 1)) {
+      // LE LOB DU GARDIEN AVANCÉ (lot 120 — le dernier de la liste utilisateur) : le LIBÉRO
+      // monté (≥ out m de sa ligne) se pique de LOIN — la cloche haute vise la ligne, le
+      // retour est plus lent que le vol. L'AUDACE est l'attribut longShots (× longF — le
+      // même levier que le tir lointain, lot 107) ; la cloche exacte (le modèle balistique
+      // compensé ×1,18 du piqué). Clé absente : le gardien avancé impuni d'hier, au bit.
+      // …PAR-DESSUS LES TÊTES : un corps adverse dans le cône à 3,5-6 m (hors du refus de
+      // décollage mais à portée de DÉTENTE — mesuré seed 11 : remise sautée h 2,72 à 3,7 m)
+      // raidit la cloche (0,8 rad ≈ 46° : 3,5 m d'altitude à 3,7 m du pied, hors de tout saut) ;
+      // couloir aérien vide : la cloche tendue (0,45-0,62), plus dure à rattraper en reculant.
+      const tetes = st.players.some((q) => q.team !== c.team && q.down <= 0 && (() => {
+        const dq = Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]);
+        return dq >= (cfg.lob.decolle ?? 3.5) && dq < 6
+          && Math.abs((Math.atan2(q.p[2] - c.p[2], q.p[0] - c.p[0]) - capL + 3 * Math.PI) % (2 * Math.PI) - Math.PI) < 0.6;
+      })());
+      const el = tetes ? 0.8 : Math.min(0.62, Math.max(0.45, Math.atan(1.25 * 3.2 / (gkOff * 0.9))));
+      shotKind = { id: 'lob', speed: Math.sqrt(Math.max(10, dGoal * 1.18) * 9.81 / Math.sin(2 * el)), elev: el, exact: true, rev: 0.2 };
+    } else if (gkOff >= 4.2 && dGk <= 8 && dGoal >= 9 && dGoal <= 21 && u < 0.3) {
       // LE PIQUÉ est l'arme du UN-CONTRE-UN : le gardien sorti (≥ 4,2 m) et PRÈS du tireur
       // (≤ 8 m), le but loin derrière lui — il ne recule pas plus vite que le vol. Sur un
       // gardien LOIN du tireur, la cloche de 2 s se fait rattraper (prise à 1,65 m mesurée,

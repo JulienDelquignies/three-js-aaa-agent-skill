@@ -98,7 +98,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // part SANS élan lisible ; les frappes tendues (ras-de-terre, flottante, mi-hauteur) gardent
     // le cou-de-pied `frappe`. La géométrie du plan (ancre, stance, atteignabilité) reste LA loi.
     if (opts.shot && choice.shotKind && st.full && cfg.gesteTir !== false) {
-      const K93 = { puissance: 'frappePuissante', lucarne: 'frappePuissante', 'enroulée': 'frappeEnroulee', 'placé': 'frappeEnroulee', 'croisé': 'frappeEnroulee', pointu: 'frappePointu', 'piqué': 'frappePointu' };
+      const K93 = { puissance: 'frappePuissante', lucarne: 'frappePuissante', 'enroulée': 'frappeEnroulee', 'placé': 'frappeEnroulee', 'croisé': 'frappeEnroulee', pointu: 'frappePointu', 'piqué': 'frappePointu', lob: 'frappePointu' };
       const cl = K93[choice.shotKind.id] ?? 'frappe';
       const row = TECHNIQUES.find((t) => t.clip === cl && t.intent !== 'clear');
       cands = [{ clip: cl, pref: 1, antic: (MOVE_TIMING[cl] || MOVE_TIMING.frappe).contact, data: row }];

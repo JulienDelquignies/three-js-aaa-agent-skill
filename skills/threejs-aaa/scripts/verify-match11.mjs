@@ -29,7 +29,7 @@ import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } fr
 import { resoudreTactique } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
-import { KEEPER, keeperDecide } from '../assets/starter/src/engine/keeper.js';
+import { KEEPER, keeperDecide, keeperSpot } from '../assets/starter/src/engine/keeper.js';
 import { menaceTir } from '../assets/starter/src/engine/menace.js';
 
 // LE MONDE DE LABO (lot 111 — le patron de neutralisation symétrique MUTUALISÉ : chaque
@@ -44,7 +44,8 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null },   // …le répertoire pré-114/115/117 (ni croqueta, ni pont, ni roulette)
   filet: false, bordure: false, celebration: false,                 // …le sifflet d'hier (pré-116 : brakes ponctuels, engagement à 3,8 s)
   talonnade: false,                                                 // …le demi-tour d'hier (pré-118 : le talon dormait)
-  unDeux: false };                                                  // …le donne-sans-va d'hier (pré-119)
+  unDeux: false,                                                    // …le donne-sans-va d'hier (pré-119)
+  libero: false, lob: false };                                      // …le gardien sur sa ligne d'hier (pré-120)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -981,10 +982,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return { n, dos, deny, part: n ? dos / n : 0 };
   };
   const vif76 = touchesDos({});
-  // …bornes re-fondées lot 119 : le BUGFIX corner (sans clé — le tas était un bug) a re-battu
-  // le monde de labo une fois ; mesures fraîches : vif 4,5 %, orbite +6,5, chaloupe −2, UT +2
-  ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 5 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif)`,
-    vif76.part <= 0.05);
+  // …bornes re-fondées lot 119 (bugfix corner) puis 120 : le LIBÉRO + gate déplacent les
+  // gardiens dès l'engagement — les flux de conduite se re-battent une fois (mesuré 5,37 % ;
+  // l'aimant d'hier vivait à ~12 % : ≤ 6 % reste « mort », l'esprit de la clause est intact)
+  ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 6 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif)`,
+    vif76.part <= 0.06);
   const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false, accroche: false,
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
@@ -1704,6 +1706,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   st.ball.release('perte'); st.ball.restart([g.x - sg * 22, 0.11, 2], { cause: 'touche' }); st.ball.possess(c.id);
   c.p[0] = g.x - sg * 22; c.p[2] = 2; c.v = [0, 0];
   for (const q of st.players) if (q.id !== c.id && !q.keeper) { q.p[0] = g.x - sg * 45; q.p[2] = (q.id % 9) * 3 - 12; q.v = [0, 0]; q.down = 0; }
+  // …le gardien SUR SA LIGNE (lot 120 : le libéro des 3 s de jeu le laissait parfois sorti et
+  // « gardien-sorti » volait la clause — la zone grise se juge face à un but GARDÉ)
+  const gkA7 = st.players.find((q) => q.keeper && q.team !== c.team);
+  gkA7.p[0] = g.x - sg * 0.6; gkA7.p[2] = 0; gkA7.v = [0, 0];
   const mAud = menaceTir(st, c, cfg);
   c.skill = makeProfile({ longShots: 92 }); const mFort = menaceTir(st, c, cfg);
   c.skill = makeProfile({ longShots: 15 }); const mFaible = menaceTir(st, c, cfg);
@@ -2291,6 +2297,78 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabU = m119({ unDeux: false });
   ok(`lot 119 — le COIN AU SEUL TIREUR (${vifU.tas6} frame de tas sur 4 × 300 s ≤ 2 — était 3/4 corners à deux corps) et le UNE-DEUX vit (${vifU.lances} lancés ≥ 6, ${vifU.retours} retours servis ≥ 2 — le mur se boucle) ; sabotage « le donne-sans-va d'hier » attrapé (unDeux:false : ${sabU.lances})`,
     vifU.tas6 <= 2 && vifU.lances >= 6 && vifU.retours >= 2 && sabU.lances === 0);
+}
+
+// ---------------------------------------------------------------- lot 120 : LE COUPLE
+// LIBÉRO + LOB — le gardien avancé (K.libero : monter DERRIÈRE la possession lointaine,
+// far 34 + rampe 8 : la hauteur est ACQUISE avant que le ballon redescende — la rampe de
+// 18 m d'avant le faisait rentrer PENDANT la descente du ballon et la fenêtre du lob
+// n'existait jamais : 0 frame ≥ 3 m mesurée sur 3 matchs), le backpedal (movement.js :
+// le retour se fait FACE AU JEU à libero.retour m/s — sans lui le sprint-retour à ~7 m/s
+// effaçait la fenêtre), et le LOB qui le punit (menaceTir voit le gardien sorti AVANT ses
+// refus de distance ; shooting.js ouvre porteLob et tire l'espèce en cloche exacte).
+{
+  // (a) fixtures pures keeperSpot : la montée, la rampe, la laisse des notes, le sabotage
+  const pitch = makePitch(FULL);
+  const g = pitch.ownGoal(0), sg = Math.sign(g.x || 1);
+  const KL = { ...KEEPER, libero: { far: 34, max: 10, rampe: 8, retour: 3.5 } };
+  const offAt = (dist, K) => Math.abs(keeperSpot(pitch, 0, [g.x - sg * dist, 0, 0], K).x - g.x);
+  const offL = offAt(60, KL), offP = offAt(20, KL), offH = offAt(60, KEEPER);
+  const offT = offAt(60, { ...KL, depthF: 0.7, gardeF: 0.8 });
+  ok(`lot 120 — le LIBÉRO monte (ballon 60 m : ${offL.toFixed(1)} m ≥ 8 ; ballon 20 m : ${offP.toFixed(1)} ≤ 3,2 — la rampe rend la surface) ; les notes tiennent la laisse (depthF 0,7 × gardeF 0,8 : ${offT.toFixed(1)} < ${offL.toFixed(1)} − 1) ; sabotage « la ligne d'hier » attrapé (libero absent : ${offH.toFixed(1)} ≤ 3,2)`,
+    offL >= 8 && offP <= 3.2 && offT < offL - 1 && offH <= 3.2);
+}
+{
+  // (b) l'ARBITRE VOIT LE GARDIEN SORTI (menaceTir pur) : l'occasion se nomme avant les
+  // refus de distance ; sur sa ligne l'ancien monde répond ; la clé absente = l'arbitre d'hier
+  const pitch = makePitch(FULL);
+  const goal = pitch.attackGoal(0), sg = Math.sign(goal.x || 1);
+  const mk = (gkOff, d, cfgLob) => {
+    const c = { id: 0, team: 0, p: [goal.x - sg * d, 0, 0], skill: { longF: 1, shotSigma: 0.3 } };
+    const gk = { id: 9, team: 1, keeper: true, down: 0, p: [goal.x - sg * gkOff, 0, 0] };
+    const st = { full: true, pitch, players: [c, gk], ball: { p: [...c.p] }, t: 0 };
+    return menaceTir(st, c, { shotRange: 20, menace: { grise: 1.55 }, ...(cfgLob === undefined ? { lob: { out: 4, min: 18, max: 38 } } : cfgLob === false ? {} : { lob: cfgLob }) });
+  };
+  const sorti = mk(8, 28), ligne = mk(0.5, 28), loin36 = mk(8, 36), sab = mk(8, 28, false);
+  ok(`lot 120 — l'ARBITRE voit le gardien sorti (8 m / porteur 28 m : « ${sorti.pourquoi} », score ${sorti.score.toFixed(2)} ≥ 0,3 ; à 36 m l'occasion tient : « ${loin36.pourquoi} ») ; sur sa ligne l'ancien monde (0,5 m : « ${ligne.pourquoi} ») ; sabotage « l'arbitre aveugle d'hier » attrapé (lob absent : « ${sab.pourquoi} »)`,
+    sorti.pourquoi === 'gardien-sorti' && sorti.score >= 0.3 && loin36.pourquoi === 'gardien-sorti'
+    && ligne.pourquoi !== 'gardien-sorti' && sab.pourquoi !== 'gardien-sorti');
+}
+{
+  // (c) l'ESPÈCE EN FIXTURE POSÉE (pattern verify-frappes — le match libre est trop avare :
+  // ~119 frames de géométrie / 300 s et l'armement de 0,3-0,5 s laisse le gardien rentrer ;
+  // le monde vif se mesure à la sonde, la CHAÎNE décision → cloche se prouve posée) :
+  // porteur seul à 26 m, gardien adverse à 6 m de sa ligne, rnd épinglé sous p — tryShot
+  // doit choisir l'ESPÈCE lob et la frappe partir en cloche (elev ≥ 0,45). Sabotage lob:false.
+  const joueF = (cfgL) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...(cfgL === false ? { lob: false } : {}) });
+    for (let i = 0; i < 3 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const c = st.players.find((q) => q.team === 0 && !q.keeper);
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
+    st.ball.release('perte'); st.ball.restart([g.x - sg * 26, 0.11, 2], { cause: 'touche' }); st.restart = null;
+    st.ball.possess(c.id); st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0;
+    c.p[0] = g.x - sg * 26; c.p[2] = 2; c.v = [0, 0];
+    for (const q of st.players) if (q.id !== c.id && !q.keeper) { q.p[0] = g.x - sg * 55; q.p[2] = (q.id % 9) * 3 - 12; q.v = [0, 0]; q.down = 0; }
+    const gkF = st.players.find((q) => q.keeper && q.team !== c.team);
+    gkF.p[0] = g.x - sg * 6; gkF.p[2] = 0; gkF.v = [0, 0];
+    st.rnd = () => 0.1;
+    const pris = cfg.tryShot(st, c, cfg);
+    let lobEv = null, vBack = 0;
+    for (let i = 0; i < 3 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      lobEv = lobEv ?? st.events.find((e) => e.type === 'shot' && e.kind === 'lob');
+      const gL = st.pitch.ownGoal(gkF.team);
+      const offNow = Math.abs(gkF.p[0] - gL.x), offTgt = gkF.target ? Math.abs(gkF.target[0] - gL.x) : offNow;
+      if (offNow > 3 && offTgt < offNow - 0.5) vBack = Math.max(vBack, gkF.speed ?? 0);
+    }
+    return { pris, lobEv, vBack };
+  };
+  const fx = joueF(true);
+  const sabL = joueF(false);
+  ok(`lot 120 — la CHAÎNE du lob se prouve posée (porteur 26 m, gardien à 6 : décision ${fx.pris}, espèce « ${fx.lobEv?.kind} » elev ${fx.lobEv?.elev} ≥ 0,45 — la cloche part) et le BACKPEDAL tient la laisse (retour mesuré ${fx.vBack.toFixed(1)} m/s ≤ 6,5 — le régime est à 3,5, le pic est la vitesse résiduelle de bascule qui décroît) ; sabotage « le monde sans lob » attrapé (lob:false : décision ${sabL.pris}, event ${sabL.lobEv ? 'lob' : 'aucun'})`,
+    fx.pris === true && fx.lobEv?.kind === 'lob' && (fx.lobEv?.elev ?? 0) >= 0.45 && fx.vBack <= 6.5
+    && !sabL.lobEv);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

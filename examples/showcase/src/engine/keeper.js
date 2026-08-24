@@ -106,6 +106,22 @@ export function keeperSpot(pitch, team, ball, K = KEEPER) {
   let depth = K.depthMin + (dMax - K.depthMin) * t;
   if (d < K.nearBall) depth = K.depthMin + (dMax - K.depthMin) * Math.max(0, d / K.nearBall) * (K.nearBall - K.depthMin) / K.nearBall;
   depth = Math.max(K.depthMin, Math.min(dMax, depth));
+  // LE LIBÉRO (lot 120, K.libero {far, max} — la dette v1 de depthMax : « au-delà c'est un
+  // libéro ») : ballon CHEZ L'ADVERSAIRE (d > far), le gardien MONTE couper la profondeur
+  // derrière sa ligne haute — progressif jusqu'à max × depthF × gardeF (la note keeping ose,
+  // le rôle garde ose — les attributs restent les facteurs). Mesuré avant : gkOff p50 0,4 m
+  // ballon à 18-38 m, le gardien collait sa ligne en permanence. Clé absente : hier au bit.
+  let liberoMax = 0;
+  if (K.libero && d > (K.libero.far ?? 34) && (K.liberoGate ?? 1) > 0) {
+    const tL = Math.min(1, (d - (K.libero.far ?? 34)) / (K.libero.rampe ?? 8));
+    // …le GATE DE SITUATION (K.liberoGate ∈ [0;1], injecté par le match) : le libéro est une
+    // LECTURE, pas une distance — montée pendant SA possession, jamais pendant un coup de
+    // pied arrêté (le corner défensif vit à ~34 m du but : sans gate, le gardien montait à
+    // 4,3 m PENDANT le corner adverse, mesuré au banc 94) ; possession adverse : cible basse,
+    // et c'est le BACKPEDAL qui fait le retard — la fenêtre du lob est cette transition même.
+    liberoMax = ((K.libero.max ?? 10) * (K.depthF ?? 1) * (K.gardeF ?? 1)) * tL * (K.liberoGate ?? 1);
+    depth = Math.max(depth, K.depthMin + liberoMax);
+  }
   const x = g.x + (dx / d) * depth;
   let z = (dz / d) * depth;
   if (K.appuis) {
@@ -236,7 +252,7 @@ export function checkKeeper(pitch, K = KEEPER) {
     const cross = (bx) * (s.z - 0) - (bz) * (s.x - g.x);              // colinéarité (ballon-but) × (gardien-but)
     const clamped = Math.abs(s.z) >= pitch.goalHalf - 0.25;           // …sauf borné à l'ouverture
     if (Math.abs(cross) > 0.35 && !clamped) issues.push(`gardien hors de la ligne ballon-but (ballon +${bx}/${bz} : écart ${cross.toFixed(2)})`);
-    if (s.depth < K.depthMin - 1e-6 || s.depth > K.depthMax + 1e-6) issues.push(`profondeur crevée (${s.depth.toFixed(2)})`);
+    if (s.depth < K.depthMin - 1e-6 || s.depth > (K.libero ? (K.libero.max ?? 10) + K.depthMin : K.depthMax) + 1e-6) issues.push(`profondeur crevée (${s.depth.toFixed(2)})`);
   }
   // 2. loin → près de sa ligne ; à l'approche → il sort
   const far = keeperSpot(pitch, 0, [0, 0, 0], K).depth;

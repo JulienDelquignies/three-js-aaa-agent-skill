@@ -171,12 +171,23 @@
    corners (22 en boîte), match11 94/0. Dettes : le trot de placement (speeds.place),
    les variantes de plan (corner court, surcharge du second poteau).
 
+12. ~~**LA LISTE UTILISATEUR DES GESTES (114-120)**~~ — **SOLDÉE** (croqueta 114, petit
+   pont 115, roulette 117, talonnade 118, une-deux 119, lob du gardien avancé 120 — note
+   162 : le couple libéro {far 34, rampe 8, retour backpedal 3,5} + le lob à trois portes
+   (arbitre gardien-sorti, décollage libre, par-dessus les têtes), 0,08 lob/match, A/B 28
+   buts ∈ bande, rondo/réduit AU BIT, ticker « lob tenté »). Dettes 120 : le lob n'a pas
+   encore marqué (fenêtre du contre éclair rare), la relance au pied du libéro hors
+   surface (Loi 12 v2).
+
 ## Backlog long terme (inchangé)
 LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36
 lots — chaque loi nouvelle redistribue des 50/50 ; sonde PAR MÉCANISME puis re-concentration
 de l'avantage : chasse × pace, premier toucher × control, duels × strength/tackling).
 
-Gardien relanceur avancé, formations 442/352
+LE MARQUAGE DU COUREUR DE MUR (dette 119 : ~20 % des retours de une-deux = but, la course
+dans le dos du presseur n'a pas de défense dédiée).
+
+Gardien relanceur avancé (la relance au pied du libéro, dette 120), formations 442/352
 complètes (la couche LIGNES existe), le troisième homme v2 (v1 livrée note 153 — reste :
 courses dédiées vers l'intervalle), triangulation v4 (assignation, hystérésis), expulsion
 physique complète, le pré-saut de tête anticipé (v1 réactive livrée note 154).

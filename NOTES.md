@@ -4956,6 +4956,74 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      a5f3f0345da8e6b8 / 6fad65e9109a10cf (références 119). LA LISTE UTILISATEUR EST SOLDÉE
      à un près : reste LE LOB DU GARDIEN AVANCÉ.
 
+162. **Lot 120 : LE COUPLE LIBÉRO + LOB (le gardien avancé et le lob qui le punit — la
+     liste utilisateur est SOLDÉE).** AVANT : gkOff p50 0,4-0,8 partout (le gardien collait
+     sa ligne) — le lob n'avait AUCUNE cible. TROIS LOIS. (1) LE LIBÉRO (keeper.js,
+     K.libero {far 34, max 10, rampe 8, retour 3,5} ×depthF×gardeF — les notes tiennent la
+     laisse) : au-delà de far la profondeur monte en rampe ; la V1 far 42/rampe 18 fut
+     RÉFUTÉE PAR LA MESURE — le gardien redescendait PENDANT la descente du ballon et la
+     fenêtre du lob n'existait JAMAIS (0 frame ≥ 3 m sur 3 matchs, porteur à 18-38 m) ;
+     far 34/rampe 8 : la hauteur est ACQUISE dès 42 m et c'est le RETOUR qui crée le
+     retard. La clause de contrat « profondeur crevée » apprend la borne libéro. (1b) LE
+     GATE DE SITUATION (liberoGate, match-sim → keeperSpot) : la montée à la DISTANCE
+     seule fut attrapée par le banc 94 — le corner défensif vit à ~34 m du but, le gardien
+     montait à 4,3 m PENDANT le corner adverse et désertait le côté ouvert du coup franc.
+     Le libéro est une LECTURE : jamais sur coup de pied arrêté (restart → 0), SA
+     possession → plein (1), possession adverse LOINTAINE (> tient 48 m) → demi-garde
+     (0,6), adverse qui avance → 0 ; et le gate binaire possession-seule fut LUI AUSSI
+     réfuté (10 frames de fenêtre / 300 s : la possession bascule instantanément, le
+     retour se fait pendant que le ballon est encore à 40-60 m) — la demi-garde adverse
+     lointaine rend la fenêtre. Les contrats apprennent : « tir hors de portée » admet le
+     lob ≤ lob.max, « le gardien erre » borne au plafond du libéro. (2) LE BACKPEDAL
+     (movement.js) : le gardien haut qui rentre revient FACE AU JEU, plafonné à retour
+     (3,5 m/s) — LE PRIX du libéro (le sprint-retour ~7 m/s effaçait la fenêtre) ; le pic
+     de match ~6 m/s est la vitesse RÉSIDUELLE de bascule qui décroît, le régime posé est
+     3,5 exact (fixture) ; et un geste de JEU COURANT seulement (!st.restart) : sur coup
+     de pied arrêté le jeu est mort, le gardien se retourne et COURT à son poste — le
+     banc 94 a attrapé le backpedal qui rendait la pose de 2,2 s insuffisante au recul de
+     10 m (postes re-mesurés : corner 0,89 m z −1,25, coup franc 0,87 m z −1,41 ✓).
+     Mesuré avant gate : 839 frames de fenêtre (porteur adverse 18-38, gardien ≥ 4 m) / 3
+     matchs ≈ 4,7 s/match. La clause « l'aimant du porté est mort » re-fondée UNE fois au
+     monde re-daté (mesuré 5,37 %, borne 5 → 6 % — l'aimant d'hier vivait à ~12 %,
+     l'esprit intact), même protocole que le bugfix corner du 119. (3) LE LOB : l'arbitre VOIT le gardien sorti (menaceTir,
+     « gardien-sorti » AVANT ses refus de distance — sans ça 0 lob malgré les 839 frames :
+     tout mourait en 'hors-portée' à 31+ m) ; la porte tryShot (out 4, 18-38 m) contourne
+     shotRange et l'angle-fermé ; l'espèce cloche EXACTE (×1,18), audace × longF (le
+     mantra). LES DEUX COUPES DE LA TÊTE qui ont fait le design : seed 6 — lob coupé à
+     1,66 m par une remise de tête à 2 m → LE DÉCOLLAGE LIBRE (cône ±0,6 rad vide à
+     < decolle 3,5 m, aux DEUX portes arbitre + tryShot) ; seed 11 — coupé à 2,72 m par
+     une DÉTENTE à 3,7 m → PAR-DESSUS LES TÊTES (un corps dans le cône à 3,5-6 m raidit
+     la cloche à 0,8 rad : 3,5 m d'altitude à 3,7 m du pied, hors de tout saut ; couloir
+     vide : cloche tendue 0,45-0,62, plus dure à rattraper). L'ISSUE MESURÉE : 0,08
+     lob/match (12 × 300 s) — vol complet apex 9,7 m, retombée dans la surface, DÉGAGÉ EN
+     DÉTENTE par un défenseur revenu sous la cloche : le lob de 37 m laisse 2,5 s au monde
+     (rare et honnête — le réel est à ~0,1-0,3/90 min ; re-mesuré APRÈS gate : 0,08/match
+     encore, seed 7 gardien à 5,6 m — la fenêtre survit à la lecture). A/B 20 × 300 s
+     APRÈS gate : 86 tirs, 31 buts ∈ [17 ; 33] ✓ (l'A/B pré-gate disait 28 — même bande).
+     EMPREINTES : rondo c775c81e62592d4d ET réduit 860254b902bdf58b AU BIT (lois
+     full-only) ; match 3/7 → bc580fe38fd7d817 / cb6a508074f9b2b7 (le libéro déplace le
+     gardien dès l'engagement, le fix backpedal-CPA re-date la 3 seule — divergences
+     datées lot 120, flux prouvé bancs + A/B).
+     CLAUSES 120 : le libéro monte (60 m : ≥ 8 ; 20 m : ≤ 3,2 ; laisse des notes ;
+     sabotage libero absent), l'arbitre voit (gardien-sorti à 8 m/28 m et à 36 m ; la
+     ligne d'hier à 0,5 m ; sabotage lob absent), la CHAÎNE posée (fixture 26 m/gardien
+     6 m : décision → espèce lob → cloche 0,62 — le match libre est trop avare pour la
+     loupe : ~119 frames de géo / 300 s et l'armement laisse le gardien rentrer ;
+     backpedal 3,5 exact posé, ≤ 6,5 toléré au pic de bascule ; sabotage lob:false : pas
+     d'event) ; la fixture 107 pose son gardien SUR sa ligne (le libéro des 3 s de mise
+     en jeu le laissait parfois sorti et « gardien-sorti » volait la clause d'audace) ;
+     LAB += libero:false, lob:false. L'INSTRUMENT RÉPARÉ : verify-frappes dormait hors
+     batterie — sa clause enroulée dépendait du PIED du joueur tiré par la seed (droitier
+     côté débordement : fenêtre patte 0,497 vs u forcé 0,5, ratée d'un cheveu) ; cassage
+     PROUVÉ préexistant sur HEAD 119 (worktree) ; fixture déterminée (strongFoot left =
+     l'ailier inversé qu'elle raconte). Le TICKER nomme le lob (« lob tenté » — le geste
+     rare s'affiche, les tirs ordinaires restent silencieux). Batterie : match11 135/0,
+     match 84/0, attributes 14/0, gestes 60/0, menace 11/0, rondo 40/0, frappes 13/0,
+     sync 9/0. Dettes nommées : le lob n'a pas encore marqué (la fenêtre du contre éclair
+     reste rare — le marquage du coureur de mur 119 et le poids des notes v2 pèseront) ;
+     le gardien-libéro ne joue pas encore la relance au pied hors surface (Loi 12 hors
+     surface v2).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

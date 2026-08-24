@@ -33,6 +33,24 @@ export function menaceTir(st, c, cfg) {
   // l'élite tente à 25 m, le fini de 30 jamais — shotSigma inversé, défaut 0,5 sans effectif).
   // false : le mur binaire d'hier (sabotage nommé).
   const grise = st.full && cfg.menace?.grise ? R * cfg.menace.grise : R;
+  // LE GARDIEN SORTI SE VOIT (lot 120, cfg.lob && st.full) : le libéro hors de sa ligne à
+  // distance de lob EST une occasion — le score se plancherise ici même (avant les refus de
+  // distance et d'angle : la cage est VIDE, ces portes parlent d'un but gardé), pondéré par
+  // longShots et par l'AMPLEUR de la sortie. Sans cette lecture, la fenêtre du contre mourait
+  // en 'hors-portée' : l'arbitre ne regardait que la distance, jamais le gardien (mesuré :
+  // 839 frames de fenêtre 18-38 m / 3 matchs, 0 lob tenté). Clé absente : l'arbitre d'hier.
+  const gkS = st.full && cfg.lob && !c.keeper ? st.players.find((p) => p.keeper && p.team !== c.team) : null;
+  const gkOffS = gkS ? Math.abs(gkS.p[0] - goal.x) : 0;
+  const capS = gkS ? Math.atan2(0 - c.p[2], goal.x - c.p[0]) : 0;
+  const decolleS = !gkS || !st.players.some((q) => q.team !== c.team && q.down <= 0
+    && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.lob.decolle ?? 3.5)
+    && Math.abs((Math.atan2(q.p[2] - c.p[2], q.p[0] - c.p[0]) - capS + 3 * Math.PI) % (2 * Math.PI) - Math.PI) < 0.6);
+  if (gkS && decolleS && gkOffS >= (cfg.lob.out ?? 4) && d >= (cfg.lob.min ?? 18) && d <= (cfg.lob.max ?? 38)
+    && Math.abs(c.p[2]) <= 14 && Math.sign(c.p[0] || goal.x) === Math.sign(goal.x)) {
+    const longFS = c.skill?.longF ?? 1;
+    return { score: Math.min(0.9, (cfg.lob.vue ?? 0.62) * longFS * (0.5 + Math.min(0.5, (gkOffS - (cfg.lob.out ?? 4)) / 8))),
+      d: +d.toFixed(1), pourquoi: 'gardien-sorti' };
+  }
   if (c.keeper || d > grise) return { score: 0, d: +d.toFixed(1), pourquoi: 'hors-portée' };
   if (Math.sign(c.p[0] || goal.x) !== Math.sign(goal.x) && d > R * 0.75) return { score: 0, d: +d.toFixed(1), pourquoi: 'sa-moitié' };
   // …l'angle fermé s'assouplit DE LOIN (lot 107, cfg.audace) : la porte tuait la frappe de

@@ -74,6 +74,17 @@ export function movePlayers(st, dt, cfg) {
     // en fin de pas (après l'intégration), l'attribut stamina le module, la précision fatiguée
     // est une dette nommée. Clé absente : le rondo et le réduit d'hier, au bit près.
     if (cfg.fatigue && st.full) top *= 1 - (cfg.fatigue.cap ?? 0.15) * (1 - (p.stam ?? 1));
+    // LE BACKPEDAL DU LIBÉRO (lot 120, cfg.libero && st.full) : le gardien AVANCÉ qui rentre
+    // revient FACE AU JEU — en reculant (retour m/s), pas en sprint dos au ballon. C'est LE
+    // prix du gardien-libéro : sans lui, le retour à ~7 m/s effaçait la fenêtre du lob
+    // (mesuré : 0 frame de gardien ≥ 3 m avec un porteur adverse à 18-38 m) — et un geste de JEU
+    // COURANT : sur coup de pied arrêté le jeu est mort, il se retourne et COURT à son poste
+    // (banc 94 : 2,2 s de pose ne suffisaient pas au recul de 10 m). Clé absente : hier.
+    if (st.full && cfg.libero && p.keeper && st.pitch && p.target && !st.restart) {
+      const gL = st.pitch.ownGoal(p.team);
+      const offNow = Math.abs(p.p[0] - gL.x), offTgt = Math.abs(p.target[0] - gL.x);
+      if (offNow > 3 && offTgt < offNow - 0.5) top = Math.min(top, cfg.libero.retour ?? 3.5);
+    }
     // LE MORDU D'UNE FEINTE S'ASSOIT SUR SA LIGNE MORTE : il a lancé son appui vers la fausse
     // passe — accélération ET pointe au ralenti le temps de la morsure (skill.biteSlow). C'est le
     // POURQUOI de la feinte : sans coût pour le défenseur, elle ne serait qu'une pantomime.
