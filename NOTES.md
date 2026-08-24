@@ -5152,6 +5152,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Dette nommée : le mordu par tour (chaque cercle re-vend la feinte — aujourd'hui le
      bite est unique ; un jockey re-mordu par cercle serait le vrai duel du multi).
 
+167. **Lot 125 : LE RÉPERTOIRE DE COURSES D'AILIER (retour utilisateur : « les ailiers
+     manquent de diversité — toujours ces courses un peu diagonales » — LA LISTE v2 EST
+     SOLDÉE).** LA MESURE A CONFIRMÉ À 100 % : 9/9 darts d'ailier rentraient à z×0,55 (la
+     diagonale intérieure unique, câblée depuis le lot 10). LA LOI (match-sim au dart,
+     cfg.courseAilier && st.full, ailier = |z| > 0,32 hz) : l'ESPÈCE se choisit à la
+     SITUATION — le défenseur de couloir INTÉRIEUR ouvre le DÉBORDEMENT (la craie, z+4
+     vers la touche), le défenseur LARGE ouvre l'UNDERLAP (le z×0,55 d'hier, devenu UNE
+     espèce parmi d'autres) — pondérée par la PATTE (la chiralité de shooting : l'INVERSÉ
+     rentre ×1,5, le NATUREL déborde ×1,5), le RÔLE largeurR (0,7-1,4) et l'axe TACTIQUE
+     largeur (0,8-1,3) — le mantra complet sur une seule décision ; la BANANE (large 0,8 s
+     puis courbe intérieure — deux segments, le mécanisme du contre-appel) vit au tirage
+     (0,5, naturel ×1,3). Le décrochage-aux-pieds N'A PAS été dupliqué : le contre-appel
+     du 122 couvre le venir-aux-pieds (la cassure quand marqué) — une loi, pas deux.
+     MESURÉ APRÈS (6 × 300 s) : 16 darts d'ailier — deborde 9 / underlap 5 / banane 2 (la
+     monoculture est morte, le débordement domine comme au réel quand les latéraux jouent
+     intérieur). L'événement 'appel-profond' porte l'espèce (mesurable, ticker possible).
+     EMPREINTES : rondo c775c81e62592d4d, réduit 4468f755032509b2, match seed 3
+     22302573165a0762 AU BIT (le tirage d'espèce ne vit qu'aux darts d'ailier — aucun
+     dans leurs fenêtres) ; seed 7 re-daté seul. CLAUSE 125 : le répertoire vit (≥ 6
+     espèces nommées, ≥ 2 familles sur 5 × 300 s) ; sabotage « le z×0,55 d'hier »
+     (courseAilier absent : 0 espèce). Dettes nommées : la banane v2 (la courbe continue
+     — aujourd'hui 2 segments droits) ; le service du débordement (le porteur voit-il
+     assez le coureur de la craie ? à sonder) ; l'espèce au ticker.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

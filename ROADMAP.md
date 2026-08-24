@@ -191,8 +191,10 @@
    conversion ; dette majeure nommée : LE TRAFIC DE FRAPPE EN BOÎTE) ; ~~124 les
    passements ×3+~~ — **LIVRÉ** (note 166 : l'enchaînement à passementEnchaine × gesteF²
    — le carré fait le style, clips 3-6 par repeatSegment, le risque émergent du ballon
-   exposé, rondo/réduit/seed 3 au bit) ; 125 le répertoire de courses d'ailier
-   (débordement, underlap, décrochage, banane — la patte pèse).
+   exposé, rondo/réduit/seed 3 au bit) ; ~~125 le répertoire de courses d'ailier~~ —
+   **LIVRÉ** (note 167 : l'espèce du dart à la situation × patte × rôle × tactique —
+   deborde 9 / underlap 5 / banane 2 vs 9/9 diagonale avant ; le décrochage couvert par
+   le contre-appel 122). **LA LISTE v2 EST SOLDÉE.**
 
 ## Backlog long terme (inchangé)
 LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36

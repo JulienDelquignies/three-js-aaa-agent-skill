@@ -2541,5 +2541,33 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif4.multi >= 4 && vif4.maxT >= 3 && sab4.maxT <= 2);
 }
 
+// ---------------------------------------------------------------- lot 125 : LE RÉPERTOIRE
+// DE L'AILIER — l'espèce du dart à la SITUATION (défenseur intérieur → déborde ; large →
+// underlap), × PATTE (l'inversé rentre, le naturel déborde), × rôle largeurR × axe largeur ;
+// la banane courbe à mi-course. Mesuré avant : 9/9 darts d'ailier rentraient (la diagonale
+// unique que l'utilisateur voyait) ; après : deborde 9 / underlap 5 / banane 2 sur 6 matchs.
+{
+  const rep125 = (over) => {
+    const esp = {};
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let cursor = 0;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'burst' && e.kind === 'appel-profond' && e.espece) esp[e.espece] = (esp[e.espece] ?? 0) + 1;
+        }
+      }
+    }
+    return { esp, n: Object.values(esp).reduce((x, y) => x + y, 0), k: Object.keys(esp).length };
+  };
+  const vif5 = rep125({});
+  const sab5 = rep125({ courseAilier: false });
+  ok(`lot 125 — l'AILIER a un RÉPERTOIRE (${JSON.stringify(vif5.esp)} sur 5 × 300 s : ${vif5.n} ≥ 6 espèces nommées, ${vif5.k} ≥ 2 familles — la diagonale unique d'hier est morte) ; sabotage « le z×0,55 d'hier » attrapé (courseAilier absent : ${sab5.n} espèce)`,
+    vif5.n >= 6 && vif5.k >= 2 && sab5.n === 0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
