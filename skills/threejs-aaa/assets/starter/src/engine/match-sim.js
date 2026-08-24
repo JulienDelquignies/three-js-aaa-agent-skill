@@ -27,8 +27,7 @@ const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
 /** La configuration du MATCH — le RONDO plus les lois du but. */
 
-/** makeMatch — perTeam joueurs de champ + 1 gardien par équipe, terrain de pitch.js, coup d'envoi
- *  équipe 0. L'état EST un état de rondo (mêmes joueurs/ballon/personas) : la config fait la différence. */
+/** makeMatch — perTeam + 1 gardien par équipe, terrain pitch.js ; l'état EST un rondo, la config fait la différence. */
 export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, squads = null, tactics = null, roles = null } = {}) {
   pitch = pitch ?? makePitch(full ? FULL : undefined);   // full = une CONFIGURATION (Loi 1, 10+gardien, postes) : même loop, la preuve du moteur
   if (full && perTeam === 5) perTeam = 10;
@@ -206,10 +205,8 @@ function assignMatchJobs(st, cfg) {
           p.job = 'walk'; p.target = [gC.x - sgC * (23 + (p.id % 2) * 5), 0, czC * (3 + ((p.id % 3) - 1) * 8)];
         } else { p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]]; }
       } else {
-        // l'adversaire TIENT LE RAYON de la remise (Loi 15/16/17 à l'échelle du format)
-        // …le COUP FRANC du plein format tient LE MUR (Loi 13 — cfg.loi12.mur, 9,15 m) :
-        // rayon réel, et les deux défenseurs les plus proches de leur but se posent SUR la
-        // ligne ballon→but, épaule contre épaule — un coup franc sans mur est un penalty déguisé
+        // l'adversaire TIENT LE RAYON de la remise (Lois 15/16/17) ; le COUP FRANC du plein format
+        // tient LE MUR (Loi 13, 9,15 m) : deux défenseurs sur la ligne ballon→but, épaule à épaule
         const mur = cfg.loi12 && st.full && (r.type === 'coup-franc' || r.type === 'penalty') ? (cfg.loi12.mur ?? 9.15) : cfg.restartClear;
         if (mur !== cfg.restartClear && r.type === 'coup-franc') {
           const og = pitch.ownGoal(p.team);
@@ -284,9 +281,8 @@ function assignMatchJobs(st, cfg) {
       // bouche du but : porté sur-visé, débordement = CSC mesuré ; hors axe il meurt en sortie de but).
       const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
       if (bdC > 0.85) {
-        // LE GARDIEN AUSSI PASSE PAR SON BALLON (la loi du porteur, au métier près) : viser le
-        // spot en abandonnant le ballon à 2 m gelait le monde — ballon posé, label tenu, press
-        // au bord de la surface, distribution jamais armable (épisodes de 73 et 84 s mesurés).
+        // LE GARDIEN AUSSI PASSE PAR SON BALLON (viser le spot en l'abandonnant à 2 m gelait le
+        // monde — épisodes de 73 et 84 s mesurés, distribution jamais armable).
         const toS = [spotD[0] - st.ball.p[0], spotD[1] - st.ball.p[2]];
         const dS = Math.hypot(toS[0], toS[1]) || 1;
         gk.push = [toS[0] / dS, toS[1] / dS];
@@ -297,9 +293,8 @@ function assignMatchJobs(st, cfg) {
         gk.push = dS > 0.6 ? [toS[0] / dS, toS[1] / dS] : [-g.sign, 0];
         gk.target = [spotD[0], 0, spotD[1]];
       }
-      // …LA RÈGLE DES SIX SECONDES (Loi 12.2, cfg.gkRelease) : passe organique quand une ligne
-      // s'ouvre ; au délai, distribution FORCÉE (meilleure rampe, sinon PUNT au flanc opposé).
-      // …ET L'ESPACE PRESSE LA RELANCE (lot 89) : sans presseur à 12 m, elle part en 1,2 s.
+      // …LA RÈGLE DES SIX SECONDES (Loi 12.2, cfg.gkRelease) : passe organique, au délai FORCÉE
+      // (rampe, sinon PUNT) ; et l'espace presse la relance (lot 89 : sans presseur, 1,2 s).
       let gkDue = cfg.gkRelease;
       if (st.full && cfg.gkRelease) {
         let pr = 99; for (const q of st.players) if (q.team !== gk.team && !q.keeper && q.down <= 0) pr = Math.min(pr, Math.hypot(q.p[0] - gk.p[0], q.p[2] - gk.p[2]));
@@ -374,16 +369,14 @@ function assignMatchJobs(st, cfg) {
       startGesture(gk, move, {
         payload: { kind: 'skill', skill: 'plongeon', ownsBody: true, pick: { foot: sideFoot },
           lunge: [lunge[0] / L, lunge[1] / L], speed: Math.min(6.5, (Math.abs(cross.z - gk.p[2]) / Math.max(0.15, cross.t)) * 1.1), cross,
-          // la détente couvre SA distance (l'écart au point d'interception + l'allongé), jamais plus
-          // …bornée au ROOT MOTION du bassin (1,35 m — le clip) : l'envergure au-delà est le
-          // métier des BRAS (gants à 2,1 par l'IK + warp), pas un corps qui glisse plus loin
+          // la détente couvre SA distance, bornée au ROOT MOTION du bassin (1,35 m) : au-delà
+          // c'est le métier des BRAS (gants à 2,1 par l'IK + warp), pas un corps qui glisse.
           lungeMax: Math.min(1.35, Math.abs(cross.z - gk.p[2]) + 0.2) },
         log: st.gestures,
       });
       gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
-      // le contrat du relevé (gk.rise) se stampe DÈS LE DÉPART : la queue du clip attend le
-      // down, qui n'arrive qu'à la FIN du geste pour un battu (mesuré sans ça : 2 453°/s — le
-      // clip jouait son relevé pendant l'acte puis le down le claquait au sol en une image)
+      // le contrat du relevé (gk.rise) se stampe DÈS LE DÉPART (sans ça : 2 453°/s mesurés —
+      // le relevé joué pendant l'acte, puis le down claquait le corps au sol en une image).
       if (st.full && cfg.keeperRise !== false && espece !== 'plongeonPrise') { const R = keeperRise(gk.skill?.getupF ?? 1, true); gk.rise = { ground: R.ground, getup: R.getup }; }
       st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact, ...(par93 ? { mains: espece === 'plongeonUneMain' ? 1 : 2 } : {}) });
       st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2) });
@@ -456,24 +449,18 @@ function assignMatchJobs(st, cfg) {
       p.touchDamp = (p._prepShot ?? -1) > st.t ? (cfg.prepDamp ?? 0.72)
         : foeGuard <= 2.2 && p.speed >= 4 ? (cfg.guardDamp ?? 0.88) : 1;
       const ev = evadeSpot(st, p, cfg);
-      // L'AILIER À ANGLE FERMÉ REPIQUE DANS L'AXE (le cut-inside) : viser le centre du but depuis
-      // le couloir profond mène au poteau de corner — 195 refus « angle-fermé » par lot de matchs
-      // mesurés sur l'équipe qui construit par l'aile (l'élite dominait la zone 609 contre 378 et
-      // tirait 10-10). Le point de mire devient l'ENTRÉE DE SURFACE côté axe jusqu'à ce que
-      // l'angle s'ouvre — le tir, ou le centre, redeviennent des issues.
+      // L'AILIER À ANGLE FERMÉ REPIQUE DANS L'AXE (cut-inside — 195 refus angle-fermé mesurés par
+      // lot) : le point de mire devient l'ENTRÉE DE SURFACE côté axe jusqu'à ce que l'angle s'ouvre.
       const sgnG = Math.sign(goal.x || 1);
       const wideClosed = Math.abs(p.p[2]) > pitch.goalHalf + 3 && p.p[0] * sgnG > pitch.hx - pitch.dims.box.depth - 4;
-      // …et le repique choisit selon LA BOÎTE : des coureurs dedans → on reste large et on SERT
-      // (le centre) ; boîte vide → on rentre (le repique concurrençait le centre — 6 centres
-      // retombés à 2 quand le cut-inside aspirait toutes les ailes)
+      // …et le repique choisit selon LA BOÎTE : coureurs dedans → large et on SERT ; vide → on
+      // rentre (le cut-inside aspirait toutes les ailes : 6 centres retombés à 2).
       const boxXr = pitch.hx - pitch.dims.box.depth;
       const boxMate = wideClosed && st.players.some((q) => q.team === p.team && !q.keeper && q.id !== p.id
         && q.down <= 0 && q.p[0] * sgnG > boxXr - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5);
-      // LE COULOIR SE TIENT (lot 105, cfg.conduiteCouloir — « encore trop axial » : 67 % des
-      // touches d'aile REPIQUAIENT, le but au centre aspire tout cap). Le porteur en bande
-      // latérale progresse DANS son couloir (l'aim z tient la bande) ; le PIED module (l'inversé
-      // — la chiralité de shooting.js — rentre sur son bon pied), le rôle largeurR et l'axe
-      // tactique largeur aussi. Clé absente : l'aim [but, 0] d'hier au bit.
+      // LE COULOIR SE TIENT (lot 105, cfg.conduiteCouloir — 67 % des touches d'aile repiquaient) :
+      // le porteur latéral progresse DANS son couloir ; le PIED (l'inversé rentre), largeurR et
+      // l'axe largeur modulent. Clé absente : l'aim [but, 0] d'hier au bit.
       let aimZ = 0;
       if (st.full && cfg.conduiteCouloir && Math.abs(p.p[2]) > (cfg.conduiteCouloir.z ?? 12) && !wideClosed) {
         const inv = (Math.sign(p.p[2] * -(goal.x || 1)) > 0) === ((p.strongFoot ?? 'right') === 'right');
@@ -492,10 +479,8 @@ function assignMatchJobs(st, cfg) {
       if (mR92 && p._takeP && Math.hypot(p.p[0] - p._takeP[0], p.p[2] - p._takeP[1]) > mR92) wGoal *= 0.25;
       let px = (gx / gl) * wGoal, pz = (gz / gl) * wGoal;
       if (ev) { const ex = ev[0] - p.p[0], ez = ev[2] - p.p[2]; const el = Math.hypot(ex, ez) || 1; px += (ex / el) * (1 - wGoal); pz += (ez / el) * (1 - wGoal); }
-      // LA CHALOUPE (lot 110, cfg.chaloupe && st.full — « c'est rarement droit une conduite ») :
-      // p50 d'amplitude de cap 10° mesuré en 1c1 — le porteur réel OSCILLE pour bouger les
-      // appuis. Perpendiculaire alternée (sin seedé par identité — déterminisme), contesté-et-
-      // lancé seulement, × gesteF (dribbling) × arbitre.conduite (rôle). Absente : le cap d'hier.
+      // LA CHALOUPE (lot 110, cfg.chaloupe && st.full) : le porteur contesté-et-lancé OSCILLE
+      // (sin seedé par identité), × gesteF × arbitre.conduite. Absente : le cap droit d'hier.
       if (st.full && cfg.chaloupe && foeGuard < (cfg.chaloupe.foe ?? 4) && p.speed > (cfg.chaloupe.v ?? 1.5)) {
         const o = Math.sin(st.t * (cfg.chaloupe.freq ?? 8.5) + p.id * 2.1)
           * (cfg.chaloupe.amp ?? 0.55) * (p.skill?.gesteF ?? 1) * (role(p).arbitre?.conduite ?? 1);
@@ -509,11 +494,9 @@ function assignMatchJobs(st, cfg) {
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = Math.hypot(p._pushS[0], p._pushS[1]) || 1;
       p.push = [p._pushS[0] / sl, p._pushS[1] / sl];
-      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE : la fuite pure d'un porteur pressé
-      // dans son camp pointait DANS son propre but (CSC en conduite mesurés, t=14,9 g1, t=124
-      // g3). Un acculé fuit LE LONG de la ligne : à < 22 m de son but, la composante vers le
-      // but propre se PLAFONNE, la poussée se rabat en latérale — le signe garde le côté, le
-      // lissage repart de la loi (sinon l'EMA la combat).
+      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE (CSC en conduite mesurés) : l'acculé fuit
+      // LE LONG de la ligne — à < 22 m de son but la composante vers le but propre se plafonne,
+      // la poussée se rabat en latérale (le signe garde le côté, le lissage repart de la loi).
       {
         const og = pitch.ownGoal(p.team);
         const sOwn = Math.sign(og.x || 1);
@@ -602,9 +585,8 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (ax / al) * adv, 0, st.pass.lead[2] + (az / al) * adv];
       }
     }
-    // UN VOL LONG SE REÇOIT À SA CHUTE PRÉDITE (lot 52, cfg.chutePredite — « les contrôles
-    // longs tous ratés » : 68 % des longs en chasse au rebond). Il court au premier point
-    // JOUABLE (y ≤ 1,2, descendant) du chemin prédit, à vitesse humaine. false : hier.
+    // UN VOL LONG SE REÇOIT À SA CHUTE PRÉDITE (lot 52, cfg.chutePredite — 68 % des longs en
+    // chasse au rebond avant) : le premier point JOUABLE du chemin prédit. false : hier.
     if (st.full && cfg.chutePredite !== false && !met && (st.pass.flight ?? 0) > 1.1 && st.ball.p[1] > 0.9) {
       if (!st._chuteT || st._chuteAt !== st.pass || st.t - st._chuteT > 0.25) {
         const chemin = predictPath(st.ball, { dt: 1 / 30, maxT: (st.pass.flight ?? 2) + 0.8 });
@@ -625,17 +607,12 @@ function assignMatchJobs(st, cfg) {
       A.x += (anchor[0] - A.x) * k; A.z += (anchor[2] - A.z) * k; A.t = st.t;
       sa = st._sAncP ??= [0, 0, 0]; sa[0] = A.x; sa[2] = A.z;
     }
-    // L'AILE HAUTE REMPLIT LA SURFACE (« ça manque de centres ») : quand le ballon vit LARGE et
-    // HAUT, les couloirs génériques laissaient la boîte vide — personne à servir, aucun centre
-    // possible. Les postes deviennent ceux du centre : premier poteau, second poteau, point de
-    // penalty, plus la sécurité et le soutien de couloir.
-    // …armés TÔT (dès l'aile au quart offensif) : des postes armés au centre arrivent après.
+    // L'AILE HAUTE REMPLIT LA SURFACE : ballon LARGE et HAUT → les postes du centre, armés TÔT
+    // — seuls les SLOTTERS les prennent ; le box crash (123) envoie les corps AVANCÉS, lui.
     const wideDeep = Math.abs(sa[2]) > pitch.hz * 0.38 && sa[0] * sgn > pitch.hx * 0.25;
     const zs = Math.sign(sa[2] || 1);
-    // …et les postes vivent DEVANT le but, pas SUR la ligne : des coureurs à 2,4-2,8 m de la
-    // ligne faisaient de chaque phase d'aile un pinball de goal-mouth (13 buts sans tir mesurés
-    // — passes qui traversent, réceptions qui roulent au fond). Premier poteau à l'épaule de la
-    // surface de but, second au niveau du penalty.
+    // …et les postes vivent DEVANT le but, pas SUR la ligne (le pinball de goal-mouth : 13 buts
+    // sans tir mesurés) — premier poteau à l'épaule des six mètres, second au penalty.
     const slots = st._bSlots ??= [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];   // 5 paires réutilisées (lot 69)
     const S5 = (i, x, z) => { slots[i][0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, x)); slots[i][1] = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, z)); };
     if (wideDeep) {   // premier/second poteau, penalty, sécurité, soutien de couloir
@@ -696,10 +673,8 @@ function assignMatchJobs(st, cfg) {
         // (×0,85) ou écarter le bloc (×1,15, le jeu d'ailes). 0,5 = ×1, l'identité.
         const lF = axe(tac(st, atk).largeur, 0.85, 1.15);
         if (lF !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * lF));
-        // …ET LE RÔLE NUANCE SON POSTE (roles.js) : la profondeur (le 9 se tient haut, le 10
-        // décroche — ±2,5 m ; le calage Loi 11 garde le DERNIER mot : un 9 haut reste calé sur
-        // la ligne) et la largeur personnelle (craie la ligne ou repique — ×0,9…1,1, composée
-        // avec la largeur d'équipe). Aucun rôle : ±0 / ×1, pas un bit.
+        // …ET LE RÔLE NUANCE SON POSTE (roles.js) : profondeur ±2,5 m (le 9 haut, le 10 décroche —
+        // le calage Loi 11 garde le dernier mot) et largeur personnelle ×0,9…1,1. Aucun rôle : pas un bit.
         const R = role(p);
         const pf = axe(R.profondeur, -2.5, 2.5);
         if (pf) tx = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, tx + -pitch.ownGoal(atk).sign * pf));
@@ -707,11 +682,7 @@ function assignMatchJobs(st, cfg) {
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
         // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
         if (off && (p.post ?? 0) >= premierOffensif(tac(st, atk).formation)) {
-          // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE, depuis la PORTÉE DE PASSE (mesuré : un dart à
-          // 16 m du poste, porteur à 30 → 21-29 appels/180 s, 0-1 servi). Un appel n'existe que
-          // s'il peut être SUIVI : pointe à portée (passRange[1] = 13), DEVANT le ballon, porteur
-          // posé, couloir ouvert → dart de 7 m, l'appelBonus le fait servir, leadTime jette
-          // DERRIÈRE. Un appel par équipe (dix ruptures = un essaim) ; style et transition modulent
+          // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE : suivi ou rien (pointe ≤ passRange, DEVANT le ballon, porteur posé, couloir ouvert → dart de 7 m). Un par équipe.
           if ((p._runT ?? -1) <= st.t && posé
             && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) <= st.t
             && (p._appelCd ?? -1) <= st.t) {
@@ -736,12 +707,14 @@ function assignMatchJobs(st, cfg) {
             }
           }
           if ((p._runT ?? -1) > st.t) {
-            // LE CONTRE-APPEL (122, cfg.contreAppel && st.full) : la course profonde MARQUÉE de
-            // près CASSE aux pieds — l'appel contre-appel du vrai attaquant (retour utilisateur) ;
-            // une fois par dart, tiré au RÔLE appel ; la latence de perception du marqueur (lot 50)
-            // paie la cassure — aucun bite artificiel. Clé absente : la course droite d'hier.
+            // LE CONTRE-APPEL (122, cfg.contreAppel && st.full) : la course profonde MARQUÉE de près
+            // CASSE aux pieds — une fois par dart, × RÔLE appel ; la latence du marqueur (lot 50) paie la
+            // cassure ; JAMAIS le coureur CHOISI, et le marqueur GOAL-SIDE (la course MORTE — sans
+            // ce prédicat : −7 buts/20 matchs de courses vivantes cassées).
             if (st.full && cfg.contreAppel && p._counter !== p._runT && st.t > p._runT - 1.0
-              && st.players.some((q) => q.team !== p.team && q.down <= 0 && d2(q.p, p.p) < (cfg.contreAppel.marque ?? 1.5))
+              && st.players[st.possession.carrier]?.intent?.choice?.to?.id !== p.id
+              && st.players.some((q) => q.team !== p.team && q.down <= 0 && d2(q.p, p.p) < (cfg.contreAppel.marque ?? 1.5)
+                && q.p[0] * off.sgn > p.p[0] * off.sgn - 0.3)
               && (st.rnd ? st.rnd() : 0.5) < (cfg.contreAppel.p ?? 0.5) * axe(role(p).appel, 0.6, 1.4)) {
               p._counter = p._runT; p._runT = st.t + 1.1;
               p._runAdv = Math.max(2, p.p[0] * off.sgn - 5); p._runZ = p.p[2] + Math.sign(st.ball.p[2] - p.p[2] || 1) * 2;
@@ -759,9 +732,8 @@ function assignMatchJobs(st, cfg) {
       }
     }
     const seMontrer = (p, want) => {
-      // SE MONTRER (lot 67, st.full — 0 option sûre 44 % du temps : les couloirs étaient
-      // AVEUGLES). Ligne coupée/point marqué → le soutien DÉCALE perpendiculairement (±2,5
-      // puis ±5 m) vers le premier point OUVERT ; sinon le couloir tient. false : les statues.
+      // SE MONTRER (lot 67, st.full — 0 option sûre 44 % du temps) : ligne coupée → le soutien
+      // DÉCALE perpendiculairement (±2,5 puis ±5 m) au premier point OUVERT. false : les statues.
       const foes = st._bFoes ??= []; foes.length = 0;   // buffer (lot 69)
       for (const q of st.players) if (q.team !== p.team && q.down <= 0 && !q._sub) foes.push(q);
       const ouvert = (wx, wz) => {
@@ -778,9 +750,8 @@ function assignMatchJobs(st, cfg) {
       if (ouvert(want[0], want[1])) return want;
       const dx = want[0] - carrier.p[0], dz = want[1] - carrier.p[2], L = Math.hypot(dx, dz) || 1;
       const px = -dz / L, pz = dx / L;
-      // …et parmi les points ouverts, LE PLUS AVANCÉ gagne (mesuré : le premier-ouvert offrait du
-      // latéral sûr et la circulation REMPLAÇAIT la percée — seed 7 passait de 5 tirs à 0 en 330 s,
-      // temps en zone de frappe 22 s → 11). On se démarque VERS le but quand un point ouvert y existe.
+      // …et parmi les points ouverts LE PLUS AVANCÉ gagne (le premier-ouvert offrait du latéral
+      // sûr : seed 7 passait de 5 tirs à 0 — on se démarque VERS le but quand un point y existe).
       const gx = pitch.attackGoal(atk).x;
       let bestPt = null, bestProg = -Infinity;
       for (const off of [2.5, -2.5, 5, -5]) {
@@ -817,19 +788,15 @@ function assignMatchJobs(st, cfg) {
     }
   }
 
-  // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : on presse SUR SIGNAL, en
-  // fenêtre bornée — le patron du contre-press porté à l'ÉQUIPE. Deux signaux sans oracle :
-  // (t1) LA PRISE DOS AU BUT (porteur reçu tourné vers son but, dans son camp) ; (t2) LA PASSE
-  // EN RETRAIT (un ballon qui recule de 3 m invite la ligne à monter). La fenêtre meurt au
-  // régain (W.team === atk), à la remise ou à l'expiration ; cooldown d'équipe — un press
-  // permanent est la frénésie que la refonte tempo a enterrée.
+  // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : on presse SUR SIGNAL, en fenêtre
+  // bornée. (t1) la PRISE DOS AU BUT ; (t2) la PASSE EN RETRAIT (3 m). La fenêtre meurt au régain,
+  // à la remise ou à l'expiration ; cooldown d'équipe — jamais un press permanent.
   if (cfg.pressTriggers && st.full) {
     const defTeam = atk === 0 ? 1 : 0;
     if (st._press && (st.t > st._press.until || st._press.team === atk || st.restart)) st._press = null;
     const sgnAtk = -pitch.ownGoal(atk).sign;
-    // L'AGRESSIVITÉ (tactics.pressing) module les TROIS signaux et la fenêtre : à 0, un bloc
-    // qui n'accepte le press que sur signal criant ; à 1, l'école de la chasse — signaux
-    // permissifs, fenêtres longues, cooldown court. 0,5 = les constantes mesurées du lot 11.
+    // L'AGRESSIVITÉ (tactics.pressing) module les trois signaux et la fenêtre (0 : signal
+    // criant seulement ; 1 : l'école de la chasse ; 0,5 = les constantes du lot 11).
     const Tp = tac(st, defTeam).pressing;
     if (!st._press && !st.restart && (st._pressCd?.[defTeam] ?? -1) <= st.t) {
       let kind = null;
@@ -838,12 +805,9 @@ function assignMatchJobs(st, cfg) {
       else if (st.phase === 'flight' && st.pass && st.pass.lead && st.pass.origin
         && st.pass.origin[0] * sgnAtk < axe(Tp, -7, -1)
         && (st.pass.lead[0] - st.pass.origin[0]) * sgnAtk < -3) kind = 'passe-en-retrait';
-      // …le retrait ne déclenche qu'en RELANCE BASSE (origine à 4 m dans leur camp) : sur
-      // toute passe arrière, 40 % du temps sous pressing — un état permanent déguisé en réflexe
-      // (t3) LE CONTRE-PRESS D'ÉQUIPE (cfg.moments — la transition défensive du Gegenpressing) :
-      // la perte est JEUNE (< 2,5 s) et HAUTE (ballon dans le camp du nouveau porteur) — le bloc
-      // qui vient de perdre saute AVANT que l'adversaire ne s'organise. Le contre-press
-      // individuel (lossReact) chassait déjà l'ex-porteur ; ici c'est l'ÉQUIPE qui bascule.
+      // …le retrait ne déclenche qu'en RELANCE BASSE (sinon 40 % du temps sous pressing).
+      // (t3) LE CONTRE-PRESS D'ÉQUIPE (cfg.moments) : perte JEUNE (< 2,5 s) et HAUTE — le bloc qui
+      // vient de perdre saute avant l'organisation adverse (lossReact chassait déjà l'ex-porteur).
       else if (cfg.moments && st.t - (st._possChangeAt ?? -99) < axe(Tp, 1, 4)
         && st.ball.p[0] * sgnAtk < -4) kind = 'contre-press';
       if (kind) {
@@ -861,10 +825,9 @@ function assignMatchJobs(st, cfg) {
     const sgnAtk = -pitch.ownGoal(atk).sign;
     const press = st.full && cfg.pressTriggers && st._press
       && st._press.team === (atk === 0 ? 1 : 0) && st._press.until > st.t ? st._press : null;
-    // LE BLOC SE CALCULE UNE FOIS PAR FRAME (lot 60 — profil mobile : formationSpots était
-    // reconstruit PAR DÉFENSEUR, ~20 formations complètes par frame, arguments identiques
-    // pour tous ; hoisté ici, valeurs identiques — le flux est au bit près). Et le tri des
-    // défenseurs vit sur clés pré-calculées (d2 recalculé dans chaque comparaison, mesuré).
+    // LE BLOC SE CALCULE UNE FOIS PAR FRAME (lot 60 : formationSpots était reconstruit PAR
+    // DÉFENSEUR — ~20 formations/frame à arguments identiques ; hoisté, flux au bit près) ;
+    // le tri des défenseurs vit sur clés pré-calculées.
     const defTeamB = atk === 0 ? 1 : 0;
     const spotsBloc = st.full
       ? formationSpots(pitch, defTeamB, anchor[0], false, tac(st, defTeamB).formation, blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), anchor[2], st._outDef ??= []) : null;
@@ -880,10 +843,8 @@ function assignMatchJobs(st, cfg) {
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
     byDist.forEach((p, i) => {
       if (i === 0) {
-        // LE GARDIEN EN MAINS EST INATTAQUABLE (futsal Loi 12 à l'échelle : on ne charge pas le
-        // gardien dans sa surface) : le press TIENT LE BORD de la surface au lieu de le harceler —
-        // sa distribution SE POSE (le harcèlement le forçait à des sorties de balle de flipper,
-        // 20,5 passes/min mesurées, la bande futsal s'arrête à 20)
+        // LE GARDIEN EN MAINS EST INATTAQUABLE (Loi 12 à l'échelle) : le press TIENT LE BORD de
+        // la surface — le harcèlement forçait des sorties de flipper (20,5 passes/min mesurées).
         const gkBall = carrier && carrier.keeper && Math.abs(carrier.p[0]) > pitch.hx - pitch.dims.box.depth
           && Math.sign(carrier.p[0]) === Math.sign(pitch.ownGoal(carrier.team).x);
         if (gkBall) {
@@ -891,9 +852,8 @@ function assignMatchJobs(st, cfg) {
           p.job = 'press'; p.target = [edge, 0, carrier.p[2] * 0.6];
           return;
         }
-        // L'OMBRE DE COUVERTURE (cfg.coverShadow, 11c11) : le presseur arrive PAR LE COULOIR
-        // du soutien le plus dangereux — son corps vit DANS la ligne de passe (du
-        // POSITIONNEMENT, aucune règle de plus). À portée de duel (< 2,6 m) l'ombre cède au tacle.
+        // L'OMBRE DE COUVERTURE (cfg.coverShadow, 11c11) : le presseur arrive PAR LE COULOIR du
+        // soutien dangereux — le corps DANS la ligne de passe ; à < 2,6 m l'ombre cède au tacle.
         if (cfg.coverShadow && st.full && carrier && !freeBall && d2(p.p, anchor) > 2.6) {
           let hot = null, hotAdv = -Infinity;
           for (const a of attackers) if (a.id !== carrier.id && !a.keeper && d2(a.p, anchor) < 15) {
@@ -1033,6 +993,51 @@ function assignMatchJobs(st, cfg) {
       p.push = null;
     }
   }
+  // LE BOX CRASH (123, cfg.boxCrash && st.full) — POST-PASS D'AUTORITÉ : la géométrie du centre
+  // imminent REMPLIT la surface (avant : p50 1 corps en boîte, réel 3-5 ; la v1 en boucle posted
+  // n'appliquait que 22 %). Les N PLUS PROCHES de la boîte (+ rôle appel), le soutien < garde m du
+  // ballon épargné, hauteur module N, Loi 11 (offsideLine), cache 0,6 s. Absente : hier.
+  if (st.full && cfg.boxCrash && !st.restart && st.possession.team >= 0) {
+    const atk = st.possession.team;
+    const g2 = pitch.attackGoal(atk), sg2 = Math.sign(g2.x || 1), zB = st.ball.p[2];
+    const bc = (st._boxCrash ??= {});
+    if ((bc[atk]?.t ?? -1) < st.t - 0.6) {
+      const geo = Math.abs(zB) > pitch.hz * (cfg.boxCrash.couloir ?? 0.4)
+        && st.ball.p[0] * sg2 > pitch.hx - pitch.dims.box.depth - (cfg.boxCrash.prof ?? 18);
+      if (geo) {
+        const n = Math.max(2, Math.min(4, Math.round(3 + axe(tac(st, atk).hauteur, -1, 1))));
+        const bx = g2.x - sg2 * 9;
+        const cands = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0
+          && q.id !== st.possession.carrier && q.job !== 'press' && q.job !== 'intercept'
+          && d2(q.p, st.ball.p) > (cfg.boxCrash.garde ?? 12))
+          .map((q) => ({ id: q.id, s: -Math.hypot(q.p[0] - bx, q.p[2]) + axe(role(q).appel, -3, 3) }))
+          .sort((x, y) => y.s - x.s).slice(0, n).map((x) => x.id);
+        bc[atk] = { t: st.t, ids: cands, zC: Math.sign(zB || 1) };
+      } else bc[atk] = { t: st.t, ids: [], zC: 1 };
+    }
+    // …LE PLONGEON SEUL en défaut : l'occupation STATIQUE (postes d'attente au bord) DIVISAIT
+    // les buts PAR DEUX (A/B apparié 6 graines : 6 vs 12, tirs égaux — le trafic de frappe) ;
+    // le crash ne vit que pendant LE VOL DU CENTRE (st.pass.cross) — zéro impact circulation.
+    // cfg.boxCrash.attente (opt-in) rend les postes d'attente à un projet qui veut payer ce prix.
+    const E = bc[atk], offL = cfg.offside ? offsideLine(st, atk) : null;
+    if (E?.ids?.length) {
+      const vol = st.pass && st.pass.cross && st.players[st.pass.from]?.team === atk;
+      if (vol || cfg.boxCrash.attente) {
+        const g3 = pitch.attackGoal(atk), sg3 = Math.sign(g3.x || 1), zC = E.zC;
+        const P = vol
+          ? [[g3.x - sg3 * 5.5, zC * 3.4], [g3.x - sg3 * 11, -zC * 1], [g3.x - sg3 * 6.5, -zC * 4.5], [g3.x - sg3 * 16, zC * 2]]
+          : [[g3.x - sg3 * 18, zC * 5], [g3.x - sg3 * 19.5, -zC * 1], [g3.x - sg3 * 18, -zC * 7], [g3.x - sg3 * 22, zC * 3]];
+        for (let k = 0; k < E.ids.length; k++) {
+          const q = st.players[E.ids[k]];
+          if (!q || q.down > 0 || busy(q) || st.possession.carrier === q.id) continue;
+          if (vol && q.id === st.pass.to) continue;   // le RECEVEUR du centre court au point de chute, jamais au poteau (5/17 vs 12/27 mesurés sans l'exemption)
+          q.job = 'support';
+          const px = offL ? offL.sgn * Math.min(P[k][0] * offL.sgn, offL.adv - 0.15) : P[k][0];
+          q.target = [px, 0, P[k][1]];
+        }
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------- l'arrêt du gardien
@@ -1055,11 +1060,9 @@ function onDive(st, gk, cfg) {
   const d = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
   const y = st.ball.p[1] ?? 0;
   if (d > 1.7 || y > 2.1) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
-  // LE GANT TOUCHE AU PLUS PRÈS : résoudre au PREMIER franchissement du rayon claquait le ballon
-  // à 1,5-1,7 m des mains — l'arrêt vrai en sim, faux aux gants (mesuré au composé : gant à
-  // 1,0-2,1 m du ballon à l'instant de l'arrêt, p50 1,67 — aucune anatomie de bras ne couvre ça).
-  // Tant que le ballon SE RAPPROCHE encore, le contact attend l'approche minimale ; le warp du
-  // gant (strike-warp, plan 3D) fait le reste du chemin visuel.
+  // LE GANT TOUCHE AU PLUS PRÈS (le premier franchissement claquait à 1,5-1,7 m des mains, p50
+  // 1,67 mesuré) : tant que le ballon SE RAPPROCHE, le contact attend l'approche minimale ; le
+  // warp du gant (strike-warp) fait le reste du chemin visuel.
   const pd = gk.act?.payload?._pd ?? Infinity;
   const closing = d < pd - 1e-4;
   if (gk.act?.payload) gk.act.payload._pd = d;
@@ -1172,12 +1175,9 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   if (st.score[0] !== buts.filter((b) => b.team === 0).length || st.score[1] !== buts.filter((b) => b.team === 1).length) {
     issues.push(`score [${st.score}] ≠ événements de but (${buts.map((b) => b.team).join(',')})`);
   }
-  // un 0 tir sur une tranche courte est du VRAI football (des mi-temps finissent 0-0) — le
-  // défaut, c'est des OCCASIONS sans tir : le ballon a vécu dans le dernier tiers et personne
-  // n'a appuyé. Sans visite du tiers, le silence est légitime (la clause des camps veille déjà).
-  // …et une OCCASION est le ballon dans la zone QUE JE VISE pendant que JE l'ai : l'instrument
-  // comptait la présence DÉFENSIVE dans sa propre surface (une équipe épinglée qui dégage) et le
-  // ballon GARÉ des remises comme des occasions d'attaque — deux ombres (loi 8)
+  // un 0 tir sur une tranche courte est du VRAI football — le défaut, ce sont des OCCASIONS sans
+  // tir (le dernier tiers visité, personne n'appuie) ; l'occasion = le ballon dans la zone QUE JE
+  // VISE pendant que JE l'ai (ni la présence défensive chez soi, ni le ballon garé des remises).
   const thirdVisits = trace.filter((s) => !s.restart && s.team >= 0
     && s.ball[0] * (s.team === 0 ? 1 : -1) > st.pitch.hx - st.pitch.dims.box.depth - 1).length;
   // …et l'attaquant MURÉ n'est pas l'attaquant MUET : celui qui DEMANDE le tir et se voit refuser

@@ -185,10 +185,13 @@
    ~~122 les changements de rythme~~ — **LIVRÉ** (note 164 : la sortie de geste explose
    — _pace 'sortie-geste' ×1,45, durée × accelF, +24-30 % mesurés ; le contre-appel
    casse aux pieds × rôle appel, 2,8/match ; la marche au calme existait déjà — mesurée,
-   pas de loi) ; 123 la présence dans la surface (sonde box crash d'abord — peut-être
-   tactique) ; 124 les passements ×3+ (enchaînements Mancini/Réveillère, gesteF² fait le
-   style) ; 125 le répertoire de courses d'ailier (débordement, underlap, décrochage,
-   banane — la patte pèse).
+   pas de loi) ; ~~123 la présence dans la surface~~ — **LIVRÉ** (note 165 : la sonde a
+   tranché — p50 1 corps, pas un réglage ; le box crash à DEUX régimes : défaut
+   plongeon-seul quasi-identité AU BIT, remplissage lourd en OPT-IN attente payé en
+   conversion ; dette majeure nommée : LE TRAFIC DE FRAPPE EN BOÎTE) ; 124 les
+   passements ×3+ (enchaînements Mancini/Réveillère, gesteF² fait le style) ; 125 le
+   répertoire de courses d'ailier (débordement, underlap, décrochage, banane — la patte
+   pèse).
 
 ## Backlog long terme (inchangé)
 LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36
@@ -198,6 +201,11 @@ de l'avantage : chasse × pace, premier toucher × control, duels × strength/ta
 LES CLAUSES APPARIÉES v2 (lot 122 : les sabotages d'écart absolu s'effritent à chaque
 monde re-daté — 8 re-fondations en 4 lots ; la forme robuste : vif et saboté sur les
 MÊMES graines, borner l'écart apparié, insensible au niveau absolu du monde).
+
+LE TRAFIC DE FRAPPE EN BOÎTE (lot 123 : la présence attaquante DIVISE les buts — les
+postes statiques ÷ 1,6, l'attente au bord ÷ 1,5, mesuré en A/B apparié ; les marqueurs
+suivent et le bloc densifié contre tout, le réel a ce trade-off en plus doux ;
+instrumenter tir par tir — contrés, déviés, couloirs — avant tout remplissage par défaut).
 
 LE MARQUAGE DU COUREUR DE MUR (dette 119 : ~20 % des retours de une-deux = but, la course
 dans le dos du presseur n'a pas de défense dédiée).

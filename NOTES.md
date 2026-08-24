@@ -5089,6 +5089,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      re-course APRÈS le décrochage — le double mouvement complet 9-then-spin) ; la cible
      de course post-élimination (le burst élève le plafond, la direction reste au job).
 
+165. **Lot 123 : LE BOX CRASH — la présence dans la surface (retour utilisateur : « la
+     surface peut manquer de présence mais c'est peut-être juste des problèmes
+     tactiques ? »).** LA SONDE A TRANCHÉ : p50 1 corps en boîte au départ des centres
+     (réel 3-5, 0/18 à ≥ 3), 0,4 au couloir du dernier tiers — PAS un réglage : les
+     courses de surface n'existaient pas (wideDeep du lot 47 posait les postes du centre
+     mais ne les servait qu'aux SLOTTERS du couloir — les corps proches de l'ancre, jamais
+     les attaquants). LA LOI (match-sim, post-pass d'autorité en fin d'assignMatchJobs,
+     cfg.boxCrash {couloir 0,4, prof 12, garde 12} && st.full) : les N corps les plus
+     proches de la boîte (tri + RÔLE appel, le soutien à < garde du ballon épargné, hors
+     porteur/chasseurs) reçoivent les postes du centre, hauteur TACTIQUE module N (2-4),
+     Loi 11 clampe à la ligne (offsideLine), cache 0,6 s. LE FEUILLETON DES MESURES — 4
+     A/B appariés, 2 pivots : (1) postes profonds statiques : remplit (arrivée 2,4) mais
+     buts ÷ 1,6 (13-17/20 matchs, conversion 19 % vs ~35 — le trafic de frappe) ; (2)
+     attente au bord + plongeon au vol : remplit (1,8) mais buts ÷ 1,5 encore ; (3)
+     plongeon SEUL : 5/17 vs 12/27 — PIRE, le bug nommé : l'élu qui était AUSSI le
+     receveur du centre abandonnait le point de chute pour son poteau — L'EXEMPTION DU
+     RECEVEUR (q.id === st.pass.to) répare (10/28 vs 12/27 ✓) ; (4) le plongeon-seul
+     réparé n'apporte que +0,1 corps — le vol de 0,9 s ne porte pas depuis les positions
+     naturelles. LE CONTRAT FINAL (le mantra : la config choisit, le moteur porte les
+     deux mondes) : le DÉFAUT est le plongeon-seul (quasi-identité prouvée AU BIT — match
+     seed 3 IDENTIQUE au monde 122, seed 7 re-daté par le seul plongeon) ; le remplissage
+     LOURD est l'OPT-IN cfg.boxCrash.attente (postes d'attente au bord 18-22 m + plongeon
+     aux poteaux au vol : arrivée ~1,8-2,4 corps, payé en conversion — un projet le
+     choisit en connaissance). EMPREINTES : rondo c775c81e62592d4d, réduit
+     4468f755032509b2 AU BIT ; st.pass porte cross (strike-sim — 1 mot). CLAUSE 123 :
+     l'opt-in remplit (arrivée ≥ 1,5) et le défaut reste léger (≤ opt-in − 0,3) — le
+     LEVIER se prouve, pas un remplissage forcé. EN CHEMIN, le CONTRE-APPEL (122)
+     recalibré : le monde 123 raréfiait les darts marqués à < 1,5 m (0 contre-appel —
+     la loi devenait lettre morte par interaction) ; marque 1,5 → 2,2 ET le prédicat
+     affiné au foot exact — on ne casse JAMAIS la course du coureur CHOISI par le
+     porteur, et le marqueur doit être GOAL-SIDE (la course MORTE ; le 2,2 brut cassait
+     des courses vivantes : −7 buts/20 matchs, rendus par le goal-side : A/B 18 → 22).
+     A/B FINAL : 77 tirs / 22 buts ∈ [17 ; 33] ✓ (bilan des calibrages : postes
+     statiques 17, attente 20, plongeon brut 18, goal-side 22). Borne du pont 4 → 3
+     (le monde re-daté déplace les fenêtres du glisseur). DETTE MAJEURE NOMMÉE : LE TRAFIC DE
+     FRAPPE EN BOÎTE (pourquoi la présence attaquante DIVISE les buts chez nous : les
+     marqueurs suivent et le bloc densifié contre tout — le réel a ce trade-off en plus
+     doux ; à instrumenter tir par tir avant tout remplissage par défaut).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

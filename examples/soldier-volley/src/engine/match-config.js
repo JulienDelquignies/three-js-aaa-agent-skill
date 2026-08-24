@@ -347,7 +347,8 @@ export const MATCH = {
                           // franchissement de 0,35. false : le moteur infatigable (sabotage
                           // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
   libero: { far: 34, max: 10, rampe: 8, retour: 3.5 },
-  contreAppel: { marque: 1.5, p: 0.5 },  // LE CONTRE-APPEL (122) : la course profonde marquée casse aux pieds (× rôle appel) ; absent : la course droite d'hier
+  contreAppel: { marque: 2.2, p: 0.5 },  // LE CONTRE-APPEL (122) : la course profonde marquée casse aux pieds (× rôle appel)
+  boxCrash: { couloir: 0.4, prof: 12, garde: 12 },  // LE BOX CRASH (123) : la géométrie du centre remplit la surface (N corps avancés aux postes, hauteur module 2-4) ; absent : la surface vide d'hier
                           // LE GARDIEN-LIBÉRO (11c11, st.full — lot 120, la dette v1 de
                           // depthMax) : ballon CHEZ L'ADVERSAIRE (> far m), le gardien MONTE
                           // couper la profondeur (progressif jusqu'à max × depthKF ×
