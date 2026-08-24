@@ -217,7 +217,15 @@ export function maybePassement(st, c, cfg) {
   // COLLE → temporiser (retour, protéger) ; il est POSTÉ loin → le fixer (tout droit) ou le
   // contre-pied, au tirage.
   const uT = st.rnd ? st.rnd() : 0.5;
-  const tours = fd >= 1.55 && uT < 0.3 + 0.35 * (c.persona?.flair ?? 0.5) ? 2 : 1;
+  let tours = fd >= 1.4 && uT < 0.45 + 0.35 * (c.persona?.flair ?? 0.5) ? 2 : 1;   // 124 : le calé multi-tour est la NORME du calé (seuil 1,55 → 1,4, base 0,3 → 0,45)
+  // L'ENCHAÎNEMENT (124, « Mancini/Réveillère — j'attends au moins 3 tours ») : chaque tour
+  // de plus se re-tire à passementEnchaine × gesteF² — le CARRÉ fait le style (l'élite ~4-5
+  // tours, le moyen ~2-3, le faible s'arrête à 2) ; le bite du contact reste UNIQUE : les
+  // tours ajoutés EXPOSENT le ballon calé au jockey qui ose — le risque est le prix du style.
+  if (tours === 2 && !enCourse) {
+    const g2 = (c.skill?.gesteF ?? 1) ** 2;
+    while (tours < (K.passementMaxTours ?? 6) && (st.rnd ? st.rnd() : 0.5) < (K.passementEnchaine ?? 0.35) * g2) tours++;
+  }
   const cross = Math.sin(Math.atan2(foe.p[2] - c.p[2], foe.p[0] - c.p[0]) - c.yaw);
   const awaySide = c.yaw + (cross > 0 ? -0.9 : 0.9);              // la diagonale OPPOSÉE au foe
   const diag = sides.reduce((b, a) => Math.abs(wrapA(a - awaySide)) < Math.abs(wrapA(b - awaySide)) ? a : b, sides[0]);
@@ -226,7 +234,7 @@ export function maybePassement(st, c, cfg) {
   else if (fd < 1.25) { sortie = 'temporise'; exitYaw = c.yaw + (diag > c.yaw ? 2.4 : -2.4); }
   else if (fd >= 1.5 && uT > 0.62) { sortie = 'fixe'; exitYaw = c.yaw; }
   else { sortie = 'contre-pied'; exitYaw = diag; }
-  const clip = tours === 2 && !enCourse ? 'passementJambes2' : 'passementJambes';   // le double exige le ballon calé
+  const clip = tours >= 2 && !enCourse ? 'passementJambes' + Math.min(tours, 6) : 'passementJambes';   // le multiple exige le ballon calé
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
   const foot = footFor(byId['passement-jambes'], sit);
   const move = MOVE_TIMING[clip];

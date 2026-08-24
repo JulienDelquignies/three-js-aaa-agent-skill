@@ -188,10 +188,11 @@
    pas de loi) ; ~~123 la présence dans la surface~~ — **LIVRÉ** (note 165 : la sonde a
    tranché — p50 1 corps, pas un réglage ; le box crash à DEUX régimes : défaut
    plongeon-seul quasi-identité AU BIT, remplissage lourd en OPT-IN attente payé en
-   conversion ; dette majeure nommée : LE TRAFIC DE FRAPPE EN BOÎTE) ; 124 les
-   passements ×3+ (enchaînements Mancini/Réveillère, gesteF² fait le style) ; 125 le
-   répertoire de courses d'ailier (débordement, underlap, décrochage, banane — la patte
-   pèse).
+   conversion ; dette majeure nommée : LE TRAFIC DE FRAPPE EN BOÎTE) ; ~~124 les
+   passements ×3+~~ — **LIVRÉ** (note 166 : l'enchaînement à passementEnchaine × gesteF²
+   — le carré fait le style, clips 3-6 par repeatSegment, le risque émergent du ballon
+   exposé, rondo/réduit/seed 3 au bit) ; 125 le répertoire de courses d'ailier
+   (débordement, underlap, décrochage, banane — la patte pèse).
 
 ## Backlog long terme (inchangé)
 LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36

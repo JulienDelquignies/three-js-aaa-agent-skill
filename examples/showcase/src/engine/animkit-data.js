@@ -984,3 +984,6 @@ export const MOVES = {
 // LE DOUBLE PASSEMENT (deux tours autour du ballon) — généré par répétition du segment du
 // cercle (0 → 0,28] : mêmes clés, même anatomie, le plant et la sortie glissent d'un tour.
 MOVES.passementJambes2 = { ...repeatSegment(MOVES.passementJambes, 0, 0.3, 1), name: 'passementJambes2' };   // le tour = 0,3 depuis le ré-authoring lot 110
+// …LES ENCHAÎNEMENTS (lot 124, « Mancini/Réveillère — j'attends au moins 3 tours ») : le même
+// segment répété n−1 fois — la cadence des jambes se LIT, la durée suit (MOVE_TIMING dérive)
+for (const n of [3, 4, 5, 6]) MOVES['passementJambes' + n] = { ...repeatSegment(MOVES.passementJambes, 0, 0.3, n - 1), name: 'passementJambes' + n };

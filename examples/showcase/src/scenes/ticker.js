@@ -46,7 +46,7 @@ export function makeTicker(TEAMS) {
       let label = names[e.kind] ?? e.kind;
       if (e.kind === 'crochet' && e.espece === 'crochetChaloupe') label = 'crochet chaloupé';
       else if (e.kind === 'crochet' && e.espece === 'crochetCourt') label = 'crochet court';
-      else if (e.kind === 'passement') label = `passement${e.enCourse ? ' lancé' : ''}${e.tours === 2 ? ' ×2' : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
+      else if (e.kind === 'passement') label = `passement${e.enCourse ? ' lancé' : ''}${(e.tours ?? 1) >= 2 ? ` ×${e.tours}` : ''}${e.sortie ? ` (${e.sortie})` : ''}`;
       else if (e.kind === 'petitPont' && e.reussi === false) label = 'petit pont (fermé)';
       pousse(`<b style="color:#e8ebf2">${label}</b> <span>— ${team(state, e.by)} nº${e.by} · ${mmss(e.t)}</span>`);
     } else if (e.type === 'tête' || e.type === 'volée') {

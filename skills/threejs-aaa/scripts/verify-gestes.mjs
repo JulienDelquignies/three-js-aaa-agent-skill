@@ -226,7 +226,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const st = world([c, foe]);
     const r = maybePassement(st, c, M);
     // …simple OU double : le nombre de tours est un tirage de variété, la clause juge l'armement
-    ok('le passement s\'arme sur le jockey posté (fixture)', r === true && /^passementJambes2?$/.test(c.act?.id ?? '')
+    ok('le passement s\'arme sur le jockey posté (fixture)', r === true && /^passementJambes[2-6]?$/.test(c.act?.id ?? '')
       && st.events.some((e) => e.type === 'skill' && e.kind === 'passement'));
   }
   {

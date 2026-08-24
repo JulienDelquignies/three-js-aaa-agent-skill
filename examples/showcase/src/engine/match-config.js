@@ -630,6 +630,8 @@ export const MATCH = {
                             // raté tape la jambe et revient en 50/50 — le pari est réel)
     pontBite: 0.7,          // s — se retourner contre son pas chassé coûte, × gesteF
     pontCd: 10,             // s
+    passementEnchaine: 0.35,// par tour au-delà de 2 : p × gesteF² (124 — le carré fait le style Mancini)
+    passementMaxTours: 6,   // le plafond des enchaînements
     rouletteFoe: [0.8, 1.8],// m — LA ROULETTE (lot 117) : le POURSUIVANT en diagonale-dos
     rouletteRoule: 0.5,     // part d'élan conservée PENDANT le tour (121, la Zidane traverse — 0,15 : la toupie d'hier)
     sortieBurst: { dur: 1.2, top: 1.45 }, // s — LA SORTIE EXPLOSE (122) : l'élimination au bout débouche sur une pointe (_pace ×1,28, durée × accelF) ; absent : les sorties plantées d'hier

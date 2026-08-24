@@ -2510,5 +2510,36 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     vif3.n >= 3 && vif3.arr >= 1.2 && def3.arr <= vif3.arr - 0.2);
 }
 
+// ---------------------------------------------------------------- lot 124 : LES PASSEMENTS
+// ×3+ — l'enchaînement Mancini/Réveillère (retour utilisateur : « j'attends au moins 3 tours,
+// avec la possibilité d'en enchaîner beaucoup ») : chaque tour au-delà de 2 se re-tire à
+// passementEnchaine × gesteF² — le CARRÉ fait le style ; les clips 3-6 répètent le segment
+// du cercle (la cadence se lit, la durée suit). Le risque reste ÉMERGENT : bite unique au
+// contact, les tours ajoutés exposent le ballon calé.
+{
+  const dist124 = (over) => {
+    const d = {};
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });
+      let cursor = 0;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'skill' && e.kind === 'passement') d[e.tours] = (d[e.tours] ?? 0) + 1;
+        }
+      }
+    }
+    const multi = Object.entries(d).filter(([k]) => +k >= 2).reduce((s2, [, v]) => s2 + v, 0);
+    const maxT = Math.max(0, ...Object.keys(d).map(Number));
+    return { d, multi, maxT };
+  };
+  const vif4 = dist124(null);
+  const sab4 = dist124({ passementEnchaine: 0 });
+  ok(`lot 124 — les PASSEMENTS s'enchaînent (${JSON.stringify(vif4.d)} sur 6 × 300 s : multi ≥ 4, max ${vif4.maxT} ≥ 3 — le Mancini vit) ; sabotage « le double plafonné d'hier » attrapé (passementEnchaine 0 : max ${sab4.maxT} ≤ 2)`,
+    vif4.multi >= 4 && vif4.maxT >= 3 && sab4.maxT <= 2);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

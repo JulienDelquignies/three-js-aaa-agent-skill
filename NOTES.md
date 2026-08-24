@@ -5128,6 +5128,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      marqueurs suivent et le bloc densifié contre tout — le réel a ce trade-off en plus
      doux ; à instrumenter tir par tir avant tout remplissage par défaut).
 
+166. **Lot 124 : LES PASSEMENTS ×3+ — l'enchaînement Mancini/Réveillère (retour
+     utilisateur : « j'ai l'impression d'avoir vu un tour avec une jambe mais j'attends au
+     moins 3 tours, avec la possibilité qu'un joueur en enchaîne beaucoup »).** AVANT : le
+     passement plafonnait à 2 tours (fd ≥ 1,55, jamais plus). LA LOI (skills-sim +
+     animkit-data) : (1) L'ENCHAÎNEMENT — chaque tour au-delà de 2 se re-tire à
+     passementEnchaine (0,35) × gesteF au CARRÉ (le carré fait le style, comme la croqueta
+     du 114 : l'élite espère ~4-5 tours, le moyen ~2-3, le faible s'arrête à 2 ; plafond
+     passementMaxTours 6) ; le calé multi-tour devient la NORME du calé (seuil 1,55 → 1,4,
+     base 0,3 → 0,45 + 0,35 flair — Mancini ne fait jamais UN cercle sur ballon posé) ; le
+     lancé reste à 1 tour (Cristiano en course). (2) LES CLIPS 3-6 : repeatSegment(cercle,
+     n−1) — la cadence des jambes SE LIT, la durée suit (1,26 / 1,56 / 1,86 / 2,16 s),
+     MOVE_TIMING dérive tout seul. (3) LE RISQUE ÉMERGENT : le bite du contact reste
+     UNIQUE — les tours ajoutés EXPOSENT le ballon calé au jockey qui ose, le long
+     enchaînement est un pari, jamais gratuit (aucun buff). Le ticker généralise « ×N ».
+     MESURÉ (8 × 300 s) : distribution {1: 41, 2: 10, 3: 2} + un ×5 vu au premier monde —
+     23 % de multi sur les armés, garde 88 % à +2,5 s. EMPREINTES : rondo
+     c775c81e62592d4d, réduit 4468f755032509b2 ET match seed 3 22302573165a0762 AU BIT
+     (le tirage ne consomme du rnd QUE sur les calés multi — aucun dans leurs fenêtres) ;
+     seed 7 re-daté seul. L'instrument verify-gestes appris (la regex du clip
+     passementJambes[2-6]). CLAUSE 124 : la distribution vit (multi ≥ 4, max ≥ 3 sur
+     6 × 300 s) ; sabotage « le double plafonné d'hier » (passementEnchaine 0 : max ≤ 2).
+     Dette nommée : le mordu par tour (chaque cercle re-vend la feinte — aujourd'hui le
+     bite est unique ; un jockey re-mordu par cercle serait le vrai duel du multi).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
