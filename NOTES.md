@@ -5379,6 +5379,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      excentrés au second poteau), la HAUTEUR du marqueur au duel aérien (le tri par
      taille), le marquage du second ballon.
 
+176. **Lot 134 : LE BALLON LIBRE PRIS EN CHARGE (retour utilisateur : « des ballons libres
+     où le plus proche ne prête pas attention alors que c'est pour lui, et il court dans le
+     sens opposé »).** LE FEUILLETON D'INSTRUMENT (3 sondes fausses avant la vraie) : la
+     mesure « s'éloigne du ballon » comptait le passeur qui repart (légitime), puis le
+     coureur servi en profondeur (le point de rendez-vous est DEVANT), puis les vols aériens
+     (la chute prédite) — le FILM frame par frame (probe-134f, cibles incluses) a tranché.
+     TROIS VICES RÉELS, TROIS LOIS : (1) LE RATTRAPAGE VISE AU TRAVERS (cfg.rattrape) — le
+     receveur d'une passe au sol qui FUIT (≥ 2,8 m/s, cos > 0,5) orbitait 2-5 s à 0,6-1 m
+     derrière elle : la mène courte (0,12 s) de la branche menace le faisait MATCHER la
+     vitesse du ballon au lieu de le dépasser (le vice déjà payé à la touche de préparation) ;
+     la cible devient le point de rattrapage résolu + marge au-delà — ET le piège d'ordre :
+     la chaîne mourante/menace ÉCRASAIT met sans le vérifier, le rattrape vit APRÈS elle et
+     prime sur la mène (la mourante garde son stop, bF < 2,8). Filmé après : fermeture 2×
+     plus vite, la reprise 0,4 s plus tôt. (2) LE BALLON RÉEL COMMANDE À PORTÉE
+     (cfg.meetReel) — le vol DÉVIÉ (> 2,5 m du lead) se courait au lead nominal fantôme
+     (meetBall ancre au lead PAR DESSEIN anti-flipper) : divergé, bas et proche → on joue le
+     ballon (mène du patron contesté). (3) L'INTERCEPTEUR DU MATCH (cfg.interception,
+     phases.intercepteurVol) — le rondo a son intercepteur depuis toujours (« anyone who can
+     legally get there goes for it »), le match ne l'avait JAMAIS porté : filmé, un presseur
+     à 1,0 m d'une passe adverse lente la regardait rouler 3 s. Pendant le vol adverse bas :
+     le défenseur qui GAGNE le chemin (interceptPoint, slack > 0,05) y va — UN seul, après
+     SA latence (lot 50, skill.reaction en facteur), ≤ 8 m du point, mémo 0,25 s. Mesuré :
+     283 frames d'interception / 300 s (0 avant). CLAUSE 134 : fixture du rattrapage (cible
+     8,5 m au-delà vs 0,5 sabotée) + le flux de l'intercepteur (≥ 30 frames vs 0). Les 3
+     clés gelées aux 3 mondes (LAB/ISO131/sab76). Dettes : la définition d'« ignoré » de la
+     134e reste un mauvais instrument (d0 < 2 la rend mécaniquement vraie — consigné), le
+     hunter de chaseLoose garde sa mène 0,7 s (pas de « au travers » — à filmer), l'orbite
+     du chasseur freeBall si le retour revient. A/B 93 tirs / 20 buts (bande) ; 154 ✓ / 0 ✗
+     (POST131 étendu aux clés 134 — le patron « la clause isole ses successeurs ») ; rondo
+     c775c81e / réduit c701c84a au bit, matchs 0cfd543abcc12b16 / b067f0e355139151.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

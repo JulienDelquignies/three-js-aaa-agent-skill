@@ -50,12 +50,13 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   libero: false, lob: false,                                        // …le gardien sur sa ligne d'hier (pré-120)
   contreAppel: false, boxCrash: false,                              // …les courses droites et la surface d'hier (pré-122/123)
   courseAilier: false, throughBall: false,
-  honneur: false, regardGardien: false, marquageCentre: false };     // …le spectateur battu, le regard de course et les statues de zone d'hier (pré-132/133)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  honneur: false, regardGardien: false, marquageCentre: false,       // …le spectateur battu, le regard de course et les statues de zone d'hier (pré-132/133)
+  interception: false, meetReel: false, rattrape: false };           // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false };   // la clause 131 isole SES successeurs — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false };   // la clause 131 isole SES successeurs (132-134) — sa loi seule varie
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -1005,7 +1006,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false,
+    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
@@ -2849,6 +2850,54 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const fb = flux133({ marquageCentre: false });
   ok(`lot 133 — le marquage VIT en flux (${fv} frames de vol marquées / 2 × 300 s ≥ 40) ; éteint : ${fb} (l'identité au monde d'hier)`,
     fv >= 40 && fb === 0);
+}
+
+// ---------------------------------------------------------------- lot 134 : LE BALLON LIBRE
+// PRIS EN CHARGE (retour utilisateur : « le plus proche ne prête pas attention, il court à
+// l'opposé »). Filmé : (a) le receveur ORBITAIT 2-5 s à 0,6-1 m derrière la passe lente qui
+// FUIT (la mène courte MATCHAIT sa vitesse) → LE RATTRAPAGE VISE AU TRAVERS (cfg.rattrape) ;
+// (b) le vol DÉVIÉ se courait au lead fantôme → LE BALLON RÉEL COMMANDE (cfg.meetReel) ;
+// (c) le match n'avait JAMAIS l'intercepteur du rondo — un presseur à 1,0 m d'une passe
+// adverse la regardait rouler → L'INTERCEPTEUR (cfg.interception, phases.intercepteurVol).
+{
+  // (a) LA FIXTURE DU RATTRAPAGE : receveur DERRIÈRE un ballon fuyant à 4,5 m/s — la cible
+  // vit AU-DELÀ du ballon (au travers), le sabotage la recolle (la mène qui matche).
+  const vise = (over = {}) => {
+    const st = makeMatch({ full: true, seed: 11 });
+    st.restart = null;
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    const rec = st.players.find((p) => p.team === 0 && !p.keeper);
+    st.ball.restart([0, 0.11, 0], { cause: 'coup-franc' });
+    st.ball.strike({ speed: 4.5, dirYaw: 0, elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });
+    rec.p[0] = -3; rec.p[2] = 0; rec.down = 0; rec.act = null;
+    st.pass = { from: st.players.find((p) => p.team === 0 && !p.keeper && p.id !== rec.id).id, to: rec.id, lead: [6, 0, 0], style: 'ground', t: st.t - 0.5, flight: 1.2, origin: [-8, 0] };
+    st.phase = 'flight'; st.possession.carrier = -1; st.lastTouch = 0;
+    matchStep(st, 1 / 60, cfg);
+    const avance = rec.target ? (rec.target[0] - st.ball.p[0]) : -9;   // > 0 = au-delà du ballon (le vol part en +x)
+    return +avance.toFixed(1);
+  };
+  const av = vise();
+  const as = vise({ rattrape: false });
+  ok(`lot 134 — le RATTRAPAGE VISE AU TRAVERS (receveur derrière un ballon fuyant 4,5 m/s : cible ${av} m AU-DELÀ du ballon ≥ 1,5) ; sabotage « l'orbite d'hier » attrapé (rattrape:false : ${as} m ≤ 0,8 — la mène qui matche la vitesse, nommée)`,
+    av >= 1.5 && as <= 0.8);
+  // (c) L'INTERCEPTEUR : flux 2 × 300 s — des frames avec un défenseur en job intercept
+  // pendant un vol adverse EXISTENT ; le sabotage n'en a AUCUNE (le match d'hier).
+  const icFlux = (over = {}) => {
+    let frames = 0;
+    for (const seed of [1, 2]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.phase === 'flight' && st.pass && st._ic && st._ic.id >= 0 && st.players[st._ic.id]?.job === 'intercept') frames++;
+      }
+    }
+    return frames;
+  };
+  const iv = icFlux({});
+  const is2 = icFlux({ interception: false });
+  ok(`lot 134 — L'INTERCEPTEUR DU MATCH vit (${iv} frames de vol adverse disputées / 2 × 300 s ≥ 30 — le rondo l'avait, le match jamais) ; sabotage « les spectateurs de couloir d'hier » attrapé (interception:false : ${is2} frame)`,
+    iv >= 30 && is2 === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

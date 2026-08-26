@@ -255,3 +255,12 @@ intégral crevait la bande A/B : le feuilleton du 123 rejoué — la RÉMANENCE 
 Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le second
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
+
+LE BALLON LIBRE PRIS EN CHARGE (134, note 176 — retour utilisateur) : le rattrapage vise
+AU TRAVERS (cfg.rattrape — l'orbite derrière la passe fuyante), le ballon réel commande à
+portée (cfg.meetReel — le vol dévié couru au lead fantôme), et L'INTERCEPTEUR DU MATCH
+(cfg.interception, phases.intercepteurVol — le rondo l'avait, le match jamais ; 283
+frames/300 s). Piège d'ordre consigné : la chaîne mourante/menace écrase met sans le
+vérifier — toute nouvelle branche de cible receveur doit se placer APRÈS elle. Dettes :
+le hunter de chaseLoose sans « au travers », l'instrument « ignoré » de la 134e (faux
+quand d0 < 2).

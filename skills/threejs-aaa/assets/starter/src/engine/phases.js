@@ -83,6 +83,39 @@ export function marquageCentre(st, cfg, { busy, tac, axe, d2 }) {
   }
 }
 
+/**
+ * L'INTERCEPTEUR DU MATCH (lot 134, cfg.interception && st.full — retour utilisateur : « le
+ * plus proche ne prête pas attention au ballon libre »). FILMÉ : un presseur à 1,0 m d'une
+ * passe adverse LENTE qui roule 3 s sans que personne la vole — le rondo a son intercepteur
+ * depuis toujours (son assignJobs), le match ne l'avait JAMAIS porté. Pendant le vol d'une
+ * passe adverse basse (< 1,4 m) : le défenseur qui GAGNE le chemin (interceptPoint, slack >
+ * 0,05) y va — UN seul, après SA latence de perception (lot 50, skill.reaction en facteur),
+ * sans traverser le terrain (≤ rayon 8 m du point), mémoïsé 0,25 s (une lecture du monde,
+ * pas un tremblement à 60 Hz). false : les spectateurs de couloir d'hier.
+ */
+export function intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, defenders, atk }) {
+  if (!(st.full && cfg.interception !== false && st.phase === 'flight' && st.pass && st.pass.to >= 0
+    && !st.restart && st.players[st.pass.from]?.team === atk && st.ball.p[1] < 1.4)) return;
+  const IC = cfg.interception === true || cfg.interception == null ? {} : cfg.interception;
+  if (!st._ic || st._icPass !== st.pass || st.t - st._ic.t > 0.25) {
+    const path = predictPath(st.ball, { dt: 1 / 20, maxT: 1.6 });
+    let best = null;
+    for (const q of defenders) {
+      if (q.down > 0 || q.keeper || busy(q) || (st.t - st.pass.t) < (q.skill?.reaction ?? 0.18)) continue;
+      const i = interceptPoint(path, q.p, cfg.speeds.chase, { reaction: 0, maxHeight: 1.2 });
+      if (!i || i.slack <= (IC.slack ?? 0.05)) continue;
+      if (Math.hypot(i.p[0] - q.p[0], i.p[2] - q.p[2]) > (IC.rayon ?? 8)) continue;
+      if (!best || i.slack > best.i.slack) best = { q, i };
+    }
+    st._ic = best ? { t: st.t, id: best.q.id, p: [best.i.p[0], best.i.p[2]] } : { t: st.t, id: -1 };
+    st._icPass = st.pass;
+  }
+  if (st._ic.id >= 0) {
+    const q = st.players[st._ic.id];
+    if (q && q.down <= 0 && !busy(q)) { q.job = 'intercept'; q.target = [st._ic.p[0], 0, st._ic.p[1]]; }
+  }
+}
+
 /** Le contrat des moments — les symétries qui ne peuvent pas mentir. */
 export function checkMoments() {
   const issues = [];

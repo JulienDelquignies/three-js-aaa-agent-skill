@@ -169,6 +169,14 @@ export const MATCH = {
                           // son yaw suit le ballon (pas chassé, patron du backpedal libéro),
                           // le côté du clip de plongeon se calcule sur un regard JUSTE
                           // (mesuré : 3/20 plongeons sur regard > 60°). false : hier.
+  interception: {},       // lot 134 : L'INTERCEPTEUR du match — pendant le vol d'une passe
+                          // adverse basse, le défenseur qui GAGNE le chemin y va (un seul,
+                          // slack > 0,05, ≤ rayon 8 m du point, latence lot 50, mémo 0,25 s).
+                          // Le rondo l'avait depuis toujours ; le match jamais. false : hier.
+  meetReel: { div: 2.5 }, // lot 134 : LE BALLON RÉEL COMMANDE À PORTÉE — le receveur d'un vol
+                          // DIVERGÉ (ballon à > div m du lead : dévié, rebondi) et proche
+                          // (< meetZone) joue LE BALLON, pas le lead nominal fantôme (mesuré :
+                          // 8/8 épisodes ≥ 1 s « il court à l'opposé »). false : hier.
   marquageCentre: {},     // lot 133 (phases.js) : le vol d'un centre adverse met des CORPS sur
                           // les attaquants de boîte — le plus proche non pris, cible goal-side
                           // 1,1 m, rayon = axe(marquage, 7, 14). Mesuré avant : 53 % libres
