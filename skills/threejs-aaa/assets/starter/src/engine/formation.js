@@ -225,7 +225,16 @@ export function formationSpots(pitch, team, anchorX, attacking, name = 433, bloc
     const ballF = Math.max(0, Math.min(1, (anchorX * sgn) / L + 0.5));
     const fMin = Math.min(...F.map(([f]) => f));
     const span = Math.max(0.01, Math.max(...F.map(([f]) => f)) - fMin);
-    const ligneF = Math.max(0.12, Math.min(0.5, ballF - bloc.soutien / L));
+    // LA POUSSE (lot 141, bloc.pousse — retour utilisateur : « la défense a tendance à trop
+    // reculer sans être proactive ») : mesuré, la ligne arrière de l'équipe QUI ATTAQUE
+    // plafonnait au rond central (p50 +0,7 m en attaque installée ; réel +5…+12 — les
+    // centraux de possession VIVENT dans le camp adverse, c'est eux qui compriment le jeu
+    // et rendent le contre-press possible). Le plafond se LÈVE continûment quand le ballon
+    // est profond (dès `des`, gain × la profondeur, max ~12 m au-delà du rond) — le gain
+    // porte l'axe hauteurBloc au call-site (le prudent reste au rond). Absent : hier au bit.
+    const pou = bloc.pousse;
+    const capA = 0.5 + (pou ? Math.min((pou.max ?? 12) / L, Math.max(0, ballF - (pou.des ?? 0.62)) * (pou.gain ?? 0.8)) : 0);
+    const ligneF = Math.max(0.12, Math.min(capA, ballF - bloc.soutien / L));
     const stretch = ((bloc.longAtk ?? 42) / L) / span;
     // LE LATÉRAL CÔTÉ FAIBLE RENTRE ET MONTE (lot 68, bloc.rentre — retour utilisateur « je vois
     // toujours le latéral opposé de l'équipe en possession des dizaines de mètres derrière les

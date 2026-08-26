@@ -332,6 +332,11 @@ export const MATCH = {
                           // avant : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s possédé
                           // instantanément. false : l'aimant d'hier (sabotage nommé).
   bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9, surcharge: 0.2, surMax: 6 },
+  pousse: {},             // LA POUSSE (141 — « la défense recule trop sans être proactive ») : la ligne arrière
+                          // de l'équipe QUI ATTAQUE franchit le rond central quand le ballon est profond (dès
+                          // des 0,62 de terrain, gain 0,8 × axe hauteurBloc, max 12 m) — mesurée au rond pile
+                          // (p50 +0,7 ; réel +5…+12). Le prix du vrai foot : le contre dans le dos existe (Loi
+                          // 11 + tranchant le punissent). false : les centraux plantés au rond d'hier
                           // surcharge (lot 98) : EN POSSESSION les postes intérieurs (|fz| <
                           // 0,5) glissent vers le couloir ballon (anchorZ × surcharge, ≤
                           // surMax m) — le surnombre qui FIXE ; les larges tiennent (l'ailier
@@ -410,7 +415,12 @@ export const MATCH = {
   contreAppel: { marque: 2.2, p: 0.5 },  // LE CONTRE-APPEL (122) : la course profonde marquée casse aux pieds (× rôle appel)
   boxCrash: { couloir: 0.4, prof: 12, garde: 12 },
   courseAilier: {},       // (125)
-  throughBall: { pointe: 2.5, bonus: 0.6 },  // LA PASSE EN PROFONDEUR AU SOL (128) : le rendez-vous itéré + la pointe d'intervalle, l'arrivée au control ; absent : la mène myope d'hier       // LE RÉPERTOIRE DE L'AILIER (125) : déborde/underlap/banane à la situation × patte × rôle × tactique ; absent : la diagonale unique d'hier  // LE BOX CRASH (123) : la géométrie du centre remplit la surface (N corps avancés aux postes, hauteur module 2-4) ; absent : la surface vide d'hier
+  throughBall: { pointe: 2.5, bonus: 0.6 },  // LA PASSE EN PROFONDEUR AU SOL (128) : le rendez-vous itéré + la pointe d'intervalle, l'arrivée au control ; absent : la mène myope d'hier
+  tranchant: {},          // LA TRANCHANTE (140 — retour : « pas encore vu une passe en profondeur vraiment tranchante ») :
+                          // l'appel de RUPTURE part de loin quand l'espace derrière la ligne existe (espace 14, rayon 26,
+                          // dart 12, fenêtre 2,2 s), rondo le sert par portee (+12) et l'ÉLECTION pèse les défenseurs
+                          // ÉLIMINÉS (parDefenseur 0,55 × visionF du passeur × axe style) + l'AIGUILLE (le couloir exigé
+                          // se resserre à la vision, ×0,78…1,15 — 1 exact au 50) ; false : la myopie de la rupture d'hier       // LE RÉPERTOIRE DE L'AILIER (125) : déborde/underlap/banane à la situation × patte × rôle × tactique ; absent : la diagonale unique d'hier  // LE BOX CRASH (123) : la géométrie du centre remplit la surface (N corps avancés aux postes, hauteur module 2-4) ; absent : la surface vide d'hier
                           // LE GARDIEN-LIBÉRO (11c11, st.full — lot 120, la dette v1 de
                           // depthMax) : ballon CHEZ L'ADVERSAIRE (> far m), le gardien MONTE
                           // couper la profondeur (progressif jusqu'à max × depthKF ×

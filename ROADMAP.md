@@ -262,6 +262,13 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA TRANCHANTE + LA POUSSE (140-141, notes 182-183 — retours utilisateur) : la rupture
+part de loin et se sert derrière la ligne (cfg.tranchant — 18 servies en course/20 min,
+0 hier ; visionF = 2e levier de passing), la ligne arrière attaquante franchit le rond
+quand le ballon est profond (cfg.pousse — p50 +0,7 → +4,6, p90 +11,8 ; gain × hauteurBloc).
+DETTE : la PRISE AU PASSAGE (le receveur cueille le ballon qui le double — l'échappée pure
+reste 0 ; nuancer le contrat lot 59 pour le through profond).
+
 L'OVERLAP + LE RETOURNEMENT (138-139, notes 180-181 — validés/demandés utilisateur) :
 l'overlap double le porteur excentré (accompagne.overlap — largeurR élit, ~7,7/match,
 21/46 servis < 3 s) ; le yaw ne se téléporte jamais (cfg.yawSlew — p90 des pivots de

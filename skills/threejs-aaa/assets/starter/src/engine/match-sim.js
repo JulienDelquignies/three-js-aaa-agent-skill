@@ -340,15 +340,13 @@ function assignMatchJobs(st, cfg) {
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
-    // LE PLONGEON D'HONNEUR (lot 132, cfg.honneur && st.full) : battu PROCHE (≤ reach ×
-    // portee) et cadré → le geste part quand même, sans arrêt promis. false : le spectateur.
+    // LE PLONGEON D'HONNEUR (lot 132, cfg.honneur && st.full) : battu PROCHE (≤ reach × portee) et cadré → le geste part, sans arrêt promis. false : le spectateur.
     const honneur = st.full && cfg.honneur !== false && dec.mode === 'battu' && dec.cross
       && Math.abs(dec.cross.z - gk.p[2]) <= K.diveReach * (cfg.honneur?.portee ?? 1.7)
       && dec.cross.t <= (K.diveTime ?? 0.9);
     if ((dec.mode === 'dive' || honneur) && gk.down <= 0) {
       const cross = dec.cross;
-      // L'ESPÈCE DE LA PARADE (lot 93) : haut ≥ 1,35 → plongeonPrise (retombe debout) ; ras
-      // < 0,85 → plongeonBas ; loin > 1,35 m → plongeonUneMain ; sinon deux mains. Éteinte : hier.
+      // L'ESPÈCE DE LA PARADE (lot 93) : haut ≥ 1,35 → plongeonPrise ; ras < 0,85 → plongeonBas ; loin > 1,35 m → plongeonUneMain ; sinon deux mains. Éteinte : hier.
       const par93 = st.full && cfg.parades !== false;
       const espece = par93 && (cross.y ?? 0) >= 1.35 ? 'plongeonPrise'
         : (cross.y ?? 0) < 0.85 ? 'plongeonBas'
@@ -569,9 +567,8 @@ function assignMatchJobs(st, cfg) {
       met = bSp > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bSp) * mk, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * mk]
         : [st.ball.p[0], 0, st.ball.p[2]];
     }
-    // LE RATTRAPAGE VISE AU TRAVERS (lot 134, cfg.rattrape && st.full — filmé : le receveur ORBITE 2-5 s à 0,6-1 m
-    // derrière la passe qui FUIT, la mène de la branche menace MATCHAIT sa vitesse ; le patron « viser à travers »
-    // porté au vol). PRIME sur la mène quand le ballon fuit VITE (≥ mort — la mourante garde son stop). false : l'orbite.
+    // LE RATTRAPAGE VISE AU TRAVERS (lot 134, cfg.rattrape && st.full — filmé : le receveur ORBITE 2-5 s derrière
+    // la passe qui FUIT, la mène matchait sa vitesse). PRIME quand le ballon fuit vite (≥ mort). false : l'orbite.
     if (st.full && cfg.rattrape !== false && dInb < 8 && st.ball.p[1] < 0.9) {
       const bF = Math.hypot(st.ball.v[0], st.ball.v[2]);
       const fuit = bF >= (cfg.attaquePasse?.mort ?? 2.8)
@@ -654,7 +651,10 @@ function assignMatchJobs(st, cfg) {
       // …chaînée au ballon en attaque (51), latéralement (68) ; l'ancre de rentrée LENTE (τ 2 s, x vif) : la ligne se referme sur l'aile INSTALLÉE.
       const tz = st._tuckZ ??= { v: 0, t: st.t };
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
-      const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v, st._outAtk ??= []);   // la formation ON (129)
+      // LA POUSSE (141, cfg.pousse && st.full) : la ligne arrière attaquante franchit le rond, gain × axe hauteurBloc
+      const blocA = blocFor(cfg.bloc ?? null, tac(st, atk));
+      if (blocA && st.full && cfg.pousse) blocA.pousse = { gain: (cfg.pousse.gain ?? 0.8) * axe(tac(st, atk).hauteurBloc, 0.3, 1.7), des: cfg.pousse.des, max: cfg.pousse.max };
+      const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocA, tz.v, st._outAtk ??= []);   // la formation ON (129)
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste coulissé peut tomber DERRIÈRE la
       // défense — l'attaquant réel vit SUR la ligne. Relue CHAQUE image ; le calage borne la CIBLE.
       const off = cfg.offside ? offsideLine(st, atk) : null;
@@ -693,7 +693,10 @@ function assignMatchJobs(st, cfg) {
             && (p._appelCd ?? -1) <= st.t) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
-            if (dB > 6 && dB < (cfg.passRange?.[1] ?? 13) - 0.5 && myAdv > st.ball.p[0] * off.sgn + 2) {
+            // LA RUPTURE (140, cfg.tranchant) : l'espace derrière la ligne → l'appel part de LOIN (26 c. 12,5), PROFOND (dart 12, 2,2 s) ; rondo sert (+portee), l'élection pèse les éliminés
+            const long = dB >= (cfg.passRange?.[1] ?? 13) - 0.5;
+            const rupt = st.full && cfg.tranchant && pitch.hx - off.adv >= (cfg.tranchant.espace ?? 14);
+            if (dB > 6 && (!long || (rupt && dB < (cfg.tranchant.rayon ?? 26))) && myAdv > st.ball.p[0] * off.sgn + 2) {
               // LE RÉPERTOIRE DE L'AILIER (125, cfg.courseAilier && st.full — 9/9 darts rentraient) : l'ESPÈCE à la
               // SITUATION (déf. intérieur → DÉBORDE ; large → UNDERLAP), × patte/largeurR/axe ; BANANE au tirage. Absente : hier.
               let deepZ = p.p[2] * 0.55, espece = null;
@@ -713,19 +716,17 @@ function assignMatchJobs(st, cfg) {
                 if (espece === 'deborde') deepZ = Math.sign(p.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(p.p[2]) + 4);
                 else if (espece === 'banane') { deepZ = Math.sign(p.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(p.p[2]) + 3); p._runBanane = st.t + 0.8; }
               }
-              const dartAdv = Math.min(off.adv - 0.15, myAdv + 7);
+              const dartAdv = Math.min(off.adv - 0.15, myAdv + (long ? (cfg.tranchant?.dart ?? 12) : 7));
               const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
                 defenders.map((q) => q.p), { corridor: 0.9 });
               if (lane.open) {
-                // …la cadence personnelle est un RÔLE (le 9 vit de ses courses : 6 s ; le
-                // meneur vit du ballon : 14 s ; polyvalent : les 10 s mesurées du lot 10)
-                p._runT = st.t + 1.7; p._runZ = deepZ; p._runAdv = dartAdv;
+                // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10)
+                p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
                 p._appelCd = st.t + axe(role(p).appel, 14, 6);
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
-                // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s) : c'est elle qui porte le
-                // bonus ET l'extension de portée — expirer à mi-course re-fermait l'enveloppe
-                p._pace = { until: st.t + 1.6, kind: 'appel', next: p._pace?.next ?? st.t + 8 };
-                st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'appel-profond', by: p.id, ...(espece ? { espece } : {}) });
+                // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s ; rupture 2,2 ≈ 2,3) — elle porte bonus et portée
+                p._pace = { until: st.t + (long ? 2.2 : 1.6), kind: 'appel', ...(long ? { rupture: true } : {}), next: p._pace?.next ?? st.t + 8 };
+                st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'appel-profond', by: p.id, ...(espece ? { espece } : {}), ...(long ? { rupture: true } : {}) });
               }
             }
           }
@@ -1183,9 +1184,8 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   if (st.score[0] !== buts.filter((b) => b.team === 0).length || st.score[1] !== buts.filter((b) => b.team === 1).length) {
     issues.push(`score [${st.score}] ≠ événements de but (${buts.map((b) => b.team).join(',')})`);
   }
-  // un 0 tir sur une tranche courte est du VRAI football — le défaut, ce sont des OCCASIONS sans
-  // tir (le dernier tiers visité, personne n'appuie) ; l'occasion = le ballon dans la zone QUE JE
-  // VISE pendant que JE l'ai (ni la présence défensive chez soi, ni le ballon garé des remises).
+  // un 0 tir sur une tranche courte est du VRAI football — le défaut, ce sont des OCCASIONS sans tir ;
+  // l'occasion = le ballon dans la zone QUE JE VISE pendant que JE l'ai (ni chez soi, ni les remises).
   const thirdVisits = trace.filter((s) => !s.restart && s.team >= 0
     && s.ball[0] * (s.team === 0 ? 1 : -1) > st.pitch.hx - st.pitch.dims.box.depth - 1).length;
   // …et l'attaquant MURÉ n'est pas l'attaquant MUET : celui qui DEMANDE le tir et se voit refuser

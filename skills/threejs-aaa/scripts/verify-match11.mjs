@@ -55,12 +55,12 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
   engagement: false, assignTenue: false,                             // …le frémissement des cibles d'hier (pré-135)
   sortieGardien: false, clearTouche: false,                          // …le gardien invisible et le corner facile d'hier (pré-136)
-  accompagne: false, yawSlew: false };                               // …le porteur esseulé et le cap claqué d'hier (pré-137/139)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  accompagne: false, yawSlew: false, tranchant: false, pousse: false };   // …le porteur esseulé, le cap claqué, la rupture myope, le rond-plafond d'hier (pré-137/141)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false };   // la clause 131 isole SES successeurs (132-139) — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false };   // la clause 131 isole SES successeurs (132-141) — sa loi seule varie
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -598,7 +598,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // 3 appels dont 2 SERVIS sur la 7 — le mécanisme vit, l'abondance reste la dette du lot 35)
   for (const seed of [2, 3, 7]) {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ shotRange: 20, tranchant: false, pousse: false });   // la clause isole 140/141 (la rupture AJOUTE des appels — son monde a sa clause)
     let fPoss = 0, fOff = 0;
     for (let i = 0; i < 180 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -1010,7 +1010,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false,
+    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
@@ -1291,8 +1291,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const lances = out.filter((v) => v > 3.5).length;
     return { n: out.length, part: lances / (out.length || 1), p50: [...out].sort((a, b) => a - b)[Math.floor(out.length / 2)] ?? 0 };
   };
-  const vif = entrees({});
-  const sab = entrees({ jockey: false });
+  const vif = entrees({ tranchant: false, pousse: false });        // la clause isole 140/141 (la ligne haute re-date le flux du pressing)
+  const sab = entrees({ jockey: false, tranchant: false, pousse: false });
   ok(`lot 95 — le presseur arrive SOUS CONTRÔLE (${(vif.part * 100).toFixed(0)} % lancés vs ${(sab.part * 100).toFixed(0)} % la minuterie d'hier, p50 ${vif.p50.toFixed(1)} vs ${sab.p50.toFixed(1)} m/s — ≥ 12 pts d'écart, même graines)`,
     vif.part <= sab.part - 0.12 && vif.p50 < sab.p50);
   // la FENÊTRE DU TACLE, unitaire (le patron checkKeeper) : identité hors match/clé, l'étau
@@ -2067,8 +2067,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return n2;
   };
-  const vifP = fluxP({});
-  const sabP = fluxP({ skill: { ...matchCfg().skill, pontFoe: null } });
+  const vifP = fluxP({ tranchant: false, pousse: false });         // la clause isole 140/141 (les fenêtres du glisseur bougent avec la ligne)
+  const sabP = fluxP({ skill: { ...matchCfg().skill, pontFoe: null }, tranchant: false, pousse: false });
   // …borne 4 → 3 (lot 123 : le monde re-daté par le box crash déplace les fenêtres du
   // glisseur — 3 mesurés ; l'existence + le sabotage restent le contrat)
   ok(`lot 115 — le PETIT PONT vit (${vifP} / 4 × 300 s ≥ 3, réussite ~47 % mesurée — un pari, pas un gain gratuit) ; sabotage « le glisseur intraversable d'hier » attrapé (pontFoe absent : ${sabP})`,
@@ -2939,8 +2939,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     durs.sort((a, b) => a - b);
     return { gros, part: courtes / Math.max(1, nC), p50: durs[Math.floor(durs.length / 2)] ?? 0 };
   };
-  const vifD = danse();
-  const sabD = danse({ engagement: false, assignTenue: false });
+  const vifD = danse({ tranchant: false, pousse: false });         // la clause isole 140/141 (les courses de rupture re-datent les durées)
+  const sabD = danse({ engagement: false, assignTenue: false, tranchant: false, pousse: false });
   ok(`lot 135 — LES CIBLES NE TREMBLENT PLUS (${vifD.gros} sauts > 5 m / 2 × 300 s ≤ sabotage − 15 % ; courses off-ball p50 ${vifD.p50.toFixed(1)} s ≥ saboté + 0,15) ; sabotage « le frémissement d'hier » attrapé (${sabD.gros} sauts, p50 ${sabD.p50.toFixed(1)} s — le re-tri à 60 Hz, nommé)`,
     vifD.gros <= sabD.gros * 0.85 && vifD.p50 >= sabD.p50 + 0.15);
 }
@@ -3081,6 +3081,74 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabY = pivote({ yawSlew: false });
   ok(`lot 139 — LE YAW NE SE TÉLÉPORTE JAMAIS (inversion sèche de course : pic ${vifY}°/s ≤ 700 — le slew borné × accelF fait pivoter le corps en ~0,3 s) ; sabotage « le claquement d'hier » attrapé (yawSlew:false : ${sabY}°/s ≥ 5 000 — le demi-tour en une frame, nommé)`,
     vifY <= 700 && vifY >= 200 && sabY >= 5000);
+}
+
+// ---------------------------------------------------------------- lot 140 : LA TRANCHANTE
+// (retour utilisateur : « pas encore vu une passe en profondeur vraiment tranchante qui crée
+// une différence »). Mesuré avant : 3 réceptions derrière la ligne / 20 min, l'appel partait
+// de ≤ 12,5 m du ballon (dart 7 m). La loi (cfg.tranchant, match-sim + rondo) : la RUPTURE
+// part de loin (rayon 26) quand l'espace derrière la ligne existe, dart 12 m fenêtre 2,2 s ;
+// rondo la sert (+12 m de portée), le rendez-vous plancher (ligne + 6, retombe sur hier si
+// fermé), l'ÉLECTION pèse les défenseurs éliminés × visionF × style, l'AIGUILLE resserre le
+// couloir à la vision. Après : 18 ruptures servies en pleine course / 20 min (0 hier).
+{
+  const compte = (over = {}) => {
+    let rupts = 0, servies = 0;
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let nEv = 0, pend = null;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        while (nEv < st.events.length) {
+          const e = st.events[nEv++];
+          if (e.type === 'burst' && e.kind === 'appel-profond' && e.rupture) rupts++;
+          if (e.type === 'pass' && e.through && st.players[e.to]?._pace?.rupture) pend = { to: e.to, t: st.t };
+          else if ((e.type === 'receive' || e.type === 'control') && pend && e.by === pend.to && st.t - pend.t < 4) { servies++; pend = null; }
+        }
+      }
+    }
+    return { rupts, servies };
+  };
+  const vifT = compte();
+  const sabT = compte({ tranchant: false });
+  ok(`lot 140 — LA TRANCHANTE : la rupture part de loin et se sert (${vifT.rupts} ruptures ≥ 8, ${vifT.servies} servies en pleine course ≥ 3 sur 3 × 300 s) ; sabotage « la rupture myope d'hier » attrapé (tranchant:false : ${sabT.rupts} ruptures = 0 — l'appel restait à 12 m du ballon)`,
+    vifT.rupts >= 8 && vifT.servies >= 3 && sabT.rupts === 0);
+}
+
+// ---------------------------------------------------------------- lot 141 : LA POUSSE
+// (retour utilisateur : « la défense a tendance à trop reculer sans être proactive »). Mesuré
+// avant : la ligne arrière de l'équipe QUI ATTAQUE plafonnait au rond central (p50 +0,7 m en
+// attaque installée ; réel +5…+12 — les centraux de possession compriment le jeu). La loi
+// (cfg.pousse, formation + match-sim) : le plafond de la ligne de soutien se lève continûment
+// quand le ballon est profond (dès 0,62 de terrain, gain 0,8 × axe hauteurBloc, max 12 m).
+// Après : p50 +4,6, p90 +11,8. Le contre dans le dos existe — c'est le prix du vrai football.
+{
+  const hauteur = (over = {}) => {
+    const haut = [];
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (i % 60 !== 0 || st.restart) continue;
+        const o = st.ball.owner, c = o != null ? st.players[o] : null;
+        if (!c) continue;
+        const atk = c.team, gA2 = st.pitch.ownGoal(1 - atk).x;
+        if (Math.abs(st.ball.p[0] - gA2) < st.pitch.hx * 0.8 && Math.sign(st.ball.p[0] || 1) === Math.sign(gA2)) {
+          const sa = Math.sign(st.pitch.ownGoal(atk).x);
+          const xs = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0).map((q) => q.p[0]).sort((a, b) => sa * (b - a));
+          haut.push(-sa * (xs[0] + xs[1] + xs[2]) / 3);
+        }
+      }
+    }
+    haut.sort((a, b) => a - b);
+    return +(haut[Math.floor(haut.length * 0.9)] ?? 0).toFixed(1);
+  };
+  const vifP = hauteur();
+  const sabP = hauteur({ pousse: false });
+  ok(`lot 141 — LA POUSSE : la ligne arrière attaquante franchit le rond quand le ballon est profond (p90 +${vifP} m ≥ +6 en attaque installée — les centraux compriment le jeu) ; sabotage « le rond-plafond d'hier » attrapé (pousse:false : p90 +${sabP} ≤ +4,5 — la ligne plantée au rond central, nommée)`,
+    vifP >= 6 && sabP <= 4.5);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

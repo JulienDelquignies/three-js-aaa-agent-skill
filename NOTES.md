@@ -5535,6 +5535,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      saboté ≥ 5 000). Dette : le turnAccel/speed du slew yawWant plafonne à ~1 000°/s à
      basse vitesse (le second écrivain, plus doux — à borner au même rate si l'œil le voit).
 
+182. **Lot 140 : LA TRANCHANTE (retour utilisateur : « pas encore vu une passe en profondeur
+     vraiment tranchante qui crée une différence »).** MESURÉ AVANT : 3 réceptions derrière la
+     ligne / 20 min, 0 event lancement — l'ENTONNOIR : l'appel timé ne partait qu'à ≤ 12,5 m
+     du ballon, dart 7 m, fenêtre 1,6 s, through exigeant un couloir plein. LA LOI
+     (cfg.tranchant) : (a) match-sim — la RUPTURE : l'espace derrière la ligne existe
+     (≥ 14 m) → l'appel part de LOIN (rayon 26), dart 12 m, fenêtre 2,2 s, _pace.rupture ;
+     (b) rondo — la portée du service (+12 m), le rendez-vous PLANCHER (la ligne + pointe
+     6 m — le coureur on-side, le ballon derrière ; tenté d'abord, retombe sur le point
+     d'hier si couloir fermé : le plancher dur tuait la candidature, through 59 → 42
+     mesuré) ; (c) l'ÉLECTION pèse les DÉFENSEURS ÉLIMINÉS (0,55/déf. × visionF × axe
+     style) et l'AIGUILLE resserre le couloir exigé à la vision du passeur (×0,78…1,15).
+     visionF : le NOUVEAU levier de la note passing (0,85…1,15, 1 exact à 50 — le patron
+     dribbling : une note, deux leviers). APRÈS : 18 ruptures servies en pleine course /
+     20 min (0 hier), tranchantes ≥ 3 éliminés 44 → 51-54, tirs < 4 s après 24 → 42.
+     DETTE NOMMÉE : la PRISE AU PASSAGE — le ballon double le coureur dans sa foulée
+     (trajectoires colinéaires) et le receveur le cueille au corps au lieu de le laisser
+     filer au point profond → l'ÉCHAPPÉE pure (≤ 1 défenseur devant à la prise) reste 0-1 /
+     20 min. Chantier receveur (nuancer le contrat lot 59 pour le through profond).
+
+183. **Lot 141 : LA POUSSE (retour utilisateur : « la défense a tendance à un peu trop
+     reculer sans être proactive »).** L'INSTRUMENT D'ABORD : la 1re sonde comptait des
+     turnovers (le ballon « recule » en changeant de camp) — refaite à possession constante.
+     LE VRAI DIAGNOSTIC : la défense qui recule est SAINE (écart ligne-ballon p50 18 m) ;
+     ce qui manquait : la ligne arrière de l'équipe QUI ATTAQUE plafonnait au ROND CENTRAL
+     (p50 +0,7 m en attaque installée ; réel +5…+12 — les centraux de Guardiola vivent dans
+     le camp adverse, ce sont eux qui compriment le jeu, rendent le contre-press possible et
+     donnent l'impression d'une équipe PROACTIVE). LA LOI (cfg.pousse, formation.js l.228 +
+     call-site match-sim) : le plafond de la ligne de soutien attaquante se lève CONTINÛMENT
+     quand le ballon est profond — dès 0,62 de terrain, gain 0,8 × axe hauteurBloc (0,3…1,7,
+     0,5 = ×1 : le bloc bas prudent RESTE au rond), max 12 m au-delà. APRÈS : p50 +4,6,
+     p90 +11,8 (la fourchette réelle). Le prix assumé du vrai football : le contre dans le
+     dos existe (la Loi 11 + la tranchante 140 adverse le punissent — c'est le jeu).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

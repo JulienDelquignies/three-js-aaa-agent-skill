@@ -206,7 +206,8 @@ export function choosePass(st, cfg = RONDO) {
       : couloirB > 0 ? Math.max(cfg.passRange[1], cfg.couloir.portee ?? 24)   // la passe d'ÉCARTEMENT a sa porte (lot 99)
       : ecarteB > 0 ? Math.max(cfg.passRange[1], cfg.ecarte.portee ?? 32)     // la sortie d'axe a la sienne (lot 105)
       : gardienOk && m.keeper ? (cfg.sortieGardien?.portee ?? 26)             // la sortie au gardien a la SIENNE (lot 136 — le retrait vit à 20-30 m)
-      : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel' ? (cfg.appelRange ?? 0) : 0);
+      : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel'
+        ? (cfg.appelRange ?? 0) + (cfg.tranchant && m._pace.rupture ? (cfg.tranchant.portee ?? 12) : 0) : 0);   // …la RUPTURE (140) se sert de LOIN
     if (d < cfg.passRange[0] || d > rMax) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
     // LA MÈNE SUIT LA COURSE (cfg.leadTime — le match la dérive du temps de vol : un coureur à
@@ -258,20 +259,40 @@ export function choosePass(st, cfg = RONDO) {
       const vRun = Math.hypot(m.v[0], m.v[1]);
       if (vRun > 2.5) {
         const dirC = [m.v[0] / vRun, m.v[1] / vRun];
-        const arr = 4.8 + 1.7 * ((m.skill?.controlF ?? 1) - 0.85) / 0.3;
-        let tRdv = d2(origin, m.p) / 11;
-        let P = null, solT = null;
-        for (let it = 0; it < 2; it++) {
-          const adv = vRun * tRdv + (cfg.throughBall.pointe ?? 2.5);
-          P = [m.p[0] + dirC[0] * adv, BALL.radius, m.p[2] + dirC[1] * adv];
-          solT = solvePass(origin, P, { style: 'ground', arrival: Math.max(4.2, Math.min(6.5, arr)) });
-          if (!solT) break;
-          tRdv = solT.flightTime;
+        const arr = Math.max(4.2, Math.min(6.5, 4.8 + 1.7 * ((m.skill?.controlF ?? 1) - 0.85) / 0.3));
+        // …L'AIGUILLE (140) : le couloir exigé se resserre pour le PASSEUR à la vision
+        // (visionF 0,85…1,15, 1 = ×1 exact au 50) — la tranchante passe par le chas
+        const aiguille = st.full && cfg.tranchant ? Math.max(0.78, Math.min(1.15, 2 - (c.skill?.visionF ?? 1))) : 1;
+        // le rendez-vous itéré, essayé avec un PLANCHER d'avance (0 = la pointe d'hier)
+        const essaye = (plancher) => {
+          let tRdv = d2(origin, m.p) / 11, P = null, solT = null;
+          for (let it = 0; it < 2; it++) {
+            const adv = Math.max(vRun * tRdv + (cfg.throughBall.pointe ?? 2.5), plancher);
+            P = [m.p[0] + dirC[0] * adv, BALL.radius, m.p[2] + dirC[1] * adv];
+            solT = solvePass(origin, P, { style: 'ground', arrival: arr });
+            if (!solT) return null;
+            tRdv = solT.flightTime;
+          }
+          const laneT = laneClearance(origin, P, opp, { corridor: (cfg.corridor ?? 1.15) * aiguille });
+          return laneT.open ? { lead: P, lane: laneT, arr } : null;
+        };
+        // …la RUPTURE REND-EZ-VOUS DERRIÈRE LA LIGNE (140) : le coureur est ON-SIDE à la passe
+        // (dart capé à la ligne), le BALLON va derrière elle — le point profond (ligne + pointe
+        // 6 m, plafonné hors des gants à −8 m du but) se TENTE d'abord ; couloir fermé ou
+        // insolvable, on RETOMBE sur le point d'hier (le plancher dur tuait la candidature :
+        // through 59 → 42 mesuré). La sonde AVANT : 3 réceptions derrière la ligne / 20 min.
+        let plancher = 0;
+        if (cfg.tranchant && m._pace?.rupture) {
+          const _gx = st.pitch.attackGoal(c.team).x, gS = Math.sign(_gx || 1);
+          const dxu = dirC[0] * gS;
+          if (dxu > 0.4) {
+            let ligne = -Infinity;
+            for (const q of foesL) if (!q.keeper && q.down <= 0) ligne = Math.max(ligne, q.p[0] * gS);
+            plancher = Math.min((ligne - m.p[0] * gS + (cfg.tranchant.pointe ?? 6)) / dxu,
+              (Math.abs(_gx) - 8 - m.p[0] * gS) / dxu);
+          }
         }
-        if (solT && P) {
-          const laneT = laneClearance(origin, P, opp, { corridor: cfg.corridor });
-          if (laneT.open) through = { lead: P, lane: laneT, arr: Math.max(4.2, Math.min(6.5, arr)) };
-        }
+        through = (plancher > 0 ? essaye(plancher) : null) ?? essaye(0);
       }
     }
     const score =
@@ -304,8 +325,19 @@ export function choosePass(st, cfg = RONDO) {
                                                               // 0 au défaut 0,5 (l'identité, le patron UT.calme du 49),
                                                               // pleine en possession — le Guardiola vit dans le preset
     // …le THROUGH remplace la mène et le style du candidat servi (le rendez-vous a son couloir jugé)
-    if (!best || score > best.score) best = through
-      ? { to: m, lead: through.lead, style: 'ground', score: score + (cfg.throughBall?.bonus ?? 0.6), lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }
+    // …ET LA TRANCHANTE PÈSE SES ÉLIMINÉS (140, cfg.tranchant — retour utilisateur : « pas
+    // encore vu une passe en profondeur vraiment tranchante ») : chaque défenseur DÉPASSÉ par
+    // le ballon vaut au barème (mesuré avant : 3 réceptions derrière la ligne / 20 min) —
+    // × visionF du passeur (l'attribut passing en facteur) × axe style (le direct ose plus)
+    let tranchB = 0;
+    if (through && st.full && cfg.tranchant) {
+      const gS = Math.sign(st.pitch.attackGoal(c.team).x || 1);
+      let el = 0;
+      for (const o of opp) if (o[0] * gS > origin[0] * gS + 0.5 && o[0] * gS < through.lead[0] * gS - 0.5) el++;
+      tranchB = Math.min(4, el) * (cfg.tranchant.parDefenseur ?? 0.55) * (c.skill?.visionF ?? 1) * axe(_sty, 0.9, 1.1);
+    }
+    if (!best || score + tranchB > best.score) best = through
+      ? { to: m, lead: through.lead, style: 'ground', score: score + (cfg.throughBall?.bonus ?? 0.6) + tranchB, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }
       : { to: m, lead, style, score, lane, dist: d, bascule };
   }
   return best;

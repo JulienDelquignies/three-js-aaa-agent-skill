@@ -56,6 +56,9 @@ export function makeProfile(ratings = {}) {
     accelF: lerp(0.88, 1.12, r('acceleration')),
     passSigma: lerp(6.0, 0.5, r('passing')) * (Math.PI / 180),   // rad — σ d'angle (à 30 : ~1 m d'écart
                                                                   // à 10 m — mesuré : 3,5° ne mordait pas les couloirs)
+    visionF: lerp(0.85, 1.15, r('passing')),                      // × sur la TRANCHANTE (lot 140) : l'élection
+                                                                  // et l'aiguille du couloir (1 exact à 50 —
+                                                                  // le patron dribbling : une note, deux leviers)
     controlF: lerp(0.7, 1.6, r('control')),
     dribbleLeadF: lerp(1.08, 0.94, r('dribbling')),
     gesteF: lerp(0.55, 1.10, r('dribbling')),                     // × sur l'ENGAGEMENT et la VENTE
