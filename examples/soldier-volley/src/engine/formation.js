@@ -89,7 +89,33 @@ export const FORMATIONS = {
     [0.48, 0.0],                                                 // le dix en soutien
     [0.58, 0.0],                                                 // la pointe
   ],
+  3142: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.23, 0.0],                                                 // la sentinelle
+    [0.37, -0.70], [0.33, -0.22], [0.33, 0.22], [0.37, 0.70],    // la ligne de quatre haute
+    [0.55, -0.16], [0.55, 0.16],                                 // le duo de pointes
+  ],
+  451: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.35, -0.72], [0.30, -0.28], [0.27, 0.0], [0.30, 0.28], [0.35, 0.72],   // le milieu à cinq
+    [0.56, 0.0],                                                 // la pointe seule
+  ],
+  5212: [
+    [0.16, -0.72], [0.13, -0.36], [0.11, 0.0], [0.13, 0.36], [0.16, 0.72],   // la ligne de cinq
+    [0.28, -0.20], [0.28, 0.20],                                 // le double pivot
+    [0.44, 0.0],                                                 // le dix
+    [0.56, -0.16], [0.56, 0.16],                                 // le duo de pointes
+  ],
 };
+
+/** LA FORMATION SE RÉSOUT PAR PHASE (lot 129, demande utilisateur : « une formation onball
+ *  et offball ») : un nom simple vaut dans les deux mondes ; { on, off } bascule à la
+ *  possession — le 433 qui défend en 451 est LA modernité tactique, et les corps convergent
+ *  par servo (l'ancre lente lisse la transition : aucun téléport, aucune loi nouvelle). */
+export function formationPour(f, attacking) {
+  if (f && typeof f === 'object') return String(attacking ? (f.on ?? 433) : (f.off ?? f.on ?? 433));
+  return String(f ?? 433);
+}
 
 /** Les RÔLES PAR DÉFAUT de chaque formation (data — un projet les passe à makeMatch({roles})
  *  tels quels ou les remplace ; absents : polyvalent partout, l'identité). Le 4231 vit de son
@@ -107,6 +133,9 @@ export const ROLES_FORMATION = {
   4141: { 4: 'recuperateur', 5: 'piston', 8: 'piston', 9: 'neufDeSurface' },
   4222: { 4: 'recuperateur', 5: 'recuperateur', 6: 'meneur', 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
   4411: { 4: 'piston', 7: 'piston', 8: 'meneur', 9: 'neufDeSurface' },
+  3142: { 3: 'recuperateur', 4: 'piston', 7: 'piston', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  451: { 4: 'piston', 6: 'meneur', 8: 'piston', 9: 'neufDeSurface' },
+  5212: { 5: 'recuperateur', 6: 'recuperateur', 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
 };
 
 /** LES LIGNES sont une DONNÉE (défense, milieu, attaque) : c'est ce qui généralise le calage
@@ -114,7 +143,8 @@ export const ROLES_FORMATION = {
  *  rôles par ligne. La somme fait toujours 10 (Loi 3 : onze joueurs, un gardien). */
 export const LIGNES = { 433: [4, 3, 3], 442: [4, 4, 2], 352: [3, 5, 2],
   4231: [4, 2, 4], 4321: [4, 3, 3], 343: [3, 4, 3], 3421: [3, 4, 3],
-  532: [5, 3, 2], 541: [5, 4, 1], 4141: [4, 5, 1], 4222: [4, 4, 2], 4411: [4, 4, 2] };
+  532: [5, 3, 2], 541: [5, 4, 1], 4141: [4, 5, 1], 4222: [4, 4, 2], 4411: [4, 4, 2],
+  3142: [3, 5, 2], 451: [4, 5, 1], 5212: [5, 3, 2] };
 
 /** Le premier poste OFFENSIF de la formation (433 → 7, 442/352 → 8) — le calage Loi 11 et les
  *  appels profonds s'adressent aux pointes, quelle que soit la formation. */

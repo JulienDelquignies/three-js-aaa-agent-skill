@@ -222,8 +222,10 @@ LE MARQUAGE DU COUREUR DE MUR (dette 119 : ~20 % des retours de une-deux = but, 
 dans le dos du presseur n'a pas de défense dédiée).
 
 Gardien relanceur avancé (la relance au pied du libéro, dette 120), ~~formations
-complètes~~ — **LIVRÉ** (lot 127, note 169 : 12 formations en data + ROLES_FORMATION, le
-bus 541 encaisse 1 vs 3 mesuré ; dettes : presets tactiques par formation, asymétriques),
+complètes~~ — **LIVRÉ** (127 puis 129, notes 169/171 : 15 formations — la liste
+utilisateur au complet —, ROLES_FORMATION, et la FORMATION PAR PHASE {on, off} au
+résolveur pur, bascule mesurée 2,3 vs 1,4 corps ; dettes : presets tactiques par
+formation, asymétriques, hystérésis de bascule, mapping de postes on↔off par rôle),
 le troisième homme v2 (v1 livrée note 153 — reste : courses dédiées vers l'intervalle),
 triangulation v4 (assignation, hystérésis), expulsion physique complète, le pré-saut de
 tête anticipé (v1 réactive livrée note 154).

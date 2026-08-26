@@ -5245,6 +5245,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactique direct devrait pousser le seuil d'ouverture du couloir ; le gardien-libéro
      adverse punit les through trop appuyés (la boucle 120 se referme — à mesurer).
 
+171. **Lot 129 : LES FORMATIONS ONBALL/OFFBALL + le catalogue à 15 (demande utilisateur :
+     la liste complète 3142…541 et « permettre aux équipes d'avoir une formation onball
+     et offball »).** (1) LE CATALOGUE COMPLÉTÉ : 3-1-4-2 (la sentinelle relanceuse),
+     4-5-1, 5-2-1-2 — la liste utilisateur au complet (15 formations, 4222 en bonus),
+     avec LIGNES et ROLES_FORMATION. (2) LA FORMATION PAR PHASE (formationPour, pur) :
+     tactics.formation accepte un nom OU { on, off } — le résolveur bascule à la
+     possession ; les trois consommateurs branchés (les postes offensifs → ON, les postes
+     défensifs → OFF, premierOffensif/Loi 11 → la phase de l'équipe qui attaque) ; AUCUNE
+     loi de mouvement nouvelle — les corps convergent par servo et l'ancre lente lisse la
+     transition (aucun téléport, l'architecture paie). L'IDENTITÉ PARFAITE : un nom
+     simple traverse formationPour tel quel — LES QUATRE EMPREINTES AU BIT (le lot est
+     data + un résolveur pur). LA PREUVE DU SWITCH mesurée : {on: 433, off: 541} tient
+     2,3 corps dans son dernier quart défensif SANS ballon contre 1,4 EN possession — le
+     bloc de cinq n'existe qu'en défense, la ligne de quatre qu'en attaque. CLAUSES 129 :
+     le catalogue complet (la liste utilisateur vérifiée nom par nom) + le résolveur pur
+     + la bascule lue en flux (off ≥ on + 0,4). Usage : makeMatch({ tactics: [{
+     formation: { on: '433', off: '451' } }, …] }). Dettes nommées : l'hystérésis de
+     bascule (aujourd'hui la possession du moteur suffit — si un projet voit du
+     flip-flop sur ballons disputés, ~0,8 s de possession stable) ; les MAPPINGS de
+     postes on↔off (le n° 7 ailier du 433 devient quel corps du 541 ? aujourd'hui l'index
+     — un mapping nommé par rôle serait plus juste).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

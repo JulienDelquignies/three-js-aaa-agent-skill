@@ -5,7 +5,7 @@ import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
-import { formationSpots, premierOffensif, blocFor, coverSpot, ballsideTrim } from './formation.js';
+import { formationSpots, premierOffensif, formationPour, blocFor, coverSpot, ballsideTrim } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
@@ -641,7 +641,7 @@ function assignMatchJobs(st, cfg) {
       // …chaînée au ballon en attaque (51), latéralement (68) ; l'ancre de rentrée LENTE (τ 2 s, x vif) : la ligne se referme sur l'aile INSTALLÉE.
       const tz = st._tuckZ ??= { v: 0, t: st.t };
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
-      const spots = formationSpots(pitch, atk, anchor[0], true, tac(st, atk).formation, blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v, st._outAtk ??= []);
+      const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocFor(cfg.bloc ?? null, tac(st, atk)), tz.v, st._outAtk ??= []);   // la formation ON (129)
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste coulissé peut tomber DERRIÈRE la
       // défense — l'attaquant réel vit SUR la ligne. Relue CHAQUE image ; le calage borne la CIBLE.
       const off = cfg.offside ? offsideLine(st, atk) : null;
@@ -675,7 +675,7 @@ function assignMatchJobs(st, cfg) {
         const wR = axe(R.largeurR, 0.9, 1.1);
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
         // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
-        if (off && (p.post ?? 0) >= premierOffensif(tac(st, atk).formation)) {
+        if (off && (p.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true))) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE : suivi ou rien (pointe ≤ passRange, DEVANT le ballon, porteur posé, couloir ouvert → dart de 7 m). Un par équipe.
           if ((p._runT ?? -1) <= st.t && posé
             && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) <= st.t
@@ -842,7 +842,7 @@ function assignMatchJobs(st, cfg) {
     // le tri des défenseurs vit sur clés pré-calculées.
     const defTeamB = atk === 0 ? 1 : 0;
     const spotsBloc = st.full
-      ? formationSpots(pitch, defTeamB, anchor[0], false, tac(st, defTeamB).formation, blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), anchor[2], st._outDef ??= []) : null;
+      ? formationSpots(pitch, defTeamB, anchor[0], false, formationPour(tac(st, defTeamB).formation, false), blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), anchor[2], st._outDef ??= []) : null;   // la formation OFF (129)
     const byDist = st._bByDist ??= []; byDist.length = 0;
     for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
     // …les MARQUABLES une fois par frame (lot 69 — le prédicat ignore le marqueur ; seul le tri est personnel)

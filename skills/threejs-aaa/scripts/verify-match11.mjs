@@ -49,7 +49,7 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   contreAppel: false, boxCrash: false,                              // …les courses droites et la surface d'hier (pré-122/123)
   courseAilier: false, throughBall: false };                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
-import { FORMATIONS, LIGNES } from '../assets/starter/src/engine/formation.js';
+import { FORMATIONS, LIGNES, formationPour } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
 let pass = 0, fail = 0;
@@ -2656,6 +2656,34 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab8 = th128({ throughBall: false });
   ok(`lot 128 — la PASSE EN PROFONDEUR AU SOL vit (${vif8.th} through / 3 × 300 s ≥ 6) et son DOSAGE livre (${vif8.thOk}/${vif8.th} conservés ≥ 65 % — le rendez-vous itéré, l'arrivée au control) ; sabotage « la mène myope d'hier » attrapé (throughBall:false : ${sab8.th})`,
     vif8.th >= 6 && vif8.thOk >= vif8.th * 0.65 && sab8.th === 0);
+}
+
+// ---------------------------------------------------------------- lot 129 : ONBALL/OFFBALL
+// + le catalogue à 15 (demande utilisateur : la liste complète + « une formation onball et
+// offball ») — formationPour résout { on, off } à la possession ; un nom simple = l'identité
+// AU BIT (les quatre empreintes le prouvent). La preuve du switch : {on 433, off 541} tient
+// 2,3 corps au dernier quart sans ballon vs 1,4 en possession (mesuré).
+{
+  const noms = Object.keys(FORMATIONS);
+  const attendu = ['3142', '3421', '343', '352', '4141', '4231', '4321', '433', '4411', '442', '451', '5212', '532', '541'];
+  const manque = attendu.filter((n) => !FORMATIONS[n]);
+  ok(`lot 129 — le CATALOGUE COMPLET (${noms.length} formations ≥ 15, la liste utilisateur au complet : ${manque.length === 0 ? 'rien ne manque' : manque.join(',')}) et le RÉSOLVEUR est pur (nom simple → identité ; {on,off} → la phase)`,
+    noms.length >= 15 && manque.length === 0
+    && formationPour('433', true) === '433' && formationPour({ on: '433', off: '541' }, false) === '541');
+  const st129 = makeMatch({ full: true, seed: 3, tactics: [{ formation: { on: '433', off: '541' } }, { formation: '433' }] });
+  const cfg129 = matchCfg({ shotRange: 20 });
+  let basOn = [], basOff = [];
+  for (let i = 0; i < 200 * 60; i++) {
+    matchStep(st129, 1 / 60, cfg129);
+    if ((i % 30) === 0 && st129.possession.team >= 0) {
+      const og = st129.pitch.ownGoal(0), sg = Math.sign(og.x || 1);
+      const bas = st129.players.filter((q) => q.team === 0 && !q.keeper && q.down <= 0 && q.p[0] * sg > st129.pitch.hx * 0.45).length;
+      (st129.possession.team === 0 ? basOn : basOff).push(bas);
+    }
+  }
+  const avg = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+  ok(`lot 129 — la BASCULE se lit ({on 433, off 541} : ${avg(basOff).toFixed(1)} corps au dernier quart SANS ballon ≥ ${avg(basOn).toFixed(1)} + 0,4 EN possession — le bloc de cinq n'existe qu'en défense)`,
+    basOn.length >= 10 && basOff.length >= 10 && avg(basOff) >= avg(basOn) + 0.4);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
