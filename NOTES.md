@@ -5267,6 +5267,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      postes on↔off (le n° 7 ailier du 433 devient quel corps du 541 ? aujourd'hui l'index
      — un mapping nommé par rôle serait plus juste).
 
+172. **Lot 130 : LE MAPPING DES POSTES on↔off + LE RÔLE PAR PHASE (demande utilisateur :
+     « le mapping, toujours configurable — n'importe quel poste avec n'importe quel
+     autre ; ça implique un rôle offball onball ? »).** LA RÉPONSE À SA QUESTION : OUI —
+     et l'élégance moteur est que chaque AXE d'un rôle a déjà sa phase naturelle. (1) LE
+     MAPPING (formation.mapPostes, pur) : formation { on, off, map } — map[posteOn] =
+     posteOff, le corps du poste k (formation ON) tient le poste map[k] du bloc
+     défensif ; absent : l'identité (le 129 au bit). Trois consommateurs mappés (les
+     postes du bloc, le repli du marqueur, la bande de ligne) — et la BANDE suit
+     désormais la VRAIE ligne défensive de la formation OFF (LIGNES[off][0] : 4 en 433,
+     5 en 541 — le premier essai à seuil fixe 5 avait re-daté le monde défaut, attrapé
+     par le fingerprint et corrigé). (2) LE RÔLE PAR PHASE (resoudreRole) : chaque entrée
+     de roles accepte un nom OU { on, off } — composé par NATURE D'AXE à la création
+     (profondeur/largeurR/appel/arbitre du ON, press/garde du OFF), zéro coût runtime,
+     aucun call-site touché ; l'ailier/récupérateur garde son appel 0,6 ET presse à
+     0,95. LES QUATRE EMPREINTES AU BIT (identité totale des mondes sans map ni rôle
+     composé). CLAUSE 130 : la composition par axe (fixture pure), le mapping
+     identité/configuré, le monde mappé joue 90 s. Usage : makeMatch({ tactics: [{
+     formation: { on: '433', off: '541', map: { 6: 8, 8: 6 } } }], roles: [{ 6: { on:
+     'ailierDePercussion', off: 'piston' } }] }). Dette : l'hystérésis de bascule
+     (inchangée du 129).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

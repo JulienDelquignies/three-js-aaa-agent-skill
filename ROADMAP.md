@@ -225,7 +225,9 @@ Gardien relanceur avancé (la relance au pied du libéro, dette 120), ~~formatio
 complètes~~ — **LIVRÉ** (127 puis 129, notes 169/171 : 15 formations — la liste
 utilisateur au complet —, ROLES_FORMATION, et la FORMATION PAR PHASE {on, off} au
 résolveur pur, bascule mesurée 2,3 vs 1,4 corps ; dettes : presets tactiques par
-formation, asymétriques, hystérésis de bascule, mapping de postes on↔off par rôle),
+formation, asymétriques, hystérésis de bascule, ~~mapping de postes on↔off~~ — **LIVRÉ**
+(130, note 172 : map configurable poste-à-poste + le rôle par phase composé par nature
+d'axe, les quatre empreintes au bit)),
 le troisième homme v2 (v1 livrée note 153 — reste : courses dédiées vers l'intervalle),
 triangulation v4 (assignation, hystérésis), expulsion physique complète, le pré-saut de
 tête anticipé (v1 réactive livrée note 154).

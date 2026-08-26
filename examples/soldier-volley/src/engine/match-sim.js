@@ -5,7 +5,7 @@ import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { RONDO, makeRondo, evadeSpot } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
-import { formationSpots, premierOffensif, formationPour, blocFor, coverSpot, ballsideTrim } from './formation.js';
+import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
@@ -843,6 +843,7 @@ function assignMatchJobs(st, cfg) {
     const defTeamB = atk === 0 ? 1 : 0;
     const spotsBloc = st.full
       ? formationSpots(pitch, defTeamB, anchor[0], false, formationPour(tac(st, defTeamB).formation, false), blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), anchor[2], st._outDef ??= []) : null;   // la formation OFF (129)
+    const mapD = mapPostes(tac(st, defTeamB).formation), nDefD = (LIGNES[formationPour(tac(st, defTeamB).formation, false)] ?? [4])[0];   // le mapping on→off + la ligne OFF (130)
     const byDist = st._bByDist ??= []; byDist.length = 0;
     for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
     // …les MARQUABLES une fois par frame (lot 69 — le prédicat ignore le marqueur ; seul le tri est personnel)
@@ -850,8 +851,7 @@ function assignMatchJobs(st, cfg) {
     const sgnDef = Math.sign(defGoal.x || 1);
     const marks = st._bMarks ??= [], mTri = st._bMTri ??= []; marks.length = 0;
     for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3))) marks.push(a);
-    // LE MARQUAGE EST BALLSIDE (lot 96, cfg.zone — formation.ballsideTrim, l'axe marquage) :
-    // l'homme du côté FAIBLE n'a pas de marqueur, la ZONE le couvre (slots pincés + coulissement).
+    // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
     byDist.forEach((p, i) => {
       if (i === 0) {
@@ -924,8 +924,8 @@ function assignMatchJobs(st, cfg) {
       if (st.full && i >= 6) {
         // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42) : ligne ~27 m du ballon,
         // longueur 30 — et le bloc est CELUI DE SA TACTIQUE (blocFor : compacité, hauteur).
-        const spotsD = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
-        const want = spotsD[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        const spotsD = spotsBloc;   // hoisté (60)
+        const want = spotsD[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]];
         // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : le bloc posté se décale de −6 à +6 m —
         // la ligne de hors-jeu suit (Loi 11 fait exister le pari). 0,5 = 0 m, l'identité.
         const sgnD = -pitch.ownGoal(p.team).sign;
@@ -953,8 +953,8 @@ function assignMatchJobs(st, cfg) {
       // corps) : en 11c11 le surplus rejoint son poste (!m) ; le réduit garde le doublement.
       const m = i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
       if (!m && st.full) {
-        const spotsM = spotsBloc;   // hoisté (lot 60) — mêmes arguments pour chaque défenseur
-        const wM = spotsM[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        const spotsM = spotsBloc;   // hoisté (60)
+        const wM = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]];
         p.job = 'mark'; p.target = [wM[0], 0, wM[1]];
         return;
       }
@@ -969,8 +969,8 @@ function assignMatchJobs(st, cfg) {
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — mesuré avant : « ligne » à
       // 19-22 m d'écart de profondeur en défense placée, réel 2-5) : le marqueur de la ligne
       // ne descend ni ne monte hors de sa bande — il suit son homme EN LATÉRAL (bande 6 m — le central sort dans le trou).
-      if (st.full && cfg.zone !== false && (p.post ?? 9) < 4 && spotsBloc) {
-        const xL = spotsBloc[p.post]?.[0], sL = (xL ?? 0) * sgnDef;
+      if (st.full && cfg.zone !== false && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {
+        const xL = spotsBloc[mapD[p.post ?? 0]]?.[0], sL = (xL ?? 0) * sgnDef;
         // …ne descend pas SOUS elle (le piège Loi 11 couvre l'homme bas) sauf ballon déjà profond…
         if (xL != null && anchor[0] * sgnDef < sL - 2 && want[0] * sgnDef > sL) want[0] = xL;
         // …et ne MONTE pas marquer à plus de 4 m devant elle (l'homme haut appartient au bloc)

@@ -112,6 +112,16 @@ export const FORMATIONS = {
  *  et offball ») : un nom simple vaut dans les deux mondes ; { on, off } bascule à la
  *  possession — le 433 qui défend en 451 est LA modernité tactique, et les corps convergent
  *  par servo (l'ancre lente lisse la transition : aucun téléport, aucune loi nouvelle). */
+/** LE MAPPING DES POSTES on→off (lot 130, configurable — « n'importe quel poste avec
+ *  n'importe quel autre ») : formation { on, off, map } — map[posteOn] = posteOff, le corps
+ *  du poste k (formation ON) tient le poste map[k] du bloc défensif ; absent : l'identité
+ *  (le comportement 129 au bit). Ex. 433→541 : { 6: 4, 8: 8 } — l'ailier devient piston. */
+export function mapPostes(f) {
+  const id = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  if (f && typeof f === 'object' && f.map) return id.map((k) => f.map[k] ?? k);
+  return id;
+}
+
 export function formationPour(f, attacking) {
   if (f && typeof f === 'object') return String(attacking ? (f.on ?? 433) : (f.off ?? f.on ?? 433));
   return String(f ?? 433);

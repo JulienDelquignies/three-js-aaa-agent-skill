@@ -40,6 +40,15 @@ export const ROLES = {
 
 /** Résout un nom ou un objet partiel en rôle complet (absent = polyvalent, l'identité). */
 export function resoudreRole(r) {
+  // LE RÔLE PAR PHASE (lot 130, demande utilisateur : « ça implique un rôle offball
+  // onball ? » — OUI, composé par NATURE D'AXE) : les axes OFFENSIFS (profondeur, largeurR,
+  // appel, arbitre) viennent du rôle ON, les axes DÉFENSIFS (press, garde) du rôle OFF —
+  // composé UNE fois à la création, aucun call-site ne change, zéro coût runtime. Un rôle
+  // simple vaut dans les deux phases (l'identité d'hier au bit).
+  if (r && typeof r === 'object' && (r.on != null || r.off != null)) {
+    const on = resoudreRole(r.on), off = resoudreRole(r.off ?? r.on);
+    return { ...on, press: off.press, garde: off.garde, nom: on.nom + '/' + off.nom };
+  }
   const base = typeof r === 'string' ? (ROLES[r] ?? ROLES.polyvalent) : (r ?? {});
   return {
     profondeur: base.profondeur ?? 0.5, largeurR: base.largeurR ?? 0.5, appel: base.appel ?? 0.5, press: base.press ?? 0.5,

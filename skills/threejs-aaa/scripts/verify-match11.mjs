@@ -29,6 +29,7 @@ import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } fr
 import { resoudreTactique } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
+import { resoudreRole } from '../assets/starter/src/engine/roles.js';
 import { KEEPER, keeperDecide, keeperSpot } from '../assets/starter/src/engine/keeper.js';
 import { menaceTir } from '../assets/starter/src/engine/menace.js';
 
@@ -49,7 +50,7 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   contreAppel: false, boxCrash: false,                              // …les courses droites et la surface d'hier (pré-122/123)
   courseAilier: false, throughBall: false };                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
-import { FORMATIONS, LIGNES, formationPour } from '../assets/starter/src/engine/formation.js';
+import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
 let pass = 0, fail = 0;
@@ -2684,6 +2685,23 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const avg = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
   ok(`lot 129 — la BASCULE se lit ({on 433, off 541} : ${avg(basOff).toFixed(1)} corps au dernier quart SANS ballon ≥ ${avg(basOn).toFixed(1)} + 0,4 EN possession — le bloc de cinq n'existe qu'en défense)`,
     basOn.length >= 10 && basOff.length >= 10 && avg(basOff) >= avg(basOn) + 0.4);
+}
+
+// ---------------------------------------------------------------- lot 130 : LE MAPPING DES
+// POSTES on↔off + LE RÔLE PAR PHASE (demande utilisateur : « configurable — n'importe quel
+// poste avec n'importe quel autre ; ça implique un rôle offball onball ? » — OUI, composé
+// par NATURE D'AXE : appel/largeurR/profondeur/arbitre du ON, press/garde du OFF, une fois
+// à la création). La bande défensive suit la ligne de la formation OFF (LIGNES[off][0]).
+{
+  const rC = resoudreRole({ on: 'ailierDePercussion', off: 'recuperateur' });
+  const rS = resoudreRole('meneur');
+  const idM = mapPostes('433'), cM = mapPostes({ on: '433', off: '541', map: { 6: 8, 8: 6 } });
+  const st130 = makeMatch({ full: true, seed: 3, tactics: [{ formation: { on: '433', off: '541', map: { 6: 8, 8: 6 } } }, { formation: '433' }] });
+  const cfg130 = matchCfg({ shotRange: 20 });
+  for (let i = 0; i < 90 * 60; i++) matchStep(st130, 1 / 60, cfg130);
+  ok(`lot 130 — le RÔLE PAR PHASE se compose par axe (ailier/récupérateur : appel ${rC.appel} = 0,6 du ON, press ${rC.press} = 0,95 du OFF ; simple : ${rS.press} — l'identité) ; le MAPPING est configurable (identité ${idM[6]} = 6 ; map {6:8} → ${cM[6]} = 8) ; le monde mappé JOUE 90 s (t=${st130.t.toFixed(0)})`,
+    rC.appel === 0.6 && rC.press === 0.95 && rC.largeurR === 0.9 && rS.press === 0.25
+    && idM[6] === 6 && cM[6] === 8 && cM[8] === 6 && st130.t >= 89);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
