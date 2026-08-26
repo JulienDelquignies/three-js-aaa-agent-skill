@@ -178,11 +178,19 @@ export const MATCH = {
                           // son yaw suit le ballon (pas chassé, patron du backpedal libéro),
                           // le côté du clip de plongeon se calcule sur un regard JUSTE
                           // (mesuré : 3/20 plongeons sur regard > 60°). false : hier.
+  yawSlew: {},            // lot 139 (movement.js) : LE YAW NE SE TÉLÉPORTE JAMAIS — le cap
+                          // de dérive (yaw = atan2(v)) passe par un slew borné rate 9,4 rad/s
+                          // (~540°/s) × accelF. Mesuré avant : p50 807°/s, p90 6 168°/s aux
+                          // prises, 31 % de retournements > 90° en une frame. false : hier.
   accompagne: {},         // lot 137 (phases.js) : L'ACCOMPAGNEMENT DE LA MONTÉE — la montée
-                          // soutenue (> 3 m/s, 0,6 s) déclenche 1-2 courses à hauteur (+4 m
+                          // soutenue (> 3 m/s, 0,6 s) déclenche 1-2 courses à hauteur (+7 m
                           // devant, ±10 m de couloir, un par côté), rôle appel en facteur,
                           // volume à l'axe transition, burst 'accompagne'. Mesuré avant :
                           // 0 corps devant le porteur en montée, soutien à 14 m. false : hier.
+                          // …lot 138, sous-clé overlap : porteur EXCENTRÉ (|z| > 8) → le
+                          // coureur côté touche au rôle LARGE (largeurR ≥ 1) le DOUBLE
+                          // (+16 m, couloir extérieur +6, burst 1,6 s, event burst/overlap).
+                          // overlap:false : l'accompagnement à hauteur seul (le 137 pur).
   assignTenue: {},        // lot 135 : L'ASSIGNATION A UNE MÉMOIRE — le GRAND saut de cible
                           // (> 3-3,5 m = une réaffectation d'homme/slot) attend sa tenue
                           // (mark 1,6 s, slot 1,2 s ; burst exempté) ; le suivi fin garde sa

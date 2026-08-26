@@ -55,12 +55,12 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
   engagement: false, assignTenue: false,                             // …le frémissement des cibles d'hier (pré-135)
   sortieGardien: false, clearTouche: false,                          // …le gardien invisible et le corner facile d'hier (pré-136)
-  accompagne: false };                                               // …le porteur esseulé d'hier (pré-137)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  accompagne: false, yawSlew: false };                               // …le porteur esseulé et le cap claqué d'hier (pré-137/139)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false };   // la clause 131 isole SES successeurs (132-137) — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false };   // la clause 131 isole SES successeurs (132-139) — sa loi seule varie
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -964,12 +964,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     denyDos = st.deny?.['controle-dos'] ?? 0;
     return { ap: dosParTech['amorti-poursuite'], recDos, recN, denyDos };
   };
-  const vif70 = anglesDe({});
+  const vif70 = anglesDe({ yawSlew: false });               // la clause isole le 139 : à la prise le corps est MI-PIVOT (slew), l'angle instantané n'est plus le juge de sePresente
   ok(`l'amorti-poursuite ne touche PLUS dans le dos (${vif70.ap} = 0 sur 240 s) et le refus est NOMMÉ (deny controle-dos ${vif70.denyDos} ≥ 1 — le ballon court, il n'obéit pas)`,
     vif70.ap === 0 && vif70.denyDos >= 1);
   ok(`le RECEVEUR SE PRÉSENTE (${vif70.recDos}/${vif70.recN} réceptions dos ≤ ${Math.max(1, Math.round(vif70.recN * 0.08))} — le corps s'ouvre au ballon qui arrive)`,
     vif70.recDos <= Math.max(1, Math.round(vif70.recN * 0.08)));
-  const sab70 = anglesDe({ priseCone: false, sePresente: false });
+  const sab70 = anglesDe({ priseCone: false, sePresente: false, yawSlew: false });
   ok(`sabotage « touche omnisciente + dos fossile » attrapé (cône coupé : ${sab70.ap + sab70.recDos} touches/réceptions dos ≥ ${vif70.ap + vif70.recDos + 4} — le monde d'hier, nommé)`,
     sab70.ap + sab70.recDos >= vif70.ap + vif70.recDos + 4);
 }
@@ -1010,7 +1010,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false,
+    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
@@ -2779,8 +2779,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
     return st.events.find((e) => e.type === 'dive');
   };
-  const dv = tente();
-  const ds = tente({ honneur: false });
+  const dv = tente({ yawSlew: false });                      // la clause isole le 139 (le monde re-daté déplaçait le gardien : un dive ordinaire partait sans la loi)
+  const ds = tente({ honneur: false, yawSlew: false });
   ok(`lot 132 — le PLONGEON D'HONNEUR part sur le battu proche (dive ${dv ? `déclenché, crossZ ${dv.crossZ}${dv.honneur ? ', honneur' : ''}` : 'ABSENT'}) ; sabotage « le spectateur d'hier » attrapé (honneur:false : ${ds ? 'un dive — le monde a bougé' : 'aucun geste, le gardien regarde le but'})`,
     !!dv && !ds);
   // (b) LE REGARD, fixture movement pure : le gardien en COURSE latérale, ballon au loin —
@@ -3022,6 +3022,65 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabA = monte({ accompagne: false });
   ok(`lot 137 — LE PORTEUR QUI MONTE A DES SOLUTIONS (offre p50 ${vifA.offre} ≥ 2 sur ${vifA.n} mesures de montée ; soutien ${vifA.soutien.toFixed(1)} m ≤ saboté − 1,5) ; sabotage « l'esseulé d'hier » attrapé (accompagne:false : offre ${sabA.offre}, soutien ${sabA.soutien.toFixed(1)} m)`,
     vifA.n >= 20 && vifA.offre >= 2 && vifA.soutien <= sabA.soutien - 1.5);
+}
+
+// ---------------------------------------------------------------- lot 138 : L'OVERLAP DE
+// DÉPASSEMENT (validé utilisateur — la dette du 137 : le « devant profond »). Le porteur
+// EXCENTRÉ (|z| > 8) qui monte : le coureur de son côté au rôle LARGE (largeurR ≥ 1 — le
+// piston vit pour ça) ne vient pas à hauteur, il le DOUBLE côté touche (+16 m, couloir
+// extérieur, burst 1,6 s, event burst/overlap). Mesuré : ~7,7/match, 21/46 servis < 3 s.
+{
+  const ov = (over = {}) => {
+    let n = 0, sv = 0;
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let cursor = 0; const watch = [];
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'burst' && e.kind === 'overlap') { n++; watch.push({ t: e.t, by: e.by, sv: false }); }
+          if (e.type === 'pass' && e.to >= 0) for (const w of watch) if (!w.sv && e.to === w.by && e.t - w.t < 3) { w.sv = true; sv++; }
+        }
+      }
+    }
+    return { n, sv };
+  };
+  const vifO = ov();
+  const sabO = ov({ accompagne: { overlap: false } });
+  ok(`lot 138 — L'OVERLAP DOUBLE le porteur excentré (${vifO.n} courses de dépassement / 3 × 300 s ≥ 8, dont ${vifO.sv} SERVIES < 3 s ≥ 2 — le une-deux extérieur du vrai foot) ; sabotage « l'accompagnement à hauteur seul » attrapé (overlap:false : ${sabO.n} — le 137 pur, nommé)`,
+    vifO.n >= 8 && vifO.sv >= 2 && sabO.n === 0);
+}
+
+// ---------------------------------------------------------------- lot 139 : LE YAW NE SE
+// TÉLÉPORTE JAMAIS (retour utilisateur : « vérifie la vitesse de retournement sur certaines
+// passes »). Mesuré avant : pic p50 807°/s, p90 6 168°/s, max 10 760 autour des prises — des
+// demi-tours EN UNE FRAME (yaw = atan2(v) suivait l'inversion de p.v instantanément ; réel
+// 200-400). La loi (movement, cfg.yawSlew) : le cap de dérive passe par un SLEW borné
+// (9,4 rad/s ≈ 540°/s × accelF — l'explosivité pivote le corps). Après : p50 539, p90 882
+// (l'athlétique réel), max 1 639 (les pivots de GESTE, ownsBody — légitimes).
+{
+  const pivote = (over = {}) => {
+    const st = makeMatch({ full: true, seed: 13 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    const p = st.players.find((q) => q.team === 0 && !q.keeper);
+    p.yaw = 0; p.yawWant = null; p.v = [4, 0]; p.speed = 4; p.job = 'support'; p.target = null; p.act = null; p.down = 0;
+    p.v[0] = -4; p.v[1] = 0;                                    // l'inversion sèche (la prise à contre-course)
+    let maxRate = 0, prev = p.yaw;
+    for (let i = 0; i < 40; i++) {
+      movePlayers(st, 1 / 60, cfg);
+      p.v[0] = -4; p.v[1] = 0; p.speed = 4;                     // la vitesse tenue inversée (la locomotion la lisserait)
+      let d = p.yaw - prev; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      maxRate = Math.max(maxRate, Math.abs(d) * 60 * 180 / Math.PI);
+      prev = p.yaw;
+    }
+    return +maxRate.toFixed(0);
+  };
+  const vifY = pivote();
+  const sabY = pivote({ yawSlew: false });
+  ok(`lot 139 — LE YAW NE SE TÉLÉPORTE JAMAIS (inversion sèche de course : pic ${vifY}°/s ≤ 700 — le slew borné × accelF fait pivoter le corps en ~0,3 s) ; sabotage « le claquement d'hier » attrapé (yawSlew:false : ${sabY}°/s ≥ 5 000 — le demi-tour en une frame, nommé)`,
+    vifY <= 700 && vifY >= 200 && sabY >= 5000);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -139,7 +139,7 @@ export function accompagneMontee(st, cfg, { tac, axe, role }) {
   else { st._montee = null; return; }
   const M = st._montee;
   if (st.t - M.t0 < (AC.tenu ?? 0.6)) return;                     // la montée se PROUVE avant d'appeler
-  if (st.t - M.memo < 0.4) { for (const id of M.ids ?? []) relance(st, id, c, sg, AC); return; }
+  if (st.t - M.memo < 0.4) { for (const e of M.ids ?? []) relance(st, e.id, c, sg, AC, e.ov); return; }
   M.memo = st.t;
   const n = Math.max(1, Math.round(1.5 + axe(tac(st, c.team).transition, -0.5, 0.5)));
   const cands = st.players.filter((q) => q.team === c.team && !q.keeper && q.down <= 0 && !q.act
@@ -154,17 +154,37 @@ export function accompagneMontee(st, cfg, { tac, axe, role }) {
     pris.push({ id: q.id, cote });
     if (pris.length >= n) break;
   }
-  M.ids = pris.map((p2) => p2.id);
-  for (const id of M.ids) relance(st, id, c, sg, AC);
+  // L'OVERLAP DE DÉPASSEMENT (lot 138, AC.overlap — la dette du 137 : le « devant profond »).
+  // Porteur EXCENTRÉ (|z| > bord) qui monte : le candidat de SON côté ne vient pas à hauteur,
+  // il le DOUBLE côté TOUCHE (+devant m, le couloir extérieur) — le latéral dans le dos de
+  // l'ailier porteur. L'élection pèse le rôle largeurR (le piston vit pour ça) ; burst long,
+  // événement 'burst' kind 'overlap' (le ticker et la clause le lisent). overlap:false : hier.
+  if (AC.overlap !== false && Math.abs(c.p[2]) > (AC.overlap?.bord ?? 8) && pris.length) {
+    const zS = Math.sign(c.p[2] || 1);
+    const ext = pris.find((p2) => p2.cote === zS);                 // le coureur du côté touche
+    if (ext) {
+      const q = st.players[ext.id];
+      const wR = axe(role(q).largeurR, 0, 2);                      // le piston/latéral (largeurR 1,3 → ×1,6) double, l'intérieur accompagne
+      if (wR >= 1) {
+        ext.overlap = true;
+        if ((M.ovEv ?? 0) < st.t - 3) { M.ovEv = st.t; st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'overlap', by: q.id }); }
+      }
+    }
+  }
+  M.ids = pris.map((p2) => ({ id: p2.id, ov: !!p2.overlap }));
+  for (const e of M.ids) relance(st, e.id, c, sg, AC, e.ov);
 }
-function relance(st, id, c, sg, AC) {
+function relance(st, id, c, sg, AC, ov = false) {
   const q = st.players[id];
   if (!q || q.down > 0 || q.act) return;
   const cote = Math.sign(q.p[2] - c.p[2] || 1);
   q.job = 'receive';   // l'accompagnement est une COURSE : le plafond de chasse (support capait à 4,4 — le porteur file à 5,5+)
-  q.target = [c.p[0] + sg * (AC.devant ?? 7), 0, c.p[2] + cote * (AC.couloir ?? 10)];
+  q.target = ov
+    ? [c.p[0] + sg * (AC.overlap?.devant ?? 16), 0,
+      Math.sign(c.p[2] || 1) * Math.min(st.pitch.hz - 2, Math.abs(c.p[2]) + (AC.overlap?.large ?? 6))]
+    : [c.p[0] + sg * (AC.devant ?? 7), 0, c.p[2] + cote * (AC.couloir ?? 10)];
   q._pace ??= { until: -1, next: 0 };
-  if (q._pace.until < st.t + 0.3) { q._pace.until = st.t + 1.2; q._pace.kind = 'accompagne'; }
+  if (q._pace.until < st.t + 0.3) { q._pace.until = st.t + (ov ? 1.6 : 1.2); q._pace.kind = ov ? 'overlap' : 'accompagne'; }
 }
 
 /** Le contrat des moments — les symétries qui ne peuvent pas mentir. */

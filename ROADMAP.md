@@ -262,6 +262,12 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'OVERLAP + LE RETOURNEMENT (138-139, notes 180-181 — validés/demandés utilisateur) :
+l'overlap double le porteur excentré (accompagne.overlap — largeurR élit, ~7,7/match,
+21/46 servis < 3 s) ; le yaw ne se téléporte jamais (cfg.yawSlew — p90 des pivots de
+prise 6 168 → 882°/s, slew 540°/s × accelF ; dette : le slew yawWant à ~1 000°/s basse
+vitesse, le second écrivain).
+
 L'ACCOMPAGNEMENT DE LA MONTÉE (137, note 179 — retour utilisateur « le porteur esseulé ») :
 la montée soutenue déclenche 1-2 courses à hauteur (phases.accompagneMontee — job receive
 pour le plafond de chasse, un par côté, jamais un corps déjà devant : les pointes gardent

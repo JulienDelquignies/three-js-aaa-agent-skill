@@ -342,7 +342,20 @@ export function movePlayers(st, dt, cfg) {
     // gardien suit son yawWant (posé vers le ballon chaque frame), le pas devient chassé —
     // le patron du backpedal libéro (120) généralisé. false : le regard de course d'hier.
     const regardGk = st.full && p.keeper && cfg.regardGardien !== false;
-    if (p.speed > 0.25 && !sePres && !regardGk) p.yaw = Math.atan2(p.v[1], p.v[0]);
+    if (p.speed > 0.25 && !sePres && !regardGk) {
+      // LE YAW NE SE TÉLÉPORTE JAMAIS (lot 139, cfg.yawSlew && st.full — mesuré : pic p50
+      // 807°/s, p90 6 168°/s autour des prises, 31 % des contrôles retournent > 90° en une
+      // frame : quand p.v s'inverse à la prise, le cap la suivait INSTANTANÉMENT ; réel
+      // 200-400°/s). Le cap de dérive passe par un SLEW borné — rate × accelF (l'explosivité
+      // du joueur pivote son corps). false (et rondo/réduit) : le claquement d'hier au bit.
+      const wantY = Math.atan2(p.v[1], p.v[0]);
+      if (st.full && cfg.yawSlew !== false) {
+        let dY = wantY - p.yaw;
+        while (dY > Math.PI) dY -= 2 * Math.PI; while (dY < -Math.PI) dY += 2 * Math.PI;
+        const capY = (cfg.yawSlew?.rate ?? 9.4) * (p.skill?.accelF ?? 1) * dt;
+        p.yaw += Math.abs(dY) <= capY ? dY : Math.sign(dY) * capY;
+      } else p.yaw = wantY;
+    }
     // A MAN CARRYING THE BALL FACES HIS BALL — not his drift. For everyone else, facing = direction of
     // travel is right; for the carrier it is wrong, and wrong in the one place it shows. He stands
     // `carryStandoff` BEHIND the ball, so his velocity points at a spot behind it while the ball is in

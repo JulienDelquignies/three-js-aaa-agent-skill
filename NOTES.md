@@ -5508,6 +5508,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      porteur), l'accompagnement du rôle piston, les pénos absents (0 faute en surface —
      un chantier Loi 12/14 de réalisme, pas d'équilibre).
 
+180. **Lot 138 : L'OVERLAP DE DÉPASSEMENT (validé utilisateur — la dette du 137).** La loi
+     (sous-clé accompagne.overlap, phases.accompagneMontee) : le porteur EXCENTRÉ (|z| > 8)
+     qui monte — le coureur de SON côté au rôle LARGE (largeurR ≥ 1 : le piston/latéral vit
+     pour ça, axe du rôle en facteur d'élection) ne vient pas à hauteur, il le DOUBLE côté
+     touche : cible +16 m devant, couloir extérieur +6 m (clampé au terrain), burst 1,6 s
+     kind 'overlap', event burst/overlap (le ticker et la clause le lisent, cd 3 s).
+     MESURÉ : ~7,7 overlaps/match, 21/46 SERVIS < 3 s (le une-deux extérieur du vrai foot
+     vit) ; à +1,5 s le dépassement complet est rare (7/46 devant — le coureur est en route,
+     et le servi tôt est le geste sain). CLAUSE 138 (n ≥ 8 / 3 × 300 s, servis ≥ 2,
+     sabotage overlap:false → 0). overlap:false = le 137 pur.
+
+181. **Lot 139 : LE YAW NE SE TÉLÉPORTE JAMAIS (retour utilisateur : « vérifie la vitesse
+     de retournement sur certaines passes, pas sûr que ce soit réaliste »).** L'INTUITION
+     MASSIVEMENT CONFIRMÉE : autour des prises de possession, pic de vitesse angulaire p50
+     807°/s, p90 6 168°/s, max 10 760°/s — des demi-tours EN UNE FRAME (réel : 200-400,
+     un pivot athlétique ~600-900), 31 % des prises retournaient le corps de > 90°
+     instantanément. LE COUPABLE : la ligne historique du facing (movement : yaw =
+     atan2(v) dès 0,25 m/s) — quand p.v s'INVERSE à la prise (le contrôle à contre-course),
+     le cap la suivait sans transition. LA LOI (cfg.yawSlew && st.full) : le cap de dérive
+     passe par un SLEW borné — rate 9,4 rad/s (~540°/s) × accelF (l'explosivité du joueur
+     pivote son corps, l'attribut en facteur). APRÈS : p50 539°/s, p90 882 (la fourchette
+     athlétique réelle), max 1 639 — les résiduels sont les pivots de GESTE (ownsBody :
+     talonnade, râteau — un geste A le droit de pivoter vite). Rondo/réduit AU BIT
+     (st.full). CLAUSE 139 : la fixture d'inversion sèche (539°/s vif ≤ 700 vs 10 800
+     saboté ≥ 5 000). Dette : le turnAccel/speed du slew yawWant plafonne à ~1 000°/s à
+     basse vitesse (le second écrivain, plus doux — à borner au même rate si l'œil le voit).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
