@@ -178,6 +178,11 @@ export const MATCH = {
                           // son yaw suit le ballon (pas chassé, patron du backpedal libéro),
                           // le côté du clip de plongeon se calcule sur un regard JUSTE
                           // (mesuré : 3/20 plongeons sur regard > 60°). false : hier.
+  accompagne: {},         // lot 137 (phases.js) : L'ACCOMPAGNEMENT DE LA MONTÉE — la montée
+                          // soutenue (> 3 m/s, 0,6 s) déclenche 1-2 courses à hauteur (+4 m
+                          // devant, ±10 m de couloir, un par côté), rôle appel en facteur,
+                          // volume à l'axe transition, burst 'accompagne'. Mesuré avant :
+                          // 0 corps devant le porteur en montée, soutien à 14 m. false : hier.
   assignTenue: {},        // lot 135 : L'ASSIGNATION A UNE MÉMOIRE — le GRAND saut de cible
                           // (> 3-3,5 m = une réaffectation d'homme/slot) attend sa tenue
                           // (mark 1,6 s, slot 1,2 s ; burst exempté) ; le suivi fin garde sa

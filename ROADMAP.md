@@ -26,8 +26,14 @@
 - **Volumétrie** : tout module ≤ 1249 lignes wc (le banc compte split('\n') = wc+1, plafond
   1250). Compenser chaque ajout par compression de commentaires ou EXTRACTION vers le fichier
   de sa famille (patron : deborde → roles.js).
-- **A/B de ship** : 20 graines × 300 s (scratchpad ab-62a.mjs à recréer : makeMatch full,
-  matchCfg({shotRange: 20}), compter tirs/buts) — bande de buts totaux **17-33** = gate.
+- **A/B de ship** : 20 graines × 300 s (scratchpad ab-97.mjs : makeMatch full,
+  matchCfg({shotRange: 20}), compter tirs/buts) — bande de buts totaux **8-22** = gate.
+  RE-FONDÉE au lot 137 (décision de monde DATÉE, note 179) : l'ancienne 17-33 était
+  calibrée sur le monde-chaos (~×6 le réel — reprises indéfendues, dégagements errants) ;
+  7 lots de réalisme user-driven (131-137) l'ont assaini et le monde converge vers 11-17
+  (~×4 le réel, format 300 s oblige). Ancrage : 40 graines du monde 137 = 28 buts
+  (11 + 17), centre 14, largeur proportionnelle. NE PLUS affaiblir des lois de réalisme
+  pour un chiffre d'arcade — la bande suit le monde, datée et consignée.
 - Batterie : verify-match11 (68), verify-match (84), verify-rondo (40), verify-matchday (88),
   verify-attributes (14 — à relire à chaque virage de flux), verify-chrono (14), verify-loi14
   (8), verify-loi3 (9), verify-ball (33), verify-gamestate (15), verify-sync (9).
@@ -255,6 +261,14 @@ intégral crevait la bande A/B : le feuilleton du 123 rejoué — la RÉMANENCE 
 Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le second
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
+
+L'ACCOMPAGNEMENT DE LA MONTÉE (137, note 179 — retour utilisateur « le porteur esseulé ») :
+la montée soutenue déclenche 1-2 courses à hauteur (phases.accompagneMontee — job receive
+pour le plafond de chasse, un par côté, jamais un corps déjà devant : les pointes gardent
+LEUR course ; rôle appel, axe transition). Offre en montée 2 → 3 (= le posé), soutien
+14 → 10,3, devant 0 → 1. + LA BANDE A/B RE-FONDÉE 8-22 (voir le contrat de méthode).
+Dettes : l'overlap de dépassement (le devant profond), l'accompagnement du piston, les
+pénos absents (0 faute en surface — chantier Loi 12/14 de réalisme).
 
 L'ÉCHELLE DE LA SÉCURITÉ (136, note 178 — retour utilisateur Guardiola/corners) : LA
 PASSE AU GARDIEN = PENTE DE STYLE PURE (0 au défaut 0,5 — l'identité, seed 7 au bit du

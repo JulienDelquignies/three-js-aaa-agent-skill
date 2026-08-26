@@ -26,6 +26,7 @@ import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
 import { coachStep, checkCoach } from '../assets/starter/src/engine/coach.js';
 import { movePlayers } from '../assets/starter/src/engine/movement.js';
+import { laneClearance } from '../assets/starter/src/engine/ball-predict.js';
 import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
 import { resoudreTactique, tac, axe as axeT } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
@@ -53,12 +54,13 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   honneur: false, regardGardien: false, marquageCentre: false,       // …le spectateur battu, le regard de course et les statues de zone d'hier (pré-132/133)
   interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
   engagement: false, assignTenue: false,                             // …le frémissement des cibles d'hier (pré-135)
-  sortieGardien: false, clearTouche: false };                        // …le gardien invisible et le corner facile d'hier (pré-136)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  sortieGardien: false, clearTouche: false,                          // …le gardien invisible et le corner facile d'hier (pré-136)
+  accompagne: false };                                               // …le porteur esseulé d'hier (pré-137)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false };   // la clause 131 isole SES successeurs (132-136) — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false };   // la clause 131 isole SES successeurs (132-137) — sa loi seule varie
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -1008,7 +1010,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false,
+    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
@@ -2971,11 +2973,55 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { gk, cornerClear };
   };
-  const poss = sortie(['possession', 'possession']);
-  const defo = sortie(null);
-  const sab136 = sortie(['possession', 'possession'], { sortieGardien: false });
+  const poss = sortie(['possession', 'possession'], { accompagne: false });   // isolation 137 : sa loi seule varie
+  const defo = sortie(null, { accompagne: false });
+  const sab136 = sortie(['possession', 'possession'], { accompagne: false, sortieGardien: false });
   ok(`lot 136 — LA SORTIE AU GARDIEN EST UN STYLE (possession : ${poss.gk} passes au gardien / 3 × 300 s ≥ 2 ; défaut style 0,5 : ${defo.gk} ≤ 1 — la pente nulle, l'identité) ; sabotage « le gardien invisible » attrapé (possession + sortieGardien:false : ${sab136.gk} ≤ vivant − 4 — l'organique rare reste) ; le corner de panique rare (${defo.cornerClear} sur dégagement ≤ 2)`,
     poss.gk >= 2 && defo.gk <= 1 && sab136.gk <= poss.gk - 4 && defo.cornerClear <= 2);
+}
+
+// ---------------------------------------------------------------- lot 137 : L'ACCOMPAGNEMENT
+// DE LA MONTÉE (retour utilisateur : « devant ça manque de solution ; si un joueur monte avec
+// le ballon il se retrouve vite esseulé »). Mesuré avant : 0 corps devant le porteur en
+// montée, soutien à 14 m (7,7 posé), offre 2 (posé 3). La loi (phases.accompagneMontee) :
+// la montée soutenue (> 3 m/s, 0,6 s) déclenche 1-2 COURSES à hauteur (job receive — le
+// plafond de chasse, support capait à 4,4 —, un par côté, rôle appel en facteur, volume à
+// l'axe transition, burst 'accompagne'). Après : OFFRE EN MONTÉE 3 = le jeu posé, soutien 10,7.
+{
+  const monte = (over = {}) => {
+    const offres = [], soutiens = [];
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let ep = null;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.restart) { ep = null; continue; }
+        const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        if (!c || c.keeper) { ep = null; continue; }
+        const g = st.pitch.attackGoal(c.team), sg = Math.sign(g.x || 1);
+        if ((c.v[0] ?? 0) * sg > 3) { ep ??= { id: c.id, t0: st.t }; if (ep.id !== c.id) ep = { id: c.id, t0: st.t }; }
+        else { ep = null; continue; }
+        if (st.t - ep.t0 < 1.2 || (i % 12) !== 0) continue;
+        const A = st.players.filter((q) => q.team === c.team && !q.keeper && q.down <= 0 && q.id !== c.id);
+        soutiens.push(Math.min(...A.map((m) => Math.hypot(m.p[0] - c.p[0], m.p[2] - c.p[2]))));
+        const D = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0).map((q) => q.p);
+        let off = 0;
+        for (const m of A) {
+          const d = Math.hypot(m.p[0] - c.p[0], m.p[2] - c.p[2]);
+          if (d < 5 || d > 25) continue;
+          if ((laneClearance([c.p[0], 0, c.p[2]], [m.p[0], 0, m.p[2]], D).margin ?? 0) >= 0.8) off++;
+        }
+        offres.push(off);
+      }
+    }
+    offres.sort((a, b) => a - b); soutiens.sort((a, b) => a - b);
+    return { n: offres.length, offre: offres[Math.floor(offres.length / 2)] ?? 0, soutien: soutiens[Math.floor(soutiens.length / 2)] ?? 99 };
+  };
+  const vifA = monte();
+  const sabA = monte({ accompagne: false });
+  ok(`lot 137 — LE PORTEUR QUI MONTE A DES SOLUTIONS (offre p50 ${vifA.offre} ≥ 2 sur ${vifA.n} mesures de montée ; soutien ${vifA.soutien.toFixed(1)} m ≤ saboté − 1,5) ; sabotage « l'esseulé d'hier » attrapé (accompagne:false : offre ${sabA.offre}, soutien ${sabA.soutien.toFixed(1)} m)`,
+    vifA.n >= 20 && vifA.offre >= 2 && vifA.soutien <= sabA.soutien - 1.5);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

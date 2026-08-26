@@ -116,6 +116,57 @@ export function intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, de
   }
 }
 
+/**
+ * L'ACCOMPAGNEMENT DE LA MONTÉE (lot 137, cfg.accompagne && st.full — retour utilisateur :
+ * « devant ça manque de solution ; si un joueur monte avec le ballon il se retrouve vite
+ * esseulé »). MESURÉ : pendant une montée (> 3 m/s soutenue), 0 coéquipier DEVANT le
+ * porteur (p50, < 20 m), le soutien le plus proche à 14 m (7,7 posé) — le porteur monte à
+ * 5-6 m/s, les soutiens trottent vers des slots à 3,4-3,9 : l'écart se creuse. LA LOI du
+ * vrai foot : la montée DÉCLENCHE des courses — les DEUX mieux placés (un par couloir,
+ * le rôle appel en facteur — JAMAIS un corps déjà devant : les pointes gardent LEUR course,
+ * l'apparié a chargé le rappel des avancés) sprintent À HAUTEUR (+7 m, ±couloir), en burst
+ * (_pace 'accompagne' — l'exemption d'allure existante) ; l'axe transition module le
+ * volume (contre → 2, conservation → 1). Mémo 0,4 s. false : l'esseulé d'hier.
+ */
+export function accompagneMontee(st, cfg, { tac, axe, role }) {
+  if (!(st.full && cfg.accompagne !== false && !st.restart)) { st._montee = null; return; }
+  const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+  if (!c || c.keeper) { st._montee = null; return; }
+  const g = st.pitch.attackGoal(c.team), sg = Math.sign(g.x || 1);
+  const vAv = (c.v[0] ?? 0) * sg;
+  const AC = cfg.accompagne === true || cfg.accompagne == null ? {} : cfg.accompagne;
+  if (vAv > (AC.seuil ?? 3)) { if (!st._montee || st._montee.id !== c.id) st._montee = { id: c.id, t0: st.t, memo: 0 }; }
+  else { st._montee = null; return; }
+  const M = st._montee;
+  if (st.t - M.t0 < (AC.tenu ?? 0.6)) return;                     // la montée se PROUVE avant d'appeler
+  if (st.t - M.memo < 0.4) { for (const id of M.ids ?? []) relance(st, id, c, sg, AC); return; }
+  M.memo = st.t;
+  const n = Math.max(1, Math.round(1.5 + axe(tac(st, c.team).transition, -0.5, 0.5)));
+  const cands = st.players.filter((q) => q.team === c.team && !q.keeper && q.down <= 0 && !q.act
+    && q.id !== c.id && (q.p[0] - c.p[0]) * sg > -12 && (q.p[0] - c.p[0]) * sg < (AC.devant ?? 7) + 2
+    && Math.abs(q.p[2] - c.p[2]) < 26)
+    .map((q) => ({ q, s: -Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) + axe(role(q).appel, -4, 4) }))
+    .sort((a, b) => b.s - a.s);
+  const pris = [];
+  for (const { q } of cands) {                                     // un par CÔTÉ — le porteur a deux couloirs
+    const cote = Math.sign(q.p[2] - c.p[2] || 1);
+    if (pris.some((p2) => p2.cote === cote)) continue;
+    pris.push({ id: q.id, cote });
+    if (pris.length >= n) break;
+  }
+  M.ids = pris.map((p2) => p2.id);
+  for (const id of M.ids) relance(st, id, c, sg, AC);
+}
+function relance(st, id, c, sg, AC) {
+  const q = st.players[id];
+  if (!q || q.down > 0 || q.act) return;
+  const cote = Math.sign(q.p[2] - c.p[2] || 1);
+  q.job = 'receive';   // l'accompagnement est une COURSE : le plafond de chasse (support capait à 4,4 — le porteur file à 5,5+)
+  q.target = [c.p[0] + sg * (AC.devant ?? 7), 0, c.p[2] + cote * (AC.couloir ?? 10)];
+  q._pace ??= { until: -1, next: 0 };
+  if (q._pace.until < st.t + 0.3) { q._pace.until = st.t + 1.2; q._pace.kind = 'accompagne'; }
+}
+
 /** Le contrat des moments — les symétries qui ne peuvent pas mentir. */
 export function checkMoments() {
   const issues = [];

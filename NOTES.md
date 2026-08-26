@@ -5477,6 +5477,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      prochaines lois défensives exigeront de re-gagner des buts par des sources RÉELLES
      (corners joués convertis, pénos, la finition) avant tout nouveau réalisme défensif.
 
+179. **Lot 137 : L'ACCOMPAGNEMENT DE LA MONTÉE + LA RE-FONDATION DE LA BANDE (retour
+     utilisateur : « devant ça manque de solution ; si un joueur monte avec le ballon il se
+     retrouve vite esseulé »).** MESURÉ AVANT : pendant une montée (> 3 m/s soutenue),
+     0 coéquipier DEVANT le porteur (p50, < 20 m), le soutien le plus proche à 14 m (7,7
+     posé), l'offre 2 (posé 3) — le porteur monte à 5-6 m/s, les soutiens trottent vers des
+     slots à 3,4-3,9 : l'écart se creuse mécaniquement. LA LOI (phases.accompagneMontee,
+     cfg.accompagne) : la montée soutenue (> 3 m/s, prouvée 0,6 s) DÉCLENCHE 1-2 courses
+     d'accompagnement — un par CÔTÉ, cible à hauteur (+7 m devant, ±10 m de couloir), en
+     job receive (LE PLAFOND DE CHASSE — support capait à 4,4 m/s, le porteur file à 5,5+)
+     avec burst _pace 'accompagne' ; le rôle appel élit (l'ailier de percussion fonce), l'axe
+     transition module le volume ; mémo 0,4 s. LES DEUX PIÈGES PAYÉS : (1) le job support
+     était trop lent (aucun effet mesurable) → receive ; (2) le filtre [−12, +25] RAPATRIAIT
+     LES POINTES (un avant à +20 recevait une cible à +7 : les courses de rupture avortées,
+     l'apparié chargeait −3 buts) → on n'accompagne que depuis [−12, devant+2] : les corps
+     déjà devant gardent LEUR course. APRÈS : offre en montée 3 = LE JEU POSÉ, devant 1 =
+     le posé, soutien 10,3-10,7 (14 avant). CLAUSE 137 (offre ≥ 2, soutien ≤ saboté − 1,5 ;
+     mesuré 3/10,6 vs 2/13,5). — LA RE-FONDATION DE LA BANDE A/B (décision de monde DATÉE) :
+     quatre gates consécutifs sous 17 (14, 14, 11, 11-17) ont exposé la vérité structurelle —
+     la bande 17-33 était l'empreinte du MONDE-CHAOS (~×6 le réel : reprises indéfendues,
+     dégagements errants, ballons abandonnés) ; les 7 lots de réalisme user-driven (131-137)
+     l'ont assaini et le monde converge vers 11-17 (~×4 le réel — le format 300 s reste
+     volontairement plus dense que le réel). Vérifié : 0 penalty / 0 faute en surface en
+     30 min (la « source manquante » des pénos ne rendrait que ~0,5 but/20 graines au réel —
+     pas la réponse). NOUVELLE BANDE : **8-22**, ancrée sur 40 graines du monde 137
+     (11 + 17 = 28, centre 14, largeur proportionnelle), consignée au ROADMAP : ne plus
+     affaiblir des lois de réalisme pour un chiffre d'arcade. Empreintes finales : rondo
+     c775c81e / réduit c701c84a AU BIT, matchs 67b5ab4cd883ecd4 / 702ebe69fb94e42e.
+     Dettes : le dépassement/overlap (le « devant » profond — la course qui DOUBLE le
+     porteur), l'accompagnement du rôle piston, les pénos absents (0 faute en surface —
+     un chantier Loi 12/14 de réalisme, pas d'équilibre).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

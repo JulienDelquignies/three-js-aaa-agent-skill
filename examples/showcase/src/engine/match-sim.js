@@ -18,7 +18,7 @@ import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCo
 import { accrocheStep } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
-import { marquageCentre, intercepteurVol } from './phases.js';
+import { marquageCentre, intercepteurVol, accompagneMontee } from './phases.js';
 import { MOVES } from './animkit.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
@@ -987,8 +987,7 @@ function assignMatchJobs(st, cfg) {
     });
   }
 
-  // L'INTERCEPTEUR (lot 134, phases.intercepteurVol) : le vol de passe adverse basse SE VOLE
-  // par le défenseur qui gagne le chemin — le rondo l'a depuis toujours, le match jamais.
+  // L'INTERCEPTEUR (134, phases) : le vol de passe adverse basse SE VOLE par qui gagne le chemin.
   intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, defenders, atk });
   // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER : pendant cfg.lossReact s, l'ex-porteur
   // CHASSE son ballon (92/254 dos mesuré) ; elle s'éteint au regain ou à la mort de la fenêtre.
@@ -1047,6 +1046,7 @@ function assignMatchJobs(st, cfg) {
     }
   }
   marquageCentre(st, cfg, { busy, tac, axe, d2 });   // 133 : le vol du centre adverse met des CORPS sur les corps (phases.js)
+  accompagneMontee(st, cfg, { tac, axe, role });     // 137 : la montée du porteur DÉCLENCHE ses courses d'accompagnement (phases.js)
 }
 
 // ---------------------------------------------------------------- l'arrêt du gardien
