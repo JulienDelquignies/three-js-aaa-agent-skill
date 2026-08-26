@@ -18,7 +18,7 @@
 // dû. Dette nommée : la photo Loi 11 (comme la remise de tête).
 // false : le monde à deux touches d'hier (sabotage nommé) ; calme:0 : le réflexe seul.
 
-import { laneClearance } from './ball-predict.js';
+import { laneClearance, solvePass } from './ball-predict.js';
 import { gauss } from './attributes.js';
 import { tac } from './tactics.js';
 
@@ -44,12 +44,29 @@ export function uneTouche(st, p, cfg) {
     && st.ball.p[1] < 0.5
     && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * Math.min(1.2, p.skill?.controlF ?? 1)) {
     const blockers = st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0).map((q) => q.p);
+    // LA UNE-TOUCHE SE GAGNE, ELLE NE S'ESPÈRE PAS (lot 131, UT.dose — mesuré avant : 116 s
+    // d'errance / 1200 s après les une-touche, p50 2,7 s ; le cap de layoff (4-6 m/s à
+    // contre-courant) sur une passe de 10-14 m fait MOURIR le ballon en route, rollResist).
+    // Le dosage se RÉSOUT sur la physique exacte (solvePass, l'outil du lot 128 : arrivée
+    // prenable UT.dose.arr) et le cap de déviation devient un FILTRE de faisabilité : la
+    // remise que la physique ne peut pas porter jusqu'au pied n'est plus tentée — le
+    // contrôle normal reprend ses droits. dose:false : les ballons morts d'hier, au bit.
+    const dose = st.full && UT.dose !== false ? (UT.dose === true || UT.dose == null ? {} : UT.dose) : null;
+    const bvl0 = Math.hypot(st.ball.v[0], st.ball.v[2]) || 1;
     const mate = st.players
       .filter((m) => m.team === p.team && m.id !== p.id && !m.keeper && m.down <= 0)
       .map((m) => ({ m, d: d2(m.p, p.p) }))
       .filter((x) => x.d > 3 && x.d < (UT.portee ?? 14))
       .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.m.p[0], 0, x.m.p[2]], blockers).margin ?? 0 }))
       .filter((x) => x.marge >= (UT.couloir ?? 0.5))
+      .map((x) => {
+        if (!dose) return x;
+        const cosD = ((x.m.p[0] - p.p[0]) * st.ball.v[0] + (x.m.p[2] - p.p[2]) * st.ball.v[2]) / (x.d * bvl0);
+        const cap = 4 + 8 * (0.5 + 0.5 * cosD);
+        const sol = solvePass([p.p[0], 0, p.p[2]], [x.m.p[0], 0, x.m.p[2]], { style: 'ground', arrival: dose.arr ?? 5.0 });
+        return { ...x, sol, faisable: !!sol && sol.speed <= Math.min(12, Math.max(cap, 6)) };
+      })
+      .filter((x) => !dose || x.faisable)
       .sort((a, b) => (b.marge + ((b.m._troisT ?? -1) > st.t ? (UT.bonus3 ?? 1.5) : 0))
         - (a.marge + ((a.m._troisT ?? -1) > st.t ? (UT.bonus3 ?? 1.5) : 0)))[0];   // le coureur du relais d'abord (lot 111)
     if (mate) {
@@ -65,7 +82,10 @@ export function uneTouche(st, p, cfg) {
       // → 8, à contre-courant → 4 (le LAYOFF du vrai football : la remise en retrait est douce).
       const bvl = Math.hypot(st.ball.v[0], st.ball.v[2]) || 1;
       const cosDev = ((mate.m.p[0] - p.p[0]) * st.ball.v[0] + (mate.m.p[2] - p.p[2]) * st.ball.v[2]) / (mate.d * bvl);
-      const spdU = Math.min(Math.min(12, Math.max(6, mate.d * 0.85)), 4 + 8 * (0.5 + 0.5 * cosDev));
+      // …dosée : la vitesse RÉSOLUE qui arrive prenable (le filtre de faisabilité a déjà
+      // garanti qu'elle tient sous le cap de déviation — le layoff reste doux ET arrive)
+      const spdU = mate.sol ? mate.sol.speed
+        : Math.min(Math.min(12, Math.max(6, mate.d * 0.85)), 4 + 8 * (0.5 + 0.5 * cosDev));
       st.ball.strike({ speed: spdU, dirYaw: yawU, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
       // LA PERCEPTION A UNE HORLOGE (le contrat de strikeNow, complété lot 50) : une première
       // intention n'a PAS d'armé — seen 0, TOUT LE MONDE paie sa réaction pleine. Mesuré avant :
@@ -75,7 +95,7 @@ export function uneTouche(st, p, cfg) {
       // 20 matchs) : la une-touche CHOISIE s'oriente avant — elle se lit comme une passe armée
       // (seenCalme ≥ la réaction max = lecture pleine) ; SEUL le réflexe pressé surprend.
       st._surprise = { t: st.t, seen: pressOk ? 0 : (UT.seenCalme ?? 0.3), n: (st._surprise?.n ?? 0) + 1 };
-      st.pass = { from: p.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'une-touche', t: st.t, flight: mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
+      st.pass = { from: p.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'une-touche', t: st.t, flight: mate.sol ? mate.sol.flightTime : mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
       // …la une-touche NOURRIT LA FIXATION aussi (lot 98 — le même registre que beginPass) :
       // c'est même LA passe qui fixe le mieux (le une-deux côté ballon du vrai football)
       if (cfg.renversement && st.full) {

@@ -6,6 +6,7 @@ import { laneClearance } from './ball-predict.js';
 import { simInternals } from './rondo-sim.js';
 import { busy, winding, startGesture } from './gesture.js';
 import { MOVES } from './animkit.js';
+import { tac, axe } from './tactics.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -286,6 +287,27 @@ export function tryClear(st, c, cfg) {
   const panique = st.full && cfg.corner && depth < 12 && (glued || near >= 2)
     && (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.45;
   const flank = c.p[2] >= 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55;  // le flanc OPPOSÉ à la mêlée
+  // LE DÉGAGEMENT CHERCHE UNE TÊTE (lot 131, cfg.clearServi && st.full — mesuré avant : 33
+  // dégagements = 198 s d'errance / 1200 s de jeu, p50 6,4 s, reprise adverse 73 % — le ballon
+  // jeté vers le flanc VIDE par construction). Le vrai défenseur sous l'étau dégage VERS un
+  // coéquipier avancé (la ligne de touche ou la pointe) : le vol atterrit sur un CORPS, le
+  // duel aérien / premier toucher s'engage, le jeu reprend. La portée suit l'axe transition
+  // (contre → plus long vers la pointe) ; le bruit de dosage est celui de beginPass (la note
+  // du dégageur fait foi). Aucune tête devant : le flanc d'hier reste le dernier recours.
+  if (!panique && st.full && cfg.clearServi !== false) {
+    const CS = cfg.clearServi === true || cfg.clearServi == null ? {} : cfg.clearServi;
+    const T = tac(st, c.team);
+    const maxD = CS.max ?? axe(T.transition ?? 0.5, 30, 44);
+    const cands = st.players
+      .filter((m) => m.team === c.team && m.id !== c.id && !m.keeper && m.down <= 0
+        && (m.p[0] - c.p[0]) * sgn > (CS.min ?? 8) && d2(m.p, c.p) < maxD)
+      .map((m) => ({ m, s: (m.p[0] - c.p[0]) * sgn + Math.abs(m.p[2]) * 0.3 }))  // avancé, et la touche protège
+      .sort((a, b) => b.s - a.s);
+    for (const { m } of cands.slice(0, CS.essais ?? 2)) {
+      const r2 = simInternals.beginPass(st, { to: { id: m.id }, lead: [m.p[0], 0, m.p[2]], style: 'lofted', clear: true, lane: { margin: 8 } }, cfg, { clear: true, forceUrgent: true });
+      if (r2) { (st._clearCd ??= {})[c.team] = st.t + 6; return r2; }
+    }
+  }
   const lead = panique
     ? [own.x + own.sign * 8, 0, Math.sign(c.p[2] || 1) * pitch.hz * 0.75]  // DERRIÈRE la ligne, écarté du but : la sortie assumée (le vol croise la ligne de fond avant la touche)
     : [c.p[0] + sgn * pitch.hx * 0.85, 0, flank];

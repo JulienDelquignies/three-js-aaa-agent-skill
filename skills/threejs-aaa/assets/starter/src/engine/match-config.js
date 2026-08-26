@@ -156,7 +156,17 @@ export const MATCH = {
                           // après le coup d'envoi où le preneur DONNE (barre abaissée, tenue
                           // dispensée — la barre calme refusait la passe courte, il partait en
                           // conduite). false : l'engagement porté d'hier (sabotage nommé).
-  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, base: 0.25, relais: 2.2, seenCalme: 0.3, bonus3: 1.5 },
+  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, base: 0.25, relais: 2.2, seenCalme: 0.3, bonus3: 1.5,
+    dose: { arr: 5.0 } }, // lot 131 : la remise RÉSOLUE (solvePass) et FAISABLE sous le cap
+                          // de layoff — le ballon d'espoir qui meurt en route (116 s d'errance
+                          // / 1200 s mesurées) n'est plus tenté. dose:false : hier au bit.
+  clearServi: { min: 8, essais: 2 },
+                          // lot 131 : LE DÉGAGEMENT CHERCHE UNE TÊTE — sous l'étau on dégage
+                          // VERS un coéquipier avancé (max = axe(transition, 30, 44) : le
+                          // contre allonge vers la pointe), le duel aérien s'engage au point
+                          // de chute ; aucune tête devant : le flanc d'hier en dernier recours.
+                          // Mesuré avant : 198 s d'errance / 1200 s, p50 6,4 s par dégagement,
+                          // reprise adverse 73 %. false : les corbeaux d'hier, au bit.
                           // + base (lot 111) : le SOCLE du une-touche calme à tout style (0,28 calibré : 0,35 asséchait les fautes de 40 % ; 7 %
                           // mesuré, tout au pressé — la pente s'annulait au style 0,5 ; le réel
                           // vit à 15-25 %) ; relais ×2,2 quand un 3e homme court ; bonus3 au tri.

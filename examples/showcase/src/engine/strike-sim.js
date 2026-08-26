@@ -451,7 +451,7 @@ export function strikeNow(st, c, cfg) {
   const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
   const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
-    t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot, ...(choice.through ? { through: true } : {}),
+    t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot, ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure

@@ -231,3 +231,17 @@ d'axe, les quatre empreintes au bit)),
 le troisième homme v2 (v1 livrée note 153 — reste : courses dédiées vers l'intervalle),
 triangulation v4 (assignation, hystérésis), expulsion physique complète, le pré-saut de
 tête anticipé (v1 réactive livrée note 154).
+
+LA RESPIRATION (131, note 173 — retour utilisateur) : le ballon vivait 56 % du temps HORS
+des pieds — dégagements jetés au flanc vide (198 s/1200) et une-touche sous-dosées qui
+meurent (116 s). LIVRÉ : clearServi (le dégagement cherche une tête, portée à l'axe
+transition) + uneTouche.dose (solvePass + cap de layoff en filtre de faisabilité). Carry
+43 → 54 %. LE MONDE MATCH RE-DATÉ : empreintes seed 3/7 = 4e6d780e9ada8598 /
+0dd3da58dc0e579e (rondo/réduit inchangées). Dettes : les drivens longs au calme, le tri
+du dégagement vers une vraie tête (taille/duel), le porteur qui PORTE (conduite ≥ 5 m :
+14 % seulement — la progression par la conduite reste timide).
+
+EN COURS DE FENÊTRE : lot 132 (gardien — 67 % des buts sans tentative, vitesse corps
+p50 170 m/s pendant le plongeon = téléport du warp à mesurer, rotation 235° max pendant
+le couché) ; lot 133 (marquage sur centre — 53 % des attaquants de boîte libres à
+l'arrivée malgré le surnombre défensif −2,6 ; 0 dégagement défensif sur 17 centres).

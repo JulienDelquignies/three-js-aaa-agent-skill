@@ -5288,6 +5288,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      'ailierDePercussion', off: 'piston' } }] }). Dette : l'hystérésis de bascule
      (inchangée du 129).
 
+173. **Lot 131 : LA RESPIRATION — LE BALLON VIT AUX PIEDS (retour utilisateur : « le jeu
+     respire pas assez au milieu ou alors il est trop rapide »).** LE DIAGNOSTIC A INVERSÉ
+     L'INTUITION : la densité au milieu est saine (4,4 corps/10 m) et la tenue du porteur
+     aussi (p50 1,27 s au lâcher) — c'est le BALLON qui ne vivait pas aux pieds : 45 % du
+     temps en vol + 11 % libre (réel ~35-40 au total). La décomposition des errances
+     (probe-131e, 1200 s) : 198 s derrière les DÉGAGEMENTS (p50 6,4 s d'errance chacun,
+     73 % rendus à l'adversaire — jetés par construction vers le flanc VIDE), 116 s
+     derrière les UNE-TOUCHE (le cap de layoff 4-6 m/s sur 10-14 m fait MOURIR le ballon
+     en route — rollResist), 173 s derrière les driven. DEUX LOIS : (1) LE DÉGAGEMENT
+     CHERCHE UNE TÊTE (cfg.clearServi, tryClear) — sous l'étau on dégage VERS un
+     coéquipier avancé (portée = axe(transition, 30, 44) : le contre allonge vers la
+     pointe ; beginPass → la note du dégageur fait foi, le duel aérien s'engage au point
+     de chute) ; aucune tête : le flanc d'hier en dernier recours. (2) LA UNE-TOUCHE SE
+     GAGNE (uneTouche.dose) — dosée par solvePass (l'outil du 128, arrivée prenable 5,0)
+     et le cap de déviation devient un FILTRE de faisabilité : la remise que la physique
+     ne porte pas n'est plus tentée, le contrôle normal reprend. APRÈS : carry 43 → 54 %,
+     vol 45 → 38 %, dégagements 198 → 89 s (les servis re-classés lofted conservés 83 %),
+     une-touche 116 → 33 s (92 % conservées), driven p90 5,6 → 2,1 s, marche off-ball
+     27 → 30 %. Rondo et réduit AU BIT ; le monde match re-daté (4e6d780e9ada8598 /
+     0dd3da58dc0e579e — la re-fondation documentée du tempo). LE LAB gelé aux 3 sites
+     (dose:false + clearServi:false). CLAUSE 131 : carry ≥ 48 % + dégagements servis ≥ 2,
+     sabotage « la patate chaude d'hier » (carry ≤ vivant − 3 pts, 0 servi). Dettes : les
+     drivens longs choisis au calme (2e volet possible), le tri du dégagement vers une
+     VRAIE tête (taille/duel aérien du receveur — aujourd'hui le plus avancé).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

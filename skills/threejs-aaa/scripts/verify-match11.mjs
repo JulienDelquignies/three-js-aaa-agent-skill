@@ -39,7 +39,7 @@ import { menaceTir } from '../assets/starter/src/engine/menace.js';
 // C'est le flux d'avant les lots 105-111, gelé : les clauses y mesurent leur loi, pas le monde.
 const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
   chaloupe: false, troisieme: false,
-  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
+  uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
   coach: false,                                         // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
   skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null, sortieBurst: null },   // …le répertoire pré-114/115/117 (ni croqueta, ni pont, ni roulette)
@@ -49,6 +49,10 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   libero: false, lob: false,                                        // …le gardien sur sa ligne d'hier (pré-120)
   contreAppel: false, boxCrash: false,                              // …les courses droites et la surface d'hier (pré-122/123)
   courseAilier: false, throughBall: false };                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+// L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
+// flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
+// le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false } };
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
@@ -1000,7 +1004,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     tenue: false, pivotReprise: false, sortie1v1: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
-    uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
+    uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
     tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });   // l'HIER exact, EN ENTIER (22e : lot 112 sans détente ni duel du venant)
   // …écart re-fondé 5 → 1,2 pt (lot 122 : les bornes de flux vivaient à ±1 du fil depuis
   // 120-121 ; la causalité du rythme INNOCENTÉE par A/B apparié — axial 45,2 = 45,2 = 45,1)
@@ -1827,8 +1831,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // homme — le monde courant re-battait l'écart à chaque lot) : ses propres clés rendues,
   // le reste gelé (unDeux compris — il vit sur le même tirage)
   const { troisieme: _t111, uneTouche: _u111, ...LAB111 } = LAB;
-  const vif = flux111({ ...LAB111 });
-  const sab = flux111({ ...LAB111, troisieme: false, uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 } });
+  // …le socle du une-touche se mesure SANS le filtre de faisabilité du 131 (sa loi, pas le monde)
+  const vif = flux111({ ...LAB111, uneTouche: ISO131.uneTouche });
+  const sab = flux111({ ...LAB111, troisieme: false, uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false } });
   ok(`lot 111 — le TROISIÈME HOMME court (${vif.trois} appels / 2 × 200 s ≥ 4) et la UNE-TOUCHE vit au calme (${vif.utPct.toFixed(0)} % des passes ≥ vif hier + 2 pts — le socle UT.base)`,
     vif.trois >= 4 && vif.utPct >= sab.utPct + 2);
   ok(`sabotage « le jeu à deux d'hier » attrapé (troisieme:false + base absente : ${sab.trois} appel ; une-touche ${sab.utPct.toFixed(0)} % — le monde d'hier, nommé)`,
@@ -1930,8 +1935,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return n;
   };
-  const vifC = flux({});
-  const sabC = flux({ coach: false });
+  // …épinglé au monde SANS le 131 (le score des graines 1-2 vivait au tempo d'hier)
+  const vifC = flux({ ...ISO131 });
+  const sabC = flux({ ...ISO131, coach: false });
   ok(`le coach VIT en flux (${vifC} changements de posture / 2 × 300 s ≥ 1) ; sabotage « les axes gelés d'hier » attrapé (coach:false : ${sabC} — le monde qui ne réagit jamais au score, nommé)`,
     vifC >= 1 && sabC === 0);
 }
@@ -2515,8 +2521,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // les postes statiques divisaient les buts par 1,5-2, le trafic de frappe est la dette v2) ;
   // le DÉFAUT plongeon-seul est quasi-identité (receveur du centre exempté). La clause prouve
   // les DEUX régimes : l'opt-in remplit, le défaut reste léger.
-  const vif3 = joue123({ throughBall: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12, attente: true } });   // isolation (128)
-  const def3 = joue123({ throughBall: false });
+  const vif3 = joue123({ throughBall: false, ...ISO131, boxCrash: { couloir: 0.4, prof: 12, garde: 12, attente: true } });   // isolation (128 + 131)
+  const def3 = joue123({ throughBall: false, ...ISO131 });
   // …bornes au n réel (3-6 centres par run de 3 graines — la variance domine : 1,2/écart 0,2)
   ok(`lot 123 — le BOX CRASH est un LEVIER (opt-in attente : ${vif3.arr.toFixed(1)} corps à l'arrivée ≥ 1,2 sur ${vif3.n} centres ; défaut plongeon-seul : ${def3.arr.toFixed(1)} ≤ opt-in − 0,2 — le remplissage lourd se PAIE, la config choisit)`,
     vif3.n >= 3 && vif3.arr >= 1.2 && def3.arr <= vif3.arr - 0.2);
@@ -2672,7 +2678,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     noms.length >= 15 && manque.length === 0
     && formationPour('433', true) === '433' && formationPour({ on: '433', off: '541' }, false) === '541');
   const st129 = makeMatch({ full: true, seed: 3, tactics: [{ formation: { on: '433', off: '541' } }, { formation: '433' }] });
-  const cfg129 = matchCfg({ shotRange: 20 });
+  const cfg129 = matchCfg({ shotRange: 20, ...ISO131 });   // isolation 131 : la bascule se mesure au tempo d'hier
   let basOn = [], basOff = [];
   for (let i = 0; i < 200 * 60; i++) {
     matchStep(st129, 1 / 60, cfg129);
@@ -2702,6 +2708,41 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`lot 130 — le RÔLE PAR PHASE se compose par axe (ailier/récupérateur : appel ${rC.appel} = 0,6 du ON, press ${rC.press} = 0,95 du OFF ; simple : ${rS.press} — l'identité) ; le MAPPING est configurable (identité ${idM[6]} = 6 ; map {6:8} → ${cM[6]} = 8) ; le monde mappé JOUE 90 s (t=${st130.t.toFixed(0)})`,
     rC.appel === 0.6 && rC.press === 0.95 && rC.largeurR === 0.9 && rS.press === 0.25
     && idM[6] === 6 && cM[6] === 8 && cM[8] === 6 && st130.t >= 89);
+}
+
+// ---------------------------------------------------------------- lot 131 : LA RESPIRATION —
+// le ballon VIT AUX PIEDS (retour utilisateur : « le jeu respire pas assez au milieu ou il est
+// trop rapide »). Mesuré avant : vol+libre 56 % du temps (réel ~35-40) — 198 s/1200 s perdues
+// derrière les dégagements jetés au flanc VIDE (p50 6,4 s d'errance, 73 % rendus à l'adversaire)
+// et 116 s derrière les une-touche qui MEURENT en route (le cap de layoff sous-dosait, rollResist).
+// Deux lois : le dégagement CHERCHE UNE TÊTE (clearServi — beginPass vers un coéquipier avancé,
+// portée = axe(transition, 30, 44), le duel aérien s'engage au point de chute), et la une-touche
+// SE GAGNE (uneTouche.dose — solvePass sur la physique exacte + le cap de déviation en FILTRE de
+// faisabilité). Après : carry 43 → 54 %, dégagements 198 → 89 s, une-touche 116 → 33 s.
+{
+  const joue131 = (over = {}, seed = 1) => {
+    const st = makeMatch({ full: true, seed });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    let cursor = 0, carryF = 0, tot = 0, servis = 0, corbeaux = 0;
+    for (let i = 0; i < 300 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      tot++; if (st.phase === 'carry') carryF++;
+      for (; cursor < st.events.length; cursor++) {
+        const e = st.events[cursor];
+        if (e.type === 'pass' && e.clear) (e.to >= 0 ? servis++ : corbeaux++);
+      }
+    }
+    return { carry: carryF / tot, servis, corbeaux };
+  };
+  const vif = [joue131({}, 1), joue131({}, 2)];
+  const carryVif = (vif[0].carry + vif[1].carry) / 2, servisVif = vif[0].servis + vif[1].servis;
+  const gel131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false } };
+  const sab = [joue131(gel131, 1), joue131(gel131, 2)];
+  const carrySab = (sab[0].carry + sab[1].carry) / 2, servisSab = sab[0].servis + sab[1].servis;
+  ok(`lot 131 — le ballon VIT AUX PIEDS (carry ${(100 * carryVif).toFixed(0)} % ≥ 48 sur 2 × 300 s — réel ~60) et le DÉGAGEMENT CHERCHE UNE TÊTE (${servisVif} servis vers un coéquipier ≥ 2, ${vif[0].corbeaux + vif[1].corbeaux} au flanc vide en dernier recours)`,
+    carryVif >= 0.48 && servisVif >= 2);
+  ok(`sabotage « la patate chaude d'hier » attrapé (clearServi:false + dose:false : carry ${(100 * carrySab).toFixed(0)} % ≤ vivant − 3 pts et ${servisSab} dégagement servi — les corbeaux et les ballons morts, nommés)`,
+    carrySab <= carryVif - 0.03 && servisSab === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
