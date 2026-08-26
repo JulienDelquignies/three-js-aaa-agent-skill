@@ -449,7 +449,7 @@ export const MATCH = {
                           // joue un ballon mort). null (défaut) : les mondes d'aujourd'hui, sans
                           // fin, au bit près — le chrono est une CONFIGURATION, pas une loi.
                           // V1 : pas d'échange de camps ni de temps additionnel (dettes nommées).
-  menace: { tir: 1, centre: 1, passe: 1, conduite: 1, grise: 1.35, muteD: 10 },
+  menace: { tir: 1, centre: 1, passe: 1, conduite: 1, grise: 1.35, muteD: 10, mur: 0.35 },  // mur (126) : le tenté décroît avec la densité adverse du cône — le mur se contourne
                           // …grise (lot 92) : la portée de tir × ce facteur = la ZONE GRISE où
                           // le tir existe dégressif, pondéré FINISHING (l'attribut, pas un mur —
                           // 8 conduites muettes / 4 matchs dont une jusqu'aux pieds du gardien).

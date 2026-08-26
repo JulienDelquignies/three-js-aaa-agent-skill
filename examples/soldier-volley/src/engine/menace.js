@@ -80,7 +80,25 @@ export function menaceTir(st, c, cfg) {
   // tir contré/dévié fait vivre la surface (corners, rebonds) — sans lui, un bloc hermétique
   // rend l'attaque STÉRILE (seed 7 : 0 tir en 330 s malgré le plancher franc, tous couloirs < need).
   const tente = !franc && margin >= need * 0.4 && d <= R * 0.6 && cfg.tirFranc !== false;
-  let sc = Math.max((0.30 + 0.62 * nearF) * (0.25 + 0.75 * laneF), franc ? (cfg.tirFranc ?? 0.72) : tente ? (cfg.tirTente ?? 0.55) : 0);
+  // LE MUR SE CONTOURNE, PAS SE PERFORE (lot 126, cfg.menace.mur — le trafic de frappe : en
+  // boîte dense les marqueurs suivent les coureurs, la clearance des tirs s'effondrait à 1,46
+  // et le TENTÉ tirait quand même dans le mur : conversion 46 → 19 % mesurée tir par tir, le
+  // corps AMI innocenté à 0,03/cône). Le score du tenté décroît avec la DENSITÉ ADVERSE du
+  // cône de frappe (±0,35 rad) — l'arbitre rend la passe/conduite au porteur muré. Absente : hier.
+  let murN = 0;
+  if (st.full && cfg.menace?.mur) {
+    const capM = Math.atan2(0 - c.p[2], goal.x - c.p[0]);
+    for (const b of blockers) {
+      const db = Math.hypot(b[0] - c.p[0], b[2] - c.p[2]);
+      if (db > d) continue;
+      const angM = Math.abs(((Math.atan2(b[2] - c.p[2], b[0] - c.p[0]) - capM + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+      if (angM < 0.35) murN++;
+    }
+  }
+  const murF = 1 / (1 + murN * (st.full && cfg.menace?.mur ? cfg.menace.mur : 0));
+  // …le FRANC aussi : margin ≥ need (0,45 — un couloir de PASSE) restait « franc » dans une
+  // boîte à 1,2 corps/cône et convertissait à 19 % — le mur pèse sur les deux branches.
+  let sc = Math.max((0.30 + 0.62 * nearF) * (0.25 + 0.75 * laneF) * murF, franc ? (cfg.tirFranc ?? 0.72) * murF : tente ? (cfg.tirTente ?? 0.55) * murF : 0);   // …la BASE aussi : laneF ne voit que le meilleur coin, murF voit le trafic central
   let why = franc ? 'occasion-franche' : tente ? 'tir-tenté' : margin < need ? 'couloir-serré' : 'cadre-en-vue';
   if (d > R) {
     const finF = c.skill ? Math.max(0, Math.min(1, (0.55 - c.skill.shotSigma) / 0.45)) : 0.5;
