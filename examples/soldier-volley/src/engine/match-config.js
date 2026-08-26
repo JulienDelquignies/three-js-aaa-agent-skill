@@ -161,6 +161,18 @@ export const MATCH = {
                           // de layoff — le ballon d'espoir qui meurt en route (116 s d'errance
                           // / 1200 s mesurées) n'est plus tenté. dose:false : hier au bit.
   clearServi: { min: 8, essais: 2 },
+  honneur: { portee: 1.7 }, // lot 132 : LE PLONGEON D'HONNEUR — battu proche (≤ reach × portee)
+                          // et cadré, le geste part quand même (sans arrêt promis — le corps
+                          // raconte le but ; mesuré : des buts avec le gardien debout en
+                          // spectateur sur un verdict « battu »). false : le spectateur d'hier.
+  regardGardien: true,    // lot 132 : le gardien NE QUITTE PAS le ballon des yeux — en course
+                          // son yaw suit le ballon (pas chassé, patron du backpedal libéro),
+                          // le côté du clip de plongeon se calcule sur un regard JUSTE
+                          // (mesuré : 3/20 plongeons sur regard > 60°). false : hier.
+  marquageCentre: {},     // lot 133 (phases.js) : le vol d'un centre adverse met des CORPS sur
+                          // les attaquants de boîte — le plus proche non pris, cible goal-side
+                          // 1,1 m, rayon = axe(marquage, 7, 14). Mesuré avant : 53 % libres
+                          // à l'arrivée malgré le surnombre. false : les statues de zone.
                           // lot 131 : LE DÉGAGEMENT CHERCHE UNE TÊTE — sous l'étau on dégage
                           // VERS un coéquipier avancé (max = axe(transition, 30, 44) : le
                           // contre allonge vers la pointe), le duel aérien s'engage au point

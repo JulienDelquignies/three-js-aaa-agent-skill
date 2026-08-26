@@ -5313,6 +5313,72 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      drivens longs choisis au calme (2e volet possible), le tri du dégagement vers une
      VRAIE tête (taille/duel aérien du receveur — aujourd'hui le plus avancé).
 
+174. **Lot 132 : LE GARDIEN QUI TENTE (retour utilisateur ×3 : « des buts où ils ne tentent
+     même pas de plonger », « incohérences de vitesse », « ils plongent d'un côté et le
+     corps se retourne complètement »).** LE DIAGNOSTIC A TRIÉ LE VRAI DU FANTÔME : (a) les
+     buts sans tentative EXISTENT — la trace keeperDecide les nomme : verdict « battu »
+     PROCHE avec un gardien LANCÉ (4,6-6,1 m/s au tir, le SET étire son réflexe ×1,35) qui
+     reste DEBOUT en spectateur ; (b) les « téléports » (170-290 m/s mesurés d'abord)
+     étaient L'INSTRUMENT — la remise en jeu replace les corps pendant la fenêtre de mesure
+     (re-mesuré proprement : 0 saut > 10 m/s en vol sur 8 graines) — MAIS l'utilisateur
+     VOIT bien cette remise qui claque le corps couché ; (c) le retournement est un REGARD
+     PÉRIMÉ : 3/20 plongeons déclenchés avec un regard > 60° du ballon (p90 107°) — le côté
+     du clip (produit vectoriel regard × détente) se calculait sur un yaw collé à la DÉRIVE
+     DE COURSE (movement : yaw = atan2(v) dès 0,25 m/s). DEUX LOIS : (1) LE PLONGEON
+     D'HONNEUR (cfg.honneur, match-sim) — battu proche (dz ≤ reach × portee 1,7) et cadré
+     (cross.t ≤ diveTime), le geste part quand même, SANS arrêt promis (le contact/canTake
+     gardent leur loi) — event dive honneur:true ; false : le spectateur d'hier. (2) LE
+     REGARD DU GARDIEN (cfg.regardGardien, movement) — le gardien ne quitte pas le ballon
+     des yeux : en course son yaw suit yawWant (posé vers le ballon ; fallback dans
+     movement quand rien ne le pilote), le pas devient chassé — le patron du backpedal
+     libéro (120) généralisé ; false : le regard de course d'hier. APRÈS : 0 but sans
+     tentative (3/3), regard au départ du plongeon p50 0° / p90 18°, 0/23 > 60°. A/B 100
+     tirs / 19 buts (bande). Fixtures clause 132 : l'honneur (piège appris : le monde
+     DÉMARRE en restart d'engagement — st.restart = null obligatoire, le cerveau gardien
+     dort pendant l'arrêt) et le regard (movePlayers pur : lancé 6,6 m/s plein z, écart au
+     ballon 0° vif / 95° saboté). AMENDEMENT 131 : l'empreinte réduit avait bougé par
+     L'INSTRUMENT (le tag clear sur l'event pass — l'empreinte inclut le JSON des events) :
+     nouvelle référence réduit c701c84aec0851ef, flux prouvé par les 231 clauses latérales ;
+     rondo INTACT (c775c81e62592d4d). Dettes : le gardien lancé qui se replace encore trop
+     vite (la cause du battu — le SET est sa loi, saine), la remise qui replace un corps
+     couché (le relevé avant la marche à l'engagement).
+
+175. **Lot 133 : LE MARQUAGE DE SURFACE SUR CENTRE (retour utilisateur : « les centres
+     manquent de défenses sur les attaquants de surface »).** MESURÉ AVANT (probe-133) :
+     53 % des attaquants de boîte LIBRES (> 3 m du premier défenseur) à l'arrivée du centre
+     ALORS QUE la défense est en surnombre (−2,6 corps) — elle tenait des ZONES, pas des
+     corps ; et 0 dégagement défensif sur 17 centres (le ballon retombe, personne ne
+     l'attaque). LA LOI (phases.marquageCentre — la famille des moments, appelée par
+     match-sim APRÈS l'assignation des jobs, l'autorité du marquage sur le spot) : pendant
+     le VOL d'un centre adverse (st.pass.cross), chaque attaquant de boîte se voit affecter
+     le défenseur libre le plus proche (les plus dangereux — près du but — servis d'abord),
+     cible GOAL-SIDE (+0,8 m côté but, pincée 8 % vers l'axe) ; le rayon de prise suit
+     l'axe tactique marquage (zone 8 m → homme 16 m) ; presseurs/intercepteurs/receveurs
+     exemptés ; les vitesses restent les speeds × topF (attributs en facteurs). Le corps
+     sur l'attaquant rend le duel aérien du point de chute DISPUTÉ. LE FEUILLETON DE LA
+     BANDE (le 123 rejoué côté défense) : le marquage INTÉGRAL retirait la première source
+     de buts du monde — A/B 15/20 puis 10/20 buts, bande 17-33 CREVÉE (et le goal-side 1,1
+     posait le corps SUR la trajectoire : les tirs mêmes chutaient 94 → 76). Le contrat
+     final : MAX 2 CORPS PRIS (les deux plus dangereux — près du but — marqués, le reste
+     vit en zone), goal-side 0,8, et le marquage vit PENDANT LE VOL — LA RÉMANENCE après
+     la retombée est un OPT-IN (marquageCentre.remanence) : l'A/B APPARIÉ mêmes graines a
+     chargé sa causalité (0,6-1,0 s : 11-15 buts/20 et jusqu'à −23 % de TIRS — la boîte
+     densifiée ferme les couloirs de frappe du 126 ; le vol-seul tient la bande à 18).
+     Toute la gamme mesurée : intégral 10, max2+rém 15, max1+rém 14, max2 vol-seul 18 ✓.
+     Au contrat : libres 53 → 41-43 %, dégagements défensifs 0 → 2-4, reprises 10-11 —
+     le centre est DÉFENDU sans mourir comme genre. LA PREUVE DE LA LOI EST UNITAIRE
+     (fixture pure de marquageCentre : 1 paire, job mark, cible goal-side +0,8 ; sabotage
+     0 paire) + le flux jure l'existence (525 frames marquées / 2 × 300 s) — la mesure de
+     distance en flux mesurait la COURSE des marqueurs, pas la loi (piège d'instrument).
+     Clause 133 en isolation (SA loi sur le monde ISO131 épinglé, sabotage « les statues de
+     zone ») ; 5 clauses de flux re-épinglées à ISO131 (96 la bande au fil du 9,8, 112 le
+     Poisson des têtes, 121-122 privées de matière) et la clause 131 isolée de SES
+     successeurs (POST131). EMPREINTES FINALES : rondo c775c81e62592d4d (bit), réduit
+     c701c84aec0851ef (stable), matchs 303626266e0d67c9 / 055acde62558ce48 (132+133 en
+     défaut, consignés — la rémanence 0 est un no-op au bit sur l'état vol-seul). Dettes : le p90 haut (7,5 m — les
+     excentrés au second poteau), la HAUTEUR du marqueur au duel aérien (le tri par
+     taille), le marquage du second ballon.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

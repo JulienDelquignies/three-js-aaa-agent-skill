@@ -18,6 +18,7 @@ import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCo
 import { accrocheStep } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
+import { marquageCentre } from './phases.js';
 import { MOVES } from './animkit.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
@@ -348,7 +349,12 @@ function assignMatchJobs(st, cfg) {
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
-    if (dec.mode === 'dive' && gk.down <= 0) {
+    // LE PLONGEON D'HONNEUR (lot 132, cfg.honneur && st.full) : battu PROCHE (≤ reach ×
+    // portee) et cadré → le geste part quand même, sans arrêt promis. false : le spectateur.
+    const honneur = st.full && cfg.honneur !== false && dec.mode === 'battu' && dec.cross
+      && Math.abs(dec.cross.z - gk.p[2]) <= K.diveReach * (cfg.honneur?.portee ?? 1.7)
+      && dec.cross.t <= (K.diveTime ?? 0.9);
+    if ((dec.mode === 'dive' || honneur) && gk.down <= 0) {
       const cross = dec.cross;
       // L'ESPÈCE DE LA PARADE (lot 93) : haut ≥ 1,35 → plongeonPrise (retombe debout) ; ras
       // < 0,85 → plongeonBas ; loin > 1,35 m → plongeonUneMain ; sinon deux mains. Éteinte : hier.
@@ -376,7 +382,7 @@ function assignMatchJobs(st, cfg) {
       // le relevé joué pendant l'acte, puis le down claquait le corps au sol en une image).
       if (st.full && cfg.keeperRise !== false && espece !== 'plongeonPrise') { const R = keeperRise(gk.skill?.getupF ?? 1, true); gk.rise = { ground: R.ground, getup: R.getup }; }
       st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact, ...(par93 ? { mains: espece === 'plongeonUneMain' ? 1 : 2 } : {}) });
-      st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2) });
+      st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2), ...(honneur ? { honneur: true } : {}) });
       continue;
     }
     // 'battu' n'a pas de spot (l'état honnête) : le gardien se replace quand même sur sa loi
@@ -455,9 +461,8 @@ function assignMatchJobs(st, cfg) {
       const boxXr = pitch.hx - pitch.dims.box.depth;
       const boxMate = wideClosed && st.players.some((q) => q.team === p.team && !q.keeper && q.id !== p.id
         && q.down <= 0 && q.p[0] * sgnG > boxXr - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5);
-      // LE COULOIR SE TIENT (lot 105, cfg.conduiteCouloir — 67 % des touches d'aile repiquaient) :
-      // le porteur latéral progresse DANS son couloir ; le PIED (l'inversé rentre), largeurR et
-      // l'axe largeur modulent. Clé absente : l'aim [but, 0] d'hier au bit.
+      // LE COULOIR SE TIENT (lot 105, cfg.conduiteCouloir — 67 % des touches d'aile repiquaient) : le porteur
+      // latéral progresse DANS son couloir ; pied/largeurR/axe largeur modulent. Absente : l'aim [but, 0] d'hier.
       let aimZ = 0;
       if (st.full && cfg.conduiteCouloir && Math.abs(p.p[2]) > (cfg.conduiteCouloir.z ?? 12) && !wideClosed) {
         const inv = (Math.sign(p.p[2] * -(goal.x || 1)) > 0) === ((p.strongFoot ?? 'right') === 'right');
@@ -491,29 +496,25 @@ function assignMatchJobs(st, cfg) {
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = Math.hypot(p._pushS[0], p._pushS[1]) || 1;
       p.push = [p._pushS[0] / sl, p._pushS[1] / sl];
-      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE (CSC en conduite mesurés) : l'acculé fuit
-      // LE LONG de la ligne — à < 22 m de son but la composante vers le but propre se plafonne,
-      // la poussée se rabat en latérale (le signe garde le côté, le lissage repart de la loi).
+      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE (CSC mesurés) : l'acculé fuit LE LONG de la ligne —
+      // < 22 m du but propre, la composante vers lui se plafonne, la poussée se rabat en latérale.
       {
         const og = pitch.ownGoal(p.team);
         const sOwn = Math.sign(og.x || 1);
-        // …au rayon À L'ÉCHELLE DU TERRAIN (0,42·hx, plafonné 22) : le 22 m plat couvrait un
-        // TIERS du réduit et étouffait sa conduite (tempsLoin 7,1 > 2,5 — attrapé par la
-        // sentinelle, encore elle)
+        // …au rayon À L'ÉCHELLE DU TERRAIN (0,42·hx, plafonné 22) : le 22 m plat couvrait un TIERS du
+        // réduit et étouffait sa conduite (tempsLoin 7,1 > 2,5 — la sentinelle, encore elle)
         if (Math.hypot(og.x - p.p[0], p.p[2]) < Math.min(22, pitch.hx * 0.42) && p.push[0] * sOwn > 0.35) {
           const lat = Math.sign(p.push[1] || (p.p[2] >= 0 ? 1 : -1));
           p.push = [sOwn * 0.35, lat * Math.sqrt(1 - 0.35 * 0.35)];
           p._pushS = [p.push[0], p.push[1]];
         }
       }
-      // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible de locomotion était la
-      // POUSSÉE PROJETÉE même ballon réel derrière (5,9 % du porté hors cône avant mesuré).
-      // Hors portée de contrôle, la cible EST le ballon, routé un demi-pas au-delà.
+      // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible était la POUSSÉE PROJETÉE même ballon
+      // derrière (5,9 % hors cône mesuré). Hors portée de contrôle, la cible EST le ballon, un demi-pas au-delà.
       const dBall = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       if (cfg.carryViaBall !== false && dBall > 0.85) {
-        // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà) :
-        // à +0,4 m l'amorti d'arrivée s'équilibrait avec la décélération du ballon — bd cloué à
-        // 1,2-1,3 m, le pied jamais en portée. Le vrai geste accélère À TRAVERS le point de touche.
+        // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà — à +0,4 m
+        // l'amorti s'équilibrait avec sa décélération, bd cloué 1,2-1,3 m : le geste accélère À TRAVERS).
         const over = (p._prepShot ?? -1) > st.t ? 2.2 : 0.4;
         p.target = [st.ball.p[0] + p.push[0] * over, 0, st.ball.p[2] + p.push[1] * over];
       } else {
@@ -1003,8 +1004,7 @@ function assignMatchJobs(st, cfg) {
       p.push = null;
     }
   }
-  // LE BOX CRASH (123) — POST-PASS D'AUTORITÉ : la géométrie du centre REMPLIT la surface (avant p50 1 corps) ;
-  // N plus proches + rôle appel, soutien épargné < garde, hauteur module N, Loi 11, cache 0,6 s. Absente : hier.
+  // LE BOX CRASH (123) — POST-PASS d'autorité : la géométrie du centre REMPLIT la surface (N plus proches + rôle appel, soutien épargné, Loi 11, cache 0,6 s). Absente : hier.
   if (st.full && cfg.boxCrash && !st.restart && st.possession.team >= 0) {
     const atk = st.possession.team;
     const g2 = pitch.attackGoal(atk), sg2 = Math.sign(g2.x || 1), zB = st.ball.p[2];
@@ -1023,8 +1023,7 @@ function assignMatchJobs(st, cfg) {
         bc[atk] = { t: st.t, ids: cands, zC: Math.sign(zB || 1) };
       } else bc[atk] = { t: st.t, ids: [], zC: 1 };
     }
-    // …LE PLONGEON SEUL en défaut (l'occupation statique DIVISAIT les buts par 2 — A/B apparié
-    // 6 vs 12, tirs égaux) : le crash ne vit qu'au VOL DU CENTRE ; boxCrash.attente = l'opt-in payant.
+    // …LE PLONGEON SEUL en défaut (le statique DIVISAIT les buts par 2, A/B apparié) : le crash ne vit qu'au VOL ; attente = l'opt-in payant.
     const E = bc[atk], offL = cfg.offside ? offsideLine(st, atk) : null;
     if (E?.ids?.length) {
       const vol = st.pass && st.pass.cross && st.players[st.pass.from]?.team === atk;
@@ -1044,6 +1043,7 @@ function assignMatchJobs(st, cfg) {
       }
     }
   }
+  marquageCentre(st, cfg, { busy, tac, axe, d2 });   // 133 : le vol du centre adverse met des CORPS sur les corps (phases.js)
 }
 
 // ---------------------------------------------------------------- l'arrêt du gardien

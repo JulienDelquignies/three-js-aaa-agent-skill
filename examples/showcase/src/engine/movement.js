@@ -317,7 +317,13 @@ export function movePlayers(st, dt, cfg) {
     // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la
     // v1 de la loi (p90 156° au contact).
     const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && p.speed < 2.2;
-    if (p.speed > 0.25 && !sePres) p.yaw = Math.atan2(p.v[1], p.v[0]);
+    // LE GARDIEN NE QUITTE PAS LE BALLON DES YEUX (lot 132, cfg.regardGardien && st.full —
+    // mesuré : 3/20 plongeons déclenchés sur un regard > 60° du ballon, p90 107° — le côté
+    // du clip se calculait sur la dérive de COURSE, le corps « se retournait ») : le yaw du
+    // gardien suit son yawWant (posé vers le ballon chaque frame), le pas devient chassé —
+    // le patron du backpedal libéro (120) généralisé. false : le regard de course d'hier.
+    const regardGk = st.full && p.keeper && cfg.regardGardien !== false;
+    if (p.speed > 0.25 && !sePres && !regardGk) p.yaw = Math.atan2(p.v[1], p.v[0]);
     // A MAN CARRYING THE BALL FACES HIS BALL — not his drift. For everyone else, facing = direction of
     // travel is right; for the carrier it is wrong, and wrong in the one place it shows. He stands
     // `carryStandoff` BEHIND the ball, so his velocity points at a spot behind it while the ball is in
@@ -336,6 +342,10 @@ export function movePlayers(st, dt, cfg) {
       // touche fantôme « le réoriente avec la balle sans le toucher » (retour utilisateur).
       // Même slew borné qu'en dessous (un demi-tour prend son temps), st.full — le rondo au
       // bit près. false : le dos fossile d'hier (sabotage nommé).
+      p.yawWant = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
+    } else if (regardGk && p.yawWant == null) {
+      // …et quand rien d'autre ne pilote son regard (marche de relance), le gardien le pose
+      // LUI-MÊME sur le ballon — le pas chassé a toujours une cible de regard.
       p.yawWant = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
     }
     // A TURN TAKES TIME — this is the ONE place a facing may change, and it can only change at a

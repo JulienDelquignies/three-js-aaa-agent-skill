@@ -241,7 +241,17 @@ transition) + uneTouche.dose (solvePass + cap de layoff en filtre de faisabilit�
 du dégagement vers une vraie tête (taille/duel), le porteur qui PORTE (conduite ≥ 5 m :
 14 % seulement — la progression par la conduite reste timide).
 
-EN COURS DE FENÊTRE : lot 132 (gardien — 67 % des buts sans tentative, vitesse corps
-p50 170 m/s pendant le plongeon = téléport du warp à mesurer, rotation 235° max pendant
-le couché) ; lot 133 (marquage sur centre — 53 % des attaquants de boîte libres à
-l'arrivée malgré le surnombre défensif −2,6 ; 0 dégagement défensif sur 17 centres).
+LE GARDIEN QUI TENTE (132, note 174) : le plongeon d'honneur (battu proche → le geste
+part, honneur:true) + le regard du gardien (yaw au ballon en course, pas chassé — le
+côté du clip juste). Les « téléports » étaient l'instrument (la remise en jeu) — mais
+la remise qui claque un corps couché reste une dette visuelle nommée. AMENDEMENT :
+l'empreinte réduit re-datée par l'INSTRUMENT du 131 (tag clear sur l'event pass) —
+nouvelle référence c701c84aec0851ef, rondo intact c775c81e62592d4d.
+
+LE MARQUAGE DE SURFACE (133, note 175 — phases.marquageCentre) : au vol du centre,
+des corps sur les corps (goal-side, rayon à l'axe marquage 8-16). p50 1,8 m, libres
+41 %, les dégagements défensifs existent — MAX 2 pris + rémanence 1,0 s (le marquage
+intégral crevait la bande A/B : le feuilleton du 123 rejoué — la RÉMANENCE est l'opt-in).
+Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le second
+poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
+défaut si la bande évolue.

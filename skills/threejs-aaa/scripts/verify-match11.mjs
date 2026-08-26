@@ -25,8 +25,9 @@ import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
 import { coachStep, checkCoach } from '../assets/starter/src/engine/coach.js';
+import { movePlayers } from '../assets/starter/src/engine/movement.js';
 import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
-import { resoudreTactique } from '../assets/starter/src/engine/tactics.js';
+import { resoudreTactique, tac, axe as axeT } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { resoudreRole } from '../assets/starter/src/engine/roles.js';
@@ -48,12 +49,15 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   unDeux: false,                                                    // …le donne-sans-va d'hier (pré-119)
   libero: false, lob: false,                                        // …le gardien sur sa ligne d'hier (pré-120)
   contreAppel: false, boxCrash: false,                              // …les courses droites et la surface d'hier (pré-122/123)
-  courseAilier: false, throughBall: false };                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  courseAilier: false, throughBall: false,
+  honneur: false, regardGardien: false, marquageCentre: false };     // …le spectateur battu, le regard de course et les statues de zone d'hier (pré-132/133)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false } };
-import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false };   // la clause 131 isole SES successeurs — sa loi seule varie
+import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
+import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1001,7 +1005,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false,
+    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
@@ -1337,8 +1341,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const p50 = (a) => { const b = [...a].sort((x, y) => x - y); return b[Math.floor(b.length / 2)] ?? 0; };
     return { ligne: p50(spread), faible: p50(weakZ) };
   };
-  const vif = bloc({});
-  const sab = bloc({ zone: false });
+  const vif = bloc({ ...ISO131 });   // isolation 131-133 : la bande se mesure au monde épinglé (le fil du 9,8)
+  const sab = bloc({ ...ISO131, zone: false });
   // …borne 9 → 9,8 (re-fondé 126 : 9,4 mesuré — le monde du mur étire marginalement la bande)
   ok(`lot 96 — la LIGNE arrière est une bande en défense placée (écart p50 ${vif.ligne.toFixed(1)} m ≤ 9,8 ; sabotage zone:false ${sab.ligne.toFixed(1)} ≥ 15 — le marquage d'hier n'a pas de ligne)`,
     vif.ligne <= 9.8 && sab.ligne >= 15);
@@ -1859,8 +1863,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { sautees, duelsV };
   };
-  const vif = ciel({});
-  const sab = ciel({ tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });
+  const vif = ciel({ ...ISO131 });   // isolation 131-133 : le ciel se compte au monde épinglé (Poisson au fil sinon)
+  const sab = ciel({ ...ISO131, tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });
   ok(`lot 112 — le CIEL VIT (8 × 300 s : ${vif.sautees} têtes sautées ≥ 5 — la détente T.saut × sautF joue le vol de 2,2-3,0 m qui était muet)`,
     vif.sautees >= 5);
   ok(`sabotage « le ciel muet d'hier » attrapé (saut/duel absents : ${sab.sautees} tête sautée, ${sab.duelsV} duel du venant — la fenêtre debout d'hier, l'identité au défaut)`,
@@ -2403,11 +2407,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // Zidane qu'Antony, ça manque d'envergure »). Mesuré au ship : sortie p50 2,5 → 4,3 m/s,
 // gain vers le but 1,9 → 2,7 m, garde 96 %. Le sabotage rend la toupie d'hier (0,15).
 {
-  const mesure = (over) => {
+  const mesure = (over, iso = {}) => {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });
+      const cfg = matchCfg({ shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2432,8 +2436,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     outs.sort((a, b) => a - b);
     return { n: outs.length, p50: outs[Math.floor(outs.length / 2)] ?? 0, garde: gardes.filter(Boolean).length };
   };
-  const zid = mesure(null);
-  const sab = mesure({ rouletteRoule: 0.15 });
+  const zid = mesure(null, ISO131);   // isolation 131-133 : les graines re-datées privaient la roulette de matière (2/3 min)
+  const sab = mesure({ rouletteRoule: 0.15 }, ISO131);
   // …borne 1,4 : le plancher vaut roule × v0 et l'entrée minimale est rouletteV 1,5 (des
   // porteurs à ~3 m/s tournent aussi — mesuré p50 1,5) ; le sabotage plafonne à 1,2 : les
   // deux mondes ne se recouvrent JAMAIS (vif ≥ 1,4 > 1,2 ≥ toupie)
@@ -2477,8 +2481,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     posts.sort((a, b) => a - b);
     return { sorties, contres, cassure, p50: posts[Math.floor(posts.length / 2)] ?? 0 };
   };
-  const vif2 = joue122({ throughBall: false });   // isolation (128) : le through SERT les coureurs qui auraient cassé
-  const sab2 = joue122({ contreAppel: false, skill: { ...matchCfg().skill, sortieBurst: null } });
+  const vif2 = joue122({ throughBall: false, ...ISO131 });   // isolation (128 + 131-133) : le through SERT les coureurs, le monde épinglé garde ses contre-appels
+  const sab2 = joue122({ contreAppel: false, ...ISO131, skill: { ...matchCfg().skill, sortieBurst: null } });
   // …l'écart p50 post-geste est passé en INFORMATIF au 123 (2,6 vs 2,6 : la mesure au flux
   // est instable entre mondes re-datés — les COMPTES d'événements + le sabotage 0/0 sont le
   // contrat déterministe ; l'explosion elle-même est prouvée par le _pace ×1,45 mécanique)
@@ -2734,15 +2738,117 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { carry: carryF / tot, servis, corbeaux };
   };
-  const vif = [joue131({}, 1), joue131({}, 2)];
+  const vif = [joue131({ ...POST131 }, 1), joue131({ ...POST131 }, 2)];
   const carryVif = (vif[0].carry + vif[1].carry) / 2, servisVif = vif[0].servis + vif[1].servis;
-  const gel131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false } };
+  const gel131 = { ...POST131, clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false } };
   const sab = [joue131(gel131, 1), joue131(gel131, 2)];
   const carrySab = (sab[0].carry + sab[1].carry) / 2, servisSab = sab[0].servis + sab[1].servis;
   ok(`lot 131 — le ballon VIT AUX PIEDS (carry ${(100 * carryVif).toFixed(0)} % ≥ 48 sur 2 × 300 s — réel ~60) et le DÉGAGEMENT CHERCHE UNE TÊTE (${servisVif} servis vers un coéquipier ≥ 2, ${vif[0].corbeaux + vif[1].corbeaux} au flanc vide en dernier recours)`,
     carryVif >= 0.48 && servisVif >= 2);
   ok(`sabotage « la patate chaude d'hier » attrapé (clearServi:false + dose:false : carry ${(100 * carrySab).toFixed(0)} % ≤ vivant − 3 pts et ${servisSab} dégagement servi — les corbeaux et les ballons morts, nommés)`,
     carrySab <= carryVif - 0.03 && servisSab === 0);
+}
+
+// ---------------------------------------------------------------- lot 132 : LE GARDIEN QUI
+// TENTE (retour utilisateur ×3 : buts sans plongeon, vitesses incohérentes, le corps qui se
+// retourne). Mesuré avant : 2/7 buts sur verdict « battu » proche avec le gardien DEBOUT en
+// spectateur ; 3/20 plongeons déclenchés sur un regard > 60° du ballon (p90 107° — le côté du
+// clip se calculait sur la dérive de COURSE) ; les « téléports » = la remise en jeu, pas le
+// corps (0 saut > 10 m/s en vol sur 8 graines). Deux lois : LE PLONGEON D'HONNEUR (battu
+// proche ≤ reach × 1,7 et cadré → le geste part, sans arrêt promis) et LE REGARD DU GARDIEN
+// (le yaw suit le ballon en course — pas chassé, le backpedal libéro généralisé). Après :
+// 0 but sans tentative (3/3), regard p90 18°, 0/23 plongeons > 60°.
+{
+  // (a) L'HONNEUR, fixture : un tir cadré HORS reach (dz ≈ reach × 1,4) — hier « battu »
+  // muet, aujourd'hui le geste part, marqué honneur:true. Sabotage : le spectateur nommé.
+  const tente = (over = {}) => {
+    const st = makeMatch({ full: true, seed: 9 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    const gk = st.players.find((p) => p.keeper && p.team === 1);
+    const g = st.pitch.ownGoal(1);
+    st.ball.restart([g.x - Math.sign(g.x || 1) * 13, 0.11, 0], { cause: 'coup-franc' });
+    st.lastTouch = 0; st.restart = null;                     // la menace vient de l'adversaire ; le monde JOUE (le cerveau gardien dort pendant l'engagement)
+    gk.p[0] = g.x - Math.sign(g.x || 1) * 0.8; gk.p[2] = -1.6; gk.down = 0; gk.act = null;
+    const versCoin = Math.atan2(2.7 - 0, (g.x - st.ball.p[0]) || 1);   // le coin OPPOSÉ au gardien décalé (dz 4,3 ≤ reach × 1,7)
+    st.ball.strike({ speed: 19, dirYaw: Math.sign(g.x || 1) > 0 ? versCoin : Math.PI - versCoin, elevation: 0.04, spinAxis: [0, 1, 0], spinRev: 0 });
+    for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
+    return st.events.find((e) => e.type === 'dive');
+  };
+  const dv = tente();
+  const ds = tente({ honneur: false });
+  ok(`lot 132 — le PLONGEON D'HONNEUR part sur le battu proche (dive ${dv ? `déclenché, crossZ ${dv.crossZ}${dv.honneur ? ', honneur' : ''}` : 'ABSENT'}) ; sabotage « le spectateur d'hier » attrapé (honneur:false : ${ds ? 'un dive — le monde a bougé' : 'aucun geste, le gardien regarde le but'})`,
+    !!dv && !ds);
+  // (b) LE REGARD, fixture movement pure : le gardien en COURSE latérale, ballon au loin —
+  // vif : le yaw se pose sur le ballon (pas chassé) ; sabotage : le yaw suit la course.
+  const regard = (over = {}) => {
+    const st = makeMatch({ full: true, seed: 9 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    const gk = st.players.find((p) => p.keeper && p.team === 1);
+    st.ball.restart([10, 0.11, 0], { cause: 'coup-franc' });
+    gk.job = 'keeper'; gk.yaw = Math.PI / 2; gk.yawWant = null; gk.act = null; gk.down = 0;
+    gk.target = [gk.p[0], 0, gk.p[2] + 12];                  // une course plein z (latérale au ballon)
+    for (let i = 0; i < 60; i++) { gk.target = [gk.p[0], 0, gk.p[2] + 12]; movePlayers(st, 1 / 60, cfg); }
+    const versBal = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
+    let d = versBal - gk.yaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+    return { ecart: Math.abs(d) * 180 / Math.PI, v: gk.speed };
+  };
+  const rv = regard();
+  const rs = regard({ regardGardien: false });
+  ok(`lot 132 — le REGARD tient en course (gardien lancé ${rv.v.toFixed(1)} m/s plein z : écart au ballon ${rv.ecart.toFixed(0)}° ≤ 40 — le pas chassé) ; sabotage « le regard de course d'hier » attrapé (regardGardien:false : ${rs.ecart.toFixed(0)}° ≥ 60 — il regarde où il court)`,
+    rv.v > 1 && rv.ecart <= 40 && rs.ecart >= 60);
+}
+
+// ---------------------------------------------------------------- lot 133 : LE MARQUAGE DE
+// SURFACE SUR CENTRE (retour utilisateur : « les centres manquent de défenses sur les
+// attaquants de surface »). Mesuré avant : 53 % des attaquants de boîte LIBRES (> 3 m) à
+// l'arrivée, 0 dégagement défensif / 17 centres. La loi (phases.marquageCentre) : au VOL du
+// centre, MAX 2 corps sur les 2 plus dangereux, goal-side 0,8, rayon = axe(marquage, 7, 14) ;
+// la RÉMANENCE est un opt-in (l'A/B APPARIÉ mêmes graines : 0,6-1,0 s coûtait 5-8 buts et
+// jusqu'à 23 % des tirs — la bande 17-33 crevait ; le vol-seul la tient à 18). La preuve de
+// la LOI est UNITAIRE (la fixture pure) — le flux ne compte que l'EXISTENCE du marquage.
+{
+  const d2f = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
+  const H = { busy: busyG, tac, axe: axeT, d2: d2f };
+  const fixture = (cfgOver = {}) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    st.restart = null;
+    const cfg = matchCfg({ shotRange: 20, ...cfgOver });
+    const g = st.pitch.ownGoal(1), sg = Math.sign(g.x || 1);
+    const atk = st.players.find((q) => q.team === 0 && !q.keeper);        // le centreur
+    const cible = st.players.filter((q) => q.team === 0 && !q.keeper)[1]; // l'attaquant de boîte
+    cible.p[0] = g.x - sg * 8; cible.p[2] = 2.5; cible.down = 0;
+    const marqueur = st.players.filter((q) => q.team === 1 && !q.keeper)[0];
+    marqueur.p[0] = g.x - sg * 13; marqueur.p[2] = -1; marqueur.down = 0; marqueur.job = 'cover'; marqueur.act = null;
+    st.pass = { from: atk.id, to: cible.id, cross: true, t: st.t, lead: [g.x - sg * 8, 0, 2] };
+    marquageCentre(st, cfg, H);
+    const M = st._marquage;
+    const pris = M?.pairs?.find(([, cid]) => cid === cible.id);
+    const m = pris ? st.players[pris[0]] : null;
+    return { pairs: M?.pairs?.length ?? 0, job: m?.job ?? '-',
+      goalSide: m ? (m.target[0] - cible.p[0]) * sg : 0 };
+  };
+  const fx = fixture();
+  const fs = fixture({ marquageCentre: false });
+  ok(`lot 133 — le VOL DU CENTRE met un CORPS sur le corps (fixture pure : ${fx.pairs} paire(s), le marqueur en job '${fx.job}', cible goal-side ${fx.goalSide.toFixed(1)} m côté but) ; sabotage « les statues de zone d'hier » attrapé (marquageCentre:false : ${fs.pairs} paire — l'attaquant libre, nommé)`,
+    fx.pairs >= 1 && fx.job === 'mark' && fx.goalSide > 0.4 && fs.pairs === 0);
+  // le FLUX : le marquage EXISTE en match (frames de vol marquées) — l'efficacité fine est
+  // le métier de la fixture, le flux jure seulement que la loi tourne
+  const flux133 = (over = {}) => {
+    let frames = 0;
+    for (const seed of [1, 2]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st._marquage?.pairs?.length) frames++;
+      }
+    }
+    return frames;
+  };
+  const fv = flux133({});
+  const fb = flux133({ marquageCentre: false });
+  ok(`lot 133 — le marquage VIT en flux (${fv} frames de vol marquées / 2 × 300 s ≥ 40) ; éteint : ${fb} (l'identité au monde d'hier)`,
+    fv >= 40 && fb === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
