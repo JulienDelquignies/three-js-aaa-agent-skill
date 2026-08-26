@@ -47,6 +47,25 @@ export function movePlayers(st, dt, cfg) {
     // pendant l'accompagnement, la semelle tient le corps immobile sur son ballon — stepGestures
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
     if (winding(p) || p.act?.payload?.ownsBody) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
+    // LA COURSE S'ENGAGE ET SE FINIT (lot 135, cfg.engagement && st.full — mesuré : 52 % des
+    // courses off-ball meurent < 1,2 s, 26 % des sauts de cible > 5 m (p90 15 m), 24 % de
+    // piétinement : le cerveau re-cible à 60 Hz, les corps FRÉMISSENT — « pas un vrai match »).
+    // Les jobs de POSTURE (support/cover/walk) adoptent une COURSE ENGAGÉE : la cible ne se
+    // réécrit que si la voulue s'en écarte de > drift ET que la tenue est écoulée — en dessous
+    // la même course s'affine (couche morte). Press/receive/intercept/carry, les bursts et le
+    // marquage (sa propre hystérésis, lot 96) restent à la frame. false : le frémissement d'hier.
+    if (st.full && cfg.engagement !== false && p.target && !p.keeper
+      && (p.job === 'support' || p.job === 'cover' || p.job === 'walk')
+      && !((p._pace?.until ?? -1) > st.t)) {
+      const E = cfg.engagement === true || cfg.engagement == null ? {} : cfg.engagement;
+      const R = p._runT;
+      const drift = R ? Math.hypot(p.target[0] - R[0], p.target[2] - R[2]) : Infinity;
+      if (!R || (drift > (E.drift ?? 2.5) && st.t >= (p._runUntil ?? 0))) {
+        p._runT = [p.target[0], 0, p.target[2]];
+        p._runUntil = st.t + (E.tenue ?? 1.4);
+      }
+      p.target = p._runT;
+    }
     let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press'
       : p.job === 'mark' ? (cfg.speeds.mark != null ? 'mark' : 'support')

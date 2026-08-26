@@ -5410,6 +5410,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (POST131 étendu aux clés 134 — le patron « la clause isole ses successeurs ») ; rondo
      c775c81e / réduit c701c84a au bit, matchs 0cfd543abcc12b16 / b067f0e355139151.
 
+177. **Lot 135 : LA DYNAMIQUE — LES CORPS NE FRÉMISSENT PLUS (retour utilisateur : « ça
+     manque d'intelligence de placement et de déplacement, off. et déf. — pas l'impression
+     de regarder un vrai match, je ne sais pas trop comment le décrire »).** LE RESSENTI
+     DIFFUS S'EST CHIFFRÉ EN DEUX SONDES : le PANORAMA STATIQUE (probe-135, 10 signatures
+     vs réel) est SAIN — offre au porteur 3 (réel 3-5), soutien 9,2 m (8-12), largeur 43,
+     profondeur 39, entre-les-lignes 2 (2-3), bloc 31 × 31, ballside 8,5 (4-10), tas 6
+     (5-7) ; seuls l'inter-lignes (17,8 vs 10-15) et le recyclage (49 % vs 30-40) débordent
+     — MAIS la DYNAMIQUE tremblait (probe-135b) : 52 % des courses off-ball meurent en
+     < 1,2 s (p50 1,1 s — réel 2-4), 26 % des sauts de cible > 5 m (p90 15 m, ~46 sauts/s
+     sur 20 corps), 24 % de piétinement. LA DÉCOMPOSITION PAR JOB (probe-135c) a nommé le
+     mal : mark 10 495 sauts (4 841 > 5 m — le RE-TRI frame-vif de QUI marque QUI : deux
+     tris imbriqués byDist × mTri, l'indice change, l'homme change, la cible saute de
+     15 m) et support 1 804 (l'échange de slots du greedy). LA LOI RETENUE (la « v4 » du
+     ROADMAP : assignation avec hystérésis, PAS de post-traitement géométrique — le verdict
+     du lot 85 respecté) : L'ASSIGNATION A UNE MÉMOIRE (cfg.assignTenue) — le GRAND saut de
+     cible (> 3-3,5 m = une réaffectation d'homme/slot) attend sa TENUE (mark 1,6 s, slot
+     1,2 s, burst _pace exempté) ; le suivi fin du même homme garde sa cadence d'hier ; aux
+     4 sites (_markT + les 3 _slotT). LE SECOND VOLET REJETÉ PAR L'APPARIÉ : cfg.engagement
+     (la course des jobs de posture tenue dans movement) coûtait 6 buts/10 graines (4 vs
+     10 — les fenêtres offensives ratées) → OPT-IN (défaut false), assignTenue porte le
+     gain SEULE : sauts > 5 m 26 → 21 %, saut p50 1,8 → 1,0 m, courses inachevées 52 →
+     44 % (p50 1,4 s), piétinement 24 → 20 %. A/B final 100 tirs / 18 buts (bande) ; rondo
+     c775c81e / réduit c701c84a AU BIT ; matchs 92b28039679dd07e / a6027bed22206dee.
+     CLAUSE 135 : vif ≤ sabotage − 15 % de gros sauts ET courses p50 + 0,15 s (5092 vs
+     6985, 1,40 vs 1,10). Dettes nommées « la dynamique v2 » : la mémoire des JOBS (le
+     cycle support→mark→press reste une source de courtes courses), la synchronie du bloc
+     (les vagues), l'inter-lignes 17,8, le recyclage 49 %, le press aux 7 212 petits sauts
+     (légitimes — le porteur bouge — mais lissables).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

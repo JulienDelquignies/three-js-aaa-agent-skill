@@ -670,7 +670,7 @@ function assignMatchJobs(st, cfg) {
         const want = spots[p.post ?? 0] ?? [p.p[0], p.p[2]];
         p.job = 'support';
         const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
-        if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
+        if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
         let tx = p._slotT[0], tz = p._slotT[1];
@@ -796,14 +796,12 @@ function assignMatchJobs(st, cfg) {
       if (best < 0) { p.job = 'support'; p.target = [p.p[0], 0, p.p[2]]; continue; }
       taken.add(best);
       p.job = 'support';
-      // L'ÉCONOMIE DU HORS-BALLON : re-visée cadencée (0,7 s, pas de 0,8 m, transition > 3,5 m
-      // immédiate) — l'hystérésis PURE gelait le bloc (2 appels servis sur 45, consigné).
+      // L'ÉCONOMIE DU HORS-BALLON : re-visée cadencée (0,7 s / 0,8 m ; > 3,5 m = réaffectation, voir assignTenue) — l'hystérésis PURE gelait le bloc (consigné).
       let want = [slots[best][0], slots[best][1]];
-      // le se-montrer s'évalue À CHAQUE cadence (la ligne bouge avec les défenseurs — un slot
-      // immobile mais fermé doit se ré-ouvrir), et sa cible ajustée passe par la même hystérésis
+      // le se-montrer s'évalue À CHAQUE cadence (un slot immobile mais fermé se ré-ouvre), même hystérésis
       if (st.full && cfg.demarque !== false && carrier && !carrier.keeper && (p._slotAt ?? -1) <= st.t) want = seMontrer(p, want);
       const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
-      if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
+      if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
         p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
       }
       p.target = [p._slotT[0], 0, p._slotT[1]];
@@ -943,14 +941,13 @@ function assignMatchJobs(st, cfg) {
         }
         p.job = 'mark';
         const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
-        if (!p._slotT || drift > 3.5 || ((p._slotAt ?? -1) <= st.t && drift > 0.8)) {
+        if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
         p.target = [p._slotT[0], 0, p._slotT[1]];
         return;
       }
-      // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT, re-visé par à-coups (0,5 s/0,8 m) ;
-      // ON MARQUE LE DANGER SEULEMENT (51b) : près du ballon ou mon tiers — sinon le bloc couvre. Réduit : hier.
+      // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT, à-coups (0,5 s/0,8 m) ; ON MARQUE LE DANGER SEULEMENT (51b) — sinon le bloc couvre. Réduit : hier.
       mTri.length = 0;                                             // copie depuis `marks` : le départ du tri stable reste l'ordre d'hier
       for (const a of marks) { a._dMark = d2(a.p, p.p); mTri.push(a); } mTri.sort((x, y) => x._dMark - y._dMark);
       // …UN MARQUEUR PAR HOMME (lot 72 : trois voisins élisaient le même homme, tas de 4-5
@@ -980,7 +977,10 @@ function assignMatchJobs(st, cfg) {
         if (xL != null && want[0] * sgnDef < sL - 6) want[0] = sgnDef * (sL - 6);
       }
       const drift = p._markT ? Math.hypot(want[0] - p._markT[0], want[1] - p._markT[1]) : Infinity;
-      if (!p._markT || drift > 3 || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8))) {
+      // L'ASSIGNATION A UNE MÉMOIRE (lot 135, cfg.assignTenue — 4 841 sauts > 5 m : le re-tri frame-vif de QUI
+      // marque QUI) : le grand saut (> 3 = un autre homme) attend la TENUE ; le suivi fin garde sa cadence.
+      const t135 = st.full && cfg.assignTenue !== false;
+      if (!p._markT || (drift > 3 && (!t135 || st.t >= (p._markHold ?? 0)) && ((t135 && (p._markHold = st.t + (cfg.assignTenue?.mark ?? 1.6))), true)) || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8) && drift <= 3)) {
         p._markT = want; p._markAt = st.t + (press ? 0.35 : 0.5);
       }
       p.target = [p._markT[0], 0, p._markT[1]];

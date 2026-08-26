@@ -169,6 +169,14 @@ export const MATCH = {
                           // son yaw suit le ballon (pas chassé, patron du backpedal libéro),
                           // le côté du clip de plongeon se calcule sur un regard JUSTE
                           // (mesuré : 3/20 plongeons sur regard > 60°). false : hier.
+  assignTenue: {},        // lot 135 : L'ASSIGNATION A UNE MÉMOIRE — le GRAND saut de cible
+                          // (> 3-3,5 m = une réaffectation d'homme/slot) attend sa tenue
+                          // (mark 1,6 s, slot 1,2 s ; burst exempté) ; le suivi fin garde sa
+                          // cadence. Mesuré : 4 841 sauts mark > 5 m, 1 804 slots. false : hier.
+  engagement: false,      // lot 135 (movement.js) : LA COURSE S'ENGAGE ET SE FINIT — OPT-IN
+                          // ({} l'active : les jobs de posture tiennent leur cible drift 2,5 /
+                          // tenue 1,4 s). L'apparié l'a CHARGÉ en défaut : les fenêtres
+                          // offensives ratées (4 buts/10 vs 10 — assignTenue porte le gain seul).
   interception: {},       // lot 134 : L'INTERCEPTEUR du match — pendant le vol d'une passe
                           // adverse basse, le défenseur qui GAGNE le chemin y va (un seul,
                           // slack > 0,05, ≤ rayon 8 m du point, latence lot 50, mémo 0,25 s).

@@ -51,12 +51,13 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   contreAppel: false, boxCrash: false,                              // …les courses droites et la surface d'hier (pré-122/123)
   courseAilier: false, throughBall: false,
   honneur: false, regardGardien: false, marquageCentre: false,       // …le spectateur battu, le regard de course et les statues de zone d'hier (pré-132/133)
-  interception: false, meetReel: false, rattrape: false };           // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
+  engagement: false, assignTenue: false };                           // …le frémissement des cibles d'hier (pré-135)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false };   // la clause 131 isole SES successeurs (132-134) — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false };   // la clause 131 isole SES successeurs (132-135) — sa loi seule varie
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -1006,7 +1007,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false,
+    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
@@ -2898,6 +2899,47 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const is2 = icFlux({ interception: false });
   ok(`lot 134 — L'INTERCEPTEUR DU MATCH vit (${iv} frames de vol adverse disputées / 2 × 300 s ≥ 30 — le rondo l'avait, le match jamais) ; sabotage « les spectateurs de couloir d'hier » attrapé (interception:false : ${is2} frame)`,
     iv >= 30 && is2 === 0);
+}
+
+// ---------------------------------------------------------------- lot 135 : LA DYNAMIQUE —
+// LES CORPS NE FRÉMISSENT PLUS (retour utilisateur : « ça manque d'intelligence de placement
+// et de déplacement — pas l'impression d'un vrai match »). Le panorama STATIQUE était SAIN
+// (offre 3, soutien 9,2, bloc 31×31, entre-lignes 2) — c'était la DYNAMIQUE : 52 % des
+// courses off-ball < 1,2 s, 26 % des sauts de cible > 5 m (p90 15 m — le re-tri frame-vif de
+// QUI marque QUI et l'échange de slots), 24 % de piétinement. Deux lois : LA COURSE S'ENGAGE
+// ET SE FINIT (cfg.engagement, movement) et L'ASSIGNATION A UNE MÉMOIRE (cfg.assignTenue —
+// le GRAND saut attend sa tenue, le suivi fin garde sa cadence, le burst exempt).
+{
+  const danse = (over = {}) => {
+    let gros = 0, courtes = 0, nC = 0;
+    const durs = [];
+    for (const seed of [1, 2]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      const S = {};
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.restart || (i % 3) !== 0) continue;
+        for (const p of st.players) {
+          if (p.keeper || p.down > 0 || p.expulse || p.id === st.possession.carrier) continue;
+          const sS = S[p.id] ??= { tgt: null, course: null };
+          if (p.target) {
+            if (sS.tgt && Math.hypot(p.target[0] - sS.tgt[0], p.target[2] - sS.tgt[2]) > 5) gros++;
+            sS.tgt = [p.target[0], 0, p.target[2]];
+          }
+          const v = Math.hypot(p.v[0], p.v[1]);
+          if (v > 2) { if (!sS.course) sS.course = st.t; }
+          else if (sS.course != null) { const d = st.t - sS.course; nC++; durs.push(d); if (d < 1.2) courtes++; sS.course = null; }
+        }
+      }
+    }
+    durs.sort((a, b) => a - b);
+    return { gros, part: courtes / Math.max(1, nC), p50: durs[Math.floor(durs.length / 2)] ?? 0 };
+  };
+  const vifD = danse();
+  const sabD = danse({ engagement: false, assignTenue: false });
+  ok(`lot 135 — LES CIBLES NE TREMBLENT PLUS (${vifD.gros} sauts > 5 m / 2 × 300 s ≤ sabotage − 15 % ; courses off-ball p50 ${vifD.p50.toFixed(1)} s ≥ saboté + 0,15) ; sabotage « le frémissement d'hier » attrapé (${sabD.gros} sauts, p50 ${sabD.p50.toFixed(1)} s — le re-tri à 60 Hz, nommé)`,
+    vifD.gros <= sabD.gros * 0.85 && vifD.p50 >= sabD.p50 + 0.15);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

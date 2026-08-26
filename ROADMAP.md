@@ -256,6 +256,15 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA DYNAMIQUE (135, note 177 — retour utilisateur « pas l'impression d'un vrai match ») :
+le panorama statique est SAIN (10 signatures vs réel — probe-135 à recréer au besoin) ;
+le mal était le TREMBLEMENT des cibles (re-tri frame-vif du marquage et des slots).
+LIVRÉ : cfg.assignTenue (la « v4 » : le grand saut attend sa tenue, aux 4 sites _markT/
+_slotT). cfg.engagement (courses de posture tenues) = OPT-IN — l'apparié l'a chargé (les
+fenêtres offensives). Empreintes match 92b28039679dd07e / a6027bed22206dee. DETTES
+« dynamique v2 » : la mémoire des JOBS, la synchronie du bloc (les vagues), l'inter-lignes
+17,8 (réel 10-15), le recyclage 49 % (réel 30-40), le lissage du press.
+
 LE BALLON LIBRE PRIS EN CHARGE (134, note 176 — retour utilisateur) : le rattrapage vise
 AU TRAVERS (cfg.rattrape — l'orbite derrière la passe fuyante), le ballon réel commande à
 portée (cfg.meetReel — le vol dévié couru au lead fantôme), et L'INTERCEPTEUR DU MATCH
