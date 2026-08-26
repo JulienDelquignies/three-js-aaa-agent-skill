@@ -161,6 +161,15 @@ export const MATCH = {
                           // de layoff — le ballon d'espoir qui meurt en route (116 s d'errance
                           // / 1200 s mesurées) n'est plus tenté. dose:false : hier au bit.
   clearServi: { min: 8, essais: 2 },
+  sortieGardien: {},      // lot 136 : LA PASSE AU GARDIEN — un comportement DE STYLE (le patron
+                          // UT.calme du 49) : bonus 5,2 × max(0, (0,5 − style) × 2) × composureF
+                          // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
+                          // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
+                          // press < 5 m. false : le gardien invisible même en possession.
+  clearTouche: false,     // lot 136 : LA TOUCHE VOLONTAIRE — OPT-IN ({} l'active : l'étau
+                          // double [collé + entouré] < 12 m met le ballon en touche). L'apparié
+                          // l'a chargée en défaut (elle mange du temps de jeu). Le CORNER RARE
+                          // et les seuils d'étau au style × rôle restent au DÉFAUT (clearServi).
   honneur: { portee: 1.7 }, // lot 132 : LE PLONGEON D'HONNEUR — battu proche (≤ reach × portee)
                           // et cadré, le geste part quand même (sans arrêt promis — le corps
                           // raconte le but ; mesuré : des buts avec le gardien debout en

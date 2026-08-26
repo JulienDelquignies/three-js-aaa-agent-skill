@@ -256,6 +256,16 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'ÉCHELLE DE LA SÉCURITÉ (136, note 178 — retour utilisateur Guardiola/corners) : LA
+PASSE AU GARDIEN = PENTE DE STYLE PURE (0 au défaut 0,5 — l'identité, seed 7 au bit du
+135 ; possession : 7/3×300 s — le patron UT.calme), la TOUCHE VOLONTAIRE = OPT-IN
+(clearTouche), au DÉFAUT : corner de panique < 10 m tirage 0,35 × sang-froid + seuils
+d'étau au style × rôle press. Gate 90/17 (le fil). DETTES : le volume des touches
+(« le terrain déborde »), le backpass Loi 12.2, le drop kick, le clip du dégagement.
+⚠ CHANTIER DE FOND : le monde défaut vit au BORD BAS de la bande (17-18) — re-gagner
+des buts par des sources RÉELLES (corners convertis, pénos, finition) AVANT toute
+nouvelle loi défensive par défaut.
+
 LA DYNAMIQUE (135, note 177 — retour utilisateur « pas l'impression d'un vrai match ») :
 le panorama statique est SAIN (10 signatures vs réel — probe-135 à recréer au besoin) ;
 le mal était le TREMBLEMENT des cibles (re-tri frame-vif du marquage et des slots).

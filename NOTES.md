@@ -5439,6 +5439,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (les vagues), l'inter-lignes 17,8, le recyclage 49 %, le press aux 7 212 petits sauts
      (légitimes — le porteur bouge — mais lissables).
 
+178. **Lot 136 : L'ÉCHELLE DE LA SÉCURITÉ (retour utilisateur : « une équipe de Guardiola
+     doit prendre plus de risques — la passe au gardien, le dribble de plus ; et le
+     dégagement doit sortir d'abord vers un coéquipier, sinon le terrain, puis la touche,
+     le corner si c'est la merde »).** MESURÉ AVANT : 0 passe au gardien / 533 (LA sortie
+     n°1 du vrai foot n'existait pas — mates() inclut le gardien mais le MUR de passRange
+     [~13 m] l'écartait avant tout barème, et le sens du jeu enterrait le reste), 0 touche
+     volontaire en 30 min (le monde ne sortait qu'en corner — d'où l'impression « toujours
+     corner »). TROIS LOIS : (1) LA SORTIE AU GARDIEN (cfg.sortieGardien, choosePass +
+     beginPass) — le porteur PRESSÉ (< 6 m) dans son tiers bas bonifie le retrait vers son
+     gardien (bonus 3,2 × axe style 1,35-0,65 — LA POSSESSION OSE — × composureF, le
+     sang-froid), avec SA portée (30 m — le patron des portes de portée : bascule/couloir/
+     écarte), cooldown d'équipe 8 s posé par beginPass (pas de ping-pong) ; le gardien
+     receveur ramasse (keeperClaim) et SA distribution existante reprend. (2) LA TOUCHE
+     VOLONTAIRE (cfg.clearTouche, tryClear) — l'étau COLLÉ sans tête servie met le ballon
+     EN TOUCHE côté proche (+7 m devant) : on rend la remise, jamais le corner. (3) LE
+     CORNER RARE — la panique ne concède que très profond (< 9 m au lieu de 12), collée,
+     tirage 0,3 × (2 − composureF). ET LE RISQUE EST UN CHOIX : les seuils d'étau de
+     tryClear suivent axe(style, 0,8-1,2) × axe(rôle press, 0,9-1,1) — l'équipe possession
+     dégage PLUS TARD (le dribble de plus et la sortie courte viennent mécaniquement de ce
+     retard), le récupérateur déblaie tôt, le meneur replié retient. APRÈS : 11 passes au
+     gardien / 6 × 300 s, corners issus de dégagement 2 → 0, touches volontaires vivantes,
+     dégagements servis 33/36. LE FEUILLETON DE LA BANDE (6 états mesurés 11-15 buts — le
+     monde 135 vit à 18, AUCUNE marge : toute sortie propre par défaut crevait le gate ;
+     l'apparié a chargé chaque volet ~1-2 buts, diffus) → LE CONTRAT FINAL, le patron
+     UT.calme du 49 : LA SORTIE AU GARDIEN EST UNE PENTE DE STYLE PURE — bonus 5,2 ×
+     max(0, (0,5 − style) × 2) × composureF : ZÉRO au style 0,5 (l'identité au défaut, la
+     bande intacte — seed 7 AU BIT du monde 135), PLEINE en possession (7 passes gardien /
+     3 × 300 s — le Guardiola vit dans le preset) ; LA TOUCHE VOLONTAIRE = OPT-IN
+     (clearTouche — elle mange du temps de jeu) ; restent AU DÉFAUT : le corner de panique
+     resserré (< 10 m, tirage 0,35 × sang-froid) et les seuils d'étau au style × rôle
+     press. GATE FINAL : 90 tirs / 17 buts (la bande au fil). CLAUSE 136 : la preuve
+     TACTIQUE (possession 7 ≥ 2, défaut ≤ 1 — la pente nulle —, sabotage ≤ vivant − 4).
+     Dettes : le VOLUME des touches (~1-3 / 30 min vs ~13 réel — « le terrain déborde ») ;
+     le backpass à la MAIN (Loi 12.2) ; le drop kick gardien ; le clip du dégagement ; LE
+     CHANTIER DE FOND CONSIGNÉ : le monde défaut vit au BORD BAS de la bande (17-18) — les
+     prochaines lois défensives exigeront de re-gagner des buts par des sources RÉELLES
+     (corners joués convertis, pénos, la finition) avant tout nouveau réalisme défensif.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

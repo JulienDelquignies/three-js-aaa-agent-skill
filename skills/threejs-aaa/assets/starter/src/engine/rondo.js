@@ -121,6 +121,21 @@ export function choosePass(st, cfg = RONDO) {
   const _dense = !!(cfg.renversement && st.full) && _fixOK
     && foesL.filter((q) => q.down <= 0 && d2(q.p, origin) < (cfg.renversement.rayon ?? 12)).length
       >= (cfg.renversement.dense ?? 5) + axe(_sty, -1, 1);
+  // LA SORTIE AU GARDIEN (lot 136, cfg.sortieGardien && st.full — mesuré : 0 passe au gardien
+  // / 533, la sortie n°1 du vrai foot n'existait pas : le barème enterre le recul). Le porteur
+  // PRESSÉ dans son tiers bas avec un couloir propre vers son gardien : le retrait se BONIFIE —
+  // la possession y tient (axe style), le sang-froid (composureF) ose ; cooldown d'équipe
+  // (beginPass le pose) contre le ping-pong gardien-défenseur. false : le gardien invisible.
+  let gardienOk = false;
+  if (st.full && cfg.sortieGardien !== false && st.pitch && !c.keeper
+    && (st._gkOutCd?.[c.team] ?? -1) < st.t) {
+    const _og = st.pitch.ownGoal(c.team), _osg = Math.sign(_og.x || 1);
+    if (c.p[0] * _osg > st.pitch.hx * 0.05) {   // son tiers bas (repère : vers SON but)
+      let foeP = 99;
+      for (const q of foesL) if (q.down <= 0) foeP = Math.min(foeP, d2(q.p, c.p));
+      gardienOk = foeP < (cfg.sortieGardien?.press ?? 5);
+    }
+  }
   let best = null;
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
@@ -190,6 +205,7 @@ export function choosePass(st, cfg = RONDO) {
     const rMax = bascule ? (cfg.renversement.portee ?? 38)
       : couloirB > 0 ? Math.max(cfg.passRange[1], cfg.couloir.portee ?? 24)   // la passe d'ÉCARTEMENT a sa porte (lot 99)
       : ecarteB > 0 ? Math.max(cfg.passRange[1], cfg.ecarte.portee ?? 32)     // la sortie d'axe a la sienne (lot 105)
+      : gardienOk && m.keeper ? (cfg.sortieGardien?.portee ?? 26)             // la sortie au gardien a la SIENNE (lot 136 — le retrait vit à 20-30 m)
       : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel' ? (cfg.appelRange ?? 0) : 0);
     if (d < cfg.passRange[0] || d > rMax) continue;
     // aim slightly in front of the receiver so he runs onto it rather than waiting for it
@@ -281,7 +297,12 @@ export function choosePass(st, cfg = RONDO) {
       + (st.full && cfg.moments?.vertical && st._possChangeAt != null
         && st.t - st._possChangeAt < (cfg.moments.win ?? 5)
         && Math.sign(st.pitch.attackGoal(c.team).x || 1) * (m.p[0] - c.p[0]) > 8 ? cfg.moments.vertical : 0)
-      + couloirB + ecarteB;                                   // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
+      + couloirB + ecarteB                                    // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
+      + (gardienOk && m.keeper ? (cfg.sortieGardien?.bonus ?? 5.2)
+        * Math.max(0, (0.5 - (st.full ? tac(st, c.team).style : 0.5)) * 2)
+        * Math.min(1.2, c.skill?.composureF ?? 1) : 0);       // la sortie au gardien (136) : PENTE DE STYLE pure —
+                                                              // 0 au défaut 0,5 (l'identité, le patron UT.calme du 49),
+                                                              // pleine en possession — le Guardiola vit dans le preset
     // …le THROUGH remplace la mène et le style du candidat servi (le rendez-vous a son couloir jugé)
     if (!best || score > best.score) best = through
       ? { to: m, lead: through.lead, style: 'ground', score: score + (cfg.throughBall?.bonus ?? 0.6), lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }

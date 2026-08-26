@@ -445,6 +445,8 @@ export function strikeNow(st, c, cfg) {
       ? { team: c.team, side: zSide || F.side, n: F.n + 1 } : { team: c.team, side: zSide, n: 1 };
   }
   st.possession.carrier = -1;
+  // la sortie au gardien pose son COOLDOWN d'équipe (lot 136 — pas de ping-pong)
+  if (st.players[choice.to.id]?.keeper) (st._gkOutCd ??= {})[c.team] = st.t + (cfg.sortieGardien?.cd ?? 12);
   st.hold = 0; st.pressure = 0;
   const sit = situation(c.p, c.yaw, from, [0, 0, 0], from[1]);
   const tx = lead[0] - c.p[0], tz = lead[2] - c.p[2];

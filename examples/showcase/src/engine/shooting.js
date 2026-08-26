@@ -7,6 +7,7 @@ import { simInternals } from './rondo-sim.js';
 import { busy, winding, startGesture } from './gesture.js';
 import { MOVES } from './animkit.js';
 import { tac, axe } from './tactics.js';
+import { role } from './roles.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -272,11 +273,14 @@ export function tryClear(st, c, cfg) {
   const depth = (c.p[0] - own.x) * -own.sign;                      // profondeur depuis SA ligne
   if (depth > pitch.hx * 0.66) return false;                       // pas dans son tiers : on joue
   if ((st._clearCd?.[c.team] ?? -1) > st.t) return false;
-  // l'étau se lit aux CORPS, pas à la minuterie de duel (st.pressure ne s'accumule qu'en
-  // conteste installé — l'équipe épinglée était taclée avant) : deux corps à 2,6 m, ou un seul
-  // mais collé (1,4 m) profond dans le tiers
-  const near = st.players.filter((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 2.6).length;
-  const glued = st.players.some((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 1.4);
+  // l'étau se lit aux CORPS (deux à 2,6 m, ou un collé 1,4 m profond) — ET LE RISQUE EST UN
+  // CHOIX (lot 136) : l'axe STYLE serre les seuils (la possession dégage plus tard — elle
+  // JOUE : passe au gardien, sortie courte, le dribble de plus vient du même retard), le
+  // RÔLE press du porteur les module (le récupérateur déblaie tôt, le meneur replié retient).
+  const rF = st.full && cfg.clearServi !== false
+    ? axe(tac(st, c.team).style, 0.8, 1.2) * axe(role(c).press, 0.9, 1.1) : 1;
+  const near = st.players.filter((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 2.6 * rF).length;
+  const glued = st.players.some((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 1.4 * rF);
   if (!(near >= 2 || (glued && depth < pitch.hx * 0.45))) return false;
   const sgn = -own.sign;                                           // vers l'avant
   // LE DÉGAGEMENT EN CATASTROPHE (lot 101, cfg.corner && st.full — la 3e source de corners,
@@ -284,8 +288,13 @@ export function tryClear(st, c, cfg) {
   // (< 12 m) et collé, le vrai défenseur SÉCURISE DERRIÈRE — n'importe où sauf devant son but,
   // le corner concédé est le moindre danger. Tirage rnd2 45 % ; sinon (ou clé absente) : le
   // dégagement au flanc d'hier, au bit près.
-  const panique = st.full && cfg.corner && depth < 12 && (glued || near >= 2)
-    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.45;
+  // L'ÉCHELLE DE LA SÉCURITÉ (lot 136, retour utilisateur : « d'abord un coéquipier, sinon le
+  // terrain, puis la touche, le corner si c'est la merde ») : le corner concédé se GAGNE le
+  // droit d'être rare — très profond (< 9 m), collé, tirage 0,3 × le sang-froid (composureF —
+  // le joueur sûr trouve mieux) ; l'étage TOUCHE volontaire vit en dessous (clearTouche).
+  const panique = st.full && cfg.corner && depth < (cfg.clearTouche || cfg.clearServi !== false ? 10 : 12) && (glued || near >= 2)
+    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() < (cfg.clearTouche || cfg.clearServi !== false
+      ? 0.35 * Math.min(1.3, 2 - (c.skill?.composureF ?? 1)) : 0.45);
   const flank = c.p[2] >= 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55;  // le flanc OPPOSÉ à la mêlée
   // LE DÉGAGEMENT CHERCHE UNE TÊTE (lot 131, cfg.clearServi && st.full — mesuré avant : 33
   // dégagements = 198 s d'errance / 1200 s de jeu, p50 6,4 s, reprise adverse 73 % — le ballon
@@ -308,9 +317,14 @@ export function tryClear(st, c, cfg) {
       if (r2) { (st._clearCd ??= {})[c.team] = st.t + 6; return r2; }
     }
   }
+  // LA TOUCHE VOLONTAIRE (lot 136, cfg.clearTouche) : l'étau COLLÉ sans tête servie met le
+  // ballon EN TOUCHE côté proche, un peu devant — on rend la remise, jamais le corner.
+  const touche = !panique && st.full && !!cfg.clearTouche && glued && near >= 2 && depth < 12;   // OPT-IN (l'apparié : elle mange du jeu)
   const lead = panique
     ? [own.x + own.sign * 8, 0, Math.sign(c.p[2] || 1) * pitch.hz * 0.75]  // DERRIÈRE la ligne, écarté du but : la sortie assumée (le vol croise la ligne de fond avant la touche)
-    : [c.p[0] + sgn * pitch.hx * 0.85, 0, flank];
+    : touche
+      ? [c.p[0] + sgn * (cfg.clearTouche?.avance ?? 7), 0, Math.sign(c.p[2] || 1) * (pitch.hz + 3)]
+      : [c.p[0] + sgn * pitch.hx * 0.85, 0, flank];
   const r = simInternals.beginPass(st, { to: { id: -2 }, lead, style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true });
   if (r) (st._clearCd ??= {})[c.team] = st.t + 6;
   return r;
