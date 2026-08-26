@@ -34,12 +34,87 @@ export const FORMATIONS = {
     // le duo de pointes
     [0.54, -0.18], [0.54, 0.18],
   ],
+  // LE CATALOGUE COMPLET (lot 127, demande utilisateur : « les différentes formations
+  // possibles ») — chaque formation reste une DONNÉE : dix postes, trois lignes, et les
+  // rôles par défaut (ROLES_FORMATION) qu'un projet pose ou remplace. Le bloc, la
+  // largeur, la hauteur, la Loi 11 : les mêmes lois coulissent tous ces mondes.
+  4231: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.27, -0.20], [0.27, 0.20],                                 // le double pivot
+    [0.44, -0.70], [0.46, 0.0], [0.44, 0.70],                    // le 10 et ses ailiers
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  4321: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.30, -0.40], [0.27, 0.0], [0.30, 0.40],                    // le milieu à trois
+    [0.46, -0.25], [0.46, 0.25],                                 // les deux dix (le sapin)
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  343: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.34, -0.70], [0.30, -0.22], [0.30, 0.22], [0.34, 0.70],    // le milieu à quatre
+    [0.52, -0.75], [0.56, 0.0], [0.52, 0.75],                    // le trio offensif
+  ],
+  3421: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.34, -0.75], [0.29, -0.22], [0.29, 0.22], [0.34, 0.75],    // le milieu à pistons
+    [0.48, -0.30], [0.48, 0.30],                                 // les deux dix
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  532: [
+    [0.16, -0.72], [0.13, -0.36], [0.11, 0.0], [0.13, 0.36], [0.16, 0.72],   // la ligne de cinq
+    [0.32, -0.40], [0.28, 0.0], [0.32, 0.40],                    // le milieu à trois
+    [0.54, -0.18], [0.54, 0.18],                                 // le duo de pointes
+  ],
+  541: [
+    [0.16, -0.72], [0.13, -0.36], [0.11, 0.0], [0.13, 0.36], [0.16, 0.72],   // la ligne de cinq (le bus)
+    [0.33, -0.62], [0.29, -0.20], [0.29, 0.20], [0.33, 0.62],    // le milieu à quatre
+    [0.55, 0.0],                                                 // la pointe seule
+  ],
+  4141: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.24, 0.0],                                                 // la sentinelle
+    [0.38, -0.65], [0.34, -0.22], [0.34, 0.22], [0.38, 0.65],    // la ligne de quatre haute
+    [0.56, 0.0],                                                 // la pointe
+  ],
+  4222: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.27, -0.20], [0.27, 0.20],                                 // le double pivot
+    [0.44, -0.50], [0.44, 0.50],                                 // les deux dix larges
+    [0.56, -0.15], [0.56, 0.15],                                 // le duo de pointes
+  ],
+  4411: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.36, -0.68], [0.30, -0.22], [0.30, 0.22], [0.36, 0.68],    // le milieu à quatre
+    [0.48, 0.0],                                                 // le dix en soutien
+    [0.58, 0.0],                                                 // la pointe
+  ],
+};
+
+/** Les RÔLES PAR DÉFAUT de chaque formation (data — un projet les passe à makeMatch({roles})
+ *  tels quels ou les remplace ; absents : polyvalent partout, l'identité). Le 4231 vit de son
+ *  10 (meneur), le 532/541 de ses pistons, le 4141 de sa sentinelle (récupérateur). */
+export const ROLES_FORMATION = {
+  433: { 5: 'meneur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' },
+  442: { 4: 'piston', 7: 'piston', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  352: { 3: 'piston', 5: 'meneur', 7: 'piston', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  4231: { 4: 'recuperateur', 5: 'recuperateur', 6: 'ailierDePercussion', 7: 'meneur', 8: 'ailierDePercussion', 9: 'neufDeSurface' },
+  4321: { 4: 'recuperateur', 7: 'meneur', 8: 'meneur', 9: 'neufDeSurface' },
+  343: { 3: 'piston', 6: 'piston', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' },
+  3421: { 3: 'piston', 6: 'piston', 7: 'meneur', 8: 'meneur', 9: 'neufDeSurface' },
+  532: { 5: 'recuperateur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  541: { 5: 'piston', 8: 'piston', 9: 'neufDeSurface' },
+  4141: { 4: 'recuperateur', 5: 'piston', 8: 'piston', 9: 'neufDeSurface' },
+  4222: { 4: 'recuperateur', 5: 'recuperateur', 6: 'meneur', 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  4411: { 4: 'piston', 7: 'piston', 8: 'meneur', 9: 'neufDeSurface' },
 };
 
 /** LES LIGNES sont une DONNÉE (défense, milieu, attaque) : c'est ce qui généralise le calage
  *  Loi 11 (« postes ≥ 7 » n'était vrai qu'en 4-3-3), les clauses du contrat, et demain les
  *  rôles par ligne. La somme fait toujours 10 (Loi 3 : onze joueurs, un gardien). */
-export const LIGNES = { 433: [4, 3, 3], 442: [4, 4, 2], 352: [3, 5, 2] };
+export const LIGNES = { 433: [4, 3, 3], 442: [4, 4, 2], 352: [3, 5, 2],
+  4231: [4, 2, 4], 4321: [4, 3, 3], 343: [3, 4, 3], 3421: [3, 4, 3],
+  532: [5, 3, 2], 541: [5, 4, 1], 4141: [4, 5, 1], 4222: [4, 4, 2], 4411: [4, 4, 2] };
 
 /** Le premier poste OFFENSIF de la formation (433 → 7, 442/352 → 8) — le calage Loi 11 et les
  *  appels profonds s'adressent aux pointes, quelle que soit la formation. */

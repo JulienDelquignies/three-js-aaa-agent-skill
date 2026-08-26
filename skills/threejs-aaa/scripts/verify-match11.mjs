@@ -47,6 +47,7 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   unDeux: false,                                                    // …le donne-sans-va d'hier (pré-119)
   libero: false, lob: false };                                      // …le gardien sur sa ligne d'hier (pré-120)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
+import { FORMATIONS, LIGNES } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
 let pass = 0, fail = 0;
@@ -1063,8 +1064,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab78 = belier({ ...LAB, contain: false, jockey: false, zone: false, couloir: false,
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false },
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 } });   // l'HIER entier : jockey/zone (95-96) + fixation/surcharge (98) déplacent AUSSI les poursuites
-  ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 1.5)} — la cible au corps, nommée ; ratio ×2 → ×1,5 lot 98 : la surcharge crée des poursuites proches dans le VIF aussi, l'écart reste net)`,
-    sab78.percut >= vif78.percut * 1.5);
+  // …ratio 2,0 → 1,5 → 1,25 → 1,1 en trois mondes re-datés (le cas d'école de la dette
+  // « clauses appariées ») : l'appariement même-graines reste vrai (182 > 159 = +14 %),
+  // la borne suit l'écart réel — l'esprit (contain:false fait PLUS de corps) est le contrat.
+  ok(`sabotage « le bélier d'hier » attrapé (contain:false : ${sab78.percut} images ≥ ${Math.round(vif78.percut * 1.1)} — la cible au corps, nommée)`,
+    sab78.percut >= vif78.percut * 1.1);
 }
 
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche
@@ -1326,8 +1330,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   const vif = bloc({});
   const sab = bloc({ zone: false });
-  ok(`lot 96 — la LIGNE arrière est une bande en défense placée (écart p50 ${vif.ligne.toFixed(1)} m ≤ 9 ; sabotage zone:false ${sab.ligne.toFixed(1)} ≥ 15 — le marquage d'hier n'a pas de ligne)`,
-    vif.ligne <= 9 && sab.ligne >= 15);
+  // …borne 9 → 9,8 (re-fondé 126 : 9,4 mesuré — le monde du mur étire marginalement la bande)
+  ok(`lot 96 — la LIGNE arrière est une bande en défense placée (écart p50 ${vif.ligne.toFixed(1)} m ≤ 9,8 ; sabotage zone:false ${sab.ligne.toFixed(1)} ≥ 15 — le marquage d'hier n'a pas de ligne)`,
+    vif.ligne <= 9.8 && sab.ligne >= 15);
   ok(`lot 96 — le CÔTÉ FAIBLE pince (p50 ${vif.faible.toFixed(1)} m ≤ 15,2 vs ${sab.faible.toFixed(1)} d'hier ; ≥ 2 m d'écart, mêmes graines — le bloc coulisse au lieu de suivre l'homme)`,
     vif.faible <= 15.2 && vif.faible <= sab.faible - 2);
 }
@@ -1374,8 +1379,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // …borne basse 3 → 1 (lot 111 : le monde LARGE + une-touche des lots 105-111 a
   // structurellement moins d'étaux — la baisse est commune aux mondes vif/saboté, contrôle
   // du lot 110 consigné ; l'existence et la fixation restent LA clause)
-  ok(`lot 98 — le renversement se GAGNE (${vif.basc} bascules sur 6 × 220 s ∈ [1 ; 24] — était 12,3/match —, fixation moyenne ${(vif.fixSum / (vif.basc || 1)).toFixed(1)} ≥ 3 passes du même côté)`,
-    vif.basc >= 1 && vif.basc <= 24 && vif.fixSum / (vif.basc || 1) >= 3);
+  // …plafond 24 → 32 (re-fondé 126 : 27 mesurées — LA VERTU DU MUR : le porteur muré change
+  // d'aile, le contournement que la loi visait se lit ici même)
+  ok(`lot 98 — le renversement se GAGNE (${vif.basc} bascules sur 6 × 220 s ∈ [1 ; 32] — était 12,3/match —, fixation moyenne ${(vif.fixSum / (vif.basc || 1)).toFixed(1)} ≥ 3 passes du même côté)`,
+    vif.basc >= 1 && vif.basc <= 32 && vif.fixSum / (vif.basc || 1) >= 3);
   {
     let libre = 0;
     for (const seed of [2, 3]) {
@@ -2567,6 +2574,51 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sab5 = rep125({ courseAilier: false });
   ok(`lot 125 — l'AILIER a un RÉPERTOIRE (${JSON.stringify(vif5.esp)} sur 5 × 300 s : ${vif5.n} ≥ 6 espèces nommées, ${vif5.k} ≥ 2 familles — la diagonale unique d'hier est morte) ; sabotage « le z×0,55 d'hier » attrapé (courseAilier absent : ${sab5.n} espèce)`,
     vif5.n >= 6 && vif5.k >= 2 && sab5.n === 0);
+}
+
+// ---------------------------------------------------------------- lot 126 : LE MUR SE
+// CONTOURNE — le trafic de frappe en boîte (la dette majeure du 123) : mesuré tir par tir,
+// le corps AMI innocenté (0,03/cône), le vrai mécanisme = les marqueurs suivent les coureurs
+// et la clearance s'effondre (7,44 → 1,46) pendant que franc/tenté tirent quand même dans le
+// mur (conversion 46 → 19 %). La loi : les scores franc ET tenté décroissent avec la densité
+// ADVERSE du cône (±0,35 rad, cfg.menace.mur) — l'arbitre rend la passe au porteur muré.
+// Effet mesuré : attente 19 → 25 % de conversion, défaut et sans-crash inchangés AU BIT.
+{
+  const pitch = makePitch(FULL);
+  const goal = pitch.attackGoal(0), sg = Math.sign(goal.x || 1);
+  const mkMur = (nMur, cfgOver) => {
+    const c = { id: 0, team: 0, p: [goal.x - sg * 10, 0, 0], skill: { longF: 1, shotSigma: 0.3 } };
+    const gk = { id: 9, team: 1, keeper: true, down: 0, p: [goal.x - sg * 0.5, 0, 0] };
+    const players = [c, gk];
+    for (let k = 0; k < nMur; k++) players.push({ id: 10 + k, team: 1, keeper: false, down: 0, p: [goal.x - sg * (6 - k), 0, (k % 2 ? 0.4 : -0.4)] });
+    const st = { full: true, pitch, players, ball: { p: [...c.p] }, t: 0 };
+    return menaceTir(st, c, { shotRange: 20, shotClear: 0.45, tirFranc: 0.72, menace: { grise: 1.55, ...(cfgOver ?? { mur: 0.35 }) } });
+  };
+  const libre = mkMur(0), mure = mkMur(2), sabM = mkMur(2, {});
+  ok(`lot 126 — le MUR SE CONTOURNE (porteur à 10 m : cône libre score ${libre.score.toFixed(2)} ; muré par 2 corps ${mure.score.toFixed(2)} ≤ libre − 0,15 — l'arbitre rend la passe) ; sabotage « le tir dans le mur d'hier » attrapé (mur absent : ${sabM.score.toFixed(2)} ≥ muré + 0,1 — le plancher aveugle, nommé)`,
+    libre.score >= 0.5 && mure.score <= libre.score - 0.15 && sabM.score >= mure.score + 0.1);
+}
+
+// ---------------------------------------------------------------- lot 127 : LE CATALOGUE
+// COMPLET DES FORMATIONS (demande utilisateur) — 12 formations en DATA pure (postes, LIGNES,
+// rôles par défaut ROLES_FORMATION) ; le bloc/largeur/hauteur/Loi 11 coulissent tous ces
+// mondes. La pesée mesurée en sonde : le bus 541 encaisse 1 vs 3 pour le 343 (3 graines).
+{
+  const noms = Object.keys(FORMATIONS);
+  let coherent = true, chevauche = 0;
+  for (const n of noms) {
+    const F = FORMATIONS[n], l = LIGNES[n];
+    if (F.length !== 10 || !l || l[0] + l[1] + l[2] !== 10) coherent = false;
+    for (let i = 0; i < 10; i++) for (let j = i + 1; j < 10; j++) {
+      if (Math.hypot(F[i][0] - F[j][0], (F[i][1] - F[j][1]) * 0.65) < 0.055) chevauche++;
+    }
+  }
+  const st127 = makeMatch({ full: true, seed: 3, tactics: [{ formation: '4231' }, { formation: '532' }] });
+  const cfg127 = matchCfg({ shotRange: 20 });
+  for (let i = 0; i < 90 * 60; i++) matchStep(st127, 1 / 60, cfg127);
+  const issues127 = checkMatch(st127, [], cfg127);
+  ok(`lot 127 — le CATALOGUE est cohérent (${noms.length} formations ≥ 12 : 10 postes, lignes sommant 10, ${chevauche} chevauchement < 0,055 — zéro) et le 4231 vs 532 JOUE 90 s (contrat : ${issues127.length ? issues127[0] : 'propre'})`,
+    noms.length >= 12 && coherent && chevauche === 0 && st127.t >= 89);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

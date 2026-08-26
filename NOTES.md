@@ -5176,6 +5176,51 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      — aujourd'hui 2 segments droits) ; le service du débordement (le porteur voit-il
      assez le coureur de la craie ? à sonder) ; l'espèce au ticker.
 
+168. **Lot 126 : LE MUR SE CONTOURNE — le trafic de frappe en boîte (la dette majeure du
+     123, le chantier qui rendra le remplissage payant).** L'INSTRUMENTATION TIR PAR TIR
+     (probe-126, attente/défaut/sans-crash sur les mêmes 6 graines) a RÉFUTÉ l'hypothèse
+     du corps ami : 0,03-0,10 AMI dans le cône de frappe — nos coureurs ne bouchent
+     rien. LE VRAI MÉCANISME : les corps attaquants ATTIRENT LEURS MARQUEURS, la
+     clearance des tirs s'effondre (7,44 sans crash → 2,02 défaut → 1,46 attente) et le
+     porteur TIRE QUAND MÊME dans le mur — zéro refus couloir-fermé : le canal est le
+     FRANC (margin ≥ need 0,45 — un seuil de couloir de PASSE, aveugle à la densité) et
+     le TENTÉ (la loi anti-stérilité du 67b) ; conversion 46 → 19 %. LA LOI (menaceTir,
+     cfg.menace.mur 0,35) : les scores franc ET tenté décroissent avec la DENSITÉ ADVERSE
+     du cône de frappe (±0,35 rad, plus près que le ballon du but) — murF = 1/(1 +
+     nAdv×mur) : l'arbitre rend la passe/conduite au porteur muré, le mur se contourne
+     au lieu de se perforer. MESURÉ : attente 19 → 25 % de conversion (densité au tir
+     1,22 → 0,97 — les tirs pris ont de meilleurs angles), défaut et sans-crash
+     INCHANGÉS AU BIT ; mur 0,5 essayé : plateau atteint (rien de plus pour l'attente,
+     le défaut refroidit) — 0,35 est le point. EMPREINTES : les QUATRE au bit (rondo,
+     réduit, match 3 ET 7 — l'identité du défaut quasi parfaite, l'effet ne vit qu'en
+     boîte dense : le comportement idéal d'une loi de moteur). CLAUSE 126 : fixture pure
+     menaceTir — cône libre ≥ 0,5, muré par 2 corps ≤ libre − 0,15, sabotage mur absent
+     (le plancher aveugle d'hier). Dettes : l'écart attente/sans-crash reste (25 vs
+     46 % — l'étage 2 est le SURNOMBRE utilisé : le coureur de surface LIBRE doit être
+     SERVI, la passe de surface scorée au marquage du receveur) ; le seuil du franc
+     lui-même (0,45) à requalifier en boîte.
+
+169. **Lot 127 : LE CATALOGUE COMPLET DES FORMATIONS (demande utilisateur : « tu pourras
+     ajouter les différentes formations possibles du foot ? »).** Le lot 17 avait posé la
+     COUCHE (formation = données pures : dix postes [profondeur, largeur], LIGNES [déf,
+     mil, att], premierOffensif dérivé) et trois mondes (433/442/352). LE CATALOGUE PASSE
+     À 12 : 4-2-3-1 (double pivot + le 10), 4-3-2-1 (le sapin), 3-4-3, 3-4-2-1, 5-3-2,
+     5-4-1 (le bus), 4-1-4-1 (la sentinelle), 4-2-2-2, 4-4-1-1 — chaque formation reste
+     une DONNÉE : AUCUNE loi nouvelle, le bloc/la largeur/la hauteur/la Loi 11/le calage
+     des pointes coulissent tous ces mondes tels quels (la preuve d'architecture du
+     moteur). LES RÔLES PAR DÉFAUT (ROLES_FORMATION, data exportée) : le 4231 vit de son
+     10 (meneur) et ses récupérateurs, le 532/541 de ses pistons, le 4141 de sa
+     sentinelle — un projet les passe à makeMatch({roles}) tels quels ou les remplace
+     (absents : polyvalent partout, l'identité — le mantra). MESURÉ : les 12 formations
+     JOUENT (60 s chacune sans crash, contrat propre) et PÈSENT — le bus 541 encaisse 1
+     but sur 3 × 300 s là où le 343 en encaisse 3 (mêmes graines, même adversaire 433) :
+     la formation est un LEVIER mesurable, pas un décor. CLAUSE 127 : la cohérence du
+     catalogue (12 formations, 10 postes, lignes sommant 10, zéro chevauchement < 0,055)
+     + le 4231 vs 532 joue 90 s au contrat. Dettes nommées : les presets tactiques PAR
+     formation (le 541 devrait tirer son axe bloc vers le bas tout seul — aujourd'hui la
+     tactique reste au choix du projet) ; les formations asymétriques (4-3-3 faux ailier
+     gauche…) que la data supporte déjà mais sans preset.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

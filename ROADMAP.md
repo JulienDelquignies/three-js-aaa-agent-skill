@@ -205,15 +205,18 @@ LES CLAUSES APPARIÉES v2 (lot 122 : les sabotages d'écart absolu s'effritent �
 monde re-daté — 8 re-fondations en 4 lots ; la forme robuste : vif et saboté sur les
 MÊMES graines, borner l'écart apparié, insensible au niveau absolu du monde).
 
-LE TRAFIC DE FRAPPE EN BOÎTE (lot 123 : la présence attaquante DIVISE les buts — les
-postes statiques ÷ 1,6, l'attente au bord ÷ 1,5, mesuré en A/B apparié ; les marqueurs
-suivent et le bloc densifié contre tout, le réel a ce trade-off en plus doux ;
-instrumenter tir par tir — contrés, déviés, couloirs — avant tout remplissage par défaut).
+~~LE TRAFIC DE FRAPPE EN BOÎTE~~ — **ÉTAGE 1 LIVRÉ** (lot 126, note 168 : le mur se
+contourne — menace.mur 0,35, franc et tenté décroissent avec la densité adverse du cône ;
+attente 19 → 25 % de conversion, les quatre empreintes au bit). ÉTAGE 2 (le surnombre
+UTILISÉ) : le coureur de surface LIBRE doit être servi — la passe de surface scorée au
+marquage du receveur ; le seuil du franc (0,45) à requalifier en boîte.
 
 LE MARQUAGE DU COUREUR DE MUR (dette 119 : ~20 % des retours de une-deux = but, la course
 dans le dos du presseur n'a pas de défense dédiée).
 
-Gardien relanceur avancé (la relance au pied du libéro, dette 120), formations 442/352
-complètes (la couche LIGNES existe), le troisième homme v2 (v1 livrée note 153 — reste :
-courses dédiées vers l'intervalle), triangulation v4 (assignation, hystérésis), expulsion
-physique complète, le pré-saut de tête anticipé (v1 réactive livrée note 154).
+Gardien relanceur avancé (la relance au pied du libéro, dette 120), ~~formations
+complètes~~ — **LIVRÉ** (lot 127, note 169 : 12 formations en data + ROLES_FORMATION, le
+bus 541 encaisse 1 vs 3 mesuré ; dettes : presets tactiques par formation, asymétriques),
+le troisième homme v2 (v1 livrée note 153 — reste : courses dédiées vers l'intervalle),
+triangulation v4 (assignation, hystérésis), expulsion physique complète, le pré-saut de
+tête anticipé (v1 réactive livrée note 154).
