@@ -281,7 +281,8 @@ export function strikeNow(st, c, cfg) {
   const lift = liftSpin && !choice.cross && !choice.bascule
     && (choice.style === 'lofted' || choice.style === 'chip') ? liftSpin : null;
   let liftAtStrike = lift;   // les cloches re-résolues (dessous) frappent AUSSI avec leur effet
-  const sol = solvePass(from, lead, { style: choice.style, ...(lift ?? {}) }) || solvePass(from, choice.lead, { style: choice.style, ...(lift ?? {}) });
+  const solOpts = { style: choice.style, ...(choice.arrival ? { arrival: choice.arrival } : {}), ...(lift ?? {}) };   // le through (128) transmet SON arrivée dosée au control
+  const sol = solvePass(from, lead, solOpts) || solvePass(from, choice.lead, solOpts);
   if (!sol) { st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4], dW(st, cfg, 0.4)); return; }   // scuffed: it stays loose
   // ON FRAPPE LE BALLON LÀ OÙ IL EST. `kick(from, …)` POSAIT le ballon sur `from`, et l'appelant
   // construisait `from = [x, BALL.radius, z]` : un ballon en l'air était plaqué au sol avant d'être
@@ -450,7 +451,7 @@ export function strikeNow(st, c, cfg) {
   const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
   const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
-    t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot,
+    t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot, ...(choice.through ? { through: true } : {}),
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure

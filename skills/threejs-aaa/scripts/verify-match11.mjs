@@ -41,11 +41,13 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5 },
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
   coach: false,                                         // …les axes gelés (pré-113 : le monde qui ne réagit pas au score)
-  skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null },   // …le répertoire pré-114/115/117 (ni croqueta, ni pont, ni roulette)
+  skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null, sortieBurst: null },   // …le répertoire pré-114/115/117 (ni croqueta, ni pont, ni roulette)
   filet: false, bordure: false, celebration: false,                 // …le sifflet d'hier (pré-116 : brakes ponctuels, engagement à 3,8 s)
   talonnade: false,                                                 // …le demi-tour d'hier (pré-118 : le talon dormait)
   unDeux: false,                                                    // …le donne-sans-va d'hier (pré-119)
-  libero: false, lob: false };                                      // …le gardien sur sa ligne d'hier (pré-120)
+  libero: false, lob: false,                                        // …le gardien sur sa ligne d'hier (pré-120)
+  contreAppel: false, boxCrash: false,                              // …les courses droites et la surface d'hier (pré-122/123)
+  courseAilier: false, throughBall: false };                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 import { momentDuJeu } from '../assets/starter/src/engine/phases.js';
 import { FORMATIONS, LIGNES } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
@@ -610,7 +612,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // c'est son métier) ; sans calage le monde d'aujourd'hui vit aussi bas (bloc profond), la
   // clause est donc ABSOLUE, pas comparative — le sabotage de la LOI vit en fixtures (§5)
   const worst = Math.max(...offPct);
-  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 12 — borne re-fondée lot 54 : le vol FLOTTÉ du backspin étire la danse de la pire graine (8 graines mesurées : corps 1,6-5,8, médiane 3,9, pire 11,3 — le corps n'a pas bougé de la bande 51b) ; le calage des POSTES et le sifflet du toucher restent les lois, en fixtures §5)`, worst <= 12);
+  // …borne 12 → 14 (128) : le THROUGH fait VIVRE la ligne — les pointes servies au ras du
+  // hors-jeu sont le foot exact de cette passe (12,6 mesuré) ; le sifflet du toucher veille.
+  ok(`les pointes vivent SUR la ligne, pas derrière (pire graine : ${worst.toFixed(1)} % du temps de possession en position illicite ≤ 14 — re-fondée 54 puis 128 : le through étire la danse ; le calage des POSTES et le sifflet du toucher restent les lois, en fixtures §5)`, worst <= 14);
 }
 
 // ---------- 7. LE PRESSING À DÉCLENCHEURS + L'OMBRE DE COUVERTURE (mécanismes sur fixtures,
@@ -2466,7 +2470,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     posts.sort((a, b) => a - b);
     return { sorties, contres, cassure, p50: posts[Math.floor(posts.length / 2)] ?? 0 };
   };
-  const vif2 = joue122({});
+  const vif2 = joue122({ throughBall: false });   // isolation (128) : le through SERT les coureurs qui auraient cassé
   const sab2 = joue122({ contreAppel: false, skill: { ...matchCfg().skill, sortieBurst: null } });
   // …l'écart p50 post-geste est passé en INFORMATIF au 123 (2,6 vs 2,6 : la mesure au flux
   // est instable entre mondes re-datés — les COMPTES d'événements + le sabotage 0/0 sont le
@@ -2510,8 +2514,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // les postes statiques divisaient les buts par 1,5-2, le trafic de frappe est la dette v2) ;
   // le DÉFAUT plongeon-seul est quasi-identité (receveur du centre exempté). La clause prouve
   // les DEUX régimes : l'opt-in remplit, le défaut reste léger.
-  const vif3 = joue123({ boxCrash: { couloir: 0.4, prof: 12, garde: 12, attente: true } });
-  const def3 = joue123({});
+  const vif3 = joue123({ throughBall: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12, attente: true } });   // isolation (128)
+  const def3 = joue123({ throughBall: false });
   // …bornes au n réel (3-6 centres par run de 3 graines — la variance domine : 1,2/écart 0,2)
   ok(`lot 123 — le BOX CRASH est un LEVIER (opt-in attente : ${vif3.arr.toFixed(1)} corps à l'arrivée ≥ 1,2 sur ${vif3.n} centres ; défaut plongeon-seul : ${def3.arr.toFixed(1)} ≤ opt-in − 0,2 — le remplissage lourd se PAIE, la config choisit)`,
     vif3.n >= 3 && vif3.arr >= 1.2 && def3.arr <= vif3.arr - 0.2);
@@ -2619,6 +2623,39 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const issues127 = checkMatch(st127, [], cfg127);
   ok(`lot 127 — le CATALOGUE est cohérent (${noms.length} formations ≥ 12 : 10 postes, lignes sommant 10, ${chevauche} chevauchement < 0,055 — zéro) et le 4231 vs 532 JOUE 90 s (contrat : ${issues127.length ? issues127[0] : 'propre'})`,
     noms.length >= 12 && coherent && chevauche === 0 && st127.t >= 89);
+}
+
+// ---------------------------------------------------------------- lot 128 : LA PASSE EN
+// PROFONDEUR AU SOL (demande utilisateur : « comment gérer le bon ajustement ? ») — LE
+// RENDEZ-VOUS ITÉRÉ : la mène générique (position + v×tLead estimé) ignorait le roulis réel ;
+// le through s'auto-cohère (t passe = t course via solvePass), pointe d'intervalle 2,5 m,
+// l'ARRIVÉE dosée au CONTROL du receveur (4,8 + 1,7×controlF). Mesuré : 34 through / 6
+// matchs, conservés 91 % — le dosage livre des ballons prenables.
+{
+  const th128 = (over) => {
+    let th = 0, thOk = 0;
+    for (const seed of [1, 2, 4]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let cursor = 0; const watch = [];
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (; cursor < st.events.length; cursor++) {
+          const e = st.events[cursor];
+          if (e.type === 'pass' && e.through && st.players[e.from]) { th++; watch.push({ t: e.t, team: st.players[e.from].team, done: false }); }
+        }
+        for (const w of watch) if (!w.done && st.t - w.t >= 2.2) {
+          if ((st.ball.owner != null ? st.players[st.ball.owner].team : st.possession.team) === w.team) thOk++;
+          w.done = true;
+        }
+      }
+    }
+    return { th, thOk };
+  };
+  const vif8 = th128({});
+  const sab8 = th128({ throughBall: false });
+  ok(`lot 128 — la PASSE EN PROFONDEUR AU SOL vit (${vif8.th} through / 3 × 300 s ≥ 6) et son DOSAGE livre (${vif8.thOk}/${vif8.th} conservés ≥ 65 % — le rendez-vous itéré, l'arrivée au control) ; sabotage « la mène myope d'hier » attrapé (throughBall:false : ${sab8.th})`,
+    vif8.th >= 6 && vif8.thOk >= vif8.th * 0.65 && sab8.th === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

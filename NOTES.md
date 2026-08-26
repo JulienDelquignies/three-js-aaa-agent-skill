@@ -5221,6 +5221,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactique reste au choix du projet) ; les formations asymétriques (4-3-3 faux ailier
      gauche…) que la data supporte déjà mais sans preset.
 
+170. **Lot 128 : LA PASSE EN PROFONDEUR AU SOL — le dosage résolu (demande utilisateur :
+     « une des passes clé du foot — comment gérer le bon ajustement ? »).** LA RÉPONSE À
+     SA QUESTION : le bon ajustement a TROIS étages, et le moteur en possédait déjà un.
+     (1) LE DOSAGE PHYSIQUE existait — solvePass bissecte sur la physique EXACTE du roulis
+     (rollResist 0,12 + drag) pour que la rasante ARRIVE à une allure prenable (arrival,
+     6,5 défaut) : la table mesurée v0=10 → 11,7 m à 6,0 m/s. (2) LE RENDEZ-VOUS ITÉRÉ
+     (la loi nouvelle, cfg.throughBall && servi) : la mène générique (position + v×tLead
+     ESTIMÉ) ignorait le roulis réel — le ballon arrivait derrière le coureur ; le through
+     s'auto-cohère : solvePass rend le temps de roulis exact, le point de course se
+     re-projette, 2 itérations convergent (t passe = t course). + LA POINTE D'INTERVALLE
+     (2,5 m plus profond que la projection — le coureur attaque l'espace, pas son ombre).
+     (3) L'ARRIVÉE AU CONTROL (l'attribut dans l'équation même) : 4,8 + 1,7 × controlF —
+     le bon toucher reçoit plus vif (moins interceptable), le faible reçoit doux. Le
+     couloir vers CE point re-jugé (laneClearance — la fenêtre du through est étroite,
+     c'est sa nature) ; strike-sim transmet l'arrival du choix ; l'événement pass porte
+     through. MESURÉ (6 × 300 s) : 34 through (5,7/match), CONSERVÉS 91 % — le dosage
+     livre ; hier (throughBall:false) : 0. EMPREINTES : rondo ET réduit AU BIT (servi
+     exige st.full) ; match 3/7 re-datés (les services profonds re-choisis). CLAUSE 128 :
+     le through vit (≥ 6 / 3 × 300 s), le dosage livre (≥ 65 % conservés), sabotage « la
+     mène myope d'hier » (0). Dettes nommées : le through DERNIÈRE PASSE (le débordement
+     du 125 servi dans la course — la banane + le through se composent, à sonder) ; la
+     tactique direct devrait pousser le seuil d'ouverture du couloir ; le gardien-libéro
+     adverse punit les through trop appuyés (la boucle 120 se referme — à mesurer).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

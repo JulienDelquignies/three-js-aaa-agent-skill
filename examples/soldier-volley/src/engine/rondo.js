@@ -229,6 +229,35 @@ export function choosePass(st, cfg = RONDO) {
     // bascule, la course profonde ne se juge pas au point doux des 10 m. Gardé st.full via
     // le kind 'appel' (les bursts du réduit n'existent que sous st.full — miroirs intacts).
     const servi = st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel';
+    // LA PASSE EN PROFONDEUR AU SOL (128, cfg.throughBall && servi — demande utilisateur :
+    // « comment gérer le bon ajustement ? ») : LE RENDEZ-VOUS ITÉRÉ — la mène générique
+    // (position + v×tLead estimé) arrivait derrière le coureur (l'estimation ignore le roulis
+    // réel) ; ici le point s'auto-cohère (t passe = t course : solvePass rend le temps du
+    // roulis EXACT, 2 itérations convergent) + LA POINTE D'INTERVALLE (2,5 m plus profond —
+    // le coureur attaque l'espace, pas son ombre) ; l'ARRIVÉE se dose au CONTROL du receveur
+    // (4,8 + 1,7 × controlF : le bon toucher reçoit plus vif, moins interceptable — l'attribut
+    // dans l'équation même du dosage). Le couloir vers CE point est re-jugé. Absente : hier.
+    let through = null;
+    if (servi && cfg.throughBall) {
+      const vRun = Math.hypot(m.v[0], m.v[1]);
+      if (vRun > 2.5) {
+        const dirC = [m.v[0] / vRun, m.v[1] / vRun];
+        const arr = 4.8 + 1.7 * ((m.skill?.controlF ?? 1) - 0.85) / 0.3;
+        let tRdv = d2(origin, m.p) / 11;
+        let P = null, solT = null;
+        for (let it = 0; it < 2; it++) {
+          const adv = vRun * tRdv + (cfg.throughBall.pointe ?? 2.5);
+          P = [m.p[0] + dirC[0] * adv, BALL.radius, m.p[2] + dirC[1] * adv];
+          solT = solvePass(origin, P, { style: 'ground', arrival: Math.max(4.2, Math.min(6.5, arr)) });
+          if (!solT) break;
+          tRdv = solT.flightTime;
+        }
+        if (solT && P) {
+          const laneT = laneClearance(origin, P, opp, { corridor: cfg.corridor });
+          if (laneT.open) through = { lead: P, lane: laneT, arr: Math.max(4.2, Math.min(6.5, arr)) };
+        }
+      }
+    }
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
@@ -253,7 +282,10 @@ export function choosePass(st, cfg = RONDO) {
         && st.t - st._possChangeAt < (cfg.moments.win ?? 5)
         && Math.sign(st.pitch.attackGoal(c.team).x || 1) * (m.p[0] - c.p[0]) > 8 ? cfg.moments.vertical : 0)
       + couloirB + ecarteB;                                   // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
-    if (!best || score > best.score) best = { to: m, lead, style, score, lane, dist: d, bascule };
+    // …le THROUGH remplace la mène et le style du candidat servi (le rendez-vous a son couloir jugé)
+    if (!best || score > best.score) best = through
+      ? { to: m, lead: through.lead, style: 'ground', score: score + (cfg.throughBall?.bonus ?? 0.6), lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }
+      : { to: m, lead, style, score, lane, dist: d, bascule };
   }
   return best;
 }

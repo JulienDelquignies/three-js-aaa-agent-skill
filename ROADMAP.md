@@ -196,6 +196,13 @@
    deborde 9 / underlap 5 / banane 2 vs 9/9 diagonale avant ; le décrochage couvert par
    le contre-appel 122). **LA LISTE v2 EST SOLDÉE.**
 
+14. ~~**LA PASSE EN PROFONDEUR AU SOL (lot 128, demande utilisateur)**~~ — **LIVRÉ**
+   (note 170 : le rendez-vous itéré — t passe = t course via solvePass exact —, la pointe
+   d'intervalle 2,5 m, l'arrivée dosée au CONTROL du receveur ; 5,7 through/match,
+   conservés 91 % ; rondo/réduit au bit). Dettes : le through dernière-passe composé au
+   débordement du 125, la tactique direct au seuil du couloir, le libéro adverse qui
+   punit les trop-appuyés (la boucle 120).
+
 ## Backlog long terme (inchangé)
 LE POIDS DES NOTES v2 (lot 115 : la part élite aux tirs a érodé de 69 % → ~49 % sur 36
 lots — chaque loi nouvelle redistribue des 50/50 ; sonde PAR MÉCANISME puis re-concentration

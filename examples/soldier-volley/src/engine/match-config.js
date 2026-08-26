@@ -349,7 +349,8 @@ export const MATCH = {
   libero: { far: 34, max: 10, rampe: 8, retour: 3.5 },
   contreAppel: { marque: 2.2, p: 0.5 },  // LE CONTRE-APPEL (122) : la course profonde marquée casse aux pieds (× rôle appel)
   boxCrash: { couloir: 0.4, prof: 12, garde: 12 },
-  courseAilier: {},       // LE RÉPERTOIRE DE L'AILIER (125) : déborde/underlap/banane à la situation × patte × rôle × tactique ; absent : la diagonale unique d'hier  // LE BOX CRASH (123) : la géométrie du centre remplit la surface (N corps avancés aux postes, hauteur module 2-4) ; absent : la surface vide d'hier
+  courseAilier: {},       // (125)
+  throughBall: { pointe: 2.5, bonus: 0.6 },  // LA PASSE EN PROFONDEUR AU SOL (128) : le rendez-vous itéré + la pointe d'intervalle, l'arrivée au control ; absent : la mène myope d'hier       // LE RÉPERTOIRE DE L'AILIER (125) : déborde/underlap/banane à la situation × patte × rôle × tactique ; absent : la diagonale unique d'hier  // LE BOX CRASH (123) : la géométrie du centre remplit la surface (N corps avancés aux postes, hauteur module 2-4) ; absent : la surface vide d'hier
                           // LE GARDIEN-LIBÉRO (11c11, st.full — lot 120, la dette v1 de
                           // depthMax) : ballon CHEZ L'ADVERSAIRE (> far m), le gardien MONTE
                           // couper la profondeur (progressif jusqu'à max × depthKF ×
