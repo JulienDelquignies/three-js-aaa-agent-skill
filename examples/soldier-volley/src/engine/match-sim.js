@@ -708,7 +708,7 @@ function assignMatchJobs(st, cfg) {
               if (lane.open) {
                 // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10)
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
-                p._appelCd = st.t + axe(role(p).appel, 14, 6);
+                p._appelCd = st.t + axe(role(p).appel, 14, 6) / (p.skill?.otbF ?? 1);   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
                 // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s ; rupture 2,2 ≈ 2,3) — elle porte bonus et portée
                 p._pace = { until: st.t + (long ? 2.2 : 1.6), kind: 'appel', ...(long ? { rupture: true } : {}), next: p._pace?.next ?? st.t + 8 };
@@ -928,7 +928,7 @@ function assignMatchJobs(st, cfg) {
         }
         p.job = 'mark';
         const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
-        if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
+        if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 * (2 - (p.skill?.posF ?? 1)) && drift <= 3.5)) {   // …le POSITIONING est une note (151) : le mauvais dérive avant de se recaler
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
         p.target = [p._slotT[0], 0, p._slotT[1]];
@@ -952,7 +952,7 @@ function assignMatchJobs(st, cfg) {
       p.job = 'mark';
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le
       // meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
-      const off = (press ? 0.95 : 1.4) * axe(role(p).press, 1.18, 0.82);
+      const off = (press ? 0.95 : 1.4) * axe(role(p).press, 1.18, 0.82) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) : le bon colle, le lâche laisse l'intervalle
       const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) :
       // le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
@@ -981,7 +981,7 @@ function assignMatchJobs(st, cfg) {
   if (cfg.lossReact && st._lossAt) {
     for (const idS of Object.keys(st._lossAt)) {
       const id = +idS, la = st._lossAt[id], p = st.players[id];
-      if (!p || st.t - la > cfg.lossReact) { delete st._lossAt[id]; continue; }
+      if (!p || st.t - la > cfg.lossReact * (p.skill?.workF ?? 1)) { delete st._lossAt[id]; continue; }   // …WORK RATE est une note (151) : le travailleur chasse sa perte plus longtemps
       const ownerNow = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
       if (ownerNow && ownerNow.team === p.team) { delete st._lossAt[id]; continue; }
       if (p.down > 0 || busy(p) || st.possession.carrier === p.id) continue;

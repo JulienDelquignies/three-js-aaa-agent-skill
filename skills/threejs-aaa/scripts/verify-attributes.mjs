@@ -27,6 +27,25 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 147 — la note flair pilote la persona (${pF.persona.flair.toFixed(3)} ≈ 0,958 avec flair 95 ; sans note : ${pN.persona.flair.toFixed(3)}, le tirage seedé d'hier)`,
       Math.abs(pF.persona.flair - (0.15 + 0.85 * 0.95)) < 1e-9 && Math.abs(pN.persona.flair - pF.persona.flair) > 1e-6);
   }
+  // lot 151 — LES MENTALES AU FLUX (appariées mêmes graines) : l'AGGRESSION fait les fautes,
+  // OFF THE BALL fait les appels — le contrat statique (monotonie, no-op) vit dans checkAttributes.
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const flux = (ratings) => {
+      const sq = [Array.from({ length: 11 }, () => ({ ratings })), []];
+      const st = makeMatch({ full: true, seed: 5, squads: sq });
+      const cfg = matchCfg({ shotRange: 20 });
+      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+      return {
+        fautes: st.events.filter((e) => e.type === 'faute' && st.players[e.by]?.team === 0).length,
+        appels: st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && st.players[e.by]?.team === 0).length,
+      };
+    };
+    const hargneux = flux({ aggression: 90, offTheBall: 90 });
+    const placide = flux({ aggression: 10, offTheBall: 10 });
+    ok(`lot 151 — les MENTALES vivent au flux (l'équipe hargneuse/mobile : ${hargneux.fautes} fautes ≥ ${placide.fautes} et ${hargneux.appels} appels ≥ ${placide.appels} + 1 — aggression et offTheBall, appariés seed 5)`,
+      hargneux.fautes >= placide.fautes && hargneux.appels >= placide.appels + 1);
+  }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));
   ok(`pace 100 × chase (${(best.topF * RONDO.speeds.chase).toFixed(2)} m/s) reste sous le plafond absolu (${RONDO.sprintMax ?? 8})`,

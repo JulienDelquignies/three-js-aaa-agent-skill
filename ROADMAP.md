@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LES SEPT MENTALES (151, note 192) : decisions/offTheBall/positioning/workRate/
+aggression/concentration/marking — une ligne par canal existant, no-op à 50, la
+concentration vit sur la fatigue (pas d'horloge nouvelle). 30/33 notes consommées.
+Reste : command/oneOnOnes/aerialReach (gardien) + throwInStyle/setPiecesFocus.
+
 LA DISTRIBUTION DU GARDIEN (150, note 191) : keeper.relancerGardien (extraite au bit,
 match-sim 1249 → 1236), cpa.sortieBut court (la RELANCE MAIN vive × throwF) / long (la
 longue directe, fenêtre × kickF, punt × kickF), le hook onTake sortie-de-but. 23 notes

@@ -5704,6 +5704,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      beginPass, lu par la clause). Clause 150 ×3 (174 ✓). RESTE : throwInStyle,
      setPiecesFocus, gkStyle complet (distribution.tempo/risk).
 
+192. **Lot 151 : LES SEPT MENTALES (l'inventaire carrière, avant-dernier bloc — 30 notes
+     consommées sur leurs 33).** Chaque greffe est UNE ligne sur un canal existant, no-op
+     exact à 50, zéro tirage nouveau (empreintes au bit) :
+     `decisions` (decF) — le seuil de panique du contesté (pressure > 0,15 × decF : le bon
+     garde la tête un instant de plus, le mauvais joue la balle de panique tôt — le canal
+     même de l'œil du lot 143) ; `offTheBall` (otbF) — ÷ sur le cooldown personnel des
+     appels profonds (le bon rejaillit) ; `positioning` (posF) — la zone morte du slot
+     défensif × (2 − posF) (le mauvais dérive de son poste avant de se recaler) ;
+     `workRate` (workF) — × sur la fenêtre de contre-press personnelle (lossReact : le
+     travailleur chasse sa perte plus longtemps) ; `aggression` (aggrF 0,8…1,2) — × sur la
+     proba d'accrochage (le hargneux accroche ET paie ses fautes — la discipline Loi 12
+     fait le reste) ; `concentration` (concF 0,7…1,3) — l'erreur d'exécution gonfle avec
+     LA FATIGUE × max(0, 1 − concF) (la faute de fin de match vit sur le canal stam du
+     lot 31 — pas d'horloge nouvelle) ; `marking` (markF) — l'offset du marqueur ×
+     (2 − markF) (le bon colle goal-side). Clause de flux appariée (aggression → fautes,
+     offTheBall → appels, seed 5) + les 7 contrats statiques dans checkAttributes.
+     RESTE de l'inventaire notes : command / oneOnOnes / aerialReach (gardien, le trio
+     à lois — command agit sur les AUTRES) ; bravery documenté alias de l'axe garde.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

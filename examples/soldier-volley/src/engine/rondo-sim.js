@@ -925,7 +925,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // l'évasion travailler ; l'urgence ne prend la main que si le duel s'installe (pressure).
         if (c.intent) c.intent = null;
         deny(st, 'contesté');
-        if (st.pressure > 0.15) {
+        if (st.pressure > 0.15 * (c.skill?.decF ?? 1)) {   // …LES DÉCISIONS sont une note (151) : le bon garde la tête un instant de plus, le mauvais panique tôt
           const choice = choosePass(st, cfg);
           if (choice) beginPass(st, choice, cfg, { forceUrgent: true });
         }

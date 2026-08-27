@@ -48,6 +48,14 @@ export const ATTRIBUTES = {
   weakFoot:    'le pied faible           → weakF [1,5 ; 0,5] : × sur l\'ÉCART au neutre des malus mauvais pied (100 ≈ ambidextre, 0 mono-pied)',
   kicking:     'la relance au pied (GK)  → kickF [0,85 ; 1,15] : la portée de la longue et du punt (keeper.relancerGardien, lot 150)',
   throwing:    'la relance à la main (GK)→ throwF [0,85 ; 1,15] : la portée de la main vive (cpa.sortieBut court — le déclencheur de transition)',
+  // LE LOT 151 — les sept MENTALES, mêmes contrats (le no-op à 50 est LA règle) :
+  decisions:   'le choix sous contrainte  → decF [0,85 ; 1,15] : le seuil de panique du contesté (le bon garde la tête, le mauvais joue tôt)',
+  offTheBall:  'les appels sans ballon    → otbF [0,85 ; 1,15] : ÷ sur le cooldown personnel des appels profonds (le bon rejaillit)',
+  positioning: 'le placement au repos     → posF [0,85 ; 1,15] : la zone morte du slot × (2 − posF) — le mauvais dérive avant de se recaler',
+  workRate:    'le volume de course       → workF [0,85 ; 1,15] : × sur la fenêtre de contre-press personnelle (le travailleur chasse plus longtemps)',
+  aggression:  'l\'engagement au duel     → aggrF [0,8 ; 1,2] : × sur la proba d\'accrochage (et donc les fautes — le hargneux paie)',
+  concentration:'la tenue de l\'attention → concF [0,7 ; 1,3] : l\'erreur d\'exécution gonfle avec la FATIGUE × max(0, 1 − concF) — la faute de fin de match',
+  marking:     'suivre et contenir        → markF [0,85 ; 1,15] : l\'offset du marqueur × (2 − markF) — le bon colle, goal-side tenu',
 };
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -100,6 +108,13 @@ export function makeProfile(ratings = {}) {
     weakF: lerp(1.5, 0.5, r('weakFoot')),                         // × sur l'écart au neutre du mauvais pied (147)
     kickF: lerp(0.85, 1.15, r('kicking')),                        // la relance au pied du gardien (150)
     throwF: lerp(0.85, 1.15, r('throwing')),                      // la relance à la main du gardien (150)
+    decF: lerp(0.85, 1.15, r('decisions')),                       // le seuil de panique (151)
+    otbF: lerp(0.85, 1.15, r('offTheBall')),                      // la cadence d'appel (151)
+    posF: lerp(0.85, 1.15, r('positioning')),                     // la zone morte du slot (151)
+    workF: lerp(0.85, 1.15, r('workRate')),                       // la fenêtre de contre-press (151)
+    aggrF: lerp(0.8, 1.2, r('aggression')),                       // la proba d'accrochage (151)
+    concF: lerp(0.7, 1.3, r('concentration')),                    // l'attention sous fatigue (151)
+    markF: lerp(0.85, 1.15, r('marking')),                        // l'offset du marqueur (151)
   });
 }
 
@@ -153,6 +168,8 @@ export function checkAttributes() {
   if (Math.abs(fbA.visionF - fbB.visionF) > 1e-9 || Math.abs(fbA.gesteF - fbB.gesteF) > 1e-9) issues.push('les fallbacks vision→passing / technique→dribbling divergent');
   if (!(hi.kickF > mid.kickF && mid.kickF > lo.kickF) || Math.abs(mid.kickF - 1) > 1e-9) issues.push('kicking non monotone ou no-op violé');
   if (!(hi.throwF > mid.throwF && mid.throwF > lo.throwF) || Math.abs(mid.throwF - 1) > 1e-9) issues.push('throwing non monotone ou no-op violé');
+  for (const [k, nom] of [['decF','decisions'],['otbF','offTheBall'],['posF','positioning'],['workF','workRate'],['aggrF','aggression'],['concF','concentration'],['markF','marking']])
+    if (!(hi[k] > mid[k] && mid[k] > lo[k]) || Math.abs(mid[k] - 1) > 1e-9) issues.push(`${nom} non monotone ou no-op violé`);
   // 4. les clés inconnues sont ignorées, pas fatales
   try { makeProfile({ chapeau: 99, pace: 60 }); } catch { issues.push('une clé inconnue fait planter makeProfile'); }
   return { ok: issues.length === 0, issues };
