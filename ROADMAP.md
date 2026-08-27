@@ -262,6 +262,27 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'INVENTAIRE DU CONSOMMATEUR CARRIÈRE (146-147, note 188) : 6 notes de plus (21
+consommées — vision/technique/handling/heading/crossing/weakFoot + flair→persona),
+l'audit (formations + seconde formation + vision déjà natives : leur copie en retard),
+le contrat des 2 régimes de conduite consigné à pushSpeed. LE PLAN DU RESTE, par ordre
+de rendement : (1) LES CPA PAR ÉQUIPE — leur seule demande MESURÉE : cfg.cpa = [t0, t1]
+(cornerStyle court/premier/second poteau, freeKick, goalKick, throwIn, le marquage
+zonal/homme) — le corner travaillé (101/102) et la touche (29) existent, il manque
+l'ESPACE PAR ÉQUIPE et l'élection de variante ; (2) tempo (axe 11e, la barre calme/
+cadence de circulation le portent), mentality (compose coach.js), offsideTrapAggression
+(le cap du bloc + Loi 11) ; (3) gkStyle (distribution length/channel/tempo/risk sur la
+rampe de distribution existante ; sweeperTendency = l'axe garde ✓ déjà), crossStyle
+(deliveryPoint/trajectory/targetZone sur tryCross), passStyle (firstTimeBias sur
+uneTouche.p, technique weighted/driven sur le style) ; (4) les notes mentales —
+decisions (le bruit du barème d'élection), offTheBall (les cadences d'appel),
+positioning (le drift du slot), workRate (les cooldowns de course), aggression (la
+proba charge/tacle + fautes), concentration (la dérive des erreurs au chrono),
+marking (l'offset/la tenue du marqueur) ; (5) le trio gardien command (l'organisation :
+la ligne mieux tenue = un levier sur les AUTRES), kicking (la portée/σ de relance),
+throwing (la relance main vive), oneOnOnes (le duel du 1c1), aerialReach (la prise
+aérienne sur centre) — bravery recouvre l'axe garde, à documenter comme alias.
+
 LE QUATUOR DU RÉALISME (142-145, notes 184-187 — retours utilisateur ×4) : la semelle à
 sa place (K.semellePlace — 333 → 36/90 min, jamais l'option qui attend), l'œil de
 l'urgence (cfg.oeil — la panique ne joue plus la ligne morte : interceptions 15 → 11 %,

@@ -46,6 +46,13 @@ export function touchDistance(speed, { close = 0.5, perSpeed = 0.36, max = 3.0 }
 export function touchDecel(speed) {
   return PITCH.rollResist * PITCH.gravity + BALL.k * 0.42 * Math.max(2, speed) ** 2 * 0.35;
 }
+// LE CONTRAT DES DEUX RÉGIMES (mesuré par le consommateur carrière, consigné lot 146) : la
+// conduite N'EST PAS « un ballon qui revient au pied » — c'est un SERVO qui le REPREND. Deux
+// mondes : le porté sous tenue (~58 % du temps, distance médiane 0,33 m — le carry servo écrit
+// le couple) et le ballon libre entre deux touches (~42 %, 0,79 m — l'écart ne se referme pas
+// seul, −0,07 m/s). pushSpeed dose la touche EN SUPPOSANT la reprise servo ~0,2 s plus tard ;
+// porter cette formule SANS le mécanisme de carry aggrave la conduite (1,06 → 1,35 m mesuré
+// chez eux). Qui vendorise la loi doit vendoriser le servo.
 export function pushSpeed(speed, lead) {
   return speed + Math.sqrt(2 * touchDecel(speed) * Math.max(0.05, lead));
 }

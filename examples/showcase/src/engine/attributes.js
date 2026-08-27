@@ -39,6 +39,13 @@ export const ATTRIBUTES = {
   stamina:     'réserve d\'endurance      → drain de fatigue × [1,25 ; 0,75] (cfg.fatigue, lot 31)',
   strength:    'force dans le duel       → charge d\'épaule × [0,85 ; 1,15] (cfg.charge, lot 32)',
   jumping:     'détente verticale        → hauteur de saut de tête × [0,75 ; 1,25] (cfg.tete.saut, lot 112)',
+  // LE LOT 147 (l'inventaire du consommateur carrière) — six notes de plus, mêmes contrats :
+  vision:      'la passe VUE             → visionF [0,85 ; 1,15] (élection/aiguille de la tranchante, lot 140) ; absente : passing la porte',
+  technique:   'savoir FAIRE le geste    → gesteF [0,55 ; 1,10] (l\'exécution/vente) ; absente : dribbling la porte — flair (persona) décide de TENTER',
+  handling:    'l\'ISSUE de l\'arrêt      → handF [0,85 ; 1,15] : capter jusqu\'à priseV × handF, sécuriser en corner dès claqueV / handF',
+  heading:     'la qualité de la tête    → headF [0,8 ; 1,2] : la puissance de la tête au but, et le cadre tenu même gêné (distinct de jumping, la détente)',
+  crossing:    'la précision du centre   → crossF [1,25 ; 0,75] : × sur le σ du centre (compose la patte du lot 100)',
+  weakFoot:    'le pied faible           → weakF [1,5 ; 0,5] : × sur l\'ÉCART au neutre des malus mauvais pied (100 ≈ ambidextre, 0 mono-pied)',
 };
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -51,17 +58,20 @@ const t01 = (r) => Math.max(0, Math.min(1, (r ?? 50) / 100));
  */
 export function makeProfile(ratings = {}) {
   const r = (k) => t01(ratings[k]);
+  const r2 = (k, fb) => t01(ratings[k] ?? ratings[fb]);   // la note dédiée, sinon sa porteuse historique — l'identité des mondes déjà notés
   return Object.freeze({
     topF: lerp(0.90, 1.10, r('pace')),
     accelF: lerp(0.88, 1.12, r('acceleration')),
     passSigma: lerp(6.0, 0.5, r('passing')) * (Math.PI / 180),   // rad — σ d'angle (à 30 : ~1 m d'écart
                                                                   // à 10 m — mesuré : 3,5° ne mordait pas les couloirs)
-    visionF: lerp(0.85, 1.15, r('passing')),                      // × sur la TRANCHANTE (lot 140) : l'élection
-                                                                  // et l'aiguille du couloir (1 exact à 50 —
-                                                                  // le patron dribbling : une note, deux leviers)
+    visionF: lerp(0.85, 1.15, r2('vision', 'passing')),           // × sur la TRANCHANTE (lot 140) : l'élection et
+                                                                  // l'aiguille (1 exact à 50) ; la note VISION dédiée
+                                                                  // (lot 147), passing la porte si absente
     controlF: lerp(0.7, 1.6, r('control')),
     dribbleLeadF: lerp(1.08, 0.94, r('dribbling')),
-    gesteF: lerp(0.55, 1.10, r('dribbling')),                     // × sur l'ENGAGEMENT et la VENTE
+    gesteF: lerp(0.55, 1.10, r2('technique', 'dribbling')),       // × sur l'ENGAGEMENT et la VENTE (la note
+                                                                  // TECHNIQUE dédiée au lot 147 — savoir FAIRE ;
+                                                                  // persona.flair décide de TENTER)
                                                                   // des gestes (un 35 tente peu et
                                                                   // vend mal — la note joue l'exécution)
     shotSigma: lerp(0.55, 0.10, r('finishing')),                  // m — sur le point visé dans le but
@@ -82,6 +92,10 @@ export function makeProfile(ratings = {}) {
     chargeF: lerp(0.85, 1.15, r('strength')),                     // × dans la charge d'épaule (les deux côtés du duel)
     sautF: lerp(0.75, 1.25, r('jumping')),                        // × sur la DÉTENTE de tête (le 50 vaut 1 exact
                                                                   // — et l'autre moitié du duel aérien, lot 112)
+    handF: lerp(0.85, 1.15, r('handling')),                       // l'ISSUE de l'arrêt (147) : prise/claquette
+    headF: lerp(0.8, 1.2, r('heading')),                          // la QUALITÉ de la tête (147) — puissance + cadre gêné
+    crossF: lerp(1.25, 0.75, r('crossing')),                      // × sur le σ du centre (147) — compose la patte
+    weakF: lerp(1.5, 0.5, r('weakFoot')),                         // × sur l'écart au neutre du mauvais pied (147)
   });
 }
 
@@ -124,6 +138,15 @@ export function checkAttributes() {
   // 3. le joueur moyen = le moteur d'aujourd'hui (le no-op numérique)
   if (Math.abs(mid.topF - 1) > 1e-9 || Math.abs(mid.accelF - 1) > 1e-9) issues.push('le 50 partout ne vaut pas 1,0 — le no-op est violé');
   if (Math.abs(mid.composureF - 1.075) > 1e-9) issues.push('composure 50 hors centre');
+  // …les six du lot 147 : monotones, no-op à 50, fallbacks identiques
+  if (!(hi.handF > mid.handF && mid.handF > lo.handF) || Math.abs(mid.handF - 1) > 1e-9) issues.push('handling non monotone ou no-op violé');
+  if (!(hi.headF > mid.headF && mid.headF > lo.headF) || Math.abs(mid.headF - 1) > 1e-9) issues.push('heading non monotone ou no-op violé');
+  if (!(hi.crossF < mid.crossF && mid.crossF < lo.crossF) || Math.abs(mid.crossF - 1) > 1e-9) issues.push('crossing non monotone (σ) ou no-op violé');
+  if (!(hi.weakF < mid.weakF && mid.weakF < lo.weakF) || Math.abs(mid.weakF - 1) > 1e-9) issues.push('weakFoot non monotone ou no-op violé');
+  if (!(hi.visionF > mid.visionF && mid.visionF > lo.visionF) || Math.abs(mid.visionF - 1) > 1e-9) issues.push('vision non monotone ou no-op violé');
+  const fbA = makeProfile({ passing: 80, dribbling: 70 });
+  const fbB = makeProfile({ passing: 80, dribbling: 70, vision: 80, technique: 70 });
+  if (Math.abs(fbA.visionF - fbB.visionF) > 1e-9 || Math.abs(fbA.gesteF - fbB.gesteF) > 1e-9) issues.push('les fallbacks vision→passing / technique→dribbling divergent');
   // 4. les clés inconnues sont ignorées, pas fatales
   try { makeProfile({ chapeau: 99, pace: 60 }); } catch { issues.push('une clé inconnue fait planter makeProfile'); }
   return { ok: issues.length === 0, issues };

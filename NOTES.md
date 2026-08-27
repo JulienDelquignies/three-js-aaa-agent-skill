@@ -5620,6 +5620,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      L'IDENTITÉ PROUVÉE À 240 s : toutes clés 142-145 éteintes = le monde 141 au bit
      (59d6b07d1e09a516 seed 5 / c524eee50a14cbea seed 2, avant/après stash identiques).
 
+188. **Lots 146-147 : L'INVENTAIRE DU CONSOMMATEUR CARRIÈRE (le jeu type FM/directeur
+     sportif qui vendorise le moteur).** L'AUDIT D'ABORD (146) : trois demandes déjà
+     servies — les formations 3142/451/5212 sont NATIVES (lot 129), la seconde formation
+     existe (formation { on, off, map }, lots 129-130), la note vision avait déjà son
+     levier (visionF, lot 140) ; leur copie vendorisée est en retard. Leur `case 'chop'`
+     sans jambes ne nous concerne pas (notre crochetCourt a appuis + jambes complètes,
+     contact 0,14). Leur CADEAU consigné À LA SOURCE (dribble.js/pushSpeed) : la conduite
+     est DEUX régimes — le servo de tenue (58 %, 0,33 m) et le ballon libre (42 %, 0,79 m) ;
+     pushSpeed suppose la reprise servo ~0,2 s plus tard — qui vendorise la loi doit
+     vendoriser le servo (porter l'une sans l'autre a AGGRAVÉ leur conduite, 1,06 → 1,35 m).
+     LE LOT 147 — six notes consommées de plus (15 → 21), mêmes trois contrats (bande
+     humaine, sans-notes-rien-ne-bouge au bit, l'exécution pas la physique) :
+     `vision` (visionF, fallback passing — l'identité des mondes déjà notés),
+     `technique` (gesteF, fallback dribbling — savoir FAIRE ; persona.flair décide de
+     TENTER, et `flair` fourni en note REMPLACE le tirage seedé de persona),
+     `handling` (handF 0,85…1,15 — l'ISSUE de l'arrêt : capter jusqu'à priseV × handF,
+     sécuriser en corner dès claqueV / handF — les seconds ballons de surface deviennent
+     une question de gardien, exactement leur demande),
+     `heading` (headF 0,8…1,2 — la puissance de la tête au but ET le cadre tenu même gêné ;
+     jumping reste la détente),
+     `crossing` (crossF ×σ du centre, compose la patte du lot 100),
+     `weakFoot` (weakF ×l'écart au neutre des malus mauvais pied : le σ du centre inversé
+     1,9 et l'audace d'enroulée 0,55 respirent de mono-pied à ambidextre — 50 = les
+     constantes d'hier EXACTES). checkAttributes porte les 6 contrats (monotonie, no-op
+     à 50, fallbacks identiques) ; clause flair au banc attributes. Empreintes AU BIT
+     (tout est gated notes). RESTE ARBITRÉ AU ROADMAP : les CPA par équipe (le gros
+     morceau, leur priorité mesurée), gkStyle/crossStyle/passStyle, tempo/mentality/
+     offsideTrap, les mentales (decisions/offTheBall/positioning/workRate/aggression/
+     concentration/marking) et le trio gardien (command/kicking/throwing).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

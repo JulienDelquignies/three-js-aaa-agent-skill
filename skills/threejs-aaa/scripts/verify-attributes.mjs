@@ -15,7 +15,18 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const r = checkAttributes();
   ok('contrat du mapping (bandes bornées, monotonie, no-op du joueur moyen)', r.ok, r.issues.join(' | '));
-  ok(`le vocabulaire est documenté (${Object.keys(ATTRIBUTES).length} notes consommées)`, Object.keys(ATTRIBUTES).length >= 10);
+  ok(`le vocabulaire est documenté (${Object.keys(ATTRIBUTES).length} notes consommées ≥ 21 — le lot 147 sert l'inventaire du consommateur carrière)`, Object.keys(ATTRIBUTES).length >= 21);
+  // lot 147 — LE FLAIR EST UNE NOTE : fournie, elle remplace le tirage seedé de persona
+  // (vouloir TENTER) ; absente, le hash d'hier au bit (l'identité)
+  {
+    const sq = [Array.from({ length: 6 }, () => ({ ratings: { flair: 95 } })), []];
+    const stF = makeMatch({ perTeam: 5, seed: 7, squads: sq });
+    const stN = makeMatch({ perTeam: 5, seed: 7 });
+    const pF = stF.players.find((q) => q.team === 0);
+    const pN = stN.players.find((q) => q.team === 0);
+    ok(`lot 147 — la note flair pilote la persona (${pF.persona.flair.toFixed(3)} ≈ 0,958 avec flair 95 ; sans note : ${pN.persona.flair.toFixed(3)}, le tirage seedé d'hier)`,
+      Math.abs(pF.persona.flair - (0.15 + 0.85 * 0.95)) < 1e-9 && Math.abs(pN.persona.flair - pF.persona.flair) > 1e-6);
+  }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));
   ok(`pace 100 × chase (${(best.topF * RONDO.speeds.chase).toFixed(2)} m/s) reste sous le plafond absolu (${RONDO.sprintMax ?? 8})`,

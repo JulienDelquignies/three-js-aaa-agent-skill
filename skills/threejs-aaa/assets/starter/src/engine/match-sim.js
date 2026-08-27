@@ -65,6 +65,8 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
         q.look = spec.look ?? null;
         q.name = spec.name ?? q.name;
         q.number = spec.number ?? null;
+        if (spec.ratings?.flair != null && q.persona)   // LE FLAIR EST UNE NOTE (147) : fournie, elle remplace le tirage seedé (TENTER ; FAIRE reste gesteF/technique)
+          q.persona = { ...q.persona, flair: 0.15 + 0.85 * Math.max(0, Math.min(1, spec.ratings.flair / 100)) };
       });
     }
   }
@@ -260,8 +262,7 @@ function assignMatchJobs(st, cfg) {
         gk.push = null;
         continue;
       }
-      // LE GARDIEN NE DRIBBLE PAS — IL DISTRIBUE. Le push avant constant en faisait un ATTAQUANT (épisodes
-      // de 45-87 m mesurés, finis en sortie). Sa loi : le SPOT de distribution devant sa ligne, jamais plus loin…
+      // LE GARDIEN NE DRIBBLE PAS — IL DISTRIBUE (épisodes de 45-87 m mesurés) : le SPOT devant sa ligne, jamais plus loin…
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol
@@ -649,8 +650,7 @@ function assignMatchJobs(st, cfg) {
       // …chaînée au ballon en attaque (51), latéralement (68) ; l'ancre de rentrée LENTE (τ 2 s, x vif) : la ligne se referme sur l'aile INSTALLÉE.
       const tz = st._tuckZ ??= { v: 0, t: st.t };
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
-      // LA POUSSE (141, cfg.pousse && st.full) : la ligne arrière attaquante franchit le rond, gain × axe hauteurBloc
-      const blocA = blocFor(cfg.bloc ?? null, tac(st, atk));
+          const blocA = blocFor(cfg.bloc ?? null, tac(st, atk));   // LA POUSSE (141, cfg.pousse && st.full) : la ligne arrière attaquante franchit le rond, gain × axe hauteurBloc
       if (blocA && st.full && cfg.pousse) blocA.pousse = { gain: (cfg.pousse.gain ?? 0.8) * axe(tac(st, atk).hauteurBloc, 0.3, 1.7), des: cfg.pousse.des, max: cfg.pousse.max };
       const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocA, tz.v, st._outAtk ??= []);   // la formation ON (129)
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste coulissé peut tomber DERRIÈRE la
@@ -693,8 +693,7 @@ function assignMatchJobs(st, cfg) {
             && (p._appelCd ?? -1) <= st.t + (jeteHot ? 3 : 0)) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
-            // LA RUPTURE (140, cfg.tranchant) : l'espace derrière la ligne → l'appel part de LOIN (26 c. 12,5), PROFOND (dart 12, 2,2 s) ; rondo sert (+portee), l'élection pèse les éliminés
-            const long = dB >= (cfg.passRange?.[1] ?? 13) - 0.5;
+                  const long = dB >= (cfg.passRange?.[1] ?? 13) - 0.5;   // LA RUPTURE (140, cfg.tranchant) : l'espace derrière la ligne → l'appel part de LOIN (26 c. 12,5), PROFOND (dart 12, 2,2 s) ; rondo sert (+portee), l'élection pèse les éliminés
             const rupt = st.full && cfg.tranchant && pitch.hx - off.adv >= (cfg.tranchant.espace ?? 14);
             if (dB > 6 && (!long || (rupt && dB < (cfg.tranchant.rayon ?? 26))) && myAdv > st.ball.p[0] * off.sgn + 2) {
               // LE RÉPERTOIRE DE L'AILIER (125, cfg.courseAilier && st.full — 9/9 darts rentraient) : l'ESPÈCE à la
@@ -1080,7 +1079,8 @@ function onDive(st, gk, cfg) {
   if (gk.act?.id === 'plongeonPrise') gk.down = Math.max(gk.down, 0.5);
   else riseDown(st, gk, cfg, true);
   const spdT = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
-  if (d <= 1.1 && y <= 1.9 && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) && d > 0.75)) {
+  const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
+  if (d <= 1.1 && y <= 1.9 && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)
@@ -1094,7 +1094,7 @@ function onDive(st, gk, cfg) {
   } else {
     const side = Math.sign(gk.p[2] - 0) || 1;
     // LA CLAQUETTE EN CORNER (lot 101 — mesuré : 1 corner/8 matchs) : le tir FORT au bout de l'envergure OU trop vif pour les gants se DÉVIE derrière la ligne (« en corner ! », outRule juge). Clé absente : hier au bit.
-    if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16)))
+    if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) / handF && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16) * handF))
       st.ball.impulse([-st.ball.v[0] * 0.45, -st.ball.v[1] * 0.4 + 2.2, -st.ball.v[2] * 0.3 + side * 6]);
     else st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
     st.lastTouch = gk.team;

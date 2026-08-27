@@ -148,7 +148,7 @@ export function tryShot(st, c, cfg) {
       const side = Math.sign(st.ball.p[2] * -(goal.x || 1));
       const sf = st.full && cfg.patte !== false ? (c.strongFoot ?? 'right') : null;
       // (l'ulp : 0,42+0,14 ≠ 0,56 au bit — sans patte la borne d'hier reste LITTÉRALE)
-      const wIn = !sf ? 1 : sf === 'both' ? 1.2 : (side > 0) === (sf === 'right') ? 1.6 : 0.55;
+      const wIn = !sf ? 1 : sf === 'both' ? 1.2 : (side > 0) === (sf === 'right') ? 1.6 : 1 - 0.45 * (c.skill?.weakF ?? 1);   // …le mauvais pied ose l'enroulée selon weakFoot (147 — 0,55 exact à 50)
       shotKind = u < 0.42 ? { id: 'puissance', speed: 21.5, elev: 0.09, rev: 0.5 }
         // L'ENROULÉE : de l'angle du repique, la mène se décale VERS LE CENTRE et le Magnus
         // la RAMÈNE au poteau (calibré : la courbe suit 1,44·(d/16)² au réel — arrivée à
@@ -208,7 +208,10 @@ export function tryCross(st, c, cfg) {
   // (contrat générique de beginPass : la dispersion DU geste) — physique intacte, aucun
   // tirage de plus (le σ existant se module). patte:false : le centreur sans patte d'hier.
   const sfC = st.full && cfg.patte !== false ? (c.strongFoot ?? 'right') : null;
-  const piedsF = !sfC ? 1 : sfC === 'both' ? 1 : (Math.sign(c.p[2] * -(goal.x || 1)) > 0) === (sfC === 'right') ? 1.9 : 0.85;
+  // …LE PIED FAIBLE EST UNE NOTE (147, weakFoot) : l'écart au neutre du malus mauvais pied × weakF
+  // (100 ≈ ambidextre → ×1,0 ; 0 mono-pied → ×2,35) ; et LA PRÉCISION DU CENTREUR (crossing) compose — 1 exact à 50
+  const wkF = c.skill?.weakF ?? 1;
+  const piedsF = (!sfC ? 1 : sfC === 'both' ? 1 : (Math.sign(c.p[2] * -(goal.x || 1)) > 0) === (sfC === 'right') ? 1 + 0.9 * wkF : 0.85) * (c.skill?.crossF ?? 1);
   if (c.p[0] * sgn < pitch.hx - pitch.dims.box.depth - (st.full ? 13 + (piedsF < 1 ? 3 : 0) : 9)) return false;   // pas assez haut (le débordeur centre tôt)
   if (Math.abs(c.p[2]) < pitch.hz * (st.full ? 0.30 : 0.38)) return false;                 // pas dans le couloir
   if (st.hold < 0.25) return false;

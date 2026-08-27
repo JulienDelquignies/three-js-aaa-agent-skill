@@ -62,7 +62,7 @@ export function teteStep(st, cfg) {
           + ((joueur.skill?.sautF ?? 1) - (venant.skill?.sautF ?? 1)) * 0.25
         : ((joueur.skill?.chargeF ?? 1) - (venant.skill?.chargeF ?? 1)) * 0.5;
       const tenu = (st.rnd ? st.rnd() : 0.5) < 0.5 + edge;
-      if (!tenu) { gene = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (T.gene ?? 0.35); geneV = T.geneV ?? 0.8; }
+      if (!tenu) { gene = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (T.gene ?? 0.35) * (2 - (joueur.skill?.headF ?? 1)); geneV = T.geneV ?? 0.8; }   // …le CADRE tenu même gêné (147, heading — ×1 exact à 50)
       st.events.push({ t: +st.t.toFixed(2), type: 'duel', kind: 'aérien', by: joueur.id, contre: venant.id, won: tenu, ...(tenu ? {} : { gene: true }), ...(saute ? { saut: true } : {}) });
     }
   }
@@ -75,7 +75,7 @@ export function teteStep(st, cfg) {
   if (dGoal < (T.but ?? 12) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
     // LA TÊTE AU BUT : piquée vers un point du cadre seedé — canal shot standard
     const tz = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (st.pitch.goalHalf - 0.5);
-    st.ball.strike({ speed: 12.5 * geneV, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]) + gene, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
+    st.ball.strike({ speed: 12.5 * geneV * (joueur.skill?.headF ?? 1), dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]) + gene, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });   // …la PUISSANCE de la tête au but (147, heading)
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
