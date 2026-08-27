@@ -297,7 +297,7 @@ export function blocFor(bloc, tq, zone = false) {
   return {
     ...bloc,                                                       // lateral/slideMax passent tels quels
     long: (bloc.long ?? 30) + ax(tq?.compacite, 4, -4),
-    ligne: (bloc.ligne ?? 27) + ax(tq?.hauteurBloc, 4, -4),
+    ligne: (bloc.ligne ?? 27) + ax(tq?.hauteurBloc, 4, -4) + ax(tq?.piege, 3, -3),   // LE PIÈGE (149) : l'agressivité du hors-jeu tient la ligne haute — 0,5 = +0
     // la PINCE du côté faible (lot 96) ne vit que sous cfg.zone (le call-site la gate) —
     // l'axe marquage : la zone pince fort (0,62), l'homme-à-homme tient sa craie (1,0)
     ...(zone ? { pince: ax(tq?.marquage, 0.62, 1.0) } : {}),

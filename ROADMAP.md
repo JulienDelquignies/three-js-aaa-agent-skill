@@ -262,6 +262,9 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LES TROIS AXES (149, note 190) : tempo (54 c. 39 passes/150 s), piege (la ligne +6,4 m),
+mentalite (tentatives avant +38 %, tirs ×3 — le forcing se paie en refus, documenté).
+
 LES CPA PAR ÉQUIPE (148, note 189) : tac.cpa { corner: court/premier/second/mixte,
 coupFranc: direct/centre/mixte, marquage: homme/zone } — le corner court a son OFFREUR
 placé, le direct ose à 34 m (v 21), la zone garde le point de chute. Opt-in au bit.

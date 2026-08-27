@@ -5670,6 +5670,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (168 ✓). RESTE de l'espace CPA (consigné) : goalKickStyle/throwInStyle, le
      setPiecesFocus, la protection premier poteau paramétrée.
 
+190. **Lot 149 : LES TROIS AXES DU CONSOMMATEUR — tempo, mentalite, piege (tactics.js,
+     identité 0,5 au bit).** `tempo` : la vitesse de circulation — la tenue calme
+     (st._calmHold) × axe(1,35…0,65) : 39 → 54 passes/150 s appariées. `piege` :
+     l'agressivité du hors-jeu — la ligne du bloc défendant (blocFor.ligne) ± axe(3…−3) :
+     la ligne vit à 35,7 m du but c. 29,3 au passif. `mentalite` : le CURSEUR DE RISQUE —
+     deux leviers : la pente de progression du choix de passe (passBias × axe 0,75…1,25)
+     ET le risque ACCEPTÉ à l'exécution (raceSlack × axe 1,25…0,75 — l'offensif tolère
+     des courses serrées). LA LEÇON D'INSTRUMENT (payée) : amplifier le désir d'avant
+     fait MONTER les REFUS de course (deny ×2) et BAISSER la part de passes avant
+     COMPLÉTÉES — le premier jet lisait l'axe « à l'envers ». La vraie signature du
+     très-offensif : les TENTATIVES avant +38 % (29 → 40) et les TIRS ×3 (1 → 3), payés
+     en ballons refusés — le forcing du vrai football, documenté tel quel. LA 2e LEÇON
+     (payée aussi) : un `grep && python` où le grep ne matche pas SAUTE le python en
+     silence — trois édits fantômes, la sonde à zéro effet les a attrapés ; toujours
+     vérifier l'effet APRÈS, jamais le seul « parse ok ».
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

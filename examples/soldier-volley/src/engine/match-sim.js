@@ -1114,7 +1114,7 @@ function onDive(st, gk, cfg) {
 function passBias(st, c, o) {
   const goal = st.pitch.attackGoal(c.team);
   const gain = Math.sign(goal.x) * (o.lead[0] - st.ball.p[0]);
-  return Math.max(-3, Math.min(3, gain * 0.22));
+  return Math.max(-3, Math.min(3, gain * 0.22 * axe(tac(st, c.team).mentalite, 0.75, 1.25)));   // LA MENTALITÉ (149) : le risque global pèse la progression — 0,5 = ×1
 }
 
 export function matchCfg(overrides = {}) {

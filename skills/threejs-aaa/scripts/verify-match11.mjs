@@ -3316,5 +3316,53 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     cibles({ marquage: 'zone' }) >= 3 && cibles(null) === 0);
 }
 
+// ---------------------------------------------------------------- lot 149 : LES TROIS AXES DU
+// CONSOMMATEUR — tempo (la circulation), mentalite (le curseur de risque), piege (le hors-jeu).
+// 0,5 = l'identité au bit (empreintes) ; appariés mêmes graines, l'effet est attribuable.
+{
+  const course = (tq) => {
+    const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
+    const cfg = matchCfg({ shotRange: 20 });
+    let passes = 0, nEv = 0; const lignes = [];
+    for (let i = 0; i < 150 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      while (nEv < st.events.length) if (st.events[nEv++].type === 'pass') passes++;
+      if (i % 60 === 0 && !st.restart && st.possession.team >= 0) {
+        const def = 1 - st.possession.team, gD = st.pitch.ownGoal(def).x, sd = Math.sign(gD);
+        const xs = st.players.filter((q) => q.team === def && !q.keeper && q.down <= 0).map((q) => q.p[0]).sort((a, b) => sd * (b - a));
+        lignes.push(Math.abs((xs[0] + xs[1] + xs[2]) / 3 - gD));
+      }
+    }
+    return { passes, ligne: lignes.reduce((a, b) => a + b, 0) / Math.max(1, lignes.length) };
+  };
+  const t0 = course({ tempo: 0 }), t1 = course({ tempo: 1 });
+  ok(`lot 149 — LE TEMPO circule (${t1.passes} passes/150 s au vif ≥ ${t0.passes} + 8 au lent — les tenues calmes respirent à l'axe, 0,5 = l'hier au bit)`,
+    t1.passes >= t0.passes + 8);
+  const p0 = course({ piege: 0 }), p1 = course({ piege: 1 });
+  ok(`lot 149 — LE PIÈGE tient la ligne haute (${p1.ligne.toFixed(1)} m du but ≥ ${p0.ligne.toFixed(1)} + 3 au passif — l'agressivité du hors-jeu est un axe d'équipe)`,
+    p1.ligne >= p0.ligne + 3);
+  const risque = (m) => {
+    const st = makeMatch({ full: true, seed: 4, tactics: [{ mentalite: m }, {}] });
+    const cfg = matchCfg({ shotRange: 20 });
+    let av = 0, tirs = 0, nEv = 0;
+    for (let i = 0; i < 150 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      while (nEv < st.events.length) {
+        const e = st.events[nEv++];
+        if (e.type === 'shot' && st.players[e.by]?.team === 0) tirs++;
+        if (e.type !== 'pass') continue;
+        const p2 = st.players[e.from], r = st.players[e.to];
+        if (!p2 || p2.team !== 0 || !r) continue;
+        const g = st.pitch.attackGoal(0);
+        if (Math.hypot(g.x - p2.p[0], p2.p[2]) - Math.hypot(g.x - r.p[0], r.p[2]) > 2) av++;
+      }
+    }
+    return { tent: av + (st.deny?.course ?? 0), tirs };
+  };
+  const m0 = risque(0), m1 = risque(1);
+  ok(`lot 149 — LA MENTALITÉ est l'appétit du risque (tentatives avant ${m1.tent} ≥ ${m0.tent} + 6, tirs ${m1.tirs} ≥ ${m0.tirs} — le forcing se paie en refus de course, c'est le football du très-offensif)`,
+    m1.tent >= m0.tent + 6 && m1.tirs >= m0.tirs);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

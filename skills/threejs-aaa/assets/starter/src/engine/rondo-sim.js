@@ -1,6 +1,7 @@
 import { BALL, stepBall, kick } from './ball.js';
 import { predictPath } from './ball-predict.js';
 import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
+import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
@@ -222,10 +223,9 @@ function standTackleNow(st, q, cfg) {
 }
 
 // ============================ LES GESTES TECHNIQUES ============================
-// Râteau, feinte, semelle — les gestes qui manipulent le ballon SANS le libérer. Trois lois :
-// (1) chaque déclenchement est SITUÉ et chaque refus se NOMME ; (2) le geste passe par la MÊME
-// machine que les frappes (armé volable, contact, accompagnement, abort nommé) ; (3) le couple
-// corps-ballon reste SOUDÉ (carry servo) — raclé, garé, jamais téléporté. La fréquence est une
+// Râteau, feinte, semelle — les gestes qui manipulent le ballon SANS le libérer. Trois lois : (1) chaque
+// déclenchement est SITUÉ, chaque refus NOMMÉ ; (2) la MÊME machine que les frappes (armé volable, contact,
+// accompagnement, abort nommé) ; (3) le couple corps-ballon SOUDÉ (carry servo). La fréquence est une
 // identité (persona.flair) sous cooldowns stricts : un geste technique est un événement, pas un tic.
 
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow };
@@ -831,7 +831,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (st._calmKey !== `${st.possession.carrier}:${st.turnovers}:${st.passes}`) {
       st._calmKey = `${st.possession.carrier}:${st.turnovers}:${st.passes}`;
       // × persona.calm : le posé et le vif ne tiennent pas le ballon pareil — l'identité au tempo
-      { const hc = (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1); }
+      { const hc = (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.35, 0.65); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
     }
     const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
     const calm = foeBody > cfg.calmFoe;

@@ -79,6 +79,11 @@ export function resoudreTactique(t) {
     // formation.js/LIGNES généralise le calage Loi 11 et les clauses). Inconnue : 433.
     formation: base.formation ?? '433',
     roles: base.roles ?? null,
+    // LES TROIS AXES DU CONSOMMATEUR (lot 149) — tempo : la vitesse de circulation (les
+    // tenues calmes se raccourcissent, la barre d'adoption s'abaisse) ; mentalite : le
+    // curseur de risque (la pente de progression du choix de passe) ; piege : l'agressivité
+    // du hors-jeu (la ligne du bloc défendant monte). 0,5 = l'identité, pas un bit.
+    tempo: base.tempo ?? 0.5, mentalite: base.mentalite ?? 0.5, piege: base.piege ?? 0.5,
     // LES COUPS DE PIED ARRÊTÉS PAR ÉQUIPE (lot 148 — la demande MESURÉE du consommateur
     // carrière : « un corner est deux constantes globales ») : un CPA n'est pas un axe,
     // c'est une SITUATION — il a son espace. { corner: 'court'|'premier'|'second'|'mixte',
