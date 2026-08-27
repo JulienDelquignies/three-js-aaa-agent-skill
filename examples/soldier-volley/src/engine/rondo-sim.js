@@ -52,16 +52,10 @@ function stepGestures(st, dt, cfg) {
       // (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
-      // AND THE BALL TRAVELS WITH HIM. While the swing runs the dribble is suspended, and the
-      // ball was left where it lay — the strike happened off a stale position (separation
-      // 2,09 → 1,53 m). The ball is at his feet: it goes where he goes until the boot sends it.
-      // LE COUPLE CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ — dans les deux sens. Avant : le corps
-      // décélérait (il s'engage) pendant que le ballon gardait son inertie ; mesuré, le couple
-      // divergeait de 0,4 m pendant le geste et le pied frappait du vide. Maintenant :
-      //   le BALLON PORTÉ est porté AU POINT DE STANCE du corps qui glisse (carry) : le couple est
-      //   soudé PAR CONSTRUCTION — au contact, la stance est vraie parce que le ballon est LÀ où le
-      //   geste la définit, plus parce qu'un frein l'a laissé à peu près au bon endroit. Un ballon
-      //   NON porté (frappe d'urgence sur ballon libre) garde l'ancien frein d'assise ;
+      // AND THE BALL TRAVELS WITH HIM — the swing suspends the dribble; the ball goes where he goes until the boot sends it (separation 2,09 → 1,53 m).
+      // LE COUPLE CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ (mesuré : 0,4 m de divergence, le pied
+      // frappait du vide) : le BALLON PORTÉ vit AU POINT DE STANCE du corps qui glisse (carry) —
+      // au contact la stance est vraie par construction ; un ballon NON porté garde le frein d'assise ;
       if (st.ball.owner === p.id && p.act.payload?.stance) {
         // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite
         // soudé (les passes partaient à 6-21° de leur stance). MAIS un ballon encore à > 0,45 m du
@@ -99,10 +93,8 @@ function stepGestures(st, dt, cfg) {
         A.from[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, A.from[1]));
         const t01 = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation));
         const g = glide(A.from, A.fromYaw, anchor, t01);
-        // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : la droite d'un glissement peut passer
-        // par le point où le ballon est posé (l'ancre est de l'autre côté de lui) — le chemin est
-        // poussé radialement hors du cercle du ballon. Les stances finissent toutes au-delà de ce
-        // rayon (talonnade 0,38 m > 0,32), donc le contournement ne combat jamais l'arrivée.
+        // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : le chemin du glissement est poussé
+        // radialement hors du cercle du ballon (les stances finissent au-delà — talonnade 0,38 > 0,32).
         {
           const bx = g.p[0] - st.ball.p[0], bz = g.p[1] - st.ball.p[2];
           const bd = Math.hypot(bx, bz), AVOID = 0.32;
@@ -244,12 +236,10 @@ export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (
 const dW = (st, cfg, k) => (st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null); // l'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config)
 function receive(st, id, cfg = RONDO) {
   const p = st.players[id];
-  // LE SIFFLET DE LA LOI 11 : photographié hors-jeu au départ du ballon (st.pass.off, strikeNow),
-  // son PREMIER toucher est l'infraction — le drapeau se lève ICI, l'administration (coup franc
-  // adverse au point du toucher) est le métier du match (assignMatchJobs lit st._whistle). Un
-  // hors-jeu qui ne touche jamais le ballon n'existe pas : la position n'est pas une faute, la
-  // participation l'est. Le toucher est laissé s'accomplir (contrôle, prise) — le jeu s'arrête
-  // au sifflet, une image plus tard, comme sur un vrai terrain.
+  // LE SIFFLET DE LA LOI 11 : photographié hors-jeu au départ (st.pass.off), son PREMIER toucher
+  // est l'infraction — le drapeau se lève ICI, l'administration est le métier du match
+  // (st._whistle). La position n'est pas une faute, la participation l'est ; le toucher
+  // s'accomplit, le jeu s'arrête une image plus tard, comme sur un vrai terrain.
   if (st.pass?.off?.[id] && cfg.offside && st.full && !st.restart) {
     st.events.push({ t: +st.t.toFixed(2), type: 'hors-jeu', by: id, at: st.pass.off[id], p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)] });
     st._whistle = { p: [p.p[0], p.p[2]], team: p.team === 0 ? 1 : 0 };
@@ -962,13 +952,23 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // appels servis sur 41 mesurés). Au vrai foot, la course DÉCLENCHE le ballon : un coureur
         // en rupture au bout d'une ligne qui score dispense de finir la tenue délibérée.
         const runnerCall = choice && (st.players[choice.to.id]?._pace?.until ?? -1) > st.t;
+        // …ET LE JETÉ DÉCLENCHE (lot 144, cfg.fixe && st.full) : le porteur A fixé — le presseur
+        // LANCÉ sur lui dispense de finir la tenue, la barre s'abaisse : le ballon part PENDANT
+        // qu'il vole (l'élection qui avance vit dans choosePass). false : la tenue sourde d'hier.
+        const jeteCall = st.full && cfg.fixe && choice && st.players.some((q) => {
+          if (q.team === c.team || q.keeper || q.down > 0) return false;
+          const dx = c.p[0] - q.p[0], dz = c.p[2] - q.p[2], d = Math.hypot(dx, dz);
+          if (d > (cfg.fixe.rayon ?? 4.5) || d < 0.8) return false;
+          const v = Math.hypot(q.v[0], q.v[1]);
+          return v >= (cfg.fixe.vitesse ?? 4) && (q.v[0] * dx + q.v[1] * dz) / (v * d) > 0.75;
+        });
         // …une intention de CENTRE vivante ne se re-décide pas (le choix de passe l'écrasait à
         // l'image suivante — 0 centre exécuté) : elle meurt de sa mort propre (TTL, receveur)
         // …et l'intention vers un COUREUR meurt AVEC la course (lot 36 : adoptées plus souvent
         // par la loi du coureur, les intentions qui échouent à s'engager occupaient le porteur
         // TTL plein — tirs 18 → 10 sur 10 graines mesurés ; on arrête de chercher le coureur
         // quand la course est finie, c'est tout)
-        if (!c.intent?.choice?.cross && choice && ((choice.score > bar && (heldEnough || runnerCall || engagementCall)) || st.hold >= cfg.holdMax)) {
+        if (!c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(bar, cfg.fixe?.barre ?? 1.2) : bar) && (heldEnough || runnerCall || engagementCall || jeteCall)) || st.hold >= cfg.holdMax)) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;

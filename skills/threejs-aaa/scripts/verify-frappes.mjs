@@ -25,7 +25,7 @@ const mk = (cfgExtra = {}) => {
   const goal = st.pitch.attackGoal(0);
   for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = -sgn * 30; q.p[2] = -28; q.v = [0, 0]; }
   for (const q of st.players.filter((q) => q.team === 0 && !q.keeper)) { q.p[0] = -sgn * 30; q.p[2] = 28; q.v = [0, 0]; }
-  return { st, sgn, goal, cfg: matchCfg({ shotRange: 20, ...cfgExtra }) };
+  return { st, sgn, goal, cfg: matchCfg({ shotRange: 20, dispersion: false, oeil: false, fixe: false, ...cfgExtra }) };   // les fixtures de frappe isolent 143-145 (les tirages ajoutés re-dataient le flux : piqué y=2,91 mesuré)
 };
 const pose = (st, c, x, z) => {
   c.p[0] = x; c.p[2] = z; c.v = [0, 0];

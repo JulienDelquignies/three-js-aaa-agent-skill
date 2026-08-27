@@ -262,6 +262,14 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE QUATUOR DU RÉALISME (142-145, notes 184-187 — retours utilisateur ×4) : la semelle à
+sa place (K.semellePlace — 333 → 36/90 min, jamais l'option qui attend), l'œil de
+l'urgence (cfg.oeil — la panique ne joue plus la ligne morte : interceptions 15 → 11 %,
+complétion 83 %), le jeté se punit (cfg.fixe — élection avant + déclenchement + la
+fenêtre d'appel ouverte : 54 % des jetés joués < 0,9 s), le hors-cadre (cfg.dispersion —
+σ situationnel + hauteur + vitesse : 13 → 22 % ; dette : le trafic plafonne, ne pas
+re-tenter par le σ).
+
 LA TRANCHANTE + LA POUSSE (140-141, notes 182-183 — retours utilisateur) : la rupture
 part de loin et se sert derrière la ligne (cfg.tranchant — 18 servies en course/20 min,
 0 hier ; visionF = 2e levier de passing), la ligne arrière attaquante franchit le rond

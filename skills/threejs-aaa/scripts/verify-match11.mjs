@@ -55,12 +55,14 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
   engagement: false, assignTenue: false,                             // …le frémissement des cibles d'hier (pré-135)
   sortieGardien: false, clearTouche: false,                          // …le gardien invisible et le corner facile d'hier (pré-136)
-  accompagne: false, yawSlew: false, tranchant: false, pousse: false };   // …le porteur esseulé, le cap claqué, la rupture myope, le rond-plafond d'hier (pré-137/141)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false };   // …le monde d'hier (pré-137/145)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false };   // la clause 131 isole SES successeurs (132-141) — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false };   // la clause 131 isole SES successeurs (132-145) — sa loi seule varie
+// le PACK 142-145 (la semelle rare, l'œil, le jeté, le souffle d'exécution) : les clauses de flux d'AVANT s'y épinglent
+const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: false };
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -469,7 +471,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const ds = [];
     for (const seed of [2, 3, 5, 6]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ shotRange: 20, ...ISO142, ...cfgExtra });
       let pris = null;
       for (let i = 0; i < 30 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -907,7 +909,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // …au LAB (lot 116 — le fix DURABLE annoncé au 3e élargissement : la clause isole le
     // gardien, une loi ancienne ; son échantillon de 6-11 cadrées restait la proie de chaque
     // flux nouveau — gelée au labo, elle ne re-cassera plus)
-    const cfg = matchCfg({ shotRange: 20, ...LAB, chrono: { periodes: 2, duree: 180, pause: 6 } });
+    const cfg = matchCfg({ shotRange: 20, ...ISO142, ...LAB, chrono: { periodes: 2, duree: 180, pause: 6 } });
     for (let i = 0; i < 380 * 60 && !st.fini; i++) matchStep(st, 1 / 60, cfg);
     const T = st.events.filter((e) => e.type === 'shot');
     tirsN += T.length;
@@ -983,7 +985,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let n = 0, dos = 0, deny = 0;
     for (const seed of [2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -1010,7 +1012,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,
     bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 },
     soutienN: null, supportSpanFull: 0, settledNear: Infinity,
-    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false,
+    tenue: false, pivotReprise: false, sortie1v1: false, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false,
     ecarte: false, conduiteCouloir: false, releveTrot: false,
     audace: false, ramasse: false, chaloupe: false, troisieme: false,
     uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
@@ -1055,7 +1057,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let percut = 0, duels = 0;
     for (const seed of [1, 5]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
       for (let i = 0; i < 150 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (st.restart || st.possession.carrier < 0) continue;
@@ -1653,7 +1655,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // vivent dans le bruit de Poisson — l'échantillon double, l'écart passe en RATIO)
     for (const seed of [2, 3, 5, 7, 9, 11]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
       let prev = null, enc = null;
       for (let i = 0; i < 240 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2462,7 +2464,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const posts = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const watch = [], runs = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2731,7 +2733,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const joue131 = (over = {}, seed = 1) => {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ shotRange: 20, ...over });
+    const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
     let cursor = 0, carryF = 0, tot = 0, servis = 0, corbeaux = 0;
     for (let i = 0; i < 300 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -2959,7 +2961,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3149,6 +3151,107 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabP = hauteur({ pousse: false });
   ok(`lot 141 — LA POUSSE : la ligne arrière attaquante franchit le rond quand le ballon est profond (p90 +${vifP} m ≥ +6 en attaque installée — les centraux compriment le jeu) ; sabotage « le rond-plafond d'hier » attrapé (pousse:false : p90 +${sabP} ≤ +4,5 — la ligne plantée au rond central, nommée)`,
     vifP >= 6 && sabP <= 4.5);
+}
+
+// ---------------------------------------------------------------- lots 142-145 : LA SEMELLE À
+// SA PLACE, L'ŒIL DE L'URGENCE, LE JETÉ SE PUNIT, LE HORS-CADRE (retours utilisateur ×4).
+{
+  // (142) la semelle : rare et JAMAIS au contresens — sabotage « la ponctuation bavarde »
+  const semelles = (over = {}) => {
+    let n = 0;
+    for (const seed of [1, 2]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+      n += st.events.filter((e) => e.type === 'skill' && e.kind === 'semelle').length;
+    }
+    return n;
+  };
+  const vifS = semelles();
+  const sabS = semelles({ semellePlace: false });
+  ok(`lot 142 — LA SEMELLE À SA PLACE (${vifS} / 2 × 300 s ≤ 10 — la ponctuation du jeu stérile, jamais l'option qui attend) ; sabotage « la ponctuation bavarde d'hier » attrapé (semellePlace:false : ${sabS} ≥ ${Math.max(12, vifS * 3)} — 333/90 min mesurés)`,
+    vifS <= 10 && sabS >= Math.max(12, vifS * 3));
+
+  // (143) l'œil de l'urgence : la panique ne joue plus la ligne MORTE — interceptions appariées
+  const inter = (over = {}) => {
+    let intercept = 0, courseU = 0;
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let nEv = 0, vol = null;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (vol && st.ball.owner != null) {
+          if (st.players[st.ball.owner].team !== vol.team) intercept++;
+          vol = null;
+        } else if (vol && st.t - vol.t > 6) vol = null;
+        while (nEv < st.events.length) {
+          const e = st.events[nEv++];
+          if (e.type === 'pass' && !e.clear) vol = { team: st.players[e.from]?.team ?? 0, to: e.to, t: st.t };
+          else if (e.type === 'sortie' && vol) vol = null;
+        }
+      }
+      courseU += st.deny?.['course-urgente'] ?? 0;
+    }
+    return { intercept, courseU };
+  };
+  const vifO = inter();
+  const sabO = inter({ oeil: false });
+  ok(`lot 143 — L'ŒIL DE L'URGENCE (${vifO.intercept} interceptions ≤ ${sabO.intercept} − 4 sur 3 × 300 s appariées, refus nommés course-urgente ${vifO.courseU} ≥ 5) ; sabotage « la panique aveugle d'hier » attrapé (oeil:false : ${sabO.intercept} interceptions, ${sabO.courseU} refus = 0)`,
+    vifO.intercept <= sabO.intercept - 4 && vifO.courseU >= 5 && sabO.courseU === 0);
+
+  // (144) le jeté déclenche : les fenêtres de jeté produisent PLUS de ballons joués — appariés
+  const jetes = (over = {}) => {
+    let jets = 0, joues = 0, appels = 0;
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      let nEv = 0, fen = null;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        if (c && !c.keeper && st.ball.owner === c.id && (!fen || st.t - fen.t0 > 3)) {
+          for (const q of st.players) {
+            if (q.team === c.team || q.keeper || q.down > 0) continue;
+            const dx = c.p[0] - q.p[0], dz = c.p[2] - q.p[2], d = Math.hypot(dx, dz);
+            if (d > 4.5 || d < 0.8) continue;
+            const v = Math.hypot(q.v[0], q.v[1]);
+            if (v >= 4 && (q.v[0] * dx + q.v[1] * dz) / (v * d) > 0.75) { jets++; fen = { carrier: c.id, t0: st.t, done: false }; break; }
+          }
+        }
+        while (nEv < st.events.length) {
+          const e = st.events[nEv++];
+          if (fen && !fen.done && st.t - fen.t0 < 0.9 && (e.type === 'pass' || e.type === 'shot') && (e.from === fen.carrier || e.by === fen.carrier)) { joues++; fen.done = true; }
+          if (fen && st.t - fen.t0 < 0.8 && e.type === 'burst' && e.kind === 'appel-profond') appels++;
+        }
+      }
+    }
+    return { jets, joues, appels, part: joues / Math.max(1, jets) };
+  };
+  const vifJ = jetes();
+  const sabJ = jetes({ fixe: false });
+  ok(`lot 144 — LE JETÉ DÉCLENCHE (${vifJ.appels} appels de rupture < 0,8 s après un jeté ≥ 3 sur ${vifJ.jets} jetés — la fenêtre s'ouvre quand le défenseur vole ; ${(vifJ.part * 100).toFixed(0)} % joués, informatif) ; sabotage « la tenue sourde d'hier » attrapé (fixe:false : ${sabJ.appels} ≤ vif − 2 — la fenêtre n'existe pas)`,
+    vifJ.appels >= 3 && sabJ.appels <= vifJ.appels - 2);
+
+  // (145) le souffle d'exécution : une 'puissance' SOUS son plancher nominal n'existe qu'au vif
+  // (σV multiplie APRÈS le plancher max() — au sabotage, mathématiquement impossible)
+  const sousPlancher = (over = {}) => {
+    let n = 0, tirs = 0;
+    const exacts = new Set(['piqué', 'tête', 'volée', 'demi-volée', 'coup-franc-direct']);
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+      // tout kind au sol non-exact a un plancher nominal ≥ 16,5 (max(sol, kind.speed)) : une
+      // vitesse < 16,2 est IMPOSSIBLE au σ plat — seule la respiration σV (après plancher) y descend
+      for (const e of st.events) if (e.type === 'shot' && e.speed != null && !exacts.has(e.kind)) { tirs++; if (e.speed < 16.2) n++; }
+    }
+    return { n, tirs };
+  };
+  const vifD2 = sousPlancher();
+  const sabD2 = sousPlancher({ dispersion: false });
+  ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (${vifD2.n} frappes sous tout plancher nominal (< 16,2 m/s) sur ${vifD2.tirs} ≥ 1 — la vitesse RESPIRE ±5 % × la situation, le hors-cadre 13 → 22 %) ; sabotage « le σ plat d'hier » attrapé (dispersion:false : ${sabD2.n} = 0 sur ${sabD2.tirs} — le plancher exact, mathématique)`,
+    vifD2.n >= 1 && sabD2.n === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -8,6 +8,7 @@
 import { BALL } from './ball.js';
 import { MOVES } from './animkit.js';
 import { situation, footFor } from './technique.js';
+import { tac } from './tactics.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
 
@@ -156,7 +157,26 @@ export function maybeSemelle(st, c, cfg, calm, foeBody) {
   // et le ballon de CONDUITE vit à 0,5-0,9 m entre deux touches — 0,6 m est le rayon du porté)
   if (st.hold < 0.3 || st.hold > Math.max(0.5, (st._calmHold ?? 1) - 0.35)) return false;
   if (d2(c.p, st.ball.p) > 0.6) return false;
-  if ((st.rnd ? st.rnd() : 0.5) > 0.2 + 0.5 * Math.max(0, (c.persona?.calm ?? 1) - 0.85) + 0.25 * (c.persona?.flair ?? 0.5)) {
+  // LA SEMELLE À SA PLACE (lot 142, K.semellePlace && st.full — retour utilisateur : « trop de
+  // semelles, ça stoppe beaucoup d'actions ») : mesuré, ~333/90 min dont 54 % avec une OPTION
+  // NETTE devant et 24 % dans le dernier tiers. Le vrai foot la joue en possession STÉRILE :
+  // jamais dans le dernier tiers adverse (là on JOUE), jamais quand un coéquipier démarqué
+  // attend devant, jamais dans la fenêtre de transition offensive (le regain s'attaque), et le
+  // tirage se resserre — modulé par l'axe style (la possession temporise, le direct presque
+  // jamais). false : la ponctuation bavarde d'hier, au bit.
+  let placeF = 1;
+  if (st.full && cfg.semellePlace !== false) {   // clé TOP-LEVEL (gelable par spread — la leçon du pack ISO142)
+    const g = st.pitch.attackGoal(c.team), sgn = Math.sign(g.x || 1);
+    if (sgn * c.p[0] > st.pitch.hx / 3) return deny(st, 'semelle-tiers');
+    if (st._possChangeAt != null && st.t - st._possChangeAt < 5) return deny(st, 'semelle-transition');
+    const opt = st.players.some((m) => m.team === c.team && m.id !== c.id && !m.keeper && m.down <= 0
+      && sgn * (m.p[0] - c.p[0]) > 3 && d2(m.p, c.p) < 20
+      && !st.players.some((q) => q.team !== c.team && q.down <= 0 && d2(q.p, m.p) < 3));
+    if (opt) return deny(st, 'semelle-option');
+    const sty = tac(st, c.team).style;                            // l'axe (identité 0,5)
+    placeF = (cfg.semellePlace?.tirage ?? 0.45) * (1 + (0.5 - sty) * 0.7); // possession ×~1,3, direct ×~0,7
+  }
+  if ((st.rnd ? st.rnd() : 0.5) > placeF * (0.2 + 0.5 * Math.max(0, (c.persona?.calm ?? 1) - 0.85) + 0.25 * (c.persona?.flair ?? 0.5))) {
     (c._skillCd ??= {}).semelle = st.t + 1.2; return false;       // pas cette fois — on re-tire plus tard
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);

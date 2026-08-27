@@ -127,8 +127,7 @@ function assignMatchJobs(st, cfg) {
     }
   } else st._deadFlightN = 0;
 
-  // LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact) : la fenêtre s'applique PAR-DESSUS les postes.
-  if (cfg.lossReact) {
+  if (cfg.lossReact) {  // LE DÉPOSSÉDÉ SE RETOURNE : la fenêtre s'applique PAR-DESSUS les postes
     const cNow = st.possession.carrier;
     const prev = st._pcar ?? -1;
     if (prev >= 0 && cNow !== prev) {
@@ -340,8 +339,7 @@ function assignMatchJobs(st, cfg) {
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? Math.hypot(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
-    // LE PLONGEON D'HONNEUR (lot 132, cfg.honneur && st.full) : battu PROCHE (≤ reach × portee) et cadré → le geste part, sans arrêt promis. false : le spectateur.
-    const honneur = st.full && cfg.honneur !== false && dec.mode === 'battu' && dec.cross
+    const honneur = st.full && cfg.honneur !== false && dec.mode === 'battu' && dec.cross   // LE PLONGEON D'HONNEUR (132) : battu proche + cadré → le geste part ; false : le spectateur
       && Math.abs(dec.cross.z - gk.p[2]) <= K.diveReach * (cfg.honneur?.portee ?? 1.7)
       && dec.cross.t <= (K.diveTime ?? 0.9);
     if ((dec.mode === 'dive' || honneur) && gk.down <= 0) {
@@ -688,9 +686,11 @@ function assignMatchJobs(st, cfg) {
         // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
         if (off && (p.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true))) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE : suivi ou rien (pointe ≤ passRange, DEVANT le ballon, porteur posé, couloir ouvert → dart de 7 m). Un par équipe.
+          // …ET LE JETÉ DÉCLENCHE LA COURSE (144) : le défenseur qui se jette OUVRE la fenêtre d'appel — « fixer puis lâcher » se joue À DEUX
+          const jeteHot = st.full && cfg.fixe && st._jeteAt && st._jeteAt.team === atk && st.t - st._jeteAt.t < 0.8;
           if ((p._runT ?? -1) <= st.t && posé
-            && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) <= st.t
-            && (p._appelCd ?? -1) <= st.t) {
+            && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) - (jeteHot ? (cfg.fixe.appel ?? 4) : 0) <= st.t
+            && (p._appelCd ?? -1) <= st.t + (jeteHot ? 3 : 0)) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
             // LA RUPTURE (140, cfg.tranchant) : l'espace derrière la ligne → l'appel part de LOIN (26 c. 12,5), PROFOND (dart 12, 2,2 s) ; rondo sert (+portee), l'élection pèse les éliminés

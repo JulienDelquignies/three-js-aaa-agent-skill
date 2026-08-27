@@ -5568,6 +5568,58 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      p90 +11,8 (la fourchette réelle). Le prix assumé du vrai football : le contre dans le
      dos existe (la Loi 11 + la tranchante 140 adverse le punissent — c'est le jeu).
 
+184. **Lot 142 : LA SEMELLE À SA PLACE (retour : « trop de semelles, ça stoppe beaucoup
+     d'actions / saccade »).** MESURÉ : 74 semelles / 4 × 300 s ≈ 333/90 min (le réel en
+     compte une poignée), dont 54 % avec une OPTION NETTE devant et 24 % dans le dernier
+     tiers. LA LOI (cfg.semellePlace TOP-LEVEL, skills-sim/maybeSemelle, st.full — le rondo
+     garde sa ponctuation au bit ; née sous cfg.skill puis MIGRÉE : une clé sous un objet
+     composite n'est pas gelable par spread — les `...LAB` des clauses l'écrasaient, 3
+     clauses fantômes ; LEÇON : les clés de loi vivent au TOP-LEVEL de cfg) : jamais dans le dernier tiers adverse (là on JOUE), jamais quand
+     un coéquipier démarqué attend devant (< 20 m, marqué > 3 m), jamais en fenêtre de
+     transition (5 s post-regain), et le tirage × 0,45 × la pente de style (la possession
+     temporise ×1,3, le direct ×0,7). Refus NOMMÉS (semelle-tiers/option/transition).
+     APRÈS : 8 / 4 × 300 s ≈ 36/90 min, 0 % avec option, 0 % dernier tiers.
+
+185. **Lot 143 : L'ŒIL DE L'URGENCE (retour : « beaucoup de passes dans le dos des joueurs,
+     récupérations horribles, perte de temps »).** LES INSTRUMENTS D'ABORD : la mène-derrière
+     (0 %) et la prise-dos (2 %) ont innocenté la mène ; la vraie image : 23 % des passes ne
+     sont JAMAIS prises par leur destinataire, reprises à 9-24 m du point après 1-2,7 s
+     d'errance — et 19 % des passes INTERCEPTÉES (réel 7-10), PAS plus lentes que les
+     complétées (12,0 c. 10,5 m/s) : l'élection était aveugle, pas le dosage. LE COUPABLE :
+     la passe de panique (forceUrgent) SAUTAIT tout le refus de course (flightRace). LA LOI
+     (cfg.oeil, strike-sim/beginPass) : même pressé, une ligne MORTE (course perdue ≥ 0,25 s)
+     se refuse (deny course-urgente) — le frame suivant élit la moins mauvaise VIVANTE.
+     APRÈS : interceptions 15 → 11 %, complétion 78 → 83 % (réel 82-88).
+
+186. **Lot 144 : LE JETÉ SE PUNIT — FIXER PUIS LÂCHER (retour : « les joueurs doivent fixer
+     un peu plus et lâcher vers l'avant quand un défenseur se jette »).** MESURÉ : sur 200
+     jetés (presseur ≥ 4 m/s, cap vers le porteur, < 4,5 m), 17 % de passes avant, 19 % «
+     rien ». LA LOI (cfg.fixe), TROIS étages : (a) rondo/bestPass — l'élection prime la
+     passe qui AVANCE pendant le vol du jeté (bonus × gain axial × visionF, l'homme du jeté
+     ×1,6 — la zone qu'il abandonne) ; (b) rondo-sim — le jeté DÉCLENCHE : dispense de finir
+     la tenue calme, barre abaissée (1,2) — le patron runnerCall ; (c) match-sim — le jeté
+     OUVRE LA FENÊTRE D'APPEL (st._jeteAt posé par bestPass) : la course de rupture part
+     quand le défenseur se jette — « fixer puis lâcher » se joue À DEUX. APRÈS : 54 % des
+     jetés joués < 0,9 s (43 % saboté), le déclenchement prouvé ; la dominance AVANT reste
+     bornée par l'offre (dette : voir la prise au passage, note 182).
+
+187. **Lot 145 : LE HORS-CADRE ET LE SOUFFLE D'EXÉCUTION (retour : « ça manque de diversité
+     sur la physique de balle des frappes, certainement trop cadrées »).** MESURÉ : 13 %
+     hors cadre (réel ~40), vitesses p10-p90 dans une bande de 4,5 m/s, kinds déjà divers
+     (11 espèces) mais l'exécution PARFAITE. LA LOI (cfg.dispersion, strike-sim) : le σ du
+     point visé s'AMPLIFIE à la SITUATION — presseur < 3 m (+0,7), tireur lancé (+0,5 × v/6),
+     distance (> 11 m, /18 par m) — × composureF (le sang-froid module), σ de base 0,33 m
+     pour le monde NON noté (le patron execSigma) ; la HAUTEUR souffle (σEl 0,04 rad — la
+     frappe qui s'envole) et la VITESSE respire (σV 5 % × sigF, APRÈS le plancher du kind) ;
+     le piqué (kind.exact) garde son geste. APRÈS : hors cadre 13 → 22 %, arrêts 5 → 7.
+     DETTE : le plafond du hors-cadre est le TRAFIC (~50 % des tirs contrés/étouffés avant
+     la ligne) — monter σ écrase les buts sans monter le hors-cadre (2 buts/8 mesuré à
+     base 0,45) : ne pas re-tenter par le σ. L'INSTRUMENT : l'event shot logguait `speed`
+     (pré-souffle) — passé à `spd` (frappé réel) ; les empreintes match re-datées par ce
+     CHAMP (88161048cbf16bd7 / 2e14d35c779f22c3), flux prouvé par 165 + 231 clauses.
+     L'IDENTITÉ PROUVÉE À 240 s : toutes clés 142-145 éteintes = le monde 141 au bit
+     (59d6b07d1e09a516 seed 5 / c524eee50a14cbea seed 2, avant/après stash identiques).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

@@ -79,6 +79,10 @@ export const RONDO = {
     feinteCd: 8,           // s
     semelleFoe: 2.4,       // m — personne à ce rayon : la semelle est un geste de champ libre
     semelleCd: 9,          // s
+    // …ET À SA PLACE (lot 142, MATCH seulement — semellePlace !== false && st.full) : jamais
+    // dans le dernier tiers adverse, jamais avec une option nette devant, jamais en fenêtre
+    // de transition ; le tirage × semelleTirage (0,45) × la pente de style (possession ×1,3).
+    // Mesuré : 333/90 min → 36. Le rondo garde sa ponctuation d'hier au bit (pas de st.full).
   },
   turnAccel: 6.0,          // m/s² PERPENDICULAR to it — the angular rate is turnAccel/speed, so pace
                            // costs agility and a dribbler can turn inside a sprinting defender

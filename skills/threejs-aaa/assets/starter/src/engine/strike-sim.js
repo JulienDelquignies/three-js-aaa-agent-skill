@@ -193,11 +193,19 @@ export function beginPass(st, choice, cfg, opts = {}) {
   const race = flightRace(from, sol, defs.map((q) => [q.p[0] + q.v[0] * T, 0, q.p[2] + q.v[1] * T]), { speed: cfg.speeds.chase });
   const rec = st.players[choice.to.id];
   const meet = rec ? interceptPoint(race.path, [rec.p[0] + rec.v[0] * T, 0, rec.p[2] + rec.v[1] * T], cfg.speeds.chase, { reaction: 0 }) : null;
-  // un TIR ne se refuse pas à la course : le défenseur qui coupe, c'est le duel du tir même
-  if (!opts.shot && !opts.clear && !urgent && st.hold < cfg.holdMax && race.first && (!meet || race.first.t < meet.t + cfg.raceSlack)) {
+  // un TIR ne se refuse pas à la course : le défenseur qui coupe, c'est le duel du tir même.
+  // …ET L'URGENCE GARDE UN ŒIL (lot 143, cfg.oeil && st.full — retour utilisateur : « beaucoup
+  // de passes dans le dos des joueurs, récupérations horribles ») : la passe de panique sautait
+  // TOUT le refus de course — mesuré : 19 % des passes interceptées (réel 7-10), et les
+  // interceptées ne sont PAS plus lentes (12,0 c. 10,5 m/s) : c'est l'ÉLECTION aveugle. Même
+  // pressé, une ligne MORTE (course perdue de ≥ marge s) se refuse — le frame suivant élit la
+  // moins mauvaise VivANTE (le veto aiguille choosePass). false : la panique aveugle d'hier.
+  if (!opts.shot && !opts.clear && st.hold < cfg.holdMax && race.first
+    && ((!urgent && (!meet || race.first.t < meet.t + cfg.raceSlack))
+      || (urgent && st.full && cfg.oeil && (!meet || race.first.t < meet.t - (cfg.oeil.marge ?? 0.25))))) {
     (st.laneVeto ??= {})[choice.to.id] = st.t + cfg.vetoTtl;
     c.intent = null;                                        // course perdue : le plan meurt, on re-décide
-    return deny(st, 'course');
+    return deny(st, urgent ? 'course-urgente' : 'course');
   }
 
   // HE COMMITS TO THE GESTURE. The ball does NOT leave here — it leaves when the swing reaches its
@@ -262,8 +270,25 @@ export function strikeNow(st, c, cfg) {
   // de course posée par choosePass (le tir garde sa cible fixe)
   const tRe = choice.shot ? 0 : (cfg.leadTime ? cfg.leadTime(Math.hypot((rec?.p[0] ?? 0) - from[0], (rec?.p[2] ?? 0) - from[2]), rec) : 0.18);
   let lead = rec ? [rec.p[0] + rec.v[0] * tRe, 0, rec.p[2] + rec.v[1] * tRe] : choice.lead;
-  if (choice.shot && c.skill) {
-    lead = [lead[0], lead[1], lead[2] + gauss(st.rnd ?? (() => 0.5)) * c.skill.shotSigma];
+  // LE HORS-CADRE DU VRAI FOOT (lot 145, cfg.dispersion && st.full — retour utilisateur :
+  // « certainement trop cadrées », mesuré 13 % hors cadre, réel ~40) : le σ du point visé
+  // s'AMPLIFIE à la SITUATION — le presseur au corps, le tireur lancé, la distance — et le
+  // sang-froid (composureF, un × d'erreur) module l'inflation ; le monde non noté reçoit un
+  // σ de base (le patron execSigma : le déchet existe sans notes). Plus bas, le même facteur
+  // souffle la HAUTEUR et la VITESSE d'exécution. Clé absente : le σ plat d'hier, au bit.
+  const D145 = st.full && choice.shot && cfg.dispersion ? cfg.dispersion : null;
+  let sigF = 1;
+  {
+    const sigBase = choice.shot ? (c.skill?.shotSigma ?? (D145 ? (D145.base ?? 0.33) : 0)) : 0;
+    if (D145) {
+      const dG = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+      let foeP = 99;
+      for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0) foeP = Math.min(foeP, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]));
+      sigF = 1 + ((foeP < (D145.press ?? 3) ? (D145.pressF ?? 0.7) : 0)
+        + Math.min(1, Math.hypot(c.v[0], c.v[1]) / 6) * (D145.lanceF ?? 0.5)
+        + Math.max(0, dG - 11) / (D145.distF ?? 18)) * (c.skill?.composureF ?? 1);
+    }
+    if (sigBase > 0) lead = [lead[0], lead[1], lead[2] + gauss(st.rnd ?? (() => 0.5)) * sigBase * sigF];
   }
   // LE BACKSPIN DE LA PASSE LEVÉE (lot 54, cfg.passeSpin && st.full) : lofted/chip se coupent SOUS le
   // ballon — l'effet rétro PORTE le vol (Magnus) et ASSIED la retombée : le premier rebond mord le
@@ -321,6 +346,13 @@ export function strikeNow(st, c, cfg) {
   // écrasait le θ 0,58 du piqué — apogée mesurée 0,91 m, le lob qui ne lobe pas (lot 39)
   let elev = shot ? (kind ? (kind.exact ? kind.elev : Math.max(Math.min(kind.elev, 0.32), 0.01)) : Math.min(sol.elevation, 0.10)) : sol.elevation;
   let spd = speed;
+  // …LE MÊME SOUFFLE SUR LA HAUTEUR ET LA VITESSE (145) : la frappe pressée/lancée/lointaine
+  // s'envole ou s'écrase (±σEl × sigF rad) et son exécution varie (±σV × sigF) — le piqué
+  // (kind.exact, une balistique de toucher) garde son geste exact
+  if (D145 && shot && !kind?.exact) {
+    elev = Math.max(0.005, elev + gauss(st.rnd ?? (() => 0.5)) * (D145.sigmaEl ?? 0.04) * sigF);
+    spd = Math.max(10, spd * (1 + gauss(st.rnd ?? (() => 0.5)) * (D145.sigmaV ?? 0.05) * Math.min(1.6, sigF)));
+  }
   // LA CLOCHE DU CENTRE (cfg.tete && st.full — lot 34) : un centre est un ARC par-dessus le
   // premier rideau, pas une passe tendue (0 centre entré en surface sur 4 matchs mesurés —
   // mangés en route). La balistique de la rentrée : portée → vitesse, θ ~26°, et le temps
@@ -366,7 +398,7 @@ export function strikeNow(st, c, cfg) {
   if (shot) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,
-      tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +speed.toFixed(1),
+      tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +spd.toFixed(1),   // …le spd FRAPPÉ (145) : l'event dit la vitesse réelle, souffle compris
       kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2), z: +st.ball.p[2].toFixed(1) });
   }
   // LA PERCEPTION A UNE HORLOGE : le départ du ballon est un événement — mais l'armé était

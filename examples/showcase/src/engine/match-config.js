@@ -332,6 +332,22 @@ export const MATCH = {
                           // avant : 14 % des prises > 10 m/s, un dégagement de 26,5 m/s possédé
                           // instantanément. false : l'aimant d'hier (sabotage nommé).
   bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9, surcharge: 0.2, surMax: 6 },
+  semellePlace: {},       // LA SEMELLE À SA PLACE (142 — « trop de semelles, ça stoppe les actions ») : jamais
+                          // dans le dernier tiers, jamais avec option nette devant, jamais en transition ;
+                          // tirage ×0,45 × pente de style. 333 → 36/90 min mesuré ; false : la ponctuation bavarde
+  oeil: {},               // L'ŒIL DE L'URGENCE (143 — « passes dans le dos, récupérations horribles ») : la
+                          // panique sautait le refus de course (flightRace) → 19 % d'interceptions (réel
+                          // 7-10) ; même pressé, une ligne MORTE (course perdue ≥ marge 0,25 s) se refuse,
+                          // le frame suivant joue la moins mauvaise vivante ; false : la panique aveugle
+  dispersion: {},         // LE HORS-CADRE (145 — « les frappes sont certainement trop cadrées », 13 % hors
+                          // cadre mesuré, réel ~40) : le σ du point visé × la SITUATION (presseur < 3 m :
+                          // +0,7 ; tireur lancé : +0,5 ; distance > 11 m : /18 par m) × composureF, le monde
+                          // non noté reçoit base 0,33 m ; la HAUTEUR (σEl 0,04 rad) et la VITESSE (σV 5 %)
+                          // soufflent au même facteur (le piqué exact garde son geste) ; false : le σ plat
+  fixe: {},               // LE JETÉ SE PUNIT (144 — « fixer et lâcher vers l'avant quand un défenseur se
+                          // jette ») : presseur lancé (≥ 4 m/s, < 4,5 m, cap vers le porteur) → l'élection
+                          // prime la passe qui AVANCE (bonus 1,5 × gain axial × visionF, l'homme du jeté
+                          // ×1,6 — la zone qu'il abandonne) ; false : l'élection aveugle d'hier
   pousse: {},             // LA POUSSE (141 — « la défense recule trop sans être proactive ») : la ligne arrière
                           // de l'équipe QUI ATTAQUE franchit le rond central quand le ballon est profond (dès
                           // des 0,62 de terrain, gain 0,8 × axe hauteurBloc, max 12 m) — mesurée au rond pile

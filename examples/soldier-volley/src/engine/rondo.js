@@ -136,6 +136,24 @@ export function choosePass(st, cfg = RONDO) {
       gardienOk = foeP < (cfg.sortieGardien?.press ?? 5);
     }
   }
+  // LE JETÉ SE PUNIT VERS L'AVANT (lot 144, cfg.fixe && st.full — retour utilisateur :
+  // « les joueurs doivent fixer un peu plus et lâcher vers l'avant quand un défenseur se
+  // jette »). Mesuré : sur 200 jetés, 17 % de passes avant, 23 % arrière, 19 % rien. Le
+  // vrai foot : le presseur LANCÉ s'élimine lui-même — la fenêtre élit la passe qui AVANCE
+  // (le gain axial pèse, × visionF du porteur), et l'HOMME DU JETÉ (le coéquipier dans la
+  // zone qu'il abandonne) pèse plus — c'est LUI le libre. false : l'élection aveugle d'hier.
+  let jete = null;
+  const gSF = st.pitch ? Math.sign(st.pitch.attackGoal(c.team).x || 1) : 1;
+  if (st.full && cfg.fixe) {
+    for (const q of foesL) {
+      if (q.down > 0 || q.keeper) continue;
+      const dx = c.p[0] - q.p[0], dz = c.p[2] - q.p[2], dq = Math.hypot(dx, dz);
+      if (dq > (cfg.fixe.rayon ?? 4.5) || dq < 0.8) continue;
+      const v = Math.hypot(q.v[0], q.v[1]);
+      if (v >= (cfg.fixe.vitesse ?? 4) && (q.v[0] * dx + q.v[1] * dz) / (v * dq) > 0.75) { jete = q; break; }
+    }
+    if (jete) st._jeteAt = { t: st.t, team: c.team };   // …le signal d'équipe : l'appel timé se déclenche sur le jeté (match-sim)
+  }
   let best = null;
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
@@ -321,7 +339,10 @@ export function choosePass(st, cfg = RONDO) {
       + couloirB + ecarteB                                    // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
       + (gardienOk && m.keeper ? (cfg.sortieGardien?.bonus ?? 5.2)
         * Math.max(0, (0.5 - (st.full ? tac(st, c.team).style : 0.5)) * 2)
-        * Math.min(1.2, c.skill?.composureF ?? 1) : 0);       // la sortie au gardien (136) : PENTE DE STYLE pure —
+        * Math.min(1.2, c.skill?.composureF ?? 1) : 0)        // la sortie au gardien (136) : PENTE DE STYLE pure —
+      // …ET LE JETÉ PAIE (144) : la passe qui avance pendant qu'il vole, l'homme qu'il lâche pèse plus
+      + (jete ? (cfg.fixe.bonus ?? 1.5) * Math.max(0, Math.min(1, (gSF * (m.p[0] - c.p[0]) - 2) / 8))
+        * (c.skill?.visionF ?? 1) * (d2(jete.p, m.p) < (cfg.fixe.zone ?? 5) ? 1 + (cfg.fixe.libre ?? 0.6) : 1) : 0);
                                                               // 0 au défaut 0,5 (l'identité, le patron UT.calme du 49),
                                                               // pleine en possession — le Guardiola vit dans le preset
     // …le THROUGH remplace la mène et le style du candidat servi (le rendez-vous a son couloir jugé)
