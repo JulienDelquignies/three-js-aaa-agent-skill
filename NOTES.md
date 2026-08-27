@@ -5650,6 +5650,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      offsideTrap, les mentales (decisions/offTheBall/positioning/workRate/aggression/
      concentration/marking) et le trio gardien (command/kicking/throwing).
 
+189. **Lot 148 : LES COUPS DE PIED ARRÊTÉS PAR ÉQUIPE (la demande MESURÉE du consommateur
+     carrière : « chez vous, un corner est deux constantes globales »).** L'ESPACE :
+     `tac.cpa = { corner, coupFranc, marquage }` dans la tactique d'équipe (tactics.js
+     resolve) — un CPA n'est pas un axe, c'est une SITUATION ; opt-in pur (absent = les
+     tirages d'hier AU BIT, empreintes vérifiées — le patron squads). LES VARIANTES :
+     (a) corner 'court' — NOUVELLE : l'OFFREUR se place au coin (~8 m, le moins grand des
+     restants, cornerSpots) et le tireur joue le une-deux au sol (14/24 en fixture, event
+     corner-joué genre 'court') — la v1 sans offreur ne déclenchait JAMAIS (personne à
+     < 18 m du coin : un corner court se PLACE, il ne s'improvise pas) ;
+     (b) 'premier'/'second' : le tirage de cible se biaise (~73 %/~75 % le poteau demandé,
+     le défaut garde son mixte 40/30/30) ;
+     (c) coupFranc 'direct' : ose à 34 m et excentré 18 (la vitesse suit : v 21 au-delà de
+     30 m — la v1 ouvrait la porte mais 19,5 m/s était balistiquement INSOLVABLE à 32 m),
+     'centre' : le direct se refuse au-delà de 20 m (le lancé/centre prime) ;
+     (d) marquage 'zone' (le DÉFENDANT) : les cinq postes structurels se gardent AU POINT
+     DE CHUTE (+0,3 m, sur le point) même sans monteur en face — l'homme d'hier se décale
+     goal-side (+0,9, ×0,92 vers l'axe) et suit le compte des monteurs. Clause 148 ×3
+     (168 ✓). RESTE de l'espace CPA (consigné) : goalKickStyle/throwInStyle, le
+     setPiecesFocus, la protection premier poteau paramétrée.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LES CPA PAR ÉQUIPE (148, note 189) : tac.cpa { corner: court/premier/second/mixte,
+coupFranc: direct/centre/mixte, marquage: homme/zone } — le corner court a son OFFREUR
+placé, le direct ose à 34 m (v 21), la zone garde le point de chute. Opt-in au bit.
+Reste : goalKick/throwIn styles, setPiecesFocus, protection premier poteau.
+
 L'INVENTAIRE DU CONSOMMATEUR CARRIÈRE (146-147, note 188) : 6 notes de plus (21
 consommées — vision/technique/handling/heading/crossing/weakFoot + flair→persona),
 l'audit (formations + seconde formation + vision déjà natives : leur copie en retard),

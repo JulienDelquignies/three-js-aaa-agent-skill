@@ -29,7 +29,7 @@ import { movePlayers } from '../assets/starter/src/engine/movement.js';
 import { laneClearance } from '../assets/starter/src/engine/ball-predict.js';
 import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
 import { resoudreTactique, tac, axe as axeT } from '../assets/starter/src/engine/tactics.js';
-import { cornerTrav } from '../assets/starter/src/engine/referee.js';
+import { cornerTrav, cornerSpots, coupFrancDirect } from '../assets/starter/src/engine/referee.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { resoudreRole } from '../assets/starter/src/engine/roles.js';
 import { KEEPER, keeperDecide, keeperSpot } from '../assets/starter/src/engine/keeper.js';
@@ -3252,6 +3252,68 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const sabD2 = sousPlancher({ dispersion: false });
   ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (${vifD2.n} frappes sous tout plancher nominal (< 16,2 m/s) sur ${vifD2.tirs} ≥ 1 — la vitesse RESPIRE ±5 % × la situation, le hors-cadre 13 → 22 %) ; sabotage « le σ plat d'hier » attrapé (dispersion:false : ${sabD2.n} = 0 sur ${sabD2.tirs} — le plancher exact, mathématique)`,
     vifD2.n >= 1 && sabD2.n === 0);
+}
+
+// ---------------------------------------------------------------- lot 148 : LES COUPS DE PIED
+// ARRÊTÉS PAR ÉQUIPE (la demande MESURÉE du consommateur carrière : « un corner est deux
+// constantes globales »). L'espace tac.cpa { corner, coupFranc, marquage } — un CPA est une
+// SITUATION, pas un axe. Opt-in pur : cpa absent = les tirages d'hier AU BIT (empreintes).
+{
+  const tire = (cpa) => {
+    const genres = {};
+    for (let seed = 1; seed <= 24; seed++) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, corner: { claqueV: 13, priseV: 16 } });
+      if (cpa) st.tactics = [resoudreTactique({ cpa }), resoudreTactique({})];
+      const q = st.players.find((p) => p.team === 0 && !p.keeper);
+      q.p[0] = st.pitch.hx - 0.2; q.p[2] = st.pitch.hz - 0.2;
+      st.ball.restart([q.p[0], 0.11, q.p[2]], { cause: 'corner' });
+      const r = { team: 0, taker: q.id, at: 1, p: [st.pitch.hx, st.pitch.hz] };
+      for (const p of st.players) {
+        const spot = p.team === 0 && p.id !== q.id ? cornerSpots(st, r, p, cfg) : null;
+        if (spot) { p.p[0] = spot[0]; p.p[2] = spot[1]; }
+      }
+      if (cornerTrav(st, q.id, cfg)) {
+        const e = st.events.filter((x) => x.type === 'corner-joué').pop();
+        genres[e.cible] = (genres[e.cible] ?? 0) + 1;
+      }
+    }
+    return genres;
+  };
+  const dft = tire(null), court = tire({ corner: 'court' }), second = tire({ corner: 'second' });
+  ok(`lot 148 — LE STYLE DE CORNER PAR ÉQUIPE (court : ${court.court ?? 0}/24 ≥ 10 — l'offreur se place, le une-deux du coin vit ; second : ${second.second ?? 0} ≥ 14 ; le défaut d'hier : ${dft.court ?? 0} court = 0, mixte ${dft.premier ?? 0}/${dft.penalty ?? 0}/${dft.second ?? 0})`,
+    (court.court ?? 0) >= 10 && (second.second ?? 0) >= 14 && (dft.court ?? 0) === 0);
+  const cf = (cpa) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20 });
+    if (cpa) st.tactics = [resoudreTactique({ cpa }), resoudreTactique({})];
+    const q = st.players.find((p) => p.team === 0 && !p.keeper);
+    const g = st.pitch.attackGoal(0);
+    q.p[0] = g.x - Math.sign(g.x) * 32; q.p[2] = 2;
+    st.ball.restart([q.p[0], 0.11, q.p[2]], { cause: 'coup-franc' });
+    return coupFrancDirect(st, q.id, cfg);
+  };
+  ok(`lot 148 — LE COUP FRANC 'direct' OSE à 32 m (${cf({ coupFranc: 'direct' })} — la vitesse suit la portée) là où le défaut refuse (${cf(null)})`,
+    cf({ coupFranc: 'direct' }) === true && cf(null) === false);
+  const cibles = (cpa) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, corner: { claqueV: 13, priseV: 16 } });
+    if (cpa) st.tactics = [resoudreTactique({}), resoudreTactique({ cpa })];
+    const taker = st.players.find((p) => p.team === 0 && !p.keeper);
+    const r = { team: 0, taker: taker.id, at: 1, p: [st.pitch.hx, st.pitch.hz] };
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), cz = 1;
+    const gh = st.pitch.goalHalf, spot = st.pitch.dims.spot ?? 11;
+    const posts = [[g.x - sg * 5.5, cz * (gh - 1)], [g.x - sg * spot, 0], [g.x - sg * 5.5, -cz * (gh - 1)], [g.x - sg * 9, cz * 5], [g.x - sg * 16.5, -cz * 2]];
+    let auPoint = 0;
+    for (const p of st.players) {
+      if (p.team !== 1 || p.keeper) continue;
+      const c = cornerSpots(st, r, p, cfg);
+      if (c && posts.some((pt) => Math.hypot(c[0] - pt[0], c[1] - pt[1]) < 0.45)) auPoint++;
+    }
+    return auPoint;
+  };
+  ok(`lot 148 — LE MARQUAGE DE CORNER 'zone' garde LE POINT DE CHUTE (${cibles({ marquage: 'zone' })} défenseurs à < 0,45 m d'un poste ≥ 3) là où l'homme d'hier se décale goal-side (${cibles(null)} = 0)`,
+    cibles({ marquage: 'zone' }) >= 3 && cibles(null) === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

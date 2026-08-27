@@ -190,12 +190,17 @@ export function coupFrancDirect(st, id, cfg) {
   const goal = pitch.attackGoal(q.team);
   const dx = goal.x - q.p[0], dzB = 0 - q.p[2];
   const d = Math.hypot(dx, dzB);
-  if (d > 30 || d < 14 || Math.abs(q.p[2]) > 15) return false;     // trop loin, trop près (mur infranchissable), trop excentré
+  // LE STYLE DE COUP FRANC (148, tac.cpa.coupFranc) : 'direct' ose de plus loin (34 m) et
+  // plus excentré ; 'centre' refuse le direct au-delà de 20 m (le lancé/centre prime) ;
+  // absent/'mixte' : les portes d'hier au bit
+  const cpaF = st.tactics?.[q.team]?.cpa?.coupFranc;
+  const dMax = cpaF === 'direct' ? 34 : cpaF === 'centre' ? 20 : 30;
+  if (d > dMax || d < 14 || Math.abs(q.p[2]) > (cpaF === 'direct' ? 18 : 15)) return false;   // trop loin, trop près (mur infranchissable), trop excentré
   const gk = st.players.find((p) => p.keeper && p.team !== q.team);
   const tz = (gk ? -Math.sign(gk.p[2] || 1) : (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5 ? -1 : 1) * (pitch.goalHalf - 0.7);
   const yaw = Math.atan2(tz - q.p[2], goal.x - q.p[0]);
   const dT = Math.hypot(goal.x - q.p[0], tz - q.p[2]);
-  const v = d > 27 ? 19.5 : 18.5;
+  const v = d > 30 ? 21 : d > 27 ? 19.5 : 18.5;   // …le 'direct' (148) ose au-delà de 30 m : la vitesse suit (portée balistique)
   let theta = null;
   for (let t = 0.30; t <= 0.52; t += 0.02) {                       // le balayage : mur passé, barre respectée
     const y = (x) => x * Math.tan(t) - (9.81 * x * x) / (2 * v * v * Math.cos(t) * Math.cos(t));
@@ -273,7 +278,31 @@ export function cornerTrav(st, id, cfg) {
   const sty = st.tactics ? (st.tactics[q.team]?.style ?? 0.5) : 0.5;
   if (rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30) return false;   // le CORT du style : possession 35 %, direct 5 %
   const cz = Math.sign(q.p[2] || 1);
-  const u = rnd();
+  // LE STYLE DE CORNER PAR ÉQUIPE (lot 148, tac.cpa.corner — la demande mesurée du
+  // consommateur carrière) : 'court' joue le une-deux du coin (nouvelle variante), 'premier'
+  // et 'second' biaisent le poteau visé ; absent/'mixte' : les tirages d'hier, AU BIT
+  // (l'élection ne consomme un tirage de plus que si 'court' est demandé — l'opt-in pur).
+  const cpaC = st.tactics?.[q.team]?.cpa?.corner;
+  if (cpaC === 'court' && rnd() < 0.7) {
+    const court = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0
+      && Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]) > 3 && Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]) < 18)
+      .sort((a, b) => Math.hypot(a.p[0] - q.p[0], a.p[2] - q.p[2]) - Math.hypot(b.p[0] - q.p[0], b.p[2] - q.p[2]))[0];
+    if (court) {
+      const dC = Math.hypot(court.p[0] - q.p[0], court.p[2] - q.p[2]);
+      const vC = Math.max(7, Math.min(11, dC * 1.05));
+      st.ball.release('coup-franc');
+      st.ball.strike({ speed: vC, dirYaw: Math.atan2(court.p[2] - q.p[2], court.p[0] - q.p[0]), elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
+      st.phase = 'flight';
+      st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
+      st.pass = { from: id, to: court.id, lead: [court.p[0], 0, court.p[2]], style: 'ground', t: st.t, flight: dC / vC, origin: [q.p[0], q.p[2]] };
+      st.lastPasser = id;
+      st.events.push({ t: +st.t.toFixed(2), type: 'corner-joué', by: id, genre: 'court', cible: 'court' });
+      return true;
+    }
+  }
+  let u = rnd();
+  if (cpaC === 'premier') u *= 0.55;                               // ~73 % premier poteau, jamais le second
+  else if (cpaC === 'second') u = 0.6 + u * 0.4;                   // ~75 % second, le reste au penalty
   const cible = u < 0.4 ? [goal.x - sg * 5.5, cz * (pitch.goalHalf - 1)]        // premier poteau
     : u < 0.7 ? [goal.x - sg * 11, 0]                                            // point de penalty
     : [goal.x - sg * 5.5, -cz * (pitch.goalHalf - 1)];                           // second poteau
@@ -316,9 +345,24 @@ export function cornerSpots(st, r, p, cfg) {
       .sort((a, b) => (b.skill?.chargeF ?? 1) - (a.skill?.chargeF ?? 1)).slice(0, posts.length);
     const map = {};
     atk.forEach((q, i) => { map[q.id] = posts[i]; });
+    // L'OFFREUR DU CORNER COURT (148, tac.cpa.corner 'court') : la variante exige un corps AU
+    // COIN (~8 m) — le une-deux ne s'improvise pas, il se PLACE. Le moins grand des restants.
+    if (st.tactics?.[r.team]?.cpa?.corner === 'court') {
+      const off = st.players.filter((q) => q.team === r.team && !q.keeper && q.id !== r.taker && q.down <= 0 && !q.expulse && !q._sub && !map[q.id])
+        .sort((a, b) => (a.skill?.chargeF ?? 1) - (b.skill?.chargeF ?? 1))[0];
+      if (off) map[off.id] = [g.x - sg * 6, cz * (st.pitch.hz - 5)];
+    }
     const defs = st.players.filter((q) => q.team !== r.team && !q.keeper && q.down <= 0 && !q.expulse && !q._sub);
     const pris = new Set();
-    atk.forEach((q, i) => {
+    // LE SCHÉMA DÉFENSIF DU CORNER (lot 148, tac.cpa.marquage du DÉFENDANT) : 'zone' tient
+    // les CINQ postes structurels même sans monteur en face (la zone couvre l'espace, pas
+    // l'homme) ; absent/'homme' : le greedy homme-par-monteur d'hier, au bit.
+    if (st.tactics?.[1 - r.team]?.cpa?.marquage === 'zone') {
+      posts.forEach((pt) => {
+        const m = defs.filter((d) => !pris.has(d.id)).sort((a, b) => d2(a.p, pt) - d2(b.p, pt))[0];
+        if (m) { pris.add(m.id); map[m.id] = [pt[0] + sg * 0.3, pt[1]]; }   // …SUR le point de chute (le zonal garde l'espace, pas l'homme)
+      });
+    } else atk.forEach((q, i) => {
       const m = defs.filter((d) => !pris.has(d.id)).sort((a, b) => d2(a.p, posts[i]) - d2(b.p, posts[i]))[0];
       if (m) { pris.add(m.id); map[m.id] = [posts[i][0] + sg * 0.9, posts[i][1] * 0.92]; }   // goal-side, un demi-pas vers l'axe
     });
