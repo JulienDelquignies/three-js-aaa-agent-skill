@@ -243,6 +243,70 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
  * coupe rien), profondeur crevée (libéro ou poteau rentré), plongeon-oracle (avant le réflexe),
  * plongeon sur un ballon non cadré, aimant à ballon (arrêt déclaré hors d'envergure).
  */
+
+/**
+ * LA DISTRIBUTION DU GARDIEN (lot 150 — extraite de match-sim au bit près, puis les VARIANTES
+ * du consommateur carrière) : le barème d'hier sert les 3 meilleurs (avance − |z|×0,15), sinon
+ * le PUNT au flanc. Les styles par équipe (tac.cpa.sortieBut) : 'court' cherche d'abord LA
+ * RELANCE MAIN (un coéquipier LIBRE à portée de bras — throwF, la note throwing : le
+ * déclencheur de transition le plus rapide) puis privilégie le proche jouable ; 'long' cible
+ * la LONGUE directe (25…48 × kickF m, la note kicking porte la longueur — et la portée du
+ * punt). Absent/'mixte' : le monde d'hier, au bit. `deps` : beginPass, leadTime (cfg).
+ */
+export function relancerGardien(st, gk, cfg, deps) {
+  const { pitch } = st;
+  const g = pitch.ownGoal(gk.team);
+  const sgn = -g.sign;
+  const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
+  const styleSB = st.tactics?.[gk.team]?.cpa?.sortieBut;
+  if (styleSB === 'court') {
+    // LA MAIN D'ABORD : un coéquipier LIBRE (aucun adversaire à < 4 m) à portée de bras
+    const porteeM = 14 * (gk.skill?.throwF ?? 1);
+    const libre = mates.filter((m) => {
+      const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
+      return dm > 4 && dm < porteeM && !st.players.some((q) => q.team !== gk.team && q.down <= 0
+        && Math.hypot(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4);
+    }).sort((a, b) => Math.hypot(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - Math.hypot(b.p[0] - gk.p[0], b.p[2] - gk.p[2]))[0];
+    if (libre) {
+      const dm = Math.hypot(libre.p[0] - gk.p[0], libre.p[2] - gk.p[2]);
+      const tI = cfg.leadTime ? cfg.leadTime(dm, libre) : 0.35;
+      const lead = [libre.p[0] + libre.v[0] * tI, 0, libre.p[2] + libre.v[1] * tI];
+      if (deps.beginPass(st, { to: { id: libre.id }, lead, style: 'ground', lane: { margin: 6 } }, cfg, { forceUrgent: true })) {
+        st.events.push({ t: +st.t.toFixed(2), type: 'relance-main', by: gk.id, to: libre.id, range: +dm.toFixed(1) });
+        return true;
+      }
+    }
+  } else if (styleSB === 'long') {
+    // LA LONGUE DIRECTE : la cible la plus AVANCÉE dans la fenêtre de pied (kicking la porte)
+    const kF = gk.skill?.kickF ?? 1;
+    const cible = mates.filter((m) => {
+      const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
+      return dm > 25 && dm < 48 * kF;
+    }).sort((a, b) => (b.p[0] - a.p[0]) * sgn)[0];
+    if (cible) {
+      const tI = cfg.leadTime ? cfg.leadTime(Math.hypot(cible.p[0] - gk.p[0], cible.p[2] - gk.p[2]), cible) : 0.5;
+      const lead = [cible.p[0] + cible.v[0] * tI, 0, cible.p[2] + cible.v[1] * tI];
+      if (deps.beginPass(st, { to: { id: cible.id }, lead, style: 'lofted', longue: true, lane: { margin: 9 } }, cfg, { forceUrgent: true })) return true;   // …le marqueur `longue` (la clause du banc le lit ; beginPass l'ignore)
+    }
+  }
+  // le barème d'hier — 'court' re-pèse vers le PROCHE jouable, sinon l'avance d'hier au bit
+  const scored = mates.map((m) => {
+    const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
+    const s = styleSB === 'court' ? -dm + (m.p[0] - gk.p[0]) * sgn * 0.1
+      : (m.p[0] - gk.p[0]) * sgn - Math.abs(m.p[2]) * 0.15;
+    return { m, s, dm };
+  }).sort((a, b) => b.s - a.s);
+  for (const { m, dm } of scored.slice(0, 3)) {
+    const tI = cfg.leadTime ? cfg.leadTime(dm, m) : 0.35;
+    const lead = [m.p[0] + m.v[0] * tI, 0, m.p[2] + m.v[1] * tI];
+    if (deps.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true })) return true;
+  }
+  // le PUNT au flanc — la note kicking porte la longueur (×1 exact à 50)
+  const flank = gk.p[2] >= 0 ? -pitch.hz * 0.5 : pitch.hz * 0.5;
+  deps.beginPass(st, { to: { id: -2 }, lead: [gk.p[0] + sgn * pitch.hx * 0.8 * (gk.skill?.kickF ?? 1), 0, flank], style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true });
+  return true;
+}
+
 export function checkKeeper(pitch, K = KEEPER) {
   const issues = [];
   // 1. la position vit sur la ligne ballon-but (échantillon d'angles et de distances)

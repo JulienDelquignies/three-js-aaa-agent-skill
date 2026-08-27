@@ -46,6 +46,8 @@ export const ATTRIBUTES = {
   heading:     'la qualité de la tête    → headF [0,8 ; 1,2] : la puissance de la tête au but, et le cadre tenu même gêné (distinct de jumping, la détente)',
   crossing:    'la précision du centre   → crossF [1,25 ; 0,75] : × sur le σ du centre (compose la patte du lot 100)',
   weakFoot:    'le pied faible           → weakF [1,5 ; 0,5] : × sur l\'ÉCART au neutre des malus mauvais pied (100 ≈ ambidextre, 0 mono-pied)',
+  kicking:     'la relance au pied (GK)  → kickF [0,85 ; 1,15] : la portée de la longue et du punt (keeper.relancerGardien, lot 150)',
+  throwing:    'la relance à la main (GK)→ throwF [0,85 ; 1,15] : la portée de la main vive (cpa.sortieBut court — le déclencheur de transition)',
 };
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -96,6 +98,8 @@ export function makeProfile(ratings = {}) {
     headF: lerp(0.8, 1.2, r('heading')),                          // la QUALITÉ de la tête (147) — puissance + cadre gêné
     crossF: lerp(1.25, 0.75, r('crossing')),                      // × sur le σ du centre (147) — compose la patte
     weakF: lerp(1.5, 0.5, r('weakFoot')),                         // × sur l'écart au neutre du mauvais pied (147)
+    kickF: lerp(0.85, 1.15, r('kicking')),                        // la relance au pied du gardien (150)
+    throwF: lerp(0.85, 1.15, r('throwing')),                      // la relance à la main du gardien (150)
   });
 }
 
@@ -147,6 +151,8 @@ export function checkAttributes() {
   const fbA = makeProfile({ passing: 80, dribbling: 70 });
   const fbB = makeProfile({ passing: 80, dribbling: 70, vision: 80, technique: 70 });
   if (Math.abs(fbA.visionF - fbB.visionF) > 1e-9 || Math.abs(fbA.gesteF - fbB.gesteF) > 1e-9) issues.push('les fallbacks vision→passing / technique→dribbling divergent');
+  if (!(hi.kickF > mid.kickF && mid.kickF > lo.kickF) || Math.abs(mid.kickF - 1) > 1e-9) issues.push('kicking non monotone ou no-op violé');
+  if (!(hi.throwF > mid.throwF && mid.throwF > lo.throwF) || Math.abs(mid.throwF - 1) > 1e-9) issues.push('throwing non monotone ou no-op violé');
   // 4. les clés inconnues sont ignorées, pas fatales
   try { makeProfile({ chapeau: 99, pace: 60 }); } catch { issues.push('une clé inconnue fait planter makeProfile'); }
   return { ok: issues.length === 0, issues };

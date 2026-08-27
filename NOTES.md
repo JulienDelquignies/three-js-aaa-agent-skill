@@ -5686,6 +5686,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      silence — trois édits fantômes, la sonde à zéro effet les a attrapés ; toujours
      vérifier l'effet APRÈS, jamais le seul « parse ok ».
 
+191. **Lot 150 : LA DISTRIBUTION DU GARDIEN (cpa.sortieBut + notes kicking/throwing —
+     l'inventaire carrière, suite).** L'EXTRACTION D'ABORD : la rampe de distribution
+     (le barème des 3 candidats + le punt au flanc) sort de match-sim (1249 → 1236) vers
+     keeper.relancerGardien — AU BIT (empreintes). LES VARIANTES : (a) sortieBut 'court' —
+     LA RELANCE MAIN VIVE : un coéquipier LIBRE (aucun adversaire < 4 m) à portée de bras
+     (14 × throwF — la note throwing, « le déclencheur de transition le plus rapide » de
+     leur inventaire) se sert au sol, event relance-main ; sinon le barème re-pèse vers le
+     PROCHE jouable ; (b) 'long' — LA LONGUE DIRECTE : la cible la plus avancée dans la
+     fenêtre 25…48 × kickF (la note kicking étend la fenêtre — et porte le PUNT ×0,85…1,15) ;
+     (c) le hook onTake 'sortie-de-but' branche les sorties de but sur la même rampe (gated
+     style — sans style, la remise générique d'hier au bit). LES LEÇONS DE FIXTURE (payées
+     ×2) : st.pass naît au CONTACT du geste, pas à beginPass — et le geste a ses propres
+     portes (deny technique/timing sur une géométrie téléportée) : le contrat de CHOIX se
+     juge au beginPass STUBBÉ qui capture le choice (to/style/lead/longue) — zéro
+     dépendance à la géométrie. Le choice porte un marqueur `longue: true` (opaque pour
+     beginPass, lu par la clause). Clause 150 ×3 (174 ✓). RESTE : throwInStyle,
+     setPiecesFocus, gkStyle complet (distribution.tempo/risk).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

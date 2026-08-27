@@ -14,7 +14,7 @@ export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert } from './keeper.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien } from './keeper.js';
 import { accrocheStep } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
@@ -289,23 +289,10 @@ function assignMatchJobs(st, cfg) {
         let pr = 99; for (const q of st.players) if (q.team !== gk.team && !q.keeper && q.down <= 0) pr = Math.min(pr, Math.hypot(q.p[0] - gk.p[0], q.p[2] - gk.p[2]));
         if (pr > 12) gkDue = Math.min(cfg.gkRelease, 1.2);
       }
-      if (cfg.gkRelease && st.t - gk._gkSince > gkDue && !busy(gk) && bdC < 1.1) {
-        const sgn = -g.sign;
-        const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
-        const scored = mates.map((m) => ({ m, s: (m.p[0] - gk.p[0]) * sgn - Math.abs(m.p[2]) * 0.15 }))
-          .sort((a, b) => b.s - a.s);
-        let served = false;
-        for (const { m } of scored.slice(0, 3)) {
-          const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
-          const tI = cfg.leadTime ? cfg.leadTime(dm, m) : 0.35;
-          const lead = [m.p[0] + m.v[0] * tI, 0, m.p[2] + m.v[1] * tI];
-          if (simInternals.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true })) { served = true; break; }
-        }
-        if (!served) {
-          const flank = gk.p[2] >= 0 ? -pitch.hz * 0.5 : pitch.hz * 0.5;
-          simInternals.beginPass(st, { to: { id: -2 }, lead: [gk.p[0] + sgn * pitch.hx * 0.8, 0, flank], style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true });
-        }
-      }
+      // LA DISTRIBUTION vit chez le gardien (keeper.relancerGardien, lot 150) : le barème
+      // d'hier au bit + les styles par équipe (cpa.sortieBut) et les notes kicking/throwing
+      if (cfg.gkRelease && st.t - gk._gkSince > gkDue && !busy(gk) && bdC < 1.1)
+        relancerGardien(st, gk, cfg, { beginPass: simInternals.beginPass });
       continue;
     }
     gk._gkSince = null;
@@ -1128,6 +1115,11 @@ export function matchCfg(overrides = {}) {
       // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
       else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
       else if (type === 'corner' && cfg.corner && st.full) cornerTrav(st, id, cfg);
+      // LA SORTIE DE BUT EST UNE DISTRIBUTION (lot 150, tac.cpa.sortieBut && st.full) : le
+      // preneur passe par relancerGardien (main courte / longue directe / le barème d'hier) —
+      // sans style, RIEN ne change : la remise générique d'hier joue, au bit
+      else if (type === 'sortie-de-but' && st.full && st.tactics?.[st.players[id]?.team]?.cpa?.sortieBut)
+        relancerGardien(st, id >= 0 ? st.players[id] : null, cfg, { beginPass: simInternals.beginPass });
     },
     // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },

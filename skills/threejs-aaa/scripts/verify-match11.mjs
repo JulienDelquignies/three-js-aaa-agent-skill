@@ -30,6 +30,7 @@ import { laneClearance } from '../assets/starter/src/engine/ball-predict.js';
 import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
 import { resoudreTactique, tac, axe as axeT } from '../assets/starter/src/engine/tactics.js';
 import { cornerTrav, cornerSpots, coupFrancDirect } from '../assets/starter/src/engine/referee.js';
+import { relancerGardien } from '../assets/starter/src/engine/keeper.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { resoudreRole } from '../assets/starter/src/engine/roles.js';
 import { KEEPER, keeperDecide, keeperSpot } from '../assets/starter/src/engine/keeper.js';
@@ -3362,6 +3363,56 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const m0 = risque(0), m1 = risque(1);
   ok(`lot 149 — LA MENTALITÉ est l'appétit du risque (tentatives avant ${m1.tent} ≥ ${m0.tent} + 6, tirs ${m1.tirs} ≥ ${m0.tirs} — le forcing se paie en refus de course, c'est le football du très-offensif)`,
     m1.tent >= m0.tent + 6 && m1.tirs >= m0.tirs);
+}
+
+// ---------------------------------------------------------------- lot 150 : LA DISTRIBUTION
+// DU GARDIEN (keeper.relancerGardien — extraite de match-sim AU BIT, empreintes) : les styles
+// par équipe (tac.cpa.sortieBut 'court'/'long') + les notes kicking/throwing. Le contrat se
+// juge au CHOIX (beginPass stubbé) — le geste a ses propres portes, jugées ailleurs.
+{
+  const scene = (cpa, ratings, place) => {
+    const squads = ratings ? [Array.from({ length: 11 }, (_, i) => (i === 10 ? { ratings } : {})), []] : null;
+    const st = makeMatch({ full: true, seed: 9, squads });
+    const cfg = matchCfg({ shotRange: 20 });
+    if (cpa) st.tactics = [resoudreTactique({ cpa }), resoudreTactique({})];
+    const gk = st.players.find((p) => p.keeper && p.team === 0);
+    const g = st.pitch.ownGoal(0), sgn = -Math.sign(g.x);
+    gk.p[0] = g.x + sgn * 5; gk.p[2] = 3;
+    place(st, gk, sgn);
+    const caps = [];
+    const okStub = relancerGardien(st, gk, cfg, { beginPass: (s2, choice) => { caps.push(choice); return caps.length > (place.refus ?? 99) ? false : true; } });
+    return { c: caps[0], caps, main: st.events.some((x) => x.type === 'relance-main'), okStub, gk0: gk.p[0] };
+  };
+  // (a) la MAIN VIVE du style court : le libre proche se sert à la main (throwing la porte)
+  const placeA = (st, gk, sgn) => {
+    const m = st.players.filter((p) => p.team === 0 && !p.keeper);
+    m[0].p[0] = gk.p[0] + sgn * 10; m[0].p[2] = -6; m[0].v = [0, 0];
+  };
+  const rMain = scene({ sortieBut: 'court' }, { throwing: 90 }, placeA);
+  const rDef = scene(null, null, placeA);
+  ok(`lot 150 — LA RELANCE MAIN du style court (main:${rMain.main}, ${rMain.c?.style} vers le libre proche — throwing, le déclencheur de transition) ; le défaut d'hier ne la connaît pas (main:${rDef.main})`,
+    rMain.main === true && rMain.c?.style === 'ground' && rDef.main === false);
+  // (b) la note KICKING étend la LONGUE : la cible à 45 m se prend à kicking 95, pas à 5
+  const placeB = (st, gk, sgn) => {
+    const m = st.players.filter((p) => p.team === 0 && !p.keeper);
+    for (const q of m) { q.p[0] = gk.p[0] + sgn * 12; q.p[2] = 10; }   // le peloton bas
+    m[0].p[0] = gk.p[0] + sgn * 45; m[0].p[2] = 2; m[0].v = [0, 0];    // LA cible profonde
+  };
+  const rK95 = scene({ sortieBut: 'long' }, { kicking: 95 }, placeB);
+  const rK5 = scene({ sortieBut: 'long' }, { kicking: 5 }, placeB);
+  ok(`lot 150 — LA NOTE KICKING étend la longue (kicking 95 : la branche LONGUE prend la cible à 45 m — longue:${rK95.c?.longue === true} ; kicking 5 : fenêtre 25-41 m fermée, le barème d'hier reprend — longue:${rK5.c?.longue === true})`,
+    rK95.c?.longue === true && rK5.c?.longue !== true);
+  // (c) le PUNT porte à kickF (tous les choix refusés → le punt part, lead × kickF)
+  const placeC = (st, gk, sgn) => { placeB(st, gk, sgn); };
+  placeC.refus = 0;                                                 // le stub refuse TOUT sauf le punt (clear)
+  const puntDe = (ratings) => {
+    const r2 = scene(null, ratings, placeC);
+    const punt = r2.caps.find((c2) => c2.clear);
+    return punt && r2.gk0 != null ? Math.abs(punt.lead[0] - r2.gk0) : 0;   // la DISTANCE du punt depuis le gardien
+  };
+  const p50 = puntDe(null), p95 = puntDe({ kicking: 95 });
+  ok(`lot 150 — LE PUNT PORTE À LA NOTE (lead ${p95.toFixed(1)} ≥ ${p50.toFixed(1)} × 1,1 — kicking 95 c. 50, le ×1 exact du no-op prouvé par les empreintes)`,
+    p95 >= p50 * 1.1);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
