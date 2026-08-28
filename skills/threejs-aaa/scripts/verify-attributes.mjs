@@ -135,7 +135,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (const seed of [2, 3, 5, 8, 9, 11]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, tacleVif: false });   // la clause isole 157 (le pique rebat les possessions ; +5 calibré → +1 au monde vivant)
+        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false });   // la clause isole 157/159 (les re-dateurs de possessions)
         const moi = st.players.filter((p) => p.team === 0)[9].id;
         for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
         miens += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.by === moi).length;
@@ -163,10 +163,31 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return n;
     };
-    const vivant = armes({}), mort = armes({ tacleVif: false });
-    const bons = armes({}, 90), durs = armes({}, 10);
+    const vivant = armes({ mord: false }), mort = armes({ mord: false, tacleVif: false });   // …épinglé mord:false (159)
+    const bons = armes({ mord: false }, 90), durs = armes({ mord: false }, 10);
     ok(`lot 157 — LE PIQUE VIT en flux (${vivant} armés / 6 × 300 s ≥ 8 ; réel ~15-25/90 min) ; sabotage « le tacle-cérémonie » attrapé (tacleVif:false : ${mort} ≤ 2) ; et l'horloge est à la note (tacleurs 90 : ${bons} armés ≥ tacleurs 10 : ${durs} + 4 — tackling arme le duel, tackleReach/esquiveF le jugent)`,
       vivant >= 8 && mort <= 2 && bons >= durs + 4);
+  }
+  // lot 159 — LE MORD : le jockey campait le presseur À LA PORTE du conteste (cible 1,0 m,
+  // conteste 0,9 — p10 0,97 m, 8,7 % de conteste). À la porte le jockey cède, la cible devient
+  // LE BALLON, l'audace à la note aggression (porte 1,6 × aggrF). L'équilibre du bouclier tient
+  // (9,3 % — c'est le foot) ; le gain vit dans les ARMÉS du pique nourris par l'agression.
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const eqA = (n) => Array.from({ length: 11 }, () => ({ ratings: { aggression: n } }));
+    const armesA = (n, over = {}) => {
+      let a = 0;
+      for (const seed of [2, 3, 5, 8, 9, 11]) {
+        const st = makeMatch({ full: true, seed, squads: [eqA(n), eqA(50)] });
+        const cfg = matchCfg({ shotRange: 20, ...over });
+        for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+        a += st.events.filter((e) => e.type === 'windup' && e.move === 'tacleDebout' && st.players[e.by]?.team === 0).length;
+      }
+      return a;
+    };
+    const mordeurs = armesA(90), placides = armesA(10);
+    ok(`lot 159 — LE MORD arme le duel à l'agression (6 × 300 s appariés : mordeurs 90 → ${mordeurs} armés ≥ placides 10 → ${placides} + 2 — aggrF ouvre la porte du conteste, l'horloge du 157 fait le reste)`,
+      mordeurs >= placides + 2);
   }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));

@@ -341,6 +341,9 @@ export const MATCH = {
   prise5050: {},          // LE DUEL DU CONTACT (154 — la fin du biais d'ordre) : deux preneurs ADVERSES dans
                           // la fenêtre du simultané (fenetre 0,12 m) → la prise au plus VIF (reaction stricte),
                           // pas au premier du tableau ; à notes égales/monde nu : l'ancien chemin, au bit
+  mord: {},               // LE MORD (159) : à la porte du conteste (porte 1,6 m × aggrF) le jockey cède et le
+                          // presseur vise LE BALLON — camper à 1,0 m quand le conteste est à 0,9 laissait 8,7 %
+                          // de conteste (p10 0,97 m) : l'amont famélique des duels ; false : le campeur d'hier
   tacleVif: {},           // L'HORLOGE DU PIQUE (157) : le tacle-debout s'engage à tackleTime × tot (0,25 ≈ 0,23 s)
                           // × (2 − tacleTempoF) quand le ballon est prenable (tackleWindow juge) — 0,9 s de
                           // pression n'arrivait JAMAIS (1 armé/30 min : la panique adverse lâche à 0,15 s) ;

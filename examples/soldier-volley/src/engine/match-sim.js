@@ -889,6 +889,14 @@ function assignMatchJobs(st, cfg) {
         }
           // LE JOCKEY (lot 95) : cible ENTRE ballon et SON but, approche SOUS CONTRÔLE (movement.js).
         if (cfg.jockey !== false && st.full && carrier && !freeBall && st.ball.owner === carrier.id) {
+          // LE MORD (lot 159, cfg.mord) : le jockey campait le presseur À LA PORTE du conteste
+          // (cible 1,0 m, conteste 0,9 — p10 mesuré 0,97 m : 8,7 % de conteste, l'amont famélique
+          // des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace
+          // est à la note (porte × aggrF : l'agressif mord dès 1,92 m, le placide 1,28 ; 1,6 à 50).
+          // Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
+          if (cfg.mord && d2(p.p, anchor) < (cfg.mord.porte ?? 1.6) * (p.skill?.aggrF ?? 1)) {
+            p.job = 'press'; p.target = [anchor[0], 0, anchor[2]]; return;
+          }
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = Math.hypot(gxJ, gzJ) || 1;
           const jd = cfg.jockey?.dist ?? 1.0;

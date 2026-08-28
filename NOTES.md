@@ -5887,6 +5887,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      n'est que tactique : aucune note ne fait oser le contact plus haut — rejoint
      l'amont famélique du 157, 19 épisodes de pression/15 min).
 
+200. **Lot 159 : LE MORD — le jockey cède à la porte du conteste (l'amont des duels,
+     modestement, honnêtement).** LA SONDE : le jockey (95) campait le presseur à la
+     PORTE du conteste — cible 1,0 m, conteste 0,9, p10 mesuré 0,97 m : 8,7 % de
+     conteste des portages, l'amont famélique des 157/158. LA LOI (cfg.mord, défaut
+     ON) : à la porte (1,6 m × aggrF — l'agressif mord dès 1,92, le placide 1,28),
+     le jockey cède et la cible devient LE BALLON. L'HONNÊTETÉ DE MESURE : l'équilibre
+     du bouclier TIENT (conteste 8,7 → 9,3 % ; même à porte 2,6 + cap levé : 10,7 —
+     le porteur pivote/protège aussi vite que l'approche, et c'est le FOOT : un
+     porteur qui protège est dur à déposséder). Le gain réel vit en aval : épisodes
+     de pression +14 % (22 → 25), et le canal de l'AGRESSION arme le pique du 157 :
+     mordeurs 90 = 6 armés vs placides 10 = 3 (l'aggrF ouvre la porte, l'horloge
+     tacleVif fait le reste). A/B 20 × 300 s : 22 buts (borne haute de la bande,
+     tenue), fautes 16. LA REQUALIFICATION DU CHANTIER : la récupération HAUTE du
+     fort ne passera PAS par le corps-à-corps (l'équilibre du bouclier est une loi
+     du jeu) — elle passera par le PRESSING D'ÉQUIPE aux notes : la hauteur et la
+     fréquence des fenêtres de déclenchement (pressTriggers) modulées par les notes
+     du BLOC (workRate/anticipation d'équipe), consigné comme prochain front.
+     Empreintes matchs re-datées (2773262091728085 / f74c17e6c98fe0b4) ;
+     rondo/réduit intacts. Clause 159 (armés 90 ≥ 10 + 2) ; packs + clauses
+     151/157 épinglés mord:false (le patron, appliqué d'avance).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

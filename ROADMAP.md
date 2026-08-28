@@ -262,6 +262,13 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE MORD (159, note 200) : le jockey campait à la porte du conteste (p10 0,97 m,
+conteste à 0,9). cfg.mord : à 1,6 m × aggrF la cible devient le ballon. L'équilibre
+du bouclier tient (8,7 → 9,3 % — c'est le foot) ; le gain vit en aval : épisodes
++14 %, et l'AGRESSION arme le pique (6 vs 3 armés aux extrêmes). REQUALIFIÉ : la
+récupération haute passera par le PRESSING D'ÉQUIPE aux notes (fenêtres
+pressTriggers × workRate/anticipation du bloc), pas par le corps-à-corps.
+
 LE JUGE DE PAIX REQUALIFIÉ (158, note 199) : la gradation 90v50 n'était PAS plate —
 l'instrument était borgne (tirs-pour seuls ; l'événement but s'attribue par e.team).
 Au bon juge : différentiel de buts −1/+1/+4/+6 aux niveaux 30/50/70/90 (12-6 au
