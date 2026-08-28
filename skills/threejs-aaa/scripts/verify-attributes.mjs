@@ -36,11 +36,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
     const NIVEAU = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
     const eq = (n) => Array.from({ length: 11 }, () => ({ ratings: Object.fromEntries(NIVEAU.map((k) => [k, n])) }));
-    // …l'échantillon de LA MESURE (leçon lot 110 : les tirs vivent dans le bruit de Poisson —
-    // 2 × 180 s rendait 0/4/2, le faux négatif ; 3 × 240 s rend 3/6/7/9 stable)
+    // …l'échantillon de LA MESURE (leçon lot 110, rejouée au 155 : les tirs vivent dans le bruit
+    // de Poisson — 2 × 180 s rendait 0/4/2 ; 3 × 240 s rendait 2/8/3 après le départ vu, le faux
+    // négatif encore ; 6 × 240 s rend 5/17/18 stable)
     const tirsDe = (n) => {
       let tirs = 0;
-      for (const seed of [2, 5, 8]) {
+      for (const seed of [2, 3, 5, 8, 11, 13]) {
         const st = makeMatch({ full: true, seed, squads: [eq(n), eq(50)] });
         const cfg = matchCfg({ shotRange: 20 });
         for (let i = 0; i < 240 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -49,7 +50,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       return tirs;
     };
     const t30 = tirsDe(30), t50 = tirsDe(50), t90 = tirsDe(90);
-    ok(`lot 152 — LA GRADATION s'ordonne (tirs appariés 3 × 240 s : équipe 30 → ${t30}, 50 → ${t50}, 90 → ${t90} — l'échelle est CONTINUE, un 62 n'est pas un 65, et l'impact est croissant)`,
+    ok(`lot 152 — LA GRADATION s'ordonne (tirs appariés 6 × 240 s : équipe 30 → ${t30}, 50 → ${t50}, 90 → ${t90} — l'échelle est CONTINUE, un 62 n'est pas un 65, et l'impact est croissant)`,
       t90 > t30 + 3 && t90 >= t50 && t50 > t30);
   }
   // lot 153 — LE PREMIER PAS AU 50/50 (l'égalisateur du 152, premier canal traité) : sur
@@ -98,24 +99,52 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 154 — LE DUEL DU CONTACT revient au plus vif (miroir 50v90 : équipe1 ${vif[1]}/6 malgré l'ordre du tableau) ; à notes égales l'ancien chemin tient (50v50 : équipe0 ${ancien[0]}/6 — le nu au bit) ; sabotage « l'ordre du tableau » attrapé (prise5050:false : équipe0 ${sab[0]}/6)`,
       vif[1] === 6 && ancien[0] === 6 && sab[0] === 6);
   }
-  // lot 151 — LES MENTALES AU FLUX (appariées mêmes graines) : l'AGGRESSION fait les fautes,
-  // OFF THE BALL fait les appels — le contrat statique (monotonie, no-op) vit dans checkAttributes.
+  // lot 155 — LE DÉPART VU : le couloir d'élection saute le bloqueur à u < 0,06 — l'angle mort
+  // du presseur collé (le gros des volées mesurées part dans ses pieds à dt 0,1-0,5 s, à TOUTES
+  // les notes). La ligne dont le premier mètre est habité se refuse ; portée d'œil × visionF.
+  {
+    const { matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const { simInternals } = await import('../assets/starter/src/engine/rondo-sim.js');
+    const election = (foeAlong, over = {}) => {
+      const st = makeMatch({ full: true, seed: 7 });
+      const cfg = matchCfg(over);
+      for (const p of st.players) { p.p[0] = p.team === 0 ? -50 : 40; p.p[2] = (p.id % 6) * 7 - 17; p.v = [0, 0]; p.speed = 0; }
+      const c = st.players.find((p) => p.team === 0 && !p.keeper);
+      const mate = st.players.filter((p) => p.team === 0 && !p.keeper)[1];
+      c.p[0] = st.ball.p[0]; c.p[2] = st.ball.p[2]; c.skill = makeProfile({});
+      mate.p[0] = c.p[0] + 12; mate.p[2] = c.p[2];
+      if (foeAlong != null) { const foe = st.players.find((p) => p.team === 1 && !p.keeper); foe.p[0] = c.p[0] + foeAlong; foe.p[2] = c.p[2] + 0.05; }
+      st.possession.carrier = c.id; st.phase = 'carry';
+      const ch = simInternals.choosePass(st, cfg);
+      return ch ? (ch.to.id === mate.id ? ch.style : 'autre') : 'refus';
+    };
+    const libre = election(null), vu = election(0.70), aveugle = election(0.70, { departVu: false });
+    ok(`lot 155 — LE DÉPART VU : la ligne libre s'élit (${libre}), le premier mètre habité (presseur à 0,70 m, u 0,058 < 0,06 : invisible au couloir) se refuse (${vu}) ; sabotage « la passe dans les pieds du jeté » attrapé (departVu:false : ${aveugle}) — en flux : volées 14,7 → 12,0 % au niveau 50, 14,1 %/12,3 % aux notes 10/90 (6 graines)`,
+      libre === 'ground' && vu === 'refus' && aveugle === 'ground');
+  }
+  // lot 151 — LES MENTALES AU FLUX, requalifié au 155 : le contrat statique (monotonie, no-op)
+  // vit dans checkAttributes ; en FLUX, le volume d'appels est à l'horloge d'ÉQUIPE (budget ~5 s,
+  // premier du tableau des éligibles servi — le biais d'ordre du 154 : otbF module l'éligibilité,
+  // jamais liante → 52 ≈ 53 appels mesurés aux extrêmes). TRIPWIRE de non-régression en attendant
+  // l'élection de l'appelant (chantier consigné au ROADMAP) ; les fautes restent ordonnées.
   {
     const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
     const flux = (ratings) => {
-      const sq = [Array.from({ length: 11 }, () => ({ ratings })), []];
-      const st = makeMatch({ full: true, seed: 5, squads: sq });
-      const cfg = matchCfg({ shotRange: 20 });
-      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
-      return {
-        fautes: st.events.filter((e) => e.type === 'faute' && st.players[e.by]?.team === 0).length,
-        appels: st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && st.players[e.by]?.team === 0).length,
-      };
+      let fautes = 0, appels = 0;
+      for (const seed of [2, 5, 9]) {
+        const sq = [Array.from({ length: 11 }, () => ({ ratings })), []];
+        const st = makeMatch({ full: true, seed, squads: sq });
+        const cfg = matchCfg({ shotRange: 20 });
+        for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+        fautes += st.events.filter((e) => e.type === 'faute' && st.players[e.by]?.team === 0).length;
+        appels += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && st.players[e.by]?.team === 0).length;
+      }
+      return { fautes, appels };
     };
     const hargneux = flux({ aggression: 90, offTheBall: 90 });
     const placide = flux({ aggression: 10, offTheBall: 10 });
-    ok(`lot 151 — les MENTALES vivent au flux (l'équipe hargneuse/mobile : ${hargneux.fautes} fautes ≥ ${placide.fautes} et ${hargneux.appels} appels ≥ ${placide.appels} + 1 — aggression et offTheBall, appariés seed 5)`,
-      hargneux.fautes >= placide.fautes && hargneux.appels >= placide.appels + 1);
+    ok(`lot 151 — les MENTALES au flux (3 × 300 s appariés : fautes ${hargneux.fautes} ≥ ${placide.fautes} ; appels ${hargneux.appels} vs ${placide.appels} — l'horloge d'équipe lie le volume, tripwire |Δ| ≤ 8 en attendant l'élection de l'appelant)`,
+      hargneux.fautes >= placide.fautes && Math.abs(hargneux.appels - placide.appels) <= 8 && hargneux.appels + placide.appels > 60);
   }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));

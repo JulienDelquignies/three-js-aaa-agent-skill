@@ -5779,6 +5779,42 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      mondes). Les 4 empreintes du monde nu intactes. Restent du chantier égalisateur :
      l'élection du passeur myope, le tacle-debout muet en flux.
 
+196. **Lot 155 : LE DÉPART VU (l'élection du passeur myope, instruite et requalifiée).**
+     LA SONDE D'ANATOMIE d'abord (passes de l'équipe notée n volées par l'adverse 50,
+     3-6 graines × 240 s) : AVANT, 11,8 / 14,7 / 13,8 % aux notes 10/50/90 — aucune
+     discrimination, et ~85 % des volées SOUS PRESSION. L'anatomie fine (dt, distance
+     du voleur à la mène) : la grosse famille part à dt 0,1-0,5 s avec le voleur SUR
+     L'ORIGINE — la passe dans les pieds du presseur collé. LA CAUSE STRUCTURELLE :
+     laneClearance saute tout bloqueur à u < 0,06 de la ligne (« derrière le passeur »),
+     soit 1,2 m sur une passe de 20 m — l'ANGLE MORT exact du jeté. DEUX CANAUX TENTÉS
+     ET REJETÉS à la mesure (l'effet APRÈS fait foi) : le couloir exigé × visionF
+     INVERSAIT (le visionnaire large perdait ses bonnes options, 138 → 106 passes,
+     volées ↑ — le couloir pilote le STYLE, pas le risque) ; la marge de l'œil urgent
+     × (2−visionF) : zéro effet (13,8 → 13,5 %, les volées ne passent pas par ce refus).
+     LA LOI (cfg.departVu, top-level, défaut ON) : la ligne dont le premier mètre est
+     habité (rayon 1,8 × visionF, perp 0,7, along > 0,2) se REFUSE — le chip lofted
+     reste jouable par-dessus. MESURÉ : niveau 50 : 14,7 → 12,0 % (le modèle voyait
+     enfin l'homme du dos, et PLUS de passes tentées) ; gradient 14,1 % / 12,3 % aux
+     notes 10/90 (6 graines — réel mais doux : la séparation ne vit que sur les longues
+     lignes où l'angle mort dépasse la portée de l'œil). A/B 20 × 300 s : 20 buts
+     (bande 8-22 ✓). Clause 155 déterministe (presseur à 0,70 m, u 0,058 : élu →
+     refusé → sabotage ré-élu) ; fixture : la Loi 11 du cerveau exige des adverses
+     DERRIÈRE le receveur (bloc à +40, sinon tout est hors-jeu et tout refuse).
+     EMPREINTES RE-DATÉES par la loi (défaut ON) : matchs 0f4b80b1a7c484f6 /
+     89b8f0184809809b ; rondo c775c81e62592d4d et réduit c701c84aec0851ef INTACTS
+     (st.full). LE POISSON REJOUÉ : la clause gradation 152 à 3 graines rendait 2/8/3
+     (faux négatif) — élargie à 6 × 240 s (5/17/18 stable). ET LA TROUVAILLE : le
+     volume d'appels est SOURD à otbF (52 ≈ 53 aux extrêmes, 15 ≈ 14 par joueur) —
+     l'horloge d'ÉQUIPE (~5 s) lie le volume et le créneau va au PREMIER DU TABLEAU
+     des éligibles (le biais d'ordre du 154, encore) ; la clause 151 devient un
+     tripwire nommé, l'ÉLECTION DE L'APPELANT est le prochain chantier. LES DIX
+     CLAUSES DE FLUX re-datées se sont épinglées au patron « la clause isole le
+     re-dateur » (departVu:false aux 4 packs LAB/ISO131/POST131/ISO142 + 6 isolations
+     locales 103/135/136/149) — ET l'épinglage a révélé une DILUTION à consigner :
+     dans le monde vivant, le levier tempo rend +8 passes/450 s (contre +8/150 s
+     épinglé) et la mentalité +4 tentatives (contre +6) — les refus du départ
+     mangent une part du différentiel des axes ; à re-creuser avec l'appelant.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

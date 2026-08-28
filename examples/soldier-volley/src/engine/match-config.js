@@ -341,6 +341,10 @@ export const MATCH = {
   prise5050: {},          // LE DUEL DU CONTACT (154 — la fin du biais d'ordre) : deux preneurs ADVERSES dans
                           // la fenêtre du simultané (fenetre 0,12 m) → la prise au plus VIF (reaction stricte),
                           // pas au premier du tableau ; à notes égales/monde nu : l'ancien chemin, au bit
+  departVu: {},           // LE DÉPART VU (155) : le couloir d'élection saute le bloqueur à u < 0,06 (~1,2 m sur
+                          // 20 m) — l'angle mort du presseur collé, le gros des volées mesurées. La ligne dont le
+                          // premier mètre (rayon 1,8 × visionF, perp 0,7) traverse un adversaire se refuse (le
+                          // chip lofted passe par-dessus) ; false : la passe dans les pieds du jeté, d'hier
   oeil: {},               // L'ŒIL DE L'URGENCE (143 — « passes dans le dos, récupérations horribles ») : la
                           // panique sautait le refus de course (flightRace) → 19 % d'interceptions (réel
                           // 7-10) ; même pressé, une ligne MORTE (course perdue ≥ marge 0,25 s) se refuse,

@@ -86,6 +86,13 @@ export function choosePass(st, cfg = RONDO) {
   // the pass leaves the BALL, not the player's navel — the dribbler carries it a metre or two
   // ahead, and judging the lane from his hips is how a "clear" pass hits a defender's shin
   const origin = [st.ball.p[0], BALL.radius, st.ball.p[2]];
+  // LE DÉPART VU (lot 155, cfg.departVu && st.full) : le couloir saute tout bloqueur à u < 0,06 —
+  // sur 20 m c'est 1,2 m : l'ANGLE MORT du presseur collé (mesuré : le gros des volées part dans
+  // ses pieds, dt 0,1-0,5 s, voleur sur l'origine, à TOUTES les notes). La ligne dont le premier
+  // mètre traverse un adversaire proche se refuse (le chip lofted reste jouable par-dessus) ; la
+  // PORTÉE de l'œil est à la note (× visionF — le myope garde un angle mort plus long ; 1 à 50).
+  const _dvR = st.full && cfg.departVu ? (cfg.departVu.rayon ?? 1.8) * (c.skill?.visionF ?? 1) : 0;
+  const _dvFoes = _dvR ? foesL.filter((q) => !q.keeper && q.down <= 0 && d2(q.p, origin) < _dvR) : null;
   // LA LOI 11 EST DANS LE CERVEAU AVANT D'ÊTRE DANS LE SIFFLET (cfg.offside — 11c11 seulement) :
   // on ne SERT pas un coéquipier en position de hors-jeu. La position se juge MAINTENANT ; la
   // photo légale, elle, se prend au DÉPART du ballon (strikeNow) — entre les deux vit l'armé,
@@ -246,6 +253,15 @@ export function choosePass(st, cfg = RONDO) {
       : lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
     const blocked = !lane.open && style !== 'lofted';
     if (blocked) continue;
+    if (_dvFoes && _dvFoes.length && style !== 'lofted') {      // le départ vu (155) : premier mètre habité → refus
+      const ldx = lead[0] - origin[0], ldz = lead[2] - origin[2], lL = Math.hypot(ldx, ldz) || 1;
+      let devant = false;
+      for (const q of _dvFoes) {
+        const qx = q.p[0] - origin[0], qz = q.p[2] - origin[2], along = (qx * ldx + qz * ldz) / lL;
+        if (along > 0.2 && Math.hypot(qx - (ldx / lL) * along, qz - (ldz / lL) * along) < (cfg.departVu.perp ?? 0.7)) { devant = true; break; }
+      }
+      if (devant) continue;
+    }
     // UNE PASSE MANQUÉE PRÈS DE LA LIGNE EST UNE SORTIE EN PRÉPARATION. Mesuré : la sortie de but
     // était devenue la première cause de perte (77/191 sur 8 graines), dont un tiers en vol — le
     // ballon dépasse son receveur et roule ~8 m. Si la ligne de sortie est à moins de 3 m DERRIÈRE

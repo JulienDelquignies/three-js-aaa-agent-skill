@@ -262,6 +262,21 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE DÉPART VU (155, note 196) : l'élection voyait tout SAUF l'homme sur le dos
+(laneClearance saute u < 0,06 — 1,2 m sur 20 m, l'angle mort du jeté ; ~85 % des
+volées sous pression, dt 0,1-0,5 s sur l'origine). cfg.departVu : premier mètre
+habité (1,8 × visionF, perp 0,7) → refus, le chip lofted passe. 14,7 → 12,0 % de
+volées au niveau 50 ; gradient 14,1/12,3 % aux notes 10/90. Deux canaux REJETÉS à
+la mesure : couloir × visionF (inversait — le couloir pilote le style), marge d'œil
+urgent (zéro effet). Empreintes matchs re-datées 0f4b80b1a7c484f6/89b8f0184809809b ;
+rondo/réduit intacts. TROUVAILLE → PROCHAIN CHANTIER : l'ÉLECTION DE L'APPELANT —
+le créneau d'appel d'équipe (~5 s) va au premier du tableau des éligibles (le biais
+d'ordre du 154) et otbF est sourd en volume (52 ≈ 53, 15 ≈ 14 par joueur) ; élire
+le MEILLEUR appelant (avance, couloir, otbF), pas le premier itéré. Restent aussi :
+le tacle-debout muet en flux, la gradation 90v50 des tirs presque plate (18 ≈ 17),
+et la DILUTION DES AXES dans le monde vivant (tempo +8/450 s contre +8/150 s
+épinglé, mentalité +4 contre +6 — les refus du départ mangent du différentiel).
+
 LE DUEL DU CONTACT (154, note 195) : le « biais de côté » instruit et requalifié —
 moitié artefact de fixture (l'engagement non purgé : la remise a un ayant droit),
 moitié vrai biais (au contact simultané, la prise allait au premier du tableau).
