@@ -36,22 +36,23 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
     const NIVEAU = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
     const eq = (n) => Array.from({ length: 11 }, () => ({ ratings: Object.fromEntries(NIVEAU.map((k) => [k, n])) }));
-    // …l'échantillon de LA MESURE (leçon lot 110, rejouée au 155 : les tirs vivent dans le bruit
-    // de Poisson — 2 × 180 s rendait 0/4/2 ; 3 × 240 s rendait 2/8/3 après le départ vu, le faux
-    // négatif encore ; 6 × 240 s rend 5/17/18 stable)
-    const tirsDe = (n) => {
-      let tirs = 0;
+    // …l'échantillon (leçon 110/155) ET LA MÉTRIQUE (leçon 158) : les tirs-POUR seuls rendaient
+    // 5/17/18 — « presque plat » en haut, l'œil du borgne : la moitié DÉFENSIVE de la domination
+    // (tirs concédés 36 → 28) était invisible. Le juge de paix est le DIFFÉRENTIEL pour−contre
+    // (3/6/9 à 6 × 240 s ; en buts à 6 × 600 s : −1/+1/+4/+6 aux niveaux 30/50/70/90).
+    const diffDe = (n) => {
+      let tp = 0, tc = 0;
       for (const seed of [2, 3, 5, 8, 11, 13]) {
         const st = makeMatch({ full: true, seed, squads: [eq(n), eq(50)] });
         const cfg = matchCfg({ shotRange: 20 });
         for (let i = 0; i < 240 * 60; i++) matchStep(st, 1 / 60, cfg);
-        tirs += st.events.filter((e) => e.type === 'shot' && st.players[e.by]?.team === 0).length;
+        for (const e of st.events) if (e.type === 'shot') { if (st.players[e.by]?.team === 0) tp++; else tc++; }
       }
-      return tirs;
+      return tp - tc;
     };
-    const t30 = tirsDe(30), t50 = tirsDe(50), t90 = tirsDe(90);
-    ok(`lot 152 — LA GRADATION s'ordonne (tirs appariés 6 × 240 s : équipe 30 → ${t30}, 50 → ${t50}, 90 → ${t90} — l'échelle est CONTINUE, un 62 n'est pas un 65, et l'impact est croissant)`,
-      t90 > t30 + 3 && t90 >= t50 && t50 > t30);
+    const d30 = diffDe(30), d50 = diffDe(50), d90 = diffDe(90);
+    ok(`lot 152/158 — LA GRADATION s'ordonne au DIFFÉRENTIEL (tirs pour−contre, 6 × 240 s appariés : équipe 30 → ${d30}, 50 → ${d50}, 90 → ${d90} — l'échelle est CONTINUE et l'impact TOTAL, attaque ET défense, est croissant)`,
+      d90 > d50 && d50 > d30 && d90 >= d30 + 4);
   }
   // lot 153 — LE PREMIER PAS AU 50/50 (l'égalisateur du 152, premier canal traité) : sur
   // ballon LOOSE, le chasseur noté LENT reste planté l'excédent de sa réaction (× 2,5) —

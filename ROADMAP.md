@@ -262,6 +262,16 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE JUGE DE PAIX REQUALIFIÉ (158, note 199) : la gradation 90v50 n'était PAS plate —
+l'instrument était borgne (tirs-pour seuls ; l'événement but s'attribue par e.team).
+Au bon juge : différentiel de buts −1/+1/+4/+6 aux niveaux 30/50/70/90 (12-6 au
+90v50, 6 × 600 s), tirs pour−contre 3/6/9, possession 58 %. Clause 152 refondée au
+différentiel. LE FRONT REQUALIFIÉ : la RÉCUPÉRATION HAUTE — le fort récupère 7,4 m
+plus bas que le moyen (sa défense mord tôt, près de sa surface) parce que le
+pressing est purement tactique : aucune note ne fait OSER le contact plus haut
+(rejoint l'amont famélique du 157 : 19 épisodes de pression/15 min). Le prochain
+canal : le pressing à la note (anticipation/workRate → la hauteur du déclenchement).
+
 L'HORLOGE DU PIQUE (157, note 198) : le tacle-debout vivait à 0,9 s de pression
 soutenue — jamais atteinte (1 armé/30 min, la panique lâche à 0,15 s). cfg.tacleVif :
 engagement à ~0,23 s (p75 des épisodes) × (2 − tacleTempoF), nouveau facteur de la

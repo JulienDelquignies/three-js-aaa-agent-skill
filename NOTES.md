@@ -5863,6 +5863,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      qui atteigne 0,23 s dans leur fenêtre : la loi est réelle mais rare à l'échelle
      de l'empreinte) ; rondo/réduit garantis par st.full.
 
+199. **Lot 158 : LE JUGE DE PAIX REQUALIFIÉ — la gradation 90v50 n'était pas plate,
+     l'instrument était borgne (aucun changement moteur).** LA SONDE PAR CANAL d'abord
+     (6 graines appariées) : le 90v50 rend possession 58 % (54,8 au miroir), duels
+     gagnés 8-0, passes volées SUP (16,4 %), ballon au dernier tiers INF (16,9 vs 23
+     éch/min), x moyen 0,4 vs 8,8 m — le fort joue PLUS BAS. L'ANATOMIE DES POSSESSIONS
+     l'explique : le 90 PROGRESSE MIEUX (24,6 m médian par possession, 31 raids ≥ 20 m
+     contre 24) mais NAÎT 7,4 m plus bas — sa défense supérieure (tackling, reactions,
+     keeping) récupère tôt et près de sa surface : le tilt territorial n'est PAS le
+     juge. TROIS LEÇONS D'INSTRUMENT payées dans la même sonde : (1) l'événement
+     `but` s'attribue par `e.team` — ni `e.by` ni `e.equipe` (deux passes fausses :
+     « buts 0-18 » à 50v50 symétrique, l'alarme absurde qui a sauvé la mesure —
+     VÉRIFIER LA FORME DE L'ÉVÉNEMENT AVANT DE COMPTER) ; (2) les tirs-POUR seuls
+     sont l'œil du borgne : la moitié DÉFENSIVE de la domination (tirs concédés
+     36 → 28) était invisible — le juge est le DIFFÉRENTIEL ; (3) 240 s
+     sous-échantillonne les buts (600 s pour les compter). LE VERDICT, au bon
+     instrument : LA GRADATION EST RÉELLE ET MONOTONE À TOUS LES ÉTAGES — buts
+     (6 × 600 s) : différentiel −1 / +1 / +4 / +6 aux niveaux 30/50/70/90 (le 90v50
+     gagne 12-6) ; tirs pour−contre (6 × 240 s) : 3 / 6 / 9 ; possession 54,8 → 58 %
+     (l'objectif ROADMAP ≥ 60 % est à 2 pts). Clause 152 REFONDÉE sur le différentiel
+     (d30 < d50 < d90, écart ≥ 4). LE FRONT RESTANT du fil, requalifié : pas la
+     gradation — LA RÉCUPÉRATION HAUTE (le fort récupère bas parce que le pressing
+     n'est que tactique : aucune note ne fait oser le contact plus haut — rejoint
+     l'amont famélique du 157, 19 épisodes de pression/15 min).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
