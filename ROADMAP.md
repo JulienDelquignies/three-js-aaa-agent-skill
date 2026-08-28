@@ -262,6 +262,17 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'HORLOGE DU PIQUE (157, note 198) : le tacle-debout vivait à 0,9 s de pression
+soutenue — jamais atteinte (1 armé/30 min, la panique lâche à 0,15 s). cfg.tacleVif :
+engagement à ~0,23 s (p75 des épisodes) × (2 − tacleTempoF), nouveau facteur de la
+note tackling ; porte de discipline du 95 juge. 1 → 12 armés/30 min, fautes 14 → 31
+/20 matchs (≈ réel), A/B 18 buts ✓, canal 90 vs 10 : 11 vs 3 armés. LE CHANTIER
+ÉGALISATEUR DU 152 EST SOLDÉ (premier pas 153, duel du contact 154, départ vu 155,
+appelant instruit-rejeté 156, pique 157). Restent (nouveaux fronts) : la gradation
+90v50 des tirs presque plate (18 ≈ 17), la dilution des axes tempo/mentalité,
+l'amont famélique des duels (19 épisodes de pression/15 min — le pressing qui
+n'ose pas entrer au contact).
+
 L'ÉLECTION DE L'APPELANT (156, note 197) : TENTÉE ET REJETÉE à la mesure — volume
 −22 %, canal otbF tué, rotation cassée ; et le monde d'hier mesuré à la bonne échelle
 (jumeau par joueur, 6 graines) montre otbF DÉJÀ vivant (31 vs 26, +19 %). Le « sourd »

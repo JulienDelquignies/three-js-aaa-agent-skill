@@ -134,7 +134,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (const seed of [2, 3, 5, 8, 9, 11]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20 });
+        const cfg = matchCfg({ shotRange: 20, tacleVif: false });   // la clause isole 157 (le pique rebat les possessions ; +5 calibré → +1 au monde vivant)
         const moi = st.players.filter((p) => p.team === 0)[9].id;
         for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
         miens += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.by === moi).length;
@@ -144,6 +144,28 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const mobile = jumeau(90), placide = jumeau(10);
     ok(`lot 151 — OFF THE BALL vit au flux, à l'échelle du jumeau (6 × 300 s appariés : le mobile 90 appelle ${mobile} ≥ ${placide} + 3 — la part du placide 10, la cadence rôle ÷ otbF est le canal)`,
       mobile >= placide + 3);
+  }
+  // lot 157 — L'HORLOGE DU PIQUE : 0,9 s de pression soutenue n'arrivait JAMAIS en flux (1 armé
+  // /30 min — la panique adverse lâche à 0,15 s, le tacle-cérémonie perdait la course des
+  // horloges PAR CONSTRUCTION). cfg.tacleVif : l'engagement à ~0,23 s (p75 des épisodes), la
+  // porte de discipline du 95 juge (balPrenable), et l'horloge est À LA NOTE tackling.
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const eqT = (n) => Array.from({ length: 11 }, () => ({ ratings: { tackling: n } }));
+    const armes = (over, note) => {
+      let n = 0;
+      for (const seed of [2, 3, 5, 8, 9, 11]) {
+        const st = makeMatch({ full: true, seed, ...(note != null ? { squads: [eqT(note), eqT(50)] } : {}) });
+        const cfg = matchCfg({ shotRange: 20, ...over });
+        for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+        n += st.events.filter((e) => e.type === 'windup' && e.move === 'tacleDebout' && (note == null || st.players[e.by]?.team === 0)).length;
+      }
+      return n;
+    };
+    const vivant = armes({}), mort = armes({ tacleVif: false });
+    const bons = armes({}, 90), durs = armes({}, 10);
+    ok(`lot 157 — LE PIQUE VIT en flux (${vivant} armés / 6 × 300 s ≥ 8 ; réel ~15-25/90 min) ; sabotage « le tacle-cérémonie » attrapé (tacleVif:false : ${mort} ≤ 2) ; et l'horloge est à la note (tacleurs 90 : ${bons} armés ≥ tacleurs 10 : ${durs} + 4 — tackling arme le duel, tackleReach/esquiveF le jugent)`,
+      vivant >= 8 && mort <= 2 && bons >= durs + 4);
   }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));

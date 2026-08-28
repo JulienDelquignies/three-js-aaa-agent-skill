@@ -341,6 +341,10 @@ export const MATCH = {
   prise5050: {},          // LE DUEL DU CONTACT (154 — la fin du biais d'ordre) : deux preneurs ADVERSES dans
                           // la fenêtre du simultané (fenetre 0,12 m) → la prise au plus VIF (reaction stricte),
                           // pas au premier du tableau ; à notes égales/monde nu : l'ancien chemin, au bit
+  tacleVif: {},           // L'HORLOGE DU PIQUE (157) : le tacle-debout s'engage à tackleTime × tot (0,25 ≈ 0,23 s)
+                          // × (2 − tacleTempoF) quand le ballon est prenable (tackleWindow juge) — 0,9 s de
+                          // pression n'arrivait JAMAIS (1 armé/30 min : la panique adverse lâche à 0,15 s) ;
+                          // false : le tacle-cérémonie d'hier, muet en flux
   departVu: {},           // LE DÉPART VU (155) : le couloir d'élection saute le bloqueur à u < 0,06 (~1,2 m sur
                           // 20 m) — l'angle mort du presseur collé, le gros des volées mesurées. La ligne dont le
                           // premier mètre (rayon 1,8 × visionF, perp 0,7) traverse un adversaire se refuse (le

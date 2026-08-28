@@ -5837,6 +5837,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la gradation 90v50 des tirs presque plate, la dilution des axes (156 n'y touche
      plus — le monde vivant reste celui du 155).
 
+198. **Lot 157 : L'HORLOGE DU PIQUE — le tacle-debout entre enfin en scène (le dernier
+     canal géométrique du 152).** LA SONDE : tackleTime = 0,9 s de pression SOUTENUE —
+     jamais atteinte en flux (pression max 0,88 s, 1 armé/30 min) parce que la panique
+     adverse lâche le ballon à 0,15 s (le seuil decF du 152) : le tacle-cérémonie
+     perdait la course des horloges PAR CONSTRUCTION. Et l'amont est famélique : 19
+     épisodes de pression/15 min, p75 = 0,22 s (le bouclier protège le ballon, mesure
+     du 32). LA LOI (cfg.tacleVif, top-level, défaut ON) : l'engagement du tacle-debout
+     à tackleTime × tot (0,25 → ~0,23 s, calé sur le p75 des épisodes) × (2 −
+     tacleTempoF) — le NOUVEAU facteur de la note tackling (lerp 0,85-1,15, 1 exact à
+     50, monotonie au contrat statique) : le bon tacleur pique à 0,19 s, le maladroit
+     attend 0,26. La PORTE DE DISCIPLINE du 95 reste juge (tackleWindow → balPrenable :
+     on ne fauche pas un ballon protégé), le cooldown anti-mitraillette tient. MESURÉ
+     (6 × 300 s) : 1 → 12 armés (≈ 24/90 min extrapolé, le réel des standing challenges) ;
+     duels 21 → 37 ; ET LES FAUTES DE MILIEU NAISSENT : 14 → 31/20 matchs A/B (≈ 28/90
+     min — le réel total est 20-30 ; le monde d'avant était à 12,6, trop propre). A/B
+     20 × 300 s : 18 buts (bande 8-22 ✓). LE CANAL DE LA NOTE : tacleurs 90 = 11 armés,
+     tacleurs 10 = 3 (l'horloge ÷ note fait ×3,7 le volume d'engagement ; le GAIN du
+     duel reste jugé par tackleReach vs esquiveF du 152). Leçon de garde : l'appel
+     `tacleHorloge(st, press[0], …)` s'évalue AVANT le court-circuit du && — press[0]
+     peut être undefined (q?.skill). Clause 157 au banc (vivant ≥ 8, sabotage ≤ 2,
+     note 90 ≥ 10 + 4) ; les packs et isolations épinglés tacleVif:false D'AVANCE
+     (la leçon du 155 appliquée en amont, zéro clause fantôme). Empreintes : les 4
+     INCHANGÉES — même les matchs (les graines 3/7 n'ont aucun épisode de pression
+     qui atteigne 0,23 s dans leur fenêtre : la loi est réelle mais rare à l'échelle
+     de l'empreinte) ; rondo/réduit garantis par st.full.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
