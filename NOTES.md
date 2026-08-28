@@ -5723,6 +5723,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      RESTE de l'inventaire notes : command / oneOnOnes / aerialReach (gardien, le trio
      à lois — command agit sur les AUTRES) ; bravery documenté alias de l'axe garde.
 
+193. **Lot 152 : LA GRADATION PROUVÉE — ET L'ÉGALISATEUR NOMMÉ (la question utilisateur :
+     « plusieurs niveaux de prise en charge, pas juste supérieur/inférieur ? chaque joueur
+     différent, l'impact réel »).** LA RÉPONSE MÉCANIQUE : oui par construction — chaque
+     note 0-100 est une interpolation CONTINUE (lerp) vers son levier, aucun palier, un 62
+     ≠ un 65. LA PREUVE MESURÉE (4 niveaux d'équipe vs 50 fixe, 3 graines × 240 s
+     appariées) : les tirs s'ordonnent STRICTEMENT — 30 → 3, 50 → 6, 70 → 7, 90 → 9 ;
+     possession 47 → 55 %. Clause de gradation au banc attributes. DEUX CANAUX
+     DIFFÉRENTIELS AJOUTÉS : l'ESQUIVE du duel (esquiveF ±0,08 m — le tacle-debout devient
+     tackling VS dribbling, ±16 cm de fenêtre entre extrêmes ; 3e levier de la note
+     dribbling, 0 exact à 50) et LA VISION OSE (raceSlack × (2 − visionF) — le voyant joue
+     les couloirs serrés que le myope refuse). L'ÉGALISATEUR NOMMÉ (l'instrumentation qui
+     compte) : l'amplitude d'ÉQUIPE reste douce parce que LES BOUCLES DE POSSESSION SONT
+     GÉOMÉTRIQUES — mesuré à niveaux extrêmes : passes VOLÉES en vol 7 = 7 (l'élection de
+     ligne est identique pour tous les passeurs, le vol se gagne à la géométrie), seconds
+     ballons 9 vs 8 (le 50/50 s'élit au plus proche, pas au plus VIF), tacles debout 0/36
+     min (le canal est rare en flux — l'esquive attend son monde), et le slack-vision pèse
+     ±0,02 s (bande trop fine pour ce canal). LE CHANTIER OUVERT (roadmap, prioritaire du
+     fil attributs) : le PREMIER PAS au ballon libre par `reactions` (±0,16 s = ±1,1 m par
+     50/50 — LE différentiel du foot réel), et l'élection de ligne du passeur myope.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

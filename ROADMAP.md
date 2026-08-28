@@ -262,6 +262,15 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA GRADATION + L'ÉGALISATEUR (152, note 193) : la preuve d'échelle (tirs 3/6/7/9 aux
+niveaux 30/50/70/90, clause au banc) + esquiveF (le duel tackling vs dribbling) + la
+vision ose (raceSlack). LE CHANTIER PRIORITAIRE DU FIL ATTRIBUTS : les boucles de
+possession sont GÉOMÉTRIQUES (passes volées 7 = 7, seconds ballons 9 = 8 aux niveaux
+extrêmes) — brancher le PREMIER PAS au ballon libre sur `reactions` (±0,16 s = ±1,1 m
+par 50/50), l'élection de ligne du passeur myope, et faire vivre le tacle-debout en
+flux (0/36 min mesuré). Mesurer chaque canal AVANT/APRÈS, viser 90v50 ≥ 60 % de
+possession SANS élargir les bandes humaines.
+
 LES SEPT MENTALES (151, note 192) : decisions/offTheBall/positioning/workRate/
 aggression/concentration/marking — une ligne par canal existant, no-op à 50, la
 concentration vit sur la fatigue (pas d'horloge nouvelle). 30/33 notes consommées.

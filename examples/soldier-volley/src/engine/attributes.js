@@ -28,7 +28,7 @@ export const ATTRIBUTES = {
   acceleration:'démarrage                → accel × [0,88 ; 1,12]',
   passing:     'erreur d\'exécution passe → bruit d\'angle [6,0° ; 0,5°] (σ), la vraie frappe dévie',
   control:     'fermeté du contrôle      → diviseur du contrôle-manqué [0,7 ; 1,6] (poids de passe)',
-  dribbling:   'longueur de touche → lead × [1,08 ; 0,94] ; engagement et vente des gestes × [0,55 ; 1,10]',
+  dribbling:   'longueur de touche → lead × [1,08 ; 0,94] ; engagement/vente des gestes × [0,55 ; 1,10] ; l\'ESQUIVE du duel ± [−0,08 ; +0,08] m (152)',
   finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ)',
   longShots:   'frappe de loin           → audace lointaine × [0,75 ; 1,25] (cfg.audace, lot 107)',
   tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m',
@@ -79,6 +79,9 @@ export function makeProfile(ratings = {}) {
                                                                   // (lot 147), passing la porte si absente
     controlF: lerp(0.7, 1.6, r('control')),
     dribbleLeadF: lerp(1.08, 0.94, r('dribbling')),
+    esquiveF: lerp(-0.08, 0.08, r('dribbling')),                  // m — le DUEL est tackling VS dribbling (152) :
+                                                                  // le dribbleur rétrécit la fenêtre du tacleur
+                                                                  // (0 exact à 50 — le 3e levier de la note)
     gesteF: lerp(0.55, 1.10, r2('technique', 'dribbling')),       // × sur l'ENGAGEMENT et la VENTE (la note
                                                                   // TECHNIQUE dédiée au lot 147 — savoir FAIRE ;
                                                                   // persona.flair décide de TENTER)
@@ -170,6 +173,7 @@ export function checkAttributes() {
   if (!(hi.throwF > mid.throwF && mid.throwF > lo.throwF) || Math.abs(mid.throwF - 1) > 1e-9) issues.push('throwing non monotone ou no-op violé');
   for (const [k, nom] of [['decF','decisions'],['otbF','offTheBall'],['posF','positioning'],['workF','workRate'],['aggrF','aggression'],['concF','concentration'],['markF','marking']])
     if (!(hi[k] > mid[k] && mid[k] > lo[k]) || Math.abs(mid[k] - 1) > 1e-9) issues.push(`${nom} non monotone ou no-op violé`);
+  if (!(hi.esquiveF > mid.esquiveF && mid.esquiveF > lo.esquiveF) || Math.abs(mid.esquiveF) > 1e-9) issues.push('esquive (dribbling) non monotone ou no-op violé');
   // 4. les clés inconnues sont ignorées, pas fatales
   try { makeProfile({ chapeau: 99, pace: 60 }); } catch { issues.push('une clé inconnue fait planter makeProfile'); }
   return { ok: issues.length === 0, issues };

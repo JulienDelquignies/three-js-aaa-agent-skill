@@ -27,6 +27,31 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 147 — la note flair pilote la persona (${pF.persona.flair.toFixed(3)} ≈ 0,958 avec flair 95 ; sans note : ${pN.persona.flair.toFixed(3)}, le tirage seedé d'hier)`,
       Math.abs(pF.persona.flair - (0.15 + 0.85 * 0.95)) < 1e-9 && Math.abs(pN.persona.flair - pF.persona.flair) > 1e-6);
   }
+  // lot 152 — LA GRADATION EST CONTINUE ET ORDONNÉE (la question utilisateur : « plusieurs
+  // niveaux, pas juste supérieur/inférieur ? chaque joueur différent, l'impact réel ») :
+  // quatre niveaux d'équipe contre un 50 fixe, mêmes graines — les tirs s'ORDONNENT.
+  // (Mesuré 3 graines × 240 s : 3 < 6 ≤ 7 < 9 strictement monotone. La dette nommée au
+  // ROADMAP : les boucles de POSSESSION restent géométriques — passes volées 7 = 7.)
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const NIVEAU = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
+    const eq = (n) => Array.from({ length: 11 }, () => ({ ratings: Object.fromEntries(NIVEAU.map((k) => [k, n])) }));
+    // …l'échantillon de LA MESURE (leçon lot 110 : les tirs vivent dans le bruit de Poisson —
+    // 2 × 180 s rendait 0/4/2, le faux négatif ; 3 × 240 s rend 3/6/7/9 stable)
+    const tirsDe = (n) => {
+      let tirs = 0;
+      for (const seed of [2, 5, 8]) {
+        const st = makeMatch({ full: true, seed, squads: [eq(n), eq(50)] });
+        const cfg = matchCfg({ shotRange: 20 });
+        for (let i = 0; i < 240 * 60; i++) matchStep(st, 1 / 60, cfg);
+        tirs += st.events.filter((e) => e.type === 'shot' && st.players[e.by]?.team === 0).length;
+      }
+      return tirs;
+    };
+    const t30 = tirsDe(30), t50 = tirsDe(50), t90 = tirsDe(90);
+    ok(`lot 152 — LA GRADATION s'ordonne (tirs appariés 3 × 240 s : équipe 30 → ${t30}, 50 → ${t50}, 90 → ${t90} — l'échelle est CONTINUE, un 62 n'est pas un 65, et l'impact est croissant)`,
+      t90 > t30 + 3 && t90 >= t50 && t50 > t30);
+  }
   // lot 151 — LES MENTALES AU FLUX (appariées mêmes graines) : l'AGGRESSION fait les fautes,
   // OFF THE BALL fait les appels — le contrat statique (monotonie, no-op) vit dans checkAttributes.
   {

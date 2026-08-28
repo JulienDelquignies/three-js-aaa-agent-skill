@@ -192,7 +192,7 @@ function standTackleNow(st, q, cfg) {
   const d = d2(q.p, st.ball.p);
   const still = st.phase === 'carry' && st.possession.carrier === victimId;
   const sit = situation(q.p, q.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
-  const pick = still && d <= cfg.receiveRadius + (q.skill?.tackleReach ?? 0) ? chooseTechnique(sit, 'win', { bias: { 'tacle-debout': 1 } })[0] : null;
+  const pick = still && d <= cfg.receiveRadius + (q.skill?.tackleReach ?? 0) - (st.players[victimId]?.skill?.esquiveF ?? 0) ? chooseTechnique(sit, 'win', { bias: { 'tacle-debout': 1 } })[0] : null;   // LE DUEL EST TACKLING VS DRIBBLING (152) : le dribbleur esquive, le maladroit s'offre — ±16 cm de fenêtre entre les extrêmes
   const won = !!pick && pick.tech.id === 'tacle-debout';
   if (!won) {
     // le refus a une cause nommée, et l'événement du duel perdu reste visible dans le flux

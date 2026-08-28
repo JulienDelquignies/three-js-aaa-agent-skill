@@ -202,7 +202,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // moins mauvaise VivANTE (le veto aiguille choosePass). false : la panique aveugle d'hier.
   // …ET LA MENTALITÉ EST LE CURSEUR DU RISQUE ACCEPTÉ (149) : l'offensif tolère des courses
   // plus serrées (raceSlack ×0,75), le défensif exige de la marge (×1,25) — 0,5 = ×1, l'hier
-  const slackM = cfg.raceSlack * axe(tac(st, c.team).mentalite, 1.25, 0.75);
+  const slackM = cfg.raceSlack * axe(tac(st, c.team).mentalite, 1.25, 0.75) * (2 - (c.skill?.visionF ?? 1));   // …ET LA VISION OSE (152) : le voyant joue les couloirs serrés que le myope refuse — 1 exact à 50
   if (!opts.shot && !opts.clear && st.hold < cfg.holdMax && race.first
     && ((!urgent && (!meet || race.first.t < meet.t + slackM))
       || (urgent && st.full && cfg.oeil && (!meet || race.first.t < meet.t - (cfg.oeil.marge ?? 0.25))))) {
