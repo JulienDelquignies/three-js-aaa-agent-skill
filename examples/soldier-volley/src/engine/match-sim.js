@@ -379,6 +379,9 @@ function assignMatchJobs(st, cfg) {
 
   // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS : le plus proche de chaque camp court.
   const bSpd = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  // L'HORLOGE DU 50/50 (lot 153) : le front de la phase loose s'horodate — le PREMIER PAS
+  // se paie à la réaction personnelle (movement.premierPas). Pur, aucun tirage.
+  if (st.phase === 'loose') { if (!st._loosePh) st._looseAt2 = st.t; st._loosePh = true; } else st._loosePh = false;
   const freeBall = cfg.chaseLoose !== false && !carrier && (st.phase === 'loose' || !st.pass || st.pass.to < 0);
   const leadK = Math.min(6, bSpd * 0.7);
   const leadP = bSpd > 1.5

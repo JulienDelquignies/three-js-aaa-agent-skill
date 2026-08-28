@@ -52,6 +52,27 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 152 — LA GRADATION s'ordonne (tirs appariés 3 × 240 s : équipe 30 → ${t30}, 50 → ${t50}, 90 → ${t90} — l'échelle est CONTINUE, un 62 n'est pas un 65, et l'impact est croissant)`,
       t90 > t30 + 3 && t90 >= t50 && t50 > t30);
   }
+  // lot 153 — LE PREMIER PAS AU 50/50 (l'égalisateur du 152, premier canal traité) : sur
+  // ballon LOOSE, le chasseur noté LENT reste planté l'excédent de sa réaction (× 2,5) —
+  // ±0,5 m concédé par duel, la fourchette du réel. No-op au vif, au moyen et au monde nu.
+  {
+    const { movePlayers } = await import('../assets/starter/src/engine/movement.js');
+    const { matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const course = (reactions, over = {}) => {
+      const st = makeMatch({ full: true, seed: 13 });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      const p2 = st.players.find((q) => q.team === 0 && !q.keeper);
+      p2.skill = makeProfile({ reactions });
+      p2.job = 'press'; p2.target = [30, 0, 0]; p2.p[0] = -10; p2.p[2] = 0; p2.v = [0, 0]; p2.speed = 0;
+      st._looseAt2 = st.t;
+      const x0 = p2.p[0];
+      for (let i = 0; i < 60; i++) { movePlayers(st, 1 / 60, cfg); st.t += 1 / 60; }
+      return +(p2.p[0] - x0).toFixed(2);
+    };
+    const dVif = course(90), dMoy = course(50), dLent = course(10), dSab = course(10, { premierPas: false });
+    ok(`lot 153 — LE PREMIER PAS se paie à la réaction (1 s de chasse : vif ${dVif} m = moyen ${dMoy} — le no-op à 50 ; lent ${dLent} ≤ vif − 0,3 — planté son excédent) ; sabotage « le 50/50 aveugle » attrapé (premierPas:false : ${dSab} = le vif)`,
+      Math.abs(dVif - dMoy) < 0.05 && dLent <= dVif - 0.3 && Math.abs(dSab - dVif) < 0.05);
+  }
   // lot 151 — LES MENTALES AU FLUX (appariées mêmes graines) : l'AGGRESSION fait les fautes,
   // OFF THE BALL fait les appels — le contrat statique (monotonie, no-op) vit dans checkAttributes.
   {

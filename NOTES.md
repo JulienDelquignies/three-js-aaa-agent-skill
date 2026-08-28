@@ -5743,6 +5743,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      fil attributs) : le PREMIER PAS au ballon libre par `reactions` (±0,16 s = ±1,1 m par
      50/50 — LE différentiel du foot réel), et l'élection de ligne du passeur myope.
 
+194. **Lot 153 : LE PREMIER PAS AU 50/50 (l'égalisateur du 152, premier canal traité).**
+     LA LOI (cfg.premierPas, movement + l'horloge de front st._looseAt2 dans match-sim —
+     pur, aucun tirage) : sur ballon LOOSE, le chasseur noté LENT reste PLANTÉ l'excédent
+     de sa réaction sur le joueur moyen ((reaction − 0,22) × 2,5, top × 0,1) avant de
+     sprinter. MESURÉ en fixture : 1 s de chasse — vif (90) 3,72 m = moyen (50) 3,72 (le
+     no-op) ; lent (10) 3,25 (−0,47 m par duel — la fourchette du réel ±0,5 m). DEUX
+     LEÇONS DE FIXTURE (payées) : ×0,55 ne mordait PAS (l'accélération vit sous le
+     plafond — le premier pas est un PLANTÉ, pas un bridage) ; et movePlayers n'avance
+     pas st.t (le sablier est à matchStep) — le lent restait planté pour l'éternité de
+     l'instrument. L'HONNÊTETÉ D'AGRÉGAT : la possession d'équipe ne bouge pas encore
+     (les vrais duels de transition ~1/match — le canal est juste, l'agrégat attend
+     l'élection du passeur myope, dette maintenue au ROADMAP). Le miroir de fixture
+     full-match a aussi exposé un BIAIS DE CÔTÉ structurel (l'équipe 0 gagne le duel
+     équidistant quel que soit le talent — l'asymétrie hunter/press à possession −1) :
+     consigné à instruire.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

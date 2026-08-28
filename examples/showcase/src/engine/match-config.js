@@ -335,6 +335,9 @@ export const MATCH = {
   semellePlace: {},       // LA SEMELLE À SA PLACE (142 — « trop de semelles, ça stoppe les actions ») : jamais
                           // dans le dernier tiers, jamais avec option nette devant, jamais en transition ;
                           // tirage ×0,45 × pente de style. 333 → 36/90 min mesuré ; false : la ponctuation bavarde
+  premierPas: {},         // LE PREMIER PAS AU 50/50 (153 — l'égalisateur des attributs) : sur ballon LOOSE,
+                          // le chasseur noté LENT trotte l'excédent de sa réaction (× 2,5) avant de sprinter ;
+                          // 50 et monde nu : zéro délai, au bit ; false : le 50/50 aveugle aux notes
   oeil: {},               // L'ŒIL DE L'URGENCE (143 — « passes dans le dos, récupérations horribles ») : la
                           // panique sautait le refus de course (flightRace) → 19 % d'interceptions (réel
                           // 7-10) ; même pressé, une ligne MORTE (course perdue ≥ marge 0,25 s) se refuse,

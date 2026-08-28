@@ -146,6 +146,14 @@ export function movePlayers(st, dt, cfg) {
         st.events.push({ type: 'burst', kind: 'chasse', by: p.id, t: +st.t.toFixed(2) });
       }
     }
+    // LE PREMIER PAS AU 50/50 (lot 153, cfg.premierPas — l'égalisateur nommé au 152 : les
+    // seconds ballons se gagnaient au PLUS PROCHE, jamais au plus VIF). Le chasseur NOTÉ
+    // LENT paie l'excédent de sa réaction sur le joueur moyen (0,22 s) : il TROTTE avant de
+    // sprinter — ±0,16 s d'écart = ~1 m par duel, LE différentiel du foot réel. No-op exact
+    // à 50 (excédent 0) et au monde nu (pas de skill) ; le vif est déjà au plancher.
+    if (st.full && cfg.premierPas !== false && p.skill && st._looseAt2 != null
+      && (p.job === 'press' || p.job === 'receive' || p.job === 'intercept')
+      && st.t - st._looseAt2 < (p.skill.reaction - 0.22) * 2.5) top *= 0.1;   // …PLANTÉ pendant son délai (×0,55 ne mordait pas : l'accélération vit sous le plafond)
     const bursting = p._pace.until > st.t;
     // …la SORTIE DE GESTE explose plus fort que la rupture ordinaire (122, sortieBurst.top —
     // l'élimination réussie ouvre l'espace : le corps le PREND ; clé absente : le ×1,28 d'hier)
