@@ -5908,6 +5908,47 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      rondo/réduit intacts. Clause 159 (armés 90 ≥ 10 + 2) ; packs + clauses
      151/157 épinglés mord:false (le patron, appliqué d'avance).
 
+201. **Lot 160 : LE PRESSING COHÉRENT (retour utilisateur : « le pressing doit être
+     collectif — pas le latéral gauche qui presse le central opposé ; une tactique
+     d'équipe cohérente, bien exécutée suivant le niveau, la cohésion, la connaissance
+     tactique »).** LA SONDE : l'élection du presseur au « plus proche brut » faisait
+     TRAVERSER — 19,1 % des press avec le poste du presseur à > 15 m latéraux du
+     ballon (p90 = 21,5 m). LA LOI (cfg.pressZone, défaut ON) : l'élection parmi les
+     4 plus proches au score distance + pénalité d'éloignement de SA zone (poids
+     0,7/m au-delà de tol 8 m latéraux du poste tenu _slotT) ; les autres tiennent le
+     bloc, LE RELAIS SE FAIT EN COULISSANT. ET LA COHÉSION EST UNE NOTE : teamwork
+     (NOUVELLE — 31/33 notes du consommateur) → teamF [0,8 ; 1,2] multiplie la
+     pénalité : le cohésif élit juste, le brouillon retombe vers le chaos d'hier —
+     qui est le VRAI foot des petites équipes. MESURÉ : traversées 19,1 → 4,1 %
+     (sabotage pressZone:false : 19,1 — l'ancien monde au bit), p90 21,5 → 11,9 m,
+     relais stables (295 → 273 : pas de sur-commutation). LE CANAL DE LA NOTE, à la
+     bonne échelle (leçon 156 : par joueur, jumeau 6 graines) : le brouillon
+     teamwork 10 PRESSE +36 % (251 vs 184 éch. — l'indiscipline est un SUR-pressing
+     hors zone, il se lance là où le cohésif laisse le zonal y aller) ; l'échelle
+     d'équipe uniforme est un mauvais instrument (facteur constant, flux entier
+     re-daté — consigné). A/B 20 × 300 s : 20 buts ✓, fautes 22 (le réel).
+     ET LE RE-DATAGE A RÉVÉLÉ DEUX FRAGILITÉS LATENTES, corrigées dans le lot :
+     (160b, cfg.rondSort — LOI 8, LE CORPS) un GEL de 28,7 s (graine 3) : des
+     marcheurs en transit se relayaient DANS le rond central, canTake ne le voyait
+     jamais vide — l'adverse de l'engagement SORT désormais radial et CONTOURNE
+     par la tangente (gel 28,7 → 10,7 s ; leçon : le premier correctif posé en fin
+     d'assignJobs était MORT — la branche remise `continue` avant, le foyer est la
+     marche vers spots) ; (160c, sans clé — un fix de CONTRAT) le tir « enroulée »
+     de 37,6 m : la PORTE du lob (120) laissait entrer la décision au-delà de la
+     grise mais l'ESPÈCE restait au tirage (u ≥ 0,25 → familles ordinaires) — au-delà
+     de la grise l'espèce EST le lob, sans tirage ; l'habit du lob est frappePointu
+     (le mapping de la clause 93 l'ignorait). DEUX LEÇONS DE CLAUSE payées : le
+     canal « armés au jumeau d'agression » était du Poisson (6v3 → 4v3 → 3v5 au fil
+     des re-datages) — la clause 159 réécrite sur le MÉCANISME (part de frames
+     cible-ballon en fenêtre 1,3-2,0 m : 40 % / 2 % / 1 % agressifs/placides/
+     sabotage, causal) ; et 160b sans clé a traversé TOUS les mondes épinglés
+     (10 échecs) avant d'être gaté — CHAQUE loi a sa clé, l'arbitre compris.
+     Empreintes finales : matchs 3057b18706ce16bd / 39251dc1a783aaf2 ;
+     rondo/réduit intacts. Clause 160 (vivant ≤ 8 %, sabotage ≥ 15 %, jumeau
+     +30 éch. épinglé rondSort:false) ; packs + isolations épinglés d'avance.
+     RESTE du pressing collectif (consigné) : les FENÊTRES d'équipe
+     (pressTriggers) aux notes du bloc, la coordination du bloc qui monte uni.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

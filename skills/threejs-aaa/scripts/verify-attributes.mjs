@@ -135,7 +135,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (const seed of [2, 3, 5, 8, 9, 11]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false });   // la clause isole 157/159 (les re-dateurs de possessions)
+        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false });   // la clause isole 157-160 (les re-dateurs de possessions)
         const moi = st.players.filter((p) => p.team === 0)[9].id;
         for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
         miens += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.by === moi).length;
@@ -163,8 +163,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return n;
     };
-    const vivant = armes({ mord: false }), mort = armes({ mord: false, tacleVif: false });   // …épinglé mord:false (159)
-    const bons = armes({ mord: false }, 90), durs = armes({ mord: false }, 10);
+    const vivant = armes({ mord: false, pressZone: false, rondSort: false }), mort = armes({ mord: false, pressZone: false, rondSort: false, tacleVif: false });   // …épinglé 159/160
+    const bons = armes({ mord: false, pressZone: false, rondSort: false }, 90), durs = armes({ mord: false, pressZone: false, rondSort: false }, 10);
     ok(`lot 157 — LE PIQUE VIT en flux (${vivant} armés / 6 × 300 s ≥ 8 ; réel ~15-25/90 min) ; sabotage « le tacle-cérémonie » attrapé (tacleVif:false : ${mort} ≤ 2) ; et l'horloge est à la note (tacleurs 90 : ${bons} armés ≥ tacleurs 10 : ${durs} + 4 — tackling arme le duel, tackleReach/esquiveF le jugent)`,
       vivant >= 8 && mort <= 2 && bons >= durs + 4);
   }
@@ -185,9 +185,76 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return a;
     };
-    const mordeurs = armesA(90), placides = armesA(10);
-    ok(`lot 159 — LE MORD arme le duel à l'agression (6 × 300 s appariés : mordeurs 90 → ${mordeurs} armés ≥ placides 10 → ${placides} + 2 — aggrF ouvre la porte du conteste, l'horloge du 157 fait le reste)`,
-      mordeurs >= placides + 2);
+    // …les ARMÉS au jumeau d'agression étaient du Poisson (6v3 calibré → 4v3 → 3v5 au fil des
+    // re-datages) : la clause juge le MÉCANISME — la part de frames où la cible du presseur
+    // est LE BALLON dans la fenêtre 1,3-2,0 m (dans la porte de l'agressif 1,92, hors de celle
+    // du placide 1,28) : causal, 40/2/1 % mesurés.
+    const mordPart = (aggression, over = {}) => {
+      let fen = 0, mord = 0;
+      for (const seed of [3, 9, 11]) {
+        const st = makeMatch({ full: true, seed });
+        const cfg = matchCfg({ shotRange: 20, ...over });
+        for (const p2 of st.players) if (p2.team === 1 && !p2.keeper) p2.skill = makeProfile({ aggression });
+        for (let i = 0; i < 200 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          if (st.phase !== 'carry' || st.possession.carrier < 0) continue;
+          const c2 = st.players[st.possession.carrier];
+          if (c2.team !== 0 || c2.keeper || st.ball.owner !== c2.id) continue;
+          const pr = st.players.find((q) => q.team === 1 && q.job === 'press' && !q.keeper);
+          if (!pr) continue;
+          const d = Math.hypot(pr.p[0] - st.ball.p[0], pr.p[2] - st.ball.p[2]);
+          if (d < 1.3 || d > 2.0) continue;
+          fen++;
+          if (Math.hypot(pr.target[0] - st.ball.p[0], pr.target[2] - st.ball.p[2]) < 0.3) mord++;
+        }
+      }
+      return fen ? Math.round(100 * mord / fen) : -1;
+    };
+    const agressifs = mordPart(90), placides2 = mordPart(10), sab159 = mordPart(90, { mord: false });
+    ok(`lot 159 — LE MORD est à l'agression (fenêtre 1,3-2,0 m : les agressifs 90 visent LE BALLON ${agressifs} % des frames ≥ placides 10 (${placides2} %) + 15 ; sabotage « le campeur » attrapé (mord:false : ${sab159} % ≤ 5) — aggrF ouvre la porte, l'horloge du 157 fait le duel)`,
+      agressifs >= placides2 + 15 && sab159 <= 5);
+  }
+  // lot 160 — LE PRESSING COHÉRENT (retour utilisateur : « pas le latéral gauche qui presse le
+  // central opposé — une tactique d'équipe cohérente, bien faite suivant la cohésion ») : le
+  // presseur est élu DANS SA ZONE (pénalité d'éloignement × teamF, la note teamwork nouvelle).
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const trav = (over = {}) => {
+      let tout = 0, loin = 0;
+      for (const seed of [2, 5, 9]) {
+        const st = makeMatch({ full: true, seed });
+        const cfg = matchCfg({ shotRange: 20, ...over });
+        for (let i = 0; i < 300 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          if (i % 15 !== 0 || st.possession.carrier < 0) continue;
+          const c = st.players[st.possession.carrier];
+          if (c.keeper) continue;
+          const pr = st.players.find((q) => q.team !== c.team && q.job === 'press' && !q.keeper);
+          if (!pr) continue;
+          tout++;
+          if (Math.abs(st.ball.p[2] - (pr._slotT ? pr._slotT[1] : pr.p[2])) > 15) loin++;
+        }
+      }
+      return +(100 * loin / tout).toFixed(1);
+    };
+    const jumeau = (tw) => {
+      let n = 0;
+      for (const seed of [2, 3, 5, 8, 9, 11]) {
+        const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 4 ? { teamwork: tw } : {} })), []];
+        const st = makeMatch({ full: true, seed, squads: sq });
+        const cfg = matchCfg({ shotRange: 20, rondSort: false });   // la clause isole 160b (le rond re-date les possessions)
+        const moi = st.players.filter((p) => p.team === 0)[4].id;
+        for (let i = 0; i < 300 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          if (i % 15 === 0 && st.possession.carrier >= 0 && st.players[st.possession.carrier].team === 1 && st.players[moi].job === 'press') n++;
+        }
+      }
+      return n;
+    };
+    const vivant = trav(), brut = trav({ pressZone: false, rondSort: false });
+    const brouillon = jumeau(10), cohesif = jumeau(90);
+    ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 15 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : le brouillon teamwork 10 presse ${brouillon} éch. ≥ cohésif 90 ${cohesif} + 30 — l'indiscipline est un sur-pressing hors zone (jumeau, 6 × 300 s)`,
+      vivant <= 8 && brut >= 15 && brouillon >= cohesif + 30);
   }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));

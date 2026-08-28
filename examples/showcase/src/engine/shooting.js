@@ -97,8 +97,12 @@ export function tryShot(st, c, cfg) {
     // (< 2 rad/s) — le gardien les lit TARD (floatRead, keeper.js).
     const gkOff = gk ? Math.abs(gk.p[0] - goal.x) : 0;
     const dGk = gk ? Math.hypot(gk.p[0] - c.p[0], gk.p[2] - c.p[2]) : 99;
+    // …et la décision QUE la porte du lob a laissée entrer (dGoal > grise, 160c) porte l'espèce
+    // LOB sans tirage — le tirage raté retombait sur les familles ordinaires : « enroulée » de
+    // 37,6 m mesurée (le contrat de portée violé par l'espèce, pas par la décision).
+    const lobSeul = dGoal > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1);
     if (st.full && cfg.lob && decolle && gkOff >= (cfg.lob.out ?? 4) && dGoal >= (cfg.lob.min ?? 18) && dGoal <= (cfg.lob.max ?? 38)
-      && u < (cfg.lob.p ?? 0.25) * (c.skill?.longF ?? 1)) {
+      && (u < (cfg.lob.p ?? 0.25) * (c.skill?.longF ?? 1) || lobSeul)) {
       // LE LOB DU GARDIEN AVANCÉ (lot 120 — le dernier de la liste utilisateur) : le LIBÉRO
       // monté (≥ out m de sa ligne) se pique de LOIN — la cloche haute vise la ligne, le
       // retour est plus lent que le vol. L'AUDACE est l'attribut longShots (× longF — le

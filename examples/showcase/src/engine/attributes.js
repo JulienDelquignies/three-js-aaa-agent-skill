@@ -32,6 +32,7 @@ export const ATTRIBUTES = {
   finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ)',
   longShots:   'frappe de loin           → audace lointaine × [0,75 ; 1,25] (cfg.audace, lot 107)',
   tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m + l\'horloge du pique (tacleTempoF, 157)',
+  teamwork:    'la cohésion du pressing   → teamF [0,8 ; 1,2] : la pénalité de zone à l\'élection du presseur (160)',
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
   composure:   'sang-froid sous pression → l\'erreur de passe pressée × [1,30 ; 0,85]',
   keeping:     'métier de gardien        → envergure [1,8 ; 2,5] m, réflexe [0,16 ; 0,09] s',
@@ -92,6 +93,8 @@ export function makeProfile(ratings = {}) {
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel
     tacleTempoF: lerp(0.85, 1.15, r('tackling')),                 // × l'horloge du pique (157) : le bon tacleur
                                                                   // engage plus tôt (÷ via 2−F) — 1 exact à 50
+    teamF: lerp(0.8, 1.2, r('teamwork')),                         // × la pénalité de zone à l'élection du presseur
+                                                                  // (160) : le cohésif élit juste, le brouillon traverse
     reaction: lerp(0.30, 0.14, r('reactions')),                   // s
     composureF: lerp(1.30, 0.85, r('composure')),                 // × sur l'erreur pressée
     keeperReach: lerp(2.55, 3.25, r('keeping')),                  // m — autour de l'envergure livrée (2,95)
@@ -149,6 +152,7 @@ export function checkAttributes() {
   if (!(hi.reaction < lo.reaction)) issues.push('reactions non monotone');
   if (!(hi.tackleReach > lo.tackleReach)) issues.push('tackling non monotone');
   if (!(hi.tacleTempoF > mid.tacleTempoF && mid.tacleTempoF > lo.tacleTempoF) || Math.abs(mid.tacleTempoF - 1) > 1e-9) issues.push('tacleTempoF non monotone ou no-op violé');
+  if (!(hi.teamF > mid.teamF && mid.teamF > lo.teamF) || Math.abs(mid.teamF - 1) > 1e-9) issues.push('teamwork non monotone ou no-op violé');
   if (!(hi.longF > mid.longF && mid.longF > lo.longF)) issues.push('longShots non monotone');
   if (Math.abs(mid.longF - 1) > 1e-9) issues.push('longF au 50 doit valoir 1 exact (l\'identité du monde moyen)');
   if (!(hi.sautF > mid.sautF && mid.sautF > lo.sautF)) issues.push('jumping non monotone');

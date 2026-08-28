@@ -262,6 +262,15 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE PRESSING COHÉRENT (160, note 201 — validé utilisateur : « collectif, pas le
+latéral qui presse le central opposé, suivant cohésion/connaissance ») :
+cfg.pressZone — l'élection du presseur pénalise l'éloignement de sa zone × teamF
+(teamwork, note NOUVELLE, 31/33). Traversées 19,1 → 4,1 %, le brouillon presse
++36 % (jumeau — l'indiscipline est un sur-pressing hors zone). RESTE du pressing
+collectif : les FENÊTRES d'équipe (pressTriggers) aux notes du bloc — hauteur et
+fréquence du déclenchement collectif —, la coordination du bloc qui monte uni
+pendant la fenêtre, et la récupération haute qui en découle (le fil 157-159).
+
 LE MORD (159, note 200) : le jockey campait à la porte du conteste (p10 0,97 m,
 conteste à 0,9). cfg.mord : à 1,6 m × aggrF la cible devient le ballon. L'équilibre
 du bouclier tient (8,7 → 9,3 % — c'est le foot) ; le gain vit en aval : épisodes

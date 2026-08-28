@@ -341,6 +341,13 @@ export const MATCH = {
   prise5050: {},          // LE DUEL DU CONTACT (154 — la fin du biais d'ordre) : deux preneurs ADVERSES dans
                           // la fenêtre du simultané (fenetre 0,12 m) → la prise au plus VIF (reaction stricte),
                           // pas au premier du tableau ; à notes égales/monde nu : l'ancien chemin, au bit
+  rondSort: {},           // LOI 8, LE CORPS (160b) : l'adverse de l'engagement SORT du rond (radial) et le
+                          // contourne (tangente) au lieu de le traverser en marchant — des relais de marcheurs
+                          // gelaient canTake 28,7 s (graine 3) ; false : les marcheurs en transit d'hier
+  pressZone: {},          // LE PRESSING COHÉRENT (160) : le presseur est élu DANS SA ZONE — distance au ballon
+                          // + pénalité (poids 0,7/m au-delà de tol 8 m latéraux du poste) × teamF (la note
+                          // teamwork fait la discipline) ; 19,1 % de traversées mesurées avant ; false :
+                          // le plus-proche-brut d'hier, le latéral qui presse le central opposé
   mord: {},               // LE MORD (159) : à la porte du conteste (porte 1,6 m × aggrF) le jockey cède et le
                           // presseur vise LE BALLON — camper à 1,0 m quand le conteste est à 0,9 laissait 8,7 %
                           // de conteste (p10 0,97 m) : l'amont famélique des duels ; false : le campeur d'hier
