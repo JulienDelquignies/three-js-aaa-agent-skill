@@ -338,6 +338,9 @@ export const MATCH = {
   premierPas: {},         // LE PREMIER PAS AU 50/50 (153 — l'égalisateur des attributs) : sur ballon LOOSE,
                           // le chasseur noté LENT trotte l'excédent de sa réaction (× 2,5) avant de sprinter ;
                           // 50 et monde nu : zéro délai, au bit ; false : le 50/50 aveugle aux notes
+  prise5050: {},          // LE DUEL DU CONTACT (154 — la fin du biais d'ordre) : deux preneurs ADVERSES dans
+                          // la fenêtre du simultané (fenetre 0,12 m) → la prise au plus VIF (reaction stricte),
+                          // pas au premier du tableau ; à notes égales/monde nu : l'ancien chemin, au bit
   oeil: {},               // L'ŒIL DE L'URGENCE (143 — « passes dans le dos, récupérations horribles ») : la
                           // panique sautait le refus de course (flightRace) → 19 % d'interceptions (réel
                           // 7-10) ; même pressé, une ligne MORTE (course perdue ≥ marge 0,25 s) se refuse,

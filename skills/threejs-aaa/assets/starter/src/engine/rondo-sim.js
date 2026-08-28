@@ -18,10 +18,8 @@ import { arbitre } from './menace.js';
 import { beginPass, strikeNow } from './strike-sim.js';
 import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
 
-// rondo-sim — the game loop of the possession game, headless. Everything that decides whether a
-// "passe à dix" is won or lost happens here: when the carrier releases, whether the pass beats the
-// press, whether a defender reads it, and who ends up with the ball. Because it runs with no
-// renderer, the whole match can be proved in node (verify-rondo) before it is ever drawn.
+// rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who
+// ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const { movePlayers, separatePlayers, turnover } = rondoInternals;
@@ -29,7 +27,6 @@ const { movePlayers, separatePlayers, turnover } = rondoInternals;
 /** Le POINT DU PIED du porteur — devant le pied de contrôle (mêmes décalages que la touche du receive),
  *  CLAMPÉ DANS LE CARRÉ : un porteur SUR la ligne portait son ballon 0,34 m dehors (6 sorties de but
  *  mesurées sur 3 graines). Le joueur s'arrête à la craie ; son ballon aussi. */
-
 
 
 /** Un refus a une CAUSE NOMMÉE, et elle se compte. C'est le seul moyen de voir un étranglement :
@@ -222,11 +219,9 @@ function standTackleNow(st, q, cfg) {
   receive(st, q.id, cfg);          // → turnover : amorti nommé (résiduel ~20 %), possession déclarée
 }
 
-// ============================ LES GESTES TECHNIQUES ============================
-// Râteau, feinte, semelle — les gestes qui manipulent le ballon SANS le libérer. Trois lois : (1) chaque
-// déclenchement est SITUÉ, chaque refus NOMMÉ ; (2) la MÊME machine que les frappes (armé volable, contact,
-// accompagnement, abort nommé) ; (3) le couple corps-ballon SOUDÉ (carry servo). La fréquence est une
-// identité (persona.flair) sous cooldowns stricts : un geste technique est un événement, pas un tic.
+// ==== LES GESTES TECHNIQUES : le ballon manipulé SANS le libérer. Trois lois : (1) déclenchement SITUÉ,
+// refus NOMMÉ ; (2) la MÊME machine que les frappes (armé volable, contact, accompagnement, abort nommé) ;
+// (3) le couple corps-ballon SOUDÉ (carry servo). La fréquence : persona.flair sous cooldowns — un événement, pas un tic.
 
 export const skillInternals = { maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow };
 export const simInternals = { beginPass: (...a) => beginPass(...a), strikeNow: (...a) => strikeNow(...a), receive: (...a) => receive(...a), chargeStep: (...a) => chargeStep(...a), slideTackleStep: (...a) => slideTackleStep(...a), choosePass: (...a) => choosePass(...a) };
@@ -1010,22 +1005,17 @@ export function rondoStep(st, dt, cfg = RONDO) {
       }
     }
   } else {
-    // LA REMISE PORTÉE (match) : tant qu'elle n'est pas posée, le preneur peut posséder le pas du
-    // ballon (ramassage → porté au point de remise — cfg.ballFetch renvoie true quand il a fait
-    // avancer le ballon lui-même). Hook absent (rondo) : physique pure, à l'identique.
+    // LA REMISE PORTÉE (match) : pas posée = le preneur possède le pas du ballon (ramassage → porté ;
+    // cfg.ballFetch true quand il l'a avancé lui-même). Hook absent (rondo) : physique pure.
     if (!(cfg.ballFetch && cfg.ballFetch(st, dt, cfg))) st.ball.integrate(dt);
     st._drb = null;
-    // first player within reach takes it — defenders included: that is the interception.
-    // BUT the ball must have LEFT the passer first: for the first metres it is still at his feet,
-    // and without this he is the closest player to it and "intercepts" his own pass 0.02 s after
-    // striking it (measured: every single pass ended that way).
+    // first player within reach takes it — defenders included: that is the interception. BUT the
+    // ball must have LEFT the passer first (releaseClear) : sinon il « intercepte » sa propre passe
+    // 0,02 s après la frappe (mesuré : toutes). …ET LA GARDE A UNE HORLOGE (cfg.releaseTtl, match) :
     const gone = st.pass ? Math.hypot(st.ball.p[0] - st.pass.origin[0], st.ball.p[2] - st.pass.origin[1]) : 99;
-    // …ET LA GARDE A UNE HORLOGE (cfg.releaseTtl, match) : une passe MORTE près de son origine
-    // (3,3 m/s sous pressing, arrêtée à 0,6 m du pied — graine 3) gardait `gone ≤ releaseClear`
-    // POUR TOUJOURS : personne n'a plus jamais eu le droit de prise, gel de 145 s. La protection
-    // anti-auto-interception ne vaut que l'instant du départ — passé le TTL, le ballon a
-    // définitivement quitté (ou n'a jamais quitté : c'est pareil, il est à prendre). Clé absente
-    // (rondo) : Infinity, pas un bit ne bouge.
+    // une passe MORTE près de son origine (3,3 m/s sous pressing, arrêtée à 0,6 m — graine 3) gardait
+    // `gone ≤ releaseClear` POUR TOUJOURS : plus aucun droit de prise, gel de 145 s. La protection ne
+    // vaut que l'instant du départ — passé le TTL, il est à prendre. Clé absente (rondo) : Infinity.
     const released = gone > cfg.releaseClear || (st.pass && st.t - st.pass.t > (cfg.releaseTtl ?? Infinity));
     // LE COACH LIT LE MATCH (lot 113) : score/chrono/momentum → axes par paliers (coach.js)
     if (cfg.coach && st.full) coachStep(st, cfg);
@@ -1036,17 +1026,27 @@ export function rondoStep(st, dt, cfg = RONDO) {
     let taker = -1, bestD = Infinity;
     if (released) {
       for (const p of st.players) {
-        // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON. La boucle sans garde donnait 3 prises de balle
-        // par des joueurs ENCORE couchés après leur tacle (sonde duels-tacles) — possession = homme
-        // DEBOUT au ballon, le temps au sol est le prix du plongeon.
+        // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON (3 prises par corps couchés post-tacle mesurées) —
+        // possession = homme DEBOUT au ballon, le temps au sol est le prix du plongeon.
         if (p.down > 0) continue;
         const d = d2(p.p, st.ball.p);
         if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
       }
+      // LE DUEL DU CONTACT (lot 154, cfg.prise5050 && st.full) : dans la fenêtre du simultané (~12 cm)
+      // la prise revient au plus VIF (reaction STRICTEMENT meilleure) ; à notes égales, l'ancien chemin
+      // — le monde noté 50 = le nu au bit (avant : le centimètre, i.e. l'ordre du tableau au miroir).
+      if (taker >= 0 && st.full && cfg.prise5050 && st.players[taker].skill) {
+        const fen = cfg.prise5050.fenetre ?? 0.12, t0 = st.players[taker];
+        for (const p of st.players) {
+          if (p.down > 0 || p.team === t0.team || !p.skill) continue;
+          const d = d2(p.p, st.ball.p);
+          if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d - bestD < fen
+            && p.skill.reaction < st.players[taker].skill.reaction) taker = p.id;
+        }
+      }
     }
-    // une remise a un ayant droit et une heure — et LA PRISE A UN MÉTIER (cfg.onTake, hook
-    // générique : la remise prise peut se jouer AUTREMENT qu'au pied — la touche de la Loi 15
-    // se LANCE à la main, un projet aval peut scripter les siennes). Clé absente : au bit près.
+    // une remise a un ayant droit et une heure — et LA PRISE A UN MÉTIER (cfg.onTake : la remise peut
+    // se jouer AUTREMENT qu'au pied — la touche Loi 15 se LANCE à la main). Clé absente : au bit près.
     const priseT = st.restart?.type ?? null;
     if (taker >= 0 && (!cfg.canTake || cfg.canTake(st, taker))) {
       receive(st, taker, cfg);

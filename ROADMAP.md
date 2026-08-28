@@ -262,11 +262,15 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE DUEL DU CONTACT (154, note 195) : le « biais de côté » instruit et requalifié —
+moitié artefact de fixture (l'engagement non purgé : la remise a un ayant droit),
+moitié vrai biais (au contact simultané, la prise allait au premier du tableau).
+cfg.prise5050 : dans la fenêtre du simultané (0,12 m), la prise au plus VIF (reaction
+stricte) ; à notes égales l'ancien chemin, le nu au bit. 50v90 : 0/10 → 20/20 au vif.
+
 LE PREMIER PAS (153, note 194) : cfg.premierPas — le lent planté son excédent de
 réaction au 50/50 (−0,47 m/duel mesuré, no-op au bit). Restent du chantier égalisateur :
-l'élection du passeur myope (passes volées 7 = 7), le biais de côté du duel équidistant
-(l'équipe 0 gagne à possession −1 — asymétrie hunter/press à instruire), le tacle-debout
-muet en flux.
+l'élection du passeur myope (passes volées 7 = 7), le tacle-debout muet en flux.
 
 LA GRADATION + L'ÉGALISATEUR (152, note 193) : la preuve d'échelle (tirs 3/6/7/9 aux
 niveaux 30/50/70/90, clause au banc) + esquiveF (le duel tackling vs dribbling) + la

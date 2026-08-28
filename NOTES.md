@@ -5759,6 +5759,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      équidistant quel que soit le talent — l'asymétrie hunter/press à possession −1) :
      consigné à instruire.
 
+195. **Lot 154 : LE DUEL DU CONTACT (le « biais de côté » instruit — et requalifié).**
+     L'INSTRUCTION D'ABORD : la sonde du miroir 50/50 refaite PROPREMENT a requalifié le
+     diagnostic du 153 en deux causes distinctes. (1) L'ARTEFACT DE FIXTURE : mon miroir
+     posait `phase = loose` sans purger `st.restart` — l'engagement du coup d'envoi restait
+     posé, la remise a un ayant droit (team 0), l'adversaire refuse d'approcher ('walk').
+     Ce n'était PAS une asymétrie hunter/press : leçon de fixture, un monde synthétique se
+     purge de ses remises. (2) LE VRAI BIAIS, plus profond : au contact la MÊME frame
+     (distances bit-égales du miroir), la boucle de prise (`d < bestD` strict, rondo-sim)
+     donnait le ballon au PREMIER DU TABLEAU — l'équipe 0 prenait 30/30, côtés inversés,
+     même `lastTouch = 1`. Le talent, lui, renversait déjà (90v10 : 20/20 au vif — le
+     premier pas du 153 fait l'avance AVANT le contact). LA LOI (cfg.prise5050, top-level) :
+     deux preneurs ADVERSES dans la fenêtre du simultané (fenetre 0,12 m) → la prise
+     revient au plus VIF (reaction STRICTEMENT meilleure) ; à notes égales, l'ancien
+     chemin — le monde noté 50 = le nu AU BIT (un tirage seedé aurait cassé ce contrat).
+     MESURÉ : 50v90 avant = équipe 0 prend 10/10 (l'ordre du tableau bat le talent) ;
+     après = le vif prend 20/20 côtés inversés ; sabotage prise5050:false → l'ordre du
+     tableau revient (10/10). Clause 154 au banc (miroir 3 graines × 2 côtés, les trois
+     mondes). Les 4 empreintes du monde nu intactes. Restent du chantier égalisateur :
+     l'élection du passeur myope, le tacle-debout muet en flux.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

@@ -73,6 +73,31 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 153 — LE PREMIER PAS se paie à la réaction (1 s de chasse : vif ${dVif} m = moyen ${dMoy} — le no-op à 50 ; lent ${dLent} ≤ vif − 0,3 — planté son excédent) ; sabotage « le 50/50 aveugle » attrapé (premierPas:false : ${dSab} = le vif)`,
       Math.abs(dVif - dMoy) < 0.05 && dLent <= dVif - 0.3 && Math.abs(dSab - dVif) < 0.05);
   }
+  // lot 154 — LE DUEL DU CONTACT (le miroir 50/50 : deux chasseurs équidistants, contact la même
+  // frame) : la prise revient au plus VIF, pas au premier du tableau (le biais d'ordre gagnait
+  // 30/30 pour l'équipe 0 même côtés inversés) ; à notes égales, l'ancien chemin (le nu au bit).
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const miroir = (r0, r1, over = {}) => {
+      let w = [0, 0];
+      for (const seed of [1, 2, 3]) for (const flip of [false, true]) {
+        const st = makeMatch({ full: true, seed });
+        const cfg = matchCfg(over);
+        for (const p of st.players) { p.p[0] = p.team === 0 ? -48 : 48; p.p[2] = (p.id % 5) * 6 - 12; p.v = [0, 0]; p.speed = 0; }
+        const a = st.players.find((q) => q.team === 0 && !q.keeper);
+        const b = st.players.find((q) => q.team === 1 && !q.keeper);
+        a.p[0] = flip ? 8 : -8; a.p[2] = 0; b.p[0] = flip ? -8 : 8; b.p[2] = 0;
+        a.skill = makeProfile({ reactions: r0 }); b.skill = makeProfile({ reactions: r1 });
+        st.ball.restart([0, 0.11, 0], { cause: 'coup-franc' });
+        st.restart = null; st.phase = 'loose'; st.possession.team = -1; st.possession.carrier = -1; st.lastTouch = 0;
+        for (let i = 0; i < 360; i++) { matchStep(st, 1 / 60, cfg); if (st.possession.carrier >= 0) { w[st.players[st.possession.carrier].team]++; break; } }
+      }
+      return w;
+    };
+    const vif = miroir(50, 90), ancien = miroir(50, 50), sab = miroir(50, 90, { prise5050: false });
+    ok(`lot 154 — LE DUEL DU CONTACT revient au plus vif (miroir 50v90 : équipe1 ${vif[1]}/6 malgré l'ordre du tableau) ; à notes égales l'ancien chemin tient (50v50 : équipe0 ${ancien[0]}/6 — le nu au bit) ; sabotage « l'ordre du tableau » attrapé (prise5050:false : équipe0 ${sab[0]}/6)`,
+      vif[1] === 6 && ancien[0] === 6 && sab[0] === 6);
+  }
   // lot 151 — LES MENTALES AU FLUX (appariées mêmes graines) : l'AGGRESSION fait les fautes,
   // OFF THE BALL fait les appels — le contrat statique (monotonie, no-op) vit dans checkAttributes.
   {
