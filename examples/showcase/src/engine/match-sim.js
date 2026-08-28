@@ -710,6 +710,10 @@ function assignMatchJobs(st, cfg) {
                 defenders.map((q) => q.p), { corridor: 0.9 });
               if (lane.open) {
                 // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10)
+                // …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE : l'ÉLECTION du mieux-disant
+                // (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume
+                // −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) :
+                // la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
                 p._appelCd = st.t + axe(role(p).appel, 14, 6) / (p.skill?.otbF ?? 1);   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
@@ -797,7 +801,6 @@ function assignMatchJobs(st, cfg) {
       p.target = [p._slotT[0], 0, p._slotT[1]];
     }
   }
-
   // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : on presse SUR SIGNAL, en fenêtre bornée.
   // (t1) la PRISE DOS AU BUT ; (t2) le RETRAIT (3 m). La fenêtre meurt au régain/remise/expiration ; cooldown d'équipe.
   if (cfg.pressTriggers && st.full) {
@@ -953,12 +956,10 @@ function assignMatchJobs(st, cfg) {
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       p.job = 'mark';
-      // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le
-      // meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
+      // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
       const off = (press ? 0.95 : 1.4) * axe(role(p).press, 1.18, 0.82) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) : le bon colle, le lâche laisse l'intervalle
       const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
-      // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) :
-      // le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
+      // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) : le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
       if (st.full && cfg.zone !== false && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {
         const xL = spotsBloc[mapD[p.post ?? 0]]?.[0], sL = (xL ?? 0) * sgnDef;
         // …ne descend pas SOUS elle (le piège Loi 11 couvre l'homme bas) sauf ballon déjà profond…
@@ -967,8 +968,7 @@ function assignMatchJobs(st, cfg) {
         if (xL != null && want[0] * sgnDef < sL - 6) want[0] = sgnDef * (sL - 6);
       }
       const drift = p._markT ? Math.hypot(want[0] - p._markT[0], want[1] - p._markT[1]) : Infinity;
-      // L'ASSIGNATION A UNE MÉMOIRE (lot 135, cfg.assignTenue — 4 841 sauts > 5 m : le re-tri frame-vif de QUI
-      // marque QUI) : le grand saut (> 3 = un autre homme) attend la TENUE ; le suivi fin garde sa cadence.
+      // L'ASSIGNATION A UNE MÉMOIRE (lot 135, cfg.assignTenue — 4 841 sauts > 5 m : le re-tri frame-vif de QUI marque QUI) : le grand saut (> 3 = un autre homme) attend la TENUE ; le suivi fin garde sa cadence.
       const t135 = st.full && cfg.assignTenue !== false;
       if (!p._markT || (drift > 3 && (!t135 || st.t >= (p._markHold ?? 0)) && ((t135 && (p._markHold = st.t + (cfg.assignTenue?.mark ?? 1.6))), true)) || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8) && drift <= 3)) {
         p._markT = want; p._markAt = st.t + (press ? 0.35 : 0.5);
@@ -979,8 +979,7 @@ function assignMatchJobs(st, cfg) {
 
   // L'INTERCEPTEUR (134, phases) : le vol de passe adverse basse SE VOLE par qui gagne le chemin.
   intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, defenders, atk });
-  // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER : pendant cfg.lossReact s, l'ex-porteur
-  // CHASSE son ballon (92/254 dos mesuré) ; elle s'éteint au regain ou à la mort de la fenêtre.
+  // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER : pendant cfg.lossReact s, l'ex-porteur CHASSE son ballon (92/254 dos mesuré) ; elle s'éteint au regain ou à la mort de la fenêtre.
   if (cfg.lossReact && st._lossAt) {
     for (const idS of Object.keys(st._lossAt)) {
       const id = +idS, la = st._lossAt[id], p = st.players[id];
@@ -988,8 +987,7 @@ function assignMatchJobs(st, cfg) {
       const ownerNow = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
       if (ownerNow && ownerNow.team === p.team) { delete st._lossAt[id]; continue; }
       if (p.down > 0 || busy(p) || st.possession.carrier === p.id) continue;
-      // …et un joueur DÉJÀ en chasse garde sa cible (l'écraser par le ballon-immédiat : fixture orbite
-      // aveugle, +2,1 m les deux bras) ; le contre-press ne re-cible que le coureur de slot
+      // …et un joueur DÉJÀ en chasse garde sa cible (l'écraser par le ballon-immédiat : fixture orbite aveugle, +2,1 m les deux bras) ; le contre-press ne re-cible que le coureur de slot
       if (p.job === 'press' || p.job === 'intercept') continue;
       p.job = 'press';
       p.target = [st.ball.p[0] + st.ball.v[0] * 0.25, 0, st.ball.p[2] + st.ball.v[2] * 0.25];
@@ -1054,13 +1052,11 @@ function riseDown(st, gk, cfg, resolved) {
 /** LE CONTACT DU PLONGEON — la géométrie du CONTACT décide : gants (≤ 1,1 m) → PRISE ;
  *  bout de gants (≤ 1,7) → CLAQUETTE ; sinon BATTU. Le gardien paie toujours (keeperDown). */
 function onDive(st, gk, cfg) {
-  // appelé CHAQUE IMAGE de la détente (rondo-sim, skillFollowStep) : renvoie true quand le gant a
-  // résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
+  // appelé CHAQUE IMAGE de la détente (rondo-sim, skillFollowStep) : renvoie true quand le gant a résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
   const d = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
   const y = st.ball.p[1] ?? 0;
   if (d > 1.7 || y > 2.1) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
-  // LE GANT TOUCHE AU PLUS PRÈS (le premier franchissement claquait à 1,5-1,7 m des mains) : tant que
-  // le ballon SE RAPPROCHE, le contact attend l'approche minimale ; le warp du gant fait le visuel.
+  // LE GANT TOUCHE AU PLUS PRÈS (le premier franchissement claquait à 1,5-1,7 m des mains) : tant que le ballon SE RAPPROCHE, le contact attend l'approche minimale ; le warp du gant fait le visuel.
   const pd = gk.act?.payload?._pd ?? Infinity;
   const closing = d < pd - 1e-4;
   if (gk.act?.payload) gk.act.payload._pd = d;
@@ -1126,8 +1122,7 @@ export function matchCfg(overrides = {}) {
     },
     // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },
-    // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91,
-    // keeperHold:false = le ballon gelé d'hier) : intouchable tenu, posé une fois debout
+    // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91, keeperHold:false = le ballon gelé d'hier) : intouchable tenu, posé une fois debout
     heldBall: (st, c, dt, cfg) => {
       if (!(st.full && cfg.keeperHold !== false) || !c.keeper || c.down <= 0 || st.ball.owner !== c.id) return false;
       st.ball.hold(keeperHoldPoint(c), dt);
@@ -1179,12 +1174,10 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   if (st.score[0] !== buts.filter((b) => b.team === 0).length || st.score[1] !== buts.filter((b) => b.team === 1).length) {
     issues.push(`score [${st.score}] ≠ événements de but (${buts.map((b) => b.team).join(',')})`);
   }
-  // un 0 tir sur une tranche courte est du VRAI football — le défaut, ce sont des OCCASIONS sans tir ;
-  // l'occasion = le ballon dans la zone QUE JE VISE pendant que JE l'ai (ni chez soi, ni les remises).
+  // un 0 tir sur une tranche courte est du VRAI football — le défaut, ce sont des OCCASIONS sans tir ; l'occasion = le ballon dans la zone QUE JE VISE pendant que JE l'ai (ni chez soi, ni les remises).
   const thirdVisits = trace.filter((s) => !s.restart && s.team >= 0
     && s.ball[0] * (s.team === 0 ? 1 : -1) > st.pitch.hx - st.pitch.dims.box.depth - 1).length;
-  // …et l'attaquant MURÉ n'est pas l'attaquant MUET : celui qui DEMANDE le tir et se voit refuser
-  // le couloir (refus nommé au registre) a appuyé — c'est le silence sans demande qu'on interdit
+  // …et l'attaquant MURÉ n'est pas l'attaquant MUET : celui qui DEMANDE le tir et se voit refuser le couloir (refus nommé au registre) a appuyé — c'est le silence sans demande qu'on interdit
   const denied = (st.deny?.['tir-couloir-fermé'] ?? 0) > 0;
   if (!shots.length && !denied && thirdVisits > 25) issues.push(`PERSONNE NE TIRE malgré ${thirdVisits} passages dans le dernier tiers — un rondo décoré`);
   for (const s of shots) {
@@ -1196,8 +1189,7 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   }
   // chaque sortie SUIVIE d'une reprise (6 s) ; coupée par la fin ≠ perdue (inFlight — sinon le contrat dépend du chrono).
   const lastT = trace.length ? trace[trace.length - 1].t : 0;
-  // …la fenêtre suit L'ÉCHELLE DU TERRAIN : 6 s au réduit ; un corner du 105 m se PORTE sur ~27 m
-  // (7,4 s mesurés, graine 7) — la borne plate accusait un porté légal de gel
+  // …la fenêtre suit L'ÉCHELLE DU TERRAIN : 6 s au réduit ; un corner du 105 m se PORTE sur ~27 m (7,4 s mesurés, graine 7) — la borne plate accusait un porté légal de gel
   const winR = Math.max(6, (st.pitch?.hx ?? 0) * 0.19);
   for (const o of sorties) {
     if (o.t > lastT - winR) continue;
@@ -1220,14 +1212,12 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   const third = st.pitch.hx / 3;
   const visits = [trace.some((s) => s.ball[0] > third), trace.some((s) => s.ball[0] < -third)];
   if (!visits[0] || !visits[1]) issues.push(`le ballon ne visite pas les deux camps (au-delà de ±${third.toFixed(0)} m : +x ${visits[0]}, −x ${visits[1]})`);
-  // LE BALLON NE SE TÉLÉPORTE JAMAIS EN MATCH : toute remise est PORTÉE (ballFetch) — le registre ne
-  // contient que LA pose du coup d'envoi. Mesuré avant : 12 sauts de 4,7-23 m / 4 matchs.
+  // LE BALLON NE SE TÉLÉPORTE JAMAIS EN MATCH : toute remise est PORTÉE (ballFetch) — le registre ne contient que LA pose du coup d'envoi. Mesuré avant : 12 sauts de 4,7-23 m / 4 matchs.
   const led = st.ball.ledger;
   if (cfg.restartCarried !== false && led && led.restarts && led.restarts.length > 1) {
     issues.push(`${led.restarts.length - 1} remise(s) posée(s) par écriture — la remise se PORTE (ballFetch), elle ne se téléporte pas`);
   }
-  // …ET LES CORPS NON PLUS : à l'échantillon de trace (0,1 s), aucun joueur ne franchit 1,6 m
-  // (16 m/s apparents — le sprint plafonne à 8). placeKickoff écrivait les douze corps à chaque but.
+  // …ET LES CORPS NON PLUS : à l'échantillon de trace (0,1 s), aucun joueur ne franchit 1,6 m (16 m/s apparents — le sprint plafonne à 8). placeKickoff écrivait les douze corps à chaque but.
   for (let i = 1; i < trace.length; i++) {
     const a = trace[i - 1], b = trace[i];
     if (b.t - a.t > 0.19) continue;

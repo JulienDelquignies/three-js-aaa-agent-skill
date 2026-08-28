@@ -5815,6 +5815,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      épinglé) et la mentalité +4 tentatives (contre +6) — les refus du départ
      mangent une part du différentiel des axes ; à re-creuser avec l'appelant.
 
+197. **Lot 156 : L'ÉLECTION DE L'APPELANT — tentée, mesurée, REJETÉE (la falsification
+     est le livrable).** L'hypothèse du 155 (le créneau d'appel au premier du tableau =
+     biais d'ordre, otbF sourd) instruite au banc d'essai : la revue des candidats
+     éligibles + l'élection du mieux-disant (dart ×0,1 + couloir ×0,3 + (otbF−1) ×
+     instinct − pénalité de répétition). MESURÉ à 6 graines × 300 s, deux variantes
+     (instinct 3 et 8) : volume −22 % (106 → 83 appels), le rang 9 écrasé (28 → 16),
+     et le canal otbF TUÉ (jumeau 17 ≈ 18) — la géométrie de formation domine tout
+     poids d'instinct raisonnable, et l'arbitrage froid casse la rotation organique.
+     ET LA CONTRE-MESURE DÉCISIVE : le monde D'HIER, mesuré à la BONNE échelle
+     (6 graines, par joueur), montre le canal otbF DÉJÀ VIVANT — le jumeau noté 90
+     appelle 31 contre 26 au jumeau 10 (+19 %) : la cadence personnelle (rôle ÷ otbF)
+     et l'ordre stable suffisent. Le « sourd » du 155 (52 ≈ 53 d'équipe, 15 ≈ 14 à
+     3 graines) était le POISSON, troisième leçon du genre en trois lots — l'échelle
+     d'équipe est liée par l'horloge (~5 s), l'échelle à 3 graines est sous le bruit ;
+     LE CANAL SE MESURE PAR JOUEUR, À 6 GRAINES. Code revenu AU BIT (les 4 empreintes
+     identiques au 155 : 0f4b80b1a7c484f6 / 89b8f0184809809b / c775c81e62592d4d /
+     c701c84aec0851ef), la leçon consignée en commentaire à l'endroit même de la
+     tentation, et la clause 151 requalifiée : le jumeau à 6 graines (31 ≥ 26 + 3),
+     déterministe. Restent du chantier égalisateur : le tacle-debout muet en flux,
+     la gradation 90v50 des tirs presque plate, la dilution des axes (156 n'y touche
+     plus — le monde vivant reste celui du 155).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

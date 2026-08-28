@@ -262,6 +262,13 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'ÉLECTION DE L'APPELANT (156, note 197) : TENTÉE ET REJETÉE à la mesure — volume
+−22 %, canal otbF tué, rotation cassée ; et le monde d'hier mesuré à la bonne échelle
+(jumeau par joueur, 6 graines) montre otbF DÉJÀ vivant (31 vs 26, +19 %). Le « sourd »
+était le Poisson (3e leçon). Clause 151 requalifiée au jumeau. Le chantier appelant est
+FERMÉ ; restent : le tacle-debout muet en flux, la gradation 90v50 des tirs (18 ≈ 17),
+la dilution des axes tempo/mentalité.
+
 LE DÉPART VU (155, note 196) : l'élection voyait tout SAUF l'homme sur le dos
 (laneClearance saute u < 0,06 — 1,2 m sur 20 m, l'angle mort du jeté ; ~85 % des
 volées sous pression, dt 0,1-0,5 s sur l'origine). cfg.departVu : premier mètre

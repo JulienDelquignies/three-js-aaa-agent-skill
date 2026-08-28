@@ -122,29 +122,28 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 155 — LE DÉPART VU : la ligne libre s'élit (${libre}), le premier mètre habité (presseur à 0,70 m, u 0,058 < 0,06 : invisible au couloir) se refuse (${vu}) ; sabotage « la passe dans les pieds du jeté » attrapé (departVu:false : ${aveugle}) — en flux : volées 14,7 → 12,0 % au niveau 50, 14,1 %/12,3 % aux notes 10/90 (6 graines)`,
       libre === 'ground' && vu === 'refus' && aveugle === 'ground');
   }
-  // lot 151 — LES MENTALES AU FLUX, requalifié au 155 : le contrat statique (monotonie, no-op)
-  // vit dans checkAttributes ; en FLUX, le volume d'appels est à l'horloge d'ÉQUIPE (budget ~5 s,
-  // premier du tableau des éligibles servi — le biais d'ordre du 154 : otbF module l'éligibilité,
-  // jamais liante → 52 ≈ 53 appels mesurés aux extrêmes). TRIPWIRE de non-régression en attendant
-  // l'élection de l'appelant (chantier consigné au ROADMAP) ; les fautes restent ordonnées.
+  // lot 151 — LES MENTALES AU FLUX, requalifié au 156 : le canal otbF vit à l'échelle PAR JOUEUR
+  // (le jumeau : un seul noté dans une équipe de 50, sa PART d'appels bouge — la cadence rôle
+  // ÷ otbF). L'échelle d'équipe (52 ≈ 53) et 3 graines (15 ≈ 14) sont sous le Poisson — le même
+  // faux « sourd » qui a fait tenter puis REJETER l'élection de l'appelant (volume −22 %, canal
+  // tué : le premier-éligible + la cadence personnelle font DÉJÀ vivre la note, note 197).
   {
     const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
-    const flux = (ratings) => {
-      let fautes = 0, appels = 0;
-      for (const seed of [2, 5, 9]) {
-        const sq = [Array.from({ length: 11 }, () => ({ ratings })), []];
+    const jumeau = (otb) => {
+      let miens = 0;
+      for (const seed of [2, 3, 5, 8, 9, 11]) {
+        const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
         const cfg = matchCfg({ shotRange: 20 });
+        const moi = st.players.filter((p) => p.team === 0)[9].id;
         for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
-        fautes += st.events.filter((e) => e.type === 'faute' && st.players[e.by]?.team === 0).length;
-        appels += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && st.players[e.by]?.team === 0).length;
+        miens += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.by === moi).length;
       }
-      return { fautes, appels };
+      return miens;
     };
-    const hargneux = flux({ aggression: 90, offTheBall: 90 });
-    const placide = flux({ aggression: 10, offTheBall: 10 });
-    ok(`lot 151 — les MENTALES au flux (3 × 300 s appariés : fautes ${hargneux.fautes} ≥ ${placide.fautes} ; appels ${hargneux.appels} vs ${placide.appels} — l'horloge d'équipe lie le volume, tripwire |Δ| ≤ 8 en attendant l'élection de l'appelant)`,
-      hargneux.fautes >= placide.fautes && Math.abs(hargneux.appels - placide.appels) <= 8 && hargneux.appels + placide.appels > 60);
+    const mobile = jumeau(90), placide = jumeau(10);
+    ok(`lot 151 — OFF THE BALL vit au flux, à l'échelle du jumeau (6 × 300 s appariés : le mobile 90 appelle ${mobile} ≥ ${placide} + 3 — la part du placide 10, la cadence rôle ÷ otbF est le canal)`,
+      mobile >= placide + 3);
   }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));
