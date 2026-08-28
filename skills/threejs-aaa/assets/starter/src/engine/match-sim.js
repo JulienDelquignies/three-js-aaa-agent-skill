@@ -500,20 +500,17 @@ function assignMatchJobs(st, cfg) {
       {
         const og = pitch.ownGoal(p.team);
         const sOwn = Math.sign(og.x || 1);
-        // …au rayon À L'ÉCHELLE DU TERRAIN (0,42·hx, plafonné 22) : le 22 m plat couvrait un TIERS du
-        // réduit et étouffait sa conduite (tempsLoin 7,1 > 2,5 — la sentinelle, encore elle)
+        // …au rayon À L'ÉCHELLE DU TERRAIN (0,42·hx, plafonné 22) : le 22 m plat couvrait un TIERS du réduit et étouffait sa conduite (tempsLoin 7,1 > 2,5 — la sentinelle, encore elle)
         if (Math.hypot(og.x - p.p[0], p.p[2]) < Math.min(22, pitch.hx * 0.42) && p.push[0] * sOwn > 0.35) {
           const lat = Math.sign(p.push[1] || (p.p[2] >= 0 ? 1 : -1));
           p.push = [sOwn * 0.35, lat * Math.sqrt(1 - 0.35 * 0.35)];
           p._pushS = [p.push[0], p.push[1]];
         }
       }
-      // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible était la POUSSÉE PROJETÉE même ballon
-      // derrière (5,9 % hors cône mesuré). Hors portée de contrôle, la cible EST le ballon, un demi-pas au-delà.
+      // LE PORTEUR PASSE PAR SON BALLON (cfg.carryViaBall) : la cible était la POUSSÉE PROJETÉE même ballon derrière (5,9 % hors cône mesuré). Hors portée de contrôle, la cible EST le ballon, un demi-pas au-delà.
       const dBall = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       if (cfg.carryViaBall !== false && dBall > 0.85) {
-        // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà — à +0,4 m
-        // l'amorti s'équilibrait avec sa décélération, bd cloué 1,2-1,3 m : le geste accélère À TRAVERS).
+        // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà — à +0,4 m l'amorti s'équilibrait avec sa décélération, bd cloué 1,2-1,3 m : le geste accélère À TRAVERS).
         const over = (p._prepShot ?? -1) > st.t ? 2.2 : 0.4;
         p.target = [st.ball.p[0] + p.push[0] * over, 0, st.ball.p[2] + p.push[1] * over];
       } else {
@@ -528,8 +525,7 @@ function assignMatchJobs(st, cfg) {
     flightRec.job = 'receive';
     let met = null;   // le pas au contact (meetBall) : un pas et demi sur l'AXE NOMINAL (flipper consigné)
     const dInb = Math.hypot(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
-    // LE BALLON RÉEL COMMANDE À PORTÉE (lot 134, cfg.meetReel && st.full — le receveur du ballon DÉVIÉ courait
-    // au lead nominal fantôme). Divergé (> div), bas, proche : on joue LE BALLON (mène 0,12 s). false : hier.
+    // LE BALLON RÉEL COMMANDE À PORTÉE (lot 134, cfg.meetReel && st.full — le receveur du ballon DÉVIÉ courait au lead nominal fantôme). Divergé (> div), bas, proche : on joue LE BALLON (mène 0,12 s). false : hier.
     if (!met && st.full && cfg.meetReel !== false && dInb < (cfg.meetZone ?? 4.5) && st.ball.p[1] < 0.9
       && Math.hypot(st.ball.p[0] - st.pass.lead[0], st.ball.p[2] - st.pass.lead[2]) > (cfg.meetReel?.div ?? 2.5)) {
       const bR = Math.hypot(st.ball.v[0], st.ball.v[2]), mR = Math.min(1.2, bR * 0.12);
@@ -544,8 +540,7 @@ function assignMatchJobs(st, cfg) {
         met = [st.pass.lead[0] + (bx / bl) * step, 0, st.pass.lead[2] + (bz / bl) * step];
       }
     }
-    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81) : menace lue après sa RÉACTION (attribut), il
-    // SPRINTE (burst 'attaque') au BALLON RÉEL — un vrai 50/50. attaquePasse:false = hier.
+    // LA PASSE CONTESTÉE S'ATTAQUE (lot 81) : menace lue après sa RÉACTION (attribut), il SPRINTE (burst 'attaque') au BALLON RÉEL — un vrai 50/50. attaquePasse:false = hier.
     let menace = false;
     if (st.full && cfg.attaquePasse !== false && (st.pass.flight ?? 0) > 0
       && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18)) {
@@ -560,8 +555,7 @@ function assignMatchJobs(st, cfg) {
         st.events.push({ type: 'burst', kind: 'attaque', by: flightRec.id, t: +st.t.toFixed(2) });
       }
     }
-    // …ET LA PASSE MOURANTE SE VA CHERCHER (filmé : morte à 2 m d'un receveur PLANTÉ, cible
-    // verrouillée sur une mène jamais atteinte). Ballon au sol, lent, loin : cible = POINT D'ARRÊT.
+    // …ET LA PASSE MOURANTE SE VA CHERCHER (filmé : morte à 2 m d'un receveur PLANTÉ, cible verrouillée sur une mène jamais atteinte). Ballon au sol, lent, loin : cible = POINT D'ARRÊT.
     const bSp = Math.hypot(st.ball.v[0], st.ball.v[2]);
     if (st.full && cfg.attaquePasse !== false && st.ball.p[1] < 0.5
       && bSp < (cfg.attaquePasse?.mort ?? 2.8)
@@ -571,14 +565,12 @@ function assignMatchJobs(st, cfg) {
       met = bSp > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bSp) * stop, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * stop]
         : [st.ball.p[0], 0, st.ball.p[2]];
     } else if (menace && st.ball.p[1] < 0.9) {
-      // sous menace on court AU ballon (mène 0,12 s — 0,35 visait le point futur : filmé
-      // perdant la course d'un cheveu, le voleur au ballon, le receveur 2 m devant)
+      // sous menace on court AU ballon (mène 0,12 s — 0,35 visait le point futur : filmé perdant la course d'un cheveu, le voleur au ballon, le receveur 2 m devant)
       const mk = Math.min(1.2, bSp * 0.12);
       met = bSp > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bSp) * mk, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * mk]
         : [st.ball.p[0], 0, st.ball.p[2]];
     }
-    // LE RATTRAPAGE VISE AU TRAVERS (lot 134, cfg.rattrape && st.full — filmé : le receveur ORBITE 2-5 s derrière
-    // la passe qui FUIT, la mène matchait sa vitesse). PRIME quand le ballon fuit vite (≥ mort). false : l'orbite.
+    // LE RATTRAPAGE VISE AU TRAVERS (lot 134, cfg.rattrape && st.full — filmé : le receveur ORBITE 2-5 s derrière la passe qui FUIT, la mène matchait sa vitesse). PRIME quand le ballon fuit vite (≥ mort). false : l'orbite.
     if (st.full && cfg.rattrape !== false && dInb < 8 && st.ball.p[1] < 0.9) {
       const bF = Math.hypot(st.ball.v[0], st.ball.v[2]);
       const fuit = bF >= (cfg.attaquePasse?.mort ?? 2.8)
@@ -825,9 +817,17 @@ function assignMatchJobs(st, cfg) {
       else if (cfg.moments && st.t - (st._possChangeAt ?? -99) < axe(Tp, 1, 4)
         && st.ball.p[0] * sgnAtk < -4) kind = 'contre-press';
       if (kind) {
-        const win = (cfg.pressTriggers.win ?? 4.5) + axe(Tp, -1.3, 1.3);
+        // LE BLOC QUI LIT (161) : la fenêtre du pressing COLLECTIF est aux notes du bloc — la
+        // moyenne d'ANTICIPATION des défenseurs de champ (anticipF, 1 exact à 50/nu) TIENT la
+        // fenêtre plus longtemps (× moy) et RÉ-ARME plus vite (cooldown ÷ moy) : le grand
+        // pressing est un acte d'équipe SU. La tactique (axe pressing) reste le CHOIX du coach ;
+        // la note fait la QUALITÉ de son exécution — le même signal, mieux lu, mieux tenu.
+        let sA = 0, nA = 0;
+        for (const q of defenders) if (q.skill?.anticipF) { sA += q.skill.anticipF; nA++; }
+        const aMoy = nA ? sA / nA : 1;
+        const win = ((cfg.pressTriggers.win ?? 4.5) + axe(Tp, -1.3, 1.3)) * aMoy;
         st._press = { team: defTeam, until: st.t + win, kind };
-        (st._pressCd ??= {})[defTeam] = st.t + win + axe(Tp, 10, 2);
+        (st._pressCd ??= {})[defTeam] = st.t + win + axe(Tp, 10, 2) / aMoy;
         st.events.push({ t: +st.t.toFixed(2), type: 'press', kind, team: defTeam });
       }
     }

@@ -5949,6 +5949,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      RESTE du pressing collectif (consigné) : les FENÊTRES d'équipe
      (pressTriggers) aux notes du bloc, la coordination du bloc qui monte uni.
 
+202. **Lot 161 : LE BLOC QUI LIT — la fenêtre du pressing collectif aux notes du bloc
+     (la suite directe du cap utilisateur : « une tactique d'équipe cohérente, bien
+     exécutée suivant le niveau »).** LA LOI (dans pressTriggers, gated notes — pas
+     de clé nouvelle, le canal 151-patron) : à l'ouverture d'une fenêtre de pressing,
+     la MOYENNE d'anticipation des défenseurs de champ (anticipF, NOUVEAU facteur
+     [0,85 ; 1,15], 1 exact à 50 — 32/33 notes du consommateur) multiplie la DURÉE
+     de la fenêtre et divise son COOLDOWN : le bloc lecteur tient son pressing plus
+     longtemps et le ré-arme plus vite. LA SÉPARATION DES POUVOIRS est le cœur du
+     mantra : l'axe tactique pressing reste le CHOIX du coach (déclencher haut ou
+     bas, souvent ou rarement) — la note fait la QUALITÉ D'EXÉCUTION de ce choix
+     (le même signal, mieux lu, mieux tenu). MESURÉ (3 × 300 s appariés) : lecteurs
+     90 → 97 s en fenêtre / 23 fenêtres / 5 régains en fenêtre ; aveugles 10 → 74 s
+     / 20 / 3 (+31 % de temps en pressing collectif au bloc qui lit). Monde nu
+     intact au bit (anticipF ?? 1). Clause 161 (lecteurs ≥ aveugles + 12 s).
+     Avec teamwork (160) et anticipation (161), le pressing collectif a ses deux
+     notes : QUI presse (la discipline de zone) et COMBIEN il dure (la lecture).
+     Reste consigné : le bloc qui monte UNI pendant la fenêtre (la compression
+     synchronisée), et la 33e note (le trio gardien command/oneOnOnes/aerialReach).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

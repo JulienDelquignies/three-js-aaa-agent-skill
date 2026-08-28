@@ -256,6 +256,28 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 15 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : le brouillon teamwork 10 presse ${brouillon} éch. ≥ cohésif 90 ${cohesif} + 30 — l'indiscipline est un sur-pressing hors zone (jumeau, 6 × 300 s)`,
       vivant <= 8 && brut >= 15 && brouillon >= cohesif + 30);
   }
+  // lot 161 — LE BLOC QUI LIT : la fenêtre du pressing COLLECTIF aux notes du bloc (retour
+  // utilisateur : « une tactique d'équipe cohérente, bien exécutée suivant le niveau ») — la
+  // moyenne d'anticipation tient la fenêtre (× moy) et ré-arme (÷ moy) ; la tactique choisit.
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const eqL = (n) => Array.from({ length: 11 }, () => ({ ratings: { anticipation: n } }));
+    const lecture = (n) => {
+      let tempsFen = 0;
+      for (const seed of [2, 5, 9]) {
+        const st = makeMatch({ full: true, seed, squads: [eqL(n), []] });
+        const cfg = matchCfg({ shotRange: 20 });
+        for (let i = 0; i < 300 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          if (st._press?.team === 0 && st._press.until > st.t) tempsFen++;
+        }
+      }
+      return Math.round(tempsFen / 60);
+    };
+    const lecteurs = lecture(90), aveugles = lecture(10);
+    ok(`lot 161 — LE BLOC QUI LIT tient sa fenêtre (3 × 300 s appariés : lecteurs 90 → ${lecteurs} s en pressing collectif ≥ aveugles 10 → ${aveugles} + 12 — l'anticipation moyenne fait l'exécution, l'axe pressing reste le choix du coach)`,
+      lecteurs >= aveugles + 12);
+  }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));
   ok(`pace 100 × chase (${(best.topF * RONDO.speeds.chase).toFixed(2)} m/s) reste sous le plafond absolu (${RONDO.sprintMax ?? 8})`,
