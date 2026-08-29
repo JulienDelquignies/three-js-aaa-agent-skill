@@ -14,7 +14,7 @@ export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue } from './keeper.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js';
 import { accrocheStep } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
@@ -286,8 +286,7 @@ function assignMatchJobs(st, cfg) {
       // LE GARDIEN NE DRIBBLE PAS — IL DISTRIBUE (épisodes de 45-87 m mesurés) : le SPOT devant sa ligne, jamais plus loin…
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
-      // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol
-      // mains ou retrait au pied ? (171, Loi 12.2 : pas de mains sur la passe d'un coéquipier — le discriminant : le dernier passeur du camp)
+      // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol mains ou retrait au pied ? (171, Loi 12.2 : pas de mains sur la passe d'un coéquipier — le discriminant : le dernier passeur du camp)
       if (gk._gkSince == null) {
         gk._mains = !(st.lastPasser != null && st.players[st.lastPasser]?.team === gk.team);
         // …et le PRENEUR D'UNE REMISE est exempt de tenue (171) : la remise a DÉJÀ son horloge (tempoWait) — la double peine crevait le contrat de reprise (> 10 s)
@@ -579,9 +578,7 @@ function assignMatchJobs(st, cfg) {
       const al = Math.hypot(ax, az);
       const adv = Math.min(cfg.meetWalk.max ?? 2.2, (st.t - st.pass.t) * (cfg.meetWalk.pace ?? 1.8), al * 0.25);
       const dLead = Math.hypot(flightRec.p[0] - st.pass.lead[0], flightRec.p[2] - st.pass.lead[2]);
-      if (dGoal > (cfg.meetWalk.hold ?? 32) && al > (cfg.meetWalk.min ?? 7) && dLead < 2.5 + adv) {
-        met = [st.pass.lead[0] + (ax / al) * adv, 0, st.pass.lead[2] + (az / al) * adv];
-      }
+      if (dGoal > (cfg.meetWalk.hold ?? 32) && al > (cfg.meetWalk.min ?? 7) && dLead < 2.5 + adv) { met = [st.pass.lead[0] + (ax / al) * adv, 0, st.pass.lead[2] + (az / al) * adv]; }
     }
     // UN VOL LONG SE REÇOIT À SA CHUTE PRÉDITE (lot 52, cfg.chutePredite — 68 % des longs en chasse au rebond avant) : le premier point JOUABLE du chemin prédit. false : hier.
     if (st.full && cfg.chutePredite !== false && !met && (st.pass.flight ?? 0) > 1.1 && st.ball.p[1] > 0.9) {
@@ -1134,21 +1131,14 @@ export function matchCfg(overrides = {}) {
       // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
       else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
       else if (type === 'corner' && cfg.corner && st.full) cornerTrav(st, id, cfg);
-      // LA SORTIE DE BUT EST UNE DISTRIBUTION (lot 150, tac.cpa.sortieBut && st.full) : le preneur passe par relancerGardien (main courte / longue directe / le barème
-      // d'hier) — sans style, RIEN ne change : la remise générique d'hier joue, au bit
+      // LA SORTIE DE BUT EST UNE DISTRIBUTION (lot 150, tac.cpa.sortieBut && st.full) : le preneur passe par relancerGardien (main courte / longue directe / le barème d'hier) — sans style, RIEN ne change : la remise générique d'hier joue, au bit
       else if (type === 'sortie-de-but' && st.full && st.tactics?.[st.players[id]?.team]?.cpa?.sortieBut)
         relancerGardien(st, id >= 0 ? st.players[id] : null, cfg, { beginPass: simInternals.beginPass });
     },
     // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },
     // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91, keeperHold:false = le ballon gelé d'hier) : intouchable tenu, posé une fois debout
-    heldBall: (st, c, dt, cfg) => {
-      if (!(st.full && cfg.keeperHold !== false) || !c.keeper || st.ball.owner !== c.id) return false;
-      if (c.down > 0) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
-      // …ET LA TENUE AUX MAINS (171) : la prise (pas un retrait — Loi 12.2) reste AUX GANTS pendant gk._tenue — la conduite-éclair lâchait en 0,38 s (cause 'conduite' au grand livre) ; il MARCHE ballon en mains puis distribue.
-      if (cfg.gkTenue && c._mains && !c._remisePrise && !st.restart && c._gkSince != null && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }   // …et JAMAIS pendant une remise : le porteur de remise POSE le ballon (le hold collait le fetch — gel mesuré t=46)
-      return false;
-    },
+    heldBall: gkHeldBall,   // le ballon aux gants : relevé + tenue de prise (keeper.gkHeldBall, lots 91/171)
     ...overrides,
   };
 }

@@ -417,3 +417,15 @@ export function gkTenueDue(st, gk, cfg, gkDue, tempoF) {
   }
   return Math.max(gkDue, Math.min(gk._tenue, cfg.gkRelease * 1.9));
 }
+
+/** LE BALLON AUX GANTS (hook heldBall du loop — lots 91 + 171). Le relevé tient toujours
+ *  (down > 0) ; debout, la PRISE AUX MAINS (pas un retrait — Loi 12.2 — ni le porteur d'une
+ *  remise : le fetch POSE son ballon) reste aux gants pendant gk._tenue — la conduite-éclair
+ *  lâchait en 0,38 s (cause 'conduite' au grand livre, mesuré). keeperHold:false : le gelé. */
+export function gkHeldBall(st, c, dt, cfg) {
+  if (!(st.full && cfg.keeperHold !== false) || !c.keeper || st.ball.owner !== c.id) return false;
+  if (c.down > 0) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
+  if (cfg.gkTenue && c._mains && !c._remisePrise && !st.restart && c._gkSince != null
+    && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
+  return false;
+}
