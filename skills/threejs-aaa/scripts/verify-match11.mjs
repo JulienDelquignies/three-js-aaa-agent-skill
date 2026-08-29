@@ -3424,7 +3424,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const cfg = matchCfg();
     st.lastTouch = 0;
     st.restart = null;
-    st.ball.restart([0, 0.11, (st.pitch.halfW ?? 34) + 2], { cause: 'test' });   // hors touche
+    st.ball.restart([0, 0.11, (st.pitch.halfW ?? 34) + 2], { cause: 'touche' });   // posé hors ligne
     for (let i = 0; i < 4 && !st.restart; i++) matchStep(st, 1 / 60, cfg);
     return st.restart ? st.restart.at - st.t : -1;
   };
