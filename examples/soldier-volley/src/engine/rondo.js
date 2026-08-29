@@ -379,7 +379,12 @@ export function choosePass(st, cfg = RONDO) {
         && Math.sign(st.pitch.attackGoal(c.team).x || 1) * (m.p[0] - c.p[0]) > 8 ? cfg.moments.vertical : 0)
       + couloirB + ecarteB                                    // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
       + (gardienOk && m.keeper ? (cfg.sortieGardien?.bonus ?? 5.2)
-        * Math.max(0, (0.5 - (st.full ? tac(st, c.team).style : 0.5)) * 2)
+        * Math.max(Math.max(0, (0.5 - (st.full ? tac(st, c.team).style : 0.5)) * 2),
+          // …ET LA DÉTRESSE (171b, sous-clé — retour utilisateur : 0 retrait/30 min mesuré,
+          // réel 10-20/match) : le porteur PRESSÉ recule vers son gardien quel que soit le
+          // style — le retrait de sécurité est un réflexe du foot, pas un choix de Guardiola
+          st.full && cfg.sortieGardien?.detresse && foesL.some((q) => !q.keeper && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.sortieGardien.pressePorteur ?? 4.5))
+            ? cfg.sortieGardien.detresse : 0)
         * Math.min(1.2, c.skill?.composureF ?? 1) : 0)        // la sortie au gardien (136) : PENTE DE STYLE pure —
       // …ET LE JETÉ PAIE (144) : la passe qui avance pendant qu'il vole, l'homme qu'il lâche pèse plus
       + (jete ? (cfg.fixe.bonus ?? 1.5) * Math.max(0, Math.min(1, (gSF * (m.p[0] - c.p[0]) - 2) / 8))

@@ -14,7 +14,7 @@ export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien } from './keeper.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue } from './keeper.js';
 import { accrocheStep } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
@@ -221,7 +221,9 @@ function assignMatchJobs(st, cfg) {
         } else { p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]]; }
       } else {
         // l'adversaire TIENT LE RAYON de la remise (Lois 15/16/17) ; le COUP FRANC plein format tient LE MUR (Loi 13, 9,15 m) : deux défenseurs ligne ballon→but
-        const mur = cfg.loi12 && st.full && (r.type === 'coup-franc' || r.type === 'penalty') ? (cfg.loi12.mur ?? 9.15) : cfg.restartClear;
+        // …ET CHAQUE REMISE A SON RAYON DU RÈGLEMENT (171d, cfg.rayonsLoi — retour utilisateur « respecter les règles ») : corner 9,15 (Loi 17), touche 2 (Loi 15) ; absent : les 3 m d'hier
+        const mur = cfg.loi12 && st.full && (r.type === 'coup-franc' || r.type === 'penalty') ? (cfg.loi12.mur ?? 9.15)
+          : st.full && cfg.rayonsLoi ? (cfg.rayonsLoi[r.type] ?? cfg.rayonsLoi.defaut ?? cfg.restartClear) : cfg.restartClear;
         if (mur !== cfg.restartClear && r.type === 'coup-franc') {
           const og = pitch.ownGoal(p.team);
           if (Math.hypot(og.x - rp[0], rp[1]) < 30) {
@@ -285,6 +287,8 @@ function assignMatchJobs(st, cfg) {
       gk.job = 'carry';
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol
+      // mains ou retrait au pied ? (171, Loi 12.2 : pas de mains sur la passe d'un coéquipier — le discriminant : le dernier passeur du camp)
+      if (gk._gkSince == null) gk._mains = !(st.lastPasser != null && st.players[st.lastPasser]?.team === gk.team);
       gk._gkSince = (st.full && cfg.keeperRise !== false && gk.down > 0) ? st.t : (gk._gkSince ?? st.t);
       // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 = la bouche du but : CSC mesuré ; hors axe il meurt en sortie de but).
       const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
@@ -305,6 +309,8 @@ function assignMatchJobs(st, cfg) {
       if (st.full && cfg.gkRelease) {
         let pr = 99; for (const q of st.players) if (q.team !== gk.team && !q.keeper && q.down <= 0) pr = Math.min(pr, Math.hypot(q.p[0] - gk.p[0], q.p[2] - gk.p[2]));
         if (pr > 12) gkDue = Math.min(cfg.gkRelease, 1.2);
+        // LA TENUE DU GARDIEN (171, keeper.gkTenueDue) : la prise se TIENT — l'éclair est un CHOIX
+        gkDue = gkTenueDue(st, gk, cfg, gkDue, (t) => axe(tac(st, gk.team).tempo, 1.25, 0.75));
       }
       // LA DISTRIBUTION vit chez le gardien (keeper.relancerGardien, lot 150) : le barème d'hier au bit + les styles par équipe (cpa.sortieBut) et les notes kicking/throwing
       if (cfg.gkRelease && st.t - gk._gkSince > gkDue && !busy(gk) && bdC < 1.1)
@@ -493,9 +499,7 @@ function assignMatchJobs(st, cfg) {
         // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà — à +0,4 m l'amorti s'équilibrait avec sa décélération, bd cloué 1,2-1,3 m : le geste accélère À TRAVERS).
         const over = (p._prepShot ?? -1) > st.t ? 2.2 : 0.4;
         p.target = [st.ball.p[0] + p.push[0] * over, 0, st.ball.p[2] + p.push[1] * over];
-      } else {
-        p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3];
-      }
+      } else { p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3]; }
       continue;
     }
     p.push = null;
@@ -893,9 +897,7 @@ function assignMatchJobs(st, cfg) {
           // LE MORD (lot 159, cfg.mord) : le jockey campait le presseur À LA PORTE du conteste (cible 1,0 m, conteste 0,9 — p10 mesuré 0,97 m : 8,7 % de conteste,
           // l'amont famélique des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace est à la note (porte × aggrF : l'agressif mord dès
           // 1,92 m, le placide 1,28 ; 1,6 à 50). Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
-          if (cfg.mord && d2(p.p, anchor) < (cfg.mord.porte ?? 1.6) * (p.skill?.aggrF ?? 1)) {
-            p.job = 'press'; p.target = [anchor[0], 0, anchor[2]]; return;
-          }
+          if (cfg.mord && d2(p.p, anchor) < (cfg.mord.porte ?? 1.6) * (p.skill?.aggrF ?? 1)) { p.job = 'press'; p.target = [anchor[0], 0, anchor[2]]; return; }
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = Math.hypot(gxJ, gzJ) || 1;
           const jd = cfg.jockey?.dist ?? 1.0;
@@ -932,11 +934,9 @@ function assignMatchJobs(st, cfg) {
         if (haut) want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * haut));
         // EN FENÊTRE DE PRESSING : le bloc posté MONTE d'un cran (pressTriggers.step) vers le ballon — la COMPRESSION fait la ligne (le bloc qui monte pousse la Loi 11 devant les pointes)
         if (press) {
-          // …LA COMPRESSION (lot 162, cfg.compression) : le bloc pressant est un POING, pas un
-          // élastique — mesuré : profondeur 34,4 m EN fenêtre contre 31,4 HORS (les chasseurs
-          // avancent, l'arrière traînait). Le FOND du bloc (tiers défensif) monte × fond (1,7),
-          // et CHACUN monte à sa note workRate (× workF : le bloc de travailleurs monte UNI,
-          // le paresseux traîne en escalier — l'exécution est aux notes, le choix à l'axe).
+          // …LA COMPRESSION (lot 162, cfg.compression) : le bloc pressant est un POING, pas un élastique — mesuré : profondeur 34,4 m EN fenêtre contre 31,4 HORS (les
+          // chasseurs avancent, l'arrière traînait). Le FOND du bloc (tiers défensif) monte × fond (1,7), et CHACUN monte à sa note workRate (× workF : le bloc de
+          // travailleurs monte UNI, le paresseux traîne en escalier — l'exécution est aux notes, le choix à l'axe).
           const relC = st.full && cfg.compression && cD1 > cD0
             ? (want[0] * Math.sign(pitch.ownGoal(p.team).x || 1) - cD0) / (cD1 - cD0) : 0;   // 1 = le plus BAS du bloc
           const kC = st.full && cfg.compression
@@ -1129,9 +1129,8 @@ export function matchCfg(overrides = {}) {
       // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
       else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
       else if (type === 'corner' && cfg.corner && st.full) cornerTrav(st, id, cfg);
-      // LA SORTIE DE BUT EST UNE DISTRIBUTION (lot 150, tac.cpa.sortieBut && st.full) : le
-      // preneur passe par relancerGardien (main courte / longue directe / le barème d'hier) —
-      // sans style, RIEN ne change : la remise générique d'hier joue, au bit
+      // LA SORTIE DE BUT EST UNE DISTRIBUTION (lot 150, tac.cpa.sortieBut && st.full) : le preneur passe par relancerGardien (main courte / longue directe / le barème
+      // d'hier) — sans style, RIEN ne change : la remise générique d'hier joue, au bit
       else if (type === 'sortie-de-but' && st.full && st.tactics?.[st.players[id]?.team]?.cpa?.sortieBut)
         relancerGardien(st, id >= 0 ? st.players[id] : null, cfg, { beginPass: simInternals.beginPass });
     },
@@ -1139,9 +1138,11 @@ export function matchCfg(overrides = {}) {
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },
     // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91, keeperHold:false = le ballon gelé d'hier) : intouchable tenu, posé une fois debout
     heldBall: (st, c, dt, cfg) => {
-      if (!(st.full && cfg.keeperHold !== false) || !c.keeper || c.down <= 0 || st.ball.owner !== c.id) return false;
-      st.ball.hold(keeperHoldPoint(c), dt);
-      return true;
+      if (!(st.full && cfg.keeperHold !== false) || !c.keeper || st.ball.owner !== c.id) return false;
+      if (c.down > 0) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
+      // …ET LA TENUE AUX MAINS (171) : la prise (pas un retrait — Loi 12.2) reste AUX GANTS pendant gk._tenue — la conduite-éclair lâchait en 0,38 s (cause 'conduite' au grand livre) ; il MARCHE ballon en mains puis distribue.
+      if (cfg.gkTenue && c._mains && c._gkSince != null && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
+      return false;
     },
     ...overrides,
   };

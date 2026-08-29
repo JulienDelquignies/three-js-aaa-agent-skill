@@ -161,7 +161,7 @@ export const MATCH = {
                           // de layoff — le ballon d'espoir qui meurt en route (116 s d'errance
                           // / 1200 s mesurées) n'est plus tenté. dose:false : hier au bit.
   clearServi: { min: 8, essais: 2 },
-  sortieGardien: {},      // lot 136 : LA PASSE AU GARDIEN — un comportement DE STYLE (le patron
+  sortieGardien: { detresse: 0.45 },      // lot 136 : LA PASSE AU GARDIEN — un comportement DE STYLE (le patron
                           // UT.calme du 49) : bonus 5,2 × max(0, (0,5 − style) × 2) × composureF
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
@@ -175,6 +175,13 @@ export const MATCH = {
                           // direction (servable au premier pas), la pointe × visionF ; et l'appel
                           // AXIAL vise l'INTERVALLE de la ligne (gapZ ≥ gap m, fenêtre z) sinon
                           // CROISE vers le couloir. false : la myopie du 0,55×z d'hier au bit.
+  rayonsLoi: { corner: 9.15, touche: 2, 'sortie-de-but': 9.15, defaut: 9.15 },   // 171d : le rayon
+                          // du RÈGLEMENT par remise (Lois 15/16/17) — les 3 m du réduit d'hier en clé absente.
+  gkTenue: { min: 2.2, max: 4.2 },   // 171 : LA TENUE DU GARDIEN — la prise se tient (tirée,
+                          // × axe tempo) sauf contre ouvert ; cap Loi 12.2 (gkRelease × 1,9).
+  corpsOuvert: { part: 0.55, max: 1.2 },   // 170 : LE CORPS OUVERT à la réception — la
+                          // demi-position entre le ballon et le jeu (part du chemin, cap rad)
+                          // × visionF : celui qui scanne s'ouvre. Mesuré avant : pivot 75°/151°.
   retenueSurface: { frein: 1.9, glisse: 0.3, accro: 0.4 },   // 169 : LA RETENUE DE SURFACE — le seuil du
                           // tacle debout s'allonge (× frein ÷ aggrF : l'agressif se jette quand
                           // même, la note fait le penalty). Mesuré avant : 1,8 péno/90 (réel 0,3).
@@ -538,7 +545,7 @@ export const MATCH = {
                           // COURSE (le brake 0,35 des sorties meurt) — les panneaux à d m
                           // des lignes le bornent, rebond mou vers le terrain ; le preneur
                           // va le chercher où il meurt (portage existant). Absent : hier.
-  celebration: { dur: 6.5, n: 3 },
+  celebration: { dur: 14, n: 5 },   // 171c (retour utilisateur : « la laisser plus longtemps ») — réel 25-45 s, 14 s le compromis jouable
                           // LA CÉLÉBRATION (11c11, st.full — lot 116) : le BUTEUR file au
                           // coin le plus proche, les n coéquipiers les PLUS PROCHES le
                           // rejoignent en courant, le reste marche à l'engagement — qui

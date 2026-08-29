@@ -408,7 +408,21 @@ export function movePlayers(st, dt, cfg) {
       // touche fantôme « le réoriente avec la balle sans le toucher » (retour utilisateur).
       // Même slew borné qu'en dessous (un demi-tour prend son temps), st.full — le rondo au
       // bit près. false : le dos fossile d'hier (sabotage nommé).
-      p.yawWant = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
+      const versB = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
+      // …EN DEMI-POSITION (170, cfg.corpsOuvert — retour utilisateur : « du mal à récupérer »,
+      // mesuré : pivot post-réception 75° médian / 151° p90 — il recevait FACE au passeur,
+      // dos au jeu, puis se retournait). Le vrai receveur ouvre son corps : une fraction du
+      // chemin vers le JEU (le but adverse), capée, × visionF — celui qui SCANNE s'ouvre,
+      // le faible regarde le ballon. Clé absente : la face pleine d'hier au bit.
+      if (st.full && cfg.corpsOuvert && !p.keeper) {
+        const gCO = st.pitch.attackGoal(p.team);
+        const versJeu = Math.atan2(-p.p[2] * 0.3, gCO.x - p.p[0]);
+        let dA = versJeu - versB;
+        while (dA > Math.PI) dA -= 2 * Math.PI;
+        while (dA < -Math.PI) dA += 2 * Math.PI;
+        p.yawWant = versB + Math.sign(dA) * Math.min(Math.abs(dA), cfg.corpsOuvert.max ?? 1.2)
+          * (cfg.corpsOuvert.part ?? 0.55) * Math.min(1.15, p.skill?.visionF ?? 1);
+      } else p.yawWant = versB;
     } else if (regardGk && p.yawWant == null) {
       // …et quand rien d'autre ne pilote son regard (marche de relance), le gardien le pose
       // LUI-MÊME sur le ballon — le pas chassé a toujours une cible de regard.

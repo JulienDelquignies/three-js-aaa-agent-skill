@@ -6143,6 +6143,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (flux directionnel 8×300 s). ET LA VALIDATION du fil 157-159 : la
      récupération haute suit l'axe pressing (−15,3/−6,4/+4,3 m médian, regains
      hauts ×12) — le pressing collectif 160-162 a fait le travail, pas de loi.
+- 211: Lots 170-171 — LE RETOUR UTILISATEUR ×6 (le corps ouvert, le gardien,
+     la célébration, les rayons du règlement). (170) « Trop de passes dans le
+     dos / du mal à récupérer » : la sonde à l'ARRIVÉE (pas à la mène — 1/382 à
+     l'intention !) montre le ballon devant (90 %) mais le PIVOT post-réception
+     à 75° médian/151° p90 — il recevait FACE au passeur, dos au jeu.
+     cfg.corpsOuvert : le receveur vise la DEMI-POSITION (part 0,55 du chemin
+     vers le jeu, cap 1,2 rad) × visionF — celui qui scanne s'ouvre. Pivot
+     75° → 60°, zéro dos créé (part 0,7 en créait 20 — refusée à la mesure).
+     (171a) « Relance ultra rapide pas terrible » : 0,38 s médiane mesurée
+     (réel 4-6 s), cause 'conduite' AU GRAND LIVRE — le gardien-preneur devenait
+     porteur ordinaire et sa 1re touche éjectait le ballon. keeper.gkTenueDue :
+     la tenue tirée 2,2-4,2 s × axe TEMPO, SAUF contre ouvert (l'éclair est un
+     CHOIX) ; heldBall ÉTENDU : la prise AUX MAINS (pas le retrait — Loi 12.2,
+     discriminant st.lastPasser) reste aux gants pendant la tenue. APRÈS :
+     3,23 s médiane, p90 5,7. (171b) « Le retrait vers le gardien » : 0/30 min
+     mesuré — le bonus 136 était une pente de style NULLE à 0,5 ;
+     sortieGardien.detresse 0,45 (porteur pressé < 4,5 m) → ~8/90 min (réel
+     10-20, fourchette basse ; la conduite du gardien récepteur = dette
+     d'observation, théâtre trop rare). (171c) La célébration 6,5 → 14 s,
+     3 → 5 coéquipiers (réel 25-45 s — le compromis jouable). (171d) « Respecter
+     les règles » : cfg.rayonsLoi — corner 9,15 (Loi 17), touche 2 (Loi 15),
+     sortie de but 9,15 ; les 3 m du réduit ne gouvernent plus le plein format
+     (le CF avait déjà son mur Loi 13, l'engagement son rond Loi 8). Empreintes
+     re-datées ea5b/135314c7/31fa3d14 au fil des lois ; épinglage ×45 (chaîne
+     +corpsOuvert +gkTenue +rayonsLoi +sortieGardien:{}). Clauses 170/171a/171d
+     (+ leçons : l'effet APRÈS a réfuté DEUX version — tacleHorloge seul au 169,
+     et ici la sonde à l'intention ; le grand livre est l'outil du diagnostic).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

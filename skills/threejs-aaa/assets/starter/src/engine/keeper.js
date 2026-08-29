@@ -399,3 +399,21 @@ export function checkKeeper(pitch, K = KEEPER) {
   }
   return { ok: issues.length === 0, issues };
 }
+
+/** LA TENUE DU GARDIEN (lot 171, cfg.gkTenue — retour utilisateur : « quand le gardien
+ *  récupère un ballon il fait une relance ultra rapide pas terrible », mesuré 0,38 s médiane,
+ *  réel 4-6 s) : la prise se TIENT (se relever, marcher, scanner) — la tenue est tirée
+ *  min..max puis × axe TEMPO de l'équipe (la posée temporise, la vive joue vite) — SAUF le
+ *  contre ouvert (un coureur d'appel vif) : la relance éclair est un CHOIX de jeu, pas un
+ *  tic. Le cap Loi 12.2 reste au-dessus (gkRelease × 1,9 ≈ 6 s à l'échelle). Rend le gkDue
+ *  éventuellement allongé ; clé absente : l'éclair d'hier au bit. */
+export function gkTenueDue(st, gk, cfg, gkDue, tempoF) {
+  if (!cfg.gkTenue) return gkDue;
+  const contre = st.players.some((q) => q.team === gk.team && !q.keeper && (q._pace?.until ?? -1) > st.t && q._pace.kind === 'appel');
+  if (contre) return gkDue;
+  if (gk._tenueAt !== gk._gkSince) {
+    gk._tenueAt = gk._gkSince;
+    gk._tenue = ((cfg.gkTenue.min ?? 2.2) + (st.rnd ? st.rnd() : 0.5) * ((cfg.gkTenue.max ?? 4.2) - (cfg.gkTenue.min ?? 2.2))) * tempoF();
+  }
+  return Math.max(gkDue, Math.min(gk._tenue, cfg.gkRelease * 1.9));
+}

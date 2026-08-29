@@ -262,6 +262,12 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE RETOUR ×6 (170-171, note 211) : le corps ouvert (pivot 75°→60°, demi-position
+× visionF), la tenue du gardien (0,38→3,23 s, l'éclair = un choix de contre), le
+retrait de détresse (0→8/90 min), la célébration 14 s, les rayons du règlement
+(corner 9,15/touche 2). Dettes : la conduite du gardien récepteur (théâtre rare),
+l'engagement cérémonieux complet (photo d'équipes), le retrait à densifier.
+
 LA RETENUE DE SURFACE (169, note 210) : les trois portes de la faute en boîte
 (debout × frein ÷ aggrF, glissé refusé au tirage × aggrF, accrochage ×0,4) —
 1,8 → 0,9 péno/90 min, fautes globales stables. La note aggrF fait le penalty.
