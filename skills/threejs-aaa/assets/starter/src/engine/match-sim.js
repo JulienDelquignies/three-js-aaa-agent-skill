@@ -173,8 +173,7 @@ function assignMatchJobs(st, cfg) {
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
         p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]];
-        // LOI 8, LE CORPS (160b) : l'adverse de l'ENGAGEMENT ne TRAVERSE pas le rond — dedans il
-        // SORT radial, et un chemin qui couperait le rond se DÉTOURNE par la tangente. Des
+        // LOI 8, LE CORPS (160b) : l'adverse de l'ENGAGEMENT ne TRAVERSE pas le rond — dedans il SORT radial, et un chemin qui couperait le rond se DÉTOURNE par la tangente. Des
         // marcheurs en transit se relayaient dans le rond : canTake ne le voyait jamais vide
         // (gel de 28,7 s mesuré, graine 3). L'arbitre a le corps qu'il exige. cfg.rondSort ; false : hier.
         if (st.full && cfg.rondSort !== false && r.type === 'engagement' && p.team !== r.team) {
@@ -291,8 +290,7 @@ function assignMatchJobs(st, cfg) {
       // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 = la bouche du but : CSC mesuré ; hors axe il meurt en sortie de but).
       const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
       if (bdC > 0.85) {
-        // LE GARDIEN AUSSI PASSE PAR SON BALLON (viser le spot en l'abandonnant à 2 m gelait le
-        // monde — épisodes de 73 et 84 s mesurés, distribution jamais armable).
+        // LE GARDIEN AUSSI PASSE PAR SON BALLON (viser le spot en l'abandonnant à 2 m gelait le monde — épisodes de 73 et 84 s mesurés, distribution jamais armable).
         const toS = [spotD[0] - st.ball.p[0], spotD[1] - st.ball.p[2]];
         const dS = Math.hypot(toS[0], toS[1]) || 1;
         gk.push = [toS[0] / dS, toS[1] / dS];
@@ -303,15 +301,13 @@ function assignMatchJobs(st, cfg) {
         gk.push = dS > 0.6 ? [toS[0] / dS, toS[1] / dS] : [-g.sign, 0];
         gk.target = [spotD[0], 0, spotD[1]];
       }
-      // …LA RÈGLE DES SIX SECONDES (Loi 12.2, cfg.gkRelease) : passe organique, au délai FORCÉE
-      // (rampe, sinon PUNT) ; et l'espace presse la relance (lot 89 : sans presseur, 1,2 s).
+      // …LA RÈGLE DES SIX SECONDES (Loi 12.2, cfg.gkRelease) : passe organique, au délai FORCÉE (rampe, sinon PUNT) ; et l'espace presse la relance (lot 89 : sans presseur, 1,2 s).
       let gkDue = cfg.gkRelease;
       if (st.full && cfg.gkRelease) {
         let pr = 99; for (const q of st.players) if (q.team !== gk.team && !q.keeper && q.down <= 0) pr = Math.min(pr, Math.hypot(q.p[0] - gk.p[0], q.p[2] - gk.p[2]));
         if (pr > 12) gkDue = Math.min(cfg.gkRelease, 1.2);
       }
-      // LA DISTRIBUTION vit chez le gardien (keeper.relancerGardien, lot 150) : le barème
-      // d'hier au bit + les styles par équipe (cpa.sortieBut) et les notes kicking/throwing
+      // LA DISTRIBUTION vit chez le gardien (keeper.relancerGardien, lot 150) : le barème d'hier au bit + les styles par équipe (cpa.sortieBut) et les notes kicking/throwing
       if (cfg.gkRelease && st.t - gk._gkSince > gkDue && !busy(gk) && bdC < 1.1)
         relancerGardien(st, gk, cfg, { beginPass: simInternals.beginPass });
       continue;
@@ -361,21 +357,18 @@ function assignMatchJobs(st, cfg) {
       const move = { id: espece, duration: MOVES[espece].duration, contact: MOVES[espece].contact };
       const lunge = [(pitch.ownGoal(gk.team).x - gk.p[0]) * 0.2, cross.z - gk.p[2]];
       const L = Math.hypot(lunge[0], lunge[1]) || 1;
-      // LE CÔTÉ DU CLIP EST RELATIF AU REGARD RÉEL, pas au monde (« cross.z > gk.z → gauche »
-      // jouait la moitié des plongeons à l'envers) : le produit vectoriel regard × détente.
+      // LE CÔTÉ DU CLIP EST RELATIF AU REGARD RÉEL, pas au monde (« cross.z > gk.z → gauche » jouait la moitié des plongeons à l'envers) : le produit vectoriel regard × détente.
       const fxK = Math.cos(gk.yaw), fzK = Math.sin(gk.yaw);
       const sideFoot = (fxK * (lunge[1] / L) - fzK * (lunge[0] / L)) > 0 ? 'left' : 'right';
       startGesture(gk, move, {
         payload: { kind: 'skill', skill: 'plongeon', ownsBody: true, pick: { foot: sideFoot },
           lunge: [lunge[0] / L, lunge[1] / L], speed: Math.min(6.5, (Math.abs(cross.z - gk.p[2]) / Math.max(0.15, cross.t)) * 1.1), cross,
-          // la détente couvre SA distance, bornée au ROOT MOTION du bassin (1,35 m) : au-delà
-          // c'est le métier des BRAS (gants à 2,1 par l'IK + warp), pas un corps qui glisse.
+          // la détente couvre SA distance, bornée au ROOT MOTION du bassin (1,35 m) : au-delà c'est le métier des BRAS (gants à 2,1 par l'IK + warp), pas un corps qui glisse.
           lungeMax: Math.min(1.35, Math.abs(cross.z - gk.p[2]) + 0.2) },
         log: st.gestures,
       });
       gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
-      // le contrat du relevé (gk.rise) se stampe DÈS LE DÉPART (sans ça : 2 453°/s mesurés —
-      // le relevé joué pendant l'acte, puis le down claquait le corps au sol en une image).
+      // le contrat du relevé (gk.rise) se stampe DÈS LE DÉPART (sans ça : 2 453°/s mesurés — le relevé joué pendant l'acte, puis le down claquait le corps au sol en une image).
       if (st.full && cfg.keeperRise !== false && espece !== 'plongeonPrise') { const R = keeperRise(gk.skill?.getupF ?? 1, true); gk.rise = { ground: R.ground, getup: R.getup }; }
       st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact, ...(par93 ? { mains: espece === 'plongeonUneMain' ? 1 : 2 } : {}) });
       st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2), ...(honneur ? { honneur: true } : {}) });
@@ -387,8 +380,7 @@ function assignMatchJobs(st, cfg) {
     gk.yawWant = Math.atan2(st.ball.p[2] - gk.p[2], st.ball.p[0] - gk.p[0]);
   }
 
-  // LA BOUCLE CHAUDE N'ALLOUE PLUS (lot 69 — les filter/map/sort par frame nourrissaient le
-  // GC du téléphone : buffers réutilisés + boucles inline, flux au bit près — empreinte sha256)
+  // LA BOUCLE CHAUDE N'ALLOUE PLUS (lot 69 — les filter/map/sort par frame nourrissaient le GC du téléphone : buffers réutilisés + boucles inline, flux au bit près — empreinte sha256)
   const field = st._bField ??= [], attackers = st._bAtk ??= [], defenders = st._bDef ??= []; field.length = 0; attackers.length = 0; defenders.length = 0;
   // à 10 après un rouge (Loi 12) ; le remplacé en chemin est hors des postes (Loi 3)
   for (const p of st.players) if (!p.keeper && !p.expulse && !p._sub) { field.push(p); (p.team === atk ? attackers : defenders).push(p); }
@@ -400,8 +392,7 @@ function assignMatchJobs(st, cfg) {
 
   // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS : le plus proche de chaque camp court.
   const bSpd = Math.hypot(st.ball.v[0], st.ball.v[2]);
-  // L'HORLOGE DU 50/50 (lot 153) : le front de la phase loose s'horodate — le PREMIER PAS
-  // se paie à la réaction personnelle (movement.premierPas). Pur, aucun tirage.
+  // L'HORLOGE DU 50/50 (lot 153) : le front de la phase loose s'horodate — le PREMIER PAS se paie à la réaction personnelle (movement.premierPas). Pur, aucun tirage.
   if (st.phase === 'loose') { if (!st._loosePh) st._looseAt2 = st.t; st._loosePh = true; } else st._loosePh = false;
   const freeBall = cfg.chaseLoose !== false && !carrier && (st.phase === 'loose' || !st.pass || st.pass.to < 0);
   const leadK = Math.min(6, bSpd * 0.7);
@@ -411,11 +402,9 @@ function assignMatchJobs(st, cfg) {
     : [anchor[0], anchor[2]];
   let hunter = null;
   if (freeBall) {
-    // …JAMAIS le gardien (lot 89, st.full — un ballon de champ n'est pas le sien : le hunter
-    // l'envoyait chasser à 20-30 m puis porter au coin des six, « il court en corner »)
+    // …JAMAIS le gardien (lot 89, st.full — un ballon de champ n'est pas le sien : le hunter l'envoyait chasser à 20-30 m puis porter au coin des six, « il court en corner »)
     let hD = Infinity; for (const p of attackers) if (p.down <= 0 && !(st.full && p.keeper)) { const d = d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
-    // LA CONDUITE SE TIENT (lot 104, cfg.tenue && st.full) : le ballon qu'il vient de pousser reste SA course
-    // (< temps s, à portée) — un coéquipier ne la vole qu'avec une VRAIE avance (marge). Absente : l'hier au bit.
+    // LA CONDUITE SE TIENT (lot 104, cfg.tenue && st.full) : le ballon qu'il vient de pousser reste SA course (< temps s, à portée) — un coéquipier ne la vole qu'avec une VRAIE avance (marge). Absente : l'hier au bit.
     if (st.full && cfg.tenue && st._exCarrier && st.t - st._exCarrier.t < (cfg.tenue.temps ?? 1.5)) {
       const ex = st.players[st._exCarrier.id];
       if (ex && ex.team === atk && ex.down <= 0 && !ex.keeper && !ex.expulse) {
@@ -424,8 +413,7 @@ function assignMatchJobs(st, cfg) {
       }
     }
     if (hunter) {
-      // une cueillette SANS course adverse se trotte (bucket support) : le sprint systématique à
-      // 6,9 poussait les corps à 9,9 km/h — on ne pique un sprint que si le 50/50 est réel
+      // une cueillette SANS course adverse se trotte (bucket support) : le sprint systématique à 6,9 poussait les corps à 9,9 km/h — on ne pique un sprint que si le 50/50 est réel
       let foeD = Infinity;
       for (const q of defenders) if (q.down <= 0) foeD = Math.min(foeD, Math.hypot(q.p[0] - leadP[0], q.p[2] - leadP[1]));
       const myD = Math.hypot(hunter.p[0] - leadP[0], hunter.p[2] - leadP[1]);
@@ -438,30 +426,25 @@ function assignMatchJobs(st, cfg) {
   for (const p of attackers) {
     if (carrier && p.id === carrier.id) {
       p.job = 'carry';
-      // CONDUITE SERRÉE PAR DÉFAUT : touche pleine en rupture nommée (burst) seulement ; et
-      // POURSUIVIE (défenseur ≤ 2,2 m) elle COLLE (cfg.carryGuard — « bien trop loin du pied »).
+      // CONDUITE SERRÉE PAR DÉFAUT : touche pleine en rupture nommée (burst) seulement ; et POURSUIVIE (défenseur ≤ 2,2 m) elle COLLE (cfg.carryGuard — « bien trop loin du pied »).
       let foeGuard = 99;
       for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) foeGuard = Math.min(foeGuard, Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]));
       p.touchF = (p._prepShot ?? -1) > st.t ? (cfg.prepTouchF ?? 0.3)   // la préparation SERRE
         : foeGuard <= 2.2 ? (cfg.carryGuard ?? ((p._pace?.until ?? -1) > st.t ? 1 : (cfg.carryTight ?? 1)))
         : (p._pace?.until ?? -1) > st.t ? 1
         : (cfg.carryTight ?? 1);
-      // …et la PROTÉGÉE AMORTIT (guardDamp) EN COURSE seulement (v ≥ 4) : amorti, le ballon
-      // reste sous le pied ; au trot, amortir créait des excursions lentes (4,5 s/min mesurés).
+      // …et la PROTÉGÉE AMORTIT (guardDamp) EN COURSE seulement (v ≥ 4) : amorti, le ballon reste sous le pied ; au trot, amortir créait des excursions lentes (4,5 s/min mesurés).
       p.touchDamp = (p._prepShot ?? -1) > st.t ? (cfg.prepDamp ?? 0.72)
         : foeGuard <= 2.2 && p.speed >= 4 ? (cfg.guardDamp ?? 0.88) : 1;
       const ev = evadeSpot(st, p, cfg);
-      // L'AILIER À ANGLE FERMÉ REPIQUE DANS L'AXE (cut-inside — 195 refus angle-fermé mesurés par
-      // lot) : le point de mire devient l'ENTRÉE DE SURFACE côté axe jusqu'à ce que l'angle s'ouvre.
+      // L'AILIER À ANGLE FERMÉ REPIQUE DANS L'AXE (cut-inside — 195 refus angle-fermé mesurés par lot) : le point de mire devient l'ENTRÉE DE SURFACE côté axe jusqu'à ce que l'angle s'ouvre.
       const sgnG = Math.sign(goal.x || 1);
       const wideClosed = Math.abs(p.p[2]) > pitch.goalHalf + 3 && p.p[0] * sgnG > pitch.hx - pitch.dims.box.depth - 4;
-      // …et le repique choisit selon LA BOÎTE : coureurs dedans → large et on SERT ; vide → on
-      // rentre (le cut-inside aspirait toutes les ailes : 6 centres retombés à 2).
+      // …et le repique choisit selon LA BOÎTE : coureurs dedans → large et on SERT ; vide → on rentre (le cut-inside aspirait toutes les ailes : 6 centres retombés à 2).
       const boxXr = pitch.hx - pitch.dims.box.depth;
       const boxMate = wideClosed && st.players.some((q) => q.team === p.team && !q.keeper && q.id !== p.id
         && q.down <= 0 && q.p[0] * sgnG > boxXr - 1.5 && Math.abs(q.p[2]) < pitch.dims.box.width / 2 + 1.5);
-      // LE COULOIR SE TIENT (lot 105, cfg.conduiteCouloir — 67 % des touches d'aile repiquaient) : le porteur
-      // latéral progresse DANS son couloir ; pied/largeurR/axe largeur modulent. Absente : l'aim [but, 0] d'hier.
+      // LE COULOIR SE TIENT (lot 105, cfg.conduiteCouloir — 67 % des touches d'aile repiquaient) : le porteur latéral progresse DANS son couloir ; pied/largeurR/axe largeur modulent. Absente : l'aim [but, 0] d'hier.
       let aimZ = 0;
       if (st.full && cfg.conduiteCouloir && Math.abs(p.p[2]) > (cfg.conduiteCouloir.z ?? 12) && !wideClosed) {
         const inv = (Math.sign(p.p[2] * -(goal.x || 1)) > 0) === ((p.strongFoot ?? 'right') === 'right');
@@ -480,8 +463,7 @@ function assignMatchJobs(st, cfg) {
       if (mR92 && p._takeP && Math.hypot(p.p[0] - p._takeP[0], p.p[2] - p._takeP[1]) > mR92) wGoal *= 0.25;
       let px = (gx / gl) * wGoal, pz = (gz / gl) * wGoal;
       if (ev) { const ex = ev[0] - p.p[0], ez = ev[2] - p.p[2]; const el = Math.hypot(ex, ez) || 1; px += (ex / el) * (1 - wGoal); pz += (ez / el) * (1 - wGoal); }
-      // LA CHALOUPE (lot 110, cfg.chaloupe && st.full) : le porteur contesté-et-lancé OSCILLE
-      // (sin seedé par identité), × gesteF × arbitre.conduite. Absente : le cap droit d'hier.
+      // LA CHALOUPE (lot 110, cfg.chaloupe && st.full) : le porteur contesté-et-lancé OSCILLE (sin seedé par identité), × gesteF × arbitre.conduite. Absente : le cap droit d'hier.
       if (st.full && cfg.chaloupe && foeGuard < (cfg.chaloupe.foe ?? 4) && p.speed > (cfg.chaloupe.v ?? 1.5)) {
         const o = Math.sin(st.t * (cfg.chaloupe.freq ?? 8.5) + p.id * 2.1)
           * (cfg.chaloupe.amp ?? 0.55) * (p.skill?.gesteF ?? 1) * (role(p).arbitre?.conduite ?? 1);
@@ -495,8 +477,7 @@ function assignMatchJobs(st, cfg) {
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = Math.hypot(p._pushS[0], p._pushS[1]) || 1;
       p.push = [p._pushS[0] / sl, p._pushS[1] / sl];
-      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE (CSC mesurés) : l'acculé fuit LE LONG de la ligne —
-      // < 22 m du but propre, la composante vers lui se plafonne, la poussée se rabat en latérale.
+      // …ET L'ÉVASION NE TRAVERSE PAS SA PROPRE SURFACE (CSC mesurés) : l'acculé fuit LE LONG de la ligne — < 22 m du but propre, la composante vers lui se plafonne, la poussée se rabat en latérale.
       {
         const og = pitch.ownGoal(p.team);
         const sOwn = Math.sign(og.x || 1);
@@ -844,6 +825,12 @@ function assignMatchJobs(st, cfg) {
     const spotsBloc = st.full
       ? formationSpots(pitch, defTeamB, anchor[0], false, formationPour(tac(st, defTeamB).formation, false), blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), anchor[2], st._outDef ??= []) : null;   // la formation OFF (129)
     const mapD = mapPostes(tac(st, defTeamB).formation), nDefD = (LIGNES[formationPour(tac(st, defTeamB).formation, false)] ?? [4])[0];   // le mapping on→off + la ligne OFF (130)
+    // …les BORNES de profondeur du bloc posté (162, hoisté) : la compression se juge RELATIVE au bloc — le tiers « terrain » ne matchait jamais (le bloc chaîné au ballon est déjà haut).
+    let cD0 = Infinity, cD1 = -Infinity;
+    if (st.full && cfg.compression && spotsBloc) {
+      const dSgn = Math.sign(pitch.ownGoal(defTeamB).x || 1);
+      for (const s2 of spotsBloc) { const v = s2[0] * dSgn; if (v < cD0) cD0 = v; if (v > cD1) cD1 = v; }
+    }
     const byDist = st._bByDist ??= []; byDist.length = 0;
     for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
     // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT
@@ -946,7 +933,16 @@ function assignMatchJobs(st, cfg) {
         if (haut) want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * haut));
         // EN FENÊTRE DE PRESSING : le bloc posté MONTE d'un cran (pressTriggers.step) vers le ballon — la COMPRESSION fait la ligne (le bloc qui monte pousse la Loi 11 devant les pointes)
         if (press) {
-          want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * (cfg.pressTriggers.step ?? 3.5)));
+          // …LA COMPRESSION (lot 162, cfg.compression) : le bloc pressant est un POING, pas un
+          // élastique — mesuré : profondeur 34,4 m EN fenêtre contre 31,4 HORS (les chasseurs
+          // avancent, l'arrière traînait). Le FOND du bloc (tiers défensif) monte × fond (1,7),
+          // et CHACUN monte à sa note workRate (× workF : le bloc de travailleurs monte UNI,
+          // le paresseux traîne en escalier — l'exécution est aux notes, le choix à l'axe).
+          const relC = st.full && cfg.compression && cD1 > cD0
+            ? (want[0] * Math.sign(pitch.ownGoal(p.team).x || 1) - cD0) / (cD1 - cD0) : 0;   // 1 = le plus BAS du bloc
+          const kC = st.full && cfg.compression
+            ? (1 + relC * (cfg.compression.fond ?? 1.4)) * (p.skill?.workF ?? 1) : 1;
+          want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * (cfg.pressTriggers.step ?? 3.5) * kC));
         }
         p.job = 'mark';
         const drift = p._slotT ? Math.hypot(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
@@ -976,7 +972,11 @@ function assignMatchJobs(st, cfg) {
       const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) : le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
       if (st.full && cfg.zone !== false && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {
-        const xL = spotsBloc[mapD[p.post ?? 0]]?.[0], sL = (xL ?? 0) * sgnDef;
+        let xL = spotsBloc[mapD[p.post ?? 0]]?.[0];
+        // …EN FENÊTRE LA BANDE MONTE AVEC LE BLOC (162) : le clamp au spot BRUT laissait le marqueur à la ligne d'hier (le plus bas du bloc = un mark, 341/354 — l'élastique venait de LÀ) ; la ligne pressante = spot + step comprimé × workF, le piège Loi 11 couvre l'homme resté bas. false : la bande d'hier.
+        if (press && st.full && cfg.compression && xL != null)
+          xL = xL - sgnDef * (cfg.pressTriggers.step ?? 3.5) * (1 + (cfg.compression.fond ?? 1.4)) * (p.skill?.workF ?? 1);
+        const sL = (xL ?? 0) * sgnDef;
         // …ne descend pas SOUS elle (le piège Loi 11 couvre l'homme bas) sauf ballon déjà profond…
         if (xL != null && anchor[0] * sgnDef < sL - 2 && want[0] * sgnDef > sL) want[0] = xL;
         // …et ne MONTE pas marquer à plus de 4 m devant elle (l'homme haut appartient au bloc)

@@ -452,6 +452,10 @@ export function onOut(st, cfg) {
     st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
     return true;
   }
+  // L'ARRÊT DE JEU LIBÈRE LA POSSESSION (162b — hygiène des remises) : un ballon POSSÉDÉ à la
+  // frame même de la sortie (receive + sortie au même pas, mesuré graine 7 t=203) laissait
+  // owner ≠ null pour toujours — ballFetch attendait owner null, la touche gelait sans reprise.
+  if (st.ball.owner != null) st.ball.release('arrêt-de-jeu');
   if (r.type === 'but') {
     st.score[r.scorer] += 1;
     st.events.push({ t: +st.t.toFixed(2), type: 'but', team: r.scorer, score: [...st.score] });

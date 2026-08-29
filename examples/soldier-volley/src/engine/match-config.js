@@ -344,6 +344,9 @@ export const MATCH = {
   rondSort: {},           // LOI 8, LE CORPS (160b) : l'adverse de l'engagement SORT du rond (radial) et le
                           // contourne (tangente) au lieu de le traverser en marchant — des relais de marcheurs
                           // gelaient canTake 28,7 s (graine 3) ; false : les marcheurs en transit d'hier
+  compression: {},        // LA COMPRESSION (162) : en fenêtre le pas de montée croît avec la profondeur relative au bloc (le plus bas × 2,4 — le poing du vrai pressing)
+                          // et chaque posté monte × workF — le bloc pressant est un poing, pas un élastique
+                          // (profondeur 34,4 m en fenêtre contre 31,4 hors, mesuré) ; false : l'élastique
   pressZone: {},          // LE PRESSING COHÉRENT (160) : le presseur est élu DANS SA ZONE — distance au ballon
                           // + pénalité (poids 0,7/m au-delà de tol 8 m latéraux du poste) × teamF (la note
                           // teamwork fait la discipline) ; 19,1 % de traversées mesurées avant ; false :

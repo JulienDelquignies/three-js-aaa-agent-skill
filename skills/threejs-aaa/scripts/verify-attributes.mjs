@@ -135,7 +135,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (const seed of [2, 3, 5, 8, 9, 11]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false });   // la clause isole 157-160 (les re-dateurs de possessions)
+        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false });   // la clause isole 157-160 (les re-dateurs de possessions)
         const moi = st.players.filter((p) => p.team === 0)[9].id;
         for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
         miens += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.by === moi).length;
@@ -163,8 +163,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return n;
     };
-    const vivant = armes({ mord: false, pressZone: false, rondSort: false }), mort = armes({ mord: false, pressZone: false, rondSort: false, tacleVif: false });   // …épinglé 159/160
-    const bons = armes({ mord: false, pressZone: false, rondSort: false }, 90), durs = armes({ mord: false, pressZone: false, rondSort: false }, 10);
+    const vivant = armes({ mord: false, pressZone: false, rondSort: false, compression: false }), mort = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleVif: false });   // …épinglé 159/160
+    const bons = armes({ mord: false, pressZone: false, rondSort: false, compression: false }, 90), durs = armes({ mord: false, pressZone: false, rondSort: false, compression: false }, 10);
     ok(`lot 157 — LE PIQUE VIT en flux (${vivant} armés / 6 × 300 s ≥ 8 ; réel ~15-25/90 min) ; sabotage « le tacle-cérémonie » attrapé (tacleVif:false : ${mort} ≤ 2) ; et l'horloge est à la note (tacleurs 90 : ${bons} armés ≥ tacleurs 10 : ${durs} + 4 — tackling arme le duel, tackleReach/esquiveF le jugent)`,
       vivant >= 8 && mort <= 2 && bons >= durs + 4);
   }
@@ -242,7 +242,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (const seed of [2, 3, 5, 8, 9, 11]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 4 ? { teamwork: tw } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, rondSort: false });   // la clause isole 160b (le rond re-date les possessions)
+        const cfg = matchCfg({ shotRange: 20, rondSort: false, compression: false });   // la clause isole 160b (le rond re-date les possessions)
         const moi = st.players.filter((p) => p.team === 0)[4].id;
         for (let i = 0; i < 300 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
@@ -251,7 +251,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return n;
     };
-    const vivant = trav(), brut = trav({ pressZone: false, rondSort: false });
+    const vivant = trav(), brut = trav({ pressZone: false, rondSort: false, compression: false });
     const brouillon = jumeau(10), cohesif = jumeau(90);
     ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 15 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : le brouillon teamwork 10 presse ${brouillon} éch. ≥ cohésif 90 ${cohesif} + 30 — l'indiscipline est un sur-pressing hors zone (jumeau, 6 × 300 s)`,
       vivant <= 8 && brut >= 15 && brouillon >= cohesif + 30);
@@ -277,6 +277,34 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const lecteurs = lecture(90), aveugles = lecture(10);
     ok(`lot 161 — LE BLOC QUI LIT tient sa fenêtre (3 × 300 s appariés : lecteurs 90 → ${lecteurs} s en pressing collectif ≥ aveugles 10 → ${aveugles} + 12 — l'anticipation moyenne fait l'exécution, l'axe pressing reste le choix du coach)`,
       lecteurs >= aveugles + 12);
+  }
+  // lot 162 — LA COMPRESSION : le bloc pressant était un ÉLASTIQUE (profondeur 34,4 m EN
+  // fenêtre contre 31,4 HORS — le marqueur clampé à la bande d'HIER pendant que le bloc montait).
+  // La bande pressante monte avec le bloc (step × (1+fond) × workF), le piège Loi 11 couvre.
+  {
+    const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const prof = (over = {}) => {
+      const inP = [];
+      for (const seed of [2, 5, 9]) {
+        const st = makeMatch({ full: true, seed });
+        const cfg = matchCfg({ shotRange: 20, ...over });
+        for (let i = 0; i < 300 * 60; i++) {
+          matchStep(st, 1 / 60, cfg);
+          if (i % 30 !== 0 || st.possession.team < 0) continue;
+          const def = 1 - st.possession.team;
+          if (!(st._press?.team === def && st._press.until > st.t)) continue;
+          const sgn = Math.sign(st.pitch.ownGoal(def).x || 1);
+          const xs = st.players.filter((q) => q.team === def && !q.keeper && q.down <= 0).map((q) => q.p[0] * sgn);
+          xs.sort((a, b) => b - a);
+          inP.push(xs[0] - xs[xs.length - 1]);
+        }
+      }
+      inP.sort((a, b) => a - b);
+      return +inP[inP.length >> 1].toFixed(1);
+    };
+    const poing = prof(), elastique = prof({ compression: false });
+    ok(`lot 162 — LA COMPRESSION ferme l'élastique (profondeur du bloc pressant : ${poing} m ≤ sabotage ${elastique} − 0,6 — la bande du marqueur monte avec le bloc, le piège Loi 11 couvre l'homme resté bas)`,
+      poing <= elastique - 0.6);
   }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));

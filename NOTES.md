@@ -5968,6 +5968,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Reste consigné : le bloc qui monte UNI pendant la fenêtre (la compression
      synchronisée), et la 33e note (le trio gardien command/oneOnOnes/aerialReach).
 
+203. **Lot 162 : LA COMPRESSION — le bloc pressant est un poing, pas un élastique
+     (le 3e volet du pressing collectif).** LA SONDE : profondeur du bloc 34,4 m EN
+     fenêtre contre 31,4 HORS — le pressing ÉTIRAIT le bloc. TROIS ITÉRATIONS de
+     diagnostic (chacune mesurée) : (v1) le step × fond au « tiers défensif du
+     terrain » ne mordait pas — en fenêtre le bloc chaîné au ballon est déjà haut,
+     la condition terrain ne matchait jamais, et au nu workF = 1 → no-op total ;
+     (v2) la profondeur RELATIVE au bloc (rel ∈ [0,1] sur les bornes des spots,
+     hoistées) — mieux mais 0,1 m ; (v3) LE VRAI COUPABLE instruit : le plus bas
+     du bloc en fenêtre est un MARQUEUR (341/354 éch.) clampé à la bande du lot 96
+     — la bande utilisait le spot BRUT, sans la montée de fenêtre : le marqueur
+     restait à la ligne d'HIER pendant que le bloc pressait. LA LOI
+     (cfg.compression) : la bande pressante = spot + step × (1+fond) × workF —
+     le piège Loi 11 couvre l'homme resté bas ; la note workRate fait l'unité de
+     la montée. LE RÉGLAGE PAR LA BANDE : fond 2,4 → 30,1 m (le poing) mais A/B
+     8 buts (borne basse — la ligne haute assèche) ; fond 1,4 retenu : 33,4 m
+     (−1,0 vs sabotage 34,4), A/B 18 buts ✓. ET LE RE-DATAGE A RÉVÉLÉ le cousin
+     du gel d'engagement (162b, sans clé — hygiène de contrat) : un ballon POSSÉDÉ
+     à la frame même de la sortie (receive + touche au même pas, graine 7 t=203)
+     laissait owner ≠ null pour toujours — ballFetch attendait owner null, la
+     touche gelait sans reprise. L'ARRÊT DE JEU LIBÈRE LA POSSESSION à la création
+     de toute remise. Empreintes matchs d1c3ebb3539f79b1 / bc96d8a058e07ce7 ;
+     rondo/réduit intacts. Clauses 117/143 épinglées compression:false (le patron) ;
+     clause 162 (poing ≤ élastique − 0,6). Le pressing collectif est complet :
+     QUI presse (teamwork, 160), COMBIEN il dure (anticipation, 161), COMMENT le
+     bloc suit (compression × workRate, 162).
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

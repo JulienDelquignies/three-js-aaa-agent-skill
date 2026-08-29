@@ -262,6 +262,15 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA COMPRESSION (162, note 203) : le bloc pressant était un élastique (34,4 m en
+fenêtre vs 31,4 hors) — le marqueur clampé à la bande d'HIER (spot brut sans la
+montée). cfg.compression : la bande pressante = spot + step × (1+fond 1,4) × workF ;
+réglé PAR la bande A/B (fond 2,4 = le poing 30,1 m mais 8 buts — assèche). 162b :
+l'arrêt de jeu LIBÈRE la possession (gel de touche owner ≠ null, graine 7).
+LE PRESSING COLLECTIF EST COMPLET : teamwork (qui), anticipation (durée),
+compression × workRate (le bloc suit). Restent : la 33e note (trio gardien),
+la dilution des axes tempo/mentalité, le banc incarné, les pénos absents.
+
 LE BLOC QUI LIT (161, note 202) : la fenêtre du pressing collectif aux notes du
 bloc — la moyenne d'anticipation (anticipF, NOUVELLE, 32/33) × la durée de fenêtre,
 ÷ le cooldown. Lecteurs 90 : 97 s en fenêtre / 5 régains vs 74 s / 3 aux aveugles
