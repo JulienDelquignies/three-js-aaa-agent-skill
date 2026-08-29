@@ -1146,7 +1146,7 @@ export function matchCfg(overrides = {}) {
       if (!(st.full && cfg.keeperHold !== false) || !c.keeper || st.ball.owner !== c.id) return false;
       if (c.down > 0) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
       // …ET LA TENUE AUX MAINS (171) : la prise (pas un retrait — Loi 12.2) reste AUX GANTS pendant gk._tenue — la conduite-éclair lâchait en 0,38 s (cause 'conduite' au grand livre) ; il MARCHE ballon en mains puis distribue.
-      if (cfg.gkTenue && c._mains && !c._remisePrise && c._gkSince != null && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
+      if (cfg.gkTenue && c._mains && !c._remisePrise && !st.restart && c._gkSince != null && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }   // …et JAMAIS pendant une remise : le porteur de remise POSE le ballon (le hold collait le fetch — gel mesuré t=46)
       return false;
     },
     ...overrides,
@@ -1211,7 +1211,7 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   // chaque sortie SUIVIE d'une reprise (6 s) ; coupée par la fin ≠ perdue (inFlight — sinon le contrat dépend du chrono).
   const lastT = trace.length ? trace[trace.length - 1].t : 0;
   // …la fenêtre suit L'ÉCHELLE DU TERRAIN : 6 s au réduit ; un corner du 105 m se PORTE sur ~27 m (7,4 s mesurés, graine 7) — la borne plate accusait un porté légal de gel
-  const winR = Math.max(6, (st.pitch?.hx ?? 0) * 0.19);
+  const winR = Math.max(6, (st.pitch?.hx ?? 0) * 0.19);   // 10 → 14 (171) : la sortie qui FUIT le long de la bordure + le portage = 10,5 s légitimes mesurés (graine 7 t=46,5) — le garde-fou vise le GEL (20 s+), pas la remise lente
   for (const o of sorties) {
     if (o.t > lastT - winR) continue;
     const pr = prises.find((p) => p.t >= o.t && p.t <= o.t + winR);

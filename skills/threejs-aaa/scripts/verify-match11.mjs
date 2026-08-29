@@ -3106,7 +3106,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let rupts = 0, servies = 0;
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       let nEv = 0, pend = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
