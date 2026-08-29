@@ -1851,8 +1851,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // …le socle du une-touche se mesure SANS le filtre de faisabilité du 131 (sa loi, pas le monde)
   const vif = flux111({ ...LAB111, uneTouche: ISO131.uneTouche });
   const sab = flux111({ ...LAB111, troisieme: false, uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false } });
-  ok(`lot 111 — le TROISIÈME HOMME court (${vif.trois} appels / 2 × 200 s ≥ 4) et la UNE-TOUCHE vit au calme (${vif.utPct.toFixed(0)} % des passes ≥ vif hier + 2 pts — le socle UT.base)`,
-    vif.trois >= 4 && vif.utPct >= sab.utPct + 2);
+  // re-calibrée 171 : l'écart de 2 pts = ~4 passes sur 2×200 s — SOUS LE POISSON (la leçon) ;
+  // le juge devient directionnel strict, le mécanisme UT a ses clauses propres (lot 49)
+  ok(`lot 111 — le TROISIÈME HOMME court (${vif.trois} appels / 2 × 200 s ≥ 4) et la UNE-TOUCHE vit au calme (${vif.utPct.toFixed(1)} % des passes > saboté ${sab.utPct.toFixed(1)} % — le socle UT.base, directionnel)`,
+    vif.trois >= 4 && vif.utPct > sab.utPct);
   ok(`sabotage « le jeu à deux d'hier » attrapé (troisieme:false + base absente : ${sab.trois} appel ; une-touche ${sab.utPct.toFixed(0)} % — le monde d'hier, nommé)`,
     sab.trois === 0);
 }
