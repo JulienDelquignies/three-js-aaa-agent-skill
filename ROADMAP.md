@@ -266,7 +266,9 @@ LE RETOUR ×6 (170-171, note 211) : le corps ouvert (pivot 75°→60°, demi-pos
 × visionF), la tenue du gardien (0,38→3,23 s, l'éclair = un choix de contre), le
 retrait de détresse (0→8/90 min), la célébration 14 s, les rayons du règlement
 (corner 9,15/touche 2). Dettes : la conduite du gardien récepteur (théâtre rare),
-l'engagement cérémonieux complet (photo d'équipes), le retrait à densifier.
+l'engagement cérémonieux complet (photo d'équipes), le retrait à densifier,
+le régime de corners (2/20 matchs post-171 c. ~5 avant — la tenue du gardien
+désamorce les mêlées ; le déficit de fond : les frappes déviées, fil du 145).
 
 LA RETENUE DE SURFACE (169, note 210) : les trois portes de la faute en boîte
 (debout × frein ÷ aggrF, glissé refusé au tirage × aggrF, accrochage ×0,4) —
