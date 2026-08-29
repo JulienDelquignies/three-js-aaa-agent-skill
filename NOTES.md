@@ -5994,6 +5994,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      QUI presse (teamwork, 160), COMBIEN il dure (anticipation, 161), COMMENT le
      bloc suit (compression × workRate, 162).
 
+204. **Lot 163 : LE TRIO GARDIEN — la clôture de l'inventaire du consommateur
+     carrière (aerialReach / oneOnOnes / command).** TROIS CANAUX, trois foyers :
+     (a) aerialF [0,85 ; 1,15] — la PRISE HAUTE : la garde d'entrée d'onDive
+     (d > 1,7 ; y > 2,1) ET le seuil de prise (1,1 ; 1,9) à la note — le gant tendu
+     du 90 va à 2,42 m, bande humaine ; PROUVÉ par fixture pure (matchInternals.
+     onDive, contact à 2,15 m : 90 prend, nu et 10 non) ; (b) oooF — le
+     UN-CONTRE-UN : les PORTES du cône de sortie (sortie1v1, lot 104 : zMax 9 /
+     near 8) × oooF — le bon sort d'un déclenchement plus large, le timide reste
+     au poste ; PROUVÉ par keeperDecide pur (porteur excentré z 9,5 : sortie à
+     1,15, poste au nu et à 0,85) ; (c) commandF — LE COMMANDEMENT, le seul
+     levier d'attribut qui agit sur LES AUTRES : le rayon du marquage de surface
+     (marquageCentre, 133) × commandF du GARDIEN de la défense — le gardien qui
+     commande étend la zone où SES défenseurs prennent les corps ; le contrat
+     statique le tient (monotonie/no-op), la preuve de FLUX attend un théâtre
+     mesurable (les centres ~4-7/match, sous le Poisson — consigné ; la fixture
+     une-frame échoue : un pass.cross artisanal est purgé par la machine avant
+     marquageCentre). LEÇON DE FIXTURE : la prise haute vit dans onDive (le
+     contact du PLONGEON) — la première chandelle se prenait au SOL frame 1
+     (ballon posé sur le gardien), la deuxième culminait à 4,3 m ; la chorégraphie
+     juste passe par l'export matchInternals et l'intégration balistique manuelle.
+     Empreintes : les 4 IDENTIQUES au 162 (gated notes — le monde nu au bit).
+     Clause 163 (2 preuves dynamiques + statique). L'INVENTAIRE DU CONSOMMATEUR
+     EST CLOS : 38 notes consommées, toutes monotones, no-op à 50, bandes
+     humaines. Restent (ROADMAP) : la dilution des axes tempo/mentalité, le banc
+     incarné, les pénos (Lois 12/14), throwInStyle/setPiecesFocus.
+
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

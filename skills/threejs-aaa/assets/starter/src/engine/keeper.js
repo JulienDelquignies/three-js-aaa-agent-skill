@@ -208,8 +208,9 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
       // ferme même excentré) ET personne pour couvrir (K.couvertD, mesuré au call-site : le
       // défenseur goal-side ≤ couvert m du ballon GÈRE — le gardien tient son poteau, c'est
       // le poste de keeperSpot qui répond). Clé absente : la charge d'hier au bit.
+      const oooK = K.oooF ?? 1;   // LE UN-CONTRE-UN (163) : les portes de la sortie à la note oneOnOnes — le bon sort d'un déclenchement plus large, le timide reste au poste ; 1 à 50/nu
       const coneOk = !K.cone
-        || ((Math.abs(ball[2]) <= (K.cone.zMax ?? 9) || Math.hypot(ball[0] - g.x, ball[2]) <= (K.cone.near ?? 8))
+        || ((Math.abs(ball[2]) <= (K.cone.zMax ?? 9) * oooK || Math.hypot(ball[0] - g.x, ball[2]) <= (K.cone.near ?? 8) * oooK)
           && (K.couvertD ?? Infinity) > (K.cone.couvert ?? 4));
       if (coneOk) {
         const standoff = K.appuis && K.porte ? 1.15 : 0.55;

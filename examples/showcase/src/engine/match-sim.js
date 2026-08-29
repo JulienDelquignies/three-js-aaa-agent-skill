@@ -173,8 +173,7 @@ function assignMatchJobs(st, cfg) {
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
         p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]];
-        // LOI 8, LE CORPS (160b) : l'adverse de l'ENGAGEMENT ne TRAVERSE pas le rond — dedans il SORT radial, et un chemin qui couperait le rond se DÉTOURNE par la tangente. Des
-        // marcheurs en transit se relayaient dans le rond : canTake ne le voyait jamais vide
+        // LOI 8, LE CORPS (160b) : l'adverse de l'ENGAGEMENT ne TRAVERSE pas le rond — dedans il SORT radial, et un chemin qui couperait le rond se DÉTOURNE par la tangente. Des marcheurs en transit se relayaient dans le rond : canTake ne le voyait jamais vide
         // (gel de 28,7 s mesuré, graine 3). L'arbitre a le corps qu'il exige. cfg.rondSort ; false : hier.
         if (st.full && cfg.rondSort !== false && r.type === 'engagement' && p.team !== r.team) {
           const R8 = (pitch.dims?.circle ?? 9.15) * 0.9 + 0.6;
@@ -325,7 +324,7 @@ function assignMatchJobs(st, cfg) {
         libero: cfg.libero, liberoGate: st.restart ? 0 : st.possession.team === gk.team ? 1 : Math.hypot(st.ball.p[0] - pitch.ownGoal(gk.team).x, st.ball.p[2]) > (cfg.libero?.tient ?? 48) ? 0.6 : 0 };
     }
     // LE CÔNE DE SORTIE (lot 104, cfg.sortie1v1 && st.full) : K.cone + la couverture goal-side mesurée (keeper.js)
-    if (st.full && cfg.sortie1v1) K = { ...K, cone: cfg.sortie1v1, couvertD: keeperCouvert(st.players, gk, pitch.ownGoal(gk.team), st.ball.p) };
+    if (st.full && cfg.sortie1v1) K = { ...K, cone: cfg.sortie1v1, oooF: gk.skill?.oooF ?? 1, couvertD: keeperCouvert(st.players, gk, pitch.ownGoal(gk.team), st.ball.p) };   // …oooF (163) : la note oneOnOnes fait les portes
     // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté ».
     if (cfg.keeperClaim !== false) {
       const own = pitch.ownGoal(gk.team);
@@ -1070,7 +1069,8 @@ function onDive(st, gk, cfg) {
   // appelé CHAQUE IMAGE de la détente (rondo-sim, skillFollowStep) : renvoie true quand le gant a résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
   const d = Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
   const y = st.ball.p[1] ?? 0;
-  if (d > 1.7 || y > 2.1) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
+  const aeF = gk.skill?.aerialF ?? 1;   // LA PORTÉE AÉRIENNE (163, note aerialReach) : la garde ET la prise à la note — 1 exact à 50/nu, bande humaine (2,1 × 1,15 = 2,42 m au gant tendu)
+  if (d > 1.7 * aeF || y > 2.1 * aeF) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
   // LE GANT TOUCHE AU PLUS PRÈS (le premier franchissement claquait à 1,5-1,7 m des mains) : tant que le ballon SE RAPPROCHE, le contact attend l'approche minimale ; le warp du gant fait le visuel.
   const pd = gk.act?.payload?._pd ?? Infinity;
   const closing = d < pd - 1e-4;
@@ -1081,7 +1081,7 @@ function onDive(st, gk, cfg) {
   else riseDown(st, gk, cfg, true);
   const spdT = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
   const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
-  if (d <= 1.1 && y <= 1.9 && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
+  if (d <= 1.1 * aeF && y <= 1.9 * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)

@@ -34,6 +34,10 @@ export const ATTRIBUTES = {
   tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m + l\'horloge du pique (tacleTempoF, 157)',
   teamwork:    'la cohésion du pressing   → teamF [0,8 ; 1,2] : la pénalité de zone à l\'élection du presseur (160)',
   anticipation: 'la lecture du bloc        → anticipF [0,85 ; 1,15] : la fenêtre du pressing collectif (161)',
+  // LE TRIO GARDIEN (163) — la clôture de l'inventaire du consommateur carrière :
+  aerialReach: 'la portée aérienne (GK)   → aerialF [0,85 ; 1,15] : hauteur et rayon de la prise haute',
+  oneOnOnes:   'le un-contre-un (GK)      → oooF [0,85 ; 1,15] : la profondeur de sortie face au porteur seul',
+  command:     'le commandement (GK)      → commandF [0,85 ; 1,15] : × le rayon du marquage de surface de SES défenseurs — le seul levier qui agit sur les AUTRES',
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
   composure:   'sang-froid sous pression → l\'erreur de passe pressée × [1,30 ; 0,85]',
   keeping:     'métier de gardien        → envergure [1,8 ; 2,5] m, réflexe [0,16 ; 0,09] s',
@@ -98,6 +102,9 @@ export function makeProfile(ratings = {}) {
                                                                   // (160) : le cohésif élit juste, le brouillon traverse
     anticipF: lerp(0.85, 1.15, r('anticipation')),                // × la fenêtre du pressing d'équipe, ÷ son cooldown
                                                                   // (161, en MOYENNE de bloc) — 1 exact à 50
+    aerialF: lerp(0.85, 1.15, r('aerialReach')),                  // × hauteur/rayon de la prise haute du gardien (163)
+    oooF: lerp(0.85, 1.15, r('oneOnOnes')),                       // × la profondeur de sortie au 1v1 (163)
+    commandF: lerp(0.85, 1.15, r('command')),                     // × le rayon du marquage de surface des SIENS (163)
     reaction: lerp(0.30, 0.14, r('reactions')),                   // s
     composureF: lerp(1.30, 0.85, r('composure')),                 // × sur l'erreur pressée
     keeperReach: lerp(2.55, 3.25, r('keeping')),                  // m — autour de l'envergure livrée (2,95)
@@ -157,6 +164,8 @@ export function checkAttributes() {
   if (!(hi.tacleTempoF > mid.tacleTempoF && mid.tacleTempoF > lo.tacleTempoF) || Math.abs(mid.tacleTempoF - 1) > 1e-9) issues.push('tacleTempoF non monotone ou no-op violé');
   if (!(hi.teamF > mid.teamF && mid.teamF > lo.teamF) || Math.abs(mid.teamF - 1) > 1e-9) issues.push('teamwork non monotone ou no-op violé');
   if (!(hi.anticipF > mid.anticipF && mid.anticipF > lo.anticipF) || Math.abs(mid.anticipF - 1) > 1e-9) issues.push('anticipation non monotone ou no-op violé');
+  for (const [k, f] of [['aerialReach', 'aerialF'], ['oneOnOnes', 'oooF'], ['command', 'commandF']])
+    if (!(hi[f] > mid[f] && mid[f] > lo[f]) || Math.abs(mid[f] - 1) > 1e-9) issues.push(k + ' non monotone ou no-op violé');
   if (!(hi.longF > mid.longF && mid.longF > lo.longF)) issues.push('longShots non monotone');
   if (Math.abs(mid.longF - 1) > 1e-9) issues.push('longF au 50 doit valoir 1 exact (l\'identité du monde moyen)');
   if (!(hi.sautF > mid.sautF && mid.sautF > lo.sautF)) issues.push('jumping non monotone');

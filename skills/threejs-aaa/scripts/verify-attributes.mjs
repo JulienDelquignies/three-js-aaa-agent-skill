@@ -306,6 +306,40 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`lot 162 — LA COMPRESSION ferme l'élastique (profondeur du bloc pressant : ${poing} m ≤ sabotage ${elastique} − 0,6 — la bande du marqueur monte avec le bloc, le piège Loi 11 couvre l'homme resté bas)`,
       poing <= elastique - 0.6);
   }
+  // lot 163 — LE TRIO GARDIEN (la clôture de l'inventaire du consommateur carrière) :
+  // aerialReach (la prise haute — garde ET prise du contact × aerialF), oneOnOnes (les portes
+  // de la sortie 1v1 × oooF), command (le rayon du marquage de surface de SES défenseurs ×
+  // commandF — le seul levier qui agit sur les AUTRES ; sa preuve de FLUX attend un théâtre
+  // mesurable, les centres vivent sous le Poisson — le contrat statique le tient).
+  {
+    const { matchInternals, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
+    const { keeperDecide, KEEPER } = await import('../assets/starter/src/engine/keeper.js');
+    const prise = (note) => {
+      const st = makeMatch({ full: true, seed: 5 });
+      const cfg = matchCfg({ shotRange: 20 });
+      const gk = st.players.find((p) => p.keeper && p.team === 0);
+      if (note != null) gk.skill = makeProfile({ aerialReach: note });
+      gk.act = { id: 'plongeonPrise', payload: {} };
+      st.ball.restart([gk.p[0] + 0.3, 0.11, gk.p[2]], { cause: 'coup-franc' });
+      st.restart = null;
+      st.ball.impulse([0, 8, 0]);
+      for (let i = 0; i < 120; i++) {
+        st.ball.integrate(1 / 60);
+        if (st.ball.p[1] >= 2.13 && st.ball.p[1] <= 2.2) return matchInternals.onDive(st, gk, cfg);
+      }
+      return false;
+    };
+    const st0 = makeMatch({ full: true, seed: 5 });
+    const g0 = st0.pitch.ownGoal(0);
+    const ball0 = [g0.x - Math.sign(g0.x) * 6, 0.11, 9.5];
+    const sortie = (oooF) => {
+      const K = { ...KEEPER, appuis: true, cone: { zMax: 9, near: 8, couvert: 4 }, couvertD: Infinity, oooF, porte: true };
+      return keeperDecide(st0.pitch, 0, st0.players.find((p) => p.keeper && p.team === 0).p, ball0, [0, 0, 0], Infinity, K, true, null)?.mode ?? 'poste';
+    };
+    ok(`lot 163 — LE TRIO GARDIEN : la prise haute est à la note (contact à 2,15 m — aerial 90 : ${prise(90)}, nu : ${prise(null)}, aerial 10 : ${prise(10)}) ; la sortie 1v1 aussi (porteur excentré z 9,5 — ooo 1,15 : ${sortie(1.15)}, nu : ${sortie(1)}, ooo 0,85 : ${sortie(0.85)}) ; command au contrat statique (monotonie/no-op, clause 1)`,
+      prise(90) === true && prise(null) === false && prise(10) === false
+      && sortie(1.15) === 'sortie' && sortie(1) === 'poste' && sortie(0.85) === 'poste');
+  }
   // le surhomme est impossible PAR CONSTRUCTION : 100 partout reste sous les plafonds du monde
   const best = makeProfile(Object.fromEntries(Object.keys(ATTRIBUTES).map((k) => [k, 100])));
   ok(`pace 100 × chase (${(best.topF * RONDO.speeds.chase).toFixed(2)} m/s) reste sous le plafond absolu (${RONDO.sprintMax ?? 8})`,

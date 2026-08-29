@@ -50,7 +50,11 @@ export function marquageCentre(st, cfg, { busy, tac, axe, d2 }) {
     if (atk == null) return;
     const def = atk === 0 ? 1 : 0;
     const gD = st.pitch.ownGoal(def), sgD = Math.sign(gD.x || 1);
-    const rayon = MC.rayon ?? axe(tac(st, def).marquage, 7, 14);
+    // LE COMMANDEMENT (163) : le rayon du marquage de surface × commandF du GARDIEN de la
+    // défense — le seul levier d'attribut qui agit sur LES AUTRES : le gardien qui commande
+    // étend la zone où ses défenseurs prennent les corps ; 1 exact à 50/nu, au bit.
+    const gkD = st.players.find((q) => q.keeper && q.team === def);
+    const rayon = (MC.rayon ?? axe(tac(st, def).marquage, 7, 14)) * (gkD?.skill?.commandF ?? 1);
     const boite = (q) => q.p[0] * sgD > (Math.abs(gD.x) - st.pitch.dims.box.depth - 2)
       && Math.abs(q.p[2]) < st.pitch.dims.box.width / 2 + 2;
     const cibles = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0 && boite(q))
