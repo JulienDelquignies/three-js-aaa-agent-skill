@@ -63,6 +63,7 @@ export function slideTackleStep(st, c, cfg) {
     && st.pitch.inBox(foe.p[0], foe.p[2], Math.sign(st.pitch.ownGoal(foe.team).x || 1))
     && (st.rnd2 ?? st.rnd ?? (() => 0.5))() > (cfg.retenueSurface.glisse ?? 0.3) * (foe.skill?.aggrF ?? 1)) {
     st._slideT[foe.team] = st.t;
+    st.events.push({ t: +st.t.toFixed(2), type: 'retenue-surface', by: foe.id });   // le refus NOMMÉ — comptable (télémétrie, clause)
     return;
   }
   const sit = situation(foe.p, foe.yaw, bp, st.ball.v, bp[1]);

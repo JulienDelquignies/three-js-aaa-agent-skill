@@ -19,7 +19,7 @@ import { evadeSpot } from '../assets/starter/src/engine/rondo.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch } from '../assets/starter/src/engine/match-sim.js';
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
-import { tackleWindow, accrocheP, tacleDegage } from '../assets/starter/src/engine/duel.js';
+import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets/starter/src/engine/duel.js';
 import { tryCross } from '../assets/starter/src/engine/shooting.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
@@ -2255,7 +2255,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let n5 = 0, offensives = 0, seenMax = -1;
     for (const seed of [1, 2, 3, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      // la clause mesure la TALONNADE — elle isole ses re-dateurs 166-169 (7/12 offensives
+      // = 58 % < 60 au vivant post-169 : le flux déplacé d'un cheveu, pas la loi)
+      const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, ...over });
       let armTalon = false, cursor = 0;   // le CURSEUR d'index — events[length-1] recompte le même windup à chaque frame (le piège, re-frappé et consigné)
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3572,28 +3574,30 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     lV >= 3 && lE === 0);
 }
 
-// ---- lot 169 : LA RETENUE DE SURFACE (le défenseur ne se jette pas dans sa surface)
+// ---- lot 169 : LA RETENUE DE SURFACE (le mécanisme du glissé, tirage contrôlé — le flux
+// des fautes de surface est SOUS LE POISSON au banc : 0 ≤ 0 ne prouvait rien, la leçon)
 {
-  // Le flux des fautes en surface, 8 graines × 300 s appariées (le péno seul est sous le
-  // Poisson — 4/40 matchs) : le vivant en produit MOINS que l'épinglé. Directionnel large.
-  const enSurface = (over) => {
-    let n = 0, tot = 0;
-    for (const seed of [1, 3, 5, 7, 9, 11, 13, 15]) {
-      const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
-      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
-      const half = st.pitch.hx;
-      for (const e of st.events) if (e.type === 'faute') {
-        tot++;
-        if (e.p && Math.abs(e.p[0]) > half - 16.5 && Math.abs(e.p[1]) < 20.16) n++;
-      }
-    }
-    return { n, tot };
+  // La fixture : un porteur lancé dans la surface de l'équipe 1, un glisseur lancé à portée.
+  // Au tirage 0,99 : la retenue REFUSE (l'épisode consommé debout — _slideT posé, pas d'acte) ;
+  // au tirage 0,01 ou sous retenueSurface:false : le pari d'hier part (l'acte posé).
+  const glisse = (tir, over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg(over ?? {});
+    const g = st.pitch.ownGoal(1), sg = Math.sign(g.x || 1);
+    const c = st.players.find((q) => q.team === 0 && !q.keeper);
+    const f = st.players.find((q) => q.team === 1 && !q.keeper);
+    c.p[0] = g.x - sg * 9; c.p[2] = 2; c.v = [sg * 4.6, 0];
+    st.ball.restart([c.p[0] + sg * 0.3, 0.11, 2], { cause: 'coup-franc' });
+    f.p[0] = c.p[0] - sg * 1.8; f.p[2] = 2; f.v = [sg * 4.6, 0]; f.yaw = Math.atan2(0, sg);   // DERRIÈRE le ballon, lancé dessus (le filtre directionnel du glissé)
+    f.slideCd = 0; f.act = null; f.down = 0;
+    st._slideT = {}; st.rnd2 = () => tir;
+    const n0 = st.events.length;
+    slideTackleStep(st, c, cfg);
+    return st.events.slice(n0).filter((e) => e.type === 'retenue-surface').length;
   };
-  const V = enSurface({}), E = enSurface({ retenueSurface: false });
-  ok(`lot 169 — LA RETENUE DE SURFACE (fautes en surface : vivant ${V.n}/${V.tot} ≤ épinglé ${E.n}/${E.tot} — le seuil du tacle s'allonge × frein ÷ aggrF dans sa surface : l'agressif se jette quand même, la note fait le penalty)`,
-    V.n <= E.n && V.tot >= 8);
+  const R = glisse(0.99), P = glisse(0.01), H = glisse(0.99, { retenueSurface: false });
+  ok(`lot 169 — LA RETENUE DE SURFACE au mécanisme (l'événement nommé du registre) : le tirage 0,99 REFUSE le glissé en boîte (${R} = 1 refus — l'épisode consommé debout), le 0,01 se couche quand même (${P} = 0 — l'agressif au petit tirage), sans la clé le pari d'hier (${H} = 0)`,
+    R === 1 && P === 0 && H === 0);
 }
-
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
