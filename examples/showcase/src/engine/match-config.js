@@ -166,6 +166,10 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
+  tacleDegage: { prise: 0.55, v: 7, bruit: 0.9 },   // 166 : LE DUEL CONTESTÉ — le tacle gagné
+                          // n'est une prise PROPRE qu'à la garde (prise × tacleGardeF, la note) ;
+                          // sinon la fente pousse le ballon devant elle (v m/s, ± bruit rad, un
+                          // ballon vivant à disputer). false : le monde 100 % propre d'hier.
   clearTouche: false,     // lot 136 : LA TOUCHE VOLONTAIRE — OPT-IN ({} l'active : l'étau
                           // double [collé + entouré] < 12 m met le ballon en touche). L'apparié
                           // l'a chargée en défaut (elle mange du temps de jeu). Le CORNER RARE

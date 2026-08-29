@@ -305,3 +305,22 @@ export function accrocheStep(st, c, cfg, pressAxe = 1) {
     return;
   }
 }
+
+/** LE DUEL CONTESTÉ (lot 166, cfg.tacleDegage && st.full) : le tacle gagné n'est une PRISE
+ *  propre qu'à la garde — sinon la fente POUSSE le ballon devant elle (libre, vif, 'contesté'
+ *  au grand livre) : le réel ne donne ~qu'une moitié de prises nettes. La part de prise ×
+ *  tacleGardeF : la note tackling agit sur l'EXÉCUTION du duel gagné. Mesuré (4×300 s) :
+ *  2/6 duels gagnés dégagés ; l'effet TOUCHES visé au départ est NUL (1 c. 2 — requalifié,
+ *  patron 158 : le déficit de touches vient des passes SERVO qui ne sortent jamais, front
+ *  consigné). Rend true si dégagé (pas de prise) ; false : le chemin d'hier au bit. */
+export function tacleDegage(st, q, cfg) {
+  const TD = st.full && cfg.tacleDegage;
+  if (!TD || !st.rnd || st.rnd() <= (TD.prise ?? 0.55) * (q.skill?.tacleGardeF ?? 1)) return false;
+  const a = Math.atan2(st.ball.p[2] - q.p[2], st.ball.p[0] - q.p[0]) + (st.rnd() - 0.5) * (TD.bruit ?? 0.9);
+  const v = TD.v ?? 7;
+  if (st.events.length) st.events[st.events.length - 1].degage = true;
+  st.ball.release('contesté');
+  st.ball.impulse([Math.cos(a) * v - st.ball.v[0], 0, Math.sin(a) * v - st.ball.v[2]]);
+  st.phase = 'loose'; st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
+  return true;
+}

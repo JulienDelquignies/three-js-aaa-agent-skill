@@ -262,6 +262,13 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE DUEL CONTESTÉ (166, note 207) : le tacle gagné n'est une prise propre qu'à la
+garde (prise 0,55 × tacleGardeF — la note tackling, 39e facteur) ; sinon la fente
+pousse le ballon devant elle, vivant à disputer. Empreinte graine 7 re-datée
+14426d8c5a206b06. Le déficit de TOUCHES persiste (requalifié : les passes servo
+ne sortent jamais — le vrai front des touches organiques, à prendre par l'erreur
+latérale d'exécution des passes pressées près de la ligne).
+
 LA TOUCHE LONGUE (165, note 206) : tac.cpa.touche 'longue' — la rentrée du tiers
 offensif se pose (15 s), les grands montent aux postes proches, le jet plat 28 m
 vise le poste HABITÉ. Opt-in pur, empreintes intactes. La dette de théâtre :

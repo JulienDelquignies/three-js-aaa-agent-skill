@@ -5,7 +5,7 @@ import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) 
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js';
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
-import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep } from './duel.js';
+import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep } from './tete.js';
 import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js';
@@ -83,8 +83,7 @@ function stepGestures(st, dt, cfg) {
             if (cfg.strideStrike.ride !== false) { A.from[0] += cx * pas; A.from[1] += sx * pas; }
           }
         }
-        // …et le segment ENTIER (ancre ET from porté) reste DANS le carré : le joueur s'arrête à
-        // la craie, il ne la traverse pas — sans la clampe le glissement poussait dehors.
+        // …et le segment ENTIER (ancre ET from porté) reste DANS le carré : le joueur s'arrête à la craie (sans la clampe le glissement poussait dehors)
         anchor.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, anchor.p[0]));
         anchor.p[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, anchor.p[1]));
         A.from[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, A.from[0]));
@@ -225,6 +224,8 @@ function standTackleNow(st, q, cfg) {
   // …et un geste TECHNIQUE se fait fermer à n'importe quel instant (la semelle tenue, le raclage
   // du râteau) — pas seulement l'armé : sa fenêtre de duel est ouverte du début à la fin
   if (victim?.act && (winding(victim) || victim.act.payload?.kind === 'skill')) abortGesture(victim, 'fermé pendant l’armé', { log: st.gestures });
+  // LE TACLE QUI DÉGAGE (166, duel.tacleDegage) : la prise n'est propre qu'à la garde
+  if (tacleDegage(st, q, cfg)) return;
   receive(st, q.id, cfg);          // → turnover : amorti nommé (résiduel ~20 %), possession déclarée
 }
 
@@ -405,8 +406,7 @@ function receive(st, id, cfg = RONDO) {
 function resoudreGlisse(st, cfg, p, pick, sit, dEvent, dPoke, won) {
   st.events.push({
     t: +st.t.toFixed(2), type: 'slide', by: p.id, won, tech: 'tacle-glisse', foot: pick.foot, surface: pick.surface,
-    // l'événement dit QUI a glissé et QUI avait le ballon : la clause de discipline de checkRondo
-    // (0 glissade de l'équipe en possession) le lit — et son sabotage l'injecte.
+    // l'événement dit QUI a glissé et QUI avait le ballon : la clause de discipline de checkRondo le lit — et son sabotage l'injecte
     team: p.team, atk: st.possession.team,
     bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +dEvent.toFixed(2), height: +st.ball.p[1].toFixed(2),
     speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),

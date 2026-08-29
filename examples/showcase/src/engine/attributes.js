@@ -31,7 +31,7 @@ export const ATTRIBUTES = {
   dribbling:   'longueur de touche → lead × [1,08 ; 0,94] ; engagement/vente des gestes × [0,55 ; 1,10] ; l\'ESQUIVE du duel ± [−0,08 ; +0,08] m (152)',
   finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ)',
   longShots:   'frappe de loin           → audace lointaine × [0,75 ; 1,25] (cfg.audace, lot 107)',
-  tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m + l\'horloge du pique (tacleTempoF, 157)',
+  tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m + l\'horloge du pique (tacleTempoF, 157) + la garde du duel gagné (tacleGardeF, 166)',
   teamwork:    'la cohésion du pressing   → teamF [0,8 ; 1,2] : la pénalité de zone à l\'élection du presseur (160)',
   anticipation: 'la lecture du bloc        → anticipF [0,85 ; 1,15] : la fenêtre du pressing collectif (161)',
   // LE TRIO GARDIEN (163) — la clôture de l'inventaire du consommateur carrière :
@@ -97,6 +97,8 @@ export function makeProfile(ratings = {}) {
     longF: lerp(0.75, 1.25, r('longShots')),                      // × sur l'AUDACE lointaine (le 50 vaut 1 exact — l'identité du monde moyen)
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel
     tacleTempoF: lerp(0.85, 1.15, r('tackling')),                 // × l'horloge du pique (157) : le bon tacleur
+    tacleGardeF: lerp(0.85, 1.15, r('tackling')),                 // × la part de PRISE PROPRE du duel gagné (166) : le
+                                                                  // grand tacleur GARDE, le moyen dégage devant lui
                                                                   // engage plus tôt (÷ via 2−F) — 1 exact à 50
     teamF: lerp(0.8, 1.2, r('teamwork')),                         // × la pénalité de zone à l'élection du presseur
                                                                   // (160) : le cohésif élit juste, le brouillon traverse
@@ -162,6 +164,7 @@ export function checkAttributes() {
   if (!(hi.reaction < lo.reaction)) issues.push('reactions non monotone');
   if (!(hi.tackleReach > lo.tackleReach)) issues.push('tackling non monotone');
   if (!(hi.tacleTempoF > mid.tacleTempoF && mid.tacleTempoF > lo.tacleTempoF) || Math.abs(mid.tacleTempoF - 1) > 1e-9) issues.push('tacleTempoF non monotone ou no-op violé');
+  if (!(hi.tacleGardeF > mid.tacleGardeF && mid.tacleGardeF > lo.tacleGardeF) || Math.abs(mid.tacleGardeF - 1) > 1e-9) issues.push('tacleGardeF non monotone ou no-op violé');
   if (!(hi.teamF > mid.teamF && mid.teamF > lo.teamF) || Math.abs(mid.teamF - 1) > 1e-9) issues.push('teamwork non monotone ou no-op violé');
   if (!(hi.anticipF > mid.anticipF && mid.anticipF > lo.anticipF) || Math.abs(mid.anticipF - 1) > 1e-9) issues.push('anticipation non monotone ou no-op violé');
   for (const [k, f] of [['aerialReach', 'aerialF'], ['oneOnOnes', 'oooF'], ['command', 'commandF']])

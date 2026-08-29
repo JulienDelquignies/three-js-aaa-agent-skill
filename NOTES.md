@@ -6060,6 +6060,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (fixture déterministe, patron 164a), la dette « touches organiques » (le
      monde sous-produit les sorties en touche, réel ~40/90 min) reste le front
      qui donnera son théâtre au trébuchet. Clause 165 ×2.
+- 207: Lot 166 — LE DUEL CONTESTÉ (cfg.tacleDegage, duel.tacleDegage). Parti pour
+     « les touches organiques » : la sonde de genèse (4×300 s) montrait 2 touches/
+     20 min (réel ~10) et AUCUNE déviation de duel — le tacle gagné donnait 100 %
+     de prises propres (receive). La loi : la prise n'est propre qu'à la garde
+     (tirage > prise 0,55 × tacleGardeF, 39e FACTEUR sur la note tackling DÉJÀ
+     consommée — l'inventaire des notes reste clos) ; sinon la fente POUSSE le
+     ballon devant elle (7 m/s ± 0,9 rad, release 'contesté' au grand livre,
+     phase loose). REQUALIFIÉ (patron 158) : l'effet duel est réel (2/6 gagnés
+     dégagés) mais l'effet touches est NUL (1 c. 2 — le déficit vient des passes
+     SERVO qui ne sortent jamais : front consigné). Loi du monde par défaut →
+     empreinte match graine 7 re-datée 14426d8c5a206b06 (graine 3 d1c3ebb3539f79b1
+     INCHANGÉE : aucun tacle gagné dans sa fenêtre — une loi rare peut laisser
+     une empreinte intacte) ; épinglage tacleDegage:false étendu aux 26+8 mondes
+     gelés + la clause gradation 152/158 (−11/−11/17 au vivant : la marche 30→50
+     mangée par le tirage — la clause mesure les NOTES, elle isole son re-dateur).
+     A/B 20×300 s : 101 tirs, 19 buts (bande 8-22). Clause 166 ×2 (seuil au
+     tirage contrôlé — déterministe, la garde à la note ; l'extinction + la
+     libération). Corps de loi dans duel.js (rondo-sim au plafond 1249).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
