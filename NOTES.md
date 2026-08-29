@@ -6124,6 +6124,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Clause 168 (le flux des lectures + l'épingle). Attributs : reaction
      (latence, du 50/81), anticipF (la lecture, du 161) — deux notes déjà
      consommées, un NOUVEAU théâtre.
+- 210: Lot 169 — LA RETENUE DE SURFACE (cfg.retenueSurface). Le diagnostic du
+     166 re-mesuré à 40 matchs : 1,8 péno/90 min (réel ~0,3), fautes globales
+     JUSTES (26,5/90) — 6,8 % des fautes en surface (réel 1-2 %). Les fautes de
+     surface se répartissent sur TROIS espèces (1 debout / 1 accrochage /
+     1 glissé-derrière sur 20 matchs) : la première loi (tacleHorloge seule)
+     n'a PAS mordu (4 → 4, l'effet APRÈS fait foi) — les trois portes ensemble :
+     (1) le seuil du tacle debout × frein 1,9 ÷ aggrF en surface ; (2) le GLISSÉ
+     se refuse dans sa boîte (tirage 0,3 × aggrF, l'épisode consommé debout —
+     st._slideT posé par le refus) ; (3) l'accrochage (déjà ×0,15 en dur, 97)
+     resserré ×0,4 sous la clé. Partout : l'AGRESSIF se jette quand même — la
+     note aggrF FAIT le penalty (la discipline est l'attribut, pas une constante).
+     APRÈS : 2 penos/40 matchs (0,9/90, ÷2), fautes stables (57). Le calibrage
+     fin ATTEND : 2 événements = sous le Poisson (la leçon — pas de sur-ajustage
+     sur 2 tirages ; re-mesure à 100+ matchs quand le théâtre s'enrichira).
+     Empreintes match INCHANGÉES (aucun duel de surface dans leurs fenêtres,
+     patron 166-graine-3). Épinglage retenueSurface:false 33+10. Clause 169
+     (flux directionnel 8×300 s). ET LA VALIDATION du fil 157-159 : la
+     récupération haute suit l'axe pressing (−15,3/−6,4/+4,3 m médian, regains
+     hauts ×12) — le pressing collectif 160-162 a fait le travail, pas de loi.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

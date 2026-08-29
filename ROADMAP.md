@@ -262,6 +262,13 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA RETENUE DE SURFACE (169, note 210) : les trois portes de la faute en boîte
+(debout × frein ÷ aggrF, glissé refusé au tirage × aggrF, accrochage ×0,4) —
+1,8 → 0,9 péno/90 min, fautes globales stables. La note aggrF fait le penalty.
+Calibrage fin en réserve (2 événements/40 matchs, sous le Poisson — re-mesure
+à 100+ matchs). Restent : le banc incarné (Loi 3), touches organiques (passes
+servo), throwInStyle soldé, réserves perf.
+
 LA RÉCUPÉRATION HAUTE EST SOLDÉE (mesure de validation, pas de loi — sonde 6×150 s
 appariée) : la hauteur médiane du regain suit l'axe pressing (−15,3 m à 0 / −6,4 à
 0,5 / +4,3 à 1) et les regains hauts (> 15 m) passent de 1 à 12. Le pressing
