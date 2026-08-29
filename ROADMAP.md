@@ -262,6 +262,12 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE DUEL DE LA PASSE EN PROFONDEUR (168, note 209) : la profondeur lit l'ESPACE
+(capEsp — la ligne proche fait le piqué court, 35/32 courts-longs) et le LECTEUR
+de trajectoire (reaction × (2 − anticipF) → le point de coupe, 13 coupes/30 min,
+l'attaque à 31 %). Les dettes du 167 soldées. Empreintes 1c4431e0fcf20da9 /
+7bf93c00a718132a.
+
 LA COURSE SERVIE (167, note 208 — retour utilisateur ×2 sur les passes en
 profondeur) : le solveur dose le SPRINT PROMIS (vCourse × topF), le burst porte
 sa direction, la mène de course SURVIT au contact (strikeNow l'écrasait — le

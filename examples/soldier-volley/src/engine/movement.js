@@ -146,6 +146,32 @@ export function movePlayers(st, dt, cfg) {
         st.events.push({ type: 'burst', kind: 'chasse', by: p.id, t: +st.t.toFixed(2) });
       }
     }
+    // LE LECTEUR DE TRAJECTOIRE (168, cfg.lectureCourse && st.full) : sur un PIQUÉ
+    // (st.pass.through), le défenseur de champ le plus proche de la trajectoire restante part
+    // au point de COUPE — s'il y arrive avant le ballon — après sa latence de LECTURE :
+    // reaction × (2 − anticipF). Le lecteur (anticipation 90) jaillit à ~0,12 s, l'aveugle à
+    // ~0,35 s : la note DÉFENSIVE répond à la note du passeur — le duel de la passe en
+    // profondeur a ses deux camps. Un seul lecteur par piqué. Clé absente : hier au bit.
+    if (st.full && cfg.lectureCourse && st.pass?.through && !st.pass._lu && !p.keeper
+      && p.team !== st.players[st.pass.from]?.team && p.down <= 0 && p._pace.until < st.t
+      && st.t - st.pass.t > (p.skill?.reaction ?? 0.18) * (2 - (p.skill?.anticipF ?? 1))) {
+      const L = st.pass.lead, bX = st.ball.p[0], bZ = st.ball.p[2];
+      const ux = L[0] - bX, uz = L[2] - bZ, len = Math.hypot(ux, uz) || 1;
+      const along = ((p.p[0] - bX) * ux + (p.p[2] - bZ) * uz) / len;
+      if (along > 1 && along < len - 1) {
+        const cX = bX + (ux / len) * along, cZ = bZ + (uz / len) * along;
+        const dMoi = Math.hypot(p.p[0] - cX, p.p[2] - cZ);
+        const vB = Math.max(3, Math.hypot(st.ball.v[0], st.ball.v[2]));
+        if (dMoi < (cfg.lectureCourse.porte ?? 4) && dMoi / 6.4 < along / vB - 0.05
+          && st.players.every((q) => q === p || q.team === p.team || q.keeper || q.down > 0
+            || Math.hypot(q.p[0] - cX, q.p[2] - cZ) >= dMoi - 1e-9)) {
+          st.pass._lu = true;
+          p.job = 'intercept'; p.target = [cX, 0, cZ];
+          p._pace = { until: st.t + 0.9, kind: 'lecture', next: p._pace?.next ?? st.t + 8 };
+          st.events.push({ type: 'burst', kind: 'lecture', by: p.id, t: +st.t.toFixed(2) });
+        }
+      }
+    }
     // LE PREMIER PAS AU 50/50 (lot 153, cfg.premierPas — l'égalisateur nommé au 152 : les
     // seconds ballons se gagnaient au PLUS PROCHE, jamais au plus VIF). Le chasseur NOTÉ
     // LENT paie l'excédent de sa réaction sur le joueur moyen (0,22 s) : il TROTTE avant de

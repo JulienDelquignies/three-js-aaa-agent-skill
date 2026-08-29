@@ -6104,6 +6104,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      + l'épingle rend hier). Attributs consommés : topF (le sprint), visionF
      (la pointe), controlF (l'arrivée, du 128) ; la tactique vit aux naissances
      (transition/style, du 141/36) ; le rôle à la cadence (appel, du 10).
+- 209: Lot 168 — LE DUEL DE LA PASSE EN PROFONDEUR (les deux dettes du 167).
+     (a) LA PROFONDEUR LIT L'ESPACE (rondo.js, capEsp sous courseServie) : 30 %
+     des piqués partaient 12-16 m devant un coureur à < 6 m de la ligne (le
+     ballon traversait, mangé — 37/37 en classe 12+, l'uniformité). Le cap :
+     la distance à la LIGNE le long de la course + 2 m (advMin 4) ; la rupture
+     garde son plancher derrière la ligne. APRÈS : 35 courts / 32 longs — la
+     variété du réel. (b) LE LECTEUR DE TRAJECTOIRE (movement.js,
+     cfg.lectureCourse) : sur un piqué (st.pass.through — l'étiquette posée par
+     strikeNow), le défenseur de champ le plus proche de la trajectoire (≤ 4 m)
+     part au point de COUPE s'il y arrive avant le ballon, après sa latence de
+     LECTURE : reaction × (2 − anticipF) — la note DÉFENSIVE répond à la note
+     du passeur, le duel a ses deux camps. Un lecteur par piqué (le patron
+     un-seul-chasseur du 81). Mesuré : 34 lectures / 30 min, 13 piqués coupés
+     par le lecteur, l'attaque prend 31 % (réel 30-40). Lois par défaut →
+     empreintes re-datées 1c4431e0fcf20da9 / 7bf93c00a718132a ; épinglage
+     lectureCourse:false 32+10 mondes. La clause 167 RE-CALIBRÉE (la médiane
+     uniforme est morte EXPRÈS — le juge devient p90 ≥ 10 + classe profonde).
+     Clause 168 (le flux des lectures + l'épingle). Attributs : reaction
+     (latence, du 50/81), anticipF (la lecture, du 161) — deux notes déjà
+     consommées, un NOUVEAU théâtre.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

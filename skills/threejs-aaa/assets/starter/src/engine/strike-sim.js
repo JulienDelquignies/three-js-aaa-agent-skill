@@ -434,7 +434,7 @@ export function strikeNow(st, c, cfg) {
     ? Math.min(c.act ? c.act.t : 0, cfg.talonnade.seen ?? 0.08) : (c.act ? c.act.t : 0);
   st._surprise = { t: st.t, seen: seen118, n: (st._surprise?.n ?? 0) + 1 };
   st.phase = 'flight';
-  st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]], cross: !!choice.cross };
+  st.pass = { from: c.id, to: choice.to.id, lead, style: choice.style, t: st.t, flight: sol.flightTime, error: sol.error, origin: [from[0], from[2]], cross: !!choice.cross, ...(choice.through ? { through: true } : {}) };
   // LE TROISIÈME HOMME (lot 111, cfg.troisieme && st.full — « le foot est plus varié dans la
   // création ») : au DÉPART de A→B, le relais C (côté but de B, à portée de une-touche) pique
   // un appel court dans l'intervalle — la passe que B peut remettre en première intention

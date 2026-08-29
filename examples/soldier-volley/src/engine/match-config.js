@@ -166,7 +166,11 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
-  courseServie: { vCourse: 6.2, gap: 4, fenetre: 14, advMax: 16 },   // 167 : LA COURSE SERVIE — le solveur
+  courseServie: { vCourse: 6.2, gap: 4, fenetre: 14, advMax: 16, advMin: 4 },
+  lectureCourse: { porte: 4 },   // 168 : LE LECTEUR DE TRAJECTOIRE — sur un piqué, le défenseur
+                          // le plus proche de la trajectoire (≤ porte m) part au point de coupe
+                          // s'il y arrive avant le ballon, après reaction × (2 − anticipF) : la
+                          // note défensive répond au passeur. false : la trajectoire inviolée.   // 167 : LA COURSE SERVIE — le solveur
                           // de through dose le SPRINT promis (vCourse × topF), le burst porte sa
                           // direction (servable au premier pas), la pointe × visionF ; et l'appel
                           // AXIAL vise l'INTERVALLE de la ligne (gapZ ≥ gap m, fenêtre z) sinon

@@ -313,7 +313,7 @@ export function choosePass(st, cfg = RONDO) {
         const essaye = (plancher) => {
           let tRdv = d2(origin, m.p) / 11, P = null, solT = null;
           for (let it = 0; it < 2; it++) {
-            const adv = Math.max(Math.min(vSol * tRdv + pointeEff, CS ? (cfg.courseServie.advMax ?? 16) : Infinity), plancher);   // capé : le piqué caricatural (20 m+) filait en sortie (7/28 mesurés)
+            const adv = Math.max(Math.min(vSol * tRdv + pointeEff, CS ? (cfg.courseServie.advMax ?? 16) : Infinity, capEsp), plancher);   // capé : le piqué caricatural (20 m+) filait en sortie (7/28 mesurés)
             P = [m.p[0] + dirC[0] * adv, BALL.radius, m.p[2] + dirC[1] * adv];
             solT = solvePass(origin, P, { style: 'ground', arrival: arr });
             if (!solT) return null;
@@ -327,6 +327,19 @@ export function choosePass(st, cfg = RONDO) {
         // 6 m, plafonné hors des gants à −8 m du but) se TENTE d'abord ; couloir fermé ou
         // insolvable, on RETOMBE sur le point d'hier (le plancher dur tuait la candidature :
         // through 59 → 42 mesuré). La sonde AVANT : 3 réceptions derrière la ligne / 20 min.
+        // …ET LA PROFONDEUR LIT L'ESPACE (168) : le rendez-vous ne DÉPASSE la ligne que pour
+        // la rupture — 30 % des piqués partaient 12-16 m devant un coureur à < 6 m de la ligne
+        // (le ballon traversait, mangé). Le cap : la distance à la ligne LE LONG de la course
+        // + 2 m ; la ligne proche fait le piqué COURT, l'espace ouvert le long — la variété.
+        let capEsp = Infinity;
+        if (CS && !m._pace?.rupture) {
+          const gE = Math.sign(st.pitch.attackGoal(c.team).x || 1);
+          if (dirC[0] * gE > 0.25) {
+            let lg = -Infinity;
+            for (const q of foesL) if (!q.keeper && q.down <= 0) lg = Math.max(lg, q.p[0] * gE);
+            if (lg > -Infinity) capEsp = Math.max(cfg.courseServie.advMin ?? 4, (lg - m.p[0] * gE + 2) / (dirC[0] * gE));
+          }
+        }
         let plancher = 0;
         if (cfg.tranchant && m._pace?.rupture) {
           const _gx = st.pitch.attackGoal(c.team).x, gS = Math.sign(_gx || 1);
