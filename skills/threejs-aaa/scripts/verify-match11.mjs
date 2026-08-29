@@ -3415,5 +3415,41 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     p95 >= p50 * 1.1);
 }
 
+// ---- lot 164 : LE TEMPO MORD (la dilution des axes soldée — la tactique pèse comme les notes)
+{
+  // (a) LE MÉCANISME : la remise au tempo de l'équipe qui la joue (referee.tempoWait).
+  //     Même monde, même sortie fabriquée 2 frames plus tard — seule la tactique diffère.
+  const toucheAt = (tempo) => {
+    const st = makeMatch({ full: true, seed: 9, tactics: [{ tempo }, { tempo }] });
+    const cfg = matchCfg();
+    st.lastTouch = 0;
+    st.restart = null;
+    st.ball.restart([0, 0.11, (st.pitch.halfW ?? 34) + 2], { cause: 'test' });   // hors touche
+    for (let i = 0; i < 4 && !st.restart; i++) matchStep(st, 1 / 60, cfg);
+    return st.restart ? st.restart.at - st.t : -1;
+  };
+  const wPose = toucheAt(0), wVif = toucheAt(1), wMid = toucheAt(0.5);
+  ok(`lot 164 — LA REMISE AU TEMPO : la posée attend ${wPose.toFixed(1)} s, la vive ${wVif.toFixed(1)} s (écart ≥ 2,5 s ; 0,5 = restartWait nu ${wMid.toFixed(1)} s, l'identité des empreintes)`,
+    wPose - wVif >= 2.5 && Math.abs(wMid - 3.2) < 0.35);
+  // (b) LE FLUX : 6 graines × 120 s appariées (leçon Poisson — jamais 3 graines), le monde
+  //     vif circule PLUS ; sonde 164 : +12,7 % de passes (réel 15-20 %, avant-lot +4,5 %).
+  const passesA = (tempo) => {
+    let n = 0;
+    for (const seed of [4, 7, 11, 15, 21, 33]) {
+      const st = makeMatch({ full: true, seed, tactics: [{ tempo }, { tempo }] });
+      const cfg = matchCfg({ shotRange: 20 });
+      let nEv = 0;
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        while (nEv < st.events.length) if (st.events[nEv++].type === 'pass') n++;
+      }
+    }
+    return n;
+  };
+  const pV = passesA(1), pP = passesA(0);
+  ok(`lot 164 — LE FLUX AU TEMPO : le vif passe plus (${pV} ≥ ${pP} × 1,05 — trois canaux : remise jouée vite, tenue calme ×0,5, barre d'adoption ×0,7)`,
+    pV >= pP * 1.05);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

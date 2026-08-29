@@ -10,6 +10,7 @@ import { winding } from './gesture.js';
 import { keeperSpot } from './keeper.js';
 import { makeProfile } from './attributes.js';
 import { resoudreRole } from './roles.js';
+import { axe as axeT, tac as tacT } from './tactics.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -446,7 +447,7 @@ export function onOut(st, cfg) {
     deny(st, 'sortie-illisible');
     const x = Math.max(-pitch.hx + 1, Math.min(pitch.hx - 1, st.ball.p[0]));
     const z = Math.sign(st.ball.p[2] || 1) * (pitch.hz - 0.15);
-    st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + cfg.restartWait };
+    st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + tempoWait(st, cfg, 1 - st.lastTouch) };
     if (carried) { brake(0.35); st.restart.placed = false; st.restart.taker = nearTaker(st.restart.team); }
     else st.ball.restart([x, BALL.radius, z], { cause: 'touche' });
     st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
@@ -459,7 +460,7 @@ export function onOut(st, cfg) {
   if (r.type === 'but') {
     st.score[r.scorer] += 1;
     st.events.push({ t: +st.t.toFixed(2), type: 'but', team: r.scorer, score: [...st.score] });
-    st.restart = { type: 'engagement', p: [0, 0], team: r.team, at: st.t + cfg.restartWait + 0.6 };
+    st.restart = { type: 'engagement', p: [0, 0], team: r.team, at: st.t + tempoWait(st, cfg, r.team) + 0.6 };
     if (carried) {
       // le filet mange la vitesse — EN CONTINU si cfg.filet (bordFiletStep : le ballon va au
       // FOND, lot 116) ; sinon le brake ponctuel d'hier. Un joueur vient sortir le ballon du
@@ -492,7 +493,7 @@ export function onOut(st, cfg) {
     }
   } else {
     st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: r.type, team: r.team, p: [+r.x.toFixed(1), +r.z.toFixed(1)] });
-    st.restart = { type: r.type, p: [r.x, r.z], team: r.team, at: st.t + cfg.restartWait };
+    st.restart = { type: r.type, p: [r.x, r.z], team: r.team, at: st.t + tempoWait(st, cfg, r.team) };
     // LA POSE DU CORNER S'ALLONGE (lot 102, cfg.corner.pose — le vrai corner prend 20-40 s) :
     // les monteurs partent de 30-40 m, la marche de remise demande son temps (cornerSpots)
     if (r.type === 'corner' && st.full && cfg.corner) st.restart.at = st.t + (cfg.corner.pose ?? 10);
@@ -506,6 +507,13 @@ export function onOut(st, cfg) {
 
 /** Qui a le droit de prendre le ballon ? Pendant une remise : l'équipe de la remise, à l'heure,
  *  et JAMAIS avant que le ballon soit POSÉ au point de remise (la remise portée a son trajet). */
+/** LE TEMPO DE LA REMISE (lot 164 — le levier n° 1 du tempo réel : jouer vite ou poser le
+ *  ballon). L'attente de remise × axe tempo de l'ÉQUIPE QUI LA JOUE (vif 0,65 ↔ posé 1,35,
+ *  0,5 = ×1 l'identité au bit). st.full : le réduit garde son horloge d'hier. */
+function tempoWait(st, cfg, team) {
+  return cfg.restartWait * (st.full && team >= 0 ? axeT(tacT(st, team).tempo, 1.6, 0.4) : 1);
+}
+
 export function canTake(st, takerId) {
   if (!st.restart) return true;
   const p = st.players[takerId];
@@ -652,7 +660,7 @@ export function adjugeFaute(st, cfg) {
     : [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, F.p[0])), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, F.p[1]))];
   const type = dansSurface ? 'penalty' : 'coup-franc';
   st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: type, team: F.team, p: [+p[0].toFixed(1), +p[1].toFixed(1)] });
-  st.restart = { type, p, team: F.team, at: st.t + cfg.restartWait + (dansSurface ? 1 : 0) };
+  st.restart = { type, p, team: F.team, at: st.t + tempoWait(st, cfg, F.team) + (dansSurface ? 1 : 0) };
   if (cfg.restartCarried !== false) {
     st.restart.placed = false;
     const tk = st.players.filter((q) => q.team === F.team && !q.keeper && q.down <= 0)
@@ -707,7 +715,7 @@ export function administerWhistle(st, cfg) {
   const x = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, w.p[0]));
   const z = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, w.p[1]));
   st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: 'coup-franc', team: w.team, p: [+x.toFixed(1), +z.toFixed(1)] });
-  st.restart = { type: 'coup-franc', p: [x, z], team: w.team, at: st.t + cfg.restartWait };
+  st.restart = { type: 'coup-franc', p: [x, z], team: w.team, at: st.t + tempoWait(st, cfg, w.team) };
   st.ball.release('arrêt-de-jeu');
   st.ball.impulse([-st.ball.v[0] * 0.65, 0, -st.ball.v[2] * 0.65]);
   if (cfg.restartCarried !== false) {

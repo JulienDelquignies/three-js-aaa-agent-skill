@@ -262,6 +262,14 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE TEMPO MORD (164, note 205) : la dilution des axes soldée — la sonde des 4 axes
+au monde vivant montrait pressing/largeur/mentalité mordants et le TEMPO dilué
+(+4,5 % de passes 0→1). Trois canaux (remise au tempo 1,6/0,4 — jouer vite ou
+poser, tenue calme 1,5/0,5, barre d'adoption 1,3/0,7), tous identité ×1 à 0,5
+(les paires somment à 2). Passes 0→1 : +12,7 % (réel 15-20 %). Restent : le banc
+incarné (Loi 3), les pénos absents (Lois 12/14), throwInStyle/setPiecesFocus,
+la preuve de flux de commandF, la récupération haute.
+
 LE TRIO GARDIEN (163, note 204) : aerialReach (la prise haute — garde et seuil
 d'onDive à la note, gant tendu 2,42 m au 90, prouvé par fixture pure), oneOnOnes
 (les portes du cône de sortie 1v1 × oooF, prouvé par keeperDecide), command (le

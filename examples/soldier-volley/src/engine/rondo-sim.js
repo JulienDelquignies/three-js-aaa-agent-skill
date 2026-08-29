@@ -132,8 +132,7 @@ function stepGestures(st, dt, cfg) {
       else if (p.act?.payload?.kind === 'tacle-debout') standTackleNow(st, p, cfg);
       else if (p.act?.payload?.kind === 'skill') skillContactNow(st, p, cfg);
     } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
-      // la fin d'un geste technique STAMPE ses mesures — le banc juge des chiffres de la sim,
-      // pas une reconstruction de trace échantillonnée
+      // la fin d'un geste technique STAMPE ses mesures — le banc juge la sim, pas une trace échantillonnée
       const A = actBefore.payload;
       // LA SORTIE EXPLOSE (122, cfg.skill.sortieBurst && st.full) : l'élimination menée au bout AVEC le
       // ballon débouche sur une accélération franche (_pace ×1,28) — mesuré avant : TOUTES les sorties
@@ -836,7 +835,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (st._calmKey !== `${st.possession.carrier}:${st.turnovers}:${st.passes}`) {
       st._calmKey = `${st.possession.carrier}:${st.turnovers}:${st.passes}`;
       // × persona.calm : le posé et le vif ne tiennent pas le ballon pareil — l'identité au tempo
-      { const hc = (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.35, 0.65); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
+      { const hc = (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.5, 0.5); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
     }
     const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
     const calm = foeBody > cfg.calmFoe;
@@ -945,7 +944,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // partait en conduite — retour utilisateur). false : l'engagement porté d'hier.
         const engagementCall = st.full && cfg.engagementPasse !== false
           && st._engagement && st._engagement.by === c.id && st.t - st._engagement.t < 2.5;
-        const bar = calm ? (engagementCall ? 0.2 : cfg.intentBarCalm) : 3.2;
+        // …et la BARRE CALME AU TEMPO (164) : la vive adopte plus tôt, la posée exige mieux
+        const bar = calm ? (engagementCall ? 0.2 : cfg.intentBarCalm * axeTac(tacDe(st, c.team).tempo, 1.3, 0.7)) : 3.2;
         // …ET LE BALLON RÉCUPÉRÉ SE DOMPTE (cfg.settleMin, match) : même pressé, on ne redonne
         // pas à l'image de la prise — la course au ballon libre fabriquait un ping-pong de
         // récupérations-éclair (23 passes/min mesurées, la bande futsal s'arrête à 20). L'appel

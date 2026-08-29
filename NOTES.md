@@ -6020,6 +6020,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      humaines. Restent (ROADMAP) : la dilution des axes tempo/mentalité, le banc
      incarné, les pénos (Lois 12/14), throwInStyle/setPiecesFocus.
 
+- 205: Lot 164 — LE TEMPO MORD (la dilution des axes soldée). Sonde AVANT des 4
+     axes dans le monde VIVANT (3 graines × 150 s appariées, tactics [tq,tq]) :
+     pressing +113 % de fenêtres, largeur +9,8 m, mentalité avant 21→34 — ils
+     MORDENT ; le tempo seul était dilué (+4,5 % de passes 0→1 ; réel 15-20 %).
+     Cause : UN canal unique (la tenue calme ×1,35/0,65, lot 149) noyé par les
+     autres sources de hold. TROIS canaux désormais, tous 0,5 = ×1 au bit (les
+     paires SOMMENT À 2 — leçon : 1,18/0,85 rendait 1,015 au milieu, l'identité
+     mourait d'un centile) : (1) LA REMISE AU TEMPO (referee.tempoWait, les 5
+     sites de st.restart) — l'attente × axe(tempo équipe qui joue, 1,6/0,4) :
+     jouer vite sa touche À 1,3 s ou la poser À 5,1 s, LE levier n° 1 du tempo
+     réel ; (2) la tenue calme élargie (1,5/0,5) ; (3) la barre d'adoption calme
+     intentBarCalm × axe(1,3/0,7) — la vive lâche plus tôt, la posée exige mieux.
+     Mesure APRÈS (6 graines × 150 s, leçon Poisson) : passes 307→346 (+12,7 %),
+     0,5 = 307 le monde d'hier. A/B 20×300 s : 98 tirs, 18 buts (bande 8-22).
+     Empreintes : les 4 IDENTIQUES (l'axe est déjà l'injectable — pas de clé
+     neuve, le défaut 0,5 EST l'épingle). Clause 164 ×2 (mécanisme remise
+     déterministe + flux 6 graines ≥ +5 %). L'A/B reste significatif : le
+     cerveau de coach (113) déplace le tempo hors 0,5 en match.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
