@@ -262,6 +262,12 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA RÉCUPÉRATION HAUTE EST SOLDÉE (mesure de validation, pas de loi — sonde 6×150 s
+appariée) : la hauteur médiane du regain suit l'axe pressing (−15,3 m à 0 / −6,4 à
+0,5 / +4,3 à 1) et les regains hauts (> 15 m) passent de 1 à 12. Le pressing
+collectif des lots 160-162 (teamwork/anticipation/compression) a fait le travail —
+le fil 157-159 se ferme.
+
 LE DUEL DE LA PASSE EN PROFONDEUR (168, note 209) : la profondeur lit l'ESPACE
 (capEsp — la ligne proche fait le piqué court, 35/32 courts-longs) et le LECTEUR
 de trajectoire (reaction × (2 − anticipF) → le point de coupe, 13 coupes/30 min,
