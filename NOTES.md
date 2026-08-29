@@ -6037,7 +6037,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Empreintes : les 4 IDENTIQUES (l'axe est déjà l'injectable — pas de clé
      neuve, le défaut 0,5 EST l'épingle). Clause 164 ×2 (mécanisme remise
      déterministe + flux 6 graines ≥ +5 %). L'A/B reste significatif : le
-     cerveau de coach (113) déplace le tempo hors 0,5 en match.
+     cerveau de coach (113) déplace le tempo hors 0,5 en match. La clause
+     149-tempo (flux à UNE graine) a cassé à l'élargissement (49 c. 50 — le
+     Poisson miniature) : re-datée sur le MÉCANISME (tenue calme moyenne posé
+     ≥ vif × 2 ; mesuré 2,35 c. 0,75 s), le flux vit en 164b. Banc 176 ✓.
+     LEÇON DE FIXTURE : BallBody.restart exige une cause du REGISTRE — « test »
+     n'existe pas, la fixture nomme « touche ».
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
