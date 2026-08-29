@@ -262,6 +262,14 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA TOUCHE LONGUE (165, note 206) : tac.cpa.touche 'longue' — la rentrée du tiers
+offensif se pose (15 s), les grands montent aux postes proches, le jet plat 28 m
+vise le poste HABITÉ. Opt-in pur, empreintes intactes. La dette de théâtre :
+« touches organiques » (3 touches/30 min mesurées, 0 offensives ; réel ~40/90 min)
+— le front qui rendra le trébuchet visible. throwInStyle est SOLDÉ ; reste
+setPiecesFocus éventuel, le banc incarné, les pénos (taux apparent 3/80 min à
+re-mesurer à 40 matchs — 3 événements, sous le Poisson).
+
 LE TEMPO MORD (164, note 205) : la dilution des axes soldée — la sonde des 4 axes
 au monde vivant montrait pressing/largeur/mentalité mordants et le TEMPO dilué
 (+4,5 % de passes 0→1). Trois canaux (remise au tempo 1,6/0,4 — jouer vite ou

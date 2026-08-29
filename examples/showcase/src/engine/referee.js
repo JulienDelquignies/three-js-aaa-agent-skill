@@ -145,33 +145,53 @@ export function stepRemplacements(st, cfg) {
  */
 export function remiseEnTouche(st, id, cfg) {
   const q = st.players[id];
-  const R = cfg.loi15?.range ?? 18;
+  // la touche LONGUE (165) : au tiers offensif avec la tactique, la portée s'étend et la
+  // SURFACE devient une cible primée — sans elle, R et barème d'hier au bit. La porte se
+  // recalcule du LANCEUR (il est à la ligne : st.restart est déjà consommé à l'onTake)
+  const gT = st.pitch.attackGoal(q.team), sgT = Math.sign(gT.x || 1);
+  const longue = st.full && st.tactics?.[q.team]?.cpa?.touche === 'longue' && q.p[0] * sgT > st.pitch.hx / 3;
+  const R = longue ? (cfg.loi15?.longue ?? 25) : (cfg.loi15?.range ?? 18);
   const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
   if (!mates.length) return;
   const foes = st.players.filter((m) => m.team !== q.team && m.down <= 0);
   const dOf = (m) => Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]);
-  let best = null, bestS = -Infinity;
+  // le jet LONG se lance SUR LE POSTE du plan (le monteur l'ATTAQUE en course — le vrai jet
+  // long est un centre à la main) ; sans plan ou sans la tactique, la cible est le corps même
+  const postOf = (m) => {
+    const pt = longue && st._touchePlan?.team === q.team ? st._touchePlan.map[m.id] : null;
+    return pt && Math.hypot(m.p[0] - pt[0], m.p[2] - pt[1]) <= 9 ? pt : null;   // un poste ne se sert qu'HABITÉ — pas de jet dans une boîte vide
+  };
+  let best = null, bestS = -Infinity, bestT = null;
   for (const m of mates) {
-    const d = dOf(m);
+    const post = postOf(m);
+    const tx = post ? post[0] : m.p[0], tz = post ? post[1] : m.p[2];
+    const d = Math.hypot(tx - q.p[0], tz - q.p[2]);
     if (d < 2 || d > R) continue;
-    const guard = Math.min(...foes.map((f) => Math.hypot(f.p[0] - m.p[0], f.p[2] - m.p[2])), 99);
-    const s = Math.min(guard, 8) - d * 0.08;                      // le plus démarqué, à portée
-    if (s > bestS) { bestS = s; best = m; }
+    const guard = Math.min(...foes.map((f) => Math.hypot(f.p[0] - tx, f.p[2] - tz)), 99);
+    let s = Math.min(guard, 8) - d * 0.08;                        // le plus démarqué, à portée
+    if (longue) {
+      const box = Math.abs(tx - gT.x) < 16.5 && Math.abs(tz) < 20.16;
+      if (box) s += 6 + 2 * (m.skill?.chargeF ?? 1);              // la boîte prime, le GRAND dans la boîte double
+      if (post) s -= Math.hypot(m.p[0] - tx, m.p[2] - tz) * 0.15; // le monteur encore LOIN de son poste paie
+    }
+    if (s > bestS) { bestS = s; best = m; bestT = [tx, tz]; }
   }
   best ??= mates.sort((a, b) => dOf(a) - dOf(b))[0];              // à défaut : le plus proche, court
-  const dx = best.p[0] - q.p[0], dz = best.p[2] - q.p[2];
+  bestT ??= [best.p[0], best.p[2]];
+  if (longue) st._touchePlan = null;                              // le plan est CONSOMMÉ par le jet
+  const dx = bestT[0] - q.p[0], dz = bestT[1] - q.p[2];
   const Rr = Math.min(Math.hypot(dx, dz), R);
-  const theta = 0.55;                                             // ~32° : la cloche de la touche
+  const theta = longue && Math.hypot(dx, dz) > 19 ? 0.42 : 0.55;  // ~32° la cloche ; le jet LONG part plat (~24°)
   const speed = Math.sqrt(Math.max(4, Rr) * 9.81 / Math.sin(2 * theta));
   st.ball.release('touche');                                      // la cause VRAIE au grand livre
   st.ball.strike({ speed, dirYaw: Math.atan2(dz, dx), elevation: theta, spinAxis: [0, 1, 0], spinRev: 0 });
   st.phase = 'flight';
   st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   const T = 2 * speed * Math.sin(theta) / 9.81;
-  st.pass = { from: id, to: best.id, lead: [best.p[0], 0, best.p[2]], style: 'touche', t: st.t, flight: T, origin: [q.p[0], q.p[2]] };
+  st.pass = { from: id, to: best.id, lead: [bestT[0], 0, bestT[1]], style: 'touche', t: st.t, flight: T, origin: [q.p[0], q.p[2]] };
   // 'rentrée', pas 'touche' : l'événement 'touche' est le TOUCHER de balle (conduite) — un
   // même mot, deux faits ; le registre les sépare
-  st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: id, to: best.id, range: +Rr.toFixed(1) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: id, to: best.id, range: +Rr.toFixed(1), genre: longue && Rr > 19 ? 'longue' : undefined });
 }
 
 /**
@@ -369,7 +389,35 @@ export function cornerSpots(st, r, p, cfg) {
     });
     const pot = defs.filter((d) => !pris.has(d.id)).sort((a, b) => Math.hypot(a.p[0] - g.x, a.p[2] - cz * gh) - Math.hypot(b.p[0] - g.x, b.p[2] - cz * gh))[0];
     if (pot) map[pot.id] = [g.x - sg * 0.6, cz * (gh - 0.4)];
-    return { at: r.at, map };
+    return { at: r.at, team: r.team, map };
+  })());
+  return P.map[p.id] ?? null;
+}
+
+/** LA TOUCHE LONGUE (lot 165, tac.cpa.touche 'longue') : dans le TIERS OFFENSIF, la rentrée
+ *  devient une arme de surface (le trébuchet) — trois cibles montent dans la boîte pendant la
+ *  pose (le patron du corner, lot 102) et le jet part PLAT et LONG (loi15.longue). Ailleurs,
+ *  ou sans la tactique : null — le monde d'hier au bit. Dettes : le marquage dédié du
+ *  défendant, l'essuie-glace du deuxième ballon. */
+export function toucheLonguePrête(st, r) {
+  if (!st.full || r.type !== 'touche' || st.tactics?.[r.team]?.cpa?.touche !== 'longue') return false;
+  const g = st.pitch.attackGoal(r.team), sg = Math.sign(g.x || 1);
+  return r.p[0] * sg > st.pitch.hx / 3;
+}
+export function toucheSpots(st, r, p, cfg) {
+  if (!toucheLonguePrête(st, r)) return null;
+  const P = st._touchePlan?.at === r.at ? st._touchePlan : (st._touchePlan = (() => {
+    const g = st.pitch.attackGoal(r.team), sg = Math.sign(g.x || 1), cz = Math.sign(r.p[1] || 1);
+    const spot = st.pitch.dims.spot ?? 11, L = cfg.loi15?.longue ?? 25;
+    // le jet long vise le CÔTÉ PROCHE de la surface (la géométrie : depuis la ligne, le
+    // second poteau est hors de portée d'un bras humain) — premier poteau, axe proche, retrait
+    const posts = [[g.x - sg * 6, cz * ((st.pitch.goalHalf ?? 3.7) + 4)], [g.x - sg * spot, cz * 9], [g.x - sg * 9, cz * 14]]
+      .filter((pt) => Math.hypot(pt[0] - r.p[0], pt[1] - r.p[1]) <= L - 2);   // seuls les postes À PORTÉE montent
+    const atk = st.players.filter((q) => q.team === r.team && !q.keeper && q.id !== r.taker && q.down <= 0 && !q.expulse && !q._sub)
+      .sort((a, b) => (b.skill?.chargeF ?? 1) - (a.skill?.chargeF ?? 1)).slice(0, posts.length);   // les GRANDS montent
+    const map = {};
+    atk.forEach((q, i) => { map[q.id] = posts[i]; });
+    return { at: r.at, team: r.team, map };
   })());
   return P.map[p.id] ?? null;
 }
@@ -448,6 +496,9 @@ export function onOut(st, cfg) {
     const x = Math.max(-pitch.hx + 1, Math.min(pitch.hx - 1, st.ball.p[0]));
     const z = Math.sign(st.ball.p[2] || 1) * (pitch.hz - 0.15);
     st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + tempoWait(st, cfg, 1 - st.lastTouch) };
+    // LA TOUCHE LONGUE SE POSE (165) : le lanceur essuie le ballon, les grands montent
+    // (réel 15-30 s) — sans la tactique ou hors du tiers offensif, l'horloge d'hier au bit
+    if (toucheLonguePrête(st, st.restart)) st.restart.at = st.t + (cfg.loi15?.pose ?? 12);
     if (carried) { brake(0.35); st.restart.placed = false; st.restart.taker = nearTaker(st.restart.team); }
     else st.ball.restart([x, BALL.radius, z], { cause: 'touche' });
     st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;

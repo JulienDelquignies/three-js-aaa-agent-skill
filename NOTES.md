@@ -6043,6 +6043,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ≥ vif × 2 ; mesuré 2,35 c. 0,75 s), le flux vit en 164b. Banc 176 ✓.
      LEÇON DE FIXTURE : BallBody.restart exige une cause du REGISTRE — « test »
      n'existe pas, la fixture nomme « touche ».
+- 206: Lot 165 — LA TOUCHE LONGUE (tac.cpa.touche 'longue', le trébuchet). La
+     rentrée du tiers offensif devient une arme de surface : la remise SE POSE
+     (loi15.pose 15 s — le lanceur essuie, réel 15-30 s, le patron corner.pose),
+     trois GRANDS (chargeF) montent aux postes du côté proche (premier poteau,
+     axe, retrait — referee.toucheSpots, le patron cornerSpots, hook mutualisé
+     avec cSpot dans assignJobs), la portée passe à loi15.longue 28 m, le jet
+     part PLAT (24° au-delà de 19 m) et vise LE POSTE — mais un poste ne se sert
+     qu'HABITÉ (monteur ≤ 9 m : pas de jet dans une boîte vide) ; le barème prime
+     la boîte (+6+2×chargeF). Défaut : la touche d'hier AU BIT (empreintes ×4
+     identiques — opt-in pur, le patron cpa du 148). DEUX leçons de site : la
+     porte se recalcule du LANCEUR (st.restart est consommé à l'onTake) ; la
+     branche touche de onOut RETURN avant le site du corner (la pose du 160b
+     rejouée — poser la loi DANS la branche). Théâtre du flux : quasi vide
+     (3 touches/30 min côté 0, 0 offensives) — la preuve est au MÉCANISME
+     (fixture déterministe, patron 164a), la dette « touches organiques » (le
+     monde sous-produit les sorties en touche, réel ~40/90 min) reste le front
+     qui donnera son théâtre au trébuchet. Clause 165 ×2.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

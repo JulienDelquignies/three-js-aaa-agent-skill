@@ -87,7 +87,8 @@ export function resoudreTactique(t) {
     // LES COUPS DE PIED ARRÊTÉS PAR ÉQUIPE (lot 148 — la demande MESURÉE du consommateur
     // carrière : « un corner est deux constantes globales ») : un CPA n'est pas un axe,
     // c'est une SITUATION — il a son espace. { corner: 'court'|'premier'|'second'|'mixte',
-    // coupFranc: 'direct'|'centre'|'mixte', marquage: 'homme'|'zone' }. Absent : les
+    // coupFranc: 'direct'|'centre'|'mixte', marquage: 'homme'|'zone',
+    // touche: 'longue' (165 — le trébuchet du tiers offensif) }. Absent : les
     // tirages du moteur d'aujourd'hui, au bit (l'opt-in pur, le patron squads).
     cpa: base.cpa ?? null,
     nom: typeof t === 'string' ? t : (base.nom ?? 'personnalisée'),

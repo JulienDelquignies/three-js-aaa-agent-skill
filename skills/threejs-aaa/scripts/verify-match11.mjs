@@ -3459,5 +3459,32 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     pV >= pP * 1.05);
 }
 
+// ---- lot 165 : LA TOUCHE LONGUE (tac.cpa.touche 'longue' — le trébuchet du tiers offensif)
+{
+  // La fixture du patron 164a : touche fabriquée au tiers offensif, même monde, seule la
+  // tactique diffère. Le théâtre du flux vivant est quasi vide (3 touches/30 min mesurées,
+  // 0 offensives — la dette « touches organiques ») : la preuve est au MÉCANISME.
+  const jet = (cpa) => {
+    const st = makeMatch({ full: true, seed: 9, tactics: [{ cpa }, {}] });
+    const cfg = matchCfg();
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
+    st.lastTouch = 1; st.restart = null;
+    st.ball.restart([sg * (st.pitch.hx - 12), 0.11, st.pitch.hz + 1.5], { cause: 'touche' });
+    let ev = null, nEv = st.events.length;
+    for (let i = 0; i < 50 * 60 && !ev; i++) {
+      matchStep(st, 1 / 60, cfg);
+      while (nEv < st.events.length) { const e = st.events[nEv++]; if (e.type === 'rentrée') ev = e; }
+    }
+    const lead = st.pass?.lead;
+    return { t: ev?.t ?? -1, range: ev?.range ?? 0, genre: ev?.genre,
+      boxLead: !!lead && Math.abs(lead[0] - g.x) < 17.5 && Math.abs(lead[2]) < 21 };
+  };
+  const L = jet({ touche: 'longue' }), D = jet(null);
+  ok(`lot 165 — LA TOUCHE LONGUE lance en boîte (genre ${L.genre}, ${L.range} m ≥ 20, lead en surface ${L.boxLead} — les grands montent pendant la pose et le jet vise le POSTE habité)`,
+    L.genre === 'longue' && L.range >= 20 && L.boxLead === true);
+  ok(`lot 165 — SANS la tactique, la touche d'hier au bit (${D.range} m ≤ 18,5, pas de genre, jet à ${D.t.toFixed(1)} s c. ${L.t.toFixed(1)} s posés — la pose n'existe que pour le trébuchet, écart ≥ 3 s)`,
+    D.range <= 18.5 && D.genre == null && L.t - D.t >= 3);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

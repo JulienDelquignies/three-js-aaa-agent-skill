@@ -538,7 +538,10 @@ export const MATCH = {
                           // manager, une UI, une IA de banc. false : la porte tournante
                           // fermée (sabotage nommé — remplacer() refuse tout). Dettes :
                           // le banc incarné, les fenêtres comptées (3 + mi-temps).
-  loi15: { range: 18 },   // LA LOI 15 (11c11, st.full) : la rentrée de TOUCHE se lance À LA
+  loi15: { range: 18,     // LA LOI 15 (11c11, st.full) : la rentrée de TOUCHE se lance À LA
+    longue: 28,           // …et la TOUCHE LONGUE (165, tac.cpa.touche 'longue') porte à CE
+    pose: 15 },           // …avec SA pose (le lanceur essuie, la boîte se remplit — réel 15-30 s)
+                          // rayon au tiers offensif — le trébuchet, plat (~24°), la boîte primée
                           // MAIN — à la prise (hook onTake), le lanceur sert un coéquipier à
                           // portée de bras (range m) et le ballon part EN CLOCHE (~32°,
                           // release('touche') au grand livre). L'exemption de la Loi 11 est

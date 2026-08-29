@@ -11,7 +11,7 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien } from './keeper.js';
@@ -204,8 +204,8 @@ function assignMatchJobs(st, cfg) {
         p.job = 'keeper'; p.target = [s.x, 0, s.z]; continue;
       }
       if (p.id === r.taker) continue;                               // le preneur a son métier (plus bas)
-      // LE PLACEMENT DU CORNER (lot 102, referee.cornerSpots) : les grands montent, le marquage homme, le premier poteau — les corps COURENT en place pendant la pose allongée
-      const cSpot = st.full && cfg.corner && r.type === 'corner' ? cornerSpots(st, r, p, cfg) : null;
+      // LE PLACEMENT DU CORNER (102) et de la TOUCHE LONGUE (165) : les grands montent en boîte pendant la pose
+      const cSpot = st.full && cfg.corner && r.type === 'corner' ? cornerSpots(st, r, p, cfg) : (st.full && r.type === 'touche' ? toucheSpots(st, r, p, cfg) : null);
       if (cSpot) { p.job = 'walk'; p.target = [cSpot[0], 0, cSpot[1]]; continue; }
       if (l14) { l14clamp(p); continue; }                           // la cérémonie vaut pour les DEUX camps
       if (r.type === 'engagement') {
