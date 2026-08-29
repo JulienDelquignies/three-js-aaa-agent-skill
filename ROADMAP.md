@@ -262,6 +262,15 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA COURSE SERVIE (167, note 208 — retour utilisateur ×2 sur les passes en
+profondeur) : le solveur dose le SPRINT PROMIS (vCourse × topF), le burst porte
+sa direction, la mène de course SURVIT au contact (strikeNow l'écrasait — le
+vrai tueur), l'appel axial vise l'INTERVALLE (gapZ) sinon croise. Avance médiane
+3,6 → 15,2 m, 5 espèces de course, 36 % de services profonds gagnés. Empreintes
+129e32dd2322f977 / da06e317436ff50c. Dettes : la variété des profondeurs (med 15
+uniforme — mêler des piqués courts 6-10 m), le contre du défenseur qui lit la
+course (anticipF en interception de trajectoire).
+
 LE DUEL CONTESTÉ (166, note 207) : le tacle gagné n'est une prise propre qu'à la
 garde (prise 0,55 × tacleGardeF — la note tackling, 39e facteur) ; sinon la fente
 pousse le ballon devant elle, vivant à disputer. Empreinte graine 7 re-datée

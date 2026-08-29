@@ -291,17 +291,29 @@ export function choosePass(st, cfg = RONDO) {
     let through = null;
     if (servi && cfg.throughBall) {
       const vRun = Math.hypot(m.v[0], m.v[1]);
-      if (vRun > 2.5) {
-        const dirC = [m.v[0] / vRun, m.v[1] / vRun];
+      // LA COURSE À VENIR (167, cfg.courseServie — retour utilisateur : « aucun joueur ne court
+      // derrière un ballon ») : le solveur dosait la vitesse INSTANTANÉE du coureur (servi à
+      // 0,4 s médian de la naissance : 15/51 sous 2,5 m/s → null, avance médiane 3,6 m — la
+      // chasse invisible). Le vrai passeur dose le SPRINT que l'appel promet : vSol = vCourse
+      // × topF (la pointe de vitesse est une note), et le burst PORTE sa direction (_pace.dir)
+      // — servable dès le premier pas. Clé absente : la myopie d'hier au bit.
+      const CS = st.full && cfg.courseServie;
+      const dirP = CS && m._pace?.dir && vRun < 3 ? m._pace.dir
+        : (vRun > 2.5 ? [m.v[0] / vRun, m.v[1] / vRun] : null);
+      if (dirP) {
+        const dirC = dirP;
+        const vSol = CS ? Math.max(vRun, (cfg.courseServie.vCourse ?? 6.2) * (m.skill?.topF ?? 1)) : vRun;
         const arr = Math.max(4.2, Math.min(6.5, 4.8 + 1.7 * ((m.skill?.controlF ?? 1) - 0.85) / 0.3));
         // …L'AIGUILLE (140) : le couloir exigé se resserre pour le PASSEUR à la vision
         // (visionF 0,85…1,15, 1 = ×1 exact au 50) — la tranchante passe par le chas
         const aiguille = st.full && cfg.tranchant ? Math.max(0.78, Math.min(1.15, 2 - (c.skill?.visionF ?? 1))) : 1;
         // le rendez-vous itéré, essayé avec un PLANCHER d'avance (0 = la pointe d'hier)
+        // …et la POINTE ose à la VISION du passeur (167) : celui qui voit sert plus profond
+        const pointeEff = (cfg.throughBall.pointe ?? 2.5) * (CS ? (c.skill?.visionF ?? 1) : 1);
         const essaye = (plancher) => {
           let tRdv = d2(origin, m.p) / 11, P = null, solT = null;
           for (let it = 0; it < 2; it++) {
-            const adv = Math.max(vRun * tRdv + (cfg.throughBall.pointe ?? 2.5), plancher);
+            const adv = Math.max(Math.min(vSol * tRdv + pointeEff, CS ? (cfg.courseServie.advMax ?? 16) : Infinity), plancher);   // capé : le piqué caricatural (20 m+) filait en sortie (7/28 mesurés)
             P = [m.p[0] + dirC[0] * adv, BALL.radius, m.p[2] + dirC[1] * adv];
             solT = solvePass(origin, P, { style: 'ground', arrival: arr });
             if (!solT) return null;
@@ -478,6 +490,20 @@ function supportSpot(st, me, cfg, anchor, carrierId, { sector = 0, claimed = [],
  * Heading convention is THIS module's: `p.yaw = atan2(v[1], v[0])`, so forward is [cos, sin] — 90° off
  * the project-wide atan2(x, z) used by world-basis.js and the CharacterController.
  */
+/** L'INTERVALLE (167) : le milieu du plus grand espace en z entre deux défenseurs DEVANT le
+ *  coureur (la ligne triée) — la course « entre deux joueurs » du vrai foot. null : pas de gap
+ *  servable (fenêtre latérale CS.fenetre, largeur minimale CS.gap). */
+export function gapZ(st, p, atk, sgn, CS) {
+  const ligne = st.players.filter((q) => q.team !== atk && !q.keeper && q.down <= 0 && (q.p[0] - p.p[0]) * sgn > 2)
+    .sort((a, b) => a.p[2] - b.p[2]);
+  let gap = null, gw = 0;
+  for (let k = 0; k + 1 < ligne.length; k++) {
+    const w = ligne[k + 1].p[2] - ligne[k].p[2], mid = (ligne[k + 1].p[2] + ligne[k].p[2]) / 2;
+    if (w > gw && Math.abs(mid - p.p[2]) < (CS.fenetre ?? 14)) { gw = w; gap = mid; }
+  }
+  return gap != null && gw >= (CS.gap ?? 4) ? gap : null;
+}
+
 export function evadeSpot(st, c, cfg = RONDO) {
   const enemies = st.players.filter((p) => p.team !== c.team);
   const mates = st.players.filter((p) => p.team === c.team && p.id !== c.id);

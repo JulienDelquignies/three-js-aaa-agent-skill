@@ -273,6 +273,27 @@ export function strikeNow(st, c, cfg) {
   // de course posée par choosePass (le tir garde sa cible fixe)
   const tRe = choice.shot ? 0 : (cfg.leadTime ? cfg.leadTime(Math.hypot((rec?.p[0] ?? 0) - from[0], (rec?.p[2] ?? 0) - from[2]), rec) : 0.18);
   let lead = rec ? [rec.p[0] + rec.v[0] * tRe, 0, rec.p[2] + rec.v[1] * tRe] : choice.lead;
+  // LA MÈNE DE COURSE SURVIT AU CONTACT (167, cfg.courseServie — retour utilisateur : « aucun
+  // joueur ne court derrière un ballon ») : le through élu posait un rendez-vous 8-11 m devant,
+  // la re-mène générique ci-dessus l'ÉCRASAIT à la frappe (mène frappée 3,6 m médiane, mesuré).
+  // Le contact re-résout LA MÊME loi que le choix : le sprint promis (vCourse × topF) × le vol,
+  // + la pointe à la vision du passeur — la position du coureur a bougé pendant l'armé, le POINT
+  // se re-calcule, il ne se rabat pas. Clé absente : l'écrasement d'hier au bit.
+  if (choice.through && rec && st.full && cfg.courseServie) {
+    const vR = Math.hypot(rec.v[0], rec.v[1]);
+    const dirT = vR > 1 ? [rec.v[0] / vR, rec.v[1] / vR] : (rec._pace?.dir ?? null);
+    if (dirT) {
+      let tV = Math.hypot(rec.p[0] - from[0], rec.p[2] - from[2]) / 11;
+      const vS = Math.max(vR, (cfg.courseServie.vCourse ?? 6.2) * (rec.skill?.topF ?? 1));
+      for (let it = 0; it < 2; it++) {
+        const adv = Math.min(vS * tV + (cfg.throughBall?.pointe ?? 2.5) * (c.skill?.visionF ?? 1), cfg.courseServie.advMax ?? 16);
+        lead = [rec.p[0] + dirT[0] * adv, 0, rec.p[2] + dirT[1] * adv];
+        const s2 = solvePass(from, lead, { style: 'ground', arrival: choice.arrival ?? 5.2 });
+        if (!s2) break;
+        tV = s2.flightTime;
+      }
+    }
+  }
   // LE HORS-CADRE DU VRAI FOOT (lot 145, cfg.dispersion && st.full — retour utilisateur :
   // « certainement trop cadrées », mesuré 13 % hors cadre, réel ~40) : le σ du point visé
   // s'AMPLIFIE à la SITUATION — le presseur au corps, le tireur lancé, la distance — et le

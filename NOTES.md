@@ -6078,6 +6078,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      A/B 20×300 s : 101 tirs, 19 buts (bande 8-22). Clause 166 ×2 (seuil au
      tirage contrôlé — déterministe, la garde à la note ; l'extinction + la
      libération). Corps de loi dans duel.js (rondo-sim au plafond 1249).
+- 208: Lot 167 — LA COURSE SERVIE (cfg.courseServie, retour utilisateur : « aucun
+     joueur ne court derrière un ballon — axe, diagonale, couloir, entre deux »).
+     SONDE : 589 passes/30 min, 34 servies ≥ 5 m devant, 5 ≥ 8 m, géométrie
+     32 axe/2 diag/0 couloir ; les appels naissent (158/30 min, 32 % servis) mais
+     la mène part 2,4 m devant (médiane), servie 0,4 s après la naissance (le
+     coureur à < 2,5 m/s → solveur null). DEUX coupables en cascade : (1) le
+     solveur dosait la vitesse INSTANTANÉE — la loi dose désormais le SPRINT
+     PROMIS (vSol = vCourse 6,2 × topF, la note de pointe) et le burst PORTE sa
+     direction (_pace.dir — servable au premier pas) ; la pointe × visionF du
+     passeur ; (2) LE VRAI TUEUR : strikeNow re-menait au CONTACT avec la loi
+     générique (rec.p + v × leadTime ≈ 5 m) — le rendez-vous élu 8-11 m était
+     ÉCRASÉ à la frappe (l'instrumentation : 119 élections through, mène frappée
+     3,6 m médiane). La mène de course SURVIT au contact : le through re-résout
+     SON rendez-vous (2 itérations, advMax 16 — le piqué 20 m+ filait en sortie
+     7/28). ET LA GÉOMÉTRIE DES NAISSANCES : l'appel axial vise l'INTERVALLE de
+     la ligne (rondo.gapZ — le milieu du plus grand gap, « entre deux joueurs »)
+     sinon CROISE vers le couloir — le 0,55×z d'hier rabattait tout vers l'axe.
+     APRÈS : avance médiane 15,2 m (le cap a OUVERT les couloirs du solveur —
+     le point à 20 m était insolvable), 39/65 services profonds, 36 % pris,
+     5 espèces vivantes (intervalle 77, déborde 47, underlap 24, croise 23,
+     banane 21). A/B 20×300 : 96 tirs, 16 buts. Loi par défaut → empreintes
+     match re-datées 129e32dd2322f977 / da06e317436ff50c ; épinglage
+     courseServie:false étendu (28+9 mondes). Clause 167 ×2 (le flux 6 graines
+     + l'épingle rend hier). Attributs consommés : topF (le sprint), visionF
+     (la pointe), controlF (l'arrivée, du 128) ; la tactique vit aux naissances
+     (transition/style, du 141/36) ; le rôle à la cadence (appel, du 10).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

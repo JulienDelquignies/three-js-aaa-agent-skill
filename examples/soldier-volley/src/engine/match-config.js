@@ -166,6 +166,11 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
+  courseServie: { vCourse: 6.2, gap: 4, fenetre: 14, advMax: 16 },   // 167 : LA COURSE SERVIE — le solveur
+                          // de through dose le SPRINT promis (vCourse × topF), le burst porte sa
+                          // direction (servable au premier pas), la pointe × visionF ; et l'appel
+                          // AXIAL vise l'INTERVALLE de la ligne (gapZ ≥ gap m, fenêtre z) sinon
+                          // CROISE vers le couloir. false : la myopie du 0,55×z d'hier au bit.
   tacleDegage: { prise: 0.55, v: 7, bruit: 0.9 },   // 166 : LE DUEL CONTESTÉ — le tacle gagné
                           // n'est une prise PROPRE qu'à la garde (prise × tacleGardeF, la note) ;
                           // sinon la fente pousse le ballon devant elle (v m/s, ± bruit rad, un

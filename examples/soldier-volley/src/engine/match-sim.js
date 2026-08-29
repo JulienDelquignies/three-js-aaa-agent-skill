@@ -2,7 +2,7 @@
 
 import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
-import { RONDO, makeRondo, evadeSpot } from './rondo.js';
+import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
@@ -686,20 +686,26 @@ function assignMatchJobs(st, cfg) {
                 if (espece === 'deborde') deepZ = Math.sign(p.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(p.p[2]) + 4);
                 else if (espece === 'banane') { deepZ = Math.sign(p.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(p.p[2]) + 3); p._runBanane = st.t + 0.8; }
               }
+              // LA GÉOMÉTRIE DE L'APPEL AXIAL (167, cfg.courseServie — retour utilisateur : axe, diagonale, couloir, ENTRE DEUX) : l'INTERVALLE de la ligne d'abord (gapZ), sinon la CROISÉE vers le couloir — le 0,55×z d'hier rabattait TOUT vers l'axe (32 axe / 2 diag / 0 couloir mesurés)
+              if (st.full && cfg.courseServie && !espece) {
+                const gZ = gapZ(st, p, atk, off.sgn, cfg.courseServie);
+                if (gZ != null) { deepZ = gZ; espece = 'intervalle'; }
+                else { deepZ = Math.sign(p.p[2] || ((st.rnd ? st.rnd() : 0.5) - 0.5)) * Math.min(pitch.hz - 6, Math.abs(p.p[2]) + 6); espece = 'croise'; }
+              }
               const dartAdv = Math.min(off.adv - 0.15, myAdv + (long ? (cfg.tranchant?.dart ?? 12) : 7));
               const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
                 defenders.map((q) => q.p), { corridor: 0.9 });
               if (lane.open) {
-                // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10)
-                // …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE : l'ÉLECTION du mieux-disant
-                // (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume
-                // −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) :
-                // la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
+                // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10) …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE :
+                // l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF
+                // tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
                 p._appelCd = st.t + axe(role(p).appel, 14, 6) / (p.skill?.otbF ?? 1);   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
                 // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s ; rupture 2,2 ≈ 2,3) — elle porte bonus et portée
-                p._pace = { until: st.t + (long ? 2.2 : 1.6), kind: 'appel', ...(long ? { rupture: true } : {}), next: p._pace?.next ?? st.t + 8 };
+                const _dx7 = off.sgn * (dartAdv + 4) - p.p[0], _dz7 = deepZ - p.p[2], _dl7 = Math.hypot(_dx7, _dz7) || 1;
+                // …le burst PORTE sa direction (167) : le solveur sert la course dès le premier pas
+                p._pace = { until: st.t + (long ? 2.2 : 1.6), kind: 'appel', ...(long ? { rupture: true } : {}), next: p._pace?.next ?? st.t + 8, ...(st.full && cfg.courseServie ? { dir: [_dx7 / _dl7, _dz7 / _dl7] } : {}) };
                 st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'appel-profond', by: p.id, ...(espece ? { espece } : {}), ...(long ? { rupture: true } : {}) });
               }
             }
@@ -797,11 +803,9 @@ function assignMatchJobs(st, cfg) {
       else if (cfg.moments && st.t - (st._possChangeAt ?? -99) < axe(Tp, 1, 4)
         && st.ball.p[0] * sgnAtk < -4) kind = 'contre-press';
       if (kind) {
-        // LE BLOC QUI LIT (161) : la fenêtre du pressing COLLECTIF est aux notes du bloc — la
-        // moyenne d'ANTICIPATION des défenseurs de champ (anticipF, 1 exact à 50/nu) TIENT la
-        // fenêtre plus longtemps (× moy) et RÉ-ARME plus vite (cooldown ÷ moy) : le grand
-        // pressing est un acte d'équipe SU. La tactique (axe pressing) reste le CHOIX du coach ;
-        // la note fait la QUALITÉ de son exécution — le même signal, mieux lu, mieux tenu.
+        // LE BLOC QUI LIT (161) : la fenêtre du pressing COLLECTIF est aux notes du bloc — la moyenne d'ANTICIPATION des défenseurs de champ (anticipF, 1 exact à
+        // 50/nu) TIENT la fenêtre plus longtemps (× moy) et RÉ-ARME plus vite (cooldown ÷ moy) : le grand pressing est un acte d'équipe SU. La tactique (axe pressing)
+        // reste le CHOIX du coach ; la note fait la QUALITÉ de son exécution — le même signal, mieux lu, mieux tenu.
         let sA = 0, nA = 0;
         for (const q of defenders) if (q.skill?.anticipF) { sA += q.skill.anticipF; nA++; }
         const aMoy = nA ? sA / nA : 1;
@@ -832,12 +836,10 @@ function assignMatchJobs(st, cfg) {
     }
     const byDist = st._bByDist ??= []; byDist.length = 0;
     for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
-    // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT
-    // (19,1 % des press à > 15 m latéraux de son poste — « le latéral gauche qui presse le central
-    // droit »). L'élection pénalise l'éloignement de SA zone (au-delà de tol) et la DISCIPLINE est
-    // à la note teamwork (× teamF : le cohésif élit juste, le brouillon retombe vers le chaos
-    // d'hier — qui est le vrai foot des petites équipes). Les autres tiennent le bloc : le relais
-    // se fait en coulissant, pas en sprint de traversée. false : l'élection brute d'hier.
+    // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT (19,1 % des press à > 15 m latéraux de son poste — « le latéral
+    // gauche qui presse le central droit »). L'élection pénalise l'éloignement de SA zone (au-delà de tol) et la DISCIPLINE est à la note teamwork (× teamF : le
+    // cohésif élit juste, le brouillon retombe vers le chaos d'hier — qui est le vrai foot des petites équipes). Les autres tiennent le bloc : le relais se fait en
+    // coulissant, pas en sprint de traversée. false : l'élection brute d'hier.
     if (st.full && cfg.pressZone && byDist.length > 1) {
       const zKey = (q) => q._dAnc + (cfg.pressZone.poids ?? 0.7)
         * Math.max(0, Math.abs((q._slotT ? q._slotT[1] : q.p[2]) - anchor[2]) - (cfg.pressZone.tol ?? 8))
@@ -888,11 +890,9 @@ function assignMatchJobs(st, cfg) {
         }
           // LE JOCKEY (lot 95) : cible ENTRE ballon et SON but, approche SOUS CONTRÔLE (movement.js).
         if (cfg.jockey !== false && st.full && carrier && !freeBall && st.ball.owner === carrier.id) {
-          // LE MORD (lot 159, cfg.mord) : le jockey campait le presseur À LA PORTE du conteste
-          // (cible 1,0 m, conteste 0,9 — p10 mesuré 0,97 m : 8,7 % de conteste, l'amont famélique
-          // des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace
-          // est à la note (porte × aggrF : l'agressif mord dès 1,92 m, le placide 1,28 ; 1,6 à 50).
-          // Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
+          // LE MORD (lot 159, cfg.mord) : le jockey campait le presseur À LA PORTE du conteste (cible 1,0 m, conteste 0,9 — p10 mesuré 0,97 m : 8,7 % de conteste,
+          // l'amont famélique des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace est à la note (porte × aggrF : l'agressif mord dès
+          // 1,92 m, le placide 1,28 ; 1,6 à 50). Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
           if (cfg.mord && d2(p.p, anchor) < (cfg.mord.porte ?? 1.6) * (p.skill?.aggrF ?? 1)) {
             p.job = 'press'; p.target = [anchor[0], 0, anchor[2]]; return;
           }

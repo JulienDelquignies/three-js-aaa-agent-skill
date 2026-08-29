@@ -56,14 +56,14 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
   engagement: false, assignTenue: false,                             // …le frémissement des cibles d'hier (pré-135)
   sortieGardien: false, clearTouche: false,                          // …le gardien invisible et le corner facile d'hier (pré-136)
-  accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false };   // …le monde d'hier (pré-137/160)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false };   // …le monde d'hier (pré-137/160)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false };   // la clause 131 isole SES successeurs (132-160) — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false };   // la clause 131 isole SES successeurs (132-160) — sa loi seule varie
 // le PACK 142-145 (la semelle rare, l'œil, le jeté, le souffle d'exécution) : les clauses de flux d'AVANT s'y épinglent
-const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false };
+const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false };
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -885,10 +885,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // settledNear: Infinity ÉPINGLÉ DES DEUX CÔTÉS (lot 103 : le trot au poste anime AUSSI le
   // monde sans meetWalk — la statue trottait à son slot, l'écart net tombait de 25 à 4 pts ;
   // la clause isole meetWalk, la variable orthogonale se neutralise symétriquement)
-  const vif = mesure({ settledNear: Infinity });
+  const vif = mesure({ settledNear: Infinity, tacleDegage: false, courseServie: false });   // …et 166/167 épinglés des DEUX côtés (le vivant montait à 10 %, l'écart net tombait à 10 pts pile)
   ok(`le RECEVEUR VIVANT (2 × 120 s : ${(vif.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≤ 25, ${vif.geles}/${vif.vols} vols figés > 60 % ≤ 8 % — il vient au-devant, la prise se fait dans le pas)`,
     vif.statue <= 0.25 && vif.geles / Math.max(1, vif.vols) <= 0.08);
-  const fige = mesure({ meetWalk: false, chutePredite: false, settledNear: Infinity });   // le monde d'hier COMPLET (lot 52 : la chute prédite anime aussi — l'isolation du sabotage la coupe)
+  const fige = mesure({ meetWalk: false, chutePredite: false, settledNear: Infinity, tacleDegage: false, courseServie: false });   // le monde d'hier COMPLET (lot 52 : la chute prédite anime aussi — l'isolation du sabotage la coupe)
   ok(`sabotage « pose figée » attrapé (meetWalk:false : ${(fige.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≥ vivant + 10 pts (${(vif.statue * 100 + 10).toFixed(0)}) — la statue d'hier, nommée)`,
     fige.statue >= vif.statue + 0.10);
 }
@@ -1454,8 +1454,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const ev = st.events.slice(n0).filter((e) => e.t <= tCF + 4);
     return { direct: ev.some((e) => e.kind === 'coup-franc-direct'), lance: ev.some((e) => e.type === 'lancement') };
   };
-  const pr = prise(21, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false }), lo = prise(40, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false }), xl = prise(60, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });   // isolation 159/160
-  const sab = prise(21, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false }), sabL = prise(40, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });
+  const pr = prise(21, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false }), lo = prise(40, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false }), xl = prise(60, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });   // isolation 159/160
+  const sab = prise(21, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false }), sabL = prise(40, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });
   ok(`lot 97 — le coup franc a un prix (21 m : ${pr.direct ? 'TIRÉ par-dessus le mur' : 'muet ?!'} ; 40 m : ${lo.lance ? 'LANCÉ dans la boîte' : 'muet ?!'} ; 60 m : ${xl.direct || xl.lance ? 'joué long ?!' : 'joué court — trop loin, on relance'})`,
     pr.direct && !pr.lance && lo.lance && !lo.direct && !xl.direct && !xl.lance);
   ok(`sabotage « la faute ne coûte rien » attrapé (cfDirect:false : 21 m ${sab.direct ? 'tiré ?!' : 'muet'}, 40 m ${sabL.lance ? 'lancé ?!' : 'muet'} — la remise courte d'hier, nommée)`,
@@ -1619,8 +1619,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const p50 = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
     return { larg: p50(larg), proche: p50(proche) };
   };
-  const vif = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });   // la clause isole 155/157/159/160 (les re-dateurs)
-  const sab = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, soutienN: null, supportSpanFull: 0, settledNear: Infinity });
+  const vif = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });   // la clause isole 155/157/159/160 (les re-dateurs)
+  const sab = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, soutienN: null, supportSpanFull: 0, settledNear: Infinity });
   ok(`lot 103 — le jeu RESPIRE (largeur en possession p50 ${vif.larg.toFixed(0)} m ≥ hier + 2 ; plus proche coéquipier p50 ${vif.proche.toFixed(1)} m ≥ hier + 0,6 — le comité de soutien, l'amplitude, le trot au poste)`,
     vif.larg >= sab.larg + 2 && vif.proche >= sab.proche + 0.6);
   ok(`sabotage « l'essaim d'hier » attrapé (soutienN:null + supportSpanFull:0 + settledNear:Infinity : largeur ${sab.larg.toFixed(0)} m, proche ${sab.proche.toFixed(1)} m — les 4 au ballon et la marche qui n'arrive jamais, nommés)`,
@@ -2070,8 +2070,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return n2;
   };
-  const vifP = fluxP({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });   // la clause isole 140/141/155-160 (les fenêtres du glisseur bougent avec le monde)
-  const sabP = fluxP({ skill: { ...matchCfg().skill, pontFoe: null }, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });
+  const vifP = fluxP({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });   // la clause isole 140/141/155-160 (les fenêtres du glisseur bougent avec le monde)
+  const sabP = fluxP({ skill: { ...matchCfg().skill, pontFoe: null }, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });
   // …borne 4 → 3 (lot 123 : le monde re-daté par le box crash déplace les fenêtres du
   // glisseur — 3 mesurés ; l'existence + le sabotage restent le contrat)
   ok(`lot 115 — le PETIT PONT vit (${vifP} / 4 × 300 s ≥ 3, réussite ~47 % mesurée — un pari, pas un gain gratuit) ; sabotage « le glisseur intraversable d'hier » attrapé (pontFoe absent : ${sabP})`,
@@ -2238,8 +2238,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { n3, tours, gardes };
   };
-  const vifR = fluxR({ compression: false, tacleDegage: false });   // la clause isole 162 (les fenêtres re-datent la matière de la roulette)
-  const sabR = fluxR({ compression: false, tacleDegage: false, skill: { ...matchCfg().skill, rouletteFoe: null } });
+  const vifR = fluxR({ compression: false, tacleDegage: false, courseServie: false });   // la clause isole 162 (les fenêtres re-datent la matière de la roulette)
+  const sabR = fluxR({ compression: false, tacleDegage: false, courseServie: false, skill: { ...matchCfg().skill, rouletteFoe: null } });
   ok(`lot 117 — la ROULETTE vit et TOURNE (${vifR.n3} / 4 × 300 s ≥ 3, ${vifR.tours} tours pleins mesurés au yaw ≥ ${Math.max(1, Math.floor(vifR.n3 * 0.6))}, garde ${vifR.gardes}/${vifR.n3} ≥ 60 % — elle PRÉSERVE : la v1 à +14 buts/20 matchs perforait, nerfée sur mesure) ; sabotage « le poursuivant sans réponse d'hier » attrapé (${sabR.n3})`,
     vifR.n3 >= 3 && vifR.tours >= Math.max(1, Math.floor(vifR.n3 * 0.6)) && vifR.gardes >= vifR.n3 * 0.6 && sabR.n3 === 0);
 }
@@ -2551,7 +2551,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const d = {};
     for (const seed of [1, 2, 3, 4, 5, 6]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });   // isolation 159/160
+      const cfg = matchCfg({ shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });   // isolation 159/160
       let cursor = 0;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2594,7 +2594,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return { esp, n: Object.values(esp).reduce((x, y) => x + y, 0), k: Object.keys(esp).length };
   };
   const vif5 = rep125({});
-  const sab5 = rep125({ courseAilier: false });
+  const sab5 = rep125({ courseAilier: false, courseServie: false });   // 167 : intervalle/croise naissent de courseServie — le sabotage du z×0,55 isole les DEUX sources d'espèces
   ok(`lot 125 — l'AILIER a un RÉPERTOIRE (${JSON.stringify(vif5.esp)} sur 5 × 300 s : ${vif5.n} ≥ 6 espèces nommées, ${vif5.k} ≥ 2 familles — la diagonale unique d'hier est morte) ; sabotage « le z×0,55 d'hier » attrapé (courseAilier absent : ${sab5.n} espèce)`,
     vif5.n >= 6 && vif5.k >= 2 && sab5.n === 0);
 }
@@ -2942,8 +2942,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     durs.sort((a, b) => a - b);
     return { gros, part: courtes / Math.max(1, nC), p50: durs[Math.floor(durs.length / 2)] ?? 0 };
   };
-  const vifD = danse({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });   // la clause isole 140/141/155-160 (les re-dateurs de durées)
-  const sabD = danse({ engagement: false, assignTenue: false, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });
+  const vifD = danse({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });   // la clause isole 140/141/155-160 (les re-dateurs de durées)
+  const sabD = danse({ engagement: false, assignTenue: false, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });
   ok(`lot 135 — LES CIBLES NE TREMBLENT PLUS (${vifD.gros} sauts > 5 m / 2 × 300 s ≤ sabotage − 15 % ; courses off-ball p50 ${vifD.p50.toFixed(1)} s ≥ saboté + 0,15) ; sabotage « le frémissement d'hier » attrapé (${sabD.gros} sauts, p50 ${sabD.p50.toFixed(1)} s — le re-tri à 60 Hz, nommé)`,
     vifD.gros <= sabD.gros * 0.85 && vifD.p50 >= sabD.p50 + 0.15);
 }
@@ -2976,9 +2976,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { gk, cornerClear };
   };
-  const poss = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });   // isolation 137/155-160 : sa loi seule varie
-  const defo = sortie(null, { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });
-  const sab136 = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, sortieGardien: false });
+  const poss = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });   // isolation 137/155-160 : sa loi seule varie
+  const defo = sortie(null, { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });
+  const sab136 = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, sortieGardien: false });
   ok(`lot 136 — LA SORTIE AU GARDIEN EST UN STYLE (possession : ${poss.gk} passes au gardien / 3 × 300 s ≥ 2 ; défaut style 0,5 : ${defo.gk} ≤ 1 — la pente nulle, l'identité) ; sabotage « le gardien invisible » attrapé (possession + sortieGardien:false : ${sab136.gk} ≤ vivant − 4 — l'organique rare reste) ; le corner de panique rare (${defo.cornerClear} sur dégagement ≤ 2)`,
     poss.gk >= 2 && defo.gk <= 1 && sab136.gk <= poss.gk - 4 && defo.cornerClear <= 2);
 }
@@ -3196,8 +3196,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { intercept, courseU };
   };
-  const vifO = inter({ compression: false, tacleDegage: false });   // la clause isole 162
-  const sabO = inter({ compression: false, tacleDegage: false, oeil: false });
+  const vifO = inter({ compression: false, tacleDegage: false, courseServie: false });   // la clause isole 162
+  const sabO = inter({ compression: false, tacleDegage: false, courseServie: false, oeil: false });
   ok(`lot 143 — L'ŒIL DE L'URGENCE (${vifO.intercept} interceptions ≤ ${sabO.intercept} − 4 sur 3 × 300 s appariées, refus nommés course-urgente ${vifO.courseU} ≥ 5) ; sabotage « la panique aveugle d'hier » attrapé (oeil:false : ${sabO.intercept} interceptions, ${sabO.courseU} refus = 0)`,
     vifO.intercept <= sabO.intercept - 4 && vifO.courseU >= 5 && sabO.courseU === 0);
 
@@ -3241,7 +3241,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const exacts = new Set(['piqué', 'tête', 'volée', 'demi-volée', 'coup-franc-direct']);
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, ...over });   // isolation 159/160
+      const cfg = matchCfg({ shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, ...over });   // isolation 159/160
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       // tout kind au sol non-exact a un plancher nominal ≥ 16,5 (max(sol, kind.speed)) : une
       // vitesse < 16,2 est IMPOSSIBLE au σ plat — seule la respiration σV (après plancher) y descend
@@ -3323,7 +3323,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const course = (tq) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
-    const cfg = matchCfg({ shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });   // la clause isole 155-160 : l'axe seul varie
     let passes = 0, nEv = 0, lastO = -1, hSum = 0, hN = 0; const lignes = [];
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -3352,7 +3352,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     p1.ligne >= p0.ligne + 3);
   const risque = (m) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [{ mentalite: m }, {}] });
-    const cfg = matchCfg({ shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false });   // la clause isole 155-160 : l'axe seul varie
     let av = 0, tirs = 0, nEv = 0;
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -3500,8 +3500,49 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   ok(`lot 166 — LA GARDE À LA NOTE : au tirage 0,60, le moyen (0,85) dégage (${essai(0.85, 0.6)}), le grand (1,15) garde (dégagé ${essai(1.15, 0.6)}) — le seuil prise × tacleGardeF EST la loi`,
     essai(0.85, 0.6) === true && essai(1.15, 0.6) === false);
-  ok(`lot 166 — SANS la clé, le duel 100 % propre d'hier (dégagé ${essai(1, 0.99, { tacleDegage: false })} même au tirage 0,99) ; et le dégagé LIBÈRE (phase loose, porteur -1 : ballon vivant à disputer)`,
-    essai(1, 0.99, { tacleDegage: false }) === false && (() => { const st = makeMatch({ full: true, seed: 5 }); st.rnd = () => 0.99; tacleDegage(st, st.players[3], matchCfg()); return st.phase === 'loose' && st.possession.carrier === -1; })());
+  ok(`lot 166 — SANS la clé, le duel 100 % propre d'hier (dégagé ${essai(1, 0.99, { tacleDegage: false, courseServie: false })} même au tirage 0,99) ; et le dégagé LIBÈRE (phase loose, porteur -1 : ballon vivant à disputer)`,
+    essai(1, 0.99, { tacleDegage: false, courseServie: false }) === false && (() => { const st = makeMatch({ full: true, seed: 5 }); st.rnd = () => 0.99; tacleDegage(st, st.players[3], matchCfg()); return st.phase === 'loose' && st.possession.carrier === -1; })());
+}
+
+// ---- lot 167 : LA COURSE SERVIE (cfg.courseServie — retour utilisateur : « aucun joueur ne
+// court derrière un ballon, ni axe, ni diagonale, ni couloir, ni entre deux »)
+{
+  // Le flux à 6 graines (leçon Poisson) : l'avance de la mène LE LONG de la course au moment
+  // de la frappe, la part des services profonds, la variété des espèces. Sonde AVANT-lot :
+  // avance médiane 3,6 m (la re-mène du contact ÉCRASAIT le rendez-vous élu), 0 couloir.
+  const cours = (over) => {
+    let servis = 0, profonds = 0; const especes = new Set(), along = [];
+    for (const seed of [4, 7, 11, 15, 21, 33]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      const vif = {}; let nEv = 0;
+      for (let i = 0; i < 120 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        while (nEv < st.events.length) {
+          const e = st.events[nEv++];
+          if (e.type === 'burst' && e.kind === 'appel-profond') { especes.add(e.espece ?? 'axe'); vif[e.by] = e.t; }
+        }
+        if (st.pass && !st.pass._c167 && vif[st.pass.to] != null && st.t - vif[st.pass.to] < 2.4) {
+          st.pass._c167 = true;
+          const r = st.players[st.pass.to], L = st.pass.lead;
+          const vR = Math.hypot(r.v[0], r.v[1]);
+          if (vR > 0.3) {
+            const al = ((L[0] - r.p[0]) * r.v[0] + (L[2] - r.p[2]) * r.v[1]) / vR;
+            servis++; along.push(al);
+            if (al >= 6) profonds++;
+          }
+          delete vif[st.pass.to];
+        }
+      }
+    }
+    along.sort((a, b) => a - b);
+    return { servis, profonds, especes: especes.size, med: +(along[along.length >> 1] ?? 0).toFixed(1), p90: +(along[Math.floor(0.9 * (along.length - 1))] ?? 0).toFixed(1) };
+  };
+  const V = cours({}), E = cours({ courseServie: false });
+  ok(`lot 167 — LE BALLON DEVANT LE COUREUR : avance médiane ${V.med} m ≥ 6 (le sprint promis vCourse × topF, la mène qui SURVIT au contact), ${V.profonds} services ≥ 6 m (≥ 4), ${V.especes} espèces de course ≥ 4 (axe/intervalle/croisée/couloir vivants)`,
+    V.med >= 6 && V.profonds >= 4 && V.especes >= 4);
+  ok(`lot 167 — L'ÉPINGLE REND HIER : courseServie:false → l'écrasement du contact (p90 ${E.p90} m ≤ 6,5 c. ${V.p90} au vivant — la myopie d'hier au bit, le monde des packs)`,
+    E.p90 <= 6.5);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
