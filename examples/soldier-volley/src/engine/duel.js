@@ -55,6 +55,16 @@ export function slideTackleStep(st, c, cfg) {
     .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))[0];
   if (!foe) return;
   if (st.t - ((st._slideT ??= {})[foe.team] ?? -99) < 6) return;
+  // LA RETENUE DE SURFACE (169b, cfg.retenueSurface) : on ne se COUCHE pas dans sa surface —
+  // le pari du glissé y coûte un penalty. L'épisode se décide UNE fois (le cooldown d'équipe
+  // est consommé par le refus : il a CHOISI de rester debout) ; l'agressif (aggrF) se couche
+  // quand même — la note fait le penalty. Clé absente : le pari d'hier au bit.
+  if (st.full && cfg.retenueSurface
+    && st.pitch.inBox(foe.p[0], foe.p[2], Math.sign(st.pitch.ownGoal(foe.team).x || 1))
+    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() > (cfg.retenueSurface.glisse ?? 0.3) * (foe.skill?.aggrF ?? 1)) {
+    st._slideT[foe.team] = st.t;
+    return;
+  }
   const sit = situation(foe.p, foe.yaw, bp, st.ball.v, bp[1]);
   const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
   // LA TABLE ET LE COULOIR SE LISENT DEBOUT (lot 66 — mesuré post-gazon : 21 des 38 glissés
@@ -290,7 +300,7 @@ export function accrocheStep(st, c, cfg, pressAxe = 1) {
       && ((r.p[0] - c.p[0]) * gx + (r.p[2] - c.p[2]) * gz) / gl > 0.5).length;
     const danger = restants < 2;
     const enSurface = pitch.inBox(q.p[0], q.p[2], Math.sign(pitch.ownGoal(q.team).x || 1));
-    if ((st.rnd2 ?? st.rnd ?? (() => 0.5))() >= accrocheP(q, pressAxe, danger, enSurface) * (0.8 + 0.4 * role(q).press) * (q.skill?.aggrF ?? 1)) continue;   // …l'AGRESSIVITÉ est une note (151) : le hargneux accroche (et paie ses fautes)
+    if ((st.rnd2 ?? st.rnd ?? (() => 0.5))() >= accrocheP(q, pressAxe, danger, enSurface) * (0.8 + 0.4 * role(q).press) * (q.skill?.aggrF ?? 1) * (enSurface && st.full && cfg.retenueSurface ? (cfg.retenueSurface.accro ?? 0.4) : 1)) continue;   // …l'AGRESSIVITÉ est une note (151) : le hargneux accroche (et paie ses fautes) — et LA RETENUE DE SURFACE (169b) resserre encore la main dans la boîte
     st._faute = { t: st.t, par: q.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave: danger };
     // …ET LE PORTEUR S'ARRACHE UNE FOIS SUR DEUX (v2, mesuré : la v1 cassait TOUTES les courses
     // accrochées — A/B 18 → 13 buts, l'occasion supprimée chirurgicalement ; au réel le battu

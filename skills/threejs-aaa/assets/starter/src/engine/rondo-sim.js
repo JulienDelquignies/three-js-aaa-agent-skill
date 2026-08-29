@@ -38,41 +38,34 @@ function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; 
 function stepGestures(st, dt, cfg) {
   for (const p of st.players) {
     if (!p.act) continue;
-    // CLOSED DOWN MID-SWING. The windup is a real window: a defender who arrives during it takes the
-    // ball off you. This is what makes pressing worth doing, and it did not exist while the ball left
-    // at the instant of the decision — there was no interval to attack.
+    // CLOSED DOWN MID-SWING. The windup is a real window: a defender who arrives during it takes the ball off you. This is what makes pressing worth doing, and it did
+    // not exist while the ball left at the instant of the decision — there was no interval to attack.
     if (winding(p) && st.phase === 'carry' && st.possession.carrier === p.id) {
-      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to
-      // get to the BALL first (sans ça le windup était fatal — record halved, turnovers doubled).
-      // …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le
-      // porteur au ballon — plus jamais « près du corps ». Le terme de la minuterie n'est plus une
-      // bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner
-      // (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
+      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to get to the BALL first (sans ça le windup était fatal — record halved,
+      // turnovers doubled). …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le porteur au ballon — plus jamais « près du
+      // corps ». Le terme de la minuterie n'est plus une bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner (son contact part
+      // avant celui du tacle → le tacle mord dans le vide, refus nommé).
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
-      // AND THE BALL TRAVELS WITH HIM — the swing suspends the dribble; the ball goes where he goes until the boot sends it (separation 2,09 → 1,53 m).
-      // LE COUPLE CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ (mesuré : 0,4 m de divergence, le pied
-      // frappait du vide) : le BALLON PORTÉ vit AU POINT DE STANCE du corps qui glisse (carry) —
-      // au contact la stance est vraie par construction ; un ballon NON porté garde le frein d'assise ;
+      // AND THE BALL TRAVELS WITH HIM — the swing suspends the dribble; the ball goes where he goes until the boot sends it (separation 2,09 → 1,53 m). LE COUPLE
+      // CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ (mesuré : 0,4 m de divergence, le pied frappait du vide) : le BALLON PORTÉ vit AU POINT DE STANCE du corps qui glisse
+      // (carry) — au contact la stance est vraie par construction ; un ballon NON porté garde le frein d'assise ;
       if (st.ball.owner === p.id && p.act.payload?.stance) {
-        // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite
-        // soudé (les passes partaient à 6-21° de leur stance). MAIS un ballon encore à > 0,45 m du
-        // corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant
-        // vivait à ±0,05 s d'un windup, le ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
+        // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite soudé (les passes partaient à 6-21° de leur stance). MAIS un
+        // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
+        // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
         st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });
       } else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
-      //   et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se
-      //   règlent pendant l'armé, comme un vrai joueur ajuste ses derniers appuis. La vitesse écrite
-      //   est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
+      // et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se règlent pendant l'armé, comme un vrai joueur ajuste ses derniers
+      // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
       if (p.act.payload?.stance) {
         const A = p.act.payload;
         // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au
         // début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
         const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance);
-        // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full) : l'ancre avance de
-        // v0·e^(−t/τ), plafond cumulé, strikeNow re-résout. ET ELLE PORTE LES DEUX BOUTS (ride,
-        // lot 48) : l'offset commit→ancre d'un porteur lancé est quasi nul — l'ease multipliait
-        // le pas d'ancre par ~0 en début d'armé (falaise). Doc : match-config, NOTES 83.
+        // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full) : l'ancre avance de v0·e^(−t/τ), plafond cumulé, strikeNow re-résout. ET ELLE PORTE LES DEUX BOUTS
+        // (ride, lot 48) : l'offset commit→ancre d'un porteur lancé est quasi nul — l'ease multipliait le pas d'ancre par ~0 en début d'armé (falaise). Doc : match-
+        // config, NOTES 83.
         if (cfg.strideStrike && st.full && (A.v0 ?? 0) > 1) {
           const tau = cfg.strideStrike.tau ?? 0.6;
           const pas = A.v0 * Math.exp(-p.act.t / tau) * dt;
@@ -97,10 +90,9 @@ function stepGestures(st, dt, cfg) {
           const bd = Math.hypot(bx, bz), AVOID = 0.32;
           if (bd < AVOID && bd > 1e-6) { g.p[0] = st.ball.p[0] + (bx / bd) * AVOID; g.p[1] = st.ball.p[2] + (bz / bd) * AVOID; }
         }
-        // L'ACTIONNEUR EST BORNÉ : le corps rejoint la courbe du glissement à vitesse humaine au
-        // plus (même loi que le lacet : une demande, un taux borné). La borne rend STRUCTURELLE la
-        // clause « aucun joueur au-dessus de 8,4 m/s » — sans elle, une ancre qui fuit (ballon
-        // encore vivant, cas d'urgence) faisait poursuivre le glissement au-delà de 10 m/s.
+        // L'ACTIONNEUR EST BORNÉ : le corps rejoint la courbe du glissement à vitesse humaine au plus (même loi que le lacet : une demande, un taux borné). La borne
+        // rend STRUCTURELLE la clause « aucun joueur au-dessus de 8,4 m/s » — sans elle, une ancre qui fuit (ballon encore vivant, cas d'urgence) faisait poursuivre le
+        // glissement au-delà de 10 m/s.
         {
           const ex = g.p[0] - p.p[0], ez = g.p[1] - p.p[2];
           const el = Math.hypot(ex, ez), cap = cfg.glideMax * dt;
@@ -114,9 +106,8 @@ function stepGestures(st, dt, cfg) {
       }
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     } else if (busy(p) && p.act?.payload?.kind === 'skill' && st.phase === 'carry' && st.possession.carrier === p.id) {
-      // LA FENÊTRE DE DUEL RESTE OUVERTE PENDANT TOUT LE GESTE TECHNIQUE — armé ET accompagnement.
-      // Sans elle, la semelle (1,0 s) et le raclage du râteau étaient des sanctuaires : un défenseur
-      // à 2,4 m couvre cette distance en 0,4 s et devait regarder. Un geste technique s'assume.
+      // LA FENÊTRE DE DUEL RESTE OUVERTE PENDANT TOUT LE GESTE TECHNIQUE — armé ET accompagnement. Sans elle, la semelle (1,0 s) et le raclage du râteau étaient des
+      // sanctuaires : un défenseur à 2,4 m couvre cette distance en 0,4 s et devait regarder. Un geste technique s'assume.
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
@@ -172,7 +163,16 @@ function stepGestures(st, dt, cfg) {
 // de discipline du 95 (tackleWindow -> balPrenable) reste juge. false / rondo : 0,9 s d'hier.
 function tacleHorloge(st, q, cfg) {
   if (!st.full || !cfg.tacleVif) return cfg.tackleTime;
-  return cfg.tackleTime * (cfg.tacleVif.tot ?? 0.25) * (2 - (q?.skill?.tacleTempoF ?? 1));
+  let h = cfg.tackleTime * (cfg.tacleVif.tot ?? 0.25) * (2 - (q?.skill?.tacleTempoF ?? 1));
+  // LA RETENUE DE SURFACE (169) : dans SA surface le défenseur ne se JETTE pas (mesuré 1,8 péno/90, réel 0,3)
+  // — le seuil s'allonge × frein ÷ aggrF : l'AGRESSIF se jette quand même, la note FAIT le penalty. Absent : hier.
+  const RS = cfg.retenueSurface;
+  if (RS && q) {
+    const g = st.pitch?.ownGoal?.(q.team);
+    if (g && Math.abs(st.ball.p[0] - g.x) < 16.5 && Math.abs(st.ball.p[2]) < 20.16
+      && Math.abs(q.p[0] - g.x) < 18) h *= (RS.frein ?? 1.9) / Math.max(0.7, q.skill?.aggrF ?? 1);
+  }
+  return h;
 }
 
 function beginStandTackle(st, q, victim, cfg) {

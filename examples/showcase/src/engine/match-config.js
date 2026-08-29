@@ -175,6 +175,9 @@ export const MATCH = {
                           // direction (servable au premier pas), la pointe × visionF ; et l'appel
                           // AXIAL vise l'INTERVALLE de la ligne (gapZ ≥ gap m, fenêtre z) sinon
                           // CROISE vers le couloir. false : la myopie du 0,55×z d'hier au bit.
+  retenueSurface: { frein: 1.9, glisse: 0.3, accro: 0.4 },   // 169 : LA RETENUE DE SURFACE — le seuil du
+                          // tacle debout s'allonge (× frein ÷ aggrF : l'agressif se jette quand
+                          // même, la note fait le penalty). Mesuré avant : 1,8 péno/90 (réel 0,3).
   tacleDegage: { prise: 0.55, v: 7, bruit: 0.9 },   // 166 : LE DUEL CONTESTÉ — le tacle gagné
                           // n'est une prise PROPRE qu'à la garde (prise × tacleGardeF, la note) ;
                           // sinon la fente pousse le ballon devant elle (v m/s, ± bruit rad, un
