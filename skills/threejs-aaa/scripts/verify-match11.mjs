@@ -3324,9 +3324,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const course = (tq) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
     const cfg = matchCfg({ shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false });   // la clause isole 155-160 : l'axe seul varie
-    let passes = 0, nEv = 0; const lignes = [];
+    let passes = 0, nEv = 0, lastO = -1, hSum = 0, hN = 0; const lignes = [];
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
+      if (st.ball.owner != null && st.ball.owner !== lastO) {   // une prise = un tirage de tenue calme
+        lastO = st.ball.owner;
+        if (st._calmHold > 0) { hSum += st._calmHold; hN++; }
+      }
       while (nEv < st.events.length) if (st.events[nEv++].type === 'pass') passes++;
       if (i % 60 === 0 && !st.restart && st.possession.team >= 0) {
         const def = 1 - st.possession.team, gD = st.pitch.ownGoal(def).x, sd = Math.sign(gD);
@@ -3334,11 +3338,15 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         lignes.push(Math.abs((xs[0] + xs[1] + xs[2]) / 3 - gD));
       }
     }
-    return { passes, ligne: lignes.reduce((a, b) => a + b, 0) / Math.max(1, lignes.length) };
+    return { passes, calm: hSum / Math.max(1, hN), ligne: lignes.reduce((a, b) => a + b, 0) / Math.max(1, lignes.length) };
   };
   const t0 = course({ tempo: 0 }), t1 = course({ tempo: 1 });
-  ok(`lot 149 — LE TEMPO circule (${t1.passes} passes/150 s au vif ≥ ${t0.passes} + 8 au lent — les tenues calmes respirent à l'axe, 0,5 = l'hier au bit)`,
-    t1.passes >= t0.passes + 8);
+  // re-daté 164 : le FLUX à une graine était un tirage (Poisson miniature — 49 c. 50 après
+  // l'élargissement des bandes) ; le flux vit en clause 164b à 6 graines, ici le MÉCANISME :
+  // la tenue calme tirée ×1,5 lent / ×0,5 vif — holdCalmFull [0,9-1,9] a un rapport 2,1 < 3,
+  // donc les distributions se séparent PAR CONSTRUCTION (les personas s'annulent en moyenne).
+  ok(`lot 149 — LE TEMPO tient (la tenue calme moyenne ${t0.calm.toFixed(2)} s au posé ≥ ${t1.calm.toFixed(2)} × 2 au vif — le mécanisme ×3 de l'axe ; le flux : clause 164b)`,
+    t0.calm >= t1.calm * 2);
   const p0 = course({ piege: 0 }), p1 = course({ piege: 1 });
   ok(`lot 149 — LE PIÈGE tient la ligne haute (${p1.ligne.toFixed(1)} m du but ≥ ${p0.ligne.toFixed(1)} + 3 au passif — l'agressivité du hors-jeu est un axe d'équipe)`,
     p1.ligne >= p0.ligne + 3);
