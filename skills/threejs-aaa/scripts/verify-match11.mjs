@@ -69,6 +69,11 @@ import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
+// L'ISOLATION DES RE-DATEURS 170-171 (le patron « la clause isole ses re-dateurs ») : le
+// corps ouvert, la tenue du gardien, les rayons du règlement, la détresse du retrait et la
+// célébration allongée re-datent le FLUX vivant — les clauses de flux d'AVANT s'y épinglent.
+const ISO171 = { corpsOuvert: false, gkTenue: false, rayonsLoi: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
+
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
@@ -1762,7 +1767,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // la fixture du ramassage : ballon MORT à 0,5 m devant un joueur sans intention
   const ram = (over) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ shotRange: 20, ...over });
+    const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
     for (let i = 0; i < 3 * 60; i++) matchStep(st, 1 / 60, cfg);
     if (st.ball.owner != null) st.ball.release('perte');
     const c = st.players[st.possession.carrier >= 0 ? st.possession.carrier : st.players.findIndex((q) => !q.keeper)];
@@ -1789,7 +1794,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const fen = [];
     for (const seed of [2, 3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       let buf = [];
       for (let i = 0; i < 150 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -1830,7 +1835,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let trois = 0, ut = 0, passes = 0;
     for (const seed of [2, 5]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 200 * 60; i++) matchStep(st, 1 / 60, cfg);
       for (const e of st.events) {
         if (e.type === 'troisieme') trois++;
@@ -1941,7 +1946,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let n = 0;
     for (const seed of [1, 2]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       n += st.events.filter((e) => e.type === 'coach').length;
     }
@@ -2895,7 +2900,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let frames = 0;
     for (const seed of [1, 2]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (st.phase === 'flight' && st.pass && st._ic && st._ic.id >= 0 && st.players[st._ic.id]?.job === 'intercept') frames++;
@@ -2923,7 +2928,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const durs = [];
     for (const seed of [1, 2]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       const S = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2964,7 +2969,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3039,7 +3044,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let n = 0, sv = 0;
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3068,7 +3073,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const pivote = (over = {}) => {
     const st = makeMatch({ full: true, seed: 13 });
-    const cfg = matchCfg({ shotRange: 20, ...over });
+    const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
     const p = st.players.find((q) => q.team === 0 && !q.keeper);
     p.yaw = 0; p.yawWant = null; p.v = [4, 0]; p.speed = 4; p.job = 'support'; p.target = null; p.act = null; p.down = 0;
     p.v[0] = -4; p.v[1] = 0;                                    // l'inversion sèche (la prise à contre-course)
@@ -3133,7 +3138,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const haut = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 60 !== 0 || st.restart) continue;
@@ -3164,7 +3169,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let n = 0;
     for (const seed of [1, 2]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       n += st.events.filter((e) => e.type === 'skill' && e.kind === 'semelle').length;
     }
@@ -3180,7 +3185,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let intercept = 0, courseU = 0;
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       let nEv = 0, vol = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3208,7 +3213,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let jets = 0, joues = 0, appels = 0;
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
       let nEv = 0, fen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3243,7 +3248,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const exacts = new Set(['piqué', 'tête', 'volée', 'demi-volée', 'coup-franc-direct']);
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, sortieGardien: {}, ...over });   // isolation 159/160
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, sortieGardien: {}, ...over });   // isolation 159/160
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       // tout kind au sol non-exact a un plancher nominal ≥ 16,5 (max(sol, kind.speed)) : une
       // vitesse < 16,2 est IMPOSSIBLE au σ plat — seule la respiration σV (après plancher) y descend
@@ -3325,7 +3330,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const course = (tq) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
-    const cfg = matchCfg({ shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, sortieGardien: {} });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, sortieGardien: {} });   // la clause isole 155-160 : l'axe seul varie
     let passes = 0, nEv = 0, lastO = -1, hSum = 0, hN = 0; const lignes = [];
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -3354,7 +3359,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     p1.ligne >= p0.ligne + 3);
   const risque = (m) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [{ mentalite: m }, {}] });
-    const cfg = matchCfg({ shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, sortieGardien: {} });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, sortieGardien: {} });   // la clause isole 155-160 : l'axe seul varie
     let av = 0, tirs = 0, nEv = 0;
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -3447,7 +3452,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let n = 0;
     for (const seed of [4, 7, 11, 15, 21, 33]) {
       const st = makeMatch({ full: true, seed, tactics: [{ tempo }, { tempo }] });
-      const cfg = matchCfg({ shotRange: 20 });
+      const cfg = matchCfg({ ...ISO171, shotRange: 20 });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);

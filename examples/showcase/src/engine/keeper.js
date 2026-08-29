@@ -408,7 +408,7 @@ export function checkKeeper(pitch, K = KEEPER) {
  *  tic. Le cap Loi 12.2 reste au-dessus (gkRelease × 1,9 ≈ 6 s à l'échelle). Rend le gkDue
  *  éventuellement allongé ; clé absente : l'éclair d'hier au bit. */
 export function gkTenueDue(st, gk, cfg, gkDue, tempoF) {
-  if (!cfg.gkTenue) return gkDue;
+  if (!cfg.gkTenue || gk._remisePrise) return gkDue;   // le preneur d'une remise est EXEMPT : la remise a déjà son horloge (tempoWait)
   const contre = st.players.some((q) => q.team === gk.team && !q.keeper && (q._pace?.until ?? -1) > st.t && q._pace.kind === 'appel');
   if (contre) return gkDue;
   if (gk._tenueAt !== gk._gkSince) {

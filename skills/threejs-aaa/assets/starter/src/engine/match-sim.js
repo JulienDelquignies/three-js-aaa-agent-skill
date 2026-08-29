@@ -288,7 +288,12 @@ function assignMatchJobs(st, cfg) {
       gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
       // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol
       // mains ou retrait au pied ? (171, Loi 12.2 : pas de mains sur la passe d'un coéquipier — le discriminant : le dernier passeur du camp)
-      if (gk._gkSince == null) gk._mains = !(st.lastPasser != null && st.players[st.lastPasser]?.team === gk.team);
+      if (gk._gkSince == null) {
+        gk._mains = !(st.lastPasser != null && st.players[st.lastPasser]?.team === gk.team);
+        // …et le PRENEUR D'UNE REMISE est exempt de tenue (171) : la remise a DÉJÀ son horloge (tempoWait) — la double peine crevait le contrat de reprise (> 10 s)
+        const evR = st.events[st.events.length - 1];
+        gk._remisePrise = !!(evR && evR.type === 'restart-pris' && evR.by === gk.id && st.t - evR.t < 0.6);
+      }
       gk._gkSince = (st.full && cfg.keeperRise !== false && gk.down > 0) ? st.t : (gk._gkSince ?? st.t);
       // …et le spot vit AU COIN des six mètres, JAMAIS sur l'axe (z ±3,5 = la bouche du but : CSC mesuré ; hors axe il meurt en sortie de but).
       const spotD = [g.x - g.sign * 4.5, (gk.p[2] >= 0 ? 1 : -1) * (pitch.goalHalf + 2.1)];
@@ -1141,7 +1146,7 @@ export function matchCfg(overrides = {}) {
       if (!(st.full && cfg.keeperHold !== false) || !c.keeper || st.ball.owner !== c.id) return false;
       if (c.down > 0) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
       // …ET LA TENUE AUX MAINS (171) : la prise (pas un retrait — Loi 12.2) reste AUX GANTS pendant gk._tenue — la conduite-éclair lâchait en 0,38 s (cause 'conduite' au grand livre) ; il MARCHE ballon en mains puis distribue.
-      if (cfg.gkTenue && c._mains && c._gkSince != null && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
+      if (cfg.gkTenue && c._mains && !c._remisePrise && c._gkSince != null && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
       return false;
     },
     ...overrides,
