@@ -3719,7 +3719,7 @@ if (__bloc()) {
     }
     return n;
   };
-  const sV = sorties({}), sE = sorties({ clearSigma: false, contreTir: false, craie: false, gkPied: false });
+  const sV = sorties({ allonge: false }), sE = sorties({ clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false });   // …et 181 épinglé des deux côtés (la jambe tendue re-datait le flux des sorties)
   ok(`lot 174 — LE DÉGAGEMENT RESPIRE (sorties de balle : vivant ${sV} ≥ épinglé ${sE} + 3 sur 6 × 300 s — le σ du clear pressé × composureF fait naître touches, corners et sorties de but ; le clear exact d'hier n'en produisait presque pas)`,
     sV >= sE + 3);
 }
@@ -3773,7 +3773,7 @@ if (__bloc()) {
     const zs = []; let touches = 0;
     for (const seed of [3, 7, 11, 15]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, gkPied: false, contreTir: false, clearSigma: false, ...over });   // la clause mesure la CRAIE — ses deux mondes isolent 174-179 (gkPied inversait le différentiel de touches)
+      const cfg = matchCfg({ shotRange: 20, gkPied: false, contreTir: false, clearSigma: false, allonge: false, ...over });   // la clause mesure la CRAIE — ses deux mondes isolent 174-181 (gkPied inversait le différentiel de touches ; la jambe tendue le re-datait)
       for (let i = 0; i < 200 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 30 === 0 && st.possession.team === 0 && !st.restart)
