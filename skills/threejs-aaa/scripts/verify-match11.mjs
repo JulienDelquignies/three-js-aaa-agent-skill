@@ -3773,7 +3773,7 @@ if (__bloc()) {
     const zs = []; let touches = 0;
     for (const seed of [3, 7, 11, 15]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, gkPied: false, contreTir: false, clearSigma: false, ...over });   // la clause mesure la CRAIE — ses deux mondes isolent 174-179 (gkPied inversait le différentiel de touches)
       for (let i = 0; i < 200 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 30 === 0 && st.possession.team === 0 && !st.restart)
