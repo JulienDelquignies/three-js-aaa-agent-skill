@@ -263,9 +263,11 @@ poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la 
 défaut si la bande évolue.
 
 L'AMORTI À LA NOTE RÉFUTÉ (180, note 220) : le settle est servo-dominé — ce
-site ne peut pas porter controlF (jumeaux 0,24 = 0,24, revert). La dette « 4 m
-de première touche » s'instruira au FILM (l'hypothèse : la distance vit AVANT
-la prise). Prochains fronts : le box crash à re-fonder, le banc incarné.
+site ne peut pas porter controlF (jumeaux 0,24 = 0,24, revert). SOLDÉ AU 181 :
+le film a trouvé le site AVANT la prise — LA JAMBE TENDUE (duel.jambeTendue,
+note 221) : la passe qui croise son receveur entre le gate binaire (0,85) et
+le pied réel (1,15) se touche, freinée ×kill×controlF, libre — la note mord
+hors servo. Prochains fronts : le box crash à re-fonder, le banc incarné.
 
 LE PIED DU GARDIEN (179, note 219) : la touche collée (0,35) + la distribution
 prompte au retrait — ballons lâchés 2→0. Dette : le dMax ~4 m de PREMIÈRE touche

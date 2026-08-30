@@ -362,3 +362,31 @@ export function contreTir(st, cfg) {
     return;
   }
 }
+
+/** LA JAMBE TENDUE (lot 181, cfg.allonge && st.full — filmé : la passe croisait son receveur
+ *  ATTITRÉ à 0,85-0,90 m et filait 7-23 m dans son dos, demi-tour ; à 60 Hz et 7,5 m/s le
+ *  minimum continu passe ENTRE les échantillons du gate binaire receiveRadius). Le pied a une
+ *  allonge : dans l'anneau [receiveRadius, max], ballon au sol qui LE DÉPASSE (radial fuyant),
+ *  le receveur tend la jambe — une TOUCHE DÉGRADÉE, pas une prise : le ballon est freiné et
+ *  reste LIBRE (hors servo — le canal où la NOTE mord enfin, dette 179/220) ; la part tuée
+ *  suit controlF : l'artiste la pose à 1 m, le maladroit se la pousse 2-3 m plus loin. La
+ *  passe est MORTE (lot 44 : la mène fantôme ne cible plus) ; une seule tentative par passe.
+ *  Clé absente : le demi-tour d'hier au bit. */
+export function jambeTendue(st, cfg) {
+  const AL = cfg.allonge;
+  if (!st.full || !AL || st.ball.owner != null || !st.pass || st.pass._tendue || st.pass.to < 0) return;
+  if (st.ball.p[1] > (AL.h ?? 0.9)) return;
+  const v = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  if (v < (AL.vMin ?? 4)) return;
+  const q = st.players[st.pass.to];
+  if (!q || q.keeper || q.down > 0) return;
+  const bx = st.ball.p[0] - q.p[0], bz = st.ball.p[2] - q.p[2], d = Math.hypot(bx, bz);
+  if (d <= (cfg.receiveRadius ?? 0.85) || d > (AL.max ?? 1.15)) return;
+  if ((st.ball.v[0] * bx + st.ball.v[2] * bz) / d <= 0) return;    // il s'approche encore : la prise propre garde sa chance
+  st.pass._tendue = true;
+  const kill = Math.min(AL.cap ?? 0.85, (AL.kill ?? 0.62) * (q.skill?.controlF ?? 1));
+  st.ball.impulse([-st.ball.v[0] * kill, -st.ball.v[1] * 0.5, -st.ball.v[2] * kill]);
+  st.events.push({ t: +st.t.toFixed(2), type: 'control', by: q.id, tech: 'jambe-tendue', foot: 'any',
+    surface: 'toe', speed: +v.toFixed(1), kill: +kill.toFixed(2), settle: null });
+  st.pass = null; st.phase = 'loose'; st.possession.carrier = -1;
+}

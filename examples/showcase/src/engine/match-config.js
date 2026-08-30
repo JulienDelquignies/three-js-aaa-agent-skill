@@ -172,6 +172,10 @@ export const MATCH = {
   craie: { tire: 0.6, seuil: 0.42 },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
                           // large est tiré vers la ligne (fraction du chemin × axe largeur ×
                           // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
+  allonge: { max: 1.15, kill: 0.62, vMin: 4, h: 0.9, cap: 0.85 },  // 181 : LA JAMBE TENDUE — la
+                          // passe qui croise son receveur ATTITRÉ à 0,85-1,15 m (entre le gate
+                          // binaire et le pied réel) se TOUCHE : freinée ×kill(×controlF), LIBRE
+                          // — hors servo, la note au contrôle mord ici. Absent : le demi-tour.
   contreTir: { vMin: 13, h: 1.3, rayon: 0.38, bruit: 1.1 },   // 176 : LE BLOC DE CHAMP — le
                           // ballon libre rapide et bas qui percute un corps adverse DÉVIE (le
                           // ricochet large, vitesse ×0,3-0,6) : ~27 % des frappes réelles sont

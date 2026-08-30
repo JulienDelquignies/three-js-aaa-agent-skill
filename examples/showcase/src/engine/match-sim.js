@@ -15,7 +15,7 @@ import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWh
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js';
-import { accrocheStep, contreTir } from './duel.js';
+import { accrocheStep, contreTir, jambeTendue } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
 import { marquageCentre, intercepteurVol, accompagneMontee } from './phases.js';
@@ -1152,6 +1152,7 @@ export function matchStep(st, dt, cfg = matchCfg()) {
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;
   const prev = [st.ball.p[0], st.ball.p[1], st.ball.p[2]];
   contreTir(st, cfg);   // LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
+  jambeTendue(st, cfg); // LA JAMBE TENDUE (181, duel.jambeTendue) : le receveur attitré touche la passe qui allait le déborder
   rondoStep(st, dt, cfg);
   st._ballPrev = prev;
   return st;

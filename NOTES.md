@@ -6311,6 +6311,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      suivante : la distance vit AVANT la prise — le ballon qui dépasse/le
      prenable qui refuse — pas après). Revert complet, moteur bit-identique au
      sceau 437 ✓ (consigné en commentaire au site, le patron des canaux morts).
+- 221: Lot 181 — LA JAMBE TENDUE (duel.jambeTendue, cfg.allonge, appelée par
+     matchStep) : le FILM promis par la note 220 a trouvé le site. La sonde
+     (chasse = course du receveur entre le croisement < 2 m et sa prise) :
+     p50 0,28 m mais une queue de 7,4 % > 2,5 m, dont 11 DEMI-TOURS de 7-23 m
+     — et le traçage frame à frame a montré le mécanisme : la passe croise son
+     receveur ATTITRÉ à 0,85-0,90 m et à 60 Hz / 7,5 m/s le minimum continu
+     passe ENTRE les échantillons du gate binaire receiveRadius (0,85) — le
+     receveur regardait sa passe passer à 90 cm sans tendre la jambe. La loi :
+     dans l'anneau [receiveRadius, 1,15 m] (le pied réel), ballon au sol qui
+     LE DÉPASSE (radial fuyant), une TOUCHE DÉGRADÉE — freinée ×kill, LIBRE
+     (pas de possess) — et c'est LE canal hors servo où la note du contrôle
+     mord enfin : kill × controlF (l'artiste 0,85 la pose à 1 m, le maladroit
+     0,49 se la pousse 3 m — le « 4 m de première touche » DU BON CÔTÉ).
+     Mesuré APRÈS : chasse p95 6,97 → 1,09 m, grosses 7,4 → 2,6 %, réceptions
+     394 → 428 ; jumeaux ENFIN disjoints (90 : p95 1,05 / 10 : p95 5,90 —
+     contre 0,24 = 0,24 au site servo du 180). La passe touchée est MORTE
+     (lot 44). Une tentative par passe. Bande 19 buts/20×300 s. Clé absente :
+     le demi-tour d'hier au bit. La dette « 4 m » du 179 est SOLDÉE.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
