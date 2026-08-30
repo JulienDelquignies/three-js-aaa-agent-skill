@@ -6238,6 +6238,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      re-basées 66cf43eb08275f8a / ac8b3213cb3e376f (le re-datage vient du
      clearSigma 174 — l'horloge n'écrit que C.ratio, lu par personne au moteur).
      Clause 175 (ratio 15/1/6 aux trois formats).
+- 216: Lot 176 — LE BLOC DE CHAMP (cfg.contreTir, duel.contreTir). Le geste
+     manquant : ~25-30 % des frappes réelles sont CONTRÉES par un corps de
+     défenseur (LA source des corners) — chez nous 14/48 tirs croisaient un
+     corps à < 0,4 m et TRAVERSAIENT (le tir fantôme). La loi, physique et
+     GÉNÉRIQUE : tout ballon LIBRE, rapide (≥ 13 m/s) et bas (≤ 1,3 m) qui
+     percute un corps ADVERSE au dernier toucheur dévie — ricochet ± 1,1 rad,
+     vitesse ×0,3-0,6, cooldown 1,5 s par corps, événement 'contre' nommé
+     (télémétrie + ticker « contré ! — nº5 bloque la frappe de nº9 »). Le rayon
+     0,38 = le corps humain effectif (0,33 testé : n'a pas changé la part — pas
+     de sur-calibrage au Poisson, 39 tirs). Mesuré (8×300 s) : 13 % des TIRS
+     contrés + 10 dégagements/passes appuyées bloqués (l'instrument FIN sépare :
+     la part brute 37 % mélangeait les deux — la leçon de l'œil du borgne
+     rejouée côté numérateur). Buts 6, corners 3 : stables — le ballon contré
+     meurt souvent en mêlée de surface (réaliste). Fixture 176 déterministe :
+     le boulet sur le corps → contré v=6 ; épinglé → traverse v=17,4.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

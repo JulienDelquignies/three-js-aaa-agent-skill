@@ -15,7 +15,7 @@ import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWh
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js';
-import { accrocheStep } from './duel.js';
+import { accrocheStep, contreTir } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
 import { marquageCentre, intercepteurVol, accompagneMontee } from './phases.js';
@@ -36,9 +36,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   // LA TACTIQUE PAR ÉQUIPE (tactics.js) : absente = équilibre, l'identité au bit.
   st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
-  for (const team of [0, 1]) {
-    st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; });
-  }
+  for (const team of [0, 1]) { st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; }); }
   // LES RÔLES PAR POSTE (roles.js) : APRÈS l'assignation des postes ; PRESET < EXPLICITE (lot 20).
   for (const team of [0, 1]) {
     const spec = { ...(st.tactics[team].roles ?? {}), ...(roles?.[team] ?? {}) };
@@ -1154,6 +1152,7 @@ export function matchStep(st, dt, cfg = matchCfg()) {
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;
   const prev = [st.ball.p[0], st.ball.p[1], st.ball.p[2]];
+  contreTir(st, cfg);   // LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
   rondoStep(st, dt, cfg);
   st._ballPrev = prev;
   return st;

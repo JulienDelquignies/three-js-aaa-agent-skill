@@ -64,6 +64,8 @@ export function makeTicker(TEAMS) {
       // LE LOB SE NOMME (lot 120) : le geste rare du gardien avancé puni — les tirs
       // ordinaires restent silencieux, le lob est un événement (comme les gestes, NOTES 36)
       pousse(`<b style="color:#f4a261">lob tenté</b> <span>— ${team(state, e.by)} nº${e.by} · ${tFM(e.t)}</span>`);
+    } else if (e.type === 'contre' && hud) {
+      pousse(`<b style="color:#f4a261">contré !</b> <span>— nº${e.by} bloque la frappe de nº${e.sur} · ${tFM(e.t)}</span>`);
     } else if (e.type === 'piqué' && hud) {
       pousse(`<b style="color:#7bd88f">passe piquée</b> <span>— nº${e.by} pour nº${e.to}, ${e.avance} m devant · ${tFM(e.t)}</span>`);
     } else if (e.type === 'un-deux' && hud) {

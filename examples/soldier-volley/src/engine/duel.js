@@ -335,3 +335,30 @@ export function tacleDegage(st, q, cfg) {
   st.phase = 'loose'; st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   return true;
 }
+
+/** LE BLOC DE CHAMP (lot 176, cfg.contreTir && st.full — ~25-30 % des frappes du réel sont
+ *  CONTRÉES par un corps, et c'est LA source des corners ; mesuré avant : 14/48 tirs croisaient
+ *  un corps à < 0,4 m et certains TRAVERSAIENT jusqu'au but). Physique générique : tout ballon
+ *  LIBRE, rapide (≥ vMin) et bas (≤ h) qui percute un corps ADVERSE au dernier toucheur dévie —
+ *  le corps encaisse, le ricochet part large (± bruit rad), la vitesse est mangée (×0,3-0,6),
+ *  l'événement 'contre' se nomme (télémétrie, ticker). Clé absente : le tir fantôme d'hier. */
+export function contreTir(st, cfg) {
+  const CT = cfg.contreTir;
+  if (!st.full || !CT || st.ball.owner != null) return;
+  const v = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  if (v < (CT.vMin ?? 13) || st.ball.p[1] > (CT.h ?? 1.3)) return;
+  const dernier = st.players[st.lastPasser ?? -1];
+  if (!dernier) return;
+  for (const q of st.players) {
+    if (q.team === dernier.team || q.keeper || q.down > 0 || (q._contreCd ?? -1) > st.t) continue;
+    const d = Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]);
+    if (d > (CT.rayon ?? 0.38)) continue;
+    q._contreCd = st.t + 1.5;
+    const rnd = st.rnd ?? (() => 0.5);
+    const a = Math.atan2(st.ball.v[2], st.ball.v[0]) + (rnd() - 0.5) * 2 * (CT.bruit ?? 1.1);
+    const k = 0.3 + rnd() * 0.3;
+    st.ball.impulse([Math.cos(a) * v * k - st.ball.v[0], -st.ball.v[1] * 0.6, Math.sin(a) * v * k - st.ball.v[2]]);
+    st.events.push({ t: +st.t.toFixed(2), type: 'contre', by: q.id, sur: dernier.id, v: +v.toFixed(1) });
+    return;
+  }
+}

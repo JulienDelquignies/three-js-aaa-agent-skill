@@ -166,6 +166,10 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
+  contreTir: { vMin: 13, h: 1.3, rayon: 0.38, bruit: 1.1 },   // 176 : LE BLOC DE CHAMP — le
+                          // ballon libre rapide et bas qui percute un corps adverse DÉVIE (le
+                          // ricochet large, vitesse ×0,3-0,6) : ~27 % des frappes réelles sont
+                          // contrées, LA source des corners. Absent : le tir fantôme d'hier.
   clearSigma: { ampli: 4 },     // 174 : LE DÉGAGEMENT RESPIRE — passSigma × ampli × composureF (~13° à 50 : le pied pressé)
                           // sur le clear (le pied pressé part où il peut : LE pourvoyeur de
                           // touches/corners du réel). Absent : le clear exact d'hier au bit.

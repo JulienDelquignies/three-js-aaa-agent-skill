@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE BLOC DE CHAMP (176, note 216) : le ballon rapide et bas qui percute un corps
+adverse DÉVIE (13 % des tirs contrés + les dégagements bloqués ; le tir fantôme
+d'hier traversait). Restes du front sorties : les touches (5 c. 13/30 min), la
+part de contres → corners à observer au fil du jalon densité FM.
+
 LA CIBLE : FOOTBALL MANAGER (175, note 215 — précisée par l'utilisateur : FM
 SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
 L'horloge de représentation est posée (chrono.affiche, ratio, scène + fil en
