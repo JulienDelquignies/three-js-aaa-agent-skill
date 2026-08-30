@@ -166,6 +166,9 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
+  craie: { tire: 0.6, seuil: 0.42 },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
+                          // large est tiré vers la ligne (fraction du chemin × axe largeur ×
+                          // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
   contreTir: { vMin: 13, h: 1.3, rayon: 0.38, bruit: 1.1 },   // 176 : LE BLOC DE CHAMP — le
                           // ballon libre rapide et bas qui percute un corps adverse DÉVIE (le
                           // ricochet large, vitesse ×0,3-0,6) : ~27 % des frappes réelles sont

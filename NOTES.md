@@ -6253,6 +6253,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      rejouée côté numérateur). Buts 6, corners 3 : stables — le ballon contré
      meurt souvent en mêlée de surface (réaliste). Fixture 176 déterministe :
      le boulet sur le corps → contré v=6 ; épinglé → traverse v=17,4.
+- 217: Lot 177 — L'ANCRE À LA CRAIE (cfg.craie). La sonde de géographie : le jeu
+     ÉVITAIT le bord (3,4 % des passes, 1,5 % de la conduite près des lignes ;
+     les postes les plus larges à |z| 18-19 m pour une craie à 34 — RENTRÉS de
+     15 m). La cause : la largeur des slots est MULTIPLICATIVE (×1,15 max — un
+     slot à 17 ne peut jamais coller à la ligne). La loi : en POSSESSION, le
+     slot déjà large (|z| > hz×0,42) est TIRÉ vers la craie — une fraction du
+     chemin restant (tire 0,6) × axe LARGEUR (0,5-1,4) × largeurR du rôle
+     (0,8-1,2) : l'ailier étire le bloc à 2-8 m de la ligne, la tactique et le
+     rôle dosent. APRÈS (6×300 s) : le plus large 23,2 → 27,3 m, passes au bord
+     ×2,4, TOUCHES 8 → 13/30 min — LE TAUX RÉEL atteint (le front des sorties
+     organiques 174-177 est SOLDÉ : dégagement qui respire + bloc de champ +
+     l'ancre à la craie = touches réelles, corners ~5/90, sorties ×3). Buts
+     3 → 6 sur la sonde (le jeu d'aile ouvre des centres) — l'A/B 20 matchs
+     juge la bande. Clause 177 (flux 4×200 s : z ≥ épinglé + 2,5 ; touches ≥).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

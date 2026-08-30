@@ -40,9 +40,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   // LES RÔLES PAR POSTE (roles.js) : APRÈS l'assignation des postes ; PRESET < EXPLICITE (lot 20).
   for (const team of [0, 1]) {
     const spec = { ...(st.tactics[team].roles ?? {}), ...(roles?.[team] ?? {}) };
-    for (const q of st.players.filter((q) => q.team === team)) {
-      if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]);
-    }
+    for (const q of st.players.filter((q) => q.team === team)) { if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]); }
   }
   // LA PATTE (lot 87) : née au CORPS — hash (seed, id), 72/23/5, zéro st.rnd ; ratings.foot surclasse.
   for (const q of st.players) {
@@ -664,6 +662,11 @@ function assignMatchJobs(st, cfg) {
         if (pf) tx = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, tx + -pitch.ownGoal(atk).sign * pf));
         const wR = axe(R.largeurR, 0.9, 1.1);
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
+        // L'ANCRE À LA CRAIE (177, cfg.craie && st.full — les larges vivaient à |z| 18-19 pour une craie à 34 : le jeu évitait le bord, 8 touches/30 min c. 13 réel). En POSSESSION le slot large est TIRÉ vers la ligne (fraction du chemin × axe LARGEUR × largeurR) — l'ailier étire à 2-8 m de la craie. Absente : hier au bit.
+        if (st.full && cfg.craie && off && Math.abs(tz) > pitch.hz * (cfg.craie.seuil ?? 0.42)) {
+          const tire = (cfg.craie.tire ?? 0.6) * axe(tac(st, atk).largeur, 0.5, 1.4) * axe(R.largeurR, 0.8, 1.2);
+          tz = Math.sign(tz) * Math.min(pitch.hz - 1.5, Math.abs(tz) + (pitch.hz - 1.5 - Math.abs(tz)) * Math.min(1, tire));
+        }
         // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
         if (off && (p.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true))) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE : suivi ou rien (pointe ≤ passRange, DEVANT le ballon, porteur posé, couloir ouvert → dart de 7 m). Un par équipe. …ET LE JETÉ DÉCLENCHE LA COURSE (144) : le défenseur qui se jette OUVRE la fenêtre d'appel — « fixer puis lâcher » se joue À DEUX
@@ -1185,9 +1188,7 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   const buts = evs.filter((e) => e.type === 'but');
   const sorties = evs.filter((e) => e.type === 'sortie');
   const prises = evs.filter((e) => e.type === 'restart-pris');
-  if (st.score[0] !== buts.filter((b) => b.team === 0).length || st.score[1] !== buts.filter((b) => b.team === 1).length) {
-    issues.push(`score [${st.score}] ≠ événements de but (${buts.map((b) => b.team).join(',')})`);
-  }
+  if (st.score[0] !== buts.filter((b) => b.team === 0).length || st.score[1] !== buts.filter((b) => b.team === 1).length) { issues.push(`score [${st.score}] ≠ événements de but (${buts.map((b) => b.team).join(',')})`); }
   // un 0 tir sur une tranche courte est du VRAI football — le défaut, ce sont des OCCASIONS sans tir ; l'occasion = le ballon dans la zone QUE JE VISE pendant que JE l'ai (ni chez soi, ni les remises).
   const thirdVisits = trace.filter((s) => !s.restart && s.team >= 0
     && s.ball[0] * (s.team === 0 ? 1 : -1) > st.pitch.hx - st.pitch.dims.box.depth - 1).length;

@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'ANCRE À LA CRAIE (177, note 217) : le slot large TIRÉ vers la ligne en
+possession (× axe largeur × largeurR) — le plus large 23→27 m, touches 8→13/
+30 min (LE TAUX RÉEL). LE FRONT DES SORTIES ORGANIQUES (174-177) EST SOLDÉ :
+dégagement qui respire + bloc de champ + ancre à la craie.
+
 LE BLOC DE CHAMP (176, note 216) : le ballon rapide et bas qui percute un corps
 adverse DÉVIE (13 % des tirs contrés + les dégagements bloqués ; le tir fantôme
 d'hier traversait). Restes du front sorties : les touches (5 c. 13/30 min), la
