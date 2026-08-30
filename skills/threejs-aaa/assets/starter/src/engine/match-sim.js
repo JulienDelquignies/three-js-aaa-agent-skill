@@ -305,10 +305,7 @@ function assignMatchJobs(st, cfg) {
       } else {
         const toS = [spotD[0] - gk.p[0], spotD[1] - gk.p[2]];
         const dS = Math.hypot(toS[0], toS[1]);
-        // LE MOONWALK TRACÉ (173, cfg.gkFace — la trace seed 7 t=66,7 : arrivé au spot le push
-        // flippait face-terrain PENDANT que le corps rattrapait sa touche à 2,8 m/s de côté —
-        // le corps marchait latéral en regardant devant). Au spot, s'il BOUGE encore, le regard
-        // suit le ballon qu'il rattrape ; immobile, la face-terrain d'hier. false : le flip nu.
+        // LE MOONWALK TRACÉ (173, cfg.gkFace — seed 7 t=66,7 : au spot le push flippait face-terrain PENDANT que le corps rattrapait sa touche de côté). Au spot en MOUVEMENT, le regard suit le ballon rattrapé ; immobile, la face-terrain d'hier. false : le flip nu au bit.
         gk.push = dS > 0.6 ? [toS[0] / dS, toS[1] / dS]
           : (st.full && cfg.gkFace !== false && Math.hypot(gk.v[0], gk.v[1]) > 1
             ? (() => { const bx = st.ball.p[0] - gk.p[0], bz = st.ball.p[2] - gk.p[2], bl = Math.hypot(bx, bz) || 1; return [bx / bl, bz / bl]; })()
