@@ -11,7 +11,7 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde, ancresCraie } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
+import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js';
@@ -1135,15 +1135,7 @@ export function matchCfg(overrides = {}) {
     // l'accrochage MODULÉ par la tactique du camp défendant (axe pressing — lot 97, duel.js)
     accrocheMod: (st, c, cfg) => accrocheStep(st, c, cfg, axe(tac(st, 1 - c.team).pressing, 0.7, 1.3)),
     // LA PRISE A UN MÉTIER (hook onTake du loop) : la touche du plein format se LANCE (Loi 15)
-    onTake: (st, id, type, cfg) => {
-      if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg);
-      // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
-      else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
-      else if (type === 'corner' && cfg.corner && st.full) cornerTrav(st, id, cfg);
-      // LA SORTIE DE BUT EST UNE DISTRIBUTION (lot 150, tac.cpa.sortieBut && st.full) : le preneur passe par relancerGardien (main courte / longue directe / le barème d'hier) — sans style, RIEN ne change : la remise générique d'hier joue, au bit
-      else if (type === 'sortie-de-but' && st.full && st.tactics?.[st.players[id]?.team]?.cpa?.sortieBut)
-        relancerGardien(st, id >= 0 ? st.players[id] : null, cfg, { beginPass: simInternals.beginPass });
-    },
+    onTake: (st, id, type, cfg) => onTakeMatch(st, id, type, cfg, simInternals.beginPass, relancerGardien),   // la prise a un métier (referee.onTakeMatch — Loi 15/CF/corner/sortie de but)
     // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },
     // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91, keeperHold:false = le ballon gelé d'hier) : intouchable tenu, posé une fois debout

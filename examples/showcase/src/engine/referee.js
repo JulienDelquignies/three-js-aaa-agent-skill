@@ -844,3 +844,16 @@ export function ballFetch(st, dt, cfg) {
   st.ball.carry(aim, dt, { tau: 0.045 });
   return true;
 }
+
+/** LA PRISE A UN MÉTIER (hook onTake du loop — déporté du matchCfg, lot 179) : la touche se
+ *  LANCE (Loi 15), le coup franc se tire ou se lance, le corner se travaille, la sortie de
+ *  but se distribue au style. _beginPass/_relancer injectés par l'appelant (le cycle d'import). */
+export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
+      if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg);
+      // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
+      else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
+      else if (type === 'corner' && cfg.corner && st.full) cornerTrav(st, id, cfg);
+      // LA SORTIE DE BUT EST UNE DISTRIBUTION (lot 150, tac.cpa.sortieBut && st.full) : le preneur passe par relancerGardien (main courte / longue directe / le barème d'hier) — sans style, RIEN ne change : la remise générique d'hier joue, au bit
+      else if (type === 'sortie-de-but' && st.full && st.tactics?.[st.players[id]?.team]?.cpa?.sortieBut)
+        _relancer(st, id >= 0 ? st.players[id] : null, cfg, { beginPass: _beginPass });
+}
