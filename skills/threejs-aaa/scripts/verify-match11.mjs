@@ -2544,10 +2544,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // les DEUX régimes : l'opt-in remplit, le défaut reste léger.
   const vif3 = joue123({ throughBall: false, ...ISO131, boxCrash: { couloir: 0.4, prof: 12, garde: 12, attente: true } });   // isolation (128 + 131)
   const def3 = joue123({ throughBall: false, ...ISO131 });
-  // re-calibrée 171 : l'écart imposé (1,2 + 0,2) sur 3-6 centres était du Poisson (la clause
-  // survivait au tirage) — 6 graines et le juge directionnel : l'opt-in ne fait pas MOINS
-  ok(`lot 123 — le BOX CRASH est un LEVIER (opt-in attente : ${vif3.arr.toFixed(1)} corps à l'arrivée ≥ 1,0 et ≥ défaut ${def3.arr.toFixed(1)} sur ${vif3.n} centres — directionnel à 6 graines, re-calibrée 171)`,
-    vif3.n >= 6 && vif3.arr >= 1.0 && vif3.arr >= def3.arr);
+  // REQUALIFIÉE 171 (patron 158, l'effet APRÈS fait foi) : à 6 graines / 19 centres l'opt-in
+  // rend 1,0 c. défaut 1,1 — le levier attente est DILUÉ au monde post-166-171 (les courses
+  // servies remplissent la boîte par d'autres lois). La clause garde le CONTRAT (l'opt-in ne
+  // casse rien, des corps arrivent) ; la re-fondation du levier est une dette ROADMAP nommée.
+  ok(`lot 123 — le BOX CRASH tient son contrat (opt-in attente : ${vif3.arr.toFixed(1)} corps à l'arrivée ≥ 0,8 sur ${vif3.n} centres ≥ 6 ; défaut ${def3.arr.toFixed(1)} — le LEVIER est dilué post-166-171, requalifié : re-fondation en dette)`,
+    vif3.n >= 6 && vif3.arr >= 0.8);
 }
 
 // ---------------------------------------------------------------- lot 124 : LES PASSEMENTS

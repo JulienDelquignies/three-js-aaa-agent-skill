@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE BOX CRASH À RE-FONDER (dette 171) : le levier boxCrash.attente est dilué au
+monde post-166-171 (opt-in 1,0 c. défaut 1,1 corps sur 19 centres — les courses
+servies remplissent la boîte par d'autres lois). La clause 123 garde le contrat ;
+le levier attend une re-fondation mesurée (le théâtre des centres reste petit).
+
 LE RETOUR ×6 (170-171, note 211) : le corps ouvert (pivot 75°→60°, demi-position
 × visionF), la tenue du gardien (0,38→3,23 s, l'éclair = un choix de contre), le
 retrait de détresse (0→8/90 min), la célébration 14 s, les rayons du règlement
