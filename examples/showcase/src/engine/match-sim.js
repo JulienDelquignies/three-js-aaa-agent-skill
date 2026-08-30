@@ -169,8 +169,7 @@ function assignMatchJobs(st, cfg) {
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
         p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]];
-        // LOI 8, LE CORPS (160b) : l'adverse de l'ENGAGEMENT ne TRAVERSE pas le rond — dedans il SORT radial, et un chemin qui couperait le rond se DÉTOURNE par la tangente. Des marcheurs en transit se relayaient dans le rond : canTake ne le voyait jamais vide
-        // (gel de 28,7 s mesuré, graine 3). L'arbitre a le corps qu'il exige. cfg.rondSort ; false : hier.
+        // LOI 8, LE CORPS (160b) : l'adverse de l'ENGAGEMENT ne TRAVERSE pas le rond — dedans il SORT radial, et un chemin qui couperait le rond se DÉTOURNE par la tangente. Des marcheurs en transit se relayaient dans le rond : canTake ne le voyait jamais vide (gel de 28,7 s mesuré, graine 3). L'arbitre a le corps qu'il exige. cfg.rondSort ; false : hier.
         if (st.full && cfg.rondSort !== false && r.type === 'engagement' && p.team !== r.team) {
           const R8 = (pitch.dims?.circle ?? 9.15) * 0.9 + 0.6;
           const dx8 = p.p[0] - rp[0], dz8 = p.p[2] - rp[1], d8 = Math.hypot(dx8, dz8);
@@ -663,11 +662,9 @@ function assignMatchJobs(st, cfg) {
         const wR = axe(R.largeurR, 0.9, 1.1);
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
         // L'ANCRE À LA CRAIE (177, cfg.craie && st.full — les larges vivaient à |z| 18-19 pour une craie à 34 : le jeu évitait le bord, 8 touches/30 min c. 13 réel). En POSSESSION le slot large est TIRÉ vers la ligne (fraction du chemin × axe LARGEUR × largeurR) — l'ailier étire à 2-8 m de la craie. Absente : hier au bit.
-        // …ET L'ANCRE S'ÉLIT AU RÔLE (178, roles.ancresCraie — retour utilisateur : l'ailier-meneur
-        // CÈDE la craie au latéral, le pattern du faux ailier) : par côté, UN porteur d'ancre
+        // …ET L'ANCRE S'ÉLIT AU RÔLE (178, roles.ancresCraie) : l'ailier-meneur CÈDE la craie au latéral (le faux ailier) — par côté, UN porteur d'ancre
         if (st.full && cfg.craie && off) {
-          if ((st._ancre?.until ?? -1) < st.t || st._ancre?.team !== atk)
-            st._ancre = { team: atk, until: st.t + 0.8, cote: ancresCraie(st, atk, axe, role) };
+          if ((st._ancre?.until ?? -1) < st.t || st._ancre?.team !== atk) st._ancre = { team: atk, until: st.t + 0.8, cote: ancresCraie(st, atk, axe, role) };
           if (st._ancre.cote[Math.sign(tz) || 1] === p.id) {
             const tire = (cfg.craie.tire ?? 0.6) * axe(tac(st, atk).largeur, 0.5, 1.4) * axe(R.largeurR, 0.8, 1.2);
             tz = Math.sign(tz) * Math.min(pitch.hz - 1.5, Math.abs(tz) + (pitch.hz - 1.5 - Math.abs(tz)) * Math.min(1, tire));
