@@ -6186,6 +6186,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      que le moteur soit fautif). Leçon d'instrument : à 4 graines la variance
      des mondes domine cette mesure (3,1 % vs 8,3 % entre deux seuils — le
      chaos, pas l'effet) ; 8 graines minimum pour ce canal.
+- 213: Lot 173 — LE MOONWALK TRACÉ ET FIXÉ (cfg.gkFace, la dette du 212 payée
+     avec le bon instrument). La trace frame à frame (seed 7, t=66,7) a craché
+     LE mécanisme que deux canaux naïfs avaient raté : arrivé à < 0,6 m de son
+     spot, le push du gardien-porteur flippait sur [−g.sign, 0] (la face-terrain,
+     un défaut arbitraire) PENDANT que le corps rattrapait sa touche de conduite
+     à 2,8 m/s de côté — le corps marchait latéral en regardant devant. La loi :
+     au spot, s'il BOUGE encore (v > 1), le regard suit le BALLON qu'il rattrape ;
+     immobile, la face-terrain d'hier. Mesure 8 graines : total désaligné
+     14,7 → 12,3 % — et le RÉSIDUEL attribué : 70/81 frames vivent dans la
+     PREMIÈRE seconde après la prise (le freinage du gardien lancé, ~0,15 s par
+     prise — physiologique, pas un bug). Clause 173 (la fixture DE la trace :
+     gardien au spot en mouvement, touche à 0,7 m → push [0,02, 1] vers le
+     ballon ; épinglé [1, 0] le flip d'hier ; leçon de fixture : possession.
+     carrier + 3 steps requis). LEÇON D'INSTRUMENT confirmée : les deux canaux
+     réfutés du 212 l'étaient à bon droit — le traçage d'UN épisode vaut mieux
+     que deux hypothèses plausibles. Les outils scratchpad (fingerprint, ab-97)
+     reconstruits post-redémarrage (les valeurs d'empreintes RE-BASÉES).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
