@@ -6203,6 +6203,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      réfutés du 212 l'étaient à bon droit — le traçage d'UN épisode vaut mieux
      que deux hypothèses plausibles. Les outils scratchpad (fingerprint, ab-97)
      reconstruits post-redémarrage (les valeurs d'empreintes RE-BASÉES).
+- 214: Lot 174 — LE DÉGAGEMENT RESPIRE (cfg.clearSigma) + LE BANC SHARDÉ. (a)
+     Les sorties organiques : le monde ne produisait NI touches NI corners
+     (9 touches/90 min c. 40-50, 1 corner/20 matchs c. ~10/match) — le canal
+     passSigma EXISTAIT (bruit d'angle 6°→0,5° à la note passing, appliqué aux
+     passes) mais le CLEAR en était EXEMPTÉ (!choice.clear) : le dégagement
+     pressé partait exact au flanc, or c'est LE pourvoyeur de sorties du réel.
+     La loi : dirNoise du clear = passSigma × ampli 4 (~13° à 50) × composureF ;
+     le monde NU reçoit execSigma ×1,25 (patron 145 — LE PIÈGE VÉCU : la
+     première version exigeait c.skill, le monde par défaut est nu → zéro effet
+     aux trois mondes, l'assert config avait AUSSI raté son ancre : deux
+     non-effets silencieux d'affilée, la mesure les a attrapés). APRÈS (6×300) :
+     touches 3→5, corners 1→3 (LE taux réel), sorties de but 3→9, buts/tirs
+     stables. Clause 174 (flux directionnel large 17 c. 7). (b) LE BANC SHARDÉ
+     (retour utilisateur « super long ») : les 85 blocs de verify-match11 sous
+     garde __bloc() (BANC_SHARDS/BANC_SHARD round-robin, sans env : identique) +
+     scripts/bancs.mjs — le runner parallèle (N shards + les 7 bancs, file de
+     concurrence aux cœurs, agrégat TOTAL ✓/✗). Mur d'horloge ÷ ~4 attendu.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

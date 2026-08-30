@@ -166,6 +166,9 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
+  clearSigma: { ampli: 4 },     // 174 : LE DÉGAGEMENT RESPIRE — passSigma × ampli × composureF (~13° à 50 : le pied pressé)
+                          // sur le clear (le pied pressé part où il peut : LE pourvoyeur de
+                          // touches/corners du réel). Absent : le clear exact d'hier au bit.
   courseServie: { vCourse: 6.2, gap: 4, fenetre: 14, advMax: 16, advMin: 4 },
   lectureCourse: { porte: 4 },   // 168 : LE LECTEUR DE TRAJECTOIRE — sur un piqué, le défenseur
                           // le plus proche de la trajectoire (≤ porte m) part au point de coupe

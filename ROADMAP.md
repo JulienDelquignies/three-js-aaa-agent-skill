@@ -262,6 +262,12 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE DÉGAGEMENT RESPIRE (174, note 214) : le clear était exempté du bruit d'angle
+— σ × ampli 4 × composureF : corners 1→3/30 min (le taux réel), sorties ×3,
+touches +66 %. Le banc SHARDÉ (bancs.mjs : mur d'horloge ÷ cœurs). Reste du
+front sorties : les touches à densifier encore (5 c. 13 réel/30 min — la passe
+appuyée près des lignes), le contre du tir de champ (déviations → corners).
+
 LE MOONWALK FIXÉ (173, note 213 — la dette 172 payée par la trace) : le push
 flippait face-terrain au spot pendant que le corps rattrapait sa touche ; le
 regard suit désormais le ballon rattrapé (cfg.gkFace). Désaligné 14,7 → 12,3 %,

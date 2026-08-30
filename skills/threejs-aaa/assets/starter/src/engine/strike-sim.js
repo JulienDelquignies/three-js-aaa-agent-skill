@@ -360,6 +360,14 @@ export function strikeNow(st, c, cfg) {
     // shooting.tryCross). Absent : 1, le σ d'hier au bit — aucun tirage de plus.
     if (c.skill) dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1) * (choice.sigmaF ?? 1);
     else if (cfg.execSigma) dirNoise = gauss(st.rnd ?? (() => 0.5)) * cfg.execSigma * (urgent ? 1.25 : 1) * (choice.sigmaF ?? 1);
+  } else if (!shot && choice.clear && st.full && cfg.clearSigma) {
+    // LE DÉGAGEMENT RESPIRE (174, cfg.clearSigma — le monde ne produisait NI touches NI
+    // corners : touches 9/90 min c. 40-50 réel, corners 1/20 matchs c. ~10/match — le clear
+    // partait EXACT au flanc, or LE pourvoyeur de sorties du foot est le dégagement pressé).
+    // σ de passe × ampli × composureF ; le monde NU reçoit execSigma (patron 145 : le déchet
+    // existe sans notes, la note le RAFFINE). Clé absente : le clear exact d'hier au bit.
+    const sigC = c.skill ? c.skill.passSigma * (c.skill.composureF ?? 1) : (cfg.execSigma ?? 0.044) * 1.25;
+    dirNoise = gauss(st.rnd ?? (() => 0.5)) * sigC * (cfg.clearSigma.ampli ?? 2.4);
   }
   sol.dirYaw += dirNoise;
   // LE RÉPERTOIRE DU TIR (choice.shotKind, posé par le match — le rondo n'en pose jamais) : le

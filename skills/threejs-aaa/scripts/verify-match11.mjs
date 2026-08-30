@@ -56,14 +56,14 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
   engagement: false, assignTenue: false,                             // …le frémissement des cibles d'hier (pré-135)
   sortieGardien: false, clearTouche: false,                          // …le gardien invisible et le corner facile d'hier (pré-136)
-  accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };   // …le monde d'hier (pré-137/160)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };   // …le monde d'hier (pré-137/160)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
-const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
-const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };   // la clause 131 isole SES successeurs (132-160) — sa loi seule varie
+const ISO131 = { clearServi: false, uneTouche: { ...matchCfg().uneTouche, dose: false }, honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
+const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, interception: false, meetReel: false, rattrape: false, engagement: false, assignTenue: false, sortieGardien: false, clearTouche: false, accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };   // la clause 131 isole SES successeurs (132-160) — sa loi seule varie
 // le PACK 142-145 (la semelle rare, l'œil, le jeté, le souffle d'exécution) : les clauses de flux d'AVANT s'y épinglent
-const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
+const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
@@ -72,13 +72,21 @@ import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 // L'ISOLATION DES RE-DATEURS 170-171 (le patron « la clause isole ses re-dateurs ») : le
 // corps ouvert, la tenue du gardien, les rayons du règlement, la détresse du retrait et la
 // célébration allongée re-datent le FLUX vivant — les clauses de flux d'AVANT s'y épinglent.
-const ISO171 = { corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
+const ISO171 = { corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
+// LE SHARD (174 — retour utilisateur : « le banc est super long ») : chaque bloc de clauses
+// est indépendant ; BANC_SHARDS/BANC_SHARD découpent l'exécution en N processus parallèles
+// (scripts/bancs.mjs orchestre — mur d'horloge ÷ cœurs). Sans variables : tout tourne, à
+// l'identique. Le partage round-robin équilibre les blocs lourds naturellement.
+const __NS = +(process.env.BANC_SHARDS ?? 1), __ID = +(process.env.BANC_SHARD ?? 0);
+let __nb = -1;
+const __bloc = () => (++__nb % __NS) === __ID;
+
 // ---------- 1. la formation est une donnée saine — TOUT le catalogue (lot 17)
-{
+if (__bloc()) {
   const pitch = makePitch(FULL);
   for (const name of ['433', '442', '352']) {
     const c0 = checkFormation(pitch, 0, name), c1 = checkFormation(pitch, 1, name);
@@ -90,7 +98,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---------- 2. le monde 22 corps tourne, contrat de base, budget
-{
+if (__bloc()) {
   const st = makeMatch({ full: true, seed: 3 });
   ok(`makeMatch({ full }) : 22 joueurs sur ${st.pitch.dims.length} × ${st.pitch.dims.width} (Loi 1)`,
     st.players.length === 22 && st.pitch.dims.length === 105 && st.full === true);
@@ -122,7 +130,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---------- 3. le bloc est un BLOC : les postes sont TENUS en jeu
-{
+if (__bloc()) {
   const st = makeMatch({ full: true, seed: 11 });
   const cfg = matchCfg({ shotRange: 20 });
   let cover = 0, n = 0;
@@ -159,7 +167,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ~27 m derrière lui, bloc borné à ~30 m, interlignes comprimées. Mesuré : bloc défendant
 // p50 43 → 30,3 m (réel 25-40), interligne défense→milieu 25,5 → 14,7 m (réel 10-15), et
 // l'ASYMÉTRIE naît (attaque 42 m étirée) — flux tenu (70 tirs / 29 buts, 20 × 300 s).
-{
+if (__bloc()) {
   // la LOI PURE d'abord : ballon au rond central → la ligne défendante vit à ~ligne m du
   // ballon (pas à ses postes absolus), et le bloc tient dans long m
   const st0 = makeMatch({ full: true, seed: 1 });
@@ -218,7 +226,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // coulissé, 70 tirs / 32 buts et la perce SURVIT (zone de centre 9 → 11, ras 5 → 8, centres
 // bas 2 → 4 vs errance, 10 × 300 s). Lois PURES et fixtures posées — le flux d'aile à
 // l'échelle d'un banc est du bruit (leçon d'instrument : 6 × 180 s ne classe rien).
-{
+if (__bloc()) {
   // la LOI PURE du coulissement : ballon à z = 20 → le bloc glisse de 20 × lateral m côté
   // ballon ; à z = 34 la borne slideMax prend la main ; anchorZ absent = l'identité d'hier.
   const st0 = makeMatch({ full: true, seed: 1 });
@@ -298,7 +306,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // d'un claquement de doigts. Mesuré avant : 14 % des prises > 10 m/s, un dégagement de
 // 26,5 m/s possédé instantanément. La MÊME scène, trois mondes — le tirage seedé décide,
 // la clé retirée est l'aimant nommé.
-{
+if (__bloc()) {
   const scene = (cfgExtra, rndV) => {
     const st = makeMatch({ full: true, seed: 5 });
     const sgn = -st.pitch.ownGoal(0).sign;
@@ -341,7 +349,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // intention n'a pas d'armé — la fenêtre aveugle se pose avec seen 0, tout le monde paie sa
 // réaction pleine (mesuré avant : 0/39 fenêtres posées, armée 135/135 — la passe la moins
 // lisible du football était la seule lue instantanément).
-{
+if (__bloc()) {
   const scene = (cfgExtra, presse) => {
     const st = makeMatch({ full: true, seed: 5 });
     const sgn = -st.pitch.ownGoal(0).sign;
@@ -387,7 +395,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // lieu de geler dans l'ancre. Mesuré : tirs frappés à 0,63 m/s p50 avant, 1,90 après (réel
 // 3-6 — le frein AMONT de la touche de préparation est la dette nommée « la préparation
 // dans la foulée »). La MÊME mesure poolée (passes + tirs), deux mondes.
-{
+if (__bloc()) {
   const corps = (cfgExtra) => {
     const vs = [];
     for (const seed of [1, 3]) {
@@ -426,7 +434,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // (strideStrike.ride) : le corps continue sa course dès la frame 1. Le creux PRÉ-contact des
 // frappes en course (corps > 3 m/s à 0,7 s du contact) est la métrique — la frame de
 // l'événement échantillonne l'instant post-courbe, elle ne peut structurellement pas bouger.
-{
+if (__bloc()) {
   const stops = (cfgExtra) => {
     const W = 42; let net = 0, tot = 0;
     for (const seed of [1, 3]) {
@@ -472,7 +480,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 3f. L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le
 // joueur part en dribble ») : fenêtre de 2,5 s après le coup d'envoi — barre abaissée, tenue
 // dispensée. Mesuré : délai prise → passe 1,7 s sur la plupart des graines (2,1-2,8 sans).
-{
+if (__bloc()) {
   const delai = (cfgExtra) => {
     const ds = [];
     for (const seed of [2, 3, 5, 6]) {
@@ -496,7 +504,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---------- 4. sabotage nommé : sans la formation, le 22-corps redevient l'essaim du réduit
-{
+if (__bloc()) {
   // LA DISPERSION ÉTAIT UN MAUVAIS INSTRUMENT (3 passages à la marge : +1,9 / vert / +1,3 —
   // un monde qui MARCHE s'étale moins vite, la moyenne des distances au centroïde s'écrase
   // des deux côtés). Le discriminant STRUCTUREL est la COUVERTURE DES POSTES (le même
@@ -528,7 +536,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 5. LA LOI 11 (hors-jeu) — la ligne, la photo, le sifflet
 // Le mécanisme se prouve sur FIXTURES (doctrine : les sabotages comparatifs de flux mentent
 // à travers les re-distributions — mesuré 3× au Lot 8) ; le flux ne juge que l'EXISTENCE.
-{
+if (__bloc()) {
   // le contrat de la loi elle-même (avant-dernier, ballon, moitié, tolérance)
   const c = checkOffside(makePitch(FULL));
   ok(`le contrat de la Loi 11 tient (checkOffside : avant-dernier défenseur, ballon qui tient la ligne, moitié qui immunise, tolérance)`, c.ok, c.issues.join(' ; '));
@@ -594,7 +602,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---------- 6. les APPELS TIMÉS existent et sont SUIVIS (flux : existence, pas de bande fine)
-{
+if (__bloc()) {
   let appels = 0, servis = 0, offPct = [], denies = 0;
   // graines {2,4,5} (re-fondé lot 34 : le monde des duels charge le porteur pendant qu'il
   // sert — le service s'est raréfié, l'existence tient, le taux reste la dette nommée)
@@ -641,7 +649,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- 7. LE PRESSING À DÉCLENCHEURS + L'OMBRE DE COUVERTURE (mécanismes sur fixtures,
 // existence en flux — la doctrine du lot 8, toujours)
-{
+if (__bloc()) {
   const mk = () => {
     const st = makeMatch({ full: true, seed: 5 });
     const sgn = -st.pitch.ownGoal(0).sign;
@@ -800,7 +808,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---------- 8. le catalogue JOUE : 4-4-2 contre 3-5-2, un match qui vit — et le fantôme retombe en 433
-{
+if (__bloc()) {
   const run = (tactics, seed = 3) => {
     const st = makeMatch({ full: true, seed, tactics });
     const cfg = matchCfg({ shotRange: 20 });
@@ -834,7 +842,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // plein format — au-delà, le ballon est LIBRE (un vrai 50/50, la chasse ne change pas,
 // l'étiquette cesse de mentir). Mesuré : pic 2,91 → 2,19 m, p99 1,99 → 1,63 — et les tirs
 // MONTENT (16 → 27 sur 10 graines, buts constants : l'honnêteté ravive le jeu).
-{
+if (__bloc()) {
   const dists = [];
   for (const seed of [1, 3]) {
     const st = makeMatch({ full: true, seed });
@@ -861,7 +869,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // à < 32 m du but il tient son point de fixation). Mesuré : p25 de vitesse 0,00 → ~0,8 m/s,
 // vols figés > 60 % du temps 14 % → ~1 %, tirs 27 → 24 et buts 9 → 11 sur 10 graines (la
 // respiration tenue). La MÊME mesure, deux mondes — le sabotage est la clé retirée.
-{
+if (__bloc()) {
   const mesure = (cfgExtra) => {
     let still = 0, frames = 0, geles = 0, vols = 0, vol = null;
     for (const seed of [1, 3]) {
@@ -890,10 +898,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // settledNear: Infinity ÉPINGLÉ DES DEUX CÔTÉS (lot 103 : le trot au poste anime AUSSI le
   // monde sans meetWalk — la statue trottait à son slot, l'écart net tombait de 25 à 4 pts ;
   // la clause isole meetWalk, la variable orthogonale se neutralise symétriquement)
-  const vif = mesure({ settledNear: Infinity, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // …et 166/167 épinglés des DEUX côtés (le vivant montait à 10 %, l'écart net tombait à 10 pts pile)
+  const vif = mesure({ settledNear: Infinity, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // …et 166/167 épinglés des DEUX côtés (le vivant montait à 10 %, l'écart net tombait à 10 pts pile)
   ok(`le RECEVEUR VIVANT (2 × 120 s : ${(vif.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≤ 25, ${vif.geles}/${vif.vols} vols figés > 60 % ≤ 8 % — il vient au-devant, la prise se fait dans le pas)`,
     vif.statue <= 0.25 && vif.geles / Math.max(1, vif.vols) <= 0.08);
-  const fige = mesure({ meetWalk: false, chutePredite: false, settledNear: Infinity, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // le monde d'hier COMPLET (lot 52 : la chute prédite anime aussi — l'isolation du sabotage la coupe)
+  const fige = mesure({ meetWalk: false, chutePredite: false, settledNear: Infinity, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // le monde d'hier COMPLET (lot 52 : la chute prédite anime aussi — l'isolation du sabotage la coupe)
   ok(`sabotage « pose figée » attrapé (meetWalk:false : ${(fige.statue * 100).toFixed(0)} % du vol < 0,5 m/s ≥ vivant + 10 pts (${(vif.statue * 100 + 10).toFixed(0)}) — la statue d'hier, nommée)`,
     fige.statue >= vif.statue + 0.10);
 }
@@ -902,7 +910,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // CORPS (diveReach 2,95 = 1,35 de root motion + 1,6 de bras). Avant : 2,1 déclarait « battu »
 // toute frappe aux coins du grand but (±3,11) — 3 plongeons sur 21 tirs, 0 arrêt, 13 buts,
 // conversion 57 %. Le « avant » chiffré EST le sabotage, consigné ici.
-{
+if (__bloc()) {
   // agrégat 3 graines (re-fondé lot 34 : la graine 2 seule est tombée à 1 tir dans le monde
   // des duels — l'échantillon d'UNE graine ne porte plus une clause de flux ; mesuré {2,3,5} :
   // 16 tirs, 25 % plongées, 19 arrêts, conversion 31 %)
@@ -947,7 +955,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // le joueur se réoriente avec la balle sans la toucher »). Mesuré avant : 54 % des
 // amortis-poursuite dans le dos (> 100°), 26 % des réceptions, prises p90 107°. Après :
 // amorti-poursuite 0 %, réceptions 2 % (p50 2°), prises 4 % — rondo/réduit au bit (empreinte).
-{
+if (__bloc()) {
   const { dansCone } = await import('../assets/starter/src/engine/dribble.js');
   ok(`la GÉOMÉTRIE du cône (devant 0° ✓, flanc 99° ✓, dos 145° ✗, la borne 100° exacte ✓)`,
     dansCone(0, 0, 0, 5, 0, 100) && dansCone(0, 0, 0, 0.1, 5.5, 100) && !dansCone(0, 0, 0, -4, 3, 100)
@@ -986,7 +994,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // CONTOURNE son ballon, le pivot dos l'expose. Mesuré avant : 18 % des touches de conduite
 // données dos (> 100°) au kick, orbite au pivot 1,06 % du porté. Après : 1,4 % — et les
 // mondes rondo/réduit au bit près (empreintes, la loi est st.full).
-{
+if (__bloc()) {
   const touchesDos = (over) => {
     let n = 0, dos = 0, deny = 0;
     for (const seed of [2, 3]) {
@@ -1033,7 +1041,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // refusait l'armé sur le ballon libre de la conduite (il roule AVEC son homme, il ne fuit
 // l'ancre de personne). Mesuré avant : 3 401 refus pour 4 tirs sur 4×180 s ; après : 90, et
 // les passes 167 → 229. L'enveloppe est RELATIVE et graduée par la technique (× controlF).
-{
+if (__bloc()) {
   const vifDe = (over) => {
     let deny = 0, passes = 0;
     for (const seed of [1, 5]) {
@@ -1058,7 +1066,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // poursuite dos en SURVITESSE d'entrée (~27 s de bélier par match) — le percutage que l'œil
 // lisait « charge dans le dos » (la faute arbitrale, elle, était déjà morte : 0 sur 4×180 s).
 // L'axe de RÔLE press module la distance (récupérateur au contact, meneur à distance).
-{
+if (__bloc()) {
   const belier = (over) => {
     let percut = 0, duels = 0;
     for (const seed of [1, 5]) {
@@ -1098,7 +1106,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---------- lot 57 — L'ÉCONOMIE DE COURSE : en jeu placé calme, le off-ball marche
-{
+if (__bloc()) {
   const { momentDuJeu } = await import('../assets/starter/src/engine/phases.js');
   const franches = (overrides) => {
     const out = [];
@@ -1134,7 +1142,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // au sol pendant le couché — mesuré avant : gelé à 1,34 m en s'éloignant des mains), et le
 // plongeon paie son PRIX RÉEL (chute + sol + relevé par étapes ~2,45 s au joueur moyen,
 // l'agilité en facteur ; le BATTU paie aussi — mesuré avant : down=0, la catapulte).
-{
+if (__bloc()) {
   const gardien = (over) => {
     const out = { prises: [], battus: [] };
     // re-fondé lot 96b (5 migrations de flux en 3 lots — LA leçon) : prises sur {5, 7} (dont
@@ -1201,7 +1209,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // DIFFÉRENCIÉES — le tir s'habille de SON espèce (mesuré avant : 13/16 tirs en passeRapide),
 // la parade nomme sa géométrie au windup (mains 1/2, espèces plongeonUneMain/plongeonPrise).
 // Contrat lot 90 : la sim dit le QUOI — ici on prouve que le QUOI se nomme et se sabote.
-{
+if (__bloc()) {
   const especes = (over) => {
     const out = { tirs: [], mains: [], sansMains: 0, plonges: {} };
     for (const seed of [2, 3, 6, 7]) {
@@ -1246,7 +1254,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // le côté du ballon et le gardien prend le CÔTÉ OUVERT. Sabotage : le gardien d'hier s'aligne
 // ballon-centre (côté ballon) dans les deux cas. Les lois unitaires (bissectrice, SET, duel
 // posé, rôle garde) vivent dans checkKeeper (verify-match).
-{
+if (__bloc()) {
   const poser = (type, over) => {
     const st = makeMatch({ full: true, seed: 3 });
     const cfg = matchCfg(over);
@@ -1277,7 +1285,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // entrées en duel lancées > 3,5 m/s — « la défense se jette »), sa cible vit ENTRE ballon et
 // but, et le TACLE attend sa FENÊTRE (duel.tackleWindow, composure en facteur). L'A/B se joue
 // À CLÉ sur les mêmes graines : l'effet est attribuable, pas un hasard de flux.
-{
+if (__bloc()) {
   const entrees = (over) => {
     const out = [];
     for (const seed of [2, 3, 5, 7]) {
@@ -1325,7 +1333,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // la zone ballside (l'axe tactics.marquage) : la LIGNE arrière est une bande (mesuré avant :
 // 19-22 m d'écart de profondeur en défense placée — pas de ligne), le côté FAIBLE pince
 // (17,3 m → bande réelle 8-14), la couverture survit au pressing. A/B à clé, mêmes graines.
-{
+if (__bloc()) {
   const bloc = (over) => {
     const spread = []; const weakZ = [];
     // trio re-balayé lot 97 (la migration de flux : l'accrochage + le lancement re-centrent le
@@ -1367,7 +1375,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // BATTU — LA source de fautes du vrai football (mesuré avant : 0,08 faute/match, réel 1,2-1,5
 // par 220 s — le monde discipliné n'avait plus ni coups francs ni cartons). La POLITIQUE est
 // un contrat unitaire (duel.accrocheP), le VOLUME un flux borné, le sabotage l'assèchement.
-{
+if (__bloc()) {
   const volume = (over) => {
     let acc = 0, fautes = 0, basc = 0, fixSum = 0;
     // échantillon 6 × 220 → 8 × 300 (lot 111 : le monde combiné a structurellement moins de
@@ -1443,7 +1451,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // point de chute), au-delà il se joue court (l'hier). Situations POSÉES (le patron du banc
 // lot 94) : le restart forgé, la PRISE fait foi (hook onTake). Sabotage cfDirect:false : la
 // remise courte d'hier aux deux distances — la faute qui ne coûte rien, nommée.
-{
+if (__bloc()) {
   const prise = (dist, over) => {
     const st = makeMatch({ full: true, seed: 3 });
     const cfg = matchCfg(over);
@@ -1459,8 +1467,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const ev = st.events.slice(n0).filter((e) => e.t <= tCF + 4);
     return { direct: ev.some((e) => e.kind === 'coup-franc-direct'), lance: ev.some((e) => e.type === 'lancement') };
   };
-  const pr = prise(21, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), lo = prise(40, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), xl = prise(60, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // isolation 159/160
-  const sab = prise(21, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), sabL = prise(40, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const pr = prise(21, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), lo = prise(40, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), xl = prise(60, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // isolation 159/160
+  const sab = prise(21, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), sabL = prise(40, { cfDirect: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   ok(`lot 97 — le coup franc a un prix (21 m : ${pr.direct ? 'TIRÉ par-dessus le mur' : 'muet ?!'} ; 40 m : ${lo.lance ? 'LANCÉ dans la boîte' : 'muet ?!'} ; 60 m : ${xl.direct || xl.lance ? 'joué long ?!' : 'joué court — trop loin, on relance'})`,
     pr.direct && !pr.lance && lo.lance && !lo.direct && !xl.direct && !xl.lance);
   ok(`sabotage « la faute ne coûte rien » attrapé (cfDirect:false : 21 m ${sab.direct ? 'tiré ?!' : 'muet'}, 40 m ${sabL.lance ? 'lancé ?!' : 'muet'} — la remise courte d'hier, nommée)`,
@@ -1472,7 +1480,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // la porte précoce), l'inversé du mauvais pied disperse (×1,9 — il repique pour enrouler).
 // Situation POSÉE : le même corps à la même aile, seule la patte change ; l'event 'centre'
 // {patte} fait foi. Sabotage patte:false : le centreur ambidextre d'hier (pas de champ).
-{
+if (__bloc()) {
   const centre = (foot, over) => {
     const st = makeMatch({ full: true, seed: 3 });
     const cfg = matchCfg({ shotRange: 20, ...over });
@@ -1516,7 +1524,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // tireur (rentrant = pied fort opposé au côté, sortant = pied du côté, tendu = both/sans
 // patte — les lots 87/100). Appel DIRECT sur état forgé (le patron du banc CF lot 97) ; le
 // style direct force le jeu long (la branche courte vit à l'axe style, 5 % en direct).
-{
+if (__bloc()) {
   const coin = (foot, over) => {
     const st = makeMatch({ full: true, seed: 3 });
     const cfg = matchCfg({ shotRange: 20, ...over });
@@ -1556,7 +1564,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // CORNER — les GRANDS montent (le tri chargeF : les ratings forgés le prouvent — le roster
 // par défaut est uniforme, le projet paramètre), le marquage HOMME goal-side, le PREMIER
 // POTEAU gardé. Corner posé (pose 10 s), corps pré-placés à distance de course réaliste.
-{
+if (__bloc()) {
   const placer = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
     const cfg = matchCfg({ shotRange: 20, ...over });
@@ -1600,7 +1608,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // poste (settledNear — sans lui, l'ailier marchait 25 m à 1,35 m/s et n'arrivait jamais).
 // Effets NETS, échantillons symétriques (mêmes graines, même durée) : la largeur de l'équipe
 // en possession et la distance au plus proche coéquipier — l'hier vivait superposé (38 m).
-{
+if (__bloc()) {
   const respire = (over) => {
     const larg = [], proche = [];
     for (const seed of [2, 3, 5, 7]) {
@@ -1624,8 +1632,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const p50 = (a) => { const s = [...a].sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
     return { larg: p50(larg), proche: p50(proche) };
   };
-  const vif = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155/157/159/160 (les re-dateurs)
-  const sab = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, soutienN: null, supportSpanFull: 0, settledNear: Infinity });
+  const vif = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155/157/159/160 (les re-dateurs)
+  const sab = respire({ departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, soutienN: null, supportSpanFull: 0, settledNear: Infinity });
   ok(`lot 103 — le jeu RESPIRE (largeur en possession p50 ${vif.larg.toFixed(0)} m ≥ hier + 2 ; plus proche coéquipier p50 ${vif.proche.toFixed(1)} m ≥ hier + 0,6 — le comité de soutien, l'amplitude, le trot au poste)`,
     vif.larg >= sab.larg + 2 && vif.proche >= sab.proche + 0.6);
   ok(`sabotage « l'essaim d'hier » attrapé (soutienN:null + supportSpanFull:0 + settledNear:Infinity : largeur ${sab.larg.toFixed(0)} m, proche ${sab.proche.toFixed(1)} m — les 4 au ballon et la marche qui n'arrive jamais, nommés)`,
@@ -1635,7 +1643,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------------------------------------------------------------- lot 104 : LE CÔNE DE SORTIE
 // — « le gardien sort aux 16 m sur un ailier en position Robben ». La charge du 1v1 exige un
 // danger DE FACE et PERSONNE pour couvrir ; sinon le poste (premier poteau). Fixture pure.
-{
+if (__bloc()) {
   const pitch = makePitch(FULL);
   const g = pitch.ownGoal(0), sg = Math.sign(g.x || 1);
   const me = [g.x - sg * 0.6, 0, 0];
@@ -1654,7 +1662,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // S'ÉCHAPPE PLUS SEULE — la tenure de conduite (le hunter revient à l'ex-porteur) + le pivot
 // de reprise (le dos freine et se retourne au lieu d'orbiter). Épisodes suivis 2 s : une perte
 // SANS pression (échappée > 2,2 m ou cueillie par l'adversaire) est LE symptôme utilisateur.
-{
+if (__bloc()) {
   const pertes = (over) => {
     let n = 0;
     // échantillon 4 × 180 → 6 × 240 s (lot 110, 3e re-cassure de flux : les épisodes rares
@@ -1703,7 +1711,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // exigeait un couloir VIDE, jamais ouvert en bloc organisé : C→W 2 %/s) et LE COULOIR SE TIENT
 // (cfg.conduiteCouloir — 67 % des touches d'aile repiquaient : l'aim [but, 0] aspire tout cap).
 // Effet net : la part du temps de ballon au TIERS CENTRAL, échantillons symétriques.
-{
+if (__bloc()) {
   const axial = (over) => {
     let c = 0, n = 0;
     for (const seed of [2, 3, 5, 7]) {
@@ -1733,7 +1741,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // jamais l'arbitrage, et la porte angle-fermé exécutait la frappe de 22 m à |z| 9) + LE
 // RAMASSAGE DU BALLON MORT (« des ballons qui traînent » : des loose de 2+ s avec un corps
 // à 0,1 m — la re-capture exigeait une INTENTION).
-{
+if (__bloc()) {
   // la fixture de l'audace : porteur seul à 22 m dans l'axe, couloir vide — l'arbitre PLANCHERISE
   const st = makeMatch({ full: true, seed: 3 });
   const cfg = matchCfg({ shotRange: 20 });
@@ -1763,7 +1771,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`lot 107 — l'angle fermé s'assouplit DE LOIN (21 m |z|=9 : ${mExc.pourquoi} ≠ angle-fermé ; 12 m |z|=9 : ${mPres.pourquoi} = angle-fermé — près du but l'excentré reste un centre)`,
     mExc.pourquoi !== 'angle-fermé' && mPres.pourquoi === 'angle-fermé');
 }
-{
+if (__bloc()) {
   // la fixture du ramassage : ballon MORT à 0,5 m devant un joueur sans intention
   const ram = (over) => {
     const st = makeMatch({ full: true, seed: 5 });
@@ -1789,7 +1797,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // « c'est rarement droit une conduite, surtout pour déstabiliser ». En 1c1 (déf < 4 m,
 // lancé), le cap OSCILLE (× gesteF × arbitre.conduite). Effet net : l'amplitude de cap par
 // fenêtre d'1 s en conduite CONTESTÉE, échantillons symétriques.
-{
+if (__bloc()) {
   const ampli = (over) => {
     const fen = [];
     for (const seed of [2, 3, 5, 7]) {
@@ -1830,7 +1838,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------------------------------------------------------------- lot 111 : LA VARIÉTÉ DE
 // CRÉATION — le TROISIÈME HOMME (le relais C au départ de A→B, servi en une touche) et le
 // SOCLE du une-touche calme (7 % mesuré, tout au pressé — le réel vit à 15-25).
-{
+if (__bloc()) {
   const flux111 = (over) => {
     let trois = 0, ut = 0, passes = 0;
     for (const seed of [2, 5]) {
@@ -1860,7 +1868,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- LOT 112 : LE SAUT DE TÊTE — la détente ouvre le ciel, le duel se conteste en venant
-{
+if (__bloc()) {
   // (a) LE FLUX : le ciel muet d'hier attrapé. Monde COURANT : des têtes SAUTÉES existent
   // (mesuré au ship : 9/10 matchs — le vol de 2,2-3,0 m sur un corps était muet, 1,7/match) ;
   // sabotage 'ciel-muet' (la fenêtre debout d'hier, saut/duel absents) : zéro sautée, zéro
@@ -1920,7 +1928,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- LOT 113 : LE CERVEAU DE COACH — score/chrono/momentum déplacent les axes, par paliers
-{
+if (__bloc()) {
   // (a) LE CONTRAT à sec (checkCoach : postures natives au bon monde, deltas bornés ±0,3,
   // la base est l'identité du calme)
   const cc = checkCoach();
@@ -1962,7 +1970,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- LOT 114 : LE DOUBLE CONTACT (la croqueta) — l'élimination de celui qui se jette
-{
+if (__bloc()) {
   // (a) LA FIXTURE SÈCHE DE LA NICHE (maybeDoubleContact est pur sur st) : le JETÉ franc
   // (closing 3 m/s, de face, 1,5 m) déclenche ; le JOCKEY posté (closing 0,3 — il appartient
   // au passement) refuse ; le DOS (bearing ~180°) refuse — la niche est la niche.
@@ -2020,7 +2028,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- LOT 115 : LE PETIT PONT — le ballon À TRAVERS le glisseur, un pari aux attributs
-{
+if (__bloc()) {
   const KP = { pontFoe: [0.8, 1.8], pontLatV: 1.2, pontCone: 40, pontDepth: 2.5, pontClear: 1.5, pontTurn: 0.85, pontV: 6.5, pontP: 0.55, pontBite: 0.7, pontCd: 10 };
   // (a) LA NICHE à sec : le GLISSEUR (pas chassés, latV 2) déclenche ; le RADIAL (il vient
   // tout droit — la croqueta/le râteau possèdent ce monde) refuse ; le STATIQUE refuse.
@@ -2077,8 +2085,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return n2;
   };
-  const vifP = fluxP({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 140/141/155-160 (les fenêtres du glisseur bougent avec le monde)
-  const sabP = fluxP({ skill: { ...matchCfg().skill, pontFoe: null }, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const vifP = fluxP({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 140/141/155-160 (les fenêtres du glisseur bougent avec le monde)
+  const sabP = fluxP({ skill: { ...matchCfg().skill, pontFoe: null }, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   // …borne 4 → 3 (lot 123 : le monde re-daté par le box crash déplace les fenêtres du
   // glisseur — 3 mesurés ; l'existence + le sabotage restent le contrat)
   ok(`lot 115 — le PETIT PONT vit (${vifP} / 4 × 300 s ≥ 3, réussite ~47 % mesurée — un pari, pas un gain gratuit) ; sabotage « le glisseur intraversable d'hier » attrapé (pontFoe absent : ${sabP})`,
@@ -2086,7 +2094,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- LOT 116 : LE BUT VIT — le filet gonfle, la fête a lieu, l'élan survit au sifflet
-{
+if (__bloc()) {
   // (a) LE FILET : un but frappé fort VOYAGE dans la cage (mesuré avant : mort à 0,27-0,79 m
   // derrière la ligne — brake 85 % en UNE frame ; le fond est à 2 m). Fixture : une frappe
   // de 15 m/s posée à 9 m de la cage → la profondeur MAX ∈ [0,95 ; 2,3] (le filet se gonfle
@@ -2167,7 +2175,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- LOT 117 : LA ROULETTE — le 360 qui protège, l'agilité filtre
-{
+if (__bloc()) {
   const KR = { rouletteFoe: [0.8, 1.8], rouletteBear: [55, 140], rouletteClosing: 0.8, rouletteV: 1.5, rouletteBite: 0.3, rouletteCd: 12 };
   // (a) LA NICHE à sec : le POURSUIVANT en diagonale déclenche ; le FRONTAL refuse (le
   // râteau/la croqueta possèdent la face) ; le porteur LENT refuse (un 360 s'enroule sur
@@ -2245,14 +2253,14 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { n3, tours, gardes };
   };
-  const vifR = fluxR({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 162 (les fenêtres re-datent la matière de la roulette)
-  const sabR = fluxR({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, skill: { ...matchCfg().skill, rouletteFoe: null } });
+  const vifR = fluxR({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 162 (les fenêtres re-datent la matière de la roulette)
+  const sabR = fluxR({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, skill: { ...matchCfg().skill, rouletteFoe: null } });
   ok(`lot 117 — la ROULETTE vit et TOURNE (${vifR.n3} / 4 × 300 s ≥ 3, ${vifR.tours} tours pleins mesurés au yaw ≥ ${Math.max(1, Math.floor(vifR.n3 * 0.6))}, garde ${vifR.gardes}/${vifR.n3} ≥ 60 % — elle PRÉSERVE : la v1 à +14 buts/20 matchs perforait, nerfée sur mesure) ; sabotage « le poursuivant sans réponse d'hier » attrapé (${sabR.n3})`,
     vifR.n3 >= 3 && vifR.tours >= Math.max(1, Math.floor(vifR.n3 * 0.6)) && vifR.gardes >= vifR.n3 * 0.6 && sabR.n3 === 0);
 }
 
 // ---- LOT 118 : LA TALONNADE DE CHOIX — la passe arrière sans se retourner, offensive
-{
+if (__bloc()) {
   // LE FLUX : le talon vit (2,3/match — était 0,5 : le plan marchait son demi-tour), TOUTES
   // dans le camp ADVERSE (le défenseur pressé qui talonnait vers son gardien offrait +8
   // buts/20 matchs — le cadeau mesuré, la borne posée) et la SURPRISE plafonnée (seen ≤
@@ -2264,7 +2272,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       const st = makeMatch({ full: true, seed });
       // la clause mesure la TALONNADE — elle isole ses re-dateurs 166-169 (7/12 offensives
       // = 58 % < 60 au vivant post-169 : le flux déplacé d'un cheveu, pas la loi)
-      const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });
+      const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });
       let armTalon = false, cursor = 0;   // le CURSEUR d'index — events[length-1] recompte le même windup à chaque frame (le piège, re-frappé et consigné)
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2307,7 +2315,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- LOT 119 : LE UNE-DEUX (le mur) + LE COIN AU SEUL TIREUR (capture utilisateur)
-{
+if (__bloc()) {
   // (a) LE CORNER SANS TAS : à la frappe de chaque corner, UN seul corps à < 2,5 m du coin
   // (mesuré avant : 3/4 corners avec 2 corps — tous les sans-spot marchaient AU POINT, la
   // règle générique des remises ; ils tiennent désormais les seconds ballons).
@@ -2354,7 +2362,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // le retour se fait FACE AU JEU à libero.retour m/s — sans lui le sprint-retour à ~7 m/s
 // effaçait la fenêtre), et le LOB qui le punit (menaceTir voit le gardien sorti AVANT ses
 // refus de distance ; shooting.js ouvre porteLob et tire l'espèce en cloche exacte).
-{
+if (__bloc()) {
   // (a) fixtures pures keeperSpot : la montée, la rampe, la laisse des notes, le sabotage
   const pitch = makePitch(FULL);
   const g = pitch.ownGoal(0), sg = Math.sign(g.x || 1);
@@ -2365,7 +2373,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`lot 120 — le LIBÉRO monte (ballon 60 m : ${offL.toFixed(1)} m ≥ 8 ; ballon 20 m : ${offP.toFixed(1)} ≤ 3,2 — la rampe rend la surface) ; les notes tiennent la laisse (depthF 0,7 × gardeF 0,8 : ${offT.toFixed(1)} < ${offL.toFixed(1)} − 1) ; sabotage « la ligne d'hier » attrapé (libero absent : ${offH.toFixed(1)} ≤ 3,2)`,
     offL >= 8 && offP <= 3.2 && offT < offL - 1 && offH <= 3.2);
 }
-{
+if (__bloc()) {
   // (b) l'ARBITRE VOIT LE GARDIEN SORTI (menaceTir pur) : l'occasion se nomme avant les
   // refus de distance ; sur sa ligne l'ancien monde répond ; la clé absente = l'arbitre d'hier
   const pitch = makePitch(FULL);
@@ -2381,7 +2389,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     sorti.pourquoi === 'gardien-sorti' && sorti.score >= 0.3 && loin36.pourquoi === 'gardien-sorti'
     && ligne.pourquoi !== 'gardien-sorti' && sab.pourquoi !== 'gardien-sorti');
 }
-{
+if (__bloc()) {
   // (c) l'ESPÈCE EN FIXTURE POSÉE (pattern verify-frappes — le match libre est trop avare :
   // ~119 frames de géométrie / 300 s et l'armement de 0,3-0,5 s laisse le gardien rentrer ;
   // le monde vif se mesure à la sonde, la CHAÎNE décision → cloche se prouve posée) :
@@ -2423,7 +2431,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // REMONTE à 75 % dans le dernier quart : le porteur sort LANCÉ (retour utilisateur : « plutôt
 // Zidane qu'Antony, ça manque d'envergure »). Mesuré au ship : sortie p50 2,5 → 4,3 m/s,
 // gain vers le but 1,9 → 2,7 m, garde 96 %. Le sabotage rend la toupie d'hier (0,15).
-{
+if (__bloc()) {
   const mesure = (over, iso = {}) => {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4]) {
@@ -2468,7 +2476,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // plantées, passement 2,3 / râteau 1,2 / roulette 2,4 m/s) ; (C) LE CONTRE-APPEL
 // (cfg.contreAppel : la course profonde marquée à < 1,5 m CASSE aux pieds, × rôle appel).
 // La marche au calme existait déjà (p50 1,8 mesuré) — pas de loi, la mesure suffit.
-{
+if (__bloc()) {
   const joue122 = (over) => {
     let sorties = 0, contres = 0, cassure = 0;
     const posts = [];
@@ -2514,7 +2522,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // Post-pass d'autorité : les N corps les plus proches de la boîte (+ rôle appel) aux postes
 // du centre, hauteur module N, Loi 11 clampe à la ligne (les corps ATTENDENT sur la ligne et
 // plongent — la présence se juge à l'ARRIVÉE du centre).
-{
+if (__bloc()) {
   const joue123 = (over) => {
     const dep = [], arr = [];
     for (const seed of [1, 2, 4, 5, 7, 9]) {   // 3 → 6 graines (171 : 3-6 centres = Poisson, le juge doublé)
@@ -2558,12 +2566,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // passementEnchaine × gesteF² — le CARRÉ fait le style ; les clips 3-6 répètent le segment
 // du cercle (la cadence se lit, la durée suit). Le risque reste ÉMERGENT : bite unique au
 // contact, les tours ajoutés exposent le ballon calé.
-{
+if (__bloc()) {
   const dist124 = (over) => {
     const d = {};
     for (const seed of [1, 2, 3, 4, 5, 6]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });   // isolation 159/160
+      const cfg = matchCfg({ shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...(over ? { skill: { ...matchCfg().skill, ...over } } : {}) });   // isolation 159/160
       let cursor = 0;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2588,7 +2596,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // underlap), × PATTE (l'inversé rentre, le naturel déborde), × rôle largeurR × axe largeur ;
 // la banane courbe à mi-course. Mesuré avant : 9/9 darts d'ailier rentraient (la diagonale
 // unique que l'utilisateur voyait) ; après : deborde 9 / underlap 5 / banane 2 sur 6 matchs.
-{
+if (__bloc()) {
   const rep125 = (over) => {
     const esp = {};
     for (const seed of [1, 2, 3, 4, 5]) {
@@ -2606,7 +2614,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     return { esp, n: Object.values(esp).reduce((x, y) => x + y, 0), k: Object.keys(esp).length };
   };
   const vif5 = rep125({});
-  const sab5 = rep125({ courseAilier: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // 167 : intervalle/croise naissent de courseServie — le sabotage du z×0,55 isole les DEUX sources d'espèces
+  const sab5 = rep125({ courseAilier: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // 167 : intervalle/croise naissent de courseServie — le sabotage du z×0,55 isole les DEUX sources d'espèces
   ok(`lot 125 — l'AILIER a un RÉPERTOIRE (${JSON.stringify(vif5.esp)} sur 5 × 300 s : ${vif5.n} ≥ 6 espèces nommées, ${vif5.k} ≥ 2 familles — la diagonale unique d'hier est morte) ; sabotage « le z×0,55 d'hier » attrapé (courseAilier absent : ${sab5.n} espèce)`,
     vif5.n >= 6 && vif5.k >= 2 && sab5.n === 0);
 }
@@ -2618,7 +2626,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // mur (conversion 46 → 19 %). La loi : les scores franc ET tenté décroissent avec la densité
 // ADVERSE du cône (±0,35 rad, cfg.menace.mur) — l'arbitre rend la passe au porteur muré.
 // Effet mesuré : attente 19 → 25 % de conversion, défaut et sans-crash inchangés AU BIT.
-{
+if (__bloc()) {
   const pitch = makePitch(FULL);
   const goal = pitch.attackGoal(0), sg = Math.sign(goal.x || 1);
   const mkMur = (nMur, cfgOver) => {
@@ -2638,7 +2646,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // COMPLET DES FORMATIONS (demande utilisateur) — 12 formations en DATA pure (postes, LIGNES,
 // rôles par défaut ROLES_FORMATION) ; le bloc/largeur/hauteur/Loi 11 coulissent tous ces
 // mondes. La pesée mesurée en sonde : le bus 541 encaisse 1 vs 3 pour le 343 (3 graines).
-{
+if (__bloc()) {
   const noms = Object.keys(FORMATIONS);
   let coherent = true, chevauche = 0;
   for (const n of noms) {
@@ -2662,7 +2670,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // le through s'auto-cohère (t passe = t course via solvePass), pointe d'intervalle 2,5 m,
 // l'ARRIVÉE dosée au CONTROL du receveur (4,8 + 1,7×controlF). Mesuré : 34 through / 6
 // matchs, conservés 91 % — le dosage livre des ballons prenables.
-{
+if (__bloc()) {
   const th128 = (over) => {
     let th = 0, thOk = 0;
     for (const seed of [1, 2, 4]) {
@@ -2694,7 +2702,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // offball ») — formationPour résout { on, off } à la possession ; un nom simple = l'identité
 // AU BIT (les quatre empreintes le prouvent). La preuve du switch : {on 433, off 541} tient
 // 2,3 corps au dernier quart sans ballon vs 1,4 en possession (mesuré).
-{
+if (__bloc()) {
   const noms = Object.keys(FORMATIONS);
   const attendu = ['3142', '3421', '343', '352', '4141', '4231', '4321', '433', '4411', '442', '451', '5212', '532', '541'];
   const manque = attendu.filter((n) => !FORMATIONS[n]);
@@ -2722,7 +2730,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // poste avec n'importe quel autre ; ça implique un rôle offball onball ? » — OUI, composé
 // par NATURE D'AXE : appel/largeurR/profondeur/arbitre du ON, press/garde du OFF, une fois
 // à la création). La bande défensive suit la ligne de la formation OFF (LIGNES[off][0]).
-{
+if (__bloc()) {
   const rC = resoudreRole({ on: 'ailierDePercussion', off: 'recuperateur' });
   const rS = resoudreRole('meneur');
   const idM = mapPostes('433'), cM = mapPostes({ on: '433', off: '541', map: { 6: 8, 8: 6 } });
@@ -2743,7 +2751,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // portée = axe(transition, 30, 44), le duel aérien s'engage au point de chute), et la une-touche
 // SE GAGNE (uneTouche.dose — solvePass sur la physique exacte + le cap de déviation en FILTRE de
 // faisabilité). Après : carry 43 → 54 %, dégagements 198 → 89 s, une-touche 116 → 33 s.
-{
+if (__bloc()) {
   const joue131 = (over = {}, seed = 1) => {
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
@@ -2778,7 +2786,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // proche ≤ reach × 1,7 et cadré → le geste part, sans arrêt promis) et LE REGARD DU GARDIEN
 // (le yaw suit le ballon en course — pas chassé, le backpedal libéro généralisé). Après :
 // 0 but sans tentative (3/3), regard p90 18°, 0/23 plongeons > 60°.
-{
+if (__bloc()) {
   // (a) L'HONNEUR, fixture : un tir cadré HORS reach (dz ≈ reach × 1,4) — hier « battu »
   // muet, aujourd'hui le geste part, marqué honneur:true. Sabotage : le spectateur nommé.
   const tente = (over = {}) => {
@@ -2826,7 +2834,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // la RÉMANENCE est un opt-in (l'A/B APPARIÉ mêmes graines : 0,6-1,0 s coûtait 5-8 buts et
 // jusqu'à 23 % des tirs — la bande 17-33 crevait ; le vol-seul la tient à 18). La preuve de
 // la LOI est UNITAIRE (la fixture pure) — le flux ne compte que l'EXISTENCE du marquage.
-{
+if (__bloc()) {
   const d2f = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
   const H = { busy: busyG, tac, axe: axeT, d2: d2f };
   const fixture = (cfgOver = {}) => {
@@ -2878,7 +2886,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // (b) le vol DÉVIÉ se courait au lead fantôme → LE BALLON RÉEL COMMANDE (cfg.meetReel) ;
 // (c) le match n'avait JAMAIS l'intercepteur du rondo — un presseur à 1,0 m d'une passe
 // adverse la regardait rouler → L'INTERCEPTEUR (cfg.interception, phases.intercepteurVol).
-{
+if (__bloc()) {
   // (a) LA FIXTURE DU RATTRAPAGE : receveur DERRIÈRE un ballon fuyant à 4,5 m/s — la cible
   // vit AU-DELÀ du ballon (au travers), le sabotage la recolle (la mène qui matche).
   const vise = (over = {}) => {
@@ -2927,7 +2935,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // QUI marque QUI et l'échange de slots), 24 % de piétinement. Deux lois : LA COURSE S'ENGAGE
 // ET SE FINIT (cfg.engagement, movement) et L'ASSIGNATION A UNE MÉMOIRE (cfg.assignTenue —
 // le GRAND saut attend sa tenue, le suivi fin garde sa cadence, le burst exempt).
-{
+if (__bloc()) {
   const danse = (over = {}) => {
     let gros = 0, courtes = 0, nC = 0;
     const durs = [];
@@ -2954,8 +2962,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     durs.sort((a, b) => a - b);
     return { gros, part: courtes / Math.max(1, nC), p50: durs[Math.floor(durs.length / 2)] ?? 0 };
   };
-  const vifD = danse({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 140/141/155-160 (les re-dateurs de durées)
-  const sabD = danse({ engagement: false, assignTenue: false, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const vifD = danse({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 140/141/155-160 (les re-dateurs de durées)
+  const sabD = danse({ engagement: false, assignTenue: false, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   ok(`lot 135 — LES CIBLES NE TREMBLENT PLUS (${vifD.gros} sauts > 5 m / 2 × 300 s ≤ sabotage − 15 % ; courses off-ball p50 ${vifD.p50.toFixed(1)} s ≥ saboté + 0,15) ; sabotage « le frémissement d'hier » attrapé (${sabD.gros} sauts, p50 ${sabD.p50.toFixed(1)} s — le re-tri à 60 Hz, nommé)`,
     vifD.gros <= sabD.gros * 0.85 && vifD.p50 >= sabD.p50 + 0.15);
 }
@@ -2969,7 +2977,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // patron UT.calme du 49 ; pleine en possession), LA TOUCHE VOLONTAIRE est un OPT-IN
 // (clearTouche), LE CORNER DE PANIQUE resserré au défaut (< 10 m, tirage 0,35 × sang-froid),
 // les seuils d'étau au style × rôle press. Le gate : 90 tirs / 17 buts, seed 7 AU BIT du 135.
-{
+if (__bloc()) {
   const sortie = (tactics, over = {}) => {
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3]) {
@@ -2988,9 +2996,9 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { gk, cornerClear };
   };
-  const poss = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // isolation 137/155-160 : sa loi seule varie
-  const defo = sortie(null, { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
-  const sab136 = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, sortieGardien: false });
+  const poss = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // isolation 137/155-160 : sa loi seule varie
+  const defo = sortie(null, { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const sab136 = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, sortieGardien: false });
   ok(`lot 136 — LA SORTIE AU GARDIEN EST UN STYLE (possession : ${poss.gk} passes au gardien / 3 × 300 s ≥ 2 ; défaut style 0,5 : ${defo.gk} ≤ 1 — la pente nulle, l'identité) ; sabotage « le gardien invisible » attrapé (possession + sortieGardien:false : ${sab136.gk} ≤ vivant − 4 — l'organique rare reste) ; le corner de panique rare (${defo.cornerClear} sur dégagement ≤ 2)`,
     poss.gk >= 2 && defo.gk <= 1 && sab136.gk <= poss.gk - 4 && defo.cornerClear <= 2);
 }
@@ -3002,7 +3010,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // la montée soutenue (> 3 m/s, 0,6 s) déclenche 1-2 COURSES à hauteur (job receive — le
 // plafond de chasse, support capait à 4,4 —, un par côté, rôle appel en facteur, volume à
 // l'axe transition, burst 'accompagne'). Après : OFFRE EN MONTÉE 3 = le jeu posé, soutien 10,7.
-{
+if (__bloc()) {
   const monte = (over = {}) => {
     const offres = [], soutiens = [];
     for (const seed of [1, 2, 3]) {
@@ -3044,7 +3052,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // EXCENTRÉ (|z| > 8) qui monte : le coureur de son côté au rôle LARGE (largeurR ≥ 1 — le
 // piston vit pour ça) ne vient pas à hauteur, il le DOUBLE côté touche (+16 m, couloir
 // extérieur, burst 1,6 s, event burst/overlap). Mesuré : ~7,7/match, 21/46 servis < 3 s.
-{
+if (__bloc()) {
   const ov = (over = {}) => {
     let n = 0, sv = 0;
     for (const seed of [1, 2, 3]) {
@@ -3075,7 +3083,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // 200-400). La loi (movement, cfg.yawSlew) : le cap de dérive passe par un SLEW borné
 // (9,4 rad/s ≈ 540°/s × accelF — l'explosivité pivote le corps). Après : p50 539, p90 882
 // (l'athlétique réel), max 1 639 (les pivots de GESTE, ownsBody — légitimes).
-{
+if (__bloc()) {
   const pivote = (over = {}) => {
     const st = makeMatch({ full: true, seed: 13 });
     const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
@@ -3106,7 +3114,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // rondo la sert (+12 m de portée), le rendez-vous plancher (ligne + 6, retombe sur hier si
 // fermé), l'ÉLECTION pèse les défenseurs éliminés × visionF × style, l'AIGUILLE resserre le
 // couloir à la vision. Après : 18 ruptures servies en pleine course / 20 min (0 hier).
-{
+if (__bloc()) {
   const compte = (over = {}) => {
     let rupts = 0, servies = 0;
     for (const seed of [1, 2, 3]) {
@@ -3138,7 +3146,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // (cfg.pousse, formation + match-sim) : le plafond de la ligne de soutien se lève continûment
 // quand le ballon est profond (dès 0,62 de terrain, gain 0,8 × axe hauteurBloc, max 12 m).
 // Après : p50 +4,6, p90 +11,8. Le contre dans le dos existe — c'est le prix du vrai football.
-{
+if (__bloc()) {
   const hauteur = (over = {}) => {
     const haut = [];
     for (const seed of [1, 2, 3]) {
@@ -3168,7 +3176,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------------------------------------------------------------- lots 142-145 : LA SEMELLE À
 // SA PLACE, L'ŒIL DE L'URGENCE, LE JETÉ SE PUNIT, LE HORS-CADRE (retours utilisateur ×4).
-{
+if (__bloc()) {
   // (142) la semelle : rare et JAMAIS au contresens — sabotage « la ponctuation bavarde »
   const semelles = (over = {}) => {
     let n = 0;
@@ -3208,8 +3216,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { intercept, courseU };
   };
-  const vifO = inter({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 162
-  const sabO = inter({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, oeil: false });
+  const vifO = inter({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 162
+  const sabO = inter({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, oeil: false });
   ok(`lot 143 — L'ŒIL DE L'URGENCE (${vifO.intercept} interceptions ≤ ${sabO.intercept} − 4 sur 3 × 300 s appariées, refus nommés course-urgente ${vifO.courseU} ≥ 5) ; sabotage « la panique aveugle d'hier » attrapé (oeil:false : ${sabO.intercept} interceptions, ${sabO.courseU} refus = 0)`,
     vifO.intercept <= sabO.intercept - 4 && vifO.courseU >= 5 && sabO.courseU === 0);
 
@@ -3253,7 +3261,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const exacts = new Set(['piqué', 'tête', 'volée', 'demi-volée', 'coup-franc-direct']);
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ ...ISO171, shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });   // isolation 159/160
+      const cfg = matchCfg({ ...ISO171, shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });   // isolation 159/160
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       // tout kind au sol non-exact a un plancher nominal ≥ 16,5 (max(sol, kind.speed)) : une
       // vitesse < 16,2 est IMPOSSIBLE au σ plat — seule la respiration σV (après plancher) y descend
@@ -3271,7 +3279,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ARRÊTÉS PAR ÉQUIPE (la demande MESURÉE du consommateur carrière : « un corner est deux
 // constantes globales »). L'espace tac.cpa { corner, coupFranc, marquage } — un CPA est une
 // SITUATION, pas un axe. Opt-in pur : cpa absent = les tirages d'hier AU BIT (empreintes).
-{
+if (__bloc()) {
   const tire = (cpa) => {
     const genres = {};
     for (let seed = 1; seed <= 24; seed++) {
@@ -3332,10 +3340,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------------------------------------------------------------- lot 149 : LES TROIS AXES DU
 // CONSOMMATEUR — tempo (la circulation), mentalite (le curseur de risque), piege (le hors-jeu).
 // 0,5 = l'identité au bit (empreintes) ; appariés mêmes graines, l'effet est attribuable.
-{
+if (__bloc()) {
   const course = (tq) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
-    const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
     let passes = 0, nEv = 0, lastO = -1, hSum = 0, hN = 0; const lignes = [];
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -3364,7 +3372,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     p1.ligne >= p0.ligne + 3);
   const risque = (m) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [{ mentalite: m }, {}] });
-    const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
     let av = 0, tirs = 0, nEv = 0;
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -3389,7 +3397,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // DU GARDIEN (keeper.relancerGardien — extraite de match-sim AU BIT, empreintes) : les styles
 // par équipe (tac.cpa.sortieBut 'court'/'long') + les notes kicking/throwing. Le contrat se
 // juge au CHOIX (beginPass stubbé) — le geste a ses propres portes, jugées ailleurs.
-{
+if (__bloc()) {
   const scene = (cpa, ratings, place) => {
     const squads = ratings ? [Array.from({ length: 11 }, (_, i) => (i === 10 ? { ratings } : {})), []] : null;
     const st = makeMatch({ full: true, seed: 9, squads });
@@ -3436,7 +3444,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- lot 164 : LE TEMPO MORD (la dilution des axes soldée — la tactique pèse comme les notes)
-{
+if (__bloc()) {
   // (a) LE MÉCANISME : la remise au tempo de l'équipe qui la joue (referee.tempoWait).
   //     Même monde, même sortie fabriquée 2 frames plus tard — seule la tactique diffère.
   const toucheAt = (tempo) => {
@@ -3472,7 +3480,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- lot 165 : LA TOUCHE LONGUE (tac.cpa.touche 'longue' — le trébuchet du tiers offensif)
-{
+if (__bloc()) {
   // La fixture du patron 164a : touche fabriquée au tiers offensif, même monde, seule la
   // tactique diffère. Le théâtre du flux vivant est quasi vide (3 touches/30 min mesurées,
   // 0 offensives — la dette « touches organiques ») : la preuve est au MÉCANISME.
@@ -3499,7 +3507,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- lot 166 : LE DUEL CONTESTÉ (cfg.tacleDegage — la prise n'est propre qu'à la garde)
-{
+if (__bloc()) {
   // Le mécanisme au SEUIL, tirage contrôlé (déterministe) : dégage si rnd > prise × tacleGardeF.
   // À prise 0,55 et tirage 0,60 : le tacleur moyen (0,85 → 0,4675) dégage, le grand (1,15 →
   // 0,6325) GARDE — la note tackling agit sur l'EXÉCUTION du duel gagné.
@@ -3512,13 +3520,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   };
   ok(`lot 166 — LA GARDE À LA NOTE : au tirage 0,60, le moyen (0,85) dégage (${essai(0.85, 0.6)}), le grand (1,15) garde (dégagé ${essai(1.15, 0.6)}) — le seuil prise × tacleGardeF EST la loi`,
     essai(0.85, 0.6) === true && essai(1.15, 0.6) === false);
-  ok(`lot 166 — SANS la clé, le duel 100 % propre d'hier (dégagé ${essai(1, 0.99, { tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } })} même au tirage 0,99) ; et le dégagé LIBÈRE (phase loose, porteur -1 : ballon vivant à disputer)`,
-    essai(1, 0.99, { tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }) === false && (() => { const st = makeMatch({ full: true, seed: 5 }); st.rnd = () => 0.99; tacleDegage(st, st.players[3], matchCfg()); return st.phase === 'loose' && st.possession.carrier === -1; })());
+  ok(`lot 166 — SANS la clé, le duel 100 % propre d'hier (dégagé ${essai(1, 0.99, { tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } })} même au tirage 0,99) ; et le dégagé LIBÈRE (phase loose, porteur -1 : ballon vivant à disputer)`,
+    essai(1, 0.99, { tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }) === false && (() => { const st = makeMatch({ full: true, seed: 5 }); st.rnd = () => 0.99; tacleDegage(st, st.players[3], matchCfg()); return st.phase === 'loose' && st.possession.carrier === -1; })());
 }
 
 // ---- lot 167 : LA COURSE SERVIE (cfg.courseServie — retour utilisateur : « aucun joueur ne
 // court derrière un ballon, ni axe, ni diagonale, ni couloir, ni entre deux »)
-{
+if (__bloc()) {
   // Le flux à 6 graines (leçon Poisson) : l'avance de la mène LE LONG de la course au moment
   // de la frappe, la part des services profonds, la variété des espèces. Sonde AVANT-lot :
   // avance médiane 3,6 m (la re-mène du contact ÉCRASAIT le rendez-vous élu), 0 couloir.
@@ -3550,7 +3558,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     along.sort((a, b) => a - b);
     return { servis, profonds, especes: especes.size, med: +(along[along.length >> 1] ?? 0).toFixed(1), p90: +(along[Math.floor(0.9 * (along.length - 1))] ?? 0).toFixed(1) };
   };
-  const V = cours({}), E = cours({ courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const V = cours({}), E = cours({ courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   // re-calibrée au 168a : la profondeur LIT L'ESPACE — la médiane uniforme (14,7) est morte
   // EXPRÈS (courts et longs mêlés) ; le juge est la CLASSE PROFONDE et le p90
   ok(`lot 167 — LE BALLON DEVANT LE COUREUR : p90 ${V.p90} m ≥ 10 (le sprint promis vCourse × topF, la mène qui SURVIT au contact), ${V.profonds} services ≥ 6 m (≥ 4), ${V.especes} espèces de course ≥ 4 (axe/intervalle/croisée/couloir vivants)`,
@@ -3560,7 +3568,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- lot 168 : LE DUEL DE LA PASSE EN PROFONDEUR (l'espace + le lecteur)
-{
+if (__bloc()) {
   // (a) mécanisme du LECTEUR au tirage de latence : reaction × (2 − anticipF) — la note
   // défensive répond au passeur ; (b) le flux : les bursts 'lecture' vivent, 0 sous l'épingle.
   const lect = (over) => {
@@ -3579,14 +3587,14 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return lectures;
   };
-  const lV = lect({}), lE = lect({ lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const lV = lect({}), lE = lect({ lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   ok(`lot 168 — LE LECTEUR DE TRAJECTOIRE vit (${lV} bursts 'lecture' / 6×120 s ≥ 3 — le défenseur part au point de COUPE après reaction × (2 − anticipF)) ; l'épingle rend la trajectoire inviolée d'hier (${lE} = 0)`,
     lV >= 3 && lE === 0);
 }
 
 // ---- lot 169 : LA RETENUE DE SURFACE (le mécanisme du glissé, tirage contrôlé — le flux
 // des fautes de surface est SOUS LE POISSON au banc : 0 ≤ 0 ne prouvait rien, la leçon)
-{
+if (__bloc()) {
   // La fixture : un porteur lancé dans la surface de l'équipe 1, un glisseur lancé à portée.
   // Au tirage 0,99 : la retenue REFUSE (l'épisode consommé debout — _slideT posé, pas d'acte) ;
   // au tirage 0,01 ou sous retenueSurface:false : le pari d'hier part (l'acte posé).
@@ -3605,12 +3613,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     slideTackleStep(st, c, cfg);
     return st.events.slice(n0).filter((e) => e.type === 'retenue-surface').length;
   };
-  const R = glisse(0.99), P = glisse(0.01), H = glisse(0.99, { retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const R = glisse(0.99), P = glisse(0.01), H = glisse(0.99, { retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   ok(`lot 169 — LA RETENUE DE SURFACE au mécanisme (l'événement nommé du registre) : le tirage 0,99 REFUSE le glissé en boîte (${R} = 1 refus — l'épisode consommé debout), le 0,01 se couche quand même (${P} = 0 — l'agressif au petit tirage), sans la clé le pari d'hier (${H} = 0)`,
     R === 1 && P === 0 && H === 0);
 }
 // ---- lots 170-171 : le retour utilisateur ×6 — le corps ouvert, le gardien, les rayons
-{
+if (__bloc()) {
   // 170 — LE CORPS OUVERT : le pivot post-réception (4 × 120 s appariées) chute sous la loi.
   const pivots = (over) => {
     const rots = [];
@@ -3668,7 +3676,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 // ---- lot 173 : LE MOONWALK TRACÉ (cfg.gkFace — le regard du gardien au spot qui BOUGE)
-{
+if (__bloc()) {
   // La fixture DE LA TRACE (seed 7 t=66,7) : le gardien AU spot (dS < 0,6), sa touche à
   // 0,7 m de côté, le corps encore en mouvement — le push doit suivre le BALLON qu'il
   // rattrape ; épinglé : le flip face-terrain d'hier ([−g.sign, 0]).
@@ -3686,10 +3694,34 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     for (let i = 0; i < 3; i++) matchStep(st, 1 / 60, cfg);
     return gk.push ? [+gk.push[0].toFixed(2), +gk.push[1].toFixed(2)] : null;
   };
-  const pV = pushDe({}), pE = pushDe({ gkFace: false });
+  const pV = pushDe({}), pE = pushDe({ gkFace: false, clearSigma: false });
   const versBallon = pV && pV[1] > 0.8;                       // le ballon est à +z : le regard le suit
   ok(`lot 173 — LE MOONWALK TRACÉ : au spot en mouvement, le regard suit le ballon rattrapé (push ${JSON.stringify(pV)} vers +z ${versBallon}) ; épinglé : le flip face-terrain d'hier (push ${JSON.stringify(pE)}, z ≈ 0)`,
     versBallon === true && pE != null && Math.abs(pE[1]) < 0.1);
+}
+
+// ---- lot 174 : LE DÉGAGEMENT RESPIRE (cfg.clearSigma — les sorties organiques)
+if (__bloc()) {
+  // Le flux des SORTIES (touches + corners + sorties de but) à 6 graines × 300 s : le monde
+  // au clear exact n'en produisait presque pas (7 c. ~30 réel) — le σ du dégagement pressé
+  // les fait naître. Directionnel large (l'écart mesuré : 17 c. 7).
+  const sorties = (over) => {
+    let n = 0;
+    for (const seed of [3, 5, 7, 11, 13, 15]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...over });
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const ty = st.restart?.type;
+        if (ty && !st._v174) { st._v174 = true; if (ty === 'touche' || ty === 'corner' || ty === 'sortie-de-but') n++; }
+        if (!st.restart) st._v174 = false;
+      }
+    }
+    return n;
+  };
+  const sV = sorties({}), sE = sorties({ clearSigma: false });
+  ok(`lot 174 — LE DÉGAGEMENT RESPIRE (sorties de balle : vivant ${sV} ≥ épinglé ${sE} + 3 sur 6 × 300 s — le σ du clear pressé × composureF fait naître touches, corners et sorties de but ; le clear exact d'hier n'en produisait presque pas)`,
+    sV >= sE + 3);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
