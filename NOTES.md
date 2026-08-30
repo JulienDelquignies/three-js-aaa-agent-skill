@@ -6267,6 +6267,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      l'ancre à la craie = touches réelles, corners ~5/90, sorties ×3). Buts
      3 → 6 sur la sonde (le jeu d'aile ouvre des centres) — l'A/B 20 matchs
      juge la bande. Clause 177 (flux 4×200 s : z ≥ épinglé + 2,5 ; touches ≥).
+- 218: Lot 178 — L'HÉRITAGE DE LA CRAIE (roles.ancresCraie + le rôle
+     ailierInterieur). Le retour utilisateur affinait le 177 : « ça peut être
+     le latéral qui colle la ligne haut si l'ailier a un rôle de meneur ou
+     d'intérieur » — la v1 tirait TOUT slot large (l'ailier rentrant restait
+     tiré, rien ne transférait la craie). La largeur d'un côté devient une
+     RESPONSABILITÉ d'équipe : par côté, l'ancre s'ÉLIT au rôle — argmax(|z du
+     slot brut| × axe(largeurR, 0,7, 1,3)) parmi les postes assez larges
+     (cache 0,8 s, st._ancre) ; SEUL l'élu est tiré vers la ligne. Le catalogue
+     s'enrichit du rôle manquant : ailierInterieur (largeurR 0,15, profondeur
+     0,6, arbitre tir 1,18 — le faux ailier qui rentre dans le demi-espace et
+     frappe). LA PREUVE DU RÔLE (150 s appariées) : au défaut les postes 7/9
+     ancrent (24,1/19,4 m) ; en ailierInterieur ils RENTRENT (18,9 / hors top)
+     et les LATÉRAUX 3 et 0 héritent (18,3 / 17,1) — le pattern City/Arsenal.
+     Leçon d'élection : le rôle 'meneur' (largeurR 0,45 ≈ neutre) ne renverse
+     pas l'élection — il fallait le VRAI rôle rentrant au catalogue, pas un
+     poids d'élection gonflé. Clause 178 (la preuve à deux mondes de rôles).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

@@ -26,6 +26,7 @@ export const ROLES = {
   neufDeSurface:       { profondeur: 0.9, largeurR: 0.4, appel: 0.9, press: 0.65, arbitre: { tir: 1.15, centre: 0.95, passe: 0.9, conduite: 0.95 } },
   ailierDePercussion:  { profondeur: 0.55, largeurR: 0.9, appel: 0.6, press: 0.6, arbitre: { tir: 0.95, centre: 1.12, passe: 0.9, conduite: 1.15 } },
   meneur:              { profondeur: 0.15, largeurR: 0.45, appel: 0.2, press: 0.25, arbitre: { tir: 0.9, centre: 0.95, passe: 1.15, conduite: 1 } },
+  ailierInterieur:     { profondeur: 0.6, largeurR: 0.15, appel: 0.7, press: 0.5, arbitre: { tir: 1.18, centre: 0.8, passe: 1, conduite: 1.1 } },   // 178 : le FAUX AILIER — il rentre dans le demi-espace et frappe ; la craie ÉCHOIT au latéral (ancresCraie)
   piston:              { profondeur: 0.75, largeurR: 0.95, appel: 0.75, press: 0.7, arbitre: { tir: 0.9, centre: 1.15, passe: 1, conduite: 1.05 } },
   // le 6 — le métier DÉFENSIF de la couche rôles (lot 19) : il colle son marquage, il saute
   // en second presseur, il ne dérape pas en appels profonds
@@ -101,4 +102,27 @@ export function deborde(st, p, carrier, pitch, atk, cfg, axe) {
     Math.max(-pitch.hx + 1.5, Math.min(pitch.hx - 1.5, carrier.p[0] + sg * 9)),
     Math.sign(carrier.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(carrier.p[2]) + 4)];
   return null;
+}
+
+/** L'HÉRITAGE DE LA CRAIE (lot 178 — retour utilisateur : « ça peut être le latéral qui colle
+ *  la ligne haut si l'ailier a un rôle de meneur ou d'intérieur »). La largeur d'un côté est
+ *  une RESPONSABILITÉ d'équipe : par côté, l'ancre s'ÉLIT au rôle — argmax(|z du slot brut| ×
+ *  largeurR) parmi les postes assez larges (|z| > hz × 0,25). L'ailier de percussion
+ *  (largeurR 0,9) gagne d'office ; un ailier-meneur (0,45) CÈDE la craie au latéral qui monte
+ *  — le pattern moderne du faux ailier. Rend { 1: id, -1: id } par signe de z. */
+export function ancresCraie(st, atk, axe, role) {
+  const hz = st.pitch?.hz ?? 34;
+  const cote = {};
+  for (const s of [1, -1]) {
+    let best = null, bs = -1;
+    for (const q of st.players) {
+      if (q.team !== atk || q.keeper || q.down > 0 || !q._slotT) continue;
+      const z = q._slotT[1];
+      if (Math.abs(z) < hz * 0.25 || Math.sign(z || 1) !== s) continue;
+      const sc = Math.abs(z) * axe(role(q).largeurR, 0.7, 1.3);
+      if (sc > bs) { bs = sc; best = q.id; }
+    }
+    cote[s] = best;
+  }
+  return cote;
 }

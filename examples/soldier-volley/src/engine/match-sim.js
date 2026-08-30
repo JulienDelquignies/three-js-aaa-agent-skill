@@ -8,7 +8,7 @@ import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique, triangule } from './tactics.js';
-import { resoudreRole, role, deborde } from './roles.js';
+import { resoudreRole, role, deborde, ancresCraie } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff } from './referee.js';
@@ -663,9 +663,15 @@ function assignMatchJobs(st, cfg) {
         const wR = axe(R.largeurR, 0.9, 1.1);
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
         // L'ANCRE À LA CRAIE (177, cfg.craie && st.full — les larges vivaient à |z| 18-19 pour une craie à 34 : le jeu évitait le bord, 8 touches/30 min c. 13 réel). En POSSESSION le slot large est TIRÉ vers la ligne (fraction du chemin × axe LARGEUR × largeurR) — l'ailier étire à 2-8 m de la craie. Absente : hier au bit.
-        if (st.full && cfg.craie && off && Math.abs(tz) > pitch.hz * (cfg.craie.seuil ?? 0.42)) {
-          const tire = (cfg.craie.tire ?? 0.6) * axe(tac(st, atk).largeur, 0.5, 1.4) * axe(R.largeurR, 0.8, 1.2);
-          tz = Math.sign(tz) * Math.min(pitch.hz - 1.5, Math.abs(tz) + (pitch.hz - 1.5 - Math.abs(tz)) * Math.min(1, tire));
+        // …ET L'ANCRE S'ÉLIT AU RÔLE (178, roles.ancresCraie — retour utilisateur : l'ailier-meneur
+        // CÈDE la craie au latéral, le pattern du faux ailier) : par côté, UN porteur d'ancre
+        if (st.full && cfg.craie && off) {
+          if ((st._ancre?.until ?? -1) < st.t || st._ancre?.team !== atk)
+            st._ancre = { team: atk, until: st.t + 0.8, cote: ancresCraie(st, atk, axe, role) };
+          if (st._ancre.cote[Math.sign(tz) || 1] === p.id) {
+            const tire = (cfg.craie.tire ?? 0.6) * axe(tac(st, atk).largeur, 0.5, 1.4) * axe(R.largeurR, 0.8, 1.2);
+            tz = Math.sign(tz) * Math.min(pitch.hz - 1.5, Math.abs(tz) + (pitch.hz - 1.5 - Math.abs(tz)) * Math.min(1, tire));
+          }
         }
         // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
         if (off && (p.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true))) {
@@ -1229,9 +1235,7 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   if (!visits[0] || !visits[1]) issues.push(`le ballon ne visite pas les deux camps (au-delà de ±${third.toFixed(0)} m : +x ${visits[0]}, −x ${visits[1]})`);
   // LE BALLON NE SE TÉLÉPORTE JAMAIS EN MATCH : toute remise est PORTÉE (ballFetch) — le registre ne contient que LA pose du coup d'envoi. Mesuré avant : 12 sauts de 4,7-23 m / 4 matchs.
   const led = st.ball.ledger;
-  if (cfg.restartCarried !== false && led && led.restarts && led.restarts.length > 1) {
-    issues.push(`${led.restarts.length - 1} remise(s) posée(s) par écriture — la remise se PORTE (ballFetch), elle ne se téléporte pas`);
-  }
+  if (cfg.restartCarried !== false && led && led.restarts && led.restarts.length > 1) { issues.push(`${led.restarts.length - 1} remise(s) posée(s) par écriture — la remise se PORTE (ballFetch), elle ne se téléporte pas`); }
   // …ET LES CORPS NON PLUS : à l'échantillon de trace (0,1 s), aucun joueur ne franchit 1,6 m (16 m/s apparents — le sprint plafonne à 8). placeKickoff écrivait les douze corps à chaque but.
   for (let i = 1; i < trace.length; i++) {
     const a = trace[i - 1], b = trace[i];

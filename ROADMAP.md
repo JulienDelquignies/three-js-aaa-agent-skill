@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'HÉRITAGE DE LA CRAIE (178, note 218 — retour utilisateur) : l'ancre s'élit au
+RÔLE par côté (ancresCraie) ; le rôle ailierInterieur ajouté au catalogue — les
+faux ailiers rentrent, les latéraux héritent de la ligne (prouvé 7/9 : 24→19 et
+latéraux 3/0 : 14→18).
+
 L'ANCRE À LA CRAIE (177, note 217) : le slot large TIRÉ vers la ligne en
 possession (× axe largeur × largeurR) — le plus large 23→27 m, touches 8→13/
 30 min (LE TAUX RÉEL). LE FRONT DES SORTIES ORGANIQUES (174-177) EST SOLDÉ :

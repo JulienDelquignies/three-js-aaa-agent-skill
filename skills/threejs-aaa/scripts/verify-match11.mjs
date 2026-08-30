@@ -3789,5 +3789,30 @@ if (__bloc()) {
     V.z >= E.z + 2.5 && V.touches >= E.touches);
 }
 
+// ---- lot 178 : L'HÉRITAGE DE LA CRAIE (roles.ancresCraie — l'ancre s'élit au RÔLE)
+if (__bloc()) {
+  // La preuve du rôle (retour utilisateur : « ça peut être le latéral qui colle la ligne si
+  // l'ailier a un rôle d'intérieur ») : aux ailiers de percussion, EUX ancrent ; aux
+  // ailierInterieur, ils RENTRENT et les LATÉRAUX héritent de la largeur.
+  const zPostes = (roles) => {
+    const st = makeMatch({ full: true, seed: 3, roles });
+    const cfg = matchCfg({ shotRange: 20 });
+    const z = {};
+    for (let i = 0; i < 150 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      if (i % 30 || st.possession.team !== 0 || st.restart) continue;
+      for (const q of st.players) if (q.team === 0 && !q.keeper) (z[q.post ?? q.id] ??= []).push(Math.abs(q.p[2]));
+    }
+    const m = {};
+    for (const [k, a] of Object.entries(z)) m[k] = a.reduce((x, y) => x + y, 0) / a.length;
+    return m;
+  };
+  const D = zPostes(null), I = zPostes([{ 7: 'ailierInterieur', 9: 'ailierInterieur' }, null]);
+  const latMaxD = Math.max(D[0] ?? 0, D[1] ?? 0, D[2] ?? 0, D[3] ?? 0, D[4] ?? 0);
+  const latMaxI = Math.max(I[0] ?? 0, I[1] ?? 0, I[2] ?? 0, I[3] ?? 0, I[4] ?? 0);
+  ok(`lot 178 — L'HÉRITAGE DE LA CRAIE au rôle : les ailiers INTÉRIEURS rentrent (poste 7 : ${(I[7] ?? 0).toFixed(1)} ≤ défaut ${(D[7] ?? 0).toFixed(1)} − 3 m) et les LATÉRAUX héritent de la ligne (le plus large des postes bas : ${latMaxI.toFixed(1)} ≥ défaut ${latMaxD.toFixed(1)} + 2 m — le pattern du faux ailier, l'ancre s'élit à largeurR)`,
+    (I[7] ?? 99) <= (D[7] ?? 0) - 3 && latMaxI >= latMaxD + 2);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
