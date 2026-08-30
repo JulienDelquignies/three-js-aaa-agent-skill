@@ -262,12 +262,19 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
-LA CIBLE : FOOTBALL MANAGER (175, note 215). L'horloge de représentation est
-posée (chrono.affiche, ratio exposé, scène + fil en minutes de match). LE JALON
-DENSITÉ FM (majeur, conditions d'entrée : les gestes foot au point — le critère
-utilisateur) : re-calibrer les volumes par 90 min vers le réel (2-3 buts, ~10
-corners, ~25 fautes, ~40 touches) — aujourd'hui ~18 buts/90 équivalents ; toutes
-les bandes A/B et clauses de flux migreront au référentiel /90.
+LA CIBLE : FOOTBALL MANAGER (175, note 215 — précisée par l'utilisateur : FM
+SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
+L'horloge de représentation est posée (chrono.affiche, ratio, scène + fil en
+minutes de match) — un échafaudage : la destination est en TROIS couches.
+(1) LE JALON DENSITÉ (majeur ; condition d'entrée : les gestes foot au point,
+le critère utilisateur) : la sim à l'échelle 90 min réelles aux volumes du vrai
+foot (2-3 buts, ~10 corners, ~25 fautes, ~40 touches — aujourd'hui ~18 buts/90
+équivalents) ; toutes les bandes A/B et clauses de flux migrent au référentiel
+/90 (le banc shardé du 174 paie les re-mesures). (2) LA LECTURE À VITESSE
+VARIABLE : le moteur est à pas fixe déterministe — accélérer = plus de steps
+par frame de rendu (le slider de vitesse, côté scène, trivial). (3) LE MODE
+TEMPS FORTS (le défaut FM) : simuler vite, ne rendre que les moments chauds —
+menace.js EST le détecteur de highlights (l'arbitre de dangerosité existe).
 
 LE DÉGAGEMENT RESPIRE (174, note 214) : le clear était exempté du bruit d'angle
 — σ × ampli 4 × composureF : corners 1→3/30 min (le taux réel), sorties ×3,
