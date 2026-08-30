@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE PIED DU GARDIEN (179, note 219) : la touche collée (0,35) + la distribution
+prompte au retrait — ballons lâchés 2→0. Dette : le dMax ~4 m de PREMIÈRE touche
+d'un retrait appuyé (le contrôle d'un boulet, générique — l'amorti du premier
+toucher × control à instruire).
+
 L'HÉRITAGE DE LA CRAIE (178, note 218 — retour utilisateur) : l'ancre s'élit au
 RÔLE par côté (ancresCraie) ; le rôle ailierInterieur ajouté au catalogue — les
 faux ailiers rentrent, les latéraux héritent de la ligne (prouvé 7/9 : 24→19 et

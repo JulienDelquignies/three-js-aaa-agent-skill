@@ -6283,6 +6283,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Leçon d'élection : le rôle 'meneur' (largeurR 0,45 ≈ neutre) ne renverse
      pas l'élection — il fallait le VRAI rôle rentrant au catalogue, pas un
      poids d'élection gonflé. Clause 178 (la preuve à deux mondes de rôles).
+- 219: Lot 179 — LE PIED DU GARDIEN (cfg.gkPied — retour utilisateur ×2 : « le
+     gardien galère à conduire »). L'instrument RECOUSU (les micro-pertes de
+     conduite < 1,2 s tolérées) : 9 épisodes au pied/40 min — 7 passes ✓, mais
+     2 BALLONS LÂCHÉS et la touche poussée à ~4 m d'un gardien qui MARCHE (il
+     courait après sa touche). Deux canaux : la touche COLLÉE (touchF 0,35 —
+     entre la préparation 0,3 et la conduite 0,62 : le pied du gardien est un
+     CONTRÔLE, pas une conduite) et la distribution PROMPTE au retrait (gkDue
+     ≤ 0,7 s — Loi 12.2 interdit les mains, chaque dixième compte sous le
+     pressing du backpass ; la tenue 171 reste aux prises MAINS). APRÈS :
+     ballons lâchés 2 → 0, toutes les fins propres. La dette d'observation :
+     dMax ~3,9 m PERSISTE — c'est la PREMIÈRE touche d'un retrait appuyé (le
+     contrôle standard d'un boulet, pas spécifique gardien) : à instruire
+     (l'amorti du premier toucher × la note control) avant de légiférer.
+     Clause 179 (le mécanisme touchF 0,35/0,62 + _mains au retrait).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

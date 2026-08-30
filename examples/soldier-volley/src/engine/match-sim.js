@@ -215,8 +215,7 @@ function assignMatchJobs(st, cfg) {
           p.job = 'walk'; p.target = [gC.x - sgC * (23 + (p.id % 2) * 5), 0, czC * (3 + ((p.id % 3) - 1) * 8)];
         } else { p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]]; }
       } else {
-        // l'adversaire TIENT LE RAYON de la remise (Lois 15/16/17) ; le COUP FRANC plein format tient LE MUR (Loi 13, 9,15 m) : deux défenseurs ligne ballon→but
-        // …ET CHAQUE REMISE A SON RAYON DU RÈGLEMENT (171d, cfg.rayonsLoi — retour utilisateur « respecter les règles ») : corner 9,15 (Loi 17), touche 2 (Loi 15) ; absent : les 3 m d'hier
+        // l'adversaire TIENT LE RAYON de la remise (Lois 15/16/17) ; le COUP FRANC plein format tient LE MUR (Loi 13, 9,15 m) : deux défenseurs ligne ballon→but …ET CHAQUE REMISE A SON RAYON DU RÈGLEMENT (171d, cfg.rayonsLoi — retour utilisateur « respecter les règles ») : corner 9,15 (Loi 17), touche 2 (Loi 15) ; absent : les 3 m d'hier
         const mur = cfg.loi12 && st.full && (r.type === 'coup-franc' || r.type === 'penalty') ? (cfg.loi12.mur ?? 9.15)
           : st.full && cfg.rayonsLoi ? (cfg.rayonsLoi[r.type] ?? cfg.rayonsLoi.defaut ?? cfg.restartClear) : cfg.restartClear;
         if (mur !== cfg.restartClear && r.type === 'coup-franc') {
@@ -280,7 +279,8 @@ function assignMatchJobs(st, cfg) {
       }
       // LE GARDIEN NE DRIBBLE PAS — IL DISTRIBUE (épisodes de 45-87 m mesurés) : le SPOT devant sa ligne, jamais plus loin…
       gk.job = 'carry';
-      gk.touchF = cfg.carryTight ?? 1;                             // le ballon en mains ne s'échappe pas
+      // LE PIED DU GARDIEN EST UN CONTRÔLE (179, cfg.gkPied — « il galère à conduire » : la touche poussée partait à ~4 m du gardien qui MARCHE, 2 ballons lâchés/9 épisodes mesurés)
+      gk.touchF = st.full && cfg.gkPied ? (cfg.gkPied.touche ?? 0.35) : (cfg.carryTight ?? 1);
       // …l'échéance des six secondes court DEBOUT (lot 91, clé keeperRise) : un gardien couché ne distribue pas — sans la garde, le down rallongé puntait depuis le sol mains ou retrait au pied ? (171, Loi 12.2 : pas de mains sur la passe d'un coéquipier — le discriminant : le dernier passeur du camp)
       if (gk._gkSince == null) {
         gk._mains = !(st.lastPasser != null && st.players[st.lastPasser]?.team === gk.team);
@@ -314,6 +314,8 @@ function assignMatchJobs(st, cfg) {
         if (pr > 12) gkDue = Math.min(cfg.gkRelease, 1.2);
         // LA TENUE DU GARDIEN (171, keeper.gkTenueDue) : la prise se TIENT — l'éclair est un CHOIX
         gkDue = gkTenueDue(st, gk, cfg, gkDue, (t) => axe(tac(st, gk.team).tempo, 1.25, 0.75));
+        // …ET AU PIED LA DISTRIBUTION EST PROMPTE (179) : le retrait se joue VITE (Loi 12.2 interdit les mains — chaque dixième compte sous le pressing du backpass)
+        if (st.full && cfg.gkPied && !gk._mains) gkDue = Math.min(gkDue, cfg.gkPied.presse ?? 0.7);
       }
       // LA DISTRIBUTION vit chez le gardien (keeper.relancerGardien, lot 150) : le barème d'hier au bit + les styles par équipe (cpa.sortieBut) et les notes kicking/throwing
       if (cfg.gkRelease && st.t - gk._gkSince > gkDue && !busy(gk) && bdC < 1.1)

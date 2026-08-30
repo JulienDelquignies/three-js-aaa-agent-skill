@@ -166,6 +166,9 @@ export const MATCH = {
                           // — 0 au style 0,5 (l'identité au défaut, la bande intacte), plein en
                           // possession (le Guardiola du preset) ; portée propre 26 m, cd 12 s,
                           // press < 5 m. false : le gardien invisible même en possession.
+  gkPied: { touche: 0.35, presse: 0.7 },   // 179 : LE PIED DU GARDIEN — la touche COLLÉE
+                          // (contrôle, pas conduite : il marche) + la distribution prompte au
+                          // retrait (le backpass se joue vite). Absent : la poussée d'hier.
   craie: { tire: 0.6, seuil: 0.42 },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
                           // large est tiré vers la ligne (fraction du chemin × axe largeur ×
                           // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
