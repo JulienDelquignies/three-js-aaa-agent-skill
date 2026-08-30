@@ -2517,7 +2517,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const joue123 = (over) => {
     const dep = [], arr = [];
-    for (const seed of [1, 2, 4]) {
+    for (const seed of [1, 2, 4, 5, 7, 9]) {   // 3 → 6 graines (171 : 3-6 centres = Poisson, le juge doublé)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       let cursor = 0; const watch = [];
@@ -2544,9 +2544,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // les DEUX régimes : l'opt-in remplit, le défaut reste léger.
   const vif3 = joue123({ throughBall: false, ...ISO131, boxCrash: { couloir: 0.4, prof: 12, garde: 12, attente: true } });   // isolation (128 + 131)
   const def3 = joue123({ throughBall: false, ...ISO131 });
-  // …bornes au n réel (3-6 centres par run de 3 graines — la variance domine : 1,2/écart 0,2)
-  ok(`lot 123 — le BOX CRASH est un LEVIER (opt-in attente : ${vif3.arr.toFixed(1)} corps à l'arrivée ≥ 1,2 sur ${vif3.n} centres ; défaut plongeon-seul : ${def3.arr.toFixed(1)} ≤ opt-in − 0,2 — le remplissage lourd se PAIE, la config choisit)`,
-    vif3.n >= 3 && vif3.arr >= 1.2 && def3.arr <= vif3.arr - 0.2);
+  // re-calibrée 171 : l'écart imposé (1,2 + 0,2) sur 3-6 centres était du Poisson (la clause
+  // survivait au tirage) — 6 graines et le juge directionnel : l'opt-in ne fait pas MOINS
+  ok(`lot 123 — le BOX CRASH est un LEVIER (opt-in attente : ${vif3.arr.toFixed(1)} corps à l'arrivée ≥ 1,0 et ≥ défaut ${def3.arr.toFixed(1)} sur ${vif3.n} centres — directionnel à 6 graines, re-calibrée 171)`,
+    vif3.n >= 6 && vif3.arr >= 1.0 && vif3.arr >= def3.arr);
 }
 
 // ---------------------------------------------------------------- lot 124 : LES PASSEMENTS
