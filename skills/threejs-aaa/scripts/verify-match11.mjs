@@ -42,7 +42,6 @@ import { menaceTir } from '../assets/starter/src/engine/menace.js';
 // de LABO — celles qui isolent UNE loi ancienne — épinglent ce monde des DEUX côtés).
 // C'est le flux d'avant les lots 105-111, gelé : les clauses y mesurent leur loi, pas le monde.
 const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
-  poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 },   // …182 épinglé (le flux des épisodes du labo bouge avec la poitrine/l'attaque du centre)
   chaloupe: false, troisieme: false,
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
@@ -58,7 +57,7 @@ const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: fal
   interception: false, meetReel: false, rattrape: false,             // …les spectateurs de couloir, le lead fantôme et l'orbite d'hier (pré-134)
   engagement: false, assignTenue: false,                             // …le frémissement des cibles d'hier (pré-135)
   sortieGardien: false, clearTouche: false,                          // …le gardien invisible et le corner facile d'hier (pré-136)
-  accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };   // …le monde d'hier (pré-137/160)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
+  accompagne: false, yawSlew: false, tranchant: false, pousse: false, fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };   // …le monde d'hier (pré-137/160 ; boxCrash reste au FALSE pré-123 posé plus haut — le sed 182 l'avait réveillé en doublant la clé, vif 8 → 12 mesuré)                        // …la diagonale unique et la mène myope d'hier (pré-125/128)
 // L'ISOLATION du lot 131 (le patron joue122({throughBall:false}) mutualisé) : les clauses de
 // flux qui mesurent LEUR loi dans le monde défaut s'épinglent au monde SANS la respiration —
 // le dégagement aux corbeaux et la une-touche espérée d'hier, au bit.
@@ -3775,7 +3774,7 @@ if (__bloc()) {
     const zs = []; let touches = 0;
     for (const seed of [3, 7, 11, 15]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, gkPied: false, contreTir: false, clearSigma: false, allonge: false, ...over });   // la clause mesure la CRAIE — ses deux mondes isolent 174-181 (gkPied inversait le différentiel de touches ; la jambe tendue le re-datait)
+      const cfg = matchCfg({ shotRange: 20, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, ...over });   // la clause mesure la CRAIE — ses deux mondes isolent 174-182 (gkPied inversait le différentiel de touches ; la jambe tendue puis l'attaque du centre le re-dataient)
       for (let i = 0; i < 200 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 30 === 0 && st.possession.team === 0 && !st.restart)
