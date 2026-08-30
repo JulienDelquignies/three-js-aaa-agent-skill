@@ -18,8 +18,7 @@ import { arbitre } from './menace.js';
 import { beginPass, strikeNow } from './strike-sim.js';
 import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
 
-// rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who
-// ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
+// rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const { movePlayers, separatePlayers, turnover } = rondoInternals;
@@ -38,8 +37,7 @@ function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; 
 function stepGestures(st, dt, cfg) {
   for (const p of st.players) {
     if (!p.act) continue;
-    // CLOSED DOWN MID-SWING. The windup is a real window: a defender who arrives during it takes the ball off you. This is what makes pressing worth doing, and it did
-    // not exist while the ball left at the instant of the decision — there was no interval to attack.
+    // CLOSED DOWN MID-SWING. The windup is a real window: a defender who arrives during it takes the ball off you. This is what makes pressing worth doing, and it did not exist while the ball left at the instant of the decision — there was no interval to attack.
     if (winding(p) && st.phase === 'carry' && st.possession.carrier === p.id) {
       // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to get to the BALL first (sans ça le windup était fatal — record halved,
       // turnovers doubled). …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le porteur au ballon — plus jamais « près du
@@ -351,6 +349,8 @@ function receive(st, id, cfg = RONDO) {
         }
         return;                                                    // pas de possession : la touche a fui
       }
+      // (180 — l'amorti à la note TENTÉ ET RÉFUTÉ ici : le settle est SERVO-DOMINÉ, le porté ravale l'impulsion (jumeaux 90/10 : 0,24 = 0,24).
+      // La note au contrôle vit à pMiss (le manqué) — le « 4 m de première touche » du 179 s'instruira au FILM, pas à ce site.)
       st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)], dW(st, cfg, 1 - pick.tech.power));
       st.ball.possess(id);
       st._settling = { ev: st.events.length, id, at: st.t + T };

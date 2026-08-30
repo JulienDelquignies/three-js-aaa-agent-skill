@@ -262,6 +262,11 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+L'AMORTI À LA NOTE RÉFUTÉ (180, note 220) : le settle est servo-dominé — ce
+site ne peut pas porter controlF (jumeaux 0,24 = 0,24, revert). La dette « 4 m
+de première touche » s'instruira au FILM (l'hypothèse : la distance vit AVANT
+la prise). Prochains fronts : le box crash à re-fonder, le banc incarné.
+
 LE PIED DU GARDIEN (179, note 219) : la touche collée (0,35) + la distribution
 prompte au retrait — ballons lâchés 2→0. Dette : le dMax ~4 m de PREMIÈRE touche
 d'un retrait appuyé (le contrôle d'un boulet, générique — l'amorti du premier

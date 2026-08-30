@@ -6297,6 +6297,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      contrôle standard d'un boulet, pas spécifique gardien) : à instruire
      (l'amorti du premier toucher × la note control) avant de légiférer.
      Clause 179 (le mécanisme touchF 0,35/0,62 + _mains au retrait).
+- 220: Lot 180 — L'AMORTI À LA NOTE : TENTÉ ET RÉFUTÉ (la doctrine appliquée,
+     rien shippé — la leçon vaut le lot). L'hypothèse de la dette 179 (le
+     résiduel du contrôle réussi × controlF, centré no-op sur controlF(50) =
+     1,15) : implémentée proprement, mesurée au JUMEAU 6 graines (control 90
+     c. 10, settle des arrivées ≥ 8 m/s) → 0,24 = 0,24, AUCUN effet. La cause
+     structurelle : le settle est SERVO-DOMINÉ — après la prise, le porté
+     (l'intégrateur du carry) ramène le ballon au pied quelle que soit
+     l'impulsion de contrôle : ce site ne PEUT pas porter la note. La note du
+     contrôle vit là où le servo ne règne pas : pMiss (le contrôle MANQUÉ, déjà
+     noté ×controlF) et l'arrivée du through (déjà ×controlF au 128). Le « 4 m
+     de première touche » du 179 s'instruira au FILM d'un épisode (l'hypothèse
+     suivante : la distance vit AVANT la prise — le ballon qui dépasse/le
+     prenable qui refuse — pas après). Revert complet, moteur bit-identique au
+     sceau 437 ✓ (consigné en commentaire au site, le patron des canaux morts).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
