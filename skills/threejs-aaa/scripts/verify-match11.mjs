@@ -3624,7 +3624,7 @@ if (__bloc()) {
     const rots = [];
     for (const seed of [4, 7, 11, 15]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, clearSigma: false, contreTir: false, craie: false, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-178 (l'élection de craie déplaçait les receveurs : 63 c. 61, la marge mangée)
       let suivi = null;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
