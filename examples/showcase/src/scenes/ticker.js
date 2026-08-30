@@ -66,6 +66,9 @@ export function makeTicker(TEAMS) {
       pousse(`<b style="color:#f4a261">lob tenté</b> <span>— ${team(state, e.by)} nº${e.by} · ${tFM(e.t)}</span>`);
     } else if (e.type === 'contre' && hud) {
       pousse(`<b style="color:#f4a261">contré !</b> <span>— nº${e.by} bloque la frappe de nº${e.sur} · ${tFM(e.t)}</span>`);
+    } else if (e.type === 'control' && e.tech === 'poitrine' && hud) {
+      // LA POITRINE SE NOMME (lot 182a) : la fenêtre morte fermée — le geste rare s'annonce
+      pousse(`<b style="color:#7bd88f">contrôle poitrine</b> <span>— nº${e.by} amortit du buste · ${tFM(e.t)}</span>`);
     } else if (e.type === 'piqué' && hud) {
       pousse(`<b style="color:#7bd88f">passe piquée</b> <span>— nº${e.by} pour nº${e.to}, ${e.avance} m devant · ${tFM(e.t)}</span>`);
     } else if (e.type === 'un-deux' && hud) {

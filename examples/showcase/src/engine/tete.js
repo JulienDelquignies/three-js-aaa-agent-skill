@@ -186,3 +186,47 @@ export function voleeStep(st, cfg) {
   }
   // sinon : ON NE VOLLEYE PAS — le contrôle au sol est le vrai geste du milieu de terrain
 }
+
+/** LA POITRINE (lot 182a, cfg.poitrine && st.full — la fenêtre MORTE [1,15 ; 1,55] nommée au
+ *  lot 40 : entre volee.max et tete.min AUCUNE loi ne jouait le vol — filmé aux centres :
+ *  des ballons de boîte croisant un corps à 0,5 m à hauteur de poitrine, perdus). Le geste
+ *  réel : le COÉQUIPIER du dernier toucheur encaisse le vol du buste — le ballon meurt et
+ *  TOMBE devant lui (l'amorti n'est pas une prise : ballon LIBRE, hors servo — la note du
+ *  contrôle module le résiduel, le canal du 181). L'adversaire ne joue pas la poitrine en
+ *  vol (son ciel est la tête, son urgence la volée). Cooldown partagé _teteCd (un contact
+ *  aérien par fenêtre de vol). Clé absente : la fenêtre morte d'hier au bit. */
+export function chestStep(st, cfg, dt = 1 / 60) {
+  const P = cfg.poitrine;
+  if (!P || !st.full) return;                                      // clé absente : la fenêtre morte d'hier
+  const bp = st.ball.p, bv = st.ball.v;
+  // …au SEGMENT de la frame, pas au point (leçon 181 : un centre à 15-20 m/s fait 0,3 m par
+  // échantillon — le rayon binaire par frame regardait le vol passer ENTRE deux images)
+  const b0 = [bp[0] - bv[0] * dt, bp[1] - bv[1] * dt, bp[2] - bv[2] * dt];
+  if (Math.max(b0[1], bp[1]) < (P.min ?? 1.15) || Math.min(b0[1], bp[1]) > (P.max ?? 1.55)) return;
+  if ((st._teteCd ?? 0) > st.t) return;
+  const camp = st.lastTouch;
+  if (camp == null) return;
+  const sx = bp[0] - b0[0], sz = bp[2] - b0[2], sl = sx * sx + sz * sz;
+  let joueur = null, bd = 99, bt = 1;
+  for (const q of st.players) {
+    if (q.down > 0 || q.keeper || q.act || q.team !== camp) continue;
+    const tS = sl > 1e-9 ? Math.max(0, Math.min(1, ((q.p[0] - b0[0]) * sx + (q.p[2] - b0[2]) * sz) / sl)) : 1;
+    const h = b0[1] + (bp[1] - b0[1]) * tS;
+    if (h < (P.min ?? 1.15) || h > (P.max ?? 1.55)) continue;
+    const d = Math.hypot(q.p[0] - (b0[0] + sx * tS), q.p[2] - (b0[2] + sz * tS));
+    // le RECEVEUR ATTITRÉ coupe SA passe d'un pas de buste (reachTo — filmé : le centre tendu ne
+    // chute pas en boîte, il le croisait à 0,8 m en route vers une chute lointaine, muet)
+    const portee = st.pass && st.pass.to === q.id ? (P.reachTo ?? 0.9) : (P.reach ?? 0.55);
+    if (d < portee && d < bd) { bd = d; joueur = q; bt = tS; }
+  }
+  if (!joueur) return;
+  st._teteCd = st.t + 0.8;
+  st.lastTouch = joueur.team;
+  const ctl = Math.min(1.2, joueur.skill?.controlF ?? 1);
+  const k = Math.min(0.9, (P.kill ?? 0.78) * ctl);
+  st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.8 - 0.5, -st.ball.v[2] * k],
+    st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null);
+  st.pass = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'poitrine', foot: 'any',
+    surface: 'chest', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+}

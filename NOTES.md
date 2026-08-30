@@ -6329,6 +6329,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      contre 0,24 = 0,24 au site servo du 180). La passe touchée est MORTE
      (lot 44). Une tentative par passe. Bande 19 buts/20×300 s. Clé absente :
      le demi-tour d'hier au bit. La dette « 4 m » du 179 est SOLDÉE.
+- 222: Lot 182 — LA RE-FONDATION DU BOX CRASH (dette 123/171). LA SONDE A
+     RE-TRANCHÉ (film-centres, 12 graines × 300 s, 3 mondes) : l'attente est
+     aujourd'hui PIRE que le défaut partout (1,89 c. 2,00 corps à la mort du
+     vol, 2 c. 6 buts de centre, trafic adverse 2,21 c. 1,80) — la dilution
+     171 confirmée et aggravée : raviver le levier est mort, il reste l'opt-in
+     documenté. LE VRAI DÉFICIT filmé : l'ATTAQUE du centre, pas la présence —
+     17/36 centres perdus, 8 croisant un corps de boîte à ≤ 0,8 m SANS être
+     joués, aux trois hauteurs : rasant (< 0,25), POITRINE (1,15-1,55 : la
+     fenêtre MORTE nommée au lot 40 — entre volee.max et tete.min AUCUNE loi),
+     au-dessus (2,2+). Deux lois posées :
+     · 182a LA POITRINE (tete.chestStep, cfg.poitrine) : le coéquipier du
+       dernier toucheur amortit le vol du buste — ballon LIBRE devant lui
+       (hors servo : kill × controlF, le canal du 181 — jumeaux 90 : 1,1 m/s
+       résiduel c. 10 : 4,0) ; au SEGMENT de la frame (leçon 181 : un centre
+       à 15-20 m/s fait 0,3 m/échantillon, le rayon par frame regardait le
+       vol passer entre deux images) ; reachTo 0,9 pour le receveur ATTITRÉ
+       (le centre tendu ne chute pas en boîte — filmé : il le croisait à
+       0,8 m en route vers une chute lointaine).
+     · 182b L'ATTAQUE DU CENTRE (phases.boxCrashStep — le bloc 123 déporté de
+       match-sim, −38 l.) : le poste du crash est un point de DÉPART, pas une
+       statue — le corps dont le rai du vol passe à portée de pas (porte
+       2,5 m) re-cible le point d'interception tenable ; la lecture se paie à
+       reaction × (2 − anticipF) (patron 168) ; le receveur attitré exempté.
+     APRÈS (film) : perdus 17 → 9 (dont 2 hors boîte), plus AUCUN perdu à
+     hauteur de poitrine, tir 8→10, tête 2→4, poitrine 2. Bande : 42 buts /
+     40 × 300 s (le 24/20 des graines 1-20 était du Poisson — vérifié sur 20
+     graines fraîches avant tout calibrage : 18). Clauses 182a (mécanisme +
+     jumeau + sabotage) et 182b (re-ciblage c. statue) ; chaînes ×42 étendues
+     (poitrine + boxCrash d'hier). Dettes tenues : le trou du HAUT (2,2 m,
+     les perdus restants h ~1,6 à 0,8-1,2 m), le trafic de frappe (conversion
+     boîte ~20-24 % — à instrumenter tir par tir), le rasant non-attitré.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

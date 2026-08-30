@@ -11,6 +11,7 @@
 //
 // L'horloge du regain (st._possChangeAt, st._possTeam) est TENUE par le match (assignMatchJobs,
 // cfg.moments) — la dérivation, elle, est pure : un état entre, un moment sort, testable au banc.
+import { offsideLine } from './offside.js';
 
 /**
  * Le moment de `team`, du point de vue du football collectif.
@@ -205,4 +206,70 @@ export function checkMoments() {
   // la fenêtre est un PARAMÈTRE, pas une constante cachée
   if (momentDuJeu(mk(0, 4), 0, 3) !== 'attaque-placée') issues.push('la fenêtre win n\'est pas honorée');
   return { ok: issues.length === 0, issues };
+}
+
+/** LE BOX CRASH (lot 123, déporté du match au 182b) — POST-PASS d'autorité : la géométrie du
+ *  centre REMPLIT la surface (N plus proches + rôle appel, soutien épargné, Loi 11, cache
+ *  0,6 s), et depuis 182b LES CORPS ATTAQUENT LE VOL (l'attaque du centre, cfg.boxCrash.attaque
+ *  — filmé : les postes étaient STATIQUES, le centre croisait un corps de boîte à 0,8 m et se
+ *  perdait ; seul le receveur attitré courait au ballon). Absente : hier. */
+export function boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }) {
+  const pitch = st.pitch;
+  if (st.full && cfg.boxCrash && !st.restart && st.possession.team >= 0) {
+    const atk = st.possession.team;
+    const g2 = pitch.attackGoal(atk), sg2 = Math.sign(g2.x || 1), zB = st.ball.p[2];
+    const bc = (st._boxCrash ??= {});
+    if ((bc[atk]?.t ?? -1) < st.t - 0.6) {
+      const geo = Math.abs(zB) > pitch.hz * (cfg.boxCrash.couloir ?? 0.4)
+        && st.ball.p[0] * sg2 > pitch.hx - pitch.dims.box.depth - (cfg.boxCrash.prof ?? 18);
+      if (geo) {
+        const n = Math.max(2, Math.min(4, Math.round(3 + axe(tac(st, atk).hauteur, -1, 1))));
+        const bx = g2.x - sg2 * 9;
+        const cands = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0
+          && q.id !== st.possession.carrier && q.job !== 'press' && q.job !== 'intercept'
+          && d2(q.p, st.ball.p) > (cfg.boxCrash.garde ?? 12))
+          .map((q) => ({ id: q.id, s: -Math.hypot(q.p[0] - bx, q.p[2]) + axe(role(q).appel, -3, 3) }))
+          .sort((x, y) => y.s - x.s).slice(0, n).map((x) => x.id);
+        bc[atk] = { t: st.t, ids: cands, zC: Math.sign(zB || 1) };
+      } else bc[atk] = { t: st.t, ids: [], zC: 1 };
+    }
+    // …LE PLONGEON SEUL en défaut (le statique DIVISAIT les buts par 2, A/B apparié) : le crash ne vit qu'au VOL ; attente = l'opt-in payant.
+    const E = bc[atk], offL = cfg.offside ? offsideLine(st, atk) : null;
+    if (E?.ids?.length) {
+      const vol = st.pass && st.pass.cross && st.players[st.pass.from]?.team === atk;
+      if (vol || cfg.boxCrash.attente) {
+        const g3 = pitch.attackGoal(atk), sg3 = Math.sign(g3.x || 1), zC = E.zC;
+        const P = vol
+          ? [[g3.x - sg3 * 5.5, zC * 3.4], [g3.x - sg3 * 11, -zC * 1], [g3.x - sg3 * 6.5, -zC * 4.5], [g3.x - sg3 * 16, zC * 2]]
+          : [[g3.x - sg3 * 18, zC * 5], [g3.x - sg3 * 19.5, -zC * 1], [g3.x - sg3 * 18, -zC * 7], [g3.x - sg3 * 22, zC * 3]];
+        const AT = vol && cfg.boxCrash.attaque ? cfg.boxCrash.attaque : null;   // clé absente : les statues d'hier au bit
+        const vB = AT ? Math.hypot(st.ball.v[0], st.ball.v[2]) : 0;
+        for (let k = 0; k < E.ids.length; k++) {
+          const q = st.players[E.ids[k]];
+          if (!q || q.down > 0 || busy(q) || st.possession.carrier === q.id) continue;
+          if (vol && q.id === st.pass.to) continue;   // le RECEVEUR du centre court au point de chute, jamais au poteau (5/17 vs 12/27 mesurés sans l'exemption)
+          q.job = 'support';
+          // …L'ATTAQUE DU CENTRE (182b) : le poste est un point de DÉPART, pas une statue — le
+          // corps dont le rai du vol passe à portée de pas ATTAQUE le point d'interception qu'il
+          // peut tenir avant le ballon (filmé : des centres croisaient un corps de boîte à 0,8 m,
+          // muets — seul le receveur attitré courait). La lecture se paie à la note (reaction ×
+          // (2 − anticipF), le patron du lecteur 168) ; attaque:false = les statues d'hier.
+          if (AT && vB > 1 && st.t - st.pass.t > (q.skill?.reaction ?? 0.18) * (2 - (q.skill?.anticipF ?? 1))) {
+            const ux = st.ball.v[0] / vB, uz = st.ball.v[2] / vB;
+            const along = (q.p[0] - st.ball.p[0]) * ux + (q.p[2] - st.ball.p[2]) * uz;
+            if (along > 0.5) {
+              const cX = st.ball.p[0] + ux * along, cZ = st.ball.p[2] + uz * along;
+              const dMoi = Math.hypot(q.p[0] - cX, q.p[2] - cZ);
+              if (dMoi < (AT.porte ?? 2.5) && dMoi / 6.4 < along / vB + 0.1) {
+                q.target = [cX, 0, cZ];
+                continue;
+              }
+            }
+          }
+          const px = offL ? offL.sgn * Math.min(P[k][0] * offL.sgn, offL.adv - 0.15) : P[k][0];
+          q.target = [px, 0, P[k][1]];
+        }
+      }
+    }
+  }
 }

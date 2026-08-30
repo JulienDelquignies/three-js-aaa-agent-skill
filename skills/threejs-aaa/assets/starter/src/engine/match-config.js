@@ -452,6 +452,10 @@ export const MATCH = {
                           // (réel 35-50). false : le bloc élastique d'hier (sabotage nommé) ;
                           // soutien absent : la ligne campeuse d'hier.
   volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 },
+  poitrine: { min: 1.15, max: 1.55, reach: 0.55, kill: 0.78 },  // 182a : LA POITRINE — la fenêtre
+                          // morte entre volée et tête se joue au BUSTE (coéquipier du dernier
+                          // toucheur) : amorti × controlF, ballon LIBRE devant lui. Absente : le
+                          // vol qui traversait la boîte sans être joué (filmé aux centres).
                           // LA VOLÉE (11c11, st.full — lot 40) : le pied joue le ballon EN VOL
                           // sous la fenêtre de tête (min-max m, portée reach) — REPRISE au but
                           // en surface (< but m : shot kind 'volée', 'demi-volée' si le ballon
@@ -496,7 +500,7 @@ export const MATCH = {
                           // nommé). Dette : la précision fatiguée (sigma), le pressing plié.
   libero: { far: 34, max: 10, rampe: 8, retour: 3.5 },
   contreAppel: { marque: 2.2, p: 0.5 },  // LE CONTRE-APPEL (122) : la course profonde marquée casse aux pieds (× rôle appel)
-  boxCrash: { couloir: 0.4, prof: 12, garde: 12 },
+  boxCrash: { couloir: 0.4, prof: 12, garde: 12, attaque: { porte: 2.5 } },  // 182b : l'ATTAQUE DU CENTRE — le corps de boîte dont le rai du vol passe à portée de pas quitte son poste pour le point d'interception (lecture payée à reaction × anticipF) ; attaque:false = les statues d'hier
   courseAilier: {},       // (125)
   throughBall: { pointe: 2.5, bonus: 0.6 },  // LA PASSE EN PROFONDEUR AU SOL (128) : le rendez-vous itéré + la pointe d'intervalle, l'arrivée au control ; absent : la mène myope d'hier
   tranchant: {},          // LA TRANCHANTE (140 — retour : « pas encore vu une passe en profondeur vraiment tranchante ») :

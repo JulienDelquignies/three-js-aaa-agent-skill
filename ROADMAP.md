@@ -315,10 +315,14 @@ regard suit désormais le ballon rattrapé (cfg.gkFace). Désaligné 14,7 → 12
 le résiduel attribué au freinage de prise (0,15 s, physiologique). LE PIQUÉ SE
 NOMME (172) : événement 'piqué' + ticker.
 
-LE BOX CRASH À RE-FONDER (dette 171) : le levier boxCrash.attente est dilué au
-monde post-166-171 (opt-in 1,0 c. défaut 1,1 corps sur 19 centres — les courses
-servies remplissent la boîte par d'autres lois). La clause 123 garde le contrat ;
-le levier attend une re-fondation mesurée (le théâtre des centres reste petit).
+~~LE BOX CRASH À RE-FONDER (dette 171)~~ — **RE-FONDÉ AU 182** (note 222) : la
+sonde a re-tranché — l'attente est PIRE que le défaut (dilution aggravée, reste
+l'opt-in documenté) ; le vrai déficit était l'ATTAQUE du centre : la POITRINE
+(182a, la fenêtre morte 1,15-1,55 fermée, kill × controlF hors servo) et
+l'ATTAQUE DU CENTRE (182b, le corps de boîte re-cible le rai à portée de pas,
+lecture × anticipF) — centres perdus 17 → 9. Dettes : le trou du HAUT (~2,2 m),
+le trafic de frappe (conversion boîte à instrumenter tir par tir), le rasant
+non-attitré.
 
 LE RETOUR ×6 (170-171, note 211) : le corps ouvert (pivot 75°→60°, demi-position
 × visionF), la tenue du gardien (0,38→3,23 s, l'éclair = un choix de contre), le

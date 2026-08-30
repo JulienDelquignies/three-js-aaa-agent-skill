@@ -6,7 +6,7 @@ import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, da
 import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
-import { teteStep, voleeStep } from './tete.js';
+import { teteStep, voleeStep, chestStep } from './tete.js';
 import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js';
 import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
@@ -1026,10 +1026,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const released = gone > cfg.releaseClear || (st.pass && st.t - st.pass.t > (cfg.releaseTtl ?? Infinity));
     // LE COACH LIT LE MATCH (lot 113) : score/chrono/momentum → axes par paliers (coach.js)
     if (cfg.coach && st.full) coachStep(st, cfg);
-    // LE CIEL SE JOUE (cfg.tete && st.full — lot 34) : un vol à hauteur de tête sur un corps se REPREND — but/dégagement/remise ; à deux, le duel aérien (tete.js)
-    if (cfg.tete && st.full && st.phase === 'flight' && released) teteStep(st, cfg);
-    // …et SOUS la fenêtre, LA VOLÉE (lot 40) : reprise en surface / dégagement d'urgence — le pied joue le vol avant la prise au sol (tete.js)
-    if (cfg.volee && st.full && st.phase === 'flight' && released) voleeStep(st, cfg);
+    // LE CIEL SE JOUE (lot 34 tête / 182a poitrine / 40 volée — tete.js) : le vol sur un corps se reprend à SA hauteur — tête, buste (la fenêtre morte 1,15-1,55 fermée), pied
+    if (st.full && st.phase === 'flight' && released) { if (cfg.tete) teteStep(st, cfg); if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); }
     let taker = -1, bestD = Infinity;
     if (released) {
       for (const p of st.players) {

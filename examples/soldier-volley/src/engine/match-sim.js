@@ -18,7 +18,7 @@ import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCo
 import { accrocheStep, contreTir, jambeTendue } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
-import { marquageCentre, intercepteurVol, accompagneMontee } from './phases.js';
+import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee } from './phases.js';
 import { MOVES } from './animkit.js';
 
 const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
@@ -1019,45 +1019,7 @@ function assignMatchJobs(st, cfg) {
       p.push = null;
     }
   }
-  // LE BOX CRASH (123) — POST-PASS d'autorité : la géométrie du centre REMPLIT la surface (N plus proches + rôle appel, soutien épargné, Loi 11, cache 0,6 s). Absente : hier.
-  if (st.full && cfg.boxCrash && !st.restart && st.possession.team >= 0) {
-    const atk = st.possession.team;
-    const g2 = pitch.attackGoal(atk), sg2 = Math.sign(g2.x || 1), zB = st.ball.p[2];
-    const bc = (st._boxCrash ??= {});
-    if ((bc[atk]?.t ?? -1) < st.t - 0.6) {
-      const geo = Math.abs(zB) > pitch.hz * (cfg.boxCrash.couloir ?? 0.4)
-        && st.ball.p[0] * sg2 > pitch.hx - pitch.dims.box.depth - (cfg.boxCrash.prof ?? 18);
-      if (geo) {
-        const n = Math.max(2, Math.min(4, Math.round(3 + axe(tac(st, atk).hauteur, -1, 1))));
-        const bx = g2.x - sg2 * 9;
-        const cands = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0
-          && q.id !== st.possession.carrier && q.job !== 'press' && q.job !== 'intercept'
-          && d2(q.p, st.ball.p) > (cfg.boxCrash.garde ?? 12))
-          .map((q) => ({ id: q.id, s: -Math.hypot(q.p[0] - bx, q.p[2]) + axe(role(q).appel, -3, 3) }))
-          .sort((x, y) => y.s - x.s).slice(0, n).map((x) => x.id);
-        bc[atk] = { t: st.t, ids: cands, zC: Math.sign(zB || 1) };
-      } else bc[atk] = { t: st.t, ids: [], zC: 1 };
-    }
-    // …LE PLONGEON SEUL en défaut (le statique DIVISAIT les buts par 2, A/B apparié) : le crash ne vit qu'au VOL ; attente = l'opt-in payant.
-    const E = bc[atk], offL = cfg.offside ? offsideLine(st, atk) : null;
-    if (E?.ids?.length) {
-      const vol = st.pass && st.pass.cross && st.players[st.pass.from]?.team === atk;
-      if (vol || cfg.boxCrash.attente) {
-        const g3 = pitch.attackGoal(atk), sg3 = Math.sign(g3.x || 1), zC = E.zC;
-        const P = vol
-          ? [[g3.x - sg3 * 5.5, zC * 3.4], [g3.x - sg3 * 11, -zC * 1], [g3.x - sg3 * 6.5, -zC * 4.5], [g3.x - sg3 * 16, zC * 2]]
-          : [[g3.x - sg3 * 18, zC * 5], [g3.x - sg3 * 19.5, -zC * 1], [g3.x - sg3 * 18, -zC * 7], [g3.x - sg3 * 22, zC * 3]];
-        for (let k = 0; k < E.ids.length; k++) {
-          const q = st.players[E.ids[k]];
-          if (!q || q.down > 0 || busy(q) || st.possession.carrier === q.id) continue;
-          if (vol && q.id === st.pass.to) continue;   // le RECEVEUR du centre court au point de chute, jamais au poteau (5/17 vs 12/27 mesurés sans l'exemption)
-          q.job = 'support';
-          const px = offL ? offL.sgn * Math.min(P[k][0] * offL.sgn, offL.adv - 0.15) : P[k][0];
-          q.target = [px, 0, P[k][1]];
-        }
-      }
-    }
-  }
+  boxCrashStep(st, cfg, { busy, tac, axe, role, d2 });  // 123/182b : la géométrie du centre remplit la boîte ET les corps ATTAQUENT le vol (phases.js)
   marquageCentre(st, cfg, { busy, tac, axe, d2 });   // 133 : le vol du centre adverse met des CORPS sur les corps (phases.js)
   accompagneMontee(st, cfg, { tac, axe, role });     // 137 : la montée du porteur DÉCLENCHE ses courses d'accompagnement (phases.js)
 }
