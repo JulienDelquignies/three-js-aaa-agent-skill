@@ -292,6 +292,10 @@ export function strikeNow(st, c, cfg) {
         if (!s2) break;
         tV = s2.flightTime;
       }
+      // …et LE PIQUÉ SE NOMME (172 — retour utilisateur : « je ne vois aucune passe en
+      // profondeur » : 25 tentatives / 9 contrôles sur 20 min EXISTAIENT, invisibles au fil)
+      st.events.push({ t: +st.t.toFixed(2), type: 'piqué', by: c.id, to: rec.id,
+        avance: +Math.hypot(lead[0] - rec.p[0], lead[2] - rec.p[2]).toFixed(1) });
     }
   }
   // LE HORS-CADRE DU VRAI FOOT (lot 145, cfg.dispersion && st.full — retour utilisateur :

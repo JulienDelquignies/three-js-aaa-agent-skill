@@ -399,6 +399,10 @@ export function movePlayers(st, dt, cfg) {
     // The slew is the same law as the momentum model above (rate = turnAccel / speed), so pace still
     // costs agility: a man sprinting cannot snap his shoulders round onto the ball.
     if (p.job === 'carry') {
+      // (172 — le « moonwalk » du gardien-porteur : DEUX canaux TENTÉS ET RÉFUTÉS à la mesure
+      // (yaw-suit-v : 13,7 ≈ 14,7 % épinglé ; + hystérésis du target : 19,5 % — PIRE) — le
+      // désalignement vient d'ailleurs (dette nommée : tracer un épisode, regarder le CLIP de
+      // rendu). Le chemin d'hier, au bit :
       p.yawWant = p.push ? Math.atan2(p.push[1], p.push[0])
         : Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
     } else if (sePres) {

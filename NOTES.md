@@ -6170,6 +6170,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      +corpsOuvert +gkTenue +rayonsLoi +sortieGardien:{}). Clauses 170/171a/171d
      (+ leçons : l'effet APRÈS a réfuté DEUX version — tacleHorloge seul au 169,
      et ici la sonde à l'intention ; le grand livre est l'outil du diagnostic).
+- 212: Lot 172 — LE PIQUÉ SE NOMME + le moonwalk réfuté (retour utilisateur ×2).
+     (a) « Aucune passe en profondeur réussie » : la sonde du DEVENIR à 20 min —
+     25 piqués, 9 CONTRÔLÉS par le coureur (36 %, le taux du réel), 15 disputés,
+     0 abandon : ils EXISTAIENT, invisibles (2/5 min et pas de ligne au fil).
+     L'événement nommé 'piqué' (strike-sim, au départ du through : by/to/avance)
+     + la ligne du ticker (« passe piquée — nº4 pour nº9, 12 m devant ») — la
+     télémétrie du moteur EST la visibilité. (b) Le « moonwalk » du gardien-
+     porteur : 14-15 % de frames désalignées mesurées (5 % à reculons) — DEUX
+     canaux tentés et RÉFUTÉS à la mesure 8 graines (yaw-suit-v : 13,7 ≈ 14,7 %
+     épinglé ; + l'hystérésis du target ballon/spot : 19,5 %, PIRE) → REVERT
+     complet (la doctrine : le canal sans effet se rejette), dette nommée avec
+     les pistes mortes (la suivante : tracer UN épisode frame à frame + regarder
+     le CLIP de rendu — le blend d'animation peut fabriquer le moonwalk sans
+     que le moteur soit fautif). Leçon d'instrument : à 4 graines la variance
+     des mondes domine cette mesure (3,1 % vs 8,3 % entre deux seuils — le
+     chaos, pas l'effet) ; 8 graines minimum pour ce canal.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

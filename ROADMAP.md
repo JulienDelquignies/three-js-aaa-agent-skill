@@ -262,6 +262,13 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LE MOONWALK DU GARDIEN-PORTEUR (dette 172, retour utilisateur avec capture) :
+14-15 % de frames de portage désalignées (5 % à reculons). Deux canaux réfutés à
+la mesure (yaw-suit-v ; l'hystérésis du target ballon/spot — pire). Piste
+suivante : tracer UN épisode frame à frame + le CLIP de rendu (le blend d'anim
+peut fabriquer le moonwalk). LE PIQUÉ SE NOMME (172) : événement 'piqué' +
+ticker — 9 contrôles du coureur / 20 min existaient, invisibles.
+
 LE BOX CRASH À RE-FONDER (dette 171) : le levier boxCrash.attente est dilué au
 monde post-166-171 (opt-in 1,0 c. défaut 1,1 corps sur 19 centres — les courses
 servies remplissent la boîte par d'autres lois). La clause 123 garde le contrat ;
