@@ -71,7 +71,7 @@ export function movePlayers(st, dt, cfg) {
       : p.job === 'mark' ? (cfg.speeds.mark != null ? 'mark' : 'support')
       : p.job === 'walk' ? (cfg.speeds.walk != null ? 'walk' : 'support')
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
-      * (p.skill?.topF ?? p.persona?.paceBias ?? 1);   // la NOTE de vitesse fait foi ; sinon l'accent persona
+      * (p.skill?.topF ?? p.persona?.paceBias ?? 1) * (p.job === 'walk' ? (p._walkF ?? 1) : 1);   // le retour pressé/flâné (183, cfg.retourTrot — posé par le match)   // la NOTE de vitesse fait foi ; sinon l'accent persona
     // LE PORTEUR COURT SUR SA TOUCHE (cfg.carrySurge, match — absent : le rondo au bit près).
     // L'allure de conduite (4,2) est celle du ballon COLLÉ ; une touche poussée devant se
     // rattrape EN POINTE. Mesuré avant : 6,4 % des images de conduite à > 2 m avec un porteur

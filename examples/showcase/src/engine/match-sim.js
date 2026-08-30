@@ -169,6 +169,19 @@ function assignMatchJobs(st, cfg) {
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
         p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]];
+        // LE RETOUR N'EST PAS UNE PROMENADE UNIFORME (183, cfg.retourTrot — filmé : 47-60 m à
+        // 2,6 m/s, les corps du fond jamais rentrés à la reprise) : LOIN de son spot on TROTTE ;
+        // le MENÉ presse le pas (il veut rejouer), le meneur au tempo bas FLÂNE (la gestion du
+        // temps est un choix de coach — l'axe tempo, pas une note). Clé absente : hier au bit.
+        const RT = cfg.retourTrot;
+        if (st.full && RT && r.type === 'engagement') {
+          const dSpot = Math.hypot(p.p[0] - p.target[0], p.p[2] - p.target[2]);
+          let f = dSpot > (RT.loin ?? 12) ? (RT.trot ?? 1.7) : 1;
+          const sc = st.score ?? [0, 0];
+          if (sc[p.team] < sc[p.team === 0 ? 1 : 0]) f *= (RT.presse ?? 1.15);
+          else if (sc[p.team] > sc[p.team === 0 ? 1 : 0] && axe(tac(st, p.team).tempo, 1, 0) > 0.6) f *= (RT.flane ?? 0.85);
+          p._walkF = f;
+        } else p._walkF = null;
         // LOI 8, LE CORPS (160b) : l'adverse de l'ENGAGEMENT ne TRAVERSE pas le rond — dedans il SORT radial, et un chemin qui couperait le rond se DÉTOURNE par la tangente. Des marcheurs en transit se relayaient dans le rond : canTake ne le voyait jamais vide (gel de 28,7 s mesuré, graine 3). L'arbitre a le corps qu'il exige. cfg.rondSort ; false : hier.
         if (st.full && cfg.rondSort !== false && r.type === 'engagement' && p.team !== r.team) {
           const R8 = (pitch.dims?.circle ?? 9.15) * 0.9 + 0.6;

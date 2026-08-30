@@ -1051,7 +1051,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     }
     // une remise a un ayant droit et une heure — et LA PRISE A UN MÉTIER (cfg.onTake : la remise peut se jouer AUTREMENT qu'au pied — la touche Loi 15 se LANCE à la main). Clé absente : au bit près.
     const priseT = st.restart?.type ?? null;
-    if (taker >= 0 && (!cfg.canTake || cfg.canTake(st, taker))) {
+    if (taker >= 0 && (!cfg.canTake || cfg.canTake(st, taker, cfg))) {
       receive(st, taker, cfg);
       if (priseT && !st.restart && cfg.onTake) cfg.onTake(st, taker, priseT, cfg);
     }

@@ -6375,6 +6375,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      shotRange ne connaissait pas (attrapé quand 182 a fait naître une faute
      lointaine tentée, graine 7). Sceau final : 440 ✓ / 0 ✗ en 838 s ; déployé
      Rondo-DJioKpBz.js (poitrine ×9, jambe-tendue grepables au chunk servi).
+- 224: Lot 183 — LOI 8, LES MOITIÉS + LE RETOUR TROTTÉ (retour utilisateur
+     170 : « les coups d'envoi/engagement : respecter les règles »). D'abord
+     le front des centres SOLDÉ en requalification : les « perdus » restants
+     du film 182 tracés un à un — la tête JOUAIT le vol haut (v 11,6 → 1,8,
+     faux négatif de sonde), le rasant repris par l'attitré une seconde plus
+     tard — le théâtre est sain, la dette « rasant non-attitré » requalifiée
+     (pas de déficit net mesurable, théâtre trop petit). PUIS LA SONDE DE
+     L'ENGAGEMENT a tranché net : 6-7 corps d'un bloc ENTIER encore chez
+     l'adversaire à CHAQUE prise post-but (12/12) — canTake n'exigeait que le
+     rond (160b), jamais les moitiés. Deux lois :
+     · LOI 8 LES MOITIÉS (referee.canTake, cfg.moities { tol 1,5, patience
+       18 }) : l'arbitre attend chaque équipe rentrée chez elle ; la patience
+       borne l'attente au-delà de restart.at (anti-gel — un corps coincé ne
+       suspend pas le match). canTake reçoit désormais cfg (l'appel rondo).
+     · LE RETOUR TROTTÉ (match-sim au bloc walk, cfg.retourTrot, lu par
+       movement ×_walkF) : filmé — 47-60 m à 2,6 m/s ne rentrent jamais dans
+       la patience (les cibles zigzaguées par le détour du rond en plus).
+       LOIN de son spot on trotte (×1,7) ; le MENÉ presse (×1,15 — il veut
+       rejouer) ; le MENEUR au tempo bas flâne (×0,85 — la gestion du temps
+       est un CHOIX de coach : l'axe tempo décide, le moteur porte).
+     APRÈS : hors-moitié 6-7 → 0/11 engagements (à la tolérance de la loi),
+     reprise 17,6 → 24-28 s post-but (célébration 14 s comprise — l'échelle
+     réelle : 45-80 s). Bande graines 1-20 : 23 buts (elles donnaient 24 au
+     182 — le bruit connu, pas de calibrage). Clause 183 (mécanisme intrus
+     posé + walkF, sabotage double) ; chaînes ×43 étendues AVEC le grep
+     anti-doublon de la leçon 223 (3 faux positifs vérifiés = paires
+     d'appels, pas de littéral doublé).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

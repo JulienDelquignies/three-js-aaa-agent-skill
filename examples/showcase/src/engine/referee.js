@@ -565,7 +565,7 @@ function tempoWait(st, cfg, team) {
   return cfg.restartWait * (st.full && team >= 0 ? axeT(tacT(st, team).tempo, 1.6, 0.4) : 1);
 }
 
-export function canTake(st, takerId) {
+export function canTake(st, takerId, cfg) {
   if (!st.restart) return true;
   const p = st.players[takerId];
   if (st.restart.placed === false) return false;
@@ -581,6 +581,18 @@ export function canTake(st, takerId) {
     for (const q of st.players) {
       if (q.team === p.team || q._sub || q.expulse || q.keeper || q.down > 0) continue;
       if (Math.hypot(q.p[0] - st.restart.p[0], q.p[2] - st.restart.p[1]) < R) return false;
+    }
+    // LOI 8, LES MOITIÉS (lot 183, cfg.moities — filmé : 6-7 corps d'un bloc entier encore
+    // chez l'adversaire à CHAQUE prise d'engagement post-but ; canTake n'exigeait que le rond).
+    // L'arbitre attend que chaque équipe soit RENTRÉE (± tol) — les corps marchent déjà à leurs
+    // spots (kickoffSpots), il suffisait d'attendre. La patience borne l'attente au-delà de
+    // l'heure de reprise (le garde-fou anti-gel : un corps coincé ne suspend pas le match).
+    if (cfg?.moities && st.t < st.restart.at + (cfg.moities.patience ?? 9)) {
+      for (const q of st.players) {
+        if (q._sub || q.expulse || q.keeper || q.down > 0) continue;
+        const sg = st.pitch.ownGoal(q.team).sign;                  // sa moitié : le côté défendu
+        if (q.p[0] * sg < -(cfg.moities.tol ?? 1.5)) return false;
+      }
     }
   }
   st.restart = null;                                               // la remise est PRISE — le jeu reprend

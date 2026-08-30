@@ -320,9 +320,14 @@ sonde a re-tranché — l'attente est PIRE que le défaut (dilution aggravée, r
 l'opt-in documenté) ; le vrai déficit était l'ATTAQUE du centre : la POITRINE
 (182a, la fenêtre morte 1,15-1,55 fermée, kill × controlF hors servo) et
 l'ATTAQUE DU CENTRE (182b, le corps de boîte re-cible le rai à portée de pas,
-lecture × anticipF) — centres perdus 17 → 9. Dettes : le trou du HAUT (~2,2 m),
-le trafic de frappe (conversion boîte à instrumenter tir par tir), le rasant
-non-attitré.
+lecture × anticipF) — centres perdus 17 → 9. Dettes : ~~le trou du HAUT~~ et ~~le
+rasant non-attitré~~ REQUALIFIÉS au 183 (tracés un à un : la tête jouait le
+haut, l'attitré reprenait le rasant — faux négatifs de sonde, théâtre sain) ;
+le trafic de frappe (conversion boîte à instrumenter tir par tir) reste.
+L'ENGAGEMENT CÉRÉMONIEUX (183, note 224) : Loi 8 complète — le rond (160b) ET
+les moitiés (canTake attend, patience anti-gel) ; le retour trotté (le mené
+presse, le meneur au tempo bas flâne). Reste du cérémonial : l'arbitre au
+sifflet incarné, le ballon replacé au point par un corps (aujourd'hui posé).
 
 LE RETOUR ×6 (170-171, note 211) : le corps ouvert (pivot 75°→60°, demi-position
 × visionF), la tenue du gardien (0,38→3,23 s, l'éclair = un choix de contre), le

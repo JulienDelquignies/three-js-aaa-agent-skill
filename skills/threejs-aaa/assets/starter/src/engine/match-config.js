@@ -172,6 +172,13 @@ export const MATCH = {
   craie: { tire: 0.6, seuil: 0.42 },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
                           // large est tiré vers la ligne (fraction du chemin × axe largeur ×
                           // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
+  moities: { tol: 1.5, patience: 18 },
+  retourTrot: { loin: 12, trot: 1.7, presse: 1.15, flane: 0.85 },  // 183 : le retour d'engagement
+                          // se TROTTE quand on est loin ; le mené presse, le meneur au tempo bas
+                          // flâne (l'axe choisit, le moteur porte). Absente : la promenade d'hier.  // 183 : LOI 8, LES MOITIÉS — l'engagement ATTEND que
+                          // chaque équipe soit rentrée chez elle (± tol m) ; patience borne
+                          // l'attente au-delà de l'heure de reprise (anti-gel). Absente : la
+                          // reprise au milieu d'un bloc adverse d'hier (6-7 corps filmés).
   allonge: { max: 1.15, kill: 0.62, vMin: 4, h: 0.9, cap: 0.85 },  // 181 : LA JAMBE TENDUE — la
                           // passe qui croise son receveur ATTITRÉ à 0,85-1,15 m (entre le gate
                           // binaire et le pied réel) se TOUCHE : freinée ×kill(×controlF), LIBRE
