@@ -3015,7 +3015,7 @@ if (__bloc()) {
     const offres = [], soutiens = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, craie: false, contreTir: false, clearSigma: false, ...over });   // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-177 (la craie écarte les soutiens larges, l'écart se mangeait : 11,1 c. 10)
       let ep = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
