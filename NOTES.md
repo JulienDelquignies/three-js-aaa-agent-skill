@@ -6360,6 +6360,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (poitrine + boxCrash d'hier). Dettes tenues : le trou du HAUT (2,2 m,
      les perdus restants h ~1,6 à 0,8-1,2 m), le trafic de frappe (conversion
      boîte ~20-24 % — à instrumenter tir par tir), le rasant non-attitré.
+- 223: La leçon du SED AVEUGLE (sceau 182) : la chaîne d'épinglage commune
+     insérée par sed en FIN de littéral peut DOUBLER une clé posée plus haut
+     dans le même objet — la dernière gagne, et mon boxCrash-objet écrasait le
+     `boxCrash: false` pré-123 de LAB : la loi se réveillait dans le monde du
+     labo (vif 8 → 12, ratio démission 2,13 → 1,25, clause crevée). Le
+     diagnostic qui a payé : le JUMEAU DE COMMITS (worktree du pré-182 — mêmes
+     chiffres → la « fuite » n'était pas le moteur mais le banc) puis le DIFF
+     des cfg effectifs en JSON. La règle : après tout sed de chaînes, grep les
+     clés DOUBLÉES dans chaque littéral touché (`boxCrash.*boxCrash`) — et un
+     monde de labo qui gèle une loi ENTIÈRE (false) ne reçoit jamais la chaîne
+     qui la re-décrit en objet. Au passage : le juge checkMatch a appris la
+     borne balistique du CF direct (34 m) — un canal légitime que l'invariant
+     shotRange ne connaissait pas (attrapé quand 182 a fait naître une faute
+     lointaine tentée, graine 7). Sceau final : 440 ✓ / 0 ✗ en 838 s ; déployé
+     Rondo-DJioKpBz.js (poitrine ×9, jambe-tendue grepables au chunk servi).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
