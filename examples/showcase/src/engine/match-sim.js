@@ -1156,7 +1156,8 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   if (!shots.length && !denied && thirdVisits > 25) issues.push(`PERSONNE NE TIRE malgré ${thirdVisits} passages dans le dernier tiers — un rondo décoré`);
   for (const s of shots) {
     const okLob = st.full && cfg.lob && s.kind === 'lob' && s.range <= (cfg.lob.max ?? 38) + 0.6;   // le lob du gardien avancé (120) vit AU-DELÀ de la grise
-    if (!okLob && s.range > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
+    const okCF = st.full && cfg.cfDirect !== false && s.kind === 'coup-franc-direct' && s.range <= 34.6;   // le CF direct (97/148) a SA borne balistique (dMax 34 au 'direct' tactique) — la clause connaît la même loi que le tireur
+    if (!okLob && !okCF && s.range > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
     // la clause connaît LA MÊME loi que le déclencheur : à bout portant (< 9 m) on tire dans le trafic (0,25 m) — juger tous les tirs au couloir de loin re-créerait l'attaquant muet
     const need = (s.range ?? 99) < 9 ? 0.25 : cfg.shotClear - 0.05;
     if (s.clear != null && s.clear < need) issues.push(`tir à travers un mur (couloir ${s.clear} m < ${need})`);

@@ -253,7 +253,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return n;
     };
-    const vivant = trav(), brut = trav({ pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+    const vivant = trav({ poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 } }), brut = trav({ pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
     const brouillon = jumeau(10), cohesif = jumeau(90);
     ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 15 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : le brouillon teamwork 10 presse ${brouillon} éch. ≥ cohésif 90 ${cohesif} + 30 — l'indiscipline est un sur-pressing hors zone (jumeau, 6 × 300 s)`,
       vivant <= 8 && brut >= 15 && brouillon >= cohesif + 30);

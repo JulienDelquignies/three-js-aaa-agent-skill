@@ -42,6 +42,7 @@ import { menaceTir } from '../assets/starter/src/engine/menace.js';
 // de LABO — celles qui isolent UNE loi ancienne — épinglent ce monde des DEUX côtés).
 // C'est le flux d'avant les lots 105-111, gelé : les clauses y mesurent leur loi, pas le monde.
 const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
+  poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 },   // …182 épinglé (le flux des épisodes du labo bouge avec la poitrine/l'attaque du centre)
   chaloupe: false, troisieme: false,
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
@@ -3720,7 +3721,7 @@ if (__bloc()) {
     }
     return n;
   };
-  const sV = sorties({ allonge: false }), sE = sorties({ clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false });   // …et 181 épinglé des deux côtés (la jambe tendue re-datait le flux des sorties)
+  const sV = sorties({ allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 } }), sE = sorties({ clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 } });   // …et 181/182 épinglés des deux côtés (jambe tendue, poitrine, attaque du centre : le flux des sorties bouge avec eux)
   ok(`lot 174 — LE DÉGAGEMENT RESPIRE (sorties de balle : vivant ${sV} ≥ épinglé ${sE} + 3 sur 6 × 300 s — le σ du clear pressé × composureF fait naître touches, corners et sorties de but ; le clear exact d'hier n'en produisait presque pas)`,
     sV >= sE + 3);
 }
