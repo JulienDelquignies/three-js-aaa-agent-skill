@@ -268,7 +268,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let tempsFen = 0;
       for (const seed of [2, 5, 9]) {
         const st = makeMatch({ full: true, seed, squads: [eqL(n), []] });
-        const cfg = matchCfg({ shotRange: 20 });
+        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause mesure l'ANTICIPATION — elle isole ses re-dateurs 166-176 (80 c. 84 : la marge mangée)
         for (let i = 0; i < 300 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           if (st._press?.team === 0 && st._press.until > st.t) tempsFen++;
