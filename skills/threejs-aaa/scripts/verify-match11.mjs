@@ -3016,7 +3016,7 @@ if (__bloc()) {
     const offres = [], soutiens = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, ...over });   // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-177 (la craie écarte les soutiens larges, l'écart se mangeait : 11,1 c. 10)
+      const cfg = matchCfg({ shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, ...over });   // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée)
       let ep = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3797,7 +3797,7 @@ if (__bloc()) {
   // ailierInterieur, ils RENTRENT et les LATÉRAUX héritent de la largeur.
   const zPostes = (roles) => {
     const st = makeMatch({ full: true, seed: 3, roles });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ shotRange: 20, moities: false, retourTrot: false });   // la clause mesure l'HÉRITAGE — elle isole 183 (l'engagement attendu re-datait les possessions du poste)
     const z = {};
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
