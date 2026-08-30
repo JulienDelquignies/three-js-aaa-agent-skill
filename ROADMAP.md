@@ -262,6 +262,13 @@ Empreintes match 132+133 : 303626266e0d67c9 / 055acde62558ce48. Dettes : le seco
 poteau, le tri par TAILLE du marqueur aérien, le marquage du second ballon, la rémanence
 défaut si la bande évolue.
 
+LA CIBLE : FOOTBALL MANAGER (175, note 215). L'horloge de représentation est
+posée (chrono.affiche, ratio exposé, scène + fil en minutes de match). LE JALON
+DENSITÉ FM (majeur, conditions d'entrée : les gestes foot au point — le critère
+utilisateur) : re-calibrer les volumes par 90 min vers le réel (2-3 buts, ~10
+corners, ~25 fautes, ~40 touches) — aujourd'hui ~18 buts/90 équivalents ; toutes
+les bandes A/B et clauses de flux migreront au référentiel /90.
+
 LE DÉGAGEMENT RESPIRE (174, note 214) : le clear était exempté du bruit d'angle
 — σ × ampli 4 × composureF : corners 1→3/30 min (le taux réel), sorties ×3,
 touches +66 %. Le banc SHARDÉ (bancs.mjs : mur d'horloge ÷ cœurs). Reste du

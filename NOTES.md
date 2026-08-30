@@ -6220,6 +6220,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      garde __bloc() (BANC_SHARDS/BANC_SHARD round-robin, sans env : identique) +
      scripts/bancs.mjs — le runner parallèle (N shards + les 7 bancs, file de
      concurrence aux cœurs, agrégat TOTAL ✓/✗). Mur d'horloge ÷ ~4 attendu.
+- 215: Lot 175 — L'HORLOGE FM (chrono.affiche) + LA CIBLE ACTÉE. L'utilisateur
+     fixe la cible : FOOTBALL MANAGER. La clarification d'architecture : FM ne
+     simule PAS 90 min réelles (10-15 min d'horloge accélérée) — ce qui fait FM,
+     c'est les VOLUMES STATISTIQUES à l'échelle du vrai match (2-3 buts, ~10
+     corners, ~25 fautes/90). Notre écart n'est pas la durée mais la DENSITÉ
+     (~18 buts/90 équivalents aujourd'hui). Trois gestes : (1) l'horloge de
+     représentation MAINTENANT — chronoStep expose C.ratio = affiche 5400 /
+     (periodes × duree) ; la scène affiche « MT2 67:30 », l'additionnel en
+     minutes affichées, le fil du ticker date en minutes de match (13 sites
+     convertis, _ratioFM) ; purement additif, le moteur joue son format calibré ;
+     le 2×45 réel reste UNE CONFIG (duree: 2700 → ratio 1). (2) LE JALON DENSITÉ
+     FM consigné (ROADMAP) : re-calibrer buts/corners/fautes par 90 vers les
+     volumes FM — conditions d'entrée : les gestes foot au point (le critère de
+     l'utilisateur), le banc shardé (fait, 174) pour payer les re-mesures.
+     (3) Les clauses passent au référentiel /90 min au fil de l'eau. Empreintes
+     re-basées 66cf43eb08275f8a / ac8b3213cb3e376f (le re-datage vient du
+     clearSigma 174 — l'horloge n'écrit que C.ratio, lu par personne au moteur).
+     Clause 175 (ratio 15/1/6 aux trois formats).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

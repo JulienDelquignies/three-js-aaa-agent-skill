@@ -1220,9 +1220,12 @@ export class Rondo {
         else {
           const tR = Math.max(0, this.state.t - (C.periode - 1) * (ch.duree + (ch.pause ?? 6)));
           const tP = Math.min(ch.duree, tR);
-          const mm = Math.floor(tP / 60), ss = String(Math.floor(tP % 60)).padStart(2, '0');
-          // le TEMPS ADDITIONNEL se lit (lot 24) : « 3:00 +2 » — la montre de l'arbitre, pas un gel
-          chrono = ` · MT${C.periode} ${mm}:${ss}${tR > ch.duree ? ` +${Math.ceil(tR - ch.duree)}` : ''}`;
+          // L'HORLOGE FM (175) : les minutes de MATCH (ratio du chrono — 90 min représentées),
+          // « MT2 67:30 », l'additionnel en minutes affichées « 45:00 +2 »
+          const R = C.ratio ?? 1;
+          const tAff = ((C.periode - 1) * ch.duree + tP) * R;
+          const mm = Math.floor(tAff / 60), ss = String(Math.floor(tAff % 60)).padStart(2, '0');
+          chrono = ` · MT${C.periode} ${mm}:${ss}${tR > ch.duree ? ` +${Math.max(1, Math.round((tR - ch.duree) * R / 60))}` : ''}`;
         }
       }
       this._hud.innerHTML = this.matchMode

@@ -608,6 +608,10 @@ export function chronoStep(st, cfg) {
   if (st.fini) return;
   if (st.possession.team >= 0 && !st.restart && dt > 0) C.poss[st.possession.team] += dt;
   const duree = ch.duree ?? 180, pause = ch.pause ?? 6, periodes = ch.periodes ?? 2;
+  // L'HORLOGE DE MATCH (175, ch.affiche — la cible Football Manager : le match REPRÉSENTE
+  // 90 minutes, quel que soit le format simulé) : le ratio mappe le temps simulé vers le
+  // temps affiché (5400 s par défaut) — une loi d'AFFICHAGE, le moteur joue son format calibré.
+  C.ratio = (ch.affiche ?? 5400) / (periodes * duree);
   // LE TEMPS ADDITIONNEL (ch.additionnel !== false) : les arrêts de jeu de LA période
   // s'accumulent, l'arbitre en rend une fraction (×0,35, plafonnée à 12 % de la période) —
   // et l'annonce est un événement quand la période nominale expire. false : la montre truquée

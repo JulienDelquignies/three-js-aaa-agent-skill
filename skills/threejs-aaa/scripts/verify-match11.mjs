@@ -3724,5 +3724,23 @@ if (__bloc()) {
     sV >= sE + 3);
 }
 
+// ---- lot 175 : L'HORLOGE FM (chrono.affiche — le match REPRÉSENTE 90 minutes)
+if (__bloc()) {
+  // La cible Football Manager : quel que soit le format simulé, l'horloge et le fil parlent
+  // en minutes de match (ratio = affiche / (periodes × duree)). Une loi d'AFFICHAGE : le
+  // moteur joue son format calibré, C.ratio est exposé par chronoStep.
+  const ratioDe = (chrono) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, chrono });
+    for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
+    return st._chrono?.ratio ?? null;
+  };
+  const r180 = ratioDe({ periodes: 2, duree: 180, pause: 6 });
+  const rFM = ratioDe({ periodes: 2, duree: 2700, pause: 6 });
+  const rCustom = ratioDe({ periodes: 2, duree: 300, pause: 6, affiche: 3600 });
+  ok(`lot 175 — L'HORLOGE FM : le chrono expose son ratio de représentation (2×180 s → ×${r180} = 90 min affichées ; 2×2700 s réels → ×${rFM} = le temps vrai ; affiche 3600 custom → ×${rCustom})`,
+    r180 === 15 && rFM === 1 && rCustom === 6);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
