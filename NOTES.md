@@ -6501,6 +6501,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      jouée le descend). Les officiels restent sans pied : empreintes à
      re-confirmer au sceau. Dettes : le percuté Loi 9, le sifflet gestuel
      du central, le drapeau du CORNER pointé (le geste directionnel).
+- 229: Lot 188 — LA LECTURE À VITESSE VARIABLE (la couche 2 du JALON FM,
+     note 229 — la cible validée utilisateur : « FM en vitesse 1 et match
+     complet c'est bien 90 minutes »). Le principe FM exact : LA SIM NE
+     CHANGE PAS, LA LECTURE ACCÉLÈRE — N steps de dt 1/60 par frame rendue
+     (Rondo.js : this.vitesse ∈ [1;8], touches 1-4 → ×1 ×2 ×4 ×8,
+     ?vitesse=N au boot). Le moteur n'est PAS touché (aucun re-datage
+     possible — la sync 9 ✓ suffit de sceau). L'AVAL VISUEL vit au temps de
+     LECTURE (stepV = step × vitesse) : le LOD d'anim accumule stepV (les
+     jambes battent à la cadence du match), la régie/caméra suit à stepV,
+     les officiels aussi ; l'horloge FM affiche « MT1 9:53 · ×4 ». VÉRIFIÉ
+     au playmode : 600 frames à ×4 → t sim 40,0 s exactement (600 × 4 / 60),
+     le plan de régie propre. Le chemin du 90 min réel est ouvert : couche 1
+     (les densités du vrai foot à l'échelle 90 min — la re-fondation des
+     clauses de flux, LE gros morceau) et couche 3 (le mode temps forts via
+     menace.js) restent, conditionnées au feu vert utilisateur sur la
+     bascule. Volumétrie Rondo tenue à 1249 (6 fusions de commentaires).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

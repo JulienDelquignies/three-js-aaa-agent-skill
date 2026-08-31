@@ -49,11 +49,9 @@ export class Rondo {
   async _build() {
     const q = new URLSearchParams(location.search);
     this.free = q.has('orbit');
-    // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne
-    // 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
+    // LE MODE SE LIT AVANT TOUT LE RESTE (le bug d'ordre est documenté : matchMode lu à la ligne 106 et consommé à la 77 — la grille d'entraînement se dessinait sur tous les matchs)
     this.matchMode = q.has('match');
-    // LE 11C11 (?full) : terrain Loi 1, 10 + gardien par équipe, postes de formation — la même
-    // scène, le même moteur : une CONFIGURATION (la preuve que l'architecture scale à 22 corps)
+    // LE 11C11 (?full) : terrain Loi 1, 10 + gardien par équipe, postes de formation — la même scène, le même moteur : une CONFIGURATION (la preuve que l'architecture scale à 22 corps)
     this.fullMode = this.matchMode && q.has('full');
 
     // ---- the stadium: pitch centre at the origin so sim space IS world space.
@@ -132,8 +130,7 @@ export class Rondo {
 
     this.ball = ballMesh();
     this.scene.add(this.ball); this.disposables.push(this.ball);
-    // the key is masked to the pitch (that is what makes the bowl fall away into night), so anything
-    // standing ON the pitch has to be opted in or it goes unlit
+    // the key is masked to the pitch (that is what makes the bowl fall away into night), so anything standing ON the pitch has to be opted in or it goes unlit
     if (this.grid) this.night.light(this.grid.group);
     this.night.light(this.ball);
     if (this.night.baked) this._bakeCorps(this.ball);   // le ballon vivait des nappes lui aussi (l'objet le plus regardé)
@@ -166,6 +163,9 @@ export class Rondo {
     // like it. ?kit=1 puts the generated strip back (and hides hers, since the two would fight).
     // The cost is stated plainly below: with her own strip there is only one strip.
     this.kits = q.get('kit') === '1';
+    // LA LECTURE À VITESSE VARIABLE (188, couche 2 du jalon FM) : N steps sim par frame rendue — le moteur garde son dt 1/60 (aucun re-datage), seule la LECTURE accélère (touches 1-4 : ×1 ×2 ×4 ×8, ?vitesse=N au boot)
+    this.vitesse = Math.max(1, Math.min(8, Number(q.get('vitesse')) || 1));
+    window.addEventListener('keydown', (e) => { if (e.key >= '1' && e.key <= '4') this.vitesse = [1, 2, 4, 8][+e.key - 1]; });
     const SHANON = { url: 'shanon.glb', faces: '+Z', name: 'shanon', dequantize: true, matte: true, ...(this.kits ? { hide: /Shirt|Shorts|Socks/i } : {}) };
     const SOLDIER = { url: 'Soldier.glb', faces: '-Z', name: 'soldier' };
     const rigParam = q.get('rig');
@@ -175,11 +175,9 @@ export class Rondo {
     this.disposables.push(this.squad);
     if (!this.squad.check.ok) console.warn('checkSquad', this.squad.check.issues);
 
-    // Order matters: scale and place BEFORE constructing the controller (it snapshots
-    // position/yaw/groundY and measures hip height and foot floors from the live rig).
+    // Order matters: scale and place BEFORE constructing the controller (it snapshots position/yaw/groundY and measures hip height and foot floors from the live rig).
     for (const p of this.state.players) {
-      // one rig per TEAM rather than round-robin: the two sides must be told apart at a glance, and
-      // two different bodies do that even before the kit colours do
+      // one rig per TEAM rather than round-robin: the two sides must be told apart at a glance, and two different bodies do that even before the kit colours do
       const { model: model3d, groundY: groundY0, clips, rig } = this.squad.spawn(p.team);
       // la TAILLE de la persona (±4 %) — appliquée par-dessus la normalisation du squad, avec le
       // sol qui suit : c'est la première chose que l'œil lit pour distinguer deux corps
@@ -229,8 +227,7 @@ export class Rondo {
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer
-      // LES CILS NE SE VOIENT PAS À 20 M (lot 74) : 960 tri × 22 corps re-skinnés chaque frame
-      // pour un détail sub-pixel à la caméra de match. ?cils=1 les rend (gros plans, carrière).
+      // LES CILS NE SE VOIENT PAS À 20 M (lot 74) : 960 tri × 22 corps re-skinnés chaque frame pour un détail sub-pixel à la caméra de match. ?cils=1 les rend (gros plans, carrière).
       if (q.get('cils') !== '1') model3d.traverse((o) => { if (/eyelash/i.test(o.name)) o.visible = false; });
       // LES CORPS SOUS LA CUISSON (lot 75) : les nappes éteintes leur donnaient 1 600-4 300 cd —
       // ni le bain (calibré tribunes) ni les couches (cassées sous WebGPU) ne peuvent les servir.
@@ -862,11 +859,14 @@ export class Rondo {
       }
     }
     const step = Math.min(dt, 1 / 30);
+    const stepV = step * (this.vitesse ?? 1);   // le temps de LECTURE (l'aval visuel vit au rythme du match, pas de la frame)
     const before = this.state.events.length;
     const toBefore = this.state.turnovers;
-    if (this.matchMode) matchStep(this.state, step, this._mcfg);
-    else rondoStep(this.state, step);
-    this._since = this.state.turnovers !== toBefore ? 0 : (this._since ?? 0) + step;
+    for (let sv = 0; sv < (this.vitesse ?? 1); sv++) {
+      if (this.matchMode) matchStep(this.state, step, this._mcfg);
+      else rondoStep(this.state, step);
+    }
+    this._since = this.state.turnovers !== toBefore ? 0 : (this._since ?? 0) + stepV;
 
     // ---- react to what the game just did: a pass fires the correct-foot strike on the passer
     for (let i = before; i < this.state.events.length; i++) {
@@ -971,7 +971,7 @@ export class Rondo {
       const nearL = this._tier === 'low' ? 22 : 30, midL = this._tier === 'low' ? 40 : 55;
       const strideL = exemptLod || dCamL < nearL ? 1 : dCamL < midL ? 2 : 3;
       pl._lodPhase = (pl._lodPhase ?? s.id) + 1;
-      pl._lodAcc = (pl._lodAcc ?? 0) + step;
+      pl._lodAcc = (pl._lodAcc ?? 0) + stepV;
       if (strideL > 1 && (pl._lodPhase % strideL) !== 0) {
         pl.ctrl.pos.set(s.p[0], pl.groundY, s.p[2]);
         pl.model.position.copy(pl.ctrl.pos);
@@ -1156,7 +1156,7 @@ export class Rondo {
       this._applyTouchWarp(pl);
     }
 
-    if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state, step, top);
+    if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state, stepV, top);
 
     // ---- the ball, spun by its own angular velocity
     const b = this.state.ball;
@@ -1181,7 +1181,7 @@ export class Rondo {
     }
     this.ball.rotation.x += b.w[0] * step; this.ball.rotation.y += b.w[1] * step; this.ball.rotation.z += b.w[2] * step;
 
-    this._broadcast(step);
+    this._broadcast(stepV);
     this._t += step;
     if (this._trace.length < 4000 && Math.floor(this._t * 10) !== Math.floor((this._t - step) * 10)) {
       this._trace.push({
@@ -1229,7 +1229,7 @@ export class Rondo {
           const R = C.ratio ?? 1;
           const tAff = ((C.periode - 1) * ch.duree + tP) * R;
           const mm = Math.floor(tAff / 60), ss = String(Math.floor(tAff % 60)).padStart(2, '0');
-          chrono = ` · MT${C.periode} ${mm}:${ss}${tR > ch.duree ? ` +${Math.max(1, Math.round((tR - ch.duree) * R / 60))}` : ''}`;
+          chrono = ` · MT${C.periode} ${mm}:${ss}${tR > ch.duree ? ` +${Math.max(1, Math.round((tR - ch.duree) * R / 60))}` : ''}${this.vitesse > 1 ? ` · ×${this.vitesse}` : ''}`;
         }
       }
       this._hud.innerHTML = this.matchMode
