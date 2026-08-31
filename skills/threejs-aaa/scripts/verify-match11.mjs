@@ -981,12 +981,12 @@ if (__bloc()) {
     denyDos = st.deny?.['controle-dos'] ?? 0;
     return { ap: dosParTech['amorti-poursuite'], recDos, recN, denyDos };
   };
-  const vif70 = anglesDe({ yawSlew: false, serreRouge: false, dosFerme: false });               // la clause isole 139 et 192 (le marquage serré re-datait le théâtre des dos)
+  const vif70 = anglesDe({ yawSlew: false, serreRouge: false, dosFerme: false, lance: false, gkAuDevant: false, preneurCPA: false, loi16: false });               // la clause isole 139 et 189-193 (le marquage serré puis les remises à métier re-dataient le théâtre des dos)
   ok(`l'amorti-poursuite ne touche PLUS dans le dos (${vif70.ap} = 0 sur 240 s) et le refus est NOMMÉ (deny controle-dos ${vif70.denyDos} ≥ 1 — le ballon court, il n'obéit pas)`,
     vif70.ap === 0 && vif70.denyDos >= 1);
   ok(`le RECEVEUR SE PRÉSENTE (${vif70.recDos}/${vif70.recN} réceptions dos ≤ ${Math.max(1, Math.round(vif70.recN * 0.08))} — le corps s'ouvre au ballon qui arrive)`,
     vif70.recDos <= Math.max(1, Math.round(vif70.recN * 0.08)));
-  const sab70 = anglesDe({ priseCone: false, sePresente: false, yawSlew: false, serreRouge: false, dosFerme: false });
+  const sab70 = anglesDe({ priseCone: false, sePresente: false, yawSlew: false, serreRouge: false, dosFerme: false, lance: false, gkAuDevant: false, preneurCPA: false, loi16: false });
   ok(`sabotage « touche omnisciente + dos fossile » attrapé (cône coupé : ${sab70.ap + sab70.recDos} touches/réceptions dos ≥ ${vif70.ap + vif70.recDos + 4} — le monde d'hier, nommé)`,
     sab70.ap + sab70.recDos >= vif70.ap + vif70.recDos + 4);
 }
