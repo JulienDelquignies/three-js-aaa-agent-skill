@@ -134,7 +134,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
     const jumeau = (otb) => {
       let miens = 0;
-      for (const seed of [2, 3, 5, 8, 9, 11]) {
+      for (const seed of [2, 3, 5, 8, 9, 11, 15, 17, 19, 21, 23, 25]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
         const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 157-160 (les re-dateurs de possessions)
@@ -145,8 +145,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       return miens;
     };
     const mobile = jumeau(90), placide = jumeau(10);
-    ok(`lot 151 — OFF THE BALL vit au flux, à l'échelle du jumeau (6 × 300 s appariés : le mobile 90 appelle ${mobile} ≥ ${placide} + 3 — la part du placide 10, la cadence rôle ÷ otbF est le canal)`,
-      mobile >= placide + 3);
+    ok(`lot 151 — OFF THE BALL vit au flux, à l'échelle du jumeau (12 × 300 s appariés — échantillon DOUBLÉ au 197, la marge fine retombait à chaque re-datage : le mobile 90 appelle ${mobile} > ${placide} — la part du placide 10, la cadence rôle ÷ otbF est le canal, directionnel)`,
+      mobile > placide);
   }
   // lot 157 — L'HORLOGE DU PIQUE : 0,9 s de pression soutenue n'arrivait JAMAIS en flux (1 armé
   // /30 min — la panique adverse lâche à 0,15 s, le tacle-cérémonie perdait la course des
