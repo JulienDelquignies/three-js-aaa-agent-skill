@@ -375,7 +375,12 @@ function assignMatchJobs(st, cfg) {
         : (st.ball.v[0] * pitch.ownGoal(gk.team).sign > 1 && Math.hypot(st.ball.v[0], st.ball.v[2]) > 2 && Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]) < (cfg.gkAuDevant.rayon ?? 25)))) {
       const bV = Math.hypot(st.ball.v[0], st.ball.v[2]) || 1;
       const mR = Math.min(4.5, bV * (cfg.gkAuDevant.mene ?? 0.4));
-      gk.target = [st.ball.p[0] + (st.ball.v[0] / bV) * mR, 0, st.ball.p[2] + (st.ball.v[2] / bV) * mR];
+      const ownG = pitch.ownGoal(gk.team);
+      let txG = st.ball.p[0] + (st.ball.v[0] / bV) * mR;
+      // …la rencontre a une BORNE de profondeur (191b — l'invariant « le gardien erre » crevé à
+      // 14,2 m de médiane : la poursuite du rayon 25 l'emmenait trop haut) : au-delà, le champ joue
+      if (Math.abs(txG - ownG.x) > (cfg.gkAuDevant.plafond ?? 16)) txG = ownG.x + Math.sign(txG - ownG.x) * (cfg.gkAuDevant.plafond ?? 16);
+      gk.target = [txG, 0, st.ball.p[2] + (st.ball.v[2] / bV) * mR];
       continue;
     }
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
