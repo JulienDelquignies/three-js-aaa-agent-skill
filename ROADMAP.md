@@ -291,6 +291,32 @@ part de contres → corners à observer au fil du jalon densité FM.
 
 LA CIBLE : FOOTBALL MANAGER (175, note 215 — précisée par l'utilisateur : FM
 SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
+## LA LISTE v3 (retour utilisateur ×12, datée lot 189 — « une bonne base mais
+## encore très loin du foot ») — LE FEU VERT DENSITÉ FM EST SUSPENDU À CETTE LISTE.
+1. LES PASSES EN PROFONDEUR : ~~sondé au 189~~ — elles EXISTENT (7 réceptions
+   derrière la ligne/30 min, plus que le réel) mais n'ABOUTISSAIENT à rien
+   (1 tir/48) : le point 5 était la cause. Après 189 : 65 % reçues, tirs ×1,7.
+   RESTE à valider à l'œil (la lisibilité).
+2. LE GARDIEN BALLON AU PIED : « toujours buggé/catastrophique » (2e réitération
+   malgré 179 — filmer le porté gardien image par image).
+3. LES ARRÊTS DU GARDIEN : pas cohérents/réalistes « à tout niveau ».
+4. LES TACLES GLISSÉS : très rares — l'animation existe-t-elle, la vitesse
+   est-elle cohérente, y a-t-il plusieurs types ?
+5. ~~LA CONTRE-ATTAQUE qui recule~~ — TRAITÉ AU 189 (note 230 : enLance, 4
+   portes fermées à la mesure — contre-recule ÷2, tirs 15 → 25/4 graines).
+6. LES CPA : corner / coup franc / renvoi aux 6 m — placements défensifs ET
+   offensifs incohérents, choix du tireur aussi.
+7. LES CENTRES : les attaquants contrôlent et se RETOURNENT trop facilement
+   (question posée : centres trop précis ou défense qui ne marque pas ? —
+   suspecter la poitrine 182a trop propre ET le marquage au vol).
+8. LES AILIERS trop seuls (peut-être normal — à mesurer contre le réel).
+9. LES LONGS BALLONS manquent (peut-être la tactique — vérifier l'axe).
+10. LES GESTES TECHNIQUES : réalisés par les BONS joueurs ? (la note technique
+    doit choisir qui tente — vérifier le facteur).
+11. LES RÉCEPTIONS À PLUSIEURS MÈTRES : encore trop (malgré 181 — trop de
+    mauvaises passes, ou le receveur pas sur ses appuis).
+12. L'ENSEMBLE : bonne base, loin du foot — l'étalon reste le réel.
+
 L'horloge de représentation est posée (chrono.affiche, ratio, scène + fil en
 minutes de match) — un échafaudage : la destination est en TROIS couches.
 (1) LE JALON DENSITÉ (majeur ; condition d'entrée : les gestes foot au point,

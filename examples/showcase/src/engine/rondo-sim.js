@@ -3,7 +3,7 @@ import { predictPath } from './ball-predict.js';
 import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js';
-import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals } from './rondo.js';
+import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
 import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js';
@@ -31,7 +31,6 @@ const { movePlayers, separatePlayers, turnover } = rondoInternals;
 /** Un refus a une CAUSE NOMMÉE, et elle se compte. C'est le seul moyen de voir un étranglement :
  * quand le jeu s'effondre, le premier chiffre à lire est « qui dit non, et combien de fois ». */
 function deny(st, cause) { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; }
-
 /** THE GESTURE CLOCK — every actor, every phase. A follow-through does not stop because the ball has
  *  left or possession changed; only a named interruption cuts a swing short (runs outside the phase machine). */
 function stepGestures(st, dt, cfg) {
@@ -58,8 +57,7 @@ function stepGestures(st, dt, cfg) {
       // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
       if (p.act.payload?.stance) {
         const A = p.act.payload;
-        // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au
-        // début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
+        // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
         const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance);
         // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full) : l'ancre avance de v0·e^(−t/τ), plafond cumulé, strikeNow re-résout. ET ELLE PORTE LES DEUX BOUTS
         // (ride, lot 48) : l'offset commit→ancre d'un porteur lancé est quasi nul — l'ease multipliait le pas d'ancre par ~0 en début d'armé (falaise). Doc : match-
@@ -81,8 +79,7 @@ function stepGestures(st, dt, cfg) {
         A.from[1] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, A.from[1]));
         const t01 = Math.min(1, p.act.t / Math.max(1e-4, p.act.anticipation));
         const g = glide(A.from, A.fromYaw, anchor, t01);
-        // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : le chemin du glissement est poussé
-        // radialement hors du cercle du ballon (les stances finissent au-delà — talonnade 0,38 > 0,32).
+        // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : le chemin du glissement est poussé radialement hors du cercle du ballon (les stances finissent au-delà — talonnade 0,38 > 0,32).
         {
           const bx = g.p[0] - st.ball.p[0], bz = g.p[1] - st.ball.p[2];
           const bd = Math.hypot(bx, bz), AVOID = 0.32;
@@ -110,8 +107,7 @@ function stepGestures(st, dt, cfg) {
       st.pressure = press.length ? st.pressure + dt : 0;
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     }
-    // l'accompagnement possédé (râteau qui tourne, semelle qui tient) écrit corps ET ballon ICI —
-    // movePlayers se tait (ownsBody), la branche busy du pas de jeu aussi : une autorité.
+    // l'accompagnement possédé (râteau qui tourne, semelle qui tient) écrit corps ET ballon ICI — movePlayers se tait (ownsBody), la branche busy du pas de jeu aussi : une autorité.
     if ((following(p) || p.act?.payload?.skill === 'plongeon') && p.act?.payload?.kind === 'skill') skillFollowStep(st, p, dt, cfg);
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
@@ -219,8 +215,7 @@ function standTackleNow(st, q, cfg) {
     height: +st.ball.p[1].toFixed(2), speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
   });
   const victim = st.players[victimId];
-  // …et un geste TECHNIQUE se fait fermer à n'importe quel instant (la semelle tenue, le raclage
-  // du râteau) — pas seulement l'armé : sa fenêtre de duel est ouverte du début à la fin
+  // …et un geste TECHNIQUE se fait fermer à n'importe quel instant (la semelle tenue, le raclage du râteau) — pas seulement l'armé : sa fenêtre de duel est ouverte du début à la fin
   if (victim?.act && (winding(victim) || victim.act.payload?.kind === 'skill')) abortGesture(victim, 'fermé pendant l’armé', { log: st.gestures });
   // LE TACLE QUI DÉGAGE (166, duel.tacleDegage) : la prise n'est propre qu'à la garde
   if (tacleDegage(st, q, cfg)) return;
@@ -263,8 +258,7 @@ function receive(st, id, cfg = RONDO) {
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
     p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — plan ET cap (le hint survivant pilotait vers l'ancre d'un autre monde)
-    // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH (les gardiens n'existent pas au
-    // rondo) ; le tir DANS LE CORPS à hauteur de poitrine : le buste ENCAISSE (lot 93).
+    // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH (les gardiens n'existent pas au rondo) ; le tir DANS LE CORPS à hauteur de poitrine : le buste ENCAISSE (lot 93).
     if (p.keeper) {
       if (st.full && cfg.parades !== false && busteBlock(st, p, cfg)) return;
       st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92], dW(st, cfg, 0.92));
@@ -382,8 +376,7 @@ function receive(st, id, cfg = RONDO) {
         t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: 'any', surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
     }
   } else {
-    // LE CÔNE VAUT AUSSI POUR L'ADVERSAIRE (lot 71, contrat zéro-contact-fantôme) : une
-    // interception/récupération est une touche de PIED — dos = le ballon file, le vol continue
+    // LE CÔNE VAUT AUSSI POUR L'ADVERSAIRE (lot 71, contrat zéro-contact-fantôme) : une interception/récupération est une touche de PIED — dos = le ballon file, le vol continue
     if (st.full && cfg.priseCone !== false && !dansCone(p.yaw, p.p[0], p.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100)) { deny(st, 'controle-dos'); return; }
     // LA CAUSE DIT LE GESTE : une interception prend un ballon en vol, un tacle prend le ballon d'un
     // porteur (duel debout ou glissade — la clause 10 de checkRondo exige l'événement physique
@@ -509,8 +502,7 @@ function trySlide(st, cfg) {
   }
   p.slideCd = st.t + cfg.slideCooldown;                        // gagné ou perdu : pas deux plongeons de suite
   st._slideT[p.team] = st.t;
-  // le temps au sol n'est plus une constante d'horloger (mesuré : 1,200 s pile sur chaque tacle,
-  // référence réelle 0,5-1 s) — variance seedée ±10 % autour de slideRecovery
+  // le temps au sol n'est plus une constante d'horloger (mesuré : 1,200 s pile sur chaque tacle, référence réelle 0,5-1 s) — variance seedée ±10 % autour de slideRecovery
   p.down = cfg.slideRecovery * (0.9 + 0.2 * (st.rnd ? st.rnd() : 0.5));  // he is on the ground either way
   // LE MATCH JOUE LE CONTACT (lot 51) : le pied arrive dans ~0,1-0,4 s, la géométrie re-jugée
   // au sommet de trySlide — le réduit garde l'instantané d'hier, au bit près (doctrine st.full).
@@ -559,8 +551,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
   slideResolve(st, cfg);               // le contact du glissé sur porteur (lot 51) — duel.js
   resolveSlideL(st, cfg);              // …et sur ballon libre (aucun _slideL hors match)
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
-  // les contraintes du monde se projettent APRÈS toutes les autorités (locomotion PUIS glissement
-  // d'armé) — projetées avant, le dernier écrivain les défaisait (voir separatePlayers)
+  // les contraintes du monde se projettent APRÈS toutes les autorités (locomotion PUIS glissement d'armé) — projetées avant, le dernier écrivain les défaisait (voir separatePlayers)
   separatePlayers(st, cfg);
   // LA MESURE DU CONTRÔLE ARRIVE QUAND LE BALLON ARRIVE. Un contrôle continu n'a pas de résultat à
   // l'instant du contact ; l'écrire là reviendrait à noter l'intention. On remplit l'événement quand
@@ -598,8 +589,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (busy(c)) {
       st.hold += dt;
       if (c.act.fired) {
-        // un geste ownsBody (râteau, semelle) écrit son ballon dans skillFollowStep — une autorité ;
-        // la feinte, elle, garde le porté au pied ordinaire pendant sa rétraction
+        // un geste ownsBody (râteau, semelle) écrit son ballon dans skillFollowStep — une autorité ; la feinte, elle, garde le porté au pied ordinaire pendant sa rétraction
         if (c.act.payload?.ownsBody) { /* stepGestures possède corps et ballon */ }
         else if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt);
         else st.ball.integrate(dt);
@@ -607,8 +597,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       return st;
     }
 
-    // LE TENU DU GARDIEN (hook heldBall — match, lot 91) : après la prise, le ballon vit aux
-    // GANTS tant que le corps se relève — ni conduite, ni duel sur un ballon tenu (Loi 12).
+    // LE TENU DU GARDIEN (hook heldBall — match, lot 91) : après la prise, le ballon vit aux GANTS tant que le corps se relève — ni conduite, ni duel sur un ballon tenu (Loi 12).
     if (cfg.heldBall?.(st, c, dt, cfg)) { st.hold += dt; return st; }
 
     // the carrier really dribbles: touches, the ball free in between (dribble.js)
@@ -667,8 +656,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         st.ball.release('contesté');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }  // il tente de l'emmener hors du duel
       } else if (intentFresh || settling) {   // porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas
-        // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du
-        // ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
+        // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
         if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
         else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
         else { deny(st, 'porte-dos'); st.ball.release('porte-dos'); }   // l'orbite durable : le ballon vit, le corps se retourne
@@ -780,8 +768,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       chargeStep(st, c, dt, cfg);
       if (st.phase !== 'carry') return st;
     }
-    // …et L'ACCROCHAGE DU BATTU (lot 97, cfg.accroche && loi12 — duel.js : LA source de fautes
-    // du vrai football, le dépassé qui retient ; modulations tactique/rôle passées par le hook)
+    // …et L'ACCROCHAGE DU BATTU (lot 97, cfg.accroche && loi12 — duel.js : LA source de fautes du vrai football, le dépassé qui retient ; modulations tactique/rôle passées par le hook)
     if (st.full && cfg.accroche !== false && cfg.loi12 && !st._faute) cfg.accrocheMod ? cfg.accrocheMod(st, c, cfg) : accrocheStep(st, c, cfg);
     // …et le TACLE GLISSÉ SUR PORTEUR (cfg.slideTackle && st.full — lot 33) : le pari du
     // dernier recours. Le glissé sur ballon LIBRE existait (« un ballon qui traîne ») ; sur
@@ -791,8 +778,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       slideTackleStep(st, c, cfg);
       if (st.phase !== 'carry') return st;
     }
-    // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 %
-    // of passes; the ball is not in front of him and the leg has nothing to hit.
+    // release — but only off a ball the foot can actually reach. Striking a ball 2.8 m away was 17 % of passes; the ball is not in front of him and the leg has nothing to hit.
     const reachNow = d2(c.p, st.ball.p) <= cfg.strikeReach;
     // …ET LA GÂCHETTE DU BUT NE DÉPEND PAS DU PIED (11c11) : en course poussée (carrySurge), le
     // ballon vit à 1,2-1,4 m DEVANT — reachNow n'est vrai qu'à l'INSTANT de la touche, et la
@@ -839,8 +825,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     }
     const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
     const calm = foeBody > cfg.calmFoe;
-    // …et beginPass lit CE holdMin-là (la porte 'timing') : au calme la fenêtre s'étire à 0,8-1,0 s,
-    // pressé elle retombe au holdMin d'origine — fixer puis donner.
+    // …et beginPass lit CE holdMin-là (la porte 'timing') : au calme la fenêtre s'étire à 0,8-1,0 s, pressé elle retombe au holdMin d'origine — fixer puis donner.
     st._holdMin = calm ? Math.min(1.0, st._calmHold) : cfg.holdMin;
     // ON NE PASSE PAS UN BALLON QU'ON EST ENCORE EN TRAIN DE POSER : pas d'engagement avant la fin
     // de la fenêtre du contrôle + settleExtra (70 % des contrôles étaient refrappés avant la fin du
@@ -928,7 +913,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // l'évasion travailler ; l'urgence ne prend la main que si le duel s'installe (pressure).
         if (c.intent) c.intent = null;
         deny(st, 'contesté');
-        if (st.pressure > 0.15 * (c.skill?.decF ?? 1)) {   // …LES DÉCISIONS sont une note (151) : le bon garde la tête un instant de plus, le mauvais panique tôt
+        if (st.pressure > 0.15 * (c.skill?.decF ?? 1) && !enLance(st, c, cfg, null)) {   // …LES DÉCISIONS sont une note (151) ; et LE LANCÉ ne panique pas (189) : le chasseur est DERRIÈRE, on court
           const choice = choosePass(st, cfg);
           if (choice) beginPass(st, choice, cfg, { forceUrgent: true });
         }
@@ -972,7 +957,17 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // par la loi du coureur, les intentions qui échouent à s'engager occupaient le porteur
         // TTL plein — tirs 18 → 10 sur 10 graines mesurés ; on arrête de chercher le coureur
         // quand la course est finie, c'est tout)
-        if (!c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(bar, cfg.fixe?.barre ?? 1.2) : bar) && (heldEnough || runnerCall || engagementCall || jeteCall)) || st.hold >= cfg.holdMax)) {
+        // LE LANCÉ VA AU BUT (189, cfg.lance && st.full — retour utilisateur ×12, point 5 : le
+        // contre gâché par la passe arrière ; mesuré : 48 through / 30 min, 1 SEUL tir derrière).
+        // Derrière la ligne, l'espace devant, le but à portée de course : on ne REDONNE pas — la
+        // barre s'envole (× composureF : le sang-froid tient le cap, le paniqué redonne tôt) SAUF
+        // pour servir un coéquipier PLUS lancé encore (le 2c1 du contre reste le vrai foot).
+        const lanceNow = enLance(st, c, cfg, choice);
+        const barL = lanceNow ? Math.max(bar, (cfg.lance.barre ?? 6) * (c.skill?.composureF ?? 1)) : bar;
+        // …et l'ADOPTION arrière est MORTE tant qu'on est lancé (189 — le veto d'exécution seul churnait : 1 801 déchirures/4 graines, ré-adoptée chaque frame)
+        const reculeL = lanceNow && choice && st.players[choice.to.id]
+          && (st.players[choice.to.id].p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) < -2;
+        if (!reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;
@@ -984,6 +979,12 @@ export function rondoStep(st, dt, cfg = RONDO) {
         if (!c.intent && maybeSemelle(st, c, cfg, calm, foeBody)) return st;
       }
       if (c.intent) {
+        // …ET LE LANCÉ DÉCHIRE L'INTENTION ARRIÈRE (189) : la passe adoptée AVANT le contre s'exécutait PENDANT — le vrai joueur change d'avis, la conduite prime (l'adoption est bloquée en amont : zéro churn)
+        const recI = st.players[c.intent.choice.to.id];
+        if (recI && enLance(st, c, cfg, null)) {
+          const sgI = Math.sign(st.pitch.attackGoal(c.team).x || 1);
+          if ((recI.p[0] - c.p[0]) * sgI < -2) { c.intent = null; deny(st, 'contre-recule'); return st; }
+        }
         // l'intention vise le receveur VIVANT : la mène se rafraîchit sur sa course réelle — c'est le même receveur, pas une re-décision (strikeNow re-résout de toute façon au contact)
         const rec = st.players[c.intent.choice.to.id];
         // LE SERVICE DU COUREUR EST UNE URGENCE DE TIMING (lot 36) : les portes (technique 932 /

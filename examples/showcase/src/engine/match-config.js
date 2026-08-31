@@ -183,6 +183,10 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  lance: { porte: 45, surnombre: 3, barre: 6, malus: 6 },  // 189 : LE LANCÉ VA AU BUT — derrière la ligne
+                          // avec l'espace, la barre de passe s'envole (× composureF) sauf pour
+                          // servir un coéquipier PLUS lancé (le 2c1). Absente : le contre gâché
+                          // par la passe arrière d'hier (1 tir sur 48 through mesuré).
   moities: { tol: 1.5, patience: 18 },
   retourTrot: { loin: 12, trot: 1.7, presse: 1.15, flane: 0.85 },  // 183 : le retour d'engagement
                           // se TROTTE quand on est loin ; le mené presse, le meneur au tempo bas

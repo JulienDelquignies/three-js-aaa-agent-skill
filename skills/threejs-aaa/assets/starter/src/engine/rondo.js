@@ -78,6 +78,21 @@ export function strikingFoot(yaw, from, to) {
  * an open lane, a receiver who is not under pressure, a sane distance, and a change of angle
  * that drags the press out of shape.
  */
+/** LE LANCÉ (lot 189, cfg.lance && st.full — retour ×12, point 5 : « le joueur parti seul en
+ *  contre passe en arrière ») : derrière la ligne (aucun adversaire de champ goal-side dans le
+ *  couloir), but à portée de course — on NE REDONNE PAS (barre × composureF), on ne panique
+ *  pas au chasseur DERRIÈRE, holdMax ne force rien : le lancé conduit et finit. L'exception du
+ *  vrai foot : servir un coéquipier PLUS lancé encore (le 2c1) garde la porte ouverte. */
+export function enLance(st, c, cfg, choice) {
+  if (!st.full || !cfg.lance) return false;
+  const g = st.pitch.attackGoal(c.team), sg = Math.sign(g.x || 1);
+  if (Math.hypot(g.x - c.p[0], c.p[2]) >= (cfg.lance.porte ?? 45)) return false;
+  if (choice && st.players[choice.to.id] && st.players[choice.to.id].p[0] * sg > c.p[0] * sg + 3) return false;
+  let gs = 0;
+  for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0 && q.p[0] * sg > c.p[0] * sg) gs++;
+  return gs <= (cfg.lance.surnombre ?? 3);                         // le CONTRE : 3 corps ou moins entre lui et le but — on joue VERS L'AVANT
+}
+
 export function choosePass(st, cfg = RONDO) {
   const c = st.players[st.possession.carrier];
   if (!c) return null;
@@ -93,6 +108,10 @@ export function choosePass(st, cfg = RONDO) {
   // PORTÉE de l'œil est à la note (× visionF — le myope garde un angle mort plus long ; 1 à 50).
   const _dvR = st.full && cfg.departVu ? (cfg.departVu.rayon ?? 1.8) * (c.skill?.visionF ?? 1) : 0;
   const _dvFoes = _dvR ? foesL.filter((q) => !q.keeper && q.down <= 0 && d2(q.p, origin) < _dvR) : null;
+  // LE CONTRE NE RECULE PAS (189) : le porteur en surnombre (enLance) paie CHER toute passe
+  // arrière — le terme au score, chirurgical (les latérales/avant restent jouables)
+  const _lanceC = enLance(st, c, cfg, null);
+  const _gSL = Math.sign(st.pitch?.attackGoal?.(c.team)?.x || 1);
   // LA LOI 11 EST DANS LE CERVEAU AVANT D'ÊTRE DANS LE SIFFLET (cfg.offside — 11c11 seulement) :
   // on ne SERT pas un coéquipier en position de hors-jeu. La position se juge MAINTENANT ; la
   // photo légale, elle, se prend au DÉPART du ballon (strikeNow) — entre les deux vit l'armé,
@@ -361,6 +380,7 @@ export function choosePass(st, cfg = RONDO) {
       - (m.id === st.lastPasser ? 2.6 : 0)                  // don't ping-pong
       - (style === 'lofted' && !bascule ? 2.2 : 0)          // ground ball whenever possible — le lofted EST la bascule
       - (overrun < 3 ? (3 - overrun) * 0.9 : 0)             // ne joue pas VERS la sortie toute proche
+      - (_lanceC && (m.p[0] - c.p[0]) * _gSL < -2 ? (cfg.lance.malus ?? 6) : 0)   // le contre ne recule pas (189)
       + (bascule ? (cfg.renversement.bonus ?? 1.5) + axe(_sty, 0.5, -0.5) : 0)   // sortir de l'étau — la possession y tient
       + (servi ? _appelEff - (cfg.appelBonus ?? 0) : 0)     // le delta du style sur le service (le terme de base vit plus bas)
       // LE MATCH A UN SENS DE JEU (cfg.passBias, match-sim) : le rondo conserve, une équipe

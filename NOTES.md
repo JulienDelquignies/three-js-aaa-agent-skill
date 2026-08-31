@@ -6517,6 +6517,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      clauses de flux, LE gros morceau) et couche 3 (le mode temps forts via
      menace.js) restent, conditionnées au feu vert utilisateur sur la
      bascule. Volumétrie Rondo tenue à 1249 (6 fusions de commentaires).
+- 230: Lot 189 — LE LANCÉ VA AU BUT (LA LISTE v3 consignée au ROADMAP — le
+     feu vert densité FM suspendu ; points 1 + 5 traités ensemble : c'était
+     LE MÊME bug). L'INSTRUCTION D'ABORD, en cascade de sondes : les through
+     EXISTENT (48/30 min, 10 % des passes — 3 sondes successives, deux
+     FAUSSES par l'erreur du 181 re-commise : owner oscille pendant la
+     conduite, et la ligne recule avec le repli — TOUJOURS mesurer par
+     événements et à l'instant du départ) ; 16 leads visent DERRIÈRE la
+     ligne, 7 y sont reçus/30 min (PLUS que le réel !)… mais 1 SEUL tir : le
+     lancé REDONNAIT. Et 6/58 passes arrière partaient d'un porteur en
+     CONTRE (≤ 3 défenseurs goal-side, but < 45 m) — 1/100 s, le crime
+     visible. LA LOI (rondo.enLance — exporté, cfg.lance { porte 45,
+     surnombre 3, barre 6, malus 6 }) : le porteur en surnombre NE RECULE
+     PAS — quatre portes, dont TROIS ont dû être fermées par la mesure
+     (chaque re-mesure identique au bit révélait la porte suivante) :
+     (1) la barre d'adoption × composureF ; (2) le malus au score
+     (choosePass) ; (3) le CHURN attrapé — l'intention pré-contre déchirée
+     PLUS l'adoption arrière bloquée (1 801 déchirures/4 graines → 0) ;
+     (4) la panique du chasseur-derrière calmée (la voie chaude) + holdMax
+     dispensé. L'exception du vrai foot : servir un coéquipier PLUS lancé
+     (+3 m) reste ouvert (le 2c1). APRÈS : contre-recule 16 → 7/4 graines,
+     tirs 15 → 25, through mieux reçus (54 → 65 %), volés 16 → 9, bande 18
+     buts/20 × 300 s ✓. Clause 189 (directionnel ×2, Poisson respecté).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
