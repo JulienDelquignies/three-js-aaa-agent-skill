@@ -992,3 +992,37 @@ function assistantsStep(st, dt, cfg) {
     a.speed = sp;
   }
 }
+
+/** L'ÉLECTION DU PRENEUR DE REMISE (lot 193, cfg.preneurCPA — déportée du match) : la sortie
+ *  de but au GARDIEN (attendue s'il est au sol — r.taker = -2), le corner et le CF OFFENSIF au
+ *  SPÉCIALISTE (passSigma le plus fin, élu UNE fois — r._elu), la touche au plus proche ; le
+ *  preneur est STICKY (re-choisi s'il tombe). Sans la clé : le plus-proche d'hier au bit. */
+export function elireTaker(st, r, cfg, d2) {
+    // …ET LE PRENEUR A UN MÉTIER (193, cfg.preneurCPA — liste v3 point 6 : sondé, le renvoi aux
+  // 6 m JAMAIS pris par le gardien, le corner par le plus proche) : la SORTIE DE BUT est au
+  // GARDIEN (~85 % du réel) ; le corner et le CF OFFENSIF vont au SPÉCIALISTE — le meilleur
+  // passing de l'équipe (passSigma le plus fin : le tireur attitré, stable par construction,
+  // qui TRAVERSE le terrain pour son corner comme au vrai). La touche reste au plus proche.
+  let taker = st.players[r.taker ?? -1] ?? null;
+  const gkOk = st.full && cfg.preneurCPA && r.type === 'sortie-de-but';
+  const specOk = st.full && cfg.preneurCPA && !r._elu && (r.type === 'corner' || (r.type === 'coup-franc'
+    && Math.hypot(st.pitch.attackGoal(r.team).x - r.p[0], r.p[1]) < (cfg.preneurCPA.zone ?? 48)));
+  if (specOk || !taker || taker.down > 0 || taker.team !== r.team || (taker.keeper && !gkOk) || (gkOk && !taker.keeper)) {
+    if (gkOk) {
+      const gkT = st.players.find((p) => p.team === r.team && p.keeper && !p.expulse) ?? null;
+      if (gkT && gkT.down > 0) { r.taker = -2; taker = null; }   // le renvoi ATTEND le gardien relevé (il est souvent au sol après l'arrêt — le fallback champ devenait sticky à jamais)
+      else taker = gkT;
+    }
+    if (!gkOk && specOk) {                                       // le SPÉCIALISTE s'élit UNE fois (r._elu — le sticky du plus proche le masquait)
+      r._elu = true;
+      taker = st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0 && !p.expulse && p.skill)
+        .sort((a, b) => (a.skill.passSigma ?? 9) - (b.skill.passSigma ?? 9))[0] ?? taker;
+    }
+    if (r.taker !== -2) {                                        // …l'attente du gardien relevé ne se fait pas écraser par le fallback (193)
+      taker ??= st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0)
+        .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0] ?? null;
+      r.taker = taker ? taker.id : -1;
+    } else if (taker) r.taker = taker.id;
+  }
+  return taker;
+}

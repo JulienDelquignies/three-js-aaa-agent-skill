@@ -11,7 +11,7 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde, ancresCraie } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep } from './referee.js';
+import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js';
@@ -33,8 +33,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   st.full = pitch.dims.length > 60;
   // le FLUX AUXILIAIRE (lot 97, contrat rng.js : un sous-seed par sous-système) : l'accrochage tire sur st.rnd2 — consommer st.rnd décalait tout le mix aval au bit (mesuré)
   { let s2 = (seed * 7919 + 13) >>> 0; st.rnd2 = () => ((s2 = (s2 * 1664525 + 1013904223) >>> 0) / 4294967296); }
-  // LA TACTIQUE PAR ÉQUIPE (tactics.js) : absente = équilibre, l'identité au bit.
-  st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];
+  st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];   // LA TACTIQUE PAR ÉQUIPE (tactics.js) : absente = équilibre, l'identité au bit.
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
   for (const team of [0, 1]) { st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; }); }
   // LES RÔLES PAR POSTE (roles.js) : APRÈS l'assignation des postes ; PRESET < EXPLICITE (lot 20).
@@ -166,15 +165,11 @@ function assignMatchJobs(st, cfg) {
       if (st._celeb && st.t >= st._celeb.until) st._celeb = null;
       if (st._celeb && p.id === st._celeb.by) { p.job = 'walk'; p.target = [st._celeb.corner[0], 0, st._celeb.corner[1]]; continue; }
       if (st._celeb && st._celeb.avec.includes(p.id)) { const bC = st.players[st._celeb.by]; p.job = 'walk'; p.target = [bC.p[0], 0, bC.p[2]]; continue; }
-      // LOI 16, LE CORPS (193, cfg.loi16 — le patron du rond 160b) : l'adverse du RENVOI sort de la surface par le bord le plus court — sans lui, canTake ne la voyait jamais vide.
-      if (st.full && cfg.loi16 && r.type === 'sortie-de-but' && p.team !== r.team && !p.keeper) {
-        const sg16 = Math.sign(r.p[0] || 1);
-        if (pitch.inBox(p.p[0], p.p[2], sg16)) {
-          const bordX = sg16 * (pitch.hx - pitch.dims.box.depth - 1.2);
-          const bordZ = Math.sign(p.p[2] || 1) * (pitch.dims.box.width / 2 + 1.2);
-          p.job = 'walk'; p.target = Math.abs(p.p[0] - bordX) < Math.abs(p.p[2] - bordZ) ? [bordX, 0, p.p[2]] : [p.p[0], 0, bordZ];
-          continue;
-        }
+      // LOI 16, LE CORPS (193, cfg.loi16 — patron 160b) : l'adverse du RENVOI sort par le bord le plus court — sans lui, canTake ne voyait jamais la surface vide.
+      if (st.full && cfg.loi16 && r.type === 'sortie-de-but' && p.team !== r.team && !p.keeper && pitch.inBox(p.p[0], p.p[2], Math.sign(r.p[0] || 1))) {
+        const sg16 = Math.sign(r.p[0] || 1), bordX = sg16 * (pitch.hx - pitch.dims.box.depth - 1.2), bordZ = Math.sign(p.p[2] || 1) * (pitch.dims.box.width / 2 + 1.2);
+        p.job = 'walk'; p.target = Math.abs(p.p[0] - bordX) < Math.abs(p.p[2] - bordZ) ? [bordX, 0, p.p[2]] : [p.p[0], 0, bordZ];
+        continue;
       }
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
@@ -264,33 +259,8 @@ function assignMatchJobs(st, cfg) {
         p.target = d < mur ? [rp[0] + (dx / (d || 1)) * mur, 0, rp[1] + (dz / (d || 1)) * mur] : [p.p[0], 0, p.p[2]];
       }
     }
-    // LE PRENEUR EST STICKY (re-choisi s'il tombe) : il CHERCHE le ballon où il meurt, le PORTE au point (ballFetch), puis le joue — l'ancien « plus proche du point » re-triait à chaque image.
-    // …ET LE PRENEUR A UN MÉTIER (193, cfg.preneurCPA — liste v3 point 6 : sondé, le renvoi aux
-    // 6 m JAMAIS pris par le gardien, le corner par le plus proche) : la SORTIE DE BUT est au
-    // GARDIEN (~85 % du réel) ; le corner et le CF OFFENSIF vont au SPÉCIALISTE — le meilleur
-    // passing de l'équipe (passSigma le plus fin : le tireur attitré, stable par construction,
-    // qui TRAVERSE le terrain pour son corner comme au vrai). La touche reste au plus proche.
-    let taker = st.players[r.taker ?? -1] ?? null;
-    const gkOk = st.full && cfg.preneurCPA && r.type === 'sortie-de-but';
-    const specOk = st.full && cfg.preneurCPA && !r._elu && (r.type === 'corner' || (r.type === 'coup-franc'
-      && Math.hypot(pitch.attackGoal(r.team).x - r.p[0], r.p[1]) < (cfg.preneurCPA.zone ?? 48)));
-    if (specOk || !taker || taker.down > 0 || taker.team !== r.team || (taker.keeper && !gkOk) || (gkOk && !taker.keeper)) {
-      if (gkOk) {
-        const gkT = st.players.find((p) => p.team === r.team && p.keeper && !p.expulse) ?? null;
-        if (gkT && gkT.down > 0) { r.taker = -2; taker = null; }   // le renvoi ATTEND le gardien relevé (il est souvent au sol après l'arrêt — le fallback champ devenait sticky à jamais)
-        else taker = gkT;
-      }
-      if (!gkOk && specOk) {                                       // le SPÉCIALISTE s'élit UNE fois (r._elu — le sticky du plus proche le masquait)
-        r._elu = true;
-        taker = st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0 && !p.expulse && p.skill)
-          .sort((a, b) => (a.skill.passSigma ?? 9) - (b.skill.passSigma ?? 9))[0] ?? taker;
-      }
-      if (r.taker !== -2) {                                        // …l'attente du gardien relevé ne se fait pas écraser par le fallback (193)
-        taker ??= st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0)
-          .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0] ?? null;
-        r.taker = taker ? taker.id : -1;
-      } else if (taker) r.taker = taker.id;
-    }
+    // LE PRENEUR EST STICKY et A UN MÉTIER (193, referee.elireTaker — gardien au renvoi, spécialiste au corner/CF offensif, ayant droit)
+    let taker = elireTaker(st, r, cfg, d2);
     if (taker) {
       taker.job = 'receive';
       // il vise le BALLON (la prise au rayon du ballon réel) ; le point de remise seulement pendant qu'il PORTE
@@ -408,8 +378,7 @@ function assignMatchJobs(st, cfg) {
       const mR = Math.min(4.5, bV * (cfg.gkAuDevant.mene ?? 0.4));
       const ownG = pitch.ownGoal(gk.team);
       let txG = st.ball.p[0] + (st.ball.v[0] / bV) * mR;
-      // …la rencontre a une BORNE de profondeur (191b — l'invariant « le gardien erre » crevé à
-      // 14,2 m de médiane : la poursuite du rayon 25 l'emmenait trop haut) : au-delà, le champ joue
+      // …la rencontre a une BORNE de profondeur (191b — l'invariant « le gardien erre » crevé à 14,2 m de médiane : la poursuite du rayon 25 l'emmenait trop haut) : au-delà, le champ joue
       if (Math.abs(txG - ownG.x) > (cfg.gkAuDevant.plafond ?? 16)) txG = ownG.x + Math.sign(txG - ownG.x) * (cfg.gkAuDevant.plafond ?? 16);
       gk.target = [txG, 0, st.ball.p[2] + (st.ball.v[2] / bV) * mR];
       continue;

@@ -1528,7 +1528,7 @@ if (__bloc()) {
 if (__bloc()) {
   const coin = (foot, over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, ...over });
+    const cfg = matchCfg({ shotRange: 20, preneurCPA: false, loi16: false, ...over });   // la clause mesure le PLACEMENT du corner — elle isole 193 (l'élection du spécialiste re-datait le monde des 5 s)
     for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
     const c = st.players.find((q) => !q.keeper && q.down <= 0);
     const goal = st.pitch.attackGoal(c.team), sg = Math.sign(goal.x || 1);
@@ -4080,7 +4080,7 @@ if (__bloc()) {
     ds.sort((a, b) => a - b);
     return { n: ds.length, p50: +(ds[Math.floor(ds.length / 2)] ?? -1).toFixed(1) };
   };
-  const V = prises({}), E = prises({ gkAuDevant: false });
+  const V = prises({ preneurCPA: false, loi16: false }), E = prises({ gkAuDevant: false, preneurCPA: false, loi16: false });   // …la clause mesure le gardien AU-DEVANT — elle isole 193 (le gardien-preneur re-datait les retraits)
   ok(`lot 190 — LE GARDIEN VIENT AU RETRAIT : les prises à p50 ${V.p50} m de sa ligne ≥ 6 (${V.n} retraits — la fenêtre du gardien moderne, et la DISPONIBILITÉ multiplie le circuit : 5 → 20/30 min mesurés) ; l'épinglé au fond de son but (p50 ${E.p50} < 6, ${E.n} retraits — le gardien-statue filmé au pixel, retrait pris à 1,6 m)`,
     V.n >= 3 && V.p50 >= 6 && (E.n === 0 || E.p50 < 6));
 }
