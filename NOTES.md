@@ -6586,6 +6586,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (47 % de lancements encore non-gagnables — dette nommée). Piège
      re-payé : un banc lancé pendant les éditions mesure un monde
      intermédiaire — le sceau se refait sur le commit.
+- 233: Lot 192 — LA ZONE ROUGE SE SERRE + LE DOS FERMÉ (liste v3 point 7 :
+     « les attaquants contrôlent et se retournent trop facilement sur les
+     centres — les centres trop bons ou la défense qui réagit mal ? »). LA
+     SONDE A RÉPONDU À LA QUESTION POSÉE : LES DEUX. Élargie au point
+     d'appui (les centres stricts : 5 réceptions au sol/60 min, le théâtre
+     est aérien) : 214 réceptions du dernier quart offensif, 92 dos au but —
+     marqueur p50 3,8 M à la prise (le réel colle à 0,5-1,5), 66 % de
+     retournements < 1,2 s, 59 tirs derrière. Deux lois :
+     · LA ZONE ROUGE (cfg.serreRouge { rayon 26, serre 0,45 }, au marquage
+       du bloc) : le danger à < 26 m du but défendu se marque AU CONTACT —
+       la garde ×0,45, l'homme PRIME la bande de zone, le suivi perd ses
+       à-coups (markF et role.press restent les facteurs).
+     · LE DOS FERMÉ (cfg.dosFerme { d 2, cap 0,12 }, au push du porteur) :
+       l'adversaire goal-side au contact TUE le cap au but — on ne traverse
+       pas un corps ; la remise et le GESTE NOMMÉ (passement/roulette, à la
+       note) restent les portes du point d'appui (le canal du point 10).
+     APRÈS : marqueur p50 2,8 (épinglé 4,0), les duels de point d'appui
+     DOUBLENT (9 → 19 — la défense existe là), tirs post-prise-dos-marquée
+     33 → 21 % (le réel ~10-15 : la direction est prise). Bande 8 buts/10
+     graines ✓. LEÇON D'INSTRUMENT : la métrique « yaw retourné » comptait
+     l'orientation du corps ouvert (170), pas la percée — le juge devient le
+     TIR post-prise-marquée ; et le mécanisme posé du dos fermé recule des
+     deux côtés (l'évasion) — le juge de FLUX fait foi, le mécanisme reste
+     informatif dans la clause.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

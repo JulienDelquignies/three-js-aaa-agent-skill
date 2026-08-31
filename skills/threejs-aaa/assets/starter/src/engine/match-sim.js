@@ -501,6 +501,13 @@ function assignMatchJobs(st, cfg) {
       let front = 0;
       for (const q of defenders) if (Math.sign(q.p[0] - p.p[0]) === Math.sign(gx) && Math.abs(q.p[0] - p.p[0]) < 6 && Math.abs(q.p[2] - p.p[2]) < 4) front++;
       let wGoal = front === 0 ? 0.8 : front === 1 ? 0.5 : 0.25;
+      // LE DOS FERMÉ (192b, cfg.dosFerme — liste v3 point 7 : 12 retournements SOUS marqueur à
+      // < 1,5 m mesurés ; on ne TRAVERSE pas un corps au contact) : l'adversaire goal-side collé
+      // tue le cap au but — la remise et le GESTE nommé (passement/roulette, à la note) restent
+      // les vraies portes du point d'appui. Clé absente : le pivot gratuit d'hier au bit.
+      if (st.full && cfg.dosFerme) for (const q of defenders) {
+        if (Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]) < (cfg.dosFerme.d ?? 2) && (q.p[0] - p.p[0]) * Math.sign(gx || 1) > -0.2) { wGoal = Math.min(wGoal, cfg.dosFerme.cap ?? 0.12); break; }
+      }
       const mR92 = st.full && cfg.menace?.muteD ? cfg.menace.muteD * (p.skill?.composureF ?? 1) : 0;
       if (mR92 && p._takeP && Math.hypot(p.p[0] - p._takeP[0], p.p[2] - p._takeP[1]) > mR92) wGoal *= 0.25;
       let px = (gx / gl) * wGoal, pz = (gz / gl) * wGoal;
@@ -1009,11 +1016,16 @@ function assignMatchJobs(st, cfg) {
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       p.job = 'mark';
+      // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — liste v3 point 7 : le point d'appui reçu
+      // avec le marqueur à 3,8 m p50, 66 % de retournements dos-au-but en < 1,2 s ; le vrai
+      // défenseur COLLE dans sa zone dangereuse — la garde passe au contact, l'homme prime la
+      // bande, le suivi perd ses à-coups). markF/press restent les facteurs. Absente : hier.
+      const rouge = st.full && cfg.serreRouge && gl < (cfg.serreRouge.rayon ?? 26);
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
-      const off = (press ? 0.95 : 1.4) * axe(role(p).press, 1.18, 0.82) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) : le bon colle, le lâche laisse l'intervalle
+      const off = (press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) : le bon colle, le lâche laisse l'intervalle
       const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) : le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
-      if (st.full && cfg.zone !== false && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {
+      if (st.full && cfg.zone !== false && !rouge && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {   // …la bande cède à l'HOMME en zone rouge (192)
         let xL = spotsBloc[mapD[p.post ?? 0]]?.[0];
         // …EN FENÊTRE LA BANDE MONTE AVEC LE BLOC (162) : le clamp au spot BRUT laissait le marqueur à la ligne d'hier (le plus bas du bloc = un mark, 341/354 — l'élastique venait de LÀ) ; la ligne pressante = spot + step comprimé × workF, le piège Loi 11 couvre l'homme resté bas. false : la bande d'hier.
         if (press && st.full && cfg.compression && xL != null)
@@ -1027,8 +1039,8 @@ function assignMatchJobs(st, cfg) {
       const drift = p._markT ? Math.hypot(want[0] - p._markT[0], want[1] - p._markT[1]) : Infinity;
       // L'ASSIGNATION A UNE MÉMOIRE (lot 135, cfg.assignTenue — 4 841 sauts > 5 m : le re-tri frame-vif de QUI marque QUI) : le grand saut (> 3 = un autre homme) attend la TENUE ; le suivi fin garde sa cadence.
       const t135 = st.full && cfg.assignTenue !== false;
-      if (!p._markT || (drift > 3 && (!t135 || st.t >= (p._markHold ?? 0)) && ((t135 && (p._markHold = st.t + (cfg.assignTenue?.mark ?? 1.6))), true)) || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8) && drift <= 3)) {
-        p._markT = want; p._markAt = st.t + (press ? 0.35 : 0.5);
+      if (rouge || !p._markT || (drift > 3 && (!t135 || st.t >= (p._markHold ?? 0)) && ((t135 && (p._markHold = st.t + (cfg.assignTenue?.mark ?? 1.6))), true)) || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8) && drift <= 3)) {
+        p._markT = want; p._markAt = st.t + (press ? 0.35 : 0.5);   // …en zone rouge le suivi est CONTINU (192)
       }
       p.target = [p._markT[0], 0, p._markT[1]];
     });

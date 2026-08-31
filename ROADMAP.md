@@ -311,9 +311,11 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
    portes fermées à la mesure — contre-recule ÷2, tirs 15 → 25/4 graines).
 6. LES CPA : corner / coup franc / renvoi aux 6 m — placements défensifs ET
    offensifs incohérents, choix du tireur aussi.
-7. LES CENTRES : les attaquants contrôlent et se RETOURNENT trop facilement
-   (question posée : centres trop précis ou défense qui ne marque pas ? —
-   suspecter la poitrine 182a trop propre ET le marquage au vol).
+7. ~~LES CENTRES contrôlés-retournés trop facilement~~ — TRAITÉ AU 192 (note
+   233 : LES DEUX — marqueur à 3,8 m ET pivot gratuit ; la zone rouge serrée
+   ×0,45 + le dos fermé : duels doublés, tirs marqués 33 → 21 %). RESTE à
+   valider à l'œil ; la poitrine 182a s'est révélée hors de cause (théâtre
+   au sol rare).
 8. LES AILIERS trop seuls (peut-être normal — à mesurer contre le réel).
 9. LES LONGS BALLONS manquent (peut-être la tactique — vérifier l'axe).
 10. LES GESTES TECHNIQUES : réalisés par les BONS joueurs ? (la note technique
