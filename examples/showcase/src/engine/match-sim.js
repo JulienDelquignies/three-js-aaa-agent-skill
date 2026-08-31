@@ -501,10 +501,8 @@ function assignMatchJobs(st, cfg) {
       let front = 0;
       for (const q of defenders) if (Math.sign(q.p[0] - p.p[0]) === Math.sign(gx) && Math.abs(q.p[0] - p.p[0]) < 6 && Math.abs(q.p[2] - p.p[2]) < 4) front++;
       let wGoal = front === 0 ? 0.8 : front === 1 ? 0.5 : 0.25;
-      // LE DOS FERMÉ (192b, cfg.dosFerme — liste v3 point 7 : 12 retournements SOUS marqueur à
-      // < 1,5 m mesurés ; on ne TRAVERSE pas un corps au contact) : l'adversaire goal-side collé
-      // tue le cap au but — la remise et le GESTE nommé (passement/roulette, à la note) restent
-      // les vraies portes du point d'appui. Clé absente : le pivot gratuit d'hier au bit.
+      // LE DOS FERMÉ (192b, cfg.dosFerme — point 7 : le pivot gratuit sous marqueur) : le corps goal-side
+      // collé tue le cap au but ; la remise et le geste NOTÉ sont les portes. Absente : hier au bit.
       if (st.full && cfg.dosFerme) for (const q of defenders) {
         if (Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]) < (cfg.dosFerme.d ?? 2) && (q.p[0] - p.p[0]) * Math.sign(gx || 1) > -0.2) { wGoal = Math.min(wGoal, cfg.dosFerme.cap ?? 0.12); break; }
       }
@@ -1016,10 +1014,9 @@ function assignMatchJobs(st, cfg) {
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       p.job = 'mark';
-      // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — liste v3 point 7 : le point d'appui reçu
-      // avec le marqueur à 3,8 m p50, 66 % de retournements dos-au-but en < 1,2 s ; le vrai
-      // défenseur COLLE dans sa zone dangereuse — la garde passe au contact, l'homme prime la
-      // bande, le suivi perd ses à-coups). markF/press restent les facteurs. Absente : hier.
+      // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — point 7 : marqueur à 3,8 m p50 au point d'appui,
+      // 66 % de retournements) : le danger < 26 m se marque AU CONTACT — la garde ×serre, l'homme prime
+      // la bande, le suivi continu. markF/press restent les facteurs. Absente : hier.
       const rouge = st.full && cfg.serreRouge && gl < (cfg.serreRouge.rayon ?? 26);
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
       const off = (press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) : le bon colle, le lâche laisse l'intervalle

@@ -116,7 +116,7 @@ if (__bloc()) {
   passes = st.events.filter((e) => e.type === 'pass').length;
   ok(`la sim 22 joueurs tient son budget (${msStep.toFixed(2)} ms/step ≤ 1,5 — mesuré 0,44 sur la machine de calibrage)`, msStep <= 1.5);
   ok(`le jeu VIT en plein format (${passes} passes en 3 min ≥ 25, ${st.events.filter((e) => e.type === 'shot').length} tirs)`, passes >= 25);
-  ok(`le monde ne GÈLE jamais (plus long silence d'événements ${gelMax.toFixed(1)} s ≤ 25)`, gelMax <= 25);
+  ok(`le monde ne GÈLE jamais (plus long silence d'événements ${gelMax.toFixed(1)} s ≤ 31 — la borne suit la CÉRÉMONIE du but, re-datée au 192 : célébration 14 s + retour trotté + moitiés attendues = 24-28 s muets, la Loi 8 du 183 les vaut)`, gelMax <= 31);
   // le contrat de base du match juge aussi ce monde (téléports, ledger, score-événements)
   const st2 = makeMatch({ full: true, seed: 7 });
   // 150 → 240 s (lot 37 puis 51b : la fenêtre s'allonge avec le tempo du monde plutôt que
@@ -981,12 +981,12 @@ if (__bloc()) {
     denyDos = st.deny?.['controle-dos'] ?? 0;
     return { ap: dosParTech['amorti-poursuite'], recDos, recN, denyDos };
   };
-  const vif70 = anglesDe({ yawSlew: false });               // la clause isole le 139 : à la prise le corps est MI-PIVOT (slew), l'angle instantané n'est plus le juge de sePresente
+  const vif70 = anglesDe({ yawSlew: false, serreRouge: false, dosFerme: false });               // la clause isole 139 et 192 (le marquage serré re-datait le théâtre des dos)
   ok(`l'amorti-poursuite ne touche PLUS dans le dos (${vif70.ap} = 0 sur 240 s) et le refus est NOMMÉ (deny controle-dos ${vif70.denyDos} ≥ 1 — le ballon court, il n'obéit pas)`,
     vif70.ap === 0 && vif70.denyDos >= 1);
   ok(`le RECEVEUR SE PRÉSENTE (${vif70.recDos}/${vif70.recN} réceptions dos ≤ ${Math.max(1, Math.round(vif70.recN * 0.08))} — le corps s'ouvre au ballon qui arrive)`,
     vif70.recDos <= Math.max(1, Math.round(vif70.recN * 0.08)));
-  const sab70 = anglesDe({ priseCone: false, sePresente: false, yawSlew: false });
+  const sab70 = anglesDe({ priseCone: false, sePresente: false, yawSlew: false, serreRouge: false, dosFerme: false });
   ok(`sabotage « touche omnisciente + dos fossile » attrapé (cône coupé : ${sab70.ap + sab70.recDos} touches/réceptions dos ≥ ${vif70.ap + vif70.recDos + 4} — le monde d'hier, nommé)`,
     sab70.ap + sab70.recDos >= vif70.ap + vif70.recDos + 4);
 }
