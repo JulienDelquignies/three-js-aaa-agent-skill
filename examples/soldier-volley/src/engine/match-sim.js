@@ -174,10 +174,8 @@ function assignMatchJobs(st, cfg) {
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
         p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]];
-        // LE RETOUR N'EST PAS UNE PROMENADE UNIFORME (183, cfg.retourTrot — filmé : 47-60 m à
-        // 2,6 m/s, les corps du fond jamais rentrés à la reprise) : LOIN de son spot on TROTTE ;
-        // le MENÉ presse le pas (il veut rejouer), le meneur au tempo bas FLÂNE (la gestion du
-        // temps est un choix de coach — l'axe tempo, pas une note). Clé absente : hier au bit.
+        // LE RETOUR N'EST PAS UNE PROMENADE UNIFORME (183, cfg.retourTrot — filmé : 47-60 m à 2,6 m/s, les corps du fond jamais rentrés à la reprise) : LOIN de son spot on TROTTE ;
+        // le MENÉ presse le pas (il veut rejouer), le meneur au tempo bas FLÂNE (la gestion du temps est un choix de coach — l'axe tempo, pas une note). Clé absente : hier au bit.
         const RT = cfg.retourTrot;
         if (st.full && RT && r.type === 'engagement') {
           const dSpot = Math.hypot(p.p[0] - p.target[0], p.p[2] - p.target[2]);
@@ -366,11 +364,8 @@ function assignMatchJobs(st, cfg) {
         continue;
       }
     }
-    // LE GARDIEN VIENT AU RETRAIT (190, cfg.gkAuDevant && st.full — liste v3 point 2, filmé AU
-    // PIXEL : le retrait pris à 1,6 M DE LA LIGNE, le gardien planté dans son but pendant que
-    // le pressing arrive). Un ballon de COÉQUIPIER qui vient vers lui (la passe le vise, ou
-    // roule vers son but sans être un tir) : la cible est le POINT D'INTERCEPTION — il SORT à
-    // la rencontre, il ne campe pas sa ligne. Clé absente : le gardien-statue d'hier au bit.
+    // LE GARDIEN VIENT AU RETRAIT (190, cfg.gkAuDevant && st.full — liste v3 point 2, filmé AU PIXEL : le retrait pris à 1,6 M DE LA LIGNE, le gardien planté dans son but pendant que
+    // le pressing arrive). Un ballon de COÉQUIPIER qui vient vers lui (la passe le vise, ou roule vers son but sans être un tir) : la cible est le POINT D'INTERCEPTION — il SORT à la rencontre, il ne campe pas sa ligne. Clé absente : le gardien-statue d'hier au bit.
     if (st.full && cfg.gkAuDevant && st.lastTouch === gk.team && st.ball.owner == null
       && (st.pass ? st.pass.to === gk.id
         : (st.ball.v[0] * pitch.ownGoal(gk.team).sign > 1 && Math.hypot(st.ball.v[0], st.ball.v[2]) > 2 && Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]) < (cfg.gkAuDevant.rayon ?? 25)))) {
@@ -501,8 +496,7 @@ function assignMatchJobs(st, cfg) {
       let front = 0;
       for (const q of defenders) if (Math.sign(q.p[0] - p.p[0]) === Math.sign(gx) && Math.abs(q.p[0] - p.p[0]) < 6 && Math.abs(q.p[2] - p.p[2]) < 4) front++;
       let wGoal = front === 0 ? 0.8 : front === 1 ? 0.5 : 0.25;
-      // LE DOS FERMÉ (192b, cfg.dosFerme — point 7 : le pivot gratuit sous marqueur) : le corps goal-side
-      // collé tue le cap au but ; la remise et le geste NOTÉ sont les portes. Absente : hier au bit.
+      // LE DOS FERMÉ (192b, cfg.dosFerme — point 7 : le pivot gratuit sous marqueur) : le corps goal-side collé tue le cap au but ; la remise et le geste NOTÉ sont les portes. Absente : hier au bit.
       if (st.full && cfg.dosFerme) for (const q of defenders) {
         if (Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]) < (cfg.dosFerme.d ?? 2) && (q.p[0] - p.p[0]) * Math.sign(gx || 1) > -0.2) { wGoal = Math.min(wGoal, cfg.dosFerme.cap ?? 0.12); break; }
       }
@@ -750,8 +744,7 @@ function assignMatchJobs(st, cfg) {
                 defenders.map((q) => q.p), { corridor: 0.9 });
               if (lane.open) {
                 // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10) …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE :
-                // l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF
-                // tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
+                // l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
                 p._appelCd = st.t + axe(role(p).appel, 14, 6) / (p.skill?.otbF ?? 1);   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
@@ -857,8 +850,7 @@ function assignMatchJobs(st, cfg) {
         && st.ball.p[0] * sgnAtk < -4) kind = 'contre-press';
       if (kind) {
         // LE BLOC QUI LIT (161) : la fenêtre du pressing COLLECTIF est aux notes du bloc — la moyenne d'ANTICIPATION des défenseurs de champ (anticipF, 1 exact à
-        // 50/nu) TIENT la fenêtre plus longtemps (× moy) et RÉ-ARME plus vite (cooldown ÷ moy) : le grand pressing est un acte d'équipe SU. La tactique (axe pressing)
-        // reste le CHOIX du coach ; la note fait la QUALITÉ de son exécution — le même signal, mieux lu, mieux tenu.
+        // 50/nu) TIENT la fenêtre plus longtemps (× moy) et RÉ-ARME plus vite (cooldown ÷ moy) : le grand pressing est un acte d'équipe SU. La tactique (axe pressing) reste le CHOIX du coach ; la note fait la QUALITÉ de son exécution — le même signal, mieux lu, mieux tenu.
         let sA = 0, nA = 0;
         for (const q of defenders) if (q.skill?.anticipF) { sA += q.skill.anticipF; nA++; }
         const aMoy = nA ? sA / nA : 1;
@@ -943,16 +935,13 @@ function assignMatchJobs(st, cfg) {
           // LE JOCKEY (lot 95) : cible ENTRE ballon et SON but, approche SOUS CONTRÔLE (movement.js).
         if (cfg.jockey !== false && st.full && carrier && !freeBall && st.ball.owner === carrier.id) {
           // LE MORD (lot 159, cfg.mord) : le jockey campait le presseur À LA PORTE du conteste (cible 1,0 m, conteste 0,9 — p10 mesuré 0,97 m : 8,7 % de conteste,
-          // l'amont famélique des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace est à la note (porte × aggrF : l'agressif mord dès
-          // 1,92 m, le placide 1,28 ; 1,6 à 50). Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
+          // l'amont famélique des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace est à la note (porte × aggrF : l'agressif mord dès 1,92 m, le placide 1,28 ; 1,6 à 50). Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
           if (cfg.mord && d2(p.p, anchor) < (cfg.mord.porte ?? 1.6) * (p.skill?.aggrF ?? 1)) { p.job = 'press'; p.target = [anchor[0], 0, anchor[2]]; return; }
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = Math.hypot(gxJ, gzJ) || 1;
           const jd = cfg.jockey?.dist ?? 1.0;
-          // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le
-          // geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du
-          // pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà
-          // tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
+          // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du
+          // pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
           const oF = (role(p).orienteFaible ?? 0.5) - 0.5;
           const biais = oF !== 0 && carrier.strongFoot ? oF * 1.1 * (carrier.strongFoot === 'left' ? 1 : -1) * Math.sign(pitch.attackGoal(carrier.team).x || 1) : 0;
           p.job = 'press';
@@ -1023,8 +1012,7 @@ function assignMatchJobs(st, cfg) {
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       p.job = 'mark';
-      // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — point 7 : marqueur à 3,8 m p50 au point d'appui,
-      // 66 % de retournements) : le danger < 26 m se marque AU CONTACT — la garde ×serre, l'homme prime
+      // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — point 7 : marqueur à 3,8 m p50 au point d'appui, 66 % de retournements) : le danger < 26 m se marque AU CONTACT — la garde ×serre, l'homme prime
       // la bande, le suivi continu. markF/press restent les facteurs. Absente : hier.
       const rouge = st.full && cfg.serreRouge && gl < (cfg.serreRouge.rayon ?? 26);
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
@@ -1104,10 +1092,8 @@ function onDive(st, gk, cfg) {
   else riseDown(st, gk, cfg, true);
   const spdT = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
   const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
-  // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4
-  // prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants
-  // dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe
-  // à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
+  // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4 prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants
+  // dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
   const priseD = st.full && cfg.priseGant ? (cfg.priseGant.d ?? 1.35) : 1.1;
   if (d <= priseD * aeF && y <= 1.9 * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');

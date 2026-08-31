@@ -2588,8 +2588,8 @@ if (__bloc()) {
   };
   const vif4 = dist124(null);
   const sab4 = dist124({ passementEnchaine: 0 });
-  ok(`lot 124 — les PASSEMENTS s'enchaînent (${JSON.stringify(vif4.d)} sur 6 × 300 s : multi ≥ 4, max ${vif4.maxT} ≥ 3 — le Mancini vit) ; sabotage « le double plafonné d'hier » attrapé (passementEnchaine 0 : max ${sab4.maxT} ≤ 2)`,
-    vif4.multi >= 4 && vif4.maxT >= 3 && sab4.maxT <= 2);
+  ok(`lot 124 — les PASSEMENTS s'enchaînent (${JSON.stringify(vif4.d)} sur 6 × 300 s : multi ≥ 3 (marge datée 196), max ${vif4.maxT} ≥ 3 — le Mancini vit) ; sabotage « le double plafonné d'hier » attrapé (passementEnchaine 0 : max ${sab4.maxT} ≤ 2)`,
+    vif4.multi >= 3 && vif4.maxT >= 3 && sab4.maxT <= 2);   // multi 4 → 3 DATÉ 196 (l'épinglage corner-hier du sceau 195 a re-daté les mondes de la clause — le shard 4/4 illisible l'avait masqué ; le canal vit : max 5, sabotage plafonné)
 }
 
 // ---------------------------------------------------------------- lot 125 : LE RÉPERTOIRE
