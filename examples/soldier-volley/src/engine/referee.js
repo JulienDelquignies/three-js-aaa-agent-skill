@@ -945,12 +945,26 @@ function assistantsStep(st, dt, cfg) {
   if (!st.full || !AS) { if (st.assistants) st.assistants = null; return; }
   const hz = st.pitch.hz + (AS.marge ?? 0.8), hx = st.pitch.hx;
   const as = st.assistants ??= [{ p: [hx * 0.5, 0, hz], v: [0, 0], yaw: 0 }, { p: [-hx * 0.5, 0, -hz], v: [0, 0], yaw: 0 }];
+  // LE DRAPEAU LEVÉ (lot 187, AS.drapeau — la Loi 11 a un GESTE) : au hors-jeu sifflé,
+  // l'assistant DE LA MOITIÉ lève son drapeau (a.drapeau = le contrat que la scène anime)
+  // et court à la HAUTEUR du point d'infraction — le vrai signal : debout, hampe dressée,
+  // à l'aplomb de la faute, tenu jusqu'à la remise jouée (ou la durée, si elle traîne).
+  for (let e = st._asEv ?? 0; e < st.events.length; e++) {
+    const ev = st.events[e];
+    if (ev.type !== 'hors-jeu') continue;
+    const team = st.players.find((p) => p.id === ev.by)?.team;
+    if (team == null) continue;
+    as[team].drapeau = { t: st.t, x: ev.at?.[0] ?? st.ball.p[0] };
+  }
+  st._asEv = st.events.length;
   for (let k = 0; k < 2; k++) {
     const a = as[k], cote = k === 0 ? 1 : -1;
+    if (a.drapeau && ((!st.restart && st.t - a.drapeau.t > 1.5) || st.t - a.drapeau.t > (AS.drapeau ?? 12))) a.drapeau = null;   // la remise jouée : le drapeau descend (garde-fou à la durée)
     const L = offsideLine(st, k);                                  // la ligne des attaques de l'équipe k
     let tx = Math.min(hx - 0.5, L.adv) * L.sgn;
     const r = st.restart;
-    if (r?.type === 'corner' && Math.sign(r.p[0] || 1) === Math.sign(L.sgn) && Math.sign(r.p[1] || 1) === cote)
+    if (a.drapeau) tx = Math.max(-hx + 0.5, Math.min(hx - 0.5, a.drapeau.x));   // l'aplomb de l'infraction prime
+    else if (r?.type === 'corner' && Math.sign(r.p[0] || 1) === Math.sign(L.sgn) && Math.sign(r.p[1] || 1) === cote)
       tx = L.sgn * hx;                                             // le drapeau de SON corner
     const dx = tx - a.p[0], d = Math.abs(dx);
     const want = d > 0.4 ? Math.min(AS.sprint ?? 7.2, d * 2.5) : 0;

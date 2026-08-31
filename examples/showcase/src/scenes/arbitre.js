@@ -8,10 +8,10 @@ import { tintPart } from '../engine/part-tint.js';
 import { RONDO } from '../engine/rondo.js';
 
 export function spawnArbitre(ctx) {
-  return { central: spawnOfficiel(ctx, [-8, 6]), assistants: [spawnOfficiel(ctx, [20, 35]), spawnOfficiel(ctx, [-20, -35])] };
+  return { central: spawnOfficiel(ctx, [-8, 6]), assistants: [spawnOfficiel(ctx, [20, 35], true), spawnOfficiel(ctx, [-20, -35], true)] };
 }
 
-function spawnOfficiel({ squad, scene, night, q, bake }, at) {
+function spawnOfficiel({ squad, scene, night, q, bake }, at, drapeau = false) {
   const { model, groundY, clips } = squad.spawn(0);
   model.position.set(at[0], groundY, at[1]);
   scene.add(model); model.updateMatrixWorld(true);
@@ -28,7 +28,24 @@ function spawnOfficiel({ squad, scene, night, q, bake }, at) {
   night.light(model);
   if (q.get('cils') !== '1') model.traverse((o) => { if (/eyelash/i.test(o.name)) o.visible = false; });
   if (bake) bake(model);
-  return { model, ctrl, groundY };
+  // LE DRAPEAU DE L'ASSISTANT (187) : hampe + fanion orange dans la MAIN (attaché au bone —
+  // il suit la course) ; pendant vers le bas au trot, DRESSÉ quand le moteur signale
+  // (st.assistants[k].drapeau — la Loi 11 a un geste). Le central n'en porte pas.
+  let flag = null;
+  if (drapeau) {
+    let hand = null; model.traverse((o) => { if (o.isBone && /RightHand$/i.test(o.name) && !hand) hand = o; });
+    if (hand) {
+      flag = new THREE.Group();
+      const hampe = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.45, 5), new THREE.MeshLambertMaterial({ color: 0xd8d0c0 }));
+      hampe.position.y = 0.225;
+      const fanion = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.16), new THREE.MeshLambertMaterial({ color: 0xff7a00, side: THREE.DoubleSide }));
+      fanion.position.set(0.11, 0.37, 0);
+      flag.add(hampe, fanion);
+      flag.rotation.x = 0;                                          // baissé par défaut (pendant le long de la jambe — l'axe X local de la main est l'axe utile, calibré au pixel)
+      hand.add(flag);
+    }
+  }
+  return { model, ctrl, groundY, flag };
 }
 
 export function updateArbitre(trio, state, step, top) {
@@ -39,6 +56,7 @@ export function updateArbitre(trio, state, step, top) {
 
 function updateOfficiel(aR, aS, step, top) {
   aR.model.visible = !!aS;
+  if (aR.flag) { const want = aS?.drapeau ? -Math.PI * 0.95 : 0; aR.flag.rotation.x += (want - aR.flag.rotation.x) * Math.min(1, step * 8); }   // dressé au signal (Loi 11), pendant sinon
   if (!aS) return;
   aR.ctrl.setMoveWorld(aS.v[0] / top, aS.v[1] / top);
   aR.ctrl.update(step);

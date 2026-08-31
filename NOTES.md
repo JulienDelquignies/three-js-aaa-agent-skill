@@ -6484,6 +6484,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      touche devant les panneaux). Clause 186 (rail + p50 + sabotage).
      Dettes tenues : le DRAPEAU levé au hors-jeu signalé (le geste),
      le percuté Loi 9, le sifflet gestuel du central.
+- 228: Lot 187 — LE DRAPEAU LEVÉ (la dette du 186 : la Loi 11 a un GESTE).
+     MOTEUR (assistantsStep, AS.drapeau) : au hors-jeu sifflé (l'event du
+     receive, lot 148), l'assistant DE LA MOITIÉ FAUTIVE lève —
+     as[team].drapeau = { t, x } est LE CONTRAT que la scène anime — et court
+     à l'APLOMB de l'infraction (sa cible prime sur le rail de la ligne) ;
+     la remise jouée, le drapeau descend (1,5 s ; garde-fou 12 s). SCÈNE
+     (arbitre.js) : la hampe + fanion orange ATTACHÉS AU BONE RightHand des
+     deux assistants (il suit la course) — pendant au trot, DRESSÉ au signal.
+     LA CALIBRATION AU PIXEL a payé encore : l'axe local de la main Mixamo
+     n'est pas celui du monde — trois orientations testées EN LIVE (play_eval
+     + screenshot : z=0 pend, z=π/2 diagonale basse, x=−π/2 horizontal,
+     x≈−π DRESSÉ) — la convention codée : rotation.x lerpée 0 (pendant) →
+     −0,95π (dressé), 8/s. Clause 187 (mécanisme : event injecté + remise
+     tenue → le bon assistant lève à l'aplomb, l'autre reste bas, la remise
+     jouée le descend). Les officiels restent sans pied : empreintes à
+     re-confirmer au sceau. Dettes : le percuté Loi 9, le sifflet gestuel
+     du central, le drapeau du CORNER pointé (le geste directionnel).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

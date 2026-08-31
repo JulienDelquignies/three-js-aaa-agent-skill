@@ -4004,5 +4004,26 @@ if (__bloc()) {
     V.corps && V.p50 >= 0 && V.p50 <= 2.5 && V.dedans === 0 && E.nul === true);
 }
 
+// ---- lot 187 : LE DRAPEAU LEVÉ (la Loi 11 a un geste — assistants[k].drapeau)
+if (__bloc()) {
+  // Mécanisme : un hors-jeu injecté (event + la remise qui le suit) — l'assistant de la
+  // moitié FAUTIVE lève (drapeau posé, l'aplomb ciblé), l'autre reste bas ; la remise jouée,
+  // le drapeau DESCEND (1,5 s). L'épinglé n'a pas de corps du tout (186).
+  const st = makeMatch({ full: true, seed: 3 });
+  const cfg = matchCfg({ shotRange: 20 });
+  for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
+  const j = st.players.find((q) => q.team === 1 && !q.keeper);
+  st.events.push({ t: +st.t.toFixed(2), type: 'hors-jeu', by: j.id, at: [-17.3, 4], p: [-17.3, 4] });
+  st.restart = { type: 'coup-franc', team: 0, p: [-17.3, 4], at: st.t + 900, placed: false };   // la remise tenue (placed:false : personne ne la joue)
+  matchStep(st, 1 / 60, cfg);
+  const leve = !!st.assistants[1].drapeau, autre = !st.assistants[0].drapeau;
+  const vise = st.assistants[1].drapeau?.x === -17.3;
+  st.restart = null;
+  for (let i = 0; i < 2 * 60; i++) matchStep(st, 1 / 60, cfg);
+  const descendu = !st.assistants[1].drapeau;
+  ok(`lot 187 — LE DRAPEAU LEVÉ : au hors-jeu sifflé l'assistant de la moitié lève (${leve}) à l'aplomb de l'infraction (x = −17,3 : ${vise}), l'autre reste bas (${autre}) ; la remise jouée, il DESCEND (${descendu}) — la Loi 11 a un geste, la scène le dresse (calibré au pixel : l'axe X de la main)`,
+    leve === true && vise === true && autre === true && descendu === true);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

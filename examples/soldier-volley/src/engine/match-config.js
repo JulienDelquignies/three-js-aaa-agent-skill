@@ -173,7 +173,7 @@ export const MATCH = {
                           // large est tiré vers la ligne (fraction du chemin × axe largeur ×
                           // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
   arbitre: { suit: 13, axial: 0.55, marche: 2.2, trot: 4.6, sprint: 6.8, recul: 5, loin: 20 },
-  assistants: { sprint: 7.2, marge: 0.8 },  // 186 : LES ASSISTANTS DE TOUCHE — la ligne du
+  assistants: { sprint: 7.2, marge: 0.8, drapeau: 12 },  // 186 : LES ASSISTANTS DE TOUCHE — la ligne du
                           // hors-jeu incarnée (Loi 6) : chacun sa touche, sa moitié, le rail
                           // de la ligne (offsideLine) ; le drapeau de son corner. false : la
                           // ligne désincarnée d'hier.
