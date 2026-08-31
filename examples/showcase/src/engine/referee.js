@@ -998,11 +998,20 @@ function assistantsStep(st, dt, cfg) {
  *  SPÉCIALISTE (passSigma le plus fin, élu UNE fois — r._elu), la touche au plus proche ; le
  *  preneur est STICKY (re-choisi s'il tombe). Sans la clé : le plus-proche d'hier au bit. */
 export function elireTaker(st, r, cfg, d2) {
-    // …ET LE PRENEUR A UN MÉTIER (193, cfg.preneurCPA — liste v3 point 6 : sondé, le renvoi aux
-  // 6 m JAMAIS pris par le gardien, le corner par le plus proche) : la SORTIE DE BUT est au
-  // GARDIEN (~85 % du réel) ; le corner et le CF OFFENSIF vont au SPÉCIALISTE — le meilleur
-  // passing de l'équipe (passSigma le plus fin : le tireur attitré, stable par construction,
-  // qui TRAVERSE le terrain pour son corner comme au vrai). La touche reste au plus proche.
+  // LA CLÉ ABSENTE = L'HIER LITTÉRAL (doctrine — le bisect 193 a montré que l'équivalence
+  // « analysée » du chemin épinglé divergeait au bit : le code d'hier est COPIÉ, pas dérivé).
+  if (!(st.full && cfg.preneurCPA)) {
+    let t = st.players[r.taker ?? -1] ?? null;
+    if (!t || t.down > 0 || t.team !== r.team || t.keeper) {
+      t = st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0)
+        .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0] ?? null;
+      r.taker = t ? t.id : -1;
+    }
+    return t;
+  }
+  // …ET LE PRENEUR A UN MÉTIER (193, cfg.preneurCPA — liste v3 point 6) : la SORTIE DE BUT au
+  // GARDIEN (~85 % du réel) ; le corner et le CF OFFENSIF au SPÉCIALISTE (passSigma le plus
+  // fin — le tireur attitré, qui TRAVERSE le terrain pour son corner). La touche au plus proche.
   let taker = st.players[r.taker ?? -1] ?? null;
   const gkOk = st.full && cfg.preneurCPA && r.type === 'sortie-de-but';
   const specOk = st.full && cfg.preneurCPA && !r._elu && (r.type === 'corner' || (r.type === 'coup-franc'
