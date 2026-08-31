@@ -297,9 +297,10 @@ minutes de match) — un échafaudage : la destination est en TROIS couches.
 le critère utilisateur) : la sim à l'échelle 90 min réelles aux volumes du vrai
 foot (2-3 buts, ~10 corners, ~25 fautes, ~40 touches — aujourd'hui ~18 buts/90
 équivalents) ; toutes les bandes A/B et clauses de flux migrent au référentiel
-/90 (le banc shardé du 174 paie les re-mesures). (2) LA LECTURE À VITESSE
-VARIABLE : le moteur est à pas fixe déterministe — accélérer = plus de steps
-par frame de rendu (le slider de vitesse, côté scène, trivial). (3) LE MODE
+/90 (le banc shardé du 174 paie les re-mesures). ~~(2) LA LECTURE À VITESSE
+VARIABLE~~ — **FAITE AU 188** (note 229 : vitesse 1-8, touches 1-4, l'aval
+visuel au temps de lecture stepV, « MT1 9:53 · ×4 » au HUD — moteur intact,
+600 frames à ×4 = 40,0 s sim vérifiées). (3) LE MODE
 TEMPS FORTS (le défaut FM) : simuler vite, ne rendre que les moments chauds —
 menace.js EST le détecteur de highlights (l'arbitre de dangerosité existe).
 
