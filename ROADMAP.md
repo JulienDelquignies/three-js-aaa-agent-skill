@@ -309,8 +309,10 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
    chemin du 50 % réel).
 5. ~~LA CONTRE-ATTAQUE qui recule~~ — TRAITÉ AU 189 (note 230 : enLance, 4
    portes fermées à la mesure — contre-recule ÷2, tirs 15 → 25/4 graines).
-6. LES CPA : corner / coup franc / renvoi aux 6 m — placements défensifs ET
-   offensifs incohérents, choix du tireur aussi.
+6. ~~LES CPA — le tireur et la Loi 16~~ TRAITÉS AU 193 (note 234 : le renvoi
+   au gardien 8/8 + la surface vidée + le spécialiste au corner/CF offensif +
+   l'ayant droit — 4 gates fermés à la mesure). RESTENT du point 6 : le poteau
+   tenu, le paquet offensif du corner, le CF direct au tireur noté.
 7. ~~LES CENTRES contrôlés-retournés trop facilement~~ — TRAITÉ AU 192 (note
    233 : LES DEUX — marqueur à 3,8 m ET pivot gratuit ; la zone rouge serrée
    ×0,45 + le dos fermé : duels doublés, tirs marqués 33 → 21 %). RESTE à

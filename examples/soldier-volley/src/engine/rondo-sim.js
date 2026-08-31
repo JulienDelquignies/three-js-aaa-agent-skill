@@ -1031,9 +1031,10 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (st.full && st.phase === 'flight' && released) { if (cfg.tete) teteStep(st, cfg); if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); }
     let taker = -1, bestD = Infinity;
     if (released) {
+      const ayant = st.full && cfg.preneurCPA && st.restart && st.restart.taker >= 0 ? st.restart.taker : null;   // la remise a un AYANT DROIT (193) : l'élection ne teste que lui — le plus-proche collé gelait canTake
       for (const p of st.players) {
         // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON (3 prises par corps couchés post-tacle mesurées) — possession = homme DEBOUT au ballon, le temps au sol est le prix du plongeon.
-        if (p.down > 0) continue;
+        if (p.down > 0 || (ayant != null && p.id !== ayant)) continue;
         const d = d2(p.p, st.ball.p);
         if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
       }

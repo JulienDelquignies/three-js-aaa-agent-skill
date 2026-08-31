@@ -166,6 +166,16 @@ function assignMatchJobs(st, cfg) {
       if (st._celeb && st.t >= st._celeb.until) st._celeb = null;
       if (st._celeb && p.id === st._celeb.by) { p.job = 'walk'; p.target = [st._celeb.corner[0], 0, st._celeb.corner[1]]; continue; }
       if (st._celeb && st._celeb.avec.includes(p.id)) { const bC = st.players[st._celeb.by]; p.job = 'walk'; p.target = [bC.p[0], 0, bC.p[2]]; continue; }
+      // LOI 16, LE CORPS (193, cfg.loi16 — le patron du rond 160b) : l'adverse du RENVOI sort de la surface par le bord le plus court — sans lui, canTake ne la voyait jamais vide.
+      if (st.full && cfg.loi16 && r.type === 'sortie-de-but' && p.team !== r.team && !p.keeper) {
+        const sg16 = Math.sign(r.p[0] || 1);
+        if (pitch.inBox(p.p[0], p.p[2], sg16)) {
+          const bordX = sg16 * (pitch.hx - pitch.dims.box.depth - 1.2);
+          const bordZ = Math.sign(p.p[2] || 1) * (pitch.dims.box.width / 2 + 1.2);
+          p.job = 'walk'; p.target = Math.abs(p.p[0] - bordX) < Math.abs(p.p[2] - bordZ) ? [bordX, 0, p.p[2]] : [p.p[0], 0, bordZ];
+          continue;
+        }
+      }
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
         p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]];
@@ -255,11 +265,31 @@ function assignMatchJobs(st, cfg) {
       }
     }
     // LE PRENEUR EST STICKY (re-choisi s'il tombe) : il CHERCHE le ballon où il meurt, le PORTE au point (ballFetch), puis le joue — l'ancien « plus proche du point » re-triait à chaque image.
+    // …ET LE PRENEUR A UN MÉTIER (193, cfg.preneurCPA — liste v3 point 6 : sondé, le renvoi aux
+    // 6 m JAMAIS pris par le gardien, le corner par le plus proche) : la SORTIE DE BUT est au
+    // GARDIEN (~85 % du réel) ; le corner et le CF OFFENSIF vont au SPÉCIALISTE — le meilleur
+    // passing de l'équipe (passSigma le plus fin : le tireur attitré, stable par construction,
+    // qui TRAVERSE le terrain pour son corner comme au vrai). La touche reste au plus proche.
     let taker = st.players[r.taker ?? -1] ?? null;
-    if (!taker || taker.down > 0 || taker.team !== r.team || taker.keeper) {
-      taker = st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0)
-        .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0] ?? null;
-      r.taker = taker ? taker.id : -1;
+    const gkOk = st.full && cfg.preneurCPA && r.type === 'sortie-de-but';
+    const specOk = st.full && cfg.preneurCPA && !r._elu && (r.type === 'corner' || (r.type === 'coup-franc'
+      && Math.hypot(pitch.attackGoal(r.team).x - r.p[0], r.p[1]) < (cfg.preneurCPA.zone ?? 48)));
+    if (specOk || !taker || taker.down > 0 || taker.team !== r.team || (taker.keeper && !gkOk) || (gkOk && !taker.keeper)) {
+      if (gkOk) {
+        const gkT = st.players.find((p) => p.team === r.team && p.keeper && !p.expulse) ?? null;
+        if (gkT && gkT.down > 0) { r.taker = -2; taker = null; }   // le renvoi ATTEND le gardien relevé (il est souvent au sol après l'arrêt — le fallback champ devenait sticky à jamais)
+        else taker = gkT;
+      }
+      if (!gkOk && specOk) {                                       // le SPÉCIALISTE s'élit UNE fois (r._elu — le sticky du plus proche le masquait)
+        r._elu = true;
+        taker = st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0 && !p.expulse && p.skill)
+          .sort((a, b) => (a.skill.passSigma ?? 9) - (b.skill.passSigma ?? 9))[0] ?? taker;
+      }
+      if (r.taker !== -2) {                                        // …l'attente du gardien relevé ne se fait pas écraser par le fallback (193)
+        taker ??= st.players.filter((p) => p.team === r.team && !p.keeper && p.down <= 0)
+          .sort((a, b) => d2(a.p, st.ball.p) - d2(b.p, st.ball.p))[0] ?? null;
+        r.taker = taker ? taker.id : -1;
+      } else if (taker) r.taker = taker.id;
     }
     if (taker) {
       taker.job = 'receive';
@@ -277,6 +307,7 @@ function assignMatchJobs(st, cfg) {
 
   // ---- les gardiens (toujours, toutes phases)
   for (const gk of st.players.filter((p) => p.keeper && !p.expulse && !p._sub)) {
+    if (st.restart && st.restart.taker === gk.id) continue;        // le gardien-PRENEUR (193) garde son métier de remise — le poste ne l'écrase pas
     gk.job = 'keeper';
     // LE GARDIEN PORTEUR EST UN DISTRIBUTEUR, PAS UN POSTE (CSC mesuré en marchant vers sa ligne) : il s'écarte du but, le cerveau distribue.
     if (carrier && carrier.id === gk.id) {

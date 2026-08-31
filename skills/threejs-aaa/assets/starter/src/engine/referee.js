@@ -605,6 +605,22 @@ export function canTake(st, takerId, cfg) {
       }
     }
   }
+  // …ET LA REMISE APPARTIENT À SON AYANT DROIT (193, cfg.preneurCPA — le préposé élu au métier
+  // marchait de loin pendant qu'un coéquipier proche prenait à sa place : le flux gardait le
+  // plus-proche d'hier) : sortie de but, corner et coup franc n'acceptent QUE r.taker (-2 = le
+  // gardien pas encore relevé : personne ne prend, on attend).
+  if (st.full && cfg?.preneurCPA && (ty === 'sortie-de-but' || ty === 'corner' || ty === 'coup-franc')
+    && st.restart.taker != null && p.id !== st.restart.taker) return false;
+  // LA LOI 16 (193, cfg.loi16 — sondé : 1-3 adversaires DANS la surface à CHAQUE prise de
+  // renvoi ; la loi les veut dehors) : la sortie de but ATTEND la surface vide d'adversaires,
+  // à la patience près (le garde-fou anti-gel du patron 183).
+  if (ty === 'sortie-de-but' && st.full && cfg?.loi16 && st.t < st.restart.at + (cfg.loi16.patience ?? 10)) {
+    const sg16 = Math.sign(st.pitch.ownGoal(p.team).x || 1);
+    for (const q of st.players) {
+      if (q.team === p.team || q._sub || q.expulse || q.down > 0) continue;
+      if (st.pitch.inBox(q.p[0], q.p[2], sg16)) return false;
+    }
+  }
   st.restart = null;                                               // la remise est PRISE — le jeu reprend
   st.events.push({ t: +st.t.toFixed(2), type: 'restart-pris', by: takerId });
   // L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le joueur part

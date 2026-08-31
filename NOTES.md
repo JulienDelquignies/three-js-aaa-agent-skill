@@ -6610,6 +6610,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      TIR post-prise-marquée ; et le mécanisme posé du dos fermé recule des
      deux côtés (l'évasion) — le juge de FLUX fait foi, le mécanisme reste
      informatif dans la clause.
+- 234: Lot 193 — LE PRENEUR A UN MÉTIER + LA LOI 16 (liste v3 point 6 :
+     « corner/CF/renvoi aux 6 m incohérents — placements et tireur »). LA
+     SONDE : le renvoi aux 6 m JAMAIS pris par le gardien (l'élection du
+     preneur EXCLUAIT les gardiens par construction), 1-3 adversaires DANS
+     la surface à chaque prise (la Loi 16 inexistante), le corner au
+     plus-proche, 0 poteau tenu. TROIS LOIS, deux clés :
+     · LE PRENEUR PAR MÉTIER (cfg.preneurCPA) : la sortie de but au GARDIEN
+       (et elle l'ATTEND s'il est au sol — r.taker = -2) ; le corner et le
+       CF offensif (< 48 m du but adverse) au SPÉCIALISTE — le passSigma le
+       plus fin de l'équipe, élu UNE fois (r._elu), qui traverse le terrain
+       pour son corner comme au vrai ; la touche au plus proche.
+     · LA LOI 16 (cfg.loi16) : le renvoi attend la surface VIDE d'adversaires
+       (patience anti-gel 10 s) et l'intrus SORT par le bord le plus court
+       (le patron du rond 160b).
+     · LA REMISE A UN AYANT DROIT : canTake ET l'élection du taker-gate ne
+       testent que r.taker — QUATRE gates fermés un à un à la mesure (le
+       sticky pré-posé, le fallback qui écrasait l'attente du gardien, le
+       bloc gardien qui écrasait le job du preneur, et le PLUS-PROCHE COLLÉ
+       élu par le rondo-gate qui gelait canTake : 5 renvois créés, 0 pris,
+       280 s — le film du gardien qui va chercher, porte, pose... et
+       personne n'a le droit). APRÈS : 8/8 renvois au gardien, 49/50 remises
+       prises, Loi 16 : 0 intrus partout, attente max 28,5 s (la cérémonie
+       du but, bornée au 192). Bande 27/20 graines (tendance haute connue —
+       jalon FM). Dettes : le poteau du corner tenu, les placements
+       offensifs du corner (le paquet), le CF direct au tireur noté (le
+       canal existe — cfDirect).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

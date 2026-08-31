@@ -183,6 +183,11 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  preneurCPA: { zone: 48 },  // 193 : LE PRENEUR A UN MÉTIER — la sortie de but au GARDIEN, le
+                          // corner/CF offensif au SPÉCIALISTE (passSigma le plus fin — le tireur
+                          // attitré), la touche au plus proche. Absente : le plus-proche d'hier.
+  loi16: { patience: 10 },  // 193 : LA LOI 16 — le renvoi attend la surface VIDE d'adversaires
+                          // (patience anti-gel), et l'intrus SORT par le bord (patron 160b).
   dosFerme: { d: 2, cap: 0.12 },  // 192b : LE DOS FERMÉ — l'adversaire goal-side au contact tue
                           // le cap au but du porteur ; la remise et le geste noté sont les portes.
   serreRouge: { rayon: 26, serre: 0.45 },  // 192 : LA ZONE ROUGE SE SERRE — le point d'appui à
