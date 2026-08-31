@@ -6636,6 +6636,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
        jalon FM). Dettes : le poteau du corner tenu, les placements
        offensifs du corner (le paquet), le CF direct au tireur noté (le
        canal existe — cfDirect).
+- 235: Le sceau du 193 — TROIS LEÇONS payées cher. (1) LE JUMEAU DE COMMITS
+     puis le BISECT en trois temps ont désigné le refactor elireTaker : son
+     chemin épinglé « analytiquement équivalent » divergeait au bit — LA
+     DOCTRINE RÉAFFIRMÉE : la clé absente rend l'hier LITTÉRAL, copié en
+     early-return, jamais dérivé. (2) LE STICKY INVALIDE SE REMPLACE (un
+     vrai bug de fidélité attrapé en chemin : le ??= ne réassigne pas un
+     preneur au sol — l'ancien code réassignait toujours). (3) DEUX CLAUSES
+     HOMONYMES « lot 102 » : quatre runs perdus à isoler « le corner
+     travaille » quand l'échec venait de « le placement » — TOUJOURS ancrer
+     le patch sur la clause QUI IMPRIME le message d'échec (le grep du
+     verbatim, pas du numéro de lot). Le re-datage finalement JUSTE : le
+     spécialiste élu mangeait un GRAND forgé (le tireur du corner ne monte
+     pas en boîte — du vrai foot) ; la clause mesure le placement, elle
+     isole l'élection. Shard 0 : 55 ✓ / 0 ✗ ; le banc complet scelle.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
