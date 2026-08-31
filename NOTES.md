@@ -6689,6 +6689,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ZÉRO téléportation, LE GESTE DE RELEVÉ EXISTE (le contrat du lot 91
      tient). La réserve à l'œil : les autres espèces (plongeon haut,
      réflexe) restent à filmer une à une — dette douce.
+- 238: Lot 196 — LES CONSIGNES DÉFENSIVES PAR JOUEUR (demande formelle du
+     projet aval : « l'attribut est la capacité, la consigne est le CHOIX »
+     — l'asymétrie signalée : six axes défensifs d'ÉQUIPE, un seul axe
+     défensif de RÔLE). QUATRE AXES ajoutés au rôle (resoudreRole, identité
+     0,5, composés par le rôle OFF comme press/garde) :
+     · duel (se jeter/rester debout) : × (0,6 + 0,8·v) sur la retenue de
+       surface (169b) ET l'imprudence du glissé (191) — la consigne
+       par-dessus le tempérament (aggrF reste la note). BRANCHÉ, la preuve
+       de flux en dette (le théâtre ~1 épisode/30 min, 12 = 12 au bit).
+     · marqueSerre (coller/laisser respirer) : × axe(v, 1,35, 0,65) sur
+       l'offset du marqueur (le site du 192, markF reste la note). PROUVÉ :
+       receveur adverse tenu à p50 3,19 c. 4,31 m — le même latéral, deux
+       ordres.
+     · ressort (dégager/ressortir) : × axe(v, 1,25, 0,75) sur les rayons de
+       l'étau de tryClear (à côté du style d'équipe et de role.press).
+       PROUVÉ au flux : 18 c. 24 clears (−25 %) — Simeone c. Guardiola,
+       les mêmes défenseurs.
+     · orienteFaible (forcer le pied faible) : le biais d'épaule du JOCKEY
+       (±0,55 m côté pied fort du porteur — l'aval weakF note déjà ce que
+       le faible tente). PROUVÉ : biais signé moyen 0,134 c. 0,106 neutre.
+     L'IDENTITÉ AU BIT : les quatre sites gardés au conditionnel strict
+     (=== 0,5 → le littéral d'hier, doctrine 235) — l'empreinte du monde
+     195 INCHANGÉE (a7ddbca0bcb0ca12 / ecf57b2c043db08f, la NOUVELLE
+     référence consignée — l'ancienne bce971a1 datait du 187, re-datée
+     légitimement par 189-195 : la fausse alerte a coûté un bisect).
+     verify-roles : 10 ✓. La leçon du mécanisme : tryClear posé à froid
+     refuse au timing de l'armé — le juge de FLUX equipe-consignée est le
+     bon instrument des consignes.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

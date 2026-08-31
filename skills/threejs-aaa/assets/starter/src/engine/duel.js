@@ -61,7 +61,7 @@ export function slideTackleStep(st, c, cfg) {
   // quand même — la note fait le penalty. Clé absente : le pari d'hier au bit.
   if (st.full && cfg.retenueSurface
     && st.pitch.inBox(foe.p[0], foe.p[2], Math.sign(st.pitch.ownGoal(foe.team).x || 1))
-    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() > (cfg.retenueSurface.glisse ?? 0.3) * (foe.skill?.aggrF ?? 1)) {
+    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() > (cfg.retenueSurface.glisse ?? 0.3) * (foe.skill?.aggrF ?? 1) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1)) {   // …ET LA CONSIGNE (196, axe duel) : « va au contact » / « reste debout » — le CHOIX du coach par-dessus le tempérament (aggrF)
     st._slideT[foe.team] = st.t;
     st.events.push({ t: +st.t.toFixed(2), type: 'retenue-surface', by: foe.id });   // le refus NOMMÉ — comptable (télémétrie, clause)
     return;
@@ -85,7 +85,7 @@ export function slideTackleStep(st, c, cfg) {
     if (!tableOk && !jambes) return;                        // rien à toucher : un pro reste debout
     // …et l'imprudence est l'EXCEPTION, pas la règle (mesuré : chaque situation jambes partait —
     // fautes 2,5/match, réel ~0,8/3 min) : 70 % du temps, le pro retient ce tacle-là aussi.
-    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > (S.imprudence ?? 0.3)) return;   // …le taux d'imprudence en clé (191)
+    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > (S.imprudence ?? 0.3) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1)) return;   // …le taux d'imprudence en clé (191) × la CONSIGNE duel (196)
     if (tableOk) {
       const tc = Math.min(0.4, Math.max(0.1, (sit.dist - 0.35) / Math.max(3.5, vq0)));
       const tMid = Math.min(0.5, (tc + 0.55) / 2);

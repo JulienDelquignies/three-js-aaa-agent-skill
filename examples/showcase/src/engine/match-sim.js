@@ -949,7 +949,16 @@ function assignMatchJobs(st, cfg) {
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = Math.hypot(gxJ, gzJ) || 1;
           const jd = cfg.jockey?.dist ?? 1.0;
-          p.job = 'press'; p.target = [anchor[0] + (gxJ / glJ) * jd, 0, anchor[2] + (gzJ / glJ) * jd];
+          // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le
+          // geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du
+          // pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà
+          // tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
+          const oF = (role(p).orienteFaible ?? 0.5) - 0.5;
+          const biais = oF !== 0 && carrier.strongFoot ? oF * 1.1 * (carrier.strongFoot === 'left' ? 1 : -1) * Math.sign(pitch.attackGoal(carrier.team).x || 1) : 0;
+          p.job = 'press';
+          p.target = biais !== 0
+            ? [anchor[0] + (gxJ / glJ) * jd - (gzJ / glJ) * biais, 0, anchor[2] + (gzJ / glJ) * jd + (gxJ / glJ) * biais]
+            : [anchor[0] + (gxJ / glJ) * jd, 0, anchor[2] + (gzJ / glJ) * jd];   // l'identité au bit : l'expression d'hier LITTÉRALE quand la consigne est neutre (doctrine 235)
           return;
         }
         p.job = 'press'; p.target = freeBall ? [leadP[0], 0, leadP[1]] : [anchor[0], 0, anchor[2]]; return;
@@ -1019,7 +1028,7 @@ function assignMatchJobs(st, cfg) {
       // la bande, le suivi continu. markF/press restent les facteurs. Absente : hier.
       const rouge = st.full && cfg.serreRouge && gl < (cfg.serreRouge.rayon ?? 26);
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
-      const off = (press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) : le bon colle, le lâche laisse l'intervalle
+      const off = (press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * ((role(p).marqueSerre ?? 0.5) !== 0.5 ? axe(role(p).marqueSerre, 1.35, 0.65) : 1) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) ET une CONSIGNE (196, axe marqueSerre : coller/laisser respirer — le même joueur, deux ordres)
       const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) : le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
       if (st.full && cfg.zone !== false && !rouge && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {   // …la bande cède à l'HOMME en zone rouge (192)

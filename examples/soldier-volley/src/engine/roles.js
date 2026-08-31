@@ -48,12 +48,18 @@ export function resoudreRole(r) {
   // simple vaut dans les deux phases (l'identité d'hier au bit).
   if (r && typeof r === 'object' && (r.on != null || r.off != null)) {
     const on = resoudreRole(r.on), off = resoudreRole(r.off ?? r.on);
-    return { ...on, press: off.press, garde: off.garde, nom: on.nom + '/' + off.nom };
+    return { ...on, press: off.press, garde: off.garde, duel: off.duel, marqueSerre: off.marqueSerre, ressort: off.ressort, orienteFaible: off.orienteFaible, nom: on.nom + '/' + off.nom };
   }
   const base = typeof r === 'string' ? (ROLES[r] ?? ROLES.polyvalent) : (r ?? {});
   return {
     profondeur: base.profondeur ?? 0.5, largeurR: base.largeurR ?? 0.5, appel: base.appel ?? 0.5, press: base.press ?? 0.5,
     garde: base.garde ?? 0.5,
+    // LES CONSIGNES DÉFENSIVES PAR JOUEUR (lot 196, demande projet aval — l'attribut est la
+    // capacité, la consigne est le CHOIX du coach ; quatre axes continus, identité 0,5) :
+    // duel (se jeter/rester debout), marqueSerre (coller/laisser respirer), ressort (dégager
+    // ou ressortir sous pression — le bloc bas de Simeone c. celui de Guardiola),
+    // orienteFaible (l'angle d'approche qui force le pied faible du porteur).
+    duel: base.duel ?? 0.5, marqueSerre: base.marqueSerre ?? 0.5, ressort: base.ressort ?? 0.5, orienteFaible: base.orienteFaible ?? 0.5,
     arbitre: { tir: 1, centre: 1, passe: 1, conduite: 1, ...(base.arbitre ?? {}) },
     nom: typeof r === 'string' ? r : (base.nom ?? 'personnalisé'),
   };

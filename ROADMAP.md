@@ -291,6 +291,11 @@ part de contres → corners à observer au fil du jalon densité FM.
 
 LA CIBLE : FOOTBALL MANAGER (175, note 215 — précisée par l'utilisateur : FM
 SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
+## LA DEMANDE PROJET (consignes défensives) — LIVRÉE AU 196 (note 238) :
+## duel / marqueSerre / ressort / orienteFaible au rôle, identité 0,5 au bit,
+## trois preuves + une dette de preuve nommée (duel, théâtre rare). Les
+## empreintes de référence : a7ddbca0bcb0ca12 / ecf57b2c043db08f (monde 195).
+
 ## LA LISTE v3 (retour utilisateur ×12, datée lot 189 — « une bonne base mais
 ## encore très loin du foot ») — LE FEU VERT DENSITÉ FM EST SUSPENDU À CETTE LISTE.
 1. LES PASSES EN PROFONDEUR : ~~sondé au 189~~ — elles EXISTENT (7 réceptions

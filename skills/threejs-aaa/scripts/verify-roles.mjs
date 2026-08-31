@@ -102,5 +102,98 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     recit({ 7: 'neufDeSurface', 8: 'neufDeSurface', 9: 'neufDeSurface' }) !== recit({ 7: 'meneur', 8: 'meneur', 9: 'meneur' }));
 }
 
+// ---------- lot 196 : LES CONSIGNES DÉFENSIVES PAR JOUEUR (demande projet aval — l'attribut
+// est la capacité, la consigne est le CHOIX ; quatre axes de rôle, identité 0,5 au bit prouvée
+// par l'empreinte du monde 195 inchangée : a7ddbca0bcb0ca12 / ecf57b2c043db08f).
+{
+  const { resoudreRole } = await import('../assets/starter/src/engine/roles.js');
+  const d = resoudreRole(undefined);
+  const c = resoudreRole({ on: { appel: 0.9 }, off: { duel: 0.9, marqueSerre: 0.1, ressort: 0.8, orienteFaible: 1 } });
+  ok(`les 4 axes se résolvent (défauts ${d.duel}/${d.marqueSerre}/${d.ressort}/${d.orienteFaible} = 0,5) et COMPOSENT par phase (off : duel ${c.duel} = 0,9, marqueSerre ${c.marqueSerre} = 0,1, ressort ${c.ressort} = 0,8, orienteFaible ${c.orienteFaible} = 1 — les consignes sont DÉFENSIVES, elles voyagent avec le rôle off ; l'axe duel est BRANCHÉ à ses deux sites — retenue de surface et imprudence du glissé — mais son théâtre est trop rare pour une preuve de flux : la dette de preuve est NOMMÉE)`,
+    d.duel === 0.5 && d.marqueSerre === 0.5 && d.ressort === 0.5 && d.orienteFaible === 0.5
+    && c.duel === 0.9 && c.marqueSerre === 0.1 && c.ressort === 0.8 && c.orienteFaible === 1 && c.appel === 0.9);
+}
+{
+  // RESSORT au juge de FLUX (le mécanisme posé refusait au timing de l'armé — l'étau vivant
+  // tacle avant le geste ; 8 graines × 300 s mesurées : 18 c. 24, −25 %) : la consigne
+  // « ressors » dégage MOINS que « dégage », toute l'équipe consignée, même monde.
+  const clearsDe = (v) => {
+    let n = 0;
+    for (const seed of [2, 3, 5, 7, 9]) {
+      const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { ressort: v };
+      const st = makeMatch({ full: true, seed, roles: [roles, null] });
+      const cfg = matchCfg({ shotRange: 20 });
+      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
+      for (const e of st.events) if (e.type === 'pass' && e.clear && st.players.find((p) => p.id === e.from)?.team === 0) n++;
+    }
+    return n;
+  };
+  const ressors = clearsDe(0.95), degage = clearsDe(0.05);
+  ok(`lot 196 — le RESSORT est une consigne (flux 5 × 300 s, équipe consignée) : « ressors » dégage ${ressors} < « dégage » ${degage} — le bloc bas de Simeone c. celui de Guardiola, les MÊMES défenseurs`,
+    ressors < degage);
+}
+
+{
+  // MARQUESERRE au flux court (l'offset ±35 % est gros — d(marqueur) aux réceptions du dernier
+  // quart, le juge du 192) : « colle » serre, « laisse respirer » relâche — le même squad.
+  const dMarqueDe = (v) => {
+    const ds = [];
+    for (const seed of [3, 5, 7]) {
+      const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { marqueSerre: v };
+      const st = makeMatch({ full: true, seed, roles: [roles, null] });
+      const cfg = matchCfg({ shotRange: 20 });
+      for (let i = 0; i < 300 * 60; i++) {
+        const evN = st.events.length;
+        matchStep(st, 1 / 60, cfg);
+        for (let e = evN; e < st.events.length; e++) {
+          const ev = st.events[e];
+          if (ev.type !== 'control' && ev.type !== 'receive') continue;
+          const q = st.players.find((p) => p.id === ev.by);
+          if (!q || q.keeper || q.team !== 1 || st.possession.team !== 1) continue;   // les receveurs ADVERSES (marqués par l'équipe consignée 0)
+          const g = st.pitch.attackGoal(1), sg = Math.sign(g.x || 1);
+          if (q.p[0] * sg < st.pitch.hx * 0.5) continue;
+          let dM = 99;
+          for (const f of st.players) if (f.team === 0 && !f.keeper && f.down <= 0) dM = Math.min(dM, Math.hypot(f.p[0] - q.p[0], f.p[2] - q.p[2]));
+          ds.push(dM);
+        }
+      }
+    }
+    ds.sort((a, b) => a - b);
+    return +(ds[Math.floor(ds.length / 2)] ?? 99).toFixed(2);
+  };
+  const colle = dMarqueDe(0.95), respire = dMarqueDe(0.05);
+  ok(`lot 196 — MARQUESERRE est une consigne : « colle » tient le receveur adverse à p50 ${colle} m < « laisse respirer » ${respire} − 0,3 — le même latéral, deux ordres (suivre partout / tenir sa zone)`,
+    colle < respire - 0.3);
+}
+{
+  // ORIENTEFAIBLE au biais moyen : le presseur consigné (1) se tient CÔTÉ PIED FORT du porteur
+  // adverse — le décalage latéral signé moyen diverge de la consigne 0 (le geste enseigné
+  // existe ; l'aval weakF note déjà ce que le faible tente).
+  const biaisDe = (v) => {
+    let acc = 0, n = 0;
+    for (const seed of [3, 5]) {
+      const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { orienteFaible: v };
+      const st = makeMatch({ full: true, seed, roles: [roles, null] });
+      const cfg = matchCfg({ shotRange: 20 });
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (i % 10) continue;
+        const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        if (!c || c.keeper || c.team !== 1 || !c.strongFoot) continue;
+        const pr = st.players.filter((q) => q.team === 0 && !q.keeper && q.job === 'press' && q.down <= 0)
+          .sort((a, b) => Math.hypot(a.p[0] - c.p[0], a.p[2] - c.p[2]) - Math.hypot(b.p[0] - c.p[0], b.p[2] - c.p[2]))[0];
+        if (!pr || Math.hypot(pr.p[0] - c.p[0], pr.p[2] - c.p[2]) > 3) continue;
+        const sgC = Math.sign(st.pitch.attackGoal(1).x || 1);
+        const cote = (pr.p[2] - c.p[2]) * (c.strongFoot === 'left' ? 1 : -1) * sgC;   // > 0 = le presseur CÔTÉ FORT
+        acc += cote; n++;
+      }
+    }
+    return n ? +(acc / n).toFixed(3) : 0;
+  };
+  const oriente = biaisDe(1), neutre = biaisDe(0.5);
+  ok(`lot 196 — ORIENTEFAIBLE est une consigne : le presseur consigné se tient côté PIED FORT (biais signé moyen ${oriente} > neutre ${neutre} + 0,015 — l'angle d'approche qui force le faible, le geste défensif enseigné qui n'existait pas)`,
+    oriente > neutre + 0.015);   // la marge suit le geste : 0,55 m de biais au jockey, dilué parmi les régimes de press — le directionnel sur l'échantillon élargi fait foi
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

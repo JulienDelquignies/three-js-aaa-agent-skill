@@ -285,7 +285,7 @@ export function tryClear(st, c, cfg) {
   // JOUE : passe au gardien, sortie courte, le dribble de plus vient du même retard), le
   // RÔLE press du porteur les module (le récupérateur déblaie tôt, le meneur replié retient).
   const rF = st.full && cfg.clearServi !== false
-    ? axe(tac(st, c.team).style, 0.8, 1.2) * axe(role(c).press, 0.9, 1.1) : 1;
+    ? axe(tac(st, c.team).style, 0.8, 1.2) * axe(role(c).press, 0.9, 1.1) * ((role(c).ressort ?? 0.5) !== 0.5 ? axe(role(c).ressort, 1.25, 0.75) : 1) : 1;   // …ET LE RESSORT (196) : la consigne « dégage » / « ressors » — le bloc bas de Simeone c. celui de Guardiola, le MÊME défenseur
   const near = st.players.filter((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 2.6 * rF).length;
   const glued = st.players.some((q) => q.team !== c.team && q.down <= 0 && d2(q.p, c.p) < 1.4 * rF);
   if (!(near >= 2 || (glued && depth < pitch.hx * 0.45))) return false;
