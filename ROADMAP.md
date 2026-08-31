@@ -328,8 +328,12 @@ verdict — la présence paie +6 pts depuis le monde 182 ; la sur-conversion est
 la question du jalon densité FM).
 L'ENGAGEMENT CÉRÉMONIEUX (183, note 224) : Loi 8 complète — le rond (160b) ET
 les moitiés (canTake attend, patience anti-gel) ; le retour trotté (le mené
-presse, le meneur au tempo bas flâne). Reste du cérémonial : l'arbitre au
-sifflet incarné, le ballon replacé au point par un corps (aujourd'hui posé).
+presse, le meneur au tempo bas flâne). Reste du cérémonial : ~~l'arbitre au
+sifflet incarné~~ FAIT AU 185 (note 226 — le corps du sifflet : diagonale,
+fautes accourues, rond tenu, rendu noir vérifié au pixel) ; le ballon replacé
+au point par un corps (aujourd'hui posé) ; les ASSISTANTS de touche (la ligne
+du hors-jeu incarnée) ; le percuté Loi 9 (ballon à terre si l'arbitre est
+touché).
 
 LE RETOUR ×6 (170-171, note 211) : le corps ouvert (pivot 75°→60°, demi-position
 × visionF), la tenue du gardien (0,38→3,23 s, l'éclair = un choix de contre), le

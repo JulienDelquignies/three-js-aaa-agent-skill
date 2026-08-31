@@ -11,7 +11,7 @@ import { tac, axe, resoudreTactique, triangule } from './tactics.js';
 import { resoudreRole, role, deborde, ancresCraie } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
-import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch } from './referee.js';
+import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js';
@@ -1128,6 +1128,7 @@ export function matchStep(st, dt, cfg = matchCfg()) {
   const prev = [st.ball.p[0], st.ball.p[1], st.ball.p[2]];
   contreTir(st, cfg);   // LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
   jambeTendue(st, cfg); // LA JAMBE TENDUE (181, duel.jambeTendue) : le receveur attitré touche la passe qui allait le déborder
+  arbitreStep(st, dt, cfg); // L'ARBITRE INCARNÉ (185, referee.arbitreStep) : le corps du sifflet — la diagonale, la faute, le rond
   rondoStep(st, dt, cfg);
   st._ballPrev = prev;
   return st;

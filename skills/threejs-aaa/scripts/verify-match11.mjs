@@ -3950,5 +3950,30 @@ if (__bloc()) {
     V.pris === false && V.walkF > 1 && E.pris === true && E.walkF === 1);
 }
 
+// ---- lot 185 : L'ARBITRE INCARNÉ (referee.arbitreStep — le corps du sifflet)
+if (__bloc()) {
+  // Le corps suit la diagonale (p50 de distance au ballon dans la fenêtre d'arbitrage réel),
+  // accourt au point de faute, tient le bord du rond à l'engagement — et n'est JAMAIS un
+  // acteur du jeu (hors st.players : l'empreinte du flux est identique avec ou sans lui).
+  const filme = (over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const dists = []; let dCF = null, dRond = null;
+    for (let i = 0; i < 120 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      const a = st.arbitre;
+      if (!a) continue;
+      if (i % 30 === 0 && !st.restart) dists.push(Math.hypot(a.p[0] - st.ball.p[0], a.p[2] - st.ball.p[2]));
+      if (st.restart?.type === 'coup-franc' && st.t > st.restart.at - 0.25) dCF ??= Math.hypot(a.p[0] - st.restart.p[0], a.p[2] - st.restart.p[1]);
+      if (st.restart?.type === 'engagement' && st.t > st.restart.at - 0.25) dRond ??= Math.hypot(a.p[0], a.p[2]);
+    }
+    dists.sort((x, y) => x - y);
+    return { corps: dists.length > 0, p50: +(dists[Math.floor(dists.length / 2)] ?? -1).toFixed(1), dCF: dCF != null ? +dCF.toFixed(1) : null, dRond: dRond != null ? +dRond.toFixed(1) : null, nul: !st.arbitre };
+  };
+  const V = filme({}), E = filme({ arbitre: false });
+  ok(`lot 185 — L'ARBITRE INCARNÉ : le corps suit à p50 ${V.p50} m ∈ [7 ; 22] du ballon, accourt au coup-franc (${V.dCF} m ≤ 9) et tient le rond à l'engagement (${V.dRond} m ∈ [8 ; 15]) ; l'épinglé reste désincarné (st.arbitre ${E.nul ? 'null' : 'posé'} — l'hier au bit, l'empreinte du flux ne bouge pas : il n'a pas de pied)`,
+    V.corps && V.p50 >= 7 && V.p50 <= 22 && (V.dCF == null || V.dCF <= 9) && (V.dRond == null || (V.dRond >= 8 && V.dRond <= 15)) && E.nul === true && E.p50 === -1);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

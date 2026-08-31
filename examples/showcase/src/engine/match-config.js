@@ -172,6 +172,10 @@ export const MATCH = {
   craie: { tire: 0.6, seuil: 0.42 },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
                           // large est tiré vers la ligne (fraction du chemin × axe largeur ×
                           // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
+  arbitre: { suit: 13, axial: 0.55, marche: 2.2, trot: 4.6, sprint: 6.8, recul: 5, loin: 20 },
+                          // 185 : L'ARBITRE INCARNÉ — le corps du sifflet (st.arbitre, hors
+                          // st.players : il ne peut rien jouer) ; la diagonale au jeu courant,
+                          // la faute accourue, le rond tenu. false : le sifflet désincarné.
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.

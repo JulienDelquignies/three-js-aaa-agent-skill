@@ -878,3 +878,54 @@ export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
       else if (type === 'sortie-de-but' && st.full && st.tactics?.[st.players[id]?.team]?.cpa?.sortieBut)
         _relancer(st, id >= 0 ? st.players[id] : null, cfg, { beginPass: _beginPass });
 }
+
+/** L'ARBITRE INCARNÉ (lot 185, cfg.arbitre && st.full — demande utilisateur : « ajoute un
+ *  arbitre s'il y en a pas »). Le sifflet avait ses LOIS (administerWhistle, adjugeFaute)
+ *  mais pas de CORPS : le voici — un 23e corps HORS de st.players (il ne peut ni prendre ni
+ *  dévier un ballon par construction ; le percuté Loi 9 est une dette nommée). Son métier
+ *  par régime : au jeu courant il SUIT en retrait diagonal (derrière le jeu, plus axial que
+ *  le ballon — les touches sont aux assistants, une dette aussi) ; au coup-franc/penalty il
+ *  ACCOURT au point ; au corner il se poste à l'angle de la surface ; à l'engagement il
+ *  tient le bord du rond. Trois allures (marche/trot/sprint à la distance), inertie simple.
+ *  La scène le rend en noir ; le moteur n'expose que st.arbitre { p, v, yaw, job }.
+ *  Clé absente : l'arbitrage désincarné d'hier au bit (st.arbitre = null). */
+export function arbitreStep(st, dt, cfg) {
+  const A = cfg.arbitre;
+  if (!st.full || !A) { if (st.arbitre) st.arbitre = null; return; }
+  const a = st.arbitre ??= { p: [-8, 0, 6], v: [0, 0], yaw: 0, job: 'suit' };
+  const b = st.ball.p, r = st.restart;
+  let tx, tz, top = A.trot ?? 4.6;
+  if (r?.type === 'engagement') {
+    a.job = 'ceremonie'; const R = (st.pitch.dims.circle ?? 9.15) + 1.8;
+    tx = -R * 0.7; tz = R * 0.7;
+  } else if (r && (r.type === 'coup-franc' || r.type === 'penalty')) {
+    a.job = 'faute';
+    const vers = Math.sign(-r.p[0] || 1);                          // le pas de recul vers le centre
+    tx = r.p[0] + vers * (A.recul ?? 5); tz = r.p[1] * 0.8;
+    top = A.sprint ?? 6.8;                                         // on ACCOURT à la faute
+  } else if (r?.type === 'corner') {
+    a.job = 'corner';
+    const sgC = Math.sign(r.p[0] || 1);
+    tx = sgC * (st.pitch.hx - st.pitch.dims.box.depth - 1); tz = Math.sign(r.p[1] || 1) * (st.pitch.dims.box.width / 2 + 2);
+  } else {
+    // LA DIAGONALE : en retrait du ballon vers le camp de l'équipe qui attaque, pincé vers l'axe
+    a.job = 'suit';
+    const atk = st.possession.team >= 0 ? st.possession.team : 0;
+    const dir = Math.sign(st.pitch.attackGoal(atk).x || 1);
+    tx = b[0] - dir * (A.suit ?? 13); tz = b[2] * (A.axial ?? 0.55);
+    const dB = Math.hypot(a.p[0] - b[0], a.p[2] - b[2]);
+    top = dB > (A.loin ?? 20) ? (A.sprint ?? 6.8) : dB > 9 ? (A.trot ?? 4.6) : (A.marche ?? 2.2);
+  }
+  tx = Math.max(-st.pitch.hx + 1, Math.min(st.pitch.hx - 1, tx));
+  tz = Math.max(-st.pitch.hz + 1, Math.min(st.pitch.hz - 1, tz));
+  const dx = tx - a.p[0], dz = tz - a.p[2], d = Math.hypot(dx, dz);
+  const want = d > 0.6 ? Math.min(top, d * 2.2) : 0;
+  const wx = d > 1e-6 ? (dx / d) * want : 0, wz = d > 1e-6 ? (dz / d) * want : 0;
+  const k = Math.min(1, dt * 5);                                   // l'inertie du corps (accélération bornée)
+  a.v[0] += (wx - a.v[0]) * k; a.v[1] += (wz - a.v[1]) * k;
+  a.p[0] += a.v[0] * dt; a.p[2] += a.v[1] * dt;
+  const sp = Math.hypot(a.v[0], a.v[1]);
+  if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
+  else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
+  a.speed = sp;
+}

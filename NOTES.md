@@ -6421,6 +6421,50 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      3bad89aaa3fcb005 IDENTIQUES au commit 183 (aucun _subs au flux nu) — pas
      d'A/B requis, pas de re-dateur possible. Clause au banc loi3 (10 ✓ :
      longe + médiane + à-dix + sabotage miroir).
+- 226: Lot 185 — L'ARBITRE INCARNÉ (demande utilisateur : « ajoute un arbitre
+     s'il y en a pas »). Le sifflet avait ses lois (administerWhistle,
+     adjugeFaute, canTake…) mais AUCUN corps. LA LOI (referee.arbitreStep,
+     cfg.arbitre, appelée par matchStep) : un 23e corps HORS de st.players —
+     il ne peut ni prendre ni dévier un ballon PAR CONSTRUCTION (le percuté
+     Loi 9 « ballon à terre » est une dette nommée, les assistants de touche
+     aussi). Son métier par régime : au jeu courant il SUIT en retrait
+     diagonal (suit 13 m, axial 0,55 — plus central que le ballon, les
+     touches sont aux assistants) ; au coup-franc/penalty il ACCOURT au
+     point (sprint, recul 5 m vers le centre) ; au corner il se poste à
+     l'angle de la surface ; à l'engagement il tient le bord du rond. Trois
+     allures (marche 2,2 / trot 4,6 / sprint 6,8), inertie bornée, à l'arrêt
+     il REGARDE le jeu. MESURÉ : d(ballon) p05 5,4 / p50 14,5 / p95 25,2 (la
+     fenêtre d'arbitrage réelle) ; aux CF à 5-6 m du point à l'heure de
+     reprise ; au rond à 10-11 m du centre. PREUVE DE NON-EFFET : empreintes
+     bce971a14a35d913 / 3bad89aaa3fcb005 identiques aux lots 183/184 — le
+     corps est un témoin, pas un acteur ; aucun re-dateur possible. LA SCÈNE
+     (Rondo.js) : même rig, tenue teinte NOIRE (Shirt/Shorts/Socks 0x17171c),
+     locomotion seule (ni gestes ni regard), le rendu copie st.arbitre —
+     VÉRIFIÉ AU PIXEL (playmode : le corps noir court la diagonale au milieu
+     des rouges et des blancs). Clause 185 (fenêtres de suivi + postes +
+     sabotage désincarné). Clé absente : l'arbitrage sans corps d'hier au bit.
+- 226: Lot 185 — L'ARBITRE INCARNÉ (demande utilisateur : « ajoute un arbitre
+     s'il y en a pas »). Le sifflet avait ses lois (administerWhistle,
+     adjugeFaute, canTake…) mais AUCUN corps. LA LOI (referee.arbitreStep,
+     cfg.arbitre, appelée par matchStep) : un 23e corps HORS de st.players —
+     il ne peut ni prendre ni dévier un ballon PAR CONSTRUCTION (le percuté
+     Loi 9 « ballon à terre » est une dette nommée, les assistants de touche
+     aussi). Son métier par régime : au jeu courant il SUIT en retrait
+     diagonal (suit 13 m, axial 0,55 — plus central que le ballon, les
+     touches sont aux assistants) ; au coup-franc/penalty il ACCOURT au
+     point (sprint, recul 5 m vers le centre) ; au corner il se poste à
+     l'angle de la surface ; à l'engagement il tient le bord du rond. Trois
+     allures (marche 2,2 / trot 4,6 / sprint 6,8), inertie bornée, à l'arrêt
+     il REGARDE le jeu. MESURÉ : d(ballon) p05 5,4 / p50 14,5 / p95 25,2 (la
+     fenêtre d'arbitrage réelle) ; aux CF à 5-6 m du point à l'heure de
+     reprise ; au rond à 10-11 m du centre. PREUVE DE NON-EFFET : empreintes
+     bce971a14a35d913 / 3bad89aaa3fcb005 identiques aux lots 183/184 — le
+     corps est un témoin, pas un acteur ; aucun re-dateur possible. LA SCÈNE
+     (Rondo.js) : même rig, tenue teinte NOIRE (Shirt/Shorts/Socks 0x17171c),
+     locomotion seule (ni gestes ni regard), le rendu copie st.arbitre —
+     VÉRIFIÉ AU PIXEL (playmode : le corps noir court la diagonale au milieu
+     des rouges et des blancs). Clause 185 (fenêtres de suivi + postes +
+     sabotage désincarné). Clé absente : l'arbitrage sans corps d'hier au bit.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
