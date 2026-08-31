@@ -6465,6 +6465,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      VÉRIFIÉ AU PIXEL (playmode : le corps noir court la diagonale au milieu
      des rouges et des blancs). Clause 185 (fenêtres de suivi + postes +
      sabotage désincarné). Clé absente : l'arbitrage sans corps d'hier au bit.
+- 227: Lot 186 — LES ASSISTANTS DE TOUCHE (demande utilisateur, la suite du
+     185). La Loi 6 incarnée : deux corps HORS du terrain (le rail z = ±(hz +
+     0,8) est absolu — a.p[2] écrit chaque frame), chacun sur SA touche
+     (côtés opposés, la diagonale complète celle du central) et SA moitié :
+     l'assistant k longe LA LIGNE DU HORS-JEU des attaques de l'équipe k —
+     celle que le moteur calculait déjà (offside.offsideLine : l'avant-
+     dernier défenseur ou le ballon, jamais derrière la médiane) ; la ligne
+     n'est plus un calcul invisible, elle a un corps qui la court. Au corner
+     de sa moitié/son côté il tient le drapeau. Sprint 7,2 (le vrai
+     assistant est le corps le plus rapide du match), en course il court, à
+     l'arrêt il FACE le terrain. MESURÉ : écart à la ligne p50 0,6-0,7 m,
+     p95 1,9-2,0 (le retard du vrai assistant), 0 frame dans le terrain sur
+     4 × 300 s, 3/3 corners au drapeau. Empreintes IDENTIQUES (troisième
+     corps sans pied — comme le central). SCÈNE : arbitre.js généralisé aux
+     TROIS officiels (spawnOfficiel/updateOfficiel — spawnArbitre rend
+     { central, assistants }), vérifié au pixel (le corps noir longe la
+     touche devant les panneaux). Clause 186 (rail + p50 + sabotage).
+     Dettes tenues : le DRAPEAU levé au hors-jeu signalé (le geste),
+     le percuté Loi 9, le sifflet gestuel du central.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

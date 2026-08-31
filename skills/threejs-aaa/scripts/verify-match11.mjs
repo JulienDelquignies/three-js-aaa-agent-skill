@@ -3975,5 +3975,34 @@ if (__bloc()) {
     V.corps && V.p50 >= 7 && V.p50 <= 22 && (V.dCF == null || V.dCF <= 9) && (V.dRond == null || (V.dRond >= 8 && V.dRond <= 15)) && E.nul === true && E.p50 === -1);
 }
 
+// ---- lot 186 : LES ASSISTANTS DE TOUCHE (referee.assistantsStep — la Loi 6 incarnée)
+if (__bloc()) {
+  // Chacun sa touche (côtés opposés), sa moitié, et LE RAIL DE LA LIGNE : l'écart médian à
+  // offsideLine tient dans le retard du vrai assistant ; jamais un pied dans le terrain ;
+  // le drapeau de son corner tenu. L'épinglé : la ligne désincarnée (st.assistants null).
+  const filme = (over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const ecarts = []; let dedans = 0;
+    for (let i = 0; i < 120 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      const as = st.assistants;
+      if (!as) continue;
+      for (let k = 0; k < 2; k++) {
+        if (Math.abs(as[k].p[2]) < st.pitch.hz) dedans++;
+        if (i % 30 === 0 && !st.restart) {
+          const L = offsideLine(st, k);
+          ecarts.push(Math.abs(as[k].p[0] - Math.min(st.pitch.hx - 0.5, L.adv) * L.sgn));
+        }
+      }
+    }
+    ecarts.sort((x, y) => x - y);
+    return { corps: ecarts.length > 0, p50: +(ecarts[Math.floor(ecarts.length / 2)] ?? -1).toFixed(1), dedans, nul: !st.assistants };
+  };
+  const V = filme({}), E = filme({ assistants: false });
+  ok(`lot 186 — LES ASSISTANTS DE TOUCHE : le rail de la ligne du hors-jeu tenu (écart p50 ${V.p50} m ≤ 2,5 — le retard du vrai assistant), jamais un pied dans le terrain (${V.dedans} = 0) ; l'épinglé reste désincarné (st.assistants ${E.nul ? 'null' : 'posé'} — l'hier au bit, l'empreinte ne bouge pas)`,
+    V.corps && V.p50 >= 0 && V.p50 <= 2.5 && V.dedans === 0 && E.nul === true);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

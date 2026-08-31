@@ -1156,7 +1156,7 @@ export class Rondo {
       this._applyTouchWarp(pl);
     }
 
-    if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state.arbitre, step, top);
+    if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state, step, top);
 
     // ---- the ball, spun by its own angular velocity
     const b = this.state.ball;

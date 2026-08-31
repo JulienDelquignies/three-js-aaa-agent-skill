@@ -1,15 +1,19 @@
-// scenes/arbitre.js — L'ARBITRE INCARNÉ AU RENDU (lot 185, déporté de Rondo.js au plafond de
-// volumétrie). Le moteur tient la vérité (st.arbitre — referee.arbitreStep, hors st.players :
-// il ne joue jamais le ballon) ; ici seulement le CORPS : même rig que les joueurs, tenue
-// teinte NOIRE, locomotion seule (ni gestes, ni regard, ni warps — un témoin, pas un acteur).
+// scenes/arbitre.js — LES OFFICIELS AU RENDU (lot 185 le central, 186 les assistants —
+// déporté de Rondo.js au plafond de volumétrie). Le moteur tient la vérité (st.arbitre,
+// st.assistants — referee.js, hors st.players : aucun ne joue le ballon) ; ici seulement les
+// CORPS : même rig que les joueurs, tenue NOIRE, locomotion seule — des témoins, pas des acteurs.
 import * as THREE from 'three';
 import { CharacterController } from '../engine/character-controller.js';
 import { tintPart } from '../engine/part-tint.js';
 import { RONDO } from '../engine/rondo.js';
 
-export function spawnArbitre({ squad, scene, night, q, bake }) {
+export function spawnArbitre(ctx) {
+  return { central: spawnOfficiel(ctx, [-8, 6]), assistants: [spawnOfficiel(ctx, [20, 35]), spawnOfficiel(ctx, [-20, -35])] };
+}
+
+function spawnOfficiel({ squad, scene, night, q, bake }, at) {
   const { model, groundY, clips } = squad.spawn(0);
-  model.position.set(-8, groundY, 6);
+  model.position.set(at[0], groundY, at[1]);
   scene.add(model); model.updateMatrixWorld(true);
   tintPart(model, { match: /Shirt|Shorts|Socks/i, color: 0x17171c });
   const mixer = new THREE.AnimationMixer(model);
@@ -27,7 +31,13 @@ export function spawnArbitre({ squad, scene, night, q, bake }) {
   return { model, ctrl, groundY };
 }
 
-export function updateArbitre(aR, aS, step, top) {
+export function updateArbitre(trio, state, step, top) {
+  updateOfficiel(trio.central, state.arbitre, step, top);
+  const as = state.assistants;
+  for (let k = 0; k < 2; k++) updateOfficiel(trio.assistants[k], as?.[k], step, top);
+}
+
+function updateOfficiel(aR, aS, step, top) {
   aR.model.visible = !!aS;
   if (!aS) return;
   aR.ctrl.setMoveWorld(aS.v[0] / top, aS.v[1] / top);

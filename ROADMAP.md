@@ -331,9 +331,10 @@ les moitiés (canTake attend, patience anti-gel) ; le retour trotté (le mené
 presse, le meneur au tempo bas flâne). Reste du cérémonial : ~~l'arbitre au
 sifflet incarné~~ FAIT AU 185 (note 226 — le corps du sifflet : diagonale,
 fautes accourues, rond tenu, rendu noir vérifié au pixel) ; le ballon replacé
-au point par un corps (aujourd'hui posé) ; les ASSISTANTS de touche (la ligne
-du hors-jeu incarnée) ; le percuté Loi 9 (ballon à terre si l'arbitre est
-touché).
+au point par un corps (aujourd'hui posé) ; ~~les ASSISTANTS de touche~~ FAITS AU
+186 (note 227 — le rail de la ligne, le drapeau du corner) ; le DRAPEAU levé
+au hors-jeu signalé (le geste) ; le percuté Loi 9 (ballon à terre si l'arbitre
+est touché).
 
 LE RETOUR ×6 (170-171, note 211) : le corps ouvert (pivot 75°→60°, demi-position
 × visionF), la tenue du gardien (0,38→3,23 s, l'éclair = un choix de contre), le

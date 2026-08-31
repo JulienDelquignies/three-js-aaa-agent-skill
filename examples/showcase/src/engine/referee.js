@@ -6,6 +6,7 @@
 // AUCUN comportement ne change : la batterie des 295 clauses au bit près est LA preuve.
 import { BALL } from './ball.js';
 import { outRule } from './pitch.js';
+import { offsideLine } from './offside.js';
 import { winding } from './gesture.js';
 import { keeperSpot } from './keeper.js';
 import { makeProfile } from './attributes.js';
@@ -928,4 +929,36 @@ export function arbitreStep(st, dt, cfg) {
   if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
   else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
   a.speed = sp;
+  assistantsStep(st, dt, cfg);
+}
+
+/** LES ASSISTANTS DE TOUCHE (lot 186, cfg.assistants — la Loi 6 : la ligne du hors-jeu
+ *  INCARNÉE). Deux corps HORS du terrain, chacun sur SA touche (côtés opposés — la diagonale
+ *  complète celle du central) et SA moitié : l'assistant k juge les attaques de l'équipe k et
+ *  longe la ligne que le moteur calcule déjà (offside.offsideLine — l'avant-dernier défenseur
+ *  ou le ballon, jamais derrière la médiane). Au corner de sa moitié il tient le drapeau. Il
+ *  court la touche en sprint (le vrai assistant est le corps le plus rapide du match), et à
+ *  l'arrêt il fait face au terrain. Comme le central : hors st.players, aucun pied dans le
+ *  jeu — l'empreinte du flux ne bouge pas. Clé absente : la ligne désincarnée d'hier. */
+function assistantsStep(st, dt, cfg) {
+  const AS = cfg.assistants;
+  if (!st.full || !AS) { if (st.assistants) st.assistants = null; return; }
+  const hz = st.pitch.hz + (AS.marge ?? 0.8), hx = st.pitch.hx;
+  const as = st.assistants ??= [{ p: [hx * 0.5, 0, hz], v: [0, 0], yaw: 0 }, { p: [-hx * 0.5, 0, -hz], v: [0, 0], yaw: 0 }];
+  for (let k = 0; k < 2; k++) {
+    const a = as[k], cote = k === 0 ? 1 : -1;
+    const L = offsideLine(st, k);                                  // la ligne des attaques de l'équipe k
+    let tx = Math.min(hx - 0.5, L.adv) * L.sgn;
+    const r = st.restart;
+    if (r?.type === 'corner' && Math.sign(r.p[0] || 1) === Math.sign(L.sgn) && Math.sign(r.p[1] || 1) === cote)
+      tx = L.sgn * hx;                                             // le drapeau de SON corner
+    const dx = tx - a.p[0], d = Math.abs(dx);
+    const want = d > 0.4 ? Math.min(AS.sprint ?? 7.2, d * 2.5) : 0;
+    const k2 = Math.min(1, dt * 6);
+    a.v[0] += (Math.sign(dx) * want - a.v[0]) * k2; a.v[1] = 0;
+    a.p[0] += a.v[0] * dt; a.p[2] = cote * hz;                     // JAMAIS dans le terrain : la touche est son rail
+    const sp = Math.abs(a.v[0]);
+    a.yaw = sp > 0.6 ? (a.v[0] > 0 ? 0 : Math.PI) : -cote * Math.PI / 2;   // en course il court, à l'arrêt il FACE le terrain
+    a.speed = sp;
+  }
 }
