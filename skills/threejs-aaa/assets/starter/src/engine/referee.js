@@ -1008,6 +1008,7 @@ export function elireTaker(st, r, cfg, d2) {
   const specOk = st.full && cfg.preneurCPA && !r._elu && (r.type === 'corner' || (r.type === 'coup-franc'
     && Math.hypot(st.pitch.attackGoal(r.team).x - r.p[0], r.p[1]) < (cfg.preneurCPA.zone ?? 48)));
   if (specOk || !taker || taker.down > 0 || taker.team !== r.team || (taker.keeper && !gkOk) || (gkOk && !taker.keeper)) {
+    if (taker && (taker.down > 0 || taker.team !== r.team || (taker.keeper && !gkOk))) taker = null;   // le sticky INVALIDE se REMPLACE (le ??= d'en bas ne réassigne pas un non-null — un preneur au sol gelait la remise, jumeau de commits 193)
     if (gkOk) {
       const gkT = st.players.find((p) => p.team === r.team && p.keeper && !p.expulse) ?? null;
       if (gkT && gkT.down > 0) { r.taker = -2; taker = null; }   // le renvoi ATTEND le gardien relevé (il est souvent au sol après l'arrêt — le fallback champ devenait sticky à jamais)
