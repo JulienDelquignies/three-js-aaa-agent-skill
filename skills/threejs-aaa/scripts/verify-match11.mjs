@@ -1568,7 +1568,7 @@ if (__bloc()) {
 if (__bloc()) {
   const placer = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, ...over });
+    const cfg = matchCfg({ shotRange: 20, preneurCPA: false, loi16: false, ...over });   // la clause mesure le PLACEMENT — elle isole 193 (le spécialiste élu mangeait un GRAND forgé : le tireur ne monte pas en boîte)
     for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
     const og = st.pitch.ownGoal(0), sg = Math.sign(og.x || 1);      // team 1 attaque og(0)
     // les GRANDS forgés : 4 attaquants à strength 92, le reste à 35 — le tri doit choisir EUX
