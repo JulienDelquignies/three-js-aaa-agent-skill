@@ -495,7 +495,7 @@ export const MATCH = {
                           // se fait couper, contrairement à la cloche) ; c'est LUI qui sert la
                           // reprise de volée. false : que des cloches (sabotage nommé).
   charge: { dist: 0.85, time: 0.4, cd: 3.0 },
-  slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 },
+  slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7, suit: 3.5, win: 1.15, frein: 1.35, imprudence: 0.2 },
                           // LE TACLE GLISSÉ SUR PORTEUR (11c11, st.full — lot 33) : le pari
                           // du dernier recours. Un poursuivant lancé (speed m/s) au ballon
                           // dans la fenêtre (at m) se couche ; la table technique juge la

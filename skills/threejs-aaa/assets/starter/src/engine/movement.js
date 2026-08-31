@@ -25,7 +25,18 @@ export function movePlayers(st, dt, cfg) {
       // de déclenchement, freiné exponentiellement (~1,4-1,8 m parcourus) — le pied ARRIVE.
       const g = p._glisse;
       if (g && st.full) {
-        const k = Math.exp(-2.5 * dt);
+        // …ET LE BALAYAGE SUIT LE BALLON (191, cfg.slideTackle.suit — liste v3 point 4 : 18 %
+        // de contacts réussis, la direction FIGÉE au lancement pendant que le ballon divergeait).
+        // La jambe s'oriente pendant la glisse : rotation bornée (rad/s) vers le ballon réel —
+        // un ajustement de corps, pas un aimant. Clé absente : la glisse aveugle d'hier au bit.
+        const su = cfg.slideTackle?.suit;
+        if (su && p._slide) {
+          const va = Math.atan2(g.v[1], g.v[0]), ba = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
+          let da = ba - va; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+          const rot = Math.max(-su * dt, Math.min(su * dt, da)), sp = Math.hypot(g.v[0], g.v[1]);
+          g.v[0] = Math.cos(va + rot) * sp; g.v[1] = Math.sin(va + rot) * sp;
+        }
+        const k = Math.exp(-(cfg.slideTackle?.frein ?? 2.5) * dt);   // …et la glisse PORTE LOIN (191 : freinée à 2,5 elle mourait à ~1,5 m, le ballon emporté à 2+ — le vrai tacle glisse 2,5-3 m, c'est même son danger)
         g.v[0] *= k; g.v[1] *= k;
         p.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, p.p[0] + g.v[0] * dt));
         p.p[2] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, p.p[2] + g.v[1] * dt));

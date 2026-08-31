@@ -6565,6 +6565,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      meilleur foot marque ; la sur-densité reste le jalon FM). Clause 190
      (fenêtre + statue épinglée). Piège payé : le replace mono-ligne a avalé
      liberoGate derrière un commentaire (SyntaxError attrapé au parse).
+- 232: Lot 191 — LE TACLE GLISSÉ QUI GAGNE (liste v3 point 4 : « très peu de
+     glissés, l'animation existe-t-elle, la vitesse cohérente, plusieurs
+     types ? »). LE FUNNEL A PARLÉ : 57 glissés/12×300 s (la fréquence est
+     réelle : ~10/90 équiv, DEUX familles — porteur/duel + ballon libre, et
+     le clip 'tacle' existe au catalogue) mais 12 % de GAGNÉS (réel 50-70) —
+     l'utilisateur ne les « voyait » pas parce que seuls les gagnés se
+     voient. Trois lois au CONTACT (le tueur : 18 % de réussite au contact,
+     la glisse figée/courte pendant que le ballon divergeait) :
+     · LE BALAYAGE SUIT LE BALLON (movement, S.suit 3,5 rad/s) : la jambe
+       s'oriente pendant la glisse — rotation bornée, pas un aimant.
+     · LA GLISSE PORTE LOIN (S.frein 2,5 → 1,35 : ~2,5-3 m parcourus comme
+       au réel — c'est même le danger du geste).
+     · L'ALLONGE AU CONTACT (S.win 1,15 + tackleReach × 2 — la note
+       tackling en facteur des DEUX temps du geste).
+     + S.imprudence en clé (0,2 — le déclencheur refuse plus de glissés
+     non-gagnables ; le canal de la faute du réel préservé). APRÈS :
+     porteur 12 % → 28 % gagnés, ballon libre 3/4, la bande saine (14
+     buts/10 graines). Le chemin du 50 % réel passe par le DÉCLENCHEUR
+     (47 % de lancements encore non-gagnables — dette nommée). Piège
+     re-payé : un banc lancé pendant les éditions mesure un monde
+     intermédiaire — le sceau se refait sur le commit.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

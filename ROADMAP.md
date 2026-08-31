@@ -302,8 +302,11 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
    la ligne, filmé au pixel ; gkAuDevant : la rencontre + le soutien 7 m —
    prises p50 8,7 m, circuit ×4). RESTE à valider à l'œil.
 3. LES ARRÊTS DU GARDIEN : pas cohérents/réalistes « à tout niveau ».
-4. LES TACLES GLISSÉS : très rares — l'animation existe-t-elle, la vitesse
-   est-elle cohérente, y a-t-il plusieurs types ?
+4. ~~LES TACLES GLISSÉS~~ — TRAITÉ AU 191 (note 232 : la fréquence était
+   réelle, le clip existe, DEUX familles — mais 12 % gagnés ; le balayage qui
+   suit + la glisse longue + l'allonge notée → 28 % porteur, 3/4 libre).
+   Dette : le déclencheur imprudent (47 % de lancements non-gagnables — le
+   chemin du 50 % réel).
 5. ~~LA CONTRE-ATTAQUE qui recule~~ — TRAITÉ AU 189 (note 230 : enLance, 4
    portes fermées à la mesure — contre-recule ÷2, tirs 15 → 25/4 graines).
 6. LES CPA : corner / coup franc / renvoi aux 6 m — placements défensifs ET

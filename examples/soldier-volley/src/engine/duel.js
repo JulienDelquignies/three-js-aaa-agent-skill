@@ -85,7 +85,7 @@ export function slideTackleStep(st, c, cfg) {
     if (!tableOk && !jambes) return;                        // rien à toucher : un pro reste debout
     // …et l'imprudence est l'EXCEPTION, pas la règle (mesuré : chaque situation jambes partait —
     // fautes 2,5/match, réel ~0,8/3 min) : 70 % du temps, le pro retient ce tacle-là aussi.
-    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > 0.3) return;
+    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > (S.imprudence ?? 0.3)) return;   // …le taux d'imprudence en clé (191)
     if (tableOk) {
       const tc = Math.min(0.4, Math.max(0.1, (sit.dist - 0.35) / Math.max(3.5, vq0)));
       const tMid = Math.min(0.5, (tc + 0.55) / 2);
@@ -164,9 +164,10 @@ export function slideResolve(st, cfg) {
     const d = d2(q.p, st.ball.p);
     // le pied BALAYE pendant la glisse : le contact se prend n'importe quand dans la fenêtre
     // [at ; until] — passé `until` sans ballon, c'est le vide (le prix du pari)
-    if (!(d <= (S.win ?? 1.0) && st.ball.p[1] < 0.6) && st.t < (g.until ?? g.at)) continue;
+    const winR = (S.win ?? 1.0) + (q.skill?.tackleReach ?? 0) * 2;   // …l'allonge du tacle au CONTACT aussi (191 — la note tackling en facteur des deux temps)
+    if (!(d <= winR && st.ball.p[1] < 0.6) && st.t < (g.until ?? g.at)) continue;
     q._slide = null;
-    if (d <= (S.win ?? 1.0) && st.ball.p[1] < 0.6) {
+    if (d <= winR && st.ball.p[1] < 0.6) {
       const c = st.players[g.sur];
       if (c?.act && winding(c)) abortGesture(c, 'fauché', { log: st.gestures });
       st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: q.id, won: true, tech: 'tacle-glisse',
