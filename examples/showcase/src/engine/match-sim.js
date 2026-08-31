@@ -1095,7 +1095,12 @@ function onDive(st, gk, cfg) {
   else riseDown(st, gk, cfg, true);
   const spdT = Math.hypot(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
   const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
-  if (d <= 1.1 * aeF && y <= 1.9 * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
+  // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4
+  // prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants
+  // dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe
+  // à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
+  const priseD = st.full && cfg.priseGant ? (cfg.priseGant.d ?? 1.35) : 1.1;
+  if (d <= priseD * aeF && y <= 1.9 * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)

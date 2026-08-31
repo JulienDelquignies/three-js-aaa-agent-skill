@@ -89,7 +89,7 @@ export const MATCH = {
                           // RESPIRATION d'équipe entre deux diagonales (respire s). Mesuré
                           // avant : 12,3 renversements / 220 s (réel 0,3-0,9), 30 % sans une
                           // passe de fixation. fix:false : les bascules libres d'hier.
-  corner: { claqueV: 13, priseV: 16 }, // LES CORNERS (11c11, st.full — lot 101) : la NAISSANCE — la
+  corner: { claqueV: 13, priseV: 21 }, // LES CORNERS (11c11, st.full — lot 101) : la NAISSANCE — la
                           // claquette du tir fort au bout de l'envergure DÉVIE derrière la
                           // ligne (≥ claqueV m/s, 1 main : « en corner ! », outRule juge —
                           // mesuré avant : 1 corner / 8 matchs) — et LE TRAVAIL (hook
@@ -183,6 +183,9 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  priseGant: { d: 1.35 },  // 194 : LA PRISE À DEUX MAINS — le contact ≤ 1,35 × aeF non-missile
+                          // se PREND (8/12 claquettes étaient à deux mains). Absente : le
+                          // poussoir d'hier.
   preneurCPA: { zone: 48 },  // 193 : LE PRENEUR A UN MÉTIER — la sortie de but au GARDIEN, le
                           // corner/CF offensif au SPÉCIALISTE (passSigma le plus fin — le tireur
                           // attitré), la touche au plus proche. Absente : le plus-proche d'hier.

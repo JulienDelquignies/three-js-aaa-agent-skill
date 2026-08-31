@@ -6650,6 +6650,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      spécialiste élu mangeait un GRAND forgé (le tireur du corner ne monte
      pas en boîte — du vrai foot) ; la clause mesure le placement, elle
      isole l'élection. Shard 0 : 55 ✓ / 0 ✗ ; le banc complet scelle.
+- 236: Lot 194 — LA PRISE À DEUX MAINS + LE MISSILE RE-CALIBRÉ (liste v3
+     point 3 : « les arrêts du gardien pas cohérents à tout niveau »). LE
+     TABLEAU : 49 tirs/12×300 s — 29 % de buts (réel ~11), 35 % d'arrêts
+     (réel ~45), et LE RATIO DES MODES INVERSÉ : 4 prises / 12 claquettes
+     dont 8 À DEUX MAINS (l'événement portait l'aveu : d ≤ 1,35, les gants
+     dessus, et il POUSSAIT). Deux causes fermées :
+     · LA PRISE À DEUX MAINS S'ÉTEND (cfg.priseGant { d: 1,35 } — onDive) :
+       le contact à deux mains non-missile se PREND (le seuil 1,1 d'hier
+       épinglé au sabotage) ; aeF/handF restent les facteurs.
+     · LE MISSILE RE-CALIBRÉ (corner.priseV 16 → 21, DATÉ) : p50 des tirs
+       19,4 m/s au départ — la garde du lot 101 (calibrée aux corners)
+       traitait TOUT tir normal en missile imprenable ; le vrai gardien
+       capte ~20-22 près du corps, le missile réel vit à 24+ (handF module
+       toujours : le bon capte 24, le faible claque dès 18).
+     APRÈS : 11 prises / 7 claquettes (le ratio du réel ~55/35), conversion
+     30 → 21 % (les rebonds de claquette en moins — le chemin vers ~11 %
+     passe par le jalon densité). AU PIXEL : le tir excentré est CUEILLI
+     par le gardien sorti (les lots 190/194 se composent — le gardien
+     maître de sa surface). Clause 194 (le flux des modes, prises ≥
+     claquettes). Dette : la distribution p50 des VITESSES de tir (19,4)
+     est elle-même haute — la question du monde comprimé (jalon FM).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

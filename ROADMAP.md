@@ -301,7 +301,10 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
    propre, le CATASTROPHIQUE était le positionnement — retraits pris à 1,6 m de
    la ligne, filmé au pixel ; gkAuDevant : la rencontre + le soutien 7 m —
    prises p50 8,7 m, circuit ×4). RESTE à valider à l'œil.
-3. LES ARRÊTS DU GARDIEN : pas cohérents/réalistes « à tout niveau ».
+3. ~~LES ARRÊTS DU GARDIEN~~ — TRAITÉ AU 194 (note 236 : le ratio des modes
+   inversé — 8 claquettes À DEUX MAINS ; la prise étendue + le missile
+   re-calibré → 11 prises/7 claquettes, conversion 30 → 21 %). RESTE à
+   valider à l'œil ; le taux global vit au jalon densité.
 4. ~~LES TACLES GLISSÉS~~ — TRAITÉ AU 191 (note 232 : la fréquence était
    réelle, le clip existe, DEUX familles — mais 12 % gagnés ; le balayage qui
    suit + la glisse longue + l'allonge notée → 28 % porteur, 3/4 libre).
