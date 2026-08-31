@@ -301,6 +301,9 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
    propre, le CATASTROPHIQUE était le positionnement — retraits pris à 1,6 m de
    la ligne, filmé au pixel ; gkAuDevant : la rencontre + le soutien 7 m —
    prises p50 8,7 m, circuit ×4). RESTE à valider à l'œil.
+3bis. LE CORNER VOLÉ (retour direct) — RÉPARÉ AU 195 (note 237 : Loi 17, le
+   gant/le contre/la tête comptent au grand livre — 7 sites, 0 renvoi volé) ;
+   le plongeon validé au pixel (départ/sol/relevé cohérents, le geste existe).
 3. ~~LES ARRÊTS DU GARDIEN~~ — TRAITÉ AU 194 (note 236 : le ratio des modes
    inversé — 8 claquettes À DEUX MAINS ; la prise étendue + le missile
    re-calibré → 11 prises/7 claquettes, conversion 30 → 21 %). RESTE à

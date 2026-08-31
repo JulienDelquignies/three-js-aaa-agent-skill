@@ -67,7 +67,7 @@ export function teteStep(st, cfg) {
     }
   }
   st._teteCd = st.t + 0.8;
-  st.lastTouch = joueur.team;
+  st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
   const goal = st.pitch.attackGoal(joueur.team);
   const own = st.pitch.ownGoal(joueur.team);
   const sgn = Math.sign(goal.x || 1);
@@ -144,7 +144,7 @@ export function voleeStep(st, cfg) {
     const demi = st.ball.v[1] > 0.3;
     const tz = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (st.pitch.goalHalf - 0.6);
     st._teteCd = st.t + 0.8;
-    st.lastTouch = joueur.team;
+    st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
     st.ball.strike({ speed: 17, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0.5 });
     surprend(st);
     st.pass = null;
@@ -155,7 +155,7 @@ export function voleeStep(st, cfg) {
   if (Math.hypot(own.x - joueur.p[0], joueur.p[2]) < 24) {
     // LE DÉGAGEMENT DE VOLÉE : le défenseur boxe le vol loin de son but, vers l'avant et le flanc
     st._teteCd = st.t + 0.8;
-    st.lastTouch = joueur.team;
+    st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
     const fz = joueur.p[2] >= 0 ? 0.5 : -0.5;
     st.ball.strike({ speed: 14, dirYaw: Math.atan2(fz, -Math.sign(own.x)), elevation: 0.38, spinAxis: [0, 1, 0], spinRev: 0 });
     surprend(st);
@@ -173,7 +173,7 @@ export function voleeStep(st, cfg) {
   // résiduel (un mauvais premier toucher laisse le ballon vivre un peu).
   if (V.amorti !== false && st.pass && st.pass.to === joueur.id && st.ball.v[1] < -0.4) {
     st._teteCd = st.t + 0.8;
-    st.lastTouch = joueur.team;
+    st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
     const ctl = Math.min(1.2, joueur.skill?.controlF ?? 1);
     const k = (V.amortiK ?? 0.85) * ctl;
     // …et l'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config)
@@ -221,7 +221,7 @@ export function chestStep(st, cfg, dt = 1 / 60) {
   }
   if (!joueur) return;
   st._teteCd = st.t + 0.8;
-  st.lastTouch = joueur.team;
+  st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
   const ctl = Math.min(1.2, joueur.skill?.controlF ?? 1);
   const k = Math.min(0.9, (P.kill ?? 0.78) * ctl);
   st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.8 - 0.5, -st.ball.v[2] * k],

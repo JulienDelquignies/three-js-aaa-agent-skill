@@ -4209,5 +4209,33 @@ if (__bloc()) {
     V.prises >= V.claques);
 }
 
+// ---- lot 195 : LE GANT EST UN TOUCHER (Loi 17 — le corner ne se vole plus)
+if (__bloc()) {
+  // Le bug de fidélité (retour utilisateur : « le gardien dévie en corner, l'arbitre siffle
+  // renvoi aux 6 m ») : la ligne du vol réécrivait lastTouch au TIREUR chaque frame — la
+  // claquette, le contre et la tête ne comptaient jamais au grand livre (7 sites réparés,
+  // lastTouch + lastPasser — un fix ABSOLU de outRule, pas une clé). Le juge de FLUX : les
+  // remises nées < 2,5 s après une déviation défensive ne sont JAMAIS des renvois.
+  let corners = 0, voles = 0;
+  for (const seed of [2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23]) {
+    const st = makeMatch({ full: true, seed });
+    const cfg = matchCfg({ shotRange: 20 });
+    let dev = null;
+    for (let i = 0; i < 300 * 60; i++) {
+      const avantR = st.restart;
+      matchStep(st, 1 / 60, cfg);
+      for (const e of st.events.slice(-3)) {
+        if (((e.type === 'arrêt' && e.mode === 'claquette') || e.type === 'contre' || (e.type === 'tête' && e.mode === 'dégagement')) && !e._c195) { e._c195 = true; dev = st.t; }
+      }
+      if (!avantR && st.restart && dev != null && st.t - dev < 2.5) {
+        if (st.restart.type === 'corner') corners++;
+        else if (st.restart.type === 'sortie-de-but') voles++;
+        dev = null;
+      }
+    }
+  }
+  ok(`lot 195 — LE GANT EST UN TOUCHER (Loi 17) : les sorties après déviation défensive donnent le CORNER (${corners} corners, ${voles} renvois volés = 0 sur 12 × 300 s — avant le fix : 0/2, la claquette sortie ligne de but sifflait renvoi)`,
+    voles === 0);
+}
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

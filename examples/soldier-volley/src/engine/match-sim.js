@@ -1117,7 +1117,7 @@ function onDive(st, gk, cfg) {
     if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) / handF && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16) * handF))
       st.ball.impulse([-st.ball.v[0] * 0.45, -st.ball.v[1] * 0.4 + 2.2, -st.ball.v[2] * 0.3 + side * 6]);
     else st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
-    st.lastTouch = gk.team;
+    st.lastTouch = gk.team; st.lastPasser = gk.id;   // …ET LE GANT EST UN TOUCHER (195 — Loi 17 : la l.1160 réécrivait lastTouch au TIREUR chaque frame de vol, la claquette sortie ligne de but donnait RENVOI au lieu de CORNER, 2 volés/12×300 s filmés)
     // APRÈS LE GANT, LE BALLON EST NEUF : st.pass gardait l'origine du tir — la porte anti-auto-interception gelait tout (111 s mesuré).
     st.pass = null;
     // …et la claquette dit SES MAINS (lot 90) : deux dans l'envergure courte (≤ 1,35), une au bout.

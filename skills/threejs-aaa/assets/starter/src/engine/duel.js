@@ -359,6 +359,7 @@ export function contreTir(st, cfg) {
     const a = Math.atan2(st.ball.v[2], st.ball.v[0]) + (rnd() - 0.5) * 2 * (CT.bruit ?? 1.1);
     const k = 0.3 + rnd() * 0.3;
     st.ball.impulse([Math.cos(a) * v * k - st.ball.v[0], -st.ball.v[1] * 0.6, Math.sin(a) * v * k - st.ball.v[2]]);
+    st.lastTouch = q.team; st.lastPasser = q.id;   // le CONTRE est un toucher (195 — Loi 17 : le contré qui sort appartient au contreur, pas au tireur)
     st.events.push({ t: +st.t.toFixed(2), type: 'contre', by: q.id, sur: dernier.id, v: +v.toFixed(1) });
     return;
   }

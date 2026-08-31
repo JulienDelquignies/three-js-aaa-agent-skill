@@ -6671,6 +6671,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      maître de sa surface). Clause 194 (le flux des modes, prises ≥
      claquettes). Dette : la distribution p50 des VITESSES de tir (19,4)
      est elle-même haute — la question du monde comprimé (jalon FM).
+- 237: Lot 195 — LE GANT EST UN TOUCHER (Loi 17) + LE PLONGEON VALIDÉ AU
+     PIXEL (retour utilisateur direct : « quand un défenseur ou le gardien
+     dévie en corner, l'arbitre siffle renvoi aux 6 m » + « le plongeon
+     incohérent entre départ/arrivée/relevé — le geste de relevé existe
+     vraiment ? »). (a) LE CORNER VOLÉ : filmé 0 corner / 2 renvois volés
+     après déviation défensive — la ligne du vol (l.1160) réécrivait
+     lastTouch au TIREUR chaque frame : la claquette POSAIT lastTouch puis
+     se le faisait écraser ; le contre (176) et la tête ne le posaient même
+     pas. LE FIX ABSOLU (une fidélité à outRule, pas une clé) : lastTouch
+     ET lastPasser posés aux 7 sites de déviation (claquette, prise,
+     contre, 5 sites de tête/volée). APRÈS : 2 corners / 0 volé. Clause 195
+     au juge de flux (jamais un renvoi < 2,5 s après déviation défensive).
+     (b) LE PLONGEON : la séquence complète filmée au pixel — détente
+     plongeonBas → couché AU MÊME POINT → redressement PAR ÉTAPES (appui
+     bras, gk.rise { ground 0,65, getup 1,25 }) → debout au même endroit.
+     ZÉRO téléportation, LE GESTE DE RELEVÉ EXISTE (le contrat du lot 91
+     tient). La réserve à l'œil : les autres espèces (plongeon haut,
+     réflexe) restent à filmer une à une — dette douce.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
