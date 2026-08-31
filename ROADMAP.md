@@ -323,7 +323,9 @@ l'ATTAQUE DU CENTRE (182b, le corps de boîte re-cible le rai à portée de pas,
 lecture × anticipF) — centres perdus 17 → 9. Dettes : ~~le trou du HAUT~~ et ~~le
 rasant non-attitré~~ REQUALIFIÉS au 183 (tracés un à un : la tête jouait le
 haut, l'attitré reprenait le rasant — faux négatifs de sonde, théâtre sain) ;
-le trafic de frappe (conversion boîte à instrumenter tir par tir) reste.
+~~le trafic de frappe~~ SOLDÉ AU 184 (note 225 : l'instrument a renversé le
+verdict — la présence paie +6 pts depuis le monde 182 ; la sur-conversion est
+la question du jalon densité FM).
 L'ENGAGEMENT CÉRÉMONIEUX (183, note 224) : Loi 8 complète — le rond (160b) ET
 les moitiés (canTake attend, patience anti-gel) ; le retour trotté (le mené
 presse, le meneur au tempo bas flâne). Reste du cérémonial : l'arbitre au
@@ -341,8 +343,9 @@ LA RETENUE DE SURFACE (169, note 210) : les trois portes de la faute en boîte
 (debout × frein ÷ aggrF, glissé refusé au tirage × aggrF, accrochage ×0,4) —
 1,8 → 0,9 péno/90 min, fautes globales stables. La note aggrF fait le penalty.
 Calibrage fin en réserve (2 événements/40 matchs, sous le Poisson — re-mesure
-à 100+ matchs). Restent : le banc incarné (Loi 3), touches organiques (passes
-servo), throwInStyle soldé, réserves perf.
+à 100+ matchs). Restent : ~~le banc incarné~~ SOLDÉ AU 184 (l'entrée à la
+médiane, l'équipe à dix le temps du trajet — note 225), touches organiques
+(passes servo), throwInStyle soldé, réserves perf.
 
 LA RÉCUPÉRATION HAUTE EST SOLDÉE (mesure de validation, pas de loi — sonde 6×150 s
 appariée) : la hauteur médiane du regain suit l'axe pressing (−15,3 m à 0 / −6,4 à

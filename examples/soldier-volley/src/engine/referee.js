@@ -125,8 +125,17 @@ export function stepRemplacements(st, cfg) {
         q._fautes = 0; q._jaunes = 0;                              // l'ardoise part avec l'homme
         q.stam = 1; q._fatEv = null;                               // …et l'entrant a des JAMBES NEUVES (lot 31)
         st.events.push({ t: +st.t.toFixed(2), type: 'remplacement', team: q.team, id: q.id, minute: Math.floor(st.t / 60) + 1 });
-        q._sub = { phase: 'in', entry: [q._exit[0], Math.sign(q.p[2]) * (st.pitch.hz - 3)] };
+        // LOI 3, L'ENTRÉE À LA MÉDIANE (lot 184, cfg.entreeMediane — le vrai remplaçant
+        // n'apparaît pas au point de sortie : il LONGE la touche hors du terrain jusqu'à la
+        // ligne médiane, salue le quatrième arbitre, et entre à x = 0 — le trajet prend le
+        // temps qu'il prend, l'équipe joue à dix pendant ce temps, comme au vrai). Clé
+        // absente : l'entrée-miroir d'hier au bit.
+        q._sub = cfg?.entreeMediane && st.full
+          ? { phase: 'longe', bord: Math.sign(q.p[2] || 1), entry: [0, Math.sign(q.p[2] || 1) * (st.pitch.hz - 3)] }
+          : { phase: 'in', entry: [q._exit[0], Math.sign(q.p[2]) * (st.pitch.hz - 3)] };
       }
+    } else if (q._sub.phase === 'longe') {
+      if (Math.abs(q.p[0]) < 1.2) { q._sub = { phase: 'in', entry: q._sub.entry }; st.events.push({ t: +st.t.toFixed(2), type: 'entree', team: q.team, id: q.id }); }
     } else if (q._sub.phase === 'in' && Math.abs(q.p[2]) < st.pitch.hz - 2.5) {
       q.down = 0; q._sub = null; q._exit = null;                   // les cerveaux le reprennent
     }

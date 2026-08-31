@@ -100,5 +100,32 @@ const arret = (st) => {                                            // un arrêt 
     remplacer(st, cfg, 1, q.id, null) === false && !st._subs);
 }
 
+// ---------- 5. lot 184 : L'ENTRÉE À LA MÉDIANE (cfg.entreeMediane — la Loi 3 complète)
+{
+  const entre = (over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    let demande = false, xIn = null, longe = false, tOut = null, tIn = null;
+    for (let i = 0; i < 200 * 60 && xIn == null; i++) {
+      matchStep(st, 1 / 60, cfg);
+      if (!demande && st.t > 30 && st.restart) {
+        const sortant = st.players.find((q) => q.team === 0 && !q.keeper && Math.abs(q.p[0]) > 20);
+        if (sortant) { remplacer(st, cfg, 0, sortant.id, { name: 'Entrant' }); demande = true; }
+      }
+      for (const ev of st.events.slice(-3)) if (ev.type === 'remplacement' && tOut == null) tOut = ev.t;
+      if (st.players.some((q) => q._sub?.phase === 'longe')) longe = true;
+      if (tOut != null && !st.players.some((q) => q._sub)) {
+        tIn = st.t;
+        const e = st.players.find((q) => q.name === 'Entrant');
+        xIn = e ? Math.abs(e.p[0]) : 99;
+      }
+    }
+    return { xIn, longe, aDix: tOut != null && tIn != null ? +(tIn - tOut).toFixed(1) : null };
+  };
+  const V = entre({}), E = entre({ entreeMediane: false });
+  ok(`lot 184 — L'ENTRÉE À LA MÉDIANE : l'entrant LONGE la touche (${V.longe}) et entre à x = ${V.xIn?.toFixed(1)} m ≤ 1,5 de la ligne médiane, l'équipe à dix ${V.aDix} s (le trajet réel) ; l'épinglé entre au miroir de la sortie (longe ${E.longe} = false, x ${E.xIn?.toFixed(1)} ≥ 15 — l'apparition d'hier)`,
+    V.longe === true && V.xIn != null && V.xIn <= 1.5 && V.aDix > 5 && E.longe === false && E.xIn >= 15);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

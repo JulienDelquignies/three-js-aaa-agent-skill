@@ -159,7 +159,7 @@ function assignMatchJobs(st, cfg) {
     for (const p of st.players) {
       // l'EXPULSÉ est hors du monde, remises comprises (Loi 12) ; le REMPLACÉ marche le même chemin
       if (p.expulse || p._sub) {
-        const to = p._sub?.phase === 'in' ? p._sub.entry : p._exit;
+        const to = p._sub?.phase === 'in' ? p._sub.entry : p._sub?.phase === 'longe' ? [0, (p._sub.bord ?? 1) * (st.pitch.hz + 2)] : p._exit;
         p.job = 'walk'; p.target = [to[0], 0, to[1]]; continue;
       }
       // …MAIS D'ABORD ON CÉLÈBRE (lot 116) : le buteur file au coin, les proches le rejoignent (st._celeb, referee)
@@ -271,7 +271,7 @@ function assignMatchJobs(st, cfg) {
 
   // ---- l'EXPULSÉ (Loi 12) : hors du monde, il marche vers sa sortie (filtres down<=0 partout) ; le REMPLACÉ (Loi 3) marche le même chemin — sortie, échange d'identité, entrée.
   for (const p of st.players) if (p.expulse || p._sub) {
-    const to = p._sub?.phase === 'in' ? p._sub.entry : p._exit;
+    const to = p._sub?.phase === 'in' ? p._sub.entry : p._sub?.phase === 'longe' ? [0, (p._sub.bord ?? 1) * (st.pitch.hz + 2)] : p._exit;
     p.job = 'walk'; p.target = [to[0], 0, to[1]];
   }
 

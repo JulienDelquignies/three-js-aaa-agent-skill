@@ -6402,6 +6402,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      posé + walkF, sabotage double) ; chaînes ×43 étendues AVEC le grep
      anti-doublon de la leçon 223 (3 faux positifs vérifiés = paires
      d'appels, pas de littéral doublé).
+- 225: Lot 184 — DEUX DETTES SOLDÉES. (a) LE TRAFIC DE FRAPPE (la dette
+     majeure du 123) : l'instrument tir par tir (12 × 300 s, chaque tir suivi
+     3 s, issue nommée) a RENVERSÉ le verdict — la présence ne divise plus les
+     buts, elle les paie : conversion 30 % au défaut c. 24 % sans boxCrash
+     (+6 pts — au 123 c'était ÷1,5). Le monde 182 (poitrine + attaque du
+     centre) a transformé les corps de boîte en joueurs du ballon. SOLDÉE PAR
+     LA MESURE, rien à shipper. La sur-conversion générale (~30 % c. ~12 %
+     réel) est la question du JALON DENSITÉ FM (le monde comprimé à 300 s) —
+     pas un calibrage local. (b) LE BANC INCARNÉ (Loi 3) : l'entrant
+     d'hier APPARAISSAIT au miroir du point de sortie (x −39,4 filmé). LA LOI
+     (referee.stepRemplacements, cfg.entreeMediane, phase 'longe') : l'entrant
+     LONGE la touche hors du terrain jusqu'à la ligne médiane et entre à
+     x = 0 — l'équipe joue à DIX le temps du trajet (16,4 s mesurées + la
+     sortie : l'échelle du vrai remplacement). Événement 'entree' à la
+     médiane (le panneau du quatrième arbitre, pour le ticker un jour).
+     PREUVE DE NON-EFFET au flux : empreintes bce971a14a35d913 /
+     3bad89aaa3fcb005 IDENTIQUES au commit 183 (aucun _subs au flux nu) — pas
+     d'A/B requis, pas de re-dateur possible. Clause au banc loi3 (10 ✓ :
+     longe + médiane + à-dix + sabotage miroir).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

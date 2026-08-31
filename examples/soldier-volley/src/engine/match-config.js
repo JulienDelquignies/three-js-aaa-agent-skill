@@ -172,6 +172,9 @@ export const MATCH = {
   craie: { tire: 0.6, seuil: 0.42 },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
                           // large est tiré vers la ligne (fraction du chemin × axe largeur ×
                           // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
+  entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
+                          // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
+                          // trajet, comme au vrai). false : l'entrée-miroir d'hier.
   moities: { tol: 1.5, patience: 18 },
   retourTrot: { loin: 12, trot: 1.7, presse: 1.15, flane: 0.85 },  // 183 : le retour d'engagement
                           // se TROTTE quand on est loin ; le mené presse, le meneur au tempo bas
