@@ -331,8 +331,9 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
    au sol rare).
 8. LES AILIERS trop seuls (peut-être normal — à mesurer contre le réel).
 9. LES LONGS BALLONS manquent (peut-être la tactique — vérifier l'axe).
-10. LES GESTES TECHNIQUES : réalisés par les BONS joueurs ? (la note technique
-    doit choisir qui tente — vérifier le facteur).
+10. ~~LES GESTES TECHNIQUES par les bons joueurs~~ — TRAITÉ AU 197 (note 239 :
+    ratio 1,5 → 3,3 — la tentative au carré, l'exhibition au cube, la feinte
+    humble à tous).
 11. LES RÉCEPTIONS À PLUSIEURS MÈTRES : encore trop (malgré 181 — trop de
     mauvaises passes, ou le receveur pas sur ses appuis).
 12. L'ENSEMBLE : bonne base, loin du foot — l'étalon reste le réel.

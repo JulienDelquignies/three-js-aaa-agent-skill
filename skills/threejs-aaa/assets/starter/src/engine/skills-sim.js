@@ -88,7 +88,7 @@ export function maybeRateau(st, c, cfg) {
   }
   if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'rateau-hors-carré');
   // QUI tente : le flair (tirage seedé) — un refus de tempérament re-tire dans 2 s, pas à 60 Hz
-  if ((st.rnd ? st.rnd() : 0.5) > 0.12 + 0.3 * (c.persona?.flair ?? 0.5)) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.12 + 0.3 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {   // …la tentative au carré (197 — le rateau vivait au flair SEUL, sans la note)
     (c._skillCd ??= {}).rateau = st.t + 2; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -227,7 +227,7 @@ export function maybePassement(st, c, cfg) {
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
   if (enCourse && closing > 0.6) return false;                    // lancé : le jockey RECULE devant, il ne charge pas
-  if ((st.rnd ? st.rnd() : 0.5) > (0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
   // LES TOURS ET LA SORTIE (la variété demandée : « Mancini, Reveillère… un nombre de tours
@@ -307,7 +307,7 @@ export function maybeCrochet(st, c, cfg) {
     if (q.team === c.team || q.down > 0) continue;
     if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
   }
-  if ((st.rnd ? st.rnd() : 0.5) > (0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1)) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {   // …la tentative au carré (197)
     (c._skillCd ??= {}).crochet = st.t + 2; return false;
   }
   // L'ESPÈCE (la variété demandée : « du Dembélé, du Yamal ») : le CHALOUPÉ veut du TEMPS — le
@@ -370,7 +370,7 @@ export function maybeDoubleContact(st, c, cfg) {
   // duel nivelle les notes : mesuré, les faibles tentaient autant que l'élite car les
   // fenêtres leur arrivent plus souvent, et la part de tirs élite tombait de 49 à 33 % sur
   // un jeu de graines ; le joueur limité ne tente pas la croqueta, il dégage)
-  if ((st.rnd ? st.rnd() : 0.5) > (0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.2 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3)) {   // …et l'EXHIBITION au cube (197 : la roulette d'un technique 20 n'existe pas)
     (c._skillCd ??= {}).double = st.t + 2; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -426,7 +426,7 @@ export function maybePetitPont(st, c, cfg) {
   // QUI le tente : flair × la note AU CARRÉ — le pont est le PARI le plus cher du
   // répertoire (47 % de réussite) : la note filtre fort (le même contrat de risque que la
   // croqueta — les gestes de contrôle restent en gesteF simple)
-  if ((st.rnd ? st.rnd() : 0.5) > (0.15 + 0.35 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.15 + 0.35 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3)) {   // …l'exhibition au cube (197)
     (c._skillCd ??= {}).pont = st.t + 2.5; return false;
   }
   const sit = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);
@@ -478,7 +478,7 @@ export function maybeRoulette(st, c, cfg) {
   // 0,5, sortie 0,75 — retour utilisateur « ça manque d'envergure ») et l'A/B à tirage constant
   // crevait la bande (34 buts > 33) — l'envergure se paie en RARETÉ, pas en toupie : la
   // roulette réelle est un éclair (~1-2/match), et chacune qui part GAGNE ses mètres.
-  if ((st.rnd ? st.rnd() : 0.5) > (0.032 + 0.1 * (c.persona?.flair ?? 0.5)) * (c.skill?.gesteF ?? 1) * (2 - (c.skill?.getupF ?? 1))) {
+  if ((st.rnd ? st.rnd() : 0.5) > (0.032 + 0.1 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 3) * (2 - (c.skill?.getupF ?? 1))) {
     (c._skillCd ??= {}).roulette = st.t + 3; return false;
   }
   const sit2 = situation(c.p, c.yaw, st.ball.p, [0, 0], st.ball.p[1]);

@@ -6717,6 +6717,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      verify-roles : 10 ✓. La leçon du mécanisme : tryClear posé à froid
      refuse au timing de l'armé — le juge de FLUX equipe-consignée est le
      bon instrument des consignes.
+- 239: Lot 197 — LA TENTATIVE À LA NOTE (liste v3 point 10 : « les gestes
+     techniques sont-ils réalisés par les bons joueurs ? »). LA SONDE (squads
+     forgés technique 90 c. 20, 6 × 300 s) : ratio bons/faibles 1,5 — les
+     maladroits tentaient presque autant (6 roulettes chez les 20 contre 2
+     chez les 90 !) : gesteF [0,55 ; 1,10] modulait la tentative en
+     LINÉAIRE (pente 1,6×) et deux sites vivaient au flair SEUL (le rateau)
+     ou presque (la roulette). LA LOI DES PENTES : la tentative au CARRÉ
+     (passement, crochet, rateau — le patron du 124 « le carré fait le
+     style ») et l'EXHIBITION AU CUBE (doubleContact, petit pont, roulette
+     — la roulette d'un technique 20 n'existe pas au réel) ; la FEINTE
+     reste au flair (le geste humble appartient à tous — le réel). APRÈS :
+     ratio 3,3 hors feinte (la gamme réelle 3-5), le monde NU au bit
+     (?? 1 → 1^n = 1 exact partout, empreinte à confirmer au sceau).
+     persona.flair reste le tempérament (QUI OSE), gesteF la note (QUI
+     SAIT) — les deux se multiplient sans se confondre, la grammaire du
+     moteur.
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
