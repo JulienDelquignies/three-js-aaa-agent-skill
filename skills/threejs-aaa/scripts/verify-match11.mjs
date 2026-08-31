@@ -1528,7 +1528,7 @@ if (__bloc()) {
 if (__bloc()) {
   const coin = (foot, over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, preneurCPA: false, loi16: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, ...over });   // la clause mesure le PLACEMENT du corner — elle isole 189-193 (le flux des 5 s de mise en place bouge avec eux)
+    const cfg = matchCfg({ shotRange: 20, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, preneurCPA: false, loi16: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le PLACEMENT du corner — elle isole 181-193 entiers (le flux des 5 s de mise en place)
     for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
     const c = st.players.find((q) => !q.keeper && q.down <= 0);
     const goal = st.pitch.attackGoal(c.team), sg = Math.sign(goal.x || 1);
