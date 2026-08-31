@@ -4058,5 +4058,32 @@ if (__bloc()) {
     V <= E * 0.7 && E >= 8);
 }
 
+// ---- lot 190 : LE GARDIEN VIENT AU RETRAIT + LE SOUTIEN DE RELANCE (liste v3 point 2)
+if (__bloc()) {
+  // Le flux (12 × 300 s de mesure d'origine, ici 4 graines) : les retraits vers le gardien se
+  // prennent LOIN de la ligne (le vivant sort à la rencontre + tient le soutien en possession
+  // amie) ; l'épinglé les prend au fond de son but (1,4-5 m — le gardien-statue filmé au pixel).
+  const prises = (over) => {
+    const ds = [];
+    for (const seed of [2, 3, 5, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+      let vol = null, seen = null;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const gk = st.pass ? st.players.find((p) => p.id === st.pass.to && p.keeper) : null;
+        if (gk && st.pass.t !== seen && st.players.find((p) => p.id === st.pass.from)?.team === gk.team) { seen = st.pass.t; vol = { gk: gk.id, t: st.pass.t }; }
+        if (vol && st.ball.owner === vol.gk) { const g = st.players[vol.gk]; ds.push(Math.abs(g.p[0] - st.pitch.ownGoal(g.team).x)); vol = null; }
+        if (vol && st.t - vol.t > 4) vol = null;
+      }
+    }
+    ds.sort((a, b) => a - b);
+    return { n: ds.length, p50: +(ds[Math.floor(ds.length / 2)] ?? -1).toFixed(1) };
+  };
+  const V = prises({}), E = prises({ gkAuDevant: false });
+  ok(`lot 190 — LE GARDIEN VIENT AU RETRAIT : les prises à p50 ${V.p50} m de sa ligne ≥ 6 (${V.n} retraits — la fenêtre du gardien moderne, et la DISPONIBILITÉ multiplie le circuit : 5 → 20/30 min mesurés) ; l'épinglé au fond de son but (p50 ${E.p50} < 6, ${E.n} retraits — le gardien-statue filmé au pixel, retrait pris à 1,6 m)`,
+    V.n >= 3 && V.p50 >= 6 && (E.n === 0 || E.p50 < 6));
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

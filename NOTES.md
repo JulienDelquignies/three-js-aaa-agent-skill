@@ -6539,6 +6539,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (+3 m) reste ouvert (le 2c1). APRÈS : contre-recule 16 → 7/4 graines,
      tirs 15 → 25, through mieux reçus (54 → 65 %), volés 16 → 9, bande 18
      buts/20 × 300 s ✓. Clause 189 (directionnel ×2, Poisson respecté).
+- 231: Lot 190 — LE GARDIEN VIENT AU RETRAIT + LE SOUTIEN DE RELANCE (liste
+     v3 point 2 : « le gardien ballon au pied toujours buggé/catastrophique »,
+     2e réitération). LE FILM A RENVERSÉ LE DIAGNOSTIC : la sim du porté
+     était PROPRE (6 épisodes/30 min, 0,3 s, ≤ 0,83 m du pied, zéro moonwalk
+     résiduel) — le catastrophique était le POSITIONNEMENT, attrapé AU PIXEL
+     (playmode seed 3 t≈67 : le retrait roulant vers un gardien PLANTÉ SUR
+     SA LIGNE, ballon à 1 m de la ligne, le pressing arrivant). Sondé : les
+     retraits pris à 1,6-1,7 M DE LA LIGNE (réel 6-14), la position de base
+     en possession amie p50 2,2 m (le gardien moderne : 8-16). DEUX LOIS,
+     une clé (cfg.gkAuDevant { rayon 25, mene 0,4, soutien 7 }) :
+     · LA RENCONTRE (match-sim, régime non-porteur) : le ballon de
+       COÉQUIPIER qui vient vers lui (la passe le vise, ou roule vers son
+       but sans être un tir) se rencontre au POINT D'INTERCEPTION — il sort.
+     · LE SOUTIEN DE RELANCE (keeper.keeperSpot via K.libero.soutien,
+       injecté par le match depuis gkAuDevant.soutien — un seul épinglage) :
+       SA possession (gate plein), même ballon proche, il TIENT ~7 m ×
+       depthF × gardeF (la note keeping et le rôle garde restent les
+       facteurs) ; le gate CPA 0 le protège des corners.
+     APRÈS : prises de retrait p50 8,7-8,8 m ✓ fenêtre réelle, ET LA
+     DISPONIBILITÉ MULTIPLIE LE CIRCUIT (5 → 20 retraits/30 min — le gardien
+     devient une option de relance, le jeu moderne) ; position amie p50 2,2
+     → 6,7 m ; vérifié au pixel (le gardien sorti, vivant sa relance devant
+     la surface). Bande 46 buts/40 graines (haut du bruit connu — le
+     meilleur foot marque ; la sur-densité reste le jalon FM). Clause 190
+     (fenêtre + statue épinglée). Piège payé : le replace mono-ligne a avalé
+     liberoGate derrière un commentaire (SyntaxError attrapé au parse).
 - Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

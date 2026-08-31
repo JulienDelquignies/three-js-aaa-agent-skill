@@ -183,6 +183,10 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  gkAuDevant: { rayon: 25, mene: 0.4, soutien: 7 },  // 190 : LE GARDIEN VIENT AU RETRAIT — le ballon de
+                          // coéquipier qui vient vers lui se rencontre au point d'interception
+                          // (filmé : pris à 1,6 m de la ligne, le vrai le prend à 6-14 m).
+                          // Absente : le gardien-statue d'hier.
   lance: { porte: 45, surnombre: 3, barre: 6, malus: 6 },  // 189 : LE LANCÉ VA AU BUT — derrière la ligne
                           // avec l'espace, la barre de passe s'envole (× composureF) sauf pour
                           // servir un coéquipier PLUS lancé (le 2c1). Absente : le contre gâché

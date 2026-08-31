@@ -345,7 +345,8 @@ function assignMatchJobs(st, cfg) {
       K = { ...K, appuis: true, posMixF: gk.skill?.posMixF ?? 1, depthF: gk.skill?.depthKF ?? 1,
         gardeF: axe(role(gk).garde, 0.7, 1.3), vGk: Math.hypot(gk.v[0], gk.v[1]), porte: !!ownr && ownr.team !== gk.team,
         // …libéro (120) : une LECTURE — jamais sur CPA (le corner défensif vit à 34 m) ; SA possession : plein ; adverse LOINTAINE (> tient 48 m) : demi-garde 0,6 ; adverse qui avance : cible basse, le backpedal fait la fenêtre du lob
-        libero: cfg.libero, liberoGate: st.restart ? 0 : st.possession.team === gk.team ? 1 : Math.hypot(st.ball.p[0] - pitch.ownGoal(gk.team).x, st.ball.p[2]) > (cfg.libero?.tient ?? 48) ? 0.6 : 0 };
+        libero: st.full && cfg.gkAuDevant?.soutien && cfg.libero ? { ...cfg.libero, soutien: cfg.gkAuDevant.soutien } : cfg.libero,   // le soutien de relance (190) voyage par gkAuDevant — un seul épinglage
+        liberoGate: st.restart ? 0 : st.possession.team === gk.team ? 1 : Math.hypot(st.ball.p[0] - pitch.ownGoal(gk.team).x, st.ball.p[2]) > (cfg.libero?.tient ?? 48) ? 0.6 : 0 };
     }
     // LE CÔNE DE SORTIE (lot 104, cfg.sortie1v1 && st.full) : K.cone + la couverture goal-side mesurée (keeper.js)
     if (st.full && cfg.sortie1v1) K = { ...K, cone: cfg.sortie1v1, oooF: gk.skill?.oooF ?? 1, couvertD: keeperCouvert(st.players, gk, pitch.ownGoal(gk.team), st.ball.p) };   // …oooF (163) : la note oneOnOnes fait les portes
@@ -363,6 +364,19 @@ function assignMatchJobs(st, cfg) {
         st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'pieds' });
         continue;
       }
+    }
+    // LE GARDIEN VIENT AU RETRAIT (190, cfg.gkAuDevant && st.full — liste v3 point 2, filmé AU
+    // PIXEL : le retrait pris à 1,6 M DE LA LIGNE, le gardien planté dans son but pendant que
+    // le pressing arrive). Un ballon de COÉQUIPIER qui vient vers lui (la passe le vise, ou
+    // roule vers son but sans être un tir) : la cible est le POINT D'INTERCEPTION — il SORT à
+    // la rencontre, il ne campe pas sa ligne. Clé absente : le gardien-statue d'hier au bit.
+    if (st.full && cfg.gkAuDevant && st.lastTouch === gk.team && st.ball.owner == null
+      && (st.pass ? st.pass.to === gk.id
+        : (st.ball.v[0] * pitch.ownGoal(gk.team).sign > 1 && Math.hypot(st.ball.v[0], st.ball.v[2]) > 2 && Math.hypot(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]) < (cfg.gkAuDevant.rayon ?? 25)))) {
+      const bV = Math.hypot(st.ball.v[0], st.ball.v[2]) || 1;
+      const mR = Math.min(4.5, bV * (cfg.gkAuDevant.mene ?? 0.4));
+      gk.target = [st.ball.p[0] + (st.ball.v[0] / bV) * mR, 0, st.ball.p[2] + (st.ball.v[2] / bV) * mR];
+      continue;
     }
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,

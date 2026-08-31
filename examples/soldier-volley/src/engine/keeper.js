@@ -122,6 +122,12 @@ export function keeperSpot(pitch, team, ball, K = KEEPER) {
     liberoMax = ((K.libero.max ?? 10) * (K.depthF ?? 1) * (K.gardeF ?? 1)) * tL * (K.liberoGate ?? 1);
     depth = Math.max(depth, K.depthMin + liberoMax);
   }
+  // …ET LE SOUTIEN DE RELANCE (190, K.libero.soutien — liste v3 point 2 : mesuré p50 2,2 m de
+  // sa ligne en possession AMIE, tout retrait le trouvait planté au fond) : SA possession
+  // (gate plein), même ballon proche, le gardien moderne TIENT ~7-10 m — disponible au
+  // retrait, la rencontre part de haut. Jamais pendant un CPA (le gate 0 le protège déjà).
+  if (K.libero && K.libero.soutien && (K.liberoGate ?? 0) >= 1)
+    depth = Math.max(depth, K.depthMin + (K.libero.soutien ?? 7) * (K.depthF ?? 1) * (K.gardeF ?? 1));
   const x = g.x + (dx / d) * depth;
   let z = (dz / d) * depth;
   if (K.appuis) {

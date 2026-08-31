@@ -297,8 +297,10 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
    derrière la ligne/30 min, plus que le réel) mais n'ABOUTISSAIENT à rien
    (1 tir/48) : le point 5 était la cause. Après 189 : 65 % reçues, tirs ×1,7.
    RESTE à valider à l'œil (la lisibilité).
-2. LE GARDIEN BALLON AU PIED : « toujours buggé/catastrophique » (2e réitération
-   malgré 179 — filmer le porté gardien image par image).
+2. ~~LE GARDIEN BALLON AU PIED~~ — TRAITÉ AU 190 (note 231 : le porté était
+   propre, le CATASTROPHIQUE était le positionnement — retraits pris à 1,6 m de
+   la ligne, filmé au pixel ; gkAuDevant : la rencontre + le soutien 7 m —
+   prises p50 8,7 m, circuit ×4). RESTE à valider à l'œil.
 3. LES ARRÊTS DU GARDIEN : pas cohérents/réalistes « à tout niveau ».
 4. LES TACLES GLISSÉS : très rares — l'animation existe-t-elle, la vitesse
    est-elle cohérente, y a-t-il plusieurs types ?
