@@ -7,6 +7,7 @@ import { makeTheme } from '../engine/club-theme.js';
 import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js';
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
 import { buildKit } from '../engine/kit.js';
+import { spawnArbitre, updateArbitre } from './arbitre.js';
 import { tintPart } from '../engine/part-tint.js';
 import { loadSquad, setCloner, rigBones } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
@@ -309,28 +310,7 @@ export class Rondo {
       });
     }
 
-    // ---- L'ARBITRE INCARNÉ (lot 185) : le 23e corps — même rig, tenue NOIRE, locomotion
-    // seule (ni gestes ni regard : il ne joue jamais le ballon — le moteur le tient HORS de
-    // st.players ; st.arbitre n'existe que si cfg.arbitre). Le rendu suit la vérité sim.
-    if (this.fullMode) {
-      const { model: mA, groundY: gA0, clips: cA } = this.squad.spawn(0);
-      mA.position.set(-8, gA0, 6);
-      this.scene.add(mA); mA.updateMatrixWorld(true);
-      tintPart(mA, { match: /Shirt|Shorts|Socks/i, color: 0x17171c });
-      const mixA = new THREE.AnimationMixer(mA);
-      const boneA = (re) => { let f = null; mA.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
-      const legsA = [
-        { up: boneA(/LeftUpLeg/i), knee: boneA(/LeftLeg$/i), foot: boneA(/LeftFoot/i) },
-        { up: boneA(/RightUpLeg/i), knee: boneA(/RightLeg$/i), foot: boneA(/RightFoot/i) },
-      ];
-      const ctrlA = new CharacterController(mA, { mixer: mixA,
-        runClip: cA.find((a) => /run/i.test(a.name)), idleClip: cA.find((a) => /idle/i.test(a.name)), walkClip: cA.find((a) => /walk/i.test(a.name)),
-        legs: legsA, stride: 2.6, runSpeed: RONDO.speeds.chase, forwardLocal: new THREE.Vector3(0, 0, -1) });
-      this.night.light(mA);
-      if (q.get('cils') !== '1') mA.traverse((o) => { if (/eyelash/i.test(o.name)) o.visible = false; });
-      if (this.night.baked) this._bakeCorps(mA);
-      this.arbitre3d = { model: mA, ctrl: ctrlA, groundY: gA0 };
-    }
+    if (this.fullMode) this.arbitre3d = spawnArbitre({ squad: this.squad, scene: this.scene, night: this.night, q, bake: this.night.baked ? (m) => this._bakeCorps(m) : null });   // l'arbitre (185) : le 23e corps en noir — spawn/update déportés (scenes/arbitre.js)
 
     // ---- les gestes : LA COUCHE, plus le mixer. Les clips additifs composaient le delta sur
     // l'idle RETARGETÉ (base tournée de 20-43° du rest prouvé : le balayage pivotait, la passe
@@ -502,8 +482,7 @@ export class Rondo {
     let useMirror = e.foot === 'left';
     if (/^plongeon/.test(move)) {
       const lg = pl.sim.act?.payload?.lunge;
-      // l'interrupteur de SABOTAGE de l'instrument composé (audit-gants) : rejouer la convention
-      // monde naïve — la clause du relevé-au-lieu doit mordre
+      // l'interrupteur de SABOTAGE de l'instrument composé (audit-gants) : rejouer la convention monde naïve — la clause du relevé-au-lieu doit mordre
       if (lg) {
         pl.model.updateMatrixWorld(true);
         const me = pl.model.matrixWorld.elements;
@@ -1177,19 +1156,7 @@ export class Rondo {
       this._applyTouchWarp(pl);
     }
 
-    // ---- l'arbitre (185) : le rendu copie la vérité sim (st.arbitre) — locomotion seule
-    if (this.arbitre3d) {
-      const aS = this.state.arbitre, aR = this.arbitre3d;
-      aR.model.visible = !!aS;
-      if (aS) {
-        aR.ctrl.setMoveWorld(aS.v[0] / top, aS.v[1] / top);
-        aR.ctrl.update(step);
-        aR.ctrl.pos.set(aS.p[0], aR.groundY, aS.p[2]);
-        aR.model.position.copy(aR.ctrl.pos);
-        aR.ctrl.yaw = aR.ctrl.yawFor(Math.cos(aS.yaw), Math.sin(aS.yaw));
-        aR.model.rotation.y = aR.ctrl.yaw;
-      }
-    }
+    if (this.arbitre3d) updateArbitre(this.arbitre3d, this.state.arbitre, step, top);
 
     // ---- the ball, spun by its own angular velocity
     const b = this.state.ball;
