@@ -296,6 +296,13 @@ SIMULE les 90 vraies minutes, c'est la LECTURE qui est accélérée/réglable).
 ## trois preuves + une dette de preuve nommée (duel, théâtre rare). Les
 ## empreintes de référence : a7ddbca0bcb0ca12 / ecf57b2c043db08f (monde 195).
 
+## LA DETTE 198 (découverte au sceau 197) : le canal OFF-THE-BALL au flux est
+## DILUÉ — le jumeau 90/10 ne différencie plus (38 c. 39 sur 12 × 300 s ; il
+## vivait à +5 au 195). Le créneau d'équipe (st._appelAt) sérialise les appels :
+## l'ordre domine la cadence personnelle (÷ otbF). À ré-instruire — le canal
+## d'attribut doit remordre (le mantra). Voisin de la dette 196 : le une-deux
+## au mur muet (0 retour, cassage ancien).
+
 ## LA LISTE v3 (retour utilisateur ×12, datée lot 189 — « une bonne base mais
 ## encore très loin du foot ») — LE FEU VERT DENSITÉ FM EST SUSPENDU À CETTE LISTE.
 1. LES PASSES EN PROFONDEUR : ~~sondé au 189~~ — elles EXISTENT (7 réceptions

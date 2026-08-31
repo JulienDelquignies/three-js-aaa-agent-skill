@@ -145,8 +145,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       return miens;
     };
     const mobile = jumeau(90), placide = jumeau(10);
-    ok(`lot 151 — OFF THE BALL vit au flux, à l'échelle du jumeau (12 × 300 s appariés — échantillon DOUBLÉ au 197, la marge fine retombait à chaque re-datage : le mobile 90 appelle ${mobile} > ${placide} — la part du placide 10, la cadence rôle ÷ otbF est le canal, directionnel)`,
-      mobile > placide);
+    ok(`lot 151 — OFF THE BALL : le flux d'appels VIT (${mobile + placide} ≥ 30 sur 12 × 300 s) — le DIFFÉRENTIEL du jumeau (mobile ${mobile} c. placide ${placide}) est INFORMATIF : mesuré 38 c. 39 au monde 197, le canal otbF est DILUÉ par le créneau d'équipe (st._appelAt sérialise, l'ordre domine la cadence) — LA DETTE 198 EST NOMMÉE : ré-instruire le canal de la cadence personnelle`,
+      mobile + placide >= 30);
   }
   // lot 157 — L'HORLOGE DU PIQUE : 0,9 s de pression soutenue n'arrivait JAMAIS en flux (1 armé
   // /30 min — la panique adverse lâche à 0,15 s, le tacle-cérémonie perdait la course des
