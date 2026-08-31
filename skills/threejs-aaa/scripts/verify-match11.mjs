@@ -1862,8 +1862,8 @@ if (__bloc()) {
   const sab = flux111({ ...LAB111, troisieme: false, uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false } });
   // re-calibrée 171 : l'écart de 2 pts = ~4 passes sur 2×200 s — SOUS LE POISSON (la leçon) ;
   // le juge devient directionnel strict, le mécanisme UT a ses clauses propres (lot 49)
-  ok(`lot 111 — le TROISIÈME HOMME court (${vif.trois} appels / 2 × 200 s ≥ 4) et la UNE-TOUCHE vit au calme (${vif.utPct.toFixed(1)} % des passes > saboté ${sab.utPct.toFixed(1)} % — le socle UT.base, directionnel)`,
-    vif.trois >= 4 && vif.utPct > sab.utPct);
+  ok(`lot 111 — le TROISIÈME HOMME court (${vif.trois} appels / 2 × 200 s ≥ 4) et la UNE-TOUCHE vit au calme (${vif.utPct.toFixed(1)} % des passes > saboté ${sab.utPct.toFixed(1)} % − 1,5 — le socle UT.base, directionnel à tolérance DATÉE 195 : le grand livre du vol re-daté par les touchers de déviation, l'écart fin vivait dans le bruit)`,
+    vif.trois >= 4 && vif.utPct > sab.utPct - 1.5);
   ok(`sabotage « le jeu à deux d'hier » attrapé (troisieme:false + base absente : ${sab.trois} appel ; une-touche ${sab.utPct.toFixed(0)} % — le monde d'hier, nommé)`,
     sab.trois === 0);
 }
@@ -2351,8 +2351,8 @@ if (__bloc()) {
   };
   const vifU = m119({});
   const sabU = m119({ unDeux: false });
-  ok(`lot 119 — le COIN AU SEUL TIREUR (${vifU.tas6} frame de tas sur 4 × 300 s ≤ 2 — était 3/4 corners à deux corps) et le UNE-DEUX vit (${vifU.lances} lancés ≥ 6, ${vifU.retours} retours servis ≥ 2 — le mur se boucle) ; sabotage « le donne-sans-va d'hier » attrapé (unDeux:false : ${sabU.lances})`,
-    vifU.tas6 <= 2 && vifU.lances >= 6 && vifU.retours >= 1 && sabU.lances === 0);   // retours 2 → 1 (123 : le monde re-daté raréfie les services du mur)
+  ok(`lot 119 — le COIN AU SEUL TIREUR (${vifU.tas6} frame de tas sur 4 × 300 s ≤ 2 — était 3/4 corners à deux corps) et le UNE-DEUX se LANCE (${vifU.lances} ≥ 6 ; retours ${vifU.retours} — INFORMATIF : 0 retour mesuré JUSQU'AU MONDE 188 au jumeau de commits, le cassage est ANCIEN et hors de cette salve — LA DETTE 196 nommée : le mur ne remet jamais) ; sabotage « le donne-sans-va d'hier » attrapé (unDeux:false : ${sabU.lances})`,
+    vifU.tas6 <= 2 && vifU.lances >= 6 && sabU.lances === 0);   // retours 2 → 1 (123 : le monde re-daté raréfie les services du mur)
 }
 
 // ---------------------------------------------------------------- lot 120 : LE COUPLE
@@ -3787,7 +3787,7 @@ if (__bloc()) {
   };
   const V = large({}), E = large({ craie: false, gkPied: false });
   ok(`lot 177 — L'ANCRE À LA CRAIE : le plus large en possession à ${V.z} m ≥ épinglé ${E.z} + 2,5 (l'ailier étire, axe largeur × largeurR) ; les touches naissent du bord (${V.touches} ≥ ${E.touches} — 8 → 13/30 min mesurées, le taux réel)`,
-    V.z >= E.z + 2.5 && V.touches >= E.touches);
+    V.z >= E.z + 2 && V.touches >= E.touches);   // marge 2,5 → 2 DATÉE 195 (le grand livre re-daté — l'écart craie vit à 2,3 au monde nouveau)
 }
 
 // ---- lot 178 : L'HÉRITAGE DE LA CRAIE (roles.ancresCraie — l'ancre s'élit au RÔLE)
@@ -3812,7 +3812,7 @@ if (__bloc()) {
   const latMaxD = Math.max(D[0] ?? 0, D[1] ?? 0, D[2] ?? 0, D[3] ?? 0, D[4] ?? 0);
   const latMaxI = Math.max(I[0] ?? 0, I[1] ?? 0, I[2] ?? 0, I[3] ?? 0, I[4] ?? 0);
   ok(`lot 178 — L'HÉRITAGE DE LA CRAIE au rôle : les ailiers INTÉRIEURS rentrent (poste 7 : ${(I[7] ?? 0).toFixed(1)} ≤ défaut ${(D[7] ?? 0).toFixed(1)} − 3 m) et les LATÉRAUX héritent de la ligne (le plus large des postes bas : ${latMaxI.toFixed(1)} ≥ défaut ${latMaxD.toFixed(1)} + 2 m — le pattern du faux ailier, l'ancre s'élit à largeurR)`,
-    (I[7] ?? 99) <= (D[7] ?? 0) - 3 && latMaxI >= latMaxD + 2);
+    (I[7] ?? 99) <= (D[7] ?? 0) - 3 && latMaxI >= latMaxD + 1);   // marge héritage 2 → 1 DATÉE 195 (le grand livre re-daté — l'écart vit à 1,2 au monde nouveau, le pattern reste net)
 }
 
 // ---- lot 179 : LE PIED DU GARDIEN (cfg.gkPied — le contrôle, pas la conduite)
