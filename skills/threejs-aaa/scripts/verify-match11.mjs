@@ -1528,7 +1528,7 @@ if (__bloc()) {
 if (__bloc()) {
   const coin = (foot, over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, preneurCPA: false, loi16: false, ...over });   // la clause mesure le PLACEMENT du corner — elle isole 193 (l'élection du spécialiste re-datait le monde des 5 s)
+    const cfg = matchCfg({ shotRange: 20, preneurCPA: false, loi16: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, ...over });   // la clause mesure le PLACEMENT du corner — elle isole 189-193 (le flux des 5 s de mise en place bouge avec eux)
     for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
     const c = st.players.find((q) => !q.keeper && q.down <= 0);
     const goal = st.pitch.attackGoal(c.team), sg = Math.sign(goal.x || 1);
