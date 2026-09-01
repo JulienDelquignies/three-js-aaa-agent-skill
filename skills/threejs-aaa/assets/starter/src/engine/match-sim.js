@@ -583,6 +583,10 @@ function assignMatchJobs(st, cfg) {
       && (st.ball.p[0] - st.pass.lead[0]) * st.ball.v[0] + (st.ball.p[2] - st.pass.lead[2]) * st.ball.v[2] > 0
       && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18) * 2) {
       const roule = Math.min(cfg.chasseRetombee.cap ?? 25, bSp * bSp / (2 * (cfg.chasseRetombee.frein ?? 1.8)));
+      // …ET LA POURSUITE S'ARRÊTE À LA CRAIE (207, retour utilisateur : « le joueur court en
+      // touche » — 28 cibles posées HORS terrain / 60 min mesurées, tz jusqu'à 49,5 pour une
+      // craie à 34 : le point d'arrêt d'un ballon qui SORT était visé tel quel). Le vrai
+      // receveur accompagne jusqu'à la ligne et s'y tient — le clamp vit dans la branche.
       met = [st.ball.p[0] + (st.ball.v[0] / bSp) * roule, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * roule];
     } else if (st.full && cfg.attaquePasse !== false && st.ball.p[1] < 0.5
       && bSp < (cfg.attaquePasse?.mort ?? 2.8)
@@ -629,7 +633,12 @@ function assignMatchJobs(st, cfg) {
       }
       if (st._chute) met = [st._chute[0], 0, st._chute[1]];
     }
-    flightRec.target = met ?? [st.pass.lead[0], 0, st.pass.lead[2]];
+    // LA POURSUITE S'ARRÊTE À LA CRAIE (207, fix ABSOLU — retour utilisateur « le joueur court
+    // en touche » : 28 cibles/60 min posées HORS terrain, tz 49,5 pour une craie à 34, par les
+    // SEPT poseurs de met — chasse, mourante, menace, rattrapage, mène). Le vrai receveur
+    // accompagne le ballon sortant jusqu'à la ligne et s'y tient : le clamp UNIQUE au poseur.
+    if (met) { met[0] = Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, met[0])); met[2] = Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, met[2])); }
+    flightRec.target = met ?? [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, st.pass.lead[0])), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, st.pass.lead[2]))];   // (207) le filet : un lead historique hors limites ne se poursuit pas dehors
   }
   {
     const sgn = Math.sign(goal.x || 1);
@@ -790,7 +799,10 @@ function assignMatchJobs(st, cfg) {
         // LE DÉDOUBLEMENT (lot 88, roles.deborde — la course de rôle du couloir) : doc roles.js
         const ov = deborde(st, p, carrier, pitch, atk, cfg, axe);
         if (ov) { tx = ov[0]; tz = ov[1]; }
-        p.target = [tx, 0, tz];
+        // …ET AUCUNE COURSE NE VISE HORS TERRAIN (207, fix absolu — le jumeau du clamp de met :
+        // le DÉDOUBLEMENT longeait la touche par l'extérieur, cible |z| 35-46 pour une craie à
+        // 34 — « le joueur court en touche »). Le clamp FINAL du poseur ; l'intérieur au bit.
+        p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, tx)), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, tz))];
       }
     }
     const seMontrer = (p, want) => {
@@ -842,7 +854,8 @@ function assignMatchJobs(st, cfg) {
       if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
         p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
       }
-      p.target = [p._slotT[0], 0, p._slotT[1]];
+      // (207) le clamp du poseur — l'appui d'un porteur à la craie visait DEHORS ; l'intérieur au bit
+      p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, p._slotT[0])), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._slotT[1]))];
     }
   }
   // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : on presse SUR SIGNAL, en fenêtre bornée. (t1) la PRISE DOS AU BUT ; (t2) le RETRAIT (3 m). La fenêtre meurt au régain/remise/expiration ; cooldown d'équipe.

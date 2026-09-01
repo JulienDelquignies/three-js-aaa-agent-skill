@@ -4365,5 +4365,31 @@ if (__bloc()) {
     V <= E - 1.5);
 }
 
+// ---- lot 207 : AUCUNE COURSE NE VISE HORS TERRAIN (retour utilisateur : « le joueur court
+// en touche en pensant que c'est une passe en profondeur »)
+if (__bloc()) {
+  // L'INVARIANT (fix absolu, 4 poseurs corrigés — le RENDEZ-VOUS du through rabattu au cerveau
+  // du passeur (rondo, P suivait la course en diagonale jusqu'à tz 46), le met du receveur, le
+  // slot du soutien, le posted/deborde) : pendant un vol de passe hors remise, AUCUN joueur de
+  // champ ne vise hors limites. Mesuré avant : 28 cibles/60 min ; après : 1 (le gardien, exclu
+  // — il vit à sa ligne). Touches 27 → 19/60 min.
+  let hors = 0;
+  for (const seed of [3, 9, 21]) {
+    const st = makeMatch({ full: true, seed });
+    const cfg = matchCfg({ shotRange: 20 });
+    const hx = st.pitch.hx, hz = st.pitch.hz;
+    for (let i = 0; i < 300 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      if (!st.pass || st.restart || i % 5) continue;
+      for (const q of st.players) {
+        if (q.keeper || q.down > 0 || !q.target) continue;
+        if (Math.abs(q.target[0]) > hx + 0.01 || Math.abs(q.target[2]) > hz + 0.01) hors++;
+      }
+    }
+  }
+  ok(`lot 207 — AUCUNE COURSE NE VISE HORS TERRAIN (${hors} cibles de champ hors limites / 3 × 300 s = 0 — le rendez-vous du through rabattu au cerveau du passeur, le receveur s'arrête à la craie ; mesuré 28 → 1 (gardien) / 60 min, touches 27 → 19)`,
+    hors === 0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

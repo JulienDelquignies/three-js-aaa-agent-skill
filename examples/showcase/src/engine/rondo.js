@@ -334,6 +334,12 @@ export function choosePass(st, cfg = RONDO) {
           for (let it = 0; it < 2; it++) {
             const adv = Math.max(Math.min(vSol * tRdv + pointeEff, CS ? (cfg.courseServie.advMax ?? 16) : Infinity, capEsp), plancher);   // capé : le piqué caricatural (20 m+) filait en sortie (7/28 mesurés)
             P = [m.p[0] + dirC[0] * adv, BALL.radius, m.p[2] + dirC[1] * adv];
+            // …ET LE RENDEZ-VOUS RESTE SUR LE TERRAIN (207, fix absolu — retour utilisateur :
+            // « le joueur court en touche en pensant profondeur » : la course en diagonale vers
+            // la craie emmenait P DEHORS, tz 35-46 mesurés — le vrai passeur vise au bord, pas
+            // en touche). Le rabat aux limites ; l'intérieur au bit.
+            P[0] = Math.max(-st.area[0] / 2 + 1, Math.min(st.area[0] / 2 - 1, P[0]));
+            P[2] = Math.max(-st.area[1] / 2 + 1, Math.min(st.area[1] / 2 - 1, P[2]));
             solT = solvePass(origin, P, { style: 'ground', arrival: arr });
             if (!solT) return null;
             tRdv = solT.flightTime;

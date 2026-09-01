@@ -6945,6 +6945,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      deploy passe par UN screenshot playmode AVANT push — et un sed
      global sur engine/ touche AUSSI les modules de rendu partagés
      (le banc de sim ne voit pas les quaternions).
+- 249: Lot 207 — AUCUNE COURSE NE VISE HORS TERRAIN (retour utilisateur :
+     « beaucoup de passes en touche — le joueur court en touche en
+     pensant que c'est une passe en profondeur »). L'INSTRUCTION en
+     entonnoir : le TAUX réel de touches était même BAS (2/20 min head-
+     less, 0/5 min à l'écran — le « beaucoup » était le MOTIF, très
+     visible) ; la sonde du motif : 28 CIBLES HORS TERRAIN / 60 min
+     (tz jusqu'à 49,5 pour une craie à 34, tx 57 derrière la ligne).
+     QUATRE poseurs corrigés, du plus profond au plus bête : (1) le
+     RENDEZ-VOUS DU THROUGH (le vrai coupable, le diagnostic utilisateur
+     VERBATIM) : P = coureur + direction × avance suivait la course en
+     diagonale jusqu'en touche — le rabat aux limites AU CERVEAU DU
+     PASSEUR (rondo, un vrai joueur ne vise pas dehors) ; (2) le met du
+     receveur (chasse/mourante/menace/rattrape) clampé à l'application ;
+     (3) le slot du soutien (l'appui d'un porteur à la craie) ; (4) le
+     posted/deborde (le dédoublant longeait la touche PAR L'EXTÉRIEUR).
+     + le filet du fallback lead. APRÈS : 28 → 1 (le gardien, légitime),
+     touches 27 → 19/60 min, poursuites-craie 14 → 11. Fix ABSOLU sans
+     clé (le patron du 195) — empreintes re-datées a62b728350551c6f /
+     14a5c37bc7c82c55, bande 23/20 fraîches. Clause invariante (aucune
+     cible de champ hors limites pendant un vol, 3 × 300 s). La leçon
+     d'instrument : les clamps posés à l'aveugle un par un ne mordaient
+     PAS (14 = 14 = 14 au bit) — c'est le CONTEXTE à la détection (job/
+     pace/phase dans la sonde) qui a nommé le poseur ; instrumenter
+     AVANT de clamper.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
