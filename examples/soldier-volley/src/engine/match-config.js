@@ -197,6 +197,9 @@ export const MATCH = {
                           // c. vivant 53 % (la sur-chasse rate des réceptions), le recalibrage
                           // court 54 %. La loi reste dans le moteur ({ depasse, h, frein, cap }
                           // — un monde aval où les ballons filent peut la rallumer).
+  appelNote: { avance: 4, pente: 2 },  // 210 : le canal off-the-ball (dette 198) — le bon voit
+                          // le créneau d'équipe s'ouvrir plus tôt (avance × (otbF − 1) s) et sa
+                          // cadence personnelle est au carré. Identité otbF 1 : pas un bit.
   ancrage: { elect: 1.4, colle: 0.7, libre: 1.6 },  // 200 : l'axe de rôle ancrage (0 colle,
                           // 1 vagabonde) — élection du comité × axe(elect, 2−elect), mou de
                           // recalage × axe(colle, libre). Identité 0,5 = pas un bit.

@@ -732,7 +732,7 @@ function assignMatchJobs(st, cfg) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE : suivi ou rien (pointe ≤ passRange, DEVANT le ballon, porteur posé, couloir ouvert → dart de 7 m). Un par équipe. …ET LE JETÉ DÉCLENCHE LA COURSE (144) : le défenseur qui se jette OUVRE la fenêtre d'appel — « fixer puis lâcher » se joue À DEUX
           const jeteHot = st.full && cfg.fixe && st._jeteAt && st._jeteAt.team === atk && st.t - st._jeteAt.t < 0.8;
           if ((p._runT ?? -1) <= st.t && posé
-            && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) - (jeteHot ? (cfg.fixe.appel ?? 4) : 0) <= st.t
+            && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) - (jeteHot ? (cfg.fixe.appel ?? 4) : 0) - (st.full && cfg.appelNote ? ((p.skill?.otbF ?? 1) - 1) * (cfg.appelNote.avance ?? 4) : 0) <= st.t   // …ET LE BON VOIT LE CRÉNEAU S'OUVRIR (210, cfg.appelNote — dette 198 : le créneau d'équipe se prenait à l'ORDRE de boucle, ratio 90/20 mesuré 1,22 pour un réel 2-3). L'avance × (otbF − 1) : l'élection continue par anticipation ; otbF 1 = 0, l'hier
             && (p._appelCd ?? -1) <= st.t + (jeteHot ? 3 : 0)) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
@@ -769,7 +769,7 @@ function assignMatchJobs(st, cfg) {
               if (lane.open) {
                 // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10) …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE : l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
-                p._appelCd = st.t + axe(role(p).appel, 14, 6) / (p.skill?.otbF ?? 1);   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent
+                p._appelCd = st.t + axe(role(p).appel, 14, 6) / ((p.skill?.otbF ?? 1) ** (st.full && cfg.appelNote ? (cfg.appelNote.pente ?? 2) : 1));   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent — et la cadence au CARRÉ (210, le patron des pentes du 197 : [0,85 ; 1,15] plafonnait le ratio à 1,35) ; 1^n = 1 exact
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
                 // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s ; rupture 2,2 ≈ 2,3) — elle porte bonus et portée
                 const _dx7 = off.sgn * (dartAdv + 4) - p.p[0], _dz7 = deepZ - p.p[2], _dl7 = hyp(_dx7, _dz7) || 1;
