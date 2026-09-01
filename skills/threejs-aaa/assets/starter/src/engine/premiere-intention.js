@@ -22,14 +22,14 @@ import { laneClearance, solvePass } from './ball-predict.js';
 import { gauss } from './attributes.js';
 import { tac } from './tactics.js';
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 /** La passe en une touche du receveur `p` — true si le ballon est REPARTI (le patron de la
  *  remise de tête : sans possession) ; false : le contrôle normal reprend. */
 export function uneTouche(st, p, cfg) {
   const UT = st.full && !p.keeper && st.pass && st.pass.to === p.id ? cfg.uneTouche : null;
   if (!UT) return false;
-  const arrU = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  const arrU = hyp(st.ball.v[0], st.ball.v[2]);
   const foeU = st.players.filter((q) => q.team !== p.team && q.down <= 0)
     .reduce((b, q) => (!b || d2(q.p, p.p) < d2(b.p, p.p) ? q : b), null);
   const pressOk = foeU && d2(foeU.p, p.p) < (UT.press ?? 2.6);
@@ -52,7 +52,7 @@ export function uneTouche(st, p, cfg) {
     // remise que la physique ne peut pas porter jusqu'au pied n'est plus tentée — le
     // contrôle normal reprend ses droits. dose:false : les ballons morts d'hier, au bit.
     const dose = st.full && UT.dose !== false ? (UT.dose === true || UT.dose == null ? {} : UT.dose) : null;
-    const bvl0 = Math.hypot(st.ball.v[0], st.ball.v[2]) || 1;
+    const bvl0 = hyp(st.ball.v[0], st.ball.v[2]) || 1;
     const mate = st.players
       .filter((m) => m.team === p.team && m.id !== p.id && !m.keeper && m.down <= 0)
       .map((m) => ({ m, d: d2(m.p, p.p) }))
@@ -80,7 +80,7 @@ export function uneTouche(st, p, cfg) {
       // à ~180° instantanément — physiquement absurde, visuellement du ping-pong). La vitesse
       // sortante se borne à l'angle de déviation : dans le flux → pleine (12), perpendiculaire
       // → 8, à contre-courant → 4 (le LAYOFF du vrai football : la remise en retrait est douce).
-      const bvl = Math.hypot(st.ball.v[0], st.ball.v[2]) || 1;
+      const bvl = hyp(st.ball.v[0], st.ball.v[2]) || 1;
       const cosDev = ((mate.m.p[0] - p.p[0]) * st.ball.v[0] + (mate.m.p[2] - p.p[2]) * st.ball.v[2]) / (mate.d * bvl);
       // …dosée : la vitesse RÉSOLUE qui arrive prenable (le filtre de faisabilité a déjà
       // garanti qu'elle tient sous le cap de déviation — le layoff reste doux ET arrive)
@@ -111,3 +111,4 @@ export function uneTouche(st, p, cfg) {
   }
   return false;
 }
+import { hyp } from './hyp.js';

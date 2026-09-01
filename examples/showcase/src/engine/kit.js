@@ -20,16 +20,16 @@ const THIGH_T = 0.5;                                                // short hem
 const SOCK_T = -0.06;                                               // sock top, fraction of Leg→Foot — negative = just OVER the knee
 
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-const norm = (a) => { const l = Math.hypot(...a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+const norm = (a) => { const l = hyp(...a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
 const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-const len3 = (a, b) => Math.hypot(...sub3(a, b));
+const len3 = (a, b) => hyp(...sub3(a, b));
 
 /** distance from p to segment ab — the proximity metric behind every skin weight here */
 function segDist(p, a, b) {
   const ab = sub3(b, a), t = Math.max(0, Math.min(1, dot3(sub3(p, a), ab) / (dot3(ab, ab) || 1)));
-  return Math.hypot(p[0] - a[0] - ab[0] * t, p[1] - a[1] - ab[1] * t, p[2] - a[2] - ab[2] * t);
+  return hyp(p[0] - a[0] - ab[0] * t, p[1] - a[1] - ab[1] * t, p[2] - a[2] - ab[2] * t);
 }
 
 /** Ring basis ⊥ d. The vertical case is PINNED to (+x,+z) so analytic and fitted rings share one
@@ -82,7 +82,7 @@ function fitRing(cloud, c, d, { clear = 0.02, slab = 0.05, maxR = 0.3, cap = Inf
     const q = [cloud[i] - c[0], cloud[i + 1] - c[1], cloud[i + 2] - c[2]], along = dot3(q, d);
     if (Math.abs(along) > slab || (exclude && exclude(cloud[i], cloud[i + 1], cloud[i + 2]))) continue;
     const w = [q[0] - d[0] * along, q[1] - d[1] * along, q[2] - d[2] * along];
-    const ru = dot3(w, u), rv = dot3(w, v), rad = Math.hypot(ru, rv);
+    const ru = dot3(w, u), rv = dot3(w, v), rad = hyp(ru, rv);
     if (rad > maxR || rad < 1e-4) continue;
     const s = (Math.floor((Math.atan2(rv, ru) / (Math.PI * 2)) * SEG) + SEG * 2) % SEG;
     if (rad > r[s]) r[s] = rad;
@@ -131,7 +131,7 @@ export function buildKit(model, { shirt = 0xffffff, shorts = 0x101418, socks = 0
   // hanging in the slab blow the carrure out into a barrel
   const armSkin = (x, y, z) => ['Left', 'Right'].some((s) => {
     const a = P[`${s}Arm`], h = P[`${s}Hand`], ab = sub3(h, a);
-    return dot3(sub3([x, y, z], a), ab) / (Math.hypot(...ab) || 1) > 0.12 && segDist([x, y, z], a, h) < 0.09;
+    return dot3(sub3([x, y, z], a), ab) / (hyp(...ab) || 1) > 0.12 && segDist([x, y, z], a, h) < 0.09;
   });
   const notMine = (s) => {                                           // thighs almost touch: drop the other leg's skin
     const o = s === 'Left' ? 'Right' : 'Left';
@@ -386,3 +386,4 @@ export function checkKit(meshes, model, m = {}) {
   }
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

@@ -97,7 +97,7 @@ export class Gaze {
   update(dt, p, target, bodyYaw, w = 1) {
     if (!this.neck || !this.head || w <= 1e-3) return;
     const dx = target[0] - p[0], dy = target[1] - p[1], dz = target[2] - p[2];
-    const horiz = Math.hypot(dx, dz) || 1e-6;
+    const horiz = hyp(dx, dz) || 1e-6;
     // L'ÉTAT EST EN MONDE, et c'est toute la physiologie : le réflexe vestibulo-oculaire compense
     // la rotation du CORPS sans délai (le regard reste posé sur la cible pendant que le corps
     // tourne dessous) — seule la POURSUITE DE CIBLE est limitée en vitesse. Rate-limiter le repère
@@ -106,7 +106,7 @@ export class Gaze {
     const wantYawW = Math.atan2(dz, dx) * 180 / Math.PI;
     const wantPitch = clamp(Math.atan2(dy, horiz) * 180 / Math.PI, GAZE.pitchMin, GAZE.pitchMax);
     // saccade vers une cible neuve, poursuite sinon — la tête ne se téléporte jamais
-    const fresh = !this._lastTarget || Math.hypot(target[0] - this._lastTarget[0], target[2] - this._lastTarget[2]) > 0.6;
+    const fresh = !this._lastTarget || hyp(target[0] - this._lastTarget[0], target[2] - this._lastTarget[2]) > 0.6;
     this._lastTarget = [target[0], target[1], target[2]];
     const rate = (fresh ? GAZE.saccade : GAZE.pursuit) * dt;
     if (this.worldYaw == null) this.worldYaw = bodyDeg;
@@ -132,7 +132,7 @@ export class Gaze {
         b.w * q[3] - b.x * q[0] - b.y * q[1] - b.z * q[2],
       ];
       b.set(r[0] * w + b.x * (1 - w), r[1] * w + b.y * (1 - w), r[2] * w + b.z * (1 - w), r[3] * w + b.w * (1 - w));
-      const n = Math.hypot(b.x, b.y, b.z, b.w) || 1; b.set(b.x / n, b.y / n, b.z / n, b.w / n);
+      const n = hyp(b.x, b.y, b.z, b.w) || 1; b.set(b.x / n, b.y / n, b.z / n, b.w / n);
     };
     put(this.neck, GAZE.neckShare);
     put(this.head, 1 - GAZE.neckShare);
@@ -176,3 +176,4 @@ export function checkGaze() {
   if (scans < 2) issues.push(`hors ballon la tête ne scanne pas (${scans} changements en 8 s)`);
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

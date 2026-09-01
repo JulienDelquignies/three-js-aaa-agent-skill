@@ -22,7 +22,7 @@ import { checkAction, byId as TECH } from './technique.js';
 //   'pair'  — evaluated on consecutive frames (velocities, teleports, energy)
 
 const deg = (rad) => (rad * 180) / Math.PI;
-const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const dist = (a, b) => hyp(a[0] - b[0], a[1] - b[1]);
 const ballXZ = (s) => [s.ball[0], s.ball[2]];
 
 export const FOOT_RULES = [
@@ -206,7 +206,7 @@ export const FOOT_RULES = [
     check: (a, b, cfg) => {
       const dt = b.t - a.t;
       if (dt <= 0) return null;
-      const d = Math.hypot(b.ball[0] - a.ball[0], b.ball[1] - a.ball[1], b.ball[2] - a.ball[2]);
+      const d = hyp(b.ball[0] - a.ball[0], b.ball[1] - a.ball[1], b.ball[2] - a.ball[2]);
       return d / dt > cfg.maxStrike * 1.2 ? `ballon à ${(d / dt).toFixed(0)} m/s entre deux images` : null;
     },
   },
@@ -218,7 +218,7 @@ export const FOOT_RULES = [
     check: (a, b, cfg) => {
       const dt = b.t - a.t;
       if (dt <= 0 || b.phase !== 'flight' || a.phase !== 'flight') return null;
-      const sa = Math.hypot(a.ball[0] - (a.prev?.[0] ?? a.ball[0]), 0);   // vitesse indisponible : on borne le gain de hauteur
+      const sa = hyp(a.ball[0] - (a.prev?.[0] ?? a.ball[0]), 0);   // vitesse indisponible : on borne le gain de hauteur
       return b.ball[1] > a.ball[1] + 0.5 && a.ball[1] > 0.5 ? `le ballon remonte de ${(b.ball[1] - a.ball[1]).toFixed(2)} m en plein vol` : null;
     },
   },
@@ -361,3 +361,4 @@ export function checkFootball(st, trace, limits = FOOT_LIMITS) {
     .map(([id, v]) => `${id}: ${v.violations}/${v.samples} (${v.pct}%) — ${v.first}`);
   return { ok: issues.length === 0, issues, byRule };
 }
+import { hyp } from './hyp.js';

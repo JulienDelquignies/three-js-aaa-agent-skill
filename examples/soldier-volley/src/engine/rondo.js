@@ -22,7 +22,7 @@ export { RONDO };
 //   clearance geometry and by INVERSE BALLISTICS, so the chosen pass actually arrives.
 
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 
 /** Build the opening position: two teams of `perTeam`, ring formation, ball on team 0. */
@@ -86,7 +86,7 @@ export function strikingFoot(yaw, from, to) {
 export function enLance(st, c, cfg, choice) {
   if (!st.full || !cfg.lance) return false;
   const g = st.pitch.attackGoal(c.team), sg = Math.sign(g.x || 1);
-  if (Math.hypot(g.x - c.p[0], c.p[2]) >= (cfg.lance.porte ?? 45)) return false;
+  if (hyp(g.x - c.p[0], c.p[2]) >= (cfg.lance.porte ?? 45)) return false;
   if (choice && st.players[choice.to.id] && st.players[choice.to.id].p[0] * sg > c.p[0] * sg + 3) return false;
   let gs = 0;
   for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0 && q.p[0] * sg > c.p[0] * sg) gs++;
@@ -173,9 +173,9 @@ export function choosePass(st, cfg = RONDO) {
   if (st.full && cfg.fixe) {
     for (const q of foesL) {
       if (q.down > 0 || q.keeper) continue;
-      const dx = c.p[0] - q.p[0], dz = c.p[2] - q.p[2], dq = Math.hypot(dx, dz);
+      const dx = c.p[0] - q.p[0], dz = c.p[2] - q.p[2], dq = hyp(dx, dz);
       if (dq > (cfg.fixe.rayon ?? 4.5) || dq < 0.8) continue;
-      const v = Math.hypot(q.v[0], q.v[1]);
+      const v = hyp(q.v[0], q.v[1]);
       if (v >= (cfg.fixe.vitesse ?? 4) && (q.v[0] * dx + q.v[1] * dz) / (v * dq) > 0.75) { jete = q; break; }
     }
     if (jete) st._jeteAt = { t: st.t, team: c.team };   // …le signal d'équipe : l'appel timé se déclenche sur le jeté (match-sim)
@@ -221,7 +221,7 @@ export function choosePass(st, cfg = RONDO) {
         let champ = 99;
         for (const o of foesL) {
           if (o.down > 0 || Math.abs(o.p[2] - m.p[2]) > (cfg.couloir.large ?? 6)) continue;
-          if (_sg * (o.p[0] - m.p[0]) > -1) champ = Math.min(champ, Math.hypot(o.p[0] - m.p[0], o.p[2] - m.p[2]));
+          if (_sg * (o.p[0] - m.p[0]) > -1) champ = Math.min(champ, hyp(o.p[0] - m.p[0], o.p[2] - m.p[2]));
         }
         if (champ > (cfg.couloir.champ ?? 8))
           couloirB = (cfg.couloir.bonus ?? 2.2) * axe(tac(st, c.team).largeur, 0.6, 1.4)
@@ -266,18 +266,18 @@ export function choosePass(st, cfg = RONDO) {
     // ballon. Les défenseurs sont donc PROJETÉS au moment d'arrivée (armé ~0,4 s + vol au tempo du
     // jeu) — même philosophie que la course du couloir : le temps, pas la géométrie figée.
     const tArr = 0.4 + d / 9;
-    const recvPressure = Math.min(...foesL.map((o) => Math.hypot(o.p[0] + o.v[0] * tArr - lead[0], o.p[2] + o.v[1] * tArr - lead[2])), 99);
+    const recvPressure = Math.min(...foesL.map((o) => hyp(o.p[0] + o.v[0] * tArr - lead[0], o.p[2] + o.v[1] * tArr - lead[2])), 99);
     // a lofted ball beats a blocked lane, at the cost of being slower and harder to control
     const style = bascule ? 'lofted'                               // la diagonale VOLE par-dessus le bloc
       : lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
     const blocked = !lane.open && style !== 'lofted';
     if (blocked) continue;
     if (_dvFoes && _dvFoes.length && style !== 'lofted') {      // le départ vu (155) : premier mètre habité → refus
-      const ldx = lead[0] - origin[0], ldz = lead[2] - origin[2], lL = Math.hypot(ldx, ldz) || 1;
+      const ldx = lead[0] - origin[0], ldz = lead[2] - origin[2], lL = hyp(ldx, ldz) || 1;
       let devant = false;
       for (const q of _dvFoes) {
         const qx = q.p[0] - origin[0], qz = q.p[2] - origin[2], along = (qx * ldx + qz * ldz) / lL;
-        if (along > 0.2 && Math.hypot(qx - (ldx / lL) * along, qz - (ldz / lL) * along) < (cfg.departVu.perp ?? 0.7)) { devant = true; break; }
+        if (along > 0.2 && hyp(qx - (ldx / lL) * along, qz - (ldz / lL) * along) < (cfg.departVu.perp ?? 0.7)) { devant = true; break; }
       }
       if (devant) continue;
     }
@@ -309,7 +309,7 @@ export function choosePass(st, cfg = RONDO) {
     // dans l'équation même du dosage). Le couloir vers CE point est re-jugé. Absente : hier.
     let through = null;
     if (servi && cfg.throughBall) {
-      const vRun = Math.hypot(m.v[0], m.v[1]);
+      const vRun = hyp(m.v[0], m.v[1]);
       // LA COURSE À VENIR (167, cfg.courseServie — retour utilisateur : « aucun joueur ne court
       // derrière un ballon ») : le solveur dosait la vitesse INSTANTANÉE du coureur (servi à
       // 0,4 s médian de la naissance : 15/51 sous 2,5 m/s → null, avance médiane 3,6 m — la
@@ -403,7 +403,7 @@ export function choosePass(st, cfg = RONDO) {
           // …ET LA DÉTRESSE (171b, sous-clé — retour utilisateur : 0 retrait/30 min mesuré,
           // réel 10-20/match) : le porteur PRESSÉ recule vers son gardien quel que soit le
           // style — le retrait de sécurité est un réflexe du foot, pas un choix de Guardiola
-          st.full && cfg.sortieGardien?.detresse && foesL.some((q) => !q.keeper && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.sortieGardien.pressePorteur ?? 4.5))
+          st.full && cfg.sortieGardien?.detresse && foesL.some((q) => !q.keeper && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.sortieGardien.pressePorteur ?? 4.5))
             ? cfg.sortieGardien.detresse : 0)
         * Math.min(1.2, c.skill?.composureF ?? 1) : 0)        // la sortie au gardien (136) : PENTE DE STYLE pure —
       // …ET LE JETÉ PAIE (144) : la passe qui avance pendant qu'il vole, l'homme qu'il lâche pèse plus
@@ -553,7 +553,7 @@ export function evadeSpot(st, c, cfg = RONDO) {
   // rewards the same push — and the carrier became literally unbeatable: 63 passes and 0 turnovers on
   // seed 6, versus 19 and 15 with the loop broken. A feedback loop reads as brilliance right up until
   // you notice the defence has stopped existing.
-  const sp = Math.hypot(c.v[0], c.v[1]);
+  const sp = hyp(c.v[0], c.v[1]);
   const hdx = sp > 0.4 ? c.v[0] / sp : Math.cos(c.yaw), hdz = sp > 0.4 ? c.v[1] / sp : Math.sin(c.yaw);
   // SAMPLED AROUND THE BALL, NOT AROUND THE PLAYER. Sampling around the player sends him to a point
   // the ball is not on the way to, so he walks off and leaves it behind: measured, 65 % of passes were
@@ -576,7 +576,7 @@ export function evadeSpot(st, c, cfg = RONDO) {
       tx = sgnG * (st.pitch.hx - 6);
       tz = Math.sign(c.p[2]) * Math.min(Math.abs(c.p[2]), st.pitch.hz * 0.42);
     }
-    const gl = Math.hypot(tx - c.p[0], tz - c.p[2]) || 1;
+    const gl = hyp(tx - c.p[0], tz - c.p[2]) || 1;
     gxu = (tx - c.p[0]) / gl; gzu = (tz - c.p[2]) / gl;
     // …ET LE MUET N'A PLUS DE SENS UNIQUE (lot 92, même clé menace.muteD — la dévaluation
     // d'arbitre ne suffisait pas : sans AUCUNE option (passe 0,08 plancher), la conduite
@@ -585,7 +585,7 @@ export function evadeSpot(st, c, cfg = RONDO) {
     // fonce plus longtemps — l'attribut en facteur), la PROGRESSION s'éteint (×0,15) :
     // l'évasion redevient protection/écart, le corps attend le soutien.
     const mR = (cfg.menace?.muteD ?? 0) * (c.skill?.composureF ?? 1);
-    const mD = mR && c._takeP ? Math.hypot(c.p[0] - c._takeP[0], c.p[2] - c._takeP[1]) : 0;
+    const mD = mR && c._takeP ? hyp(c.p[0] - c._takeP[0], c.p[2] - c._takeP[1]) : 0;
     if (mR && mD > mR) { gxu *= 0.15; gzu *= 0.15; }
   }
   let best = null;
@@ -597,9 +597,9 @@ export function evadeSpot(st, c, cfg = RONDO) {
     //  (0,6 → 1,0 : la touche de conduite porte le ballon ~1 m au-delà du point visé — une cible à
     //  0,7 m de la ligne est déjà une sortie de but en préparation, 49 sorties sur 4 graines)
     let foe = Infinity;
-    for (const f of enemies) foe = Math.min(foe, Math.hypot(f.p[0] - x, f.p[2] - z));
+    for (const f of enemies) foe = Math.min(foe, hyp(f.p[0] - x, f.p[2] - z));
     let mate = Infinity;
-    for (const m of mates) mate = Math.min(mate, Math.hypot(m.p[0] - x, m.p[2] - z));
+    for (const m of mates) mate = Math.min(mate, hyp(m.p[0] - x, m.p[2] - z));
     const edge = Math.min(hx - Math.abs(x), hz - Math.abs(z));
     const score = foe * cfg.evadeFoe + Math.min(mate, 4) * cfg.evadeMate
       + edge * cfg.evadeEdge + (dx * hdx + dz * hdz) * cfg.evadeKeep
@@ -697,7 +697,7 @@ export function assignJobs(st, cfg = RONDO) {
         const goal = near && d2(near.p, car.p) < cfg.pressRadius ? evadeSpot(st, car, cfg) : null;
         if (goal && cfg.carryStandoff > 0) {
           const gx = goal[0] - st.ball.p[0], gz = goal[2] - st.ball.p[2];
-          const gl = Math.hypot(gx, gz) || 1;
+          const gl = hyp(gx, gz) || 1;
           // …décalé CÔTÉ PIED FRAPPEUR : la stance d'une passe met le corps sur le côté du ballon, pas
           // pile derrière. Se tenir derrière-décalé pendant la conduite, c'est arriver à l'engagement
           // déjà à un demi-pas de l'ancre — mesuré, la porte d'atteignabilité refusait sinon assez
@@ -727,7 +727,7 @@ export function assignJobs(st, cfg = RONDO) {
           // receveur en livraison finissait 0,35 m PASSÉ son point d'assise (control-at-foot
           // 2,9 % → 5,9 %) et le segment rasait le ballon (not-inside-a-body 4,9 %).
           {
-            const ax = tx - p.p[0], az = tz - p.p[2], al = Math.hypot(ax, az);
+            const ax = tx - p.p[0], az = tz - p.p[2], al = hyp(ax, az);
             if (al > 0.5) { tx += (ax / al) * 0.35; tz += (az / al) * 0.35; }
           }
           // …EN CONTOURNANT SON BALLON : l'ancre est souvent de l'autre côté de lui, et la droite
@@ -738,7 +738,7 @@ export function assignJobs(st, cfg = RONDO) {
           const dxs = tx - p.p[0], dzs = tz - p.p[2], L2 = dxs * dxs + dzs * dzs || 1;
           const u = Math.max(0, Math.min(1, ((bx - p.p[0]) * dxs + (bz - p.p[2]) * dzs) / L2));
           const cx = p.p[0] + dxs * u - bx, cz = p.p[2] + dzs * u - bz;
-          const cd = Math.hypot(cx, cz), AVOID = 0.34;
+          const cd = hyp(cx, cz), AVOID = 0.34;
           if (u > 0 && u < 1 && cd < AVOID) {
             const nx = cd > 1e-6 ? cx / cd : -dzs / Math.sqrt(L2), nz = cd > 1e-6 ? cz / cd : dxs / Math.sqrt(L2);
             tx = bx + nx * AVOID; tz = bz + nz * AVOID;
@@ -821,12 +821,12 @@ export function assignJobs(st, cfg = RONDO) {
       // autour du ballon — il coupe toujours la passe, mais depuis un cône DISTINCT du presseur.
       let vx = (m.p[0] - anchor[0]) * cfg.coverFrac, vz = (m.p[2] - anchor[2]) * cfg.coverFrac;
       {
-        const vl = Math.hypot(vx, vz);
+        const vl = hyp(vx, vz);
         if (vl > 1e-6 && vl < cfg.coverMinDist) { vx *= cfg.coverMinDist / vl; vz *= cfg.coverMinDist / vl; }
       }
       if (pr) {
         const px = pr.p[0] - anchor[0], pz = pr.p[2] - anchor[2];
-        if (Math.hypot(px, pz) > 0.3) {                        // presseur SUR le ballon : angle indéfini
+        if (hyp(px, pz) > 0.3) {                        // presseur SUR le ballon : angle indéfini
           let dAng = Math.atan2(vz, vx) - Math.atan2(pz, px);
           while (dAng > Math.PI) dAng -= 2 * Math.PI;
           while (dAng < -Math.PI) dAng += 2 * Math.PI;
@@ -862,7 +862,7 @@ export function assignJobs(st, cfg = RONDO) {
       if (!m) { d.target = [...d.p]; return; }
       d.job = 'mark';
       const mx = anchor[0] - m.p[0], mz = anchor[2] - m.p[2];
-      const ml = Math.hypot(mx, mz) || 1;
+      const ml = hyp(mx, mz) || 1;
       const step = Math.min(2.2, ml * 0.3);                     // a step goal-side of your man…
       let tx = m.p[0] + (mx / ml) * step, tz = m.p[2] + (mz / ml) * step;      // …not a walk to the ball
       // …et jamais un POSTE dans la zone du presseur : quand le porteur conduit VERS l'homme
@@ -870,7 +870,7 @@ export function assignJobs(st, cfg = RONDO) {
       // l'essaim mesuré. Le poste du marqueur garde un rayon de courtoisie autour du ballon.
       {
         const rx = tx - anchor[0], rz = tz - anchor[2];
-        const rl = Math.hypot(rx, rz);
+        const rl = hyp(rx, rz);
         if (rl > 1e-6 && rl < 2.8) { tx = anchor[0] + (rx / rl) * 2.8; tz = anchor[2] + (rz / rl) * 2.8; }
       }
       d.target = [tx, 0, tz];
@@ -884,7 +884,7 @@ function turnover(st, carrier, why, cfg = null) {
   st.turnovers++;
   st.best = Math.max(st.best, st.passes);
   const w = st.players[carrier];
-  const sp0 = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  const sp0 = hyp(st.ball.v[0], st.ball.v[2]);
   const dW = w ? d2(w.p, st.ball.p) : 99;
   // l'événement porte SA géométrie (loi 8) : distance gagnant→ballon au flip, vitesse avant/après —
   // c'est ce que les clauses « vol sans geste » et « télékinésie » de checkRondo lisent.
@@ -929,7 +929,7 @@ function turnover(st, carrier, why, cfg = null) {
         // …et le fautif CHASSE sa touche (lot 44, réflexe lossReact — capture utilisateur :
         // le receveur restait PLANTÉ à côté de sa touche fuyante, l'adversaire prenait)
         if (cfg?.lossReact) (st._lossAt ??= {})[carrier] = st.t;
-        ev.v1 = +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(2);
+        ev.v1 = +hyp(st.ball.v[0], st.ball.v[2]).toFixed(2);
         return;
       }
     }
@@ -940,8 +940,9 @@ function turnover(st, carrier, why, cfg = null) {
       st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), settle: null });
     }
   }
-  ev.v1 = +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(2);
+  ev.v1 = +hyp(st.ball.v[0], st.ball.v[2]).toFixed(2);
 }
 
 export { predictPath };
 export const rondoInternals = { supportSpot, movePlayers, separatePlayers, turnover };
+import { hyp } from './hyp.js';

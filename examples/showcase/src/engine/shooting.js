@@ -9,7 +9,7 @@ import { MOVES } from './animkit.js';
 import { tac, axe } from './tactics.js';
 import { role } from './roles.js';
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
+const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
 // ---------------------------------------------------------------- le tir
 /**
@@ -21,7 +21,7 @@ export function tryShot(st, c, cfg) {
   if (c.keeper) return false;
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
-  const dGoal = Math.hypot(goal.x - c.p[0], 0 - c.p[2]);
+  const dGoal = hyp(goal.x - c.p[0], 0 - c.p[2]);
   // …la même portée grise que l'arbitre (lot 92 — une seule vérité) : le tir lointain choisi
   // par la menace ne se fait pas refuser à la porte.
   // LE LOB OUVRE SA PROPRE PORTE (lot 120) : le gardien-libéro MONTÉ (≥ lob.out de sa ligne)
@@ -33,7 +33,7 @@ export function tryShot(st, c, cfg) {
   // remise de tête du défenseur posté à 2 m). Le cône ±0,6 rad vers le but doit être vide.
   const capL = gkL ? Math.atan2(0 - c.p[2], goal.x - c.p[0]) : 0;
   const decolle = !gkL || !st.players.some((q) => q.team !== c.team && q.down <= 0
-    && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.lob.decolle ?? 3.5)
+    && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.lob.decolle ?? 3.5)
     && Math.abs((Math.atan2(q.p[2] - c.p[2], q.p[0] - c.p[0]) - capL + 3 * Math.PI) % (2 * Math.PI) - Math.PI) < 0.6);
   const porteLob = gkL && decolle && Math.abs(gkL.p[0] - goal.x) >= (cfg.lob.out ?? 4)
     && dGoal >= (cfg.lob.min ?? 18) && dGoal <= (cfg.lob.max ?? 38) && Math.abs(c.p[2]) <= 14;
@@ -68,7 +68,7 @@ export function tryShot(st, c, cfg) {
   // touche avant la frappe : fenêtre de préparation posée sur le porteur (le régime de touche la
   // lit : touchF ≈ 0,3), l'ancre rafraîchie pour que le retour du ballon se POSSÈDE — au pas où
   // le ballon est au pied, la frappe arme.
-  const bdShot = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+  const bdShot = hyp(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
   // (le POINTU DE NÉCESSITÉ — frapper du bout du pied SANS préparation le ballon à 1,3 m — est
   // une dette nommée : les portes d'armement de beginPass n'ont pas la portée du geste tendu,
   // et le premier jet mesuré tuait 37 % des tirs : le rush refusé en aval, le cerveau passait
@@ -96,7 +96,7 @@ export function tryShot(st, c, cfg) {
     // cou-de-pied portent une rotation LISIBLE (0,5 rev) ; flottante et pointu quasi rien
     // (< 2 rad/s) — le gardien les lit TARD (floatRead, keeper.js).
     const gkOff = gk ? Math.abs(gk.p[0] - goal.x) : 0;
-    const dGk = gk ? Math.hypot(gk.p[0] - c.p[0], gk.p[2] - c.p[2]) : 99;
+    const dGk = gk ? hyp(gk.p[0] - c.p[0], gk.p[2] - c.p[2]) : 99;
     // …et la décision QUE la porte du lob a laissée entrer (dGoal > grise, 160c) porte l'espèce
     // LOB sans tirage — le tirage raté retombait sur les familles ordinaires : « enroulée » de
     // 37,6 m mesurée (le contrat de portée violé par l'espèce, pas par la décision).
@@ -113,7 +113,7 @@ export function tryShot(st, c, cfg) {
       // raidit la cloche (0,8 rad ≈ 46° : 3,5 m d'altitude à 3,7 m du pied, hors de tout saut) ;
       // couloir aérien vide : la cloche tendue (0,45-0,62), plus dure à rattraper en reculant.
       const tetes = st.players.some((q) => q.team !== c.team && q.down <= 0 && (() => {
-        const dq = Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]);
+        const dq = hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]);
         return dq >= (cfg.lob.decolle ?? 3.5) && dq < 6
           && Math.abs((Math.atan2(q.p[2] - c.p[2], q.p[0] - c.p[0]) - capL + 3 * Math.PI) % (2 * Math.PI) - Math.PI) < 0.6;
       })());
@@ -228,8 +228,8 @@ export function tryCross(st, c, cfg) {
   // opposé au centreur — là où un centre fait mal)
   const spotZ = -Math.sign(c.p[2] || 1) * Math.max(2.0, pitch.goalHalf + 0.8);
   const spot = [goal.x - sgn * Math.max(3.5, pitch.dims.spot * 0.7), spotZ];
-  const rec = inBox.sort((a, b) => Math.hypot(a.p[0] - spot[0], a.p[2] - spot[1]) - Math.hypot(b.p[0] - spot[0], b.p[2] - spot[1]))[0];
-  const tI = cfg.leadTime ? cfg.leadTime(Math.hypot(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.35;
+  const rec = inBox.sort((a, b) => hyp(a.p[0] - spot[0], a.p[2] - spot[1]) - hyp(b.p[0] - spot[0], b.p[2] - spot[1]))[0];
+  const tI = cfg.leadTime ? cfg.leadTime(hyp(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.35;
   let lead = [rec.p[0] + rec.v[0] * tI, 0, rec.p[2] + rec.v[1] * tI];
   // …tirée vers le point utile (le centre arrive DEVANT le coureur, côté but)
   lead = [lead[0] + (spot[0] - lead[0]) * 0.4, 0, lead[2] + (spot[1] - lead[2]) * 0.4];
@@ -245,7 +245,7 @@ export function tryCross(st, c, cfg) {
   // d'aile vit à 1,2-1,4 m en course — beginPass refusait 169 centres sur 170 mesurés
   // (l'engagement veut le ballon au pied ; la gâchette du lot 13 ne suffisait pas, il fallait
   // AUSSI la touche). Le centreur SERRE sa touche ; au pas suivant, le centre arme.
-  const bdC = Math.hypot(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
+  const bdC = hyp(c.p[0] - st.ball.p[0], c.p[2] - st.ball.p[2]);
   if (st.full && cfg.prepTouch !== false && bdC > 0.95) {          // st.full : le réduit centre comme hier, au bit près
     c._prepShot = st.t + 0.9;
     c.anchorHint = { t: st.t };
@@ -336,3 +336,4 @@ export function tryClear(st, c, cfg) {
   if (r) (st._clearCd ??= {})[c.team] = st.t + 6;
   return r;
 }
+import { hyp } from './hyp.js';

@@ -222,13 +222,13 @@ export const byId = Object.fromEntries(TECHNIQUES.map((t) => [t.id, t]));
 export function situation(playerP, yaw, ballP, ballV = [0, 0], ballY = 0.11) {
   const fx = Math.cos(yaw), fz = Math.sin(yaw);
   const dx = ballP[0] - playerP[0], dz = ballP[2] - playerP[2];
-  const d = Math.hypot(dx, dz) || 1e-6;
+  const d = hyp(dx, dz) || 1e-6;
   const ux = dx / d, uz = dz / d;
   const dot = Math.max(-1, Math.min(1, fx * ux + fz * uz));
   const bearing = (Math.acos(dot) * 180) / Math.PI;
   // cross product of facing × direction-to-ball, in a Y-up frame: positive means the ball is LEFT
   const side = fx * uz - fz * ux;
-  const speed = Math.hypot(ballV[0], ballV[2] ?? ballV[1] ?? 0);
+  const speed = hyp(ballV[0], ballV[2] ?? ballV[1] ?? 0);
   return { bearing, side: side > 0 ? 'left' : 'right', sideMag: Math.abs(side), dist: d, height: ballY, speed };
 }
 
@@ -326,3 +326,4 @@ export function checkAction(act) {
   }
   return null;
 }
+import { hyp } from './hyp.js';

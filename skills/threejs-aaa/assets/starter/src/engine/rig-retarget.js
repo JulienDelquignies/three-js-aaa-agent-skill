@@ -134,7 +134,7 @@ export function checkRetarget(clip, dst) {
     for (let i = 1; i < tr.times.length; i++) if (tr.times[i] <= tr.times[i - 1]) { issues.push(`temps non croissants: ${tr.name}`); break; }
     if (prop === 'quaternion') {
       for (let i = 0; i < tr.values.length; i += 4) {
-        const l = Math.hypot(tr.values[i], tr.values[i + 1], tr.values[i + 2], tr.values[i + 3]);
+        const l = hyp(tr.values[i], tr.values[i + 1], tr.values[i + 2], tr.values[i + 3]);
         if (Math.abs(l - 1) > 0.01) { issues.push(`quaternion non normalisé: ${tr.name}`); break; }
       }
     }
@@ -178,3 +178,4 @@ export function dequantizeSkinned(model) {
   });
   return converted;
 }
+import { hyp } from './hyp.js';

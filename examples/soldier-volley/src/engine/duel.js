@@ -10,7 +10,7 @@ import { winding, abortGesture } from './gesture.js';
 import { predictPath } from './ball-predict.js';
 import { role } from './roles.js';
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 /** L'ÉCART DU BALLON AU RAYON DE GLISSE (lot 66) — le corps part DROIT dans sa course : si cette
  *  droite ne passe pas au ballon (cible instantanée ou prédite), le pied ne peut pas l'atteindre.
@@ -18,9 +18,9 @@ const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
  *  ne passe pas au ballon ne part pas — mesuré avant : 14 ratés secs/6 matchs, le corps couché à
  *  plus d'un mètre d'un ballon assis. */
 export function ecartCouloir(p, bp, portee = 2.6) {
-  const v = Math.hypot(p.v[0], p.v[1]), dx = v > 0.5 ? p.v[0] / v : Math.cos(p.yaw), dz = v > 0.5 ? p.v[1] / v : Math.sin(p.yaw);
+  const v = hyp(p.v[0], p.v[1]), dx = v > 0.5 ? p.v[0] / v : Math.cos(p.yaw), dz = v > 0.5 ? p.v[1] / v : Math.sin(p.yaw);
   const rx = bp[0] - p.p[0], rz = bp[2] - p.p[2], al = Math.max(0.35, Math.min(portee, rx * dx + rz * dz));
-  return Math.hypot(rx - al * dx, rz - al * dz);
+  return hyp(rx - al * dx, rz - al * dz);
 }
 
 /** Un refus a une cause nommée (copie locale du registre du loop — le patron referee). */
@@ -42,14 +42,14 @@ export function slideTackleStep(st, c, cfg) {
   const S = cfg.slideTackle;
   // le DERNIER RECOURS : on ne se couche que sur un porteur LANCÉ (une construction lente se
   // défend debout — sans cette porte : 20,8 glissés/match mesurés, la fête du tacle)
-  if (Math.hypot(c.v[0], c.v[1]) < (S.carrySpeed ?? 4)) return;
+  if (hyp(c.v[0], c.v[1]) < (S.carrySpeed ?? 4)) return;
   const bp = st.ball.p;
   const foe = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0 && !q.act
-    && (q.slideCd ?? 0) <= st.t && Math.hypot(q.v[0], q.v[1]) >= (S.speed ?? 4.2))
+    && (q.slideCd ?? 0) <= st.t && hyp(q.v[0], q.v[1]) >= (S.speed ?? 4.2))
     .filter((q) => {
       const d = d2(q.p, bp);
       if (d < (S.at?.[0] ?? 1.3) || d > (S.at?.[1] ?? 2.6)) return false;
-      const vq = Math.hypot(q.v[0], q.v[1]);
+      const vq = hyp(q.v[0], q.v[1]);
       return ((bp[0] - q.p[0]) * q.v[0] + (bp[2] - q.p[2]) * q.v[1]) / (d2(q.p, bp) * vq || 1) > 0.5;
     })
     .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))[0];
@@ -76,7 +76,7 @@ export function slideTackleStep(st, c, cfg) {
   // parte. Le JET, lui, reste le pari de l'engagé (accuracy 0,6 ± tackling — sans lui, 83
   // glissés sur 83 prenaient le ballon). S.predit:false = les plongeons d'hier (sabotage nommé).
   const tableOk = !!pick && pick.tech.id === 'tacle-glisse';
-  const vq0 = Math.hypot(foe.v[0], foe.v[1]) || 1;
+  const vq0 = hyp(foe.v[0], foe.v[1]) || 1;
   // …mais l'IMPRUDENCE reste un chemin du réel : un couloir qui trouve les JAMBES du porteur
   // part même table refusée — c'est le tacle dangereux, la faute, le jaune.
   const jambes = d2(foe.p, c.p) < 2.2 && ecartCouloir(foe, [c.p[0], 0, c.p[2]], 0.35 + vq0 * 0.45) <= (S.body ?? 1.1);
@@ -114,7 +114,7 @@ export function slideTackleStep(st, c, cfg) {
     // plus tard, géométrie RE-JUGÉE : un ballon qui s'est échappé fait un tacle dans le
     // vide — c'est le prix du pari). contact:false : l'instantané d'hier (sabotage nommé
     // « le tacle télékinésiste »).
-    const vq = Math.hypot(foe.v[0], foe.v[1]) || 1;
+    const vq = hyp(foe.v[0], foe.v[1]) || 1;
     if (S.contact === false) {
       if (c.act && winding(c)) abortGesture(c, 'fauché', { log: st.gestures });
       st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: foe.id, won: true, tech: 'tacle-glisse',
@@ -132,7 +132,7 @@ export function slideTackleStep(st, c, cfg) {
   const dBody = d2(foe.p, c.p);
   if (dBody < (S.body ?? 1.1)) {
     // les jambes avant le ballon : la FAUTE — la victime TOMBE, et par DERRIÈRE c'est GRAVE
-    const vSpd = Math.hypot(c.v[0], c.v[1]);
+    const vSpd = hyp(c.v[0], c.v[1]);
     const grave = vSpd > 1.5 && ((c.p[0] - foe.p[0]) * c.v[0] + (c.p[2] - foe.p[2]) * c.v[1]) / (dBody * vSpd || 1) > 0.55;
     if (c.act && winding(c)) abortGesture(c, 'fauché', { log: st.gestures });
     c.down = S.trip ?? 0.7;
@@ -208,9 +208,9 @@ export function chargeStep(st, c, dt, cfg) {
   // (première version : 33 fautes / 9 min, toutes « par derrière », des 0-0 étouffés au
   // sifflet — l'ombre de poursuite criminalisée). La faute par derrière est le PERCUTAGE :
   // dans le dos, AU CONTACT (< 0,55 m) et en SURVITESSE (il lui rentre dedans, +0,6 m/s).
-  const vSpd = Math.hypot(c.v[0], c.v[1]);
+  const vSpd = hyp(c.v[0], c.v[1]);
   const dxp = c.p[0] - foe.p[0], dzp = c.p[2] - foe.p[2];
-  const dp = Math.hypot(dxp, dzp) || 1;
+  const dp = hyp(dxp, dzp) || 1;
   const behind = vSpd > 1.5 && (dxp * c.v[0] + dzp * c.v[1]) / (dp * vSpd) > 0.55;
   if (behind) {
     // la vitesse D'ENTRÉE (projetée chargeur→porteur) : un crash, pas un pas plus vite —
@@ -228,7 +228,7 @@ export function chargeStep(st, c, dt, cfg) {
   // …et l'ÉLAN DU PORTEUR PÈSE CONTRE (un homme lancé se charge mal — sans ce terme, 11
   // ballons jaillis / 12 min étouffaient l'attaque : tirs 5 → 2,25 par match mesurés)
   const edge = ((foe.skill?.chargeF ?? 1) - (c.skill?.chargeF ?? 1)) * 0.5
-    + Math.min(0.15, Math.hypot(foe.v[0], foe.v[1]) * 0.02)
+    + Math.min(0.15, hyp(foe.v[0], foe.v[1]) * 0.02)
     - Math.min(0.14, vSpd * 0.022);
   const won = (st.rnd ? st.rnd() : 0.5) < 0.40 + edge;
   st.events.push({ t: +st.t.toFixed(2), type: 'duel', by: foe.id, won, kind: 'épaule', sur: c.id });
@@ -286,17 +286,17 @@ export function accrocheP(q, pressAxe, danger, enSurface) {
  */
 export function accrocheStep(st, c, cfg, pressAxe = 1) {
   if (st.ball.owner !== c.id) return;
-  const cv = Math.hypot(c.v[0], c.v[1]);
+  const cv = hyp(c.v[0], c.v[1]);
   if (cv < 2.6) return;
   const { pitch } = st;
   const og = pitch.ownGoal(1 - c.team);
-  const gx = og.x - c.p[0], gz = 0 - c.p[2]; const gl = Math.hypot(gx, gz) || 1;
+  const gx = og.x - c.p[0], gz = 0 - c.p[2]; const gl = hyp(gx, gz) || 1;
   for (const q of st.players) {
     if (q.team === c.team || q.keeper || q.down > 0 || (q._accCd ?? -1) > st.t || st._faute) continue;
     const d = d2(q.p, c.p);
     if (d > 1.6) continue;
     if (((q.p[0] - c.p[0]) * gx + (q.p[2] - c.p[2]) * gz) / (gl * (d || 1)) > -0.05) continue;  // pas dans le dos/à l'épaule
-    if (Math.hypot(q.v[0], q.v[1]) > cv + 0.5) continue;                                        // pas battu de vitesse
+    if (hyp(q.v[0], q.v[1]) > cv + 0.5) continue;                                        // pas battu de vitesse
     q._accCd = st.t + 6;                                            // une décision par épisode
     const restants = st.players.filter((r) => r.team === q.team && !r.keeper && r.down <= 0
       && ((r.p[0] - c.p[0]) * gx + (r.p[2] - c.p[2]) * gz) / gl > 0.5).length;
@@ -346,13 +346,13 @@ export function tacleDegage(st, q, cfg) {
 export function contreTir(st, cfg) {
   const CT = cfg.contreTir;
   if (!st.full || !CT || st.ball.owner != null) return;
-  const v = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  const v = hyp(st.ball.v[0], st.ball.v[2]);
   if (v < (CT.vMin ?? 13) || st.ball.p[1] > (CT.h ?? 1.3)) return;
   const dernier = st.players[st.lastPasser ?? -1];
   if (!dernier) return;
   for (const q of st.players) {
     if (q.team === dernier.team || q.keeper || q.down > 0 || (q._contreCd ?? -1) > st.t) continue;
-    const d = Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]);
+    const d = hyp(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]);
     if (d > (CT.rayon ?? 0.38)) continue;
     q._contreCd = st.t + 1.5;
     const rnd = st.rnd ?? (() => 0.5);
@@ -378,11 +378,11 @@ export function jambeTendue(st, cfg) {
   const AL = cfg.allonge;
   if (!st.full || !AL || st.ball.owner != null || !st.pass || st.pass._tendue || st.pass.to < 0) return;
   if (st.ball.p[1] > (AL.h ?? 0.9)) return;
-  const v = Math.hypot(st.ball.v[0], st.ball.v[2]);
+  const v = hyp(st.ball.v[0], st.ball.v[2]);
   if (v < (AL.vMin ?? 4)) return;
   const q = st.players[st.pass.to];
   if (!q || q.keeper || q.down > 0) return;
-  const bx = st.ball.p[0] - q.p[0], bz = st.ball.p[2] - q.p[2], d = Math.hypot(bx, bz);
+  const bx = st.ball.p[0] - q.p[0], bz = st.ball.p[2] - q.p[2], d = hyp(bx, bz);
   if (d <= (cfg.receiveRadius ?? 0.85) || d > (AL.max ?? 1.15)) return;
   if ((st.ball.v[0] * bx + st.ball.v[2] * bz) / d <= 0) return;    // il s'approche encore : la prise propre garde sa chance
   st.pass._tendue = true;
@@ -392,3 +392,4 @@ export function jambeTendue(st, cfg) {
     surface: 'toe', speed: +v.toFixed(1), kill: +kill.toFixed(2), settle: null });
   st.pass = null; st.phase = 'loose'; st.possession.carrier = -1;
 }
+import { hyp } from './hyp.js';

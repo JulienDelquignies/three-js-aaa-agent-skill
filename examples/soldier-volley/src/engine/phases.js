@@ -109,7 +109,7 @@ export function intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, de
       if (q.down > 0 || q.keeper || busy(q) || (st.t - st.pass.t) < (q.skill?.reaction ?? 0.18)) continue;
       const i = interceptPoint(path, q.p, cfg.speeds.chase, { reaction: 0, maxHeight: 1.2 });
       if (!i || i.slack <= (IC.slack ?? 0.05)) continue;
-      if (Math.hypot(i.p[0] - q.p[0], i.p[2] - q.p[2]) > (IC.rayon ?? 8)) continue;
+      if (hyp(i.p[0] - q.p[0], i.p[2] - q.p[2]) > (IC.rayon ?? 8)) continue;
       if (!best || i.slack > best.i.slack) best = { q, i };
     }
     st._ic = best ? { t: st.t, id: best.q.id, p: [best.i.p[0], best.i.p[2]] } : { t: st.t, id: -1 };
@@ -150,7 +150,7 @@ export function accompagneMontee(st, cfg, { tac, axe, role }) {
   const cands = st.players.filter((q) => q.team === c.team && !q.keeper && q.down <= 0 && !q.act
     && q.id !== c.id && (q.p[0] - c.p[0]) * sg > -12 && (q.p[0] - c.p[0]) * sg < (AC.devant ?? 7) + 2
     && Math.abs(q.p[2] - c.p[2]) < 26)
-    .map((q) => ({ q, s: -Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) + axe(role(q).appel, -4, 4) }))
+    .map((q) => ({ q, s: -hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) + axe(role(q).appel, -4, 4) }))
     .sort((a, b) => b.s - a.s);
   const pris = [];
   for (const { q } of cands) {                                     // un par CÔTÉ — le porteur a deux couloirs
@@ -228,7 +228,7 @@ export function boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }) {
         const cands = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0
           && q.id !== st.possession.carrier && q.job !== 'press' && q.job !== 'intercept'
           && d2(q.p, st.ball.p) > (cfg.boxCrash.garde ?? 12))
-          .map((q) => ({ id: q.id, s: -Math.hypot(q.p[0] - bx, q.p[2]) + axe(role(q).appel, -3, 3) }))
+          .map((q) => ({ id: q.id, s: -hyp(q.p[0] - bx, q.p[2]) + axe(role(q).appel, -3, 3) }))
           .sort((x, y) => y.s - x.s).slice(0, n).map((x) => x.id);
         bc[atk] = { t: st.t, ids: cands, zC: Math.sign(zB || 1) };
       } else bc[atk] = { t: st.t, ids: [], zC: 1 };
@@ -243,7 +243,7 @@ export function boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }) {
           ? [[g3.x - sg3 * 5.5, zC * 3.4], [g3.x - sg3 * 11, -zC * 1], [g3.x - sg3 * 6.5, -zC * 4.5], [g3.x - sg3 * 16, zC * 2]]
           : [[g3.x - sg3 * 18, zC * 5], [g3.x - sg3 * 19.5, -zC * 1], [g3.x - sg3 * 18, -zC * 7], [g3.x - sg3 * 22, zC * 3]];
         const AT = vol && cfg.boxCrash.attaque ? cfg.boxCrash.attaque : null;   // clé absente : les statues d'hier au bit
-        const vB = AT ? Math.hypot(st.ball.v[0], st.ball.v[2]) : 0;
+        const vB = AT ? hyp(st.ball.v[0], st.ball.v[2]) : 0;
         for (let k = 0; k < E.ids.length; k++) {
           const q = st.players[E.ids[k]];
           if (!q || q.down > 0 || busy(q) || st.possession.carrier === q.id) continue;
@@ -259,7 +259,7 @@ export function boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }) {
             const along = (q.p[0] - st.ball.p[0]) * ux + (q.p[2] - st.ball.p[2]) * uz;
             if (along > 0.5) {
               const cX = st.ball.p[0] + ux * along, cZ = st.ball.p[2] + uz * along;
-              const dMoi = Math.hypot(q.p[0] - cX, q.p[2] - cZ);
+              const dMoi = hyp(q.p[0] - cX, q.p[2] - cZ);
               if (dMoi < (AT.porte ?? 2.5) && dMoi / 6.4 < along / vB + 0.1) {
                 q.target = [cX, 0, cZ];
                 continue;
@@ -273,3 +273,4 @@ export function boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }) {
     }
   }
 }
+import { hyp } from './hyp.js';

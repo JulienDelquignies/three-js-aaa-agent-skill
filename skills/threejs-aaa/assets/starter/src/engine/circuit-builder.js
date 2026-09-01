@@ -12,7 +12,7 @@ export function buildCircuit(circuit, { theme = null } = {}) {
   const { pts, width } = circuit, n = pts.length;
   const normal = (i) => {
     const a = pts[(i + n - 1) % n], b = pts[(i + 1) % n];
-    const tx = b[0] - a[0], tz = b[1] - a[1], l = Math.hypot(tx, tz) || 1;
+    const tx = b[0] - a[0], tz = b[1] - a[1], l = hyp(tx, tz) || 1;
     return [-tz / l, tx / l];
   };
 
@@ -95,3 +95,4 @@ export function buildCircuit(circuit, { theme = null } = {}) {
 
   return { group, colliders, dispose: () => disposables.forEach((d) => d.dispose?.()) };
 }
+import { hyp } from './hyp.js';

@@ -13,7 +13,7 @@ import { TECHNIQUES, chooseTechnique, situation } from './technique.js';
 import { axe, tac } from './tactics.js';
 import { role } from './roles.js';
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 /** Un refus a une cause nommée (copie locale du registre du loop). */
 const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; };
 /** L'amorti amortit AUSSI la rotation (lot 54 — le spin orphelin ; doc : match-config). */
@@ -64,7 +64,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // dans l'enveloppe de TECHNIQUE (strikeBallRel × controlF — l'attribut gradue la loi), la
   // frappe se planifie comme sur ballon porté (le couple s'arrange : hardMax/adjustSpeed).
   // La borne ABSOLUE d'hier reste la loi du ballon VRAIMENT libre. false : la disette d'hier.
-  const relV = Math.hypot(st.ball.v[0] - (c.v?.[0] ?? 0), st.ball.v[2] - (c.v?.[1] ?? 0));
+  const relV = hyp(st.ball.v[0] - (c.v?.[0] ?? 0), st.ball.v[2] - (c.v?.[1] ?? 0));
   const couple = st.ball.owner === c.id || (st.full && cfg.frappeConduite !== false
     && relV <= (cfg.strikeBallRel ?? 2.2) * (c.skill?.controlF ?? 1));
   let pick, move, stance, anchor;
@@ -87,7 +87,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
       let dYaw118 = Math.abs(outYaw - c.yaw); while (dYaw118 > Math.PI) dYaw118 = Math.abs(dYaw118 - 2 * Math.PI);
       if (dYaw118 * 180 / Math.PI > (cfg.talonnade.cone ?? 130)
         && st.players.some((q) => q.team !== c.team && q.down <= 0
-          && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.talonnade.press ?? 2.8)
+          && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.talonnade.press ?? 2.8)
           && situation(c.p, c.yaw, q.p, [0, 0], 0.11).bearing < 70)) {
         for (const cd of cands) if (cd.clip === 'talonnade') cd.pref += cfg.talonnade.bonus ?? 0.4;
       }
@@ -124,7 +124,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // porte ballon-vif ne concerne que les ballons LIBRES, dont l'ancre fuyait pendant l'armé
     // (glissement mesuré à 10,2 m/s avant la porte). La branche « livraison » est morte avec la
     // capture : le contrôle possède le ballon dès le contact, il n'y a plus de vol à attendre.
-    if (!couple && Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax) return deny(st, 'ballon-vif');
+    if (!couple && hyp(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax) return deny(st, 'ballon-vif');
     pick = { tech: plan.best.data, foot: plan.best.foot };
     move = MOVE_TIMING[plan.best.clip] || MOVE_TIMING.passe;
     stance = STANCES[plan.best.clip] || STANCES.passe;
@@ -147,7 +147,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // du conteste a laissé les balles d'urgence partir de ballons dribblés à 2-4 m/s. La borne est
     // plus lâche que celle du plan (l'urgence a moins le choix), mais elle existe : au-delà, on
     // continue de conduire — le refus se nomme.
-    if (!couple && Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax * 1.6) return deny(st, 'ballon-vif');
+    if (!couple && hyp(st.ball.v[0], st.ball.v[2]) > cfg.strikeBallMax * 1.6) return deny(st, 'ballon-vif');
     // pressé (il l'est, par définition ici) : la vitesse départage les gestes DÉJÀ bons
     const antic = (o) => (MOVE_TIMING[o.tech.clip] || MOVE_TIMING.passe).contact;
     const good = topts.filter((o) => o.score >= topts[0].score - cfg.rushedSlack);
@@ -159,7 +159,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // borné même en urgence : l'inatteignable reste un téléport déguisé, donc refusé
     // (porté : le couple s'arrange ensemble — la borne est celle du plan, pas celle du ballon libre)
     if (!reachable([c.p[0], c.p[2]], anchor, move.contact, st.ball.owner === c.id ? { adjustSpeed: 4.5, hardMax: 1.15 } : { adjustSpeed: 4.5, hardMax: 0.75 })) {
-      st._denyD?.push(Math.hypot(anchor.p[0] - c.p[0], anchor.p[1] - c.p[2]));
+      st._denyD?.push(hyp(anchor.p[0] - c.p[0], anchor.p[1] - c.p[2]));
       return deny(st, 'ancre');
     }
   }
@@ -232,7 +232,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   c.intent = null;                                          // l'intention a abouti : le geste prend le relais
   startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw,
     // …l'ÉLAN du commit (lot 45) : la foulée de frappe le porte DANS le geste (stepGestures)
-    v0: Math.hypot(c.v[0], c.v[1]), vYaw: Math.atan2(c.v[1], c.v[0]) }, log: st.gestures });
+    v0: hyp(c.v[0], c.v[1]), vYaw: Math.atan2(c.v[1], c.v[0]) }, log: st.gestures });
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, tech: pick.tech.id, move: pick.tech.clip, foot: pick.foot, anticipation: move.contact });
   return true;
 }
@@ -271,7 +271,7 @@ export function strikeNow(st, c, cfg) {
   }
   // la re-mène du contact suit LA MÊME loi que le choix : une mène courte ici défaisait la mène
   // de course posée par choosePass (le tir garde sa cible fixe)
-  const tRe = choice.shot ? 0 : (cfg.leadTime ? cfg.leadTime(Math.hypot((rec?.p[0] ?? 0) - from[0], (rec?.p[2] ?? 0) - from[2]), rec) : 0.18);
+  const tRe = choice.shot ? 0 : (cfg.leadTime ? cfg.leadTime(hyp((rec?.p[0] ?? 0) - from[0], (rec?.p[2] ?? 0) - from[2]), rec) : 0.18);
   let lead = rec ? [rec.p[0] + rec.v[0] * tRe, 0, rec.p[2] + rec.v[1] * tRe] : choice.lead;
   // LA MÈNE DE COURSE SURVIT AU CONTACT (167, cfg.courseServie — retour utilisateur : « aucun
   // joueur ne court derrière un ballon ») : le through élu posait un rendez-vous 8-11 m devant,
@@ -280,10 +280,10 @@ export function strikeNow(st, c, cfg) {
   // + la pointe à la vision du passeur — la position du coureur a bougé pendant l'armé, le POINT
   // se re-calcule, il ne se rabat pas. Clé absente : l'écrasement d'hier au bit.
   if (choice.through && rec && st.full && cfg.courseServie) {
-    const vR = Math.hypot(rec.v[0], rec.v[1]);
+    const vR = hyp(rec.v[0], rec.v[1]);
     const dirT = vR > 1 ? [rec.v[0] / vR, rec.v[1] / vR] : (rec._pace?.dir ?? null);
     if (dirT) {
-      let tV = Math.hypot(rec.p[0] - from[0], rec.p[2] - from[2]) / 11;
+      let tV = hyp(rec.p[0] - from[0], rec.p[2] - from[2]) / 11;
       const vS = Math.max(vR, (cfg.courseServie.vCourse ?? 6.2) * (rec.skill?.topF ?? 1));
       for (let it = 0; it < 2; it++) {
         const adv = Math.min(vS * tV + (cfg.throughBall?.pointe ?? 2.5) * (c.skill?.visionF ?? 1), cfg.courseServie.advMax ?? 16);
@@ -295,7 +295,7 @@ export function strikeNow(st, c, cfg) {
       // …et LE PIQUÉ SE NOMME (172 — retour utilisateur : « je ne vois aucune passe en
       // profondeur » : 25 tentatives / 9 contrôles sur 20 min EXISTAIENT, invisibles au fil)
       st.events.push({ t: +st.t.toFixed(2), type: 'piqué', by: c.id, to: rec.id,
-        avance: +Math.hypot(lead[0] - rec.p[0], lead[2] - rec.p[2]).toFixed(1) });
+        avance: +hyp(lead[0] - rec.p[0], lead[2] - rec.p[2]).toFixed(1) });
     }
   }
   // LE HORS-CADRE DU VRAI FOOT (lot 145, cfg.dispersion && st.full — retour utilisateur :
@@ -309,11 +309,11 @@ export function strikeNow(st, c, cfg) {
   {
     const sigBase = choice.shot ? (c.skill?.shotSigma ?? (D145 ? (D145.base ?? 0.33) : 0)) : 0;
     if (D145) {
-      const dG = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+      const dG = hyp(lead[0] - from[0], lead[2] - from[2]);
       let foeP = 99;
-      for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0) foeP = Math.min(foeP, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]));
+      for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0) foeP = Math.min(foeP, hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]));
       sigF = 1 + ((foeP < (D145.press ?? 3) ? (D145.pressF ?? 0.7) : 0)
-        + Math.min(1, Math.hypot(c.v[0], c.v[1]) / 6) * (D145.lanceF ?? 0.5)
+        + Math.min(1, hyp(c.v[0], c.v[1]) / 6) * (D145.lanceF ?? 0.5)
         + Math.max(0, dG - 11) / (D145.distF ?? 18)) * (c.skill?.composureF ?? 1);
     }
     if (sigBase > 0) lead = [lead[0], lead[1], lead[2] + gauss(st.rnd ?? (() => 0.5)) * sigBase * sigF];
@@ -396,12 +396,12 @@ export function strikeNow(st, c, cfg) {
   if (choice.cross && choice.bas && st.full) {
     // LE CENTRE BAS (lot 40) : fort et À RAS vers le point de penalty — le ballon skim à
     // hauteur de reprise (apogée ~0,3 m, un rebond en route est sa nature), la volée l'attend
-    const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+    const R = hyp(lead[0] - from[0], lead[2] - from[2]);
     elev = 0.14;
     spd = Math.max(15, R * 1.25);
     sol.flightTime = R / (spd * Math.cos(elev));
   } else if (choice.cross && cfg.tete && st.full) {
-    const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+    const R = hyp(lead[0] - from[0], lead[2] - from[2]);
     elev = 0.45;
     const solC = liftSpin ? solvePass(from, lead, { style: elev, ...liftSpin }) : null;
     if (solC) { spd = solC.speed; sol.flightTime = solC.flightTime; liftAtStrike = liftSpin; }
@@ -413,7 +413,7 @@ export function strikeNow(st, c, cfg) {
   // …et la DIAGONALE DU RENVERSEMENT vole PAR-DESSUS le bloc (lot 35) : la même cloche —
   // c'est sa raison d'être au vrai football, le couloir 2D bouché n'existe pas à 5 m du sol
   if (choice.bascule && cfg.renversement && st.full) {
-    const R = Math.hypot(lead[0] - from[0], lead[2] - from[2]);
+    const R = hyp(lead[0] - from[0], lead[2] - from[2]);
     elev = 0.42;
     const solB = liftSpin ? solvePass(from, lead, { style: elev, ...liftSpin }) : null;
     if (solB) { spd = solB.speed; sol.flightTime = solB.flightTime; liftAtStrike = liftSpin; }
@@ -457,7 +457,7 @@ export function strikeNow(st, c, cfg) {
     let C = null, bs = -1;
     for (const q of st.players) {
       if (q.team !== c.team || q.keeper || q.down > 0 || q.expulse || q._sub || q.id === c.id || q.id === choice.to.id) continue;
-      const dB = Math.hypot(q.p[0] - choice.to.p[0], q.p[2] - choice.to.p[2]);
+      const dB = hyp(q.p[0] - choice.to.p[0], q.p[2] - choice.to.p[2]);
       if (dB < (cfg.troisieme.min ?? 6) || dB > (cfg.troisieme.max ?? 16)) continue;
       if (sg3 * (q.p[0] - choice.to.p[0]) < 1) continue;
       const sc3 = (20 - dB) + sg3 * (q.p[0] - choice.to.p[0]);
@@ -476,9 +476,9 @@ export function strikeNow(st, c, cfg) {
   // marqués, zéro consommateur nouveau). Tiré sur rnd2 × l'axe relation (le jeu combiné
   // aime le une-deux) × le rôle appel DU PASSEUR. Absente : le monde d'hier au bit.
   if (st.full && cfg.unDeux && choice.to?.p && !choice.shot && !c.keeper) {
-    const dAB = Math.hypot(choice.to.p[0] - c.p[0], choice.to.p[2] - c.p[2]);
+    const dAB = hyp(choice.to.p[0] - c.p[0], choice.to.p[2] - c.p[2]);
     const presse2 = st.players.some((q) => q.team !== c.team && q.down <= 0
-      && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.unDeux.press ?? 2.5));
+      && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.unDeux.press ?? 2.5));
     if (dAB < (cfg.unDeux.dist ?? 13) && presse2
       && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.unDeux.p ?? 0.55) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(c).appel, 0.7, 1.3)) {
       c._pace = { until: st.t + (cfg.unDeux.dur ?? 1.5), kind: 'un-deux', next: c._pace?.next ?? st.t + 6 };
@@ -541,3 +541,4 @@ export function strikeNow(st, c, cfg) {
     urgent: !!urgent,
   });
 }
+import { hyp } from './hyp.js';

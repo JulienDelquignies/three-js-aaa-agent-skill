@@ -143,12 +143,12 @@ export function checkCareer(c) {
       if (inX && inZ) issues.push(`travel ${t.from}→${t.to}: pad inside the building`);
       if (t.pos[1] !== 0) issues.push(`travel ${t.from}→${t.to}: pad not on the ground`);
       const e = entranceOf(s.model);
-      if (Math.hypot(t.pos[0] - (s.at[0] + e[0]), t.pos[2] - (s.at[2] + e[1])) > 4) issues.push(`travel ${t.from}→${t.to}: pad far from the entrance`);
+      if (hyp(t.pos[0] - (s.at[0] + e[0]), t.pos[2] - (s.at[2] + e[1])) > 4) issues.push(`travel ${t.from}→${t.to}: pad far from the entrance`);
     } else {
       const lg = s.model.loge, lx = t.pos[0] - s.at[0], lz = t.pos[2] - s.at[2];
       if (lx < lg.rect[0] || lx > lg.rect[2] || lz < lg.rect[1] || lz > lg.rect[3]) issues.push(`travel ${t.from}→${t.to}: pad outside the loge`);
       if (Math.abs(t.pos[1] - lg.floorY) > 0.01) issues.push(`travel ${t.from}→${t.to}: pad not on the loge floor`);
-      for (const it of lg.items || []) if (Math.hypot(it.x - lx, it.z - lz) < 0.6) issues.push(`travel ${t.from}→${t.to}: pad collides with the loge ${it.kind}`);
+      for (const it of lg.items || []) if (hyp(it.x - lx, it.z - lz) < 0.6) issues.push(`travel ${t.from}→${t.to}: pad collides with the loge ${it.kind}`);
     }
   }
   // spawns on-site (the stadium spawn must be in the loge, on its floor)
@@ -166,3 +166,4 @@ export function checkCareer(c) {
   if (c.level < 4 && c.sites.aeroport) issues.push('airport present below level 4');
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

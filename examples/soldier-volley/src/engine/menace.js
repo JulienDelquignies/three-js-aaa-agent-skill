@@ -25,7 +25,7 @@ import { axe } from './tactics.js';
 export function menaceTir(st, c, cfg) {
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
-  const d = Math.hypot(goal.x - c.p[0], c.p[2]);
+  const d = hyp(goal.x - c.p[0], c.p[2]);
   const R = cfg.shotRange ?? 15;
   // LA PORTÉE DE TIR EST L'ATTRIBUT, PAS UN MUR (lot 92, cfg.menace.grise && st.full — mesuré :
   // 8 conduites muettes / 4 matchs, tir « hors-portée » 8/8 à 21-31 m, l'une jusqu'aux pieds du
@@ -43,7 +43,7 @@ export function menaceTir(st, c, cfg) {
   const gkOffS = gkS ? Math.abs(gkS.p[0] - goal.x) : 0;
   const capS = gkS ? Math.atan2(0 - c.p[2], goal.x - c.p[0]) : 0;
   const decolleS = !gkS || !st.players.some((q) => q.team !== c.team && q.down <= 0
-    && Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.lob.decolle ?? 3.5)
+    && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.lob.decolle ?? 3.5)
     && Math.abs((Math.atan2(q.p[2] - c.p[2], q.p[0] - c.p[0]) - capS + 3 * Math.PI) % (2 * Math.PI) - Math.PI) < 0.6);
   if (gkS && decolleS && gkOffS >= (cfg.lob.out ?? 4) && d >= (cfg.lob.min ?? 18) && d <= (cfg.lob.max ?? 38)
     && Math.abs(c.p[2]) <= 14 && Math.sign(c.p[0] || goal.x) === Math.sign(goal.x)) {
@@ -89,7 +89,7 @@ export function menaceTir(st, c, cfg) {
   if (st.full && cfg.menace?.mur) {
     const capM = Math.atan2(0 - c.p[2], goal.x - c.p[0]);
     for (const b of blockers) {
-      const db = Math.hypot(b[0] - c.p[0], b[2] - c.p[2]);
+      const db = hyp(b[0] - c.p[0], b[2] - c.p[2]);
       if (db > d) continue;
       const angM = Math.abs(((Math.atan2(b[2] - c.p[2], b[0] - c.p[0]) - capM + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
       if (angM < 0.35) murN++;
@@ -112,7 +112,7 @@ export function menaceTir(st, c, cfg) {
     // le monde note SES frappeurs de loin) et dégressif doux vers la grise. false : hier.
     if (st.full && cfg.audace && margin >= need * 0.8) {
       let charge = 99;
-      for (const b of blockers) { const db = Math.hypot(b[0] - c.p[0], b[2] - c.p[2]); if (db < charge) charge = db; }
+      for (const b of blockers) { const db = hyp(b[0] - c.p[0], b[2] - c.p[2]); if (db < charge) charge = db; }
       if (charge >= (cfg.audace.esp ?? 5)) {
         sc = Math.max(sc, (cfg.audace.bonus ?? 0.55) * (c.skill?.longF ?? 1)
           * Math.max(0, 1 - ((d - R) / Math.max(0.5, grise - R)) * 0.5));
@@ -148,8 +148,8 @@ export function menacePasse(st, c, cfg) {
   if (!best) return { score: 0.08, pourquoi: 'aucune-ligne' };
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
-  const dRec = Math.hypot(goal.x - best.to.p[0], best.to.p[2]);
-  const dMoi = Math.hypot(goal.x - c.p[0], c.p[2]);
+  const dRec = hyp(goal.x - best.to.p[0], best.to.p[2]);
+  const dMoi = hyp(goal.x - c.p[0], c.p[2]);
   const prog = Math.max(-1, Math.min(1, (dMoi - dRec) / 14));
   const libre = Math.min(1, (best.lane?.margin ?? 0) / 3);
   return {
@@ -171,7 +171,7 @@ export function menaceConduite(st, c, cfg) {
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
   const gx = goal.x - c.p[0], gz = -c.p[2];
-  const gl = Math.hypot(gx, gz) || 1;
+  const gl = hyp(gx, gz) || 1;
   const ux = gx / gl, uz = gz / gl;
   let espace = 9;
   for (const q of st.players) {
@@ -189,7 +189,7 @@ export function menaceConduite(st, c, cfg) {
   // depuis la prise (c._takeP, posé par receive), le score décroît (plancher 0,32×) — la passe
   // de CIRCULATION redevient le bon choix : rendre le ballon quand rien ne s'ouvre EST le
   // football. false : la conduite gratuite d'hier (sabotage nommé).
-  const mD = st.full && cfg.menace?.muteD && c._takeP ? Math.hypot(c.p[0] - c._takeP[0], c.p[2] - c._takeP[1]) : 0;
+  const mD = st.full && cfg.menace?.muteD && c._takeP ? hyp(c.p[0] - c._takeP[0], c.p[2] - c._takeP[1]) : 0;
   if (mD > (cfg.menace?.muteD ?? 10)) { sc *= Math.max(0.32, 1 - (mD - (cfg.menace?.muteD ?? 10)) * 0.07); why = 'conduite-muette'; }
   return { score: +sc.toFixed(3), espace: +espace.toFixed(1), pourquoi: why };
 }
@@ -228,3 +228,4 @@ export function arbitre(st, c, cfg) {
   }
   return { ...o, meilleure, score: +sMax.toFixed(3) };
 }
+import { hyp } from './hyp.js';

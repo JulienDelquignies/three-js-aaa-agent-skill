@@ -59,7 +59,7 @@ export function keeperRise(getupF = 1, resolved = true, K = KEEPER) {
  * Sous le seuil ou hors de la fenêtre : false — la prise d'hier, au bit près.
  */
 export function busteBlock(st, gk, cfg) {
-  const vIn = Math.hypot(st.ball.v[0], st.ball.v[1] ?? 0, st.ball.v[2]);
+  const vIn = hyp(st.ball.v[0], st.ball.v[1] ?? 0, st.ball.v[2]);
   const y = st.ball.p[1] ?? 0;
   if (vIn < (cfg.busteV ?? 12) || y < 0.85 || y > 1.45) return false;
   st.ball.impulse([-st.ball.v[0] * 1.55, -(st.ball.v[1] ?? 0) * 0.8, -st.ball.v[2] * 1.55]);
@@ -94,7 +94,7 @@ export function keeperHoldPoint(gk, K = KEEPER) {
 export function keeperSpot(pitch, team, ball, K = KEEPER) {
   const g = pitch.ownGoal(team);
   const dx = ball[0] - g.x, dz = ball[2] - 0;
-  const d = Math.hypot(dx, dz) || 1e-6;
+  const d = hyp(dx, dz) || 1e-6;
   if (K.appuis && Math.abs(dx) < 3 && Math.abs(ball[2]) > pitch.goalHalf + 5) {
     // LE POSTE DE CORNER : voir venir le centre, couvrir la moitié lointaine
     const sg = Math.sign(g.x || 1);
@@ -134,7 +134,7 @@ export function keeperSpot(pitch, team, ball, K = KEEPER) {
     // LA BISSECTRICE : direction moyenne des unitaires ballon → poteaux, coupée à la même
     // profondeur x — le z juste ; posMixF mélange depuis la ligne du centre (le placement
     // est un MÉTIER : le gardien moyen la tient, le faible dérive vers l'erreur d'hier)
-    const u = (pz) => { const ux = g.x - ball[0], uz = pz - ball[2]; const l = Math.hypot(ux, uz) || 1; return [ux / l, uz / l]; };
+    const u = (pz) => { const ux = g.x - ball[0], uz = pz - ball[2]; const l = hyp(ux, uz) || 1; return [ux / l, uz / l]; };
     const u1 = u(pitch.goalHalf), u2 = u(-pitch.goalHalf);
     const bx = u1[0] + u2[0], bz = u1[1] + u2[1];
     if (Math.abs(bx) > 1e-6) {
@@ -149,10 +149,10 @@ export function keeperSpot(pitch, team, ball, K = KEEPER) {
  * la distance au ballon du défenseur de champ goal-side le plus proche ; Infinity si personne
  * n'est entre le ballon et le but. Le cône la compare à K.cone.couvert : couvert → le poste. */
 export function keeperCouvert(players, gk, goal, ball) {
-  const dBut = Math.hypot(ball[0] - goal.x, ball[2]);
+  const dBut = hyp(ball[0] - goal.x, ball[2]);
   let cv = Infinity;
   for (const q of players) if (q.team === gk.team && !q.keeper && q.down <= 0
-    && Math.hypot(q.p[0] - goal.x, q.p[2]) < dBut) cv = Math.min(cv, Math.hypot(q.p[0] - ball[0], q.p[2] - ball[2]));
+    && hyp(q.p[0] - goal.x, q.p[2]) < dBut) cv = Math.min(cv, hyp(q.p[0] - ball[0], q.p[2] - ball[2]));
   return cv;
 }
 
@@ -184,7 +184,7 @@ export function shotCross(pitch, team, ball, ballV, g = 9.81) {
 export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K = KEEPER, threat = true, spin = null) {
   const spot = keeperSpot(pitch, team, ball, K);
   const cross = shotCross(pitch, team, ball, ballV);
-  const speed = Math.hypot(ballV[0], ballV[2]);
+  const speed = hyp(ballV[0], ballV[2]);
   // UNE PASSE EN RETRAIT N'EST PAS UN TIR : sans menace (dernier contact = SA propre équipe), le
   // gardien ne plonge JAMAIS — il vient CUEILLIR le ballon qui arrive vers lui (mesuré avant :
   // 10 plongeons sur 14 étaient des essuie-glaces sur les retraits de ses défenseurs).
@@ -216,12 +216,12 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
       // le poste de keeperSpot qui répond). Clé absente : la charge d'hier au bit.
       const oooK = K.oooF ?? 1;   // LE UN-CONTRE-UN (163) : les portes de la sortie à la note oneOnOnes — le bon sort d'un déclenchement plus large, le timide reste au poste ; 1 à 50/nu
       const coneOk = !K.cone
-        || ((Math.abs(ball[2]) <= (K.cone.zMax ?? 9) * oooK || Math.hypot(ball[0] - g.x, ball[2]) <= (K.cone.near ?? 8) * oooK)
+        || ((Math.abs(ball[2]) <= (K.cone.zMax ?? 9) * oooK || hyp(ball[0] - g.x, ball[2]) <= (K.cone.near ?? 8) * oooK)
           && (K.couvertD ?? Infinity) > (K.cone.couvert ?? 4));
       if (coneOk) {
         const standoff = K.appuis && K.porte ? 1.15 : 0.55;
         const dx = g.x - ball[0], dz = 0 - ball[2];
-        const dl = Math.hypot(dx, dz) || 1;
+        const dl = hyp(dx, dz) || 1;
         return { mode: 'sortie', spot: { x: ball[0] + (dx / dl) * standoff, z: Math.max(-pitch.goalHalf - 1.5, Math.min(pitch.goalHalf + 1.5, ball[2] + (dz / dl) * standoff)), depth: spot.depth }, set: standoff > 1 };
       }
     }
@@ -270,12 +270,12 @@ export function relancerGardien(st, gk, cfg, deps) {
     // LA MAIN D'ABORD : un coéquipier LIBRE (aucun adversaire à < 4 m) à portée de bras
     const porteeM = 14 * (gk.skill?.throwF ?? 1);
     const libre = mates.filter((m) => {
-      const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
+      const dm = hyp(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
       return dm > 4 && dm < porteeM && !st.players.some((q) => q.team !== gk.team && q.down <= 0
-        && Math.hypot(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4);
-    }).sort((a, b) => Math.hypot(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - Math.hypot(b.p[0] - gk.p[0], b.p[2] - gk.p[2]))[0];
+        && hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4);
+    }).sort((a, b) => hyp(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - hyp(b.p[0] - gk.p[0], b.p[2] - gk.p[2]))[0];
     if (libre) {
-      const dm = Math.hypot(libre.p[0] - gk.p[0], libre.p[2] - gk.p[2]);
+      const dm = hyp(libre.p[0] - gk.p[0], libre.p[2] - gk.p[2]);
       const tI = cfg.leadTime ? cfg.leadTime(dm, libre) : 0.35;
       const lead = [libre.p[0] + libre.v[0] * tI, 0, libre.p[2] + libre.v[1] * tI];
       if (deps.beginPass(st, { to: { id: libre.id }, lead, style: 'ground', lane: { margin: 6 } }, cfg, { forceUrgent: true })) {
@@ -287,18 +287,18 @@ export function relancerGardien(st, gk, cfg, deps) {
     // LA LONGUE DIRECTE : la cible la plus AVANCÉE dans la fenêtre de pied (kicking la porte)
     const kF = gk.skill?.kickF ?? 1;
     const cible = mates.filter((m) => {
-      const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
+      const dm = hyp(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
       return dm > 25 && dm < 48 * kF;
     }).sort((a, b) => (b.p[0] - a.p[0]) * sgn)[0];
     if (cible) {
-      const tI = cfg.leadTime ? cfg.leadTime(Math.hypot(cible.p[0] - gk.p[0], cible.p[2] - gk.p[2]), cible) : 0.5;
+      const tI = cfg.leadTime ? cfg.leadTime(hyp(cible.p[0] - gk.p[0], cible.p[2] - gk.p[2]), cible) : 0.5;
       const lead = [cible.p[0] + cible.v[0] * tI, 0, cible.p[2] + cible.v[1] * tI];
       if (deps.beginPass(st, { to: { id: cible.id }, lead, style: 'lofted', longue: true, lane: { margin: 9 } }, cfg, { forceUrgent: true })) return true;   // …le marqueur `longue` (la clause du banc le lit ; beginPass l'ignore)
     }
   }
   // le barème d'hier — 'court' re-pèse vers le PROCHE jouable, sinon l'avance d'hier au bit
   const scored = mates.map((m) => {
-    const dm = Math.hypot(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
+    const dm = hyp(m.p[0] - gk.p[0], m.p[2] - gk.p[2]);
     const s = styleSB === 'court' ? -dm + (m.p[0] - gk.p[0]) * sgn * 0.1
       : (m.p[0] - gk.p[0]) * sgn - Math.abs(m.p[2]) * 0.15;
     return { m, s, dm };
@@ -347,7 +347,7 @@ export function checkKeeper(pitch, K = KEEPER) {
   // ballon) ; le même ballon lent HORS surface → il tient son poste (pas un libéro)
   const unContreUn = keeperDecide(pitch, 0, me, [me[0] + 5, 0.11, 2], [1.5, 0, 0.5], Infinity, K);
   if (unContreUn.mode !== 'sortie') issues.push(`le gardien ne charge pas le un-contre-un dans sa surface (${unContreUn.mode})`);
-  else if (Math.hypot(unContreUn.spot.x - (me[0] + 5), unContreUn.spot.z - 2) > 1.2) issues.push('la charge du un-contre-un ne va pas AU ballon');
+  else if (hyp(unContreUn.spot.x - (me[0] + 5), unContreUn.spot.z - 2) > 1.2) issues.push('la charge du un-contre-un ne va pas AU ballon');
   const loin = keeperDecide(pitch, 0, me, [me[0] + 14, 0.11, 2], [1.5, 0, 0.5], Infinity, K);
   if (loin.mode === 'sortie') issues.push('le gardien charge hors de sa surface (libéro)');
   const wide = keeperDecide(pitch, 0, me, [me[0] + 9, 0.11, pitch.goalHalf + 3], [-14, 0.5, 0], 0.3, K);
@@ -374,7 +374,7 @@ export function checkKeeper(pitch, K = KEEPER) {
     const ball = [pitch.ownGoal(0).x + 11, 0, 8];
     const s = keeperSpot(pitch, 0, ball, KA);
     const g0 = pitch.ownGoal(0);
-    const u = (pz) => { const ux = g0.x - ball[0], uz = pz - ball[2]; const l = Math.hypot(ux, uz) || 1; return [ux / l, uz / l]; };
+    const u = (pz) => { const ux = g0.x - ball[0], uz = pz - ball[2]; const l = hyp(ux, uz) || 1; return [ux / l, uz / l]; };
     const u1 = u(pitch.goalHalf), u2 = u(-pitch.goalHalf);
     const zBis = ball[2] + ((u1[1] + u2[1]) / (u1[0] + u2[0])) * (s.x - ball[0]);
     if (Math.abs(s.z - zBis) > 0.02) issues.push(`la bissectrice n'est pas tenue (z ${s.z.toFixed(2)} vs ${zBis.toFixed(2)})`);
@@ -399,7 +399,7 @@ export function checkKeeper(pitch, K = KEEPER) {
     const bDuel = [g0.x + 5, 0.11, 2];
     const sPorte = keeperDecide(pitch, 0, meS, bDuel, [1.5, 0, 0.5], Infinity, { ...KA, porte: true });
     const sLibre = keeperDecide(pitch, 0, meS, bDuel, [1.5, 0, 0.5], Infinity, { ...KA, porte: false });
-    const dOfSpot = (m) => Math.hypot(m.spot.x - bDuel[0], m.spot.z - bDuel[2]);
+    const dOfSpot = (m) => hyp(m.spot.x - bDuel[0], m.spot.z - bDuel[2]);
     if (!(sPorte.mode === 'sortie' && sPorte.set && dOfSpot(sPorte) > 1.0 && sLibre.mode === 'sortie' && dOfSpot(sLibre) < 0.7))
       issues.push(`le duel posé ne tient pas (porté ${dOfSpot(sPorte).toFixed(2)} m, libre ${dOfSpot(sLibre).toFixed(2)} m)`);
   }
@@ -435,3 +435,4 @@ export function gkHeldBall(st, c, dt, cfg) {
     && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
   return false;
 }
+import { hyp } from './hyp.js';

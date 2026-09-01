@@ -10,7 +10,7 @@
 import { dist, quatAngle, DEG } from './vecmath.js';
 
 const R = (name, ok, value, tolerance, detail) => ({ name, ok, value, tolerance, detail });
-const horiz = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const horiz = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 /** A contact/attachment must hold every frame of its window (per-frame gaps ≤ maxGap). */
 export function heldThroughout(distances, maxGap = 0.06) {
@@ -104,3 +104,4 @@ export function validateSequence(spec) {
   const failed = checks.filter((c) => !c.ok);
   return { ok: failed.length === 0, checks, failed: failed.map((c) => c.name) };
 }
+import { hyp } from './hyp.js';

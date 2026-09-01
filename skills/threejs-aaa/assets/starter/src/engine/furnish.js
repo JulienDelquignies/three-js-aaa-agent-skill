@@ -290,7 +290,7 @@ export function checkFurnishing(model, items) {
   });
   for (const it of items) {
     if (!it.faces) continue; const t = byId.get(it.faces); if (!t) continue;
-    const dir = [Math.sin(it.yaw), Math.cos(it.yaw)]; const to = [t.x - it.x, t.z - it.z]; const l = Math.hypot(to[0], to[1]) || 1;
+    const dir = [Math.sin(it.yaw), Math.cos(it.yaw)]; const to = [t.x - it.x, t.z - it.z]; const l = hyp(to[0], to[1]) || 1;
     if ((dir[0] * to[0] + dir[1] * to[1]) / l < 0.5) issues.push(`${it.kind}@${it.room}: does not face its ${t.kind}`);
   }
   // private dining room (salon privé): THE meeting table of the DS game — a table with two seats
@@ -314,9 +314,10 @@ export function checkFurnishing(model, items) {
     if (Math.abs(dyaw) > 0.1) issues.push(`press-wall@${desk.room}: backdrop not aligned with the podium`);
     const fwd = [Math.sin(desk.yaw), Math.cos(desk.yaw)], to = [wall.x - desk.x, wall.z - desk.z];
     if (fwd[0] * to[0] + fwd[1] * to[1] > 0) issues.push(`press-wall@${desk.room}: backdrop in FRONT of the podium`);
-    if (Math.hypot(to[0], to[1]) > 1.2) issues.push(`press-wall@${desk.room}: backdrop too far behind the podium`);
+    if (hyp(to[0], to[1]) > 1.2) issues.push(`press-wall@${desk.room}: backdrop too far behind the podium`);
     const seats = items.filter((i) => i.faces === desk.id && i.kind === 'chair').length;
     if (seats < 2) issues.push(`press-desk@${desk.room}: fewer than 2 press seats facing the podium`);
   }
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

@@ -90,7 +90,7 @@ export function checkClip(resolved) {
     for (let i = 0; i < keys.length; i++) {
       if (keys[i].t < 0 || keys[i].t > duration) issues.push(`${bone}: key outside [0, duration]`);
       if (i && keys[i].t <= keys[i - 1].t) { issues.push(`${bone}: keys not strictly sorted`); break; }
-      const q = keys[i].q, n = Math.hypot(...q);
+      const q = keys[i].q, n = hyp(...q);
       if (Math.abs(n - 1) > 1e-3) { issues.push(`${bone}: non-normalized quaternion`); break; }
     }
     // limbs must MOVE, not teleport: bounded angular velocity between consecutive keys.
@@ -126,12 +126,12 @@ export function checkClip(resolved) {
       if (k.p[1] < -0.85 || k.p[1] > 1.1) { issues.push(`hips through the floor or rocket jump (dy=${k.p[1].toFixed(2)} m)`); break; }
       if (i) {
         const pv = resolved.hipsPos[i - 1];
-        const v = Math.hypot(k.p[0] - pv.p[0], k.p[1] - pv.p[1], k.p[2] - pv.p[2]) / Math.max(1e-4, k.t - pv.t);
+        const v = hyp(k.p[0] - pv.p[0], k.p[1] - pv.p[1], k.p[2] - pv.p[2]) / Math.max(1e-4, k.t - pv.t);
         if (v > 6.5) { issues.push(`hips teleport (${v.toFixed(1)} m/s between keys)`); break; }
       }
     }
     const first = resolved.hipsPos[0], last = resolved.hipsPos[resolved.hipsPos.length - 1];
-    if (loop && Math.hypot(...last.p.map((v, i) => v - first.p[i])) > 0.05) issues.push('hips loop seam pops (pelvis does not come home)');
+    if (loop && hyp(...last.p.map((v, i) => v - first.p[i])) > 0.05) issues.push('hips loop seam pops (pelvis does not come home)');
   }
   return { ok: issues.length === 0, issues };
 }
@@ -226,3 +226,4 @@ export function mirrorMove(spec, name = `${spec.name}-gauche`) {
 }
 
 export { repeatSegment, MOVES } from './animkit-data.js';
+import { hyp } from './hyp.js';

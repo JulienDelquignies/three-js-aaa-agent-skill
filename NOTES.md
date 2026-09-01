@@ -6751,6 +6751,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      11, ouvert au 181 (p95 6,97, 7,4 %), est clos. Clause 198 au jumeau
      appuisRecev: false (p95 vivant ≤ épinglé − 0,5 m). Clé absente = le
      planté d'hier au bit.
+- 241: Lot 199 — LA RACINE RAPIDE (retour utilisateur : « le banc est de
+     plus en plus long on peut pas l'optimiser ? » — ET l'unique ✗ du banc
+     198 était la clause de budget, 1,61 ms/step sous contention). LE
+     PROFIL (--cpu-prof, 120 s de match) : rondoStep 21,6 %, assignMatch-
+     Jobs 12,7 %, movePlayers 9,4 %, GC 6,1 %, stepBall+helpers ~12 % —
+     et Math.hypot PARTOUT (412 sites), mesuré 4,4× plus lent en V8 que
+     sqrt(a²+b²) (divergent à ~1 ulp dans 38 % des cas). DEUX GESTES :
+     (a) hyp.js — le socle sans import, hyp(a,b,c?) en racine crue, sed
+     global sur les 412 sites (le monde re-daté AU CALIBRE : bande 17
+     buts/20 graines fraîches, banc complet juge) ; (b) stepBall : le
+     fusionné par défaut HISSÉ + memo par référence d'opts (un spread
+     par appel nourrissait le GC via les boucles de prédiction).
+     APRÈS : 0,736 → 0,51-0,53 ms/step (−30 %, le budget 1,5 respire à
+     ×3) — le banc en hérite d'autant. TROISIÈME GESTE : bancs.mjs passe
+     à shards = 2× cœurs (la file finissait sur 1-2 gros shards, cœurs
+     dormants — round-robin plus fin, même concurrence). L'EMPREINTE :
+     seed 3 INCHANGÉE au bit (cf9feb43ff908413 — aucune divergence d'ulp
+     sur sa trajectoire), seed 7 re-datée 2b0dc731baeb47e5. Le reste du
+     profil est structurel (les boucles par-joueur) — chantier futur si
+     besoin. La leçon d'instrument : le 1,40 ms « isolé » d'avant était
+     de la CONTENTION de shards ; machine libre = 0,736.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

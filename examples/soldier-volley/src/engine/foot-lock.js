@@ -91,7 +91,7 @@ export class FootLockIK {
       // verrouiller). Le discriminant est RELATIF À L'ALLURE : en cycle vrai, l'appui est
       // quasi-stationnaire en monde et le swing va à ~2× l'allure — un pied bas sous
       // max(0,4 ; 0,6×allure) est un appui, même s'il dérape.
-      const vFoot = st.prev ? Math.hypot(_foot.x - st.prev.x, _foot.z - st.prev.z) / Math.max(1e-4, dt) : 0;
+      const vFoot = st.prev ? hyp(_foot.x - st.prev.x, _foot.z - st.prev.z) / Math.max(1e-4, dt) : 0;
       st.prev = st.prev ? st.prev.set(_foot.x, _foot.y, _foot.z) : _foot.clone();
       const allowed = !mask || mask[i] !== false;
       const low = _foot.y <= st.floor + this.contactBand;
@@ -101,7 +101,7 @@ export class FootLockIK {
         st.yaw0 = bodyYaw ?? 0;
       }
       if (st.grounded) {
-        const drift = Math.hypot(st.lock.x - _foot.x, st.lock.z - _foot.z);
+        const drift = hyp(st.lock.x - _foot.x, st.lock.z - _foot.z);
         const turned = bodyYaw != null && Math.abs(Math.atan2(Math.sin(bodyYaw - st.yaw0), Math.cos(bodyYaw - st.yaw0))) > 0.44;
         // …et l'ÉTIREMENT SE RELÂCHE AVANT LA BUTÉE : une cheville réelle DÉCOLLE (le talon pèle)
         // avant l'extension complète — attendre l'écrêtage de la sphère, c'est traîner le pied à
@@ -109,7 +109,7 @@ export class FootLockIK {
         // = 25-40 mm de glissement à w=1, la clause « un pied tenu ne bouge pas » le lit). À 92 %
         // de la portée, le fondu démarre PENDANT que la jambe peut encore suivre.
         l.up.getWorldPosition(_hip);
-        const dLock = Math.hypot(_hip.x - st.lock.x, _hip.y - Math.max(_foot.y, st.floor), _hip.z - st.lock.z);
+        const dLock = hyp(_hip.x - st.lock.x, _hip.y - Math.max(_foot.y, st.floor), _hip.z - st.lock.z);
         const stretched = dLock > 0.92 * (A + B) * 0.995;
         // relâche : le clip a levé le pied (vrai swing : haut ou NET plus vite que l'allure), la
         // dérive dépasse la borne d'un appui (0,45 m — au-delà le pied DOIT se re-planter, pas
@@ -153,3 +153,4 @@ export class FootLockIK {
     }
   }
 }
+import { hyp } from './hyp.js';

@@ -17,7 +17,7 @@ export const cross = (a, b) => [
   a[2] * b[0] - a[0] * b[2],
   a[0] * b[1] - a[1] * b[0],
 ];
-export const len = (a) => Math.hypot(a[0], a[1], a[2]);
+export const len = (a) => hyp(a[0], a[1], a[2]);
 export const dist = (a, b) => len(sub(a, b));
 export function norm(a) {
   const l = len(a);
@@ -47,7 +47,7 @@ export function quatMul(a, b) {
 }
 export const quatConjugate = (q) => [-q[0], -q[1], -q[2], q[3]];
 export function quatNormalize(q) {
-  const l = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  const l = hyp(q[0], q[1], q[2], q[3]) || 1;
   return [q[0] / l, q[1] / l, q[2] / l, q[3] / l];
 }
 export function quatFromAxisAngle(axis, angle) {
@@ -114,3 +114,4 @@ export function quatAngle(a, b) {
   const d = Math.abs(clamp(a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3], -1, 1));
   return 2 * Math.acos(d);
 }
+import { hyp } from './hyp.js';

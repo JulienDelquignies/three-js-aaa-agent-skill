@@ -5,7 +5,7 @@
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
 const scale = (a, s) => [a[0] * s, a[1] * s];
-const len = (a) => Math.hypot(a[0], a[1]);
+const len = (a) => hyp(a[0], a[1]);
 const norm = (a) => { const l = len(a) || 1; return [a[0] / l, a[1] / l]; };
 
 /** Desired velocity straight at the target, at full speed. */
@@ -30,3 +30,4 @@ export function toMoveInput(vel, maxSpeed) {
   const l = len(vel); if (l < 1e-4) return [0, 0];
   const m = Math.min(1, l / maxSpeed); return [vel[0] / l * m, vel[1] / l * m];
 }
+import { hyp } from './hyp.js';

@@ -12,7 +12,7 @@ import { tac } from './tactics.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 export const footPoint = (st, p, cfg) => {
   const fx = Math.cos(p.yaw), fz = Math.sin(p.yaw);
@@ -84,7 +84,7 @@ export function maybeRateau(st, c, cfg) {
   const ex = c.p[0] + Math.cos(exitYaw) * 1.2, ez = c.p[2] + Math.sin(exitYaw) * 1.2;
   for (const q of st.players) {
     if (q.team === c.team || q.down > 0) continue;
-    if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < K.rateauClear) return deny(st, 'rateau-sans-issue');
+    if (hyp(q.p[0] - ex, q.p[2] - ez) < K.rateauClear) return deny(st, 'rateau-sans-issue');
   }
   if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'rateau-hors-carré');
   // QUI tente : le flair (tirage seedé) — un refus de tempérament re-tire dans 2 s, pas à 60 Hz
@@ -223,7 +223,7 @@ export function maybePassement(st, c, cfg) {
   const sides = [c.yaw + 0.9, c.yaw - 0.9].filter((a) => {
     const ex = c.p[0] + Math.cos(a) * 1.5, ez = c.p[2] + Math.sin(a) * 1.5;
     if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return false;
-    return !st.players.some((q) => q.team !== c.team && q.down <= 0 && Math.hypot(q.p[0] - ex, q.p[2] - ez) < 1.2);
+    return !st.players.some((q) => q.team !== c.team && q.down <= 0 && hyp(q.p[0] - ex, q.p[2] - ez) < 1.2);
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
   if (enCourse && closing > 0.6) return false;                    // lancé : le jockey RECULE devant, il ne charge pas
@@ -305,7 +305,7 @@ export function maybeCrochet(st, c, cfg) {
   if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'crochet-hors-carré');
   for (const q of st.players) {
     if (q.team === c.team || q.down > 0) continue;
-    if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
+    if (hyp(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
   }
   if ((st.rnd ? st.rnd() : 0.5) > (0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) {   // …la tentative au carré (197)
     (c._skillCd ??= {}).crochet = st.t + 2; return false;
@@ -364,7 +364,7 @@ export function maybeDoubleContact(st, c, cfg) {
   if (Math.abs(ex) > st.area[0] / 2 - 0.6 || Math.abs(ez) > st.area[1] / 2 - 0.6) return deny(st, 'double-hors-carré');
   for (const q of st.players) {
     if (q.team === c.team || q.down > 0 || q === foe) continue;   // le jeté lui-même sera mordu, pas un mur
-    if (Math.hypot(q.p[0] - ex, q.p[2] - ez) < (K.doubleClear ?? 1.1)) return deny(st, 'double-sans-issue');
+    if (hyp(q.p[0] - ex, q.p[2] - ez) < (K.doubleClear ?? 1.1)) return deny(st, 'double-sans-issue');
   }
   // QUI le tente : flair × la note de dribble AU CARRÉ — un geste de RISQUE (le 50/50 du
   // duel nivelle les notes : mesuré, les faibles tentaient autant que l'élite car les
@@ -421,7 +421,7 @@ export function maybePetitPont(st, c, cfg) {
   if (Math.abs(bx) > st.area[0] / 2 - 0.8 || Math.abs(bz) > st.area[1] / 2 - 0.8) return deny(st, 'pont-hors-carré');
   for (const q of st.players) {
     if (q.team === c.team || q.down > 0 || q === foe) continue;
-    if (Math.hypot(q.p[0] - bx, q.p[2] - bz) < (K.pontClear ?? 1.5)) return deny(st, 'pont-second-rideau');
+    if (hyp(q.p[0] - bx, q.p[2] - bz) < (K.pontClear ?? 1.5)) return deny(st, 'pont-second-rideau');
   }
   // QUI le tente : flair × la note AU CARRÉ — le pont est le PARI le plus cher du
   // répertoire (47 % de réussite) : la note filtre fort (le même contrat de risque que la
@@ -506,7 +506,7 @@ export function maybeFeinteFrappe(st, c, cfg, contested) {
   if ((c._skillCd?.frappeFeinte ?? -1) > st.t) return false;
   if (st.hold < 0.3 || d2(c.p, st.ball.p) > 0.65) return false;
   const goal = st.pitch.attackGoal(c.team);
-  const dGoal = Math.hypot(goal.x - c.p[0], 0 - c.p[2]);
+  const dGoal = hyp(goal.x - c.p[0], 0 - c.p[2]);
   if (dGoal > (cfg.shotRange ?? 15) + 1) return false;            // hors zone : feinter quoi ?
   const gYaw = Math.atan2(0 - c.p[2], goal.x - c.p[0]);
   let blocker = null;
@@ -688,7 +688,7 @@ export function skillFollowStep(st, p, dt, cfg) {
     // plonger à sa gauche », retour utilisateur). La détente couvre SA distance, puis s'éteint.
     const T = p.act.anticipation + 0.25;
     const k = p.act.t < p.act.anticipation ? 1 : Math.max(0, 1 - (p.act.t - p.act.anticipation) / 0.25);
-    A.lungeMax = A.lungeMax ?? Math.min(1.35, Math.hypot((A.cross?.z ?? p.p[2]) - p.p[2], (A.cross ? 0.35 : 0)) + 0.2);
+    A.lungeMax = A.lungeMax ?? Math.min(1.35, hyp((A.cross?.z ?? p.p[2]) - p.p[2], (A.cross ? 0.35 : 0)) + 0.2);
     A.lungeRun = A.lungeRun ?? 0;
     if (p.act.t < T && A.lunge && A.lungeRun < A.lungeMax) {
       const step = Math.min(A.speed * k * dt, A.lungeMax - A.lungeRun);
@@ -698,7 +698,7 @@ export function skillFollowStep(st, p, dt, cfg) {
       p.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, p.p[0]));
       p.p[2] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, p.p[2]));
       p.v[0] = A.lunge[0] * (step / dt); p.v[1] = A.lunge[1] * (step / dt);
-      p.speed = Math.hypot(p.v[0], p.v[1]);
+      p.speed = hyp(p.v[0], p.v[1]);
     } else { p.v[0] = 0; p.v[1] = 0; p.speed = 0; }
   } else if (A.skill === 'passement') {
     // le corps reste PLANTÉ sur son appui, le ballon est FIGÉ sous le cercle de la jambe — la
@@ -785,7 +785,7 @@ export function skillFollowStep(st, p, dt, cfg) {
     // corps s'oriente au contournement et son burst l'emmène — la chasse standard reprend
     if (p.act.t < p.act.anticipation) {
       if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-pont', { log: st.gestures }); return; }
-      p.v[0] *= 0.8; p.v[1] *= 0.8; p.speed = Math.hypot(p.v[0], p.v[1]);
+      p.v[0] *= 0.8; p.v[1] *= 0.8; p.speed = hyp(p.v[0], p.v[1]);
     } else if (A.reussi) {
       const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
       const e2 = u * u * (3 - 2 * u);
@@ -795,7 +795,7 @@ export function skillFollowStep(st, p, dt, cfg) {
       p.v[0] = Math.cos(p.yaw) * vC; p.v[1] = Math.sin(p.yaw) * vC;
       p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
       p.speed = vC;
-    } else { p.v[0] *= 0.7; p.v[1] *= 0.7; p.speed = Math.hypot(p.v[0], p.v[1]); }
+    } else { p.v[0] *= 0.7; p.v[1] *= 0.7; p.speed = hyp(p.v[0], p.v[1]); }
   } else if (A.skill === 'doubleContact') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-double', { log: st.gestures }); return; }
     // le corps GLISSE sur son élan freiné et le cap TOURNE À PEINE vers la sortie (ease —
@@ -844,7 +844,7 @@ export function skillFollowStep(st, p, dt, cfg) {
     // corps s'oriente au contournement et son burst l'emmène — la chasse standard reprend
     if (p.act.t < p.act.anticipation) {
       if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-pont', { log: st.gestures }); return; }
-      p.v[0] *= 0.8; p.v[1] *= 0.8; p.speed = Math.hypot(p.v[0], p.v[1]);
+      p.v[0] *= 0.8; p.v[1] *= 0.8; p.speed = hyp(p.v[0], p.v[1]);
     } else if (A.reussi) {
       const u = Math.min(1, (p.act.t - p.act.anticipation) / Math.max(1e-4, p.act.follow));
       const e2 = u * u * (3 - 2 * u);
@@ -854,7 +854,7 @@ export function skillFollowStep(st, p, dt, cfg) {
       p.v[0] = Math.cos(p.yaw) * vC; p.v[1] = Math.sin(p.yaw) * vC;
       p.p[0] += p.v[0] * dt; p.p[2] += p.v[1] * dt;
       p.speed = vC;
-    } else { p.v[0] *= 0.7; p.v[1] *= 0.7; p.speed = Math.hypot(p.v[0], p.v[1]); }
+    } else { p.v[0] *= 0.7; p.v[1] *= 0.7; p.speed = hyp(p.v[0], p.v[1]); }
   } else if (A.skill === 'doubleContact') {
     if (st.ball.owner !== p.id) { abortGesture(p, 'ballon-souffle-pendant-double', { log: st.gestures }); return; }
     // le corps GLISSE sur son élan freiné et le cap TOURNE À PEINE vers la sortie (ease —
@@ -892,6 +892,7 @@ export function skillFollowStep(st, p, dt, cfg) {
     }
     p.v[0] = 0; p.v[1] = 0; p.speed = 0;
     if (A.pin) st.ball.carry([A.pin[0], A.pin[1]], dt, { tau: 0.04 });
-    A.maxV = Math.max(A.maxV ?? 0, Math.hypot(st.ball.v[0], st.ball.v[2]));
+    A.maxV = Math.max(A.maxV ?? 0, hyp(st.ball.v[0], st.ball.v[2]));
   }
 }
+import { hyp } from './hyp.js';

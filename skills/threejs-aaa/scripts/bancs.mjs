@@ -5,7 +5,7 @@
 import { spawn } from 'node:child_process';
 import { cpus } from 'node:os';
 
-const SH = +(process.env.BANC_SHARDS ?? Math.max(2, Math.min(6, cpus().length)));
+const SH = +(process.env.BANC_SHARDS ?? Math.max(2, Math.min(10, cpus().length * 2)));   // 199 : shards = 2× cœurs — la file finissait sur 1-2 gros shards pendant que les autres cœurs dormaient (round-robin plus fin, même concurrence)
 const jobs = [];
 for (let i = 0; i < SH; i++) jobs.push({ name: `match11 ${i + 1}/${SH}`, args: ['verify-match11.mjs'], env: { BANC_SHARDS: String(SH), BANC_SHARD: String(i) } });
 for (const b of ['verify-match.mjs', 'verify-rondo.mjs', 'verify-gestes.mjs', 'verify-menace.mjs', 'verify-frappes.mjs', 'verify-sync.mjs', 'verify-attributes.mjs'])

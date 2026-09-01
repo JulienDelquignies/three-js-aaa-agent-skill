@@ -49,7 +49,7 @@ export const PITCH = {
   grassSpin: 0.7,        // part de spin conservée — l'herbe freine aussi la rotation à l'impact
 };
 
-const len = (a) => Math.hypot(a[0], a[1], a[2]);
+const len = (a) => hyp(a[0], a[1], a[2]);
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 /**
@@ -111,7 +111,7 @@ function resolveGround(s, { restitution, friction, grassTangent = 1, grassSpin =
   s.v[1] = -s.v[1] * restitution;
   // contact-point tangential velocity: u = v_t + (ω × (0,−r,0))_t = (vx + r·wz, vz − r·wx)
   const ux = s.v[0] + r * s.w[2], uz = s.v[2] - r * s.w[0];
-  const u = Math.hypot(ux, uz);
+  const u = hyp(ux, uz);
   if (u < 1e-6) return;
   const jStick = (a / (1 + a)) * u;                         // impulse/mass that removes all slip
   const j = Math.min(friction * jn, jStick);                // Coulomb cone
@@ -142,7 +142,7 @@ function resolveGround(s, { restitution, friction, grassTangent = 1, grassSpin =
  * the grass contributes, and without it a firm pass rolls 150 m across the pitch.
  */
 function rollGround(s, dt, { gravity, rollResist, drag = true }) {
-  const sp = Math.hypot(s.v[0], s.v[2]);
+  const sp = hyp(s.v[0], s.v[2]);
   if (sp < 1e-6) { s.v[0] = s.v[2] = 0; s.w[0] = s.w[1] = s.w[2] = 0; return; }
   const dec = (rollResist * gravity + (drag ? BALL.k * dragCoefficient(sp) * sp * sp : 0)) * dt;
   const f = Math.max(0, sp - dec) / sp;
@@ -156,8 +156,9 @@ function rollGround(s, dt, { gravity, rollResist, drag = true }) {
  * @param {{p:number[],v:number[],w:number[]}} s
  * @param {number} dt seconds
  */
-export function stepBall(s, dt, opts = {}) {
-  const o = { ...PITCH, drag: true, magnus: true, ground: true, ...opts };
+const DEFO = { ...PITCH, drag: true, magnus: true, ground: true };   // 199 : le fusionné par défaut HISSÉ — un spread par appel nourrissait le GC (6 % du profil) via les boucles de prédiction
+export function stepBall(s, dt, opts) {
+  const o = opts == null ? DEFO : opts._o ?? (opts._o = { ...PITCH, drag: true, magnus: true, ground: true, ...opts });   // memo par RÉFÉRENCE (les opts sont stables par boucle) — même contenu au bit
   const speed = len(s.v);
   // never travel more than half a radius per sub-step
   const n = Math.max(1, Math.min(64, Math.ceil((speed * dt) / (BALL.radius * 0.5))));
@@ -218,11 +219,11 @@ export function checkBallFlight(path, { maxSpeed = 60, dt = 1 / 120 } = {}) {
     const { p, v } = path[i];
     for (const c of [...p, ...v]) if (!Number.isFinite(c)) { issues.push('valeurs non finies dans la trajectoire'); break; }
     if (p[1] < BALL.radius - 0.02) { issues.push(`le ballon traverse la pelouse (y=${p[1].toFixed(3)} < r)`); break; }
-    const sp = Math.hypot(v[0], v[1], v[2]);
+    const sp = hyp(v[0], v[1], v[2]);
     if (sp > maxSpeed) { issues.push(`vitesse irréaliste ${sp.toFixed(1)} m/s (> ${maxSpeed})`); break; }
     if (i > 0) {
       const q = path[i - 1].p;
-      const step = Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+      const step = hyp(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
       if (step > maxSpeed * dt * 1.6 + 1e-3) { issues.push(`saut de position ${step.toFixed(2)} m en un pas (téléport)`); break; }
     }
     // energy may only decrease in flight (drag/friction are dissipative — nothing adds energy)
@@ -237,7 +238,7 @@ export function checkBallFlight(path, { maxSpeed = 60, dt = 1 / 120 } = {}) {
 /** Lateral deviation (m) of a path from the straight line of its initial heading — the "bend". */
 export function lateralBend(path) {
   const a = path[0].p, v = path[0].v;
-  const h = Math.hypot(v[0], v[2]) || 1;
+  const h = hyp(v[0], v[2]) || 1;
   const dx = v[0] / h, dz = v[2] / h;                       // unit heading in the pitch plane
   let worst = 0;
   for (const s of path) {
@@ -247,3 +248,4 @@ export function lateralBend(path) {
   }
   return worst;
 }
+import { hyp } from './hyp.js';

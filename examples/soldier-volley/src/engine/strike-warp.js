@@ -67,14 +67,14 @@ export function warpEnvelope(t, antic, { winIn = WARP.winIn, out = WARP.out } = 
  */
 export function planWarp(expectedXZ, ballXZ, { standoff = WARP.standoff, warpMax = WARP.warpMax } = {}) {
   const dx = expectedXZ[0] - ballXZ[0], dz = expectedXZ[1] - ballXZ[1];
-  const d = Math.hypot(dx, dz);
+  const d = hyp(dx, dz);
   // dégénéré : le pied authoré tombe SUR le centre du ballon — aucune direction d'approche à
   // corriger (et un clip pareil est faux en amont) : on ne warpe pas au hasard, on le DIT.
   if (d < 1e-6) return { offset: [0, 0], mag: 0, full: 0, denied: 'warp-degenere' };
   const ux = dx / d, uz = dz / d;
   let ox = (ballXZ[0] + ux * standoff) - expectedXZ[0];
   let oz = (ballXZ[1] + uz * standoff) - expectedXZ[1];
-  const full = Math.hypot(ox, oz);
+  const full = hyp(ox, oz);
   let denied = null;
   if (full > warpMax) { denied = 'warp-hors-borne'; const k = warpMax / full; ox *= k; oz *= k; }
   return { offset: [ox, oz], mag: Math.min(full, warpMax), full, denied };
@@ -101,13 +101,13 @@ export const HAND_WARP = {
  */
 export function planWarp3(expected, ball, { standoff = HAND_WARP.standoff, warpMax = HAND_WARP.warpMax } = {}) {
   const dx = expected[0] - ball[0], dy = expected[1] - ball[1], dz = expected[2] - ball[2];
-  const d = Math.hypot(dx, dy, dz);
+  const d = hyp(dx, dy, dz);
   if (d < 1e-6) return { offset: [0, 0, 0], mag: 0, full: 0, denied: 'warp-degenere' };
   const k = standoff / d;
   let ox = (ball[0] + dx * k) - expected[0];
   let oy = (ball[1] + dy * k) - expected[1];
   let oz = (ball[2] + dz * k) - expected[2];
-  const full = Math.hypot(ox, oy, oz);
+  const full = hyp(ox, oy, oz);
   let denied = null;
   if (full > warpMax) { denied = 'warp-hors-borne'; const q = warpMax / full; ox *= q; oy *= q; oz *= q; }
   return { offset: [ox, oy, oz], mag: Math.min(full, warpMax), full, denied };
@@ -119,7 +119,7 @@ export function planWarp3(expected, ball, { standoff = HAND_WARP.standoff, warpM
  * et on nomme le refus). A = cuisse (hanche→genou), B = tibia (genou→cheville), en mètres monde.
  */
 export function warpReach(hipW, targetW, A, B) {
-  const d = Math.hypot(targetW[0] - hipW[0], targetW[1] - hipW[1], targetW[2] - hipW[2]);
+  const d = hyp(targetW[0] - hipW[0], targetW[1] - hipW[1], targetW[2] - hipW[2]);
   return d <= (A + B) * 0.995;
 }
 
@@ -144,7 +144,7 @@ export function checkStrikeWarp(cfg = WARP) {
   if (warpEnvelope(antic + cfg.out + 1e-3, antic, cfg) !== 0) issues.push('le warp ne rend pas la jambe après le contact');
   // 3. la surface s'arrête à la surface : cible à standoff du centre, jamais dedans
   const p = planWarp([0.5, 0], [0, 0], cfg);
-  const land = Math.hypot(0.5 + p.offset[0], p.offset[1]);
+  const land = hyp(0.5 + p.offset[0], p.offset[1]);
   if (Math.abs(land - cfg.standoff) > 1e-6) issues.push(`la cible n'est pas au standoff (${land.toFixed(3)} m vs ${cfg.standoff})`);
   // 4. borné, et le refus est nommé
   const far = planWarp([cfg.warpMax + cfg.standoff + 0.3, 0], [0, 0], cfg);
@@ -155,7 +155,7 @@ export function checkStrikeWarp(cfg = WARP) {
   if (!Number.isFinite(deg.offset[0]) || deg.denied !== 'warp-degenere') issues.push('cas dégénéré non nommé (pied sur le centre du ballon)');
   // 6. LE PLAN 3D (le gant) obéit aux mêmes lois : surface en 3D, borne nommée, dégénéré nommé
   const h = planWarp3([0, 1.6, 0.5], [0, 1.0, 0]);
-  const land3 = Math.hypot(0 + h.offset[0] - 0, 1.6 + h.offset[1] - 1.0, 0.5 + h.offset[2] - 0);
+  const land3 = hyp(0 + h.offset[0] - 0, 1.6 + h.offset[1] - 1.0, 0.5 + h.offset[2] - 0);
   if (Math.abs(land3 - HAND_WARP.standoff) > 1e-6) issues.push(`le gant ne s'arrête pas à la surface (${land3.toFixed(3)} m vs ${HAND_WARP.standoff})`);
   const far3 = planWarp3([HAND_WARP.warpMax + 2, 0, 0], [0, 0, 0]);
   if (far3.mag > HAND_WARP.warpMax + 1e-9 || far3.denied !== 'warp-hors-borne') issues.push('la borne 3D ne mord pas ou ne se nomme pas');
@@ -163,3 +163,4 @@ export function checkStrikeWarp(cfg = WARP) {
   if (!Number.isFinite(deg3.offset[1]) || deg3.denied !== 'warp-degenere') issues.push('dégénéré 3D non nommé');
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

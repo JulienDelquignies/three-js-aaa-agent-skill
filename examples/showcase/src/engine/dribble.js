@@ -71,11 +71,11 @@ export function dribbleSteer(ball, player, { pull = 0.6, reach = 1.15 } = {}) {
   const wx = player.want ? player.want[0] : player.heading[0];
   const wz = player.want ? player.want[1] : player.heading[1];
   const bx = ball.p[0] - player.p[0], bz = ball.p[2] - player.p[1];
-  const d = Math.hypot(bx, bz);
+  const d = hyp(bx, bz);
   if (d < reach * 0.9) return [wx, wz];                    // ball at the foot: just go where you want
   const k = Math.min(1, (d - reach * 0.9) / 1.6) * pull;   // the further it drifted, the harder you chase
   const hx = wx + (bx / d - wx) * k, hz = wz + (bz / d - wz) * k;
-  const l = Math.hypot(hx, hz) || 1;
+  const l = hyp(hx, hz) || 1;
   return [hx / l, hz / l];
 }
 
@@ -99,7 +99,7 @@ export const dansCone = (yaw, px, pz, bx, bz, cone = 100) => {
 };
 
 export function balPrenable(ball, px, pz, prise = 0.5, fuite = 0.5) {
-  const bx = ball.p[0] - px, bz = ball.p[2] - pz, dd = Math.hypot(bx, bz);
+  const bx = ball.p[0] - px, bz = ball.p[2] - pz, dd = hyp(bx, bz);
   return dd < prise || (dd > 1e-4 ? (ball.v[0] * bx + ball.v[2] * bz) / dd : 0) < fuite;
 }
 
@@ -142,7 +142,7 @@ export function dribbleStep(d, ball, player, dt) {
   d.sinceTouch += player.speed * dt;
 
   const bx = ball.p[0] - px, bz = ball.p[2] - pz;
-  const dist = Math.hypot(bx, bz);
+  const dist = hyp(bx, bz);
   const ahead = (bx * hx + bz * hz);                       // signed: how far in front the ball is
 
   let touched = false, ev = null;
@@ -186,7 +186,7 @@ export function dribbleStep(d, ball, player, dt) {
     // the touch aims where the player WANTS to go (this is what carries the ball through a turn),
     // blended with the ball's current line so a touch never teleports its direction
     const cvx = ball.v[0], cvz = ball.v[2];
-    const cl = Math.hypot(cvx, cvz);
+    const cl = hyp(cvx, cvz);
     const curX = cl > 0.2 ? cvx / cl : wantX, curZ = cl > 0.2 ? cvz / cl : wantZ;
     // UNE TOUCHE QUI CORRIGE, CORRIGE VRAIMENT : quand la ligne du ballon a divergé de plus de
     // 60° du cap voulu (déviation, duel, rebond), le mélange avec la ligne courante perpétuait
@@ -194,7 +194,7 @@ export function dribbleStep(d, ball, player, dt) {
     const div = Math.acos(Math.max(-1, Math.min(1, curX * wantX + curZ * wantZ)));
     const steerK = div > Math.PI / 3 ? 1 : c.steer;
     let dx = curX + (wantX - curX) * steerK, dz = curZ + (wantZ - curZ) * steerK;
-    const dl = Math.hypot(dx, dz) || 1; dx /= dl; dz /= dl;
+    const dl = hyp(dx, dz) || 1; dx /= dl; dz /= dl;
     // LEAD THE TURN: by the time the player catches this touch they will have rotated further, so
     // aim inside the curve rather than down the current tangent. Touching the tangent is exactly
     // what leaves the ball drifting to the outside and behind on a curved run.
@@ -223,7 +223,7 @@ export function dribbleStep(d, ball, player, dt) {
 
   advance(ball, dt);
 
-  const nd = Math.hypot(ball.p[0] - px, ball.p[2] - pz);
+  const nd = hyp(ball.p[0] - px, ball.p[2] - pz);
   d.lost = nd > c.controlRadius;
   return { touched, ev, dist: nd, ahead, control: Math.max(0, 1 - nd / c.controlRadius), lost: d.lost };
 }
@@ -253,3 +253,4 @@ export function checkDribble(trace, { controlRadius = 4.2, minVariation = 0.15, 
   if (touches === 0) issues.push('aucune touche : le ballon n\'est jamais joué');
   return { ok: issues.length === 0, issues, stats: { mean: +mean.toFixed(2), sd: +sd.toFixed(2), worst: +worst.toFixed(2), touches } };
 }
+import { hyp } from './hyp.js';

@@ -71,9 +71,10 @@ export function checkPersona({ n = 10, seed = 3 } = {}) {
   let worst = Infinity, pair = null;
   for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
     const a = axes(ps[i]), b = axes(ps[j]);
-    const d = Math.hypot(...a.map((v, k) => v - b[k]));
+    const d = hyp(...a.map((v, k) => v - b[k]));
     if (d < worst) { worst = d; pair = [i, j]; }
   }
   if (worst < 0.35) issues.push(`personas ${pair} presque clones (L2 ${worst.toFixed(2)} < 0,35)`);
   return { ok: issues.length === 0, issues, worst };
 }
+import { hyp } from './hyp.js';

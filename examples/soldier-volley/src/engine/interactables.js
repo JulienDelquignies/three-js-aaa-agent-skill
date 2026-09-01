@@ -15,7 +15,7 @@ export class InteractableSystem {
     let best = null, bd = Infinity;
     for (const it of this.items) {
       const q = it.pos();
-      const d = Math.hypot(q[0] - p.x, q[2] - p.z);
+      const d = hyp(q[0] - p.x, q[2] - p.z);
       if (d <= it.radius && d < bd) { best = it; bd = d; }
     }
     this.current = best;
@@ -91,3 +91,4 @@ export function carryFollow(handBone, mesh, body = null, offset = [0, -0.12, 0.0
   mesh.position.set(_v.x + offset[0], _v.y + offset[1], _v.z + offset[2]);
   if (body) body.setTranslation({ x: mesh.position.x, y: mesh.position.y, z: mesh.position.z }, false);
 }
+import { hyp } from './hyp.js';

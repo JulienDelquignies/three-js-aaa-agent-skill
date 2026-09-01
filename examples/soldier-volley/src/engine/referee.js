@@ -13,7 +13,7 @@ import { makeProfile } from './attributes.js';
 import { resoudreRole } from './roles.js';
 import { axe as axeT, tac as tacT } from './tactics.js';
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
+const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
 /** Un refus a une cause nommée (copie locale du registre du loop). */
 const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; };
@@ -115,7 +115,7 @@ export function stepRemplacements(st, cfg) {
   for (const q of st.players) {
     if (!q._sub) continue;
     if (q._sub.phase === 'out') {
-      if (Math.hypot(q.p[0] - q._exit[0], q.p[2] - q._exit[1]) < 1.2) {
+      if (hyp(q.p[0] - q._exit[0], q.p[2] - q._exit[1]) < 1.2) {
         const spec = q._sub.spec ?? {};
         q.ratings = spec.ratings ?? null;
         q.skill = spec.ratings ? makeProfile(spec.ratings) : null;
@@ -164,25 +164,25 @@ export function remiseEnTouche(st, id, cfg) {
   const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
   if (!mates.length) return;
   const foes = st.players.filter((m) => m.team !== q.team && m.down <= 0);
-  const dOf = (m) => Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]);
+  const dOf = (m) => hyp(m.p[0] - q.p[0], m.p[2] - q.p[2]);
   // le jet LONG se lance SUR LE POSTE du plan (le monteur l'ATTAQUE en course — le vrai jet
   // long est un centre à la main) ; sans plan ou sans la tactique, la cible est le corps même
   const postOf = (m) => {
     const pt = longue && st._touchePlan?.team === q.team ? st._touchePlan.map[m.id] : null;
-    return pt && Math.hypot(m.p[0] - pt[0], m.p[2] - pt[1]) <= 9 ? pt : null;   // un poste ne se sert qu'HABITÉ — pas de jet dans une boîte vide
+    return pt && hyp(m.p[0] - pt[0], m.p[2] - pt[1]) <= 9 ? pt : null;   // un poste ne se sert qu'HABITÉ — pas de jet dans une boîte vide
   };
   let best = null, bestS = -Infinity, bestT = null;
   for (const m of mates) {
     const post = postOf(m);
     const tx = post ? post[0] : m.p[0], tz = post ? post[1] : m.p[2];
-    const d = Math.hypot(tx - q.p[0], tz - q.p[2]);
+    const d = hyp(tx - q.p[0], tz - q.p[2]);
     if (d < 2 || d > R) continue;
-    const guard = Math.min(...foes.map((f) => Math.hypot(f.p[0] - tx, f.p[2] - tz)), 99);
+    const guard = Math.min(...foes.map((f) => hyp(f.p[0] - tx, f.p[2] - tz)), 99);
     let s = Math.min(guard, 8) - d * 0.08;                        // le plus démarqué, à portée
     if (longue) {
       const box = Math.abs(tx - gT.x) < 16.5 && Math.abs(tz) < 20.16;
       if (box) s += 6 + 2 * (m.skill?.chargeF ?? 1);              // la boîte prime, le GRAND dans la boîte double
-      if (post) s -= Math.hypot(m.p[0] - tx, m.p[2] - tz) * 0.15; // le monteur encore LOIN de son poste paie
+      if (post) s -= hyp(m.p[0] - tx, m.p[2] - tz) * 0.15; // le monteur encore LOIN de son poste paie
     }
     if (s > bestS) { bestS = s; best = m; bestT = [tx, tz]; }
   }
@@ -190,8 +190,8 @@ export function remiseEnTouche(st, id, cfg) {
   bestT ??= [best.p[0], best.p[2]];
   if (longue) st._touchePlan = null;                              // le plan est CONSOMMÉ par le jet
   const dx = bestT[0] - q.p[0], dz = bestT[1] - q.p[2];
-  const Rr = Math.min(Math.hypot(dx, dz), R);
-  const theta = longue && Math.hypot(dx, dz) > 19 ? 0.42 : 0.55;  // ~32° la cloche ; le jet LONG part plat (~24°)
+  const Rr = Math.min(hyp(dx, dz), R);
+  const theta = longue && hyp(dx, dz) > 19 ? 0.42 : 0.55;  // ~32° la cloche ; le jet LONG part plat (~24°)
   const speed = Math.sqrt(Math.max(4, Rr) * 9.81 / Math.sin(2 * theta));
   st.ball.release('touche');                                      // la cause VRAIE au grand livre
   st.ball.strike({ speed, dirYaw: Math.atan2(dz, dx), elevation: theta, spinAxis: [0, 1, 0], spinRev: 0 });
@@ -220,7 +220,7 @@ export function coupFrancDirect(st, id, cfg) {
   const { pitch } = st;
   const goal = pitch.attackGoal(q.team);
   const dx = goal.x - q.p[0], dzB = 0 - q.p[2];
-  const d = Math.hypot(dx, dzB);
+  const d = hyp(dx, dzB);
   // LE STYLE DE COUP FRANC (148, tac.cpa.coupFranc) : 'direct' ose de plus loin (34 m) et
   // plus excentré ; 'centre' refuse le direct au-delà de 20 m (le lancé/centre prime) ;
   // absent/'mixte' : les portes d'hier au bit
@@ -230,7 +230,7 @@ export function coupFrancDirect(st, id, cfg) {
   const gk = st.players.find((p) => p.keeper && p.team !== q.team);
   const tz = (gk ? -Math.sign(gk.p[2] || 1) : (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5 ? -1 : 1) * (pitch.goalHalf - 0.7);
   const yaw = Math.atan2(tz - q.p[2], goal.x - q.p[0]);
-  const dT = Math.hypot(goal.x - q.p[0], tz - q.p[2]);
+  const dT = hyp(goal.x - q.p[0], tz - q.p[2]);
   const v = d > 30 ? 21 : d > 27 ? 19.5 : 18.5;   // …le 'direct' (148) ose au-delà de 30 m : la vitesse suit (portée balistique)
   let theta = null;
   for (let t = 0.30; t <= 0.52; t += 0.02) {                       // le balayage : mur passé, barre respectée
@@ -265,15 +265,15 @@ export function coupFrancLance(st, id, cfg) {
   const q = st.players[id];
   const { pitch } = st;
   const goal = pitch.attackGoal(q.team);
-  const d = Math.hypot(goal.x - q.p[0], 0 - q.p[2]);
+  const d = hyp(goal.x - q.p[0], 0 - q.p[2]);
   if (d > 55 || d <= 30) return false;                             // trop loin pour la boîte ; à portée, le direct s'en charge
   const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
   const sg = Math.sign(goal.x || 1);
   const tx = goal.x - sg * 10.5, tz = (rnd() < 0.5 ? -1 : 1) * (2 + 5 * rnd());
   const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
   if (!mates.length) return false;
-  const best = mates.sort((a, b) => Math.hypot(a.p[0] - tx, a.p[2] - tz) - Math.hypot(b.p[0] - tx, b.p[2] - tz))[0];
-  const R = Math.hypot(tx - q.p[0], tz - q.p[2]);
+  const best = mates.sort((a, b) => hyp(a.p[0] - tx, a.p[2] - tz) - hyp(b.p[0] - tx, b.p[2] - tz))[0];
+  const R = hyp(tx - q.p[0], tz - q.p[2]);
   const theta = 0.62, v = Math.sqrt(R * 9.81 / Math.sin(2 * theta));
   const yaw = Math.atan2(tz - q.p[2], tx - q.p[0]);
   st.ball.release('coup-franc');                                   // la cause VRAIE au grand livre
@@ -316,10 +316,10 @@ export function cornerTrav(st, id, cfg) {
   const cpaC = st.tactics?.[q.team]?.cpa?.corner;
   if (cpaC === 'court' && rnd() < 0.7) {
     const court = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0
-      && Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]) > 3 && Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]) < 18)
-      .sort((a, b) => Math.hypot(a.p[0] - q.p[0], a.p[2] - q.p[2]) - Math.hypot(b.p[0] - q.p[0], b.p[2] - q.p[2]))[0];
+      && hyp(m.p[0] - q.p[0], m.p[2] - q.p[2]) > 3 && hyp(m.p[0] - q.p[0], m.p[2] - q.p[2]) < 18)
+      .sort((a, b) => hyp(a.p[0] - q.p[0], a.p[2] - q.p[2]) - hyp(b.p[0] - q.p[0], b.p[2] - q.p[2]))[0];
     if (court) {
-      const dC = Math.hypot(court.p[0] - q.p[0], court.p[2] - q.p[2]);
+      const dC = hyp(court.p[0] - q.p[0], court.p[2] - q.p[2]);
       const vC = Math.max(7, Math.min(11, dC * 1.05));
       st.ball.release('coup-franc');
       st.ball.strike({ speed: vC, dirYaw: Math.atan2(court.p[2] - q.p[2], court.p[0] - q.p[0]), elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });
@@ -339,7 +339,7 @@ export function cornerTrav(st, id, cfg) {
     : [goal.x - sg * 5.5, -cz * (pitch.goalHalf - 1)];                           // second poteau
   const sf = cfg.patte !== false ? (q.strongFoot ?? 'right') : 'both';
   const rentrant = sf === 'both' ? 0 : ((Math.sign(q.p[2] * -(goal.x || 1)) > 0) === (sf === 'right') ? 1 : -1);
-  const R = Math.hypot(cible[0] - q.p[0], cible[1] - q.p[2]);
+  const R = hyp(cible[0] - q.p[0], cible[1] - q.p[2]);
   const theta = 0.45, v = Math.sqrt(Math.max(10, R) * 9.81 / Math.sin(2 * theta));
   const yaw = Math.atan2(cible[1] - q.p[2], cible[0] - q.p[0]);
   st.ball.release('coup-franc');                                   // la cause des coups de pied arrêtés au grand livre
@@ -348,7 +348,7 @@ export function cornerTrav(st, id, cfg) {
   st.phase = 'flight';
   st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
-  const best = mates.length ? mates.sort((a, b) => Math.hypot(a.p[0] - cible[0], a.p[2] - cible[1]) - Math.hypot(b.p[0] - cible[0], b.p[2] - cible[1]))[0] : null;
+  const best = mates.length ? mates.sort((a, b) => hyp(a.p[0] - cible[0], a.p[2] - cible[1]) - hyp(b.p[0] - cible[0], b.p[2] - cible[1]))[0] : null;
   st.pass = { from: id, to: best?.id ?? -2, lead: [cible[0], 0, cible[1]], style: 'corner', t: st.t, flight: 2 * v * Math.sin(theta) / 9.81, origin: [q.p[0], q.p[2]] };
   st.lastPasser = id;
   st.events.push({ t: +st.t.toFixed(2), type: 'corner-joué', by: id, genre: rentrant > 0 ? 'rentrant' : rentrant < 0 ? 'sortant' : 'tendu', cible: u < 0.4 ? 'premier' : u < 0.7 ? 'penalty' : 'second' });
@@ -397,7 +397,7 @@ export function cornerSpots(st, r, p, cfg) {
       const m = defs.filter((d) => !pris.has(d.id)).sort((a, b) => d2(a.p, posts[i]) - d2(b.p, posts[i]))[0];
       if (m) { pris.add(m.id); map[m.id] = [posts[i][0] + sg * 0.9, posts[i][1] * 0.92]; }   // goal-side, un demi-pas vers l'axe
     });
-    const pot = defs.filter((d) => !pris.has(d.id)).sort((a, b) => Math.hypot(a.p[0] - g.x, a.p[2] - cz * gh) - Math.hypot(b.p[0] - g.x, b.p[2] - cz * gh))[0];
+    const pot = defs.filter((d) => !pris.has(d.id)).sort((a, b) => hyp(a.p[0] - g.x, a.p[2] - cz * gh) - hyp(b.p[0] - g.x, b.p[2] - cz * gh))[0];
     if (pot) map[pot.id] = [g.x - sg * 0.6, cz * (gh - 0.4)];
     return { at: r.at, team: r.team, map };
   })());
@@ -422,7 +422,7 @@ export function toucheSpots(st, r, p, cfg) {
     // le jet long vise le CÔTÉ PROCHE de la surface (la géométrie : depuis la ligne, le
     // second poteau est hors de portée d'un bras humain) — premier poteau, axe proche, retrait
     const posts = [[g.x - sg * 6, cz * ((st.pitch.goalHalf ?? 3.7) + 4)], [g.x - sg * spot, cz * 9], [g.x - sg * 9, cz * 14]]
-      .filter((pt) => Math.hypot(pt[0] - r.p[0], pt[1] - r.p[1]) <= L - 2);   // seuls les postes À PORTÉE montent
+      .filter((pt) => hyp(pt[0] - r.p[0], pt[1] - r.p[1]) <= L - 2);   // seuls les postes À PORTÉE montent
     const atk = st.players.filter((q) => q.team === r.team && !q.keeper && q.id !== r.taker && q.down <= 0 && !q.expulse && !q._sub)
       .sort((a, b) => (b.skill?.chargeF ?? 1) - (a.skill?.chargeF ?? 1)).slice(0, posts.length);   // les GRANDS montent
     const map = {};
@@ -590,7 +590,7 @@ export function canTake(st, takerId, cfg) {
     const R = (st.pitch?.dims?.circle ?? 9.15) * 0.9;
     for (const q of st.players) {
       if (q.team === p.team || q._sub || q.expulse || q.keeper || q.down > 0) continue;
-      if (Math.hypot(q.p[0] - st.restart.p[0], q.p[2] - st.restart.p[1]) < R) return false;
+      if (hyp(q.p[0] - st.restart.p[0], q.p[2] - st.restart.p[1]) < R) return false;
     }
     // LOI 8, LES MOITIÉS (lot 183, cfg.moities — filmé : 6-7 corps d'un bloc entier encore
     // chez l'adversaire à CHAQUE prise d'engagement post-but ; canTake n'exigeait que le rond).
@@ -841,7 +841,7 @@ export function ballFetch(st, dt, cfg) {
     // à bordure.d), la matière remplace le mur ; clés absentes : la palissade d'hier, au bit.
     if (!(st.full && cfg && (cfg.filet || cfg.bordure))) {   // la matière (bordFiletStep, gardé st.full) remplace le mur — au réduit la palissade d'hier reste, au bit
       const outX = Math.abs(bp[0]) - st.pitch.hx, outZ = Math.abs(bp[2]) - st.pitch.hz;
-      if ((outX > 1.2 || outZ > 1.2) && Math.hypot(st.ball.v[0], st.ball.v[2]) > 0.3) {
+      if ((outX > 1.2 || outZ > 1.2) && hyp(st.ball.v[0], st.ball.v[2]) > 0.3) {
         st.ball.impulse([-st.ball.v[0], 0, -st.ball.v[2]]);
       }
     }
@@ -850,8 +850,8 @@ export function ballFetch(st, dt, cfg) {
     // l'horloge de la remise (at + 5), le gel vivait dans l'intervalle
     if (r._fetchT0 == null) r._fetchT0 = st.t;
     const reach = st.t - r._fetchT0 > 2 ? 2.2 : 0.85;
-    const close = Math.hypot(tk.p[0] - bp[0], tk.p[2] - bp[2]) < reach;
-    const slow = Math.hypot(st.ball.v[0], st.ball.v[2]) < 3.5 && bp[1] < 1.2;
+    const close = hyp(tk.p[0] - bp[0], tk.p[2] - bp[2]) < reach;
+    const slow = hyp(st.ball.v[0], st.ball.v[2]) < 3.5 && bp[1] < 1.2;
     if (close && slow && st.ball.owner == null) { st.ball.possess(tk.id); r.carried = true; }
     return false;
   }
@@ -863,7 +863,7 @@ export function ballFetch(st, dt, cfg) {
   }
   // la pose est SERRÉE (0,12 m) : posé à 0,22 m du point pendant que le preneur s'amortit sur LE
   // POINT, l'écart cumulé dépassait le rayon de prise — touche gelée 58 s, mesuré graine 3
-  const atSpot = Math.hypot(bp[0] - r.p[0], bp[2] - r.p[1]) < 0.12;
+  const atSpot = hyp(bp[0] - r.p[0], bp[2] - r.p[1]) < 0.12;
   if (atSpot && bp[1] <= BALL.radius + 0.02) {
     st.ball.release('arrêt-de-jeu');
     st.ball.rest();
@@ -871,7 +871,7 @@ export function ballFetch(st, dt, cfg) {
     return false;
   }
   // au pied, cap sur le point de remise (droit sur le point quand on y est presque)
-  const dSpot = Math.hypot(tk.p[0] - r.p[0], tk.p[2] - r.p[1]);
+  const dSpot = hyp(tk.p[0] - r.p[0], tk.p[2] - r.p[1]);
   const ux = (r.p[0] - tk.p[0]) / (dSpot || 1), uz = (r.p[1] - tk.p[2]) / (dSpot || 1);
   // …porté DEVANT LES PIEDS (0,6 m), pas sous le corps : à 0,35 m le ballon vivait entre les
   // pieds du marcheur et chaque foulée l'ENJAMBAIT — l'œil lisait des passements de jambes en
@@ -930,18 +930,18 @@ export function arbitreStep(st, dt, cfg) {
     const atk = st.possession.team >= 0 ? st.possession.team : 0;
     const dir = Math.sign(st.pitch.attackGoal(atk).x || 1);
     tx = b[0] - dir * (A.suit ?? 13); tz = b[2] * (A.axial ?? 0.55);
-    const dB = Math.hypot(a.p[0] - b[0], a.p[2] - b[2]);
+    const dB = hyp(a.p[0] - b[0], a.p[2] - b[2]);
     top = dB > (A.loin ?? 20) ? (A.sprint ?? 6.8) : dB > 9 ? (A.trot ?? 4.6) : (A.marche ?? 2.2);
   }
   tx = Math.max(-st.pitch.hx + 1, Math.min(st.pitch.hx - 1, tx));
   tz = Math.max(-st.pitch.hz + 1, Math.min(st.pitch.hz - 1, tz));
-  const dx = tx - a.p[0], dz = tz - a.p[2], d = Math.hypot(dx, dz);
+  const dx = tx - a.p[0], dz = tz - a.p[2], d = hyp(dx, dz);
   const want = d > 0.6 ? Math.min(top, d * 2.2) : 0;
   const wx = d > 1e-6 ? (dx / d) * want : 0, wz = d > 1e-6 ? (dz / d) * want : 0;
   const k = Math.min(1, dt * 5);                                   // l'inertie du corps (accélération bornée)
   a.v[0] += (wx - a.v[0]) * k; a.v[1] += (wz - a.v[1]) * k;
   a.p[0] += a.v[0] * dt; a.p[2] += a.v[1] * dt;
-  const sp = Math.hypot(a.v[0], a.v[1]);
+  const sp = hyp(a.v[0], a.v[1]);
   if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
   else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
   a.speed = sp;
@@ -1015,7 +1015,7 @@ export function elireTaker(st, r, cfg, d2) {
   let taker = st.players[r.taker ?? -1] ?? null;
   const gkOk = st.full && cfg.preneurCPA && r.type === 'sortie-de-but';
   const specOk = st.full && cfg.preneurCPA && !r._elu && (r.type === 'corner' || (r.type === 'coup-franc'
-    && Math.hypot(st.pitch.attackGoal(r.team).x - r.p[0], r.p[1]) < (cfg.preneurCPA.zone ?? 48)));
+    && hyp(st.pitch.attackGoal(r.team).x - r.p[0], r.p[1]) < (cfg.preneurCPA.zone ?? 48)));
   if (specOk || !taker || taker.down > 0 || taker.team !== r.team || (taker.keeper && !gkOk) || (gkOk && !taker.keeper)) {
     if (taker && (taker.down > 0 || taker.team !== r.team || (taker.keeper && !gkOk))) taker = null;   // le sticky INVALIDE se REMPLACE (le ??= d'en bas ne réassigne pas un non-null — un preneur au sol gelait la remise, jumeau de commits 193)
     if (gkOk) {
@@ -1036,3 +1036,4 @@ export function elireTaker(st, r, cfg, d2) {
   }
   return taker;
 }
+import { hyp } from './hyp.js';

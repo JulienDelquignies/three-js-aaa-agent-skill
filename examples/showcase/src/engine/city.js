@@ -109,7 +109,7 @@ export function generateCity({ career, seed = 1 } = {}) {
       if (blocked[c] || road[c]) continue;
       const [wx, wz] = centre(i, j);
       if (nextToRoad(i, j) && rnd() < DENSITY[lvl]) {
-        const d = Math.hypot(wx - cx, wz - cz);
+        const d = hyp(wx - cx, wz - cz);
         const boost = lvl >= 3 && d < 70 ? 1 + (70 - d) / 70 * (lvl - 2) : 1;      // downtown rises
         const [hb, hr] = RISE[lvl];
         const h = Math.round((hb + rnd() * hr) * boost);
@@ -149,7 +149,7 @@ export function checkCity(city, career) {
     const p = city.paths[`${t.from}->${t.to}`];
     if (!p || p.length < 2) { issues.push(`no route ${t.from}→${t.to}`); continue; }
     for (const [x, z] of p) if (!onRoad(x, z)) { issues.push(`route ${t.from}→${t.to} leaves the road`); break; }
-    const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) <= C * 1.5;
+    const near = (a, b) => hyp(a[0] - b[0], a[1] - b[1]) <= C * 1.5;
     if (!near(p[0], city.stops[t.from].pos) || !near(p[p.length - 1], city.stops[t.to].pos)) issues.push(`route ${t.from}→${t.to} does not join the stops`);
   }
   // streets never cross a site, buildings never sit on a street or a site
@@ -182,3 +182,4 @@ export function checkCity(city, career) {
   if (city.buildings.length < 10) issues.push('city is implausibly empty');
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

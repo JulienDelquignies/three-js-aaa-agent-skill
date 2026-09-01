@@ -94,7 +94,7 @@ export class DebugGizmos {
     if (renderer?.info) txt += `\ndraws ${renderer.info.render.calls}  tris ${(renderer.info.render.triangles / 1000).toFixed(0)}k`;
     if (this.sys && st.pos) {
       const near = this.sys.items
-        .map((it) => { const p = typeof it.pos === 'function' ? it.pos() : it.pos; const l = typeof it.label === 'function' ? it.label() : it.label; return { l, d: Math.hypot(p[0] - st.pos[0], p[2] - st.pos[2]) }; })
+        .map((it) => { const p = typeof it.pos === 'function' ? it.pos() : it.pos; const l = typeof it.label === 'function' ? it.label() : it.label; return { l, d: hyp(p[0] - st.pos[0], p[2] - st.pos[2]) }; })
         .sort((a, b) => a.d - b.d).slice(0, 4);
       for (const n of near) txt += `\n${n.d.toFixed(1).padStart(5)} m  ${String(n.l).slice(0, 40)}`;
     }
@@ -107,3 +107,4 @@ export class DebugGizmos {
     for (const d of this.disposables) d.dispose?.();
   }
 }
+import { hyp } from './hyp.js';

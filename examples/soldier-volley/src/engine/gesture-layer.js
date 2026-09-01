@@ -49,7 +49,7 @@ const qSlerp = (a, b, t) => {
     s0 = Math.sin((1 - t) * th) / sth; s1 = Math.sin(t * th) / sth;
   } else { s0 = 1 - t; s1 = t; }
   const out = [a[0] * s0 + bx * s1, a[1] * s0 + by * s1, a[2] * s0 + bz * s1, a[3] * s0 + bw * s1];
-  const n = Math.hypot(out[0], out[1], out[2], out[3]) || 1;
+  const n = hyp(out[0], out[1], out[2], out[3]) || 1;
   return [out[0] / n, out[1] / n, out[2] / n, out[3] / n];
 };
 
@@ -162,7 +162,7 @@ export function checkGestureLayer() {
     { t: 0.4, pose: {} },
   ] };
   const mkBone = (q) => ({ quaternion: { x: q[0], y: q[1], z: q[2], w: q[3], set(x, y, z, w) { this.x = x; this.y = y; this.z = z; this.w = w; } } });
-  const norm = (q) => { const n = Math.hypot(...q) || 1; return q.map((v) => v / n); };
+  const norm = (q) => { const n = hyp(...q) || 1; return q.map((v) => v / n); };
   const qOf = (b) => [b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w];
   const angle = (a, b) => 2 * Math.acos(Math.min(1, Math.abs(a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]))) * 180 / Math.PI;
   const attendu = (layer, t) => qMul(layer.rest.get('RightUpLeg'), samplePose(layer.tracks, t).RightUpLeg);
@@ -186,3 +186,4 @@ export function checkGestureLayer() {
   if (!r4.missing.includes('RightUpLeg')) issues.push('os manquant silencieux — le membre ne bougera pas et personne ne le sait');
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

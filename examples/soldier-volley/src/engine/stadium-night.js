@@ -212,7 +212,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   // KEY LIGHT — aimed DOWN THE PITCH (long axis = X) from the end that already carries a mast, tilted
   // ~19° off that axis: a shadow running exactly parallel to the touchline reads as a CG turntable.
   const sx = Math.sign(masts[0].x) || -1, sz = Math.sign(masts[0].z) || -1;
-  const hx = sx, hz = sz * 0.34, hl = Math.hypot(hx, hz), r = KEY_DIST * Math.cos(KEY_ELEV);
+  const hx = sx, hz = sz * 0.34, hl = hyp(hx, hz), r = KEY_DIST * Math.cos(KEY_ELEV);
   const sun = new THREE.DirectionalLight(0xdfe9ff, KEY_I * intensity);   // metal-halide: distinctly cool
   sun.position.set((hx / hl) * r, KEY_DIST * Math.sin(KEY_ELEV), (hz / hl) * r);
   sun.castShadow = true;
@@ -251,7 +251,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
     // …et jusqu'à SA TOUCHE (lot 45 — « les bords à côté de la ligne médiane sont trop
     // sombres ») : visée z 0,25 → 0,31 W — les flancs médians vivaient entre les quadrants
     const ax = Math.sign(m.x || 1) * L * 0.36, az = Math.sign(m.z || 1) * W * 0.31;
-    const d = Math.hypot(m.x - ax, m.y, m.z - az);
+    const d = hyp(m.x - ax, m.y, m.z - az);
     // distance 0 = no cutoff: a finite `distance` draws a visible ring across the grass where the
     // window function reaches zero, and at these ranges that ring always lands mid-pitch.
     const spot = new THREE.SpotLight(0xf0f5ff, 1, 0, 0.68, 0.55, 2);
@@ -267,7 +267,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
     // in PostFX.js) has something over 1 to bleed. Nudged 0.25 m toward the pitch so it never z-fights
     // the head box stadium-builder already puts at exactly this point on 'pylon' tiers.
     const head = new THREE.Mesh(headGeo, headMat);
-    const k = 0.25 / (Math.hypot(m.x, m.z) || 1);
+    const k = 0.25 / (hyp(m.x, m.z) || 1);
     head.position.set(m.x * (1 - k), m.y, m.z * (1 - k));
     group.add(head);
     // lookAt() resolves its argument in WORLD space and reads the mesh's own WORLD position — hence
@@ -280,9 +280,9 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   // mâts du côté : la bouche de but vivait dans le noir entre les quatre quadrants (capture
   // utilisateur). Modestes (×0,55 du POOL) : la nuit reste une nuit, la cage se lit.
   for (const gx of [-L / 2, L / 2]) {
-    const m = masts.reduce((b, q) => (!b || Math.hypot(q.x - gx, q.z) < Math.hypot(b.x - gx, b.z) ? q : b), null);
+    const m = masts.reduce((b, q) => (!b || hyp(q.x - gx, q.z) < hyp(b.x - gx, b.z) ? q : b), null);
     if (!m) continue;
-    const d = Math.hypot(m.x - gx, m.y, m.z);
+    const d = hyp(m.x - gx, m.y, m.z);
     const wash = new THREE.SpotLight(0xf0f5ff, 1, 0, 0.52, 0.6, 2);
     wash.intensity = POOL_E * 0.55 * d * d * intensity;
     wash.position.set(m.x, m.y, m.z);
@@ -298,7 +298,7 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   {
     const cotes = [...masts].sort((a, b) => Math.abs(a.x) - Math.abs(b.x)).slice(0, 2);
     for (const m of cotes) {
-      const d = Math.hypot(m.x, m.y, m.z);
+      const d = hyp(m.x, m.y, m.z);
       const wash = new THREE.SpotLight(0xf0f5ff, 1, 0, 0.52, 0.6, 2);
       wash.intensity = POOL_E * 0.55 * d * d * intensity;
       wash.position.set(m.x, m.y, m.z);
@@ -487,3 +487,4 @@ export function checkStadiumNight(result, model) {
   }
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

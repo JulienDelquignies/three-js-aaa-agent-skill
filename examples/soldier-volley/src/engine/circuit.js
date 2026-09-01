@@ -37,8 +37,8 @@ function attempt({ level, seed }) {
   }
   const pts = catmullClosed(ctrl, 14);
   const width = 8.5;
-  const d = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
-  const start = { pos: pts[0], dir: (() => { const v = [pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]], l = Math.hypot(...v); return [v[0] / l, v[1] / l]; })() };
+  const d = (a, b) => hyp(a[0] - b[0], a[1] - b[1]);
+  const start = { pos: pts[0], dir: (() => { const v = [pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]], l = hyp(...v); return [v[0] / l, v[1] / l]; })() };
   const nrm = [-start.dir[1], start.dir[0]];                       // start-line normal (left)
   const paddock = {
     spawn: [start.pos[0] + nrm[0] * (width / 2 + 9), start.pos[1] + nrm[1] * (width / 2 + 9)],
@@ -65,7 +65,7 @@ export function checkCircuit(c) {
   let minR = Infinity;
   for (let i = 0; i < n; i++) {
     const a = pts[(i + n - 1) % n], b = pts[i], cc = pts[(i + 1) % n];
-    const ab = Math.hypot(b[0] - a[0], b[1] - a[1]), bc = Math.hypot(cc[0] - b[0], cc[1] - b[1]), ca = Math.hypot(a[0] - cc[0], a[1] - cc[1]);
+    const ab = hyp(b[0] - a[0], b[1] - a[1]), bc = hyp(cc[0] - b[0], cc[1] - b[1]), ca = hyp(a[0] - cc[0], a[1] - cc[1]);
     const area2 = Math.abs((b[0] - a[0]) * (cc[1] - a[1]) - (b[1] - a[1]) * (cc[0] - a[0]));
     if (area2 > 1e-9) minR = Math.min(minR, (ab * bc * ca) / (2 * area2));
   }
@@ -82,11 +82,11 @@ export function checkCircuit(c) {
   }
   // the paddock stands OFF the racing surface
   for (const p of [c.paddock.spawn, c.paddock.returnPad]) {
-    for (const q of pts) if (Math.hypot(p[0] - q[0], p[1] - q[1]) < width / 2 + 2) { issues.push('the paddock sits on the track'); break; }
+    for (const q of pts) if (hyp(p[0] - q[0], p[1] - q[1]) < width / 2 + 2) { issues.push('the paddock sits on the track'); break; }
   }
   // the grid slot IS on the track (you start ON the tarmac, aimed down the straight)
   let onTrack = false;
-  for (const q of pts) if (Math.hypot(c.grid[0] - q[0], c.grid[1] - q[1]) < width / 2) { onTrack = true; break; }
+  for (const q of pts) if (hyp(c.grid[0] - q[0], c.grid[1] - q[1]) < width / 2) { onTrack = true; break; }
   if (!onTrack) issues.push('the starting grid is off the track');
   return { ok: issues.length === 0, issues, minRadius: minR };
 }
@@ -113,3 +113,4 @@ export function makeLapTimer(circuit) {
     },
   };
 }
+import { hyp } from './hyp.js';

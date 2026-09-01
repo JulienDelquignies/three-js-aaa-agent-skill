@@ -5,7 +5,7 @@ import { winding } from './gesture.js';
 import { momentDuJeu } from './phases.js';
 import { dansCone } from './dribble.js';
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /** Move every player toward their target with real acceleration limits. */
@@ -33,14 +33,14 @@ export function movePlayers(st, dt, cfg) {
         if (su && p._slide) {
           const va = Math.atan2(g.v[1], g.v[0]), ba = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
           let da = ba - va; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
-          const rot = Math.max(-su * dt, Math.min(su * dt, da)), sp = Math.hypot(g.v[0], g.v[1]);
+          const rot = Math.max(-su * dt, Math.min(su * dt, da)), sp = hyp(g.v[0], g.v[1]);
           g.v[0] = Math.cos(va + rot) * sp; g.v[1] = Math.sin(va + rot) * sp;
         }
         const k = Math.exp(-(cfg.slideTackle?.frein ?? 2.5) * dt);   // …et la glisse PORTE LOIN (191 : freinée à 2,5 elle mourait à ~1,5 m, le ballon emporté à 2+ — le vrai tacle glisse 2,5-3 m, c'est même son danger)
         g.v[0] *= k; g.v[1] *= k;
         p.p[0] = Math.max(-st.area[0] / 2, Math.min(st.area[0] / 2, p.p[0] + g.v[0] * dt));
         p.p[2] = Math.max(-st.area[1] / 2, Math.min(st.area[1] / 2, p.p[2] + g.v[1] * dt));
-        p.v[0] = g.v[0]; p.v[1] = g.v[1]; p.speed = Math.hypot(g.v[0], g.v[1]);
+        p.v[0] = g.v[0]; p.v[1] = g.v[1]; p.speed = hyp(g.v[0], g.v[1]);
         if (p.speed < 0.4) p._glisse = null;
         continue;
       }
@@ -57,7 +57,7 @@ export function movePlayers(st, dt, cfg) {
     // …et un geste technique possède le corps AU-DELÀ du contact : le râteau tourne le lacet
     // pendant l'accompagnement, la semelle tient le corps immobile sur son ballon — stepGestures
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
-    if (winding(p) || p.act?.payload?.ownsBody) { p.speed = Math.hypot(p.v[0], p.v[1]); continue; }
+    if (winding(p) || p.act?.payload?.ownsBody) { p.speed = hyp(p.v[0], p.v[1]); continue; }
     // LA COURSE S'ENGAGE ET SE FINIT (lot 135, cfg.engagement && st.full — mesuré : 52 % des
     // courses off-ball meurent < 1,2 s, 26 % des sauts de cible > 5 m (p90 15 m), 24 % de
     // piétinement : le cerveau re-cible à 60 Hz, les corps FRÉMISSENT — « pas un vrai match »).
@@ -70,7 +70,7 @@ export function movePlayers(st, dt, cfg) {
       && !((p._pace?.until ?? -1) > st.t)) {
       const E = cfg.engagement === true || cfg.engagement == null ? {} : cfg.engagement;
       const R = p._runT;
-      const drift = R ? Math.hypot(p.target[0] - R[0], p.target[2] - R[2]) : Infinity;
+      const drift = R ? hyp(p.target[0] - R[0], p.target[2] - R[2]) : Infinity;
       if (!R || (drift > (E.drift ?? 2.5) && st.t >= (p._runUntil ?? 0))) {
         p._runT = [p.target[0], 0, p.target[2]];
         p._runUntil = st.t + (E.tenue ?? 1.4);
@@ -146,10 +146,10 @@ export function movePlayers(st, dt, cfg) {
     if ((p.job === 'press' || p.job === 'intercept') && st.pass
       && st.t - st.pass.t > chR && st.t - st.pass.t < 0.5 + chR
       && p._pace.until < st.t && !st.pass._chased) {
-      const dMe = Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
+      const dMe = hyp(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]);
       const nearest = st.players.every((q) => q === p || q.team === p.team || q.down > 0
         || (q.job !== 'press' && q.job !== 'intercept')
-        || Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) >= dMe - 1e-9);
+        || hyp(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) >= dMe - 1e-9);
       if (nearest) {
         st.pass._chased = true;
         p._pace.until = st.t + 0.9;
@@ -167,15 +167,15 @@ export function movePlayers(st, dt, cfg) {
       && p.team !== st.players[st.pass.from]?.team && p.down <= 0 && p._pace.until < st.t
       && st.t - st.pass.t > (p.skill?.reaction ?? 0.18) * (2 - (p.skill?.anticipF ?? 1))) {
       const L = st.pass.lead, bX = st.ball.p[0], bZ = st.ball.p[2];
-      const ux = L[0] - bX, uz = L[2] - bZ, len = Math.hypot(ux, uz) || 1;
+      const ux = L[0] - bX, uz = L[2] - bZ, len = hyp(ux, uz) || 1;
       const along = ((p.p[0] - bX) * ux + (p.p[2] - bZ) * uz) / len;
       if (along > 1 && along < len - 1) {
         const cX = bX + (ux / len) * along, cZ = bZ + (uz / len) * along;
-        const dMoi = Math.hypot(p.p[0] - cX, p.p[2] - cZ);
-        const vB = Math.max(3, Math.hypot(st.ball.v[0], st.ball.v[2]));
+        const dMoi = hyp(p.p[0] - cX, p.p[2] - cZ);
+        const vB = Math.max(3, hyp(st.ball.v[0], st.ball.v[2]));
         if (dMoi < (cfg.lectureCourse.porte ?? 4) && dMoi / 6.4 < along / vB - 0.05
           && st.players.every((q) => q === p || q.team === p.team || q.keeper || q.down > 0
-            || Math.hypot(q.p[0] - cX, q.p[2] - cZ) >= dMoi - 1e-9)) {
+            || hyp(q.p[0] - cX, q.p[2] - cZ) >= dMoi - 1e-9)) {
           st.pass._lu = true;
           p.job = 'intercept'; p.target = [cX, 0, cZ];
           p._pace = { until: st.t + 0.9, kind: 'lecture', next: p._pace?.next ?? st.t + 8 };
@@ -205,7 +205,7 @@ export function movePlayers(st, dt, cfg) {
     // 16 × 14 m — la panique, pas du soutien. À moins de 3 m de sa station, la vitesse d'un soutien
     // est celle d'un ajustement (supportNearCap), pas d'une course.
     if (p.job === 'support' && p.target) {
-      const dS = Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]);
+      const dS = hyp(p.target[0] - p.p[0], p.target[2] - p.p[2]);
       if (dS < 3) top = Math.min(top, cfg.supportNearCap);
     }
     // LE RELEVÉ REPART AU TROT (lot 106, cfg.releveTrot && st.full — « la vitesse du relevé
@@ -224,7 +224,7 @@ export function movePlayers(st, dt, cfg) {
     // corps FREINE, pivote face au ballon (le slew gagne dès que le drift cesse), reprend.
     // Clé absente/false : l'orbite d'hier au bit.
     if (st.full && cfg.pivotReprise && p.job === 'carry' && st.ball.owner == null && !p.keeper) {
-      const dB = Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]);
+      const dB = hyp(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]);
       if (dB < (cfg.pivotReprise.d ?? 1.9)
         && !dansCone(p.yaw, p.p[0], p.p[2], st.ball.p[0], st.ball.p[2], cfg.pivotReprise.cone ?? 110))
         top = Math.min(top, cfg.pivotReprise.cap ?? 0.8);
@@ -263,12 +263,12 @@ export function movePlayers(st, dt, cfg) {
         let tSpd = 0;
         if (p.target) {
           const pv = p._tgtPrev;
-          if (pv && pv.t < st.t) tSpd = Math.hypot(p.target[0] - pv.x, p.target[2] - pv.z) / Math.max(1e-3, st.t - pv.t);
+          if (pv && pv.t < st.t) tSpd = hyp(p.target[0] - pv.x, p.target[2] - pv.z) / Math.max(1e-3, st.t - pv.t);
           p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
           if (tSpd > 9) tSpd = 0;   // un saut de cible est une RÉAFFECTATION, pas le jeu qui bouge : on y va au trot
         }
         const volVersMoi = st.pass && st.pass.lead
-          && Math.hypot(p.p[0] - st.pass.lead[0], p.p[2] - st.pass.lead[2]) < (A.chaud ?? 14);
+          && hyp(p.p[0] - st.pass.lead[0], p.p[2] - st.pass.lead[2]) < (A.chaud ?? 14);
         if (!(dB < (A.chaud ?? 14) || volVersMoi || tSpd > (A.manRun ?? 3.5))) {
           // …à la vitesse du jeu, LITTÉRALEMENT : le plafond suit la cible (+15 % et 0,4 m/s de
           // convergence), borné [marche, trot] — un bloc qui coulisse sur une circulation lente
@@ -283,7 +283,7 @@ export function movePlayers(st, dt, cfg) {
           // économise (le bloc compact n'a pas 12 m à faire). Mesuré sans : l'étirement offensif
           // fondait (asymétrie attaque 30,9 < défense + 4, la clause du bloc court).
           const trotB = moment === 'attaque-placée' ? (A.trotAtk ?? 3.9) : (A.trot ?? 3.4);
-          const dTgt = p.target ? Math.hypot(p.target[0] - p.p[0], p.target[2] - p.p[2]) : 0;
+          const dTgt = p.target ? hyp(p.target[0] - p.p[0], p.target[2] - p.p[2]) : 0;
           // …ET LE RATTRAPAGE OFFENSIF EST UN LEVIER, PAS UNE LOI DU DÉFAUT (lot 68,
           // A.rattrapeAtk — résultat négatif CONSIGNÉ) : pour guérir « le latéral opposé des
           // dizaines de mètres derrière », on a d'abord raccourci le rattrapage d'attaque
@@ -304,7 +304,7 @@ export function movePlayers(st, dt, cfg) {
     let wx = 0, wz = 0;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
-      const d = Math.hypot(dx, dz);
+      const d = hyp(dx, dz);
       if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
     }
     // LA DEMANDE DES RÔLES CALMES EST LISSÉE (τ = wantTau). La cible de marche des soutiens sautait
@@ -330,7 +330,7 @@ export function movePlayers(st, dt, cfg) {
     // at 3 m/s it is 115°/s. The slower carrier out-turns the quicker presser — which is the actual
     // advantage a dribbler has over a defender, and now it exists in the model instead of in the prose.
     const dvx = wx - p.v[0], dvz = wz - p.v[1];
-    const sp0 = Math.hypot(p.v[0], p.v[1]);
+    const sp0 = hyp(p.v[0], p.v[1]);
     // le mordu paie AUSSI en actionneurs : son appui est parti du mauvais côté — freiner comme
     // tourner lui coûtent le facteur de morsure, en plus de la pointe (le modèle d'inertie fait le
     // reste : c'est lui que la feinte bat, exactement comme le commentaire ci-dessus l'annonçait)
@@ -339,7 +339,7 @@ export function movePlayers(st, dt, cfg) {
       const ux = p.v[0] / sp0, uz = p.v[1] / sp0;
       const along = clamp(dvx * ux + dvz * uz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       let latx = dvx - (dvx * ux + dvz * uz) * ux, latz = dvz - (dvx * ux + dvz * uz) * uz;
-      const lat = Math.hypot(latx, latz), cap = cfg.turnAccel * kBite * dt;
+      const lat = hyp(latx, latz), cap = cfg.turnAccel * kBite * dt;
       if (lat > cap) { latx *= cap / lat; latz *= cap / lat; }
       p.v[0] += along * ux + latx; p.v[1] += along * uz + latz;
     } else {                                     // at a standstill there is no momentum to fight
@@ -355,7 +355,7 @@ export function movePlayers(st, dt, cfg) {
     const apron = cfg.apron ?? 0;
     p.p[0] = clamp(p.p[0], -st.area[0] / 2 - apron, st.area[0] / 2 + apron);
     p.p[2] = clamp(p.p[2], -st.area[1] / 2 - apron, st.area[1] / 2 + apron);
-    p.speed = Math.hypot(p.v[0], p.v[1]);
+    p.speed = hyp(p.v[0], p.v[1]);
     // LE DRAIN DE FATIGUE (cfg.fatigue && st.full, lot 31) : l'effort au carré + un socle,
     // une récup légère sous 1,5 m/s — le tout À L'ÉCHELLE DU FORMAT (horizon = durée
     // nominale du match configuré : un moteur réutilisable ne code pas « 90 minutes » en
@@ -478,7 +478,7 @@ export function separatePlayers(st, cfg) {
     for (let j = i + 1; j < st.players.length; j++) {
       const a = st.players[i], b = st.players[j];
       const dx = b.p[0] - a.p[0], dz = b.p[2] - a.p[2];
-      const d = Math.hypot(dx, dz);
+      const d = hyp(dx, dz);
       const gap = social && a.team === b.team && !st.restart && a.down <= 0 && b.down <= 0
         && !a.act && !b.act ? social : cfg.minGap;
       if (d >= gap || d < 1e-6) continue;
@@ -489,3 +489,4 @@ export function separatePlayers(st, cfg) {
     }
   }
 }
+import { hyp } from './hyp.js';

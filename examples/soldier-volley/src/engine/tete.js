@@ -11,7 +11,7 @@
 // rondo d'hier, au bit près. Dettes nommées : le PRÉ-SAUT anticipé (le corps qui monte
 // AVANT le contact — la scène démarre le clip dans sa montée en attendant), la Loi 11 sur
 // reprise de tête (le sifflet vit à la prise au sol — la redirection n'appelle pas receive).
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 /** LA PERCEPTION A UNE HORLOGE (le contrat de strikeNow, complété lot 50) : une redirection
  *  de première intention n'a PAS d'armé — seen 0, tout le monde paie sa réaction pleine
@@ -71,7 +71,7 @@ export function teteStep(st, cfg) {
   const goal = st.pitch.attackGoal(joueur.team);
   const own = st.pitch.ownGoal(joueur.team);
   const sgn = Math.sign(goal.x || 1);
-  const dGoal = Math.hypot(goal.x - joueur.p[0], joueur.p[2]);
+  const dGoal = hyp(goal.x - joueur.p[0], joueur.p[2]);
   if (dGoal < (T.but ?? 12) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
     // LA TÊTE AU BUT : piquée vers un point du cadre seedé — canal shot standard
     const tz = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (st.pitch.goalHalf - 0.5);
@@ -82,7 +82,7 @@ export function teteStep(st, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', range: +dGoal.toFixed(1), speed: +(12.5 * geneV).toFixed(1) });
     return;
   }
-  if (Math.hypot(own.x - joueur.p[0], joueur.p[2]) < 24) {
+  if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {
     // LE DÉGAGEMENT DE LA TÊTE : loin de son but, vers l'avant et le flanc.
     // …SAUF PRESSÉ PRÈS DE SA LIGNE (lot 101, cfg.corner && st.full — la 2e source de corners,
     // mesurée : la claquette seule en rendait 1/8 matchs) : le défenseur qui dégage de la tête
@@ -138,7 +138,7 @@ export function voleeStep(st, cfg) {
   const goal = st.pitch.attackGoal(joueur.team);
   const own = st.pitch.ownGoal(joueur.team);
   const sgn = Math.sign(goal.x || 1);
-  const dGoal = Math.hypot(goal.x - joueur.p[0], joueur.p[2]);
+  const dGoal = hyp(goal.x - joueur.p[0], joueur.p[2]);
   if (dGoal < (V.but ?? 14) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
     // LA REPRISE DE VOLÉE : première intention, le canal shot standard — le plongeon répond
     const demi = st.ball.v[1] > 0.3;
@@ -152,7 +152,7 @@ export function voleeStep(st, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', range: +dGoal.toFixed(1), speed: 17 });
     return;
   }
-  if (Math.hypot(own.x - joueur.p[0], joueur.p[2]) < 24) {
+  if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {
     // LE DÉGAGEMENT DE VOLÉE : le défenseur boxe le vol loin de son but, vers l'avant et le flanc
     st._teteCd = st.t + 0.8;
     st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
@@ -181,7 +181,7 @@ export function voleeStep(st, cfg) {
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'amorti-retombée', foot: 'any',
-      surface: bp[1] > 0.7 ? 'thigh' : 'instep', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+      surface: bp[1] > 0.7 ? 'thigh' : 'instep', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
     return;
   }
   // sinon : ON NE VOLLEYE PAS — le contrôle au sol est le vrai geste du milieu de terrain
@@ -213,7 +213,7 @@ export function chestStep(st, cfg, dt = 1 / 60) {
     const tS = sl > 1e-9 ? Math.max(0, Math.min(1, ((q.p[0] - b0[0]) * sx + (q.p[2] - b0[2]) * sz) / sl)) : 1;
     const h = b0[1] + (bp[1] - b0[1]) * tS;
     if (h < (P.min ?? 1.15) || h > (P.max ?? 1.55)) continue;
-    const d = Math.hypot(q.p[0] - (b0[0] + sx * tS), q.p[2] - (b0[2] + sz * tS));
+    const d = hyp(q.p[0] - (b0[0] + sx * tS), q.p[2] - (b0[2] + sz * tS));
     // le RECEVEUR ATTITRÉ coupe SA passe d'un pas de buste (reachTo — filmé : le centre tendu ne
     // chute pas en boîte, il le croisait à 0,8 m en route vers une chute lointaine, muet)
     const portee = st.pass && st.pass.to === q.id ? (P.reachTo ?? 0.9) : (P.reach ?? 0.55);
@@ -228,5 +228,6 @@ export function chestStep(st, cfg, dt = 1 / 60) {
     st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null);
   st.pass = null;
   st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'poitrine', foot: 'any',
-    surface: 'chest', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+    surface: 'chest', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
 }
+import { hyp } from './hyp.js';

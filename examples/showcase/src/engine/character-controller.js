@@ -141,7 +141,7 @@ export class CharacterController {
     // modèle, lu en début d'update, capture tout — y compris ce que la scène a imposé.
     const wp = this.model.position;
     if (this._lastW) {
-      const d = Math.hypot(wp.x - this._lastW.x, wp.z - this._lastW.z);
+      const d = hyp(wp.x - this._lastW.x, wp.z - this._lastW.z);
       const cap = this.runSpeed * this.sprintMult * 1.5;      // au-delà : téléport de scène, pas une course
       const inst = Math.min(d / Math.max(1e-4, dt), cap);
       this.groundSpeed = (this.groundSpeed ?? inst) * 0.7 + inst * 0.3;
@@ -164,9 +164,9 @@ export class CharacterController {
       const r = this.collide(ddx, this.vy * dt, ddz);
       this.pos.x += r.dx; this.pos.y += r.dy; this.pos.z += r.dz;
       if (r.grounded) { if (this.vy < 0) this.vy = 0; this.airborne = false; } else this.airborne = true;
-      this.dist += Math.hypot(r.dx, r.dz);                  // cadence tracks ACTUAL movement (blocked → legs slow)
+      this.dist += hyp(r.dx, r.dz);                  // cadence tracks ACTUAL movement (blocked → legs slow)
     } else {
-      this.pos.x += ddx; this.pos.z += ddz; this.dist += Math.hypot(ddx, ddz);
+      this.pos.x += ddx; this.pos.z += ddz; this.dist += hyp(ddx, ddz);
       if (this.airborne || this.vy !== 0) { this.vy -= this.gravity * dt; this.pos.y += this.vy * dt; if (this.pos.y <= this.groundY) { this.pos.y = this.groundY; this.vy = 0; this.airborne = false; } }
     }
     this.model.position.copy(this.pos); this.model.rotation.y = this.yaw;
@@ -280,3 +280,4 @@ export class CharacterController {
     if (hips && g.hipsY) hips.position.y += g.hipsY / Math.max(1e-6, this.model.scale.y);
   }
 }
+import { hyp } from './hyp.js';

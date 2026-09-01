@@ -33,7 +33,7 @@ export function generateBeach({ level = 3, seed = 1 } = {}) {
     const z = sand[1] + 1.5 + rnd() * (sand[3] - sand[1] - 6);
     // keep palms off the villa footprint (pool included) and away from the loungers
     if (x > vb[0] - 1.2 && x < vb[2] + 1.2 && z > vb[1] - 1.2 && z < vb[3] + 1.2) continue;
-    if (transats.some((t) => Math.hypot(t.x - x, t.z - z) < 2.2)) continue;
+    if (transats.some((t) => hyp(t.x - x, t.z - z) < 2.2)) continue;
     palms.push([x, z, 0.85 + rnd() * 0.5]);
   }
   const hub = villa.floors[0].rooms.find((r) => r.id === villa.floors[0].hubId);
@@ -59,11 +59,12 @@ export function checkBeach(b) {
   for (const [x, z] of b.palms) {
     if (!inSand(x, z)) issues.push('a palm is off the sand');
     if (x > vb[0] - 0.8 && x < vb[2] + 0.8 && z > vb[1] - 0.8 && z < vb[3] + 0.8) issues.push('a palm grows through the villa');
-    if (b.transats.some((t) => Math.hypot(t.x - x, t.z - z) < 1.2)) issues.push('a palm grows through a lounger');
+    if (b.transats.some((t) => hyp(t.x - x, t.z - z) < 1.2)) issues.push('a palm grows through a lounger');
   }
   if (!inSand(b.spawn[0], b.spawn[2], 2)) issues.push('spawn off the resort');
   if (b.spawn[0] > vb[0] && b.spawn[0] < vb[2] && b.spawn[2] > vb[1] && b.spawn[2] < vb[3]) issues.push('spawn inside the villa');
-  if (Math.hypot(b.returnPad[0] - b.spawn[0], b.returnPad[2] - b.spawn[2]) > 6) issues.push('return pad far from the spawn');
+  if (hyp(b.returnPad[0] - b.spawn[0], b.returnPad[2] - b.spawn[2]) > 6) issues.push('return pad far from the spawn');
   if (b.transats.length < 3) issues.push('resort implausibly empty (no loungers)');
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

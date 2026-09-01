@@ -131,8 +131,8 @@ export function triangule(slots, anchor, minDeg = 35, hx = 1e9, hz = 1e9) {
   const min = (minDeg * Math.PI) / 180;
   for (let i = 0; i < slots.length; i++) {
     for (let j = i + 1; j < slots.length; j++) {
-      const ri = Math.hypot(slots[i][0] - anchor[0], slots[i][1] - anchor[2]);
-      const rj = Math.hypot(slots[j][0] - anchor[0], slots[j][1] - anchor[2]);
+      const ri = hyp(slots[i][0] - anchor[0], slots[i][1] - anchor[2]);
+      const rj = hyp(slots[j][0] - anchor[0], slots[j][1] - anchor[2]);
       if (ri >= 10 || rj >= 10) continue;                      // la largeur et la sécurité ne bougent pas
       const ai = Math.atan2(slots[i][1] - anchor[2], slots[i][0] - anchor[0]);
       const aj = Math.atan2(slots[j][1] - anchor[2], slots[j][0] - anchor[0]);
@@ -148,3 +148,4 @@ export function triangule(slots, anchor, minDeg = 35, hx = 1e9, hz = 1e9) {
   }
   return slots;
 }
+import { hyp } from './hyp.js';

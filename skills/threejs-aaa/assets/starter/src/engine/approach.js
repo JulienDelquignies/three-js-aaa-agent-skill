@@ -81,7 +81,7 @@ export function anchorFor(ball, outYaw, foot, stance) {
 /** La stance RÉALISÉE par une géométrie donnée — pour la juger, pas la produire. */
 export function stanceOf(playerP, playerYaw, ball, foot) {
   const dx = ball[0] - playerP[0], dz = ball[1] - playerP[1];
-  const dist = Math.hypot(dx, dz) || 1e-9;
+  const dist = hyp(dx, dz) || 1e-9;
   const fx = Math.cos(playerYaw), fz = Math.sin(playerYaw);
   const ux = dx / dist, uz = dz / dist;
   const cross = fx * uz - fz * ux;                          // > 0 : ballon à GAUCHE (convention situation())
@@ -103,7 +103,7 @@ export function stanceOf(playerP, playerYaw, ball, foot) {
  * rampe d'arrivée faisait payer ~0,25 s par passe (taux de perte 0,58 → 0,75).
  */
 export function reachable(from, anchor, antic, { adjustSpeed = 3.0, hardMax = 0.6 } = {}) {
-  const d = Math.hypot(anchor.p[0] - from[0], anchor.p[1] - from[1]);
+  const d = hyp(anchor.p[0] - from[0], anchor.p[1] - from[1]);
   return d <= Math.min(hardMax, adjustSpeed * Math.max(0.05, antic));
 }
 
@@ -163,7 +163,7 @@ export function planStrike(playerP, ball, outYaw, candidates, {
     if (!s) continue;
     for (const foot of ['right', 'left']) {
       const anchor = anchorFor(ball, outYaw, foot, s);
-      const d = Math.hypot(anchor.p[0] - playerP[0], anchor.p[1] - playerP[1]);
+      const d = hyp(anchor.p[0] - playerP[0], anchor.p[1] - playerP[1]);
       // `extraReach` : mètres de MARCHE déjà acquis avant que le glissement ne commence — le cas de
       // la livraison en route (le corps se place PENDANT que le ballon voyage). La borne du
       // glissement (hardMax) ne bouge pas : seule la marche d'avant s'ajoute au chemin permis.
@@ -236,8 +236,8 @@ export function checkApproach({ stances = STANCES } = {}) {
   {
     const a = anchorFor([1, 1], 0.3, 'right', stances.passe);
     const g0 = glide([0, 0], 2.0, a, 0), g1 = glide([0, 0], 2.0, a, 1);
-    if (Math.hypot(g0.p[0], g0.p[1]) > 1e-9) issues.push('le glissement ne part pas de la position de départ');
-    if (Math.hypot(g1.p[0] - a.p[0], g1.p[1] - a.p[1]) > 1e-9) issues.push('le glissement n\'arrive pas sur l\'ancre');
+    if (hyp(g0.p[0], g0.p[1]) > 1e-9) issues.push('le glissement ne part pas de la position de départ');
+    if (hyp(g1.p[0] - a.p[0], g1.p[1] - a.p[1]) > 1e-9) issues.push('le glissement n\'arrive pas sur l\'ancre');
     const v0 = (glideEase(0.01) - glideEase(0)) / 0.01, v1 = (glideEase(1) - glideEase(0.99)) / 0.01;
     if (v0 > 0.1 || v1 > 0.1) issues.push('le glissement démarre ou s\'arrête en échelon (pas un pas humain)');
   }
@@ -246,3 +246,4 @@ export function checkApproach({ stances = STANCES } = {}) {
   if (!reachable([0, 0], { p: [0.5, 0] }, 0.38)) issues.push('une ancre à 0,5 m en 0,38 s est refusée : le jeu ne peut plus frapper');
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

@@ -14,7 +14,7 @@ import { BALL, PITCH, kick, stepBall, dragCoefficient } from './ball.js';
 //   speed until the simulated ball actually lands where we asked. Monotone in speed, so bisection
 //   always converges. The result is a pass that arrives on the receiver at a receivable pace.
 
-const dist2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const dist2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
 /** Sample the ball's future. Returns [{t, p:[x,y,z], v:[x,y,z]}] at `dt` intervals. */
 export function predictPath(state, { dt = 1 / 60, maxT = 4 } = {}) {
@@ -98,7 +98,7 @@ export function solvePass(from, to, { style = 'ground', arrival = 6.5, spinRev =
     for (let t = 0; t < 7; t += h) {
       stepBall(s, h);
       const travelled = dist2(from, s.p);
-      const sp = Math.hypot(s.v[0], s.v[1], s.v[2]);
+      const sp = hyp(s.v[0], s.v[1], s.v[2]);
       if (rolling) {
         if (travelled >= d) return { metric: sp, t: t + h, r: travelled, sp };
         if (sp < 0.2) return { metric: 0, t: t + h, r: travelled, sp: 0 };
@@ -114,7 +114,7 @@ export function solvePass(from, to, { style = 'ground', arrival = 6.5, spinRev =
       prevY = s.p[1]; prevVy = s.v[1];
     }
     const r = dist2(from, s.p);
-    return { metric: rolling ? 0 : r, t: 7, r, sp: Math.hypot(s.v[0], s.v[2]) };
+    return { metric: rolling ? 0 : r, t: 7, r, sp: hyp(s.v[0], s.v[2]) };
   };
 
   const target = rolling ? arrival : d;
@@ -162,7 +162,7 @@ export function laneClearance(from, to, blockers, { corridor = 1.15, ignore = -1
     let u = ((b[0] - ax) * dx + (b[2] - az) * dz) / L2;
     if (u < 0.06 || u > 0.98) continue;                       // behind the passer or on the receiver
     u = Math.max(0, Math.min(1, u));
-    const m = Math.hypot(b[0] - (ax + dx * u), b[2] - (az + dz * u));
+    const m = hyp(b[0] - (ax + dx * u), b[2] - (az + dz * u));
     if (m < margin) { margin = m; blocker = i; }
   }
   return { open: margin >= corridor, margin: margin === Infinity ? 99 : margin, blocker };
@@ -178,7 +178,7 @@ export function interceptPoint(path, from, speed, { reaction = 0.18, reach = 0.9
   let best = null;
   for (const s of path) {
     if (s.p[1] > maxHeight) continue;
-    const need = Math.max(0, Math.hypot(s.p[0] - from[0], s.p[2] - from[2]) - reach) / Math.max(0.1, speed);
+    const need = Math.max(0, hyp(s.p[0] - from[0], s.p[2] - from[2]) - reach) / Math.max(0.1, speed);
     const slack = s.t - (need + reaction);
     if (slack >= 0) { best = { t: s.t, p: [...s.p], slack }; break; }
   }
@@ -244,3 +244,4 @@ export function solveGroundLeg(D, T, { vMax = 6, iters = 40, tol = 1e-3 } = {}) 
   }
   return (lo + hi) / 2;
 }
+import { hyp } from './hyp.js';

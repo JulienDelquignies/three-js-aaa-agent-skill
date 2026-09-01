@@ -53,8 +53,8 @@ export const RELEASES = new Set(['frappe', 'touche', 'conduite', 'contesté', 'p
  * @returns le rapport |Δp| / (max(|v₀|,|v₁|)·h) — au-delà de CONTINUITY_SLACK, c'est un téléport.
  */
 export function stepRatio(p0, p1, v0, v1, h) {
-  const d = Math.hypot(p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]);
-  const s0 = Math.hypot(v0[0], v0[1], v0[2]), s1 = Math.hypot(v1[0], v1[1], v1[2]);
+  const d = hyp(p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]);
+  const s0 = hyp(v0[0], v0[1], v0[2]), s1 = hyp(v1[0], v1[1], v1[2]);
   const budget = Math.max(s0, s1) * h;
   if (budget <= 1e-12) return d <= 1e-9 ? 0 : Infinity;   // immobile : tout déplacement est un saut
   return d / budget;
@@ -124,7 +124,7 @@ export class BallBody {
     const s = this.#s;
     let dx = (point[0] - s.p[0]) / Math.max(1e-3, tau);
     let dz = (point[1] - s.p[2]) / Math.max(1e-3, tau);
-    const m = Math.hypot(dx, dz);
+    const m = hyp(dx, dz);
     if (m > vMax) { dx *= vMax / m; dz *= vMax / m; }
     const a = 1 - Math.exp(-dt / Math.max(1e-4, tau));
     s.v[0] += (dx - s.v[0]) * a;
@@ -132,7 +132,7 @@ export class BallBody {
     return this.integrate(dt);
   }
 
-  // Lectures : des vues gelées. Tout le code existant (`b.p[0]`, `Math.hypot(...b.p)`, `[...b.p]`,
+  // Lectures : des vues gelées. Tout le code existant (`b.p[0]`, `hyp(...b.p)`, `[...b.p]`,
   // `Array.isArray(b.p)`) continue de fonctionner — sans quoi la lecture seule serait un mur que
   // personne n'adopterait. Seule l'ÉCRITURE lève.
   get p() { return this.#view.p; }
@@ -153,7 +153,7 @@ export class BallBody {
     let left = dt;
     let guard = 0;
     while (left > 1e-9 && guard++ < 256) {
-      const speed = Math.hypot(s.v[0], s.v[1], s.v[2]);
+      const speed = hyp(s.v[0], s.v[1], s.v[2]);
       const n = Math.max(1, Math.min(64, Math.ceil((speed * left) / (BALL.radius * 0.5))));
       const h = left / n;
       const p0 = [...s.p], v0 = [...s.v];
@@ -163,7 +163,7 @@ export class BallBody {
       if (r > this.ledger.worst) this.ledger.worst = r;
       if (r > CONTINUITY_SLACK) {
         this.ledger.breaches.push({
-          d: +Math.hypot(s.p[0] - p0[0], s.p[1] - p0[1], s.p[2] - p0[2]).toFixed(4),
+          d: +hyp(s.p[0] - p0[0], s.p[1] - p0[1], s.p[2] - p0[2]).toFixed(4),
           ratio: +r.toFixed(2), h: +h.toFixed(5),
         });
       }
@@ -185,7 +185,7 @@ export class BallBody {
     let dx = (point[0] - s.p[0]) / Math.max(1e-3, tau);
     let dy = (point[1] - s.p[1]) / Math.max(1e-3, tau);
     let dz = (point[2] - s.p[2]) / Math.max(1e-3, tau);
-    const m = Math.hypot(dx, dy, dz);
+    const m = hyp(dx, dy, dz);
     if (m > vMax) { dx *= vMax / m; dy *= vMax / m; dz *= vMax / m; }
     const a = 1 - Math.exp(-dt / Math.max(1e-4, tau));
     s.v[0] += (dx - s.v[0]) * a; s.v[1] += (dy - s.v[1]) * a; s.v[2] += (dz - s.v[2]) * a;
@@ -256,7 +256,7 @@ export class BallBody {
     if (!cause) throw new Error('ballon : restart() sans cause. Une remise en jeu se justifie — sinon c\'est un téléport.');
     if (!RESTARTS.has(cause)) throw new Error(`ballon : cause de remise en jeu inconnue « ${cause} » (connues : ${[...RESTARTS].join(', ')})`);
     const s = this.#s;
-    const d = Math.hypot(to[0] - s.p[0], (to[1] ?? BALL.radius) - s.p[1], to[2] - s.p[2]);
+    const d = hyp(to[0] - s.p[0], (to[1] ?? BALL.radius) - s.p[1], to[2] - s.p[2]);
     this.ledger.restarts.push({ cause, d: +d.toFixed(2) });
     s.p[0] = to[0]; s.p[1] = to[1] ?? BALL.radius; s.p[2] = to[2];
     s.v[0] = 0; s.v[1] = 0; s.v[2] = 0;
@@ -294,3 +294,4 @@ export function checkBallBody(body, { restartMax = 30, restartsPerMin = 6, minut
   if (L.steps < minSteps) issues.push(`seulement ${L.steps} pas d'intégration : un contrat vert sur un ballon qui n'a pas vécu n'a rien vérifié`);
   return { ok: issues.length === 0, issues, stats: { steps: L.steps, breaches: L.breaches.length, worst: +L.worst.toFixed(3), restarts: L.restarts.length, possessions: L.possessions ?? 0, releases: (L.releases ?? []).length } };
 }
+import { hyp } from './hyp.js';

@@ -34,7 +34,7 @@ export class DriveController {
     if (this.collide && (want[0] || want[1])) {
       const r = this.collide(want[0], want[1]);
       moved = [r.dx, r.dz];
-      const askLen = Math.hypot(...want), gotLen = Math.hypot(...moved);
+      const askLen = hyp(...want), gotLen = hyp(...moved);
       this.blocked = askLen > 1e-4 && gotLen < askLen * 0.45;
       if (this.blocked) this.speed *= 0.25;
     } else this.blocked = false;
@@ -42,3 +42,4 @@ export class DriveController {
     return { x: this.pos[0], z: this.pos[1], yaw: this.yaw, speed: this.speed, wheelSpin: this.speed / this.wheelRadius, blocked: this.blocked };
   }
 }
+import { hyp } from './hyp.js';

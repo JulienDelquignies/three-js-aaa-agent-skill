@@ -63,7 +63,7 @@ export function lathe(profile, { segments = 32, caps = true } = {}) {
 function frames(path) {
   const t = [], n = [], b = [];
   const sub = (a, c) => [a[0] - c[0], a[1] - c[1], a[2] - c[2]];
-  const nrm = (v) => { const l = Math.hypot(...v) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
+  const nrm = (v) => { const l = hyp(...v) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
   const cross = (a, c) => [a[1] * c[2] - a[2] * c[1], a[2] * c[0] - a[0] * c[2], a[0] * c[1] - a[1] * c[0]];
   for (let i = 0; i < path.length; i++) {
     const a = path[Math.max(0, i - 1)], c = path[Math.min(path.length - 1, i + 1)];
@@ -74,7 +74,7 @@ function frames(path) {
   b.push(cross(t[0], n[0]));
   for (let i = 1; i < path.length; i++) {
     const axis = cross(t[i - 1], t[i]);
-    const s = Math.hypot(...axis), c = Math.max(-1, Math.min(1, t[i - 1][0] * t[i][0] + t[i - 1][1] * t[i][1] + t[i - 1][2] * t[i][2]));
+    const s = hyp(...axis), c = Math.max(-1, Math.min(1, t[i - 1][0] * t[i][0] + t[i - 1][1] * t[i][1] + t[i - 1][2] * t[i][2]));
     if (s < EPS) { n.push(n[i - 1]); b.push(b[i - 1]); continue; }
     const [ax, ay, az] = [axis[0] / s, axis[1] / s, axis[2] / s];
     const ang = Math.atan2(s, c), co = Math.cos(ang), si = Math.sin(ang);
@@ -237,9 +237,9 @@ export function extrudePoly(outline, { depth = 1, bevel = 0, y0 = 0 } = {}) {
     const a = pts[(i + pts.length - 1) % pts.length], b = pts[(i + 1) % pts.length];
     const e1 = [p[0] - a[0], p[1] - a[1]], e2 = [b[0] - p[0], b[1] - p[1]];
     const n1 = [e1[1], -e1[0]], n2 = [e2[1], -e2[0]];
-    const l1 = Math.hypot(...n1) || 1, l2 = Math.hypot(...n2) || 1;
+    const l1 = hyp(...n1) || 1, l2 = hyp(...n2) || 1;
     let nx = n1[0] / l1 + n2[0] / l2, ny = n1[1] / l1 + n2[1] / l2;
-    const l = Math.hypot(nx, ny) || 1;
+    const l = hyp(nx, ny) || 1;
     return [nx / l, ny / l];
   });
   const ring = (inset, y) => pts.flatMap((p, i) => [p[0] - nrm[i][0] * inset, y, p[1] - nrm[i][1] * inset]);
@@ -349,7 +349,7 @@ export function computeNormals(mesh) {
     for (const o of [a, b, c]) { n[o] += nx; n[o + 1] += ny; n[o + 2] += nz; }
   }
   for (let i = 0; i < n.length; i += 3) {
-    const l = Math.hypot(n[i], n[i + 1], n[i + 2]) || 1;
+    const l = hyp(n[i], n[i + 1], n[i + 2]) || 1;
     n[i] /= l; n[i + 1] /= l; n[i + 2] /= l;
   }
   mesh.normals = n;
@@ -370,7 +370,7 @@ export function checkMesh(mesh, { maxTris = 20000, closed = true, minVolume = 0 
     const a = idx[i] * 3, b = idx[i + 1] * 3, c = idx[i + 2] * 3;
     const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2];
     const vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
-    const area2 = Math.hypot(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx);
+    const area2 = hyp(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx);
     if (area2 < 1e-10) degenerate++;
     volume += (p[a] * (p[b + 1] * p[c + 2] - p[b + 2] * p[c + 1]) + p[a + 1] * (p[b + 2] * p[c] - p[b] * p[c + 2]) + p[a + 2] * (p[b] * p[c + 1] - p[b + 1] * p[c])) / 6;
     if (closed) {
@@ -390,3 +390,4 @@ export function checkMesh(mesh, { maxTris = 20000, closed = true, minVolume = 0 
   }
   return { ok: issues.length === 0, issues, tris: idx.length / 3, volume };
 }
+import { hyp } from './hyp.js';

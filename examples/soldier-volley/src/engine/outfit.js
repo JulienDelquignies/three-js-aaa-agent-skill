@@ -38,7 +38,7 @@ const ringAxis = (c, d, r) => {
   return pts;
 };
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-const norm = (a) => { const l = Math.hypot(...a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+const norm = (a) => { const l = hyp(...a) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
 const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const mergeMeshes = (arr) => merge(arr);
 const mixHex = (hex, toward, t) => new THREE.Color(hex).lerp(new THREE.Color(toward), t).getHex();
@@ -65,7 +65,7 @@ function orient(mesh, at, U, N, V) {
 function segDist(p, a, b) {
   const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], ap = [p[0] - a[0], p[1] - a[1], p[2] - a[2]];
   const t = Math.max(0, Math.min(1, (ap[0] * ab[0] + ap[1] * ab[1] + ap[2] * ab[2]) / ((ab[0] ** 2 + ab[1] ** 2 + ab[2] ** 2) || 1)));
-  return Math.hypot(p[0] - a[0] - ab[0] * t, p[1] - a[1] - ab[1] * t, p[2] - a[2] - ab[2] * t);
+  return hyp(p[0] - a[0] - ab[0] * t, p[1] - a[1] - ab[1] * t, p[2] - a[2] - ab[2] * t);
 }
 
 function findBones(model) {
@@ -102,7 +102,7 @@ function fitRing(cloud, c, d, u, v, { clear = 0.02, slab = 0.05, maxR = 0.3, cap
     if (Math.abs(along) > slab) continue;
     const rx = px - d[0] * along, ry = py - d[1] * along, rz = pz - d[2] * along;
     const ru = rx * u[0] + ry * u[1] + rz * u[2], rv = rx * v[0] + ry * v[1] + rz * v[2];
-    const rad = Math.hypot(ru, rv);
+    const rad = hyp(ru, rv);
     if (rad > maxR || rad < 1e-4) continue;
     if (exclude && exclude(cloud[i], cloud[i + 1], cloud[i + 2])) continue;
     const sect = (Math.floor((Math.atan2(rv, ru) / (Math.PI * 2)) * SEG) + SEG * 2) % SEG;
@@ -321,7 +321,7 @@ export function buildJeansSweat(model, { sweat = 0x8d939c, jeans = 0x3d5a80, hoo
   const armSkin = (x, y, z) => {
     for (const [a, h] of armSegs) {
       const ab = [h[0] - a[0], h[1] - a[1], h[2] - a[2]];
-      const L = Math.hypot(...ab) || 1;
+      const L = hyp(...ab) || 1;
       const t = ((x - a[0]) * ab[0] + (y - a[1]) * ab[1] + (z - a[2]) * ab[2]) / (L * L);
       if (t * L > 0.12 && segDist([x, y, z], a, h) < 0.09) return true;
     }
@@ -640,3 +640,4 @@ export function checkOutfit(meshes, model, m = {}) {
   }
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

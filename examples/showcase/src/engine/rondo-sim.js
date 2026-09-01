@@ -20,7 +20,7 @@ import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle,
 
 // rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
 
-const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const { movePlayers, separatePlayers, turnover } = rondoInternals;
 
 /** Le POINT DU PIED du porteur — devant le pied de contrôle (mêmes décalages que la touche du receive),
@@ -40,8 +40,7 @@ function stepGestures(st, dt, cfg) {
     if (winding(p) && st.phase === 'carry' && st.possession.carrier === p.id) {
       // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to get to the BALL first (sans ça le windup était fatal — record halved,
       // turnovers doubled). …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le porteur au ballon — plus jamais « près du
-      // corps ». Le terme de la minuterie n'est plus une bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner (son contact part
-      // avant celui du tacle → le tacle mord dans le vide, refus nommé).
+      // corps ». Le terme de la minuterie n'est plus une bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
       // AND THE BALL TRAVELS WITH HIM — the swing suspends the dribble; the ball goes where he goes until the boot sends it (separation 2,09 → 1,53 m). LE COUPLE
@@ -82,7 +81,7 @@ function stepGestures(st, dt, cfg) {
         // ON CONTOURNE SON BALLON, ON NE LE TRAVERSE PAS : le chemin du glissement est poussé radialement hors du cercle du ballon (les stances finissent au-delà — talonnade 0,38 > 0,32).
         {
           const bx = g.p[0] - st.ball.p[0], bz = g.p[1] - st.ball.p[2];
-          const bd = Math.hypot(bx, bz), AVOID = 0.32;
+          const bd = hyp(bx, bz), AVOID = 0.32;
           if (bd < AVOID && bd > 1e-6) { g.p[0] = st.ball.p[0] + (bx / bd) * AVOID; g.p[1] = st.ball.p[2] + (bz / bd) * AVOID; }
         }
         // L'ACTIONNEUR EST BORNÉ : le corps rejoint la courbe du glissement à vitesse humaine au plus (même loi que le lacet : une demande, un taux borné). La borne
@@ -90,14 +89,14 @@ function stepGestures(st, dt, cfg) {
         // glissement au-delà de 10 m/s.
         {
           const ex = g.p[0] - p.p[0], ez = g.p[1] - p.p[2];
-          const el = Math.hypot(ex, ez), cap = cfg.glideMax * dt;
+          const el = hyp(ex, ez), cap = cfg.glideMax * dt;
           const k = el > cap ? cap / el : 1;
           p.v[0] = (ex * k) / Math.max(1e-4, dt);
           p.v[1] = (ez * k) / Math.max(1e-4, dt);
           p.p[0] += ex * k; p.p[2] += ez * k;
         }
         p.yaw = g.yaw; p.yawWant = null;
-        p.speed = Math.hypot(p.v[0], p.v[1]);
+        p.speed = hyp(p.v[0], p.v[1]);
       }
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     } else if (busy(p) && p.act?.payload?.kind === 'skill' && st.phase === 'carry' && st.possession.carrier === p.id) {
@@ -212,7 +211,7 @@ function standTackleNow(st, q, cfg) {
   st.events.push({
     t: +st.t.toFixed(2), type: 'duel', by: q.id, won: true, tech: 'tacle-debout', foot: pick.foot,
     surface: pick.surface, bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2),
-    height: +st.ball.p[1].toFixed(2), speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+    height: +st.ball.p[1].toFixed(2), speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1),
   });
   const victim = st.players[victimId];
   // …et un geste TECHNIQUE se fait fermer à n'importe quel instant (la semelle tenue, le raclage du râteau) — pas seulement l'armé : sa fenêtre de duel est ouverte du début à la fin
@@ -264,7 +263,7 @@ function receive(st, id, cfg = RONDO) {
       st.ball.impulse([-st.ball.v[0] * 0.92, -st.ball.v[1] * 0.6, -st.ball.v[2] * 0.92], dW(st, cfg, 0.92));
       if (st.ball.owner !== id) st.ball.possess(id);
       st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'prise-gardien', foot: 'both',
-        surface: 'hands', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+        surface: 'hands', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
       return;
     }
     // WHICH CONTROL. A ball arriving on the left is taken with the left foot, or with the outside of
@@ -285,7 +284,7 @@ function receive(st, id, cfg = RONDO) {
         .reduce((b, q) => (!b || d2(q.p, p.p) < d2(b.p, p.p) ? q : b), null);
       let tx = Math.cos(p.yaw), tz = Math.sin(p.yaw);
       if (foe) {
-        const ax = p.p[0] - foe.p[0], az = p.p[2] - foe.p[2], al = Math.hypot(ax, az) || 1;
+        const ax = p.p[0] - foe.p[0], az = p.p[2] - foe.p[2], al = hyp(ax, az) || 1;
         tx = ax / al; tz = az / al;
       }
       p.yawWant = Math.atan2(tz, tx);              // he turns ONTO it — movePlayers slews, never snaps
@@ -325,7 +324,7 @@ function receive(st, id, cfg = RONDO) {
       // reste LIBRE avec son résiduel — contestable, exactement ce qu'un défenseur attend d'une
       // passe trop appuyée. Le taux suit la vitesse et la précision de la surface (accuracy), le
       // tirage est seedé (le hasard de la partie, pas un dé caché).
-      const arr = Math.hypot(st.ball.v[0], st.ball.v[2]);
+      const arr = hyp(st.ball.v[0], st.ball.v[2]);
       const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy * (p.skill?.controlF ?? 1))));
       if (pMiss > 0 && (st.rnd ? st.rnd() : 0.5) < pMiss) {
         deny(st, 'contrôle-manqué');
@@ -351,7 +350,7 @@ function receive(st, id, cfg = RONDO) {
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
         bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),
-        speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+        speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1),
         // OÙ LE BALLON A FINI, relativement au joueur — le nombre que la règle juge. Il n'existe PAS
         // encore à cet instant : le contrôle est devenu continu, le ballon met l'accompagnement du
         // geste à arriver. L'inscrire maintenant, ce serait inscrire l'intention à la place du
@@ -371,9 +370,9 @@ function receive(st, id, cfg = RONDO) {
       if (AP && foeAP > cfg.contestRadius) {
         st.ball.impulse([-st.ball.v[0] * AP, -st.ball.v[1] * 0.6, -st.ball.v[2] * AP], dW(st, cfg, AP));
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: 'amorti-poursuite', foot: 'any',
-          surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+          surface: 'sole', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
       } else { st.ball.impulse([-st.ball.v[0] * 0.25, 0, -st.ball.v[2] * 0.25], dW(st, cfg, 0.25)); if (st.full) st.events.push({ // la touche muette se nomme (lot 54)
-        t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: 'any', surface: 'sole', speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
+        t: +st.t.toFixed(2), type: 'control', by: id, tech: 'quart-de-touche', foot: 'any', surface: 'sole', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null }); }
     }
   } else {
     // LE CÔNE VAUT AUSSI POUR L'ADVERSAIRE (lot 71, contrat zéro-contact-fantôme) : une interception/récupération est une touche de PIED — dos = le ballon file, le vol continue
@@ -402,7 +401,7 @@ function resoudreGlisse(st, cfg, p, pick, sit, dEvent, dPoke, won) {
     // l'événement dit QUI a glissé et QUI avait le ballon : la clause de discipline de checkRondo le lit — et son sabotage l'injecte
     team: p.team, atk: st.possession.team,
     bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +dEvent.toFixed(2), height: +st.ball.p[1].toFixed(2),
-    speed: +Math.hypot(st.ball.v[0], st.ball.v[2]).toFixed(1),
+    speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1),
   });
   if (!won) return;
   // Un tacle ne fait pas APPARAÎTRE le ballon près du tacleur : le pied le RENVOIE — une
@@ -419,7 +418,7 @@ function resoudreGlisse(st, cfg, p, pick, sit, dEvent, dPoke, won) {
   if (mate) { ux = mate.p[0] - st.ball.p[0]; uz = mate.p[2] - st.ball.p[2]; }
   else if (foe) { ux = st.ball.p[0] - foe.p[0]; uz = st.ball.p[2] - foe.p[2]; }
   else { ux = p.p[0] - st.ball.p[0]; uz = p.p[2] - st.ball.p[2]; }
-  const ul = Math.hypot(ux, uz) || 1;
+  const ul = hyp(ux, uz) || 1;
   const back = Math.min(3.2, dPoke / 0.28);
   st.ball.impulse([(ux / ul) * back - st.ball.v[0], -st.ball.v[1], (uz / ul) * back - st.ball.v[2]]);
   if (p.down > 0) { st.phase = 'loose'; st.pass = null; st.possession.carrier = -1; st.hold = 0; st.pressure = 0; }
@@ -453,7 +452,7 @@ function trySlide(st, cfg) {
   if (!strayed) return;
   if (st.ball.owner != null) return;                            // un ballon PORTÉ se dispute debout (le duel), pas au sol
   if (st.ball.p[1] > 0.4) return;                               // you do not slide at a ball in the air
-  if (Math.hypot(st.ball.v[0], st.ball.v[2]) > cfg.slideMaxBall) return;   // nor at one going too fast to win
+  if (hyp(st.ball.v[0], st.ball.v[2]) > cfg.slideMaxBall) return;   // nor at one going too fast to win
   // A SLIDE IS A LAST RESORT, not a longer reach (anyone-in-range going down = 182 slides in 90 s,
   // possession 18 passes → 4). You slide when you are LOSING THE RACE to an opponent — everything
   // else is a normal run.
@@ -508,7 +507,7 @@ function trySlide(st, cfg) {
   // au sommet de trySlide — le réduit garde l'instantané d'hier, au bit près (doctrine st.full).
   if (st.full) {
     p._slideL = { at: st.t + Math.min(0.4, Math.max(0.1, (best.d - 0.35) / 5)), until: st.t + 0.55, pick, sit };
-    const vL = Math.hypot(p.v[0], p.v[1]);
+    const vL = hyp(p.v[0], p.v[1]);
     const dirL = vL > 0.5 ? [p.v[0] / vL, p.v[1] / vL] : [Math.cos(p.yaw), Math.sin(p.yaw)];
     p._glisse = { v: [dirL[0] * Math.max(4, vL), dirL[1] * Math.max(4, vL)] };   // la glissade porte le corps
     return;
@@ -605,7 +604,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // where the BALL should be pushed — the escape direction assignJobs computed, not the direction of
     // the player's own next step (those differ: he stands behind the ball, so his step is toward it)
     let want = c.push || (c.target ? (() => {
-      const dx = c.target[0] - c.p[0], dz = c.target[2] - c.p[2], l = Math.hypot(dx, dz) || 1;
+      const dx = c.target[0] - c.p[0], dz = c.target[2] - c.p[2], l = hyp(dx, dz) || 1;
       return [dx / l, dz / l];
     })() : [Math.cos(c.yaw), Math.sin(c.yaw)]);
     // LA CONDUITE RENTRE SES TOUCHES PRÈS DE LA CRAIE. La sortie de but était devenue la première
@@ -620,7 +619,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       if (mX < 1.3) { const k = (1.3 - mX) / 1.3; wx2 = wx2 * (1 - k) - Math.sign(st.ball.p[0]) * k; }
       if (mZ < 1.3) { const k = (1.3 - mZ) / 1.3; wz2 = wz2 * (1 - k) - Math.sign(st.ball.p[2]) * k; }
       if (wx2 !== want[0] || wz2 !== want[1]) {
-        const l2 = Math.hypot(wx2, wz2) || 1;
+        const l2 = hyp(wx2, wz2) || 1;
         want = [wx2 / l2, wz2 / l2];
       }
     }
@@ -629,7 +628,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // after that, heading and `want` became the same vector and every touch went full strength straight
     // down the push, so the ball simply outran a man capped at 4.2 m/s (`carry-reach` 0.4 % → 8.8 % of
     // carry frames with the ball beyond 3 m). Two consumers of yaw, one meaning changed, both to fix.
-    const csp = Math.hypot(c.v[0], c.v[1]);
+    const csp = hyp(c.v[0], c.v[1]);
     const heading = csp > 0.4 ? [c.v[0] / csp, c.v[1] / csp] : [Math.cos(c.yaw), Math.sin(c.yaw)];
     // LE CÔNE DU PORTÉ (lot 76 — l'aimant : 18 % des touches au kick dos) : ni servo ni touche
     // hors du cône avant EN COURSE — le corps CONTOURNE son ballon ; à l'ARRÊT (< 1,5) la
@@ -667,7 +666,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // LE RAMASSAGE DU BALLON MORT (lot 107, cfg.ramasse && st.full — « des ballons qui traînent » :
     // mesuré, des loose de 2+ s avec un corps à 0,1 m — la re-capture exigeait une INTENTION ;
     // le vrai joueur POSE le pied sur un ballon lent à portée). Le cône et le prenable tiennent.
-    } else if ((intentFresh || (st.full && cfg.ramasse && !st.restart && Math.hypot(st.ball.v[0], st.ball.v[2]) < (cfg.ramasse.v ?? 1.5)
+    } else if ((intentFresh || (st.full && cfg.ramasse && !st.restart && hyp(st.ball.v[0], st.ball.v[2]) < (cfg.ramasse.v ?? 1.5)
       && dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.ramasse.cone ?? 80))) && !contested && d2(c.p, st.ball.p) < cfg.captureRadius && (!st.full || cfg.prisePied === false || balPrenable(st.ball, c.p[0], c.p[2], cfg.prisePied ?? 0.5)) && (!st.full || cfg.priseCone === false || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], cfg.priseCone ?? 100))) {
       st.ball.possess(c.id);
       // …le ramassage SE POSE (lot 107 — sans ça la branche du porté re-lâchait la frame d'après, cap non aligné : touches dos) ; jamais pendant une remise (le taker court-circuitait le CF).
@@ -700,7 +699,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           const pokeSkill = 0.5 + 0.45 * Math.max(0, Math.min(1, ((q.skill ? (q.skill.tackleReach + 0.10) / 0.20 : 0.5))));
           if ((st.rnd ? st.rnd() : 0.5) > pokeSkill) { q._pokeCd = st.t + 0.9; continue; }
           const ux = st.ball.p[0] - q.p[0], uz = st.ball.p[2] - q.p[2];
-          const ul = Math.hypot(ux, uz) || 1;
+          const ul = hyp(ux, uz) || 1;
           // le pique TRAVERSE le ballon : déviation franche loin du pied qui pique — un 50/50
           st.ball.impulse([-st.ball.v[0] * 0.55 + (ux / ul) * 3.4, 0, -st.ball.v[2] * 0.55 + (uz / ul) * 3.4]);
           q._pokeCd = st.t + 1.2;
@@ -789,7 +788,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // tryShot pose alors sa touche de préparation (lot 6a) et la frappe arme à la touche
     // suivante. Réduit et rondo : inchangés au bit près (st.full + cfg.tryShot).
     const gachetteNear = st.full && !!cfg.tryShot && !!st.pitch
-      && Math.hypot(st.pitch.attackGoal(c.team).x - c.p[0], c.p[2]) < (cfg.shotRange ?? 15);
+      && hyp(st.pitch.attackGoal(c.team).x - c.p[0], c.p[2]) < (cfg.shotRange ?? 15);
     // …et la GÂCHETTE DU CENTRE (lot 34) : l'ailier au couloir vit à ~21 m du centre du but —
     // gachetteNear ne s'ouvrait jamais pour lui, tryCross n'était JAMAIS appelé en course
     // (mesuré : 1 centre / 2 matchs malgré des portes géométriques élargies — la même serrure
@@ -946,9 +945,9 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // qu'il vole (l'élection qui avance vit dans choosePass). false : la tenue sourde d'hier.
         const jeteCall = st.full && cfg.fixe && choice && st.players.some((q) => {
           if (q.team === c.team || q.keeper || q.down > 0) return false;
-          const dx = c.p[0] - q.p[0], dz = c.p[2] - q.p[2], d = Math.hypot(dx, dz);
+          const dx = c.p[0] - q.p[0], dz = c.p[2] - q.p[2], d = hyp(dx, dz);
           if (d > (cfg.fixe.rayon ?? 4.5) || d < 0.8) return false;
-          const v = Math.hypot(q.v[0], q.v[1]);
+          const v = hyp(q.v[0], q.v[1]);
           return v >= (cfg.fixe.vitesse ?? 4) && (q.v[0] * dx + q.v[1] * dz) / (v * d) > 0.75;
         });
         // …une intention de CENTRE vivante ne se re-décide pas (le choix de passe l'écrasait à
@@ -996,7 +995,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           c._prepShot = st.t + 0.9;
           c.anchorHint ??= { t: st.t };
         }
-        const tI = cfg.leadTime ? cfg.leadTime(Math.hypot(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.28;
+        const tI = cfg.leadTime ? cfg.leadTime(hyp(rec.p[0] - c.p[0], rec.p[2] - c.p[2]), rec) : 0.28;
         c.intent.choice.lead = [rec.p[0] + rec.v[0] * tI, BALL.radius, rec.p[2] + rec.v[1] * tI];
         // LA FEINTE AVANT LA PASSE : l'intention est prête, un défenseur vit dans le cône de la
         // fausse direction — tout l'armé se joue (volable !), le ballon reste, le mordu s'assoit,
@@ -1020,7 +1019,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // first player within reach takes it — defenders included: that is the interception. BUT the
     // ball must have LEFT the passer first (releaseClear) : sinon il « intercepte » sa propre passe
     // 0,02 s après la frappe (mesuré : toutes). …ET LA GARDE A UNE HORLOGE (cfg.releaseTtl, match) :
-    const gone = st.pass ? Math.hypot(st.ball.p[0] - st.pass.origin[0], st.ball.p[2] - st.pass.origin[1]) : 99;
+    const gone = st.pass ? hyp(st.ball.p[0] - st.pass.origin[0], st.ball.p[2] - st.pass.origin[1]) : 99;
     // une passe MORTE près de son origine (3,3 m/s sous pressing, arrêtée à 0,6 m — graine 3) gardait
     // `gone ≤ releaseClear` POUR TOUJOURS : plus aucun droit de prise, gel de 145 s. La protection ne
     // vaut que l'instant du départ — passé le TTL, il est à prendre. Clé absente (rondo) : Infinity.
@@ -1123,7 +1122,7 @@ export function checkRondo(st, trace, cfg = RONDO) {
   // within 3.5 m of the ball is the DEFINITION of the exercise, not a defect, and an absolute radius
   // called it a beehive 39% of the time. Scaled to the box, the same rule keeps its meaning at any size.
   const swarmR = Math.min(3.5, cfg.swarmFrac * Math.min(st.area[0], st.area[1]));
-  const nearCount = (s) => s.players.filter((p) => p.team !== s.team && Math.hypot(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < swarmR).length;
+  const nearCount = (s) => s.players.filter((p) => p.team !== s.team && hyp(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < swarmR).length;
   const crowded = settled.filter((s) => nearCount(s) > 3).length;
   const allIn = settled.filter((s) => nearCount(s) > 4).length;
   const worstSwarm = settled.length ? Math.max(...settled.map(nearCount)) : 0;
@@ -1136,7 +1135,7 @@ export function checkRondo(st, trace, cfg = RONDO) {
   for (const s of settled) {
     const team = s.players.filter((p) => p.team === s.team);
     let sum = 0, k = 0;
-    for (let i = 0; i < team.length; i++) for (let j = i + 1; j < team.length; j++) { sum += Math.hypot(team[i].p[0] - team[j].p[0], team[i].p[1] - team[j].p[1]); k++; }
+    for (let i = 0; i < team.length; i++) for (let j = i + 1; j < team.length; j++) { sum += hyp(team[i].p[0] - team[j].p[0], team[i].p[1] - team[j].p[1]); k++; }
     if (k) minSpread = Math.min(minSpread, sum / k);
   }
   // …and the same for spread: 5 m was written against a 26 m box. Both thresholds were absolute metres
@@ -1169,11 +1168,11 @@ export function checkRondo(st, trace, cfg = RONDO) {
   const harried = carry.filter((s) => {
     const c = s.players.find((p) => p.id === s.carrier);
     if (!c) return false;
-    const mine = Math.hypot(c.p[0] - s.ball[0], c.p[1] - s.ball[2]);
+    const mine = hyp(c.p[0] - s.ball[0], c.p[1] - s.ball[2]);
     // …and BEATEN, not merely close. A defender touch-tight behind a man who is shielding the ball is normal football; what is not normal is a defender permanently between the carrier and his ball.
     return s.players.some((p) => p.team !== s.team
-      && Math.hypot(p.p[0] - c.p[0], p.p[1] - c.p[1]) < cfg.tackleRadius
-      && Math.hypot(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < mine);
+      && hyp(p.p[0] - c.p[0], p.p[1] - c.p[1]) < cfg.tackleRadius
+      && hyp(p.p[0] - s.ball[0], p.p[1] - s.ball[2]) < mine);
   }).length;
   const harriedPct = carry.length ? harried / carry.length : 0;
   if (carry.length > 30 && harriedPct > cfg.harriedMax) issues.push(`le porteur est collé par un défenseur ${(harriedPct * 100).toFixed(0)}% du temps de conduite — il ne s'échappe jamais`);
@@ -1247,3 +1246,4 @@ function hullArea(pts) {
 }
 
 export { predictPath };
+import { hyp } from './hyp.js';

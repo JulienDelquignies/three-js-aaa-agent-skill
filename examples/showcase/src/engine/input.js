@@ -61,12 +61,12 @@ export class Input {
     for (const k of this.keys) { const m = KEY_MOVE[k]; if (m) { x += m[0]; z += m[1]; } }
     if (this._gpMove) { x += this._gpMove.x; z += this._gpMove.z; }
     x += this._touchMove.x; z += this._touchMove.z;
-    const l = Math.hypot(x, z); if (l > 1) { x /= l; z /= l; }
+    const l = hyp(x, z); if (l > 1) { x /= l; z /= l; }
     return { x, z };
   }
   consumeLook() { const l = { dx: this._look.dx, dy: this._look.dy }; this._look.dx = 0; this._look.dy = 0; return l; }
   consumeZoom() { const z = this._zoom; this._zoom = 0; return z; }
-  down(a) { return this._held.has('k:' + a) || (a === 'sprint' && (this._gpSprint || Math.hypot(this._touchMove.x, this._touchMove.z) > 0.92)) || this._held.has('t:' + a); }
+  down(a) { return this._held.has('k:' + a) || (a === 'sprint' && (this._gpSprint || hyp(this._touchMove.x, this._touchMove.z) > 0.92)) || this._held.has('t:' + a); }
   /** held by an EXPLICIT press only (key/button/pad) — no stick-rim auto-sprint. Driving reads the
    *  brake with this: on touch, full throttle pushes the stick to the rim, which must not brake. */
   downStrict(a) { return this._held.has('k:' + a) || this._held.has('t:' + a) || (a === 'sprint' && this._gpSprint); }
@@ -84,7 +84,7 @@ export class Input {
     const R = 52; let id = null, cx = 0, cy = 0;
     const setKnob = (dx, dy) => { knob.style.transform = `translate(${dx}px,${-dy}px)`; };
     base.addEventListener('pointerdown', (e) => { id = e.pointerId; const r = base.getBoundingClientRect(); cx = r.left + r.width / 2; cy = r.top + r.height / 2; base.setPointerCapture(id); });
-    base.addEventListener('pointermove', (e) => { if (e.pointerId !== id) return; let dx = e.clientX - cx, dy = cy - e.clientY; const l = Math.hypot(dx, dy) || 1; const c = Math.min(1, l / R); dx = dx / l * c * R; dy = dy / l * c * R; setKnob(dx, dy); this._touchMove = { x: (dx / R), z: (dy / R) }; });
+    base.addEventListener('pointermove', (e) => { if (e.pointerId !== id) return; let dx = e.clientX - cx, dy = cy - e.clientY; const l = hyp(dx, dy) || 1; const c = Math.min(1, l / R); dx = dx / l * c * R; dy = dy / l * c * R; setKnob(dx, dy); this._touchMove = { x: (dx / R), z: (dy / R) }; });
     const rel = (e) => { if (e.pointerId === id) { id = null; this._touchMove = { x: 0, z: 0 }; setKnob(0, 0); } };
     base.addEventListener('pointerup', rel); base.addEventListener('pointercancel', rel);
     // right action buttons
@@ -105,3 +105,4 @@ export class Input {
     this.el.querySelectorAll('[data-ctl]').forEach((e) => e.remove());
   }
 }
+import { hyp } from './hyp.js';

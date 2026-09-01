@@ -155,7 +155,7 @@ export function buildStadium(model, theme, { at = [0, 0, 0], archCast = false } 
     const stex = new THREE.CanvasTexture(drawSponsorStrip(theme)); stex.colorSpace = THREE.SRGBColorSpace;
     stex.wrapS = THREE.RepeatWrapping; disposables.push(stex);
     for (const bd of model.boards) {
-      const dx = bd.b[0] - bd.a[0], dz = bd.b[1] - bd.a[1]; const len = Math.hypot(dx, dz);
+      const dx = bd.b[0] - bd.a[0], dz = bd.b[1] - bd.a[1]; const len = hyp(dx, dz);
       // LED la nuit (lot 68) : 0,25 laissait le cadre publicitaire dans le noir — le vrai stade
       // nocturne est CEINT de panneaux qui brillent ; c'est eux qui tiennent lisible un corps
       // sorti pour la touche (le « vide noir » des captures). 1,0 : lumineux, sous le bloom (1,6).
@@ -349,3 +349,4 @@ export function buildStadium(model, theme, { at = [0, 0, 0], archCast = false } 
 
   return { group, colliders, vantages: model.vantages, dispose: () => disposables.forEach((d) => d.dispose?.()) };
 }
+import { hyp } from './hyp.js';

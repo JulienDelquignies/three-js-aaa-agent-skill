@@ -277,7 +277,7 @@ export class PathDriver {
   constructor(path, { speed = 15 } = {}) {
     this.pts = path; this.speed = speed; this.t = 0;
     this.len = [0];
-    for (let i = 1; i < path.length; i++) this.len.push(this.len[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
+    for (let i = 1; i < path.length; i++) this.len.push(this.len[i - 1] + hyp(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
     this.total = this.len[this.len.length - 1];
     this.pos = [...path[0]]; this.yaw = this._headingAt(0.5); this.done = false;
   }
@@ -305,3 +305,4 @@ export class PathDriver {
     return { x: this.pos[0], z: this.pos[1], yaw: this.yaw, wheelSpin: v / 0.34, done: this.done };
   }
 }
+import { hyp } from './hyp.js';

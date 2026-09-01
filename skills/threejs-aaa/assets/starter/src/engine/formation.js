@@ -311,7 +311,7 @@ export function blocFor(bloc, tq, zone = false) {
  *  à 35 % du chemin — la cible du cover ET de l'assurance de pressing (i===2, lot 96). */
 export function coverSpot(defGoal, anchor, cfg) {
   const gx = defGoal.x - anchor[0], gz = 0 - anchor[2];
-  const gl = Math.hypot(gx, gz) || 1;
+  const gl = hyp(gx, gz) || 1;
   const dd = Math.max(cfg.coverMinDist, Math.min(6, gl * 0.35));
   return [anchor[0] + (gx / gl) * dd, 0, anchor[2] + (gz / gl) * dd];
 }
@@ -367,3 +367,4 @@ export function checkFormation(pitch, team, name = 433) {
   if (!(proj[0][0] * sgn > repli[0][0] * sgn + 3)) issues.push('le bloc ne coulisse pas (ligne arrière immobile)');
   return { ok: issues.length === 0, issues };
 }
+import { hyp } from './hyp.js';

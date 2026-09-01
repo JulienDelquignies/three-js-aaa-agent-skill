@@ -29,7 +29,7 @@ export class ThirdPersonCamera {
     if (obstruct) {
       const fx = target.x, fy = target.y + this.lookHeight, fz = target.z;
       const vx = this._want.x - fx, vy = this._want.y - fy, vz = this._want.z - fz;
-      const full = Math.hypot(vx, vy, vz) || 1e-6;
+      const full = hyp(vx, vy, vz) || 1e-6;
       const hit = obstruct([fx, fy, fz], [vx / full, vy / full, vz / full], full);
       const allowed = hit != null ? Math.max(0.35, hit - 0.3) : full;
       this._occDist = allowed < this._occDist ? allowed : this._occDist + (allowed - this._occDist) * (1 - Math.exp(-4 * dt));
@@ -43,3 +43,4 @@ export class ThirdPersonCamera {
     this.cam.lookAt(this._look);
   }
 }
+import { hyp } from './hyp.js';

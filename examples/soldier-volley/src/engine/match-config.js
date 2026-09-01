@@ -1026,7 +1026,7 @@ export const MATCH = {
                           // appels, 1 servi (la décoration). Clé absente (rondo) : pas un bit.
   // la mène suit la course : temps d'arrivée estimé (0,4 + d/9, borné 1 s), amorti à 85 % — un
   // ballon DANS la course, pas sur les talons
-  leadTime: (d, rec) => Math.min(0.4 + d / 9, 1.0) * ((rec && Math.hypot(rec.v?.[0] ?? 0, rec.v?.[1] ?? 0) > 1.6) ? 0.85 : 0.3),
+  leadTime: (d, rec) => Math.min(0.4 + d / 9, 1.0) * ((rec && hyp(rec.v?.[0] ?? 0, rec.v?.[1] ?? 0) > 1.6) ? 0.85 : 0.3),
   speeds: { ...RONDO.speeds, support: 4.9, mark: 5.6, keeper: 6.4, walk: 2.6, chase: 6.4 },  // le soutien OFFENSIF économise ;
                           // walk = le pas de remise ; chase 6,4 : un press de MATCH se soutient
                           // walk = le pas de remise ; chase 6,4 : un press de MATCH se soutient
@@ -1038,3 +1038,4 @@ export const MATCH = {
   // 0,93 s (mesuré). Un joueur de match FIXE avec un marqueur à 2 m ; seul le vrai pressing rushe.
   calmFoe: 1.8,
 };
+import { hyp } from './hyp.js';

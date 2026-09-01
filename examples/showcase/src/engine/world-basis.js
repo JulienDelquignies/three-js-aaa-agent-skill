@@ -21,7 +21,7 @@ export class WorldBasis {
   direction(h) { return [Math.sin(h), Math.cos(h)]; }        // unit world ground dir (x,z) for a heading
   right(h) { return [Math.cos(h), -Math.sin(h)]; }           // 90° right of the heading, on the ground
   planar(v) { return [v[0], 0, v[2]]; }                      // drop the up component
-  normalizePlanar(dx, dz) { const l = Math.hypot(dx, dz) || 1; return [dx / l, dz / l]; }
+  normalizePlanar(dx, dz) { const l = hyp(dx, dz) || 1; return [dx / l, dz / l]; }
 
   // ---- model facing (no moonwalk) ----
   // Ground angle of a model's own forward axis, e.g. [0,0,-1] → atan2(0,-1) = π.
@@ -48,3 +48,4 @@ export class WorldBasis {
 
 // Default gameplay basis (+Y up, XZ ground). Import { WORLD } for the common case.
 export const WORLD = new WorldBasis();
+import { hyp } from './hyp.js';
