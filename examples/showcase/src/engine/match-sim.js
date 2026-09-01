@@ -174,8 +174,7 @@ function assignMatchJobs(st, cfg) {
       // APRÈS UN BUT, ON REVIENT EN MARCHANT (placeKickoff écrivait les douze corps — 20 m en une image) ; UNE REMISE EST UNE RESPIRATION : marche 2,6 m/s.
       if (r.spots && r.spots[p.id] && p.id !== r.taker) {
         p.job = 'walk'; p.target = [r.spots[p.id][0], 0, r.spots[p.id][1]];
-        // LE RETOUR N'EST PAS UNE PROMENADE UNIFORME (183, cfg.retourTrot — filmé : 47-60 m à 2,6 m/s, les corps du fond jamais rentrés à la reprise) : LOIN de son spot on TROTTE ;
-        // le MENÉ presse le pas (il veut rejouer), le meneur au tempo bas FLÂNE (la gestion du temps est un choix de coach — l'axe tempo, pas une note). Clé absente : hier au bit.
+        // LE RETOUR N'EST PAS UNE PROMENADE UNIFORME (183, cfg.retourTrot — filmé : 47-60 m à 2,6 m/s, les corps du fond jamais rentrés à la reprise) : LOIN de son spot on TROTTE ; le MENÉ presse le pas (il veut rejouer), le meneur au tempo bas FLÂNE (la gestion du temps est un choix de coach — l'axe tempo, pas une note). Clé absente : hier au bit.
         const RT = cfg.retourTrot;
         if (st.full && RT && r.type === 'engagement') {
           const dSpot = Math.hypot(p.p[0] - p.target[0], p.p[2] - p.target[2]);
@@ -546,8 +545,11 @@ function assignMatchJobs(st, cfg) {
     let met = null;   // le pas au contact (meetBall) : un pas et demi sur l'AXE NOMINAL (flipper consigné)
     const dInb = Math.hypot(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
     // LE BALLON RÉEL COMMANDE À PORTÉE (lot 134, cfg.meetReel && st.full — le receveur du ballon DÉVIÉ courait au lead nominal fantôme). Divergé (> div), bas, proche : on joue LE BALLON (mène 0,12 s). false : hier.
+    // …ET LES APPUIS DU DERNIER SEGMENT (198, cfg.appuisRecev — liste v3 point 11 : 8/11 mauvaises réceptions avec le receveur À L'ARRÊT sur des passes quasi parfaites, err
+    // < 0,01 rad ; le vrai receveur DANSE sur ses appuis) : à < fen s du contact, le seuil de divergence s'abaisse — l'ajustement FIN au ballon réel. Clé absente : le planté d'hier.
+    const finVol = st.full && cfg.appuisRecev && dInb / Math.max(1, Math.hypot(st.ball.v[0], st.ball.v[2])) < (cfg.appuisRecev.fen ?? 0.8);
     if (!met && st.full && cfg.meetReel !== false && dInb < (cfg.meetZone ?? 4.5) && st.ball.p[1] < 0.9
-      && Math.hypot(st.ball.p[0] - st.pass.lead[0], st.ball.p[2] - st.pass.lead[2]) > (cfg.meetReel?.div ?? 2.5)) {
+      && Math.hypot(st.ball.p[0] - st.pass.lead[0], st.ball.p[2] - st.pass.lead[2]) > (finVol ? (cfg.appuisRecev.div ?? 0.6) : (cfg.meetReel?.div ?? 2.5))) {
       const bR = Math.hypot(st.ball.v[0], st.ball.v[2]), mR = Math.min(1.2, bR * 0.12);
       met = bR > 0.3 ? [st.ball.p[0] + (st.ball.v[0] / bR) * mR, 0, st.ball.p[2] + (st.ball.v[2] / bR) * mR]
         : [st.ball.p[0], 0, st.ball.p[2]];
@@ -981,8 +983,7 @@ function assignMatchJobs(st, cfg) {
         // EN FENÊTRE DE PRESSING : le bloc posté MONTE d'un cran (pressTriggers.step) vers le ballon — la COMPRESSION fait la ligne (le bloc qui monte pousse la Loi 11 devant les pointes)
         if (press) {
           // …LA COMPRESSION (lot 162, cfg.compression) : le bloc pressant est un POING, pas un élastique — mesuré : profondeur 34,4 m EN fenêtre contre 31,4 HORS (les
-          // chasseurs avancent, l'arrière traînait). Le FOND du bloc (tiers défensif) monte × fond (1,7), et CHACUN monte à sa note workRate (× workF : le bloc de
-          // travailleurs monte UNI, le paresseux traîne en escalier — l'exécution est aux notes, le choix à l'axe).
+          // chasseurs avancent, l'arrière traînait). Le FOND du bloc (tiers défensif) monte × fond (1,7), et CHACUN monte à sa note workRate (× workF : le bloc de travailleurs monte UNI, le paresseux traîne en escalier — l'exécution est aux notes, le choix à l'axe).
           const relC = st.full && cfg.compression && cD1 > cD0
             ? (want[0] * Math.sign(pitch.ownGoal(p.team).x || 1) - cD0) / (cD1 - cD0) : 0;   // 1 = le plus BAS du bloc
           const kC = st.full && cfg.compression
@@ -1012,8 +1013,7 @@ function assignMatchJobs(st, cfg) {
       const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
       const gl = Math.hypot(gx, gz) || 1;
       p.job = 'mark';
-      // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — point 7 : marqueur à 3,8 m p50 au point d'appui, 66 % de retournements) : le danger < 26 m se marque AU CONTACT — la garde ×serre, l'homme prime
-      // la bande, le suivi continu. markF/press restent les facteurs. Absente : hier.
+      // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — point 7 : marqueur à 3,8 m p50 au point d'appui, 66 % de retournements) : le danger < 26 m se marque AU CONTACT — la garde ×serre, l'homme prime la bande, le suivi continu. markF/press restent les facteurs. Absente : hier.
       const rouge = st.full && cfg.serreRouge && gl < (cfg.serreRouge.rayon ?? 26);
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
       const off = (press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * ((role(p).marqueSerre ?? 0.5) !== 0.5 ? axe(role(p).marqueSerre, 1.35, 0.65) : 1) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) ET une CONSIGNE (196, axe marqueSerre : coller/laisser respirer — le même joueur, deux ordres)

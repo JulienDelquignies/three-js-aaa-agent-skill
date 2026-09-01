@@ -6733,7 +6733,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      persona.flair reste le tempérament (QUI OSE), gesteF la note (QUI
      SAIT) — les deux se multiplient sans se confondre, la grammaire du
      moteur.
-- Skill `threejs-aaa` : refs 01–22, scripts de vérif (interaction / scene / temporal / locomotion), starter runnable.
+- 240: Lot 198 — LES APPUIS DU RECEVEUR (liste v3 point 11 : « trop de
+     mauvaises passes ou le destinataire pas sur ses appuis ? »). LA SONDE
+     A RÉPONDU À LA QUESTION VERBATIM : sur les 11 grosses chasses
+     restantes (> 2,5 m hors through), l'erreur de passe est QUASI NULLE
+     (max 0,107 rad ≈ 6°, cinq à < 0,01 — des passes PARFAITES qui
+     finissent en chasse) mais 8/11 receveurs sont À L'ARRÊT (v < 2 m/s)
+     quand le ballon les croise : LE DESTINATAIRE N'EST PAS SUR SES APPUIS.
+     LA LOI : le meetReel du 171 existait mais son seuil de divergence
+     (2,5 m) ignorait les petits écarts — le receveur restait planté sur
+     le point théorique. cfg.appuisRecev { fen: 0.8, div: 0.6 } : au
+     DERNIER SEGMENT du vol (< fen s du contact), le seuil tombe à div —
+     l'ajustement FIN au ballon réel, le geste des petits pas d'appui.
+     APRÈS (6 graines × 300 s) : chasse p95 2,57 → 0,95 m, grosses
+     5,3 → 2,4 % dont 4/9 through VOULUS (~5 vraies mauvaises / 30 min),
+     et 358 → 368 réceptions (plus de passes ARRIVENT). Le canal du point
+     11, ouvert au 181 (p95 6,97, 7,4 %), est clos. Clause 198 au jumeau
+     appuisRecev: false (p95 vivant ≤ épinglé − 0,5 m). Clé absente = le
+     planté d'hier au bit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

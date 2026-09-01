@@ -183,6 +183,9 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  appuisRecev: { fen: 0.8, div: 0.6 },  // 198 : LES APPUIS DU RECEVEUR — au dernier segment du
+                          // vol (< fen s), l'ajustement FIN au ballon réel (div 2,5 → 0,6).
+                          // Absente : le receveur planté d'hier.
   priseGant: { d: 1.35 },  // 194 : LA PRISE À DEUX MAINS — le contact ≤ 1,35 × aeF non-missile
                           // se PREND (8/12 claquettes étaient à deux mains). Absente : le
                           // poussoir d'hier.
