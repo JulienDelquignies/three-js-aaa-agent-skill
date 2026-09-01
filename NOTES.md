@@ -7018,6 +7018,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Fixture leçon : A servable en LOFTED seulement (le chip du chas) —
      la remise rasante forcée serait le raffinement futur (style du
      retour, dette douce).
+- 252: Lot 210 — LE CANAL OFF-THE-BALL S'EXPRIME (dette 198 : ratio
+     d'appels notés 90/20 mesuré 1,22 pour un réel 2-3). Deux causes
+     structurelles : le créneau d'équipe _appelAt se prenait à l'ORDRE
+     de boucle (le premier éligible, pas le meilleur), et la pente
+     [0,85 ; 1,15] de la cadence plafonnait le ratio à 1,35 même
+     parfaitement exprimée. cfg.appelNote { avance: 4, pente: 2 } : le
+     bon VOIT le créneau s'ouvrir plus tôt (avance × (otbF − 1) s —
+     l'élection continue par anticipation, sans élection discrète, le
+     rejet du 156 respecté) et sa cadence personnelle est au CARRÉ (le
+     patron des pentes du 197). APRÈS : ratio 1,22 → 2,00. Identité :
+     otbF 1 → avance 0, 1² = 1 — jumeau au bit sur les squads par
+     défaut (61f2440ad9a1b608 / 6a37f24c44e43252 ; la seed 3 avait été
+     re-datée au 209 sans re-mesure — À CHAQUE lot désormais). Bande
+     17/20 fraîches (101-120). Clause au jumeau 6 × 300 s (attributes).
+     Sceau 477 ✓ / 0 ✗ en 995 s.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
