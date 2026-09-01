@@ -6969,6 +6969,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      PAS (14 = 14 = 14 au bit) — c'est le CONTEXTE à la détection (job/
      pace/phase dans la sonde) qui a nommé le poseur ; instrumenter
      AVANT de clamper.
+- 250: Lots 208/b/c — LA TROISIÈME VAGUE, ET UNE LOI REJETÉE À LA MESURE.
+     (a) Les marges datées de la vague 207 (204 0,7 ; budget 1,6 sous
+     contention 8 shards ; 141/104/démission/160/195 — l'épisode-limite
+     Loi 17 seed 17 t194,5 en dette). (b) SIX juges re-fondés au
+     mécanisme : 202 (fixture du point d'arrêt 36,5 c. 8,9, rattrape
+     isolé — il vise le même ordre de cible pour un ballon fuyant), 143
+     (les refus nommés 469 c. 0 font foi, le différentiel
+     d'interceptions informatif), 149 (passBias au CALCUL EXACT :
+     1,65/2,2/2,75 — le facteur mentalite pur), 145 (le σ des vitesses
+     — le plancher absolu 16,2 était mort), 196-orienteFaible (fixture
+     jockey, delta d'épaule −0,55 ; leçon : un corps du spawn à 1,26 m
+     MORDAIT — l'isolement du posé), 200-ancrage (fixture d'élection à
+     asymétrie franche, jugée au buffer st._bSlotters — l'ancre interne
+     du comité n'est pas le ballon, la distance des cibles ne discrimine
+     pas des spots chaînés au ballon). (c) LA RETOMBÉE (202) REJETÉE AU
+     DÉFAUT : le 207 a guéri la CAUSE (les rendez-vous hors terrain) et
+     le pansement s'est mis à NUIRE — épinglé 63 % de conservation c.
+     vivant 53, recalibrage court 54. Clé coupée, code réactivable (un
+     monde aval où les ballons filent peut la rallumer). La leçon
+     d'architecture : UNE LOI-PANSEMENT MEURT QUAND LA CAUSE GUÉRIT —
+     re-mesurer les pansements après chaque fix de cause. SCEAU FINAL :
+     475 ✓ / 0 ✗, empreintes a62b728350551c6f / 6a37f24c44e43252, bande
+     22/20 graines fraîches (81-100). Le bilan des vagues 205-208 : ~25
+     clauses re-jugées, DIX juges de flux morts remplacés par des
+     fixtures de mécanisme — le patrimoine converge vers l'insensible
+     au chaos.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
