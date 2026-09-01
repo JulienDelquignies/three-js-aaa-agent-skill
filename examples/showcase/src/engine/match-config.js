@@ -183,6 +183,9 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  chasseRetombee: { depasse: 3, h: 1.2, frein: 1.8, cap: 25 },  // 202 : la retombée SE CHASSE —
+                          // le ballon vif qui a dépassé le lead se poursuit au point d'arrêt
+                          // prédit (liste v3 point 9 : le long ballon filait, receveur planté).
   ancrage: { elect: 1.4, colle: 0.7, libre: 1.6 },  // 200 : l'axe de rôle ancrage (0 colle,
                           // 1 vagabonde) — élection du comité × axe(elect, 2−elect), mou de
                           // recalage × axe(colle, libre). Identité 0,5 = pas un bit.

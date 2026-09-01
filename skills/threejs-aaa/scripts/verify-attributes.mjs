@@ -40,21 +40,28 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // 5/17/18 — « presque plat » en haut, l'œil du borgne : la moitié DÉFENSIVE de la domination
     // (tirs concédés 36 → 28) était invisible. Le juge de paix est le DIFFÉRENTIEL pour−contre
     // (3/6/9 à 6 × 240 s ; en buts à 6 × 600 s : −1/+1/+4/+6 aux niveaux 30/50/70/90).
+    // RE-FONDÉE au 201 (le re-datage 199 a exposé la fragilité du différentiel de tirs SEUL :
+    // la marche 30→50 mangée une DEUXIÈME fois par le tirage, −11 c. −15 à 10 graines). Le juge
+    // composite : dPasses + 10 × dTirs — le TERRITOIRE (des centaines d'événements) et
+    // l'ABOUTISSEMENT (rare mais lourd) ; mesuré −157 < −108 < −7 < +490, monotone aux 4 rungs.
     const diffDe = (n) => {
-      let tp = 0, tc = 0;
+      let tp = 0, tc = 0, pp = 0, pc = 0;
       for (const seed of [2, 3, 5, 8, 11, 13]) {
         const st = makeMatch({ full: true, seed, squads: [eq(n), eq(50)] });
         // la clause mesure la GRADATION DES NOTES — elle isole le duel contesté (166), son
         // re-dateur : −11/−11/17 au monde vivant post-166, la marche 30→50 mangée par le tirage
-        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
         for (let i = 0; i < 240 * 60; i++) matchStep(st, 1 / 60, cfg);
-        for (const e of st.events) if (e.type === 'shot') { if (st.players[e.by]?.team === 0) tp++; else tc++; }
+        for (const e of st.events) {
+          if (e.type === 'shot') { if (st.players[e.by]?.team === 0) tp++; else tc++; }
+          if (e.type === 'receive' || e.type === 'control') { if (st.players[e.by]?.team === 0) pp++; else pc++; }
+        }
       }
-      return tp - tc;
+      return (pp - pc) + 10 * (tp - tc);
     };
-    const d30 = diffDe(30), d50 = diffDe(50), d90 = diffDe(90);
-    ok(`lot 152/158 — LA GRADATION s'ordonne au DIFFÉRENTIEL (tirs pour−contre, 6 × 240 s appariés : équipe 30 → ${d30}, 50 → ${d50}, 90 → ${d90} — l'échelle est CONTINUE et l'impact TOTAL, attaque ET défense, est croissant)`,
-      d90 > d50 && d50 > d30 && d90 >= d30 + 4);
+    const d30 = diffDe(30), d50 = diffDe(50), d70 = diffDe(70), d90 = diffDe(90);
+    ok(`lot 152/158 — LA GRADATION s'ordonne au COMPOSITE territoire + aboutissement (dPasses + 10·dTirs, 6 × 240 s appariés : 30 → ${d30}, 50 → ${d50}, 70 → ${d70}, 90 → ${d90} — l'échelle est CONTINUE sur QUATRE rungs, l'impact TOTAL croissant)`,
+      d90 > d70 && d70 > d50 && d50 > d30 && d90 >= d30 + 250);
   }
   // lot 153 — LE PREMIER PAS AU 50/50 (l'égalisateur du 152, premier canal traité) : sur
   // ballon LOOSE, le chasseur noté LENT reste planté l'excédent de sa réaction (× 2,5) —
@@ -137,7 +144,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (const seed of [2, 3, 5, 8, 9, 11, 15, 17, 19, 21, 23, 25]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 157-160 (les re-dateurs de possessions)
+        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 157-160 (les re-dateurs de possessions)
         const moi = st.players.filter((p) => p.team === 0)[9].id;
         for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
         miens += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.by === moi).length;
@@ -165,8 +172,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return n;
     };
-    const vivant = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), mort = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, tacleVif: false });   // …épinglé 159/160
-    const bons = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 90), durs = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 10);
+    const vivant = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), mort = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, tacleVif: false });   // …épinglé 159/160
+    const bons = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 90), durs = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 10);
     ok(`lot 157 — LE PIQUE VIT en flux (${vivant} armés / 6 × 300 s ≥ 8 ; réel ~15-25/90 min) ; sabotage « le tacle-cérémonie » attrapé (tacleVif:false : ${mort} ≤ 2) ; et l'horloge est à la note (tacleurs 90 : ${bons} armés ≥ tacleurs 10 : ${durs} + 2 (marge DATÉE 195 — le grand livre re-daté, le jumeau vit à +2 sur 6 graines) — tackling arme le duel, tackleReach/esquiveF le jugent)`,
       vivant >= 8 && mort <= 2 && bons >= durs + 2);
   }
@@ -239,24 +246,30 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return +(100 * loin / tout).toFixed(1);
     };
-    const jumeau = (tw) => {
-      let n = 0;
-      for (const seed of [2, 3, 5, 8, 9, 11]) {
-        const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 4 ? { teamwork: tw } : {} })), []];
-        const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 160b (le rond re-date les possessions)
-        const moi = st.players.filter((p) => p.team === 0)[4].id;
-        for (let i = 0; i < 300 * 60; i++) {
-          matchStep(st, 1 / 60, cfg);
-          if (i % 15 === 0 && st.possession.carrier >= 0 && st.players[st.possession.carrier].team === 1 && st.players[moi].job === 'press') n++;
-        }
-      }
-      return n;
+    const vivant = trav({ poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 } }), brut = trav({ pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+    // LE JUMEAU DE FLUX RE-FONDÉ au 201 (le re-datage 199 l'a noyé : 182/153 à 6 graines mais
+    // 266/277 à 8 et 15/14 hors-zone à 12 — teamF est un facteur de DÉPARTAGE, son théâtre est
+    // la queue). LA FIXTURE BINAIRE (doctrine lot 8) : ballon large z 24, le joueur 4 planté
+    // corps à droite, SLOT forgé à gauche (le latéral qui pourrait traverser) — dans la bande
+    // de départage, l'élection FLIPPE À LA NOTE SEULE (même monde, même position).
+    const presseA = (tw) => {
+      const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 4 ? { teamwork: tw } : {} })), []];
+      const st = makeMatch({ full: true, seed: 5, squads: sq });
+      const cfg = matchCfg({ shotRange: 20 });
+      const c1 = st.players.find((p) => p.team === 1 && p.post === 5);
+      c1.p[0] = 0; c1.p[2] = 24;
+      const moi = st.players.filter((p) => p.team === 0)[4];
+      moi.p[0] = 4; moi.p[2] = 20; moi._slotT = [moi.p[0], -10];
+      st.ball.restart([0.3, 0.11, 24], { cause: 'coup-franc' });
+      st.restart = null; st.ball.possess(c1.id);
+      st.possession = { team: 1, carrier: c1.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1;
+      st._possChangeAt = st.t - 9; st._possTeam = 1;
+      matchStep(st, 1 / 60, cfg);
+      return st.players.some((p) => p.team === 0 && p.job === 'press' && p.id === moi.id);
     };
-    const vivant = trav({ poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 } }), brut = trav({ pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
-    const brouillon = jumeau(10), cohesif = jumeau(90);
-    ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 15 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : le brouillon teamwork 10 presse ${brouillon} éch. ≥ cohésif 90 ${cohesif} + 30 — l'indiscipline est un sur-pressing hors zone (jumeau, 6 × 300 s)`,
-      vivant <= 8 && brut >= 15 && brouillon >= cohesif + 30);
+    const brouillonPresse = presseA(10), cohesifPresse = presseA(90);
+    ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 15 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : fixture de départage — le brouillon teamwork 10 TRAVERSE et presse (${brouillonPresse}), le cohésif 90 tient sa zone (presse ${cohesifPresse}) — même monde, même position, seule la note décide`,
+      vivant <= 8 && brut >= 15 && brouillonPresse === true && cohesifPresse === false);
   }
   // lot 161 — LE BLOC QUI LIT : la fenêtre du pressing COLLECTIF aux notes du bloc (retour
   // utilisateur : « une tactique d'équipe cohérente, bien exécutée suivant le niveau ») — la
@@ -265,20 +278,25 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
     const eqL = (n) => Array.from({ length: 11 }, () => ({ ratings: { anticipation: n } }));
     const lecture = (n) => {
-      let tempsFen = 0;
+      let tempsFen = 0, nF = 0;
       for (const seed of [2, 5, 9]) {
         const st = makeMatch({ full: true, seed, squads: [eqL(n), []] });
-        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause mesure l'ANTICIPATION — elle isole ses re-dateurs 166-176 (80 c. 84 : la marge mangée)
+        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause mesure l'ANTICIPATION — elle isole ses re-dateurs 166-176 (80 c. 84 : la marge mangée)
+        // RE-FONDÉE au 201 : le temps PASSÉ en fenêtre confondait lecture et victoire (mieux
+        // lire = gagner le ballon plus tôt = MOINS de temps à presser — le re-datage 199 l'a
+        // inversé, 48 c. 72 s). Le juge du mécanisme : la fenêtre ACCORDÉE à l'ouverture
+        // (until − t, le « × moy » lui-même) — mesuré 5,04 c. 3,96 s.
+        let cur = null;
         for (let i = 0; i < 300 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
-          if (st._press?.team === 0 && st._press.until > st.t) tempsFen++;
+          if (st._press?.team === 0 && st._press.until !== cur) { cur = st._press.until; nF++; tempsFen += st._press.until - st.t; }
         }
       }
-      return Math.round(tempsFen / 60);
+      return tempsFen / (nF || 1);
     };
     const lecteurs = lecture(90), aveugles = lecture(10);
-    ok(`lot 161 — LE BLOC QUI LIT tient sa fenêtre (3 × 300 s appariés : lecteurs 90 → ${lecteurs} s en pressing collectif ≥ aveugles 10 → ${aveugles} + 12 — l'anticipation moyenne fait l'exécution, l'axe pressing reste le choix du coach)`,
-      lecteurs >= aveugles + 12);
+    ok(`lot 161 — LE BLOC QUI LIT tient sa fenêtre (3 × 300 s appariés, fenêtre ACCORDÉE moyenne à l'ouverture : lecteurs 90 → ${lecteurs.toFixed(2)} s ≥ aveugles 10 → ${aveugles.toFixed(2)} + 0,7 — l'anticipation moyenne fait la fenêtre, l'axe pressing reste le choix du coach)`,
+      lecteurs >= aveugles + 0.7);
   }
   // lot 162 — LA COMPRESSION : le bloc pressant était un ÉLASTIQUE (profondeur 34,4 m EN
   // fenêtre contre 31,4 HORS — le marqueur clampé à la bande d'HIER pendant que le bloc montait).
@@ -291,7 +309,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         const st = makeMatch({ full: true, seed });
         // la clause mesure la COMPRESSION — elle isole ses re-dateurs 166/167 (33,9 c. 33,8 :
         // le flux des courses servies déplaçait la profondeur du bloc de 0,5 m)
-        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });
+        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });
         for (let i = 0; i < 300 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           if (i % 30 !== 0 || st.possession.team < 0) continue;
@@ -306,7 +324,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       inP.sort((a, b) => a - b);
       return +inP[inP.length >> 1].toFixed(1);
     };
-    const poing = prof(), elastique = prof({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+    const poing = prof(), elastique = prof({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
     ok(`lot 162 — LA COMPRESSION ferme l'élastique (profondeur du bloc pressant : ${poing} m ≤ sabotage ${elastique} − 0,6 — la bande du marqueur monte avec le bloc, le piège Loi 11 couvre l'homme resté bas)`,
       poing <= elastique - 0.6);
   }

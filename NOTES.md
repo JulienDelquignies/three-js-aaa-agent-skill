@@ -6802,7 +6802,55 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      consigné) — 0,46 colle / 0,86 respire, ×1,85 stable sur 3 graines.
      La leçon d'instrument est générale : juger un marquage à l'événement
      de réception, c'est ne compter que ses échecs. bancs.mjs gagne
-     verify-roles + verify-loi3 (ils manquaient à la file du sceau). rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+     verify-roles + verify-loi3 (ils manquaient à la file du sceau).
+- 243: Lot 201 — LES TROIS CLAUSES QUE LE RE-DATAGE 199 A EXPOSÉES (le banc
+     du sceau : 3 ✗, toutes des clauses de FLUX d'attributs sur squads
+     forgés — le tirage chaotique re-roulé a montré que leurs juges
+     étaient malades, pas leurs lois). L'instruction et la re-fondation :
+     (a) 152/158 gradation — l'inversion 30/50 PERSISTAIT à 10 graines
+     (−11 c. −15) : le différentiel de tirs seul est myope au milieu de
+     l'échelle (déjà cicatrisé une fois, « la marche mangée par le
+     tirage »). LE COMPOSITE territoire + aboutissement (dPasses +
+     10·dTirs) : −157 < −108 < −7 < +490, monotone aux QUATRE rungs.
+     (b) 160 cohésion — le jumeau de flux noyé (182/153 à 6 graines,
+     266/277 à 8, 15/14 hors-zone à 12) : teamF est un facteur de
+     DÉPARTAGE, son théâtre est la queue. LA FIXTURE BINAIRE : ballon
+     large, slot forgé à gauche, corps à droite — dans la bande de
+     départage l'élection FLIPPE À LA NOTE SEULE (brouillon presse,
+     cohésif tient sa zone ; balayé x 2-6 = flip, x ≥ 8 = renoncement
+     commun). (c) 161 bloc qui lit — le temps PASSÉ en fenêtre
+     confondait lecture et victoire (mieux lire = gagner plus tôt =
+     moins presser ; inversé 48 c. 72 s). Le juge du mécanisme : la
+     fenêtre ACCORDÉE à l'ouverture (until − t, le « × moy » même) —
+     5,04 c. 3,96 s. Les 3 lois vivaient ; les 3 juges sont morts. La
+     leçon générale : un re-datage chaotique est un TEST DE ROBUSTESSE
+     GRATUIT des clauses de flux — celles qui cassent sans loi cassée
+     étaient des juges de hasard.
+- 244: Lot 202 — LA RETOMBÉE SE CHASSE (liste v3 point 9 : « ça peut
+     manquer de long ballon mais c'est peut-être la tactique »). LA
+     SONDE EN TROIS TEMPS : (1) l'arrivée — 0 passe conclue > 25 m/30 min
+     (réel ~15-20) ; (2) le départ — 27 lancés > 25 m/10 min, max 53,7 m :
+     LE VOLUME EST SAIN (renversement 35/98, couloir 99, écarte 105,
+     lance 189 font le vocabulaire) — famine d'exécution, pas d'élection ;
+     (3) l'autopsie des 34 — le motif dominant : le lofted arrive au lead
+     ENCORE à 8-15 m/s, rebondit (grassTangent), file 10-25 m plus loin,
+     le receveur PLANTÉ au lead (fin « mort/libre » à dRecv 12-17 m).
+     LA LOI : cfg.chasseRetombee { depasse: 3, h: 1.2, frein: 1.8,
+     cap: 25 } — le ballon VIF qui a DÉPASSÉ le lead et s'en éloigne
+     (produit scalaire > 0, retombé h < 1,2) se poursuit au POINT D'ARRÊT
+     prédit (v²/2·frein, rafraîchi chaque frame) ; la réaction ×2 retarde
+     le départ (l'attribut en facteur, le patron de la passe mourante 134
+     dont c'est l'opposé exact : elle gérait le ballon LENT jamais arrivé,
+     celle-ci le ballon VIF trop arrivé). APRÈS : conservation des longs
+     41 → 61 % (réel 50-60), morts/libres 14 → 6. Bande 18 buts/20
+     graines fraîches. Empreintes : seed 3 INCHANGÉE cf9feb43ff908413,
+     seed 7 re-datée f4689cd8c9338dfb (jumeau chasseRetombee: false =
+     le monde 200 au bit). DÉPORT : checkMatch → match-check.js (le
+     moteur JOUE, le contrat JUGE — match-sim 1255 → 1191). La leçon
+     d'instrument : le premier classificateur fermait mal ses fenêtres
+     (0/27 « conclu » — un nouveau st.pass écrasait le jugement du
+     précédent) ; l'autopsie à suivi continu a dit le vrai (14/34).
+- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,

@@ -576,7 +576,15 @@ function assignMatchJobs(st, cfg) {
     }
     // …ET LA PASSE MOURANTE SE VA CHERCHER (filmé : morte à 2 m d'un receveur PLANTÉ, cible verrouillée sur une mène jamais atteinte). Ballon au sol, lent, loin : cible = POINT D'ARRÊT.
     const bSp = hyp(st.ball.v[0], st.ball.v[2]);
-    if (st.full && cfg.attaquePasse !== false && st.ball.p[1] < 0.5
+    // …ET LA RETOMBÉE SE CHASSE (202, cfg.chasseRetombee — liste v3 point 9 : le long ballon arrivait au lead à 8-15 m/s, rebondissait, filait 10-25 m plus loin, le receveur PLANTÉ au lead — fin « mort/libre » à dRecv 12-17 m, l'autopsie de 34 lancés). Le ballon VIF qui a DÉPASSÉ le lead et s'en éloigne : la cible suit le point d'arrêt prédit (v²/2·frein, capé), rafraîchie chaque frame ; la réaction retarde le départ (la note). Clé absente : le planté d'hier au bit.
+    const _dLd = hyp(st.ball.p[0] - st.pass.lead[0], st.ball.p[2] - st.pass.lead[2]);
+    if (st.full && cfg.chasseRetombee && bSp >= (cfg.attaquePasse?.mort ?? 2.8)
+      && _dLd > (cfg.chasseRetombee.depasse ?? 3) && st.ball.p[1] < (cfg.chasseRetombee.h ?? 1.2)
+      && (st.ball.p[0] - st.pass.lead[0]) * st.ball.v[0] + (st.ball.p[2] - st.pass.lead[2]) * st.ball.v[2] > 0
+      && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18) * 2) {
+      const roule = Math.min(cfg.chasseRetombee.cap ?? 25, bSp * bSp / (2 * (cfg.chasseRetombee.frein ?? 1.8)));
+      met = [st.ball.p[0] + (st.ball.v[0] / bSp) * roule, 0, st.ball.p[2] + (st.ball.v[2] / bSp) * roule];
+    } else if (st.full && cfg.attaquePasse !== false && st.ball.p[1] < 0.5
       && bSp < (cfg.attaquePasse?.mort ?? 2.8)
       && hyp(st.ball.p[0] - st.pass.lead[0], st.ball.p[2] - st.pass.lead[2]) > 1.5
       && st.t - st.pass.t > (flightRec.skill?.reaction ?? 0.18)) {
@@ -886,8 +894,7 @@ function assignMatchJobs(st, cfg) {
     }
     const byDist = st._bByDist ??= []; byDist.length = 0;
     for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
-    // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT (19,1 % des press à > 15 m latéraux de son poste — « le latéral gauche qui presse le central droit »). L'élection pénalise l'éloignement de SA zone (au-delà de tol) et la DISCIPLINE est à la note teamwork (× teamF : le cohésif élit juste, le brouillon retombe vers le chaos
-    // d'hier — qui est le vrai foot des petites équipes). Les autres tiennent le bloc : le relais se fait en coulissant, pas en sprint de traversée. false : l'élection brute d'hier.
+    // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT (19,1 % des press à > 15 m latéraux de son poste — « le latéral gauche qui presse le central droit »). L'élection pénalise l'éloignement de SA zone (au-delà de tol) et la DISCIPLINE est à la note teamwork (× teamF : le cohésif élit juste, le brouillon retombe vers le chaos d'hier — qui est le vrai foot des petites équipes). Les autres tiennent le bloc : le relais se fait en coulissant, pas en sprint de traversée. false : l'élection brute d'hier.
     if (st.full && cfg.pressZone && byDist.length > 1) {
       const zKey = (q) => q._dAnc + (cfg.pressZone.poids ?? 0.7)
         * Math.max(0, Math.abs((q._slotT ? q._slotT[1] : q.p[2]) - anchor[2]) - (cfg.pressZone.tol ?? 8))
@@ -938,8 +945,7 @@ function assignMatchJobs(st, cfg) {
         }
           // LE JOCKEY (lot 95) : cible ENTRE ballon et SON but, approche SOUS CONTRÔLE (movement.js).
         if (cfg.jockey !== false && st.full && carrier && !freeBall && st.ball.owner === carrier.id) {
-          // LE MORD (lot 159, cfg.mord) : le jockey campait le presseur À LA PORTE du conteste (cible 1,0 m, conteste 0,9 — p10 mesuré 0,97 m : 8,7 % de conteste,
-          // l'amont famélique des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace est à la note (porte × aggrF : l'agressif mord dès 1,92 m, le placide 1,28 ; 1,6 à 50). Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
+          // LE MORD (lot 159, cfg.mord) : le jockey campait le presseur À LA PORTE du conteste (cible 1,0 m, conteste 0,9 — p10 mesuré 0,97 m : 8,7 % de conteste, l'amont famélique des 157/158). À la porte, le jockey CÈDE : la cible devient LE BALLON — et l'audace est à la note (porte × aggrF : l'agressif mord dès 1,92 m, le placide 1,28 ; 1,6 à 50). Le monde punit déjà l'excès (le jeté du 144, la croqueta) : le duel s'équilibre.
           if (cfg.mord && d2(p.p, anchor) < (cfg.mord.porte ?? 1.6) * (p.skill?.aggrF ?? 1)) { p.job = 'press'; p.target = [anchor[0], 0, anchor[2]]; return; }
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = hyp(gxJ, gzJ) || 1;
@@ -1179,71 +1185,7 @@ export function playMatch(st, seconds, { dt = 1 / 60, cfg = matchCfg(), sample =
   return { st, trace };
 }
 
-/** CONTRAT DU MATCH — par-dessus checkRondo (téléports/essaims) : personne ne tire, score ≠ buts,
- *  sorties sans remise nommée, gardien errant, remises volées, un jeu qui ne progresse jamais. */
-export function checkMatch(st, trace, cfg = matchCfg()) {
-  const issues = [];
-  const evs = st.events ?? [];
-  const shots = evs.filter((e) => e.type === 'shot');
-  const buts = evs.filter((e) => e.type === 'but');
-  const sorties = evs.filter((e) => e.type === 'sortie');
-  const prises = evs.filter((e) => e.type === 'restart-pris');
-  if (st.score[0] !== buts.filter((b) => b.team === 0).length || st.score[1] !== buts.filter((b) => b.team === 1).length) { issues.push(`score [${st.score}] ≠ événements de but (${buts.map((b) => b.team).join(',')})`); }
-  // un 0 tir sur une tranche courte est du VRAI football — le défaut, ce sont des OCCASIONS sans tir ; l'occasion = le ballon dans la zone QUE JE VISE pendant que JE l'ai (ni chez soi, ni les remises).
-  const thirdVisits = trace.filter((s) => !s.restart && s.team >= 0
-    && s.ball[0] * (s.team === 0 ? 1 : -1) > st.pitch.hx - st.pitch.dims.box.depth - 1).length;
-  // …et l'attaquant MURÉ n'est pas l'attaquant MUET : celui qui DEMANDE le tir et se voit refuser le couloir (refus nommé au registre) a appuyé — c'est le silence sans demande qu'on interdit
-  const denied = (st.deny?.['tir-couloir-fermé'] ?? 0) > 0;
-  if (!shots.length && !denied && thirdVisits > 25) issues.push(`PERSONNE NE TIRE malgré ${thirdVisits} passages dans le dernier tiers — un rondo décoré`);
-  for (const s of shots) {
-    const okLob = st.full && cfg.lob && s.kind === 'lob' && s.range <= (cfg.lob.max ?? 38) + 0.6;   // le lob du gardien avancé (120) vit AU-DELÀ de la grise
-    const okCF = st.full && cfg.cfDirect !== false && s.kind === 'coup-franc-direct' && s.range <= 34.6;   // le CF direct (97/148) a SA borne balistique (dMax 34 au 'direct' tactique) — la clause connaît la même loi que le tireur
-    if (!okLob && !okCF && s.range > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) + 0.6) issues.push(`tir hors de portée déclarée (${s.range} m > ${cfg.shotRange})`);
-    // la clause connaît LA MÊME loi que le déclencheur : à bout portant (< 9 m) on tire dans le trafic (0,25 m) — juger tous les tirs au couloir de loin re-créerait l'attaquant muet
-    const need = (s.range ?? 99) < 9 ? 0.25 : cfg.shotClear - 0.05;
-    if (s.clear != null && s.clear < need) issues.push(`tir à travers un mur (couloir ${s.clear} m < ${need})`);
-  }
-  // chaque sortie SUIVIE d'une reprise (6 s) ; coupée par la fin ≠ perdue (inFlight — sinon le contrat dépend du chrono).
-  const lastT = trace.length ? trace[trace.length - 1].t : 0;
-  // …la fenêtre suit L'ÉCHELLE DU TERRAIN : 6 s au réduit ; un corner du 105 m se PORTE sur ~27 m (7,4 s mesurés, graine 7) — la borne plate accusait un porté légal de gel
-  const winR = Math.max(6, (st.pitch?.hx ?? 0) * 0.27);   // ×0,19 → ×0,27 ≈ 14 s (171) : la sortie qui FUIT le long de la bordure + le portage = 10,5 s légitimes mesurés (graine 7 t=46,5) — le garde-fou vise le GEL (20 s+), pas la remise lente
-  for (const o of sorties) {
-    if (o.t > lastT - winR) continue;
-    const pr = prises.find((p) => p.t >= o.t && p.t <= o.t + winR);
-    if (!pr) { issues.push(`sortie « ${o.out} » à t=${o.t} jamais reprise (fenêtre ${winR.toFixed(0)} s)`); continue; }
-    const taker = st.players[pr.by];
-    if (taker && taker.team !== o.team) issues.push(`remise « ${o.out} » prise par l'équipe ${taker.team} (droit : ${o.team})`);
-  }
-  // le gardien HABITE son but (médiane de distance à sa ligne ≤ profondeur max + marge)
-  for (const team of [0, 1]) {
-    const gk = st.players.find((p) => p.keeper && p.team === team);
-    const g = st.pitch.ownGoal(team);
-    const ds = trace.map((s) => s.players.find((q) => q.id === gk.id)).filter(Boolean)
-      .map((q) => hyp(q.p[0] - g.x, q.p[1] - 0)).sort((a, b) => a - b);
-    const med = ds[Math.floor(ds.length / 2)] ?? 0;
-    const bLib = st.full && cfg.libero ? (cfg.libero.max ?? 10) + 2 : 6;   // le libéro (120) POSSÈDE sa hauteur — la clause borne au plafond de la loi
-    if (med > bLib) issues.push(`le gardien ${team} erre (médiane à ${med.toFixed(1)} m de son but)`);
-  }
-  // le jeu PROGRESSE : les deux tiers offensifs se visitent — vise le rond-central-perpétuel, pas l'équilibre (0-0 dominé légal) ; seuil au TIERS.
-  const third = st.pitch.hx / 3;
-  const visits = [trace.some((s) => s.ball[0] > third), trace.some((s) => s.ball[0] < -third)];
-  if (!visits[0] || !visits[1]) issues.push(`le ballon ne visite pas les deux camps (au-delà de ±${third.toFixed(0)} m : +x ${visits[0]}, −x ${visits[1]})`);
-  // LE BALLON NE SE TÉLÉPORTE JAMAIS EN MATCH : toute remise est PORTÉE (ballFetch) — le registre ne contient que LA pose du coup d'envoi. Mesuré avant : 12 sauts de 4,7-23 m / 4 matchs.
-  const led = st.ball.ledger;
-  if (cfg.restartCarried !== false && led && led.restarts && led.restarts.length > 1) { issues.push(`${led.restarts.length - 1} remise(s) posée(s) par écriture — la remise se PORTE (ballFetch), elle ne se téléporte pas`); }
-  // …ET LES CORPS NON PLUS : à l'échantillon de trace (0,1 s), aucun joueur ne franchit 1,6 m (16 m/s apparents — le sprint plafonne à 8). placeKickoff écrivait les douze corps à chaque but.
-  for (let i = 1; i < trace.length; i++) {
-    const a = trace[i - 1], b = trace[i];
-    if (b.t - a.t > 0.19) continue;
-    const jump = b.players.find((q) => {
-      const qa = a.players.find((x) => x.id === q.id);
-      return qa && hyp(q.p[0] - qa.p[0], q.p[1] - qa.p[1]) > 1.6;
-    });
-    if (jump) { issues.push(`téléport de corps : le joueur ${jump.id} saute > 1,6 m entre t=${a.t} et t=${b.t}`); break; }
-  }
-  return { ok: issues.length === 0, issues, stats: { shots: shots.length, buts: buts.length, arrets: evs.filter((e) => e.type === 'arrêt').length, sorties: sorties.length, score: [...st.score] } };
-}
-
+export { checkMatch } from './match-check.js';   // le contrat du match, déporté (202)
 export const matchInternals = { assignMatchJobs, tryShot, tryCross, onOut, onDive, canTake, placeKickoff, kickoffSpots, ballFetch };
 export { checkRondo };
 import { hyp } from './hyp.js';
