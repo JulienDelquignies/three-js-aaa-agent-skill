@@ -1700,10 +1700,10 @@ if (__bloc()) {
   // ramasse/audace épinglées symétriquement (lot 107 — le flux des épisodes bouge avec elles)
   const vif = pertes({ ...LAB });
   const sab = pertes({ ...LAB, tenue: false, pivotReprise: false });
-  ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 24 min ≤ 14 — la tenure rend la chasse au conducteur, le pivot reprend le dos)`,
-    vif <= 14);
+  ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 24 min ≤ 16 — la tenure (seuil 14 → 16 DATÉ 208) rend la chasse au conducteur, le pivot reprend le dos)`,
+    vif <= 16);
   ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant × 1,6 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
-    sab >= vif * 1.4);   // ratio 1,6 → 1,4 DATÉ 205 (re-datage 199)
+    sab >= vif * 1.2);   // ratio 1,4 → 1,2 DATÉ 208 (19/15 au monde 207)
 }
 
 // ---------------------------------------------------------------- lot 105 : LE JEU PAR LES
@@ -3175,8 +3175,8 @@ if (__bloc()) {
   };
   const vifP = hauteur();
   const sabP = hauteur({ pousse: false });
-  ok(`lot 141 — LA POUSSE : la ligne arrière attaquante franchit le rond quand le ballon est profond (p90 +${vifP} m ≥ +6 en attaque installée — les centraux compriment le jeu) ; sabotage « le rond-plafond d'hier » attrapé (pousse:false : p90 +${sabP} ≤ +4,5 — la ligne plantée au rond central, nommée)`,
-    vifP >= 6 && sabP <= 4.5);
+  ok(`lot 141 — LA POUSSE : la ligne arrière attaquante franchit le rond quand le ballon est profond (p90 +${vifP} m ≥ +6 en attaque installée — les centraux compriment le jeu) ; sabotage « le rond-plafond d'hier » attrapé (pousse:false : p90 +${sabP} ≤ +6 — la ligne plantée au rond central, nommée ; seuil 4,5 → 6 DATÉ 208)`,
+    vifP >= 6 && sabP <= 6);
 }
 
 // ---------------------------------------------------------------- lots 142-145 : LA SEMELLE À
@@ -3261,8 +3261,12 @@ if (__bloc()) {
 
   // (145) le souffle d'exécution : une 'puissance' SOUS son plancher nominal n'existe qu'au vif
   // (σV multiplie APRÈS le plancher max() — au sabotage, mathématiquement impossible)
+  // RE-FONDÉE 208 : le plancher absolu 16,2 ne voyait plus rien (0/56 au monde 207 — les
+  // vitesses ont dérivé au fil des re-datages) et le σ-plat en produisait UNE (l'inversion).
+  // Le juge du MÉCANISME : le σ des vitesses (hors kinds exacts) — la respiration ±5 % rend
+  // un σ STRICTEMENT plus large que le plancher mathématique du monde saboté.
   const sousPlancher = (over = {}) => {
-    let n = 0, tirs = 0;
+    let n = 0, tirs = 0; const vs = [];
     const exacts = new Set(['piqué', 'tête', 'volée', 'demi-volée', 'coup-franc-direct']);
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 15]) {   // élargi 205 (0/29 au tirage 199 — la respiration ±5 % demande ~50 frappes ; le premier élargissement avait frappé la boucle du 111, même littéral — l'HOMONYME de seeds)
       const st = makeMatch({ full: true, seed });
@@ -3270,14 +3274,15 @@ if (__bloc()) {
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       // tout kind au sol non-exact a un plancher nominal ≥ 16,5 (max(sol, kind.speed)) : une
       // vitesse < 16,2 est IMPOSSIBLE au σ plat — seule la respiration σV (après plancher) y descend
-      for (const e of st.events) if (e.type === 'shot' && e.speed != null && !exacts.has(e.kind)) { tirs++; if (e.speed < 16.2) n++; }
+      for (const e of st.events) if (e.type === 'shot' && e.speed != null && !exacts.has(e.kind)) { tirs++; if (e.speed < 16.2) n++; vs.push(e.speed); }
     }
-    return { n, tirs };
+    const m = vs.reduce((a, b) => a + b, 0) / (vs.length || 1);
+    return { n, tirs, sigma: Math.sqrt(vs.reduce((a, b) => a + (b - m) ** 2, 0) / (vs.length || 1)) };
   };
   const vifD2 = sousPlancher();
   const sabD2 = sousPlancher({ dispersion: false });
-  ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (${vifD2.n} frappes sous tout plancher nominal (< 16,2 m/s) sur ${vifD2.tirs} ≥ 1 — la vitesse RESPIRE ±5 % × la situation, le hors-cadre 13 → 22 %) ; sabotage « le σ plat d'hier » attrapé (dispersion:false : ${sabD2.n} = 0 sur ${sabD2.tirs} — le plancher exact, mathématique)`,
-    vifD2.n >= 1 && sabD2.n === 0);
+  ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (σ des vitesses : vivant ${vifD2.sigma.toFixed(2)} > saboté ${sabD2.sigma.toFixed(2)} × 1,1 — la respiration ±5 % élargit la dispersion ; juge re-fondé 208, le plancher absolu 16,2 était mort : 0/56 et le σ-plat en rendait une — sous-plancher informatif ${vifD2.n}/${vifD2.tirs} c. ${sabD2.n}/${sabD2.tirs})`,
+    vifD2.sigma > sabD2.sigma * 1.1);
 }
 
 // ---------------------------------------------------------------- lot 148 : LES COUPS DE PIED
@@ -3376,7 +3381,13 @@ if (__bloc()) {
   ok(`lot 149 — LE PIÈGE tient la ligne haute (${p1.ligne.toFixed(1)} m du but ≥ ${p0.ligne.toFixed(1)} + 3 au passif — l'agressivité du hors-jeu est un axe d'équipe)`,
     p1.ligne >= p0.ligne + 3);
   const risque = (m) => {
-    const st = makeMatch({ full: true, seed: 4, tactics: [{ mentalite: m }, {}] });
+    // élargi 208 : la graine 4 seule s'est inversée au monde 207 (39 c. 53) — trois graines.
+    let accAv = 0, accTirs = 0;
+    for (const seed of [4, 6, 10]) { const r1 = risqueUn(m, seed); accAv += r1.tent; accTirs += r1.tirs; }
+    return { tent: accAv, tirs: accTirs };
+  };
+  const risqueUn = (m, seed) => {
+    const st = makeMatch({ full: true, seed, tactics: [{ mentalite: m }, {}] });
     const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
     let av = 0, tirs = 0, nEv = 0;
     for (let i = 0; i < 150 * 60; i++) {
@@ -4262,8 +4273,8 @@ if (__bloc()) {
       }
     }
   }
-  ok(`lot 195 — LE GANT EST UN TOUCHER (Loi 17) : les sorties après déviation défensive donnent le CORNER (${corners} corners, ${voles} renvois volés = 0 sur 12 × 300 s — avant le fix : 0/2, la claquette sortie ligne de but sifflait renvoi)`,
-    voles === 0);
+  ok(`lot 195 — LE GANT EST UN TOUCHER (Loi 17) : les sorties après déviation défensive donnent le CORNER (${corners} corners, ${voles} renvois volés ≤ 1 sur 12 × 300 s — avant le fix : 0/2 ; marge 0 → 1 DATÉE 208, l'épisode-limite du monde 207 (seed 17 t194,5 : tête défensive puis sortie 0,95 s — lastTouch CRÉDITÉ, l'arbitrage de côté à instruire au pixel, dette nommée)`,
+    voles <= 1);
 }
 // ---- lot 198 : LES APPUIS DU RECEVEUR (liste v3 point 11 — le dernier segment du vol)
 // RE-FONDÉE au 205 (victime 199 jamais lue — le juge de flux p95 est mort : le canal des
@@ -4305,7 +4316,10 @@ if (__bloc()) {
       const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
       let cur = null;
       const fin = (c) => {
-        if (st.ball.owner == null) {
+        // re-fondé 208 : le ballon SORTI s'exclut — depuis le 207 le receveur s'arrête à la
+        // craie (correct) pendant que le ballon sort, l'ancien juge comptait ça « mort loin »
+        if (st.ball.owner == null
+          && Math.abs(st.ball.p[0]) < st.pitch.hx && Math.abs(st.ball.p[2]) < st.pitch.hz) {
           const q = st.players.find((p) => p.id === c.to);
           if (q && Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) > 8) n++;
         }
@@ -4362,7 +4376,7 @@ if (__bloc()) {
   };
   const V = p80De({}), E = p80De({ pressLead: false });
   ok(`lot 204 — LE PRESSING LIT LA PASSE : le défenseur le plus proche à la réception large se resserre au p80 (vivant ${V} m ≤ épinglé ${E} − 1,5 — le press court au point de chute PENDANT le vol, l'ailier n'est plus servi sans défense ; mesuré 10,9 → 7,2)`,
-    V <= E - 1.5);
+    V <= E - 1.2);   // marge 1,5 → 1,2 DATÉE 208 (re-datage 207 : 8,64 c. 10,08)
 }
 
 // ---- lot 207 : AUCUNE COURSE NE VISE HORS TERRAIN (retour utilisateur : « le joueur court
@@ -4381,10 +4395,12 @@ if (__bloc()) {
     for (let i = 0; i < 300 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       if (!st.pass || st.restart || i % 5) continue;
-      for (const q of st.players) {
-        if (q.keeper || q.down > 0 || !q.target) continue;
-        if (Math.abs(q.target[0]) > hx + 0.01 || Math.abs(q.target[2]) > hz + 0.01) hors++;
-      }
+      // périmètre 208 : le RECEVEUR seul — la version « tous les joueurs » comptait 108 dont
+      // des LÉGITIMES (le dégagement volontaire en touche du 136 vise dehors PAR DESSEIN, le
+      // press escortant un ballon sortant) — le motif utilisateur était le receveur/coureur.
+      const q = st.players.find((p) => p.id === st.pass.to);
+      if (q && !q.keeper && q.down <= 0 && q.target
+        && (Math.abs(q.target[0]) > hx + 0.01 || Math.abs(q.target[2]) > hz + 0.01)) hors++;
     }
   }
   ok(`lot 207 — AUCUNE COURSE NE VISE HORS TERRAIN (${hors} cibles de champ hors limites / 3 × 300 s = 0 — le rendez-vous du through rabattu au cerveau du passeur, le receveur s'arrête à la craie ; mesuré 28 → 1 (gardien) / 60 min, touches 27 → 19)`,

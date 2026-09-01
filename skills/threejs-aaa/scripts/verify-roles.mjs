@@ -175,34 +175,33 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     okAll);
 }
 {
-  // ORIENTEFAIBLE au biais moyen : le presseur consigné (1) se tient CÔTÉ PIED FORT du porteur
-  // adverse — le décalage latéral signé moyen diverge de la consigne 0 (le geste enseigné
-  // existe ; l'aval weakF note déjà ce que le faible tente).
-  const biaisDe = (v) => {
-    let acc = 0, n = 0;
-    for (const seed of [3, 5]) {
-      const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { orienteFaible: v };
-      const st = makeMatch({ full: true, seed, roles: [roles, null] });
-      const cfg = matchCfg({ shotRange: 20 });
-      for (let i = 0; i < 300 * 60; i++) {
-        matchStep(st, 1 / 60, cfg);
-        if (i % 10) continue;
-        const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
-        if (!c || c.keeper || c.team !== 1 || !c.strongFoot) continue;
-        const pr = st.players.filter((q) => q.team === 0 && !q.keeper && q.job === 'press' && q.down <= 0)
-          .sort((a, b) => Math.hypot(a.p[0] - c.p[0], a.p[2] - c.p[2]) - Math.hypot(b.p[0] - c.p[0], b.p[2] - c.p[2]))[0];
-        if (!pr || Math.hypot(pr.p[0] - c.p[0], pr.p[2] - c.p[2]) > 3) continue;
-        const sgC = Math.sign(st.pitch.attackGoal(1).x || 1);
-        const cote = (pr.p[2] - c.p[2]) * (c.strongFoot === 'left' ? 1 : -1) * sgC;   // > 0 = le presseur CÔTÉ FORT
-        acc += cote; n++;
-      }
-    }
-    return n ? +(acc / n).toFixed(3) : 0;
+  // ORIENTEFAIBLE à LA FIXTURE DU JOCKEY (re-fondée 208 — le biais moyen de flux est mort au
+  // monde 207 : 0,105 c. 0,109, le chaos re-roulé a mangé le directionnel ; 5e victime des
+  // re-datages en juge de flux). Le mécanisme : l'épaule du jockey se décale de oF × 1,1 m
+  // côté pied FORT — porteur posé pied droit, axe x pur : le biais vit en z, delta binaire.
+  const cibleJockey = (v) => {
+    const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { orienteFaible: v };
+    const st = makeMatch({ full: true, seed: 5, roles: [roles, null] });
+    const cfg = matchCfg({ shotRange: 20 });
+    const sgn = Math.sign(st.pitch.attackGoal(1).x || 1);
+    const c1 = st.players.find((p) => p.team === 1 && p.post === 5);
+    c1.p[0] = 0; c1.p[2] = 0; c1.strongFoot = 'right';
+    const pr = st.players.find((p) => p.team === 0 && p.post === 4);
+    for (const q of st.players) if (q.team === 0 && !q.keeper && q !== pr) { q.p[0] = -sgn * 40; q.p[2] = 20; }   // l'isolement (leçon : un corps du spawn à 1,26 m MORDAIT — cible ballon, jamais le jockey)
+    pr.p[0] = -sgn * 2.5; pr.p[2] = 0;
+    st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c1.id);
+    st.possession = { team: 1, carrier: c1.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1;
+    st._possChangeAt = st.t - 9; st._possTeam = 1;
+    matchStep(st, 1 / 60, cfg);
+    const press = st.players.find((p) => p.team === 0 && p.job === 'press');
+    return press ? +press.target[2].toFixed(2) : null;
   };
-  const oriente = biaisDe(1), neutre = biaisDe(0.5);
-  ok(`lot 196 — ORIENTEFAIBLE est une consigne : le presseur consigné se tient côté PIED FORT (biais signé moyen ${oriente} > neutre ${neutre} + 0,015 — l'angle d'approche qui force le faible, le geste défensif enseigné qui n'existait pas)`,
-    oriente > neutre + 0.015);   // la marge suit le geste : 0,55 m de biais au jockey, dilué parmi les régimes de press — le directionnel sur l'échantillon élargi fait foi
+  const zC = cibleJockey(1), zN = cibleJockey(0.5);
+  ok(`lot 196 — ORIENTEFAIBLE est une consigne (fixture jockey, porteur pied droit posé : cible z du presseur consigné ${zC} c. neutre ${zN} — le décalage d'épaule ≥ 0,4 m côté pied fort, même monde ; le flux du biais moyen mort au 207, informatif)`,
+    zC != null && zN != null && Math.abs(zC - zN) >= 0.4);
 }
+
 
 // ---------- lot 200 : LE RÔLE AGIT SUR LA STRUCTURE (demande projet aval)
 {
