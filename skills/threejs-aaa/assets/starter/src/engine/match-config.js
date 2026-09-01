@@ -183,6 +183,10 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  pressLead: { loin: 6, delai: 0.25 },  // 204 : LE PRESSING LIT LA PASSE — pendant un vol
+                          // adverse lointain, l'élection et la cible du press = le POINT DE
+                          // CHUTE (l'ailier n'est plus servi sans défense) ; axe pressing lit
+                          // plus tôt, anticipation date le départ individuel.
   chasseRetombee: { depasse: 3, h: 1.2, frein: 1.8, cap: 25 },  // 202 : la retombée SE CHASSE —
                           // le ballon vif qui a dépassé le lead se poursuit au point d'arrêt
                           // prédit (liste v3 point 9 : le long ballon filait, receveur planté).

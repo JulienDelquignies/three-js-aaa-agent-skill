@@ -892,8 +892,13 @@ function assignMatchJobs(st, cfg) {
       const dSgn = Math.sign(pitch.ownGoal(defTeamB).x || 1);
       for (const s2 of spotsBloc) { const v = s2[0] * dSgn; if (v < cD0) cD0 = v; if (v > cD1) cD1 = v; }
     }
+    // LE PRESSING LIT LA PASSE (204, cfg.pressLead && st.full — liste v3 point 8 précisé : « l'ailier seul, surtout SANS DÉFENSE sur lui » — filmé : le presseur élu chassait le BALLON EN VOL et partait de 6-23 m à la réception, l'ailier libre 3 s). Le vrai défenseur lit la passe et court au POINT DE CHUTE : l'ancre d'élection ET la cible du press deviennent le lead qui voyage loin (> loin × axe pressing — l'équipe presseuse lit plus tôt) ; le DÉPART individuel attend la lecture (delai × (2 − anticipF), la note). Clé absente : la chasse du ballon en vol d'hier, au bit.
+    const aP = st.full && cfg.pressLead && st.pass && st.phase === 'flight' && st.lastTouch === atk
+      && hyp(st.pass.lead[0] - st.ball.p[0], st.pass.lead[2] - st.ball.p[2])
+        > (cfg.pressLead.loin ?? 6) * axe(tac(st, defTeamB).pressing, 1.3, 0.7)
+      ? st.pass.lead : null;
     const byDist = st._bByDist ??= []; byDist.length = 0;
-    for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
+    for (const q of defenders) { q._dAnc = d2(q.p, aP ?? anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
     // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT (19,1 % des press à > 15 m latéraux de son poste — « le latéral gauche qui presse le central droit »). L'élection pénalise l'éloignement de SA zone (au-delà de tol) et la DISCIPLINE est à la note teamwork (× teamF : le cohésif élit juste, le brouillon retombe vers le chaos d'hier — qui est le vrai foot des petites équipes). Les autres tiennent le bloc : le relais se fait en coulissant, pas en sprint de traversée. false : l'élection brute d'hier.
     if (st.full && cfg.pressZone && byDist.length > 1) {
       const zKey = (q) => q._dAnc + (cfg.pressZone.poids ?? 0.7)
@@ -959,7 +964,8 @@ function assignMatchJobs(st, cfg) {
             : [anchor[0] + (gxJ / glJ) * jd, 0, anchor[2] + (gzJ / glJ) * jd];   // l'identité au bit : l'expression d'hier LITTÉRALE quand la consigne est neutre (doctrine 235)
           return;
         }
-        p.job = 'press'; p.target = freeBall ? [leadP[0], 0, leadP[1]] : [anchor[0], 0, anchor[2]]; return;
+        const voitP = aP && st.t - st.pass.t > (cfg.pressLead.delai ?? 0.25) * (2 - (p.skill?.anticipF ?? 1));   // (204) le départ à la lecture
+        p.job = 'press'; p.target = voitP ? [aP[0], 0, aP[2]] : freeBall ? [leadP[0], 0, leadP[1]] : [anchor[0], 0, anchor[2]]; return;
       }
       if (i === 1) {
         // EN FENÊTRE DE PRESSING : le second défenseur SAUTE sur le PIVOT (le pari — le régain haut se paie en couverture) ; un rôle sans jambes de press (< 0,25, le meneur replié) garde la couverture.

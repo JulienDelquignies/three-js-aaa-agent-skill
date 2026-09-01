@@ -6865,6 +6865,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      flux tuées par le re-datage 199, quatre lois vivantes, quatre juges
      re-fondés (composite, fixture binaire, fenêtre accordée, appel
      direct) — le patrimoine de clauses est plus dur qu'avant.
+- 246: Lot 204 — LE PRESSING LIT LA PASSE (liste v3 point 8 PRÉCISÉ par
+     l'utilisateur : « l'ailier seul je parlais surtout sans défense sur
+     lui »). LE FILM en deux temps : (1) le gros est sain — p50 du
+     défenseur le plus proche à la réception large 4,7 m (réel 2-6),
+     78 % pressés < 3 m en 0,15 s ; (2) la queue est malade — p80
+     10,9 m, 24 % jamais pressés en 3 s AVEC un presseur élu en route
+     (v ~6 m/s) parti de 6-23 m : l'élection chassait le BALLON EN VOL
+     et ne partait qu'à la réception. Ironie cohérente : les lots
+     35/99/202 ont armé l'attaque large, la défense de bande n'avait pas
+     suivi. LA LOI : cfg.pressLead { loin: 6, delai: 0.25 } — pendant un
+     vol adverse lointain, l'ancre d'ÉLECTION et la CIBLE du press
+     deviennent le POINT DE CHUTE (la course commence pendant le vol) ;
+     l'axe tactique pressing lit plus tôt (loin × axe(1,3, 0,7)), la
+     note anticipation date le départ individuel (delai × (2−anticipF)).
+     Deux touches chirurgicales : aP ?? anchor à l'élection, voitP à la
+     cible. APRÈS : p80 10,9 → 7,2 m (−34 %), les 21 « jamais pressés »
+     restants = les jeux rapides (l'ailier relâche avant la physique —
+     le réel). BANDE : 27 buts/20 graines fraîches (limite haute
+     tolérée) — le jumeau sur les MÊMES graines donne 22 (le tirage est
+     haut, la loi ajoute ~5 : la sortie du latéral ouvre son dos, le
+     dilemme du vrai football — surveillé, pas calibré). Empreintes :
+     2a70d604fe835a70 / 398727dc88ad43b9 (jumeau pressLead: false = le
+     monde 202/203 au bit). Reste de la liste v3 : RIEN — les 12 points
+     sont instruits (8 et 9 fermés ce lot et le 202 ; le 12 « bonne base
+     mais loin du foot » reste le juge permanent).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
