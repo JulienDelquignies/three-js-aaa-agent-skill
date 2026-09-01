@@ -197,6 +197,14 @@ export const MATCH = {
                           // c. vivant 53 % (la sur-chasse rate des réceptions), le recalibrage
                           // court 54 %. La loi reste dans le moteur ({ depasse, h, frein, cap }
                           // — un monde aval où les ballons filent peut la rallumer).
+  throughRisque: { parMetre: 0.6, cap: 4 },  // 212 : le through PAIE sa course perdue — la
+                          // marge (déf − receveur au point de chute) négative coûte au barème,
+                          // × (2 − visionF) × axe style. Absente : 0, l'hier au bit.
+  tenueCalme: { plafond: 2.5, calm: [1.2, 3.0] },  // 211 : LE PORTEUR LIBRE PORTE — la tenue
+                          // calme tirée dans calm (s) × persona × tempo × decF × rôle tenue,
+                          // plafonnée à plafond (1,0 d'hier décapitait tout). Absente : l'hier
+                          // au bit. (Nommée tenueCalme : `tenue` est la conduite du 104 —
+                          // la collision de clé dans un littéral, la dernière gagne.)
   appelNote: { avance: 4, pente: 2 },  // 210 : le canal off-the-ball (dette 198) — le bon voit
                           // le créneau d'équipe s'ouvrir plus tôt (avance × (otbF − 1) s) et sa
                           // cadence personnelle est au carré. Identité otbF 1 : pas un bit.

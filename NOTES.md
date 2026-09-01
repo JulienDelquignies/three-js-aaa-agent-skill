@@ -7033,6 +7033,42 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      re-datée au 209 sans re-mesure — À CHAQUE lot désormais). Bande
      17/20 fraîches (101-120). Clause au jumeau 6 × 300 s (attributes).
      Sceau 477 ✓ / 0 ✗ en 995 s.
+- 253: Lot 211 — LE PORTEUR LIBRE PORTE (retour utilisateur « on doit
+     encore améliorer les passes »). LE TABLEAU DE BORD contre le réel :
+     longueurs parfaites (63/27/9 %), mais tempo 2,28 s entre passes
+     (réel 3-4), 729 passes/90 min/équipe (réel 400-600), réussite
+     73 % (75-85), avant 43 %/latéral 26 % (38/35), through ×6. LA CAUSE :
+     la tenue calme tirée dans [0,9 ; 1,9] × persona × tempo puis
+     DÉCAPITÉE à 1,0 s (`Math.min(1.0, …)`) — tenue libre p50 1,17 s
+     pour un réel 2-4. cfg.tenueCalme { plafond: 2.5, calm: [1.2, 3.0] }
+     × decF (la note decisions garde la tête) × rôle tenue NOUVEAU
+     (identité 0,5 : le meneur garde, le relayeur joue vite) — le tempo
+     reste le choix du coach. DEUX PIÈGES : (1) mon premier instrument
+     mesurait la tenue à l'owner — qui OSCILLE en conduite (leçon 181
+     recommise : 0,77 s « réel » pour un st.hold de 1,77) ; (2) LA
+     COLLISION DE CLÉ : `tenue` existait déjà (la conduite du 104,
+     { temps, portee, marge }) — ma définition était écrasée par la
+     seconde (la dernière gagne dans un littéral) et mon jumeau
+     `tenue: false` coupait la loi 104 : renommée tenueCalme. APRÈS :
+     tenue libre 1,17 → 2,32 s, pressé 1,02 → 1,33, volume 671 → 608-
+     675 passes/90 min, tempo 2,28 → 2,85 s. La réussite recule à 70 %
+     (le porteur qui tient voit la défense s'organiser sans que son
+     soutien vienne) — DETTE NOMMÉE : le soutien du porteur qui tient.
+- 254: Lot 212 — LE THROUGH PAIE SA COURSE PERDUE. Mesuré : ratés à
+     marge de course p50 −6,2 m (le défenseur 6 m plus près du point de
+     chute que le receveur AU LANCÉ) c. réussis −0,1 — le barème
+     ignorait le prix du risque ; et la moitié des through > 28 m.
+     cfg.throughRisque { parMetre: 0.6, cap: 4 } : la marge négative
+     coûte, × (2 − visionF : le passeur qui VOIT la course perdue ne la
+     joue pas) × axe style (le direct ose). La première version ne
+     mordait PAS : le through REMPLAÇAIT la passe simple au même homme —
+     un through dévalué restait élu si les autres candidats étaient
+     pires ; sous la clé, le meilleur des deux par candidat. APRÈS :
+     through 64 → 40/90 min, ratés à marge +4,8 (plus un condamné au
+     lancé), réussite des through 62 → 68 %. Jumeaux au bit exacts (212
+     coupé = monde 211 311751fbf28aa34b/08515679a7de178f ; les deux
+     coupés = monde 210). Empreintes 5b3dd2e73d27db62 / 08515679a7de178f,
+     bande 19/20 fraîches (141-160).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

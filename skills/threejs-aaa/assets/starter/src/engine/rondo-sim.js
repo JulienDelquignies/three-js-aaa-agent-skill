@@ -38,8 +38,7 @@ function stepGestures(st, dt, cfg) {
     if (!p.act) continue;
     // CLOSED DOWN MID-SWING. The windup is a real window: a defender who arrives during it takes the ball off you. This is what makes pressing worth doing, and it did not exist while the ball left at the instant of the decision — there was no interval to attack.
     if (winding(p) && st.phase === 'carry' && st.possession.carrier === p.id) {
-      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to get to the BALL first (sans ça le windup était fatal — record halved,
-      // turnovers doubled). …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le porteur au ballon — plus jamais « près du
+      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to get to the BALL first (sans ça le windup était fatal — record halved, turnovers doubled). …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le porteur au ballon — plus jamais « près du
       // corps ». Le terme de la minuterie n'est plus une bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
@@ -820,12 +819,13 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (st._calmKey !== `${st.possession.carrier}:${st.turnovers}:${st.passes}`) {
       st._calmKey = `${st.possession.carrier}:${st.turnovers}:${st.passes}`;
       // × persona.calm : le posé et le vif ne tiennent pas le ballon pareil — l'identité au tempo
-      { const hc = (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.5, 0.5); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
+      // …ET LE PORTEUR LIBRE PORTE (211, cfg.tenueCalme — retour utilisateur « améliorer les passes » : tenue libre mesurée p50 0,90 s pour un réel 2-4, 729 passes/90 min pour 400-600, le plafond 1,0 décapitait le calme). La plage s'étire (tenue.calm), la NOTE decisions garde la tête (× decF), le RÔLE tenue donne la cadence (le meneur garde, le relayeur joue vite — identité 0,5), le TEMPO reste le choix du coach. Clé absente : l'hier au bit.
+      { const hc = (st.full && cfg.tenueCalme?.calm) || (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.5, 0.5) * (st.full && cfg.tenueCalme ? (c.skill?.decF ?? 1) * ((c.role?.tenue ?? 0.5) !== 0.5 ? axeTac(c.role.tenue, 0.7, 1.4) : 1) : 1); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
     }
     const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
     const calm = foeBody > cfg.calmFoe;
     // …et beginPass lit CE holdMin-là (la porte 'timing') : au calme la fenêtre s'étire à 0,8-1,0 s, pressé elle retombe au holdMin d'origine — fixer puis donner.
-    st._holdMin = calm ? Math.min(1.0, st._calmHold) : cfg.holdMin;
+    st._holdMin = calm ? Math.min(st.full && cfg.tenueCalme ? (cfg.tenueCalme.plafond ?? 2.5) : 1.0, st._calmHold) : cfg.holdMin;   // (211) le plafond du calme en clé — 1,0 d'hier sans elle
     // ON NE PASSE PAS UN BALLON QU'ON EST ENCORE EN TRAIN DE POSER : pas d'engagement avant la fin
     // de la fenêtre du contrôle + settleExtra (70 % des contrôles étaient refrappés avant la fin du
     // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.

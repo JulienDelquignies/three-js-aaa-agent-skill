@@ -430,8 +430,24 @@ export function choosePass(st, cfg = RONDO) {
       for (const o of opp) if (o[0] * gS > origin[0] * gS + 0.5 && o[0] * gS < through.lead[0] * gS - 0.5) el++;
       tranchB = Math.min(4, el) * (cfg.tranchant.parDefenseur ?? 0.55) * (c.skill?.visionF ?? 1) * axe(_sty, 0.9, 1.1);
     }
-    if (!best || score + tranchB > best.score) best = through
-      ? { to: m, lead: through.lead, style: 'ground', score: score + (cfg.throughBall?.bonus ?? 0.6) + tranchB, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }
+    // …ET LE THROUGH PAIE SA COURSE PERDUE (212, cfg.throughRisque — retour utilisateur « améliorer
+    // les passes » : ratés à marge de course p50 −6,2 m c. réussis −0,1 — le barème ignorait que le
+    // défenseur était 6 m plus près du point de chute que le receveur). La marge négative coûte
+    // parMetre/m (capé), × (2 − visionF : le passeur qui VOIT la course perdue ne la joue pas) ×
+    // axe style (le direct accepte le risque). Clé absente : 0, l'hier au bit.
+    let risqueB = 0;
+    if (through && st.full && cfg.throughRisque) {
+      let dDef = 99; for (const o of opp) dDef = Math.min(dDef, hyp(o[0] - through.lead[0], o[2] - through.lead[2]));
+      const marge = dDef - hyp(m.p[0] - through.lead[0], m.p[2] - through.lead[2]);
+      if (marge < 0) risqueB = Math.min(cfg.throughRisque.cap ?? 4, -marge * (cfg.throughRisque.parMetre ?? 0.6)) * (2 - (c.skill?.visionF ?? 1)) * axe(_sty, 1.2, 0.8);
+    }
+    // …ET LE THROUGH CONCURRENCE LA PASSE SIMPLE AU MÊME HOMME (212) : il la REMPLAÇAIT — un
+    // through dévalué restait élu si les autres candidats étaient pires. Sous cfg.throughRisque, le
+    // meilleur des deux ; clé absente : le remplacement d'hier au bit.
+    const scT = through ? score + (cfg.throughBall?.bonus ?? 0.6) + tranchB - risqueB : -Infinity;
+    const useT = through && !(st.full && cfg.throughRisque && scT < score);
+    if (!best || (useT ? scT : score) > best.score) best = useT
+      ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }
       : { to: m, lead, style, score, lane, dist: d, bascule };
   }
   return best;

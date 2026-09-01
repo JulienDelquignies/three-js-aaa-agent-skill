@@ -63,6 +63,9 @@ export function resoudreRole(r) {
     // L'ANCRAGE (200, demande aval) : 0 = colle à son poste, 1 = vagabonde — l'axe qui sépare
     // le meneur libre du carrilero (élection du comité + mou du recalage, match-sim). ON-phase.
     ancrage: base.ancrage ?? 0.5,
+    // LA TENUE (211) : 0 = joue vite (le relayeur), 1 = garde le ballon (le meneur qui fixe) —
+    // la cadence de la tenue calme du porteur (rondo-sim, × axe(0,7, 1,4)). ON-phase.
+    tenue: base.tenue ?? 0.5,
     arbitre: { tir: 1, centre: 1, passe: 1, conduite: 1, ...(base.arbitre ?? {}) },
     nom: typeof r === 'string' ? r : (base.nom ?? 'personnalisé'),
   };
