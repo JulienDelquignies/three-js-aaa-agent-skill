@@ -899,7 +899,7 @@ function assignMatchJobs(st, cfg) {
         > (cfg.pressLead.loin ?? 6) * axe(tac(st, defTeamB).pressing, 1.3, 0.7)
       ? st.pass.lead : null;
     const byDist = st._bByDist ??= []; byDist.length = 0;
-    for (const q of defenders) { q._dAnc = d2(q.p, aP ?? anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
+    for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
     // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT (19,1 % des press à > 15 m latéraux de son poste — « le latéral gauche qui presse le central droit »). L'élection pénalise l'éloignement de SA zone (au-delà de tol) et la DISCIPLINE est à la note teamwork (× teamF : le cohésif élit juste, le brouillon retombe vers le chaos d'hier — qui est le vrai foot des petites équipes). Les autres tiennent le bloc : le relais se fait en coulissant, pas en sprint de traversée. false : l'élection brute d'hier.
     if (st.full && cfg.pressZone && byDist.length > 1) {
       const zKey = (q) => q._dAnc + (cfg.pressZone.poids ?? 0.7)
@@ -908,6 +908,14 @@ function assignMatchJobs(st, cfg) {
       let bi = 0, bk = zKey(byDist[0]);
       for (let i2 = 1; i2 < Math.min(4, byDist.length); i2++) { const k2 = zKey(byDist[i2]); if (k2 < bk) { bk = k2; bi = i2; } }
       if (bi > 0) { const t2 = byDist[0]; byDist[0] = byDist[bi]; byDist[bi] = t2; }
+    }
+    // (204b) le lecteur du point de chute NE remélange PAS le tri (la v1 triait byDist par aP :
+    // press, cover et marquages permutaient à chaque vol de bande — 13 clauses re-datées, la 192
+    // inversée). SEUL l'élu s'échange, comme le swap de pressZone : deux corps, pas l'ordre.
+    if (aP && byDist.length > 1) {
+      let bi2 = 0, bd2 = Infinity;
+      for (let i3 = 0; i3 < byDist.length; i3++) { const dd = d2(byDist[i3].p, aP); if (dd < bd2) { bd2 = dd; bi2 = i3; } }
+      if (bi2 > 0) { const t3 = byDist[0]; byDist[0] = byDist[bi2]; byDist[bi2] = t3; }
     }
     // …les MARQUABLES une fois par frame (lot 69 — le prédicat ignore le marqueur ; seul le tri est personnel)
     const rayonM = st.full ? (cfg.marquageRayon ?? 22) : Infinity;
