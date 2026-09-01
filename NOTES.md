@@ -6850,6 +6850,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      d'instrument : le premier classificateur fermait mal ses fenêtres
      (0/27 « conclu » — un nouveau st.pass écrasait le jugement du
      précédent) ; l'autopsie à suivi continu a dit le vrai (14/34).
+- 245: Lot 203 — LE RESSORT RE-FONDÉ AU MÉCANISME DIRECT (la 4e victime du
+     re-datage : le juge de flux du 196 mort au monde 202, clears fondus
+     à ~2/graine, 16 c. 18 sur 10 graines = bruit). La fixture par
+     matchStep refusait « au timing de l'armé » (leçon 196) — l'appel
+     DIRECT de tryClear contourne : l'étau × axe(ressort, 1,25, 0,75),
+     deux corps posés à 2,6 m tombent DANS le rayon du « dégage »
+     (2,6 × 1,225 = 3,19) et HORS du rayon du « ressors » (2,6 × 0,775 =
+     2,02) — la décision FLIPPE à la consigne seule. Deux pièges de
+     fixture en chemin : le ballon est en LECTURE SEULE (restart puis
+     possess, jamais p[0] =) et beginPass exige le ballon AUX PIEDS.
+     Sceau : verify-roles 13 ✓, le banc complet 462 ✓ (le moteur
+     inchangé depuis). Bilan de la campagne 201-203 : QUATRE clauses de
+     flux tuées par le re-datage 199, quatre lois vivantes, quatre juges
+     re-fondés (composite, fixture binaire, fenêtre accordée, appel
+     direct) — le patrimoine de clauses est plus dur qu'avant.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

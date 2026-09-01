@@ -114,23 +114,34 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     && c.duel === 0.9 && c.marqueSerre === 0.1 && c.ressort === 0.8 && c.orienteFaible === 1 && c.appel === 0.9);
 }
 {
-  // RESSORT au juge de FLUX (le mécanisme posé refusait au timing de l'armé — l'étau vivant
-  // tacle avant le geste ; 8 graines × 300 s mesurées : 18 c. 24, −25 %) : la consigne
-  // « ressors » dégage MOINS que « dégage », toute l'équipe consignée, même monde.
-  const clearsDe = (v) => {
-    let n = 0;
-    for (const seed of [2, 3, 5, 7, 9]) {
-      const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { ressort: v };
-      const st = makeMatch({ full: true, seed, roles: [roles, null] });
-      const cfg = matchCfg({ shotRange: 20 });
-      for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
-      for (const e of st.events) if (e.type === 'pass' && e.clear && st.players.find((p) => p.id === e.from)?.team === 0) n++;
-    }
-    return n;
+  // RESSORT au MÉCANISME DIRECT (re-fondée au 203 — le juge de flux du 196 est mort au monde
+  // 202 : les clears ont fondu à ~2/graine, 16 c. 18 sur 10 graines = bruit ; et la fixture
+  // par matchStep refusait au timing de l'armé. L'appel DIRECT de tryClear contourne les deux) :
+  // l'étau se lit aux corps dans un rayon × axe(ressort, 1,25, 0,75) — deux adversaires posés
+  // à 2,6 m tombent DANS le rayon du « dégage » (2,6 × 1,225 = 3,19) et HORS du rayon du
+  // « ressors » (2,6 × 0,775 = 2,02) : la décision flippe à la consigne seule, même monde.
+  const { matchCfg: mC } = await import('../assets/starter/src/engine/match-sim.js');
+  const { tryClear } = await import('../assets/starter/src/engine/shooting.js');
+  const { resoudreRole } = await import('../assets/starter/src/engine/roles.js');
+  const clearAvec = (v) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = mC({ shotRange: 20 });
+    const c = st.players.find((p) => p.team === 0 && p.post === 1);
+    c.role = resoudreRole({ ressort: v });
+    const own = st.pitch.ownGoal(0);
+    c.p[0] = own.x - own.sign * 14; c.p[2] = 3;
+    const foes = st.players.filter((p) => p.team === 1 && !p.keeper).slice(0, 2);
+    foes[0].p[0] = c.p[0] + 2.6; foes[0].p[2] = c.p[2];
+    foes[1].p[0] = c.p[0] - 2.6; foes[1].p[2] = c.p[2];
+    for (const q of st.players) if (q.team === 1 && !q.keeper && !foes.includes(q)) { q.p[0] = -own.x; q.p[2] = 20; }
+    st.ball.restart([c.p[0] + 0.3, 0.11, c.p[2]], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1; st.lastTouch = 0;
+    return !!tryClear(st, c, cfg);
   };
-  const ressors = clearsDe(0.95), degage = clearsDe(0.05);
-  ok(`lot 196 — le RESSORT est une consigne (flux 5 × 300 s, équipe consignée) : « ressors » dégage ${ressors} < « dégage » ${degage} — le bloc bas de Simeone c. celui de Guardiola, les MÊMES défenseurs`,
-    ressors < degage);
+  const degage = clearAvec(0.05), ressors = clearAvec(0.95);
+  ok(`lot 196 — le RESSORT est une consigne (tryClear DIRECT, même monde : « dégage » déblaie (${degage}) là où « ressors » garde le ballon (dégage ${ressors}) — l'étau × axe(1,25/0,75), deux corps à 2,6 m dans la bande de départage ; le flux au monde 202 : 16 c. 18/10 graines, informatif)`,
+    degage === true && ressors === false);
 }
 
 {
