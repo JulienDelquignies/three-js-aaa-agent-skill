@@ -157,6 +157,9 @@ export const MATCH = {
                           // dispensée — la barre calme refusait la passe courte, il partait en
                           // conduite). false : l'engagement porté d'hier (sabotage nommé).
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, base: 0.25, relais: 2.2, seenCalme: 0.3, bonus3: 1.5,
+    murF: 1.5, chas: 0.4,   // 209 : le MUR REND (dette 196) — le relais chaud pousse la
+                          // une-touche au tirage final (murF) et ACCEPTE LE CHAS (chas : le
+                          // couloir exigé × 0,4 pour le coureur _troisT — la remise rasante)
     dose: { arr: 5.0 } }, // lot 131 : la remise RÉSOLUE (solvePass) et FAISABLE sous le cap
                           // de layoff — le ballon d'espoir qui meurt en route (116 s d'errance
                           // / 1200 s mesurées) n'est plus tenté. dose:false : hier au bit.
@@ -581,7 +584,7 @@ export const MATCH = {
                           // (min-max m) — la cloche haute vise la ligne, le retour est
                           // plus lent que le vol. L'audace × longF (l'attribut longShots).
                           // Absente : le gardien avancé impuni d'hier.
-  unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 1.2 },
+  unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8 },  // calibré 209 : 6 laissait A perdre de 1,9 contre le soutien facile (le chip du chas paie son malus lofted) — 23 % de retours c. ~50 réel  // dur 1,2 → 2,4 CALIBRÉ 209 (dette 196 : la fenêtre courait depuis le LANCÉ — le vol la mangeait, p50 restant 0,33 s au toucher du mur ; 2,4 couvre vol + décision, la course du donne-et-va dure)
                           // LE UNE-DEUX (11c11, st.full — lot 119) : sur une passe COURTE
                           // (< dist m) d'un passeur PRESSÉ (< press m), le passeur ENCHAÎNE
                           // sa course (donne-et-va, burst dur s) et porte le marqueur du

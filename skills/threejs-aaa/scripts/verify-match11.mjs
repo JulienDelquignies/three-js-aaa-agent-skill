@@ -4407,5 +4407,41 @@ if (__bloc()) {
     hors === 0);
 }
 
+// ---- lot 209 : LE UNE-DEUX REND (dette 196 — le canal de création ressuscité)
+if (__bloc()) {
+  // 0 retour/31 à la dette. TROIS verrous levés : la fenêtre _troisT courait depuis le LANCÉ
+  // (le vol la mangeait — dur 1,2 → 2,4) ; le retour rasant du donne-et-va mourait au couloir
+  // uniforme (le CHAS : × 0,4 pour le relais chaud) ; et le mur qui CONTRÔLAIT choisissait
+  // via choosePass qui ignorait le coureur (le terme retour 8 au barème, prouvé au point :
+  // +6 exact sur la fixture, A bat le soutien facile). Mesuré : 13 retours/32 lancés (41 %,
+  // réel 40-60). Sabotage nommé = les valeurs d'hier (dur 1,2, retour 0, murF/chas 1).
+  const retoursDe = (over) => {
+    let lances = 0, retours = 0;
+    for (const seed of [3, 5, 7, 11, 13, 17]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+      const suivis = [];
+      for (let i = 0; i < 300 * 60; i++) {
+        const evN = st.events.length;
+        matchStep(st, 1 / 60, cfg);
+        for (let e = evN; e < st.events.length; e++) {
+          const ev = st.events[e];
+          if (ev.type === 'un-deux') { lances++; suivis.push({ t: ev.t, a: ev.a, b: ev.b, done: false }); }
+          for (const L of suivis) {
+            if (L.done) continue;
+            if (ev.type === 'pass' && st.lastPasser === L.b && ev.t > L.t) { if (st.pass?.to === L.a) retours++; L.done = true; }
+            if (ev.t - L.t > 5) L.done = true;
+          }
+        }
+      }
+    }
+    return { lances, retours };
+  };
+  const V = retoursDe({});
+  const E = retoursDe({ unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 1.2 }, uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, base: 0.25, relais: 2.2, seenCalme: 0.3, bonus3: 1.5, dose: { arr: 5.0 } } });
+  ok(`lot 209 — LE UNE-DEUX REND (dette 196 : 0 retour/31) : vivant ${V.retours} retours/${V.lances} lancés ≥ 8 et ≥ sabotage-d'hier × 2 (${E.retours}/${E.lances} — la fenêtre au lancé, le couloir uniforme, le barème aveugle, nommés) — le donne-et-va aboutit (41 % mesuré, réel 40-60)`,
+    V.retours >= 8 && V.retours >= E.retours * 2);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

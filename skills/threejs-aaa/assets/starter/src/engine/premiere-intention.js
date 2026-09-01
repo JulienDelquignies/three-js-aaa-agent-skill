@@ -42,7 +42,7 @@ export function uneTouche(st, p, cfg) {
   const pCalme = (UT.calme ?? 0.5) * Math.max(UT.base ?? 0, 1 - 2 * (tac(st, p.team).style ?? 0.5)) * (relais3 ? (UT.relais ?? 2.2) : 1);
   if ((pressOk || (pCalme > 0 && (st.rnd ? st.rnd() : 0.5) < pCalme)) && arrU <= (UT.vmax ?? 9.5)
     && st.ball.p[1] < 0.5
-    && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * Math.min(1.2, p.skill?.controlF ?? 1)) {
+    && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * Math.min(1.2, p.skill?.controlF ?? 1) * (relais3 ? (UT.murF ?? 1) : 1)) {   // …ET LE MUR REND (209, UT.murF — dette 196 : le lanceur d'un une-deux COURT, son mur se posait ; 5 retours/22. Le relais chaud pousse la une-touche au tirage FINAL, pas seulement au calme. Clé absente : ×1, l'hier)
     const blockers = st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0).map((q) => q.p);
     // LA UNE-TOUCHE SE GAGNE, ELLE NE S'ESPÈRE PAS (lot 131, UT.dose — mesuré avant : 116 s
     // d'errance / 1200 s après les une-touche, p50 2,7 s ; le cap de layoff (4-6 m/s à
@@ -58,7 +58,7 @@ export function uneTouche(st, p, cfg) {
       .map((m) => ({ m, d: d2(m.p, p.p) }))
       .filter((x) => x.d > 3 && x.d < (UT.portee ?? 14))
       .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.m.p[0], 0, x.m.p[2]], blockers).margin ?? 0 }))
-      .filter((x) => x.marge >= (UT.couloir ?? 0.5))
+      .filter((x) => x.marge >= (UT.couloir ?? 0.5) * ((x.m._troisT ?? -1) > st.t ? (UT.chas ?? 1) : 1))   // …ET LE RETOUR ACCEPTE LE CHAS (209, dette 196 : les refus mesurés à marge 0,05-0,35 — le donne-et-va rend PAR NATURE dans le couloir étroit du presseur contourné ; le une-deux réel ose la remise rasante). Relais froid : le 0,5 d'hier.
       .map((x) => {
         if (!dose) return x;
         const cosD = ((x.m.p[0] - p.p[0]) * st.ball.v[0] + (x.m.p[2] - p.p[2]) * st.ball.v[2]) / (x.d * bvl0);

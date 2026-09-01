@@ -404,6 +404,7 @@ export function choosePass(st, cfg = RONDO) {
         && st.t - st._possChangeAt < (cfg.moments.win ?? 5)
         && Math.sign(st.pitch.attackGoal(c.team).x || 1) * (m.p[0] - c.p[0]) > 8 ? cfg.moments.vertical : 0)
       + couloirB + ecarteB                                    // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
+      + (st.full && cfg.unDeux && (m._troisT ?? -1) > st.t ? (cfg.unDeux.retour ?? 0) : 0)   // …ET LE COUREUR DU UNE-DEUX EST LA CIBLE (209, dette 196 : le mur contrôlait puis choisissait un AUTRE — choosePass ignorait le relais ; 3 retours/23. Le donne-et-va se sert AUSSI au choix posé — clé absente : 0, l'hier)
       + (gardienOk && m.keeper ? (cfg.sortieGardien?.bonus ?? 5.2)
         * Math.max(Math.max(0, (0.5 - (st.full ? tac(st, c.team).style : 0.5)) * 2),
           // …ET LA DÉTRESSE (171b, sous-clé — retour utilisateur : 0 retrait/30 min mesuré,

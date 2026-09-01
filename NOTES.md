@@ -6995,6 +6995,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      clauses re-jugées, DIX juges de flux morts remplacés par des
      fixtures de mécanisme — le patrimoine converge vers l'insensible
      au chaos.
+- 251: Lot 209 — LE UNE-DEUX REND (dette 196 : le canal de création mort,
+     0 retour/31 lancés depuis le monde 188). L'instruction : le canal
+     s'était DÉJÀ à moitié ressuscité (5/22 au monde 208 — les lots
+     198-208 sans le viser), et TROIS verrous tenaient le reste :
+     (1) la fenêtre _troisT courait depuis le LANCÉ — le vol la mangeait
+     (p50 restant 0,33 s au toucher du mur) → dur 1,2 → 2,4 CALIBRÉ ;
+     (2) le retour rasant du donne-et-va mourait au couloir uniforme
+     (marges mesurées 0,05-0,35 SOUS le gate 0,5 — le presseur contourné
+     est là PAR NATURE, le une-deux réel ose) → LE CHAS (uneTouche.chas :
+     couloir × 0,4 pour le relais _troisT chaud) + murF 1,5 au tirage ;
+     (3) le mur qui CONTRÔLAIT choisissait via choosePass qui IGNORAIT
+     le coureur → le terme retour au barème (8 — prouvé au point : +6
+     exact sur fixture, puis calibré pour battre le soutien facile dont
+     le chip du chas payait le malus lofted). APRÈS : 13 retours/32
+     lancés (41 %, réel 40-60) et les lancés MONTENT (22 → 32 : le canal
+     s'auto-nourrit). En chemin la DOCTRINE reprise : mes fallbacks
+     codés étaient les valeurs NOUVELLES (?? 1,5) — clé absente doit
+     rendre L'HIER (?? 1, ?? 0) ; les vivantes vivent en CONFIG.
+     Empreintes : seed 3 61f2440ad9a1b608, seed 7 INCHANGÉE (sa fenêtre
+     de 90 s ne croise pas de une-deux). Bande 17/20 fraîches (101-120).
+     Fixture leçon : A servable en LOFTED seulement (le chip du chas) —
+     la remise rasante forcée serait le raffinement futur (style du
+     retour, dette douce).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
