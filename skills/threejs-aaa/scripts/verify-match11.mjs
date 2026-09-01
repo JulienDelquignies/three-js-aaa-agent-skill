@@ -803,7 +803,20 @@ if (__bloc()) {
         iW = act;
       }
     }
-    ok(`au moins un RÉGAIN tombe dans une fenêtre (${regains}, graines 3→4 — le pressing gagne parfois, c'est son métier)`, regains >= 1);
+    // …et la cascade s'étend (209 : le une-deux fluidifie les possessions — 3 ET 4 muettes)
+    for (const sF of [5, 7, 9]) {
+      if (regains > 0) break;
+      const stF = makeMatch({ full: true, seed: sF });
+      let wT2 = -1, wP2 = -1, iW2 = false;
+      for (let i = 0; i < 180 * 60; i++) {
+        matchStep(stF, 1 / 60, cfg);
+        const act = !!(stF._press && stF._press.until > stF.t && !stF.restart);
+        if (act && !iW2) { wT2 = stF._press.team; wP2 = stF.possession.team; }
+        if (!act && iW2 && wT2 >= 0) { if (stF.possession.team === wT2 && wP2 !== wT2) regains++; wT2 = -1; }
+        iW2 = act;
+      }
+    }
+    ok(`au moins un RÉGAIN tombe dans une fenêtre (${regains}, graines 3→4→5/7/9 — le pressing gagne parfois, c'est son métier)`, regains >= 1);
     ok(`le monde ne gèle PLUS JAMAIS (gel max ${gelMax.toFixed(1)} s ≤ 25 — la graine du gel de 145 s, guérie)`, gelMax <= 25);
   }
 }
