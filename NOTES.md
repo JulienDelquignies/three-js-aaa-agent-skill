@@ -6923,6 +6923,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      flux p95 mort quand 202+204 ont couvert son théâtre). La leçon des
      leçons : re-datage → grep ✗ COMPLET → chaque victime instruite
      DIRECTION d'abord (loi vivante ?) puis marge datée ou juge re-fondé.
+     LE SCEAU FINAL (205b) : la 145 vraiment élargie (le premier sed
+     avait frappé la boucle du 111 — MÊME LITTÉRAL de graines [1..8],
+     l'homonyme s'étend aux littéraux ; 1/50 sous plancher) ; la 178 au
+     mécanisme direct (ancresCraie à slots forgés : l'ailierInterieur
+     cède l'ancre au latéral, flip binaire). BANC : 476 ✓ / 0 ✗ — le
+     premier banc RÉELLEMENT vert depuis le 199. DEPLOY vérifié : chunk
+     Rondo-DslFjLpI.js, clé pressLead grepable.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
