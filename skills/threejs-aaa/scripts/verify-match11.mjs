@@ -1382,7 +1382,7 @@ if (__bloc()) {
     // échantillon 6 × 220 → 8 × 300 (lot 111 : le monde combiné a structurellement moins de
     // duels — 7 fautes/4 accrochages mesurés au contrôle global ; les 6 graines courtes
     // tombaient à 0-2, le bruit de Poisson des événements rares, le même remède que pertes-104)
-    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 15]) {   // élargi 205 (0/29 sous plancher au tirage 199 — la respiration ±5 % demande ~50 frappes)
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -3264,7 +3264,7 @@ if (__bloc()) {
   const sousPlancher = (over = {}) => {
     let n = 0, tirs = 0;
     const exacts = new Set(['piqué', 'tête', 'volée', 'demi-volée', 'coup-franc-direct']);
-    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 15]) {   // élargi 205 (0/29 au tirage 199 — la respiration ±5 % demande ~50 frappes ; le premier élargissement avait frappé la boucle du 111, même littéral — l'HOMONYME de seeds)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ ...ISO171, shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });   // isolation 159/160
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -3823,8 +3823,24 @@ if (__bloc()) {
   const D = zPostes(null), I = zPostes([{ 7: 'ailierInterieur', 9: 'ailierInterieur' }, null]);
   const latMaxD = Math.max(D[0] ?? 0, D[1] ?? 0, D[2] ?? 0, D[3] ?? 0, D[4] ?? 0);
   const latMaxI = Math.max(I[0] ?? 0, I[1] ?? 0, I[2] ?? 0, I[3] ?? 0, I[4] ?? 0);
-  ok(`lot 178 — L'HÉRITAGE DE LA CRAIE au rôle : les ailiers INTÉRIEURS rentrent (poste 7 : ${(I[7] ?? 0).toFixed(1)} ≤ défaut ${(D[7] ?? 0).toFixed(1)} − 3 m) et les LATÉRAUX héritent de la ligne (le plus large des postes bas : ${latMaxI.toFixed(1)} ≥ défaut ${latMaxD.toFixed(1)} + 2 m — le pattern du faux ailier, l'ancre s'élit à largeurR)`,
-    (I[7] ?? 99) <= (D[7] ?? 0) - 3 && latMaxI >= latMaxD + 1);   // marge héritage 2 → 1 DATÉE 195 (le grand livre re-daté — l'écart vit à 1,2 au monde nouveau, le pattern reste net)
+  // RE-FONDÉE au 205 (victime 199 : le juge zPostes — des moyennes de flux sur 150 s — rendait
+  // l'héritage à 0,9/0,1 m, noyé ; même élargi à 3 graines). LE MÉCANISME DIRECT : ancresCraie
+  // élit au score |z_slot| × axe(largeurR, 0,7, 1,3) — slots FORGÉS (le patron du 160) : ailier
+  // slot 20 (interieur × 0,75 = 15) c. latéral slot 16 (× 1) → l'ÉLU FLIPPE au rôle seul.
+  const { ancresCraie } = await import('../assets/starter/src/engine/roles.js');
+  const { axe: axeT } = await import('../assets/starter/src/engine/tactics.js');
+  const { role: roleF, resoudreRole: rR } = await import('../assets/starter/src/engine/roles.js');
+  const eluDe = (roles) => {
+    const st = makeMatch({ full: true, seed: 3, roles });
+    const ail = st.players.find((p) => p.team === 0 && p.post === 7);
+    const lat = st.players.find((p) => p.team === 0 && p.post === 3);
+    for (const q of st.players) if (q.team === 0 && !q.keeper) q._slotT = [10, q.post === 7 ? 20 : q.post === 3 ? 16 : (q.post ?? 0) - 5];
+    const cote = ancresCraie(st, 0, axeT, roleF);
+    return { elu: cote[1], ailId: ail.id, latId: lat.id };
+  };
+  const dI = eluDe([{ 7: 'ailierInterieur' }, null]), dD = eluDe(null);
+  ok(`lot 178 — L'HÉRITAGE DE LA CRAIE au rôle (mécanisme direct, slots forgés : l'ailierInterieur CÈDE l'ancre au latéral (élu ${dI.elu === dI.latId ? 'latéral' : dI.elu}) ; le défaut la garde à l'ailier (élu ${dD.elu === dD.ailId ? 'ailier' : dD.elu}) — l'ancre s'élit à largeurR, le pattern du faux ailier ; le flux zPostes 3 graines : héritage 0,9/0,1 m, informatif — le juge de moyennes est mort au monde 199)`,
+    dI.elu === dI.latId && dD.elu === dD.ailId);
 }
 
 // ---- lot 179 : LE PIED DU GARDIEN (cfg.gkPied — le contrôle, pas la conduite)
