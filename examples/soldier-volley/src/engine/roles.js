@@ -60,6 +60,9 @@ export function resoudreRole(r) {
     // ou ressortir sous pression — le bloc bas de Simeone c. celui de Guardiola),
     // orienteFaible (l'angle d'approche qui force le pied faible du porteur).
     duel: base.duel ?? 0.5, marqueSerre: base.marqueSerre ?? 0.5, ressort: base.ressort ?? 0.5, orienteFaible: base.orienteFaible ?? 0.5,
+    // L'ANCRAGE (200, demande aval) : 0 = colle à son poste, 1 = vagabonde — l'axe qui sépare
+    // le meneur libre du carrilero (élection du comité + mou du recalage, match-sim). ON-phase.
+    ancrage: base.ancrage ?? 0.5,
     arbitre: { tir: 1, centre: 1, passe: 1, conduite: 1, ...(base.arbitre ?? {}) },
     nom: typeof r === 'string' ? r : (base.nom ?? 'personnalisé'),
   };
@@ -131,4 +134,28 @@ export function ancresCraie(st, atk, axe, role) {
     cote[s] = best;
   }
   return cote;
+}
+
+// LA DÉFORMATION DE LIGNE (200, cfg.roleStructure — appelée de match-sim ; role/axe passés
+// pour éviter le cycle) : l'INTRUS = slot déplacé de ≥ seuil m par sa profondeur de rôle ;
+// ses voisins de bande s'écartent de son z (falloff linéaire sur portee).
+export function intrusDe(posted, spots, cfg, role, axe, sgnA) {
+  let l = null;
+  const rMs = cfg.role?.profondeurM ?? 2.5;
+  for (const p of posted) {
+    const pv = role(p).profondeur ?? 0.5;
+    if (pv === 0.5) continue;
+    const off = axe(pv, -rMs, rMs);
+    if (Math.abs(off) < (cfg.roleStructure.seuil ?? 4)) continue;
+    const w = spots[p.post ?? 0];
+    if (w) (l ??= []).push({ id: p.id, x: w[0] + sgnA * off, z: w[1] });
+  }
+  return l;
+}
+export function ecarteLigne(intrus, p, tx, tz, cfg, hz) {
+  for (const it of intrus) if (it.id !== p.id && Math.abs(tx - it.x) < (cfg.roleStructure.bande ?? 4)) {
+    const dz = tz - it.z, ad = Math.abs(dz), po = cfg.roleStructure.portee ?? 12;
+    if (ad < po) tz = Math.max(-hz + 1.5, Math.min(hz - 1.5, tz + (dz >= 0 ? 1 : -1) * (cfg.roleStructure.ecarte ?? 4) * (1 - ad / po)));
+  }
+  return tz;
 }

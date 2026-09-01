@@ -183,6 +183,13 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
+  ancrage: { elect: 1.4, colle: 0.7, libre: 1.6 },  // 200 : l'axe de rôle ancrage (0 colle,
+                          // 1 vagabonde) — élection du comité × axe(elect, 2−elect), mou de
+                          // recalage × axe(colle, libre). Identité 0,5 = pas un bit.
+  roleStructure: { seuil: 4, bande: 4, ecarte: 4, portee: 12 },  // 200 : l'INTRUS déforme la
+                          // ligne (demi-centre entre les stoppeurs → ils s'écartent). Dormante
+                          // sous cfg.role.profondeurM ≤ seuil (le défaut 2,5) — cfg.role
+                          // { profondeurM, largeurF } reste ABSENT par défaut (branche littérale).
   appuisRecev: { fen: 0.8, div: 0.6 },  // 198 : LES APPUIS DU RECEVEUR — au dernier segment du
                           // vol (< fen s), l'ajustement FIN au ballon réel (div 2,5 → 0,6).
                           // Absente : le receveur planté d'hier.

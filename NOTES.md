@@ -6772,7 +6772,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      profil est structurel (les boucles par-joueur) — chantier futur si
      besoin. La leçon d'instrument : le 1,40 ms « isolé » d'avant était
      de la CONTENTION de shards ; machine libre = 0,736.
-- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+- 242: Lot 200 — LE RÔLE AGIT SUR LA STRUCTURE (5e demande formelle du
+     projet aval, la première qui touche la charpente : « le poste place,
+     le rôle nuance » rendait le demi-centre inexprimable). TROIS LIVRABLES :
+     (1) ancrage — l'axe de rôle (0 colle, 1 vagabonde, resoudreRole,
+     ON-phase) : élection du comité de soutien × axe(elect 1,4, 0,6) +
+     mou du recalage de slot × axe(colle 0,7, libre 1,6). PROUVÉ par LEUR
+     statistique (l'excursion relative au centre de gravité des
+     coéquipiers, invariante au déplacement du bloc) : 8,16 cloué → 8,91
+     neutre → 10,59 libre (+30 %) — le meneur libre et le carrilero ne
+     sont plus ancrés à force égale. (2) cfg.role.profondeurM/largeurF —
+     les amplitudes ±2,5 m / ×0,9-1,1 en PARAMÈTRE, défaut ABSENT = la
+     branche littérale d'hier au bit (1−0,1 ≠ 0,9 en IEEE — la branche
+     gardée, pas recalculée). (3) cfg.roleStructure — L'INTRUS DÉFORME LA
+     LIGNE : un slot déplacé de ≥ seuil 4 m par sa profondeur de rôle
+     entre dans une autre ligne, ses voisins de bande (±4 m en x)
+     s'écartent de son z (ecarte 4 × falloff sur portee 12). PROUVÉ sur
+     fixture au chiffre EXACT : pivot profondeur 0 × profondeurM 16
+     descend à x −20,4, le stoppeur posté s'écarte 6,9 → 8,6 (+1,70 =
+     4 × (1 − 6,9/12) au bit). Dormante aux amplitudes du jour (2,5 <
+     seuil). Déport : intrusDe/ecarteLigne dans roles.js. IDENTITÉ :
+     clés ACTIVES + rôles neutres = empreintes 199 inchangées
+     (cf9feb43ff908413 / 2b0dc731baeb47e5) + clause 60 s au bit.
+     EN CHEMIN — la clause marqueSerre du 196 RE-FONDÉE : son juge « d au
+     marqueur aux réceptions » portait un BIAIS DU SURVIVANT (bien marqué
+     = jamais servi, seuls les marquages battus échantillonnés — le
+     re-datage 199 l'a exposé en INVERSANT le flux, confirmé 8 graines).
+     Le juge honnête : la CIBLE du marqueur (d(target, homme) EST l'offset
+     consigné) — 0,46 colle / 0,86 respire, ×1,85 stable sur 3 graines.
+     La leçon d'instrument est générale : juger un marquage à l'événement
+     de réception, c'est ne compter que ses échecs. bancs.mjs gagne
+     verify-roles + verify-loi3 (ils manquaient à la file du sceau). rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,

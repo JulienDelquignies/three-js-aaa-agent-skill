@@ -134,36 +134,34 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 {
-  // MARQUESERRE au flux court (l'offset ±35 % est gros — d(marqueur) aux réceptions du dernier
-  // quart, le juge du 192) : « colle » serre, « laisse respirer » relâche — le même squad.
-  const dMarqueDe = (v) => {
-    const ds = [];
-    for (const seed of [3, 5, 7]) {
-      const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { marqueSerre: v };
-      const st = makeMatch({ full: true, seed, roles: [roles, null] });
-      const cfg = matchCfg({ shotRange: 20 });
-      for (let i = 0; i < 300 * 60; i++) {
-        const evN = st.events.length;
-        matchStep(st, 1 / 60, cfg);
-        for (let e = evN; e < st.events.length; e++) {
-          const ev = st.events[e];
-          if (ev.type !== 'control' && ev.type !== 'receive') continue;
-          const q = st.players.find((p) => p.id === ev.by);
-          if (!q || q.keeper || q.team !== 1 || st.possession.team !== 1) continue;   // les receveurs ADVERSES (marqués par l'équipe consignée 0)
-          const g = st.pitch.attackGoal(1), sg = Math.sign(g.x || 1);
-          if (q.p[0] * sg < st.pitch.hx * 0.5) continue;
-          let dM = 99;
-          for (const f of st.players) if (f.team === 0 && !f.keeper && f.down <= 0) dM = Math.min(dM, Math.hypot(f.p[0] - q.p[0], f.p[2] - q.p[2]));
-          ds.push(dM);
-        }
-      }
-    }
-    ds.sort((a, b) => a - b);
-    return +(ds[Math.floor(ds.length / 2)] ?? 99).toFixed(2);
+  // MARQUESERRE au MÉCANISME (re-fondée au 200 — l'ancien juge « d(marqueur) aux réceptions »
+  // portait un BIAIS DU SURVIVANT : bien marqué, le receveur ne reçoit jamais, seuls les
+  // marquages battus entraient dans l'échantillon ; le re-datage 199 l'a exposé en inversant
+  // le flux, 8 graines confirmées confondues. Le juge honnête : la CIBLE du marqueur — sa
+  // distance à l'homme EST l'offset consigné, ×1,35 respire / ×0,65 colle) : fixture posée,
+  // horizon court (1 s, avant divergence), receveur adverse planté en zone.
+  const dCibleDe = (v, seed) => {
+    const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { marqueSerre: v };
+    const st = makeMatch({ full: true, seed, roles: [roles, null] });
+    const cfg = matchCfg({ shotRange: 20 });
+    const sgn = Math.sign(st.pitch.attackGoal(1).x || 1);
+    const c1 = st.players.find((p) => p.team === 1 && p.post === 5);
+    c1.p[0] = 0; c1.p[2] = 0;
+    const recv = st.players.find((p) => p.team === 1 && p.post === 8);
+    recv.p[0] = sgn * 30; recv.p[2] = 6;
+    st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c1.id);
+    st.possession = { team: 1, carrier: c1.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1;
+    st._possChangeAt = st.t - 9; st._possTeam = 1;
+    for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
+    let dT = 99;
+    for (const f of st.players) if (f.team === 0 && !f.keeper && f.job === 'mark') dT = Math.min(dT, Math.hypot(f.target[0] - recv.p[0], f.target[2] - recv.p[2]));
+    return dT;
   };
-  const colle = dMarqueDe(0.95), respire = dMarqueDe(0.05);
-  ok(`lot 196 — MARQUESERRE est une consigne : « colle » tient le receveur adverse à p50 ${colle} m < « laisse respirer » ${respire} − 0,3 — le même latéral, deux ordres (suivre partout / tenir sa zone)`,
-    colle < respire - 0.3);
+  let okAll = true, txt = [];
+  for (const seed of [3, 5, 7]) { const c = dCibleDe(0.95, seed), r = dCibleDe(0.05, seed); okAll = okAll && r >= c * 1.5; txt.push(`s${seed} ${c.toFixed(2)}/${r.toFixed(2)}`); }
+  ok(`lot 196 — MARQUESERRE est une consigne (cible du marqueur, colle/respire : ${txt.join(' ')} — ×1,5+ attendu, le même joueur, deux ordres ; mesuré ×1,85)`,
+    okAll);
 }
 {
   // ORIENTEFAIBLE au biais moyen : le presseur consigné (1) se tient CÔTÉ PIED FORT du porteur
@@ -193,6 +191,64 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const oriente = biaisDe(1), neutre = biaisDe(0.5);
   ok(`lot 196 — ORIENTEFAIBLE est une consigne : le presseur consigné se tient côté PIED FORT (biais signé moyen ${oriente} > neutre ${neutre} + 0,015 — l'angle d'approche qui force le faible, le geste défensif enseigné qui n'existait pas)`,
     oriente > neutre + 0.015);   // la marge suit le geste : 0,55 m de biais au jockey, dilué parmi les régimes de press — le directionnel sur l'échantillon élargi fait foi
+}
+
+// ---------- lot 200 : LE RÔLE AGIT SUR LA STRUCTURE (demande projet aval)
+{
+  // (a) L'ANCRAGE au flux — la statistique invariante suggérée par le projet aval : l'excursion
+  // RELATIVE AU CENTRE DE GRAVITÉ des coéquipiers (annule le déplacement du bloc, survit au
+  // chaos). Le cloué (0) tient son poste, le libre (1) vagabonde — mesuré 8,16 / 8,91 / 10,59.
+  const excDe = (anc) => {
+    const rel = [];
+    for (const seed of [3, 7]) {
+      const st = makeMatch({ full: true, seed, roles: [{ 5: { ancrage: anc } }, null] });
+      const cfg = matchCfg({ shotRange: 20 });
+      const p5 = st.players.find((p) => p.team === 0 && p.post === 5);
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (i % 10) continue;
+        let cx = 0, cz = 0, m = 0;
+        for (const q of st.players) if (q.team === 0 && !q.keeper && q.id !== p5.id) { cx += q.p[0]; cz += q.p[2]; m++; }
+        rel.push([p5.p[0] - cx / m, p5.p[2] - cz / m]);
+      }
+    }
+    const mx = rel.reduce((a, r) => a + r[0], 0) / rel.length, mz = rel.reduce((a, r) => a + r[1], 0) / rel.length;
+    return Math.sqrt(rel.reduce((a, r) => a + (r[0] - mx) ** 2 + (r[1] - mz) ** 2, 0) / rel.length);
+  };
+  const colle = excDe(0), libre = excDe(1);
+  ok(`lot 200 — l'ANCRAGE est un axe (excursion au centroïde du même milieu : cloué ${colle.toFixed(2)} m < libre ${libre.toFixed(2)} − 1 — le meneur libre et le carrilero ne sont plus ancrés à force égale)`,
+    libre - colle >= 1);
+  // (b) LE DEMI-CENTRE sur fixture (doctrine lot 8 : le flux est noyé par le chaos — mesuré,
+  // deux mondes divergés) : profondeurM 16 fait DESCENDRE le pivot dans la ligne arrière et le
+  // stoppeur posté S'ÉCARTE de ecarte × (1 − dz/portee) — le delta de cible exact.
+  const fix = (structOn) => {
+    const st = makeMatch({ full: true, seed: 5, roles: [{ 5: { profondeur: 0 } }, null] });
+    const cfg = matchCfg({ shotRange: 20, role: { profondeurM: 16 }, ...(structOn ? {} : { roleStructure: false }) });
+    const sgn = -st.pitch.ownGoal(0).sign;
+    for (const q of st.players.filter((q) => q.team === 1)) q.p[0] = sgn * (q.keeper ? 51 : 44);
+    const c0 = st.players.find((p) => p.team === 0 && p.post === 8);
+    c0.p[0] = 0; c0.p[2] = 0;
+    st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c0.id);
+    st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+    st._possChangeAt = st.t - 9; st._possTeam = 0;
+    matchStep(st, 1 / 60, cfg);
+    const cb = st.players.find((p) => p.team === 0 && p.post === 2);
+    const p5 = st.players.find((p) => p.team === 0 && p.post === 5);
+    return { cbZ: Math.abs(cb.target[2]), p5x: p5.target[0] * sgn };
+  };
+  const sans = fix(false), avec = fix(true);
+  ok(`lot 200 — l'INTRUS DÉFORME LA LIGNE (fixture : pivot profondeur 0 × profondeurM 16 descend à x ${avec.p5x.toFixed(1)} ; le stoppeur posté s'écarte |z| ${sans.cbZ.toFixed(1)} → ${avec.cbZ.toFixed(1)}, +1,7 attendu — le demi-centre et l'anchor ne sont plus le même joueur)`,
+    avec.cbZ - sans.cbZ >= 1.2 && avec.p5x < -12);
+  // (c) L'IDENTITÉ : les clés ACTIVES avec des rôles neutres = pas un bit (60 s d'événements)
+  const evs = (over) => {
+    const st = makeMatch({ full: true, seed: 3 });
+    const cfg = matchCfg({ shotRange: 20, ...over });
+    for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
+    return JSON.stringify(st.events);
+  };
+  ok(`lot 200 — l'identité tient (ancrage/roleStructure ACTIFS sans rôle qui les réclame === clés coupées, 60 s au bit — « aucune déformation sans rôle qui la réclame »)`,
+    evs({}) === evs({ ancrage: false, roleStructure: false }));
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

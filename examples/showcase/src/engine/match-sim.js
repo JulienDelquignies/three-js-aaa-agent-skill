@@ -8,7 +8,7 @@ import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique, triangule } from './tactics.js';
-import { resoudreRole, role, deborde, ancresCraie } from './roles.js';
+import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js';
 import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker } from './referee.js';
@@ -363,8 +363,7 @@ function assignMatchJobs(st, cfg) {
         continue;
       }
     }
-    // LE GARDIEN VIENT AU RETRAIT (190, cfg.gkAuDevant && st.full — liste v3 point 2, filmé AU PIXEL : le retrait pris à 1,6 M DE LA LIGNE, le gardien planté dans son but pendant que
-    // le pressing arrive). Un ballon de COÉQUIPIER qui vient vers lui (la passe le vise, ou roule vers son but sans être un tir) : la cible est le POINT D'INTERCEPTION — il SORT à la rencontre, il ne campe pas sa ligne. Clé absente : le gardien-statue d'hier au bit.
+    // LE GARDIEN VIENT AU RETRAIT (190, cfg.gkAuDevant && st.full — liste v3 point 2, filmé AU PIXEL : le retrait pris à 1,6 M DE LA LIGNE, le gardien planté dans son but pendant que le pressing arrive). Un ballon de COÉQUIPIER qui vient vers lui (la passe le vise, ou roule vers son but sans être un tir) : la cible est le POINT D'INTERCEPTION — il SORT à la rencontre, il ne campe pas sa ligne. Clé absente : le gardien-statue d'hier au bit.
     if (st.full && cfg.gkAuDevant && st.lastTouch === gk.team && st.ball.owner == null
       && (st.pass ? st.pass.to === gk.id
         : (st.ball.v[0] * pitch.ownGoal(gk.team).sign > 1 && hyp(st.ball.v[0], st.ball.v[2]) > 2 && hyp(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]) < (cfg.gkAuDevant.rayon ?? 25)))) {
@@ -544,8 +543,7 @@ function assignMatchJobs(st, cfg) {
     flightRec.job = 'receive';
     let met = null;   // le pas au contact (meetBall) : un pas et demi sur l'AXE NOMINAL (flipper consigné)
     const dInb = hyp(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
-    // LE BALLON RÉEL COMMANDE À PORTÉE (lot 134, cfg.meetReel && st.full — le receveur du ballon DÉVIÉ courait au lead nominal fantôme). Divergé (> div), bas, proche : on joue LE BALLON (mène 0,12 s). false : hier. …ET LES APPUIS DU DERNIER SEGMENT (198, cfg.appuisRecev — liste v3 point 11 : 8/11 mauvaises réceptions avec le receveur À L'ARRÊT sur des passes quasi parfaites, err
-    // < 0,01 rad ; le vrai receveur DANSE sur ses appuis) : à < fen s du contact, le seuil de divergence s'abaisse — l'ajustement FIN au ballon réel. Clé absente : le planté d'hier.
+    // LE BALLON RÉEL COMMANDE À PORTÉE (lot 134, cfg.meetReel && st.full — le receveur du ballon DÉVIÉ courait au lead nominal fantôme). Divergé (> div), bas, proche : on joue LE BALLON (mène 0,12 s). false : hier. …ET LES APPUIS DU DERNIER SEGMENT (198, cfg.appuisRecev — liste v3 point 11 : 8/11 mauvaises réceptions avec le receveur À L'ARRÊT sur des passes quasi parfaites, err < 0,01 rad ; le vrai receveur DANSE sur ses appuis) : à < fen s du contact, le seuil de divergence s'abaisse — l'ajustement FIN au ballon réel. Clé absente : le planté d'hier.
     const finVol = st.full && cfg.appuisRecev && dInb / Math.max(1, hyp(st.ball.v[0], st.ball.v[2])) < (cfg.appuisRecev.fen ?? 0.8);
     if (!met && st.full && cfg.meetReel !== false && dInb < (cfg.meetZone ?? 4.5) && st.ball.p[1] < 0.9
       && hyp(st.ball.p[0] - st.pass.lead[0], st.ball.p[2] - st.pass.lead[2]) > (finVol ? (cfg.appuisRecev.div ?? 0.6) : (cfg.meetReel?.div ?? 2.5))) {
@@ -657,7 +655,8 @@ function assignMatchJobs(st, cfg) {
     if (st.full) {
       // tri à clés TRANSIENTES pré-calculées (lot 60 — d2 recalculé par comparaison à 60 Hz) ; sort stable, mêmes clés → l'ordre d'hier
       const bs = st._bSlotters ??= []; bs.length = 0;
-      for (const q of free) { q._dAnc = d2(q.p, sa); bs.push(q); }
+      // …ET L'ANCRAGE PÈSE L'ÉLECTION (200, cfg.ancrage — demande projet aval : le meneur LIBRE rejoint le ballon de plus loin, le cloué résiste) : distance d'élection × axe(ancrage, elect, 2−elect). Identité 0,5 / clé absente : l'hier au bit.
+      for (const q of free) { q._dAnc = d2(q.p, sa); if (cfg.ancrage) { const av = role(q).ancrage ?? 0.5; if (av !== 0.5) q._dAnc *= axe(av, cfg.ancrage.elect ?? 1.4, 2 - (cfg.ancrage.elect ?? 1.4)); } bs.push(q); }
       bs.sort((a, b) => a._dAnc - b._dAnc);
       // LE SOUTIEN EST UN PETIT COMITÉ (lot 103, cfg.soutienN — « trop dense au milieu » : 4 slotters + porteur = 5 corps au ballon, largeur 38 m vs 45-60 réel ; le réel soutient à 2-3, les libérés TIENNENT LA STRUCTURE — relation module ±1). Absente : les 4 d'hier au bit.
       const nSout = cfg.soutienN != null ? Math.round(axe(tac(st, atk).relation, cfg.soutienN - 1, cfg.soutienN + 1)) : 4;
@@ -678,25 +677,32 @@ function assignMatchJobs(st, cfg) {
       // LA VERTICALITÉ DU REGAIN (cfg.moments) : en transition offensive (bloc adverse déformé), le cooldown des appels profonds se relâche de 2,5 s — la profondeur se joue MAINTENANT
       const transOff = cfg.moments && st._possTeam === atk
         && st.t - (st._possChangeAt ?? -99) < (cfg.moments.win ?? 5);
+      // LES RÔLES DÉFORMENT LA LIGNE (200, cfg.roleStructure && st.full — demande aval : le demi-centre descend ENTRE les stoppeurs et les ÉCARTE, 3 → 3+1 ; le latéral inversé cède son couloir). Un slot déplacé de ≥ seuil m en profondeur par son rôle est un INTRUS de la ligne où il atterrit : les voisins de bande s'écartent de son z (falloff sur portee). Dormante aux amplitudes du jour (2,5 < seuil) ; clé absente : l'hier au bit.
+      const intrus = st.full && cfg.roleStructure ? intrusDe(posted, spots, cfg, role, axe, -pitch.ownGoal(atk).sign) : null;
       for (const p of posted) {
         const want = spots[p.post ?? 0] ?? [p.p[0], p.p[2]];
         p.job = 'support';
+        const R = role(p);
+        // …ET L'ANCRAGE DONNE DU MOU (200) : le seuil de recalage du slot × axe(ancrage, colle, libre) — le cloué se recale au pas, le libre vagabonde avant le rappel. ×1 exact à 0,5.
+        const anc = cfg.ancrage ? (R.ancrage ?? 0.5) : 0.5;
+        const mou = anc !== 0.5 ? axe(anc, cfg.ancrage.colle ?? 0.7, cfg.ancrage.libre ?? 1.6) : 1;
         const drift = p._slotT ? hyp(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
-        if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
+        if (!p._slotT || (drift > 3.5 * mou && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 * mou && drift <= 3.5 * mou)) {
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
         let tx = p._slotT[0], tz = p._slotT[1];
         // LA LARGEUR (tactics.largeur) : l'amplitude des postes offensifs — jouer dedans (×0,85) ou écarter le bloc (×1,15, le jeu d'ailes). 0,5 = ×1, l'identité.
         const lF = axe(tac(st, atk).largeur, 0.85, 1.15);
         if (lF !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * lF));
-        // …ET LE RÔLE NUANCE SON POSTE (roles.js) : profondeur ±2,5 m (le 9 haut, le 10 décroche — le calage Loi 11 garde le dernier mot) et largeur personnelle ×0,9…1,1. Aucun rôle : pas un bit.
-        const R = role(p);
-        const pf = axe(R.profondeur, -2.5, 2.5);
+        // …ET LE RÔLE NUANCE SON POSTE (roles.js) : profondeur ±2,5 m (le 9 haut, le 10 décroche — le calage Loi 11 garde le dernier mot) et largeur ×0,9…1,1 — AMPLITUDES EN PARAMÈTRE (200, cfg.role.profondeurM/largeurF, demande aval : essayer plus large sans forker ; défaut ABSENT = la branche littérale d'hier au bit).
+        const rM = cfg.role?.profondeurM;
+        const pf = rM != null ? axe(R.profondeur, -rM, rM) : axe(R.profondeur, -2.5, 2.5);
         if (pf) tx = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, tx + -pitch.ownGoal(atk).sign * pf));
-        const wR = axe(R.largeurR, 0.9, 1.1);
+        const wFr = cfg.role?.largeurF;
+        const wR = wFr != null ? axe(R.largeurR, 1 - wFr, 1 + wFr) : axe(R.largeurR, 0.9, 1.1);
         if (wR !== 1) tz = Math.max(-pitch.hz + 1.5, Math.min(pitch.hz - 1.5, tz * wR));
-        // L'ANCRE À LA CRAIE (177, cfg.craie && st.full — les larges vivaient à |z| 18-19 pour une craie à 34 : le jeu évitait le bord, 8 touches/30 min c. 13 réel). En POSSESSION le slot large est TIRÉ vers la ligne (fraction du chemin × axe LARGEUR × largeurR) — l'ailier étire à 2-8 m de la craie. Absente : hier au bit.
-        // …ET L'ANCRE S'ÉLIT AU RÔLE (178, roles.ancresCraie) : l'ailier-meneur CÈDE la craie au latéral (le faux ailier) — par côté, UN porteur d'ancre
+        if (intrus) tz = ecarteLigne(intrus, p, tx, tz, cfg, pitch.hz);
+        // L'ANCRE À LA CRAIE (177, cfg.craie && st.full — les larges vivaient à |z| 18-19 pour une craie à 34 : le jeu évitait le bord, 8 touches/30 min c. 13 réel). En POSSESSION le slot large est TIRÉ vers la ligne (fraction du chemin × axe LARGEUR × largeurR) — l'ailier étire à 2-8 m de la craie. Absente : hier au bit. …ET L'ANCRE S'ÉLIT AU RÔLE (178, roles.ancresCraie) : l'ailier-meneur CÈDE la craie au latéral (le faux ailier) — par côté, UN porteur d'ancre
         if (st.full && cfg.craie && off) {
           if ((st._ancre?.until ?? -1) < st.t || st._ancre?.team !== atk) st._ancre = { team: atk, until: st.t + 0.8, cote: ancresCraie(st, atk, axe, role) };
           if (st._ancre.cote[Math.sign(tz) || 1] === p.id) {
@@ -744,8 +750,7 @@ function assignMatchJobs(st, cfg) {
               const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
                 defenders.map((q) => q.p), { corridor: 0.9 });
               if (lane.open) {
-                // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10) …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE :
-                // l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
+                // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10) …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE : l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
                 p._appelCd = st.t + axe(role(p).appel, 14, 6) / (p.skill?.otbF ?? 1);   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent
                 (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
@@ -850,8 +855,7 @@ function assignMatchJobs(st, cfg) {
       else if (cfg.moments && st.t - (st._possChangeAt ?? -99) < axe(Tp, 1, 4)
         && st.ball.p[0] * sgnAtk < -4) kind = 'contre-press';
       if (kind) {
-        // LE BLOC QUI LIT (161) : la fenêtre du pressing COLLECTIF est aux notes du bloc — la moyenne d'ANTICIPATION des défenseurs de champ (anticipF, 1 exact à
-        // 50/nu) TIENT la fenêtre plus longtemps (× moy) et RÉ-ARME plus vite (cooldown ÷ moy) : le grand pressing est un acte d'équipe SU. La tactique (axe pressing) reste le CHOIX du coach ; la note fait la QUALITÉ de son exécution — le même signal, mieux lu, mieux tenu.
+        // LE BLOC QUI LIT (161) : la fenêtre du pressing COLLECTIF est aux notes du bloc — la moyenne d'ANTICIPATION des défenseurs de champ (anticipF, 1 exact à 50/nu) TIENT la fenêtre plus longtemps (× moy) et RÉ-ARME plus vite (cooldown ÷ moy) : le grand pressing est un acte d'équipe SU. La tactique (axe pressing) reste le CHOIX du coach ; la note fait la QUALITÉ de son exécution — le même signal, mieux lu, mieux tenu.
         let sA = 0, nA = 0;
         for (const q of defenders) if (q.skill?.anticipF) { sA += q.skill.anticipF; nA++; }
         const aMoy = nA ? sA / nA : 1;
@@ -940,8 +944,7 @@ function assignMatchJobs(st, cfg) {
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = hyp(gxJ, gzJ) || 1;
           const jd = cfg.jockey?.dist ?? 1.0;
-          // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du
-          // pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
+          // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
           const oF = (role(p).orienteFaible ?? 0.5) - 0.5;
           const biais = oF !== 0 && carrier.strongFoot ? oF * 1.1 * (carrier.strongFoot === 'left' ? 1 : -1) * Math.sign(pitch.attackGoal(carrier.team).x || 1) : 0;
           p.job = 'press';
@@ -980,8 +983,7 @@ function assignMatchJobs(st, cfg) {
         if (haut) want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * haut));
         // EN FENÊTRE DE PRESSING : le bloc posté MONTE d'un cran (pressTriggers.step) vers le ballon — la COMPRESSION fait la ligne (le bloc qui monte pousse la Loi 11 devant les pointes)
         if (press) {
-          // …LA COMPRESSION (lot 162, cfg.compression) : le bloc pressant est un POING, pas un élastique — mesuré : profondeur 34,4 m EN fenêtre contre 31,4 HORS (les
-          // chasseurs avancent, l'arrière traînait). Le FOND du bloc (tiers défensif) monte × fond (1,7), et CHACUN monte à sa note workRate (× workF : le bloc de travailleurs monte UNI, le paresseux traîne en escalier — l'exécution est aux notes, le choix à l'axe).
+          // …LA COMPRESSION (lot 162, cfg.compression) : le bloc pressant est un POING, pas un élastique — mesuré : profondeur 34,4 m EN fenêtre contre 31,4 HORS (les chasseurs avancent, l'arrière traînait). Le FOND du bloc (tiers défensif) monte × fond (1,7), et CHACUN monte à sa note workRate (× workF : le bloc de travailleurs monte UNI, le paresseux traîne en escalier — l'exécution est aux notes, le choix à l'axe).
           const relC = st.full && cfg.compression && cD1 > cD0
             ? (want[0] * Math.sign(pitch.ownGoal(p.team).x || 1) - cD0) / (cD1 - cD0) : 0;   // 1 = le plus BAS du bloc
           const kC = st.full && cfg.compression
@@ -1090,8 +1092,7 @@ function onDive(st, gk, cfg) {
   else riseDown(st, gk, cfg, true);
   const spdT = hyp(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
   const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
-  // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4 prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants
-  // dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
+  // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4 prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
   const priseD = st.full && cfg.priseGant ? (cfg.priseGant.d ?? 1.35) : 1.1;
   if (d <= priseD * aeF && y <= 1.9 * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
