@@ -6930,6 +6930,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      cède l'ancre au latéral, flip binaire). BANC : 476 ✓ / 0 ✗ — le
      premier banc RÉELLEMENT vert depuis le 199. DEPLOY vérifié : chunk
      Rondo-DslFjLpI.js, clé pressLead grepable.
+- 248: Lot 206 — L'ÉCRAN NOIR (retour utilisateur : « prends une capture
+     du match, y'a un gros problème ») : le match DÉPLOYÉ rendait noir
+     depuis le sed hyp du 199 — trois deploys « vérifiés » ont servi du
+     noir (la clé grepable prouve la présence du code, JAMAIS l'image).
+     Le bisect VISUEL au playmode (198 parfait / 199 noir) puis l'arité :
+     Math.hypot est VARIADIQUE — hyp(a,b,c) ignorait la 4e composante
+     des spreads hyp(...q) : les QUATERNIONS d'animkit/gesture-layer/kit
+     sortaient des normes fausses → rotations corrompues → noir. Le fix :
+     chemin 2-3 args inchangé (la racine crue — empreintes sim AU BIT
+     79dc1d3457c0312e / c2148c891f9980fd), l'au-delà retombe sur le
+     variadique vrai. Validé AU PIXEL (stade/projecteurs/corps, plans
+     large et rapproché), redéployé. RÈGLE DURCIE AU CONTRAT : tout
+     deploy passe par UN screenshot playmode AVANT push — et un sed
+     global sur engine/ touche AUSSI les modules de rendu partagés
+     (le banc de sim ne voit pas les quaternions).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
