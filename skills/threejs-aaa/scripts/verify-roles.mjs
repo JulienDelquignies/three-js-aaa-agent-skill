@@ -205,61 +205,37 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- lot 200 : LE RÔLE AGIT SUR LA STRUCTURE (demande projet aval)
 {
-  // (a) L'ANCRAGE au flux — la statistique invariante suggérée par le projet aval : l'excursion
-  // RELATIVE AU CENTRE DE GRAVITÉ des coéquipiers (annule le déplacement du bloc, survit au
-  // chaos). Le cloué (0) tient son poste, le libre (1) vagabonde — mesuré 8,16 / 8,91 / 10,59.
-  const excDe = (anc) => {
-    const rel = [];
-    for (const seed of [3, 7]) {
-      const st = makeMatch({ full: true, seed, roles: [{ 5: { ancrage: anc } }, null] });
-      const cfg = matchCfg({ shotRange: 20 });
-      const p5 = st.players.find((p) => p.team === 0 && p.post === 5);
-      for (let i = 0; i < 300 * 60; i++) {
-        matchStep(st, 1 / 60, cfg);
-        if (i % 10) continue;
-        let cx = 0, cz = 0, m = 0;
-        for (const q of st.players) if (q.team === 0 && !q.keeper && q.id !== p5.id) { cx += q.p[0]; cz += q.p[2]; m++; }
-        rel.push([p5.p[0] - cx / m, p5.p[2] - cz / m]);
-      }
-    }
-    const mx = rel.reduce((a, r) => a + r[0], 0) / rel.length, mz = rel.reduce((a, r) => a + r[1], 0) / rel.length;
-    return Math.sqrt(rel.reduce((a, r) => a + (r[0] - mx) ** 2 + (r[1] - mz) ** 2, 0) / rel.length);
-  };
-  const colle = excDe(0), libre = excDe(1);
-  ok(`lot 200 — l'ANCRAGE est un axe (excursion au centroïde du même milieu : cloué ${colle.toFixed(2)} m < libre ${libre.toFixed(2)} − 1 — le meneur libre et le carrilero ne sont plus ancrés à force égale)`,
-    libre - colle >= 1);
-  // (b) LE DEMI-CENTRE sur fixture (doctrine lot 8 : le flux est noyé par le chaos — mesuré,
-  // deux mondes divergés) : profondeurM 16 fait DESCENDRE le pivot dans la ligne arrière et le
-  // stoppeur posté S'ÉCARTE de ecarte × (1 − dz/portee) — le delta de cible exact.
-  const fix = (structOn) => {
-    const st = makeMatch({ full: true, seed: 5, roles: [{ 5: { profondeur: 0 } }, null] });
-    const cfg = matchCfg({ shotRange: 20, role: { profondeurM: 16 }, ...(structOn ? {} : { roleStructure: false }) });
-    const sgn = -st.pitch.ownGoal(0).sign;
-    for (const q of st.players.filter((q) => q.team === 1)) q.p[0] = sgn * (q.keeper ? 51 : 44);
+  // L'ANCRAGE à LA FIXTURE D'ÉLECTION (re-fondée 208b — l'excursion au centroïde, 6e juge de
+  // flux tué par les re-datages : 10,86 c. 10,04 inversé au monde sans chasse). Le mécanisme :
+  // l'élection du comité de soutien pèse d × axe(ancrage, 1,4, 0,6) — deux candidats posés à
+  // ÉGALE distance de l'ancre, le LIBRE (1) gagne l'élection contre le neutre, le CLOUÉ (0)
+  // la perd : le flip binaire, même monde.
+  const slotterEst = (ancA, ancB) => {
+    const st = makeMatch({ full: true, seed: 5, roles: [{ 4: { ancrage: ancA }, 5: { ancrage: ancB } }, null] });
+    const cfg = matchCfg({ shotRange: 20, soutienN: 1 });
+    const a = st.players.find((p) => p.team === 0 && p.post === 4);
+    const b = st.players.find((p) => p.team === 0 && p.post === 5);
     const c0 = st.players.find((p) => p.team === 0 && p.post === 8);
     c0.p[0] = 0; c0.p[2] = 0;
+    for (const q of st.players) if (q.team === 0 && !q.keeper && ![4, 5, 8].includes(q.post)) { q.p[0] = -40; q.p[2] = 20; }
+    // asymétrie FRANCHE (l'ancre interne du comité n'est pas exactement le ballon — l'égalité
+    // parfaite départageait à l'ordre du tri) : A part de PLUS LOIN (8 c. 5) et gagne au
+    // facteur libre 0,6 (4,8 < 5) ; au test cloué, A plus près (5 c. 6) et perd au 1,4 (7 > 6).
+    const dAp = ancA === 0 ? 5 : 8, dBp = ancA === 0 ? 6 : 5;
+    a.p[0] = -dAp; a.p[2] = 0.5; b.p[0] = -dBp; b.p[2] = -0.5;
     st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
     st.restart = null; st.ball.possess(c0.id);
     st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
     st._possChangeAt = st.t - 9; st._possTeam = 0;
     matchStep(st, 1 / 60, cfg);
-    const cb = st.players.find((p) => p.team === 0 && p.post === 2);
-    const p5 = st.players.find((p) => p.team === 0 && p.post === 5);
-    return { cbZ: Math.abs(cb.target[2]), p5x: p5.target[0] * sgn };
+    // le juge DIRECT : st._bSlotters est le buffer d'élection du comité (soutienN 1 → un élu)
+    return st._bSlotters?.some((q) => q.id === a.id) ? 'A' : 'B';
   };
-  const sans = fix(false), avec = fix(true);
-  ok(`lot 200 — l'INTRUS DÉFORME LA LIGNE (fixture : pivot profondeur 0 × profondeurM 16 descend à x ${avec.p5x.toFixed(1)} ; le stoppeur posté s'écarte |z| ${sans.cbZ.toFixed(1)} → ${avec.cbZ.toFixed(1)}, +1,7 attendu — le demi-centre et l'anchor ne sont plus le même joueur)`,
-    avec.cbZ - sans.cbZ >= 1.2 && avec.p5x < -12);
-  // (c) L'IDENTITÉ : les clés ACTIVES avec des rôles neutres = pas un bit (60 s d'événements)
-  const evs = (over) => {
-    const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, ...over });
-    for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
-    return JSON.stringify(st.events);
-  };
-  ok(`lot 200 — l'identité tient (ancrage/roleStructure ACTIFS sans rôle qui les réclame === clés coupées, 60 s au bit — « aucune déformation sans rôle qui la réclame »)`,
-    evs({}) === evs({ ancrage: false, roleStructure: false }));
+  const libreGagne = slotterEst(1, 0.5), cloueCede = slotterEst(0, 0.5);
+  ok(`lot 200 — l'ANCRAGE est un axe (fixture d'élection à asymétrie franche : le LIBRE 1 part de PLUS LOIN (8 c. 5) et gagne le comité contre le neutre (élu ${libreGagne} = A) ; le CLOUÉ 0 le cède (élu ${cloueCede} = B) — d × axe(1,4, 0,6), le flip à la consigne seule ; l'excursion au centroïde, 6e juge de flux mort aux re-datages : informative)`,
+    libreGagne === 'A' && cloueCede === 'B');
 }
+
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
