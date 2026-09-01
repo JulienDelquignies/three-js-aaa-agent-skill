@@ -892,8 +892,9 @@ function assignMatchJobs(st, cfg) {
       const dSgn = Math.sign(pitch.ownGoal(defTeamB).x || 1);
       for (const s2 of spotsBloc) { const v = s2[0] * dSgn; if (v < cD0) cD0 = v; if (v > cD1) cD1 = v; }
     }
-    // LE PRESSING LIT LA PASSE (204, cfg.pressLead && st.full — liste v3 point 8 précisé : « l'ailier seul, surtout SANS DÉFENSE sur lui » — filmé : le presseur élu chassait le BALLON EN VOL et partait de 6-23 m à la réception, l'ailier libre 3 s). Le vrai défenseur lit la passe et court au POINT DE CHUTE : l'ancre d'élection ET la cible du press deviennent le lead qui voyage loin (> loin × axe pressing — l'équipe presseuse lit plus tôt) ; le DÉPART individuel attend la lecture (delai × (2 − anticipF), la note). Clé absente : la chasse du ballon en vol d'hier, au bit.
+    // LE PRESSING LIT LA PASSE (204, cfg.pressLead && st.full — liste v3 point 8 précisé : « l'ailier seul, surtout SANS DÉFENSE sur lui » — filmé : le presseur élu chassait le BALLON EN VOL et partait de 6-23 m à la réception, l'ailier libre 3 s). Le vrai défenseur lit la passe et court au POINT DE CHUTE : pour un lead de BANDE (|z| > bande × hz — la loi resserrée au déficit mesuré : version large = 15 clauses re-datées, le press central changeait de monde) l'ancre d'élection ET la cible du press deviennent le lead qui voyage loin (> loin × axe pressing — l'équipe presseuse lit plus tôt) ; le DÉPART individuel attend la lecture (delai × (2 − anticipF), la note). Clé absente : la chasse du ballon en vol d'hier, au bit.
     const aP = st.full && cfg.pressLead && st.pass && st.phase === 'flight' && st.lastTouch === atk
+      && Math.abs(st.pass.lead[2]) > pitch.hz * (cfg.pressLead.bande ?? 0.4)
       && hyp(st.pass.lead[0] - st.ball.p[0], st.pass.lead[2] - st.ball.p[2])
         > (cfg.pressLead.loin ?? 6) * axe(tac(st, defTeamB).pressing, 1.3, 0.7)
       ? st.pass.lead : null;

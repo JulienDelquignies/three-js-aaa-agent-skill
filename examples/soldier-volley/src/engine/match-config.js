@@ -183,7 +183,7 @@ export const MATCH = {
   entreeMediane: true,    // 184 : LOI 3 — l'entrant LONGE la touche hors terrain jusqu'à la
                           // ligne médiane et entre à x = 0 (l'équipe joue à dix le temps du
                           // trajet, comme au vrai). false : l'entrée-miroir d'hier.
-  pressLead: { loin: 6, delai: 0.25 },  // 204 : LE PRESSING LIT LA PASSE — pendant un vol
+  pressLead: { loin: 6, delai: 0.25, bande: 0.4 },  // 204 : LE PRESSING LIT LA PASSE — pendant un vol
                           // adverse lointain, l'élection et la cible du press = le POINT DE
                           // CHUTE (l'ailier n'est plus servi sans défense) ; axe pressing lit
                           // plus tôt, anticipation date le départ individuel.
