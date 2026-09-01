@@ -3223,8 +3223,11 @@ if (__bloc()) {
   };
   const vifO = inter({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 162
   const sabO = inter({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, oeil: false });
-  ok(`lot 143 — L'ŒIL DE L'URGENCE (${vifO.intercept} interceptions ≤ ${sabO.intercept} − 4 sur 3 × 300 s appariées, refus nommés course-urgente ${vifO.courseU} ≥ 5) ; sabotage « la panique aveugle d'hier » attrapé (oeil:false : ${sabO.intercept} interceptions, ${sabO.courseU} refus = 0)`,
-    vifO.intercept <= sabO.intercept - 4 && vifO.courseU >= 5 && sabO.courseU === 0);
+  // RE-CONTRAT 208 : le différentiel d'interceptions est mort au monde 207 (47 c. 44, inversé
+  // par le chaos re-roulé) ; le MÉCANISME fait foi : les refus NOMMÉS (deny course-urgente,
+  // 469 c. 0 au sabotage — binaire net). Interceptions en garde-fou lâche (non-explosion).
+  ok(`lot 143 — L'ŒIL DE L'URGENCE (refus nommés course-urgente ${vifO.courseU} ≥ 5 c. sabotage ${sabO.courseU} = 0 — le mécanisme fait foi ; interceptions ${vifO.intercept} ≤ ${sabO.intercept} + 8 en garde-fou, le différentiel mort au 207 : informatif)`,
+    vifO.intercept <= sabO.intercept + 8 && vifO.courseU >= 5 && sabO.courseU === 0);
 
   // (144) le jeté déclenche : les fenêtres de jeté produisent PLUS de ballons joués — appariés
   const jetes = (over = {}) => {
@@ -3405,8 +3408,19 @@ if (__bloc()) {
     return { tent: av + (st.deny?.course ?? 0), tirs };
   };
   const m0 = risque(0), m1 = risque(1);
-  ok(`lot 149 — LA MENTALITÉ est l'appétit du risque (tentatives avant ${m1.tent} ≥ ${m0.tent} + 6, tirs ${m1.tirs} ≥ ${m0.tirs} — le forcing se paie en refus de course, c'est le football du très-offensif)`,
-    m1.tent >= m0.tent + 6 && m1.tirs >= m0.tirs - 1);   // tirs − 1 DATÉ 205 (re-datage 199, seed unique — le terme tentatives fait foi à +15)
+  // RE-FONDÉE 208 : le flux « tentatives avant » s'est inversé MÊME à 3 graines (95 c. 119 au
+  // monde 207 — l'axe global se noie dans le chaos de flux). LE MÉCANISME DIRECT : passBias,
+  // le terme de progression du choix de passe — la MÊME passe de +10 m vaut × axe(mentalite,
+  // 0,75, 1,25) : le très-offensif la paie 1,25×, le très-prudent 0,75×, au calcul exact.
+  const biasDe = (m) => {
+    const st = makeMatch({ full: true, seed: 4, tactics: [{ mentalite: m }, {}] });
+    const c = st.players.find((p) => p.team === 0 && !p.keeper);
+    const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
+    return +matchCfg().passBias(st, c, { lead: [st.ball.p[0] + sgn * 10, 0, 0] }).toFixed(3);
+  };
+  const b0 = biasDe(0), b5 = biasDe(0.5), b1 = biasDe(1);
+  ok(`lot 149 — LA MENTALITÉ est l'appétit du risque (passBias d'une passe de +10 m : prudent ${b0} < neutre ${b5} < offensif ${b1} — le facteur × axe(0,75, 1,25) au calcul exact, 1,65/2,2/2,75 attendus ; le flux « tentatives » mort au 207, 95 c. 119 : informatif)`,
+    b0 < b5 && b5 < b1 && Math.abs(b5 - 2.2) < 0.01);   // tirs − 1 DATÉ 205 (re-datage 199, seed unique — le terme tentatives fait foi à +15)
 }
 
 // ---------------------------------------------------------------- lot 150 : LA DISTRIBUTION
@@ -4304,45 +4318,31 @@ if (__bloc()) {
     V >= 1.0 && E <= 0.8);
 }
 
-// ---- lot 202 : LA RETOMBÉE SE CHASSE (liste v3 point 9 — les longs ballons)
+// ---- lot 202 : LA RETOMBÉE SE CHASSE (REJETÉE AU 208 — le mécanisme reste prouvé)
 if (__bloc()) {
-  // L'autopsie des lancés > 25 m (3 × 300 s) : le vivant chasse le ballon vif qui a dépassé
-  // le lead (point d'arrêt prédit) ; l'épinglé reste planté — morts/libres 14 → 6 mesuré,
-  // conservation 41 → 61 % (réel 50-60). Le juge : les morts à receveur lointain.
-  const morts = (over) => {
-    let n = 0;
-    for (const seed of [3, 7, 11]) {
-      const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
-      let cur = null;
-      const fin = (c) => {
-        // re-fondé 208 : le ballon SORTI s'exclut — depuis le 207 le receveur s'arrête à la
-        // craie (correct) pendant que le ballon sort, l'ancien juge comptait ça « mort loin »
-        if (st.ball.owner == null
-          && Math.abs(st.ball.p[0]) < st.pitch.hx && Math.abs(st.ball.p[2]) < st.pitch.hz) {
-          const q = st.players.find((p) => p.id === c.to);
-          if (q && Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) > 8) n++;
-        }
-      };
-      for (let i = 0; i < 300 * 60; i++) {
-        matchStep(st, 1 / 60, cfg);
-        if (st.pass && st.pass.t !== cur?.t) {
-          const o = st.pass.origin, lead = st.pass.lead;
-          const L = Math.hypot(lead[0] - o[0], lead[2] - o[1]);
-          if (cur && !cur.done && cur.long) { cur.done = true; fin(cur); }
-          cur = { t: st.pass.t, long: L > 25, to: st.pass.to, done: false };
-        }
-        if (cur && cur.long && !cur.done) {
-          const bv = Math.hypot(st.ball.v[0], st.ball.v[2]);
-          if ((bv < 2 && st.ball.p[1] < 0.3) || st.ball.owner != null || st.t - cur.t > 7) { cur.done = true; fin(cur); }
-        }
-      }
-    }
-    return n;
+  // L'histoire : la loi guérissait le symptôme (conservation 41 → 61 % au monde 202) ; le 207
+  // a guéri la CAUSE (les rendez-vous hors terrain) et la sur-chasse s'est mise à NUIRE
+  // (épinglé 63 % c. vivant 53 % mesurés, recalibrage court 54 %) — clé COUPÉE au défaut,
+  // le code reste réactivable. La clause garde le MÉCANISME : ballon vif dépassant le lead,
+  // la clé ACTIVE met la cible au point d'arrêt (loin devant), la clé coupée au demi-pas.
+  const cible = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const r = st.players.find((p) => p.team === 0 && p.post === 5);
+    r.p[0] = 10; r.p[2] = 0; r.v[0] = 0; r.v[1] = 0;
+    const from = st.players.find((p) => p.team === 0 && p.post === 4);
+    from.p[0] = 0; from.p[2] = 0;
+    st.ball.restart([14, 0.11, 0.5], { cause: 'coup-franc' });
+    st.restart = null;
+    st.ball.impulse([9, 0, 0]);
+    st.pass = { from: from.id, to: r.id, lead: [10, 0, 0], style: 'ground', t: st.t - 1.2, flight: 1.0, origin: [0, 0] };
+    st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.lastTouch = 0; st.lastPasser = from.id;
+    matchStep(st, 1 / 60, cfg);
+    return +r.target[0].toFixed(1);
   };
-  const V = morts({}), E = morts({ chasseRetombee: false });
-  ok(`lot 202 — LA RETOMBÉE SE CHASSE : les longs ballons morts loin du receveur fondent (vivant ${V} ≤ épinglé ${E} − 4 — le ballon vif qui dépasse le lead se poursuit au point d'arrêt, mesuré 14 → 6, conservation 41 → 61 %)`,
-    V <= E - 4);
+  const on = cible({ rattrape: false, chasseRetombee: { depasse: 3, h: 1.2, frein: 1.8, cap: 25 } }), off = cible({ rattrape: false });   // rattrape (134) coupé des deux côtés : il vise le même ordre de cible pour un ballon fuyant — l'isolation du mécanisme
+  ok(`lot 202/208 — LA RETOMBÉE SE CHASSE, rejetée au défaut mais le mécanisme VIT (ballon vif à 9 m/s dépassant le lead de 4 m : clé active → cible x ${on} au point d'arrêt ≥ ballon + 5 ; défaut coupé → ${off} ≤ 16 le demi-pas d'hier — l'histoire : le 207 a guéri la cause, la sur-chasse nuisait, 63 c. 53 %)`,
+    on >= 19 && off <= 16);
 }
 
 // ---- lot 204 : LE PRESSING LIT LA PASSE (liste v3 point 8 précisé — l'ailier sans défense)

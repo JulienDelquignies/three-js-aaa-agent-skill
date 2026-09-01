@@ -187,9 +187,13 @@ export const MATCH = {
                           // adverse lointain, l'élection et la cible du press = le POINT DE
                           // CHUTE (l'ailier n'est plus servi sans défense) ; axe pressing lit
                           // plus tôt, anticipation date le départ individuel.
-  chasseRetombee: { depasse: 3, h: 1.2, frein: 1.8, cap: 25 },  // 202 : la retombée SE CHASSE —
-                          // le ballon vif qui a dépassé le lead se poursuit au point d'arrêt
-                          // prédit (liste v3 point 9 : le long ballon filait, receveur planté).
+  chasseRetombee: false,  // 202, REJETÉE AU 208 : la retombée se chassait (le long ballon
+                          // filait, receveur planté — conservation 41 → 61 % au monde 202).
+                          // Le 207 a guéri la CAUSE (les rendez-vous visaient hors terrain) et
+                          // le pansement s'est mis à NUIRE : mesuré au monde 207, épinglé 63 %
+                          // c. vivant 53 % (la sur-chasse rate des réceptions), le recalibrage
+                          // court 54 %. La loi reste dans le moteur ({ depasse, h, frein, cap }
+                          // — un monde aval où les ballons filent peut la rallumer).
   ancrage: { elect: 1.4, colle: 0.7, libre: 1.6 },  // 200 : l'axe de rôle ancrage (0 colle,
                           // 1 vagabonde) — élection du comité × axe(elect, 2−elect), mou de
                           // recalage × axe(colle, libre). Identité 0,5 = pas un bit.
