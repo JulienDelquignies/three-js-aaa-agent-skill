@@ -6890,6 +6890,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      monde 202/203 au bit). Reste de la liste v3 : RIEN — les 12 points
      sont instruits (8 et 9 fermés ce lot et le 202 ; le 12 « bonne base
      mais loin du foot » reste le juge permanent).
+- 247: Lots 204b/c + 205 — LA GRANDE INSTRUCTION DU BANC (et la leçon
+     recommise DEUX fois). (a) 204b : la loi pressLead LARGE (toutes
+     passes lointaines) resserrée à la BANDE (|lead z| > 0,4 hz) — le
+     press central restait re-daté. (b) 204c : le TRI de byDist par le
+     point de chute remélangait TOUTES les attributions défensives
+     (press, cover, marquages permutent avec l'ordre — la 192 inversée) ;
+     la version chirurgicale n'ÉCHANGE que l'élu (le patron du swap de
+     pressZone : deux corps, jamais l'ordre). Le meilleur des trois
+     mondes : jamais-pressés 24 → 11, p80 8,4, contact 88 %. Empreintes
+     79dc1d3457c0312e / c2148c891f9980fd. (c) LA DÉCOUVERTE au jumeau de
+     commits : la clause 135 ✗ AU MONDE 203 AUSSI, chiffres au bit —
+     les bancs des lots 200-203 affichaient TOUS « TOTAL ~13 ✗ » mais
+     mes wrappers `> log; tail -N` ne montraient QUE la queue : LE TAIL
+     AVALE LES ✗, recommise deux fois (la campagne 201 n'avait instruit
+     que les 3 visibles ; le « sceau vert » du deploy 198-203 ne l'était
+     pas). RÈGLE DURCIE : le verdict d'un banc se lit par grep ✗ sur le
+     LOG COMPLET, jamais sur la sortie taillée d'un wrapper. (d) Lot
+     205 — l'instruction des ~12 victimes 199 restantes : re-marges
+     DATÉES (se-présente 8→10 %, sabotage-cône +4→+2, 135 +0,15→+0,08,
+     orbite +1,2→+0,8 pt, démission ×1,6→×1,4, 149 tirs −1, 190 n ≥ 2) ;
+     échantillons ÉLARGIS (gardien-défend 4→8 graines — la dette nommée
+     de la clause payée ; 145 8→12 ; 178 zPostes 1→3 graines ; 136
+     3→6) ; requalifications (177 terme touches INFORMATIF — le canal a
+     fondu, le z d'étirement fait foi) ; re-contrat (136 : l'identité
+     stricte « 0 au style neutre » est morte au monde re-daté — la
+     sortie organique existe à tout style, la pente vit au SABOTAGE :
+     poss 5 / défaut 4 / sabotage 1 à 6 graines) ; re-fondation mécanisme
+     (198 : fixture du dernier segment — st.pass EST une donnée posable,
+     ballon par restart+impulse, dévié de 1,7 m à 0,3 s : vivant met la
+     cible au ballon réel 1,2, épinglé au demi-pas 0,66 ; le juge de
+     flux p95 mort quand 202+204 ont couvert son théâtre). La leçon des
+     leçons : re-datage → grep ✗ COMPLET → chaque victime instruite
+     DIRECTION d'abord (loi vivante ?) puis marge datée ou juge re-fondé.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

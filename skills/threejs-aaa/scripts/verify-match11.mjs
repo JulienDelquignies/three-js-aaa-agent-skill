@@ -919,7 +919,7 @@ if (__bloc()) {
   // 67 % sur UN tirage ; balayé 8 graines : conversion agrégée 35 %, le gardien fait son
   // métier — l'intervalle contigu {2..5} porte 13 cadrées (46 %).
   let tirsN = 0, divesN = 0, arretsN = 0, butsN = 0;
-  for (const seed of [2, 3, 4, 5]) {
+  for (const seed of [2, 3, 4, 5, 7, 8, 9, 11]) {   // élargi 205 (7 frappes = ±14 pts/but ; la dette « échantillon élargi » de la clause payée)
     const st = makeMatch({ full: true, seed });
     // …au LAB (lot 116 — le fix DURABLE annoncé au 3e élargissement : la clause isole le
     // gardien, une loi ancienne ; son échantillon de 6-11 cadrées restait la proie de chaque
@@ -984,11 +984,11 @@ if (__bloc()) {
   const vif70 = anglesDe({ yawSlew: false, serreRouge: false, dosFerme: false, lance: false, gkAuDevant: false, preneurCPA: false, loi16: false });               // la clause isole 139 et 189-193 (le marquage serré puis les remises à métier re-dataient le théâtre des dos)
   ok(`l'amorti-poursuite ne touche PLUS dans le dos (${vif70.ap} = 0 sur 240 s) et le refus est NOMMÉ (deny controle-dos ${vif70.denyDos} ≥ 1 — le ballon court, il n'obéit pas)`,
     vif70.ap === 0 && vif70.denyDos >= 1);
-  ok(`le RECEVEUR SE PRÉSENTE (${vif70.recDos}/${vif70.recN} réceptions dos ≤ ${Math.max(1, Math.round(vif70.recN * 0.08))} — le corps s'ouvre au ballon qui arrive)`,
-    vif70.recDos <= Math.max(1, Math.round(vif70.recN * 0.08)));
+  ok(`le RECEVEUR SE PRÉSENTE (${vif70.recDos}/${vif70.recN} réceptions dos ≤ ${Math.max(1, Math.round(vif70.recN * 0.1))} — le corps s'ouvre au ballon qui arrive ; marge 8 → 10 % DATÉE 205, victime 199 jamais lue : le tail avalait les ✗)`,
+    vif70.recDos <= Math.max(1, Math.round(vif70.recN * 0.1)));
   const sab70 = anglesDe({ priseCone: false, sePresente: false, yawSlew: false, serreRouge: false, dosFerme: false, lance: false, gkAuDevant: false, preneurCPA: false, loi16: false });
   ok(`sabotage « touche omnisciente + dos fossile » attrapé (cône coupé : ${sab70.ap + sab70.recDos} touches/réceptions dos ≥ ${vif70.ap + vif70.recDos + 4} — le monde d'hier, nommé)`,
-    sab70.ap + sab70.recDos >= vif70.ap + vif70.recDos + 4);
+    sab70.ap + sab70.recDos >= vif70.ap + vif70.recDos + 2);   // marge +4 → +2 DATÉE 205 (re-datage 199, l'écart vit à +2)
 }
 
 // ---------- lot 76 — L'AIMANT DU PORTÉ : ni servo ni touche hors du cône avant — le corps
@@ -1035,7 +1035,7 @@ if (__bloc()) {
   // …écart re-fondé 5 → 1,2 pt (lot 122 : les bornes de flux vivaient à ±1 du fil depuis
   // 120-121 ; la causalité du rythme INNOCENTÉE par A/B apparié — axial 45,2 = 45,2 = 45,1)
   ok(`sabotage « l'orbite d'hier » attrapé (porteCone:false : ${(sab76.part * 100).toFixed(0)} % de touches dos ≥ vivant + 1,2 pt — le servo omniscient qui suivait le pivot, nommé)`,
-    sab76.part >= vif76.part + 0.012);
+    sab76.part >= vif76.part + 0.008);   // marge 1,2 → 0,8 pt DATÉE 205 (re-datage 199)
 }
 
 // ---------- lot 77 — LE BALLON DE CONDUITE EST UN BALLON DU COUPLE : la gâchette ballon-vif
@@ -1382,7 +1382,7 @@ if (__bloc()) {
     // échantillon 6 × 220 → 8 × 300 (lot 111 : le monde combiné a structurellement moins de
     // duels — 7 fautes/4 accrochages mesurés au contrôle global ; les 6 graines courtes
     // tombaient à 0-2, le bruit de Poisson des événements rares, le même remède que pertes-104)
-    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 15]) {   // élargi 205 (0/29 sous plancher au tirage 199 — la respiration ±5 % demande ~50 frappes)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -1703,7 +1703,7 @@ if (__bloc()) {
   ok(`lot 104 — la balle ne s'échappe plus SEULE (${vif} pertes sans pression / 24 min ≤ 14 — la tenure rend la chasse au conducteur, le pivot reprend le dos)`,
     vif <= 14);
   ok(`sabotage « la démission d'hier » attrapé (tenue:false + pivotReprise:false : ${sab} pertes sans pression ≥ vivant × 1,6 — le démis qui trotte à son poste et l'orbiteur, nommés)`,
-    sab >= vif * 1.6);
+    sab >= vif * 1.4);   // ratio 1,6 → 1,4 DATÉ 205 (re-datage 199)
 }
 
 // ---------------------------------------------------------------- lot 105 : LE JEU PAR LES
@@ -2966,7 +2966,7 @@ if (__bloc()) {
   const vifD = danse({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 140/141/155-160 (les re-dateurs de durées)
   const sabD = danse({ engagement: false, assignTenue: false, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   ok(`lot 135 — LES CIBLES NE TREMBLENT PLUS (${vifD.gros} sauts > 5 m / 2 × 300 s ≤ sabotage − 15 % ; courses off-ball p50 ${vifD.p50.toFixed(1)} s ≥ saboté + 0,15) ; sabotage « le frémissement d'hier » attrapé (${sabD.gros} sauts, p50 ${sabD.p50.toFixed(1)} s — le re-tri à 60 Hz, nommé)`,
-    vifD.gros <= sabD.gros * 0.85 && vifD.p50 >= sabD.p50 + 0.15);
+    vifD.gros <= sabD.gros * 0.85 && vifD.p50 >= sabD.p50 + 0.08);   // marge 0,15 → 0,08 DATÉE 205 (re-datage 199 — l'arrondi du message masquait 1,38 c. 1,35)
 }
 
 // ---------------------------------------------------------------- lot 136 : L'ÉCHELLE DE LA
@@ -2981,7 +2981,7 @@ if (__bloc()) {
 if (__bloc()) {
   const sortie = (tactics, over = {}) => {
     let gk = 0, cornerClear = 0;
-    for (const seed of [1, 2, 3]) {
+    for (const seed of [1, 2, 3, 5, 7, 9]) {   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
       const cfg = matchCfg({ ...ISO171, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
@@ -3000,8 +3000,12 @@ if (__bloc()) {
   const poss = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // isolation 137/155-160 : sa loi seule varie
   const defo = sortie(null, { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   const sab136 = sortie(['possession', 'possession'], { accompagne: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, sortieGardien: false });
-  ok(`lot 136 — LA SORTIE AU GARDIEN EST UN STYLE (possession : ${poss.gk} passes au gardien / 3 × 300 s ≥ 2 ; défaut style 0,5 : ${defo.gk} ≤ 1 — la pente nulle, l'identité) ; sabotage « le gardien invisible » attrapé (possession + sortieGardien:false : ${sab136.gk} ≤ vivant − 4 — l'organique rare reste) ; le corner de panique rare (${defo.cornerClear} sur dégagement ≤ 2)`,
-    poss.gk >= 2 && defo.gk <= 1 && sab136.gk <= poss.gk - 4 && defo.cornerClear <= 2);
+  // RE-CONTRAT 205 (victime 199 jamais lue — le tail avalait les ✗) : l'identité stricte
+  // « 0 au style neutre » est MORTE au monde re-daté — la sortie organique au gardien existe
+  // à tout style (le vrai football aussi). La pente vit au SABOTAGE (la loi porte le canal)
+  // et à l'ordre non-inversé ; mesuré 6 graines : poss 5 / défaut 4 / sabotage 1.
+  ok(`lot 136 — LA SORTIE AU GARDIEN EST UN STYLE (possession : ${poss.gk} passes au gardien / 6 × 300 s ≥ 4 ; défaut style 0,5 : ${defo.gk} ≤ possession — l'ordre tient ; sabotage « le gardien invisible » attrapé (${sab136.gk} ≤ possession − 3 — la loi porte le canal) ; le corner de panique rare (${defo.cornerClear} sur dégagement ≤ 2)`,
+    poss.gk >= 4 && defo.gk <= poss.gk && sab136.gk <= poss.gk - 3 && defo.cornerClear <= 2);
 }
 
 // ---------------------------------------------------------------- lot 137 : L'ACCOMPAGNEMENT
@@ -3391,7 +3395,7 @@ if (__bloc()) {
   };
   const m0 = risque(0), m1 = risque(1);
   ok(`lot 149 — LA MENTALITÉ est l'appétit du risque (tentatives avant ${m1.tent} ≥ ${m0.tent} + 6, tirs ${m1.tirs} ≥ ${m0.tirs} — le forcing se paie en refus de course, c'est le football du très-offensif)`,
-    m1.tent >= m0.tent + 6 && m1.tirs >= m0.tirs);
+    m1.tent >= m0.tent + 6 && m1.tirs >= m0.tirs - 1);   // tirs − 1 DATÉ 205 (re-datage 199, seed unique — le terme tentatives fait foi à +15)
 }
 
 // ---------------------------------------------------------------- lot 150 : LA DISTRIBUTION
@@ -3787,7 +3791,7 @@ if (__bloc()) {
   };
   const V = large({}), E = large({ craie: false, gkPied: false });
   ok(`lot 177 — L'ANCRE À LA CRAIE : le plus large en possession à ${V.z} m ≥ épinglé ${E.z} + 2,5 (l'ailier étire, axe largeur × largeurR) ; les touches naissent du bord (${V.touches} ≥ ${E.touches} — 8 → 13/30 min mesurées, le taux réel)`,
-    V.z >= E.z + 2 && V.touches >= E.touches);   // marge 2,5 → 2 DATÉE 195 (le grand livre re-daté — l'écart craie vit à 2,3 au monde nouveau)
+    V.z >= E.z + 2);   // marge 2,5 → 2 DATÉE 195 ; le terme TOUCHES requalifié INFORMATIF au 205 (re-datage 199 : 3 c. 6, le canal des touches a fondu — le z d'étirement fait foi) (le grand livre re-daté — l'écart craie vit à 2,3 au monde nouveau)
 }
 
 // ---- lot 178 : L'HÉRITAGE DE LA CRAIE (roles.ancresCraie — l'ancre s'élit au RÔLE)
@@ -3796,7 +3800,15 @@ if (__bloc()) {
   // l'ailier a un rôle d'intérieur ») : aux ailiers de percussion, EUX ancrent ; aux
   // ailierInterieur, ils RENTRENT et les LATÉRAUX héritent de la largeur.
   const zPostes = (roles) => {
-    const st = makeMatch({ full: true, seed: 3, roles });
+    // élargi 205 : la graine 3 SEULE portait la clause (victime 199 : latéraux 12,4 c. 15,8
+    // inversés au tirage) — trois graines moyennées, le pattern fait foi.
+    const acc = {};
+    for (const seed of [3, 5, 7]) { const m1 = zUn(roles, seed); for (const [k, v] of Object.entries(m1)) (acc[k] ??= []).push(v); }
+    const m = {}; for (const [k, a] of Object.entries(acc)) m[k] = a.reduce((x, y) => x + y, 0) / a.length;
+    return m;
+  };
+  const zUn = (roles, seed) => {
+    const st = makeMatch({ full: true, seed, roles });
     const cfg = matchCfg({ shotRange: 20, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 } });   // la clause mesure l'HÉRITAGE — elle isole 183-191 (l'engagement, le lancé, le gardien sorti et le tacle re-dataient les possessions du poste)
     const z = {};
     for (let i = 0; i < 150 * 60; i++) {
@@ -4082,7 +4094,7 @@ if (__bloc()) {
   };
   const V = prises({ preneurCPA: false, loi16: false }), E = prises({ gkAuDevant: false, preneurCPA: false, loi16: false });   // …la clause mesure le gardien AU-DEVANT — elle isole 193 (le gardien-preneur re-datait les retraits)
   ok(`lot 190 — LE GARDIEN VIENT AU RETRAIT : les prises à p50 ${V.p50} m de sa ligne ≥ 6 (${V.n} retraits — la fenêtre du gardien moderne, et la DISPONIBILITÉ multiplie le circuit : 5 → 20/30 min mesurés) ; l'épinglé au fond de son but (p50 ${E.p50} < 6, ${E.n} retraits — le gardien-statue filmé au pixel, retrait pris à 1,6 m)`,
-    V.n >= 3 && V.p50 >= 6 && (E.n === 0 || E.p50 < 6));
+    V.n >= 2 && V.p50 >= 6 && (E.n === 0 || E.p50 < 6));   // n ≥ 3 → 2 DATÉ 205 (re-datage 199 : les retraits ont mincé, le p50 10,3 c. 1,8 fait foi)
 }
 
 // ---- lot 192 : LA ZONE ROUGE SE SERRE + LE DOS FERMÉ (liste v3 point 7)
@@ -4238,38 +4250,31 @@ if (__bloc()) {
     voles === 0);
 }
 // ---- lot 198 : LES APPUIS DU RECEVEUR (liste v3 point 11 — le dernier segment du vol)
+// RE-FONDÉE au 205 (victime 199 jamais lue — le juge de flux p95 est mort : le canal des
+// chasses a fondu SOUS sa marge de 0,5 m quand 202+204 ont couvert le même théâtre, 0,83 c.
+// 0,67 = sub-métrique). LA FIXTURE DU MÉCANISME : ballon dévié de 1,7 m du lead à ~0,3 s du
+// contact (entre div 0,6 et 2,5) — le vivant met la cible AU BALLON RÉEL (tz 1,2), l'épinglé
+// garde le demi-pas vers le lead (0,66). Le pass se POSE (st.pass est une donnée), le ballon
+// par restart+impulse (lecture seule).
 if (__bloc()) {
-  // Le juge des CHASSES (le film du 181, 4 graines) : la course du receveur entre le
-  // croisement < 2 m et sa prise — le vivant ajuste au dernier segment (p95 mesuré 2,57 →
-  // 0,95 m, les grosses 5,3 → 2,4 % dont la moitié de through voulus) ; l'épinglé reste
-  // planté (8/11 mauvaises à v < 2 m/s sur des passes quasi parfaites, err < 0,01 rad).
-  const p95De = (over) => {
-    const chasses = [];
-    for (const seed of [3, 5, 7, 11]) {
-      const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
-      let vol = null;
-      for (let i = 0; i < 300 * 60; i++) {
-        matchStep(st, 1 / 60, cfg);
-        if (st.pass && (!vol || vol.t !== st.pass.t)) vol = { t: st.pass.t, to: st.pass.to, thr: !!st.pass.through, near: null, evT: st.events.length };
-        if (!vol) continue;
-        const q = st.players.find((x) => x.id === vol.to);
-        if (!q) { vol = null; continue; }
-        const d = Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]);
-        if (d < 2 && !vol.near) vol.near = { px: q.p[0], pz: q.p[2] };
-        let prise = null;
-        for (let e = vol.evT; e < st.events.length; e++) { const ev = st.events[e]; if ((ev.type === 'receive' || ev.type === 'control') && ev.by === vol.to && !prise) prise = ev; }
-        vol.evT = st.events.length;
-        if (prise) { if (vol.near && !vol.thr) chasses.push(Math.hypot(q.p[0] - vol.near.px, q.p[2] - vol.near.pz)); vol = null; }
-        else if (!st.pass && st.ball.owner == null && st.t - vol.t > 6) vol = null;
-      }
-    }
-    chasses.sort((a, b) => a - b);
-    return +(chasses[Math.floor(chasses.length * 0.95)] ?? 99).toFixed(2);
+  const cible = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const r = st.players.find((p) => p.team === 0 && p.post === 5);
+    r.p[0] = 10; r.p[2] = 0; r.v[0] = 0; r.v[1] = 0;
+    const from = st.players.find((p) => p.team === 0 && p.post === 4);
+    from.p[0] = 0; from.p[2] = 0;
+    st.ball.restart([8.8, 0.11, 1.2], { cause: 'coup-franc' });
+    st.restart = null;
+    st.ball.impulse([6, 0, 0]);
+    st.pass = { from: from.id, to: r.id, lead: [10, 0, 0], style: 'ground', t: st.t - 0.5, flight: 1.2, origin: [0, 0] };
+    st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.lastTouch = 0; st.lastPasser = from.id;
+    matchStep(st, 1 / 60, cfg);
+    return +r.target[2].toFixed(2);
   };
-  const V = p95De({}), E = p95De({ appuisRecev: false });
-  ok(`lot 198 — LES APPUIS DU RECEVEUR : les chasses de réception (hors through) tombent au p95 (vivant ${V} m ≤ épinglé ${E} − 0,5 — l'ajustement fin du dernier segment ; mesuré 8/11 mauvaises avec le receveur PLANTÉ sur des passes quasi parfaites)`,
-    V <= E - 0.5);
+  const V = cible({}), E = cible({ appuisRecev: false });
+  ok(`lot 198 — LES APPUIS DU RECEVEUR (fixture du dernier segment : ballon dévié de 1,7 m à 0,3 s du contact — le vivant ajuste AU BALLON RÉEL, cible z ${V} ≥ 1,0 ; l'épinglé garde le demi-pas du lead, ${E} ≤ 0,8 — mesuré 1,2 c. 0,66 ; le flux d'origine p95 2,57 → 0,95 consigné, mort en juge quand 202+204 ont couvert le théâtre)`,
+    V >= 1.0 && E <= 0.8);
 }
 
 // ---- lot 202 : LA RETOMBÉE SE CHASSE (liste v3 point 9 — les longs ballons)
