@@ -7069,6 +7069,50 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      coupé = monde 211 311751fbf28aa34b/08515679a7de178f ; les deux
      coupés = monde 210). Empreintes 5b3dd2e73d27db62 / 08515679a7de178f,
      bande 19/20 fraîches (141-160).
+- 255: Lot 213 — LA PROFONDEUR ENTRE AVANTS (demande utilisateur, à la
+     volée : « des passes en profondeur pour l'attaquant et les ailiers,
+     des milieux ET des latéraux ; l'attaquant lance les ailiers, les
+     ailiers lancent l'attaquant »). LA MATRICE AVANT (passeur × receveur
+     par poste, |z| moyenne validée : 0/3 latéraux 13, 7/9 ailiers 17,
+     8 attaquant 7) : 44 passes profondes/90 min/équipe, milieux 13,
+     latéraux 9 (ils existaient), ATTAQUANT 0, AILIERS 1 — les canaux
+     entre avants étaient MORTS. L'instruction en cinq couches, chacune
+     mesurée : (a) le 212 pénalisait les through des avants (dans la
+     surface un défenseur est toujours près du point de chute) → la marge
+     en TEMPS (tDef = d/vDef + réaction, tRec = d/vSol — le coureur est
+     lancé, le défenseur doit lire) ; (b) le couloir serré de la surface
+     → chas 0,3 pour l'appel dans le tiers ; (c) LE VERROU PRINCIPAL :
+     l'appel profond exige un espace derrière la ligne inexistant dans le
+     tiers — l'APPEL COURT EN DIAGONALE (4 m vers le côté du ballon, le
+     premier poteau), sa PROPRE cadence (3,5 s, hors créneau d'équipe —
+     une combinaison locale à deux), l'ANTICIPATION (le 9 part pendant
+     que le ballon voyage vers l'ailier — 5/20 appels tombaient l'instant
+     où l'ailier lâchait) ; (d) LE VERROU STRUCTUREL : l'appel vit chez
+     les POSTÉS et l'attaquant proche de l'ailier était élu au COMITÉ de
+     soutien — un slotter n'appelle jamais ; ballon large dans le tiers
+     → la pointe centrale reste la CIBLE (diagonales 11 → 27) ; (e) LE
+     BARÈME AVEUGLE AU DANGER : 53 diagonales, 7 servies — aucun terme
+     pour la valeur du point de chute → dangerPasse (lead dans la surface
+     : +2 × axe mentalite × visionF) ; l'exemption du risque pour la
+     diagonale (comme le relais chaud — la combinaison répétée). APRÈS :
+     passes profondes 29 → 47/30 min, l'ATTAQUANT en lance 5, les AILIERS
+     5 ; le tableau de bord global : réussite 72-73 % (75 avant le
+     danger, 70 avant le 213c — le prix assumé), directions 39/31/30.
+     Les leçons d'instrument : (1) au frame du lancé le porteur est déjà
+     −1 (compter par ÉVÉNEMENTS) ; (2) la fixture propre ÉLIT le through
+     — en flux le verrou était la rareté et le comité, pas le barème ;
+     (3) une seule porte à la fois (rareté → cadence → comité →
+     timing → danger). Clause : la fixture du burst diagonale (ON true /
+     OFF false). Chaînes : profondeurAvants/dangerPasse épinglés. Les
+     212b/c en chemin : le mur d'un une-deux s'exempte de la tenue calme
+     (relais chaud → première intention), le relais chaud s'exempte du
+     risque (sa course perdue est le presseur contourné) ; la 192 au
+     mécanisme (fixture marqueSerre, serreRouge on/off : 0,66 c. 11,09),
+     la 209 au barème direct (choosePass : A élu au relais chaud), la
+     210 à la fixture du créneau (le 90 appelle le premier), la 149 à
+     passBias (1,65/2,2/2,75), la 145 au σ, la 143 aux refus nommés.
+     DETTES : le une-deux à 18-27 % au flux (retrouver 40), le canal otb
+     ×1,3-1,4 au flux (×2,00 au monde 210), la réussite 75-85.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

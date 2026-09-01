@@ -38,12 +38,10 @@ function stepGestures(st, dt, cfg) {
     if (!p.act) continue;
     // CLOSED DOWN MID-SWING. The windup is a real window: a defender who arrives during it takes the ball off you. This is what makes pressing worth doing, and it did not exist while the ball left at the instant of the decision — there was no interval to attack.
     if (winding(p) && st.phase === 'carry' && st.possession.carrier === p.id) {
-      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to get to the BALL first (sans ça le windup était fatal — record halved, turnovers doubled). …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le porteur au ballon — plus jamais « près du
-      // corps ». Le terme de la minuterie n'est plus une bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
+      // TAKING THE BALL OFF A MAN MID-SWING IS A BLOCK, NOT A TACKLE : the defender has to get to the BALL first (sans ça le windup était fatal — record halved, turnovers doubled). …ET LE PRÉDICAT EST CELUI DU DUEL (pressPredicate) : à portée de jeu du BALLON, et qui BAT le porteur au ballon — plus jamais « près du corps ». Le terme de la minuterie n'est plus une bascule : c'est l'engagement d'un tacle-debout, que l'armé du porteur peut encore gagner (son contact part avant celui du tacle → le tacle mord dans le vide, refus nommé).
       const press = pressPredicate(st, p, cfg);
       st.pressure = press.length ? st.pressure + dt : 0;
-      // AND THE BALL TRAVELS WITH HIM — the swing suspends the dribble; the ball goes where he goes until the boot sends it (separation 2,09 → 1,53 m). LE COUPLE
-      // CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ (mesuré : 0,4 m de divergence, le pied frappait du vide) : le BALLON PORTÉ vit AU POINT DE STANCE du corps qui glisse
+      // AND THE BALL TRAVELS WITH HIM — the swing suspends the dribble; the ball goes where he goes until the boot sends it (separation 2,09 → 1,53 m). LE COUPLE CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ (mesuré : 0,4 m de divergence, le pied frappait du vide) : le BALLON PORTÉ vit AU POINT DE STANCE du corps qui glisse
       // (carry) — au contact la stance est vraie par construction ; un ballon NON porté garde le frein d'assise ;
       if (st.ball.owner === p.id && p.act.payload?.stance) {
         // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite soudé (les passes partaient à 6-21° de leur stance). MAIS un
@@ -823,7 +821,9 @@ export function rondoStep(st, dt, cfg = RONDO) {
       { const hc = (st.full && cfg.tenueCalme?.calm) || (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.5, 0.5) * (st.full && cfg.tenueCalme ? (c.skill?.decF ?? 1) * ((c.role?.tenue ?? 0.5) !== 0.5 ? axeTac(c.role.tenue, 0.7, 1.4) : 1) : 1); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
     }
     const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
-    const calm = foeBody > cfg.calmFoe;
+    // …SAUF LE MUR D'UN UNE-DEUX (212b — l'interaction 211×209 mesurée : 41 → 13 % de retours, le mur TENAIT son ballon calmement pendant que le lanceur courait) : un coéquipier au relais CHAUD (_troisT) veut le ballon MAINTENANT — la tenue calme s'efface, la première intention garde ses droits. Clé absente : le calme d'hier.
+    const relaisChaud = st.full && cfg.tenueCalme && st.players.some((q) => q.team === c.team && q.id !== c.id && (q._troisT ?? -1) > st.t);
+    const calm = foeBody > cfg.calmFoe && !relaisChaud;
     // …et beginPass lit CE holdMin-là (la porte 'timing') : au calme la fenêtre s'étire à 0,8-1,0 s, pressé elle retombe au holdMin d'origine — fixer puis donner.
     st._holdMin = calm ? Math.min(st.full && cfg.tenueCalme ? (cfg.tenueCalme.plafond ?? 2.5) : 1.0, st._calmHold) : cfg.holdMin;   // (211) le plafond du calme en clé — 1,0 d'hier sans elle
     // ON NE PASSE PAS UN BALLON QU'ON EST ENCORE EN TRAIN DE POSER : pas d'engagement avant la fin

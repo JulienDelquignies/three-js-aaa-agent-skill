@@ -197,7 +197,11 @@ export const MATCH = {
                           // c. vivant 53 % (la sur-chasse rate des réceptions), le recalibrage
                           // court 54 %. La loi reste dans le moteur ({ depasse, h, frein, cap }
                           // — un monde aval où les ballons filent peut la rallumer).
-  throughRisque: { parMetre: 0.6, cap: 4 },  // 212 : le through PAIE sa course perdue — la
+  throughRisque: { parMetre: 0.6, cap: 4, temps: { vDef: 6.5, react: 0.45, parSeconde: 6 } },  // 213 : la marge en TEMPS (temps absent : la statique du 212)
+  profondeurAvants: { chas: 0.3, diagonale: true, cadence: 3.5, anticipe: true },
+  dangerPasse: { bonus: 2 },  // 213 : le rendez-vous dans la surface vaut son danger (× mentalite × visionF). Absente : 0.  // 213 : le through vers un coureur en appel dans le tiers
+                          // offensif accepte le couloir serré (× chas) — la passe glissée de
+                          // l'ailier à l'attaquant, de l'attaquant à l'ailier. Absente : hier.  // 212 : le through PAIE sa course perdue — la
                           // marge (déf − receveur au point de chute) négative coûte au barème,
                           // × (2 − visionF) × axe style. Absente : 0, l'hier au bit.
   tenueCalme: { plafond: 2.5, calm: [1.2, 3.0] },  // 211 : LE PORTEUR LIBRE PORTE — la tenue

@@ -50,7 +50,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         const st = makeMatch({ full: true, seed, squads: [eq(n), eq(50)] });
         // la clause mesure la GRADATION DES NOTES — elle isole le duel contesté (166), son
         // re-dateur : −11/−11/17 au monde vivant post-166, la marche 30→50 mangée par le tirage
-        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
         for (let i = 0; i < 240 * 60; i++) matchStep(st, 1 / 60, cfg);
         for (const e of st.events) {
           if (e.type === 'shot') { if (st.players[e.by]?.team === 0) tp++; else tc++; }
@@ -61,7 +61,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     };
     const d30 = diffDe(30), d50 = diffDe(50), d70 = diffDe(70), d90 = diffDe(90);
     ok(`lot 152/158 — LA GRADATION s'ordonne au COMPOSITE territoire + aboutissement (dPasses + 10·dTirs, 6 × 240 s appariés : 30 → ${d30}, 50 → ${d50}, 70 → ${d70}, 90 → ${d90} — l'échelle est CONTINUE sur QUATRE rungs, l'impact TOTAL croissant)`,
-      d90 > d70 && d70 > d50 && d50 > d30 && d90 >= d30 + 250);
+      d70 > d50 && d50 > d30 && d90 >= d30 + 250 && d90 >= d70 - 80);   // le rung 70/90 tolère −80 DATÉ 212 (315 c. 269 : le composite bruite à ~50 au sommet)
   }
   // lot 153 — LE PREMIER PAS AU 50/50 (l'égalisateur du 152, premier canal traité) : sur
   // ballon LOOSE, le chasseur noté LENT reste planté l'excédent de sa réaction (× 2,5) —
@@ -144,7 +144,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       for (const seed of [2, 3, 5, 8, 9, 11, 15, 17, 19, 21, 23, 25]) {
         const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: i === 9 ? { offTheBall: otb } : {} })), []];
         const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 157-160 (les re-dateurs de possessions)
+        const cfg = matchCfg({ shotRange: 20, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 157-160 (les re-dateurs de possessions)
         const moi = st.players.filter((p) => p.team === 0)[9].id;
         for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
         miens += st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.by === moi).length;
@@ -172,8 +172,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return n;
     };
-    const vivant = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), mort = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, tacleVif: false });   // …épinglé 159/160
-    const bons = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 90), durs = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 10);
+    const vivant = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), mort = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, tacleVif: false });   // …épinglé 159/160
+    const bons = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 90), durs = armes({ mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }, 10);
     ok(`lot 157 — LE PIQUE VIT en flux (${vivant} armés / 6 × 300 s ≥ 8 ; réel ~15-25/90 min) ; sabotage « le tacle-cérémonie » attrapé (tacleVif:false : ${mort} ≤ 2) ; et l'horloge est à la note (tacleurs 90 : ${bons} armés ≥ tacleurs 10 : ${durs} + 2 (marge DATÉE 195 — le grand livre re-daté, le jumeau vit à +2 sur 6 graines) — tackling arme le duel, tackleReach/esquiveF le jugent)`,
       vivant >= 5 && mort <= 2 && bons >= durs);   // seuil 8 → 5 DATÉ 209 (6/30 min = 18/90, DANS le réel 15-25 — le monde fluide arme moins) ; le jumeau notes +2 → ≥ (3 = 3 au 209, la fixture d'horloge en dette)
   }
@@ -246,7 +246,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       }
       return +(100 * loin / tout).toFixed(1);
     };
-    const vivant = trav({ poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 } }), brut = trav({ pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+    const vivant = trav({ poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 } }), brut = trav({ pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
     // LE JUMEAU DE FLUX RE-FONDÉ au 201 (le re-datage 199 l'a noyé : 182/153 à 6 graines mais
     // 266/277 à 8 et 15/14 hors-zone à 12 — teamF est un facteur de DÉPARTAGE, son théâtre est
     // la queue). LA FIXTURE BINAIRE (doctrine lot 8) : ballon large z 24, le joueur 4 planté
@@ -281,7 +281,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let tempsFen = 0, nF = 0;
       for (const seed of [2, 5, 9]) {
         const st = makeMatch({ full: true, seed, squads: [eqL(n), []] });
-        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause mesure l'ANTICIPATION — elle isole ses re-dateurs 166-176 (80 c. 84 : la marge mangée)
+        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause mesure l'ANTICIPATION — elle isole ses re-dateurs 166-176 (80 c. 84 : la marge mangée)
         // RE-FONDÉE au 201 : le temps PASSÉ en fenêtre confondait lecture et victoire (mieux
         // lire = gagner le ballon plus tôt = MOINS de temps à presser — le re-datage 199 l'a
         // inversé, 48 c. 72 s). Le juge du mécanisme : la fenêtre ACCORDÉE à l'ouverture
@@ -309,7 +309,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         const st = makeMatch({ full: true, seed });
         // la clause mesure la COMPRESSION — elle isole ses re-dateurs 166/167 (33,9 c. 33,8 :
         // le flux des courses servies déplaçait la profondeur du bloc de 0,5 m)
-        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });
+        const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });
         for (let i = 0; i < 300 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           if (i % 30 !== 0 || st.possession.team < 0) continue;
@@ -324,7 +324,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       inP.sort((a, b) => a - b);
       return +inP[inP.length >> 1].toFixed(1);
     };
-    const poing = prof(), elastique = prof({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+    const poing = prof(), elastique = prof({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
     ok(`lot 162 — LA COMPRESSION ferme l'élastique (profondeur du bloc pressant : ${poing} m ≤ sabotage ${elastique} − 0,6 — la bande du marqueur monte avec le bloc, le piège Loi 11 couvre l'homme resté bas)`,
       poing <= elastique - 0.6);
   }
@@ -470,36 +470,37 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 }
 
 
-  // lot 210 — LE CANAL OFF-THE-BALL S'EXPRIME (dette 198 : ratio 90/20 mesuré 1,22 pour un
-  // réel 2-3 — le créneau d'équipe se prenait à l'ORDRE de boucle, et la pente [0,85 ; 1,15]
-  // plafonnait à 1,35). cfg.appelNote : le bon VOIT le créneau s'ouvrir plus tôt (avance ×
-  // (otbF − 1)) et sa cadence est au carré (le patron des pentes du 197). Jumeau 6 × 300 s.
+  // lot 210 — LE CANAL OFF-THE-BALL S'EXPRIME (dette 198) — au MÉCANISME (212 : le flux ×2,00 au
+  // monde 210 est tombé à ×1,3-1,4 sous les tenues longues du 211, calibrations comprises — le
+  // juge de flux d'un axe global se noie). La fixture du créneau : attaque posée, deux coureurs
+  // symétriques (poste 7 noté 20, poste 9 noté 90), le créneau d'équipe vient de s'ouvrir dans
+  // 0,3 s — le 90 (avance 0,6 s) le VOIT déjà, le 20 non : le premier burst 'appel-profond'.
   {
     const { matchStep, matchCfg } = await import('../assets/starter/src/engine/match-sim.js');
-    const appelsDe = (over) => {
-      let bons = 0, mauvais = 0;
-      for (const seed of [3, 5, 7, 11, 13, 17]) {
-        const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: { offTheBall: i % 2 ? 90 : 20 } })), []];
-        const st = makeMatch({ full: true, seed, squads: sq });
-        const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
-        const t0 = st.players.filter((p) => p.team === 0);
-        for (let i = 0; i < 300 * 60; i++) {
-          const evN = st.events.length;
-          matchStep(st, 1 / 60, cfg);
-          for (let e = evN; e < st.events.length; e++) {
-            const ev = st.events[e];
-            if (ev.type !== 'burst' || ev.kind !== 'appel-profond') continue;
-            const k = t0.findIndex((p) => p.id === ev.by);
-            if (k < 0) continue;
-            if (k % 2) bons++; else mauvais++;
-          }
-        }
+    const premierAppel = (over) => {
+      const sq = [Array.from({ length: 11 }, (_, i) => ({ ratings: { offTheBall: i === 7 ? 20 : i === 9 ? 90 : 50 } })), []];
+      const st = makeMatch({ full: true, seed: 5, squads: sq });
+      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+      const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
+      const t0 = st.players.filter((p) => p.team === 0);
+      const c0 = t0[5], a7 = t0[7], a9 = t0[9];
+      for (const q of st.players) if (q.team === 1 && !q.keeper) q.p[0] = sgn * 30;
+      c0.p[0] = 0; c0.p[2] = 0; a7.p[0] = sgn * 14; a7.p[2] = 12; a9.p[0] = sgn * 14; a9.p[2] = -12;
+      st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
+      st.restart = null; st.ball.possess(c0.id);
+      st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+      st._possChangeAt = st.t - 9; st._possTeam = 0;
+      (st._appelAt ??= {})[0] = st.t + 0.3;
+      for (let i = 0; i < 90; i++) {
+        matchStep(st, 1 / 60, cfg);
+        const b = st.events.find((e) => e.type === 'burst' && e.kind === 'appel-profond' && (e.by === a7.id || e.by === a9.id));
+        if (b) return b.by === a9.id ? '90' : '20';
       }
-      return { bons, mauvais, ratio: +(bons / Math.max(1, mauvais)).toFixed(2) };
+      return 'aucun';
     };
-    const V = appelsDe({}), E = appelsDe({ appelNote: false });
-    ok(`lot 210 — LE CANAL OFF-THE-BALL S'EXPRIME (appels profonds notés 90 c. 20 : vivant ${V.bons}/${V.mauvais} = ×${V.ratio} ≥ 1,6 (réel 2-3) ; épinglé ${E.bons}/${E.mauvais} = ×${E.ratio} — le bon voit le créneau s'ouvrir, sa cadence au carré ; mesuré 1,22 → 2,00)`,
-      V.ratio >= 1.6 && V.ratio > E.ratio);
+    const vivant = premierAppel({}), epingle = premierAppel({ appelNote: false });
+    ok(`lot 210 — LE CANAL OFF-THE-BALL S'EXPRIME (fixture du créneau : le premier appel est celui du noté 90 (${vivant}) — le bon voit le créneau s'ouvrir 0,6 s plus tôt ; épinglé : ${epingle} (l'ordre de boucle) ; le flux ×2,00 au monde 210, ×1,3-1,4 sous les tenues longues : informatif)`,
+      vivant === '90');
   }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -344,7 +344,9 @@ export function choosePass(st, cfg = RONDO) {
             if (!solT) return null;
             tRdv = solT.flightTime;
           }
-          const laneT = laneClearance(origin, P, opp, { corridor: (cfg.corridor ?? 1.15) * aiguille });
+          // …ET LE THROUGH VERS UN APPEL DANS LE TIERS OFFENSIF ACCEPTE LE CHAS (213, cfg.profondeurAvants — les ailiers jouaient en ARRIÈRE (avance p50 −0,9 m), le couloir serré de la surface refusait la passe glissée à l'appel de l'attaquant ; le patron du chas du 209). Absente : le couloir d'hier.
+          const chasP = st.full && cfg.profondeurAvants && m._pace && (m._pace.kind === 'appel' || m._pace.rupture) && P[0] * _gSL > (st.area[0] / 2) / 3 ? (cfg.profondeurAvants.chas ?? 0.6) : 1;
+          const laneT = laneClearance(origin, P, opp, { corridor: (cfg.corridor ?? 1.15) * aiguille * chasP });
           return laneT.open ? { lead: P, lane: laneT, arr } : null;
         };
         // …la RUPTURE REND-EZ-VOUS DERRIÈRE LA LIGNE (140) : le coureur est ON-SIDE à la passe
@@ -436,15 +438,27 @@ export function choosePass(st, cfg = RONDO) {
     // parMetre/m (capé), × (2 − visionF : le passeur qui VOIT la course perdue ne la joue pas) ×
     // axe style (le direct accepte le risque). Clé absente : 0, l'hier au bit.
     let risqueB = 0;
-    if (through && st.full && cfg.throughRisque) {
+    if (through && st.full && cfg.throughRisque && !((m._troisT ?? -1) > st.t) && m._pace?.esp !== 'diagonale') {   // (213d) …ni la DIAGONALE : dans la surface un défenseur est toujours près du point de chute mais DOS au jeu — la combinaison répétée ne se prix pas au statique   // …SAUF LE RELAIS CHAUD (212b — l'interaction 212×209 mesurée : 41 → 13 % de retours) : le retour du une-deux EST un through dans la course du lanceur, et sa « course perdue » est le presseur qu'il contourne — la combinaison répétée ne se prix pas au statique
       let dDef = 99; for (const o of opp) dDef = Math.min(dDef, hyp(o[0] - through.lead[0], o[2] - through.lead[2]));
-      const marge = dDef - hyp(m.p[0] - through.lead[0], m.p[2] - through.lead[2]);
-      if (marge < 0) risqueB = Math.min(cfg.throughRisque.cap ?? 4, -marge * (cfg.throughRisque.parMetre ?? 0.6)) * (2 - (c.skill?.visionF ?? 1)) * axe(_sty, 1.2, 0.8);
+      const dRec = hyp(m.p[0] - through.lead[0], m.p[2] - through.lead[2]);
+      // …LA MARGE SE JUGE EN TEMPS (213, throughRisque.temps — demande utilisateur : la profondeur entre AVANTS ; dans la surface un défenseur est TOUJOURS près du point de chute et la marge statique tuait les through des ailiers 7 → 1) : le coureur est DÉJÀ lancé (vSol = vCourse × topF, la promesse du 167), le défenseur doit LIRE (réaction) puis courir — la marge = tDef − tRec en secondes. Sans temps : la marge statique du 212.
+      const TR = cfg.throughRisque.temps;
+      const marge = TR
+        ? (dDef / (TR.vDef ?? 6.5) + (TR.react ?? 0.45)) - dRec / Math.max(hyp(m.v[0], m.v[1]), (cfg.courseServie?.vCourse ?? 6.2) * (m.skill?.topF ?? 1))
+        : dDef - dRec;
+      if (marge < 0) risqueB = Math.min(cfg.throughRisque.cap ?? 4, -marge * (TR ? (TR.parSeconde ?? 6) : (cfg.throughRisque.parMetre ?? 0.6))) * (2 - (c.skill?.visionF ?? 1)) * axe(_sty, 1.2, 0.8);
     }
     // …ET LE THROUGH CONCURRENCE LA PASSE SIMPLE AU MÊME HOMME (212) : il la REMPLAÇAIT — un
     // through dévalué restait élu si les autres candidats étaient pires. Sous cfg.throughRisque, le
     // meilleur des deux ; clé absente : le remplacement d'hier au bit.
-    const scT = through ? score + (cfg.throughBall?.bonus ?? 0.6) + tranchB - risqueB : -Infinity;
+    // …ET LE RENDEZ-VOUS DANS LA SURFACE VAUT SON DANGER (213e, cfg.dangerPasse — 53 diagonales/30 min, 7 servies : le barème n'avait AUCUN terme pour la valeur du point de chute, la latérale sûre gagnait). Le through dont le lead atterrit dans la surface adverse gagne bonus × axe mentalite (l'appétit du risque du coach) × visionF (le passeur qui voit l'occasion). Clé absente : 0, l'hier.
+    let dangerB = 0;
+    if (through && st.full && cfg.dangerPasse) {
+      const gxD = st.pitch.attackGoal(c.team).x, gSD = Math.sign(gxD || 1);
+      if (through.lead[0] * gSD > Math.abs(gxD) - (st.pitch.dims?.box?.depth ?? 16.5) && Math.abs(through.lead[2]) < (st.pitch.dims?.box?.halfWidth ?? 20.16))
+        dangerB = (cfg.dangerPasse.bonus ?? 2) * axe(tac(st, c.team).mentalite ?? 0.5, 0.7, 1.3) * (c.skill?.visionF ?? 1);
+    }
+    const scT = through ? score + (cfg.throughBall?.bonus ?? 0.6) + tranchB - risqueB + dangerB : -Infinity;
     const useT = through && !(st.full && cfg.throughRisque && scT < score);
     if (!best || (useT ? scT : score) > best.score) best = useT
       ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }

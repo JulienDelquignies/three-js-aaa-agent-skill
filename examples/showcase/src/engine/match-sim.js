@@ -673,7 +673,9 @@ function assignMatchJobs(st, cfg) {
       // tri à clés TRANSIENTES pré-calculées (lot 60 — d2 recalculé par comparaison à 60 Hz) ; sort stable, mêmes clés → l'ordre d'hier
       const bs = st._bSlotters ??= []; bs.length = 0;
       // …ET L'ANCRAGE PÈSE L'ÉLECTION (200, cfg.ancrage — demande projet aval : le meneur LIBRE rejoint le ballon de plus loin, le cloué résiste) : distance d'élection × axe(ancrage, elect, 2−elect). Identité 0,5 / clé absente : l'hier au bit.
-      for (const q of free) { q._dAnc = d2(q.p, sa); if (cfg.ancrage) { const av = role(q).ancrage ?? 0.5; if (av !== 0.5) q._dAnc *= axe(av, cfg.ancrage.elect ?? 1.4, 2 - (cfg.ancrage.elect ?? 1.4)); } bs.push(q); }
+      // …ET LA POINTE N'EST PAS UN SOUTIEN QUAND LE BALLON EST LARGE DANS LE TIERS OFFENSIF (213c, cfg.profondeurAvants.diagonale — l'appel vit chez les POSTÉS et l'attaquant proche de l'ailier était élu au comité : un slotter n'appelle jamais ; 9-11 diagonales/30 min). Le vrai 9 reste dans la surface : il est la CIBLE. Clé absente : le comité d'hier.
+      const sgnP = -pitch.ownGoal(atk).sign, balLarge = st.full && cfg.profondeurAvants?.diagonale && Math.abs(st.ball.p[2]) > pitch.hz * 0.35 && st.ball.p[0] * sgnP > pitch.hx / 3;
+      for (const q of free) { if (balLarge && (q.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true)) && Math.abs(q.p[2]) < 12) continue; q._dAnc = d2(q.p, sa); if (cfg.ancrage) { const av = role(q).ancrage ?? 0.5; if (av !== 0.5) q._dAnc *= axe(av, cfg.ancrage.elect ?? 1.4, 2 - (cfg.ancrage.elect ?? 1.4)); } bs.push(q); }
       bs.sort((a, b) => a._dAnc - b._dAnc);
       // LE SOUTIEN EST UN PETIT COMITÉ (lot 103, cfg.soutienN — « trop dense au milieu » : 4 slotters + porteur = 5 corps au ballon, largeur 38 m vs 45-60 réel ; le réel soutient à 2-3, les libérés TIENNENT LA STRUCTURE — relation module ±1). Absente : les 4 d'hier au bit.
       const nSout = cfg.soutienN != null ? Math.round(axe(tac(st, atk).relation, cfg.soutienN - 1, cfg.soutienN + 1)) : 4;
@@ -731,16 +733,24 @@ function assignMatchJobs(st, cfg) {
         if (off && (p.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true))) {
           // …ET L'APPEL TIMÉ JAILLIT DE LA LIGNE : suivi ou rien (pointe ≤ passRange, DEVANT le ballon, porteur posé, couloir ouvert → dart de 7 m). Un par équipe. …ET LE JETÉ DÉCLENCHE LA COURSE (144) : le défenseur qui se jette OUVRE la fenêtre d'appel — « fixer puis lâcher » se joue À DEUX
           const jeteHot = st.full && cfg.fixe && st._jeteAt && st._jeteAt.team === atk && st.t - st._jeteAt.t < 0.8;
-          if ((p._runT ?? -1) <= st.t && posé
-            && (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) - (jeteHot ? (cfg.fixe.appel ?? 4) : 0) - (st.full && cfg.appelNote ? ((p.skill?.otbF ?? 1) - 1) * (cfg.appelNote.avance ?? 4) : 0) <= st.t   // …ET LE BON VOIT LE CRÉNEAU S'OUVRIR (210, cfg.appelNote — dette 198 : le créneau d'équipe se prenait à l'ORDRE de boucle, ratio 90/20 mesuré 1,22 pour un réel 2-3). L'avance × (otbF − 1) : l'élection continue par anticipation ; otbF 1 = 0, l'hier
-            && (p._appelCd ?? -1) <= st.t + (jeteHot ? 3 : 0)) {
+          // …LA DIAGONALE A SA PROPRE CADENCE (213b — 9 diagonales/30 min sous le créneau d'ÉQUIPE et le cooldown des appels profonds : une combinaison LOCALE à deux ne s'y soumet pas — cadence 3,5 s, hors créneau)
+          // …ET L'ATTAQUANT ANTICIPE (213d) : 5/20 diagonales tombaient l'instant où l'ailier lâchait (hold 0,62 = son minimum sous presse) — le vrai 9 part pendant que le ballon VOYAGE vers l'ailier large. La cible large : le ballon posé large, ou en vol vers un coéquipier large du tiers offensif.
+          const volLarge = st.full && cfg.profondeurAvants?.diagonale && cfg.profondeurAvants.anticipe !== false && !carrier && st.pass && st.pass.to >= 0 && st.players[st.pass.to]?.team === atk && Math.abs(st.pass.lead[2]) > pitch.hz * 0.35 && st.pass.lead[0] * off.sgn > pitch.hx / 3;
+          const diagPre = st.full && cfg.profondeurAvants?.diagonale && Math.abs(p.p[2]) < 12 && off.adv - p.p[0] * off.sgn < 8 && (p._diagCd ?? -1) <= st.t
+            && ((Math.abs(st.ball.p[2]) > pitch.hz * 0.35 && st.ball.p[0] * off.sgn > pitch.hx / 3) || volLarge);
+          if ((p._runT ?? -1) <= st.t && (posé || (diagPre && volLarge))
+            && (diagPre || (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) - (jeteHot ? (cfg.fixe.appel ?? 4) : 0) - (st.full && cfg.appelNote ? ((p.skill?.otbF ?? 1) - 1) * (cfg.appelNote.avance ?? 4) : 0) <= st.t)   // …ET LE BON VOIT LE CRÉNEAU S'OUVRIR (210, cfg.appelNote — dette 198 : le créneau d'équipe se prenait à l'ORDRE de boucle, ratio 90/20 mesuré 1,22 pour un réel 2-3). L'avance × (otbF − 1) : l'élection continue par anticipation ; otbF 1 = 0, l'hier
+            && (diagPre || (p._appelCd ?? -1) <= st.t + (jeteHot ? 3 : 0))) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
                   const long = dB >= (cfg.passRange?.[1] ?? 13) - 0.5;   // LA RUPTURE (140, cfg.tranchant) : l'espace derrière la ligne → l'appel part de LOIN (26 c. 12,5), PROFOND (dart 12, 2,2 s) ; rondo sert (+portee), l'élection pèse les éliminés
             const rupt = st.full && cfg.tranchant && pitch.hx - off.adv >= (cfg.tranchant.espace ?? 14);
-            if (dB > 6 && (!long || (rupt && dB < (cfg.tranchant.rayon ?? 26))) && myAdv > st.ball.p[0] * off.sgn + 2) {
+            // L'APPEL COURT EN DIAGONALE (213, cfg.profondeurAvants.diagonale — demande utilisateur : « les ailiers lancent l'attaquant en profondeur » ; mesuré : 3 coïncidences ailier-porteur/attaquant-en-appel par 30 min — l'appel profond exige un espace derrière la ligne qu'il n'y a pas dans le tiers offensif). L'attaquant CENTRAL près de la ligne, ailier porteur LARGE : l'appel est court (4 m), en diagonale vers le côté du ballon, couloir serré — le premier poteau du vrai football. Absente : hier.
+            const diag = diagPre && dB > 5 && dB < 26;
+            if ((dB > 6 && (!long || (rupt && dB < (cfg.tranchant.rayon ?? 26))) && myAdv > st.ball.p[0] * off.sgn + 2) || diag) {
               // LE RÉPERTOIRE DE L'AILIER (125, cfg.courseAilier && st.full — 9/9 darts rentraient) : l'ESPÈCE à la SITUATION (déf. intérieur → DÉBORDE ; large → UNDERLAP), × patte/largeurR/axe ; BANANE au tirage. Absente : hier.
               let deepZ = p.p[2] * 0.55, espece = null;
+              if (diag) { espece = 'diagonale'; deepZ = p.p[2] + Math.sign(st.ball.p[2] - p.p[2] || 1) * 4; }   // (213) vers le côté du ballon, le premier poteau
               if (st.full && cfg.courseAilier && Math.abs(p.p[2]) > pitch.hz * 0.32) {
                 let latD = null, dLat = 99;
                 for (const q of st.players) if (q.team !== atk && !q.keeper && q.down <= 0) {
@@ -763,18 +773,19 @@ function assignMatchJobs(st, cfg) {
                 if (gZ != null) { deepZ = gZ; espece = 'intervalle'; }
                 else { deepZ = Math.sign(p.p[2] || ((st.rnd ? st.rnd() : 0.5) - 0.5)) * Math.min(pitch.hz - 6, Math.abs(p.p[2]) + 6); espece = 'croise'; }
               }
-              const dartAdv = Math.min(off.adv - 0.15, myAdv + (long ? (cfg.tranchant?.dart ?? 12) : 7));
+              const dartAdv = Math.min(off.adv - 0.15, myAdv + (diag ? 4 : long ? (cfg.tranchant?.dart ?? 12) : 7));
               const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
-                defenders.map((q) => q.p), { corridor: 0.9 });
+                defenders.map((q) => q.p), { corridor: diag ? (cfg.profondeurAvants.chas ?? 0.6) : 0.9 });   // (213) la diagonale accepte le chas
               if (lane.open) {
                 // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10) …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE : l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
+                if (diag) p._diagCd = st.t + (cfg.profondeurAvants.cadence ?? 3.5); else   // (213b) la diagonale ne consomme ni le cooldown profond ni le créneau d'équipe
                 p._appelCd = st.t + axe(role(p).appel, 14, 6) / ((p.skill?.otbF ?? 1) ** (st.full && cfg.appelNote ? (cfg.appelNote.pente ?? 2) : 1));   // …OFF THE BALL est une note (151) : le bon rejaillit plus souvent — et la cadence au CARRÉ (210, le patron des pentes du 197 : [0,85 ; 1,15] plafonnait le ratio à 1,35) ; 1^n = 1 exact
-                (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
+                if (!diag) (st._appelAt ??= {})[atk] = st.t + axe(tac(st, atk).style, 6.5, 3.5);
                 // la fenêtre de _pace COUVRE le dart (1,6 ≈ 1,7 s ; rupture 2,2 ≈ 2,3) — elle porte bonus et portée
                 const _dx7 = off.sgn * (dartAdv + 4) - p.p[0], _dz7 = deepZ - p.p[2], _dl7 = hyp(_dx7, _dz7) || 1;
                 // …le burst PORTE sa direction (167) : le solveur sert la course dès le premier pas
-                p._pace = { until: st.t + (long ? 2.2 : 1.6), kind: 'appel', ...(long ? { rupture: true } : {}), next: p._pace?.next ?? st.t + 8, ...(st.full && cfg.courseServie ? { dir: [_dx7 / _dl7, _dz7 / _dl7] } : {}) };
+                p._pace = { until: st.t + (long ? 2.2 : 1.6), kind: 'appel', ...(long ? { rupture: true } : {}), ...(diag ? { esp: 'diagonale' } : {}), next: p._pace?.next ?? st.t + 8, ...(st.full && cfg.courseServie ? { dir: [_dx7 / _dl7, _dz7 / _dl7] } : {}) };   // (213d) l'espèce voyage avec la course
                 st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'appel-profond', by: p.id, ...(espece ? { espece } : {}), ...(long ? { rupture: true } : {}) });
               }
             }
