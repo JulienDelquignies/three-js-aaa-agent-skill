@@ -2117,7 +2117,7 @@ if (__bloc()) {
     const st = makeMatch({ full: true, seed: 3 });
     const cfg = matchCfg({ shotRange: 20, ...over });
     for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
-    st.ball.release('fixture');
+    st.ball.release('arrêt-de-jeu');   // la cause « fixture » n'existe pas au ballon (RELEASES) — le crash muet du shard 6/8, 29 clauses avalées
     for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }   // la trajectoire vide (le gardien attrapait la fixture)
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1], -st.ball.v[2]]);
     st.ball.restart([st.pitch.hx - 9, 0.11, 0], { cause: 'engagement' });
@@ -2173,7 +2173,7 @@ if (__bloc()) {
     const st = makeMatch({ full: true, seed: 5 });
     const cfg = matchCfg({ shotRange: 20, ...over });
     for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
-    st.ball.release('fixture');
+    st.ball.release('arrêt-de-jeu');   // la cause « fixture » n'existe pas au ballon (RELEASES) — le crash muet du shard 6/8, 29 clauses avalées
     for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }
     st.ball.restart([0, 0.11, st.pitch.hz - 2], { cause: 'engagement' });
     st.ball.strike({ speed: 20, dirYaw: Math.PI / 2, elevation: 0.12, spinAxis: [0, 1, 0], spinRev: 0 });
