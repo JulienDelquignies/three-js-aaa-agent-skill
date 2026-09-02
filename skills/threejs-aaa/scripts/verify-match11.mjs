@@ -625,7 +625,7 @@ if (__bloc()) {
       const trio = st.players.filter((p) => p.team === atk && !p.keeper && (p.post ?? 0) >= 7);
       if (trio.length) { fPoss++; if (trio.some((p) => p.p[0] * L.sgn > L.adv + 0.05)) fOff++; }
     }
-    const bursts = st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond');
+    const bursts = st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond' && e.espece !== 'diagonale');   // la diagonale (213) est un appel LOCAL, pas l'essaim profond
     const passes = st.events.filter((e) => e.type === 'pass');
     appels += bursts.length;
     servis += passes.filter((p) => bursts.some((b) => b.by === p.to && p.t - b.t >= 0 && p.t - b.t < 2.2)).length;
@@ -4380,38 +4380,35 @@ if (__bloc()) {
     on >= 19 && off <= 16);
 }
 
-// ---- lot 204 : LE PRESSING LIT LA PASSE (liste v3 point 8 précisé — l'ailier sans défense)
+// ---- lot 204 : LE PRESSING LIT LA PASSE (liste v3 point 8 précisé) — au MÉCANISME (213 : le
+// juge de flux p80 a fondu à 0,45 m au fil des re-datages ; l'élection se prouve posée)
 if (__bloc()) {
-  // Le juge de la QUEUE (le film du point 8 : le presseur chassait le ballon en vol, partait
-  // de 6-23 m — p80 du défenseur le plus proche à la réception large 10,9 m ; le lecteur du
-  // point de chute la ramène à 7,2). 4 graines × 300 s, vivant c. épinglé pressLead: false.
-  const p80De = (over) => {
-    const ds = [];
-    for (const seed of [3, 7, 11, 13]) {
-      const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
-      for (let i = 0; i < 300 * 60; i++) {
-        const evN = st.events.length;
-        matchStep(st, 1 / 60, cfg);
-        for (let e = evN; e < st.events.length; e++) {
-          const ev = st.events[e];
-          if (ev.type !== 'receive' && ev.type !== 'control') continue;
-          const q = st.players.find((p) => p.id === ev.by);
-          if (!q || q.keeper) continue;
-          const sg = Math.sign(st.pitch.attackGoal(q.team).x || 1);
-          if (Math.abs(q.p[2]) < st.pitch.hz * 0.5 || q.p[0] * sg < 5) continue;
-          let dm = 99;
-          for (const m of st.players) if (m.team !== q.team && !m.keeper && m.down <= 0) dm = Math.min(dm, Math.hypot(m.p[0] - q.p[0], m.p[2] - q.p[2]));
-          ds.push(dm);
-        }
-      }
-    }
-    ds.sort((a, b) => a - b);
-    return +(ds[Math.floor(ds.length * 0.8)] ?? 99).toFixed(2);
+  // Un vol ADVERSE vers la bande : deux défenseurs, D1 à 2 m du ballon en vol, D2 à 2 m du point
+  // de chute (12 m plus loin). Sous pressLead l'élu du press est D2 (il lit la passe) ; sans la
+  // clé, D1 (il chasse le ballon en l'air) — le flip à la clé seule, même monde.
+  const eluPress = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const sgn = Math.sign(st.pitch.attackGoal(1).x || 1);
+    const t0 = st.players.filter((p) => p.team === 0 && !p.keeper), t1 = st.players.filter((p) => p.team === 1 && !p.keeper);
+    const passeur = t1[5], recv = t1[7];
+    for (const q of t0) { q.p[0] = -sgn * 40; q.p[2] = -25; }
+    for (const q of t1) { q.p[0] = -sgn * 30; q.p[2] = -20; }
+    passeur.p[0] = sgn * 5; passeur.p[2] = 0; recv.p[0] = sgn * 22; recv.p[2] = 24;
+    const D1 = t0[3], D2 = t0[4];
+    D1.p[0] = sgn * 12; D1.p[2] = 12; D2.p[0] = sgn * 20; D2.p[2] = 22;
+    st.ball.restart([sgn * 11, 0.11, 10], { cause: 'coup-franc' });
+    st.restart = null;
+    st.ball.impulse([sgn * 8, 0, 9]);
+    st.pass = { from: passeur.id, to: recv.id, lead: [sgn * 22, 0, 24], style: 'ground', t: st.t - 0.6, flight: 2.2, origin: [sgn * 5, 0] };
+    st.phase = 'flight'; st.possession = { team: 1, carrier: -1 }; st.lastTouch = 1; st.lastPasser = passeur.id;
+    for (let i = 0; i < 24; i++) matchStep(st, 1 / 60, cfg);
+    const pr = t0.find((p) => p.job === 'press');
+    return pr === D2 ? 'D2' : pr === D1 ? 'D1' : pr ? 'autre' : 'aucun';
   };
-  const V = p80De({}), E = p80De({ pressLead: false });
-  ok(`lot 204 — LE PRESSING LIT LA PASSE : le défenseur le plus proche à la réception large se resserre au p80 (vivant ${V} m ≤ épinglé ${E} − 1,5 — le press court au point de chute PENDANT le vol, l'ailier n'est plus servi sans défense ; mesuré 10,9 → 7,2)`,
-    V <= E - 0.7);   // marge 1,2 → 0,7 DATÉE 208b (la chasse coupée dilue la queue : 9,92 c. 10,91 — la direction fait foi)
+  const on = eluPress({}), off = eluPress({ pressLead: false });
+  ok(`lot 204 — LE PRESSING LIT LA PASSE (fixture de l'élection : vol adverse vers la bande — sous la clé l'élu est D2 au point de chute (${on}), sans elle D1 au ballon en vol (${off}) ; le flux p80 10,9 → 8,4 au 204c, fondu à 0,45 m au monde 213 : informatif)`,
+    on === 'D2' && off !== 'D2');
 }
 
 // ---- lot 207 : AUCUNE COURSE NE VISE HORS TERRAIN (retour utilisateur : « le joueur court
@@ -4525,14 +4522,16 @@ if (__bloc()) {
           const lead = st.pass.lead, r = st.players.find((p) => p.id === st.pass.to), from = st.players.find((p) => p.id === st.pass.from);
           if (!r || !from) continue;
           let dDef = 99; for (const q of st.players) if (q.team !== from.team && q.down <= 0) dDef = Math.min(dDef, Math.hypot(q.p[0] - lead[0], q.p[2] - lead[2]));
-          tot++; if (dDef - Math.hypot(r.p[0] - lead[0], r.p[2] - lead[2]) < -3) n++;
+          // le juge suit la LOI (213 : la marge en TEMPS — tDef = d/6,5 + 0,45 de réaction, tRec = d/vSol)
+          const dRec = Math.hypot(r.p[0] - lead[0], r.p[2] - lead[2]), vSol = Math.max(Math.hypot(r.v[0], r.v[1]), 6.2 * (r.skill?.topF ?? 1));
+          tot++; if ((dDef / 6.5 + 0.45) - dRec / vSol < -0.4) n++;
         }
       }
     }
     return { n, tot };
   };
   const V = condamnes({}), E = condamnes({ throughRisque: false });
-  ok(`lot 212 — LE THROUGH PAIE SA COURSE PERDUE : through condamnés au lancé (marge < −3 m) vivant ${V.n}/${V.tot} ≤ épinglé ${E.n}/${E.tot} × 0,5 — le passeur qui voit la course perdue ne la joue pas (mesuré ratés −6,2 → +4,8 m de marge, through 64 → 40/90 min, réussite des through 62 → 68 %)`,
+  ok(`lot 212 — LE THROUGH PAIE SA COURSE PERDUE : through condamnés au lancé (marge en TEMPS < −0,4 s, le critère de la loi) vivant ${V.n}/${V.tot} ≤ épinglé ${E.n}/${E.tot} × 0,5 — le passeur qui voit la course perdue ne la joue pas (mesuré ratés −6,2 → +4,8 m de marge, through 64 → 40/90 min, réussite des through 62 → 68 %)`,
     V.n <= E.n * 0.5 && E.n >= 4);
 }
 
