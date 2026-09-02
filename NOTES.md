@@ -7266,7 +7266,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      400-600). Le reste de l'écart de temps mort (réel 35-40) tient au
      NOMBRE d'arrêts (5-8 touches/30 min c. ~13 réelles, 3 fautes c. ~8)
      — un autre lot. Le chrono FM en profite : le match de 90 min tient
-     son temps mort.
+     son temps mort. AU SCEAU : l'invariant checkMatch (« sortie jamais
+     reprise en 14 s ») suit désormais la loi (max des espèces × contexte
+     × aléa + marge), 164/165 épinglées (contrastes de pose du monde
+     d'hier) ; shards ciblés verts (2/8, 6/8, 7/8 — pas de banc complet
+     redoublé : le banc précédent avait tout vert sauf ces trois, moteur
+     inchangé). Déployé : chunk Rondo-BcIsBltO.js.
+- 262: LE RYTHME CHANGE (retour utilisateur « c'est trop long tes
+     runs ») : un seul banc complet par lot, jamais redoublé (les shards
+     ciblés + jumeau + bande scellent une correction) ; le sceau complet
+     tous les 2-3 lots ; sondes à 3 graines pour instruire, 6-12 pour
+     décider ; le second lot perf (les boucles structurelles, 45 % du
+     profil) en file. Deux pièges d'attente consignés : une boucle
+     « zéro processus node » attend le serveur MCP du playmode (qui EST
+     un node) ; un timeout de 10 min tue la chaîne mais pas ses enfants.
+     VÉRIFIÉ sans lot : la note passing s'exprime au flux (squads 90 c.
+     20 : réussite 83 c. 74 %, réel ~90/~72). TENTÉE ET REJETÉE : 218 —
+     le relais chaud servi dans sa course (mene/bonus3/capRelais sous
+     uneToucheVive) : la fixture élit le relais dans les 3 géométries
+     (le cap à contre-courant du 131 le déclarait infaisable : 7,6-8,7
+     m/s requis pour 4-6 permis), mais au flux 1 retour/16 et la une-
+     touche 79 → 73 % — les situations sont rares et LE LANCEUR NE
+     SPRINTE PAS (1-5 m/s mesurés à la réception du mur) : le levier est
+     le lanceur, pas le mur. Boutons gardés, défauts = l'hier au bit
+     (empreintes 217 inchangées).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

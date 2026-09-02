@@ -58,38 +58,40 @@ export function uneTouche(st, p, cfg) {
     // contrôle normal reprend ses droits. dose:false : les ballons morts d'hier, au bit.
     const dose = st.full && UT.dose !== false ? (UT.dose === true || UT.dose == null ? {} : UT.dose) : null;
     const bvl0 = hyp(st.ball.v[0], st.ball.v[2]) || 1;
+    // LE RELAIS CHAUD SE SERT DANS SA COURSE (218, V.mene / bonus3 / capRelais — TENTÉE ET REJETÉE à la mesure : la fixture élit le relais dans les 3 géométries, mais au flux 1 retour/16 et la une-touche 79 → 73 % ; les situations sont rares et le lanceur ne sprinte pas (1-5 m/s) — le levier est le LANCEUR. Défauts = l'hier au bit ; les clés restent des boutons. l'entonnoir du mur d'un une-deux : 6/16 « pas de candidat », la ligne mur → PIEDS du coureur traverse le presseur contourné ; le vrai retour va DEVANT lui) : la cible du candidat au relais est m.p + v × mene, le couloir et le dosage se jugent sur ELLE. Absente : les pieds d'hier.
+    const cibleDe = (m) => (V && (m._troisT ?? -1) > st.t && (V.mene ?? 0) > 0) ? [m.p[0] + m.v[0] * (V.mene ?? 0), m.p[2] + m.v[1] * (V.mene ?? 0)] : [m.p[0], m.p[2]];
     const mate = st.players
       .filter((m) => m.team === p.team && m.id !== p.id && !m.keeper && m.down <= 0)
-      .map((m) => ({ m, d: d2(m.p, p.p) }))
+      .map((m) => { const c = cibleDe(m); return { m, c, d: hyp(c[0] - p.p[0], c[1] - p.p[2]) }; })
       .filter((x) => x.d > (V ? (V.dMin ?? 2.5) : 3) && x.d < (UT.portee ?? 14))   // (216) la remise très courte est un candidat
-      .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.m.p[0], 0, x.m.p[2]], blockers).margin ?? 0 }))
+      .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.c[0], 0, x.c[1]], blockers).margin ?? 0 }))
       .filter((x) => x.marge >= (V ? (V.couloir ?? 0.9) : (UT.couloir ?? 0.5)) * ((x.m._troisT ?? -1) > st.t ? (V ? (V.chas ?? 0.22) : (UT.chas ?? 1)) : 1))   // …ET LA UNE-TOUCHE ORDINAIRE VEUT UN COULOIR (216 : à 0,5 m la remise rapide se faisait intercepter — 73 % ; à 0,9 : 77 %, les passes de jeu retrouvent 78 %) ; le relais chaud garde ses 0,2 m absolus (0,9 × 0,22)   // …ET LE RETOUR ACCEPTE LE CHAS (209, dette 196 : les refus mesurés à marge 0,05-0,35 — le donne-et-va rend PAR NATURE dans le couloir étroit du presseur contourné ; le une-deux réel ose la remise rasante). Relais froid : le 0,5 d'hier.
       .map((x) => {
         if (!dose) return x;
-        const cosD = ((x.m.p[0] - p.p[0]) * st.ball.v[0] + (x.m.p[2] - p.p[2]) * st.ball.v[2]) / (x.d * bvl0);
+        const cosD = ((x.c[0] - p.p[0]) * st.ball.v[0] + (x.c[1] - p.p[2]) * st.ball.v[2]) / (x.d * bvl0);
         const cap = 4 + 8 * (0.5 + 0.5 * cosD);
-        const sol = solvePass([p.p[0], 0, p.p[2]], [x.m.p[0], 0, x.m.p[2]], { style: 'ground', arrival: dose.arr ?? 5.0 });
+        const sol = solvePass([p.p[0], 0, p.p[2]], [x.c[0], 0, x.c[1]], { style: 'ground', arrival: dose.arr ?? 5.0 });
         // …ET LA REMISE COURTE EST FAISABLE (216 : 93 refus « pas de candidat » mesurés — le cap de layoff à contre-courant (4-6 m/s, lot 131) refusait la remise en RETRAIT de 3-6 m, LA une-touche la plus courante du football, qui ne peut pas mourir en route)
-        const capV = V && x.d < (V.court ?? 7) ? Math.max(cap, 6, V.capCourt ?? 8.5) : Math.max(cap, 6);
+        const capV = V && (x.m._troisT ?? -1) > st.t ? Math.max(cap, V.capRelais ?? 6, 6) : V && x.d < (V.court ?? 7) ? Math.max(cap, 6, V.capCourt ?? 8.5) : Math.max(cap, 6);   // …ET LE RELAIS CHAUD A SON CAP (218 : le retour du une-deux repart d'où venait le ballon — le cap à contre-courant du 131 le déclarait infaisable (7,6-8,7 m/s requis pour 4-6 permis) alors que le coureur vient À LA RENCONTRE)
         return { ...x, sol, faisable: !!sol && sol.speed <= Math.min(12, capV) };
       })
       .filter((x) => !dose || x.faisable)
-      .sort((a, b) => (b.marge + ((b.m._troisT ?? -1) > st.t ? (UT.bonus3 ?? 1.5) : 0))
-        - (a.marge + ((a.m._troisT ?? -1) > st.t ? (UT.bonus3 ?? 1.5) : 0)))[0];   // le coureur du relais d'abord (lot 111)
+      .sort((a, b) => (b.marge + ((b.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0))
+        - (a.marge + ((a.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0)))[0];   // le coureur du relais d'abord (lot 111)
     if (!mate) refus('ut-candidat');
     if (mate) {
       st.passes++; st.best = Math.max(st.best, st.passes);
       st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: p.id, count: st.passes });
       st.lastTouch = p.team;
       const sigU = (p.skill?.passSigma ?? cfg.execSigma ?? 0.044) * (pressOk ? 1.6 : 1.3);
-      const yawU = Math.atan2(mate.m.p[2] - p.p[2], mate.m.p[0] - p.p[0]) + gauss(st.rnd ?? (() => 0.5)) * sigU;
+      const yawU = Math.atan2(mate.c[1] - p.p[2], mate.c[0] - p.p[0]) + gauss(st.rnd ?? (() => 0.5)) * sigU;   // (218) vers la cible (la course du relais)
       // …ET LE RENVOI S'AMORTIT (lot 51 — « des contrôles pas beaux ») : une première intention
       // DÉVIE le flux, elle ne le renverse pas pleine vitesse (mesuré : un vol de 7 m/s renvoyé
       // à ~180° instantanément — physiquement absurde, visuellement du ping-pong). La vitesse
       // sortante se borne à l'angle de déviation : dans le flux → pleine (12), perpendiculaire
       // → 8, à contre-courant → 4 (le LAYOFF du vrai football : la remise en retrait est douce).
       const bvl = hyp(st.ball.v[0], st.ball.v[2]) || 1;
-      const cosDev = ((mate.m.p[0] - p.p[0]) * st.ball.v[0] + (mate.m.p[2] - p.p[2]) * st.ball.v[2]) / (mate.d * bvl);
+      const cosDev = ((mate.c[0] - p.p[0]) * st.ball.v[0] + (mate.c[1] - p.p[2]) * st.ball.v[2]) / (mate.d * bvl);
       // …dosée : la vitesse RÉSOLUE qui arrive prenable (le filtre de faisabilité a déjà
       // garanti qu'elle tient sous le cap de déviation — le layoff reste doux ET arrive)
       const spdU = mate.sol ? mate.sol.speed
@@ -103,7 +105,7 @@ export function uneTouche(st, p, cfg) {
       // 20 matchs) : la une-touche CHOISIE s'oriente avant — elle se lit comme une passe armée
       // (seenCalme ≥ la réaction max = lecture pleine) ; SEUL le réflexe pressé surprend.
       st._surprise = { t: st.t, seen: pressOk ? 0 : (UT.seenCalme ?? 0.3), n: (st._surprise?.n ?? 0) + 1 };
-      st.pass = { from: p.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'une-touche', t: st.t, flight: mate.sol ? mate.sol.flightTime : mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
+      st.pass = { from: p.id, to: mate.m.id, lead: [mate.c[0], 0, mate.c[1]], style: 'une-touche', t: st.t, flight: mate.sol ? mate.sol.flightTime : mate.d / (spdU * 0.97), origin: [p.p[0], p.p[2]] };
       // …la une-touche NOURRIT LA FIXATION aussi (lot 98 — le même registre que beginPass) :
       // c'est même LA passe qui fixe le mieux (le une-deux côté ballon du vrai football)
       if (cfg.renversement && st.full) {
