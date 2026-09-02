@@ -4696,7 +4696,7 @@ if (__bloc()) {
   // (218b) LA COURSE CHERCHE L'ESPACE (course.espace) : le lanceur pressé derrière-côté (dos = +z),
   // le mur à 4 m, un défenseur qui COUVRE le rendez-vous +z → sous espace la cible part en −z ;
   // sans, dans la couverture (+z). Le flux : retours 9/54 → 16/55 sur 12 graines (réel ~50 %).
-  const cote = (over) => {
+  const cote = (over, skill) => {
     const st = makeMatch({ full: true, seed: 5 });
     const cfg = matchCfg({ shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 1.0, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5, ...over } } });
     const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
@@ -4705,6 +4705,7 @@ if (__bloc()) {
     const foes = st.players.filter((p) => p.team === 1 && !p.keeper);
     for (const p of foes) { p.p[0] = sgn * 40; p.p[2] = 20; }
     c.p[0] = 0; c.p[2] = 0; c.v[0] = 0; c.v[1] = 0; B.p[0] = sgn * 4; B.p[2] = -0.5;
+    if (skill) c.skill = { ...(c.skill ?? {}), ...skill };
     foes[0].p[0] = -sgn * 1.6; foes[0].p[2] = -0.9; foes[1].p[0] = sgn * 7; foes[1].p[2] = 3.5;
     st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
     st.restart = null; st.ball.possess(c.id);
@@ -4715,6 +4716,11 @@ if (__bloc()) {
   const zE = cote({ espace: true }), zS = cote({});
   ok(`lot 218b — LA COURSE DU UNE-DEUX CHERCHE L'ESPACE (cible z ${zE.toFixed(1)} < 0 côté ouvert ; sans espace ${zS.toFixed(1)} > 0 dans la couverture — le flux : retours 9/54 → 16/55)`,
     zE < -1 && zS > 1);
+  // (218d) LA LECTURE EST UNE NOTE : le coureur noté 0 en off the ball (otbF 0 → misread certain) lit le
+  // MAUVAIS côté ; à 50 (otbF 1) aucun tirage — identité au bit (empreintes 218c inchangées).
+  const zM = cote({ espace: true }, { otbF: 0 }), z50 = cote({ espace: true }, { otbF: 1 });
+  ok(`lot 218d — LA LECTURE DU COUREUR EST UNE NOTE (otbF 0 : cible z ${zM.toFixed(1)} > 0 dans la couverture ; otbF 1 : ${z50.toFixed(1)} < 0 l'identité — équipes 20/50/90 : retours 44/71/64 %)`,
+    zM > 1 && z50 < -1);
 }
 
 // ---- lot 218c : LE MUR REMET AU COUREUR (retour aux passes — le donne-et-va se ferme en une touche)
@@ -4727,7 +4733,7 @@ if (__bloc()) {
   // {mene 0,5, capRelais 10, relaisPrio} : la cible dans la course, le cap du retour, le relais
   // chaud faisable DEVANT. Mesuré : 9 remises/16 murs, retours 50 % (réel ~50), une-touche 77 %.
   const { uneTouche } = await import('../assets/starter/src/engine/premiere-intention.js');
-  const elu = (over) => {
+  const elu = (over, skill) => {
     const st = makeMatch({ full: true, seed: 5 });
     const base = matchCfg();
     const cfg = matchCfg({ shotRange: 20, uneTouche: { ...base.uneTouche, p: 1.0 }, ...(over ?? {}) });
@@ -4737,6 +4743,7 @@ if (__bloc()) {
     for (const q of t0) if (![4, 5, 6, 8].includes(t0.indexOf(q))) { q.p[0] = -sgn * 40; q.p[2] = 25; }
     for (const q of t1) { q.p[0] = sgn * 45; q.p[2] = -25; }
     p.p[0] = 0; p.p[2] = 0; from.p[0] = -sgn * 8; from.p[2] = -6;
+    if (skill) p.skill = { ...(p.skill ?? {}), ...skill };
     A.p[0] = sgn * 9; A.p[2] = 2; A.v[0] = sgn * 5; A.v[1] = 0.5; A._troisT = st.t + 2; A._pace = { until: st.t + 1.5, kind: 'un-deux', next: st.t + 6 };
     C.p[0] = sgn * 1; C.p[2] = 4;
     t1[0].p[0] = sgn * 2; t1[0].p[2] = -2.5;
@@ -4751,6 +4758,11 @@ if (__bloc()) {
   const V = elu({}), E = elu({ uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 } });
   ok(`lot 218c — LE MUR REMET AU COUREUR (une touche vers ${V} = A le coureur du une-deux à 9 m en course ; hier ${E} = C l'appui libre — le flux : retours 32 → 50 %, une-touche 77 % tenue)`,
     V === 'A' && E === 'C');
+  // (218d) LE MUR DOIT VOIR SON COUREUR : noté 0 en vision (visionF 0 → la priorité se perd à coup sûr)
+  // il sert l'appui libre ; à 50 (visionF 1) aucun tirage — l'identité.
+  const Vm = elu({}, { visionF: 0 }), V50 = elu({}, { visionF: 1 });
+  ok(`lot 218d — LA VISION DU MUR EST UNE NOTE (visionF 0 : une touche vers ${Vm} = C l'appui ; visionF 1 : ${V50} = A le coureur — l'identité)`,
+    Vm === 'C' && V50 === 'A');
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

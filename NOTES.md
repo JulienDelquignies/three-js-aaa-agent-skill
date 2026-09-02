@@ -7378,6 +7378,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      depuis le 217 : 218 (le lanceur sprinte), 218b (la course cherche
      l'espace), 218c (le mur remet au coureur) — le une-deux du moteur :
      32 → 50 % de retours, le réel.
+- 266: LES NOTES ENTRENT DANS LE UNE-DEUX (218d, course.lecture et
+     uneToucheVive.relaisLecture — le mantra : les attributs par des
+     FACTEURS, jamais des branches). Le coureur mal noté OFF THE BALL lit
+     parfois le mauvais côté (probabilité (1 − otbF) × lecture 2 : otbF
+     0,85 → 30 %) ; le mur mal noté VISION perd parfois la priorité au
+     relais ((1 − visionF) × relaisLecture 2). À 50 et au-dessus AUCUN
+     tirage : le monde par défaut est bit-identique au 218c (empreintes
+     inchangées) — la bonne lecture est déjà la loi, la mauvaise note la
+     dégrade. Mesuré (équipes homogènes, 6 × 300 s) : retours du une-deux
+     44 % à 20, 71 % à 50, 64 % à 90 (50 ≈ 90 : l'identité ; 20 chute).
+     Le rôle et la tactique entraient déjà : le tirage du une-deux ×
+     axe(relation) × axe(role.appel) (119), la vitesse × topF (218).
+     Clauses 218d au mécanisme (otbF 0 → le mauvais côté ; visionF 0 →
+     l'appui). VÉRIFIÉ SANS LOT (tableau des passes du monde 218c) :
+     tenue libre 2,4 s / pressée 1,4 s, 519 passes/90 min/équipe, longues
+     62 % (6 graines), passes en touche ~3 % (les « 5,6 % » comptaient
+     tirs et dégagements enregistrés comme passes), réussite de jeu
+     74-78 % — au réel ; throughs STRICTS 21/90 min/équipe (réel 5-10,
+     réussite 50 c. 30-45) : deux fois le réel, mais c'est la profondeur
+     demandée par l'utilisateur (213) — consigné, pas corrigé.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

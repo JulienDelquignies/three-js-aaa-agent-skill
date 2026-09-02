@@ -60,6 +60,11 @@ export function uneTouche(st, p, cfg) {
     const bvl0 = hyp(st.ball.v[0], st.ball.v[2]) || 1;
     // LE RELAIS CHAUD SE SERT DANS SA COURSE (218, V.mene / bonus3 / capRelais — TENTÉE ET REJETÉE à la mesure : la fixture élit le relais dans les 3 géométries, mais au flux 1 retour/16 et la une-touche 79 → 73 % ; les situations sont rares et le lanceur ne sprinte pas (1-5 m/s) — le levier est le LANCEUR. Défauts = l'hier au bit ; les clés restent des boutons. l'entonnoir du mur d'un une-deux : 6/16 « pas de candidat », la ligne mur → PIEDS du coureur traverse le presseur contourné ; le vrai retour va DEVANT lui) : la cible du candidat au relais est m.p + v × mene, le couloir et le dosage se jugent sur ELLE. Absente : les pieds d'hier.
     const cibleDe = (m) => (V && (m._troisT ?? -1) > st.t && (V.mene ?? 0) > 0) ? [m.p[0] + m.v[0] * (V.mene ?? 0), m.p[2] + m.v[1] * (V.mene ?? 0)] : [m.p[0], m.p[2]];
+    // …ET LE MUR DOIT VOIR SON COUREUR (218d, V.relaisLecture — le mantra) : la priorité au relais chaud
+    // se perd parfois chez le mur mal noté VISION — probabilité (1 − visionF) × relaisLecture (visionF
+    // 0,85 → 30 %) ; à 50 et au-dessus aucun tirage : l'identité au bit.
+    const misV = V?.relaisPrio ? Math.max(0, 1 - (p.skill?.visionF ?? 1)) * (V.relaisLecture ?? 2) : 0;
+    const prioV = !!V?.relaisPrio && !(misV > 0 && (st.rnd ? st.rnd() : 0.5) < misV);
     const mate = st.players
       .filter((m) => m.team === p.team && m.id !== p.id && !m.keeper && m.down <= 0)
       .map((m) => { const c = cibleDe(m); return { m, c, d: hyp(c[0] - p.p[0], c[1] - p.p[2]) }; })
@@ -76,7 +81,7 @@ export function uneTouche(st, p, cfg) {
         return { ...x, sol, faisable: !!sol && sol.speed <= Math.min(12, capV) };
       })
       .filter((x) => !dose || x.faisable)
-      .sort((a, b) => ((V?.relaisPrio ? (((b.m._troisT ?? -1) > st.t) - ((a.m._troisT ?? -1) > st.t)) : 0)   // (218c, V.relaisPrio) LE RELAIS CHAUD FAISABLE PASSE DEVANT : sans bloqueur la marge d'un appui vaut 99 et écrasait le coureur (marge 1-3 + bonus) — 11 murs en une touche, 1 retour ; absente : le barème d'hier
+      .sort((a, b) => ((prioV ? (((b.m._troisT ?? -1) > st.t) - ((a.m._troisT ?? -1) > st.t)) : 0)   // (218c, V.relaisPrio) LE RELAIS CHAUD FAISABLE PASSE DEVANT : sans bloqueur la marge d'un appui vaut 99 et écrasait le coureur (marge 1-3 + bonus) — 11 murs en une touche, 1 retour ; absente : le barème d'hier
         || ((b.marge + ((b.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0))
         - (a.marge + ((a.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0)))))[0];   // le coureur du relais d'abord (lot 111)
     if (!mate) refus('ut-candidat');

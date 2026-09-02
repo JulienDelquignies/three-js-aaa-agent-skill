@@ -513,6 +513,11 @@ export function strikeNow(st, c, cfg) {
             return Math.min(lane.margin, near) + (k === cote ? 0.3 : 0);
           };
           coteE = score(1) >= score(-1) ? 1 : -1;
+          // …ET LA LECTURE EST UNE NOTE (218d, C.lecture — le mantra : les attributs entrent par des
+          // facteurs) : le coureur mal noté OFF THE BALL lit parfois le mauvais côté — probabilité
+          // (1 − otbF) × lecture (otbF 0,85 → 30 %) ; à 50 et au-dessus aucun tirage : l'identité au bit.
+          const mis = Math.max(0, 1 - (c.skill?.otbF ?? 1)) * (C.lecture ?? 2);
+          if (mis > 0 && (st.rnd2 ? st.rnd2() : 0.5) < mis) coteE = -coteE;
         }
         const dx = ux, dz = uz + coteE * (C.ecart ?? 3), dl = hyp(dx, dz) || 1;
         c._pace.cible = [c.p[0] + dx, c.p[2] + dz]; c._pace.dir = [dx / dl, dz / dl];
