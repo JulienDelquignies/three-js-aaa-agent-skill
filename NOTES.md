@@ -7460,7 +7460,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le monde. Dettes hors contrat consignées : slide (fixture « les jambes
      avant le ballon » sans faute), circuits ×2, dribble (latence 1,05 c.
      1,0), loi12 (meute 8,9 c. 8,4) — des flux re-datés jamais enchaînés.
-     Rejoués : part-tint 18 ✓, kit 5 ✓, sync 9 ✓, tactics 11 ✓.
+     Rejoués : part-tint 18 ✓, kit 5 ✓, sync 9 ✓, tactics 11 ✓. DÉPLOYÉ
+     (capture playmode validée : maillots rouges/blancs saturés, ballon,
+     stade ; chunk Rondo-Qu4D-wm-.js — propreTiers et relaisPrio grepables
+     à l'alias). En ligne : 218 → 219b.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
