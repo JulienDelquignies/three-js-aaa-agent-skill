@@ -7232,7 +7232,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      empreintes d07335bbdf40f098 / 5599439a4bccb612, bande 18/20
      fraîches (201-220). Clause : uneTouche DIRECT (tirage forcé à 1) —
      la remise en retrait de 4 m à contre-courant sous presse part sous
-     la clé, jamais sans.
+     la clé, jamais sans. AU SCEAU : deux clauses re-jugées — « au calme
+     on contrôle » (la scène tire à 0,3 : sous le 216 la une-touche calme
+     tire à 35 % et PART — le nouveau contrat, le réel ; l'ancien se juge
+     à l'hier épinglé) et la 194 (le gardien prend 4 c. 10 claquettes :
+     la une-touche fait 57 tirs c. 88 par 12 × 300 s — 43 c. 66/90 min
+     pour les deux équipes, PLUS PRÈS du réel 25-30 — et le mix de tirs
+     change ; la fixture du gardien dérape (l'attaquant posé reprend,
+     handling relève le seuil du missile) : la clause s'épingle au
+     monde 215 où son juge parle). La leçon : le jeu en première
+     intention tire MOINS — et c'est le réel.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

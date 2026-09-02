@@ -383,8 +383,12 @@ if (__bloc()) {
     !!sous.ut && sous.ut.by === sous.r.id && sous.ut.to === sous.m.id);
   ok(`…et elle SURPREND (lot 50 : fenêtre aveugle posée à l'instant du départ, seen=${sous.st._surprise?.seen} — pas d'armé à lire, toute la défense paie sa réaction pleine)`,
     !!sous.ut && !!sous.st._surprise && Math.abs(sous.st._surprise.t - sous.ut.t) < 0.02 && sous.st._surprise.seen === 0);
-  const calme = scene({}, false);
-  ok(`au CALME on contrôle (même scène sans presseur : une-touche=${!!calme.ut}, phase=${calme.st.phase} — la première intention est l'arme du pressé, pas un tic)`,
+  // RE-CONTRAT 216 : au CALME la une-touche est désormais un TIRAGE (uneToucheVive.base 0,7 ×
+  // calme 0,5 = 35 % — le réel joue en première intention à tout style) ; sous le tirage forcé à
+  // 0,3 de la scène elle PART. L'ancien contrat « l'arme du pressé, pas un tic » se juge à l'hier
+  // épinglé (uneToucheVive: false) — daté.
+  const calme = scene({ uneToucheVive: false }, false);
+  ok(`au CALME d'hier on contrôle (épinglé uneToucheVive: false, même scène sans presseur : une-touche=${!!calme.ut}, phase=${calme.st.phase}) — au 216 la une-touche calme est un tirage à 35 %`,
     !calme.ut && calme.st.phase === 'carry');
   const sab = scene({ uneTouche: false }, true);
   ok(`sabotage « le monde à deux touches » attrapé (uneTouche:false, même scène pressée : une-touche=${!!sab.ut} — le contrôle obligatoire d'hier, nommé)`,
@@ -4292,7 +4296,7 @@ if (__bloc()) {
     }
     return { prises, claques };
   };
-  const V = modesDe({});
+  const V = modesDe({ uneToucheVive: false });   // épinglée au monde 215 au 216 (le juge de flux dépend du MIX de tirs : la une-touche fait 57 tirs c. 88 / 12 × 300 s — 43 c. 66/90 min, plus près du réel 25-30 — et 4 prises c. 18)
   ok(`lot 194 — LA PRISE À DEUX MAINS : le gardien PREND plus qu'il ne claque (${V.prises} prises ≥ ${V.claques} claquettes sur 12 × 300 s — le ratio du réel ~55/35 ; avant : 4/12 inversé, 8 claquettes à deux mains) ; le missile re-calibré à 21 (daté : p50 des tirs 19,4 — conversion 30 → 21 %)`,
     V.prises >= V.claques);
 }
