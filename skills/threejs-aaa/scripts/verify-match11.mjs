@@ -3037,7 +3037,7 @@ if (__bloc()) {
     const offres = [], soutiens = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, ...over });   // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée)
+      const cfg = matchCfg({ shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée)
       let ep = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
