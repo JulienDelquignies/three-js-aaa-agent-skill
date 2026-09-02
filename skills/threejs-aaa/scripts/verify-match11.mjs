@@ -3496,7 +3496,7 @@ if (__bloc()) {
   //     Même monde, même sortie fabriquée 2 frames plus tard — seule la tactique diffère.
   const toucheAt = (tempo) => {
     const st = makeMatch({ full: true, seed: 9, tactics: [{ tempo }, { tempo }] });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ tempsMort: false });   // épinglé 217 : la clause mesure un contraste de POSE dans le monde d'hier (les cérémonies réelles écrasent l'écart)
     st.lastTouch = 0;
     st.restart = null;
     st.ball.restart([0, 0.11, (st.pitch.halfW ?? 34) + 2], { cause: 'touche' });   // posé hors ligne
@@ -3533,7 +3533,7 @@ if (__bloc()) {
   // 0 offensives — la dette « touches organiques ») : la preuve est au MÉCANISME.
   const jet = (cpa) => {
     const st = makeMatch({ full: true, seed: 9, tactics: [{ cpa }, {}] });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ tempsMort: false });   // épinglé 217 : la clause mesure un contraste de POSE dans le monde d'hier (les cérémonies réelles écrasent l'écart)
     const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
     st.lastTouch = 1; st.restart = null;
     st.ball.restart([sg * (st.pitch.hx - 12), 0.11, st.pitch.hz + 1.5], { cause: 'touche' });

@@ -7,6 +7,7 @@ import { hyp } from './hyp.js';
 /** CONTRAT DU MATCH — par-dessus checkRondo (téléports/essaims) : personne ne tire, score ≠ buts,
  *  sorties sans remise nommée, gardien errant, remises volées, un jeu qui ne progresse jamais. */
 export function checkMatch(st, trace, cfg = matchCfg()) {
+  const fen = cfg?.tempsMort ? Math.max(...Object.entries(cfg.tempsMort).filter(([k]) => !['traine', 'presse'].includes(k)).map(([, v]) => v)) * 1.35 * 1.2 + 6 : 14;   // (217) la fenêtre de reprise suit la loi des cérémonies : max des espèces × contexte × aléa + marge — 14 s d'hier sans la clé
   const issues = [];
   const evs = st.events ?? [];
   const shots = evs.filter((e) => e.type === 'shot');
@@ -31,7 +32,7 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   // chaque sortie SUIVIE d'une reprise (6 s) ; coupée par la fin ≠ perdue (inFlight — sinon le contrat dépend du chrono).
   const lastT = trace.length ? trace[trace.length - 1].t : 0;
   // …la fenêtre suit L'ÉCHELLE DU TERRAIN : 6 s au réduit ; un corner du 105 m se PORTE sur ~27 m (7,4 s mesurés, graine 7) — la borne plate accusait un porté légal de gel
-  const winR = Math.max(6, (st.pitch?.hx ?? 0) * 0.27);   // ×0,19 → ×0,27 ≈ 14 s (171) : la sortie qui FUIT le long de la bordure + le portage = 10,5 s légitimes mesurés (graine 7 t=46,5) — le garde-fou vise le GEL (20 s+), pas la remise lente
+  const winR = Math.max(6, (st.pitch?.hx ?? 0) * 0.27, fen);   // …ET LA LOI DES CÉRÉMONIES (217) : sous cfg.tempsMort la reprise attend jusqu'à max(espèces) × contexte × aléa — la fenêtre suit   // ×0,19 → ×0,27 ≈ 14 s (171) : la sortie qui FUIT le long de la bordure + le portage = 10,5 s légitimes mesurés (graine 7 t=46,5) — le garde-fou vise le GEL (20 s+), pas la remise lente
   for (const o of sorties) {
     if (o.t > lastT - winR) continue;
     const pr = prises.find((p) => p.t >= o.t && p.t <= o.t + winR);
