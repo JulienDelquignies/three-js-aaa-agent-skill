@@ -7474,6 +7474,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      d'aile 12/90 min (3/4 réussies) — au réel (10-20 par match) ; le
      « 0,3/match » de l'annexe circuits mesure autre chose (dette hors
      contrat). LE TABLEAU DES PASSES EST AU RÉEL sur tous ses postes.
+     DETTE FERMÉE : l'épisode-limite Loi 17 (graine 17, t 194,5 — 250)
+     n'existe plus au monde 219b (tir à 194,1 volé, ballon gardé) — non
+     reproductible, sans clause à re-fonder.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
