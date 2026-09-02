@@ -111,6 +111,7 @@ export function choosePass(st, cfg = RONDO) {
   // LE CONTRE NE RECULE PAS (189) : le porteur en surnombre (enLance) paie CHER toute passe
   // arrière — le terme au score, chirurgical (les latérales/avant restent jouables)
   const _lanceC = enLance(st, c, cfg, null);
+  const _force = st.full && cfg.passeSure && st.hold >= (cfg.holdMax ?? 3) - (cfg.passeSure.avant ?? 0.4);   // (215) la fenêtre de la passe forcée
   const _gSL = Math.sign(st.pitch?.attackGoal?.(c.team)?.x || 1);
   // LA LOI 11 EST DANS LE CERVEAU AVANT D'ÊTRE DANS LE SIFFLET (cfg.offside — 11c11 seulement) :
   // on ne SERT pas un coéquipier en position de hors-jeu. La position se juge MAINTENANT ; la
@@ -407,6 +408,7 @@ export function choosePass(st, cfg = RONDO) {
         && Math.sign(st.pitch.attackGoal(c.team).x || 1) * (m.p[0] - c.p[0]) > 8 ? cfg.moments.vertical : 0)
       + couloirB + ecarteB                                    // le couloir ouvert (lot 99) + la sortie d'axe (lot 105)
       + (st.full && cfg.unDeux && (m._troisT ?? -1) > st.t ? (cfg.unDeux.retour ?? 0) : 0)   // …ET LE COUREUR DU UNE-DEUX EST LA CIBLE (209, dette 196 : le mur contrôlait puis choisissait un AUTRE — choosePass ignorait le relais ; 3 retours/23. Le donne-et-va se sert AUSSI au choix posé — clé absente : 0, l'hier)
+      + (_force ? (lane?.margin ?? 0) * (cfg.passeSure.poids ?? 1.5) * (2.075 - (c.skill?.composureF ?? 1.075)) : 0)   // LA PASSE FORCÉE SE JOUE SÛRE (215, cfg.passeSure — 10 % des passes partent au holdMax à 74 % de réussite : le forcé prime le COULOIR LE PLUS LARGE, × sang-froid (composureF, 1 exact au 50) ; le réel ne perd pas le ballon sur une passe forcée, il la joue en retrait)
       + (gardienOk && m.keeper ? (cfg.sortieGardien?.bonus ?? 5.2)
         * Math.max(Math.max(0, (0.5 - (st.full ? tac(st, c.team).style : 0.5)) * 2),
           // …ET LA DÉTRESSE (171b, sous-clé — retour utilisateur : 0 retrait/30 min mesuré,
@@ -459,7 +461,7 @@ export function choosePass(st, cfg = RONDO) {
         dangerB = (cfg.dangerPasse.bonus ?? 2) * axe(tac(st, c.team).mentalite ?? 0.5, 0.7, 1.3) * (c.skill?.visionF ?? 1);
     }
     const scT = through ? score + (cfg.throughBall?.bonus ?? 0.6) + tranchB - risqueB + dangerB : -Infinity;
-    const useT = through && !(st.full && cfg.throughRisque && scT < score);
+    const useT = through && !_force && !(st.full && cfg.throughRisque && scT < score);   // (215) forcé : jamais en profondeur
     if (!best || (useT ? scT : score) > best.score) best = useT
       ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }
       : { to: m, lead, style, score, lane, dist: d, bascule };

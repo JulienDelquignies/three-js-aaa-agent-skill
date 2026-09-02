@@ -199,7 +199,8 @@ export const MATCH = {
                           // — un monde aval où les ballons filent peut la rallumer).
   throughRisque: { parMetre: 0.6, cap: 4, temps: { vDef: 6.5, react: 0.45, parSeconde: 6 } },  // 213 : la marge en TEMPS (temps absent : la statique du 212)
   profondeurAvants: { chas: 0.3, diagonale: true, cadence: 3.5, anticipe: true },
-  dangerPasse: { bonus: 2 },  // 213 : le rendez-vous dans la surface vaut son danger (× mentalite × visionF). Absente : 0.  // 213 : le through vers un coureur en appel dans le tiers
+  dangerPasse: { bonus: 2 },
+  passeSure: { avant: 0.4, poids: 1.5 },  // 215 : la passe FORCÉE (holdMax − avant) se joue sûre — le couloir le plus large prime, jamais en profondeur. Absente : le barème d'hier.  // 213 : le rendez-vous dans la surface vaut son danger (× mentalite × visionF). Absente : 0.  // 213 : le through vers un coureur en appel dans le tiers
                           // offensif accepte le couloir serré (× chas) — la passe glissée de
                           // l'ailier à l'attaquant, de l'attaquant à l'ailier. Absente : hier.  // 212 : le through PAIE sa course perdue — la
                           // marge (déf − receveur au point de chute) négative coûte au barème,

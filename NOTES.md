@@ -7181,6 +7181,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      liste de démonstration au showcase (le vrai nom vient du squad).
      Validé au pixel (RICHARD/6, THOMAS/4, ROBERT/5), identité sim au bit
      (4a96bed20e20c399 / 7221e3da645996a8), verify-kit 5 ✓.
+- 259: Lot 215 — LA PASSE FORCÉE SE JOUE SÛRE (retour aux passes). D'abord
+     l'instrument corrigé : le « 72 % » du tableau de bord comptait
+     dégagements, têtes et touches comme des passes TENTÉES — les passes
+     de JEU réussissent à 78 % (réel 75-85) ; la dette « réussite »
+     était pour moitié un artefact. Les classes faibles : through 48 %
+     (le prix du danger du 213, réel 40-60), le porteur LIBRE à 74 %
+     (moins que pressé 78 — il use de son temps pour tenter la passe qui
+     tue), et les FORCÉES au holdMax (10 % des passes) à 72-74 %. Le
+     soutien du porteur qui tient n'était PAS la cause : les options
+     ouvertes montent pendant la tenue (2,38 → 2,50). cfg.passeSure
+     { avant: 0.4, poids: 1.5 } : dans la fenêtre holdMax − avant, le
+     COULOIR LE PLUS LARGE prime (× (2,075 − composureF) — le sang-froid
+     trouve la sûre, 1 exact au 50) et JAMAIS en profondeur — le réel ne
+     perd pas le ballon sur une passe forcée, il la joue en retrait.
+     APPARIÉ 12 graines : forcées 72 → 76 %, toutes 78 → 77 (bruit —
+     746 c. 789 passes, la possession conservée espace les passes).
+     Jumeau au bit (4a96bed20e20c399 / 7221e3da645996a8), seed 7
+     re-datée c40af2e3d9b68401, bande 20/20 fraîches (181-200). Clause :
+     la fixture choosePass du 213 + un soutien sûr — libre → le through,
+     forcé → le soutien, forcé sans clé → le through (la première
+     géométrie « couloir étroit devant / large de côté » ne créait pas de
+     tension : le barème de base évite déjà fortement l'étroit).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
