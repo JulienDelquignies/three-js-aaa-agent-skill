@@ -7470,6 +7470,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la prédiction (191, predit) → épinglée predit:false. part-tint,
      tactics et slide entrent dans la liste du contrat de bancs.mjs (des
      secondes chacun) : un banc jamais enchaîné pourrit en silence.
+     VÉRIFIÉ SANS LOT : renversements 9/90 min et passes qui changent
+     d'aile 12/90 min (3/4 réussies) — au réel (10-20 par match) ; le
+     « 0,3/match » de l'annexe circuits mesure autre chose (dette hors
+     contrat). LE TABLEAU DES PASSES EST AU RÉEL sur tous ses postes.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
