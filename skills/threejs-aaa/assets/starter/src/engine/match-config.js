@@ -608,6 +608,13 @@ export const MATCH = {
                           // (min-max m) — la cloche haute vise la ligne, le retour est
                           // plus lent que le vol. L'audace × longF (l'attribut longShots).
                           // Absente : le gardien avancé impuni d'hier.
+  // LE DRIBBLE EST UN RÔLE, UN LIEU ET UNE CADENCE (219, cfg.dribble && st.full — mesuré : 133 tentatives/30 min
+  // hors doublons (réel 10-15), sur TOUS les postes, à 21 m de la ligne (le réel dribble sur l'aile). Facteurs
+  // sur les portes de skills-sim (le tirage reste le même : l'hier au bit quand la clé est absente) : l'aile
+  // × aile, l'axe × axe, le tiers propre × propreTiers, le tiers adverse × adverseTiers ; cadence : un joueur
+  // ne retente pas avant cadence s × axe(role.dribble, 1.5, 0.5) — et l'axe de rôle `dribble` (identité 0,5)
+  // multiplie tout [0,4 ; 1,6]. Les notes (gesteF²) restent celles du 197.
+  dribble: { aile: 1.3, axe: 0.85, propreTiers: 0.5, adverseTiers: 1.15, cadence: 60, volume: 0.35 },   // cadence 60 : un ailier (rôle 1) retente au plus toutes les 30 s, un stoppeur (0) toutes les 90 — le réel : 5-8 dribbles/90 min pour un ailier
   unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5, espace: true } },   // espace (218b) : la course cherche le CÔTÉ OUVERT (couloir mur → cible + rendez-vous) — retours 9/54 → 16/55 sur 12 graines   // course (218) : LE LANCEUR SPRINTE — cible à m dans le dos du presseur (ecart de côté, élan mélangé), vitesse de chasse ; mesuré avant : 2,3 m/s à 0,3 s (footing), 1 retour/16 ; après : 5,0 m/s, 5/24  // calibré 209 : 6 laissait A perdre de 1,9 contre le soutien facile (le chip du chas paie son malus lofted) — 23 % de retours c. ~50 réel  // dur 1,2 → 2,4 CALIBRÉ 209 (dette 196 : la fenêtre courait depuis le LANCÉ — le vol la mangeait, p50 restant 0,33 s au toucher du mur ; 2,4 couvre vol + décision, la course du donne-et-va dure)
                           // LE UNE-DEUX (11c11, st.full — lot 119) : sur une passe COURTE
                           // (< dist m) d'un passeur PRESSÉ (< press m), le passeur ENCHAÎNE

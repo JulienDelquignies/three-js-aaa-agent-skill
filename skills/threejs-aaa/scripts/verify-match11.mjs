@@ -4765,5 +4765,27 @@ if (__bloc()) {
     Vm === 'C' && V50 === 'A');
 }
 
+// ---- lot 219 : LE DRIBBLE EST UN RÔLE, UN LIEU ET UNE CADENCE (le mantra — mesuré : 133 tentatives/30 min)
+if (__bloc()) {
+  // Mesuré avant : 133 tentatives/30 min hors doublons (dribbles vrais 58, réel 15-25), sur TOUS les
+  // postes, à 21 m de la ligne la plus proche (11 % sur l'aile — le réel dribble sur l'aile).
+  // cfg.dribble : facteurs sur les portes de tentative de skills-sim (le tirage est consommé de la
+  // même façon — clé absente : l'hier au bit, jumeau vérifié) : aile/axe, tiers propre/adverse,
+  // volume, cadence par joueur × axe(role.dribble) ; l'axe de rôle `dribble` (identité 0,5).
+  // Le juge au MÉCANISME : dribM, la fonction pure — rôle, lieu, cadence, identité.
+  const { dribM } = await import('../assets/starter/src/engine/skills-sim.js');
+  const st = makeMatch({ full: true, seed: 5 });
+  const cfg = matchCfg({ shotRange: 20 }), off = matchCfg({ shotRange: 20, dribble: false });
+  const sgn = Math.sign(st.pitch.attackGoal(0).x || 1), hz = st.pitch.hz, hx = st.pitch.hx;
+  const c = st.players.find((p) => p.team === 0 && !p.keeper);
+  const at = (x, z, role) => { c.p[0] = sgn * x; c.p[2] = z; c.role = role ? { ...role } : undefined; c._dribAt = -99; return dribM(st, c, cfg); };
+  const identite = at(0, 0, null), absent = (() => { c.p[0] = hz * 0.9; c.p[2] = hz * 0.9; c.role = undefined; c._dribAt = -99; return dribM(st, c, off); })();
+  const aile = at(0, hz * 0.8, null), axe0 = at(0, 0, null), propre = at(-hx * 0.5, 0, null), adverse = at(hx * 0.5, 0, null);
+  const roleHaut = at(0, 0, { dribble: 1 }), roleBas = at(0, 0, { dribble: 0 });
+  c.p[0] = 0; c.p[2] = 0; c.role = undefined; c._dribAt = st.t; const enCadence = dribM(st, c, cfg);
+  ok(`lot 219 — LE DRIBBLE EST UN RÔLE, UN LIEU ET UNE CADENCE (clé absente ${absent.toFixed(2)} = 1 l'identité ; volume ${identite.toFixed(2)} ; aile ${aile.toFixed(2)} > axe ${axe0.toFixed(2)} ; tiers propre ${propre.toFixed(2)} < adverse ${adverse.toFixed(2)} ; rôle 1 ${roleHaut.toFixed(2)} > rôle 0 ${roleBas.toFixed(2)} ; en cadence ${enCadence} — le flux : dribbles vrais 58 → 28/30 min, sur l'aile 11 → 27 %)`,
+    Math.abs(absent - 1) < 1e-9 && aile > axe0 && propre < adverse && roleHaut > roleBas && enCadence === 0 && identite < 1);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

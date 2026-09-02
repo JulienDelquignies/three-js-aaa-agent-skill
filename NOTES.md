@@ -7401,6 +7401,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      monde par défaut bit-identique au 218c (banc 218c fait foi) ; shards
      4/8 (32 ✓) et 5/8 (35 ✓) — clauses 218 et blocs à équipes notées —
      et annexe attributes (27 ✓) rejoués verts.
+- 267: LE DRIBBLE EST UN RÔLE, UN LIEU ET UNE CADENCE (219, cfg.dribble +
+     axe de rôle `dribble` — le mantra). Chemin : la dette des touches
+     (8/30 min c. ~13) → la sonde des sources : tacles 35 % de sorties,
+     mais ZÉRO touche venue d'un dribble parce que les dribbles vivent au
+     CENTRE (21 m de la ligne, 11 % sur l'aile) et PARTOUT (133
+     tentatives/30 min hors doublons « vendu », dribbles vrais 58 c. 15-25
+     réels ; les stoppeurs autant que les ailiers). Les portes de
+     skills-sim ne connaissaient que le flair de la persona et gesteF².
+     La loi : dribM, un multiplicateur des portes — rôle axe(dribble)
+     [0,4 ; 1,6], lieu (aile 1,3 / axe 0,85 ; tiers propre 0,5 / adverse
+     1,15), volume 0,35, cadence 60 s × axe(rôle, 1,5, 0,5) par joueur.
+     Le tirage est consommé pareil : clé absente = l'hier au bit (jumeau
+     vérifié — après correction : axe(0,5 ; 0,5 ; 1,6) valait 1,05, les
+     bornes doivent être centrées sur 1). Mesuré : dribbles vrais 58 → 28
+     /30 min, sur l'aile 11 → 27 %, défenseurs 25 % des tentatives ; la
+     cadence seule ne mordait pas (12 joueurs sur 22 tentaient une fois par
+     5 min : le volume est la LARGEUR). Les touches restent 8 : le dribble
+     d'aile ne pousse pas le ballon dehors (dette suivante : le ballon du
+     duel et du dribble a peu d'énergie — 1,4-3,2 m/s d'impulsion en
+     duel.js, réel 5-10). TENTÉE SANS GAIN (perf 2) : le vol du ballon
+     sans allocation (aeroAccel/cross) — bit-identique mais 0,575 c. 0,575
+     ms/step : V8 élidait déjà ; retirée. Le profil 218d : locomotion ~30 %,
+     attribution 13 %, prédictions de ballon ~19 %, GC 6,5 % — un gain
+     réel demande une restructuration, pas un micro-patch. VÉRIFIÉ :
+     les sorties de passes « 5,6 % » comptaient tirs et dégagements ;
+     les vraies passes en touche ~3 % (réel 2-3).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
