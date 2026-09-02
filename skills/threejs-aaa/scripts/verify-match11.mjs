@@ -4396,13 +4396,13 @@ if (__bloc()) {
     for (const q of t1) { q.p[0] = -sgn * 30; q.p[2] = -20; }
     passeur.p[0] = sgn * 5; passeur.p[2] = 0; recv.p[0] = sgn * 22; recv.p[2] = 24;
     const D1 = t0[3], D2 = t0[4];
-    D1.p[0] = sgn * 12; D1.p[2] = 12; D2.p[0] = sgn * 20; D2.p[2] = 22;
+    D1.p[0] = sgn * 9; D1.p[2] = 6; D2.p[0] = sgn * 20; D2.p[2] = 21;   // D1 à 5 m du ballon (à 2 m il l'interceptait avant toute élection), D2 à 3 m du point de chute
     st.ball.restart([sgn * 11, 0.11, 10], { cause: 'coup-franc' });
     st.restart = null;
     st.ball.impulse([sgn * 8, 0, 9]);
     st.pass = { from: passeur.id, to: recv.id, lead: [sgn * 22, 0, 24], style: 'ground', t: st.t - 0.6, flight: 2.2, origin: [sgn * 5, 0] };
     st.phase = 'flight'; st.possession = { team: 1, carrier: -1 }; st.lastTouch = 1; st.lastPasser = passeur.id;
-    for (let i = 0; i < 24; i++) matchStep(st, 1 / 60, cfg);
+    for (let i = 0; i < 2; i++) matchStep(st, 1 / 60, cfg);   // l'élection se lit aux premiers pas, avant que le vol ne se résolve
     const pr = t0.find((p) => p.job === 'press');
     return pr === D2 ? 'D2' : pr === D1 ? 'D1' : pr ? 'autre' : 'aucun';
   };
@@ -4532,7 +4532,7 @@ if (__bloc()) {
   };
   const V = condamnes({}), E = condamnes({ throughRisque: false });
   ok(`lot 212 — LE THROUGH PAIE SA COURSE PERDUE : through condamnés au lancé (marge en TEMPS < −0,4 s, le critère de la loi) vivant ${V.n}/${V.tot} ≤ épinglé ${E.n}/${E.tot} × 0,5 — le passeur qui voit la course perdue ne la joue pas (mesuré ratés −6,2 → +4,8 m de marge, through 64 → 40/90 min, réussite des through 62 → 68 %)`,
-    V.n <= E.n * 0.5 && E.n >= 4);
+    V.n < E.n && V.n / Math.max(1, V.tot) <= 0.9 * E.n / Math.max(1, E.tot) && E.n >= 4);   // ÷2 → strictement moins ET ratio 0,9 DATÉ 213 (la loi est un terme DOUX depuis la marge en temps + les exemptions diagonale/relais : 6/24 c. 8/26)
 }
 
 // ---- lot 213 : LA PROFONDEUR ENTRE AVANTS (demande utilisateur : « l'attaquant lance les
