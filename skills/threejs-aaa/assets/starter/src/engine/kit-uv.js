@@ -78,8 +78,8 @@ export function drawKit(theme, { number = null, name = null, initials = null, uv
     let fs = Math.round(h * 0.11);
     ctx.font = `bold ${fs}px system-ui, sans-serif`;
     let widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.1), total = widths.reduce((a, b) => a + b, 0);
-    if (total > w * 0.85) {   // le nom long tient dans 85 % du dos (la couture n'est pas un bord de flocage)
-      fs = Math.max(8, Math.floor(fs * (w * 0.85) / total)); ctx.font = `bold ${fs}px system-ui, sans-serif`;
+    if (total > w * 0.7) {   // le nom tient dans 70 % de la boîte : le panneau du dos s'ENROULE sur le côté avant le bord UV (mesuré au pixel : 85 % frôlait la couture)
+      fs = Math.max(8, Math.floor(fs * (w * 0.7) / total)); ctx.font = `bold ${fs}px system-ui, sans-serif`;
       widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.1); total = widths.reduce((a, b) => a + b, 0);
     }
     const r = w * 0.62, cx = x + w / 2, cy = y + h * 0.30 + r;   // le centre de l'arc sous le nom
