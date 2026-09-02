@@ -200,7 +200,12 @@ export const MATCH = {
   throughRisque: { parMetre: 0.6, cap: 4, temps: { vDef: 6.5, react: 0.45, parSeconde: 6 } },  // 213 : la marge en TEMPS (temps absent : la statique du 212)
   profondeurAvants: { chas: 0.3, diagonale: true, cadence: 3.5, anticipe: true },
   dangerPasse: { bonus: 2 },
-  passeSure: { avant: 0.4, poids: 1.5 },  // 215 : la passe FORCÉE (holdMax − avant) se joue sûre — le couloir le plus large prime, jamais en profondeur. Absente : le barème d'hier.  // 213 : le rendez-vous dans la surface vaut son danger (× mentalite × visionF). Absente : 0.  // 213 : le through vers un coureur en appel dans le tiers
+  passeSure: { avant: 0.4, poids: 1.5 },
+  uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 },  // 216 : LA PREMIÈRE
+                          // INTENTION VIT — pressé dès qu'un défenseur ARRIVE (3,4 m), socle calme
+                          // 0,7 × visionF, × rôle tenue au tirage, la remise COURTE faisable
+                          // (< 7 m : cap 8,5 m/s), candidat dès 2,5 m, couloir 0,9 (le relais
+                          // chaud garde 0,2 m absolus). Absente : l'hier au bit (4,3 % de UT).  // 215 : la passe FORCÉE (holdMax − avant) se joue sûre — le couloir le plus large prime, jamais en profondeur. Absente : le barème d'hier.  // 213 : le rendez-vous dans la surface vaut son danger (× mentalite × visionF). Absente : 0.  // 213 : le through vers un coureur en appel dans le tiers
                           // offensif accepte le couloir serré (× chas) — la passe glissée de
                           // l'ailier à l'attaquant, de l'attaquant à l'ailier. Absente : hier.  // 212 : le through PAIE sa course perdue — la
                           // marge (déf − receveur au point de chute) négative coûte au barème,

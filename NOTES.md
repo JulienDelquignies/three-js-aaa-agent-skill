@@ -7204,6 +7204,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      géométrie « couloir étroit devant / large de côté » ne créait pas de
      tension : le barème de base évite déjà fortement l'étroit). SCEAU :
      481 ✓ / 0 ✗ en 825 s (le banc seul).
+- 260: Lot 216 — LA PREMIÈRE INTENTION VIT (retour utilisateur « améliorer
+     les passes », 3e tour). L'écart du tableau de bord jamais instruit :
+     une-touche 3-4 % des passes pour un réel 15-25. L'ENTONNOIR (refus
+     NOMMÉS ajoutés au module, le patron du 143) sur ~236 arrivées
+     jugées : 138 « pas d'envie » (ni pressé < 2,6 m — p25 des réceptions
+     à 2,7 ! — ni tiré au calme : 0,5 × 0,25 = 12,5 %), 59 « pas de
+     candidat », 39 jouées. Puis, l'envie relevée, la porte suivante :
+     93 « pas de candidat » — le cap de DOSAGE à contre-courant (lot 131,
+     4-6 m/s) refusait la REMISE COURTE EN RETRAIT de 3-6 m, LA
+     une-touche du football, qui ne peut pas mourir en route. Puis la
+     qualité : à couloir 0,5 la remise rapide se faisait intercepter
+     (73 %, les passes de jeu 74). cfg.uneToucheVive (clé de PREMIER
+     niveau — une sous-clé n'est pas épinglable) { press: 3.4, base:
+     0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 } :
+     pressé dès qu'un défenseur ARRIVE, socle calme 0,7 × visionF (celui
+     qui voit joue vite), × rôle tenue au tirage (le relayeur joue vite,
+     le meneur garde — identité 0,5 ; controlF déjà au tirage, style
+     déjà en pente), la remise courte faisable, le couloir 0,9 pour
+     l'ordinaire (le relais chaud garde ses 0,2 m absolus). APRÈS :
+     une-touche 14-17 % à 77 % (réel 15-25 à ~80), passes de jeu 78 %
+     (inchangées). Le prix : le tempo 2,4 s et 746 passes/90 min (la
+     une-touche accélère — dette volume/tempo nommée, le réel tient
+     15-25 % de une-touche À 3-4 s de tempo). EN CHEMIN : l'import
+     d'`axe` manquait dans premiere-intention (un ReferenceError latent
+     au premier rôle tenue ≠ 0,5 — attrapé). Jumeau au bit (monde 215),
+     empreintes d07335bbdf40f098 / 5599439a4bccb612, bande 18/20
+     fraîches (201-220). Clause : uneTouche DIRECT (tirage forcé à 1) —
+     la remise en retrait de 4 m à contre-courant sous presse part sous
+     la clé, jamais sans.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
