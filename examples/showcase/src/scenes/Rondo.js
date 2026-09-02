@@ -9,6 +9,7 @@ import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipe
 import { buildKit } from '../engine/kit.js';
 import { spawnArbitre, updateArbitre } from './arbitre.js';
 import { tintPart } from '../engine/part-tint.js';
+import { applyKit } from '../engine/kit-uv.js';
 import { loadSquad, setCloner, rigBones } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
 import { MOVES, mirrorMove } from '../engine/animkit.js';
@@ -24,9 +25,7 @@ import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 import { makeTicker } from './ticker.js';
 
-// Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights.
-// The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of
-// truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
+// Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
 
 const TEAMS = [
   { name: 'Grand Bol', primary: 0xe8ecf2, secondary: 0x16233f, shorts: 0x16233f, socks: 0xe8ecf2 },
@@ -194,8 +193,9 @@ export class Rondo {
       // supposition fausse (« maillot, peau et crampons partagent un matériau ») : mesuré, le
       // fichier contient SEPT meshes dont `Ch38_Shirt`, et le matériau est un attribut du draw
       // call — teindre le maillot n'atteint pas la peau. Voir engine/part-tint.js.
-      // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe
-      const tint = tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) });
+      // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe. …ET LE MAILLOT EST UNE TEXTURE (214, engine/kit-uv.js — demande projet aval : plus le « 7 » de Mixamo sur tout le monde, le numéro coûte un canvas, pas 14 meshes) ; ?kit=1 garde le kit géométrique
+      const tint = this.kits ? tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) })
+        : applyKit(model3d, { theme: p.keeper ? { primary: 0xd7b12a, secondary: 0x2a2a2a, accent: 0x111111, shorts: 0x2a2a2a, socks: 0xd7b12a } : { ...TEAMS[p.team], ...(p.look?.shirt != null ? { primary: p.look.shirt } : {}) }, number: p.id + 1, initials: TEAMS[p.team].initials ?? null });
       if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands

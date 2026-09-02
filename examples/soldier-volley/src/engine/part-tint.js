@@ -34,14 +34,20 @@ import * as THREE from 'three/webgpu';
  *  matériaux, pas vingt — sinon on paie la couleur en appels de rendu. */
 const cache = new WeakMap();
 
-function tintedMaterial(src, color) {
-  let byColour = cache.get(src);
-  if (!byColour) { byColour = new Map(); cache.set(src, byColour); }
+const cacheMap = new WeakMap();   // …et PAR TEXTURE (214) : un `map` fourni a son propre cache par couleur
+
+function tintedMaterial(src, color, map = null) {
+  const root = map ? (cacheMap.get(map) ?? (cacheMap.set(map, new WeakMap()), cacheMap.get(map))) : cache;
+  let byColour = root.get(src);
+  if (!byColour) { byColour = new Map(); root.set(src, byColour); }
   const key = color >>> 0;
   if (!byColour.has(key)) {
     const m = src.clone();
     m.color = new THREE.Color(color);
-    m.name = `${src.name || 'mat'}-tint-${key.toString(16)}`;
+    // L'EMPLACEMENT DE TEXTURE (214, demande projet aval) : `map` REMPLACE la texture sur le CLONE de
+    // la pièce — jamais sur le matériau partagé (corps, visage, chaussures lisent le même atlas).
+    if (map) m.map = map;
+    m.name = `${src.name || 'mat'}-tint-${key.toString(16)}${map ? '-map' : ''}`;
     byColour.set(key, m);
   }
   return byColour.get(key);
@@ -55,17 +61,17 @@ function tintedMaterial(src, color) {
  * @param color  la couleur d'équipe (0xRRGGBB)
  * @returns { applied, parts, skipped, check }
  */
-export function tintPart(model, { match = /Shirt/i, color = 0xffffff } = {}) {
+export function tintPart(model, { match = /Shirt/i, color = 0xffffff, map = null } = {}) {
   const parts = [], skipped = [];
   model.traverse((o) => {
     if (!o.isMesh && !o.isSkinnedMesh) return;
     if (Array.isArray(o.material)) { skipped.push(`${o.name}: matériaux multiples (non géré)`); return; }
     if (match.test(o.name)) {
-      o.material = tintedMaterial(o.material, color);
+      o.material = tintedMaterial(o.material, color, map);
       parts.push(o);
     }
   });
-  return { applied: parts.length, parts, skipped, check: checkTint(model, { match, color }) };
+  return { applied: parts.length, parts, skipped, check: checkTint(model, { match, color, map }) };
 }
 
 /**
@@ -74,7 +80,7 @@ export function tintPart(model, { match = /Shirt/i, color = 0xffffff } = {}) {
  * STRUCTURELLE : si le matériau du maillot n'est partagé avec aucune autre pièce, alors aucune
  * commande de rendu ne peut colorer les deux. C'est cette non-appartenance qu'on vérifie.
  */
-export function checkTint(model, { match = /Shirt/i, color = 0xffffff } = {}) {
+export function checkTint(model, { match = /Shirt/i, color = 0xffffff, map = null } = {}) {
   const issues = [];
   const hit = [], miss = [];
   model.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) (match.test(o.name) ? hit : miss).push(o); });
@@ -93,9 +99,14 @@ export function checkTint(model, { match = /Shirt/i, color = 0xffffff } = {}) {
     if (shared.length) issues.push(`${o.name} partage son matériau avec ${shared.map((m) => m.name).join(', ')} — la teinte déborderait sur ${shared[0].name}`);
     // …et il faut garder la TEXTURE, sinon on a remplacé un vêtement par un aplat de couleur.
     if (!o.material.map) issues.push(`${o.name} : la texture a disparu (teinte plate — plis et coutures perdus)`);
+    // …ET LA TEXTURE FOURNIE EST AU CONTRAT glTF DE L'ASSET (214) : origine en haut à gauche (flipY false), sRGB — sinon la carte SHANON_UV ment d'une demi-image
+    if (map && o.material.map !== map) issues.push(`${o.name} : la texture fournie n'est pas montée`);
+    if (o.material.map && o.material.map.flipY !== false) issues.push(`${o.name} : map.flipY doit être false (origine glTF en haut à gauche — la carte UV serait retournée)`);
+    if (o.material.map && o.material.map.colorSpace !== THREE.SRGBColorSpace) issues.push(`${o.name} : map.colorSpace doit être sRGB (les couleurs d'équipe seraient délavées)`);
   }
   // et le reste du personnage n'a pas bougé
   for (const o of miss) {
+    if (map && o.material?.map === map) issues.push(`${o.name} a reçu la texture du maillot alors qu'il ne devait pas`);
     const c = o.material?.color;
     if (c && Math.abs(c.r - want.r) + Math.abs(c.g - want.g) + Math.abs(c.b - want.b) < 0.02 && want.getHex() !== 0xffffff) {
       issues.push(`${o.name} a pris la couleur d'équipe alors qu'il ne devait pas`);

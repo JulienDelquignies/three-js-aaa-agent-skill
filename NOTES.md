@@ -7133,6 +7133,40 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      — un terme doux depuis les exemptions), l'essaim hors diagonale (un
      appel LOCAL). SCEAU : 480 ✓ / 0 ✗ (479 au banc + le budget vert en
      isolement), déployé après screenshot playmode.
+- 257: Lot 214 — L'EMPLACEMENT DE TEXTURE DU MAILLOT (6e demande formelle du
+     projet aval — la première qui touche l'ASSET : shanon.glb et son
+     atlas 512×512, image 2, matériau Ch38_body partagé par maillot,
+     short, chaussettes, corps, chaussures). Leur relevé UV vérifié par
+     MON rastériseur (256², origine glTF en haut à gauche, flipY false) :
+     couverture des boîtes maillot 98,0 %, short 100 %, chaussettes
+     97,3 % (≥ 95 exigé) — devant et manche A sont un seul îlot soudé
+     (la coupe à u 0,30 est une convention de peinture), les deux
+     manches ont la même aire à 10 px près. TROIS LIVRABLES : (1)
+     engine/kit-uv.js exporte SHANON_UV (la carte est une propriété de
+     l'asset : si le GLB change, la carte change dans le même lot et sa
+     clause parle) + uvCoverage (le juge) ; (2) tintPart({ map }) —
+     la texture REMPLACE material.map sur le CLONE de la pièce (jamais
+     sur le matériau partagé), cache par (texture, couleur) ; checkTint
+     vérifie en plus map.flipY === false et colorSpace sRGB, et qu'aucune
+     pièce non visée n'a reçu la map ; (3) drawKit(theme, { number,
+     initials, uv, atlas }) → canvas 512 : copie l'atlas (hors îlots
+     intact), remplit devant/dos/manches en primary, ourlets en
+     secondary, short et chaussettes en leurs couleurs, numéro dans le
+     dos et initiales devant en accent — le « 7 » et l'écusson de Mixamo
+     disparaissent ; kitTexture (flipY false, sRGB) ; applyKit (l'atlas lu
+     sur le matériau du maillot du modèle, un canvas par tenue+numéro).
+     LE MATCH S'HABILLE : Rondo.js applique le kit texturé par défaut
+     (?kit=1 garde le kit géométrique) — validé AU PIXEL : chaque joueur
+     porte SON numéro dans le dos (6, 4, 10, 5), plus aucun 7, visages et
+     chaussures intacts, le gardien en jaune. BANC verify-kit.mjs (5 ✓ :
+     la carte contre l'asset + l'image de l'atlas, le clone seul reçoit
+     la map, le cache par tenue, le refus d'une texture hors contrat,
+     l'hier sans map) ; `three` s'importe désormais en node pour un banc
+     (lien symbolique gitignoré à la racine vers le three du showcase).
+     Leçon de banc : mon test de cache créait un matériau SOURCE par
+     joueur — au jeu tous les clones SkeletonUtils partagent celui du
+     GLB, c'est la clé du cache. Ce qu'on ne livre pas (leur point 4) :
+     motifs, sponsors, écussons, gardien, 2e tenue — leur couche.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
