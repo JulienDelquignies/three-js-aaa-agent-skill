@@ -75,14 +75,14 @@ export function drawKit(theme, { number = null, name = null, initials = null, uv
   if (name) {
     const [x, y, w, h] = px(uv.shirt.back, size);
     const txt = String(name).toUpperCase().slice(0, 14);
-    let fs = Math.round(h * 0.11);
+    let fs = Math.round(h * 0.075);   // 214c (retour utilisateur « c'est trop gros ») : 11 → 7,5 % du dos — le réel floque 5-6 cm sur 70
     ctx.font = `bold ${fs}px system-ui, sans-serif`;
-    let widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.1), total = widths.reduce((a, b) => a + b, 0);
-    if (total > w * 0.7) {   // le nom tient dans 70 % de la boîte : le panneau du dos s'ENROULE sur le côté avant le bord UV (mesuré au pixel : 85 % frôlait la couture)
-      fs = Math.max(8, Math.floor(fs * (w * 0.7) / total)); ctx.font = `bold ${fs}px system-ui, sans-serif`;
-      widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.1); total = widths.reduce((a, b) => a + b, 0);
+    let widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.06), total = widths.reduce((a, b) => a + b, 0);
+    if (total > w * 0.6) {   // le nom tient dans 60 % de la boîte : le panneau du dos s'ENROULE sur le côté avant le bord UV (mesuré au pixel)
+      fs = Math.max(8, Math.floor(fs * (w * 0.6) / total)); ctx.font = `bold ${fs}px system-ui, sans-serif`;
+      widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.06); total = widths.reduce((a, b) => a + b, 0);
     }
-    const r = w * 0.62, cx = x + w / 2, cy = y + h * 0.30 + r;   // le centre de l'arc sous le nom
+    const r = w * 0.9, cx = x + w / 2, cy = y + h * 0.29 + r;   // l'arc plus plat (rayon 0,9 w), le nom juste au-dessus du numéro
     let a = -total / 2 / r;
     for (let i = 0; i < txt.length; i++) {
       const half = widths[i] / 2 / r; a += half;
