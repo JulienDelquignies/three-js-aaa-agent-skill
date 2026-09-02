@@ -7343,7 +7343,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      râteau puis une passe au gardien — presser derrière-côté. Jumeau
      espace absent = 218 au bit ; les empreintes 3/7 à 90 s sont celles
      du 218 (aucun choix de côté dans leurs 90 s). Bande A/B 20 × 300 s :
-     87 tirs, 17 buts, 18 accrochages, 27 fautes, 6 corners.
+     87 tirs, 17 buts, 18 accrochages, 27 fautes, 6 corners. BANC 218b
+     (complet, seul, 1526 s) : 483 ✓ / 2 ✗ — deux comptes courts re-datés
+     (115 petit pont 2 c. 3 sur 4 graines ; gradation des notes 152/158
+     non monotone au 50 sur 6 × 240 s) → épinglés course:false ; shard 5/8
+     33 ✓ et annexe attributes 27 ✓ au re-test. SCELLÉ (déploiement au
+     prochain sceau, 217 étant en ligne).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
