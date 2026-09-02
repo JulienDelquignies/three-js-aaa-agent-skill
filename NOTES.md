@@ -7342,7 +7342,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      +2,9). Piège de fixture : un presseur DEVANT à 1,4 m déclenche le
      râteau puis une passe au gardien — presser derrière-côté. Jumeau
      espace absent = 218 au bit ; les empreintes 3/7 à 90 s sont celles
-     du 218 (aucun choix de côté dans leurs 90 s).
+     du 218 (aucun choix de côté dans leurs 90 s). Bande A/B 20 × 300 s :
+     87 tirs, 17 buts, 18 accrochages, 27 fautes, 6 corners.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
