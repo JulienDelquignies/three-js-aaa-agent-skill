@@ -7166,7 +7166,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Leçon de banc : mon test de cache créait un matériau SOURCE par
      joueur — au jeu tous les clones SkeletonUtils partagent celui du
      GLB, c'est la clé du cache. Ce qu'on ne livre pas (leur point 4) :
-     motifs, sponsors, écussons, gardien, 2e tenue — leur couche.
+     motifs, sponsors, écussons, gardien, 2e tenue — leur couche. SCEAU :
+     480 ✓ / 0 ✗ en 825 s (le banc seul), déployé après validation au
+     pixel — chunk Rondo-bl3eGL0R.js.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
