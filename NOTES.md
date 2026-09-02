@@ -7397,7 +7397,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tirs et dégagements enregistrés comme passes), réussite de jeu
      74-78 % — au réel ; throughs STRICTS 21/90 min/équipe (réel 5-10,
      réussite 50 c. 30-45) : deux fois le réel, mais c'est la profondeur
-     demandée par l'utilisateur (213) — consigné, pas corrigé.
+     demandée par l'utilisateur (213) — consigné, pas corrigé. SCELLÉ :
+     monde par défaut bit-identique au 218c (banc 218c fait foi) ; shards
+     4/8 (32 ✓) et 5/8 (35 ✓) — clauses 218 et blocs à équipes notées —
+     et annexe attributes (27 ✓) rejoués verts.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
