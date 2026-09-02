@@ -7370,6 +7370,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      libre à 4 m → A ; hier → C). Jumeau (clés absentes) = 218b au bit ;
      monde 218c : seed 3 d07335bbdf40f098, seed 7 9bb6a15a11c57c2c. Bande
      A/B 20 × 300 s : 84 tirs, 16 buts, 15 accrochages, 23 fautes, 5 corners.
+     BANC 218c (complet, seul, 1443 s) : 485 ✓ / 1 ✗ — lot 137 (accompagne :
+     soutien 9,8 c. 10,5 saboté, marge 1,5 sur 3 graines) épinglé à la
+     une-touche du 218b ; shard 5/8 34 ✓ au re-test. SCELLÉ ET DÉPLOYÉ
+     (capture playmode validée avant : stade, deux équipes, ballon en jeu ;
+     chunk Rondo-CNVR7Vhc.js, relaisPrio grepable à l'alias). Trois lots
+     depuis le 217 : 218 (le lanceur sprinte), 218b (la course cherche
+     l'espace), 218c (le mur remet au coureur) — le une-deux du moteur :
+     32 → 50 % de retours, le réel.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
