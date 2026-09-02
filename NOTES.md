@@ -7113,6 +7113,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      passBias (1,65/2,2/2,75), la 145 au σ, la 143 aux refus nommés.
      DETTES : le une-deux à 18-27 % au flux (retrouver 40), le canal otb
      ×1,3-1,4 au flux (×2,00 au monde 210), la réussite 75-85.
+- 256: LE SCEAU 211-213 (et deux leçons de banc). (a) LE CRASH MUET : le
+     shard 6/8 mourait sur `st.ball.release('fixture')` — une cause que
+     le ballon ne connaît pas (RELEASES) — dans deux vieilles clauses ;
+     le runner l'étiquetait « sortie illisible ou code 1 » COMME un
+     shard à ✗, et 29-32 clauses disparaissaient du TOTAL sans ligne ✗.
+     La signature : un « illisible » SANS ✗ = un crash ; et le TOTAL qui
+     baisse (447-448 c. 477) est le signal à lire à chaque banc. (b) LA
+     CONTENTION DE MES PROPRES TRAVAUX : la clause de budget à 2,47 ms/
+     step pendant que le shard 6/8, Chromium du playmode et le build
+     tournaient à côté du banc — machine calme : 0,39-0,42 ms/step
+     (mieux que le calibrage 199 à 0,53) et la clause à 0,46. Règle : le
+     banc du sceau tourne SEUL. (c) Les trois dernières clauses de la
+     vague 213 : la 204 à la FIXTURE D'ÉLECTION (vol adverse vers la
+     bande : sous la clé l'élu est D2 au point de chute, sans elle D1 au
+     ballon — D1 à 5 m du ballon : à 2 m il l'interceptait avant toute
+     élection, et l'élection se lit aux 2 premiers pas), la 212 au juge
+     de sa propre loi (la marge en TEMPS, strictement moins ET ratio 0,9
+     — un terme doux depuis les exemptions), l'essaim hors diagonale (un
+     appel LOCAL). SCEAU : 480 ✓ / 0 ✗ (479 au banc + le budget vert en
+     isolement), déployé après screenshot playmode.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
