@@ -807,6 +807,13 @@ function assignMatchJobs(st, cfg) {
             tz = p._runZ ?? tz;
           } else if (tx * off.sgn > off.adv - 0.8) tx = off.sgn * Math.max(0, off.adv - 0.8);
         }
+        // LE DONNE-ET-VA COURT À SA CIBLE (218, cfg.unDeux.course — doc strike-sim : la pointe portait
+        // un plafond sans cible, le lanceur trottait). Pendant la pointe, la consigne est la course ;
+        // le hors-jeu la borne comme l'appel. Absente : l'hier au bit.
+        if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) {
+          tx = p._pace.cible[0]; tz = p._pace.cible[1];
+          if (off && tx * off.sgn > off.adv - 0.15) tx = off.sgn * Math.max(0, off.adv - 0.15);
+        }
         // LE DÉDOUBLEMENT (lot 88, roles.deborde — la course de rôle du couloir) : doc roles.js
         const ov = deborde(st, p, carrier, pitch, atk, cfg, axe);
         if (ov) { tx = ov[0]; tz = ov[1]; }
@@ -867,6 +874,13 @@ function assignMatchJobs(st, cfg) {
       }
       // (207) le clamp du poseur — l'appui d'un porteur à la craie visait DEHORS ; l'intérieur au bit
       p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, p._slotT[0])), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._slotT[1]))];
+      // …ET LE DONNE-ET-VA DU COMITÉ COURT À SA CIBLE (218 — le lanceur est un SLOTTER : sa consigne était son slot à 1,5 m, il trottait à 2,4 m/s)
+      if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) {
+        let cx = p._pace.cible[0];
+        const offU = cfg.offside ? offsideLine(st, atk) : null;
+        if (offU && cx * offU.sgn > offU.adv - 0.15) cx = offU.sgn * Math.max(0, offU.adv - 0.15);
+        p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, cx)), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._pace.cible[1]))];
+      }
     }
   }
   // ---- LE PRESSING À DÉCLENCHEURS (cfg.pressTriggers, 11c11) : on presse SUR SIGNAL, en fenêtre bornée. (t1) la PRISE DOS AU BUT ; (t2) le RETRAIT (3 m). La fenêtre meurt au régain/remise/expiration ; cooldown d'équipe.

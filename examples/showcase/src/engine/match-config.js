@@ -608,7 +608,7 @@ export const MATCH = {
                           // (min-max m) — la cloche haute vise la ligne, le retour est
                           // plus lent que le vol. L'audace × longF (l'attribut longShots).
                           // Absente : le gardien avancé impuni d'hier.
-  unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8 },  // calibré 209 : 6 laissait A perdre de 1,9 contre le soutien facile (le chip du chas paie son malus lofted) — 23 % de retours c. ~50 réel  // dur 1,2 → 2,4 CALIBRÉ 209 (dette 196 : la fenêtre courait depuis le LANCÉ — le vol la mangeait, p50 restant 0,33 s au toucher du mur ; 2,4 couvre vol + décision, la course du donne-et-va dure)
+  unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5 } },   // course (218) : LE LANCEUR SPRINTE — cible à m dans le dos du presseur (ecart de côté, élan mélangé), vitesse de chasse ; mesuré avant : 2,3 m/s à 0,3 s (footing), 1 retour/16 ; après : 5,0 m/s, 5/24  // calibré 209 : 6 laissait A perdre de 1,9 contre le soutien facile (le chip du chas paie son malus lofted) — 23 % de retours c. ~50 réel  // dur 1,2 → 2,4 CALIBRÉ 209 (dette 196 : la fenêtre courait depuis le LANCÉ — le vol la mangeait, p50 restant 0,33 s au toucher du mur ; 2,4 couvre vol + décision, la course du donne-et-va dure)
                           // LE UNE-DEUX (11c11, st.full — lot 119) : sur une passe COURTE
                           // (< dist m) d'un passeur PRESSÉ (< press m), le passeur ENCHAÎNE
                           // sa course (donne-et-va, burst dur s) et porte le marqueur du

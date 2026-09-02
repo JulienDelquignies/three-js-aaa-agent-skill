@@ -83,6 +83,12 @@ export function movePlayers(st, dt, cfg) {
       : p.job === 'walk' ? (cfg.speeds.walk != null ? 'walk' : 'support')
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
       * (p.skill?.topF ?? p.persona?.paceBias ?? 1) * (p.job === 'walk' ? (p._walkF ?? 1) : 1);   // le retour pressé/flâné (183, cfg.retourTrot — posé par le match)   // la NOTE de vitesse fait foi ; sinon l'accent persona
+    // LE DONNE-ET-VA COURT À FOND (218, cfg.unDeux.course — mesuré : le lanceur en pointe plafonnait à
+    // 5,8 m/s (support 4,9 × 1,28) quand le presseur court à 7,6 (chase) : une course de une-deux est
+    // un sprint, pas un coulissement de soutien). Le lanceur prend la vitesse de CHASSE le temps de
+    // sa pointe — la note de vitesse fait foi. Absente : l'hier au bit.
+    if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible)
+      top = Math.max(top, cfg.speeds.chase * (p.skill?.topF ?? p.persona?.paceBias ?? 1));
     // LE PORTEUR COURT SUR SA TOUCHE (cfg.carrySurge, match — absent : le rondo au bit près).
     // L'allure de conduite (4,2) est celle du ballon COLLÉ ; une touche poussée devant se
     // rattrape EN POINTE. Mesuré avant : 6,4 % des images de conduite à > 2 m avec un porteur

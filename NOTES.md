@@ -7290,6 +7290,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      SPRINTE PAS (1-5 m/s mesurés à la réception du mur) : le levier est
      le lanceur, pas le mur. Boutons gardés, défauts = l'hier au bit
      (empreintes 217 inchangées).
+- 263: LE LANCEUR DU UNE-DEUX SPRINTE (218, cfg.unDeux.course — retour aux
+     passes). Sondé : le lanceur d'un une-deux trottait à 2,3 m/s à 0,3 s /
+     2,4 à 0,6 s / 4,3 à 1,0 s (l'appel profond : 4,4 / 5,5 / 5,5 ; le réel
+     6-8 dès 0,5 s). Deux causes : la pointe 'un-deux' ne portait qu'un
+     plafond (×1,28) sans CIBLE — la consigne redevenait son slot de comité
+     à 1,5 m ; et ce plafond était celui du SOUTIEN (4,9 × 1,28 = 5,8) quand
+     le presseur court à 7,6 (chase). La loi : à l'événement, une cible à m
+     (8) dans le dos du presseur (ecart 3 du côté opposé), direction = élan
+     du corps × elan (0,5) + but, avancée plancher 30 % (sans l'élan : la
+     cible plein but imposait un demi-tour, 7,5 → 2,0 m/s) ; les DEUX
+     poseurs la consomment (comité ET postés — la ligne de hors-jeu la
+     borne comme l'appel) ; la vitesse de chasse le temps de la pointe (la
+     note de vitesse fait foi). Mesuré après : 5,0 / 5,1 / 6,2 m/s ; retours
+     1/16 → 5/24 ; une-touche 77 % (inchangée). La fixture posée du MUR
+     dit que son barème est juste : il sert le coureur quand le défenseur
+     est sur la ligne de passe et l'appui quand le défenseur COUVRE la
+     course (cas 2) — les non-retours du flux sont des courses couvertes
+     (marge 0,9 m à la ligne, mais l'homme au point de rendez-vous). DETTE :
+     le taux de retour (réel ~50 %) — la course doit chercher l'ESPACE
+     (côté sans couverture), pas seulement le dos du presseur. Piège de
+     fixture : un coureur marqué _troisT est élu receveur par le porteur
+     (job receive, sa propre consigne) — la fixture le pose SANS la marque.
+     Clause au mécanisme (218) : consigne = cible (0 m c. 6,8 épinglé),
+     4,7 m/s à 0,6 s c. 1,7. Jumeau course:false = 217 au bit ; monde 218 :
+     seed 3 d07335bbdf40f098 (inchangée — pas de une-deux dans ses 90 s),
+     seed 7 d60b497f47011c1a. Bande A/B 20 × 300 s : 95 tirs, 26 buts
+     (tendance haute tolérée), 14 accrochages, 21 fautes, 6 corners.
+     BANC 218 (complet, seul, 1494 s) : 480 ✓ / 4 ✗ — trois re-datages
+     chaotiques de clauses de flux qui mesurent d'AUTRES contrastes (149
+     piège : +0,3 c. +3 m sur une graine ; 190 : 1 retrait c. 2 ; 144 :
+     27 c. 23 appels sur 3 graines) → épinglées course:false (le 217 au
+     bit pour elles) ; et UN ✗ LATENT DU 217 : la fenêtre `fen` du juge
+     (max des cérémonies × 1,62 + 6 ≈ 50 s) s'appliquait au match RÉDUIT
+     — où l'arbitre ne l'applique pas (st.full) — et une sortie dans les
+     50 dernières secondes d'un match de 90 s était « coupée par la fin » :
+     le sabotage « remise volée » passait sans être attrapé. Le juge suit
+     la loi : fen sous st.full, 14 s au réduit (annexe match 84 ✓). Leçon :
+     le sceau du 217 n'avait rejoué que les shards match11 — un lot qui
+     touche match-check.js rejoue les ANNEXES match/sync aussi.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

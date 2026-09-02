@@ -7,7 +7,7 @@ import { hyp } from './hyp.js';
 /** CONTRAT DU MATCH — par-dessus checkRondo (téléports/essaims) : personne ne tire, score ≠ buts,
  *  sorties sans remise nommée, gardien errant, remises volées, un jeu qui ne progresse jamais. */
 export function checkMatch(st, trace, cfg = matchCfg()) {
-  const fen = cfg?.tempsMort ? Math.max(...Object.entries(cfg.tempsMort).filter(([k]) => !['traine', 'presse'].includes(k)).map(([, v]) => v)) * 1.35 * 1.2 + 6 : 14;   // (217) la fenêtre de reprise suit la loi des cérémonies : max des espèces × contexte × aléa + marge — 14 s d'hier sans la clé
+  const fen = cfg?.tempsMort && st.full ? Math.max(...Object.entries(cfg.tempsMort).filter(([k]) => !['traine', 'presse'].includes(k)).map(([, v]) => v)) * 1.35 * 1.2 + 6 : 14;   // (217) la fenêtre de reprise suit la loi des cérémonies : max des espèces × contexte × aléa + marge — 14 s d'hier sans la clé
   const issues = [];
   const evs = st.events ?? [];
   const shots = evs.filter((e) => e.type === 'shot');

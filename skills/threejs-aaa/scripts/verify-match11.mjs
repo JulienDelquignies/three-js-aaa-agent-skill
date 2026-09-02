@@ -3251,7 +3251,7 @@ if (__bloc()) {
     let jets = 0, joues = 0, appels = 0;
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
+      const cfg = matchCfg({ ...ISO171, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, shotRange: 20, ...over });   // (218) course:false — la clause mesure la fenêtre du JETÉ (3 graines : 27 c. 23 re-daté par le sprint du une-deux)
       let nEv = 0, fen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3373,7 +3373,7 @@ if (__bloc()) {
 if (__bloc()) {
   const course = (tq) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
-    const cfg = matchCfg({ ...ISO171, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ ...ISO171, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
     let passes = 0, nEv = 0, lastO = -1, hSum = 0, hN = 0; const lignes = [];
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -4150,7 +4150,7 @@ if (__bloc()) {
     ds.sort((a, b) => a - b);
     return { n: ds.length, p50: +(ds[Math.floor(ds.length / 2)] ?? -1).toFixed(1) };
   };
-  const V = prises({ preneurCPA: false, loi16: false }), E = prises({ gkAuDevant: false, preneurCPA: false, loi16: false });   // …la clause mesure le gardien AU-DEVANT — elle isole 193 (le gardien-preneur re-datait les retraits)
+  const V = prises({ preneurCPA: false, loi16: false, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false } }), E = prises({ gkAuDevant: false, preneurCPA: false, loi16: false, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false } });   // (218) course:false — les retraits (1-2 événements) sont chaos-fragiles, la clause mesure le gardien au-devant   // …la clause mesure le gardien AU-DEVANT — elle isole 193 (le gardien-preneur re-datait les retraits)
   ok(`lot 190 — LE GARDIEN VIENT AU RETRAIT : les prises à p50 ${V.p50} m de sa ligne ≥ 6 (${V.n} retraits — la fenêtre du gardien moderne, et la DISPONIBILITÉ multiplie le circuit : 5 → 20/30 min mesurés) ; l'épinglé au fond de son but (p50 ${E.p50} < 6, ${E.n} retraits — le gardien-statue filmé au pixel, retrait pris à 1,6 m)`,
     V.n >= 2 && V.p50 >= 6 && (E.n === 0 || E.p50 < 6));   // n ≥ 3 → 2 DATÉ 205 (re-datage 199 : les retraits ont mincé, le p50 10,3 c. 1,8 fait foi)
 }
@@ -4663,6 +4663,36 @@ if (__bloc()) {
   const f = (x) => x == null ? '—' : x.toFixed(1);
   ok(`lot 217 — LES CÉRÉMONIES DE REMISE AU RÉEL (p50 vivant/épinglé : touche ${f(V.touche)}/${f(E.touche)} s ≥ 8, renvoi ${f(V.renvoi)}/${f(E.renvoi)} ≥ 14, coup franc ${f(V.cf)}/${f(E.cf)} ≥ 12 — chaque espèce vivante ≥ 1,5 × l'hier ; temps mort 19 → 24 %, passes 746 → 645/90 min)`,
     V.touche >= 8 && V.renvoi >= 14 && (V.cf == null || V.cf >= 12) && V.touche >= 1.5 * (E.touche ?? 99) && V.renvoi >= 1.5 * (E.renvoi ?? 99));
+}
+
+// ---- lot 218 : LE LANCEUR DU UNE-DEUX SPRINTE (retour aux passes — « on doit encore améliorer les passes »)
+if (__bloc()) {
+  // Mesuré : le lanceur d'un une-deux trottait à 2,3 m/s à 0,3 s / 2,4 à 0,6 s (l'appel profond :
+  // 4,4 / 5,5 ; le réel 6-8 dès 0,5 s) — la pointe portait un plafond sans CIBLE (la consigne
+  // redevenait son slot à 1,5 m) et le plafond du soutien (4,9 × 1,28) — 1 retour/16.
+  // cfg.unDeux.course : une cible dans le dos du presseur (m, ecart, élan mélangé), consommée par
+  // les deux poseurs (comité et postés), et la vitesse de CHASSE le temps de la pointe. Le juge
+  // au MÉCANISME : un coureur posé en pointe un-deux (sans marque de relais, pour ne pas être
+  // élu receveur) — sa consigne EST sa cible et il file ; épinglé, il garde son slot au trot.
+  const course = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
+    const R = st.players.find((p) => p.team === 0 && p.post === 8), M = st.players.find((p) => p.team === 0 && p.post === 5), C = st.players.find((p) => p.team === 0 && p.post === 7);
+    for (const q of st.players) if (q.team === 0 && !q.keeper && ![5, 7, 8].includes(q.post)) { q.p[0] = -sgn * 30; q.p[2] = 15; }
+    for (const q of st.players) if (q.team === 1 && !q.keeper) { q.p[0] = sgn * 40; q.p[2] = 20; }
+    R.p[0] = 0; R.p[2] = 0; R.v[0] = 0; R.v[1] = 0; C.p[0] = -sgn * 1; C.p[2] = -7; M.p[0] = -sgn * 4; M.p[2] = -3;
+    st.ball.restart([-sgn * 3.7, 0.11, -3], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(M.id);
+    st.possession = { team: 0, carrier: M.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+    const cible = [sgn * 8, 3];
+    R._pace = { until: st.t + 2.4, kind: 'un-deux', next: st.t + 6, cible, dir: [sgn * 0.94, 0.35] }; R._troisT = -1;
+    for (let i = 0; i < 36; i++) matchStep(st, 1 / 60, cfg);
+    return { dT: R.target ? Math.hypot(R.target[0] - cible[0], R.target[2] - cible[1]) : 99, v: Math.hypot(R.v[0], R.v[1]) };
+  };
+  const V = course({}), E = course({ unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false } });
+  ok(`lot 218 — LE LANCEUR DU UNE-DEUX SPRINTE (vivant : consigne à ${V.dT.toFixed(1)} m de sa cible < 1, ${V.v.toFixed(1)} m/s à 0,6 s ≥ 4 ; épinglé : ${E.dT.toFixed(1)} m > 3, ${E.v.toFixed(1)} m/s — le flux : 2,3 → 5,0 m/s à 0,3 s, retours 1/16 → 5/24 ; DETTE : le taux de retour (réel ~50 %) — les courses couvertes)`,
+    V.dT < 1 && V.v >= 4 && E.dT > 3 && V.v >= E.v + 1.5);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

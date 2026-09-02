@@ -483,6 +483,25 @@ export function strikeNow(st, c, cfg) {
       && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.unDeux.p ?? 0.55) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(c).appel, 0.7, 1.3)) {
       c._pace = { until: st.t + (cfg.unDeux.dur ?? 1.5), kind: 'un-deux', next: c._pace?.next ?? st.t + 6 };
       c._troisT = st.t + (cfg.unDeux.dur ?? 1.5);
+      // …ET LE LANCEUR SPRINTE (218, cfg.unDeux.course — mesuré : 2,3 m/s à 0,3 s, 2,4 à 0,6 s
+      // (l'appel profond : 4,4 / 5,5 ; le réel 6-8 dès 0,5 s) : la pointe n'avait qu'un PLAFOND,
+      // jamais de CIBLE — la consigne redevenait son slot, il TROTTAIT. Le donne-et-va prend
+      // une cible dans le DOS de son presseur : course m vers le but, décalée du côté opposé au
+      // presseur (ecart m) ; le poseur la consomme pendant la pointe (borne : le hors-jeu).
+      // 1 retour/16 hier : le mur ne trouvait pas de coureur. Absente : l'hier au bit.
+      if (cfg.unDeux.course) {
+        const C = cfg.unDeux.course, sg = Math.sign(st.pitch?.attackGoal?.(c.team)?.x ?? 1) || 1;
+        const q = st.players.filter((o) => o.team !== c.team && o.down <= 0).sort((a, b) => hyp(a.p[0] - c.p[0], a.p[2] - c.p[2]) - hyp(b.p[0] - c.p[0], b.p[2] - c.p[2]))[0];
+        const cote = q ? -Math.sign(q.p[2] - c.p[2] || 1) : Math.sign(c.p[2] || 1);
+        // …la course PROLONGE L'ÉLAN (trace : lancé à 7,5 m/s en conduite, la cible plein but lui imposait un
+        // demi-tour — 2,0 m/s à 0,8 s) : direction = élan × elan + but × (1 − elan), avancée plancher 30 %
+        const vN = hyp(c.v[0], c.v[1]), el = vN > 2 ? (C.elan ?? 0.5) : 0, M = C.m ?? 8;
+        let ux = sg * (1 - el) + (c.v[0] / (vN || 1)) * el, uz = (c.v[1] / (vN || 1)) * el;
+        const ul = hyp(ux, uz) || 1; ux = (ux / ul) * M; uz = (uz / ul) * M;
+        if (ux * sg < 0.3 * M) ux = sg * 0.3 * M;
+        const dx = ux, dz = uz + cote * (C.ecart ?? 3), dl = hyp(dx, dz) || 1;
+        c._pace.cible = [c.p[0] + dx, c.p[2] + dz]; c._pace.dir = [dx / dl, dz / dl];
+      }
       st.events.push({ t: +st.t.toFixed(2), type: 'un-deux', a: c.id, b: choice.to.id });
     }
   }
