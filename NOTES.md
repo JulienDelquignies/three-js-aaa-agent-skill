@@ -7426,7 +7426,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      attribution 13 %, prédictions de ballon ~19 %, GC 6,5 % — un gain
      réel demande une restructuration, pas un micro-patch. VÉRIFIÉ :
      les sorties de passes « 5,6 % » comptaient tirs et dégagements ;
-     les vraies passes en touche ~3 % (réel 2-3).
+     les vraies passes en touche ~3 % (réel 2-3). Bande A/B 20 × 300 s :
+     126 tirs, 22 buts (le plafond de la bande — moins de dribbles perdus,
+     plus d'attaques abouties ; 84-95 tirs aux mondes 218), 12 accrochages,
+     18 fautes, 7 corners.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
