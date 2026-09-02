@@ -7243,6 +7243,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      monde 215 où son juge parle). La leçon : le jeu en première
      intention tire MOINS — et c'est le réel. SCEAU : 482 ✓ / 0 ✗ en
      825 s (le banc seul).
+- 261: Lot 217 — LES CÉRÉMONIES DE REMISE AU RÉEL (le volume de passes,
+     dette du 216 : 746/90 min pour un réel 400-600 alors que les tenues
+     sont dans les normes). L'HYPOTHÈSE VÉRIFIÉE : le temps de jeu
+     effectif — mesuré 19 % de temps mort (réel 35-40) : touche 5,3 s
+     (réel ~15), renvoi 6,8 (~25), corner 9,8 (~30), coup franc 3,0
+     (20-30) — les remises étaient expédiées, et 81 % de jeu effectif
+     contre 60 fabriquait mécaniquement +35 % de passes. cfg.tempsMort
+     { touche: 12, 'sortie-de-but': 20, corner: 22, 'coup-franc': 18,
+     penalty: 28, traine: 0.35, presse: 0.35 } dans tempoWait : une
+     durée par ESPÈCE × le tempo tactique (axe 1,6/0,4 — l'équipe qui
+     joue vite remet vite) × le CONTEXTE de score (celle qui mène en fin
+     de match traîne jusqu'à +35 %, celle qui court après se dépêche —
+     st.score et le chrono) × un aléa seedé 0,8-1,2 ; l'engagement garde
+     son horloge (la cérémonie du but). QUATRE sites d'appel à brancher
+     (l'espèce n'y passait pas) : la touche, la sortie/corner (le corner
+     prend le MAX de sa pose et de la cérémonie — hier au bit sans la
+     clé), l'arbitrage des fautes (Loi 12, l.770 — le coup franc figé à
+     3,2 s = restartWait, traqué à l'instrument création/fin), le
+     sifflet. APRÈS : touche 10,5 s, renvoi 19,6, coup franc 17,2,
+     corner 22,2 ; temps mort 19 → 24 % ; passes 746 → 645/90 min (réel
+     400-600). Le reste de l'écart de temps mort (réel 35-40) tient au
+     NOMBRE d'arrêts (5-8 touches/30 min c. ~13 réelles, 3 fautes c. ~8)
+     — un autre lot. Le chrono FM en profite : le match de 90 min tient
+     son temps mort.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

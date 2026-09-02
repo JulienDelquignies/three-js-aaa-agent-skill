@@ -201,6 +201,9 @@ export const MATCH = {
   profondeurAvants: { chas: 0.3, diagonale: true, cadence: 3.5, anticipe: true },
   dangerPasse: { bonus: 2 },
   passeSure: { avant: 0.4, poids: 1.5 },
+  tempsMort: { touche: 12, 'sortie-de-but': 20, corner: 22, 'coup-franc': 18, penalty: 28, traine: 0.35, presse: 0.35 },  // 217 : les cérémonies
+                          // de remise au réel (s, × tempo tactique × contexte de score × aléa 0,8-1,2)
+                          // — temps mort mesuré 19 % pour un réel 35-40. Absente : restartWait d'hier.
   uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 },  // 216 : LA PREMIÈRE
                           // INTENTION VIT — pressé dès qu'un défenseur ARRIVE (3,4 m), socle calme
                           // 0,7 × visionF, × rôle tenue au tirage, la remise COURTE faisable

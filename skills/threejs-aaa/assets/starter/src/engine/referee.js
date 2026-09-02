@@ -505,7 +505,7 @@ export function onOut(st, cfg) {
     deny(st, 'sortie-illisible');
     const x = Math.max(-pitch.hx + 1, Math.min(pitch.hx - 1, st.ball.p[0]));
     const z = Math.sign(st.ball.p[2] || 1) * (pitch.hz - 0.15);
-    st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + tempoWait(st, cfg, 1 - st.lastTouch) };
+    st.restart = { type: 'touche', p: [x, z], team: 1 - st.lastTouch, at: st.t + tempoWait(st, cfg, 1 - st.lastTouch, 'touche') };
     // LA TOUCHE LONGUE SE POSE (165) : le lanceur essuie le ballon, les grands montent
     // (réel 15-30 s) — sans la tactique ou hors du tiers offensif, l'horloge d'hier au bit
     if (toucheLonguePrête(st, st.restart)) st.restart.at = st.t + (cfg.loi15?.pose ?? 12);
@@ -554,10 +554,10 @@ export function onOut(st, cfg) {
     }
   } else {
     st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: r.type, team: r.team, p: [+r.x.toFixed(1), +r.z.toFixed(1)] });
-    st.restart = { type: r.type, p: [r.x, r.z], team: r.team, at: st.t + tempoWait(st, cfg, r.team) };
+    st.restart = { type: r.type, p: [r.x, r.z], team: r.team, at: st.t + tempoWait(st, cfg, r.team, r.type) };
     // LA POSE DU CORNER S'ALLONGE (lot 102, cfg.corner.pose — le vrai corner prend 20-40 s) :
     // les monteurs partent de 30-40 m, la marche de remise demande son temps (cornerSpots)
-    if (r.type === 'corner' && st.full && cfg.corner) st.restart.at = st.t + (cfg.corner.pose ?? 10);
+    if (r.type === 'corner' && st.full && cfg.corner) st.restart.at = st.t + Math.max(cfg.corner.pose ?? 10, tempoWait(st, cfg, r.team, 'corner'));   // (217) la cérémonie du corner : le max de sa pose et du temps mort réel — sans tempsMort, tempoWait rend restartWait < pose : l'hier au bit
     if (carried) { if (!(st.full && cfg.bordure)) brake(0.35); st.restart.placed = false; st.restart.taker = nearTaker(r.team); }
     else st.ball.restart([r.x, BALL.radius, r.z], { cause: r.type });
   }
@@ -571,8 +571,22 @@ export function onOut(st, cfg) {
 /** LE TEMPO DE LA REMISE (lot 164 — le levier n° 1 du tempo réel : jouer vite ou poser le
  *  ballon). L'attente de remise × axe tempo de l'ÉQUIPE QUI LA JOUE (vif 0,65 ↔ posé 1,35,
  *  0,5 = ×1 l'identité au bit). st.full : le réduit garde son horloge d'hier. */
-function tempoWait(st, cfg, team) {
-  return cfg.restartWait * (st.full && team >= 0 ? axeT(tacT(st, team).tempo, 1.6, 0.4) : 1);
+function tempoWait(st, cfg, team, type = null) {
+  // LES CÉRÉMONIES DE REMISE AU RÉEL (217, cfg.tempsMort — mesuré : temps mort 19 % du match pour
+  // un réel de 35-40 ; touche 5,3 s (réel ~15), renvoi 6,8 (~25), corner 9,8 (~30), coup franc
+  // 3 (20-30) — et 746 passes/90 min qui en découlent). Une durée par ESPÈCE, × le tempo
+  // tactique (l'équipe qui joue vite remet vite), × le CONTEXTE (celle qui mène en fin de match
+  // traîne, celle qui court après se dépêche — st.score et le chrono), × un aléa seedé (0,8-1,2).
+  // L'engagement garde son horloge (cérémonie du but). Clé absente : restartWait d'hier au bit.
+  const TM = st.full && type && cfg.tempsMort && cfg.tempsMort[type] != null ? cfg.tempsMort : null;
+  const base = TM ? TM[type] : cfg.restartWait;
+  const tempoF = st.full && team >= 0 ? axeT(tacT(st, team).tempo, 1.6, 0.4) : 1;
+  if (!TM) return base * tempoF;
+  const lead = team >= 0 && st.score ? (st.score[team] ?? 0) - (st.score[1 - team] ?? 0) : 0;
+  const tard = st.chrono ? Math.min(1, Math.max(0, (st.chrono.t ?? st.t) / (st.chrono.total ?? 5400))) : Math.min(1, st.t / 5400);
+  const contexte = lead > 0 ? 1 + (TM.traine ?? 0.35) * tard : lead < 0 ? 1 - (TM.presse ?? 0.35) * tard : 1;
+  const alea = 0.8 + 0.4 * (st.rnd ? st.rnd() : 0.5);
+  return base * tempoF * contexte * alea;
 }
 
 export function canTake(st, takerId, cfg) {
@@ -753,7 +767,7 @@ export function adjugeFaute(st, cfg) {
     : [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, F.p[0])), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, F.p[1]))];
   const type = dansSurface ? 'penalty' : 'coup-franc';
   st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: type, team: F.team, p: [+p[0].toFixed(1), +p[1].toFixed(1)] });
-  st.restart = { type, p, team: F.team, at: st.t + tempoWait(st, cfg, F.team) + (dansSurface ? 1 : 0) };
+  st.restart = { type, p, team: F.team, at: st.t + tempoWait(st, cfg, F.team, type) + (dansSurface ? 1 : 0) };   // (217) l'espèce (coup-franc / penalty)
   if (cfg.restartCarried !== false) {
     st.restart.placed = false;
     const tk = st.players.filter((q) => q.team === F.team && !q.keeper && q.down <= 0)
@@ -808,7 +822,7 @@ export function administerWhistle(st, cfg) {
   const x = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, w.p[0]));
   const z = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, w.p[1]));
   st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: 'coup-franc', team: w.team, p: [+x.toFixed(1), +z.toFixed(1)] });
-  st.restart = { type: 'coup-franc', p: [x, z], team: w.team, at: st.t + tempoWait(st, cfg, w.team) };
+  st.restart = { type: 'coup-franc', p: [x, z], team: w.team, at: st.t + tempoWait(st, cfg, w.team, 'coup-franc') };   // (217) l'espèce
   st.ball.release('arrêt-de-jeu');
   st.ball.impulse([-st.ball.v[0] * 0.65, 0, -st.ball.v[2] * 0.65]);
   if (cfg.restartCarried !== false) {
