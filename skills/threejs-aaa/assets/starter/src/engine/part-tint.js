@@ -47,6 +47,7 @@ function tintedMaterial(src, color, map = null) {
     // L'EMPLACEMENT DE TEXTURE (214, demande projet aval) : `map` REMPLACE la texture sur le CLONE de
     // la pièce — jamais sur le matériau partagé (corps, visage, chaussures lisent le même atlas).
     if (map) m.map = map;
+    else if (m.map && m.map.colorSpace !== THREE.SRGBColorSpace) m.map.colorSpace = THREE.SRGBColorSpace;   // (219b) la texture PROPRE du modèle est une texture de COULEUR : sRGB, sinon les couleurs d'équipe sont délavées (le banc part-tint, hors contrat, le disait depuis le 214). Une texture FOURNIE reste sous la responsabilité de l'appelant : checkTint la refuse (contrat 214)
     m.name = `${src.name || 'mat'}-tint-${key.toString(16)}${map ? '-map' : ''}`;
     byColour.set(key, m);
   }

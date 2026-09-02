@@ -190,7 +190,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // les identités (défaut 0 EXACT, sabotage 0) se prouvent sur CHAQUE graine visitée.
     for (const seed of [1, 3, 5]) {
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ shotRange: 20, ...cfgX });
+      const cfg = matchCfg({ shotRange: 20, uneToucheVive: false, uneTouche: { ...matchCfg().uneTouche, base: 0 }, ...cfgX });
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
       for (const e of st.events) if (e.type === 'pass' && e.style === 'une-touche') { ut++; if (e.calme) calme++; }
     }

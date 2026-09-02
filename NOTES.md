@@ -7429,7 +7429,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      les vraies passes en touche ~3 % (réel 2-3). Bande A/B 20 × 300 s :
      126 tirs, 22 buts (le plafond de la bande — moins de dribbles perdus,
      plus d'attaques abouties ; 84-95 tirs aux mondes 218), 12 accrochages,
-     18 fautes, 7 corners.
+     18 fautes, 7 corners. BANC 219 : le premier passage (477 ✓ / 12 ✗)
+     tombait sur les clauses des GESTES (croqueta, semelle, pont, roulette,
+     passements, sortie, cône de touche, ballon mort, gradation, pique) :
+     elles comptent des dribbles au flux d'un monde qui en avait quatre
+     fois trop — épinglées dribble:false (16 match11 + 3 attributes : elles
+     jugent le mécanisme de chaque geste, pas son volume). Deux
+     redémarrages du conteneur ont mangé deux bancs détachés (l'attente
+     passive semble déclencher la récupération) : le banc se joue en
+     AVANT-PLAN par moitiés (4 shards en parallèle < 10 min, deux fois,
+     puis les annexes) — 224 ✓ match11 + annexes du contrat toutes vertes
+     (match 84, rondo 40, gestes 60, menace 11, frappes 13, sync 9,
+     attributes 27, roles 11, loi3 10, kit 5). SCELLÉ. Hors contrat (les
+     54 autres verify-*.mjs, jamais enchaînés par bancs.mjs) : part-tint
+     (map.colorSpace pas sRGB — un vrai bug de rendu, corrigé au 219b),
+     tactics (la porte « 0 une-touche calme EXACTEMENT au défaut »
+     périmée depuis le 216 — re-fondée), slide (fixture « les jambes avant
+     le ballon » sans faute — DETTE), circuits ×2 / dribble / loi12 (flux
+     re-datés — dettes). Leçon : `pkill -f` avec un motif présent dans sa
+     propre ligne se tue (code 144) — tuer par PID.
+- 268: DEUX BANCS HORS CONTRAT REMIS D'ÉQUERRE (219b). part-tint : la
+     texture PROPRE du modèle (Ch38_Shirt) était lue en linéaire — les
+     couleurs d'équipe délavées à l'écran depuis le 214 ; tintedMaterial
+     la passe en sRGB (une texture FOURNIE reste à l'appelant : checkTint
+     la refuse, contrat 214 — la première version corrigeait aussi la
+     fournie et cassait ce refus). tactics : la clause « la une-touche au
+     calme est un choix de style » exigeait 0 une-touche calme EXACTEMENT
+     au défaut — périmée depuis uneTouche.base 0,25 puis uneToucheVive
+     (216) ; épinglée (uneToucheVive:false, base 0) : elle juge l'AXE, pas
+     le monde. Dettes hors contrat consignées : slide (fixture « les jambes
+     avant le ballon » sans faute), circuits ×2, dribble (latence 1,05 c.
+     1,0), loi12 (meute 8,9 c. 8,4) — des flux re-datés jamais enchaînés.
+     Rejoués : part-tint 18 ✓, kit 5 ✓, sync 9 ✓, tactics 11 ✓.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
