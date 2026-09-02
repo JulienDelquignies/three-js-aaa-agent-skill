@@ -2097,7 +2097,7 @@ if (__bloc()) {
     let n2 = 0;
     for (const seed of [1, 7, 9, 10]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, ...over });   // (218b) course:false — le petit pont se compte à 2-3 par 4 graines, re-daté par la course du une-deux
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       n2 += st.events.filter((e) => e.type === 'skill' && e.kind === 'petitPont').length;
     }
