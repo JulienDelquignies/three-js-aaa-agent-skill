@@ -7329,6 +7329,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la loi : fen sous st.full, 14 s au réduit (annexe match 84 ✓). Leçon :
      le sceau du 217 n'avait rejoué que les shards match11 — un lot qui
      touche match-check.js rejoue les ANNEXES match/sync aussi.
+- 264: LA COURSE DU UNE-DEUX CHERCHE L'ESPACE (218b, unDeux.course.espace —
+     la dette nommée au 263). Des deux côtés (±ecart), celui dont le couloir
+     mur → cible ET le rendez-vous sont les plus dégagés (laneClearance +
+     distance du défenseur le plus proche, min des deux) ; le dos du
+     presseur départage (+0,3). Mesuré, retours du une-deux : 6 graines
+     d'origine 7/26 c. 5/24, 6 graines fraîches 9/29 c. 4/30 — cumul
+     16/55 (29 %) c. 9/54 (17 %) ; réel ~50 % : le reste est la lecture
+     du mur (il joue posé à 0,9 s, le coureur a couru 4,5 m) et les
+     défenses qui lisent la course. Clause 218b au mécanisme (fixture :
+     presseur derrière-côté, défenseur couvrant +z → cible −3,1 ; sans :
+     +2,9). Piège de fixture : un presseur DEVANT à 1,4 m déclenche le
+     râteau puis une passe au gardien — presser derrière-côté. Jumeau
+     espace absent = 218 au bit ; les empreintes 3/7 à 90 s sont celles
+     du 218 (aucun choix de côté dans leurs 90 s).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

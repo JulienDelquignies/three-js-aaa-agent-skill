@@ -4693,6 +4693,28 @@ if (__bloc()) {
   const V = course({}), E = course({ unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false } });
   ok(`lot 218 — LE LANCEUR DU UNE-DEUX SPRINTE (vivant : consigne à ${V.dT.toFixed(1)} m de sa cible < 1, ${V.v.toFixed(1)} m/s à 0,6 s ≥ 4 ; épinglé : ${E.dT.toFixed(1)} m > 3, ${E.v.toFixed(1)} m/s — le flux : 2,3 → 5,0 m/s à 0,3 s, retours 1/16 → 5/24 ; DETTE : le taux de retour (réel ~50 %) — les courses couvertes)`,
     V.dT < 1 && V.v >= 4 && E.dT > 3 && V.v >= E.v + 1.5);
+  // (218b) LA COURSE CHERCHE L'ESPACE (course.espace) : le lanceur pressé derrière-côté (dos = +z),
+  // le mur à 4 m, un défenseur qui COUVRE le rendez-vous +z → sous espace la cible part en −z ;
+  // sans, dans la couverture (+z). Le flux : retours 9/54 → 16/55 sur 12 graines (réel ~50 %).
+  const cote = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 1.0, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5, ...over } } });
+    const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
+    const c = st.players.find((p) => p.team === 0 && p.post === 5), B = st.players.find((p) => p.team === 0 && p.post === 8);
+    for (const p of st.players) if (p.team === 0 && !p.keeper && ![5, 8].includes(p.post)) { p.p[0] = -sgn * 30; p.p[2] = 15; }
+    const foes = st.players.filter((p) => p.team === 1 && !p.keeper);
+    for (const p of foes) { p.p[0] = sgn * 40; p.p[2] = 20; }
+    c.p[0] = 0; c.p[2] = 0; c.v[0] = 0; c.v[1] = 0; B.p[0] = sgn * 4; B.p[2] = -0.5;
+    foes[0].p[0] = -sgn * 1.6; foes[0].p[2] = -0.9; foes[1].p[0] = sgn * 7; foes[1].p[2] = 3.5;
+    st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' });
+    st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+    for (let i = 0; i < 90 && !c._pace?.cible; i++) matchStep(st, 1 / 60, cfg);
+    return c._pace?.cible ? c._pace.cible[1] : NaN;
+  };
+  const zE = cote({ espace: true }), zS = cote({});
+  ok(`lot 218b — LA COURSE DU UNE-DEUX CHERCHE L'ESPACE (cible z ${zE.toFixed(1)} < 0 côté ouvert ; sans espace ${zS.toFixed(1)} > 0 dans la couverture — le flux : retours 9/54 → 16/55)`,
+    zE < -1 && zS > 1);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

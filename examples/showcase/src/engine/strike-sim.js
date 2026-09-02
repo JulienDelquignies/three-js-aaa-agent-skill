@@ -4,7 +4,7 @@
 // (volumétrie du cœur), au bit près — la batterie est la preuve. Une famille par fichier.
 import { STANCES, anchorFor, planStrike, reachable } from './approach.js';
 import { gauss } from './attributes.js';
-import { flightRace, interceptPoint, solvePass } from './ball-predict.js';
+import { flightRace, interceptPoint, laneClearance, solvePass } from './ball-predict.js';
 import { BALL } from './ball.js';
 import { startGesture } from './gesture.js';
 import { isOffside, offsideLine } from './offside.js';
@@ -499,7 +499,22 @@ export function strikeNow(st, c, cfg) {
         let ux = sg * (1 - el) + (c.v[0] / (vN || 1)) * el, uz = (c.v[1] / (vN || 1)) * el;
         const ul = hyp(ux, uz) || 1; ux = (ux / ul) * M; uz = (uz / ul) * M;
         if (ux * sg < 0.3 * M) ux = sg * 0.3 * M;
-        const dx = ux, dz = uz + cote * (C.ecart ?? 3), dl = hyp(dx, dz) || 1;
+        // …ET LA COURSE CHERCHE L'ESPACE (218b, C.espace — la fixture du mur : il sert le coureur quand le
+        // défenseur est sur la ligne de passe et l'appui quand le défenseur COUVRE la course ; 5 retours/24) :
+        // des deux côtés (±ecart), celui dont le couloir mur → cible et le rendez-vous sont les plus
+        // dégagés ; l'ancien côté (dos du presseur) départage. Absente : le 218 au bit.
+        let coteE = cote;
+        if (C.espace) {
+          const foes = st.players.filter((o) => o.team !== c.team && o.down <= 0).map((o) => o.p);
+          const score = (k) => {
+            const tx = c.p[0] + ux, tz = c.p[2] + uz + k * (C.ecart ?? 3);
+            const lane = laneClearance(choice.to.p, [tx, 0, tz], foes, { corridor: 1 });
+            let near = 99; for (const f of foes) near = Math.min(near, hyp(f[0] - tx, f[2] - tz));
+            return Math.min(lane.margin, near) + (k === cote ? 0.3 : 0);
+          };
+          coteE = score(1) >= score(-1) ? 1 : -1;
+        }
+        const dx = ux, dz = uz + coteE * (C.ecart ?? 3), dl = hyp(dx, dz) || 1;
         c._pace.cible = [c.p[0] + dx, c.p[2] + dz]; c._pace.dir = [dx / dl, dz / dl];
       }
       st.events.push({ t: +st.t.toFixed(2), type: 'un-deux', a: c.id, b: choice.to.id });
