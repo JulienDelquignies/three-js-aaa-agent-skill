@@ -7463,7 +7463,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Rejoués : part-tint 18 ✓, kit 5 ✓, sync 9 ✓, tactics 11 ✓. DÉPLOYÉ
      (capture playmode validée : maillots rouges/blancs saturés, ballon,
      stade ; chunk Rondo-Qu4D-wm-.js — propreTiers et relaisPrio grepables
-     à l'alias). En ligne : 218 → 219b.
+     à l'alias). En ligne : 218 → 219b. Puis slide re-fondé (10 ✓) : la
+     fixture « les jambes avant le ballon » figeait rnd 0,3 quand la clé
+     slideTackle.imprudence vaut 0,2 depuis le 191 (le pro RETIENT ce
+     tacle) → 0,1 ; et « la glissade dans le vide » attend le monde d'avant
+     la prédiction (191, predit) → épinglée predit:false. part-tint,
+     tactics et slide entrent dans la liste du contrat de bancs.mjs (des
+     secondes chacun) : un banc jamais enchaîné pourrit en silence.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

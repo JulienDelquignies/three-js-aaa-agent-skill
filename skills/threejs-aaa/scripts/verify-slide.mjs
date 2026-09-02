@@ -57,7 +57,7 @@ const bp = (st) => st.ball.p;
     foe.p[0] = c.p[0] - 0.8; foe.p[2] = c.p[2] + 0.3;              // au CORPS, dans le dos du porteur
     foe.v = [5.5, 0]; foe.yaw = Math.PI;                           // …et sa glissade regarde AILLEURS : la table refuse
   });
-  st.rnd = () => 0.3;
+  st.rnd = () => 0.1;   // (219b) SOUS le taux d'imprudence (slideTackle.imprudence 0,2 depuis le 191 — à 0,3 le pro RETIENT ce tacle : la fixture de 33 jugeait le monde d'avant la clé)
   slideTackleStep(st, c, cfg);
   const fa = st.events.find((e) => e.type === 'faute' && e.kind?.startsWith('tacle-glissé'));
   ok(`les JAMBES avant le ballon : FAUTE ${fa?.kind} (victime couchée down=${c.down.toFixed(2)} ≈ 0,7, monde en loose, st._faute grave=${st._faute?.grave})`,
@@ -78,6 +78,7 @@ const bp = (st) => st.ball.p;
     foe.v = [5.5, 0]; foe.yaw = Math.PI;
   });
   st.rnd = () => 0.3;
+  cfg.slideTackle = { ...cfg.slideTackle, predit: false };   // (219b) le monde d'AVANT la prédiction (191) : depuis, un pro sans ballon ni jambes en vue reste DEBOUT — la glissade dans le vide est un sabotage nommé, pas le défaut
   const carrier0 = st.possession.carrier;
   slideTackleStep(st, c, cfg);
   const ev = st.events[st.events.length - 1];
