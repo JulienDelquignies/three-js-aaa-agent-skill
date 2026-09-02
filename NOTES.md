@@ -7241,7 +7241,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      change ; la fixture du gardien dérape (l'attaquant posé reprend,
      handling relève le seuil du missile) : la clause s'épingle au
      monde 215 où son juge parle). La leçon : le jeu en première
-     intention tire MOINS — et c'est le réel.
+     intention tire MOINS — et c'est le réel. SCEAU : 482 ✓ / 0 ✗ en
+     825 s (le banc seul).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
