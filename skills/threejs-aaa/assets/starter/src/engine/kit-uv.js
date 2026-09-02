@@ -55,7 +55,7 @@ const px = (b, size) => [b[0] * size, b[1] * size, (b[2] - b[0]) * size, (b[3] -
  * Mixamo disparaissent sous la peinture. Le canvas est à l'appelant : une texture par tenue.
  * @param theme { primary, secondary, accent, shorts?, socks?, initials? } (le contrat des clubs)
  */
-export function drawKit(theme, { number = null, initials = null, uv = SHANON_UV, atlas = null, size = 512 } = {}) {
+export function drawKit(theme, { number = null, name = null, initials = null, uv = SHANON_UV, atlas = null, size = 512 } = {}) {
   const canvas = typeof document !== 'undefined' ? document.createElement('canvas') : new OffscreenCanvas(size, size);
   canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d');
@@ -68,7 +68,28 @@ export function drawKit(theme, { number = null, initials = null, uv = SHANON_UV,
   fill(uv.shorts.body, theme.shorts ?? secondary); hem(uv.shorts.body, primary, 0.05);
   for (const b of Object.values(uv.socks)) fill(b, theme.socks ?? primary);
   ctx.fillStyle = hex(accent); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  if (number != null) { const [x, y, w, h] = px(uv.shirt.back, size); ctx.font = `bold ${Math.round(h * 0.52)}px system-ui, sans-serif`; ctx.fillText(String(number), x + w / 2, y + h * 0.47); }
+  // LE DOS AU RÉEL (214b, retour utilisateur « le numéro est un peu gros — et le nom au-dessus ? ») : le
+  // numéro fait ~35-40 % de la hauteur du dos (0,52 était trop), le NOM en capitales espacées
+  // au-dessus, ARQUÉ (chaque lettre tournée sur un arc — le flocage du vrai maillot).
+  if (number != null) { const [x, y, w, h] = px(uv.shirt.back, size); ctx.font = `bold ${Math.round(h * 0.38)}px system-ui, sans-serif`; ctx.fillText(String(number), x + w / 2, y + h * 0.58); }
+  if (name) {
+    const [x, y, w, h] = px(uv.shirt.back, size);
+    const txt = String(name).toUpperCase().slice(0, 14);
+    let fs = Math.round(h * 0.11);
+    ctx.font = `bold ${fs}px system-ui, sans-serif`;
+    let widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.1), total = widths.reduce((a, b) => a + b, 0);
+    if (total > w * 0.85) {   // le nom long tient dans 85 % du dos (la couture n'est pas un bord de flocage)
+      fs = Math.max(8, Math.floor(fs * (w * 0.85) / total)); ctx.font = `bold ${fs}px system-ui, sans-serif`;
+      widths = [...txt].map((ch) => ctx.measureText(ch).width + fs * 0.1); total = widths.reduce((a, b) => a + b, 0);
+    }
+    const r = w * 0.62, cx = x + w / 2, cy = y + h * 0.30 + r;   // le centre de l'arc sous le nom
+    let a = -total / 2 / r;
+    for (let i = 0; i < txt.length; i++) {
+      const half = widths[i] / 2 / r; a += half;
+      ctx.save(); ctx.translate(cx + Math.sin(a) * r, cy - Math.cos(a) * r); ctx.rotate(a); ctx.fillText(txt[i], 0, 0); ctx.restore();
+      a += half;
+    }
+  }
   if (initials) { const [x, y, w, h] = px(uv.shirt.front, size); ctx.font = `bold ${Math.round(h * 0.16)}px system-ui, sans-serif`; ctx.fillText(String(initials).slice(0, 3), x + w * 0.5, y + h * 0.30); }
   return canvas;
 }
@@ -90,11 +111,11 @@ const kitCache = new Map();   // une texture par (tenue, numéro) — 2 à 4 ten
  * d'habillement via tintPart({ map }) — color 0xffffff, la texture porte la couleur. L'atlas
  * d'origine est lu sur le matériau du maillot du modèle (image 2). Retourne le contrat checkTint.
  */
-export function applyKit(model, { theme, number = null, initials = null, uv = SHANON_UV, match = /Shirt|Shorts|Socks/i } = {}) {
+export function applyKit(model, { theme, number = null, name = null, initials = null, uv = SHANON_UV, match = /Shirt|Shorts|Socks/i } = {}) {
   const shirt = model.getObjectByName?.(uv.atlas.meshes.shirt) ?? null;
   const atlas = shirt?.material?.map?.image ?? null;
-  const key = `${theme.primary}|${theme.secondary}|${theme.accent}|${theme.shorts ?? ''}|${theme.socks ?? ''}|${number ?? ''}|${initials ?? ''}`;
+  const key = `${theme.primary}|${theme.secondary}|${theme.accent}|${theme.shorts ?? ''}|${theme.socks ?? ''}|${number ?? ''}|${name ?? ''}|${initials ?? ''}`;
   let map = kitCache.get(key);
-  if (!map) { map = kitTexture(drawKit(theme, { number, initials, uv, atlas })); kitCache.set(key, map); }
+  if (!map) { map = kitTexture(drawKit(theme, { number, name, initials, uv, atlas })); kitCache.set(key, map); }
   return tintPart(model, { match, color: 0xffffff, map });
 }

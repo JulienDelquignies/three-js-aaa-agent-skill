@@ -7169,6 +7169,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      motifs, sponsors, écussons, gardien, 2e tenue — leur couche. SCEAU :
      480 ✓ / 0 ✗ en 825 s (le banc seul), déployé après validation au
      pixel — chunk Rondo-bl3eGL0R.js.
+- 258: Lot 214b — LE DOS AU RÉEL (retour utilisateur : « le numéro est un
+     peu gros — et le nom au-dessus ? »). Le numéro passe de 52 à 38 % de
+     la hauteur du dos (le réel : 25-30 cm sur un dos de 70), posé plus
+     bas (0,58) ; le NOM en capitales espacées au-dessus, ARQUÉ (chaque
+     lettre tournée sur un arc de rayon 0,62 w — le flocage réel), la
+     police réduite pour tenir dans 85 % du dos (la couture n'est pas
+     un bord). Le contrat de squad gagne `name` (spec.name ?? spec.nom
+     → q.name — le projet aval nomme ses joueurs), drawKit/applyKit
+     prennent `name`, le cache par tenue l'inclut ; ?noms=1 floque une
+     liste de démonstration au showcase (le vrai nom vient du squad).
+     Validé au pixel (RICHARD/6, THOMAS/4, ROBERT/5), identité sim au bit
+     (4a96bed20e20c399 / 7221e3da645996a8), verify-kit 5 ✓.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

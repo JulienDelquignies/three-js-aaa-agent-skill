@@ -27,6 +27,7 @@ import { makeTicker } from './ticker.js';
 
 // Rondo — a 5 v 5 "passe à dix" on the centre circle of the Grand Bol, under floodlights. The GAME is decided by rondo-sim (proved headless); this file only DRESSES it — one source of truth, two consumers. Pitch centre = world origin (grass Y = 0, long axis X).
 
+const NOMS_DEMO = ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert', 'Richard', 'Petit', 'Durand', 'Leroy', 'Moreau', 'Simon', 'Laurent', 'Lefebvre', 'Michel', 'Garcia', 'David', 'Bertrand', 'Roux', 'Vincent', 'Fournier', 'Morel', 'Girard'];   // ?noms=1 : le flocage de démonstration (214b) — le vrai nom vient du squad (spec.name)
 const TEAMS = [
   { name: 'Grand Bol', primary: 0xe8ecf2, secondary: 0x16233f, shorts: 0x16233f, socks: 0xe8ecf2 },
   { name: 'Rivaux', primary: 0xc8202f, secondary: 0x14161c, shorts: 0x14161c, socks: 0xc8202f },
@@ -54,8 +55,7 @@ export class Rondo {
     this.fullMode = this.matchMode && q.has('full');
 
     // ---- the stadium: pitch centre at the origin so sim space IS world space.
-    // EN MATCH, LE STADE SE CONSTRUIT AUTOUR DU TERRAIN RÉDUIT (stade paramétrique) : ses cages
-    // sont LES cages (mêmes lignes que pitch.js), sa pelouse peint LES surfaces — une seule vérité
+    // EN MATCH, LE STADE SE CONSTRUIT AUTOUR DU TERRAIN RÉDUIT (stade paramétrique) : ses cages sont LES cages (mêmes lignes que pitch.js), sa pelouse peint LES surfaces — une seule vérité
     // au sol, plus de carré superposé ni de buts décoratifs à 3 m des vrais.
     const model = this.fullMode
       ? generateStadium({ tier: 4, landmark: 'grandbol' })   // défauts = plein format Loi 1
@@ -195,7 +195,7 @@ export class Rondo {
       // call — teindre le maillot n'atteint pas la peau. Voir engine/part-tint.js.
       // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe. …ET LE MAILLOT EST UNE TEXTURE (214, engine/kit-uv.js — demande projet aval : plus le « 7 » de Mixamo sur tout le monde, le numéro coûte un canvas, pas 14 meshes) ; ?kit=1 garde le kit géométrique
       const tint = this.kits ? tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) })
-        : applyKit(model3d, { theme: p.keeper ? { primary: 0xd7b12a, secondary: 0x2a2a2a, accent: 0x111111, shorts: 0x2a2a2a, socks: 0xd7b12a } : { ...TEAMS[p.team], ...(p.look?.shirt != null ? { primary: p.look.shirt } : {}) }, number: p.id + 1, initials: TEAMS[p.team].initials ?? null });
+        : applyKit(model3d, { theme: p.keeper ? { primary: 0xd7b12a, secondary: 0x2a2a2a, accent: 0x111111, shorts: 0x2a2a2a, socks: 0xd7b12a } : { ...TEAMS[p.team], ...(p.look?.shirt != null ? { primary: p.look.shirt } : {}) }, number: p.id + 1, name: p.name ?? (q.get('noms') === '1' ? NOMS_DEMO[p.id % NOMS_DEMO.length] : null), initials: TEAMS[p.team].initials ?? null });
       if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands

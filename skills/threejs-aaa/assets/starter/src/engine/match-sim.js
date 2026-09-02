@@ -57,7 +57,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
         q.ratings = spec.ratings ?? null;
         q.skill = spec.ratings ? makeProfile(spec.ratings) : null;
         if (spec.ratings?.foot) q.strongFoot = spec.ratings.foot;
-        q.look = spec.look ?? null;
+        q.look = spec.look ?? null; q.name = spec.name ?? spec.nom ?? null;   // (214b) le NOM du joueur — le squad peut le porter, le maillot l'affiche
         q.name = spec.name ?? q.name;
         q.number = spec.number ?? null;
         if (spec.ratings?.flair != null && q.persona)   // LE FLAIR EST UNE NOTE (147) : fournie, elle remplace le tirage seedé (TENTER ; FAIRE reste gesteF/technique)
