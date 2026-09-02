@@ -7202,7 +7202,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la fixture choosePass du 213 + un soutien sûr — libre → le through,
      forcé → le soutien, forcé sans clé → le through (la première
      géométrie « couloir étroit devant / large de côté » ne créait pas de
-     tension : le barème de base évite déjà fortement l'étroit).
+     tension : le barème de base évite déjà fortement l'étroit). SCEAU :
+     481 ✓ / 0 ✗ en 825 s (le banc seul).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
