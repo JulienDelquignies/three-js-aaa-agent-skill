@@ -7349,6 +7349,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      non monotone au 50 sur 6 × 240 s) → épinglés course:false ; shard 5/8
      33 ✓ et annexe attributes 27 ✓ au re-test. SCELLÉ (déploiement au
      prochain sceau, 217 étant en ligne).
+- 265: LE MUR REMET AU COUREUR (218c, uneToucheVive mene/capRelais/
+     relaisPrio — retour aux passes). Sondé : 17 murs de une-deux, 4
+     remises en une touche, AUCUNE au coureur ; 7 retours après contrôle
+     (32 %) ; le réel remet en une touche ~70 % des donne-et-va. Deux
+     leçons d'instrument : le mur qui remet en une touche n'est JAMAIS
+     « owner » (l'ancienne sonde comptait au possédé : 11 remises tues) et
+     l'événement de une-touche porte `by`, pas `from`. Instrumenté : le
+     coureur est à 6-12 m, couloir ouvert (1-3 m), il faut 7-9 m/s pour
+     le servir (cosD ≈ −1 : le retour repart d'où venait le ballon) et le
+     cap de dose du relais valait 6 (lot 131) ; quand il devient faisable,
+     un appui LIBRE l'écrase au tri (sans bloqueur, laneClearance rend
+     99). Loi : mene 0,5 (la cible dans la course), capRelais 10, et
+     relaisPrio — le relais chaud faisable passe devant. Mesuré : 9
+     remises/16 murs, 8 retours (50 %, le réel) c. 7/22 (32 %) ;
+     réussite des une-touche 77 % tenue. Les mêmes boutons, tentés au 218
+     AVANT que le lanceur sprinte, avaient été rejetés (1 retour/16) :
+     une loi peut être juste et inutile tant que sa cause amont manque.
+     Clause 218c au mécanisme (fixture : coureur à 9 m en course + appui
+     libre à 4 m → A ; hier → C). Jumeau (clés absentes) = 218b au bit ;
+     monde 218c : seed 3 d07335bbdf40f098, seed 7 9bb6a15a11c57c2c.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

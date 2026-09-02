@@ -76,8 +76,9 @@ export function uneTouche(st, p, cfg) {
         return { ...x, sol, faisable: !!sol && sol.speed <= Math.min(12, capV) };
       })
       .filter((x) => !dose || x.faisable)
-      .sort((a, b) => (b.marge + ((b.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0))
-        - (a.marge + ((a.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0)))[0];   // le coureur du relais d'abord (lot 111)
+      .sort((a, b) => ((V?.relaisPrio ? (((b.m._troisT ?? -1) > st.t) - ((a.m._troisT ?? -1) > st.t)) : 0)   // (218c, V.relaisPrio) LE RELAIS CHAUD FAISABLE PASSE DEVANT : sans bloqueur la marge d'un appui vaut 99 et écrasait le coureur (marge 1-3 + bonus) — 11 murs en une touche, 1 retour ; absente : le barème d'hier
+        || ((b.marge + ((b.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0))
+        - (a.marge + ((a.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0)))))[0];   // le coureur du relais d'abord (lot 111)
     if (!mate) refus('ut-candidat');
     if (mate) {
       st.passes++; st.best = Math.max(st.best, st.passes);

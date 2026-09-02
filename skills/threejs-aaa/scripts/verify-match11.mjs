@@ -4717,5 +4717,41 @@ if (__bloc()) {
     zE < -1 && zS > 1);
 }
 
+// ---- lot 218c : LE MUR REMET AU COUREUR (retour aux passes — le donne-et-va se ferme en une touche)
+if (__bloc()) {
+  // Sondé (sonde corrigée : le mur qui remet en une touche n'est jamais « owner » — l'ancienne
+  // sonde le taisait) : 17 murs, 4 remises en une touche, AUCUNE au coureur ; 7 retours après
+  // contrôle (32 %). Le coureur (6-12 m, couloir ouvert 1-3 m) était refusé par le cap de dose du
+  // relais (6 m/s, 7-9 requis : le retour repart d'où venait le ballon, lot 131) et, quand
+  // faisable, écrasé au tri par un appui libre (sans bloqueur la marge vaut 99). uneToucheVive
+  // {mene 0,5, capRelais 10, relaisPrio} : la cible dans la course, le cap du retour, le relais
+  // chaud faisable DEVANT. Mesuré : 9 remises/16 murs, retours 50 % (réel ~50), une-touche 77 %.
+  const { uneTouche } = await import('../assets/starter/src/engine/premiere-intention.js');
+  const elu = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const base = matchCfg();
+    const cfg = matchCfg({ shotRange: 20, uneTouche: { ...base.uneTouche, p: 1.0 }, ...(over ?? {}) });
+    const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
+    const t0 = st.players.filter((p) => p.team === 0 && !p.keeper), t1 = st.players.filter((p) => p.team === 1 && !p.keeper);
+    const p = t0[5], A = t0[8], C = t0[4], from = t0[6];
+    for (const q of t0) if (![4, 5, 6, 8].includes(t0.indexOf(q))) { q.p[0] = -sgn * 40; q.p[2] = 25; }
+    for (const q of t1) { q.p[0] = sgn * 45; q.p[2] = -25; }
+    p.p[0] = 0; p.p[2] = 0; from.p[0] = -sgn * 8; from.p[2] = -6;
+    A.p[0] = sgn * 9; A.p[2] = 2; A.v[0] = sgn * 5; A.v[1] = 0.5; A._troisT = st.t + 2; A._pace = { until: st.t + 1.5, kind: 'un-deux', next: st.t + 6 };
+    C.p[0] = sgn * 1; C.p[2] = 4;
+    t1[0].p[0] = sgn * 2; t1[0].p[2] = -2.5;
+    st.ball.restart([-sgn * 1.0, 0.11, -0.8], { cause: 'coup-franc' });
+    st.restart = null;
+    st.ball.impulse([sgn * 5.5, 0, 4.2]);
+    st.pass = { from: from.id, to: p.id, lead: [0, 0, 0], style: 'ground', t: st.t - 1.2, flight: 1.5, origin: [-sgn * 8, -6] };
+    st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.lastTouch = 0; st.lastPasser = from.id;
+    const r = uneTouche(st, p, cfg);
+    return r ? (st.pass?.to === A.id ? 'A' : st.pass?.to === C.id ? 'C' : 'autre') : 'non';
+  };
+  const V = elu({}), E = elu({ uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 } });
+  ok(`lot 218c — LE MUR REMET AU COUREUR (une touche vers ${V} = A le coureur du une-deux à 9 m en course ; hier ${E} = C l'appui libre — le flux : retours 32 → 50 %, une-touche 77 % tenue)`,
+    V === 'A' && E === 'C');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

@@ -204,7 +204,7 @@ export const MATCH = {
   tempsMort: { touche: 12, 'sortie-de-but': 20, corner: 22, 'coup-franc': 18, penalty: 28, traine: 0.35, presse: 0.35 },  // 217 : les cérémonies
                           // de remise au réel (s, × tempo tactique × contexte de score × aléa 0,8-1,2)
                           // — temps mort mesuré 19 % pour un réel 35-40. Absente : restartWait d'hier.
-  uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 },   // 218 (mene/bonus3/capRelais) TENTÉE ET REJETÉE au flux — boutons absents = l'hier  // 216 : LA PREMIÈRE
+  uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22, mene: 0.5, capRelais: 10, relaisPrio: true },   // 218c : LE MUR REMET AU COUREUR — sa cible dans la course (mene), le cap du retour (capRelais : 7-9 m/s requis, 6 permis), et le relais chaud faisable PASSE DEVANT (relaisPrio : sans bloqueur la marge d'un appui vaut 99). Mesuré : murs en une touche 4 → 9/16, retours 32 → 50 % (réel ~50), une-touche 77 % tenue. (Les mêmes boutons, tentés au 218 avant que le lanceur sprinte, avaient été rejetés.)  // 216 : LA PREMIÈRE
                           // INTENTION VIT — pressé dès qu'un défenseur ARRIVE (3,4 m), socle calme
                           // 0,7 × visionF, × rôle tenue au tirage, la remise COURTE faisable
                           // (< 7 m : cap 8,5 m/s), candidat dès 2,5 m, couloir 0,9 (le relais
