@@ -7516,7 +7516,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      10 m/s planté → le critère dans la foulée. Attributs : accelF, topF,
      anticipF, controlF ; les rôles et la tactique entrent par le choix
      du through (mentalité, style, vision) déjà en place. Clé absente :
-     l'hier au bit (jumeau vérifié).
+     l'hier au bit (jumeau vérifié). Volumétrie : la loi vit dans foulee.js
+     (match-sim 1292 → 1249, monde bit-identique). BANC 220 (avant-plan par
+     moitiés) : 224 clauses match11 vertes après quatre épingles de flux
+     re-datés (141 pousse : sabotage à 6,1 pour 6 ; 149 piège ; 194 prises
+     du gardien 7 c. 8 ; 117 roulette 2 c. 3 — dribble:false) et une
+     cinquième dans attributes (gradation 152/158 — foulee:false) ; les
+     13 annexes du contrat vertes. Bande A/B 20 × 300 s : 109 tirs, 17
+     buts, 16 accrochages, 21 fautes, 6 corners. Clauses 220 au
+     mécanisme : etaCourse (l'élan compte, l'arrêt coûte, le travers est
+     perdu), la coupe en amont (ballon à 9 m/s qui sort : le proche coupe à
+     z 27, le lointain n'a AUCUN point — il ne sort pas), le through à
+     l'ETA (vol − ETA 0,37 c. 0,94 s hier, arrivée 8,0 c. 5,7).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
