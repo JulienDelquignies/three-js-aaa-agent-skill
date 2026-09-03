@@ -7527,7 +7527,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      mécanisme : etaCourse (l'élan compte, l'arrêt coûte, le travers est
      perdu), la coupe en amont (ballon à 9 m/s qui sort : le proche coupe à
      z 27, le lointain n'a AUCUN point — il ne sort pas), le through à
-     l'ETA (vol − ETA 0,37 c. 0,94 s hier, arrivée 8,0 c. 5,7).
+     l'ETA (vol − ETA 0,37 c. 0,94 s hier, arrivée 8,0 c. 5,7). Annexe
+     attributes 27 ✓ (le bloc du pique épinglé foulee:false ; un log
+     tronqué par une ligne binaire avait fait croire à un ✗ — relire au
+     filtre `grep -a`). DÉPLOYÉ (capture playmode validée ; chunk
+     Rondo-B7HboSZI.js, vPrise grepable à l'alias). En ligne : 220.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
