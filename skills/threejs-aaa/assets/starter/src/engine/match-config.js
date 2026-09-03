@@ -608,6 +608,10 @@ export const MATCH = {
                           // (min-max m) — la cloche haute vise la ligne, le retour est
                           // plus lent que le vol. L'audace × longF (l'attribut longShots).
                           // Absente : le gardien avancé impuni d'hier.
+  // L'OBLIGATION DE REPLI (221, cfg.repli && st.full — audit aval : six joueurs devant le ballon dans son camp).
+  // Un attaquant derrière le ballon ne se marque pas ; tout défenseur devant la ligne du ballon sauf les
+  // pointes (axe tactique repli, identité 1) rentre en sprint après delai × (2 − workF). Doc match-sim.
+  repli: { marge: 2, delai: 0.4 },
   // LE RENDEZ-VOUS DANS LA FOULÉE (220, cfg.foulee && st.full — doc match-sim) : le receveur LANCÉ
   // (through, ou pointe d'appel avec le lead ≥ avance m devant lui) n'a qu'une cible — le premier
   // point jouable du vol prédit, dans le terrain, qu'il rejoint avec sa cinématique réelle (élan,

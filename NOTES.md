@@ -7532,6 +7532,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tronqué par une ligne binaire avait fait croire à un ✗ — relire au
      filtre `grep -a`). DÉPLOYÉ (capture playmode validée ; chunk
      Rondo-B7HboSZI.js, vPrise grepable à l'alias). En ligne : 220.
+- 270: L'AUDIT TACTIQUE DE L'AVAL ET L'OBLIGATION DE REPLI (221, cfg.repli
+     + axe tactique repli). Le projet aval a livré une lecture par scènes
+     (repli inexistant : 6 joueurs devant le ballon dans son camp ;
+     pressing en essaim à 2,5 m partout ; marquage surface 3,2-3,4 m ;
+     touche-aimant 9-10 joueurs à < 12 m ; gardien « sans passe » ; coup
+     franc < 32 m sans attaquant dans la surface). Vérifié d'abord : leur
+     monde `perTeam 10` EST notre plein format (10 de champ + gardien) ;
+     rejoué sur 3 × 20 min : repli p50 2 / p90 6, pressing 2,9/2,5/2,1 m,
+     marquage 4,7 m p50, touche 7 joueurs — confirmés ; le gardien PASSE
+     (19/60 min — leur zéro lisait `by`, la passe porte `from`) mais perd
+     8 ballons/60 min ; le coup franc < 32 m : 0 attaquant, confirmé. Un
+     agent a cartographié l'organisation défensive : il n'existe AUCUNE
+     loi de repli (la rentrée est « émergente » : la cible devient le spot
+     défensif), et la loi d'allure plafonne un joueur loin de son poste
+     au TROT (3,4) voire à la MARCHE (2,1) en défense placée — le joueur
+     resté devant. Sondé : 2,4 joueurs devant la ligne du ballon par
+     perte ; 244/267 sont des MARQUEURS d'un appui de passe ARRIÈRE
+     (plafond 5,6 m/s), 54 ne repassent jamais derrière la ligne en 8 s.
+     La loi (repli.js) : (a) un attaquant derrière le ballon (> marge 2 m)
+     ne se marque pas ; (b) tout défenseur devant la ligne sauf les
+     POINTES (round(axe(repli, 0, 2)) : identité 1) rentre en SPRINT
+     (burst 'repli', exempt de l'allure) vers un point derrière la ligne,
+     après delai 0,4 × (2 − workF) — le work rate est la note de
+     l'engagement. Mesuré (3 × 10 min) : devant le ballon p50 3 → 1 ;
+     rentrés derrière la ligne 92 → 152/267, jamais en 8 s 54 → 39,
+     vitesse de rentrée 4,0 → 4,7 m/s (les corps tracés : 6,5-7,1) ; le
+     p90 6 restant est le temps de course (40 m à 7 m/s = 6 s) et le
+     tourbillon des pertes (112/30 min). Jumeau repli:false = 220 au bit.
+     LE PLAN, dans l'ordre de l'aval : 222 presseur et couverture (la
+     distance d'engagement par zone × pressing), 223 appuis de relance du
+     gardien, 224 montée sur coup de pied arrêté + événement `placement`,
+     225 marquage surface, 226 la touche n'aimante que 4-5 joueurs.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

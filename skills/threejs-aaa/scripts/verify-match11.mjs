@@ -4842,5 +4842,42 @@ if (__bloc()) {
     !!V && !!E && V.ecart <= 0.5 && E.ecart >= 0.8 && V.arr > E.arr);
 }
 
+// ---- lot 221 : L'OBLIGATION DE REPLI (audit aval, constat 1 : « le repli défensif n'existe pas »)
+if (__bloc()) {
+  // Sondé : après une perte, 2,4 joueurs de champ devant la ligne du ballon ; 244/267 étaient des MARQUEURS
+  // d'un appui de passe arrière (plafonnés à 5,6 m/s), 54 ne repassaient jamais derrière la ligne en 8 s.
+  // cfg.repli : (a) un attaquant derrière le ballon (> marge) ne se marque pas ; (b) tout défenseur devant
+  // la ligne du ballon sauf les pointes (axe tactique repli : round(axe(repli, 0, 2)), identité 1) prend
+  // le burst 'repli' (sprint, exempt de l'allure) vers un point derrière la ligne, après delai × (2 − workF).
+  // Le juge au MÉCANISME : une perte posée — porteur adverse au centre, quatre de mes joueurs de champ
+  // 12-30 m devant la ligne du ballon, un attaquant adverse 6 m derrière le ballon. Après 1 s : le plus
+  // avancé (la pointe) garde son poste ; les trois autres portent 'repli' avec une cible derrière la ligne
+  // ; l'attaquant derrière le ballon n'est pas dans les marquables. Épinglé (repli:false) : aucun 'repli'.
+  const repli = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);   // l'équipe 0 attaque vers +sgn ; l'équipe 1 porte le ballon
+    const c = st.players.find((p) => p.team === 1 && p.post === 5);
+    const mes = st.players.filter((p) => p.team === 0 && !p.keeper).sort((a, b) => a.post - b.post);
+    for (const q of st.players) if (q.team === 1 && !q.keeper && q.id !== c.id) { q.p[0] = -sgn * 20; q.p[2] = 15; }
+    mes.forEach((q, k) => { q.p[0] = -sgn * (3 + k * 0.7); q.p[2] = (k - 3) * 3; q._pace = null; q._markT = null; });   // les six autres AUTOUR du ballon : presseur et couverture se prennent chez eux
+    c.p[0] = 0; c.p[2] = 0;
+    const derriere = st.players.find((p) => p.team === 1 && !p.keeper && p.id !== c.id); derriere.p[0] = sgn * 6; derriere.p[2] = 3;   // derrière le ballon POUR les attaquants (ils attaquent vers −sgn : derrière = côté +sgn)
+    const devant = mes.slice(6, 10); devant.forEach((q, k) => { q.p[0] = sgn * (12 + 6 * k); q.p[2] = (k - 1.5) * 6; });
+    st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 1, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1; st._possChangeAt = st.t - 1; st._possTeam = 1;
+    for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
+    const sgD = -sgn;   // vers le but de l'équipe 0
+    const avec = devant.filter((q) => q._pace?.kind === 'repli' && (q._pace.until ?? -1) > st.t);
+    const pointe = devant.reduce((b, q) => (!b || (q.p[0] - b.p[0]) * sgn > 0 ? q : b), null);
+    const ciblesDerriere = avec.filter((q) => q.target && (q.target[0] - st.ball.p[0]) * sgD > 0).length;
+    const marque = (st._bMarks ?? []).some((a) => a.id === derriere.id);
+    return { n: avec.length, pointeExempte: !avec.includes(pointe), ciblesDerriere, marque };
+  };
+  const V = repli({}), E = repli({ repli: false });
+  ok(`lot 221 — L'OBLIGATION DE REPLI (vivant : ${V.n} = 3 rentrent en sprint, la pointe exemptée ${V.pointeExempte}, cibles derrière la ligne ${V.ciblesDerriere} = 3, l'appui derrière le ballon marqué ${V.marque} = false ; épinglé : ${E.n} = 0 — le flux : devant le ballon p50 3 → 1, rentrés 92 → 152/267, jamais 54 → 39)`,
+    V.n === 3 && V.pointeExempte && V.ciblesDerriere === 3 && !V.marque && E.n === 0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

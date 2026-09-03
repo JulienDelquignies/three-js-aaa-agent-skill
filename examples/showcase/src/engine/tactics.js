@@ -9,6 +9,7 @@
 //   hauteurBloc  [0..1] — où le bloc défend (postes défensifs décalés −6…+6 m ; la ligne de
 //                          hors-jeu suit, la Loi 11 fait le reste)
 //   largeur      [0..1] — l'amplitude des postes offensifs (z × 0,85…1,15)
+//   repli        [0..1] — les POINTES dispensées de repli (221) : round(axe(repli, 0, 2)) — 0 : tout le monde rentre, 0,5 : une pointe, 1 : deux
 //   pressing     [0..1] — l'agressivité des fenêtres du lot 11 (durée, cooldown, sévérité des
 //                          trois signaux — dos-au-but, retrait, contre-press)
 //   style        [0..1] — possession ↔ direct : les poids de l'arbitre de menace par ÉQUIPE
