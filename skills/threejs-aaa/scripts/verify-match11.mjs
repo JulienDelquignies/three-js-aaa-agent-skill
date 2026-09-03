@@ -1820,7 +1820,7 @@ if (__bloc()) {
     const fen = [];
     for (const seed of [2, 3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
+      const cfg = matchCfg({ avantContact: false, referme: false, ...ISO171, shotRange: 20, ...over });
       let buf = [];
       for (let i = 0; i < 150 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2097,14 +2097,14 @@ if (__bloc()) {
     let n2 = 0;
     for (const seed of [1, 7, 9, 10]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ dribble: false, shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, ...over });   // (218b) course:false — le petit pont se compte à 2-3 par 4 graines, re-daté par la course du une-deux
+      const cfg = matchCfg({ referme: false, dribble: false, shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, ...over });   // (218b) course:false — le petit pont se compte à 2-3 par 4 graines, re-daté par la course du une-deux
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       n2 += st.events.filter((e) => e.type === 'skill' && e.kind === 'petitPont').length;
     }
     return n2;
   };
   const vifP = fluxP({ tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 140/141/155-160 (les fenêtres du glisseur bougent avec le monde)
-  const sabP = fluxP({ skill: { ...matchCfg({ dribble: false }).skill, pontFoe: null }, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
+  const sabP = fluxP({ skill: { ...matchCfg({ referme: false, dribble: false }).skill, pontFoe: null }, tranchant: false, pousse: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });
   // …borne 4 → 3 (lot 123 : le monde re-daté par le box crash déplace les fenêtres du
   // glisseur — 3 mesurés ; l'existence + le sabotage restent le contrat)
   ok(`lot 115 — le PETIT PONT vit (${vifP} / 4 × 300 s ≥ 3, réussite ~47 % mesurée — un pari, pas un gain gratuit) ; sabotage « le glisseur intraversable d'hier » attrapé (pontFoe absent : ${sabP})`,
@@ -2119,7 +2119,7 @@ if (__bloc()) {
   // ET la maille le tient) ; sabotage « le mur invisible d'hier » (filet:false) : ≤ 0,85.
   const cage = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, ...over });
+    const cfg = matchCfg({ repli: false, shotRange: 20, ...over });
     for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
     st.ball.release('arrêt-de-jeu');   // la cause « fixture » n'existe pas au ballon (RELEASES) — le crash muet du shard 6/8, 29 clauses avalées
     for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }   // la trajectoire vide (le gardien attrapait la fixture)
@@ -2143,9 +2143,10 @@ if (__bloc()) {
   // rapproché) ; sabotage celebration:false : zéro fête, l'engagement d'hier.
   const fete = (over) => {
     let buts2 = 0, celebs2 = 0, wait2 = 0, rapproche = 0, d0 = 0, d1 = 0;
-    for (const seed of [1, 2, 4]) {
+    for (const seed of [1, 2, 4, 5, 7, 9, 11, 13, 17, 19]) {
+      if (buts2 >= 1 && [5, 7, 9, 11, 13, 17, 19].includes(seed)) break;   // (228) les buts sont rares (10 par 100 min) : trois graines, puis autant qu'il faut pour EN VOIR UN — la clause juge la cérémonie, pas la rareté
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ repli: false, shotRange: 20, ...over });
       let cursor = 0, watch2 = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2454,7 +2455,7 @@ if (__bloc()) {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
+      const cfg = matchCfg({ referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2500,7 +2501,7 @@ if (__bloc()) {
     const posts = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ dribble: false, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ referme: false, dribble: false, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const watch = [], runs = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2525,7 +2526,7 @@ if (__bloc()) {
     return { sorties, contres, cassure, p50: posts[Math.floor(posts.length / 2)] ?? 0 };
   };
   const vif2 = joue122({ throughBall: false, ...ISO131 });   // isolation (128 + 131-133) : le through SERT les coureurs, le monde épinglé garde ses contre-appels
-  const sab2 = joue122({ contreAppel: false, ...ISO131, skill: { ...matchCfg({ dribble: false }).skill, sortieBurst: null } });
+  const sab2 = joue122({ contreAppel: false, ...ISO131, skill: { ...matchCfg({ referme: false, dribble: false }).skill, sortieBurst: null } });
   // …l'écart p50 post-geste est passé en INFORMATIF au 123 (2,6 vs 2,6 : la mesure au flux
   // est instable entre mondes re-datés — les COMPTES d'événements + le sabotage 0/0 sont le
   // contrat déterministe ; l'explosion elle-même est prouvée par le _pace ×1,45 mécanique)
@@ -3000,7 +3001,7 @@ if (__bloc()) {
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3, 5, 7, 9]) {   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ referme: false, marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3373,7 +3374,7 @@ if (__bloc()) {
 if (__bloc()) {
   const course = (tq) => {
     const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
-    const cfg = matchCfg({ repli: false, garde: false, foulee: false, ...ISO171, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
+    const cfg = matchCfg({ referme: false, repli: false, garde: false, foulee: false, ...ISO171, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
     let passes = 0, nEv = 0, lastO = -1, hSum = 0, hN = 0; const lignes = [];
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -3581,7 +3582,7 @@ if (__bloc()) {
     let servis = 0, profonds = 0; const especes = new Set(), along = [];
     for (const seed of [4, 7, 11, 15, 21, 33]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ avantContact: false, shotRange: 20, ...over });
+      const cfg = matchCfg({ referme: false, avantContact: false, shotRange: 20, ...over });
       const vif = {}; let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5012,7 +5013,7 @@ if (__bloc()) {
   // pour l'anticipateur (1,15 → 0,77 s ? non : 4−1 = 3 m / 3 = 1,0 s > 0,77) — le juge pose les deux cas nets :
   // à 2,5 m fermant à 3 m/s (0,5 s) : tout le monde voit venir ; à 4 m fermant à 0,5 m/s (6 s) : personne.
   const { presseurArrive } = await import('../assets/starter/src/engine/pression.js');
-  const AC = matchCfg().avantContact;
+  const AC = matchCfg({ referme: false }).avantContact;
   const mk = (d, v) => ({ players: [{ team: 1, keeper: false, down: 0, p: [d, 0, 0], v: [-v, 0] }], }), c = { team: 0, p: [0, 0, 0], skill: null };
   ok(`lot 227 — LE PORTEUR LIT L'ARRIVÉE DU PRESSEUR (à 2,5 m fermant à 3 m/s : ${presseurArrive(mk(2.5, 3), c, AC)} = true ; à 4 m fermant à 0,5 m/s : ${presseurArrive(mk(4, 0.5), c, AC)} = false ; à 2,5 m à 3 m/s pour un porteur au sang-froid 1,15 et à l'anticipation 0,85 : ${presseurArrive(mk(2.5, 3), { ...c, skill: { composureF: 1.15, anticipF: 0.85 } }, AC)} = true encore (0,5 ≤ 0,9 × 1,15 × 1,15))`,
     presseurArrive(mk(2.5, 3), c, AC) === true && presseurArrive(mk(4, 0.5), c, AC) === false && presseurArrive(mk(2.5, 3), { ...c, skill: { composureF: 1.15, anticipF: 0.85 } }, AC) === true);
@@ -5023,7 +5024,7 @@ if (__bloc()) {
     let n = 0;
     for (const seed of [3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ referme: false, shotRange: 20, ...(over ?? {}) });
       let prev = -1;
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const p = st.possession.team; if (p >= 0 && prev >= 0 && p !== prev && !st.restart) n++; prev = p >= 0 ? p : prev; }
     }
