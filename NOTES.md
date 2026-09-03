@@ -7786,7 +7786,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      décision avant ~0,3 s après la prise et le presseur proche ouvre
      aussi le jeté d'hier. Épingles avantContact:false : 167, 128, 189,
      aimant du porté, cône de touche, orbite (des flux de conduite et de
-     profondeur re-datés par la passe précoce).
+     profondeur re-datés par la passe précoce) ; puis 121, 129, 137
+     (marge 1,5 → 1,2 datée), 164, 168 ; classe « ordre » : 96, 174, 189.
+     Huit shards match11 verts hors cette classe, treize annexes vertes
+     (attributes 27 ✓ avec la gradation épinglée — deux runs parallèles
+     avaient mêlé leurs logs : un seul run par fichier). DÉPLOYÉ (capture
+     validée ; chunk Rondo-fmMLEJ8n.js, avantContact grepable). En ligne
+     : 221 → 227.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
