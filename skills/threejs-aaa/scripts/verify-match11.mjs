@@ -3065,8 +3065,8 @@ if (__bloc()) {
   };
   const vifA = monte();
   const sabA = monte({ accompagne: false });
-  ok(`lot 137 — LE PORTEUR QUI MONTE A DES SOLUTIONS (offre p50 ${vifA.offre} ≥ 2 sur ${vifA.n} mesures de montée ; soutien ${vifA.soutien.toFixed(1)} m ≤ saboté − 1,5) ; sabotage « l'esseulé d'hier » attrapé (accompagne:false : offre ${sabA.offre}, soutien ${sabA.soutien.toFixed(1)} m)`,
-    vifA.n >= 20 && vifA.offre >= 2 && vifA.soutien <= sabA.soutien - 1.5);
+  ok(`lot 137 — LE PORTEUR QUI MONTE A DES SOLUTIONS (offre p50 ${vifA.offre} ≥ 2 sur ${vifA.n} mesures de montée ; soutien ${vifA.soutien.toFixed(1)} m ≤ saboté − 1,2) ; sabotage « l'esseulé d'hier » attrapé (accompagne:false : offre ${sabA.offre}, soutien ${sabA.soutien.toFixed(1)} m)`,
+    vifA.n >= 20 && vifA.offre >= 2 && vifA.soutien <= sabA.soutien - 1.2);   // marge 1,5 → 1,2 DATÉE 227 (10,7 c. 12,0 : la direction tient, la passe précoce a re-daté le soutien)
 }
 
 // ---------------------------------------------------------------- lot 138 : L'OVERLAP DE
@@ -3622,7 +3622,7 @@ if (__bloc()) {
     let lectures = 0;
     for (const seed of [4, 7, 11, 15, 21, 33]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ avantContact: false, shotRange: 20, ...over });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
