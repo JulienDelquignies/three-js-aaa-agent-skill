@@ -1017,7 +1017,7 @@ if (__bloc()) {
     let n = 0, dos = 0, deny = 0;
     for (const seed of [2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ repli: false, garde: false, dribble: false, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, ...ISO142, ...over });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -1687,7 +1687,7 @@ if (__bloc()) {
     // vivent dans le bruit de Poisson — l'échantillon double, l'écart passe en RATIO)
     for (const seed of [2, 3, 5, 7, 9, 11]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ repli: false, garde: false, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, repli: false, garde: false, shotRange: 20, ...ISO142, ...over });
       let prev = null, enc = null;
       for (let i = 0; i < 240 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2243,7 +2243,7 @@ if (__bloc()) {
     let n3 = 0, tours = 0, gardes = 0;
     for (const seed of [1, 2, 5, 8]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ dribble: false, shotRange: 20, ...over });
+      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, dribble: false, shotRange: 20, ...over });
       const marks = [];
       let spinWatch = null;
       for (let i = 0; i < 300 * 60; i++) {
@@ -2272,7 +2272,7 @@ if (__bloc()) {
     return { n3, tours, gardes };
   };
   const vifR = fluxR({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 162 (les fenêtres re-datent la matière de la roulette)
-  const sabR = fluxR({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, skill: { ...matchCfg({ dribble: false }).skill, rouletteFoe: null } });
+  const sabR = fluxR({ compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, skill: { ...matchCfg({ cpaMontee: false, remise: false, relance: false, dribble: false }).skill, rouletteFoe: null } });
   ok(`lot 117 — la ROULETTE vit et TOURNE (${vifR.n3} / 4 × 300 s ≥ 3, ${vifR.tours} tours pleins mesurés au yaw ≥ ${Math.max(1, Math.floor(vifR.n3 * 0.6))}, garde ${vifR.gardes}/${vifR.n3} ≥ 60 % — elle PRÉSERVE : la v1 à +14 buts/20 matchs perforait, nerfée sur mesure) ; sabotage « le poursuivant sans réponse d'hier » attrapé (${sabR.n3})`,
     vifR.n3 >= 3 && vifR.tours >= Math.max(1, Math.floor(vifR.n3 * 0.6)) && vifR.gardes >= vifR.n3 * 0.6 && sabR.n3 === 0);
 }
@@ -3000,7 +3000,7 @@ if (__bloc()) {
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3, 5, 7, 9]) {   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3448,7 +3448,7 @@ if (__bloc()) {
   const scene = (cpa, ratings, place) => {
     const squads = ratings ? [Array.from({ length: 11 }, (_, i) => (i === 10 ? { ratings } : {})), []] : null;
     const st = makeMatch({ full: true, seed: 9, squads });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, shotRange: 20 });
     if (cpa) st.tactics = [resoudreTactique({ cpa }), resoudreTactique({})];
     const gk = st.players.find((p) => p.keeper && p.team === 0);
     const g = st.pitch.ownGoal(0), sgn = -Math.sign(g.x);
@@ -4286,7 +4286,7 @@ if (__bloc()) {
     let prises = 0, claques = 0;
     for (const seed of [2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ foulee: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, foulee: false, shotRange: 20, ...(over ?? {}) });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       for (const e of st.events) {
         if (e.type !== 'arrêt') continue;
