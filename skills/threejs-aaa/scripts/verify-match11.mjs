@@ -5006,5 +5006,33 @@ if (__bloc()) {
     V.couverts === 3 && E.couverts <= 2);
 }
 
+// ---- lot 227 : LA PASSE AVANT LE CONTACT (la racine du tourbillon des pertes — 61 % des pertes étaient des frappes au contact)
+if (__bloc()) {
+  // (a) la primitive : un presseur à 4 m qui ferme à 3 m/s arrive dans 1 s → sous le seuil 0,9 × (2 − anticipF) : vrai
+  // pour l'anticipateur (1,15 → 0,77 s ? non : 4−1 = 3 m / 3 = 1,0 s > 0,77) — le juge pose les deux cas nets :
+  // à 2,5 m fermant à 3 m/s (0,5 s) : tout le monde voit venir ; à 4 m fermant à 0,5 m/s (6 s) : personne.
+  const { presseurArrive } = await import('../assets/starter/src/engine/pression.js');
+  const AC = matchCfg().avantContact;
+  const mk = (d, v) => ({ players: [{ team: 1, keeper: false, down: 0, p: [d, 0, 0], v: [-v, 0] }], }), c = { team: 0, p: [0, 0, 0], skill: null };
+  ok(`lot 227 — LE PORTEUR LIT L'ARRIVÉE DU PRESSEUR (à 2,5 m fermant à 3 m/s : ${presseurArrive(mk(2.5, 3), c, AC)} = true ; à 4 m fermant à 0,5 m/s : ${presseurArrive(mk(4, 0.5), c, AC)} = false ; à 2,5 m à 3 m/s pour un porteur au sang-froid 1,15 et à l'anticipation 0,85 : ${presseurArrive(mk(2.5, 3), { ...c, skill: { composureF: 1.15, anticipF: 0.85 } }, AC)} = true encore (0,5 ≤ 0,9 × 1,15 × 1,15))`,
+    presseurArrive(mk(2.5, 3), c, AC) === true && presseurArrive(mk(4, 0.5), c, AC) === false && presseurArrive(mk(2.5, 3), { ...c, skill: { composureF: 1.15, anticipF: 0.85 } }, AC) === true);
+  // (b) LE FLUX : la porte de tenue (holdMin) interdit toute décision avant ~0,3 s après la prise, et le presseur
+  // proche ouvre aussi le jeté d'hier — la fixture posée ne sépare pas les mondes ; la preuve est le tourbillon :
+  // pertes de possession sur 3 × 300 s, vivant ≤ 0,9 × épinglé (mesuré 6 graines : 291 c. 360/90 min)
+  const pertes = (over) => {
+    let n = 0;
+    for (const seed of [3, 5, 7]) {
+      const st = makeMatch({ full: true, seed });
+      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+      let prev = -1;
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const p = st.possession.team; if (p >= 0 && prev >= 0 && p !== prev && !st.restart) n++; prev = p >= 0 ? p : prev; }
+    }
+    return n;
+  };
+  const pV = pertes({}), pE = pertes({ avantContact: false });
+  ok(`lot 227 — LA PASSE AVANT LE CONTACT (pertes de possession sur 3 × 300 s : vivant ${pV} ≤ 0,9 × épinglé ${pE} — le flux à 6 graines : 360 → 291/90 min, passes 77 → 84 %)`,
+    pV <= 0.9 * pE);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

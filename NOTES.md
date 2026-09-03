@@ -7751,6 +7751,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      y étaient inertes). DÉPLOYÉ (capture validée ; chunk
      Rondo-Cq-c6Vfd.js, marquageSurface et ramasseur grepables à l'alias).
      En ligne : 221 → 225b.
+- 277: LA PASSE AVANT LE CONTACT (227, cfg.avantContact, pression.js —
+     la racine nommée deux fois : le tourbillon des pertes, 360/90 min
+     c. 200-280 réelles, qui fabrique l'essaim par contre-press). Sondé
+     au registre du ballon : 61 % des pertes sont des FRAPPES avec le
+     presseur à 1,4 m (p50) au moment du coup, 25 % des touches de
+     conduite volées à 2,4 m ; la possession perdue dure 10,5 s p50. Le
+     porteur attendait le contact : la branche contestée joue « en
+     urgence » et le jeté (144) ne lisait que le presseur LANCÉ (≥ 4
+     m/s) — un presseur qui trotte à 2-3 m/s arrivait sans rien
+     déclencher. La loi : l'ETA du presseur le plus proche (distance
+     moins le contact 1 m, sur sa vitesse de fermeture, dans 6 m) sous
+     0,9 s × (2 − anticipF) × composureF dispense la tenue et abaisse la
+     barre à 1,2 : la meilleure passe part AVANT la pression.
+     L'anticipation voit venir, le sang-froid attend un peu plus ; le
+     rôle (tenue, 211) et la tactique (tempo) restent dans la barre.
+     Mesuré (6 × 300 s) : pertes 360 → 291/90 min, passes réussies 77 →
+     84 % (foe 14 %), presseur au coup 1,4 → 1,6 m, touches de conduite
+     volées 25 → 21 %. Jumeau avantContact:false = 225b au bit.
+     Volumétrie : rondo-sim 1264 → déport dans pression.js.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

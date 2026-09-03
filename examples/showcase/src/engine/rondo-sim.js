@@ -950,6 +950,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           const v = hyp(q.v[0], q.v[1]);
           return v >= (cfg.fixe.vitesse ?? 4) && (q.v[0] * dx + q.v[1] * dz) / (v * d) > 0.75;
         });
+        const AC = st.full && cfg.avantContact ? cfg.avantContact : null, pressCall = AC && choice && presseurArrive(st, c, AC);   // LA PASSE AVANT LE CONTACT (227, doc pression.js)
         // …une intention de CENTRE vivante ne se re-décide pas (le choix de passe l'écrasait à
         // l'image suivante — 0 centre exécuté) : elle meurt de sa mort propre (TTL, receveur)
         // …et l'intention vers un COUREUR meurt AVEC la course (lot 36 : adoptées plus souvent
@@ -966,7 +967,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // …et l'ADOPTION arrière est MORTE tant qu'on est lancé (189 — le veto d'exécution seul churnait : 1 801 déchirures/4 graines, ré-adoptée chaque frame)
         const reculeL = lanceNow && choice && st.players[choice.to.id]
           && (st.players[choice.to.id].p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) < -2;
-        if (!reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
+        if (!reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;
@@ -1246,4 +1247,4 @@ function hullArea(pts) {
 }
 
 export { predictPath };
-import { hyp } from './hyp.js';
+import { hyp } from './hyp.js'; import { presseurArrive } from './pression.js';
