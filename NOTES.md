@@ -7818,7 +7818,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      +25), trou p90 19,2 m. Règle : un module ne mute pas un buffer
      partagé du frame — il expose un delta que le consommateur nommé
      applique. Monde 228b : seed 3 3d35e71c25827909, seed 7
-     ee6a622f5d89b0eb.
+     ee6a622f5d89b0eb. SCEAU 228b : 8 shards verts (shard 2 seul : 144
+     « le jeté déclenche » et 145 « le souffle » rouges isolés sur 228b —
+     deux contrastes d'hier déplacés par la ligne qui se referme,
+     épinglés referme:false, bloc 74 : 4 ✓), attributes 27 ✓, les douze
+     annexes vertes, bande 74 tirs / 9 buts / 23 fautes / 7 corners,
+     déployé (chunk Rondo-BtdVtARb.js, capture playmode avant deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
