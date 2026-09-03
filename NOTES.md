@@ -7863,6 +7863,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      remises tombent à 8 touches / 50 min — la dette des touches, 14 c.
      40/90 min réelles, s'aggrave et reste nommée). Jumeau
      contrePress:false = 228b au bit (3d35e71c25827909 / ee6a622f5d89b0eb).
+     SCEAU 229 : 8 shards verts hors classe ordre (96, 174, 189 ; les
+     contrastes déplacés épinglés contrePress:false : 133, 145, 129, 140,
+     136, 162 bloc élastique, 110 démission, 96 plongeon — tous verts
+     isolés), attributes 27 ✓ (gradation 152/158 épinglée l. 53), les douze
+     annexes vertes, bande 68 / 11 / 19 / 6, déployé (chunk
+     Rondo-CfOB-tcZ.js, capture playmode avant deploy). Monde 229 « chaise »
+     : seed 3 173fb72c4182e7db, seed 7 7622b2d88c514b04.
+- 280: LA CHAISE À QUATRE PIEDS CÔTÉ ATTAQUE (230, cfg.compensation,
+     compensation.js — Moulin, l. 5696-5709 : le latéral monte, un milieu
+     descend dans son couloir). AVANT (film-chaise, 6 × 300 s) : en camp
+     adverse 6,3 corps de champ derrière le ballon (réel 4-5 : nos
+     attaques sont prudentes — dette nommée), le latéral monté ≥ 12 m
+     devant sa ligne sur 11 % des images, COMBLÉ (un non-défenseur à
+     < 10 m de son poste de ligne) 24 % du temps : le couloir du latéral
+     parti était le trou du contre. LA LOI : pour chaque extérieur de la
+     ligne arrière (|z du spot| ≥ ext 10) monté de ≥ monte 12 m devant son
+     spot ON (hystérésis hyst 3 une fois engagé), le milieu posté le plus
+     proche du spot vacant — le récupérateur descend plus volontiers
+     (rôle press : bonus 6 m) — voit son spot tiré vers le spot vacant
+     (part 0,7 × posF) ; un milieu par latéral ; le porteur, un joueur en
+     burst et les soutiens (slotters) restent. Le delta s'applique à
+     `want` dans le bloc posté (le patron 228 : le consommateur nommé,
+     rien de muté). APRÈS : comblé 53 % (part 1,0 : 62 % — la limite est
+     l'hystérésis du slot, pas la part ; 0,7 gardé : le milieu descend, il
+     ne devient pas latéral). Clause 230 : primitive sur un état factice
+     (latéral monté de 15 → poste 4 tiré à 0,7, seul ; 5 → rien ; engagé à
+     10 → tient ; clé absente → null) et flux 3 × 300 s (49 % c. 16 %).
+     Jumeau compensation:false = 229 au bit (173fb72c4182e7db /
+     7622b2d88c514b04).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
