@@ -1,7 +1,8 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
 import { BALL } from './ball.js';
-import { laneClearance, predictPath, interceptPoint, rendezVous, etaCourse } from './ball-predict.js';
+import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
+import { cibleFoulee } from './foulee.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
@@ -543,52 +544,9 @@ function assignMatchJobs(st, cfg) {
     flightRec.job = 'receive';
     let met = null;   // le pas au contact (meetBall) : un pas et demi sur l'AXE NOMINAL (flipper consigné)
     const dInb = hyp(flightRec.p[0] - st.ball.p[0], flightRec.p[2] - st.ball.p[2]);
-    // LE RENDEZ-VOUS DANS LA FOULÉE (220, cfg.foulee && st.full — retour utilisateur : « il essaye de
-    // la récupérer trop tôt, passe complètement à côté et doit refaire un effort »). Tracé : sur une
-    // profonde de 34 m, le receveur EN COURSE prenait pour cible le ballon lui-même 20 m en amont
-    // (« menace → on court au ballon », une loi de passe courte contestée), faisait demi-tour à 3 m/s,
-    // puis la cible sautait 10 m au-delà du lead (rattrapage), revenait au lead, repartait 13 m plus
-    // loin (retombée) : 9 changements de cible par vol, 29 % de ballons DÉPASSÉS, 43 % de prises.
-    // La loi : un receveur LANCÉ (through, ou pointe d'appel avec le lead ≥ avance m devant lui)
-    // n'a qu'UNE cible — le premier point JOUABLE du vol prédit, DANS le terrain, qu'il rejoint avec
-    // sa cinématique réelle (élan, accélération × accelF, pointe × topF) et une MARGE
-    // (marge × (2 − anticipF) : l'anticipation est une note) ; elle TIENT tant qu'elle reste
-    // atteignable (hystérésis — plus de cible qui glisse), et les lois de passe courte se taisent.
+    // LE RENDEZ-VOUS DANS LA FOULÉE (220, cfg.foulee — doc foulee.js : une cible cinématique dans le terrain pour le receveur lancé ou le lead qui frôle une ligne ; sous ce verrou les lois de passe courte se taisent)
     let fouleeLock = false;
-    if (st.full && cfg.foulee && st.ball.owner == null) {
-      const F = cfg.foulee, r = flightRec;
-      const vR = hyp(r.v[0], r.v[1]);
-      const kind = (r._pace?.until ?? -1) > st.t ? r._pace.kind : null;
-      const lance = !!st.pass.through || kind === 'appel' || kind === 'un-deux' || kind === 'deborde' || kind === 'contre-appel' || kind === 'troisieme';
-      const gA = pitch.attackGoal(r.team), sgA = Math.sign(gA.x || 1);
-      const ux = vR > 1.5 ? r.v[0] / vR : sgA, uz = vR > 1.5 ? r.v[1] / vR : 0;
-      const devant = (st.pass.lead[0] - r.p[0]) * ux + (st.pass.lead[2] - r.p[2]) * uz;
-      // …ET LE BALLON QUI FRÔLE LA LIGNE SE COUPE EN AMONT (220 — retour utilisateur : « il court en
-      // dehors du terrain pour la récupérer alors qu'il pourrait l'avoir dedans ») : lead à moins de
-      // bord m d'une ligne → le rendez-vous DANS le terrain, le premier faisable, jamais la craie
-      const bord = Math.min(pitch.hx - Math.abs(st.pass.lead[0]), pitch.hz - Math.abs(st.pass.lead[2])) < (F.bord ?? 4);
-      if ((lance && devant >= (F.avance ?? 6)) || bord) {
-        const cache = st._rdv;
-        const refresh = !cache || cache.pass !== st.pass || st.t - cache.at > (F.cadence ?? 0.15);
-        if (refresh) {
-          const restant = Math.max(0.6, (st.pass.flight ?? 2) - (st.t - st.pass.t) + 1.2);
-          const path = predictPath(st.ball, { dt: 1 / 30, maxT: Math.min(4, restant) });
-          const opts = { accel: (cfg.accel ?? 7.5) * (r.skill?.accelF ?? 1), top: cfg.speeds.chase * (r.skill?.topF ?? 1), reach: cfg.receiveRadius ?? 0.85, reaction: 0,
-            marge: (F.marge ?? 0.2) * (2 - (r.skill?.anticipF ?? 1)), maxHeight: 1.2, inside: [pitch.hx, pitch.hz],
-            vPrise: Math.max(F.vPrise ?? 6.5, vR * (F.vPriseCourse ?? 1.1)) * (r.skill?.controlF ?? 1) };   // la prise dans la foulée : un sprinteur accepte un ballon à sa vitesse (× 1,1), le bon toucher prend plus vif
-          let keep = null;
-          if (cache && cache.pass === st.pass && cache.p && F.hyst !== false) {
-            // l'hystérésis : le point tenu reste la cible tant que le vol y passe encore et qu'il y arrive à temps
-            let near = null, nd = Infinity;
-            for (const s of path) { const dd = hyp(s.p[0] - cache.p[0], s.p[2] - cache.p[2]); if (dd < nd) { nd = dd; near = s; } }
-            if (near && nd < (F.div ?? 2.5) && near.t - opts.reaction - etaCourse(r.p, r.v, near.p, opts) >= 0) keep = { t: near.t, p: [near.p[0], near.p[1], near.p[2]], slack: 0 };
-          }
-          const rv = keep ?? rendezVous(path, r.p, r.v, opts);
-          st._rdv = { pass: st.pass, at: st.t, p: rv ? [rv.p[0], rv.p[2]] : null, t: rv ? st.t + rv.t : null };
-        }
-        if (st._rdv?.p) { met = [st._rdv.p[0], 0, st._rdv.p[1]]; fouleeLock = true; }
-      }
-    }
+    if (st.full && cfg.foulee && st.ball.owner == null) { const P = cibleFoulee(st, cfg, flightRec, pitch); if (P) { met = P; fouleeLock = true; } }
     // LE BALLON RÉEL COMMANDE À PORTÉE (lot 134, cfg.meetReel && st.full — le receveur du ballon DÉVIÉ courait au lead nominal fantôme). Divergé (> div), bas, proche : on joue LE BALLON (mène 0,12 s). false : hier. …ET LES APPUIS DU DERNIER SEGMENT (198, cfg.appuisRecev — liste v3 point 11 : 8/11 mauvaises réceptions avec le receveur À L'ARRÊT sur des passes quasi parfaites, err < 0,01 rad ; le vrai receveur DANSE sur ses appuis) : à < fen s du contact, le seuil de divergence s'abaisse — l'ajustement FIN au ballon réel. Clé absente : le planté d'hier.
     const finVol = st.full && cfg.appuisRecev && dInb / Math.max(1, hyp(st.ball.v[0], st.ball.v[2])) < (cfg.appuisRecev.fen ?? 0.8);
     if (!met && st.full && cfg.meetReel !== false && dInb < (cfg.meetZone ?? 4.5) && st.ball.p[1] < 0.9
