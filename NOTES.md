@@ -7731,6 +7731,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      compensation du latéral monté, l'entre-lignes 10-15 / 6 m par bloc,
      et la conversion des tirs 1/9 comme bande de réalisme (nos bandes
      A/B : 76 tirs pour 10-14 buts = 1/6-1/8, proche).
+- 276: LE RAMASSEUR DE BALLE (225b, cfg.ramasseur) ET LE BANC 225. Le
+     shard 2 joué seul a levé un vrai gel : graine 7, corner à t 23 jamais
+     joué en 51 s — le ballon mort à 4 m derrière la ligne ET 4 m au-delà
+     de la touche, hors du tablier (apron 2 m) ; le preneur pédalait
+     contre la borne à 2,8 m d'un bras de 2,2. ballFetch : un ballon hors
+     d'atteinte (tablier + 0,6 m, à l'arrêt) ou une quête de plus de 6 s
+     remet le ballon au point de remise et le nomme (événement
+     `ramasseur`) ; le juge checkMatch soustrait ces poses. Rejoué :
+     corner pris à 42,5 s, contrat à 22 ✓, annexe match 84 ✓. Bande A/B
+     20 × 300 s (225) : 76 tirs, 10 buts, 22 accrochages, 30 fautes, 3
+     corners. Banc 225 par shards : 96, 174, 212 restent la classe
+     « ordre des blocs » (isolés ✓) ; épingles marquageSurface:false
+     (coach, 135, 217, 136, 164, 212) ; 217 tolère un échantillon sans
+     renvoi. Monde 225b : seed 3 836702b95cca24d9, seed 7
+     8d843111da6b8281 (le ramasseur a joué dans ses 90 s).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
