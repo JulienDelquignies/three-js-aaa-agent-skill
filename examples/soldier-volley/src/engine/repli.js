@@ -19,7 +19,7 @@ export function repliStep(st, cfg, { defenders, atk, pitch, tac, axe }) {
   const depuis = st.t - (st._possChangeAt ?? -99);
   for (let k = nP; k < cand.length; k++) {
     const p = cand[k];
-    if (p.job === 'press' || p.job === 'intercept' || p.job === 'cover' || p.job === 'receive') continue;
+    if (p.job === 'press' || p.job === 'intercept' || p.job === 'cover' || p.job === 'receive' || p.job === 'walk' || p._sub) continue;   // un remplaçant en trajet (Loi 3) ou un marcheur de cérémonie n'est pas un défenseur en jeu
     if (depuis < (RP.delai ?? 0.4) * (2 - (p.skill?.workF ?? 1))) continue;
     const kind = (p._pace?.until ?? -1) > st.t ? p._pace.kind : null;
     if (kind && kind !== 'repli') continue;

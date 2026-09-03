@@ -104,7 +104,7 @@ const arret = (st) => {                                            // un arrêt 
 {
   const entre = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const cfg = matchCfg({ shotRange: 20, repli: false, ...(over ?? {}) });   // (221) repli:false — la clause dépend de LA première remise après 30 s de la graine 3 ; le repli en change le monde et le changement demandé s'annule à la reprise
     let demande = false, xIn = null, longe = false, tOut = null, tIn = null;
     for (let i = 0; i < 200 * 60 && xIn == null; i++) {
       matchStep(st, 1 / 60, cfg);

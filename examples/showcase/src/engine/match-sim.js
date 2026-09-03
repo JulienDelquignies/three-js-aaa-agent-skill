@@ -813,13 +813,8 @@ function assignMatchJobs(st, cfg) {
             tz = p._runZ ?? tz;
           } else if (tx * off.sgn > off.adv - 0.8) tx = off.sgn * Math.max(0, off.adv - 0.8);
         }
-        // LE DONNE-ET-VA COURT À SA CIBLE (218, cfg.unDeux.course — doc strike-sim : la pointe portait
-        // un plafond sans cible, le lanceur trottait). Pendant la pointe, la consigne est la course ;
-        // le hors-jeu la borne comme l'appel. Absente : l'hier au bit.
-        if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) {
-          tx = p._pace.cible[0]; tz = p._pace.cible[1];
-          if (off && tx * off.sgn > off.adv - 0.15) tx = off.sgn * Math.max(0, off.adv - 0.15);
-        }
+        // LE DONNE-ET-VA COURT À SA CIBLE (218, cfg.unDeux.course — doc strike-sim) ; le hors-jeu la borne comme l'appel
+        if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) { tx = p._pace.cible[0]; tz = p._pace.cible[1]; if (off && tx * off.sgn > off.adv - 0.15) tx = off.sgn * Math.max(0, off.adv - 0.15); }
         // LE DÉDOUBLEMENT (lot 88, roles.deborde — la course de rôle du couloir) : doc roles.js
         const ov = deborde(st, p, carrier, pitch, atk, cfg, axe);
         if (ov) { tx = ov[0]; tz = ov[1]; }
@@ -965,12 +960,8 @@ function assignMatchJobs(st, cfg) {
     const rayonM = st.full ? (cfg.marquageRayon ?? 22) : Infinity;
     const sgnDef = Math.sign(defGoal.x || 1);
     const marks = st._bMarks ??= [], mTri = st._bMTri ??= []; marks.length = 0;
-    // …ET UN ATTAQUANT DERRIÈRE LE BALLON NE SE MARQUE PAS (221, cfg.repli — audit aval : « le repli
-    // n'existe pas » ; sondé : 244/267 corps restés devant la ligne du ballon étaient des MARQUEURS
-    // d'un appui de passe arrière, plafonnés à 5,6 m/s — 54 ne repassaient jamais derrière la ligne)
-    const RP = st.full && cfg.repli ? cfg.repli : null;
-    for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3))
-      && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
+    const RP = st.full && cfg.repli ? cfg.repli : null;   // (221, doc repli.js) un attaquant DERRIÈRE le ballon ne se marque pas — 244/267 corps restés devant étaient ses marqueurs
+    for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)) && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
     // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
     byDist.forEach((p, i) => {
@@ -1110,8 +1101,7 @@ function assignMatchJobs(st, cfg) {
     });
   }
 
-  // L'OBLIGATION DE REPLI (221, cfg.repli — doc repli.js : un attaquant derrière le ballon ne se marque pas (ci-dessus) ; tout défenseur devant la ligne du ballon sauf les pointes rentre en sprint)
-  if (st.full && cfg.repli && st.possession.team >= 0) repliStep(st, cfg, { defenders, atk, pitch, tac, axe });
+  if (st.full && cfg.repli && st.possession.team >= 0) repliStep(st, cfg, { defenders, atk, pitch, tac, axe });   // L'OBLIGATION DE REPLI (221, doc repli.js)
   // L'INTERCEPTEUR (134, phases) : le vol de passe adverse basse SE VOLE par qui gagne le chemin.
   intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, defenders, atk });
   // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER : pendant cfg.lossReact s, l'ex-porteur CHASSE son ballon (92/254 dos mesuré) ; elle s'éteint au regain ou à la mort de la fenêtre.
