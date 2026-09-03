@@ -202,7 +202,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let fen = 0, mord = 0;
       for (const seed of [3, 9, 11]) {
         const st = makeMatch({ full: true, seed });
-        const cfg = matchCfg({ shotRange: 20, ...over });
+        const cfg = matchCfg({ shotRange: 20, marquageSurface: false, ...over });
         for (const p2 of st.players) if (p2.team === 1 && !p2.keeper) p2.skill = makeProfile({ aggression });
         for (let i = 0; i < 200 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
