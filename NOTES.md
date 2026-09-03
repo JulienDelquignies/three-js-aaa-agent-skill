@@ -7769,7 +7769,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Mesuré (6 × 300 s) : pertes 360 → 291/90 min, passes réussies 77 →
      84 % (foe 14 %), presseur au coup 1,4 → 1,6 m, touches de conduite
      volées 25 → 21 %. Jumeau avantContact:false = 225b au bit.
-     Volumétrie : rondo-sim 1264 → déport dans pression.js.
+     Volumétrie : rondo-sim 1264 → déport dans pression.js. Bande A/B 20 ×
+     300 s (227) : 53 tirs, 8 buts, 20 accrochages, 29 fautes, 3 corners.
+     LA BANDE DE SANTÉ SE RE-FONDE : « 8-22 buts » datait du monde d'avant
+     le repli (17-22 buts par 20 matchs de 5 min = 15-20 par 90 min, six
+     fois le réel) ; la campagne 221-227 l'a fait descendre à 8 (= 7 par
+     90 min, deux fois et demie le réel de 2,7). La bande devient 3-12
+     buts et 40-90 tirs par 20 × 300 s — le réel (2,7 buts, ~25 tirs par
+     90 min → 3 buts, 28 tirs par 100 min) reste en dessous : la
+     conversion 1 tir sur 6-7 c. 1 sur 9 (Reep) et le volume de tirs
+     restent les dettes de réalisme suivantes. Clause 227 : (a) la
+     primitive (2,5 m à 3 m/s → vrai ; 4 m à 0,5 m/s → faux ; le
+     sang-froid 1,15 / l'anticipation 0,85 voit encore venir à 0,5 s) ;
+     (b) le flux à 3 graines (49 pertes ≤ 0,9 × 66) — la fixture posée
+     ne sépare pas les mondes : la porte de tenue (holdMin) interdit toute
+     décision avant ~0,3 s après la prise et le presseur proche ouvre
+     aussi le jeté d'hier. Épingles avantContact:false : 167, 128, 189,
+     aimant du porté, cône de touche, orbite (des flux de conduite et de
+     profondeur re-datés par la passe précoce).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -980,7 +980,7 @@ if (__bloc()) {
     && dansCone(Math.PI / 2, 2, 2, 2, 7, 100));
   const anglesDe = (over) => {
     const st = makeMatch({ full: true, seed: 2 });
-    const cfg = matchCfg({ repli: false, dribble: false, shotRange: 20, ...over });
+    const cfg = matchCfg({ avantContact: false, repli: false, dribble: false, shotRange: 20, ...over });
     let nEv = 0; const dosParTech = { 'amorti-poursuite': 0, autres: 0 }; let recDos = 0, recN = 0, denyDos = 0;
     for (let i = 0; i < 240 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -1017,7 +1017,7 @@ if (__bloc()) {
     let n = 0, dos = 0, deny = 0;
     for (const seed of [2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ avantContact: false, cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, ...ISO142, ...over });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2454,7 +2454,7 @@ if (__bloc()) {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
+      const cfg = matchCfg({ avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2693,7 +2693,7 @@ if (__bloc()) {
     let th = 0, thOk = 0;
     for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ avantContact: false, shotRange: 20, ...over });
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2728,7 +2728,7 @@ if (__bloc()) {
     noms.length >= 15 && manque.length === 0
     && formationPour('433', true) === '433' && formationPour({ on: '433', off: '541' }, false) === '541');
   const st129 = makeMatch({ full: true, seed: 3, tactics: [{ formation: { on: '433', off: '541' } }, { formation: '433' }] });
-  const cfg129 = matchCfg({ repli: false, shotRange: 20, ...ISO131 });   // isolation 131 : la bascule se mesure au tempo d'hier
+  const cfg129 = matchCfg({ avantContact: false, repli: false, shotRange: 20, ...ISO131 });   // isolation 131 : la bascule se mesure au tempo d'hier
   let basOn = [], basOff = [];
   for (let i = 0; i < 200 * 60; i++) {
     matchStep(st129, 1 / 60, cfg129);
@@ -3037,7 +3037,7 @@ if (__bloc()) {
     const offres = [], soutiens = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ repli: false, garde: false, shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée)
+      const cfg = matchCfg({ avantContact: false, repli: false, garde: false, shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée)
       let ep = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3496,7 +3496,7 @@ if (__bloc()) {
   //     Même monde, même sortie fabriquée 2 frames plus tard — seule la tactique diffère.
   const toucheAt = (tempo) => {
     const st = makeMatch({ full: true, seed: 9, tactics: [{ tempo }, { tempo }] });
-    const cfg = matchCfg({ marquageSurface: false, tempsMort: false });   // épinglé 217 : la clause mesure un contraste de POSE dans le monde d'hier (les cérémonies réelles écrasent l'écart)
+    const cfg = matchCfg({ avantContact: false, marquageSurface: false, tempsMort: false });   // épinglé 217 : la clause mesure un contraste de POSE dans le monde d'hier (les cérémonies réelles écrasent l'écart)
     st.lastTouch = 0;
     st.restart = null;
     st.ball.restart([0, 0.11, (st.pitch.halfW ?? 34) + 2], { cause: 'touche' });   // posé hors ligne
@@ -3512,7 +3512,7 @@ if (__bloc()) {
     let n = 0;
     for (const seed of [4, 7, 11, 15, 21, 33]) {
       const st = makeMatch({ full: true, seed, tactics: [{ tempo }, { tempo }] });
-      const cfg = matchCfg({ marquageSurface: false, ...ISO171, shotRange: 20 });
+      const cfg = matchCfg({ avantContact: false, marquageSurface: false, ...ISO171, shotRange: 20 });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3581,7 +3581,7 @@ if (__bloc()) {
     let servis = 0, profonds = 0; const especes = new Set(), along = [];
     for (const seed of [4, 7, 11, 15, 21, 33]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ avantContact: false, shotRange: 20, ...over });
       const vif = {}; let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4080,7 +4080,7 @@ if (__bloc()) {
   // moitié FAUTIVE lève (drapeau posé, l'aplomb ciblé), l'autre reste bas ; la remise jouée,
   // le drapeau DESCEND (1,5 s). L'épinglé n'a pas de corps du tout (186).
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ repli: false, garde: false, shotRange: 20 });
+  const cfg = matchCfg({ avantContact: false, repli: false, garde: false, shotRange: 20 });
   for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
   const j = st.players.find((q) => q.team === 1 && !q.keeper);
   st.events.push({ t: +st.t.toFixed(2), type: 'hors-jeu', by: j.id, at: [-17.3, 4], p: [-17.3, 4] });
