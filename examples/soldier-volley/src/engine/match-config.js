@@ -608,6 +608,12 @@ export const MATCH = {
                           // (min-max m) — la cloche haute vise la ligne, le retour est
                           // plus lent que le vol. L'audace × longF (l'attribut longShots).
                           // Absente : le gardien avancé impuni d'hier.
+  // LE RENDEZ-VOUS DANS LA FOULÉE (220, cfg.foulee && st.full — doc match-sim) : le receveur LANCÉ
+  // (through, ou pointe d'appel avec le lead ≥ avance m devant lui) n'a qu'une cible — le premier
+  // point jouable du vol prédit, dans le terrain, qu'il rejoint avec sa cinématique réelle (élan,
+  // accélération × accelF, pointe × topF) et une marge (× (2 − anticipF)) ; elle tient (hystérésis,
+  // div m) et se rafraîchit à la cadence. Absente : les sept lois de passe courte d'hier au bit.
+  foulee: { marge: 0.2, avance: 6, div: 2.5, cadence: 0.15, hyst: true, vPrise: 6.5, bord: 4, tranchant: { arrMax: 8, marge: 0.15, pas: 0.8, sprint: 1.28 } },   // bord : le lead à < bord m d'une ligne se coupe en amont ; tranchant : l'arrivée du through MONTE (pas, plafond arrMax × controlF) tant que le vol dépasse l'ETA cinématique du coureur (sprint × chase × topF) de plus de marge — le ballon arrive quand le coureur arrive   // vPrise : le premier point faisable où le ballon est descendu sous vPrise × controlF (le coureur ne s'arrête pas pour attendre un ballon à 10 m/s)
   // LE DRIBBLE EST UN RÔLE, UN LIEU ET UNE CADENCE (219, cfg.dribble && st.full — mesuré : 133 tentatives/30 min
   // hors doublons (réel 10-15), sur TOUS les postes, à 21 m de la ligne (le réel dribble sur l'aile). Facteurs
   // sur les portes de skills-sim (le tirage reste le même : l'hier au bit quand la clé est absente) : l'aile

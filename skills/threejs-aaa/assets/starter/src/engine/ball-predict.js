@@ -185,6 +185,49 @@ export function interceptPoint(path, from, speed, { reaction = 0.18, reach = 0.9
   return best;
 }
 
+/**
+ * LA COURSE D'UN CORPS (220) : le temps qu'un joueur met à rejoindre un point, avec SON élan (la
+ * composante de sa vitesse le long de la ligne — le perpendiculaire est perdu), son accélération
+ * (cfg.accel × accelF) et sa pointe (top × topF). interceptPoint supposait la vitesse constante dès
+ * le premier pas : un coureur lancé à 6 m/s dans une autre direction ou un corps arrêté payaient
+ * 0,5-1 s d'erreur, et le rendez-vous « le plus tôt atteignable » était toujours trop tôt.
+ */
+export function etaCourse(from, v, to, { accel = 7.5, top = 6.4, reach = 0.9 } = {}) {
+  const dx = to[0] - from[0], dz = to[2] - from[2];
+  const d = Math.max(0, hyp(dx, dz) - reach);
+  if (d <= 0) return 0;
+  const v0 = v ? Math.max(0, (v[0] * dx + v[1] * dz) / (hyp(dx, dz) || 1)) : 0;
+  if (v0 >= top) return d / top;
+  const a = Math.max(0.5, accel);
+  const dAcc = (top * top - v0 * v0) / (2 * a);
+  if (d <= dAcc) return (-v0 + Math.sqrt(v0 * v0 + 2 * a * d)) / a;
+  return (top - v0) / a + (d - dAcc) / top;
+}
+
+/**
+ * LE RENDEZ-VOUS DANS LA FOULÉE (220) : le premier échantillon JOUABLE (≤ maxHeight), DANS le
+ * terrain (inside = [hx, hz]), que le coureur rejoint avec une MARGE (slack ≥ marge — l'anticipation
+ * est une note) selon etaCourse. Sans point à marge, le meilleur à marge ≥ 0 ; sinon null.
+ * @returns {{t, p, slack}|null}
+ */
+export function rendezVous(path, from, v, { accel = 7.5, top = 6.4, reach = 0.9, reaction = 0.18, marge = 0.2, maxHeight = 1.2, inside = null, vPrise = Infinity } = {}) {
+  let best = null, premier = null;
+  for (const s of path) {
+    if (s.p[1] > maxHeight) continue;
+    if (inside && (Math.abs(s.p[0]) > inside[0] - 0.5 || Math.abs(s.p[2]) > inside[1] - 0.5)) continue;
+    const slack = s.t - (etaCourse(from, v, s.p, { accel, top, reach }) + reaction);
+    if (slack >= marge) {
+      // …DANS LA FOULÉE : le premier point faisable où le ballon est DESCENDU à la vitesse de prise
+      // (vPrise) — un coureur ne s'arrête pas pour attendre un ballon à 10 m/s, il continue et le
+      // prend là où il a ralenti ; sans un tel point, le premier faisable (le ballon file : tant pis)
+      const vb = s.v ? hyp(s.v[0], s.v[2]) : 0;
+      if (vb <= vPrise) return { t: s.t, p: [s.p[0], s.p[1], s.p[2]], slack };
+      if (!premier) premier = { t: s.t, p: [s.p[0], s.p[1], s.p[2]], slack };
+    } else if (slack >= 0 && !best) best = { t: s.t, p: [s.p[0], s.p[1], s.p[2]], slack };
+  }
+  return premier ?? best;
+}
+
 /** The point on the pitch a receiver should run to in order to meet the ball cleanly. */
 export function meetPoint(path, from, speed, opts = {}) {
   const i = interceptPoint(path, from, speed, opts);

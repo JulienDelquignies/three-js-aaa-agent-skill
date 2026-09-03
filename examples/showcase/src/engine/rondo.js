@@ -1,6 +1,6 @@
 import { BALL } from './ball.js';
 import { BallBody } from './ball-body.js';
-import { predictPath, solvePass, laneClearance, interceptPoint, PASS_STYLE } from './ball-predict.js';
+import { predictPath, solvePass, laneClearance, interceptPoint, etaCourse, PASS_STYLE } from './ball-predict.js';
 import { winding } from './gesture.js';
 import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
@@ -323,7 +323,13 @@ export function choosePass(st, cfg = RONDO) {
       if (dirP) {
         const dirC = dirP;
         const vSol = CS ? Math.max(vRun, (cfg.courseServie.vCourse ?? 6.2) * (m.skill?.topF ?? 1)) : vRun;
-        const arr = Math.max(4.2, Math.min(6.5, 4.8 + 1.7 * ((m.skill?.controlF ?? 1) - 0.85) / 0.3));
+        let arr = Math.max(4.2, Math.min(6.5, 4.8 + 1.7 * ((m.skill?.controlF ?? 1) - 0.85) / 0.3));
+        // …ET LA TRANCHANTE ARRIVE À LA FOULÉE (220b, cfg.foulee.tranchant — retour utilisateur « pas
+        // tranchantes » : dosée à 5,9 m/s pour un coureur lancé à 8, la profonde volait 3 s et le
+        // coureur l'attendait). L'arrivée suit la vitesse de course promise (vSol × foulee, plafond
+        // arrMax) × le contrôle du receveur (le bon toucher prend plus vif). Absente : le dosage d'hier.
+        const TF = st.full && cfg.foulee?.tranchant ? cfg.foulee.tranchant : null;
+        if (TF && TF.foulee) arr = Math.max(arr, Math.min(TF.arrMax ?? 8, vSol * TF.foulee) * (m.skill?.controlF ?? 1));
         // …L'AIGUILLE (140) : le couloir exigé se resserre pour le PASSEUR à la vision
         // (visionF 0,85…1,15, 1 = ×1 exact au 50) — la tranchante passe par le chas
         const aiguille = st.full && cfg.tranchant ? Math.max(0.78, Math.min(1.15, 2 - (c.skill?.visionF ?? 1))) : 1;
@@ -344,6 +350,24 @@ export function choosePass(st, cfg = RONDO) {
             solT = solvePass(origin, P, { style: 'ground', arrival: arr });
             if (!solT) return null;
             tRdv = solT.flightTime;
+          }
+          // …ET LE BALLON ARRIVE QUAND LE COUREUR ARRIVE (220b, foulee.tranchant — tracé : lead plafonnée à
+          // advMax 16 m, vol 2,9 s, coureur à 8 m/s qui couvre 16 m en 2 s — il attendait 0,9 s, planté,
+          // un ballon à 5,9 m/s : « pas tranchant »). Quand le vol dépasse l'ETA cinématique du coureur
+          // (élan, accélération × accelF, pointe de sprint × topF) de plus de marge, l'arrivée MONTE
+          // (jusqu'à arrMax × controlF) jusqu'à ce que le ballon soit à ses pieds dans la foulée.
+          if (TF) {
+            const topR = (cfg.speeds?.chase ?? 6.4) * (TF.sprint ?? 1.28) * (m.skill?.topF ?? 1);
+            const eta = etaCourse(m.p, m.v, P, { accel: (cfg.accel ?? 7.5) * (m.skill?.accelF ?? 1), top: topR, reach: 0.9 });
+            const arrCap = (TF.arrMax ?? 8) * (m.skill?.controlF ?? 1);
+            let arrT = arr;
+            for (let k = 0; k < 4 && solT.flightTime > eta + (TF.marge ?? 0.15) && arrT < arrCap - 1e-6; k++) {
+              arrT = Math.min(arrCap, arrT + (TF.pas ?? 0.8));
+              const s2 = solvePass(origin, P, { style: 'ground', arrival: arrT });
+              if (!s2) break;
+              solT = s2;
+            }
+            arr = arrT;
           }
           // …ET LE THROUGH VERS UN APPEL DANS LE TIERS OFFENSIF ACCEPTE LE CHAS (213, cfg.profondeurAvants — les ailiers jouaient en ARRIÈRE (avance p50 −0,9 m), le couloir serré de la surface refusait la passe glissée à l'appel de l'attaquant ; le patron du chas du 209). Absente : le couloir d'hier.
           const chasP = st.full && cfg.profondeurAvants && m._pace && (m._pace.kind === 'appel' || m._pace.rupture) && P[0] * _gSL > (st.area[0] / 2) / 3 ? (cfg.profondeurAvants.chas ?? 0.6) : 1;

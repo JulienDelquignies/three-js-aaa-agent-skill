@@ -7477,6 +7477,46 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      DETTE FERMÉE : l'épisode-limite Loi 17 (graine 17, t 194,5 — 250)
      n'existe plus au monde 219b (tir à 194,1 volé, ballon gardé) — non
      reproductible, sans clause à re-fonder.
+- 269: LE RENDEZ-VOUS DANS LA FOULÉE (220/220b, cfg.foulee — retour
+     utilisateur : « il essaye de récupérer la passe trop tôt, passe à
+     côté et refait un effort » ; « il court en dehors du terrain pour un
+     ballon qu'il aurait dedans » ; « les profondes ne sont pas
+     tranchantes, la réception non plus — qu'est-ce qui manque ? »).
+     CE QUI MANQUAIT : (1) interceptPoint rend le PREMIER point à marge
+     nulle avec un coureur à vitesse constante — pas d'élan, pas
+     d'accélération, pas de marge ; (2) le receveur du match est régi par
+     SEPT lois de passe courte (menace → on court au ballon, rattrapage
+     au travers, mène, retombée, mourante, marche au-devant, chute) qui se
+     disputent un coureur lancé : tracé sur une profonde de 34 m, il
+     prend pour cible le ballon 20 m en amont, fait demi-tour à 3 m/s, la
+     cible saute 10 m au-delà du lead, revient, repart 13 m plus loin —
+     9 changements par vol, 29 % de ballons DÉPASSÉS, 43 % de prises, et
+     au moment où le ballon atteint le lead il est 6,8 m derrière ; (3)
+     la lead du through est plafonnée à 16 m et dosée pour 2,9 s de vol
+     quand le coureur à 8 m/s couvre 16 m en 2 s : il attendait 0,9 s
+     planté un ballon à 5,9 m/s. LES LOIS : etaCourse (élan le long de la
+     ligne, accélération cfg.accel × accelF, pointe × topF) ; rendezVous
+     (premier point jouable DANS le terrain atteint avec marge × (2 −
+     anticipF), « dans la foulée » : ballon descendu sous vPrise = max(6,5
+     ; 1,1 × sa vitesse) × controlF) tenu par hystérésis (div 2,5 m,
+     cadence 0,15 s), pour le receveur LANCÉ (through ou pointe d'appel
+     avec le lead ≥ 6 m devant) ET pour tout lead à < 4 m d'une ligne
+     (le ballon qui frôle la touche se coupe en amont) — sous ce verrou
+     les lois de passe courte se taisent ; le through dont l'arrivée
+     MONTE (pas 0,8, plafond 8 × controlF) tant que le vol dépasse l'ETA
+     du coureur (sprint 1,28 × chase × topF) de plus de 0,15 s. MESURÉ
+     (6-12 graines) : receveur au lead −6,8 → −0,1 m, dépassés 29 → 0-20
+     %, prises sur profondes 43 → 60-73 %, changements de cible 9 → 3,
+     passes vers la touche 55 → 77-83 % de prises ; fixture du through :
+     vol − ETA 0,94 → 0,37 s, arrivée 5,7 → 8,0 m/s. Trois tentatives
+     consignées en route : arrivée = vSol × 0,9 (5,6 m/s : rien) ; × 1,15
+     (7,3 m/s mais le receveur n'acceptait qu'un ballon sous 6,5 et
+     l'attendait au-delà du lead) → vPrise suit sa course ; la première
+     version « premier point atteignable » faisait attendre un ballon à
+     10 m/s planté → le critère dans la foulée. Attributs : accelF, topF,
+     anticipF, controlF ; les rôles et la tactique entrent par le choix
+     du through (mentalité, style, vision) déjà en place. Clé absente :
+     l'hier au bit (jumeau vérifié).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

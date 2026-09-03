@@ -4787,5 +4787,58 @@ if (__bloc()) {
     Math.abs(absent - 1) < 1e-9 && aile > axe0 && propre < adverse && roleHaut > roleBas && enCadence === 0 && identite < 1);
 }
 
+// ---- lot 220 : LE RENDEZ-VOUS DANS LA FOULÉE (retour utilisateur : « il essaye de la récupérer trop tôt,
+// passe à côté, refait un effort » ; « il court en dehors du terrain pour un ballon qu'il aurait dedans » ;
+// « les passes en profondeur ne sont pas tranchantes »)
+if (__bloc()) {
+  // Tracé avant : sur une profonde de 34 m le receveur EN COURSE prenait pour cible le ballon lui-même
+  // 20 m en amont (loi « menace → on court au ballon » écrite pour la passe courte), faisait demi-tour,
+  // puis la cible sautait 10 m au-delà du lead, revenait, repartait : 9 changements de cible par vol,
+  // 29 % de ballons DÉPASSÉS, 43 % de prises ; et la lead du through, plafonnée à 16 m avec un vol de
+  // 2,9 s pour un coureur à 8 m/s, le faisait attendre 0,9 s planté. Trois lois, une primitive :
+  // etaCourse (élan, accélération × accelF, pointe × topF) ; rendezVous (le premier point jouable DANS
+  // le terrain, atteint avec marge × (2 − anticipF), dans la foulée : ballon descendu sous vPrise) ;
+  // le through dont l'arrivée MONTE jusqu'à ce que le ballon arrive quand le coureur arrive.
+  const { etaCourse, rendezVous, predictPath, solvePass } = await import('../assets/starter/src/engine/ball-predict.js');
+  const { kick } = await import('../assets/starter/src/engine/ball.js');
+  // (a) la primitive : l'élan compte, l'arrêt coûte, la pointe borne
+  const tLance = etaCourse([0, 0, 0], [8, 0], [16, 0, 0], { accel: 7.5, top: 8, reach: 0 });
+  const tArret = etaCourse([0, 0, 0], [0, 0], [16, 0, 0], { accel: 7.5, top: 8, reach: 0 });
+  const tTravers = etaCourse([0, 0, 0], [0, 8], [16, 0, 0], { accel: 7.5, top: 8, reach: 0 });
+  ok(`lot 220 — LA COURSE D'UN CORPS (etaCourse : lancé à 8 m/s ${tLance.toFixed(2)} s = 16/8 ; arrêté ${tArret.toFixed(2)} s > lancé + 0,4 ; élan de travers ${tTravers.toFixed(2)} s = arrêté — le perpendiculaire est perdu)`,
+    Math.abs(tLance - 2) < 1e-6 && tArret > tLance + 0.4 && Math.abs(tTravers - tArret) < 1e-6);
+  // (b) le rendez-vous DANS le terrain : un ballon roulé vers la ligne de touche (hz 34), le receveur à
+  // 6 m de côté — le point élu est dedans (|z| ≤ 33,5) et en amont du point le plus tôt « atteignable »
+  const g = kick([0, 0.11, 20], { speed: 14, dirYaw: Math.PI / 2, elevation: 0.02 });
+  const chemin = predictPath(g, { dt: 1 / 30, maxT: 4 });
+  const rv = rendezVous(chemin, [6, 0, 26], [0, 0], { accel: 7.5, top: 6.4, reach: 0.85, reaction: 0, marge: 0.2, maxHeight: 1.2, inside: [52.5, 34], vPrise: 6.5 });
+  const dehors = chemin.some((s) => Math.abs(s.p[2]) > 34);
+  ok(`lot 220 — LE BALLON QUI FRÔLE LA LIGNE SE COUPE EN AMONT (vol qui SORT : ${dehors} ; rendez-vous z ${rv?.p[2].toFixed(1)} ≤ 33,5 dedans, marge ${rv?.slack.toFixed(2)} s ≥ 0)`,
+    dehors && !!rv && Math.abs(rv.p[2]) <= 33.5 && rv.slack >= 0);
+  // (c) le through arrive QUAND le coureur arrive : passeur posé, coureur en appel à 7,6 m/s ; vivant
+  // |vol − ETA| ≤ 0,5 s ; hier (tranchant:false) le coureur attendait ≥ 0,8 s
+  const { choosePass } = await import('../assets/starter/src/engine/rondo.js');
+  const essai = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
+    const c = st.players.find((p) => p.team === 0 && p.post === 5), A = st.players.find((p) => p.team === 0 && p.post === 8);
+    for (const q of st.players) if (q.team === 0 && !q.keeper && ![5, 8].includes(q.post)) { q.p[0] = -sgn * 40; q.p[2] = 20; }
+    for (const q of st.players) if (q.team === 1 && !q.keeper) { q.p[0] = sgn * 30; q.p[2] = -25; }
+    c.p[0] = 0; c.p[2] = 0; A.p[0] = sgn * 10; A.p[2] = 8; A.v[0] = sgn * 7.5; A.v[1] = -1.5;
+    A._pace = { until: st.t + 1.6, kind: 'appel', next: st.t + 8, dir: [sgn * 0.98, -0.2] }; A._runT = st.t + 1.7;
+    st.ball.restart([0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+    const b = choosePass(st, cfg);
+    if (!b?.through) return null;
+    const sol = solvePass([c.p[0], 0, c.p[2]], b.lead, { style: 'ground', arrival: b.arrival });
+    const eta = etaCourse(A.p, A.v, b.lead, { accel: 7.5, top: 6.4 * 1.28, reach: 0.9 });
+    return { ecart: sol.flightTime - eta, arr: b.arrival };
+  };
+  const V = essai({}), E = essai({ foulee: { ...matchCfg().foulee, tranchant: false } });
+  ok(`lot 220b — LE THROUGH ARRIVE QUAND LE COUREUR ARRIVE (vivant : vol − ETA ${V?.ecart.toFixed(2)} s ≤ 0,5, arrivée ${V?.arr.toFixed(1)} m/s ; hier : ${E?.ecart.toFixed(2)} s ≥ 0,8 d'attente, arrivée ${E?.arr.toFixed(1)} — le flux : receveur au lead −6,8 → −0,1 m, dépassés 29 → 0-20 %, prises 43 → 60-73 %)`,
+    !!V && !!E && V.ecart <= 0.5 && E.ecart >= 0.8 && V.arr > E.arr);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
