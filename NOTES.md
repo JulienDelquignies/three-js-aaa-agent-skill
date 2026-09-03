@@ -7907,6 +7907,52 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      SCEAU 230 : monde par défaut = 229 au bit (le banc 229 vaut : 8
      shards, attributes 27 ✓), clause 230 isolée 2 ✓, les douze annexes
      vertes, déployé (chunk Rondo-9MrNCAlr.js, capture playmode avant deploy).
+- 281: L'ENTRE-LIGNES (231, cfg.projection, projection.js — « la recherche
+     permanente du jeu entre les lignes », Comment regarder l. 559-571 ;
+     « s'intercaler entre les lignes », Comment gagner l. 3376). AVANT
+     (film-projection, possession installée ≥ 5 s en camp adverse, 6 ×
+     300 s) : ligne arrière −16,9 m du ballon (réel 15-25, bon), MILIEU
+     −5,2, avant +9,0 ; corps devant le ballon par image : milieu 0,70,
+     avant 2,07 ; entre-lignes milieu → avant 15,6 m, bloc 38,6 m. Les 8
+     vivaient derrière le ballon : à −5 m ils étaient élus SOUTIENS (les
+     3 plus proches) et jamais postés — la boucle qui les gardait
+     derrière. LA LOI : en possession installée (installe 3 s) et ballon
+     à x ≥ depuis 0, les INTÉRIEURS (la ligne du milieu sans son premier
+     poste, le pivot reste la sécurité) sont dispensés du comité des
+     soutiens (postesEntreLignes, st._entreL) et, postés, voient leur spot
+     tiré (part 1) vers ballon + entre 8 × axe(hauteurBloc, 0,6, 1,4) ×
+     axe(rôle profondeur, 0,4, 1,6), jamais derrière leur spot, borné par
+     la ligne de hors-jeu − marge 10 (ENTRE les lignes : à marge 3 ils
+     vivaient dans la ligne adverse, contre-appels 35 → 91) ; ils ne sont
+     pas candidats à l'accompagnement (phases.js — élus « un par côté »
+     ils volaient le débordement du latéral). Itérations mesurées : entre
+     6 / part 0,7 → cible +2 m, rien ne bouge ; entre 8 / part 1 → les
+     intérieurs au niveau du ballon (−0,3), cible +6,9 suivie en retard.
+     APRÈS (6 graines) : milieu −5,2 → −2,1 m, corps du milieu devant 0,70
+     → 0,97, entre-lignes milieu → avant 15,6 → 8,6, bloc 38,6 → 36,3 —
+     et le PRIX : appels profonds 100 → 69, débordements 36 → 19, passes
+     290 → 251, profondes 13 → 6 sur 3 × 300 s (le ballon monte par le
+     centre, les pointes se retrouvent collées à la ligne de hors-jeu et
+     l'ailier porte moins). Clause 231 : primitive sur état factice
+     (intérieurs 5/6 à min(ballon + 8, ligne − 10), pivot intact, pas
+     installée → null, clé absente → null, Set {5,6} posé) et flux 3
+     graines (0,84 c. 0,70 milieux devant, médiane −3,2 c. −4,9). BANDE :
+     76 tirs / 16 BUTS / 22 fautes / 5 corners (229 : 68 / 11) — un tir
+     sur cinq au fond, le ballon monte par le centre et les pointes
+     tirent collées à la ligne. LE VERDICT, le même que le 230 : loi
+     NOMMÉE, ÉTEINTE PAR DÉFAUT (null = 229 au bit), activable par projet
+     (matchCfg({ projection: { entre: 8, marge: 10, installe: 3, depuis: 0,
+     part: 1 } })) ; la clause 231 la prouve allumée. LA LEÇON DES DEUX
+     LOTS : les lois de STRUCTURE offensive (chaise, entre-lignes) se
+     heurtent aux systèmes de COURSE et de PASSE (accompagnement « un par
+     côté » par proximité, appels profonds des seules pointes, arbitre de
+     menace qui préfère la sortie arrière) — la prochaine campagne doit
+     porter sur ces systèmes (la course servie, la conversion 1/9, le
+     tir sous pression ×2) avant toute nouvelle structure. Monde 231 =
+     229 au bit (173fb72c4182e7db / 7622b2d88c514b04). SCEAU 231 : monde
+     par défaut = 229 au bit (le banc 229 vaut), clause 231 isolée 2 ✓,
+     les douze annexes vertes, déployé (chunk Rondo-CKQky04Q.js, capture playmode
+     avant deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -5118,5 +5118,40 @@ if (__bloc()) {
     V.pc >= 30 && V.pc >= E.pc + 12 && V.monte >= 100);
 }
 
+if (__bloc()) {
+  // L'ENTRE-LIGNES (231, projection.js, cfg.projection — « la recherche permanente du jeu entre les lignes »). Loi NOMMÉE,
+  // ÉTEINTE par défaut (null = 229 au bit) : allumée, le ballon monte par le centre (16 buts / 20 × 300 s, profondes 13 → 6).
+  // (a) La primitive, loi allumée, état factice : ballon à x 10 (sg 1), possession installée (t 20, regain à 10), postes 4/5/6 postés
+  // (spots [−5, 0], [−2, −9], [−2, 9]), ligne de hors-jeu à 30 → les intérieurs 5 et 6 projetés à min(10 + 8, 30 − 10)
+  // = 18 (part 1), le pivot 4 intact ; ligne à 22 → bornés à 12 ; regain à 19 (pas installée) → null ; clé absente →
+  // null ; postesEntreLignes rend {5, 6} et pose st._entreL. (b) Le flux (3 × 300 s, possession installée en camp
+  // adverse) : corps du MILIEU devant le ballon par image et médiane du milieu au ballon, avec c. sans la clé —
+  // mesuré 6 graines : 0,70 → 0,97 corps, −5,2 → −2,1 m ; entre-lignes milieu → avant 15,6 → 8,6 m.
+  const { projeterMilieux, postesEntreLignes } = await import('../assets/starter/src/engine/projection.js');
+  const { LIGNES, mapPostes, formationPour } = await import('../assets/starter/src/engine/formation.js');
+  const { tac, axe } = await import('../assets/starter/src/engine/tactics.js');
+  const role = () => ({ profondeur: 0.5 }), tacF = () => ({ hauteurBloc: 0.5 }), ON = { entre: 8, marge: 10, installe: 3, depuis: 0, part: 1 };
+  const spots = [[-20, -14], [-20, -5], [-20, 5], [-20, 14], [-5, 0], [-2, -9], [-2, 9], [15, -15], [18, 0], [15, 15]];
+  const mk = (regain) => { const players = spots.map((sp, k) => ({ id: k, team: 0, post: k, p: [sp[0], 0, sp[1]] }));
+    return { st: { full: true, t: 20, _possChangeAt: regain, players, ball: { p: [10, 0, 0] } }, posted: players.slice(1) }; };
+  const run = (regain, cfgX, adv) => { const { st, posted } = mk(regain);
+    return projeterMilieux(st, cfgX, { atk: 0, posted, spots, sg: 1, formation: null, off: { sgn: 1, adv }, role, tac: tacF, axe }); };
+  const A = run(10, matchCfg({ projection: ON }), 30), B = run(10, matchCfg({ projection: ON }), 22), C = run(19, matchCfg({ projection: ON }), 30), D = run(10, matchCfg(), 30);
+  const { st: stE } = mk(10); const E = postesEntreLignes(stE, matchCfg({ projection: ON }), { atk: 0, sg: 1, formation: null });
+  ok(`lot 231 — L'ENTRE-LIGNES, loi nommée (allumée : les intérieurs 5/6 projetés à x ${A?.get(5)?.[0]}/${A?.get(6)?.[0]} (= 18, part ${A?.get(5)?.[2]}), le pivot intact (${!A?.has(4)}) ; ligne à 22 → ${B?.get(5)?.[0]} (= 12) ; pas installée → ${C === null} ; défaut (null) → ${D === null} ; entre les lignes : {${[...(E ?? [])].join(',')}} = {5,6}, posé sur st (${stE._entreL?.[0] === E}))`,
+    A?.get(5)?.[0] === 18 && A?.get(6)?.[0] === 18 && A.get(5)[2] === 1 && A.get(5)[1] === -9 && !A.has(4) && B?.get(5)?.[0] === 12 && C === null && D === null && E?.size === 2 && E.has(5) && E.has(6) && stE._entreL?.[0] === E);
+  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); let fr = 0, dev = 0; const meds = [];
+    for (const seed of [3, 5, 7]) { const st = makeMatch({ full: true, seed });
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const poss = st.possession.team; if (poss < 0 || st.restart || i % 6) continue;
+        if (st.t - (st._possChangeAt ?? -99) < 5) continue; const sg = Math.sign(st.pitch.attackGoal(poss).x || 1), bx = st.ball.p[0] * sg; if (bx <= 0) continue; fr++;
+        const f = tac(st, poss).formation, ids = mapPostes(f), Lg = LIGNES[formationPour(f, true)] ?? [4, 3, 3], mil = new Set(ids.slice(Lg[0], Lg[0] + Lg[1]));
+        const xs = st.players.filter((p) => p.team === poss && mil.has(p.post) && p.down <= 0).map((p) => p.p[0] * sg - bx);
+        dev += xs.filter((v) => v > 1).length; xs.sort((a, b) => a - b); meds.push(xs[xs.length >> 1] ?? 0); } }
+    meds.sort((a, b) => a - b); return { fr, dev: dev / Math.max(1, fr), med: meds[meds.length >> 1] ?? 0 }; };
+  const V = flux({ projection: ON }), S = flux({});
+  ok(`…et le FLUX, loi allumée (${V.fr} images installées en camp adverse) : ${V.dev.toFixed(2)} milieux devant le ballon ≥ défaut ${S.dev.toFixed(2)} + 0,1, médiane du milieu au ballon ${V.med.toFixed(1)} m ≥ ${S.med.toFixed(1)} + 1,5 — la structure existe ; son prix (le jeu par le centre, 16 buts) est la raison de l'extinction`,
+    V.dev >= S.dev + 0.1 && V.med >= S.med + 1.5 && V.fr >= 1000);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

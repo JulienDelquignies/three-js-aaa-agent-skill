@@ -6,6 +6,7 @@ import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
 import { lossReactStep, contrePressStep } from './contrepress.js';
 import { compenserLateral } from './compensation.js';
+import { projeterMilieux, postesEntreLignes } from './projection.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
@@ -684,7 +685,8 @@ function assignMatchJobs(st, cfg) {
       // …ET L'ANCRAGE PÈSE L'ÉLECTION (200, cfg.ancrage — demande projet aval : le meneur LIBRE rejoint le ballon de plus loin, le cloué résiste) : distance d'élection × axe(ancrage, elect, 2−elect). Identité 0,5 / clé absente : l'hier au bit.
       // …ET LA POINTE N'EST PAS UN SOUTIEN QUAND LE BALLON EST LARGE DANS LE TIERS OFFENSIF (213c, cfg.profondeurAvants.diagonale — l'appel vit chez les POSTÉS et l'attaquant proche de l'ailier était élu au comité : un slotter n'appelle jamais ; 9-11 diagonales/30 min). Le vrai 9 reste dans la surface : il est la CIBLE. Clé absente : le comité d'hier.
       const sgnP = -pitch.ownGoal(atk).sign, balLarge = st.full && cfg.profondeurAvants?.diagonale && Math.abs(st.ball.p[2]) > pitch.hz * 0.35 && st.ball.p[0] * sgnP > pitch.hx / 3;
-      for (const q of free) { if (balLarge && (q.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true)) && Math.abs(q.p[2]) < 12) continue; q._dAnc = d2(q.p, sa); if (cfg.ancrage) { const av = role(q).ancrage ?? 0.5; if (av !== 0.5) q._dAnc *= axe(av, cfg.ancrage.elect ?? 1.4, 2 - (cfg.ancrage.elect ?? 1.4)); } bs.push(q); }
+      const entreL = postesEntreLignes(st, cfg, { atk, sg: sgnP, formation: tac(st, atk).formation });   // (231) les intérieurs entre les lignes ne siègent pas au comité
+      for (const q of free) { if (balLarge && (q.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true)) && Math.abs(q.p[2]) < 12) continue; if (entreL && entreL.has(q.post)) continue; q._dAnc = d2(q.p, sa); if (cfg.ancrage) { const av = role(q).ancrage ?? 0.5; if (av !== 0.5) q._dAnc *= axe(av, cfg.ancrage.elect ?? 1.4, 2 - (cfg.ancrage.elect ?? 1.4)); } bs.push(q); }
       bs.sort((a, b) => a._dAnc - b._dAnc);
       // LE SOUTIEN EST UN PETIT COMITÉ (lot 103, cfg.soutienN — « trop dense au milieu » : 4 slotters + porteur = 5 corps au ballon, largeur 38 m vs 45-60 réel ; le réel soutient à 2-3, les libérés TIENNENT LA STRUCTURE — relation module ±1). Absente : les 4 d'hier au bit.
       const nSout = cfg.soutienN != null ? Math.round(axe(tac(st, atk).relation, cfg.soutienN - 1, cfg.soutienN + 1)) : 4;
@@ -708,8 +710,9 @@ function assignMatchJobs(st, cfg) {
       // LES RÔLES DÉFORMENT LA LIGNE (200, cfg.roleStructure && st.full — demande aval : le demi-centre descend ENTRE les stoppeurs et les ÉCARTE, 3 → 3+1 ; le latéral inversé cède son couloir). Un slot déplacé de ≥ seuil m en profondeur par son rôle est un INTRUS de la ligne où il atterrit : les voisins de bande s'écartent de son z (falloff sur portee). Dormante aux amplitudes du jour (2,5 < seuil) ; clé absente : l'hier au bit.
       const intrus = st.full && cfg.roleStructure ? intrusDe(posted, spots, cfg, role, axe, -pitch.ownGoal(atk).sign) : null;
       const comp = compenserLateral(st, cfg, { atk, posted, spots, sg: -pitch.ownGoal(atk).sign, formation: tac(st, atk).formation, role, axe, d2 });   // LA CHAISE À QUATRE PIEDS (230, cfg.compensation) : le latéral monté, un milieu descend dans son couloir
+      const proj = projeterMilieux(st, cfg, { atk, posted, spots, sg: -pitch.ownGoal(atk).sign, formation: tac(st, atk).formation, off, role, tac, axe, exclude: comp ? new Set(comp.keys()) : null });   // L'ENTRE-LIGNES (231, cfg.projection) : les intérieurs postés vivent devant le ballon, entre les lignes
       for (const p of posted) {
-        const want0 = spots[p.post ?? 0] ?? [p.p[0], p.p[2]], cp = comp?.get(p.post);
+        const want0 = spots[p.post ?? 0] ?? [p.p[0], p.p[2]], cp = comp?.get(p.post) ?? proj?.get(p.post);
         const want = cp ? [want0[0] + (cp[0] - want0[0]) * cp[2], want0[1] + (cp[1] - want0[1]) * cp[2]] : want0;
         p.job = 'support';
         const R = role(p);
