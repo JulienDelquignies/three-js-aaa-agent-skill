@@ -5,6 +5,7 @@ import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
 import { lossReactStep, contrePressStep } from './contrepress.js';
+import { compenserLateral } from './compensation.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
@@ -706,8 +707,10 @@ function assignMatchJobs(st, cfg) {
         && st.t - (st._possChangeAt ?? -99) < (cfg.moments.win ?? 5);
       // LES RÔLES DÉFORMENT LA LIGNE (200, cfg.roleStructure && st.full — demande aval : le demi-centre descend ENTRE les stoppeurs et les ÉCARTE, 3 → 3+1 ; le latéral inversé cède son couloir). Un slot déplacé de ≥ seuil m en profondeur par son rôle est un INTRUS de la ligne où il atterrit : les voisins de bande s'écartent de son z (falloff sur portee). Dormante aux amplitudes du jour (2,5 < seuil) ; clé absente : l'hier au bit.
       const intrus = st.full && cfg.roleStructure ? intrusDe(posted, spots, cfg, role, axe, -pitch.ownGoal(atk).sign) : null;
+      const comp = compenserLateral(st, cfg, { atk, posted, spots, sg: -pitch.ownGoal(atk).sign, formation: tac(st, atk).formation, role, axe, d2 });   // LA CHAISE À QUATRE PIEDS (230, cfg.compensation) : le latéral monté, un milieu descend dans son couloir
       for (const p of posted) {
-        const want = spots[p.post ?? 0] ?? [p.p[0], p.p[2]];
+        const want0 = spots[p.post ?? 0] ?? [p.p[0], p.p[2]], cp = comp?.get(p.post);
+        const want = cp ? [want0[0] + (cp[0] - want0[0]) * cp[2], want0[1] + (cp[1] - want0[1]) * cp[2]] : want0;
         p.job = 'support';
         const R = role(p);
         // …ET L'ANCRAGE DONNE DU MOU (200) : le seuil de recalage du slot × axe(ancrage, colle, libre) — le cloué se recale au pas, le libre vagabonde avant le rappel. ×1 exact à 0,5.

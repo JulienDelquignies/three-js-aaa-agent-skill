@@ -5078,5 +5078,45 @@ if (__bloc()) {
     V.m[0] >= 2.0 && V.m[0] >= E.m[0] + 0.6 && V.m[2] >= E.m[2] + 0.6 && V.m[3] <= 1.3 && V.evs.length >= 20 && V.evs[0]?.dur === 5.5 && dG === 7.7 && E.evs.length === 0);
 }
 
+if (__bloc()) {
+  // LA CHAISE À QUATRE PIEDS côté attaque (230, compensation.js, cfg.compensation — Moulin : le latéral monte, un milieu
+  // descend dans son couloir). Loi NOMMÉE, ÉTEINTE par défaut (null = 229 au bit) : mesurée, elle recycle le jeu vers
+  // l'arrière côté ballon (4 buts / 20 × 300 s, 167 mort) et ne change rien côté opposé — nos attaques gardent déjà 6,5
+  // corps derrière le ballon (réel 4-5). (a) La primitive, loi allumée : le latéral poste 0 (spot [−20, −14]) à x −5
+  // (monté 15 devant la ligne médiane −20 ≥ 12) → le milieu posté le plus proche du spot vacant (poste 4 à [−10, −12] c.
+  // poste 5 à [−8, 0]) est tiré à part 0,7 ; à x −15 (monté 5) rien ; engagé, l'hystérésis tient à monté 10 ; en transition
+  // rien ; côté ballon avec oppose : rien ; clé absente (défaut) : null. (b) Le flux allumé c. défaut (3 × 300 s) : le
+  // latéral monté ≥ 12 m devant sa ligne est COMBLÉ (un non-défenseur à < 10 m de son poste de ligne) — mesuré 6 graines 24 → 40 %.
+  const { compenserLateral } = await import('../assets/starter/src/engine/compensation.js');
+  const { LIGNES, mapPostes, formationPour } = await import('../assets/starter/src/engine/formation.js');
+  const { tac, axe } = await import('../assets/starter/src/engine/tactics.js');
+  const ON = { monte: 12, hyst: 3, ext: 10, part: 0.7, bonus: 6, tenue: 1, memoR: 25, pivot: false, transition: false, oppose: false };
+  const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]), role = () => ({ press: 0.5 });
+  const spots = [[-20, -14], [-20, -5], [-20, 5], [-20, 14], [-10, -12], [-8, 0], [-10, 12], [5, -15], [8, 0], [5, 15]];
+  const mk = (xLat, ballZ = 14) => { const players = spots.map((sp, k) => ({ id: k, team: 0, keeper: false, down: 0, post: k, p: [k === 0 ? xLat : sp[0], 0, sp[1]], skill: null, _pace: { until: -1, next: 0 } }));
+    return { st: { full: true, t: 10, players, possession: { carrier: -1 }, ball: { p: [0, 0, ballZ] } }, posted: players.slice(1) }; };
+  const run = (xLat, cfgX, { pre, transition, ballZ } = {}) => { const { st, posted } = mk(xLat, ballZ); if (pre) st._compK = { 0: new Set([0]) }; if (transition) st._momentK = 'transition';
+    return compenserLateral(st, cfgX, { atk: 0, posted, spots, sg: 1, formation: null, role, axe, d2 }); };
+  const A = run(-5, matchCfg({ compensation: ON })), B = run(-15, matchCfg({ compensation: ON })), C = run(-10, matchCfg({ compensation: ON }), { pre: true });
+  const T = run(-5, matchCfg({ compensation: ON }), { transition: true }), O = run(-5, matchCfg({ compensation: { ...ON, oppose: true } }), { ballZ: -14 }), D = run(-5, matchCfg());
+  const a4 = A?.get(4);
+  ok(`lot 230 — LA CHAISE À QUATRE PIEDS, loi nommée (allumée : le latéral 0 monté de 15 m → le poste 4 tiré vers [${a4?.[0]}, ${a4?.[1]}] à ${a4?.[2]} (= 0,7), seul (${A?.size} = 1) ; monté de 5 : ${B === null} ; engagé à 10 : ${C?.has(4)} ; en transition : ${T === null} ; côté ballon sous oppose : ${O === null} ; défaut (null) : ${D === null})`,
+    a4 && a4[0] === -20 && a4[1] === -14 && Math.abs(a4[2] - 0.7) < 1e-9 && A.size === 1 && B === null && C?.has(4) === true && T === null && O === null && D === null);
+  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); let monte = 0, comble = 0;
+    for (const seed of [3, 5, 7]) { const st = makeMatch({ full: true, seed });
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const poss = st.possession.team; if (poss < 0 || st.restart || i % 6) continue;
+        const sg = Math.sign(st.pitch.attackGoal(poss).x || 1); if (st.ball.p[0] * sg <= 0) continue;
+        const mine = st.players.filter((p) => p.team === poss && !p.keeper && p.down <= 0);
+        const f = tac(st, poss).formation, ids = mapPostes(f), nD = (LIGNES[formationPour(f, true)] ?? [4, 3, 3])[0], arr = new Set(ids.slice(0, nD));
+        const defs = mine.filter((p) => arr.has(p.post)); if (!defs.length) continue;
+        const ligneX = defs.map((p) => p.p[0] * sg).sort((a, b) => a - b)[Math.floor(defs.length / 2)];
+        for (const d of defs) if (Math.abs(d.p[2]) > 10 && d.p[0] * sg > ligneX + 12) { monte++;
+          if (mine.some((q) => q !== d && !arr.has(q.post) && Math.hypot(q.p[0] * sg - ligneX, q.p[2] - d.p[2]) < 10)) comble++; } } }
+    return { monte, pc: 100 * comble / Math.max(1, monte) }; };
+  const V = flux({ compensation: ON }), E = flux({});
+  ok(`…et le FLUX, loi allumée côté ballon : latéral monté comblé ${V.pc.toFixed(0)} % (${V.monte} images) ≥ 30 et ≥ défaut ${E.pc.toFixed(0)} % (${E.monte}) + 12 pts — la structure existe ; son prix (le recyclage) est la raison de l'extinction`,
+    V.pc >= 30 && V.pc >= E.pc + 12 && V.monte >= 100);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

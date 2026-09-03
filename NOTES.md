@@ -7872,26 +7872,41 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      : seed 3 173fb72c4182e7db, seed 7 7622b2d88c514b04.
 - 280: LA CHAISE À QUATRE PIEDS CÔTÉ ATTAQUE (230, cfg.compensation,
      compensation.js — Moulin, l. 5696-5709 : le latéral monte, un milieu
-     descend dans son couloir). AVANT (film-chaise, 6 × 300 s) : en camp
-     adverse 6,3 corps de champ derrière le ballon (réel 4-5 : nos
-     attaques sont prudentes — dette nommée), le latéral monté ≥ 12 m
+     descend dans son couloir) — LOI NOMMÉE, ÉTEINTE PAR DÉFAUT (null =
+     229 au bit). AVANT (film-chaise, 6 × 300 s) : en camp adverse 6,3
+     corps de champ derrière le ballon (réel 4-5), le latéral monté ≥ 12 m
      devant sa ligne sur 11 % des images, COMBLÉ (un non-défenseur à
-     < 10 m de son poste de ligne) 24 % du temps : le couloir du latéral
-     parti était le trou du contre. LA LOI : pour chaque extérieur de la
-     ligne arrière (|z du spot| ≥ ext 10) monté de ≥ monte 12 m devant son
-     spot ON (hystérésis hyst 3 une fois engagé), le milieu posté le plus
-     proche du spot vacant — le récupérateur descend plus volontiers
-     (rôle press : bonus 6 m) — voit son spot tiré vers le spot vacant
-     (part 0,7 × posF) ; un milieu par latéral ; le porteur, un joueur en
-     burst et les soutiens (slotters) restent. Le delta s'applique à
-     `want` dans le bloc posté (le patron 228 : le consommateur nommé,
-     rien de muté). APRÈS : comblé 53 % (part 1,0 : 62 % — la limite est
-     l'hystérésis du slot, pas la part ; 0,7 gardé : le milieu descend, il
-     ne devient pas latéral). Clause 230 : primitive sur un état factice
-     (latéral monté de 15 → poste 4 tiré à 0,7, seul ; 5 → rien ; engagé à
-     10 → tient ; clé absente → null) et flux 3 × 300 s (49 % c. 16 %).
-     Jumeau compensation:false = 229 au bit (173fb72c4182e7db /
-     7622b2d88c514b04).
+     < 10 m de son poste de ligne) 24 %. LA LOI (allumée) : extérieur de
+     la ligne arrière monté de ≥ monte 12 m devant sa LIGNE RÉELLE
+     (médiane des x arrière — « devant son spot » était l'état normal du
+     latéral, 45 % des images ; devant sa ligne, 14 %), le milieu posté le
+     plus proche du spot vacant (rôle press : bonus 6) tire son spot vers
+     lui (part 0,7 × posF), reste le même tant qu'il le peut et tient sa
+     cadence d'appel (tenue 1 s — sans quoi le compensateur lançait un
+     appel depuis sa position reculée, le burst l'excluait, le suivant
+     était tiré : la cascade, appels profonds 100 → 71, contre-appels 35 →
+     69) tant qu'il est à portée du couloir (memoR 25 — de loin il
+     n'arrivait jamais : 10 % sur 3/5/7, 67 % avec le rayon), n'est pas
+     candidat à l'accompagnement (phases.js), jamais en
+     transition, côté opposé au ballon (oppose). MESURÉ, chaque variante :
+     côté ballon, comblé 24 → 40-44 % mais le milieu descendu devient la
+     sortie arrière de l'ailier — bande 78 tirs / 4 buts (229 : 68 / 11),
+     débordements 36 → 25-27, services aux coureurs 4 → 1-3 (167 mort,
+     189 : le porteur en contre recule 7 fois) ; pivot seul : rien (le 6
+     est presque toujours slotter) ; côté opposé seul : rien de mesurable
+     (22 %), 167 revit (p90 14,1, 7 services). LE VERDICT : nos attaques
+     gardent déjà 6,5 corps derrière le ballon — la chaise est
+     sur-satisfaite, la dette réelle est la PROJECTION (2,7 corps devant
+     le ballon en camp adverse). La loi reste au moteur (un projet à bloc
+     bas et pistons l'allume : matchCfg({ compensation: {…} })), la clause
+     230 la prouve allumée (primitive sur état factice : monté 15 → poste
+     4 tiré à 0,7 ; 5 → rien ; engagé à 10 → tient ; transition → rien ;
+     côté ballon sous oppose → rien ; défaut → null ; flux allumé côté
+     ballon 40 % c. 16 %). Monde 230 = 229 au bit (173fb72c4182e7db /
+     7622b2d88c514b04, jumeau prouvé sur chaque variante).
+     SCEAU 230 : monde par défaut = 229 au bit (le banc 229 vaut : 8
+     shards, attributes 27 ✓), clause 230 isolée 2 ✓, les douze annexes
+     vertes, déployé (chunk Rondo-9MrNCAlr.js, capture playmode avant deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

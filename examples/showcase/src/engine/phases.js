@@ -11,6 +11,7 @@
 //
 // L'horloge du regain (st._possChangeAt, st._possTeam) est TENUE par le match (assignMatchJobs,
 // cfg.moments) — la dérivation, elle, est pure : un état entre, un moment sort, testable au banc.
+import { estCompensateur } from './compensation.js';
 import { offsideLine } from './offside.js';
 
 /**
@@ -148,7 +149,7 @@ export function accompagneMontee(st, cfg, { tac, axe, role }) {
   M.memo = st.t;
   const n = Math.max(1, Math.round(1.5 + axe(tac(st, c.team).transition, -0.5, 0.5)));
   const cands = st.players.filter((q) => q.team === c.team && !q.keeper && q.down <= 0 && !q.act
-    && q.id !== c.id && (q.p[0] - c.p[0]) * sg > -12 && (q.p[0] - c.p[0]) * sg < (AC.devant ?? 7) + 2
+    && q.id !== c.id && !estCompensateur(st, q.team, q.post) && (q.p[0] - c.p[0]) * sg > -12 && (q.p[0] - c.p[0]) * sg < (AC.devant ?? 7) + 2
     && Math.abs(q.p[2] - c.p[2]) < 26)
     .map((q) => ({ q, s: -hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) + axe(role(q).appel, -4, 4) }))
     .sort((a, b) => b.s - a.s);
