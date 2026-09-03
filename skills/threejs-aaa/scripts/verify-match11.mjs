@@ -980,7 +980,7 @@ if (__bloc()) {
     && dansCone(Math.PI / 2, 2, 2, 2, 7, 100));
   const anglesDe = (over) => {
     const st = makeMatch({ full: true, seed: 2 });
-    const cfg = matchCfg({ dribble: false, shotRange: 20, ...over });
+    const cfg = matchCfg({ repli: false, dribble: false, shotRange: 20, ...over });
     let nEv = 0; const dosParTech = { 'amorti-poursuite': 0, autres: 0 }; let recDos = 0, recN = 0, denyDos = 0;
     for (let i = 0; i < 240 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -2454,7 +2454,7 @@ if (__bloc()) {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ dribble: false }).skill, ...over } } : {}) });
+      const cfg = matchCfg({ repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ repli: false, dribble: false }).skill, ...over } } : {}) });
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2728,7 +2728,7 @@ if (__bloc()) {
     noms.length >= 15 && manque.length === 0
     && formationPour('433', true) === '433' && formationPour({ on: '433', off: '541' }, false) === '541');
   const st129 = makeMatch({ full: true, seed: 3, tactics: [{ formation: { on: '433', off: '541' } }, { formation: '433' }] });
-  const cfg129 = matchCfg({ shotRange: 20, ...ISO131 });   // isolation 131 : la bascule se mesure au tempo d'hier
+  const cfg129 = matchCfg({ repli: false, shotRange: 20, ...ISO131 });   // isolation 131 : la bascule se mesure au tempo d'hier
   let basOn = [], basOff = [];
   for (let i = 0; i < 200 * 60; i++) {
     matchStep(st129, 1 / 60, cfg129);
@@ -3000,7 +3000,7 @@ if (__bloc()) {
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3, 5, 7, 9]) {   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
