@@ -7745,7 +7745,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      « ordre des blocs » (isolés ✓) ; épingles marquageSurface:false
      (coach, 135, 217, 136, 164, 212) ; 217 tolère un échantillon sans
      renvoi. Monde 225b : seed 3 836702b95cca24d9, seed 7
-     8d843111da6b8281 (le ramasseur a joué dans ses 90 s).
+     8d843111da6b8281 (le ramasseur a joué dans ses 90 s). Annexe
+     attributes 27 ✓ (lot 160 : marge du bras saboté datée 15 → 12, le
+     contraste tient 6 c. 13,5 % ; les épingles marquageSurface/ramasseur
+     y étaient inertes). DÉPLOYÉ (capture validée ; chunk
+     Rondo-Cq-c6Vfd.js, marquageSurface et ramasseur grepables à l'alias).
+     En ligne : 221 → 225b.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
