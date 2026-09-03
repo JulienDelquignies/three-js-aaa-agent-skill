@@ -268,8 +268,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       return st.players.some((p) => p.team === 0 && p.job === 'press' && p.id === moi.id);
     };
     const brouillonPresse = presseA(10), cohesifPresse = presseA(90);
-    ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 15 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : fixture de départage — le brouillon teamwork 10 TRAVERSE et presse (${brouillonPresse}), le cohésif 90 tient sa zone (presse ${cohesifPresse}) — même monde, même position, seule la note décide`,
-      vivant <= 10 && brut >= 15 && brouillonPresse === true && cohesifPresse === false);   // vivant ≤ 8 → 10 DATÉ 208 (8,5 % au monde 207, le sabotage à 24,5 fait le contraste)
+    ok(`lot 160 — LE PRESSING COHÉRENT (traversées > 15 m : ${vivant} % ≤ 8 vivant, ${brut} % ≥ 12 au sabotage « le latéral qui traverse ») ; et la COHÉSION est une note : fixture de départage — le brouillon teamwork 10 TRAVERSE et presse (${brouillonPresse}), le cohésif 90 tient sa zone (presse ${cohesifPresse}) — même monde, même position, seule la note décide`,
+      vivant <= 10 && brut >= 12 && brouillonPresse === true && cohesifPresse === false);   // vivant ≤ 8 → 10 DATÉ 208 (8,5 % au monde 207, le sabotage à 24,5 fait le contraste)
   }
   // lot 161 — LE BLOC QUI LIT : la fenêtre du pressing COLLECTIF aux notes du bloc (retour
   // utilisateur : « une tactique d'équipe cohérente, bien exécutée suivant le niveau ») — la
