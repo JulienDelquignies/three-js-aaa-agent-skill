@@ -612,6 +612,7 @@ export const MATCH = {
   // le rayon (n grands aux postes de la surface, retrait m) ; remise : la touche n'aimante que ses appuis
   // (appuis ± axe relation, postes devant/dedans/derrière en m) ; relance : la sortie de balle du gardien
   // (centraux aux coins de la surface : prof/ecart m, pivot et latéraux en m du but). Absentes : l'hier au bit.
+  ramasseur: { patience: 6, marge: 0.6 },   // LE RAMASSEUR DE BALLE (225b, doc referee.ballFetch) : ballon hors du tablier + marge, ou quête > patience s → au point de remise
   marquageSurface: true,   // L'AFFECTATION HOMME PAR HOMME (225, doc match-sim) : le danger d'abord, le marqueur libre le plus proche × (2 − markF) — absente : le tri personnel d'hier (orphelins)
   cpaMontee: { rayon: 35, n: 5, retrait: 19 },   // brief tactique : 5-7 dans la surface (premier poteau ×2, penalty, second poteau, retrait 18-22 m), 2-3 en couverture
   remise: { appuis: 3, court: 6, dedans: 8, arriere: 8 },   // brief : court 4-7 m sur la ligne, soutien 6-10 m derrière, dans le dos 10-15 m (le 4e appui)

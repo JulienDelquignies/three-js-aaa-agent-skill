@@ -56,7 +56,8 @@ export function checkMatch(st, trace, cfg = matchCfg()) {
   if (!visits[0] || !visits[1]) issues.push(`le ballon ne visite pas les deux camps (au-delà de ±${third.toFixed(0)} m : +x ${visits[0]}, −x ${visits[1]})`);
   // LE BALLON NE SE TÉLÉPORTE JAMAIS EN MATCH : toute remise est PORTÉE (ballFetch) — le registre ne contient que LA pose du coup d'envoi. Mesuré avant : 12 sauts de 4,7-23 m / 4 matchs.
   const led = st.ball.ledger;
-  if (cfg.restartCarried !== false && led && led.restarts && led.restarts.length > 1) { issues.push(`${led.restarts.length - 1} remise(s) posée(s) par écriture — la remise se PORTE (ballFetch), elle ne se téléporte pas`); }
+  const ramasses = st.events ? st.events.filter((e) => e.type === 'ramasseur').length : 0;   // (225b) le RAMASSEUR DE BALLE pose légitimement (ballon hors du tablier / quête épuisée) — chaque pose est nommée par un événement
+  if (cfg.restartCarried !== false && led && led.restarts && led.restarts.length - 1 - ramasses > 0) { issues.push(`${led.restarts.length - 1 - ramasses} remise(s) posée(s) par écriture — la remise se PORTE (ballFetch), elle ne se téléporte pas`); }
   // …ET LES CORPS NON PLUS : à l'échantillon de trace (0,1 s), aucun joueur ne franchit 1,6 m (16 m/s apparents — le sprint plafonne à 8). placeKickoff écrivait les douze corps à chaque but.
   for (let i = 1; i < trace.length; i++) {
     const a = trace[i - 1], b = trace[i];

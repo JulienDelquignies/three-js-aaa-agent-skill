@@ -864,6 +864,19 @@ export function ballFetch(st, dt, cfg) {
     // la QUÊTE échoue 2 s (au contact mais géométrie surprise), il TEND LE BRAS : le bras suivait
     // l'horloge de la remise (at + 5), le gel vivait dans l'intervalle
     if (r._fetchT0 == null) r._fetchT0 = st.t;
+    // LE RAMASSEUR DE BALLE (225b, cfg.ramasseur — un corner gelé 51 s, graine 7 : le ballon mort à 4 m derrière la
+    // ligne ET 4 m au-delà de la touche, hors du tablier ; le preneur pédalait contre la borne à 2,8 m d'un bras de
+    // 2,2). Un ballon hors d'atteinte (au-delà du tablier + marge) ou une quête plus longue que patience s : le ballon
+    // revient au point de remise — le ramasseur du réel. Absente : la quête sans fin d'hier.
+    if (st.full && cfg?.ramasseur) {
+      const RM = cfg.ramasseur, ap = (cfg.apron ?? 0) + (RM.marge ?? 0.6);
+      const horsAtteinte = Math.abs(bp[0]) > st.pitch.hx + ap || Math.abs(bp[2]) > st.pitch.hz + ap;
+      if ((horsAtteinte && hyp(st.ball.v[0], st.ball.v[2]) < 1) || st.t - r._fetchT0 > (RM.patience ?? 6)) {
+        st.ball.restart([r.p[0], 0.11, r.p[1]], { cause: r.type }); r.placed = true; r.carried = false; r._fetchT0 = null;
+        st.events.push({ t: +st.t.toFixed(2), type: 'ramasseur', cause: horsAtteinte ? 'hors-atteinte' : 'patience' });
+        return false;
+      }
+    }
     const reach = st.t - r._fetchT0 > 2 ? 2.2 : 0.85;
     const close = hyp(tk.p[0] - bp[0], tk.p[2] - bp[2]) < reach;
     const slow = hyp(st.ball.v[0], st.ball.v[2]) < 3.5 && bp[1] < 1.2;
