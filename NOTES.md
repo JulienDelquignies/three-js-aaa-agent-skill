@@ -7645,7 +7645,15 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactique explicite 'court'/'long' garde sa voix. Leçon d'empreinte :
      une référence prise avant une v2 du même lot est périmée — re-mesurer
      à chaque sous-lot. Monde 226b : seed 3 c0afdb00403e9f69, seed 7
-     80193a4e239c1b12.
+     80193a4e239c1b12. Mesuré 226b (12 × 10 min) : gardien 41 passes/90
+     min dont 24 longues, 18 pertes — la règle joue (long sous pression)
+     et les pertes restantes sont les longues perdues au duel (un 50/50
+     réel, ~50 %), pas des mains dans la pression : consigné, pas
+     corrigé. Bande A/B 20 × 300 s (226b) : 76 tirs, 12 buts, 25
+     accrochages, 31 fautes, 7 corners. Clauses 223, 223b, 224, 226 au
+     mécanisme (renvoi : la forme du brief ; pression 4 m → long, 22 m
+     → court ; coup franc 3 monteurs marqués à 0,9 m ; touche ≤ 6 cibles
+     à < 12 m c. 10 hier).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
