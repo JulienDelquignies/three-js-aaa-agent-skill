@@ -4879,5 +4879,33 @@ if (__bloc()) {
     V.n === 3 && V.pointeExempte && V.ciblesDerriere === 3 && !V.marque && E.n === 0);
 }
 
+// ---- lot 222 : LA GARDE SUIT LA ZONE (audit aval, constat 2 : « le porteur est toujours à 2,5 m d'un adversaire »)
+if (__bloc()) {
+  // cfg.garde : la distance d'engagement du premier défenseur suit la zone (loin de mon but 6 m, milieu 3,
+  // mon tiers au contact), × axe(pressing) × (2 − aggrF), divisée en fenêtre de pressing ; loin de mon but
+  // hors fenêtre le bloc ne marque pas à l'homme ; le repos entre deux fenêtres × cooldown. Le juge au
+  // MÉCANISME : un porteur posé et l'équipe adverse posée derrière — la cible du presseur élu après une
+  // image, distance au ballon : loin ≥ 5 ; dans mon tiers ≤ 1,2 ; épinglé (garde:false) loin ≤ 1,2.
+  const presseur = (xPorteur, over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);   // l'équipe 0 attaque vers +sgn, son but est à −sgn
+    const c = st.players.find((p) => p.team === 1 && p.post === 5);
+    for (const q of st.players) if (q.team === 1 && !q.keeper && q.id !== c.id) { q.p[0] = xPorteur - sgn * 12; q.p[2] = 12; }
+    const mes = st.players.filter((p) => p.team === 0 && !p.keeper);
+    mes.forEach((q, k) => { q.p[0] = xPorteur - sgn * (8 + k * 3); q.p[2] = (k - 4) * 4; q._pace = null; q._markT = null; });
+    c.p[0] = xPorteur; c.p[2] = 0;
+    st.ball.restart([xPorteur + sgn * 0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 1, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1;
+    st._press = null; st._pressCd = { 0: st.t + 99, 1: st.t + 99 }; st._possChangeAt = st.t - 20; st._lossAt = {};   // aucune fenêtre : la perte est vieille, le repos long
+    cfg.assignJobs(st, cfg);   // l'attribution seule, sans avancer le monde : le porteur possède, aucune passe ne part
+    const pr = mes.find((q) => q.job === 'press');
+    return pr?.target ? Math.hypot(pr.target[0] - c.p[0], pr.target[2] - c.p[2]) : null;
+  };
+  const loin = presseur(40, {}), proche = presseur(-40, {}), loinE = presseur(40, { garde: false });
+  ok(`lot 222 — LA GARDE SUIT LA ZONE (cible du presseur : porteur loin de mon but ${loin?.toFixed(1)} m ≥ 5 ; dans mon tiers ${proche?.toFixed(1)} ≤ 1,2 ; épinglé loin ${loinE?.toFixed(1)} ≤ 1,2 — le flux : fenêtres 24 → 14 % du temps porté, presseur hors fenêtre 3,9-4,8 m loin du but ; l'adversaire le plus proche reste ~2,8 m : 55 % des échantillons profonds sont des fenêtres de contre-press après une perte — le tourbillon des pertes, la dette suivante)`,
+    loin != null && loin >= 5 && proche != null && proche <= 1.2 && loinE != null && loinE <= 1.2);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

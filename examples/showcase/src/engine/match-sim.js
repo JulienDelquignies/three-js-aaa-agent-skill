@@ -908,7 +908,7 @@ function assignMatchJobs(st, cfg) {
         const aMoy = nA ? sA / nA : 1;
         const win = ((cfg.pressTriggers.win ?? 4.5) + axe(Tp, -1.3, 1.3)) * aMoy;
         st._press = { team: defTeam, until: st.t + win, kind };
-        (st._pressCd ??= {})[defTeam] = st.t + win + axe(Tp, 10, 2) / aMoy;
+        (st._pressCd ??= {})[defTeam] = st.t + win + axe(Tp, 10, 2) / aMoy * (st.full && cfg.garde ? (cfg.garde.cooldown ?? 2) : 1);   // (222) la fenêtre est rare : × garde.cooldown (le porteur profond ouvrait une fenêtre la moitié du temps)
         st.events.push({ t: +st.t.toFixed(2), type: 'press', kind, team: defTeam });
       }
     }
@@ -960,8 +960,8 @@ function assignMatchJobs(st, cfg) {
     const rayonM = st.full ? (cfg.marquageRayon ?? 22) : Infinity;
     const sgnDef = Math.sign(defGoal.x || 1);
     const marks = st._bMarks ??= [], mTri = st._bMTri ??= []; marks.length = 0;
-    const RP = st.full && cfg.repli ? cfg.repli : null;   // (221, doc repli.js) un attaquant DERRIÈRE le ballon ne se marque pas — 244/267 corps restés devant étaient ses marqueurs
-    for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)) && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
+    const RP = st.full && cfg.repli ? cfg.repli : null, zoneLoin = st.full && cfg.garde && !press && Math.abs(anchor[0] - defGoal.x) > pitch.hx * (4 / 3) * (cfg.garde.zoneLoin ?? 1);   // (222) LOIN DE MON BUT, HORS FENÊTRE, LE BLOC TIENT SA ZONE : pas de marquage à l'homme (les marqueurs deviennent des postés) — l'adversaire le plus proche était la couverture ou un marqueur collé à un voisin, 2,5 m partout
+    if (!zoneLoin) for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)) && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
     // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
     byDist.forEach((p, i) => {
@@ -1003,7 +1003,10 @@ function assignMatchJobs(st, cfg) {
           if (cfg.mord && d2(p.p, anchor) < (cfg.mord.porte ?? 1.6) * (p.skill?.aggrF ?? 1)) { p.job = 'press'; p.target = [anchor[0], 0, anchor[2]]; return; }
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = hyp(gxJ, gzJ) || 1;
-          const jd = cfg.jockey?.dist ?? 1.0;
+          let jd = cfg.jockey?.dist ?? 1.0;
+          if (st.full && cfg.garde) {   // LA GARDE SUIT LA ZONE (222, cfg.garde — doc match-config : loin de mon but 6 m, milieu 3, mon tiers au contact ; × pressing × (2 − aggrF) ; en fenêtre × fenetre)
+            const G = cfg.garde, dMon = Math.abs(anchor[0] - ogJ.x), L = pitch.hx * 2; jd = Math.max(jd, (dMon > L * (2 / 3) ? (G.loin ?? 6) : dMon > L / 3 ? (G.milieu ?? 3) : jd) * (press ? (G.fenetre ?? 0.5) : 1) * axe(tac(st, p.team).pressing, 1.4, 0.6) * (2 - (p.skill?.aggrF ?? 1)));
+          }
           // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
           const oF = (role(p).orienteFaible ?? 0.5) - 0.5;
           const biais = oF !== 0 && carrier.strongFoot ? oF * 1.1 * (carrier.strongFoot === 'left' ? 1 : -1) * Math.sign(pitch.attackGoal(carrier.team).x || 1) : 0;

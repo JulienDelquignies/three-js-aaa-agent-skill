@@ -608,6 +608,10 @@ export const MATCH = {
                           // (min-max m) — la cloche haute vise la ligne, le retour est
                           // plus lent que le vol. L'audace × longF (l'attribut longShots).
                           // Absente : le gardien avancé impuni d'hier.
+  // LA GARDE SUIT LA ZONE (222, cfg.garde && st.full — audit aval : le porteur pressé à 2,5 m partout). La
+  // distance d'engagement du premier défenseur : loin de mon but 5 m (il ferme les lignes), milieu 3 m, mon
+  // tiers au contact (jockey.dist), × axe(pressing) × (2 − aggrF) ; fenêtre de pressing : au contact. Doc match-sim.
+  garde: { loin: 6, milieu: 3, cooldown: 3, fenetre: 0.5 },   // fenetre : en fenêtre de pressing la garde se divise (0,5) — le contact reste au mord (1,6 m)   // cooldown : × sur le repos entre deux fenêtres de pressing (× axe(pressing, 10, 2) s d'hier) — sondé : le porteur profond ouvrait une fenêtre la moitié du temps
   // L'OBLIGATION DE REPLI (221, cfg.repli && st.full — audit aval : six joueurs devant le ballon dans son camp).
   // Un attaquant derrière le ballon ne se marque pas ; tout défenseur devant la ligne du ballon sauf les
   // pointes (axe tactique repli, identité 1) rentre en sprint après delai × (2 − workF). Doc match-sim.

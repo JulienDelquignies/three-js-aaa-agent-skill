@@ -7564,6 +7564,30 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      distance d'engagement par zone × pressing), 223 appuis de relance du
      gardien, 224 montée sur coup de pied arrêté + événement `placement`,
      225 marquage surface, 226 la touche n'aimante que 4-5 joueurs.
+     Puis : le remplaçant en trajet (Loi 3) et le marcheur de cérémonie
+     ne rentrent pas (le repli les prenait pour des défenseurs devant le
+     ballon : l'entrant n'atteignait jamais la médiane — loi3 184).
+- 271: LA GARDE SUIT LA ZONE (222, cfg.garde — constat 2 de l'aval : « un
+     essaim, pas un bloc », le porteur à 2,5 m d'un adversaire partout).
+     Sondé (film-garde) : l'adversaire le plus proche est le PRESSEUR ; en
+     fenêtre de pressing il est au contact, et dans le tiers profond du
+     porteur la MOITIÉ des échantillons sont en fenêtre — le déclencheur
+     « dos au but » (hold < 0,5 s, presque chaque réception profonde) et
+     surtout le CONTRE-PRESS après une perte (112 pertes/30 min). La loi :
+     la distance d'engagement du presseur suit la zone (loin de mon but 6
+     m — il ferme les lignes —, milieu 3, mon tiers au contact), × axe
+     tactique pressing (1,4 → 0,6) × (2 − aggrF), divisée par deux en
+     fenêtre (le mord garde le contact à 1,6 m) ; loin de mon but hors
+     fenêtre le bloc ne marque pas à l'homme (les marqueurs deviennent des
+     postés : l'adversaire le plus proche était un marqueur collé à un
+     voisin ou la couverture) ; le repos entre deux fenêtres × cooldown 3.
+     Mesuré : fenêtres 24 → 14 % du temps porté ; presseur hors fenêtre
+     loin du but 3,9-4,8 m ; MAIS l'adversaire le plus proche reste
+     2,9/2,6/2,1 m par tiers : 55 % des échantillons du tiers profond
+     restent des fenêtres de contre-press — c'est le tourbillon des pertes
+     (336/90 min, réel 200-280) qui fabrique l'essaim, la dette nommée.
+     Jumeau garde:false = 221 au bit. Clause 222 au mécanisme (la cible du
+     presseur : loin ≥ 5 m, mon tiers ≤ 1,2, épinglé ≤ 1,2).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
