@@ -7661,8 +7661,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      vérifiés isolés — la dette du harnais, 272) ; annexes du contrat
      vertes (match 84, rondo 40, gestes 60, menace 11, frappes 13, sync 9,
      roles 11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10 ;
-     attributes : ci-dessous). Volumétrie : match-sim 1248 après trois
-     déports (foulee.js, repli.js, cpa.js).
+     attributes 27 ✓ après épingles relance/remise/cpaMontee sur la
+     gradation et le pique). Volumétrie : match-sim 1248 après trois
+     déports (foulee.js, repli.js, cpa.js). DÉPLOYÉ (capture playmode
+     validée ; chunk Rondo-BIf-rDbv.js, cpaMontee grepable à l'alias). En
+     ligne : 221 → 226b — le repli, la garde, la sortie de balle, la
+     montée sur coup franc, la touche à appuis, l'événement placement.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
