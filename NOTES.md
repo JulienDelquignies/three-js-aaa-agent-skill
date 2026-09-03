@@ -7685,6 +7685,52 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Mesuré : libres 59 → 34 %, p50 3,5 → 2,2 m (réel 1-2), audit 4,4 →
      3,4 m. Jumeau = 226b au bit. Monde 225 : seed 3 836702b95cca24d9,
      seed 7 11a33347a3d6252d.
+- 275: LA BIBLIOTHÈQUE TACTIQUE (deux livres digérés par des agents —
+     « Comment regarder un match de foot », Cahiers du football ;
+     « Comment gagner un match de foot », Cosmidis et al. — dépôt
+     juliendelquignies/book). Ce qui borne nos lois, avec le numéro de
+     ligne du texte : MARQUAGE — individuel « l'haleine sur la nuque »,
+     1-2 m quand l'homme est dos au porteur (l. 4549 / 7481) ; zone :
+     « un qui sort de la ligne, trois qui couvrent » (Gourcuff, l. 7372)
+     ; entre lignes 10-15 m en bloc médian, ~6 m en bloc bas (l. 7355) ;
+     bloc ≤ 25 m attaque-défense (Bielsa, l. 4836) ; le second poteau au
+     latéral opposé, quatre en équilibre derrière (l. 7075-7078) ; sur
+     CPA le mixte domine (zone pour les petits, homme + 3-4 « au ballon
+     » pour les costauds, l. 8200-8218) ; gardien : second poteau + 8-9 m
+     devant sa ligne (Furlan, l. 8185). TRANSITIONS — contre-pressing
+     chronométré : 6 s (Guardiola), 5 s (Klopp), 8-10 s (Rangnick), 10 s
+     (Bielsa) (l. 3659-3711, 803, 850) ; zone-press c. recul-frein, la
+     faute intelligente (l. 4340-4438) ; « une chaise à quatre pieds »
+     (Moulin), compensation du latéral monté (l. 5696-5709) ; le premier
+     sprint « dans le joueur, sans faute » (Zeidler, l. 7258). PRESSING —
+     déclencheurs : porteur dos au but, contrôle raté (l. 4088) ; cible
+     le latéral, « la ligne de touche est le meilleur défenseur »
+     (Guardiola, l. 4152) ; 6-7 joueurs actifs pour un pressing haut
+     (Zeidler, l. 7302) ; on ne presse pas à 80 m de son but (Moulin, l.
+     4409) ; la ligne recule si le porteur n'est pas cadré (l. 4875).
+     SORTIE DE BALLE — salida volpiana : le pivot décroche pour le +1, les
+     centraux s'écartent (l. 6768-6789) ; le troisième homme, l'homme
+     libre (l. 6664-6737) ; PSG : 9 ballons perdus par match sur les
+     sorties du gardien (l. 1705) — nos 18/90 min sont le double, même
+     ordre ; 8 ballons sur 10 au pied (Landreau, l. 2064) ; règle des 6 s.
+     CPA — L1 2014-15 : 9 corners/match, 1 but tous les ~50 (l. 7790) ;
+     28,6 % des buts sur CPA (l. 7832) ; 75 % des buts de corner sur
+     rentrants (City, l. 8151) ; premier c. second poteau contradictoire
+     (80/50 %, l. 8170-8182 — deux profils, pas une vérité) ; touche à
+     hauteur de surface = un corner (l. 8108) ; touche longue 20 → 27 m
+     (Gronnemark, l. 3693). PERFORMANCE — 1 but pour 9 tirs (Reep, l.
+     3337) ; 1/25 à 21-27 m, 1/40 au-delà ; tir sans pression ×2 (l.
+     3540-3549) ; penalty 75 %, gardien plonge 94 % (l. 9607-9679) ;
+     ouverture du score = victoire 85 % dom. / 76 % ext. (l. 10315). Les
+     livres ne couvrent PAS : seuils chiffrés de déclenchement du
+     pressing, corner offensif détaillé, mur du coup franc. Les rôles :
+     sentinelle, double pivot, regista, faux 9, mezzala (l. 9370-9560).
+     À FAIRE de cette bibliothèque : le contre-pressing chronométré par
+     profil (nos fenêtres 4,5 s + cooldown ≈ Klopp), la faute tactique,
+     « un qui sort, trois qui couvrent » comme loi de bascule, la
+     compensation du latéral monté, l'entre-lignes 10-15 / 6 m par bloc,
+     et la conversion des tirs 1/9 comme bande de réalisme (nos bandes
+     A/B : 76 tirs pour 10-14 buts = 1/6-1/8, proche).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

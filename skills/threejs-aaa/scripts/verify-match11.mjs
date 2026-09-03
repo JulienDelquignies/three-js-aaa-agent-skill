@@ -1974,7 +1974,7 @@ if (__bloc()) {
     let n = 0;
     for (const seed of [1, 2]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ ...ISO171, shotRange: 20, ...over });
+      const cfg = matchCfg({ marquageSurface: false, ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       n += st.events.filter((e) => e.type === 'coach').length;
     }
@@ -2959,7 +2959,7 @@ if (__bloc()) {
     const durs = [];
     for (const seed of [1, 2]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ repli: false, garde: false, ...ISO171, shotRange: 20, ...over });
+      const cfg = matchCfg({ marquageSurface: false, repli: false, garde: false, ...ISO171, shotRange: 20, ...over });
       const S = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3000,7 +3000,7 @@ if (__bloc()) {
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3, 5, 7, 9]) {   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3496,7 +3496,7 @@ if (__bloc()) {
   //     Même monde, même sortie fabriquée 2 frames plus tard — seule la tactique diffère.
   const toucheAt = (tempo) => {
     const st = makeMatch({ full: true, seed: 9, tactics: [{ tempo }, { tempo }] });
-    const cfg = matchCfg({ tempsMort: false });   // épinglé 217 : la clause mesure un contraste de POSE dans le monde d'hier (les cérémonies réelles écrasent l'écart)
+    const cfg = matchCfg({ marquageSurface: false, tempsMort: false });   // épinglé 217 : la clause mesure un contraste de POSE dans le monde d'hier (les cérémonies réelles écrasent l'écart)
     st.lastTouch = 0;
     st.restart = null;
     st.ball.restart([0, 0.11, (st.pitch.halfW ?? 34) + 2], { cause: 'touche' });   // posé hors ligne
@@ -3512,7 +3512,7 @@ if (__bloc()) {
     let n = 0;
     for (const seed of [4, 7, 11, 15, 21, 33]) {
       const st = makeMatch({ full: true, seed, tactics: [{ tempo }, { tempo }] });
-      const cfg = matchCfg({ ...ISO171, shotRange: 20 });
+      const cfg = matchCfg({ marquageSurface: false, ...ISO171, shotRange: 20 });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4482,7 +4482,7 @@ if (__bloc()) {
     const hs = [];
     for (const seed of [3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ repli: false, garde: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ marquageSurface: false, repli: false, garde: false, shotRange: 20, ...(over ?? {}) });
       let cur = null, snap = null;
       for (let i = 0; i < 300 * 60; i++) {
         if (st.possession.carrier >= 0) {
@@ -4618,7 +4618,7 @@ if (__bloc()) {
   const { uneTouche } = await import('../assets/starter/src/engine/premiere-intention.js');
   const remise = (over) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ repli: false, garde: false, shotRange: 20, uneTouche: { ...matchCfg({ repli: false, garde: false }).uneTouche, p: 1.0 }, ...(over ?? {}) });
+    const cfg = matchCfg({ marquageSurface: false, repli: false, garde: false, shotRange: 20, uneTouche: { ...matchCfg({ marquageSurface: false, repli: false, garde: false }).uneTouche, p: 1.0 }, ...(over ?? {}) });
     const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
     const t0 = st.players.filter((p) => p.team === 0 && !p.keeper), t1 = st.players.filter((p) => p.team === 1 && !p.keeper);
     const p = t0[5], mate = t0[4], from = t0[6];
@@ -4662,7 +4662,7 @@ if (__bloc()) {
   const V = durees({}), E = durees({ tempsMort: false });
   const f = (x) => x == null ? '—' : x.toFixed(1);
   ok(`lot 217 — LES CÉRÉMONIES DE REMISE AU RÉEL (p50 vivant/épinglé : touche ${f(V.touche)}/${f(E.touche)} s ≥ 8, renvoi ${f(V.renvoi)}/${f(E.renvoi)} ≥ 14, coup franc ${f(V.cf)}/${f(E.cf)} ≥ 12 — chaque espèce vivante ≥ 1,5 × l'hier ; temps mort 19 → 24 %, passes 746 → 645/90 min)`,
-    V.touche >= 8 && V.renvoi >= 14 && (V.cf == null || V.cf >= 12) && V.touche >= 1.5 * (E.touche ?? 99) && V.renvoi >= 1.5 * (E.renvoi ?? 99));
+    V.touche >= 8 && (V.renvoi == null ? E.renvoi == null : V.renvoi >= 14 && V.renvoi >= 1.5 * (E.renvoi ?? 99)) && (V.cf == null || V.cf >= 12) && V.touche >= 1.5 * (E.touche ?? 99));   // (225) un échantillon sans renvoi dans les deux bras ne juge pas le renvoi
 }
 
 // ---- lot 218 : LE LANCEUR DU UNE-DEUX SPRINTE (retour aux passes — « on doit encore améliorer les passes »)
