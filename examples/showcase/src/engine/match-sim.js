@@ -878,9 +878,7 @@ function assignMatchJobs(st, cfg) {
       p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, p._slotT[0])), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._slotT[1]))];
       // …ET LE DONNE-ET-VA DU COMITÉ COURT À SA CIBLE (218 — le lanceur est un SLOTTER : sa consigne était son slot à 1,5 m, il trottait à 2,4 m/s)
       if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) {
-        let cx = p._pace.cible[0];
-        const offU = cfg.offside ? offsideLine(st, atk) : null;
-        if (offU && cx * offU.sgn > offU.adv - 0.15) cx = offU.sgn * Math.max(0, offU.adv - 0.15);
+        let cx = p._pace.cible[0]; const offU = cfg.offside ? offsideLine(st, atk) : null; if (offU && cx * offU.sgn > offU.adv - 0.15) cx = offU.sgn * Math.max(0, offU.adv - 0.15);
         p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, cx)), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._pace.cible[1]))];
       }
     }

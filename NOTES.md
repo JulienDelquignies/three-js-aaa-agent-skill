@@ -7653,7 +7653,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      accrochages, 31 fautes, 7 corners. Clauses 223, 223b, 224, 226 au
      mécanisme (renvoi : la forme du brief ; pression 4 m → long, 22 m
      → court ; coup franc 3 monteurs marqués à 0,9 m ; touche ≤ 6 cibles
-     à < 12 m c. 10 hier).
+     à < 12 m c. 10 hier). BANC 226b (avant-plan, deux à quatre shards à
+     la fois) : huit shards verts après les épingles relance/remise/
+     cpaMontee:false (aimant du porté, 104, 136, 150 — ce dernier juge le
+     contraste 'court'/défaut que la relance par pression a déplacé —,
+     174, 117, 194), hors 96/174 (dépendants de l'ordre des blocs,
+     vérifiés isolés — la dette du harnais, 272) ; annexes du contrat
+     vertes (match 84, rondo 40, gestes 60, menace 11, frappes 13, sync 9,
+     roles 11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10 ;
+     attributes : ci-dessous). Volumétrie : match-sim 1248 après trois
+     déports (foulee.js, repli.js, cpa.js).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
