@@ -1004,9 +1004,7 @@ function assignMatchJobs(st, cfg) {
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = hyp(gxJ, gzJ) || 1;
           let jd = cfg.jockey?.dist ?? 1.0;
-          if (st.full && cfg.garde) {   // LA GARDE SUIT LA ZONE (222, cfg.garde — doc match-config : loin de mon but 6 m, milieu 3, mon tiers au contact ; × pressing × (2 − aggrF) ; en fenêtre × fenetre)
-            const G = cfg.garde, dMon = Math.abs(anchor[0] - ogJ.x), L = pitch.hx * 2; jd = Math.max(jd, (dMon > L * (2 / 3) ? (G.loin ?? 6) : dMon > L / 3 ? (G.milieu ?? 3) : jd) * (press ? (G.fenetre ?? 0.5) : 1) * axe(tac(st, p.team).pressing, 1.4, 0.6) * (2 - (p.skill?.aggrF ?? 1)));
-          }
+          if (st.full && cfg.garde) { const G = cfg.garde, dMon = Math.abs(anchor[0] - ogJ.x), L = pitch.hx * 2; jd = Math.max(jd, (dMon > L * (2 / 3) ? (G.loin ?? 6) : dMon > L / 3 ? (G.milieu ?? 3) : jd) * (press ? (G.fenetre ?? 0.5) : 1) * axe(tac(st, p.team).pressing, 1.4, 0.6) * (2 - (p.skill?.aggrF ?? 1))); }   // LA GARDE SUIT LA ZONE (222, doc match-config)
           // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
           const oF = (role(p).orienteFaible ?? 0.5) - 0.5;
           const biais = oF !== 0 && carrier.strongFoot ? oF * 1.1 * (carrier.strongFoot === 'left' ? 1 : -1) * Math.sign(pitch.attackGoal(carrier.team).x || 1) : 0;

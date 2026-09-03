@@ -7587,7 +7587,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      restent des fenêtres de contre-press — c'est le tourbillon des pertes
      (336/90 min, réel 200-280) qui fabrique l'essaim, la dette nommée.
      Jumeau garde:false = 221 au bit. Clause 222 au mécanisme (la cible du
-     presseur : loin ≥ 5 m, mon tiers ≤ 1,2, épinglé ≤ 1,2).
+     presseur : loin ≥ 5 m, mon tiers ≤ 1,2, épinglé ≤ 1,2). Bande A/B
+     20 × 300 s : 221 → 80 tirs, 14 buts, 26 fautes ; 222 → 67 tirs, 14
+     buts, 24 fautes (les 17-22 buts des mondes 218-220 tombent avec le
+     repli — la « première cause » nommée par l'aval).
+- 272: LE BANC 221-222 ET UNE DETTE DU HARNAIS. Huit shards match11 joués
+     en avant-plan : 228 clauses vertes sauf des flux qui ÉCHOUENT EN SHARD
+     ET PASSENT ISOLÉS avec les MÊMES chiffres épinglés ou non (96, 189,
+     217, 121, 137, 174, 212 ; bissection : le bloc 26 rougit après le
+     bloc 2 d'un même processus, pas après le bloc 10). Prouvé : le
+     moteur n'a AUCUNE fuite (empreinte de la graine 7 identique seule ou
+     après une autre partie ; aucun état de module mutable) — la fuite
+     vit dans le harnais : matchCfg copie MATCH en surface, ses
+     sous-objets sont PARTAGÉS entre toutes les cfg d'un processus (le
+     seul écrivain trouvé : le memo opts._o de stepBall). DETTE NOMMÉE :
+     trouver l'état partagé du banc (bissection bloc à bloc), et rendre
+     matchCfg profond. Les annexes du contrat : match 84, rondo 40, gestes
+     60, menace 11, frappes 13, sync, roles 11, loi3 10, kit 5, part-tint
+     18, tactics 11, slide 10 — vertes ; attributes voir ci-dessous.
+     Épingles posées (garde/repli:false) : 135, 189, 217, orbite, 96, 104,
+     149, 145, 212, 121, 137, 174, et attributes 157/162.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
