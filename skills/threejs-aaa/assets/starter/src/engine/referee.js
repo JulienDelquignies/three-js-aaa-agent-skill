@@ -637,6 +637,7 @@ export function canTake(st, takerId, cfg) {
   }
   st.restart = null;                                               // la remise est PRISE — le jeu reprend
   st.events.push({ t: +st.t.toFixed(2), type: 'restart-pris', by: takerId });
+  if (cfg?.placement !== false) placementEvent(st, ty, p.team);   // (224) l'événement demandé par l'aval : la surface visée à la prise
   // L'ENGAGEMENT EST UNE PASSE (lot 45, retour utilisateur « sur l'engagement le joueur part
   // en dribble ») : le monde ENTIER est devant le preneur — la barre calme (4,8) refusait la
   // passe courte de l'engagement et il partait en conduite. Le mémo est lu par la décision
@@ -1051,3 +1052,4 @@ export function elireTaker(st, r, cfg, d2) {
   return taker;
 }
 import { hyp } from './hyp.js';
+import { placementEvent } from './cpa.js';

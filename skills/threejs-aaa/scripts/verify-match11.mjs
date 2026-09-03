@@ -4907,5 +4907,54 @@ if (__bloc()) {
     loin != null && loin >= 5 && proche != null && proche <= 1.2 && loinE != null && loinE <= 1.2);
 }
 
+// ---- lots 223-226 : LES REMISES ONT UNE STRUCTURE (audit aval : sortie de balle, coup franc, touche, événement placement)
+if (__bloc()) {
+  // Trois fixtures posées (une remise sans arbitre : st.restart écrit à la main), une par espèce ; l'épinglé
+  // (clé absente) rend la marche vers le point de remise d'hier. Doc cpa.js et match-config.
+  const scene = (type, pos, team, over, secs) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
+    st.ball.restart([pos[0], 0.11, pos[1]], { cause: type });
+    st.restart = { type, team, p: [pos[0], pos[1]], at: st.t + 17, carried: false, placed: true };
+    st.possession = { team, carrier: -1 }; st.phase = 'loose'; st.lastTouch = 1 - team;
+    for (let i = 0; i < secs * 60; i++) matchStep(st, 1 / 60, cfg);
+    return st;
+  };
+  const st0 = makeMatch({ full: true, seed: 5 }); const sgn = Math.sign(st0.pitch.attackGoal(0).x || 1), gx = st0.pitch.attackGoal(0).x, og = st0.pitch.ownGoal(0).x, hz = st0.pitch.hz;
+  // 223 — le renvoi se sort : centraux aux coins de la surface (x 12-14 m de ma ligne, |z| ≥ 17), pivot dans l'axe à 20-24 m, latéraux à ≥ 27 m et larges
+  const forme = (over) => {
+    const st = scene('sortie-de-but', [og + sgn * 5.5, 3], 0, over, 11.5);
+    const mes = st.players.filter((q) => q.team === 0 && !q.keeper).map((q) => ({ x: (q.p[0] - og) * sgn, z: q.p[2] }));
+    const cb = mes.filter((m) => m.x >= 11 && m.x <= 15 && Math.abs(m.z) >= 17).length;
+    const piv = mes.filter((m) => m.x >= 19 && m.x <= 25 && Math.abs(m.z) <= 5).length;
+    const fb = mes.filter((m) => m.x >= 27 && m.x <= 33 && Math.abs(m.z) >= hz - 8).length;
+    const auBallon = mes.filter((m) => m.x <= 9).length;
+    return { cb, piv, fb, auBallon };
+  };
+  const V = forme({}), E = forme({ relance: false });
+  ok(`lot 223 — LE RENVOI SE SORT (vivant : centraux écartés ${V.cb} = 2, pivot décroché ${V.piv} ≥ 1, latéraux hauts et larges ${V.fb} = 2, corps collés au ballon ${V.auBallon} = 0 ; épinglé : collés au ballon ${E.auBallon} ≥ 5 — la marche vers le point de remise d'hier)`,
+    V.cb === 2 && V.piv >= 1 && V.fb === 2 && V.auBallon === 0 && E.auBallon >= 5);
+  // 224 — la montée sur coup franc latéral à 25 m : ≥ 3 attaquants dans la surface à la prise, chaque monteur marqué à ≤ 1,5 m (p50), le mur de deux ; épinglé : 0 attaquant
+  const cf = (over) => {
+    const st = scene('coup-franc', [gx - sgn * 22, 14], 0, over, 16.5);
+    const box = (q) => Math.abs(q.p[0] - gx) < 16.5 && Math.abs(q.p[2]) < 20.16;
+    const att = st.players.filter((q) => q.team === 0 && !q.keeper && box(q));
+    const dMin = att.map((a) => Math.min(...st.players.filter((q) => q.team === 1 && !q.keeper).map((d) => Math.hypot(d.p[0] - a.p[0], d.p[2] - a.p[2])))).sort((a, b) => a - b);
+    return { att: att.length, marque: dMin[dMin.length >> 1] ?? 99, mur: st.restart?._mur?.length ?? 0, placement: st.events.filter((e) => e.type === 'placement' && e.espece === 'coup-franc').length };
+  };
+  const C = cf({}), CE = cf({ cpaMontee: false });
+  ok(`lot 224 — LA MONTÉE SUR COUP FRANC (vivant : ${C.att} ≥ 3 attaquants dans la surface à la prise, marqués à ${C.marque.toFixed(1)} m ≤ 1,5 p50, mur ${C.mur} = 2 ; épinglé : ${CE.att} = 0)`,
+    C.att >= 3 && C.marque <= 1.5 && C.mur === 2 && CE.att === 0);
+  // 226 — la touche n'aimante que ses appuis : à la prise, coéquipiers du lanceur à < 12 m de la ligne ≤ 5 (le lanceur + 3-4 appuis) ; épinglé ≥ 7
+  const touche = (over) => {
+    const st = scene('touche', [sgn * 10, hz], 0, over, 3);
+    return st.players.filter((q) => q.team === 0 && !q.keeper && q.target && hz - Math.abs(q.target[2]) < 12).length;   // les CIBLES (les marcheurs d'hier à 2,6 m/s n'arrivent pas dans la cérémonie de la fixture)
+  };
+  const T = touche({}), TE = touche({ remise: false });
+  ok(`lot 226 — LA TOUCHE N'AIMANTE QUE SES APPUIS (vivant : ${T} coéquipiers visant à < 12 m de la ligne ≤ 6 (lanceur, appuis, les deux larges de la formation) ; épinglé : ${TE} ≥ 8 — l'aimant d'hier ; le flux : 7 → 3 joueurs à < 12 m, réel 4-5)`,
+    T <= 6 && TE >= 8);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

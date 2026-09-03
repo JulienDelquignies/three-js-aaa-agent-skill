@@ -7607,6 +7607,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      18, tactics 11, slide 10 — vertes ; attributes voir ci-dessous.
      Épingles posées (garde/repli:false) : 135, 189, 217, orbite, 96, 104,
      149, 145, 212, 121, 137, 174, et attributes 157/162.
+- 273: LES REMISES ONT UNE STRUCTURE (223-226, cpa.js — les constats 4, 5, 6
+     de l'aval et leur événement `placement`). Un agent tactique a produit
+     un brief chiffré dans l'esprit de Momont/Toniutti/Cosmidis/Kuchly
+     (sortie de balle 4+1 / 3+2 : centraux y ±14-20 à x 8-14 m au renvoi,
+     sentinelle 16-24 m, latéraux y ±28-33 à x 25-35 ; coup franc latéral
+     : 5-7 dans la surface, premier poteau ×2, penalty, second poteau,
+     retrait 18-22 m, mur 2-4, marquage mixte 0,5-1 m ; touche : 3 appuis
+     (court 4-7 m, soutien 6-10 m derrière, dans le dos 10-15 m), Loi 15
+     2 m). Le moteur avait UNE règle pour toute remise : « chacun marche
+     vers le point de remise » (l'aimant de la touche, le renvoi sans
+     appuis, le coup franc sans monteur). Trois lois sous clé : relance
+     (la sortie de balle, au renvoi ET quand le gardien a le ballon en
+     jeu — élection par les LIGNES de la formation : les deux extérieurs
+     de la ligne arrière sont les latéraux, les suivants les centraux
+     écartés, un cinquième reste dans l'axe, le premier milieu est le
+     pivot ; tac.cpa.sortieBut 'long' l'éteint), cpaMontee (n grands —
+     chargeF — aux postes de la surface dans le rayon, ±1 selon
+     tac.cpa.coupFranc, le défendant marque goal-side ou tient la zone
+     selon tac.cpa.marquage, le mur reste), remise (appuis ± axe relation
+     : court sur la ligne, dedans, derrière, dans le dos ; le reste tient
+     sa FORMATION autour du point) ; les montées se prennent au TROT
+     (_walkF). Pièges : le plan attend l'élection du preneur (sinon le
+     tireur monte) ; l'owner de conduite ; une cfg nested. Mesuré : touche
+     7 → 3 joueurs à < 12 m (réel 4-5), gardien 3 → 10 passes/15 min ;
+     fixtures : renvoi = la forme du brief au mètre (13/±19, 22/0,
+     30/±28) ; coup franc à 25 m : 3 monteurs dans la surface à la prise,
+     marqués à 0,9 m, mur 2 ; `placement` émis à chaque prise (corner :
+     5 attaquants / 7 défenseurs). Jumeau (quatre clés dont placement) =
+     222 au bit. Monde 226 : seed 3 715202860ebe2a04, seed 7
+     c1bde06e0d0119e6.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

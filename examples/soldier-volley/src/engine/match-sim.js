@@ -4,6 +4,7 @@ import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
+import { cfSpots, remiseCible, sortieBalle } from './cpa.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
@@ -217,7 +218,7 @@ function assignMatchJobs(st, cfg) {
       }
       if (p.id === r.taker) continue;                               // le preneur a son métier (plus bas)
       // LE PLACEMENT DU CORNER (102) et de la TOUCHE LONGUE (165) : les grands montent en boîte pendant la pose
-      const cSpot = st.full && cfg.corner && r.type === 'corner' ? cornerSpots(st, r, p, cfg) : (st.full && r.type === 'touche' ? toucheSpots(st, r, p, cfg) : null);
+      const cSpot = st.full && cfg.corner && r.type === 'corner' ? cornerSpots(st, r, p, cfg) : (st.full && r.type === 'touche' ? toucheSpots(st, r, p, cfg) : null) ?? (st.full && cfg.cpaMontee && r.type === 'coup-franc' ? cfSpots(st, r, p, cfg) : null);   // (224) LA MONTÉE SUR COUP FRANC — doc cpa.js
       if (cSpot) { p.job = 'walk'; p.target = [cSpot[0], 0, cSpot[1]]; continue; }
       if (l14) { l14clamp(p); continue; }                           // la cérémonie vaut pour les DEUX camps
       if (r.type === 'engagement') {
@@ -230,7 +231,7 @@ function assignMatchJobs(st, cfg) {
         if (st.full && cfg.corner && r.type === 'corner') {
           const gC = pitch.attackGoal(p.team), sgC = Math.sign(gC.x || 1), czC = Math.sign(r.p[1] || 1);
           p.job = 'walk'; p.target = [gC.x - sgC * (23 + (p.id % 2) * 5), 0, czC * (3 + ((p.id % 3) - 1) * 8)];
-        } else { p.job = 'walk'; p.target = [r.p[0], 0, r.p[1]]; }
+        } else { p.job = 'walk'; p.target = (st.full && (cfg.remise || cfg.relance) ? remiseCible(st, r, p, cfg, tac) : null) ?? [r.p[0], 0, r.p[1]]; }   // (223/226) la touche n'aimante que ses appuis, le renvoi se sort — doc cpa.js
       } else {
         // l'adversaire TIENT LE RAYON de la remise (Lois 15/16/17) ; le COUP FRANC plein format tient LE MUR (Loi 13, 9,15 m) : deux défenseurs ligne ballon→but …ET CHAQUE REMISE A SON RAYON DU RÈGLEMENT (171d, cfg.rayonsLoi — retour utilisateur « respecter les règles ») : corner 9,15 (Loi 17), touche 2 (Loi 15) ; absent : les 3 m d'hier
         const mur = cfg.loi12 && st.full && (r.type === 'coup-franc' || r.type === 'penalty') ? (cfg.loi12.mur ?? 9.15)
@@ -1103,6 +1104,7 @@ function assignMatchJobs(st, cfg) {
   }
 
   if (st.full && cfg.repli && st.possession.team >= 0) repliStep(st, cfg, { defenders, atk, pitch, tac, axe });   // L'OBLIGATION DE REPLI (221, doc repli.js)
+  if (st.full && cfg.relance && carrier?.keeper) for (const p of attackers) if (!p.keeper && p.down <= 0 && !p._sub && p.job !== 'receive') { const s = sortieBalle(st, atk, p, cfg, tac); if (s) { p.job = 'support'; p.target = s; } }   // (223) LA SORTIE DE BALLE quand le gardien a le ballon — doc cpa.js
   // L'INTERCEPTEUR (134, phases) : le vol de passe adverse basse SE VOLE par qui gagne le chemin.
   intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, defenders, atk });
   // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER : pendant cfg.lossReact s, l'ex-porteur CHASSE son ballon (92/254 dos mesuré) ; elle s'éteint au regain ou à la mort de la fenêtre.
