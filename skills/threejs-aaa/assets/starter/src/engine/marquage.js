@@ -27,16 +27,20 @@ export function affecterMarquage(st, byDist, marks, defGoal, d2) {
 // ligne : le plus proche glisse part du trou, le suivant second ; × posF (le placement est une note) × axe
 // tactique marquage (zone 1,2 → homme 0,6 : la zone couvre l'espace, l'homme reste sur le sien). Les spots du bloc
 // sont mutés pour l'image (ils se recalculent à chaque image). Absente : le trou d'hier au bit.
-export function refermerLigne(spotsBloc, mapD, nDefD, presseur, defenders, cfg, tacDef, axe) {
-  const R = cfg.referme; if (!R || !spotsBloc || !presseur) return;
+export function refermerLigne(st, spotsBloc, mapD, nDefD, presseur, defenders, cfg, tacDef, axe) {
+  const R = cfg.referme; if (st._bRefermeDz) st._bRefermeDz.clear(); if (!R || !spotsBloc || !presseur) return;
   const pp = mapD[presseur.post ?? 99] ?? 99; if (pp >= nDefD) return;   // seul un défenseur de LIGNE laisse un trou
   const vac = spotsBloc[pp]; if (!vac) return;
   const ligne = [];
   for (const q of defenders) { const k = mapD[q.post ?? 99] ?? 99; if (k < nDefD && q.id !== presseur.id && spotsBloc[k]) ligne.push({ k, q, z: spotsBloc[k][1] }); }
   ligne.sort((a, b) => Math.abs(a.z - vac[1]) - Math.abs(b.z - vac[1]));
   const tacF = axe(tacDef.marquage ?? 0.5, 1.2, 0.6);
+  // le décalage par poste vit dans st._bRefermeDz — les spots du bloc ne sont PAS mutés (les muter changeait la
+  // HAUTEUR de la ligne par un consommateur invisible : hauteurBloc 0 → 35 m au lieu de 13 — mesuré) ; seuls les
+  // postés de la ligne l'appliquent (match-sim, spot wM)
+  const dz = st._bRefermeDz ??= new Map(); dz.clear();
   ligne.slice(0, 2).forEach((e, i) => {
     const part = (i === 0 ? (R.part ?? 0.5) : (R.second ?? 0.25)) * (e.q.skill?.posF ?? 1) * tacF;
-    spotsBloc[e.k][1] = e.z + (vac[1] - e.z) * Math.min(0.9, part);
+    dz.set(e.k, (vac[1] - e.z) * Math.min(0.9, part));
   });
 }

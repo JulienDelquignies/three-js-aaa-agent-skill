@@ -876,8 +876,7 @@ function assignMatchJobs(st, cfg) {
       }
       // (207) le clamp du poseur — l'appui d'un porteur à la craie visait DEHORS ; l'intérieur au bit
       p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, p._slotT[0])), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._slotT[1]))];
-      // …ET LE DONNE-ET-VA DU COMITÉ COURT À SA CIBLE (218 — le lanceur est un SLOTTER : sa consigne était son slot à 1,5 m, il trottait à 2,4 m/s)
-      if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) {
+      if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) {   // …ET LE DONNE-ET-VA DU COMITÉ COURT À SA CIBLE (218 — le lanceur est un SLOTTER : sa consigne était son slot)
         let cx = p._pace.cible[0]; const offU = cfg.offside ? offsideLine(st, atk) : null; if (offU && cx * offU.sgn > offU.adv - 0.15) cx = offU.sgn * Math.max(0, offU.adv - 0.15);
         p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, cx)), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._pace.cible[1]))];
       }
@@ -963,7 +962,7 @@ function assignMatchJobs(st, cfg) {
     if (!zoneLoin) for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)) && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
     // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
-    if (st.full && cfg.referme && byDist[0]) refermerLigne(spotsBloc, mapD, nDefD, byDist[0], defenders, cfg, tac(st, defTeamB), axe);   // LA LIGNE SE REFERME (228, doc marquage.js)
+    if (st.full && cfg.referme && byDist[0]) refermerLigne(st, spotsBloc, mapD, nDefD, byDist[0], defenders, cfg, tac(st, defTeamB), axe); else if (st._bRefermeDz) st._bRefermeDz.clear();   // LA LIGNE SE REFERME (228, doc marquage.js)
     byDist.forEach((p, i) => {
       if (i === 0) {
         // LE GARDIEN EN MAINS EST INATTAQUABLE (Loi 12 à l'échelle) : le press TIENT LE BORD de la surface — le harcèlement forçait des sorties de flipper (20,5 passes/min mesurées).
@@ -1068,7 +1067,7 @@ function assignMatchJobs(st, cfg) {
       const m = st.full && cfg.marquageSurface ? (st._bAssign?.get(p.id) ?? null) : i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (60)
-        const wM = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]];
+        const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]], wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0;   // (228) le voisin du sorti glisse vers le trou
         p.job = 'mark'; p.target = [wM[0], 0, wM[1]];
         return;
       }

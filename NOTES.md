@@ -7806,6 +7806,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      m, p50 inchangé (la médiane est la largeur de la ligne entière : 4
      hommes sur 33 m — la compacité latérale du bloc, dette suivante avec
      l'entre-lignes 10-15 / 6 m). Jumeau referme:false = 227 au bit.
+     PUIS UNE LEÇON (228b) : l'annexe tactics a rougi — « la hauteur de
+     bloc bouge la ligne » : médiane −0,1 m pour +4,5 attendus ; sondé,
+     le bloc BAS montait à 35 m (13 sans referme) et le HAUT descendait à
+     29,6 (39,4) : muter le z des spots du bloc (`spotsBloc`, le buffer
+     `st._outDef` réécrit à chaque image) changeait la HAUTEUR par un
+     consommateur que je n'ai pas identifié (part 0 = le monde d'hier au
+     mètre). La loi n'écrit plus dans les spots : elle produit un décalage
+     PAR POSTE (`st._bRefermeDz`) que seuls les postés de la ligne
+     appliquent à leur spot. Hauteur retrouvée (19,5 / 44,6, contraste
+     +25), trou p90 19,2 m. Règle : un module ne mute pas un buffer
+     partagé du frame — il expose un delta que le consommateur nommé
+     applique. Monde 228b : seed 3 3d35e71c25827909, seed 7
+     ee6a622f5d89b0eb.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

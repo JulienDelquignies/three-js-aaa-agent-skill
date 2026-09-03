@@ -5046,11 +5046,11 @@ if (__bloc()) {
   const mk = () => [[-20, -14], [-20, -5], [-20, 6], [-20, 16]];
   const defs = [0, 1, 2, 3].map((k) => ({ id: k, post: k, skill: null }));
   const mapD = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const sV = mk(); refermerLigne(sV, mapD, 4, defs[1], defs, matchCfg(), { marquage: 0.5 }, axe);
-  const sE = mk(); refermerLigne(sE, mapD, 4, defs[1], defs, matchCfg({ referme: false }), { marquage: 0.5 }, axe);
-  const sH = mk(); refermerLigne(sH, mapD, 4, defs[1], defs, matchCfg(), { marquage: 1.0 }, axe);
-  ok(`lot 228 — LA LIGNE SE REFERME (le poste 1 sort : le voisin z −14 → ${sV[0][1].toFixed(2)} (= −9,95), le second z 6 → ${sV[2][1].toFixed(3)} (= 3,525), le sorti intact ${sV[1][1]} ; épinglé : ${sE[0][1]} = −14 ; marquage à l'homme : ${sH[0][1].toFixed(1)} < ${sV[0][1].toFixed(1)} — la zone couvre, l'homme reste)`,
-    Math.abs(sV[0][1] + 9.95) < 1e-6 && Math.abs(sV[2][1] - 3.525) < 1e-6 && sV[1][1] === -5 && sE[0][1] === -14 && sH[0][1] < sV[0][1]);
+  const dzDe = (cfgX, tq) => { const st = {}; const sp = mk(); refermerLigne(st, sp, mapD, 4, defs[1], defs, cfgX, tq, axe); return { dz: st._bRefermeDz ?? new Map(), sp }; };
+  const V = dzDe(matchCfg(), { marquage: 0.5 }), E = dzDe(matchCfg({ referme: false }), { marquage: 0.5 }), H = dzDe(matchCfg(), { marquage: 1.0 });
+  // le décalage vit dans st._bRefermeDz (les spots ne sont pas mutés — muter changeait la hauteur de la ligne par un consommateur invisible)
+  ok(`lot 228 — LA LIGNE SE REFERME (le poste 1 sort : le voisin z −14 glisse de ${V.dz.get(0)?.toFixed(2)} (= 4,05), le second z 6 de ${V.dz.get(2)?.toFixed(3)} (= −2,475), le sorti sans décalage ${V.dz.has(1)}, les spots intacts ${V.sp[0][1]} ; épinglé : ${E.dz.size} = 0 ; marquage à l'homme : ${H.dz.get(0)?.toFixed(1)} < ${V.dz.get(0)?.toFixed(1)} — la zone couvre, l'homme reste)`,
+    Math.abs(V.dz.get(0) - 4.05) < 1e-6 && Math.abs(V.dz.get(2) + 2.475) < 1e-6 && !V.dz.has(1) && V.sp[0][1] === -14 && E.dz.size === 0 && H.dz.get(0) < V.dz.get(0));
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
