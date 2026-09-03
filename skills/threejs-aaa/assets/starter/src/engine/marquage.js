@@ -20,3 +20,23 @@ export function affecterMarquage(st, byDist, marks, defGoal, d2) {
     if (best) { pris.add(best.id); A.set(best.id, a); }
   }
 }
+
+// LA LIGNE SE REFERME (228, cfg.referme — la bibliothèque : « un qui sort de la ligne, trois qui couvrent »,
+// Gourcuff ; sondé : quand un défenseur de ligne sort presser (20 % des instants), l'écart maximal entre ses voisins
+// monte à 13,6 m p50 et 24,5 p90 — la ligne d'hier ne bougeait pas). Le spot VACANT du sorti attire ses voisins de
+// ligne : le plus proche glisse part du trou, le suivant second ; × posF (le placement est une note) × axe
+// tactique marquage (zone 1,2 → homme 0,6 : la zone couvre l'espace, l'homme reste sur le sien). Les spots du bloc
+// sont mutés pour l'image (ils se recalculent à chaque image). Absente : le trou d'hier au bit.
+export function refermerLigne(spotsBloc, mapD, nDefD, presseur, defenders, cfg, tacDef, axe) {
+  const R = cfg.referme; if (!R || !spotsBloc || !presseur) return;
+  const pp = mapD[presseur.post ?? 99] ?? 99; if (pp >= nDefD) return;   // seul un défenseur de LIGNE laisse un trou
+  const vac = spotsBloc[pp]; if (!vac) return;
+  const ligne = [];
+  for (const q of defenders) { const k = mapD[q.post ?? 99] ?? 99; if (k < nDefD && q.id !== presseur.id && spotsBloc[k]) ligne.push({ k, q, z: spotsBloc[k][1] }); }
+  ligne.sort((a, b) => Math.abs(a.z - vac[1]) - Math.abs(b.z - vac[1]));
+  const tacF = axe(tacDef.marquage ?? 0.5, 1.2, 0.6);
+  ligne.slice(0, 2).forEach((e, i) => {
+    const part = (i === 0 ? (R.part ?? 0.5) : (R.second ?? 0.25)) * (e.q.skill?.posF ?? 1) * tacF;
+    spotsBloc[e.k][1] = e.z + (vac[1] - e.z) * Math.min(0.9, part);
+  });
+}

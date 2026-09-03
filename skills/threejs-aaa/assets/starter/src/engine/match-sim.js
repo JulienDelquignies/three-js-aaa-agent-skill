@@ -4,7 +4,7 @@ import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
-import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage } from './marquage.js';
+import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
@@ -963,6 +963,7 @@ function assignMatchJobs(st, cfg) {
     if (!zoneLoin) for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)) && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
     // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
+    if (st.full && cfg.referme && byDist[0]) refermerLigne(spotsBloc, mapD, nDefD, byDist[0], defenders, cfg, tac(st, defTeamB), axe);   // LA LIGNE SE REFERME (228, doc marquage.js)
     byDist.forEach((p, i) => {
       if (i === 0) {
         // LE GARDIEN EN MAINS EST INATTAQUABLE (Loi 12 à l'échelle) : le press TIENT LE BORD de la surface — le harcèlement forçait des sorties de flipper (20,5 passes/min mesurées).

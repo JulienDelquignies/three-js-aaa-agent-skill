@@ -614,6 +614,7 @@ export const MATCH = {
   // (centraux aux coins de la surface : prof/ecart m, pivot et latéraux en m du but). Absentes : l'hier au bit.
   avantContact: { seuil: 0.9, rayon: 6, contact: 1.0, barre: 1.2 },   // LA PASSE AVANT LE CONTACT (227, doc rondo-sim) : ETA du presseur ≤ seuil × (2 − anticipF) × composureF → tenue dispensée, barre abaissée
   ramasseur: { patience: 6, marge: 0.6 },   // LE RAMASSEUR DE BALLE (225b, doc referee.ballFetch) : ballon hors du tablier + marge, ou quête > patience s → au point de remise
+  referme: { part: 0.5, second: 0.25 },   // LA LIGNE SE REFERME (228, doc marquage.js) : un qui sort, les voisins glissent vers le trou × posF × axe marquage
   marquageSurface: true,   // L'AFFECTATION HOMME PAR HOMME (225, doc match-sim) : le danger d'abord, le marqueur libre le plus proche × (2 − markF) — absente : le tri personnel d'hier (orphelins)
   cpaMontee: { rayon: 35, n: 5, retrait: 19 },   // brief tactique : 5-7 dans la surface (premier poteau ×2, penalty, second poteau, retrait 18-22 m), 2-3 en couverture
   remise: { appuis: 3, court: 6, dedans: 8, arriere: 8 },   // brief : court 4-7 m sur la ligne, soutien 6-10 m derrière, dans le dos 10-15 m (le 4e appui)

@@ -5034,5 +5034,23 @@ if (__bloc()) {
     pV <= 0.9 * pE);
 }
 
+// ---- lot 228 : LA LIGNE SE REFERME (la bibliothèque : « un qui sort de la ligne, trois qui couvrent », Gourcuff)
+if (__bloc()) {
+  // La primitive : une ligne de quatre à z −14, −5, 6, 16 ; le poste 1 (z −5) sort presser → son voisin le plus proche
+  // (poste 0, à 9 m) glisse de part (0,5 × posF 1 × axe marquage 0,5 → 0,9 = 0,45) : −14 → −9,95 ; le second (poste 2, à
+  // 11 m) de 0,25 × 0,9 = 0,225 : 6 → 3,525 ; clé absente : rien ne bouge ; marquage à l'HOMME (1,0 → axe 0,6) : le
+  // voisin glisse moins (−14 → −11,3). Le flux : écart max p90 24,5 → 19,4 m.
+  const { refermerLigne } = await import('../assets/starter/src/engine/marquage.js');
+  const { axe } = await import('../assets/starter/src/engine/tactics.js');
+  const mk = () => [[-20, -14], [-20, -5], [-20, 6], [-20, 16]];
+  const defs = [0, 1, 2, 3].map((k) => ({ id: k, post: k, skill: null }));
+  const mapD = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const sV = mk(); refermerLigne(sV, mapD, 4, defs[1], defs, matchCfg(), { marquage: 0.5 }, axe);
+  const sE = mk(); refermerLigne(sE, mapD, 4, defs[1], defs, matchCfg({ referme: false }), { marquage: 0.5 }, axe);
+  const sH = mk(); refermerLigne(sH, mapD, 4, defs[1], defs, matchCfg(), { marquage: 1.0 }, axe);
+  ok(`lot 228 — LA LIGNE SE REFERME (le poste 1 sort : le voisin z −14 → ${sV[0][1].toFixed(2)} (= −9,95), le second z 6 → ${sV[2][1].toFixed(3)} (= 3,525), le sorti intact ${sV[1][1]} ; épinglé : ${sE[0][1]} = −14 ; marquage à l'homme : ${sH[0][1].toFixed(1)} < ${sV[0][1].toFixed(1)} — la zone couvre, l'homme reste)`,
+    Math.abs(sV[0][1] + 9.95) < 1e-6 && Math.abs(sV[2][1] - 3.525) < 1e-6 && sV[1][1] === -5 && sE[0][1] === -14 && sH[0][1] < sV[0][1]);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

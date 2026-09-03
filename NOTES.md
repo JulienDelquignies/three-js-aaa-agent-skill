@@ -7793,6 +7793,19 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      avaient mêlé leurs logs : un seul run par fichier). DÉPLOYÉ (capture
      validée ; chunk Rondo-fmMLEJ8n.js, avantContact grepable). En ligne
      : 221 → 227.
+- 278: LA LIGNE SE REFERME (228, cfg.referme, marquage.js — la
+     bibliothèque : « un qui sort de la ligne, trois qui couvrent »,
+     Gourcuff l. 7372). Sondé (3 × 300 s) : le presseur est un défenseur
+     de LIGNE 20 % des instants ; l'écart maximal entre ses voisins monte
+     alors à 13,6 m p50 et 24,5 p90 (12,8 / 16,1 sinon) — le spot vacant
+     restait vacant, la ligne d'hier ne bougeait pas. La loi : le spot du
+     sorti attire ses deux voisins de ligne (part 0,5 et 0,25 du trou), ×
+     posF (le placement est une note) × axe tactique marquage (zone 1,2
+     → homme 0,6 : la zone couvre l'espace, l'homme reste sur le sien) ;
+     les spots du bloc sont mutés pour l'image. Mesuré : p90 24,5 → 19,4
+     m, p50 inchangé (la médiane est la largeur de la ligne entière : 4
+     hommes sur 33 m — la compacité latérale du bloc, dette suivante avec
+     l'entre-lignes 10-15 / 6 m). Jumeau referme:false = 227 au bit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
