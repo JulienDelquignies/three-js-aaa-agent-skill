@@ -1076,6 +1076,7 @@ export const MATCH = {
   lossReact: 1.6,         // s — LE DÉPOSSÉDÉ SE RETOURNE (contre-press) : l'ex-porteur chasse son
                           // ballon au lieu de repartir en coureur de slot ; null : la course
                           // aveugle (sabotage nommé — 92/254 pertes suivies d'un dos-au-ballon)
+  contrePress: { dur: 5.5, n: 3, rayon: 20, compact: 4, ferme: 0.5, elan: 1.0, frein: 0.5, chaise: true },   // LE CONTRE-PRESSING CHRONOMÉTRÉ (229, contrepress.js) : à la perte en bloc compact (≥ compact à < rayon), les n plus proches hors ligne arrière (chaise — « un qui sort, trois qui couvrent » ; rôle press ≥ 0,25) ferment les sorties (au point ferme [0..1] du chemin ballon → sortie) pendant dur × axe(pressing) × workF, puis recul-frein (burst repli frein s) ; remplace le signal t3 des fenêtres rares. null : le monde 228
   // LA CIRCULATION D'UN MATCH N'EST PAS LA TENUE D'UN RONDO. Mesuré avant : 53 % des images en
   // conduite, tenue p90 3,6 s, 84 passes pour 18 reçues (21 %) — « trop de conduite, des passes
   // qui ne suivent pas l'appel » (retour utilisateur, mot pour mot ce que les chiffres disaient).

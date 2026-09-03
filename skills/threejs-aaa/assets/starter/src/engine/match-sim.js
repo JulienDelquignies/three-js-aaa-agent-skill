@@ -4,6 +4,7 @@ import { BALL } from './ball.js';
 import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
+import { lossReactStep, contrePressStep } from './contrepress.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
@@ -1106,21 +1107,8 @@ function assignMatchJobs(st, cfg) {
   if (st.full && cfg.relance && carrier?.keeper) for (const p of attackers) if (!p.keeper && p.down <= 0 && !p._sub && p.job !== 'receive') { const s = sortieBalle(st, atk, p, cfg, tac); if (s) { p.job = 'support'; p.target = s; } }   // (223) LA SORTIE DE BALLE quand le gardien a le ballon — doc cpa.js
   // L'INTERCEPTEUR (134, phases) : le vol de passe adverse basse SE VOLE par qui gagne le chemin.
   intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, defenders, atk });
-  // …ET LA FENÊTRE DU CONTRE-PRESS S'APPLIQUE EN DERNIER : pendant cfg.lossReact s, l'ex-porteur CHASSE son ballon (92/254 dos mesuré) ; elle s'éteint au regain ou à la mort de la fenêtre.
-  if (cfg.lossReact && st._lossAt) {
-    for (const idS of Object.keys(st._lossAt)) {
-      const id = +idS, la = st._lossAt[id], p = st.players[id];
-      if (!p || st.t - la > cfg.lossReact * (p.skill?.workF ?? 1)) { delete st._lossAt[id]; continue; }   // …WORK RATE est une note (151) : le travailleur chasse sa perte plus longtemps
-      const ownerNow = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
-      if (ownerNow && ownerNow.team === p.team) { delete st._lossAt[id]; continue; }
-      if (p.down > 0 || busy(p) || st.possession.carrier === p.id) continue;
-      // …et un joueur DÉJÀ en chasse garde sa cible (l'écraser par le ballon-immédiat : fixture orbite aveugle, +2,1 m les deux bras) ; le contre-press ne re-cible que le coureur de slot
-      if (p.job === 'press' || p.job === 'intercept') continue;
-      p.job = 'press';
-      p.target = [st.ball.p[0] + st.ball.v[0] * 0.25, 0, st.ball.p[2] + st.ball.v[2] * 0.25];
-      p.push = null;
-    }
-  }
+  lossReactStep(st, cfg, { busy });   // le dépossédé se retourne (déporté au 229, verbatim)
+  contrePressStep(st, cfg, { busy, tac, axe, role, d2, pitch });   // LE CONTRE-PRESSING CHRONOMÉTRÉ (229, cfg.contrePress) : la meute des n plus proches ferme les sorties pendant dur × pressing × work, puis recul-frein
   boxCrashStep(st, cfg, { busy, tac, axe, role, d2 });  // 123/182b : la géométrie du centre remplit la boîte ET les corps ATTAQUENT le vol (phases.js)
   marquageCentre(st, cfg, { busy, tac, axe, d2 });   // 133 : le vol du centre adverse met des CORPS sur les corps (phases.js)
   accompagneMontee(st, cfg, { tac, axe, role });     // 137 : la montée du porteur DÉCLENCHE ses courses d'accompagnement (phases.js)

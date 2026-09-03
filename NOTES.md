@@ -7824,6 +7824,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      épinglés referme:false, bloc 74 : 4 ✓), attributes 27 ✓, les douze
      annexes vertes, bande 74 tirs / 9 buts / 23 fautes / 7 corners,
      déployé (chunk Rondo-BtdVtARb.js, capture playmode avant deploy).
+- 279: LE CONTRE-PRESSING CHRONOMÉTRÉ (229, cfg.contrePress, contrepress.js —
+     la bibliothèque : « 6 s Guardiola, 5 s Klopp, 8-10 s Rangnick, 10 s
+     Bielsa »). AVANT (sonde 10 × 300 s, film-contrepress) : après une
+     perte, 1,3 chasseur à +1 s, 1,0 à +3, 0,9 à +5, 0,7 à +8 — jamais
+     plus de 2 : le contre-press d'hier était un des signaux (t3) des
+     fenêtres RARES du lot 11 (cooldown ≈ 22 s depuis 222), deux presseurs
+     au mieux, sans horloge ni bascule. Regain < 5 s 26 %, < 10 s 45 %.
+     LA LOI : à la perte (changement de possession hors remise), si le
+     bloc est COMPACT (≥ compact 4 des siens à < rayon 20 m) et la zone
+     permise (x > axe(hauteurBloc, 0, −2hx/3) : à 0,5 le tiers propre est
+     exclu — « on ne presse pas à 80 m de son but »), les n 3 plus proches
+     HORS LIGNE ARRIÈRE (chaise — « un qui sort, trois qui couvrent » ;
+     rôle press ≥ 0,25, le meneur reste) forment la MEUTE pendant dur 5,5
+     × axe(pressing, 0,6, 1,4) × workF : le premier est déjà presseur du
+     bloc (i = 0), les autres FERMENT les sorties — chacun sa sortie la
+     plus proche du ballon, au point ferme 0,5 du chemin ballon → sortie
+     (1,5 m côté ballon de la sortie allongeait la tenue du porteur :
+     regain < 5 s 30 → 20 % en compact ; la cage à mi-chemin ferme la
+     ligne en restant près du ballon), burst 'contre-press' pendant elan
+     1 s. À la mort de l'horloge (regain, remise, chasseurs échus) : le
+     RECUL-FREIN, burst 'repli' frein 0,5 s (la loi 221 fait le reste).
+     Le signal t3 d'hier reste (les deux mécanismes coexistent — le
+     retirer perdait 3 points de regain en bloc étiré). Le dépossédé
+     (lossReact) est déporté verbatim dans contrepress.js (match-sim
+     1237 lignes). APRÈS (mêmes 10 graines) : 2,4/2,1/1,8/0,8 chasseurs
+     (compact 2,7/2,4/2,1/0,7 — l'horloge meurt à +8 s), regain < 5 s
+     27 %, < 10 s 51 %. Sans la chaise : 19 chasseurs sur 66 étaient des
+     défenseurs et la bande montait à 13 buts (le dos ouvert) ; avec :
+     68 tirs / 11 buts / 19 fautes / 6 corners. Clause 229 au banc : flux
+     3 × 300 s appariés (meute 2,9/2,5/2,2/0,7 c. 1,3/1,0/0,9/0,8 sans la
+     clé ; ≥ 2,0 à +1 s, +0,6 à +1 et +5 s, ≤ 1,3 à +8 s), la primitive
+     par l'événement (dur 5,5 à l'identité, 7,7 sous gegenpressing, 0
+     meute sans la clé). Épinglés contrePress:false (contrastes d'hier
+     déplacés par la meute) : 167 (p90 10,6 ≥ 10), 128 (5/8 through
+     conservés), 227 (pertes 63 > 0,9 × 54 — la meute fabrique des
+     pertes, c'est son métier), 217 (aucune touche en 900 s : les
+     remises tombent à 8 touches / 50 min — la dette des touches, 14 c.
+     40/90 min réelles, s'aggrave et reste nommée). Jumeau
+     contrePress:false = 228b au bit (3d35e71c25827909 / ee6a622f5d89b0eb).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
