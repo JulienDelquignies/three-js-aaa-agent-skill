@@ -265,7 +265,22 @@ export function relancerGardien(st, gk, cfg, deps) {
   const g = pitch.ownGoal(gk.team);
   const sgn = -g.sign;
   const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
-  const styleSB = st.tactics?.[gk.team]?.cpa?.sortieBut;
+  let styleSB = st.tactics?.[gk.team]?.cpa?.sortieBut;
+  // LE CHOIX SE LIT À LA PRESSION (223b, cfg.relance.pression — brief tactique : court si le premier presseur est
+  // loin (seuil axe style : possession 6 m → direct 14 m), ≤ dans20 adversaires dans les 20 m du ballon et un
+  // appui LIBRE (aucun adversaire à < 4 m) ; sinon long. Mesuré avant : la sortie de balle structurée faisait
+  // jouer court dans la pression — 12 → 19 pertes du gardien/90 min. La tactique explicite garde sa voix ;
+  // 'mixte' ou absente : la pression décide. × (2 − composureF) sur le seuil : le gardien calme attend plus.
+  const PR = st.full && cfg.relance?.pression ? cfg.relance.pression : null;
+  if (PR && (styleSB == null || styleSB === 'mixte')) {
+    const foes = st.players.filter((q) => q.team !== gk.team && !q.keeper && q.down <= 0);
+    const dPress = Math.min(99, ...foes.map((q) => hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2])));
+    const dans20 = foes.filter((q) => hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2]) < 20).length;
+    const libre = mates.some((m) => { const dm = hyp(m.p[0] - gk.p[0], m.p[2] - gk.p[2]); return dm > 4 && dm < (PR.portee ?? 25) && !foes.some((q) => hyp(q.p[0] - m.p[0], q.p[2] - m.p[2]) < 4); });
+    const axeS = (v, lo, hi) => lo + (hi - lo) * (v ?? 0.5);
+    const seuil = axeS(st.tactics?.[gk.team]?.style, PR.presseurPosé ?? 6, PR.presseurDirect ?? 14) * (2 - (gk.skill?.composureF ?? 1));
+    styleSB = dPress >= seuil && dans20 <= (PR.dans20 ?? 3) && libre ? 'court' : 'long';
+  }
   if (styleSB === 'court') {
     // LA MAIN D'ABORD : un coéquipier LIBRE (aucun adversaire à < 4 m) à portée de bras
     const porteeM = 14 * (gk.skill?.throwF ?? 1);

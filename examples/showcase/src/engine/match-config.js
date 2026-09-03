@@ -614,7 +614,7 @@ export const MATCH = {
   // (centraux aux coins de la surface : prof/ecart m, pivot et latéraux en m du but). Absentes : l'hier au bit.
   cpaMontee: { rayon: 35, n: 5, retrait: 19 },   // brief tactique : 5-7 dans la surface (premier poteau ×2, penalty, second poteau, retrait 18-22 m), 2-3 en couverture
   remise: { appuis: 3, court: 6, dedans: 8, arriere: 8 },   // brief : court 4-7 m sur la ligne, soutien 6-10 m derrière, dans le dos 10-15 m (le 4e appui)
-  relance: { prof: -4, ecart: 1, pivot: 22, lateral: 30 },   // brief : centraux y ±14-20 à x 8-14 m au renvoi, sentinelle 16-24 m, latéraux y ±28-33 à x 25-35
+  relance: { prof: -4, ecart: 1, pivot: 22, lateral: 30, pression: { presseurPosé: 6, presseurDirect: 14, dans20: 3, portee: 25 } },   // pression (223b) : le court/long du gardien se lit à la pression (doc keeper.js)   // brief : centraux y ±14-20 à x 8-14 m au renvoi, sentinelle 16-24 m, latéraux y ±28-33 à x 25-35
   // LA GARDE SUIT LA ZONE (222, cfg.garde && st.full — audit aval : le porteur pressé à 2,5 m partout). La
   // distance d'engagement du premier défenseur : loin de mon but 5 m (il ferme les lignes), milieu 3 m, mon
   // tiers au contact (jockey.dist), × axe(pressing) × (2 − aggrF) ; fenêtre de pressing : au contact. Doc match-sim.

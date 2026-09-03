@@ -4952,6 +4952,28 @@ if (__bloc()) {
     return st.players.filter((q) => q.team === 0 && !q.keeper && q.target && hz - Math.abs(q.target[2]) < 12).length;   // les CIBLES (les marcheurs d'hier à 2,6 m/s n'arrivent pas dans la cérémonie de la fixture)
   };
   const T = touche({}), TE = touche({ remise: false });
+  // 223b — le gardien lit la PRESSION : posé, presseur à 4 m → LONG (lofted/longue) ; presseur à 22 m avec un appui libre → COURT
+  const { relancerGardien } = await import('../assets/starter/src/engine/keeper.js');
+  const { simInternals } = await import('../assets/starter/src/engine/rondo-sim.js');
+  const relance = (dPresseur, over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const gk = st.players.find((p) => p.team === 0 && p.keeper), ogx = st.pitch.ownGoal(0).x, sg = -Math.sign(ogx || 1);
+    for (const q of st.players) if (q.team === 1 && !q.keeper) { q.p[0] = ogx + sg * 45; q.p[2] = 20; }
+    const foes = st.players.filter((q) => q.team === 1 && !q.keeper); foes[0].p[0] = ogx + sg * (5 + dPresseur); foes[0].p[2] = 0;
+    const mes = st.players.filter((q) => q.team === 0 && !q.keeper); mes.forEach((q, k) => { q.p[0] = ogx + sg * (14 + 4 * k); q.p[2] = (k % 2 ? 1 : -1) * (10 + k); });
+    gk.p[0] = ogx + sg * 5; gk.p[2] = 0;
+    st.ball.restart([gk.p[0] + sg * 0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(gk.id);
+    st.possession = { team: 0, carrier: gk.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0; gk._mains = true;
+    const ev0 = st.events.length;
+    relancerGardien(st, gk, cfg, { beginPass: simInternals.beginPass });
+    for (let i = 0; i < 90 && !st.events.slice(ev0).some((e) => e.type === 'pass' || e.type === 'relance-main' || e.type === 'clearance'); i++) matchStep(st, 1 / 60, cfg);   // le ballon part au CONTACT du geste (windup → pass)
+    const pass = st.events.slice(ev0).find((e) => e.type === 'pass' || e.type === 'relance-main' || e.type === 'clearance');
+    return pass ? (pass.type === 'relance-main' || (pass.type === 'pass' && pass.style === 'ground') ? 'court' : 'long') : 'aucune';
+  };
+  const pres = relance(4, {}), libre = relance(22, {});
+  ok(`lot 223b — LE GARDIEN LIT LA PRESSION (presseur à 4 m : ${pres} = long ; presseur à 22 m et appui libre : ${libre} = court — le flux : 19 pertes/90 min avec la sortie structurée jouée court dans la pression)`,
+    pres === 'long' && libre === 'court');
   ok(`lot 226 — LA TOUCHE N'AIMANTE QUE SES APPUIS (vivant : ${T} coéquipiers visant à < 12 m de la ligne ≤ 6 (lanceur, appuis, les deux larges de la formation) ; épinglé : ${TE} ≥ 8 — l'aimant d'hier ; le flux : 7 → 3 joueurs à < 12 m, réel 4-5)`,
     T <= 6 && TE >= 8);
 }

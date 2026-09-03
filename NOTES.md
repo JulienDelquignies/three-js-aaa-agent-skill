@@ -7635,8 +7635,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      30/±28) ; coup franc à 25 m : 3 monteurs dans la surface à la prise,
      marqués à 0,9 m, mur 2 ; `placement` émis à chaque prise (corner :
      5 attaquants / 7 défenseurs). Jumeau (quatre clés dont placement) =
-     222 au bit. Monde 226 : seed 3 715202860ebe2a04, seed 7
-     c1bde06e0d0119e6.
+     222 au bit. Puis la sonde longue (12 × 10 min) : coup franc proche 4
+     attaquants dans la surface en médiane (4/8 avec ≥ 3), gardien 36
+     passes/90 min MAIS 19 pertes (12 avant) : la sortie structurée
+     jouait court DANS la pression. 223b (relance.pression) : le court/
+     long se lit à la pression — premier presseur au-delà d'un seuil (axe
+     style : possession 6 m → direct 14 m, × (2 − composureF)), ≤ 3
+     adversaires dans les 20 m, un appui libre à < 25 m ; sinon long ; la
+     tactique explicite 'court'/'long' garde sa voix. Leçon d'empreinte :
+     une référence prise avant une v2 du même lot est périmée — re-mesurer
+     à chaque sous-lot. Monde 226b : seed 3 c0afdb00403e9f69, seed 7
+     80193a4e239c1b12.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
