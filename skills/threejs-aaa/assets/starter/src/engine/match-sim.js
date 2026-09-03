@@ -5,6 +5,7 @@ import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
 import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js';
+import { affecterMarquage } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
@@ -1061,9 +1062,10 @@ function assignMatchJobs(st, cfg) {
       }
       // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT, à-coups (0,5 s/0,8 m) ; ON MARQUE LE DANGER SEULEMENT (51b) — sinon le bloc couvre. Réduit : hier.
       mTri.length = 0;                                             // copie depuis `marks` : le départ du tri stable reste l'ordre d'hier
+      if (st.full && cfg.marquageSurface) affecterMarquage(st, byDist, marks, defGoal, d2);   // L'AFFECTATION HOMME PAR HOMME (225, doc marquage.js)
       for (const a of marks) { a._dMark = d2(a.p, p.p); mTri.push(a); } mTri.sort((x, y) => x._dMark - y._dMark);
       // …UN MARQUEUR PAR HOMME (lot 72 : trois voisins élisaient le même homme, tas de 4-5 corps) : en 11c11 le surplus rejoint son poste (!m) ; le réduit garde le doublement.
-      const m = i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
+      const m = st.full && cfg.marquageSurface ? (st._bAssign?.get(p.id) ?? null) : i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (60)
         const wM = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]];

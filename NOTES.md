@@ -7667,6 +7667,24 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      validée ; chunk Rondo-BIf-rDbv.js, cpaMontee grepable à l'alias). En
      ligne : 221 → 226b — le repli, la garde, la sortie de balle, la
      montée sur coup franc, la touche à appuis, l'événement placement.
+- 274: L'AFFECTATION HOMME PAR HOMME (225, cfg.marquageSurface,
+     marquage.js — constat 3 de l'aval : « un attaquant sur dix seul dans
+     la surface »). L'utilisateur a mis deux livres en texte dans un dépôt
+     (« Comment regarder un match de foot », « Comment gagner un match de
+     foot » — Cahiers du football, Cosmidis et al.) : deux agents les
+     digèrent (une première tentative est tombée en 529). Sondé (3 × 10
+     min, 448 observations) : attaquant dans la surface → premier
+     défenseur p50 3,5 m, 59 % LIBRES (> 3 m), et pourtant 8 marqueurs
+     actifs et 5 défenseurs dans la surface : le job `mark` le plus proche
+     n'était pas SON marqueur. La cause : chaque marqueur prenait le
+     (i−2)-ième attaquant le plus proche DE LUI (lot 72 : « un marqueur
+     par homme » supposait des tris identiques) — deux marqueurs sur le
+     même homme, un orphelin. La loi : une affectation par image — le
+     DANGER d'abord (l'attaquant le plus près de mon but), pour chacun le
+     marqueur libre le plus proche × (2 − markF), chaque homme une fois.
+     Mesuré : libres 59 → 34 %, p50 3,5 → 2,2 m (réel 1-2), audit 4,4 →
+     3,4 m. Jumeau = 226b au bit. Monde 225 : seed 3 836702b95cca24d9,
+     seed 7 11a33347a3d6252d.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

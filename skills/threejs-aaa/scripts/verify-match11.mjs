@@ -4978,5 +4978,33 @@ if (__bloc()) {
     T <= 6 && TE >= 8);
 }
 
+// ---- lot 225 : L'AFFECTATION HOMME PAR HOMME (audit aval, constat 3 : un attaquant sur dix seul dans la surface)
+if (__bloc()) {
+  // Le juge au MÉCANISME : trois attaquants dans ma surface (ballon large dans mon tiers), mes marqueurs posés de
+  // façon que le tri PERSONNEL d'hier en mette deux sur le même homme ; l'affectation couvre les trois (chaque
+  // homme un marqueur à ≤ 3 m après 1 s), l'épinglé laisse un orphelin (> 3 m). cfg.assignJobs seul, puis 1 s.
+  const couverture = (over) => {
+    const st = makeMatch({ full: true, seed: 5 });
+    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const ogx = st.pitch.ownGoal(0).x, sg = -Math.sign(ogx || 1);   // l'équipe 0 défend son but en ogx ; l'équipe 1 attaque
+    const c = st.players.find((p) => p.team === 1 && p.post === 6);
+    for (const q of st.players) if (q.team === 1 && !q.keeper && q.id !== c.id) { q.p[0] = ogx + sg * 45; q.p[2] = 20; }
+    const atts = st.players.filter((p) => p.team === 1 && !p.keeper && p.id !== c.id).slice(0, 3);
+    atts[0].p[0] = ogx + sg * 8; atts[0].p[2] = -3; atts[1].p[0] = ogx + sg * 11; atts[1].p[2] = 2; atts[2].p[0] = ogx + sg * 14; atts[2].p[2] = 6;   // trois hommes proches les uns des autres
+    c.p[0] = ogx + sg * 22; c.p[2] = 28;   // le porteur large, dans mon tiers
+    const mes = st.players.filter((p) => p.team === 0 && !p.keeper);
+    mes.forEach((q, k) => { q.p[0] = ogx + sg * (4 + k * 1.5); q.p[2] = -12 + k * 2.5; q._markT = null; q._pace = null; });   // mes corps en diagonale serrée : les distances personnelles trient différemment (géométrie balayée : le tri d'hier n'en couvre qu'un)
+    st.ball.restart([c.p[0] + sg * 0.3, 0.11, c.p[2]], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 1, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1;
+    st._press = null; st._pressCd = { 0: st.t + 99, 1: st.t + 99 }; st._possChangeAt = st.t - 20; st._lossAt = {};
+    for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
+    const dists = atts.map((a) => Math.min(...mes.map((q) => Math.hypot(q.p[0] - a.p[0], q.p[2] - a.p[2]))));
+    return { couverts: dists.filter((d) => d <= 3.2).length, max: Math.max(...dists) };
+  };
+  const V = couverture({}), E = couverture({ marquageSurface: false });
+  ok(`lot 225 — L'AFFECTATION HOMME PAR HOMME (vivant : ${V.couverts} = 3 hommes couverts à ≤ 3,2 m, le plus loin à ${V.max.toFixed(1)} m ; épinglé : ${E.couverts} ≤ 2 — l'orphelin du tri personnel d'hier ; le flux : libres dans la surface 59 → 34 %, p50 3,5 → 2,2 m)`,
+    V.couverts === 3 && E.couverts <= 2);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
