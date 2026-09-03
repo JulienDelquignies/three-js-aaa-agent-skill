@@ -4809,12 +4809,14 @@ if (__bloc()) {
     Math.abs(tLance - 2) < 1e-6 && tArret > tLance + 0.4 && Math.abs(tTravers - tArret) < 1e-6);
   // (b) le rendez-vous DANS le terrain : un ballon roulé vers la ligne de touche (hz 34), le receveur à
   // 6 m de côté — le point élu est dedans (|z| ≤ 33,5) et en amont du point le plus tôt « atteignable »
-  const g = kick([0, 0.11, 20], { speed: 14, dirYaw: Math.PI / 2, elevation: 0.02 });
+  const g = kick([0, 0.11, 20], { speed: 9, dirYaw: Math.PI / 2, elevation: 0.02 });
   const chemin = predictPath(g, { dt: 1 / 30, maxT: 4 });
-  const rv = rendezVous(chemin, [6, 0, 26], [0, 0], { accel: 7.5, top: 6.4, reach: 0.85, reaction: 0, marge: 0.2, maxHeight: 1.2, inside: [52.5, 34], vPrise: 6.5 });
+  const rv = rendezVous(chemin, [1.5, 0, 27], [0, 0], { accel: 7.5, top: 6.4, reach: 0.85, reaction: 0, marge: 0.2, maxHeight: 1.2, inside: [52.5, 34], vPrise: 6.5 });
   const dehors = chemin.some((s) => Math.abs(s.p[2]) > 34);
-  ok(`lot 220 — LE BALLON QUI FRÔLE LA LIGNE SE COUPE EN AMONT (vol qui SORT : ${dehors} ; rendez-vous z ${rv?.p[2].toFixed(1)} ≤ 33,5 dedans, marge ${rv?.slack.toFixed(2)} s ≥ 0)`,
-    dehors && !!rv && Math.abs(rv.p[2]) <= 33.5 && rv.slack >= 0);
+  // …et le coureur qui NE PEUT PAS couper avant la ligne ne reçoit AUCUN point (il ne court pas dehors)
+  const loin = rendezVous(chemin, [12, 0, 22], [0, 0], { accel: 7.5, top: 6.4, reach: 0.85, reaction: 0, marge: 0.2, maxHeight: 1.2, inside: [52.5, 34], vPrise: 6.5 });
+  ok(`lot 220 — LE BALLON QUI FRÔLE LA LIGNE SE COUPE EN AMONT (vol qui SORT : ${dehors} ; rendez-vous z ${rv?.p[2].toFixed(1)} ≤ 33,5 dedans, marge ${rv?.slack.toFixed(2)} s ≥ 0 ; le coureur trop loin : ${loin === null ? 'aucun point — il ne sort pas' : 'point z ' + loin.p[2].toFixed(1)})`,
+    dehors && !!rv && Math.abs(rv.p[2]) <= 33.5 && rv.slack >= 0 && loin === null);
   // (c) le through arrive QUAND le coureur arrive : passeur posé, coureur en appel à 7,6 m/s ; vivant
   // |vol − ETA| ≤ 0,5 s ; hier (tranchant:false) le coureur attendait ≥ 0,8 s
   const { choosePass } = await import('../assets/starter/src/engine/rondo.js');
