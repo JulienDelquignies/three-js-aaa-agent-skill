@@ -731,6 +731,8 @@ export const MATCH = {
                           // fin, au bit près — le chrono est une CONFIGURATION, pas une loi.
                           // V1 : pas d'échange de camps ni de temps additionnel (dettes nommées).
   menace: { tir: 1, centre: 1, passe: 1, conduite: 1, grise: 1.35, muteD: 10, mur: 0.35 },
+  pasChasse: { part: 1, diveTime: 0.65 },
+  claquette: { devant: 0.5, cote: 5, haut: 1.5 },
   qualiteTir: { seuilBoite: 0.14, seuilLoin: 0.05, plancher: 0.15, base: 0.36, efold: 8, pres: 2, presF: 0.6, retard: 0.8, avance: 1.15, lobOut: 4 },   // LA ZONE DE VÉRITÉ (232, menace.js) : la qualité attendue du tir (distance, angle, pression, mur) contre un seuil (seuilBoite dans la surface, seuilLoin hors — le brief 2.10) × axe style ÷ rôle arbitre.tir ÷ finition × composureF × score ; sous le seuil, les planchers franc/tenté s'étouffent (plancher) et la passe reprend la main. null : l'arbitre d'hier (63 tirs / 90 min)  // mur (126) : le tenté décroît avec la densité adverse du cône — le mur se contourne
                           // …grise (lot 92) : la portée de tir × ce facteur = la ZONE GRISE où
                           // le tir existe dégressif, pondéré FINISHING (l'attribut, pas un mur —

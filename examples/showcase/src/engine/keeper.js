@@ -237,7 +237,19 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
   // plongeait comme un gardien posé. Le SET est LA base du métier.
   const setF = K.appuis && (K.vGk ?? 0) > 2.2 ? 1.35 : 1;
   if (!cross || speed < 6 || shotAge < K.reflex * (floaty ? (K.floatRead ?? 2.4) : 1) * setF) return { mode: 'poste', spot };
-  if (cross.t > K.diveTime) return { mode: 'poste', spot };                    // trop tôt : se replacer d'abord
+  // …et sous le pas chassé le plongeon se décide PLUS TARD (pasChasse.diveTime 0,65 : le contact du geste est à 0,55 s) — à 0,9 s le gardien se commettait tôt et ne glissait que sur les vols > 1,02 s
+  const diveT = K.pasChasse ? (K.pasChasse.diveTime ?? 0.65) : K.diveTime;
+  if (cross.t > diveT) {
+    // LE PAS CHASSÉ (232b, K.pasChasse — le métier : le tir est parti et arrive dans plus de diveTime ; le gardien ne
+    // se replace pas à son poste de la bissectrice, il GLISSE vers la LIGNE DU TIR (le point de passage) et plonge
+    // quand le vol entre dans le délai. Mesuré avant : le point visé à 3,7-5,6 m du gardien (p50 — le tireur vise le
+    // coin loin de lui), 'battu' sans plongeon pour 6 buts sur 13, 5 arrêts pour 15 buts). Absente : le poste d'hier.
+    if (K.pasChasse) {
+      const zc = Math.max(-pitch.goalHalf + 0.3, Math.min(pitch.goalHalf - 0.3, cross.z));
+      return { mode: 'poste', spot: { x: spot.x, z: me[2] + (zc - me[2]) * (K.pasChasse.part ?? 1), depth: spot.depth }, pasChasse: true };
+    }
+    return { mode: 'poste', spot };                    // trop tôt : se replacer d'abord
+  }
   if (Math.abs(cross.z) > pitch.goalHalf + 0.6 || cross.y > pitch.goalH + 0.4) return { mode: 'poste', spot }; // non cadré
   const dz = cross.z - me[2];
   if (Math.abs(dz) <= K.gatherHalf) return { mode: 'gather', spot: { x: spot.x, z: cross.z, depth: spot.depth } };

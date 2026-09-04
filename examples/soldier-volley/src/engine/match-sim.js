@@ -352,6 +352,7 @@ function assignMatchJobs(st, cfg) {
         libero: st.full && cfg.gkAuDevant?.soutien && cfg.libero ? { ...cfg.libero, soutien: cfg.gkAuDevant.soutien } : cfg.libero,   // le soutien de relance (190) voyage par gkAuDevant — un seul épinglage
         liberoGate: st.restart ? 0 : st.possession.team === gk.team ? 1 : hyp(st.ball.p[0] - pitch.ownGoal(gk.team).x, st.ball.p[2]) > (cfg.libero?.tient ?? 48) ? 0.6 : 0 };
     }
+    if (st.full && cfg.pasChasse && st.pass && st.pass.to === -2) K = { ...K, pasChasse: cfg.pasChasse };
     // LE CÔNE DE SORTIE (lot 104, cfg.sortie1v1 && st.full) : K.cone + la couverture goal-side mesurée (keeper.js)
     if (st.full && cfg.sortie1v1) K = { ...K, cone: cfg.sortie1v1, oooF: gk.skill?.oooF ?? 1, couvertD: keeperCouvert(st.players, gk, pitch.ownGoal(gk.team), st.ball.p) };   // …oooF (163) : la note oneOnOnes fait les portes
     // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté ».
@@ -1168,7 +1169,11 @@ function onDive(st, gk, cfg) {
     // LA CLAQUETTE EN CORNER (lot 101 — mesuré : 1 corner/8 matchs) : le tir FORT au bout de l'envergure OU trop vif pour les gants se DÉVIE derrière la ligne (« en corner ! », outRule juge). Clé absente : hier au bit.
     if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) / handF && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16) * handF))
       st.ball.impulse([-st.ball.v[0] * 0.45, -st.ball.v[1] * 0.4 + 2.2, -st.ball.v[2] * 0.3 + side * 6]);
-    else st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
+    else if (st.full && cfg.claquette) {
+      // LA CLAQUETTE ÉCARTE (232b, cfg.claquette — le métier : la parade à deux mains AMORTIT (× devant le long du tir) et ÉCARTE (cote m/s côté gardien, haut m/s) ; hier : renvoi à 1,4 × la vitesse du tir dans l'axe, le canon vers les attaquants)
+      const C = cfg.claquette, handC = gk.skill?.handF ?? 1;
+      st.ball.impulse([-st.ball.v[0] * (C.devant ?? 0.5) / handC, -st.ball.v[1] * 0.6 + (C.haut ?? 1.5), -st.ball.v[2] * 0.5 + side * (C.cote ?? 5) * handC]);
+    } else st.ball.impulse([-st.ball.v[0] * 1.4, -st.ball.v[1] * 0.6 + 1.5, -st.ball.v[2] * 0.6 + side * 3.5]);
     st.lastTouch = gk.team; st.lastPasser = gk.id;   // …ET LE GANT EST UN TOUCHER (195 — Loi 17 : la l.1160 réécrivait lastTouch au TIREUR chaque frame de vol, la claquette sortie ligne de but donnait RENVOI au lieu de CORNER, 2 volés/12×300 s filmés)
     // APRÈS LE GANT, LE BALLON EST NEUF : st.pass gardait l'origine du tir — la porte anti-auto-interception gelait tout (111 s mesuré).
     st.pass = null;

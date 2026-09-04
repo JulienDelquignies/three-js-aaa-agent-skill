@@ -8006,6 +8006,46 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Rondo-Bnu-wF1R.js, capture playmode avant deploy). Monde 232 : seed 3
      173fb72c4182e7db (inchangée : aucun tir dans sa fenêtre), seed 7
      277cbf9e260012ac.
+- 283: LE PAS CHASSÉ DU GARDIEN ET LA CLAQUETTE QUI ÉCARTE (232b,
+     cfg.pasChasse / cfg.claquette — keeper.js keeperDecide, match-sim
+     onDive). La dette nommée au 232 : la conversion à bout portant.
+     AVANT (film-cadre / film-arret, 24 × 300 s) : 35 tirs, 15 buts (43 %),
+     5 arrêts, 2 hors cadre — 25 % d'arrêts sur cadrés (réel 65-72).
+     Diagnostic tir par tir : le tireur vise le coin LOIN du gardien
+     (point visé à 3,7-5,6 m de lui, p50), le gardien posé sur sa
+     bissectrice à 2-4 m de la ligne est hors de sa portée de plongeon
+     (2,95 m) → « battu » sans plongeon pour 6 buts sur 13 ; et sa lecture
+     'poste' (vol > diveTime 0,9 s) le renvoyait à son poste d'origine au
+     lieu de la ligne du tir. LA LOI (a) : sur un TIR en vol (st.pass.to
+     === −2 — un centre n'est pas un tir : gardé sur tout vol, le gardien
+     quittait son poste sur les centres, 26 → 49 tirs / 100 min) qui
+     arrive dans plus de pasChasse.diveTime 0,65 s (le contact du geste
+     est à 0,55 s ; à 0,9 il se commettait tôt et ne glissait que sur les
+     vols > 1,02 s), le poste devient le point de passage (part 1) : le
+     gardien GLISSE vers la ligne du tir puis plonge. (b) La claquette à
+     deux mains AMORTIT et ÉCARTE (devant × 0,5 ÷ handF, cote 5 m/s ×
+     handF, haut 1,5) au lieu de renvoyer le tir à 1,4 × dans l'axe (le
+     canon vers les attaquants) — rare en flux (les tirs ≥ 16 m/s partent
+     déjà en corner, lot 101), doctrine du métier, jumeau propre. ESSAYÉ ET
+     RETIRÉ : « le gardien se fait grand » (la prise-au-corps élargie sur
+     le vol court) — aucun effet mesurable (mêmes 40 tirs, 9 arrêts, 13
+     buts, même bande) : un placebo ne se livre pas. APRÈS (24 graines) :
+     9 arrêts pour 13 buts, 41 % d'arrêts sur cadrés (25 → 41 ; les vols de
+     0,45-0,7 s : 2/4 → 4/4 arrêts/buts, > 0,7 s : 1/6 → 4/6). BANDE : 31
+     tirs / 11 buts / 19 fautes / 6 corners par 100 min (232 : 26 / 10) —
+     les buts ne bougent pas : ils sont à 3-9 m (pas de temps de plongeon)
+     et de la tête (4 sur 11). Dettes nommées : la précision à bout
+     portant (la dispersion 145 à < 11 m ne manque presque jamais un but
+     de 7,32 m : 5 % hors cadre, réel 25-35), les têtes sur centre, le
+     placement du gardien face au tireur excentré. Garde-fou (3 graines) :
+     appels profonds 90 c. 96, passes 257 c. 295 (−13 %), profondes 17 c.
+     10, pertes 375 c. 372. Clause 232b : primitive (vol 1,2 s → poste sur
+     la ligne du tir ; 0,7 s → encore ; 0,6 s → plongeon/battu ; clé
+     absente → le poste d'hier) + flux 6 graines (taux d'arrêt ≥ sans +
+     0,08). Épinglés pasChasse:false : 149, 190 (+ claquette:false) ; les
+     lois éteintes 230/231 figées (pasChasse, claquette, qualiteTir:false).
+     Empreinte inchangée (173fb72c4182e7db / 277cbf9e260012ac : aucun tir
+     dans la fenêtre des graines 3/7 — la loi ne vit que sur un tir).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
