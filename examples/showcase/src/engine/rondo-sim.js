@@ -825,7 +825,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const relaisChaud = st.full && cfg.tenueCalme && st.players.some((q) => q.team === c.team && q.id !== c.id && (q._troisT ?? -1) > st.t);
     const calm = foeBody > cfg.calmFoe && !relaisChaud;
     // …et beginPass lit CE holdMin-là (la porte 'timing') : au calme la fenêtre s'étire à 0,8-1,0 s, pressé elle retombe au holdMin d'origine — fixer puis donner.
-    st._holdMin = calm ? Math.min(st.full && cfg.tenueCalme ? (cfg.tenueCalme.plafond ?? 2.5) : 1.0, st._calmHold) : cfg.holdMin;   // (211) le plafond du calme en clé — 1,0 d'hier sans elle
+    st._holdMin = (calm ? Math.min(st.full && cfg.tenueCalme ? (cfg.tenueCalme.plafond ?? 2.5) : 1.0, st._calmHold) : cfg.holdMin) * (st.full && cfg.tempoAxe !== false ? axeTac(tacDe(st, c.team).tempo, 1.4, 0.6) : 1);   // (235) le TEMPO est un axe : posé 0 → × 1,4, vif 1 → × 0,6, identité 0,5 (la convention de la barre calme 164 et de la tenue calme 211)   // (211) le plafond du calme en clé — 1,0 d'hier sans elle
     // ON NE PASSE PAS UN BALLON QU'ON EST ENCORE EN TRAIN DE POSER : pas d'engagement avant la fin
     // de la fenêtre du contrôle + settleExtra (70 % des contrôles étaient refrappés avant la fin du
     // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.
@@ -934,7 +934,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // pas à l'image de la prise — la course au ballon libre fabriquait un ping-pong de
         // récupérations-éclair (23 passes/min mesurées, la bande futsal s'arrête à 20). L'appel
         // en rupture (runnerCall) reste dispensé : servir une course EST une première touche.
-        const heldEnough = (!calm || st.hold >= st._calmHold) && st.hold >= (cfg.settleMin ?? 0);
+        const heldEnough = (!calm || st.hold >= st._calmHold) && st.hold >= (cfg.settleMin ?? 0) * (st.full && cfg.tempoAxe !== false ? axeTac(tacDe(st, c.team).tempo, 1.4, 0.6) : 1);   // (235) le dompter suit le tempo
         // L'APPEL CASSE LA TENUE : au tempo posé, les tenues (1,5-2,5 s) et les courses (0,7-1,1 s)
         // étaient désynchronisées — le temps d'avoir « assez tenu », la course était finie (3
         // appels servis sur 41 mesurés). Au vrai foot, la course DÉCLENCHE le ballon : un coureur

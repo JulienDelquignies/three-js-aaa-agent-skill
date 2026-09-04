@@ -8155,6 +8155,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      les douze annexes vertes (sync : deux imports fondus, match-sim
      1249) ; déployé (chunk Rondo-DR6Ko3KQ.js, capture playmode avant
      deploy — la ligne rouge visiblement un cran plus haute).
+- 287: LE TEMPO EST UN AXE (235, tactics.js — brief 2.9 : tenue 0,8-1,4 s
+     en jeu court, 1,8-2,6 en jeu lent, orthogonal au style court/long).
+     TROUVÉ : deux lois lisaient déjà `tac.tempo` — la barre calme
+     d'adoption (164 : × axe(1,3, 0,7)) et la tenue calme `_calmHold`
+     (211 : × axe(1,5, 0,5)) — mais resoudreTactique ne copiait pas
+     l'axe : `makeMatch({ tactics: [{ tempo: 0 }] })` rendait undefined →
+     0,5, l'axe n'atteignait jamais les lois (un axe mort depuis le 149).
+     LA LOI : `tempo` résolu (défaut 0,5, l'identité), documenté dans
+     l'en-tête des axes — CONVENTION de ces lois : 0 posé, 1 vif (ma
+     première greffe l'avait à l'envers, le flux l'a dit : tempo 0 tenait
+     3,17 s, tempo 1 1,23) ; il porte de plus la tenue minimale
+     conditionnelle (st._holdMin, rondo-sim 828) et le dompter du ballon
+     récupéré (settleMin, 937) × axe(tempo, 1,4, 0,6) — la première paire
+     (0,6 ; 1,5) avait 1,05 pour milieu : l'identité au bit mourait,
+     refondue — et la probabilité de une-touche (premiere-intention 50)
+     × axe(0,6, 1,4) ; gate cfg.tempoAxe (false : les trois greffes
+     inertes ; l'axe résolu reste). MESURÉ (film-tempo, 6 × 300 s, équipe
+     tempo 0 c. équipe tempo 1) : tenue p50 1,27 c. 1,08 s (la médiane est
+     faite d'exécution : dompter + armé, elle ne lit pas l'axe), p90 1,97
+     c. 2,47 (la queue, la tenue calme, s'ordonne) ; passes par minute de
+     possession 19,1 c. 19,9 ; courtes 62 c. 69 % — sous le bruit à 6
+     graines. Ce qui est prouvé au banc : le mécanisme (la tenue calme
+     échantillonnée, tempo 0 ≤ 0,45 × tempo 1 ; l'identité à ± 15 %) et
+     l'identité au bit (empreinte 236 avec et sans la clé). Le tempo comme
+     réalisme (tenue médiane 0,8-1,4 / 1,8-2,6) reste une dette : la
+     médiane demande une cadence de DÉCISION (le porteur qui attend son
+     moment), pas des planchers. Annexe tactics 11 ✓.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -14,6 +14,10 @@
 //                          trois signaux — dos-au-but, retrait, contre-press)
 //   style        [0..1] — possession ↔ direct : les poids de l'arbitre de menace par ÉQUIPE
 //                          et la cadence des appels profonds
+//   tempo        [0..1] — posé ↔ vif (149/164/211, résolu au 235) : la barre calme d'adoption × 1,3…0,7, la
+//                          tenue calme × 1,5…0,5, la tenue minimale et le dompter × 1,4…0,6, la une-touche
+//                          × 0,6…1,4 — orthogonal au style (court/long) : un tiki-taka est court ET vif,
+//                          un bloc bas patient est court ET posé
 //   transition   [0..1] — conservation ↔ contre : la verticalité du regain (relaxation des
 //                          appels pendant la transition offensive, lot 14)
 //   marquage     [0..1] — zone ↔ homme-à-homme (lot 96, cfg.zone) : jusqu'où on SUIT son
@@ -73,6 +77,9 @@ export function resoudreTactique(t) {
     compacite: base.compacite ?? 0.5,
     // LE RELATIONNEL (lot 83) : l'espacement des soutiens est un CHOIX de tactique — 0,5 = identité.
     relation: base.relation ?? 0.5,
+    // LE TEMPO (posé 0 ↔ vif 1 — lu par la barre calme 164 et la tenue calme 211 depuis toujours, jamais résolu avant
+    // le 235 ; la tenue minimale et le dompter × axe(1,4, 0,6), la une-touche × axe(0,6, 1,4)) — 0,5 = l'identité au bit.
+    tempo: base.tempo ?? 0.5,
     // ZONE ↔ HOMME (lot 96) : le rayon de suivi du marquage et la pince du côté faible — 0,5 = le
     // ballside standard du moteur (cfg.zone:false rend le marquage intégral d'hier, au bit).
     marquage: base.marquage ?? 0.5,

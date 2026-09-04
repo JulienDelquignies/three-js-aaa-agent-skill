@@ -47,7 +47,7 @@ export function uneTouche(st, p, cfg) {
   if (!veut) refus('ut-envie'); else if (arrU > (UT.vmax ?? 9.5)) refus('ut-vitesse'); else if (st.ball.p[1] >= 0.5) refus('ut-haut');
   if (veut && arrU <= (UT.vmax ?? 9.5)
     && st.ball.p[1] < 0.5
-    && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * Math.min(1.2, p.skill?.controlF ?? 1) * (relais3 ? (UT.murF ?? 1) : 1) * (V && (p.role?.tenue ?? 0.5) !== 0.5 ? axe(p.role.tenue, 1.4, 0.6) : 1)) {   // …ET LE RÔLE TENUE DONNE LA CADENCE (216 : le relayeur (0) joue vite, le meneur (1) garde — identité 0,5)   // …ET LE MUR REND (209, UT.murF — dette 196 : le lanceur d'un une-deux COURT, son mur se posait ; 5 retours/22. Le relais chaud pousse la une-touche au tirage FINAL, pas seulement au calme. Clé absente : ×1, l'hier)
+    && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * (st.full && cfg.tempoAxe !== false ? axe(tac(st, p.team).tempo, 0.6, 1.4) : 1) * Math.min(1.2, p.skill?.controlF ?? 1) * (relais3 ? (UT.murF ?? 1) : 1) * (V && (p.role?.tenue ?? 0.5) !== 0.5 ? axe(p.role.tenue, 1.4, 0.6) : 1)) {   // …ET LE RÔLE TENUE DONNE LA CADENCE (216 : le relayeur (0) joue vite, le meneur (1) garde — identité 0,5)   // …ET LE MUR REND (209, UT.murF — dette 196 : le lanceur d'un une-deux COURT, son mur se posait ; 5 retours/22. Le relais chaud pousse la une-touche au tirage FINAL, pas seulement au calme. Clé absente : ×1, l'hier)
     const blockers = st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0).map((q) => q.p);
     // LA UNE-TOUCHE SE GAGNE, ELLE NE S'ESPÈRE PAS (lot 131, UT.dose — mesuré avant : 116 s
     // d'errance / 1200 s après les une-touche, p50 2,7 s ; le cap de layoff (4-6 m/s à

@@ -5288,5 +5288,28 @@ if (__bloc()) {
     V.c <= E.c - 0.12 && V.d >= E.d + 0.12 && V.n >= 150);
 }
 
+if (__bloc()) {
+  // LE TEMPO EST UN AXE (235, tactics.js — brief 2.9 : tenue 0,8-1,4 s en jeu court, 1,8-2,6 en jeu lent). Deux lois
+  // lisaient déjà `tac.tempo` (la barre calme 164, la tenue calme 211) mais resoudreTactique ne le copiait pas : l'axe
+  // n'atteignait jamais les lois. Désormais résolu (défaut 0,5, l'identité ; convention de ces lois : 0 posé, 1 vif), il
+  // porte aussi la tenue minimale et le dompter (× axe(1,4, 0,6)) et la une-touche (× axe(0,6, 1,4)). (a) La primitive :
+  // resoudreTactique({ tempo: 0 }).tempo = 0, défaut 0,5, preset 'equilibre' 0,5 ; axe(0,5, 0,6, 1,4) = 1 exactement.
+  // (b) Le flux (3 × 300 s, équipe 0 tempo 0 posé c. équipe 1 tempo 1 vif) : la tenue calme `_calmHold` échantillonnée à
+  // chaque prise — p50 vif ≤ 0,45 × p50 posé (la loi : × 0,5 c. × 1,5) ; à l'identité, les deux équipes à ± 15 %.
+  const { resoudreTactique, axe } = await import('../assets/starter/src/engine/tactics.js');
+  const r0 = resoudreTactique({ tempo: 0 }), rD = resoudreTactique(), rE = resoudreTactique('equilibre');
+  ok(`lot 235 — LE TEMPO EST UN AXE (résolu : tempo 0 → ${r0.tempo}, défaut → ${rD.tempo}, equilibre → ${rE.tempo} ; axe(0,5, 0,6, 1,4) = ${axe(0.5, 0.6, 1.4)}, axe(0,5, 1,4, 0,6) = ${axe(0.5, 1.4, 0.6)} — l'identité au bit)`,
+    r0.tempo === 0 && rD.tempo === 0.5 && rE.tempo === 0.5 && axe(0.5, 0.6, 1.4) === 1 && axe(0.5, 1.4, 0.6) === 1);
+  const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
+  const flux = (tactics) => { const cfg = matchCfg({ shotRange: 20 }); const H = [[], []];
+    for (const seed of [3, 5, 7]) { const st = makeMatch({ full: true, seed, tactics }); let car = -1;
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const c = st.possession.carrier;
+        if (c !== car && c >= 0 && st._calmHold != null) { const p = st.players[c]; if (p && !p.keeper) H[p.team].push(st._calmHold); } car = c; } }
+    return { r: med(H[0]), l: med(H[1]), n: H[0].length + H[1].length }; };
+  const V = flux([{ tempo: 0 }, { tempo: 1 }]), E = flux(null);
+  ok(`…et le FLUX (3 × 300 s) : tenue calme p50 — vif (tempo 1) ${V.l.toFixed(2)} s ≤ 0,45 × posé (tempo 0) ${V.r.toFixed(2)} (la loi ×0,5 c. ×1,5) ; identité ${E.r.toFixed(2)} / ${E.l.toFixed(2)} à ± 15 % (${V.n} prises)`,
+    V.l <= 0.45 * V.r && Math.abs(E.r - E.l) <= 0.15 * Math.max(E.r, E.l) && V.n >= 200);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
