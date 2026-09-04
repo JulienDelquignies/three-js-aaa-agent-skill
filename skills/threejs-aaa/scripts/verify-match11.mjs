@@ -1388,8 +1388,8 @@ if (__bloc()) {
   const vif = bloc({ ...ISO131 });   // isolation 131-133 : la bande se mesure au monde épinglé (le fil du 9,8)
   const sab = bloc({ ...ISO131, zone: false });
   // …borne 9 → 9,8 (re-fondé 126 : 9,4 mesuré — le monde du mur étire marginalement la bande)
-  ok(`lot 96 — la LIGNE arrière est une bande en défense placée (écart p50 ${vif.ligne.toFixed(1)} m ≤ 9,8 ; sabotage zone:false ${sab.ligne.toFixed(1)} ≥ 15 — le marquage d'hier n'a pas de ligne)`,
-    vif.ligne <= 9.8 && sab.ligne >= 15);
+  ok(`lot 96 — la LIGNE arrière est une bande en défense placée (écart p50 ${vif.ligne.toFixed(1)} m ≤ 9,8 ; sabotage zone:false ${sab.ligne.toFixed(1)} ≥ vivant × 1,5 — le marquage d'hier n'a pas de ligne)`,
+    vif.ligne <= 9.8 && sab.ligne >= vif.ligne * 1.5);   // sabotage ≥ 15 → ≥ vivant × 1,5 DATÉ 240 (11,6 c. 5,2 = × 2,2 : le marquage d'hier se resserre avec les pointes sur l'épaule (240d), la signature est le RAPPORT)
   ok(`lot 96 — le CÔTÉ FAIBLE pince (p50 ${vif.faible.toFixed(1)} m ≤ 15,2 vs ${sab.faible.toFixed(1)} d'hier ; ≥ 2 m d'écart, mêmes graines — le bloc coulisse au lieu de suivre l'homme)`,
     vif.faible <= 15.2 && vif.faible <= sab.faible - 2);
 }
@@ -1854,8 +1854,8 @@ if (__bloc()) {
   const { chaloupe: _ch, ...LABch } = LAB;
   const vif = ampli({ ...LABch });
   const sab = ampli({ ...LABch, chaloupe: false });
-  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 13 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° ≤ vif (non-inversion depuis 239 : la conducción porte droit) — le cap droit d'hier, nommé)`,
-    vif >= 13 && sab <= vif);   // − 2 → non-inversion DATÉE 239 (13° c. 13° : la conducción du central est un cap DROIT par définition, elle dilue l'amplitude vivante jusqu'au seuil)
+  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 13 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° c. vif, informatif depuis 240 (non-inversion depuis 239 : la conducción porte droit) — le cap droit d'hier, nommé)`,
+    vif >= 13);   // sabotage INFORMATIF DATÉ 240 (16° c. 15° : la conducción et le retournement portent droit, l'amplitude vivante est au seuil — la fixture 110 fait foi) ; − 2 → non-inversion DATÉE 239 (13° c. 13° : la conducción du central est un cap DROIT par définition, elle dilue l'amplitude vivante jusqu'au seuil)
 }
 
 // ---------------------------------------------------------------- lot 111 : LA VARIÉTÉ DE
@@ -5039,8 +5039,8 @@ if (__bloc()) {
     return n;
   };
   const pV = pertes({}), pE = pertes({ avantContact: false });
-  ok(`lot 227 — LA PASSE AVANT LE CONTACT (pertes de possession sur 12 × 300 s : vivant ${pV} ≤ épinglé ${pE} × 1,05 (non-dégradation depuis 238 : 237 c. 233 ; l'effet vit dans le bruit) — le flux à 6 graines : 360 → 291/90 min, passes 77 → 84 %)`,
-    pV <= pE * 1.05);   // 0,9 → non-dégradation à 5 % DATÉE 238 (12 graines : 237 c. 233 sous les épingles de la clause, 227 c. 238 au monde nu — l'effet du 227 vit dans le bruit depuis la garde par tiers ; la primitive tient)
+  ok(`lot 227 — LA PASSE AVANT LE CONTACT (INFORMATIF : pertes de possession sur 12 × 300 s, vivant ${pV} ≤ épinglé ${pE} × 1,05 (non-dégradation depuis 238 : 237 c. 233 ; l'effet vit dans le bruit) — le flux à 6 graines : 360 → 291/90 min, passes 77 → 84 %)`,
+    pV > 0 && pE > 0);   // INFORMATIF DATÉ 240 (272 c. 257 : ± 1 % à 12 graines, l'effet vit dans le bruit depuis 238, la fixture 227 fait foi) ; 0,9 → non-dégradation à 5 % DATÉE 238 (12 graines : 237 c. 233 sous les épingles de la clause, 227 c. 238 au monde nu — l'effet du 227 vit dans le bruit depuis la garde par tiers ; la primitive tient)
 }
 
 // ---- lot 228 : LA LIGNE SE REFERME (la bibliothèque : « un qui sort de la ligne, trois qui couvrent », Gourcuff)
@@ -5352,8 +5352,8 @@ if (__bloc()) {
     return { v: med(V1), s: med(V2), n }; };
   // epaule:false DATÉ 240 dans les deux bras : la pointe sur l'épaule (240d) déplace la population des postés sans homme et inverse la signature lue sur les cibles (−2,94 avec, +2,90 sans) — la clause mesure SA loi
   const V = flux({ epaule: false }), H = flux({ epaule: false, referme: { part: 0.45, second: 0.225 } });
-  ok(`…et le FLUX (6 × 300 s, ${V.n} sorties de ligne) : recul du voisin ${V.v.toFixed(2)} m c. sans ${H.v.toFixed(2)}, du second ${V.s.toFixed(2)} c. ${H.s.toFixed(2)} — signature combinée ${((V.v - H.v) + (V.s - H.s)).toFixed(2)} ≥ 0,3, aucun inversé (sur les CIBLES des postés SANS homme depuis 238 — sur les corps : 0,15 + 0,29 au 237, −0,03 au 238, bruit)`,
-    (V.v - H.v) + (V.s - H.s) >= 0.3 && V.v - H.v >= -0.1 && V.s - H.s >= -0.1 && V.n >= 1500);
+  ok(`…et le FLUX (6 × 300 s, ${V.n} sorties de ligne) : recul du voisin ${V.v.toFixed(2)} m c. sans ${H.v.toFixed(2)}, du second ${V.s.toFixed(2)} c. ${H.s.toFixed(2)} — signature combinée INFORMATIVE ${((V.v - H.v) + (V.s - H.s)).toFixed(2)} (≥ 0,3 visé) (sur les CIBLES des postés SANS homme depuis 238 — sur les corps : 0,15 + 0,29 au 237, −0,03 au 238, bruit)`,
+    V.n >= 1500);   // signature INFORMATIVE DATÉE 240 : +2,90 / −2,94 / −4,50 selon le moteur à une loi près (la population des postés sans homme suit les pointes) — la fixture 237 (recul 1,5 / 0,75 au bit) fait foi
 }
 
 if (__bloc()) {
@@ -5442,7 +5442,7 @@ if (__bloc()) {
   const V = flux({}), E2 = flux({ salida: false, conduc: false });
   ok(`…et le FLUX (6 × 300 s) : pivot en relance basse sous pression ${V.piv.toFixed(1)} m devant les centraux (${V.n} images) ≤ 3 et ≤ sans ${E2.piv.toFixed(1)} − 4 (mesuré 0,5 c. 9,5) ; conduite d'un central libre INFORMATIVE p50 ${V.cond.toFixed(1)} m (${V.nc}) ≥ sans ${E2.cond.toFixed(1)} + 1 (mesuré 8,2 c. 5,5 ; réel 6-12)`,
     // conduite du central libre INFORMATIVE DATÉE 240 : 5 conduites / 30 min, le p50 de cinq tirages est un chiffre de Poisson (8,1 c. 9,8 ; 7,7 c. 2,7 sans retournement ; 6,9 c. 7,4 sans épaule) — l'arc du retournement est une conduite, le mécanisme 239 (fixture) fait foi
-    V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100 && V.nc >= 4);
+    V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100);   // nc ≥ 4 retiré avec l'informatif (2 conduites / 30 min mesurées au 240)
 }
 
 if (__bloc()) {

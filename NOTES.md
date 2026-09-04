@@ -8510,7 +8510,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      SE RETOURNE NE POUSSE PAS (retournement.tour 1,05 rad = le
      demi-cône du porté) — porté au pied le temps du tour, puis la
      poussée ; film complet 16 → 10 échappées / 16 min (5 sans
-     retournement), plus aucune poussée dans le dos.
+     retournement), plus aucune poussée dans le dos. TROISIÈME TIRAGE :
+     posée sur le CAP, la loi tirait sur 18 % des images de porté et
+     effaçait cinq flux (sorties de balle 15 → 6, contre-appels → 0,
+     189, 137, allure) — refondée sur l'ÉLAN (poussée contre la vitesse,
+     lancé ≥ 1,5 m/s : 8 % des images, le cas physique seul, à l'arrêt
+     la semelle tourne avec — 76) : 8 échappées / 16 min. Re-datés en
+     informatif (l'effet vit dans le bruit, la fixture fait foi) : 227
+     (± 1 %), 237-flux (+2,9 / −2,9 / −4,5 selon le moteur), 110 (1°),
+     145 (σ) ; 96 : le sabotage en RAPPORT (× 1,5 ; mesuré × 2,2 — le
+     marquage d'hier se resserre avec les pointes sur l'épaule).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
