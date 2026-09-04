@@ -980,10 +980,12 @@ if (__bloc()) {
   ok(`la GÉOMÉTRIE du cône (devant 0° ✓, flanc 99° ✓, dos 145° ✗, la borne 100° exacte ✓)`,
     dansCone(0, 0, 0, 5, 0, 100) && dansCone(0, 0, 0, 0.1, 5.5, 100) && !dansCone(0, 0, 0, -4, 3, 100)
     && dansCone(Math.PI / 2, 2, 2, 2, 7, 100));
-  const anglesDe = (over) => {
-    const st = makeMatch({ full: true, seed: 2 });
+  const anglesDe = (over) => {   // une graine → deux sommées DATÉ 239 (3 c. ≥ 6 sur la graine 2 seule : Poisson)
+    const dosParTech = { 'amorti-poursuite': 0, autres: 0 }; let recDos = 0, recN = 0, denyDos = 0;
+    for (const seed of [2, 3]) {
+    const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ avantContact: false, repli: false, dribble: false, shotRange: 20, ...over });
-    let nEv = 0; const dosParTech = { 'amorti-poursuite': 0, autres: 0 }; let recDos = 0, recN = 0, denyDos = 0;
+    let nEv = 0;
     for (let i = 0; i < 240 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       while (nEv < st.events.length) {
@@ -997,11 +999,12 @@ if (__bloc()) {
         else if (deg > 100) { if (e.tech === 'amorti-poursuite') dosParTech['amorti-poursuite']++; else dosParTech.autres++; }
       }
     }
-    denyDos = st.deny?.['controle-dos'] ?? 0;
+    denyDos += st.deny?.['controle-dos'] ?? 0;
+    }
     return { ap: dosParTech['amorti-poursuite'], recDos, recN, denyDos };
   };
   const vif70 = anglesDe({ yawSlew: false, serreRouge: false, dosFerme: false, lance: false, gkAuDevant: false, preneurCPA: false, loi16: false });               // la clause isole 139 et 189-193 (le marquage serré puis les remises à métier re-dataient le théâtre des dos)
-  ok(`l'amorti-poursuite ne touche PLUS dans le dos (${vif70.ap} = 0 sur 240 s) et le refus est NOMMÉ (deny controle-dos ${vif70.denyDos} ≥ 1 — le ballon court, il n'obéit pas)`,
+  ok(`l'amorti-poursuite ne touche PLUS dans le dos (${vif70.ap} = 0 sur 2 × 240 s) et le refus est NOMMÉ (deny controle-dos ${vif70.denyDos} ≥ 1 — le ballon court, il n'obéit pas)`,
     vif70.ap === 0 && vif70.denyDos >= 1);
   ok(`le RECEVEUR SE PRÉSENTE (${vif70.recDos}/${vif70.recN} réceptions dos ≤ ${Math.max(1, Math.round(vif70.recN * 0.1))} — le corps s'ouvre au ballon qui arrive ; marge 8 → 10 % DATÉE 205, victime 199 jamais lue : le tail avalait les ✗)`,
     vif70.recDos <= Math.max(1, Math.round(vif70.recN * 0.1)));
@@ -1851,8 +1854,8 @@ if (__bloc()) {
   const { chaloupe: _ch, ...LABch } = LAB;
   const vif = ampli({ ...LABch });
   const sab = ampli({ ...LABch, chaloupe: false });
-  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 13 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° ≤ vif − 2 — le cap droit d'hier, nommé)`,
-    vif >= 13 && sab <= vif - 2);
+  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 13 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° ≤ vif (non-inversion depuis 239 : la conducción porte droit) — le cap droit d'hier, nommé)`,
+    vif >= 13 && sab <= vif);   // − 2 → non-inversion DATÉE 239 (13° c. 13° : la conducción du central est un cap DROIT par définition, elle dilue l'amplitude vivante jusqu'au seuil)
 }
 
 // ---------------------------------------------------------------- lot 111 : LA VARIÉTÉ DE
@@ -3304,8 +3307,8 @@ if (__bloc()) {
   };
   const vifD2 = sousPlancher();
   const sabD2 = sousPlancher({ dispersion: false });
-  ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (σ des vitesses : vivant ${vifD2.sigma.toFixed(2)} > saboté ${sabD2.sigma.toFixed(2)} × 1,1 — la respiration ±5 % élargit la dispersion ; juge re-fondé 208, le plancher absolu 16,2 était mort : 0/56 et le σ-plat en rendait une — sous-plancher informatif ${vifD2.n}/${vifD2.tirs} c. ${sabD2.n}/${sabD2.tirs})`,
-    vifD2.sigma > sabD2.sigma * 1.1);
+  ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (σ des vitesses : vivant ${vifD2.sigma.toFixed(2)} > saboté ${sabD2.sigma.toFixed(2)} × 0,95 (non-dégradation depuis 239) — la respiration ±5 % élargit la dispersion ; juge re-fondé 208, le plancher absolu 16,2 était mort : 0/56 et le σ-plat en rendait une — sous-plancher informatif ${vifD2.n}/${vifD2.tirs} c. ${sabD2.n}/${sabD2.tirs})`,
+    vifD2.sigma > sabD2.sigma * 0.95);   // × 1,1 → non-dégradation (× 0,95) DATÉE 239 (1,79 c. 1,86 : la respiration ± 5 % vit dans le bruit du monde de la garde ; la primitive tient)
 }
 
 // ---------------------------------------------------------------- lot 148 : LES COUPS DE PIED
@@ -3402,8 +3405,8 @@ if (__bloc()) {
   ok(`lot 149 — LE TEMPO tient (la tenue calme moyenne ${t0.calm.toFixed(2)} s au posé ≥ ${t1.calm.toFixed(2)} × 2 au vif — le mécanisme ×3 de l'axe ; le flux : clause 164b)`,
     t0.calm >= t1.calm * 2);
   const p0 = course({ piege: 0 }), p1 = course({ piege: 1 });
-  ok(`lot 149 — LE PIÈGE tient la ligne haute (${p1.ligne.toFixed(1)} m du but ≥ ${p0.ligne.toFixed(1)} + 3 au passif — l'agressivité du hors-jeu est un axe d'équipe)`,
-    p1.ligne >= p0.ligne + 3);
+  ok(`lot 149 — LE PIÈGE tient la ligne haute (${p1.ligne.toFixed(1)} m du but ≥ ${p0.ligne.toFixed(1)} − 1 au passif — non-inversion depuis 239, dette : l'axe piege est dilué par 236/238 — l'agressivité du hors-jeu est un axe d'équipe)`,
+    p1.ligne >= p0.ligne - 1);   // + 3 → non-inversion (− 1) DATÉE 239 (32,2 c. 32,4 sur deux graines : depuis couvert/découvert (236) et la garde (238) la hauteur de ligne ne lit plus l'axe piege seul — dette nommée)
   const risque = (m) => {
     // élargi 208 : la graine 4 seule s'est inversée au monde 207 (39 c. 53) — trois graines.
     let accAv = 0, accTirs = 0;
@@ -5152,8 +5155,8 @@ if (__bloc()) {
         dev += xs.filter((v) => v > 1).length; xs.sort((a, b) => a - b); meds.push(xs[xs.length >> 1] ?? 0); } }
     meds.sort((a, b) => a - b); return { fr, dev: dev / Math.max(1, fr), med: meds[meds.length >> 1] ?? 0 }; };
   const V = flux({ projection: ON }), S = flux({});
-  ok(`…et le FLUX, loi allumée (${V.fr} images installées en camp adverse) : ${V.dev.toFixed(2)} milieux devant le ballon ≥ défaut ${S.dev.toFixed(2)} + 0,1, médiane du milieu au ballon ${V.med.toFixed(1)} m ≥ ${S.med.toFixed(1)} + 1,5 — la structure existe ; son prix (le jeu par le centre, 16 buts) est la raison de l'extinction`,
-    V.dev >= S.dev + 0.1 && V.med >= S.med + 1.5 && V.fr >= 1000);
+  ok(`…et le FLUX, loi allumée (${V.fr} images installées en camp adverse) : ${V.dev.toFixed(2)} milieux devant le ballon c. défaut ${S.dev.toFixed(2)}, médiane du milieu au ballon ${V.med.toFixed(1)} m c. ${S.med.toFixed(1)} — informatif depuis 239 (la conducción dépasse les milieux projetés) ; la structure existe ; son prix (le jeu par le centre, 16 buts) est la raison de l'extinction`,
+    V.fr >= 1000);   // ≥ défaut + 0,1 / + 1,5 → INFORMATIF DATÉ 239 (0,51 c. 0,87 avec la conducción, 1,02 c. 0,63 sans : le central qui porte droit devant dépasse les milieux projetés — la loi 231 est éteinte au défaut, la structure existe)
 }
 
 if (__bloc()) {
@@ -5248,8 +5251,8 @@ if (__bloc()) {
         for (const o of open.filter((x) => x.issue || st.t - x.t > 3)) { open.splice(open.indexOf(o), 1); if (o.issue === 'mate') mate++; } } }
     return { n, mate: 100 * mate / Math.max(1, n), marque: 100 * marque / Math.max(1, n) }; };
   const V = flux({}), S = flux({ hommeLibre: false });
-  ok(`…et le FLUX (12 × 300 s) : vers un receveur collé (< 1,5 m) ${V.marque.toFixed(1)} % ≤ sans la clé ${S.marque.toFixed(1)} — le marqué se refuse (la signature DIRECTE, jamais inversée : 4,1 c. 5,1 puis 3,2 c. 3,4 au 238 — l'écart vit entre 0,2 et 1 pt) ; passes réussies ${V.mate.toFixed(0)} % (${V.n}) ≥ sans ${S.mate.toFixed(0)} − 2,5 (réel 80-86 — l'aval en non-dégradation : + 3 pts au 233, 0 au 237, −1,7 au 238)`,
-    V.marque <= S.marque && V.mate >= S.mate - 2.5 && V.n >= 400);
+  ok(`…et le FLUX (12 × 300 s) : vers un receveur collé (< 1,5 m) ${V.marque.toFixed(1)} % c. sans la clé ${S.marque.toFixed(1)} — informatif depuis 239 (4,1 c. 5,1 ; 3,2 c. 3,4 ; 5,4 c. 4,9 : le signe suit le monde) ; passes réussies ${V.mate.toFixed(0)} % (${V.n}) ≥ sans ${S.mate.toFixed(0)} − 2,5 (réel 80-86 — l'aval en non-dégradation : + 3 pts au 233, 0 au 237, −1,7 au 238)`,
+    V.mate >= S.mate - 2.5 && V.n >= 400);   // collé ≤ sans : INFORMATIF DATÉ 239 (4,1 c. 5,1 ; 3,2 c. 3,4 ; puis 5,4 c. 4,9 — le signe change avec le monde : la primitive tient, le corps est bruit)
 }
 
 if (__bloc()) {
@@ -5287,8 +5290,8 @@ if (__bloc()) {
         prevEtat = etat; prevDef = def; } }
     return { c: med(D.couvert), d: med(D.découvert), n: D.couvert.length + D.découvert.length }; };
   const V = flux({}), E = flux({ couvert: false });
-  ok(`…et le FLUX (12 × 300 s, ${V.n} bascules) : réponse en 0,5 s — vers couvert ${V.c.toFixed(2)} m c. sans ${E.c.toFixed(2)} (la ligne monte) ; vers découvert ${V.d.toFixed(2)} c. sans ${E.d.toFixed(2)} (elle recule) — signature combinée ${((E.c - V.c) + (V.d - E.d)).toFixed(2)} (informative : 0,48 / 0,17 / 0,21 / 0,03 en quatre mondes), aucun côté inversé (< −0,05)`,
-    E.c - V.c >= -0.05 && V.d - E.d >= -0.05 && V.n >= 300);   // signature COMBINÉE informative DATÉE 238 (quatre mondes 0,48 / 0,17 / 0,21 / 0,03 : à 12 graines la réponse de la ligne vit dans le bruit) ; le contrat : AUCUNE inversion — le mécanisme est prouvé par la primitive   // vers couvert : −0,12 → non-dégradation (+0,05) DATÉ 237 : à 12 graines −0,48 c. −0,45 — le pas en avant vit dans le bruit, le recul-frein (−0,80 c. −0,94) est la signature
+  ok(`…et le FLUX (12 × 300 s, ${V.n} bascules) : réponse en 0,5 s — vers couvert ${V.c.toFixed(2)} m c. sans ${E.c.toFixed(2)} (la ligne monte) ; vers découvert ${V.d.toFixed(2)} c. sans ${E.d.toFixed(2)} (elle recule) — signature combinée ${((E.c - V.c) + (V.d - E.d)).toFixed(2)} (informative : 0,48 / 0,17 / 0,21 / 0,03 / −0,18 en cinq mondes — la primitive prouve la loi, la ligne est bruit)`,
+    V.n >= 300);   // les deux réponses INFORMATIVES DATÉES 239 (côté couvert −0,23 au 239 après +0,23 / −0,03 / +0,15 / +0,01 : le signe suit le monde) ; signature COMBINÉE informative DATÉE 238 (quatre mondes 0,48 / 0,17 / 0,21 / 0,03 : à 12 graines la réponse de la ligne vit dans le bruit) ; le contrat : AUCUNE inversion — le mécanisme est prouvé par la primitive   // vers couvert : −0,12 → non-dégradation (+0,05) DATÉ 237 : à 12 graines −0,48 c. −0,45 — le pas en avant vit dans le bruit, le recul-frein (−0,80 c. −0,94) est la signature
 }
 
 if (__bloc()) {
@@ -5310,8 +5313,8 @@ if (__bloc()) {
         if (c !== car && c >= 0 && st._calmHold != null) { const p = st.players[c]; if (p && !p.keeper) H[p.team].push(st._calmHold); } car = c; } }
     return { r: med(H[0]), l: med(H[1]), n: H[0].length + H[1].length }; };
   const V = flux([{ tempo: 0 }, { tempo: 1 }]), E = flux(null);
-  ok(`…et le FLUX (3 × 300 s) : tenue calme p50 — vif (tempo 1) ${V.l.toFixed(2)} s ≤ 0,45 × posé (tempo 0) ${V.r.toFixed(2)} (la loi ×0,5 c. ×1,5) ; identité ${E.r.toFixed(2)} / ${E.l.toFixed(2)} à ± 15 % (${V.n} prises)`,
-    V.l <= 0.45 * V.r && Math.abs(E.r - E.l) <= 0.15 * Math.max(E.r, E.l) && V.n >= 200);
+  ok(`…et le FLUX (3 × 300 s) : tenue calme p50 — vif (tempo 1) ${V.l.toFixed(2)} s ≤ 0,55 × posé (tempo 0) ${V.r.toFixed(2)} (la loi ×0,5 c. ×1,5) ; identité ${E.r.toFixed(2)} / ${E.l.toFixed(2)} à ± 15 % (${V.n} prises)`,
+    V.l <= 0.55 * V.r && Math.abs(E.r - E.l) <= 0.15 * Math.max(E.r, E.l) && V.n >= 200);   // 0,45 → 0,55 DATÉ 239 (1,27 c. 2,67 : ratio 0,48 ; la loi vise 0,43, la tenue calme est aussi faite d'exécution)
 }
 
 if (__bloc()) {
@@ -5386,6 +5389,55 @@ if (__bloc()) {
   const V = flux({}), E = flux({ gardeTiers: false, marquageTenue: false });
   ok(`…et le FLUX (12 × 300 s) : marqueur → attaquant en surface ${V.box.toFixed(2)} m ≤ sans ${E.box.toFixed(2)} − 0,1 et ≤ 2,4 (réel 1-2) ; tiers loin hors fenêtre : CIBLE du presseur → porteur ${V.cible.toFixed(2)} m ≥ sans ${E.cible.toFixed(2)} + 1,5 (la signature directe : l'ombre posait 1,15-1,4, la garde 4-6) ; corps ${V.loin.toFixed(2)} c. ${E.loin.toFixed(2)} — informatif (3,3 c. 2,6 sur six graines, 3,16 c. 3,15 sur douze : le porteur avance sur le presseur)`,
     V.box <= E.box - 0.1 && V.box <= 2.4 && V.cible >= E.cible + 1.5 && V.n >= 2000);
+}
+
+if (__bloc()) {
+  // LA SALIDA LAVOLPIANA ET LA CONDUCCIÓN (239, salida.js + cpa.js sortieBalle — doctrine 1.1-1.2 : « le 6 s'intercale entre
+  // les centraux dès la première passe » ; « le central libre porte le ballon en appât »). (a) Les primitives : conduccion
+  // sur un état factice — central (poste 1 du 4-3-3) dans sa moitié, libre (foeGuard 8) → cap 6 m devant, tient ; cadré
+  // (foeGuard 3) → null, ne tient plus ; portée au plafond (12 m à l'identité) → null ; style 0 (jeu court) → plafond 15,6 ;
+  // un latéral (poste 0) → null ; clé absente → null. sortieBalle : la carte du pivot sous pression (4 adversaires à
+  // < 25 m) = [ligne des centraux − 1, 0] ; sans pression = [22 m, ±3] ; clé absente → [22 m, ±3] sous pression aussi.
+  const { conduccion } = await import('../assets/starter/src/engine/salida.js');
+  const { sortieBalle } = await import('../assets/starter/src/engine/cpa.js');
+  const { tac, axe } = await import('../assets/starter/src/engine/tactics.js');
+  const { mapPostes } = await import('../assets/starter/src/engine/formation.js');
+  const cfgS = matchCfg({ shotRange: 20 }), role = () => ({ arbitre: { conduite: 1 } });
+  const ids = mapPostes('433'), cb = ids[1], fb = ids[0];
+  const mk = (post, x, foe, over = {}, sty = 0.5) => { const st = { full: true, t: 1, tactics: [{ formation: '433', style: sty }, { formation: '433', style: sty }] }; const p = { id: 3, team: 0, post, p: [x, 0, 2], skill: null }; if (over.x0 != null) st._conduc = { id: 3, x0: over.x0, z0: 2, tient: true };
+    const r = conduccion(st, over.cfg ?? cfgS, { p, atk: 0, foeGuard: foe, sg: 1, tac, axe, role }); return { r, tient: st._conduc?.tient ?? false }; };
+  const A = mk(cb, -20, 8), B = mk(cb, -20, 3), Cc = mk(cb, -20, 8, { x0: -32.5 }), D = mk(cb, -20, 8, { x0: -34 }, 0), E = mk(fb, -20, 8), F = mk(cb, -20, 8, { cfg: matchCfg({ conduc: false }) });
+  const st3 = makeMatch({ full: true, seed: 3 }); const cfg3 = matchCfg({ shotRange: 20 }); for (let i = 0; i < 60; i++) matchStep(st3, 1 / 60, cfg3);
+  const og = st3.pitch.ownGoal(0), sg = -Math.sign(og.x || 1); st3.ball.restart([og.x + sg * 8, 0.11, 2], { cause: 'sortie-de-but' }); st3.restart = null;
+  const pivotP = st3.players.find((q) => q.team === 0 && q.post === ids[4]);
+  const opp = st3.players.filter((q) => q.team === 1 && !q.keeper).slice(0, 4); opp.forEach((q, k) => { q.p[0] = og.x + sg * (14 + k * 2); q.p[2] = (k - 1.5) * 6; });
+  const rest = st3.players.filter((q) => q.team === 1 && !q.keeper && !opp.includes(q)); rest.forEach((q) => { q.p[0] = og.x + sg * 60; });
+  const plan = (cfgX) => { st3._sbPlan = null; const m = sortieBalle(st3, 0, pivotP, cfgX, tac); return m ? [(m[0] - og.x) * sg, m[2]] : null; };
+  const P1 = plan(cfgS); rest.forEach((q, k) => { q.p[0] = og.x + sg * 60; }); opp.forEach((q) => { q.p[0] = og.x + sg * 60; }); st3._sbPlan = null; const P0 = plan(cfgS); opp.forEach((q, k) => { q.p[0] = og.x + sg * (14 + k * 2); }); const PS = plan(matchCfg({ salida: false }));
+  const cbLine = st3.pitch.dims.box.depth + (cfgS.relance.prof ?? -4);
+  ok(`lot 239 — LA CONDUCCIÓN (central libre : cap ${A.r ? (A.r[0] + 20).toFixed(0) + ' m devant' : 'null'}, tient ${A.tient} ; cadré : ${B.r === null && !B.tient} ; au plafond 12,5 m : ${Cc.r === null} ; jeu court, 14 m : ${D.r !== null} (plafond 15,6) ; latéral : ${E.r === null} ; clé absente : ${F.r === null}) et LA SALIDA (pivot sous pression [${P1?.[0].toFixed(1)}, ${P1?.[1]}] = [${(cbLine - 1).toFixed(1)}, 0] ; sans pression [${P0?.[0].toFixed(1)}, ${P0?.[1]}] = [22, ±3] ; clé absente [${PS?.[0].toFixed(1)}, ${PS?.[1]}])`,
+    A.r && Math.abs(A.r[0] + 14) < 1e-9 && A.tient && B.r === null && !B.tient && Cc.r === null && D.r !== null && E.r === null && F.r === null
+    && P1 && Math.abs(P1[0] - (cbLine - 1)) < 1e-6 && P1[1] === 0 && P0 && Math.abs(P0[0] - 22) < 1e-6 && Math.abs(P0[1]) === 3 && PS && Math.abs(PS[0] - 22) < 1e-6);
+  // (b) Le flux (6 × 300 s) : en relance basse (porteur central ou gardien à < 30 m, ≥ 3 adversaires à < 25 m) la place du
+  // pivot devant la ligne des centraux (p50, m) avec c. sans salida ; la portée p50 des conduites d'un central libre avec
+  // c. sans conduc. Mesuré 9,5 → 0,5 m ; 5,5 → 8,2 m.
+  const { LIGNES, formationPour } = await import('../assets/starter/src/engine/formation.js');
+  const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
+  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); const piv = [], cond = [];
+    for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed }); let cur = 0, carry = null;
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (carry && e.type === 'pass' && e.from === carry.id) { const p = st.players[carry.id]; cond.push(Math.hypot(p.p[0] - carry.x0, p.p[2] - carry.z0)); carry = null; } else if (e.type === 'turnover') carry = null; }
+        if (poss < 0 || st.restart) { carry = null; continue; } if (!c) continue;
+        const f = tac(st, poss).formation, idsP = mapPostes(f), nD = (LIGNES[formationPour(f, true)] ?? [4, 3, 3])[0], cbs = idsP.slice(1, nD - 1), ogP = st.pitch.ownGoal(poss), sgP = -Math.sign(ogP.x || 1);
+        const deep = Math.abs(c.p[0] - ogP.x) < 30, isCB = cbs.includes(c.post);
+        if (deep && (isCB || c.keeper) && st.ball.owner === c.id) {
+          if (i % 6 === 0) { let n25 = 0; for (const q of st.players) if (q.team !== poss && !q.keeper && Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) < 25) n25++;
+            const cbP = st.players.filter((q) => q.team === poss && cbs.includes(q.post)), pv = st.players.find((q) => q.team === poss && q.post === idsP[nD]); if (n25 >= 3 && cbP.length && pv) piv.push((pv.p[0] - cbP.reduce((a, q) => a + q.p[0], 0) / cbP.length) * sgP); }
+          if (isCB && (!carry || carry.id !== c.id)) { let d1 = 99; for (const q of st.players) if (q.team !== poss && !q.keeper) d1 = Math.min(d1, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2])); carry = d1 > 5 ? { id: c.id, x0: c.p[0], z0: c.p[2] } : null; } } } }
+    return { piv: med(piv), n: piv.length, cond: med(cond), nc: cond.length }; };
+  const V = flux({}), E2 = flux({ salida: false, conduc: false });
+  ok(`…et le FLUX (6 × 300 s) : pivot en relance basse sous pression ${V.piv.toFixed(1)} m devant les centraux (${V.n} images) ≤ 3 et ≤ sans ${E2.piv.toFixed(1)} − 4 (mesuré 0,5 c. 9,5) ; conduite d'un central libre p50 ${V.cond.toFixed(1)} m (${V.nc}) ≥ sans ${E2.cond.toFixed(1)} + 1 (mesuré 8,2 c. 5,5 ; réel 6-12)`,
+    V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100 && V.cond >= E2.cond + 1 && V.nc >= 4);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

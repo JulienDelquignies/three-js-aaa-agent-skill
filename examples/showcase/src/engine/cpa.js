@@ -73,7 +73,12 @@ export function sortieBalle(st, team, p, cfg, tac) {
       [fbL, fbR].forEach((q, i) => { if (q) map[q.id] = [og.x + sg * (R.lateral ?? 30), (i === 0 ? 1 : -1) * (pitch.hz - 6)]; });
       rest.forEach((q, i) => { map[q.id] = rest.length === 3 && i === 1 ? [bx - sg * 2, 0] : [bx, (i === 0 ? 1 : -1) * bz]; });
     } else defs.forEach((q, i) => { map[q.id] = i === 1 ? [bx - sg * 2, 0] : [bx, (i === 0 ? 1 : -1) * bz]; });   // 3 derrière : les deux extérieurs écartés, le central dans l'axe
-    if (pivot) map[pivot.id] = [og.x + sg * (R.pivot ?? 22), Math.sign(st.ball.p[2] || 1) * 3];
+    // LA SALIDA LAVOLPIANA (239, cfg.salida — doc salida.js) : sous pression (≥ pression adversaires à < portee m du ballon)
+    // le pivot descend ENTRE les centraux écartés (leur ligne + prof, z 0) — le +1 de la relance ; sinon le 22 m d'hier au bit
+    const S = st.full && cfg.salida ? cfg.salida : null;
+    let nP = 0; if (S) for (const q of st.players) if (q.team !== team && !q.keeper && q.down <= 0 && Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) < (S.portee ?? 25)) nP++;
+    if (pivot) map[pivot.id] = S && nP >= (S.pression ?? 3) ? [bx + sg * (S.prof ?? -1), 0] : [og.x + sg * (R.pivot ?? 22), Math.sign(st.ball.p[2] || 1) * 3];
+    st._salidaGK = S && pivot && nP >= (S.pression ?? 3) ? { t: st.t, pivot: pivot.post, n: nP } : null;
     return { t: st.t, map, spots };
   })());
   const m = P.map[p.id];

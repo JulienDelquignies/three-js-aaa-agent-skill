@@ -217,6 +217,9 @@ offensive enfin, débats en axes tout du long.**
 - Cible : sorties de but courtes réussies ≥ 88 % (brief), zéro perte plein axe à < 20 m ; conduites
   de central de 6-12 m suivies d'une passe qui gagne une ligne : sonde à écrire.
 - Taille : M. Fichiers : `cpa.js`, `skills-sim.js`, `menace.js`.
+- **SCELLÉ (NOTES 290)** : `salida.js` (salidaStep + conduccion) et la greffe dans `sortieBalle` ; pivot 9,5 → 0,5 m
+  devant les centraux sous pression (entre eux), conduite d'un central libre 5,5 → 8,2 m p50 (réel 6-12). La sortie
+  de but est trop rare pour porter la loi (3 par 30 min, dette des sorties) : la salida vit sur la relance basse.
 
 **Lot 240 — Le troisième homme et l'appui-remise (préceptes 1.3, 1.5 ; brief chantier 2).**
 - Doctrine : A → B (une touche, dos au but, « si tu n'as pas vu, tu remets ») → C lancé qui part

@@ -6,7 +6,7 @@ import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
 import { lossReactStep, contrePressStep } from './contrepress.js';
 import { compenserLateral } from './compensation.js';
-import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js';
+import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
@@ -494,7 +494,7 @@ function assignMatchJobs(st, cfg) {
           * axe(role(p).largeurR, 0.8, 1.2) * axe(tac(st, atk).largeur, 0.85, 1.15);
         aimZ = Math.sign(p.p[2]) * Math.min(Math.abs(p.p[2]), pitch.hz * 0.55) * Math.max(0, Math.min(1, tient));
       }
-      const aim = wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, aimZ];
+      const aimC = st.full && cfg.conduc ? conduccion(st, cfg, { p, atk, foeGuard, sg: sgnG, tac, axe, role }) : null, aim = aimC ?? (wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, aimZ]);   // LA CONDUCCIÓN (239, salida.js) : le central libre conduit droit devant
       const gx = aim[0] - p.p[0], gz = aim[1] - p.p[2];
       const gl = hyp(gx, gz) || 1;
       // devant dégagé → cap au but ; bouché → l'évasion ; LE MUET REND LE CAP (lot 92) : ×0,25.
@@ -699,7 +699,7 @@ function assignMatchJobs(st, cfg) {
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
           const blocA = blocFor(cfg.bloc ?? null, tac(st, atk));   // LA POUSSE (141, cfg.pousse && st.full) : la ligne arrière attaquante franchit le rond, gain × axe hauteurBloc
       if (blocA && st.full && cfg.pousse) blocA.pousse = { gain: (cfg.pousse.gain ?? 0.8) * axe(tac(st, atk).hauteurBloc, 0.3, 1.7), des: cfg.pousse.des, max: cfg.pousse.max };
-      const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocA, tz.v, st._outAtk ??= []);   // la formation ON (129)
+      const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocA, tz.v, st._outAtk ??= []); if (st.full && cfg.salida) salidaStep(st, cfg, { atk, spots, carrier, pitch, tac });   // la formation ON (129) ; LA SALIDA (239, salida.js) : le pivot entre les centraux sous pression
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste coulissé peut tomber DERRIÈRE la défense — l'attaquant réel vit SUR la ligne. Relue CHAQUE image ; le calage borne la CIBLE.
       const off = cfg.offside ? offsideLine(st, atk) : null;
       // …ET L'APPEL SE TIME SUR LE PASSEUR (lot 41, cfg.appelPret) : on appelle quand le porteur PEUT donner — ballon au pied ≤ appelPret m (avant p50 1,43 s). false : l'appel aveugle d'hier.
@@ -711,7 +711,7 @@ function assignMatchJobs(st, cfg) {
       // LES RÔLES DÉFORMENT LA LIGNE (200, cfg.roleStructure && st.full — demande aval : le demi-centre descend ENTRE les stoppeurs et les ÉCARTE, 3 → 3+1 ; le latéral inversé cède son couloir). Un slot déplacé de ≥ seuil m en profondeur par son rôle est un INTRUS de la ligne où il atterrit : les voisins de bande s'écartent de son z (falloff sur portee). Dormante aux amplitudes du jour (2,5 < seuil) ; clé absente : l'hier au bit.
       const intrus = st.full && cfg.roleStructure ? intrusDe(posted, spots, cfg, role, axe, -pitch.ownGoal(atk).sign) : null;
       const comp = compenserLateral(st, cfg, { atk, posted, spots, sg: -pitch.ownGoal(atk).sign, formation: tac(st, atk).formation, role, axe, d2 });   // LA CHAISE À QUATRE PIEDS (230, cfg.compensation) : le latéral monté, un milieu descend dans son couloir
-      const proj = projeterMilieux(st, cfg, { atk, posted, spots, sg: -pitch.ownGoal(atk).sign, formation: tac(st, atk).formation, off, role, tac, axe, exclude: comp ? new Set(comp.keys()) : null });   // L'ENTRE-LIGNES (231, cfg.projection) : les intérieurs postés vivent devant le ballon, entre les lignes
+      const proj = projeterMilieux(st, cfg, { atk, posted, spots, sg: -pitch.ownGoal(atk).sign, formation: tac(st, atk).formation, off, role, tac, axe, exclude: comp || st._salida ? new Set([...(comp ? comp.keys() : []), ...(st._salida ? [st._salida.pivot] : [])]) : null });   // L'ENTRE-LIGNES (231, cfg.projection) — (239) le pivot en salida n'est pas projeté : les intérieurs postés vivent devant le ballon, entre les lignes
       for (const p of posted) {
         const want0 = spots[p.post ?? 0] ?? [p.p[0], p.p[2]], cp = comp?.get(p.post) ?? proj?.get(p.post);
         const want = cp ? [want0[0] + (cp[0] - want0[0]) * cp[2], want0[1] + (cp[1] - want0[1]) * cp[2]] : want0;

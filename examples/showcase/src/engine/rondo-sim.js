@@ -825,7 +825,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const relaisChaud = st.full && cfg.tenueCalme && st.players.some((q) => q.team === c.team && q.id !== c.id && (q._troisT ?? -1) > st.t);
     const calm = foeBody > cfg.calmFoe && !relaisChaud;
     // …et beginPass lit CE holdMin-là (la porte 'timing') : au calme la fenêtre s'étire à 0,8-1,0 s, pressé elle retombe au holdMin d'origine — fixer puis donner.
-    st._holdMin = (calm ? Math.min(st.full && cfg.tenueCalme ? (cfg.tenueCalme.plafond ?? 2.5) : 1.0, st._calmHold) : cfg.holdMin) * (st.full && cfg.tempoAxe !== false ? axeTac(tacDe(st, c.team).tempo, 1.4, 0.6) : 1);   // (235) le TEMPO est un axe : posé 0 → × 1,4, vif 1 → × 0,6, identité 0,5 (la convention de la barre calme 164 et de la tenue calme 211)   // (211) le plafond du calme en clé — 1,0 d'hier sans elle
+    st._holdMin = (calm ? Math.min(st.full && cfg.tenueCalme ? (cfg.tenueCalme.plafond ?? 2.5) : 1.0, st._calmHold) : cfg.holdMin) * (st.full && cfg.tempoAxe !== false ? axeTac(tacDe(st, c.team).tempo, 1.4, 0.6) : 1) * (st.full && cfg.conduc && st._conduc && st._conduc.id === c.id && st._conduc.tient ? (cfg.conduc.tenue ?? 2) : 1);   // (239) l'appât de la conducción tient le ballon   // (235) le TEMPO est un axe : posé 0 → × 1,4, vif 1 → × 0,6, identité 0,5 (la convention de la barre calme 164 et de la tenue calme 211)   // (211) le plafond du calme en clé — 1,0 d'hier sans elle
     // ON NE PASSE PAS UN BALLON QU'ON EST ENCORE EN TRAIN DE POSER : pas d'engagement avant la fin
     // de la fenêtre du contrôle + settleExtra (70 % des contrôles étaient refrappés avant la fin du
     // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.

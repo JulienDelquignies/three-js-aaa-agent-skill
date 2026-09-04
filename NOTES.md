@@ -8350,6 +8350,73 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10) ; 8 shards :
      hors classe (174) tout re-daté vert isolé ; déployé (chunk
      Rondo-Wyk24gg8.js à l'alias, capture playmode avant deploy).
+- 290: LA SALIDA LAVOLPIANA ET LA CONDUCCIÓN (239, salida.js + cpa.js
+     sortieBalle — doctrine 1.1-1.2, Guardiola / Xavi / Dall'Oglio : « le
+     6 s'intercale entre les centraux dès la première passe » ; « le
+     central libre porte le ballon en appât pour faire sortir un
+     adversaire, puis donne à celui que la sortie a libéré »). TROUVÉ
+     (film-relance, 6 × 300 s) : en relance basse (porteur central ou
+     gardien à < 30 m) le pivot vivait à 9,5 m DEVANT les centraux (p10
+     2,8, |z| 9,4), sous pression (≥ 3 adversaires à < 25 m, 75 % des
+     images) comme sans ; un central libre (aucun adversaire à < 5 m)
+     conduisait 5,5 m p50 (réel 6-12) et donnait toujours avant le
+     cadrage. La sortie de but elle-même est trop rare pour porter la
+     loi (3 par 30 min — dette des sorties : le ballon ne quitte presque
+     jamais le terrain) : la salida s'écrit sur la RELANCE BASSE en jeu,
+     qui couvre aussi les renvois. LES LOIS : (1) cfg.salida : ballon au
+     central ou au gardien à < zone m, ≥ pression adversaires à < portee
+     m du ballon → le pivot descend ENTRE les centraux écartés (leur
+     ligne + prof, z 0). Deux consommateurs : le plan de sortie de balle
+     (cpa.js sortieBalle — la cible du pivot quand le gardien distribue,
+     le 22 m du 223 sinon) et le spot posté (salida.js salidaStep, muté
+     pour l'image ; le pivot est exclu de la projection 231 qui le
+     renvoyait devant le ballon). (2) cfg.conduc : le CENTRAL porteur
+     dans sa moitié, libre (> libre m), conduit DROIT DEVANT (cap à pas
+     m) tant que la portée reste sous max × axe(style : jeu court 1,3 /
+     long 0,7) × visionF × arbitre.conduite du rôle ; pendant l'appât la
+     tenue calme est × tenue (rondo-sim) — on ne donne pas tant que
+     personne ne sort ; cadré ou au plafond, le cap d'hier et la passe
+     part vers le receveur libre (l'arbitre de passe lit déjà la sortie
+     adverse). Clés absentes : le monde 238 au bit (f599cb7e1bc66208 /
+     3060ddc67fae7401 — chiffré au 239, le 238 n'avait pas chiffré son
+     propre monde). TROUVÉ EN CHEMIN : ma première greffe (le spot posté
+     seul) ne bougeait rien — pendant la possession du gardien la cible
+     du pivot vient du plan de sortie de balle, pas des spots ; et la
+     projection 231 repoussait le spot muté. MESURÉ : pivot 9,5 → 1,1 m
+     devant les centraux (0,5 sous pression), |z| 9,4 → 1,4 ; conduite
+     d'un central libre 5,5 → 8,2 m p50 (p90 8,9 → 11,8), toutes finies
+     en passe, aucune perdue. Réutilisable : salidaStep et conduccion
+     sont des primitives pures (état, cfg, formation, porteur) ; la
+     pression, la zone, le plafond, la tenue sont des clés ; le rôle
+     (arbitre.conduite) et la tactique (style) sont des facteurs, 1 à
+     l'identité. BANC : clause 239 — primitives factices (libre / cadré /
+     plafond / jeu court / latéral / clé absente ; la carte du pivot sous
+     pression et sans) et flux (pivot ≤ 3 m et ≤ sans − 4 ; conduite ≥
+     sans + 1). GARDE-FOUS : bande sur 60 graines 27 / 56 / 30 tirs, 3 /
+     11 / 6 buts → 37,7 tirs et 6,7 buts par 100 min (le 56 des graines
+     21-40 : un tirage — chaque clé seule y rend 35-39, et 1-20 rend 27) ;
+     film-tirs 12 graines 26 tirs/90, 59 % en surface, 13 m p50 ;
+     pertes 369 → 333/90 ; pertes plein axe à < 20 m 3,3 → 0,9 % ; courses
+     intactes. INTERACTIONS TROUVÉES PAR LE BANC : le flux « allumé » de
+     la projection 231 (loi éteinte au défaut) s'inverse avec la
+     conducción (0,51 milieux devant le ballon c. 0,87 ; sans conduc 1,02
+     c. 0,63) — le central qui porte droit devant dépasse les milieux
+     projetés : informatif daté, la structure existe ; la chaloupe 110
+     (amplitude du cap en 1c1) tombe au seuil (13° c. 13°) — la
+     conducción est un cap DROIT par définition : non-inversion datée.
+     RE-DATÉES par volumétrie ou signature, verts isolés : bloc 18 (dos
+     fossile, une graine → deux), 145 (σ non-dégradation), 149 (piège
+     non-inversion : la hauteur de ligne ne lit plus l'axe piege seul
+     depuis 236/238, dette), 233 (collé informatif : le signe suit le
+     monde), 236 (les deux réponses informatives), 235 (ratio 0,45 →
+     0,55). SCEAU 239 : jumeau {salida:false, conduc:false} = monde 238
+     au bit (f599cb7e1bc66208 / 3060ddc67fae7401) ; clause 239 isolée
+     2 ✓ ; attributes 26 ✓ / 1 ✗ (la gradation, hier) ; douze annexes
+     vertes (match 84, rondo 40, gestes 60, menace 11, frappes 13, sync
+     9, roles 11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10) ; 8
+     shards : classe 96 / 189 seule, le reste re-daté vert isolé ;
+     déployé (chunk Rondo-D4-XmTVm.js à l'alias, capture playmode avant
+     deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
