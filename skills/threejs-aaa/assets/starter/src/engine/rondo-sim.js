@@ -3,8 +3,7 @@ import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) 
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
-import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
-import { uneTouche } from './premiere-intention.js';
+import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js'; import { uneTouche } from './premiere-intention.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';

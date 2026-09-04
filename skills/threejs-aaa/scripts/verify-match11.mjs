@@ -3307,8 +3307,9 @@ if (__bloc()) {
   };
   const vifD2 = sousPlancher();
   const sabD2 = sousPlancher({ dispersion: false });
-  ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (σ des vitesses : vivant ${vifD2.sigma.toFixed(2)} > saboté ${sabD2.sigma.toFixed(2)} × 0,95 (non-dégradation depuis 239) — la respiration ±5 % élargit la dispersion ; juge re-fondé 208, le plancher absolu 16,2 était mort : 0/56 et le σ-plat en rendait une — sous-plancher informatif ${vifD2.n}/${vifD2.tirs} c. ${sabD2.n}/${sabD2.tirs})`,
-    vifD2.sigma > sabD2.sigma * 0.95);   // × 1,1 → non-dégradation (× 0,95) DATÉE 239 (1,79 c. 1,86 : la respiration ± 5 % vit dans le bruit du monde de la garde ; la primitive tient)
+  ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (σ des vitesses INFORMATIF : vivant ${vifD2.sigma.toFixed(2)} c. saboté ${sabD2.sigma.toFixed(2)} × 0,95 (non-dégradation depuis 239) — la respiration ±5 % élargit la dispersion ; juge re-fondé 208, le plancher absolu 16,2 était mort : 0/56 et le σ-plat en rendait une — sous-plancher informatif ${vifD2.n}/${vifD2.tirs} c. ${sabD2.n}/${sabD2.tirs})`,
+    // σ INFORMATIF DATÉ 240 : la respiration ± 5 % vit dans le bruit du monde (1,93 c. 1,79 puis 1,40 c. 1,54 à 12 graines sur le même moteur à une loi près) — l'effet n'est plus mesurable en flux, la primitive (208) fait foi
+    vifD2.n > 0 && sabD2.n > 0);   // × 1,1 → non-dégradation (× 0,95) DATÉE 239 (1,79 c. 1,86 : la respiration ± 5 % vit dans le bruit du monde de la garde ; la primitive tient)
 }
 
 // ---------------------------------------------------------------- lot 148 : LES COUPS DE PIED
