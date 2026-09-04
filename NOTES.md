@@ -8417,6 +8417,60 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      shards : classe 96 / 189 seule, le reste re-daté vert isolé ;
      déployé (chunk Rondo-D4-XmTVm.js à l'alias, capture playmode avant
      deploy).
+- 291: LES QUATRE RETOURS (240a-d — retour utilisateur avant le 240 : « du
+     jeu court avec un adversaire proche rend des ballons perdus », « le
+     retournement pour la passe en arrière est trop rapide, ça devrait
+     être plus de conduite pour se libérer », « ce n'est pas toujours le
+     joueur libre le plus proche qui va au ballon libre », « les joueurs
+     les plus avancés jouent trop derrière »). MESURÉ AVANT (film-retour,
+     6 × 300 s) : passes vers un receveur à 2-4 m d'un adversaire = 15 %
+     des passes, perdues 15 / 33 / 40 % (courtes / moyennes / longues)
+     contre 3-10 % vers un libre ; rotation du passeur dans les 0,3 s
+     avant une passe arrière 457 °/s p50, 586 p90 (réel 200-250 avec
+     ballon) ; élu au ballon libre plus lent que le plus proche de
+     > 0,35 s dans un tiers des cas ; l'attaquant le plus avancé 5,9 m
+     DERRIÈRE la ligne défensive en possession installée (la pointe :
+     spot sur la ligne, cible 3,9 m derrière — le slot traîne —, corps
+     6,8 m). LES LOIS : (a) cfg.passeMarque (rondo.js malusPasseMarque,
+     remisePossible — primitives pures) : sous 4,5 m de liberté projetée,
+     malus × (1 − liberté/seuil) × visionF × axe(style) ÷ controlF du
+     receveur, ÷ 0,35 s'il a une REMISE possible (coéquipier libre à ≤ 8 m,
+     couloir dégagé). (b) cfg.retournement : le porteur — et le passeur
+     0,5 s après sa passe (movement.js enPorte) — pivote à ≤ rate × accelF
+     rad/s avec UN SEUL budget par image (les deux slews s'additionnaient :
+     229 + 229 = 458 °/s) ; au geste, le corps ne saute plus sur le cap du
+     geste, il y TOURNE à ce rythme (rondo-sim:95 tenait le corps sur le
+     geste à chaque image — ma première greffe « saut borné » y était
+     devenue 34° par image, 2 000 °/s : la trace par accesseur sur yaw l'a
+     dit) ; la passe à > 100° dans le dos attend le retournement en
+     conduisant vers le receveur (l'arc, match-sim), au plus 0,5 s, sauf
+     pressé/jeté. (c) cfg.chasseEta : le chasseur du ballon libre élu au
+     temps d'arrivée (etaCourse : élan, accel × accelF, top × topF), des
+     deux côtés — ÉTEINTE (null) : à 12 graines l'élu prend le ballon 56 c.
+     60 % sans, durées égales ; un placebo ne se livre pas, la primitive
+     reste. (d) cfg.epaule : la cible d'une pointe posée remonte à marge ×
+     axe(profondeur du rôle) de la ligne de hors-jeu (le 9 haut colle, le
+     décrocheur reste bas). Clés absentes : le monde 239 au bit
+     (999a1a77793ac480 / 474fd82f70465af7) — la bissection par fichier
+     puis par greffe a d'abord attrapé une boucle d'élection avalée par un
+     trim de ligne. MESURÉ APRÈS : rotation 457 → 169-176 °/s p50, p90
+     229 ; passes dans le dos 148 → 78 ; part vers un serré 15,1 → 13,3 %
+     (contre son jumeau, 12 graines — réel mais faible : la vraie réponse
+     est la remise, 240) ; l'attaquant le plus avancé 5,9 → 3,3-4,5 m
+     (pointe : cible 3,9 → 2,3-2,6, corps 6,8 → 5,0-5,6). LE PRIX, nommé :
+     pertes 333 → 393/90 (le corps qui frappe avant d'être aligné perd des
+     ballons — 447 avec une attente de 1,2 s, 408 à 0,5 ; l'épaule en
+     coûte aussi ~50 à 6 graines) — la remise du dos au jeu (240) est la
+     dette qui le rend. Bande 1-20 : 30-33 tirs / 6-8 buts par 100 min,
+     21-40 : 24 / 5. LES GARDES CASSÉS EN CHEMIN : la porte du retournement
+     retenait aussi les centres (le centreur au ras de la ligne « a le
+     receveur dans le dos ») et l'engagement (7,7 s : son chronomètre se
+     réarmait à chaque changement de receveur) — elle ne vaut plus que
+     pour la passe EN ARRIÈRE (receveur ≥ 2 m derrière sur l'axe
+     d'attaque), hors centre, passe levée, remise, pressé, jeté ; et au
+     geste, le centre et la passe levée gardent le fouet d'hier (le
+     centre bas de l'annexe frappes le demandait). Rotation finale
+     162-180 °/s p50, p90 211-420 (les centres exemptés fouettent).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

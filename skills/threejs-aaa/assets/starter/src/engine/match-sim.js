@@ -1,14 +1,10 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
-import { BALL } from './ball.js';
-import { laneClearance, predictPath, interceptPoint } from './ball-predict.js';
-import { cibleFoulee } from './foulee.js';
-import { repliStep } from './repli.js';
-import { lossReactStep, contrePressStep } from './contrepress.js';
-import { compenserLateral } from './compensation.js';
+import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js';
+import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js';
+import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js';
 import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js';
-import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
-import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
+import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
 import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
@@ -445,7 +441,9 @@ function assignMatchJobs(st, cfg) {
   let hunter = null;
   if (freeBall) {
     // …JAMAIS le gardien (lot 89, st.full — un ballon de champ n'est pas le sien : le hunter l'envoyait chasser à 20-30 m puis porter au coin des six, « il court en corner »)
-    let hD = Infinity; for (const p of attackers) if (p.down <= 0 && !(st.full && p.keeper)) { const d = d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
+    const CE = st.full && cfg.chasseEta ? cfg.chasseEta : null, leadP3 = [leadP[0], 0, leadP[1]]; let hD = Infinity;   // LE PLUS RAPIDE AU BALLON, PAS LE PLUS PRÈS (240c, doc match-config) : l'élection compare des temps d'arrivée for (const p of attackers) if (p.down <= 0 && !(st.full && p.keeper)) { const d = CE ? etaCourse(p.p, p.v, leadP3, { accel: (cfg.accel ?? 7.5) * (p.skill?.accelF ?? 1), top: (CE.top ?? cfg.speeds?.chase ?? 6.4) * (p.skill?.topF ?? 1) }) : d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
+    for (const p of attackers) if (p.down <= 0 && !(st.full && p.keeper)) { const d = CE ? etaCourse(p.p, p.v, leadP3, { accel: (cfg.accel ?? 7.5) * (p.skill?.accelF ?? 1), top: (CE.top ?? cfg.speeds?.chase ?? 6.4) * (p.skill?.topF ?? 1) }) : d2(p.p, st.ball.p); if (d < hD) { hD = d; hunter = p; } }
+    if (CE && hunter) hD = d2(hunter.p, st.ball.p);   // la tenue (104) compare des distances : on lui rend celle de l'élu
     // LA CONDUITE SE TIENT (lot 104, cfg.tenue && st.full) : le ballon qu'il vient de pousser reste SA course (< temps s, à portée) — un coéquipier ne la vole qu'avec une VRAIE avance (marge). Absente : l'hier au bit.
     if (st.full && cfg.tenue && st._exCarrier && st.t - st._exCarrier.t < (cfg.tenue.temps ?? 1.5)) {
       const ex = st.players[st._exCarrier.id];
@@ -494,7 +492,7 @@ function assignMatchJobs(st, cfg) {
           * axe(role(p).largeurR, 0.8, 1.2) * axe(tac(st, atk).largeur, 0.85, 1.15);
         aimZ = Math.sign(p.p[2]) * Math.min(Math.abs(p.p[2]), pitch.hz * 0.55) * Math.max(0, Math.min(1, tient));
       }
-      const aimC = st.full && cfg.conduc ? conduccion(st, cfg, { p, atk, foeGuard, sg: sgnG, tac, axe, role }) : null, aim = aimC ?? (wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, aimZ]);   // LA CONDUCCIÓN (239, salida.js) : le central libre conduit droit devant
+      const R240 = st.full && cfg.retournement && p._retour ? st.players[p._retour.to] : null, aimR = R240 ? [R240.p[0], R240.p[2]] : null, aimC = st.full && cfg.conduc ? conduccion(st, cfg, { p, atk, foeGuard, sg: sgnG, tac, axe, role }) : null, aim = aimR ?? aimC ?? (wideClosed && !boxMate ? [goal.x - sgnG * pitch.dims.box.depth * 0.6, p.p[2] * 0.15] : [goal.x, aimZ]);   // LA CONDUCCIÓN (239, salida.js) : le central libre conduit droit devant
       const gx = aim[0] - p.p[0], gz = aim[1] - p.p[2];
       const gl = hyp(gx, gz) || 1;
       // devant dégagé → cap au but ; bouché → l'évasion ; LE MUET REND LE CAP (lot 92) : ×0,25.
@@ -516,6 +514,7 @@ function assignMatchJobs(st, cfg) {
         const pl0 = hyp(px, pz) || 1;
         px += (-pz / pl0) * o; pz += (px / pl0) * o;
       }
+      if (aimR && p.push) { const cur = Math.atan2(p.push[1], p.push[0]); let dA = Math.atan2(pz, px) - cur; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const step = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) / 60; const ang = cur + Math.sign(dA) * Math.min(Math.abs(dA), step); px = Math.cos(ang); pz = Math.sin(ang); }
       const pl = hyp(px, pz) || 1;
       // LA POUSSÉE SE LISSE (EMA τ 0,35 s) : l'évasion 60 Hz zigzaguait — l'intention d'abord.
       const raw = [px / pl, pz / pl];
@@ -821,6 +820,7 @@ function assignMatchJobs(st, cfg) {
             tx = off.sgn * Math.max(0, Math.min(p._runAdv ?? (off.adv - 0.15), off.adv - 0.15));
             tz = p._runZ ?? tz;
           } else if (tx * off.sgn > off.adv - 0.8) tx = off.sgn * Math.max(0, off.adv - 0.8);
+          else if (st.full && cfg.epaule && (p._runT ?? -1) <= st.t) { const marge = (cfg.epaule.marge ?? 2) * axe(R.profondeur, cfg.epaule.profond ?? 3, cfg.epaule.haut ?? 0.3); const sur = off.adv - marge; if (tx * off.sgn < sur) tx = off.sgn * Math.max(0, sur); }
         }
         // LE DONNE-ET-VA COURT À SA CIBLE (218, cfg.unDeux.course — doc strike-sim) ; le hors-jeu la borne comme l'appel
         if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) { tx = p._pace.cible[0]; tz = p._pace.cible[1]; if (off && tx * off.sgn > off.adv - 0.15) tx = off.sgn * Math.max(0, off.adv - 0.15); }
@@ -944,7 +944,7 @@ function assignMatchJobs(st, cfg) {
         > (cfg.pressLead.loin ?? 6) * axe(tac(st, defTeamB).pressing, 1.3, 0.7)
       ? st.pass.lead : null;
     const byDist = st._bByDist ??= []; byDist.length = 0;
-    for (const q of defenders) { q._dAnc = d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
+    const CE2 = st.full && cfg.chasseEta && freeBall ? cfg.chasseEta : null, ldp = [leadP[0], 0, leadP[1]]; for (const q of defenders) { q._dAnc = CE2 ? etaCourse(q.p, q.v, ldp, { accel: (cfg.accel ?? 7.5) * (q.skill?.accelF ?? 1), top: (CE2.top ?? cfg.speeds?.chase ?? 6.4) * (q.skill?.topF ?? 1) }) * (CE2.top ?? 6.4) : d2(q.p, anchor); byDist.push(q); } byDist.sort((a, b) => a._dAnc - b._dAnc);
     // LE PRESSING COHÉRENT (lot 160, cfg.pressZone) : le presseur « plus proche brut » TRAVERSAIT (19,1 % des press à > 15 m latéraux de son poste — « le latéral gauche qui presse le central droit »). L'élection pénalise l'éloignement de SA zone (au-delà de tol) et la DISCIPLINE est à la note teamwork (× teamF : le cohésif élit juste, le brouillon retombe vers le chaos d'hier — qui est le vrai foot des petites équipes). Les autres tiennent le bloc : le relais se fait en coulissant, pas en sprint de traversée. false : l'élection brute d'hier.
     if (st.full && cfg.pressZone && byDist.length > 1) {
       const zKey = (q) => q._dAnc + (cfg.pressZone.poids ?? 0.7)

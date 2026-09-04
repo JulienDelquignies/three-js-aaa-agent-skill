@@ -100,6 +100,25 @@ export function malusHommeLibre(liberte, cfg, visionF = 1, sty = 0.5) {
   return (H.malus ?? 4) * Math.max(0, 1 - liberte / (H.seuil ?? 2.5)) * visionF * axe(sty, 1.3, 0.7);
 }
 
+/** LE MARQUÉ NE SE JOUE QU'EN REMISE (240a) — pure : le malus d'une passe vers un receveur dont la liberté projetée est sous
+ *  cfg.passeMarque.seuil ; × visionF du passeur × axe(style) ÷ controlF du receveur ; ÷ remiseF s'il a une remise. 0 sans la clé. */
+export function malusPasseMarque(liberte, cfg, { visionF = 1, sty = 0.5, controlF = 1, remise = false } = {}) {
+  const PM = cfg?.passeMarque; if (!PM) return 0;
+  const seuil = PM.seuil ?? 4.5; if (liberte >= seuil) return 0;
+  return (PM.malus ?? 5) * (1 - liberte / seuil) * visionF * axe(sty, 1.3, 0.7) / controlF * (remise ? (PM.remiseF ?? 0.35) : 1);
+}
+
+/** La REMISE possible (240a) — pure : un coéquipier de c, autre que m, libre (≥ seuil) à ≤ remise m du point de chute, couloir dégagé. */
+export function remisePossible(st, c, m, lead, foesL, opp, cfg) {
+  const PM = cfg?.passeMarque; if (!PM) return false;
+  for (const t of st.players) {
+    if (t.team !== c.team || t.keeper || t.id === m.id || t.id === c.id || t.down > 0 || hyp(t.p[0] - lead[0], t.p[2] - lead[2]) > (PM.remise ?? 8)) continue;
+    let lib = 99; for (const o of foesL) lib = Math.min(lib, hyp(o.p[0] - t.p[0], o.p[2] - t.p[2]));
+    if (lib >= (PM.seuil ?? 4.5) && laneClearance(lead, t.p, opp, { corridor: cfg.corridor }).open) return true;
+  }
+  return false;
+}
+
 export function choosePass(st, cfg = RONDO) {
   const c = st.players[st.possession.carrier];
   if (!c) return null;
@@ -413,8 +432,20 @@ export function choosePass(st, cfg = RONDO) {
         through = (plancher > 0 ? essaye(plancher) : null) ?? essaye(0);
       }
     }
+    // LE MARQUÉ NE SE JOUE QU'EN REMISE (240a, cfg.passeMarque && st.full — retour utilisateur : « beaucoup de jeu court avec
+    // un adversaire proche rend des ballons perdus ». Mesuré : le receveur à 2-4 m d'un adversaire fait 15 % des passes,
+    // perdues 15-40 % contre 3-10 % vers un libre ; l'homme libre (233) s'annule dès 2,5 m et le terme linéaire pèse 1,15/m
+    // face au couloir à 2,4). Sous seuil m de liberté projetée : malus × (1 − liberté/seuil) × visionF (le passeur qui voit)
+    // × axe(style : possession refuse, direct accepte) ÷ controlF du RECEVEUR (le bon toucher tient un ballon serré) —
+    // divisé par remiseF si le receveur a une REMISE possible (un coéquipier libre à ≤ remise m, couloir dégagé depuis
+    // son point de chute) : le marqué se joue s'il peut remettre, c'est le troisième homme (240). Absente : l'hier au bit.
+    const PM = st.full && !through && !servi ? cfg.passeMarque : null;
+    const malusMarque = PM && recvPressure < (PM.seuil ?? 4.5)
+      ? malusPasseMarque(recvPressure, cfg, { visionF: c.skill?.visionF ?? 1, sty: _sty, controlF: m.skill?.controlF ?? 1, remise: remisePossible(st, c, m, lead, foesL, opp, cfg) })
+      : 0;
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
+      - malusMarque                                         // LE MARQUÉ NE SE JOUE QU'EN REMISE (240a)
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
       // L'HOMME LIBRE (233, cfg.hommeLibre && st.full — Xavi/Lillo : trouver l'homme libre, pas le marqué. Mesuré avant :
       // 18 % des passes vers un receveur à < 3 m d'un adversaire, interceptées à 27-36 % (libre ≥ 3 m : 9 %) — le terme

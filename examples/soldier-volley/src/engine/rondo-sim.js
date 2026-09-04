@@ -1,15 +1,9 @@
-import { BALL, stepBall, kick } from './ball.js';
-import { predictPath } from './ball-predict.js';
-import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
+import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
-import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js';
-import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
-import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js';
-import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
-import { teteStep, voleeStep, chestStep } from './tete.js';
-import { coachStep } from './coach.js';
-import { MOVES } from './animkit.js';
-import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
+import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
+import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
+import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
+import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js';
 import { uneTouche } from './premiere-intention.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 import { offsideLine, isOffside } from './offside.js';
@@ -92,7 +86,8 @@ function stepGestures(st, dt, cfg) {
           p.v[1] = (ez * k) / Math.max(1e-4, dt);
           p.p[0] += ex * k; p.p[2] += ez * k;
         }
-        p.yaw = g.yaw; p.yawWant = null;
+        if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted')) { let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
+        else { p.yaw = g.yaw; p.yawWant = null; }
         p.speed = hyp(p.v[0], p.v[1]);
       }
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
@@ -966,7 +961,11 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // …et l'ADOPTION arrière est MORTE tant qu'on est lancé (189 — le veto d'exécution seul churnait : 1 801 déchirures/4 graines, ré-adoptée chaque frame)
         const reculeL = lanceNow && choice && st.players[choice.to.id]
           && (st.players[choice.to.id].p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) < -2;
-        if (!reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
+        const dosR = st.full && cfg.retournement && choice && !choice.cross && choice.style !== 'lofted' && !st.restart && st.phase === 'carry' && !pressCall && !jeteCall && st.players[choice.to.id]
+          && (() => { const to = st.players[choice.to.id]; if ((to.p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) > -2) return false; let dA = Math.atan2(to.p[2] - c.p[2], to.p[0] - c.p[0]) - c.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; return Math.abs(dA) > (cfg.retournement.cap ?? 1.75); })();
+        if (dosR) { if (c._retour) c._retour.to = choice.to.id; else c._retour = { to: choice.to.id, t: st.t }; } else if (c._retour) c._retour = null;   // le chronomètre part de la PREMIÈRE image dos (un receveur qui change ne le réarme pas — l'engagement attendait 7,7 s)
+        const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2);
+        if (!attendR && !reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;

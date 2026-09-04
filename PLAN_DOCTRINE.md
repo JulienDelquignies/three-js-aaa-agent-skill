@@ -221,6 +221,11 @@ offensive enfin, débats en axes tout du long.**
   devant les centraux sous pression (entre eux), conduite d'un central libre 5,5 → 8,2 m p50 (réel 6-12). La sortie
   de but est trop rare pour porter la loi (3 par 30 min, dette des sorties) : la salida vit sur la relance basse.
 
+**Lot 240a-d — Les quatre retours (avant le 240) — SCELLÉ (NOTES 291).** Passe vers un receveur serré (passeMarque,
+faible : 15,1 → 13,3 %), retournement du porteur (457 → 169 °/s p50, passes dans le dos ÷ 2), ballon libre au temps
+d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3-4,5 m de la ligne). Prix : pertes 333 → 393/90,
+à rendre par la remise du 240.
+
 **Lot 240 — Le troisième homme et l'appui-remise (préceptes 1.3, 1.5 ; brief chantier 2).**
 - Doctrine : A → B (une touche, dos au but, « si tu n'as pas vu, tu remets ») → C lancé qui part
   200-400 ms AVANT que B reçoive ; cycle 1,4-2,2 s ; 8-15 combinaisons réussies par match.

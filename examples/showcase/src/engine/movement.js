@@ -403,8 +403,8 @@ export function movePlayers(st, dt, cfg) {
       if (st.full && cfg.yawSlew !== false) {
         let dY = wantY - p.yaw;
         while (dY > Math.PI) dY -= 2 * Math.PI; while (dY < -Math.PI) dY += 2 * Math.PI;
-        const capY = (cfg.yawSlew?.rate ?? 9.4) * (p.skill?.accelF ?? 1) * dt;
-        p.yaw += Math.abs(dY) <= capY ? dY : Math.sign(dY) * capY;
+        const capY = (st.full && cfg.retournement && enPorte(st, p, cfg) ? Math.min(cfg.yawSlew?.rate ?? 9.4, cfg.retournement.rate ?? 4) : (cfg.yawSlew?.rate ?? 9.4)) * (p.skill?.accelF ?? 1) * dt;   // (240b) le porteur — et le passeur qui vient de lâcher — pivote au rythme du corps
+        { const ap = Math.abs(dY) <= capY ? dY : Math.sign(dY) * capY; p.yaw += ap; p._yawUsed = Math.abs(ap); }   // (240b) ce que ce slew a pris du budget de rotation de l'image
       } else p.yaw = wantY;
     }
     // A MAN CARRYING THE BALL FACES HIS BALL — not his drift. For everyone else, facing = direction of
@@ -458,9 +458,16 @@ export function movePlayers(st, dt, cfg) {
       let d = p.yawWant - p.yaw;
       while (d > Math.PI) d -= 2 * Math.PI;
       while (d < -Math.PI) d += 2 * Math.PI;
-      const rate = Math.max(cfg.turnRateMin, cfg.turnAccel / Math.max(1, p.speed));
-      if (Math.abs(d) <= rate * dt) { p.yaw = p.yawWant; p.yawWant = null; }
-      else p.yaw += Math.sign(d) * rate * dt;
+      // LE CORPS SE RETOURNE AVEC LE BALLON (240b, cfg.retournement && st.full — retour utilisateur : « le retournement pour la
+      // passe en arrière est trop rapide » ; mesuré : 457 °/s p50, 586 p90 dans les 0,3 s avant une passe arrière, réel
+      // 200-250 avec ballon) : le PORTEUR pivote au plus à rate rad/s × accelF (l'explosivité) — les autres gardent leur loi.
+      const rate0 = Math.max(cfg.turnRateMin, cfg.turnAccel / Math.max(1, p.speed));
+      const porteur = st.full && cfg.retournement && enPorte(st, p, cfg);
+      const rate = porteur ? Math.min(rate0, (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1)) : rate0;
+      // …UN SEUL BUDGET PAR IMAGE pour le porteur (240b) : les deux slews s'additionnaient (229 + 229 = 458 °/s mesurés)
+      const pas = porteur ? Math.max(0, rate * dt - (p._yawUsed ?? 0)) : rate * dt; p._yawUsed = 0;
+      if (Math.abs(d) <= pas) { p.yaw = p.yawWant; p.yawWant = null; }
+      else p.yaw += Math.sign(d) * pas;
     }
   }
 }
@@ -472,6 +479,12 @@ export function movePlayers(st, dt, cfg) {
 // pendant le geste) réécrivait la position APRÈS elle et la défaisait — mesuré, le budget
 // players-not-overlapping crevait (2,6 % > 2). L'ordre est une loi de charte : les autorités
 // écrivent, puis le monde projette ses contraintes, une fois, à la fin.
+/** LE CORPS QUI PORTE OU VIENT DE LÂCHER (240b) : le porteur, et le passeur pendant retournement.apres s après sa passe —
+ *  mesuré : les grandes rotations vivaient dans l'image de la frappe, quand le passeur retrouvait le plafond des autres. */
+export function enPorte(st, p, cfg) {
+  return st.possession?.carrier === p.id || st.ball.owner === p.id || (st.lastPasser === p.id && !!st.pass && st.t - st.pass.t < (cfg.retournement?.apres ?? 0.5));
+}
+
 export function separatePlayers(st, cfg) {
   // …ET LA DISTANCE SOCIALE DES COÉQUIPIERS (lot 86, cfg.social && st.full — mesuré : 1584
   // paires même équipe < 1,2 m / 15 min dont 52 % mark+mark, épisodes jusqu'à 11,5 s — « ils

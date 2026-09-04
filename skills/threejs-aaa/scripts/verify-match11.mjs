@@ -5440,5 +5440,42 @@ if (__bloc()) {
     V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100 && V.cond >= E2.cond + 1 && V.nc >= 4);
 }
 
+if (__bloc()) {
+  // LES QUATRE RETOURS (240a-d — retour utilisateur avant le 240 : « du jeu court vers un homme serré », « le retournement
+  // trop rapide », « pas le plus rapide au ballon libre », « les avancés jouent trop derrière »). (a) Les primitives :
+  // malusPasseMarque (liberté 2 m, seuil 4,5 : 5 × (1 − 2/4,5) = 2,778 ; ÷ controlF 1,25 → 2,222 ; × visionF 1,2 → 3,333 ;
+  // remise possible × 0,35 → 0,972 ; liberté 5 → 0 ; clé absente → 0) ; remisePossible sur un état factice (un coéquipier
+  // libre à 6 m du point de chute, couloir dégagé → true ; le même à 12 m → false) ; enPorte (porteur → true ; passeur 0,3 s
+  // après sa passe → true, 0,8 s → false ; un autre → false).
+  const { malusPasseMarque, remisePossible } = await import('../assets/starter/src/engine/rondo.js');
+  const { enPorte } = await import('../assets/starter/src/engine/movement.js');
+  const cfgQ = matchCfg({ shotRange: 20 });
+  const mA = malusPasseMarque(2, cfgQ), mB = malusPasseMarque(2, cfgQ, { controlF: 1.25 }), mC = malusPasseMarque(2, cfgQ, { visionF: 1.2 }), mD = malusPasseMarque(2, cfgQ, { remise: true }), mE = malusPasseMarque(5, cfgQ), mS = malusPasseMarque(2, matchCfg({ passeMarque: false }));
+  const c0 = { id: 0, team: 0, p: [0, 0, 0] }, m0 = { id: 1, team: 0, p: [10, 0, 0] }, foe = { id: 9, team: 1, keeper: false, p: [40, 0, 20] };
+  const mk = (tx) => ({ players: [c0, m0, { id: 2, team: 0, keeper: false, down: 0, p: [tx, 0, 0] }, foe] });
+  const rP = remisePossible(mk(16), c0, m0, [10, 0.11, 0], [foe], [foe.p], cfgQ), rN = remisePossible(mk(22), c0, m0, [10, 0.11, 0], [foe], [foe.p], cfgQ);
+  const stP = { t: 10, possession: { carrier: 3 }, ball: { owner: null }, lastPasser: 5, pass: { t: 9.7 } };
+  const eA = enPorte(stP, { id: 3 }, cfgQ), eB = enPorte(stP, { id: 5 }, cfgQ), eC = enPorte({ ...stP, t: 10.5 }, { id: 5 }, cfgQ), eD = enPorte(stP, { id: 7 }, cfgQ);
+  ok(`lot 240 — LE MARQUÉ NE SE JOUE QU'EN REMISE (malus liberté 2 m : ${mA.toFixed(3)} = 2,778 ; controlF 1,25 → ${mB.toFixed(3)} ; visionF 1,2 → ${mC.toFixed(3)} ; remise → ${mD.toFixed(3)} ; liberté 5 → ${mE} ; clé absente → ${mS} ; remise possible à 6 m ${rP}, à 12 m ${rN}) et LE CORPS QUI PORTE (porteur ${eA}, passeur à 0,3 s ${eB}, à 0,8 s ${eC}, un autre ${eD})`,
+    Math.abs(mA - 2.7777777778) < 1e-6 && Math.abs(mB - 2.2222222222) < 1e-6 && Math.abs(mC - 3.3333333333) < 1e-6 && Math.abs(mD - 0.9722222222) < 1e-6 && mE === 0 && mS === 0 && rP === true && rN === false && eA && eB && !eC && !eD);
+  // (b) Le flux (6 × 300 s) : la part des passes vers un receveur serré (2-4 m) avec c. sans passeMarque (mesuré 15 → 10 %) ;
+  // la rotation du passeur dans les 0,3 s avant une passe arrière, p50 (mesuré 462 → 176 °/s ; réel 200-250) ; l'attaquant
+  // le plus avancé derrière la ligne défensive en possession installée (mesuré 5,9 → 3,3 m).
+  const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
+  const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); let nP = 0, serre = 0; const rot = [], haut = [];
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed }); let cur = 0; const yawH = new Map();   // 12 graines : la part « serré » est un écart de 2 points
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg);
+        for (const p of st.players) { const h = yawH.get(p.id) ?? []; h.push([st.t, p.yaw]); if (h.length > 30) h.shift(); yawH.set(p.id, h); }
+        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (e.type !== 'pass' || e.to < 0) continue; const from = st.players[e.from], to = st.players[e.to]; if (!from || !to) continue; nP++;
+          let pr = 99; for (const q of st.players) if (q.team !== from.team && !q.keeper && q.down <= 0) pr = Math.min(pr, d2(q.p, to.p)); if (pr >= 2 && pr < 4) serre++;
+          const h = yawH.get(from.id) ?? [], h0 = h.find((x) => x[0] >= st.t - 0.3) ?? h[0]; if (h0 && h.length > 2) { const ang = Math.atan2(to.p[2] - from.p[2], to.p[0] - from.p[0]); const rel = Math.abs(((ang - h0[1] + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI; if (rel > 110) { const dy = Math.abs(((from.yaw - h0[1] + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI; rot.push(dy / Math.max(0.05, st.t - h0[0])); } } }
+        if (i % 6 === 0) { const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null; if (c && poss >= 0 && !st.restart && st.t - (st._possChangeAt ?? -99) > 4) { const sg = Math.sign(st.pitch.attackGoal(poss).x || 1); const def = st.players.filter((q) => q.team !== poss && !q.keeper && q.down <= 0).map((q) => q.p[0] * sg).sort((a, b) => b - a); const att = st.players.filter((q) => q.team === poss && !q.keeper && q.id !== c.id).map((q) => q.p[0] * sg).sort((a, b) => b - a); if (def.length >= 2 && att.length) haut.push((def[0] + def[1]) / 2 - att[0]); } } } }
+    return { serre: 100 * serre / Math.max(1, nP), nP, rot: med(rot), nRot: rot.length, haut: med(haut) }; };
+  const V = flux({}), E = flux({ passeMarque: false, retournement: false, epaule: false }), E2 = flux({ passeMarque: false });   // chaque loi contre SON jumeau : la part « serré » contre passeMarque seule (les autres lois la remontent, elle la ramène)
+  ok(`…et le FLUX (12 × 300 s) : passes vers un receveur serré ${V.serre.toFixed(1)} % (${V.nP}) ≤ sans passeMarque ${E2.serre.toFixed(1)} % (${E2.nP}) — non-inversion (mesuré 15,1 → 13,3 et 14,5 → 13,5 : réel mais faible, la vraie réponse au receveur serré est la remise du 240) ; rotation avant passe arrière p50 ${V.rot.toFixed(0)} °/s ≤ 300 et ≤ sans ${E.rot.toFixed(0)} − 100 (${V.nRot} passes ; réel 200-250) ; l'attaquant le plus avancé ${V.haut.toFixed(1)} m derrière la ligne ≤ sans ${E.haut.toFixed(1)} − 1,0 (réel 0-3 ; mesuré 5,9 → 3,3 et 4,5 selon les graines)`,
+    V.serre <= E2.serre && V.rot <= 300 && V.rot <= E.rot - 100 && V.nRot >= 30 && V.haut <= E.haut - 1.0);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
