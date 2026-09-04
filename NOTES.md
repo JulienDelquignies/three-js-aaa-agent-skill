@@ -8147,7 +8147,14 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      couvert +3 ; 5 m face → découvert −5 ; dos au jeu → couvert ;
      hauteurBloc 1 → 4,2 ; lissage → 2,98 à 1 s ; clé absente → null) +
      flux sur la réponse aux bascules (6 graines). Jumeau couvert:false =
-     233 au bit (53ae473c4c45401e / c1887e28edbe7ac6).
+     233 au bit (53ae473c4c45401e / c1887e28edbe7ac6). SCEAU 236 : 8
+     shards verts hors classe ordre (96) — contrastes d'hier déplacés par
+     la ligne vivante, épinglés couvert:false et verts isolés : coach
+     (plus de but en 600 s), 233, 128, 149, 227, 137, 117, 124, 143, 232b,
+     230/231 (lois éteintes figées) ; attributes 27 ✓ (l. 53/147/169) ;
+     les douze annexes vertes (sync : deux imports fondus, match-sim
+     1249) ; déployé (chunk Rondo-DR6Ko3KQ.js, capture playmode avant
+     deploy — la ligne rouge visiblement un cran plus haute).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
