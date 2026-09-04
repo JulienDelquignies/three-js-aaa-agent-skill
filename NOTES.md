@@ -8046,6 +8046,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      lois éteintes 230/231 figées (pasChasse, claquette, qualiteTir:false).
      Empreinte inchangée (173fb72c4182e7db / 277cbf9e260012ac : aucun tir
      dans la fenêtre des graines 3/7 — la loi ne vit que sur un tir).
+     SCEAU 232b : 8 shards verts hors classe ordre (96), attributes 27 ✓,
+     les douze annexes vertes (sync : le plafond se compte en split —
+     1249 en wc ; match-sim ramené à 1248), déployé (chunk
+     Rondo-BWlHCKLV.js, capture playmode avant deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
