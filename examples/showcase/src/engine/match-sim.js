@@ -6,7 +6,7 @@ import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
 import { lossReactStep, contrePressStep } from './contrepress.js';
 import { compenserLateral } from './compensation.js';
-import { projeterMilieux, postesEntreLignes } from './projection.js';
+import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
@@ -971,6 +971,7 @@ function assignMatchJobs(st, cfg) {
     // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
     if (st.full && cfg.referme && byDist[0]) refermerLigne(st, spotsBloc, mapD, nDefD, byDist[0], defenders, cfg, tac(st, defTeamB), axe); else if (st._bRefermeDz) st._bRefermeDz.clear();   // LA LIGNE SE REFERME (228, doc marquage.js)
+    if (st.full && cfg.couvert) { let sA = 0, nA = 0; for (const q of defenders) if (q.skill?.anticipF) { sA += q.skill.anticipF; nA++; } couvertStep(st, cfg, { defTeam: defTeamB, carrier, presseur: byDist[0] ?? null, sgnAtk, anticipMoy: nA ? sA / nA : 1, tac, axe }); } else if (st._bCouvertDx) st._bCouvertDx[defTeamB] = 0;   // BALLON COUVERT / DÉCOUVERT (236, doc couvert.js)
     byDist.forEach((p, i) => {
       if (i === 0) {
         // LE GARDIEN EN MAINS EST INATTAQUABLE (Loi 12 à l'échelle) : le press TIENT LE BORD de la surface — le harcèlement forçait des sorties de flipper (20,5 passes/min mesurées).
@@ -1076,7 +1077,7 @@ function assignMatchJobs(st, cfg) {
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (60)
         const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]], wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0;   // (228) le voisin du sorti glisse vers le trou
-        p.job = 'mark'; p.target = [wM[0], 0, wM[1]];
+        p.job = 'mark'; p.target = [wM[0] + (st._bCouvertDx && mapD.indexOf(p.post ?? 0) < nDefD ? (st._bCouvertDx[defTeamB] ?? 0) : 0), 0, wM[1]];   // (236) la LIGNE ARRIÈRE monte ou recule selon l'état du porteur (couvert.js)
         return;
       }
       if (!m) { p.job = 'mark'; p.target = [p.p[0], 0, p.p[2]]; return; }

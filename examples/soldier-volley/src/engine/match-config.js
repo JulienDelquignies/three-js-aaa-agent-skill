@@ -734,6 +734,7 @@ export const MATCH = {
   pasChasse: { part: 1, diveTime: 0.65 },
   claquette: { devant: 0.5, cote: 5, haut: 1.5 },
   hommeLibre: { seuil: 2.5, malus: 4 },   // L'HOMME LIBRE (233, choosePass) : malus × (1 − liberté projetée du receveur / seuil) × visionF × axe(style) — le marqué se refuse (18 % des passes, interceptées à 27-36 %). null : le barème linéaire d'hier
+  couvert: { pres: 2, libre: 3.5, face: 0.3, monte: 3, recule: 5, tau: 0.2 },   // BALLON COUVERT / DÉCOUVERT (236, couvert.js) : porteur cadré (≤ pres m ou dos au jeu) → la ligne monte de monte m × axe(hauteurBloc, 0,6, 1,4) ; libre (> libre m, face au jeu) → recul-frein de recule m × axe(1,4, 0,6) ; × anticipation moyenne de la ligne ; lissé (tau s). null : la ligne indifférente d'hier
   qualiteTir: { seuilBoite: 0.14, seuilLoin: 0.05, plancher: 0.15, base: 0.36, efold: 8, pres: 2, presF: 0.6, retard: 0.8, avance: 1.15, lobOut: 4 },   // LA ZONE DE VÉRITÉ (232, menace.js) : la qualité attendue du tir (distance, angle, pression, mur) contre un seuil (seuilBoite dans la surface, seuilLoin hors — le brief 2.10) × axe style ÷ rôle arbitre.tir ÷ finition × composureF × score ; sous le seuil, les planchers franc/tenté s'étouffent (plancher) et la passe reprend la main. null : l'arbitre d'hier (63 tirs / 90 min)  // mur (126) : le tenté décroît avec la densité adverse du cône — le mur se contourne
                           // …grise (lot 92) : la portée de tir × ce facteur = la ZONE GRISE où
                           // le tir existe dégressif, pondéré FINISHING (l'attribut, pas un mur —

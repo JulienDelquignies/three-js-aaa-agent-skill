@@ -8109,7 +8109,46 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      est fermé), le centre précoce, la sortie en touche du duel de
      couloir (duel.js), et le dégagement pressé vers la touche (174) — les
      sorties de but viendront de la précision à bout portant (232b).
- : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+- 286: BALLON COUVERT / BALLON DÉCOUVERT (236, cfg.couvert, couvert.js —
+     la règle cardinale de la défense placée : « c'est le ballon qui
+     déclenche la montée, si le porteur est cadré ou pas » (Lacombe), « si
+     le porteur est libre, l'ensemble du bloc doit reculer pour se prémunir
+     d'un ballon par-dessus » (Moulin) ; brief chantier 3). AVANT
+     (film-couvert, 6 × 300 s) : l'état du porteur adverse — couvert (un
+     défenseur à ≤ 2 m ou dos au jeu) 43 % du temps, découvert (libre >
+     3,5 m, face au jeu) 27 % — ne changeait rien à la ligne arrière : 24,8
+     m du but couvert, 26,6 découvert, et elle RECULAIT quand le porteur
+     était cadré (−1,5 m/s, elle suivait le ballon). LA LOI : l'état donne
+     une cible de profondeur de ligne — + monte 3 m (couvert : le pas en
+     avant) × axe(hauteurBloc, 0,6, 1,4), − recule 5 m (découvert : le
+     recul-frein) × axe(1,4, 0,6), 0 entre-deux ; × la moyenne d'anticipF
+     de la ligne (161) ; lissée (tau 0,2 s — l'amorce ≤ 200 ms du brief) ;
+     appliquée aux POSTÉS de la ligne arrière (mapD.slice(0, nD)) par le
+     consommateur `wM` (le patron 228 : un delta, rien de muté) ; dans le
+     bloc bas les défenseurs marquent des hommes (225) — la loi ne s'y
+     applique pas, c'est juste. ISOLÉ : le chemin de code à deltas nuls =
+     l'hier au bit ; la montée seule élève toute la ligne de 5-6 m dans
+     tous les états (la ligne haute tient l'attaque plus loin : le jeu se
+     joue plus loin du but) ; les médianes absolues par état sont couplées
+     au jeu — la PREUVE est la réponse aux bascules (film-couvert2) :
+     0,5 s après le passage vers « couvert », l'écart ballon − ligne se
+     referme de −0,47 m (sans : −0,24) ; vers « découvert », −0,68 (sans :
+     −0,93) — la ligne monte davantage sur le porteur cadré, recule
+     davantage sur le porteur libre. APRÈS : ligne du bloc médian 31,3 →
+     33,6 m du but (réel 34-44), couvert 32,2 c. découvert 31,6 (avant :
+     24,8 c. 26,6 — le signe s'inverse). BANDE : 32 tirs / 5 BUTS / 25
+     fautes / 5 corners par 100 min (233 : 41 / 12) — les buts tombent à
+     4,5 / 90 (réel 2,7) : la ligne qui monte sur le porteur cadré est le
+     vrai frein aux buts, pas la finition. Le prix : pertes 333 → 384 / 90,
+     réussite des passes 82 → 79 % (interceptions 13 → 17 % — la ligne
+     haute intercepte ; les pertes par passe 48 → 43 % du total) ;
+     garde-fou : appels profonds 89 c. 90, passes 272 c. 292, profondes 11
+     c. 6, contre-appels 66 c. 102. Clause 236 : primitive pure (1,5 m →
+     couvert +3 ; 5 m face → découvert −5 ; dos au jeu → couvert ;
+     hauteurBloc 1 → 4,2 ; lissage → 2,98 à 1 s ; clé absente → null) +
+     flux sur la réponse aux bascules (6 graines). Jumeau couvert:false =
+     233 au bit (53ae473c4c45401e / c1887e28edbe7ac6).
+- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
