@@ -8080,8 +8080,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      pure (1,2 m → 2,08 ; 3 m → 0 ; vision 1,15 → 2,392 ; direct 1,456 ;
      possession 2,704 ; clé absente 0) + flux 6 graines (réussite ≥ sans
      + 1,5, part des passes au collé ≤ sans). Jumeau hommeLibre:false =
-     232b au bit (173fb72c4182e7db / 277cbf9e260012ac).
-- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+     232b au bit (173fb72c4182e7db / 277cbf9e260012ac). SCEAU 233 : 8
+     shards verts hors classe ordre (96, 174) — contrastes d'hier déplacés
+     par l'homme libre, épinglés hommeLibre:false et verts isolés : pose
+     figée, 217, 190, 232 (51 c. 72 tirs — le ratio 0,71 pour 0,70), 232b,
+     121, 122 ; attributes 27 ✓ (gradation, l. 53/147/169) ; les douze
+     annexes vertes ; bande 41 tirs / 12 buts / 24 fautes / 5 corners par
+     100 min (232b : 31 / 11 — la possession aboutit davantage, encore dans
+     la bande re-fondée 20-45 ; réel 24-33) ; déployé (chunk
+     Rondo-CQiPFeEU.js, capture playmode avant deploy). Monde 233 : seed 3
+     53ae473c4c45401e, seed 7 c1887e28edbe7ac6.
+- 285: LA LIGNE DE TOUCHE (234) — SONDÉ, NON LIVRÉ. Mesuré (film-touche,
+     6 × 300 s) : touches 9 / 90 (réel ~40), sorties de but 3 (réel ~20),
+     corners 3 (réel 9-10) ; le ballon n'est à < 5 m d'une ligne de touche
+     que 2 % du jeu ; 93 conduites de couloir / 90 finissent en passe,
+     centre ou touche ; le porteur excentré (|z| > hz/2) porte VERS L'AXE
+     74 % du temps, vers la ligne 12 % (dbg-couloir). Essayé : « montrer
+     la touche » — le cadrage jockey décalé vers l'intérieur sur porteur
+     excentré (versTouche 1 puis 2,5 m × axe marquage × teamF) : le
+     presseur n'est « plus dedans que le porteur » que 45 → 47 %, l'écart
+     réel 0,10 → 0,15 m — la cible décalée ne se réalise pas dans les
+     corps (le mord à 1,6 m reprend le ballon pour cible, la garde
+     éloigne), et la direction du porteur ne vient pas du presseur : elle
+     vient du CÔNE DE CONDUITE de l'arbitre (menaceConduite, ±35° vers le
+     but) qui ne connaît pas le couloir. Retiré (un placebo ne se livre
+     pas). À REPRENDRE au 240/241 par la décision du porteur : la conduite
+     de couloir (le cône s'ouvre le long de la ligne quand l'intérieur
+     est fermé), le centre précoce, la sortie en touche du duel de
+     couloir (duel.js), et le dégagement pressé vers la touche (174) — les
+     sorties de but viendront de la précision à bout portant (232b).
+ : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
