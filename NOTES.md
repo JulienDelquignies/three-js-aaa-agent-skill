@@ -8247,13 +8247,109 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      sur son homme) — à reprendre avec la garde par tiers (238). SCEAU
      237 : jumeau « recul absent » = monde 235 au bit (71717ebf0bb27154 /
      a8a90f93e85bace6 — part 0,45 × axe 1 = part 0,5 × 0,9), monde 237
-     0e1f168aeb558b61 ; clause 237 isolée 2 ✓, 228 inchangée 1 ✓,
+     d9ceb6f22f805b06 / 8b88d02780cde74a (corrigé au 238 : le chiffre écrit
+     au sceau datait d'avant part 0,45) ; clause 237 isolée 2 ✓, 228 inchangée 1 ✓,
      attributes 26 ✓ / 1 ✗ (la gradation 152/158, rouge depuis le 236) ;
      douze annexes vertes (match 84, rondo 40, gestes 60, menace 11,
      frappes 13, sync 9, roles 11, loi3 10, kit 5, part-tint 18, tactics
      11, slide 10) ; 8 shards : seuls 96 / 174 / 189 (la classe « ordre
      des blocs »), chacun vert isolé ; déployé (chunk Rondo-Dco_sHtR.js à
      l'alias, capture playmode avant deploy).
+- 289: LA GARDE PAR TIERS ET L'AFFECTATION QUI SE TIENT (238, garde.js
+     gardeDist, marquage.js affecterMarquage — Moulin : « on ne presse pas
+     à 80 m de son but » ; brief 2.3 : 4-8 m de cadrage dans le tiers
+     adverse, 1,2-1,8 au contact ; marquage de surface réel 1-2 m).
+     TROUVÉ (film-garde, 6 × 300 s) : porteur → premier défenseur 2,6 /
+     2,8 / 2,5 m par tiers (loin / milieu / proche), en fenêtre comme
+     hors — la garde 222 (loin 6, milieu 3) n'atteignait JAMAIS les
+     corps : l'ombre de couverture (coverShadow, avant le jockey dans
+     l'ordre du presseur) posait la cible à 1,15 m du porteur dès 2,6 m
+     (cible du presseur mesurée à 1,4 m). Et en surface le marqueur
+     affecté était à 4,4 m de son homme pour une cible à 0,64 : une
+     affectation vivait 0,27 s p50 (re-tirée à chaque image, A.clear())
+     et le marqueur était élu parmi les proches du BALLON (11,6 m de son
+     homme à l'affectation) — il n'arrivait jamais. LES LOIS : (1)
+     gardeDist (garde.js), UNE distance par tiers depuis le but défendu
+     (loin 6 du 222, milieu gardeTiers.milieu 4, proche gardeTiers.proche
+     2 — hier le pas du jockey 1 m) × fenêtre 0,5 × axe pressing (1,4 →
+     0,6) × (2 − aggrF), lue par l'ombre ET le jockey ; la morsure (1,6 m)
+     reste : elle ne mord que si le porteur VIENT. (2) marquageTenue
+     (gain 0,6) : le marqueur garde son homme sauf marqueur libre à moins
+     de 0,6 × son coût, et reste éligible sorti du peloton du ballon
+     (jamais les deux presseurs). Clés absentes : le tirage d'hier au bit
+     (jumeau = moteur 237 committé, d9ceb6f22f805b06 / 8b88d02780cde74a).
+     LE GARDE-FOU A PARLÉ : à gain 0,6 la bande sortait (50 tirs par 100
+     min, bande 20-45) — film-tirs à 12 graines : 53 tirs/90 avec, 23
+     sans la tenue, 80 % dans la surface, tirs LIBRES à moins de 11 m
+     × 3 : le marqueur qui garde son homme hors du peloton prive le bloc
+     de sa couverture, le receveur en surface est libre. Variantes
+     mesurées : sans l'extension hors peloton 23 tirs mais marque 2,8 m
+     (rien de gagné) ; gain 0,8 : 38 tirs/90, marque 2,1 m — retenu (on
+     lâche dès qu'un libre est 20 % plus près). La tenue et la
+     couverture sont un arbitrage, la clé le porte.
+     MESURÉ : marqueur → attaquant en surface 2,4 → 2,0-2,1 m (réel 1-2) ;
+     tiers loin hors fenêtre : la CIBLE du presseur 1,33 → 6,01 m (12
+     graines — la signature directe, prouvée au banc) mais le CORPS 2,6 →
+     3,3 sur six graines et 3,16 c. 3,15 sur douze : dans le bruit (la
+     possession loin est rare, le porteur avance au sprint sur un presseur
+     qui recule au jog — physique, pas une borne ; informatif au banc,
+     comme l'aval du 233) ; milieu 2,8 → 2,9 (cible 4, même cause) ;
+     proche 2,5 → 2,3 ; durée d'une
+     affectation 0,27 → 0,45 s p50, 1,25 → 2,23 p90 (l'homme sort de la
+     zone de danger, la paire meurt avec lui) ; distance à l'affectation
+     11,6 → 10,3 m (les nouvelles paires viennent toujours du peloton :
+     dette). Le relais du presseur (plan : 5 s × workF) n'est pas livré :
+     mesuré, le presseur change déjà toutes les 1,0 s p50 (p90 5,5) — le
+     relais est l'inverse du problème. Réutilisable : gardeDist est une
+     primitive pure (état, cfg, presseur, ancre, fenêtre) qu'un autre
+     projet appelle sans le match ; les tiers et les facteurs sont des
+     clés. L'INTERACTION TROUVÉE PAR LE BANC (clause 227 rouge : pertes
+     129 avec la passe avant contact c. 112 sans, 260 c. 238 à 12
+     graines — une loi utile devenue nuisible) : avec la garde, l'ombre
+     de couverture couvre VRAIMENT le couloir à 3-6 m (hier collée au
+     porteur) ; ses pas latéraux le long du couloir ferment à 3 m/s
+     l'espace d'une image, presseurArrive (227) y lit une arrivée et la
+     passe hâtive part dans le couloir couvert. LA LOI : le cadrant
+     n'arrive pas — presseurArrive ignore le presseur dont la CIBLE est
+     à plus de gardeTiers.lireCible (2,5 m) du porteur (l'intention prime
+     la vitesse d'une image ; 0 : l'hier au bit). Mesuré à 12 graines :
+     227 c. 238 (la loi 227 redevient utile, −5 %), pertes 390 → 369/90
+     (294 au 237 ; réel 200-280 — la marque serrée coûte des pertes en
+     surface, dette offensive). RE-DATÉES sur preuve : 222 (tiers proche
+     ≤ 1,2 → 2,3 : la garde du tiers défensif n'est plus le pas du
+     jockey) ; la fixture de l'ombre épinglée gardeTiers:false (elle
+     mesure le point d'ombre d'hier) ; 97 (fenêtre 4 → 6 s : la frappe
+     part à 3,8 s hier, 4,27 avec la garde — la décision, pas le chrono) ;
+     checkMatch 330 → 480 s (graine 7 sèche dans tous les mondes, 1 tir
+     en 300 s hier) ; coach 4 → 8 graines ; 233 à 12 graines (collé 4,1
+     c. 5,1, aval − 2,5) ; 227 3 → 6 graines ; 167 6 → 12 ; 237 mesuré
+     sur les CIBLES des postés (le corps : 0,15 + 0,29 au 237, −0,03 ici
+     — bruit ; la cible est ce que la loi pose). Le tour final des 8
+     shards (moteur avec lireCible) a encore rendu dix flux au bord,
+     tous verts isolés après re-datation par volumétrie : gardien DÉFEND
+     8 → 16 graines, 112 8 → 12, 144 (sabotage informatif : 53 c. 48,
+     l'écart n'est plus mesurable), 149 (une graine → deux moyennées),
+     170 4 → 8, 233 (non-inversion seule : l'écart vit entre 0,2 et 1 pt),
+     227 (12 graines, non-dégradation à 5 % : 237 c. 233 sous ses
+     épingles — l'effet vit dans le bruit depuis la garde), 236 (aucune
+     inversion, la signature combinée informative : 0,48 / 0,17 / 0,21 /
+     0,03 en quatre mondes), 237 (cibles des POSTÉS SANS HOMME : + 1,5 /
+     + 2,2 m, signature 3,7 — enfin franche, là où le delta s'applique
+     exactement), 230 (structure seule : 27 c. 32, la garde et l'oblique
+     couvrent le dos au défaut). LEÇON DU 238 : trois lois anciennes
+     (232b, 144, 227) n'ont plus d'effet mesurable dans ce monde ; leurs
+     primitives tiennent, leurs flux sont datés informatifs. Un banc de
+     flux à ± 1 événement ne prouve une loi que par sa signature DIRECTE
+     (la cible, le choix) — les corps sont l'aval, bruités par tout le
+     reste du monde. SCEAU 238 : jumeau {gardeTiers:false,
+     marquageTenue:false} = moteur 237 au bit (d9ceb6f22f805b06 /
+     8b88d02780cde74a, lireCible sous gardeTiers) ; clause 238 isolée 2 ✓ ;
+     bande 40 graines 31-38 tirs, 6-8 buts par 100 min ; pertes 369/90 ;
+     attributes 26 ✓ / 1 ✗ (la gradation, hier) ; douze annexes vertes
+     (match 84, rondo 40, gestes 60, menace 11, frappes 13, sync 9, roles
+     11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10) ; 8 shards :
+     hors classe (174) tout re-daté vert isolé ; déployé (chunk
+     Rondo-Wyk24gg8.js à l'alias, capture playmode avant deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

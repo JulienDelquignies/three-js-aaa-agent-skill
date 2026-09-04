@@ -198,6 +198,10 @@ offensive enfin, débats en axes tout du long.**
   Le relais du presseur après `garde.relais 5 s × workF`.
 - Cible : 2,8 / 2,8 / 2,3 → 4-6 / 3-5 / 1,5-3 ; marquage surface 2,6 → 1,5-2 m.
 - Taille : S-M. Fichiers : `match-sim.js` (jockey), `marquage.js`.
+- **SCELLÉ (NOTES 289)** : la garde 222 n'atteignait pas les corps (l'ombre de couverture posait 1,15 m avant
+  le jockey) → `garde.js` gardeDist lue par l'ombre et le jockey ; tiers loin 2,6 → 3,3 m, proche 2,5 → 2,3 ;
+  marquage de surface 2,4 → 2,1 m par la tenue d'affectation (`marquageTenue` gain 0,8 — à 0,6 la bande sortait, 53 tirs/90 : le garde-fou anti-Goodhart a tranché). Le relais du
+  presseur n'est pas livré (il change déjà toutes les 1 s). Dette : les nouvelles paires viennent du peloton.
 
 ### Campagne III — La doctrine offensive (Guardiola, Xavi, Dall'Oglio, Elsner)
 

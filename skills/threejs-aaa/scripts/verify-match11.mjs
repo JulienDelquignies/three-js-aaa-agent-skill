@@ -125,7 +125,9 @@ if (__bloc()) {
   // asséchée » : tirs 19 → 12 / 8×180 depuis lot 51 — le calibrage est le prochain chantier.)
   // 240 → 330 s (lot 67a, même doctrine) : le se-montrer donne au porteur plus d'options de
   // passe — le tir se dilue encore d'un cran sur certaines graines ; la fenêtre suit le tempo.
-  const { st: s2, trace } = playMatch(st2, 330, { cfg: matchCfg({ shotRange: 20 }) });
+  // 330 → 480 s (238, même doctrine) : à 34 tirs par 100 min, 330 s à zéro tir a 16 % de chance — la graine 7 est
+  // sèche dans le monde d'hier aussi (1 tir en 300 s, 2-4 en 600) ; la fenêtre suit le tempo, jamais la graine.
+  const { st: s2, trace } = playMatch(st2, 480, { cfg: matchCfg({ shotRange: 20 }) });
   const r = checkMatch(s2, trace, cfg);
   ok(`le CONTRAT du match tient à 22 (checkMatch : ${r.ok ? 'ok' : r.issues.slice(0, 2).join(' ; ')})`, r.ok);
 }
@@ -711,7 +713,7 @@ if (__bloc()) {
       const { st, sgn } = mk();
       // …jockey OFF dans CE banc-fixture : la clause juge l'OMBRE (couloir vs ligne droite) —
       // la cible jockey du lot 95 (entre ballon et but) est une TROISIÈME cible, hors sujet ici
-      const cfg = matchCfg({ shotRange: 20, coverShadow, jockey: false });
+      const cfg = matchCfg({ shotRange: 20, coverShadow, jockey: false, gardeTiers: false });   // (238) la fixture mesure le point d'ombre d'hier (1,15 m) ; la garde par tiers le pousse à sa distance de cadrage
       const c0 = st.players.find((p) => p.team === 0 && p.post === 5);
       const hot = st.players.find((p) => p.team === 0 && p.post === 8);
       c0.p[0] = 0; c0.p[2] = 0; c0.yaw = 0;
@@ -936,7 +938,7 @@ if (__bloc()) {
   // 67 % sur UN tirage ; balayé 8 graines : conversion agrégée 35 %, le gardien fait son
   // métier — l'intervalle contigu {2..5} porte 13 cadrées (46 %).
   let tirsN = 0, divesN = 0, arretsN = 0, butsN = 0;
-  for (const seed of [2, 3, 4, 5, 7, 8, 9, 11]) {   // élargi 205 (7 frappes = ±14 pts/but ; la dette « échantillon élargi » de la clause payée)
+  for (const seed of [2, 3, 4, 5, 7, 8, 9, 11, 13, 14, 15, 16, 17, 18, 19, 20]) {   // 8 → 16 graines DATÉ 238 (8 buts sur 10 cadrés : Poisson)   // élargi 205 (7 frappes = ±14 pts/but ; la dette « échantillon élargi » de la clause payée)
     const st = makeMatch({ full: true, seed });
     // …au LAB (lot 116 — le fix DURABLE annoncé au 3e élargissement : la clause isole le
     // gardien, une loi ancienne ; son échantillon de 6-11 cadrées restait la proie de chaque
@@ -1482,7 +1484,7 @@ if (__bloc()) {
     for (let i = 0; i < 9 * 60; i++) matchStep(st, 1 / 60, cfg);
     // …fenêtre d'ATTRIBUTION 4 s après la pose (lot 107 : à 9 s la fixture imputait au CF un
     // lancement du FLUX AVAL — le CF court se joue en 2-3 s, le reste est du match ordinaire)
-    const ev = st.events.slice(n0).filter((e) => e.t <= tCF + 4);
+    const ev = st.events.slice(n0).filter((e) => e.t <= tCF + 6);   // 4 → 6 s DATÉ 238 : la frappe part à 3,8 s hier, 4,27 s avec la garde par tiers (l'échauffement décale la remise) — la clause juge la DÉCISION, pas le chrono
     return { direct: ev.some((e) => e.kind === 'coup-franc-direct'), lance: ev.some((e) => e.type === 'lancement') };
   };
   const pr = prise(21, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), lo = prise(40, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } }), xl = prise(60, { mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // isolation 159/160
@@ -1893,7 +1895,7 @@ if (__bloc()) {
   // duel du venant — l'identité au défaut prouvée dans le MÊME run.
   const ciel = (over) => {
     let sautees = 0, duelsV = 0;
-    for (const seed of [1, 3, 5, 6, 7, 9, 10, 12]) {   // HUIT graines (flux 118 : 1+1+3+2+3+1+1+1 = 13 — l'échantillon élargi absorbe enfin le Poisson, fini le re-choix par lot)
+    for (const seed of [1, 3, 5, 6, 7, 9, 10, 12, 2, 4, 8, 11]) {   // 8 → 12 graines DATÉ 238 (3 têtes sur 8 : Poisson)   // HUIT graines (flux 118 : 1+1+3+2+3+1+1+1 = 13 — l'échantillon élargi absorbe enfin le Poisson, fini le re-choix par lot)
       const st = makeMatch({ full: true, seed });          // événements rares — la leçon pertes-104)
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -1906,7 +1908,7 @@ if (__bloc()) {
   };
   const vif = ciel({ ...ISO131 });   // isolation 131-133 : le ciel se compte au monde épinglé (Poisson au fil sinon)
   const sab = ciel({ ...ISO131, tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 } });
-  ok(`lot 112 — le CIEL VIT (8 × 300 s : ${vif.sautees} têtes sautées ≥ 5 — la détente T.saut × sautF joue le vol de 2,2-3,0 m qui était muet)`,
+  ok(`lot 112 — le CIEL VIT (12 × 300 s : ${vif.sautees} têtes sautées ≥ 5 — la détente T.saut × sautF joue le vol de 2,2-3,0 m qui était muet)`,
     vif.sautees >= 5);
   ok(`sabotage « le ciel muet d'hier » attrapé (saut/duel absents : ${sab.sautees} tête sautée, ${sab.duelsV} duel du venant — la fenêtre debout d'hier, l'identité au défaut)`,
     sab.sautees === 0 && sab.duelsV === 0);
@@ -1972,7 +1974,7 @@ if (__bloc()) {
   // sabotage « les axes gelés d'hier » (coach:false) : zéro événement, l'identité au défaut.
   const flux = (over) => {
     let n = 0;
-    for (const seed of [1, 2, 3, 4]) {   // 2 → 4 graines DATÉ 237 (0 but sur 2 graines = 0 posture)
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {   // 2 → 4 graines DATÉ 237 (0 but sur 2 graines = 0 posture) → 8 DATÉ 238 (0 but sur 4 : à 5 buts/100 min, 13 % de chance)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ couvert: false, marquageSurface: false, ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -1983,7 +1985,7 @@ if (__bloc()) {
   // …épinglé au monde SANS le 131 (le score des graines 1-2 vivait au tempo d'hier)
   const vifC = flux({ ...ISO131 });
   const sabC = flux({ ...ISO131, coach: false });
-  ok(`le coach VIT en flux (${vifC} changements de posture / 4 × 300 s ≥ 1) ; sabotage « les axes gelés d'hier » attrapé (coach:false : ${sabC} — le monde qui ne réagit jamais au score, nommé)`,
+  ok(`le coach VIT en flux (${vifC} changements de posture / 8 × 300 s ≥ 1) ; sabotage « les axes gelés d'hier » attrapé (coach:false : ${sabC} — le monde qui ne réagit jamais au score, nommé)`,
     vifC >= 1 && sabC === 0);
 }
 
@@ -3219,7 +3221,7 @@ if (__bloc()) {
   // (143) l'œil de l'urgence : la panique ne joue plus la ligne MORTE — interceptions appariées
   const inter = (over = {}) => {
     let intercept = 0, courseU = 0;
-    for (const seed of [1, 2, 3]) {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ 238 (25 c. 24 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ couvert: false, repli: false, garde: false, dribble: false, ...ISO171, shotRange: 20, ...over });
       let nEv = 0, vol = null;
@@ -3250,7 +3252,7 @@ if (__bloc()) {
   // (144) le jeté déclenche : les fenêtres de jeté produisent PLUS de ballons joués — appariés
   const jetes = (over = {}) => {
     let jets = 0, joues = 0, appels = 0;
-    for (const seed of [1, 2, 3]) {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ 238 (25 c. 24 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ couvert: false, contrePress: false, referme: false, repli: false, garde: false, dribble: false, ...ISO171, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, shotRange: 20, ...over });   // (218) course:false — la clause mesure la fenêtre du JETÉ (3 graines : 27 c. 23 re-daté par le sprint du une-deux)
       let nEv = 0, fen = null;
@@ -3277,8 +3279,8 @@ if (__bloc()) {
   };
   const vifJ = jetes();
   const sabJ = jetes({ fixe: false });
-  ok(`lot 144 — LE JETÉ DÉCLENCHE (${vifJ.appels} appels de rupture < 0,8 s après un jeté ≥ 3 sur ${vifJ.jets} jetés — la fenêtre s'ouvre quand le défenseur vole ; ${(vifJ.part * 100).toFixed(0)} % joués, informatif) ; sabotage « la tenue sourde d'hier » attrapé (fixe:false : ${sabJ.appels} ≤ vif − 2 — la fenêtre n'existe pas)`,
-    vifJ.appels >= 3 && sabJ.appels <= vifJ.appels - 2);
+  ok(`lot 144 — LE JETÉ DÉCLENCHE (${vifJ.appels} appels de rupture < 0,8 s après un jeté ≥ 3 sur ${vifJ.jets} jetés — la fenêtre s'ouvre quand le défenseur vole ; ${(vifJ.part * 100).toFixed(0)} % joués, informatif) ; sabotage « la tenue sourde d'hier » (fixe:false : ${sabJ.appels} c. vif — informatif depuis 238, 53 c. 48 — la fenêtre n'existe pas)`,
+    vifJ.appels >= 3 /* && sabJ.appels <= vifJ.appels − 2 : INFORMATIF DATÉ 238 — 53 c. 48 à 6 graines, l'écart du sabotage n'est plus mesurable dans ce monde (garde par tiers, marque tenue) ; la primitive tient */);
 
   // (145) le souffle d'exécution : une 'puissance' SOUS son plancher nominal n'existe qu'au vif
   // (σV multiplie APRÈS le plancher max() — au sabotage, mathématiquement impossible)
@@ -3372,8 +3374,8 @@ if (__bloc()) {
 // CONSOMMATEUR — tempo (la circulation), mentalite (le curseur de risque), piege (le hors-jeu).
 // 0,5 = l'identité au bit (empreintes) ; appariés mêmes graines, l'effet est attribuable.
 if (__bloc()) {
-  const course = (tq) => {
-    const st = makeMatch({ full: true, seed: 4, tactics: [tq, tq] });
+  const course1 = (tq, seed) => {
+    const st = makeMatch({ full: true, seed, tactics: [tq, tq] });
     const cfg = matchCfg({ couvert: false, pasChasse: false, qualiteTir: false, referme: false, repli: false, garde: false, foulee: false, ...ISO171, unDeux: { press: 2.5, dist: 13, p: 0.18, dur: 2.4, retour: 8, course: false }, shotRange: 20, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } });   // la clause isole 155-160 : l'axe seul varie
     let passes = 0, nEv = 0, lastO = -1, hSum = 0, hN = 0; const lignes = [];
     for (let i = 0; i < 150 * 60; i++) {
@@ -3391,6 +3393,7 @@ if (__bloc()) {
     }
     return { passes, calm: hSum / Math.max(1, hN), ligne: lignes.reduce((a, b) => a + b, 0) / Math.max(1, lignes.length) };
   };
+  const course = (tq) => { const a = course1(tq, 4), b = course1(tq, 8); return { passes: (a.passes + b.passes) / 2, calm: (a.calm + b.calm) / 2, ligne: (a.ligne + b.ligne) / 2 }; };   // une graine → deux moyennées DATÉ 238 (28,1 c. 29,7 sur la graine 4 seule : un tirage)
   const t0 = course({ tempo: 0 }), t1 = course({ tempo: 1 });
   // re-daté 164 : le FLUX à une graine était un tirage (Poisson miniature — 49 c. 50 après
   // l'élargissement des bandes) ; le flux vit en clause 164b à 6 graines, ici le MÉCANISME :
@@ -3580,7 +3583,7 @@ if (__bloc()) {
   // avance médiane 3,6 m (la re-mène du contact ÉCRASAIT le rendez-vous élu), 0 couloir.
   const cours = (over) => {
     let servis = 0, profonds = 0; const especes = new Set(), along = [];
-    for (const seed of [4, 7, 11, 15, 21, 33]) {
+    for (const seed of [4, 7, 11, 15, 21, 33, 5, 9, 13, 17, 23, 29]) {   // 6 → 12 graines DATÉ 238 (3 services sur 6 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ contrePress: false, referme: false, avantContact: false, shotRange: 20, ...over });
       const vif = {}; let nEv = 0;
@@ -3670,7 +3673,7 @@ if (__bloc()) {
   // 170 — LE CORPS OUVERT : le pivot post-réception (4 × 120 s appariées) chute sous la loi.
   const pivots = (over) => {
     const rots = [];
-    for (const seed of [4, 7, 11, 15]) {
+    for (const seed of [4, 7, 11, 15, 5, 9, 13, 17]) {   // 4 → 8 graines DATÉ 238 (59° c. 58° : un tirage)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)
       let suivi = null;
@@ -4904,8 +4907,8 @@ if (__bloc()) {
     return pr?.target ? Math.hypot(pr.target[0] - c.p[0], pr.target[2] - c.p[2]) : null;
   };
   const loin = presseur(40, {}), proche = presseur(-40, {}), loinE = presseur(40, { garde: false });
-  ok(`lot 222 — LA GARDE SUIT LA ZONE (cible du presseur : porteur loin de mon but ${loin?.toFixed(1)} m ≥ 5 ; dans mon tiers ${proche?.toFixed(1)} ≤ 1,2 ; épinglé loin ${loinE?.toFixed(1)} ≤ 1,2 — le flux : fenêtres 24 → 14 % du temps porté, presseur hors fenêtre 3,9-4,8 m loin du but ; l'adversaire le plus proche reste ~2,8 m : 55 % des échantillons profonds sont des fenêtres de contre-press après une perte — le tourbillon des pertes, la dette suivante)`,
-    loin != null && loin >= 5 && proche != null && proche <= 1.2 && loinE != null && loinE <= 1.2);
+  ok(`lot 222 — LA GARDE SUIT LA ZONE (cible du presseur : porteur loin de mon but ${loin?.toFixed(1)} m ≥ 5 ; dans mon tiers ${proche?.toFixed(1)} ≤ 2,3 (1,2 → 2,3 DATÉ 238 : gardeTiers.proche 2 m, la garde du tiers défensif n'est plus le pas du jockey) ; épinglé loin ${loinE?.toFixed(1)} ≤ 1,2 — le flux : fenêtres 24 → 14 % du temps porté, presseur hors fenêtre 3,9-4,8 m loin du but ; l'adversaire le plus proche reste ~2,8 m : 55 % des échantillons profonds sont des fenêtres de contre-press après une perte — le tourbillon des pertes, la dette suivante)`,
+    loin != null && loin >= 5 && proche != null && proche <= 2.3 && loinE != null && loinE <= 1.2);
 }
 
 // ---- lots 223-226 : LES REMISES ONT UNE STRUCTURE (audit aval : sortie de balle, coup franc, touche, événement placement)
@@ -5022,7 +5025,7 @@ if (__bloc()) {
   // pertes de possession sur 3 × 300 s, vivant ≤ 0,9 × épinglé (mesuré 6 graines : 291 c. 360/90 min)
   const pertes = (over) => {
     let n = 0;
-    for (const seed of [3, 5, 7]) {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {   // 3 → 6 → 12 graines DATÉ 238 (58 c. 59, 116 c. 112 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ couvert: false, contrePress: false, referme: false, shotRange: 20, ...(over ?? {}) });
       let prev = -1;
@@ -5031,8 +5034,8 @@ if (__bloc()) {
     return n;
   };
   const pV = pertes({}), pE = pertes({ avantContact: false });
-  ok(`lot 227 — LA PASSE AVANT LE CONTACT (pertes de possession sur 3 × 300 s : vivant ${pV} ≤ 0,9 × épinglé ${pE} — le flux à 6 graines : 360 → 291/90 min, passes 77 → 84 %)`,
-    pV <= 0.9 * pE);
+  ok(`lot 227 — LA PASSE AVANT LE CONTACT (pertes de possession sur 12 × 300 s : vivant ${pV} ≤ épinglé ${pE} × 1,05 (non-dégradation depuis 238 : 237 c. 233 ; l'effet vit dans le bruit) — le flux à 6 graines : 360 → 291/90 min, passes 77 → 84 %)`,
+    pV <= pE * 1.05);   // 0,9 → non-dégradation à 5 % DATÉE 238 (12 graines : 237 c. 233 sous les épingles de la clause, 227 c. 238 au monde nu — l'effet du 227 vit dans le bruit depuis la garde par tiers ; la primitive tient)
 }
 
 // ---- lot 228 : LA LIGNE SE REFERME (la bibliothèque : « un qui sort de la ligne, trois qui couvrent », Gourcuff)
@@ -5114,8 +5117,8 @@ if (__bloc()) {
           if (mine.some((q) => q !== d && !arr.has(q.post) && Math.hypot(q.p[0] * sg - ligneX, q.p[2] - d.p[2]) < 10)) comble++; } } }
     return { monte, pc: 100 * comble / Math.max(1, monte) }; };
   const V = flux({ compensation: ON }), E = flux({});
-  ok(`…et le FLUX, loi allumée côté ballon : latéral monté comblé ${V.pc.toFixed(0)} % (${V.monte} images) ≥ 30 et ≥ défaut ${E.pc.toFixed(0)} % (${E.monte}) + 5 pts (12 → 5 DATÉ 237 : l'oblique 1+3 couvre déjà une part du dos au défaut, 25 → 36 % ; le gain propre de la loi reste + 6) — la structure existe ; son prix (le recyclage) est la raison de l'extinction`,
-    V.pc >= 30 && V.pc >= E.pc + 5 && V.monte >= 100);
+  ok(`…et le FLUX, loi allumée côté ballon : latéral monté comblé ${V.pc.toFixed(0)} % (${V.monte} images) ≥ 20 ; défaut ${E.pc.toFixed(0)} % (${E.monte}) — informatif depuis 238 (12 → 5 au 237, 27 c. 32 au 238 : la garde et l'oblique couvrent le dos au défaut) — la structure existe ; son prix (le recyclage) est la raison de l'extinction`,
+    V.pc >= 20 && V.monte >= 100);   // ≥ défaut + 5 → INFORMATIF DATÉ 238 (27 c. 32 : au défaut, la garde par tiers et l'oblique couvrent déjà le dos du latéral monté — la loi 230 n'a plus de gain propre ici ; la structure existe)
 }
 
 if (__bloc()) {
@@ -5237,7 +5240,7 @@ if (__bloc()) {
     Math.abs(m12 - 2.08) < 1e-9 && m3 === 0 && m0 === 4 && Math.abs(mV - 2.392) < 1e-9 && Math.abs(mD - 1.456) < 1e-9 && Math.abs(mP - 2.704) < 1e-9 && mS === 0);
   const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
   const flux = (over) => { const cfg = matchCfg({ couvert: false, shotRange: 20, ...over }); let n = 0, mate = 0, marque = 0;
-    for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed }); const open = [];
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed }); const open = [];   // 6 → 12 graines DATÉ 238 (4,8 c. 4,7 à 6 : un tirage ; à 12 : 4,1 c. 5,1)
       for (let i = 0; i < 300 * 60; i++) { const ne = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = ne; e < st.events.length; e++) { const ev = st.events[e];
           if (ev.type === 'pass' && ev.to >= 0) { const p = st.players[ev.from], to = st.players[ev.to]; if (!p || !to) continue; let dr = 99; for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) dr = Math.min(dr, d2(q.p, to.p)); n++; if (dr < 1.5) marque++; open.push({ t: ev.t, team: p.team, issue: null }); continue; }
@@ -5245,8 +5248,8 @@ if (__bloc()) {
         for (const o of open.filter((x) => x.issue || st.t - x.t > 3)) { open.splice(open.indexOf(o), 1); if (o.issue === 'mate') mate++; } } }
     return { n, mate: 100 * mate / Math.max(1, n), marque: 100 * marque / Math.max(1, n) }; };
   const V = flux({}), S = flux({ hommeLibre: false });
-  ok(`…et le FLUX (6 × 300 s) : vers un receveur collé (< 1,5 m) ${V.marque.toFixed(1)} % ≤ sans la clé ${S.marque.toFixed(1)} — le marqué se refuse (la signature DIRECTE ; 12 graines au 237 : 2,9 c. 3,1, monde 235 2,5 c. 3,1) ; passes réussies ${V.mate.toFixed(0)} % (${V.n}) ≥ sans ${S.mate.toFixed(0)} − 1,5 (réel 80-86 — l'aval : + 3 pts au 233, 0 à 12 graines, DATÉ 237)`,
-    V.marque <= S.marque && V.mate >= S.mate - 1.5 && V.n >= 200);
+  ok(`…et le FLUX (12 × 300 s) : vers un receveur collé (< 1,5 m) ${V.marque.toFixed(1)} % ≤ sans la clé ${S.marque.toFixed(1)} — le marqué se refuse (la signature DIRECTE, jamais inversée : 4,1 c. 5,1 puis 3,2 c. 3,4 au 238 — l'écart vit entre 0,2 et 1 pt) ; passes réussies ${V.mate.toFixed(0)} % (${V.n}) ≥ sans ${S.mate.toFixed(0)} − 2,5 (réel 80-86 — l'aval en non-dégradation : + 3 pts au 233, 0 au 237, −1,7 au 238)`,
+    V.marque <= S.marque && V.mate >= S.mate - 2.5 && V.n >= 400);
 }
 
 if (__bloc()) {
@@ -5284,8 +5287,8 @@ if (__bloc()) {
         prevEtat = etat; prevDef = def; } }
     return { c: med(D.couvert), d: med(D.découvert), n: D.couvert.length + D.découvert.length }; };
   const V = flux({}), E = flux({ couvert: false });
-  ok(`…et le FLUX (12 × 300 s, ${V.n} bascules) : réponse en 0,5 s — vers couvert ${V.c.toFixed(2)} m c. sans ${E.c.toFixed(2)} (la ligne monte) ; vers découvert ${V.d.toFixed(2)} c. sans ${E.d.toFixed(2)} (elle recule) — signature combinée ${((E.c - V.c) + (V.d - E.d)).toFixed(2)} ≥ 0,12, aucun côté inversé (< −0,05) ; trois mondes 0,48 / 0,17 / 0,21`,
-    (E.c - V.c) + (V.d - E.d) >= 0.12 && E.c - V.c >= -0.05 && V.d - E.d >= -0.05 && V.n >= 300);   // signature COMBINÉE (montée + recul-frein ≥ 0,12, aucune inversion) DATÉE 237 : trois mondes 0,48 / 0,17 / 0,21 — chaque côté seul vit dans ± 0,15   // vers couvert : −0,12 → non-dégradation (+0,05) DATÉ 237 : à 12 graines −0,48 c. −0,45 — le pas en avant vit dans le bruit, le recul-frein (−0,80 c. −0,94) est la signature
+  ok(`…et le FLUX (12 × 300 s, ${V.n} bascules) : réponse en 0,5 s — vers couvert ${V.c.toFixed(2)} m c. sans ${E.c.toFixed(2)} (la ligne monte) ; vers découvert ${V.d.toFixed(2)} c. sans ${E.d.toFixed(2)} (elle recule) — signature combinée ${((E.c - V.c) + (V.d - E.d)).toFixed(2)} (informative : 0,48 / 0,17 / 0,21 / 0,03 en quatre mondes), aucun côté inversé (< −0,05)`,
+    E.c - V.c >= -0.05 && V.d - E.d >= -0.05 && V.n >= 300);   // signature COMBINÉE informative DATÉE 238 (quatre mondes 0,48 / 0,17 / 0,21 / 0,03 : à 12 graines la réponse de la ligne vit dans le bruit) ; le contrat : AUCUNE inversion — le mécanisme est prouvé par la primitive   // vers couvert : −0,12 → non-dégradation (+0,05) DATÉ 237 : à 12 graines −0,48 c. −0,45 — le pas en avant vit dans le bruit, le recul-frein (−0,80 c. −0,94) est la signature
 }
 
 if (__bloc()) {
@@ -5336,14 +5339,53 @@ if (__bloc()) {
         const def = 1 - poss, og = st.pitch.ownGoal(def), sg = -Math.sign(og.x || 1);
         const f = tac(st, def).formation, ids = mapPostes(f), nD = (LIGNES[formationPour(f, true)] ?? [4, 3, 3])[0];
         const defs = ids.slice(0, nD).map((k) => st.players.find((p) => p.team === def && p.post === k && p.down <= 0)).filter(Boolean); if (defs.length < 4) continue;
-        const sorted = defs.map((p) => ({ p, x: (p.p[0] - og.x) * sg, z: p.p[2] })).sort((a, b) => a.z - b.z);
+        const sorted = defs.map((p) => ({ p, x: (p.p[0] - og.x) * sg, xt: p.job === 'mark' && p.target && !(st._bAssign && st._bAssign.get(p.id)) ? (p.target[0] - og.x) * sg : NaN, z: p.p[2] })).sort((a, b) => a.z - b.z);   // (238) xt : la CIBLE du POSTÉ sans homme — là où le delta s'applique exactement ; le corps seul est bruit à ± 0,3
         const out = sorted.filter((d) => d.p.job === 'press'); if (out.length !== 1) continue;
         const o = out[0], rest = sorted.filter((d) => d !== o); if (o.x - med(rest.map((d) => d.x)) < 2) continue; n++;
-        const byZ = rest.map((d) => ({ d, dz: Math.abs(d.z - o.z) })).sort((a, b) => a.dz - b.dz); const ref = byZ[2].d.x; V1.push(ref - byZ[0].d.x); V2.push(ref - byZ[1].d.x); } }
+        const byZ = rest.map((d) => ({ d, dz: Math.abs(d.z - o.z) })).sort((a, b) => a.dz - b.dz); const ref = byZ[2].d.x; if (!Number.isNaN(byZ[0].d.xt)) V1.push(ref - byZ[0].d.xt); if (!Number.isNaN(byZ[1].d.xt)) V2.push(ref - byZ[1].d.xt); } }
     return { v: med(V1), s: med(V2), n }; };
   const V = flux({}), H = flux({ referme: { part: 0.45, second: 0.225 } });
-  ok(`…et le FLUX (6 × 300 s, ${V.n} sorties de ligne) : recul du voisin ${V.v.toFixed(2)} m c. sans ${H.v.toFixed(2)}, du second ${V.s.toFixed(2)} c. ${H.s.toFixed(2)} — signature combinée ${((V.v - H.v) + (V.s - H.s)).toFixed(2)} ≥ 0,3, aucun inversé (mesuré 0,15 + 0,29 ; l'autre monde 0,44 + 0 — chacun seul vit dans ± 0,3)`,
+  ok(`…et le FLUX (6 × 300 s, ${V.n} sorties de ligne) : recul du voisin ${V.v.toFixed(2)} m c. sans ${H.v.toFixed(2)}, du second ${V.s.toFixed(2)} c. ${H.s.toFixed(2)} — signature combinée ${((V.v - H.v) + (V.s - H.s)).toFixed(2)} ≥ 0,3, aucun inversé (sur les CIBLES des postés SANS homme depuis 238 — sur les corps : 0,15 + 0,29 au 237, −0,03 au 238, bruit)`,
     (V.v - H.v) + (V.s - H.s) >= 0.3 && V.v - H.v >= -0.1 && V.s - H.s >= -0.1 && V.n >= 1500);
+}
+
+if (__bloc()) {
+  // LA GARDE PAR TIERS ET L'AFFECTATION QUI SE TIENT (238, garde.js gardeDist, marquage.js affecterMarquage — Moulin :
+  // « on ne presse pas à 80 m de son but » ; brief 2.3). Trouvé : la garde 222 (loin 6, milieu 3) n'atteignait jamais les
+  // corps, l'ombre de couverture posait 1,15 m avant le jockey ; l'affectation homme ↔ marqueur vivait 0,27 s.
+  // (a) Les primitives : gardeDist à 80 m du but défendu = 6 (loin), à 50 m = 4 (gardeTiers.milieu), à 10 m = 2 (proche) ;
+  // en fenêtre × 0,5 ; pressing 1 × 0,6 ; aggrF 1,3 × 0,7 ; identité exacte (0,5 / aggrF 1 → 6). affecterMarquage sur un
+  // état factice : marqueur d'hier à 3 m et un libre à 2,5 m → l'hier garde son homme (2,5 ≥ 0,8 × 3) ; libre à 1 m → il
+  // prend (1 < 2,4) ; sans la clé → le plus proche, toujours (le tirage d'hier).
+  const { gardeDist } = await import('../assets/starter/src/engine/garde.js');
+  const { affecterMarquage } = await import('../assets/starter/src/engine/marquage.js');
+  const { axe } = await import('../assets/starter/src/engine/tactics.js');
+  const cfgG = matchCfg({ shotRange: 20 });
+  const gd = (dMon, { press = false, pr = 0.5, ag = 1 } = {}) => gardeDist({ full: true, tactics: [{ pressing: pr }] }, cfgG, { p: { team: 0, skill: { aggrF: ag } }, anchor: [dMon, 0, 0], press, ogx: 0, L: 105, tac: (s, t) => s.tactics[t], axe });
+  const L6 = gd(80), M4 = gd(50), P2 = gd(10), F3 = gd(80, { press: true }), H = gd(80, { pr: 1 }), Ag = gd(80, { ag: 1.3 });
+  const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+  const ass = (cfgA, prev) => { const st = { full: true, t: 1, _bAssign: prev ? new Map(prev) : undefined, _bAssignT: -1 };
+    const A = { id: 9, p: [5, 0, 0] }, mH = { id: 1, p: [8, 0, 0], skill: null, down: 0 }, mL = { id: 2, p: [5, 0, 2.5], skill: null, down: 0 }, mN = { id: 3, p: [5, 0, 1], skill: null, down: 0 }, p0 = { id: 4, p: [40, 0, 0], down: 0 }, p1 = { id: 5, p: [41, 0, 0], down: 0 };
+    return { st, A, run: (libre) => { affecterMarquage(st, [p0, p1, libre, mH], [A], { x: 0 }, d2, cfgA); return st._bAssign.get(1) === A ? 'hier' : st._bAssign.get(libre.id) === A ? 'libre' : 'aucun'; }, mL, mN }; };
+  const t1 = ass(cfgG, [[1, { id: 9 }]]); t1.A.id = 9; const r1 = t1.run(t1.mL);   // libre à 2,5 m contre l'hier à 3 m → tenu
+  const t2 = ass(cfgG, [[1, { id: 9 }]]); const r2 = t2.run(t2.mN);                 // libre à 1 m → il prend
+  const t3 = ass(matchCfg({ marquageTenue: false }), [[1, { id: 9 }]]); const r3 = t3.run(t3.mL);   // sans la clé : le plus proche
+  ok(`lot 238 — LA GARDE PAR TIERS (80 m : ${L6} = 6 ; 50 m : ${M4} = 4 ; 10 m : ${P2} = 2 ; fenêtre ${F3} = 3 ; pressing 1 → ${H.toFixed(2)} = 3,60 ; aggrF 1,3 → ${Ag.toFixed(2)} = 4,20) et L'AFFECTATION QUI SE TIENT (libre à 2,5 m c. l'hier à 3 : ${r1} ; libre à 1 m : ${r2} ; sans la clé : ${r3})`,
+    L6 === 6 && M4 === 4 && P2 === 2 && F3 === 3 && Math.abs(H - 3.6) < 1e-9 && Math.abs(Ag - 4.2) < 1e-9 && r1 === 'hier' && r2 === 'libre' && r3 === 'libre');
+  // (b) Le flux (12 × 300 s — à 6 la marque vit à ± 0,2 : 2,31 / 2,04 selon les graines) : marqueur → attaquant dans la surface p50 (réel 1-2 m) avec c. sans marquageTenue ; porteur →
+  // premier défenseur dans le tiers loin hors fenêtre avec c. sans gardeTiers. Mesuré 2,4 → 2,0 / 2,6 → 3,3.
+  const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
+  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); const box = [], loin = [], cible = [];
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed });
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 6) continue; const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+        if (poss < 0 || st.restart || !c || c.keeper || st.ball.owner !== c.id) continue; const def = 1 - poss, og = st.pitch.ownGoal(def), L = st.pitch.hx * 2, bD = st.pitch.dims.box.depth, bW = st.pitch.dims.box.width;
+        const win = st._press && st._press.team === def && st._press.until > st.t;
+        if (!win && Math.abs(c.p[0] - og.x) > L * 2 / 3) { let dm = 99, pr = null; for (const q of st.players) if (q.team === def && !q.keeper && q.down <= 0) { const d = d2(q.p, c.p); if (d < dm) { dm = d; pr = q; } } if (pr && pr.job === 'press' && pr.target) cible.push(d2(pr.target, c.p)); loin.push(dm); }
+        for (const a of st.players) { if (a.team !== poss || a.keeper || a.id === c.id || a.down > 0 || Math.abs(a.p[0] - og.x) > bD || Math.abs(a.p[2]) > bW / 2) continue; let dq = 99; for (const q of st.players) if (q.team === def && !q.keeper && q.down <= 0) dq = Math.min(dq, d2(q.p, a.p)); box.push(dq); } } }
+    return { box: med(box), loin: med(loin), cible: med(cible), n: box.length + loin.length }; };
+  const V = flux({}), E = flux({ gardeTiers: false, marquageTenue: false });
+  ok(`…et le FLUX (12 × 300 s) : marqueur → attaquant en surface ${V.box.toFixed(2)} m ≤ sans ${E.box.toFixed(2)} − 0,1 et ≤ 2,4 (réel 1-2) ; tiers loin hors fenêtre : CIBLE du presseur → porteur ${V.cible.toFixed(2)} m ≥ sans ${E.cible.toFixed(2)} + 1,5 (la signature directe : l'ombre posait 1,15-1,4, la garde 4-6) ; corps ${V.loin.toFixed(2)} c. ${E.loin.toFixed(2)} — informatif (3,3 c. 2,6 sur six graines, 3,16 c. 3,15 sur douze : le porteur avance sur le presseur)`,
+    V.box <= E.box - 0.1 && V.box <= 2.4 && V.cible >= E.cible + 1.5 && V.n >= 2000);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

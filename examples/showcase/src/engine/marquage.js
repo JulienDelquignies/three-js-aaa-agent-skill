@@ -8,15 +8,24 @@
 // distance au premier défenseur p50 3,5 → 2,2 m (réel 1-2).
 import { hyp } from './hyp.js';
 
-export function affecterMarquage(st, byDist, marks, defGoal, d2) {
+// …ET L'AFFECTATION SE TIENT (238, cfg.marquageTenue — mesuré : une affectation vivait 0,27 s p50, le marqueur était
+// pris parmi les proches du BALLON à 11,6 m de son homme et n'arrivait jamais, corps à 4,4 m de l'homme pour une cible
+// à 0,64) : le marqueur d'hier garde son homme tant que l'homme est marqué et que nul marqueur libre n'est nettement
+// plus près (coût < gain × le sien, 0,8 — à 0,6 le marqueur hors peloton privait le bloc de sa couverture : 53 tirs/90,
+// tirs libres en surface × 3) ; il reste éligible même sorti du peloton du ballon (jamais les deux presseurs ;
+// T.horsPeloton false : au peloton seulement, marque 2,8 m). Absente : le tirage d'hier au bit.
+export function affecterMarquage(st, byDist, marks, defGoal, d2, cfg = null) {
   if (st._bAssignT === st.t) return;
-  st._bAssignT = st.t; const A = st._bAssign ??= new Map(); A.clear();
+  st._bAssignT = st.t; const A = st._bAssign ??= new Map();
+  const T = cfg && st.full ? cfg.marquageTenue : null, prev = T ? new Map(A) : null; A.clear();
   const markers = byDist.slice(2, 2 + Math.max(0, marks.length)).filter((q) => !q.keeper);
+  if (prev && T.horsPeloton !== false) { const deux = new Set(byDist.slice(0, 2).map((q) => q.id)); for (const q of byDist) if (prev.has(q.id) && !deux.has(q.id) && !q.keeper && q.down <= 0 && !markers.includes(q)) markers.push(q); }
   const danger = [...marks].sort((x, y) => hyp(x.p[0] - defGoal.x, x.p[2]) - hyp(y.p[0] - defGoal.x, y.p[2]));
   const pris = new Set();
   for (const a of danger) {
-    let best = null, bc = Infinity;
-    for (const q of markers) { if (pris.has(q.id)) continue; const c = d2(a.p, q.p) * (2 - (q.skill?.markF ?? 1)); if (c < bc) { bc = c; best = q; } }
+    let best = null, bc = Infinity, tenu = null, tc = Infinity;
+    for (const q of markers) { if (pris.has(q.id)) continue; const c = d2(a.p, q.p) * (2 - (q.skill?.markF ?? 1)); if (c < bc) { bc = c; best = q; } if (prev && prev.get(q.id)?.id === a.id) { tenu = q; tc = c; } }
+    if (tenu && bc >= (T.gain ?? 0.6) * tc) best = tenu;
     if (best) { pris.add(best.id); A.set(best.id, a); }
   }
 }

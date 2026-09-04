@@ -6,7 +6,7 @@ import { cibleFoulee } from './foulee.js';
 import { repliStep } from './repli.js';
 import { lossReactStep, contrePressStep } from './contrepress.js';
 import { compenserLateral } from './compensation.js';
-import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js';
+import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js';
 import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
@@ -990,8 +990,8 @@ function assignMatchJobs(st, cfg) {
           }
           if (hot) {
             const hx2 = hot.p[0] - anchor[0], hz2 = hot.p[2] - anchor[2];
-            const hl = hyp(hx2, hz2) || 1;
-            p.job = 'press'; p.target = [anchor[0] + (hx2 / hl) * 1.15, 0, anchor[2] + (hz2 / hl) * 1.15];
+            const hl = hyp(hx2, hz2) || 1, dO = st.full && cfg.gardeTiers && cfg.garde ? Math.max(1.15, gardeDist(st, cfg, { p, anchor, press, ogx: pitch.ownGoal(p.team).x, L: pitch.hx * 2, tac, axe })) : 1.15;   // (238) l'ombre respecte la garde par tiers (garde.js)
+            p.job = 'press'; p.target = [anchor[0] + (hx2 / hl) * dO, 0, anchor[2] + (hz2 / hl) * dO];
             return;
           }
         }
@@ -1012,7 +1012,7 @@ function assignMatchJobs(st, cfg) {
           const ogJ = pitch.ownGoal(p.team);
           const gxJ = ogJ.x - anchor[0], gzJ = 0 - anchor[2]; const glJ = hyp(gxJ, gzJ) || 1;
           let jd = cfg.jockey?.dist ?? 1.0;
-          if (st.full && cfg.garde) { const G = cfg.garde, dMon = Math.abs(anchor[0] - ogJ.x), L = pitch.hx * 2; jd = Math.max(jd, (dMon > L * (2 / 3) ? (G.loin ?? 6) : dMon > L / 3 ? (G.milieu ?? 3) : jd) * (press ? (G.fenetre ?? 0.5) : 1) * axe(tac(st, p.team).pressing, 1.4, 0.6) * (2 - (p.skill?.aggrF ?? 1))); }   // LA GARDE SUIT LA ZONE (222, doc match-config)
+          if (st.full && cfg.garde) { jd = cfg.gardeTiers ? Math.max(jd, gardeDist(st, cfg, { p, anchor, press, ogx: ogJ.x, L: pitch.hx * 2, tac, axe })) : jd; if (!cfg.gardeTiers) { const G = cfg.garde, dMon = Math.abs(anchor[0] - ogJ.x), L = pitch.hx * 2; jd = Math.max(jd, (dMon > L * (2 / 3) ? (G.loin ?? 6) : dMon > L / 3 ? (G.milieu ?? 3) : jd) * (press ? (G.fenetre ?? 0.5) : 1) * axe(tac(st, p.team).pressing, 1.4, 0.6) * (2 - (p.skill?.aggrF ?? 1))); } }   // LA GARDE SUIT LA ZONE (222, doc match-config)
           // L'ORIENTATION VERS LE PIED FAIBLE (196, axe orienteFaible — demande projet : le geste défensif le plus enseigné n'existait pas) : l'épaule se DÉCALE du côté du pied FORT du porteur — le contournement s'offre côté faible, et l'aval note déjà tout ce que le faible tente (weakF aux frappes/passes). Identité 0,5 : biais nul.
           const oF = (role(p).orienteFaible ?? 0.5) - 0.5;
           const biais = oF !== 0 && carrier.strongFoot ? oF * 1.1 * (carrier.strongFoot === 'left' ? 1 : -1) * Math.sign(pitch.attackGoal(carrier.team).x || 1) : 0;
@@ -1070,7 +1070,7 @@ function assignMatchJobs(st, cfg) {
       }
       // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT, à-coups (0,5 s/0,8 m) ; ON MARQUE LE DANGER SEULEMENT (51b) — sinon le bloc couvre. Réduit : hier.
       mTri.length = 0;                                             // copie depuis `marks` : le départ du tri stable reste l'ordre d'hier
-      if (st.full && cfg.marquageSurface) affecterMarquage(st, byDist, marks, defGoal, d2);   // L'AFFECTATION HOMME PAR HOMME (225, doc marquage.js)
+      if (st.full && cfg.marquageSurface) affecterMarquage(st, byDist, marks, defGoal, d2, cfg);   // L'AFFECTATION HOMME PAR HOMME (225, doc marquage.js)
       for (const a of marks) { a._dMark = d2(a.p, p.p); mTri.push(a); } mTri.sort((x, y) => x._dMark - y._dMark);
       // …UN MARQUEUR PAR HOMME (lot 72 : trois voisins élisaient le même homme, tas de 4-5 corps) : en 11c11 le surplus rejoint son poste (!m) ; le réduit garde le doublement.
       const m = st.full && cfg.marquageSurface ? (st._bAssign?.get(p.id) ?? null) : i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));

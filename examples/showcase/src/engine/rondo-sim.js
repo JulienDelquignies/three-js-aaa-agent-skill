@@ -950,7 +950,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           const v = hyp(q.v[0], q.v[1]);
           return v >= (cfg.fixe.vitesse ?? 4) && (q.v[0] * dx + q.v[1] * dz) / (v * d) > 0.75;
         });
-        const AC = st.full && cfg.avantContact ? cfg.avantContact : null, pressCall = AC && choice && presseurArrive(st, c, AC);   // LA PASSE AVANT LE CONTACT (227, doc pression.js) …une intention de CENTRE vivante ne se re-décide pas (le choix de passe l'écrasait à
+        const AC = st.full && cfg.avantContact ? cfg.avantContact : null, pressCall = AC && choice && presseurArrive(st, c, AC, st.full && cfg.gardeTiers ? (cfg.gardeTiers.lireCible ?? 2.5) : 0);   // (238) le cadrant n'arrive pas (pression.js)   // LA PASSE AVANT LE CONTACT (227, doc pression.js) …une intention de CENTRE vivante ne se re-décide pas (le choix de passe l'écrasait à
         // l'image suivante — 0 centre exécuté) : elle meurt de sa mort propre (TTL, receveur)
         // …et l'intention vers un COUREUR meurt AVEC la course (lot 36 : adoptées plus souvent
         // par la loi du coureur, les intentions qui échouent à s'engager occupaient le porteur
