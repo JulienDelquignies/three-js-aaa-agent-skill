@@ -181,6 +181,11 @@ offensive enfin, débats en axes tout du long.**
 - Cible : le chevron mesuré (angle de la ligne au moment de la sortie ≥ 8°) ; trou de ligne p90
   19,2 → ≤ 17 m.
 - Taille : S. Fichier : `marquage.js`.
+- **SCELLÉ (NOTES 288)** : recul du voisin 2,50 → 2,65 m, du second 2,22 → 2,51 (réf. le troisième — le
+  médian absorbait le recul) ; trou p90 21,0 → 20,4 (la cible ≤ 17 reste ouverte : moitié des instants le
+  poste marque un homme et ne lit pas le delta). Identité de l'axe marquage rétablie à monde constant (part
+  0,45 × axe(1,4 ; 0,6)). Effet de bord : centres 20-29 → 7-13 par 30 min (réel 10-13). Dettes : 232b sans
+  effet à 48 graines ; le marqueur à homme devrait lire le delta (238).
 
 **Lot 238 — On ne presse pas à 80 m de son but : la garde tenue par tiers.**
 - Doctrine : Moulin ; brief 2.3 : rayon d'intervention 1,2-1,8 m au contact, 4-6 s de harcèlement

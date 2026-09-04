@@ -27,20 +27,27 @@ export function affecterMarquage(st, byDist, marks, defGoal, d2) {
 // ligne : le plus proche glisse part du trou, le suivant second ; × posF (le placement est une note) × axe
 // tactique marquage (zone 1,2 → homme 0,6 : la zone couvre l'espace, l'homme reste sur le sien). Les spots du bloc
 // sont mutés pour l'image (ils se recalculent à chaque image). Absente : le trou d'hier au bit.
-export function refermerLigne(st, spotsBloc, mapD, nDefD, presseur, defenders, cfg, tacDef, axe) {
-  const R = cfg.referme; if (st._bRefermeDz) st._bRefermeDz.clear(); if (!R || !spotsBloc || !presseur) return;
+export function refermerLigne(st, spotsBloc, mapD, nDefD, presseur, defenders, cfg, tacDef, axe, sgnAtk = 0) {
+  const R = cfg.referme; if (st._bRefermeDz) st._bRefermeDz.clear(); if (st._bRefermeDx) st._bRefermeDx.clear(); if (!R || !spotsBloc || !presseur) return;
   const pp = mapD[presseur.post ?? 99] ?? 99; if (pp >= nDefD) return;   // seul un défenseur de LIGNE laisse un trou
   const vac = spotsBloc[pp]; if (!vac) return;
   const ligne = [];
   for (const q of defenders) { const k = mapD[q.post ?? 99] ?? 99; if (k < nDefD && q.id !== presseur.id && spotsBloc[k]) ligne.push({ k, q, z: spotsBloc[k][1] }); }
   ligne.sort((a, b) => Math.abs(a.z - vac[1]) - Math.abs(b.z - vac[1]));
-  const tacF = axe(tacDef.marquage ?? 0.5, 1.2, 0.6);
+  const tacF = axe(tacDef.marquage ?? 0.5, 1.4, 0.6);   // (237) bornes 1,4/0,6 : l’identité EXACTE au milieu (1,2/0,6 donnait × 0,9 à 0,5 — un axe absent doit valoir 1)
   // le décalage par poste vit dans st._bRefermeDz — les spots du bloc ne sont PAS mutés (les muter changeait la
   // HAUTEUR de la ligne par un consommateur invisible : hauteurBloc 0 → 35 m au lieu de 13 — mesuré) ; seuls les
   // postés de la ligne l'appliquent (match-sim, spot wM)
   const dz = st._bRefermeDz ??= new Map(); dz.clear();
+  // L'OBLIQUE 1+3 (237, R.recul / R.reculSecond — Sacchi, Gourcuff : « une ligne de quatre ne monte jamais de front » ; le
+  // sortant cadre, les trois reculent en diagonale pour couvrir son dos) : le voisin recule de recul m, le second de
+  // reculSecond, × posF × axe marquage, vers SON but (sgnAtk : vers le but défendu) — st._bRefermeDx, même patron. Mesuré
+  // (référence le troisième, 6 × 300 s) : recul du voisin 2,50 → 2,65 m, du second 2,22 → 2,51. Clés absentes : 0, l’hier au bit.
+  const dx = st._bRefermeDx ??= new Map(); dx.clear();
   ligne.slice(0, 2).forEach((e, i) => {
-    const part = (i === 0 ? (R.part ?? 0.5) : (R.second ?? 0.25)) * (e.q.skill?.posF ?? 1) * tacF;
+    const posF = e.q.skill?.posF ?? 1, part = (i === 0 ? (R.part ?? 0.5) : (R.second ?? 0.25)) * posF * tacF;
     dz.set(e.k, (vac[1] - e.z) * Math.min(0.9, part));
+    const rec = (i === 0 ? (R.recul ?? 0) : (R.reculSecond ?? 0)) * posF * tacF;
+    if (rec && sgnAtk) dx.set(e.k, rec * sgnAtk);
   });
 }

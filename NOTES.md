@@ -8185,6 +8185,75 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (71717ebf0bb27154 / a8a90f93e85bace6 avec et sans la clé — le banc
      236 vaut), clause 235 isolée 2 ✓, annexes tactics 11 ✓ et sync 9 ✓,
      déployé (chunk Rondo-C5WBspjz.js, capture playmode avant deploy).
+- 288: L'OBLIQUE 1+3 (237, marquage.js refermerLigne, cfg.referme.recul /
+     reculSecond — Sacchi, Gourcuff : « une ligne de quatre ne monte
+     jamais de front » ; le sortant cadre, les trois reculent en diagonale
+     pour couvrir son dos, le V pointé vers le ballon). LA LOI : dans le
+     même patron que le 228 (st._bRefermeDz), un second delta par poste
+     st._bRefermeDx : le voisin immédiat du sorti recule de recul m (1,5)
+     vers son but, le second de reculSecond (0,75), × posF (le placement
+     est une note) × axe marquage (zone recule, homme reste) × sgnAtk ;
+     consommé par les postés de la ligne (match-sim, spot wM, avec le
+     delta couvert/découvert du 236). Recul absent : 0, l'hier au bit.
+     TROUVÉ EN CHEMIN : (1) ma première sonde disait « aucun effet »
+     (voisin 0,00) — elle mesurait le recul au MÉDIAN des trois restants,
+     qui absorbe exactement le recul (voisin −1,5, second −0,75, tiers 0 →
+     médian −0,75) ; référence désormais le troisième ; (2) l'axe marquage
+     du 228 avait pour bornes (1,2 ; 0,6) : × 0,9 au milieu — un axe absent
+     ne valait pas 1, l'identité était rompue depuis le 228. Refondu
+     (1,4 ; 0,6) ET part 0,5 → 0,45, second 0,25 → 0,225 : le glissement
+     d'hier AU BIT à l'identité (jumeau « recul absent » = monde 235,
+     71717ebf0bb27154 / a8a90f93e85bace6), la clause 228 inchangée (4,05).
+     Ma première refonte (bornes seules, ×1,11 sur le glissement) avait
+     re-tiré le monde entier : dix clauses de flux rouges (133, 137, 131,
+     194, 235, 232b, 233, 236, démission, bélier), toutes vertes au monde
+     235 — la leçon : une identité se rétablit à monde constant.
+     MESURÉ (film-oblique, 6 × 300 s, référence le troisième) : recul du
+     voisin 2,50 → 2,65 m, du second 2,22 → 2,51 (+0,44 en tout ; un
+     autre tirage du monde donnait +0,44 + 0 : chaque terme seul vit dans
+     ± 0,3, la somme tient) ; trou de ligne p50 12,6, p90 21,0 → 20,4.
+     Moitié des instants le poste marque un homme et ne lit pas le delta
+     (826 postés c. 138 hommes assignés). Effet de bord daté : les CENTRES
+     passent de 20-29 à 7-13 par 30 min (réel 10-13 — le monde d'hier en
+     avait trop ; le dos du latéral sorti est couvert, le centre se refuse).
+     GARDE-FOUS : bande 20 × 300 s = 30 tirs / 7 buts par 100 min (bande
+     20-45 / 3-12) ; courses (chasse 242, appel 230, profond 84, through
+     18, lecture 5) intactes ; pertes 384 → 294/90 (réel 200-280).
+     BANC : clause 237 — primitive factice (voisin 1,5, second 0,75, posF
+     0,8 → 1,2, homme × 0,6, sgnAtk 0 → dx vide et dz gardé, recul absent
+     → vide, clé absente → rien) et flux (signature combinée voisin +
+     second ≥ 0,3, aucun inversé). RE-DATÉES sur preuve, au monde 237 :
+     133 (2 → 6 graines : les graines 1-2 n'ont plus un centre), 131 et
+     bélier (2 → 4 graines, Poisson), démission (12 graines, ratio 1,2 →
+     1,1 : 20/17), 236 (12 graines, signature combinée montée + recul-frein
+     ≥ 0,12 : trois mondes 0,48 / 0,17 / 0,21 — chaque côté seul vit dans
+     ± 0,15), 233 (la signature DIRECTE — passes vers un receveur collé ≤
+     sans — et l'aval en non-dégradation : à 12 graines la réussite est
+     85,7 c. 85,7 ; le + 3 du 233 était un tirage), 232b (12 graines,
+     NON-DÉGRADATION : à 48 graines le taux d'arrêts est 67 c. 66 % sans
+     le pas chassé, dans ce monde comme au monde 235 (75 c. 68) — l'effet
+     25 → 41 du 232b ne se retrouve plus : DETTE nommée, la loi reste
+     (primitive prouvée) et se tranche au lot gardien), et sept clauses de
+     Poisson doublées à monde re-tiré (pose figée 2 → 4 graines : 25 c.
+     26 % ; coach 2 → 4 : 0 but donc 0 posture ; 217 3 → 6 : aucun coup
+     franc vivant ; orbite 2 → 8 : 5 c. 5,7 % ; roulette 4 → 8 : garde
+     4/8 ; box crash 6 → 12 : les centres divisés par deux ; 230 flux 3
+     → 6 et marge + 12 → + 5 : l'oblique couvre déjà une part du dos au
+     défaut, 25 → 36 %, le gain propre de la loi reste + 6). Toutes
+     vertes au monde 235 (banc235 sur le moteur exporté), toutes rouges
+     d'un tirage : le banc de flux vit à ± 1 événement — la volumétrie
+     est la seule réponse honnête, jamais la borne. DETTE 237 : le
+     marqueur à homme assigné devrait lire aussi le delta (un pas côté but
+     sur son homme) — à reprendre avec la garde par tiers (238). SCEAU
+     237 : jumeau « recul absent » = monde 235 au bit (71717ebf0bb27154 /
+     a8a90f93e85bace6 — part 0,45 × axe 1 = part 0,5 × 0,9), monde 237
+     0e1f168aeb558b61 ; clause 237 isolée 2 ✓, 228 inchangée 1 ✓,
+     attributes 26 ✓ / 1 ✗ (la gradation 152/158, rouge depuis le 236) ;
+     douze annexes vertes (match 84, rondo 40, gestes 60, menace 11,
+     frappes 13, sync 9, roles 11, loi3 10, kit 5, part-tint 18, tactics
+     11, slide 10) ; 8 shards : seuls 96 / 174 / 189 (la classe « ordre
+     des blocs »), chacun vert isolé ; déployé (chunk Rondo-Dco_sHtR.js à
+     l'alias, capture playmode avant deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

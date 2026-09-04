@@ -970,7 +970,7 @@ function assignMatchJobs(st, cfg) {
     if (!zoneLoin) for (const a of attackers) if ((!carrier || a.id !== carrier.id) && (d2(a.p, anchor) <= rayonM || (st.full && a.p[0] * sgnDef > pitch.hx / 3)) && !(RP && (a.p[0] - anchor[0]) * sgnDef < -(RP.marge ?? 2))) marks.push(a);
     // LE MARQUAGE EST BALLSIDE (96, cfg.zone — ballsideTrim, axe marquage) : le côté FAIBLE n'a pas de marqueur, la ZONE le couvre.
     if (st.full && cfg.zone !== false && marks.length) ballsideTrim(marks, anchor[2], pitch, sgnDef, axe(tac(st, defTeamB).marquage, 8, 30));
-    if (st.full && cfg.referme && byDist[0]) refermerLigne(st, spotsBloc, mapD, nDefD, byDist[0], defenders, cfg, tac(st, defTeamB), axe); else if (st._bRefermeDz) st._bRefermeDz.clear();   // LA LIGNE SE REFERME (228, doc marquage.js)
+    if (st.full && cfg.referme && byDist[0]) refermerLigne(st, spotsBloc, mapD, nDefD, byDist[0], defenders, cfg, tac(st, defTeamB), axe, sgnAtk); else { if (st._bRefermeDz) st._bRefermeDz.clear(); if (st._bRefermeDx) st._bRefermeDx.clear(); }   // LA LIGNE SE REFERME (228, doc marquage.js)
     if (st.full && cfg.couvert) { let sA = 0, nA = 0; for (const q of defenders) if (q.skill?.anticipF) { sA += q.skill.anticipF; nA++; } couvertStep(st, cfg, { defTeam: defTeamB, carrier, presseur: byDist[0] ?? null, sgnAtk, anticipMoy: nA ? sA / nA : 1, tac, axe }); } else if (st._bCouvertDx) st._bCouvertDx[defTeamB] = 0;   // BALLON COUVERT / DÉCOUVERT (236, doc couvert.js)
     byDist.forEach((p, i) => {
       if (i === 0) {
@@ -1077,7 +1077,7 @@ function assignMatchJobs(st, cfg) {
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (60)
         const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]], wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0;   // (228) le voisin du sorti glisse vers le trou
-        p.job = 'mark'; p.target = [wM[0] + (st._bCouvertDx && mapD.indexOf(p.post ?? 0) < nDefD ? (st._bCouvertDx[defTeamB] ?? 0) : 0), 0, wM[1]];   // (236) la LIGNE ARRIÈRE monte ou recule selon l'état du porteur (couvert.js)
+        p.job = 'mark'; p.target = [wM[0] + (st._bCouvertDx && mapD.indexOf(p.post ?? 0) < nDefD ? (st._bCouvertDx[defTeamB] ?? 0) : 0) + (st._bRefermeDx?.get(mapD[p.post ?? 0]) ?? 0), 0, wM[1]];   // (236) la LIGNE ARRIÈRE monte ou recule selon l'état du porteur (couvert.js)
         return;
       }
       if (!m) { p.job = 'mark'; p.target = [p.p[0], 0, p.p[2]]; return; }
