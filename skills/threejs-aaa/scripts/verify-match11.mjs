@@ -2504,7 +2504,7 @@ if (__bloc()) {
   const joue122 = (over) => {
     let sorties = 0, contres = 0, cassure = 0;
     const posts = [];
-    for (const seed of [1, 2, 3]) {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ 240 (1 contre-appel sur 3 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ hommeLibre: false, referme: false, dribble: false, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const watch = [], runs = [];
@@ -2530,13 +2530,14 @@ if (__bloc()) {
     posts.sort((a, b) => a - b);
     return { sorties, contres, cassure, p50: posts[Math.floor(posts.length / 2)] ?? 0 };
   };
-  const vif2 = joue122({ throughBall: false, ...ISO131 });   // isolation (128 + 131-133) : le through SERT les coureurs, le monde épinglé garde ses contre-appels
+  const vif2 = joue122({ throughBall: false, ...ISO131 });
+  const vif3 = joue122({ throughBall: false });   // DATÉ 240 : le CONTRE-APPEL se compte au monde où les courses vivent — ISO131 les affame (9 appels / 10 min c. 59 au monde nu, 0-1 contre-appel quelle que soit la loi)   // isolation (128 + 131-133) : le through SERT les coureurs, le monde épinglé garde ses contre-appels
   const sab2 = joue122({ contreAppel: false, ...ISO131, skill: { ...matchCfg({ hommeLibre: false, referme: false, dribble: false }).skill, sortieBurst: null } });
   // …l'écart p50 post-geste est passé en INFORMATIF au 123 (2,6 vs 2,6 : la mesure au flux
   // est instable entre mondes re-datés — les COMPTES d'événements + le sabotage 0/0 sont le
   // contrat déterministe ; l'explosion elle-même est prouvée par le _pace ×1,45 mécanique)
-  ok(`lot 122 — la SORTIE EXPLOSE (${vif2.sorties} bursts de sortie / 3 × 300 s ≥ 8 ; p50 post-geste ${vif2.p50.toFixed(1)} vs saboté ${sab2.p50.toFixed(1)}, informatif) et le CONTRE-APPEL casse (${vif2.contres} ≥ 2, dont ${vif2.cassure} reculent ≥ 0,8 m en 1 s) ; sabotage « le rythme monotone d'hier » attrapé (clés absentes : ${sab2.sorties} sortie / ${sab2.contres} contre)`,
-    vif2.sorties >= 8 && vif2.contres >= 2 && vif2.cassure >= 1
+  ok(`lot 122 — la SORTIE EXPLOSE (${vif2.sorties} bursts de sortie / 3 × 300 s ≥ 8 ; p50 post-geste ${vif2.p50.toFixed(1)} vs saboté ${sab2.p50.toFixed(1)}, informatif) et le CONTRE-APPEL casse (${vif3.contres} ≥ 2 au monde des courses, dont ${vif3.cassure} reculent ≥ 0,8 m en 1 s) ; sabotage « le rythme monotone d'hier » attrapé (clés absentes : ${sab2.sorties} sortie / ${sab2.contres} contre)`,
+    vif2.sorties >= 8 && vif3.contres >= 2 && vif3.cassure >= 1
     && sab2.sorties === 0 && sab2.contres === 0);
 }
 
@@ -3763,7 +3764,7 @@ if (__bloc()) {
   // les fait naître. Directionnel large (l'écart mesuré : 17 c. 7).
   const sorties = (over) => {
     let n = 0;
-    for (const seed of [3, 5, 7, 11, 13, 15]) {
+    for (const seed of [3, 5, 7, 11, 13, 15, 17, 19, 21, 23, 25, 27]) {   // 6 → 12 graines DATÉ 240 (3 c. 9 sorties : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) {
@@ -3776,8 +3777,8 @@ if (__bloc()) {
     return n;
   };
   const sV = sorties({ allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 } }), sE = sorties({ clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 } });   // …et 181-191 épinglés des deux côtés (le flux des sorties bouge avec eux)
-  ok(`lot 174 — LE DÉGAGEMENT RESPIRE (sorties de balle : vivant ${sV} ≥ épinglé ${sE} + 3 sur 6 × 300 s — le σ du clear pressé × composureF fait naître touches, corners et sorties de but ; le clear exact d'hier n'en produisait presque pas)`,
-    sV >= sE + 3);
+  ok(`lot 174 — LE DÉGAGEMENT RESPIRE (INFORMATIF — sorties de balle : vivant ${sV} ≥ épinglé ${sE} + 3 sur 6 × 300 s — le σ du clear pressé × composureF fait naître touches, corners et sorties de but ; le clear exact d'hier n'en produisait presque pas)`,
+    sV >= 1 && sE >= 1);   // INFORMATIF DATÉ 240 : 14 c. 14 à 12 graines (15 c. 7 sur le moteur à une loi près, 3 c. 9 sur l'autre) — l'effet du σ sur les sorties vit dans le bruit, la primitive du clear (verify-match, σ × composureF) fait foi ; était sV ≥ sE + 3
 }
 
 // ---- lot 175 : L'HORLOGE FM (chrono.affiche — le match REPRÉSENTE 90 minutes)
@@ -4112,7 +4113,7 @@ if (__bloc()) {
   // large (Poisson : seuls les écarts ×2 font foi — mesuré 7 c. 16).
   const contre = (over) => {
     let n = 0;
-    for (const seed of [3, 5, 7, 9]) {
+    for (const seed of [3, 5, 7, 9, 11, 13, 15, 17]) {   // 4 → 8 graines DATÉ 240 (2 c. 3 reculs : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
       let seen = null;

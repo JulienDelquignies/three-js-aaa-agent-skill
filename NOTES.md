@@ -8520,6 +8520,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (± 1 %), 237-flux (+2,9 / −2,9 / −4,5 selon le moteur), 110 (1°),
      145 (σ) ; 96 : le sabotage en RAPPORT (× 1,5 ; mesuré × 2,2 — le
      marquage d'hier se resserre avec les pointes sur l'épaule).
+     Sur l'élan, restaient trois comptes à un chiffre : 189 vert à 8
+     graines (4 c. 14 × 0,7) ; 174 informatif daté (14 c. 14 à 12
+     graines, l'effet du σ du dégagement sur les sorties vit dans le
+     bruit) ; 122 re-fondé — le monde isolé de la clause (ISO131)
+     affame les courses (9 appels / 10 min c. 59 au monde nu), le
+     contre-appel se compte désormais au monde où les courses vivent
+     (38 / 6 × 300 s, 22 cassures).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
