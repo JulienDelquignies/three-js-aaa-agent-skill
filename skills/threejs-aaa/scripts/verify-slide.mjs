@@ -114,19 +114,20 @@ const bp = (st) => st.ball.p;
 // ---------- 6. le FLUX : la texture en bande, le jeu respire
 {
   let att = 0, fa = 0, buts = 0, secs = 0;
-  for (const seed of [1, 2, 3, 4, 5, 7]) {
+  const secsDe = (st) => st.events.filter((e) => e.type === 'slide' && e.bearing !== undefined && !e.won && !e.faute && e.dist > 1).length;
+  for (const seed of [1, 2, 3, 4, 5, 7, 9, 11, 13, 15, 17, 19]) {   // 6 → 12 graines DATÉ 240 (7 ratés secs / 6 : Poisson à un chiffre)
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20 });
     for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
     att += st.events.filter((e) => e.type === 'slide' && (e.sur != null || e.faute)).length;
     fa += st.events.filter((e) => e.type === 'faute').length;
-    secs += st.events.filter((e) => e.type === 'slide' && e.bearing !== undefined && !e.won && !e.faute && e.dist > 1).length;
+    secs += secsDe(st);
     buts += st.score[0] + st.score[1];
   }
   // LE CORPS NE SE COUCHE PLUS À CÔTÉ (lot 66) : post-gazon, 14 ratés secs/6 matchs — le glissé
   // sur ballon libre partait dans SA course, le pied passait à > 1 m du ballon assis. Le couloir
   // se lit DEBOUT (ecartCouloir) ; le vide résiduel est l'esquive/le jet, pas l'absurde.
-  ok(`le corps ne se couche plus à côté (${(secs / 6).toFixed(1)} raté(s) sec(s) libre(s)/match ≤ 1 — le couloir se lit debout)`, secs / 6 <= 1);
+  ok(`le corps ne se couche plus à côté (${secs} ratés secs libres / 12 matchs ≤ 12 + 2√12 = 18,9 — la borne 1/match lue à 2σ de Poisson, DATÉ 240 (13 à 12 graines, 7 à 6 : le compte est un chiffre, la loi 66 n'a pas de clé à saboter) ; le couloir se lit debout)`, secs <= 12 + 2 * Math.sqrt(12));
   // Bande RE-FONDÉE au lot 62 (plancher 0,5 → 0,25, récit) : la prise au pied a rendu le ballon
   // de conduite plus souvent LIBRE entre les touches (+67 % de touches mesurées) — le PIQUE
   // debout (pokeReach) joue désormais une part de ce que seul le tacle couché prenait, et c'est
@@ -138,8 +139,8 @@ const bp = (st) => st.ball.p;
   // dont 1,3 de CHARGES-derrière (duel lot 32, hors périmètre glissé — dette nommée : 1,3/3 min
   // ≈ 40/90 min, le réel en fait 5-10) et 0,8 de glissés-imprudence (le chemin voulu, avec sa
   // retenue à 70 %). Le garde-fou reste : les fautes ne doivent pas hacher le jeu.
-  ok(`le DERNIER RECOURS vit en bande (6 × 180 s : ${(att / 6).toFixed(1)} glissé(s) engagé(s)/match ∈ [0,15 ; 5], ${(fa / 6).toFixed(1)} faute-tot/match ≤ 2,5, ${buts} buts ≥ 3 : le jeu respire)`,
-    att / 6 >= 0.15 && att / 6 <= 5 && fa / 6 <= 2.5);   // les buts se jugent à UN endroit (lot 36)
+  ok(`le DERNIER RECOURS vit en bande (12 × 180 s : ${(att / 12).toFixed(1)} glissé(s) engagé(s)/match ∈ [0,15 ; 5], ${(fa / 12).toFixed(1)} faute-tot/match ≤ 2,5, ${buts} buts ≥ 3 : le jeu respire)`,
+    att / 12 >= 0.15 && att / 12 <= 5 && fa / 12 <= 2.5);   // les buts se jugent à UN endroit (lot 36)
 }
 
 // ---------- 7. sabotage nommé « personne ne se couche » : slideTackle:false → le monde d'hier

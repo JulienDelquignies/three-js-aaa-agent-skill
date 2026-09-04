@@ -270,7 +270,7 @@ const frappe = (st, c, cfg, u, gkX = null) => {
 // ---------- 6. le FLUX : le répertoire VIT en match (balayage coupe-circuit, doctrine lot 36)
 {
   const especes = new Set();
-  for (const seed of [1, 2, 3, 4, 5, 6]) {
+  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {   // 6 → 12 graines DATÉ 240 (7 tirs / 6 × 300 s : l'espèce est un chiffre de Poisson)
     const st = makeMatch({ full: true, seed });
     const cfg = matchCfg({ shotRange: 20 });
     for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);

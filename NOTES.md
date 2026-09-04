@@ -8527,6 +8527,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      affame les courses (9 appels / 10 min c. 59 au monde nu), le
      contre-appel se compte désormais au monde où les courses vivent
      (38 / 6 × 300 s, 22 cassures).
+     SCEAU 240a-d : jumeau {passeMarque:false, retournement:false,
+     epaule:false} = monde 239 au bit (999a1a77793ac480 /
+     474fd82f70465af7) ; clause 240 isolée 2 ✓ (non-inversion 14,0 c.
+     14,9 %) ; 104 à 24 pertes sans pression / 48 min ; bande 1-20 :
+     40 tirs, 6 buts, 8 corners ; pertes 411/90 (réel 200-280 — la
+     dette de la remise) ; attributes 26 ✓ / 1 ✗ (la gradation, hier) ;
+     douze annexes vertes (match 84, rondo 40, gestes 60, menace 11,
+     frappes 13 à 12 graines, sync 9, roles 11, loi3 10, kit 5,
+     part-tint 18, tactics 11, slide 10 — ratés secs lus à 2σ de
+     Poisson, la loi 66 n'a pas de clé) ; 8 shards sur le moteur final :
+     4 rouges, tous rejoués verts isolés après re-datation (145 juge
+     informatif, gâchette garde-fou 60 → 30 avec le prix 67 → 48
+     passes nommé, 110 informatif à 12,6°, 118 attribué au même corps) ;
+     déployé (chunk Rondo-BWhr90dU.js à l'alias, capture playmode
+     avant deploy). PRIX À RENDRE AU 240 : pertes 411/90, passes −28 %
+     au monde du couple, services profonds 9 → 4 sous le retournement.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

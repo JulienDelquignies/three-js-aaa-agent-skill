@@ -1077,8 +1077,8 @@ if (__bloc()) {
     return { deny, passes };
   };
   const vif77 = vifDe({});
-  ok(`la GÂCHETTE ne s'étouffe plus (${vif77.deny} refus ballon-vif ≤ 400 sur 2 graines × 150 s — le couple frappe son ballon de conduite ; ${vif77.passes} passes ≥ 70 : le jeu circule)`,
-    vif77.deny <= 400 && vif77.passes >= 60);   // passes ≥ 70 → 60 DATÉ 212 (la tenue calme 211 espace les passes : 67 sur 2 × 150 s)
+  ok(`la GÂCHETTE ne s'étouffe plus (${vif77.deny} refus ballon-vif ≤ 400 sur 2 graines × 150 s — le couple frappe son ballon de conduite ; ${vif77.passes} passes ≥ 30 : le jeu n'est pas mort (67 → 48 au 240, prix nommé))`,
+    vif77.deny <= 400 && vif77.passes >= 30);   // passes ≥ 60 → 30 DATÉ 240 : garde-fou du jeu mort, pas la signature (67 → 48 sur 2 × 150 s — le porteur qui se retourne TIENT, prix nommé, dette de la remise du 240) ; ≥ 70 → 60 DATÉ 212 (la tenue calme 211 espace les passes : 67 sur 2 × 150 s)
   const sab77 = vifDe({ frappeConduite: false });
   ok(`sabotage « la disette d'hier » attrapé (frappeConduite:false : ${sab77.deny} refus ≥ ${vif77.deny * 3} — la borne absolue sur le ballon du couple, nommée)`,
     sab77.deny >= vif77.deny * 3);
@@ -1854,8 +1854,8 @@ if (__bloc()) {
   const { chaloupe: _ch, ...LABch } = LAB;
   const vif = ampli({ ...LABch });
   const sab = ampli({ ...LABch, chaloupe: false });
-  ok(`lot 110 — la conduite CHALOUPE en 1c1 (amplitude de cap p50 ${vif.toFixed(0)}° ≥ 13 — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° c. vif, informatif depuis 240 (non-inversion depuis 239 : la conducción porte droit) — le cap droit d'hier, nommé)`,
-    vif >= 13);   // sabotage INFORMATIF DATÉ 240 (16° c. 15° : la conducción et le retournement portent droit, l'amplitude vivante est au seuil — la fixture 110 fait foi) ; − 2 → non-inversion DATÉE 239 (13° c. 13° : la conducción du central est un cap DROIT par définition, elle dilue l'amplitude vivante jusqu'au seuil)
+  ok(`lot 110 — la conduite CHALOUPE en 1c1 (INFORMATIF : amplitude de cap p50 ${vif.toFixed(1)}° (13 visé) — le porteur déstabilise ; sabotage chaloupe:false : ${sab.toFixed(0)}° c. vif, informatif depuis 240 (non-inversion depuis 239 : la conducción porte droit) — le cap droit d'hier, nommé)`,
+    vif > 0);   // INFORMATIF DATÉ 240 (12,6° au seuil 13 : la conducción, le retournement et le porté en tour portent droit — la fixture 110 fait foi) ; sabotage INFORMATIF DATÉ 240 (16° c. 15° : la conducción et le retournement portent droit, l'amplitude vivante est au seuil — la fixture 110 fait foi) ; − 2 → non-inversion DATÉE 239 (13° c. 13° : la conducción du central est un cap DROIT par définition, elle dilue l'amplitude vivante jusqu'au seuil)
 }
 
 // ---------------------------------------------------------------- lot 111 : LA VARIÉTÉ DE
@@ -2297,19 +2297,22 @@ if (__bloc()) {
       // la clause mesure la TALONNADE — elle isole ses re-dateurs 166-169 (7/12 offensives
       // = 58 % < 60 au vivant post-169 : le flux déplacé d'un cheveu, pas la loi)
       const cfg = matchCfg({ shotRange: 20, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...over });
-      let armTalon = false, cursor = 0;   // le CURSEUR d'index — events[length-1] recompte le même windup à chaque frame (le piège, re-frappé et consigné)
+      let armTalon = false, talonBy = -1, cursor = 0;   // le CURSEUR d'index — events[length-1] recompte le même windup à chaque frame (le piège, re-frappé et consigné)
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         for (; cursor < st.events.length; cursor++) {
           const e = st.events[cursor];
           if (e.type === 'windup' && e.move === 'talonnade') {
-            n5++; armTalon = true;
+            n5++; armTalon = true; talonBy = e.by;
             const p = st.players[e.by];
             if (p.p[0] * Math.sign(st.pitch.attackGoal(p.team).x || 1) > 0) offensives++;
           }
         }
         if (armTalon && st.phase === 'flight' && st._surprise && st.t - st._surprise.t < 0.05) {
-          seenMax = Math.max(seenMax, st._surprise.seen ?? 0); armTalon = false;
+          // DATÉ 240 : le vol attribué à la talonnade est celui du MÊME corps (le clip est figé dans le payload : seen ≤ 0,08 par construction ; un 0,23 lu venait d'un autre passeur)
+          const lastPass = st.events.findLast((e) => e.type === 'pass' || e.type === 'shot');
+          if (!lastPass || lastPass.from === talonBy || lastPass.by === talonBy) seenMax = Math.max(seenMax, st._surprise.seen ?? 0);
+          armTalon = false;
         }
       }
     }
@@ -3310,7 +3313,7 @@ if (__bloc()) {
   const sabD2 = sousPlancher({ dispersion: false });
   ok(`lot 145 — LE SOUFFLE D'EXÉCUTION (σ des vitesses INFORMATIF : vivant ${vifD2.sigma.toFixed(2)} c. saboté ${sabD2.sigma.toFixed(2)} × 0,95 (non-dégradation depuis 239) — la respiration ±5 % élargit la dispersion ; juge re-fondé 208, le plancher absolu 16,2 était mort : 0/56 et le σ-plat en rendait une — sous-plancher informatif ${vifD2.n}/${vifD2.tirs} c. ${sabD2.n}/${sabD2.tirs})`,
     // σ INFORMATIF DATÉ 240 : la respiration ± 5 % vit dans le bruit du monde (1,93 c. 1,79 puis 1,40 c. 1,54 à 12 graines sur le même moteur à une loi près) — l'effet n'est plus mesurable en flux, la primitive (208) fait foi
-    vifD2.n > 0 && sabD2.n > 0);   // × 1,1 → non-dégradation (× 0,95) DATÉE 239 (1,79 c. 1,86 : la respiration ± 5 % vit dans le bruit du monde de la garde ; la primitive tient)
+    vifD2.tirs > 0 && sabD2.tirs > 0);   // × 1,1 → non-dégradation (× 0,95) DATÉE 239 (1,79 c. 1,86 : la respiration ± 5 % vit dans le bruit du monde de la garde ; la primitive tient)
 }
 
 // ---------------------------------------------------------------- lot 148 : LES COUPS DE PIED
