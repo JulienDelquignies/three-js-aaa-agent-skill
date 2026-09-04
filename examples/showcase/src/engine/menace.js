@@ -48,8 +48,15 @@ export function menaceTir(st, c, cfg) {
   if (gkS && decolleS && gkOffS >= (cfg.lob.out ?? 4) && d >= (cfg.lob.min ?? 18) && d <= (cfg.lob.max ?? 38)
     && Math.abs(c.p[2]) <= 14 && Math.sign(c.p[0] || goal.x) === Math.sign(goal.x)) {
     const longFS = c.skill?.longF ?? 1;
-    return { score: Math.min(0.9, (cfg.lob.vue ?? 0.62) * longFS * (0.5 + Math.min(0.5, (gkOffS - (cfg.lob.out ?? 4)) / 8))),
-      d: +d.toFixed(1), pourquoi: 'gardien-sorti' };
+    let scL = Math.min(0.9, (cfg.lob.vue ?? 0.62) * longFS * (0.5 + Math.min(0.5, (gkOffS - (cfg.lob.out ?? 4)) / 8)));
+    // …(232) le lob aussi a une QUALITÉ : la cage vide la multiplie (× (1 + sortie / Q.lobOut)) — mesuré sans la porte :
+    // 25 % des tirs restants étaient des lobs de 30 m (10 / 90 min ; le réel en voit un par match, les bons jours)
+    let qL = null, whyL = 'gardien-sorti';
+    if (st.full && cfg.qualiteTir) {
+      qL = qualiteTir(st, c, cfg, d, 0) * (1 + gkOffS / (cfg.qualiteTir.lobOut ?? 4));
+      const g = selectiviteTir(st, c, cfg, qL); scL *= g.f; if (g.sel < 0.5) whyL = 'lob-sans-qualité';
+    }
+    return { score: +scL.toFixed(3), d: +d.toFixed(1), pourquoi: whyL, ...(qL != null ? { q: +qL.toFixed(3) } : {}) };
   }
   if (c.keeper || d > grise) return { score: 0, d: +d.toFixed(1), pourquoi: 'hors-portée' };
   if (Math.sign(c.p[0] || goal.x) !== Math.sign(goal.x) && d > R * 0.75) return { score: 0, d: +d.toFixed(1), pourquoi: 'sa-moitié' };
@@ -120,7 +127,56 @@ export function menaceTir(st, c, cfg) {
       }
     }
   }
-  return { score: +sc.toFixed(3), d: +d.toFixed(1), marge: +margin.toFixed(2), tz: +tz.toFixed(1), pourquoi: why };
+  // LA ZONE DE VÉRITÉ (232, cfg.qualiteTir && st.full — la doctrine : Lacombe, 25-30 m ; le brief : 22-30 tirs par
+  // match, 1 but pour 9-11 tirs, « le tir sans pression convertit ×2 » ; mesuré AVANT : 63 tirs / 90 min, 48 % sous
+  // pression — « l'occasion franche se prend » plancherisait à 0,72 tout couloir libre à ≤ 16 m, chaque entrée de
+  // surface devenait un tir). Le tir reçoit une QUALITÉ ATTENDUE q (qualiteTir : distance, angle, pression, mur) et
+  // un SEUIL : Q.seuil × axe(style, 1,3, 0,7) (le direct tire de loin) ÷ rôle arbitre.tir (le 9) ÷ (0,7 + 0,6·finF)
+  // (l'élite tente à 25 m, identité 0,5) × composureF (le sang-froid attend la meilleure occasion) × le score (mené :
+  // Q.retard, on tire à vue ; devant : Q.avance). La SÉLECTIVITÉ s = lissage de q/seuil entre 0,5 et 1,5 étouffe les
+  // planchers franc/tenté (× plancher + (1 − plancher)·s) : sous le seuil, la passe et la conduite reprennent la main —
+  // conserver, porter vers la zone de vérité. Clé absente : l'arbitre d'hier au bit.
+  let q = null;
+  if (st.full && cfg.qualiteTir) {
+    q = qualiteTir(st, c, cfg, d, murN);
+    const g = selectiviteTir(st, c, cfg, q);
+    sc *= g.f;
+    if (g.sel < 0.5 && ['occasion-franche', 'tir-tenté', 'cadre-en-vue', 'zone-grise', 'audace'].includes(why)) why = 'qualité-insuffisante';   // le refus d'hier (couloir-serré) garde son nom : la géométrie explique mieux que le seuil
+  }
+  return { score: +sc.toFixed(3), d: +d.toFixed(1), marge: +margin.toFixed(2), tz: +tz.toFixed(1), pourquoi: why, ...(q != null ? { q: +q.toFixed(3) } : {}) };
+}
+
+/** LA SÉLECTIVITÉ (232) — pure : le seuil du tireur (Q.seuilBoite dans la surface / Q.seuilLoin hors × axe(style, 1,3, 0,7) ÷ rôle arbitre.tir ÷ (0,7 + 0,6·finF)
+ *  × composureF × score) et le lissage de q/seuil entre 0,5 et 1,5 ; rend { f, sel, seuil } — f multiplie le score du
+ *  tir (plancher + (1 − plancher)·sel). */
+export function selectiviteTir(st, c, cfg, q) {
+  const Q = cfg.qualiteTir ?? {}, T = st.tactics?.[c.team];
+  const finQ = c.skill ? Math.max(0, Math.min(1, (0.55 - c.skill.shotSigma) / 0.45)) : 0.5;
+  const lead = st.score ? (st.score[c.team] ?? 0) - (st.score[1 - c.team] ?? 0) : 0;
+  // DEUX SEUILS (le brief 2.10) : dans la surface on attend mieux (seuilBoite 0,12) ; hors de la surface on accepte le
+  // tir de qualité modeste (seuilLoin 0,05) — un seuil unique tuait toute la mi-distance (mesuré : 0 tir > 22 m, 83 %
+  // dans la surface pour 60-68 réels), ou n'écrémait rien dans la boîte
+  const goal = st.pitch.attackGoal(c.team), boite = Math.abs(goal.x - c.p[0]) <= st.pitch.dims.box.depth && Math.abs(c.p[2]) <= st.pitch.dims.box.width / 2;
+  const seuil = (boite ? (Q.seuilBoite ?? Q.seuil ?? 0.12) : (Q.seuilLoin ?? Q.seuil ?? 0.05)) * (T ? axe(T.style, 1.3, 0.7) : 1) / (c.role?.arbitre?.tir ?? 1) / (0.7 + 0.6 * finQ)
+    * (c.skill?.composureF ?? 1) * (lead < 0 ? (Q.retard ?? 0.8) : lead > 0 ? (Q.avance ?? 1.15) : 1);
+  const u = q / Math.max(1e-6, seuil), t = Math.max(0, Math.min(1, (u - 0.5) / 1));
+  const sel = t * t * (3 - 2 * t), pl = Q.plancher ?? 0.15;
+  return { f: pl + (1 - pl) * sel, sel, seuil };
+}
+
+/** LA QUALITÉ ATTENDUE D'UN TIR (232) — pure : distance (0,36 à 8 m, e-fold Q.efold 8 m : 0,13 à 16, 0,05 à 24),
+ *  angle (cos^1,5 de l'écart à l'axe du but : 0,8 à 30°, 0,35 à 60°), pression (un adversaire à < Q.pres m : ×
+ *  Q.presF — le tir libre convertit ×2), mur (corps dans le cône : × 1/(1 + 0,5·n)). Le monde note ses tireurs
+ *  ailleurs (le seuil) : la qualité est celle de la SITUATION, la même pour tous. */
+export function qualiteTir(st, c, cfg, d = null, murN = 0) {
+  const Q = cfg.qualiteTir ?? {}, goal = st.pitch.attackGoal(c.team);
+  const dd = d ?? hyp(goal.x - c.p[0], c.p[2]);
+  const qD = Math.min(1, (Q.base ?? 0.36) * Math.exp(-(dd - 8) / (Q.efold ?? 8)));
+  const ang = Math.atan2(Math.abs(c.p[2]), Math.max(0.5, Math.abs(goal.x - c.p[0])));
+  const qA = Math.pow(Math.max(0, Math.cos(ang)), 1.5);
+  let presse = false;
+  for (const o of st.players) if (o.team !== c.team && !o.keeper && o.down <= 0 && hyp(o.p[0] - c.p[0], o.p[2] - c.p[2]) < (Q.pres ?? 2)) { presse = true; break; }
+  return qD * qA * (presse ? (Q.presF ?? 0.6) : 1) / (1 + 0.5 * murN);
 }
 
 /** LE CENTRE — les portes de position de tryCross (haut, large, boîte peuplée, cooldown), la

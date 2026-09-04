@@ -7953,6 +7953,48 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      par défaut = 229 au bit (le banc 229 vaut), clause 231 isolée 2 ✓,
      les douze annexes vertes, déployé (chunk Rondo-CKQky04Q.js, capture playmode
      avant deploy).
+- 282: LA ZONE DE VÉRITÉ (232, cfg.qualiteTir, menace.js qualiteTir /
+     selectiviteTir — Lacombe : la zone de vérité à 25-30 m ; le brief
+     2.10 : 22-30 tirs par match, 60-68 % dans la surface, seuil
+     d'attente 0,05-0,09 hors surface / 0,12+ dedans, « le tir sans
+     pression convertit ×2 »). Premier lot du PLAN_DOCTRINE (campagne I,
+     les décisions). AVANT (film-tirs, 12 × 300 s) : 72 tirs / 90 min,
+     9 buts, 48 % dans la surface, p50 19 m, 52 % sous pression < 2 m,
+     10 % de lobs > 27 m — « l'occasion franche se prend » (67a)
+     plancherisait à 0,72 tout couloir libre à ≤ 0,8 × portée (16 m) :
+     chaque entrée de surface devenait un tir. LA LOI : le tir reçoit une
+     QUALITÉ ATTENDUE q — pure, la même pour tous : distance (base 0,36 à
+     8 m, e-fold 8 m), angle (cos^1,5), pression (un adversaire à < 2 m :
+     × presF 0,6), mur (× 1/(1 + 0,5·n)) — et un SEUIL du tireur :
+     seuilBoite 0,14 dans la surface / seuilLoin 0,05 hors (un seuil
+     unique tuait toute la mi-distance : 0 tir > 22 m, 83 % dans la
+     surface) × axe(style, 1,3, 0,7) (le direct tire de loin) ÷ rôle
+     arbitre.tir (le 9 tente) ÷ (0,7 + 0,6·finF) (l'élite tente à 25 m,
+     identité à la note 50) × composureF (le sang-froid attend mieux) ×
+     score (mené : retard 0,8, on tire à vue ; devant : avance 1,15). La
+     SÉLECTIVITÉ lisse q/seuil entre 0,5 et 1,5 et multiplie le score du
+     tir (plancher 0,15 + 0,85·sel) — sous le seuil, la passe et la
+     conduite reprennent la main. Le LOB « gardien sorti » (120) passe par
+     la même porte, sa qualité × (1 + sortie / lobOut 4) — sans elle, 25 %
+     des tirs restants étaient des lobs de 30 m. APRÈS (12 graines) : 35
+     tirs / 90 (réglages mesurés : 0,09 unique → 38 et 84 % surface ;
+     0,065 → 48 ; 0,16 / 0,035 → 53 et 51 % ; 0,14 / 0,045 → 45 et 60 % ;
+     0,14 / 0,05 → 35 et 65 %, retenu), 65 % dans la surface, p50 12 m,
+     0 lob. BANDE : 26 tirs / 10 buts / 21 fautes / 5 corners par 100 min
+     (229 : 68 / 11). Les dix buts sont des tirs de 5-16 m (sonde
+     dbg-buts) : la porte a fait son travail (23 tirs / 90, réel 22-30)
+     et la CONVERSION À BOUT PORTANT (38 % ; réel 15-30 %) est la dette du
+     gardien et de la finition — lot 232b nommé, avant le 233. LA BANDE DE
+     SANTÉ SE RE-FONDE : 20-45 tirs par 100 min (réel 24-33), 3-12 buts
+     jusqu'au 232b. Garde-fou (dbg-courses, 3 graines) : appels profonds
+     96 c. 100, passes 295 c. 290, pertes 372 c. 396 ; débordements 30 c.
+     36 et profondes 10 c. 13 dans le bruit de Poisson (le garde-fou
+     passera à 6 graines) ; contre-appels 35 → 118 : le symptôme d'une
+     possession qui dure dans le dernier tiers, à lire au 240. Clause
+     232 : primitive pure (relations de qualité, effets du style, du
+     rôle, du sang-froid, du score, clé absente sans champ q) + flux 6
+     graines (tirs / 90 ≤ 0,7 × sans, surface + 5). Jumeau qualiteTir:
+     false = 229 au bit (173fb72c4182e7db / 7622b2d88c514b04).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
