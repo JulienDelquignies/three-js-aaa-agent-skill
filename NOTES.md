@@ -7994,7 +7994,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      232 : primitive pure (relations de qualité, effets du style, du
      rôle, du sang-froid, du score, clé absente sans champ q) + flux 6
      graines (tirs / 90 ≤ 0,7 × sans, surface + 5). Jumeau qualiteTir:
-     false = 229 au bit (173fb72c4182e7db / 7622b2d88c514b04).
+     false = 229 au bit (173fb72c4182e7db / 7622b2d88c514b04). SCEAU 232 :
+     8 shards verts hors classe ordre (96) — contrastes d'hier déplacés
+     par le nouveau mélange de tirs, épinglés qualiteTir:false et verts
+     isolés : 93, 149, 190, 107 (l'audace passe sous 0,4 par la porte),
+     123, le gardien-défend (conversion cadrée 78 % : la dette 232b), 230
+     et 231 (lois éteintes mesurées dans le monde d'hier) ; attributes
+     27 ✓ (gradation l. 53 et pique 147/169 épinglés) ; les douze annexes
+     vertes (menace : le refus « couloir-serré » garde son nom, seuls les
+     motifs positifs deviennent « qualité-insuffisante ») ; déployé (chunk
+     Rondo-Bnu-wF1R.js, capture playmode avant deploy). Monde 232 : seed 3
+     173fb72c4182e7db (inchangée : aucun tir dans sa fenêtre), seed 7
+     277cbf9e260012ac.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
