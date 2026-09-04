@@ -482,6 +482,8 @@ export function movePlayers(st, dt, cfg) {
 /** LE CORPS QUI PORTE OU VIENT DE LÂCHER (240b) : le porteur, et le passeur pendant retournement.apres s après sa passe —
  *  mesuré : les grandes rotations vivaient dans l'image de la frappe, quand le passeur retrouvait le plafond des autres. */
 export function enPorte(st, p, cfg) {
+  // …sauf le preneur du COUP D'ENVOI dans sa fenêtre (loi 45 : l'engagement est une passe — barre abaissée, tenue dispensée, retournement dispensé : 2,54 s c. 1,01 mesurés)
+  if (cfg.engagementPasse !== false && st._engagement && st._engagement.by === p.id && st.t - st._engagement.t < 2.5) return false;
   return st.possession?.carrier === p.id || st.ball.owner === p.id || (st.lastPasser === p.id && !!st.pass && st.t - st.pass.t < (cfg.retournement?.apres ?? 0.5));
 }
 

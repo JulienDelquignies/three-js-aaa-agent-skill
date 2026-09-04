@@ -5,8 +5,7 @@ import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js
 import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js';
 import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js';
 import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js';
-import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
 import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
 import { offsideLine } from './offside.js';
 import { tac, axe, resoudreTactique, triangule } from './tactics.js';

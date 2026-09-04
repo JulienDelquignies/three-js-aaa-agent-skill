@@ -86,7 +86,7 @@ function stepGestures(st, dt, cfg) {
           p.v[1] = (ez * k) / Math.max(1e-4, dt);
           p.p[0] += ex * k; p.p[2] += ez * k;
         }
-        if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted')) { let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
+        if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted' || A.pick?.tech?.clip === 'talonnade')) { let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
         else { p.yaw = g.yaw; p.yawWant = null; }
         p.speed = hyp(p.v[0], p.v[1]);
       }
@@ -642,11 +642,13 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const contested = foeBall < cfg.contestRadius && foeBall < d2(c.p, st.ball.p) - cfg.contestSlack;
     const intentFresh = !!c.intent || (c.anchorHint && st.t - c.anchorHint.t < 0.4);
     const settling = st._settling && st.t < st._settling.at;
+    // LE PORTEUR QUI SE RETOURNE NE POUSSE PAS (240b, cfg.retournement.tour) : la poussée à plus de tour rad du corps → porté (servo au pied) le temps du tour — un lancé qui poussait dans son dos laissait le ballon derrière lui (12 → 31 pertes sans pression / 48 min ; cône du porté 76)
+    const tourne = st.full && cfg.retournement && enPorte(st, c, cfg) && Math.abs(((Math.atan2(want[1], want[0]) - c.yaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI) > (cfg.retournement.tour ?? 1.05);
     if (st.ball.owner === c.id) {
       if (contested) {
         st.ball.release('contesté');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }  // il tente de l'emmener hors du duel
-      } else if (intentFresh || settling) {   // porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas
+      } else if (intentFresh || settling || tourne) {   // porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
         // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
         if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
         else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
@@ -961,7 +963,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // …et l'ADOPTION arrière est MORTE tant qu'on est lancé (189 — le veto d'exécution seul churnait : 1 801 déchirures/4 graines, ré-adoptée chaque frame)
         const reculeL = lanceNow && choice && st.players[choice.to.id]
           && (st.players[choice.to.id].p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) < -2;
-        const dosR = st.full && cfg.retournement && choice && !choice.cross && choice.style !== 'lofted' && !st.restart && st.phase === 'carry' && !pressCall && !jeteCall && st.players[choice.to.id]
+        const dosR = st.full && cfg.retournement && !engagementCall && choice && !choice.cross && choice.style !== 'lofted' && !st.restart && st.phase === 'carry' && !pressCall && !jeteCall && st.players[choice.to.id]
           && (() => { const to = st.players[choice.to.id]; if ((to.p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) > -2) return false; let dA = Math.atan2(to.p[2] - c.p[2], to.p[0] - c.p[0]) - c.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; return Math.abs(dA) > (cfg.retournement.cap ?? 1.75); })();
         if (dosR) { if (c._retour) c._retour.to = choice.to.id; else c._retour = { to: choice.to.id, t: st.t }; } else if (c._retour) c._retour = null;   // le chronomètre part de la PREMIÈRE image dos (un receveur qui change ne le réarme pas — l'engagement attendait 7,7 s)
         const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2);
@@ -1245,4 +1247,4 @@ function hullArea(pts) {
 }
 
 export { predictPath };
-import { hyp } from './hyp.js'; import { presseurArrive } from './pression.js';
+import { hyp } from './hyp.js'; import { enPorte } from './movement.js'; import { presseurArrive } from './pression.js';

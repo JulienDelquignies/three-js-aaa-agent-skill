@@ -222,9 +222,10 @@ offensive enfin, débats en axes tout du long.**
   de but est trop rare pour porter la loi (3 par 30 min, dette des sorties) : la salida vit sur la relance basse.
 
 **Lot 240a-d — Les quatre retours (avant le 240) — SCELLÉ (NOTES 291).** Passe vers un receveur serré (passeMarque,
-faible : 15,1 → 13,3 %), retournement du porteur (457 → 169 °/s p50, passes dans le dos ÷ 2), ballon libre au temps
-d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3-4,5 m de la ligne). Prix : pertes 333 → 393/90,
-à rendre par la remise du 240.
+faible : 15,1 → 13,3 %), retournement du porteur (457 → 169 °/s p50, passes dans le dos ÷ 2 ; le porteur qui se
+retourne ne pousse pas — porté au pied le temps du tour ; le coup d'envoi et la talonnade dispensés), ballon libre au
+temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3-4,5 m de la ligne). Prix : pertes
+333 → 411/90, à rendre par la remise du 240.
 
 **Lot 240 — Le troisième homme et l'appui-remise (préceptes 1.3, 1.5 ; brief chantier 2).**
 - Doctrine : A → B (une touche, dos au but, « si tu n'as pas vu, tu remets ») → C lancé qui part

@@ -8471,6 +8471,46 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      geste, le centre et la passe levée gardent le fouet d'hier (le
      centre bas de l'annexe frappes le demandait). Rotation finale
      162-180 °/s p50, p90 211-420 (les centres exemptés fouettent).
+     LES ROUGES DU BANC, ATTRIBUÉS À LEUR CLÉ (banc à épingle, PIN
+     par variable d'environnement) : l'ENGAGEMENT (45) passait de 1,01
+     à 2,54 s — le preneur du coup d'envoi, tourné vers le but adverse,
+     subissait le plafond pour donner à son soutien au bord du rond →
+     la loi 45 dispense aussi le retournement dans sa fenêtre (enPorte
+     et la porte dosR : « l'engagement est une passe, pas un
+     retournement ») ; le 170 (corps ouvert) était MASQUÉ (59° c. 60° :
+     le plafond bride le pivot des deux côtés ; 55° c. 65° sans) → la
+     clause épingle retournement:false et mesure sa loi ; le 167 est
+     vert sur le moteur final (p90 15,2 m, 4 services profonds — la
+     borne rase : 9 sans retournement, le passeur tourne plus lentement
+     pour servir la course, PRIX NOMMÉ à re-mesurer au 240 propre) ; le
+     128 (7 through) et le 145 (σ 1,93 > 1,70) rendus verts isolés sur
+     le moteur final (flux sous charge) ; 96 et 189 : classe ordre ;
+     budget 3,44 ms/step : charge (4 shards + épingles sur 4 cœurs).
+     LE SECOND TIRAGE (la dispense du coup d'envoi change chaque
+     pré-roll : onze rouges, tous rejoués isolés, chacun attribué) :
+     118 (talonnade) — le tour au geste (240b) retardait un geste dont
+     la signature est un bassin qui ne tourne pas → exemption talonnade
+     au geste, comme le centre ; 120 (lob) et 192 (zone rouge) —
+     fixtures fragiles révélées (le porteur posé regardait à 164° du
+     but après 3 s de conduite ; le receveur posé montait sur l'épaule)
+     → le fixture pose le corps face au but, le receveur reposé chaque
+     image ; 217, 190, 114, 121, 235-tempo — Poisson à un chiffre,
+     graines doublées (6 → 12, 4 → 8, 4 → 8, 3 → 6, 3 → 6) ; 237-flux —
+     l'épaule déplace la population des postés sans homme et inverse
+     la signature lue sur les cibles (−2,94 avec, +2,90 sans) → la
+     clause épingle epaule:false et mesure sa loi ; 239-flux — la
+     conduite du central libre (5 conduites / 30 min) passe en
+     informatif daté, l'arc du retournement EST une conduite, le pivot
+     (286 images) et la fixture 239 font foi ; 104 — LE PRIX RÉEL : les
+     pertes sans pression 12 → 31 / 48 min sous le retournement (film :
+     4 échappées sur 9 avec la poussée à plus de 100° du corps, 6 sur 9
+     à plus de 4 m/s — le lancé poussait dans son dos, le cône du porté
+     (76) refusait la retouche). Tourner la poussée avec le corps
+     (essai) : pire au monde du 104 (48). La loi juste : LE PORTEUR QUI
+     SE RETOURNE NE POUSSE PAS (retournement.tour 1,05 rad = le
+     demi-cône du porté) — porté au pied le temps du tour, puis la
+     poussée ; film complet 16 → 10 échappées / 16 min (5 sans
+     retournement), plus aucune poussée dans le dos.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

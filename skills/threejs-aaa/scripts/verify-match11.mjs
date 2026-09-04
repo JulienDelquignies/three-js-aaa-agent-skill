@@ -2018,7 +2018,7 @@ if (__bloc()) {
   // entre les touches ; la garde = l'équipe contrôle à +1,5 s, conduite et vol compris).
   const flux = (over) => {
     let n = 0, gardes = 0;
-    for (const seed of [1, 2, 3, 4]) {
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {   // 4 → 8 graines DATÉ 240 (3 sur 4 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ dribble: false, shotRange: 20, ...over });
       const marks = [];
@@ -2427,7 +2427,7 @@ if (__bloc()) {
     const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
     st.ball.release('perte'); st.ball.restart([g.x - sg * 26, 0.11, 2], { cause: 'touche' }); st.restart = null;
     st.ball.possess(c.id); st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0;
-    c.p[0] = g.x - sg * 26; c.p[2] = 2; c.v = [0, 0];
+    c.p[0] = g.x - sg * 26; c.p[2] = 2; c.v = [0, 0]; c.yaw = Math.atan2(0, sg);   // DATÉ 240 : le corps se retourne avec le ballon (240b) — le porteur posé regarde le but (il conduisait à 164° du but, le lob armé attendait un corps)
     for (const q of st.players) if (q.id !== c.id && !q.keeper) { q.p[0] = g.x - sg * 55; q.p[2] = (q.id % 9) * 3 - 12; q.v = [0, 0]; q.down = 0; }
     const gkF = st.players.find((q) => q.keeper && q.team !== c.team);
     gkF.p[0] = g.x - sg * 6; gkF.p[2] = 0; gkF.v = [0, 0];
@@ -2458,7 +2458,7 @@ if (__bloc()) {
 if (__bloc()) {
   const mesure = (over, iso = {}) => {
     const outs = [], gardes = [];
-    for (const seed of [1, 2, 4]) {
+    for (const seed of [1, 2, 4, 5, 7, 8]) {   // 3 → 6 graines DATÉ 240 (2 sur 3 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
       let cursor = 0; const watch = [];
@@ -3678,7 +3678,8 @@ if (__bloc()) {
     const rots = [];
     for (const seed of [4, 7, 11, 15, 5, 9, 13, 17]) {   // 4 → 8 graines DATÉ 238 (59° c. 58° : un tirage)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)
+      // retournement:false DATÉ 240 : le plafond de rotation du porteur (240b) bride le pivot des deux côtés (59° c. 60° masqués ; 55° c. 65° sans) — la clause mesure SA loi
+      const cfg = matchCfg({ shotRange: 20, retournement: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)
       let suivi = null;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4142,7 +4143,7 @@ if (__bloc()) {
   // amie) ; l'épinglé les prend au fond de son but (1,4-5 m — le gardien-statue filmé au pixel).
   const prises = (over) => {
     const ds = [];
-    for (const seed of [2, 3, 5, 7]) {
+    for (const seed of [2, 3, 5, 7, 11, 13, 17, 19]) {   // 4 → 8 graines DATÉ 240 (1 retrait sur 4 : Poisson)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ hommeLibre: false, claquette: false, pasChasse: false, qualiteTir: false, shotRange: 20, ...(over ?? {}) });
       let vol = null, seen = null;
@@ -4227,7 +4228,7 @@ if (__bloc()) {
     st.restart = null; st.ball.possess(c1.id);
     st.possession = { team: 1, carrier: c1.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1;
     st._possChangeAt = st.t - 9; st._possTeam = 1;
-    for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
+    for (let i = 0; i < 60; i++) { recv.p[0] = sgn * 30; recv.p[2] = 6; recv.v = [0, 0]; matchStep(st, 1 / 60, cfg); }   // DATÉ 240 : le receveur POSÉ reste posé (la pointe montait sur l'épaule, 240d — la cible du marqueur suivait un corps qui bougeait)
     let dT = 99;
     for (const f of st.players) if (f.team === 0 && !f.keeper && f.job === 'mark') dT = Math.min(dT, Math.hypot(f.target[0] - recv.p[0], f.target[2] - recv.p[2]));
     return dT;
@@ -4653,7 +4654,7 @@ if (__bloc()) {
   // Le juge : la durée p50 des remises par espèce, vivant c. épinglé (3 × 300 s).
   const durees = (over) => {
     const d = {};
-    for (const seed of [3, 5, 7, 11, 13, 17]) {   // 3 → 6 graines DATÉ 237 (aucun coup franc vivant sur 3)
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {   // 3 → 6 graines DATÉ 237, 6 → 12 DATÉ 240 (aucun renvoi épinglé sur 6) (aucun coup franc vivant sur 3)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ hommeLibre: false, contrePress: false, shotRange: 20, ...(over ?? {}) });
       let cur = null, t0 = 0;
@@ -5308,7 +5309,8 @@ if (__bloc()) {
     r0.tempo === 0 && rD.tempo === 0.5 && rE.tempo === 0.5 && axe(0.5, 0.6, 1.4) === 1 && axe(0.5, 1.4, 0.6) === 1);
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
   const flux = (tactics) => { const cfg = matchCfg({ shotRange: 20 }); const H = [[], []];
-    for (const seed of [3, 5, 7]) { const st = makeMatch({ full: true, seed, tactics }); let car = -1;
+    // 3 → 6 graines DATÉ 240 (ratio 0,57 c. 0,48 au 239 : l'épaule et le retournement raccourcissent la tenue posée — 2,24 c. 2,9-3,0 s sans l'une ou l'autre)
+    for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed, tactics }); let car = -1;
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const c = st.possession.carrier;
         if (c !== car && c >= 0 && st._calmHold != null) { const p = st.players[c]; if (p && !p.keeper) H[p.team].push(st._calmHold); } car = c; } }
     return { r: med(H[0]), l: med(H[1]), n: H[0].length + H[1].length }; };
@@ -5347,7 +5349,8 @@ if (__bloc()) {
         const o = out[0], rest = sorted.filter((d) => d !== o); if (o.x - med(rest.map((d) => d.x)) < 2) continue; n++;
         const byZ = rest.map((d) => ({ d, dz: Math.abs(d.z - o.z) })).sort((a, b) => a.dz - b.dz); const ref = byZ[2].d.x; if (!Number.isNaN(byZ[0].d.xt)) V1.push(ref - byZ[0].d.xt); if (!Number.isNaN(byZ[1].d.xt)) V2.push(ref - byZ[1].d.xt); } }
     return { v: med(V1), s: med(V2), n }; };
-  const V = flux({}), H = flux({ referme: { part: 0.45, second: 0.225 } });
+  // epaule:false DATÉ 240 dans les deux bras : la pointe sur l'épaule (240d) déplace la population des postés sans homme et inverse la signature lue sur les cibles (−2,94 avec, +2,90 sans) — la clause mesure SA loi
+  const V = flux({ epaule: false }), H = flux({ epaule: false, referme: { part: 0.45, second: 0.225 } });
   ok(`…et le FLUX (6 × 300 s, ${V.n} sorties de ligne) : recul du voisin ${V.v.toFixed(2)} m c. sans ${H.v.toFixed(2)}, du second ${V.s.toFixed(2)} c. ${H.s.toFixed(2)} — signature combinée ${((V.v - H.v) + (V.s - H.s)).toFixed(2)} ≥ 0,3, aucun inversé (sur les CIBLES des postés SANS homme depuis 238 — sur les corps : 0,15 + 0,29 au 237, −0,03 au 238, bruit)`,
     (V.v - H.v) + (V.s - H.s) >= 0.3 && V.v - H.v >= -0.1 && V.s - H.s >= -0.1 && V.n >= 1500);
 }
@@ -5436,8 +5439,9 @@ if (__bloc()) {
           if (isCB && (!carry || carry.id !== c.id)) { let d1 = 99; for (const q of st.players) if (q.team !== poss && !q.keeper) d1 = Math.min(d1, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2])); carry = d1 > 5 ? { id: c.id, x0: c.p[0], z0: c.p[2] } : null; } } } }
     return { piv: med(piv), n: piv.length, cond: med(cond), nc: cond.length }; };
   const V = flux({}), E2 = flux({ salida: false, conduc: false });
-  ok(`…et le FLUX (6 × 300 s) : pivot en relance basse sous pression ${V.piv.toFixed(1)} m devant les centraux (${V.n} images) ≤ 3 et ≤ sans ${E2.piv.toFixed(1)} − 4 (mesuré 0,5 c. 9,5) ; conduite d'un central libre p50 ${V.cond.toFixed(1)} m (${V.nc}) ≥ sans ${E2.cond.toFixed(1)} + 1 (mesuré 8,2 c. 5,5 ; réel 6-12)`,
-    V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100 && V.cond >= E2.cond + 1 && V.nc >= 4);
+  ok(`…et le FLUX (6 × 300 s) : pivot en relance basse sous pression ${V.piv.toFixed(1)} m devant les centraux (${V.n} images) ≤ 3 et ≤ sans ${E2.piv.toFixed(1)} − 4 (mesuré 0,5 c. 9,5) ; conduite d'un central libre INFORMATIVE p50 ${V.cond.toFixed(1)} m (${V.nc}) ≥ sans ${E2.cond.toFixed(1)} + 1 (mesuré 8,2 c. 5,5 ; réel 6-12)`,
+    // conduite du central libre INFORMATIVE DATÉE 240 : 5 conduites / 30 min, le p50 de cinq tirages est un chiffre de Poisson (8,1 c. 9,8 ; 7,7 c. 2,7 sans retournement ; 6,9 c. 7,4 sans épaule) — l'arc du retournement est une conduite, le mécanisme 239 (fixture) fait foi
+    V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100 && V.nc >= 4);
 }
 
 if (__bloc()) {
