@@ -58,7 +58,7 @@ const usableSun = (l) => !!l && (l.isDirectionalLight === true || l.isPointLight
  * issue instead of an effect nobody notices is missing.
  */
 function buildGraph(renderer, scene, camera, state) {
-  const cfg = { ...TIERS[state.tier], dither: state.dither }, passes = {}, declared = cfg.bloom === false ? [] : ['bloom'];
+  const cfg = { ...tierFor(renderer, state.tier), dither: state.dither }, passes = {}, declared = cfg.bloom === false ? [] : ['bloom'];
 
   // MSAA must die BEFORE the pass is constructed: the sample count is baked into its render target.
   // …and it dies on the FXAA tier too (lot 62 — « toujours saccadé » au téléphone) : Renderer.js
@@ -181,7 +181,7 @@ function buildGraph(renderer, scene, camera, state) {
     passes.dither = ldr;
   }
 
-  return { scenePass, passes, declared, outputNode: ldr, toneMapping };
+  return { scenePass, passes, declared, outputNode: ldr, toneMapping, path: rendererPath(renderer), ssrRetire: cfg.ssrRetire ?? null };
 }
 
 /**
@@ -190,6 +190,25 @@ function buildGraph(renderer, scene, camera, state) {
  *
  * @param {{tier?:'low'|'high'|'ultra', sun?:THREE.Light, lut?:{texture:THREE.Data3DTexture,size?:number,intensity?:number}, dof?:object}} [options]
  */
+/** Le chemin RÉEL du renderer (perf lot 2) : WebGPU, ou le repli WebGL2 — lu sur le backend, jamais supposé. */
+export function rendererPath(renderer) {
+  const b = renderer?.backend;
+  if (!b) return 'inconnu';
+  return b.isWebGPUBackend ? 'webgpu' : (b.isWebGLBackend || b.gl) ? 'webgl2' : 'inconnu';
+}
+
+// LE REPLI WEBGL2 NE COMPILE PAS SSR (perf lot 2 — mesuré : l'émission TSL → GLSL de SSRNode mélange int et float
+// dans max, « ERROR: 0:248: 'max' : no matching overloaded function », VALIDATE_STATUS false ; on payait ses cibles et
+// deux attachements MRT sur toute la passe scène pour zéro image). Sur ce chemin la passe est RETIRÉE du graphe —
+// rien n'est perdu à l'image, on cesse de payer un néant. WebGPU garde SSR inchangé.
+export function tierFor(renderer, tier) {
+  const cfg = { ...(TIERS[tier] ?? TIERS.high) };
+  // ?ssr=force : le SABOTAGE NOMMÉ — on laisse la passe refusée dans le graphe pour voir le contrôle rougir (casser le garde une fois avant de le signer)
+  const force = typeof location !== 'undefined' && new URLSearchParams(location.search).get('ssr') === 'force';
+  if (cfg.ssr && rendererPath(renderer) === 'webgl2' && !force) { cfg.ssr = false; cfg.ssrRetire = 'repli webgl2 : SSRNode ne compile pas (max int/float)'; }
+  return cfg;
+}
+
 export function createRenderPipeline(renderer, scene, camera, { tier = 'high', sun = null, lut = null, dof: dofOptions = null, dither = true } = {}) {
   const Pipeline = THREE.RenderPipeline ?? THREE.PostProcessing; // r185 renamed PostProcessing → RenderPipeline
   const postProcessing = new Pipeline(renderer);
@@ -198,6 +217,16 @@ export function createRenderPipeline(renderer, scene, camera, { tier = 'high', s
   postProcessing.outputColorTransform = false;
 
   const state = { tier: TIERS[tier] ? tier : 'high', sun, lut, dof: dofOptions, dither };
+  // LES SHADERS REFUSÉS SE CONSIGNENT (perf lot 2) : renderer.debug.onShaderError (repli WebGL2) — un programme qui
+  // ne lie pas est écrit dans renderer.userData.shaderErrors, et checkRenderPipeline ROUGIT dessus. Un contrôle qui
+  // répond « tout va bien » sur un shader refusé est pire qu'aucun contrôle.
+  if (renderer?.debug && !renderer.userData?.shaderErrors) {
+    (renderer.userData ??= {}).shaderErrors = [];
+    renderer.debug.onShaderError = (gl, program, vs, fs) => {
+      const err = (sh, kind) => { const ok = gl.getShaderParameter(sh, gl.COMPILE_STATUS); const log = gl.getShaderInfoLog(sh) || ''; return ok && !log.trim() ? null : `${kind} : ${(log.split('\n').find((l) => /ERROR/.test(l)) ?? log.trim() ?? 'refusé').slice(0, 160)}`; };
+      renderer.userData.shaderErrors.push({ at: performance.now(), programLog: (gl.getProgramInfoLog(program) || '').slice(0, 160), vertex: err(vs, 'vertex'), fragment: err(fs, 'fragment') });
+    };
+  }
   const api = { postProcessing, passes: {}, declared: [], tier: state.tier, toneMapping: THREE.NoToneMapping };
   const free = () => { for (const p of Object.values(api.passes)) p?.dispose?.(); api.scenePass?.dispose?.(); };
 
@@ -230,6 +259,10 @@ export function createRenderPipeline(renderer, scene, camera, { tier = 'high', s
 export function checkRenderPipeline(pipeline, renderer) {
   const issues = [], p = pipeline?.passes ?? {};
   if (!pipeline?.postProcessing) issues.push('pipeline invalide : aucun RenderPipeline construit');
+  // (perf lot 2) une passe déclarée que le GPU refuse : le renderer a consigné le programme refusé → rouge, nommé
+  const refuses = renderer?.userData?.shaderErrors ?? [];
+  for (const r of refuses) issues.push(`shader refusé par le GPU (${pipeline?.path ?? 'chemin inconnu'}) : ${r.fragment ?? r.vertex ?? r.programLog ?? 'programme non lié'} — une passe déclarée ne compile pas, on paie ses cibles pour rien`);
+  if (pipeline?.path === 'webgl2' && p.ssr) issues.push('SSR construite sur le repli WebGL2 : SSRNode ne compile pas sur ce chemin (max int/float) — tierFor doit la retirer');
   for (const name of pipeline?.declared ?? []) {
     if (!p[name]) issues.push(`passe déclarée « ${name} » absente du graphe (godrays exige une DirectionalLight/PointLight avec castShadow, un LUT exige une texture 3D)`);
   }

@@ -8,11 +8,10 @@ import { Engine } from './engine/Engine.js';
 export async function run(SceneClass, opts = {}) {
   const app = document.getElementById('app');
   const engine = new Engine(app);
-  await engine.boot();
-  // ?fps=1 : le compteur reste visible (lot 69 — le diagnostic à distance des saccades
-  // téléphone : « trait sur l'écran donc saccade » se date avec un chiffre à l'écran)
+  // ?fps=1 : le compteur existe et reste visible (lot 69 — le diagnostic à distance des saccades
+  // téléphone) ; sans lui, AUCUN compteur n'est créé (perf lot 4 : masqué, il tournait quand même)
   const showFps = new URLSearchParams(location.search).has('fps');
-  if (engine.stats?.dom) engine.stats.dom.style.display = showFps ? 'block' : 'none';
+  await engine.boot({ stats: showFps });
 
   const scene = new SceneClass(engine.scene, engine.renderer);
   if (scene.ready) await scene.ready;

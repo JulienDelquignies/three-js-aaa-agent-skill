@@ -6,6 +6,8 @@ import { buildStadium } from '../engine/stadium-builder.js';
 import { makeTheme } from '../engine/club-theme.js';
 import { setupStadiumNight, checkStadiumNight } from '../engine/stadium-night.js';
 import { createRenderPipeline, checkRenderPipeline } from '../engine/render-pipeline.js';
+import { lireMachine, marcheDepart } from '../engine/quality.js';
+import { construireEscalier, appliquerMarche, boucleQualite, setSieges, setNappes } from '../engine/escalier.js';
 import { buildKit } from '../engine/kit.js';
 import { spawnArbitre, updateArbitre } from './arbitre.js';
 import { tintPart } from '../engine/part-tint.js';
@@ -72,14 +74,22 @@ export class Rondo {
     // plein format sur écran étroit : la chaîne 'low' par défaut (le post 'high' à DPR mobile
     // sur 105 × 68 est le lag mesuré au téléphone) — ?q=high le rétablit explicitement.
     // Calculé AVANT le stade : la taille de la shadow map en dépend (lot 61).
-    this._tier = q.get('q') || (this.fullMode && typeof window !== 'undefined' && window.innerWidth < 700 ? 'low' : 'high');
+    // LE TIER SE CHOISIT D'APRÈS LA MACHINE (perf lot 1 — mesuré : innerWidth < 700 était la SEULE auto-détection du
+    // projet, un test de téléphone ; une Surface Go derrière une fenêtre large prenait le tier haut, 1 200 ms l'image
+    // contre 550). La détection ne fait que choisir la MARCHE DE DÉPART (quality.js) ; le GPU réel se voit en jouant.
+    this._machine = lireMachine({ renderer: this.renderer });
+    const depart = marcheDepart(this._machine, { q: q.get('q'), fullMode: this.fullMode });
+    this._tier = this.fullMode ? depart.tier : (q.get('q') || 'high');
+    this._depart = depart;
+    if (this.fullMode && typeof console !== 'undefined') console.info(`qualité : marche de départ ${this._tier} — ${depart.raisons.join(' ; ')} (${this._machine.chemin}, gpu ${this._machine.gpu ?? '?'}, ${this._machine.cores ?? '?'} cœurs, ${this._machine.mem ?? '?'} Go)`);
     // MOINS DE CHALEUR AU TIER LOW (lot 72 — le compteur ?fps=1 : CPU 7,3 → 19,7 ms en 70 s =
     // thermal throttling, pas une fuite — sim locale plate, scène et DOM stables) : la moitié
     // des sièges instanciés suffit à peupler la nuit (les derniers rangs se vident — un soir de
     // semaine) ; ~6-7k boîtes de moins dans chaque frame. ?seats=full les rétablit.
-    if (this._tier === 'low' && q.get('seats') !== 'full') {
-      built.group.traverse((o) => { if (o.isInstancedMesh && o.count > 800) o.count = Math.floor(o.count / 2); });
-    }
+    // …les sièges se comptent PLEINS une fois (perf lot 5 : la marche « moitié des sièges » est réversible en jeu)
+    this._stade = built; built.group.traverse((o) => { if (o.isInstancedMesh && o.count > 800) o.userData.fullCount = o.count; });
+    this._seatsFull = q.get('seats') === 'full';
+    if (this._tier === 'low' && !this._seatsFull) setSieges(this, false);
 
     // ---- night: floodlights + one shadow-casting sun fitted to the pitch
     this.night = setupStadiumNight(this.scene, this.renderer, { at: [0, 0, 0], model,
@@ -351,17 +361,26 @@ export class Rondo {
 
   // L'émissif des corps sous la cuisson (lot 75) — le champ des nappes est quasi uniforme
   // (mesuré) : une intensité constante rend aux corps ce que les spots éteints leur donnaient.
-  _bakeCorps(root3d) {
+  _bakeCorps(root3d, on = true) {
     root3d.traverse((o) => {
       const m = o.material;
-      if (!(o.isMesh || o.isSkinnedMesh) || !m || m._corpsCuit) return;
-      m._corpsCuit = true;
-      if (m.map) m.emissiveMap = m.map;
-      m.emissive = (m.color?.clone?.() ?? new THREE.Color(0xffffff)).multiply(new THREE.Color(0xf0f5ff));
-      m.emissiveIntensity = 0.42;
+      if (!(o.isMesh || o.isSkinnedMesh) || !m) return;
+      if (on) {
+        if (m._corpsCuit) return;
+        m._corpsAvant = { emissiveMap: m.emissiveMap ?? null, emissive: m.emissive?.clone?.() ?? null, emissiveIntensity: m.emissiveIntensity };   // réversible (perf lot 5)
+        m._corpsCuit = true;
+        if (m.map) m.emissiveMap = m.map;
+        m.emissive = (m.color?.clone?.() ?? new THREE.Color(0xffffff)).multiply(new THREE.Color(0xf0f5ff));
+        m.emissiveIntensity = 0.42;
+      } else {
+        if (!m._corpsCuit) return;
+        const A = m._corpsAvant; m._corpsCuit = false;
+        m.emissiveMap = A?.emissiveMap ?? null; if (A?.emissive) m.emissive.copy(A.emissive); m.emissiveIntensity = A?.emissiveIntensity ?? 0;
+      }
       m.needsUpdate = true;
     });
   }
+
 
   // La sonde des millisecondes (lot 74, ?probe=1) — cycle 4 configurations et affiche le fps
   // de chacune ; l'overlay reste à l'écran pour la capture. Voir le commentaire du constructeur.
@@ -453,6 +472,9 @@ export class Rondo {
     // ?dither=0 : la sortie nue (l'A/B téléphone du banding — lot 71)
     const q2 = new URLSearchParams(location.search);
     this.pipeline = createRenderPipeline(this.renderer, this.scene, cam, { tier: this._tier, sun: this.night?.sun, dither: q2.get('dither') !== '0' });
+    // LE CONTRÔLE DU PIPELINE APRÈS LES PREMIÈRES IMAGES (perf lot 2) : les shaders compilent à la première image — le contrat se juge à la 3e, ses défauts en console et dans _reports.pipeline (le chemin réel, SSR retirée ou refusée)
+    this._pipeCheckAt = 3; if (this.pipeline.ssrRetire) console.info('pipeline : SSR retirée —', this.pipeline.ssrRetire);
+    if (this.fullMode) construireEscalier(this, q2);   // L'ESCALIER (perf lot 5, escalier.js) — le cap DPR est connu ici
     this.postfx = this.pipeline;
     if (this._reports) this._reports.pipeline = checkRenderPipeline(this.pipeline, this.renderer);
     window.__rondoReport = this._reports;
@@ -828,36 +850,9 @@ export class Rondo {
     // dans camera()). Le post relit getDrawingBufferSize à chaque frame : le changement se
     // propage seul, sans resize. Une fenêtre gelée (onglet caché, chargement, GC massif) se
     // REJETTE au lieu de se lire comme de la lenteur. ?dynres=0 coupe (sabotage nommé).
+    if (this._pipeCheckAt != null && --this._pipeCheckAt <= 0) { this._pipeCheckAt = null; const r = checkRenderPipeline(this.pipeline, this.renderer); this._reports.pipeline = { ...r, path: this.pipeline?.path }; if (!r.ok) console.warn('pipeline (' + this.pipeline?.path + ') :', r.issues.join(' ; ')); }
     if (this._probe && typeof performance !== 'undefined') this._probeStep();
-    if (this._dynRes && !this._probe && typeof performance !== 'undefined') {
-      const nowW = performance.now();
-      if (this._drT0 == null) { this._drT0 = nowW; this._drN = 0; }
-      else if (++this._drN && nowW - this._drT0 >= 2000) {
-        const win = nowW - this._drT0, fps = this._drN * 1000 / win;
-        const cur = this.renderer?.getPixelRatio?.() ?? 0;
-        if (win < 4000 && cur > 0) {
-          // …plancher 0,75 au tier LOW (lot 72 — le compteur ?fps=1 du téléphone : CPU 7,3 →
-          // 19,7 ms en 70 s de jeu = THERMAL THROTTLING, pas une fuite (sim locale plate à
-          // 1,0 ms/frame sur 240 s, scène et DOM stables). La réponse moteur : produire moins
-          // de chaleur — DPR 1,0 sur un écran dense ≈ 2,6 Mpx ; 0,75 en retire 44 %. Les tiers
-          // hauts gardent le plancher net de 1,0.
-          const drMin = this._tier === 'low' ? 0.75 : 1.0;
-          // …et l'échelle MARCHE SUR LES DIVISEURS (lot 73) : chaque cran reste un étirement
-          // entier du compositeur — un pas arithmétique (−0,25) retomberait sur le battement.
-          // Sous ?drsnap=0, les deux branches restituent l'arithmétique d'hier à l'identique.
-          const down = this._drSnap ? this._snapDpr(cur - 0.25) : Math.max(drMin, cur - 0.25);
-          const okDown = this._drSnap ? (down >= drMin - 1e-3 && down < cur - 1e-3) : cur > drMin;
-          if (fps < 45 && okDown) { this.renderer.setPixelRatio(down); this._drUp = 0; }
-          else if (fps > 55 && this._dprCap && cur < this._dprCap - 1e-3) {
-            // REMONTER exige DEUX fenêtres rapides consécutives (lot 62 — hystérésis) : chaque
-            // changement réalloue les cibles du post, osciller 1,25↔1,5 toutes les 2 s SERAIT
-            // une saccade. Descendre reste immédiat : on rend des pixels, jamais des à-coups.
-            if ((this._drUp = (this._drUp ?? 0) + 1) >= 2) { this.renderer.setPixelRatio(this._snapUp(cur, this._dprCap)); this._drUp = 0; }
-          } else this._drUp = 0;
-        }
-        this._drT0 = nowW; this._drN = 0;
-      }
-    }
+    if (this._dynRes && !this._probe && typeof performance !== 'undefined') boucleQualite(this, performance.now());   // LA BOUCLE D'AJUSTEMENT (perf lot 3, escalier.js) : un centile juge, l'escalier descend et remonte, le plancher se signale
     const step = Math.min(dt, 1 / 30);
     const stepV = step * (this.vitesse ?? 1);   // le temps de LECTURE (l'aval visuel vit au rythme du match, pas de la frame)
     const before = this.state.events.length;

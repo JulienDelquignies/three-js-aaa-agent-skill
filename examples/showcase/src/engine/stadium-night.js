@@ -317,8 +317,11 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
   // le débordement des nappes leur donnait (mesuré : tribunes −66 % sans). Vérité de la
   // sonde embarquée sur l'appareil : tout 18 fps / sans nappes 60 — les spots coûtaient
   // ~40 ms/frame de fragment. bake:false (?bakelight=0) : le forward d'hier.
-  let baked = false;
-  if (bake) {
+  // LA CUISSON EST BASCULABLE EN JEU (perf lot 5, la marche « nappes → texture ») : préparée une fois (la carte, l'uv1,
+  // le bain), appliquée ou retirée à la demande — setBake(on). bake:true la pose à la construction (le tier low d'hier).
+  let baked = false, prepared = null;
+  const preparer = () => {
+    if (prepared) return prepared;
     const grounds = [];
     scene.traverse((o) => { if (o.isMesh && (o.name === 'pelouse' || o.name === 'abords')) grounds.push(o); });
     if (grounds.length) {
@@ -365,8 +368,6 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
         g.material.lightMap = tex; g.material.lightMapIntensity = 1.03;        // calibré par zones (avec bain 0,40/0,125 + fuite)
         g.material.needsUpdate = true;
       }
-      baked = true;
-      for (const s of spots) s.visible = false;                                // plus AUCUN coût spot — les flaques vivent en texture
       // LE BAIN : ce que les nappes donnaient au RESTE du monde (corps, tribunes, mobilier).
       // Une directionnelle douce du dessus (le shading des corps garde un haut/bas) + un
       // renfort d'hémisphère (les gradins verticaux vivaient du débordement LATÉRAL des
@@ -375,11 +376,21 @@ export function setupStadiumNight(scene, renderer, { at = [0, 0, 0], model, inte
       bain.position.set(6, 40, 3); group.add(bain); group.add(bain.target);
       const bainHemi = new THREE.HemisphereLight(0x9fb4d8, 0x3a4030, BAIN_H * intensity);
       bainHemi.position.set(0, 30, 0); group.add(bainHemi);
+      prepared = { tex, grounds, bain, bainHemi };
     }
-  }
+    return prepared;
+  };
+  const setBake = (on) => {
+    const P = on ? preparer() : prepared; if (!P) { baked = false; return false; }
+    for (const g of P.grounds) { g.material.lightMap = on ? P.tex : null; g.material.lightMapIntensity = on ? 1.03 : 1; g.material.needsUpdate = true; }
+    for (const s of spots) s.visible = !on;                                     // cuit : plus AUCUN coût spot — les flaques vivent en texture
+    P.bain.visible = on; P.bainHemi.visible = on;
+    baked = on; return true;
+  };
+  if (bake) setBake(true);
 
   return {
-    group, sun, spots, scene, doused: doused.map(([l]) => l), baked,
+    group, sun, spots, scene, doused: doused.map(([l]) => l), get baked() { return baked; }, setBake,
     get keyLayer() { return keyLayer; }, light,
     dispose() {
       scene.remove(group);
