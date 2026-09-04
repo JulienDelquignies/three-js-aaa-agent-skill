@@ -8050,6 +8050,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      les douze annexes vertes (sync : le plafond se compte en split —
      1249 en wc ; match-sim ramené à 1248), déployé (chunk
      Rondo-BWlHCKLV.js, capture playmode avant deploy).
+- 284: L'HOMME LIBRE (233, cfg.hommeLibre, rondo.js malusHommeLibre dans
+     le score de choosePass — Xavi/Lillo : « trouver l'homme libre »,
+     Comment regarder l. 6664-6737). Le lot 233 du PLAN_DOCTRINE (le budget
+     des pertes) s'est RÉORIENTÉ à la sonde : l'anatomie des pertes par la
+     dernière action du PERDANT (film-pertes3, 6 × 300 s — le « contrôle/
+     réception 88 % » de film-pertes était le contrôle du NOUVEAU
+     possesseur, l'interception, pas un contrôle raté) : passes 64 %
+     (courtes, 10,5 m, passeur pressé à 2,0 m), conduites/ballons libres
+     21 %, contrôle puis perte 13 % ; la meute (229) ne pèse que 10 pertes
+     de conduite sur 42 — la réception multi-attributs et le duel de la
+     meute prévus au plan n'étaient pas la cause. LA CAUSE (film-marge) :
+     18 % des passes vont à un receveur à < 3 m d'un adversaire et sont
+     interceptées à 27-36 % (receveur libre ≥ 3 m : 9 %, le réel) ; le
+     score de choosePass pesait la liberté projetée du receveur
+     LINÉAIREMENT (1,15/m jusqu'à 9) face au couloir (2,4/m) — collé ou
+     libre, 1,7 point d'écart. LA LOI : un malus NON LINÉAIRE sous le
+     seuil : malus 4 × (1 − liberté/seuil 2,5) × visionF (le passeur qui
+     VOIT) × axe(style, 1,3, 0,7) (la possession refuse le marqué, le
+     direct l'accepte) ; pas sur la course servie ni le through (le point
+     de chute a sa loi, 212). APRÈS (6 graines) : passes au marqué 18 →
+     15 %, interceptées à 25 % ; réussite des passes 76-79 → 82 % (réel
+     80-86), interceptions 18-20 → 13 % ; pertes 369 → 327-333 / 90 (réel
+     200-280 — le reste : 20 % « contrôle puis perte » et 14 % conduites,
+     le porteur pressé sans sortie ; dette : l'appui-remise du 240 et la
+     sortie de sécurité). Garde-fou : à 3 graines les profondes tombaient
+     11 → 6 — à 6 graines 11 c. 10, réussies 91 c. 80 % : du bruit ;
+     appels profonds 90 c. 95, passes 292 c. 305. Clause 233 : primitive
+     pure (1,2 m → 2,08 ; 3 m → 0 ; vision 1,15 → 2,392 ; direct 1,456 ;
+     possession 2,704 ; clé absente 0) + flux 6 graines (réussite ≥ sans
+     + 1,5, part des passes au collé ≤ sans). Jumeau hommeLibre:false =
+     232b au bit (173fb72c4182e7db / 277cbf9e260012ac).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

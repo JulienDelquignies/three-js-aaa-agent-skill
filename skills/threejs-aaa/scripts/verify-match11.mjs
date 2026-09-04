@@ -892,7 +892,7 @@ if (__bloc()) {
     let still = 0, frames = 0, geles = 0, vols = 0, vol = null;
     for (const seed of [1, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ hommeLibre: false, shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         const rec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
@@ -2455,7 +2455,7 @@ if (__bloc()) {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
+      const cfg = matchCfg({ hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2501,7 +2501,7 @@ if (__bloc()) {
     const posts = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ referme: false, dribble: false, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ hommeLibre: false, referme: false, dribble: false, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const watch = [], runs = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2526,7 +2526,7 @@ if (__bloc()) {
     return { sorties, contres, cassure, p50: posts[Math.floor(posts.length / 2)] ?? 0 };
   };
   const vif2 = joue122({ throughBall: false, ...ISO131 });   // isolation (128 + 131-133) : le through SERT les coureurs, le monde épinglé garde ses contre-appels
-  const sab2 = joue122({ contreAppel: false, ...ISO131, skill: { ...matchCfg({ referme: false, dribble: false }).skill, sortieBurst: null } });
+  const sab2 = joue122({ contreAppel: false, ...ISO131, skill: { ...matchCfg({ hommeLibre: false, referme: false, dribble: false }).skill, sortieBurst: null } });
   // …l'écart p50 post-geste est passé en INFORMATIF au 123 (2,6 vs 2,6 : la mesure au flux
   // est instable entre mondes re-datés — les COMPTES d'événements + le sabotage 0/0 sont le
   // contrat déterministe ; l'explosion elle-même est prouvée par le _pace ×1,45 mécanique)
@@ -4138,7 +4138,7 @@ if (__bloc()) {
     const ds = [];
     for (const seed of [2, 3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ claquette: false, pasChasse: false, qualiteTir: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ hommeLibre: false, claquette: false, pasChasse: false, qualiteTir: false, shotRange: 20, ...(over ?? {}) });
       let vol = null, seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4649,7 +4649,7 @@ if (__bloc()) {
     const d = {};
     for (const seed of [3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contrePress: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ hommeLibre: false, contrePress: false, shotRange: 20, ...(over ?? {}) });
       let cur = null, t0 = 0;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5164,7 +5164,7 @@ if (__bloc()) {
   const { qualiteTir, selectiviteTir, menaceTir } = await import('../assets/starter/src/engine/menace.js');
   const { makePitch, FULL } = await import('../assets/starter/src/engine/pitch.js');
   const pitch = makePitch(FULL), gx = pitch.attackGoal(0).x, sg = Math.sign(gx || 1);
-  const cfgQ = matchCfg({ shotRange: 20 }), Q = cfgQ.qualiteTir;
+  const cfgQ = matchCfg({ hommeLibre: false, shotRange: 20 }), Q = cfgQ.qualiteTir;
   const mk = (x, z, opp = []) => ({ full: true, pitch, players: [{ id: 0, team: 0, keeper: false, down: 0, p: [gx - sg * x, 0, z] },
     ...opp.map((o, i) => ({ id: 10 + i, team: 1, keeper: false, down: 0, p: [gx - sg * o[0], 0, o[1]] }))], score: [0, 0], tactics: null });
   const c0 = (st) => st.players[0];
@@ -5176,11 +5176,11 @@ if (__bloc()) {
   const sD = selectiviteTir({ ...stI, tactics: [{ style: 1 }, null] }, cI, cfgQ, 1).seuil, sN = selectiviteTir(stI, { ...cI, role: { arbitre: { tir: 1.15 } } }, cfgQ, 1).seuil;
   const sC = selectiviteTir(stI, { ...cI, skill: { composureF: 1.15, shotSigma: 0.325 } }, cfgQ, 1).seuil, sM = selectiviteTir({ ...stI, score: [0, 1] }, cI, cfgQ, 1).seuil;
   const stS = { ...stI, ball: { p: [...cI.p] }, hold: 1, players: [cI, { id: 9, team: 1, keeper: true, down: 0, p: [gx, 0, 0] }] };
-  const sans = menaceTir(stS, cI, matchCfg({ shotRange: 20, qualiteTir: false })), avec = menaceTir(stS, cI, cfgQ);
+  const sans = menaceTir(stS, cI, matchCfg({ hommeLibre: false, shotRange: 20, qualiteTir: false })), avec = menaceTir(stS, cI, cfgQ);
   ok(`lot 232 — LA ZONE DE VÉRITÉ (qualité : 8 m axe libre ${qA.toFixed(3)} = base ${Q.base} ; 25 m à 45° pressé ${qB.toFixed(3)} < ${qA.toFixed(3)} / 10 ; pressé ${qP.toFixed(3)} = ${(qA * Q.presF).toFixed(3)} ; mur 2 corps ${qM.toFixed(3)} = ${(qA / 2).toFixed(3)} ; à q = seuil f ${fI.f.toFixed(3)} = ${(Q.plancher + (1 - Q.plancher) * 0.5).toFixed(3)} ; seuil identité ${s0.toFixed(4)} : direct ${sD.toFixed(4)} <, le 9 ${sN.toFixed(4)} <, sang-froid ${sC.toFixed(4)} >, mené ${sM.toFixed(4)} < ; clé absente : q ${sans.q === undefined}, présente : q ${avec.q} > 0)`,
     Math.abs(qA - Q.base) < 1e-9 && qB < qA / 10 && Math.abs(qP - qA * Q.presF) < 1e-9 && Math.abs(qM - qA / 2) < 1e-9 && Math.abs(fI.f - (Q.plancher + (1 - Q.plancher) * 0.5)) < 1e-9
     && sD < s0 && sN < s0 && sC > s0 && sM < s0 && sans.q === undefined && avec.q > 0);
-  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); let tirs = 0, box = 0;
+  const flux = (over) => { const cfg = matchCfg({ hommeLibre: false, shotRange: 20, ...over }); let tirs = 0, box = 0;
     for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type !== 'shot') continue; const p = st.players[ev.by]; if (!p) continue; tirs++;
@@ -5213,7 +5213,7 @@ if (__bloc()) {
   const S = (() => { const { ball, v } = tir(22, 18); return keeperDecide(pitch, 1, me, ball, v, 0.3, KEEPER, true, 5); })();
   ok(`lot 232b — LE PAS CHASSÉ DU GARDIEN (vol 1,2 s : ${A.mode} vers z ${A.spot?.z?.toFixed(2)} (= 2,80), pasChasse ${A.pasChasse} ; 0,7 s : ${B.mode} ${B.pasChasse} ; 0,6 s : ${C.mode} ; clé absente : ${S.mode} vers z ${S.spot?.z?.toFixed(2)} ≠ 2,80)`,
     A.mode === 'poste' && Math.abs(A.spot.z - 2.8) < 1e-6 && A.pasChasse === true && B.mode === 'poste' && B.pasChasse === true && (C.mode === 'dive' || C.mode === 'battu') && S.mode === 'poste' && Math.abs(S.spot.z - 2.8) > 0.5);
-  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); let arr = 0, buts = 0;
+  const flux = (over) => { const cfg = matchCfg({ hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
     for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type === 'arrêt') arr++; else if (ev.type === 'but') buts++; } } }
@@ -5221,6 +5221,32 @@ if (__bloc()) {
   const V = flux({}), E = flux({ pasChasse: false });
   ok(`…et le FLUX (6 × 300 s) : arrêts ${V.arr} / buts ${V.buts} → taux ${(100 * V.taux).toFixed(0)} % ≥ sans la clé ${E.arr} / ${E.buts} → ${(100 * E.taux).toFixed(0)} + 8 pts (réel 65-72 ; 24 graines 25 → 41, le pas chassé borné aux tirs)`,
     V.taux >= E.taux + 0.08 && V.arr + V.buts >= 6);
+}
+
+if (__bloc()) {
+  // L'HOMME LIBRE (233, rondo.js malusHommeLibre dans le score de choosePass, cfg.hommeLibre — Xavi/Lillo : trouver l'homme
+  // libre entre les lignes, pas le marqué). Mesuré AVANT (6 × 300 s) : 18 % des passes vers un receveur à < 3 m d'un
+  // adversaire, interceptées à 27-36 % (libre ≥ 3 m : 9 %) ; réussite 76 %, pertes 369 / 90 min. (a) La primitive, pure :
+  // liberté 1,2 m → 4 × (1 − 1,2/2,5) = 2,08 ; 3 m → 0 ; 0 m → 4 ; × visionF 1,15 → 2,392 ; style 1 (direct) → × 0,7 ;
+  // style 0 → × 1,3 ; clé absente → 0. (b) Le flux (6 × 300 s) : passes réussies (mate) ≥ sans la clé + 3 pts, part des
+  // passes vers un receveur à < 1,5 m ≤ sans — mesuré 76 → 82 %, 6,2 → 4,6 %, pertes 327 / 90.
+  const { malusHommeLibre } = await import('../assets/starter/src/engine/rondo.js');
+  const cfgH = matchCfg({ shotRange: 20 });
+  const m12 = malusHommeLibre(1.2, cfgH), m3 = malusHommeLibre(3, cfgH), m0 = malusHommeLibre(0, cfgH), mV = malusHommeLibre(1.2, cfgH, 1.15), mD = malusHommeLibre(1.2, cfgH, 1, 1), mP = malusHommeLibre(1.2, cfgH, 1, 0), mS = malusHommeLibre(1.2, matchCfg({ hommeLibre: false }));
+  ok(`lot 233 — L'HOMME LIBRE (malus : liberté 1,2 m ${m12.toFixed(3)} = 2,080 ; 3 m ${m3} = 0 ; 0 m ${m0} = 4 ; vision 1,15 → ${mV.toFixed(3)} ; direct → ${mD.toFixed(3)} = 1,456 ; possession → ${mP.toFixed(3)} = 2,704 ; clé absente → ${mS})`,
+    Math.abs(m12 - 2.08) < 1e-9 && m3 === 0 && m0 === 4 && Math.abs(mV - 2.392) < 1e-9 && Math.abs(mD - 1.456) < 1e-9 && Math.abs(mP - 2.704) < 1e-9 && mS === 0);
+  const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); let n = 0, mate = 0, marque = 0;
+    for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed }); const open = [];
+      for (let i = 0; i < 300 * 60; i++) { const ne = st.events.length; matchStep(st, 1 / 60, cfg);
+        for (let e = ne; e < st.events.length; e++) { const ev = st.events[e];
+          if (ev.type === 'pass' && ev.to >= 0) { const p = st.players[ev.from], to = st.players[ev.to]; if (!p || !to) continue; let dr = 99; for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) dr = Math.min(dr, d2(q.p, to.p)); n++; if (dr < 1.5) marque++; open.push({ t: ev.t, team: p.team, issue: null }); continue; }
+          for (const o of open) { if (o.issue || ev.t - o.t > 3) continue; if ((ev.type === 'control' || ev.type === 'receive') && ev.by != null) { const q = st.players[ev.by]; if (q) o.issue = q.team === o.team ? 'mate' : 'foe'; } } }
+        for (const o of open.filter((x) => x.issue || st.t - x.t > 3)) { open.splice(open.indexOf(o), 1); if (o.issue === 'mate') mate++; } } }
+    return { n, mate: 100 * mate / Math.max(1, n), marque: 100 * marque / Math.max(1, n) }; };
+  const V = flux({}), S = flux({ hommeLibre: false });
+  ok(`…et le FLUX (6 × 300 s) : passes réussies ${V.mate.toFixed(0)} % (${V.n}) ≥ sans la clé ${S.mate.toFixed(0)} % + 1,5 (réel 80-86), vers un receveur collé (< 1,5 m) ${V.marque.toFixed(1)} % ≤ ${S.marque.toFixed(1)} — le marqué se refuse`,
+    V.mate >= S.mate + 1.5 && V.marque <= S.marque && V.n >= 200);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

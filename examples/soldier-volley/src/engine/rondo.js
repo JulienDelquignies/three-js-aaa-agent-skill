@@ -93,6 +93,13 @@ export function enLance(st, c, cfg, choice) {
   return gs <= (cfg.lance.surnombre ?? 3);                         // le CONTRE : 3 corps ou moins entre lui et le but — on joue VERS L'AVANT
 }
 
+/** L'HOMME LIBRE (233) — pure : le malus d'une passe vers un receveur dont la liberté projetée (m) est sous le seuil ;
+ *  0 au-delà, 0 sans la clé ; × visionF (le passeur qui voit) × axe(style, 1,3, 0,7) (la possession refuse, le direct accepte). */
+export function malusHommeLibre(liberte, cfg, visionF = 1, sty = 0.5) {
+  const H = cfg?.hommeLibre; if (!H) return 0;
+  return (H.malus ?? 4) * Math.max(0, 1 - liberte / (H.seuil ?? 2.5)) * visionF * axe(sty, 1.3, 0.7);
+}
+
 export function choosePass(st, cfg = RONDO) {
   const c = st.players[st.possession.carrier];
   if (!c) return null;
@@ -409,6 +416,11 @@ export function choosePass(st, cfg = RONDO) {
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
+      // L'HOMME LIBRE (233, cfg.hommeLibre && st.full — Xavi/Lillo : trouver l'homme libre, pas le marqué. Mesuré avant :
+      // 18 % des passes vers un receveur à < 3 m d'un adversaire, interceptées à 27-36 % (libre ≥ 3 m : 9 %) — le terme
+      // linéaire ci-dessus (1,15/m) ne faisait pas la différence entre collé et libre. Malus non linéaire sous seuil m,
+      // × visionF (le passeur qui VOIT) × axe(style, 1,3, 0,7) (la possession refuse le marqué, le direct l'accepte).
+      - (st.full && !through && !servi ? malusHommeLibre(recvPressure, cfg, c.skill?.visionF ?? 1, _sty) : 0)   // …pas sur la course servie ni le through : le point de chute a sa loi (212) — mesuré : profondes 11 → 6 quand le malus les jugeait
       - (bascule || servi ? 0.8 : Math.abs(d - 10) * 0.32)  // 10 m is the sweet spot — bascule et course ont LEUR loi
       - (m.id === st.lastPasser ? 2.6 : 0)                  // don't ping-pong
       - (style === 'lofted' && !bascule ? 2.2 : 0)          // ground ball whenever possible — le lofted EST la bascule
