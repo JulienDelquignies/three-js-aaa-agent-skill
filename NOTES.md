@@ -8181,7 +8181,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      l'identité au bit (empreinte 236 avec et sans la clé). Le tempo comme
      réalisme (tenue médiane 0,8-1,4 / 1,8-2,6) reste une dette : la
      médiane demande une cadence de DÉCISION (le porteur qui attend son
-     moment), pas des planchers. Annexe tactics 11 ✓.
+     moment), pas des planchers. SCEAU 235 : monde par défaut = 236 au bit
+     (71717ebf0bb27154 / a8a90f93e85bace6 avec et sans la clé — le banc
+     236 vaut), clause 235 isolée 2 ✓, annexes tactics 11 ✓ et sync 9 ✓,
+     déployé (chunk Rondo-C5WBspjz.js, capture playmode avant deploy).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
