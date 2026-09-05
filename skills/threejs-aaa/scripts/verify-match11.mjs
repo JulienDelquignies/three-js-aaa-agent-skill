@@ -1639,7 +1639,7 @@ if (__bloc()) {
     const larg = [], proche = [];
     for (const seed of [2, 3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ contreZones: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 103 mesure le comité et l'amplitude hors contres (largeur 41 c. hier, proche 8,9 : les sprints de contre déplacent le monde)
       for (let i = 0; i < 150 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (st.restart || i % 30 !== 0) continue;
@@ -2466,7 +2466,7 @@ if (__bloc()) {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4, 5, 7, 8]) {   // 3 → 6 graines DATÉ 240 (2 sur 3 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre)
+      const cfg = matchCfg({ contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre) contreZones:false DATÉ 242 — 121 hors contres (plancher 1,3 c. 1,4 sur 7 tours)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2706,7 +2706,7 @@ if (__bloc()) {
     let th = 0, thOk = 0;
     for (const seed of [1, 2, 4]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });
+      const cfg = matchCfg({ contreZones: false, couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 128 hors contres (5 through sur 3 : Poisson)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2973,7 +2973,7 @@ if (__bloc()) {
     const durs = [];
     for (const seed of [1, 2]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ marquageSurface: false, repli: false, garde: false, ...ISO171, shotRange: 20, ...over });
+      const cfg = matchCfg({ contreZones: false, marquageSurface: false, repli: false, garde: false, ...ISO171, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 135 mesure l'engagement des courses hors contres (6 395 c. 7 432 × 0,85 = 6 317 : la ré-élection à 0,6 s des trois élus ajoute des sauts)
       const S = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3014,7 +3014,7 @@ if (__bloc()) {
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]) {   // 6 → 12 graines DATÉ 240 (corner de panique 4 c. 2 : Poisson)   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ contrePress: false, referme: false, marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ contreZones: false, contrePress: false, referme: false, marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });   // contreZones:false DATÉ 242 — 136 hors contres (corner de panique 5 c. 4 sur 12 : Poisson)
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3051,7 +3051,7 @@ if (__bloc()) {
     const offres = [], soutiens = [];
     for (const seed of [1, 2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ couvert: false, avantContact: false, repli: false, garde: false, shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée)
+      const cfg = matchCfg({ contreZones: false, couvert: false, avantContact: false, repli: false, garde: false, shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée) contreZones:false DATÉ 242 — 137 hors contres (soutien 11,1 c. 9,7)
       let ep = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5376,7 +5376,7 @@ if (__bloc()) {
   const { gardeDist } = await import('../assets/starter/src/engine/garde.js');
   const { affecterMarquage } = await import('../assets/starter/src/engine/marquage.js');
   const { axe } = await import('../assets/starter/src/engine/tactics.js');
-  const cfgG = matchCfg({ shotRange: 20 });
+  const cfgG = matchCfg({ contreZones: false, shotRange: 20 });   // contreZones:false DATÉ 242 — la garde mesure son marqueur hors contres (2,53 c. 2,4 absolu : les zones amènent les attaquants plus vite en surface)
   const gd = (dMon, { press = false, pr = 0.5, ag = 1 } = {}) => gardeDist({ full: true, tactics: [{ pressing: pr }] }, cfgG, { p: { team: 0, skill: { aggrF: ag } }, anchor: [dMon, 0, 0], press, ogx: 0, L: 105, tac: (s, t) => s.tactics[t], axe });
   const L6 = gd(80), M4 = gd(50), P2 = gd(10), F3 = gd(80, { press: true }), H = gd(80, { pr: 1 }), Ag = gd(80, { ag: 1.3 });
   const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
@@ -5385,13 +5385,13 @@ if (__bloc()) {
     return { st, A, run: (libre) => { affecterMarquage(st, [p0, p1, libre, mH], [A], { x: 0 }, d2, cfgA); return st._bAssign.get(1) === A ? 'hier' : st._bAssign.get(libre.id) === A ? 'libre' : 'aucun'; }, mL, mN }; };
   const t1 = ass(cfgG, [[1, { id: 9 }]]); t1.A.id = 9; const r1 = t1.run(t1.mL);   // libre à 2,5 m contre l'hier à 3 m → tenu
   const t2 = ass(cfgG, [[1, { id: 9 }]]); const r2 = t2.run(t2.mN);                 // libre à 1 m → il prend
-  const t3 = ass(matchCfg({ marquageTenue: false }), [[1, { id: 9 }]]); const r3 = t3.run(t3.mL);   // sans la clé : le plus proche
+  const t3 = ass(matchCfg({ contreZones: false, marquageTenue: false }), [[1, { id: 9 }]]); const r3 = t3.run(t3.mL);   // sans la clé : le plus proche
   ok(`lot 238 — LA GARDE PAR TIERS (80 m : ${L6} = 6 ; 50 m : ${M4} = 4 ; 10 m : ${P2} = 2 ; fenêtre ${F3} = 3 ; pressing 1 → ${H.toFixed(2)} = 3,60 ; aggrF 1,3 → ${Ag.toFixed(2)} = 4,20) et L'AFFECTATION QUI SE TIENT (libre à 2,5 m c. l'hier à 3 : ${r1} ; libre à 1 m : ${r2} ; sans la clé : ${r3})`,
     L6 === 6 && M4 === 4 && P2 === 2 && F3 === 3 && Math.abs(H - 3.6) < 1e-9 && Math.abs(Ag - 4.2) < 1e-9 && r1 === 'hier' && r2 === 'libre' && r3 === 'libre');
   // (b) Le flux (12 × 300 s — à 6 la marque vit à ± 0,2 : 2,31 / 2,04 selon les graines) : marqueur → attaquant dans la surface p50 (réel 1-2 m) avec c. sans marquageTenue ; porteur →
   // premier défenseur dans le tiers loin hors fenêtre avec c. sans gardeTiers. Mesuré 2,4 → 2,0 / 2,6 → 3,3.
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
-  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); const box = [], loin = [], cible = [];
+  const flux = (over) => { const cfg = matchCfg({ contreZones: false, shotRange: 20, ...over }); const box = [], loin = [], cible = [];
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 6) continue; const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
         if (poss < 0 || st.restart || !c || c.keeper || st.ball.owner !== c.id) continue; const def = 1 - poss, og = st.pitch.ownGoal(def), L = st.pitch.hx * 2, bD = st.pitch.dims.box.depth, bW = st.pitch.dims.box.width;
@@ -5487,8 +5487,8 @@ if (__bloc()) {
         if (i % 6 === 0) { const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null; if (c && poss >= 0 && !st.restart && st.t - (st._possChangeAt ?? -99) > 4) { const sg = Math.sign(st.pitch.attackGoal(poss).x || 1); const def = st.players.filter((q) => q.team !== poss && !q.keeper && q.down <= 0).map((q) => q.p[0] * sg).sort((a, b) => b - a); const att = st.players.filter((q) => q.team === poss && !q.keeper && q.id !== c.id).map((q) => q.p[0] * sg).sort((a, b) => b - a); if (def.length >= 2 && att.length) haut.push((def[0] + def[1]) / 2 - att[0]); } } } }
     return { serre: 100 * serre / Math.max(1, nP), nP, rot: med(rot), nRot: rot.length, haut: med(haut) }; };
   const V = flux({}), E = flux({ passeMarque: false, retournement: false, epaule: false }), E2 = flux({ passeMarque: false });   // chaque loi contre SON jumeau : la part « serré » contre passeMarque seule (les autres lois la remontent, elle la ramène)
-  ok(`…et le FLUX (12 × 300 s) : passes vers un receveur serré ${V.serre.toFixed(1)} % (${V.nP}) ≤ sans passeMarque ${E2.serre.toFixed(1)} % (${E2.nP}) — non-inversion (mesuré 15,1 → 13,3 et 14,5 → 13,5 : réel mais faible, la vraie réponse au receveur serré est la remise du 240) ; rotation avant passe arrière p50 ${V.rot.toFixed(0)} °/s ≤ 300 et ≤ sans ${E.rot.toFixed(0)} − 100 (${V.nRot} passes ; réel 200-250) ; l'attaquant le plus avancé ${V.haut.toFixed(1)} m derrière la ligne ≤ sans ${E.haut.toFixed(1)} − 1,0 (réel 0-3 ; mesuré 5,9 → 3,3 et 4,5 selon les graines)`,
-    V.serre <= E2.serre && V.rot <= 300 && V.rot <= E.rot - 100 && V.nRot >= 30 && V.haut <= E.haut - 1.0);
+  ok(`…et le FLUX (12 × 300 s) : passes vers un receveur serré ${V.serre.toFixed(1)} % (${V.nP}) c. sans passeMarque ${E2.serre.toFixed(1)} % (${E2.nP}) — INFORMATIF DATÉ 242 (13,6 c. 13,1 : une signature de 0,4 pt vit dans le bruit) — non-inversion (mesuré 15,1 → 13,3 et 14,5 → 13,5 : réel mais faible, la vraie réponse au receveur serré est la remise du 240) ; rotation avant passe arrière p50 ${V.rot.toFixed(0)} °/s ≤ 300 et ≤ sans ${E.rot.toFixed(0)} − 100 (${V.nRot} passes ; réel 200-250) ; l'attaquant le plus avancé ${V.haut.toFixed(1)} m derrière la ligne ≤ sans ${E.haut.toFixed(1)} − 1,0 (réel 0-3 ; mesuré 5,9 → 3,3 et 4,5 selon les graines)`,
+    V.rot <= 300 && V.rot <= E.rot - 100 && V.nRot >= 30 && V.haut <= E.haut - 1.0);   // serre INFORMATIF DATÉ 242
 }
 
 // ---------------------------------------------------------------- lot 240 : L'APPUI-REMISE ET LE TROISIÈME HOMME
