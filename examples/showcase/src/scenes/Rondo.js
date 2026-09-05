@@ -12,7 +12,7 @@ import { tintPart } from '../engine/part-tint.js';
 import { applyKit } from '../engine/kit-uv.js';
 import { loadSquad, setCloner, rigBones } from '../engine/squad.js';
 import { CharacterController } from '../engine/character-controller.js';
-import { MOVES, mirrorMove } from '../engine/animkit.js';
+import { MOVES, mirrorMove } from '../engine/animkit.js'; import { castStrikes, strikeSpec } from '../engine/motion-cast.js';   // frappes GÉNÉRÉES par joueur (reference/51) — une ligne : la scène vit AU plafond de volumétrie
 import { GestureLayer } from '../engine/gesture-layer.js';
 import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
@@ -287,7 +287,7 @@ export class Rondo {
           d.set(dw[0], dw[1], dw[2]).applyMatrix3(m); hipsBone.position.add(d);
         };
       })();
-      const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite });
+      const gestureLayer = new GestureLayer({ bones: rigBones(model3d), rest: entry.bones, hipsWrite }), cast = castStrikes(entry, p, Number(q.get('seed')) || 7, this._reports.gestes);
       ctrl.lockExternal = true;   // le verrou des pieds se résout en toute FIN de pile (voir plus bas)
       // LE REGARD (engine/gaze.js) : la couche que le sweep a classée n°1 en manque de réalisme —
       // médiane tête→ballon 49-65° dans tous les rôles, receveur qui ne regarde le ballon que
@@ -295,7 +295,7 @@ export class Rondo {
       const cloneBones = rigBones(model3d);
       const gaze = new Gaze({ neck: cloneBones.get('Neck'), head: cloneBones.get('Head') });
       this.players.push({
-        sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge, hipsCtl,
+        sim: p, model: model3d, ctrl, mixer, groundY, rig, gestureLayer, hipsNudge, hipsCtl, ...cast,
         gaze, _gazeSt: {}, _gazeRng: gazeRng(p.id + 13),
         legs: { left: legs[0], right: legs[1] },
         legLens: { left: legLen(legs[0]), right: legLen(legs[1]) },
@@ -472,7 +472,7 @@ export class Rondo {
     // exactement pourquoi 57 % des gestes ont pu dessiner le mauvais mouvement pendant toute une
     // session sans qu'aucun contrat ne bronche : le jeu affichait quelque chose de plausible. Un repli
     // qui se tait est pire qu'une erreur.
-    const spec = MOVES[move] || (this._reports.gestes.push(`geste absent : ${move}`), MOVES.passe);
+    const spec = strikeSpec(pl, move) || MOVES[move] || (this._reports.gestes.push(`geste absent : ${move}`), MOVES.passe);   // une frappe générée se prend AU JOUEUR (son style, son rig)
     // LE MIROIR DU PLONGEON SE JUGE AU MODÈLE, pas à une convention monde : « cross.z > gk.z →
     // gauche » jouait la moitié des plongeons à l'envers (« il plonge du mauvais côté », captures).
     // Ici : le lunge sim projeté sur la DROITE RÉELLE du modèle (matrice monde) choisit le côté.

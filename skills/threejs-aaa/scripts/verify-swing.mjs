@@ -52,6 +52,10 @@ const qinv = (q) => [-q[0], -q[1], -q[2], q[3]];
 const world = (name, delta) => { let q = [0, 0, 0, 1], p = [0, 0, 0];
   for (const k of chain(name)) { const nm = String(N[k].name || '').replace(/^mixamorig\d*[:_]?/i, '');
     const t = N[k].translation || [0, 0, 0]; const rt = rv(q, t); p = [p[0] + rt[0], p[1] + rt[1], p[2] + rt[2]];
+    // LE CANAL HANCHES (delta.__hips, mètres personnage [droite, haut, avant]) : le jeu déplace le
+    // bassin (hipsWrite) — sans lui, le banc mesurait la stance d'un corps qui n'est pas là. Ce
+    // rig regarde +Z dans son fichier : droite = −X, avant = +Z.
+    if (nm === 'Hips' && delta.__hips) p = [p[0] - delta.__hips[0], p[1] + delta.__hips[1], p[2] + delta.__hips[2]];
     let local = N[k].rotation || [0, 0, 0, 1];
     if (delta[nm]) local = qm(local, delta[nm]);
     q = qm(q, local); }
@@ -87,6 +91,12 @@ const poseAt = (tracks, t) => {
  *  BASE_POSE des bras — le banc validait des bras que le jeu n'affichait pas, et inversement. Le
  *  paramètre q0 est gardé pour la stabilité des appels ; il n'est plus consommé. */
 const deltasAt = (tracks, q0, t) => poseAt(tracks, t);
+const hipsAt = (spec, t) => {   // lerp du canal hanches entre clés (la loi de gesture-layer)
+  const ks = spec.keys.filter((k) => k.hips); if (!ks.length) return null;
+  if (t <= ks[0].t) return ks[0].hips; if (t >= ks[ks.length - 1].t) return ks[ks.length - 1].hips;
+  let i = 1; while (ks[i].t < t) i++; const a = ks[i - 1], b = ks[i], u = (t - a.t) / Math.max(1e-9, b.t - a.t);
+  return a.hips.map((v, j) => v + (b.hips[j] - v) * u);
+};
 
 // ---- LE REPÈRE SE DÉRIVE DU SQUELETTE, PAS DE LA FOI (loi 8, appliquée au banc lui-même) :
 // l'armature Mixamo est TOURNÉE (−90° X) — l'axe « y » des nœuds n'est pas le haut du monde. Le
@@ -129,7 +139,8 @@ function swingPortrait(spec, foot) {
   const q0 = poseAt(r.tracks, 0);
   const rest = world(F, deltasAt(r.tracks, q0, 0));
   const pts = [], toes = [];
-  for (let t = 0; t <= r.duration + 1e-9; t += h) { pts.push(world(F, deltasAt(r.tracks, q0, t))); toes.push(world(T, deltasAt(r.tracks, q0, t))); }
+  const at = (t) => ({ ...deltasAt(r.tracks, q0, t), __hips: hipsAt(spec, t) });
+  for (let t = 0; t <= r.duration + 1e-9; t += h) { pts.push(world(F, at(t))); toes.push(world(T, at(t))); }
   const speed = (i) => {
     const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
     return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) / (2 * h);
@@ -198,8 +209,10 @@ console.log('\n— la CONCORDANCE stance ↔ clip : le ballon est porté là où
     const spec = MOVES[id];
     const r = resolveTracks(spec);
     const q0 = poseAt(r.tracks, 0);
-    const at = (t) => world('RightFoot', deltasAt(r.tracks, q0, t));
-    const hips = world('Hips', deltasAt(r.tracks, q0, spec.contact));
+    const at = (t) => world('RightFoot', { ...deltasAt(r.tracks, q0, t), __hips: hipsAt(spec, t) });
+    // depuis l'ORIGINE du modèle (la position que anchorFor place) — le bassin voyage sur les frappes
+    // générées, un os qui recule ne dit pas où la sim doit poser le corps
+    const hips = [0, 0, 0];
     const c = at(spec.contact), a = at(spec.contact - h), b = at(spec.contact + h);
     const v = [(b[0] - a[0]) / (2 * h), (b[1] - a[1]) / (2 * h), (b[2] - a[2]) / (2 * h)];
     const vn = Math.hypot(...v) || 1;
@@ -305,9 +318,10 @@ console.log('\n— les sabotages : chaque clause doit mordre —');
   // LE SABOTAGE-RÉFÉRENCE : la passe LIVRÉE avant ce banc — l'accompagnement RECULE après le
   // contact (cuisse −46° → −30°), la vitesse interpolée s'annule pile sur la pose de contact.
   const parked = JSON.parse(JSON.stringify(MOVES.passe));
+  // (sur un spec DENSE — 60 Hz, généré — « garer » c'est tenir la pose de contact sur toutes les clés
+  // à partir de l'image qui précède le contact : le pied s'arrête SUR le ballon au lieu de le traverser)
   const kC = parked.keys.find((k) => Math.abs(k.t - parked.contact) < 1e-6);
-  const kF = parked.keys.find((k) => k.t > parked.contact && k.pose.RightUpLeg);
-  if (kC && kF) kF.pose.RightUpLeg = [(kC.pose.RightUpLeg[0] ?? 0) + 16, kC.pose.RightUpLeg[1] ?? 0, 0];
+  if (kC) for (const k of parked.keys) if (k.t >= parked.contact - 1 / 60 - 1e-6) { k.pose = JSON.parse(JSON.stringify(kC.pose)); k.hips = kC.hips ? [...kC.hips] : k.hips; }
   const s = swingPortrait(parked, 'right');
   ok(`sabotage « pose de contact GARÉE (l'accompagnement recule) » attrapé (vitesse au contact ${s.vContact.toFixed(1)} m/s)`,
     s.vContact < 10 || Math.abs(s.tPeak - parked.contact) > 0.035);

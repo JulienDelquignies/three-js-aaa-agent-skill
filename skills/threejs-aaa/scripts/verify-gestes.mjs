@@ -35,19 +35,22 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     ok(`« ${clip} » déclare son contact sur une clé posée (${m.contact} s)`,
       typeof m.contact === 'number' && Math.abs(near.t - m.contact) < 1e-6 && Object.keys(near.pose).length > 0);
   }
-  // LA FEINTE RESSEMBLE À LA PASSE : même clé de backswing (jambe de frappe à ≤ 12° près). C'est la
-  // clause de la tromperie — si l'armé diverge, le défenseur (et l'œil) ne peuvent pas mordre.
-  const bp = MOVES.passe.keys[1].pose, bf = MOVES.feintePasse.keys[1].pose;
+  // LA FEINTE RESSEMBLE À LA PASSE : même armé (l'extension de hanche et la flexion de genou
+  // maximales à ≤ 12° près). C'est la clause de la tromperie — si l'armé diverge, le défenseur (et
+  // l'œil) ne peuvent pas mordre. Les deux gestes sont GÉNÉRÉS par la même loi (motion-strike) :
+  // la clause lit les extrêmes des pistes, plus une clé d'index — un spec dense n'a pas « la » clé.
+  const ext = (spec, bone, pick) => spec.keys.reduce((b2, k) => (k.pose[bone] ? pick(b2, k.pose[bone][0]) : b2), pick === Math.min ? Infinity : -Infinity);
   const dLeg = Math.max(
-    Math.abs(bp.RightUpLeg[0] - bf.RightUpLeg[0]),
-    Math.abs(bp.RightLeg[0] - bf.RightLeg[0]),
+    Math.abs(ext(MOVES.passe, 'RightUpLeg', Math.min) - ext(MOVES.feintePasse, 'RightUpLeg', Math.min)),
+    Math.abs(ext(MOVES.passe, 'RightLeg', Math.min) - ext(MOVES.feintePasse, 'RightLeg', Math.min)),
   );
-  ok(`la feinte RESSEMBLE à la passe (backswing jambe à ${dLeg.toFixed(0)}° ≤ 12)`, dLeg <= 12);
-  // …et au « contact », elle SE RETIENT : la cuisse de la passe traverse à 46°, la feinte s'arrête
-  // sous 15° — l'anti-overshoot est la signature mécanique du geste retenu.
+  ok(`la feinte RESSEMBLE à la passe (armé jambe à ${dLeg.toFixed(0)}° ≤ 12)`, dLeg <= 12);
+  // …et au « contact », elle SE RETIENT : la cuisse de la passe traverse (≥ 15° devant), la feinte
+  // s'arrête sous 10° et au moins 10° derrière la passe — l'anti-overshoot est la signature
+  // mécanique du geste retenu.
   const cP = MOVES.passe.keys.find((k) => Math.abs(k.t - MOVES.passe.contact) < 1e-6).pose.RightUpLeg[0];
   const cF = MOVES.feintePasse.keys.find((k) => Math.abs(k.t - MOVES.feintePasse.contact) < 1e-6).pose.RightUpLeg[0];
-  ok(`…mais SE RETIENT au contact (cuisse passe ${cP}° vs feinte ${cF}° ≤ 15)`, cP >= 40 && cF <= 15);
+  ok(`…mais SE RETIENT au contact (cuisse passe ${cP.toFixed(0)}° vs feinte ${cF.toFixed(0)}°)`, cP >= 15 && cF <= 10 && cP - cF >= 10);
   // la semelle est le clip de l'immobilité qui REGARDE : pendant la tenue, la tête se LÈVE
   const hold = MOVES.arretSemelle.keys[2].pose;
   ok(`la semelle lève la tête pendant la tenue (Head x ${hold.Head[0]}° ≤ 0 — le regard au jeu)`, hold.Head[0] <= 0);
@@ -208,15 +211,16 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const t = byId[id];
     ok(`« ${id} » est dans la table (intent carry, clip ${t?.clip})`, !!t && t.intent === 'carry' && !!MOVES[t.clip]);
   }
-  // LA RESSEMBLANCE DE L'ARMÉ : la feinte de frappe copie la clé de backswing de `frappe`, os
-  // pour os — un armé qui ne ressemble pas à la frappe ne fait asseoir personne
+  // LA RESSEMBLANCE DE L'ARMÉ : la feinte de frappe a l'armé de `frappe` — mêmes extrêmes de hanche
+  // et de genou à ≤ 12° (les deux sont GÉNÉRÉS par la même loi, motion-strike) — un armé qui ne
+  // ressemble pas à la frappe ne fait asseoir personne
   {
-    const armF = MOVES.frappe.keys[1].pose, armFF = MOVES.feinteFrappe.keys[1].pose;
-    const same = Object.keys(armF).every((b) => JSON.stringify(armF[b]) === JSON.stringify(armFF[b]));
-    ok('la feinte de frappe RESSEMBLE à la frappe (backswing identique os pour os)', same);
-    // …et LA RETENUE est la signature : la cuisse meurt à ≤ 12° là où la frappe traverse à 62°
-    const retenue = MOVES.feinteFrappe.keys[2].pose.RightUpLeg[0];
-    ok(`…et se RETIENT au contact (cuisse ${retenue}° ≤ 12 — la frappe traverse à 62)`, retenue <= 12);
+    const ext = (spec, bone) => spec.keys.reduce((b2, k) => (k.pose[bone] ? Math.min(b2, k.pose[bone][0]) : b2), Infinity);
+    const d = Math.max(Math.abs(ext(MOVES.frappe, 'RightUpLeg') - ext(MOVES.feinteFrappe, 'RightUpLeg')), Math.abs(ext(MOVES.frappe, 'RightLeg') - ext(MOVES.feinteFrappe, 'RightLeg')));
+    ok(`la feinte de frappe RESSEMBLE à la frappe (armé à ${d.toFixed(0)}° ≤ 12)`, d <= 12);
+    // …et LA RETENUE est la signature : la cuisse meurt à ≤ 12° au « contact » là où la frappe traverse
+    const retenue = MOVES.feinteFrappe.keys.find((k) => Math.abs(k.t - MOVES.feinteFrappe.contact) < 1e-6).pose.RightUpLeg[0];
+    ok(`…et se RETIENT au contact (cuisse ${retenue.toFixed(0)}° ≤ 12 — la frappe traverse)`, retenue <= 12);
   }
   // LE PASSEMENT : jockey POSTÉ en face → armé ; charge → refus (le râteau possède la charge) ;
   // sorties bouchées → refus NOMMÉ

@@ -251,7 +251,11 @@ console.log('\n— la SILHOUETTE : où finissent les mains, sur le vrai squelett
   const world = (name, pose) => { let q = [0, 0, 0, 1], p = [0, 0, 0];
     for (const k of chain(name)) { const nm = String(N[k].name || '').replace(/^mixamorig\d*[:_]?/i, '');
       const t = N[k].translation || [0, 0, 0]; const rt = rv(q, t); p = [p[0] + rt[0], p[1] + rt[1], p[2] + rt[2]];
-      q = qm(q, pose[nm] || (N[k].rotation || [0, 0, 0, 1])); }
+      // LA SÉMANTIQUE DU JEU : rest ⊗ q_spec (gesture-layer, verify-swing). L'ancienne FK REMPLAÇAIT
+      // la rotation de repos par le spec — vraie par accident sur les poses authorées, fausse de 51 cm
+      // sur les frappes générées (dont les angles sont des articulations SUR le bind, comme le jeu).
+      const rest = N[k].rotation || [0, 0, 0, 1];
+      q = qm(q, pose[nm] ? qm(rest, pose[nm]) : rest); }
     return p; };
   const handsBelowNeck = (spec) => {
     const r = resolveTracks(spec);
@@ -276,9 +280,11 @@ console.log('\n— la SILHOUETTE : où finissent les mains, sur le vrai squelett
   }
   // LE SABOTAGE-RÉFÉRENCE : la frappe LIVRÉE la veille — bras d'équilibre à la verticale (main à
   // +20 cm au-dessus du cou), verte sous checkStrike, dénoncée par l'utilisateur sur capture.
+  const SKY_ARM = [-59.5, -5.4, 3.6];   // LeftArm à 150° d'élévation (rz(−60) conjugué dans le bind — motion-rig) : main à +36 cm du cou
   const skyArm = JSON.parse(JSON.stringify(MOVES.frappe));
   for (const k of skyArm.keys) {
-    if (k.pose.LeftArm) { k.pose.LeftArm = [-38, 0, 52]; k.pose.LeftForeArm = [-20, 0, 20]; }
+    // (le bras au ciel dans la sémantique du jeu : élévation 150°, mesuré par la sonde du profil)
+    if (k.pose.LeftArm) { k.pose.LeftArm = SKY_ARM; k.pose.LeftForeArm = [0, 0, 0]; }
   }
   const sky = handsBelowNeck(skyArm);
   ok(`sabotage « bras d'équilibre au ciel (la version livrée) » attrapé (main à +${(sky.worst * 100).toFixed(0)} cm)`, sky.worst > 0.05);

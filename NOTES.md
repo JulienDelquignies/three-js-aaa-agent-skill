@@ -8652,6 +8652,64 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ligne a avalé salidaStep — le jumeau l'a dit sur la graine 3).
      Jumeau {couloirs:false, offre:false} = moteur 240 au bit
      (96438266e0387b08 / 061fc1b4491ef7ab).
+- 294: LES FRAPPES GÉNÉRÉES (lot A1 — animations 11c11, branche
+     claude/11c11-3d-animations ; retour utilisateur : « beaucoup de choses
+     ne sont pas belles… si tu crées les animations toi-même ce sera plus
+     conforme… différents types de geste pour le même geste, quelques
+     détails par joueur »). LE DIAGNOSTIC MESURÉ : 3 clips capturés (idle,
+     marche, course du Soldier) et 47 gestes en poses clés écrites à la
+     main — six clés pour une frappe, 92° de cuisse en 90 ms en ligne
+     droite, aucune clé qui sache où est le ballon ni le poids ; en jeu,
+     passe rapide 50 ms avant contact = corps droit, aucun armé (capture).
+     LA LOI : un geste est une FONCTION du temps et de paramètres, écrite
+     en ARTICULATIONS anatomiques (repère personnage) et conjuguée dans
+     le bind de l'os — q_spec = bindQ⁻¹ ⊗ R ⊗ bindQ, d'où W = R_parent ⊗
+     R ⊗ bindQ : l'axe du genou est emporté par la cuisse sans que
+     personne ne sache quel axe local c'est (motion-rig, sonde des signes
+     sur 17 articulations au chargement, n'importe quel rig). Les courbes
+     sont des RAMPES C¹ (intégrale d'une cloche asymétrique) : le pic de
+     vitesse de chaque articulation est un paramètre placé — séquence
+     proximo-distale (cuisse ~65 ms avant, genou SUR le contact, plafond
+     30 rad/s tenu en allongeant la fenêtre, jamais en accélérant),
+     bassin assis derrière l'appui puis passé au-dessus (canal hanches),
+     appui par IK deux os, tronc/bras par la physique, tête sur le
+     ballon, dégagement du sol mesuré en FK (motion-strike). SEPT
+     ESPÈCES (frappe, puissante, enroulée, passe, passe rapide, feinte de
+     passe, feinte de frappe — durées et contacts de la table : la sim ne
+     voit rien changer) + un STYLE par joueur (15 paramètres bornés
+     tirés de l'identité ; motion-cast accroche profil du rig vivant +
+     style + gestes générés à la demande au joueur, 3 lignes dans la
+     scène au plafond de volumétrie). MESURÉ (verify-motion, 81
+     clauses) : frappe 14,5 m/s au contact, genou 1 590°/s ; puissante
+     15,4 / 1 630 ; passe 11,4 ; passe rapide 10,3 ; miroir exact à 4 mm ;
+     40 graines × 7 espèces sous contrat et sous checkClip ; la frappe
+     authorée d'hier refusée sur 5 clauses. L'INSTRUMENT : la
+     planche-contact (contact-sheet.mjs, 3 caméras × 6 phases, avant /
+     après, le même œil pour l'agent et l'humain). CORRIGÉ EN CHEMIN :
+     verify-animkit (silhouette) REMPLAÇAIT le repos par le spec (faux
+     de 51 cm sur des angles d'articulation) — compose rest ⊗ q_spec ;
+     verify-swing ignorait le canal hanches ; les feintes sont générées
+     par la loi de la frappe qu'elles imitent ; un export nommé `then`
+     fait d'un module un thenable (import()) — `chain`. LA STANCE :
+     dérivée des clips générés, mesurée depuis l'ORIGINE du modèle (la
+     convention de anchorFor — un os des hanches qui recule de 8 cm ne
+     dit pas où poser le corps) : frappe {0,36 m, 24°} contre {0,41, 11°}
+     hier, passe {0,45, 18°} contre {0,58, 11°} — le contact DEVANT
+     l'appui, le genou encore fléchi ; une première table plus près du
+     corps ({0,26, 43°}) était plus vraie encore et cassait 3 bandes de
+     sim : la géométrie corps-ballon est une ENTRÉE du moteur. Mesuré :
+     rondo 40/40 ; match 82/84 (conversion 0/18 sur fixture, excursion
+     serrée 2,02 contre 2,01 — deux bornes de bande, verts au bit avec
+     la table d'hier) — à trancher avec le chantier moteur.
+     LE MONDE COMPOSÉ (audit-membres, build final) : 16/16, pied→point
+     de frappe 0,02-0,06 m (0,42 avant ce lot), vitesse du pied composée
+     5,9-8,3 m/s sur passe rapide en course (clip seul 10,3).
+     DETTES NOMMÉES : le poids des jambes à l'arrivée divise encore la
+     vitesse du pied composée par ~1,5 — le re-calage est le prochain
+     chantier ; restent
+     authorés extérieur, déviation, pointu, pivot, talonnade, contrôles,
+     tacles, tête, plongeons (chacun une espèce de plus du générateur) ;
+     la locomotion attend sa couche d'inclinaison et de balancier.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
