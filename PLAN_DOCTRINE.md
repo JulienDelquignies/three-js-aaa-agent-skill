@@ -294,9 +294,13 @@ re-échelonné linéairement dans [0,7 ; 1,3] (zéro couple fondu, zéro ordre i
 rendue, checkRoles borne le résolu, axe dribble reporté par la résolution (rappel 219). Table livrée en
 `docs/Retour_Reference_244e_Table_Roles.md`.
 
-**Lot 244d — Le poste naturel côté joueur (à sceller).** `profil.postes` (liste de noms de la grille) +
-familiarité = FACTEUR (identité absente) pondérant décision et contrôle hors poste ; mesuré sur un
-effectif noté joué à contre-emploi.
+**Lot 244d — Le poste naturel côté joueur — SCELLÉ (NOTES 306).** `squads[i].postes` (noms de la grille)
+→ `familiarite` (1 / 0,8 / 0,75 / 0,5 / 0,3 / 0,15) → `profilAuPoste` : la lecture du jeu × 0,7-0,75 et la
+réaction × 1,3 à familiarité 0, la technique intacte. Mesuré : à contre-emploi, tirs concédés 4 → 13,
+passes 323 → 269 (8 × 300 s) ; le malus léger était un placebo, rejeté. Absent : au bit.
+
+**Rouge hérité — la gradation 152/158 (annexe attributes).** Bissecté : vert au 235, rouge dès le 237
+(`referme`). À trancher : épingle ou vrai effet du 237 sur les mondes notés.
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

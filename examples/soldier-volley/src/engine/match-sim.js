@@ -1,11 +1,11 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue } from './duel.js'; import { makeProfile } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js';
 
@@ -43,7 +43,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
         const spec = roster[i];
         if (!spec) return;
         q.ratings = spec.ratings ?? null;
-        q.skill = spec.ratings ? makeProfile(spec.ratings) : null;
+        q.skill = spec.ratings ? makeProfile(spec.ratings) : null; if (spec.postes?.length) { q.postes = spec.postes; q.posteFam = familiarite(spec.postes, posteNom(formationPour(st.tactics[team].formation, true), q.post)); if (q.posteFam < 1) q.skill = profilAuPoste(q.skill ?? makeProfile({}), q.posteFam); }   // (244d) LE POSTE NATUREL : hors poste, le profil au poste (décision, placement…) — liste absente : rien, au bit
         if (spec.ratings?.foot) q.strongFoot = spec.ratings.foot;
         q.look = spec.look ?? null; q.name = spec.name ?? spec.nom ?? null;   // (214b) le NOM du joueur — le squad peut le porter, le maillot l'affiche
         q.name = spec.name ?? q.name;

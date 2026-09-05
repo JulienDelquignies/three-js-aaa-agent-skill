@@ -335,6 +335,26 @@ export function pivotDe(name = 433) {
 export function pointeDe(f, k, cfg) {
   const n = formationPour(f, true); return cfg?.postesNommes ? estPointe(n, k) : k >= premierOffensif(n);
 }
+/** LA FAMILIARITÉ DE POSTE (244d — le poste NATUREL côté joueur) : un corps déclare ses postes
+ *  (squads[team][i].postes = ['D(D)', 'WB(D)']) ; tenu à un poste de la grille, il en est plus ou
+ *  moins familier — 1 au poste exact, la même strate à un autre côté (− 0,05 par cran de côté), la
+ *  strate voisine (0,75 − 0,05 par cran), deux strates (0,5), plus loin (0,3), un gardien hors de sa
+ *  cage ou l'inverse (0,15). Liste absente ou vide : 1, l'identité — personne n'est jamais déclaré
+ *  hors poste par défaut. Le facteur est attributes.profilAuPoste ; la donnée est ici. */
+export function familiarite(postes, nom) {
+  if (!postes || !postes.length) return 1;
+  const cible = litPoste(nom); if (!cible) return 1;
+  let best = 0, lus = 0;
+  for (const n of postes) {
+    const p = litPoste(n); if (!p) continue; lus++;
+    if (p.strate === cible.strate && p.cote === cible.cote) return 1;
+    if ((p.strate === 'GK') !== (cible.strate === 'GK')) { best = Math.max(best, 0.15); continue; }
+    const dS = Math.abs(STRATES.indexOf(p.strate) - STRATES.indexOf(cible.strate)), dC = Math.abs(COTES.indexOf(p.cote) - COTES.indexOf(cible.cote));
+    const f = dS === 0 ? 1 - 0.05 * dC : dS === 1 ? 0.75 - 0.05 * dC : dS === 2 ? 0.5 : 0.3;
+    best = Math.max(best, f);
+  }
+  return lus ? best : 1;   // que des noms inconnus : rien de déclaré, l'identité
+}
 /** « D(CG) » → { strate: 'D', cote: 'CG' } ; le gardien → GK(C) ; inconnu → null. */
 export function litPoste(nom) {
   const m = /^(GK|D|WB|DM|M|AM|ST)\((G|CG|C|CD|D)\)$/.exec(nom ?? '');

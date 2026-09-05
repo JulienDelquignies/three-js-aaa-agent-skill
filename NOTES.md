@@ -9254,6 +9254,47 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      roles.js lance verify-roles (et un plantage n'est pas un vert).
      Aucun rôle posé par défaut : empreintes 94e2de4e74fb69f8 /
      d9ed4cfdf0e94e1d = le 244b au bit.
+- 306: LE POSTE NATUREL CÔTÉ JOUEUR (244d — la grille 244a rencontre
+     les attributs : « toujours les attributs, les tactiques, les
+     rôles »). Jusqu'ici le rôle se posait sur le POSTE et jamais sur le
+     corps : un avant placé latéral jouait exactement comme un latéral
+     de métier. LA DONNÉE : squads[team][i].postes = ['D(D)', 'WB(D)']
+     (des noms de la grille) ; LA LOI : formation.familiarite(postes,
+     posteTenu) — 1 au poste exact, 0,8 l'autre côté de la même strate
+     (− 0,05 par cran), 0,75 la strate voisine, 0,5 à deux, 0,3 plus
+     loin, 0,15 le gardien hors cage ; liste absente ou que des noms
+     inconnus : 1 (personne n'est déclaré hors poste par défaut) ; LE
+     FACTEUR : attributes.profilAuPoste — hors poste le corps garde sa
+     TECHNIQUE (passe, contrôle, frappe, vitesse intacts) mais LIT moins
+     bien (décision, placement, anticipation, appel, déplacement,
+     cohésion, marquage, concentration × lerp(0,7-0,75, 1, fam)) et
+     RÉAGIT plus tard (reaction × lerp(1,3, 1, fam)) — composé avec la
+     note, comme FM (Decisions, Positioning, Anticipation, Off the Ball,
+     Teamwork). makeMatch : posteFam au poste tenu (formation ON) ; sans
+     notes, un profil identité × malus est créé ; familiarité 1 rend le
+     même objet. MESURÉ (8 × 300 s, 4-3-3 déclaré à contre-emploi — huit
+     corps à 0,3, le gardien chez lui — c. le même déclaré à ses postes)
+     : le malus LÉGER essayé d'abord (× 0,88-0,9) ne se voit pas
+     (possession 52 c. 51,8, tirs concédés 8 c. 4, passes 305 c. 323 —
+     du bruit), rejeté comme placebo ; le malus FM se voit : tirs
+     concédés 4 → 13, passes 323 → 269, possession 51,8 → 49,6. BANC
+     244d : les huit familiarités, le facteur (decF 0,79 à 0,3, controlF
+     intact, réaction 0,266 > 0,22, même objet à 1), au match (déclaré à
+     ses postes : aucun profil créé ; à contre-emploi 0,3 × 8, 0,95 × 2,
+     1) et le flux 8 × 300 s (13 tirs concédés ≥ 4 × 1,5 + 2, 269 passes
+     ≤ 323 × 0,92, contrat structurel tenu). Sans squads : empreintes
+     94e2de4e74fb69f8 / d9ed4cfdf0e94e1d = le 244b au bit ; match-sim à
+     1249 (ligne fusionnée). Dette : la familiarité est calculée à la
+     création sur la formation ON — un switch de formation en match
+     (coach) ne la recalcule pas. BISSECTION DU ROUGE HÉRITÉ (gradation
+     152/158) : vert aux sceaux 232 (33303d4) et 235 (7894ab2), rouge
+     dès le 237 (33069f7, « l'oblique 1+3 », clé referme) puis 238, 239,
+     240, 241, 242, 243 — six sceaux ont affiché vert sur un rouge
+     (l'annexe attributes n'était pas relue, ou pas relancée). À
+     trancher au prochain lot : referme épinglée à false dans le monde
+     de la gradation (test lancé), ou un vrai effet du 237 sur les
+     mondes notés à 30 (le composite du 30 monte à 82 > 47 : la loi
+     favoriserait le mauvais décideur).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

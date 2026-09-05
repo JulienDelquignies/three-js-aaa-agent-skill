@@ -70,7 +70,8 @@ import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes, POSTES_FORMATION, ROLES_FORMATION, GRILLE, litPoste, posteNom, lignesFines, checkPostes } from '../assets/starter/src/engine/formation.js';
 import { ROLES, LIBELLES_ROLES, rolesGrille, checkRoles } from '../assets/starter/src/engine/roles.js';
-import { estPointe, estLateral, pivotDe, pointeDe } from '../assets/starter/src/engine/formation.js';
+import { estPointe, estLateral, pivotDe, pointeDe, familiarite } from '../assets/starter/src/engine/formation.js';
+import { profilAuPoste, POSTE_MALUS } from '../assets/starter/src/engine/attributes.js';
 import { readdirSync as __rd, readFileSync as __rf } from 'node:fs';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -5803,6 +5804,41 @@ if (__bloc()) {
   ok(`lot 244b — le FLUX (3 × 300 s) : 3-5-2 dédoublement par ${key(A352.deb) || 'personne'} (${sum(A352.deb)} ; hier ${JSON.stringify(H352.deb)} — un CENTRAL débordait), pivot de salida ${key(A352.pivots) || '—'} (hier ${key(H352.pivots) || '—'}), appels ${sum(A352.appels)} c. ${sum(H352.appels)}, pertes ${A352.pertes} ≤ ${H352.pertes} × 1,15 ; 4-2-3-1 : le dix sur la ligne ${A4231.ligne.toFixed(0)} % des images ≤ 5 (hier ${H4231.ligne.toFixed(0)}), ses appels profonds ${A4231.appels['AM(C)'] ?? 0} = 0 (hier ${H4231.appels['AM(C)'] ?? 0}), ceux du 9 ${A4231.appels['ST(C)'] ?? 0} ≥ ${H4231.appels['ST(C)'] ?? 0}, pertes ${A4231.pertes} ≤ ${H4231.pertes} × 1,15`,
     key(A352.deb) === 'WB(D)+WB(G)' && sum(A352.deb) >= 4 && !('D(CG)' in A352.deb) && key(A352.pivots) === 'M(C)' && A352.pertes <= H352.pertes * 1.15
     && A4231.ligne <= 5 && (A4231.appels['AM(C)'] ?? 0) === 0 && (A4231.appels['ST(C)'] ?? 0) >= (H4231.appels['ST(C)'] ?? 0) && A4231.pertes <= H4231.pertes * 1.15);
+}
+
+// ---------------------------------------------------------------- lot 244d : LE POSTE NATUREL CÔTÉ
+// JOUEUR (la grille 244a rencontre les attributs) : squads[team][i].postes = ['D(D)', 'WB(D)'] ; tenu à
+// un poste de la grille, le corps en est plus ou moins familier (formation.familiarite — 1 exact,
+// 0,8 l'autre côté de la même strate, 0,75 la strate voisine, 0,5 à deux, 0,3 plus loin, 0,15 le
+// gardien hors cage) et la familiarité est un FACTEUR composé avec la note (attributes.profilAuPoste :
+// décision, placement, anticipation, appel, déplacement, cohésion, marquage, concentration × 0,7-0,75
+// à familiarité 0, réaction × 1,3). Liste absente : rien, au bit — personne n'est déclaré hors poste
+// par défaut (empreintes du 244b). Mesuré 8 × 300 s (contre-emploi c. déclaré à ses postes) : tirs
+// concédés 4 → 13, passes 323 → 269 ; le malus léger (× 0,88) était un placebo, rejeté.
+if (__bloc()) {
+  const f = (a, b) => familiarite(a, b);
+  const p50 = makeProfile({}), hors = profilAuPoste(p50, 0.3);
+  const sqAt = (m) => Array.from({ length: 11 }, (_, i) => i === 10 ? { postes: ['GK(C)'] } : { postes: [posteNom('433', m === 'contre' ? 9 - i : i)] });
+  const stP = makeMatch({ full: true, seed: 1, squads: [sqAt('propre'), []] }), stC = makeMatch({ full: true, seed: 1, squads: [sqAt('contre'), []] });
+  const famC = stC.players.filter((q) => q.team === 0).map((q) => +(q.posteFam ?? 1).toFixed(2));
+  ok(`lot 244d — LA FAMILIARITÉ DE POSTE : D(D)→D(D) ${f(['D(D)'], 'D(D)')} = 1, D(G)→D(D) ${f(['D(G)'], 'D(D)')} = 0,8, D(D)→WB(D) ${f(['D(D)'], 'WB(D)')} = 0,75, M(C)→ST(C) ${f(['M(C)'], 'ST(C)')} = 0,5, ST(C)→D(CG) ${f(['ST(C)'], 'D(CG)')} = 0,3, GK→D(C) ${f(['GK(C)'], 'D(C)')} = 0,15, liste absente ${f(undefined, 'D(D)')} = 1, [D(D), WB(D)]→WB(D) ${f(['D(D)', 'WB(D)'], 'WB(D)')} = 1 ; le FACTEUR : hors poste à 0,3 decF ${hors.decF.toFixed(3)} (${POSTE_MALUS.decF} à 0), controlF intact ${hors.controlF} = ${p50.controlF}, réaction ${hors.reaction.toFixed(3)} > ${p50.reaction}, familiarité 1 = le même objet ${profilAuPoste(p50, 1) === p50} ; au match : déclaré à ses postes → aucun profil créé (${stP.players.every((q) => q.skill == null)}), à contre-emploi → ${famC.join('/')}`,
+    f(['D(D)'], 'D(D)') === 1 && f(['D(G)'], 'D(D)') === 0.8 && f(['D(D)'], 'WB(D)') === 0.75 && f(['M(C)'], 'ST(C)') === 0.5 && f(['ST(C)'], 'D(CG)') === 0.3 && f(['GK(C)'], 'D(C)') === 0.15 && f(undefined, 'D(D)') === 1 && f(['D(D)', 'WB(D)'], 'WB(D)') === 1
+    && Math.abs(hors.decF - (0.7 + 0.3 * 0.3)) < 1e-9 && hors.controlF === p50.controlF && hors.reaction > p50.reaction && profilAuPoste(p50, 1) === p50
+    && stP.players.every((q) => q.skill == null) && famC.filter((v) => v === 0.3).length === 8 && famC[10] === 1);
+  // le FLUX (8 × 300 s) : l'équipe à contre-emploi CONCÈDE (tirs contre ≥ propre × 1,5 + 2) et JOUE MOINS (passes ≤ propre × 0,92)
+  const flux = (m) => {
+    const o = { tirsContre: 0, passes: 0, issues: 0 };
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const st = makeMatch({ full: true, seed, squads: [sqAt(m), sqAt('propre')] }), cfg = matchCfg({ shotRange: 20 });
+      const { trace } = playMatch(st, 300, { cfg });
+      for (const e of st.events) { const t = st.players[e.by ?? e.from]?.team; if (e.type === 'shot' && t === 1) o.tirsContre++; if (e.type === 'pass' && t === 0) o.passes++; }
+      o.issues += __structurel(checkMatch(st, trace, cfg).issues).length;
+    }
+    return o;
+  };
+  const C = flux('contre'), Pp = flux('propre');
+  ok(`lot 244d — le FLUX (8 × 300 s, 4-3-3 c. 4-3-3) : à contre-emploi l'équipe CONCÈDE ${C.tirsContre} tirs ≥ ${Pp.tirsContre} × 1,5 + 2 (déclarée à ses postes) et joue ${C.passes} passes ≤ ${Pp.passes} × 0,92 ; contrat structurel ${C.issues + Pp.issues} écart`,
+    C.tirsContre >= Pp.tirsContre * 1.5 + 2 && C.passes <= Pp.passes * 0.92 && C.issues + Pp.issues === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

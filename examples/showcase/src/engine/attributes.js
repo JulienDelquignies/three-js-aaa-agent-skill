@@ -140,6 +140,27 @@ export function makeProfile(ratings = {}) {
   });
 }
 
+/** LE PROFIL AU POSTE (244d — la familiarité de poste devient un FACTEUR, comme une note) : hors de
+ *  ses postes naturels, un corps garde sa technique (passe, contrôle, frappe, vitesse : inchangés)
+ *  mais LIT moins bien le jeu — décision, placement, anticipation, cadence d'appel, déplacement
+ *  sans ballon, cohésion, marquage, concentration : × lerp(0,7-0,75, 1, familiarité), et RÉAGIT plus
+ *  tard (reaction × lerp(1,3, 1, fam)). FM le dit ainsi (Decisions, Positioning, Anticipation, Off the
+ *  Ball, Teamwork). familiarité 1 : le profil rendu tel quel, au bit (le même objet). */
+// MESURÉ (8 × 300 s, 4-3-3 déclaré à contre-emploi — huit corps à 0,3 — c. le même déclaré à ses postes) :
+// un malus léger (× 0,88-0,9 sur décision/placement/appel) ne se voit pas (possession 52 c. 51,8, tirs
+// concédés 8 c. 4, passes 305 c. 323 — le bruit) ; le malus FM (× 0,7-0,75 + réaction × 1,3) se voit :
+// tirs concédés 4 → 13, passes 323 → 269, possession 51,8 → 49,6. Un placebo ne se livre pas : c'est
+// le second qui vit. Composé avec la note : un 30 de décision hors poste (0,85 × 0,79) lit à 0,67.
+export const POSTE_MALUS = { decF: 0.7, posF: 0.7, anticipF: 0.75, otbF: 0.75, offBallF: 0.75, teamF: 0.75, markF: 0.75, concF: 0.75 };
+export const POSTE_MALUS_LENT = { reaction: 1.3 };   // les facteurs « plus c'est grand, plus c'est lent » (secondes) : × lerp(hi, 1, fam)
+export function profilAuPoste(skill, fam = 1) {
+  if (!(fam < 1)) return skill;
+  const out = { ...skill, posteFam: fam };
+  for (const [k, lo] of Object.entries(POSTE_MALUS)) if (typeof out[k] === 'number') out[k] = out[k] * lerp(lo, 1, fam);
+  for (const [k, hi] of Object.entries(POSTE_MALUS_LENT)) if (typeof out[k] === 'number') out[k] = out[k] * lerp(hi, 1, fam);
+  return Object.freeze(out);
+}
+
 /** Un tirage gaussien SEEDÉ (somme de 3 uniformes, centrée) — l'erreur d'exécution en jeu. */
 export function gauss(rnd) {
   return ((rnd() + rnd() + rnd()) - 1.5) * 1.4142;               // ≈ N(0, 1) borné à ±2,1 σ
