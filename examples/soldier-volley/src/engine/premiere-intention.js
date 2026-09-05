@@ -36,6 +36,15 @@ export function uneTouche(st, p, cfg) {
   const V = (st.full && cfg.uneToucheVive) || null;   // la clé de PREMIER niveau (épinglable : uneToucheVive: false = l'hier au bit)
   const refus = (k) => { (st.deny ??= {})[k] = (st.deny[k] ?? 0) + 1; };   // les refus NOMMÉS (216 — l'entonnoir se lit)
   const pressOk = foeU && d2(foeU.p, p.p) < (V ? (V.press ?? 3.4) : (UT.press ?? 2.6));
+  // L'APPUI-REMISE (240, cfg.appuiRemise — « si tu n'as pas vu, tu remets ») : le receveur DOS AU BUT (cos(cap, but) < −cos)
+  // avec un presseur à ≤ press m ne se retourne pas — la remise en une touche est FORCÉE (pas de tirage), vers un appui DE
+  // FACE d'abord (le demi-plan de son regard) ; le sang-froid rend une part de pivot (composureF > 1 × sangFroid — 227 : le
+  // presseur lent se laisse tourner). Mesuré avant : 0 remise sur 9 réceptions dos+pressé (6 refusées au tirage, 3 sans
+  // candidat), 4 pivots, 4 conduites, 1 perte. Clé absente : aucun tirage consommé, l'hier au bit.
+  const AR = st.full && cfg.appuiRemise ? cfg.appuiRemise : null;
+  const sgAR = AR ? Math.sign(st.pitch.attackGoal(p.team).x || 1) : 0;
+  const dosAR = !!(AR && foeU && Math.cos(p.yaw) * sgAR < -(AR.cos ?? 0.3) && d2(foeU.p, p.p) <= (AR.press ?? 2));
+  const force = dosAR && (st.rnd ? st.rnd() : 0.5) < 1 - Math.max(0, (p.skill?.composureF ?? 1) - 1) * (AR.sangFroid ?? 1);
   // …LE SOCLE (lot 111, UT.base — « ça manque de une-deux » : 7 % de une-touche mesuré, tout
   // au pressé ; la pente 1−2×style s'annulait au défaut 0,5). Le une-touche calme du VRAI
   // football existe à tout style (~15-25 % des passes) : base = le plancher, la pente du
@@ -43,11 +52,11 @@ export function uneTouche(st, p, cfg) {
   // …et LE RELAIS DU TROISIÈME HOMME (lot 111) force presque la tentative : un C en course.
   const relais3 = st.players.some((q) => q.team === p.team && (q._troisT ?? -1) > st.t);
   const pCalme = (UT.calme ?? 0.5) * Math.max(V ? (V.base ?? 0.45) : (UT.base ?? 0), 1 - 2 * (tac(st, p.team).style ?? 0.5)) * (relais3 ? (UT.relais ?? 2.2) : 1) * (V ? (p.skill?.visionF ?? 1) : 1);   // …ET LA VISION JOUE VITE AU CALME (216 : celui qui voit le jeu n'a pas besoin de contrôler)
-  const veut = pressOk || (pCalme > 0 && (st.rnd ? st.rnd() : 0.5) < pCalme);
+  const veut = pressOk || force || (pCalme > 0 && (st.rnd ? st.rnd() : 0.5) < pCalme);
   if (!veut) refus('ut-envie'); else if (arrU > (UT.vmax ?? 9.5)) refus('ut-vitesse'); else if (st.ball.p[1] >= 0.5) refus('ut-haut');
   if (veut && arrU <= (UT.vmax ?? 9.5)
     && st.ball.p[1] < 0.5
-    && (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * (st.full && cfg.tempoAxe !== false ? axe(tac(st, p.team).tempo, 0.6, 1.4) : 1) * Math.min(1.2, p.skill?.controlF ?? 1) * (relais3 ? (UT.murF ?? 1) : 1) * (V && (p.role?.tenue ?? 0.5) !== 0.5 ? axe(p.role.tenue, 1.4, 0.6) : 1)) {   // …ET LE RÔLE TENUE DONNE LA CADENCE (216 : le relayeur (0) joue vite, le meneur (1) garde — identité 0,5)   // …ET LE MUR REND (209, UT.murF — dette 196 : le lanceur d'un une-deux COURT, son mur se posait ; 5 retours/22. Le relais chaud pousse la une-touche au tirage FINAL, pas seulement au calme. Clé absente : ×1, l'hier)
+    && (force || (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * (st.full && cfg.tempoAxe !== false ? axe(tac(st, p.team).tempo, 0.6, 1.4) : 1) * Math.min(1.2, p.skill?.controlF ?? 1) * (relais3 ? (UT.murF ?? 1) : 1) * (V && (p.role?.tenue ?? 0.5) !== 0.5 ? axe(p.role.tenue, 1.4, 0.6) : 1))) {   // …ET LE RÔLE TENUE DONNE LA CADENCE (216 : le relayeur (0) joue vite, le meneur (1) garde — identité 0,5)   // …ET LE MUR REND (209, UT.murF — dette 196 : le lanceur d'un une-deux COURT, son mur se posait ; 5 retours/22. Le relais chaud pousse la une-touche au tirage FINAL, pas seulement au calme. Clé absente : ×1, l'hier)
     const blockers = st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0).map((q) => q.p);
     // LA UNE-TOUCHE SE GAGNE, ELLE NE S'ESPÈRE PAS (lot 131, UT.dose — mesuré avant : 116 s
     // d'errance / 1200 s après les une-touche, p50 2,7 s ; le cap de layoff (4-6 m/s à
@@ -65,12 +74,16 @@ export function uneTouche(st, p, cfg) {
     // 0,85 → 30 %) ; à 50 et au-dessus aucun tirage : l'identité au bit.
     const misV = V?.relaisPrio ? Math.max(0, 1 - (p.skill?.visionF ?? 1)) * (V.relaisLecture ?? 2) : 0;
     const prioV = !!V?.relaisPrio && !(misV > 0 && (st.rnd ? st.rnd() : 0.5) < misV);
-    const mate = st.players
+    const cands0 = st.players
       .filter((m) => m.team === p.team && m.id !== p.id && !m.keeper && m.down <= 0)
       .map((m) => { const c = cibleDe(m); return { m, c, d: hyp(c[0] - p.p[0], c[1] - p.p[2]) }; })
-      .filter((x) => x.d > (V ? (V.dMin ?? 2.5) : 3) && x.d < (UT.portee ?? 14))   // (216) la remise très courte est un candidat
+      .filter((x) => x.d > (V ? (V.dMin ?? 2.5) : 3) && x.d < (UT.portee ?? 14));   // (216) la remise très courte est un candidat
+    if (force && !cands0.length) refus('ar-portee');
+    const candsL = cands0
       .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.c[0], 0, x.c[1]], blockers).margin ?? 0 }))
-      .filter((x) => x.marge >= (V ? (V.couloir ?? 0.9) : (UT.couloir ?? 0.5)) * ((x.m._troisT ?? -1) > st.t ? (V ? (V.chas ?? 0.22) : (UT.chas ?? 1)) : 1))   // …ET LA UNE-TOUCHE ORDINAIRE VEUT UN COULOIR (216 : à 0,5 m la remise rapide se faisait intercepter — 73 % ; à 0,9 : 77 %, les passes de jeu retrouvent 78 %) ; le relais chaud garde ses 0,2 m absolus (0,9 × 0,22)   // …ET LE RETOUR ACCEPTE LE CHAS (209, dette 196 : les refus mesurés à marge 0,05-0,35 — le donne-et-va rend PAR NATURE dans le couloir étroit du presseur contourné ; le une-deux réel ose la remise rasante). Relais froid : le 0,5 d'hier.
+      .filter((x) => x.marge >= (V ? (V.couloir ?? 0.9) : (UT.couloir ?? 0.5)) * ((x.m._troisT ?? -1) > st.t ? (V ? (V.chas ?? 0.22) : (UT.chas ?? 1)) : 1))   // …ET LA UNE-TOUCHE ORDINAIRE VEUT UN COULOIR (216 : à 0,5 m la remise rapide se faisait intercepter — 73 % ; à 0,9 : 77 %, les passes de jeu retrouvent 78 %) ; le relais chaud garde ses 0,2 m absolus (0,9 × 0,22)   // …ET LE RETOUR ACCEPTE LE CHAS (209, dette 196 : les refus mesurés à marge 0,05-0,35 — le donne-et-va rend PAR NATURE dans le couloir étroit du presseur contourné ; le une-deux réel ose la remise rasante). Relais froid : le 0,5 d'hier.;
+    if (force && cands0.length && !candsL.length) refus('ar-couloir');
+    const cands = candsL
       .map((x) => {
         if (!dose) return x;
         const cosD = ((x.c[0] - p.p[0]) * st.ball.v[0] + (x.c[1] - p.p[2]) * st.ball.v[2]) / (x.d * bvl0);
@@ -80,7 +93,11 @@ export function uneTouche(st, p, cfg) {
         const capV = V && (x.m._troisT ?? -1) > st.t ? Math.max(cap, V.capRelais ?? 6, 6) : V && x.d < (V.court ?? 7) ? Math.max(cap, 6, V.capCourt ?? 8.5) : Math.max(cap, 6);   // …ET LE RELAIS CHAUD A SON CAP (218 : le retour du une-deux repart d'où venait le ballon — le cap à contre-courant du 131 le déclarait infaisable (7,6-8,7 m/s requis pour 4-6 permis) alors que le coureur vient À LA RENCONTRE)
         return { ...x, sol, faisable: !!sol && sol.speed <= Math.min(12, capV) };
       })
-      .filter((x) => !dose || x.faisable)
+      .filter((x) => !dose || x.faisable);
+    if (force && candsL.length && !cands.length) refus('ar-dose');
+    const candAR = force ? cands.filter((x) => (x.c[0] - p.p[0]) * Math.cos(p.yaw) + (x.c[1] - p.p[2]) * Math.sin(p.yaw) > 0) : [];   // (240) DE FACE d'abord — s'il n'y en a pas, tous
+    if (force && cands.length && !candAR.length) refus('ar-de-dos');   // (informatif : la remise part quand même, vers un appui dans le dos)
+    const mate = (candAR.length ? candAR : cands)
       .sort((a, b) => ((prioV ? (((b.m._troisT ?? -1) > st.t) - ((a.m._troisT ?? -1) > st.t)) : 0)   // (218c, V.relaisPrio) LE RELAIS CHAUD FAISABLE PASSE DEVANT : sans bloqueur la marge d'un appui vaut 99 et écrasait le coureur (marge 1-3 + bonus) — 11 murs en une touche, 1 retour ; absente : le barème d'hier
         || ((b.marge + ((b.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0))
         - (a.marge + ((a.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0)))))[0];   // le coureur du relais d'abord (lot 111)
@@ -121,7 +138,13 @@ export function uneTouche(st, p, cfg) {
           ? { team: p.team, side: zS || F.side, n: F.n + 1 } : { team: p.team, side: zS, n: 1 };
       }
       st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0;
-      st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(pressOk ? {} : { calme: true }) });
+      st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(pressOk ? {} : { calme: true }), ...(force ? { appui: true } : {}) });
+      // …LA COMBINAISON SE COMPTE (240) : le coureur du troisième homme SERVI en une touche = A → B → C abouti ; et la remise
+      // d'appui garde la course de C vivante le temps du relais (vie s) — la chaîne A → B → A → C du vrai football
+      if (AR) {
+        if ((mate.m._troisT ?? -1) > st.t) st.events.push({ t: +st.t.toFixed(2), type: 'combinaison', kind: 'troisieme', a: st.lastPasser ?? null, b: p.id, c: mate.m.id, dur: +(st.t - (mate.m._troisAt ?? st.t)).toFixed(2) });
+        else if (force) for (const q of st.players) if (q.team === p.team && (q._troisT ?? -1) > st.t) q._troisT = Math.max(q._troisT, st.t + (AR.vie ?? 0.8));
+      }
       return true;
     }
   }

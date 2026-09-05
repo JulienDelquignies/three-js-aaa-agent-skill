@@ -466,6 +466,8 @@ export function strikeNow(st, c, cfg) {
     if (C && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.troisieme.p ?? 0.5) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(C).appel, 0.7, 1.3)) {
       C._pace = { until: st.t + (cfg.troisieme.dur ?? 1.1), kind: 'troisieme', next: C._pace?.next ?? st.t + 6 };
       C._troisT = st.t + (cfg.troisieme.dur ?? 1.6);
+      // (240, cfg.appuiRemise.vieC) LA COURSE VIT LE CYCLE : jusqu'à la réception de B + vieC s (mesuré : C partait 0,95 s avant la réception et mourait 0,65 s après — seule la une-touche le servait, 3 sur 25 contrôles) ; gardé par la clé, le jumeau au bit
+      if (cfg.appuiRemise) { const vie = st.t + (st.pass?.flight ?? 0.8) + (cfg.appuiRemise.vieC ?? 1.2); C._troisT = vie; C._pace.until = vie; C._troisAt = st.t; }
       st.events.push({ t: +st.t.toFixed(2), type: 'troisieme', a: c.id, b: choice.to.id, c: C.id });
     }
   }

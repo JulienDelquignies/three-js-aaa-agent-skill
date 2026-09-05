@@ -8543,6 +8543,43 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      déployé (chunk Rondo-BWhr90dU.js à l'alias, capture playmode
      avant deploy). PRIX À RENDRE AU 240 : pertes 411/90, passes −28 %
      au monde du couple, services profonds 9 → 4 sous le retournement.
+- 292: LE TROISIÈME HOMME ET L'APPUI-REMISE (240 — préceptes 1.3, 1.5 :
+     « si tu n'as pas vu, tu remets »). SONDE AVANT (6 × 300 s) : 257
+     réceptions, 49 dos au but, 13 sous presseur ≤ 2 m dont 8 déjà en
+     une touche (loi 44), 0 remise sur les 6 refusées au tirage ; le
+     troisième homme (111) lance 55 courses / 30 min, 11 servies : C
+     part 0,95 s avant la réception de B et sa course meurt 0,65 s
+     après — seule la une-touche le sert (7 sur 18), 3 sur 25
+     contrôles ; C à 12,6 m de B. DEUX LOIS (cfg.appuiRemise,
+     premiere-intention / strike-sim) : (a) L'APPUI-REMISE — receveur
+     dos au but (cos(cap, but) < −0,3) avec un presseur à ≤ 2 m : la
+     une-touche est FORCÉE (aucun tirage), vers un appui DE FACE
+     d'abord (le demi-plan du regard), refus nommés (ar-portee,
+     ar-couloir, ar-dose, ar-de-dos informatif) ; composureF > 1 ×
+     sangFroid rend une part de pivot (le sang-froid, 227) ; la remise
+     d'appui garde la course de C vivante vie s ; (b) LA COURSE VIT LE
+     CYCLE — la course du troisième homme (111) vit jusqu'à la
+     réception de B + vieC s (vieC 0,6 mesuré contre 0,9 et 1,2 : le
+     cycle 1,4-2,2 s du réel — plus long, plus de perdus sur service) ;
+     l'événement combinaison {troisieme, a, b, c, dur} compte A → B → C
+     en une touche. MESURÉ (12 × 300 s) : troisième homme servi 28 →
+     60 / 60 min, RÉUSSI (C reçoit, le ballon est encore à l'équipe 2 s
+     après) 19 → 48, perdus sur service 9 → 10, pertes 273 → 282 (× 1,03,
+     non-dégradation) ; bande 33 tirs / 7 buts ; passes 1215 → 1338/90 ;
+     appels profonds ± 0, débordements +31 % (cause nommée : le porteur
+     large et avancé 19 → 24,6 % des images de porté — l'attaque avance ;
+     garde 231 re-fondée en non-diminution), appels courts −20 % et
+     contre-appels −23 % au monde nu (C occupé par sa course — informatif,
+     le 122 se compte au monde des courses). La cible doctrinale « 8-15
+     combinaisons réussies / match » compte plus strict que notre
+     « servi » (toute passe à C dans les 2,5 s) : 48 réussis / 60 min ici,
+     l'écart de définition est nommé, pas chassé. Fixture au banc (B dos
+     au but, presseur à 1,8 m dans son dos, A de face, tirage 0,9) : loi
+     → remise appui vers A ; clé absente → contrôle (l'hier au bit) ;
+     composureF 1,5 → pivot ; presseur hors seuil → contrôle. Jumeau
+     {appuiRemise:false} = moteur 240a-d au bit (7fdcfe013bd30aa5 /
+     1a67b3e2a9035ccd) — le premier essai le cassait : ma parenthèse
+     coupait le produit du tirage (rnd < p × tempo × …), leçon consignée.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

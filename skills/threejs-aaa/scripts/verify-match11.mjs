@@ -5486,5 +5486,59 @@ if (__bloc()) {
     V.serre <= E2.serre && V.rot <= 300 && V.rot <= E.rot - 100 && V.nRot >= 30 && V.haut <= E.haut - 1.0);
 }
 
+// ---------------------------------------------------------------- lot 240 : L'APPUI-REMISE ET LE TROISIÈME HOMME
+// (cfg.appuiRemise — préceptes 1.3, 1.5 : « si tu n'as pas vu, tu remets » ; A → B dos au but → C lancé)
+if (__bloc()) {
+  // LA FIXTURE : B dos au but à x 5, A de face à 6 m, le presseur à 1,8 m dans le dos de B (côté but) ; la passe A → B en
+  // vol à 8 m/s ; tirage épinglé 0,9 (au-dessus du p 0,65 de la loi 44 : sans la loi, la une-touche est refusée et B contrôle).
+  const scene = (cfgExtra, composureF) => {
+    const st = makeMatch({ full: true, seed: 5 }); const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
+    for (const p of st.players) if (!p.keeper) { p.p[0] = -sgn * 40; p.p[2] = (p.id % 9) * 3 - 12; p.v = [0, 0]; p.act = null; }
+    const a = st.players.find((p) => p.team === 0 && !p.keeper), r = st.players.find((p) => p.team === 0 && !p.keeper && p.id !== a.id);
+    const f = st.players.find((p) => p.team === 1 && !p.keeper);
+    r.p[0] = 5; r.p[2] = 0; r.v = [0, 0]; r.yaw = Math.atan2(0, -sgn);
+    a.p[0] = 5 - sgn * 6; a.p[2] = 0; a.v = [0, 0]; a.yaw = Math.atan2(0, sgn);
+    f.p[0] = 5 + sgn * 1.8; f.p[2] = 0; f.v = [0, 0];
+    if (composureF) r.skill = { ...r.skill, composureF };
+    st.ball.release('sortie'); st.ball.restart([5 - sgn * 6, 0.11, 0], { cause: 'touche' });
+    st.ball.strike({ speed: 8, dirYaw: Math.atan2(0, sgn), elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });
+    st.restart = null; st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.hold = 0; st.lastTouch = 0;
+    st.pass = { from: a.id, to: r.id, lead: [5, 0, 0], t: st.t - 0.2, origin: [5 - sgn * 6, 0], flight: 0.8 };
+    st.rnd = () => 0.9;
+    const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+    for (let i = 0; i < 1.5 * 60 && !st.events.some((e) => e.type === 'pass' && e.style === 'une-touche') && st.phase !== 'carry'; i++) matchStep(st, 1 / 60, cfg);
+    const ut = st.events.find((e) => e.type === 'pass' && e.style === 'une-touche');
+    return { ut: ut ? { appui: !!ut.appui, versA: ut.to === a.id } : null, phase: st.phase };
+  };
+  const L = scene({}), A = scene({ appuiRemise: false }), Sf = scene({}, 1.5), Ps = scene({ appuiRemise: { ...matchCfg().appuiRemise, press: 1.5 } });
+  ok(`lot 240 — L'APPUI-REMISE au mécanisme (B dos au but, presseur à 1,8 m dans son dos, tirage 0,9 : la loi FORCE la une-touche (appui ${L.ut?.appui}) vers A de face (${L.ut?.versA}) ; clé absente → contrôle (${A.phase}, l'hier au bit) ; sang-froid composureF 1,5 → le pivot rendu (${Sf.phase}) ; presseur hors seuil press 1,5 → contrôle (${Ps.phase}))`,
+    L.ut?.appui === true && L.ut?.versA === true && !A.ut && A.phase === 'carry' && !Sf.ut && !Ps.ut);
+  // LE FLUX (12 × 300 s) : le troisième homme SERVI (une passe à C dans les 2,5 s de sa course) et RÉUSSI (C reçoit et le
+  // ballon est encore à l'équipe 2 s après), les perdus sur service, les pertes de possession (non-dégradation), et la garde
+  // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
+  const flux = (over) => {
+    const cfg = matchCfg({ shotRange: 20, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0;
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {
+      const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg); const t = st.possession?.team ?? -1; if (prev >= 0 && t >= 0 && t !== prev && !st.restart) pertes++; if (t >= 0) prev = t;
+        for (; cur < st.events.length; cur++) {
+          const e = st.events[cur];
+          if (e.type === 'troisieme') tr.push({ c: e.c, t: e.t });
+          if (e.type === 'burst' && e.kind === 'appel-profond') profond++;
+          if (e.type === 'burst' && e.kind === 'deborde') deborde++;
+          if (e.type === 'pass' && e.to != null) for (const x of tr) if (!x.done && e.to === x.c && e.t - x.t < 2.5) { x.done = true; servis++; x.serviT = e.t; x.team = st.players[e.to].team; }
+        }
+        for (const x of tr) if (x.serviT != null && !x.juge && st.t - x.serviT >= 2) { x.juge = true; if ((st.possession?.team ?? -1) === x.team && !st.restart) reussis++; else perdus++; }
+      }
+    }
+    return { pertes, servis, reussis, perdus, profond, deborde };
+  };
+  const V = flux({}), E = flux({ appuiRemise: false });
+  ok(`…et le FLUX (12 × 300 s) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,8 (la course vit le cycle : vieC) ; perdus sur service ${V.perdus} ≤ sans ${E.perdus} × 1,6 + 2 ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
+    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.8 && V.perdus <= E.perdus * 1.6 + 2 && V.pertes <= E.pertes * 1.05
+    && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

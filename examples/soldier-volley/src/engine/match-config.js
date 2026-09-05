@@ -1061,6 +1061,7 @@ export const MATCH = {
                           // × inverse — il rentre sur son bon pied, la chiralité shooting),
                           // le rôle largeurR (craie 0,8-1,2) et l'axe tactique largeur.
                           // false : l'aim au centre d'hier au bit.
+  appuiRemise: { press: 2, cos: 0.3, sangFroid: 1, vie: 0.8, vieC: 0.6 },   // vieC 1,2 → 0,6 MESURÉ (12 × 300 s) : services 80 → 90/90, réussis 55 → 72, perdus sur service 24 → 15, pertes 450 → 423 (410 sans) — le cycle 1,4-2,2 s du réel, pas plus   // L'APPUI-REMISE (240, premiere-intention) : le receveur DOS AU BUT (cos(cap, but) < −cos) avec un presseur à ≤ press m remet en UNE TOUCHE sans tirage, vers un appui DE FACE d'abord ; composureF > 1 × sangFroid rend une part de pivot (le sang-froid) ; la remise d'appui prolonge la course du troisième homme de vie s ; la course de C (111) vit jusqu'à la réception de B + vieC s (le cycle 1,4-2,2 s du réel) ; l'événement combinaison {kind:'troisieme', a, b, c, dur} compte A → B → C abouti. Absente : 0 remise forcée sur 9 réceptions dos+pressé, l'hier au bit
   troisieme: { min: 6, max: 16, p: 0.5, dur: 1.1 },
                           // LE TROISIÈME HOMME (lot 111, st.full — strike-sim au départ de
                           // passe) : le relais C côté but du receveur pique un appel court dans

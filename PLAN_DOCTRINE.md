@@ -227,7 +227,7 @@ retourne ne pousse pas — porté au pied le temps du tour ; le coup d'envoi et 
 temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3-4,5 m de la ligne). Prix : pertes
 333 → 411/90, à rendre par la remise du 240.
 
-**Lot 240 — Le troisième homme et l'appui-remise (préceptes 1.3, 1.5 ; brief chantier 2).**
+**Lot 240 — Le troisième homme et l'appui-remise (préceptes 1.3, 1.5 ; brief chantier 2) — SCELLÉ (NOTES 292).** Appui-remise forcée dos au but sous presseur (× sang-froid), la course du troisième homme vit le cycle (vieC 0,6) : servis 28 → 60 / 60 min, réussis 19 → 48, pertes × 1,03.
 - Doctrine : A → B (une touche, dos au but, « si tu n'as pas vu, tu remets ») → C lancé qui part
   200-400 ms AVANT que B reçoive ; cycle 1,4-2,2 s ; 8-15 combinaisons réussies par match.
 - Nous : `troisieme` existe (strike-sim) mais n'est jamais mesuré ; la remise vit sans la loi
