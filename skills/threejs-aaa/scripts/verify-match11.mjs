@@ -2466,7 +2466,7 @@ if (__bloc()) {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4, 5, 7, 8]) {   // 3 → 6 graines DATÉ 240 (2 sur 3 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });
+      const cfg = matchCfg({ couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3837,7 +3837,7 @@ if (__bloc()) {
     const zs = []; let touches = 0;
     for (const seed of [3, 7, 11, 15]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, ...over });   // la clause mesure la CRAIE — ses deux mondes isolent 174-182 (gkPied inversait le différentiel de touches ; la jambe tendue puis l'attaque du centre le re-dataient)
+      const cfg = matchCfg({ couloirs: false, shotRange: 20, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, ...over });   // la clause mesure la CRAIE — ses deux mondes isolent 174-182 (gkPied inversait le différentiel de touches ; la jambe tendue puis l'attaque du centre le re-dataient) couloirs:false DATÉ 241 — 177 : l'étirement à la craie mesuré hors couloirs (25,8 c. 24 + 2 avec le registre : la largeur est aussi la sienne)
       for (let i = 0; i < 200 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 30 === 0 && st.possession.team === 0 && !st.restart)
@@ -4694,7 +4694,7 @@ if (__bloc()) {
   // élu receveur) — sa consigne EST sa cible et il file ; épinglé, il garde son slot au trot.
   const course = (over) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const cfg = matchCfg({ couloirs: false, shotRange: 20, ...(over ?? {}) });   // couloirs:false DATÉ 241 — 218 : le sprint du lanceur mesuré hors couloirs (épinglé 4,7 = vivant 4,7 avec le registre)
     const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
     const R = st.players.find((p) => p.team === 0 && p.post === 8), M = st.players.find((p) => p.team === 0 && p.post === 5), C = st.players.find((p) => p.team === 0 && p.post === 7);
     for (const q of st.players) if (q.team === 0 && !q.keeper && ![5, 7, 8].includes(q.post)) { q.p[0] = -sgn * 30; q.p[2] = 15; }
@@ -4716,7 +4716,7 @@ if (__bloc()) {
   // sans, dans la couverture (+z). Le flux : retours 9/54 → 16/55 sur 12 graines (réel ~50 %).
   const cote = (over, skill) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 1.0, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5, ...over } } });
+    const cfg = matchCfg({ couloirs: false, shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 1.0, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5, ...over } } });
     const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
     const c = st.players.find((p) => p.team === 0 && p.post === 5), B = st.players.find((p) => p.team === 0 && p.post === 8);
     for (const p of st.players) if (p.team === 0 && !p.keeper && ![5, 8].includes(p.post)) { p.p[0] = -sgn * 30; p.p[2] = 15; }
