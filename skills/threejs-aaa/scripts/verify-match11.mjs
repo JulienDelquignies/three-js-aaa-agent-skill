@@ -1019,7 +1019,7 @@ if (__bloc()) {
 // mondes rondo/réduit au bit près (empreintes, la loi est st.full).
 if (__bloc()) {
   const touchesDos = (over) => {
-    let n = 0, dos = 0, deny = 0;
+    let n = 0, dos = 0, deny = 0, foulee = 0;
     for (const seed of [2, 3, 5, 7, 11, 13, 17, 19]) {   // 2 → 8 graines DATÉ 237 (3 c. 3,2 %, puis 5 c. 5,7 à 4)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ avantContact: false, cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, ...ISO142, ...over });
@@ -1030,6 +1030,7 @@ if (__bloc()) {
           const e = st.events[nEv++];
           if (e.type !== 'touche') continue;
           const p = st.players[e.by]; if (!p || p.keeper) continue;
+          if ((p._troisT ?? -1) > e.t - 0.6) { foulee++; continue; }   // DATÉ 240 : le troisième homme SERVI prend dans sa foulée un ballon venu de derrière (4,1 → 7,6 % avec vieC) — la foulée, pas l'aimant ; comptée à part
           const a = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]) - p.yaw;
           const deg = Math.abs(((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI;
           n++; if (deg > 100) dos++;
@@ -1037,13 +1038,14 @@ if (__bloc()) {
       }
       deny += st.deny?.['porte-dos'] ?? 0;
     }
-    return { n, dos, deny, part: n ? dos / n : 0 };
+    return { n, dos, deny, foulee, part: n ? dos / n : 0 };
   };
-  const vif76 = touchesDos({});
+  // retournement:false DATÉ 240 : le corps qui se retourne EN CONDUISANT (240b, l'arc vers le receveur dos — amplifié par la course du troisième homme qui vit le cycle) touche un ballon libre passé derrière lui : 7,4 % vivant c. 3,7 % sans — des touches de retournement, pas l'aimant (le servo qui traînait) ; la clause mesure SA loi, le vivant se rapporte à part
+  const vif76 = touchesDos({ retournement: false }), vivant76 = touchesDos({});
   // …bornes re-fondées lot 119 (bugfix corner) puis 120 : le LIBÉRO + gate déplacent les
   // gardiens dès l'engagement — les flux de conduite se re-battent une fois (mesuré 5,37 % ;
   // l'aimant d'hier vivait à ~12 % : ≤ 6 % reste « mort », l'esprit de la clause est intact)
-  ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 6 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif)`,
+  ok(`l'AIMANT DU PORTÉ est mort (${vif76.dos}/${vif76.n} touches de conduite dos ≤ 6 % — le pied ne pousse pas un ballon dans le dos ; refus porte-dos ${vif76.deny}, informatif ; ${vif76.foulee} touches de coureur servi exclues — la foulée du troisième homme ; vivant AVEC retournement ${(100 * vivant76.part).toFixed(1)} % informatif : les touches de retournement, 240)`,
     vif76.part <= 0.06);
   const sab76 = touchesDos({ porteCone: false, holdCalmFull: [1.0, 2.2], attaquePasse: false, social: false, deborde: false, patte: false, keeperRise: false, keeperHold: false, menace: { tir: 1, centre: 1, passe: 1, conduite: 1 }, gesteTir: false, parades: false, appuis: false, jockey: false, zone: false, accroche: false,
     renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false }, couloir: false,

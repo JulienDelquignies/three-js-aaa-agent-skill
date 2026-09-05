@@ -642,7 +642,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const intentFresh = !!c.intent || (c.anchorHint && st.t - c.anchorHint.t < 0.4);
     const settling = st._settling && st.t < st._settling.at;
     // LE PORTEUR QUI SE RETOURNE NE POUSSE PAS (240b, cfg.retournement.tour) : la poussée à plus de tour rad du corps → porté (servo au pied) le temps du tour — un lancé qui poussait dans son dos laissait le ballon derrière lui (12 → 31 pertes sans pression / 48 min ; cône du porté 76)
-    const tourne = st.full && cfg.retournement && c.speed >= 1.5 && enPorte(st, c, cfg) && Math.abs(((Math.atan2(want[1], want[0]) - Math.atan2(c.v[1], c.v[0]) + Math.PI * 3) % (Math.PI * 2)) - Math.PI) > (cfg.retournement.tour ?? 1.05);   // contre l'ÉLAN (la vitesse), pas le cap : 8 % des images de porté lancé c. 18 % sur le cap — à l'arrêt la semelle tourne avec (76)
+    const tourne = st.full && cfg.retournement && c.speed >= 1.5 && enPorte(st, c, cfg) && Math.abs(((Math.atan2(want[1], want[0]) - Math.atan2(c.v[1], c.v[0]) + Math.PI * 3) % (Math.PI * 2)) - Math.PI) > (cfg.retournement.tour ?? 1.05);   // contre l'ÉLAN (la vitesse), pas le cap : 8 % des images de porté lancé c. 18 % sur le cap — à l'arrêt la semelle tourne avec (76) ; « au cap à l'arrêt » ESSAYÉ ET REJETÉ au 240 (pertes sans pression 24 → 34, pertes 282 → 308)
     if (st.ball.owner === c.id) {
       if (contested) {
         st.ball.release('contesté');
