@@ -9045,6 +9045,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      groupé avec et sans la clé ; build et deploy une fois — et chaque
      loi qui déplace les corps re-tire une dizaine de flux, c'est le
      prix du contrat, pas un accident.
+- 301: LA LIGNE FERMÉE (243 — retour utilisateur : « des choix de passe avec
+     un adversaire sur la ligne ; pas gênant si le joueur est nul, mais
+     je ne connais pas le niveau des deux équipes »). D'ABORD LE NIVEAU :
+     le match déployé joue sans notes (makeMatch({ perTeam, seed, full }),
+     aucun squads) — tous à 50, l'identité ; personne n'est nul, ce qu'on
+     voit est le choix d'un joueur MOYEN. SONDE (6 × 300 s) : une passe
+     sur dix part avec un adversaire à < 1 m de sa ligne, perdue à 17-33 %
+     (5 % ligne nette) ; les trois quarts sont LEVÉES (la ligne fermée
+     bascule le style en cloche) ; sur 22 passes au sol jouées dans un
+     corps, 15 avaient une ligne OUVERTE à l'adoption (≥ 1,15 m) fermée à
+     la frappe 0,77 s plus tard — le défenseur entre pendant l'armé et
+     le passeur ne relit pas. TROIS LOIS ESSAYÉES (cfg.ligneFermee,
+     rondo.js + strike-sim) : la cloche exige un corps à ≥ 4 m du pied et
+     ≥ 3 m du point visé ; un malus × (1 − marge/seuil) × decF (le bon
+     décideur refuse) ; la RELECTURE à la frappe (hors urgence, centre,
+     through, cloche : couloir relu × visionF, le geste finit en feinte,
+     refus nommé ligne-fermee). MESURÉ : la part de passes dans un corps
+     ne bouge pas (5-6 %, identique à décisions 30 et 70) ; la relecture
+     tire 18 fois / 30 min ; et la seule branche qui mord — interdire la
+     cloche par-dessus le marqueur collé au dos du receveur — fait 324 →
+     483 pertes / 90 : ces passes sont le DERNIER RECOURS d'un porteur qui
+     n'a pas de meilleure offre ; les lui retirer, c'est le faire tenir et
+     perdre. ÉTEINTE (null), le code reste, mécanisme prouvé ; la vraie
+     réponse est structurelle : l'offre de passe (éteinte au 241, effet
+     nul), la profondeur des intérieurs — les dettes déjà nommées. Ce que
+     l'utilisateur voit est donc juste : un joueur moyen qui n'a que ça.
+     Jumeau {ligneFermee:false} = moteur 242 au bit (94e2de4e74fb69f8 /
+     46ce3576f0d5249f) ; par défaut null : le moteur servi est inchangé.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

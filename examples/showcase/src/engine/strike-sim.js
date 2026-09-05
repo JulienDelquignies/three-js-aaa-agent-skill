@@ -250,6 +250,17 @@ export function strikeNow(st, c, cfg) {
   const { choice, pick, stance, urgent } = c.act.payload;
   const rec = st.players[choice.to.id];
   const from = [st.ball.p[0], BALL.radius, st.ball.p[2]];
+  // LA LIGNE RELUE À LA FRAPPE (243, cfg.ligneFermee.relu && st.full — retour utilisateur « un adversaire sur la ligne de passe ») : la
+  // ligne était OUVERTE à l'adoption (≥ 1,15 m) et un défenseur y est entré pendant l'armé (0,77 s p50 — 15 des 22 passes au sol
+  // jouées dans un corps, mesurées) ; le passeur qui a le temps (pas urgent) relit sa ligne au contact : fermée sous relu × visionF
+  // (le myope laisse partir, le voyant refuse plus tôt), le geste finit en FEINTE — ballon au pied, l'intention se re-choisit ;
+  // refus nommé ligne-fermee. Le centre, le through et la cloche passent par-dessus, ils ne relisent pas. Absente : l'hier au bit.
+  if (st.full && cfg.ligneFermee && cfg.ligneFermee.relu && rec && !urgent && !choice.cross && !choice.through && choice.style !== 'lofted') {
+    const blockers = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0 && !q._sub).map((q) => q.p);
+    const lead0 = [rec.p[0] + rec.v[0] * 0.28, BALL.radius, rec.p[2] + rec.v[1] * 0.28];
+    const lane = laneClearance(from, lead0, blockers, { corridor: cfg.ligneFermee.relu * (c.skill?.visionF ?? 1) });
+    if (!lane.open) { c.intent = null; st.events.push({ t: +st.t.toFixed(2), type: 'refus', kind: 'ligne-fermee', by: c.id, marge: +lane.margin.toFixed(2) }); return deny(st, 'ligne-fermee'); }
+  }
   // LE PIED NE FRAPPE JUSTE QUE LÀ OÙ LE GESTE LE SUPPOSE. Deux façons d'arriver au contact avec un
   // ballon qui n'est pas à sa stance : un ballon CONTESTÉ resté libre pendant l'armé (le duel a le
   // droit de pourrir la géométrie), et un porté qui n'a pas eu le temps d'ARRANGER le couple (armé
