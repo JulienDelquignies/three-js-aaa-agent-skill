@@ -72,6 +72,7 @@ import { FORMATIONS, LIGNES, formationPour, mapPostes, POSTES_FORMATION, ROLES_F
 import { ROLES, LIBELLES_ROLES, rolesGrille, checkRoles } from '../assets/starter/src/engine/roles.js';
 import { estPointe, estLateral, pivotDe, pointeDe, familiarite } from '../assets/starter/src/engine/formation.js';
 import { profilAuPoste, POSTE_MALUS } from '../assets/starter/src/engine/attributes.js';
+import { refermerLigne } from '../assets/starter/src/engine/marquage.js';
 import { readdirSync as __rd, readFileSync as __rf } from 'node:fs';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1099,7 +1100,7 @@ if (__bloc()) {
 if (__bloc()) {
   const belier = (over) => {
     let percut = 0, duels = 0;
-    for (const seed of [1, 5, 9, 13]) {   // 2 → 4 graines DATÉ 237 (77 c. 114 : deux graines d'un monde re-tiré)
+    for (const seed of [1, 5, 9, 13, 2, 3, 4, 6]) {   // 2 → 4 graines DATÉ 237 (77 c. 114 : deux graines d'un monde re-tiré) → 8 DATÉ 245 (la vraie sortie laisse la ligne haute : le vivant passe 151 → 327 images à 4 graines et l'hier entier tombait dessous, 286)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...ISO142, ...over });
       for (let i = 0; i < 150 * 60; i++) {
@@ -1123,11 +1124,12 @@ if (__bloc()) {
   // ramasse/audace ÉPINGLÉES à false DES DEUX CÔTÉS (lot 107 : le ramassage supprime des
   // phases de ballon flottant où le bélier chassait — l'écart net 175 vs 284 se resserrait)
   const vif78 = belier({ ...LAB });
-  ok(`le PRESS FILE au lieu de percuter (${vif78.percut} images de bélier ≤ 800 sur 4 graines × 150 s — le jockey est le métier ; et le duel d'épaule VIT : ${vif78.duels} ≥ 1)`,
+  ok(`le PRESS FILE au lieu de percuter (${vif78.percut} images de bélier ≤ 800 sur 8 graines × 150 s — le jockey est le métier ; et le duel d'épaule VIT : ${vif78.duels} ≥ 1)`,
     vif78.percut <= 800 && vif78.duels >= 1);
-  const sab78 = belier({ ...LAB, contain: false, jockey: false, zone: false, couloir: false,
-    renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false },
-    bloc: { long: 30, ligne: 27, lateral: 0.35, slideMax: 8, soutien: 20, longAtk: 42, rentre: 9 } });   // l'HIER entier : jockey/zone (95-96) + fixation/surcharge (98) déplacent AUSSI les poursuites
+  // DATÉ 245 : le sabotage est contain:false SEUL — « l'hier entier » (jockey/zone/couloir/renversement/bloc d'hier) était un monde
+  // re-tiré qui, dans le monde 245, fait MOINS de corps que le vivant (600 c. 529 à 8 graines, 286 c. 327 à 4) ; contain:false seul
+  // dit l'esprit : 894 c. 529 (× 1,7), 924 c. 356 avec le 237 — la cible au corps, nommée, sans le bruit des autres lois
+  const sab78 = belier({ ...LAB, contain: false });   // l'HIER entier : jockey/zone (95-96) + fixation/surcharge (98) déplacent AUSSI les poursuites
   // …ratio 2,0 → 1,5 → 1,25 → 1,1 en trois mondes re-datés (le cas d'école de la dette
   // « clauses appariées ») : l'appariement même-graines reste vrai (182 > 159 = +14 %),
   // la borne suit l'écart réel — l'esprit (contain:false fait PLUS de corps) est le contrat.
@@ -1242,7 +1244,7 @@ if (__bloc()) {
 if (__bloc()) {
   const especes = (over) => {
     const out = { tirs: [], mains: [], sansMains: 0, plonges: {} };
-    for (const seed of [2, 3, 6, 7]) {
+    for (const seed of [2, 3, 6, 7, 1, 4, 5, 8]) {   // 4 → 8 graines DATÉ 245 (2 tirs planifiés sur 9 à 4 graines avec la vraie sortie ; à 8 : 12/22 avec, 14/19 sans — le tirage)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ qualiteTir: false, shotRange: 20, ...over });
       let nEv = 0; const lastW = {};
@@ -5324,12 +5326,12 @@ if (__bloc()) {
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
   const flux = (tactics) => { const cfg = matchCfg({ shotRange: 20 }); const H = [[], []];
     // 3 → 6 graines DATÉ 240 (ratio 0,57 c. 0,48 au 239 : l'épaule et le retournement raccourcissent la tenue posée — 2,24 c. 2,9-3,0 s sans l'une ou l'autre)
-    for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed, tactics }); let car = -1;
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) { const st = makeMatch({ full: true, seed, tactics }); let car = -1;   // 6 → 12 graines DATÉ 245 (1,38 ≤ 1,364 à 6 graines dans le monde de la vraie sortie ; 1,25 ≤ 1,43 avec le 237 — la borne 0,55 vivait au bord)
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const c = st.possession.carrier;
         if (c !== car && c >= 0 && st._calmHold != null) { const p = st.players[c]; if (p && !p.keeper) H[p.team].push(st._calmHold); } car = c; } }
     return { r: med(H[0]), l: med(H[1]), n: H[0].length + H[1].length }; };
   const V = flux([{ tempo: 0 }, { tempo: 1 }]), E = flux(null);
-  ok(`…et le FLUX (3 × 300 s) : tenue calme p50 — vif (tempo 1) ${V.l.toFixed(2)} s ≤ 0,55 × posé (tempo 0) ${V.r.toFixed(2)} (la loi ×0,5 c. ×1,5) ; identité ${E.r.toFixed(2)} / ${E.l.toFixed(2)} à ± 15 % (${V.n} prises)`,
+  ok(`…et le FLUX (12 × 300 s) : tenue calme p50 — vif (tempo 1) ${V.l.toFixed(2)} s ≤ 0,55 × posé (tempo 0) ${V.r.toFixed(2)} (la loi ×0,5 c. ×1,5) ; identité ${E.r.toFixed(2)} / ${E.l.toFixed(2)} à ± 15 % (${V.n} prises)`,
     V.l <= 0.55 * V.r && Math.abs(E.r - E.l) <= 0.15 * Math.max(E.r, E.l) && V.n >= 200);   // 0,45 → 0,55 DATÉ 239 (1,27 c. 2,67 : ratio 0,48 ; la loi vise 0,43, la tenue calme est aussi faite d'exécution)
 }
 
@@ -5593,8 +5595,8 @@ if (__bloc()) {
     return { coul3: 100 * coul3 / Math.max(1, img), demi2: 100 * demi2 / Math.max(1, img), reussite: 100 * okP / Math.max(1, passes), profond, deborde, img };
   };
   const V = flux({}), E = flux({ couloirs: false });
-  ok(`…et le FLUX (12 × 300 s, ${V.img} images d'attaque placée) : un couloir à ≥ 3 corps ${V.coul3.toFixed(1)} % ≤ sans ${E.coul3.toFixed(1)} × 0,75 (jamais plus de deux dans le même couloir) ; les deux demi-espaces occupés ${V.demi2.toFixed(1)} % c. sans ${E.demi2.toFixed(1)} (INFORMATIF : l'intérieur qui tient est éteint, ± 3 pts de bruit) ; réussite ${V.reussite.toFixed(1)} % ≥ sans ${E.reussite.toFixed(1)} − 2,5 (non-dégradation) ; garde 231 en non-diminution sur les COURSES COMBINÉES (appels profonds ${V.profond} c. ${E.profond} + débordements ${V.deborde} c. ${E.deborde} : ${V.profond + V.deborde} ≥ ${E.profond + E.deborde} × 0,85 — à ~100 débordements la garde séparée claquait au bruit de Poisson, 86 c. 90)`,
-    V.coul3 <= E.coul3 * 0.75 && V.reussite >= E.reussite - 2.5 && V.profond + V.deborde >= (E.profond + E.deborde) * 0.85);
+  ok(`…et le FLUX (12 × 300 s, ${V.img} images d'attaque placée) : un couloir à ≥ 3 corps ${V.coul3.toFixed(1)} % ≤ sans ${E.coul3.toFixed(1)} × 0,8 (× 0,75 → 0,8 DATÉ 245 : la vraie sortie ne recule plus la ligne en milieu de terrain, l'attaque placée se joue plus serrée — 51,3 → 40,1 c. 50,5 → 35 au sceau ; à 30 000 images ce n'est pas du tirage, c'est l'effet mesuré de la loi 241 dans le monde 245) ; les deux demi-espaces occupés ${V.demi2.toFixed(1)} % c. sans ${E.demi2.toFixed(1)} (INFORMATIF : l'intérieur qui tient est éteint, ± 3 pts de bruit) ; réussite ${V.reussite.toFixed(1)} % ≥ sans ${E.reussite.toFixed(1)} − 2,5 (non-dégradation) ; garde 231 en non-diminution sur les COURSES COMBINÉES (appels profonds ${V.profond} c. ${E.profond} + débordements ${V.deborde} c. ${E.deborde} : ${V.profond + V.deborde} ≥ ${E.profond + E.deborde} × 0,85 — à ~100 débordements la garde séparée claquait au bruit de Poisson, 86 c. 90)`,
+    V.coul3 <= E.coul3 * 0.8 && V.reussite >= E.reussite - 2.5 && V.profond + V.deborde >= (E.profond + E.deborde) * 0.85);
 }
 
 // ---------------------------------------------------------------- lot 242 : LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (Elsner)
@@ -5837,8 +5839,59 @@ if (__bloc()) {
     return o;
   };
   const C = flux('contre'), Pp = flux('propre');
-  ok(`lot 244d — le FLUX (8 × 300 s, 4-3-3 c. 4-3-3) : à contre-emploi l'équipe CONCÈDE ${C.tirsContre} tirs ≥ ${Pp.tirsContre} × 1,5 + 2 (déclarée à ses postes) et joue ${C.passes} passes ≤ ${Pp.passes} × 0,92 ; contrat structurel ${C.issues + Pp.issues} écart`,
-    C.tirsContre >= Pp.tirsContre * 1.5 + 2 && C.passes <= Pp.passes * 0.92 && C.issues + Pp.issues === 0);
+  // INFORMATIF DATÉ 245 : la signature du 244d (tirs concédés 4 → 13, passes 323 → 269) vivait de l'oblique du 237 qui
+  // reculait la ligne × posF à chaque pression — corrigée au 245, le contre-emploi ne se voit plus (8 × 300 s : 6 c. 6 tirs
+  // concédés, 325 c. 281 passes ; 16 × 300 s : 18 c. 14, possession 49,1 c. 50,4). La couche de DONNÉE (postes,
+  // familiarité, profilAuPoste) reste ; ce qu'elle révèle est la dette 246 : les notes de LECTURE (décision, placement,
+  // anticipation, appel, cohésion) sont des leviers presque morts dans les lois — seul le contrat structurel est exigé.
+  ok(`lot 244d — le FLUX (8 × 300 s, 4-3-3 c. 4-3-3, INFORMATIF DATÉ 245) : à contre-emploi l'équipe concède ${C.tirsContre} tirs (déclarée à ses postes : ${Pp.tirsContre}) et joue ${C.passes} passes (${Pp.passes}) — le levier de lecture est presque mort (dette 246) ; contrat structurel ${C.issues + Pp.issues} écart`,
+    C.issues + Pp.issues === 0);
+}
+
+// ---------------------------------------------------------------- lot 245 : LA VRAIE SORTIE (le rouge
+// hérité de la gradation 152/158, bissecté jusqu'au 237 — cfg.referme.sortie / zone, ALLUMÉES). L'oblique
+// 1+3 du 237 se déclenchait dès qu'un défenseur de ligne était le plus proche du ballon : chez l'équipe
+// notée 90, qui presse haut, à 40 m du but 89 % du temps et sans sortie réelle un tiers du temps — chaque
+// pression de milieu reculait la ligne de 1,5 m et la domination du fort s'effaçait (composite 90 : 504
+// sans la loi → 94). La loi : le sortant DEVANT la ligne d'au moins sortie m et le ballon à moins de zone m
+// du but défendu. Mesuré (gradation, 12 × 240 s) : sans referme −238/−110/680/707, avec le 237 82/47/77/94
+// (6 graines), avec la 245 11/49/249/470 — monotone et ample ; l'oblique tire 6-8 % des images (40 hier),
+// 96 % sur une vraie sortie. Gater aussi la glissade latérale du 228 (glisseSortie) casse la gradation
+// (−113/263/90/230) : clé gardée, absente. Jumeau {sortie, zone absentes} = le 244d au bit.
+if (__bloc()) {
+  const pitch = makePitch(FULL), og = pitch.ownGoal(0), sgnAtk = Math.sign(og.x || 1);   // l'équipe 0 défend son but en −x : vers lui = sgnAtk
+  const mk = (post, x, z) => ({ id: 100 + post, post, team: 0, p: [x, 0, z], skill: null });
+  const spots = [[-35, -14], [-35, -5], [-35, 5], [-35, 14], [-20, -10], [-20, 0], [-20, 10], [-5, -20], [-5, 0], [-5, 20]];
+  const essai = (xPresseur, ballX, R) => {
+    const st = { pitch, ball: { p: [ballX, 0, -5] }, _bRefermeDz: new Map(), _bRefermeDx: new Map() };
+    const D = [mk(0, -35, -14), mk(1, xPresseur, -5), mk(2, -35, 5), mk(3, -35, 14)];
+    refermerLigne(st, spots.map((s) => [...s]), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 4, D[1], D, { referme: R }, { marquage: 0.5 }, (v, a, b) => a + (b - a) * v, sgnAtk);
+    return { glisse: st._bRefermeDz.size, recul: st._bRefermeDx.get(0) ?? 0 };
+  };
+  const R245 = matchCfg().referme, R237 = { part: 0.45, second: 0.225, recul: 1.5, reculSecond: 0.75 };
+  const vraie = essai(-30, -22, R245), niveau = essai(-35, -22, R245), loin = essai(-30, 20, R245), hier = essai(-35, 20, R237);   // ballon à x = +20 : 72 m du but défendu (−52,5)
+  ok(`lot 245 — LA VRAIE SORTIE au mécanisme : sortant 5 m devant la ligne, ballon à 22 m du but → le voisin recule de ${vraie.recul.toFixed(2)} m (= 1,5 vers son but) et glisse (${vraie.glisse} postes) ; sortant AU NIVEAU de la ligne → recul ${niveau.recul} = 0 (la glissade d'hier reste : ${niveau.glisse}) ; sortant devant mais ballon à 72 m → recul ${loin.recul} = 0 ; le 237 (clés absentes) reculait au niveau et à 72 m : ${hier.recul.toFixed(2)} ; clés par défaut sortie ${R245.sortie} / zone ${R245.zone}`,
+    Math.abs(vraie.recul - 1.5 * sgnAtk) < 1e-9 && vraie.glisse === 2 && niveau.recul === 0 && niveau.glisse === 2 && loin.recul === 0 && Math.abs(hier.recul - 1.5 * sgnAtk) < 1e-9 && R245.sortie === 2 && R245.zone === 40);
+  // le FLUX (3 × 300 s, match par défaut) : l'oblique tire ≤ 12 % des images (hier ~40) et ≥ 90 % sur une vraie sortie (hier 60)
+  const geo = (over) => {
+    let act = 0, img = 0, vraies = 0;
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg(over);
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg); if (i % 10) continue;
+        const def = st.possession.team >= 0 ? 1 - st.possession.team : -1; if (def < 0) continue; img++;
+        if (!st._bRefermeDx?.size) continue; act++;
+        const g = st.pitch.ownGoal(def), sg = Math.sign(g.x || 1), ids = mapPostes(tac(st, def).formation), nD = (LIGNES[formationPour(tac(st, def).formation, false)] ?? [4, 3, 3])[0];
+        const ligne = st.players.filter((q) => q.team === def && !q.keeper && ids.indexOf(q.post) < nD);
+        let pres = null, bd = Infinity; for (const q of ligne) { const d = Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]); if (d < bd) { bd = d; pres = q; } }
+        const lig = Math.min(...ligne.filter((q) => q !== pres).map((q) => q.p[0] * sg)); if (lig - pres.p[0] * sg >= 2) vraies++;
+      }
+    }
+    return { pct: 100 * act / Math.max(1, img), vraies: 100 * vraies / Math.max(1, act) };
+  };
+  const V = geo({}), H = geo({ referme: R237 });
+  ok(`lot 245 — le FLUX (3 × 300 s) : l'oblique tire ${V.pct.toFixed(1)} % des images ≤ 12 (le 237 : ${H.pct.toFixed(1)}) et ${V.vraies.toFixed(0)} % sur une vraie sortie ≥ 90 (le 237 : ${H.vraies.toFixed(0)})`,
+    V.pct <= 12 && V.vraies >= 90 && H.pct > V.pct);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -9307,6 +9307,68 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      déclenche sur la sortie du presseur, plus fréquente contre un bon
      porteur — le bloc du faible recule plus et mieux, et la domination
      territoriale du fort ne se traduit plus en tirs).
+- 307: LA VRAIE SORTIE (245 — le rouge hérité de la gradation 152/158,
+     compris et corrigé ; cfg.referme.sortie / zone, ALLUMÉES). LE
+     MÉCANISME (sondé dans le monde exact de la clause, 6 × 240 s, notés
+     30/50/70/90 c. 50) : l'oblique 1+3 du 237 se déclenchait dès qu'un
+     défenseur de LIGNE était le plus proche du ballon (byDist[0]) — pas
+     sur une sortie. Chez l'équipe notée 90, qui presse haut, l'oblique
+     tirait 41 % des images, à plus de 40 m de son but 89 % du temps, et
+     le « sortant » était DERRIÈRE ou au niveau de la ligne un tiers du
+     temps ; chaque pression de milieu de terrain reculait ses voisins
+     de 1,5 × posF m vers son but. Le fort ne pouvait plus tenir sa
+     ligne haute : dPasses 284 → 24, tirs 24/2 → 18/11, composite 504 →
+     94 ; le 30 (qui presse peu) y gagnait (0 → 82). Décomposé : sans
+     recul (le 228 exact) 4/51/259/182 ; le 237 sans recul −48/95/168/
+     273 ; avec recul 82/47/77/94 — c'est le recul, pas la glissade ni
+     part 0,45. LA LOI : l'oblique de Sacchi couvre le dos d'un sortant
+     quand le dos est le but — le sortant doit être DEVANT la ligne d'au
+     moins sortie m (2) et le ballon à moins de zone m du but défendu
+     (40) ; la glissade latérale du 228 reste libre (la gater aussi —
+     glisseSortie — casse la gradation : −113/263/90/230, clé gardée,
+     absente). MESURÉ (12 × 240 s) : sans referme −238/−110/680/707 ;
+     avec la 245 11/49/249/470 — monotone et ample ; l'oblique tire
+     6-8 % des images (40 hier), 96 % sur une vraie sortie, 2 % loin du
+     but ; le bloc 228 et le bloc 237 restent verts. BANC : clause 245
+     (mécanisme — sortant 5 m devant, ballon à 22 m : recul 1,5 ;
+     au niveau : 0 mais la glissade reste ; ballon à 72 m : 0 ; le 237 à
+     clés absentes reculait partout — et flux 3 × 300 s : 4,4 % des
+     images ≤ 12, 97 % de vraies sorties ≥ 90 ; le 237 : 26,9 % et
+     62 %) ; la gradation de l'annexe attributes passe à 12 graines
+     (DATÉ 245 : à 6, le bas tenait au tirage — 24 > 8). Jumeau {sortie,
+     zone absentes} = le 244d au bit (94e2de4e74fb69f8 /
+     d9ed4cfdf0e94e1d) ; défaut : e140bada469d99fb / e615292ad7ea10b2.
+     LEÇON : six sceaux (237 → 243) ont affiché vert sur ce rouge — soit
+     l'annexe n'était pas relancée, soit son résultat n'était pas lu ;
+     le tally d'un driver doit lire CHAQUE annexe, et un rouge
+     d'attributs n'est jamais « du tirage » avant d'avoir été bissecté.
+     LE BANC COMPLET au monde 245 (8 shards + douze annexes) — six
+     rouges, chacun relu avec la clé épinglée au 237 : lot 93 (2 tirs
+     planifiés sur 9 à 4 graines ; à 8 : 12/22 avec, 14/19 sans — le
+     tirage) → 8 graines ; 241 flux (couloir à ≥ 3 corps 40,1 c. sans
+     51,3 = × 0,78 ; avec le 237 37,4 c. 49,7 = × 0,75 au bord) → borne
+     × 0,8 DATÉ 245, à 30 000 images ce n'est pas du tirage mais l'effet
+     réel de la loi 241 dans un monde où la ligne ne recule plus en
+     milieu ; tempo 235 flux (1,38 ≤ 1,364 à 6 graines ; 1,25 ≤ 1,43 avec
+     le 237) → 12 graines ; bélier 78 (le vivant passe 151 → 327 images
+     — la ligne haute met le presseur au corps — et « l'hier entier »
+     du sabotage tombait dessous, 286) → 8 graines et sabotage
+     contain:false SEUL (894 c. 529, × 1,7 ; l'hier entier était un
+     monde re-tiré) ; tactics « hauteur de bloc » (médiane 3,2 à 7
+     graines, 11,3 avec le 237 ; écarts de −17 à +30) → 11 graines
+     (médiane 10,2) ; et LE 244D : sa signature (tirs concédés 4 → 13,
+     passes 323 → 269) VIVAIT DE L'OBLIQUE DU 237 (× posF à chaque
+     pression) — dans le monde 245 le contre-emploi ne se voit plus
+     (8 × 300 s : 6 c. 6, 325 c. 281 ; 16 × 300 s : 18 c. 14 tirs
+     concédés, possession 49,1 c. 50,4). La couche de donnée reste
+     (postes, familiarité, profilAuPoste — l'API d'un projet), la clause
+     de flux passe en INFORMATIF, et ce qu'elle révèle devient la dette
+     246 : les notes de LECTURE (décision, placement, anticipation,
+     appel, cohésion, marquage, concentration, réaction) sont des
+     leviers presque morts dans les lois — la gradation 152/158 ne
+     mesure que la technique (passe, contrôle, frappe, tacle, vitesse).
+     Annexe attributes : 27 ✓ / 0 ✗ — verte pour la première fois
+     depuis le 237.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

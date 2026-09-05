@@ -301,8 +301,14 @@ passes 323 → 269 (8 × 300 s) ; le malus léger était un placebo, rejeté. Ab
 
 **Rouge hérité — la gradation 152/158 (annexe attributes).** Bissecté : vert au 235, rouge dès le 237
 (`referme`). Tranché : referme épinglée à false rend 0 / 46 / 373 / 504 ; allumée, 82 / 47 / 77 / 94 — la loi
-écrase la domination des notes (504 → 94). **Lot 245 — pourquoi le 237 neutralise les attributs (à
-comprendre avant toute épingle).**
+écrase la domination des notes (504 → 94). **Lot 245 — La vraie sortie — SCELLÉ (NOTES 307).** L'oblique du 237 tirait sur « le plus proche du ballon »,
+à 40 m du but, sans sortie ; corrigée : sortant devant la ligne (2 m) et ballon dans la zone du but (40 m).
+Gradation rendue (11/49/249/470 à 12 graines), l'oblique tire 6-8 % des images au lieu de 40.
+
+**Lot 246 — Les leviers de lecture (à sceller).** Révélé par le 244d au monde 245 : décision, placement,
+anticipation, appel, cohésion, marquage, concentration, réaction ne bougent presque rien dans les lois.
+Chaque note de lecture doit avoir UN levier mesuré (gradation appariée 30/50/70/90 sur sa propre
+signature), comme la technique en a dans la 152/158 ; le 244d retrouvera alors sa mesure.
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

@@ -46,7 +46,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // l'ABOUTISSEMENT (rare mais lourd) ; mesuré −157 < −108 < −7 < +490, monotone aux 4 rungs.
     const diffDe = (n) => {
       let tp = 0, tc = 0, pp = 0, pc = 0;
-      for (const seed of [2, 3, 5, 8, 11, 13]) {
+      // 6 → 12 graines DATÉ 245 : à 6 le bas de l'échelle tenait au tirage (30 → 24 > 50 → 8 avec l'oblique corrigée ; à 12 : 11 < 49 < 249 < 470) — et le rouge de six sceaux (237-243) était une LOI, pas le tirage (l'oblique reculait la ligne à chaque pression de milieu : 82/47/77/94)
+      for (const seed of [2, 3, 5, 8, 11, 13, 17, 19, 23, 29, 31, 37]) {
         const st = makeMatch({ full: true, seed, squads: [eq(n), eq(50)] });
         // la clause mesure la GRADATION DES NOTES — elle isole le duel contesté (166), son
         // re-dateur : −11/−11/17 au monde vivant post-166, la marche 30→50 mangée par le tirage
@@ -60,7 +61,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       return (pp - pc) + 10 * (tp - tc);
     };
     const d30 = diffDe(30), d50 = diffDe(50), d70 = diffDe(70), d90 = diffDe(90);
-    ok(`lot 152/158 — LA GRADATION s'ordonne au COMPOSITE territoire + aboutissement (dPasses + 10·dTirs, 6 × 240 s appariés : 30 → ${d30}, 50 → ${d50}, 70 → ${d70}, 90 → ${d90} — l'échelle est CONTINUE sur QUATRE rungs, l'impact TOTAL croissant)`,
+    ok(`lot 152/158 — LA GRADATION s'ordonne au COMPOSITE territoire + aboutissement (dPasses + 10·dTirs, 12 × 240 s appariés : 30 → ${d30}, 50 → ${d50}, 70 → ${d70}, 90 → ${d90} — l'échelle est CONTINUE sur QUATRE rungs, l'impact TOTAL croissant)`,
       d70 > d50 && d50 > d30 && d90 >= d30 + 250 && d90 >= d70 - 80);   // le rung 70/90 tolère −80 DATÉ 212 (315 c. 269 : le composite bruite à ~50 au sommet)
   }
   // lot 153 — LE PREMIER PAS AU 50/50 (l'égalisateur du 152, premier canal traité) : sur
