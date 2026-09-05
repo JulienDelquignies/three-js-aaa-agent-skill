@@ -122,11 +122,16 @@
   (t, espèce, style), politique pure lue de la sim et de la persona, vrille de l'humérus
   (armPose), pieds fixes par IK ; verify-attente 40 clauses ; la loi de cadence raccourcie sous la
   marche ; contact-sheet --idle.
+- LIVRÉ (lot A9, note 305) : LES REMISES À LA MAIN — motion-restart : la touche (ballon derrière la
+  tête, tronc arqué puis fouetté, lâcher à 1,76 m, pieds au sol), le roulé du gardien, le ramassage
+  au sol, armIK (poignet à un point, rotation par la matrice des repères) ; la sim ARME la touche et
+  lance des mains au contact (throwNow), le gardien distribue à la main par le roulé (porte 'timing'
+  exemptée, gants qui descendent), le lanceur attend face au terrain et pivote sur sa cible ;
+  verify-remises 21 clauses ; contact-sheet --move touche/rouleMain/ramassage.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
-  (A9) LES REMISES EN
-  JEU — la touche (jouée au pied depuis la ligne aujourd'hui, sans ballon en mains : un crochet
-  sim), la course d'élan des coups de pied arrêtés, la relance à la main et le dégagement de volée
-  du gardien, le ramassage au sol, la prise aérienne tenue (dette A6) ; (A10) LE CONTACT — la chute
+  (A9 bis) LES REMISES AU PIED — la course d'élan des coups de pied arrêtés (touche longue comprise),
+  le dégagement de volée du gardien, la prise aérienne tenue (dette A6), le lanceur derrière la
+  ligne ; (A10) LE CONTACT — la chute
   du joueur fauté et son relevé, le duel d'épaule, le tacle subi, la protection de balle bras tendu
   (crochets sim : chute sur faute, consigne de face « jockey » pour que la course arrière du lot A7
   se déclenche) ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

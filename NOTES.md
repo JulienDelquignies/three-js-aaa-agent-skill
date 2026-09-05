@@ -9141,6 +9141,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (bras croisés, mains dans le dos), le regard d'attente, le mur qui saute,
      les joueurs qui se replacent de côté pendant un temps mort (la sim les
      fait regarder le jeu — consigne « on se retourne pour marcher », moteur).
+- 305: LES REMISES À LA MAIN (lot A9 — « ok pour enchainer A9 »). La touche était un
+     crochet : à la prise, remiseEnTouche lançait le ballon DU SOL à l'instant même, le
+     preneur dans son clip d'attente ; la relance à la main du gardien dessinait une passe
+     du pied ; le ramassage au sol s'habillait de la prise aérienne. engine/motion-restart :
+     trois espèces générées (touche — ballon derrière la tête, tronc arqué puis fouetté,
+     lâcher à 1,76 m, pieds au sol ; rouleMain — fente, bras armé derrière, lâcher à 0,36 m
+     devant ; ramassage — fente, mains qui cueillent à 0,33 m) et armIK (poignet à un point :
+     coude par IK deux os, plan du coude au PÔLE, rotation par la matrice des repères — le
+     plus-court-arc sautait de 44° bras replié). LA SIM LES JOUE : referee.remiseEnTouche
+     ARME le geste, strike-sim.throwNow lance des mains au contact (ball.restart cause
+     'touche' à 1,8 m, solvePass depuis les mains) ; beginPass(mains) prend la technique
+     roule-main, exempte de la porte 'timing' (le holdMin conditionnel refusait CHAQUE
+     relance à la main : 0 en 7 graines × 240 s), gkHeldBall descend les gants avec l'armé
+     (passe à ballY 0,46 ; avant 1,09). LE LANCEUR FAIT FACE (mesuré : pris en course à
+     4 m/s, dos au jeu, 171° de sa cible) : canTake pose la touche à l'arrêt face au terrain
+     (patience 3 s), ballFetch tourne l'attente par le slew, movement.js laisse les remises à
+     la MAIN pivoter sous le geste et viser la cible (enPorte les exempte du retournement du
+     porteur) : 0-5° au lâcher. Scène : attente ballonMains (motion-idle, poignets par
+     armIK), le ballon dessiné entre les mains (_holdHands), prise basse → ramassage. Banc
+     verify-remises 21 clauses (six touches FORCÉES par match — le hasard n'en garantit
+     aucune —, roulé pris sur pièce, six sabotages) ; verify-match11 en cours de re-mesure
+     sur le moteur final (la clause « foulée de frappe vit » a flanché de 0,02 m/s sur une
+     première passe : chaos de trajectoire, pas la remise — voir le rapport du lot). Dettes :
+     le lanceur se tient dans le terrain, pas derrière la ligne ; pas de course d'élan de la
+     touche longue ; le roulé n'est observable que forcé (2 prises aux gants en 12 min, deux
+     retraits joués au pied) ; dégagement de volée et prise aérienne tenue restent aux clips.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

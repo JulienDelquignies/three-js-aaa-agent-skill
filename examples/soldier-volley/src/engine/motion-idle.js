@@ -25,6 +25,7 @@
 
 import { fkPose, jointToSpec, quatToEulerXYZ, rx, ry, rz, chain } from './motion-rig.js';
 import { legIK } from './motion-strike.js';
+import { armIK } from './motion-restart.js';
 import { quatMul, quatConjugate, quatNormalize, clamp } from './vecmath.js';
 import { subRng } from './rng.js';
 
@@ -46,6 +47,8 @@ export const IDLE_KINDS = {
   sautillement: { hw: 0.12, knee: 14, lean: 4,  headDown: 2,  sway: 0.012, swayT: 3.0, breath: 1.0, breathT: 3.0, bounce: 0.035, bounceT: 0.42, heel: 14, arms: { elev: 12, fwd: 22,  elbow: 70, twist: 0 },   armLive: 2.5 },
   pret:         { hw: 0.24, knee: 32, lean: 18, headDown: 6,  sway: 0.02,  swayT: 2.4, breath: 1.4, breathT: 2.8, bounce: 0.012, bounceT: 0.75, heel: 4,  arms: { elev: 10, fwd: 24,  elbow: 50, twist: -20 }, armLive: 2.0 },
   pretGardien:  { hw: 0.30, knee: 40, lean: 26, headDown: 4,  sway: 0.015, swayT: 2.0, breath: 1.4, breathT: 2.6, bounce: 0.016, bounceT: 0.62, heel: 6,  arms: { elev: 22, fwd: 36,  elbow: 55, twist: -10 }, armLive: 2.0 },
+  // le ballon en mains (le preneur d'une touche qui attend) : les deux poignets encadrent le ballon devant la poitrine (IK de bras)
+  ballonMains:  { hw: 0.12, knee: 6,  lean: 2,  headDown: 3,  sway: 0.02,  swayT: 6.5, breath: 1.0, breathT: 4.0, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 8,  fwd: 30,  elbow: 90, twist: 0 },   armLive: 0.5, wrists: [0.16, 1.32, -0.30] },
   mur:          { hw: 0.10, knee: 10, lean: 8,  headDown: 12, sway: 0.008, swayT: 5.0, breath: 0.8, breathT: 3.8, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: -20, fwd: 26, elbow: 12, twist: 72 },  armLive: 0.4 },
 };
 export const IDLE_NAMES = Object.keys(IDLE_KINDS);
@@ -137,6 +140,16 @@ export function idlePose(P, t, kind = 'repos', style = NEUTRAL_IDLE_STYLE, opts 
   const elev = A.elev + (posed ? 0 : style.armElev) + br * 0.5, elbow = A.elbow + (posed ? 0 : style.elbow);
   Object.assign(J, armPose('Left', { elev, fwd: A.fwd + live, elbow: elbow + live2, twist: A.twist }));
   Object.assign(J, armPose('Right', { elev, fwd: A.fwd - live, elbow: elbow - live2, twist: A.twist }));
+  if (K.wrists) {
+    // les mains SUR le ballon : IK de bras vers les deux poignets (le micro-balancier respire avec la cage)
+    const w = K.wrists, lift = 0.01 * Math.sin(TAU * tt / 5.1);
+    const partialA = fkPose(P, { Hips: jointToSpec(P, 'Hips', RHips), Spine: jointToSpec(P, 'Spine', J.Spine), Spine1: jointToSpec(P, 'Spine1', J.Spine1), Spine2: jointToSpec(P, 'Spine2', J.Spine2) }, hips);
+    for (const [side, sgn] of [['Left', -1], ['Right', 1]]) {
+      const Rpar = [J.Hips, J.Spine, J.Spine1, J.Spine2].reduce((acc, q) => quatMul(acc, q));
+      const r = armIK(P, side, partialA[`${side}Arm`].p, Rpar, [sgn * w[0], w[1] + lift, w[2]], [sgn * 0.6, 0.2, 0.6]);
+      J[`${side}Arm`] = r.Rarm; J[`${side}ForeArm`] = r.Rfore;
+    }
+  }
   // ---- les jambes : pieds FIXES en repère personnage, IK sur le bassin qui bouge
   const partial = fkPose(P, { Hips: jointToSpec(P, 'Hips', RHips) }, hips);
   const feet = {};
@@ -171,6 +184,7 @@ export function idlePose(P, t, kind = 'repos', style = NEUTRAL_IDLE_STYLE, opts 
 export function idlePolicy(ctx, persona = null) {
   const calm = persona?.calm ?? 1, burst = persona?.burstiness ?? 1;
   if (ctx.wall) return 'mur';
+  if (ctx.toucheTaker) return 'ballonMains';
   if (ctx.keeper) {
     if (ctx.dead) return calm > 1.08 ? 'mainsHanches' : 'repos';
     return (ctx.ballD ?? 99) < 32 ? 'pretGardien' : 'repos';

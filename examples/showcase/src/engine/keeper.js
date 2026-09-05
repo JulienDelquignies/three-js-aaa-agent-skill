@@ -305,7 +305,7 @@ export function relancerGardien(st, gk, cfg, deps) {
       const dm = hyp(libre.p[0] - gk.p[0], libre.p[2] - gk.p[2]);
       const tI = cfg.leadTime ? cfg.leadTime(dm, libre) : 0.35;
       const lead = [libre.p[0] + libre.v[0] * tI, 0, libre.p[2] + libre.v[1] * tI];
-      if (deps.beginPass(st, { to: { id: libre.id }, lead, style: 'ground', lane: { margin: 6 } }, cfg, { forceUrgent: true })) {
+      if (deps.beginPass(st, { to: { id: libre.id }, lead, style: 'ground', lane: { margin: 6 } }, cfg, { forceUrgent: true, mains: true })) {
         st.events.push({ t: +st.t.toFixed(2), type: 'relance-main', by: gk.id, to: libre.id, range: +dm.toFixed(1) });
         return true;
       }
@@ -458,6 +458,15 @@ export function gkTenueDue(st, gk, cfg, gkDue, tempoF) {
 export function gkHeldBall(st, c, dt, cfg) {
   if (!(st.full && cfg.keeperHold !== false) || !c.keeper || st.ball.owner !== c.id) return false;
   if (c.down > 0) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
+  // LE ROULÉ (lot A9) : pendant l'armé du roulé, les gants DESCENDENT avec le geste — de la poitrine au point de
+  // lâcher (0,45 m devant, 0,35 m de haut) ; le ballon suit les mains et strikeNow le lit là où il est (avant : un
+  // hold(0,5 s) posé au contact ne déplaçait que la vitesse — la passe partait de 1,09 m, de la poitrine).
+  if (c.act && !c.act.fired && c.act.payload?.mains === 'roule') {
+    const u = Math.max(0, Math.min(1, c.act.t / Math.max(1e-3, 0.8 * c.act.anticipation))), w = u * u * (3 - 2 * u);   // au point de lâcher 0,1 s avant le contact (le hold traîne de tau 0,12)
+    const h = keeperHoldPoint(c), r = [c.p[0] + Math.cos(c.yaw) * 0.45, 0.35, c.p[2] + Math.sin(c.yaw) * 0.45];
+    st.ball.hold([h[0] + (r[0] - h[0]) * w, h[1] + (r[1] - h[1]) * w, h[2] + (r[2] - h[2]) * w], dt);
+    return true;
+  }
   if (cfg.gkTenue && c._mains && !c._remisePrise && !st.restart && c._gkSince != null
     && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
   return false;

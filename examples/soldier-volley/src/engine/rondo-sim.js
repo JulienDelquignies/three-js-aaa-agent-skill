@@ -8,7 +8,7 @@ import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js'
 import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
-import { beginPass, strikeNow } from './strike-sim.js';
+import { beginPass, strikeNow, throwNow } from './strike-sim.js';
 import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
 
 // rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
@@ -36,7 +36,8 @@ function stepGestures(st, dt, cfg) {
       st.pressure = press.length ? st.pressure + dt : 0;
       // AND THE BALL TRAVELS WITH HIM — the swing suspends the dribble; the ball goes where he goes until the boot sends it (separation 2,09 → 1,53 m). LE COUPLE CORPS-BALLON EST SOUDÉ PENDANT L'ARMÉ (mesuré : 0,4 m de divergence, le pied frappait du vide) : le BALLON PORTÉ vit AU POINT DE STANCE du corps qui glisse
       // (carry) — au contact la stance est vraie par construction ; un ballon NON porté garde le frein d'assise ;
-      if (st.ball.owner === p.id && p.act.payload?.stance) {
+      if (st.ball.owner === p.id && p.act.payload?.mains === 'roule') cfg.heldBall?.(st, p, dt, cfg);   // le roulé du gardien : les gants descendent avec l'armé (keeper.gkHeldBall, lot A9)
+      else if (st.ball.owner === p.id && p.act.payload?.stance) {
         // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite soudé (les passes partaient à 6-21° de leur stance). MAIS un
         // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
         // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
@@ -103,6 +104,7 @@ function stepGestures(st, dt, cfg) {
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
       if (p.act?.payload?.kind === 'pass') strikeNow(st, p, cfg);
+      else if (p.act?.payload?.kind === 'touche') throwNow(st, p, cfg);   // le lâcher de la touche (lot A9)
       else if (p.act?.payload?.kind === 'tacle-debout') standTackleNow(st, p, cfg);
       else if (p.act?.payload?.kind === 'skill') skillContactNow(st, p, cfg);
     } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
@@ -580,9 +582,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       st.hold += dt;
       if (c.act.fired) {
         // un geste ownsBody (râteau, semelle) écrit son ballon dans skillFollowStep — une autorité ; la feinte, elle, garde le porté au pied ordinaire pendant sa rétraction
-        if (c.act.payload?.ownsBody) { /* stepGestures possède corps et ballon */ }
-        else if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt);
-        else st.ball.integrate(dt);
+        if (!c.act.payload?.ownsBody) { if (st.ball.owner === c.id) st.ball.carry(footPoint(st, c, cfg), dt); else st.ball.integrate(dt); }
       }
       return st;
     }

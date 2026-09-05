@@ -233,12 +233,7 @@ export class Rondo {
       // le warp de frappe a besoin des chaînes de jambe PAR PIED et de leurs longueurs (mesurées
       // sur le rig posé, comme foot-lock) — l'autorité de la jambe frappeuse pendant l'armé
       const _a = new THREE.Vector3(), _b = new THREE.Vector3();
-      const legLen = (l) => {
-        l.up.getWorldPosition(_a); l.knee.getWorldPosition(_b);
-        const A = _a.distanceTo(_b);
-        l.foot.getWorldPosition(_a);
-        return { A, B: _b.distanceTo(_a) };
-      };
+      const legLen = (l) => { l.up.getWorldPosition(_a); l.knee.getWorldPosition(_b); const A = _a.distanceTo(_b); l.foot.getWorldPosition(_a); return { A, B: _b.distanceTo(_a) }; };
       // LA COUCHE DE GESTE (engine/gesture-layer) : la pose authorée posée ABSOLUE, par membre,
       // après le mixer. Le rest vient du TEMPLATE de squad.js — jamais animé, donc exactement le
       // repère contre lequel le banc de swing prouve les clips. Les deltas additifs sur l'idle
@@ -524,8 +519,10 @@ export class Rondo {
     // s'éloignait des mains 1,06 → 1,39 m pendant le relevé, aucune main dessus.
     const holding = this.state.ball.owner === pl.sim.id && (pl.sim.down ?? 0) > 0
       && /^plongeon/.test(pl.gestureLayer.spec?.name ?? '') && (!diveAct || a.payload.resolved);
-    pl._holdW = Math.max(0, Math.min(1, (pl._holdW ?? 0) + (holding ? dtP : -dtP) / 0.12));
-    if (pl._holdW > 1e-3) { this._armsToBall(pl, pl._holdW); pl._dwarp = null; return; }   // les gants tiennent — le warp d'approche n'a plus d'objet
+    // …ET LE BALLON EN MAINS (lot A9) : le preneur d'une touche (l'attente, l'armé), le roulé du gardien, le
+    // ramassage — le ballon suit les MAINS du geste (_holdHands : pas de warp, le geste a ses bras)
+    pl._holdW = Math.max(0, Math.min(1, (pl._holdW ?? 0) + (holding || pl._holdHands ? dtP : -dtP) / 0.12));
+    if (pl._holdW > 1e-3) { if (!pl._holdHands) this._armsToBall(pl, pl._holdW); pl._dwarp = null; return; }   // les gants tiennent — le warp d'approche n'a plus d'objet
     if (!diveAct) { pl._dwarp = null; return; }
     // …mapping RE-SIGNÉ avec le miroir corrigé (lot 106) : la main du geste suivait la
     // convention de l'ancien monde compensé — mesuré après le fix du côté : gant p50 1,04 m
@@ -702,6 +699,7 @@ export class Rondo {
   }
 
   _applyStrikeWarp(pl) {
+    if (pl.sim.act?.payload?.mains) return;                        // un lancer n'a pas de pied de frappe (lot A9)
     const a = pl.sim.act;
     if (!a || a.payload?.kind !== 'pass' || !a.payload.pick) { pl._warp = null; pl._warpCal = null; return; }
     const foot = a.payload.pick.foot === 'left' ? 'left' : 'right';
@@ -884,7 +882,7 @@ export class Rondo {
         // où le ballon est vraiment)
         // …la PRISE DU GARDIEN arme les MAINS, pas le pied (lot 91 — mesuré : main à 1,06 m du
         // ballon à l'instant de la prise debout, l'amorti ne tend aucun bras) : _applyCatchWarp
-        if (pl) { this._playTech(pl, e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
+        if (pl) { this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
       } else if (e.type === 'arrêt' && (e.mode === 'pieds' || e.mode === 'buste')) {
         // L'ARRÊT NOMMÉ S'HABILLE (lot 93, contrat lot 90) : pieds → paradePieds, buste →
         // paradeBuste ; les modes de plongeon appartiennent à l'acte qui possède déjà le corps.
@@ -962,8 +960,10 @@ export class Rondo {
       // proches. ?animlod=0 le coupe (sabotage nommé).
       const stx = this.state;
       // L'ATTENTE (A8, motion-idle) : la situation de la sim → l'espèce d'idle (politique pure du contrôleur)
-      { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : null;
-        pl.ctrl.idleCtx = { keeper: !!s.keeper, dead: !!r && r.type !== 'fin', wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team }; }
+      { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : null, tk = !!r && r.type === 'touche' && r.taker === s.id && Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) < 1.3, aT = s.act, tId = aT?.payload?.pick?.tech?.id;
+        pl.ctrl.idleCtx = { keeper: !!s.keeper, dead: !!r && r.type !== 'fin', wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, toucheTaker: tk, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team };
+        // LE BALLON EN MAINS (A9) : le preneur qui attend ou arme sa touche, le gardien qui arme son roulé ou qui vient de ramasser
+        pl._holdHands = tk || ((tId === 'touche' || tId === 'roule-main') && !aT.fired) || ((pl.gestureLayer.spec?.name ?? '') === 'ramassage' && stx.ball.owner === s.id); }
       const exemptLod = !this._animLod || pl.gestureLayer.active || s.act || (s.down ?? 0) > 0
         || s.id === stx.possession.carrier || s.id === (stx.pass?.to ?? -99) || s.keeper;
       const dCamL = exemptLod ? 0 : Math.hypot(this.cam.position.x - s.p[0], this.cam.position.z - s.p[2]);
@@ -1166,8 +1166,7 @@ export class Rondo {
     // met le ballon DANS les mains rendues (le patron d'attache AAA — Unity/Unreal parentent
     // l'objet tenu au socket de la main) ; la sim garde SA position pour ses lois, le mélange
     // suit _holdW (entrée/sortie fondues, pas de pop).
-    if (b.owner != null) {
-      const plH = this.players.find((q) => q.sim.id === b.owner);
+    { const plH = this.players.find((q) => q._holdHands && (q._holdW ?? 0) > 1e-3) || (b.owner != null ? this.players.find((q) => q.sim.id === b.owner) : null);
       if (plH && (plH._holdW ?? 0) > 1e-3 && plH.arms) {
         const w = plH._holdW;
         let mx = 0, my = 0, mz = 0, n = 0;
