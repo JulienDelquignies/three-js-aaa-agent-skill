@@ -108,6 +108,8 @@ const arret = (st) => {                                            // un arrêt 
     let demande = false, xIn = null, longe = false, tOut = null, tIn = null;
     for (let i = 0; i < 200 * 60 && xIn == null; i++) {
       matchStep(st, 1 / 60, cfg);
+      // DATÉ 240 : la scène FABRIQUE son arrêt de jeu (ballon poussé en touche à 30 s) — la graine 3 ne s'arrêtait plus entre 30 et 200 s (le flux du 240, les sorties rares), la clause attendait une remise qui ne venait pas
+      if (!demande && st.t > 30 && !st.restart && !st._sortie184) { st._sortie184 = true; st.ball.release('sortie'); st.ball.restart([0, 0.11, st.pitch.hz + 1.5], { cause: 'touche' }); }
       if (!demande && st.t > 30 && st.restart) {
         const sortant = st.players.find((q) => q.team === 0 && !q.keeper && Math.abs(q.p[0]) > 20);
         if (sortant) { remplacer(st, cfg, 0, sortant.id, { name: 'Entrant' }); demande = true; }
