@@ -8652,6 +8652,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ligne a avalé salidaStep — le jumeau l'a dit sur la graine 3).
      Jumeau {couloirs:false, offre:false} = moteur 240 au bit
      (96438266e0387b08 / 061fc1b4491ef7ab).
+     LE SCEAU, SES ROUGES ET LEURS PREUVES : le registre dort pendant la
+     fenêtre d'engagement (le soutien du coup d'envoi débordait à 13 m,
+     prise → passe 1,0 → 5,7 s — essayés et rejetés avant : la pré-passe
+     des soutiens (demi-espaces 53 c. 60), l'exemption du soutien collé) ;
+     le débordement reste CÔTÉ BALLON (contre le ballon, le passeur
+     changeait de côté et la fixation du 98 ne montait jamais : 0 bascule
+     → 1, fixation 4,0) ; « l'intérieur tient » et l'offre éteints ; garde
+     231 en courses combinées (à ~100 débordements la garde séparée
+     claquait au bruit de Poisson). Re-datés sur preuve, tous verts sans
+     la clé : 143 (interceptions informatives, le texte le disait), 240-
+     flux (perdus sur service en taux du vivant, le « sans » à 4 est un
+     chiffre), 217 (renvoi absent d'un bras = informatif, la dette des
+     sorties rares), foulée (4 graines et le monde LAB épingle les
+     couloirs — le bras gelé frappe des ballons reçus en course, une
+     population que les couloirs accélèrent), 177, 218, 121 (leur monde
+     épingle couloirs:false), tactics (6 graines), loi3 184 (la fixture
+     fabrique son arrêt de jeu). SCEAU 241 : jumeau {couloirs:false,
+     offre:false} = moteur 240 au bit (96438266e0387b08 /
+     061fc1b4491ef7ab) ; clause 241 isolée 2 ✓ (un couloir à ≥ 3 corps
+     35,2 % ≤ 50,5 × 0,75, réussite 73,1 ≥ 74,0 − 2,5, courses combinées
+     ≥ × 0,85) ; attributes 26 ✓ / 1 ✗ (la gradation, hier) ; douze
+     annexes vertes (match 84, rondo 40, gestes 60, menace 11, frappes 13,
+     sync 9, roles 11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10) ;
+     8 shards : 264 ✓ / 0 ✗ ; déployé (chunk Rondo-BbkTuYO-.js à l'alias,
+     capture playmode avant deploy). DETTES : la profondeur des
+     intérieurs (les 80 % de demi-espaces), une bascule par match c. 12
+     hier (la fixation revit, la volumétrie non), les sorties de balle
+     rares, la gradation.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
