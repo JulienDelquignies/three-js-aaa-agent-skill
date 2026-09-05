@@ -292,7 +292,10 @@ export function contreZonesStep(st, cfg, { tac, axe, role }) {
   if (!en) { Z[atk] = null; return; }
   if (Z[atk] && st.t - Z[atk].t < (CZ.cadence ?? 0.6)) return;
   const pitch = st.pitch, g = pitch.attackGoal(atk), sg = Math.sign(g.x || 1);
-  const lance = st.ball.v[0] * sg > 1 || st.ball.p[0] * sg > 0;   // le ballon lancé vers l'avant (ou déjà dans la moitié adverse)
+  // LE CONTRE EST UN BALLON QUI FILE : lancé = le ballon (ou le porteur) à ≥ lance m/s vers l'avant ; il MEURT quand le porteur tient plus de tenue s — « vitesse > 1 ou moitié adverse » allumait trois sprints après chaque regain (9 corps à + de 3,5 m/s, 6 421 sauts de cible : la fourmilière)
+  const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+  const vAv = Math.max(st.ball.v[0] * sg, car ? car.v[0] * sg : 0);
+  const lance = vAv >= (CZ.lance ?? 4) && !(car && st.hold > (CZ.tenue ?? 1));
   if (!lance) { Z[atk] = { t: st.t, ids: [] }; return; }
   const k = Math.min(1, axe(tac(st, atk).transition, 0, 2)); if (k <= 0) { Z[atk] = { t: st.t, ids: [] }; return; }
   const cands = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0 && !q._sub && q.id !== st.possession.carrier)   // les coureurs entrent dans l'élection (ils occupent leur zone et gardent leur course — match-sim)
@@ -305,7 +308,8 @@ export function contreZonesStep(st, cfg, { tac, axe, role }) {
   const pres = reste[0], centre = reste[1];
   Z[atk] = { t: st.t, k, zs, ids: [centre.id, pres.id, loin.id] };
   // …ET LE CONTRE EST UN SPRINT : l'élu qui n'est pas déjà en burst prend la vitesse de sprint (movement : top × 1,28) le temps de la cadence — ils partent 30-40 m derrière, un posté qui marche n'arrive pas (médiane 1 corps arrivé mesurée)
-  for (const q of [centre, pres, loin]) if (!((q._pace?.until ?? -1) > st.t)) q._pace = { until: st.t + (CZ.cadence ?? 0.6) + 0.3, kind: 'contre-zone', next: q._pace?.next ?? st.t + 6 };
+  const xz = g.x - sg * (CZ.prof ?? 20);
+  for (const q of [centre, pres, loin]) if (!((q._pace?.until ?? -1) > st.t) && Math.hypot(q.p[0] - xz, q.p[2]) > (CZ.sprintDe ?? 8)) q._pace = { until: st.t + (CZ.cadence ?? 0.6) + 0.3, kind: 'contre-zone', next: q._pace?.next ?? st.t + 6 };   // le sprint : seulement loin de sa zone
 }
 /** La cible de zone d'un attaquant élu (242) — [x, z] ou null. */
 export function contreZoneDe(st, cfg, p, atk) {
