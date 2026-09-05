@@ -188,7 +188,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // graines {1,3} → {1,3,5} (lot 68, récit) : les lois de replacement (rentre, ancre lente)
     // ont redistribué les tempos — 1 calme sur {1,3} quand l'existence vit sur la voisine ;
     // les identités (défaut 0 EXACT, sabotage 0) se prouvent sur CHAQUE graine visitée.
-    for (const seed of [1, 3, 5]) {
+    for (const seed of [1, 3, 5, 7, 9, 11]) {   // 3 → 6 graines DATÉ 241 (1 calme sur 1 une-touche : Poisson)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
       const cfg = matchCfg({ shotRange: 20, uneToucheVive: false, uneTouche: { ...matchCfg().uneTouche, base: 0 }, ...cfgX });
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);

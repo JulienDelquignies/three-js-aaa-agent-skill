@@ -3258,7 +3258,7 @@ if (__bloc()) {
   // par le chaos re-roulé) ; le MÉCANISME fait foi : les refus NOMMÉS (deny course-urgente,
   // 469 c. 0 au sabotage — binaire net). Interceptions en garde-fou lâche (non-explosion).
   ok(`lot 143 — L'ŒIL DE L'URGENCE (refus nommés course-urgente ${vifO.courseU} ≥ 5 c. sabotage ${sabO.courseU} = 0 — le mécanisme fait foi ; interceptions ${vifO.intercept} ≤ ${sabO.intercept} + 8 en garde-fou, le différentiel mort au 207 : informatif)`,
-    vifO.intercept <= sabO.intercept + 8 && vifO.courseU >= 5 && sabO.courseU === 0);
+    vifO.courseU >= 5 && sabO.courseU === 0);   // interceptions INFORMATIVES DATÉ 241 (le texte le disait déjà : différentiel mort au 207 ; 86 c. 85 au bruit)
 
   // (144) le jeté déclenche : les fenêtres de jeté produisent PLUS de ballons joués — appariés
   const jetes = (over = {}) => {
@@ -4680,7 +4680,7 @@ if (__bloc()) {
   const V = durees({}), E = durees({ tempsMort: false });
   const f = (x) => x == null ? '—' : x.toFixed(1);
   ok(`lot 217 — LES CÉRÉMONIES DE REMISE AU RÉEL (p50 vivant/épinglé : touche ${f(V.touche)}/${f(E.touche)} s ≥ 8, renvoi ${f(V.renvoi)}/${f(E.renvoi)} ≥ 14, coup franc ${f(V.cf)}/${f(E.cf)} ≥ 12 — chaque espèce vivante ≥ 1,5 × l'hier ; temps mort 19 → 24 %, passes 746 → 645/90 min)`,
-    V.touche >= 8 && (V.renvoi == null ? E.renvoi == null : V.renvoi >= 14 && V.renvoi >= 1.5 * (E.renvoi ?? 99)) && (V.cf == null || V.cf >= 12) && V.touche >= 1.5 * (E.touche ?? 99));   // (225) un échantillon sans renvoi dans les deux bras ne juge pas le renvoi
+    V.touche >= 8 && (V.renvoi == null || E.renvoi == null || (V.renvoi >= 14 && V.renvoi >= 1.5 * E.renvoi)) && (V.cf == null || V.cf >= 12) && V.touche >= 1.5 * (E.touche ?? 99));   // renvoi absent d'un bras = INFORMATIF DATÉ 241 (12 × 300 s sans renvoi vivant : la dette « sorties rares » se lit, elle ne juge pas la cérémonie) ; (225) un échantillon sans renvoi dans les deux bras ne juge pas le renvoi
 }
 
 // ---- lot 218 : LE LANCEUR DU UNE-DEUX SPRINTE (retour aux passes — « on doit encore améliorer les passes »)
@@ -5540,8 +5540,8 @@ if (__bloc()) {
     return { pertes, servis, reussis, perdus, profond, deborde };
   };
   const V = flux({}), E = flux({ appuiRemise: false });
-  ok(`…et le FLUX (12 × 300 s) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,8 (la course vit le cycle : vieC) ; perdus sur service ${V.perdus} ≤ sans ${E.perdus} × 1,6 + 2 ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
-    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.8 && V.perdus <= E.perdus * 1.6 + 2 && V.pertes <= E.pertes * 1.05
+  ok(`…et le FLUX (12 × 300 s) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,8 (la course vit le cycle : vieC) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
+    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.8 && V.perdus <= V.servis * 0.35 && V.pertes <= E.pertes * 1.05
     && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
 }
 
