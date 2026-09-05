@@ -68,7 +68,7 @@ const POST131 = { honneur: false, regardGardien: false, marquageCentre: false, i
 const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: false, departVu: false, tacleVif: false, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 } };
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
-import { FORMATIONS, LIGNES, formationPour, mapPostes } from '../assets/starter/src/engine/formation.js';
+import { FORMATIONS, LIGNES, formationPour, mapPostes, POSTES_FORMATION, ROLES_FORMATION, GRILLE, litPoste, posteNom, lignesFines, checkPostes } from '../assets/starter/src/engine/formation.js';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
 // L'ISOLATION DES RE-DATEURS 170-171 (le patron « la clause isole ses re-dateurs ») : le
@@ -5645,6 +5645,51 @@ if (__bloc()) {
   const V2 = flux({}), E2 = flux({ contreZones: false });
   ok(`…et le FLUX (12 × 300 s) : contres arrivés à l'entrée ${V2.contres} ≥ sans ${E2.contres} × 0,8 (non-diminution — le × 1,5 était l'artefact des sprints permanents, rejetés : 9 corps à + de 3,5 m/s) ; aucune zone occupée ${V2.zero.toFixed(0)} % ≤ sans ${E2.zero.toFixed(0)} − 15 pts ; deux zones ou plus ${V2.deuxPlus.toFixed(0)} % ≥ sans ${E2.deuxPlus.toFixed(0)} + 10 pts (mesuré 13 → 29 ; la cible doctrinale 60 % à trois zones est une dette) ; deuxième latéral ${V2.larges} ≤ 1 ; garde 231 combinée ${V2.profond + V2.deborde} ≥ ${E2.profond + E2.deborde} × 0,85 ; pertes ${V2.pertes} ≤ sans ${E2.pertes} × 1,05`,
     V2.contres >= E2.contres * 0.8 && V2.zero <= E2.zero - 15 && V2.deuxPlus >= E2.deuxPlus + 10 && V2.larges <= 1 && V2.profond + V2.deborde >= (E2.profond + E2.deborde) * 0.85 && V2.pertes <= E2.pertes * 1.05);
+}
+
+// ---------------------------------------------------------------- lot 244a : LES POSTES NOMMÉS
+// + LE CATALOGUE EXHAUSTIF (demande utilisateur : « est-ce que le moteur gère bien tous les
+// postes attendus ? » — la grille GK / D / WB / DM / M / AM / ST × G · CG · C · CD · D — puis
+// « ajoute toutes les formations possibles »). La DONNÉE : chaque indice de chaque formation
+// porte son nom (POSTES_FORMATION), les strates fines en découlent (lignesFines), seize
+// formations de plus (31). Aucune loi ne lit la grille (244b) : les empreintes du 242 tiennent
+// au bit (94e2de4e74fb69f8 / 46ce3576f0d5249f). checkFormation (lot 17) garde sa règle de
+// largeur par ligne GROSSIÈRE — fausse pour un sapin ou un 4-4-1-1 (3421, 4222, 4321, 4411,
+// 5212 y sont « étroits » depuis le 127) : c'est checkPostes, à la strate, qui juge la grille.
+if (__bloc()) {
+  const noms = Object.keys(FORMATIONS);
+  const ko = noms.map((n) => [n, checkPostes(n)]).filter(([, c]) => !c.ok);
+  const complet = noms.filter((n) => !LIGNES[n] || !ROLES_FORMATION[n] || !POSTES_FORMATION[n]);
+  // la grille entière est COUVERTE : chacun des 24 postes vit dans au moins une formation
+  const vus = new Set(noms.flatMap((n) => POSTES_FORMATION[n]));
+  const grille = Object.entries(GRILLE).flatMap(([s, cs]) => cs.map((c) => `${s}(${c})`)).filter((p) => p !== 'GK(C)');
+  const absents = grille.filter((p) => !vus.has(p));
+  // les rôles par défaut suivent la grille sur les seize nouvelles (WB → piston, DM → récupérateur,
+  // AM axial → meneur, AM large → ailier de percussion, ST → neuf de surface)
+  const attendu = { WB: 'piston', DM: 'recuperateur', ST: 'neufDeSurface' };
+  const nouvelles = ['4312', '41212', '4132', '4123', '4213', '424', '460', '3412', '3511', '3241', '31213', '3331', '361', '5311', '5221', '523'];
+  const roleKo = [];
+  for (const n of nouvelles) POSTES_FORMATION[n].forEach((nom, k) => {
+    const p = litPoste(nom), r = ROLES_FORMATION[n][k];
+    const veut = attendu[p.strate] ?? (p.strate === 'AM' ? (p.cote === 'G' || p.cote === 'D' ? 'ailierDePercussion' : 'meneur') : undefined);
+    if (r !== veut) roleKo.push(`${n}:${k} ${nom} → ${r ?? 'polyvalent'} (attendu ${veut ?? 'polyvalent'})`);
+  });
+  const lf = lignesFines('4231'), lg = lignesFines('3331');
+  ok(`lot 244a — LES POSTES NOMMÉS : ${noms.length} formations ≥ 31, catalogue complet (spots + LIGNES + rôles + grille : ${complet.length === 0 ? 'rien ne manque' : complet.join(',')}), checkPostes SAIN partout (${ko.length} KO${ko.length ? ' : ' + ko.map(([n, c]) => n + ' ' + c.issues.join(' / ')).join(' ; ') : ''}), les 24 postes de la grille tous couverts (${absents.length === 0 ? 'aucun absent' : absents.join(',')}), les rôles des seize suivent la grille (${roleKo.length} écart${roleKo.length ? ' : ' + roleKo.join(' ; ') : ''}) ; lignesFines 4231 = 4 D · 2 DM · 3 AM · 1 ST (${lf.D}/${lf.DM}/${lf.AM}/${lf.ST}), 3331 = 3 D · 2 WB · 1 DM · 3 AM · 1 ST (${lg.D}/${lg.WB}/${lg.DM}/${lg.AM}/${lg.ST}) ; posteNom(433, 10) = ${posteNom('433', 10)}`,
+    noms.length >= 31 && complet.length === 0 && ko.length === 0 && absents.length === 0 && roleKo.length === 0
+    && lf.D === 4 && lf.DM === 2 && lf.AM === 3 && lf.ST === 1 && lg.D === 3 && lg.WB === 2 && lg.DM === 1 && lg.AM === 3 && lg.ST === 1 && posteNom('433', 10) === 'GK(C)');
+  // …et chacune des seize JOUE : 60 s contre le 433, zéro écart au contrat (Loi 3, terrain, ballon)
+  const joue = [];
+  for (const n of nouvelles) {
+    const st = makeMatch({ full: true, seed: 5, tactics: [{ formation: n }, { formation: '433' }] });
+    const cfg = matchCfg({ shotRange: 20 });
+    for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
+    const issues = checkMatch(st, [], cfg);
+    joue.push({ n, t: st.t, issues: issues.length, poss: st.possession.team });
+  }
+  const cassees = joue.filter((j) => j.t < 59 || j.issues > 0);
+  ok(`lot 244a — les SEIZE nouvelles JOUENT (60 s contre le 433 chacune, contrat tenu : ${cassees.length === 0 ? 'zéro écart' : cassees.map((j) => `${j.n} ${j.issues} écart(s) t ${j.t.toFixed(0)}`).join(' ; ')})`,
+    cassees.length === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

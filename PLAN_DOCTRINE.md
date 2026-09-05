@@ -272,6 +272,18 @@ temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3
   gardien (sonde).
 - Taille : S-M. Fichier : `phases.js`.
 
+**Lot 244a — Les postes nommés + le catalogue exhaustif — SCELLÉ (NOTES 302).** La grille GK / D / WB /
+DM / M / AM / ST × G · CG · C · CD · D devient une donnée (`POSTES_FORMATION`, `lignesFines`,
+`checkPostes`), 31 formations (seize de plus), rôles par défaut dérivés de la grille ; aucune loi ne la
+lit encore — empreintes du 242 au bit.
+- Constat : un poste était un indice ; trois strates seulement (le dix comptait parmi les pointes, la
+  sentinelle parmi les milieux) ; le dédoublement code « posts 0/3 » en dur.
+
+**Lot 244b — Les lois au nom du poste (à sceller).** Dédoublement par la strate WB/D ; pointes = AM +
+ST (Loi 11, couloirs, appels) ; sentinelle = DM (salida, contre-pressing) ; puis le poste naturel côté
+joueur (`profil.postes` + familiarité = facteur, identité absente). Mesuré à trois et cinq derrière,
+où la différence existe ; à clé absente, hier au bit.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
@@ -286,8 +298,8 @@ temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3
 
 ## 5. Ce que le plan ne fait pas, et pourquoi
 
-- Pas de nouvelle formation avant le 241 (le catalogue 4-4-2 / 3-5-2 reste la dette de la couche
-  rôles ; la doctrine 4-4-2 de Gourcuff se lit déjà dans les distances, satisfaites).
+- Pas de nouvelle formation avant le 241 (levé au 244a : 31 formations, la grille des postes en donnée ;
+  la dette de la couche rôles devient le 244b, les lois au nom du poste).
 - Pas de fatigue sur la compacité (brief 5.3) avant que les bandes de réalisme (I) soient re-fondées.
 - Le harnais (classe « ordre des blocs » : 96, 174, 189) reste une dette nommée ; elle ne bloque
   aucun sceau (les blocs passent isolés) mais coûte du temps de banc à chaque lot.

@@ -9073,6 +9073,48 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      l'utilisateur voit est donc juste : un joueur moyen qui n'a que ça.
      Jumeau {ligneFermee:false} = moteur 242 au bit (94e2de4e74fb69f8 /
      46ce3576f0d5249f) ; par défaut null : le moteur servi est inchangé.
+- 302: LES POSTES NOMMÉS + LE CATALOGUE EXHAUSTIF (244a — demande
+     utilisateur : « est-ce que le moteur gère bien tous les postes
+     attendus ? » avec la grille GK / D / WB / DM / M / AM / ST × G · CG ·
+     C · CD · D, puis « ligne moteur doit évoluer du coup ? ajoute toutes
+     les formations possibles »). RÉPONSE : non, pas entièrement — un
+     poste était un INDICE 0-9 d'une formation, le moteur ne connaissait
+     que trois strates (LIGNES : le dix comptait parmi les pointes, la
+     sentinelle parmi les milieux, le piston tantôt défenseur tantôt
+     milieu), le dédoublement (roles.js) code « posts 0/3 » en dur (faux
+     à trois ou cinq derrière), et aucun corps n'a de poste naturel. LA
+     DONNÉE D'ABORD (formation.js) : la grille (STRATES, COTES, GRILLE —
+     24 postes + GK(C)), POSTES_FORMATION (le nom de chaque indice de
+     chaque formation ; G = fz négatif vu de son but, C = l'axe, CG/CD
+     ≤ 0,5, G/D au-delà ; les pointes d'un duo = ST(G)/ST(D) : la grille
+     n'a pas de ST(CG)), litPoste / posteNom / lignesFines (les strates
+     fines comptées) et checkPostes (dix noms de la grille, côté = signe
+     et largeur de fz, strates ordonnées en profondeur, largeur de LIGNE
+     exigée des seules strates D et M — un sapin ou un 4-4-1-1 a le droit
+     d'être étroit —, LIGNES[0] = D + WB bas). SEIZE FORMATIONS DE PLUS
+     (31) : 4312, 41212 (losange), 4132, 4123 (pointe basse), 4213, 424,
+     460 (faux neuf), 3412, 3511, 3241, 31213 (losange du 3-4-3), 3331,
+     361, 5311, 5221, 523 — fractions, LIGNES grossières (la géométrie
+     des lois d'hier) et rôles par défaut dérivés de la grille (WB →
+     piston, DM → récupérateur, AM axial → meneur, AM large → ailier de
+     percussion, ST → neuf de surface). Les quinze d'hier ne bougent pas
+     d'un bit. TROUVÉ : checkFormation (lot 17) exige la largeur d'une
+     ligne PLATE à chaque ligne grossière — 3421, 4222, 4321, 4411, 5212
+     y sont « étroits » depuis le 127 sans que le banc le regarde (lot
+     17 ne teste que 433/442/352) ; règle laissée telle quelle (elle sert
+     ces trois-là), la grille se juge à la strate. BANC 244a : 31 ≥ 31,
+     catalogue complet, checkPostes sain partout, les 24 postes tous
+     couverts, rôles des seize conformes, lignesFines 4231 = 4/2/3/1 et
+     3331 = 3/2/1/3/1, et les seize JOUENT 60 s contre le 433 sans écart
+     au contrat (32 s). Lots 17/127/129 et l'annexe sync : verts. AUCUNE
+     LOI NE LIT LA GRILLE : empreintes 94e2de4e74fb69f8 / 46ce3576f0d5249f
+     = le 242 au bit. 244b (à sceller, mesuré) : les lois passent au nom
+     — dédoublement par la strate WB/D, pointes = AM + ST (le dix du
+     4231 n'est plus une pointe pour la Loi 11 ni pour les couloirs),
+     sentinelle = DM pour la salida et le contre-pressing ; puis le poste
+     NATUREL côté joueur (profil.postes + familiarité = facteur, identité
+     absente). Dette nommée : les variantes « étroites » (4231 à trois
+     dix axiaux, 4-4-2 losange large) demandent une clé non numérique.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

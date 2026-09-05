@@ -106,6 +106,105 @@ export const FORMATIONS = {
     [0.44, 0.0],                                                 // le dix
     [0.56, -0.16], [0.56, 0.16],                                 // le duo de pointes
   ],
+  // LE CATALOGUE EXHAUSTIF (lot 244, demande utilisateur : « ajoute toutes les formations
+  // possibles ») — seize formations de plus, toujours des DONNÉES : les fractions d'hier ne
+  // bougent pas d'un bit, les nouvelles s'ajoutent. Chaque poste a son NOM de la grille
+  // (POSTES_FORMATION) : c'est la grille qui dit qui est piston, sentinelle, dix ou pointe.
+  4312: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.30, -0.46], [0.27, 0.0], [0.30, 0.46],                    // le milieu à trois
+    [0.44, 0.0],                                                 // le dix
+    [0.56, -0.16], [0.56, 0.16],                                 // le duo de pointes
+  ],
+  41212: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.24, 0.0],                                                 // la sentinelle (le losange)
+    [0.32, -0.46], [0.32, 0.46],                                 // les deux relayeurs
+    [0.44, 0.0],                                                 // le dix
+    [0.56, -0.16], [0.56, 0.16],                                 // le duo de pointes
+  ],
+  4132: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.24, 0.0],                                                 // la sentinelle
+    [0.36, -0.65], [0.34, 0.0], [0.36, 0.65],                    // le milieu à trois large
+    [0.55, -0.16], [0.55, 0.16],                                 // le duo de pointes
+  ],
+  4123: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.24, 0.0],                                                 // la sentinelle (4-3-3 pointe basse)
+    [0.33, -0.38], [0.33, 0.38],                                 // les deux relayeurs
+    [0.52, -0.78], [0.56, 0.0], [0.52, 0.78],                    // le trio offensif
+  ],
+  4213: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.27, -0.20], [0.27, 0.20],                                 // le double pivot
+    [0.50, -0.78], [0.42, 0.0], [0.50, 0.78],                    // les ailiers hauts et le dix
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  424: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.30, -0.22], [0.30, 0.22],                                 // le duo de milieux
+    [0.50, -0.78], [0.56, -0.16], [0.56, 0.16], [0.50, 0.78],    // deux ailiers, deux pointes
+  ],
+  460: [
+    [0.15, -0.62], [0.12, -0.22], [0.12, 0.22], [0.15, 0.62],   // la ligne de quatre
+    [0.27, -0.20], [0.27, 0.20],                                 // le double pivot
+    [0.46, -0.72], [0.50, -0.20], [0.50, 0.20], [0.46, 0.72],    // quatre dix, pas de pointe (le faux neuf)
+  ],
+  3412: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.34, -0.78], [0.29, -0.22], [0.29, 0.22], [0.34, 0.78],    // le milieu à pistons
+    [0.44, 0.0],                                                 // le dix
+    [0.56, -0.16], [0.56, 0.16],                                 // le duo de pointes
+  ],
+  3511: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.34, -0.80], [0.30, -0.30], [0.26, 0.0], [0.30, 0.30], [0.34, 0.80],   // le milieu à cinq
+    [0.44, 0.0],                                                 // le dix
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  3241: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.26, -0.20], [0.26, 0.20],                                 // le double pivot
+    [0.44, -0.72], [0.46, -0.22], [0.46, 0.22], [0.44, 0.72],    // la ligne de quatre haute
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  31213: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.23, 0.0],                                                 // la sentinelle (le losange du 3-4-3)
+    [0.31, -0.46], [0.31, 0.46],                                 // les deux relayeurs
+    [0.42, 0.0],                                                 // le dix
+    [0.52, -0.75], [0.56, 0.0], [0.52, 0.75],                    // le trio offensif
+  ],
+  3331: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.30, -0.75], [0.24, 0.0], [0.30, 0.75],                    // deux pistons autour de la sentinelle
+    [0.46, -0.60], [0.48, 0.0], [0.46, 0.60],                    // trois dix
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  361: [
+    [0.13, -0.33], [0.11, 0.0], [0.13, 0.33],                    // la ligne de trois
+    [0.36, -0.80], [0.26, -0.20], [0.26, 0.20], [0.36, 0.80],    // pistons et double pivot
+    [0.46, -0.31], [0.46, 0.31],                                 // les deux dix
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  5311: [
+    [0.16, -0.72], [0.13, -0.36], [0.11, 0.0], [0.13, 0.36], [0.16, 0.72],   // la ligne de cinq
+    [0.31, -0.46], [0.28, 0.0], [0.31, 0.46],                    // le milieu à trois
+    [0.44, 0.0],                                                 // le dix
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  5221: [
+    [0.16, -0.72], [0.13, -0.36], [0.11, 0.0], [0.13, 0.36], [0.16, 0.72],   // la ligne de cinq
+    [0.27, -0.20], [0.27, 0.20],                                 // le double pivot
+    [0.45, -0.31], [0.45, 0.31],                                 // les deux dix
+    [0.58, 0.0],                                                 // la pointe
+  ],
+  523: [
+    [0.16, -0.72], [0.13, -0.36], [0.11, 0.0], [0.13, 0.36], [0.16, 0.72],   // la ligne de cinq
+    [0.30, -0.22], [0.30, 0.22],                                 // le duo de milieux
+    [0.50, -0.75], [0.56, 0.0], [0.50, 0.75],                    // le trio offensif
+  ],
 };
 
 /** LA FORMATION SE RÉSOUT PAR PHASE (lot 129, demande utilisateur : « une formation onball
@@ -146,7 +245,125 @@ export const ROLES_FORMATION = {
   3142: { 3: 'recuperateur', 4: 'piston', 7: 'piston', 8: 'neufDeSurface', 9: 'neufDeSurface' },
   451: { 4: 'piston', 6: 'meneur', 8: 'piston', 9: 'neufDeSurface' },
   5212: { 5: 'recuperateur', 6: 'recuperateur', 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  // 244 — dérivés de la grille (WB → piston, DM → récupérateur, AM axial → meneur, AM large →
+  // ailier de percussion, ST → neuf de surface ; D et M : polyvalent, l'identité)
+  4312: { 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  41212: { 4: 'recuperateur', 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  4132: { 4: 'recuperateur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  4123: { 4: 'recuperateur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' },
+  4213: { 4: 'recuperateur', 5: 'recuperateur', 6: 'ailierDePercussion', 7: 'meneur', 8: 'ailierDePercussion', 9: 'neufDeSurface' },
+  424: { 6: 'ailierDePercussion', 7: 'neufDeSurface', 8: 'neufDeSurface', 9: 'ailierDePercussion' },
+  460: { 4: 'recuperateur', 5: 'recuperateur', 6: 'ailierDePercussion', 7: 'meneur', 8: 'meneur', 9: 'ailierDePercussion' },
+  3412: { 3: 'piston', 6: 'piston', 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  3511: { 3: 'piston', 7: 'piston', 8: 'meneur', 9: 'neufDeSurface' },
+  3241: { 3: 'recuperateur', 4: 'recuperateur', 5: 'ailierDePercussion', 6: 'meneur', 7: 'meneur', 8: 'ailierDePercussion', 9: 'neufDeSurface' },
+  31213: { 3: 'recuperateur', 6: 'meneur', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' },
+  3331: { 3: 'piston', 4: 'recuperateur', 5: 'piston', 6: 'ailierDePercussion', 7: 'meneur', 8: 'ailierDePercussion', 9: 'neufDeSurface' },
+  361: { 3: 'piston', 4: 'recuperateur', 5: 'recuperateur', 6: 'piston', 7: 'meneur', 8: 'meneur', 9: 'neufDeSurface' },
+  5311: { 0: 'piston', 4: 'piston', 8: 'meneur', 9: 'neufDeSurface' },
+  5221: { 0: 'piston', 4: 'piston', 5: 'recuperateur', 6: 'recuperateur', 7: 'meneur', 8: 'meneur', 9: 'neufDeSurface' },
+  523: { 0: 'piston', 4: 'piston', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' },
 };
+
+// ======================================================================= LES POSTES NOMMÉS
+// (lot 244, demande utilisateur : « est-ce que le moteur gère bien tous les postes attendus ? »
+// — la grille GK / D / WB / DM / M / AM / ST, côtés G · CG · C · CD · D). Hier, un poste était
+// un INDICE (0-9) et le moteur ne connaissait que trois strates (LIGNES) : le dix comptait
+// parmi les pointes, la sentinelle parmi les milieux, le piston tantôt défenseur tantôt milieu.
+// La grille est la DONNÉE qui manquait : chaque indice de chaque formation porte son NOM, et
+// les strates fines en découlent (lignesFines). Le repère : G = fz négatif, D = fz positif,
+// vus de son propre but ; C = l'axe, CG/CD = |fz| ≤ 0,5, G/D = plus large ; pour les pointes,
+// G/D nomment simplement la gauche et la droite d'un duo (la grille n'a pas de ST(CG)).
+// Aucune LOI ne lit encore la grille (244a = la donnée ; 244b = les lois : dédoublement par le
+// nom, pointes = strates AM+ST, familiarité de poste côté joueur) — au bit près, hier.
+export const STRATES = ['GK', 'D', 'WB', 'DM', 'M', 'AM', 'ST'];
+export const COTES = ['G', 'CG', 'C', 'CD', 'D'];
+/** La grille des 24 postes (+ le gardien) : strate → côtés admis. */
+export const GRILLE = { GK: ['C'], D: ['G', 'CG', 'C', 'CD', 'D'], WB: ['G', 'D'], DM: ['CG', 'C', 'CD'],
+  M: ['G', 'CG', 'C', 'CD', 'D'], AM: ['G', 'CG', 'C', 'CD', 'D'], ST: ['G', 'C', 'D'] };
+const D4 = ['D(G)', 'D(CG)', 'D(CD)', 'D(D)'], D3 = ['D(CG)', 'D(C)', 'D(CD)'], D5 = ['WB(G)', 'D(CG)', 'D(C)', 'D(CD)', 'WB(D)'];
+export const POSTES_FORMATION = {
+  433: [...D4, 'M(CG)', 'M(C)', 'M(CD)', 'AM(G)', 'ST(C)', 'AM(D)'],
+  442: [...D4, 'M(G)', 'M(CG)', 'M(CD)', 'M(D)', 'ST(G)', 'ST(D)'],
+  352: [...D3, 'WB(G)', 'M(CG)', 'M(C)', 'M(CD)', 'WB(D)', 'ST(G)', 'ST(D)'],
+  4231: [...D4, 'DM(CG)', 'DM(CD)', 'AM(G)', 'AM(C)', 'AM(D)', 'ST(C)'],
+  4321: [...D4, 'M(CG)', 'M(C)', 'M(CD)', 'AM(CG)', 'AM(CD)', 'ST(C)'],
+  343: [...D3, 'WB(G)', 'M(CG)', 'M(CD)', 'WB(D)', 'AM(G)', 'ST(C)', 'AM(D)'],
+  3421: [...D3, 'WB(G)', 'M(CG)', 'M(CD)', 'WB(D)', 'AM(CG)', 'AM(CD)', 'ST(C)'],
+  532: [...D5, 'M(CG)', 'M(C)', 'M(CD)', 'ST(G)', 'ST(D)'],
+  541: [...D5, 'M(G)', 'M(CG)', 'M(CD)', 'M(D)', 'ST(C)'],
+  4141: [...D4, 'DM(C)', 'M(G)', 'M(CG)', 'M(CD)', 'M(D)', 'ST(C)'],
+  4222: [...D4, 'DM(CG)', 'DM(CD)', 'AM(CG)', 'AM(CD)', 'ST(G)', 'ST(D)'],
+  4411: [...D4, 'M(G)', 'M(CG)', 'M(CD)', 'M(D)', 'AM(C)', 'ST(C)'],
+  3142: [...D3, 'DM(C)', 'WB(G)', 'M(CG)', 'M(CD)', 'WB(D)', 'ST(G)', 'ST(D)'],
+  451: [...D4, 'M(G)', 'M(CG)', 'M(C)', 'M(CD)', 'M(D)', 'ST(C)'],
+  5212: [...D5, 'DM(CG)', 'DM(CD)', 'AM(C)', 'ST(G)', 'ST(D)'],
+  4312: [...D4, 'M(CG)', 'M(C)', 'M(CD)', 'AM(C)', 'ST(G)', 'ST(D)'],
+  41212: [...D4, 'DM(C)', 'M(CG)', 'M(CD)', 'AM(C)', 'ST(G)', 'ST(D)'],
+  4132: [...D4, 'DM(C)', 'M(G)', 'M(C)', 'M(D)', 'ST(G)', 'ST(D)'],
+  4123: [...D4, 'DM(C)', 'M(CG)', 'M(CD)', 'AM(G)', 'ST(C)', 'AM(D)'],
+  4213: [...D4, 'DM(CG)', 'DM(CD)', 'AM(G)', 'AM(C)', 'AM(D)', 'ST(C)'],
+  424: [...D4, 'M(CG)', 'M(CD)', 'AM(G)', 'ST(G)', 'ST(D)', 'AM(D)'],
+  460: [...D4, 'DM(CG)', 'DM(CD)', 'AM(G)', 'AM(CG)', 'AM(CD)', 'AM(D)'],
+  3412: [...D3, 'WB(G)', 'M(CG)', 'M(CD)', 'WB(D)', 'AM(C)', 'ST(G)', 'ST(D)'],
+  3511: [...D3, 'WB(G)', 'M(CG)', 'M(C)', 'M(CD)', 'WB(D)', 'AM(C)', 'ST(C)'],
+  3241: [...D3, 'DM(CG)', 'DM(CD)', 'AM(G)', 'AM(CG)', 'AM(CD)', 'AM(D)', 'ST(C)'],
+  31213: [...D3, 'DM(C)', 'M(CG)', 'M(CD)', 'AM(C)', 'AM(G)', 'ST(C)', 'AM(D)'],
+  3331: [...D3, 'WB(G)', 'DM(C)', 'WB(D)', 'AM(G)', 'AM(C)', 'AM(D)', 'ST(C)'],
+  361: [...D3, 'WB(G)', 'DM(CG)', 'DM(CD)', 'WB(D)', 'AM(CG)', 'AM(CD)', 'ST(C)'],
+  5311: [...D5, 'M(CG)', 'M(C)', 'M(CD)', 'AM(C)', 'ST(C)'],
+  5221: [...D5, 'DM(CG)', 'DM(CD)', 'AM(CG)', 'AM(CD)', 'ST(C)'],
+  523: [...D5, 'M(CG)', 'M(CD)', 'AM(G)', 'ST(C)', 'AM(D)'],
+};
+
+/** « D(CG) » → { strate: 'D', cote: 'CG' } ; le gardien → GK(C) ; inconnu → null. */
+export function litPoste(nom) {
+  const m = /^(GK|D|WB|DM|M|AM|ST)\((G|CG|C|CD|D)\)$/.exec(nom ?? '');
+  return m ? { strate: m[1], cote: m[2] } : null;
+}
+/** Le nom du poste k (0-9) de la formation, le gardien pour k ≥ 10 ; formation inconnue → 433. */
+export function posteNom(name = 433, k = 0) {
+  if (k >= 10 || k == null) return 'GK(C)';
+  return (POSTES_FORMATION[name] ?? POSTES_FORMATION[433])[k] ?? null;
+}
+/** Les STRATES FINES d'une formation : { D, WB, DM, M, AM, ST } comptés (GK = 1 toujours). */
+export function lignesFines(name = 433) {
+  const out = { GK: 1, D: 0, WB: 0, DM: 0, M: 0, AM: 0, ST: 0 };
+  for (const n of POSTES_FORMATION[name] ?? POSTES_FORMATION[433]) { const p = litPoste(n); if (p) out[p.strate]++; }
+  return out;
+}
+/** La grille est-elle SAINE pour cette formation ? Dix noms de la grille, le côté qui suit le
+ *  signe de fz (et sa largeur), les strates ordonnées en profondeur (D < DM < M < AM < ST en
+ *  moyenne, WB devant D), la strate WB/D et la strate M à la largeur d'une LIGNE (les dix, les
+ *  sentinelles et les pointes ont le droit d'être étroits — le sapin, le losange), et les
+ *  strates GROSSIÈRES (LIGNES) qui recomptent la grille (défense = D + WB de la ligne basse). */
+export function checkPostes(name = 433) {
+  const issues = [], F = FORMATIONS[name], N = POSTES_FORMATION[name], lg = LIGNES[name];
+  if (!F || !N || !lg) return { ok: false, issues: [`formation ${name} : catalogue incomplet (spots ${!!F}, postes ${!!N}, lignes ${!!lg})`] };
+  if (N.length !== 10) issues.push(`${N.length} noms (≠ 10)`);
+  const par = {}, seen = new Set();
+  N.forEach((nom, k) => {
+    const p = litPoste(nom), [f, fz] = F[k] ?? [0, 0];
+    if (!p || !GRILLE[p.strate].includes(p.cote)) { issues.push(`poste ${k} : « ${nom} » hors grille`); return; }
+    if (seen.has(nom)) issues.push(`poste ${k} : « ${nom} » en double`); seen.add(nom);
+    const c = p.cote, g = c === 'G' || c === 'CG', d = c === 'D' || c === 'CD';
+    if (c === 'C' ? fz !== 0 : g ? fz >= 0 : fz <= 0) issues.push(`poste ${k} : « ${nom} » du mauvais côté (fz ${fz})`);
+    if (p.strate !== 'ST' && p.strate !== 'WB' && (c === 'CG' || c === 'CD') && Math.abs(fz) > 0.5) issues.push(`poste ${k} : « ${nom} » trop large pour un intérieur (fz ${fz})`);
+    if (p.strate !== 'ST' && (c === 'G' || c === 'D') && Math.abs(fz) <= 0.5) issues.push(`poste ${k} : « ${nom} » trop étroit pour un large (fz ${fz})`);
+    (par[p.strate] ??= []).push({ k, f, fz });
+  });
+  const moy = (s) => par[s] ? par[s].reduce((a, q) => a + q.f, 0) / par[s].length : null;
+  let prev = null;
+  for (const s of ['D', 'DM', 'M', 'AM', 'ST']) { const m = moy(s); if (m == null) continue; if (prev != null && m <= prev.m) issues.push(`strate ${s} (${m.toFixed(2)}) pas devant ${prev.s} (${prev.m.toFixed(2)})`); prev = { s, m }; }
+  if (moy('WB') != null && moy('WB') <= moy('D')) issues.push('les pistons ne sont pas devant les centraux');
+  const largeur = (s, n) => { const zs = (par[s] ?? []).map((q) => q.fz); return zs.length ? (Math.max(...zs) - Math.min(...zs)) * 0.92 * 34 / (0.42 * 68 * ((n - 1) / 3) || 1) : 1; };
+  const nDef = (par.D?.length ?? 0) + (par.WB ?? []).filter((q) => q.f < 0.2).length;
+  if (largeur('D', par.D?.length ?? 1) < 1 && (par.D?.length ?? 0) >= 4) issues.push('ligne D étroite');
+  if ((par.M?.length ?? 0) >= 3 && largeur('M', par.M.length) < 0.85) issues.push('strate M étroite');
+  if (nDef !== lg[0]) issues.push(`LIGNES[0] = ${lg[0]} mais la grille compte ${nDef} défenseurs (D + WB bas)`);
+  if (lg[0] + lg[1] + lg[2] !== 10) issues.push(`LIGNES ${lg.join('-')} ne somme pas 10`);
+  return { ok: issues.length === 0, issues };
+}
 
 /** LES LIGNES sont une DONNÉE (défense, milieu, attaque) : c'est ce qui généralise le calage
  *  Loi 11 (« postes ≥ 7 » n'était vrai qu'en 4-3-3), les clauses du contrat, et demain les
@@ -154,7 +371,11 @@ export const ROLES_FORMATION = {
 export const LIGNES = { 433: [4, 3, 3], 442: [4, 4, 2], 352: [3, 5, 2],
   4231: [4, 2, 4], 4321: [4, 3, 3], 343: [3, 4, 3], 3421: [3, 4, 3],
   532: [5, 3, 2], 541: [5, 4, 1], 4141: [4, 5, 1], 4222: [4, 4, 2], 4411: [4, 4, 2],
-  3142: [3, 5, 2], 451: [4, 5, 1], 5212: [5, 3, 2] };
+  3142: [3, 5, 2], 451: [4, 5, 1], 5212: [5, 3, 2],
+  // 244 — les seize du catalogue exhaustif (trois strates : la géométrie des lois d'hier)
+  4312: [4, 4, 2], 41212: [4, 4, 2], 4132: [4, 4, 2], 4123: [4, 3, 3], 4213: [4, 2, 4], 424: [4, 2, 4], 460: [4, 2, 4],
+  3412: [3, 5, 2], 3511: [3, 6, 1], 3241: [3, 2, 5], 31213: [3, 4, 3], 3331: [3, 3, 4], 361: [3, 4, 3],
+  5311: [5, 4, 1], 5221: [5, 2, 3], 523: [5, 2, 3] };
 
 /** Le premier poste OFFENSIF de la formation (433 → 7, 442/352 → 8) — le calage Loi 11 et les
  *  appels profonds s'adressent aux pointes, quelle que soit la formation. */
