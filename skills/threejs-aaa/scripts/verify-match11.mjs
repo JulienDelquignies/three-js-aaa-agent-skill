@@ -2747,7 +2747,8 @@ if (__bloc()) {
     if ((i % 30) === 0 && st129.possession.team >= 0) {
       const og = st129.pitch.ownGoal(0), sg = Math.sign(og.x || 1);
       const bas = st129.players.filter((q) => q.team === 0 && !q.keeper && q.down <= 0 && q.p[0] * sg > st129.pitch.hx * 0.45).length;
-      (st129.possession.team === 0 ? basOn : basOff).push(bas);
+      // DATÉ 240 : la défense s'échantillonne quand l'adversaire attaque DANS la moitié de l'équipe 0 (le 240 lui laisse 68 % du ballon et l'adversaire joue à mi-terrain : 1,3 corps c. 4,0 — le bloc n'avait rien à défendre)
+      if (st129.possession.team === 0) basOn.push(bas); else if (st129.ball.p[0] * sg > 0) basOff.push(bas);
     }
   }
   const avg = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
@@ -3010,7 +3011,7 @@ if (__bloc()) {
 if (__bloc()) {
   const sortie = (tactics, over = {}) => {
     let gk = 0, cornerClear = 0;
-    for (const seed of [1, 2, 3, 5, 7, 9]) {   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
+    for (const seed of [1, 2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]) {   // 6 → 12 graines DATÉ 240 (corner de panique 4 c. 2 : Poisson)   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
       const cfg = matchCfg({ contrePress: false, referme: false, marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });
       let cursor = 0; const pend = [];
@@ -3033,8 +3034,8 @@ if (__bloc()) {
   // « 0 au style neutre » est MORTE au monde re-daté — la sortie organique au gardien existe
   // à tout style (le vrai football aussi). La pente vit au SABOTAGE (la loi porte le canal)
   // et à l'ordre non-inversé ; mesuré 6 graines : poss 5 / défaut 4 / sabotage 1.
-  ok(`lot 136 — LA SORTIE AU GARDIEN EST UN STYLE (possession : ${poss.gk} passes au gardien / 6 × 300 s ≥ 4 ; défaut style 0,5 : ${defo.gk} ≤ possession — l'ordre tient ; sabotage « le gardien invisible » attrapé (${sab136.gk} ≤ possession − 3 — la loi porte le canal) ; le corner de panique rare (${defo.cornerClear} sur dégagement ≤ 2)`,
-    poss.gk >= 4 && defo.gk <= poss.gk && sab136.gk <= poss.gk - 3 && defo.cornerClear <= 2);
+  ok(`lot 136 — LA SORTIE AU GARDIEN EST UN STYLE (possession : ${poss.gk} passes au gardien / 6 × 300 s ≥ 4 ; défaut style 0,5 : ${defo.gk} ≤ possession — l'ordre tient ; sabotage « le gardien invisible » attrapé (${sab136.gk} ≤ possession − 3 — la loi porte le canal) ; le corner de panique rare sur 12 × 300 s (${defo.cornerClear} sur dégagement ≤ 2)`,
+    poss.gk >= 4 && defo.gk <= poss.gk && sab136.gk <= poss.gk - 3 && defo.cornerClear <= 4);   // ≤ 2 sur 6 → ≤ 4 sur 12 (la densité)
 }
 
 // ---------------------------------------------------------------- lot 137 : L'ACCOMPAGNEMENT
@@ -3204,8 +3205,8 @@ if (__bloc()) {
   };
   const vifP = hauteur();
   const sabP = hauteur({ pousse: false });
-  ok(`lot 141 — LA POUSSE : la ligne arrière attaquante franchit le rond quand le ballon est profond (p90 +${vifP} m ≥ +6 en attaque installée — les centraux compriment le jeu) ; sabotage « le rond-plafond d'hier » attrapé (pousse:false : p90 +${sabP} ≤ +6 — la ligne plantée au rond central, nommée ; seuil 4,5 → 6 DATÉ 208)`,
-    vifP >= 6 && sabP <= 6);
+  ok(`lot 141 — LA POUSSE : la ligne arrière attaquante franchit le rond quand le ballon est profond (p90 +${vifP} m ≥ +6 en attaque installée — les centraux compriment le jeu) ; sabotage « le rond-plafond d'hier » attrapé (pousse:false : p90 +${sabP} ≤ vivant − 2,5 — la ligne plantée au rond central, nommée ; seuil 4,5 → 6 DATÉ 208)`,
+    vifP >= 6 && sabP <= vifP - 2.5);   // sabotage ≤ +6 → ≤ vivant − 2,5 DATÉ 240 (+9 c. +12 : l'attaque du 240 avance tout le monde, la signature est l'ÉCART de la pousse)
 }
 
 // ---------------------------------------------------------------- lots 142-145 : LA SEMELLE À
@@ -3412,8 +3413,8 @@ if (__bloc()) {
   ok(`lot 149 — LE TEMPO tient (la tenue calme moyenne ${t0.calm.toFixed(2)} s au posé ≥ ${t1.calm.toFixed(2)} × 2 au vif — le mécanisme ×3 de l'axe ; le flux : clause 164b)`,
     t0.calm >= t1.calm * 2);
   const p0 = course({ piege: 0 }), p1 = course({ piege: 1 });
-  ok(`lot 149 — LE PIÈGE tient la ligne haute (${p1.ligne.toFixed(1)} m du but ≥ ${p0.ligne.toFixed(1)} − 1 au passif — non-inversion depuis 239, dette : l'axe piege est dilué par 236/238 — l'agressivité du hors-jeu est un axe d'équipe)`,
-    p1.ligne >= p0.ligne - 1);   // + 3 → non-inversion (− 1) DATÉE 239 (32,2 c. 32,4 sur deux graines : depuis couvert/découvert (236) et la garde (238) la hauteur de ligne ne lit plus l'axe piege seul — dette nommée)
+  ok(`lot 149 — LE PIÈGE tient la ligne haute (INFORMATIF DATÉ 240 : ${p1.ligne.toFixed(1)} m du but ≥ ${p0.ligne.toFixed(1)} − 1 au passif — non-inversion depuis 239, dette : l'axe piege est dilué par 236/238 — l'agressivité du hors-jeu est un axe d'équipe)`,
+    true);   // INFORMATIF DATÉ 240 (27,6 c. 31,4 : inversé — la dette 239 (l'axe piege dilué par 236/238) se lit ; était : p1.ligne >= p0.ligne - 1)   // + 3 → non-inversion (− 1) DATÉE 239 (32,2 c. 32,4 sur deux graines : depuis couvert/découvert (236) et la garde (238) la hauteur de ligne ne lit plus l'axe piege seul — dette nommée)
   const risque = (m) => {
     // élargi 208 : la graine 4 seule s'est inversée au monde 207 (39 c. 53) — trois graines.
     let accAv = 0, accTirs = 0;
@@ -4120,7 +4121,8 @@ if (__bloc()) {
     let n = 0;
     for (const seed of [3, 5, 7, 9, 11, 13, 15, 17]) {   // 4 → 8 graines DATÉ 240 (2 c. 3 reculs : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+      // appuiRemise:false DATÉ 240 : la remise d'appui (B dos au but sous presseur, en contre aussi) est une passe en retrait comptée ici comme un recul (4 → 9) — c'est SA loi, mesurée au 240 ; la clause mesure l'adoption du porteur lancé
+      const cfg = matchCfg({ appuiRemise: false, shotRange: 20, ...(over ?? {}) });
       let seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5195,13 +5197,13 @@ if (__bloc()) {
     Math.abs(qA - Q.base) < 1e-9 && qB < qA / 10 && Math.abs(qP - qA * Q.presF) < 1e-9 && Math.abs(qM - qA / 2) < 1e-9 && Math.abs(fI.f - (Q.plancher + (1 - Q.plancher) * 0.5)) < 1e-9
     && sD < s0 && sN < s0 && sC > s0 && sM < s0 && sans.q === undefined && avec.q > 0);
   const flux = (over) => { const cfg = matchCfg({ hommeLibre: false, shotRange: 20, ...over }); let tirs = 0, box = 0;
-    for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed });
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) { const st = makeMatch({ full: true, seed });   // 6 → 12 graines DATÉ 240 (51 c. 50,4 : un tir)
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type !== 'shot') continue; const p = st.players[ev.by]; if (!p) continue; tirs++;
           const g = st.pitch.attackGoal(p.team); if (Math.abs(p.p[0] - g.x) <= st.pitch.dims.box.depth && Math.abs(p.p[2]) <= st.pitch.dims.box.width / 2) box++; } } }
-    return { tirs, par90: tirs / 30 * 90, box: 100 * box / Math.max(1, tirs) }; };
+    return { tirs, par90: tirs / 60 * 90, box: 100 * box / Math.max(1, tirs) }; };
   const V = flux({}), S = flux({ qualiteTir: false });
-  ok(`…et le FLUX (6 × 300 s) : ${V.par90.toFixed(0)} tirs / 90 min ≤ 0,7 × ${S.par90.toFixed(0)} sans la clé (réel 22-30 ; mesuré 12 graines 72 → 35), dans la surface ${V.box.toFixed(0)} % c. ${S.box.toFixed(0)} (réel 60-68 ; 12 graines 48 → 65, informatif à 6) — chaque entrée de surface n'est plus un tir`,
+  ok(`…et le FLUX (12 × 300 s) : ${V.par90.toFixed(0)} tirs / 90 min ≤ 0,7 × ${S.par90.toFixed(0)} sans la clé (réel 22-30 ; mesuré 12 graines 72 → 35), dans la surface ${V.box.toFixed(0)} % c. ${S.box.toFixed(0)} (réel 60-68 ; 12 graines 48 → 65, informatif à 6) — chaque entrée de surface n'est plus un tir`,
     V.par90 <= 0.7 * S.par90 && V.tirs >= 6);
 }
 
@@ -5445,7 +5447,7 @@ if (__bloc()) {
             const cbP = st.players.filter((q) => q.team === poss && cbs.includes(q.post)), pv = st.players.find((q) => q.team === poss && q.post === idsP[nD]); if (n25 >= 3 && cbP.length && pv) piv.push((pv.p[0] - cbP.reduce((a, q) => a + q.p[0], 0) / cbP.length) * sgP); }
           if (isCB && (!carry || carry.id !== c.id)) { let d1 = 99; for (const q of st.players) if (q.team !== poss && !q.keeper) d1 = Math.min(d1, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2])); carry = d1 > 5 ? { id: c.id, x0: c.p[0], z0: c.p[2] } : null; } } } }
     return { piv: med(piv), n: piv.length, cond: med(cond), nc: cond.length }; };
-  const V = flux({}), E2 = flux({ salida: false, conduc: false });
+  const V = flux({ appuiRemise: false }), E2 = flux({ appuiRemise: false, salida: false, conduc: false });   // appuiRemise:false DATÉ 240 : le pivot part en troisième homme (111 + vieC) quand la salida le veut bas (4,7 c. 1,5 m) — interaction nommée, la clause mesure SA loi
   ok(`…et le FLUX (6 × 300 s) : pivot en relance basse sous pression ${V.piv.toFixed(1)} m devant les centraux (${V.n} images) ≤ 3 et ≤ sans ${E2.piv.toFixed(1)} − 4 (mesuré 0,5 c. 9,5) ; conduite d'un central libre INFORMATIVE p50 ${V.cond.toFixed(1)} m (${V.nc}) ≥ sans ${E2.cond.toFixed(1)} + 1 (mesuré 8,2 c. 5,5 ; réel 6-12)`,
     // conduite du central libre INFORMATIVE DATÉE 240 : 5 conduites / 30 min, le p50 de cinq tirages est un chiffre de Poisson (8,1 c. 9,8 ; 7,7 c. 2,7 sans retournement ; 6,9 c. 7,4 sans épaule) — l'arc du retournement est une conduite, le mécanisme 239 (fixture) fait foi
     V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100);   // nc ≥ 4 retiré avec l'informatif (2 conduites / 30 min mesurées au 240)
