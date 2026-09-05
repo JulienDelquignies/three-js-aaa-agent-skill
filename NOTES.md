@@ -9028,6 +9028,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      restants de verify-match11 (roulette qui traverse, œil de l'urgence,
      ancre à la craie, cérémonies, une-deux, flux troisième homme) sont
      ceux du commit de base — le chantier moteur.
+- 302: LA BRANCHE MAIN (« tu peux créer une branche main en mergeant les 2
+     branches actives ? »). main naît le 5 septembre de la branche moteur
+     (claude/ai-agent-threejs-aaa-tool-dyrrb0, ffee199 : lots 241-242, note
+     294) fusionnée avec la branche animations (claude/11c11-3d-animations-
+     ob06xa, 9071c22 : lots A1-A6) — 16 commits depuis la base commune
+     7a9e33c, merge --no-ff. UN SEUL CONFLIT : NOTES.md, les deux chantiers
+     ayant écrit chacun une note 294 ; résolution : les deux jeux gardés,
+     moteur puis animations, les notes animations renumérotées 295-301 (les
+     renvois suivent : ROADMAP.md, reference/51-motion-strike.md, le renvoi
+     interne de la 296). Aucun conflit de code : les deux chantiers ne
+     touchent pas les mêmes fichiers, et la sim lit des animations
+     exactement ce qu'elle lisait — les 41 espèces générées gardent durée et
+     contact de l'authoré (vérifié espèce par espèce), STANCES est la table
+     du moteur (note 301). BANCS DE L'ARBRE FUSIONNÉ : verify-match11 266/0
+     (le banc du moteur — ses six rouges de la base sont réglés par les lots
+     241-242 ; sur la branche animations seule, avec le banc de la base, la
+     table restaurée redonne 258/6, les six rouges de la note 301), match
+     84/0, rondo 40/0, motion 206/0, animkit 119/119, gestes 60/0, swing
+     115/0, approach 24/0, strike-warp 23/0, slide 10/0, gesture 28/0,
+     gesture-layer 10/0, tête 7/0, frappes 13/0, retarget 13/0, anim-fsm
+     15/0, tactics 11/0, sync 9/0, build de la vitrine OK. UN ROUGE,
+     ANTÉRIEUR AU MERGE : verify-attributes 26/1 (lot 152/158, la gradation
+     30 → 82, 50 → 47, 70 → 77, 90 → 94 — les mêmes chiffres sur la branche
+     moteur seule, dans un worktree) : le chantier moteur. NON FUSIONNÉE :
+     perf/11c11-lots (dcd8f96, 4 septembre, 1 commit hors de la
+     branche moteur, base 5bca43e) — une troisième branche, pas « active »,
+     à merger sur demande. RÈGLE DE JOURNAL désormais : la prochaine note
+     est la 303, et chaque chantier repart de main (merge de main dans sa
+     branche) pour que les numéros ne se croisent plus.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
