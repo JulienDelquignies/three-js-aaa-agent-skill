@@ -1,21 +1,37 @@
-// motion-cast — LE CASTING DES FRAPPES GÉNÉRÉES : un joueur, son rig, son style, ses gestes.
+// motion-cast — LE CASTING DES GESTES GÉNÉRÉS : un joueur, son rig, son style, ses gestes — et le
+// REGISTRE des générateurs (quelle famille dessine quel geste).
 //
-// La scène spawn des corps depuis un ROSTER (squad.js) ; les frappes ne sont plus des specs de la
-// table, elles sont GÉNÉRÉES (motion-strike) contre le squelette RÉEL de chaque template — ses
-// orientations bind, ses longueurs, l'échelle du squad — et non contre le profil de référence baké
-// (motion-profile-shanon, qui ne sert qu'aux MOVES par défaut et au banc). Un autre rig (?rig=)
-// a ses propres jambes : la sonde des signes (checkProfile) le prouve au chargement, et un rig aux
-// axes inconnus se DIT dans le rapport au lieu de frapper de travers en silence.
+// La scène spawn des corps depuis un ROSTER (squad.js) ; les gestes générés ne sont plus des specs
+// de la table, ils sont CALCULÉS (motion-strike, motion-control, motion-aerial) contre le squelette
+// RÉEL de chaque template — ses orientations bind, ses longueurs, l'échelle du squad — et non contre
+// le profil de référence baké (motion-profile-shanon, qui ne sert qu'aux MOVES par défaut et au banc).
+// Un autre rig (?rig=) a ses propres jambes : la sonde des signes (checkProfile) le prouve au
+// chargement, et un rig aux axes inconnus se DIT dans le rapport au lieu de frapper de travers.
 //
 // LE STYLE (retour utilisateur : « différents types de geste pour le même geste, quelques
 // détails par joueur ») est une fonction pure de l'identité du joueur et de la graine du monde :
 // le même joueur frappe toujours pareil, deux joueurs jamais tout à fait pareil. Les gestes se
-// génèrent à la PREMIÈRE demande (quelques ms — pas 22 corps × 7 espèces au coup d'envoi) et se
+// génèrent à la PREMIÈRE demande (quelques ms — pas 22 corps × 20 espèces au coup d'envoi) et se
 // gardent sur le joueur. Pur : aucune dépendance rendu — le parent de Hips est lu par sa matrice
 // monde (16 nombres), pas par three.
 
 import { profileFromBones, checkProfile } from './motion-rig.js';
-import { KINDS, generateStrike, styleFromSeed } from './motion-strike.js';
+import { KINDS as STRIKE_KINDS, generateStrike, checkStrikeGen, styleFromSeed } from './motion-strike.js';
+import { CONTROL_KINDS, generateControl, checkControlGen } from './motion-control.js';
+import { AERIAL_KINDS, generateAerial, checkAerialGen } from './motion-aerial.js';
+
+/** LE REGISTRE : geste → { family, generate(P, opts), check(spec, P, opts) }. */
+export const GENERATORS = {};
+for (const k of Object.keys(STRIKE_KINDS)) GENERATORS[k] = { family: 'strike', generate: (P, o) => generateStrike(k, P, o), check: (spec, P, o) => checkStrikeGen(spec, P, k, o) };
+for (const k of Object.keys(CONTROL_KINDS)) GENERATORS[k] = { family: 'control', generate: (P, o) => generateControl(k, P, o), check: (spec, P, o) => checkControlGen(spec, P, k, o) };
+for (const k of Object.keys(AERIAL_KINDS)) GENERATORS[k] = { family: 'aerial', generate: (P, o) => generateAerial(k, P, o), check: (spec, P) => checkAerialGen(spec, P, k) };
+export const GENERATED_KINDS = Object.keys(GENERATORS);
+
+/** Générer un geste par son nom (null si le geste n'est pas généré). */
+export function generateMove(name, P, opts = {}) {
+  const g = GENERATORS[name];
+  return g ? g.generate(P, opts) : null;
+}
 
 /** Rotation (quaternion) et échelle uniforme d'une matrice 4×4 colonne-major (three.js). */
 function decomposeElements(e) {
@@ -55,8 +71,9 @@ export function castStrikes(entry, player, seed = 7, report = null) {
   return { profile: motionProfileOf(entry, report), style: styleFromSeed(player.id * 7919 + seed), moves: {} };
 }
 
-/** La frappe GÉNÉRÉE de ce joueur pour ce geste (null si le geste n'est pas une frappe générée). */
+/** Le geste GÉNÉRÉ de ce joueur (frappe, contrôle, tête…) — null si le geste n'est pas généré.
+ *  (Le nom reste `strikeSpec` : c'est la ligne de la scène, qui vit au plafond de volumétrie.) */
 export function strikeSpec(pl, move) {
-  if (!KINDS[move] || !pl.profile) return null;
-  return (pl.moves[move] ??= generateStrike(move, pl.profile, { style: pl.style }));
+  if (!GENERATORS[move] || !pl.profile) return null;
+  return (pl.moves[move] ??= GENERATORS[move].generate(pl.profile, { style: pl.style }));
 }

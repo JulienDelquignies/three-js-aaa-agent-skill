@@ -8710,6 +8710,72 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      authorés extérieur, déviation, pointu, pivot, talonnade, contrôles,
      tacles, tête, plongeons (chacun une espèce de plus du générateur) ;
      la locomotion attend sa couche d'inclinaison et de balancier.
+- 295: VINGT GESTES GÉNÉRÉS (lot A3 — « tu peux faire le même travail
+     pour d'autres gestes ? »). La même loi que la note 294 (articulations
+     anatomiques conjuguées dans le bind, rampes C¹ à pics placés, appui par
+     IK, style par joueur, emitSpec) étendue à trois familles, un REGISTRE
+     (motion-cast.GENERATORS : espèce → famille, generate, check) et
+     animkit-data qui génère les MOVES à l'import (les specs authorées
+     restent lisibles dans AUTHORED). LES FRAPPES (motion-strike, 12
+     espèces) : extérieur (pied inversé, cheville rentrée, hanche en
+     rotation interne — une touche : son retour de jambe n'est pas une
+     frappe, le pic se cherche sur le swing), déviation (fouetté court,
+     direction libre, pic tôt), pointe (30° vers le sol, le genou fait
+     tout), pivot (le corps tourne de 34° sur l'appui pendant l'armé,
+     hanche en abduction), talonnade (la jambe part DEVANT puis fouette en
+     ARRIÈRE, pointe relevée dès t=0, tête qui ne regarde pas, lacet du
+     bassin < 6°). LES CONTRÔLES (motion-control, 6 espèces) : trois
+     temps — la jambe VA AU DEVANT (reach : hanche, genou, surface
+     orientée : intérieur tourné, extérieur éversé, semelle relevée de
+     22°), AMORTIT (cushion : dès le contact elle recule et se replie
+     16-25 % de la durée — c'est le retrait qui absorbe, la surface
+     s'ouvre après), REVIENT (settle, pose finale = initiale) ;
+     cuisse à 82° genou à hauteur de hanche buste en arrière ; poitrine
+     cambrée tête en arrière bassin −6 cm deux pieds plantés (tenue
+     modérée : la sim y renvoie 8 contrôles sur 41 sans technique nommée) ;
+     tacle debout = FENTE (bassin −11 cm et +5 cm devant, buste 24° en
+     avant, jambe tendue au ballon). LA TÊTE (motion-aerial) : le corps
+     PLIE (−14 cm, genoux ~48°), le bassin suit une PARABOLE (apex +38 cm
+     au contact), les jambes en IK sur des cibles qui montent et traînent,
+     replantées à l'atterrissage ; le coup S'ARME en montant (buste cambré,
+     cou en extension, bras au-dessus de l'horizontale) et FRAPPE à l'apex
+     (Head ≥ 18° — c'est le cou qui joue, pas le saut) ; tête debout = le
+     fouetté seul, la locomotion garde les jambes. MESURÉ (verify-motion,
+     165 clauses) : enroulée 14,3 m/s, extérieur 9,5, déviation 9,5,
+     pointe 12, pivot 9, talon 7,9 vers l'arrière ; 40 graines × 20
+     espèces = 800 gestes sous contrat ET sous checkClip ; amplitudes
+     bakées = résolues à ±0,03 ; miroir ≤ 1 cm ; sabotages nommés (contrôle
+     statue, tête plate, talonnade qui part devant, appui qui glisse, main
+     au ciel). LA STANCE re-dérivée (depuis l'origine) : enroulée {0,27 m,
+     42°}, pointe {0,48, 16°}, extérieur {0,58, 1°}, pivot {0,50, 64°},
+     déviation {0,32, 35°}, talonnade {0,34, 163°} — rondo 40/40, match
+     83/84 (la clause de RÉGIME : excursion serrée 2,03 contre 2,02, la
+     même frontière de 1 cm qu'au lot A1 — à trancher avec le chantier
+     moteur). CORRIGÉ EN CHEMIN : la clé de contact à 3 ms d'une clé de
+     grille faisait lire 30 rad/s à l'IK (elle REMPLACE la grille à moins
+     de 5 ms) ; le portrait d'un contrôle lit l'échantillon le plus proche
+     du contact (une grille à 120 Hz ne tombe pas sur 0,20 s) ; la hausse
+     du corps pour dégager la pointe est bornée par le jeu de l'affaissement
+     (elle faisait décoller l'appui) ; le plafond 30 rad/s du genou tenu à
+     la construction (fenêtre allongée, kneeTop ≤ 122) ; les feintes
+     portent l'armé des gestes re-bakés (verify-gestes 60/60). LA
+     PLANCHE-CONTACT est générique (--move <espèce>, ballon au pied pour un
+     contrôle, en l'air pour une tête, caméras haussées) : avant/après
+     rendus pour contrôle intérieur, tête, talonnade, tacle debout, cuisse,
+     pivot, pointe, tête debout, extérieur. EN JEU (match11, seed 7) : un
+     contrôle intérieur généré capturé sous 3 caméras (pied tourné vers le
+     ballon, tête sur le ballon, bras d'équilibre), une talonnade. LE MONDE
+     COMPOSÉ (audit-membres) : 15/16 (16/16 au lot A1, sur d'autres
+     épisodes) — l'épisode rouge est une passe rapide « posée » où l'appui
+     est à 43 cm du sol à l'armé, 20 au contact, et le pied frappeur à
+     0,6 m/s : le corps composé n'a PAS joué la passe (les jambes restées à
+     la locomotion — poids d'arrivée ou clip lancé au contact), le clip
+     seul est sous contrat. C'est la dette A2 qui se montre sur un épisode
+     de plus, à instrumenter (l'audit doit dire le poids des jambes et
+     l'offset du clip à l'instant du contact). Les deux autres épisodes :
+     pied→point de frappe 0,09-0,16 m, vitesse composée 7,9-8,3 m/s.
+     DETTES : A2 (poids d'arrivée), les espèces au sol et aux mains (tacle
+     glissé, râteaux, semelle, plongeons, relevés), la locomotion (A4).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

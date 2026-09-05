@@ -91,18 +91,22 @@
 - Le greedy vif d'assignation des slots est un optimum local prouvé (lot 85) — ne pas retenter
   de stabilisation géométrique par frame.
 
-## LES ANIMATIONS 11C11 (chantier parallèle — branche claude/11c11-3d-animations, note 294)
+## LES ANIMATIONS 11C11 (chantier parallèle — branche claude/11c11-3d-animations, notes 294-295)
 - LIVRÉ (lot A1) : les FRAPPES GÉNÉRÉES — motion-rig (profil du rig, conjugaison, sonde des
   signes), motion-strike (7 espèces, style par joueur, contrat), motion-cast (casting par joueur),
   contact-sheet.mjs (la planche-contact), verify-motion.mjs (81 clauses), reference/51.
+- LIVRÉ (lot A3, note 295) : VINGT espèces générées — les 5 frappes restantes (extérieur,
+  déviation, pointu, pivot, talonnade), motion-control (6 contrôles dont poitrine, cuisse, semelle
+  et tacle debout), motion-aerial (tête sautée balistique, tête debout), le registre GENERATORS,
+  la planche-contact générique, verify-motion à 165 clauses (800 gestes stylés sous contrat).
 - SUIVANT, dans l'ordre : (A2) le monde composé — re-caler les poids d'arrivée pour que la vitesse
-  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A3) les
-  autres espèces : extérieur, déviation, pointu, pivot, talonnade, puis contrôles, tacles, tête,
-  plongeons — chacune une espèce du générateur, jamais un clip de plus à la main ; (A4) la
+  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A3 bis)
+  les espèces au sol et aux mains : tacle glissé, râteaux, semelle, plongeons et parades du gardien,
+  relevés — chacune une espèce du générateur, jamais un clip de plus à la main ; (A4) la
   locomotion : inclinaison à l'accélération, balancier des bras selon la vitesse, décélération,
   pas chassés, course arrière (générés par-dessus le Soldier) ; (A5) la stance dérivée et les
   bandes de la sim (la géométrie corps-ballon est une entrée du moteur : à trancher avec le
-  chantier moteur).
+  chantier moteur — verify-match 83/84 sur la clause de régime, frontière de 1 cm).
 
 ## LE PLAN (validé utilisateur) — dans l'ordre
 1. ~~**LE GARDIEN COMPLET (lot 91)**~~ — **LIVRÉ** (note 133) : tenu aux gants (ball.hold +

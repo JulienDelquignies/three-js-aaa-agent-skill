@@ -54,13 +54,24 @@ const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 export const KINDS = {
   frappe:          { surface: 'laces',  duration: 0.85, contact: 0.35, vFoot: 14.5, amp: 0.96, swingHip: 0.13, swingKnee: 0.095, follow: 0.20, hipTop: -28, hipEnd: 68, kneeTop: 116, kneeMin: 12, turnOut: 8, abdTop: 14, abdContact: 2, toeDown: 12, lean: 13, open: 22, headDown: 30, armElev: 64, armFwd: 42, dip: 0.055, sitBack: 0.07 },
   frappePuissante: { surface: 'laces',  duration: 1.0,  contact: 0.45, vFoot: 15.5, amp: 1.15, swingHip: 0.12, swingKnee: 0.085, follow: 0.18, hipTop: -26, hipEnd: 72, kneeTop: 124, kneeMin: 10, turnOut: 8, abdTop: 16, abdContact: 2, toeDown: 10, lean: 17, open: 26, headDown: 30, armElev: 70, armFwd: 44, dip: 0.065, sitBack: 0.09 },
-  frappeEnroulee:  { surface: 'laces',  duration: 0.9,  contact: 0.38, vFoot: 15, amp: 1.02, swingHip: 0.13, swingKnee: 0.095, follow: 0.22, hipTop: -26, hipEnd: 64, kneeTop: 112, kneeMin: 14, turnOut: 22, abdTop: 18, abdContact: 8, toeDown: 5, lean: 12, open: 30, headDown: 28, armElev: 62, armFwd: 44, dip: 0.05, sitBack: 0.07, wrap: true },
-  passe:           { surface: 'inside', duration: 0.7,  contact: 0.38, vFoot: 11.5, amp: 1.08, swingHip: 0.12, swingKnee: 0.09, follow: 0.09, hipTop: -18, hipEnd: 42, kneeTop: 70, kneeMin: 10, turnOut: 42, abdTop: 14, abdContact: 10, toeDown: -8, lean: 6, open: 12, headDown: 26, armElev: 45, armFwd: 22, dip: 0.04, sitBack: 0.06 },
+  frappeEnroulee:  { surface: 'laces',  duration: 0.9,  contact: 0.38, vFoot: 14.3, amp: 1.26, swingHip: 0.13, swingKnee: 0.095, follow: 0.22, hipTop: -26, hipEnd: 64, kneeTop: 112, kneeMin: 14, turnOut: 22, abdTop: 18, abdContact: 8, toeDown: 5, lean: 12, open: 30, headDown: 28, armElev: 62, armFwd: 44, dip: 0.05, sitBack: 0.07, wrap: true },
+  passe:           { surface: 'inside', duration: 0.7,  contact: 0.38, vFoot: 11.5, amp: 1.26, swingHip: 0.12, swingKnee: 0.09, follow: 0.09, hipTop: -18, hipEnd: 42, kneeTop: 70, kneeMin: 10, turnOut: 42, abdTop: 14, abdContact: 10, toeDown: -8, lean: 6, open: 12, headDown: 26, armElev: 45, armFwd: 22, dip: 0.04, sitBack: 0.06 },
   // LES FEINTES (technique.js : « TOUT l'armé d'une passe / d'une frappe, zéro ballon parti ») — le
   // même générateur, le même armé, et la jambe se RETIENT : le swing s'arrête court du ballon.
-  feintePasse:     { surface: 'inside', duration: 0.4,  contact: 0.26, feint: true, vFoot: 0, swingHip: 0.10, swingKnee: 0.07, follow: 0.06, hipTop: -19, hipEnd: 6, kneeTop: 74, kneeMin: 40, turnOut: 30, abdTop: 12, abdContact: 8, toeDown: -6, lean: 5, open: 8, headDown: 24, armElev: 42, armFwd: 22, dip: 0.035, sitBack: 0.06 },
-  feinteFrappe:    { surface: 'laces',  duration: 0.55, contact: 0.3,  feint: true, vFoot: 0, swingHip: 0.13, swingKnee: 0.08, follow: 0.10, hipTop: -33, hipEnd: 4, kneeTop: 122, kneeMin: 62, turnOut: 8, abdTop: 14, abdContact: 4, toeDown: 12, lean: 11, open: 14, headDown: 28, armElev: 60, armFwd: 38, dip: 0.05, sitBack: 0.10 },
-  passeRapide:     { surface: 'inside', duration: 0.54, contact: 0.22, vFoot: 10.5, amp: 1.3, swingHip: 0.11, swingKnee: 0.08, follow: 0.09, hipTop: -15, hipEnd: 44, kneeTop: 58, kneeMin: 8, turnOut: 40, abdTop: 12, abdContact: 10, toeDown: -8, lean: 5, open: 10, headDown: 24, armElev: 40, armFwd: 20, dip: 0.035, sitBack: 0.045 },
+  // ---- les cinq autres frappes du vocabulaire (technique.js) — même loi, drapeaux de forme :
+  //   flick     pichenette : pas de séquence proximo-distale exigée (la jambe reste sous le corps)
+  //   invert    ° d'inversion du pied (l'EXTÉRIEUR frappe semelle vers l'intérieur, jambe qui croise)
+  //   pivot     ° de lacet du bassin AU CONTACT (la passe en se retournant : le ballon est derrière-côté)
+  //   backheel  la TALONNADE : préchargé devant, fouetté vers l'ARRIÈRE — bassin carré, tête haute
+  //   direction 1 avant, −1 arrière, 0 libre (la déviation présente la surface, le ballon a le sens)
+  passeExterieur:  { surface: 'outside', duration: 0.5,  contact: 0.24, vFoot: 9.5, amp: 0.7, swingHip: 0.12, swingKnee: 0.08, follow: 0.12, hipTop: -16, hipEnd: 62, kneeTop: 62, kneeMin: 14, turnOut: -16, abdTop: 6, abdContact: -8, toeDown: 14, invert: -14, lean: 5, open: 8, headDown: 22, armElev: 45, armFwd: 26, dip: 0.035, sitBack: 0.04, flick: true, vWindow: [7.5, 14] },
+  deviation:       { surface: 'inside', duration: 0.38, contact: 0.16, vFoot: 9.5, amp: 0.85, peakLead: 0.02, swingHip: 0.10, swingKnee: 0.07, follow: 0.08, hipTop: -4, hipEnd: 28, kneeTop: 24, kneeMin: 14, turnOut: 36, abdTop: 10, abdContact: 12, toeDown: -6, lean: 4, open: 8, headDown: 20, armElev: 42, armFwd: 22, dip: 0.03, sitBack: 0.03, flick: true, direction: 0, vWindow: [2.5, 12] },
+  frappePointu:    { surface: 'toe',    duration: 0.5,  contact: 0.18, vFoot: 12, amp: 1.15, swingHip: 0.11, swingKnee: 0.07, follow: 0.10, hipTop: -14, hipEnd: 44, kneeTop: 56, kneeMin: 6, turnOut: 0, abdTop: 6, abdContact: 2, toeDown: 30, lean: 6, open: 8, headDown: 24, armElev: 40, armFwd: 24, dip: 0.035, sitBack: 0.05, vWindow: [9, 18] },
+  passePivot:      { surface: 'inside', duration: 0.95, contact: 0.52, vFoot: 9, amp: 0.93, swingHip: 0.13, swingKnee: 0.09, follow: 0.12, hipTop: -14, hipEnd: 50, kneeTop: 68, kneeMin: 12, turnOut: 30, abdTop: 14, abdContact: 14, toeDown: -6, lean: 6, open: 10, headDown: 18, armElev: 48, armFwd: 26, dip: 0.04, sitBack: 0.05, pivot: 34, vWindow: [7.5, 14] },
+  talonnade:       { surface: 'heel',   duration: 0.65, contact: 0.19, vFoot: 8, amp: 1.15, backheel: true, direction: -1, hipFwd: 18, hipBack: -28, kneeFwd: 22, kneeTop: 105, follow: 0.17, swingHip: 0.05, swingKnee: 0.04, hipTop: 0, hipEnd: 0, kneeMin: 0, turnOut: 0, abdTop: 0, abdContact: 0, toeDown: -16, lean: -4, open: 0, headDown: -4, armElev: 40, armFwd: 20, dip: 0.03, sitBack: 0.02, vWindow: [5.5, 12] },
+  feintePasse:     { surface: 'inside', duration: 0.4,  contact: 0.26, feint: true, vFoot: 0, swingHip: 0.10, swingKnee: 0.07, follow: 0.06, hipTop: -23, hipEnd: 6, kneeTop: 88, kneeMin: 40, turnOut: 30, abdTop: 12, abdContact: 8, toeDown: -6, lean: 5, open: 8, headDown: 24, armElev: 42, armFwd: 22, dip: 0.035, sitBack: 0.06 },
+  feinteFrappe:    { surface: 'laces',  duration: 0.55, contact: 0.3,  feint: true, vFoot: 0, swingHip: 0.13, swingKnee: 0.08, follow: 0.10, hipTop: -27, hipEnd: 4, kneeTop: 111, kneeMin: 62, turnOut: 8, abdTop: 14, abdContact: 4, toeDown: 12, lean: 11, open: 14, headDown: 28, armElev: 60, armFwd: 38, dip: 0.05, sitBack: 0.10 },
+  passeRapide:     { surface: 'inside', duration: 0.54, contact: 0.22, vFoot: 10.5, amp: 1.15, swingHip: 0.11, swingKnee: 0.08, follow: 0.09, hipTop: -15, hipEnd: 44, kneeTop: 58, kneeMin: 8, turnOut: 40, abdTop: 12, abdContact: 10, toeDown: -8, lean: 5, open: 10, headDown: 24, armElev: 40, armFwd: 20, dip: 0.035, sitBack: 0.045 },
 };
 
 /** Les bornes du STYLE — un détail par joueur, jamais un autre geste (verify-motion les balaye). */
@@ -107,7 +118,7 @@ export function ramp(t, t0, tp, t1) {
   return (0.5 * (tp - t0) + 0.5 * (s + (w / Math.PI) * Math.sin(Math.PI * s / w))) / total;
 }
 /** Une bosse C¹ (monte de 0 à 1 puis redescend à 0) — pour ce qui passe et ne reste pas. */
-const bump = (t, t0, t1, t2) => (t <= t1 ? ramp(t, t0, (t0 + t1) / 2, t1) : 1 - ramp(t, t1, (t1 + t2) / 2, t2));
+export const bump = (t, t0, t1, t2) => (t <= t1 ? ramp(t, t0, (t0 + t1) / 2, t1) : 1 - ramp(t, t1, (t1 + t2) / 2, t2));
 
 // ---- l'orientation d'un os par alignement de repères (direction + normale de plan) ----
 const quatFromBasis = (a1, a2, a3, b1, b2, b3) => {   // R = B · Aᵀ (colonnes a → colonnes b)
@@ -135,7 +146,7 @@ const alignWorld = (d0, n0, d1, n1) => { const A = frame(d0, n0), B = frame(d1, 
  * @param Rpar  rotation d'articulation cumulée du parent (le bassin)
  * @param ankle cible monde du nœud cheville
  */
-function legIK(P, side, hipW, Rpar, ankle) {
+export function legIK(P, side, hipW, Rpar, ankle) {
   const up = P.bones[`${side}UpLeg`], kn = P.bones[`${side}Leg`], ft = P.bones[`${side}Foot`];
   const L = P.lengths;
   const pole = [0, 0, -1];
@@ -154,7 +165,7 @@ function legIK(P, side, hipW, Rpar, ankle) {
 
 /** La pose de bras : `elev` ° depuis la verticale basse (0 = bras pendant, 90 = horizontal
  *  latéral), `fwd` ° de flexion (vers l'avant), `elbow` ° de flexion du coude. */
-function armJoints(side, { elev, fwd, elbow, rot = 0 }) {
+export function armJoints(side, { elev, fwd, elbow, rot = 0 }) {
   const s = side === 'Right' ? -1 : 1;                 // abaisser : rz(−) à droite, rz(+) à gauche
   return {
     [`${side}Arm`]: chain(ry(-s * rot), rz(s * (90 - elev)), rx(fwd)),
@@ -165,6 +176,97 @@ function armJoints(side, { elev, fwd, elbow, rot = 0 }) {
 /** La pose NEUTRE debout (première et dernière clé) — bras pendants légèrement écartés. */
 export function neutralJoints() {
   return { ...armJoints('Left', { elev: 14, fwd: 6, elbow: 14 }), ...armJoints('Right', { elev: 14, fwd: 6, elbow: 14 }) };
+}
+
+/**
+ * ÉMETTRE un spec animkit dense depuis une pose d'articulations par instant — LA sortie commune des
+ * générateurs (frappe, contrôle, tête). `poseAt(t)` → { J: { os: R }, hips: [droite, haut, avant] } ;
+ * `ik(t)` → { Left: cible cheville | null, Right: … } : une jambe avec cible est résolue par IK deux os
+ * sur la hanche réelle de l'image (pied à plat), une jambe sans cible garde ses DOF. La clé de CONTACT
+ * existe toujours (les bancs et le miroir la cherchent).
+ */
+export function emitSpec(P, { duration, contact, fps = 60, poseAt, ik = () => ({}) }) {
+  const keys = [];
+  const n = Math.round(duration * fps);
+  let times = [];
+  for (let i = 0; i <= n; i++) times.push(i === n ? duration : i / fps);
+  // la clé de contact REMPLACE la clé de grille à moins de 5 ms (un intervalle de 3 ms transforme le
+  // moindre coude d'IK en « téléport » pour checkClip — 30 rad/s mesurés sur un genou d'appui)
+  if (contact != null && !times.some((t) => Math.abs(t - contact) < 1e-6)) { times = times.filter((t) => Math.abs(t - contact) > 0.005 || t === 0 || t === duration); times.push(contact); }
+  times.sort((a, b) => a - b);
+  for (const t of times) {
+    const { J, hips } = poseAt(t);
+    const targets = ik(t) || {};
+    const partial = fkPose(P, { Hips: jointToSpec(P, 'Hips', J.Hips || [0, 0, 0, 1]) }, hips);
+    for (const side of ['Left', 'Right']) {
+      const target = targets[side];
+      if (!target) continue;
+      const r = legIK(P, side, partial[`${side}UpLeg`].p, J.Hips || [0, 0, 0, 1], target);
+      J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
+      // le pied planté reste À PLAT : on annule la rotation cumulée bassin+cuisse+tibia sur la cheville
+      const legW = quatMul(quatMul(J.Hips || [0, 0, 0, 1], r.Rthigh), r.Rshank);
+      J[`${side}Foot`] = quatNormalize(quatConjugate(legW));
+      J[`${side}ToeBase`] = [0, 0, 0, 1];
+    }
+    const pose = {};
+    for (const [bone, R] of Object.entries(J)) {
+      const q = jointToSpec(P, bone, R);
+      if (q) pose[bone] = quatToEulerXYZ(q).map((v) => Math.round(v * 100) / 100);
+    }
+    keys.push({ t: Math.round(t * 10000) / 10000, pose, hips: hips.map((v) => Math.round(v * 1000) / 1000) });
+  }
+  return keys;
+}
+
+/** Un échantillonneur dense d'un spec : at(t) → la pose monde FK (la sémantique du jeu). */
+export function denseSampler(spec, P) {
+  const { tracks, hipsPos } = resolveDense(spec);
+  return (t) => fkPose(P, sampleQ(tracks, t), sampleHips(hipsPos, t));
+}
+
+/**
+ * LE PORTRAIT DU CORPS, commun à toutes les familles : appui planté et à plat, mains sous le cou,
+ * coude vivant, rien sous la pelouse, retour à la pose initiale — plus les positions monde de
+ * quelques os au fil du temps pour les clauses propres à chaque famille.
+ */
+export function bodyPortrait(spec, P, { support = 'Left', window = null, hz = 120 } = {}) {
+  const at = denseSampler(spec, P);
+  const h = 1 / hz, ground = P.lengths.groundY;
+  const [w0, w1] = window || [0, spec.duration];
+  let supDrift = 0, supLift = 0, worstHand = -Infinity, locked = 0, nElev = 0, lowest = Infinity;
+  const sup0 = support ? at(w0)[`${support}Foot`].p : null;
+  const samples = [];
+  for (let t = 0; t <= spec.duration + 1e-9; t += h) {
+    const w = at(t);
+    samples.push({ t, w });
+    if (support && t >= w0 - 1e-9 && t <= w1 + 1e-9) {
+      const sp = w[`${support}Foot`].p;
+      supDrift = Math.max(supDrift, hyp(sp[0] - sup0[0], sp[2] - sup0[2])); supLift = Math.max(supLift, Math.abs(sp[1] - sup0[1]));
+    }
+    for (const side of ['Left', 'Right']) {
+      const sh = w[`${side}Arm`].p, fo = w[`${side}ForeArm`].p, ha = w[`${side}Hand`].p;
+      worstHand = Math.max(worstHand, ha[1] - w.Neck.p[1]);
+      const elev = Math.asin(clamp((ha[1] - sh[1]) / (len(sub(ha, sh)) || 1), -1, 1)) * R2D;
+      if (elev > -40) { nElev++; const u = sub(sh, fo), v2 = sub(ha, fo); if (Math.acos(clamp(dot(u, v2) / ((len(u) * len(v2)) || 1), -1, 1)) * R2D >= 155) locked++; }
+    }
+    lowest = Math.min(lowest, w.LeftToeBase.p[1], w.RightToeBase.p[1], w.LeftFoot.p[1] - 0.04, w.RightFoot.p[1] - 0.04);
+  }
+  const first = samples[0].w, last = samples[samples.length - 1].w;
+  let endGap = 0;
+  for (const bone of Object.keys(first)) endGap = Math.max(endGap, len(sub(first[bone].p, last[bone].p)));
+  return { at, samples, supDrift, supLift, worstHand, lockedFrac: nElev ? locked / nElev : 0, lowest: lowest - ground, endGap };
+}
+
+/** Les clauses du corps, communes (chaque famille y ajoute les siennes). */
+export function bodyIssues(p, { support = true } = {}) {
+  const issues = [];
+  if (support && p.supDrift > 0.03) issues.push(`l'appui GLISSE (${(p.supDrift * 100).toFixed(1)} cm) — le pied planté doit tenir`);
+  if (support && p.supLift > 0.03) issues.push(`l'appui DÉCOLLE (${(p.supLift * 100).toFixed(1)} cm)`);
+  if (p.worstHand > 0.03) issues.push(`une main passe au-dessus du cou (+${(p.worstHand * 100).toFixed(0)} cm)`);
+  if (p.lockedFrac > 0.2) issues.push(`coude verrouillé bras levé sur ${(100 * p.lockedFrac).toFixed(0)} % des images (> 20)`);
+  if (p.lowest < -0.03) issues.push(`un pied passe sous la pelouse (${(p.lowest * 100).toFixed(0)} cm)`);
+  if (p.endGap > 0.06) issues.push(`la pose finale n'est pas la pose initiale (écart ${(p.endGap * 100).toFixed(0)} cm) — le fondu vers la locomotion sauterait`);
+  return issues;
 }
 
 /**
@@ -185,6 +287,7 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
   const tFt = Math.min(T - 0.08, tc + K.follow);          // fin de l'accompagnement (hanche au maximum)
   const tKneeEnd = Math.min(tFt, tc + 0.3 * K.swingKnee);  // le genou finit de s'étendre juste après le contact
   const tPlant = 0.45 * tc;                                // le corps est assis sur l'appui
+  const tPre = Math.max(0.04, tc - 0.04), tBack = Math.min(T - 0.1, tc + K.follow);   // talonnade : préchargé devant, fouetté derrière
   const inside = K.surface === 'inside';
   const L = P.lengths;
   const ankleRestY = P.bones.LeftFoot.bindP[1];
@@ -201,11 +304,15 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
   const snap = S.snap;
   const cv = (t) => {
     // hanche frappeuse : armé → swing (pic ~50 ms avant le contact) → accompagnement → retour
-    const hipFlex = hipTop * ramp(t, 0, 0.6 * tTopHip, tTopHip)
-      + (hipEnd - hipTop) * ramp(t, tTopHip, tc - 0.09, tFt)
+    const hipFlex = K.backheel
+      ? K.hipFwd * ramp(t, 0, 0.6 * tPre, tPre) + (K.hipBack - K.hipFwd) * ramp(t, tPre, tc + 0.005, tBack) + (0 - K.hipBack) * ramp(t, tBack, (tBack + T) / 2, T)
+      : hipTop * ramp(t, 0, 0.6 * tTopHip, tTopHip)
+      + (hipEnd - hipTop) * ramp(t, tTopHip, tc - (K.peakLead ?? 0.09), tFt)
       + (0 - hipEnd) * ramp(t, tFt, (tFt + T) / 2, T);
     // genou frappeur : fléchit pendant que la cuisse repart, s'étend avec le pic SUR le contact
-    const knee = kneeTop * ramp(t, 0, 0.6 * tTopKnee, tTopKnee)
+    const knee = K.backheel
+      ? K.kneeFwd * ramp(t, 0, 0.6 * tPre, tPre) + (kneeTop - K.kneeFwd) * ramp(t, tPre, tc + 0.03, tBack) + (0 - kneeTop) * ramp(t, tBack, (tBack + T) / 2, T)
+      : kneeTop * ramp(t, 0, 0.6 * tTopKnee, tTopKnee)
       + (kneeMin - kneeTop) * ramp(t, tTopKnee, tc - 0.02 + snap, tKneeEnd)
       + ((K.feint ? kneeMin : 22) - kneeMin) * ramp(t, tKneeEnd, (tKneeEnd + tFt) / 2, tFt)
       + (0 - (K.feint ? kneeMin : 22)) * ramp(t, tFt, (tFt + T) / 2, T);
@@ -217,22 +324,25 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
     // mesure la vitesse angulaire totale de la cuisse)
     const turn = K.turnOut * ramp(t, 0.2 * tc, 0.6 * tc, tc - 0.02) + (0 - K.turnOut) * ramp(t, tKneeEnd, (tKneeEnd + T) / 2, T);
     // cheville : cou-de-pied verrouillé pointe basse ; intérieur : pied relevé (dorsiflexion)
-    const toeRamp = ramp(t, 0.3 * tc, 0.7 * tc, tc - 0.02) * (1 - ramp(t, tFt, (tFt + T) / 2, T));
+    const toeRamp = (K.backheel ? ramp(t, 0, 0.25 * tc, 0.6 * tc) : ramp(t, 0.3 * tc, 0.7 * tc, tc - 0.02)) * (1 - ramp(t, tFt, (tFt + T) / 2, T));
     const toe = K.toeDown * S.toe * toeRamp;
     // bassin : lacet côté frappeur à l'armé (droite = négatif), revient et passe au contact
-    const pelvYaw = -16 * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (16 + 12 * S.open) * ramp(t, tTopHip, tc - 0.02, tFt) + (-12 * S.open) * ramp(t, tFt, (tFt + T) / 2, T);
+    const turnEnv = ramp(t, 0, 0.5 * tc, tc - 0.02) * (1 - ramp(t, tFt, (tFt + T) / 2, T));   // le pivot : tourné AU contact, revenu à la fin
+    const pelvYaw = K.backheel ? 0 : K.pivot ? -K.pivot * turnEnv
+      : -16 * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (16 + 12 * S.open) * ramp(t, tTopHip, tc - 0.02, tFt) + (-12 * S.open) * ramp(t, tFt, (tFt + T) / 2, T);
     // (le bassin : antéversion à l'armé — rx −, le haut du bassin part en avant, le dos se cambre —
     // puis rétroversion à travers le contact, qui participe à la flexion de hanche)
     const pelvTilt = -4 * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (4 + 8) * ramp(t, tTopHip, tc, tFt) + (-8) * ramp(t, tFt, (tFt + T) / 2, T);
-    const pelvRoll = S.hipRoll * bump(t, 0.3 * tc, tTopKnee, tc + 0.1);
+    const pelvRoll = K.backheel ? 0 : S.hipRoll * bump(t, 0.3 * tc, tTopKnee, tc + 0.1);
     // tronc : arrière à l'armé (lean), avant à l'accompagnement ; contre-rotation ; latéral loin de la jambe
     // (rx + = le haut du corps part vers l'ARRIÈRE — sonde du profil : rx − sur Spine avance la tête)
     const lean = K.lean * S.lean * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (-K.lean * S.lean - 14) * ramp(t, tTopHip, tc + 0.02, tFt) + (14) * ramp(t, tFt, (tFt + T) / 2, T);
-    const trunkYaw = 10 * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (-10 - K.open * S.open) * ramp(t, tTopHip, tc + 0.03, tFt) + (K.open * S.open) * ramp(t, tFt, (tFt + T) / 2, T);
+    const trunkYaw = K.backheel ? 0 : K.pivot ? -0.6 * K.pivot * turnEnv
+      : 10 * ramp(t, 0, 0.5 * tTopHip, tTopHip) + (-10 - K.open * S.open) * ramp(t, tTopHip, tc + 0.03, tFt) + (K.open * S.open) * ramp(t, tFt, (tFt + T) / 2, T);
     const side = S.sideLean * bump(t, tPlant, tc, T);
     // tête : SUR le ballon (bas, un peu à droite) jusqu'au contact, puis se relève vers la cible
     const head = K.headDown * S.headDown * ramp(t, 0, 0.5 * tPlant, tPlant) + (-K.headDown * S.headDown) * ramp(t, tc + 0.04, tc + 0.14, tFt + 0.1);
-    const headYaw = -14 * ramp(t, 0, 0.5 * tPlant, tPlant) + 14 * ramp(t, tc + 0.04, tc + 0.14, tFt + 0.1);
+    const headYaw = K.pivot ? -0.8 * K.pivot * turnEnv : -14 * ramp(t, 0, 0.5 * tPlant, tPlant) + 14 * ramp(t, tc + 0.04, tc + 0.14, tFt + 0.1);
     // bras d'équilibre (gauche) : monte pendant l'armé, tenu au contact, redescend ; bras droit recule
     // (un geste court — la feinte, 0,4 s — n'a pas le temps de redescendre un bras levé haut sans
     // dépasser le plafond des bras (14 rad/s, checkClip) : le bras monte MOINS, jamais plus vite)
@@ -261,7 +371,7 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
     // jambe frappeuse (droite) : DOF anatomiques
     J.RightUpLeg = chain(ry(-c.turn), rz(c.abd), rx(c.hipFlex));
     J.RightLeg = rx(-c.knee);
-    J.RightFoot = inside ? chain(rz(8 * c.toeRamp), rx(-c.toe)) : rx(-c.toe);   // intérieur : légère éversion, la surface se présente
+    J.RightFoot = inside ? chain(rz(8 * c.toeRamp), rx(-c.toe)) : K.invert ? chain(rz(K.invert * c.toeRamp), rx(-c.toe)) : rx(-c.toe);   // intérieur : éversion ; extérieur : inversion — la surface se présente
     J.RightToeBase = [0, 0, 0, 1];
     // bras : le gauche équilibre (haut, devant-latéral, coude plié), le droit recule
     const n = neutralJoints();
@@ -284,37 +394,12 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
       deficit = Math.max(deficit, P.lengths.groundY - 0.005 - Math.min(w.RightToeBase.p[1], w.RightFoot.p[1] - 0.04));
     }
     if (deficit <= 0) break;
-    lift += deficit;
+    lift = Math.min(lift + deficit, K.dip * S.dip * 0.8 + 0.02);   // jamais plus que l'appui ne peut donner (sinon il décolle)
   }
   const liftAt = (t) => lift * bump(t, 0.3 * tTopKnee, tc, tFt + 0.05);
 
   // ---- l'échantillonnage : jambe d'appui par IK sur le bassin réel de chaque image ----
-  const keys = [];
-  const n = Math.round(T * fps);
-  const times = [];
-  for (let i = 0; i <= n; i++) times.push(i === n ? T : i / fps);
-  if (!times.some((t) => Math.abs(t - tc) < 1e-6)) times.push(tc);   // la clé de CONTACT existe (bancs, miroir)
-  times.sort((a, b) => a - b);
-  for (const t of times) {
-    const { J, hips: hips0 } = poseAt(t);
-    const hips = [hips0[0], hips0[1] + liftAt(t), hips0[2]];
-    // la hanche gauche après la pose du bassin (FK partielle : Hips seul)
-    const partial = fkPose(P, { Hips: jointToSpec(P, 'Hips', J.Hips) }, hips);
-    const hipL = partial.LeftUpLeg.p;
-    const ik = legIK(P, 'Left', hipL, J.Hips, leftFootRest);
-    J.LeftUpLeg = ik.Rthigh; J.LeftLeg = ik.Rshank;
-    // le pied d'appui reste À PLAT : on annule la rotation cumulée cuisse+tibia sur la cheville
-    // (orientation monde du pied = bind), puis on l'étend légèrement au contact (poussée)
-    const legW = quatMul(quatMul(J.Hips, ik.Rthigh), ik.Rshank);
-    J.LeftFoot = quatNormalize(quatConjugate(legW));
-    J.LeftToeBase = [0, 0, 0, 1];
-    const pose = {};
-    for (const [bone, R] of Object.entries(J)) {
-      const q = jointToSpec(P, bone, R);
-      if (q) pose[bone] = quatToEulerXYZ(q).map((v) => Math.round(v * 100) / 100);
-    }
-    keys.push({ t: Math.round(t * 10000) / 10000, pose, hips: hips.map((v) => Math.round(v * 1000) / 1000) });
-  }
+  const keys = emitSpec(P, { duration: T, contact: tc, fps, poseAt: (t) => { const { J, hips } = poseAt(t); return { J, hips: [hips[0], hips[1] + liftAt(t), hips[2]] }; }, ik: () => ({ Left: leftFootRest, Right: null }) });
   return { name: kindName, duration: T, contact: tc, foot: 'right', generated: true, keys };
 }
 
@@ -340,8 +425,11 @@ export function strikePortrait(spec, P, { foot = 'right' } = {}) {
   }
   const speed = (i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)]; return len(sub(b, a)) / (2 * h); };
   const iC = Math.round(spec.contact / h);
+  // le pic se cherche sur le SWING (jusqu'à la fin de l'accompagnement) : le retour de la jambe
+  // d'une petite touche peut aller plus vite que la touche, ce n'est pas une frappe
   let peak = 0, iPeak = 0;
-  for (let i = 0; i < pts.length; i++) { const s = speed(i); if (s > peak) { peak = s; iPeak = i; } }
+  const iSwingEnd = Math.min(pts.length - 1, Math.round((spec.contact + 0.12) / h));
+  for (let i = 0; i <= iSwingEnd; i++) { const s = speed(i); if (s > peak) { peak = s; iPeak = i; } }
   const a = pts[Math.max(0, iC - 1)], b = pts[Math.min(pts.length - 1, iC + 1)];
   const v = vscale(sub(b, a), 1 / (2 * h));
   const vn = len(v) || 1;
@@ -372,6 +460,8 @@ export function strikePortrait(spec, P, { foot = 'right' } = {}) {
   const thighPk = jointPeak(foot === 'right' ? 'RightUpLeg' : 'LeftUpLeg'), kneePk = jointPeak(foot === 'right' ? 'RightLeg' : 'LeftLeg');
   const hipTrack = spec.keys.map((k) => k.pose[foot === 'right' ? 'RightUpLeg' : 'LeftUpLeg']?.[0]).filter((v) => typeof v === 'number');
   const hipMin = hipTrack.length ? Math.min(...hipTrack) : 0, hipMax = hipTrack.length ? Math.max(...hipTrack) : 0;
+  let kneeLo = Infinity, kneeHi = -Infinity;
+  for (const k of spec.keys) if (k.pose[foot === 'right' ? 'RightLeg' : 'LeftLeg']) { const x = k.pose[foot === 'right' ? 'RightLeg' : 'LeftLeg'][0]; kneeLo = Math.min(kneeLo, x); kneeHi = Math.max(kneeHi, x); }
   const first = at(0), last = at(spec.duration);
   let endGap = 0;
   for (const bone of Object.keys(first)) endGap = Math.max(endGap, len(sub(first[bone].p, last[bone].p)));
@@ -379,7 +469,7 @@ export function strikePortrait(spec, P, { foot = 'right' } = {}) {
     vContact: speed(iC), peak, tPeak: iPeak * h, vFwd: -v[2], height: c[1] - ground, ankleY: c[1],
     toeAxis: hyp(toes[iC][0] - c[0], toes[iC][2] - c[2]), stance, S,
     supDrift, supLift, worstHand, lockedFrac: nElev ? locked / nElev : 0, lowest: lowest - ground,
-    thighPeak: thighPk, kneePeak: kneePk, endGap, hipMin, hipMax,
+    thighPeak: thighPk, kneePeak: kneePk, endGap, kneeRange: kneeHi - kneeLo, hipMin, hipMax,
   };
 }
 
@@ -398,11 +488,13 @@ export function checkStrikeGen(spec, P, kindName, { foot = 'right' } = {}) {
     if (p.endGap > 0.06) issues.push(`la pose finale n'est pas la pose initiale (écart ${(p.endGap * 100).toFixed(0)} cm)`);
     return { ok: issues.length === 0, issues, portrait: p };
   }
-  const vMin = K.vFoot ? K.vFoot * 0.8 : 8;    // ±20 % : la technique d'un joueur est une note, pas une constante
+  const vMin = K.vFoot ? K.vFoot * 0.78 : 8;   // ±22 % : la technique d'un joueur est une note, pas une constante
+  const dir = K.direction ?? 1;
   if (p.vContact < vMin) issues.push(`pied au contact ${p.vContact.toFixed(1)} m/s < ${vMin.toFixed(1)} (visé ${K.vFoot})`);
   if (p.vContact > 27) issues.push(`pied au contact ${p.vContact.toFixed(1)} m/s > 27 — au-delà de l'élite`);
   if (Math.abs(p.tPeak - spec.contact) > 0.035) issues.push(`pic de vitesse à t=${p.tPeak.toFixed(3)} hors du contact ${spec.contact} ± 0,035`);
-  if (p.vFwd < 0.6 * p.vContact) issues.push(`le pied ne traverse pas vers l'avant (v_avant ${p.vFwd.toFixed(1)} < 60 % de ${p.vContact.toFixed(1)})`);
+  if (dir > 0 && p.vFwd < 0.6 * p.vContact) issues.push(`le pied ne traverse pas vers l'avant (v_avant ${p.vFwd.toFixed(1)} < 60 % de ${p.vContact.toFixed(1)})`);
+  if (dir < 0 && p.vFwd > -0.6 * p.vContact) issues.push(`le talon ne traverse pas vers l'ARRIÈRE (v_avant ${p.vFwd.toFixed(1)} > −60 % de ${p.vContact.toFixed(1)})`);
   if (p.height < 0.05 || p.height > 0.30) issues.push(`cheville au contact à ${(p.height * 100).toFixed(0)} cm du sol (attendu 5-30)`);
   if (p.toeAxis < 0.08) issues.push(`orientation du pied non écrite au contact (axe orteils horizontal ${(p.toeAxis * 100).toFixed(1)} cm < 8 — la clause du banc de swing)`);
   // les bornes articulaires de la hanche frappeuse (les mêmes que checkClip, en repère spec) : un armé
@@ -413,6 +505,8 @@ export function checkStrikeGen(spec, P, kindName, { foot = 'right' } = {}) {
   if (p.worstHand > 0.03) issues.push(`une main passe au-dessus du cou (+${(p.worstHand * 100).toFixed(0)} cm)`);
   if (p.lockedFrac > 0.2) issues.push(`coude verrouillé bras levé sur ${(100 * p.lockedFrac).toFixed(0)} % des images (> 20)`);
   if (p.lowest < -0.03) issues.push(`un pied passe sous la pelouse (${(p.lowest * 100).toFixed(0)} cm)`);
+  if (K.backheel && p.kneeRange < 70) issues.push(`la talonnade ne fouette pas derrière (genou ${p.kneeRange.toFixed(0)}° < 70)`);
+  if (K.flick || K.backheel) return { ok: issues.length === 0, issues, portrait: p };   // pichenette / talon : pas de fouet proximo-distal exigé
   if (!(p.thighPeak.t < p.kneePeak.t)) issues.push(`séquence proximo-distale absente (pic cuisse t=${p.thighPeak.t.toFixed(3)}, genou t=${p.kneePeak.t.toFixed(3)})`);
   if (Math.abs(p.kneePeak.t - spec.contact) > 0.05) issues.push(`le pic du genou (t=${p.kneePeak.t.toFixed(3)}) n'est pas sur le contact (± 50 ms)`);
   if (p.kneePeak.w < 12) issues.push(`genou trop lent (${(p.kneePeak.w * R2D).toFixed(0)}°/s < 690)`);

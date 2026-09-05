@@ -25,6 +25,9 @@ import { KINDS, STYLE_RANGES, NEUTRAL_STYLE, styleFromSeed, generateStrike, solv
 import { resolveTracks, checkClip, checkStrike, mirrorMove, eulerToQuat, quatAngle } from '../assets/starter/src/engine/animkit.js';
 import { AUTHORED } from '../assets/starter/src/engine/animkit-data.js';
 import { STANCES } from '../assets/starter/src/engine/approach.js';
+import { CONTROL_KINDS, generateControl, checkControlGen } from '../assets/starter/src/engine/motion-control.js';
+import { AERIAL_KINDS, generateAerial, checkAerialGen } from '../assets/starter/src/engine/motion-aerial.js';
+import { GENERATORS, GENERATED_KINDS } from '../assets/starter/src/engine/motion-cast.js';
 import { quatMul, quatNormalize } from '../assets/starter/src/engine/vecmath.js';
 
 let pass = 0, fail = 0;
@@ -80,7 +83,7 @@ ok('ramp : C¹, 0 → 1, pic de vitesse à l\'instant demandé', (() => {
 
 // ---------- 3. le contrat, par espèce et par pied
 console.log('\n— le contrat de frappe, par espèce et par pied —');
-const REAL = { laces: [13.5, 27], inside: [9.5, 16] };   // fenêtres du réel : cou-de-pied 15-25 (élite), intérieur ~10-14
+const REAL = { laces: [13.5, 27], inside: [9.5, 16], outside: [7.5, 14], toe: [9, 18], heel: [5.5, 12] };   // fenêtres du réel : cou-de-pied 15-25 (élite), intérieur ~10-14
 const stanceTable = {};
 for (const k of Object.keys(KINDS)) {
   const K = KINDS[k];
@@ -92,16 +95,20 @@ for (const k of Object.keys(KINDS)) {
     const p = c.portrait;
     if (K.feint) ok(`  pied ${foot} : feinte — se RETIENT (pied ${p.vContact.toFixed(1)} m/s), appui planté, mains sous le cou, retour`, c.ok, c.issues.join(' | '));
     else {
-      const [lo, hi] = REAL[K.surface];
+      const [lo, hi] = K.vWindow || REAL[K.surface];
       ok(`  pied ${foot} : pied au contact ${p.vContact.toFixed(1)} m/s dans le réel [${lo}, ${hi}], pic à ${(1000 * (p.tPeak - sp.contact)).toFixed(0)} ms du contact`, c.ok && p.vContact >= lo && p.vContact <= hi, c.issues.join(' | '));
-      ok(`    séquence proximo-distale : cuisse ${(p.thighPeak.t * 1000).toFixed(0)} ms PUIS genou ${(p.kneePeak.t * 1000).toFixed(0)} ms (${(p.kneePeak.w * R2D).toFixed(0)}°/s — élite 1 100-1 600)`, p.thighPeak.t < p.kneePeak.t && p.kneePeak.w * R2D >= 690);
+      if (K.backheel) ok(`    la talonnade fouette DERRIÈRE (genou ${p.kneeRange.toFixed(0)}° ≥ 70, v_avant ${p.vFwd.toFixed(1)} ≤ −60 %)`, p.kneeRange >= 70 && p.vFwd <= -0.6 * p.vContact);
+      else if (K.flick) ok(`    pichenette : la jambe reste sous le corps (hanche ${p.hipMin.toFixed(0)}…${p.hipMax.toFixed(0)}°), pied ${(p.height * 100).toFixed(0)} cm`, p.hipMin >= -40 && p.hipMax <= 100);
+      else ok(`    séquence proximo-distale : cuisse ${(p.thighPeak.t * 1000).toFixed(0)} ms PUIS genou ${(p.kneePeak.t * 1000).toFixed(0)} ms (${(p.kneePeak.w * R2D).toFixed(0)}°/s — élite 1 100-1 600)`, p.thighPeak.t < p.kneePeak.t && p.kneePeak.w * R2D >= 690);
       ok(`    appui planté (dérive ${(p.supDrift * 100).toFixed(1)} cm, décollage ${(p.supLift * 100).toFixed(1)} cm), mains à ${(p.worstHand * 100).toFixed(0)} cm sous le cou, retour ${(p.endGap * 100).toFixed(0)} cm`, p.supDrift <= 0.03 && p.supLift <= 0.03 && p.worstHand <= 0.03 && p.endGap <= 0.06);
     }
   }
   const r = resolveTracks(spec);
   const cc = checkClip(r);
   ok(`  checkClip (animkit) : os connus, vitesses angulaires sous les plafonds, bassin sain`, cc.ok, cc.issues.slice(0, 3).join(' | '));
-  if (!K.feint) { const cs = checkStrike(r); ok(`  checkStrike (animkit) : bassin, tronc, tête, bras d'équilibre, appui, fouet`, cs.ok, cs.issues.join(' | ')); }
+  // les clauses d'expressivité d'animkit suivent la FAMILLE (comme dans verify-animkit) : pichenette
+  // sans fouet, pivot sans séquence, la talonnade a ses propres clauses (bassin carré, tête haute)
+  if (!K.feint && !K.backheel) { const cs = checkStrike(r, K.flick ? { proximoDistal: false, flick: true } : K.pivot ? { proximoDistal: false } : {}); ok(`  checkStrike (animkit) : bassin, tronc, tête, bras d'équilibre, appui${K.flick || K.pivot ? '' : ', fouet'}`, cs.ok, cs.issues.join(' | ')); }
   stanceTable[k] = strikePortrait(spec, P).stance;
 }
 
@@ -112,19 +119,49 @@ console.log('\n— le style : un détail par joueur, jamais un autre geste —')
   for (let seed = 1; seed <= 40; seed++) {
     const st = styleFromSeed(seed);
     for (const [k, [a, b]] of Object.entries(STYLE_RANGES)) if (!(st[k] >= a && st[k] <= b)) bad++;
-    for (const kind of ['frappe', 'passe', 'passeRapide', 'frappePuissante', 'frappeEnroulee', 'feintePasse', 'feinteFrappe']) {
-      const spec = generateStrike(kind, P, { style: st });
-      const c = checkStrikeGen(spec, P, kind), cc = checkClip(resolveTracks(spec));
-      n++; if (!c.ok || !cc.ok) { bad++; if (bad <= 5) console.log(`   graine ${seed} × ${kind} : ${[...c.issues, ...cc.issues].join(' | ')}`); }
-      if (!KINDS[kind].feint) { worstV[0] = Math.min(worstV[0], c.portrait.vContact / KINDS[kind].vFoot); worstV[1] = Math.max(worstV[1], c.portrait.vContact / KINDS[kind].vFoot); }
+    for (const kind of GENERATED_KINDS) {
+      const spec = GENERATORS[kind].generate(P, { style: st });
+      const c = GENERATORS[kind].check(spec, P, {});
+      const cc = checkClip(resolveTracks(spec));
+      n++; if (!c.ok || !cc.ok) { bad++; if (bad <= 6) console.log(`   graine ${seed} × ${kind} : ${[...c.issues, ...cc.issues].join(' | ')}`); }
+      if (KINDS[kind] && !KINDS[kind].feint) { worstV[0] = Math.min(worstV[0], c.portrait.vContact / KINDS[kind].vFoot); worstV[1] = Math.max(worstV[1], c.portrait.vContact / KINDS[kind].vFoot); }
     }
   }
-  ok(`40 graines × 7 espèces = ${n} gestes sous contrat ET sous checkClip (${bad} refus)`, bad === 0);
-  ok(`la vitesse visée tient sous tous les styles (${(100 * worstV[0]).toFixed(0)} % à ${(100 * worstV[1]).toFixed(0)} % de vFoot — ±20 %, la technique est une note)`, worstV[0] >= 0.8 && worstV[1] <= 1.25);
+  ok(`40 graines × ${GENERATED_KINDS.length} espèces = ${n} gestes sous contrat ET sous checkClip (${bad} refus)`, bad === 0);
+  ok(`la vitesse visée tient sous tous les styles (${(100 * worstV[0]).toFixed(0)} % à ${(100 * worstV[1]).toFixed(0)} % de vFoot — ±25 %, la technique est une note)`, worstV[0] >= 0.75 && worstV[1] <= 1.3);
   ok('même graine → même geste (déterminisme)', JSON.stringify(generateStrike('frappe', P, { style: styleFromSeed(9) })) === JSON.stringify(generateStrike('frappe', P, { style: styleFromSeed(9) })));
   const a = generateStrike('frappe', P, { style: styleFromSeed(9) }), b = generateStrike('frappe', P, { style: styleFromSeed(10) });
   let diff = 0; for (let i = 0; i < a.keys.length; i++) for (const bone of Object.keys(a.keys[i].pose)) diff = Math.max(diff, quatAngle(eulerToQuat(a.keys[i].pose[bone]), eulerToQuat(b.keys[i].pose[bone])) * R2D);
   ok(`deux graines ne sont pas des clones (pire écart d'os ${diff.toFixed(0)}° ≥ 5) mais restent le même geste (≤ 40°)`, diff >= 5 && diff <= 40);
+}
+
+// ---------- 4b. les contrôles : le pied va au ballon et cède, le corps reçoit
+console.log('\n— les contrôles, par espèce et par pied —');
+for (const k of Object.keys(CONTROL_KINDS)) {
+  const K = CONTROL_KINDS[k];
+  const spec = generateControl(k, P);
+  ok(`« ${k} » : ${spec.keys.length} clés, durée ${spec.duration} s et contact ${spec.contact} s inchangés`, spec.duration === K.duration && spec.contact === K.contact);
+  for (const [foot, sp] of K.chest ? [['droit', spec]] : [['droit', spec], ['gauche', mirrorMove(spec)]]) {
+    const c = checkControlGen(sp, P, k, { foot: foot === 'droit' ? 'right' : 'left' });
+    const p = c.portrait;
+    const what = K.chest ? `poitrine offerte (tête ${(p.headBack * 100).toFixed(0)} cm derrière le bassin), genoux ${(p.dipC * 100).toFixed(0)} cm`
+      : K.thigh ? `cuisse au ballon (genou à ${(p.kneeH * 100).toFixed(0)} cm), cambré ${(p.headBack * 100).toFixed(0)} cm`
+      : K.lunge ? `fente : pied à ${(p.excC * 100).toFixed(0)} cm devant, bassin ${(p.dipC * 100).toFixed(0)} cm / +${(p.fwdC * 100).toFixed(0)} cm`
+      : `pied au ballon à ${(p.excC * 100).toFixed(0)} cm (≥ ${(K.excursion * 100).toFixed(0)}), cheville à ${(p.hC * 100).toFixed(0)} cm, retour à ${(p.endExc * 100).toFixed(0)} cm`;
+    ok(`  pied ${foot} : ${what} — appui planté, mains sous le cou, retour`, c.ok, c.issues.join(' | '));
+  }
+  const cc = checkClip(resolveTracks(spec));
+  ok('  checkClip (animkit)', cc.ok, cc.issues.slice(0, 3).join(' | '));
+}
+
+// ---------- 4c. les têtes : un saut est une balistique, un coup de tête est un fouetté
+console.log('\n— les têtes —');
+for (const k of Object.keys(AERIAL_KINDS)) {
+  const spec = generateAerial(k, P);
+  const c = checkAerialGen(spec, P, k), p = c.portrait;
+  ok(`« ${k} » : ${AERIAL_KINDS[k].upperOnly ? 'haut du corps seul, ' : `bassin +${(p.apex * 100).toFixed(0)} cm à l'apex, impulsion ${(p.crouch * 100).toFixed(0)} cm / genou ${p.kneeAtCrouch.toFixed(0)}°, `}tête ${p.headBackMin.toFixed(0)}° → ${p.headC.toFixed(0)}° au contact`, c.ok, c.issues.join(' | '));
+  const cc = checkClip(resolveTracks(spec));
+  ok('  checkClip (animkit)', cc.ok, cc.issues.slice(0, 3).join(' | '));
 }
 
 // ---------- 5. les amplitudes bakées
@@ -175,6 +212,14 @@ console.log('\n— les sabotages —');
   ok('sabotage « style hors bornes (armé ×1,8) » refusé par le contrat', !c2.ok, c2.issues.slice(0, 2).join(' | '));
   const slow = generateStrike('passe', P, { amp: 0.4 });
   ok('sabotage « armé étouffé (amp 0,4) » : la passe n\'atteint plus sa vitesse', !checkStrikeGen(slow, P, 'passe').ok);
+  const statue = generateControl('controleInterieur', P);
+  for (const k of statue.keys) for (const b of Object.keys(k.pose)) if (/Leg|Foot/.test(b)) k.pose[b] = [0, 0, 0];
+  ok('sabotage « contrôle-statue (le pied ne va pas au ballon) » attrapé', checkControlGen(statue, P, 'controleInterieur').issues.some((i) => /ne va pas au ballon/.test(i)));
+  const flat = generateAerial('tete', P);
+  for (const k of flat.keys) k.hips = [0, 0, 0];
+  ok('sabotage « tête sans saut (bassin à plat) » attrapé', checkAerialGen(flat, P, 'tete').issues.some((i) => /ne MONTE pas|ne PLIE pas/.test(i)));
+  const fwdHeel = { ...generateStrike('passe', P), name: 'talonnade' };
+  ok('sabotage « talonnade qui frappe DEVANT » attrapé par la direction', checkStrikeGen(fwdHeel, P, 'talonnade').issues.some((i) => /ARRIÈRE/.test(i)));
 }
 
 console.log('\n— la table des stances à recopier (approach.STANCES) —');

@@ -57,7 +57,7 @@ threejs-aaa/ (the skill)
 │   ├── 47-football-rules.md    impossible-football catalogue (23 rules) + the gesture vocabulary as data
 │   ├── 48-gesture-timeline.md  an action has a beginning and an end: the ball leaves at the contact frame
 │   ├── 49-gait-engine.md       the gait clock: one phase, slaved clips, measured cadence, whole-body layer
-│   ├── 51-motion-strike.md     GENERATED strikes: anatomical joint curves (proximo-distal whip, weight on the support leg, per-player style) → animkit specs, the rig profile, the contact sheet
+│   ├── 51-motion-strike.md     GENERATED gestures (20 species: strikes, controls, headers): anatomical joint curves (proximo-distal whip, cushion, ballistic jump, per-player style) → animkit specs, the rig profile, the contact sheet
 │   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
@@ -143,10 +143,13 @@ examples/
   `motion-strike.js` writes the biomechanics of the kick as C¹ ramps with placed velocity peaks
   (thigh first, knee whip peaking ON the contact at 1 100-1 600°/s, foot at 11-18 m/s, weight sitting
   back on a planted support leg solved by IK, trunk and balance arm from the physics, head on the ball)
-  and emits ordinary animkit specs at 60 Hz — seven species (passes, shots, feints) plus a bounded
-  per-player STYLE (same gesture, a player's own details). `contact-sheet.mjs` renders any gesture
-  3 cameras × 6 phases for the agent and the human to judge the same picture. Proven by
-  `verify-motion.mjs` (81 clauses, 40 seeds × 7 species under contract).
+  and emits ordinary animkit specs at 60 Hz — twelve strike species (passes, shots, feints, outside,
+  toe, pivot, backheel); `motion-control.js` writes controls as reach → cushion → settle (inside,
+  outside, sole, thigh, chest, standing tackle) and `motion-aerial.js` the header as a ballistic
+  jump with IK legs and a neck whip at the apex — twenty species, plus a bounded per-player STYLE
+  (same gesture, a player's own details). `contact-sheet.mjs` renders any gesture 3 cameras × 6
+  phases for the agent and the human to judge the same picture. Proven by `verify-motion.mjs`
+  (165 clauses, 40 seeds × 20 species under contract).
 - **Procedural animation & interaction verification** — math-driven motion (springs, damping,
   two-bone IK, look-at, foot IK) and a tested validator that checks a character↔object interaction
   is correct (orientation, reach, hand-on-target, feet grounded) — runnable at runtime and in CI.

@@ -38,16 +38,16 @@
 // (résiduel composé 0,45 m mesuré). verify-swing porte la clause de concordance : si un clip est
 // ré-authoré, la table DOIT être re-mesurée, sinon le banc refuse.
 export const STANCES = {
-  passe: { dist: 0.45, bearing: 18 },          // GÉNÉRÉES (motion-strike) : mesurées par FK depuis l'origine du modèle, canal hanches compris — verify-motion imprime la table
-  passeRapide: { dist: 0.50, bearing: 17 },
+  passe: { dist: 0.44, bearing: 18 },          // GÉNÉRÉES (motion-strike) : mesurées par FK depuis l'origine du modèle, canal hanches compris — verify-motion imprime la table
+  passeRapide: { dist: 0.51, bearing: 17 },
   frappe: { dist: 0.36, bearing: 24 },         // le cou-de-pied : contact devant l'appui, le genou encore fléchi, le ballon dans l'axe de la hanche frappeuse
   frappePuissante: { dist: 0.41, bearing: 21 },
-  frappeEnroulee: { dist: 0.30, bearing: 39 },   // l'enroulée : la jambe contourne, le ballon plus ouvert
-  frappePointu: { dist: 0.62, bearing: 4 },       // le bout du pied : ballon devant, presque dans l'axe
-  passeExterieur: { dist: 0.53, bearing: 8 },    // re-mesurés depuis l'ORIGINE du modèle (verify-swing) — la convention de anchorFor
-  passePivot: { dist: 0.46, bearing: 61 },
-  deviation: { dist: 0.32, bearing: 48 },
-  talonnade: { dist: 0.26, bearing: 145 },
+  frappeEnroulee: { dist: 0.27, bearing: 42 },   // l'enroulée : la jambe contourne, le ballon plus ouvert
+  frappePointu: { dist: 0.48, bearing: 16 },      // le bout du pied : ballon devant, presque dans l'axe
+  passeExterieur: { dist: 0.58, bearing: 1 },    // GÉNÉRÉES aussi (extérieur, déviation, pointu, pivot, talonnade) : mesurées depuis l'ORIGINE du modèle
+  passePivot: { dist: 0.50, bearing: 64 },
+  deviation: { dist: 0.32, bearing: 35 },
+  talonnade: { dist: 0.34, bearing: 163 },
 };
 
 const D2R = Math.PI / 180;

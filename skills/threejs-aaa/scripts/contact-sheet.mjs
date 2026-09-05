@@ -20,7 +20,10 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { MOVES, AUTHORED } from '../assets/starter/src/engine/animkit-data.js';
 import { profileFromGltf } from '../assets/starter/src/engine/motion-rig.js';
-import { KINDS, solveStrike, strikePortrait, styleFromSeed, NEUTRAL_STYLE } from '../assets/starter/src/engine/motion-strike.js';
+import { KINDS, solveStrike, strikePortrait, styleFromSeed, NEUTRAL_STYLE, denseSampler } from '../assets/starter/src/engine/motion-strike.js';
+import { GENERATORS } from '../assets/starter/src/engine/motion-cast.js';
+import { CONTROL_KINDS, controlPortrait } from '../assets/starter/src/engine/motion-control.js';
+import { AERIAL_KINDS, aerialPortrait } from '../assets/starter/src/engine/motion-aerial.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, arr) => a.startsWith('--') ? [a.slice(2), arr[i + 1] && !arr[i + 1].startsWith('--') ? arr[i + 1] : '1'] : []).filter(Boolean));
 const MOVE = args.move || 'frappe';
@@ -38,24 +41,44 @@ const raw = readFileSync(join(SHOW, 'public', 'shanon.glb'));
 const glbLen = raw.readUInt32LE(12);
 const P = profileFromGltf(JSON.parse(raw.subarray(20, 20 + glbLen).toString()), { faces: '+Z' });
 const variants = [];
+// LE BALLON de la planche : à la stance dérivée (frappe), au pied / sous la semelle / sur la cuisse /
+// devant la poitrine (contrôles), au front (tête) — lu par FK au contact du spec, quelle que soit sa
+// provenance (authoré ou généré)
+function ballFor(move, spec) {
+  const at = denseSampler(spec, P);
+  const w = at(spec.contact);
+  const K = CONTROL_KINDS[move];
+  if (AERIAL_KINDS[move]) { const h = w.Head.p; return [h[0], h[1] + 0.02, h[2] - 0.2]; }
+  if (K?.chest) { const c = w.Spine2.p; return [c[0], c[1] + 0.05, c[2] - 0.24]; }
+  if (K?.thigh) { const k = w.RightLeg.p, hp = w.RightUpLeg.p; return [(k[0] + hp[0]) / 2 + 0.02, (k[1] + hp[1]) / 2 + 0.11, (k[2] + hp[2]) / 2 - 0.02]; }
+  if (K?.sole) { const f = w.RightFoot.p; return [f[0], 0.11, f[2] - 0.12]; }
+  if (K) { const f = w.RightFoot.p, h = w.Hips.p; const d = Math.hypot(f[0] - h[0], f[2] - h[2]) || 1; return [f[0] + 0.14 * (f[0] - h[0]) / d, 0.11, f[2] + 0.14 * (f[2] - h[2]) / d]; }
+  return strikePortrait(spec, P).S;
+}
+function describe(move, spec) {
+  if (AERIAL_KINDS[move]) { const p = aerialPortrait(spec, P); return AERIAL_KINDS[move].upperOnly ? `tête ${p.headC.toFixed(0)}° au contact` : `bassin +${(p.apex * 100).toFixed(0)} cm à l'apex · tête ${p.headC.toFixed(0)}°`; }
+  if (CONTROL_KINDS[move]) { const p = controlPortrait(spec, P); return CONTROL_KINDS[move].chest ? `tête ${(p.headBack * 100).toFixed(0)} cm derrière le bassin` : CONTROL_KINDS[move].thigh ? `genou à ${(p.kneeH * 100).toFixed(0)} cm` : `pied à ${(p.excC * 100).toFixed(0)} cm au contact`; }
+  const p = strikePortrait(spec, P);
+  return `pied ${p.vContact.toFixed(1)} m/s · genou ${(p.kneePeak.w * 180 / Math.PI).toFixed(0)}°/s · stance {${p.stance.dist.toFixed(2)} m, ${p.stance.bearing.toFixed(0)}°}`;
+}
 if (VARIANT !== 'after') {
   const spec = AUTHORED[MOVE] || MOVES[MOVE];
   if (!spec) { console.error(`geste inconnu : ${MOVE}`); process.exit(1); }
-  const p = strikePortrait(spec, P);
-  variants.push({ label: `AVANT — ${MOVE} authoré (${spec.keys.length} clés) · pied ${p.vContact.toFixed(1)} m/s au contact · stance {${p.stance.dist.toFixed(2)} m, ${p.stance.bearing.toFixed(0)}°}`, spec, ball: p.S });
+  variants.push({ label: `AVANT — ${MOVE} authoré (${spec.keys.length} clés) · ${describe(MOVE, spec)}`, spec, ball: ballFor(MOVE, spec) });
 }
 if (VARIANT !== 'before') {
-  if (!KINDS[MOVE]) { console.error(`pas de générateur pour : ${MOVE} (espèces : ${Object.keys(KINDS).join(', ')})`); process.exit(1); }
+  if (!GENERATORS[MOVE]) { console.error(`pas de générateur pour : ${MOVE} (espèces : ${Object.keys(GENERATORS).join(', ')})`); process.exit(1); }
   const style = SEED != null ? styleFromSeed(SEED) : NEUTRAL_STYLE;
-  const sol = solveStrike(MOVE, P, { style });
-  const p = strikePortrait(sol.spec, P);
-  variants.push({ label: `APRÈS — ${MOVE} généré${SEED != null ? ` (style graine ${SEED})` : ' (style neutre)'} · pied ${p.vContact.toFixed(1)} m/s · genou ${(p.kneePeak.w * 180 / Math.PI).toFixed(0)}°/s · stance {${p.stance.dist.toFixed(2)} m, ${p.stance.bearing.toFixed(0)}°}`, spec: sol.spec, ball: p.S });
+  const spec = KINDS[MOVE] && !KINDS[MOVE].feint ? solveStrike(MOVE, P, { style }).spec : GENERATORS[MOVE].generate(P, { style });
+  variants.push({ label: `APRÈS — ${MOVE} généré${SEED != null ? ` (style graine ${SEED})` : ' (style neutre)'} · ${describe(MOVE, spec)}`, spec, ball: ballFor(MOVE, spec) });
 }
 const PHASES = [-0.25, -0.15, -0.03, 0, 0.08, 0.2];
+const HIGH = !!AERIAL_KINDS[MOVE] || !!CONTROL_KINDS[MOVE]?.chest;   // une tête ou une poitrine se regarde plus haut
+const up = HIGH ? 0.4 : 0;
 const CAMS = [
-  { name: 'côté frappeur', pos: [3.1, 1.15, -0.3], look: [0, 0.95, -0.15] },
-  { name: 'face ¾', pos: [2.1, 1.3, -2.7], look: [0, 0.9, 0] },
-  { name: 'dos ¾ bas', pos: [-1.7, 0.55, 2.5], look: [0, 0.8, -0.2] },
+  { name: 'côté frappeur', pos: [3.1, 1.15 + up, -0.3], look: [0, 0.95 + up, -0.15] },
+  { name: 'face ¾', pos: [2.1, 1.3 + up, -2.7], look: [0, 0.9 + up, 0] },
+  { name: 'dos ¾ bas', pos: [-1.7, 0.55 + up, 2.5], look: [0, 0.8 + up, -0.2] },
 ];
 
 // ---- le serveur statique + Chromium headless (même recette que audit-membres)
@@ -88,7 +111,7 @@ for (const v of variants) {
     for (let i = 0; i < 40; i++) pl.ctrl.update(1 / 60);          // la base : l'idle, poids 1
     pl.model.position.set(0, pl.groundY, 0); pl.model.rotation.y = 0;
     pl.ctrl.pos.set(0, pl.groundY, 0);
-    S.ball.position.set(ball[0], 0.11, ball[2]);
+    S.ball.position.set(ball[0], ball[1], ball[2]);
     const r = pl.gestureLayer.begin(spec);
     const sheet = document.createElement('canvas');
     const W = cell, H = cell, top = 34, left = 120;
