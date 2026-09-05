@@ -2,7 +2,7 @@
 // même couloir vertical ») : un REGISTRE d'occupation des CIBLES de la structure d'attaque, ouvert à chaque image par le
 // porteur (son couloir compte en premier), rempli par les postés puis les soutiens dans l'ordre où le match les pose. Une
 // cible qui tombe dans un couloir plein (≥ max) se DÉPLACE au couloir voisin le plus proche qui a de la place — à égalité,
-// le côté OPPOSÉ au ballon (ouvrir la largeur) — en gardant sa position relative dans le couloir ; la réaffectation TIENT
+// le CÔTÉ DU BALLON (surcharger un côté, isoler l'autre : contre le ballon, la fixation du 98 mourait) — en gardant sa position relative dans le couloir ; la réaffectation TIENT
 // tenue s (hystérésis — la v4 promise au lot 84 : jamais un post-traitement par image, trois échecs consignés). Mesuré avant
 // (6 × 300 s, attaque placée, corps devant le ballon − 10 m) : un couloir à ≥ 3 corps sur 50 % des images, deux demi-espaces
 // occupés 34 %. Clé absente : aucune cible ne bouge, l'hier au bit.
@@ -44,7 +44,7 @@ export function placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ, devant, rempl
   let best = -1, bd = 99;
   for (let c = 0; c < 5; c++) {
     if (R.n[c] >= max) continue;
-    const d = Math.abs(c - c0) + (Math.abs(c - cb) < Math.abs(c0 - cb) ? 0.1 : 0) - ((c === 1 || c === 3) && R.n[c] === 0 ? (C.demi ?? 0.6) : 0);   // à égalité, le côté OPPOSÉ au ballon ; un DEMI-ESPACE VIDE attire (demi — le relais dans chaque demi-espace, précepte 1.4)
+    const d = Math.abs(c - c0) + (Math.abs(c - cb) > Math.abs(c0 - cb) ? 0.1 : 0) - ((c === 1 || c === 3) && R.n[c] === 0 ? (C.demi ?? 0.6) : 0);   // à égalité, le CÔTÉ DU BALLON (Guardiola surcharge un côté et isole l'autre — contre le ballon, le passeur changeait de côté et la fixation du 98 ne montait jamais : 0 bascule) ; un DEMI-ESPACE VIDE attire (demi)
     if (d < bd) { bd = d; best = c; }
   }
   if (best < 0) { compte(c0); return tz; }   // tout est plein : la cible reste (le monde le dira)
