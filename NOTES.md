@@ -8697,19 +8697,26 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      FIXES à l'entrée de la surface (hx − 20, ou ballon + 6 si plus
      avancé) sous la Loi 11, z 0 / ± 14 (intermédiaire, jamais 25) ;
      amplitude × axe transition (0 : rien) ; les élus prennent un burst
-     contre-zone (le sprint : ils partent 30-40 m derrière). ESSAYÉS ET
-     REJETÉS : cibles « ballon + 8 » (les élus restaient près du porteur,
-     plus d'option profonde : 6 → 2 contres), fenêtre moments.win 5 s
-     (les zones se vidaient quand le ballon arrivait), l'élection hors
-     coureurs et l'override des seuls postés (les soutiens élus gardaient
-     leur slot). MESURÉ (12 × 300 s) : contres arrivés à l'entrée 8 → 17
-     (4,3/match), aucune zone 62 → 29 %, deux zones ou plus 12,5 → 65 %,
-     trois 0 → 18 % (l'annexe lointaine 41 %, la proche 65), trois corps
-     arrivés en médiane, second latéral 0 ; courses combinées 413 → 493,
-     pertes 294 → 284. La cible doctrinale « trois zones ≥ 60 % » n'est
-     pas atteinte — l'annexe lointaine est une traversée de 20 m qu'un
-     seul corps fait à temps ; dette nommée avec les buts de contre (1 → 0
-     sur 60 min, un chiffre). Jumeau {contreZones:false} = moteur 241 au
+     contre-zone (le sprint) tant qu'ils sont à plus de 8 m de leur zone ;
+     LE CONTRE EST UN BALLON QUI FILE : ballon ou porteur à ≥ 4 m/s vers
+     l'avant, il meurt quand un porteur LENT tient plus d'une seconde.
+     ESSAYÉS ET REJETÉS : cibles « ballon + 8 » (les élus restaient près
+     du porteur, plus d'option profonde : 6 → 2 contres), fenêtre
+     moments.win 5 s (les zones se vidaient quand le ballon arrivait),
+     l'élection hors coureurs et l'override des seuls postés (les
+     soutiens élus gardaient leur slot), et le déclencheur lâche « vitesse
+     > 1 ou moitié adverse » : il rendait 17 contres à l'entrée et deux
+     zones ou plus à 65 % — mais trois sprints après chaque regain, 9
+     corps à plus de 3,5 m/s au jeu placé (borne 6), 6 421 sauts de cible,
+     quinze rouges au banc : la fourmilière, un prix qu'on ne livre pas ; à
+     3 m/s même fourmilière sans les zones. MESURÉ (12 × 300 s, le
+     déclencheur strict) : contres arrivés à l'entrée 8 → 7 (non-
+     diminution), aucune zone 63 → 43 %, deux zones ou plus 13 → 29 %,
+     second latéral 27 → 0-1 ; économie de course tenue, couloirs et
+     240-flux verts. La cible doctrinale « trois zones ≥ 60 % » est loin
+     (0-11 %) : l'annexe lointaine est une traversée de 20 m, et les
+     contres qui arrivent sont rares (2/match) — dette nommée avec les
+     buts de contre. Jumeau {contreZones:false} = moteur 241 au
      bit (6434e6a7aa44317b / 5effe81d30eb6e6b).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`

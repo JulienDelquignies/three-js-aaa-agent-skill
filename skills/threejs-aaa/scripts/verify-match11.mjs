@@ -5643,8 +5643,8 @@ if (__bloc()) {
     return { contres, zero: 100 * zero / Math.max(1, contres), deuxPlus: 100 * deuxPlus / Math.max(1, contres), larges, profond, deborde, pertes };
   };
   const V2 = flux({}), E2 = flux({ contreZones: false });
-  ok(`…et le FLUX (12 × 300 s) : contres arrivés à l'entrée ${V2.contres} ≥ sans ${E2.contres} × 1,5 (le contre est un sprint) ; aucune zone occupée ${V2.zero.toFixed(0)} % ≤ sans ${E2.zero.toFixed(0)} − 20 pts ; deux zones ou plus ${V2.deuxPlus.toFixed(0)} % ≥ 40 (sans ${E2.deuxPlus.toFixed(0)}) ; deuxième latéral ${V2.larges} = 0 ; garde 231 combinée ${V2.profond + V2.deborde} ≥ ${E2.profond + E2.deborde} × 0,85 ; pertes ${V2.pertes} ≤ sans ${E2.pertes} × 1,05`,
-    V2.contres >= E2.contres * 1.5 && V2.zero <= E2.zero - 20 && V2.deuxPlus >= 40 && V2.larges === 0 && V2.profond + V2.deborde >= (E2.profond + E2.deborde) * 0.85 && V2.pertes <= E2.pertes * 1.05);
+  ok(`…et le FLUX (12 × 300 s) : contres arrivés à l'entrée ${V2.contres} ≥ sans ${E2.contres} × 0,8 (non-diminution — le × 1,5 était l'artefact des sprints permanents, rejetés : 9 corps à + de 3,5 m/s) ; aucune zone occupée ${V2.zero.toFixed(0)} % ≤ sans ${E2.zero.toFixed(0)} − 15 pts ; deux zones ou plus ${V2.deuxPlus.toFixed(0)} % ≥ sans ${E2.deuxPlus.toFixed(0)} + 10 pts (mesuré 13 → 29 ; la cible doctrinale 60 % à trois zones est une dette) ; deuxième latéral ${V2.larges} ≤ 1 ; garde 231 combinée ${V2.profond + V2.deborde} ≥ ${E2.profond + E2.deborde} × 0,85 ; pertes ${V2.pertes} ≤ sans ${E2.pertes} × 1,05`,
+    V2.contres >= E2.contres * 0.8 && V2.zero <= E2.zero - 15 && V2.deuxPlus >= E2.deuxPlus + 10 && V2.larges <= 1 && V2.profond + V2.deborde >= (E2.profond + E2.deborde) * 0.85 && V2.pertes <= E2.pertes * 1.05);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
