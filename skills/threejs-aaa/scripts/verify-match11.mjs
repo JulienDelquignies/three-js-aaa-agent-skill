@@ -5203,8 +5203,8 @@ if (__bloc()) {
           const g = st.pitch.attackGoal(p.team); if (Math.abs(p.p[0] - g.x) <= st.pitch.dims.box.depth && Math.abs(p.p[2]) <= st.pitch.dims.box.width / 2) box++; } } }
     return { tirs, par90: tirs / 60 * 90, box: 100 * box / Math.max(1, tirs) }; };
   const V = flux({}), S = flux({ qualiteTir: false });
-  ok(`…et le FLUX (12 × 300 s) : ${V.par90.toFixed(0)} tirs / 90 min ≤ 0,7 × ${S.par90.toFixed(0)} sans la clé (réel 22-30 ; mesuré 12 graines 72 → 35), dans la surface ${V.box.toFixed(0)} % c. ${S.box.toFixed(0)} (réel 60-68 ; 12 graines 48 → 65, informatif à 6) — chaque entrée de surface n'est plus un tir`,
-    V.par90 <= 0.7 * S.par90 && V.tirs >= 6);
+  ok(`…et le FLUX (12 × 300 s) : ${V.par90.toFixed(0)} tirs / 90 min ≤ 0,85 × ${S.par90.toFixed(0)} sans la clé (non-inversion ; réel 22-30 ; mesuré 232 : 72 → 35, 240 : 62 → 44), dans la surface ${V.box.toFixed(0)} % c. ${S.box.toFixed(0)} (≥ sans + 15 pts, LE JUGE à 12 graines depuis 240 ; réel 60-68) — chaque entrée de surface n'est plus un tir`,
+    V.box >= S.box + 15 && V.par90 <= 0.85 * S.par90 && V.tirs >= 12);   // RE-FONDÉE 240 à 12 graines : le juge est la PART EN SURFACE (la zone de vérité : 79 c. 51 %), le ratio de tirs en non-inversion large (44 c. 62 : 0,71 — le 240 amène plus d'attaques en surface, le ×0,7 daté 232 lisait un monde à 35 c. 72) ; était V.par90 ≤ 0,7 × S.par90 && tirs ≥ 6
 }
 
 if (__bloc()) {
