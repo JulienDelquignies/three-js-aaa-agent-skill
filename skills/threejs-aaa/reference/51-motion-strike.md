@@ -267,9 +267,11 @@ le pied passe à 0,02-0,06 m du point de frappe (0,42 m avant le lot A1).
   d'arrivée (audit-membres) est le prochain chantier.
 - Restent authorés : la retournée (sans déclencheur sim) et les gestes sociaux (salut, poignée,
   célébration, applaudir, consulter). Tout le football du répertoire est généré.
-- La table `STANCES` re-dérivée du lot A3 (passe 0,44 m, déviation 0,32, pivot {0,50, 64°}, talon
-  {0,34, 163°}…) laisse verify-match à 83/84 : la clause de RÉGIME (excursion serrée < pleine − 0,3)
-  tombe à 2,03 contre 2,02 — une frontière de 1 cm sur une fixture de conduite, déjà à 1 cm au lot A1,
-  à trancher avec le chantier moteur.
+- La table `STANCES` est RENDUE AU MOTEUR (note 300) : la re-dériver des clips générés (passe 0,44 m,
+  déviation 0,32, pivot {0,50, 64°}…) faisait basculer 8 clauses de verify-match11 (l'engagement, le
+  choix de l'espèce de tir, la conduite — 258 clauses accordées sur la géométrie d'hier). La stance
+  des clips vit dans `STANCES_CLIP` (verify-motion la mesure, verify-swing la compare) ; l'écart de
+  8-16 cm est porté au ballon par le warp de frappe de la scène. Une seule géométrie pour la sim et
+  les clips reste à trancher avec le chantier moteur.
 - La locomotion est toujours celle du Soldier ; le corps accordé (gait.js) attend sa couche
   d'inclinaison à l'accélération et de balancier des bras selon la vitesse.

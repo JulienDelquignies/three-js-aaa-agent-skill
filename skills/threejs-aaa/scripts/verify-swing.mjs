@@ -20,7 +20,7 @@
 // Contrôles : le pied d'accueil s'étend vers le ballon puis revient (l'amorti est un geste, pas
 // une pose) — excursion ≥ 0,18 m et retour ≤ 60 % de l'excursion.
 import { MOVES, resolveTracks, mirrorMove } from '../assets/starter/src/engine/animkit.js';
-import { STANCES } from '../assets/starter/src/engine/approach.js';
+import { STANCES_CLIP as STANCES } from '../assets/starter/src/engine/approach.js';   // la stance DES CLIPS (la sim garde la sienne : STANCES)
 import { readFileSync } from 'node:fs';
 
 let pass = 0, fail = 0;

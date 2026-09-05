@@ -13,7 +13,7 @@
 //   4. LE STYLE : 40 graines × 7 espèces restent sous contrat (un détail par joueur, jamais un
 //      autre geste), le même joueur re-tire le même geste, deux joueurs ne sont pas des clones.
 //   5. LES AMPLITUDES BAKÉES tiennent leur vitesse (le jeu génère sans bissection).
-//   6. LA STANCE DÉRIVÉE (S = cheville + 0,18 · direction) concorde avec approach.STANCES (≤ 8 cm) —
+//   6. LA STANCE DÉRIVÉE (S = cheville + 0,18 · direction) concorde avec approach.STANCES_CLIP (≤ 8 cm) —
 //      la table est imprimée pour être recopiée quand un geste change.
 //   7. LE MIROIR est exact : la FK du geste miroir est le miroir de la FK (x ↔ −x, ≤ 1 cm).
 //   8. LES SABOTAGES : la frappe plate d'hier, une main au ciel, un appui qui glisse, un style hors
@@ -24,7 +24,7 @@ import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shan
 import { KINDS, STYLE_RANGES, NEUTRAL_STYLE, styleFromSeed, generateStrike, solveStrike, strikePortrait, checkStrikeGen, ramp } from '../assets/starter/src/engine/motion-strike.js';
 import { resolveTracks, checkClip, checkStrike, mirrorMove, eulerToQuat, quatAngle } from '../assets/starter/src/engine/animkit.js';
 import { AUTHORED } from '../assets/starter/src/engine/animkit-data.js';
-import { STANCES } from '../assets/starter/src/engine/approach.js';
+import { STANCES_CLIP as STANCES } from '../assets/starter/src/engine/approach.js';   // la stance DES CLIPS (la sim garde la sienne : STANCES)
 import { CONTROL_KINDS, generateControl, checkControlGen } from '../assets/starter/src/engine/motion-control.js';
 import { AERIAL_KINDS, generateAerial, checkAerialGen } from '../assets/starter/src/engine/motion-aerial.js';
 import { SKILL_KINDS, generateSkill, checkSkillGen } from '../assets/starter/src/engine/motion-skill.js';
@@ -247,7 +247,7 @@ for (const k of Object.keys(KINDS)) {
 }
 
 // ---------- 6. la stance dérivée
-console.log('\n— la stance dérivée ↔ approach.STANCES —');
+console.log('\n— la stance dérivée ↔ approach.STANCES_CLIP (la sim garde STANCES, sa géométrie) —');
 for (const [k, st] of Object.entries(stanceTable)) {
   const tab = STANCES[k];
   if (!tab) { console.log(`   (${k} : pas de stance — geste porté)`); continue; }

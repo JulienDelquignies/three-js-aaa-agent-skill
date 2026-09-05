@@ -38,13 +38,34 @@
 // (résiduel composé 0,45 m mesuré). verify-swing porte la clause de concordance : si un clip est
 // ré-authoré, la table DOIT être re-mesurée, sinon le banc refuse.
 export const STANCES = {
-  passe: { dist: 0.44, bearing: 18 },          // GÉNÉRÉES (motion-strike) : mesurées par FK depuis l'origine du modèle, canal hanches compris — verify-motion imprime la table
+  // LA GÉOMÉTRIE DE LA SIM — une ENTRÉE DU MOTEUR, pas une mesure de clip. Les bancs de sim (rondo, match,
+  // match11 : 258 clauses) sont accordés sur cette table ; la re-dériver des clips générés (lots A1-A3)
+  // déplaçait le coup d'envoi, le choix de l'espèce de tir, la conduite — 8 clauses de verify-match11
+  // basculaient pour une géométrie « plus vraie » de 5-15 cm. Le clip a SA stance (STANCES_CLIP, mesurée par
+  // verify-motion) ; l'écart entre les deux est absorbé par le warp de frappe (pied → ballon, ≤ 0,42 m).
+  passe: { dist: 0.58, bearing: 11 },
+  passeRapide: { dist: 0.58, bearing: 11 },   // même frappe, armé court : la stance est identique
+  frappe: { dist: 0.41, bearing: 11 },
+  frappePuissante: { dist: 0.41, bearing: 11 },   // le cou-de-pied ample : même ballon que frappe
+  frappeEnroulee: { dist: 0.55, bearing: 16 },    // l'intérieur : ballon un peu plus loin, plus ouvert
+  frappePointu: { dist: 0.62, bearing: 4 },       // le bout du pied : ballon devant, presque dans l'axe
+  passeExterieur: { dist: 0.45, bearing: 10 },
+  passePivot: { dist: 0.43, bearing: 72 },
+  deviation: { dist: 0.27, bearing: 62 },
+  talonnade: { dist: 0.32, bearing: 153 },
+};
+/** LA STANCE DES CLIPS GÉNÉRÉS — où le pied frappe VRAIMENT, mesurée par FK depuis l'origine du modèle
+ *  (S = cheville au contact + 0,18 · direction du pied) — la table que verify-motion imprime et que
+ *  verify-swing compare au clip. Écart à STANCES : passe 14 cm, frappe 10, pointu 16, extérieur 13,
+ *  pivot 8, déviation 13, talon 10 — le warp de frappe les porte au ballon. */
+export const STANCES_CLIP = {
+  passe: { dist: 0.44, bearing: 18 },
   passeRapide: { dist: 0.51, bearing: 17 },
-  frappe: { dist: 0.36, bearing: 24 },         // le cou-de-pied : contact devant l'appui, le genou encore fléchi, le ballon dans l'axe de la hanche frappeuse
+  frappe: { dist: 0.36, bearing: 24 },
   frappePuissante: { dist: 0.41, bearing: 21 },
-  frappeEnroulee: { dist: 0.27, bearing: 42 },   // l'enroulée : la jambe contourne, le ballon plus ouvert
-  frappePointu: { dist: 0.48, bearing: 16 },      // le bout du pied : ballon devant, presque dans l'axe
-  passeExterieur: { dist: 0.58, bearing: 1 },    // GÉNÉRÉES aussi (extérieur, déviation, pointu, pivot, talonnade) : mesurées depuis l'ORIGINE du modèle
+  frappeEnroulee: { dist: 0.27, bearing: 42 },
+  frappePointu: { dist: 0.48, bearing: 16 },
+  passeExterieur: { dist: 0.58, bearing: 1 },
   passePivot: { dist: 0.50, bearing: 64 },
   deviation: { dist: 0.32, bearing: 35 },
   talonnade: { dist: 0.34, bearing: 163 },

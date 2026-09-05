@@ -118,7 +118,8 @@
   locomotion : inclinaison à l'accélération, balancier des bras selon la vitesse, décélération,
   pas chassés, course arrière (générés par-dessus le Soldier) ; (A5) la stance dérivée et les
   bandes de la sim (la géométrie corps-ballon est une entrée du moteur : à trancher avec le
-  chantier moteur — verify-match 83/84 sur la clause de régime, frontière de 1 cm).
+  chantier moteur — la table STANCES est restée celle du moteur, la stance des clips vit dans
+  STANCES_CLIP, l'écart est porté par le warp de frappe ; note 300).
 
 ## LE PLAN (validé utilisateur) — dans l'ordre
 1. ~~**LE GARDIEN COMPLET (lot 91)**~~ — **LIVRÉ** (note 133) : tenu aux gants (ball.hold +

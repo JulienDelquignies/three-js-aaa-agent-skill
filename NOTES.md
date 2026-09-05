@@ -8939,6 +8939,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      contrat et sous checkClip. Nommé : la borne d'Euler de checkClip sur
      la hanche est une convention debout ; un corps couché mériterait une
      lecture géométrique (angle cuisse / axe du bassin).
+- 300: LA TABLE DES STANCES RENDUE AU MOTEUR. verify-match11 (1 h de calcul,
+     258 clauses de sim pure) : 258/6 sur le commit d'avant les lots
+     d'animation, 253/11 avec la table des stances re-dérivée des clips
+     générés (A1-A3) — trois clauses qui passaient sont rouges et huit
+     nouvelles (l'engagement qui n'est plus une passe : 3,27 s ; le tir qui
+     ne s'habille plus de son espèce ; la balle qui s'échappe seule ; la
+     passe en profondeur ; les cibles ; la sortie au gardien ; deux flux).
+     La seule entrée de la sim que ces lots touchaient : approach.STANCES,
+     la géométrie corps-ballon (passe 0,58 → 0,44 m, pointu 0,62 → 0,48,
+     extérieur 0,45 → 0,58, déviation 0,27 → 0,32…). Une géométrie « plus
+     vraie » de 5-15 cm déplaçait le coup d'envoi, le choix de l'espèce de
+     tir, la conduite — les 258 clauses sont ACCORDÉES sur la table
+     d'hier. DÉCISION : STANCES redevient celle du moteur (une entrée, pas
+     une mesure) ; la stance DES CLIPS vit dans STANCES_CLIP (mesurée par
+     verify-motion, comparée par verify-swing) ; l'écart entre les deux
+     (8-16 cm) est porté au ballon par le warp de frappe de la scène
+     (pied → ballon, ≤ 0,42 m). Avec la table d'hier : rondo 40/40, match
+     84/84 attendu (la clause de régime à 2,02 revient sous sa borne),
+     verify-approach 24/24, verify-swing 115/115, verify-motion inchangé
+     (ses clauses de stance lisent STANCES_CLIP). Nommé : les 6 rouges
+     restants de verify-match11 (roulette qui traverse, œil de l'urgence,
+     ancre à la craie, cérémonies, une-deux, flux troisième homme) sont
+     ceux du commit de base — le chantier moteur.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
