@@ -8920,6 +8920,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      gestes sociaux. DETTES : le monde composé (A2) — le time-warp et le
      warp des gants de la scène restent ceux d'hier ; audit-gants à relire
      sur le build ; la locomotion (A4 du plan initial).
+- 299: LA JAMBE ARRIÈRE DU TACLE (retour utilisateur : « le tacle glissé, la
+     jambe arrière est pas terrible ? »). Elle se repliait SOUS le corps, genou
+     devant : un genou à terre, pas une glissade. Deux erreurs de pose :
+     (1) le bassin ROULAIT sur la hanche (68°) au lieu de BASCULER en arrière
+     — un tacleur glisse pieds devant, ASSIS sur la hanche, buste redressé
+     (bascule 46°, roulis 30°, buste redressé de 24° sur le bassin, tête à
+     22 cm derrière le bassin) ; (2) la jambe arrière est celle du HURDLER :
+     cuisse sortie à gauche au ras du sol, tibia replié derrière, pied
+     derrière la fesse — la cible du pied se pose depuis la HANCHE de
+     l'instant (le bassin a avancé de 30 cm et descendu de 70 : depuis
+     l'origine le pied était hors de portée, jambe tendue derrière), le pole
+     du genou sort à gauche et un peu devant. Appris : au-delà de ~50° de
+     bascule, checkClip lit sur cette jambe une extension de hanche hors
+     bornes (Euler x < −40 : une cuisse en abduction de 100° sur un bassin
+     couché n'a pas d'Euler propre) — balayé 144 poses (bascule × roulis ×
+     pole × pied), la plus couchée qui passe est gardée. 41 graines sous
+     contrat et sous checkClip. Nommé : la borne d'Euler de checkClip sur
+     la hanche est une convention debout ; un corps couché mériterait une
+     lecture géométrique (angle cuisse / axe du bassin).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

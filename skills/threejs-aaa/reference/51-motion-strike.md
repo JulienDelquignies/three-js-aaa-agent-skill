@@ -124,11 +124,14 @@ droit balaie le ballon 26 cm vers la gauche, le poids transfère, le gauche le p
 deux touches, deux appuis, rasant), `petitPont` (armé genou 54°, extension SÈCHE à 2° au contact,
 pied à 3,5 m/s, le corps déjà bas et penché, aucune clé de bras — la locomotion les garde).
 
-**`motion-ground.js` — le corps qui se couche (lot A5).** Le tacle glissé a quatre temps que la
-scène et la sim exploitent tels quels : le LANCEMENT (une foulée, le corps bas et penché), la CHUTE
-SUR LE CÔTÉ (le bassin descend à 19 cm et ROULE sur la hanche gauche — épaules à 56° —, la jambe
+**`motion-ground.js` — le corps qui se couche (lot A5, repris au retour utilisateur).** Le tacle
+glissé a quatre temps que la scène et la sim exploitent tels quels : le LANCEMENT (une foulée, le
+corps bas et penché), la CHUTE ASSISE (le bassin descend à 19 cm et BASCULE en arrière de 46° — le
+tacleur glisse pieds devant, assis sur la hanche gauche, roulis de 30°, buste redressé —, la jambe
 droite s'ALLONGE au ras du sol vers le ballon, 93 cm devant au contact, pointe relevée ; la gauche
-se replie dessous par IK, la main gauche se pose au sol, le bras droit fait balancier), la POSE
+est la jambe du HURDLER : cuisse sortie à gauche au ras du sol, tibia replié derrière, pied derrière
+la fesse — par IK depuis la hanche de l'instant, genou vers l'extérieur ; la main gauche se pose au
+sol derrière, le bras droit fait balancier), la POSE
 COUCHÉE atteinte à 55 % (la scène y gèle le clip tant que la sim garde le corps au sol, `down`),
 le RELEVÉ sur les 30 derniers % (rejoué quand la sim relève ; debout à la fin). Le corps est
 TRANSPORTÉ par la sim (la glissade porte 2,5-3 m, freinée — movement.js) : le clip ne porte qu'un
