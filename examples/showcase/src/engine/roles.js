@@ -48,46 +48,46 @@ export const ROLES = {
   // (les bancs et les projets qui les posent : au bit). Aucun rôle posé par défaut : polyvalent.
   // les gardiens (2)
   goalkeeper:            { garde: 0.15, ancrage: 0.05, tenue: 0.15, ressort: 0.3 },
-  keeper_libero:         { garde: 0.9, ancrage: 0.25, tenue: 0.3, ressort: 0.85, arbitre: { passe: 1.15 } },
+  keeper_libero:         { garde: 0.9, ancrage: 0.25, tenue: 0.3, ressort: 0.85, arbitre: { passe: 1.07 } },
   // les défenseurs centraux (5)
   centre_back:           { profondeur: 0.1, largeurR: 0.25, appel: 0.1, press: 0.5, ancrage: 0.2, tenue: 0.3, duel: 0.55, marqueSerre: 0.55, ressort: 0.4, orienteFaible: 0.55 },
   stopper:               { profondeur: 0.12, largeurR: 0.22, appel: 0.1, press: 0.7, ancrage: 0.3, tenue: 0.2, duel: 0.8, marqueSerre: 0.8, ressort: 0.25, orienteFaible: 0.6 },
   cover:                 { profondeur: 0.06, largeurR: 0.25, appel: 0.08, press: 0.3, ancrage: 0.15, tenue: 0.3, duel: 0.25, marqueSerre: 0.25, ressort: 0.45, orienteFaible: 0.65 },
-  playmaker_defender:    { profondeur: 0.12, largeurR: 0.28, appel: 0.12, press: 0.45, ancrage: 0.3, tenue: 0.6, duel: 0.4, marqueSerre: 0.45, ressort: 0.85, orienteFaible: 0.55, arbitre: { passe: 1.3, conduite: 1.1, tir: 0.7 } },
-  libero:                { profondeur: 0.18, largeurR: 0.25, appel: 0.15, press: 0.4, ancrage: 0.45, tenue: 0.55, duel: 0.35, marqueSerre: 0.3, ressort: 0.8, orienteFaible: 0.5, arbitre: { passe: 1.25, conduite: 1.2 } },
+  playmaker_defender:    { profondeur: 0.12, largeurR: 0.28, appel: 0.12, press: 0.45, ancrage: 0.3, tenue: 0.6, duel: 0.4, marqueSerre: 0.45, ressort: 0.85, orienteFaible: 0.55, arbitre: { passe: 1.21, conduite: 1.06, tir: 0.83 } },
+  libero:                { profondeur: 0.18, largeurR: 0.25, appel: 0.15, press: 0.4, ancrage: 0.45, tenue: 0.55, duel: 0.35, marqueSerre: 0.3, ressort: 0.8, orienteFaible: 0.5, arbitre: { passe: 1.16, conduite: 1.18 } },
   // les latéraux et pistons (4)
-  full_back:             { profondeur: 0.25, largeurR: 0.8, appel: 0.25, press: 0.55, ancrage: 0.35, tenue: 0.35, duel: 0.55, marqueSerre: 0.65, ressort: 0.45, orienteFaible: 0.6, arbitre: { centre: 1.15 } },
-  wing_back:             { profondeur: 0.45, largeurR: 0.95, appel: 0.45, press: 0.6, ancrage: 0.5, tenue: 0.35, duel: 0.5, marqueSerre: 0.55, ressort: 0.5, orienteFaible: 0.5, arbitre: { centre: 1.3, conduite: 1.1 } },
-  inverted_fullback:     { profondeur: 0.28, largeurR: 0.3, appel: 0.2, press: 0.55, ancrage: 0.45, tenue: 0.5, duel: 0.5, marqueSerre: 0.6, ressort: 0.7, orienteFaible: 0.6, arbitre: { passe: 1.2, centre: 0.75 } },
-  modern_wingback:       { profondeur: 0.5, largeurR: 0.88, appel: 0.55, press: 0.65, ancrage: 0.55, tenue: 0.4, duel: 0.55, marqueSerre: 0.6, ressort: 0.6, orienteFaible: 0.55, arbitre: { centre: 1.25, conduite: 1.15 } },
+  full_back:             { profondeur: 0.25, largeurR: 0.8, appel: 0.25, press: 0.55, ancrage: 0.35, tenue: 0.35, duel: 0.55, marqueSerre: 0.65, ressort: 0.45, orienteFaible: 0.6, arbitre: { centre: 1.1 } },
+  wing_back:             { profondeur: 0.45, largeurR: 0.95, appel: 0.45, press: 0.6, ancrage: 0.5, tenue: 0.35, duel: 0.5, marqueSerre: 0.55, ressort: 0.5, orienteFaible: 0.5, arbitre: { centre: 1.25, conduite: 1.06 } },
+  inverted_fullback:     { profondeur: 0.28, largeurR: 0.3, appel: 0.2, press: 0.55, ancrage: 0.45, tenue: 0.5, duel: 0.5, marqueSerre: 0.6, ressort: 0.7, orienteFaible: 0.6, arbitre: { passe: 1.12, centre: 0.7 } },
+  modern_wingback:       { profondeur: 0.5, largeurR: 0.88, appel: 0.55, press: 0.65, ancrage: 0.55, tenue: 0.4, duel: 0.55, marqueSerre: 0.6, ressort: 0.6, orienteFaible: 0.55, arbitre: { centre: 1.2, conduite: 1.12 } },
   // les milieux défensifs (4)
-  anchor:                { profondeur: 0.15, largeurR: 0.3, appel: 0.05, press: 0.45, ancrage: 0.1, tenue: 0.35, duel: 0.55, marqueSerre: 0.55, ressort: 0.65, orienteFaible: 0.6, arbitre: { passe: 1.1, tir: 0.6 } },
-  half_back:             { profondeur: 0.1, largeurR: 0.28, appel: 0.05, press: 0.5, ancrage: 0.15, tenue: 0.4, duel: 0.5, marqueSerre: 0.5, ressort: 0.75, orienteFaible: 0.6, arbitre: { passe: 1.2, tir: 0.55 } },
-  regista:               { profondeur: 0.25, largeurR: 0.3, appel: 0.2, press: 0.35, ancrage: 0.3, tenue: 0.75, duel: 0.3, marqueSerre: 0.35, ressort: 0.9, orienteFaible: 0.45, arbitre: { passe: 1.4, tir: 0.7, conduite: 0.9 } },
-  destroyer:             { profondeur: 0.18, largeurR: 0.35, appel: 0.08, press: 0.9, ancrage: 0.4, tenue: 0.2, duel: 0.9, marqueSerre: 0.75, ressort: 0.3, orienteFaible: 0.7, arbitre: { passe: 0.85, tir: 0.5, conduite: 0.8 } },
+  anchor:                { profondeur: 0.15, largeurR: 0.3, appel: 0.05, press: 0.45, ancrage: 0.1, tenue: 0.35, duel: 0.55, marqueSerre: 0.55, ressort: 0.65, orienteFaible: 0.6, arbitre: { passe: 1.02, tir: 0.77 } },
+  half_back:             { profondeur: 0.1, largeurR: 0.28, appel: 0.05, press: 0.5, ancrage: 0.15, tenue: 0.4, duel: 0.5, marqueSerre: 0.5, ressort: 0.75, orienteFaible: 0.6, arbitre: { passe: 1.12, tir: 0.73 } },
+  regista:               { profondeur: 0.25, largeurR: 0.3, appel: 0.2, press: 0.35, ancrage: 0.3, tenue: 0.75, duel: 0.3, marqueSerre: 0.35, ressort: 0.9, orienteFaible: 0.45, arbitre: { passe: 1.3, tir: 0.83, conduite: 0.82 } },
+  destroyer:             { profondeur: 0.18, largeurR: 0.35, appel: 0.08, press: 0.9, ancrage: 0.4, tenue: 0.2, duel: 0.9, marqueSerre: 0.75, ressort: 0.3, orienteFaible: 0.7, arbitre: { passe: 0.79, tir: 0.7, conduite: 0.7 } },
   // les milieux centraux (5)
   box_to_box:            { profondeur: 0.45, largeurR: 0.45, appel: 0.55, press: 0.7, ancrage: 0.65, tenue: 0.45, duel: 0.65, marqueSerre: 0.55, ressort: 0.5, orienteFaible: 0.5, arbitre: { tir: 1.1 } },
-  deep_lying_playmaker:  { profondeur: 0.28, largeurR: 0.35, appel: 0.2, press: 0.4, ancrage: 0.3, tenue: 0.7, duel: 0.35, marqueSerre: 0.4, ressort: 0.85, orienteFaible: 0.45, arbitre: { passe: 1.35, tir: 0.75 } },
-  mezzala:               { profondeur: 0.55, largeurR: 0.6, appel: 0.6, press: 0.55, ancrage: 0.6, tenue: 0.55, duel: 0.5, marqueSerre: 0.45, ressort: 0.6, orienteFaible: 0.45, arbitre: { conduite: 1.2, tir: 1.1 } },
-  carrilero:             { profondeur: 0.38, largeurR: 0.65, appel: 0.35, press: 0.65, ancrage: 0.35, tenue: 0.4, duel: 0.6, marqueSerre: 0.6, ressort: 0.55, orienteFaible: 0.55, arbitre: { passe: 1.1, tir: 0.8 } },
-  free_role_creator:     { profondeur: 0.55, largeurR: 0.4, appel: 0.55, press: 0.35, ancrage: 0.95, tenue: 0.85, duel: 0.3, marqueSerre: 0.25, ressort: 0.7, orienteFaible: 0.35, arbitre: { passe: 1.3, conduite: 1.25, tir: 1.1 } },
+  deep_lying_playmaker:  { profondeur: 0.28, largeurR: 0.35, appel: 0.2, press: 0.4, ancrage: 0.3, tenue: 0.7, duel: 0.35, marqueSerre: 0.4, ressort: 0.85, orienteFaible: 0.45, arbitre: { passe: 1.25, tir: 0.87 } },
+  mezzala:               { profondeur: 0.55, largeurR: 0.6, appel: 0.6, press: 0.55, ancrage: 0.6, tenue: 0.55, duel: 0.5, marqueSerre: 0.45, ressort: 0.6, orienteFaible: 0.45, arbitre: { conduite: 1.18, tir: 1.1 } },
+  carrilero:             { profondeur: 0.38, largeurR: 0.65, appel: 0.35, press: 0.65, ancrage: 0.35, tenue: 0.4, duel: 0.6, marqueSerre: 0.6, ressort: 0.55, orienteFaible: 0.55, arbitre: { passe: 1.02, tir: 0.9 } },
+  free_role_creator:     { profondeur: 0.55, largeurR: 0.4, appel: 0.55, press: 0.35, ancrage: 0.95, tenue: 0.85, duel: 0.3, marqueSerre: 0.25, ressort: 0.7, orienteFaible: 0.35, arbitre: { passe: 1.21, conduite: 1.24, tir: 1.1 } },
   // les milieux offensifs (3)
-  attacking_midfielder:  { profondeur: 0.62, largeurR: 0.4, appel: 0.65, press: 0.45, ancrage: 0.6, tenue: 0.65, duel: 0.4, marqueSerre: 0.35, ressort: 0.6, orienteFaible: 0.4, arbitre: { passe: 1.2, tir: 1.15 } },
-  trequartista:          { profondeur: 0.6, largeurR: 0.35, appel: 0.55, press: 0.2, ancrage: 0.85, tenue: 0.85, duel: 0.2, marqueSerre: 0.15, ressort: 0.65, orienteFaible: 0.3, arbitre: { passe: 1.3, conduite: 1.3, tir: 1.1 } },
-  shadow_striker:        { profondeur: 0.72, largeurR: 0.35, appel: 0.85, press: 0.5, ancrage: 0.7, tenue: 0.4, duel: 0.4, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { tir: 1.3, passe: 0.9 } },
+  attacking_midfielder:  { profondeur: 0.62, largeurR: 0.4, appel: 0.65, press: 0.45, ancrage: 0.6, tenue: 0.65, duel: 0.4, marqueSerre: 0.35, ressort: 0.6, orienteFaible: 0.4, arbitre: { passe: 1.12, tir: 1.13 } },
+  trequartista:          { profondeur: 0.6, largeurR: 0.35, appel: 0.55, press: 0.2, ancrage: 0.85, tenue: 0.85, duel: 0.2, marqueSerre: 0.15, ressort: 0.65, orienteFaible: 0.3, arbitre: { passe: 1.21, conduite: 1.3, tir: 1.1 } },
+  shadow_striker:        { profondeur: 0.72, largeurR: 0.35, appel: 0.85, press: 0.5, ancrage: 0.7, tenue: 0.4, duel: 0.4, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { tir: 1.23, passe: 0.84 } },
   // les ailiers (5)
-  winger:                { profondeur: 0.6, largeurR: 0.95, appel: 0.6, press: 0.45, ancrage: 0.4, tenue: 0.55, duel: 0.35, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { centre: 1.35, conduite: 1.2, tir: 0.9 } },
-  inside_forward:        { profondeur: 0.68, largeurR: 0.45, appel: 0.75, press: 0.45, ancrage: 0.6, tenue: 0.6, duel: 0.35, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { tir: 1.35, conduite: 1.25, centre: 0.75 } },
-  wide_creator:          { profondeur: 0.55, largeurR: 0.75, appel: 0.45, press: 0.4, ancrage: 0.55, tenue: 0.7, duel: 0.3, marqueSerre: 0.3, ressort: 0.65, orienteFaible: 0.35, arbitre: { passe: 1.3, centre: 1.2, conduite: 1.15 } },
-  raumdeuter:            { profondeur: 0.7, largeurR: 0.55, appel: 0.95, press: 0.35, ancrage: 0.9, tenue: 0.2, duel: 0.25, marqueSerre: 0.2, ressort: 0.45, orienteFaible: 0.3, arbitre: { tir: 1.3, conduite: 0.8, centre: 0.85 } },
-  tracking_winger:       { profondeur: 0.5, largeurR: 0.85, appel: 0.4, press: 0.85, ancrage: 0.3, tenue: 0.35, duel: 0.7, marqueSerre: 0.8, ressort: 0.45, orienteFaible: 0.65, arbitre: { centre: 1.15, conduite: 0.95 } },
+  winger:                { profondeur: 0.6, largeurR: 0.95, appel: 0.6, press: 0.45, ancrage: 0.4, tenue: 0.55, duel: 0.35, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { centre: 1.3, conduite: 1.18, tir: 0.97 } },
+  inside_forward:        { profondeur: 0.68, largeurR: 0.45, appel: 0.75, press: 0.45, ancrage: 0.6, tenue: 0.6, duel: 0.35, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { tir: 1.27, conduite: 1.24, centre: 0.7 } },
+  wide_creator:          { profondeur: 0.55, largeurR: 0.75, appel: 0.45, press: 0.4, ancrage: 0.55, tenue: 0.7, duel: 0.3, marqueSerre: 0.3, ressort: 0.65, orienteFaible: 0.35, arbitre: { passe: 1.21, centre: 1.15, conduite: 1.12 } },
+  raumdeuter:            { profondeur: 0.7, largeurR: 0.55, appel: 0.95, press: 0.35, ancrage: 0.9, tenue: 0.2, duel: 0.25, marqueSerre: 0.2, ressort: 0.45, orienteFaible: 0.3, arbitre: { tir: 1.23, conduite: 0.7, centre: 0.8 } },
+  tracking_winger:       { profondeur: 0.5, largeurR: 0.85, appel: 0.4, press: 0.85, ancrage: 0.3, tenue: 0.35, duel: 0.7, marqueSerre: 0.8, ressort: 0.45, orienteFaible: 0.65, arbitre: { centre: 1.1, conduite: 0.88 } },
   // les attaquants (6)
-  forward:               { profondeur: 0.78, largeurR: 0.35, appel: 0.75, press: 0.45, ancrage: 0.55, tenue: 0.45, duel: 0.4, marqueSerre: 0.3, ressort: 0.45, orienteFaible: 0.35, arbitre: { tir: 1.25 } },
-  target_man:            { profondeur: 0.72, largeurR: 0.25, appel: 0.35, press: 0.35, ancrage: 0.25, tenue: 0.6, duel: 0.45, marqueSerre: 0.25, ressort: 0.3, orienteFaible: 0.3, arbitre: { tir: 1.2, passe: 1.1, conduite: 0.8 } },
-  poacher:               { profondeur: 0.85, largeurR: 0.28, appel: 0.9, press: 0.25, ancrage: 0.35, tenue: 0.15, duel: 0.2, marqueSerre: 0.15, ressort: 0.3, orienteFaible: 0.25, arbitre: { tir: 1.4, passe: 0.75, conduite: 0.8 } },
-  all_around_striker:    { profondeur: 0.72, largeurR: 0.4, appel: 0.7, press: 0.55, ancrage: 0.6, tenue: 0.45, duel: 0.55, marqueSerre: 0.4, ressort: 0.55, orienteFaible: 0.45, arbitre: { tir: 1.2, passe: 1.15, conduite: 1.1 } },
-  pressing_striker:      { profondeur: 0.7, largeurR: 0.4, appel: 0.65, press: 0.95, ancrage: 0.55, tenue: 0.25, duel: 0.8, marqueSerre: 0.55, ressort: 0.4, orienteFaible: 0.7, arbitre: { tir: 1.15 } },
-  false_9:               { profondeur: 0.52, largeurR: 0.32, appel: 0.6, press: 0.45, ancrage: 0.8, tenue: 0.75, duel: 0.35, marqueSerre: 0.3, ressort: 0.7, orienteFaible: 0.4, arbitre: { passe: 1.3, conduite: 1.2, tir: 1.1 } },
+  forward:               { profondeur: 0.78, largeurR: 0.35, appel: 0.75, press: 0.45, ancrage: 0.55, tenue: 0.45, duel: 0.4, marqueSerre: 0.3, ressort: 0.45, orienteFaible: 0.35, arbitre: { tir: 1.2 } },
+  target_man:            { profondeur: 0.72, largeurR: 0.25, appel: 0.35, press: 0.35, ancrage: 0.25, tenue: 0.6, duel: 0.45, marqueSerre: 0.25, ressort: 0.3, orienteFaible: 0.3, arbitre: { tir: 1.17, passe: 1.02, conduite: 0.7 } },
+  poacher:               { profondeur: 0.85, largeurR: 0.28, appel: 0.9, press: 0.25, ancrage: 0.35, tenue: 0.15, duel: 0.2, marqueSerre: 0.15, ressort: 0.3, orienteFaible: 0.25, arbitre: { tir: 1.3, passe: 0.7, conduite: 0.7 } },
+  all_around_striker:    { profondeur: 0.72, largeurR: 0.4, appel: 0.7, press: 0.55, ancrage: 0.6, tenue: 0.45, duel: 0.55, marqueSerre: 0.4, ressort: 0.55, orienteFaible: 0.45, arbitre: { tir: 1.17, passe: 1.07, conduite: 1.06 } },
+  pressing_striker:      { profondeur: 0.7, largeurR: 0.4, appel: 0.65, press: 0.95, ancrage: 0.55, tenue: 0.25, duel: 0.8, marqueSerre: 0.55, ressort: 0.4, orienteFaible: 0.7, arbitre: { tir: 1.13 } },
+  false_9:               { profondeur: 0.52, largeurR: 0.32, appel: 0.6, press: 0.45, ancrage: 0.8, tenue: 0.75, duel: 0.35, marqueSerre: 0.3, ressort: 0.7, orienteFaible: 0.4, arbitre: { passe: 1.21, conduite: 1.18, tir: 1.1 } },
 };
 
 /** Résout un nom ou un objet partiel en rôle complet (absent = polyvalent, l'identité). */
@@ -117,6 +117,8 @@ export function resoudreRole(r) {
     // LA TENUE (211) : 0 = joue vite (le relayeur), 1 = garde le ballon (le meneur qui fixe) —
     // la cadence de la tenue calme du porteur (rondo-sim, × axe(0,7, 1,4)). ON-phase.
     tenue: base.tenue ?? 0.5,
+    // LE DRIBBLE (219, rappelé au 244e par le projet aval) : l'axe existait au catalogue et skills-sim le lit, mais la résolution le perdait (undefined) — reporté, identité 0,5
+    dribble: base.dribble ?? 0.5,
     arbitre: { tir: 1, centre: 1, passe: 1, conduite: 1, ...(base.arbitre ?? {}) },
     nom: typeof r === 'string' ? r : (base.nom ?? 'personnalisé'),
   };
@@ -132,8 +134,13 @@ export function checkRoles() {
     for (const k of ['profondeur', 'largeurR', 'appel', 'press', 'garde', 'dribble']) {
       if (r[k] < 0 || r[k] > 1) issues.push(`${nom}.${k} hors [0;1]`);
     }
-    // [0,7 ; 1,3] → [0,5 ; 1,4] DATÉ 244c : le catalogue aval va de × 0,5 (le destructeur qui ne tire pas) à × 1,4 (le renard, le regista) — un rôle nuance encore, il n'écrase pas (× 0 ou × 3 seraient une autre loi)
-    for (const [o, v] of Object.entries(r.arbitre ?? {})) if (v < 0.5 || v > 1.4) issues.push(`${nom}.arbitre.${o} = ${v} hors [0,5;1,4] — un rôle nuance, il n'écrase pas`);
+    // l'arbitre ABSENT est l'identité (244e — resoudreRole le remplit) ; la bande [0,7 ; 1,3] est la LOI : le catalogue aval y est re-échelonné, pas la bande élargie (244b l'avait fait, 244e le défait : « un rôle nuance, il n'écrase pas » redevient vrai)
+    for (const [o, v] of Object.entries(r.arbitre ?? {})) if (v < 0.7 || v > 1.3) issues.push(`${nom}.arbitre.${o} = ${v} hors [0,7;1,3] — un rôle nuance, il n'écrase pas`);
+  }
+  for (const nom of Object.keys(ROLES)) {   // 244e (retour aval) : tout rôle du catalogue SE RÉSOUT, et le résolu respecte les bornes
+    const q = resoudreRole(nom);
+    for (const [o, v] of Object.entries(q.arbitre)) if (!(v >= 0.7 && v <= 1.3)) issues.push(`${nom} résolu : arbitre.${o} = ${v}`);
+    if (!(q.dribble >= 0 && q.dribble <= 1)) issues.push(`${nom} résolu : dribble ${q.dribble} — l'axe se perd à la résolution`);
   }
   const p = ROLES.polyvalent;
   if (p.profondeur !== 0.5 || p.largeurR !== 0.5 || p.appel !== 0.5 || p.press !== 0.5 || p.garde !== 0.5 || (p.dribble ?? 0.5) !== 0.5

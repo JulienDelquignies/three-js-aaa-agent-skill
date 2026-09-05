@@ -69,7 +69,7 @@ const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: fals
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes, POSTES_FORMATION, ROLES_FORMATION, GRILLE, litPoste, posteNom, lignesFines, checkPostes } from '../assets/starter/src/engine/formation.js';
-import { ROLES, LIBELLES_ROLES, rolesGrille } from '../assets/starter/src/engine/roles.js';
+import { ROLES, LIBELLES_ROLES, rolesGrille, checkRoles } from '../assets/starter/src/engine/roles.js';
 import { estPointe, estLateral, pivotDe, pointeDe } from '../assets/starter/src/engine/formation.js';
 import { readdirSync as __rd, readFileSync as __rf } from 'node:fs';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
@@ -5724,12 +5724,25 @@ if (__bloc()) {
   const trous = G.flatMap(([n, g]) => [...Array(11).keys()].filter((k) => !ROLES[g[k]]).map((k) => `${n}:${k}`));
   const g433 = rolesGrille('433'), g442 = rolesGrille('442'), g4231 = rolesGrille('4231'), g352 = rolesGrille('352');
   const m = resoudreRole('mezzala');
-  ok(`lot 244c — LE CATALOGUE DES RÔLES (aval FM) : ${fm.length} rôles = 34 (${Object.keys(ROLES).length} avec les neuf d'hier), tous résolus, onze axes dans [0 ; 1] et arbitre > 0 (${horsBorne.length ? horsBorne.join(' ; ') : 'aucun écart'}) ; les ONZE AXES sont lus par une loi (${morts.length ? 'MORTS : ' + morts.join(',') : 'aucun axe mort'}) ; rolesGrille couvre les onze postes des ${G.length} formations (${trous.length ? trous.join(',') : 'aucun trou'}) : 433 = ${g433[4]}/${g433[5]}/${g433[6]} au milieu, ${g433[7]}·${g433[8]}·${g433[9]} devant ; 442 = ${g442[5]} × 2 ; 4231 = ${g4231[4]} + ${g4231[5]}, ${g4231[7]} ; 352 = ${g352[3]}, gardien ${g433[10]} ; mezzala profondeur ${m.profondeur} largeur ${m.largeurR} conduite ×${m.arbitre.conduite} ; préréglages d'hier corrigés (4321 → poste ${Object.keys(ROLES_FORMATION[4321])[0]} = ${POSTES_FORMATION[4321][5]}, 532 → poste ${Object.keys(ROLES_FORMATION[532])[0]} = ${POSTES_FORMATION[532][6]})`,
+  ok(`lot 244c — LE CATALOGUE DES RÔLES (aval FM) : ${fm.length} rôles = 34 (${Object.keys(ROLES).length} avec les neuf d'hier), tous résolus, onze axes dans [0 ; 1] et arbitre > 0 (${horsBorne.length ? horsBorne.join(' ; ') : 'aucun écart'}) ; les ONZE AXES sont lus par une loi (${morts.length ? 'MORTS : ' + morts.join(',') : 'aucun axe mort'}) ; rolesGrille couvre les onze postes des ${G.length} formations (${trous.length ? trous.join(',') : 'aucun trou'}) : 433 = ${g433[4]}/${g433[5]}/${g433[6]} au milieu, ${g433[7]}·${g433[8]}·${g433[9]} devant ; 442 = ${g442[5]} × 2 ; 4231 = ${g4231[4]} + ${g4231[5]}, ${g4231[7]} ; 352 = ${g352[3]}, gardien ${g433[10]} ; mezzala profondeur ${m.profondeur} largeur ${m.largeurR} conduite ×${m.arbitre.conduite} (1,2 aval → 1,18 re-échelonné 244e) ; préréglages d'hier corrigés (4321 → poste ${Object.keys(ROLES_FORMATION[4321])[0]} = ${POSTES_FORMATION[4321][5]}, 532 → poste ${Object.keys(ROLES_FORMATION[532])[0]} = ${POSTES_FORMATION[532][6]})`,
     fm.length === 34 && horsBorne.length === 0 && morts.length === 0 && trous.length === 0
     && g433[4] === 'mezzala' && g433[5] === 'deep_lying_playmaker' && g433[7] === 'winger' && g433[8] === 'forward' && g433[10] === 'goalkeeper'
     && g442[5] === 'box_to_box' && g4231[4] === 'deep_lying_playmaker' && g4231[5] === 'anchor' && g4231[7] === 'attacking_midfielder' && g352[3] === 'wing_back'
-    && m.profondeur === 0.55 && m.largeurR === 0.6 && m.arbitre.conduite === 1.2
+    && m.profondeur === 0.55 && m.largeurR === 0.6 && m.arbitre.conduite === 1.18
     && ROLES_FORMATION[4321][5] === 'recuperateur' && ROLES_FORMATION[4321][4] == null && ROLES_FORMATION[532][6] === 'recuperateur' && ROLES_FORMATION[532][5] == null);
+  // 244e (retour aval) : TOUT rôle du catalogue se résout et le résolu respecte la bande [0,7 ; 1,3] — la
+  // donnée s'aligne sur la loi (re-échelle linéaire, pas d'écrasement : zéro couple de rôles fondu) ; et
+  // l'axe dribble survit à la résolution (rappel 219 : il ressortait undefined)
+  const AXA = ['tir', 'centre', 'passe', 'conduite'], tous = Object.keys(ROLES), hors = [], vus = new Map(); let fondus = 0;
+  for (const k of tous) {
+    const q = resoudreRole(k);
+    for (const a of AXA) if (!(q.arbitre[a] >= 0.7 && q.arbitre[a] <= 1.3)) hors.push(`${k}.${a}=${q.arbitre[a]}`);
+    if (!(q.dribble >= 0 && q.dribble <= 1)) hors.push(`${k}.dribble=${q.dribble}`);
+    const v = AXA.map((a) => q.arbitre[a]).join(','); if (LIBELLES_ROLES[k] && v !== '1,1,1,1') { if (vus.has(v)) fondus++; vus.set(v, k); }
+  }
+  const c244e = checkRoles();
+  ok(`lot 244e — LA DONNÉE S'ALIGNE SUR LA LOI (retour aval) : ${tous.length} rôles se résolvent, arbitre résolu dans [0,7 ; 1,3] et dribble reporté (${hors.length ? hors.join(' ; ') : 'aucun écart'}), ${fondus} couple fondu par la re-échelle (regista passe ×${resoudreRole('regista').arbitre.passe} > deep_lying_playmaker ×${resoudreRole('deep_lying_playmaker').arbitre.passe} ; destroyer tir ×${resoudreRole('destroyer').arbitre.tir} < half_back ×${resoudreRole('half_back').arbitre.tir} < anchor ×${resoudreRole('anchor').arbitre.tir}), checkRoles ${c244e.ok ? 'vert' : c244e.issues.join(' ; ')}, dribble libre ${resoudreRole({ dribble: 0.9 }).dribble}`,
+    hors.length === 0 && fondus === 0 && c244e.ok && resoudreRole('regista').arbitre.passe > resoudreRole('deep_lying_playmaker').arbitre.passe && resoudreRole('destroyer').arbitre.tir < resoudreRole('half_back').arbitre.tir && resoudreRole('half_back').arbitre.tir < resoudreRole('anchor').arbitre.tir && resoudreRole({ dribble: 0.9 }).dribble === 0.9);
   // …et la grille JOUE (433 aux rôles FM des deux côtés, 2 × 300 s) : contrat tenu ; le prix
   // c. polyvalent est INFORMATIF (mesuré 4 × 300 s : pertes 104 → 108, passes 356 → 289, tirs
   // 4 → 4 — des rôles marqués jouent moins de passes, pas plus de pertes)
