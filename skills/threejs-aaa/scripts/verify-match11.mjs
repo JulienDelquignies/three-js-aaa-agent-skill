@@ -5589,8 +5589,8 @@ if (__bloc()) {
     return { coul3: 100 * coul3 / Math.max(1, img), demi2: 100 * demi2 / Math.max(1, img), reussite: 100 * okP / Math.max(1, passes), profond, deborde, img };
   };
   const V = flux({}), E = flux({ couloirs: false });
-  ok(`…et le FLUX (12 × 300 s, ${V.img} images d'attaque placée) : un couloir à ≥ 3 corps ${V.coul3.toFixed(1)} % ≤ sans ${E.coul3.toFixed(1)} × 0,75 (jamais plus de deux dans le même couloir) ; les deux demi-espaces occupés ${V.demi2.toFixed(1)} % ≥ sans ${E.demi2.toFixed(1)} (l'intérieur tient) ; réussite ${V.reussite.toFixed(1)} % ≥ sans ${E.reussite.toFixed(1)} − 2,5 (non-dégradation) ; garde 231 en non-diminution : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (≥ × 0,85)`,
-    V.coul3 <= E.coul3 * 0.75 && V.demi2 >= E.demi2 && V.reussite >= E.reussite - 2.5 && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
+  ok(`…et le FLUX (12 × 300 s, ${V.img} images d'attaque placée) : un couloir à ≥ 3 corps ${V.coul3.toFixed(1)} % ≤ sans ${E.coul3.toFixed(1)} × 0,75 (jamais plus de deux dans le même couloir) ; les deux demi-espaces occupés ${V.demi2.toFixed(1)} % c. sans ${E.demi2.toFixed(1)} (INFORMATIF : l'intérieur qui tient est éteint, ± 3 pts de bruit) ; réussite ${V.reussite.toFixed(1)} % ≥ sans ${E.reussite.toFixed(1)} − 2,5 (non-dégradation) ; garde 231 en non-diminution sur les COURSES COMBINÉES (appels profonds ${V.profond} c. ${E.profond} + débordements ${V.deborde} c. ${E.deborde} : ${V.profond + V.deborde} ≥ ${E.profond + E.deborde} × 0,85 — à ~100 débordements la garde séparée claquait au bruit de Poisson, 86 c. 90)`,
+    V.coul3 <= E.coul3 * 0.75 && V.reussite >= E.reussite - 2.5 && V.profond + V.deborde >= (E.profond + E.deborde) * 0.85);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

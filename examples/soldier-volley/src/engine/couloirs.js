@@ -30,7 +30,7 @@ export function tenirDemiEspace(tz, baseZ, hz, marge = 1.5) {
 }
 
 /** La cible (tz) d'un joueur passe au registre : rendue telle quelle si son couloir a de la place, déplacée sinon. */
-export function placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ, devant }) {
+export function placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ, devant, remplir = true }) {
   const C = cfg.couloirs, R = ouvrirRegistre(st, atk, pitch, null), hz = pitch.hz, W = hz * 2 / 5, max = C.max ?? 2;
   const c0 = couloirDe(tz, hz); const compte = (c) => { R.n[c]++; if (devant) R.av[c]++; };
   if (p._coul && p._coul.until > st.t) {   // l'hystérésis : la réaffectation tient
@@ -38,8 +38,8 @@ export function placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ, devant }) {
     p._coul = null;
   }
   const cb = couloirDe(ballZ ?? 0, hz);
-  // REMPLIR (C.remplir) : un DEMI-ESPACE voisin resté VIDE l'image d'avant attire le second corps d'un couloir déjà occupé — le relais dans chaque demi-espace (précepte 1.4 : ≥ 80 % du temps de possession ; mesuré 33 % sans)
-  if (C.remplir !== false && R.n[c0] >= 1) for (const c of [c0 - 1, c0 + 1]) if ((c === 1 || c === 3) && R.prev[c] === 0 && R.n[c] === 0) { const off = Math.max(-W * 0.4, Math.min(W * 0.4, tz - (-hz + (c0 + 0.5) * W))); compte(c); p._coul = { c, off, until: st.t + (C.tenue ?? 2) }; return Math.max(-hz + 1.5, Math.min(hz - 1.5, -hz + (c + 0.5) * W + off)); }
+  // REMPLIR (C.remplir) : un DEMI-ESPACE voisin resté VIDE l'image d'avant attire le second corps d'un couloir déjà occupé — le relais dans chaque demi-espace (précepte 1.4 : ≥ 80 % du temps de possession ; mesuré 33 % sans). Le registre dort pendant la fenêtre d'engagement (match-sim, couloirs.engagement) : REMPLIR arrachait le soutien du coup d'envoi à 13 m (délai prise → passe 1,0 → 5,7 s)
+  if (remplir && C.remplir !== false && R.n[c0] >= 1) for (const c of [c0 - 1, c0 + 1]) if ((c === 1 || c === 3) && R.prev[c] === 0 && R.n[c] === 0) { const off = Math.max(-W * 0.4, Math.min(W * 0.4, tz - (-hz + (c0 + 0.5) * W))); compte(c); p._coul = { c, off, until: st.t + (C.tenue ?? 2) }; return Math.max(-hz + 1.5, Math.min(hz - 1.5, -hz + (c + 0.5) * W + off)); }
   if (R.n[c0] < max) { compte(c0); return tz; }
   let best = -1, bd = 99;
   for (let c = 0; c < 5; c++) {
