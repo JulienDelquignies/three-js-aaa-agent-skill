@@ -3,6 +3,9 @@ import { FootLockIK } from './foot-lock.js';
 import { WORLD } from './world-basis.js';
 import { AnimationStateMachine } from './anim-state-machine.js';
 import { makeGaitClock, phaseOffset, gaitLayer } from './gait.js';
+import { gaitPose, gaitCadenceFactor, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from './motion-gait.js';
+import { profileFromBones } from './motion-rig.js';
+import { UP_BONES } from './gesture-layer.js';
 
 // CharacterController — turn input into believable, correct movement. This is the point of the skill:
 // good controls. It couples player intent (a world-space move vector, 0..1) to:
@@ -15,7 +18,7 @@ import { makeGaitClock, phaseOffset, gaitLayer } from './gait.js';
 const FWD = new THREE.Vector3(0, 0, -1);
 
 export class CharacterController {
-  constructor(model, { mixer, runClip, idleClip, walkClip = null, legs = null, stride = 2.6, walkStride = 1.5, walkSpeed = 1.9, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, forwardLocal = FWD, persona = null } = {}) {
+  constructor(model, { mixer, runClip, idleClip, walkClip = null, legs = null, stride = 2.6, walkStride = 1.5, walkSpeed = 1.9, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, locomotion = 'clips', gaitStyle = null, gaitProfile = null, forwardLocal = FWD, persona = null } = {}) {
     this.model = model; this.mixer = mixer; this.runDur = runClip.duration;
     this.stride = stride; this.runSpeed = runSpeed; this.sprintMult = sprintMult; this.jumpSpeed = jumpSpeed; this.gravity = gravity;
     this.accel = accel; this.turnRate = turnRate;
@@ -74,6 +77,57 @@ export class CharacterController {
       this._gaitBones = map;
       this._gaitQ = new THREE.Quaternion(); this._gaitE = new THREE.Euler();
     }
+    // LA FOULÉE GÉNÉRÉE (motion-gait, lot A7) : la pose de locomotion est CALCULÉE — chemins de pied
+    // → IK sur la hanche de l'instant, bassin, tronc, bras — fonction pure de (φ, v→) — et posée
+    // ABSOLUE par os après le mixer (rest ⊗ q_spec : l'écrivain de la couche de geste), fondue avec
+    // l'idle du mixer sous 0,6 m/s. Le rest et le profil viennent du clone AU BIND (jamais animé à la
+    // construction) : exactement le repère contre lequel verify-foulee prouve le générateur.
+    // `locomotion: 'generee'` l'active ; 'clips' garde les trois clips du donneur (l'ancien monde —
+    // l'avant/après des captures, le sabotage nommé). Commutable à chaud (ctrl.locomotion).
+    this.locomotion = locomotion;
+    this._gaitGen = null;
+    if (this.gait && this._gaitBones && locomotion === 'generee') this._setupGeneratedGait(gaitProfile, gaitStyle);
+  }
+
+  /** Le profil de rig (repère personnage, mètres monde) et le rest, pris sur le clone au bind. */
+  _setupGeneratedGait(profile, style) {
+    const rest = new Map();
+    for (const [name, b] of this._gaitBones) rest.set(name, new THREE.Quaternion(b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w));
+    const hips = this._gaitBones.get('Hips');
+    if (!hips) return;
+    let P = profile;
+    // le repère personnage = le repère du MODÈLE (origine aux pieds, face −Z), à l'échelle monde :
+    // la matrice du parent des hanches RELATIVE au modèle, fois l'échelle du modèle (squad + persona)
+    const par = hips.parent;
+    this.model.updateWorldMatrix(true, true);
+    const rel = new THREE.Matrix4().copy(this.model.matrixWorld).invert().multiply(par.matrixWorld);
+    const pos = new THREE.Vector3(), quat = new THREE.Quaternion(), scl = new THREE.Vector3();
+    rel.decompose(pos, quat, scl);
+    const kM = this.model.scale.y;
+    if (!P) P = profileFromBones(this._gaitBones, { rootQ: [quat.x, quat.y, quat.z, quat.w], rootP: [pos.x * kM, pos.y * kM, pos.z * kM], scale: scl.y * kM });
+    // l'axe « haut personnage » exprimé dans le local du parent des hanches (le rebond du bassin
+    // s'écrit en mètres personnage, comme le canal hips des specs)
+    const toParent = new THREE.Matrix3().setFromMatrix4(rel).invert();
+    const axisY = new THREE.Vector3(0, 1 / kM, 0).applyMatrix3(toParent);
+    if (typeof style === 'number') style = gaitStyleFromSeed(style);   // la graine de persona → sa signature
+    this._gaitGen = { P, style: style || NEUTRAL_GAIT_STYLE, rest, hipsRest: hips.position.clone(), axisY, tq: new THREE.Quaternion(), tp: new THREE.Vector3(), w: 0, vBody: [0, 0] };
+  }
+
+  /** Changer le style de foulée d'un joueur (sa signature, graine de persona). */
+  setGaitStyle(styleOrSeed) {
+    if (!this._gaitGen) return;
+    this._gaitGen.style = typeof styleOrSeed === 'number' ? gaitStyleFromSeed(styleOrSeed) : styleOrSeed;
+  }
+
+  /** La vitesse en repère CORPS [avant, droite] : intention lissée × allure, contre le lacet d'entrée
+   *  (celui de la sim, pris avant que le facing ne tourne) — un gardien qui se déplace de côté face au
+   *  ballon lit (0, ±v), un défenseur qui recule face au jeu lit (−v, 0). */
+  _bodyVelocity(v) {
+    const [fx, fz] = WORLD.facingDir(this._yawIn ?? this.yaw, this.fa);
+    const mag = this._cur.length();
+    let dx = fx, dz = fz;
+    if (mag > 1e-3) { dx = this._cur.x / mag; dz = this._cur.y / mag; }
+    return [v * (dx * fx + dz * fz), v * (dx * -fz + dz * fx)];
   }
 
   /** Mesure l'offset de phase de chaque ancre porteuse de foulée : le contact GAUCHE à φ = 0. */
@@ -148,6 +202,7 @@ export class CharacterController {
     } else this.groundSpeed = 0;
     this._lastW = { x: wp.x, z: wp.z };
 
+    this._yawIn = this.yaw;                                 // le lacet reçu (sim) avant le facing de ce pas
     // smooth the input so starts/stops ease instead of snapping
     const k = 1 - Math.exp(-this.accel * dt);
     this._cur.lerp(this._move, k);
@@ -175,7 +230,11 @@ export class CharacterController {
     const run01 = Math.min(1, this.speed / runRef);
     if (this._useFsm) {
       const vGait = Math.max(this.speed, this.groundSpeed ?? 0);
-      if (this.gait) this.gait.advance(vGait, dt);                   // l'horloge unique tourne AVANT le mixer
+      // …et la cadence suit la DIRECTION quand la foulée est générée (×1,3 à reculons, ×1,9 de côté —
+      // motion-gait.gaitCadenceFactor : une phase, une durée, le chemin de pied et l'horloge sont UN)
+      const gen = this._gaitGen && this.locomotion === 'generee';
+      const vb = gen ? this._bodyVelocity(vGait) : null;
+      if (this.gait) this.gait.advance(vGait, dt * (gen ? gaitCadenceFactor(vb[0], vb[1]) : 1));   // l'horloge unique tourne AVANT le mixer
       // PENDANT UN GESTE, LES JAMBES SUIVENT LE CORPS RÉEL — jamais un zéro forcé. L'idle forcé
       // (vTarget = 0) a été mesuré à l'audit membre par membre : le glissement d'approche translate
       // le corps jusqu'à 5,2 m/s pendant l'armé, et des jambes d'idle sous un corps qui se déplace,
@@ -222,6 +281,7 @@ export class CharacterController {
    *  fonction pure de (φ, v) et l'application est idempotente par construction. */
   _applyGaitLayer(v) {
     if (!this.gait || !this._gaitBones) return;
+    if (this._gaitGen && this.locomotion === 'generee') { this._applyGeneratedGait(v); this._applyLean(); return; }
     const g = gaitLayer(this.gait.phi, v);
     if (!g) return;
     const D = Math.PI / 180;
@@ -241,6 +301,39 @@ export class CharacterController {
       this._gaitQ.setFromEuler(this._gaitE);
       bone.quaternion.multiply(this._gaitQ);
     }
+    this._applyLean();
+    const hips = this._gaitBones.get('Hips');
+    if (hips && g.hipsY) hips.position.y += g.hipsY / Math.max(1e-6, this.model.scale.y);
+  }
+
+  /** LA FOULÉE GÉNÉRÉE, posée : os = slerp(mixer, rest ⊗ q_spec(φ, v→), w) — w monte de 0,25 à 0,6 m/s
+   *  (en dessous, l'idle du mixer ; au-delà, la pose calculée est CELLE DU BANC). Pendant un geste le
+   *  haut du corps appartient au geste (même règle que la couche additive) ; le bassin rebondit en
+   *  mètres personnage sur l'axe haut du parent. */
+  _applyGeneratedGait(v) {
+    const G = this._gaitGen;
+    const w = Math.max(0, Math.min(1, (v - 0.25) / 0.35));
+    G.w = w;
+    if (w <= 1e-3) return;
+    const vb = this._bodyVelocity(v);
+    G.vBody = vb;
+    const g = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1 });
+    for (const name in g.q) {
+      if (this.gestureHold && UP_BONES.test(name)) continue;
+      const bone = this._gaitBones.get(name), rest = G.rest.get(name);
+      if (!bone || !rest) continue;
+      const q = g.q[name];
+      this._gaitQ.set(q[0], q[1], q[2], q[3]);
+      G.tq.copy(rest).multiply(this._gaitQ);
+      if (w >= 1) bone.quaternion.copy(G.tq); else bone.quaternion.slerp(G.tq, w);
+    }
+    const hips = this._gaitBones.get('Hips');
+    if (hips) { G.tp.copy(G.hipsRest).addScaledVector(G.axisY, g.hips[1]); hips.position.lerp(G.tp, w); }
+  }
+
+  /** L'inclinaison dans l'accélération et la signature de silhouette — communes aux deux foulées. */
+  _applyLean() {
+    const D = Math.PI / 180;
     // L'INCLINAISON DANS L'ACCÉLÉRATION — le corps PENCHE dans ce qu'il fait : buste en avant
     // quand on accélère, retenue en arrière au freinage, roulis DANS le virage (comme un cycliste).
     // C'est le tell n°1 d'un corps qui a une masse ; sans lui, les changements d'allure lisent
@@ -276,8 +369,6 @@ export class CharacterController {
       const sh = this._gaitBones.get('Spine2');
       if (sh) { this._gaitE.set(0, 0, this.persona.posture.shoulder * D * 0.6, 'XYZ'); this._gaitQ.setFromEuler(this._gaitE); sh.quaternion.multiply(this._gaitQ); }
     }
-    const hips = this._gaitBones.get('Hips');
-    if (hips && g.hipsY) hips.position.y += g.hipsY / Math.max(1e-6, this.model.scale.y);
   }
 }
 import { hyp } from './hyp.js';

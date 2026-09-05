@@ -27,9 +27,12 @@ import { AERIAL_KINDS, aerialPortrait } from '../assets/starter/src/engine/motio
 import { SKILL_KINDS, skillPortrait } from '../assets/starter/src/engine/motion-skill.js';
 import { GROUND_KINDS, groundPortrait } from '../assets/starter/src/engine/motion-ground.js';
 import { KEEPER_KINDS, keeperPortrait } from '../assets/starter/src/engine/motion-keeper.js';
+import { gaitParams, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from '../assets/starter/src/engine/motion-gait.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, arr) => a.startsWith('--') ? [a.slice(2), arr[i + 1] && !arr[i + 1].startsWith('--') ? arr[i + 1] : '1'] : []).filter(Boolean));
-const MOVE = args.move || 'frappe';
+// --gait <vF> [--lat <vR>] : LA FOULÉE (lot A7) — huit phases d'un cycle, avant (clips du donneur) / après (générée), posées par le contrôleur
+const GAIT = args.gait != null ? { vF: +args.gait, vR: +(args.lat || 0) } : null;
+const MOVE = GAIT ? `foulee-${GAIT.vF}-${GAIT.vR}` : (args.move || 'frappe');
 const VARIANT = args.variant || 'both';
 const SEED = args.seed != null ? +args.seed : null;
 const CELL = +(args.cell || 300);
@@ -70,18 +73,25 @@ function describe(move, spec) {
   const p = strikePortrait(spec, P);
   return `pied ${p.vContact.toFixed(1)} m/s · genou ${(p.kneePeak.w * 180 / Math.PI).toFixed(0)}°/s · stance {${p.stance.dist.toFixed(2)} m, ${p.stance.bearing.toFixed(0)}°}`;
 }
-if (VARIANT !== 'after') {
+if (GAIT) {
+  const v = Math.hypot(GAIT.vF, GAIT.vR), style = SEED != null ? gaitStyleFromSeed(SEED) : NEUTRAL_GAIT_STYLE;
+  const pg = gaitParams(GAIT.vF, GAIT.vR, style);
+  const dir = `${v.toFixed(1)} m/s (avant ${GAIT.vF}, droite ${GAIT.vR})`;
+  if (VARIANT !== 'after') variants.push({ label: `AVANT — les clips du donneur (Soldier) à ${dir}`, mode: 'clips', gait: { ...GAIT, seed: SEED }, spec: null, ball: [2.5, 0.11, 4] });
+  if (VARIANT !== 'before') variants.push({ label: `APRÈS — la foulée générée à ${dir}${SEED != null ? ` (signature graine ${SEED})` : ''} · appui ${(pg.s * 100).toFixed(0)} %, cycle ${pg.T.toFixed(2)} s`, mode: 'generee', gait: { ...GAIT, seed: SEED }, spec: null, ball: [2.5, 0.11, 4] });
+}
+if (!GAIT && VARIANT !== 'after') {
   const spec = AUTHORED[MOVE] || MOVES[MOVE];
   if (!spec) { console.error(`geste inconnu : ${MOVE}`); process.exit(1); }
   variants.push({ label: `AVANT — ${MOVE} authoré (${spec.keys.length} clés) · ${describe(MOVE, spec)}`, spec, ball: ballFor(MOVE, spec) });
 }
-if (VARIANT !== 'before') {
+if (!GAIT && VARIANT !== 'before') {
   if (!GENERATORS[MOVE]) { console.error(`pas de générateur pour : ${MOVE} (espèces : ${Object.keys(GENERATORS).join(', ')})`); process.exit(1); }
   const style = SEED != null ? styleFromSeed(SEED) : NEUTRAL_STYLE;
   const spec = KINDS[MOVE] && !KINDS[MOVE].feint ? solveStrike(MOVE, P, { style }).spec : GENERATORS[MOVE].generate(P, { style });
   variants.push({ label: `APRÈS — ${MOVE} généré${SEED != null ? ` (style graine ${SEED})` : ' (style neutre)'} · ${describe(MOVE, spec)}`, spec, ball: ballFor(MOVE, spec) });
 }
-const PHASES = [-0.25, -0.15, -0.03, 0, 0.08, 0.2];
+const PHASES = GAIT ? [0, 1, 2, 3, 4, 5, 6, 7].map((i) => i / 8) : [-0.25, -0.15, -0.03, 0, 0.08, 0.2];
 const HIGH = !!AERIAL_KINDS[MOVE] || !!CONTROL_KINDS[MOVE]?.chest || !!KEEPER_KINDS[MOVE]?.jump;   // une tête, une poitrine ou une prise se regarde plus haut
 const up = HIGH ? 0.4 : 0;
 const side = KEEPER_KINDS[MOVE]?.lateral ? KEEPER_KINDS[MOVE].lateral * 0.55 : 0;   // un plongeon part de côté : les caméras suivent à mi-course
@@ -122,7 +132,7 @@ for (const v of variants) {
     pl.model.position.set(0, pl.groundY, 0); pl.model.rotation.y = 0;
     pl.ctrl.pos.set(0, pl.groundY, 0);
     S.ball.position.set(ball[0], ball[1], ball[2]);
-    const r = pl.gestureLayer.begin(spec);
+    const r = spec ? pl.gestureLayer.begin(spec) : { missing: [] };
     const sheet = document.createElement('canvas');
     const W = cell, H = cell, top = 34, left = 120;
     sheet.width = left + W * phases.length; sheet.height = top + H * cams.length;
@@ -137,17 +147,30 @@ for (const v of variants) {
   }, { spec: v.spec, ball: v.ball, phases: PHASES, cams: CAMS, cell: CELL, label: v.label });
   for (let ci = 0; ci < CAMS.length; ci++) {
     for (let pi = 0; pi < PHASES.length; pi++) {
-      const t = await page.evaluate(async ({ cam, dt }) => {
+      const t = await page.evaluate(async ({ cam, dt, gait, mode }) => {
         const S = window.__scene || window.__rondo, E = window.__engine;
         const pl = S.players[0], spec = pl.gestureLayer.spec;
-        const t = Math.max(0, Math.min(spec.duration, spec.contact + dt));
-        pl.mixer.update(0);
-        pl.gestureLayer.apply(t, 1, 1);
+        let t;
+        if (gait) {
+          // LA FOULÉE : posée par le CONTRÔLEUR (l'écrivain du jeu), à la phase φ = dt, vitesse corps (vF, vR)
+          const v = Math.hypot(gait.vF, gait.vR);
+          if (gait.seed != null && pl.ctrl._gaitGen) pl.ctrl.setGaitStyle(gait.seed);
+          pl.ctrl.locomotion = mode; pl.ctrl.gait.phi = dt;
+          pl.ctrl._cur.set(gait.vR / v, -gait.vF / v); pl.ctrl._yawIn = pl.ctrl.yaw;
+          pl.ctrl.groundSpeed = v; pl.ctrl.speed = v; pl.ctrl._vAnim = v;
+          pl.ctrl.anim.set('speed', v).update(0);
+          pl.ctrl._applyGaitLayer(v);
+          t = dt;
+        } else {
+          t = Math.max(0, Math.min(spec.duration, spec.contact + dt));
+          pl.mixer.update(0);
+          pl.gestureLayer.apply(t, 1, 1);
+        }
         pl.model.updateMatrixWorld(true);
         E.camera.position.set(...cam.pos); E.camera.lookAt(...cam.look); E.camera.updateMatrixWorld(true);
         if (E.postfx?.render) await E.postfx.render(); else E.renderer.render(E.scene, E.camera);
         return t;
-      }, { cam: CAMS[ci], dt: PHASES[pi] });
+      }, { cam: CAMS[ci], dt: PHASES[pi], gait: v.gait || null, mode: v.mode || null });
       const png = await page.screenshot({ type: 'png' });
       await page.evaluate(async ({ b64, ci, pi, t, dt }) => {
         const { g, W, H, top, left } = window.__sheet;

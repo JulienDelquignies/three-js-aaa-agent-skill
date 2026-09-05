@@ -9057,6 +9057,52 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      à merger sur demande. RÈGLE DE JOURNAL désormais : la prochaine note
      est la 303, et chaque chantier repart de main (merge de main dans sa
      branche) pour que les numéros ne se croisent plus.
+- 303: LA FOULÉE GÉNÉRÉE (lot A7 — « ok vas-y commence A7 »). Mesuré d'abord
+     (match11, graine 7, 1 min, 20 joueurs de champ) : la couche de geste possède
+     3,2 % du temps d'écran ; 97 % sont de la locomotion, et c'était TROIS clips
+     du donneur Soldier (idle, walk, run) cadencés par gait.js — sprint = trot
+     accéléré buste droit (1,5 % des images à > 7 m/s), un défenseur sur trois
+     en mouvement près du ballon lui tourne le dos, le gardien glisse de côté sur
+     un cycle de marche de face (43 % de son temps latéral ou à reculons). Le
+     module motion-gait : la méthode des gestes appliquée à la foulée — chemins
+     de pied (appui fixe au monde par construction : la cheville recule sous le
+     bassin à −v→ ; pelage talon-pointe qui avance de 0,2 m en marche ; vol en
+     cloche, talon vers la fesse en course, genou devant à reculons) résolus par
+     legIK sur la hanche de l'instant, bassin (rebond ×2, roulis, lacet, tangage,
+     affaissement CALCULÉ pour atteindre les deux extrêmes), tronc (Pontzer
+     149 → 94°), bras opposés à leur jambe — FONCTION PURE de (φ, vF, vR), posée
+     ABSOLUE (rest ⊗ q_spec) par le contrôleur après le mixer, fondue avec l'idle
+     sous 0,6 m/s. Régimes interpolés par la vitesse (marche 62 % d'appui → trot
+     44 → course 36 → sprint 27) et fondus par la direction (arrière, chassés) ;
+     la CADENCE SUIT LA DIRECTION (×1,3 à reculons, ×1,9 de côté — sinon un
+     chassé à 2 m/s demande des pieds à 1,8 m ; l'horloge et le chemin partagent
+     le facteur). Signature par joueur (graine de persona : coude, balancier,
+     inclinaison, hauteur du vol, ouverture des pieds…). LEÇONS : (1) la jambe
+     de shanon (0,76 m) est courte pour la foulée de Dorn — atteindre le point de
+     pose coûte 7 cm d'affaissement en marche, 10-12 en course (dette nommée :
+     cadence à l'échelle de la jambe) ; (2) le talon doit décoller à MI-appui
+     (peel 0,5 en marche) : cloué au sol jusqu'à 78 % de l'appui, la jambe
+     demandait 16 cm de crouch ; (3) le déroulé pendant l'appui fixe est un
+     glissement — il vit dans le pelage ; (4) le sprint sec (pic de vol à 28 %,
+     0,46 m) fait 41 rad/s de genou : 30 % et 0,30 m le ramènent sous les 30 de
+     checkClip ; (5) la clause de dégagement se lit sur l'ORTEIL à mi-vol, pas
+     sur la cheville à la pose. Contrat verify-foulee 45/45 (13 régimes, 40
+     signatures × 6, pure, checkClip, lois entre régimes, bande du verrou, 8
+     sabotages). En jeu : trace d'un coureur à 4,53 m/s — cheville gauche au
+     même point monde pendant les 8 images de l'appui fixe (le corps avance de
+     7,5 cm par image) ; vitesse monde du pied en appui fixe médiane 0,13 m/s
+     (p90 0,99 : le virage) ; pied bas immobile 23-29 % des images contre 10-12
+     avec les clips. contact-sheet --gait v [--lat] rend huit phases avant/après
+     par le contrôleur ; ?foulee=clips rend l'ancien monde ; ctrl.locomotion se
+     commute à chaud (sc.update(0) : l'avant/après au même instant). Dettes : la
+     course arrière n'a presque jamais de déclencheur (la sim fait regarder où
+     l'on court : 150 s sans un vF < −1,8 — une consigne « jockey » côté
+     moteur), virage et freinage réduits au lean, idle du Soldier (A8), une
+     re-capture d'une image du verrou pendant le pelage (plancher calibré sur le
+     clip de course), bras de course bas et fermés. Bancs : tous verts (sync,
+     gait 23, locomotion, anim-fsm, gesture-layer 10, persona 20, gestes 60,
+     animkit, motion 206, rondo 40, match 84, swing 115, slide 10, gesture 28,
+     retarget 13).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

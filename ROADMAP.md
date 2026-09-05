@@ -91,7 +91,7 @@
 - Le greedy vif d'assignation des slots est un optimum local prouvé (lot 85) — ne pas retenter
   de stabilisation géométrique par frame.
 
-## LES ANIMATIONS 11C11 (chantier parallèle — branche claude/11c11-3d-animations, notes 295-301)
+## LES ANIMATIONS 11C11 (chantier parallèle — branche claude/11c11-3d-animations, notes 295-303)
 - LIVRÉ (lot A1) : les FRAPPES GÉNÉRÉES — motion-rig (profil du rig, conjugaison, sonde des
   signes), motion-strike (7 espèces, style par joueur, contrat), motion-cast (casting par joueur),
   contact-sheet.mjs (la planche-contact), verify-motion.mjs (81 clauses), reference/51.
@@ -111,15 +111,30 @@
   aérienne, parades des pieds et du buste générés (motion-keeper : impulsion, détente en root
   motion, gants au bout, tapis, relevé sur place en une chaîne IK continue). Tout le football du
   répertoire est généré (41 espèces) ; restent la retournée (sans déclencheur) et les gestes sociaux.
-- SUIVANT, dans l'ordre : (A2) le monde composé — re-caler les poids d'arrivée pour que la vitesse
-  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A6 bis)
-  les gestes sociaux et la retournée quand la sim la déclenchera — chaque espèce du générateur, jamais
-  un clip de plus à la main ; (A4) la
-  locomotion : inclinaison à l'accélération, balancier des bras selon la vitesse, décélération,
-  pas chassés, course arrière (générés par-dessus le Soldier) ; (A5) la stance dérivée et les
-  bandes de la sim (la géométrie corps-ballon est une entrée du moteur : à trancher avec le
-  chantier moteur — la table STANCES est restée celle du moteur, la stance des clips vit dans
-  STANCES_CLIP, l'écart est porté par le warp de frappe ; note 301).
+- LIVRÉ (lot A7, note 303) : LA FOULÉE GÉNÉRÉE — motion-gait : 97 % du temps d'écran n'est plus
+  trois clips du Soldier mais une fonction pure de (φ, v→) : chemins de pied (appui fixe au monde
+  par construction, pelage talon-pointe, vol en cloche) résolus par IK, bassin, tronc, bras ;
+  marche → trot → course → sprint interpolés, course arrière et pas chassés fondus par la
+  direction, cadence qui suit la direction ; signature par joueur ; verify-foulee 45 clauses (13
+  régimes, 40 signatures, 8 sabotages) ; contact-sheet --gait ; ?foulee=clips pour l'avant.
+- SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
+  (A8) L'ATTENTE — idles de footballeur générés et variés (mains sur les hanches, sautillement,
+  regard), position d'attente du gardien (fléchi, mains prêtes), le mur, l'attente des remises en
+  jeu (aujourd'hui l'idle du Soldier pour tous, 43 % du temps du gardien) ; (A9) LES REMISES EN
+  JEU — la touche (jouée au pied depuis la ligne aujourd'hui, sans ballon en mains : un crochet
+  sim), la course d'élan des coups de pied arrêtés, la relance à la main et le dégagement de volée
+  du gardien, le ramassage au sol, la prise aérienne tenue (dette A6) ; (A10) LE CONTACT — la chute
+  du joueur fauté et son relevé, le duel d'épaule, le tacle subi, la protection de balle bras tendu
+  (crochets sim : chute sur faute, consigne de face « jockey » pour que la course arrière du lot A7
+  se déclenche) ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
+  et cartons de l'arbitre, gestes sociaux générés. Et les dettes : (A2) le monde composé — re-caler
+  les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s
+  composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 bis) la
+  cadence à l'échelle de la jambe (shanon 0,76 m : 7-12 cm d'affaissement), virage et freinage,
+  le port des bras en course, le verrou de pieds calibré sur la foulée générée ; (A5) la stance
+  dérivée et les bandes de la sim (la géométrie corps-ballon est une entrée du moteur — STANCES
+  reste celle du moteur, la stance des clips vit dans STANCES_CLIP, l'écart est porté par le warp
+  de frappe ; note 301).
 
 ## LE PLAN (validé utilisateur) — dans l'ordre
 1. ~~**LE GARDIEN COMPLET (lot 91)**~~ — **LIVRÉ** (note 133) : tenu aux gants (ball.hold +

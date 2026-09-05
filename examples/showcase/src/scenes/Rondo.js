@@ -223,7 +223,7 @@ export class Rondo {
         runClip: clips.find((a) => /run/i.test(a.name)),
         idleClip: clips.find((a) => /idle/i.test(a.name)),
         walkClip: clips.find((a) => /walk/i.test(a.name)),
-        legs, stride: 2.6, runSpeed: RONDO.speeds.chase, persona: p.persona,
+        legs, stride: 2.6, runSpeed: RONDO.speeds.chase, persona: p.persona, locomotion: q.get('foulee') === 'clips' ? 'clips' : 'generee', gaitStyle: p.id * 7919 + (Number(q.get('seed')) || 7),   // LA FOULÉE GÉNÉRÉE (A7, motion-gait) — ?foulee=clips : les trois clips du donneur (l'avant)
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer
