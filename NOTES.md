@@ -8776,6 +8776,87 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      pied→point de frappe 0,09-0,16 m, vitesse composée 7,9-8,3 m/s.
      DETTES : A2 (poids d'arrivée), les espèces au sol et aux mains (tacle
      glissé, râteaux, semelle, plongeons, relevés), la locomotion (A4).
+- 296: LES GESTES TECHNIQUES GÉNÉRÉS (lot A4 — « continue avec les mêmes
+     méthodes »). Un dribble n'est pas un fouet : c'est un CHEMIN DU PIED
+     autour d'un ballon qui ne part pas (intent carry, le lacet à la sim —
+     loi 12). motion-skill écrit la courbe du pied libre dans le repère
+     personnage et l'IK deux os (emitSpec accepte { p, foot, pole } :
+     orientation ABSOLUE du pied, plan du genou) en déduit cuisse et tibia ;
+     appui planté, tronc et bras vendent le geste, bassin qui s'abaisse ;
+     même style par joueur, même sortie animkit, registre GENERATORS (34
+     espèces). TROIS VÉRITÉS DE L'IK payées en chemin : (1) près de
+     l'extension la dérivée genou/cheville est infinie — une cheville en
+     ligne droite fait claquer le genou (38 rad/s sur la roulette, 0,1 s de
+     contact) : approches et retours EN JOINT SPACE (la pose de contact
+     résolue une fois, la jambe y va par la fraction q^a — solveLeg /
+     applyLeg), le petit pont tout entier en joint space (il passe par
+     l'extension complète, sa cible posée à 99,9 % de la jambe depuis la
+     hanche de l'instant, quel que soit le style) ; (2) un pied PLANTÉ qui
+     part n'est pas au repos (le bassin est descendu) : la croqueta
+     interpole entre la solution plantée du moment et la cible
+     (applyLegBetween) ; (3) une cible hors de portée SATURE l'IK sans le
+     dire (la plante du passement à 0,90 m d'une hanche à 0,89 : jambe
+     tendue, pied en l'air) — chaque point est atteignable avec le bassin
+     de l'instant. LES ESPÈCES : râteau (semelle SUR le ballon — cheville
+     29 cm, 10 cm du centre, pointe descendue — puis tirée sous le corps
+     jusqu'à z=+4 cm), arrêt semelle (tenue à 0 cm pendant 0,38 s, la tête
+     se lève 14° → −5°), roulette (la pointe coiffe le ballon en 0,1 s,
+     genou 75°, pivot bas −10 cm bras ouverts à 74°), passements 1-6 (le
+     CERCLE hors → devant → dedans (contact) → derrière : 33 cm au plus
+     haut, 50 cm de balayage, jamais à moins de 17 cm du ballon, buste 12°
+     côté feinte ; les tours répètent le cercle os pour os — tout ce qui
+     bouge pendant un tour n'est fonction que de l'instant du tour, la
+     clause de verify-gestes « clé 0,45 du double = clé 0,15 du simple »
+     tient au bit), crochet / court / chaloupé (l'intérieur balaie À
+     TRAVERS le ballon, pic de vitesse SUR le contact — ramp vaut
+     (tp−t0)/(t1−t0) en tp, la fin du balayage se choisit pour que ce soit
+     la fraction du chemin au ballon — 3,4 / 3,7 / 5,9 m/s, croise la
+     médiane, s'abaisse ; le chaloupé ment d'abord : épaules 16° à droite,
+     bassin +6 cm), croqueta (balaie 26 cm à gauche, pousse 23 cm devant,
+     deux appuis), petit pont (genou 54° → 2°, 3,5 m/s, sans clé de bras).
+     MESURÉ : verify-motion 188 clauses, 40 graines × 34 espèces = 1 360
+     gestes sous contrat ET sous checkClip ; sabotages : le râteau authoré
+     (5 clauses — l'appui glissait de 5,6 cm, coude verrouillé 61 % du
+     temps), un passement dont le corps descend de 12 cm (la jambe frôle
+     le ballon). verify-gestes RÉÉCRIT en FK (épaules, pieds, mains, par
+     instant) : les clauses lisaient une clé par INDEX (keys[2]) et des
+     conventions d'Euler authorées (« abduction = z ≤ −20 », « bras ouverts
+     = LeftArm z ≥ 40 ») fausses sur des articulations conjuguées — et
+     l'une contredisait son propre commentaire (le chaloupé « ment du côté
+     où il ne va pas » exigeait un lacet vers la coupe). rondo 40/40,
+     dribble 19/19, slide 10/10, animkit 119/119, swing 115/115,
+     audit-membres 15/16 (les mêmes trois épisodes de passe rapide qu'au
+     lot A3 — l'audit ne capture pas les gestes techniques : à étendre).
+     EN JEU (match11, seed 7) : un râteau capturé la semelle sur le ballon
+     sous pression, un passement de jambes la jambe en l'air par-dessus le
+     ballon (poids des jambes 1,0 : le geste possède le corps, ownsBody).
+     DETTES : le corps composé (A2) ; le sol (tacle glissé, retournée — A5)
+     et les mains du gardien (A6) ; les gestes sociaux restent authorés.
+- 297: LE TACLE GLISSÉ GÉNÉRÉ (lot A5 — le sol). Quatre temps que la scène
+     et la sim exploitent tels quels : LANCEMENT (une foulée, corps bas et
+     penché), CHUTE SUR LE CÔTÉ (bassin à 19 cm, roulé sur la hanche gauche
+     — épaules 56° —, jambe droite allongée au ras du sol vers le ballon :
+     93 cm devant au contact, pointe relevée ; la gauche repliée dessous par
+     IK, main gauche au sol, bras droit en balancier, tête sur le ballon),
+     POSE COUCHÉE à 55 % (la scène y gèle le clip tant que down > 0), RELEVÉ
+     sur les 30 derniers % (rejoué quand la sim relève ; debout à la fin).
+     Le corps est TRANSPORTÉ par la sim (movement.js : la glissade porte
+     2,5-3 m) : le clip ne porte qu'un root motion de 30 cm devant — l'authoré
+     en portait 1,2 m PAR-DESSUS le transport. BUG DE L'IK trouvé en chemin :
+     la normale du plan de la jambe (legIK) était cuisse × pole ; quand la
+     cuisse s'aligne sur le pole (jambe très pliée vers lui) elle s'annule
+     et la cuisse VRILLE de 177° sur son axe en une image, positions FK
+     inchangées — invisible à tout contrat de position, attrapé par
+     checkClip (184 rad/s). Désormais tibia × cuisse (le plan RÉEL de la
+     flexion, signe cohérent avec le pole), jambe tendue : (hanche→cheville)
+     × pole. Les 34 autres espèces re-vérifiées sous la nouvelle loi. La
+     retournée n'est PAS générée : aucune loi de la sim ne la déclenche
+     (verify-animkit la lit encore authorée) — une espèce pour le jour où le
+     moteur la jouera. MESURÉ : verify-motion 191 clauses (40 × 35 = 1 400
+     gestes) ; sabotage : le tacle authoré refusé. DETTE : la scène gèle le
+     clip à 55 % et relâche au relevé sim — la queue du tacle (0,76 → 1) ne se
+     joue que si la sim n'a pas déjà remis le corps en course ; l'audit des
+     membres ne capture pas encore le tacle (« le tacle aura SES clauses »).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

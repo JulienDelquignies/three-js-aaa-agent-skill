@@ -16,6 +16,12 @@
 //   4. LES SABOTAGES : sans presseur → refus, sortie bouchée → refus NOMMÉ, sous conteste → refus,
 //      spam → cooldown.
 import { MOVES, resolveTracks } from '../assets/starter/src/engine/animkit.js';
+import { denseSampler } from '../assets/starter/src/engine/motion-strike.js';
+import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shanon.js';
+// les gestes techniques sont GÉNÉRÉS (motion-skill) : les clauses de forme lisent le corps en FK (la
+// sémantique du jeu), pas une clé d'index ni une convention d'Euler authorée
+const fkAt = (spec) => denseSampler(spec, SHANON_PROFILE);
+const keyNear = (spec, t) => spec.keys.reduce((b, k) => (Math.abs(k.t - t) < Math.abs(b.t - t) ? k : b), spec.keys[0]);
 import { byId } from '../assets/starter/src/engine/technique.js';
 import { makeRondo, RONDO, rondoInternals } from '../assets/starter/src/engine/rondo.js';
 import { playRondo, skillInternals } from '../assets/starter/src/engine/rondo-sim.js';
@@ -52,8 +58,8 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const cF = MOVES.feintePasse.keys.find((k) => Math.abs(k.t - MOVES.feintePasse.contact) < 1e-6).pose.RightUpLeg[0];
   ok(`…mais SE RETIENT au contact (cuisse passe ${cP.toFixed(0)}° vs feinte ${cF.toFixed(0)}°)`, cP >= 15 && cF <= 10 && cP - cF >= 10);
   // la semelle est le clip de l'immobilité qui REGARDE : pendant la tenue, la tête se LÈVE
-  const hold = MOVES.arretSemelle.keys[2].pose;
-  ok(`la semelle lève la tête pendant la tenue (Head x ${hold.Head[0]}° ≤ 0 — le regard au jeu)`, hold.Head[0] <= 0);
+  const hold = keyNear(MOVES.arretSemelle, 0.62).pose, onBall = keyNear(MOVES.arretSemelle, MOVES.arretSemelle.contact).pose;
+  ok(`la semelle lève la tête pendant la tenue (Head x ${onBall.Head[0]}° au contact → ${hold.Head[0]}° ≤ 0 à la fin de la tenue — le regard au jeu)`, hold.Head[0] <= 0 && onBall.Head[0] > hold.Head[0]);
   ok('les trois clips résolvent (resolveTracks)', ['rateau', 'feintePasse', 'arretSemelle'].every((c) => Object.keys(resolveTracks(MOVES[c]).tracks).length > 10));
 }
 
@@ -339,11 +345,13 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   {
     // le CHALOUPÉ MENT du buste avant la coupe ; le COURT n'a pas le temps de mentir
     const ch = MOVES.crochetChaloupe, co = MOVES.crochetCourt;
-    const chPre = ch.keys.filter((k) => k.t > 0 && k.t < ch.contact);
-    const coPre = co.keys.filter((k) => k.t > 0 && k.t < co.contact);
-    const ment = chPre.some((k) => (k.pose.Spine1?.[1] ?? 0) >= 10 && (k.hips?.[0] ?? 0) >= 0.04);
-    const sobre = coPre.every((k) => Math.abs(k.pose.Spine1?.[1] ?? 0) <= 6);
-    ok('le chaloupé MENT du buste avant la coupe (Spine1 ≥ 10°, déport ≥ 4 cm) ; le court reste sobre', ment && sobre);
+    // le lacet des ÉPAULES en FK (+ = épaule droite derrière = tourné à droite, à l'opposé de la coupe) et le déport du bassin
+    const shoulderYaw = (spec) => { const at = fkAt(spec), y0 = (w) => Math.atan2(w.RightShoulder.p[2] - w.LeftShoulder.p[2], w.RightShoulder.p[0] - w.LeftShoulder.p[0]) * 180 / Math.PI, base = y0(at(0)); return (t) => y0(at(t)) - base; };
+    const yawCh = shoulderYaw(ch), yawCo = shoulderYaw(co);
+    let mentYaw = 0, mentX = 0, sobreYaw = 0;
+    for (const k of ch.keys) if (k.t > 0 && k.t < ch.contact) { mentYaw = Math.max(mentYaw, yawCh(k.t)); mentX = Math.max(mentX, k.hips?.[0] ?? 0); }
+    for (const k of co.keys) if (k.t > 0 && k.t < co.contact) sobreYaw = Math.max(sobreYaw, Math.abs(yawCo(k.t)));
+    ok(`le chaloupé MENT du buste avant la coupe (épaules ${mentYaw.toFixed(0)}° à droite ≥ 8, déport ${(mentX * 100).toFixed(0)} cm ≥ 4) ; le court reste sobre (${sobreYaw.toFixed(0)}° ≤ 6)`, mentYaw >= 8 && mentX >= 0.04 && sobreYaw <= 6);
     ok(`les trois espèces de crochet ont trois durées (${co.duration} < ${MOVES.crochet.duration} < ${ch.duration})`,
       co.duration < MOVES.crochet.duration && MOVES.crochet.duration < ch.duration);
     // le DOUBLE passement est le simple + UN TOUR, os pour os (le segment répété est identique)
@@ -468,8 +476,12 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const D = MOVES.doubleContact;
   const t1 = D.keys.find((k) => k.t === 0.1), t2 = D.keys.find((k) => k.t === D.contact);
-  ok(`le double contact ALTERNE les jambes (pousse : jambe droite abduite ${t1?.pose.RightUpLeg?.[2]} ≤ −20 ; reçoit au contact : jambe gauche ${t2?.pose.LeftUpLeg?.[2]} ≥ 16 — deux touches, deux pieds)`,
-    (t1?.pose.RightUpLeg?.[2] ?? 0) <= -20 && (t2?.pose.LeftUpLeg?.[2] ?? 0) >= 16);
+  // en FK : le pied DROIT balaie vers la gauche avant la touche 1 (x qui baisse), le pied GAUCHE pousse devant autour du contact (z qui baisse)
+  const at = fkAt(D);
+  const sweepL = at(0).RightFoot.p[0] - Math.min(...[0.06, 0.08, 0.1, 0.12].map((t) => at(t).RightFoot.p[0]));
+  const pushFwd = at(D.contact - 0.04).LeftFoot.p[2] - at(D.contact + 0.06).LeftFoot.p[2];
+  ok(`le double contact ALTERNE les jambes (touche 1 : le pied droit balaie ${(sweepL * 100).toFixed(0)} cm vers la gauche ≥ 20 ; contact : le pied gauche pousse ${(pushFwd * 100).toFixed(0)} cm devant ≥ 10 — deux touches, deux pieds)`,
+    sweepL >= 0.2 && pushFwd >= 0.1);
   ok(`…le BUSTE VEND le transfert (lean ${t1?.pose.Spine1?.[2]} puis ${t2?.pose.Spine1?.[2]} — il change de côté) et le geste est SEC (${D.duration} s ≤ 0,4 : deux touches, pas une danse)`,
     Math.sign(t1?.pose.Spine1?.[2] ?? 0) !== Math.sign(t2?.pose.Spine1?.[2] ?? 0) && (t1?.pose.Spine1?.[2] ?? 0) !== 0 && D.duration <= 0.4);
 }
@@ -487,8 +499,11 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const R = MOVES.roulette;
   const semelle = R.keys.find((k) => k.t === R.contact);
   const pivot = R.keys.find((k) => k.t === 0.32);
-  ok(`la roulette ARME la semelle (jambe ${semelle?.pose.RightLeg?.[0]} ≤ −28 au contact), PIVOTE bas (hanches ${pivot?.hips?.[1]} ≤ −0,07, bras ouverts ${pivot?.pose.LeftArm?.[2]} ≥ 40) et reste sobre (${R.duration} s ≤ 0,8)`,
-    (semelle?.pose.RightLeg?.[0] ?? 0) <= -28 && (pivot?.hips?.[1] ?? 0) <= -0.07 && (pivot?.pose.LeftArm?.[2] ?? 0) >= 40 && R.duration <= 0.8);
+  // les bras OUVERTS se lisent en FK : les mains loin de l'axe du corps au pivot
+  const wP = fkAt(R)(0.32);
+  const spread = Math.min(Math.abs(wP.LeftHand.p[0] - wP.Hips.p[0]), Math.abs(wP.RightHand.p[0] - wP.Hips.p[0]));
+  ok(`la roulette ARME la semelle (jambe ${semelle?.pose.RightLeg?.[0]} ≤ −28 au contact), PIVOTE bas (hanches ${pivot?.hips?.[1]} ≤ −0,07, bras ouverts : mains à ${(spread * 100).toFixed(0)} cm de l'axe ≥ 40) et reste sobre (${R.duration} s ≤ 0,8)`,
+    (semelle?.pose.RightLeg?.[0] ?? 0) <= -28 && (pivot?.hips?.[1] ?? 0) <= -0.07 && spread >= 0.4 && R.duration <= 0.8);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

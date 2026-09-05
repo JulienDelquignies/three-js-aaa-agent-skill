@@ -24,6 +24,8 @@ import { KINDS, solveStrike, strikePortrait, styleFromSeed, NEUTRAL_STYLE, dense
 import { GENERATORS } from '../assets/starter/src/engine/motion-cast.js';
 import { CONTROL_KINDS, controlPortrait } from '../assets/starter/src/engine/motion-control.js';
 import { AERIAL_KINDS, aerialPortrait } from '../assets/starter/src/engine/motion-aerial.js';
+import { SKILL_KINDS, skillPortrait } from '../assets/starter/src/engine/motion-skill.js';
+import { GROUND_KINDS, groundPortrait } from '../assets/starter/src/engine/motion-ground.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, arr) => a.startsWith('--') ? [a.slice(2), arr[i + 1] && !arr[i + 1].startsWith('--') ? arr[i + 1] : '1'] : []).filter(Boolean));
 const MOVE = args.move || 'frappe';
@@ -48,6 +50,8 @@ function ballFor(move, spec) {
   const at = denseSampler(spec, P);
   const w = at(spec.contact);
   const K = CONTROL_KINDS[move];
+  if (SKILL_KINDS[move]) return [...SKILL_KINDS[move].ball];   // le geste technique DÉCLARE où est son ballon (il ne part pas)
+  if (GROUND_KINDS[move]) return [...GROUND_KINDS[move].ball];
   if (AERIAL_KINDS[move]) { const h = w.Head.p; return [h[0], h[1] + 0.02, h[2] - 0.2]; }
   if (K?.chest) { const c = w.Spine2.p; return [c[0], c[1] + 0.05, c[2] - 0.24]; }
   if (K?.thigh) { const k = w.RightLeg.p, hp = w.RightUpLeg.p; return [(k[0] + hp[0]) / 2 + 0.02, (k[1] + hp[1]) / 2 + 0.11, (k[2] + hp[2]) / 2 - 0.02]; }
@@ -56,6 +60,8 @@ function ballFor(move, spec) {
   return strikePortrait(spec, P).S;
 }
 function describe(move, spec) {
+  if (GROUND_KINDS[move]) { const p = groundPortrait(spec, P); return `pied à ${(p.footAheadC * 100).toFixed(0)} cm devant, bassin couché à ${(p.pelvisL * 100).toFixed(0)} cm`; }
+  if (SKILL_KINDS[move]) { const p = skillPortrait(spec, P), K = SKILL_KINDS[move]; return K.sole ? `cheville à ${(p.hC * 100).toFixed(0)} cm, ${(p.distBallC * 100).toFixed(0)} cm du ballon` : K.circle ? `pied à ${(p.peakH * 100).toFixed(0)} cm, ${(p.minBall * 100).toFixed(0)} cm du ballon` : K.croqueta ? `balaie ${(p.sweepL * 100).toFixed(0)} cm, pousse ${(p.pushL * 100).toFixed(0)} cm` : `pied ${p.vFootC.toFixed(1)} m/s au contact`; }
   if (AERIAL_KINDS[move]) { const p = aerialPortrait(spec, P); return AERIAL_KINDS[move].upperOnly ? `tête ${p.headC.toFixed(0)}° au contact` : `bassin +${(p.apex * 100).toFixed(0)} cm à l'apex · tête ${p.headC.toFixed(0)}°`; }
   if (CONTROL_KINDS[move]) { const p = controlPortrait(spec, P); return CONTROL_KINDS[move].chest ? `tête ${(p.headBack * 100).toFixed(0)} cm derrière le bassin` : CONTROL_KINDS[move].thigh ? `genou à ${(p.kneeH * 100).toFixed(0)} cm` : `pied à ${(p.excC * 100).toFixed(0)} cm au contact`; }
   const p = strikePortrait(spec, P);

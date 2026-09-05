@@ -146,14 +146,17 @@ const alignWorld = (d0, n0, d1, n1) => { const A = frame(d0, n0), B = frame(d1, 
  * @param Rpar  rotation d'articulation cumulée du parent (le bassin)
  * @param ankle cible monde du nœud cheville
  */
-export function legIK(P, side, hipW, Rpar, ankle) {
+export function legIK(P, side, hipW, Rpar, ankle, pole = [0, 0, -1]) {
   const up = P.bones[`${side}UpLeg`], kn = P.bones[`${side}Leg`], ft = P.bones[`${side}Foot`];
   const L = P.lengths;
-  const pole = [0, 0, -1];
   const ik = twoBoneIK(hipW, ankle, L.thigh, L.shank, pole);
   const d1 = norm(sub(ik.mid, hipW)), s1 = norm(sub(ik.end, ik.mid));
-  // normale du plan de la jambe : cuisse × pole (le genou bascule dans ce plan)
-  const n1 = norm(cross(d1, pole));
+  // normale du plan de la jambe : tibia × cuisse — le plan RÉEL de la flexion, robuste quand la cuisse
+  // s'aligne sur le pole (cuisse × pole s'annulait et RETOURNAIT la cuisse sur son axe : 177° de
+  // vrille en une image sur un tacle couché, positions FK inchangées) ; jambe tendue : (hanche→cheville) × pole
+  const dir = norm(sub(ankle, hipW));
+  const bendN = cross(s1, d1);
+  const n1 = norm(len(bendN) > 0.05 ? bendN : cross(dir, pole));
   const d0 = norm(sub(kn.bindP, up.bindP)), s0 = norm(sub(ft.bindP, kn.bindP));
   const n0 = norm(cross(d0, [0, 0, -1]));
   const thighW = alignWorld(d0, n0, d1, n1);
@@ -185,14 +188,18 @@ export function neutralJoints() {
  * sur la hanche réelle de l'image (pied à plat), une jambe sans cible garde ses DOF. La clé de CONTACT
  * existe toujours (les bancs et le miroir la cherchent).
  */
-export function emitSpec(P, { duration, contact, fps = 60, poseAt, ik = () => ({}) }) {
+export function emitSpec(P, { duration, contact, fps = 60, poseAt, ik = () => ({}), marks = [] }) {
   const keys = [];
   const n = Math.round(duration * fps);
   let times = [];
   for (let i = 0; i <= n; i++) times.push(i === n ? duration : i / fps);
-  // la clé de contact REMPLACE la clé de grille à moins de 5 ms (un intervalle de 3 ms transforme le
-  // moindre coude d'IK en « téléport » pour checkClip — 30 rad/s mesurés sur un genou d'appui)
-  if (contact != null && !times.some((t) => Math.abs(t - contact) < 1e-6)) { times = times.filter((t) => Math.abs(t - contact) > 0.005 || t === 0 || t === duration); times.push(contact); }
+  // la clé de contact (et les REPÈRES d'un geste : l'armé d'un pont, le pivot d'une roulette — les
+  // instants que les bancs lisent) REMPLACE la clé de grille à moins de 5 ms (un intervalle de 3 ms
+  // transforme le moindre coude d'IK en « téléport » pour checkClip — 30 rad/s mesurés sur un genou d'appui)
+  for (const m of [contact, ...marks]) {
+    if (m == null || times.some((t) => Math.abs(t - m) < 1e-6)) continue;
+    times = times.filter((t) => Math.abs(t - m) > 0.005 || t === 0 || t === duration); times.push(m);
+  }
   times.sort((a, b) => a - b);
   for (const t of times) {
     const { J, hips } = poseAt(t);
@@ -201,11 +208,16 @@ export function emitSpec(P, { duration, contact, fps = 60, poseAt, ik = () => ({
     for (const side of ['Left', 'Right']) {
       const target = targets[side];
       if (!target) continue;
-      const r = legIK(P, side, partial[`${side}UpLeg`].p, J.Hips || [0, 0, 0, 1], target);
+      // une cible est un point (pied planté à plat) ou { p, foot, pole } : la cheville d'une jambe
+      // LIBRE (semelle sur le ballon, cercle du passement) avec l'orientation ABSOLUE du pied et le
+      // plan du genou choisis par le geste
+      const p = Array.isArray(target) ? target : target.p;
+      const r = legIK(P, side, partial[`${side}UpLeg`].p, J.Hips || [0, 0, 0, 1], p, (!Array.isArray(target) && target.pole) || [0, 0, -1]);
       J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
       // le pied planté reste À PLAT : on annule la rotation cumulée bassin+cuisse+tibia sur la cheville
       const legW = quatMul(quatMul(J.Hips || [0, 0, 0, 1], r.Rthigh), r.Rshank);
-      J[`${side}Foot`] = quatNormalize(quatConjugate(legW));
+      const flat = quatNormalize(quatConjugate(legW));
+      J[`${side}Foot`] = (!Array.isArray(target) && target.foot) ? quatMul(flat, target.foot) : flat;
       J[`${side}ToeBase`] = [0, 0, 0, 1];
     }
     const pose = {};

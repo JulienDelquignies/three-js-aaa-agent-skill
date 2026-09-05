@@ -27,6 +27,8 @@ import { AUTHORED } from '../assets/starter/src/engine/animkit-data.js';
 import { STANCES } from '../assets/starter/src/engine/approach.js';
 import { CONTROL_KINDS, generateControl, checkControlGen } from '../assets/starter/src/engine/motion-control.js';
 import { AERIAL_KINDS, generateAerial, checkAerialGen } from '../assets/starter/src/engine/motion-aerial.js';
+import { SKILL_KINDS, generateSkill, checkSkillGen } from '../assets/starter/src/engine/motion-skill.js';
+import { GROUND_KINDS, generateGround, checkGroundGen } from '../assets/starter/src/engine/motion-ground.js';
 import { GENERATORS, GENERATED_KINDS } from '../assets/starter/src/engine/motion-cast.js';
 import { quatMul, quatNormalize } from '../assets/starter/src/engine/vecmath.js';
 
@@ -162,6 +164,49 @@ for (const k of Object.keys(AERIAL_KINDS)) {
   ok(`« ${k} » : ${AERIAL_KINDS[k].upperOnly ? 'haut du corps seul, ' : `bassin +${(p.apex * 100).toFixed(0)} cm à l'apex, impulsion ${(p.crouch * 100).toFixed(0)} cm / genou ${p.kneeAtCrouch.toFixed(0)}°, `}tête ${p.headBackMin.toFixed(0)}° → ${p.headC.toFixed(0)}° au contact`, c.ok, c.issues.join(' | '));
   const cc = checkClip(resolveTracks(spec));
   ok('  checkClip (animkit)', cc.ok, cc.issues.slice(0, 3).join(' | '));
+}
+
+// ---------- 4d. les gestes techniques : un chemin du pied autour d'un ballon qui ne part pas
+console.log('\n— les gestes techniques —');
+for (const k of Object.keys(SKILL_KINDS)) {
+  if (/^passementJambes[3-6]$/.test(k)) continue;   // les tours 3-6 sont le même cercle (le sweep les couvre)
+  const K = SKILL_KINDS[k];
+  const spec = generateSkill(k, P);
+  const c = checkSkillGen(spec, P, k), p = c.portrait;
+  const what = K.sole ? `semelle à ${(p.hC * 100).toFixed(0)} cm du sol, ${(p.distBallC * 100).toFixed(0)} cm du ballon${K.dragTo != null ? `, tirée jusqu'à z=${p.backMost.toFixed(2)}` : ''}${K.hold ? `, tenue à ${(p.holdDrift * 100).toFixed(1)} cm` : ''}`
+    : K.circle ? `pied à ${(p.peakH * 100).toFixed(0)} cm par-dessus, balayage ${((p.xMax - p.xMin) * 100).toFixed(0)} cm, jamais à moins de ${(p.minBall * 100).toFixed(0)} cm du ballon, buste ${p.leanMax.toFixed(0)}°`
+    : K.cut ? `intérieur au ballon à ${p.vFootC.toFixed(1)} m/s, croise jusqu'à x=${p.xMin.toFixed(2)}, bassin ${(p.dipMin * 100).toFixed(0)} cm${K.sway ? `, épaules ${p.swayYawMax.toFixed(0)}° à droite avant la coupe` : ''}`
+    : K.croqueta ? `pied droit balaie ${(p.sweepL * 100).toFixed(0)} cm à gauche, pied gauche pousse ${(p.pushL * 100).toFixed(0)} cm devant, appuis ${(p.supA * 100).toFixed(1)}/${(p.supB * 100).toFixed(1)} cm`
+    : `genou ${p.kneeAt(K.arm).toFixed(0)}° armé → ${p.kneeAt(spec.contact).toFixed(0)}° au contact, pied ${p.vFootC.toFixed(1)} m/s, sans clé de bras`;
+  ok(`« ${k} » : ${what}`, c.ok, c.issues.slice(0, 3).join(' | '));
+  const cc = checkClip(resolveTracks(spec));
+  ok('  checkClip (animkit)', cc.ok, cc.issues.slice(0, 3).join(' | '));
+}
+{
+  // le double passement répète le simple os pour os (la clause de verify-gestes, re-prouvée ici)
+  const p1 = generateSkill('passementJambes', P), p2 = generateSkill('passementJambes2', P);
+  const k015 = p1.keys.find((k) => Math.abs(k.t - 0.15) < 1e-6), k045 = p2.keys.find((k) => Math.abs(k.t - 0.45) < 1e-6);
+  ok('le double passement répète le cercle os pour os (clé 0,45 du double = clé 0,15 du simple)', !!k015 && !!k045 && JSON.stringify(k045.pose) === JSON.stringify(k015.pose) && JSON.stringify(k045.hips) === JSON.stringify(k015.hips));
+  // SABOTAGES : le râteau authoré d'hier sous le contrat de la semelle ; un passement qui touche le ballon
+  const old = checkSkillGen(AUTHORED.rateau, P, 'rateau');
+  ok(`sabotage « le râteau authoré » refusé (${old.issues.length} clauses : ${old.issues.slice(0, 2).join(' | ')})`, !old.ok);
+  const low = JSON.parse(JSON.stringify(generateSkill('passementJambes', P)));
+  for (const k of low.keys) if (k.hips) k.hips = [k.hips[0], k.hips[1] - 0.12, k.hips[2]];   // le corps descend de 12 cm : la jambe frôle le ballon
+  const lowC = checkSkillGen(low, P, 'passementJambes');
+  ok(`sabotage « le passement qui touche le ballon » refusé (${lowC.issues.slice(0, 2).join(' | ')})`, !lowC.ok);
+}
+
+// ---------- 4e. le sol : le tacle glissé — le corps se couche sur la hanche, la jambe s'allonge au ballon
+console.log('\n— le sol —');
+for (const k of Object.keys(GROUND_KINDS)) {
+  const spec = generateGround(k, P);
+  const c = checkGroundGen(spec, P, k), p = c.portrait;
+  ok(`« ${k} » : pied à ${(p.footAheadC * 100).toFixed(0)} cm devant au contact (${(p.footHC * 100).toFixed(0)} cm du sol), bassin à ${(p.pelvisL * 100).toFixed(0)} cm couché, épaules roulées à ${p.rollL.toFixed(0)}°, main gauche à ${(p.handMin * 100).toFixed(0)} cm du sol, relevé debout (bassin ${(p.pelvisE * 100).toFixed(0)} cm)`, c.ok, c.issues.slice(0, 3).join(' | '));
+  const cc = checkClip(resolveTracks(spec));
+  ok('  checkClip (animkit)', cc.ok, cc.issues.slice(0, 3).join(' | '));
+  // sabotage : le tacle authoré d'hier (bassin à −0,66 en une clé, jambes traversant la pelouse) sous le contrat du sol
+  const old = checkGroundGen(AUTHORED[k], P, k);
+  ok(`sabotage « le ${k} authoré » refusé (${old.issues.length} clauses : ${old.issues.slice(0, 2).join(' | ')})`, !old.ok);
 }
 
 // ---------- 5. les amplitudes bakées

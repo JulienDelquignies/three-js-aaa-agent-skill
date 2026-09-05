@@ -2,7 +2,7 @@
 // REGISTRE des générateurs (quelle famille dessine quel geste).
 //
 // La scène spawn des corps depuis un ROSTER (squad.js) ; les gestes générés ne sont plus des specs
-// de la table, ils sont CALCULÉS (motion-strike, motion-control, motion-aerial) contre le squelette
+// de la table, ils sont CALCULÉS (motion-strike, motion-control, motion-aerial, motion-skill) contre le squelette
 // RÉEL de chaque template — ses orientations bind, ses longueurs, l'échelle du squad — et non contre
 // le profil de référence baké (motion-profile-shanon, qui ne sert qu'aux MOVES par défaut et au banc).
 // Un autre rig (?rig=) a ses propres jambes : la sonde des signes (checkProfile) le prouve au
@@ -19,12 +19,16 @@ import { profileFromBones, checkProfile } from './motion-rig.js';
 import { KINDS as STRIKE_KINDS, generateStrike, checkStrikeGen, styleFromSeed } from './motion-strike.js';
 import { CONTROL_KINDS, generateControl, checkControlGen } from './motion-control.js';
 import { AERIAL_KINDS, generateAerial, checkAerialGen } from './motion-aerial.js';
+import { SKILL_KINDS, generateSkill, checkSkillGen } from './motion-skill.js';
+import { GROUND_KINDS, generateGround, checkGroundGen } from './motion-ground.js';
 
 /** LE REGISTRE : geste → { family, generate(P, opts), check(spec, P, opts) }. */
 export const GENERATORS = {};
 for (const k of Object.keys(STRIKE_KINDS)) GENERATORS[k] = { family: 'strike', generate: (P, o) => generateStrike(k, P, o), check: (spec, P, o) => checkStrikeGen(spec, P, k, o) };
 for (const k of Object.keys(CONTROL_KINDS)) GENERATORS[k] = { family: 'control', generate: (P, o) => generateControl(k, P, o), check: (spec, P, o) => checkControlGen(spec, P, k, o) };
 for (const k of Object.keys(AERIAL_KINDS)) GENERATORS[k] = { family: 'aerial', generate: (P, o) => generateAerial(k, P, o), check: (spec, P) => checkAerialGen(spec, P, k) };
+for (const k of Object.keys(SKILL_KINDS)) GENERATORS[k] = { family: 'skill', generate: (P, o) => generateSkill(k, P, o), check: (spec, P) => checkSkillGen(spec, P, k) };
+for (const k of Object.keys(GROUND_KINDS)) GENERATORS[k] = { family: 'ground', generate: (P, o) => generateGround(k, P, o), check: (spec, P) => checkGroundGen(spec, P, k) };
 export const GENERATED_KINDS = Object.keys(GENERATORS);
 
 /** Générer un geste par son nom (null si le geste n'est pas généré). */

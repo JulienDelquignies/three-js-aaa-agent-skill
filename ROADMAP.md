@@ -99,10 +99,18 @@
   déviation, pointu, pivot, talonnade), motion-control (6 contrôles dont poitrine, cuisse, semelle
   et tacle debout), motion-aerial (tête sautée balistique, tête debout), le registre GENERATORS,
   la planche-contact générique, verify-motion à 165 clauses (800 gestes stylés sous contrat).
+- LIVRÉ (lot A4, note 296) : les GESTES TECHNIQUES générés (motion-skill, 34 espèces au total) —
+  râteau, semelle, roulette (la semelle sur le ballon), passements 1-6 (le cercle par-dessus),
+  crochets court / franc / chaloupé (la coupe qui balaie), croqueta (deux touches, deux appuis),
+  petit pont (la pichenette) ; l'IK aux deux bouts en joint space ; verify-motion 188 clauses
+  (1 360 gestes stylés), verify-gestes en FK.
+- LIVRÉ (lot A5, note 297) : le SOL — le tacle glissé généré (motion-ground : chute sur la hanche,
+  jambe allongée au ballon, pose couchée à 55 % pour le gel de la scène, relevé), le plan de flexion
+  de l'IK rendu robuste (tibia × cuisse) ; la retournée attend un déclencheur sim.
 - SUIVANT, dans l'ordre : (A2) le monde composé — re-caler les poids d'arrivée pour que la vitesse
-  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A3 bis)
-  les espèces au sol et aux mains : tacle glissé, râteaux, semelle, plongeons et parades du gardien,
-  relevés — chacune une espèce du générateur, jamais un clip de plus à la main ; (A4) la
+  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A6)
+  la famille des MAINS (plongeons, prise, parades du gardien) — chaque espèce du générateur, jamais
+  un clip de plus à la main ; (A4) la
   locomotion : inclinaison à l'accélération, balancier des bras selon la vitesse, décélération,
   pas chassés, course arrière (générés par-dessus le Soldier) ; (A5) la stance dérivée et les
   bandes de la sim (la géométrie corps-ballon est une entrée du moteur : à trancher avec le
