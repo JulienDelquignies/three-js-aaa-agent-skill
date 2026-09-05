@@ -4,6 +4,7 @@ import { WORLD } from './world-basis.js';
 import { AnimationStateMachine } from './anim-state-machine.js';
 import { makeGaitClock, phaseOffset, gaitLayer } from './gait.js';
 import { gaitPose, gaitCadenceFactor, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from './motion-gait.js';
+import { idlePose, idlePolicy, idleStyleFromSeed, NEUTRAL_IDLE_STYLE } from './motion-idle.js';
 import { profileFromBones } from './motion-rig.js';
 import { UP_BONES } from './gesture-layer.js';
 
@@ -109,8 +110,15 @@ export class CharacterController {
     // s'écrit en mètres personnage, comme le canal hips des specs)
     const toParent = new THREE.Matrix3().setFromMatrix4(rel).invert();
     const axisY = new THREE.Vector3(0, 1 / kM, 0).applyMatrix3(toParent);
+    const axisX = new THREE.Vector3(1 / kM, 0, 0).applyMatrix3(toParent);
+    const seed = typeof style === 'number' ? style : null;
     if (typeof style === 'number') style = gaitStyleFromSeed(style);   // la graine de persona → sa signature
-    this._gaitGen = { P, style: style || NEUTRAL_GAIT_STYLE, rest, hipsRest: hips.position.clone(), axisY, tq: new THREE.Quaternion(), tp: new THREE.Vector3(), w: 0, vBody: [0, 0] };
+    this._gaitGen = { P, style: style || NEUTRAL_GAIT_STYLE, rest, hipsRest: hips.position.clone(), axisY, axisX, tq: new THREE.Quaternion(), tq2: new THREE.Quaternion(), tp: new THREE.Vector3(), w: 0, vBody: [0, 0] };
+    // L'ATTENTE GÉNÉRÉE (motion-idle, lot A8) : sous 0,6 m/s le corps n'est plus l'idle du donneur mais
+    // une espèce d'attente choisie par la politique (idleCtx posé par la scène ; idleForce : la planche),
+    // au style du joueur, fondue en 0,5 s d'une espèce à l'autre et fondue avec la foulée au-dessus.
+    this._idle = { style: seed != null ? idleStyleFromSeed(seed + 101) : NEUTRAL_IDLE_STYLE, kind: 'repos', prev: null, blend: 1, t: 0 };
+    this.idleCtx = null; this.idleForce = null;
   }
 
   /** Changer le style de foulée d'un joueur (sa signature, graine de persona). */
@@ -311,25 +319,47 @@ export class CharacterController {
    *  haut du corps appartient au geste (même règle que la couche additive) ; le bassin rebondit en
    *  mètres personnage sur l'axe haut du parent. */
   _applyGeneratedGait(v) {
-    const G = this._gaitGen;
-    const w = Math.max(0, Math.min(1, (v - 0.25) / 0.35));
+    const G = this._gaitGen, I = this._idle;
+    const dt = Math.max(0, this._leanDt ?? 1 / 60);
+    const w = Math.max(0, Math.min(1, (v - 0.25) / 0.35));      // 0 : attente ; 1 : foulée ; entre : fondu
     G.w = w;
-    if (w <= 1e-3) return;
-    const vb = this._bodyVelocity(v);
-    G.vBody = vb;
-    const g = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1 });
-    for (const name in g.q) {
+    // ---- l'attente : l'espèce de la situation (politique pure), fondue en 0,5 s à chaque changement
+    let idle = null;
+    if (w < 1) {
+      const kind = this.idleForce || (this.idleCtx ? idlePolicy(this.idleCtx, this.persona) : 'repos');
+      if (kind !== I.kind) { I.prev = I.kind; I.kind = kind; I.blend = 0; }
+      I.blend = Math.min(1, I.blend + dt / 0.5);
+      I.t += dt;
+      idle = idlePose(G.P, I.t, I.kind, I.style);
+      if (I.blend < 1 && I.prev) {
+        const b = idlePose(G.P, I.t, I.prev, I.style);
+        idle = { q: blendQ(b.q, idle.q, I.blend, G), hips: lerp3(b.hips, idle.hips, I.blend) };
+      } else if (I.prev) I.prev = null;
+    }
+    // ---- la foulée
+    let gait = null;
+    if (w > 0) {
+      const vb = this._bodyVelocity(v);
+      G.vBody = vb;
+      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1 });
+    }
+    const pose = gait && idle ? { q: blendQ(idle.q, gait.q, w, G), hips: lerp3(idle.hips, gait.hips, w) } : (gait || idle);
+    if (!pose) return;
+    for (const name in pose.q) {
       if (this.gestureHold && UP_BONES.test(name)) continue;
       const bone = this._gaitBones.get(name), rest = G.rest.get(name);
       if (!bone || !rest) continue;
-      const q = g.q[name];
+      const q = pose.q[name];
       this._gaitQ.set(q[0], q[1], q[2], q[3]);
       G.tq.copy(rest).multiply(this._gaitQ);
-      if (w >= 1) bone.quaternion.copy(G.tq); else bone.quaternion.slerp(G.tq, w);
+      bone.quaternion.copy(G.tq);
     }
     const hips = this._gaitBones.get('Hips');
-    if (hips) { G.tp.copy(G.hipsRest).addScaledVector(G.axisY, g.hips[1]); hips.position.lerp(G.tp, w); }
+    if (hips) hips.position.copy(G.hipsRest).addScaledVector(G.axisY, pose.hips[1]).addScaledVector(G.axisX, pose.hips[0]);
   }
+
+  /** Forcer une espèce d'attente (la planche-contact, un test) — null : la politique décide. */
+  setIdle(kind) { this.idleForce = kind; }
 
   /** L'inclinaison dans l'accélération et la signature de silhouette — communes aux deux foulées. */
   _applyLean() {
@@ -371,4 +401,18 @@ export class CharacterController {
     }
   }
 }
+/** Fondu de deux poses q_spec (os par os, slerp — un os absent d'un côté garde l'autre). */
+function blendQ(a, b, t, G) {
+  if (t <= 0) return a; if (t >= 1) return b;
+  const out = {};
+  for (const k in b) {
+    if (!a[k]) { out[k] = b[k]; continue; }
+    G.tq.set(a[k][0], a[k][1], a[k][2], a[k][3]); G.tq2.set(b[k][0], b[k][1], b[k][2], b[k][3]);
+    G.tq.slerp(G.tq2, t); out[k] = [G.tq.x, G.tq.y, G.tq.z, G.tq.w];
+  }
+  for (const k in a) if (!out[k]) out[k] = a[k];
+  return out;
+}
+const lerp3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+
 import { hyp } from './hyp.js';

@@ -9103,6 +9103,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      gait 23, locomotion, anim-fsm, gesture-layer 10, persona 20, gestes 60,
      animkit, motion 206, rondo 40, match 84, swing 115, slide 10, gesture 28,
      retarget 13).
+- 304: L'ATTENTE GÉNÉRÉE (lot A8 — « ok enchaine a8 »). À l'arrêt, tous les joueurs
+     jouaient l'idle du Soldier : le même garde-à-vous, les mêmes secondes, le
+     gardien comme un piquet (43 % de son temps). motion-idle : une fonction pure
+     de (t, espèce, style) — le poids qui passe d'un pied à l'autre (±3,5 cm,
+     6-9 s, le bassin ROULE vers la jambe libre, dont le talon se lève de ce qui
+     lui manque en portée), la respiration aux clavicules (5 mm), les bras qui
+     vivent sur des périodes incommensurables, les pieds FIXES (IK sur le bassin
+     qui bouge). Six espèces qui sont des situations : repos, mainsHanches (le
+     calme), sautillement (le nerveux, sur la pointe), pret (la garde du
+     défenseur à ≤ 5,5 m du porteur), pretGardien (bas, large, gants ouverts,
+     ballon ≤ 32 m), mur (mains croisées devant le bas-ventre, menton rentré, à
+     9,5 m d'un coup franc adverse). La politique est pure (contexte lu de la
+     sim en une ligne de scène + persona.calm/burstiness). LEÇONS : (1) la main
+     sur la hanche et les mains devant le bas-ventre demandent la VRILLE de
+     l'humérus — armJoints n'en avait pas (son rot est un lacet de T-pose) ;
+     armPose l'ajoute, et la vrille garde son signe d'un côté à l'autre (le
+     miroir x → −x conserve une rotation autour de X — la première version
+     inversait, main gauche à 46 cm du corps) ; les angles viennent d'une
+     recherche FK sur le rig (poignet à ≤ 1 cm de la cible) ; (2) le poignet de
+     shanon pend à 0,94 m (bras 0,49 m) : les cibles se pensent en poignet, pas
+     en main ; (3) le bind a 8° de genou — une attente « droite » mesure 16° ;
+     (4) la respiration ne se mesure pas sur la hauteur de la poitrine (un
+     tangage ne monte pas) mais sur les épaules ; (5) SOUS LA MARCHE, la loi de
+     cadence (f ∝ v ⇒ foulée constante de 1,5 m) faisait faire des enjambées de
+     1,5 m au ralenti aux joueurs qui se replacent à 0,4 m/s — invisible avec
+     les clips (fondu vers l'idle), flagrant avec la foulée générée qui suit la
+     loi à la lettre : gait.strideLaw raccourcit la foulée sous 1,4 m/s
+     (S ∝ v^0,75 : 0,59 m à 0,4 m/s), verify-gait inchangé 23/23. Contrat
+     verify-attente 40/40 (6 espèces, 24 styles × 6, pure, lente, checkClip,
+     ce qui est propre à chaque espèce, la politique, 8 sabotages). En jeu
+     (graine 7) : touche à t = 170 — 17 joueurs à l'arrêt, 5 mains sur les
+     hanches, 6 sautillements, 6 repos ; le gardien en position à 27 m du ballon
+     (capture) ; le mur : pas un coup franc en deux matchs (12 min de jeu :
+     touches, corners, engagements) — à observer au premier. contact-sheet
+     --idle espèce (avant/après par le contrôleur). Dettes : variantes de repos
+     (bras croisés, mains dans le dos), le regard d'attente, le mur qui saute,
+     les joueurs qui se replacent de côté pendant un temps mort (la sim les
+     fait regarder le jeu — consigne « on se retourne pour marcher », moteur).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

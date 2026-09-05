@@ -209,15 +209,11 @@ export class Rondo {
 
       const mixer = new THREE.AnimationMixer(model3d);
       const bone = (re) => { let f = null; model3d.traverse((o) => { if (o.isBone && re.test(o.name) && !f) f = o; }); return f; };
-      const legs = [
-        { up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i), foot: bone(/LeftFoot/i) },
-        { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i), foot: bone(/RightFoot/i) },
-      ];
+      const legs = [{ up: bone(/LeftUpLeg/i), knee: bone(/LeftLeg$/i), foot: bone(/LeftFoot/i) },
+        { up: bone(/RightUpLeg/i), knee: bone(/RightLeg$/i), foot: bone(/RightFoot/i) }];
       // …et les chaînes de BRAS, pour le warp du gant (le plongeon) — mêmes primitives que les jambes
-      const arms = [
-        { up: bone(/LeftArm$/i), elbow: bone(/LeftForeArm$/i), hand: bone(/LeftHand$/i) },
-        { up: bone(/RightArm$/i), elbow: bone(/RightForeArm$/i), hand: bone(/RightHand$/i) },
-      ];
+      const arms = [{ up: bone(/LeftArm$/i), elbow: bone(/LeftForeArm$/i), hand: bone(/LeftHand$/i) },
+        { up: bone(/RightArm$/i), elbow: bone(/RightForeArm$/i), hand: bone(/RightHand$/i) }];
       const ctrl = new CharacterController(model3d, {
         mixer,
         runClip: clips.find((a) => /run/i.test(a.name)),
@@ -965,6 +961,9 @@ export class Rondo {
       // JAMAIS ralenti : le porteur, le receveur, un corps en geste/au sol, les gardiens, les
       // proches. ?animlod=0 le coupe (sabotage nommé).
       const stx = this.state;
+      // L'ATTENTE (A8, motion-idle) : la situation de la sim → l'espèce d'idle (politique pure du contrôleur)
+      { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : null;
+        pl.ctrl.idleCtx = { keeper: !!s.keeper, dead: !!r && r.type !== 'fin', wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team }; }
       const exemptLod = !this._animLod || pl.gestureLayer.active || s.act || (s.down ?? 0) > 0
         || s.id === stx.possession.carrier || s.id === (stx.pass?.to ?? -99) || s.keeper;
       const dCamL = exemptLod ? 0 : Math.hypot(this.cam.position.x - s.p[0], this.cam.position.z - s.p[2]);

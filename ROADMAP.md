@@ -91,7 +91,7 @@
 - Le greedy vif d'assignation des slots est un optimum local prouvé (lot 85) — ne pas retenter
   de stabilisation géométrique par frame.
 
-## LES ANIMATIONS 11C11 (chantier parallèle — branche claude/11c11-3d-animations, notes 295-303)
+## LES ANIMATIONS 11C11 (chantier parallèle — branche claude/11c11-3d-animations, notes 295-304)
 - LIVRÉ (lot A1) : les FRAPPES GÉNÉRÉES — motion-rig (profil du rig, conjugaison, sonde des
   signes), motion-strike (7 espèces, style par joueur, contrat), motion-cast (casting par joueur),
   contact-sheet.mjs (la planche-contact), verify-motion.mjs (81 clauses), reference/51.
@@ -117,10 +117,13 @@
   marche → trot → course → sprint interpolés, course arrière et pas chassés fondus par la
   direction, cadence qui suit la direction ; signature par joueur ; verify-foulee 45 clauses (13
   régimes, 40 signatures, 8 sabotages) ; contact-sheet --gait ; ?foulee=clips pour l'avant.
+- LIVRÉ (lot A8, note 304) : L'ATTENTE GÉNÉRÉE — motion-idle : six espèces (repos, mains sur les
+  hanches, sautillement, garde du défenseur, position du gardien, mur) comme fonction pure de
+  (t, espèce, style), politique pure lue de la sim et de la persona, vrille de l'humérus
+  (armPose), pieds fixes par IK ; verify-attente 40 clauses ; la loi de cadence raccourcie sous la
+  marche ; contact-sheet --idle.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
-  (A8) L'ATTENTE — idles de footballeur générés et variés (mains sur les hanches, sautillement,
-  regard), position d'attente du gardien (fléchi, mains prêtes), le mur, l'attente des remises en
-  jeu (aujourd'hui l'idle du Soldier pour tous, 43 % du temps du gardien) ; (A9) LES REMISES EN
+  (A9) LES REMISES EN
   JEU — la touche (jouée au pied depuis la ligne aujourd'hui, sans ballon en mains : un crochet
   sim), la course d'élan des coups de pied arrêtés, la relance à la main et le dégagement de volée
   du gardien, le ramassage au sol, la prise aérienne tenue (dette A6) ; (A10) LE CONTACT — la chute

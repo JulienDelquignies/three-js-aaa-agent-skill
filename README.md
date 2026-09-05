@@ -58,7 +58,8 @@ threejs-aaa/ (the skill)
 │   ├── 48-gesture-timeline.md  an action has a beginning and an end: the ball leaves at the contact frame
 │   ├── 49-gait-engine.md       the gait clock: one phase, slaved clips, measured cadence, whole-body layer
 │   ├── 51-motion-strike.md     GENERATED gestures (41 species: strikes, controls, headers, dribbling skills, slide tackle, keeper dives and parades)
-│   ├── 52-motion-gait.md       GENERATED locomotion (walk → jog → run → sprint, backpedal, side shuffle — a pure function of phase and body velocity): anatomical joint curves and foot paths (proximo-distal whip, cushion, ballistic jump, sole/circle/cut, the body that lies down, the dive that gets up on the spot, per-player style) → animkit specs, the rig profile, the contact sheet
+│   ├── 52-motion-gait.md       GENERATED locomotion (walk → jog → run → sprint, backpedal, side shuffle — a pure function of phase and body velocity)
+│   ├── 53-motion-idle.md       GENERATED idles (rest, hands on hips, bouncing, defender's guard, keeper's set, the wall — a pure function of time and situation): anatomical joint curves and foot paths (proximo-distal whip, cushion, ballistic jump, sole/circle/cut, the body that lies down, the dive that gets up on the spot, per-player style) → animkit specs, the rig profile, the contact sheet
 │   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
@@ -242,6 +243,10 @@ examples/
   → run → sprint interpolated by speed, backpedal and side shuffle blended by direction with a
   direction-aware cadence, a per-player gait signature, posed absolutely by the controller after the
   mixer (`verify-foulee.mjs`, 45 clauses; `contact-sheet.mjs --gait`).
+  `motion-idle.js` (lot A8) generates the WAITING body too — six kinds of idle (rest with the weight
+  shifting foot to foot and breathing shoulders, hands on hips, bouncing on the toes, the defender's
+  guard, the keeper's set position, the wall) chosen by a pure policy from the match situation and
+  the persona, with a humerus twist that puts a hand on a hip (`verify-attente.mjs`, 40 clauses).
 
 ## Install
 
