@@ -316,6 +316,25 @@ export const POSTES_FORMATION = {
   523: [...D5, 'M(CG)', 'M(CD)', 'AM(G)', 'ST(C)', 'AM(D)'],
 };
 
+/** LES LOIS AU NOM DU POSTE (244b, cfg.postesNommes — { } l'allume, null = l'indice d'hier au bit) :
+ *  estPointe (la strate ST et les AM LARGES dansent sur la ligne ; le dix axial reste entre les
+ *  lignes), pivotDe (le 6 de la salida : DM(C), sinon M(C), sinon le pivot gauche — hier : le
+ *  premier milieu, soit l'INTÉRIEUR GAUCHE en 4-3-3), estLateral (le dédoublement : WB ou D
+ *  large — hier : les indices 0 et 3, faux à trois ou cinq derrière). pointeDe résout la clé. */
+export function estPointe(name = 433, k = 0) {
+  const p = litPoste(posteNom(name, k)); return !!p && (p.strate === 'ST' || (p.strate === 'AM' && (p.cote === 'G' || p.cote === 'D')));
+}
+export function estLateral(name = 433, k = 0) {
+  const p = litPoste(posteNom(name, k)); return !!p && (p.strate === 'WB' || (p.strate === 'D' && (p.cote === 'G' || p.cote === 'D')));
+}
+export function pivotDe(name = 433) {
+  const N = POSTES_FORMATION[name] ?? POSTES_FORMATION[433];
+  for (const v of ['DM(C)', 'M(C)', 'DM(CG)', 'DM(CD)', 'M(CG)', 'M(CD)']) { const k = N.indexOf(v); if (k >= 0) return k; }
+  return null;
+}
+export function pointeDe(f, k, cfg) {
+  const n = formationPour(f, true); return cfg?.postesNommes ? estPointe(n, k) : k >= premierOffensif(n);
+}
 /** « D(CG) » → { strate: 'D', cote: 'CG' } ; le gardien → GK(C) ; inconnu → null. */
 export function litPoste(nom) {
   const m = /^(GK|D|WB|DM|M|AM|ST)\((G|CG|C|CD|D)\)$/.exec(nom ?? '');

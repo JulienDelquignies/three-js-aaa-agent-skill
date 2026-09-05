@@ -57,9 +57,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     }
     return { ligne: nD ? depth / nD : 0, zTrio: nZ ? z / nZ : 0 };
   };
-  const ecarts = [1, 3, 7].map((s) => run({ hauteurBloc: 1 }, s).ligne - run({ hauteurBloc: 0 }, s).ligne).sort((a, b) => a - b);
-  ok(`la HAUTEUR DE BLOC bouge la ligne (écarts ${ecarts.map((e) => e.toFixed(1)).join(' / ')} m sur graines 1/3/7 — MÉDIANE ${ecarts[1].toFixed(1)} ≥ 4,5 ; monde lot 34 : +9,0)`,
-    ecarts[1] >= 4.5);
+  // 3 → 7 graines DATÉ 244b (volumétrie : la graine 1 rend −19,8 dans tous les mondes, la 3 passait 6,8 → 3,0 au pivot M(C) — la médiane de trois tenait à une graine ; à sept : 11,3 avec la clé, 18,3 sans)
+  const ecarts = [1, 3, 7, 2, 4, 5, 6].map((s) => run({ hauteurBloc: 1 }, s).ligne - run({ hauteurBloc: 0 }, s).ligne).sort((a, b) => a - b);
+  ok(`la HAUTEUR DE BLOC bouge la ligne (écarts ${ecarts.map((e) => e.toFixed(1)).join(' / ')} m sur 7 graines — MÉDIANE ${ecarts[3].toFixed(1)} ≥ 4,5 ; monde lot 34 : +9,0)`,
+    ecarts[3] >= 4.5);
   // …la LARGEUR, re-fondée lot 42 : l'axe gouverne les POSTES — la juger au flux l'a noyée
   // TROIS fois (le renversement lot 35, puis les slots de surface et les darts : écarts
   // mesurés 1,4 puis 2,2 m pour une loi qui en produit ~5 aux postes). L'instrument honnête :

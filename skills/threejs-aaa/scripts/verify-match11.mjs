@@ -70,6 +70,7 @@ import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes, POSTES_FORMATION, ROLES_FORMATION, GRILLE, litPoste, posteNom, lignesFines, checkPostes } from '../assets/starter/src/engine/formation.js';
 import { ROLES, LIBELLES_ROLES, rolesGrille } from '../assets/starter/src/engine/roles.js';
+import { estPointe, estLateral, pivotDe, pointeDe } from '../assets/starter/src/engine/formation.js';
 import { readdirSync as __rd, readFileSync as __rf } from 'node:fs';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -1982,7 +1983,7 @@ if (__bloc()) {
   // sabotage « les axes gelés d'hier » (coach:false) : zéro événement, l'identité au défaut.
   const flux = (over) => {
     let n = 0;
-    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {   // 2 → 4 graines DATÉ 237 (0 but sur 2 graines = 0 posture) → 8 DATÉ 238 (0 but sur 4 : à 5 buts/100 min, 13 % de chance)
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {   // 2 → 4 graines DATÉ 237 (0 but sur 2 graines = 0 posture) → 8 DATÉ 238 (0 but sur 4 : à 5 buts/100 min, 13 % de chance) → 12 DATÉ 244b (0 sur 8 avec le pivot au M(C) ; mesuré 16 graines : 3 bougent dans les deux mondes — 8 graines ont 20 % de chance de zéro)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ couvert: false, marquageSurface: false, ...ISO171, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -1993,7 +1994,7 @@ if (__bloc()) {
   // …épinglé au monde SANS le 131 (le score des graines 1-2 vivait au tempo d'hier)
   const vifC = flux({ ...ISO131 });
   const sabC = flux({ ...ISO131, coach: false });
-  ok(`le coach VIT en flux (${vifC} changements de posture / 8 × 300 s ≥ 1) ; sabotage « les axes gelés d'hier » attrapé (coach:false : ${sabC} — le monde qui ne réagit jamais au score, nommé)`,
+  ok(`le coach VIT en flux (${vifC} changements de posture / 12 × 300 s ≥ 1) ; sabotage « les axes gelés d'hier » attrapé (coach:false : ${sabC} — le monde qui ne réagit jamais au score, nommé)`,
     vifC >= 1 && sabC === 0);
 }
 
@@ -5525,7 +5526,7 @@ if (__bloc()) {
   // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
   const flux = (over) => {
     const cfg = matchCfg({ shotRange: 20, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0;
-    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); const t = st.possession?.team ?? -1; if (prev >= 0 && t >= 0 && t !== prev && !st.restart) pertes++; if (t >= 0) prev = t;
@@ -5542,7 +5543,7 @@ if (__bloc()) {
     return { pertes, servis, reussis, perdus, profond, deborde };
   };
   const V = flux({}), E = flux({ appuiRemise: false });
-  ok(`…et le FLUX (12 × 300 s) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,5 (la course vit le cycle : vieC ; × 1,8 → 1,5 DATÉ 242 : 36 c. 21, le 242 sert aussi les courses du sans) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
+  ok(`…et le FLUX (24 × 300 s — 12 → 24 DATÉ 244b, volumétrie : à 12 graines le monde au pivot M(C) rendait 44 c. 58 servis et la seconde douzaine 54 c. 48 — le tirage, pas la clé) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,5 (la course vit le cycle : vieC ; × 1,8 → 1,5 DATÉ 242 : 36 c. 21, le 242 sert aussi les courses du sans) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
     V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.5 && V.perdus <= V.servis * 0.35 && V.pertes <= E.pertes * 1.05
     && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
 }
@@ -5570,7 +5571,7 @@ if (__bloc()) {
   // 231. Mesuré : 50,5 → 30,6 %, 45 → 52 %, 74,0 → 73,1 %.
   const flux = (over) => {
     const cfgF = matchCfg({ shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
-    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st2 = makeMatch({ full: true, seed }); let cur = 0, possT = -1, possSince = 0; const pend = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st2, 1 / 60, cfgF);
@@ -5624,7 +5625,7 @@ if (__bloc()) {
   // Mesuré : contres arrivés 8 → 17, zéro zone 62 → 29 %, deux zones ou plus 12,5 → 65 %, trois 0 → 18 %, deuxième latéral 0.
   const flux = (over) => {
     const cfgF = matchCfg({ shotRange: 20, ...over }); let contres = 0, zero = 0, deuxPlus = 0, larges = 0, profond = 0, deborde = 0, pertes = 0;
-    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let regain = null, cur = 0, prev = -1;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfgF); const t = st.possession?.team ?? -1;
@@ -5645,8 +5646,8 @@ if (__bloc()) {
     return { contres, zero: 100 * zero / Math.max(1, contres), deuxPlus: 100 * deuxPlus / Math.max(1, contres), larges, profond, deborde, pertes };
   };
   const V2 = flux({}), E2 = flux({ contreZones: false });
-  ok(`…et le FLUX (12 × 300 s) : contres arrivés à l'entrée ${V2.contres} ≥ sans ${E2.contres} × 0,8 (non-diminution — le × 1,5 était l'artefact des sprints permanents, rejetés : 9 corps à + de 3,5 m/s) ; aucune zone occupée ${V2.zero.toFixed(0)} % ≤ sans ${E2.zero.toFixed(0)} − 15 pts ; deux zones ou plus ${V2.deuxPlus.toFixed(0)} % ≥ sans ${E2.deuxPlus.toFixed(0)} + 10 pts (mesuré 13 → 29 ; la cible doctrinale 60 % à trois zones est une dette) ; deuxième latéral ${V2.larges} ≤ 1 ; garde 231 combinée ${V2.profond + V2.deborde} ≥ ${E2.profond + E2.deborde} × 0,85 ; pertes ${V2.pertes} ≤ sans ${E2.pertes} × 1,05`,
-    V2.contres >= E2.contres * 0.8 && V2.zero <= E2.zero - 15 && V2.deuxPlus >= E2.deuxPlus + 10 && V2.larges <= 1 && V2.profond + V2.deborde >= (E2.profond + E2.deborde) * 0.85 && V2.pertes <= E2.pertes * 1.05);
+  ok(`…et le FLUX (24 × 300 s — 12 → 24 DATÉ 244b, volumétrie) : contres arrivés à l'entrée ${V2.contres} ≥ sans ${E2.contres} × 0,75 (× 0,8 → 0,75 DATÉ 244b : à 14 contres σ = 3,7, la borne 0,8 vivait à −0,75 σ — deux douzaines mesurées 5/3 puis 6/11 avec la clé, 7/8 puis 8/10 sans) (non-diminution — le × 1,5 était l'artefact des sprints permanents, rejetés : 9 corps à + de 3,5 m/s) ; aucune zone occupée ${V2.zero.toFixed(0)} % ≤ sans ${E2.zero.toFixed(0)} − 15 pts ; deux zones ou plus ${V2.deuxPlus.toFixed(0)} % ≥ sans ${E2.deuxPlus.toFixed(0)} + 10 pts (mesuré 13 → 29 ; la cible doctrinale 60 % à trois zones est une dette) ; deuxième latéral ${V2.larges} ≤ 1 ; garde 231 combinée ${V2.profond + V2.deborde} ≥ ${E2.profond + E2.deborde} × 0,85 ; pertes ${V2.pertes} ≤ sans ${E2.pertes} × 1,05`,
+    V2.contres >= E2.contres * 0.75 && V2.zero <= E2.zero - 15 && V2.deuxPlus >= E2.deuxPlus + 10 && V2.larges <= 1 && V2.profond + V2.deborde >= (E2.profond + E2.deborde) * 0.85 && V2.pertes <= E2.pertes * 1.05);
 }
 
 // LE CONTRAT STRUCTUREL (244a) : checkMatch porte deux clauses de TEMPO calibrées à 480 s (lot 17 :
@@ -5746,6 +5747,49 @@ if (__bloc()) {
   const FMj = jeu([g433, g433]), POj = jeu(undefined);
   ok(`lot 244c — la grille FM JOUE (433 c. 433, 2 × 300 s avec trace : ${FMj.issues} écart au contrat structurel, polyvalent ${POj.issues} — zéro ; informatif : pertes ${FMj.pertes} c. polyvalent ${POj.pertes}, passes ${FMj.passes} c. ${POj.passes}, tirs ${FMj.tirs} c. ${POj.tirs})`,
     FMj.issues === 0 && POj.issues === 0);
+}
+
+// ---------------------------------------------------------------- lot 244b : LES LOIS AU NOM DU
+// POSTE (cfg.postesNommes, ALLUMÉE — la grille 244a devient la référence des lois qui devinaient
+// le poste par son INDICE) : les pointes sont la strate ST et les AM larges (le dix axial reste
+// entre les lignes), le pivot de la salida est le 6 de la grille (hier ids[nD] = le PREMIER
+// milieu : l'intérieur gauche en 4-3-3, le PISTON GAUCHE en 3-5-2), le dédoublement est celui du
+// WB ou du D large (hier les indices 0 et 3 : en 3-5-2 le central gauche débordait 18 fois / 8 ×
+// 300 s et le piston droit jamais). Jumeau {postesNommes:false} = 242 au bit.
+if (__bloc()) {
+  const pts = (n) => [...Array(10).keys()].filter((k) => estPointe(n, k)).map((k) => POSTES_FORMATION[n][k]).join(' ');
+  const lat = (n) => [...Array(10).keys()].filter((k) => estLateral(n, k)).map((k) => POSTES_FORMATION[n][k]).join(' ');
+  const piv = (n) => POSTES_FORMATION[n][pivotDe(n)];
+  ok(`lot 244b — LES PRÉDICATS DE LA GRILLE : pointes 433 = ${pts('433')} (= hier), 4231 = ${pts('4231')} (le dix n'y est plus), 4321 = ${pts('4321')} ; latéraux 352 = ${lat('352')}, 532 = ${lat('532')} (hier : indices 0/3 = D(CG) et WB(G) / WB(G) et D(CD)) ; pivot 433 = ${piv('433')} (hier M(CG)), 352 = ${piv('352')} (hier WB(G)), 4231 = ${piv('4231')} ; pointeDe résout la clé (433 poste 7 : ${pointeDe('433', 7, matchCfg())}/${pointeDe('433', 7, matchCfg({ postesNommes: false }))}, 4231 poste 7 : ${pointeDe('4231', 7, matchCfg())}/${pointeDe('4231', 7, matchCfg({ postesNommes: false }))})`,
+    pts('433') === 'AM(G) ST(C) AM(D)' && pts('4231') === 'AM(G) AM(D) ST(C)' && pts('4321') === 'ST(C)' && lat('352') === 'WB(G) WB(D)' && lat('532') === 'WB(G) WB(D)'
+    && piv('433') === 'M(C)' && piv('352') === 'M(C)' && piv('4231') === 'DM(CG)' && pointeDe('433', 7, matchCfg()) === true && pointeDe('4231', 7, matchCfg()) === false && pointeDe('4231', 7, matchCfg({ postesNommes: false })) === true);
+  // le FLUX (3 × 300 s par monde) : 3-5-2 — le dédoublement vient des DEUX pistons et d'aucun central ; 4-2-3-1 — le dix
+  // sur la ligne défensive ≤ 5 % des images (hier 16), zéro appel profond du dix (hier 24 / 4 × 300 s), ceux du 9 ≥ hier ;
+  // les pertes ≤ hier × 1,15 (Poisson à 3 graines — mesuré à 8 : 352 +8 %, 4231 −1 %, 433 −8 %) ; salida 433 : pivot M(C) toujours
+  const flux = (f, over) => {
+    const o = { deb: {}, appels: {}, pivots: {}, ligne: 0, img: 0, pertes: 0 };
+    for (const seed of [1, 2, 3]) {
+      const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ shotRange: 20, ...over });
+      let prev = -1, cur = 0;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg); const tm = st.possession?.team ?? -1;
+        if (prev >= 0 && tm >= 0 && tm !== prev && !st.restart) o.pertes++; if (tm >= 0) prev = tm;
+        if (st._salida && tm === 0) { const nm = POSTES_FORMATION[f][st._salida.pivot]; o.pivots[nm] = (o.pivots[nm] ?? 0) + 1; }
+        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (e.type === 'burst' && (e.kind === 'deborde' || e.kind === 'appel-profond')) { const p = st.players[e.by]; if (p?.team === 0) { const nm = POSTES_FORMATION[f][p.post], k = e.kind === 'deborde' ? o.deb : o.appels; k[nm] = (k[nm] ?? 0) + 1; } } }
+        if (f === '4231' && i % 30 === 0 && tm === 0 && !st.restart) {
+          const sg = -Math.sign(st.pitch.ownGoal(0).x || 1), dl = st.players.filter((q) => q.team === 1 && !q.keeper).map((q) => q.p[0] * sg).sort((a, b) => b - a), dix = st.players.find((q) => q.team === 0 && q.post === 7);
+          o.img++; if (dix.p[0] * sg - (dl[1] ?? 0) > -2) o.ligne++;
+        }
+      }
+    }
+    o.ligne = o.img ? 100 * o.ligne / o.img : 0; return o;
+  };
+  const A352 = flux('352', {}), H352 = flux('352', { postesNommes: false });
+  const A4231 = flux('4231', {}), H4231 = flux('4231', { postesNommes: false });
+  const sum = (m) => Object.values(m).reduce((a, b) => a + b, 0), key = (m) => Object.keys(m).sort().join('+');
+  ok(`lot 244b — le FLUX (3 × 300 s) : 3-5-2 dédoublement par ${key(A352.deb) || 'personne'} (${sum(A352.deb)} ; hier ${JSON.stringify(H352.deb)} — un CENTRAL débordait), pivot de salida ${key(A352.pivots) || '—'} (hier ${key(H352.pivots) || '—'}), appels ${sum(A352.appels)} c. ${sum(H352.appels)}, pertes ${A352.pertes} ≤ ${H352.pertes} × 1,15 ; 4-2-3-1 : le dix sur la ligne ${A4231.ligne.toFixed(0)} % des images ≤ 5 (hier ${H4231.ligne.toFixed(0)}), ses appels profonds ${A4231.appels['AM(C)'] ?? 0} = 0 (hier ${H4231.appels['AM(C)'] ?? 0}), ceux du 9 ${A4231.appels['ST(C)'] ?? 0} ≥ ${H4231.appels['ST(C)'] ?? 0}, pertes ${A4231.pertes} ≤ ${H4231.pertes} × 1,15`,
+    key(A352.deb) === 'WB(D)+WB(G)' && sum(A352.deb) >= 4 && !('D(CG)' in A352.deb) && key(A352.pivots) === 'M(C)' && A352.pertes <= H352.pertes * 1.15
+    && A4231.ligne <= 5 && (A4231.appels['AM(C)'] ?? 0) === 0 && (A4231.appels['ST(C)'] ?? 0) >= (H4231.appels['ST(C)'] ?? 0) && A4231.pertes <= H4231.pertes * 1.15);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

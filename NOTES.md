@@ -9163,6 +9163,65 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Aucun rôle posé par défaut : empreintes 94e2de4e74fb69f8 /
      46ce3576f0d5249f = le 242 au bit. Le 244b (les lois au nom du poste,
      puis le poste naturel côté joueur) reste le prochain lot mesuré.
+- 304: LES LOIS AU NOM DU POSTE (244b — cfg.postesNommes, ALLUMÉE ;
+     « ligne moteur doit évoluer du coup ? » — oui, la voici). Trois lois
+     devinaient le poste par son INDICE, et l'indice mentait hors du
+     4-3-3 : (1) les POINTES (« ≥ premierOffensif ») — en 4-2-3-1 le dix
+     dansait sur la ligne défensive (16 % des images, 24 appels profonds
+     / 4 × 300 s, autant que le 9) ; (2) le PIVOT de la salida (ids[nD],
+     le premier milieu) — l'intérieur GAUCHE en 4-3-3, le PISTON GAUCHE
+     en 3-5-2 (1663 images / 8 × 300 s à s'intercaler entre les
+     centraux) ; (3) le DÉDOUBLEMENT (indices 0/3) — en 3-5-2 le central
+     gauche débordait (18 courses / 8 × 300 s) et le piston droit jamais ;
+     en 5-3-2 le D(CD). LA LOI : formation.js — estPointe (strate ST et
+     AM larges ; le dix axial reste entre les lignes), estLateral (WB ou
+     D large), pivotDe (DM(C), sinon M(C), sinon le pivot gauche),
+     pointeDe résout la clé ; match-sim (trois sites : comité, appel
+     timé Loi 11, couloirs pointesLibres), salida.js (ligneArriere lit la
+     clé), roles.js (deborde). MESURÉ (8 × 300 s) : 4-3-3 pivot M(C)
+     100 %, pertes 193 → 177, appels 121 → 119 ; 3-5-2 dédoublement WB(G)
+     9 + WB(D) 5 (zéro central), appels 118 → 119, pertes 190 → 206
+     (Poisson : salida seule −3, dédoublement seul +7) ; 4-2-3-1 le dix
+     sur la ligne 16 → 2 % des images, ses appels 24 → 0, ceux du 9
+     23 → 35, pertes 93 → 92. ALLUMÉE par défaut : c'est une correction
+     de football (le 6 s'intercale, pas le 8 gauche), flux neutre. Le
+     4-3-3 servi ne change que par le pivot de salida : empreintes
+     94e2de4e74fb69f8 / d9ed4cfdf0e94e1d (graine 3 identique, la salida
+     n'y a pas mordu) ; jumeau {postesNommes:false} = 242 au bit
+     (94e2de4e74fb69f8 / 46ce3576f0d5249f). BANC 244b : prédicats
+     (433/4231/4321/352/532) et flux 3 × 300 s (3-5-2 : dédoublement
+     WB(D)+WB(G) 6, aucun central, pivot M(C), pertes 69 ≤ 66 × 1,15 ;
+     4-2-3-1 : dix sur la ligne 0 % ≤ 5, appels du dix 0, du 9 29 ≥ 17,
+     pertes 67 ≤ 75 × 1,15). Le contre-pressing et le marquage lisent
+     déjà la défense par LIGNES[0] = D + WB bas (identique à la grille
+     par construction, clause 244a) : rien à changer. LE BANC COMPLET
+     (8 shards + douze annexes, 62 min) au pivot M(C) — quatre rouges,
+     tous de FLUX, tous relus avec la clé épinglée à false : (a) coach
+     113 (0 posture / 8 × 300 s) — 16 graines mesurées : 3 bougent dans
+     les deux mondes, 8 graines ont 20 % de chance de zéro → 12 graines
+     DATÉ 244b ; (b) 240 flux (servis 44 c. 58 à 12 graines) — la
+     seconde douzaine rend 54 avec la clé c. 48 sans : le tirage, pas la
+     clé ; à 24 graines servis 98 c. 106, réussis 66 c. 67, pertes +1,5 %
+     → 24 graines DATÉ 244b ; (c) 242 flux (contres 5 c. 3, deux zones
+     40 < 43) — seconde douzaine 6/11 avec, 8/10 sans ; à 14 contres
+     σ = 3,7 et la borne × 0,8 vivait à −0,75 σ → 24 graines et × 0,75
+     DATÉ 244b (la signature des zones, elle, tient : zéro zone 36 ≤ 42,
+     deux zones 45 ≥ 24) ; (d) annexe tactics « hauteur de bloc »
+     (médiane de 3 graines 3,0 < 4,5 ; la graine 1 rend −19,8 dans TOUS
+     les mondes) → 7 graines DATÉ 244b (médiane 11,3 avec la clé, 18,3
+     sans). Plus un plantage : l'annexe roles (checkRoles) exigeait un
+     arbitre sur chaque rôle et le bornait à [0,7 ; 1,3] — le catalogue
+     aval (244c) va de × 0,5 (destructeur, tir) à × 1,4 (renard, regista)
+     → arbitre ?? {} et [0,5 ; 1,4] DATÉ 244c ; l'annexe imprimait
+     0 ✓ / 0 ✗ et mon décompte la lisait verte : un plantage n'est pas
+     un vert (à retenir). ROUGE HÉRITÉ, pas du 244 : l'annexe attributes
+     « lot 152/158 la gradation » (30 → 82, 50 → 47, 70 → 77, 90 → 94,
+     non monotone) est rouge À L'IDENTIQUE aux commits 78d6517 (sceau
+     242), 8d17dda (243) et aujourd'hui — clé épinglée ou non (salida y
+     est déjà à false). Le sceau 242 l'a laissée passer ; dette nommée
+     « gradation 152/158 », à bissecter avant le 242 (le monde des
+     notes 30/50 s'est retourné : 82 > 47). Reste (244d) : le poste
+     NATUREL côté joueur — profil.postes + familiarité en facteur.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

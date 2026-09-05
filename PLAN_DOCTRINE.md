@@ -284,10 +284,14 @@ en donnée (`roles.js`, identifiants aval) ; `rolesGrille` pose le rôle par dé
 (mezzalas d'un trio, sentinelle, meneur reculé, piston…) ; préréglages 4321/532 corrigés ; aucun rôle par
 défaut, empreintes au bit. Trouvé : le contrat du 127 était lu à vide depuis le 127.
 
-**Lot 244b — Les lois au nom du poste (à sceller).** Dédoublement par la strate WB/D ; pointes = AM +
-ST (Loi 11, couloirs, appels) ; sentinelle = DM (salida, contre-pressing) ; puis le poste naturel côté
-joueur (`profil.postes` + familiarité = facteur, identité absente). Mesuré à trois et cinq derrière,
-où la différence existe ; à clé absente, hier au bit.
+**Lot 244b — Les lois au nom du poste — SCELLÉ (NOTES 304).** `cfg.postesNommes` allumée : pointes =
+strate ST + AM larges (le dix reste entre les lignes), pivot de salida = DM(C) sinon M(C) (hier l'intérieur
+gauche, le piston gauche en 3-5-2), dédoublement = WB ou D large (hier les indices 0/3 : un central
+débordait en 3-5-2). Flux neutre à 8 graines ; jumeau false = 242 au bit.
+
+**Lot 244d — Le poste naturel côté joueur (à sceller).** `profil.postes` (liste de noms de la grille) +
+familiarité = FACTEUR (identité absente) pondérant décision et contrôle hors poste ; mesuré sur un
+effectif noté joué à contre-emploi.
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

@@ -1,4 +1,4 @@
-import { POSTES_FORMATION, litPoste, lignesFines } from './formation.js';
+import { POSTES_FORMATION, litPoste, lignesFines, estLateral, formationPour } from './formation.js';
 // roles.js — LES RÔLES PAR POSTE : le poste dit OÙ (formation.js), le rôle dit QUOI (les biais
 // de comportement), l'attribut dit COMMENT ça réussit (attributes.js) — trois couches qui se
 // COMPOSENT sans se confondre. Même grammaire que la tactique (lot 15) : des axes à identité
@@ -132,7 +132,8 @@ export function checkRoles() {
     for (const k of ['profondeur', 'largeurR', 'appel', 'press', 'garde', 'dribble']) {
       if (r[k] < 0 || r[k] > 1) issues.push(`${nom}.${k} hors [0;1]`);
     }
-    for (const [o, v] of Object.entries(r.arbitre)) if (v < 0.7 || v > 1.3) issues.push(`${nom}.arbitre.${o} = ${v} hors [0,7;1,3] — un rôle nuance, il n'écrase pas`);
+    // [0,7 ; 1,3] → [0,5 ; 1,4] DATÉ 244c : le catalogue aval va de × 0,5 (le destructeur qui ne tire pas) à × 1,4 (le renard, le regista) — un rôle nuance encore, il n'écrase pas (× 0 ou × 3 seraient une autre loi)
+    for (const [o, v] of Object.entries(r.arbitre ?? {})) if (v < 0.5 || v > 1.4) issues.push(`${nom}.arbitre.${o} = ${v} hors [0,5;1,4] — un rôle nuance, il n'écrase pas`);
   }
   const p = ROLES.polyvalent;
   if (p.profondeur !== 0.5 || p.largeurR !== 0.5 || p.appel !== 0.5 || p.press !== 0.5 || p.garde !== 0.5 || (p.dribble ?? 0.5) !== 0.5
@@ -150,7 +151,7 @@ export function checkRoles() {
  *  couloir. Retourne la cible de course ou null. false : le latéral qui reste chez lui. */
 export function deborde(st, p, carrier, pitch, atk, cfg, axe) {
   if (!st.full || cfg.deborde === false || !carrier || carrier.keeper) return null;
-  if (p.post !== 0 && p.post !== 3) return null;
+  if (cfg.postesNommes ? !estLateral(formationPour(st.tactics?.[atk]?.formation, true), p.post ?? 0) : (p.post !== 0 && p.post !== 3)) return null;   // 244b : le latéral DE LA GRILLE (WB ou D large) — hier les indices 0/3
   const sg = -pitch.ownGoal(atk).sign;
   if ((p._ovT ?? -1) <= st.t
     && Math.abs(carrier.p[2]) > pitch.hz * 0.42
