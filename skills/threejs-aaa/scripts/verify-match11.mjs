@@ -42,7 +42,7 @@ import { menaceTir } from '../assets/starter/src/engine/menace.js';
 // nouveau lot de flux re-cassait les clauses d'isolation une par une ; désormais les clauses
 // de LABO — celles qui isolent UNE loi ancienne — épinglent ce monde des DEUX côtés).
 // C'est le flux d'avant les lots 105-111, gelé : les clauses y mesurent leur loi, pas le monde.
-const LAB = { ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
+const LAB = { couloirs: false, /* DATÉ 241 : la clause mesure SA loi — le bras gelé (frappeConduite:false) frappe des ballons reçus en course, population que les couloirs accélèrent (2,48 c. 2,26 : inversé) */ ecarte: false, conduiteCouloir: false, ramasse: false, audace: false,
   chaloupe: false, troisieme: false,
   uneTouche: { press: 2.6, vmax: 9.5, portee: 14, couloir: 0.5, p: 0.65, calme: 0.5, dose: false }, clearServi: false,
   tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12 },   // …la fenêtre debout (pré-112 : ni détente ni duel du venant)
@@ -406,7 +406,7 @@ if (__bloc()) {
 if (__bloc()) {
   const corps = (cfgExtra) => {
     const vs = [];
-    for (const seed of [1, 3]) {
+    for (const seed of [1, 3, 5, 7]) {   // 2 → 4 graines DATÉ 241 (gelé 2,29 c. vivant 2,37 sur 57 gestes : l'écart de 0,12 vit dans le bruit du p50)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
