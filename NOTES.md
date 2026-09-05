@@ -8580,6 +8580,35 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      {appuiRemise:false} = moteur 240a-d au bit (7fdcfe013bd30aa5 /
      1a67b3e2a9035ccd) — le premier essai le cassait : ma parenthèse
      coupait le produit du tirage (rnd < p × tempo × …), leçon consignée.
+     LES ROUGES DU SCEAU, ATTRIBUÉS ET RE-DATÉS SUR PREUVE (tous verts
+     sans la clé, tous rejoués isolés) : 76 — le corps qui se retourne
+     en conduisant touche un ballon libre passé derrière lui (7,4 %
+     vivant c. 3,7 % sans retournement ; « au cap à l'arrêt » essayé et
+     rejeté : pertes sans pression 24 → 34) → la clause épingle
+     retournement:false et rapporte le vivant ; 141 — le sabotage de la
+     pousse en signature relative (+9 c. +12 : l'attaque avance tout le
+     monde) ; zone de vérité — à 12 graines, le juge est la part en
+     surface (79 c. 51 %), le ratio de tirs en non-inversion (44 c. 62,
+     0,71 c. le ×0,7 daté 232) ; 189 et 239-flux épinglent la clé (la
+     remise d'appui recule en contre ; le pivot part en troisième homme
+     quand la salida le veut bas — interactions nommées) ; 136 à 12
+     graines ; 149 informatif (la dette 239 se lit, inversée de 3 m) ;
+     129 — la défense s'échantillonne quand l'adversaire attaque dans
+     la moitié de l'équipe 0 (le 240 lui laisse 68 % du ballon, l'adverse
+     jouait à mi-terrain : 1,3 corps c. 4,0) ; loi3 184 — la fixture
+     fabrique son arrêt de jeu (la graine 3 ne s'arrêtait plus entre 30
+     et 200 s). SCEAU 240 : jumeau {appuiRemise:false} = monde 240a-d au
+     bit (7fdcfe013bd30aa5 / 1a67b3e2a9035ccd), jumeau {passeMarque,
+     retournement, epaule, appuiRemise : false} = monde 239 au bit ;
+     clause 240 isolée 2 ✓ ; bande 1-20 : 33 tirs, 7 buts, 7 corners ;
+     attributes 26 ✓ / 1 ✗ (la gradation, hier) ; douze annexes vertes
+     (match 84, rondo 40, gestes 60, menace 11, frappes 13, sync 9,
+     roles 11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10) ; 8
+     shards : 262 ✓ / 0 ✗ ; déployé (chunk Rondo-TYd8bLUO.js à l'alias,
+     capture playmode avant deploy). DETTES : pertes 423-450/90 (réel
+     200-280) ; la cible « 8-15 combinaisons réussies » à compter au
+     sens strict quand le 241 posera les couloirs ; le pivot tiraillé
+     entre salida et troisième homme ; gardiens ; MCP Blender.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
