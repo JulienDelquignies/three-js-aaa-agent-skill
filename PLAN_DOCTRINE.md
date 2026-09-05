@@ -300,7 +300,9 @@ réaction × 1,3 à familiarité 0, la technique intacte. Mesuré : à contre-em
 passes 323 → 269 (8 × 300 s) ; le malus léger était un placebo, rejeté. Absent : au bit.
 
 **Rouge hérité — la gradation 152/158 (annexe attributes).** Bissecté : vert au 235, rouge dès le 237
-(`referme`). À trancher : épingle ou vrai effet du 237 sur les mondes notés.
+(`referme`). Tranché : referme épinglée à false rend 0 / 46 / 373 / 504 ; allumée, 82 / 47 / 77 / 94 — la loi
+écrase la domination des notes (504 → 94). **Lot 245 — pourquoi le 237 neutralise les attributs (à
+comprendre avant toute épingle).**
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

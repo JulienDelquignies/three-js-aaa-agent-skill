@@ -9295,6 +9295,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      de la gradation (test lancé), ou un vrai effet du 237 sur les
      mondes notés à 30 (le composite du 30 monte à 82 > 47 : la loi
      favoriserait le mauvais décideur).
+     TRANCHÉ (test referme:false épinglé dans l'annexe) : la gradation
+     redevient 0 / 46 / 373 / 504 — monotone, et surtout AMPLE : avec
+     referme, 82 / 47 / 77 / 94. La loi du 237 n'inverse pas seulement
+     le 30 et le 50, elle ÉCRASE la domination du 90 (504 → 94) : le
+     monde devient presque insensible aux notes. Ce n'est pas un rouge
+     de tirage, c'est une loi qui neutralise les attributs — le
+     contraire du contrat du moteur. Pas d'épingle : un lot 245 doit
+     comprendre POURQUOI « le voisin et le second reculent derrière le
+     sortant » efface l'effet des notes (hypothèse : le repli du 237 se
+     déclenche sur la sortie du presseur, plus fréquente contre un bon
+     porteur — le bloc du faible recule plus et mieux, et la domination
+     territoriale du fort ne se traduit plus en tirs).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
