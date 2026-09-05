@@ -1,22 +1,15 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
-import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js';
-import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js';
-import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js';
-import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js';
-import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js';
-import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
-import { offsideLine } from './offside.js';
-import { tac, axe, resoudreTactique, triangule } from './tactics.js';
-import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js';
-import { MATCH } from './match-config.js';
+import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js';
+import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js';
+import { offsideLine } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js';
+import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker } from './referee.js';
 import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js';
-import { accrocheStep, contreTir, jambeTendue } from './duel.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue } from './duel.js';
 import { makeProfile } from './attributes.js';
 import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee } from './phases.js';
@@ -674,6 +667,7 @@ function assignMatchJobs(st, cfg) {
       S5(2, sa[0] - sgn * 6 * K, sa[2] * 0.5); S5(3, sa[0] + sgn * 2 * K, sa[2] > 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55); S5(4, sa[0] + sgn * 4 * K, sa[2] * -0.6);
     }
     if (st.full && cfg.triangle !== false && !wideDeep) triangule(slots, sa, cfg.triangle?.min ?? 35, pitch.hx, pitch.hz);   // lot 84, ÉTEINTE
+    if (st.full && cfg.couloirs) ouvrirRegistre(st, atk, pitch, carrier);   // LES CINQ COULOIRS (241) : le registre s'ouvre, le porteur compte en premier
     const free = st._bFree ??= []; free.length = 0;
     for (const p of attackers) if ((!carrier || p.id !== carrier.id) && p !== flightRec && p !== hunter) free.push(p);
     // EN 11C11 : les couloirs dynamiques sont RÉSERVÉS au soutien rapproché (les plus près de l'ancre) — le reste du monde tient SON poste de formation coulissé (le bloc).
@@ -697,7 +691,7 @@ function assignMatchJobs(st, cfg) {
       tz.v += (anchor[2] - tz.v) * Math.min(1, Math.max(0, st.t - tz.t) / 2); tz.t = st.t;
           const blocA = blocFor(cfg.bloc ?? null, tac(st, atk));   // LA POUSSE (141, cfg.pousse && st.full) : la ligne arrière attaquante franchit le rond, gain × axe hauteurBloc
       if (blocA && st.full && cfg.pousse) blocA.pousse = { gain: (cfg.pousse.gain ?? 0.8) * axe(tac(st, atk).hauteurBloc, 0.3, 1.7), des: cfg.pousse.des, max: cfg.pousse.max };
-      const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocA, tz.v, st._outAtk ??= []); if (st.full && cfg.salida) salidaStep(st, cfg, { atk, spots, carrier, pitch, tac });   // la formation ON (129) ; LA SALIDA (239, salida.js) : le pivot entre les centraux sous pression
+      const spots = formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocA, tz.v, st._outAtk ??= []); const spotsBase = st.full && cfg.couloirs?.relais ? formationSpots(pitch, atk, anchor[0], true, formationPour(tac(st, atk).formation, true), blocA, 0, st._outAtkBase ??= []) : null; /* (241) les spots SANS coulissement : le demi-espace de base de chaque intérieur */ if (st.full && cfg.salida) salidaStep(st, cfg, { atk, spots, carrier, pitch, tac });   // la formation ON (129) ; LA SALIDA (239, salida.js) : le pivot entre les centraux sous pression
       // LA LOI 11 CALE LES POINTES (cfg.offside) : un poste coulissé peut tomber DERRIÈRE la défense — l'attaquant réel vit SUR la ligne. Relue CHAQUE image ; le calage borne la CIBLE.
       const off = cfg.offside ? offsideLine(st, atk) : null;
       // …ET L'APPEL SE TIME SUR LE PASSEUR (lot 41, cfg.appelPret) : on appelle quand le porteur PEUT donner — ballon au pied ≤ appelPret m (avant p50 1,43 s). false : l'appel aveugle d'hier.
@@ -829,6 +823,7 @@ function assignMatchJobs(st, cfg) {
         // …ET AUCUNE COURSE NE VISE HORS TERRAIN (207, fix absolu — le jumeau du clamp de met :
         // le DÉDOUBLEMENT longeait la touche par l'extérieur, cible |z| 35-46 pour une craie à
         // 34 — « le joueur court en touche »). Le clamp FINAL du poseur ; l'intérieur au bit.
+        if (st.full && cfg.couloirs && (p._runT ?? -1) <= st.t && !ov && !(cfg.couloirs.pointesLibres !== false && (p.post ?? 0) >= premierOffensif(formationPour(tac(st, atk).formation, true)))) { const LG = LIGNES[formationPour(tac(st, atk).formation, true)]; if (cfg.couloirs.relais && LG && spotsBase && (p.post ?? 0) >= LG[0] && (p.post ?? 0) < LG[0] + LG[1]) tz = tenirDemiEspace(tz, spotsBase[p.post][1], pitch.hz, cfg.couloirs.relais.marge ?? 1.5); tz = placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ: st.ball.p[2], devant: (tx - st.ball.p[0]) * -pitch.ownGoal(atk).sign > -5 }); tx = placerLigne(st, cfg, p, tx, { atk, pitch, offAdv: off ? off.adv : null }); }   // (241) l'intérieur tient son demi-espace, puis le registre des couloirs et des lignes   // (241) le posté passe au registre des couloirs (pas en course, pas en dédoublement)
         p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, tx)), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, tz))];
       }
     }
@@ -839,6 +834,7 @@ function assignMatchJobs(st, cfg) {
       const ouvert = (wx, wz) => {
         const dx0 = wx - carrier.p[0], dz0 = wz - carrier.p[2], L = hyp(dx0, dz0);
         if (L < 4) return false;
+        if (st.full && cfg.offre && dansOmbre(carrier.p[0], carrier.p[2], wx, wz, foes, cfg.offre.cone ?? 12)) return false;   // L'OFFRE DE PASSE (241b) : hors du cône d'ombre du défenseur
         const ux = dx0 / L, uz = dz0 / L;
         for (const f of foes) {
           if (hyp(f.p[0] - wx, f.p[2] - wz) < 2.2) return false;
@@ -848,17 +844,21 @@ function assignMatchJobs(st, cfg) {
         return true;
       };
       if (ouvert(want[0], want[1])) return want;
+      const refO = (k) => { if (st.full && cfg.offre) (st.deny ??= {})[k] = (st.deny[k] ?? 0) + 1; };   // (241b) l'entonnoir de l'offre, nommé
+      refO('offre-ombre');
       const dx = want[0] - carrier.p[0], dz = want[1] - carrier.p[2], L = hyp(dx, dz) || 1;
       const px = -dz / L, pz = dx / L;
       // …et parmi les points ouverts LE PLUS AVANCÉ gagne (le premier-ouvert offrait du latéral sûr : seed 7 passait de 5 tirs à 0 — on se démarque VERS le but quand un point y existe).
       const gx = pitch.attackGoal(atk).x;
       let bestPt = null, bestProg = -Infinity;
-      for (const off of [2.5, -2.5, 5, -5]) {
+      const pasO = st.full && cfg.offre ? (cfg.offre.pas ?? 1.75) * (p.skill?.offBallF ?? 1) : 2.5, maxO = st.full && cfg.offre ? (cfg.offre.max ?? 3.5) * (p.skill?.offBallF ?? 1) : 5;   // (241b) 1,5-3,5 m × offBallF (le déplacement sans ballon) ; absente : 2,5 / 5 d'hier
+      for (const off of [pasO, -pasO, maxO, -maxO]) {
         const wx = want[0] + px * off, wz = want[1] + pz * off;
         if (Math.abs(wx) >= pitch.hx - 1.2 || Math.abs(wz) >= pitch.hz - 1.2 || !ouvert(wx, wz)) continue;
         const prog = -Math.abs(gx - wx);
         if (prog > bestProg) { bestProg = prog; bestPt = [wx, wz]; }
       }
+      refO(bestPt ? 'offre-sorti' : 'offre-bloque');
       return bestPt ?? want;
     };
     const taken = new Set();
@@ -877,6 +877,7 @@ function assignMatchJobs(st, cfg) {
       let want = [slots[best][0], slots[best][1]];
       // le se-montrer s'évalue À CHAQUE cadence (un slot immobile mais fermé se ré-ouvre), même hystérésis
       if (st.full && cfg.demarque !== false && carrier && !carrier.keeper && (p._slotAt ?? -1) <= st.t) want = seMontrer(p, want);
+      if (st.full && cfg.couloirs) want = [placerLigne(st, cfg, p, want[0], { atk, pitch, offAdv: cfg.offside ? offsideLine(st, atk).adv : null }), placerCouloir(st, cfg, p, want[1], { atk, pitch, ballZ: st.ball.p[2], devant: (want[0] - st.ball.p[0]) * -pitch.ownGoal(atk).sign > -5 })];   // (241) le soutien passe au registre des couloirs
       const drift = p._slotT ? hyp(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
       if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
         p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)

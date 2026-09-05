@@ -17,6 +17,7 @@ import { makePitch, FULL } from '../assets/starter/src/engine/pitch.js';
 import { formationSpots, checkFormation, premierOffensif, blocFor } from '../assets/starter/src/engine/formation.js';
 import { evadeSpot, choosePass } from '../assets/starter/src/engine/rondo.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch, matchInternals } from '../assets/starter/src/engine/match-sim.js';
+import { couloirDe, ouvrirRegistre, placerCouloir, tenirDemiEspace, dansOmbre } from '../assets/starter/src/engine/couloirs.js';
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets/starter/src/engine/duel.js';
@@ -5542,6 +5543,54 @@ if (__bloc()) {
   ok(`…et le FLUX (12 × 300 s) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,8 (la course vit le cycle : vieC) ; perdus sur service ${V.perdus} ≤ sans ${E.perdus} × 1,6 + 2 ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
     V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.8 && V.perdus <= E.perdus * 1.6 + 2 && V.pertes <= E.pertes * 1.05
     && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
+}
+
+// ---------------------------------------------------------------- lot 241 : LES CINQ COULOIRS (précepte 1.4 — Guardiola)
+if (__bloc()) {
+  // LES PRIMITIVES (pures) : le couloir d'un z ; le registre (le porteur compte en premier) ; le débordement vers le voisin libre,
+  // le côté opposé au ballon à égalité, le demi-espace vide qui attire ; l'hystérésis ; l'intérieur qui tient son demi-espace ; l'ombre.
+  const st = makeMatch({ full: true, seed: 3 }); const hz = st.pitch.hz, W = hz * 2 / 5; const cfg = matchCfg({ shotRange: 20 });
+  const cs = [couloirDe(-hz, hz), couloirDe(-hz + W * 1.5, hz), couloirDe(0, hz), couloirDe(hz * 0.99, hz)];
+  const car = { p: [0, 0, 0], keeper: false }; const R = ouvrirRegistre(st, 0, st.pitch, car);
+  const mk = () => ({ id: 99, _coul: null }); const cfgR = matchCfg({ shotRange: 20, couloirs: { ...matchCfg().couloirs, remplir: false } });
+  const a0 = mk(), zR = placerCouloir(st, cfg, a0, 1, { atk: 0, pitch: st.pitch, ballZ: 0 }), cR = couloirDe(zR, hz);   // REMPLIR : le 2e corps d'un couloir occupé va au demi-espace vide
+  ouvrirRegistre(st, 0, st.pitch, car); R.t = -1; ouvrirRegistre(st, 0, st.pitch, car);   // registre rouvert (le porteur au centre)
+  const a = mk(), z1 = placerCouloir(st, cfgR, a, 1, { atk: 0, pitch: st.pitch, ballZ: 0 });   // remplir éteint : 2e au centre reste (max 2)
+  const b = mk(), z2 = placerCouloir(st, cfgR, b, 2, { atk: 0, pitch: st.pitch, ballZ: 0 });   // 3e au centre : déborde vers un demi-espace vide
+  const c2 = couloirDe(z2, hz), nCentre = R.n[2];
+  const z2b = placerCouloir(st, cfgR, b, 2, { atk: 0, pitch: st.pitch, ballZ: 0 });   // l'hystérésis : même image, même couloir
+  const zT = tenirDemiEspace(0, -hz + W * 1.5, hz, 1.5), zT2 = tenirDemiEspace(5, 0, hz, 1.5);   // l'intérieur du demi-espace 1 tiré à 0 → borné dans son demi-espace ; un central : libre
+  const foes = [{ p: [5, 0, 0.5] }]; const om = dansOmbre(0, 0, 10, 1, foes, 12), omNon = dansOmbre(0, 0, 10, 6, foes, 12);
+  ok(`lot 241 — LES CINQ COULOIRS au mécanisme (couloirs ${cs.join('')} = 0124 ; le porteur compte ${nCentre >= 1} ; REMPLIR : le 2e corps va au demi-espace vide (${cR} ∈ {1, 3}) ; remplir éteint, le 2e au centre reste (z ${z1}) ; 3e déborde au demi-espace ${c2} (1 ou 3, z ${z2.toFixed(1)}) ; hystérésis ${z2b === z2} ; l'intérieur tient son demi-espace (z ${zT.toFixed(1)} ∈ [−20,4 ; −6,8]) et le central est libre (${zT2}) ; l'ombre à 12° ${om} / hors ombre ${omNon})`,
+    cs.join('') === '0124' && (cR === 1 || cR === 3) && z1 === 1 && (c2 === 1 || c2 === 3) && z2b === z2 && zT <= -hz + 2 * W - 1.5 + 1e-9 && zT >= -hz + W + 1.5 - 1e-9 && zT2 === 5 && om === true && omNon === false);
+  // LE FLUX (12 × 300 s, attaque placée : possession ≥ 3 s, ballon dans la moitié adverse) : un couloir à ≥ 3 corps (structure devant
+  // le ballon − 10 m), les deux demi-espaces occupés à ≤ 15 m derrière le ballon, la réussite des passes (non-dégradation), la garde
+  // 231. Mesuré : 50,5 → 30,6 %, 45 → 52 %, 74,0 → 73,1 %.
+  const flux = (over) => {
+    const cfgF = matchCfg({ shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {
+      const st2 = makeMatch({ full: true, seed }); let cur = 0, possT = -1, possSince = 0; const pend = {};
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st2, 1 / 60, cfgF);
+        for (; cur < st2.events.length; cur++) { const e = st2.events[cur];
+          if (e.type === 'burst' && e.kind === 'appel-profond') profond++; if (e.type === 'burst' && e.kind === 'deborde') deborde++;
+          if (e.type === 'pass' && e.to != null) { passes++; pend[e.to] = e.t; }
+          if ((e.type === 'control' || (e.type === 'pass' && e.style === 'une-touche')) && e.by != null && pend[e.by] != null && e.t - pend[e.by] < 3) { okP++; delete pend[e.by]; } }
+        const t = st2.possession?.team ?? -1; if (t !== possT) { possT = t; possSince = st2.t; }
+        if (i % 6 !== 0 || t < 0 || st2.t - possSince < 3 || st2.restart) continue;
+        const sg = Math.sign(st2.pitch.attackGoal(t).x || 1); if (st2.ball.p[0] * sg < 0) continue;
+        img++; const car2 = st2.possession.carrier >= 0 ? st2.players[st2.possession.carrier] : null;
+        const mine = st2.players.filter((q) => q.team === t && !q.keeper && q.down <= 0 && q.p[0] * sg > st2.ball.p[0] * sg - 10);
+        const n5 = [0, 0, 0, 0, 0]; for (const q of mine) n5[couloirDe(q.p[2], hz)]++; if (Math.max(...n5) >= 3) coul3++;
+        const rel = (ci) => st2.players.some((q) => q.team === t && !q.keeper && q !== car2 && couloirDe(q.p[2], hz) === ci && q.p[0] * sg > st2.ball.p[0] * sg - 15);
+        if (rel(1) && rel(3)) demi2++;
+      }
+    }
+    return { coul3: 100 * coul3 / Math.max(1, img), demi2: 100 * demi2 / Math.max(1, img), reussite: 100 * okP / Math.max(1, passes), profond, deborde, img };
+  };
+  const V = flux({}), E = flux({ couloirs: false });
+  ok(`…et le FLUX (12 × 300 s, ${V.img} images d'attaque placée) : un couloir à ≥ 3 corps ${V.coul3.toFixed(1)} % ≤ sans ${E.coul3.toFixed(1)} × 0,75 (jamais plus de deux dans le même couloir) ; les deux demi-espaces occupés ${V.demi2.toFixed(1)} % ≥ sans ${E.demi2.toFixed(1)} (l'intérieur tient) ; réussite ${V.reussite.toFixed(1)} % ≥ sans ${E.reussite.toFixed(1)} − 2,5 (non-dégradation) ; garde 231 en non-diminution : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (≥ × 0,85)`,
+    V.coul3 <= E.coul3 * 0.75 && V.demi2 >= E.demi2 && V.reussite >= E.reussite - 2.5 && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

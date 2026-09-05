@@ -242,7 +242,7 @@ temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3
 - Garde-fou : appels profonds et débordements ± 15 % (leçon 231).
 - Taille : M-L. Fichiers : `premiere-intention.js`, `strike-sim.js`, `movement.js`.
 
-**Lot 241 — Les cinq couloirs et l'offre de passe (précepte 1.4 ; brief chantiers 1 et 2.8).**
+**Lot 241 — Les cinq couloirs et l'offre de passe (précepte 1.4 ; brief chantiers 1 et 2.8) — SCELLÉ (NOTES 293).** Le registre des couloirs (max 2, hystérésis, demi-espace vide qui attire, l'intérieur tient son demi-espace) : un couloir à ≥ 3 corps 50,5 → 30,6 %, réussite non dégradée. L'offre de passe et les lignes : mécanismes posés, flux nuls, éteints (placebo). Dette : la profondeur des intérieurs pour les 80 % de demi-espaces.
 - Doctrine : jamais plus de deux joueurs dans le même couloir vertical, pas plus de trois sur la
   même ligne horizontale (Guardiola) ; un relais dans chaque demi-espace ≥ 80 % du temps de
   possession ; l'offre de passe : un coéquipier sort du cône d'ombre du défenseur de 1,5-3,5 m.

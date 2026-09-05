@@ -57,6 +57,7 @@ export const ATTRIBUTES = {
   // LE LOT 151 — les sept MENTALES, mêmes contrats (le no-op à 50 est LA règle) :
   decisions:   'le choix sous contrainte  → decF [0,85 ; 1,15] : le seuil de panique du contesté (le bon garde la tête, le mauvais joue tôt)',
   offTheBall:  'les appels sans ballon    → otbF [0,85 ; 1,15] : ÷ sur le cooldown personnel des appels profonds (le bon rejaillit)',
+  movement:    'le déplacement sans ballon → offBallF [0,85 ; 1,15] : × sur le décalage hors de l\'ombre du défenseur (offre, 241b) ; absente : offTheBall la porte',
   positioning: 'le placement au repos     → posF [0,85 ; 1,15] : la zone morte du slot × (2 − posF) — le mauvais dérive avant de se recaler',
   workRate:    'le volume de course       → workF [0,85 ; 1,15] : × sur la fenêtre de contre-press personnelle (le travailleur chasse plus longtemps)',
   aggression:  'l\'engagement au duel     → aggrF [0,8 ; 1,2] : × sur la proba d\'accrochage (et donc les fautes — le hargneux paie)',
@@ -130,6 +131,7 @@ export function makeProfile(ratings = {}) {
     throwF: lerp(0.85, 1.15, r('throwing')),                      // la relance à la main du gardien (150)
     decF: lerp(0.85, 1.15, r('decisions')),                       // le seuil de panique (151)
     otbF: lerp(0.85, 1.15, r('offTheBall')),                      // la cadence d'appel (151)
+    offBallF: lerp(0.85, 1.15, r2('movement', 'offTheBall')),      // LE DÉPLACEMENT SANS BALLON (241b) : l'amplitude du décalage hors de l'ombre (offre) ; la note dédiée, sinon offTheBall
     posF: lerp(0.85, 1.15, r('positioning')),                     // la zone morte du slot (151)
     workF: lerp(0.85, 1.15, r('workRate')),                       // la fenêtre de contre-press (151)
     aggrF: lerp(0.8, 1.2, r('aggression')),                       // la proba d'accrochage (151)
@@ -194,7 +196,7 @@ export function checkAttributes() {
   if (Math.abs(fbA.visionF - fbB.visionF) > 1e-9 || Math.abs(fbA.gesteF - fbB.gesteF) > 1e-9) issues.push('les fallbacks vision→passing / technique→dribbling divergent');
   if (!(hi.kickF > mid.kickF && mid.kickF > lo.kickF) || Math.abs(mid.kickF - 1) > 1e-9) issues.push('kicking non monotone ou no-op violé');
   if (!(hi.throwF > mid.throwF && mid.throwF > lo.throwF) || Math.abs(mid.throwF - 1) > 1e-9) issues.push('throwing non monotone ou no-op violé');
-  for (const [k, nom] of [['decF','decisions'],['otbF','offTheBall'],['posF','positioning'],['workF','workRate'],['aggrF','aggression'],['concF','concentration'],['markF','marking']])
+  for (const [k, nom] of [['decF','decisions'],['otbF','offTheBall'],['posF','positioning'],['workF','workRate'],['aggrF','aggression'],['concF','concentration'],['markF','marking'],['offBallF','movement']])
     if (!(hi[k] > mid[k] && mid[k] > lo[k]) || Math.abs(mid[k] - 1) > 1e-9) issues.push(`${nom} non monotone ou no-op violé`);
   if (!(hi.esquiveF > mid.esquiveF && mid.esquiveF > lo.esquiveF) || Math.abs(mid.esquiveF) > 1e-9) issues.push('esquive (dribbling) non monotone ou no-op violé');
   // 4. les clés inconnues sont ignorées, pas fatales

@@ -8609,6 +8609,49 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      200-280) ; la cible « 8-15 combinaisons réussies » à compter au
      sens strict quand le 241 posera les couloirs ; le pivot tiraillé
      entre salida et troisième homme ; gardiens ; MCP Blender.
+- 293: LES CINQ COULOIRS (241 — précepte 1.4, Guardiola : « jamais plus de
+     deux joueurs dans le même couloir vertical, pas plus de trois sur la
+     même ligne »). SONDE AVANT (12 × 300 s, attaque placée : possession
+     ≥ 3 s, ballon dans la moitié adverse, structure devant le ballon
+     − 10 m) : un couloir à ≥ 3 corps sur 50,5 % des images (4 et plus :
+     19 %), une ligne à ≥ 4 sur 16 %, les deux demi-espaces occupés 32 %
+     (à 15 m derrière le ballon : 45 %), soutiens élus dans l'ombre d'un
+     défenseur 32 %, réussite 74,0 %. LA LOI (cfg.couloirs, couloirs.js) :
+     un REGISTRE d'occupation des cibles, ouvert à chaque image par le
+     porteur, rempli par les postés puis les soutiens ; une cible dans un
+     couloir plein (max 2) passe au voisin libre le plus proche (côté
+     opposé au ballon à égalité, un demi-espace vide attire de demi), en
+     gardant sa position relative, et y TIENT tenue s (hystérésis — la
+     v4 promise au 84) ; REMPLIR : un demi-espace resté vide l'image
+     d'avant attire le second corps d'un couloir voisin ; l'INTÉRIEUR
+     TIENT SON DEMI-ESPACE : un poste de la ligne des milieux dont le
+     spot de base tombe dans un demi-espace y reste borné (le
+     coulissement latéral 68 vidait le demi-espace opposé). Le registre
+     vaut pour les dix (la restriction à la structure d'attaque
+     affaiblissait : 30 → 39 %). ESSAYÉS ET REJETÉS : l'élection d'un
+     relais à ballon + 6 m (44 % de demi-espaces mais réussite 74 → 71,
+     une cible mobile poursuivie) ; L'OFFRE DE PASSE (cône d'ombre ± 12°
+     greffé sur seMontrer 67, décalage 1,75-3,5 m × offBallF) — mécanisme
+     prouvé (2 388 évaluations dans l'ombre / 10 min, 1 404 points nets ;
+     fixture 23/23) mais flux NUL (élus dans l'ombre 32 → 31 %, passes
+     dans l'ombre 16 → 15, réussite 74 → 73) : ÉTEINTE (offre: null), le
+     code reste, l'attribut offBallF (note « movement », offTheBall la
+     porte) reste au catalogue ; LES LIGNES (bandes de 8 m, max 3, recul
+     d'une bande) — effet nul (16,5 → 18,6 %) : ÉTEINTE (ligne: null). Un
+     placebo ne se livre pas. LES POINTES SORTENT DU REGISTRE
+     (pointesLibres) : sorties du couloir du ballon, leurs appels
+     profonds tombaient de 26 % (343 → 253, la garde 231) — elles vivent
+     sur la ligne (Loi 11, 240d). MESURÉ (12 × 300 s) : un couloir à ≥ 3
+     corps 50,5 → 36,6 % (30,6 avec les pointes au registre), les deux
+     demi-espaces à 15 m 60 → 63 % (clause) / 45 → 52 (sonde), réussite
+     74,0 → 73,5 (non-dégradation), appels profonds 343 → 311 (≥ × 0,85),
+     débordements 106 → 107. La cible doctrinale « deux demi-espaces
+     ≥ 80 % » tient à la PROFONDEUR des intérieurs (10-18 m derrière les
+     pointes : une question de formation), dette nommée. Le piège des
+     lignes composées a frappé une fois de plus (un commentaire de fin de
+     ligne a avalé salidaStep — le jumeau l'a dit sur la graine 3).
+     Jumeau {couloirs:false, offre:false} = moteur 240 au bit
+     (96438266e0387b08 / 061fc1b4491ef7ab).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
