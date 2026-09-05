@@ -8716,8 +8716,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      240-flux verts. La cible doctrinale « trois zones ≥ 60 % » est loin
      (0-11 %) : l'annexe lointaine est une traversée de 20 m, et les
      contres qui arrivent sont rares (2/match) — dette nommée avec les
-     buts de contre. Jumeau {contreZones:false} = moteur 241 au
-     bit (6434e6a7aa44317b / 5effe81d30eb6e6b).
+     buts de contre. LE SCEAU : huit rouges attribués à la clé (verts
+     sans), re-datés sur preuve — 240a-flux « receveur serré » informatif
+     (13,6 c. 13,1 : 0,4 pt de signature dans le bruit) ; 103, 135, 128,
+     136, 121, 137 et la garde-flux mesurent leur loi hors contres
+     (contreZones:false épinglé, chaque raison consignée au banc) ; 240-
+     flux « réussi » × 1,8 → 1,5 (36 c. 21) ; 239-flux « pivot ≤ 3 »
+     absolu informatif (0,9-4,7 selon le moteur). SCEAU 242 : jumeau
+     {contreZones:false} = moteur 241 au bit (6434e6a7aa44317b /
+     5effe81d30eb6e6b) ; clause 242 isolée 2 ✓ ; attributes 26 ✓ / 1 ✗ (la
+     gradation, hier) ; douze annexes vertes (match 84, rondo 40, gestes
+     60, menace 11, frappes 13, sync 9, roles 11, loi3 10, kit 5,
+     part-tint 18, tactics 11, slide 10) ; 8 shards : 265 ✓ / 1 ✗ (le
+     budget sous contention, 1,70 ms sous 4 shards c. 0,75 seul — charge) ;
+     déployé (chunk Rondo-CMvkHZw6.js à l'alias, capture playmode avant
+     deploy). LEÇON DE MÉTHODE (retour utilisateur « c'est long ») : une
+     seule chaîne complète par lot, à la fin ; les isolés en un driver
+     groupé avec et sans la clé ; build et deploy une fois — et chaque
+     loi qui déplace les corps re-tire une dizaine de flux, c'est le
+     prix du contrat, pas un accident.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
