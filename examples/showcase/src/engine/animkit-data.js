@@ -8,6 +8,9 @@
 /** Répéter un segment (t0, t1] d'un clip `extra` fois — le MULTI-TOURS du passement (Mancini,
  *  Reveillère) : les clés du segment sont rejouées décalées, la suite glisse, durée et contact
  *  s'étendent d'autant. Pur : la variante passe le même checkClip que l'original. */
+import { GENERATED_KINDS, generateMove } from './motion-cast.js';
+import { SHANON_PROFILE } from './motion-profile-shanon.js';
+
 export function repeatSegment(spec, t0, t1, extra) {
   const seg = spec.keys.filter((k) => k.t > t0 && k.t <= t1);
   const dur = t1 - t0;
@@ -987,3 +990,12 @@ MOVES.passementJambes2 = { ...repeatSegment(MOVES.passementJambes, 0, 0.3, 1), n
 // …LES ENCHAÎNEMENTS (lot 124, « Mancini/Réveillère — j'attends au moins 3 tours ») : le même
 // segment répété n−1 fois — la cadence des jambes se LIT, la durée suit (MOVE_TIMING dérive)
 for (const n of [3, 4, 5, 6]) MOVES['passementJambes' + n] = { ...repeatSegment(MOVES.passementJambes, 0, 0.3, n - 1), name: 'passementJambes' + n };
+
+// ---- LES GESTES GÉNÉRÉS (motion-strike, motion-control, motion-aerial — reference/51) remplacent
+// les poses écrites à la main : même nom, même durée, même contact (la sim ne voit rien changer),
+// mais un geste CALCULÉ — frappes (séquence proximo-distale, pied à 8-16 m/s, poids sur l'appui),
+// contrôles (le pied va au ballon et cède), têtes (bassin balistique, fouetté du cou). Les specs
+// authorés restent lisibles sous AUTHORED (la planche-contact « avant », les bancs de régression) :
+// un remplacement doit rester comparable à ce qu'il remplace.
+export const AUTHORED = Object.fromEntries(GENERATED_KINDS.filter((k) => MOVES[k]).map((k) => [k, MOVES[k]]));
+for (const k of GENERATED_KINDS) MOVES[k] = generateMove(k, SHANON_PROFILE);

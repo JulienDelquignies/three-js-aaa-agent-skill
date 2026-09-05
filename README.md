@@ -57,6 +57,7 @@ threejs-aaa/ (the skill)
 │   ├── 47-football-rules.md    impossible-football catalogue (23 rules) + the gesture vocabulary as data
 │   ├── 48-gesture-timeline.md  an action has a beginning and an end: the ball leaves at the contact frame
 │   ├── 49-gait-engine.md       the gait clock: one phase, slaved clips, measured cadence, whole-body layer
+│   ├── 51-motion-strike.md     GENERATED gestures (41 species: strikes, controls, headers, dribbling skills, slide tackle, keeper dives and parades): anatomical joint curves and foot paths (proximo-distal whip, cushion, ballistic jump, sole/circle/cut, the body that lies down, the dive that gets up on the spot, per-player style) → animkit specs, the rig profile, the contact sheet
 │   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
@@ -104,6 +105,8 @@ threejs-aaa/ (the skill)
 │   ├── verify-gesture.mjs    an action has a beginning and an end: windup → contact → follow-through
 │   ├── verify-part-tint.mjs  recolour ONE part of a character whose parts share a single material
 │   ├── verify-gait.mjs       the single gait phase: no clip drift, Dorn cadence, idle unslaved, body layer
+│   ├── verify-motion.mjs     generated strikes: rig profile sign probe, conjugation, real-world foot speed, proximo-distal order, style sweep, stances, mirror
+│   ├── contact-sheet.mjs     a gesture on one player, 3 cameras × 6 phases around the contact, before/after, in one PNG (the shared eye)
 │   ├── capture.mjs           headless screenshot + perf snapshot (the visual-QA loop)
 │   ├── frame-stats.mjs       measure a rendered PNG (mean luminance, contrast, clipping); --selftest proves the PNG filters
 │   └── gen-asset.mjs         (optional/paid) AI text/image-to-3D → game-ready GLB (Meshy)
@@ -135,6 +138,27 @@ examples/
   shadows, AA, banding), then fixes and repeats — plus a draw-call perf gate for CI. Free
   (Playwright/Chromium pre-installed). This is what makes "AAA-perfect renders" iteratively reachable
   instead of coded blind.
+- **Generated football strikes (native)** — the kick is COMPUTED, not posed: `motion-rig.js` conjugates
+  anatomical joint rotations into any Mixamo rig's bind frame (a sign probe proves the axes on load),
+  `motion-strike.js` writes the biomechanics of the kick as C¹ ramps with placed velocity peaks
+  (thigh first, knee whip peaking ON the contact at 1 100-1 600°/s, foot at 11-18 m/s, weight sitting
+  back on a planted support leg solved by IK, trunk and balance arm from the physics, head on the ball)
+  and emits ordinary animkit specs at 60 Hz — twelve strike species (passes, shots, feints, outside,
+  toe, pivot, backheel); `motion-control.js` writes controls as reach → cushion → settle (inside,
+  outside, sole, thigh, chest, standing tackle) and `motion-aerial.js` the header as a ballistic
+  jump with IK legs and a neck whip at the apex; `motion-skill.js` writes dribbling skills as FOOT
+  PATHS around a ball that stays (sole on the ball for the drag-back, sole stop and roulette; the
+  circle over the ball for stepovers; the sweep through the ball for the cuts; two feet for the
+  croqueta; the sharp nutmeg flick) solved by two-bone IK with joint-space ends; `motion-ground.js`
+  lays the body down for the slide tackle (roll onto the hip, leg stretched to the ball, the lying
+  pose the scene freezes while the sim keeps the player down, the get-up); `motion-keeper.js` dives
+  the goalkeeper (impulse, lateral root-motion launch with the gloves stretched to the ball, the mat,
+  the get-up on the spot as one continuous IK chain), catches in the air and parries with the feet
+  or the chest — forty-one species, plus a bounded per-player STYLE (same gesture, a player's own
+  details).
+  `contact-sheet.mjs` renders any gesture 3 cameras × 6 phases for the agent and the human to judge
+  the same picture. Proven by `verify-motion.mjs` (206 clauses, 40 seeds × 41 species under
+  contract).
 - **Procedural animation & interaction verification** — math-driven motion (springs, damping,
   two-bone IK, look-at, foot IK) and a tested validator that checks a character↔object interaction
   is correct (orientation, reach, hand-on-target, feet grounded) — runnable at runtime and in CI.

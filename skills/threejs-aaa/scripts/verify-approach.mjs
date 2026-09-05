@@ -119,10 +119,16 @@ console.log('\n— le PLAN : la stance propre quand on peut, l’improvisation q
   // sur les ancres qu'on peut rejoindre — depuis l'ancre de la passe, celle de la talonnade
   // (antic 0,19 s, DERRIÈRE le ballon) est hors de portée : un min global sur la table mesure une
   // option qui n'existe pas dans le monde composé, pas le choix du joueur.
-  const rush = planStrike(aP.p, ball, outYaw, cands, { rushed: true, rushedSlack: 99 });
+  // FIXTURE : la géométrie de la table d'hier (passe à 0,58 m, 11°) — depuis cette ancre-là, celle
+  // de la talonnade est hors de portée, ce qui est exactement ce que la clause prouve (le min sur les
+  // atteignables). La table VIVANTE (frappes générées, passe à 0,33 m) met le ballon plus près du corps
+  // et rend le talon atteignable en 0,19 s : la géométrie a changé, pas le mécanisme.
+  const FIX = { ...STANCES, passe: { dist: 0.58, bearing: 11 } };
+  const aF = anchorFor(ball, outYaw, 'right', FIX.passe);
+  const rush = planStrike(aF.p, ball, outYaw, cands, { rushed: true, rushedSlack: 99, stances: FIX });
   const fastest = Math.min(...cands
     .filter((c) => ['right', 'left'].some((f) =>
-      reachable(aP.p, anchorFor(ball, outYaw, f, STANCES[c.clip]), c.antic, { adjustSpeed: 3.6, hardMax: 0.6 })))
+      reachable(aF.p, anchorFor(ball, outYaw, f, FIX[c.clip]), c.antic, { adjustSpeed: 3.6, hardMax: 0.6 })))
     .map((c) => c.antic));
   ok(`pressé (marge infinie) : le plan prend la plus prompte DES ATTEIGNABLES (${rush.best?.antic}s = min ${fastest}s)`,
     rush.best?.antic === fastest);

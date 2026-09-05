@@ -56,7 +56,9 @@ console.log('\n— l\'échantillonnage : les clés exactes, l\'interpolation con
   const r = resolveTracks(MOVES.passe);
   const key = r.tracks.RightUpLeg.find((k) => Math.abs(k.t - MOVES.passe.contact) < 1e-9);
   const s = samplePose(r.tracks, MOVES.passe.contact);
-  ok('à t = une clé, la pose EST la clé (pas d\'interpolation parasite)', key && angDeg(s.RightUpLeg, key.q) < 1e-6);
+  // (1e-6° était l'exactitude au bit d'un clip authoré à 5 clés ; un clip GÉNÉRÉ dense passe par l'arrondi Euler
+  // à 0,01° et la normalisation du slerp — 1e-3° reste « aucune interpolation parasite », 0,01° d'arrondi compris)
+  ok('à t = une clé, la pose EST la clé (pas d\'interpolation parasite)', key && angDeg(s.RightUpLeg, key.q) < 1e-3);
   let worstStep = 0;
   let prev = null;
   for (let t = 0; t <= MOVES.passe.duration; t += 1e-3) {
