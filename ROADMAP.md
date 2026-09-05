@@ -107,9 +107,13 @@
 - LIVRÉ (lot A5, note 297) : le SOL — le tacle glissé généré (motion-ground : chute sur la hanche,
   jambe allongée au ballon, pose couchée à 55 % pour le gel de la scène, relevé), le plan de flexion
   de l'IK rendu robuste (tibia × cuisse) ; la retournée attend un déclencheur sim.
+- LIVRÉ (lot A6, note 298) : les MAINS DU GARDIEN — plongeons (aérien, bas, une main), prise
+  aérienne, parades des pieds et du buste générés (motion-keeper : impulsion, détente en root
+  motion, gants au bout, tapis, relevé sur place en une chaîne IK continue). Tout le football du
+  répertoire est généré (41 espèces) ; restent la retournée (sans déclencheur) et les gestes sociaux.
 - SUIVANT, dans l'ordre : (A2) le monde composé — re-caler les poids d'arrivée pour que la vitesse
-  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A6)
-  la famille des MAINS (plongeons, prise, parades du gardien) — chaque espèce du générateur, jamais
+  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A6 bis)
+  les gestes sociaux et la retournée quand la sim la déclenchera — chaque espèce du générateur, jamais
   un clip de plus à la main ; (A4) la
   locomotion : inclinaison à l'accélération, balancier des bras selon la vitesse, décélération,
   pas chassés, course arrière (générés par-dessus le Soldier) ; (A5) la stance dérivée et les

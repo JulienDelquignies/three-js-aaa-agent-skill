@@ -1,4 +1,4 @@
-# 51 — Les gestes générés : un geste calculé, pas dessiné (`motion-rig`, `motion-strike`, `motion-control`, `motion-aerial`, `motion-skill`, `motion-ground`, `motion-cast`)
+# 51 — Les gestes générés : un geste calculé, pas dessiné (`motion-rig`, `motion-strike`, `motion-control`, `motion-aerial`, `motion-skill`, `motion-ground`, `motion-keeper`, `motion-cast`)
 
 > « Mixamo on avait essayé mais l'IA n'arrivait pas à les utiliser correctement dans le moteur. Je
 > pense que si tu crées les animations toi-même ce sera plus conforme à ce qui est attendu, non ?
@@ -140,8 +140,27 @@ attrapé par checkClip). Elle est désormais tibia × cuisse, le plan RÉEL de l
 n'est pas générée : aucune loi de la sim ne la déclenche (une espèce pour le jour où le moteur la
 jouera).
 
+**`motion-keeper.js` — les mains du gardien (lot A6).** Un plongeon a cinq temps que la scène et
+la sim exploitent tels quels : l'IMPULSION (le corps plie, −26 à −34 cm, buste devant, bras bas), la
+DÉTENTE latérale (le bassin part de côté en root motion — 1,35 m, 1,5 pour la parade à une main,
+1,15 pour le plongeon bas — en montant (+28 cm) ou en rasant (−50 cm) ; le corps roule sur le flanc,
+les jambes s'allongent, les BRAS S'ÉTIRENT le long de l'axe du corps vers le ballon : gants à
+0,95-0,97 m du bassin au contact ; le voyage latéral commence pendant l'impulsion, parce que
+checkClip borne le bassin à 6,5 m/s entre clés), la CHUTE (tapis à −68/−72 cm, roulé à 96°), le SOL
+(pose tenue jusqu'à `rise` — la scène y gèle tant que la sim garde le corps au sol, gk.rise) et le
+RELEVÉ, SUR PLACE (le bassin garde son décalage : la sim a transporté l'origine au même point) : les
+pieds vont de leur place couchée à leur place debout au ras du sol par IK, les genoux se replient
+sous le corps d'eux-mêmes pendant que le bassin remonte et déroule — le tapis et le relevé sont UNE
+chaîne IK continue (le pole du genou DEVANT : un pole « en haut » devient parallèle à la jambe quand
+le pied passe sous la hanche, et la cuisse vrille). Le plongeon bas garde les pieds au ras du sol
+pendant la détente (cibles qui glissent, bornées à la portée de la jambe). La PRISE AÉRIENNE est une
+détente verticale (+55 cm), bras au-dessus de la tête avant le contact (43 cm au-dessus), retombée
+sur ses appuis. Les PARADES sont des réflexes debout : la jambe droite qui claque latérale tendue
+(pied à 0,62 m), la poitrine qui encaisse (buste bombé, coudes serrés devant, le recul au contact).
+Le miroir d'animkit inverse le root motion latéral (le plongeon à gauche).
+
 **`motion-cast.js` — le registre et le casting.** `GENERATORS` associe chaque espèce à sa
-famille (`generate(P, opts)`, `check(spec, P, opts)`) ; `GENERATED_KINDS` en compte trente-cinq ;
+famille (`generate(P, opts)`, `check(spec, P, opts)`) ; `GENERATED_KINDS` en compte quarante et une ;
 animkit-data génère les MOVES par défaut à l'import (les specs authorées restent lisibles dans
 `AUTHORED`, pour la planche « avant »). À la spawn, la scène accroche au joueur `{ profile, style,
 moves }` : le profil du rig VIVANT (une fois par template), un STYLE tiré de son identité, et des
@@ -155,11 +174,11 @@ Quinze paramètres bornés (`STYLE_RANGES`) : amplitude d'armé ×0,86-1,14, inc
 à l'accompagnement, hauteur et avancée du bras d'équilibre, flexion du coude 30-64°, recul du bras
 côté frappeur, tête baissée, accompagnement, cheville, affaissement du bassin, décalage du pic du
 genou ±12 ms, inclinaison latérale, écart d'appui, hausse de hanche. Deux tirages moyennés par
-paramètre (les extrêmes rares). Le contrat balaye 40 graines × 35 espèces (1 400 gestes) : tout reste sous contrat ET
+paramètre (les extrêmes rares). Le contrat balaye 40 graines × 41 espèces (1 640 gestes) : tout reste sous contrat ET
 sous checkClip ; le même joueur re-tire le même geste ; deux graines diffèrent de ≥ 5° et ≤ 40° sur
 l'os le plus écarté (reconnaissable, pas caricatural).
 
-## Le contrat (`checkStrikeGen`, `checkControlGen`, `checkAerialGen`, `checkSkillGen`, `checkGroundGen` — `verify-motion.mjs`, 191 clauses)
+## Le contrat (`checkStrikeGen`, `checkControlGen`, `checkAerialGen`, `checkSkillGen`, `checkGroundGen`, `checkKeeperGen` — `verify-motion.mjs`, 206 clauses)
 
 Par espèce et par pied (le miroir est exact : FK gauche = miroir de la FK droite à 4 mm) : vitesse
 du pied au contact dans la fenêtre du réel (cou-de-pied 13,5-27, intérieur 9,5-16, extérieur
@@ -192,7 +211,13 @@ authoré d'hier (5 clauses, l'appui qui glisse de 5,6 cm), un passement dont le 
 mains) et par instant, plus par index de clé ni par convention d'Euler authorée. Le sol
 (`checkGroundGen`) : pied ≥ 80 cm devant au contact et ≤ 16 cm du sol, bassin ≤ 32 cm à la pose
 couchée, épaules roulées ≥ 40°, main gauche ≤ 30 cm du sol, relevé debout (bassin et pieds à leur
-hauteur) ; le tacle authoré d'hier refusé (sabotage).
+hauteur) ; le tacle authoré d'hier refusé (sabotage). Les mains (`checkKeeperGen`) : la détente couvre
+sa distance (≥ 90 % du root motion) à sa hauteur (18-40 cm aérien, ≤ −35 bas), les gants au bout
+(≥ 0,85 m du bassin, 0,95 à une main), le corps couché dans la détente (≥ 40°) et au tapis (≤ −60 cm,
+≥ 65°), le relevé debout sur place, `rise` déclaré ; la prise saute (≥ 45 cm) mains au-dessus de la
+tête et retombe sur ses appuis ; la parade des pieds claque (≥ 0,6 m, genou tendu) ; le buste se
+bombe puis prend, coudes devant, genoux souples. Sabotages : le plongeon authoré, un plongeon bras le
+long du corps. `verify-animkit` désigne désormais ses clés de sabotage par l'instant, plus par index.
 
 Mesuré sur le rig de référence : `frappe` 14,5 m/s au contact, genou 1 590°/s ; `frappePuissante`
 15,4 m/s, 1 630°/s ; `frappeEnroulee` 14,3 ; `passe` 11,4 m/s ; `passeRapide` 10,4 ; `passeExterieur`
@@ -237,9 +262,8 @@ le pied passe à 0,02-0,06 m du point de frappe (0,42 m avant le lot A1).
 - Dans la composition en jeu, le poids des jambes suit l'arrivée (byArrive) : le monde composé mesure
   5,9-8,3 m/s au contact sur une passe rapide en course (le clip seul : 10,3). Le re-calage des poids
   d'arrivée (audit-membres) est le prochain chantier.
-- Restent authorés : la retournée (sans déclencheur sim), les plongeons, la prise et les parades du
-  gardien (la famille des mains — A6), les gestes sociaux (salut, poignée, célébration, applaudir,
-  consulter). Chacun est une espèce de plus du générateur, pas un autre outil.
+- Restent authorés : la retournée (sans déclencheur sim) et les gestes sociaux (salut, poignée,
+  célébration, applaudir, consulter). Tout le football du répertoire est généré.
 - La table `STANCES` re-dérivée du lot A3 (passe 0,44 m, déviation 0,32, pivot {0,50, 64°}, talon
   {0,34, 163°}…) laisse verify-match à 83/84 : la clause de RÉGIME (excursion serrée < pleine − 0,3)
   tombe à 2,03 contre 2,02 — une frontière de 1 cm sur une fixture de conduite, déjà à 1 cm au lot A1,

@@ -29,6 +29,7 @@ import { CONTROL_KINDS, generateControl, checkControlGen } from '../assets/start
 import { AERIAL_KINDS, generateAerial, checkAerialGen } from '../assets/starter/src/engine/motion-aerial.js';
 import { SKILL_KINDS, generateSkill, checkSkillGen } from '../assets/starter/src/engine/motion-skill.js';
 import { GROUND_KINDS, generateGround, checkGroundGen } from '../assets/starter/src/engine/motion-ground.js';
+import { KEEPER_KINDS, generateKeeper, checkKeeperGen } from '../assets/starter/src/engine/motion-keeper.js';
 import { GENERATORS, GENERATED_KINDS } from '../assets/starter/src/engine/motion-cast.js';
 import { quatMul, quatNormalize } from '../assets/starter/src/engine/vecmath.js';
 
@@ -207,6 +208,34 @@ for (const k of Object.keys(GROUND_KINDS)) {
   // sabotage : le tacle authoré d'hier (bassin à −0,66 en une clé, jambes traversant la pelouse) sous le contrat du sol
   const old = checkGroundGen(AUTHORED[k], P, k);
   ok(`sabotage « le ${k} authoré » refusé (${old.issues.length} clauses : ${old.issues.slice(0, 2).join(' | ')})`, !old.ok);
+}
+
+// ---------- 4f. les mains du gardien : la détente, les gants au bout, le tapis, le relevé sur place
+console.log('\n— le gardien —');
+for (const k of Object.keys(KEEPER_KINDS)) {
+  const K = KEEPER_KINDS[k];
+  const spec = generateKeeper(k, P);
+  const c = checkKeeperGen(spec, P, k), p = c.portrait;
+  const what = K.dive ? `bassin ${p.hC[0].toFixed(2)} m de côté et ${(100 * p.hC[1]).toFixed(0)} cm de haut au contact, gants à ${p.handReach.toFixed(2)} m, épaules ${p.rollC.toFixed(0)}° ; tapis à ${(100 * p.pelvisLie).toFixed(0)} cm / ${p.rollLie.toFixed(0)}° ; relevé debout sur place (rise ${spec.rise})`
+    : K.jump ? `bassin +${(100 * p.hC[1]).toFixed(0)} cm, mains ${(100 * p.handsAboveHead).toFixed(0)} cm au-dessus de la tête, retombée sur les appuis (${(100 * p.landed).toFixed(0)} cm)`
+    : K.kick ? `pied à ${p.footOutC.toFixed(2)} m de côté, ${(100 * p.footHC).toFixed(0)} cm du sol, genou ${p.kneeC.toFixed(0)}°`
+    : `tête ${(100 * p.headBackMax).toFixed(0)} cm derrière le bassin, mains ${(100 * p.handsFrontC).toFixed(0)} cm devant la poitrine, bassin ${(100 * p.dipMin).toFixed(0)} cm`;
+  ok(`« ${k} » : ${what}`, c.ok, c.issues.slice(0, 3).join(' | '));
+  const cc = checkClip(resolveTracks(spec));
+  ok('  checkClip (animkit)', cc.ok, cc.issues.slice(0, 3).join(' | '));
+}
+{
+  // le miroir d'un plongeon plonge de l'autre côté (root motion latéral inversé) et reste sain
+  const m = mirrorMove(generateKeeper('plongeon', P));
+  const kC = m.keys.find((k) => Math.abs(k.t - 0.55) < 1e-6);
+  ok(`le miroir du plongeon part à GAUCHE (bassin x ${kC?.hips?.[0].toFixed(2)} au contact ≤ −1,2) et passe checkClip`, (kC?.hips?.[0] ?? 0) <= -1.2 && checkClip(resolveTracks(m)).ok);
+  // SABOTAGES : le plongeon authoré d'hier sous le contrat des mains ; un plongeon bras le long du corps
+  const old = checkKeeperGen(AUTHORED.plongeon, P, 'plongeon');
+  ok(`sabotage « le plongeon authoré » refusé (${old.issues.length} clauses : ${old.issues.slice(0, 2).join(' | ')})`, !old.ok);
+  const lazy = JSON.parse(JSON.stringify(generateKeeper('plongeon', P)));
+  for (const k of lazy.keys) { delete k.pose.LeftArm; delete k.pose.RightArm; delete k.pose.LeftForeArm; delete k.pose.RightForeArm; }
+  const lazyC = checkKeeperGen(lazy, P, 'plongeon');
+  ok(`sabotage « le plongeon bras le long du corps » refusé (${lazyC.issues.slice(0, 1).join('')})`, !lazyC.ok);
 }
 
 // ---------- 5. les amplitudes bakées

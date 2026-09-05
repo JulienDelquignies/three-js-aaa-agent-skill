@@ -8857,6 +8857,69 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      clip à 55 % et relâche au relevé sim — la queue du tacle (0,76 → 1) ne se
      joue que si la sim n'a pas déjà remis le corps en course ; l'audit des
      membres ne capture pas encore le tacle (« le tacle aura SES clauses »).
+- 298: LES MAINS DU GARDIEN GÉNÉRÉES (lot A6). Plongeon aérien, bas, à une
+     main, prise aérienne, parade des pieds, blocage du buste — motion-keeper,
+     même machine. Un plongeon a cinq temps que la scène et la sim exploitent
+     tels quels : IMPULSION (le corps plie), DÉTENTE latérale en root motion
+     (bassin à 1,35 m de côté et +28 cm au contact — 1,15 m / −50 cm pour le
+     bas, 1,5 m à une main —, le corps roulé à 78°, les bras étirés le long
+     de l'axe du corps : gants à 0,95-0,97 m du bassin), CHUTE (tapis à −68
+     cm, roulé à 96°), SOL (tenu jusqu'à `rise`, que le clip déclare : la
+     scène y gèle tant que la sim garde le corps au sol, gk.rise), RELEVÉ SUR
+     PLACE (le bassin garde son décalage : la sim a transporté l'origine).
+     TROIS LOIS apprises : (1) checkClip borne le bassin à 6,5 m/s entre clés
+     — 1,35 m en 0,3 s à pic de cosinus en ferait 9 : le voyage latéral
+     COMMENCE pendant l'impulsion (le gardien charge déjà de côté) ; (2) le
+     tapis et le relevé sont UNE chaîne IK continue — les pieds vont de leur
+     place couchée à leur place debout au ras du sol, les genoux se replient
+     sous le corps d'eux-mêmes ; un pole de genou « en haut » devient
+     parallèle à la jambe quand le pied passe sous la hanche et la cuisse
+     VRILLE (108 rad/s) : le pole est DEVANT, l'axe que le roulis ne change
+     pas ; (3) le plongeon bas n'a pas de vol : les pieds RASENT le sol
+     (cibles IK qui glissent vers la place couchée, bornées à 93 % de la
+     jambe — une cible hors de portée tend la jambe d'un coup). La prise
+     aérienne : +55 cm, mains 43 cm au-dessus de la tête AVANT le contact,
+     retombée sur ses appuis (replantés là où le corps est, décalé de 0,72).
+     Parades : la jambe droite claque latérale tendue (pied à 0,62 m,
+     genou 2°), le buste se bombe puis prend (coudes serrés devant, recul
+     de 5 cm). Le miroir d'animkit inverse le root motion (gauche).
+     verify-animkit désigne ses clés de sabotage par l'instant (keys[2],
+     keys[3] d'un clip dense n'étaient plus le tapis ni l'extension).
+     EN JEU, LE BUG QUI DORMAIT : audit-gants rouge — « le corps plonge DU
+     CÔTÉ du lunge » : 16 plongeons sur 16 du mauvais côté, et son sabotage
+     (la convention monde naïve) du bon. Mesuré au FK : l'authoré d'hier
+     plongeait PIEDS DEVANT (tête à −0,54 m du bassin pendant que le root
+     motion allait à +1,35) ; le miroir de la scène (lot 106, « le clip
+     s'étale du côté −X du modèle ») alignait la TÊTE sur le lunge en
+     envoyant le root motion à l'opposé, et le biais des hanches (clip −
+     voyage, signé pour ce clip-là) rattrapait le tout. Le plongeon généré
+     part tête première, root motion et tête du même côté : la scène
+     miroite désormais quand le lunge est du côté −X du modèle, et le biais
+     soustrait le voyage (rendu = clip, qui converge vers la sim). Sonde en
+     jeu (hipsWrite) : le canal hanches EST [droite, haut, avant] du
+     personnage — la convention des générateurs tient. Capturé (seed 3) :
+     un plongeon bas tête première vers le ballon, au ras du sol. DETTE
+     nommée : la prise en l'air — dès que la sim donne le ballon au gardien
+     (tenu), _armsToBall tire les deux mains vers le ballon SIM, posé au
+     corps (à hauteur de hanche) : au sommet du saut les bras redescendent
+     avant le corps ; le ballon rendu devrait vivre dans les gants du clip
+     jusqu'à la retombée (deux poids : ballon-aux-mains dès la prise,
+     bras-au-ballon-sim après la retombée) — Rondo.js est au plafond.
+     AUDIT-GANTS après le miroir corrigé : 12/12 — le bras vit à l'instant
+     de l'arrêt (p50 0,87 m ≤ 1,1 ; 1,2 avant), la prise se ferme (0,14),
+     le corps couché sur les arrêts développés (0,45 m), le côté du lunge
+     16/16, le gardien se relève où il est tombé (0,27 m), le plongeon ne
+     téléporte pas (16 m/s p50, 23 avant). verify-gesture-layer : la clause
+     « la pose EST la clé » exigeait 1e-6° — l'exactitude au bit d'un clip à
+     5 clés ; un clip dense passe par l'arrondi Euler à 0,01° : 1e-3°
+     (rouge depuis A1, invisible parce que hors de la liste des bancs).
+     MESURÉ : 41 espèces générées — TOUT LE FOOTBALL du répertoire —,
+     verify-motion 206 clauses, 40 × 41 = 1 640 gestes sous contrat et sous
+     checkClip ; sabotages : le plongeon authoré, un plongeon bras le long
+     du corps. RESTENT authorés : la retournée (sans déclencheur sim) et les
+     gestes sociaux. DETTES : le monde composé (A2) — le time-warp et le
+     warp des gants de la scène restent ceux d'hier ; audit-gants à relire
+     sur le build ; la locomotion (A4 du plan initial).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

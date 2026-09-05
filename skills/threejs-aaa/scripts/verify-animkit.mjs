@@ -80,9 +80,11 @@ sab('genou plié à l’envers', (s) => { s.keys[1].pose.RightLeg = [60, 0, 0]; 
     (hit ? pass++ : fail++);
     console.log(`${hit ? '✓' : '✗'} sabotage « ${name} » attrapé${hit ? '' : ` — issues: ${r.issues.join('; ') || '(aucune)'}`}`);
   };
-  sabH('bassin à travers le sol', (s) => { s.keys[3].hips = [1.35, -1.2, 0]; }, 'through the floor');
-  sabH('saut-fusée (dy 2 m)', (s) => { s.keys[2].hips = [0, 2, 0]; }, 'rocket jump');
-  sabH('bassin téléporté (1,3 m en 40 ms)', (s) => { s.keys[2].t = s.keys[1].t + 0.04; }, 'hips teleport');
+  // (le plongeon est GÉNÉRÉ, dense : les clés se désignent par leur instant — le tapis à 0,9 s, l'extension à 0,55)
+  const keyAt = (s, t) => s.keys.reduce((b, k) => (Math.abs(k.t - t) < Math.abs(b.t - t) ? k : b), s.keys[0]);
+  sabH('bassin à travers le sol', (s) => { keyAt(s, 0.9).hips = [1.35, -1.2, 0]; }, 'through the floor');
+  sabH('saut-fusée (dy 2 m)', (s) => { keyAt(s, 0.55).hips = [1.35, 2, 0]; }, 'rocket jump');
+  sabH('bassin téléporté (1,3 m en une image)', (s) => { const k = keyAt(s, 0.3); k.hips = [k.hips[0] + 1.3, k.hips[1], k.hips[2]]; }, 'hips teleport');
 }
 
 

@@ -57,7 +57,7 @@ threejs-aaa/ (the skill)
 │   ├── 47-football-rules.md    impossible-football catalogue (23 rules) + the gesture vocabulary as data
 │   ├── 48-gesture-timeline.md  an action has a beginning and an end: the ball leaves at the contact frame
 │   ├── 49-gait-engine.md       the gait clock: one phase, slaved clips, measured cadence, whole-body layer
-│   ├── 51-motion-strike.md     GENERATED gestures (35 species: strikes, controls, headers, dribbling skills, slide tackle): anatomical joint curves and foot paths (proximo-distal whip, cushion, ballistic jump, sole/circle/cut, the body that lies down, per-player style) → animkit specs, the rig profile, the contact sheet
+│   ├── 51-motion-strike.md     GENERATED gestures (41 species: strikes, controls, headers, dribbling skills, slide tackle, keeper dives and parades): anatomical joint curves and foot paths (proximo-distal whip, cushion, ballistic jump, sole/circle/cut, the body that lies down, the dive that gets up on the spot, per-player style) → animkit specs, the rig profile, the contact sheet
 │   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
@@ -151,10 +151,13 @@ examples/
   circle over the ball for stepovers; the sweep through the ball for the cuts; two feet for the
   croqueta; the sharp nutmeg flick) solved by two-bone IK with joint-space ends; `motion-ground.js`
   lays the body down for the slide tackle (roll onto the hip, leg stretched to the ball, the lying
-  pose the scene freezes while the sim keeps the player down, the get-up) — thirty-five species,
-  plus a bounded per-player STYLE (same gesture, a player's own details).
+  pose the scene freezes while the sim keeps the player down, the get-up); `motion-keeper.js` dives
+  the goalkeeper (impulse, lateral root-motion launch with the gloves stretched to the ball, the mat,
+  the get-up on the spot as one continuous IK chain), catches in the air and parries with the feet
+  or the chest — forty-one species, plus a bounded per-player STYLE (same gesture, a player's own
+  details).
   `contact-sheet.mjs` renders any gesture 3 cameras × 6 phases for the agent and the human to judge
-  the same picture. Proven by `verify-motion.mjs` (191 clauses, 40 seeds × 35 species under
+  the same picture. Proven by `verify-motion.mjs` (206 clauses, 40 seeds × 41 species under
   contract).
 - **Procedural animation & interaction verification** — math-driven motion (springs, damping,
   two-bone IK, look-at, foot IK) and a tested validator that checks a character↔object interaction

@@ -26,6 +26,7 @@ import { CONTROL_KINDS, controlPortrait } from '../assets/starter/src/engine/mot
 import { AERIAL_KINDS, aerialPortrait } from '../assets/starter/src/engine/motion-aerial.js';
 import { SKILL_KINDS, skillPortrait } from '../assets/starter/src/engine/motion-skill.js';
 import { GROUND_KINDS, groundPortrait } from '../assets/starter/src/engine/motion-ground.js';
+import { KEEPER_KINDS, keeperPortrait } from '../assets/starter/src/engine/motion-keeper.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, arr) => a.startsWith('--') ? [a.slice(2), arr[i + 1] && !arr[i + 1].startsWith('--') ? arr[i + 1] : '1'] : []).filter(Boolean));
 const MOVE = args.move || 'frappe';
@@ -52,6 +53,7 @@ function ballFor(move, spec) {
   const K = CONTROL_KINDS[move];
   if (SKILL_KINDS[move]) return [...SKILL_KINDS[move].ball];   // le geste technique DÉCLARE où est son ballon (il ne part pas)
   if (GROUND_KINDS[move]) return [...GROUND_KINDS[move].ball];
+  if (KEEPER_KINDS[move]) return [...KEEPER_KINDS[move].ball];
   if (AERIAL_KINDS[move]) { const h = w.Head.p; return [h[0], h[1] + 0.02, h[2] - 0.2]; }
   if (K?.chest) { const c = w.Spine2.p; return [c[0], c[1] + 0.05, c[2] - 0.24]; }
   if (K?.thigh) { const k = w.RightLeg.p, hp = w.RightUpLeg.p; return [(k[0] + hp[0]) / 2 + 0.02, (k[1] + hp[1]) / 2 + 0.11, (k[2] + hp[2]) / 2 - 0.02]; }
@@ -60,6 +62,7 @@ function ballFor(move, spec) {
   return strikePortrait(spec, P).S;
 }
 function describe(move, spec) {
+  if (KEEPER_KINDS[move]) { const p = keeperPortrait(spec, P), K = KEEPER_KINDS[move]; return K.dive ? `bassin ${p.hC[0].toFixed(2)} m de côté, ${(100 * p.hC[1]).toFixed(0)} cm de haut au contact, gants à ${p.handReach.toFixed(2)} m` : K.jump ? `bassin +${(100 * p.hC[1]).toFixed(0)} cm, mains ${(100 * p.handsAboveHead).toFixed(0)} cm au-dessus de la tête` : K.kick ? `pied à ${p.footOutC.toFixed(2)} m de côté` : `tête ${(100 * p.headBackMax).toFixed(0)} cm derrière le bassin`; }
   if (GROUND_KINDS[move]) { const p = groundPortrait(spec, P); return `pied à ${(p.footAheadC * 100).toFixed(0)} cm devant, bassin couché à ${(p.pelvisL * 100).toFixed(0)} cm`; }
   if (SKILL_KINDS[move]) { const p = skillPortrait(spec, P), K = SKILL_KINDS[move]; return K.sole ? `cheville à ${(p.hC * 100).toFixed(0)} cm, ${(p.distBallC * 100).toFixed(0)} cm du ballon` : K.circle ? `pied à ${(p.peakH * 100).toFixed(0)} cm, ${(p.minBall * 100).toFixed(0)} cm du ballon` : K.croqueta ? `balaie ${(p.sweepL * 100).toFixed(0)} cm, pousse ${(p.pushL * 100).toFixed(0)} cm` : `pied ${p.vFootC.toFixed(1)} m/s au contact`; }
   if (AERIAL_KINDS[move]) { const p = aerialPortrait(spec, P); return AERIAL_KINDS[move].upperOnly ? `tête ${p.headC.toFixed(0)}° au contact` : `bassin +${(p.apex * 100).toFixed(0)} cm à l'apex · tête ${p.headC.toFixed(0)}°`; }
@@ -79,12 +82,13 @@ if (VARIANT !== 'before') {
   variants.push({ label: `APRÈS — ${MOVE} généré${SEED != null ? ` (style graine ${SEED})` : ' (style neutre)'} · ${describe(MOVE, spec)}`, spec, ball: ballFor(MOVE, spec) });
 }
 const PHASES = [-0.25, -0.15, -0.03, 0, 0.08, 0.2];
-const HIGH = !!AERIAL_KINDS[MOVE] || !!CONTROL_KINDS[MOVE]?.chest;   // une tête ou une poitrine se regarde plus haut
+const HIGH = !!AERIAL_KINDS[MOVE] || !!CONTROL_KINDS[MOVE]?.chest || !!KEEPER_KINDS[MOVE]?.jump;   // une tête, une poitrine ou une prise se regarde plus haut
 const up = HIGH ? 0.4 : 0;
+const side = KEEPER_KINDS[MOVE]?.lateral ? KEEPER_KINDS[MOVE].lateral * 0.55 : 0;   // un plongeon part de côté : les caméras suivent à mi-course
 const CAMS = [
-  { name: 'côté frappeur', pos: [3.1, 1.15 + up, -0.3], look: [0, 0.95 + up, -0.15] },
-  { name: 'face ¾', pos: [2.1, 1.3 + up, -2.7], look: [0, 0.9 + up, 0] },
-  { name: 'dos ¾ bas', pos: [-1.7, 0.55 + up, 2.5], look: [0, 0.8 + up, -0.2] },
+  { name: 'côté frappeur', pos: [3.1 + side, 1.15 + up, -0.3], look: [side, 0.95 + up, -0.15] },
+  { name: 'face ¾', pos: [2.1 + side, 1.3 + up, -2.7 - 0.6 * side], look: [side, 0.9 + up, 0] },
+  { name: 'dos ¾ bas', pos: [-1.7 + side, 0.55 + up, 2.5 + 0.6 * side], look: [side, 0.8 + up, -0.2] },
 ];
 
 // ---- le serveur statique + Chromium headless (même recette que audit-membres)

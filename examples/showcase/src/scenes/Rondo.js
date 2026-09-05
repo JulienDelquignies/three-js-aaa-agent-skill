@@ -486,10 +486,10 @@ export class Rondo {
         // …SIGNE re-mesuré aux BONES (lot 106, capture seed 1 t=160 : lg·X=+0,13, corps rendu
         // à l'OPPOSÉ du lunge — l'audit d'époque jugeait l'écart FINAL des hanches, symétrique
         // au miroir : le côté visuel n'était pas jugé, la régression a survécu au retarget).
-        // Le clip de base s'étale du côté −X du modèle : lunge du côté +X → miroir. Le
-        // SABOTAGE 'plongeon-monde' rejoue le signe d'HIER (le bug corrigé, nommé).
+        // Le plongeon GÉNÉRÉ (motion-keeper) part TÊTE PREMIÈRE du côté +X du modèle (root motion et tête
+        // du même côté — l'authoré d'hier s'étalait à −X, pieds devant) : lunge du côté −X → miroir. SABOTAGE 'plongeon-monde' : le signe d'hier.
         const proj = lg[0] * me[0] + lg[1] * me[2];
-        useMirror = (typeof window !== 'undefined' && window.__sabotage === 'plongeon-monde') ? proj < 0 : proj > 0;
+        useMirror = (typeof window !== 'undefined' && window.__sabotage === 'plongeon-monde') ? proj > 0 : proj < 0;
         pl._diveMirror = useMirror;
       } else pl._diveMirror = useMirror;
     }
@@ -1094,7 +1094,7 @@ export class Rondo {
           // …X RE-SIGNÉ avec le miroir corrigé (lot 106) : l'ancien monde tenait par DEUX
           // erreurs compensées — clip à l'envers + biais signé pour lui (écart hanches petit,
           // pose fausse). Le côté réparé, le biais suit la même convention que les hips du clip.
-          if (pl.hipsCtl) pl.hipsCtl.bias = [-(vx * me[0] + vz * me[2]) / rl, 0, -(vx * me[8] + vz * me[10]) / fl];
+          if (pl.hipsCtl) pl.hipsCtl.bias = [(vx * me[0] + vz * me[2]) / rl, 0, (vx * me[8] + vz * me[10]) / fl];   // le clip généré porte son root motion DANS le sens du lunge : le biais soustrait le voyage (rendu = clip, qui converge vers la sim)
         } else if (pl._diveStart) { pl._diveStart = null; if (pl.hipsCtl) pl.hipsCtl.bias = null; }
         // …et la QUEUE du plongeon appartient à gk.rise (lot 91) : l'acte vivant sans down (le
         // battu paie à la FIN du geste) ATTEND à la pose couchée ; le sol TIENT (gel, patron du
