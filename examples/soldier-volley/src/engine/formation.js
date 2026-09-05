@@ -234,10 +234,10 @@ export const ROLES_FORMATION = {
   442: { 4: 'piston', 7: 'piston', 8: 'neufDeSurface', 9: 'neufDeSurface' },
   352: { 3: 'piston', 5: 'meneur', 7: 'piston', 8: 'neufDeSurface', 9: 'neufDeSurface' },
   4231: { 4: 'recuperateur', 5: 'recuperateur', 6: 'ailierDePercussion', 7: 'meneur', 8: 'ailierDePercussion', 9: 'neufDeSurface' },
-  4321: { 4: 'recuperateur', 7: 'meneur', 8: 'meneur', 9: 'neufDeSurface' },
+  4321: { 5: 'recuperateur', 7: 'meneur', 8: 'meneur', 9: 'neufDeSurface' },   // 244c : le 6 est le M(C), pas l'intérieur gauche
   343: { 3: 'piston', 6: 'piston', 7: 'ailierDePercussion', 8: 'neufDeSurface', 9: 'ailierDePercussion' },
   3421: { 3: 'piston', 6: 'piston', 7: 'meneur', 8: 'meneur', 9: 'neufDeSurface' },
-  532: { 5: 'recuperateur', 8: 'neufDeSurface', 9: 'neufDeSurface' },
+  532: { 6: 'recuperateur', 8: 'neufDeSurface', 9: 'neufDeSurface' },   // 244c : idem
   541: { 5: 'piston', 8: 'piston', 9: 'neufDeSurface' },
   4141: { 4: 'recuperateur', 5: 'piston', 8: 'piston', 9: 'neufDeSurface' },
   4222: { 4: 'recuperateur', 5: 'recuperateur', 6: 'meneur', 7: 'meneur', 8: 'neufDeSurface', 9: 'neufDeSurface' },

@@ -279,6 +279,11 @@ lit encore — empreintes du 242 au bit.
 - Constat : un poste était un indice ; trois strates seulement (le dix comptait parmi les pointes, la
   sentinelle parmi les milieux) ; le dédoublement code « posts 0/3 » en dur.
 
+**Lot 244c — Le catalogue des rôles du projet aval — SCELLÉ (NOTES 303).** 34 rôles sur les onze axes,
+en donnée (`roles.js`, identifiants aval) ; `rolesGrille` pose le rôle par défaut de chaque poste nommé
+(mezzalas d'un trio, sentinelle, meneur reculé, piston…) ; préréglages 4321/532 corrigés ; aucun rôle par
+défaut, empreintes au bit. Trouvé : le contrat du 127 était lu à vide depuis le 127.
+
 **Lot 244b — Les lois au nom du poste (à sceller).** Dédoublement par la strate WB/D ; pointes = AM +
 ST (Loi 11, couloirs, appels) ; sentinelle = DM (salida, contre-pressing) ; puis le poste naturel côté
 joueur (`profil.postes` + familiarité = facteur, identité absente). Mesuré à trois et cinq derrière,

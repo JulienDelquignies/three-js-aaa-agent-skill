@@ -69,6 +69,8 @@ const ISO142 = { fixe: false, oeil: false, dispersion: false, semellePlace: fals
 import { momentDuJeu, marquageCentre } from '../assets/starter/src/engine/phases.js';
 import { busy as busyG } from '../assets/starter/src/engine/gesture.js';
 import { FORMATIONS, LIGNES, formationPour, mapPostes, POSTES_FORMATION, ROLES_FORMATION, GRILLE, litPoste, posteNom, lignesFines, checkPostes } from '../assets/starter/src/engine/formation.js';
+import { ROLES, LIBELLES_ROLES, rolesGrille } from '../assets/starter/src/engine/roles.js';
+import { readdirSync as __rd, readFileSync as __rf } from 'node:fs';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
 // L'ISOLATION DES RE-DATEURS 170-171 (le patron « la clause isole ses re-dateurs ») : le
@@ -2689,8 +2691,8 @@ if (__bloc()) {
   }
   const st127 = makeMatch({ full: true, seed: 3, tactics: [{ formation: '4231' }, { formation: '532' }] });
   const cfg127 = matchCfg({ shotRange: 20 });
-  for (let i = 0; i < 90 * 60; i++) matchStep(st127, 1 / 60, cfg127);
-  const issues127 = checkMatch(st127, [], cfg127);
+  const { trace: tr127 } = playMatch(st127, 90, { cfg: cfg127 });   // 244c : avec une TRACE — le contrat « les deux camps » la lit
+  const issues127 = checkMatch(st127, tr127, cfg127).issues;   // 244c : checkMatch rend { ok, issues, stats } — « .length » sur l'objet disait toujours « propre »
   ok(`lot 127 — le CATALOGUE est cohérent (${noms.length} formations ≥ 12 : 10 postes, lignes sommant 10, ${chevauche} chevauchement < 0,055 — zéro) et le 4231 vs 532 JOUE 90 s (contrat : ${issues127.length ? issues127[0] : 'propre'})`,
     noms.length >= 12 && coherent && chevauche === 0 && st127.t >= 89);
 }
@@ -5647,6 +5649,12 @@ if (__bloc()) {
     V2.contres >= E2.contres * 0.8 && V2.zero <= E2.zero - 15 && V2.deuxPlus >= E2.deuxPlus + 10 && V2.larges <= 1 && V2.profond + V2.deborde >= (E2.profond + E2.deborde) * 0.85 && V2.pertes <= E2.pertes * 1.05);
 }
 
+// LE CONTRAT STRUCTUREL (244a) : checkMatch porte deux clauses de TEMPO calibrées à 480 s (lot 17 :
+// « personne ne tire », « les deux camps se visitent ») — sur un match de 90 ou 300 s elles jugent
+// la graine, pas le monde. Les clauses courtes gardent tout le reste (Loi 3, terrain, gardien qui
+// erre, téléports, temps morts) ; la bande de tempo est le métier du lot 17 et des bandes.
+const __structurel = (issues) => issues.filter((x) => !/PERSONNE NE TIRE|ne visite pas les deux camps/.test(x));
+
 // ---------------------------------------------------------------- lot 244a : LES POSTES NOMMÉS
 // + LE CATALOGUE EXHAUSTIF (demande utilisateur : « est-ce que le moteur gère bien tous les
 // postes attendus ? » — la grille GK / D / WB / DM / M / AM / ST × G · CG · C · CD · D — puis
@@ -5683,13 +5691,61 @@ if (__bloc()) {
   for (const n of nouvelles) {
     const st = makeMatch({ full: true, seed: 5, tactics: [{ formation: n }, { formation: '433' }] });
     const cfg = matchCfg({ shotRange: 20 });
-    for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
-    const issues = checkMatch(st, [], cfg);
+    const { trace } = playMatch(st, 90, { cfg });
+    const issues = __structurel(checkMatch(st, trace, cfg).issues);
     joue.push({ n, t: st.t, issues: issues.length, poss: st.possession.team });
   }
-  const cassees = joue.filter((j) => j.t < 59 || j.issues > 0);
-  ok(`lot 244a — les SEIZE nouvelles JOUENT (60 s contre le 433 chacune, contrat tenu : ${cassees.length === 0 ? 'zéro écart' : cassees.map((j) => `${j.n} ${j.issues} écart(s) t ${j.t.toFixed(0)}`).join(' ; ')})`,
+  const cassees = joue.filter((j) => j.t < 89 || j.issues > 0);
+  ok(`lot 244a — les SEIZE nouvelles JOUENT (90 s contre le 433 chacune, contrat STRUCTUREL tenu (avec trace) : ${cassees.length === 0 ? 'zéro écart' : cassees.map((j) => `${j.n} ${j.issues} écart(s) t ${j.t.toFixed(0)}`).join(' ; ')})`,
     cassees.length === 0);
+}
+
+// ---------------------------------------------------------------- lot 244c : LE CATALOGUE DES
+// RÔLES (fourni par le projet aval « FM » — l'utilisateur : « ils utilisent ça eux ») : 34
+// rôles écrits sur nos onze axes + arbitre, en DONNÉE (roles.js) ; rolesGrille pose le rôle
+// par défaut de chaque poste nommé (244a) ; les deux préréglages d'hier qui posaient le
+// récupérateur sur l'intérieur gauche (4321, 532) passent au M(C). Aucun rôle posé par
+// défaut : empreintes du 242 au bit. Le moteur possède les lois et les axes, le rôle est une
+// donnée : la preuve est que les onze axes sont lus par une loi (comptés dans le source).
+if (__bloc()) {
+  const fm = Object.keys(LIBELLES_ROLES), AXES = ['profondeur', 'largeurR', 'appel', 'press', 'garde', 'ancrage', 'tenue', 'duel', 'marqueSerre', 'ressort', 'orienteFaible'];
+  const horsBorne = [];
+  for (const k of fm) {
+    if (!ROLES[k]) { horsBorne.push(k + ' absent'); continue; }
+    const r = resoudreRole(k);
+    for (const a of AXES) if (!(r[a] >= 0 && r[a] <= 1)) horsBorne.push(`${k}.${a} = ${r[a]}`);
+    for (const [g, v] of Object.entries(r.arbitre)) if (!(v > 0)) horsBorne.push(`${k}.arbitre.${g} = ${v}`);
+  }
+  const dir = new URL('../assets/starter/src/engine/', import.meta.url);
+  const src = __rd(dir).filter((f) => f.endsWith('.js') && !['roles.js', 'match-config.js'].includes(f)).map((f) => __rf(new URL(f, dir), 'utf8')).join('\n');
+  const morts = AXES.filter((a) => !new RegExp(`\\.${a}\\b`).test(src));
+  const G = Object.keys(FORMATIONS).map((n) => [n, rolesGrille(n)]);
+  const trous = G.flatMap(([n, g]) => [...Array(11).keys()].filter((k) => !ROLES[g[k]]).map((k) => `${n}:${k}`));
+  const g433 = rolesGrille('433'), g442 = rolesGrille('442'), g4231 = rolesGrille('4231'), g352 = rolesGrille('352');
+  const m = resoudreRole('mezzala');
+  ok(`lot 244c — LE CATALOGUE DES RÔLES (aval FM) : ${fm.length} rôles = 34 (${Object.keys(ROLES).length} avec les neuf d'hier), tous résolus, onze axes dans [0 ; 1] et arbitre > 0 (${horsBorne.length ? horsBorne.join(' ; ') : 'aucun écart'}) ; les ONZE AXES sont lus par une loi (${morts.length ? 'MORTS : ' + morts.join(',') : 'aucun axe mort'}) ; rolesGrille couvre les onze postes des ${G.length} formations (${trous.length ? trous.join(',') : 'aucun trou'}) : 433 = ${g433[4]}/${g433[5]}/${g433[6]} au milieu, ${g433[7]}·${g433[8]}·${g433[9]} devant ; 442 = ${g442[5]} × 2 ; 4231 = ${g4231[4]} + ${g4231[5]}, ${g4231[7]} ; 352 = ${g352[3]}, gardien ${g433[10]} ; mezzala profondeur ${m.profondeur} largeur ${m.largeurR} conduite ×${m.arbitre.conduite} ; préréglages d'hier corrigés (4321 → poste ${Object.keys(ROLES_FORMATION[4321])[0]} = ${POSTES_FORMATION[4321][5]}, 532 → poste ${Object.keys(ROLES_FORMATION[532])[0]} = ${POSTES_FORMATION[532][6]})`,
+    fm.length === 34 && horsBorne.length === 0 && morts.length === 0 && trous.length === 0
+    && g433[4] === 'mezzala' && g433[5] === 'deep_lying_playmaker' && g433[7] === 'winger' && g433[8] === 'forward' && g433[10] === 'goalkeeper'
+    && g442[5] === 'box_to_box' && g4231[4] === 'deep_lying_playmaker' && g4231[5] === 'anchor' && g4231[7] === 'attacking_midfielder' && g352[3] === 'wing_back'
+    && m.profondeur === 0.55 && m.largeurR === 0.6 && m.arbitre.conduite === 1.2
+    && ROLES_FORMATION[4321][5] === 'recuperateur' && ROLES_FORMATION[4321][4] == null && ROLES_FORMATION[532][6] === 'recuperateur' && ROLES_FORMATION[532][5] == null);
+  // …et la grille JOUE (433 aux rôles FM des deux côtés, 2 × 300 s) : contrat tenu ; le prix
+  // c. polyvalent est INFORMATIF (mesuré 4 × 300 s : pertes 104 → 108, passes 356 → 289, tirs
+  // 4 → 4 — des rôles marqués jouent moins de passes, pas plus de pertes)
+  const jeu = (roles) => {
+    let pertes = 0, passes = 0, tirs = 0, issues = 0;
+    for (const seed of [1, 2]) {
+      const st = makeMatch({ full: true, seed, roles }), cfg = matchCfg({ shotRange: 20 });
+      const { trace } = playMatch(st, 300, { cfg });
+      let prev = -1; for (const e of trace) { const tm = e.team ?? -1; if (prev >= 0 && tm >= 0 && tm !== prev && !e.restart) pertes++; if (tm >= 0) prev = tm; }
+      for (const e of st.events) if (e.type === 'pass') passes++;
+      const c = checkMatch(st, trace, cfg); issues += __structurel(c.issues).length; tirs += c.stats.shots;
+    }
+    return { pertes, passes, tirs, issues };
+  };
+  const FMj = jeu([g433, g433]), POj = jeu(undefined);
+  ok(`lot 244c — la grille FM JOUE (433 c. 433, 2 × 300 s avec trace : ${FMj.issues} écart au contrat structurel, polyvalent ${POj.issues} — zéro ; informatif : pertes ${FMj.pertes} c. polyvalent ${POj.pertes}, passes ${FMj.passes} c. ${POj.passes}, tirs ${FMj.tirs} c. ${POj.tirs})`,
+    FMj.issues === 0 && POj.issues === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

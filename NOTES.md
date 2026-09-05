@@ -9115,6 +9115,54 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      NATUREL côté joueur (profil.postes + familiarité = facteur, identité
      absente). Dette nommée : les variantes « étroites » (4231 à trois
      dix axiaux, 4-4-2 losange large) demandent une clé non numérique.
+- 303: LE CATALOGUE DES RÔLES DU PROJET AVAL (244c — retour utilisateur :
+     « tu as pas un souci entre récupérateur et mezzala ? », puis la table
+     de 34 rôles « c'est le jeu FM qui m'a fourni ça, ils utilisent ça
+     eux »). LE SOUCI, OUI, DOUBLE : aucun rôle mezzala (les intérieurs
+     d'un trio, M(CG)/M(CD), jouaient polyvalent — ni demi-espace ni
+     arrivée en surface), et deux préréglages du 127 posaient le
+     récupérateur sur l'INTÉRIEUR GAUCHE (4321 poste 4, 532 poste 5) en
+     laissant le pivot polyvalent — asymétrie que la clause 244a ne
+     regardait que sur les seize nouvelles. LA TABLE AVAL EST LA PREUVE
+     DU MOTEUR : 34 rôles écrits sur NOS onze axes (profondeur, largeurR,
+     appel, press, garde, ancrage, tenue, duel, marqueSerre, ressort,
+     orienteFaible) + arbitre, et pas une loi n'a bougé pour les
+     accueillir — les onze axes sont tous lus par une loi (compté dans le
+     source, clause 244c : aucun axe mort). roles.js : les 34 en DONNÉE
+     sous leurs identifiants aval (goalkeeper, keeper_libero, centre_back,
+     stopper, cover, playmaker_defender, libero, full_back, wing_back,
+     inverted_fullback, modern_wingback, anchor, half_back, regista,
+     destroyer, box_to_box, deep_lying_playmaker, mezzala, carrilero,
+     free_role_creator, attacking_midfielder, trequartista,
+     shadow_striker, winger, inside_forward, wide_creator, raumdeuter,
+     tracking_winger, forward, target_man, poacher, all_around_striker,
+     pressing_striker, false_9), LIBELLES_ROLES pour l'UI, les neuf rôles
+     d'hier gardés (bancs et projets : au bit). rolesGrille(formation) :
+     le rôle par défaut de chaque poste NOMMÉ (244a) — D large = latéral,
+     D axial = central, WB = piston, DM(C) = sentinelle, double pivot =
+     meneur reculé + sentinelle, M(C) = meneur reculé (box-to-box sous un
+     DM), intérieurs d'un trio ou sous un DM = mezzalas (box-to-box dans
+     un milieu à deux : le 442 n'a pas de mezzala), M large = ailier, AM
+     axial = milieu offensif, AM large = ailier, ST = attaquant, GK =
+     goalkeeper (indice 10). Préréglages 4321/532 corrigés (récupérateur
+     au M(C)). TROUVÉ AU PASSAGE : checkMatch rend { ok, issues, stats }
+     et le lot 127 lisait « .length » sur l'objet — « contrat : propre »
+     depuis le 127 quoi qu'il arrive ; la clause 244a d'hier héritait du
+     même vide. Corrigé (issues + TRACE via playMatch : la clause « les
+     deux camps » lit la trace) ; deux clauses de checkMatch sont de
+     TEMPO calibrées à 480 s (lot 17 : « personne ne tire », « les deux
+     camps ») — sur 90/300 s elles jugent la graine ; __structurel les
+     écarte des matchs courts, tout le reste du contrat reste exigé (le
+     127 affiche désormais l'écart réel : « personne ne tire » en 90 s).
+     BANC 244c : 34 = 34, axes dans [0 ; 1], arbitre > 0, aucun axe mort,
+     rolesGrille sans trou sur 31 × 11 postes, attendus 433/442/4231/352,
+     mezzala 0,55/0,6/×1,2 ; et la grille FM JOUE (433 c. 433, 2 × 300 s,
+     zéro écart structurel). INFORMATIF (4 × 300 s, sonde) : rôles FM des
+     deux côtés c. polyvalent — pertes 104 → 108, passes 356 → 289, tirs
+     4 → 4 : des rôles marqués jouent moins de passes, pas plus de pertes.
+     Aucun rôle posé par défaut : empreintes 94e2de4e74fb69f8 /
+     46ce3576f0d5249f = le 242 au bit. Le 244b (les lois au nom du poste,
+     puis le poste naturel côté joueur) reste le prochain lot mesuré.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
