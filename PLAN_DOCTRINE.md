@@ -289,6 +289,11 @@ strate ST + AM larges (le dix reste entre les lignes), pivot de salida = DM(C) s
 gauche, le piston gauche en 3-5-2), dédoublement = WB ou D large (hier les indices 0/3 : un central
 débordait en 3-5-2). Flux neutre à 8 graines ; jumeau false = 242 au bit.
 
+**Lot 244e — La donnée s'aligne sur la loi — SCELLÉ (NOTES 305).** Retour aval : arbitre du catalogue
+re-échelonné linéairement dans [0,7 ; 1,3] (zéro couple fondu, zéro ordre inversé), bande de checkRoles
+rendue, checkRoles borne le résolu, axe dribble reporté par la résolution (rappel 219). Table livrée en
+`docs/Retour_Reference_244e_Table_Roles.md`.
+
 **Lot 244d — Le poste naturel côté joueur (à sceller).** `profil.postes` (liste de noms de la grille) +
 familiarité = FACTEUR (identité absente) pondérant décision et contrôle hors poste ; mesuré sur un
 effectif noté joué à contre-emploi.

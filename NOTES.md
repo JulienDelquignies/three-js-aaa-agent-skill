@@ -9222,6 +9222,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      « gradation 152/158 », à bissecter avant le 242 (le monde des
      notes 30/50 s'est retourné : 82 > 47). Reste (244d) : le poste
      NATUREL côté joueur — profil.postes + familiarité en facteur.
+- 305: LA DONNÉE S'ALIGNE SUR LA LOI (244e — retour du projet aval
+     « le jeu du directeur sportif » sur le 244c, trois griefs, tous
+     fondés). (1) checkRoles plantait sur les quatre rôles sans arbitre
+     (goalkeeper, centre_back, stopper, cover — chez eux un rôle qui ne
+     nuance rien ne pose pas d'arbitre, resoudreRole le remplit) : déjà
+     toléré au 244b, gardé. (2) La bande [0,7 ; 1,3] : le 244b l'avait
+     ÉLARGIE à [0,5 ; 1,4] — c'est la voie qu'ils déconseillent, à
+     raison : « un rôle nuance, il n'écrase pas » mentait. Leur mesure :
+     écraser aux bornes fond DOUZE couples de rôles (tout le bas de
+     l'échelle de frappe sur 0,70 : regista = destroyer = half_back =
+     anchor) ; la RE-ÉCHELLE linéaire axe par axe (tir 0,5-1,4, centre
+     0,75-1,35, passe 0,75-1,4, conduite 0,8-1,3 → 0,7-1,3) garde chaque
+     distinction. Adoptée : la bande est la loi, la table est une
+     donnée, la donnée s'aligne (regista passe 1,4 → 1,3, destroyer tir
+     0,5 → 0,7, mezzala conduite 1,2 → 1,18) ; vérifié sur les 34 :
+     zéro couple fondu, zéro ordre inversé, zéro valeur hors bande ;
+     bande de checkRoles rendue à [0,7 ; 1,3]. La table re-échelonnée
+     est livrée (docs/Retour_Reference_244e_Table_Roles.md) — leur jeu
+     doit la lire ou appliquer la même re-échelle : la table du moteur
+     n'est plus « à la valeur près » la leur sur l'arbitre (les onze
+     axes, si). (3) L'AXE DRIBBLE (rappel 219) : resoudreRole ne le
+     reportait pas — posé sur un rôle, il ressortait undefined alors que
+     skills-sim le lit (role(c).dribble ?? 0,5 : perdu en silence).
+     Reporté (base.dribble ?? 0,5). Leur clause adoptée : checkRoles
+     résout tout le catalogue et borne le RÉSOLU (arbitre, dribble) ;
+     clause 244e au banc (43 rôles résolus, bornes, zéro couple fondu,
+     ordres regista > deep_lying_playmaker en passe et destroyer <
+     half_back < anchor en tir, dribble libre 0,9). Leçon de procédure :
+     l'annexe roles n'avait pas été lancée au 244c ; tout lot qui touche
+     roles.js lance verify-roles (et un plantage n'est pas un vert).
+     Aucun rôle posé par défaut : empreintes 94e2de4e74fb69f8 /
+     d9ed4cfdf0e94e1d = le 244b au bit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
