@@ -276,3 +276,44 @@ export function boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }) {
   }
 }
 import { hyp } from './hyp.js';
+
+// LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (242, cfg.contreZones — précepte 4.2, Elsner : « zone centrale + deux zones
+// annexes occupées à chaque contre ; l'excentré en position intermédiaire, jamais deuxième latéral »). Mesuré avant (6 × 300 s) :
+// 27 contres, les trois zones occupées à l'arrivée 3,7 %, une seule 63 %, aucune 22 % — en contre les pointes couraient où
+// l'appel les menait. En moment TRANSITION (regain < moments.win) et ballon lancé vers l'avant, à cadence s : les trois
+// attaquants les plus avancés (hors porteur, hors course) se répartissent — l'annexe LOINTAINE au plus fort rôle appel (la
+// course dans le dos), l'annexe CÔTÉ BALLON au corps de ce côté, le CENTRE au troisième ; cibles à ballon + avance m (sous la
+// Loi 11, match-sim), z 0 / ± annexe m (intermédiaire : 14, jamais 25) ; amplitude × axe transition (à 0 : rien, à 0,5 : plein).
+// Clé absente : aucune élection, l'hier au bit.
+export function contreZonesStep(st, cfg, { tac, axe, role }) {
+  const CZ = st.full && cfg.contreZones ? cfg.contreZones : null; if (!CZ || st.restart || st.possession.team < 0) return;
+  const atk = st.possession.team, Z = (st._contreZones ??= [null, null]);
+  const en = st._possTeam === atk && st.t - (st._possChangeAt ?? -99) < (CZ.win ?? 10);   // la fenêtre du CONTRE (win s) — l'arrivée demande 6-10 s (les coéquipiers partent 30-40 m derrière) ; à moments.win (5 s) les zones se vidaient juste quand le ballon arrivait
+  if (!en) { Z[atk] = null; return; }
+  if (Z[atk] && st.t - Z[atk].t < (CZ.cadence ?? 0.6)) return;
+  const pitch = st.pitch, g = pitch.attackGoal(atk), sg = Math.sign(g.x || 1);
+  const lance = st.ball.v[0] * sg > 1 || st.ball.p[0] * sg > 0;   // le ballon lancé vers l'avant (ou déjà dans la moitié adverse)
+  if (!lance) { Z[atk] = { t: st.t, ids: [] }; return; }
+  const k = Math.min(1, axe(tac(st, atk).transition, 0, 2)); if (k <= 0) { Z[atk] = { t: st.t, ids: [] }; return; }
+  const cands = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0 && !q._sub && q.id !== st.possession.carrier)   // les coureurs entrent dans l'élection (ils occupent leur zone et gardent leur course — match-sim)
+    .sort((a, b) => b.p[0] * sg - a.p[0] * sg).slice(0, 3);
+  if (cands.length < 3) { Z[atk] = { t: st.t, ids: [] }; return; }
+  const zs = Math.sign(st.ball.p[2] || 1);
+  // l'annexe lointaine au plus fort appel ; l'annexe côté ballon au corps de ce côté parmi les deux autres ; le centre au dernier
+  const byAppel = [...cands].sort((a, b) => (role(b).appel ?? 0.5) - (role(a).appel ?? 0.5));
+  const loin = byAppel[0]; const reste = cands.filter((q) => q !== loin).sort((a, b) => b.p[2] * zs - a.p[2] * zs);
+  const pres = reste[0], centre = reste[1];
+  Z[atk] = { t: st.t, k, zs, ids: [centre.id, pres.id, loin.id] };
+  // …ET LE CONTRE EST UN SPRINT : l'élu qui n'est pas déjà en burst prend la vitesse de sprint (movement : top × 1,28) le temps de la cadence — ils partent 30-40 m derrière, un posté qui marche n'arrive pas (médiane 1 corps arrivé mesurée)
+  for (const q of [centre, pres, loin]) if (!((q._pace?.until ?? -1) > st.t)) q._pace = { until: st.t + (CZ.cadence ?? 0.6) + 0.3, kind: 'contre-zone', next: q._pace?.next ?? st.t + 6 };
+}
+/** La cible de zone d'un attaquant élu (242) — [x, z] ou null. */
+export function contreZoneDe(st, cfg, p, atk) {
+  const Z = st._contreZones?.[atk]; if (!Z || !Z.ids?.length) return null;
+  const i = Z.ids.indexOf(p.id); if (i < 0) return null;
+  const CZ = cfg.contreZones, pitch = st.pitch, g = pitch.attackGoal(atk), sg = Math.sign(g.x || 1);
+  const zc = i === 0 ? 0 : i === 1 ? Z.zs * (CZ.annexe ?? 14) : -Z.zs * (CZ.annexe ?? 14);
+  // les zones sont FIXES, à l'entrée de la surface (prof m de la ligne de but) — l'élu y COURT pendant que le ballon est lancé ; « ballon + 8 » a été essayé : il gardait les élus près du porteur, plus d'option profonde, le contre mourait (6 → 2 contres / 30 min)
+  const xz = g.x - sg * (CZ.prof ?? 20), xb = st.ball.p[0] + sg * (CZ.avance ?? 6);
+  return [xz * sg > xb * sg ? xz : xb, zc, Z.k];
+}

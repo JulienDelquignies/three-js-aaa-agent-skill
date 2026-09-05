@@ -1,16 +1,12 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
-import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js';
-import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js';
-import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
+import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue } from './duel.js';
-import { makeProfile } from './attributes.js';
-import { startGesture, busy, winding } from './gesture.js';
-import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee } from './phases.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue } from './duel.js'; import { makeProfile } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
+import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
@@ -816,6 +812,8 @@ function assignMatchJobs(st, cfg) {
           else if (st.full && cfg.epaule && (p._runT ?? -1) <= st.t) { const marge = (cfg.epaule.marge ?? 2) * axe(R.profondeur, cfg.epaule.profond ?? 3, cfg.epaule.haut ?? 0.3); const sur = off.adv - marge; if (tx * off.sgn < sur) tx = off.sgn * Math.max(0, sur); }
         }
         // LE DONNE-ET-VA COURT À SA CIBLE (218, cfg.unDeux.course — doc strike-sim) ; le hors-jeu la borne comme l'appel
+        const cz = st.full && cfg.contreZones && (p._runT ?? -1) <= st.t ? contreZoneDe(st, cfg, p, atk) : null;   // (242) LES TROIS ZONES D'ENTRÉE EN CONTRE : l'élu prend sa zone, sous la Loi 11, à l'amplitude de l'axe transition (le coureur garde sa course)
+        if (cz) { const xz = off ? off.sgn * Math.min(cz[0] * off.sgn, off.adv - 0.8) : cz[0]; tx += (xz - tx) * cz[2]; tz += (cz[1] - tz) * cz[2]; }
         if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) { tx = p._pace.cible[0]; tz = p._pace.cible[1]; if (off && tx * off.sgn > off.adv - 0.15) tx = off.sgn * Math.max(0, off.adv - 0.15); }
         // LE DÉDOUBLEMENT (lot 88, roles.deborde — la course de rôle du couloir) : doc roles.js
         const ov = deborde(st, p, carrier, pitch, atk, cfg, axe);
@@ -884,6 +882,8 @@ function assignMatchJobs(st, cfg) {
       }
       // (207) le clamp du poseur — l'appui d'un porteur à la craie visait DEHORS ; l'intérieur au bit
       p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, p._slotT[0])), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._slotT[1]))];
+      const czS = st.full && cfg.contreZones && (p._runT ?? -1) <= st.t ? contreZoneDe(st, cfg, p, atk) : null;   // (242) le soutien élu à une zone d'entrée la prend aussi (le comité au ballon est souvent le plus avancé)
+      if (czS) { const offZ = cfg.offside ? offsideLine(st, atk) : null; const xz = offZ ? offZ.sgn * Math.min(czS[0] * offZ.sgn, offZ.adv - 0.8) : czS[0]; p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, p.target[0] + (xz - p.target[0]) * czS[2])), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p.target[2] + (czS[1] - p.target[2]) * czS[2]))]; }
       if (st.full && cfg.unDeux?.course && p._pace?.kind === 'un-deux' && p._pace.until > st.t && p._pace.cible) {   // …ET LE DONNE-ET-VA DU COMITÉ COURT À SA CIBLE (218 — le lanceur est un SLOTTER : sa consigne était son slot)
         let cx = p._pace.cible[0]; const offU = cfg.offside ? offsideLine(st, atk) : null; if (offU && cx * offU.sgn > offU.adv - 0.15) cx = offU.sgn * Math.max(0, offU.adv - 0.15);
         p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, cx)), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, p._pace.cible[1]))];
@@ -1117,7 +1117,7 @@ function assignMatchJobs(st, cfg) {
   intercepteurVol(st, cfg, { busy, predictPath, interceptPoint, defenders, atk });
   lossReactStep(st, cfg, { busy });   // le dépossédé se retourne (déporté au 229, verbatim)
   contrePressStep(st, cfg, { busy, tac, axe, role, d2, pitch });   // LE CONTRE-PRESSING CHRONOMÉTRÉ (229, cfg.contrePress) : la meute des n plus proches ferme les sorties pendant dur × pressing × work, puis recul-frein
-  boxCrashStep(st, cfg, { busy, tac, axe, role, d2 });  // 123/182b : la géométrie du centre remplit la boîte ET les corps ATTAQUENT le vol (phases.js)
+  boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }); contreZonesStep(st, cfg, { tac, axe, role });   // 242 : les trois zones d'entrée en contre (phases.js) ; 123/182b : la géométrie du centre remplit la boîte ET les corps ATTAQUENT le vol (phases.js)
   marquageCentre(st, cfg, { busy, tac, axe, d2 });   // 133 : le vol du centre adverse met des CORPS sur les corps (phases.js)
   accompagneMontee(st, cfg, { tac, axe, role });     // 137 : la montée du porteur DÉCLENCHE ses courses d'accompagnement (phases.js)
 }

@@ -5593,5 +5593,59 @@ if (__bloc()) {
     V.coul3 <= E.coul3 * 0.75 && V.reussite >= E.reussite - 2.5 && V.profond + V.deborde >= (E.profond + E.deborde) * 0.85);
 }
 
+// ---------------------------------------------------------------- lot 242 : LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (Elsner)
+if (__bloc()) {
+  // LA FIXTURE : un regain dans sa moitié (st._possTeam / _possChangeAt), le ballon lancé vers l'avant, trois attaquants devant le
+  // porteur — après une image, l'élection a posé centre / annexe côté ballon / annexe lointaine (le plus fort rôle appel), les cibles
+  // sont aux zones (x = hx − 20 sous la Loi 11, z 0 / ± 14) et les élus sont en burst contre-zone ; transition 0 → rien ; clé absente → rien.
+  const scene = (cfgExtra, tactics) => {
+    const st = makeMatch({ full: true, seed: 5, ...(tactics ? { tactics } : {}) }); const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), hx = st.pitch.hx;
+    for (const p of st.players) if (!p.keeper) { p.p[0] = -sg * 30; p.p[2] = (p.id % 9) * 3 - 12; p.v = [0, 0]; p.act = null; p._runT = -1; p._pace = null; }
+    const [c, a, b, d] = st.players.filter((p) => p.team === 0 && !p.keeper);
+    c.p[0] = -sg * 5; c.p[2] = 4; a.p[0] = sg * 2; a.p[2] = 12; b.p[0] = sg * 1; b.p[2] = -10; d.p[0] = 0; d.p[2] = 1;   // le porteur et trois corps devant
+    for (const p of st.players) if (p.team === 1 && !p.keeper) { p.p[0] = sg * 42; p.p[2] = (p.id % 9) * 4 - 16; }   // la ligne adverse est à 42 m (la Loi 11 ne borne pas les zones à hx − 20 = 32,5)
+    st.ball.restart([c.p[0] + sg * 0.3, 0.11, 4], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1; st._possTeam = 0; st._possChangeAt = st.t - 1;
+    st.ball.release('conduite'); st.ball.strike({ speed: 6, dirYaw: Math.atan2(0, sg), elevation: 0.02, spinAxis: [0, 1, 0], spinRev: 0 });   // lancé vers l'avant
+    const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+    for (let i = 0; i < 2; i++) matchStep(st, 1 / 60, cfg);
+    const Z = st._contreZones?.[0]; const ids = Z?.ids ?? [];
+    const zoneOk = ids.length === 3 && ids.every((id, k) => { const q = st.players[id]; const tz = q.target?.[2] ?? 99; const want = k === 0 ? 0 : k === 1 ? Z.zs * 14 : -Z.zs * 14; return Math.abs(tz - want) < 3 && q.target[0] * sg > hx - 22; });
+    const burst = ids.length === 3 && ids.every((id) => st.players[id]._pace?.kind === 'contre-zone');
+    return { n: ids.length, zoneOk, burst, zs: Z?.zs };
+  };
+  const V = scene({}), T0 = scene({}, [{ transition: 0 }, {}]), A = scene({ contreZones: false });
+  ok(`lot 242 — LES TROIS ZONES au mécanisme (élus ${V.n} = 3, côté ballon zs ${V.zs} = 1 ; cibles aux zones (x > hx − 22, z 0 / ± 14) ${V.zoneOk} ; burst contre-zone ${V.burst} ; transition 0 → ${T0.n} élus (rien) ; clé absente → ${A.n} (l'hier au bit))`,
+    V.n === 3 && V.zs === 1 && V.zoneOk && V.burst && T0.n === 0 && A.n === 0);
+  // LE FLUX (12 × 300 s) : un contre = regain dans sa moitié (x·sg < 5) puis ballon à l'ENTRÉE de la surface (hx − 22) dans les 10 s,
+  // possession gardée ; à l'entrée, les attaquants (hors porteur, x ≥ hx − 28) dans les trois zones (centre |z| ≤ 9, annexes 9-20).
+  // Mesuré : contres arrivés 8 → 17, zéro zone 62 → 29 %, deux zones ou plus 12,5 → 65 %, trois 0 → 18 %, deuxième latéral 0.
+  const flux = (over) => {
+    const cfgF = matchCfg({ shotRange: 20, ...over }); let contres = 0, zero = 0, deuxPlus = 0, larges = 0, profond = 0, deborde = 0, pertes = 0;
+    for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {
+      const st = makeMatch({ full: true, seed }); let regain = null, cur = 0, prev = -1;
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfgF); const t = st.possession?.team ?? -1;
+        if (prev >= 0 && t >= 0 && t !== prev && !st.restart) pertes++; if (t >= 0) prev = t;
+        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (e.type === 'burst' && e.kind === 'appel-profond') profond++; if (e.type === 'burst' && e.kind === 'deborde') deborde++; }
+        if (st._possChangeAt != null && (!regain || regain.at !== st._possChangeAt)) { const gT = st.pitch.attackGoal(st._possTeam ?? 0), sgT = Math.sign(gT.x || 1); regain = { at: st._possChangeAt, team: st._possTeam, done: st.ball.p[0] * sgT >= 5 }; }
+        if (regain && !regain.done && t === regain.team && st.t - regain.at < 10 && !st.restart) {
+          const g = st.pitch.attackGoal(t), sg = Math.sign(g.x || 1), hx = st.pitch.hx;
+          if (st.ball.p[0] * sg >= hx - 22 && st.t - regain.at > 0.5) {
+            regain.done = true; contres++; const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+            const att = st.players.filter((q) => q.team === t && !q.keeper && q !== car && q.p[0] * sg >= hx - 28);
+            const n = (att.some((q) => Math.abs(q.p[2]) <= 9) ? 1 : 0) + (att.some((q) => q.p[2] > 9 && q.p[2] <= 20) ? 1 : 0) + (att.some((q) => q.p[2] < -9 && q.p[2] >= -20) ? 1 : 0);
+            if (n === 0) zero++; if (n >= 2) deuxPlus++; if (att.filter((q) => Math.abs(q.p[2]) > 20).length >= 2) larges++;
+          }
+        } else if (regain && t !== regain.team && t >= 0) regain.done = true;
+      }
+    }
+    return { contres, zero: 100 * zero / Math.max(1, contres), deuxPlus: 100 * deuxPlus / Math.max(1, contres), larges, profond, deborde, pertes };
+  };
+  const V2 = flux({}), E2 = flux({ contreZones: false });
+  ok(`…et le FLUX (12 × 300 s) : contres arrivés à l'entrée ${V2.contres} ≥ sans ${E2.contres} × 1,5 (le contre est un sprint) ; aucune zone occupée ${V2.zero.toFixed(0)} % ≤ sans ${E2.zero.toFixed(0)} − 20 pts ; deux zones ou plus ${V2.deuxPlus.toFixed(0)} % ≥ 40 (sans ${E2.deuxPlus.toFixed(0)}) ; deuxième latéral ${V2.larges} = 0 ; garde 231 combinée ${V2.profond + V2.deborde} ≥ ${E2.profond + E2.deborde} × 0,85 ; pertes ${V2.pertes} ≤ sans ${E2.pertes} × 1,05`,
+    V2.contres >= E2.contres * 1.5 && V2.zero <= E2.zero - 20 && V2.deuxPlus >= 40 && V2.larges === 0 && V2.profond + V2.deborde >= (E2.profond + E2.deborde) * 0.85 && V2.pertes <= E2.pertes * 1.05);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

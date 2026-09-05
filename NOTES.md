@@ -8680,6 +8680,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      intérieurs (les 80 % de demi-espaces), une bascule par match c. 12
      hier (la fixation revit, la volumétrie non), les sorties de balle
      rares, la gradation.
+- 294: LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (242 — précepte 4.2,
+     Elsner : « zone centrale + deux zones annexes occupées à chaque
+     contre ; l'excentré en position intermédiaire, jamais deuxième
+     latéral »). SONDE AVANT : un contre = regain dans sa moitié puis
+     ballon à l'entrée de la surface (hx − 22) dans les 10 s ; sur 12 ×
+     300 s, 8 contres y arrivent (2/match), aucune zone occupée 62 %,
+     deux zones ou plus 12,5 %, trois 0 %, un corps arrivé en médiane,
+     deux « seconds latéraux » sur 27 % des contres (à 30 m) — en contre
+     les pointes couraient où l'appel les menait. LA LOI (cfg.contreZones,
+     phases.js contreZonesStep / contreZoneDe) : en contre (regain < win
+     10 s) et ballon lancé vers l'avant, à cadence 0,6 s, les trois
+     attaquants les plus avancés (hors porteur ; les coureurs entrent
+     dans l'élection et gardent leur course) prennent centre / annexe
+     côté ballon / annexe lointaine (le plus fort rôle appel) ; cibles
+     FIXES à l'entrée de la surface (hx − 20, ou ballon + 6 si plus
+     avancé) sous la Loi 11, z 0 / ± 14 (intermédiaire, jamais 25) ;
+     amplitude × axe transition (0 : rien) ; les élus prennent un burst
+     contre-zone (le sprint : ils partent 30-40 m derrière). ESSAYÉS ET
+     REJETÉS : cibles « ballon + 8 » (les élus restaient près du porteur,
+     plus d'option profonde : 6 → 2 contres), fenêtre moments.win 5 s
+     (les zones se vidaient quand le ballon arrivait), l'élection hors
+     coureurs et l'override des seuls postés (les soutiens élus gardaient
+     leur slot). MESURÉ (12 × 300 s) : contres arrivés à l'entrée 8 → 17
+     (4,3/match), aucune zone 62 → 29 %, deux zones ou plus 12,5 → 65 %,
+     trois 0 → 18 % (l'annexe lointaine 41 %, la proche 65), trois corps
+     arrivés en médiane, second latéral 0 ; courses combinées 413 → 493,
+     pertes 294 → 284. La cible doctrinale « trois zones ≥ 60 % » n'est
+     pas atteinte — l'annexe lointaine est une traversée de 20 m qu'un
+     seul corps fait à temps ; dette nommée avec les buts de contre (1 → 0
+     sur 60 min, un chiffre). Jumeau {contreZones:false} = moteur 241 au
+     bit (6434e6a7aa44317b / 5effe81d30eb6e6b).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

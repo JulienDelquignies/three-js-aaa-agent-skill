@@ -45,6 +45,7 @@ export const MATCH = {
                           // l'approche — l'option profonde meurt sans un geste) ; à portée de duel
                           // l'ombre cède au tacle. false : le press en ligne droite (sabotage nommé).
   moments: { win: 5, vertical: 0.5 },
+  contreZones: { win: 10, prof: 20, avance: 6, annexe: 14, cadence: 0.6 },   // LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (242, st.full — phases.js, précepte 4.2 Elsner) : en contre (regain < win s — l'arrivée demande 6-10 s) et ballon lancé vers l'avant, les trois attaquants les plus avancés (hors porteur, hors course) prennent centre / annexe côté ballon / annexe lointaine (le plus fort rôle appel), cibles FIXES à l'entrée de la surface (prof m de la ligne de but, ou ballon + avance m si le ballon est déjà plus avancé) sous la Loi 11, z 0 / ± annexe m (l'excentré en position intermédiaire, jamais deuxième latéral) ; amplitude × axe transition (0 : rien, 0,5 : plein). Absente : les pointes courent où l'appel les mène (trois zones occupées 3,7 % des contres)
                           // LES QUATRE MOMENTS DU JEU (phases.js — le socle de la tactique) ;
                           // + vertical (lot 111) : pendant la fenêtre win du regain, la passe
                           // qui AVANCE (> 8 m vers le but) pèse au barème — le désordre
