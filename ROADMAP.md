@@ -91,6 +91,36 @@
 - Le greedy vif d'assignation des slots est un optimum local prouvé (lot 85) — ne pas retenter
   de stabilisation géométrique par frame.
 
+## LES ANIMATIONS 11C11 (chantier parallèle — branche claude/11c11-3d-animations, notes 294-295)
+- LIVRÉ (lot A1) : les FRAPPES GÉNÉRÉES — motion-rig (profil du rig, conjugaison, sonde des
+  signes), motion-strike (7 espèces, style par joueur, contrat), motion-cast (casting par joueur),
+  contact-sheet.mjs (la planche-contact), verify-motion.mjs (81 clauses), reference/51.
+- LIVRÉ (lot A3, note 295) : VINGT espèces générées — les 5 frappes restantes (extérieur,
+  déviation, pointu, pivot, talonnade), motion-control (6 contrôles dont poitrine, cuisse, semelle
+  et tacle debout), motion-aerial (tête sautée balistique, tête debout), le registre GENERATORS,
+  la planche-contact générique, verify-motion à 165 clauses (800 gestes stylés sous contrat).
+- LIVRÉ (lot A4, note 296) : les GESTES TECHNIQUES générés (motion-skill, 34 espèces au total) —
+  râteau, semelle, roulette (la semelle sur le ballon), passements 1-6 (le cercle par-dessus),
+  crochets court / franc / chaloupé (la coupe qui balaie), croqueta (deux touches, deux appuis),
+  petit pont (la pichenette) ; l'IK aux deux bouts en joint space ; verify-motion 188 clauses
+  (1 360 gestes stylés), verify-gestes en FK.
+- LIVRÉ (lot A5, note 297) : le SOL — le tacle glissé généré (motion-ground : chute sur la hanche,
+  jambe allongée au ballon, pose couchée à 55 % pour le gel de la scène, relevé), le plan de flexion
+  de l'IK rendu robuste (tibia × cuisse) ; la retournée attend un déclencheur sim.
+- LIVRÉ (lot A6, note 298) : les MAINS DU GARDIEN — plongeons (aérien, bas, une main), prise
+  aérienne, parades des pieds et du buste générés (motion-keeper : impulsion, détente en root
+  motion, gants au bout, tapis, relevé sur place en une chaîne IK continue). Tout le football du
+  répertoire est généré (41 espèces) ; restent la retournée (sans déclencheur) et les gestes sociaux.
+- SUIVANT, dans l'ordre : (A2) le monde composé — re-caler les poids d'arrivée pour que la vitesse
+  du pied au contact tienne EN JEU (audit-membres : 5-6 m/s composé contre 11 au clip) ; (A6 bis)
+  les gestes sociaux et la retournée quand la sim la déclenchera — chaque espèce du générateur, jamais
+  un clip de plus à la main ; (A4) la
+  locomotion : inclinaison à l'accélération, balancier des bras selon la vitesse, décélération,
+  pas chassés, course arrière (générés par-dessus le Soldier) ; (A5) la stance dérivée et les
+  bandes de la sim (la géométrie corps-ballon est une entrée du moteur : à trancher avec le
+  chantier moteur — la table STANCES est restée celle du moteur, la stance des clips vit dans
+  STANCES_CLIP, l'écart est porté par le warp de frappe ; note 300).
+
 ## LE PLAN (validé utilisateur) — dans l'ordre
 1. ~~**LE GARDIEN COMPLET (lot 91)**~~ — **LIVRÉ** (note 133) : tenu aux gants (ball.hold +
    heldBall + _armsToBall), prix réel du plongeon (keeperRise, agilité getupF, battu paie,

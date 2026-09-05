@@ -260,7 +260,7 @@ temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3
   recycler le jeu — on les remesure alors, allumées, contre le garde-fou.
 - Taille : L. Fichiers : `match-sim.js` (slots), nouveau `couloirs.js`, `attributes.js`.
 
-**Lot 242 — Les trois zones d'entrée de surface en contre (précepte 4.2) — SCELLÉ (NOTES 294).** Élection des trois zones en contre, cibles fixes à l'entrée, sprint : contres arrivés 8 → 17 / 60 min, aucune zone 62 → 29 %, deux zones ou plus 12,5 → 65 %. Dette : les trois zones à 18 % (cible 60), l'annexe lointaine.
+**Lot 242 — Les trois zones d'entrée de surface en contre (précepte 4.2) — SCELLÉ (NOTES 300).** Élection des trois zones en contre, cibles fixes à l'entrée, sprint : contres arrivés 8 → 17 / 60 min, aucune zone 62 → 29 %, deux zones ou plus 12,5 → 65 %. Dette : les trois zones à 18 % (cible 60), l'annexe lointaine.
 - Doctrine : Elsner — zone centrale + deux zones annexes occupées à chaque contre ; l'excentré en
   position intermédiaire, jamais deuxième latéral.
 - Nous : boxCrash (123) sur les centres seulement ; en contre les pointes courent où l'appel les

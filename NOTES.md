@@ -8652,6 +8652,316 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ligne a avalé salidaStep — le jumeau l'a dit sur la graine 3).
      Jumeau {couloirs:false, offre:false} = moteur 240 au bit
      (96438266e0387b08 / 061fc1b4491ef7ab).
+- 294: LES FRAPPES GÉNÉRÉES (lot A1 — animations 11c11, branche
+     claude/11c11-3d-animations ; retour utilisateur : « beaucoup de choses
+     ne sont pas belles… si tu crées les animations toi-même ce sera plus
+     conforme… différents types de geste pour le même geste, quelques
+     détails par joueur »). LE DIAGNOSTIC MESURÉ : 3 clips capturés (idle,
+     marche, course du Soldier) et 47 gestes en poses clés écrites à la
+     main — six clés pour une frappe, 92° de cuisse en 90 ms en ligne
+     droite, aucune clé qui sache où est le ballon ni le poids ; en jeu,
+     passe rapide 50 ms avant contact = corps droit, aucun armé (capture).
+     LA LOI : un geste est une FONCTION du temps et de paramètres, écrite
+     en ARTICULATIONS anatomiques (repère personnage) et conjuguée dans
+     le bind de l'os — q_spec = bindQ⁻¹ ⊗ R ⊗ bindQ, d'où W = R_parent ⊗
+     R ⊗ bindQ : l'axe du genou est emporté par la cuisse sans que
+     personne ne sache quel axe local c'est (motion-rig, sonde des signes
+     sur 17 articulations au chargement, n'importe quel rig). Les courbes
+     sont des RAMPES C¹ (intégrale d'une cloche asymétrique) : le pic de
+     vitesse de chaque articulation est un paramètre placé — séquence
+     proximo-distale (cuisse ~65 ms avant, genou SUR le contact, plafond
+     30 rad/s tenu en allongeant la fenêtre, jamais en accélérant),
+     bassin assis derrière l'appui puis passé au-dessus (canal hanches),
+     appui par IK deux os, tronc/bras par la physique, tête sur le
+     ballon, dégagement du sol mesuré en FK (motion-strike). SEPT
+     ESPÈCES (frappe, puissante, enroulée, passe, passe rapide, feinte de
+     passe, feinte de frappe — durées et contacts de la table : la sim ne
+     voit rien changer) + un STYLE par joueur (15 paramètres bornés
+     tirés de l'identité ; motion-cast accroche profil du rig vivant +
+     style + gestes générés à la demande au joueur, 3 lignes dans la
+     scène au plafond de volumétrie). MESURÉ (verify-motion, 81
+     clauses) : frappe 14,5 m/s au contact, genou 1 590°/s ; puissante
+     15,4 / 1 630 ; passe 11,4 ; passe rapide 10,3 ; miroir exact à 4 mm ;
+     40 graines × 7 espèces sous contrat et sous checkClip ; la frappe
+     authorée d'hier refusée sur 5 clauses. L'INSTRUMENT : la
+     planche-contact (contact-sheet.mjs, 3 caméras × 6 phases, avant /
+     après, le même œil pour l'agent et l'humain). CORRIGÉ EN CHEMIN :
+     verify-animkit (silhouette) REMPLAÇAIT le repos par le spec (faux
+     de 51 cm sur des angles d'articulation) — compose rest ⊗ q_spec ;
+     verify-swing ignorait le canal hanches ; les feintes sont générées
+     par la loi de la frappe qu'elles imitent ; un export nommé `then`
+     fait d'un module un thenable (import()) — `chain`. LA STANCE :
+     dérivée des clips générés, mesurée depuis l'ORIGINE du modèle (la
+     convention de anchorFor — un os des hanches qui recule de 8 cm ne
+     dit pas où poser le corps) : frappe {0,36 m, 24°} contre {0,41, 11°}
+     hier, passe {0,45, 18°} contre {0,58, 11°} — le contact DEVANT
+     l'appui, le genou encore fléchi ; une première table plus près du
+     corps ({0,26, 43°}) était plus vraie encore et cassait 3 bandes de
+     sim : la géométrie corps-ballon est une ENTRÉE du moteur. Mesuré :
+     rondo 40/40 ; match 82/84 (conversion 0/18 sur fixture, excursion
+     serrée 2,02 contre 2,01 — deux bornes de bande, verts au bit avec
+     la table d'hier) — à trancher avec le chantier moteur.
+     LE MONDE COMPOSÉ (audit-membres, build final) : 16/16, pied→point
+     de frappe 0,02-0,06 m (0,42 avant ce lot), vitesse du pied composée
+     5,9-8,3 m/s sur passe rapide en course (clip seul 10,3).
+     DETTES NOMMÉES : le poids des jambes à l'arrivée divise encore la
+     vitesse du pied composée par ~1,5 — le re-calage est le prochain
+     chantier ; restent
+     authorés extérieur, déviation, pointu, pivot, talonnade, contrôles,
+     tacles, tête, plongeons (chacun une espèce de plus du générateur) ;
+     la locomotion attend sa couche d'inclinaison et de balancier.
+- 295: VINGT GESTES GÉNÉRÉS (lot A3 — « tu peux faire le même travail
+     pour d'autres gestes ? »). La même loi que la note 294 (articulations
+     anatomiques conjuguées dans le bind, rampes C¹ à pics placés, appui par
+     IK, style par joueur, emitSpec) étendue à trois familles, un REGISTRE
+     (motion-cast.GENERATORS : espèce → famille, generate, check) et
+     animkit-data qui génère les MOVES à l'import (les specs authorées
+     restent lisibles dans AUTHORED). LES FRAPPES (motion-strike, 12
+     espèces) : extérieur (pied inversé, cheville rentrée, hanche en
+     rotation interne — une touche : son retour de jambe n'est pas une
+     frappe, le pic se cherche sur le swing), déviation (fouetté court,
+     direction libre, pic tôt), pointe (30° vers le sol, le genou fait
+     tout), pivot (le corps tourne de 34° sur l'appui pendant l'armé,
+     hanche en abduction), talonnade (la jambe part DEVANT puis fouette en
+     ARRIÈRE, pointe relevée dès t=0, tête qui ne regarde pas, lacet du
+     bassin < 6°). LES CONTRÔLES (motion-control, 6 espèces) : trois
+     temps — la jambe VA AU DEVANT (reach : hanche, genou, surface
+     orientée : intérieur tourné, extérieur éversé, semelle relevée de
+     22°), AMORTIT (cushion : dès le contact elle recule et se replie
+     16-25 % de la durée — c'est le retrait qui absorbe, la surface
+     s'ouvre après), REVIENT (settle, pose finale = initiale) ;
+     cuisse à 82° genou à hauteur de hanche buste en arrière ; poitrine
+     cambrée tête en arrière bassin −6 cm deux pieds plantés (tenue
+     modérée : la sim y renvoie 8 contrôles sur 41 sans technique nommée) ;
+     tacle debout = FENTE (bassin −11 cm et +5 cm devant, buste 24° en
+     avant, jambe tendue au ballon). LA TÊTE (motion-aerial) : le corps
+     PLIE (−14 cm, genoux ~48°), le bassin suit une PARABOLE (apex +38 cm
+     au contact), les jambes en IK sur des cibles qui montent et traînent,
+     replantées à l'atterrissage ; le coup S'ARME en montant (buste cambré,
+     cou en extension, bras au-dessus de l'horizontale) et FRAPPE à l'apex
+     (Head ≥ 18° — c'est le cou qui joue, pas le saut) ; tête debout = le
+     fouetté seul, la locomotion garde les jambes. MESURÉ (verify-motion,
+     165 clauses) : enroulée 14,3 m/s, extérieur 9,5, déviation 9,5,
+     pointe 12, pivot 9, talon 7,9 vers l'arrière ; 40 graines × 20
+     espèces = 800 gestes sous contrat ET sous checkClip ; amplitudes
+     bakées = résolues à ±0,03 ; miroir ≤ 1 cm ; sabotages nommés (contrôle
+     statue, tête plate, talonnade qui part devant, appui qui glisse, main
+     au ciel). LA STANCE re-dérivée (depuis l'origine) : enroulée {0,27 m,
+     42°}, pointe {0,48, 16°}, extérieur {0,58, 1°}, pivot {0,50, 64°},
+     déviation {0,32, 35°}, talonnade {0,34, 163°} — rondo 40/40, match
+     83/84 (la clause de RÉGIME : excursion serrée 2,03 contre 2,02, la
+     même frontière de 1 cm qu'au lot A1 — à trancher avec le chantier
+     moteur). CORRIGÉ EN CHEMIN : la clé de contact à 3 ms d'une clé de
+     grille faisait lire 30 rad/s à l'IK (elle REMPLACE la grille à moins
+     de 5 ms) ; le portrait d'un contrôle lit l'échantillon le plus proche
+     du contact (une grille à 120 Hz ne tombe pas sur 0,20 s) ; la hausse
+     du corps pour dégager la pointe est bornée par le jeu de l'affaissement
+     (elle faisait décoller l'appui) ; le plafond 30 rad/s du genou tenu à
+     la construction (fenêtre allongée, kneeTop ≤ 122) ; les feintes
+     portent l'armé des gestes re-bakés (verify-gestes 60/60). LA
+     PLANCHE-CONTACT est générique (--move <espèce>, ballon au pied pour un
+     contrôle, en l'air pour une tête, caméras haussées) : avant/après
+     rendus pour contrôle intérieur, tête, talonnade, tacle debout, cuisse,
+     pivot, pointe, tête debout, extérieur. EN JEU (match11, seed 7) : un
+     contrôle intérieur généré capturé sous 3 caméras (pied tourné vers le
+     ballon, tête sur le ballon, bras d'équilibre), une talonnade. LE MONDE
+     COMPOSÉ (audit-membres) : 15/16 (16/16 au lot A1, sur d'autres
+     épisodes) — l'épisode rouge est une passe rapide « posée » où l'appui
+     est à 43 cm du sol à l'armé, 20 au contact, et le pied frappeur à
+     0,6 m/s : le corps composé n'a PAS joué la passe (les jambes restées à
+     la locomotion — poids d'arrivée ou clip lancé au contact), le clip
+     seul est sous contrat. C'est la dette A2 qui se montre sur un épisode
+     de plus, à instrumenter (l'audit doit dire le poids des jambes et
+     l'offset du clip à l'instant du contact). Les deux autres épisodes :
+     pied→point de frappe 0,09-0,16 m, vitesse composée 7,9-8,3 m/s.
+     DETTES : A2 (poids d'arrivée), les espèces au sol et aux mains (tacle
+     glissé, râteaux, semelle, plongeons, relevés), la locomotion (A4).
+- 296: LES GESTES TECHNIQUES GÉNÉRÉS (lot A4 — « continue avec les mêmes
+     méthodes »). Un dribble n'est pas un fouet : c'est un CHEMIN DU PIED
+     autour d'un ballon qui ne part pas (intent carry, le lacet à la sim —
+     loi 12). motion-skill écrit la courbe du pied libre dans le repère
+     personnage et l'IK deux os (emitSpec accepte { p, foot, pole } :
+     orientation ABSOLUE du pied, plan du genou) en déduit cuisse et tibia ;
+     appui planté, tronc et bras vendent le geste, bassin qui s'abaisse ;
+     même style par joueur, même sortie animkit, registre GENERATORS (34
+     espèces). TROIS VÉRITÉS DE L'IK payées en chemin : (1) près de
+     l'extension la dérivée genou/cheville est infinie — une cheville en
+     ligne droite fait claquer le genou (38 rad/s sur la roulette, 0,1 s de
+     contact) : approches et retours EN JOINT SPACE (la pose de contact
+     résolue une fois, la jambe y va par la fraction q^a — solveLeg /
+     applyLeg), le petit pont tout entier en joint space (il passe par
+     l'extension complète, sa cible posée à 99,9 % de la jambe depuis la
+     hanche de l'instant, quel que soit le style) ; (2) un pied PLANTÉ qui
+     part n'est pas au repos (le bassin est descendu) : la croqueta
+     interpole entre la solution plantée du moment et la cible
+     (applyLegBetween) ; (3) une cible hors de portée SATURE l'IK sans le
+     dire (la plante du passement à 0,90 m d'une hanche à 0,89 : jambe
+     tendue, pied en l'air) — chaque point est atteignable avec le bassin
+     de l'instant. LES ESPÈCES : râteau (semelle SUR le ballon — cheville
+     29 cm, 10 cm du centre, pointe descendue — puis tirée sous le corps
+     jusqu'à z=+4 cm), arrêt semelle (tenue à 0 cm pendant 0,38 s, la tête
+     se lève 14° → −5°), roulette (la pointe coiffe le ballon en 0,1 s,
+     genou 75°, pivot bas −10 cm bras ouverts à 74°), passements 1-6 (le
+     CERCLE hors → devant → dedans (contact) → derrière : 33 cm au plus
+     haut, 50 cm de balayage, jamais à moins de 17 cm du ballon, buste 12°
+     côté feinte ; les tours répètent le cercle os pour os — tout ce qui
+     bouge pendant un tour n'est fonction que de l'instant du tour, la
+     clause de verify-gestes « clé 0,45 du double = clé 0,15 du simple »
+     tient au bit), crochet / court / chaloupé (l'intérieur balaie À
+     TRAVERS le ballon, pic de vitesse SUR le contact — ramp vaut
+     (tp−t0)/(t1−t0) en tp, la fin du balayage se choisit pour que ce soit
+     la fraction du chemin au ballon — 3,4 / 3,7 / 5,9 m/s, croise la
+     médiane, s'abaisse ; le chaloupé ment d'abord : épaules 16° à droite,
+     bassin +6 cm), croqueta (balaie 26 cm à gauche, pousse 23 cm devant,
+     deux appuis), petit pont (genou 54° → 2°, 3,5 m/s, sans clé de bras).
+     MESURÉ : verify-motion 188 clauses, 40 graines × 34 espèces = 1 360
+     gestes sous contrat ET sous checkClip ; sabotages : le râteau authoré
+     (5 clauses — l'appui glissait de 5,6 cm, coude verrouillé 61 % du
+     temps), un passement dont le corps descend de 12 cm (la jambe frôle
+     le ballon). verify-gestes RÉÉCRIT en FK (épaules, pieds, mains, par
+     instant) : les clauses lisaient une clé par INDEX (keys[2]) et des
+     conventions d'Euler authorées (« abduction = z ≤ −20 », « bras ouverts
+     = LeftArm z ≥ 40 ») fausses sur des articulations conjuguées — et
+     l'une contredisait son propre commentaire (le chaloupé « ment du côté
+     où il ne va pas » exigeait un lacet vers la coupe). rondo 40/40,
+     dribble 19/19, slide 10/10, animkit 119/119, swing 115/115,
+     audit-membres 15/16 (les mêmes trois épisodes de passe rapide qu'au
+     lot A3 — l'audit ne capture pas les gestes techniques : à étendre).
+     EN JEU (match11, seed 7) : un râteau capturé la semelle sur le ballon
+     sous pression, un passement de jambes la jambe en l'air par-dessus le
+     ballon (poids des jambes 1,0 : le geste possède le corps, ownsBody).
+     DETTES : le corps composé (A2) ; le sol (tacle glissé, retournée — A5)
+     et les mains du gardien (A6) ; les gestes sociaux restent authorés.
+- 297: LE TACLE GLISSÉ GÉNÉRÉ (lot A5 — le sol). Quatre temps que la scène
+     et la sim exploitent tels quels : LANCEMENT (une foulée, corps bas et
+     penché), CHUTE SUR LE CÔTÉ (bassin à 19 cm, roulé sur la hanche gauche
+     — épaules 56° —, jambe droite allongée au ras du sol vers le ballon :
+     93 cm devant au contact, pointe relevée ; la gauche repliée dessous par
+     IK, main gauche au sol, bras droit en balancier, tête sur le ballon),
+     POSE COUCHÉE à 55 % (la scène y gèle le clip tant que down > 0), RELEVÉ
+     sur les 30 derniers % (rejoué quand la sim relève ; debout à la fin).
+     Le corps est TRANSPORTÉ par la sim (movement.js : la glissade porte
+     2,5-3 m) : le clip ne porte qu'un root motion de 30 cm devant — l'authoré
+     en portait 1,2 m PAR-DESSUS le transport. BUG DE L'IK trouvé en chemin :
+     la normale du plan de la jambe (legIK) était cuisse × pole ; quand la
+     cuisse s'aligne sur le pole (jambe très pliée vers lui) elle s'annule
+     et la cuisse VRILLE de 177° sur son axe en une image, positions FK
+     inchangées — invisible à tout contrat de position, attrapé par
+     checkClip (184 rad/s). Désormais tibia × cuisse (le plan RÉEL de la
+     flexion, signe cohérent avec le pole), jambe tendue : (hanche→cheville)
+     × pole. Les 34 autres espèces re-vérifiées sous la nouvelle loi. La
+     retournée n'est PAS générée : aucune loi de la sim ne la déclenche
+     (verify-animkit la lit encore authorée) — une espèce pour le jour où le
+     moteur la jouera. MESURÉ : verify-motion 191 clauses (40 × 35 = 1 400
+     gestes) ; sabotage : le tacle authoré refusé. DETTE : la scène gèle le
+     clip à 55 % et relâche au relevé sim — la queue du tacle (0,76 → 1) ne se
+     joue que si la sim n'a pas déjà remis le corps en course ; l'audit des
+     membres ne capture pas encore le tacle (« le tacle aura SES clauses »).
+- 298: LES MAINS DU GARDIEN GÉNÉRÉES (lot A6). Plongeon aérien, bas, à une
+     main, prise aérienne, parade des pieds, blocage du buste — motion-keeper,
+     même machine. Un plongeon a cinq temps que la scène et la sim exploitent
+     tels quels : IMPULSION (le corps plie), DÉTENTE latérale en root motion
+     (bassin à 1,35 m de côté et +28 cm au contact — 1,15 m / −50 cm pour le
+     bas, 1,5 m à une main —, le corps roulé à 78°, les bras étirés le long
+     de l'axe du corps : gants à 0,95-0,97 m du bassin), CHUTE (tapis à −68
+     cm, roulé à 96°), SOL (tenu jusqu'à `rise`, que le clip déclare : la
+     scène y gèle tant que la sim garde le corps au sol, gk.rise), RELEVÉ SUR
+     PLACE (le bassin garde son décalage : la sim a transporté l'origine).
+     TROIS LOIS apprises : (1) checkClip borne le bassin à 6,5 m/s entre clés
+     — 1,35 m en 0,3 s à pic de cosinus en ferait 9 : le voyage latéral
+     COMMENCE pendant l'impulsion (le gardien charge déjà de côté) ; (2) le
+     tapis et le relevé sont UNE chaîne IK continue — les pieds vont de leur
+     place couchée à leur place debout au ras du sol, les genoux se replient
+     sous le corps d'eux-mêmes ; un pole de genou « en haut » devient
+     parallèle à la jambe quand le pied passe sous la hanche et la cuisse
+     VRILLE (108 rad/s) : le pole est DEVANT, l'axe que le roulis ne change
+     pas ; (3) le plongeon bas n'a pas de vol : les pieds RASENT le sol
+     (cibles IK qui glissent vers la place couchée, bornées à 93 % de la
+     jambe — une cible hors de portée tend la jambe d'un coup). La prise
+     aérienne : +55 cm, mains 43 cm au-dessus de la tête AVANT le contact,
+     retombée sur ses appuis (replantés là où le corps est, décalé de 0,72).
+     Parades : la jambe droite claque latérale tendue (pied à 0,62 m,
+     genou 2°), le buste se bombe puis prend (coudes serrés devant, recul
+     de 5 cm). Le miroir d'animkit inverse le root motion (gauche).
+     verify-animkit désigne ses clés de sabotage par l'instant (keys[2],
+     keys[3] d'un clip dense n'étaient plus le tapis ni l'extension).
+     EN JEU, LE BUG QUI DORMAIT : audit-gants rouge — « le corps plonge DU
+     CÔTÉ du lunge » : 16 plongeons sur 16 du mauvais côté, et son sabotage
+     (la convention monde naïve) du bon. Mesuré au FK : l'authoré d'hier
+     plongeait PIEDS DEVANT (tête à −0,54 m du bassin pendant que le root
+     motion allait à +1,35) ; le miroir de la scène (lot 106, « le clip
+     s'étale du côté −X du modèle ») alignait la TÊTE sur le lunge en
+     envoyant le root motion à l'opposé, et le biais des hanches (clip −
+     voyage, signé pour ce clip-là) rattrapait le tout. Le plongeon généré
+     part tête première, root motion et tête du même côté : la scène
+     miroite désormais quand le lunge est du côté −X du modèle, et le biais
+     soustrait le voyage (rendu = clip, qui converge vers la sim). Sonde en
+     jeu (hipsWrite) : le canal hanches EST [droite, haut, avant] du
+     personnage — la convention des générateurs tient. Capturé (seed 3) :
+     un plongeon bas tête première vers le ballon, au ras du sol. DETTE
+     nommée : la prise en l'air — dès que la sim donne le ballon au gardien
+     (tenu), _armsToBall tire les deux mains vers le ballon SIM, posé au
+     corps (à hauteur de hanche) : au sommet du saut les bras redescendent
+     avant le corps ; le ballon rendu devrait vivre dans les gants du clip
+     jusqu'à la retombée (deux poids : ballon-aux-mains dès la prise,
+     bras-au-ballon-sim après la retombée) — Rondo.js est au plafond.
+     AUDIT-GANTS après le miroir corrigé : 12/12 — le bras vit à l'instant
+     de l'arrêt (p50 0,87 m ≤ 1,1 ; 1,2 avant), la prise se ferme (0,14),
+     le corps couché sur les arrêts développés (0,45 m), le côté du lunge
+     16/16, le gardien se relève où il est tombé (0,27 m), le plongeon ne
+     téléporte pas (16 m/s p50, 23 avant). verify-gesture-layer : la clause
+     « la pose EST la clé » exigeait 1e-6° — l'exactitude au bit d'un clip à
+     5 clés ; un clip dense passe par l'arrondi Euler à 0,01° : 1e-3°
+     (rouge depuis A1, invisible parce que hors de la liste des bancs).
+     MESURÉ : 41 espèces générées — TOUT LE FOOTBALL du répertoire —,
+     verify-motion 206 clauses, 40 × 41 = 1 640 gestes sous contrat et sous
+     checkClip ; sabotages : le plongeon authoré, un plongeon bras le long
+     du corps. RESTENT authorés : la retournée (sans déclencheur sim) et les
+     gestes sociaux. DETTES : le monde composé (A2) — le time-warp et le
+     warp des gants de la scène restent ceux d'hier ; audit-gants à relire
+     sur le build ; la locomotion (A4 du plan initial).
+- 299: LA JAMBE ARRIÈRE DU TACLE (retour utilisateur : « le tacle glissé, la
+     jambe arrière est pas terrible ? »). Elle se repliait SOUS le corps, genou
+     devant : un genou à terre, pas une glissade. Deux erreurs de pose :
+     (1) le bassin ROULAIT sur la hanche (68°) au lieu de BASCULER en arrière
+     — un tacleur glisse pieds devant, ASSIS sur la hanche, buste redressé
+     (bascule 46°, roulis 30°, buste redressé de 24° sur le bassin, tête à
+     22 cm derrière le bassin) ; (2) la jambe arrière est celle du HURDLER :
+     cuisse sortie à gauche au ras du sol, tibia replié derrière, pied
+     derrière la fesse — la cible du pied se pose depuis la HANCHE de
+     l'instant (le bassin a avancé de 30 cm et descendu de 70 : depuis
+     l'origine le pied était hors de portée, jambe tendue derrière), le pole
+     du genou sort à gauche et un peu devant. Appris : au-delà de ~50° de
+     bascule, checkClip lit sur cette jambe une extension de hanche hors
+     bornes (Euler x < −40 : une cuisse en abduction de 100° sur un bassin
+     couché n'a pas d'Euler propre) — balayé 144 poses (bascule × roulis ×
+     pole × pied), la plus couchée qui passe est gardée. 41 graines sous
+     contrat et sous checkClip. Nommé : la borne d'Euler de checkClip sur
+     la hanche est une convention debout ; un corps couché mériterait une
+     lecture géométrique (angle cuisse / axe du bassin).
+- 300: LA TABLE DES STANCES RENDUE AU MOTEUR. verify-match11 (1 h de calcul,
+     258 clauses de sim pure) : 258/6 sur le commit d'avant les lots
+     d'animation, 253/11 avec la table des stances re-dérivée des clips
+     générés (A1-A3) — trois clauses qui passaient sont rouges et huit
+     nouvelles (l'engagement qui n'est plus une passe : 3,27 s ; le tir qui
+     ne s'habille plus de son espèce ; la balle qui s'échappe seule ; la
+     passe en profondeur ; les cibles ; la sortie au gardien ; deux flux).
+     La seule entrée de la sim que ces lots touchaient : approach.STANCES,
+     la géométrie corps-ballon (passe 0,58 → 0,44 m, pointu 0,62 → 0,48,
+     extérieur 0,45 → 0,58, déviation 0,27 → 0,32…). Une géométrie « plus
+     vraie » de 5-15 cm déplaçait le coup d'envoi, le choix de l'espèce de
+     tir, la conduite — les 258 clauses sont ACCORDÉES sur la table
+     d'hier. DÉCISION : STANCES redevient celle du moteur (une entrée, pas
+     une mesure) ; la stance DES CLIPS vit dans STANCES_CLIP (mesurée par
+     verify-motion, comparée par verify-swing) ; l'écart entre les deux
+     (8-16 cm) est porté au ballon par le warp de frappe de la scène
+     (pied → ballon, ≤ 0,42 m). Avec la table d'hier : rondo 40/40, match
+     84/84 attendu (la clause de régime à 2,02 revient sous sa borne),
+     verify-approach 24/24, verify-swing 115/115, verify-motion inchangé
+     (ses clauses de stance lisent STANCES_CLIP). Nommé : les 6 rouges
+     restants de verify-match11 (roulette qui traverse, œil de l'urgence,
+     ancre à la craie, cérémonies, une-deux, flux troisième homme) sont
+     ceux du commit de base — le chantier moteur.
      LE SCEAU, SES ROUGES ET LEURS PREUVES : le registre dort pendant la
      fenêtre d'engagement (le soutien du coup d'envoi débordait à 13 m,
      prise → passe 1,0 → 5,7 s — essayés et rejetés avant : la pré-passe
@@ -8680,7 +8990,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      intérieurs (les 80 % de demi-espaces), une bascule par match c. 12
      hier (la fixation revit, la volumétrie non), les sorties de balle
      rares, la gradation.
-- 294: LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (242 — précepte 4.2,
+- 300: LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (242 — précepte 4.2,
      Elsner : « zone centrale + deux zones annexes occupées à chaque
      contre ; l'excentré en position intermédiaire, jamais deuxième
      latéral »). SONDE AVANT : un contre = regain dans sa moitié puis
