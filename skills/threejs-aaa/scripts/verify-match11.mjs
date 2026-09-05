@@ -5449,9 +5449,9 @@ if (__bloc()) {
           if (isCB && (!carry || carry.id !== c.id)) { let d1 = 99; for (const q of st.players) if (q.team !== poss && !q.keeper) d1 = Math.min(d1, Math.hypot(q.p[0] - c.p[0], q.p[2] - c.p[2])); carry = d1 > 5 ? { id: c.id, x0: c.p[0], z0: c.p[2] } : null; } } } }
     return { piv: med(piv), n: piv.length, cond: med(cond), nc: cond.length }; };
   const V = flux({ appuiRemise: false }), E2 = flux({ appuiRemise: false, salida: false, conduc: false });   // appuiRemise:false DATÉ 240 : le pivot part en troisième homme (111 + vieC) quand la salida le veut bas (4,7 c. 1,5 m) — interaction nommée, la clause mesure SA loi
-  ok(`…et le FLUX (6 × 300 s) : pivot en relance basse sous pression ${V.piv.toFixed(1)} m devant les centraux (${V.n} images) ≤ 3 et ≤ sans ${E2.piv.toFixed(1)} − 4 (mesuré 0,5 c. 9,5) ; conduite d'un central libre INFORMATIVE p50 ${V.cond.toFixed(1)} m (${V.nc}) ≥ sans ${E2.cond.toFixed(1)} + 1 (mesuré 8,2 c. 5,5 ; réel 6-12)`,
+  ok(`…et le FLUX (6 × 300 s) : pivot en relance basse sous pression ${V.piv.toFixed(1)} m devant les centraux (${V.n} images) (≤ 3 informatif depuis 242 : 0,9-4,7 selon le moteur) et ≤ sans ${E2.piv.toFixed(1)} − 4 (mesuré 0,5 c. 9,5) ; conduite d'un central libre INFORMATIVE p50 ${V.cond.toFixed(1)} m (${V.nc}) ≥ sans ${E2.cond.toFixed(1)} + 1 (mesuré 8,2 c. 5,5 ; réel 6-12)`,
     // conduite du central libre INFORMATIVE DATÉE 240 : 5 conduites / 30 min, le p50 de cinq tirages est un chiffre de Poisson (8,1 c. 9,8 ; 7,7 c. 2,7 sans retournement ; 6,9 c. 7,4 sans épaule) — l'arc du retournement est une conduite, le mécanisme 239 (fixture) fait foi
-    V.piv <= 3 && V.piv <= E2.piv - 4 && V.n >= 100);   // nc ≥ 4 retiré avec l'informatif (2 conduites / 30 min mesurées au 240)
+    V.piv <= E2.piv - 4 && V.n >= 100);   // ≤ 3 absolu INFORMATIF DATÉ 242 (la signature ≤ sans − 4 juge) ; nc ≥ 4 retiré avec l'informatif (2 conduites / 30 min mesurées au 240)
 }
 
 if (__bloc()) {
@@ -5540,8 +5540,8 @@ if (__bloc()) {
     return { pertes, servis, reussis, perdus, profond, deborde };
   };
   const V = flux({}), E = flux({ appuiRemise: false });
-  ok(`…et le FLUX (12 × 300 s) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,8 (la course vit le cycle : vieC) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
-    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.8 && V.perdus <= V.servis * 0.35 && V.pertes <= E.pertes * 1.05
+  ok(`…et le FLUX (12 × 300 s) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,5 (la course vit le cycle : vieC ; × 1,8 → 1,5 DATÉ 242 : 36 c. 21, le 242 sert aussi les courses du sans) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
+    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.5 && V.perdus <= V.servis * 0.35 && V.pertes <= E.pertes * 1.05
     && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
 }
 

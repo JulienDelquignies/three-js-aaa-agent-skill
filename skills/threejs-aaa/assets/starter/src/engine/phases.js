@@ -295,7 +295,7 @@ export function contreZonesStep(st, cfg, { tac, axe, role }) {
   // LE CONTRE EST UN BALLON QUI FILE : lancé = le ballon (ou le porteur) à ≥ lance m/s vers l'avant ; il MEURT quand le porteur tient plus de tenue s — « vitesse > 1 ou moitié adverse » allumait trois sprints après chaque regain (9 corps à + de 3,5 m/s, 6 421 sauts de cible : la fourmilière)
   const car = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
   const vAv = Math.max(st.ball.v[0] * sg, car ? car.v[0] * sg : 0);
-  const lance = vAv >= (CZ.lance ?? 4) && !(car && st.hold > (CZ.tenue ?? 1));
+  const lance = vAv >= (CZ.lance ?? 4) && !(car && st.hold > (CZ.tenue ?? 1) && car.speed < 3);   // la tenue ne compte que porteur LENT : balle au pied lancé, le contre vit
   if (!lance) { Z[atk] = { t: st.t, ids: [] }; return; }
   const k = Math.min(1, axe(tac(st, atk).transition, 0, 2)); if (k <= 0) { Z[atk] = { t: st.t, ids: [] }; return; }
   const cands = st.players.filter((q) => q.team === atk && !q.keeper && q.down <= 0 && !q._sub && q.id !== st.possession.carrier)   // les coureurs entrent dans l'élection (ils occupent leur zone et gardent leur course — match-sim)
