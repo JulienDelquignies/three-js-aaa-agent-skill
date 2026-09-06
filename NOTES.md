@@ -9161,9 +9161,20 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      porteur) : 0-5° au lâcher. Scène : attente ballonMains (motion-idle, poignets par
      armIK), le ballon dessiné entre les mains (_holdHands), prise basse → ramassage. Banc
      verify-remises 21 clauses (six touches FORCÉES par match — le hasard n'en garantit
-     aucune —, roulé pris sur pièce, six sabotages) ; verify-match11 en cours de re-mesure
-     sur le moteur final (la clause « foulée de frappe vit » a flanché de 0,02 m/s sur une
-     première passe : chaos de trajectoire, pas la remise — voir le rapport du lot). Dettes :
+     aucune —, roulé pris sur pièce, six sabotages) ; suite des 24 bancs verte. VERIFY-MATCH11 :
+     260/6 sur le moteur A9, 266/0 sur main — les six rouges sont des clauses SUR LE FIL
+     (gelé 2,21 pour ≤ 2,19 ; 0 bascule pour ≥ 1 ; chaîne de passements 2 pour ≥ 3 ; 5/9
+     conservés pour ≥ 65 % ; p50 1,50 pour ≥ 1,55 s ; deuxième latéral 2 pour ≤ 1), rien
+     qui touche une remise. CONTRÔLE : main avec UN degré de plus sur l'élévation de
+     l'ancienne touche (0,55 → 0,56, aucune loi changée) donne 262/4 — les mêmes foulée
+     (2,21) et renversement (0), le dosage des passes en profondeur (7/12) et le troisième
+     homme flanchent ; main intact est à l'exact bord (gelé 2,19 ≤ 2,19, 1 bascule pour un
+     minimum de 1, chaîne 3 pour un minimum de 3). Une remise qui dure 0,6-2 s de plus
+     change la trajectoire du match dès la première touche ; les statistiques du monde sans
+     touche sont IDENTIQUES entre A9 et main (2 × 300 s : 192 passes, 213 contrôles, 57
+     pertes, 3887 refus timing — au bit). Dette pour le moteur : ces clauses mesurent au fil
+     du rasoir (marges 0 à 1 événement), elles flancheront à chaque lot qui touche une
+     trajectoire. Dettes :
      le lanceur se tient dans le terrain, pas derrière la ligne ; pas de course d'élan de la
      touche longue ; le roulé n'est observable que forcé (2 prises aux gants en 12 min, deux
      retraits joués au pied) ; dégagement de volée et prise aérienne tenue restent aux clips.

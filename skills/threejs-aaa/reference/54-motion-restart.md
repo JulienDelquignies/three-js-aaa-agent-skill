@@ -96,6 +96,19 @@ plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait. Contra
   main, ce qui n'est jamais tombé en 12 min de jeu sur deux graines (2 prises aux gants, toutes
   deux des retraits joués au pied).
 
+## Le banc du match (verify-match11)
+
+260/6 sur le moteur A9 contre 266/0 sur main. Les six rouges sont des clauses SUR LE FIL
+(gelé 2,21 pour ≤ 2,19 ; 0 bascule pour ≥ 1 ; chaîne de passements 2 pour ≥ 3 ; 5/9 passes en
+profondeur conservées pour ≥ 65 % ; p50 des courses 1,50 pour ≥ 1,55 s ; deuxième latéral 2
+pour ≤ 1), aucune ne mesure une remise. Contrôle : main avec UN degré de plus sur l'élévation de
+l'ancienne touche (0,55 → 0,56 rad, aucune loi changée) donne 262/4 — les mêmes foulée et
+renversement, plus le dosage des passes en profondeur et le troisième homme. Main intact est à
+l'exact bord (gelé 2,19 ≤ 2,19, 1 bascule pour un minimum de 1, chaîne 3 pour un minimum de 3).
+Une remise qui dure 0,6-2 s de plus change la trajectoire du match dès la première touche ; les
+statistiques d'un monde sans touche sont identiques entre A9 et main au bit (2 × 300 s : 192
+passes, 213 contrôles, 57 pertes). Dette pour le moteur : ces clauses mesurent au fil du rasoir.
+
 ## Les dettes nommées
 
 - Le lanceur se tient 0,2-0,8 m DANS le terrain (la sim le pose au point de remise, pas derrière la
