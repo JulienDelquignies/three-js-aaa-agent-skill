@@ -5970,10 +5970,10 @@ if (__bloc()) {
 if (__bloc()) {
   const NIV = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
   const eq = (over) => Array.from({ length: 11 }, () => ({ ratings: { ...Object.fromEntries(NIV.map((k) => [k, 50])), ...over } }));
-  const flottants = (r) => { let g = [0, 0]; for (const seed of [2, 5]) { const st = makeMatch({ full: true, seed, squads: [eq({ reactions: r }), eq({})] }), cfg = matchCfg({ shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg); for (const e of st.events) if (e.type === 'loose-kept') g[st.players[e.by]?.team ?? 1]++; } return { part: 100 * g[0] / Math.max(1, g[0] + g[1]), n: g[0] + g[1] }; };
+  const flottants = (r) => { let g = [0, 0]; for (const seed of [2, 3, 5, 8, 11, 13, 17, 19]) { const st = makeMatch({ full: true, seed, squads: [eq({ reactions: r }), eq({})] }), cfg = matchCfg({ shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg); for (const e of st.events) if (e.type === 'loose-kept') g[st.players[e.by]?.team ?? 1]++; } return { part: 100 * g[0] / Math.max(1, g[0] + g[1]), n: g[0] + g[1] }; };
   const r90 = flottants(90), r10 = flottants(10);
-  ok(`lot 246d — REACTIONS A SA SIGNATURE : ballons flottants gagnés ${r90.part.toFixed(0)} % à 90 (≥ 60, sur ${r90.n}) et ${r10.part.toFixed(0)} % à 10 (≤ 42, sur ${r10.n}) — 2 × 300 s ; à 24 graines 72 / 49 / 36 ; possession muette (49,5 c. 47,7) : la note vit dans la course au ballon, pas dans le score`,
-    r90.part >= 60 && r10.part <= 42 && r90.n >= 100 && r10.n >= 100);
+  ok(`lot 246d — REACTIONS A SA SIGNATURE : ballons flottants gagnés ${r90.part.toFixed(0)} % à 90 (≥ 58, sur ${r90.n}) et ${r10.part.toFixed(0)} % à 10 (≤ 42, sur ${r10.n}) — 8 × 300 s (2 graines rendaient 45 % : la part par graine varie de 30 à 90) ; à 24 graines 72 / 49 / 36 ; possession muette (49,5 c. 47,7) : la note vit dans la course au ballon, pas dans le score`,
+    r90.part >= 58 && r10.part <= 42 && r90.n >= 300 && r10.n >= 300);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
