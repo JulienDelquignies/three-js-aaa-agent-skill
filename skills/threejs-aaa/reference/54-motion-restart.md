@@ -37,7 +37,7 @@ plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait. Contra
 ## La sim (ce qui a changé au moteur, localisé — sous la clé `cfg.remisesMain`)
 
 Le contrat du moteur (retour `docs/Retour_Reference_A9_Remises.md`) : toute clé absente rend le
-moteur d'hier AU BIT. `cfg.remisesMain` (`{ toucheH: 1.8, elev: 0.24, elevLongue: 0.40, face: 0.35,
+moteur d'hier AU BIT. `cfg.remisesMain` (`{ toucheH: 1.8, elev: 0.55, elevLongue: 0.42, face: 0.35,
 patience: 3 }`, allumée dans match-config) gate la touche armée, le ballon porté, la pose du lanceur
 et le roulé du gardien ; `null` = la rentrée instantanée du sol et la relance au pied d'hier — vérifié
 au bit sur 6 graines × 300 s × deux mondes contre le tronc du moteur (mêmes 430 passes, 581 armés,
@@ -57,7 +57,9 @@ au bit sur 6 graines × 300 s × deux mondes contre le tronc du moteur (mêmes 4
 - `strike-sim.throwNow` — appelé par l'horloge du geste au contact (dispatch `rondo-sim`) : le
   ballon quitte les MAINS là où holdMains l'a porté (`release('touche')` puis `strike`, aucune
   écriture de position), balistique honnête (`solvePass` depuis la hauteur réelle du ballon,
-  élévation `elev` 0,24 / `elevLongue` 0,40 pour la touche longue), événement `rentrée` avec
+  élévation `elev` 0,55 / `elevLongue` 0,42 pour la touche longue — la CLOCHE d'hier : tendue à
+  0,24 le jet filait à 17,7 m/s p50 et arrivait en 1,0 s, la possession tenait 5 s ; en cloche
+  13,1 m/s, 2,25 s, 18,8 s, comme hier (2,13 s, 12 s) — le réel lance à 10-15 m/s), événement `rentrée` avec
   `ballY`, `speed`, `face`.
 - `strike-sim.beginPass(…, { mains: true })` : la distribution à la main du gardien prend la
   technique `roule-main` (clip `rouleMain`), sans ancre ni stance, EXEMPTE de la porte 'timing'

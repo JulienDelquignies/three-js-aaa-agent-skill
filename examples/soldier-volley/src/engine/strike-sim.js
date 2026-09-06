@@ -26,8 +26,9 @@ const dW = (st, cfg, k) => (st.full && cfg.amortiSpin !== false ? [-st.ball.w[0]
  * voyage. Elle est morte avec la CAPTURE : le contrôle POSSÈDE le ballon dès le contact et le
  * porté l'amène au pied — le ballon du plan est simplement le ballon réel.)
  */
-/** LA TOUCHE (lot A9, cfg.remisesMain) : le lancer part des MAINS — hauteur du lâcher, trajectoire tendue (courte) ou en cloche (longue). */
-export const TOUCHE_H = 1.8, TOUCHE_ELEV = 0.24, TOUCHE_ELEV_LONGUE = 0.40;
+/** LA TOUCHE (lot A9, cfg.remisesMain) : le lancer part des MAINS — hauteur du lâcher, la cloche d'hier (0,55 rad court, 0,42 long :
+ *  un jet à 10-15 m/s ; tendu à 0,24 il filait à 17,7 m/s et arrivait en 1 s — mesuré, la possession tenait 5 s au lieu de 19). */
+export const TOUCHE_H = 1.8, TOUCHE_ELEV = 0.55, TOUCHE_ELEV_LONGUE = 0.42;
 const wrapPi = (a) => a - 2 * Math.PI * Math.round(a / (2 * Math.PI));
 const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
 
