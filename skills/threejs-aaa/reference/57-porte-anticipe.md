@@ -38,3 +38,12 @@ une loi de football ; le tronc peut re-calibrer ses flux de duel sur le monde pr
 
 Les refus au contact ≤ 35 % d'hier, les épisodes ≤ 50 %, le vendangé repris (≥ 60 %), la clé absente
 rend l'hier (≥ 40 refus).
+
+## Le banc du match (bancs.mjs, 8 shards + les bancs des lots d'animation, 607 clauses)
+
+598 ✓ / 9 ✗ sur le moteur final. Le lot 207 du tronc (aucune course ne vise hors terrain) et l'aimant du
+porté sont verts. Les neuf rouges : le FLUX troisième homme, le lot 128 et la gradation (rouges depuis
+A9 bis), le lot 170 (pivot médian 62 ≤ 55 sur 2 graines), « la course traverse la frappe » (le sabotage à
+55 % pour 56 exigés : un point), le lot 135 (2 graines), le FLUX arrêts/buts (12 arrêts pour 3 buts : 80 %
+≥ 83, des comptes à un chiffre), les contres (14 ≥ 10 ✓, une sous-condition) et l'arbitre de verify-menace
+(4 changements d'avis ≥ 5) — des lames de couteau re-tirées par la trajectoire, aucune ne lit le porté.

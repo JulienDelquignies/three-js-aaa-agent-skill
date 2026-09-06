@@ -9783,7 +9783,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      hors terrain) : le lanceur à 0,4 m lâchait le ballon 10 cm dehors et le receveur d'une remise de
      la tête visait la craie — le lanceur se pose à 0,25 m (les pieds sur la ligne, Loi 15) et, au jeu
      courant, aucune cible de champ ne dépasse la touche (movement.js, sous remisesPied.touche). Doc
-     reference/57.
+     reference/57. LE BANC COMPLET (bancs.mjs, 8 shards + mes trois bancs enrôlés, 607 clauses) : 598 ✓ /
+     9 ✗ — le lot 207 et l'aimant du porté verts ; les neuf rouges : le FLUX troisième homme, le lot 128
+     et la gradation (rouges depuis A9 bis), lot 170 (62 ≤ 55, le pivot médian de 2 graines), « la course
+     traverse la frappe » (le sabotage à 55 % pour 56 exigés : un point), lot 135 (2 graines), le FLUX
+     arrêts/buts (12 arrêts pour 3 buts : 80 % ≥ 83 — des comptes à un chiffre), les contres (14 ≥ 10 ✓,
+     une sous-condition), l'arbitre de verify-menace (4 changements d'avis ≥ 5) — des lames de couteau
+     re-tirées, aucune ne lit le porté.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
