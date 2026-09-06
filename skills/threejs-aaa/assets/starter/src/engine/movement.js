@@ -81,6 +81,11 @@ export function movePlayers(st, dt, cfg) {
       }
       p.target = p._runT;
     }
+    // LE LANCEUR RENTRE (lot A9 bis, cfg.remisesPied.touche) : un corps HORS du terrain qui n'a pas de remise à porter revient d'abord
+    // DEDANS — le lanceur posté derrière la ligne recevait la remise de la tête de son coéquipier là où il était : dehors, une seconde
+    // touche pour l'adversaire, en boucle (mesuré : 57 rentrées c. 28 sur 24 × 600 s). Absente : l'hier au bit.
+    if (st.full && cfg.remisesPied?.touche && p.target && !p._sub && !p.expulse && Math.abs(p.p[2]) > st.pitch.hz - 0.1
+      && (!st.restart || st.restart.taker !== p.id) && Math.abs(p.target[2]) > st.pitch.hz - 3) p.target = [p.target[0], 0, Math.sign(p.p[2] || 1) * (st.pitch.hz - 3)];   // 3 m dedans : la remise de la tête au lanceur vise un corps DANS le jeu
     let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press'
       : p.job === 'mark' ? (cfg.speeds.mark != null ? 'mark' : 'support')

@@ -620,10 +620,14 @@ export function canTake(st, takerId, cfg) {
   const ty = st.restart.type;
   // LE LANCEUR SE POSE (lot A9) : la touche se lance À L'ARRÊT, FACE AU TERRAIN (ballFetch le tourne par le slew) — mesuré
   // avant : pris en course à 4 m/s, dos au jeu, le geste lançait par-dessus la tête. Patience 3 s : jamais de gel.
+  // …et la touche est à son LANCEUR (lot A9 bis, cfg.remisesPied.touche) : posté derrière la ligne, c'est lui qui lance — hier le plus proche
+  // du ballon la prenait parfois de l'intérieur du terrain (un coéquipier venu s'offrir, les pieds dedans)
+  if (ty === 'touche' && st.full && cfg?.remisesPied?.touche && st.restart.taker >= 0 && p.id !== st.restart.taker) return false;
   if (ty === 'touche' && st.full && cfg?.remisesMain && st.t < Math.max(st.restart.at, st.restart.placedAt ?? 0) + (cfg.remisesMain.patience ?? 3)) {   // …la patience court depuis la POSE (A9 bis : le lanceur arrivé tard se posait dos au jeu)
     let dY = Math.atan2(-Math.sign(st.restart.p[1] || 1), 0) - p.yaw;
     while (dY > Math.PI) dY -= 2 * Math.PI; while (dY < -Math.PI) dY += 2 * Math.PI;
     if (hyp(p.v[0], p.v[1]) > 0.6 || Math.abs(dY) > (cfg.remisesMain.face ?? 0.35)) return false;
+    if (cfg.remisesPied?.touche && Math.abs(p.p[2]) < st.pitch.hz + 0.05) return false;   // …et DERRIÈRE la ligne (A9 bis) : posé sur la ligne à l'instant de la pose, il lançait de l'intérieur
   }
   // LA COURSE D'ÉLAN (lot A9 bis, cfg.remisesPied.elan) : le coup franc et le corner se prennent AU BOUT de la course — la remise
   // attend que le preneur soit reparti de son point de départ et que son geste arrive au contact (elanNow prend alors la remise)
@@ -909,7 +913,7 @@ export function ballFetch(st, dt, cfg) {
       const RM = cfg.ramasseur, ap = (cfg.apron ?? 0) + (RM.marge ?? 0.6);
       const horsAtteinte = Math.abs(bp[0]) > st.pitch.hx + ap || Math.abs(bp[2]) > st.pitch.hz + ap;
       if ((horsAtteinte && hyp(st.ball.v[0], st.ball.v[2]) < 1) || st.t - r._fetchT0 > (RM.patience ?? 6)) {
-        st.ball.restart([r.p[0], 0.11, r.p[1]], { cause: r.type }); r.placed = true; r.carried = false; r._fetchT0 = null; poserElan(st, r, cfg);
+        st.ball.restart([r.p[0], 0.11, r.p[1]], { cause: r.type }); r.placed = true; r.placedAt = st.t; r.carried = false; r._fetchT0 = null; poserElan(st, r, cfg);
         st.events.push({ t: +st.t.toFixed(2), type: 'ramasseur', cause: horsAtteinte ? 'hors-atteinte' : 'patience' });
         return false;
       }
@@ -1135,6 +1139,7 @@ export function poserElan(st, r, cfg) {
 export function elanJob(st, r, tk, cfg) {
   const RP = st.full && cfg?.remisesPied;
   if (RP?.touche && r.type === 'touche' && r.placed === true) {   // LE LANCEUR DERRIÈRE LA LIGNE (Loi 15) : il se tient recul m dehors, le ballon sur la ligne à portée de main
+    r.placedAt ??= st.t;                                          // une pose venue d'ailleurs (le ramasseur, une remise déjà posée) date sa patience ici
     tk.job = 'receive'; tk.target = [r.p[0], 0, r.p[1] + Math.sign(r.p[1] || 1) * (RP.touche.recul ?? 0.4)]; return true;
   }
   const el = r.elan;
