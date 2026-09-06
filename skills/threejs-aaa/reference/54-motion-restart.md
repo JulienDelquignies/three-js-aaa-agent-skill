@@ -101,7 +101,7 @@ plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait. Contra
 260/6 sur le moteur A9 contre 266/0 sur main. Les six rouges sont des clauses SUR LE FIL
 (gelé 2,21 pour ≤ 2,19 ; 0 bascule pour ≥ 1 ; chaîne de passements 2 pour ≥ 3 ; 5/9 passes en
 profondeur conservées pour ≥ 65 % ; p50 des courses 1,50 pour ≥ 1,55 s ; deuxième latéral 2
-pour ≤ 1), aucune ne mesure une remise. Contrôle : main avec UN degré de plus sur l'élévation de
+pour ≤ 1), aucune ne mesure une remise. Contrôle : main avec 0,01 rad de plus (0,6°) sur l'élévation de
 l'ancienne touche (0,55 → 0,56 rad, aucune loi changée) donne 262/4 — les mêmes foulée et
 renversement, plus le dosage des passes en profondeur et le troisième homme. Main intact est à
 l'exact bord (gelé 2,19 ≤ 2,19, 1 bascule pour un minimum de 1, chaîne 3 pour un minimum de 3).

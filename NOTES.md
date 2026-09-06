@@ -9165,7 +9165,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      260/6 sur le moteur A9, 266/0 sur main — les six rouges sont des clauses SUR LE FIL
      (gelé 2,21 pour ≤ 2,19 ; 0 bascule pour ≥ 1 ; chaîne de passements 2 pour ≥ 3 ; 5/9
      conservés pour ≥ 65 % ; p50 1,50 pour ≥ 1,55 s ; deuxième latéral 2 pour ≤ 1), rien
-     qui touche une remise. CONTRÔLE : main avec UN degré de plus sur l'élévation de
+     qui touche une remise. CONTRÔLE : main avec 0,01 rad de plus (0,6°) sur l'élévation de
      l'ancienne touche (0,55 → 0,56, aucune loi changée) donne 262/4 — les mêmes foulée
      (2,21) et renversement (0), le dosage des passes en profondeur (7/12) et le troisième
      homme flanchent ; main intact est à l'exact bord (gelé 2,19 ≤ 2,19, 1 bascule pour un
