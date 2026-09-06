@@ -9591,6 +9591,42 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      300 ; la gradation 131/35) — la roulette et la salida sont revenues vertes, deux autres
      ont flanché : le fil du rasoir, pas une loi. Dette pour le moteur : la gradation à 12
      graines lit trois touches ; les clauses au fil du rasoir restent.
+- 313: LE CONTACT (lot A10 — « merci tu peux enchaîner »). La sim couchait le fauté
+     (p.down) mais la scène ne dessinait rien : un joueur fauché restait DEBOUT, figé 0,7 s dans
+     son clip d'attente ; le duel d'épaule n'avait pas de corps ; le porteur pressé dans le dos
+     ne protégeait rien ; la course arrière du lot A7 n'avait aucun déclencheur (le cap suivait la
+     dérive). engine/motion-contact : six espèces générées — chuteAvant (trébuche, mains au sol,
+     poitrine posée, couché à plat ventre, relevé à quatre pattes → genoux → un pied sous le
+     corps → debout), chuteCote (sur la hanche droite, main gauche devant), chuteArriere (assis,
+     sur le dos, mains derrière, relevé par la flexion), trebuche (buste qui plonge, deux appuis),
+     epaule (épaule droite dans l'adversaire, appui large), protection (bras droit tendu vers
+     l'adversaire, tronc tourné, plateau tenu). MESURÉ EN CONSTRUISANT : le pôle du genou doit
+     suivre la jambe (hanche→pied tourné de 90° dans le sagittal) — fixe devant-haut il était
+     anti-parallèle à la jambe couchée (vrille de 180°, genou à 62 cm, 174 rad/s), tourné par
+     derrière il passait par l'axe (genou à 15 cm sur le côté) ; la normale du plan du genou
+     vient du pôle (legIK2), pas de tibia × cuisse (nul sur une jambe tendue) ; le relevé passe
+     par les genoux (bassin remonté à 0,55 m d'abord, tibias à plat, puis un pied sous le corps —
+     un pied loin derrière sous un bassin bas mettait le genou dans la pelouse) ; les chutes n'ont
+     pas de style de corps (le sol est où il est). SIM sous cfg.contact { chute 1,6, glisse 0,5,
+     jockey { d 4,5, vMax 3,5 } }, absente = le tronc au bit (6 graines × 300 s × deux mondes,
+     identiques) : duel.chuter nomme la chute (avant pour les jambes prises et le percuté — l'élan
+     est devant —, côté sur la hanche, arrière pour le retenu ; down = chute s ; le corps glisse
+     de glisse × sa vitesse ; événement 'chute') aux quatre sites (tacle glissé subi, accrochage
+     qui fauche, charge dans le dos, fente qui trouve le corps — les deux derniers ne couchaient
+     personne) ; movement.js : le presseur à ≤ 4,5 m du porteur qui recule ou se décale lui FAIT
+     FACE (yawWant, slew borné) — face au porteur 76 % des images de presse (60 sans la clé),
+     course arrière 3 % + pas chassé 9 % (0 + 2 sans) : les régimes A7 vivent. SCÈNE
+     (scenes/rondo-contact.js, Rondo.js à 1249 lignes sous le plafond) : la chute tient au sol
+     tant que la sim couche (gel vrai) et se relève pour finir quand la sim relève ; la chute
+     possède les jambes (la glissade faisait lire « il court », poids 0,79) ; épaule + trébuchement
+     sur le duel ; bouclier tenu tant que la pression dure — mesuré : 232 images d'occasion en
+     110 s, toutes sous 0,35 s (le porteur collé agit avant), la pose est là, pas la tenue de balle
+     (dette moteur). Banc verify-contact 25 clauses (6 neutres, 20 styles × 6, le propre, le
+     registre, la sim clé allumée/absente, 6 sabotages) ; planches --move chuteAvant/…/protection ;
+     captures graine 7 t 283 (chute avant, relevé), graine 3 t 117 (épaule, trébuchement), 126
+     (bouclier avant une frappe). Dettes : le bouclier sans durée (tenue de balle dos au but = loi
+     moteur), le duel d'épaule rare (1 / 360 s), deux corps qui se traversent au sol, la glisse
+     dans le sens de la vitesse quelle que soit la chute, ni protestation ni douleur (A11).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

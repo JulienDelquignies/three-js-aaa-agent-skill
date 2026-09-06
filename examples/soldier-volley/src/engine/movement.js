@@ -397,7 +397,16 @@ export function movePlayers(st, dt, cfg) {
     // gardien suit son yawWant (posé vers le ballon chaque frame), le pas devient chassé —
     // le patron du backpedal libéro (120) généralisé. false : le regard de course d'hier.
     const regardGk = st.full && p.keeper && cfg.regardGardien !== false;
-    if (p.speed > 0.25 && !sePres && !regardGk) {
+    // LE JOCKEY FAIT FACE (lot A10, cfg.contact.jockey) : le presseur à ≤ d m du porteur adverse, qui RECULE ou se DÉCALE (il ne
+    // court pas sur lui, ≤ vMax), garde le regard sur lui — le corps recule et chasse (la course arrière et le pas chassé
+    // du lot A7 n'avaient aucun déclencheur : le cap suivait toujours la dérive). Absente : le dos au porteur d'hier, au bit.
+    const jockey = st.full && cfg.contact?.jockey && !p.keeper && p.job === 'press' && st.possession.carrier >= 0 && st.possession.carrier !== p.id
+      && (() => { const c = st.players[st.possession.carrier]; if (!c || c.team === p.team) return false;
+        const dx = c.p[0] - p.p[0], dz = c.p[2] - p.p[2], d = hyp(dx, dz);
+        if (d > (cfg.contact.jockey.d ?? 4.5) || d < 0.3 || p.speed > (cfg.contact.jockey.vMax ?? 3.5)) return false;
+        const along = p.speed > 0.25 ? (p.v[0] * dx + p.v[1] * dz) / (p.speed * d) : 0;
+        return along < 0.5 ? [dx, dz] : false; })();
+    if (p.speed > 0.25 && !sePres && !regardGk && !jockey) {
       // LE YAW NE SE TÉLÉPORTE JAMAIS (lot 139, cfg.yawSlew && st.full — mesuré : pic p50
       // 807°/s, p90 6 168°/s autour des prises, 31 % des contrôles retournent > 90° en une
       // frame : quand p.v s'inverse à la prise, le cap la suivait INSTANTANÉMENT ; réel
@@ -451,6 +460,8 @@ export function movePlayers(st, dt, cfg) {
         p.yawWant = versB + Math.sign(dA) * Math.min(Math.abs(dA), cfg.corpsOuvert.max ?? 1.2)
           * (cfg.corpsOuvert.part ?? 0.55) * Math.min(1.15, p.skill?.visionF ?? 1);
       } else p.yawWant = versB;
+    } else if (jockey) {
+      p.yawWant = Math.atan2(jockey[1], jockey[0]);
     } else if (regardGk && p.yawWant == null) {
       // …et quand rien d'autre ne pilote son regard (marche de relance), le gardien le pose
       // LUI-MÊME sur le ballon — le pas chassé a toujours une cible de regard.

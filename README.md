@@ -61,6 +61,7 @@ threejs-aaa/ (the skill)
 │   ├── 52-motion-gait.md       GENERATED locomotion (walk → jog → run → sprint, backpedal, side shuffle — a pure function of phase and body velocity)
 │   ├── 53-motion-idle.md       GENERATED idles (rest, hands on hips, bouncing, defender's guard, keeper's set, the wall — a pure function of time and situation): anatomical joint curves and foot paths (proximo-distal whip, cushion, ballistic jump, sole/circle/cut, the body that lies down, the dive that gets up on the spot, per-player style) → animkit specs, the rig profile, the contact sheet
 │   ├── 54-motion-restart.md    GENERATED hand restarts (throw-in, keeper's underarm roll, ground pickup — the sim arms the gesture and the ball leaves the HANDS at contact)
+│   ├── 55-motion-contact.md    GENERATED contact (falls and getting up, stumble, shoulder duel, ball shielding — the sim names the fall, the jockey faces the carrier)
 │   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
@@ -252,7 +253,13 @@ examples/
   trunk arched then whipped, released at 1.76 m, both feet on the ground), the keeper's underarm
   roll, the ground pickup — with a wrist-to-point arm IK; the sim now ARMS the throw-in and the
   ball leaves the hands at the gesture's contact, the keeper distributes by hand with the roll, and
-  the thrower waits facing the pitch and turns onto his target (`verify-remises.mjs`, 21 clauses).
+  the thrower waits facing the pitch and turns onto his target (`verify-remises.mjs`, 23 clauses).
+  `motion-contact.js` (lot A10) generates the CONTACT — three falls (forward, sideways, backward)
+  with their get-up (hands push, knees, one foot under, standing), the stumble, the shoulder duel and
+  the ball shield with the arm extended; the sim, under `cfg.contact`, names the fall at every foul
+  site and makes the retreating presser face the carrier so the generated backpedal and side shuffle
+  finally trigger; the scene holds the body on the ground exactly as long as the sim does
+  (`verify-contact.mjs`, 25 clauses).
 
 ## Install
 

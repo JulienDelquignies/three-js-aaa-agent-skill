@@ -131,13 +131,17 @@
   moteur, sceau 245) : la clé cfg.remisesMain (absente = le tronc au bit), la touche PORTÉE aux mains
   (holdMains, jamais posée par écriture), la cloche d'hier depuis les mains, salida et pertes vertes,
   la gradation 152/158 au tirage (trois touches en 12 × 240 s).
+- LIVRÉ (lot A10, note 313) : LE CONTACT — motion-contact : trois chutes (avant, côté, arrière) avec
+  leur relevé, le trébuchement, le duel d'épaule, le bouclier bras tendu ; legIK2 (normale du genou au
+  pôle, pôle qui suit la jambe) ; la sim sous cfg.contact (absente = le tronc au bit) : duel.chuter
+  nomme la chute aux quatre sites de faute, le presseur qui recule fait face (les régimes A7 vivent) ;
+  scenes/rondo-contact : chute tenue au sol et relevée à l'heure sim, épaule et trébuchement sur le
+  duel, bouclier tenu ; verify-contact 25 clauses ; contact-sheet --move chuteAvant/…/protection.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 bis) LES REMISES AU PIED — la course d'élan des coups de pied arrêtés (touche longue comprise),
   le dégagement de volée du gardien, la prise aérienne tenue (dette A6), le lanceur derrière la
-  ligne ; (A10) LE CONTACT — la chute
-  du joueur fauté et son relevé, le duel d'épaule, le tacle subi, la protection de balle bras tendu
-  (crochets sim : chute sur faute, consigne de face « jockey » pour que la course arrière du lot A7
-  se déclenche) ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
+  ligne ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
+  deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
   et cartons de l'arbitre, gestes sociaux générés. Et les dettes : (A2) le monde composé — re-caler
   les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s
   composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 bis) la

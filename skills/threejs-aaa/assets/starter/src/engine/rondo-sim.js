@@ -1,7 +1,7 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
-import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
+import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js'; import { uneTouche } from './premiere-intention.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
@@ -196,7 +196,7 @@ function standTackleNow(st, q, cfg) {
     const vic = st.players[victimId];
     if (cfg.loi12 && st.full && still && vic && d2(q.p, vic.p) < (cfg.loi12.contact ?? 0.9) && !st._faute) {
       st._faute = { t: st.t, par: q.id, sur: victimId, team: vic.team, p: [vic.p[0], vic.p[2]] };
-      st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: victimId, p: [+vic.p[0].toFixed(1), +vic.p[2].toFixed(1)] });
+      st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: victimId, p: [+vic.p[0].toFixed(1), +vic.p[2].toFixed(1)] }); if (st.full && cfg.contact) chuter(st, vic, q, cfg, 'tacle-debout', null);   // (A10) la fente qui trouve les jambes : il tombe
     }
     return;
   }

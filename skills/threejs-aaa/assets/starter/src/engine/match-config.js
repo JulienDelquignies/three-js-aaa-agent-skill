@@ -707,6 +707,11 @@ export const MATCH = {
                           // manager, une UI, une IA de banc. false : la porte tournante
                           // fermée (sabotage nommé — remplacer() refuse tout). Dettes :
                           // le banc incarné, les fenêtres comptées (3 + mi-temps).
+  contact: { chute: 1.6, glisse: 0.5, jockey: { d: 4.5, vMax: 3.5 } },   // (lot A10) LE CONTACT : le FAUTÉ TOMBE (tacle glissé subi, charge dans le dos, accrochage
+                          // qui fauche, fente qui trouve le corps : down = chute s, le corps glisse de glisse × sa vitesse — duel.chuter
+                          // nomme la chute : avant / côté / arrière, la scène l'habille) ; le presseur à ≤ d m du porteur qui recule ou
+                          // se décale lui FAIT FACE (consigne « jockey », movement.js — la course arrière et le pas chassé du lot A7 se
+                          // déclenchent). Absente : le fauché figé debout 0,7 s et le presseur qui tourne le dos, au bit.
   remisesMain: { toucheH: 1.8, elev: 0.55, elevLongue: 0.42, face: 0.35, patience: 3 },   // (lot A9) LES REMISES À LA MAIN : la touche s'ARME (motion-restart 'touche' — le ballon PORTÉ aux mains
                           // pendant l'armé, jamais posé par écriture) et part des mains au contact (toucheH ; élévations : la CLOCHE d'hier, 0,55 rad
                           // court / 0,42 long — mesuré : tendue à 0,24 le jet filait à 17,7 m/s p50 et arrivait en 1,0 s, la possession tenait

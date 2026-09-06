@@ -65,7 +65,7 @@ function quatFromCols(c0, c1, c2) {
 }
 /** La rotation qui porte le repère (d0, n0) sur (d1, n1) : R = F1 · F0ᵀ — unique et continue tant que les repères le
  *  sont (le plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait sur lui-même). */
-function alignFrame(d0, n0, d1, n1) {
+export function alignFrame(d0, n0, d1, n1) {
   const F0 = frameOf(d0, n0), F1 = frameOf(d1, n1);
   // R = F1 · F0ᵀ : colonne j de R = Σ_k F1[k] · F0[k][j]
   const col = (j) => [0, 1, 2].map((i) => F1[0][i] * F0[0][j] + F1[1][i] * F0[1][j] + F1[2][i] * F0[2][j]);

@@ -1,3 +1,4 @@
+import { contactEvent, contactClock, contactShield } from './rondo-contact.js';
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -883,6 +884,7 @@ export class Rondo {
         // …la PRISE DU GARDIEN arme les MAINS, pas le pied (lot 91 — mesuré : main à 1,06 m du
         // ballon à l'instant de la prise debout, l'amorti ne tend aucun bras) : _applyCatchWarp
         if (pl) { this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
+      } else if (e.type === 'chute' || (e.type === 'duel' && e.kind === 'épaule') || (e.type === 'faute' && e.kind === 'accrochage')) { contactEvent(this, e);   // LE CONTACT (lot A10, rondo-contact.js)
       } else if (e.type === 'arrêt' && (e.mode === 'pieds' || e.mode === 'buste')) {
         // L'ARRÊT NOMMÉ S'HABILLE (lot 93, contrat lot 90) : pieds → paradePieds, buste →
         // paradeBuste ; les modes de plongeon appartiennent à l'acte qui possède déjà le corps.
@@ -993,7 +995,7 @@ export class Rondo {
       pl.ctrl.yaw = pl.ctrl.yawFor(Math.cos(s.yaw), Math.sin(s.yaw));
       pl.model.rotation.y = pl.ctrl.yaw;
 
-      // ---- LA COUCHE DE GESTE, après le mixer. Les poids restent les lois de composition :
+      const shield = contactShield(this, pl);   // le porteur pressé protège son ballon (lot A10) — puis LA COUCHE DE GESTE, après le mixer. Les poids restent les lois de composition :
       // LE POIDS DES JAMBES = L'ARRIVÉE (corps posé : 1 − v/2,5 sur la vitesse sol MESURÉE — la
       // chimère et le patin ont chacun leur loi) OU LE CONTACT QUI APPROCHE ((t/(antic·0,8))^1.5 —
       // le dernier cinquième de l'armé appartient au plant, entièrement) ; le HAUT s'arme tout de
@@ -1004,7 +1006,7 @@ export class Rondo {
         const act = pl.sim.act;
         const v = pl.ctrl.groundSpeed ?? 0;
         const meta = pl._layerClock ?? { t0: this._t, offset: 0, dur: 0.6, antic: 0.2 };
-        let t = act ? act.t : (this._t - meta.t0 + meta.offset);
+        let t = act ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt;   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
         // LE TACLEUR RESTE AU SOL tant que la sim le dit (p.down = récupération) : l'horloge du
         // clip se GÈLE sur la pose couchée (clé « au sol ») au lieu de dérouler le relevé — le
         // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
@@ -1045,8 +1047,8 @@ export class Rondo {
         // corps à ~6 m/s, donc byArrive lit « il court » et éteint les jambes du clip (mesuré :
         // wLegs 0,24 à t=0,18, hanches DEBOUT à l'arrêt, gant à ~1 m d'un ballon au sol). La
         // vitesse d'un corps en plongeon EST celle du geste, pas de la locomotion.
-        const target = done ? 0 : (act?.payload?.skill === 'plongeon' || act?.payload?.enCourse ? 1 : Math.max(byArrive, byContact));
-        pl._wLegs = (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, dtP / 0.05);
+        const target = done ? 0 : (act?.payload?.skill === 'plongeon' || act?.payload?.enCourse || pl._fallOwns ? 1 : Math.max(byArrive, byContact));   // …et la chute au sol (lot A10)
+        pl._wLegs = shield ? 0 : (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, dtP / 0.05);   // le bouclier laisse les jambes à la foulée
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
         // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à
         // chaque geste. 0,12 s d'entrée = ≤ 25° par 50 ms, sous le seuil perceptible.

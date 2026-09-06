@@ -23,6 +23,7 @@ import { SKILL_KINDS, generateSkill, checkSkillGen } from './motion-skill.js';
 import { GROUND_KINDS, generateGround, checkGroundGen } from './motion-ground.js';
 import { KEEPER_KINDS, generateKeeper, checkKeeperGen } from './motion-keeper.js';
 import { RESTART_KINDS, generateRestart, checkRestartGen } from './motion-restart.js';
+import { CONTACT_KINDS, generateContact, checkContactGen } from './motion-contact.js';
 
 /** LE REGISTRE : geste → { family, generate(P, opts), check(spec, P, opts) }. */
 export const GENERATORS = {};
@@ -33,6 +34,7 @@ for (const k of Object.keys(SKILL_KINDS)) GENERATORS[k] = { family: 'skill', gen
 for (const k of Object.keys(GROUND_KINDS)) GENERATORS[k] = { family: 'ground', generate: (P, o) => generateGround(k, P, o), check: (spec, P) => checkGroundGen(spec, P, k) };
 for (const k of Object.keys(KEEPER_KINDS)) GENERATORS[k] = { family: 'keeper', generate: (P, o) => generateKeeper(k, P, o), check: (spec, P) => checkKeeperGen(spec, P, k) };
 for (const k of Object.keys(RESTART_KINDS)) GENERATORS[k] = { family: 'restart', generate: (P, o) => generateRestart(k, P, o), check: (spec, P) => checkRestartGen(spec, P, k) };
+for (const k of Object.keys(CONTACT_KINDS)) GENERATORS[k] = { family: 'contact', generate: (P, o) => generateContact(k, P, o), check: (spec, P) => checkContactGen(spec, P, k) };
 export const GENERATED_KINDS = Object.keys(GENERATORS);
 
 /** Générer un geste par son nom (null si le geste n'est pas généré). */
