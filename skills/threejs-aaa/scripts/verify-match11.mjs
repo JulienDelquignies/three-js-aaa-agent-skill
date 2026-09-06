@@ -5528,11 +5528,11 @@ if (__bloc()) {
   // ballon est encore à l'équipe 2 s après), les perdus sur service, les pertes de possession (non-dégradation), et la garde
   // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
   const flux = (over) => {
-    const cfg = matchCfg({ shotRange: 20, remisesMain: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0;   // remisesMain:null DATÉ A9 : la clause mesure SA loi dans le monde d'hier — avec les remises à la main, l'appui-remise coûte 573 pertes c. sans 508 (+ 13 %, 24 × 300 s ; + 1,5 % hier) et 36 % de services perdus : une interaction touche-en-cloche × appui-remise à comprendre (lot 247), pas à re-dater
+    const cfg = matchCfg({ shotRange: 20, remisesMain: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
       for (let i = 0; i < 300 * 60; i++) {
-        matchStep(st, 1 / 60, cfg); const t = st.possession?.team ?? -1; if (prev >= 0 && t >= 0 && t !== prev && !st.restart) pertes++; if (t >= 0) prev = t;
+        matchStep(st, 1 / 60, cfg); const t = st.possession?.team ?? -1; if (!st.restart) jeu++; if (prev >= 0 && t >= 0 && t !== prev && !st.restart) pertes++; if (t >= 0) prev = t;
         for (; cur < st.events.length; cur++) {
           const e = st.events[cur];
           if (e.type === 'troisieme') tr.push({ c: e.c, t: e.t });
@@ -5543,11 +5543,11 @@ if (__bloc()) {
         for (const x of tr) if (x.serviT != null && !x.juge && st.t - x.serviT >= 2) { x.juge = true; if ((st.possession?.team ?? -1) === x.team && !st.restart) reussis++; else perdus++; }
       }
     }
-    return { pertes, servis, reussis, perdus, profond, deborde };
+    return { pertes, pertesMin: pertes / Math.max(1, jeu / 3600), jeuMin: jeu / 3600, servis, reussis, perdus, profond, deborde };
   };
   const V = flux({}), E = flux({ appuiRemise: false });
-  ok(`…et le FLUX (24 × 300 s — 12 → 24 DATÉ 244b, volumétrie : à 12 graines le monde au pivot M(C) rendait 44 c. 58 servis et la seconde douzaine 54 c. 48 — le tirage, pas la clé) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,5 (la course vit le cycle : vieC ; × 1,8 → 1,5 DATÉ 242 : 36 c. 21, le 242 sert aussi les courses du sans) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
-    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.5 && V.perdus <= V.servis * 0.35 && V.pertes <= E.pertes * 1.05
+  ok(`…et le FLUX (24 × 300 s — 12 → 24 DATÉ 244b, volumétrie : à 12 graines le monde au pivot M(C) rendait 44 c. 58 servis et la seconde douzaine 54 c. 48 — le tirage, pas la clé) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,5 (la course vit le cycle : vieC ; × 1,8 → 1,5 DATÉ 242 : 36 c. 21, le 242 sert aussi les courses du sans) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${(V.pertesMin * 100).toFixed(0)} ≤ sans ${(E.pertesMin * 100).toFixed(0)} × 1,05 PAR 100 MIN DE JEU (non-dégradation ; brutes ${V.pertes} c. ${E.pertes} sur ${V.jeuMin.toFixed(0)} c. ${E.jeuMin.toFixed(0)} min de jeu — DATÉ 247 : le temps mort n'est pas une perte) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
+    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.5 && V.perdus <= V.servis * 0.35 && V.pertesMin <= E.pertesMin * 1.05
     && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
 }
 

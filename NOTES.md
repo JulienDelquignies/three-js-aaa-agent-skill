@@ -9621,6 +9621,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      247 nommé : comprendre l'interaction avant d'y toucher. Le 240 et
      A9 sont tous deux justes ; leur rencontre coûte des ballons. Les
      annexes de la branche : foulee 45, attente 42, remises 23 ✓.
+- 314: LE TEMPS MORT N'EST PAS UNE PERTE (247, première passe — « on
+     continue »). L'interaction touche-en-cloche × appui-remise du 313
+     n'existe pas : en 8 × 300 s, 3 à 14 touches seulement et AUCUN
+     troisième homme né dans les 8 s d'une touche. Ce qui existe : sans
+     l'appui-remise, le ballon sort 4 × plus (14 touches c. 3) et
+     chaque touche A9 coûte 11 s de cérémonie — le monde « sans » jouait
+     33 min sur 40, le monde « avec » 36 ; les pertes BRUTES comparaient
+     deux temps de jeu (573 c. 508 = « + 13 % »). Le flux du 240 compte
+     désormais les pertes PAR MINUTE DE JEU (images hors temps mort) :
+     à 24 graines, 548 c. 509 par 100 min (+ 8 %) et 36 % de services
+     perdus (hier + 1,5 %, 30 %). Le roulé du gardien isolé (sous-clé
+     roule:false) ne change rien (+ 9 % brut) ; les appuis naissent
+     plus près du but dans le monde A9 (p50 52 m c. 57, 23 % c. 17 % à
+     < 30 m) — l'hypothèse ouverte : le service en retrait près de son
+     but. Sonde par profondeur à refaire (la mienne comptait chaque
+     service jugé comme perdu). Épingle remisesMain:null RENDUE au 240
+     flux avec la métrique par minute gardée ; le 247 reste ouvert sur
+     la dose (zone ou dosage sous pression près du but), à dater sur
+     preuve. Bench seulement, aucune loi touchée : moteur au bit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
