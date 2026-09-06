@@ -9640,6 +9640,51 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      flux avec la métrique par minute gardée ; le 247 reste ouvert sur
      la dose (zone ou dosage sous pression près du but), à dater sur
      preuve. Bench seulement, aucune loi touchée : moteur au bit.
+- 315: LES LEVIERS DE LECTURE, PREMIÈRE PASSE (246 — « toujours les
+     attributs »). LA MATRICE (sonde-246 : chaque note de lecture à 90
+     puis à 10, les autres à 50, contre une équipe à 50 ; 12 × 300 s ;
+     référence sans note : possession 53,1 %, tirs 13/7) :
+     concentration MORTE à l'identique (concF n'est lu nulle part) ;
+     reactions muette en possession (50,7 c. 50,6) ; teamwork faible
+     mais juste (57,2 c. 54,6) ; offTheBall (poss 50,5 c. 45,2, pertes
+     237 c. 305), marking (51,6 c. 45,1), decisions (49,5 c. 40,9 —
+     n'agit qu'en bas) vivantes dans le bon sens ; et DEUX NOTES
+     INVERSÉES. (1) ANTICIPATION : 90 → possession 47,6 c. 57,8 à 10.
+     Isolé : avantContact éteint rend 50,5 — la passe avant le contact
+     (227) lisait seuil × (2 − anticipF) : le bon anticipateur passait
+     PLUS TARD. Corrigé : avantContact.lecture (seuil × anticipF,
+     ALLUMÉE) → 50,6 c. 52,3 ; reste un écart de tirs (4/13 c. 11/8),
+     suspect : la fenêtre de pressing collectif du 161 (× moyenne
+     d'anticipF : le bloc qui lit presse plus et se fait prendre) —
+     à isoler (246b). (2) POSITIONING : 90 → 47,5 c. 52,1 à 10 (et 53,1
+     sans note : la note COÛTAIT 5,6 pts au bon placeur). Trois lecteurs
+     : la référme du 237 (× posF sur l'amplitude du recul — retiré,
+     referme.note 0) ; la « zone morte du slot » du 151 au bloc
+     défensif (drift > 0,8 × (2 − posF) : le bon placeur se recale
+     serré et court après son slot) — je l'ai d'abord RE-CÂBLÉE (clé
+     zoneMorte, aux trois sites) sans voir qu'elle existait déjà à la
+     ligne 1065 sous 160 colonnes de code (le grep coupé ; c'est un
+     TRACEUR — Proxy sur skill.posF, 1253 lectures en 30 s, une seule
+     pile — qui l'a montrée) : mesurée serrée 48,3 c. 52,1, REJETÉE et
+     retirée (placement.zoneMorte:false, true la rend) ; et le LEVIER
+     JUSTE : le placement est une PRÉCISION — cfg.placement { bruit 10,
+     tenue 3 } : le mauvais placeur (posF < 1) tient son poste défensif
+     à bruit × (1 − posF) m à côté (positioning 10 : 1,2 m), direction
+     stable par tranche de tenue (hash id × tranche, zéro tirage), rien
+     à 50 et au-dessus. MESURÉ (12 × 300 s) : positioning 90 = 53,1
+     (la référence, au bit : plus aucune loi ne punit le bon placeur),
+     10 = 48,8, tirs 1/12. Les matchs sans notes : au bit (tous les
+     leviers lisent des notes ; empreintes e140bada469d99fb /
+     e615292ad7ea10b2). BANC : clause 246 au mécanisme (la passe avant
+     le contact lit dans le bon sens et hier l'inversait, le bruit de
+     placement 1,2 m à 10 / 0 à 50 et 90 / stable puis tourne,
+     placement et referme.note par défaut) ; annexe attributes verte.
+     DETTES 246b : concentration (aucun lecteur — un levier de LAPS
+     d'attention : le marqueur qui perd son homme une seconde),
+     reactions (levier sur l'issue du match à trouver), teamwork
+     (un seul lecteur, faible), et la fenêtre de pressing 161 sous
+     anticipation. La matrice reste la méthode : une note, un levier,
+     une mesure appariée dans le bon sens.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -707,7 +707,7 @@ function assignMatchJobs(st, cfg) {
         const R = role(p);
         // …ET L'ANCRAGE DONNE DU MOU (200) : le seuil de recalage du slot × axe(ancrage, colle, libre) — le cloué se recale au pas, le libre vagabonde avant le rappel. ×1 exact à 0,5.
         const anc = cfg.ancrage ? (R.ancrage ?? 0.5) : 0.5;
-        const mou = anc !== 0.5 ? axe(anc, cfg.ancrage.colle ?? 0.7, cfg.ancrage.libre ?? 1.6) : 1;
+        const mou = (anc !== 0.5 ? axe(anc, cfg.ancrage.colle ?? 0.7, cfg.ancrage.libre ?? 1.6) : 1);
         const drift = p._slotT ? hyp(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
         if (!p._slotT || (drift > 3.5 * mou && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 * mou && drift <= 3.5 * mou)) {
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
@@ -1060,9 +1060,9 @@ function assignMatchJobs(st, cfg) {
             ? (1 + relC * (cfg.compression.fond ?? 1.4)) * (p.skill?.workF ?? 1) : 1;
           want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * (cfg.pressTriggers.step ?? 3.5) * kC));
         }
-        p.job = 'mark';
+        p.job = 'mark'; if (st.full && cfg.placement && (p.skill?.posF ?? 1) < 1) { const a = ((p.id * 7919 + Math.floor(st.t / (cfg.placement.tenue ?? 3)) * 104729) % 360) * Math.PI / 180, r = (cfg.placement.bruit ?? 10) * (1 - (p.skill?.posF ?? 1)); want[0] += r * Math.cos(a); want[1] += r * Math.sin(a); }   // (246) LE BRUIT DE PLACEMENT : le mauvais placeur (posF < 1) tient son poste défensif à côté — bruit × (1 − posF) m, direction stable tenue s (hash id × tranche : zéro tirage) ; à 50 et au-dessus : rien. Mesuré : la zone morte serrée du bon placeur lui coûtait la possession (48,3 c. 52,1) — le placement est une PRÉCISION, pas une cadence
         const drift = p._slotT ? hyp(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
-        if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 * (2 - (p.skill?.posF ?? 1)) && drift <= 3.5)) {   // …le POSITIONING est une note (151) : le mauvais dérive avant de se recaler
+        if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 * (st.full && cfg.placement && cfg.placement.zoneMorte !== true ? 1 : 2 - (p.skill?.posF ?? 1)) && drift <= 3.5)) {   // …le POSITIONING était une ZONE MORTE (151) — (246) INVERSÉE : le recalage serré du bon placeur lui coûtait 5,6 pts de possession (47,5 c. 53,1, 12 × 300 s) ; sous cfg.placement la note est un BRUIT (ligne du dessus), la zone morte ne la lit plus (placement.zoneMorte:true la rend ; placement null : l'hier)
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
         p.target = [p._slotT[0], 0, p._slotT[1]];

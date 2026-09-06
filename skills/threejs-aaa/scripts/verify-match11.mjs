@@ -73,6 +73,7 @@ import { ROLES, LIBELLES_ROLES, rolesGrille, checkRoles } from '../assets/starte
 import { estPointe, estLateral, pivotDe, pointeDe, familiarite } from '../assets/starter/src/engine/formation.js';
 import { profilAuPoste, POSTE_MALUS } from '../assets/starter/src/engine/attributes.js';
 import { refermerLigne } from '../assets/starter/src/engine/marquage.js';
+import { makeProfile as __mp } from '../assets/starter/src/engine/attributes.js';
 import { readdirSync as __rd, readFileSync as __rf } from 'node:fs';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -5892,6 +5893,30 @@ if (__bloc()) {
   const V = geo({}), H = geo({ referme: R237 });
   ok(`lot 245 — le FLUX (3 × 300 s) : l'oblique tire ${V.pct.toFixed(1)} % des images ≤ 12 (le 237 : ${H.pct.toFixed(1)}) et ${V.vraies.toFixed(0)} % sur une vraie sortie ≥ 90 (le 237 : ${H.vraies.toFixed(0)})`,
     V.pct <= 12 && V.vraies >= 90 && H.pct > V.pct);
+}
+
+// ---------------------------------------------------------------- lot 246 : LES LEVIERS DE LECTURE
+// (première passe — « toujours les attributs ») : la MATRICE (chaque note de lecture à 90 puis à 10,
+// les autres à 50, contre une équipe à 50 ; 12 × 300 s, sonde-246) a dit : concentration MORTE (concF
+// n'est lu nulle part), reactions et teamwork presque muettes, offTheBall / marking / decisions vivantes
+// dans le bon sens — et deux notes INVERSÉES : anticipation (90 : possession 47,6 c. 57,8 à 10 — la passe
+// avant le contact lisait (2 − anticipF) : le bon anticipateur passait PLUS TARD ; isolé : avantContact
+// éteint rend 50,5) et positioning (90 : 47,5 c. 52,1 — posF n'amplifiait que le recul/glissement de la
+// ligne, et la « zone morte » promise au 151 n'était lue par personne ; la câbler serrée coûte encore :
+// 48,3 c. 52,1 — le placement est une PRÉCISION, pas une cadence ; le traceur a montré que la zone morte
+// du 151 lisait DÉJÀ posF au bloc défensif : c'était elle, le levier inversé). Livré : avantContact.lecture
+// (seuil × anticipF, ALLUMÉE : 50,6 c. 52,3), referme.note 0 (posF n'amplifie plus le recul), placement
+// { bruit, tenue, zoneMorte:false } (le mauvais placeur tient son poste à côté, la zone morte ne lit plus la note). Les matchs sans notes : au bit (tous les leviers lisent des notes).
+if (__bloc()) {
+  // (a) la passe avant le contact LIT : à anticipation 90 le seuil est plus LARGE qu'à 10 (il voit plus tôt)
+  const p90 = __mp({ anticipation: 90 }), p10 = __mp({ anticipation: 10 }), AC = matchCfg().avantContact;
+  const seuil = (sk, lecture) => (AC.seuil ?? 0.9) * (lecture ? (sk.anticipF ?? 1) : 2 - (sk.anticipF ?? 1)) * (sk.composureF ?? 1);
+  // (b) le bruit de placement : posF 0,85 (10) → 1,5 m à côté (bruit 10) ; posF 1,15 (90) → 0 ; à 50 → 0 ; direction stable sur la tenue
+  const brut = (posF, id, t, P = { bruit: 10, tenue: 3 }) => { if (!(posF < 1)) return [0, 0]; const a = ((id * 7919 + Math.floor(t / P.tenue) * 104729) % 360) * Math.PI / 180, r = P.bruit * (1 - posF); return [r * Math.cos(a), r * Math.sin(a)]; };
+  const b10 = brut(__mp({ positioning: 10 }).posF, 3, 10), b10b = brut(__mp({ positioning: 10 }).posF, 3, 11), b10c = brut(__mp({ positioning: 10 }).posF, 3, 14), b90 = brut(__mp({ positioning: 90 }).posF, 3, 10), b50 = brut(__mp({}).posF, 3, 10);
+  const r10 = Math.hypot(...b10);
+  ok(`lot 246 — LES LEVIERS DE LECTURE au mécanisme : la passe avant le contact LIT (anticipation 90 : seuil ${seuil(p90, true).toFixed(3)} s > 10 : ${seuil(p10, true).toFixed(3)} ; hier ${seuil(p90, false).toFixed(3)} < ${seuil(p10, false).toFixed(3)} — inversé) et la clé est ALLUMÉE (${AC.lecture === true}) ; le bruit de placement : positioning 10 → ${r10.toFixed(2)} m à côté (= 1,2 : bruit 10 × (1 − 0,88)), stable sur la tenue (${(Math.hypot(b10[0] - b10b[0], b10[1] - b10b[1])).toFixed(2)} = 0 à 1 s, ${Math.hypot(b10[0] - b10c[0], b10[1] - b10c[1]) > 0.01} tourne après 3 s), 90 → ${Math.hypot(...b90)} = 0, 50 → ${Math.hypot(...b50)} = 0 ; placement ${JSON.stringify(matchCfg().placement)} ALLUMÉ (zoneMorte false : la zone morte du 151, le VRAI levier inversé — trouvé au traceur, il lisait posF à la ligne 1065 sous 160 colonnes de code), referme.note ${matchCfg().referme.note} = 0 (la note n'amplifie plus le recul)`,
+    seuil(p90, true) > seuil(p10, true) && seuil(p90, false) < seuil(p10, false) && AC.lecture === true && Math.abs(r10 - 1.2) < 1e-6 && Math.hypot(b10[0] - b10b[0], b10[1] - b10b[1]) < 1e-9 && Math.hypot(b10[0] - b10c[0], b10[1] - b10c[1]) > 0.01 && Math.hypot(...b90) === 0 && Math.hypot(...b50) === 0 && matchCfg().placement?.bruit === 10 && matchCfg().placement.zoneMorte === false && matchCfg().referme.note === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

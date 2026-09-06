@@ -311,7 +311,16 @@ Gradation rendue (11/49/249/470 à 12 graines), l'oblique tire 6-8 % des images 
 derrière, déclenche le 240 sur une situation que A9 crée en nombre ; mesurer les appuis-remises nés d'une
 touche c. du jeu courant, et dater la loi (dispense après touche, ou dosage) sur preuve.
 
-**Lot 246 — Les leviers de lecture (à sceller).** Révélé par le 244d au monde 245 : décision, placement,
+**Lot 246 — Les leviers de lecture, première passe — SCELLÉ (NOTES 315).** La matrice (chaque note à 90
+puis 10, 12 × 300 s) : concentration morte, reactions muette, teamwork faible ; anticipation et positioning
+INVERSÉES et corrigées (avantContact.lecture, referme.note 0, placement { bruit, zoneMorte:false }) ;
+positioning 90 = la référence, 10 = −4,3 pts et 12 tirs concédés.
+
+**Lot 246b — Les leviers restants (à sceller).** Concentration (un laps d'attention du marqueur), reactions
+(l'issue), teamwork (un second lecteur), la fenêtre de pressing 161 sous anticipation (4/13 c. 11/8 tirs).
+Méthode : une note, un levier, une mesure appariée dans le bon sens.
+
+**Lot 246 (ancien libellé)** Révélé par le 244d au monde 245 : décision, placement,
 anticipation, appel, cohésion, marquage, concentration, réaction ne bougent presque rien dans les lois.
 Chaque note de lecture doit avoir UN levier mesuré (gradation appariée 30/50/70/90 sur sa propre
 signature), comme la technique en a dans la 152/158 ; le 244d retrouvera alors sa mesure.

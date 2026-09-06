@@ -19,7 +19,7 @@ export function presseurArrive(st, c, AC, lireCible = 0) {
     if (d > (AC.rayon ?? 6)) continue;
     const ferme = Math.max(0.3, (q.v[0] * dx + q.v[1] * dz) / (d || 1));   // la vitesse de fermeture (m/s vers moi)
     const tc = Math.max(0, d - (AC.contact ?? 1.0)) / ferme;
-    if (tc <= (AC.seuil ?? 0.9) * (2 - (c.skill?.anticipF ?? 1)) * (c.skill?.composureF ?? 1)) return true;
+    if (tc <= (AC.seuil ?? 0.9) * (AC.lecture ? (c.skill?.anticipF ?? 1) : 2 - (c.skill?.anticipF ?? 1)) * (c.skill?.composureF ?? 1)) return true;   // (246) AC.lecture : le bon anticipateur VOIT le presseur plus tôt (seuil × anticipF) — (2 − anticipF) le faisait passer plus tard (anticipation 90 : possession 47,6 c. 57,8 à 10, mesuré 12 graines) ; absent : l'hier
   }
   return false;
 }

@@ -67,7 +67,7 @@ export function refermerLigne(st, spotsBloc, mapD, nDefD, presseur, defenders, c
     if (sortieOk && R.zone != null) { const g = st.pitch?.ownGoal?.(presseur.team); if (g && Math.hypot(st.ball.p[0] - g.x, st.ball.p[2]) > R.zone) sortieOk = false; }
   }
   ligne.slice(0, 2).forEach((e, i) => {
-    const posF = e.q.skill?.posF ?? 1, part = (i === 0 ? (R.part ?? 0.5) : (R.second ?? 0.25)) * posF * tacF;
+    const posF = Math.pow(e.q.skill?.posF ?? 1, R.note ?? 1), part = (i === 0 ? (R.part ?? 0.5) : (R.second ?? 0.25)) * posF * tacF;   // (246) R.note : l'exposant de la note de placement sur l'AMPLITUDE du glissement et du recul — mesuré à 12 graines, × posF INVERSAIT le levier (placement 90 : possession 47,5 c. 52,1 à 10) : le bon placeur ne recule pas PLUS, il se recale plus serré (zoneMorte). 0 = la note ne touche pas l'amplitude ; absent : l'hier
     if (glisseOk) dz.set(e.k, (vac[1] - e.z) * Math.min(0.9, part));
     const rec = sortieOk ? (i === 0 ? (R.recul ?? 0) : (R.reculSecond ?? 0)) * posF * tacF : 0;
     if (rec && sgnAtk) dx.set(e.k, rec * sgnAtk);
