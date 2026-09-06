@@ -35,6 +35,9 @@ export const RESTART_KINDS = {
     lunge: 0.5, hw: 0.12, lean: 60, dip: 0.38, backswing: 0.24, backH: 0.74, sweep: 0.45 },
   ramassage: { duration: 1.12, contact: 0.42, ball: [0, 0.11, -0.4], hands: 'two', releaseH: 0.2,
     lunge: 0.45, hw: 0.14, lean: 84, dip: 0.41, scoopZ: -0.36, chestZ: -0.28, chestY: 1.06 },
+  // (lot A9 bis) le dégagement de volée du gardien : le ballon lâché de la main (release) tombe, le cou-de-pied droit le prend à mi-hauteur
+  voleeGardien: { duration: 1.3, contact: 0.9, release: 0.65, ball: [0.06, 0.69, -0.52], hands: 'two', releaseH: 1.0, foot: true,
+    hw: 0.12, step: 0.32, dropZ: -0.42, dropH: 1.0, bow: 16, backZ: 0.45, backH: 0.35, kickY: 0.6, kickZ: -0.5, followY: 0.7, followZ: -0.78, lean: 12 },
 };
 export const RESTART_NAMES = Object.keys(RESTART_KINDS);
 
@@ -65,7 +68,7 @@ function quatFromCols(c0, c1, c2) {
 }
 /** La rotation qui porte le repère (d0, n0) sur (d1, n1) : R = F1 · F0ᵀ — unique et continue tant que les repères le
  *  sont (le plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait sur lui-même). */
-function alignFrame(d0, n0, d1, n1) {
+export function alignFrame(d0, n0, d1, n1) {
   const F0 = frameOf(d0, n0), F1 = frameOf(d1, n1);
   // R = F1 · F0ᵀ : colonne j de R = Σ_k F1[k] · F0[k][j]
   const col = (j) => [0, 1, 2].map((i) => F1[0][i] * F0[0][j] + F1[1][i] * F0[1][j] + F1[2][i] * F0[2][j]);
@@ -227,7 +230,60 @@ function generateRamassage(P, { style }) {
   return { name: 'ramassage', duration: T, contact: tc, keys, hold: 'hands', catch: tc };
 }
 
-export const RESTART_GENERATORS = { touche: generateTouche, rouleMain: generateRouleMain, ramassage: generateRamassage };
+/** LE DÉGAGEMENT DE VOLÉE (lot A9 bis) : un pas d'appui du pied gauche, les mains portent le ballon devant à hauteur de main et
+ *  le LÂCHENT (release), la jambe droite s'arme (talon vers la fesse) et le cou-de-pied prend le ballon tombé à mi-hauteur (contact),
+ *  l'accompagnement monte à la hanche, le pied se pose devant. Le ballon vit dans les mains jusqu'au lâcher, TOMBE (la sim le
+ *  porte au servo sur sa chute — keeper.gkHeldBall) et part du pied au contact (strike-sim : la frappe de sa hauteur). */
+function generateVoleeGardien(P, { style }) {
+  const K = RESTART_KINDS.voleeGardien;
+  const T = K.duration, tc = K.contact, tL = K.release, ankleY = P.bones.LeftFoot.bindP[1];
+  const grip = 0.15, leanA = K.lean * style.lean, followA = style.follow;
+  const poseAt = (t) => {
+    const step = ramp(t, 0.02, 0.16, 0.32);                       // le pas d'appui : le corps avance
+    const back = ramp(t, 0.3, 0.45, 0.66);                        // l'armé de la jambe droite : le tronc se cambre
+    const swing = ramp(t, 0.66, tc, tc + 0.1);                    // le fouetté : la vitesse de pointe AU contact, l'accompagnement dans la foulée
+    const fol = ramp(t, tc, tc + 0.12, T);                        // l'accompagnement, le retour
+    const bow = K.bow * ramp(t, 0.02, 0.2, 0.4) * (1 - ramp(t, tL - 0.05, tL + 0.16, tc + 0.1));   // le tronc se penche sur le ballon qu'il tient devant (la portée du bras : 0,49 m de l'épaule)
+    const lean = leanA * (0.3 * back + 0.7 * swing) * (1 - 0.6 * fol) - bow;   // + = en ARRIÈRE : la posture du punt
+    const rise = 0.02 * followA * ramp(t, tc, tc + 0.1, tc + 0.25) * (1 - ramp(t, tc + 0.25, tc + 0.32, T));   // sur la pointe de l'appui à l'accompagnement
+    const hips = [0, -0.03 * (back + swing) * (1 - fol) + rise, 0.12 * step];
+    const J = { ...neutralJoints() };
+    J.Hips = rx(lean * 0.4);
+    J.Spine = rx(lean * 0.3); J.Spine1 = rx(lean * 0.2); J.Spine2 = rx(lean * 0.1);
+    const look = 18 * (0.5 * step + 0.5 * back) * (1 - fol);       // le regard sur le ballon qu'on lâche
+    J.Neck = rx(-look * 0.4); J.Head = rx(-look * 0.6);
+    // les mains : à la poitrine → le point de lâcher → elles s'ouvrent (la droite descend derrière, la gauche s'équilibre devant-haut)
+    const chest = [0, 1.38, -0.28], drop = [0.06, K.dropH, K.dropZ];
+    let wrists;
+    if (t < tL) { const c = v3(chest, drop, ramp(t, 0.05, 0.35, tL)); wrists = { Left: [c[0] - grip, c[1], c[2]], Right: [c[0] + grip, c[1], c[2]] }; }
+    else {
+      const u = ramp(t, tL, tL + 0.25, tc + 0.42);
+      wrists = { Left: v3([drop[0] - grip, drop[1], drop[2]], [-0.3, 1.1, -0.4], u), Right: v3([drop[0] + grip, drop[1], drop[2]], [0.34, 0.95, -0.25], u) };
+    }
+    armsTo(P, J, hips, wrists, { Left: [-0.7, 0.2, 0.3], Right: [0.7, 0.2, 0.3] });
+    return { J, hips };
+  };
+  const ik = (t) => {
+    const step = ramp(t, 0.02, 0.16, 0.32), lift = Math.sin(Math.PI * step) * 0.06;
+    const back = ramp(t, 0.3, 0.45, 0.66), swing = ramp(t, 0.66, tc, tc + 0.1), down = ramp(t, tc + 0.1, tc + 0.26, T);
+    const Left = [-K.hw, ankleY + lift, -K.step * step];           // le pas d'appui devant, planté ensuite
+    const bk = [K.hw + 0.02, ankleY + K.backH, K.backZ], kk = [K.hw - 0.02, K.kickY, K.kickZ], fw = [K.hw, K.followY, K.followZ];
+    const sC = ramp(tc, 0.66, tc, tc + 0.1);                      // la part du fouetté écoulée AU contact (la vitesse de pointe y est ; l'accompagnement est proportionné : même vitesse de part et d'autre)
+    let R;                                                        // derrière → l'armé (talon vers la fesse) → le contact devant à mi-hauteur → la hanche → posé devant
+    if (t < 0.3) R = [K.hw, ankleY, 0.05];
+    else if (t < 0.66) R = v3([K.hw, ankleY, 0.05], bk, back);
+    else if (t < tc + 0.1) { R = swing <= sC ? v3(bk, kk, swing / sC) : v3(kk, fw, (swing - sC) / (1 - sC)); if (swing < sC) R[1] -= 0.14 * Math.sin(Math.PI * swing / sC); }   // le pied passe BAS sous le corps
+    else R = v3(fw, [K.hw, ankleY, -K.step * 0.9], down);
+    const pointe = t >= 0.3 && t < tc + 0.1 ? 25 * (back * (1 - swing) + swing) : 0;   // la pointe du pied tirée au fouetté
+    // le pôle du genou SUIT la jambe (la loi du lot A10) : hanche→pied tourné de 90° dans le sagittal — devant pour une jambe basse, en HAUT pour une jambe tendue devant (un pôle fixe devant était parallèle à la jambe à l'accompagnement : vrille de 180°)
+    const hipR = P.bones.RightUpLeg.bindP, dR = norm(sub(R, [hipR[0], hipR[1] - 0.03 * (back + swing), hipR[2]]));
+    return { Left, Right: { p: R, foot: rx(-pointe), pole: [dR[0] * 0.2, -dR[2], dR[1]] } };
+  };
+  const keys = emitSpec(P, { duration: T, contact: tc, poseAt, ik, marks: [tL] });
+  return { name: 'voleeGardien', duration: T, contact: tc, keys, hold: 'hands', release: tL };
+}
+
+export const RESTART_GENERATORS = { touche: generateTouche, rouleMain: generateRouleMain, ramassage: generateRamassage, voleeGardien: generateVoleeGardien };
 
 const NEUTRAL = { lean: 1, follow: 1 };
 export function generateRestart(kind, P, { style = null } = {}) {
@@ -245,7 +301,7 @@ export function restartPortrait(spec, P) {
   const wc = at(spec.contact), w0 = at(0), wT = at(spec.duration);
   const series = [];
   for (let i = 0; i <= 60; i++) { const t = (i / 60) * spec.duration; const w = at(t); series.push({ t, mid: mid(w), apart: len(sub(w.LeftHand.p, w.RightHand.p)), head: w.Head.p, pelvis: w.Hips.p, chest: w.Spine2.p, lf: w.LeftFoot.p, rf: w.RightFoot.p, lt: w.LeftToeBase.p, rt: w.RightToeBase.p, le: w.LeftForeArm.p, re: w.RightForeArm.p }); }
-  return { midC: mid(wc), apartC: len(sub(wc.LeftHand.p, wc.RightHand.p)), head: wc.Head.p, pelvisC: wc.Hips.p, pelvis0: w0.Hips.p, chestC: wc.Spine2.p, mid0: mid(w0), midT: mid(wT), series };
+  return { midC: mid(wc), apartC: len(sub(wc.LeftHand.p, wc.RightHand.p)), head: wc.Head.p, pelvisC: wc.Hips.p, pelvis0: w0.Hips.p, chestC: wc.Spine2.p, mid0: mid(w0), midT: mid(wT), rfC: wc.RightFoot.p, lfC: wc.LeftFoot.p, series };
 }
 
 /**
@@ -259,7 +315,8 @@ export function checkRestartGen(spec, P, kind) {
   const p = restartPortrait(spec, P);
   const K = RESTART_KINDS[kind];
   const ground = P.lengths.groundY;
-  const apartOk = p.series.filter((s) => s.t <= spec.contact).every((s) => s.apart > 0.22 && s.apart < 0.42);
+  const tHold = spec.release != null && spec.release < spec.contact ? spec.release : spec.contact;   // la volée lâche AVANT le contact (le pied prend le ballon tombé)
+  const apartOk = p.series.filter((s) => s.t <= tHold).every((s) => s.apart > 0.22 && s.apart < 0.42);
   if (!apartOk) issues.push('les mains ne tiennent pas le ballon (écart hors [22, 42] cm avant le lâcher)');
   for (const s of p.series) {
     if (Math.min(s.lt[1], s.rt[1], s.lf[1] - 0.02, s.rf[1] - 0.02) < ground - 0.015) { issues.push(`sous la pelouse à t=${s.t.toFixed(2)}`); break; }
@@ -287,6 +344,19 @@ export function checkRestartGen(spec, P, kind) {
     if (!(p.midC[2] < -0.35)) issues.push('ramassage : les mains ne sont pas devant au sol');
     if (!(p.midT[1] > 0.95 && p.midT[2] < -0.15)) issues.push(`ramassage : le ballon ne finit pas à la poitrine (${p.midT.map((v) => v.toFixed(2))})`);
     if (!(p.pelvisC[1] < p.pelvis0[1] - 0.2)) issues.push('ramassage : le corps ne se baisse pas assez');
+  }
+  if (kind === 'voleeGardien') {
+    const ankle = P.bones.LeftFoot.bindP[1];
+    const iC = p.series.findIndex((s) => s.t >= spec.contact), sA = p.series[Math.max(0, iC - 1)], sB = p.series[Math.min(p.series.length - 1, iC + 1)];
+    const vF = len(sub(sB.rf, sA.rf)) / Math.max(1e-3, sB.t - sA.t);
+    if (!(p.rfC[1] > 0.45 && p.rfC[1] < 0.8)) issues.push(`volée : le pied frappe à ${p.rfC[1].toFixed(2)} m (attendu 0,45-0,8 — le ballon tombé de la main)`);
+    if (!(p.rfC[2] < -0.35)) issues.push(`volée : le pied ne frappe pas DEVANT (z ${p.rfC[2].toFixed(2)})`);
+    if (!(vF > 5)) issues.push(`volée : pied à ${vF.toFixed(1)} m/s au contact (attendu > 5)`);
+    if (!(p.lfC[1] < ankle + 0.03)) issues.push('volée : le pied d\'appui quitte le sol au contact');
+    const rel = p.series.find((s) => s.t >= spec.release);
+    if (!(rel && rel.mid[1] > 0.9 && rel.mid[2] < -0.4)) issues.push(`volée : le lâcher n'est pas devant à hauteur de main (${rel ? rel.mid.map((v) => v.toFixed(2)).join(', ') : '?'})`);
+    if (!(p.chestC[2] > p.pelvisC[2] + 0.02)) issues.push('volée : le tronc ne se cambre pas en arrière au contact');
+    if (!p.series.filter((s) => s.t > spec.release + 0.25 && s.t < spec.contact + 0.3).every((s) => s.apart > 0.42)) issues.push('volée : les mains ne s\'ouvrent pas après le lâcher');
   }
   // retour debout : bassin à ≤ 4 cm de son départ à la fin
   const last = p.series[p.series.length - 1];

@@ -136,6 +136,7 @@ export function slideTackleStep(st, c, cfg) {
     const grave = vSpd > 1.5 && ((c.p[0] - foe.p[0]) * c.v[0] + (c.p[2] - foe.p[2]) * c.v[1]) / (dBody * vSpd || 1) > 0.55;
     if (c.act && winding(c)) abortGesture(c, 'fauché', { log: st.gestures });
     c.down = S.trip ?? 0.7;
+    chuter(st, c, foe, cfg, 'tacle-glissé', null);                                   // (A10) le fauché tombe et la chute est nommée
     st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: foe.id, won: false, tech: 'tacle-glisse', team: foe.team, atk: c.team, sur: c.id, faute: true });
     if (cfg.loi12 && !st._faute) {
       st._faute = { t: st.t, par: foe.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave };
@@ -193,6 +194,26 @@ export function slideResolve(st, cfg) {
  * Perdu : le chargeur REBONDIT (levier natif _bite : sa pointe s'assoit 0,45 s). Jamais sur
  * le gardien porteur (charger le gardien est une faute réelle — v1 : on ne charge pas).
  */
+/** LA CHUTE NOMMÉE (lot A10, cfg.contact) : le fauté TOMBE — down = chute s, le corps glisse (movement._glisse) de glisse × sa
+ *  vitesse, et la chute est NOMMÉE pour la scène (p._chute : avant quand le coup vient de derrière ou des jambes, côté quand il
+ *  vient du flanc — le côté est celui du coup —, arrière quand il est retenu/tiré). Clé absente : l'ancien down, rien de nommé. */
+export function chuter(st, c, foe, cfg, cause, fallback) {
+  const C = st.full && cfg.contact;
+  if (!C) { if (fallback != null) c.down = Math.max(c.down, fallback); return; }
+  c.down = Math.max(c.down, C.chute ?? 1.6);
+  const vSpd = hyp(c.v[0], c.v[1]);
+  const fx = vSpd > 0.5 ? c.v[0] / vSpd : Math.cos(c.yaw), fz = vSpd > 0.5 ? c.v[1] / vSpd : Math.sin(c.yaw);
+  const dx = foe ? foe.p[0] - c.p[0] : -fx, dz = foe ? foe.p[2] - c.p[2] : -fz, d = hyp(dx, dz) || 1;
+  const along = (dx * fx + dz * fz) / d, lat = (-dx * fz + dz * fx) / d;            // le coup vient de devant (+) / derrière (−) ; lat + : de la DROITE
+  // les jambes prises (tacles) et le percuté dans le dos partent EN AVANT — l'élan est devant (mesuré : un 'arrière' sur
+  // une fente de face glissait vers l'avant sur le dos) ; de côté, sur la hanche ; retenu (accrochage), en arrière
+  const kind = cause === 'accrochage' ? 'arriere' : Math.abs(lat) > 0.75 ? 'cote' : 'avant';
+  void along;
+  c._chute = { t: st.t, kind, side: lat >= 0 ? 1 : -1, by: foe?.id ?? -1, cause };
+  c._glisse = { v: [c.v[0] * (C.glisse ?? 0.5), c.v[1] * (C.glisse ?? 0.5)] };
+  st.events.push({ t: +st.t.toFixed(2), type: 'chute', by: c.id, par: foe?.id ?? -1, kind, cause });
+}
+
 export function chargeStep(st, c, dt, cfg) {
   if (c.keeper) return;
   const B = cfg.charge;
@@ -219,6 +240,7 @@ export function chargeStep(st, c, dt, cfg) {
     if (dp < 0.5 && vInto > vSpd + 0.8 && cfg.loi12 && !st._faute) {
       st._faute = { t: st.t, par: foe.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]] };
       st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: foe.id, sur: c.id, kind: 'charge-derrière', p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
+      if (st.full && cfg.contact) { if (c.act && winding(c)) abortGesture(c, 'percuté', { log: st.gestures }); chuter(st, c, foe, cfg, 'charge-derrière', null); }   // (A10) percuté dans le dos : il tombe
     } else {
       st._chgT = (B.time ?? 0.4) * 0.5;                           // la filature ré-arme, sans événement
       foe._chgCd = st.t + 0.5;
@@ -312,7 +334,7 @@ export function accrocheStep(st, c, cfg, pressAxe = 1) {
     st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: c.id, kind: 'accrochage', prometteur: danger, arrache, p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
     if (!arrache) {
       c.v[0] *= 0.5; c.v[1] *= 0.5;                                 // la course cassée — deux foulées, pas un arrêt
-      if (danger) c.down = Math.max(c.down, 0.6);                   // la faute tactique le fauche
+      if (danger) chuter(st, c, q, cfg, 'accrochage', 0.6);         // la faute tactique le fauche (A10 : il tombe, tiré en arrière)
     }
     return;
   }

@@ -452,7 +452,7 @@ if (__bloc()) {
 if (__bloc()) {
   const stops = (cfgExtra) => {
     const W = 42; let net = 0, tot = 0;
-    for (const seed of [1, 3]) {
+    for (const seed of [1, 3, 2, 4]) {   // 2 → 4 graines DATÉ A10 (le sabotage à 55 % pour 55,6 exigés : un point, à deux graines)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
       const hist = new Map();
@@ -2696,7 +2696,7 @@ if (__bloc()) {
     }
   }
   const st127 = makeMatch({ full: true, seed: 3, tactics: [{ formation: '4231' }, { formation: '532' }] });
-  const cfg127 = matchCfg({ shotRange: 20 });
+  const cfg127 = matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  shotRange: 20 });   // contact/porteAnticipe/remisesPied:null DATÉ A10 : dans le monde du contact 10/16 through conservés (62 % pour ≥ 65) — le receveur qui tombe est le prix du contact, mesure du 247 ; la clause mesure SA loi dans le monde d'hier
   const { trace: tr127 } = playMatch(st127, 90, { cfg: cfg127 });   // 244c : avec une TRACE — le contrat « les deux camps » la lit
   const issues127 = checkMatch(st127, tr127, cfg127).issues;   // 244c : checkMatch rend { ok, issues, stats } — « .length » sur l'objet disait toujours « propre »
   ok(`lot 127 — le CATALOGUE est cohérent (${noms.length} formations ≥ 12 : 10 postes, lignes sommant 10, ${chevauche} chevauchement < 0,055 — zéro) et le 4231 vs 532 JOUE 90 s (contrat : ${issues127.length ? issues127[0] : 'propre'})`,
@@ -2712,9 +2712,9 @@ if (__bloc()) {
 if (__bloc()) {
   const th128 = (over) => {
     let th = 0, thOk = 0;
-    for (const seed of [1, 2, 4]) {
+    for (const seed of [1, 2, 4, 3, 5, 6]) {   // 3 → 6 graines DATÉ A10 (4 through ≥ 6 à 3 graines dans le monde du contact et des remises au pied ; 8 sans leurs clés — Poisson à 4)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contreZones: false, couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 128 hors contres (5 through sur 3 : Poisson)
+      const cfg = matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  contreZones: false, couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 128 hors contres (5 through sur 3 : Poisson)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2979,9 +2979,9 @@ if (__bloc()) {
   const danse = (over = {}) => {
     let gros = 0, courtes = 0, nC = 0;
     const durs = [];
-    for (const seed of [1, 2]) {
+    for (const seed of [1, 2, 3, 4]) {   // 2 → 4 graines DATÉ A10 (courses p50 1,4 ≥ 1,4 + 0,15 à 2 graines dans le monde A10 ; 1,6 sans leurs clés)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contreZones: false, marquageSurface: false, repli: false, garde: false, ...ISO171, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 135 mesure l'engagement des courses hors contres (6 395 c. 7 432 × 0,85 = 6 317 : la ré-élection à 0,6 s des trois élus ajoute des sauts)
+      const cfg = matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  contreZones: false, marquageSurface: false, repli: false, garde: false, ...ISO171, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 135 mesure l'engagement des courses hors contres (6 395 c. 7 432 × 0,85 = 6 317 : la ré-élection à 0,6 s des trois élus ajoute des sauts)   // contact/porteAnticipe/remisesPied:null DATÉ A10 : les courses off-ball p50 1,4 s vivant = 1,4 saboté dans le monde A10 (1,6 sans leurs clés) — le porté qui anticipe et le contact changent la durée des courses ; la clause mesure SA loi dans le monde d'hier
       const S = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3696,7 +3696,7 @@ if (__bloc()) {
     for (const seed of [4, 7, 11, 15, 5, 9, 13, 17]) {   // 4 → 8 graines DATÉ 238 (59° c. 58° : un tirage)
       const st = makeMatch({ full: true, seed });
       // retournement:false DATÉ 240 : le plafond de rotation du porteur (240b) bride le pivot des deux côtés (59° c. 60° masqués ; 55° c. 65° sans) — la clause mesure SA loi
-      const cfg = matchCfg({ shotRange: 20, retournement: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)
+      const cfg = matchCfg({ porteAnticipe: null,  shotRange: 20, retournement: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)   // porteAnticipe:null DATÉ A10 (isolé clé par clé : contact et remisesPied ne bougent rien, le porté qui anticipe fait 57 → 62° de pivot post-prise — il change la PRISE, la clause mesure la demi-position d'hier)
       let suivi = null;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5201,11 +5201,11 @@ if (__bloc()) {
   const sD = selectiviteTir({ ...stI, tactics: [{ style: 1 }, null] }, cI, cfgQ, 1).seuil, sN = selectiviteTir(stI, { ...cI, role: { arbitre: { tir: 1.15 } } }, cfgQ, 1).seuil;
   const sC = selectiviteTir(stI, { ...cI, skill: { composureF: 1.15, shotSigma: 0.325 } }, cfgQ, 1).seuil, sM = selectiviteTir({ ...stI, score: [0, 1] }, cI, cfgQ, 1).seuil;
   const stS = { ...stI, ball: { p: [...cI.p] }, hold: 1, players: [cI, { id: 9, team: 1, keeper: true, down: 0, p: [gx, 0, 0] }] };
-  const sans = menaceTir(stS, cI, matchCfg({ hommeLibre: false, shotRange: 20, qualiteTir: false })), avec = menaceTir(stS, cI, cfgQ);
+  const sans = menaceTir(stS, cI, matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  hommeLibre: false, shotRange: 20, qualiteTir: false })), avec = menaceTir(stS, cI, cfgQ);   // contact/porteAnticipe/remisesPied:null DATÉ A10 (12 arrêts pour 3 buts : des comptes à un chiffre, 80 % pour ≥ 83 ; sans leurs clés 53 ≥ 49 — dette « lot gardien » inchangée)
   ok(`lot 232 — LA ZONE DE VÉRITÉ (qualité : 8 m axe libre ${qA.toFixed(3)} = base ${Q.base} ; 25 m à 45° pressé ${qB.toFixed(3)} < ${qA.toFixed(3)} / 10 ; pressé ${qP.toFixed(3)} = ${(qA * Q.presF).toFixed(3)} ; mur 2 corps ${qM.toFixed(3)} = ${(qA / 2).toFixed(3)} ; à q = seuil f ${fI.f.toFixed(3)} = ${(Q.plancher + (1 - Q.plancher) * 0.5).toFixed(3)} ; seuil identité ${s0.toFixed(4)} : direct ${sD.toFixed(4)} <, le 9 ${sN.toFixed(4)} <, sang-froid ${sC.toFixed(4)} >, mené ${sM.toFixed(4)} < ; clé absente : q ${sans.q === undefined}, présente : q ${avec.q} > 0)`,
     Math.abs(qA - Q.base) < 1e-9 && qB < qA / 10 && Math.abs(qP - qA * Q.presF) < 1e-9 && Math.abs(qM - qA / 2) < 1e-9 && Math.abs(fI.f - (Q.plancher + (1 - Q.plancher) * 0.5)) < 1e-9
     && sD < s0 && sN < s0 && sC > s0 && sM < s0 && sans.q === undefined && avec.q > 0);
-  const flux = (over) => { const cfg = matchCfg({ hommeLibre: false, shotRange: 20, ...over }); let tirs = 0, box = 0;
+  const flux = (over) => { const cfg = matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  hommeLibre: false, shotRange: 20, ...over }); let tirs = 0, box = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) { const st = makeMatch({ full: true, seed });   // 6 → 12 graines DATÉ 240 (51 c. 50,4 : un tir)
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type !== 'shot') continue; const p = st.players[ev.by]; if (!p) continue; tirs++;
@@ -5238,7 +5238,7 @@ if (__bloc()) {
   const S = (() => { const { ball, v } = tir(22, 18); return keeperDecide(pitch, 1, me, ball, v, 0.3, KEEPER, true, 5); })();
   ok(`lot 232b — LE PAS CHASSÉ DU GARDIEN (vol 1,2 s : ${A.mode} vers z ${A.spot?.z?.toFixed(2)} (= 2,80), pasChasse ${A.pasChasse} ; 0,7 s : ${B.mode} ${B.pasChasse} ; 0,6 s : ${C.mode} ; clé absente : ${S.mode} vers z ${S.spot?.z?.toFixed(2)} ≠ 2,80)`,
     A.mode === 'poste' && Math.abs(A.spot.z - 2.8) < 1e-6 && A.pasChasse === true && B.mode === 'poste' && B.pasChasse === true && (C.mode === 'dive' || C.mode === 'battu') && S.mode === 'poste' && Math.abs(S.spot.z - 2.8) > 0.5);
-  const flux = (over) => { const cfg = matchCfg({ couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
+  const flux = (over) => { const cfg = matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {   /* 6 → 12 graines DATÉ 237 (4 arrêts + buts sur 6) */ const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type === 'arrêt') arr++; else if (ev.type === 'but') buts++; } } }
@@ -5530,7 +5530,7 @@ if (__bloc()) {
   // ballon est encore à l'équipe 2 s après), les perdus sur service, les pertes de possession (non-dégradation), et la garde
   // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
   const flux = (over) => {
-    const cfg = matchCfg({ shotRange: 20, remisesMain: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)
+    const cfg = matchCfg({ shotRange: 20, remisesMain: null, contact: null, porteAnticipe: null, remisesPied: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // contact/porteAnticipe/remisesPied:null DATÉ A10 (le contact fait TOMBER le receveur dos au but : services perdus 37 % pour ≤ 35, 24 × 300 s — la clause mesure SA loi dans le monde d'hier ; le prix du contact sur l'appui-remise est une mesure du lot 247) ; remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
       for (let i = 0; i < 300 * 60; i++) {
@@ -5933,8 +5933,8 @@ if (__bloc()) {
   const K = matchCfg().couvert, tac0 = () => ({ hauteurBloc: 0.5 }), axe0 = (v, a, b) => a + (b - a) * v;
   const cible = (am, lecture) => { const st = { full: true, t: 0, _bCouvert: {} }, args = { defTeam: 0, carrier: { p: [0, 0, 0], yaw: 0, keeper: false }, presseur: { p: [1, 0, 0] }, sgnAtk: 1, anticipMoy: am, tac: tac0, axe: axe0 }; couvertStep(st, { couvert: { ...K, lecture } }, args); st.t = 1 / 60; return couvertStep(st, { couvert: { ...K, lecture } }, args); };   // deux appels : le premier pose l'état, le second fait le pas (dt = 1/60)
   const l90 = cible(1.12, true), l10 = cible(0.88, true), h90 = cible(1.12, false), h10 = cible(0.88, false);
-  ok(`lot 246b — LE BLOC QUI LIT au mécanisme : porteur cadré → montée cible ${l90.cible.toFixed(2)} m à anticipation 90 = ${l10.cible.toFixed(2)} à 10 (l'amplitude ne lit plus la note ; hier ${h90.cible.toFixed(2)} > ${h10.cible.toFixed(2)}) ; le premier pas de lecture ${l90.dx.toFixed(4)} m à 90 > ${l10.dx.toFixed(4)} à 10 (tau ÷ anticipation : il lit plus tôt ; hier ${h90.dx.toFixed(4)} / ${h10.dx.toFixed(4)}) ; clé ALLUMÉE ${K.lecture === true}, attention ${matchCfg().attention === null ? 'null (rejetée)' : 'ALLUMÉE ?'}, pressTriggers.lecture ${matchCfg().pressTriggers.lecture === undefined ? 'absente (isolement)' : matchCfg().pressTriggers.lecture}`,
-    Math.abs(l90.cible - l10.cible) < 1e-9 && h90.cible > h10.cible && l90.dx > l10.dx && K.lecture === true && matchCfg().attention === null && matchCfg().pressTriggers.lecture === undefined);
+  ok(`lot 246b — LE BLOC QUI LIT au mécanisme : porteur cadré → montée cible ${l90.cible.toFixed(2)} m à anticipation 90 = ${l10.cible.toFixed(2)} à 10 (l'amplitude ne lit plus la note ; hier ${h90.cible.toFixed(2)} > ${h10.cible.toFixed(2)}) ; le premier pas de lecture ${l90.dx.toFixed(4)} m à 90 > ${l10.dx.toFixed(4)} à 10 (tau ÷ anticipation : il lit plus tôt ; hier ${h90.dx.toFixed(4)} / ${h10.dx.toFixed(4)}) ; clé ALLUMÉE ${K.lecture === true}, attention par déplacement rejetée (la clé porte depuis le 246c le laps par la RÉACTION : ${JSON.stringify(matchCfg().attention)}), pressTriggers.lecture ${matchCfg().pressTriggers.lecture === undefined ? 'absente (isolement)' : matchCfg().pressTriggers.lecture}`,
+    Math.abs(l90.cible - l10.cible) < 1e-9 && h90.cible > h10.cible && l90.dx > l10.dx && K.lecture === true && matchCfg().attention?.taux === 2 && matchCfg().pressTriggers.lecture === undefined);
 }
 
 // ---------------------------------------------------------------- lot 246c : LE LAPS D'ATTENTION PAR LA

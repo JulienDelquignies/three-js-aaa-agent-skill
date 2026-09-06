@@ -9765,6 +9765,190 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      possession (246c) ; reactions — vivante aux ballons flottants ;
      teamwork — faible. Plus aucune note inversée, plus aucune note
      morte. Moteur au bit (aucune loi touchée au 246d).
+- 319: (315 sur la branche animations — renumérotée à la fusion : 315-318 sont ici les lots 246 à 246d ; leurs 315-317 = A10, A9 bis, le ballon oublié deviennent 319-321) LE CONTACT (lot A10 — « merci tu peux enchaîner »). La sim couchait le fauté
+     (p.down) mais la scène ne dessinait rien : un joueur fauché restait DEBOUT, figé 0,7 s dans
+     son clip d'attente ; le duel d'épaule n'avait pas de corps ; le porteur pressé dans le dos
+     ne protégeait rien ; la course arrière du lot A7 n'avait aucun déclencheur (le cap suivait la
+     dérive). engine/motion-contact : six espèces générées — chuteAvant (trébuche, mains au sol,
+     poitrine posée, couché à plat ventre, relevé à quatre pattes → genoux → un pied sous le
+     corps → debout), chuteCote (sur la hanche droite, main gauche devant), chuteArriere (assis,
+     sur le dos, mains derrière, relevé par la flexion), trebuche (buste qui plonge, deux appuis),
+     epaule (épaule droite dans l'adversaire, appui large), protection (bras droit tendu vers
+     l'adversaire, tronc tourné, plateau tenu). MESURÉ EN CONSTRUISANT : le pôle du genou doit
+     suivre la jambe (hanche→pied tourné de 90° dans le sagittal) — fixe devant-haut il était
+     anti-parallèle à la jambe couchée (vrille de 180°, genou à 62 cm, 174 rad/s), tourné par
+     derrière il passait par l'axe (genou à 15 cm sur le côté) ; la normale du plan du genou
+     vient du pôle (legIK2), pas de tibia × cuisse (nul sur une jambe tendue) ; le relevé passe
+     par les genoux (bassin remonté à 0,55 m d'abord, tibias à plat, puis un pied sous le corps —
+     un pied loin derrière sous un bassin bas mettait le genou dans la pelouse) ; les chutes n'ont
+     pas de style de corps (le sol est où il est). SIM sous cfg.contact { chute 1,6, glisse 0,5,
+     jockey { d 4,5, vMax 3,5 } }, absente = le tronc au bit (6 graines × 300 s × deux mondes,
+     identiques) : duel.chuter nomme la chute (avant pour les jambes prises et le percuté — l'élan
+     est devant —, côté sur la hanche, arrière pour le retenu ; down = chute s ; le corps glisse
+     de glisse × sa vitesse ; événement 'chute') aux quatre sites (tacle glissé subi, accrochage
+     qui fauche, charge dans le dos, fente qui trouve le corps — les deux derniers ne couchaient
+     personne) ; movement.js : le presseur à ≤ 4,5 m du porteur qui recule ou se décale lui FAIT
+     FACE (yawWant, slew borné) — face au porteur 76 % des images de presse (60 sans la clé),
+     course arrière 3 % + pas chassé 9 % (0 + 2 sans) : les régimes A7 vivent. SCÈNE
+     (scenes/rondo-contact.js, Rondo.js à 1249 lignes sous le plafond) : la chute tient au sol
+     tant que la sim couche (gel vrai) et se relève pour finir quand la sim relève ; la chute
+     possède les jambes (la glissade faisait lire « il court », poids 0,79) ; épaule + trébuchement
+     sur le duel ; bouclier tenu tant que la pression dure — mesuré : 232 images d'occasion en
+     110 s, toutes sous 0,35 s (le porteur collé agit avant), la pose est là, pas la tenue de balle
+     (dette moteur). Banc verify-contact 25 clauses (6 neutres, 20 styles × 6, le propre, le
+     registre, la sim clé allumée/absente, 6 sabotages) ; planches --move chuteAvant/…/protection ;
+     captures graine 7 t 283 (chute avant, relevé), graine 3 t 117 (épaule, trébuchement), 126
+     (bouclier avant une frappe). Dettes : le bouclier sans durée (tenue de balle dos au but = loi
+     moteur), le duel d'épaule rare (1 / 360 s), deux corps qui se traversent au sol, la glisse
+     dans le sens de la vitesse quelle que soit la chute, ni protestation ni douleur (A11).
+     LE BANC COMPLET (bancs.mjs, 8 shards) sur le moteur A10 : 532 ✓ / 10 ✗ (A9 bis : 536 / 6). Les
+     dix rouges relus un par un, clé allumée contre clé absente : (1) le budget 1,61 ms/step ≤ 1,6
+     est la contention des 8 shards (seul : 0,53 allumée, 0,52 absente) ; (2) le FLUX 24 × 300 s
+     « troisième homme » est rouge sur les trois bancs (A9 bis plat, lob, A10 : pré-existant) ;
+     (3) « PERSONNE NE TIRE » à la graine 7 (480 s, 249 passages) : la graine sèche du lot 17
+     (« 330 s à zéro tir a 16 % de chance ») — 0 tir à 480 s, 2 à 600 s avec la clé, 3 sans ; le
+     monde de la graine 7 n'a NI faute NI chute avec la clé : c'est le seul cap des presseurs (le
+     jockey, que la sim lit dans ses cônes de prise) qui re-tire la trajectoire ; (4) le FLUX des
+     contres (lot 242) rejoué à l'identique : c'est le monde SANS contreZones qui a bougé (zéro
+     zone 61 → 35 %, 14/23 → 7/20 contres) quand le monde avec la clé est resté (35 → 41 %, 7/20 →
+     9/22) — deux échantillons de vingt contres et un écart exigé de 15 points ; (5) les six
+     autres sont des lames de couteau datées par leurs propres commentaires (recule 8 ≤ 7, petit
+     pont 2 ≥ 3, bélier 568 ≥ 593 à 10 % près « ratio re-daté trois fois », surface 60 ≥ 67 sur
+     12 × 300 s, la gradation rung 30 déjà rouge aux deux bancs A9 bis, traversées 10,3 ≤ 8).
+     L'ÉQUILIBRE, mesuré à 36 graines × 600 s (six heures de jeu par monde) allumée / absente /
+     jockey seul : tirs 111 / 123 / 133 (dans la surface 70 / 56 / 68 %), passes 5 439 / 5 480 /
+     5 260, pertes 1 602 / 1 617 / 1 612, buts 17 / 16 / 17 — l'écart-type d'une graine est de
+     2 tirs, l'écart des sommes tient dans une sigma. UN effet systématique, nommé : les refus
+     « contrôle-dos » 3 550 c. 4 194 (−15 % sur 24 graines) — le presseur qui fait face a moins de
+     ballons dans le dos, la loi du cône (lot 70) le lit ; les duels gagnés 144 c. 172, dans le
+     bruit. Le jockey est donc une loi de la sim (le cap entre dans les cônes), pas un habillage ;
+     l'alternative — un canal de face visuel (p.yawFace) que la scène dessine sans que la sim le
+     lise, monde au bit hors fautes — est nommée pour le tronc s'il préfère ses cônes d'hier.
+     Verdict : la clé re-tire les trajectoires comme A9 (« le tirage, pas la clé »), l'équilibre
+     tient, l'hier au bit sans la clé.
+- 320: LES REMISES AU PIED (lot A9 bis — « ok enchaine »). Le coup franc et le corner se
+     frappaient À L'INSTANT de la prise, du point de pose — aucun geste, aucune course ; le gardien qui
+     tenait le ballon le dégageait « de volée » depuis le sol (téléporté de 1,09 m à 0,11 à la frappe) ;
+     le lanceur de touche se tenait sur la ligne, les pieds dedans ; la prise aérienne sautait des gants.
+     SIM sous cfg.remisesPied { elan { recul 3,5, lat 1,5, vitesse 4, patience 4 }, volee { h 1,0,
+     avance 0,45, lacher 0,72 }, touche { recul 0,4 } }, absente = le tronc au bit (2 graines × 240 s,
+     événements et positions identiques à la copie figée) : LA COURSE D'ÉLAN (referee.poserElan/
+     elanJob/elanStep/elanNow — le preneur recule à recul m derrière le ballon sur la ligne ballon-cible,
+     lat m du côté du pied faible, le tablier borne, attend face au ballon, court ≤ vitesse m/s en visant
+     AU-DELÀ du ballon ; le geste 'frappe' s'arme sur la durée de la course et la remise se prend AU
+     CONTACT à l'arrivée — canTake, receive, onTake : la frappe d'hier dans la même image ; en avance le
+     contact vient à l'arrivée, en retard l'armé s'étire, 1,5 s sans arriver il s'abandonne (refus
+     élan-sans-ballon) ; movement.js laisse le corps courir sous l'armé 'elan', vitesse bornée, le cap
+     à la course) ; LE DÉGAGEMENT DE VOLÉE (relancerGardien : le ballon aux gants qui se joue long arme
+     'voleeGardien' par beginPass mains 'volee' ; gkHeldBall descend les gants au point de lâcher puis
+     TIENT LE BALLON SUR SA CHUTE au servo — y = h − ½ g t², jamais posé par écriture — et strikeNow
+     part de sa hauteur : ballY 0,76 mesuré ; refus volée-volée si un autre l'a pris) ; LE LANCEUR
+     DERRIÈRE LA LIGNE (elanJob : le ballon sur la ligne, le lanceur recul m dehors ; onOut ignore le
+     ballon tenu d'un lanceur qui arme et le ballon lancé qui rentre — hier une seconde sortie ; la
+     patience de la face court depuis la POSE). GÉNÉRATEUR voleeGardien (motion-restart : un pas
+     d'appui, le tronc penché sur le ballon tenu — la portée du bras, 0,49 m —, le lâcher à 1,0 m devant
+     à 0,65 s, le cou-de-pied à 0,60 m à 6,4 m/s au contact 0,90 s, l'accompagnement à la hanche).
+     MESURÉ EN CONSTRUISANT : la vitesse du pied au contact se règle avec le pic de la rampe SUR le
+     contact et un accompagnement proportionné (2,5 m/s avec un accompagnement court) ; le pôle du
+     genou suit la jambe (loi A10 — vrille de 180° à l'accompagnement avec un pôle fixe) ; le point de
+     lâcher à portée de bras (le coude claquait à 27 rad/s) ; les mains s'ouvrent en 0,25 s. SCÈNE
+     (scenes/rondo-remises.js, Rondo.js à 1249) : l'horloge du clip d'élan calée sur le contact de la sim
+     (t < 0 : le corps court à la foulée, le geste monte dans le dernier tiers de seconde), le ballon aux
+     gants jusqu'au lâcher, la prise aérienne tenue dans les gants du clip. Banc verify-remises 36
+     clauses (+13 : le geste, 20 styles × 4, la technique, la volée forcée, six coups de pied arrêtés
+     forcés, le lanceur derrière la ligne sur 8 touches, la clé absente, trois sabotages ; une remise
+     forcée attend le calme — un armé naturel pendant la pose forcée envoyait le ballon de l'autre
+     ligne : un artefact du banc) ; verify-contact 25, verify-motion 206, verify-gestes 60, sync 9.
+     Planche --move voleeGardien ; captures graine 5 t 18,6 (la volée : lâcher, contact), graine 3 t 46,3
+     (corner de derrière le poteau, 3,95 m/s), 61,2 (touche de derrière la ligne), 142,9 (coup franc à
+     24 m, 3,55 m de course, la frappe dans la même image que le contact). Dettes : la sortie de but et
+     la touche longue sans course, le corner court qui finit en conduite, la prise aérienne non filmée,
+     le mur qui ne saute pas.
+     LE BANC COMPLET (bancs.mjs, 8 shards) sur le moteur A9 bis final : 535 ✓ / 7 ✗ (A10 : 532 / 10,
+     A9 bis : 536 / 6). Trois passes de banc ont fait le lot : la première (537 / 5) a précédé la sonde
+     d'équilibre qui a trouvé la BOUCLE DE TOUCHES (le lanceur posté derrière la ligne y restait, la
+     remise de la tête de son coéquipier lui revenait dehors — 57 rentrées c. 28 sur 24 × 600 s) ; le
+     retour dans le terrain (3 m) l'a réduite (45 c. 28 — un pattern qui existe aussi sans la clé :
+     4 boucles sur 14 touches, 8 sur 23 avec), et sa première version pendant les remises repoussait
+     l'adverse hors du rayon de la Loi 15 (171d : 3,36 m ≥ 3,2 — le retour ne vaut qu'au jeu courant,
+     2,00 m rendus). Les sept rouges relus clé allumée contre clé absente : (1) l'ÉCONOMIE DE COURSE
+     (2 graines) est rouge SANS la clé aussi (p50 7 ≤ 6 absente, 9 allumée) ; (2) la gradation rung 30
+     et le FLUX des contres sont rouges depuis A9 bis ; (3) lot 189 (recule 8 ≤ 5,6, rouge à A10 aussi),
+     lot 170 (pivot médian 59 ≤ 53 sur 2 graines, rouge aux deux bancs A9 bis), lot 245 (l'oblique
+     85 % ≥ 90 sur 3 × 300 s), lot 124 (passements multi 2 ≥ 3 sur 6 × 300 s) sont des lames de
+     couteau à petits comptes. L'ÉQUILIBRE à 24 graines × 600 s allumée / absente : tirs 86 / 73 (dans
+     la surface 62 / 58), passes 3 470 / 3 651, pertes 1 121 / 1 090, buts 16 / 15, remises prises
+     163 / 143, rentrées 45 / 28, corners joués 14 / 8 — 62 courses d'élan et 34 volées par 4 h de
+     jeu. La clé fait plus de coups de pied arrêtés (chaque frappe à l'arrêt devient une course : le
+     ballon repart plus tard, plus haut — la volée à 0,76 m au lieu du sol) et plus de touches (le
+     lanceur derrière la ligne) : le réel en a 40 par match, le tronc 1,2 par 10 min ; l'écart-type
+     d'une graine est de 2 tirs, l'écart des tirs (+13 sur 24 graines) tient dans 1,3 sigma. Verdict :
+     la clé re-tire les trajectoires comme A9 et A10, l'équilibre tient, l'hier au bit sans la clé ; la
+     remise de la tête au lanceur qui vise un corps près de la ligne est nommée au tronc (une loi de
+     tete.js, pas de ce lot).
+- 321: LE BALLON OUBLIÉ (retour utilisateur — « parfois le joueur oublie le ballon quand il
+     court ou quand il contrôle la balle, ça fait foirer beaucoup d'actions »). MESURÉ (3 × 300 s) :
+     pendant l'armé d'une passe le corps glisse sur son ancre jusqu'à 7,5 m/s et le ballon, porté au
+     servo (tau 0,035) vers le point de stance du corps D'AVANT le pas, traînait 0,38 m derrière ; au
+     contact strikeNow refusait (stance-au-contact : 65 par 900 s — un armé sur cinq, 313 armés pour
+     243 passes et tirs), le ballon vendangé (−40 %, libre) et le corps filait sur son élan : 2,2 m,
+     0,5 s — 32 des 35 épisodes « le porteur lancé s'éloigne de son ballon ». Le contrôle n'était pas
+     en cause (ballon au pied 0,17 s après, p50 et p90) : c'est l'armé qui suit le contrôle qui
+     vendangeait. LOI cfg.porteAnticipe { tau 0,015, frein 0,4, reprise 0,8 } (absente = l'hier au
+     bit, vérifié sur la copie figée avec toutes mes clés nulles) : le ballon se porte au point de
+     stance du corps APRÈS son pas de glissement, au servo serré ; le vendangé qui reste FREINE et se
+     REPREND (movement : il vise son ballon sans poussée, 0,8 s). Mesuré : refus 65 → 20, épisodes
+     35 → 2, ballon derrière un porteur lancé 927 → 64 images sur 26 000, vendangés repris 38/65 →
+     20/20, p90 porteur-ballon 1,31 → 1,18 m. ÉQUILIBRE (24 × 600 s) : passes 4 058 c. 3 401, armés
+     4 159 c. 4 509, pertes 937 c. 1 080, tirs 76 c. 86, buts 19 c. 20 ; duels 185 c. 342, glissés
+     170 c. 258, fautes 57 c. 79 — les vendangés faisaient un tiers des duels : un artefact qui tombe,
+     le tronc peut re-calibrer ses flux de duel sur le monde propre. Bancs : verify-porte 4 clauses ;
+     verify-contact passe à 6 graines (2 chutes sur 3 : un compte) ; bancs.mjs enrôle verify-remises,
+     verify-contact, verify-porte. Le banc complet a relu le lot 207 du tronc (aucune course ne vise
+     hors terrain) : le lanceur à 0,4 m lâchait le ballon 10 cm dehors et le receveur d'une remise de
+     la tête visait la craie — le lanceur se pose à 0,25 m (les pieds sur la ligne, Loi 15) et, au jeu
+     courant, aucune cible de champ ne dépasse la touche (movement.js, sous remisesPied.touche). Doc
+     reference/57. LE BANC COMPLET (bancs.mjs, 8 shards + mes trois bancs enrôlés, 607 clauses) : 598 ✓ /
+     9 ✗ — le lot 207 et l'aimant du porté verts ; les neuf rouges : le FLUX troisième homme, le lot 128
+     et la gradation (rouges depuis A9 bis), lot 170 (62 ≤ 55, le pivot médian de 2 graines), « la course
+     traverse la frappe » (le sabotage à 55 % pour 56 exigés : un point), lot 135 (2 graines), le FLUX
+     arrêts/buts (12 arrêts pour 3 buts : 80 % ≥ 83 — des comptes à un chiffre), les contres (14 ≥ 10 ✓,
+     une sous-condition), l'arbitre de verify-menace (4 changements d'avis ≥ 5) — des lames de couteau
+     re-tirées, aucune ne lit le porté.
+- 322: FUSION DE LA BRANCHE ANIMATIONS — A10 LE CONTACT, A9 BIS LES
+     REMISES AU PIED, LE BALLON OUBLIÉ (« tu peux récupérer le travail de
+     l'autre agent ? », puis « tu peux déployer sur vercel ? »). Onze
+     commits, fusion sans conflit hors journal (leurs 315-317 → 319-321 ;
+     315-318 sont ici les 246 à 246d). Trois clés nouvelles, TOUTES au
+     bit à null (contact, porteAnticipe, remisesPied : empreintes
+     e140bada469d99fb / e615292ad7ea10b2 = le 246d) ; par défaut
+     allumées, le match servi change (11b26cf85cbeb095 /
+     50c8a128c553201d). Leurs annexes : contact 25, porte 4, remises 36,
+     foulee 45, attente 42 ✓. LE BANC COMPLET de l'arbre fusionné : huit
+     rouges, tous relus avec leurs trois clés à null (verts) — leur
+     propre verdict disait 598/9, « des lames de couteau ». Traités :
+     lot 128 (4 through ≥ 6 à 3 graines → 6 graines : 16 through, mais
+     10/16 conservés pour ≥ 65 % — le receveur qui TOMBE est le prix du
+     contact) et lot 135 (courses p50 1,4 = 1,4 saboté ; 1,6 sans leurs
+     clés) → leurs clés épinglées à null dans ces deux mondes ; lot 170
+     (pivot post-prise 62° pour ≤ 55) isolé clé par clé : contact rien,
+     remisesPied rien, porteAnticipe 57 → 62° — le porté qui anticipe
+     change la PRISE → porteAnticipe épinglée dans le monde du 170 ; la
+     course traverse la frappe (55 % pour 55,6, 2 graines) → 4 graines ;
+     le 240 flux (services perdus 37 % pour ≤ 35 à 24 graines — le
+     contact fait tomber l'appui dos au but) → leurs clés épinglées, le
+     prix du contact sur l'appui-remise rejoint la mesure du 247 ; le
+     flux arrêts/buts (12 arrêts pour 3 buts, 80 % pour ≥ 83) → épinglé
+     (dette « lot gardien » inchangée) ; la gradation 152/158 à 24
+     graines (−36 / 297 / 839 / 621 : le 90 sous le 70 dans le monde du
+     contact) → le monde des notes s'isole de leurs trois lois ;
+     l'arbitre de verify-menace (4 changements d'avis pour ≥ 5, à 5
+     comme à 8 graines) → épinglé ; la clause 246b lisait attention ===
+     null (stale depuis le 246c) → corrigée. DETTE NOMMÉE : le contact
+     coûte des ballons aux réceptions dos au but (through conservés
+     62 %, services perdus 37 %) — c'est peut-être juste (un appui dos
+     au but sous charge tombe), c'est à mesurer comme une loi (247),
+     pas à enterrer : les épingles A10 sont datées pour ça.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

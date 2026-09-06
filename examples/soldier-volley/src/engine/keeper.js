@@ -277,6 +277,7 @@ export function relancerGardien(st, gk, cfg, deps) {
   const g = pitch.ownGoal(gk.team);
   const sgn = -g.sign;
   const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
+  const volee = st.full && cfg.remisesPied?.volee && st.ball.owner === gk.id && st.ball.p[1] > 0.6 ? 'volee' : undefined;   // (A9 bis) le ballon AUX GANTS se dégage de VOLÉE — jamais posé au sol par écriture
   let styleSB = st.tactics?.[gk.team]?.cpa?.sortieBut;
   // LE CHOIX SE LIT À LA PRESSION (223b, cfg.relance.pression — brief tactique : court si le premier presseur est
   // loin (seuil axe style : possession 6 m → direct 14 m), ≤ dans20 adversaires dans les 20 m du ballon et un
@@ -320,7 +321,7 @@ export function relancerGardien(st, gk, cfg, deps) {
     if (cible) {
       const tI = cfg.leadTime ? cfg.leadTime(hyp(cible.p[0] - gk.p[0], cible.p[2] - gk.p[2]), cible) : 0.5;
       const lead = [cible.p[0] + cible.v[0] * tI, 0, cible.p[2] + cible.v[1] * tI];
-      if (deps.beginPass(st, { to: { id: cible.id }, lead, style: 'lofted', longue: true, lane: { margin: 9 } }, cfg, { forceUrgent: true })) return true;   // …le marqueur `longue` (la clause du banc le lit ; beginPass l'ignore)
+      if (deps.beginPass(st, { to: { id: cible.id }, lead, style: 'lofted', longue: true, lane: { margin: 9 } }, cfg, { forceUrgent: true, mains: volee })) return true;   // …le marqueur `longue` (la clause du banc le lit ; beginPass l'ignore)
     }
   }
   // le barème d'hier — 'court' re-pèse vers le PROCHE jouable, sinon l'avance d'hier au bit
@@ -333,11 +334,11 @@ export function relancerGardien(st, gk, cfg, deps) {
   for (const { m, dm } of scored.slice(0, 3)) {
     const tI = cfg.leadTime ? cfg.leadTime(dm, m) : 0.35;
     const lead = [m.p[0] + m.v[0] * tI, 0, m.p[2] + m.v[1] * tI];
-    if (deps.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true })) return true;
+    if (deps.beginPass(st, { to: { id: m.id }, lead, style: dm > 11 ? 'lofted' : 'ground', lane: { margin: dm > 11 ? 8 : 5 } }, cfg, { forceUrgent: true, mains: dm > 11 ? volee : undefined })) return true;
   }
   // le PUNT au flanc — la note kicking porte la longueur (×1 exact à 50)
   const flank = gk.p[2] >= 0 ? -pitch.hz * 0.5 : pitch.hz * 0.5;
-  deps.beginPass(st, { to: { id: -2 }, lead: [gk.p[0] + sgn * pitch.hx * 0.8 * (gk.skill?.kickF ?? 1), 0, flank], style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true });
+  deps.beginPass(st, { to: { id: -2 }, lead: [gk.p[0] + sgn * pitch.hx * 0.8 * (gk.skill?.kickF ?? 1), 0, flank], style: 'lofted', clear: true, lane: { margin: 9 } }, cfg, { clear: true, forceUrgent: true, mains: volee });
   return true;
 }
 
@@ -467,8 +468,20 @@ export function gkHeldBall(st, c, dt, cfg) {
     st.ball.hold([h[0] + (r[0] - h[0]) * w, h[1] + (r[1] - h[1]) * w, h[2] + (r[2] - h[2]) * w], dt);
     return true;
   }
+  // LE DÉGAGEMENT DE VOLÉE (lot A9 bis, cfg.remisesPied.volee) : les gants descendent de la poitrine au point de lâcher (avance m devant,
+  // h m de haut) jusqu'à lacher × l'armé, puis le ballon TOMBE de la main (la chute libre, tenue au servo : y = h − ½ g t² — jamais posé
+  // par écriture, jamais téléporté au sol) et le pied le prend au contact du geste, là où il est (strikeNow part de sa hauteur).
+  if (c.act && !c.act.fired && c.act.payload?.mains === 'volee') {
+    const V = cfg.remisesPied?.volee || {}, A = c.act.anticipation, tL = (V.lacher ?? 0.72) * A;
+    const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw), r = [c.p[0] + fx * (V.avance ?? 0.5), V.h ?? 1.0, c.p[2] + fz * (V.avance ?? 0.5)];
+    if (c.act.t >= tL) { const tf = c.act.t - tL; if (c.act.payload.lache == null) c.act.payload.lache = st.t; st.ball.hold([r[0], Math.max(BALL_R, r[1] - 4.905 * tf * tf), r[2]], dt, { tau: 0.03, vMax: 12 }); return true; }
+    const u = Math.max(0, Math.min(1, c.act.t / Math.max(1e-3, tL))), w = u * u * (3 - 2 * u), h = keeperHoldPoint(c);
+    st.ball.hold([h[0] + (r[0] - h[0]) * w, h[1] + (r[1] - h[1]) * w, h[2] + (r[2] - h[2]) * w], dt);
+    return true;
+  }
   if (cfg.gkTenue && c._mains && !c._remisePrise && !st.restart && c._gkSince != null
     && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
   return false;
 }
 import { hyp } from './hyp.js';
+const BALL_R = 0.11;   // le rayon du ballon (ball.js BALL.radius) — le point bas de la chute de la volée

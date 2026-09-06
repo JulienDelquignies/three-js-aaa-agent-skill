@@ -1,7 +1,7 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
-import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
+import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js'; import { uneTouche } from './premiere-intention.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
@@ -41,7 +41,7 @@ function stepGestures(st, dt, cfg) {
         // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite soudé (les passes partaient à 6-21° de leur stance). MAIS un
         // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
         // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
-        st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });
+        if (!(st.full && cfg.porteAnticipe)) st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });   // …sinon le porté ANTICIPE, après le glissement (plus bas)
       } else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
       // et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se règlent pendant l'armé, comme un vrai joueur ajuste ses derniers
       // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
@@ -89,6 +89,7 @@ function stepGestures(st, dt, cfg) {
         if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted' || A.pick?.tech?.clip === 'talonnade')) { let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
         else { p.yaw = g.yaw; p.yawWant = null; }
         p.speed = hyp(p.v[0], p.v[1]);
+        if (st.full && cfg.porteAnticipe && st.ball.owner === p.id && A.stance) { const sp = stanceBallPoint(p, A.stance, A.pick.foot), loin = d2(p.p, st.ball.p) > 0.45; st.ball.carry(sp, dt, loin ? { tau: 0.12, vMax: 9 } : { tau: cfg.porteAnticipe.tau ?? 0.015 }); }   // LE PORTÉ ANTICIPE (cfg.porteAnticipe && st.full — retour utilisateur « le joueur oublie le ballon ») : le ballon se portait au point de stance du corps D'AVANT le glissement (tau 0,035) — à 7,5 m/s il traînait 0,38 m derrière, la frappe REFUSÉE au contact (stance-au-contact 65 par 900 s, un armé sur cinq), le ballon vendangé, le corps filait sur son élan (32 des 35 « il court sans son ballon »). Ici : le point de stance du corps APRÈS son pas, au servo serré (tau). Absente : hier au bit.
       }
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     } else if (busy(p) && p.act?.payload?.kind === 'skill' && st.phase === 'carry' && st.possession.carrier === p.id) {
@@ -103,9 +104,8 @@ function stepGestures(st, dt, cfg) {
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
-      if (p.act?.payload?.kind === 'pass') strikeNow(st, p, cfg);
-      else if (p.act?.payload?.kind === 'touche') throwNow(st, p, cfg);   // le lâcher de la touche (lot A9)
-      else if (p.act?.payload?.kind === 'tacle-debout') standTackleNow(st, p, cfg);
+      const K = p.act?.payload?.kind; if (K === 'pass') strikeNow(st, p, cfg); else if (K === 'touche') throwNow(st, p, cfg); else if (K === 'elan') cfg.elanNow?.(st, p, cfg, receive);   // le lâcher de la touche (A9), la prise d'élan (A9 bis)
+      else if (K === 'tacle-debout') standTackleNow(st, p, cfg);
       else if (p.act?.payload?.kind === 'skill') skillContactNow(st, p, cfg);
     } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
       // la fin d'un geste technique STAMPE ses mesures — le banc juge la sim, pas une trace échantillonnée
@@ -196,7 +196,7 @@ function standTackleNow(st, q, cfg) {
     const vic = st.players[victimId];
     if (cfg.loi12 && st.full && still && vic && d2(q.p, vic.p) < (cfg.loi12.contact ?? 0.9) && !st._faute) {
       st._faute = { t: st.t, par: q.id, sur: victimId, team: vic.team, p: [vic.p[0], vic.p[2]] };
-      st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: victimId, p: [+vic.p[0].toFixed(1), +vic.p[2].toFixed(1)] });
+      st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: victimId, p: [+vic.p[0].toFixed(1), +vic.p[2].toFixed(1)] }); if (st.full && cfg.contact) chuter(st, vic, q, cfg, 'tacle-debout', null);   // (A10) la fente qui trouve les jambes : il tombe
     }
     return;
   }

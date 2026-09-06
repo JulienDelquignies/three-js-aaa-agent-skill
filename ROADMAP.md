@@ -131,13 +131,27 @@
   moteur, sceau 245) : la clé cfg.remisesMain (absente = le tronc au bit), la touche PORTÉE aux mains
   (holdMains, jamais posée par écriture), la cloche d'hier depuis les mains, salida et pertes vertes,
   la gradation 152/158 au tirage (trois touches en 12 × 240 s).
+- LIVRÉ (lot A10, note 315) : LE CONTACT — motion-contact : trois chutes (avant, côté, arrière) avec
+  leur relevé, le trébuchement, le duel d'épaule, le bouclier bras tendu ; legIK2 (normale du genou au
+  pôle, pôle qui suit la jambe) ; la sim sous cfg.contact (absente = le tronc au bit) : duel.chuter
+  nomme la chute aux quatre sites de faute, le presseur qui recule fait face (les régimes A7 vivent) ;
+  scenes/rondo-contact : chute tenue au sol et relevée à l'heure sim, épaule et trébuchement sur le
+  duel, bouclier tenu ; verify-contact 25 clauses ; contact-sheet --move chuteAvant/…/protection ;
+  banc complet 532/10 (A9 bis 536/6 — dix rouges relus : contention, pré-existant, graine sèche, lames
+  de couteau ; l'équilibre à 36 graines × 600 s tenu, un effet nommé : −15 % de refus contrôle-dos).
+- LIVRÉ (lot A9 bis, note 316) : LES REMISES AU PIED — la course d'élan des coups francs et corners (le
+  preneur recule, attend, court, la remise se prend au contact à l'arrivée), le dégagement de volée du
+  gardien (geste voleeGardien : le ballon lâché tombe, le pied le prend), le lanceur derrière la ligne, la
+  prise aérienne tenue ; la sim sous cfg.remisesPied (absente = le tronc au bit) ; verify-remises 36 clauses ;
+  banc complet 535/7 (sept rouges relus : un rouge sans la clé aussi, deux depuis A9 bis, quatre lames de
+  couteau ; l'équilibre à 24 graines × 600 s tenu — plus de coups de pied arrêtés et de touches, note 316).
+- LIVRÉ (le ballon oublié, note 317) : LE PORTÉ QUI ANTICIPE — un armé sur cinq était refusé au contact (le
+  ballon traînait derrière le corps qui glisse), vendangé, le corps filait sans lui ; cfg.porteAnticipe : le
+  ballon au point de stance du corps après son pas, le vendangé freine et se reprend (refus 65 → 20, épisodes
+  35 → 2 ; un tiers des duels tombe avec les ballons vendangés — le tronc re-calibre) ; verify-porte 4 clauses.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
-  (A9 bis) LES REMISES AU PIED — la course d'élan des coups de pied arrêtés (touche longue comprise),
-  le dégagement de volée du gardien, la prise aérienne tenue (dette A6), le lanceur derrière la
-  ligne ; (A10) LE CONTACT — la chute
-  du joueur fauté et son relevé, le duel d'épaule, le tacle subi, la protection de balle bras tendu
-  (crochets sim : chute sur faute, consigne de face « jockey » pour que la course arrière du lot A7
-  se déclenche) ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
+  (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
+  deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
   et cartons de l'arbitre, gestes sociaux générés. Et les dettes : (A2) le monde composé — re-caler
   les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s
   composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 bis) la

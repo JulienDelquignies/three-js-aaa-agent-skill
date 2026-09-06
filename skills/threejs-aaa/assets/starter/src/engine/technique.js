@@ -55,6 +55,11 @@ export const TECHNIQUES = [
     side: [0, 180], dist: [0, 3], turn: 180, power: 0.5, accuracy: 0.95,
     clip: 'rouleMain', why: 'La relance à la main du gardien : un ballon roulé à deux mains par en dessous, au sol, précis et court.',
   },
+  {
+    id: 'volee-gardien', intent: 'mains', foot: 'near', surface: 'laces',
+    side: [0, 180], dist: [0, 3], turn: 180, power: 0.95, accuracy: 0.55,
+    clip: 'voleeGardien', why: 'Le dégagement de volée du gardien (lot A9 bis) : le ballon lâché de la main tombe, le cou-de-pied le prend à mi-hauteur — long, haut, peu précis.',
+  },
   // ---- PASSING
   {
     id: 'passe-interieur', intent: 'pass', foot: 'near', surface: 'inside',

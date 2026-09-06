@@ -3,7 +3,7 @@
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
-import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
+import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
@@ -246,7 +246,7 @@ function assignMatchJobs(st, cfg) {
     }
     // LE PRENEUR EST STICKY et A UN MÉTIER (193, referee.elireTaker — gardien au renvoi, spécialiste au corner/CF offensif, ayant droit)
     let taker = elireTaker(st, r, cfg, d2);
-    if (taker) {
+    if (taker && !elanJob(st, r, taker, cfg)) {                  // …sauf pendant la course d'élan (lot A9 bis : il recule, il attend — referee.elanJob)
       taker.job = 'receive';
       // il vise le BALLON (la prise au rayon du ballon réel) ; le point de remise seulement pendant qu'il PORTE
       taker.target = r.carried && r.placed === false ? [r.p[0], 0, r.p[1]] : [st.ball.p[0], 0, st.ball.p[2]];
@@ -1205,7 +1205,7 @@ export function matchCfg(overrides = {}) {
     // le plongeon BATTU paie sa chute au bout du geste (hook onDiveEnd du loop — lot 91)
     onDiveEnd: (st, gk, A, cfg) => { if (!A.resolved) riseDown(st, gk, cfg, false); },
     // le ballon PRIS reste aux GANTS pendant le relevé (hook heldBall du loop — lot 91, keeperHold:false = le ballon gelé d'hier) : intouchable tenu, posé une fois debout
-    heldBall: gkHeldBall,   // le ballon aux gants : relevé + tenue de prise (keeper.gkHeldBall, lots 91/171)
+    heldBall: gkHeldBall, elanNow,   // (A9 bis) la remise se prend au contact du geste d'élan (referee.elanNow) ; le ballon aux gants : relevé + tenue de prise (keeper.gkHeldBall, lots 91/171)
     ...overrides,
   };
 }
