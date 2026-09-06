@@ -320,8 +320,12 @@ positioning 90 = la référence, 10 = −4,3 pts et 12 tirs concédés.
 la montée ne lit plus l'anticipation, tau la divise ; anticipation 90 → 7/3 tirs, 10 → 5/12 (hier inversé).
 Le laps d'attention (déplacement) rejeté à 24 graines.
 
-**Lot 246c — Concentration par la réaction, reactions par l'issue, teamwork par un second lecteur (à
-sceller).** Méthode : une note, un levier, une mesure appariée dans le bon sens.
+**Lot 246c — Le laps d'attention par la réaction — SCELLÉ (NOTES 317).** cfg.attention { tenue 3, taux 2 } :
+le distrait garde la cible du début de la tranche ; concentration 10 → 16/23 tirs c. 23/17 sans note (24
+graines), possession égale ; taux 1 ne mordait pas.
+
+**Lot 246d — Reactions par l'issue, teamwork par un second lecteur (à sceller).** Méthode : une note, un
+levier, une mesure appariée dans le bon sens.
 
 **Lot 246 (ancien libellé)** Révélé par le 244d au monde 245 : décision, placement,
 anticipation, appel, cohésion, marquage, concentration, réaction ne bougent presque rien dans les lois.

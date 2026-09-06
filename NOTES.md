@@ -9713,6 +9713,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Sans notes : au bit (empreintes du 245). Reste (246c) :
      concentration par la réaction, reactions par l'issue, teamwork par
      un second lecteur.
+- 317: LE LAPS D'ATTENTION PAR LA RÉACTION (246c — la note
+     concentration avait ZÉRO lecteur). Le 246b avait essayé le laps
+     par DÉPLACEMENT (le marqueur posté 8 m à côté une tranche sur
+     (1 − concF)) et l'avait rejeté : le distrait concédait MOINS (10
+     c. 17). Le laps juste porte sur la RÉACTION : une tranche de 3 s
+     sur (1 − concF) × taux, le marqueur garde la cible du DÉBUT de la
+     tranche — il court vers là où son homme ÉTAIT, ou vers le slot
+     d'il y a trois secondes ; hash id × tranche, zéro tirage ; à 50 et
+     au-dessus, rien (cfg.attention { tenue 3, taux 2 }, match-sim, les
+     TROIS cibles de marquage : zone, homme, ligne). MESURÉ 24 × 300 s (référence sans
+     note : possession 52,4, tirs 23/17) : concentration 90 = la
+     référence au bit ; 10 à taux 1 (24 % des tranches) : 25/14 — rien
+     ne mord ; 10 à taux 2 (48 %) : 16/23 — 6 tirs concédés de plus, 7
+     de moins pour soi, possession égale (52,3). Mesuré AVANT le laps sur la
+     troisième cible (la ligne du ballon couvert) ; avec les trois
+     cibles, remesuré à 24 graines : possession 49,3 (− 3,1), tirs
+     21/15 (plus de pénalité de tirs). Deux variantes du même levier,
+     deux signatures : le laps mord dans le bon sens (le distrait perd
+     quelque chose, possession ou tirs), mais sa SIGNATURE n'est pas
+     stable à 24 graines. Taux 2 livré, levier nommé FAIBLE — à
+     re-mesurer à 48 graines (246d) avant de le dire fort ; un levier
+     dont le signe tient mais dont la forme bouge n'est pas un
+     placebo, c'est un levier sous le bruit. BANC : clause 246c au mécanisme (part des
+     images de marquage en laps ≈ 48 % à 10, cible gelée dans la
+     tranche, 0 à 50 et 90, clés par défaut) ; annexe attributes. Sans
+     notes : au bit (empreintes du 245). Reste (246d) : reactions par
+     l'issue, teamwork par un second lecteur.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

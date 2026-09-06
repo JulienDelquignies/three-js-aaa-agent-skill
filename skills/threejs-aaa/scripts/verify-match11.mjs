@@ -5937,5 +5937,28 @@ if (__bloc()) {
     Math.abs(l90.cible - l10.cible) < 1e-9 && h90.cible > h10.cible && l90.dx > l10.dx && K.lecture === true && matchCfg().attention === null && matchCfg().pressTriggers.lecture === undefined);
 }
 
+// ---------------------------------------------------------------- lot 246c : LE LAPS D'ATTENTION PAR LA
+// RÉACTION (cfg.attention, ALLUMÉE — la note concentration avait ZÉRO lecteur). Le distrait garde, une
+// tranche de 3 s sur (1 − concF) × taux, la cible du DÉBUT de la tranche (zone ou homme) : il suit le jeu
+// avec retard. Mesuré 24 × 300 s (référence sans note : tirs 23/17) : concentration 10 à taux 2 (48 % des
+// tranches) → 16/23, à taux 1 → 25/14 (rien ne mord) ; 90 = la référence au bit. Le laps par DÉPLACEMENT
+// (246b) est rejeté : 10 concédés c. 17. Sans notes : au bit.
+if (__bloc()) {
+  const A = matchCfg().attention, NIV = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
+  const eq = (over) => Array.from({ length: 11 }, () => ({ ratings: { ...Object.fromEntries(NIV.map((k) => [k, 50])), ...over } }));
+  const part = (conc) => {   // la part des images où un marqueur de l'équipe 0 est en LAPS (cible gelée), équipe 1 en possession
+    const st = makeMatch({ full: true, seed: 3, squads: [eq({ concentration: conc }), eq({})] }), cfg = matchCfg({ shotRange: 20 });
+    let laps = 0, n = 0, gel = 0, gelN = 0; const prevT = new Map();
+    for (let i = 0; i < 90 * 60; i++) {
+      matchStep(st, 1 / 60, cfg); if (st.restart || st.possession.team !== 1) continue;
+      for (const p of st.players) if (p.team === 0 && !p.keeper && p.job === 'mark' && p.target) { n++; const tr = Math.floor(st.t / (A.tenue ?? 3)); if (p._vuTr === tr) { laps++; const q = prevT.get(p.id); if (q && q.tr === tr) { gelN++; if (Math.abs(q.x - p.target[0]) < 1e-9 && Math.abs(q.z - p.target[2]) < 1e-9) gel++; } prevT.set(p.id, { tr, x: p.target[0], z: p.target[2] }); } }
+    }
+    return { laps: n ? 100 * laps / n : 0, gel: gelN ? 100 * gel / gelN : 0 };
+  };
+  const c10 = part(10), c50 = part(50), c90 = part(90), attendu = 100 * (1 - __mp({ concentration: 10 }).concF) * (A.taux ?? 1);
+  ok(`lot 246c — LE LAPS D'ATTENTION au mécanisme : concentration 10 → ${c10.laps.toFixed(0)} % des images de marquage en laps (attendu ≈ ${attendu.toFixed(0)} % = (1 − concF ${__mp({ concentration: 10 }).concF.toFixed(2)}) × taux ${A.taux}, tolérance ± 12), la cible y est GELÉE (${c10.gel.toFixed(0)} % des images consécutives ≥ 80 — le reste : le marqueur SANS homme suit sa propre position, ligne « if (!m) », un laps sans objet) ; à 50 → ${c50.laps} %, à 90 → ${c90.laps} % (rien) ; clé par défaut tenue ${A.tenue} / taux ${A.taux}`,
+    Math.abs(c10.laps - attendu) <= 12 && c10.gel >= 80 && c50.laps === 0 && c90.laps === 0 && A.taux === 2 && A.tenue === 3);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

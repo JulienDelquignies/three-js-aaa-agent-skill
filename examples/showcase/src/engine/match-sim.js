@@ -1060,12 +1060,12 @@ function assignMatchJobs(st, cfg) {
             ? (1 + relC * (cfg.compression.fond ?? 1.4)) * (p.skill?.workF ?? 1) : 1;
           want[0] = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, want[0] + sgnD * (cfg.pressTriggers.step ?? 3.5) * kC));
         }
-        p.job = 'mark'; if (st.full && cfg.placement && (p.skill?.posF ?? 1) < 1) { const a = ((p.id * 7919 + Math.floor(st.t / (cfg.placement.tenue ?? 3)) * 104729) % 360) * Math.PI / 180, r = (cfg.placement.bruit ?? 10) * (1 - (p.skill?.posF ?? 1)); want[0] += r * Math.cos(a); want[1] += r * Math.sin(a); } if (st.full && cfg.attention && (p.skill?.concF ?? 1) < 1) { const tr = Math.floor(st.t / (cfg.attention.tenue ?? 3)), u = ((p.id * 2654435761 + tr * 40503) % 1000) / 1000; if (u < (1 - (p.skill?.concF ?? 1)) * (cfg.attention.taux ?? 1)) { const a = ((p.id * 7919 + tr * 104729) % 360) * Math.PI / 180, r = cfg.attention.bruit ?? 8; want[0] += r * Math.cos(a); want[1] += r * Math.sin(a); } }   // (246b) LE LAPS D'ATTENTION : le distrait (concF < 1) perd son poste de bruit m une tranche sur (1 − concF) × taux — hash, zéro tirage ; à 50 et au-dessus : rien   // (246) LE BRUIT DE PLACEMENT : le mauvais placeur (posF < 1) tient son poste défensif à côté — bruit × (1 − posF) m, direction stable tenue s (hash id × tranche : zéro tirage) ; à 50 et au-dessus : rien. Mesuré : la zone morte serrée du bon placeur lui coûtait la possession (48,3 c. 52,1) — le placement est une PRÉCISION, pas une cadence
+        p.job = 'mark'; if (st.full && cfg.placement && (p.skill?.posF ?? 1) < 1) { const a = ((p.id * 7919 + Math.floor(st.t / (cfg.placement.tenue ?? 3)) * 104729) % 360) * Math.PI / 180, r = (cfg.placement.bruit ?? 10) * (1 - (p.skill?.posF ?? 1)); want[0] += r * Math.cos(a); want[1] += r * Math.sin(a); }   // (246) LE BRUIT DE PLACEMENT : le mauvais placeur (posF < 1) tient son poste défensif à côté — bruit × (1 − posF) m, direction stable tenue s (hash id × tranche : zéro tirage) ; à 50 et au-dessus : rien. Mesuré : la zone morte serrée du bon placeur lui coûtait la possession (48,3 c. 52,1) — le placement est une PRÉCISION, pas une cadence
         const drift = p._slotT ? hyp(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
         if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 * (st.full && cfg.placement && cfg.placement.zoneMorte !== true ? 1 : 2 - (p.skill?.posF ?? 1)) && drift <= 3.5)) {   // …le POSITIONING était une ZONE MORTE (151) — (246) INVERSÉE : le recalage serré du bon placeur lui coûtait 5,6 pts de possession (47,5 c. 53,1, 12 × 300 s) ; sous cfg.placement la note est un BRUIT (ligne du dessus), la zone morte ne la lit plus (placement.zoneMorte:true la rend ; placement null : l'hier)
           p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)
         }
-        p.target = [p._slotT[0], 0, p._slotT[1]];
+        p.target = [p._slotT[0], 0, p._slotT[1]]; if (st.full && cfg.attention && (p.skill?.concF ?? 1) < 1) { const tr = Math.floor(st.t / (cfg.attention.tenue ?? 3)); if (((p.id * 2654435761 + tr * 40503) % 1000) / 1000 < (1 - (p.skill?.concF ?? 1)) * (cfg.attention.taux ?? 1)) { if (p._vuTr !== tr) { p._vuTr = tr; p._vu = [p.target[0], p.target[2]]; } p.target[0] = p._vu[0]; p.target[2] = p._vu[1]; } else p._vuTr = -1; }   // (246c) LE LAPS D'ATTENTION PAR LA RÉACTION : le distrait (concF < 1) garde, une tranche sur (1 − concF) × taux, la cible du DÉBUT de la tranche — il suit le jeu avec retard ; hash id × tranche, zéro tirage ; à 50 et au-dessus : rien
         return;
       }
       // marquage : l'attaquant libre le plus proche, un pas CÔTÉ BUT, à-coups (0,5 s/0,8 m) ; ON MARQUE LE DANGER SEULEMENT (51b) — sinon le bloc couvre. Réduit : hier.
@@ -1077,7 +1077,7 @@ function assignMatchJobs(st, cfg) {
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (60)
         const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]], wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0;   // (228) le voisin du sorti glisse vers le trou
-        p.job = 'mark'; p.target = [wM[0] + (st._bCouvertDx && mapD.indexOf(p.post ?? 0) < nDefD ? (st._bCouvertDx[defTeamB] ?? 0) : 0) + (st._bRefermeDx?.get(mapD[p.post ?? 0]) ?? 0), 0, wM[1]];   // (236) la LIGNE ARRIÈRE monte ou recule selon l'état du porteur (couvert.js)
+        p.job = 'mark'; p.target = [wM[0] + (st._bCouvertDx && mapD.indexOf(p.post ?? 0) < nDefD ? (st._bCouvertDx[defTeamB] ?? 0) : 0) + (st._bRefermeDx?.get(mapD[p.post ?? 0]) ?? 0), 0, wM[1]]; if (st.full && cfg.attention && (p.skill?.concF ?? 1) < 1) { const tr = Math.floor(st.t / (cfg.attention.tenue ?? 3)); if (((p.id * 2654435761 + tr * 40503) % 1000) / 1000 < (1 - (p.skill?.concF ?? 1)) * (cfg.attention.taux ?? 1)) { if (p._vuTr !== tr) { p._vuTr = tr; p._vu = [p.target[0], p.target[2]]; } p.target[0] = p._vu[0]; p.target[2] = p._vu[1]; } else p._vuTr = -1; }   // (236) la LIGNE ARRIÈRE monte ou recule selon l'état du porteur (couvert.js)
         return;
       }
       if (!m) { p.job = 'mark'; p.target = [p.p[0], 0, p.p[2]]; return; }
@@ -1107,7 +1107,7 @@ function assignMatchJobs(st, cfg) {
       if (rouge || !p._markT || (drift > 3 && (!t135 || st.t >= (p._markHold ?? 0)) && ((t135 && (p._markHold = st.t + (cfg.assignTenue?.mark ?? 1.6))), true)) || ((p._markAt ?? -1) <= st.t && drift > (press ? 0.55 : 0.8) && drift <= 3)) {
         p._markT = want; p._markAt = st.t + (press ? 0.35 : 0.5);   // …en zone rouge le suivi est CONTINU (192)
       }
-      p.target = [p._markT[0], 0, p._markT[1]];
+      p.target = [p._markT[0], 0, p._markT[1]]; if (st.full && cfg.attention && (p.skill?.concF ?? 1) < 1) { const tr = Math.floor(st.t / (cfg.attention.tenue ?? 3)); if (((p.id * 2654435761 + tr * 40503) % 1000) / 1000 < (1 - (p.skill?.concF ?? 1)) * (cfg.attention.taux ?? 1)) { if (p._vuTr !== tr) { p._vuTr = tr; p._vu = [p.target[0], p.target[2]]; } p.target[0] = p._vu[0]; p.target[2] = p._vu[1]; } else p._vuTr = -1; }   // (246c) le même laps sur le marquage d'homme : il court vers là où son homme ÉTAIT
     });
   }
 
