@@ -21,11 +21,13 @@ export function couvertStep(st, cfg, { defTeam, carrier, presseur, sgnAtk, antic
   if (carrier && !carrier.keeper) {
     const dP = presseur ? Math.hypot(presseur.p[0] - carrier.p[0], presseur.p[2] - carrier.p[2]) : 99;
     const face = Math.cos(carrier.yaw) * sgnAtk > (K.face ?? 0.3);
-    if (dP <= (K.pres ?? 2) || !face) { etat = 'couvert'; cible = (K.monte ?? 3) * axe(T.hauteurBloc, 0.6, 1.4) * anticipMoy; }
-    else if (dP > (K.libre ?? 3.5) && face) { etat = 'découvert'; cible = -(K.recule ?? 5) * axe(T.hauteurBloc, 1.4, 0.6) * anticipMoy; }
+    // (246b) K.lecture : le bloc qui LIT ne monte pas PLUS, il monte PLUS TÔT — l'amplitude ne lit plus la moyenne d'anticipation, la constante tau la divise (mesuré : × anticipMoy sur l'amplitude faisait concéder 12-13 tirs c. 6-8 à anticipation 90) ; absent : l'hier
+    const am = K.lecture ? 1 : anticipMoy;
+    if (dP <= (K.pres ?? 2) || !face) { etat = 'couvert'; cible = (K.monte ?? 3) * axe(T.hauteurBloc, 0.6, 1.4) * am; }
+    else if (dP > (K.libre ?? 3.5) && face) { etat = 'découvert'; cible = -(K.recule ?? 5) * axe(T.hauteurBloc, 1.4, 0.6) * am; }
   }
   const M = (st._bCouvert ??= {}); const prev = M[defTeam] ?? { dx: 0, t: st.t };
-  const dt = Math.max(0, Math.min(0.2, st.t - prev.t)), k = 1 - Math.exp(-dt / (K.tau ?? 0.2));
+  const dt = Math.max(0, Math.min(0.2, st.t - prev.t)), k = 1 - Math.exp(-dt / ((K.tau ?? 0.2) / (K.lecture ? anticipMoy : 1)));
   const dx = prev.dx + (cible - prev.dx) * k;
   M[defTeam] = { dx, t: st.t, etat };
   (st._bCouvertDx ??= {})[defTeam] = dx * sgnAtk * -1;   // en coordonnées monde : + vers le but adverse de la défense = vers le ballon

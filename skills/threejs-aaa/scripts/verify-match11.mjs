@@ -74,6 +74,7 @@ import { estPointe, estLateral, pivotDe, pointeDe, familiarite } from '../assets
 import { profilAuPoste, POSTE_MALUS } from '../assets/starter/src/engine/attributes.js';
 import { refermerLigne } from '../assets/starter/src/engine/marquage.js';
 import { makeProfile as __mp } from '../assets/starter/src/engine/attributes.js';
+import { couvertStep } from '../assets/starter/src/engine/couvert.js';
 import { readdirSync as __rd, readFileSync as __rf } from 'node:fs';
 import { balPrenable } from '../assets/starter/src/engine/dribble.js';
 
@@ -5917,6 +5918,23 @@ if (__bloc()) {
   const r10 = Math.hypot(...b10);
   ok(`lot 246 — LES LEVIERS DE LECTURE au mécanisme : la passe avant le contact LIT (anticipation 90 : seuil ${seuil(p90, true).toFixed(3)} s > 10 : ${seuil(p10, true).toFixed(3)} ; hier ${seuil(p90, false).toFixed(3)} < ${seuil(p10, false).toFixed(3)} — inversé) et la clé est ALLUMÉE (${AC.lecture === true}) ; le bruit de placement : positioning 10 → ${r10.toFixed(2)} m à côté (= 1,2 : bruit 10 × (1 − 0,88)), stable sur la tenue (${(Math.hypot(b10[0] - b10b[0], b10[1] - b10b[1])).toFixed(2)} = 0 à 1 s, ${Math.hypot(b10[0] - b10c[0], b10[1] - b10c[1]) > 0.01} tourne après 3 s), 90 → ${Math.hypot(...b90)} = 0, 50 → ${Math.hypot(...b50)} = 0 ; placement ${JSON.stringify(matchCfg().placement)} ALLUMÉ (zoneMorte false : la zone morte du 151, le VRAI levier inversé — trouvé au traceur, il lisait posF à la ligne 1065 sous 160 colonnes de code), referme.note ${matchCfg().referme.note} = 0 (la note n'amplifie plus le recul)`,
     seuil(p90, true) > seuil(p10, true) && seuil(p90, false) < seuil(p10, false) && AC.lecture === true && Math.abs(r10 - 1.2) < 1e-6 && Math.hypot(b10[0] - b10b[0], b10[1] - b10b[1]) < 1e-9 && Math.hypot(b10[0] - b10c[0], b10[1] - b10c[1]) > 0.01 && Math.hypot(...b90) === 0 && Math.hypot(...b50) === 0 && matchCfg().placement?.bruit === 10 && matchCfg().placement.zoneMorte === false && matchCfg().referme.note === 0);
+}
+
+// ---------------------------------------------------------------- lot 246b : LE BLOC QUI LIT MONTE
+// PLUS TÔT, PAS PLUS (cfg.couvert.lecture, ALLUMÉE). Après le 246, anticipation 90 concédait encore 12-13
+// tirs c. 6-8 : isolé, ni la fenêtre 161 (pressTriggers.lecture:false : 5/12 encore) ni la passe avant le
+// contact — c'est couvert.js (236) qui multipliait l'AMPLITUDE de la montée et du recul par la moyenne
+// d'anticipation du bloc (× 1,12 à 90) : le bloc qui lit montait plus haut et se faisait prendre. La loi :
+// l'amplitude ne lit plus la note, la constante de temps tau la divise (il lit plus tôt). Mesuré 12 × 300 s :
+// anticipation 90 → tirs 7/3, 10 → 5/12 (hier 4/13 c. 11/8) ; la possession n'est pas son levier (53,1 c.
+// 53,3). Le LAPS D'ATTENTION (cfg.attention, concentration) essayé et REJETÉ : 24 graines, le distrait
+// concède 10 tirs c. 17 — déplacer un marqueur n'est pas le distraire (246c : la réaction). Sans notes : au bit.
+if (__bloc()) {
+  const K = matchCfg().couvert, tac0 = () => ({ hauteurBloc: 0.5 }), axe0 = (v, a, b) => a + (b - a) * v;
+  const cible = (am, lecture) => { const st = { full: true, t: 0, _bCouvert: {} }, args = { defTeam: 0, carrier: { p: [0, 0, 0], yaw: 0, keeper: false }, presseur: { p: [1, 0, 0] }, sgnAtk: 1, anticipMoy: am, tac: tac0, axe: axe0 }; couvertStep(st, { couvert: { ...K, lecture } }, args); st.t = 1 / 60; return couvertStep(st, { couvert: { ...K, lecture } }, args); };   // deux appels : le premier pose l'état, le second fait le pas (dt = 1/60)
+  const l90 = cible(1.12, true), l10 = cible(0.88, true), h90 = cible(1.12, false), h10 = cible(0.88, false);
+  ok(`lot 246b — LE BLOC QUI LIT au mécanisme : porteur cadré → montée cible ${l90.cible.toFixed(2)} m à anticipation 90 = ${l10.cible.toFixed(2)} à 10 (l'amplitude ne lit plus la note ; hier ${h90.cible.toFixed(2)} > ${h10.cible.toFixed(2)}) ; le premier pas de lecture ${l90.dx.toFixed(4)} m à 90 > ${l10.dx.toFixed(4)} à 10 (tau ÷ anticipation : il lit plus tôt ; hier ${h90.dx.toFixed(4)} / ${h10.dx.toFixed(4)}) ; clé ALLUMÉE ${K.lecture === true}, attention ${matchCfg().attention === null ? 'null (rejetée)' : 'ALLUMÉE ?'}, pressTriggers.lecture ${matchCfg().pressTriggers.lecture === undefined ? 'absente (isolement)' : matchCfg().pressTriggers.lecture}`,
+    Math.abs(l90.cible - l10.cible) < 1e-9 && h90.cible > h10.cible && l90.dx > l10.dx && K.lecture === true && matchCfg().attention === null && matchCfg().pressTriggers.lecture === undefined);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

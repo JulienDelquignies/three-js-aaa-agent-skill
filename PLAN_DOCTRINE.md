@@ -316,9 +316,12 @@ puis 10, 12 × 300 s) : concentration morte, reactions muette, teamwork faible ;
 INVERSÉES et corrigées (avantContact.lecture, referme.note 0, placement { bruit, zoneMorte:false }) ;
 positioning 90 = la référence, 10 = −4,3 pts et 12 tirs concédés.
 
-**Lot 246b — Les leviers restants (à sceller).** Concentration (un laps d'attention du marqueur), reactions
-(l'issue), teamwork (un second lecteur), la fenêtre de pressing 161 sous anticipation (4/13 c. 11/8 tirs).
-Méthode : une note, un levier, une mesure appariée dans le bon sens.
+**Lot 246b — Le bloc qui lit monte plus tôt, pas plus — SCELLÉ (NOTES 316).** couvert.lecture : l'amplitude de
+la montée ne lit plus l'anticipation, tau la divise ; anticipation 90 → 7/3 tirs, 10 → 5/12 (hier inversé).
+Le laps d'attention (déplacement) rejeté à 24 graines.
+
+**Lot 246c — Concentration par la réaction, reactions par l'issue, teamwork par un second lecteur (à
+sceller).** Méthode : une note, un levier, une mesure appariée dans le bon sens.
 
 **Lot 246 (ancien libellé)** Révélé par le 244d au monde 245 : décision, placement,
 anticipation, appel, cohésion, marquage, concentration, réaction ne bougent presque rien dans les lois.

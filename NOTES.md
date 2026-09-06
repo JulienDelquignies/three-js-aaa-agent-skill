@@ -9685,6 +9685,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (un seul lecteur, faible), et la fenêtre de pressing 161 sous
      anticipation. La matrice reste la méthode : une note, un levier,
      une mesure appariée dans le bon sens.
+- 316: LE BLOC QUI LIT MONTE PLUS TÔT, PAS PLUS (246b — les leviers
+     restants). Après le 246, anticipation 90 concédait encore 12-13
+     tirs c. 6-8 (possession égale). Isolé par clés (12 × 300 s) : la
+     fenêtre de pressing collectif du 161 non (pressTriggers.lecture:
+     false, clé d'isolement gardée : 5/12 encore), la passe avant le
+     contact non ; c'est couvert.js (236) qui multipliait l'AMPLITUDE
+     de la montée sur ballon couvert et du recul sur ballon découvert
+     par la moyenne d'anticipation du bloc — le bloc qui lit montait
+     3,36 m au lieu de 3 et se faisait prendre dans son dos. Même
+     erreur que posF sur le recul du 237 : une note de LECTURE n'est
+     pas une amplitude, c'est un TEMPS. La loi (couvert.lecture,
+     ALLUMÉE) : l'amplitude ne lit plus la note, la constante tau la
+     divise — il monte plus tôt. MESURÉ : anticipation 90 → tirs 7/3,
+     10 → 5/12 (hier 4/13 c. 11/8 : inversé) ; possession 53,1 c. 53,3
+     — l'anticipation n'est pas un levier de possession, c'est un
+     levier de tirs concédés, et il est maintenant dans le bon sens.
+     LE LAPS D'ATTENTION pour concentration (cfg.attention : le distrait
+     perd son poste défensif de 8 m une tranche sur (1 − concF)) essayé
+     et REJETÉ à 24 graines : concentration 10 concède 10 tirs c. 17
+     sans note — déplacer un marqueur n'est pas le distraire, c'est un
+     autre placement ; le laps doit porter sur la RÉACTION (le marqueur
+     qui suit son homme avec retard) — 246c. Clé null, code gardé.
+     BANC : clause 246b au mécanisme (deux pas de couvertStep : cible
+     3,00 = 3,00 aux deux notes, hier 3,36 > 2,64 ; le premier pas de
+     lecture plus grand à 90 ; clés par défaut) ; annexe attributes.
+     Sans notes : au bit (empreintes du 245). Reste (246c) :
+     concentration par la réaction, reactions par l'issue, teamwork par
+     un second lecteur.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
