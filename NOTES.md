@@ -8711,7 +8711,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tacles, tête, plongeons (chacun une espèce de plus du générateur) ;
      la locomotion attend sa couche d'inclinaison et de balancier.
 - 295: VINGT GESTES GÉNÉRÉS (lot A3 — « tu peux faire le même travail
-     pour d'autres gestes ? »). La même loi que la note 294 (articulations
+     pour d'autres gestes ? »). La même loi que la note 295 (articulations
      anatomiques conjuguées dans le bind, rampes C¹ à pics placés, appui par
      IK, style par joueur, emitSpec) étendue à trois familles, un REGISTRE
      (motion-cast.GENERATORS : espèce → famille, generate, check) et
@@ -8939,7 +8939,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      contrat et sous checkClip. Nommé : la borne d'Euler de checkClip sur
      la hanche est une convention debout ; un corps couché mériterait une
      lecture géométrique (angle cuisse / axe du bassin).
-- 300: LA TABLE DES STANCES RENDUE AU MOTEUR. verify-match11 (1 h de calcul,
+- 299b: LA TABLE DES STANCES RENDUE AU MOTEUR. verify-match11 (1 h de calcul,
      258 clauses de sim pure) : 258/6 sur le commit d'avant les lots
      d'animation, 253/11 avec la table des stances re-dérivée des clips
      générés (A1-A3) — trois clauses qui passaient sont rouges et huit
@@ -9369,6 +9369,160 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      mesure que la technique (passe, contrôle, frappe, tacle, vitesse).
      Annexe attributes : 27 ✓ / 0 ✗ — verte pour la première fois
      depuis le 237.
+- 308: (numérotée 302 sur la branche animations/main — renumérotée à la fusion : ici 294-299b sont A1-A6, la jambe arrière et les stances, 300-307 les lots 242-245 ; leurs 303-304 = A7-A8 deviennent 309-310 ; A9 n'est pas repris, voir 311) LA BRANCHE MAIN (« tu peux créer une branche main en mergeant les 2
+     branches actives ? »). main naît le 5 septembre de la branche moteur
+     (claude/ai-agent-threejs-aaa-tool-dyrrb0, ffee199 : lots 241-242, note
+     294) fusionnée avec la branche animations (claude/11c11-3d-animations-
+     ob06xa, 9071c22 : lots A1-A6) — 16 commits depuis la base commune
+     7a9e33c, merge --no-ff. UN SEUL CONFLIT : NOTES.md, les deux chantiers
+     ayant écrit chacun une note 294 ; résolution : les deux jeux gardés,
+     moteur puis animations, les notes animations renumérotées 295-301 (les
+     renvois suivent : ROADMAP.md, reference/51-motion-strike.md, le renvoi
+     interne de la 296). Aucun conflit de code : les deux chantiers ne
+     touchent pas les mêmes fichiers, et la sim lit des animations
+     exactement ce qu'elle lisait — les 41 espèces générées gardent durée et
+     contact de l'authoré (vérifié espèce par espèce), STANCES est la table
+     du moteur (note 301). BANCS DE L'ARBRE FUSIONNÉ : verify-match11 266/0
+     (le banc du moteur — ses six rouges de la base sont réglés par les lots
+     241-242 ; sur la branche animations seule, avec le banc de la base, la
+     table restaurée redonne 258/6, les six rouges de la note 301), match
+     84/0, rondo 40/0, motion 206/0, animkit 119/119, gestes 60/0, swing
+     115/0, approach 24/0, strike-warp 23/0, slide 10/0, gesture 28/0,
+     gesture-layer 10/0, tête 7/0, frappes 13/0, retarget 13/0, anim-fsm
+     15/0, tactics 11/0, sync 9/0, build de la vitrine OK. UN ROUGE,
+     ANTÉRIEUR AU MERGE : verify-attributes 26/1 (lot 152/158, la gradation
+     30 → 82, 50 → 47, 70 → 77, 90 → 94 — les mêmes chiffres sur la branche
+     moteur seule, dans un worktree) : le chantier moteur. NON FUSIONNÉE :
+     perf/11c11-lots (dcd8f96, 4 septembre, 1 commit hors de la
+     branche moteur, base 5bca43e) — une troisième branche, pas « active »,
+     à merger sur demande. RÈGLE DE JOURNAL désormais : la prochaine note
+     est la 303, et chaque chantier repart de main (merge de main dans sa
+     branche) pour que les numéros ne se croisent plus.
+- 309: LA FOULÉE GÉNÉRÉE (lot A7 — « ok vas-y commence A7 »). Mesuré d'abord
+     (match11, graine 7, 1 min, 20 joueurs de champ) : la couche de geste possède
+     3,2 % du temps d'écran ; 97 % sont de la locomotion, et c'était TROIS clips
+     du donneur Soldier (idle, walk, run) cadencés par gait.js — sprint = trot
+     accéléré buste droit (1,5 % des images à > 7 m/s), un défenseur sur trois
+     en mouvement près du ballon lui tourne le dos, le gardien glisse de côté sur
+     un cycle de marche de face (43 % de son temps latéral ou à reculons). Le
+     module motion-gait : la méthode des gestes appliquée à la foulée — chemins
+     de pied (appui fixe au monde par construction : la cheville recule sous le
+     bassin à −v→ ; pelage talon-pointe qui avance de 0,2 m en marche ; vol en
+     cloche, talon vers la fesse en course, genou devant à reculons) résolus par
+     legIK sur la hanche de l'instant, bassin (rebond ×2, roulis, lacet, tangage,
+     affaissement CALCULÉ pour atteindre les deux extrêmes), tronc (Pontzer
+     149 → 94°), bras opposés à leur jambe — FONCTION PURE de (φ, vF, vR), posée
+     ABSOLUE (rest ⊗ q_spec) par le contrôleur après le mixer, fondue avec l'idle
+     sous 0,6 m/s. Régimes interpolés par la vitesse (marche 62 % d'appui → trot
+     44 → course 36 → sprint 27) et fondus par la direction (arrière, chassés) ;
+     la CADENCE SUIT LA DIRECTION (×1,3 à reculons, ×1,9 de côté — sinon un
+     chassé à 2 m/s demande des pieds à 1,8 m ; l'horloge et le chemin partagent
+     le facteur). Signature par joueur (graine de persona : coude, balancier,
+     inclinaison, hauteur du vol, ouverture des pieds…). LEÇONS : (1) la jambe
+     de shanon (0,76 m) est courte pour la foulée de Dorn — atteindre le point de
+     pose coûte 7 cm d'affaissement en marche, 10-12 en course (dette nommée :
+     cadence à l'échelle de la jambe) ; (2) le talon doit décoller à MI-appui
+     (peel 0,5 en marche) : cloué au sol jusqu'à 78 % de l'appui, la jambe
+     demandait 16 cm de crouch ; (3) le déroulé pendant l'appui fixe est un
+     glissement — il vit dans le pelage ; (4) le sprint sec (pic de vol à 28 %,
+     0,46 m) fait 41 rad/s de genou : 30 % et 0,30 m le ramènent sous les 30 de
+     checkClip ; (5) la clause de dégagement se lit sur l'ORTEIL à mi-vol, pas
+     sur la cheville à la pose. Contrat verify-foulee 45/45 (13 régimes, 40
+     signatures × 6, pure, checkClip, lois entre régimes, bande du verrou, 8
+     sabotages). En jeu : trace d'un coureur à 4,53 m/s — cheville gauche au
+     même point monde pendant les 8 images de l'appui fixe (le corps avance de
+     7,5 cm par image) ; vitesse monde du pied en appui fixe médiane 0,13 m/s
+     (p90 0,99 : le virage) ; pied bas immobile 23-29 % des images contre 10-12
+     avec les clips. contact-sheet --gait v [--lat] rend huit phases avant/après
+     par le contrôleur ; ?foulee=clips rend l'ancien monde ; ctrl.locomotion se
+     commute à chaud (sc.update(0) : l'avant/après au même instant). Dettes : la
+     course arrière n'a presque jamais de déclencheur (la sim fait regarder où
+     l'on court : 150 s sans un vF < −1,8 — une consigne « jockey » côté
+     moteur), virage et freinage réduits au lean, idle du Soldier (A8), une
+     re-capture d'une image du verrou pendant le pelage (plancher calibré sur le
+     clip de course), bras de course bas et fermés. Bancs : tous verts (sync,
+     gait 23, locomotion, anim-fsm, gesture-layer 10, persona 20, gestes 60,
+     animkit, motion 206, rondo 40, match 84, swing 115, slide 10, gesture 28,
+     retarget 13).
+- 310: L'ATTENTE GÉNÉRÉE (lot A8 — « ok enchaine a8 »). À l'arrêt, tous les joueurs
+     jouaient l'idle du Soldier : le même garde-à-vous, les mêmes secondes, le
+     gardien comme un piquet (43 % de son temps). motion-idle : une fonction pure
+     de (t, espèce, style) — le poids qui passe d'un pied à l'autre (±3,5 cm,
+     6-9 s, le bassin ROULE vers la jambe libre, dont le talon se lève de ce qui
+     lui manque en portée), la respiration aux clavicules (5 mm), les bras qui
+     vivent sur des périodes incommensurables, les pieds FIXES (IK sur le bassin
+     qui bouge). Six espèces qui sont des situations : repos, mainsHanches (le
+     calme), sautillement (le nerveux, sur la pointe), pret (la garde du
+     défenseur à ≤ 5,5 m du porteur), pretGardien (bas, large, gants ouverts,
+     ballon ≤ 32 m), mur (mains croisées devant le bas-ventre, menton rentré, à
+     9,5 m d'un coup franc adverse). La politique est pure (contexte lu de la
+     sim en une ligne de scène + persona.calm/burstiness). LEÇONS : (1) la main
+     sur la hanche et les mains devant le bas-ventre demandent la VRILLE de
+     l'humérus — armJoints n'en avait pas (son rot est un lacet de T-pose) ;
+     armPose l'ajoute, et la vrille garde son signe d'un côté à l'autre (le
+     miroir x → −x conserve une rotation autour de X — la première version
+     inversait, main gauche à 46 cm du corps) ; les angles viennent d'une
+     recherche FK sur le rig (poignet à ≤ 1 cm de la cible) ; (2) le poignet de
+     shanon pend à 0,94 m (bras 0,49 m) : les cibles se pensent en poignet, pas
+     en main ; (3) le bind a 8° de genou — une attente « droite » mesure 16° ;
+     (4) la respiration ne se mesure pas sur la hauteur de la poitrine (un
+     tangage ne monte pas) mais sur les épaules ; (5) SOUS LA MARCHE, la loi de
+     cadence (f ∝ v ⇒ foulée constante de 1,5 m) faisait faire des enjambées de
+     1,5 m au ralenti aux joueurs qui se replacent à 0,4 m/s — invisible avec
+     les clips (fondu vers l'idle), flagrant avec la foulée générée qui suit la
+     loi à la lettre : gait.strideLaw raccourcit la foulée sous 1,4 m/s
+     (S ∝ v^0,75 : 0,59 m à 0,4 m/s), verify-gait inchangé 23/23. Contrat
+     verify-attente 40/40 (6 espèces, 24 styles × 6, pure, lente, checkClip,
+     ce qui est propre à chaque espèce, la politique, 8 sabotages). En jeu
+     (graine 7) : touche à t = 170 — 17 joueurs à l'arrêt, 5 mains sur les
+     hanches, 6 sautillements, 6 repos ; le gardien en position à 27 m du ballon
+     (capture) ; le mur : pas un coup franc en deux matchs (12 min de jeu :
+     touches, corners, engagements) — à observer au premier. contact-sheet
+     --idle espèce (avant/après par le contrôleur). Dettes : variantes de repos
+     (bras croisés, mains dans le dos), le regard d'attente, le mur qui saute,
+     les joueurs qui se replacent de côté pendant un temps mort (la sim les
+     fait regarder le jeu — consigne « on se retourne pour marcher », moteur).
+- 311: LA FUSION DE LA BRANCHE ANIMATIONS, A7 ET A8 REPRIS, A9 LAISSÉ
+     (« tu peux récupérer ce qui a été fait sur l'autre branche ? »).
+     Repris : main (9c7e613, la note 302 de là-bas → 308 ici), A7 la
+     foulée générée (309), A8 l'attente générée (310) — motion-gait,
+     motion-idle, character-controller, gait.js : le rendu et des
+     fonctions pures, l'empreinte du match servi ne bouge pas
+     (e140bada469d99fb / e615292ad7ea10b2 = le 245 au bit), annexes
+     foulee 45 ✓ et attente 40 ✓. NON REPRIS : A9 « les remises à la
+     main » (97ea260 — la sim arme la touche et le roulé du gardien :
+     keeper, movement, referee, rondo-sim, strike-sim, technique,
+     motion-restart), parce qu'il change la SIMULATION SANS CLÉ — aucun
+     jumeau au bit — et que le banc complet de l'arbre fusionné avec
+     lui remonte quatre contrats cassés que l'on ne peut ni épingler ni
+     re-dater : (1) LE CONTRAT DE REMISE (match-check : « toute remise
+     est portée, ballFetch, jamais posée par écriture ») — en 4-3-3
+     graine 1, 300 s, cinq touches sont posées par écriture (sauts de
+     1,7 à 5,8 m au registre) sans événement qui les nomme (le
+     ramasseur, lui, nomme sa pose) ; quatre formations sur seize
+     rompent le contrat structurel en 90 s, et le 4-3-3 en 300 s ;
+     (2) LA SALIDA (239) — le pivot en relance basse sous pression
+     passe de 2,8 m à 5,9 m devant les centraux (6 × 300 s) : le roulé
+     du gardien depuis les mains change la relance et le 6 ne
+     s'intercale plus ; (3) LA GRADATION DES NOTES (152/158, 12 × 240 s)
+     — 70 / 51 / 249 / 443 : le 30 repasse devant le 50 ; (4) LE 240 —
+     pertes 575 c. sans 509 (+ 13 %, 24 × 300 s ; avant fusion 545 c.
+     522). Aussi : lot 189 (11 reculs ≤ 10,5), 140 (2 servies ≥ 3),
+     241 (× 0,81) bougent — du tirage, re-datables, mais pas les quatre
+     premiers. CE QUE LA BRANCHE ANIMATIONS DOIT FAIRE POUR QUE A9 SOIT
+     REPRIS : une clé cfg (ex. remisesMain, absente = l'hier au bit) qui
+     gate la touche armée et le roulé ; nommer chaque pose légitime par
+     un événement que match-check accepte (comme 'ramasseur'), ou
+     porter le ballon aux mains par ballFetch ; remesurer la salida
+     (pivot ≤ 3 m devant les centraux) et la gradation dans son monde ;
+     et lancer le banc COMPLET (8 shards + annexes), pas seulement
+     verify-remises (21 ✓ chez eux). Le retour est écrit pour eux :
+     docs/Retour_Reference_A9_Remises.md.
+     BANC COMPLET de l'arbre fusionné (A7 + A8 + main) : 8 shards et
+     quinze annexes verts, sauf le flux du 244b (appels du 9 en 4-2-3-1
+     20 ≥ hier 22 à 3 graines — Poisson, et déjà rouge au banc 245 dans
+     un shard relu avant sa fin : leçon, le tally se lit APRÈS le
+     fichier .done) → 6 graines DATÉ 246.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

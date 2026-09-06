@@ -267,7 +267,7 @@ le pied passe à 0,02-0,06 m du point de frappe (0,42 m avant le lot A1).
   d'arrivée (audit-membres) est le prochain chantier.
 - Restent authorés : la retournée (sans déclencheur sim) et les gestes sociaux (salut, poignée,
   célébration, applaudir, consulter). Tout le football du répertoire est généré.
-- La table `STANCES` est RENDUE AU MOTEUR (note 300) : la re-dériver des clips générés (passe 0,44 m,
+- La table `STANCES` est RENDUE AU MOTEUR (note 301) : la re-dériver des clips générés (passe 0,44 m,
   déviation 0,32, pivot {0,50, 64°}…) faisait basculer 8 clauses de verify-match11 (l'engagement, le
   choix de l'espèce de tir, la conduite — 258 clauses accordées sur la géométrie d'hier). La stance
   des clips vit dans `STANCES_CLIP` (verify-motion la mesure, verify-swing la compare) ; l'écart de

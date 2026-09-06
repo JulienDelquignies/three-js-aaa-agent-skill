@@ -36,6 +36,11 @@
 const LAW = [[0, 0], [1.4, 0.93], [3.5, 1.88], [5.2, 2.21], [7.0, 2.63], [9.0, 3.1]];
 export function strideLaw(v) {
   const x = Math.max(0, Math.min(9.0, Math.abs(v)));
+  // SOUS LA MARCHE (< 1,4 m/s) : la foulée RACCOURCIT avec l'allure (S ∝ v^0,75 — 0,59 m à 0,4 m/s,
+  // 0,28 m à 0,15) au lieu de garder les 1,5 m du segment linéaire (f ∝ v ⇒ S constante : un joueur
+  // qui se replace à 0,4 m/s faisait des enjambées de 1,5 m au ralenti — mesuré avec la foulée
+  // générée du lot A7, où le chemin de pied suit la loi à la lettre). Continu en 1,4.
+  if (x < 1.4) return 0.93 * Math.pow(x / 1.4, 0.25);
   for (let i = 1; i < LAW.length; i++) {
     if (x <= LAW[i][0]) {
       const [x0, y0] = LAW[i - 1], [x1, y1] = LAW[i];

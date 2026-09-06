@@ -5784,7 +5784,7 @@ if (__bloc()) {
   // les pertes ≤ hier × 1,15 (Poisson à 3 graines — mesuré à 8 : 352 +8 %, 4231 −1 %, 433 −8 %) ; salida 433 : pivot M(C) toujours
   const flux = (f, over) => {
     const o = { deb: {}, appels: {}, pivots: {}, ligne: 0, img: 0, pertes: 0 };
-    for (const seed of [1, 2, 3]) {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ 246 (appels du 9 en 4-2-3-1 : 20 ≥ hier 22 à 3 graines — Poisson à 20 ; le 245 l'avait laissé passer : shard relu avant sa fin)
       const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ shotRange: 20, ...over });
       let prev = -1, cur = 0;
       for (let i = 0; i < 300 * 60; i++) {
@@ -5803,7 +5803,7 @@ if (__bloc()) {
   const A352 = flux('352', {}), H352 = flux('352', { postesNommes: false });
   const A4231 = flux('4231', {}), H4231 = flux('4231', { postesNommes: false });
   const sum = (m) => Object.values(m).reduce((a, b) => a + b, 0), key = (m) => Object.keys(m).sort().join('+');
-  ok(`lot 244b — le FLUX (3 × 300 s) : 3-5-2 dédoublement par ${key(A352.deb) || 'personne'} (${sum(A352.deb)} ; hier ${JSON.stringify(H352.deb)} — un CENTRAL débordait), pivot de salida ${key(A352.pivots) || '—'} (hier ${key(H352.pivots) || '—'}), appels ${sum(A352.appels)} c. ${sum(H352.appels)}, pertes ${A352.pertes} ≤ ${H352.pertes} × 1,15 ; 4-2-3-1 : le dix sur la ligne ${A4231.ligne.toFixed(0)} % des images ≤ 5 (hier ${H4231.ligne.toFixed(0)}), ses appels profonds ${A4231.appels['AM(C)'] ?? 0} = 0 (hier ${H4231.appels['AM(C)'] ?? 0}), ceux du 9 ${A4231.appels['ST(C)'] ?? 0} ≥ ${H4231.appels['ST(C)'] ?? 0}, pertes ${A4231.pertes} ≤ ${H4231.pertes} × 1,15`,
+  ok(`lot 244b — le FLUX (6 × 300 s) : 3-5-2 dédoublement par ${key(A352.deb) || 'personne'} (${sum(A352.deb)} ; hier ${JSON.stringify(H352.deb)} — un CENTRAL débordait), pivot de salida ${key(A352.pivots) || '—'} (hier ${key(H352.pivots) || '—'}), appels ${sum(A352.appels)} c. ${sum(H352.appels)}, pertes ${A352.pertes} ≤ ${H352.pertes} × 1,15 ; 4-2-3-1 : le dix sur la ligne ${A4231.ligne.toFixed(0)} % des images ≤ 5 (hier ${H4231.ligne.toFixed(0)}), ses appels profonds ${A4231.appels['AM(C)'] ?? 0} = 0 (hier ${H4231.appels['AM(C)'] ?? 0}), ceux du 9 ${A4231.appels['ST(C)'] ?? 0} ≥ ${H4231.appels['ST(C)'] ?? 0}, pertes ${A4231.pertes} ≤ ${H4231.pertes} × 1,15`,
     key(A352.deb) === 'WB(D)+WB(G)' && sum(A352.deb) >= 4 && !('D(CG)' in A352.deb) && key(A352.pivots) === 'M(C)' && A352.pertes <= H352.pertes * 1.15
     && A4231.ligne <= 5 && (A4231.appels['AM(C)'] ?? 0) === 0 && (A4231.appels['ST(C)'] ?? 0) >= (H4231.appels['ST(C)'] ?? 0) && A4231.pertes <= H4231.pertes * 1.15);
 }
