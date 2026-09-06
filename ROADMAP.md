@@ -136,7 +136,9 @@
   pôle, pôle qui suit la jambe) ; la sim sous cfg.contact (absente = le tronc au bit) : duel.chuter
   nomme la chute aux quatre sites de faute, le presseur qui recule fait face (les régimes A7 vivent) ;
   scenes/rondo-contact : chute tenue au sol et relevée à l'heure sim, épaule et trébuchement sur le
-  duel, bouclier tenu ; verify-contact 25 clauses ; contact-sheet --move chuteAvant/…/protection.
+  duel, bouclier tenu ; verify-contact 25 clauses ; contact-sheet --move chuteAvant/…/protection ;
+  banc complet 532/10 (A9 bis 536/6 — dix rouges relus : contention, pré-existant, graine sèche, lames
+  de couteau ; l'équilibre à 36 graines × 600 s tenu, un effet nommé : −15 % de refus contrôle-dos).
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 bis) LES REMISES AU PIED — la course d'élan des coups de pied arrêtés (touche longue comprise),
   le dégagement de volée du gardien, la prise aérienne tenue (dette A6), le lanceur derrière la

@@ -93,6 +93,36 @@ trébuchement qui ne plonge pas, épaule qui ne sort pas, bras ballant).
 - Graine 3, t = 117 s : duel d'épaule gagné → `epaule-gauche` sur le chargeur, `trebuche` sur le battu
   (`a10-epaule`) ; t = 126 s : bouclier 0,3 s avant une frappe (`a10-protection`).
 
+## Le banc du match (bancs.mjs, 8 shards)
+
+532 ✓ / 10 ✗ sur le moteur A10 (A9 bis : 536 / 6). Les dix rouges, relus clé allumée contre clé absente :
+
+- le budget 1,61 ms/step ≤ 1,6 : la contention des 8 shards (seul : 0,53 allumée, 0,52 absente) ;
+- le FLUX 24 × 300 s « troisième homme » : rouge sur les trois bancs (A9 bis plat, lob, A10), pré-existant ;
+- « PERSONNE NE TIRE » à la graine 7 : la graine sèche du lot 17 (0 tir à 480 s, 2 à 600 s avec la clé, 3
+  sans) ; cette graine n'a ni faute ni chute avec la clé — seul le cap des presseurs re-tire la trajectoire ;
+- le FLUX des contres (lot 242), rejoué : le monde SANS contreZones a bougé (zéro zone 61 → 35 %, 14/23 →
+  7/20 contres), le monde avec la clé est resté (35 → 41 %, 7/20 → 9/22) — vingt contres par monde, un
+  écart exigé de 15 points ;
+- six lames de couteau datées par leurs propres commentaires (recule 8 ≤ 7, petit pont 2 ≥ 3, bélier 568 ≥
+  593, surface 60 ≥ 67 sur 12 × 300 s, gradation rung 30 déjà rouge aux bancs A9 bis, traversées 10,3 ≤ 8).
+
+L'équilibre, mesuré à 36 graines × 600 s (six heures de jeu par monde) :
+
+| monde | tirs | dans la surface | passes | pertes | buts |
+|---|---|---|---|---|---|
+| clé allumée | 111 | 70 % | 5 439 | 1 602 | 17 |
+| clé absente (le tronc) | 123 | 56 % | 5 480 | 1 617 | 16 |
+| jockey seul (les chutes d'hier) | 133 | 68 % | 5 260 | 1 612 | 17 |
+
+L'écart-type d'une graine est de 2 tirs : les sommes tiennent dans une sigma. Un effet systématique, nommé :
+les refus « contrôle-dos » 3 550 c. 4 194 (−15 % sur 24 graines) — le presseur qui fait face a moins de
+ballons dans le dos, la loi du cône de prise (lot 70) le lit. Le jockey est une loi de la sim (le cap entre
+dans les cônes de `duel.js` et de la prise), pas un habillage ; l'alternative — un canal de face visuel
+(`p.yawFace`) dessiné par la scène sans que la sim le lise, monde au bit hors fautes — est nommée pour le
+tronc s'il préfère ses cônes d'hier. Verdict : la clé re-tire les trajectoires comme A9 (« le tirage, pas la
+clé »), l'équilibre tient, l'hier au bit sans la clé.
+
 ## Les dettes nommées
 
 - Le bouclier n'a pas de durée en jeu (la sim relâche le ballon sous 0,35 s quand on est collé) ; une

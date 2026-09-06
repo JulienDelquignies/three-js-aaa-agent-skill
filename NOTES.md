@@ -9627,6 +9627,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (bouclier avant une frappe). Dettes : le bouclier sans durée (tenue de balle dos au but = loi
      moteur), le duel d'épaule rare (1 / 360 s), deux corps qui se traversent au sol, la glisse
      dans le sens de la vitesse quelle que soit la chute, ni protestation ni douleur (A11).
+     LE BANC COMPLET (bancs.mjs, 8 shards) sur le moteur A10 : 532 ✓ / 10 ✗ (A9 bis : 536 / 6). Les
+     dix rouges relus un par un, clé allumée contre clé absente : (1) le budget 1,61 ms/step ≤ 1,6
+     est la contention des 8 shards (seul : 0,53 allumée, 0,52 absente) ; (2) le FLUX 24 × 300 s
+     « troisième homme » est rouge sur les trois bancs (A9 bis plat, lob, A10 : pré-existant) ;
+     (3) « PERSONNE NE TIRE » à la graine 7 (480 s, 249 passages) : la graine sèche du lot 17
+     (« 330 s à zéro tir a 16 % de chance ») — 0 tir à 480 s, 2 à 600 s avec la clé, 3 sans ; le
+     monde de la graine 7 n'a NI faute NI chute avec la clé : c'est le seul cap des presseurs (le
+     jockey, que la sim lit dans ses cônes de prise) qui re-tire la trajectoire ; (4) le FLUX des
+     contres (lot 242) rejoué à l'identique : c'est le monde SANS contreZones qui a bougé (zéro
+     zone 61 → 35 %, 14/23 → 7/20 contres) quand le monde avec la clé est resté (35 → 41 %, 7/20 →
+     9/22) — deux échantillons de vingt contres et un écart exigé de 15 points ; (5) les six
+     autres sont des lames de couteau datées par leurs propres commentaires (recule 8 ≤ 7, petit
+     pont 2 ≥ 3, bélier 568 ≥ 593 à 10 % près « ratio re-daté trois fois », surface 60 ≥ 67 sur
+     12 × 300 s, la gradation rung 30 déjà rouge aux deux bancs A9 bis, traversées 10,3 ≤ 8).
+     L'ÉQUILIBRE, mesuré à 36 graines × 600 s (six heures de jeu par monde) allumée / absente /
+     jockey seul : tirs 111 / 123 / 133 (dans la surface 70 / 56 / 68 %), passes 5 439 / 5 480 /
+     5 260, pertes 1 602 / 1 617 / 1 612, buts 17 / 16 / 17 — l'écart-type d'une graine est de
+     2 tirs, l'écart des sommes tient dans une sigma. UN effet systématique, nommé : les refus
+     « contrôle-dos » 3 550 c. 4 194 (−15 % sur 24 graines) — le presseur qui fait face a moins de
+     ballons dans le dos, la loi du cône (lot 70) le lit ; les duels gagnés 144 c. 172, dans le
+     bruit. Le jockey est donc une loi de la sim (le cap entre dans les cônes), pas un habillage ;
+     l'alternative — un canal de face visuel (p.yawFace) que la scène dessine sans que la sim le
+     lise, monde au bit hors fautes — est nommée pour le tronc s'il préfère ses cônes d'hier.
+     Verdict : la clé re-tire les trajectoires comme A9 (« le tirage, pas la clé »), l'équilibre
+     tient, l'hier au bit sans la clé.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
