@@ -103,9 +103,8 @@ function stepGestures(st, dt, cfg) {
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
-      if (p.act?.payload?.kind === 'pass') strikeNow(st, p, cfg);
-      else if (p.act?.payload?.kind === 'touche') throwNow(st, p, cfg);   // le lâcher de la touche (lot A9)
-      else if (p.act?.payload?.kind === 'tacle-debout') standTackleNow(st, p, cfg);
+      const K = p.act?.payload?.kind; if (K === 'pass') strikeNow(st, p, cfg); else if (K === 'touche') throwNow(st, p, cfg); else if (K === 'elan') cfg.elanNow?.(st, p, cfg, receive);   // le lâcher de la touche (A9), la prise d'élan (A9 bis)
+      else if (K === 'tacle-debout') standTackleNow(st, p, cfg);
       else if (p.act?.payload?.kind === 'skill') skillContactNow(st, p, cfg);
     } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
       // la fin d'un geste technique STAMPE ses mesures — le banc juge la sim, pas une trace échantillonnée

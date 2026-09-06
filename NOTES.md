@@ -9701,6 +9701,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      lise, monde au bit hors fautes — est nommée pour le tronc s'il préfère ses cônes d'hier.
      Verdict : la clé re-tire les trajectoires comme A9 (« le tirage, pas la clé »), l'équilibre
      tient, l'hier au bit sans la clé.
+- 316: LES REMISES AU PIED (lot A9 bis — « ok enchaine »). Le coup franc et le corner se
+     frappaient À L'INSTANT de la prise, du point de pose — aucun geste, aucune course ; le gardien qui
+     tenait le ballon le dégageait « de volée » depuis le sol (téléporté de 1,09 m à 0,11 à la frappe) ;
+     le lanceur de touche se tenait sur la ligne, les pieds dedans ; la prise aérienne sautait des gants.
+     SIM sous cfg.remisesPied { elan { recul 3,5, lat 1,5, vitesse 4, patience 4 }, volee { h 1,0,
+     avance 0,45, lacher 0,72 }, touche { recul 0,4 } }, absente = le tronc au bit (2 graines × 240 s,
+     événements et positions identiques à la copie figée) : LA COURSE D'ÉLAN (referee.poserElan/
+     elanJob/elanStep/elanNow — le preneur recule à recul m derrière le ballon sur la ligne ballon-cible,
+     lat m du côté du pied faible, le tablier borne, attend face au ballon, court ≤ vitesse m/s en visant
+     AU-DELÀ du ballon ; le geste 'frappe' s'arme sur la durée de la course et la remise se prend AU
+     CONTACT à l'arrivée — canTake, receive, onTake : la frappe d'hier dans la même image ; en avance le
+     contact vient à l'arrivée, en retard l'armé s'étire, 1,5 s sans arriver il s'abandonne (refus
+     élan-sans-ballon) ; movement.js laisse le corps courir sous l'armé 'elan', vitesse bornée, le cap
+     à la course) ; LE DÉGAGEMENT DE VOLÉE (relancerGardien : le ballon aux gants qui se joue long arme
+     'voleeGardien' par beginPass mains 'volee' ; gkHeldBall descend les gants au point de lâcher puis
+     TIENT LE BALLON SUR SA CHUTE au servo — y = h − ½ g t², jamais posé par écriture — et strikeNow
+     part de sa hauteur : ballY 0,76 mesuré ; refus volée-volée si un autre l'a pris) ; LE LANCEUR
+     DERRIÈRE LA LIGNE (elanJob : le ballon sur la ligne, le lanceur recul m dehors ; onOut ignore le
+     ballon tenu d'un lanceur qui arme et le ballon lancé qui rentre — hier une seconde sortie ; la
+     patience de la face court depuis la POSE). GÉNÉRATEUR voleeGardien (motion-restart : un pas
+     d'appui, le tronc penché sur le ballon tenu — la portée du bras, 0,49 m —, le lâcher à 1,0 m devant
+     à 0,65 s, le cou-de-pied à 0,60 m à 6,4 m/s au contact 0,90 s, l'accompagnement à la hanche).
+     MESURÉ EN CONSTRUISANT : la vitesse du pied au contact se règle avec le pic de la rampe SUR le
+     contact et un accompagnement proportionné (2,5 m/s avec un accompagnement court) ; le pôle du
+     genou suit la jambe (loi A10 — vrille de 180° à l'accompagnement avec un pôle fixe) ; le point de
+     lâcher à portée de bras (le coude claquait à 27 rad/s) ; les mains s'ouvrent en 0,25 s. SCÈNE
+     (scenes/rondo-remises.js, Rondo.js à 1249) : l'horloge du clip d'élan calée sur le contact de la sim
+     (t < 0 : le corps court à la foulée, le geste monte dans le dernier tiers de seconde), le ballon aux
+     gants jusqu'au lâcher, la prise aérienne tenue dans les gants du clip. Banc verify-remises 36
+     clauses (+13 : le geste, 20 styles × 4, la technique, la volée forcée, six coups de pied arrêtés
+     forcés, le lanceur derrière la ligne sur 8 touches, la clé absente, trois sabotages ; une remise
+     forcée attend le calme — un armé naturel pendant la pose forcée envoyait le ballon de l'autre
+     ligne : un artefact du banc) ; verify-contact 25, verify-motion 206, verify-gestes 60, sync 9.
+     Planche --move voleeGardien ; captures graine 5 t 18,6 (la volée : lâcher, contact), graine 3 t 46,3
+     (corner de derrière le poteau, 3,95 m/s), 61,2 (touche de derrière la ligne), 142,9 (coup franc à
+     24 m, 3,55 m de course, la frappe dans la même image que le contact). Dettes : la sortie de but et
+     la touche longue sans course, le corner court qui finit en conduite, la prise aérienne non filmée,
+     le mur qui ne saute pas.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

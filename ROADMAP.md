@@ -139,10 +139,12 @@
   duel, bouclier tenu ; verify-contact 25 clauses ; contact-sheet --move chuteAvant/…/protection ;
   banc complet 532/10 (A9 bis 536/6 — dix rouges relus : contention, pré-existant, graine sèche, lames
   de couteau ; l'équilibre à 36 graines × 600 s tenu, un effet nommé : −15 % de refus contrôle-dos).
+- LIVRÉ (lot A9 bis, note 316) : LES REMISES AU PIED — la course d'élan des coups francs et corners (le
+  preneur recule, attend, court, la remise se prend au contact à l'arrivée), le dégagement de volée du
+  gardien (geste voleeGardien : le ballon lâché tombe, le pied le prend), le lanceur derrière la ligne, la
+  prise aérienne tenue ; la sim sous cfg.remisesPied (absente = le tronc au bit) ; verify-remises 36 clauses.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
-  (A9 bis) LES REMISES AU PIED — la course d'élan des coups de pied arrêtés (touche longue comprise),
-  le dégagement de volée du gardien, la prise aérienne tenue (dette A6), le lanceur derrière la
-  ligne ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
+  (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
   et cartons de l'arbitre, gestes sociaux générés. Et les dettes : (A2) le monde composé — re-caler
   les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s

@@ -62,6 +62,7 @@ threejs-aaa/ (the skill)
 │   ├── 53-motion-idle.md       GENERATED idles (rest, hands on hips, bouncing, defender's guard, keeper's set, the wall — a pure function of time and situation): anatomical joint curves and foot paths (proximo-distal whip, cushion, ballistic jump, sole/circle/cut, the body that lies down, the dive that gets up on the spot, per-player style) → animkit specs, the rig profile, the contact sheet
 │   ├── 54-motion-restart.md    GENERATED hand restarts (throw-in, keeper's underarm roll, ground pickup — the sim arms the gesture and the ball leaves the HANDS at contact)
 │   ├── 55-motion-contact.md    GENERATED contact (falls and getting up, stumble, shoulder duel, ball shielding — the sim names the fall, the jockey faces the carrier)
+│   ├── 56-remises-au-pied.md   GENERATED foot restarts (free-kick and corner run-up taken at the end of the run, keeper's volley clearance from the hands, thrower behind the line, held aerial catch)
 │   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
@@ -260,6 +261,15 @@ examples/
   site and makes the retreating presser face the carrier so the generated backpedal and side shuffle
   finally trigger; the scene holds the body on the ground exactly as long as the sim does
   (`verify-contact.mjs`, 25 clauses).
+
+  `motion-restart.js` (lot A9 bis) adds the FOOT restarts: free kicks and corners are taken at the end of a
+  generated RUN-UP (the taker walks back behind the ball on the ball-target line, waits facing it, runs in at
+  4 m/s and the sim takes the restart at the contact of the gesture, on arrival — yesterday it struck the ball
+  the instant the restart opened, standing still), the keeper's volley clearance is generated (`voleeGardien`:
+  the ball is carried to the drop point by the gloves, FALLS from the hand and the instep takes it mid-height —
+  the pass leaves from the ball's real height, never teleported to the ground), the thrower stands behind the
+  touchline (Law 15) and the aerial catch stays in the gloves of the clip. Everything under `cfg.remisesPied`
+  (absent = yesterday bit for bit); `verify-remises.mjs` carries the 36 clauses (reference/56).
 
 ## Install
 

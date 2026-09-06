@@ -1,4 +1,4 @@
-import { contactEvent, contactClock, contactShield } from './rondo-contact.js';
+import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { remiseClock, remiseHands } from './rondo-remises.js';   // le contact (A10), les remises au pied (A9 bis)
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -965,7 +965,7 @@ export class Rondo {
       { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : null, tk = !!r && r.type === 'touche' && r.taker === s.id && Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) < 1.3, aT = s.act, tId = aT?.payload?.pick?.tech?.id;
         pl.ctrl.idleCtx = { keeper: !!s.keeper, dead: !!r && r.type !== 'fin', wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, toucheTaker: tk, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team };
         // LE BALLON EN MAINS (A9) : le preneur qui attend ou arme sa touche, le gardien qui arme son roulé ou qui vient de ramasser
-        pl._holdHands = tk || ((tId === 'touche' || tId === 'roule-main') && !aT.fired) || ((pl.gestureLayer.spec?.name ?? '') === 'ramassage' && stx.ball.owner === s.id); }
+        pl._holdHands = tk || ((tId === 'touche' || tId === 'roule-main') && !aT.fired) || remiseHands(pl, aT, stx, s) || ((pl.gestureLayer.spec?.name ?? '') === 'ramassage' && stx.ball.owner === s.id); }
       const exemptLod = !this._animLod || pl.gestureLayer.active || s.act || (s.down ?? 0) > 0
         || s.id === stx.possession.carrier || s.id === (stx.pass?.to ?? -99) || s.keeper;
       const dCamL = exemptLod ? 0 : Math.hypot(this.cam.position.x - s.p[0], this.cam.position.z - s.p[2]);
@@ -1006,7 +1006,7 @@ export class Rondo {
         const act = pl.sim.act;
         const v = pl.ctrl.groundSpeed ?? 0;
         const meta = pl._layerClock ?? { t0: this._t, offset: 0, dur: 0.6, antic: 0.2 };
-        let t = act ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt;   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
+        let t = act ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt; t = remiseClock(pl, act, t);   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
         // LE TACLEUR RESTE AU SOL tant que la sim le dit (p.down = récupération) : l'horloge du
         // clip se GÈLE sur la pose couchée (clé « au sol ») au lieu de dérouler le relevé — le
         // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
@@ -1030,14 +1030,14 @@ export class Rondo {
         // couchée (700°/s de tronc, 11 m/s mesurés — note 132).
         const diveDown = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse && !pl.sim._sub && pl.sim.rise
           && /^plongeon/.test(pl.gestureLayer.spec?.name ?? '');
-        const antic = act?.anticipation || meta.antic || 0.2;
+        const antic = (act?.payload?.kind === 'elan' ? pl.gestureLayer.spec?.contact : act?.anticipation) || meta.antic || 0.2;   // l'élan : l'armé de la sim est la course, celui du clip son contact (rondo-remises)
         const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
         // …et le contact ne possède les jambes QUE jusqu'à ~0,15 s après lui : au-delà, c'est le
         // corps qui décide (byArrive). Sans cette borne, un tacleur relevé COURAIT à 3 m/s avec
         // les jambes de la pose couchée à poids plein (byContact restait à 1 tout l'accompagnement
         // du tacle, 0,9 s — orteil à −0,48 m, mesuré) ; pareil pour toute frappe dont la sim
         // repart tôt.
-        const byContact = t < antic + 0.15 ? Math.min(1, Math.pow(t / Math.max(1e-4, antic * 0.8), 1.5)) : 0;
+        const byContact = t < antic + 0.15 ? Math.min(1, Math.pow(Math.max(0, t) / Math.max(1e-4, antic * 0.8), 1.5)) : 0;
         // …et un tacleur que la SIM a relevé et remis en course lâche sa pose tout de suite : le
         // reste du clip couché n'a plus de corps à habiller (résidu mesuré : jambe fantôme à
         // −0,28 m pendant le fondu tardif)
@@ -1056,7 +1056,7 @@ export class Rondo {
         // « changement de mouvement » (retour utilisateur — le geste doit être la CONTINUITÉ de la
         // locomotion) : 0,12 → 0,18 s selon la vitesse sol, symétrique entrée/sortie.
         const tauW = 0.12 + 0.06 * Math.min(1, v / 4);
-        pl._wUp = done ? Math.max(0, (pl._wUp ?? 1) - dtP / tauW) : Math.min(1, (pl._wUp ?? 0) + dtP / tauW);
+        pl._wUp = done || t < 0 ? Math.max(0, (pl._wUp ?? 1) - dtP / tauW) : Math.min(1, (pl._wUp ?? 0) + dtP / tauW);   // t < 0 : le clip d'élan n'a pas commencé, le corps court
         // L'ENTRÉE MÈNE L'HORLOGE DU CLIP (la clé t=0 est la pose NEUTRE — le haut se faisait
         // tirer au garde-à-vous avant de s'armer) : on échantillonne EN AVANCE (lead 0,3 ×
         // anticipation), convergence linéaire vers l'heure vraie AU CONTACT.

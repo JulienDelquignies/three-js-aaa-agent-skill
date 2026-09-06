@@ -713,6 +713,11 @@ export const MATCH = {
                           // se décale lui FAIT FACE (consigne « jockey », movement.js — la course arrière et le pas chassé du lot A7 se
                           // déclenchent). Absente : le fauché figé debout 0,7 s et le presseur qui tourne le dos, au bit.
   remisesMain: { toucheH: 1.8, elev: 0.55, elevLongue: 0.42, face: 0.35, patience: 3 },   // (lot A9) LES REMISES À LA MAIN : la touche s'ARME (motion-restart 'touche' — le ballon PORTÉ aux mains
+  remisesPied: { elan: { recul: 3.5, lat: 1.5, vitesse: 4.0, patience: 4 }, volee: { h: 1.0, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.4 } },   // (lot A9 bis) LES REMISES AU PIED : le coup franc et le corner se prennent AU BOUT d'une COURSE D'ÉLAN (referee.poserElan/elanStep/elanNow —
+  // le preneur recule de recul m derrière le ballon, lat m du côté de son pied faible, attend l'heure face au ballon, court ≤ vitesse m/s, le geste 'frappe' s'arme sur la course et la remise se prend au contact, à l'arrivée ;
+  // patience s sans arriver : la prise d'hier) ; le gardien qui tient le ballon le DÉGAGE DE VOLÉE (keeper.relancerGardien mains 'volee' — motion-restart 'voleeGardien' : les mains descendent au point de lâcher (h, avance),
+  // le ballon TOMBE de la main à lacher × l'armé et le pied le prend au contact, strikeNow part de sa hauteur) ; le lanceur de touche POSE le ballon recul m derrière la ligne (les deux pieds hors du terrain, Loi 15).
+  // Absente : la frappe instantanée du point de pose, le ballon tenu téléporté au sol à la frappe, le lanceur sur la ligne — l'hier au bit.
                           // pendant l'armé, jamais posé par écriture) et part des mains au contact (toucheH ; élévations : la CLOCHE d'hier, 0,55 rad
                           // court / 0,42 long — mesuré : tendue à 0,24 le jet filait à 17,7 m/s p50 et arrivait en 1,0 s, la possession tenait
                           // 5 s ; en cloche 13,1 m/s, 2,25 s, 18,8 s — le réel lance à 10-15 m/s) ; la relance à la main du

@@ -57,7 +57,7 @@ export function movePlayers(st, dt, cfg) {
     // …et un geste technique possède le corps AU-DELÀ du contact : le râteau tourne le lacet
     // pendant l'accompagnement, la semelle tient le corps immobile sur son ballon — stepGestures
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
-    if (winding(p) || p.act?.payload?.ownsBody) {
+    if ((winding(p) || p.act?.payload?.ownsBody) && !p.act?.payload?.elan) {   // …et la COURSE D'ÉLAN (lot A9 bis) : le corps COURT sous son armé, le contact attend l'arrivée
       p.speed = hyp(p.v[0], p.v[1]);
       if (!p.act?.payload?.mains) continue;
       p.v = [0, 0]; p.push = null; p.speed = 0;                     // …sauf les MAINS (lot A9 — touche, roulé du gardien) : planté, il TOURNE encore sur sa cible pendant l'armé (le slew ci-dessous)
@@ -86,7 +86,8 @@ export function movePlayers(st, dt, cfg) {
       : p.job === 'mark' ? (cfg.speeds.mark != null ? 'mark' : 'support')
       : p.job === 'walk' ? (cfg.speeds.walk != null ? 'walk' : 'support')
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
-      * (p.skill?.topF ?? p.persona?.paceBias ?? 1) * (p.job === 'walk' ? (p._walkF ?? 1) : 1);   // le retour pressé/flâné (183, cfg.retourTrot — posé par le match)   // la NOTE de vitesse fait foi ; sinon l'accent persona
+      * (p.skill?.topF ?? p.persona?.paceBias ?? 1) * (p.job === 'walk' ? (p._walkF ?? 1) : 1);
+    if (p.act?.payload?.elan) top = Math.min(top, p.act.payload.elan);   // la course d'élan (A9 bis) : un trot vers le ballon, pas un sprint   // le retour pressé/flâné (183, cfg.retourTrot — posé par le match)   // la NOTE de vitesse fait foi ; sinon l'accent persona
     // LE DONNE-ET-VA COURT À FOND (218, cfg.unDeux.course — mesuré : le lanceur en pointe plafonnait à
     // 5,8 m/s (support 4,9 × 1,28) quand le presseur court à 7,6 (chase) : une course de une-deux est
     // un sprint, pas un coulissement de soutien). Le lanceur prend la vitesse de CHASSE le temps de
@@ -385,7 +386,7 @@ export function movePlayers(st, dt, cfg) {
     // on the geometry at COMMIT and then let the body rotate for the whole 0.4 s of the windup, so the
     // ball could be dead behind him by the time the boot arrived — `ball-ahead-at-strike` 16.7 %. You
     // commit your body when you commit your gesture; that IS what committing means.
-    if (p.act && !p.act.payload?.mains) continue;                  // …sauf les remises à la MAIN (lot A9 — touche, roulé) : le ballon est dans ses mains, il tourne le corps avec
+    if (p.act && !p.act.payload?.mains && !p.act.payload?.elan) continue;   // …sauf les remises à la MAIN et la course d'élan (A9 bis : le cap suit la course) (lot A9 — touche, roulé) : le ballon est dans ses mains, il tourne le corps avec
     // …pendant la PRÉSENTATION (lot 70, plus bas), l'autorité du cap est le BALLON, pas la
     // dérive : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à chaque
     // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la

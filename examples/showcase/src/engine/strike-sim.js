@@ -42,7 +42,7 @@ const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3
 export function holdMains(st, c, dt, cfg) {
   const A = c.act;
   if (!A || A.fired || st.ball.owner !== c.id) return false;
-  if (A.payload?.mains === 'roule') return !!cfg.heldBall?.(st, c, dt, cfg);
+  if (A.payload?.mains === 'roule' || A.payload?.mains === 'volee') return !!cfg.heldBall?.(st, c, dt, cfg);   // les gants du gardien (keeper.gkHeldBall)
   if (A.payload?.mains !== 'touche') return false;
   const H = (cfg.remisesMain && cfg.remisesMain.toucheH) || TOUCHE_H;
   const u = A.t / Math.max(1e-3, A.anticipation), fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
@@ -96,7 +96,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // LA DISTRIBUTION À LA MAIN DU GARDIEN (lot A9, opts.mains) : pas d'ancre ni de stance — le ballon est DANS
   // les mains ; la technique est le roulé (motion-restart.rouleMain), lâché bas devant au contact. Avant : la
   // relance à la main dessinait une passe du pied. (La touche, elle, s'arme dans referee.remiseEnTouche.)
-  const mains = !!opts.mains;
+  const mains = opts.mains === true ? 'roule' : (opts.mains || null);   // 'roule' (le gardien, A9) | 'volee' (le dégagement de volée, A9 bis)
 
   // QUELLE TECHNIQUE ? DEUX RÉGIMES, parce que le temps change la nature de la question.
   //
@@ -125,7 +125,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     && relV <= (cfg.strikeBallRel ?? 2.2) * (c.skill?.controlF ?? 1));
   let pick, move, stance, anchor;
   if (mains) {
-    pick = { tech: byId['roule-main'], foot: c.foot }; move = MOVE_TIMING[pick.tech.clip] || MOVE_TIMING.passe; stance = null; anchor = null;
+    pick = { tech: byId[mains === 'volee' ? 'volee-gardien' : 'roule-main'] || byId['roule-main'], foot: c.foot }; move = MOVE_TIMING[pick.tech.clip] || MOVE_TIMING.passe; stance = null; anchor = null;
   } else if (!urgent) {
     // les surfaces de PLAN : jouables sur un ballon posé (une « première » sur un ballon qu'on
     // s'est soi-même assis serait une contradiction — firstTime reste à l'improvisation)
@@ -291,7 +291,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   }
   c.foot = pick.foot;
   c.intent = null;                                          // l'intention a abouti : le geste prend le relais
-  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw, mains: mains ? 'roule' : null,
+  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw, mains,
     // …l'ÉLAN du commit (lot 45) : la foulée de frappe le porte DANS le geste (stepGestures)
     v0: hyp(c.v[0], c.v[1]), vYaw: Math.atan2(c.v[1], c.v[0]) }, log: st.gestures });
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, tech: pick.tech.id, move: pick.tech.clip, foot: pick.foot, anticipation: move.contact });
@@ -312,8 +312,9 @@ export function strikeNow(st, c, cfg) {
   const rec = st.players[choice.to.id];
   // LE ROULÉ DU GARDIEN (lot A9) part des MAINS, bas et devant : le ballon tenu descend au point de lâcher
   // (hold — le déplacement porté, pas un téléport) et la balistique part de là
-  const roule = c.act.payload.mains === 'roule';                 // le ballon est aux gants, descendus au point de lâcher (keeper.gkHeldBall)
-  const from = [st.ball.p[0], roule ? Math.max(BALL.radius, st.ball.p[1]) : BALL.radius, st.ball.p[2]];
+  const mains = c.act.payload.mains;                            // 'roule' : aux gants descendus au point de lâcher ; 'volee' : le ballon lâché qui tombe (keeper.gkHeldBall) — la frappe part de sa hauteur
+  const from = [st.ball.p[0], mains ? Math.max(BALL.radius, st.ball.p[1]) : BALL.radius, st.ball.p[2]];
+  if (mains === 'volee' && st.ball.owner !== c.id) { deny(st, 'volée-volée'); return; }   // le ballon lâché lui a été pris : pas de frappe dans le vide
   // LA LIGNE RELUE À LA FRAPPE (243, cfg.ligneFermee.relu && st.full — retour utilisateur « un adversaire sur la ligne de passe ») : la
   // ligne était OUVERTE à l'adoption (≥ 1,15 m) et un défenseur y est entré pendant l'armé (0,77 s p50 — 15 des 22 passes au sol
   // jouées dans un corps, mesurées) ; le passeur qui a le temps (pas urgent) relit sa ligne au contact : fermée sous relu × visionF
@@ -637,7 +638,7 @@ export function strikeNow(st, c, cfg) {
   const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
   const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
-    t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot, ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
+    t: +st.t.toFixed(2), type: 'pass', from: c.id, to: choice.to.id, style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure

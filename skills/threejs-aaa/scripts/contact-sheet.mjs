@@ -63,6 +63,7 @@ function ballFor(move, spec) {
   if (SKILL_KINDS[move]) return [...SKILL_KINDS[move].ball];   // le geste technique DÉCLARE où est son ballon (il ne part pas)
   if (GROUND_KINDS[move]) return [...GROUND_KINDS[move].ball];
   if (KEEPER_KINDS[move]) return [...KEEPER_KINDS[move].ball];
+  if (RESTART_KINDS[move]?.foot) return RESTART_KINDS[move].ball;                                     // la volée du gardien (A9 bis) : le ballon tombé, au cou-de-pied au contact
   if (RESTART_KINDS[move]) { const p = restartPortrait(spec, P); return [p.midC[0], p.midC[1], p.midC[2]]; }   // le ballon est dans les mains au lâcher
   if (CONTACT_KINDS[move]) return move === 'protection' ? [-0.18, 0.11, -0.22] : [0.6, 0.11, -0.9];   // le bouclier : ballon sous le pied gauche ; les autres : le ballon est ailleurs
   if (AERIAL_KINDS[move]) { const h = w.Head.p; return [h[0], h[1] + 0.02, h[2] - 0.2]; }
@@ -73,6 +74,7 @@ function ballFor(move, spec) {
   return strikePortrait(spec, P).S;
 }
 function describe(move, spec) {
+  if (RESTART_KINDS[move]?.foot) { const p = restartPortrait(spec, P); return `pied au contact (${p.rfC.map((v) => v.toFixed(2)).join(', ')}) m, lâcher des mains à ${p.series.find((x) => x.t >= spec.release)?.mid[1].toFixed(2)} m`; }
   if (RESTART_KINDS[move]) { const p = restartPortrait(spec, P); return `mains au contact (${p.midC.map((v) => v.toFixed(2)).join(', ')}) m, écart ${(p.apartC * 100).toFixed(0)} cm`; }
   if (CONTACT_KINDS[move]) { const p = contactPortrait(spec, P); return p.atL ? `bassin à ${p.atL.pelvis[1].toFixed(2)} m couché, ${p.end.pelvis[1].toFixed(2)} m relevé` : p.atH ? `main droite à ${p.atH.rh[0].toFixed(2)} m à droite, ${(p.atH.rh[2] - p.atH.pelvis[2]).toFixed(2)} m derrière` : `bassin ${p.atC.pelvis[1].toFixed(2)} m, poitrine ${(p.atC.pelvis[2] - p.atC.chest[2]).toFixed(2)} m devant au contact`; }
   if (KEEPER_KINDS[move]) { const p = keeperPortrait(spec, P), K = KEEPER_KINDS[move]; return K.dive ? `bassin ${p.hC[0].toFixed(2)} m de côté, ${(100 * p.hC[1]).toFixed(0)} cm de haut au contact, gants à ${p.handReach.toFixed(2)} m` : K.jump ? `bassin +${(100 * p.hC[1]).toFixed(0)} cm, mains ${(100 * p.handsAboveHead).toFixed(0)} cm au-dessus de la tête` : K.kick ? `pied à ${p.footOutC.toFixed(2)} m de côté` : `tête ${(100 * p.headBackMax).toFixed(0)} cm derrière le bassin`; }

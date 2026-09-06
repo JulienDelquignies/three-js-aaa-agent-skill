@@ -8,6 +8,10 @@
 // coéquipier — et que la relance à la main du gardien s'habille du roulé, lâché bas ; (3) que chaque clause
 // attrape son sabotage nommé.
 //
+// (lot A9 bis) …et LES REMISES AU PIED : le dégagement de volée du gardien (geste 'voleeGardien' : mains ensemble jusqu'au lâcher,
+// le pied prend le ballon tombé à mi-hauteur), la COURSE D'ÉLAN des coups francs et corners (recule, attend, court, la prise au
+// contact à l'arrivée), le lanceur DERRIÈRE la ligne, et la clé absente qui rend l'hier.
+//
 // Lancer : node skills/threejs-aaa/scripts/verify-remises.mjs
 
 import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shanon.js';
@@ -22,11 +26,15 @@ import { MOVE_TIMING } from '../assets/starter/src/engine/skills-sim.js';
 import { TOUCHE_H } from '../assets/starter/src/engine/strike-sim.js';
 import { makeMatch, matchCfg, playMatch, matchStep } from '../assets/starter/src/engine/match-sim.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
+import { relancerGardien } from '../assets/starter/src/engine/keeper.js';
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
 const P = SHANON_PROFILE;
 const f2 = (v) => v.map((x) => x.toFixed(2)).join(', ');
+// une remise FORCÉE n'écrase pas un geste des mains en cours (un armé de touche naturel pendant la pose forcée envoyait le
+// ballon de l'autre ligne, du sol — un artefact du banc, pas du moteur) : on attend le calme
+const quiet = (st, cfg) => { for (let i = 0; i < 240 && st.players.some((p) => p.act && (p.act.payload?.mains || p.act.payload?.kind === 'elan')); i++) matchStep(st, 1 / 60, cfg); };
 
 // ---- 1. les trois gestes, style neutre
 for (const kind of RESTART_NAMES) {
@@ -45,7 +53,7 @@ for (const kind of RESTART_NAMES) {
     const r = checkRestartGen(spec, P, kind), c = checkClip(resolveTracks(spec));
     if (!r.ok || !c.ok) { bad++; if (bad <= 3) console.log(`   graine ${s} ${kind} : ${[...r.issues, ...c.issues].join(' ; ')}`); }
   }
-  ok(bad === 0, `20 styles × 3 gestes = 60 remises sous contrat et checkClip (${bad} rouges)`);
+  ok(bad === 0, `20 styles × ${RESTART_NAMES.length} gestes = ${20 * RESTART_NAMES.length} remises sous contrat et checkClip (${bad} rouges)`);
 }
 
 // ---- 3. l'IK de bras : exacte quand la cible est atteignable, sans saut de vrille
@@ -81,7 +89,7 @@ for (const kind of RESTART_NAMES) {
 // ---- 4. le registre : les trois espèces sont des MOVES, avec leur timing, et les techniques les nomment
 {
   ok(RESTART_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING[k].contact - RESTART_KINDS[k].contact) < 1e-6), `touche, rouleMain, ramassage sont des MOVES générés, contact ${RESTART_NAMES.map((k) => MOVE_TIMING[k]?.contact).join(' / ')} s`);
-  ok(byId.touche?.clip === 'touche' && byId['roule-main']?.clip === 'rouleMain' && byId.touche.intent === 'mains', 'les techniques touche et roule-main existent, intent \'mains\' (jamais candidates au plan du pied)');
+  ok(byId.touche?.clip === 'touche' && byId['roule-main']?.clip === 'rouleMain' && byId.touche.intent === 'mains' && byId['volee-gardien']?.clip === 'voleeGardien' && byId['volee-gardien'].intent === 'mains', 'les techniques touche, roule-main et volee-gardien existent, intent \'mains\' (jamais candidates au plan du pied)');
 }
 
 // ---- 5. LA SIM JOUE LA TOUCHE À LA MAIN — trois touches FORCÉES par match (le hasard n'en garantit aucune en
@@ -89,14 +97,15 @@ for (const kind of RESTART_NAMES) {
 // 'relance-main' n'est jamais tombé en 7 graines × 240 s : la clause force la distribution via beginPass).
 {
   const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
-  let touches = 0, hauts = 0, delais = [], recus = 0, pris = 0, rentrees = 0, faces = [], poses = [];
+  let touches = 0, hauts = 0, delais = [], recus = 0, pris = 0, rentrees = 0, faces = [], poses = [], horsLigne = [];
   for (const seed of [7, 3]) {
     let { st } = playMatch(makeMatch({ full: true, seed }), 12, { cfg });
     for (const x of [-20, 5, 25]) {
       const z = 33.9 * (x > 0 ? 1 : -1);
+      quiet(st, cfg); if (st.ball.owner != null) st.ball.release('perte');
       st.ball.restart([x, 0.11, z], { cause: 'touche' });
       st.restart = { type: 'touche', p: [x, z], team: 1 - (st.lastTouch ?? 0), at: st.t + 2.5, placed: false };
-      ({ st } = playMatch(st, 25, { cfg }));
+      for (let i = 0; i < 60 * 25; i++) { const r = st.restart; const dz = r && r.type === 'touche' && r.placed === true && r.taker >= 0 ? Math.abs(st.players[r.taker].p[2]) - st.pitch.hz : null; matchStep(st, 1 / 60, cfg); if (dz != null && !st.restart) horsLigne.push(+dz.toFixed(2)); }
     }
     poses.push(st.ball.ledger.restarts.filter((r) => r.cause !== 'engagement').length - st.events.filter((e) => e.type === 'ramasseur').length);
     const ev = st.events;
@@ -124,6 +133,7 @@ for (const kind of RESTART_NAMES) {
   ok(touches > 0 && hauts === touches, `chaque touche part de la hauteur des mains : ${hauts}/${touches} rentrées à ballY ≥ 1,7 (TOUCHE_H ${TOUCHE_H})`);
   ok(delais.length === touches && dmin > 0.5 && dmax < 0.8, `le ballon part AU CONTACT du geste (${dmin.toFixed(2)}-${dmax.toFixed(2)} s après l'armé, contact ${RESTART_KINDS.touche.contact} s)`);
   ok(touches > 0 && recus / touches >= 0.5, `la touche trouve un coéquipier : ${recus}/${touches} premiers contacts pour l'équipe du preneur`);
+  ok(horsLigne.length >= 6 && horsLigne.every((d) => d >= 0.1 && d <= 0.7), `LE LANCEUR DERRIÈRE LA LIGNE (lot A9 bis, cfg.remisesPied.touche) : le bassin à ${horsLigne.map((d) => d.toFixed(2)).join('/')} m hors du terrain à la prise (attendu 0,1-0,7 : les pieds sur ou derrière la ligne, Loi 15 — hier sur la ligne, les pieds dedans)`);
   ok(faces.length === rentrees && Math.max(...faces) <= 15, `le lanceur FAIT FACE à sa cible au lâcher (écart corps-cible max ${Math.max(...faces)}° ≤ 15, ${faces.join('/')} — mesuré avant : il lançait dos au jeu, face à la lisse, 171°)`);
   // LA CLÉ ABSENTE REND L'HIER (le contrat du moteur) : sans cfg.remisesMain, la touche part du sol à l'instant de la
   // prise (aucun armé 'touche', rentrée sans ballY) et la relance à la main du gardien reste une passe du pied
@@ -132,6 +142,7 @@ for (const kind of RESTART_NAMES) {
     let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 12, { cfg: cfg0 });
     for (const x of [-20, 5, 25]) {
       const z = 33.9 * (x > 0 ? 1 : -1);
+      quiet(st, cfg0); if (st.ball.owner != null) st.ball.release('perte');
       st.ball.restart([x, 0.11, z], { cause: 'touche' });
       st.restart = { type: 'touche', p: [x, z], team: 1 - (st.lastTouch ?? 0), at: st.t + 2.5, placed: false };
       ({ st } = playMatch(st, 25, { cfg: cfg0 }));
@@ -153,6 +164,83 @@ for (const kind of RESTART_NAMES) {
   ok(!!pr && pr.ballY >= 0.2 && pr.ballY <= 0.6 && pr.t - w.t > 0.4 && pr.t - w.t < 0.8, `le roulé lâche le ballon BAS devant, au contact : passe à ballY ${pr?.ballY ?? '—'} m, ${pr ? (pr.t - w.t).toFixed(2) : '—'} s après l'armé (contact ${RESTART_KINDS.rouleMain.contact} s)`);
 }
 
+// ---- 7. LES REMISES AU PIED (lot A9 bis, cfg.remisesPied)
+{
+  const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
+  const hyp = Math.hypot;
+  // LA VOLÉE : le gardien tient le ballon aux gants (prise forcée), le style long → beginPass(mains 'volee') arme le geste, les
+  // gants descendent, le ballon TOMBE, le pied le prend à mi-hauteur (la passe part de la hauteur du ballon, jamais du sol)
+  {
+    let { st } = playMatch(makeMatch({ full: true, seed: 3 }), 8, { cfg });
+    const gk = st.players.find((p) => p.keeper && p.team === 0);
+    if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([gk.p[0] + 0.3, 1.0, gk.p[2]], { cause: 'sortie-de-but' }); st.restart = null; st.ball.possess(gk.id);
+    st.possession = { team: 0, carrier: gk.id }; st.phase = 'carry'; st.hold = 0; gk._gkSince = st.t - 3; gk._mains = true; gk.v = [0, 0];
+    st.tactics = st.tactics || [{}, {}]; st.tactics[0] = { ...(st.tactics[0] || {}), cpa: { ...((st.tactics[0] || {}).cpa || {}), sortieBut: 'long' } };
+    const n0 = st.ball.ledger.restarts.length;
+    const armed = relancerGardien(st, gk, cfg, { beginPass: simInternals.beginPass });
+    const A = gk.act, w = st.events.filter((e) => e.type === 'windup' && e.by === gk.id).pop();
+    let yHaut = 0, yBas = 9, yRel = null, tombe = true, prevY = null;
+    for (let i = 0; i < 120 && gk.act && !gk.act.fired; i++) { matchStep(st, 1 / 60, cfg); if (!gk.act || gk.act.fired) break; const y = st.ball.p[1]; if (gk.act?.payload?.lache == null) yHaut = Math.max(yHaut, y); else { if (yRel == null) yRel = y; if (prevY != null && y > prevY + 0.03) tombe = false; yBas = Math.min(yBas, y); } prevY = y; }
+    for (let i = 0; i < 30 && !st.events.some((e) => e.type === 'pass' && e.from === gk.id && e.mains === 'volee'); i++) matchStep(st, 1 / 60, cfg);
+    const pr = st.events.find((e) => e.type === 'pass' && e.from === gk.id && e.mains === 'volee');
+    ok(!!armed && A?.payload?.mains === 'volee' && w?.tech === 'volee-gardien' && w.move === 'voleeGardien', `LE DÉGAGEMENT DE VOLÉE s'arme aux gants : windup tech ${w?.tech ?? '—'}, move ${w?.move ?? '—'}, mains ${A?.payload?.mains ?? '—'} (anticipation ${A?.anticipation?.toFixed(2) ?? '—'} s)`);
+    ok(yHaut >= 0.9 && yRel != null && tombe && yBas <= yRel - 0.12, `le ballon vit aux mains (${yHaut.toFixed(2)} m) puis TOMBE du lâcher (${yRel?.toFixed(2) ?? '—'} m) au contact (jamais posé par écriture) : y descend jusqu'à ${yBas.toFixed(2)} m`);
+    ok(!!pr && pr.ballY >= 0.45 && pr.ballY <= 0.9 && pr.style === 'lofted' && st.ball.ledger.restarts.length === n0, `la frappe part de la hauteur du ballon tombé : passe ${pr?.style ?? '—'} à ballY ${pr?.ballY ?? '—'} m (attendu 0,45-0,9 — hier : téléporté au sol, 0,11) ; aucune pose au registre`);
+  }
+  // LA COURSE D'ÉLAN : coup franc à 24 m (direct) et à 40 m (lancement), corner — forcés sur deux graines. Le preneur recule,
+  // attend, court ; le geste s'arme sur la course (windup tech 'elan') et la remise se prend AU CONTACT, à l'arrivée ('élan'
+  // puis la frappe d'hier dans la même image), le corps encore lancé (≥ 2 m/s : il court à travers le ballon).
+  const forceCPA = (st, cfg, type, p, team, onWindup = null) => {
+    quiet(st, cfg); if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([p[0], 0.11, p[1]], { cause: type }); st.restart = { type, p, team, at: st.t + 3, placed: false }; st.possession = { team, carrier: -1 }; st.phase = 'loose';
+    const n0 = st.events.length, t0 = st.t; let taken = null, armed = false;
+    for (let i = 0; i < 60 * 30; i++) { const had = !!st.restart; matchStep(st, 1 / 60, cfg); if (!armed && onWindup && st.events.slice(n0).some((e) => e.type === 'windup' && e.tech === 'elan')) { armed = true; onWindup(st); } if (had && !st.restart) { taken = st.t; break; } }
+    for (let i = 0; i < 90 && taken != null; i++) matchStep(st, 1 / 60, cfg);   // la frappe d'hier (ou, au corner court, la passe qui suit)
+    const ev = st.events.slice(n0);
+    const w = ev.find((e) => e.type === 'windup' && e.tech === 'elan'), el = ev.find((e) => e.type === 'élan');
+    const frappe = ev.find((e) => (e.type === 'shot' && e.kind === 'coup-franc-direct') || e.type === 'lancement' || e.type === 'corner-joué' || (e.type === 'pass' && e.t >= (el?.t ?? Infinity)));
+    const pris = ev.find((e) => e.type === 'restart-pris');
+    return { type, taken: taken != null ? +(taken - t0).toFixed(2) : null, w, el, frappe, memeImage: !!(el && pris && Math.abs(pris.t - el.t) < 0.02 && (!frappe || frappe.type === 'pass' || Math.abs(frappe.t - el.t) < 0.02)) };
+  };
+  const runs = [];
+  for (const seed of [7, 3]) {
+    let { st } = playMatch(makeMatch({ full: true, seed }), 8, { cfg });
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
+    for (const [type, p] of [['coup-franc', [g.x - sg * 24, 3]], ['coup-franc', [g.x - sg * 40, -6]], ['corner', [g.x, st.pitch.hz]]]) runs.push(forceCPA(st, cfg, type, p, 0));
+  }
+  const armes = runs.filter((r) => r.w), arrivees = runs.filter((r) => r.el), prises = runs.filter((r) => r.taken != null);
+  ok(prises.length === runs.length && armes.length === runs.length, `LA COURSE D'ÉLAN s'arme sur chaque coup de pied arrêté : ${armes.length}/${runs.length} armés 'elan' (départs à ${runs.map((r) => r.w?.depart ?? '—').join('/')} m du ballon), ${prises.length} remises prises`);
+  ok(arrivees.length === runs.length && arrivees.every((r) => r.el.vitesse >= 2 && r.el.course >= 0.5 && r.el.d <= 1.0), `la remise se prend AU CONTACT, à l'arrivée, le corps lancé : ${arrivees.map((r) => r.el.vitesse).join('/')} m/s après ${arrivees.map((r) => r.el.course).join('/')} s de course, à ${arrivees.map((r) => r.el.d).join('/')} m du ballon`);
+  ok(runs.every((r) => r.memeImage), `…et la remise se prend dans la MÊME image que le contact du geste, la frappe d'hier avec elle : ${runs.map((r) => r.frappe ? (r.frappe.kind ?? r.frappe.type) : 'corner court (le ballon au pied)').join('/')}`);
+  ok(runs.every((r) => r.w && r.w.depart >= (r.type === 'corner' ? 1.2 : 2.5)), `le départ est DERRIÈRE le ballon : ${runs.map((r) => r.w?.depart ?? '—').join('/')} m (recul 3,5 sur la ligne ballon-cible ; borné par le tablier au corner, ≥ 1,2)`);
+  // LA CLÉ ABSENTE REND L'HIER : sans cfg.remisesPied, la frappe part à l'instant de la prise (aucun armé 'elan', aucun 'élan'), du
+  // point de pose ; et le gardien qui tient le ballon le pose au sol à la frappe (passe sans ballY)
+  {
+    const cfg0 = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesPied: null });
+    let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg: cfg0 });
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
+    const r0 = [forceCPA(st, cfg0, 'coup-franc', [g.x - sg * 24, 3], 0), forceCPA(st, cfg0, 'corner', [g.x, st.pitch.hz], 0)];
+    const gk = st.players.find((p) => p.keeper && p.team === 0);
+    quiet(st, cfg0); if (st.ball.owner != null) st.ball.release('perte');
+    st.ball.restart([gk.p[0] + 0.3, 1.0, gk.p[2]], { cause: 'sortie-de-but' }); st.restart = null; st.ball.possess(gk.id);
+    st.possession = { team: 0, carrier: gk.id }; st.phase = 'carry'; st.hold = 0; gk._gkSince = st.t - 3; gk._mains = true; gk.v = [0, 0];
+    st.tactics = st.tactics || [{}, {}]; st.tactics[0] = { ...(st.tactics[0] || {}), cpa: { ...((st.tactics[0] || {}).cpa || {}), sortieBut: 'long' } };
+    relancerGardien(st, gk, cfg0, { beginPass: simInternals.beginPass });
+    const m0 = gk.act?.payload?.mains ?? null;
+    ok(r0.every((r) => r.taken != null && !r.w && !r.el && r.frappe) && m0 == null, `la clé absente rend l'hier au bit : remisesPied:null → ${r0.filter((r) => r.taken != null).length} remises prises sans armé ni course (${r0.map((r) => r.frappe?.kind ?? r.frappe?.type ?? '—').join('/')}), la volée du gardien redevient la frappe du sol (mains ${m0 ?? 'null'})`);
+  }
+  // le sabotage de la sim : le preneur EMPORTÉ à 15 m dès l'armé (la course n'arrive pas) — pas de frappe dans le vide : l'armé
+  // s'étire, puis s'abandonne (refus élan-sans-ballon) et la prise d'hier prend au ballon
+  {
+    let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg });
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
+    const r = forceCPA(st, cfg, 'coup-franc', [g.x - sg * 24, 3], 0, (st) => { const tk = st.players[st.restart.taker]; tk.p[0] -= sg * 15; });
+    const abandon = (st.deny?.['élan-sans-ballon'] ?? 0) > 0;
+    ok(r.taken != null && r.w && !r.el && r.frappe && abandon, `sabotage « le preneur emporté » attrapé : armé ${!!r.w}, aucun contact dans le vide (élan ${!!r.el}), l'armé abandonné (élan-sans-ballon ${abandon}), la remise prise quand même (${r.frappe?.kind ?? r.frappe?.type ?? '—'})`);
+  }
+}
+
 // ---- 6. les sabotages nommés (par la substitution des paramètres d'espèce)
 const sab = (label, kind, mutate, want) => {
   const K = RESTART_KINDS[kind], saved = { ...K };
@@ -169,6 +257,8 @@ sab('touche sans fouetté (whip 0, arch 0)', 'touche', () => ({ whip: 0, arch: 0
 sab('roulé lâché haut (releaseH 0,9)', 'rouleMain', () => ({ releaseH: 0.9 }), /lâcher à/);
 sab('roulé sans armé (backswing −0,1)', 'rouleMain', () => ({ backswing: -0.1 }), /armé derrière/);
 sab('ramassage qui ne se baisse pas (dip 0,05, lean 20)', 'ramassage', () => ({ dip: 0.05, lean: 20 }), /cueillent|baisse/);
+sab('volée frappée au sol (kickY 0,2)', 'voleeGardien', () => ({ kickY: 0.2 }), /pied frappe à/);
+sab('volée lâchée derrière le corps (dropZ 0,1)', 'voleeGardien', () => ({ dropZ: 0.1 }), /lâcher n'est pas devant/);
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
