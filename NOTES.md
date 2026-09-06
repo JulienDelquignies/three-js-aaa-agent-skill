@@ -9740,6 +9740,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tranche, 0 à 50 et 90, clés par défaut) ; annexe attributes. Sans
      notes : au bit (empreintes du 245). Reste (246d) : reactions par
      l'issue, teamwork par un second lecteur.
+- 318: REACTIONS A SA SIGNATURE, LA CONCENTRATION TIENT, TEAMWORK RESTE
+     FAIBLE (246d — mesures, aucune loi nouvelle). REACTIONS : muette en
+     possession et en tirs à 24 graines (90 : 49,5 ; 10 : 47,7 ; sans
+     note 52,4), et pourtant bien câblée (départs sur passe, chasse,
+     ballon flottant, latence du porteur) — sa signature est LÀ OÙ ELLE
+     DOIT VIVRE : les ballons flottants gagnés (rondo-sim : le plus vif
+     prend) 72 % à 90, 49 % sans note, 36 % à 10 (24 × 300 s). Un
+     attribut n'a pas à bouger le score pour être vrai ; il doit bouger
+     SA situation. Clause 246d (2 × 300 s : ≥ 60 % à 90, ≤ 42 % à 10).
+     CONCENTRATION (246c) à 48 graines : possession 52,4 → 49,7 (− 2,7 ;
+     − 3,1 à 24 : stable), tirs 38/40 → 32/33 — un levier de POSSESSION
+     (le distrait récupère plus tard), pas de tirs concédés ; le
+     « 16/23 » de la variante à deux cibles était du bruit. Levier
+     confirmé faible et stable. TEAMWORK : + 2,6 à 12 graines, + 0,9 à
+     24 — faible, dans le bon sens, un seul lecteur (l'élection du
+     presseur, 160) ; aucun second lecteur posé : pas de mécanisme
+     mesurable identifié (l'élection du soutien × teamF est une
+     amplitude, le genre de levier que le 246 a appris à ne plus
+     inventer). LA MATRICE, ÉTAT FINAL (référence 52,4 % / tirs 38-40) :
+     offTheBall, marking, decisions — vivantes en possession ;
+     anticipation — vivante en tirs concédés (246b) ; positioning —
+     vivante en possession et tirs (246) ; concentration — faible en
+     possession (246c) ; reactions — vivante aux ballons flottants ;
+     teamwork — faible. Plus aucune note inversée, plus aucune note
+     morte. Moteur au bit (aucune loi touchée au 246d).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

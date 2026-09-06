@@ -324,8 +324,9 @@ Le laps d'attention (déplacement) rejeté à 24 graines.
 le distrait garde la cible du début de la tranche ; concentration 10 → 16/23 tirs c. 23/17 sans note (24
 graines), possession égale ; taux 1 ne mordait pas.
 
-**Lot 246d — Reactions par l'issue, teamwork par un second lecteur (à sceller).** Méthode : une note, un
-levier, une mesure appariée dans le bon sens.
+**Lot 246d — La matrice close — SCELLÉ (NOTES 318).** Reactions vit aux ballons flottants (72 / 49 / 36 %),
+la concentration tient en possession à 48 graines (− 2,7), teamwork reste faible sans second lecteur. Plus
+aucune note inversée ni morte.
 
 **Lot 246 (ancien libellé)** Révélé par le 244d au monde 245 : décision, placement,
 anticipation, appel, cohésion, marquage, concentration, réaction ne bougent presque rien dans les lois.

@@ -5960,5 +5960,21 @@ if (__bloc()) {
     Math.abs(c10.laps - attendu) <= 12 && c10.gel >= 80 && c50.laps === 0 && c90.laps === 0 && A.taux === 2 && A.tenue === 3);
 }
 
+// ---------------------------------------------------------------- lot 246d : REACTIONS A SA SIGNATURE, LA
+// CONCENTRATION TIENT EN POSSESSION, TEAMWORK RESTE FAIBLE (mesures, aucune loi nouvelle). Reactions :
+// muette en possession et en tirs (24 × 300 s : 49,5 c. 47,7), mais là où elle doit vivre elle vit — les
+// BALLONS FLOTTANTS gagnés (rondo-sim : le plus vif les prend) : 72 % à 90, 49 % sans note, 36 % à 10.
+// Concentration (246c) à 48 graines : possession 52,4 → 49,7 (− 2,7, comme − 3,1 à 24), tirs 38/40 → 32/33 —
+// un levier de POSSESSION, pas de tirs concédés. Teamwork : + 2,6 à 12 graines, + 0,9 à 24 — faible, juste,
+// un seul lecteur (l'élection du presseur) ; pas de second lecteur sans mécanisme mesuré.
+if (__bloc()) {
+  const NIV = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
+  const eq = (over) => Array.from({ length: 11 }, () => ({ ratings: { ...Object.fromEntries(NIV.map((k) => [k, 50])), ...over } }));
+  const flottants = (r) => { let g = [0, 0]; for (const seed of [2, 5]) { const st = makeMatch({ full: true, seed, squads: [eq({ reactions: r }), eq({})] }), cfg = matchCfg({ shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg); for (const e of st.events) if (e.type === 'loose-kept') g[st.players[e.by]?.team ?? 1]++; } return { part: 100 * g[0] / Math.max(1, g[0] + g[1]), n: g[0] + g[1] }; };
+  const r90 = flottants(90), r10 = flottants(10);
+  ok(`lot 246d — REACTIONS A SA SIGNATURE : ballons flottants gagnés ${r90.part.toFixed(0)} % à 90 (≥ 60, sur ${r90.n}) et ${r10.part.toFixed(0)} % à 10 (≤ 42, sur ${r10.n}) — 2 × 300 s ; à 24 graines 72 / 49 / 36 ; possession muette (49,5 c. 47,7) : la note vit dans la course au ballon, pas dans le score`,
+    r90.part >= 60 && r10.part <= 42 && r90.n >= 100 && r10.n >= 100);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
