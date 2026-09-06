@@ -305,6 +305,12 @@ passes 323 → 269 (8 × 300 s) ; le malus léger était un placebo, rejeté. Ab
 à 40 m du but, sans sortie ; corrigée : sortant devant la ligne (2 m) et ballon dans la zone du but (40 m).
 Gradation rendue (11/49/249/470 à 12 graines), l'oblique tire 6-8 % des images au lieu de 40.
 
+**Lot 247 — L'appui-remise dans le monde A9 (première passe, NOTES 314 : le temps mort n'est pas une perte).** Avec A9, l'appui-remise coûte
+573 pertes c. 508 sans (+ 13 %, 24 × 300 s) et 36 % de services perdus ; hier + 1,5 %. Le monde du 240 est
+épinglé `remisesMain:null` en attendant. Hypothèse : le ballon reçu de la touche, dos au but, presseur
+derrière, déclenche le 240 sur une situation que A9 crée en nombre ; mesurer les appuis-remises nés d'une
+touche c. du jeu courant, et dater la loi (dispense après touche, ou dosage) sur preuve.
+
 **Lot 246 — Les leviers de lecture (à sceller).** Révélé par le 244d au monde 245 : décision, placement,
 anticipation, appel, cohésion, marquage, concentration, réaction ne bougent presque rien dans les lois.
 Chaque note de lecture doit avoir UN levier mesuré (gradation appariée 30/50/70/90 sur sa propre

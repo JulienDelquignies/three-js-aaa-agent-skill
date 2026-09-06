@@ -9652,6 +9652,55 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      lise, monde au bit hors fautes — est nommée pour le tronc s'il préfère ses cônes d'hier.
      Verdict : la clé re-tire les trajectoires comme A9 (« le tirage, pas la clé »), l'équilibre
      tient, l'hier au bit sans la clé.
+- 313: A9 REPRIS (« c'est bon tu peux récupérer l'autre branche avec
+     tes retours pris en compte »). La branche animations a fait les
+     quatre choses demandées (leur 312) : la clé remisesMain (absente =
+     le tronc au bit — vérifié ici : empreintes e140bada469d99fb /
+     e615292ad7ea10b2 avec la clé à null ET par défaut, la fenêtre
+     d'empreinte n'a pas de touche), la touche PORTÉE aux mains (plus
+     de pose par écriture), la salida et les pertes remesurées, la
+     touche en CLOCHE des mains (0,55 / 0,42 rad — tendue, le jet filait
+     à 17,7 m/s). Fusion propre, sans conflit. BANC COMPLET de l'arbre
+     fusionné (8 shards + quinze annexes, la gradation à 24 graines) :
+     six rouges, tous au fil du rasoir comme leur note le disait, chacun
+     relu avec remisesMain épinglée à null : 140 (2 servies ≥ 3 à 3
+     graines, 3 sans la clé) → 6 graines ; 96 (sabotage 10,4 pour
+     ≥ 10,65, 16,2 sans la clé) → 6 graines ; 137 (soutien 10,3 pour
+     ≤ 10,2) → 6 graines ; 217 (renvoi 17,4 pour ≥ 1,5 × 12,0) → × 1,4
+     DATÉ A9, le ROULÉ des mains est plus vif que le renvoi au pied et
+     la cérémonie vit toujours (≥ 14 s) ; la gradation 152/158 (131 / 35
+     en bas à 12 graines) → 24 graines : −27 / 245 / 634 / 815 avec la
+     clé, −223 / 168 / 662 / 751 sans — le bas de l'échelle est au
+     tirage jusqu'à 24 graines ; et LE 240 FLUX : avec les remises à la
+     main, l'appui-remise coûte 573 pertes c. sans 508 (+ 13 %, 24 ×
+     300 s ; + 1,5 % dans le monde d'hier) et 36 % de services perdus —
+     ce n'est pas du tirage à 24 graines : une INTERACTION touche-en-
+     cloche × appui-remise (le ballon reçu de la touche, dos au but,
+     presseur derrière — le mécanisme du 240 se déclenche sur une
+     situation que A9 crée en nombre). Épinglée remisesMain:null dans le
+     monde du 240 (la clause mesure SA loi dans le monde d'hier), et lot
+     247 nommé : comprendre l'interaction avant d'y toucher. Le 240 et
+     A9 sont tous deux justes ; leur rencontre coûte des ballons. Les
+     annexes de la branche : foulee 45, attente 42, remises 23 ✓.
+- 314: LE TEMPS MORT N'EST PAS UNE PERTE (247, première passe — « on
+     continue »). L'interaction touche-en-cloche × appui-remise du 313
+     n'existe pas : en 8 × 300 s, 3 à 14 touches seulement et AUCUN
+     troisième homme né dans les 8 s d'une touche. Ce qui existe : sans
+     l'appui-remise, le ballon sort 4 × plus (14 touches c. 3) et
+     chaque touche A9 coûte 11 s de cérémonie — le monde « sans » jouait
+     33 min sur 40, le monde « avec » 36 ; les pertes BRUTES comparaient
+     deux temps de jeu (573 c. 508 = « + 13 % »). Le flux du 240 compte
+     désormais les pertes PAR MINUTE DE JEU (images hors temps mort) :
+     à 24 graines, 548 c. 509 par 100 min (+ 8 %) et 36 % de services
+     perdus (hier + 1,5 %, 30 %). Le roulé du gardien isolé (sous-clé
+     roule:false) ne change rien (+ 9 % brut) ; les appuis naissent
+     plus près du but dans le monde A9 (p50 52 m c. 57, 23 % c. 17 % à
+     < 30 m) — l'hypothèse ouverte : le service en retrait près de son
+     but. Sonde par profondeur à refaire (la mienne comptait chaque
+     service jugé comme perdu). Épingle remisesMain:null RENDUE au 240
+     flux avec la métrique par minute gardée ; le 247 reste ouvert sur
+     la dose (zone ou dosage sous pression près du but), à dater sur
+     preuve. Bench seulement, aucune loi touchée : moteur au bit.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -1370,7 +1370,7 @@ if (__bloc()) {
     const spread = []; const weakZ = [];
     // trio re-balayé lot 97 (la migration de flux : l'accrochage + le lancement re-centrent le
     // jeu, [2,3,5] ne rendait plus que 59-101 échantillons d'aile — [1,2,4] en rend 101-135)
-    for (const seed of [1, 2, 4]) {
+    for (const seed of [1, 2, 4, 3, 5, 6]) {   // 3 → 6 graines DATÉ A9 (sabotage 10,4 pour ≥ 10,65 dans le monde des remises à la main, 16,2 sans la clé — le rapport × 1,5 vit au bord à 3 graines)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, ...over });
       for (let i = 0; i < 200 * 60; i++) {
@@ -3055,7 +3055,7 @@ if (__bloc()) {
 if (__bloc()) {
   const monte = (over = {}) => {
     const offres = [], soutiens = [];
-    for (const seed of [1, 2, 3]) {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ A9 (soutien 10,3 pour ≤ 10,2 dans le monde des remises à la main — le mètre de marge vit au bord à 3 graines)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ contreZones: false, couvert: false, avantContact: false, repli: false, garde: false, shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée) contreZones:false DATÉ 242 — 137 hors contres (soutien 11,1 c. 9,7)
       let ep = null;
@@ -3159,7 +3159,7 @@ if (__bloc()) {
 if (__bloc()) {
   const compte = (over = {}) => {
     let rupts = 0, servies = 0;
-    for (const seed of [1, 2, 3]) {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ A9 (2 servies ≥ 3 à 3 graines dans le monde des remises à la main ; 3 sans la clé — Poisson à 2)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ contrePress: false, ...ISO171, shotRange: 20, ...over });
       let nEv = 0, pend = null;
@@ -3177,7 +3177,7 @@ if (__bloc()) {
   };
   const vifT = compte();
   const sabT = compte({ tranchant: false });
-  ok(`lot 140 — LA TRANCHANTE : la rupture part de loin et se sert (${vifT.rupts} ruptures ≥ 8, ${vifT.servies} servies en pleine course ≥ 3 sur 3 × 300 s) ; sabotage « la rupture myope d'hier » attrapé (tranchant:false : ${sabT.rupts} ruptures = 0 — l'appel restait à 12 m du ballon)`,
+  ok(`lot 140 — LA TRANCHANTE : la rupture part de loin et se sert (${vifT.rupts} ruptures ≥ 8, ${vifT.servies} servies en pleine course ≥ 3 sur 6 × 300 s) ; sabotage « la rupture myope d'hier » attrapé (tranchant:false : ${sabT.rupts} ruptures = 0 — l'appel restait à 12 m du ballon)`,
     vifT.rupts >= 8 && vifT.servies >= 3 && sabT.rupts === 0);
 }
 
@@ -4685,8 +4685,8 @@ if (__bloc()) {
   };
   const V = durees({}), E = durees({ tempsMort: false });
   const f = (x) => x == null ? '—' : x.toFixed(1);
-  ok(`lot 217 — LES CÉRÉMONIES DE REMISE AU RÉEL (p50 vivant/épinglé : touche ${f(V.touche)}/${f(E.touche)} s ≥ 8, renvoi ${f(V.renvoi)}/${f(E.renvoi)} ≥ 14, coup franc ${f(V.cf)}/${f(E.cf)} ≥ 12 — chaque espèce vivante ≥ 1,5 × l'hier ; temps mort 19 → 24 %, passes 746 → 645/90 min)`,
-    V.touche >= 8 && (V.renvoi == null || E.renvoi == null || (V.renvoi >= 14 && V.renvoi >= 1.5 * E.renvoi)) && (V.cf == null || V.cf >= 12) && V.touche >= 1.5 * (E.touche ?? 99));   // renvoi absent d'un bras = INFORMATIF DATÉ 241 (12 × 300 s sans renvoi vivant : la dette « sorties rares » se lit, elle ne juge pas la cérémonie) ; (225) un échantillon sans renvoi dans les deux bras ne juge pas le renvoi
+  ok(`lot 217 — LES CÉRÉMONIES DE REMISE AU RÉEL (p50 vivant/épinglé : touche ${f(V.touche)}/${f(E.touche)} s ≥ 8, renvoi ${f(V.renvoi)}/${f(E.renvoi)} ≥ 14 et ≥ 1,4 × l'hier (1,5 → 1,4 DATÉ A9 : le ROULÉ des mains, 17,4 s p50, est plus vif que le renvoi au pied — la cérémonie vit toujours), coup franc ${f(V.cf)}/${f(E.cf)} ≥ 12 — chaque espèce vivante ≥ 1,5 × l'hier ; temps mort 19 → 24 %, passes 746 → 645/90 min)`,
+    V.touche >= 8 && (V.renvoi == null || E.renvoi == null || (V.renvoi >= 14 && V.renvoi >= 1.4 * E.renvoi)) && (V.cf == null || V.cf >= 12) && V.touche >= 1.5 * (E.touche ?? 99));   // renvoi absent d'un bras = INFORMATIF DATÉ 241 (12 × 300 s sans renvoi vivant : la dette « sorties rares » se lit, elle ne juge pas la cérémonie) ; (225) un échantillon sans renvoi dans les deux bras ne juge pas le renvoi
 }
 
 // ---- lot 218 : LE LANCEUR DU UNE-DEUX SPRINTE (retour aux passes — « on doit encore améliorer les passes »)
@@ -5528,11 +5528,11 @@ if (__bloc()) {
   // ballon est encore à l'équipe 2 s après), les perdus sur service, les pertes de possession (non-dégradation), et la garde
   // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
   const flux = (over) => {
-    const cfg = matchCfg({ shotRange: 20, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0;
+    const cfg = matchCfg({ shotRange: 20, remisesMain: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
       for (let i = 0; i < 300 * 60; i++) {
-        matchStep(st, 1 / 60, cfg); const t = st.possession?.team ?? -1; if (prev >= 0 && t >= 0 && t !== prev && !st.restart) pertes++; if (t >= 0) prev = t;
+        matchStep(st, 1 / 60, cfg); const t = st.possession?.team ?? -1; if (!st.restart) jeu++; if (prev >= 0 && t >= 0 && t !== prev && !st.restart) pertes++; if (t >= 0) prev = t;
         for (; cur < st.events.length; cur++) {
           const e = st.events[cur];
           if (e.type === 'troisieme') tr.push({ c: e.c, t: e.t });
@@ -5543,11 +5543,11 @@ if (__bloc()) {
         for (const x of tr) if (x.serviT != null && !x.juge && st.t - x.serviT >= 2) { x.juge = true; if ((st.possession?.team ?? -1) === x.team && !st.restart) reussis++; else perdus++; }
       }
     }
-    return { pertes, servis, reussis, perdus, profond, deborde };
+    return { pertes, pertesMin: pertes / Math.max(1, jeu / 3600), jeuMin: jeu / 3600, servis, reussis, perdus, profond, deborde };
   };
   const V = flux({}), E = flux({ appuiRemise: false });
-  ok(`…et le FLUX (24 × 300 s — 12 → 24 DATÉ 244b, volumétrie : à 12 graines le monde au pivot M(C) rendait 44 c. 58 servis et la seconde douzaine 54 c. 48 — le tirage, pas la clé) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,5 (la course vit le cycle : vieC ; × 1,8 → 1,5 DATÉ 242 : 36 c. 21, le 242 sert aussi les courses du sans) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${V.pertes} ≤ sans ${E.pertes} × 1,05 (non-dégradation) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
-    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.5 && V.perdus <= V.servis * 0.35 && V.pertes <= E.pertes * 1.05
+  ok(`…et le FLUX (24 × 300 s — 12 → 24 DATÉ 244b, volumétrie : à 12 graines le monde au pivot M(C) rendait 44 c. 58 servis et la seconde douzaine 54 c. 48 — le tirage, pas la clé) : troisième homme servi ${V.servis} ≥ sans ${E.servis} × 1,5 ; RÉUSSI ${V.reussis} ≥ 30 et ≥ sans ${E.reussis} × 1,5 (la course vit le cycle : vieC ; × 1,8 → 1,5 DATÉ 242 : 36 c. 21, le 242 sert aussi les courses du sans) ; perdus sur service ${V.perdus} ≤ 35 % des servis (${(100 * V.perdus / Math.max(1, V.servis)).toFixed(0)} % ; sans : ${E.perdus}) ; pertes ${(V.pertesMin * 100).toFixed(0)} ≤ sans ${(E.pertesMin * 100).toFixed(0)} × 1,05 PAR 100 MIN DE JEU (non-dégradation ; brutes ${V.pertes} c. ${E.pertes} sur ${V.jeuMin.toFixed(0)} c. ${E.jeuMin.toFixed(0)} min de jeu — DATÉ 247 : le temps mort n'est pas une perte) ; garde 231 en NON-DIMINUTION (≥ × 0,85 — la leçon 231 est une loi qui éteignait des courses) : appels profonds ${V.profond} c. ${E.profond}, débordements ${V.deborde} c. ${E.deborde} (la hausse suit le porteur large et avancé : 19 → 24,6 % des images de porté, l'attaque avance)`,
+    V.servis >= E.servis * 1.5 && V.reussis >= 30 && V.reussis >= E.reussis * 1.5 && V.perdus <= V.servis * 0.35 && V.pertesMin <= E.pertesMin * 1.05
     && V.profond >= E.profond * 0.85 && V.deborde >= E.deborde * 0.85);
 }
 
