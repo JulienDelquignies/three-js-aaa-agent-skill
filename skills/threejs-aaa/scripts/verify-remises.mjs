@@ -89,7 +89,7 @@ for (const kind of RESTART_NAMES) {
 // 'relance-main' n'est jamais tombé en 7 graines × 240 s : la clause force la distribution via beginPass).
 {
   const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
-  let touches = 0, hauts = 0, delais = [], recus = 0, pris = 0, rentrees = 0, faces = [];
+  let touches = 0, hauts = 0, delais = [], recus = 0, pris = 0, rentrees = 0, faces = [], poses = [];
   for (const seed of [7, 3]) {
     let { st } = playMatch(makeMatch({ full: true, seed }), 12, { cfg });
     for (const x of [-20, 5, 25]) {
@@ -98,6 +98,7 @@ for (const kind of RESTART_NAMES) {
       st.restart = { type: 'touche', p: [x, z], team: 1 - (st.lastTouch ?? 0), at: st.t + 2.5, placed: false };
       ({ st } = playMatch(st, 25, { cfg }));
     }
+    poses.push(st.ball.ledger.restarts.filter((r) => r.cause !== 'engagement').length - st.events.filter((e) => e.type === 'ramasseur').length);
     const ev = st.events;
     for (let i = 0; i < ev.length; i++) {
       const e = ev[i];
@@ -114,12 +115,30 @@ for (const kind of RESTART_NAMES) {
       }
     }
   }
+  // LE REGISTRE DU BALLON : aucune remise posée par écriture — les seules poses sont le coup d'envoi et les trois
+  // touches FORCÉES par le banc (restart cause 'touche', c'est le banc qui écrit) ; la touche jouée est PORTÉE
+  // (holdMains) et lancée de là (retour du moteur, docs/Retour_Reference_A9_Remises.md : 5 poses par écriture avant)
+  ok(poses.every((n) => n === 3), `aucune remise posée par écriture : ${poses.join(' + ')} poses au registre par match = les 3 forcées du banc (checkMatch : « la remise se PORTE »)`);
   const dmin = Math.min(...delais), dmax = Math.max(...delais);
   ok(touches >= 6 && rentrees === touches, `chaque touche s'ARME avant de partir : ${touches} armés 'touche' pour ${rentrees} rentrées (${pris} remises prises, 6 forcées)`);
   ok(touches > 0 && hauts === touches, `chaque touche part de la hauteur des mains : ${hauts}/${touches} rentrées à ballY ≥ 1,7 (TOUCHE_H ${TOUCHE_H})`);
   ok(delais.length === touches && dmin > 0.5 && dmax < 0.8, `le ballon part AU CONTACT du geste (${dmin.toFixed(2)}-${dmax.toFixed(2)} s après l'armé, contact ${RESTART_KINDS.touche.contact} s)`);
   ok(touches > 0 && recus / touches >= 0.5, `la touche trouve un coéquipier : ${recus}/${touches} premiers contacts pour l'équipe du preneur`);
   ok(faces.length === rentrees && Math.max(...faces) <= 15, `le lanceur FAIT FACE à sa cible au lâcher (écart corps-cible max ${Math.max(...faces)}° ≤ 15, ${faces.join('/')} — mesuré avant : il lançait dos au jeu, face à la lisse, 171°)`);
+  // LA CLÉ ABSENTE REND L'HIER (le contrat du moteur) : sans cfg.remisesMain, la touche part du sol à l'instant de la
+  // prise (aucun armé 'touche', rentrée sans ballY) et la relance à la main du gardien reste une passe du pied
+  {
+    const cfg0 = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesMain: null });
+    let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 12, { cfg: cfg0 });
+    for (const x of [-20, 5, 25]) {
+      const z = 33.9 * (x > 0 ? 1 : -1);
+      st.ball.restart([x, 0.11, z], { cause: 'touche' });
+      st.restart = { type: 'touche', p: [x, z], team: 1 - (st.lastTouch ?? 0), at: st.t + 2.5, placed: false };
+      ({ st } = playMatch(st, 25, { cfg: cfg0 }));
+    }
+    const w0 = st.events.filter((e) => e.type === 'windup' && e.tech === 'touche').length, r0 = st.events.filter((e) => e.type === 'rentrée');
+    ok(w0 === 0 && r0.length >= 3 && r0.every((e) => e.ballY == null), `la clé absente rend l'hier au bit : remisesMain:null → ${r0.length} rentrées instantanées du sol, ${w0} armé 'touche', aucun ballY`);
+  }
   // la relance à la main du gardien : le ballon dans ses gants, beginPass(mains) doit armer le roulé, et le ballon partir bas
   const st0 = playMatch(makeMatch({ full: true, seed: 7 }), 12, { cfg }).st;
   const gk = st0.players.find((p) => p.keeper && p.team === 0);

@@ -26,34 +26,55 @@ const dW = (st, cfg, k) => (st.full && cfg.amortiSpin !== false ? [-st.ball.w[0]
  * voyage. Elle est morte avec la CAPTURE : le contrôle POSSÈDE le ballon dès le contact et le
  * porté l'amène au pied — le ballon du plan est simplement le ballon réel.)
  */
-/** LA TOUCHE (lot A9) : le lancer part des MAINS — hauteur du lâcher, trajectoire tendue (courte) ou en cloche (longue). */
+/** LA TOUCHE (lot A9, cfg.remisesMain) : le lancer part des MAINS — hauteur du lâcher, trajectoire tendue (courte) ou en cloche (longue). */
 export const TOUCHE_H = 1.8, TOUCHE_ELEV = 0.24, TOUCHE_ELEV_LONGUE = 0.40;
 const wrapPi = (a) => a - 2 * Math.PI * Math.round(a / (2 * Math.PI));
+const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
+
+/**
+ * LE BALLON AUX MAINS PENDANT L'ARMÉ d'une remise à la main (stepGestures, lot A9) — une AUTORITÉ de position
+ * nommée, comme le porté au pied d'une frappe : le ballon est TENU (ball.hold : un déplacement, jamais une pose
+ * par écriture — le registre du ballon ne voit aucune remise). Le roulé du gardien : les gants descendent
+ * (keeper.gkHeldBall) ; la touche : le ballon monte du sol à la poitrine, passe derrière la tête, revient au
+ * point de lâcher (toucheH, 0,3 m devant) — le chemin des mains du geste généré (motion-restart.touche).
+ */
+export function holdMains(st, c, dt, cfg) {
+  const A = c.act;
+  if (!A || A.fired || st.ball.owner !== c.id) return false;
+  if (A.payload?.mains === 'roule') return !!cfg.heldBall?.(st, c, dt, cfg);
+  if (A.payload?.mains !== 'touche') return false;
+  const H = (cfg.remisesMain && cfg.remisesMain.toucheH) || TOUCHE_H;
+  const u = A.t / Math.max(1e-3, A.anticipation), fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
+  // poitrine (u ≤ 0,35) → derrière la tête (u 0,65) → point de lâcher (u 1) : trois jalons, deux fondus
+  const chest = [0.25, 1.35], back = [-0.12, H - 0.06], rel = [0.30, H];
+  const k = u < 0.35 ? chest : u < 0.65 ? [chest[0] + (back[0] - chest[0]) * smooth((u - 0.35) / 0.3), chest[1] + (back[1] - chest[1]) * smooth((u - 0.35) / 0.3)]
+    : [back[0] + (rel[0] - back[0]) * smooth((u - 0.65) / 0.35), back[1] + (rel[1] - back[1]) * smooth((u - 0.65) / 0.35)];
+  st.ball.hold([c.p[0] + fx * k[0], k[1], c.p[2] + fz * k[0]], dt, { tau: 0.1, vMax: 8 });
+  return true;
+}
 
 /**
  * LE LÂCHER DE LA TOUCHE — appelé par l'horloge du geste au contact du geste 'touche' armé par
- * referee.remiseEnTouche. Le ballon quitte les MAINS (0,3 m devant, TOUCHE_H : la discontinuité nommée du
- * ballon, cause 'touche'), re-mené sur le coéquipier élu là où il est MAINTENANT, balistique honnête
+ * referee.remiseEnTouche. Le ballon quitte les MAINS là où holdMains l'a porté (aucune écriture de position :
+ * la balistique part du ballon tel qu'il est), re-mené sur le coéquipier élu là où il est MAINTENANT, honnête
  * (solvePass depuis la hauteur des mains). Pas de photo de hors-jeu : la Loi 11 exempte la rentrée.
  */
 export function throwNow(st, c, cfg) {
-  const T = c.act.payload;
+  const T = c.act.payload, K = cfg.remisesMain || {};
   const best = st.players[T.to];
   const tx = best ? best.p[0] : T.target[0], tz = best ? best.p[2] : T.target[1];
-  const fx = Math.cos(c.yaw), fz = Math.sin(c.yaw);
-  const from = [c.p[0] + fx * 0.3, TOUCHE_H, c.p[2] + fz * 0.3];
+  const from = [st.ball.p[0], Math.max(BALL.radius, st.ball.p[1]), st.ball.p[2]];
   const d = hyp(tx - from[0], tz - from[2]);
   const longue = T.longue && d > 19;
-  const sol = solvePass(from, [tx, 0, tz], { style: longue ? TOUCHE_ELEV_LONGUE : TOUCHE_ELEV });
-  st.ball.restart(from, { cause: 'touche' });                    // le ballon quitte les mains, pas le sol
+  const sol = solvePass(from, [tx, 0, tz], { style: longue ? (K.elevLongue ?? TOUCHE_ELEV_LONGUE) : (K.elev ?? TOUCHE_ELEV) });
+  st.ball.release('touche');                                      // la cause VRAIE au grand livre — le ballon quitte les mains
   const theta = sol ? sol.elevation : 0.45, speed = sol ? sol.speed : Math.sqrt(Math.max(4, d) * 9.81 / Math.sin(2 * 0.45));
   st.ball.strike({ speed, dirYaw: sol ? sol.dirYaw : Math.atan2(tz - from[2], tx - from[0]), elevation: theta, spinAxis: [0, 1, 0], spinRev: 0 });
   st.phase = 'flight';
   st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   st.pass = { from: c.id, to: T.to, lead: [tx, 0, tz], style: 'touche', t: st.t, flight: sol ? sol.flightTime : 2 * speed * Math.sin(theta) / 9.81, origin: [from[0], from[2]] };
-  st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: c.id, to: T.to, range: +Math.min(d, T.Rr ?? d).toFixed(1), genre: longue ? 'longue' : undefined, ballY: TOUCHE_H, speed: +speed.toFixed(1),
+  st.events.push({ t: +st.t.toFixed(2), type: 'rentrée', by: c.id, to: T.to, range: +Math.min(d, T.Rr ?? d).toFixed(1), genre: longue ? 'longue' : undefined, ballY: +from[1].toFixed(2), speed: +speed.toFixed(1),
     face: +(Math.abs(wrapPi(Math.atan2(tz - from[2], tx - from[0]) - c.yaw)) * 180 / Math.PI).toFixed(0) });   // l'écart corps-cible en degrés
-  void cfg;
 }
 
 export function beginPass(st, choice, cfg, opts = {}) {

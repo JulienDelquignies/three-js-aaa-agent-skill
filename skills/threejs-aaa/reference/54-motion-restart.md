@@ -34,15 +34,31 @@ plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait. Contra
 (la sphère de la touche, à 34 cm). Ce que l'IK refuse : les cibles hors portée (épaule de shanon
 à 1,43 m + 0,49 m de bras : le lâcher de la touche est à 1,76, pas à 2,0).
 
-## La sim (ce qui a changé au moteur, localisé)
+## La sim (ce qui a changé au moteur, localisé — sous la clé `cfg.remisesMain`)
+
+Le contrat du moteur (retour `docs/Retour_Reference_A9_Remises.md`) : toute clé absente rend le
+moteur d'hier AU BIT. `cfg.remisesMain` (`{ toucheH: 1.8, elev: 0.24, elevLongue: 0.40, face: 0.35,
+patience: 3 }`, allumée dans match-config) gate la touche armée, le ballon porté, la pose du lanceur
+et le roulé du gardien ; `null` = la rentrée instantanée du sol et la relance au pied d'hier — vérifié
+au bit sur 6 graines × 300 s × deux mondes contre le tronc du moteur (mêmes 430 passes, 581 armés,
+140 pertes, 10 041 refus timing…), et par la clause « la clé absente rend l'hier » de verify-remises.
 
 - `referee.remiseEnTouche` ARME le geste (`startGesture` 'touche', payload `{ kind: 'touche', to,
   target, longue, Rr, mains }`, événement `windup` tech 'touche') au lieu de lancer ; le preneur
-  POSSÈDE le ballon pendant l'armé.
+  POSSÈDE le ballon pendant l'armé. Clé absente : le code d'hier, à la ligne.
+- `strike-sim.holdMains` (appelé par `stepGestures` pendant l'armé d'une remise à la main) : le
+  ballon est TENU (`ball.hold` — un déplacement, jamais une pose par écriture : le registre du ballon
+  ne voit aucune remise, `checkMatch` « la remise se PORTE » tient). Pour la touche il monte du sol à
+  la poitrine (0,25 m devant, 1,35 m), passe derrière la tête (−0,12 m, 1,74 m) et revient au point de
+  lâcher (0,30 m devant, toucheH) — le chemin des mains du geste généré ; pour le roulé ce sont les
+  gants qui descendent (`keeper.gkHeldBall`). Mesuré en jeu : 0,13 → 1,11 m à 0,22 s → 1,78 à 0,52 →
+  1,82 au contact. Avant : `ball.restart` écrivait le ballon aux mains — 5 poses par écriture en
+  300 s au registre, le contrat de checkMatch rompu (le retour du moteur).
 - `strike-sim.throwNow` — appelé par l'horloge du geste au contact (dispatch `rondo-sim`) : le
-  ballon quitte les MAINS (`ball.restart(from, { cause: 'touche' })` à TOUCHE_H 1,8 m, 0,3 m devant
-  — la discontinuité nommée du ballon), balistique honnête (`solvePass` depuis la hauteur des mains,
-  élévation 0,24 / 0,40 pour la touche longue), événement `rentrée` avec `ballY`, `speed`, `face`.
+  ballon quitte les MAINS là où holdMains l'a porté (`release('touche')` puis `strike`, aucune
+  écriture de position), balistique honnête (`solvePass` depuis la hauteur réelle du ballon,
+  élévation `elev` 0,24 / `elevLongue` 0,40 pour la touche longue), événement `rentrée` avec
+  `ballY`, `speed`, `face`.
 - `strike-sim.beginPass(…, { mains: true })` : la distribution à la main du gardien prend la
   technique `roule-main` (clip `rouleMain`), sans ancre ni stance, EXEMPTE de la porte 'timing'
   (le holdMin conditionnel de la conduite — 2,2 s au calme — refusait CHAQUE relance à la main :
@@ -52,8 +68,8 @@ plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait. Contra
 - `technique.js` : rangées `touche` et `roule-main`, intent 'mains' — jamais candidates au plan du
   pied. `motion-cast` : les trois espèces sont des MOVES générés, `MOVE_TIMING` les lit.
 - LE LANCEUR FAIT FACE. Mesuré avant : pris en course à 4 m/s, dos au jeu, face à la lisse (171°
-  de la cible au lâcher). `referee.canTake` : la touche se prend À L'ARRÊT, face au terrain (± 20°,
-  patience 3 s — jamais de gel) ; `ballFetch` tourne le lanceur qui attend par le slew borné
+  de la cible au lâcher). `referee.canTake` : la touche se prend À L'ARRÊT, face au terrain (± `face`
+  0,35 rad, `patience` 3 s — jamais de gel) ; `ballFetch` tourne le lanceur qui attend par le slew borné
   (`yawWant`) ; `movement.js` laisse les remises à la MAIN pivoter sous le geste (« a swing owns
   the body » vaut pour un ballon au pied : le lanceur tourne le corps AVEC son ballon en mains, au
   taux d'un homme debout — `enPorte` les exempte du retournement du porteur) et le porteur d'une
@@ -70,7 +86,7 @@ plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait. Contra
   relance à la main s'habille du `rouleMain` ; `_applyStrikeWarp` s'efface pour les mains (pas de
   pied de frappe à corriger).
 
-## Le contrat (verify-remises.mjs — 21 clauses)
+## Le contrat (verify-remises.mjs — 23 clauses)
 
 - trois gestes sous `checkRestartGen` (ballon entre les mains jusqu'au lâcher, mains au bon endroit
   au contact, derrière la tête pour la touche, tronc qui s'arque puis fouette, pieds au sol, roulé
@@ -81,6 +97,9 @@ plus-court-arc + vrille d'hier sautait de 44° quand le bras se repliait. Contra
   l'armé (contact 0,62), 7/7 premiers contacts pour l'équipe du preneur, lanceur face à sa cible
   (0-5°) ; la relance à la main du gardien prise sur pièce (`beginPass` mains, le ballon aux gants
   descendu : windup 'roule-main', passe à ballY 0,46, 0,53 s après l'armé) ;
+- le registre du ballon : par match, les seules poses sont le coup d'envoi et les trois touches
+  forcées par le banc — la touche jouée est portée, jamais écrite ; la clé absente rend l'hier
+  (remisesMain:null → rentrées instantanées du sol, aucun armé, aucun ballY) ;
 - six sabotages nommés (touche lâchée bas, sans armé, sans fouetté ; roulé lâché haut, sans armé ;
   ramassage qui ne se baisse pas).
 

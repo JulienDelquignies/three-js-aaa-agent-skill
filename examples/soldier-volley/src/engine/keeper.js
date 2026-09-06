@@ -305,7 +305,7 @@ export function relancerGardien(st, gk, cfg, deps) {
       const dm = hyp(libre.p[0] - gk.p[0], libre.p[2] - gk.p[2]);
       const tI = cfg.leadTime ? cfg.leadTime(dm, libre) : 0.35;
       const lead = [libre.p[0] + libre.v[0] * tI, 0, libre.p[2] + libre.v[1] * tI];
-      if (deps.beginPass(st, { to: { id: libre.id }, lead, style: 'ground', lane: { margin: 6 } }, cfg, { forceUrgent: true, mains: true })) {
+      if (deps.beginPass(st, { to: { id: libre.id }, lead, style: 'ground', lane: { margin: 6 } }, cfg, { forceUrgent: true, mains: !!(st.full && cfg.remisesMain) })) {   // (lot A9, cfg.remisesMain) le roulé — absente : la passe du pied d'hier
         st.events.push({ t: +st.t.toFixed(2), type: 'relance-main', by: gk.id, to: libre.id, range: +dm.toFixed(1) });
         return true;
       }
