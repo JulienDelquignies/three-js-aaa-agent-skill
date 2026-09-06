@@ -131,7 +131,7 @@
   moteur, sceau 245) : la clé cfg.remisesMain (absente = le tronc au bit), la touche PORTÉE aux mains
   (holdMains, jamais posée par écriture), la cloche d'hier depuis les mains, salida et pertes vertes,
   la gradation 152/158 au tirage (trois touches en 12 × 240 s).
-- LIVRÉ (lot A10, note 313) : LE CONTACT — motion-contact : trois chutes (avant, côté, arrière) avec
+- LIVRÉ (lot A10, note 315) : LE CONTACT — motion-contact : trois chutes (avant, côté, arrière) avec
   leur relevé, le trébuchement, le duel d'épaule, le bouclier bras tendu ; legIK2 (normale du genou au
   pôle, pôle qui suit la jambe) ; la sim sous cfg.contact (absente = le tronc au bit) : duel.chuter
   nomme la chute aux quatre sites de faute, le presseur qui recule fait face (les régimes A7 vivent) ;
