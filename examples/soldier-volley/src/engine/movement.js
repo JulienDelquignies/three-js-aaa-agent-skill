@@ -86,6 +86,8 @@ export function movePlayers(st, dt, cfg) {
     // touche pour l'adversaire, en boucle (mesuré : 57 rentrées c. 28 sur 24 × 600 s). Absente : l'hier au bit.
     if (st.full && cfg.remisesPied?.touche && p.target && !p._sub && !p.expulse && Math.abs(p.p[2]) > st.pitch.hz - 0.1
       && !st.restart && Math.abs(p.target[2]) > st.pitch.hz - 3) p.target = [p.target[0], 0, Math.sign(p.p[2] || 1) * (st.pitch.hz - 3)];   // 3 m dedans : la remise de la tête au lanceur vise un corps DANS le jeu ; pendant une remise, les rayons du règlement font foi (171d)
+    // …et PERSONNE ne court en touche derrière un ballon qui rentre (lot 207 du tronc : le receveur s'arrête à la craie) : la remise de la tête au lanceur, jouée depuis la ligne, prédisait un point de chute à 5 cm dehors
+    if (st.full && cfg.remisesPied?.touche && p.target && !p.keeper && !p._sub && !st.restart && Math.abs(p.target[2]) > st.pitch.hz && Math.abs(p.target[0]) <= st.pitch.hx) p.target = [p.target[0], 0, Math.sign(p.target[2]) * st.pitch.hz];
     let top = (cfg.speeds[p.job === 'press' || p.job === 'intercept' || p.job === 'receive' ? 'chase'
       : p.job === 'carry' ? 'carry' : p.job === 'cover' ? 'press'
       : p.job === 'mark' ? (cfg.speeds.mark != null ? 'mark' : 'support')

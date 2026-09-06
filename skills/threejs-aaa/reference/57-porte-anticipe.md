@@ -24,11 +24,13 @@ fait foirer beaucoup d'actions ». Mesuré dans la sim (3 graines × 300 s, la c
 Mesuré (3 × 300 s, verify-porte.mjs) : refus au contact 65 → 20 ; armés 312 → 269 pour 243 → 263 passes
 et tirs (l'armé porte) ; épisodes « il court sans son ballon » 35 → 2 ; le ballon derrière un porteur
 lancé 927 → 64 images sur 26 000 de porté ; le vendangé repris en moins de 1,5 s : 38/65 → 20/20 ;
+le lanceur de touche se pose à 0,25 m (0,4 avant : le ballon lâché partait 10 cm dehors et le receveur
+d'une remise de la tête visait la craie — lot 207 du tronc) ;
 distance porteur-ballon en conduite p90 1,31 → 1,18 m. Le contrôle lui-même n'était pas en cause : le
 ballon est au pied 0,17 s après (p50 et p90), avec ou sans la clé.
 
-L'équilibre (24 graines × 600 s, clé allumée / absente) : passes 3 768 / 3 470, armés 3 964 / 4 532,
-pertes 1 043 / 1 121, tirs 79 / 86, buts 16 / 16 — et les DUELS 194 / 338, glissés 181 / 264, fautes 64 / 74 :
+L'équilibre (24 graines × 600 s, clé allumée / absente) : passes 4 058 / 3 401, armés 4 159 / 4 509,
+pertes 937 / 1 080, tirs 76 / 86, buts 19 / 20 — et les DUELS 185 / 342, glissés 170 / 258, fautes 57 / 79 :
 les ballons vendangés étaient une source de 50/50 (un tiers des duels). C'est un artefact qui tombe, pas
 une loi de football ; le tronc peut re-calibrer ses flux de duel sur le monde propre.
 

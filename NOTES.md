@@ -9774,12 +9774,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      stance du corps APRÈS son pas de glissement, au servo serré ; le vendangé qui reste FREINE et se
      REPREND (movement : il vise son ballon sans poussée, 0,8 s). Mesuré : refus 65 → 20, épisodes
      35 → 2, ballon derrière un porteur lancé 927 → 64 images sur 26 000, vendangés repris 38/65 →
-     20/20, p90 porteur-ballon 1,31 → 1,18 m. ÉQUILIBRE (24 × 600 s) : passes 3 768 c. 3 470, armés
-     3 964 c. 4 532, pertes 1 043 c. 1 121, tirs 79 c. 86, buts 16 = 16 ; duels 194 c. 338, glissés
-     181 c. 264, fautes 64 c. 74 — les vendangés faisaient un tiers des duels : un artefact qui tombe,
+     20/20, p90 porteur-ballon 1,31 → 1,18 m. ÉQUILIBRE (24 × 600 s) : passes 4 058 c. 3 401, armés
+     4 159 c. 4 509, pertes 937 c. 1 080, tirs 76 c. 86, buts 19 c. 20 ; duels 185 c. 342, glissés
+     170 c. 258, fautes 57 c. 79 — les vendangés faisaient un tiers des duels : un artefact qui tombe,
      le tronc peut re-calibrer ses flux de duel sur le monde propre. Bancs : verify-porte 4 clauses ;
      verify-contact passe à 6 graines (2 chutes sur 3 : un compte) ; bancs.mjs enrôle verify-remises,
-     verify-contact, verify-porte. Doc reference/57.
+     verify-contact, verify-porte. Le banc complet a relu le lot 207 du tronc (aucune course ne vise
+     hors terrain) : le lanceur à 0,4 m lâchait le ballon 10 cm dehors et le receveur d'une remise de
+     la tête visait la craie — le lanceur se pose à 0,25 m (les pieds sur la ligne, Loi 15) et, au jeu
+     courant, aucune cible de champ ne dépasse la touche (movement.js, sous remisesPied.touche). Doc
+     reference/57.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
