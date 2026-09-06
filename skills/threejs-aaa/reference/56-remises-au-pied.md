@@ -94,11 +94,44 @@ forcée envoyait le ballon de l'autre ligne — un artefact du banc, pas du mote
   t = 142,9 s : coup franc direct à 24 m, 3,55 m de course à 3,8 m/s, la frappe et le contact dans la même
   image (`a9bis-cf-course`, `a9bis-cf-contact`).
 
+## Le banc du match (bancs.mjs, 8 shards)
+
+535 ✓ / 7 ✗ sur le moteur A9 bis final (A10 : 532 / 10, A9 bis : 536 / 6). La première passe (537 / 5) a
+précédé la sonde d'équilibre, qui a trouvé la BOUCLE DE TOUCHES : le lanceur posté derrière la ligne y
+restait, la remise de la tête de son coéquipier lui revenait dehors, une seconde touche pour l'adversaire
+(57 rentrées c. 28 sur 24 × 600 s). Le retour dans le terrain (3 m, au jeu courant seulement — pendant une
+remise les rayons du règlement font foi, 171d) l'a ramenée à 45 c. 28 ; le pattern existe aussi sans la clé
+(4 boucles sur 14 touches ; 8 sur 23 avec).
+
+Les sept rouges, relus clé allumée contre clé absente :
+
+- l'économie de course (2 graines) est rouge SANS la clé aussi (p50 7 ≤ 6 absente, 9 allumée) ;
+- la gradation rung 30 et le FLUX des contres : rouges depuis A9 bis ;
+- lot 189 (recule 8 ≤ 5,6, rouge à A10 aussi), lot 170 (pivot médian 59 ≤ 53 sur 2 graines, rouge aux deux
+  bancs A9 bis), lot 245 (85 % ≥ 90 sur 3 × 300 s), lot 124 (passements 2 ≥ 3 sur 6 × 300 s) : des lames de
+  couteau à petits comptes.
+
+L'équilibre, mesuré à 24 graines × 600 s (quatre heures de jeu par monde) :
+
+| monde | tirs | dans la surface | passes | pertes | buts | remises prises | rentrées | corners joués |
+|---|---|---|---|---|---|---|---|---|
+| clé allumée | 86 | 62 | 3 470 | 1 121 | 16 | 163 | 45 | 14 |
+| clé absente (le tronc) | 73 | 58 | 3 651 | 1 090 | 15 | 143 | 28 | 8 |
+
+62 courses d'élan et 34 volées par quatre heures de jeu. La clé fait plus de coups de pied arrêtés (chaque
+frappe à l'arrêt devient une course, le ballon repart plus tard et plus haut) et plus de touches (le lanceur
+derrière la ligne) — le réel en a 40 par match, le tronc 1,2 par 10 min. L'écart-type d'une graine est de
+2 tirs : l'écart (+13 sur 24 graines) tient dans 1,3 sigma. Verdict : la clé re-tire les trajectoires comme
+A9 et A10, l'équilibre tient, l'hier au bit sans la clé. Nommé au tronc : la remise de la tête au lanceur
+qui vise un corps près de la ligne (une loi de `tete.js`, pas de ce lot).
+
 ## Les dettes nommées
 
 - La sortie de but n'a pas de course d'élan (le gardien la distribue par `relancerGardien` : une passe
   armée sur place) ; la touche longue non plus (le lanceur se pose, A9).
 - Le corner court (35 % au style possession) rend le ballon au pied du preneur au contact : la course
   finit sur une conduite, pas une frappe.
+- La remise de la tête au lanceur vise un corps près de la ligne et sort parfois (la boucle de touches,
+  4 sur 14 sans la clé, 8 sur 23 avec) : une loi de `tete.js`, nommée au tronc.
 - La prise aérienne tenue n'a pas été filmée (aucune prise aérienne en 380 s sur trois graines).
 - Aucun mur qui saute, aucune barrière qui se place au coup franc pendant la course : le mur d'hier.

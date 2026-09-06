@@ -9739,6 +9739,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      24 m, 3,55 m de course, la frappe dans la même image que le contact). Dettes : la sortie de but et
      la touche longue sans course, le corner court qui finit en conduite, la prise aérienne non filmée,
      le mur qui ne saute pas.
+     LE BANC COMPLET (bancs.mjs, 8 shards) sur le moteur A9 bis final : 535 ✓ / 7 ✗ (A10 : 532 / 10,
+     A9 bis : 536 / 6). Trois passes de banc ont fait le lot : la première (537 / 5) a précédé la sonde
+     d'équilibre qui a trouvé la BOUCLE DE TOUCHES (le lanceur posté derrière la ligne y restait, la
+     remise de la tête de son coéquipier lui revenait dehors — 57 rentrées c. 28 sur 24 × 600 s) ; le
+     retour dans le terrain (3 m) l'a réduite (45 c. 28 — un pattern qui existe aussi sans la clé :
+     4 boucles sur 14 touches, 8 sur 23 avec), et sa première version pendant les remises repoussait
+     l'adverse hors du rayon de la Loi 15 (171d : 3,36 m ≥ 3,2 — le retour ne vaut qu'au jeu courant,
+     2,00 m rendus). Les sept rouges relus clé allumée contre clé absente : (1) l'ÉCONOMIE DE COURSE
+     (2 graines) est rouge SANS la clé aussi (p50 7 ≤ 6 absente, 9 allumée) ; (2) la gradation rung 30
+     et le FLUX des contres sont rouges depuis A9 bis ; (3) lot 189 (recule 8 ≤ 5,6, rouge à A10 aussi),
+     lot 170 (pivot médian 59 ≤ 53 sur 2 graines, rouge aux deux bancs A9 bis), lot 245 (l'oblique
+     85 % ≥ 90 sur 3 × 300 s), lot 124 (passements multi 2 ≥ 3 sur 6 × 300 s) sont des lames de
+     couteau à petits comptes. L'ÉQUILIBRE à 24 graines × 600 s allumée / absente : tirs 86 / 73 (dans
+     la surface 62 / 58), passes 3 470 / 3 651, pertes 1 121 / 1 090, buts 16 / 15, remises prises
+     163 / 143, rentrées 45 / 28, corners joués 14 / 8 — 62 courses d'élan et 34 volées par 4 h de
+     jeu. La clé fait plus de coups de pied arrêtés (chaque frappe à l'arrêt devient une course : le
+     ballon repart plus tard, plus haut — la volée à 0,76 m au lieu du sol) et plus de touches (le
+     lanceur derrière la ligne) : le réel en a 40 par match, le tronc 1,2 par 10 min ; l'écart-type
+     d'une graine est de 2 tirs, l'écart des tirs (+13 sur 24 graines) tient dans 1,3 sigma. Verdict :
+     la clé re-tire les trajectoires comme A9 et A10, l'équilibre tient, l'hier au bit sans la clé ; la
+     remise de la tête au lanceur qui vise un corps près de la ligne est nommée au tronc (une loi de
+     tete.js, pas de ce lot).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
