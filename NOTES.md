@@ -9560,6 +9560,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le lanceur se tient dans le terrain, pas derrière la ligne ; pas de course d'élan de la
      touche longue ; le roulé n'est observable que forcé (2 prises aux gants en 12 min, deux
      retraits joués au pied) ; dégagement de volée et prise aérienne tenue restent aux clips.
+     A9 BIS — LE RETOUR DU MOTEUR (docs/Retour_Reference_A9_Remises.md, sceau 245 : A7 et A8
+     repris, A9 laissé — « change la simulation sans clé », 4 contrats cassés). Fusion de la
+     branche moteur (244a-245) faite, puis les quatre demandes : (1) LA CLÉ cfg.remisesMain
+     { toucheH, elev, elevLongue, face, patience }, allumée ; absente = le tronc AU BIT (referee
+     garde le code d'hier à la ligne, keeper ne demande le roulé qu'avec la clé, canTake et
+     ballFetch aussi) — vérifié bit à bit contre le tronc sur 6 graines × 300 s × deux mondes
+     (430 passes, 581 armés, 140 pertes, 10 041 refus timing : identiques) et la gradation
+     152/158 clé absente rend exactement leurs 11/49/249/470 ; (2) LA POSE NOMMÉE : plus
+     aucun ball.restart à la touche — strike-sim.holdMains TIENT le ballon pendant l'armé
+     (sol → poitrine → derrière la tête → point de lâcher, mesuré en jeu 0,13 → 1,11 → 1,78 →
+     1,82 m) et throwNow lance de là où il est ; le registre ne voit plus de remise, le
+     contrat « la remise se PORTE » de checkMatch tient (clause verify-remises : 3 + 3 poses =
+     les touches forcées du banc) ; (3) LA REMESURE : salida 239 verte au bloc (pivot 4,2 m
+     ≤ sans 9,5 − 4 ; le ≤ 3 est informatif « 0,9-4,7 selon le moteur ») ; pertes 240 verte
+     au banc complet ; la gradation 152/158 : rung 30 → 96 c. 11 (tendue), 131 (cloche) —
+     MESURÉ : trois touches en 12 × 240 s dans ce monde, deux du faible, une du fort, et le
+     composite bascule de 120 sur ces trois événements (tirs 28-24 c. 24-24) ; le CONTRÔLE
+     clé absente + 0,01 rad sur la touche d'hier donne 74/79/249/384 (l'ordre tient de 5
+     points, le rung 30 a bougé de 63, le rung 90 de −86) : le bas de l'échelle est au tirage,
+     comme leur propre note 245 le disait à 6 graines (30 → 24 > 50 → 8) ; (4) LE BANC COMPLET
+     (bancs.mjs, 8 shards + 12 annexes) : 536/6 avec la touche tendue — 217 renvoi épinglé
+     17,9 pour ≥ 18,0 ; flux 24 × 300 pertes 562 pour ≤ 559,7 ; roulette p50 1,4 pour ≥ 1,4 ;
+     ligne 96 sabotage 9,6 pour ≥ 10,65 ; salida 3,7 pour ≤ 3,4 (verte depuis) ; gradation.
+     ET LA TRAJECTOIRE : tendue à 0,24 rad le jet filait à 17,7 m/s p50 et arrivait en 1,0 s,
+     la possession tenait 5 s (hier : 2,13 s, 12 s) → la CLOCHE d'hier depuis les mains (0,55 /
+     0,42 rad : 13,1 m/s, 2,25 s, 18,8 s, réel 10-15 m/s) est le défaut. Dette pour le moteur :
+     la gradation à 12 graines lit trois touches ; les clauses au fil du rasoir restent.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

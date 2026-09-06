@@ -117,18 +117,34 @@ au bit sur 6 graines × 300 s × deux mondes contre le tronc du moteur (mêmes 4
   main, ce qui n'est jamais tombé en 12 min de jeu sur deux graines (2 prises aux gants, toutes
   deux des retraits joués au pied).
 
-## Le banc du match (verify-match11)
+## Le banc du match (le retour du moteur, docs/Retour_Reference_A9_Remises.md)
 
-260/6 sur le moteur A9 contre 266/0 sur main. Les six rouges sont des clauses SUR LE FIL
-(gelé 2,21 pour ≤ 2,19 ; 0 bascule pour ≥ 1 ; chaîne de passements 2 pour ≥ 3 ; 5/9 passes en
-profondeur conservées pour ≥ 65 % ; p50 des courses 1,50 pour ≥ 1,55 s ; deuxième latéral 2
-pour ≤ 1), aucune ne mesure une remise. Contrôle : main avec 0,01 rad de plus (0,6°) sur l'élévation de
-l'ancienne touche (0,55 → 0,56 rad, aucune loi changée) donne 262/4 — les mêmes foulée et
-renversement, plus le dosage des passes en profondeur et le troisième homme. Main intact est à
-l'exact bord (gelé 2,19 ≤ 2,19, 1 bascule pour un minimum de 1, chaîne 3 pour un minimum de 3).
-Une remise qui dure 0,6-2 s de plus change la trajectoire du match dès la première touche ; les
-statistiques d'un monde sans touche sont identiques entre A9 et main au bit (2 × 300 s : 192
-passes, 213 contrôles, 57 pertes). Dette pour le moteur : ces clauses mesurent au fil du rasoir.
+Le sceau 245 du moteur a repris A7 et A8 et laissé A9 : « change la simulation sans clé », quatre
+contrats cassés. Réponse, après fusion de la branche moteur (244a-245) :
+
+1. **La clé** `cfg.remisesMain` — absente, le tronc AU BIT (mêmes 430 passes, 581 armés, 140
+   pertes, 10 041 refus timing sur 6 graines × 300 s × deux mondes ; la gradation 152/158 clé
+   absente rend exactement leurs 11 / 49 / 249 / 470).
+2. **La pose nommée** — plus aucun `ball.restart` à la touche : `holdMains` tient le ballon
+   pendant l'armé, `throwNow` lance de là où il est ; le registre ne voit plus de remise,
+   `checkMatch` « la remise se PORTE » tient (avant : 5 poses par écriture en 300 s).
+3. **La remesure** — salida 239 verte (pivot 4,2 m ≤ sans 9,5 − 4 ; le ≤ 3 est informatif,
+   « 0,9-4,7 selon le moteur ») ; pertes 240 verte au banc complet ; la gradation 152/158 lit
+   TROIS touches en 12 × 240 s (deux du faible, une du fort) et son rung 30 bascule de 120 sur
+   ces trois événements (11 → 96 tendue, 131 cloche) ; le contrôle « clé absente + 0,01 rad sur
+   la touche d'hier » donne 74 / 79 / 249 / 384 — l'ordre tient de 5 points, le rung 30 bouge
+   de 63 : le bas de l'échelle est au tirage (leur note 245 le disait déjà à 6 graines).
+4. **Le banc complet** (`bancs.mjs`, 8 shards + 12 annexes) : 536/6 avec la touche tendue — les
+   rouges restants sont au fil du rasoir (renvoi épinglé 17,9 pour ≥ 18,0 ; pertes 562 pour
+   ≤ 559,7 ; roulette p50 1,4 pour ≥ 1,4 ; ligne 96 sabotage 9,6 pour ≥ 10,65) ou la gradation.
+
+Et la trajectoire : tendue à 0,24 rad le jet filait à 17,7 m/s p50, arrivait en 1,0 s et la
+possession tenait 5 s (hier 2,13 s, 12 s) ; la CLOCHE d'hier depuis les mains (0,55 / 0,42 rad :
+13,1 m/s, 2,25 s, 18,8 s — le réel lance à 10-15 m/s) est le défaut de la clé.
+
+Sur la branche avant fusion (moteur A9 seul, 266 clauses) : 260/6 contre 266/0 sur main, six
+clauses sur le fil, et le contrôle main + 0,01 rad à 262/4 — la trajectoire d'un match change
+dès la première touche, les statistiques d'un monde sans touche sont identiques au bit.
 
 ## Les dettes nommées
 

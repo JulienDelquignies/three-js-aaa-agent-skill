@@ -127,7 +127,10 @@
   au sol, armIK (poignet à un point, rotation par la matrice des repères) ; la sim ARME la touche et
   lance des mains au contact (throwNow), le gardien distribue à la main par le roulé (porte 'timing'
   exemptée, gants qui descendent), le lanceur attend face au terrain et pivote sur sa cible ;
-  verify-remises 21 clauses ; contact-sheet --move touche/rouleMain/ramassage.
+  verify-remises 23 clauses ; contact-sheet --move touche/rouleMain/ramassage. A9 BIS (le retour du
+  moteur, sceau 245) : la clé cfg.remisesMain (absente = le tronc au bit), la touche PORTÉE aux mains
+  (holdMains, jamais posée par écriture), la cloche d'hier depuis les mains, salida et pertes vertes,
+  la gradation 152/158 au tirage (trois touches en 12 × 240 s).
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 bis) LES REMISES AU PIED — la course d'élan des coups de pied arrêtés (touche longue comprise),
   le dégagement de volée du gardien, la prise aérienne tenue (dette A6), le lanceur derrière la
