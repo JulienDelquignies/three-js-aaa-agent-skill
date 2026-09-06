@@ -57,7 +57,11 @@ export function movePlayers(st, dt, cfg) {
     // …et un geste technique possède le corps AU-DELÀ du contact : le râteau tourne le lacet
     // pendant l'accompagnement, la semelle tient le corps immobile sur son ballon — stepGestures
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
-    if (winding(p) || p.act?.payload?.ownsBody) { p.speed = hyp(p.v[0], p.v[1]); continue; }
+    if (winding(p) || p.act?.payload?.ownsBody) {
+      p.speed = hyp(p.v[0], p.v[1]);
+      if (!p.act?.payload?.mains) continue;
+      p.v = [0, 0]; p.push = null; p.speed = 0;                     // …sauf les MAINS (lot A9 — touche, roulé du gardien) : planté, il TOURNE encore sur sa cible pendant l'armé (le slew ci-dessous)
+    }
     // LA COURSE S'ENGAGE ET SE FINIT (lot 135, cfg.engagement && st.full — mesuré : 52 % des
     // courses off-ball meurent < 1,2 s, 26 % des sauts de cible > 5 m (p90 15 m), 24 % de
     // piétinement : le cerveau re-cible à 60 Hz, les corps FRÉMISSENT — « pas un vrai match »).
@@ -381,7 +385,7 @@ export function movePlayers(st, dt, cfg) {
     // on the geometry at COMMIT and then let the body rotate for the whole 0.4 s of the windup, so the
     // ball could be dead behind him by the time the boot arrived — `ball-ahead-at-strike` 16.7 %. You
     // commit your body when you commit your gesture; that IS what committing means.
-    if (p.act) continue;
+    if (p.act && !p.act.payload?.mains) continue;                  // …sauf les remises à la MAIN (lot A9 — touche, roulé) : le ballon est dans ses mains, il tourne le corps avec
     // …pendant la PRÉSENTATION (lot 70, plus bas), l'autorité du cap est le BALLON, pas la
     // dérive : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à chaque
     // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la
@@ -420,7 +424,10 @@ export function movePlayers(st, dt, cfg) {
       // (yaw-suit-v : 13,7 ≈ 14,7 % épinglé ; + hystérésis du target : 19,5 % — PIRE) — le
       // désalignement vient d'ailleurs (dette nommée : tracer un épisode, regarder le CLIP de
       // rendu). Le chemin d'hier, au bit :
-      p.yawWant = p.push ? Math.atan2(p.push[1], p.push[0])
+      // …sauf les remises à la MAIN (lot A9) : le ballon est dans ses mains (posé DERRIÈRE le lanceur de touche, sur la ligne) — il fait face à sa CIBLE
+      const M = p.act?.payload?.mains ? (p.act.payload.target ?? (p.act.payload.choice?.lead ? [p.act.payload.choice.lead[0], p.act.payload.choice.lead[2]] : null)) : null;
+      p.yawWant = M && Number.isFinite(M[0]) && Number.isFinite(M[1]) ? Math.atan2(M[1] - p.p[2], M[0] - p.p[0])
+        : p.push ? Math.atan2(p.push[1], p.push[0])
         : Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
     } else if (sePres) {
       // …ET UN RECEVEUR SE PRÉSENTE (lot 70) : le corps s'OUVRE au ballon qui arrive — un
@@ -484,6 +491,7 @@ export function movePlayers(st, dt, cfg) {
 export function enPorte(st, p, cfg) {
   // …sauf le preneur du COUP D'ENVOI dans sa fenêtre (loi 45 : l'engagement est une passe — barre abaissée, tenue dispensée, retournement dispensé : 2,54 s c. 1,01 mesurés)
   if (cfg.engagementPasse !== false && st._engagement && st._engagement.by === p.id && st.t - st._engagement.t < 2.5) return false;
+  if (p.act?.payload?.mains) return false;                         // …et les remises à la MAIN (lot A9 — touche, roulé) : le ballon est dans ses mains, pas à ses pieds — il pivote au taux d'un homme debout
   return st.possession?.carrier === p.id || st.ball.owner === p.id || (st.lastPasser === p.id && !!st.pass && st.t - st.pass.t < (cfg.retournement?.apres ?? 0.5));
 }
 

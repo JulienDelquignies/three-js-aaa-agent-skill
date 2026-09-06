@@ -43,6 +43,18 @@ export const SURFACE_HEIGHT = {
  *  clip      the animkit move that draws it, and `contact` the frame the boot meets the ball
  */
 export const TECHNIQUES = [
+  // ---- LES MAINS (lot A9) — jamais candidates au plan (intent 'mains') : strike-sim les élit quand le ballon est
+  // en mains (le preneur d'une touche, la relance à la main du gardien) ; le geste est généré (motion-restart)
+  {
+    id: 'touche', intent: 'mains', foot: 'near', surface: 'inside',
+    side: [0, 180], dist: [0, 3], turn: 180, power: 0.6, accuracy: 0.8,
+    clip: 'touche', why: 'La touche (Loi 15) : les deux mains derrière la tête, les deux pieds au sol — le lancer part de la hauteur des mains.',
+  },
+  {
+    id: 'roule-main', intent: 'mains', foot: 'near', surface: 'inside',
+    side: [0, 180], dist: [0, 3], turn: 180, power: 0.5, accuracy: 0.95,
+    clip: 'rouleMain', why: 'La relance à la main du gardien : un ballon roulé à deux mains par en dessous, au sol, précis et court.',
+  },
   // ---- PASSING
   {
     id: 'passe-interieur', intent: 'pass', foot: 'near', surface: 'inside',

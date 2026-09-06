@@ -12,6 +12,9 @@ import { keeperSpot } from './keeper.js';
 import { makeProfile } from './attributes.js';
 import { resoudreRole } from './roles.js';
 import { axe as axeT, tac as tacT } from './tactics.js';
+import { startGesture } from './gesture.js';
+import { MOVE_TIMING } from './skills-sim.js';
+import { byId } from './technique.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -191,6 +194,21 @@ export function remiseEnTouche(st, id, cfg) {
   if (longue) st._touchePlan = null;                              // le plan est CONSOMMÉ par le jet
   const dx = bestT[0] - q.p[0], dz = bestT[1] - q.p[2];
   const Rr = Math.min(hyp(dx, dz), R);
+  if (st.full && cfg.remisesMain) {
+    // LE GESTE DES DEUX MAINS (lot A9, cfg.remisesMain) : la rentrée ARME le geste 'touche' (motion-restart : ballon
+    // derrière la tête, fouetté du tronc) ; le ballon est PORTÉ aux mains pendant l'armé (strike-sim.holdMains — jamais
+    // posé par écriture) et part AU CONTACT du geste, de la hauteur des mains (throwNow : balistique honnête). Le
+    // preneur POSSÈDE le ballon pendant l'armé ; le lâcher re-mène sur le coéquipier élu là où il sera.
+    st.ball.possess(q.id); st.possession.carrier = q.id;
+    const move = MOVE_TIMING.touche || { duration: 1.15, contact: 0.62 };
+    // il PLANTE et se TOURNE sur sa cible pendant l'armé (movement.js laisse son slew vivre sous le geste — canTake l'a
+    // posé face au terrain, l'écart restant est celui de la cible : quelques dizaines de degrés, un quart de seconde)
+    q.yawWant = Math.atan2(dz, dx); q.v = [0, 0];
+    startGesture(q, { id: 'touche', ...move }, { payload: { kind: 'touche', to: best.id, target: bestT, longue: !!longue, Rr, pick: { tech: byId.touche, foot: q.foot }, mains: 'touche' }, log: st.gestures });
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: id, tech: 'touche', move: 'touche', foot: q.foot, anticipation: move.contact });
+    return;
+  }
+  // …clé absente : la rentrée instantanée d'hier, du sol, au bit
   const theta = longue && hyp(dx, dz) > 19 ? 0.42 : 0.55;  // ~32° la cloche ; le jet LONG part plat (~24°)
   const speed = Math.sqrt(Math.max(4, Rr) * 9.81 / Math.sin(2 * theta));
   st.ball.release('touche');                                      // la cause VRAIE au grand livre
@@ -596,6 +614,13 @@ export function canTake(st, takerId, cfg) {
   if (st.t < st.restart.at - 0.25) return false;
   if (p.team !== st.restart.team) return false;
   const ty = st.restart.type;
+  // LE LANCEUR SE POSE (lot A9) : la touche se lance À L'ARRÊT, FACE AU TERRAIN (ballFetch le tourne par le slew) — mesuré
+  // avant : pris en course à 4 m/s, dos au jeu, le geste lançait par-dessus la tête. Patience 3 s : jamais de gel.
+  if (ty === 'touche' && st.full && cfg?.remisesMain && st.t < st.restart.at + (cfg.remisesMain.patience ?? 3)) {
+    let dY = Math.atan2(-Math.sign(st.restart.p[1] || 1), 0) - p.yaw;
+    while (dY > Math.PI) dY -= 2 * Math.PI; while (dY < -Math.PI) dY += 2 * Math.PI;
+    if (hyp(p.v[0], p.v[1]) > 0.6 || Math.abs(dY) > (cfg.remisesMain.face ?? 0.35)) return false;
+  }
   // L'ARBITRE TIENT LE COUP D'ENVOI (Loi 8, lot 72) : la reprise ATTEND que le rond central
   // soit vide d'adversaires — l'expulsé du rond (l'attaquant du but d'avant) traversait le
   // preneur à 1,1 m et CONTESTAIT la première passe : release en ping-pong, 63 refus
@@ -845,6 +870,10 @@ export function administerWhistle(st, cfg) {
  */
 export function ballFetch(st, dt, cfg) {
   const r = st.restart;
+  if (r && r.placed === true && r.type === 'touche' && st.full && cfg?.remisesMain) {              // le lanceur ATTEND FACE AU TERRAIN (lot A9 — mesuré : il attendait dos au jeu, face à la lisse, et lançait par-dessus sa tête)
+    const tk = st.players[r.taker ?? -1];
+    if (tk && tk.down <= 0 && hyp(tk.v[0], tk.v[1]) < 0.3) tk.yawWant = Math.atan2(-Math.sign(r.p[1] || 1), 0);
+  }
   if (!r || r.placed !== false) return false;
   const tk = st.players[r.taker ?? -1];
   if (!tk || tk.down > 0) return false;

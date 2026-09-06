@@ -9523,6 +9523,104 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      20 ≥ hier 22 à 3 graines — Poisson, et déjà rouge au banc 245 dans
      un shard relu avant sa fin : leçon, le tally se lit APRÈS le
      fichier .done) → 6 graines DATÉ 246.
+- 312: LES REMISES À LA MAIN (lot A9 — « ok pour enchainer A9 »). La touche était un
+     crochet : à la prise, remiseEnTouche lançait le ballon DU SOL à l'instant même, le
+     preneur dans son clip d'attente ; la relance à la main du gardien dessinait une passe
+     du pied ; le ramassage au sol s'habillait de la prise aérienne. engine/motion-restart :
+     trois espèces générées (touche — ballon derrière la tête, tronc arqué puis fouetté,
+     lâcher à 1,76 m, pieds au sol ; rouleMain — fente, bras armé derrière, lâcher à 0,36 m
+     devant ; ramassage — fente, mains qui cueillent à 0,33 m) et armIK (poignet à un point :
+     coude par IK deux os, plan du coude au PÔLE, rotation par la matrice des repères — le
+     plus-court-arc sautait de 44° bras replié). LA SIM LES JOUE : referee.remiseEnTouche
+     ARME le geste, strike-sim.throwNow lance des mains au contact (ball.restart cause
+     'touche' à 1,8 m, solvePass depuis les mains) ; beginPass(mains) prend la technique
+     roule-main, exempte de la porte 'timing' (le holdMin conditionnel refusait CHAQUE
+     relance à la main : 0 en 7 graines × 240 s), gkHeldBall descend les gants avec l'armé
+     (passe à ballY 0,46 ; avant 1,09). LE LANCEUR FAIT FACE (mesuré : pris en course à
+     4 m/s, dos au jeu, 171° de sa cible) : canTake pose la touche à l'arrêt face au terrain
+     (patience 3 s), ballFetch tourne l'attente par le slew, movement.js laisse les remises à
+     la MAIN pivoter sous le geste et viser la cible (enPorte les exempte du retournement du
+     porteur) : 0-5° au lâcher. Scène : attente ballonMains (motion-idle, poignets par
+     armIK), le ballon dessiné entre les mains (_holdHands), prise basse → ramassage. Banc
+     verify-remises 21 clauses (six touches FORCÉES par match — le hasard n'en garantit
+     aucune —, roulé pris sur pièce, six sabotages) ; suite des 24 bancs verte. VERIFY-MATCH11 :
+     260/6 sur le moteur A9, 266/0 sur main — les six rouges sont des clauses SUR LE FIL
+     (gelé 2,21 pour ≤ 2,19 ; 0 bascule pour ≥ 1 ; chaîne de passements 2 pour ≥ 3 ; 5/9
+     conservés pour ≥ 65 % ; p50 1,50 pour ≥ 1,55 s ; deuxième latéral 2 pour ≤ 1), rien
+     qui touche une remise. CONTRÔLE : main avec 0,01 rad de plus (0,6°) sur l'élévation de
+     l'ancienne touche (0,55 → 0,56, aucune loi changée) donne 262/4 — les mêmes foulée
+     (2,21) et renversement (0), le dosage des passes en profondeur (7/12) et le troisième
+     homme flanchent ; main intact est à l'exact bord (gelé 2,19 ≤ 2,19, 1 bascule pour un
+     minimum de 1, chaîne 3 pour un minimum de 3). Une remise qui dure 0,6-2 s de plus
+     change la trajectoire du match dès la première touche ; les statistiques du monde sans
+     touche sont IDENTIQUES entre A9 et main (2 × 300 s : 192 passes, 213 contrôles, 57
+     pertes, 3887 refus timing — au bit). Dette pour le moteur : ces clauses mesurent au fil
+     du rasoir (marges 0 à 1 événement), elles flancheront à chaque lot qui touche une
+     trajectoire. Dettes :
+     le lanceur se tient dans le terrain, pas derrière la ligne ; pas de course d'élan de la
+     touche longue ; le roulé n'est observable que forcé (2 prises aux gants en 12 min, deux
+     retraits joués au pied) ; dégagement de volée et prise aérienne tenue restent aux clips.
+     A9 BIS — LE RETOUR DU MOTEUR (docs/Retour_Reference_A9_Remises.md, sceau 245 : A7 et A8
+     repris, A9 laissé — « change la simulation sans clé », 4 contrats cassés). Fusion de la
+     branche moteur (244a-245) faite, puis les quatre demandes : (1) LA CLÉ cfg.remisesMain
+     { toucheH, elev, elevLongue, face, patience }, allumée ; absente = le tronc AU BIT (referee
+     garde le code d'hier à la ligne, keeper ne demande le roulé qu'avec la clé, canTake et
+     ballFetch aussi) — vérifié bit à bit contre le tronc sur 6 graines × 300 s × deux mondes
+     (430 passes, 581 armés, 140 pertes, 10 041 refus timing : identiques) et la gradation
+     152/158 clé absente rend exactement leurs 11/49/249/470 ; (2) LA POSE NOMMÉE : plus
+     aucun ball.restart à la touche — strike-sim.holdMains TIENT le ballon pendant l'armé
+     (sol → poitrine → derrière la tête → point de lâcher, mesuré en jeu 0,13 → 1,11 → 1,78 →
+     1,82 m) et throwNow lance de là où il est ; le registre ne voit plus de remise, le
+     contrat « la remise se PORTE » de checkMatch tient (clause verify-remises : 3 + 3 poses =
+     les touches forcées du banc) ; (3) LA REMESURE : salida 239 verte au bloc (pivot 4,2 m
+     ≤ sans 9,5 − 4 ; le ≤ 3 est informatif « 0,9-4,7 selon le moteur ») ; pertes 240 verte
+     au banc complet ; la gradation 152/158 : rung 30 → 96 c. 11 (tendue), 131 (cloche) —
+     MESURÉ : trois touches en 12 × 240 s dans ce monde, deux du faible, une du fort, et le
+     composite bascule de 120 sur ces trois événements (tirs 28-24 c. 24-24) ; le CONTRÔLE
+     clé absente + 0,01 rad sur la touche d'hier donne 74/79/249/384 (l'ordre tient de 5
+     points, le rung 30 a bougé de 63, le rung 90 de −86) : le bas de l'échelle est au tirage,
+     comme leur propre note 245 le disait à 6 graines (30 → 24 > 50 → 8) ; (4) LE BANC COMPLET
+     (bancs.mjs, 8 shards + 12 annexes) : 536/6 avec la touche tendue — 217 renvoi épinglé
+     17,9 pour ≥ 18,0 ; flux 24 × 300 pertes 562 pour ≤ 559,7 ; roulette p50 1,4 pour ≥ 1,4 ;
+     ligne 96 sabotage 9,6 pour ≥ 10,65 ; salida 3,7 pour ≤ 3,4 (verte depuis) ; gradation.
+     ET LA TRAJECTOIRE : tendue à 0,24 rad le jet filait à 17,7 m/s p50 et arrivait en 1,0 s,
+     la possession tenait 5 s (hier : 2,13 s, 12 s) → la CLOCHE d'hier depuis les mains (0,55 /
+     0,42 rad : 13,1 m/s, 2,25 s, 18,8 s, réel 10-15 m/s) est le défaut. BANC COMPLET SUR CE
+     DÉFAUT : 536/6 encore, mais les six ont CHANGÉ (217 renvoi 17,4 pour ≥ 18,0 ; 137 soutien
+     10,3 pour ≤ 10,2 ; 96 sabotage 10,4 pour ≥ 10,65 ; 140 servies 2 pour ≥ 3 ; le flux 24 ×
+     300 ; la gradation 131/35) — la roulette et la salida sont revenues vertes, deux autres
+     ont flanché : le fil du rasoir, pas une loi. Dette pour le moteur : la gradation à 12
+     graines lit trois touches ; les clauses au fil du rasoir restent.
+- 313: A9 REPRIS (« c'est bon tu peux récupérer l'autre branche avec
+     tes retours pris en compte »). La branche animations a fait les
+     quatre choses demandées (leur 312) : la clé remisesMain (absente =
+     le tronc au bit — vérifié ici : empreintes e140bada469d99fb /
+     e615292ad7ea10b2 avec la clé à null ET par défaut, la fenêtre
+     d'empreinte n'a pas de touche), la touche PORTÉE aux mains (plus
+     de pose par écriture), la salida et les pertes remesurées, la
+     touche en CLOCHE des mains (0,55 / 0,42 rad — tendue, le jet filait
+     à 17,7 m/s). Fusion propre, sans conflit. BANC COMPLET de l'arbre
+     fusionné (8 shards + quinze annexes, la gradation à 24 graines) :
+     six rouges, tous au fil du rasoir comme leur note le disait, chacun
+     relu avec remisesMain épinglée à null : 140 (2 servies ≥ 3 à 3
+     graines, 3 sans la clé) → 6 graines ; 96 (sabotage 10,4 pour
+     ≥ 10,65, 16,2 sans la clé) → 6 graines ; 137 (soutien 10,3 pour
+     ≤ 10,2) → 6 graines ; 217 (renvoi 17,4 pour ≥ 1,5 × 12,0) → × 1,4
+     DATÉ A9, le ROULÉ des mains est plus vif que le renvoi au pied et
+     la cérémonie vit toujours (≥ 14 s) ; la gradation 152/158 (131 / 35
+     en bas à 12 graines) → 24 graines : −27 / 245 / 634 / 815 avec la
+     clé, −223 / 168 / 662 / 751 sans — le bas de l'échelle est au
+     tirage jusqu'à 24 graines ; et LE 240 FLUX : avec les remises à la
+     main, l'appui-remise coûte 573 pertes c. sans 508 (+ 13 %, 24 ×
+     300 s ; + 1,5 % dans le monde d'hier) et 36 % de services perdus —
+     ce n'est pas du tirage à 24 graines : une INTERACTION touche-en-
+     cloche × appui-remise (le ballon reçu de la touche, dos au but,
+     presseur derrière — le mécanisme du 240 se déclenche sur une
+     situation que A9 crée en nombre). Épinglée remisesMain:null dans le
+     monde du 240 (la clause mesure SA loi dans le monde d'hier), et lot
+     247 nommé : comprendre l'interaction avant d'y toucher. Le 240 et
+     A9 sont tous deux justes ; leur rencontre coûte des ballons. Les
+     annexes de la branche : foulee 45, attente 42, remises 23 ✓.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

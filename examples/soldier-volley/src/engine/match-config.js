@@ -707,6 +707,12 @@ export const MATCH = {
                           // manager, une UI, une IA de banc. false : la porte tournante
                           // fermée (sabotage nommé — remplacer() refuse tout). Dettes :
                           // le banc incarné, les fenêtres comptées (3 + mi-temps).
+  remisesMain: { toucheH: 1.8, elev: 0.55, elevLongue: 0.42, face: 0.35, patience: 3 },   // (lot A9) LES REMISES À LA MAIN : la touche s'ARME (motion-restart 'touche' — le ballon PORTÉ aux mains
+                          // pendant l'armé, jamais posé par écriture) et part des mains au contact (toucheH ; élévations : la CLOCHE d'hier, 0,55 rad
+                          // court / 0,42 long — mesuré : tendue à 0,24 le jet filait à 17,7 m/s p50 et arrivait en 1,0 s, la possession tenait
+                          // 5 s ; en cloche 13,1 m/s, 2,25 s, 18,8 s — le réel lance à 10-15 m/s) ; la relance à la main du
+                          // gardien est le ROULÉ ; le lanceur se pose face au terrain (face rad, patience s). Absente : la rentrée instantanée
+                          // du sol et la relance au pied d'hier, au bit.
   loi15: { range: 18,     // LA LOI 15 (11c11, st.full) : la rentrée de TOUCHE se lance À LA
     longue: 28,           // …et la TOUCHE LONGUE (165, tac.cpa.touche 'longue') porte à CE
     pose: 15 },           // …avec SA pose (le lanceur essuie, la boîte se remplit — réel 15-30 s)
