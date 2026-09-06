@@ -8652,73 +8652,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ligne a avalé salidaStep — le jumeau l'a dit sur la graine 3).
      Jumeau {couloirs:false, offre:false} = moteur 240 au bit
      (96438266e0387b08 / 061fc1b4491ef7ab).
-     LE SCEAU, SES ROUGES ET LEURS PREUVES : le registre dort pendant la
-     fenêtre d'engagement (le soutien du coup d'envoi débordait à 13 m,
-     prise → passe 1,0 → 5,7 s — essayés et rejetés avant : la pré-passe
-     des soutiens (demi-espaces 53 c. 60), l'exemption du soutien collé) ;
-     le débordement reste CÔTÉ BALLON (contre le ballon, le passeur
-     changeait de côté et la fixation du 98 ne montait jamais : 0 bascule
-     → 1, fixation 4,0) ; « l'intérieur tient » et l'offre éteints ; garde
-     231 en courses combinées (à ~100 débordements la garde séparée
-     claquait au bruit de Poisson). Re-datés sur preuve, tous verts sans
-     la clé : 143 (interceptions informatives, le texte le disait), 240-
-     flux (perdus sur service en taux du vivant, le « sans » à 4 est un
-     chiffre), 217 (renvoi absent d'un bras = informatif, la dette des
-     sorties rares), foulée (4 graines et le monde LAB épingle les
-     couloirs — le bras gelé frappe des ballons reçus en course, une
-     population que les couloirs accélèrent), 177, 218, 121 (leur monde
-     épingle couloirs:false), tactics (6 graines), loi3 184 (la fixture
-     fabrique son arrêt de jeu). SCEAU 241 : jumeau {couloirs:false,
-     offre:false} = moteur 240 au bit (96438266e0387b08 /
-     061fc1b4491ef7ab) ; clause 241 isolée 2 ✓ (un couloir à ≥ 3 corps
-     35,2 % ≤ 50,5 × 0,75, réussite 73,1 ≥ 74,0 − 2,5, courses combinées
-     ≥ × 0,85) ; attributes 26 ✓ / 1 ✗ (la gradation, hier) ; douze
-     annexes vertes (match 84, rondo 40, gestes 60, menace 11, frappes 13,
-     sync 9, roles 11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10) ;
-     8 shards : 264 ✓ / 0 ✗ ; déployé (chunk Rondo-BbkTuYO-.js à l'alias,
-     capture playmode avant deploy). DETTES : la profondeur des
-     intérieurs (les 80 % de demi-espaces), une bascule par match c. 12
-     hier (la fixation revit, la volumétrie non), les sorties de balle
-     rares, la gradation.
-- 294: LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (242 — précepte 4.2,
-     Elsner : « zone centrale + deux zones annexes occupées à chaque
-     contre ; l'excentré en position intermédiaire, jamais deuxième
-     latéral »). SONDE AVANT : un contre = regain dans sa moitié puis
-     ballon à l'entrée de la surface (hx − 22) dans les 10 s ; sur 12 ×
-     300 s, 8 contres y arrivent (2/match), aucune zone occupée 62 %,
-     deux zones ou plus 12,5 %, trois 0 %, un corps arrivé en médiane,
-     deux « seconds latéraux » sur 27 % des contres (à 30 m) — en contre
-     les pointes couraient où l'appel les menait. LA LOI (cfg.contreZones,
-     phases.js contreZonesStep / contreZoneDe) : en contre (regain < win
-     10 s) et ballon lancé vers l'avant, à cadence 0,6 s, les trois
-     attaquants les plus avancés (hors porteur ; les coureurs entrent
-     dans l'élection et gardent leur course) prennent centre / annexe
-     côté ballon / annexe lointaine (le plus fort rôle appel) ; cibles
-     FIXES à l'entrée de la surface (hx − 20, ou ballon + 6 si plus
-     avancé) sous la Loi 11, z 0 / ± 14 (intermédiaire, jamais 25) ;
-     amplitude × axe transition (0 : rien) ; les élus prennent un burst
-     contre-zone (le sprint) tant qu'ils sont à plus de 8 m de leur zone ;
-     LE CONTRE EST UN BALLON QUI FILE : ballon ou porteur à ≥ 4 m/s vers
-     l'avant, il meurt quand un porteur LENT tient plus d'une seconde.
-     ESSAYÉS ET REJETÉS : cibles « ballon + 8 » (les élus restaient près
-     du porteur, plus d'option profonde : 6 → 2 contres), fenêtre
-     moments.win 5 s (les zones se vidaient quand le ballon arrivait),
-     l'élection hors coureurs et l'override des seuls postés (les
-     soutiens élus gardaient leur slot), et le déclencheur lâche « vitesse
-     > 1 ou moitié adverse » : il rendait 17 contres à l'entrée et deux
-     zones ou plus à 65 % — mais trois sprints après chaque regain, 9
-     corps à plus de 3,5 m/s au jeu placé (borne 6), 6 421 sauts de cible,
-     quinze rouges au banc : la fourmilière, un prix qu'on ne livre pas ; à
-     3 m/s même fourmilière sans les zones. MESURÉ (12 × 300 s, le
-     déclencheur strict) : contres arrivés à l'entrée 8 → 7 (non-
-     diminution), aucune zone 63 → 43 %, deux zones ou plus 13 → 29 %,
-     second latéral 27 → 0-1 ; économie de course tenue, couloirs et
-     240-flux verts. La cible doctrinale « trois zones ≥ 60 % » est loin
-     (0-11 %) : l'annexe lointaine est une traversée de 20 m, et les
-     contres qui arrivent sont rares (2/match) — dette nommée avec les
-     buts de contre. Jumeau {contreZones:false} = moteur 241 au
-     bit (6434e6a7aa44317b / 5effe81d30eb6e6b).
-- 295: LES FRAPPES GÉNÉRÉES (lot A1 — animations 11c11, branche
+- 294: LES FRAPPES GÉNÉRÉES (lot A1 — animations 11c11, branche
      claude/11c11-3d-animations ; retour utilisateur : « beaucoup de choses
      ne sont pas belles… si tu crées les animations toi-même ce sera plus
      conforme… différents types de geste pour le même geste, quelques
@@ -8776,7 +8710,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      authorés extérieur, déviation, pointu, pivot, talonnade, contrôles,
      tacles, tête, plongeons (chacun une espèce de plus du générateur) ;
      la locomotion attend sa couche d'inclinaison et de balancier.
-- 296: VINGT GESTES GÉNÉRÉS (lot A3 — « tu peux faire le même travail
+- 295: VINGT GESTES GÉNÉRÉS (lot A3 — « tu peux faire le même travail
      pour d'autres gestes ? »). La même loi que la note 295 (articulations
      anatomiques conjuguées dans le bind, rampes C¹ à pics placés, appui par
      IK, style par joueur, emitSpec) étendue à trois familles, un REGISTRE
@@ -8842,7 +8776,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      pied→point de frappe 0,09-0,16 m, vitesse composée 7,9-8,3 m/s.
      DETTES : A2 (poids d'arrivée), les espèces au sol et aux mains (tacle
      glissé, râteaux, semelle, plongeons, relevés), la locomotion (A4).
-- 297: LES GESTES TECHNIQUES GÉNÉRÉS (lot A4 — « continue avec les mêmes
+- 296: LES GESTES TECHNIQUES GÉNÉRÉS (lot A4 — « continue avec les mêmes
      méthodes »). Un dribble n'est pas un fouet : c'est un CHEMIN DU PIED
      autour d'un ballon qui ne part pas (intent carry, le lacet à la sim —
      loi 12). motion-skill écrit la courbe du pied libre dans le repère
@@ -8898,7 +8832,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ballon (poids des jambes 1,0 : le geste possède le corps, ownsBody).
      DETTES : le corps composé (A2) ; le sol (tacle glissé, retournée — A5)
      et les mains du gardien (A6) ; les gestes sociaux restent authorés.
-- 298: LE TACLE GLISSÉ GÉNÉRÉ (lot A5 — le sol). Quatre temps que la scène
+- 297: LE TACLE GLISSÉ GÉNÉRÉ (lot A5 — le sol). Quatre temps que la scène
      et la sim exploitent tels quels : LANCEMENT (une foulée, corps bas et
      penché), CHUTE SUR LE CÔTÉ (bassin à 19 cm, roulé sur la hanche gauche
      — épaules 56° —, jambe droite allongée au ras du sol vers le ballon :
@@ -8923,7 +8857,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      clip à 55 % et relâche au relevé sim — la queue du tacle (0,76 → 1) ne se
      joue que si la sim n'a pas déjà remis le corps en course ; l'audit des
      membres ne capture pas encore le tacle (« le tacle aura SES clauses »).
-- 299: LES MAINS DU GARDIEN GÉNÉRÉES (lot A6). Plongeon aérien, bas, à une
+- 298: LES MAINS DU GARDIEN GÉNÉRÉES (lot A6). Plongeon aérien, bas, à une
      main, prise aérienne, parade des pieds, blocage du buste — motion-keeper,
      même machine. Un plongeon a cinq temps que la scène et la sim exploitent
      tels quels : IMPULSION (le corps plie), DÉTENTE latérale en root motion
@@ -8986,7 +8920,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      gestes sociaux. DETTES : le monde composé (A2) — le time-warp et le
      warp des gants de la scène restent ceux d'hier ; audit-gants à relire
      sur le build ; la locomotion (A4 du plan initial).
-- 300: LA JAMBE ARRIÈRE DU TACLE (retour utilisateur : « le tacle glissé, la
+- 299: LA JAMBE ARRIÈRE DU TACLE (retour utilisateur : « le tacle glissé, la
      jambe arrière est pas terrible ? »). Elle se repliait SOUS le corps, genou
      devant : un genou à terre, pas une glissade. Deux erreurs de pose :
      (1) le bassin ROULAIT sur la hanche (68°) au lieu de BASCULER en arrière
@@ -9005,7 +8939,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      contrat et sous checkClip. Nommé : la borne d'Euler de checkClip sur
      la hanche est une convention debout ; un corps couché mériterait une
      lecture géométrique (angle cuisse / axe du bassin).
-- 301: LA TABLE DES STANCES RENDUE AU MOTEUR. verify-match11 (1 h de calcul,
+- 299b: LA TABLE DES STANCES RENDUE AU MOTEUR. verify-match11 (1 h de calcul,
      258 clauses de sim pure) : 258/6 sur le commit d'avant les lots
      d'animation, 253/11 avec la table des stances re-dérivée des clips
      générés (A1-A3) — trois clauses qui passaient sont rouges et huit
@@ -9028,7 +8962,414 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      restants de verify-match11 (roulette qui traverse, œil de l'urgence,
      ancre à la craie, cérémonies, une-deux, flux troisième homme) sont
      ceux du commit de base — le chantier moteur.
-- 302: LA BRANCHE MAIN (« tu peux créer une branche main en mergeant les 2
+     LE SCEAU, SES ROUGES ET LEURS PREUVES : le registre dort pendant la
+     fenêtre d'engagement (le soutien du coup d'envoi débordait à 13 m,
+     prise → passe 1,0 → 5,7 s — essayés et rejetés avant : la pré-passe
+     des soutiens (demi-espaces 53 c. 60), l'exemption du soutien collé) ;
+     le débordement reste CÔTÉ BALLON (contre le ballon, le passeur
+     changeait de côté et la fixation du 98 ne montait jamais : 0 bascule
+     → 1, fixation 4,0) ; « l'intérieur tient » et l'offre éteints ; garde
+     231 en courses combinées (à ~100 débordements la garde séparée
+     claquait au bruit de Poisson). Re-datés sur preuve, tous verts sans
+     la clé : 143 (interceptions informatives, le texte le disait), 240-
+     flux (perdus sur service en taux du vivant, le « sans » à 4 est un
+     chiffre), 217 (renvoi absent d'un bras = informatif, la dette des
+     sorties rares), foulée (4 graines et le monde LAB épingle les
+     couloirs — le bras gelé frappe des ballons reçus en course, une
+     population que les couloirs accélèrent), 177, 218, 121 (leur monde
+     épingle couloirs:false), tactics (6 graines), loi3 184 (la fixture
+     fabrique son arrêt de jeu). SCEAU 241 : jumeau {couloirs:false,
+     offre:false} = moteur 240 au bit (96438266e0387b08 /
+     061fc1b4491ef7ab) ; clause 241 isolée 2 ✓ (un couloir à ≥ 3 corps
+     35,2 % ≤ 50,5 × 0,75, réussite 73,1 ≥ 74,0 − 2,5, courses combinées
+     ≥ × 0,85) ; attributes 26 ✓ / 1 ✗ (la gradation, hier) ; douze
+     annexes vertes (match 84, rondo 40, gestes 60, menace 11, frappes 13,
+     sync 9, roles 11, loi3 10, kit 5, part-tint 18, tactics 11, slide 10) ;
+     8 shards : 264 ✓ / 0 ✗ ; déployé (chunk Rondo-BbkTuYO-.js à l'alias,
+     capture playmode avant deploy). DETTES : la profondeur des
+     intérieurs (les 80 % de demi-espaces), une bascule par match c. 12
+     hier (la fixation revit, la volumétrie non), les sorties de balle
+     rares, la gradation.
+- 300: LES TROIS ZONES D'ENTRÉE DE SURFACE EN CONTRE (242 — précepte 4.2,
+     Elsner : « zone centrale + deux zones annexes occupées à chaque
+     contre ; l'excentré en position intermédiaire, jamais deuxième
+     latéral »). SONDE AVANT : un contre = regain dans sa moitié puis
+     ballon à l'entrée de la surface (hx − 22) dans les 10 s ; sur 12 ×
+     300 s, 8 contres y arrivent (2/match), aucune zone occupée 62 %,
+     deux zones ou plus 12,5 %, trois 0 %, un corps arrivé en médiane,
+     deux « seconds latéraux » sur 27 % des contres (à 30 m) — en contre
+     les pointes couraient où l'appel les menait. LA LOI (cfg.contreZones,
+     phases.js contreZonesStep / contreZoneDe) : en contre (regain < win
+     10 s) et ballon lancé vers l'avant, à cadence 0,6 s, les trois
+     attaquants les plus avancés (hors porteur ; les coureurs entrent
+     dans l'élection et gardent leur course) prennent centre / annexe
+     côté ballon / annexe lointaine (le plus fort rôle appel) ; cibles
+     FIXES à l'entrée de la surface (hx − 20, ou ballon + 6 si plus
+     avancé) sous la Loi 11, z 0 / ± 14 (intermédiaire, jamais 25) ;
+     amplitude × axe transition (0 : rien) ; les élus prennent un burst
+     contre-zone (le sprint) tant qu'ils sont à plus de 8 m de leur zone ;
+     LE CONTRE EST UN BALLON QUI FILE : ballon ou porteur à ≥ 4 m/s vers
+     l'avant, il meurt quand un porteur LENT tient plus d'une seconde.
+     ESSAYÉS ET REJETÉS : cibles « ballon + 8 » (les élus restaient près
+     du porteur, plus d'option profonde : 6 → 2 contres), fenêtre
+     moments.win 5 s (les zones se vidaient quand le ballon arrivait),
+     l'élection hors coureurs et l'override des seuls postés (les
+     soutiens élus gardaient leur slot), et le déclencheur lâche « vitesse
+     > 1 ou moitié adverse » : il rendait 17 contres à l'entrée et deux
+     zones ou plus à 65 % — mais trois sprints après chaque regain, 9
+     corps à plus de 3,5 m/s au jeu placé (borne 6), 6 421 sauts de cible,
+     quinze rouges au banc : la fourmilière, un prix qu'on ne livre pas ; à
+     3 m/s même fourmilière sans les zones. MESURÉ (12 × 300 s, le
+     déclencheur strict) : contres arrivés à l'entrée 8 → 7 (non-
+     diminution), aucune zone 63 → 43 %, deux zones ou plus 13 → 29 %,
+     second latéral 27 → 0-1 ; économie de course tenue, couloirs et
+     240-flux verts. La cible doctrinale « trois zones ≥ 60 % » est loin
+     (0-11 %) : l'annexe lointaine est une traversée de 20 m, et les
+     contres qui arrivent sont rares (2/match) — dette nommée avec les
+     buts de contre. LE SCEAU : huit rouges attribués à la clé (verts
+     sans), re-datés sur preuve — 240a-flux « receveur serré » informatif
+     (13,6 c. 13,1 : 0,4 pt de signature dans le bruit) ; 103, 135, 128,
+     136, 121, 137 et la garde-flux mesurent leur loi hors contres
+     (contreZones:false épinglé, chaque raison consignée au banc) ; 240-
+     flux « réussi » × 1,8 → 1,5 (36 c. 21) ; 239-flux « pivot ≤ 3 »
+     absolu informatif (0,9-4,7 selon le moteur). SCEAU 242 : jumeau
+     {contreZones:false} = moteur 241 au bit (6434e6a7aa44317b /
+     5effe81d30eb6e6b) ; clause 242 isolée 2 ✓ ; attributes 26 ✓ / 1 ✗ (la
+     gradation, hier) ; douze annexes vertes (match 84, rondo 40, gestes
+     60, menace 11, frappes 13, sync 9, roles 11, loi3 10, kit 5,
+     part-tint 18, tactics 11, slide 10) ; 8 shards : 265 ✓ / 1 ✗ (le
+     budget sous contention, 1,70 ms sous 4 shards c. 0,75 seul — charge) ;
+     déployé (chunk Rondo-CMvkHZw6.js à l'alias, capture playmode avant
+     deploy). LEÇON DE MÉTHODE (retour utilisateur « c'est long ») : une
+     seule chaîne complète par lot, à la fin ; les isolés en un driver
+     groupé avec et sans la clé ; build et deploy une fois — et chaque
+     loi qui déplace les corps re-tire une dizaine de flux, c'est le
+     prix du contrat, pas un accident.
+- 301: LA LIGNE FERMÉE (243 — retour utilisateur : « des choix de passe avec
+     un adversaire sur la ligne ; pas gênant si le joueur est nul, mais
+     je ne connais pas le niveau des deux équipes »). D'ABORD LE NIVEAU :
+     le match déployé joue sans notes (makeMatch({ perTeam, seed, full }),
+     aucun squads) — tous à 50, l'identité ; personne n'est nul, ce qu'on
+     voit est le choix d'un joueur MOYEN. SONDE (6 × 300 s) : une passe
+     sur dix part avec un adversaire à < 1 m de sa ligne, perdue à 17-33 %
+     (5 % ligne nette) ; les trois quarts sont LEVÉES (la ligne fermée
+     bascule le style en cloche) ; sur 22 passes au sol jouées dans un
+     corps, 15 avaient une ligne OUVERTE à l'adoption (≥ 1,15 m) fermée à
+     la frappe 0,77 s plus tard — le défenseur entre pendant l'armé et
+     le passeur ne relit pas. TROIS LOIS ESSAYÉES (cfg.ligneFermee,
+     rondo.js + strike-sim) : la cloche exige un corps à ≥ 4 m du pied et
+     ≥ 3 m du point visé ; un malus × (1 − marge/seuil) × decF (le bon
+     décideur refuse) ; la RELECTURE à la frappe (hors urgence, centre,
+     through, cloche : couloir relu × visionF, le geste finit en feinte,
+     refus nommé ligne-fermee). MESURÉ : la part de passes dans un corps
+     ne bouge pas (5-6 %, identique à décisions 30 et 70) ; la relecture
+     tire 18 fois / 30 min ; et la seule branche qui mord — interdire la
+     cloche par-dessus le marqueur collé au dos du receveur — fait 324 →
+     483 pertes / 90 : ces passes sont le DERNIER RECOURS d'un porteur qui
+     n'a pas de meilleure offre ; les lui retirer, c'est le faire tenir et
+     perdre. ÉTEINTE (null), le code reste, mécanisme prouvé ; la vraie
+     réponse est structurelle : l'offre de passe (éteinte au 241, effet
+     nul), la profondeur des intérieurs — les dettes déjà nommées. Ce que
+     l'utilisateur voit est donc juste : un joueur moyen qui n'a que ça.
+     Jumeau {ligneFermee:false} = moteur 242 au bit (94e2de4e74fb69f8 /
+     46ce3576f0d5249f) ; par défaut null : le moteur servi est inchangé.
+- 302: LES POSTES NOMMÉS + LE CATALOGUE EXHAUSTIF (244a — demande
+     utilisateur : « est-ce que le moteur gère bien tous les postes
+     attendus ? » avec la grille GK / D / WB / DM / M / AM / ST × G · CG ·
+     C · CD · D, puis « ligne moteur doit évoluer du coup ? ajoute toutes
+     les formations possibles »). RÉPONSE : non, pas entièrement — un
+     poste était un INDICE 0-9 d'une formation, le moteur ne connaissait
+     que trois strates (LIGNES : le dix comptait parmi les pointes, la
+     sentinelle parmi les milieux, le piston tantôt défenseur tantôt
+     milieu), le dédoublement (roles.js) code « posts 0/3 » en dur (faux
+     à trois ou cinq derrière), et aucun corps n'a de poste naturel. LA
+     DONNÉE D'ABORD (formation.js) : la grille (STRATES, COTES, GRILLE —
+     24 postes + GK(C)), POSTES_FORMATION (le nom de chaque indice de
+     chaque formation ; G = fz négatif vu de son but, C = l'axe, CG/CD
+     ≤ 0,5, G/D au-delà ; les pointes d'un duo = ST(G)/ST(D) : la grille
+     n'a pas de ST(CG)), litPoste / posteNom / lignesFines (les strates
+     fines comptées) et checkPostes (dix noms de la grille, côté = signe
+     et largeur de fz, strates ordonnées en profondeur, largeur de LIGNE
+     exigée des seules strates D et M — un sapin ou un 4-4-1-1 a le droit
+     d'être étroit —, LIGNES[0] = D + WB bas). SEIZE FORMATIONS DE PLUS
+     (31) : 4312, 41212 (losange), 4132, 4123 (pointe basse), 4213, 424,
+     460 (faux neuf), 3412, 3511, 3241, 31213 (losange du 3-4-3), 3331,
+     361, 5311, 5221, 523 — fractions, LIGNES grossières (la géométrie
+     des lois d'hier) et rôles par défaut dérivés de la grille (WB →
+     piston, DM → récupérateur, AM axial → meneur, AM large → ailier de
+     percussion, ST → neuf de surface). Les quinze d'hier ne bougent pas
+     d'un bit. TROUVÉ : checkFormation (lot 17) exige la largeur d'une
+     ligne PLATE à chaque ligne grossière — 3421, 4222, 4321, 4411, 5212
+     y sont « étroits » depuis le 127 sans que le banc le regarde (lot
+     17 ne teste que 433/442/352) ; règle laissée telle quelle (elle sert
+     ces trois-là), la grille se juge à la strate. BANC 244a : 31 ≥ 31,
+     catalogue complet, checkPostes sain partout, les 24 postes tous
+     couverts, rôles des seize conformes, lignesFines 4231 = 4/2/3/1 et
+     3331 = 3/2/1/3/1, et les seize JOUENT 60 s contre le 433 sans écart
+     au contrat (32 s). Lots 17/127/129 et l'annexe sync : verts. AUCUNE
+     LOI NE LIT LA GRILLE : empreintes 94e2de4e74fb69f8 / 46ce3576f0d5249f
+     = le 242 au bit. 244b (à sceller, mesuré) : les lois passent au nom
+     — dédoublement par la strate WB/D, pointes = AM + ST (le dix du
+     4231 n'est plus une pointe pour la Loi 11 ni pour les couloirs),
+     sentinelle = DM pour la salida et le contre-pressing ; puis le poste
+     NATUREL côté joueur (profil.postes + familiarité = facteur, identité
+     absente). Dette nommée : les variantes « étroites » (4231 à trois
+     dix axiaux, 4-4-2 losange large) demandent une clé non numérique.
+- 303: LE CATALOGUE DES RÔLES DU PROJET AVAL (244c — retour utilisateur :
+     « tu as pas un souci entre récupérateur et mezzala ? », puis la table
+     de 34 rôles « c'est le jeu FM qui m'a fourni ça, ils utilisent ça
+     eux »). LE SOUCI, OUI, DOUBLE : aucun rôle mezzala (les intérieurs
+     d'un trio, M(CG)/M(CD), jouaient polyvalent — ni demi-espace ni
+     arrivée en surface), et deux préréglages du 127 posaient le
+     récupérateur sur l'INTÉRIEUR GAUCHE (4321 poste 4, 532 poste 5) en
+     laissant le pivot polyvalent — asymétrie que la clause 244a ne
+     regardait que sur les seize nouvelles. LA TABLE AVAL EST LA PREUVE
+     DU MOTEUR : 34 rôles écrits sur NOS onze axes (profondeur, largeurR,
+     appel, press, garde, ancrage, tenue, duel, marqueSerre, ressort,
+     orienteFaible) + arbitre, et pas une loi n'a bougé pour les
+     accueillir — les onze axes sont tous lus par une loi (compté dans le
+     source, clause 244c : aucun axe mort). roles.js : les 34 en DONNÉE
+     sous leurs identifiants aval (goalkeeper, keeper_libero, centre_back,
+     stopper, cover, playmaker_defender, libero, full_back, wing_back,
+     inverted_fullback, modern_wingback, anchor, half_back, regista,
+     destroyer, box_to_box, deep_lying_playmaker, mezzala, carrilero,
+     free_role_creator, attacking_midfielder, trequartista,
+     shadow_striker, winger, inside_forward, wide_creator, raumdeuter,
+     tracking_winger, forward, target_man, poacher, all_around_striker,
+     pressing_striker, false_9), LIBELLES_ROLES pour l'UI, les neuf rôles
+     d'hier gardés (bancs et projets : au bit). rolesGrille(formation) :
+     le rôle par défaut de chaque poste NOMMÉ (244a) — D large = latéral,
+     D axial = central, WB = piston, DM(C) = sentinelle, double pivot =
+     meneur reculé + sentinelle, M(C) = meneur reculé (box-to-box sous un
+     DM), intérieurs d'un trio ou sous un DM = mezzalas (box-to-box dans
+     un milieu à deux : le 442 n'a pas de mezzala), M large = ailier, AM
+     axial = milieu offensif, AM large = ailier, ST = attaquant, GK =
+     goalkeeper (indice 10). Préréglages 4321/532 corrigés (récupérateur
+     au M(C)). TROUVÉ AU PASSAGE : checkMatch rend { ok, issues, stats }
+     et le lot 127 lisait « .length » sur l'objet — « contrat : propre »
+     depuis le 127 quoi qu'il arrive ; la clause 244a d'hier héritait du
+     même vide. Corrigé (issues + TRACE via playMatch : la clause « les
+     deux camps » lit la trace) ; deux clauses de checkMatch sont de
+     TEMPO calibrées à 480 s (lot 17 : « personne ne tire », « les deux
+     camps ») — sur 90/300 s elles jugent la graine ; __structurel les
+     écarte des matchs courts, tout le reste du contrat reste exigé (le
+     127 affiche désormais l'écart réel : « personne ne tire » en 90 s).
+     BANC 244c : 34 = 34, axes dans [0 ; 1], arbitre > 0, aucun axe mort,
+     rolesGrille sans trou sur 31 × 11 postes, attendus 433/442/4231/352,
+     mezzala 0,55/0,6/×1,2 ; et la grille FM JOUE (433 c. 433, 2 × 300 s,
+     zéro écart structurel). INFORMATIF (4 × 300 s, sonde) : rôles FM des
+     deux côtés c. polyvalent — pertes 104 → 108, passes 356 → 289, tirs
+     4 → 4 : des rôles marqués jouent moins de passes, pas plus de pertes.
+     Aucun rôle posé par défaut : empreintes 94e2de4e74fb69f8 /
+     46ce3576f0d5249f = le 242 au bit. Le 244b (les lois au nom du poste,
+     puis le poste naturel côté joueur) reste le prochain lot mesuré.
+- 304: LES LOIS AU NOM DU POSTE (244b — cfg.postesNommes, ALLUMÉE ;
+     « ligne moteur doit évoluer du coup ? » — oui, la voici). Trois lois
+     devinaient le poste par son INDICE, et l'indice mentait hors du
+     4-3-3 : (1) les POINTES (« ≥ premierOffensif ») — en 4-2-3-1 le dix
+     dansait sur la ligne défensive (16 % des images, 24 appels profonds
+     / 4 × 300 s, autant que le 9) ; (2) le PIVOT de la salida (ids[nD],
+     le premier milieu) — l'intérieur GAUCHE en 4-3-3, le PISTON GAUCHE
+     en 3-5-2 (1663 images / 8 × 300 s à s'intercaler entre les
+     centraux) ; (3) le DÉDOUBLEMENT (indices 0/3) — en 3-5-2 le central
+     gauche débordait (18 courses / 8 × 300 s) et le piston droit jamais ;
+     en 5-3-2 le D(CD). LA LOI : formation.js — estPointe (strate ST et
+     AM larges ; le dix axial reste entre les lignes), estLateral (WB ou
+     D large), pivotDe (DM(C), sinon M(C), sinon le pivot gauche),
+     pointeDe résout la clé ; match-sim (trois sites : comité, appel
+     timé Loi 11, couloirs pointesLibres), salida.js (ligneArriere lit la
+     clé), roles.js (deborde). MESURÉ (8 × 300 s) : 4-3-3 pivot M(C)
+     100 %, pertes 193 → 177, appels 121 → 119 ; 3-5-2 dédoublement WB(G)
+     9 + WB(D) 5 (zéro central), appels 118 → 119, pertes 190 → 206
+     (Poisson : salida seule −3, dédoublement seul +7) ; 4-2-3-1 le dix
+     sur la ligne 16 → 2 % des images, ses appels 24 → 0, ceux du 9
+     23 → 35, pertes 93 → 92. ALLUMÉE par défaut : c'est une correction
+     de football (le 6 s'intercale, pas le 8 gauche), flux neutre. Le
+     4-3-3 servi ne change que par le pivot de salida : empreintes
+     94e2de4e74fb69f8 / d9ed4cfdf0e94e1d (graine 3 identique, la salida
+     n'y a pas mordu) ; jumeau {postesNommes:false} = 242 au bit
+     (94e2de4e74fb69f8 / 46ce3576f0d5249f). BANC 244b : prédicats
+     (433/4231/4321/352/532) et flux 3 × 300 s (3-5-2 : dédoublement
+     WB(D)+WB(G) 6, aucun central, pivot M(C), pertes 69 ≤ 66 × 1,15 ;
+     4-2-3-1 : dix sur la ligne 0 % ≤ 5, appels du dix 0, du 9 29 ≥ 17,
+     pertes 67 ≤ 75 × 1,15). Le contre-pressing et le marquage lisent
+     déjà la défense par LIGNES[0] = D + WB bas (identique à la grille
+     par construction, clause 244a) : rien à changer. LE BANC COMPLET
+     (8 shards + douze annexes, 62 min) au pivot M(C) — quatre rouges,
+     tous de FLUX, tous relus avec la clé épinglée à false : (a) coach
+     113 (0 posture / 8 × 300 s) — 16 graines mesurées : 3 bougent dans
+     les deux mondes, 8 graines ont 20 % de chance de zéro → 12 graines
+     DATÉ 244b ; (b) 240 flux (servis 44 c. 58 à 12 graines) — la
+     seconde douzaine rend 54 avec la clé c. 48 sans : le tirage, pas la
+     clé ; à 24 graines servis 98 c. 106, réussis 66 c. 67, pertes +1,5 %
+     → 24 graines DATÉ 244b ; (c) 242 flux (contres 5 c. 3, deux zones
+     40 < 43) — seconde douzaine 6/11 avec, 8/10 sans ; à 14 contres
+     σ = 3,7 et la borne × 0,8 vivait à −0,75 σ → 24 graines et × 0,75
+     DATÉ 244b (la signature des zones, elle, tient : zéro zone 36 ≤ 42,
+     deux zones 45 ≥ 24) ; (d) annexe tactics « hauteur de bloc »
+     (médiane de 3 graines 3,0 < 4,5 ; la graine 1 rend −19,8 dans TOUS
+     les mondes) → 7 graines DATÉ 244b (médiane 11,3 avec la clé, 18,3
+     sans). Plus un plantage : l'annexe roles (checkRoles) exigeait un
+     arbitre sur chaque rôle et le bornait à [0,7 ; 1,3] — le catalogue
+     aval (244c) va de × 0,5 (destructeur, tir) à × 1,4 (renard, regista)
+     → arbitre ?? {} et [0,5 ; 1,4] DATÉ 244c ; l'annexe imprimait
+     0 ✓ / 0 ✗ et mon décompte la lisait verte : un plantage n'est pas
+     un vert (à retenir). ROUGE HÉRITÉ, pas du 244 : l'annexe attributes
+     « lot 152/158 la gradation » (30 → 82, 50 → 47, 70 → 77, 90 → 94,
+     non monotone) est rouge À L'IDENTIQUE aux commits 78d6517 (sceau
+     242), 8d17dda (243) et aujourd'hui — clé épinglée ou non (salida y
+     est déjà à false). Le sceau 242 l'a laissée passer ; dette nommée
+     « gradation 152/158 », à bissecter avant le 242 (le monde des
+     notes 30/50 s'est retourné : 82 > 47). Reste (244d) : le poste
+     NATUREL côté joueur — profil.postes + familiarité en facteur.
+- 305: LA DONNÉE S'ALIGNE SUR LA LOI (244e — retour du projet aval
+     « le jeu du directeur sportif » sur le 244c, trois griefs, tous
+     fondés). (1) checkRoles plantait sur les quatre rôles sans arbitre
+     (goalkeeper, centre_back, stopper, cover — chez eux un rôle qui ne
+     nuance rien ne pose pas d'arbitre, resoudreRole le remplit) : déjà
+     toléré au 244b, gardé. (2) La bande [0,7 ; 1,3] : le 244b l'avait
+     ÉLARGIE à [0,5 ; 1,4] — c'est la voie qu'ils déconseillent, à
+     raison : « un rôle nuance, il n'écrase pas » mentait. Leur mesure :
+     écraser aux bornes fond DOUZE couples de rôles (tout le bas de
+     l'échelle de frappe sur 0,70 : regista = destroyer = half_back =
+     anchor) ; la RE-ÉCHELLE linéaire axe par axe (tir 0,5-1,4, centre
+     0,75-1,35, passe 0,75-1,4, conduite 0,8-1,3 → 0,7-1,3) garde chaque
+     distinction. Adoptée : la bande est la loi, la table est une
+     donnée, la donnée s'aligne (regista passe 1,4 → 1,3, destroyer tir
+     0,5 → 0,7, mezzala conduite 1,2 → 1,18) ; vérifié sur les 34 :
+     zéro couple fondu, zéro ordre inversé, zéro valeur hors bande ;
+     bande de checkRoles rendue à [0,7 ; 1,3]. La table re-échelonnée
+     est livrée (docs/Retour_Reference_244e_Table_Roles.md) — leur jeu
+     doit la lire ou appliquer la même re-échelle : la table du moteur
+     n'est plus « à la valeur près » la leur sur l'arbitre (les onze
+     axes, si). (3) L'AXE DRIBBLE (rappel 219) : resoudreRole ne le
+     reportait pas — posé sur un rôle, il ressortait undefined alors que
+     skills-sim le lit (role(c).dribble ?? 0,5 : perdu en silence).
+     Reporté (base.dribble ?? 0,5). Leur clause adoptée : checkRoles
+     résout tout le catalogue et borne le RÉSOLU (arbitre, dribble) ;
+     clause 244e au banc (43 rôles résolus, bornes, zéro couple fondu,
+     ordres regista > deep_lying_playmaker en passe et destroyer <
+     half_back < anchor en tir, dribble libre 0,9). Leçon de procédure :
+     l'annexe roles n'avait pas été lancée au 244c ; tout lot qui touche
+     roles.js lance verify-roles (et un plantage n'est pas un vert).
+     Aucun rôle posé par défaut : empreintes 94e2de4e74fb69f8 /
+     d9ed4cfdf0e94e1d = le 244b au bit.
+- 306: LE POSTE NATUREL CÔTÉ JOUEUR (244d — la grille 244a rencontre
+     les attributs : « toujours les attributs, les tactiques, les
+     rôles »). Jusqu'ici le rôle se posait sur le POSTE et jamais sur le
+     corps : un avant placé latéral jouait exactement comme un latéral
+     de métier. LA DONNÉE : squads[team][i].postes = ['D(D)', 'WB(D)']
+     (des noms de la grille) ; LA LOI : formation.familiarite(postes,
+     posteTenu) — 1 au poste exact, 0,8 l'autre côté de la même strate
+     (− 0,05 par cran), 0,75 la strate voisine, 0,5 à deux, 0,3 plus
+     loin, 0,15 le gardien hors cage ; liste absente ou que des noms
+     inconnus : 1 (personne n'est déclaré hors poste par défaut) ; LE
+     FACTEUR : attributes.profilAuPoste — hors poste le corps garde sa
+     TECHNIQUE (passe, contrôle, frappe, vitesse intacts) mais LIT moins
+     bien (décision, placement, anticipation, appel, déplacement,
+     cohésion, marquage, concentration × lerp(0,7-0,75, 1, fam)) et
+     RÉAGIT plus tard (reaction × lerp(1,3, 1, fam)) — composé avec la
+     note, comme FM (Decisions, Positioning, Anticipation, Off the Ball,
+     Teamwork). makeMatch : posteFam au poste tenu (formation ON) ; sans
+     notes, un profil identité × malus est créé ; familiarité 1 rend le
+     même objet. MESURÉ (8 × 300 s, 4-3-3 déclaré à contre-emploi — huit
+     corps à 0,3, le gardien chez lui — c. le même déclaré à ses postes)
+     : le malus LÉGER essayé d'abord (× 0,88-0,9) ne se voit pas
+     (possession 52 c. 51,8, tirs concédés 8 c. 4, passes 305 c. 323 —
+     du bruit), rejeté comme placebo ; le malus FM se voit : tirs
+     concédés 4 → 13, passes 323 → 269, possession 51,8 → 49,6. BANC
+     244d : les huit familiarités, le facteur (decF 0,79 à 0,3, controlF
+     intact, réaction 0,266 > 0,22, même objet à 1), au match (déclaré à
+     ses postes : aucun profil créé ; à contre-emploi 0,3 × 8, 0,95 × 2,
+     1) et le flux 8 × 300 s (13 tirs concédés ≥ 4 × 1,5 + 2, 269 passes
+     ≤ 323 × 0,92, contrat structurel tenu). Sans squads : empreintes
+     94e2de4e74fb69f8 / d9ed4cfdf0e94e1d = le 244b au bit ; match-sim à
+     1249 (ligne fusionnée). Dette : la familiarité est calculée à la
+     création sur la formation ON — un switch de formation en match
+     (coach) ne la recalcule pas. BISSECTION DU ROUGE HÉRITÉ (gradation
+     152/158) : vert aux sceaux 232 (33303d4) et 235 (7894ab2), rouge
+     dès le 237 (33069f7, « l'oblique 1+3 », clé referme) puis 238, 239,
+     240, 241, 242, 243 — six sceaux ont affiché vert sur un rouge
+     (l'annexe attributes n'était pas relue, ou pas relancée). À
+     trancher au prochain lot : referme épinglée à false dans le monde
+     de la gradation (test lancé), ou un vrai effet du 237 sur les
+     mondes notés à 30 (le composite du 30 monte à 82 > 47 : la loi
+     favoriserait le mauvais décideur).
+     TRANCHÉ (test referme:false épinglé dans l'annexe) : la gradation
+     redevient 0 / 46 / 373 / 504 — monotone, et surtout AMPLE : avec
+     referme, 82 / 47 / 77 / 94. La loi du 237 n'inverse pas seulement
+     le 30 et le 50, elle ÉCRASE la domination du 90 (504 → 94) : le
+     monde devient presque insensible aux notes. Ce n'est pas un rouge
+     de tirage, c'est une loi qui neutralise les attributs — le
+     contraire du contrat du moteur. Pas d'épingle : un lot 245 doit
+     comprendre POURQUOI « le voisin et le second reculent derrière le
+     sortant » efface l'effet des notes (hypothèse : le repli du 237 se
+     déclenche sur la sortie du presseur, plus fréquente contre un bon
+     porteur — le bloc du faible recule plus et mieux, et la domination
+     territoriale du fort ne se traduit plus en tirs).
+- 307: LA VRAIE SORTIE (245 — le rouge hérité de la gradation 152/158,
+     compris et corrigé ; cfg.referme.sortie / zone, ALLUMÉES). LE
+     MÉCANISME (sondé dans le monde exact de la clause, 6 × 240 s, notés
+     30/50/70/90 c. 50) : l'oblique 1+3 du 237 se déclenchait dès qu'un
+     défenseur de LIGNE était le plus proche du ballon (byDist[0]) — pas
+     sur une sortie. Chez l'équipe notée 90, qui presse haut, l'oblique
+     tirait 41 % des images, à plus de 40 m de son but 89 % du temps, et
+     le « sortant » était DERRIÈRE ou au niveau de la ligne un tiers du
+     temps ; chaque pression de milieu de terrain reculait ses voisins
+     de 1,5 × posF m vers son but. Le fort ne pouvait plus tenir sa
+     ligne haute : dPasses 284 → 24, tirs 24/2 → 18/11, composite 504 →
+     94 ; le 30 (qui presse peu) y gagnait (0 → 82). Décomposé : sans
+     recul (le 228 exact) 4/51/259/182 ; le 237 sans recul −48/95/168/
+     273 ; avec recul 82/47/77/94 — c'est le recul, pas la glissade ni
+     part 0,45. LA LOI : l'oblique de Sacchi couvre le dos d'un sortant
+     quand le dos est le but — le sortant doit être DEVANT la ligne d'au
+     moins sortie m (2) et le ballon à moins de zone m du but défendu
+     (40) ; la glissade latérale du 228 reste libre (la gater aussi —
+     glisseSortie — casse la gradation : −113/263/90/230, clé gardée,
+     absente). MESURÉ (12 × 240 s) : sans referme −238/−110/680/707 ;
+     avec la 245 11/49/249/470 — monotone et ample ; l'oblique tire
+     6-8 % des images (40 hier), 96 % sur une vraie sortie, 2 % loin du
+     but ; le bloc 228 et le bloc 237 restent verts. BANC : clause 245
+     (mécanisme — sortant 5 m devant, ballon à 22 m : recul 1,5 ;
+     au niveau : 0 mais la glissade reste ; ballon à 72 m : 0 ; le 237 à
+     clés absentes reculait partout — et flux 3 × 300 s : 4,4 % des
+     images ≤ 12, 97 % de vraies sorties ≥ 90 ; le 237 : 26,9 % et
+     62 %) ; la gradation de l'annexe attributes passe à 12 graines
+     (DATÉ 245 : à 6, le bas tenait au tirage — 24 > 8). Jumeau {sortie,
+     zone absentes} = le 244d au bit (94e2de4e74fb69f8 /
+     d9ed4cfdf0e94e1d) ; défaut : e140bada469d99fb / e615292ad7ea10b2.
+     LEÇON : six sceaux (237 → 243) ont affiché vert sur ce rouge — soit
+     l'annexe n'était pas relancée, soit son résultat n'était pas lu ;
+     le tally d'un driver doit lire CHAQUE annexe, et un rouge
+     d'attributs n'est jamais « du tirage » avant d'avoir été bissecté.
+     LE BANC COMPLET au monde 245 (8 shards + douze annexes) — six
+     rouges, chacun relu avec la clé épinglée au 237 : lot 93 (2 tirs
+     planifiés sur 9 à 4 graines ; à 8 : 12/22 avec, 14/19 sans — le
+     tirage) → 8 graines ; 241 flux (couloir à ≥ 3 corps 40,1 c. sans
+     51,3 = × 0,78 ; avec le 237 37,4 c. 49,7 = × 0,75 au bord) → borne
+     × 0,8 DATÉ 245, à 30 000 images ce n'est pas du tirage mais l'effet
+     réel de la loi 241 dans un monde où la ligne ne recule plus en
+     milieu ; tempo 235 flux (1,38 ≤ 1,364 à 6 graines ; 1,25 ≤ 1,43 avec
+     le 237) → 12 graines ; bélier 78 (le vivant passe 151 → 327 images
+     — la ligne haute met le presseur au corps — et « l'hier entier »
+     du sabotage tombait dessous, 286) → 8 graines et sabotage
+     contain:false SEUL (894 c. 529, × 1,7 ; l'hier entier était un
+     monde re-tiré) ; tactics « hauteur de bloc » (médiane 3,2 à 7
+     graines, 11,3 avec le 237 ; écarts de −17 à +30) → 11 graines
+     (médiane 10,2) ; et LE 244D : sa signature (tirs concédés 4 → 13,
+     passes 323 → 269) VIVAIT DE L'OBLIQUE DU 237 (× posF à chaque
+     pression) — dans le monde 245 le contre-emploi ne se voit plus
+     (8 × 300 s : 6 c. 6, 325 c. 281 ; 16 × 300 s : 18 c. 14 tirs
+     concédés, possession 49,1 c. 50,4). La couche de donnée reste
+     (postes, familiarité, profilAuPoste — l'API d'un projet), la clause
+     de flux passe en INFORMATIF, et ce qu'elle révèle devient la dette
+     246 : les notes de LECTURE (décision, placement, anticipation,
+     appel, cohésion, marquage, concentration, réaction) sont des
+     leviers presque morts dans les lois — la gradation 152/158 ne
+     mesure que la technique (passe, contrôle, frappe, tacle, vitesse).
+     Annexe attributes : 27 ✓ / 0 ✗ — verte pour la première fois
+     depuis le 237.
+- 308: (numérotée 302 sur la branche animations/main — renumérotée à la fusion : ici 294-299b sont A1-A6, la jambe arrière et les stances, 300-307 les lots 242-245 ; leurs 303-304 = A7-A8 deviennent 309-310 ; A9 n'est pas repris, voir 311) LA BRANCHE MAIN (« tu peux créer une branche main en mergeant les 2
      branches actives ? »). main naît le 5 septembre de la branche moteur
      (claude/ai-agent-threejs-aaa-tool-dyrrb0, ffee199 : lots 241-242, note
      294) fusionnée avec la branche animations (claude/11c11-3d-animations-
@@ -9057,7 +9398,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      à merger sur demande. RÈGLE DE JOURNAL désormais : la prochaine note
      est la 303, et chaque chantier repart de main (merge de main dans sa
      branche) pour que les numéros ne se croisent plus.
-- 303: LA FOULÉE GÉNÉRÉE (lot A7 — « ok vas-y commence A7 »). Mesuré d'abord
+- 309: LA FOULÉE GÉNÉRÉE (lot A7 — « ok vas-y commence A7 »). Mesuré d'abord
      (match11, graine 7, 1 min, 20 joueurs de champ) : la couche de geste possède
      3,2 % du temps d'écran ; 97 % sont de la locomotion, et c'était TROIS clips
      du donneur Soldier (idle, walk, run) cadencés par gait.js — sprint = trot
@@ -9103,7 +9444,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      gait 23, locomotion, anim-fsm, gesture-layer 10, persona 20, gestes 60,
      animkit, motion 206, rondo 40, match 84, swing 115, slide 10, gesture 28,
      retarget 13).
-- 304: L'ATTENTE GÉNÉRÉE (lot A8 — « ok enchaine a8 »). À l'arrêt, tous les joueurs
+- 310: L'ATTENTE GÉNÉRÉE (lot A8 — « ok enchaine a8 »). À l'arrêt, tous les joueurs
      jouaient l'idle du Soldier : le même garde-à-vous, les mêmes secondes, le
      gardien comme un piquet (43 % de son temps). motion-idle : une fonction pure
      de (t, espèce, style) — le poids qui passe d'un pied à l'autre (±3,5 cm,
@@ -9141,7 +9482,48 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (bras croisés, mains dans le dos), le regard d'attente, le mur qui saute,
      les joueurs qui se replacent de côté pendant un temps mort (la sim les
      fait regarder le jeu — consigne « on se retourne pour marcher », moteur).
-- 305: LES REMISES À LA MAIN (lot A9 — « ok pour enchainer A9 »). La touche était un
+- 311: LA FUSION DE LA BRANCHE ANIMATIONS, A7 ET A8 REPRIS, A9 LAISSÉ
+     (« tu peux récupérer ce qui a été fait sur l'autre branche ? »).
+     Repris : main (9c7e613, la note 302 de là-bas → 308 ici), A7 la
+     foulée générée (309), A8 l'attente générée (310) — motion-gait,
+     motion-idle, character-controller, gait.js : le rendu et des
+     fonctions pures, l'empreinte du match servi ne bouge pas
+     (e140bada469d99fb / e615292ad7ea10b2 = le 245 au bit), annexes
+     foulee 45 ✓ et attente 40 ✓. NON REPRIS : A9 « les remises à la
+     main » (97ea260 — la sim arme la touche et le roulé du gardien :
+     keeper, movement, referee, rondo-sim, strike-sim, technique,
+     motion-restart), parce qu'il change la SIMULATION SANS CLÉ — aucun
+     jumeau au bit — et que le banc complet de l'arbre fusionné avec
+     lui remonte quatre contrats cassés que l'on ne peut ni épingler ni
+     re-dater : (1) LE CONTRAT DE REMISE (match-check : « toute remise
+     est portée, ballFetch, jamais posée par écriture ») — en 4-3-3
+     graine 1, 300 s, cinq touches sont posées par écriture (sauts de
+     1,7 à 5,8 m au registre) sans événement qui les nomme (le
+     ramasseur, lui, nomme sa pose) ; quatre formations sur seize
+     rompent le contrat structurel en 90 s, et le 4-3-3 en 300 s ;
+     (2) LA SALIDA (239) — le pivot en relance basse sous pression
+     passe de 2,8 m à 5,9 m devant les centraux (6 × 300 s) : le roulé
+     du gardien depuis les mains change la relance et le 6 ne
+     s'intercale plus ; (3) LA GRADATION DES NOTES (152/158, 12 × 240 s)
+     — 70 / 51 / 249 / 443 : le 30 repasse devant le 50 ; (4) LE 240 —
+     pertes 575 c. sans 509 (+ 13 %, 24 × 300 s ; avant fusion 545 c.
+     522). Aussi : lot 189 (11 reculs ≤ 10,5), 140 (2 servies ≥ 3),
+     241 (× 0,81) bougent — du tirage, re-datables, mais pas les quatre
+     premiers. CE QUE LA BRANCHE ANIMATIONS DOIT FAIRE POUR QUE A9 SOIT
+     REPRIS : une clé cfg (ex. remisesMain, absente = l'hier au bit) qui
+     gate la touche armée et le roulé ; nommer chaque pose légitime par
+     un événement que match-check accepte (comme 'ramasseur'), ou
+     porter le ballon aux mains par ballFetch ; remesurer la salida
+     (pivot ≤ 3 m devant les centraux) et la gradation dans son monde ;
+     et lancer le banc COMPLET (8 shards + annexes), pas seulement
+     verify-remises (21 ✓ chez eux). Le retour est écrit pour eux :
+     docs/Retour_Reference_A9_Remises.md.
+     BANC COMPLET de l'arbre fusionné (A7 + A8 + main) : 8 shards et
+     quinze annexes verts, sauf le flux du 244b (appels du 9 en 4-2-3-1
+     20 ≥ hier 22 à 3 graines — Poisson, et déjà rouge au banc 245 dans
+     un shard relu avant sa fin : leçon, le tally se lit APRÈS le
+     fichier .done) → 6 graines DATÉ 246.
+- 312: LES REMISES À LA MAIN (lot A9 — « ok pour enchainer A9 »). La touche était un
      crochet : à la prise, remiseEnTouche lançait le ballon DU SOL à l'instant même, le
      preneur dans son clip d'attente ; la relance à la main du gardien dessinait une passe
      du pied ; le ramassage au sol s'habillait de la prise aérienne. engine/motion-restart :

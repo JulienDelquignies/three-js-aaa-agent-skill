@@ -260,7 +260,7 @@ temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3
   recycler le jeu — on les remesure alors, allumées, contre le garde-fou.
 - Taille : L. Fichiers : `match-sim.js` (slots), nouveau `couloirs.js`, `attributes.js`.
 
-**Lot 242 — Les trois zones d'entrée de surface en contre (précepte 4.2) — SCELLÉ (NOTES 294).** Élection des trois zones en contre, cibles fixes à l'entrée, sprint : contres arrivés 8 → 17 / 60 min, aucune zone 62 → 29 %, deux zones ou plus 12,5 → 65 %. Dette : les trois zones à 18 % (cible 60), l'annexe lointaine.
+**Lot 242 — Les trois zones d'entrée de surface en contre (précepte 4.2) — SCELLÉ (NOTES 300).** Élection des trois zones en contre, cibles fixes à l'entrée, sprint : contres arrivés 8 → 17 / 60 min, aucune zone 62 → 29 %, deux zones ou plus 12,5 → 65 %. Dette : les trois zones à 18 % (cible 60), l'annexe lointaine.
 - Doctrine : Elsner — zone centrale + deux zones annexes occupées à chaque contre ; l'excentré en
   position intermédiaire, jamais deuxième latéral.
 - Nous : boxCrash (123) sur les centres seulement ; en contre les pointes courent où l'appel les
@@ -271,6 +271,44 @@ temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3
 - Cible : contres avec les trois zones occupées à l'arrivée ≥ 60 % ; buts de contre en un-contre-un
   gardien (sonde).
 - Taille : S-M. Fichier : `phases.js`.
+
+**Lot 244a — Les postes nommés + le catalogue exhaustif — SCELLÉ (NOTES 302).** La grille GK / D / WB /
+DM / M / AM / ST × G · CG · C · CD · D devient une donnée (`POSTES_FORMATION`, `lignesFines`,
+`checkPostes`), 31 formations (seize de plus), rôles par défaut dérivés de la grille ; aucune loi ne la
+lit encore — empreintes du 242 au bit.
+- Constat : un poste était un indice ; trois strates seulement (le dix comptait parmi les pointes, la
+  sentinelle parmi les milieux) ; le dédoublement code « posts 0/3 » en dur.
+
+**Lot 244c — Le catalogue des rôles du projet aval — SCELLÉ (NOTES 303).** 34 rôles sur les onze axes,
+en donnée (`roles.js`, identifiants aval) ; `rolesGrille` pose le rôle par défaut de chaque poste nommé
+(mezzalas d'un trio, sentinelle, meneur reculé, piston…) ; préréglages 4321/532 corrigés ; aucun rôle par
+défaut, empreintes au bit. Trouvé : le contrat du 127 était lu à vide depuis le 127.
+
+**Lot 244b — Les lois au nom du poste — SCELLÉ (NOTES 304).** `cfg.postesNommes` allumée : pointes =
+strate ST + AM larges (le dix reste entre les lignes), pivot de salida = DM(C) sinon M(C) (hier l'intérieur
+gauche, le piston gauche en 3-5-2), dédoublement = WB ou D large (hier les indices 0/3 : un central
+débordait en 3-5-2). Flux neutre à 8 graines ; jumeau false = 242 au bit.
+
+**Lot 244e — La donnée s'aligne sur la loi — SCELLÉ (NOTES 305).** Retour aval : arbitre du catalogue
+re-échelonné linéairement dans [0,7 ; 1,3] (zéro couple fondu, zéro ordre inversé), bande de checkRoles
+rendue, checkRoles borne le résolu, axe dribble reporté par la résolution (rappel 219). Table livrée en
+`docs/Retour_Reference_244e_Table_Roles.md`.
+
+**Lot 244d — Le poste naturel côté joueur — SCELLÉ (NOTES 306).** `squads[i].postes` (noms de la grille)
+→ `familiarite` (1 / 0,8 / 0,75 / 0,5 / 0,3 / 0,15) → `profilAuPoste` : la lecture du jeu × 0,7-0,75 et la
+réaction × 1,3 à familiarité 0, la technique intacte. Mesuré : à contre-emploi, tirs concédés 4 → 13,
+passes 323 → 269 (8 × 300 s) ; le malus léger était un placebo, rejeté. Absent : au bit.
+
+**Rouge hérité — la gradation 152/158 (annexe attributes).** Bissecté : vert au 235, rouge dès le 237
+(`referme`). Tranché : referme épinglée à false rend 0 / 46 / 373 / 504 ; allumée, 82 / 47 / 77 / 94 — la loi
+écrase la domination des notes (504 → 94). **Lot 245 — La vraie sortie — SCELLÉ (NOTES 307).** L'oblique du 237 tirait sur « le plus proche du ballon »,
+à 40 m du but, sans sortie ; corrigée : sortant devant la ligne (2 m) et ballon dans la zone du but (40 m).
+Gradation rendue (11/49/249/470 à 12 graines), l'oblique tire 6-8 % des images au lieu de 40.
+
+**Lot 246 — Les leviers de lecture (à sceller).** Révélé par le 244d au monde 245 : décision, placement,
+anticipation, appel, cohésion, marquage, concentration, réaction ne bougent presque rien dans les lois.
+Chaque note de lecture doit avoir UN levier mesuré (gradation appariée 30/50/70/90 sur sa propre
+signature), comme la technique en a dans la 152/158 ; le 244d retrouvera alors sa mesure.
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
@@ -286,8 +324,8 @@ temps d'arrivée (éteinte : placebo mesuré), pointe sur l'épaule (5,9 → 3,3
 
 ## 5. Ce que le plan ne fait pas, et pourquoi
 
-- Pas de nouvelle formation avant le 241 (le catalogue 4-4-2 / 3-5-2 reste la dette de la couche
-  rôles ; la doctrine 4-4-2 de Gourcuff se lit déjà dans les distances, satisfaites).
+- Pas de nouvelle formation avant le 241 (levé au 244a : 31 formations, la grille des postes en donnée ;
+  la dette de la couche rôles devient le 244b, les lois au nom du poste).
 - Pas de fatigue sur la compacité (brief 5.3) avant que les bandes de réalisme (I) soient re-fondées.
 - Le harnais (classe « ordre des blocs » : 96, 174, 189) reste une dette nommée ; elle ne bloque
   aucun sceau (les blocs passent isolés) mais coûte du temps de banc à chaque lot.

@@ -295,8 +295,15 @@ export function choosePass(st, cfg = RONDO) {
     const tArr = 0.4 + d / 9;
     const recvPressure = Math.min(...foesL.map((o) => hyp(o.p[0] + o.v[0] * tArr - lead[0], o.p[2] + o.v[1] * tArr - lead[2])), 99);
     // a lofted ball beats a blocked lane, at the cost of being slower and harder to control
-    const style = bascule ? 'lofted'                               // la diagonale VOLE par-dessus le bloc
+    let style = bascule ? 'lofted'                                 // la diagonale VOLE par-dessus le bloc
       : lane.open ? (d > 13 ? 'driven' : 'ground') : (lane.margin > 0.5 ? 'driven' : 'lofted');
+    // LA LIGNE FERMÉE (243, cfg.ligneFermee && st.full — retour utilisateur : « un adversaire sur la ligne de passe ») : une cloche ne passe pas un corps
+    // collé au pied — le bloqueur doit être à ≥ cloche m du passeur et à ≥ retombee m du point visé, sinon la ligne est fermée pour de bon (le candidat tombe).
+    // Mesuré avant (tous à 50) : 6 % des passes avec un corps à < 0,5 m de la ligne, 74 % d'entre elles levées, perdues à 33 % (5 % ligne nette).
+    if (st.full && cfg.ligneFermee && style === 'lofted' && !bascule && lane.blocker >= 0) {
+      const b = opp[lane.blocker], al = ((b[0] - origin[0]) * (lead[0] - origin[0]) + (b[2] - origin[2]) * (lead[2] - origin[2])) / (d || 1);
+      if (al < (cfg.ligneFermee.cloche ?? 4) || d - al < (cfg.ligneFermee.retombee ?? 3)) style = 'ground';
+    }
     const blocked = !lane.open && style !== 'lofted';
     if (blocked) continue;
     if (_dvFoes && _dvFoes.length && style !== 'lofted') {      // le départ vu (155) : premier mètre habité → refus
@@ -445,6 +452,8 @@ export function choosePass(st, cfg = RONDO) {
       : 0;
     const score =
       Math.min(lane.margin, 4) * 2.4                       // clearance is king
+      // …ET LE BON DÉCIDEUR REFUSE LA LIGNE FERMÉE (243) : sous seuil m de marge, malus × (1 − marge/seuil) × decF (la note décisions : 1 à 50, le bon refuse plus, le mauvais tente)
+      - (st.full && cfg.ligneFermee && !bascule && lane.margin < (cfg.ligneFermee.seuil ?? 1) ? (cfg.ligneFermee.malus ?? 5) * (1 - lane.margin / (cfg.ligneFermee.seuil ?? 1)) * (c.skill?.decF ?? 1) : 0)
       - malusMarque                                         // LE MARQUÉ NE SE JOUE QU'EN REMISE (240a)
       + Math.min(recvPressure, 9) * 1.15                    // pass to the man who will BE free
       // L'HOMME LIBRE (233, cfg.hommeLibre && st.full — Xavi/Lillo : trouver l'homme libre, pas le marqué. Mesuré avant :

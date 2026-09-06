@@ -53,10 +53,23 @@ export function refermerLigne(st, spotsBloc, mapD, nDefD, presseur, defenders, c
   // reculSecond, × posF × axe marquage, vers SON but (sgnAtk : vers le but défendu) — st._bRefermeDx, même patron. Mesuré
   // (référence le troisième, 6 × 300 s) : recul du voisin 2,50 → 2,65 m, du second 2,22 → 2,51. Clés absentes : 0, l’hier au bit.
   const dx = st._bRefermeDx ??= new Map(); dx.clear();
+  // LA VRAIE SORTIE (245, R.sortie / R.zone — le rouge hérité de la gradation 152/158, bissecté jusqu'au 237) : l'oblique se
+  // déclenchait dès qu'un défenseur de ligne était LE PLUS PROCHE du ballon — à 40 m du but 89 % du temps chez l'équipe
+  // notée 90 (qui presse haut), et sans sortie réelle (le « sortant » derrière ou au niveau de la ligne) un tiers du temps.
+  // Chaque pression en milieu de terrain reculait la ligne de 1,5 m : la domination du fort s'effaçait (composite 90 :
+  // 504 sans la loi → 94 avec). L'oblique de Sacchi couvre le DOS d'un sortant quand le dos est le but : le sortant doit
+  // être DEVANT la ligne de sortie m, et le ballon à moins de zone m du but défendu. Clés absentes : le 237 au bit.
+  let sortieOk = true, glisseOk = true;
+  if (sgnAtk && (R.sortie != null || R.zone != null)) {
+    const prof = (q) => q.p[0] * sgnAtk;   // grand = près du but défendu
+    const lig = Math.min(...ligne.map((e) => prof(e.q)));
+    if (R.sortie != null && !(lig - prof(presseur) >= R.sortie)) { sortieOk = false; if (R.glisseSortie) glisseOk = false; }   // glisseSortie : la glissade latérale (228) exige aussi la vraie sortie
+    if (sortieOk && R.zone != null) { const g = st.pitch?.ownGoal?.(presseur.team); if (g && Math.hypot(st.ball.p[0] - g.x, st.ball.p[2]) > R.zone) sortieOk = false; }
+  }
   ligne.slice(0, 2).forEach((e, i) => {
     const posF = e.q.skill?.posF ?? 1, part = (i === 0 ? (R.part ?? 0.5) : (R.second ?? 0.25)) * posF * tacF;
-    dz.set(e.k, (vac[1] - e.z) * Math.min(0.9, part));
-    const rec = (i === 0 ? (R.recul ?? 0) : (R.reculSecond ?? 0)) * posF * tacF;
+    if (glisseOk) dz.set(e.k, (vac[1] - e.z) * Math.min(0.9, part));
+    const rec = sortieOk ? (i === 0 ? (R.recul ?? 0) : (R.reculSecond ?? 0)) * posF * tacF : 0;
     if (rec && sgnAtk) dx.set(e.k, rec * sgnAtk);
   });
 }

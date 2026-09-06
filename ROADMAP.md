@@ -111,18 +111,18 @@
   aérienne, parades des pieds et du buste générés (motion-keeper : impulsion, détente en root
   motion, gants au bout, tapis, relevé sur place en une chaîne IK continue). Tout le football du
   répertoire est généré (41 espèces) ; restent la retournée (sans déclencheur) et les gestes sociaux.
-- LIVRÉ (lot A7, note 303) : LA FOULÉE GÉNÉRÉE — motion-gait : 97 % du temps d'écran n'est plus
+- LIVRÉ (lot A7, note 309) : LA FOULÉE GÉNÉRÉE — motion-gait : 97 % du temps d'écran n'est plus
   trois clips du Soldier mais une fonction pure de (φ, v→) : chemins de pied (appui fixe au monde
   par construction, pelage talon-pointe, vol en cloche) résolus par IK, bassin, tronc, bras ;
   marche → trot → course → sprint interpolés, course arrière et pas chassés fondus par la
   direction, cadence qui suit la direction ; signature par joueur ; verify-foulee 45 clauses (13
   régimes, 40 signatures, 8 sabotages) ; contact-sheet --gait ; ?foulee=clips pour l'avant.
-- LIVRÉ (lot A8, note 304) : L'ATTENTE GÉNÉRÉE — motion-idle : six espèces (repos, mains sur les
+- LIVRÉ (lot A8, note 310) : L'ATTENTE GÉNÉRÉE — motion-idle : six espèces (repos, mains sur les
   hanches, sautillement, garde du défenseur, position du gardien, mur) comme fonction pure de
   (t, espèce, style), politique pure lue de la sim et de la persona, vrille de l'humérus
   (armPose), pieds fixes par IK ; verify-attente 40 clauses ; la loi de cadence raccourcie sous la
   marche ; contact-sheet --idle.
-- LIVRÉ (lot A9, note 305) : LES REMISES À LA MAIN — motion-restart : la touche (ballon derrière la
+- LIVRÉ (lot A9, note 312) : LES REMISES À LA MAIN — motion-restart : la touche (ballon derrière la
   tête, tronc arqué puis fouetté, lâcher à 1,76 m, pieds au sol), le roulé du gardien, le ramassage
   au sol, armIK (poignet à un point, rotation par la matrice des repères) ; la sim ARME la touche et
   lance des mains au contact (throwNow), le gardien distribue à la main par le roulé (porte 'timing'

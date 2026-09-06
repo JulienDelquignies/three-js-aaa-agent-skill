@@ -3,9 +3,10 @@
 // adversaire, puis donne à celui que la sortie a libéré »). Mesuré avant (film-relance, 6 × 300 s) : en relance basse
 // le pivot vivait à 9,5 m DEVANT les centraux, sous pression (≥ 3 adversaires à < 25 m, 75 % des images) comme sans ;
 // un central libre conduisait 5,5 m p50 (réel 6-12) et donnait toujours avant le cadrage.
-import { LIGNES, mapPostes, formationPour } from './formation.js';
+import { LIGNES, mapPostes, formationPour, pivotDe } from './formation.js';
 
-const ligneArriere = (st, team, tac) => { const f = tac(st, team).formation, ids = mapPostes(f), nD = (LIGNES[formationPour(f, true)] ?? [4, 3, 3])[0]; return { ids, nD, cbs: ids.slice(1, nD - 1), pivot: ids[nD] }; };
+// 244b (cfg.postesNommes) : le pivot est le 6 DE LA GRILLE (DM(C), sinon M(C)) — hier ids[nD], le premier milieu, soit l'intérieur gauche en 4-3-3
+const ligneArriere = (st, team, tac, cfg) => { const f = tac(st, team).formation, ids = mapPostes(f), nD = (LIGNES[formationPour(f, true)] ?? [4, 3, 3])[0], kP = cfg?.postesNommes ? pivotDe(formationPour(f, true)) : nD; return { ids, nD, cbs: ids.slice(1, nD - 1), pivot: kP == null ? null : ids[kP] }; };
 
 // (1) LA SALIDA (cfg.salida && st.full) : ballon au central ou au gardien à < zone m du but propre, ≥ pression adversaires
 // à < portee m du ballon → le spot du PIVOT descend ENTRE les centraux (x = leur ligne + prof, z 0) — le +1 de la relance.
@@ -16,7 +17,7 @@ export function salidaStep(st, cfg, { atk, spots, carrier, pitch, tac }) {
   if (st.tactics?.[atk]?.cpa?.sortieBut === 'long') return null;
   const og = pitch.ownGoal(atk), sg = -Math.sign(og.x || 1);
   if (Math.abs(carrier.p[0] - og.x) >= (S.zone ?? 30)) return null;
-  const { cbs, pivot } = ligneArriere(st, atk, tac);
+  const { cbs, pivot } = ligneArriere(st, atk, tac, cfg);
   if (!carrier.keeper && !cbs.includes(carrier.post)) return null;
   let n = 0; for (const q of st.players) if (q.team !== atk && !q.keeper && q.down <= 0 && Math.hypot(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]) < (S.portee ?? 25)) n++;
   if (n < (S.pression ?? 3)) return null;
