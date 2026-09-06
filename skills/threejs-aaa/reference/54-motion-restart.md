@@ -140,7 +140,10 @@ contrats cassés. Réponse, après fusion de la branche moteur (244a-245) :
 
 Et la trajectoire : tendue à 0,24 rad le jet filait à 17,7 m/s p50, arrivait en 1,0 s et la
 possession tenait 5 s (hier 2,13 s, 12 s) ; la CLOCHE d'hier depuis les mains (0,55 / 0,42 rad :
-13,1 m/s, 2,25 s, 18,8 s — le réel lance à 10-15 m/s) est le défaut de la clé.
+13,1 m/s, 2,25 s, 18,8 s — le réel lance à 10-15 m/s) est le défaut de la clé. Le banc complet
+sur ce défaut : 536/6 encore, mais six AUTRES clauses (217 renvoi 17,4 pour ≥ 18,0 ; 137 soutien
+10,3 pour ≤ 10,2 ; 96 sabotage 10,4 pour ≥ 10,65 ; 140 servies 2 pour ≥ 3 ; le flux 24 × 300 ; la
+gradation) — la roulette et la salida revenues vertes, deux autres flanchées : le fil du rasoir.
 
 Sur la branche avant fusion (moteur A9 seul, 266 clauses) : 260/6 contre 266/0 sur main, six
 clauses sur le fil, et le contrôle main + 0,01 rad à 262/4 — la trajectoire d'un match change

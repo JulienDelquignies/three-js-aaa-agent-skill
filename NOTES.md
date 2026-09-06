@@ -9585,8 +9585,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ligne 96 sabotage 9,6 pour ≥ 10,65 ; salida 3,7 pour ≤ 3,4 (verte depuis) ; gradation.
      ET LA TRAJECTOIRE : tendue à 0,24 rad le jet filait à 17,7 m/s p50 et arrivait en 1,0 s,
      la possession tenait 5 s (hier : 2,13 s, 12 s) → la CLOCHE d'hier depuis les mains (0,55 /
-     0,42 rad : 13,1 m/s, 2,25 s, 18,8 s, réel 10-15 m/s) est le défaut. Dette pour le moteur :
-     la gradation à 12 graines lit trois touches ; les clauses au fil du rasoir restent.
+     0,42 rad : 13,1 m/s, 2,25 s, 18,8 s, réel 10-15 m/s) est le défaut. BANC COMPLET SUR CE
+     DÉFAUT : 536/6 encore, mais les six ont CHANGÉ (217 renvoi 17,4 pour ≥ 18,0 ; 137 soutien
+     10,3 pour ≤ 10,2 ; 96 sabotage 10,4 pour ≥ 10,65 ; 140 servies 2 pour ≥ 3 ; le flux 24 ×
+     300 ; la gradation 131/35) — la roulette et la salida sont revenues vertes, deux autres
+     ont flanché : le fil du rasoir, pas une loi. Dette pour le moteur : la gradation à 12
+     graines lit trois touches ; les clauses au fil du rasoir restent.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
