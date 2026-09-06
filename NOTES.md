@@ -9761,6 +9761,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la clé re-tire les trajectoires comme A9 et A10, l'équilibre tient, l'hier au bit sans la clé ; la
      remise de la tête au lanceur qui vise un corps près de la ligne est nommée au tronc (une loi de
      tete.js, pas de ce lot).
+- 317: LE BALLON OUBLIÉ (retour utilisateur — « parfois le joueur oublie le ballon quand il
+     court ou quand il contrôle la balle, ça fait foirer beaucoup d'actions »). MESURÉ (3 × 300 s) :
+     pendant l'armé d'une passe le corps glisse sur son ancre jusqu'à 7,5 m/s et le ballon, porté au
+     servo (tau 0,035) vers le point de stance du corps D'AVANT le pas, traînait 0,38 m derrière ; au
+     contact strikeNow refusait (stance-au-contact : 65 par 900 s — un armé sur cinq, 313 armés pour
+     243 passes et tirs), le ballon vendangé (−40 %, libre) et le corps filait sur son élan : 2,2 m,
+     0,5 s — 32 des 35 épisodes « le porteur lancé s'éloigne de son ballon ». Le contrôle n'était pas
+     en cause (ballon au pied 0,17 s après, p50 et p90) : c'est l'armé qui suit le contrôle qui
+     vendangeait. LOI cfg.porteAnticipe { tau 0,015, frein 0,4, reprise 0,8 } (absente = l'hier au
+     bit, vérifié sur la copie figée avec toutes mes clés nulles) : le ballon se porte au point de
+     stance du corps APRÈS son pas de glissement, au servo serré ; le vendangé qui reste FREINE et se
+     REPREND (movement : il vise son ballon sans poussée, 0,8 s). Mesuré : refus 65 → 20, épisodes
+     35 → 2, ballon derrière un porteur lancé 927 → 64 images sur 26 000, vendangés repris 38/65 →
+     20/20, p90 porteur-ballon 1,31 → 1,18 m. ÉQUILIBRE (24 × 600 s) : passes 3 768 c. 3 470, armés
+     3 964 c. 4 532, pertes 1 043 c. 1 121, tirs 79 c. 86, buts 16 = 16 ; duels 194 c. 338, glissés
+     181 c. 264, fautes 64 c. 74 — les vendangés faisaient un tiers des duels : un artefact qui tombe,
+     le tronc peut re-calibrer ses flux de duel sur le monde propre. Bancs : verify-porte 4 clauses ;
+     verify-contact passe à 6 graines (2 chutes sur 3 : un compte) ; bancs.mjs enrôle verify-remises,
+     verify-contact, verify-porte. Doc reference/57.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -69,7 +69,7 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
 {
   const run = (over) => {
     const out = { fautes: 0, chutes: [], downs: [], press: 0, face: 0, back: 0, lat: 0, tripDowns: [] };
-    for (const seed of [7, 3, 1]) {
+    for (const seed of [7, 3, 1, 5, 2, 4]) {   // 3 → 6 graines (le porté qui anticipe — cfg.porteAnticipe — a fait tomber les ballons vendangés et avec eux un tiers des duels : 2 chutes sur 3 graines, un compte, pas une loi)
       const st = makeMatch({ full: true, seed });
       const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, ...over });
       const downAt = {};
@@ -98,7 +98,7 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b.length ? b[b.length >> 1] : 0; };
   const on = run({}), off = run({ contact: null });
   const kinds = [...new Set(on.chutes.map((e) => e.kind))];
-  ok(on.chutes.length >= 3 && on.chutes.every((e) => ['avant', 'cote', 'arriere'].includes(e.kind) && e.by >= 0 && e.cause), `le fauté TOMBE, nommé : ${on.chutes.length} chutes sur 3 × 300 s (${kinds.join(', ')} ; causes ${[...new Set(on.chutes.map((e) => e.cause))].join(', ')}) pour ${on.fautes} fautes`);
+  ok(on.chutes.length >= 3 && on.chutes.every((e) => ['avant', 'cote', 'arriere'].includes(e.kind) && e.by >= 0 && e.cause), `le fauté TOMBE, nommé : ${on.chutes.length} chutes sur 6 × 300 s (${kinds.join(', ')} ; causes ${[...new Set(on.chutes.map((e) => e.cause))].join(', ')}) pour ${on.fautes} fautes`);
   ok(on.downs.length >= 3 && med(on.downs) >= 1.3 && Math.max(...on.downs) <= 2.6, `le fauché reste à terre p50 ${med(on.downs).toFixed(2)} s (≥ 1,3 : le temps de tomber, de tenir, de se relever ; cfg.contact.chute ${matchCfg().contact.chute})`);
   const pct = (o, k) => 100 * o[k] / (o.press || 1);
   ok(pct(on, 'face') >= pct(off, 'face') + 8 && pct(on, 'back') + pct(on, 'lat') >= 6 && pct(on, 'back') + pct(on, 'lat') >= 2 * (pct(off, 'back') + pct(off, 'lat')), `le presseur qui recule FAIT FACE au porteur : ${pct(on, 'face').toFixed(0)} % des images de presse à ≤ 4,5 m (sans la clé ${pct(off, 'face').toFixed(0)}) — course arrière ${pct(on, 'back').toFixed(0)} % + pas chassé ${pct(on, 'lat').toFixed(0)} % (sans : ${pct(off, 'back').toFixed(0)} + ${pct(off, 'lat').toFixed(0)}) : les régimes du lot A7 vivent`);

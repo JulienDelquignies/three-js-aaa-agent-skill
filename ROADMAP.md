@@ -145,6 +145,10 @@
   prise aérienne tenue ; la sim sous cfg.remisesPied (absente = le tronc au bit) ; verify-remises 36 clauses ;
   banc complet 535/7 (sept rouges relus : un rouge sans la clé aussi, deux depuis A9 bis, quatre lames de
   couteau ; l'équilibre à 24 graines × 600 s tenu — plus de coups de pied arrêtés et de touches, note 316).
+- LIVRÉ (le ballon oublié, note 317) : LE PORTÉ QUI ANTICIPE — un armé sur cinq était refusé au contact (le
+  ballon traînait derrière le corps qui glisse), vendangé, le corps filait sans lui ; cfg.porteAnticipe : le
+  ballon au point de stance du corps après son pas, le vendangé freine et se reprend (refus 65 → 20, épisodes
+  35 → 2 ; un tiers des duels tombe avec les ballons vendangés — le tronc re-calibre) ; verify-porte 4 clauses.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

@@ -41,7 +41,7 @@ function stepGestures(st, dt, cfg) {
         // tau 0,05 → 0,035 : l'armé le plus court (passeRapide, contact 0,22 s) exige un couple vite soudé (les passes partaient à 6-21° de leur stance). MAIS un
         // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
         // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
-        st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });
+        if (!(st.full && cfg.porteAnticipe)) st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });   // …sinon le porté ANTICIPE, après le glissement (plus bas)
       } else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
       // et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se règlent pendant l'armé, comme un vrai joueur ajuste ses derniers
       // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
@@ -89,6 +89,7 @@ function stepGestures(st, dt, cfg) {
         if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted' || A.pick?.tech?.clip === 'talonnade')) { let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
         else { p.yaw = g.yaw; p.yawWant = null; }
         p.speed = hyp(p.v[0], p.v[1]);
+        if (st.full && cfg.porteAnticipe && st.ball.owner === p.id && A.stance) { const sp = stanceBallPoint(p, A.stance, A.pick.foot), loin = d2(p.p, st.ball.p) > 0.45; st.ball.carry(sp, dt, loin ? { tau: 0.12, vMax: 9 } : { tau: cfg.porteAnticipe.tau ?? 0.015 }); }   // LE PORTÉ ANTICIPE (cfg.porteAnticipe && st.full — retour utilisateur « le joueur oublie le ballon ») : le ballon se portait au point de stance du corps D'AVANT le glissement (tau 0,035) — à 7,5 m/s il traînait 0,38 m derrière, la frappe REFUSÉE au contact (stance-au-contact 65 par 900 s, un armé sur cinq), le ballon vendangé, le corps filait sur son élan (32 des 35 « il court sans son ballon »). Ici : le point de stance du corps APRÈS son pas, au servo serré (tau). Absente : hier au bit.
       }
       if (st.pressure >= tacleHorloge(st, press[0], cfg) && tackleWindow(st, press[0], cfg, balPrenable)) beginStandTackle(st, press[0], p, cfg);
     } else if (busy(p) && p.act?.payload?.kind === 'skill' && st.phase === 'carry' && st.possession.carrier === p.id) {

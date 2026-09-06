@@ -340,6 +340,7 @@ export function strikeNow(st, c, cfg) {
     // refuse AVANT que le catalogue ne condamne
     if (Math.abs(sitNow.dist - stance.dist) > 0.22 || Math.abs(bNow) > 22) {
       deny(st, 'stance-au-contact');
+      if (st.full && cfg.porteAnticipe) { c._reprise = st.t + (cfg.porteAnticipe.reprise ?? 0.8); c.v[0] *= cfg.porteAnticipe.frein ?? 0.4; c.v[1] *= cfg.porteAnticipe.frein ?? 0.4; }   // …et le vendangé FREINE et se REPREND (movement.js : il vise son ballon, sans poussée) — hier il filait 0,6 s sur l'élan du glissement (7,5 m/s) et perdait la possession
       if (st.ball.owner === c.id) st.ball.release('perte');              // la touche ratée le lui échappe
       st.ball.impulse([-st.ball.v[0] * 0.4, 0, -st.ball.v[2] * 0.4], dW(st, cfg, 0.4));   // vendangé : le ballon reste libre
       return;

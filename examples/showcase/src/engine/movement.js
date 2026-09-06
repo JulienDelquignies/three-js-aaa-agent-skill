@@ -92,7 +92,10 @@ export function movePlayers(st, dt, cfg) {
       : p.job === 'walk' ? (cfg.speeds.walk != null ? 'walk' : 'support')
       : p.job === 'keeper' ? (cfg.speeds.keeper != null ? 'keeper' : 'press') : 'support'] ?? cfg.speeds.support)
       * (p.skill?.topF ?? p.persona?.paceBias ?? 1) * (p.job === 'walk' ? (p._walkF ?? 1) : 1);
-    if (p.act?.payload?.elan) top = Math.min(top, p.act.payload.elan);   // la course d'élan (A9 bis) : un trot vers le ballon, pas un sprint   // le retour pressé/flâné (183, cfg.retourTrot — posé par le match)   // la NOTE de vitesse fait foi ; sinon l'accent persona
+    if (p.act?.payload?.elan) top = Math.min(top, p.act.payload.elan);   // la course d'élan (A9 bis) : un trot vers le ballon, pas un sprint
+    // LE VENDANGÉ SE REPREND (cfg.porteAnticipe && st.full — strikeNow pose _reprise au refus stance-au-contact) : le porteur dont la frappe est refusée VISE SON BALLON, sans poussée ni pointe, le temps de le reprendre — hier il filait
+    // sur l'élan du glissement (7,5 m/s) pendant que le ballon vendangé mourait derrière lui : 2,2 m, 0,5 s, « il oublie le ballon ». Absente : l'hier au bit.
+    if (st.full && cfg.porteAnticipe && (p._reprise ?? -1) > st.t && st.possession.carrier === p.id) { p.push = null; p.target = [st.ball.p[0], 0, st.ball.p[2]]; top = Math.min(top, cfg.speeds.carry ?? 4.2); }   // le retour pressé/flâné (183, cfg.retourTrot — posé par le match)   // la NOTE de vitesse fait foi ; sinon l'accent persona
     // LE DONNE-ET-VA COURT À FOND (218, cfg.unDeux.course — mesuré : le lanceur en pointe plafonnait à
     // 5,8 m/s (support 4,9 × 1,28) quand le presseur court à 7,6 (chase) : une course de une-deux est
     // un sprint, pas un coulissement de soutien). Le lanceur prend la vitesse de CHASSE le temps de
