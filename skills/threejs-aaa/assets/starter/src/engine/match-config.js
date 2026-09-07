@@ -302,6 +302,14 @@ export const MATCH = {
                           // du RÈGLEMENT par remise (Lois 15/16/17) — les 3 m du réduit d'hier en clé absente.
   gkTenue: { min: 2.2, max: 4.2 },   // 171 : LA TENUE DU GARDIEN — la prise se tient (tirée,
                           // × axe tempo) sauf contre ouvert ; cap Loi 12.2 (gkRelease × 1,9).
+  scan: { vol: [0.4, 0.6], horsBallon: [1.5, 4], dur: 0.45, prise: 1.5, presseur: 10, corps: null },   // 250 : L'HORLOGE DE SCAN
+                          // (scan.js, interface gelée §1) — p.scan { at, until, vers, cible, n, vol } pour le
+                          // rendu (A12a lit, jamais n'écrit) : vol scans/s pendant le vol d'une passe qui
+                          // m'arrive (× scanF, la note), horsBallon l'intervalle (s) hors ballon, dur la
+                          // saccade, prise le rayon (m) où l'on ne regarde plus que le ballon (Jordet),
+                          // presseur le rayon (m) du presseur regardé. corps : le corps ne s'ouvre (170)
+                          // qu'après un regard — null : mesuré, doc NOTES 327. L'horloge seule ne bouge
+                          // aucun bit de jeu (LCG par acteur). null : pas d'horloge, gaze.js garde la sienne.
   corpsOuvert: { part: 0.55, max: 1.2 },   // 170 : LE CORPS OUVERT à la réception — la
                           // demi-position entre le ballon et le jeu (part du chemin, cap rad)
                           // × visionF : celui qui scanne s'ouvre. Mesuré avant : pivot 75°/151°.

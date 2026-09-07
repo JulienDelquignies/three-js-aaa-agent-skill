@@ -369,6 +369,9 @@ lue par le rendu (250), interface `p.scan` gelée avant A12a.
 6. *Ordre.* 248 (données, au bit) → 251 (repli, mesuré faux) → 249b (touches) → 249 (identification,
    informatif d'abord) → 250 (scan) → 252 → 253 → 255 → 254.
 
+**Lot 250 — SCELLÉ (NOTES 327).** L'horloge de scan (scan.js, cfg.scan, p.scan pour A12a) : déterministe, aucun bit
+de jeu, cadence de Jordet, scanning comme temps ; le corps ouvert après le regard mesuré placebo (corps null).
+
 **Lot 249 — SCELLÉ (NOTES 326).** Le test d'identification « sans les noms » (verify-identification.mjs) : 18 signatures
 exprimées gelées, 43 muettes nommées = le backlog (l'appel muet partout, à instruire avant le 253).
 

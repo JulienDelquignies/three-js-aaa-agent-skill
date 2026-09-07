@@ -10104,6 +10104,33 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      buts sur CPA : 0 et 0/2) : passes courtes du gardien 67 % sur 6
      (doc > 90 %). Aucune loi, empreintes au bit (f8167a8c1e333a04 /
      b6d66a5f8aee347f). Coût : ~8 min, dans bancs.mjs.
+- 327: L'HORLOGE DE SCAN (250, Campagne V — scan.js, interface gelée §1
+     lue par gaze.js au A12a). Jordet : le receveur regarde autour de lui
+     PENDANT LE VOL (0,4-0,6 scan/s chez les pros), jamais pendant la
+     frappe du passeur ni pendant la prise. L'horloge vit dans la SIM,
+     déterministe par acteur (LCG seedé par p.id, aucun st.rnd) : p.scan
+     { at, until, vers, cible, n, vol } sur chaque joueur, appelée de
+     movement ; les yeux vont au presseur le plus proche (< presseur m),
+     sinon l'espace côté jeu, sinon un coéquipier. cfg.scan { vol
+     [0,4 ; 0,6] scans/s en vol × scanF, horsBallon [1,5 ; 4] s,
+     dur 0,45, prise 1,5 m, presseur 10 m } — livrée par défaut : elle ne
+     bouge AUCUN bit de jeu (événements identiques avec et sans, empreintes
+     f8167a8c1e333a04 / b6d66a5f8aee347f). Mesuré : 0,73 scan/s de vol,
+     0,88 regard par vol (les vols durent 1,1 s), yeux en saccade 12 % des
+     images hors ballon. LA NOTE EST UN TEMPS (amendement 3) : ratings.
+     scanning → scanF [0,85 ; 1,15] multiplie la cadence et avance le
+     premier regard (÷ scanF) — 90 : 0,88 regard par vol, 10 : 0,72, 3/3
+     graines. Le consommateur de jeu proposé — le corps ne s'ouvre (170)
+     qu'après avoir regardé, cfg.scan.corps — MESURÉ PLACEBO (6 × 300 s :
+     pivot post-réception p50 65° avec et sans, dos au jeu à la prise
+     35 → 38 %, scanning 90/10 : 62°/61°) : null, code gardé ; la raison
+     est le temps lui-même — les vols durent 1,1 s, le premier regard
+     tombe à 0,25-0,75 s, le receveur n'a regardé que 48 % des prises, et
+     l'ouverture du corps est un slew qui met plus longtemps que le vol.
+     Le « contrôle manqué × (2 − scanF) » n'est pas construit : une
+     amplitude par construction (leçon 246). Le pied de réception (A12b)
+     lit pick.foot, déjà écrit par la table des techniques. Banc :
+     verify-scan (5 clauses), dans bancs.mjs.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

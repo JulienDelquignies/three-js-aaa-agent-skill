@@ -3,6 +3,7 @@
 // batterie est la preuve. Une famille par fichier : le cerveau décide, le mouvement PORTE.
 import { winding } from './gesture.js';
 import { momentDuJeu } from './phases.js';
+import { scanStep, aScanne } from './scan.js';
 import { dansCone } from './dribble.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
@@ -11,6 +12,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 /** Move every player toward their target with real acceleration limits. */
 export function movePlayers(st, dt, cfg) {
   for (const p of st.players) {
+    scanStep(st, p, cfg);   // (250) l'horloge de scan — p.scan pour le rendu, le TEMPS du corps ouvert ; cfg.scan absent : rien
     // a player on the ground after a slide does not run — mais l'EXPULSÉ (Loi 12) et le
     // REMPLACÉ en chemin (Loi 3) ne sont pas des corps au sol : leur down géant est un
     // drapeau d'inexistence pour les cerveaux (les filtres down<=0 les couvrent sans être
@@ -463,7 +465,8 @@ export function movePlayers(st, dt, cfg) {
       // dos au jeu, puis se retournait). Le vrai receveur ouvre son corps : une fraction du
       // chemin vers le JEU (le but adverse), capée, × visionF — celui qui SCANNE s'ouvre,
       // le faible regarde le ballon. Clé absente : la face pleine d'hier au bit.
-      if (st.full && cfg.corpsOuvert && !p.keeper) {
+      // (250, cfg.scan.corps) LE CORPS S'OUVRE APRÈS AVOIR REGARDÉ : la note scanning est un TEMPS — le scanneur regarde tôt dans le vol et s'ouvre tôt, le faible reçoit face au ballon ; corps absent : le 170 d'hier au bit
+      if (st.full && cfg.corpsOuvert && !p.keeper && !(cfg.scan?.corps && !aScanne(p))) {
         const gCO = st.pitch.attackGoal(p.team);
         const versJeu = Math.atan2(-p.p[2] * 0.3, gCO.x - p.p[0]);
         let dA = versJeu - versB;

@@ -222,6 +222,8 @@ tactiques portant leurs rôles.
 Banc : `verify-identification.mjs` (lot 249 — le test d'identification « sans les noms » : 25 rôles du document à leur poste,
 11 configurations × 6 graines, la signature du rôle contre le polyvalent du même poste graine par graine ; 18 signatures
 exprimées gelées, le reste informatif = le backlog 250-254 ; les chiffres du document imprimés).
+Banc : `verify-scan.mjs` (lot 250 — l'horloge de scan : déterministe par acteur, aucun bit de jeu, cadence de Jordet en vol,
+la note scanning comme temps, jamais de saccade à la frappe ni à la prise ; le corps ouvert après le regard mesuré placebo).
 
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
