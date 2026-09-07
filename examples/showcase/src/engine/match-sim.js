@@ -27,7 +27,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   // LES RÔLES PAR POSTE (roles.js) : APRÈS l'assignation des postes ; PRESET < EXPLICITE (lot 20).
   for (const team of [0, 1]) {
     const spec = { ...(st.tactics[team].roles ?? {}), ...(roles?.[team] ?? {}) };
-    for (const q of st.players.filter((q) => q.team === team)) { if (spec[q.post] != null) q.role = resoudreRole(spec[q.post]); }
+    for (const q of st.players.filter((q) => q.team === team)) { const ref = squads?.[team]?.[q.post]?.refus; if (spec[q.post] != null || ref?.length) q.role = resoudreRole(spec[q.post] ?? 'polyvalent', ref); }   // (248) squads[i].refus compose les interdits du joueur au rôle (polyvalent si aucun rôle : mêmes axes, identité)
   }
   // LA PATTE (lot 87) : née au CORPS — hash (seed, id), 72/23/5, zéro st.rnd ; ratings.foot surclasse.
   for (const q of st.players) {

@@ -5,7 +5,7 @@
 // re-distribue tout le match — mesuré : six mondes, six récits) : le mécanisme se prouve sur
 // FIXTURES (doctrine lot 8) — même monde, seul le rôle change, delta de cible exact.
 import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
-import { checkRoles, ROLES } from '../assets/starter/src/engine/roles.js';
+import { checkRoles, ROLES, resoudreRole, compatibiliteOnze, ROLES_DOCUMENT, PERSONAS_FIXTURE, LIBELLES_ROLES } from '../assets/starter/src/engine/roles.js';
 import { arbitre } from '../assets/starter/src/engine/menace.js';
 
 let pass = 0, fail = 0;
@@ -236,6 +236,25 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     libreGagne === 'A' && cloueCede === 'B');
 }
 
+
+// ---- lot 248 : LES 25 RÔLES DU DOCUMENT CONTRE LE CATALOGUE (Campagne V — données seules, empreinte au bit)
+{
+  const doc = Object.entries(ROLES_DOCUMENT), manque = doc.filter(([, id]) => !ROLES[id]).map(([k]) => k);
+  const neufs = ['fullback_third_cb', 'wide_playmaker_fullback', 'half_space_playmaker', 'vertical_creator', 'deep_lying_forward'];
+  const c = checkRoles();
+  const inv = resoudreRole('inverted_fullback', ['tete']), poly = resoudreRole('polyvalent'), onoff = resoudreRole({ on: 'wide_creator', off: 'tracking_winger' });
+  const fautif = compatibiliteOnze(['inverted_fullback', 'centre_back', 'centre_back', 'inverted_fullback', 'regista', 'mezzala', 'wide_creator', 'winger', 'false_9', 'winger', 'goalkeeper'], { hauteurBloc: 0.5 }, '433');
+  const sain = compatibiliteOnze(['full_back', 'centre_back', 'centre_back', 'full_back', 'anchor', 'mezzala', 'mezzala', 'winger', 'forward', 'winger', 'goalkeeper'], {}, '433');
+  const haut = compatibiliteOnze(['full_back', 'libero', 'centre_back', 'full_back', 'anchor', 'mezzala', 'mezzala', 'winger', 'forward', 'winger', 'keeper_libero'], { hauteurBloc: 0.5 }, '433');
+  const personas = Object.entries(PERSONAS_FIXTURE).every(([, p]) => ROLES[p.role] && p.refus.length && Object.keys(p.ratings).length >= 6);
+  ok(`lot 248 — LES 25 RÔLES DU DOCUMENT sont au catalogue (${doc.length} appariés, ${manque.length ? 'manquent : ' + manque.join(',') : 'aucun manquant'}), ${Object.keys(ROLES).length} rôles dont cinq nouveaux dans la bande (checkRoles ${c.ok ? 'vert' : c.issues.join(' ; ')}, ${neufs.filter((k) => ROLES[k] && LIBELLES_ROLES[k]).length}/5 avec libellé) ; les INTERDITS se composent (latéral inversé + refus tête → ${[...inv.interdits].join('+')}, polyvalent → ${inv.interdits.size && poly.interdits.size === 0 ? 'aucun' : '?'}, on/off → ${[...onoff.interdits].join('+')}) ; la COMPATIBILITÉ du onze avertit (onze fautif : ${fautif.length} règles — ${fautif.map((x) => x.regle.split(' ').slice(0, 4).join(' ')).join(' / ')} ; onze sain : ${sain.length} ; libéro + gardien libéro en bloc bas : ${haut.length}) ; six personas de fixture (${personas})`,
+    manque.length === 0 && c.ok && neufs.every((k) => ROLES[k] && LIBELLES_ROLES[k]) && inv.interdits.has('deborde') && inv.interdits.has('tete') && poly.interdits.size === 0 && onoff.interdits.has('repli') && onoff.interdits.has('relacherPress') && fautif.length >= 3 && sain.length === 0 && haut.length === 2 && personas);
+  // l'INTERDIT est lu par une loi : le latéral avec refus ['deborde'] ne déborde jamais (2 × 300 s), le même sans refus déborde
+  const debordes = (refus) => { let n = 0; for (const seed of [1, 2]) { const sq = Array.from({ length: 11 }, (_, i) => (i === 0 || i === 3) && refus ? { refus: ['deborde'] } : {}); const st = makeMatch({ full: true, seed, squads: [sq, []] }), cfg = matchCfg({ shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg); for (const e of st.events) if (e.type === 'burst' && e.kind === 'deborde' && st.players[e.by]?.team === 0) n++; } return n; };
+  const avec = debordes(false), sans = debordes(true);
+  ok(`lot 248 — l'INTERDIT est LU par la loi du dédoublement : latéraux avec refus ['deborde'] → ${sans} débordement(s) = 0 sur 2 × 300 s ; sans refus → ${avec} ≥ 1 (le rôle dit non AVANT que la loi n'agisse — pas un multiplicateur, la bande d'arbitre est intacte)`,
+    sans === 0 && avec >= 1);
+}
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

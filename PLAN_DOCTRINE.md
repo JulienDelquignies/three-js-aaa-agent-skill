@@ -369,6 +369,9 @@ lue par le rendu (250), interface `p.scan` gelée avant A12a.
 6. *Ordre.* 248 (données, au bit) → 251 (repli, mesuré faux) → 249b (touches) → 249 (identification,
    informatif d'abord) → 250 (scan) → 252 → 253 → 255 → 254.
 
+**Lot 248 — SCELLÉ (NOTES 323).** 25 rôles appariés, cinq vecteurs nouveaux dans la bande, interdits binaires
+(role.interdits ∪ squads[i].refus, lus par le dédoublement), compatibiliteOnze (neuf règles, avertit), six personas.
+
 **A12 — les signes visibles du rôle (agent animation, aucune loi de sim, empreinte au bit)** : A12a le scan
 du receveur en vol (lit `p.scan`), A12b la réception de trois-quarts et le pied arrière (lit `pick.foot`),
 A12c la pausa (lit le kind/événement du 253), A12d le recul-frein, A12e la marche des rôles marchants,

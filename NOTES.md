@@ -9949,6 +9949,47 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      62 %, services perdus 37 %) — c'est peut-être juste (un appui dos
      au but sous charge tombe), c'est à mesurer comme une loi (247),
      pas à enterrer : les épingles A10 sont datées pour ça.
+- 323: LES 25 RÔLES DU DOCUMENT CONTRE LE CATALOGUE (248, Campagne V —
+     données seules, empreinte au bit : 11b26cf85cbeb095 / 50c8a128c553201d
+     = la fusion A10). Le document (§3) donne 8 postes × 2-4 rôles = 25 ;
+     vingt existaient dans le catalogue aval (ROLES_DOCUMENT les
+     apparie : GK A = keeper_libero, DC A = cover, LAT A =
+     inverted_fullback, MDC C = regista, MO A = trequartista, AV C =
+     false_9…), cinq manquaient — fullback_third_cb (le latéral bloqué,
+     troisième central), wide_playmaker_fullback (Alexander-Arnold),
+     half_space_playmaker (Pedri), vertical_creator (De Bruyne),
+     deep_lying_forward (Kane) — vecteurs [CONVENTION] posés DANS la
+     bande d'arbitre du 244e (leur « centre 0,6 » devient 0,7), à dater
+     sur fixture au 249. L'INTERDIT (« ce qu'il lui est formellement
+     interdit ») n'est pas un multiplicateur : c'est une DONNÉE BINAIRE
+     du rôle (role.interdits, vocabulaire gelé dans
+     docs/Interface_Campagne_V.md : deborde, tete, tirLoin,
+     dribbleElimination, decrochage, repli, tacleGlisse…) que la loi
+     concernée consulte AVANT d'agir — interdit(p, nom) ; le joueur y
+     ajoute ses REFUS (squads[i].refus, composés à la résolution :
+     rôle ∪ refus, on/off ∪). Un seul lecteur aujourd'hui, la preuve du
+     mécanisme : le dédoublement (roles.deborde) — deux latéraux avec
+     refus ['deborde'] ne débordent jamais sur 2 × 300 s, les mêmes sans
+     refus débordent. Dix rôles existants reçoivent leurs interdits
+     (l'inversé ne déborde pas, la sentinelle ne tire pas de loin ni ne
+     se projette, le regista et le couvreur ne tacle pas glissé, le faux
+     9 ne saute pas, le renard ne décroche pas, l'ailier marchant ne
+     replie pas, l'ailier de pressing ne relâche pas, le gardien libéro
+     ne reste pas chez lui) — sans lecteur encore : 251 (repli), 252
+     (decrochage), tete.js (tete). La COMPATIBILITÉ DU ONZE
+     (compatibiliteOnze, table pure dérivée de « ce qu'il coûte à
+     l'équipe ») avertit sans bloquer : neuf règles (le regista exige
+     deux relayeurs, le faux 9 un plongeur, l'ailier marchant un latéral
+     qui reste, deux inversés une sentinelle, l'électron libre un 6,
+     deux renards personne, le libéro et le gardien libéro une ligne
+     haute, deux pistons une sentinelle) — onze fautif : 3 règles, onze
+     sain : 0, libéro + gardien libéro en bloc bas : 2. Six PERSONAS de
+     fixture (Busquets, Kane, Yamal, Haaland, Pedri, Van Dijk :
+     attributs + rôle + refus) pour le test d'identification 249. BANC :
+     verify-roles 248 (deux clauses), la 244c passe à 39 libellés,
+     verify-sync. Un bug attrapé avant le sceau : l'insertion des
+     interdits tombait DANS l'objet arbitre de dix rôles (checkRoles le
+     disait : « arbitre.interdits hors bande »).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
