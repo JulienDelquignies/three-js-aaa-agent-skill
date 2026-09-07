@@ -369,6 +369,15 @@ lue par le rendu (250), interface `p.scan` gelée avant A12a.
 6. *Ordre.* 248 (données, au bit) → 251 (repli, mesuré faux) → 249b (touches) → 249 (identification,
    informatif d'abord) → 250 (scan) → 252 → 253 → 255 → 254.
 
+**A12 — les signes visibles du rôle (agent animation, aucune loi de sim, empreinte au bit)** : A12a le scan
+du receveur en vol (lit `p.scan`), A12b la réception de trois-quarts et le pied arrière (lit `pick.foot`),
+A12c la pausa (lit le kind/événement du 253), A12d le recul-frein, A12e la marche des rôles marchants,
+A12f les petits gestes signés (bras du tireur : `payload.mains = 'signal'`, une ligne dans cpa.js sous clé),
+et une planche « sans les noms » par rôle du 249. Interfaces GELÉES dans `docs/Interface_Campagne_V.md`
+(p.scan, cfg.scan, scanning, pausa, passation, signal, interdits/refus). Synchronisation : 248 d'abord
+(identifiants = API partagée) ; l'horloge de scan est dans la SIM, jamais dans gaze.js ; le moteur ne touche
+pas gaze.js. Journal : le tronc est à 322, la branche numérote à partir de 323.
+
 **Chiffres du document promus en clauses (249, tolérances [CONVENTION])** : 8-9 sous la ligne du ballon en
 bloc bas ; 2-3 actifs autour du lanceur, 7 immobiles ; 40-50 touches par match ; 4-6 dans la surface sur
 corner, latéraux + sentinelle en rest defense ; passes courtes du gardien > 90 %, rétention des longs
