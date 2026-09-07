@@ -9990,6 +9990,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      verify-sync. Un bug attrapé avant le sceau : l'insertion des
      interdits tombait DANS l'objet arbitre de dix rôles (checkRoles le
      disait : « arbitre.interdits hors bande »).
+- 324: LE REPLI PAR RÔLE (251, Campagne V — débat 3 du document :
+     Simeone/Conte c. Mourinho, « qui a le droit de rester devant le
+     ballon »). L'équipe disait déjà COMBIEN (tactics.repli → 0, 1 ou 2
+     pointes, 221) ; l'élection était positionnelle (le plus devant
+     garde son poste). Le rôle dit maintenant QUI : axe de rôle repli
+     [0..1] (identité 0,5 = l'élection d'hier au bit ; 1 = dispensé, 0 =
+     rentre toujours ; phase OFF), posé sur 23 rôles du catalogue aval
+     (wide_creator 0,9, poacher 0,9, forward 0,85, tracking_winger 0,1,
+     carrilero 0,15, box_to_box 0,2…), les neuf rôles d'hier à
+     l'identité ; cfg.repli.role trie les candidats par l'axe puis par
+     la position ; l'INTERDIT 'repli' (l'ailier marchant) ne rentre
+     JAMAIS et sa dispense s'ajoute aux pointes — le prix de la
+     doctrine, visible — au repli de la loi 221 comme au recul-frein
+     du contre-press (229), où la meute rentrait en sprint sans lire
+     le rôle. Prouvé : wide_creator 0 image en sprint de repli sur
+     2 × 300 s, tracking_winger rentre et vit moins devant. LE FLUX,
+     mesuré d'abord (sonde-251, 4 × 300 s) : dans notre moitié, p50 2
+     devant, ≥ 6 devant 12,4 % des images — mais près du but « devant la
+     ligne du ballon » ne veut rien dire ; ballon à 25-52 m de notre
+     but : p50 1, 8-9 sous la ligne 64,7 % des images, ≥ 6 devant 6,9 %,
+     et ceux qui restent devant sont des MARQUEURS DÉJÀ EN SPRINT DE
+     REPLI (649 sur 1045) vers un point 3 m derrière un ballon qui
+     avance plus vite qu'eux, surtout 2 à 10 s après la perte : la
+     traîne est la TRANSITION, pas le bloc. Deux doses essayées (le
+     point visé qui avance avec le ballon, le resserrement vers l'axe
+     du §4.1) : placebos à 25-52 m (64,7 → 65,3 %, 6,9 → 7,1 %) —
+     clés null, code gardé. Le « 8-9 sous la ligne ≥ 90 % » du document
+     reste une dette nommée, et son vrai chantier est le repli en
+     transition (la vitesse du ballon c. celle du sprint), pas le rôle.
+     Empreintes au bit (11b26cf85cbeb095 / 50c8a128c553201d : aucun
+     rôle posé par défaut). Banc : verify-roles 251.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

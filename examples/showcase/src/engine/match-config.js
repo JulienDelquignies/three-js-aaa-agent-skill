@@ -631,7 +631,7 @@ export const MATCH = {
   // L'OBLIGATION DE REPLI (221, cfg.repli && st.full — audit aval : six joueurs devant le ballon dans son camp).
   // Un attaquant derrière le ballon ne se marque pas ; tout défenseur devant la ligne du ballon sauf les
   // pointes (axe tactique repli, identité 1) rentre en sprint après delai × (2 − workF). Doc match-sim.
-  repli: { marge: 2, delai: 0.4 },
+  repli: { marge: 2, delai: 0.4, role: true, avance: null, axe: null },   // role (251, Campagne V) : le RÔLE dit QUI reste devant (axe de rôle repli, 1 = dispensé ; l'interdit 'repli' de l'ailier marchant ne rentre jamais), l'équipe dit COMBIEN ; absent : l'élection positionnelle d'hier. avance (s, le point visé avance avec le ballon) et axe (part de resserrement en z) : MESURÉS PLACEBO sur le ballon à 25-52 m de notre but (8-9 sous la ligne 64,7 → 65,3 %, ≥ 6 devant 6,9 → 7,1 %) ; null, code gardé
   // LE RENDEZ-VOUS DANS LA FOULÉE (220, cfg.foulee && st.full — doc match-sim) : le receveur LANCÉ
   // (through, ou pointe d'appel avec le lead ≥ avance m devant lui) n'a qu'une cible — le premier
   // point jouable du vol prédit, dans le terrain, qu'il rejoint avec sa cinématique réelle (élan,

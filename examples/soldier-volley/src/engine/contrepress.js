@@ -12,6 +12,7 @@
 // (Moulin, CP.chaise) : la ligne arrière ne chasse pas — mesuré sans elle : 19 chasseurs sur 66 étaient des défenseurs,
 // et la bande montait à 13 buts (le dos ouvert).
 import { LIGNES, mapPostes, formationPour } from './formation.js';
+import { interdit } from './roles.js';
 
 /** LE DÉPOSSÉDÉ SE RETOURNE (cfg.lossReact, déporté verbatim du match-sim au 229) : pendant lossReact s
  *  l'ex-porteur CHASSE son ballon ; s'éteint au regain ou à la mort de la fenêtre. */
@@ -67,7 +68,7 @@ export function contrePressStep(st, cfg, { busy, tac, axe, role, d2, pitch }) {
     // LE RECUL-FREIN : l'horloge morte sans regain, la meute rentre tout de suite (burst repli — la loi 221 prend le relais)
     if (poss !== cp.team) for (const h of cp.hunters) {
       const p = st.players[h.id];
-      if (p && p.down <= 0) pace(p, st, st.t + (CP.frein ?? 0.5), 'repli');
+      if (p && p.down <= 0 && !interdit(p, 'repli')) pace(p, st, st.t + (CP.frein ?? 0.5), 'repli');   // (251) l'INTERDIT de repli (l'ailier marchant) chasse mais ne rentre pas en sprint — il rentre au pas, comme partout
     }
     st._cp = null; return;
   }

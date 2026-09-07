@@ -1,3 +1,4 @@
+import { role, interdit } from './roles.js';
 // L'OBLIGATION DE REPLI (221, cfg.repli && st.full — déporté de match-sim ; doc : match-config.repli).
 // Audit aval, constat 1 : « six joueurs de champ devant le ballon dans son propre camp — une équipe qui a
 // renoncé ». Sondé : 244/267 corps restés devant la ligne du ballon après une perte étaient des MARQUEURS
@@ -14,8 +15,9 @@ export function repliStep(st, cfg, { defenders, atk, pitch, tac, axe }) {
   const devantDe = (p) => (p.p[0] - st.ball.p[0]) * sgD < -marge;   // devant = plus loin de mon but que le ballon
   const nP = Math.round(axe(tac(st, defTeam).repli ?? 0.5, 0, 2));
   const cand = st._bRepli ??= []; cand.length = 0;
-  for (const p of defenders) if (!p.keeper && p.down <= 0 && devantDe(p)) cand.push(p);
-  cand.sort((a, b) => (a.p[0] - b.p[0]) * sgD);   // le plus DEVANT d'abord : les pointes gardent leur poste
+  for (const p of defenders) if (!p.keeper && p.down <= 0 && devantDe(p) && !(RP.role && interdit(p, 'repli'))) cand.push(p);   // (251) l'INTERDIT de repli (l'ailier marchant) ne rentre jamais — sa dispense s'ajoute aux pointes : c'est le prix, visible
+  // (251, RP.role) le RÔLE dit QUI reste : tri par l'axe repli décroissant (1 = dispensé), puis le plus DEVANT d'abord ; à 0,5 partout, l'élection positionnelle d'hier au bit
+  cand.sort((a, b) => (RP.role ? (role(b).repli ?? 0.5) - (role(a).repli ?? 0.5) : 0) || (a.p[0] - b.p[0]) * sgD);
   const depuis = st.t - (st._possChangeAt ?? -99);
   for (let k = nP; k < cand.length; k++) {
     const p = cand[k];
@@ -24,6 +26,11 @@ export function repliStep(st, cfg, { defenders, atk, pitch, tac, axe }) {
     const kind = (p._pace?.until ?? -1) > st.t ? p._pace.kind : null;
     if (kind && kind !== 'repli') continue;
     p._pace = { until: st.t + 0.5, kind: 'repli', next: p._pace?.next ?? st.t + 8 };
-    if (!p.target || (p.target[0] - st.ball.p[0]) * sgD < marge) p.target = [st.ball.p[0] + sgD * marge * 1.5, 0, p.target ? p.target[2] : p.p[2]];
+    // (251) LE REPLI ANTICIPE ET RESSERRE (§4.1 du document : priorité 1 sous la ligne du ballon, priorité 2 l'axe) — sondé : quand ≥ 6 corps
+    // restent devant, ils sont DÉJÀ en sprint de repli (649/1045) vers un point 3 m derrière un ballon qui avance plus vite qu'eux
+    // (85 cas sur 130 à plus de 5 s de la perte). RP.avance : le point visé avance avec le ballon (sa vitesse vers mon but × avance s) ;
+    // RP.axe : la cible en z rentre vers l'axe d'une part axe (un entonnoir, pas une course dans son couloir). Absentes : l'hier au bit.
+    const vB = RP.avance ? Math.max(0, (st.ball.v?.[0] ?? 0) * sgD) * RP.avance : 0, zA = RP.axe ? (p.target ? p.target[2] : p.p[2]) * (1 - RP.axe) : (p.target ? p.target[2] : p.p[2]);
+    if (!p.target || (p.target[0] - st.ball.p[0]) * sgD < marge + vB) p.target = [st.ball.p[0] + sgD * (marge * 1.5 + vB), 0, zA];
   }
 }

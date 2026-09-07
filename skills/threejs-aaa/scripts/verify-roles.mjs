@@ -256,5 +256,16 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     sans === 0 && avec >= 1);
 }
 
+// ---- lot 251 : LE REPLI PAR RÔLE (Campagne V, débat 3 — l'équipe dit COMBIEN, le rôle dit QUI). cfg.repli.role :
+// tri des candidats par l'axe de rôle repli (1 = dispensé) puis le plus devant ; l'INTERDIT 'repli' (ailier marchant)
+// ne rentre jamais, sa dispense s'ajoute aux pointes — le prix, visible. Le flux (ballon à 25-52 m de notre but, 4 × 300 s) :
+// 8-9 sous la ligne 65 % des images, p50 1 devant, ≥ 6 devant 7 % ; les doses avance/axe sont des placebos (null).
+{
+  const bursts = (roleId) => { let n = 0, ahead = 0, img = 0; for (const seed of [1, 2]) { const st = makeMatch({ full: true, seed, roles: [{ 7: roleId }, {}] }), cfg = matchCfg({ shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 30 === 0 && st.possession.team === 1 && !st.restart) { const p = st.players.find((q) => q.team === 0 && q.post === 7), sg = Math.sign(st.pitch.ownGoal(0).x || 1); img++; if ((p.p[0] - st.ball.p[0]) * sg < -2) ahead++; if (p._pace?.kind === 'repli' && p._pace.until > st.t) n++; } } } return { n, devant: 100 * ahead / Math.max(1, img) }; };
+  const marchant = bursts('wide_creator'), presseur = bursts('tracking_winger'), poly = bursts('polyvalent');
+  ok(`lot 251 — LE REPLI PAR RÔLE : l'ailier marchant (wide_creator, repli 0,9 + interdit) ne rentre jamais (${marchant.n} images en sprint de repli = 0 sur 2 × 300 s, devant le ballon ${marchant.devant.toFixed(0)} % des images sans ballon), l'ailier de pressing (tracking_winger, repli 0,1) rentre (${presseur.n} ≥ 1, devant ${presseur.devant.toFixed(0)} % < marchant) ; polyvalent (0,5 = l'élection d'hier) ${poly.n} sprints, devant ${poly.devant.toFixed(0)} % ; clé repli.role ${matchCfg().repli.role}`,
+    marchant.n === 0 && presseur.n >= 1 && presseur.devant < marchant.devant && matchCfg().repli.role === true);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
