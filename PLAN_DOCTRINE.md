@@ -369,6 +369,9 @@ lue par le rendu (250), interface `p.scan` gelée avant A12a.
 6. *Ordre.* 248 (données, au bit) → 251 (repli, mesuré faux) → 249b (touches) → 249 (identification,
    informatif d'abord) → 250 (scan) → 252 → 253 → 255 → 254.
 
+**Lot 249b — SCELLÉ (NOTES 325).** La craie est une chaise tenue (cfg.craie.tenue) : l'ancre gardée, sa chaise, son
+couloir, la craie visée ; sorties hors fautes 28 → 40 / 90 (réel ~70 — dette nommée : le service de la craie).
+
 **Lot 251 — SCELLÉ (NOTES 324).** Axe de rôle repli (l'équipe dit combien, le rôle dit qui), l'interdit 'repli' ne
 rentre jamais ; le flux à 25-52 m : 65 % des images à 8-9 sous la ligne, la traîne est la transition — dette nommée.
 

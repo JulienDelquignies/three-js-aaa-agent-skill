@@ -726,11 +726,10 @@ function assignMatchJobs(st, cfg) {
         if (intrus) tz = ecarteLigne(intrus, p, tx, tz, cfg, pitch.hz);
         // L'ANCRE À LA CRAIE (177, cfg.craie && st.full — les larges vivaient à |z| 18-19 pour une craie à 34 : le jeu évitait le bord, 8 touches/30 min c. 13 réel). En POSSESSION le slot large est TIRÉ vers la ligne (fraction du chemin × axe LARGEUR × largeurR) — l'ailier étire à 2-8 m de la craie. Absente : hier au bit. …ET L'ANCRE S'ÉLIT AU RÔLE (178, roles.ancresCraie) : l'ailier-meneur CÈDE la craie au latéral (le faux ailier) — par côté, UN porteur d'ancre
         if (st.full && cfg.craie && off) {
-          if ((st._ancre?.until ?? -1) < st.t || st._ancre?.team !== atk) st._ancre = { team: atk, until: st.t + 0.8, cote: ancresCraie(st, atk, axe, role) };
-          if (st._ancre.cote[Math.sign(tz) || 1] === p.id) {
-            const tire = (cfg.craie.tire ?? 0.6) * axe(tac(st, atk).largeur, 0.5, 1.4) * axe(R.largeurR, 0.8, 1.2);
-            tz = Math.sign(tz) * Math.min(pitch.hz - 1.5, Math.abs(tz) + (pitch.hz - 1.5 - Math.abs(tz)) * Math.min(1, tire));
-          }
+          if ((st._ancre?.until ?? -1) < st.t || st._ancre?.team !== atk) { const c = ancresCraie(st, atk, axe, role, cfg); st._ancre = { team: atk, until: st.t + 0.8, cote: c, since: c.since }; }
+          const sA = cfg.craie.tenue ? (st._ancre.cote[1] === p.id ? 1 : st._ancre.cote[-1] === p.id ? -1 : 0) : 0;   // (249b) l'ancre TENUE se reconnaît à son côté d'élection, pas au signe d'un slot qui flotte
+          if (sA) { tz = sA * (pitch.hz - (cfg.craie.bord ?? 2.5) * axe(R.largeurR, 1.5, 0.7) * axe(tac(st, atk).largeur, 1.4, 0.7)); const ecart = Math.abs(p.p[2] - tz); if (cfg.craie.dabord != null && ecart > cfg.craie.dabord) tx = p.p[0]; if (cfg.craie.ouvre != null && ecart > cfg.craie.ouvre) p._ouvre = st.t + 0.5; }   // …deux doses à part (mesurées séparément, doc match-config) : dabord (la craie d'abord, la hauteur ensuite — tient sa hauteur au-delà de dabord m) ; ouvre (« ouvre-toi ! » — au-delà de ouvre m l'ancre rejoint sa craie au trot, movement.js)   // (249b) LA CRAIE EST UN LIEU, PAS UNE FRACTION : l'ancre tenue vise bord m de la ligne (le percuteur 1,75, le meneur 3,75 ; l'axe largeur module) — mesuré avant : tirée d'un slot qui changeait 134 fois/min, la cible sautait 42 fois/min entre 5 et 12 m
+          else if (st._ancre.cote[Math.sign(tz) || 1] === p.id) { const tire = (cfg.craie.tire ?? 0.6) * axe(tac(st, atk).largeur, 0.5, 1.4) * axe(R.largeurR, 0.8, 1.2); tz = Math.sign(tz) * Math.min(pitch.hz - 1.5, Math.abs(tz) + (pitch.hz - 1.5 - Math.abs(tz)) * Math.min(1, tire)); }
         }
         // …les POINTES sont celles de LA formation (LIGNES — « ≥ 7 » n'était vrai qu'en 4-3-3)
         if (off && pointeDe(tac(st, atk).formation, p.post ?? 0, cfg)) {
@@ -821,7 +820,7 @@ function assignMatchJobs(st, cfg) {
         // …ET AUCUNE COURSE NE VISE HORS TERRAIN (207, fix absolu — le jumeau du clamp de met :
         // le DÉDOUBLEMENT longeait la touche par l'extérieur, cible |z| 35-46 pour une craie à
         // 34 — « le joueur court en touche »). Le clamp FINAL du poseur ; l'intérieur au bit.
-        if (coul241 && (p._runT ?? -1) <= st.t && !ov && !(cfg.couloirs.pointesLibres !== false && pointeDe(tac(st, atk).formation, p.post ?? 0, cfg))) { const LG = LIGNES[formationPour(tac(st, atk).formation, true)]; if (cfg.couloirs.relais && LG && spotsBase && (p.post ?? 0) >= LG[0] && (p.post ?? 0) < LG[0] + LG[1]) tz = tenirDemiEspace(tz, spotsBase[p.post][1], pitch.hz, cfg.couloirs.relais.marge ?? 1.5); tz = placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ: st.ball.p[2], devant: (tx - st.ball.p[0]) * -pitch.ownGoal(atk).sign > -5 }); tx = placerLigne(st, cfg, p, tx, { atk, pitch, offAdv: off ? off.adv : null }); }   // (241) l'intérieur tient son demi-espace, puis le registre des couloirs et des lignes   // (241) le posté passe au registre des couloirs (pas en course, pas en dédoublement)
+        if (coul241 && (p._runT ?? -1) <= st.t && !ov && !(cfg.couloirs.pointesLibres !== false && pointeDe(tac(st, atk).formation, p.post ?? 0, cfg))) { const LG = LIGNES[formationPour(tac(st, atk).formation, true)]; if (cfg.couloirs.relais && LG && spotsBase && (p.post ?? 0) >= LG[0] && (p.post ?? 0) < LG[0] + LG[1]) tz = tenirDemiEspace(tz, spotsBase[p.post][1], pitch.hz, cfg.couloirs.relais.marge ?? 1.5); tz = placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ: st.ball.p[2], devant: (tx - st.ball.p[0]) * -pitch.ownGoal(atk).sign > -5, ancre: !!cfg.craie?.tenue && st._ancre?.team === atk && st._ancre.cote[Math.sign(tz) || 1] === p.id }); tx = placerLigne(st, cfg, p, tx, { atk, pitch, offAdv: off ? off.adv : null }); }   // (241) l'intérieur tient son demi-espace, puis le registre des couloirs et des lignes   // (241) le posté passe au registre des couloirs (pas en course, pas en dédoublement)
         p.target = [Math.max(-pitch.hx + 0.8, Math.min(pitch.hx - 0.8, tx)), 0, Math.max(-pitch.hz + 0.8, Math.min(pitch.hz - 0.8, tz))];
       }
     }
@@ -860,22 +859,21 @@ function assignMatchJobs(st, cfg) {
       return bestPt ?? want;
     };
     const taken = new Set();
+    const estAncre = (p) => !!cfg.craie?.tenue && st._ancre?.team === atk && (st._ancre.cote[1] === p.id || st._ancre.cote[-1] === p.id);   // (249b) LA CRAIE EST UNE CHAISE TENUE : l'ancre élue garde son slot (sa chaise) tant qu'il est libre — mesuré avant : le greedy la réasseyait 130 fois/min, sa cible en x sautait 38 fois/min
     // greedy vif = OPTIMUM LOCAL prouvé (lot 85 : bail 7,3 %, ancre 8,6, combiné 6,4 — base 4,6)
     for (const p of slotters) {
-      let best = -1, bd = Infinity;
-      for (let i = 0; i < slots.length; i++) {
-        if (taken.has(i)) continue;
-        const dd = hyp(p.p[0] - slots[i][0], p.p[2] - slots[i][1]);
-        if (dd < bd) { bd = dd; best = i; }
+      let best = -1, bd = Infinity; if (estAncre(p) && p._chaise != null && p._chaise < slots.length && !taken.has(p._chaise)) best = p._chaise;
+      else for (let i = 0; i < slots.length; i++) {
+        if (taken.has(i)) continue; const dd = hyp(p.p[0] - slots[i][0], p.p[2] - slots[i][1]); if (dd < bd) { bd = dd; best = i; }
       }
       if (best < 0) { p.job = 'support'; p.target = [p.p[0], 0, p.p[2]]; continue; }
-      taken.add(best);
+      taken.add(best); p._chaise = estAncre(p) ? best : null;
       p.job = 'support';
       // L'ÉCONOMIE DU HORS-BALLON : re-visée cadencée (0,7 s / 0,8 m ; > 3,5 m = réaffectation, voir assignTenue) — l'hystérésis PURE gelait le bloc (consigné).
       let want = [slots[best][0], slots[best][1]];
       // le se-montrer s'évalue À CHAQUE cadence (un slot immobile mais fermé se ré-ouvre), même hystérésis
       if (st.full && cfg.demarque !== false && carrier && !carrier.keeper && (p._slotAt ?? -1) <= st.t) want = seMontrer(p, want);
-      if (coul241) want = [placerLigne(st, cfg, p, want[0], { atk, pitch, offAdv: cfg.offside ? offsideLine(st, atk).adv : null }), placerCouloir(st, cfg, p, want[1], { atk, pitch, ballZ: st.ball.p[2], devant: (want[0] - st.ball.p[0]) * -pitch.ownGoal(atk).sign > -5 })];   // (241) le soutien passe au registre des lignes et des couloirs   // (241) le soutien passe au registre des couloirs
+      if (coul241) want = [placerLigne(st, cfg, p, want[0], { atk, pitch, offAdv: cfg.offside ? offsideLine(st, atk).adv : null }), placerCouloir(st, cfg, p, want[1], { atk, pitch, ballZ: st.ball.p[2], devant: (want[0] - st.ball.p[0]) * -pitch.ownGoal(atk).sign > -5 , ancre: estAncre(p)})];   // (241) le soutien passe au registre des lignes et des couloirs   // (241) le soutien passe au registre des couloirs
       const drift = p._slotT ? hyp(want[0] - p._slotT[0], want[1] - p._slotT[1]) : Infinity;
       if (!p._slotT || (drift > 3.5 && (!(st.full && cfg.assignTenue !== false) || st.t >= (p._slotHold ?? 0) || (p._pace?.until ?? -1) > st.t) && ((p._slotHold = st.t + (cfg.assignTenue?.slot ?? 1.2)), true)) || ((p._slotAt ?? -1) <= st.t && drift > 0.8 && drift <= 3.5)) {
         p._slotT = [want[0], want[1]]; p._slotAt = st.t + 0.7;   // copie (lot 69 : want vit en buffer)

@@ -234,7 +234,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let tout = 0, loin = 0;
       for (const seed of [2, 5, 9]) {
         const st = makeMatch({ full: true, seed });
-        const cfg = matchCfg({ shotRange: 20, ...over });
+        const cfg = matchCfg({ shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, ...over });   // craie sans tenue DATÉ 249b : la chaise tenue met l'ailier à la ligne, le presseur qui le cadre TRAVERSE (10,6 c. 8 %) — le flux du pressing cohérent se lit dans le monde d'hier
         for (let i = 0; i < 300 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           if (i % 15 !== 0 || st.possession.carrier < 0) continue;

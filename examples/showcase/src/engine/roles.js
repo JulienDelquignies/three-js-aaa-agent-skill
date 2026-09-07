@@ -197,9 +197,15 @@ export function deborde(st, p, carrier, pitch, atk, cfg, axe) {
  *  largeurR) parmi les postes assez larges (|z| > hz × 0,25). L'ailier de percussion
  *  (largeurR 0,9) gagne d'office ; un ailier-meneur (0,45) CÈDE la craie au latéral qui monte
  *  — le pattern moderne du faux ailier. Rend { 1: id, -1: id } par signe de z. */
-export function ancresCraie(st, atk, axe, role) {
+export function ancresCraie(st, atk, axe, role, cfg = null) {
   const hz = st.pitch?.hz ?? 34;
   const cote = {};
+  // LA CRAIE EST UNE CHAISE TENUE (249b, cfg.craie.tenue — mesuré avant : l'ancre changeait de mains 35 fois par minute de
+  // possession, le slot de l'ancré 139 fois, sa cible en z sautait de > 4 m 51 fois : personne ne peut tenir une ligne qu'on
+  // lui reprend toutes les deux secondes — l'ancré vivait à 13,6 m de la craie pour une cible à 5). L'élu GARDE sa craie
+  // tant qu'il est éligible (vivant, de son côté, assez large DE CORPS — pas de slot, qui flotte) : tenue s au moins, puis
+  // seulement un rival qui le bat de marge (25 %). Absente : la ré-élection à 0,8 s d'hier, au bit.
+  const T = cfg?.craie?.tenue, prev = T && st._ancre?.team === atk ? st._ancre : null;
   for (const s of [1, -1]) {
     let best = null, bs = -1;
     for (const q of st.players) {
@@ -209,8 +215,15 @@ export function ancresCraie(st, atk, axe, role) {
       const sc = Math.abs(z) * axe(role(q).largeurR, 0.7, 1.3);
       if (sc > bs) { bs = sc; best = q.id; }
     }
+    if (prev && prev.cote[s] != null && prev.cote[s] !== best) {
+      const p = st.players[prev.cote[s]];
+      const eligible = p && p.team === atk && !p.keeper && p.down <= 0 && !p._sub && Math.sign(p.p[2] || 1) === s && Math.abs(p.p[2]) >= hz * 0.25;
+      const scP = eligible ? Math.max(Math.abs(p.p[2]), Math.abs(p._slotT?.[1] ?? 0)) * axe(role(p).largeurR, 0.7, 1.3) : -1;
+      if (eligible && (st.t - (prev.since?.[s] ?? -99) < T || bs < scP * (1 + (cfg.craie.marge ?? 0.25)))) best = prev.cote[s];
+    }
     cote[s] = best;
   }
+  if (T) cote.since = { 1: prev && prev.cote[1] === cote[1] ? prev.since?.[1] ?? st.t : st.t, [-1]: prev && prev.cote[-1] === cote[-1] ? prev.since?.[-1] ?? st.t : st.t };
   return cote;
 }
 

@@ -30,9 +30,10 @@ export function tenirDemiEspace(tz, baseZ, hz, marge = 1.5) {
 }
 
 /** La cible (tz) d'un joueur passe au registre : rendue telle quelle si son couloir a de la place, déplacée sinon. */
-export function placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ, devant, remplir = true }) {
+export function placerCouloir(st, cfg, p, tz, { atk, pitch, ballZ, devant, remplir = true, ancre = false }) {
   const C = cfg.couloirs, R = ouvrirRegistre(st, atk, pitch, null), hz = pitch.hz, W = hz * 2 / 5, max = C.max ?? 2;
   const c0 = couloirDe(tz, hz); const compte = (c) => { R.n[c]++; if (devant) R.av[c]++; };
+  if (ancre) { compte(c0); return tz; }   // (249b) L'ANCRE NE SE DÉLOGE PAS : la craie tenue compte dans son couloir mais n'en sort jamais — mesuré avant : le couloir large « plein » (max 2) renvoyait l'ancré au centre du demi-espace, 13,6 m de la ligne
   if (p._coul && p._coul.until > st.t) {   // l'hystérésis : la réaffectation tient
     if (R.n[p._coul.c] < max) { compte(p._coul.c); return Math.max(-hz + 1.5, Math.min(hz - 1.5, -hz + (p._coul.c + 0.5) * W + p._coul.off)); }
     p._coul = null;

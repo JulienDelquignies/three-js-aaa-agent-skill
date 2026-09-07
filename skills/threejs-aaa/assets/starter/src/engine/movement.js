@@ -316,7 +316,8 @@ export function movePlayers(st, dt, cfg) {
           // referme GLISSE, il ne sprinte pas. Défaut 12 = symétrique de la défense (neutre) ;
           // la clé reste injectable pour un style d'occupation agressif aval.
           const ratt = moment === 'attaque-placée' ? (A.rattrapeAtk ?? A.rattrape ?? 12) : (A.rattrape ?? 12);
-          const suivre = dTgt > ratt ? trotB
+          // …ET L'ANCRE S'OUVRE AU TROT (249b, p._ouvre posé par la craie tenue — « ouvre-toi ! » est une intention comme se démarquer) : mesuré avant, l'ancré rejoignait sa craie au pas, 16 s pour 10 m de largeur
+          const suivre = dTgt > ratt || (p._ouvre ?? -1) > st.t ? trotB
             : clamp(tSpd * 1.15 + 0.4, A.marche ?? 2.1, trotB);
           top = Math.min(top, tSpd < 1.0 && dTgt <= ratt && dB > (A.calme ?? 24) ? (A.marche ?? 2.1) : suivre);
         }

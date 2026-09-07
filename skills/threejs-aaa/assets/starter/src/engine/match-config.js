@@ -173,9 +173,26 @@ export const MATCH = {
   gkPied: { touche: 0.35, presse: 0.7 },   // 179 : LE PIED DU GARDIEN — la touche COLLÉE
                           // (contrôle, pas conduite : il marche) + la distribution prompte au
                           // retrait (le backpass se joue vite). Absent : la poussée d'hier.
-  craie: { tire: 0.6, seuil: 0.42 },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
+  craie: { tire: 0.6, seuil: 0.42, tenue: 6, marge: 0.25, bord: 2.5, dabord: 3, ouvre: null },   // 177 : L'ANCRE À LA CRAIE — en possession le poste
                           // large est tiré vers la ligne (fraction du chemin × axe largeur ×
                           // largeurR) : l'ailier étire à 2-8 m de la craie. Absent : le rentré.
+                          // 249b (Campagne V, « le ballon qui sort ») : LA CRAIE EST UNE CHAISE TENUE.
+                          // Mesuré avant : 25-30 sorties hors fautes / 90 (réel ~70), le ballon à < 3 m
+                          // d'une ligne 1,4 % du jeu, l'ancre changeait de mains 35 fois / min de
+                          // possession, son slot 139 fois, sa cible en z sautait 51 fois, le couloir
+                          // large « plein » la renvoyait au demi-espace (13,6 m de la ligne), sa cible
+                          // fuyait en x : l'ancré vivait à 13,6 m d'une craie visée à 5. tenue (s) :
+                          // l'élu garde sa craie (roles.ancresCraie — vivant, de son côté, large de
+                          // corps), puis seul un rival qui le bat de marge la prend ; il garde sa
+                          // chaise (son slot, greedy) et son couloir (couloirs.placerCouloir, compté
+                          // jamais délogé) ; il vise la craie elle-même : bord m × largeurR (percuteur
+                          // 1,75, meneur 3,75) × axe largeur ; dabord (m) : au-delà, la craie d'abord,
+                          // la hauteur ensuite (il tient sa hauteur). ouvre (m) : au-delà, il rejoint
+                          // au trot (movement) — MESURÉ PLACEBO/NOCIF (16 × 300 s : 36 sorties c. 34
+                          // sans, corners 2,7 c. 6,7), null, code gardé. Mesuré (32 × 300 s) : l'ancré à
+                          // < 4 m de la ligne 21 → 32 % de la possession, le plus large 8,1 → 4,4 m,
+                          // sorties hors fautes 28 → 40 / 90 (touches 17 → 25, corners 3 → 6, sorties
+                          // de but 8 → 9) — la dette (réel ~70) reste nommée. tenue absent : hier au bit.
   arbitre: { suit: 13, axial: 0.55, marche: 2.2, trot: 4.6, sprint: 6.8, recul: 5, loin: 20 },
   assistants: { sprint: 7.2, marge: 0.8, drapeau: 12 },  // 186 : LES ASSISTANTS DE TOUCHE — la ligne du
                           // hors-jeu incarnée (Loi 6) : chacun sa touche, sa moitié, le rail

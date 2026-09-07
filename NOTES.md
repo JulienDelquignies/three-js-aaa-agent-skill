@@ -10021,6 +10021,59 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      transition (la vitesse du ballon c. celle du sprint), pas le rôle.
      Empreintes au bit (11b26cf85cbeb095 / 50c8a128c553201d : aucun
      rôle posé par défaut). Banc : verify-roles 251.
+- 325: LE BALLON QUI SORT — LA CRAIE EST UNE CHAISE TENUE (249b,
+     Campagne V). Sondé d'abord, sur 16 puis 32 graines × 300 s : 25-30
+     sorties hors fautes par 90 min (touches 16-19, corners 1-4, sorties
+     de but 5-10 ; réel ~70), et rien ne sort parce que rien n'y va —
+     tous les gestes longs (66 lofted, 23 centres, 21 dégagements, 31
+     tacles sur 34 min) finissent sur un corps ; le ballon vit à moins
+     de 3 m d'une ligne 1,4 % du jeu ; le plus large de l'équipe en
+     possession est à 8,1 m de la craie (p50), les ailiers à 12,4, les
+     réceptions à < 3 m de la ligne 1 %. L'ancre de la craie (177/178)
+     existait et ne tenait pas : élue toutes les 0,8 s sur un slot qui
+     flotte, elle changeait de mains 35 fois par minute de possession,
+     son slot 139 fois, sa cible en z sautait de plus de 4 m 51 fois ;
+     le couloir large « plein » (241, max 2) la renvoyait au centre du
+     demi-espace — 13,6 m de la ligne, exactement sa position mesurée ;
+     sa cible fuyait en x (6-27 m) et la largeur se fermait à 0,7 m/s ;
+     filmée, elle rejoignait enfin sa craie au pas (16 s pour 10 m) puis
+     la tenait. La loi (cfg.craie.tenue) : l'élu GARDE sa craie tant qu'il
+     est éligible de corps (vivant, de son côté, |z| ≥ hz/4 — pas de
+     slot), tenue s puis seul un rival qui le bat de marge la prend
+     (roles.ancresCraie) ; il garde sa chaise (son index de slot au
+     greedy) et son couloir (placerCouloir : compté, jamais délogé) ; il
+     vise la craie elle-même (bord m × largeurR — le percuteur à 1,75, le
+     meneur à 3,75 — × axe largeur) ; au-delà de dabord m, la craie
+     d'abord, la hauteur ensuite. Deux doses mesurées à part sur 16
+     graines : dabord (33,6 → 45,3 sorties, gardée) ; ouvre (le trot
+     d'ouverture, movement) 35,8 et corners 6,7 → 2,7 — null, code gardé.
+     Mesuré après (32 × 300 s) : l'ancré à moins de 4 m de la ligne 1 →
+     23 % de la possession (32 % avec le trot), le plus large 8,1 → 4,4 m,
+     sorties hors fautes 28 → 40 / 90 (touches 17 → 25, corners 3 → 6,
+     sorties de but 8 → 9) — positif dans les deux lots de 16, très
+     bruité (45 c. 34 par lot). Livrée par défaut (le monde bouge :
+     empreintes f8167a8c1e333a04 / b6d66a5f8aee347f ; craie sans tenue =
+     11b26cf85cbeb095 / 50c8a128c553201d, l'hier au bit). La dette reste
+     nommée : 40 c. 70, et son prochain front n'est plus la largeur, c'est
+     le SERVICE de la craie — un ancré à la craie existe 31 % des images
+     de possession mais à 43 m du porteur, servi 31 fois par 90 — le
+     renversement (98), la passe qui manque à la ligne, le tacle à la
+     ligne. Banc : verify-match11 249b (l'ancre change de mains 10,7 c.
+     35,2 fois/min ; à < 4 m 23 c. 1 %). LE BANC AU MONDE NOUVEAU (8 shards +
+     annexes) : trois clauses déplacées par la craie, épinglées craie sans
+     tenue DATÉ 249b après preuve qu'elles étaient vertes à HEAD (worktree)
+     — 189 le lancé (13 c. 11,2, σ Poisson), le flux du troisième homme
+     (88 c. 97), le pressing cohérent 160 (traversées 10,6 c. 8 %) ; la
+     clause 251 lit « devant » en informatif (44 c. 45 %). RÉPARÉ : le
+     shard 5 mourait d'un TypeError depuis le 245 (la fixture 237 sans
+     positions sous referme.sortie — le tally ne s'imprimait pas, personne
+     ne l'a lu) : positions posées, et le cas posF à referme.note 1 (246).
+     HÉRITÉS, rouges à HEAD avant ce lot, laissés rouges et nommés (ni la
+     craie ni les clés A10 à null ne les rendent) : 246d (ballons flottants
+     à 10 : 46 % pour ≤ 42 — rouge depuis la fusion A10, 63/46 déjà au banc
+     final249) et le flux « contres arrivés à l'entrée » (aucune zone
+     occupée 43 c. 39, deuxième latéral 3 c. ≤ 1). Deux dettes de la fusion
+     à instruire, pas du 249b.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

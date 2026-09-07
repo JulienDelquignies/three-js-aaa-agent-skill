@@ -4131,7 +4131,7 @@ if (__bloc()) {
     for (const seed of [3, 5, 7, 9, 11, 13, 15, 17]) {   // 4 → 8 graines DATÉ 240 (2 c. 3 reculs : Poisson)
       const st = makeMatch({ full: true, seed });
       // appuiRemise:false DATÉ 240 : la remise d'appui (B dos au but sous presseur, en contre aussi) est une passe en retrait comptée ici comme un recul (4 → 9) — c'est SA loi, mesurée au 240 ; la clause mesure l'adoption du porteur lancé
-      const cfg = matchCfg({ appuiRemise: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) — le monde d'hier pour la clause du lancé
       let seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5346,9 +5346,9 @@ if (__bloc()) {
   const { refermerLigne } = await import('../assets/starter/src/engine/marquage.js');
   const { axe } = await import('../assets/starter/src/engine/tactics.js');
   const mk = (over, { posF = 1, marquage = 0.5, sgn = 1 } = {}) => { const cfg = matchCfg({ shotRange: 20, ...over }); const st = { full: true };
-    const spots = [[0, -16], [0, -5], [0, 5], [0, 15]], defs = [0, 1, 2, 3].map((k) => ({ id: k, post: k, skill: { posF: k === 2 ? posF : 1 } }));
+    const spots = [[0, -16], [0, -5], [0, 5], [0, 15]], defs = [0, 1, 2, 3].map((k) => ({ id: k, post: k, p: [k === 1 ? -3 : 0, 0, spots[k][1]], skill: { posF: k === 2 ? posF : 1 } }));   // p DATÉ 249b : la VRAIE SORTIE (245, referme.sortie 2) lit la profondeur des corps ; note 1 pour le cas posF (246 : la note est un TEMPS, note 0 par défaut — l'amplitude ne vit qu'allumée) — le sortant 3 m devant sa ligne ; sans p, le shard 5 mourait d'un TypeError depuis le 245 (le tally ne s'imprimait pas, personne ne l'a lu)
     refermerLigne(st, spots, [0, 1, 2, 3], 4, defs[1], defs, cfg, { marquage }, axe, sgn); return { dx: st._bRefermeDx ?? new Map(), dz: st._bRefermeDz ?? new Map() }; };
-  const A = mk({}), B = mk({}, { posF: 0.8 }), C = mk({}, { marquage: 1 }), D = mk({}, { sgn: 0 }), E = mk({ referme: { part: 0.45, second: 0.225 } }), S = mk({ referme: false });
+  const A = mk({}), B = mk({ referme: { ...matchCfg().referme, note: 1 } }, { posF: 0.8 }), C = mk({}, { marquage: 1 }), D = mk({}, { sgn: 0 }), E = mk({ referme: { part: 0.45, second: 0.225 } }), S = mk({ referme: false });
   ok(`lot 237 — L'OBLIQUE 1+3 (voisin ${A.dx.get(2)} (= 1,5), second ${A.dx.get(0)} (= 0,75) ; posF 0,8 : ${B.dx.get(2)} (= 1,2) ; marquage homme : ${C.dx.get(2)?.toFixed(2)} (= 0,90) ; sgnAtk 0 : dx ${D.dx.size} / dz ${D.dz.size} (= 0 / 2) ; recul absent : ${E.dx.size} (= 0) ; clé absente : ${S.dx.size + S.dz.size} (= 0))`,
     A.dx.get(2) === 1.5 && A.dx.get(0) === 0.75 && Math.abs(B.dx.get(2) - 1.2) < 1e-9 && Math.abs(C.dx.get(2) - 0.9) < 1e-9 && D.dx.size === 0 && D.dz.size === 2 && E.dx.size === 0 && S.dx.size + S.dz.size === 0);
   // (b) Le flux (6 × 300 s) : quand un défenseur de ligne presse ≥ 2 m devant sa ligne, le recul du voisin immédiat et du
@@ -5530,7 +5530,7 @@ if (__bloc()) {
   // ballon est encore à l'équipe 2 s après), les perdus sur service, les pertes de possession (non-dégradation), et la garde
   // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
   const flux = (over) => {
-    const cfg = matchCfg({ shotRange: 20, remisesMain: null, contact: null, porteAnticipe: null, remisesPied: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // contact/porteAnticipe/remisesPied:null DATÉ A10 (le contact fait TOMBER le receveur dos au but : services perdus 37 % pour ≤ 35, 24 × 300 s — la clause mesure SA loi dans le monde d'hier ; le prix du contact sur l'appui-remise est une mesure du lot 247) ; remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)
+    const cfg = matchCfg({ shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, remisesMain: null, contact: null, porteAnticipe: null, remisesPied: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // contact/porteAnticipe/remisesPied:null DATÉ A10 (le contact fait TOMBER le receveur dos au but : services perdus 37 % pour ≤ 35, 24 × 300 s — la clause mesure SA loi dans le monde d'hier ; le prix du contact sur l'appui-remise est une mesure du lot 247) ; remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)   // craie sans tenue DATÉ 249b (flux du troisième homme sous σ : 88 c. 97)
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
       for (let i = 0; i < 300 * 60; i++) {
@@ -5629,7 +5629,7 @@ if (__bloc()) {
   // possession gardée ; à l'entrée, les attaquants (hors porteur, x ≥ hx − 28) dans les trois zones (centre |z| ≤ 9, annexes 9-20).
   // Mesuré : contres arrivés 8 → 17, zéro zone 62 → 29 %, deux zones ou plus 12,5 → 65 %, trois 0 → 18 %, deuxième latéral 0.
   const flux = (over) => {
-    const cfgF = matchCfg({ shotRange: 20, ...over }); let contres = 0, zero = 0, deuxPlus = 0, larges = 0, profond = 0, deborde = 0, pertes = 0;
+    const cfgF = matchCfg({ shotRange: 20, ...over }); let contres = 0, zero = 0, deuxPlus = 0, larges = 0, profond = 0, deborde = 0, pertes = 0;   // ROUGE HÉRITÉ constaté au 249b : rouge à HEAD avant le lot (aucune zone occupée 43 c. 39 ; ni craie ni clés A10 à null ne le rendent — dette nommée, NOTES 325)
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let regain = null, cur = 0, prev = -1;
       for (let i = 0; i < 300 * 60; i++) {
@@ -5974,6 +5974,21 @@ if (__bloc()) {
   const r90 = flottants(90), r10 = flottants(10);
   ok(`lot 246d — REACTIONS A SA SIGNATURE : ballons flottants gagnés ${r90.part.toFixed(0)} % à 90 (≥ 58, sur ${r90.n}) et ${r10.part.toFixed(0)} % à 10 (≤ 42, sur ${r10.n}) — 8 × 300 s (2 graines rendaient 45 % : la part par graine varie de 30 à 90) ; à 24 graines 72 / 49 / 36 ; possession muette (49,5 c. 47,7) : la note vit dans la course au ballon, pas dans le score`,
     r90.part >= 58 && r10.part <= 42 && r90.n >= 300 && r10.n >= 300);
+}
+
+// ---------------------------------------------------------------- lot 249b : LE BALLON QUI SORT — LA CRAIE EST UNE CHAISE
+// TENUE (Campagne V). Sondé : 15-25 sorties hors fautes / 90 min (réel ~70) ; le ballon à < 3 m d'une ligne 1,4 % du jeu ;
+// le plus large de l'équipe en possession à 8 m de la craie (p50) ; l'ancre de la craie (177/178) changeait de mains 35 fois
+// par minute de possession, son slot 139 fois, sa cible en z sautait 51 fois ; le couloir large « plein » la renvoyait au
+// demi-espace (13,6 m) ; sa cible fuyait en x. La loi (cfg.craie.tenue) : l'élu GARDE sa craie (tenue s, puis un rival à
+// marge), garde sa chaise (slot) et son couloir, vise la craie elle-même (bord m × largeurR × largeur), et tient sa hauteur
+// tant qu'il n'est pas ouvert (dabord m). Mesuré : l'ancré à < 4 m de la ligne 21 → 32 % de la possession, le plus large
+// 8,1 → 4,4 m, sorties hors fautes 25 → 45 / 90 (16 × 300 s : touches 19 → 28, corners 1 → 8, sorties de but 5 → 9).
+if (__bloc()) {
+  const mesure = (over) => { let n = 0, pres = 0, flips = 0, possMin = 0; for (const seed of [1, 2, 3]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ shotRange: 20, ...over }), prev = {}; for (let i = 0; i < 200 * 60; i++) { matchStep(st, 1 / 60, cfg); if (st.restart || i % 6) continue; const t = st.possession.team; if (t < 0) continue; possMin += 0.1 / 60; const A = st._ancre; if (!A || A.team !== t) continue; for (const s of [1, -1]) { const id = A.cote[s], k = t + ':' + s; if (id !== prev[k] && prev[k] != null) flips++; prev[k] = id; if (id == null) continue; n++; if (st.pitch.hz - Math.abs(st.players[id].p[2]) < 4) pres++; } } } return { pres: n ? 100 * pres / n : 0, flips: possMin ? flips / possMin : 0 }; };
+  const tenu = mesure({}), hier = mesure({ craie: { tire: 0.6, seuil: 0.42 } });
+  ok(`lot 249b — LA CRAIE EST UNE CHAISE TENUE : l'ancre change de mains ${tenu.flips.toFixed(1)} fois / min de possession (≤ 16 ; hier ${hier.flips.toFixed(1)}, ≥ 25) et vit à < 4 m de la ligne ${tenu.pres.toFixed(0)} % du temps (≥ 18 ; hier ${hier.pres.toFixed(0)} %, ≤ 8 — sa cible d'hier était à 5 m) — 3 × 200 s ; clé craie.tenue ${matchCfg().craie?.tenue}`,
+    tenu.flips <= 16 && hier.flips >= 25 && tenu.pres >= 18 && hier.pres <= 8 && matchCfg().craie?.tenue > 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
