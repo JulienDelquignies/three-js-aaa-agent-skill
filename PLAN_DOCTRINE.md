@@ -333,6 +333,47 @@ anticipation, appel, cohésion, marquage, concentration, réaction ne bougent pr
 Chaque note de lecture doit avoir UN levier mesuré (gradation appariée 30/50/70/90 sur sa propre
 signature), comme la technique en a dans la 152/158 ; le 244d retrouvera alors sa mesure.
 
+### Campagne V — Les rôles individuels (Recherche_Tactique_Individuelle.md → moteur)
+
+Proposée par l'agent animations le 7/09 (lots 248-255 pour le moteur, A12 pour l'animation), reprise ici
+avec les amendements de l'agent moteur. Le mantra reste la loi : lois au moteur, rôles en données, clé
+absente = hier au bit, sonde avant, clause au banc, banc COMPLET avant tout sceau.
+
+**Ce qui est accepté tel quel.** L'architecture poste / rôle / signature = grille 244a / catalogue 244c /
+attributs + persona. Les 25 rôles du document contre les 34 du catalogue (lot 248 : cinq identifiants
+nouveaux, les vecteurs existants sont une API aval, on ne les modifie pas). `compatibiliteOnze` (table pure,
+avertit sans bloquer). Le repli par rôle (251 : l'équipe dit COMBIEN, le rôle dit QUI). La passation du
+marqueur (252, le 6 = `pivotDe`). La pausa comme décision (253). Le preset ligne haute et sa clause à deux
+faces, le prix visible (255). Les mécanismes relationnels en dernier (254). Le scan comme horloge de sim
+lue par le rendu (250), interface `p.scan` gelée avant A12a.
+
+**Amendements (agent moteur).**
+1. *L'INTERDIT n'est pas un multiplicateur.* Le contrat 244e borne l'arbitre à [0,7 ; 1,3] : « centre 0,6 »,
+   « tir 0,77 » et « refus → arbitre 0 » le violent. L'interdit est une DONNÉE binaire du rôle
+   (`interdits: ['deborde', 'tete', …]`) et du joueur (`squads[i].refus`), lue par la loi concernée avant
+   d'agir — comme `deborde` lit déjà le rôle — hors de la bande d'arbitre. Le catalogue garde ses nuances.
+2. *Un banc ne naît pas rouge.* Le test d'identification (249) assertera les rôles que le moteur exprime ;
+   les autres sont INFORMATIFS (imprimés, non jugés) jusqu'à leur lot, sinon le tally du driver ne dit plus
+   rien. La liste informative EST le backlog 250-254.
+3. *Une note de lecture est un temps, pas une amplitude* (leçon 246 : anticipation et placement inversés
+   par des amplitudes × note). Au 250, `scanF` joue sur QUAND le corps s'ouvre et QUEL pied ; le contrôle
+   manqué × (2 − scanF) se mesure avant d'être livré, et se retire s'il n'est qu'une amplitude.
+4. *Deux écarts mesurés aujourd'hui passent devant le scan.* (a) Touches : 9 par 90 min (sonde 8 × 300 s,
+   réel 40-50) — le ballon ne sort pas assez ; ce n'est pas une clause du 249, c'est un lot (249b, « le
+   ballon qui sort ») : pourquoi il reste dedans (passes trop sûres, pas de jeu à la craie, dégagements
+   absents), puis loi et clause. (b) Repli : médiane 2 devant le ballon, mais ≥ 6 devant sur 16 % des
+   images quand l'adversaire est dans notre moitié — la « hérésie » du §4.1 existe une image sur six ; le
+   251 la vise (8-9 sous la ligne ≥ 90 % des images [CONVENTION]).
+5. *Volumétrie.* Trois graines × 300 s en ordinal par graine est fragile (leçons 93, 140, 244b…) ; six
+   graines minimum, et le jugement ordinal PAR graine plutôt qu'en moyenne, comme proposé.
+6. *Ordre.* 248 (données, au bit) → 251 (repli, mesuré faux) → 249b (touches) → 249 (identification,
+   informatif d'abord) → 250 (scan) → 252 → 253 → 255 → 254.
+
+**Chiffres du document promus en clauses (249, tolérances [CONVENTION])** : 8-9 sous la ligne du ballon en
+bloc bas ; 2-3 actifs autour du lanceur, 7 immobiles ; 40-50 touches par match ; 4-6 dans la surface sur
+corner, latéraux + sentinelle en rest defense ; passes courtes du gardien > 90 %, rétention des longs
+30-40 % ; scans du receveur 0,4-0,6/s en vol ; buts sur CPA 25-33 % (mesuré, pas forcé).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
