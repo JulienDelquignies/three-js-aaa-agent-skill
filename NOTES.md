@@ -10074,6 +10074,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      final249) et le flux « contres arrivés à l'entrée » (aucune zone
      occupée 43 c. 39, deuxième latéral 3 c. ≤ 1). Deux dettes de la fusion
      à instruire, pas du 249b.
+- 326: LE TEST D'IDENTIFICATION (249, Campagne V — « sans les noms »).
+     Annexe verify-identification.mjs : chaque rôle du document posé à
+     son poste du 4-2-3-1 (trois rôles par match, un par strate — 11
+     configurations), six graines × 240 s, et sa signature (largeur,
+     profondeur relative au bloc, appels, part de pressing, sprints de
+     repli, tenue au ballon, duels, distance de marquage, dribbles,
+     hauteur du gardien) comparée GRAINE PAR GRAINE au polyvalent du même
+     poste dans le même monde (amendement 5 : l'ordinal par graine, pas la
+     moyenne). Amendement 2 : n'asserter que ce que le moteur exprime —
+     sur 61 axes d'amplitude ≥ 0,2 à consommateur prouvé, 18 tiennent à
+     ≥ 5/6 et sont GELÉS (la garde de non-régression) : la garde du
+     gardien (libéro ↑ 6/6, de ligne ↓ 6/6 — keeper.js, lot 94), la
+     profondeur des centraux et de la sentinelle (cover 6/6, stopper,
+     libero, anchor 5/6), la tenue basse des centraux (5/6), la largeur
+     (wing_back, winger, tracking_winger ↑ 5/6 ; regista ↓ 6/6), le
+     pressing (destroyer ↑ 5/6, trequartista ↓ 6/6), le repli des rôles
+     dispensés (poacher, deep_lying_forward, false_9, wide_creator ↓ 6/6 —
+     le 251). Les 43 muets sont le BACKLOG, nommés : l'APPEL est muet
+     partout (1-4/6 pour des consommateurs 41/125/144 — la signature
+     « bursts d'appel » ne sépare pas un 9 d'un polyvalent : à instruire
+     avant le 253) ; la largeur des rôles centraux (↓ 4/6, le poste tient
+     déjà l'axe) ; le pressing des rôles moyens (2-4/6) ; la profondeur
+     des attaquants (2-4/6 : le calage Loi 11 écrase le rôle) ; le repli
+     « rentre toujours » (tracking_winger 2/6 : le polyvalent sprinte déjà,
+     l'axe bas n'ajoute rien — vrai du 251, un seul sens) ; duel et
+     marqueSerre sans consommateur (252/254). Les chiffres du document,
+     informatifs sur 24 min de référence (trop peu pour les corners et les
+     buts sur CPA : 0 et 0/2) : passes courtes du gardien 67 % sur 6
+     (doc > 90 %). Aucune loi, empreintes au bit (f8167a8c1e333a04 /
+     b6d66a5f8aee347f). Coût : ~8 min, dans bancs.mjs.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

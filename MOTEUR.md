@@ -219,6 +219,9 @@ une équipe directe, le rôle ne renverse pas le style, c'est mesuré et c'est l
 Banc : `verify-roles.mjs` (6 clauses — mécanismes sur fixtures au chiffre près, sabotage
 « rôles placebo »). Dettes nommées : rôles de pressing, formations 4-4-2/3-5-2, presets
 tactiques portant leurs rôles.
+Banc : `verify-identification.mjs` (lot 249 — le test d'identification « sans les noms » : 25 rôles du document à leur poste,
+11 configurations × 6 graines, la signature du rôle contre le polyvalent du même poste graine par graine ; 18 signatures
+exprimées gelées, le reste informatif = le backlog 250-254 ; les chiffres du document imprimés).
 
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
