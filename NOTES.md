@@ -10311,6 +10311,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le rapport au-dessus / à côté (0 / 14 : les visées du moteur restent basses, la
      lucarne à 8 %) ; le temps d'arrivée comme P (Modèle 07) ; la sonde-258 (dans
      scripts/book) lit 'null' comme le défaut — passer {"finition":null}.
+     Sceau : commit fe54917, déploiement showcase-pi-mocha (cmp du chunk Rondo servi =
+     construit) — le CLI vercel 59 (npx frais) passe par fetch de Node : « fetch failed »
+     derrière le proxy tant que NODE_USE_ENV_PROXY=1 n'est pas posé (README du proxy) ;
+     le build se lance depuis examples/showcase (le .vercel y vit).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
