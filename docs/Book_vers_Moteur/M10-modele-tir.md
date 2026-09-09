@@ -1,0 +1,63 @@
+# Modèle 10 — Le modèle de tir, contre le moteur
+
+*Fiche du 9/09, moteur d9720d4 (SCEAU 256). Mesures : sonde passe/tir (2 × 90 min), reprises des Bibles 02 et 09.*
+
+## 1. Ce que le chapitre demande
+
+- **La porte de décision** (xG ≥ seuil par mentalité, κ_i pénalise les occasions moyennes, verrou 0,30 s), **le
+  modèle xG** en forme close sur la grille (X, C) (test 1 : RMS < 0,020 contre la chaîne physique), **le geste**
+  (puissance / placement : optimum intérieur, test 2), **la résolution** (anisotropie au-dessus / à côté ≈ 1,5,
+  PSxG séparé de xG par la finition), **le blocage** (27,5 % contrés), **le gardien** (enveloppe atteignable
+  continue à l'origine, R_dive 1,4-1,9 m, taux d'arrêt ≈ 60 % dedans / 85 % dehors / 69 % total, amplitude ± 5
+  buts par saison), **rebonds** (10 % des tirs, 9 % des buts), **hors-jeu et VAR** (`GOAL_PENDING_REVIEW`).
+- **Cibles** : 25,3 tirs par match, 64 % dans la surface, distance médiane 16 m / moyenne 14,8, cadrés 33 %,
+  contrés 27,5 %, buts / tirs 0,110, buts / cadrés 0,32, 2,85 buts par match, 88 % des buts dans la surface, 15 %
+  de la tête (16,9 % des tirs à 9,6 %), penalties 78 %, tête / pied recentrés.
+
+## 2. Où en est le code
+
+**Existant.** `shooting.js` (`tryShot` : portée `shotRange`, gris `menace.grise`, répertoire des frappes 39 :
+placé 16,5-17,5 m/s, enroulée 18,5 avec curl, tendu, lob, volée ; le pied faible 147), `menace.js` (`menaceTir`,
+`qualiteTir` 232 : seuils boîte 0,14 / loin 0,05, pression × 0,6 ; `selectiviteTir`), la mentalité (149,
+185-186), la dispersion 145 (hors-cadre), `contreTir` (176), le gardien (keeper.js : `diveReach` 2,95 m,
+`diveTime` 0,9, `gatherHalf`, buste, pieds, prise, claquette ; le relevé qui coûte), le rebond (le second ballon
+après arrêt existe physiquement), la tête (34, 112), la Loi 11 à la passe, le penalty (Loi 14), la première
+intention.
+
+**Partiel.** `qualiteTir` est un **seuil de menace** (0,14 / 0,05), pas un xG en forme close ; la porte n'a pas de
+verrou nommé ; l'erreur est isotrope et sans exposant vitesse-précision (Modèle 03) ; le gardien arrête **44 %
+des cadrés** (réel 68 %) — dedans 52 % (≈ 60 ✓), **dehors 100 %** (≈ 85) : la frappe de loin ne rentre jamais, celle
+de près trop ; le blocage existe mais rare (**2 %** contrés, réel 27,5) ; 24,5 tirs par match ✓ mais **24,5 % de
+buts par tir** (réel 11) et 6 buts par match (réel 2,85) ; distance p50 12,8 m (réel 16) ; têtes 6 % des tirs, 0 but.
+
+**Absent.** Le xG en forme close et le test de cohérence physique ; PSxG ; l'optimum puissance / placement ;
+l'anisotropie ; l'enveloppe du gardien continue à l'origine et le budget temps ; `GOAL_PENDING_REVIEW` ; les deux
+conventions de comptage ; le recentrage tête / pied.
+
+## 3. Les tests de réfutation, un par un
+
+| # | Cible (book) | Statut | Mesuré (2 × 90 min) |
+|---|---|---|---|
+| 1 cohérence xG / physique | RMS < 0,020 | sans objet (pas de xG) |
+| 2 optimum puissance / placement | non monotone | absent (vitesses fixes par geste) |
+| 3 anisotropie des manqués | ratio ≥ 1,1, ≈ 1,5 | absent (isotrope) |
+| 4 xG / PSxG | distinguables | sans objet |
+| 5 sensibilité au gardien | ≥ 3 pts sur R_dive | à mesurer (`diveReach`) |
+| 5 bis arrêt dedans / dehors | ≈ 60 / 85 / 69 | mesurable, **partiel** | **52 % / 100 % / 44 %** |
+| 7 rebonds | 10 % des tirs, 9 % des buts | mesurable, **proche** | **6 % / 8 %** |
+| 8 latence VAR | > 0 | absent |
+| 9 non-oscillation SHOOT | < 0,5 / match | à instrumenter |
+| 9 bis tête | 9,6 % de conversion, 15 % des buts | **6 %** des tirs, **0** but |
+| 10 ablation de la doctrine | 6-9 tirs à 0,13 c. 16-22 à 0,06 | à mesurer (axe mentalité) |
+| cibles | 25,3 tirs ; 64 % dedans ; p50 16 m ; cadrés 33 ; contrés 27,5 ; buts / tirs 0,11 ; 2,85 buts | | **24,5** ✓ ; **73 %** ; **12,8 m** ; **55 %** ; **2 %** ; **0,245** ; **6,0** |
+
+## 4. Les lots que la fiche appelle
+
+1. **L'échelle de finition** (le 258 ; tests 3, 5 bis, cibles) : l'erreur anisotrope avec exposant vitesse-précision
+   (Modèle 03 lot 3), la vitesse qui coûte la précision — la conversion 24,5 → 11 %, dehors 0 → 15 % d'arrêts en
+   moins, 6 → 2,85 buts.
+2. **Le blocage** (cible 27,5 %) : `contreTir` à 2 % — le corps entre le tireur et le but (Bible 03, 15).
+3. **Le xG en forme close et PSxG** (tests 1, 4 ; Modèle 06) : la grille (X, C), la finition qui déplace PSxG.
+4. **Le gardien à enveloppe continue** (tests 5, 5 ter ; Bible 02) : budget temps, R_dive, ± 5 buts par saison.
+5. **La tête et le penalty recentrés** (9 bis, cibles) ; **le VAR** (test 8) et **les deux conventions** (test 12 ;
+   Modèle 16 lot 1).

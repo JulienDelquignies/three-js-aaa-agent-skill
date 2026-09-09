@@ -42,7 +42,17 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Modèle 02 — locomotion | [M02-locomotion.md](M02-locomotion.md) | 1-3, 6, 8, 11-13 mesurés | le profil mono-exponentiel et l'intention d'effort (8,5 accélérations / min, réel 0,9) ; le freinage ; l'évitement (11,5 interpénétrations / min) ; la fatigue sur l'accélération ; les courses arquées |
 | Modèle 03 — ballon | [M03-physique-ballon.md](M03-physique-ballon.md) | 2-5, 14 mesurés | la portance calée (C_L à la moitié) ; le roulement DIN ; l'erreur anisotrope ; l'interception probabiliste ; le knuckleball |
 | Modèle 04 — perception | [M04-perception-cognition.md](M04-perception-cognition.md) | inventaire (architecture A) | la couche de croyance ; le balayage comme prérequis de poste ; la latence par décision ; l'attention et la tromperie ; la communication ; l'invariance par permutation |
-| Modèle 05 → 16 | en cours | | |
+| Modèle 05 → 06 | en cours (sonde lancée) | | |
+| Modèle 07 — pression | [M07-pression-lignes-de-passe.md](M07-pression-lignes-de-passe.md) | 2, 3, 5, 7 mesurés | la pression comme temps d'arrivée ; l'interception probabiliste couplée ; l'affectation avec hystérésis ; le déclenchement par événement ; le piège |
+| Modèle 08 — architecture décisionnelle | [M08-architecture-decisionnelle.md](M08-architecture-decisionnelle.md) | inventaire | la couche unité ; le blackboard à trois zones ; les verrous nommés ; les revendications spatiales ; le journal des intentions |
+| Modèle 09 — passe | [M09-modele-passe.md](M09-modele-passe.md) | 1, cal mesurés | la passe qui se manque à la bonne distance (courtes 67-80 %, longues 61-71) ; le type somme calibré ; le rendez-vous ; la comptabilité des pertes ; le sous-dosage |
+| Modèle 10 — tir | [M10-modele-tir.md](M10-modele-tir.md) | 5 bis, 7, 9 bis, cibles mesurés | l'échelle de finition (24,5 % de buts par tir, 6 buts / match) ; le blocage (2 % contrés) ; le xG et PSxG ; le gardien à enveloppe continue ; tête, penalty, VAR |
+| Modèle 11 — duels | [M11-duels-stochastiques.md](M11-duels-stochastiques.md) | 1, 2, 4 mesurés | le noyau commun de duel (dribble plat à 18-24 %, 0,8 % de fautes obtenues) ; le volume des gestes ; la tromperie |
+| Modèle 12 — règles et arbitrage | [M12-regles-arbitrage.md](M12-regles-arbitrage.md) | 8, 11, 12 mesurés | le carton qui juge la nature (2,7 fautes par jaune) ; le hors-jeu comme capsule ; le temps du match (49 arrêts de 17,5 s) ; l'arbitre faillible ; le VAR |
+| Modèle 13 — coups de pied arrêtés | [M13-coups-de-pied-arretes.md](M13-coups-de-pied-arretes.md) | 1, 2, 5, 10 mesurés | le volume des CPA (3,5 corners, 14 touches) ; le corner comme chorégraphie (0 but, attaque 29 % au premier contact) ; le penalty ; la touche contestée ; le playbook |
+| Modèle 14 — consignes et formations | [M14-consignes-et-formations.md](M14-consignes-et-formations.md) | inventaire | le certificat par consigne ; les deux formes étiquetées ; la familiarité et le plan adverse ; la formation à dix ; le vecteur de joueur |
+| Modèle 15 — IA entraîneur | [M15-ia-entraineur.md](M15-ia-entraineur.md) | inventaire | le coach qui observe des agrégats bruités ; les remplacements comme politique ; la bibliothèque et l'attente ; l'ablation au banc ; la perte de temps |
+| Modèle 16 — télémétrie | [M16-telemetrie-outils.md](M16-telemetrie-outils.md) | inventaire | le journal en vocabulaire SPADL ; la table du réel au banc ; les détecteurs d'artefacts ; le journal de décision ; l'en-tête de session |
 | Référentiel de calibration 01 → 16 | à faire | | |
 | Modèle 01 → 16 | à faire | | |
 | Référentiel 01 → 16 | à faire | | |
