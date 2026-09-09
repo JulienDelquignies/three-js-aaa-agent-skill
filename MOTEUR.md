@@ -229,6 +229,20 @@ Banc : `verify-book.mjs` (330 — LE BOOK COMME TABLE DU RÉEL : 25 sondes dans 
 `JulienDelquignies/book`, 2 × 90 min chacune ; informatif — il imprime, ne rougit jamais ; les cibles, les statuts et les lots
 vivent dans `docs/Book_vers_Moteur/`, une fiche par chapitre, README pour la carte et les douze constats).
 
+### L'échelle de finition (lot 258, `cfg.finition` — `strike-sim.finitionSigma`)
+
+Le tir dévie **en angle** à la frappe, pas en mètres sur le point visé : σψ = 1,4° × finF (finishing, identité
+à 50 : 2,24 à 0, 0,45 à 100) × pied faible (1 + 0,29 weakF) × pression (1 + 1,35 × composureF/1,075 × P, P = 1
+au corps → 0 à 5 m) × fatigue (1 + 0,2 (1 − stam)) × (v / 22)^1,2 × distance (1 + 0,012 (d − 12)⁺) ; σθ = 2 σψ
+(on manque au-dessus deux fois plus qu'à côté) ; la vitesse est log-normale (σ 0,08) et **sous-dosée** sous
+pression et fatigue ; le point visé des frappes de but tire sa **hauteur** (bas 0,35 m / mi 1,0 / lucarne 1,95 à
+62 / 30 / 8 %). La loi est pure et exportée (`finitionSigma(F, x)` → { sigPsi, sigTheta, sigV, muV }) : le banc
+la lit telle quelle (bloc 258 : identité, monotonie, facteurs, sabotage sigma0 0) et la fixture (18 m, presseur
+de côté, 48 frappes) mesure l'écart-type au plan (0,78 m ≥ 0,35 ; sabotage 0,002). `finition: null` = le 145
+d'hier au bit. Mesuré à graines égales : cadrés 60 → 48 % (réel 33 + 27 contrés) ; la conversion ne bouge pas —
+le contré manquant (258b) et le gardien contre les frappes hautes (Bible 02) sont les deux autres facteurs.
+Fiches : `docs/Book_vers_Moteur/M10-modele-tir.md`, `R03-tirs-buts.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

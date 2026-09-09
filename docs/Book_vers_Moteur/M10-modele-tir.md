@@ -39,8 +39,8 @@ conventions de comptage ; le recentrage tête / pied.
 | # | Cible (book) | Statut | Mesuré (2 × 90 min) |
 |---|---|---|---|
 | 1 cohérence xG / physique | RMS < 0,020 | sans objet (pas de xG) |
-| 2 optimum puissance / placement | non monotone | absent (vitesses fixes par geste) |
-| 3 anisotropie des manqués | ratio ≥ 1,1, ≈ 1,5 | absent (isotrope) |
+| 2 optimum puissance / placement | non monotone | partiel (258 : (v/vMax)^1,2 existe ; les vitesses restent fixes par geste) |
+| 3 anisotropie des manqués | ratio ≥ 1,1, ≈ 1,5 | **258** : σθ = 2 σψ existe ; mesuré 0-1 au-dessus / 12-14 à côté — les visées du moteur restent basses (lucarne 8 %) |
 | 4 xG / PSxG | distinguables | sans objet |
 | 5 sensibilité au gardien | ≥ 3 pts sur R_dive | à mesurer (`diveReach`) |
 | 5 bis arrêt dedans / dehors | ≈ 60 / 85 / 69 | mesurable, **partiel** | **52 % / 100 % / 44 %** |
@@ -53,7 +53,7 @@ conventions de comptage ; le recentrage tête / pied.
 
 ## 4. Les lots que la fiche appelle
 
-1. **L'échelle de finition** (le 258 ; tests 3, 5 bis, cibles) : l'erreur anisotrope avec exposant vitesse-précision
+1. **L'échelle de finition** (le 258 — **SCELLÉ 331** : σ d'angle anisotrope, attributs en facteurs, sous-dosage, hauteur visée ; cadrés 60 → 48 % à graines égales, conversion inchangée ; tests 3, 5 bis, cibles) : l'erreur anisotrope avec exposant vitesse-précision
    (Modèle 03 lot 3), la vitesse qui coûte la précision — la conversion 24,5 → 11 %, dehors 0 → 15 % d'arrêts en
    moins, 6 → 2,85 buts.
 2. **Le blocage** (cible 27,5 %) : `contreTir` à 2 % — le corps entre le tireur et le but (Bible 03, 15).

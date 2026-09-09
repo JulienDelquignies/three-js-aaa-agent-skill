@@ -21,7 +21,8 @@ import { couloirDe, ouvrirRegistre, placerCouloir, tenirDemiEspace, dansOmbre } 
 import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets/starter/src/engine/duel.js';
-import { tryCross } from '../assets/starter/src/engine/shooting.js';
+import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
+import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
@@ -195,7 +196,7 @@ if (__bloc()) {
     const dLong = [], dInter = [], aLong = [];
     for (const seed of [1, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contrePress: false, shotRange: 20, ...cfgX });
+      const cfg = matchCfg({ contrePress: false, shotRange: 20, finition: null, ...cfgX });   // finition null DATÉ 258 : vert à HEAD (sabotage 38,6 ≥ 36,7 au 252), la longueur du bloc remangée par les tirages de l'échelle de finition (36,4 c. 37,5) — la clause mesure le bloc, pas le tir
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 30 !== 0 || st.restart) continue;
@@ -4542,7 +4543,7 @@ if (__bloc()) {
     let n = 0, tot = 0;
     for (const seed of [3, 5, 7, 11]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ shotRange: 20, finition: null, ...(over ?? {}) });   // finition null DATÉ 258 : vert à HEAD (5/19 ≤ 14/28 × 0,5 au 252), les through condamnés remangés par les tirages de l'échelle de finition (6/19 c. 10/29) — la clause mesure la course perdue, pas le tir
       let cur = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5399,7 +5400,7 @@ if (__bloc()) {
   // (b) Le flux (12 × 300 s — à 6 la marque vit à ± 0,2 : 2,31 / 2,04 selon les graines) : marqueur → attaquant dans la surface p50 (réel 1-2 m) avec c. sans marquageTenue ; porteur →
   // premier défenseur dans le tiers loin hors fenêtre avec c. sans gardeTiers. Mesuré 2,4 → 2,0 / 2,6 → 3,3.
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
-  const flux = (over) => { const cfg = matchCfg({ contreZones: false, shotRange: 20, ...over }); const box = [], loin = [], cible = [];
+  const flux = (over) => { const cfg = matchCfg({ contreZones: false, shotRange: 20, finition: null /* finition null DATÉ 258 : vert à HEAD (2,27 ≤ 2,4 au 252), le marquage de surface remangé par les tirages de l'échelle de finition (2,64) — la clause mesure la garde, pas le tir */, ...over }); const box = [], loin = [], cible = [];
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 6) continue; const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
         if (poss < 0 || st.restart || !c || c.keeper || st.ball.owner !== c.id) continue; const def = 1 - poss, og = st.pitch.ownGoal(def), L = st.pitch.hx * 2, bD = st.pitch.dims.box.depth, bW = st.pitch.dims.box.width;
@@ -5878,7 +5879,7 @@ if (__bloc()) {
   const geo = (over) => {
     let act = 0, img = 0, vraies = 0;
     for (const seed of [1, 2, 3]) {
-      const st = makeMatch({ full: true, seed }), cfg = matchCfg(over);
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ finition: null, ...over });   // finition null DATÉ 258 : vert à HEAD (97 % ≥ 90 au 252), la vraie sortie remangée par les tirages de l'échelle de finition (88 %) — la clause mesure l'oblique, pas le tir
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); if (i % 10) continue;
         const def = st.possession.team >= 0 ? 1 - st.possession.team : -1; if (def < 0) continue; img++;
@@ -6006,6 +6007,64 @@ if (__bloc()) {
   const V = film([3, 5]), stop = film([3, 5, 7, 9], { 1: 'stopper', 2: 'stopper' }), cov = film([3, 5, 7, 9], { 1: 'cover', 2: 'cover' }), sans = film([3], null, { passation: null });
   ok(`lot 252 — LA PASSATION DU MARQUEUR : ${V.remises} remises au pivot sur 2 × 300 s (≥ 15), rendues ${V.rendues} ; le pivot libre à +0,25 s marque l'homme remis (cible à < 3,5 m) ${V.marque}/${V.libres} fois (≥ 70 %) ; LA BANDE DU CENTRAL est tactique et rôle (pure) : polyvalent ${bande(0.5, 'polyvalent').toFixed(1)} m (= 8), homme (marquage 1) ${bande(1, 'polyvalent').toFixed(1)} (= 11,2), zone (0) ${bande(0, 'polyvalent').toFixed(1)} (= 4,8), stopper ${bande(0.5, 'stopper').toFixed(1)} > cover ${bande(0.5, 'cover').toFixed(1)} ; clé absente : ${sans.remises} remise (= 0, l'hier au bit) ; pivot du 4-3-3 = poste ${pivotDe(433)} — (informatif, flux 4 × 300 s) centraux stopper ${stop.remises} remises c. cover ${cov.remises}`,
     V.remises >= 15 && V.libres >= 8 && V.marque / Math.max(1, V.libres) >= 0.7 && Math.abs(bande(0.5, 'polyvalent') - 8) < 1e-9 && Math.abs(bande(1, 'polyvalent') - 11.2) < 1e-9 && Math.abs(bande(0, 'polyvalent') - 4.8) < 1e-9 && bande(0.5, 'stopper') > bande(0.5, 'cover') && sans.remises === 0 && pivotDe(433) === 5);
+}
+
+// ---------------------------------------------------------------- lot 258 : L'ÉCHELLE DE
+// FINITION (cfg.finition, strike-sim.finitionSigma — la carte du book : Modèle 03 §5.2, Modèle 10
+// §3). L'erreur du tir est un σ D'ANGLE à la frappe, anisotrope (au-dessus 2 × à côté), les
+// attributs en FACTEURS (finF identité à 50, composure sur κ, weakFoot sur le pied faible), la
+// vitesse log-normale sous-dosée, le point visé tiré en hauteur (bas / mi / lucarne). La loi
+// pure se lit telle quelle ; le flux se mesure ; finition null = le 145 d'hier au bit.
+if (__bloc()) {
+  const F = matchCfg().finition;
+  const deg = (r) => r * 180 / Math.PI;
+  const base = finitionSigma(F, { finF: 1, composureF: 1.075, weakF: 1, faible: false, P: 0, stam: 1, spd: 22, dG: 12 });
+  const fin0 = finitionSigma(F, { finF: 2.24, P: 0, stam: 1, spd: 22, dG: 12 }), fin100 = finitionSigma(F, { finF: 0.447, P: 0, stam: 1, spd: 22, dG: 12 });
+  const pied = finitionSigma(F, { finF: 1, weakF: 1, faible: true, P: 0, stam: 1, spd: 22, dG: 12 });
+  const presse = finitionSigma(F, { finF: 1, composureF: 1.075, P: 1, stam: 1, spd: 22, dG: 12 });
+  const fatig = finitionSigma(F, { finF: 1, P: 0, stam: 0, spd: 22, dG: 12 });
+  const doux = finitionSigma(F, { finF: 1, P: 0, stam: 1, spd: 16.5, dG: 12 }), loin = finitionSigma(F, { finF: 1, P: 0, stam: 1, spd: 22, dG: 24 });
+  const sab = finitionSigma({ ...F, sigma0: 0 }, { finF: 1, P: 1, stam: 0, spd: 22, dG: 24 });
+  ok(`lot 258 — L'ÉCHELLE DE FINITION, la loi pure : σψ ${deg(base.sigPsi).toFixed(2)}° à l'identité (finishing 50, plafond de frappe, sans pression : = sigma0 ${F.sigma0}) ; σθ = ${(base.sigTheta / base.sigPsi).toFixed(1)} × σψ (au-dessus deux fois à côté) ; finishing 0 → ${deg(fin0.sigPsi).toFixed(2)}° > 50 > 100 → ${deg(fin100.sigPsi).toFixed(2)}° (× 2,24 / × 0,45) ; pied faible × ${(pied.sigPsi / base.sigPsi).toFixed(2)} (1,29) ; au corps × ${(presse.sigPsi / base.sigPsi).toFixed(2)} (1 + κ 1,35) et sous-dosage ${presse.muV.toFixed(2)} (−0,15) ; épuisé × ${(fatig.sigPsi / base.sigPsi).toFixed(2)} (1,20), vitesse ${fatig.muV.toFixed(2)} (−0,11) ; frappe douce 16,5 m/s × ${(doux.sigPsi / base.sigPsi).toFixed(2)} (< 1 : (v/vMax)^1,2) ; 24 m × ${(loin.sigPsi / base.sigPsi).toFixed(2)} (1,14) ; sabotage « sigma0 0 » : σ ${deg(sab.sigPsi).toFixed(3)}° (le tir exact, attrapé)`,
+    Math.abs(deg(base.sigPsi) - F.sigma0) < 1e-9 && Math.abs(base.sigTheta / base.sigPsi - 2) < 1e-9
+    && fin0.sigPsi > base.sigPsi && base.sigPsi > fin100.sigPsi && Math.abs(fin0.sigPsi / base.sigPsi - 2.24) < 1e-6 && Math.abs(fin100.sigPsi / base.sigPsi - 0.447) < 1e-6
+    && Math.abs(pied.sigPsi / base.sigPsi - 1.29) < 1e-9 && Math.abs(presse.sigPsi / base.sigPsi - 2.35) < 1e-9 && Math.abs(presse.muV + 0.15) < 1e-9
+    && Math.abs(fatig.sigPsi / base.sigPsi - 1.2) < 1e-9 && Math.abs(fatig.muV + 0.11) < 1e-9 && doux.sigPsi < base.sigPsi && Math.abs(loin.sigPsi / base.sigPsi - 1.144) < 1e-9 && sab.sigPsi === 0);
+  // …ET LA FIXTURE (le patron verify-frappes : tout le monde parqué loin, le tireur à 18 m dans l'axe avec UN presseur à
+  // 2 m de côté (P = 0,75 : la pression est le facteur qui mord), le gardien à son poste, 48 frappes à flux seedé distincts) : la part DANS LE CADRE au plan du but — le monde 258
+  // c. le sabotage « le tir exact » (sigma0 0, sans hauteur visée). Sans pression ni fatigue la loi ne disperse que par
+  // σ0 × (v/vMax)^γ × la hauteur visée : elle doit manquer ET le sabotage ne doit pas. Mesuré en flux 4 × 90 min :
+  // cadrés 45 % des non contrés (avant 51-57, réel 45), buts 4,0 / match (4,75), conversion 13,4 % (15) ; le contré
+  // manquant (0,8 % c. 27) est le lot suivant, pas celui-ci.
+  const planFix = (over) => {
+    const zs = [], ys = []; let n = 0;
+    for (let k = 0; k < 48; k++) {
+      const st = makeMatch({ full: true, seed: 5 });
+      const sgn = -st.pitch.ownGoal(0).sign, goal = st.pitch.attackGoal(0);
+      for (const q of st.players.filter((q) => q.team === 1 && !q.keeper)) { q.p[0] = -sgn * 30; q.p[2] = -28; q.v = [0, 0]; }
+      for (const q of st.players.filter((q) => q.team === 0 && !q.keeper)) { q.p[0] = -sgn * 30; q.p[2] = 28; q.v = [0, 0]; }
+      const cfg = matchCfg({ shotRange: 20, oeil: false, fixe: false, ...(over ?? {}) });
+      const c = st.players.find((p) => p.team === 0 && !p.keeper); const x = goal.x - sgn * 18;
+      c.p[0] = x; c.p[2] = 0; c.v = [0, 0]; c.yaw = Math.atan2(0, sgn);
+      const d1 = st.players.find((p) => p.team === 1 && !p.keeper); d1.p[0] = x; d1.p[2] = 2; d1.v = [0, 0];   // le presseur à 2 m DE CÔTÉ (hors du couloir de tir ; il dérive à ~3 m pendant l'armé : P ≈ 0,5)
+      st.ball.restart([x + sgn * 0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+      st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+      let lcg = ((k + 1) * 2654435761 + 97) >>> 0; st.rnd = () => { lcg = (lcg * 1664525 + 1013904223) >>> 0; return lcg / 4294967296; };
+      tryShot(st, c, cfg);
+      for (let i = 0; i < 4 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        if (st.phase === 'flight' && st.events.some((e) => e.type === 'shot')) {   // au LANCER : le point de passage au plan, extrapolé en ligne droite (sans le gardien)
+          const v = st.ball.v, t = (goal.x - st.ball.p[0]) / (v[0] || 1e-6); if (t > 0) { zs.push(st.ball.p[2] + v[2] * t); ys.push(st.ball.p[1] + v[1] * t - 4.905 * t * t); n++; } break;
+        }
+      }
+    }
+    const m = zs.reduce((a, b) => a + b, 0) / Math.max(1, zs.length), sd = Math.sqrt(zs.reduce((a, z) => a + (z - m) ** 2, 0) / Math.max(1, zs.length));
+    const dessus = ys.filter((y) => y > 2.44).length, cote = zs.filter((z) => Math.abs(z) > 3.66).length;
+    return { n, m, sd, dessus, cote };
+  };
+  const vifF = planFix(null), exactF = planFix({ finition: { ...F, sigma0: 0, hauteur: null } });
+  ok(`lot 258 — L'ÉCHELLE DE FINITION en fixture (18 m dans l'axe, presseur de côté, 48 frappes, point de passage au plan extrapolé au lancer) : écart-type latéral ${vifF.sd.toFixed(2)} m ≥ 0,35 (σψ ≈ 1,9° × 18 m — hors du cadre : ${vifF.cote} à côté, ${vifF.dessus} au-dessus) ; sabotage « le tir exact » (sigma0 0, sans hauteur) : ${exactF.sd.toFixed(3)} m ≤ 0,05 — la loi disperse, le sabotage vise le même point`,
+    vifF.n >= 40 && exactF.n >= 40 && vifF.sd >= 0.35 && exactF.sd <= 0.05 && vifF.sd >= exactF.sd + 0.3);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -10246,6 +10246,71 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      finition), 257 (le carton), 259 (l'épaule), puis le profil locomoteur et la couche
      de croyance comme lots transversaux, le pas de décision séparé du pas physique
      (Modèle 01) comme condition du banc du réel à ≥ 200 matchs.
+- 331: L'ÉCHELLE DE FINITION (258 — le premier lot que la carte du book produit :
+     Modèle 03 §5.2, Modèle 10 §3-§3.4, Référentiel 03). Le TIR ne disperse plus par un σ
+     métrique sur le point visé (shotSigma 0,10-0,55 m pour 7,32 m de cage, le 145 par
+     situation) mais par un σ D'ANGLE à la frappe, la loi PURE strike-sim.finitionSigma :
+     σψ = sigma0 1,4° × finF (finishing : 0,2^(f̂ − 0,5), 2,24 à 0, 1 exact à 50, 0,45 à
+     100) × (1 + 0,29 × weakF du mauvais pied) × (1 + κ 1,35 × composureF/1,075 × P) ×
+     (1 + 0,2 (1 − stam)) × (v/vMax)^1,2 × (1 + 0,012 (d − 12)⁺) ; σθ = 2 σψ (on manque
+     AU-DESSUS deux fois plus qu'à côté) ; vitesse log-normale σ 0,08 SOUS-DOSÉE
+     (−0,05 − 0,10 P − 0,06 (1 − stam)) ; le point visé des FRAPPES DE BUT (placé,
+     puissance, enroulée, tendu) tire sa HAUTEUR (bas 0,35 m 62 %, mi 1,0 m 30 %, lucarne
+     1,95 m 8 %), l'élévation compense la chute — le ras-de-terre, le pointu, la volée, le
+     lob gardent la hauteur de leur geste. Deux recalages au MOTEUR, documentés à la clé :
+     P = 1 au corps (≤ 1 m) → 0 au plateau 5 m (la distance, en attendant le temps
+     d'arrivée du Modèle 07 — à 3 m, le press du book ne mordait jamais : 3,2 m
+     d'intervention médiane) ; vMax = 22, le plafond de frappe DU MOTEUR (16,5-21,5 m/s —
+     le (v/vMax)^γ vit relatif au tireur, à 35 il écrasait tout σ à 0,4). Trois à quatre
+     tirages seedés par tir (cap, élévation, vitesse, hauteur) ; finition null = le 145
+     d'hier au bit (jumeau 5721b4cffbce2dfc / 815dbeda427d613c ; défaut 545ae09e89b2b180 /
+     815bdeda427d613c — la graine 7 n'a pas de tir en 90 s). MESURÉ, à graines égales
+     (8 × 45 min, clé nulle c. défaut) : cadrés 60 → 48 % des tirs (réel 33 + 27 contrés
+     = 45 des non contrés : TENU), hors cadre 36 → 47, tirs 12,6 → 14,9, buts 2,63 → 3,13
+     (21 c. 25 sur 8 mi-temps : le bruit de Poisson), conversion des tirs 21 % inchangée
+     — le gardien arrête 66 → 56 % des cadrés : les frappes à mi-hauteur et en lucarne le
+     battent (diveReach 2,95 / diveTime 0,9 : la dette du gardien, Bible 02 lot 5). LE
+     CONSTAT : l'échelle de finition règle la DISPERSION (ce qu'elle promet) ; les « dix
+     buts » tiennent à trois facteurs multiplicatifs — tirs 30 c. 25 (× 1,2), cadrés 48 c.
+     33 (× 1,45, dont le contré manquant 3 % c. 27 : le 258b « le corps qui contre »,
+     Modèle 10 lot 2), arrêts 56 c. 69 (× 1,4, le gardien). Chacun son lot. Sondes : 4 ×
+     90 min avant (tirs 31,8, buts 4,75, cadrés 51 %, arrêts 71 %, conversion 15 %) ; v1
+     (book brut : σ0 1,4, press 3, vMax 35) cadrés 57 — la loi affinait le tir ; σ0 2,0 :
+     56 — σ0 n'est pas le levier aux visées du moteur (0,55 m du poteau) ; v2 (hauteur
+     sur TOUS les gestes) : 45 %, buts 4,0 — mais le ras-de-terre montait à 0,52 m ; v3
+     (hauteur sur les frappes de but) : 51 %, buts 6,75 (graine 11 : 11 buts). Banc :
+     bloc 258 (index 151) — la loi pure (identité, monotonie, aniso, pied, κ, fatigue,
+     (v/vMax), distance, sabotage sigma0 0) + la fixture (18 m, presseur de côté, 48
+     frappes : écart-type latéral au plan 0,78 m ≥ 0,35, sabotage 0,002). Épingles
+     finition null DATÉ 258 : verify-attributes 152/158 (vert au 256, prouvé en worktree
+     767de25 : −13 / 35 / 831 / 1087 — remangé 228 / 171) ; verify-match11 bloc 3 « bloc
+     élastique » (38,6 ≥ 36,7 au 252, remangé 36,4 c. 37,5 — la clause mesure le bloc) ;
+     verify-match11 bloc 144 « lot 245 le flux » (97 % ≥ 90 au 252, remangé 88 — la clause
+     mesure l'oblique) ; bloc 110 « lot 212 le through condamné » (5/19 ≤ 14/28 × 0,5 au 252,
+     remangé 6/19 c. 10/29 — la clause mesure la course perdue) ; bloc 134 « lot 238 le flux de
+     la garde » (marqueur → attaquant 2,27 ≤ 2,4 au 252, remangé 2,64) ; verify-attributes lot
+     157 « le pique vit » (tacleurs 90 : 7 ≥ 5 + 2 au 252 et 256, remangé 4 c. 8 + 2) ;
+     verify-identification REGELÉ DATÉ 258 (la règle du 252 : à chaque monde scellé la liste se
+     regèle et le journal nomme les pertes) : 22 → 17 signatures — perdues LAT A|appel, MDC
+     A|profondeur, MDC B|profondeur, MIL B|tenue, MDC C|profondeur, AIL C|repli, AV C|tenue, et
+     AIL D|repli déjà perdue au 256 (wide_creator sans repli 0,9 ; l'annexe n'avait pas été
+     lue à ce sceau — prouvé en worktree 767de25 : 0 ✓ / 1 ✗) ; gagnées LAT A|profondeur, LAT
+     C|profondeur, AV A|profondeur ; la dette : à 6 graines le test tient au tirage (8 pertes
+     pour un lot qui ne touche pas aux rôles) — volumétrie ≥ 12 ; le budget CPU (bloc 1,
+     4,74 ms/step sous contention : rerun isolé) ;
+     verify-frappes mk() (le ras-de-terre à 0,52 : ces fixtures jugent la balistique
+     du geste). BANC COMPLET (final258.sh, 8 shards + 20 annexes) : 287 ✓ / 7 ✗ au premier
+     passage — 5 épingles + 1 contention + 246d ; isolés après épingles : shard 0 32/0, 3 39/0,
+     6 33/0, 1 seul : le budget 0,46 ms/step ≤ 1,6 (4,74 sous contention 4 shards + 2 sondes) ;
+     annexes : 20 vertes (attributes 27/0 après les deux épingles, identification 1/0 après
+     regel, frappes 13/0, match 84/0, rondo 40/0, gestes 60/0, remises 36/0, foulee 45/0,
+     attente 42/0, contact 25/0…). Rouges hérités : 246d reste rouge (43 % à 90, 44 % à 10 — nommé depuis le
+     246d) ; « contres arrivés à l'entrée » (rouge depuis le 244b/252) REVERDIT au monde 258
+     (20 ≥ 15 × 0,75) — noté, pas revendiqué : le monde a bougé, pas la loi. Dettes nommées :
+     le gardien contre les frappes hautes ; le contré (258b) ;
+     le rapport au-dessus / à côté (0 / 14 : les visées du moteur restent basses, la
+     lucarne à 8 %) ; le temps d'arrivée comme P (Modèle 07) ; la sonde-258 (dans
+     scripts/book) lit 'null' comme le défaut — passer {"finition":null}.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

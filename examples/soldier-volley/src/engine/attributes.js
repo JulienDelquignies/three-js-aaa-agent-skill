@@ -29,7 +29,7 @@ export const ATTRIBUTES = {
   passing:     'erreur d\'exécution passe → bruit d\'angle [6,0° ; 0,5°] (σ), la vraie frappe dévie',
   control:     'fermeté du contrôle      → diviseur du contrôle-manqué [0,7 ; 1,6] (poids de passe)',
   dribbling:   'longueur de touche → lead × [1,08 ; 0,94] ; engagement/vente des gestes × [0,55 ; 1,10] ; l\'ESQUIVE du duel ± [−0,08 ; +0,08] m (152)',
-  finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ)',
+  finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ) ; sous cfg.finition (258) : finF [2,24 ; 0,45] × le σ d\'angle de la frappe',
   longShots:   'frappe de loin           → audace lointaine × [0,75 ; 1,25] (cfg.audace, lot 107)',
   tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m + l\'horloge du pique (tacleTempoF, 157) + la garde du duel gagné (tacleGardeF, 166)',
   teamwork:    'la cohésion du pressing   → teamF [0,8 ; 1,2] : la pénalité de zone à l\'élection du presseur (160)',
@@ -96,6 +96,7 @@ export function makeProfile(ratings = {}) {
                                                                   // des gestes (un 35 tente peu et
                                                                   // vend mal — la note joue l'exécution)
     shotSigma: lerp(0.55, 0.10, r('finishing')),                  // m — sur le point visé dans le but
+    finF: Math.pow(0.2, r('finishing') - 0.5),                    // × sur le σ D'ANGLE de la frappe (258, cfg.finition) : 2,24 à 0, 1 exact à 50, 0,45 à 100 — Modèle 03 §5.2 (2,5 × 0,2^f̂), recentré à l'identité
     longF: lerp(0.75, 1.25, r('longShots')),                      // × sur l'AUDACE lointaine (le 50 vaut 1 exact — l'identité du monde moyen)
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel
     tacleTempoF: lerp(0.85, 1.15, r('tackling')),                 // × l'horloge du pique (157) : le bon tacleur
@@ -185,6 +186,7 @@ export function checkAttributes() {
   // 2. la monotonie : plus la note monte, meilleur le levier
   if (!(hi.passSigma < mid.passSigma && mid.passSigma < lo.passSigma)) issues.push('passing non monotone');
   if (!(hi.shotSigma < mid.shotSigma && mid.shotSigma < lo.shotSigma)) issues.push('finishing non monotone');
+  if (!(hi.finF < mid.finF && mid.finF < lo.finF) || Math.abs(mid.finF - 1) > 1e-9) issues.push('finF non monotone ou identité à 50 violée');
   if (!(hi.controlF > mid.controlF && mid.controlF > lo.controlF)) issues.push('control non monotone');
   if (!(hi.reaction < lo.reaction)) issues.push('reactions non monotone');
   if (!(hi.tackleReach > lo.tackleReach)) issues.push('tackling non monotone');

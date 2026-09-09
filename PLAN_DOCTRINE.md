@@ -435,6 +435,14 @@ Chaque fiche porte ses lots en §4 ; la règle reste : une loi à clé, jumeau a
 table du réel (verify-book, informatif) promue en clause fiche par fiche quand la loi qui la fait tenir est
 scellée (décision 4 du Plan_Route).
 
+**258 — L'ÉCHELLE DE FINITION : SCELLÉ (331).** La dispersion du tir est un σ d'angle anisotrope, les
+attributs en facteurs (finF identité à 50, composure, weakFoot, stamina), la vitesse sous-dosée, la hauteur
+visée tirée. Mesuré à graines égales : cadrés 60 → 48 % (réel 45 des non contrés), conversion inchangée.
+Ce qu'il révèle et nomme : **258b — le corps qui contre** (tirs contrés 3 % c. 27, Modèle 10 lot 2 : le
+défenseur dans le couloir de tir, `contreTir` 176 qui ne mord qu'à 2 %) et **le gardien contre les frappes
+hautes** (arrêts 56 % des cadrés c. 69 — Bible 02 lot 5, diveReach / diveTime). L'ordre devient : 258b → 257
+→ 259, puis les transversaux.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

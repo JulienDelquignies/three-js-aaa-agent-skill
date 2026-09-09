@@ -307,6 +307,19 @@ export function beginPass(st, choice, cfg, opts = {}) {
  * you get a ball played behind a man. Aiming at where he is NOW is both more correct and more honest —
  * the geometry recorded on the event is the geometry the strike actually had.
  */
+/** L'ÉCHELLE DE FINITION (258) — la loi PURE : les σ d'un tir. `F` = cfg.finition, `x` = { finF, composureF, weakF,
+ *  faible (mauvais pied), P (pression 0..1), stam, spd (m/s), dG (m au point visé) }. Renvoie { sigPsi, sigTheta } en
+ *  radians et { sigV, muV } sur le log de la vitesse. Aucun tirage ici : le banc la lit telle quelle. */
+export function finitionSigma(F, x) {
+  const fPied = x.faible ? 1 + (F.pied ?? 0.29) * (x.weakF ?? 1) : 1;
+  const kappa = (F.kappa ?? 1.35) * ((x.composureF ?? 1.075) / 1.075);
+  const sigPsi = (F.sigma0 ?? 1.4) * Math.PI / 180 * (x.finF ?? 1) * fPied * (1 + kappa * (x.P ?? 0))
+    * (1 + (F.fatigue ?? 0.2) * (1 - (x.stam ?? 1))) * Math.pow(Math.max(0.3, (x.spd ?? 25) / (F.vMax ?? 35)), F.gamma ?? 1.2)
+    * (1 + (F.dist ?? 0.012) * Math.max(0, (x.dG ?? 12) - 12));
+  return { sigPsi, sigTheta: (F.aniso ?? 2) * sigPsi, sigV: F.sigmaV ?? 0.08,
+    muV: -((F.sousDose ?? 0.05) + (F.sousDoseP ?? 0.10) * (x.P ?? 0)) - (F.fatigueV ?? 0.06) * (1 - (x.stam ?? 1)) };
+}
+
 export function strikeNow(st, c, cfg) {
   const { choice, pick, stance, urgent } = c.act.payload;
   const rec = st.players[choice.to.id];
@@ -381,10 +394,18 @@ export function strikeNow(st, c, cfg) {
   // sang-froid (composureF, un × d'erreur) module l'inflation ; le monde non noté reçoit un
   // σ de base (le patron execSigma : le déchet existe sans notes). Plus bas, le même facteur
   // souffle la HAUTEUR et la VITESSE d'exécution. Clé absente : le σ plat d'hier, au bit.
-  const D145 = st.full && choice.shot && cfg.dispersion ? cfg.dispersion : null;
+  // L'ÉCHELLE DE FINITION (258, cfg.finition && st.full — la carte du book, Modèle 03 §5.2 / Modèle 10 §3 :
+  // « shotSigma 0,10-0,55 m pour 7,32 m de cage ») : l'erreur du TIR n'est plus un σ métrique sur le point visé
+  // mais un σ D'ANGLE à la frappe — σψ = σ0 × finF (finishing, identité à 50) × pied (faible + pied × weakF)
+  // × pression (1 + κ P, κ × composureF / 1,075) × fatigue (1 + fat (1 − stam)) × (v / vMax)^γ × distance —
+  // anisotrope (σθ = aniso σψ : le tir manque AU-DESSUS plus qu'À CÔTÉ), la vitesse log-normale SOUS-DOSÉE sous
+  // pression et fatigue. Elle REMPLACE le σ métrique et le souffle du 145 sur le tir (le piqué exact garde son
+  // geste). Clé absente : le 145 d'hier, au bit. Mesuré avant : conversion 24,5 % (réel 11), cadrés 55 % (33).
+  const F258 = st.full && choice.shot && cfg.finition ? cfg.finition : null;
+  const D145 = st.full && choice.shot && cfg.dispersion && !F258 ? cfg.dispersion : null;
   let sigF = 1;
   {
-    const sigBase = choice.shot ? (c.skill?.shotSigma ?? (D145 ? (D145.base ?? 0.33) : 0)) : 0;
+    const sigBase = choice.shot && !F258 ? (c.skill?.shotSigma ?? (D145 ? (D145.base ?? 0.33) : 0)) : 0;
     if (D145) {
       const dG = hyp(lead[0] - from[0], lead[2] - from[2]);
       let foeP = 99;
@@ -465,6 +486,31 @@ export function strikeNow(st, c, cfg) {
   if (D145 && shot && !kind?.exact) {
     elev = Math.max(0.005, elev + gauss(st.rnd ?? (() => 0.5)) * (D145.sigmaEl ?? 0.04) * sigF);
     spd = Math.max(10, spd * (1 + gauss(st.rnd ?? (() => 0.5)) * (D145.sigmaV ?? 0.05) * Math.min(1.6, sigF)));
+  }
+  // …LA FRAPPE DÉVIE EN ANGLE (258) : σψ à la frappe, σθ = aniso × σψ, la vitesse log-normale et sous-dosée.
+  // Trois tirages seedés (cap, élévation, vitesse) — le monde à clé nulle n'en tire aucun.
+  let shotYawNoise = 0;
+  if (F258 && shot && !kind?.exact) {
+    const rnd = st.rnd ?? (() => 0.5);
+    const dG = hyp(lead[0] - from[0], lead[2] - from[2]);
+    let foeP = 99;
+    for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0) foeP = Math.min(foeP, hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]));
+    const P = Math.max(0, Math.min(1, 1 - Math.max(0, foeP - 1) / Math.max(0.5, (F258.press ?? 5) - 1)));   // l'intensité de pression [0..1] : 1 au corps (≤ 1 m), 0 au plateau press m (Modèle 04 : 4-5 m) — la distance en attendant le temps d'arrivée (Modèle 07)
+    // …LA HAUTEUR VISÉE (258, F.hauteur — Modèle 10 §3.4 : le point visé est un TIRAGE dans un mélange, bas / mi-hauteur /
+    // lucarne) : l'élévation ne vient plus du geste seul mais de la hauteur voulue au but (chute compensée) — c'est ce qui
+    // rend possible le tir AU-DESSUS (réel : 1,5 × plus de manqués au-dessus qu'à côté). null : l'élévation du geste
+    const H = F258.hauteur;
+    if (H && (!kind || ['placé', 'puissance', 'enroulée', 'tendu'].includes(kind.id))) {   // les FRAPPES DE BUT tirent leur hauteur ; le ras-de-terre, le pointu, la volée, le lob gardent la hauteur de leur geste (le geste EST la hauteur)
+      const u = rnd(), pB = H.p?.[0] ?? 0.62, pM = H.p?.[1] ?? 0.30;
+      const yV = u < pB ? (H.bas ?? 0.35) : u < pB + pM ? (H.mi ?? 1.0) : (H.lucarne ?? 1.95);
+      const tv = dG / Math.max(8, spd);
+      elev = Math.max(0.005, Math.min(0.45, Math.atan((yV - (from[1] ?? 0.11) + 4.905 * tv * tv) / Math.max(1, dG))));
+    }
+    const faible = !!(c.strongFoot && c.strongFoot !== 'both' && c.foot && c.foot !== c.strongFoot);
+    const L = finitionSigma(F258, { finF: c.skill?.finF ?? 1, composureF: c.skill?.composureF ?? 1.075, weakF: c.skill?.weakF ?? 1, faible, P, stam: c.stam ?? 1, spd, dG });
+    shotYawNoise = gauss(rnd) * L.sigPsi; sol.dirYaw += shotYawNoise;   // la déviation de cap du tir, comme celle de la passe (dirNoise), avant la frappe
+    elev = Math.max(0.005, elev + gauss(rnd) * L.sigTheta);
+    spd = Math.max(10, spd * Math.exp(gauss(rnd) * L.sigV + L.muV));
   }
   // LA CLOCHE DU CENTRE (cfg.tete && st.full — lot 34) : un centre est un ARC par-dessus le
   // premier rideau, pas une passe tendue (0 centre entré en surface sur 4 matchs mesurés —

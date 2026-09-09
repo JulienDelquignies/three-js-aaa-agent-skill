@@ -15,7 +15,7 @@
 | T15 | Tirs à angle < 20° | 50 % ± 7 | — | à instrumenter |
 | T16-T17 | Tête : conversion 9,6 %, part 17 % | | **6 %** des tirs, **0** but (Modèle 10) | réfuté |
 | T18 | Ratio 0 / 1 défenseur dans le cône | 2,0 | — | à instrumenter |
-| T19 | Tirs cadrés (but + arrêt) | 33 % ± 3 | **55 %** | réfuté |
+| T19 | Tirs cadrés (but + arrêt) | 33 % ± 3 | **55 %** → **48 %** au 258 (8 × 45 min à graines égales : 60 → 48) | réfuté, en marche (réel 45 des non contrés) |
 | T20 | Tirs contrés | 27 % ± 4 | **2 %** | **réfuté × 13** |
 | T21 | Tirs sur les montants | 2,3 % | — | à instrumenter (événement `pylon` / `roof`) |
 | T22 | Taux d'arrêt | 69 % ± 4 | **44 %** (dedans 52, dehors 100) | réfuté |
@@ -31,7 +31,7 @@
 
 ## Ce que le référentiel ajoute aux lots déjà nommés
 
-1. **L'échelle de finition** (T5, T7, T8, T19, T22 ; le 258) : la conversion par distance (T9-T14) est la clause
+1. **L'échelle de finition** (T5, T7, T8, T19, T22 ; le 258 — SCELLÉ 331 : la dispersion est réglée, la conversion tient au contré et au gardien) : la conversion par distance (T9-T14) est la clause
    du lot — 45 % à 0-5 m, 2,2 % à > 23 m — et le gardien à 69 %.
 2. **Le corps qui contre** (T20 ; Modèle 10 lot 2) : 2 → 27 % des tirs — et les corners qui en naissent.
 3. **La tête** (T16-T17 ; Bible 15 lot 4) : 6 → 17 % des tirs, à 9,6 %.
