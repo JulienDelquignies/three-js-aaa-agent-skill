@@ -26,6 +26,7 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Bible 02 — gardien | [02-gardien.md](02-gardien.md) | 1, 2, 4-5, 7, 15, 18, 20, 24 mesurés | le gardien couplé à sa ligne ; la portée bornée par le temps ; la règle des 8 s ; les longs du gardien qui manquent |
 | Bible 03 — défenseurs centraux | [03-defenseurs-centraux.md](03-defenseurs-centraux.md) | T1, T3, T4, T5, T7, T8, T16 mesurés (défaut, bloc haut, bloc bas) | la ligne est une ligne ; la charnière sur le centre ; l'intervention et duelAggression ; le gardien lu par la ligne ; la relance du central ; l'aérien instrumenté |
 | Bible 04 — latéraux et pistons | [04-lateraux.md](04-lateraux.md) | 1, 8, 10, 14, 15-18, 21, 23, 24, 31 mesurés | la rest defense ; le centre qui se manque ; le cadrage à ballReleased ; le profil locomoteur ; la fatigue locale |
-| Bible 05 → 16 | à faire | | |
+| Bible 05 — milieu défensif | [05-milieu-defensif.md](05-milieu-defensif.md) | T1, T2, T4, T8, T9, T12-14, T17, T18, T27 mesurés (4-3-3, 4-2-3-1, bloc bas) | le renversement qui existe ; le double pivot comme unité ; l'interligne piloté par le bloc ; le budget du 6 ; les régimes de tempo ; la faute tactique |
+| Bible 06 → 16 | à faire | | |
 | Modèle 01 → 16 | à faire | | |
 | Référentiel 01 → 16 | à faire | | |
