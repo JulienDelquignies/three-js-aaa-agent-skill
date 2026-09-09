@@ -10214,6 +10214,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      touches trouvées, lâcher à 25°) — les annexes de fin de driver
      n'avaient pas été lues au sceau : épinglées passation null DATÉ
      252, et la règle : le tally du driver se lit APRÈS final.done.
+- 330: LE BOOK CONTRE LE MOTEUR — LA CARTE DES 48 CHAPITRES (docs/Book_vers_Moteur,
+     9/09, aucun bit de jeu : jumeau 5721b4cffbce2dfc / 815dbeda427d613c intact). Une
+     fiche par chapitre (16 Bible, 16 Modèle, 16 Référentiel), même format : ce que le
+     chapitre demande / où en est le code (existant, partiel, absent) / chaque test de
+     réfutation classé mesurable-tenu / mesurable-réfuté / à instrumenter / absent avec
+     le chiffre du moteur d'aujourd'hui / les lots que la fiche appelle. Les sondes
+     vivent dans skills/threejs-aaa/scripts/book/ (25 sondes, 2 × 90 min chacune, graines
+     3 et 7 ; importent le starter) et verify-book.mjs les liste et les lance — banc
+     INFORMATIF (amendement 2 : un banc ne naît pas rouge). Douze constats transversaux
+     (README) : tout le monde chasse (165 km / équipe, HI × 5,5, 8,5 accélérations / min
+     c. 0,9) ; la défense au contact (3,2 m) et la ligne cassée 72 % du temps ; le ballon
+     vit devant (1 522 passes de 12,8 m, 76 min en jeu) ; la largeur sans phase ; rien ne
+     se manque (centres 58 %, longs 66 %, conversion 24,5 %, 6 buts / match) ; personne ne
+     regarde ni ne retarde (0 latence, 96 changements de cible / min, 29 commutations de
+     marquage / min) ; le moteur ment sur sa précision (40 tirs / 90 à dt 1/60, 22 à 1/30 ;
+     251 µs / tick = 130 s / match) ; pas de couche de croyance (architecture A du
+     Modèle 04) ; le duel sans vecteur (FW gagne 71 % des têtes, 82 glissés / match, 8,5
+     jaunes, 1 rouge) ; le ballon ne sort pas (3,5 corners, 14 touches, 49 arrêts de
+     17,5 s) ; la physique du ballon à moitié calée (C_L à la moitié : 2,4 m de courbe c.
+     4,5-6 ; roulement 58 m à 20 m/s c. 47 ; BRD 3,9 c. 4,6) ; le banc prouve des
+     invariants, pas le réel. Ce que la carte tient : Bible 11 X7 (la reperte immédiate
+     7,5 / 1,2 %), X4, X6, X10, X15 ; Bible 10 T1 (bloc 27,8 / 40,6 m), T4 (signature
+     angulaire 97 / 77 / 72°) ; Bible 13 test 23 (la ligne de hors-jeu sur le second) ;
+     Modèle 02 test 8 (déficit de conduite 15 %), 13 ; Bible 14 T12 (dos au jeu 38 %) ;
+     Référentiel 01 C3 (24,5 tirs), C23 (23 fautes). Dettes de sonde nommées : les presets
+     passés par makeMatch({tactics:[{preset}]}) ne s'appliquent pas (Modèle 06 : même
+     chiffre au dixième — refaire avec l'API de tactics) ; T5 de la Bible 10 hors
+     définition (91 % déjà en mouvement) ; D7 du Modèle 15 NaN ; 2 matchs par sonde
+     (indicatif sur les buts). Ordre des lots produit par la carte (PLAN §4) : 258 (la
+     finition), 257 (le carton), 259 (l'épaule), puis le profil locomoteur et la couche
+     de croyance comme lots transversaux, le pas de décision séparé du pas physique
+     (Modèle 01) comme condition du banc du réel à ≥ 200 matchs.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

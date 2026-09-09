@@ -1,0 +1,28 @@
+// sonde MC07/09/10 — passes : complétion par distance × direction, sol c. aérien, ≥ 32 m, bloquées ; tirs : volume, surface, distance, cadré / contré / but, arrêts dedans / dehors, rebonds, têtes.
+import { makeMatch, matchStep, matchCfg } from '../../assets/starter/src/engine/match-sim.js';
+const seeds = (process.argv[2] ?? '3,7').split(',').map(Number);
+const o = { n: 0, pass: {}, sol: [0, 0], air: [0, 0], longs: [0, 0], contres: 0, passes: 0, shots: 0, inBox: 0, dist: [], cadres: 0, buts: 0, blocs: 0, arretsIn: [0, 0], arretsOut: [0, 0], rebonds: 0, butsRebond: 0, tetes: 0, butsTete: 0, vitesses: [] };
+const cls = (d) => d < 13.7 ? '5-15 yd' : d < 27.4 ? '15-30 yd' : '30+ yd';
+for (const seed of seeds) {
+  const st = makeMatch({ full: true, seed }), cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 2700, pause: 10 } }); o.n++;
+  let seen = 0; const pend = []; const shotsPend = []; let lastShot = null, lastEnd = null;
+  for (let i = 0; i < 5400 * 60; i++) {
+    matchStep(st, 1 / 60, cfg); if (st.restart?.type === 'fin') break;
+    for (const w of pend) if (!w.done && st.t - w.t > 0.15) { const ow = st.ball.owner ?? -1; if (ow >= 0) { w.done = true; const ok = st.players[ow].team === w.team; const k = w.cls + ' ' + w.dir; (o.pass[k] ??= [0, 0])[1]++; if (ok) o.pass[k][0]++; (w.air ? o.air : o.sol)[1]++; if (ok) (w.air ? o.air : o.sol)[0]++; if (w.d >= 32) { o.longs[1]++; if (ok) o.longs[0]++; } } else if (st.t - w.t > 5 || st.restart) { w.done = true; const k = w.cls + ' ' + w.dir; (o.pass[k] ??= [0, 0])[1]++; (w.air ? o.air : o.sol)[1]++; if (w.d >= 32) o.longs[1]++; } }
+    for (; seen < st.events.length; seen++) { const e = st.events[seen]; const by = st.players[e.by];
+      if (e.type === 'pass' && by && !by.keeper && !e.mains) { const to = st.players[e.to]; if (!to) continue; o.passes++; const d = Math.hypot(to.p[0] - by.p[0], to.p[2] - by.p[2]); const og = st.pitch.ownGoal(by.team); const dx = (to.p[0] - by.p[0]) * -og.sign; const dir = dx > 3 ? 'avant' : dx < -3 ? 'arrière' : 'latéral'; pend.push({ t: st.t, team: by.team, d, cls: cls(d), dir, air: e.style !== 'ground' && e.style !== 'driven', done: false }); }
+      if (e.type === 'contre') o.contres++;
+      if (e.type === 'shot' && by) { o.shots++; const og = st.pitch.attackGoal ? null : null; const g = st.pitch.ownGoal(1 - by.team); const d = Math.hypot(by.p[0] - g.x, by.p[2]); o.dist.push(d); const inBox = Math.abs(by.p[0] - g.x) <= 16.5 && Math.abs(by.p[2]) <= 20.16; if (inBox) o.inBox++; if (e.kind === 'tête' || e.geste === 'tête') o.tetes++; if (lastEnd && st.t - lastEnd.t < 60 && lastEnd.team === by.team) { o.rebonds++; shotsPend.push({ t: st.t, team: by.team, rebond: true, tete: e.kind === 'tête', inBox }); } else shotsPend.push({ t: st.t, team: by.team, rebond: false, tete: e.kind === 'tête', inBox }); if (e.speed) o.vitesses.push(e.speed); }
+      if (e.type === 'arrêt' && by) { const sp = shotsPend.slice().reverse().find((s) => st.t - s.t < 3 && s.team !== by.team); if (sp) { o.cadres++; (sp.inBox ? o.arretsIn : o.arretsOut)[0]++; (sp.inBox ? o.arretsIn : o.arretsOut)[1]++; lastEnd = { t: st.t, team: sp.team }; sp.fin = true; } }
+      if (e.type === 'but') { const sp = shotsPend.slice().reverse().find((s) => st.t - s.t < 3 && s.team === e.team); o.buts++; o.cadres++; if (sp) { (sp.inBox ? o.arretsIn : o.arretsOut)[1]++; if (sp.rebond) o.butsRebond++; if (sp.tete) o.butsTete++; sp.fin = true; } }
+      if (e.type === 'contre') { const sp = shotsPend.slice().reverse().find((s) => st.t - s.t < 1.5 && !s.fin); if (sp) { o.blocs++; lastEnd = { t: st.t, team: sp.team }; sp.fin = true; } }
+    }
+  }
+}
+const q = (a, x) => { a = [...a].sort((u, v) => u - v); return a.length ? a[Math.floor(x * a.length)] : NaN; }; const mean = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : NaN; const n = o.n; const pct = (c) => c[1] ? (100 * c[0] / c[1]).toFixed(0) : 'NaN';
+console.log(`${n} × 90 min`);
+console.log(`M09-1 complétion par distance × direction : ${Object.entries(o.pass).sort().map(([k, c]) => `${k} ${pct(c)} % (${c[1]})`).join(' ; ')} (cibles 5-15 yd 88-92, 15-30 yd 82-87, 30+ yd 55-65 ; global 80-83)`);
+console.log(`M09-cal sol ${pct(o.sol)} % (cible 90-95) c. aérien ${pct(o.air)} % (< sol) ; ≥ 32 m ${pct(o.longs)} % (cible 47) sur ${o.longs[1]} ; passes bloquées en vol ('contre' / passes) ${(100 * o.contres / Math.max(1, o.passes)).toFixed(1)} % (cible 3,1) ; ${(o.passes / n).toFixed(0)} passes de champ / match`);
+console.log(`M10-9 tirs / match (2 équipes) ${(o.shots / n).toFixed(1)} (cible 25,3) ; dans la surface ${(100 * o.inBox / Math.max(1, o.shots)).toFixed(0)} % (64) ; distance p50 ${q(o.dist, 0.5).toFixed(1)} m (16), moyenne ${mean(o.dist).toFixed(1)} (14,8) ; vitesse de frappe p50 ${q(o.vitesses, 0.5).toFixed(1)} m/s`);
+console.log(`M10-9 cadrés (but + arrêt) ${(100 * o.cadres / Math.max(1, o.shots)).toFixed(0)} % (33) ; contrés ${(100 * o.blocs / Math.max(1, o.shots)).toFixed(0)} % (27,5) ; buts / tirs ${(100 * o.buts / Math.max(1, o.shots)).toFixed(1)} % (11) ; buts / cadrés ${(100 * o.buts / Math.max(1, o.cadres)).toFixed(0)} % (32) ; buts / match ${(o.buts / n).toFixed(2)} (2,85)`);
+console.log(`M10-5bis taux d'arrêt dedans ${pct(o.arretsIn)} % (cible ≈ 60), dehors ${pct(o.arretsOut)} % (≈ 85) ; M10-7 tirs de rebond (même minute après arrêt / contre) ${(100 * o.rebonds / Math.max(1, o.shots)).toFixed(0)} % (10), buts de rebond ${(100 * o.butsRebond / Math.max(1, o.buts)).toFixed(0)} % (9) ; têtes ${(100 * o.tetes / Math.max(1, o.shots)).toFixed(0)} % des tirs (16,9), buts de la tête ${(100 * o.butsTete / Math.max(1, o.buts)).toFixed(0)} % (15)`);

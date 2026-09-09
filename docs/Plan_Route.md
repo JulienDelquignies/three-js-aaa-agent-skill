@@ -110,14 +110,14 @@ moteur » et un bloc « tests de réfutation par la mesure ». Le brief qui l'ac
 (celui du jeu aval, en TypeScript) — pas celui-ci. **Il manque donc la cartographie du book contre CE moteur**, et
 c'est le premier livrable du chantier :
 
-1. **`docs/Book_vers_Moteur.md` — la cartographie chapitre par chapitre**, sur le modèle du brief : pour chaque
+1. **`docs/Book_vers_Moteur/` — la cartographie chapitre par chapitre** (FAIT le 9/09 : 48 fiches + README, journal 330), sur le modèle du brief : pour chaque
    chapitre, ce que le moteur modélise déjà (avec le numéro de lot et la clé), ce qu'il modélise partiellement, ce
    qui est absent, et — surtout — **chacun de ses tests de réfutation** classé en *mesurable aujourd'hui* /
    *loi existante, cible fausse* / *absent*. Le gardien est traité le premier ci-dessous, en exemple complet :
    27 tests, dont le tout premier (distance moyenne à la ligne 13,1 m) réfute le moteur d'aujourd'hui (profondeur
    plafonnée à 2,6 m, libéro à 10 m). C'est un travail de lecture, pas de loi : il se fait en parallèle du chantier
    A, un chapitre par jour, et il PRODUIT les lots suivants au lieu de les deviner.
-2. **Les tests de réfutation deviennent une annexe du banc** (`verify-book.mjs`), informatifs d'abord (amendement 2 :
+2. **Les tests de réfutation deviennent une annexe du banc** (`verify-book.mjs` — EXISTE, 25 sondes dans `scripts/book/`, informatif), informatifs d'abord (amendement 2 :
    un banc ne naît pas rouge), un test à la fois promu en clause quand la loi qui le fait tenir est scellée. Le
    chapitre 15 du référentiel donne en plus les 48 tests V01-V48 du protocole de validation, avec leur budget
    statistique et leur cadence : les onze P0 « à chaque PR » (déterminisme, buts 2,85 ±0,25, tirs 25 ±2,5, passes

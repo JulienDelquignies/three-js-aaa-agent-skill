@@ -412,6 +412,29 @@ bloc bas ; 2-3 actifs autour du lanceur, 7 immobiles ; 40-50 touches par match ;
 corner, latéraux + sentinelle en rest defense ; passes courtes du gardien > 90 %, rétention des longs
 30-40 % ; scans du receveur 0,4-0,6/s en vol ; buts sur CPA 25-33 % (mesuré, pas forcé).
 
+### La carte du book (docs/Book_vers_Moteur, 330) — ce qu'elle impose à l'ordre
+
+Les 48 fiches sont écrites et mesurées (2 × 90 min par chapitre). Elles ne changent pas l'ordre déjà amendé
+(258 → 257 → 259 → 253 → 255 → 254) : elles le confirment et le prolongent. Après le 259, les lots
+transversaux que la carte appelle le plus souvent, dans l'ordre de leur rendement :
+
+1. **Le profil locomoteur et le budget de course** (Modèle 02, Référentiel 05, Bibles 07-09, 16) : V₀/τ par
+   attributs, intention d'effort, freinage, fatigue sur l'accélération — 165 km / équipe → 108, 8,5 → 0,9
+   accélérations / min. C'est le constat n° 1 des trois volumes.
+2. **La couche de croyance** (Modèle 04, puis 05, 07, 08 ; Bibles 10, 13, 14) : `view` par joueur, les
+   décisions lisent la croyance — l'intervalle, la fenêtre de renversement, le décalage entre lignes, le
+   dribble qui trompe, le coach qui se trompe. Le scan 250 en est la source.
+3. **Le pas de décision séparé du pas physique et les flux RNG nommés** (Modèle 01) : condition du banc du
+   réel (≥ 200 matchs) et de la saison (chantier A) — 130 s / match → 2 s.
+4. **Le duel comme vecteur** (Modèle 11, Bible 15) et **la passe qui se manque à la bonne distance**
+   (Modèles 07, 09 ; le centre 58 → 20 %).
+5. **Le ballon qui sort et le temps du match** (Modèles 12, 13 ; Bible 14 ; Référentiels 01, 06, 10).
+6. **Le bloc qui perçoit et la ligne qui est une ligne** (Bibles 03, 10) — découlent de 1 et 2.
+
+Chaque fiche porte ses lots en §4 ; la règle reste : une loi à clé, jumeau au bit, clause au banc — et la
+table du réel (verify-book, informatif) promue en clause fiche par fiche quand la loi qui la fait tenir est
+scellée (décision 4 du Plan_Route).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

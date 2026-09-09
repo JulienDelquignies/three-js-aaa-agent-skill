@@ -225,6 +225,10 @@ exprimées gelées, le reste informatif = le backlog 250-254 ; les chiffres du d
 Banc : `verify-scan.mjs` (lot 250 — l'horloge de scan : déterministe par acteur, aucun bit de jeu, cadence de Jordet en vol,
 la note scanning comme temps, jamais de saccade à la frappe ni à la prise ; le corps ouvert après le regard mesuré placebo).
 
+Banc : `verify-book.mjs` (330 — LE BOOK COMME TABLE DU RÉEL : 25 sondes dans `scripts/book/`, une par chapitre du dépôt
+`JulienDelquignies/book`, 2 × 90 min chacune ; informatif — il imprime, ne rougit jamais ; les cibles, les statuts et les lots
+vivent dans `docs/Book_vers_Moteur/`, une fiche par chapitre, README pour la carte et les douze constats).
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;
