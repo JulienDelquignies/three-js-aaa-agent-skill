@@ -28,6 +28,8 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Bible 04 — latéraux et pistons | [04-lateraux.md](04-lateraux.md) | 1, 8, 10, 14, 15-18, 21, 23, 24, 31 mesurés | la rest defense ; le centre qui se manque ; le cadrage à ballReleased ; le profil locomoteur ; la fatigue locale |
 | Bible 05 — milieu défensif | [05-milieu-defensif.md](05-milieu-defensif.md) | T1, T2, T4, T8, T9, T12-14, T17, T18, T27 mesurés (4-3-3, 4-2-3-1, bloc bas) | le renversement qui existe ; le double pivot comme unité ; l'interligne piloté par le bloc ; le budget du 6 ; les régimes de tempo ; la faute tactique |
 | Bible 06 — relayeurs | [06-relayeurs.md](06-relayeurs.md) | 1, 3, 8-14, 16, 18-20, 24-25, 28 mesurés | la rest defense comme structure ; la course avant le ballon ; le soutien par sous-phase ; la règle des lignes ; le contre-press dans le joueur ; le handoff en unité |
-| Bible 07 → 16 | à faire | | |
+| Bible 07 — entre les lignes | [07-meneur-entre-les-lignes.md](07-meneur-entre-les-lignes.md) | T1, T2, T5-T7, T11, T13, T14, T21, T23 mesurés (adversaire défaut / bloc bas) | la poche dérivée de l'adversaire ; le sprint a un budget ; la pausa ; le déclencheur côté attaquants ; l'orientation de trois-quarts |
+| Bible 08 — ailiers | [08-ailiers.md](08-ailiers.md) | 1-6, 10, 12-15, 17, 21, 23 mesurés | dyT par phase et la conservation ; le dribble à sa fréquence ; le budget de sprint ; le pressing arqué ; les rôles de touche |
+| Bible 09 → 16 | à faire | | |
 | Modèle 01 → 16 | à faire | | |
 | Référentiel 01 → 16 | à faire | | |
