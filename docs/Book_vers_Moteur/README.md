@@ -38,7 +38,11 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Bible 14 — micro-comportements | [14-micro-comportements.md](14-micro-comportements.md) | T1-T3, T12, T15, T24, T25 mesurés | la perception non omnisciente ; la tromperie ; le temps du match ; la communication comme canal ; la première touche typée et la pausa |
 | Bible 15 — duels et seconds ballons | [15-duels-seconds-ballons.md](15-duels-seconds-ballons.md) | D1-D3, D10, D12, D14, D15, D17, D20-D24, D30, D33 mesurés | le duel comme vecteur ; le tacle glissé comme dernier recours (82/match) ; le jeu long qui se manque et le ballon qui sort ; la tête comme volume ; les redistributions contestées |
 | Bible 16 — contexte de match | [16-contexte-de-match.md](16-contexte-de-match.md) | T5, T6, T10-T15, T17, T19, T23 mesurés | le profil locomoteur et le budget (165 km / équipe) ; la couche de contexte ; les trois fatigues ; le temps du match ; l'infériorité et le lieu |
-| Modèle computationnel 01 → 16 | à faire | | |
+| Modèle 01 — boucle | [M01-boucle-simulation.md](M01-boucle-simulation.md) | 3, 5, 9, 10 mesurés | le pas de décision séparé du pas physique (40 tirs à 1/60, 22 à 1/30) ; les flux RNG nommés ; le double tampon ; le budget (251 µs / tick) ; le temps de jeu ; le LOD1 |
+| Modèle 02 — locomotion | [M02-locomotion.md](M02-locomotion.md) | 1-3, 6, 8, 11-13 mesurés | le profil mono-exponentiel et l'intention d'effort (8,5 accélérations / min, réel 0,9) ; le freinage ; l'évitement (11,5 interpénétrations / min) ; la fatigue sur l'accélération ; les courses arquées |
+| Modèle 03 — ballon | [M03-physique-ballon.md](M03-physique-ballon.md) | 2-5, 14 mesurés | la portance calée (C_L à la moitié) ; le roulement DIN ; l'erreur anisotrope ; l'interception probabiliste ; le knuckleball |
+| Modèle 04 — perception | [M04-perception-cognition.md](M04-perception-cognition.md) | inventaire (architecture A) | la couche de croyance ; le balayage comme prérequis de poste ; la latence par décision ; l'attention et la tromperie ; la communication ; l'invariance par permutation |
+| Modèle 05 → 16 | en cours | | |
 | Référentiel de calibration 01 → 16 | à faire | | |
 | Modèle 01 → 16 | à faire | | |
 | Référentiel 01 → 16 | à faire | | |
