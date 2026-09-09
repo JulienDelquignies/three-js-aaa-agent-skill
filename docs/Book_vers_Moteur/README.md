@@ -35,7 +35,11 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Bible 11 — transitions | [11-transitions.md](11-transitions.md) | X1-X7, X10, X13-X15, X22-X25 mesurés | la transition comme résultat ; le rendement du contre par le déséquilibre lu ; les cinq rôles de transition ; la reperte immédiate (tenue) ; le socle de possession |
 | Bible 12 — marquage et passation | [12-marquage-passations.md](12-marquage-passations.md) | T1-T5, T7, T10, T17, T18 mesurés | la distance d'intervention ; la passation comme état et comme parole ; le clignotement (29/min) ; l'entre-lignes et le décrochage ; les corners comme protocole |
 | Bible 13 — chorégraphie | [13-choregraphie-zonale.md](13-choregraphie-zonale.md) | 1-7, 13-18, 22, 23 mesurés | le repère d'équipe daté ; longueur et largeur par bande ; la répulsion entre partenaires ; l'immobilité active ; le gardien dans le repère ; la respiration asymétrique |
-| Bible 14 → 16 | en cours (sondes lancées) | | |
+| Bible 14 — micro-comportements | [14-micro-comportements.md](14-micro-comportements.md) | T1-T3, T12, T15, T24, T25 mesurés | la perception non omnisciente ; la tromperie ; le temps du match ; la communication comme canal ; la première touche typée et la pausa |
+| Bible 15 — duels et seconds ballons | [15-duels-seconds-ballons.md](15-duels-seconds-ballons.md) | D1-D3, D10, D12, D14, D15, D17, D20-D24, D30, D33 mesurés | le duel comme vecteur ; le tacle glissé comme dernier recours (82/match) ; le jeu long qui se manque et le ballon qui sort ; la tête comme volume ; les redistributions contestées |
+| Bible 16 — contexte de match | [16-contexte-de-match.md](16-contexte-de-match.md) | T5, T6, T10-T15, T17, T19, T23 mesurés | le profil locomoteur et le budget (165 km / équipe) ; la couche de contexte ; les trois fatigues ; le temps du match ; l'infériorité et le lieu |
+| Modèle computationnel 01 → 16 | à faire | | |
+| Référentiel de calibration 01 → 16 | à faire | | |
 | Modèle 01 → 16 | à faire | | |
 | Référentiel 01 → 16 | à faire | | |
 
