@@ -42,7 +42,8 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Modèle 02 — locomotion | [M02-locomotion.md](M02-locomotion.md) | 1-3, 6, 8, 11-13 mesurés | le profil mono-exponentiel et l'intention d'effort (8,5 accélérations / min, réel 0,9) ; le freinage ; l'évitement (11,5 interpénétrations / min) ; la fatigue sur l'accélération ; les courses arquées |
 | Modèle 03 — ballon | [M03-physique-ballon.md](M03-physique-ballon.md) | 2-5, 14 mesurés | la portance calée (C_L à la moitié) ; le roulement DIN ; l'erreur anisotrope ; l'interception probabiliste ; le knuckleball |
 | Modèle 04 — perception | [M04-perception-cognition.md](M04-perception-cognition.md) | inventaire (architecture A) | la couche de croyance ; le balayage comme prérequis de poste ; la latence par décision ; l'attention et la tromperie ; la communication ; l'invariance par permutation |
-| Modèle 05 → 06 | en cours (sonde lancée) | | |
+| Modèle 05 — contrôle de l'espace | [M05-controle-espace.md](M05-controle-espace.md) | 2, 4 mesurés | l'engagement de cible et la zone morte (96 changements / min) ; la probabilité de contrôle ; la zone atteignable ; le calcul sur les croyances |
+| Modèle 06 — modèles de valeur | [M06-modeles-de-valeur.md](M06-modeles-de-valeur.md) | 2, 5, cal mesurés | une valeur d'état calibrée ; la direction et la longueur des passes (49 % arrière, 1,6 % longues) ; l'attitude au risque qui déplace ; la température ; le test d'import |
 | Modèle 07 — pression | [M07-pression-lignes-de-passe.md](M07-pression-lignes-de-passe.md) | 2, 3, 5, 7 mesurés | la pression comme temps d'arrivée ; l'interception probabiliste couplée ; l'affectation avec hystérésis ; le déclenchement par événement ; le piège |
 | Modèle 08 — architecture décisionnelle | [M08-architecture-decisionnelle.md](M08-architecture-decisionnelle.md) | inventaire | la couche unité ; le blackboard à trois zones ; les verrous nommés ; les revendications spatiales ; le journal des intentions |
 | Modèle 09 — passe | [M09-modele-passe.md](M09-modele-passe.md) | 1, cal mesurés | la passe qui se manque à la bonne distance (courtes 67-80 %, longues 61-71) ; le type somme calibré ; le rendez-vous ; la comptabilité des pertes ; le sous-dosage |
@@ -53,7 +54,22 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Modèle 14 — consignes et formations | [M14-consignes-et-formations.md](M14-consignes-et-formations.md) | inventaire | le certificat par consigne ; les deux formes étiquetées ; la familiarité et le plan adverse ; la formation à dix ; le vecteur de joueur |
 | Modèle 15 — IA entraîneur | [M15-ia-entraineur.md](M15-ia-entraineur.md) | inventaire | le coach qui observe des agrégats bruités ; les remplacements comme politique ; la bibliothèque et l'attente ; l'ablation au banc ; la perte de temps |
 | Modèle 16 — télémétrie | [M16-telemetrie-outils.md](M16-telemetrie-outils.md) | inventaire | le journal en vocabulaire SPADL ; la table du réel au banc ; les détecteurs d'artefacts ; le journal de décision ; l'en-tête de session |
-| Référentiel de calibration 01 → 16 | à faire | | |
+| Référentiel 01 — macro | [R01-macro.md](R01-macro.md) | C1-C36 mesurés | le socle de possession (1 522 passes, 76 min) ; l'échelle de finition (6 buts) ; le ballon qui sort (49 arrêts) ; le carton ; la saison |
+| Référentiel 02 — passes | [R02-passes-possession.md](R02-passes-possession.md) | 1-2, 4-10, 14-17, 23, 35-38 | le centre qui se manque (58 %) ; le ballon long qui existe ; les définitions nommées ; l'amplitude inter-équipes |
+| Référentiel 03 — tirs | [R03-tirs-buts.md](R03-tirs-buts.md) | T1, T4-T8, T16-T22, T32, T34 | l'échelle de finition par distance ; le corps qui contre (2 %) ; la tête ; la part des buts par origine (contre 58 %) |
+| Référentiel 04 — défense | [R04-defense-duels.md](R04-defense-duels.md) | 1-4, 8-11, 13-16, 21-22, 25-34 | le tacle glissé rare et le carton ; le ciel ; le dribble à trois issues ; les récupérations basses |
+| Référentiel 05 — physique | [R05-physique.md](R05-physique.md) | 1-3, 5, 7-9, 14-19 | le profil locomoteur et le budget (16,5 km, HI × 5,5, accélérations × 10) ; le pic par poste |
+| Référentiel 06 — CPA | [R06-cpa.md](R06-cpa.md) | S1-S4, S8, S10, S16-S18, S22 | le volume des CPA ; le corner comme chorégraphie ; le second ballon ; le journal des CPA |
+| Référentiel 07 — physiologie | [R07-physiologie-fatigue.md](R07-physiologie-fatigue.md) | 5-8, 10, 16 | la fatigue temporaire (P0, absente) ; trois fatigues, trois courbes ; la mi-temps |
+| Référentiel 08 — blessures | [R08-blessures-charge.md](R08-blessures-charge.md) | absent | le hasard lésionnel comme sortie du physique ; le calendrier ; la sévérité |
+| Référentiel 09 — psychologie | [R09-psychologie-momentum.md](R09-psychologie-momentum.md) | P8, P13, passes avant | les effets de score comme couche ; le domicile et le public ; le temps additionnel ; ce qu'on refuse de modéliser |
+| Référentiel 10 — arbitrage | [R10-arbitrage-lois.md](R10-arbitrage-lois.md) | A01-A06, A08, A13-A15 | le carton qui juge ; le temps du match ; le hors-jeu qui existe ; la main et le VAR |
+| Référentiel 11 — environnement | [R11-environnement-terrain.md](R11-environnement-terrain.md) | E7 | le roulement DIN et ses presets (BRD 3,9 m) ; la densité de l'air ; la chaleur ; les dimensions |
+| Référentiel 12 — Football Manager | [R12-football-manager.md](R12-football-manager.md) | C6, C13 | le budget CPU (130 s / match) ; l'intelligence qui pèse autant que la vitesse ; la saison comme banc |
+| Référentiel 13 — familiarité | [R13-familiarite-relations.md](R13-familiarite-relations.md) | absent | le réseau de passes comme mesure ; `relation` comme familiarité dyadique |
+| Référentiel 14 — styles | [R14-styles-ligues-epoques.md](R14-styles-ligues-epoques.md) | à mesurer | la sonde des presets ; le niveau comme variable ; les équipes de référence |
+| Référentiel 15 — protocole | [R15-protocole-validation.md](R15-protocole-validation.md) | Q2 | le banc du réel ; la statistique ; les six niveaux |
+| Référentiel 16 — données | [R16-donnees-ressources.md](R16-donnees-ressources.md) | inventaire | l'étape 1 (Wyscout) ; SPADL ; le tracking |
 | Modèle 01 → 16 | à faire | | |
 | Référentiel 01 → 16 | à faire | | |
 
@@ -78,3 +94,25 @@ Les mêmes constats reviennent de poste en poste, et ce sont eux qui font les lo
    se manquent** (258, ch. 02, 04, 08, 09).
 6. **Personne ne regarde ni ne retarde.** Aucune latence de décision, aucune croyance périmée, le scan sans effet sous
    pression, le pausa absent, le 10 sans poche. → **la perception non omnisciente** (Modèle 04) et **la pausa** (253).
+
+## Ce que les 48 fiches disent ensemble
+
+Aux six constats des Bibles 01-09 (tout le monde chasse ; la défense au contact ; le ballon vit devant ; la largeur
+sans phase ; rien ne se manque ; personne ne regarde ni ne retarde), les volumes Modèle et Référentiel ajoutent :
+
+7. **Le moteur ment sur sa précision** (Modèle 01) : 40 tirs par 90 min à dt 1/60, 22 à dt 1/30 — des constantes
+   sont câblées au pas ; 251 µs par tick, 130 s par match : la saison comme instrument de mesure est hors de
+   portée tant que le pas de décision n'est pas séparé du pas physique.
+8. **Il n'y a pas de couche de croyance** (Modèles 04, 05, 07, 08) : chaque décision lit l'état vrai — d'où
+   96 changements de cible par minute, 29 commutations de marquage, un bloc omniscient, un dribble qui ne trompe
+   pas, un coach infaillible. C'est le lot transversal n° 1 des trois volumes.
+9. **Le duel n'a pas de vecteur** (Modèles 10, 11 ; Référentiels 03, 04) : deux issues, pas de neutre, le
+   vainqueur récupère, le tir se convertit à 24,5 %, la tête ne marque jamais, le tacle glissé est ordinaire et
+   le carton pleut.
+10. **Le ballon ne sort pas et le jeu ne s'arrête pas** (Modèles 12, 13 ; Référentiels 01, 06, 10) : 3,5 corners,
+    14 touches, 49 arrêts de 17,5 s, 76 minutes de jeu effectif.
+11. **La physique du ballon est à moitié calée** (Modèle 03 ; Référentiel 11) : portance à la moitié, roulement
+    trop long, pas de knuckleball, pas de preset de terrain.
+12. **Le banc prouve des invariants, pas le réel** (Modèle 16 ; Référentiel 15) : ce dossier est la table du
+    réel ; il reste à la verser au banc (informative, puis contractuelle) et à la dimensionner (≥ 200 matchs,
+    ce qui exige le point 7).
