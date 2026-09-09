@@ -31,7 +31,11 @@ ordres de grandeur sont sûrs, les décimales non) ; les sondes vivent dans le s
 | Bible 07 — entre les lignes | [07-meneur-entre-les-lignes.md](07-meneur-entre-les-lignes.md) | T1, T2, T5-T7, T11, T13, T14, T21, T23 mesurés (adversaire défaut / bloc bas) | la poche dérivée de l'adversaire ; le sprint a un budget ; la pausa ; le déclencheur côté attaquants ; l'orientation de trois-quarts |
 | Bible 08 — ailiers | [08-ailiers.md](08-ailiers.md) | 1-6, 10, 12-15, 17, 21, 23 mesurés | dyT par phase et la conservation ; le dribble à sa fréquence ; le budget de sprint ; le pressing arqué ; les rôles de touche |
 | Bible 09 — avant-centre | [09-avant-centre.md](09-avant-centre.md) | T1, T4, T7, T8, T13-T14, T17, T19, T24 mesurés | le budget de course ; l'épaule et le service ; la finition ; le pressing comme suppression d'option ; le ballon qui ne vit pas avec le 9 |
-| Bible 10 → 16 | à faire | | |
+| Bible 10 — bloc collectif | [10-bloc-collectif.md](10-bloc-collectif.md) | 1-8, 11-13, 15, 17, 18, 20 mesurés | le bloc qui perçoit ; le coulissement par ligne ; la ligne est une ligne ; l'interligne dérivé et son point de rupture ; le bloc fatigable ; les déclencheurs comme événements |
+| Bible 11 — transitions | [11-transitions.md](11-transitions.md) | X1-X7, X10, X13-X15, X22-X25 mesurés | la transition comme résultat ; le rendement du contre par le déséquilibre lu ; les cinq rôles de transition ; la reperte immédiate (tenue) ; le socle de possession |
+| Bible 12 — marquage et passation | [12-marquage-passations.md](12-marquage-passations.md) | T1-T5, T7, T10, T17, T18 mesurés | la distance d'intervention ; la passation comme état et comme parole ; le clignotement (29/min) ; l'entre-lignes et le décrochage ; les corners comme protocole |
+| Bible 13 — chorégraphie | [13-choregraphie-zonale.md](13-choregraphie-zonale.md) | 1-7, 13-18, 22, 23 mesurés | le repère d'équipe daté ; longueur et largeur par bande ; la répulsion entre partenaires ; l'immobilité active ; le gardien dans le repère ; la respiration asymétrique |
+| Bible 14 → 16 | en cours (sondes lancées) | | |
 | Modèle 01 → 16 | à faire | | |
 | Référentiel 01 → 16 | à faire | | |
 
