@@ -913,7 +913,7 @@ function assignMatchJobs(st, cfg) {
         const win = ((cfg.pressTriggers.win ?? 4.5) + axe(Tp, -1.3, 1.3)) * aMoy;
         st._press = { team: defTeam, until: st.t + win, kind };
         (st._pressCd ??= {})[defTeam] = st.t + win + axe(Tp, 10, 2) / aMoy * (st.full && cfg.garde ? (cfg.garde.cooldown ?? 2) : 1);   // (222) la fenêtre est rare : × garde.cooldown (le porteur profond ouvrait une fenêtre la moitié du temps)
-        st.events.push({ t: +st.t.toFixed(2), type: 'press', kind, team: defTeam });
+        st.events.push({ t: +st.t.toFixed(2), type: 'press', kind, team: defTeam, p: [+st.ball.p[0].toFixed(1), +st.ball.p[2].toFixed(1)] });
       }
     }
   }

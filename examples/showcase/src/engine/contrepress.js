@@ -56,7 +56,7 @@ export function contrePressStep(st, cfg, { busy, tac, axe, role, d2, pitch }) {
           .map((p) => ({ id: p.id, until: st.t + dur * (p.skill?.workF ?? 1) }));
         if (hunters.length) {
           st._cp = { team: loser, t0: st.t, hunters };
-          st.events.push({ t: +st.t.toFixed(2), type: 'contre-press', team: loser, n: hunters.length, dur: +dur.toFixed(1) });
+          st.events.push({ t: +st.t.toFixed(2), type: 'contre-press', team: loser, p: [+st.ball.p[0].toFixed(1), +st.ball.p[2].toFixed(1)], n: hunters.length, dur: +dur.toFixed(1) });
         }
       }
     }

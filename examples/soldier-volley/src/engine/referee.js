@@ -119,7 +119,7 @@ export function stepRemplacements(st, cfg) {
     if (!q._sub) continue;
     if (q._sub.phase === 'out') {
       if (hyp(q.p[0] - q._exit[0], q.p[2] - q._exit[1]) < 1.2) {
-        const spec = q._sub.spec ?? {};
+        const spec = q._sub.spec ?? {}; const sortant = { name: q.name ?? null, number: q.number ?? null };   // (256) l'identité qui sort, avant l'échange
         q.ratings = spec.ratings ?? null;
         q.skill = spec.ratings ? makeProfile(spec.ratings) : null;
         q.look = spec.look ?? null;
@@ -128,7 +128,7 @@ export function stepRemplacements(st, cfg) {
         if (spec.role != null) q.role = resoudreRole(spec.role);
         q._fautes = 0; q._jaunes = 0;                              // l'ardoise part avec l'homme
         q.stam = 1; q._fatEv = null;                               // …et l'entrant a des JAMBES NEUVES (lot 31)
-        st.events.push({ t: +st.t.toFixed(2), type: 'remplacement', team: q.team, id: q.id, minute: Math.floor(st.t / 60) + 1 });
+        st.events.push({ t: +st.t.toFixed(2), type: 'remplacement', team: q.team, id: q.id, minute: Math.floor(st.t / 60) + 1, sortant, entrant: { name: spec.name ?? null, number: spec.number ?? null } });   // (256) p.id est un maillot : l'entrant se nomme ici
         // LOI 3, L'ENTRÉE À LA MÉDIANE (lot 184, cfg.entreeMediane — le vrai remplaçant
         // n'apparaît pas au point de sortie : il LONGE la touche hors du terrain jusqu'à la
         // ligne médiane, salue le quatrième arbitre, et entre à x = 0 — le trajet prend le

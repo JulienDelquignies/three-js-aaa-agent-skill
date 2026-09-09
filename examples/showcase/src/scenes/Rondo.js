@@ -196,13 +196,13 @@ export class Rondo {
       // call — teindre le maillot n'atteint pas la peau. Voir engine/part-tint.js.
       // le gardien porte SA couleur — le métier se lit avant le maillot d'équipe. …ET LE MAILLOT EST UNE TEXTURE (214, engine/kit-uv.js — demande projet aval : plus le « 7 » de Mixamo sur tout le monde, le numéro coûte un canvas, pas 14 meshes) ; ?kit=1 garde le kit géométrique
       const tint = this.kits ? tintPart(model3d, { match: /Shirt/i, color: p.keeper ? 0xd7b12a : (p.look?.shirt ?? TEAMS[p.team].primary) })
-        : applyKit(model3d, { theme: p.keeper ? { primary: 0xd7b12a, secondary: 0x2a2a2a, accent: 0x111111, shorts: 0x2a2a2a, socks: 0xd7b12a } : { ...TEAMS[p.team], ...(p.look?.shirt != null ? { primary: p.look.shirt } : {}) }, number: p.id + 1, name: p.name ?? (q.get('noms') === '1' ? NOMS_DEMO[p.id % NOMS_DEMO.length] : null), initials: TEAMS[p.team].initials ?? null });
+        : applyKit(model3d, { theme: p.keeper ? { primary: 0xd7b12a, secondary: 0x2a2a2a, accent: 0x111111, shorts: 0x2a2a2a, socks: 0xd7b12a } : { ...TEAMS[p.team], ...(p.look?.shirt != null ? { primary: p.look.shirt } : {}), ...(p.look?.secondary != null ? { secondary: p.look.secondary } : {}), ...(p.look?.accent != null ? { accent: p.look.accent } : {}), ...(p.look?.shorts != null ? { shorts: p.look.shorts } : {}), ...(p.look?.socks != null ? { socks: p.look.socks } : {}) }, number: p.number ?? p.id + 1, name: p.name ?? (q.get('noms') === '1' ? NOMS_DEMO[p.id % NOMS_DEMO.length] : null), initials: TEAMS[p.team].initials ?? null });
       if (!tint.check.ok) this._reports.kits.push(tint.check.issues);
 
       // the kit — built after scale/placement because the skeleton binds to the pose as it stands
       if (this.kits) {
         const t = TEAMS[p.team];
-        const kit = buildKit(model3d, { shirt: t.primary, shorts: t.shorts, socks: t.socks, trim: t.secondary, number: p.id + 1 });
+        const kit = buildKit(model3d, { shirt: p.look?.shirt ?? t.primary, shorts: p.look?.shorts ?? t.shorts, socks: p.look?.socks ?? t.socks, trim: p.look?.secondary ?? t.secondary, number: p.number ?? p.id + 1 });   // (256) le numéro du joueur, le look champ par champ (retour aval) ; applyKit se rappelle sur un modèle posé pour repeindre
         if (kit.group) model3d.add(kit.group);
         else this._reports.kits.push(kit.check?.issues);
         if (kit.check && !kit.check.ok) this._reports.kits.push(kit.check.issues);

@@ -658,7 +658,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         const nEv = st.events.length;
         matchStep(st, 1 / 60, cfg);
         if (cid >= 0 && !st.players[cid].keeper && st.phase === 'loose' && st.possession.carrier < 0
-          && !st.events.slice(nEv).some((e) => ['duel', 'turnover', 'sortie', 'but', 'pass', 'shot', 'centre', 'pique'].includes(e.type))) {
+          && !st.events.slice(nEv).some((e) => ['duel', 'turnover', 'sortie', 'but', 'pass', 'shot', 'centre', 'tacle-pique'].includes(e.type))) {
           bascules++;
           const c = st.players[cid];
           // …et un porteur AU SOL est une bascule de CORPS (taclé, tombé), pas un vol
@@ -1005,7 +1005,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     st.rnd = () => 0.1;                     // le succès du pique se TIRE à la note — la fixture le fixe
     const nEv = st.events.length;
     for (let i = 0; i < 30; i++) matchStep(st, 1 / 60, cfg);
-    return st.events.slice(nEv).some((e) => e.type === 'pique');
+    return st.events.slice(nEv).some((e) => e.type === 'tacle-pique');
   };
   ok('le PIQUE existe (fixture : pied adverse au ballon libre de conduite → dévié, événement nommé)', fixturePique(true) === true);
   ok('sabotage « défenseur-spectateur » attrapé (même fixture sans pokeReach : il regarde passer)', fixturePique(false) === false);
@@ -1016,7 +1016,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       const st = makeMatch({ perTeam: 5, seed });
       const cfg = matchCfg();
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
-      piques += st.events.filter((e) => e.type === 'pique').length;
+      piques += st.events.filter((e) => e.type === 'tacle-pique').length;
     }
     ok(`le pique VIT en flux, sobrement (${piques} sur 4 × 120 s ∈ [2 ; 30])`, piques >= 2 && piques <= 30);
   }

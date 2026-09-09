@@ -78,7 +78,7 @@ export const ROLES = {
   // les ailiers (5)
   winger:                { profondeur: 0.6, largeurR: 0.95, appel: 0.6, press: 0.45, ancrage: 0.4, tenue: 0.55, duel: 0.35, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { centre: 1.3, conduite: 1.18, tir: 0.97 } , repli: 0.5 },
   inside_forward:        { profondeur: 0.68, largeurR: 0.45, appel: 0.75, press: 0.45, ancrage: 0.6, tenue: 0.6, duel: 0.35, marqueSerre: 0.3, ressort: 0.5, orienteFaible: 0.35, arbitre: { tir: 1.27, conduite: 1.24, centre: 0.7 } , repli: 0.6 },
-  wide_creator:          { profondeur: 0.55, largeurR: 0.75, appel: 0.45, press: 0.4, ancrage: 0.55, tenue: 0.7, duel: 0.3, marqueSerre: 0.3, ressort: 0.65, orienteFaible: 0.35, arbitre: { passe: 1.21, centre: 1.15, conduite: 1.12 } , interdits: ['repli'] , repli: 0.9 },
+  wide_creator:          { profondeur: 0.55, largeurR: 0.75, appel: 0.45, press: 0.4, ancrage: 0.55, tenue: 0.7, duel: 0.3, marqueSerre: 0.3, ressort: 0.65, orienteFaible: 0.35, arbitre: { passe: 1.21, centre: 1.15, conduite: 1.12 } , interdits: ['repli']  },   // (256) repli 0,9 retiré : mort sous l'interdit 'repli' (retour aval — une valeur morte finit lue comme vivante)
   raumdeuter:            { profondeur: 0.7, largeurR: 0.55, appel: 0.95, press: 0.35, ancrage: 0.9, tenue: 0.2, duel: 0.25, marqueSerre: 0.2, ressort: 0.45, orienteFaible: 0.3, arbitre: { tir: 1.23, conduite: 0.7, centre: 0.8 } , repli: 0.8 },
   tracking_winger:       { profondeur: 0.5, largeurR: 0.85, appel: 0.4, press: 0.85, ancrage: 0.3, tenue: 0.35, duel: 0.7, marqueSerre: 0.8, ressort: 0.45, orienteFaible: 0.65, arbitre: { centre: 1.1, conduite: 0.88 } , interdits: ['relacherPress'] , repli: 0.1 },
   // les attaquants (6)

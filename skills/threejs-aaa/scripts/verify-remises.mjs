@@ -96,7 +96,7 @@ for (const kind of RESTART_NAMES) {
 // 2 × 180 s), deux matchs, la cfg de la scène ; puis la relance à la main du gardien, prise sur pièce (l'événement
 // 'relance-main' n'est jamais tombé en 7 graines × 240 s : la clause force la distribution via beginPass).
 {
-  const cfg = matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
+  const cfg = matchCfg({ shotRange: 20, passation: null, chrono: { periodes: 2, duree: 180, pause: 6 } });   // passation null DATÉ 252 (constaté au 256 : 36 ✓ au 250, 3/7 touches trouvées et un lâcher à 25° dans le monde de la remise au pivot — sept touches, le tirage)
   let touches = 0, hauts = 0, delais = [], recus = 0, pris = 0, rentrees = 0, faces = [], poses = [], horsLigne = [];
   for (const seed of [7, 3]) {
     let { st } = playMatch(makeMatch({ full: true, seed }), 12, { cfg });

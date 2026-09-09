@@ -79,7 +79,7 @@ export function teteStep(st, cfg) {
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
-    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', range: +dGoal.toFixed(1), speed: +(12.5 * geneV).toFixed(1) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', geste: 'tête', range: +dGoal.toFixed(1), speed: +(12.5 * geneV).toFixed(1) });
     return;
   }
   if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {
@@ -149,7 +149,7 @@ export function voleeStep(st, cfg) {
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'but', demi });
-    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', range: +dGoal.toFixed(1), speed: 17 });
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', geste: 'volée', range: +dGoal.toFixed(1), speed: 17 });
     return;
   }
   if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {

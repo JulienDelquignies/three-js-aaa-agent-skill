@@ -225,6 +225,14 @@ exprimées gelées, le reste informatif = le backlog 250-254 ; les chiffres du d
 Banc : `verify-scan.mjs` (lot 250 — l'horloge de scan : déterministe par acteur, aucun bit de jeu, cadence de Jordet en vol,
 la note scanning comme temps, jamais de saccade à la frappe ni à la prise ; le corps ouvert après le regard mesuré placebo).
 
+**Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
+sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
+une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;
+`sansCible: true` marque le ballon expédié sans destinataire (dégagement, urgence) — pas une passe manquée.
+`turnover.equipe` est l'équipe qui perd (`to` en alias un lot). `press` et `contre-press` portent le lieu `p: [x, z]`.
+`remplacement { sortant, entrant }` : `p.id` est un maillot, pas une personne. Le rendu peint `p.number` et le `look`
+champ par champ ; `applyKit` se rappelle sur un modèle déjà posé.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

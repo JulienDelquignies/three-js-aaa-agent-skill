@@ -369,6 +369,17 @@ lue par le rendu (250), interface `p.scan` gelée avant A12a.
 6. *Ordre.* 248 (données, au bit) → 251 (repli, mesuré faux) → 249b (touches) → 249 (identification,
    informatif d'abord) → 250 (scan) → 252 → 253 → 255 → 254.
 
+**Lot 256 — SCELLÉ (NOTES 329).** Le journal vu d'un consommateur : dix points de vocabulaire du retour aval, au bit
+(docs/Retour_Reference_Journal_Fond.md). Alias d'un lot : pass.from, turnover.to — à retirer au 257.
+
+**Retour aval de fond (7/09) — ordre amendé** : 258 L'ÉCHELLE DE FINITION (shotSigma sur l'ordre de grandeur de la
+cage, le 145 gardé ; cibles ~25 tirs, ~33 % cadrées, ~11 % conversion, ~2,7 buts ; banc complet, épingles datées ;
+re-mesurer B (les notes défensives) et C derrière, et les sept leviers de gardien) → 257 LE CARTON JUGE LA NATURE
+(prometteur / tacle par derrière / arrache → jaune ; le tally à 4-5 ; d'abord : la faute d'anti-jeu n'existe presque
+pas, prometteur vrai 1 fois en 3 matchs) → 259 L'ÉPAULE DU DERNIER DÉFENSEUR (quand part l'appel, d'où ; 0 hors-jeu
+en 270 min, la profondeur reçue 18 m derrière la ligne — l'appel muet du 249) → 253 → 255 → 254. A13 (animation) :
+un second canal pour le flux d'animation (burst/touche/control/windup = 58 % du journal).
+
 **Lot 252 — SCELLÉ (NOTES 328).** La passation du marqueur (cfg.passation) : la bande du central tactique et rôle,
 la remise au pivot libre, à portée, entre les lignes ; le pivot marque 21/22 ; le flux du 9 décroché reste au bloc.
 

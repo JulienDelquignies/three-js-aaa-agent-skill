@@ -10182,6 +10182,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la règle posée : à chaque monde scellé la liste se regèle (22) et
      le journal nomme les pertes. Hérités, toujours rouges et nommés :
      246d, les contres à l'entrée.
+- 329: LE JOURNAL VU D'UN CONSOMMATEUR (256 — retour aval du 7/09 sur
+     fc61aaa, docs/Retour_Reference_Journal_Fond.md). Dix points de
+     vocabulaire, tous vérifiés exacts, livrés au bit (empreintes
+     5721b4cffbce2dfc / 815dbeda427d613c — l'empreinte hache le NOMBRE
+     d'événements et l'état, pas leurs champs) : scanning au catalogue
+     ATTRIBUTES avec le repli r2('scanning','vision') (le 170 graduait
+     par vision ; le commentaire de decisions remis à sa ligne) ;
+     pass.by canonique et from en alias UN lot (376 by c. 1 304 from
+     mesurés chez eux — le piège silencieux) ; turnover.equipe (to en
+     alias) ; pass.sansCible sur le ballon expédié sans destinataire
+     (55 par match comptés comme passes manquées) ; shot.geste 'tête' /
+     'volée' et la doctrine écrite : shot est le SEUL événement de
+     frappe (ils comptaient shot + tête + volée + pique = 190 frappes
+     pour 43) ; le tacle 'pique' devient 'tacle-pique' (un accent
+     séparait un tacle d'une passe — NFC/NFD) ; remplacement { sortant,
+     entrant } (p.id est un maillot) ; press et contre-press portent le
+     lieu p: [x, z] ; Rondo.js peint p.number et le look champ par
+     champ (le neuf portait le 10). wide_creator perd son axe repli 0,9
+     mort sous l'interdit. Les cinq constats de fond, acceptés et
+     ordonnés : 258 l'échelle de finition (shotSigma 0,10-0,55 m pour
+     7,32 m de cage — 7,5 % de la largeur pour le pire finisseur du
+     monde : LE point, il explique B, C et les dix buts), 257 le carton
+     qui juge la nature (fautes % 2 : 7,7 cartons, 0,7 expulsion par
+     match c. 4 et 0,05), 259 l'épaule du dernier défenseur (0 hors-jeu
+     en 270 min, la profondeur reçue 18 m derrière la ligne — la même
+     dette que l'appel muet du 249). Leur réfutation gardée : élargir
+     ×3 les bandes défensives ne change rien (t 0,83) — la décision
+     défensive se prend avant l'attribut. Banc : les deux touches de
+     verify-remises étaient rouges depuis le 252 (36 ✓ au 250 ; 3/7
+     touches trouvées, lâcher à 25°) — les annexes de fin de driver
+     n'avaient pas été lues au sceau : épinglées passation null DATÉ
+     252, et la règle : le tally du driver se lit APRÈS final.done.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -57,6 +57,7 @@ export const ATTRIBUTES = {
   // LE LOT 151 — les sept MENTALES, mêmes contrats (le no-op à 50 est LA règle) :
   decisions:   'le choix sous contrainte  → decF [0,85 ; 1,15] : le seuil de panique du contesté (le bon garde la tête, le mauvais joue tôt)',
   offTheBall:  'les appels sans ballon    → otbF [0,85 ; 1,15] : ÷ sur le cooldown personnel des appels profonds (le bon rejaillit)',
+  scanning:    'le regard autour de soi   → scanF [0,85 ; 1,15] : × la cadence de scan en vol et le premier regard (250) ; absente : vision la porte (le 170 graduait l\'ouverture du corps par vision)',
   movement:    'le déplacement sans ballon → offBallF [0,85 ; 1,15] : × sur le décalage hors de l\'ombre du défenseur (offre, 241b) ; absente : offTheBall la porte',
   positioning: 'le placement au repos     → posF [0,85 ; 1,15] : la zone morte du slot × (2 − posF) — le mauvais dérive avant de se recaler',
   workRate:    'le volume de course       → workF [0,85 ; 1,15] : × sur la fenêtre de contre-press personnelle (le travailleur chasse plus longtemps)',
@@ -129,8 +130,8 @@ export function makeProfile(ratings = {}) {
     weakF: lerp(1.5, 0.5, r('weakFoot')),                         // × sur l'écart au neutre du mauvais pied (147)
     kickF: lerp(0.85, 1.15, r('kicking')),                        // la relance au pied du gardien (150)
     throwF: lerp(0.85, 1.15, r('throwing')),                      // la relance à la main du gardien (150)
-    decF: lerp(0.85, 1.15, r('decisions')),
-    scanF: lerp(0.85, 1.15, r('scanning')),                       // × la CADENCE de scan en vol (250) — un temps, pas une amplitude ; 50 = 1                       // le seuil de panique (151)
+    decF: lerp(0.85, 1.15, r('decisions')),                       // le seuil de panique (151)
+    scanF: lerp(0.85, 1.15, r2('scanning', 'vision')),            // × la CADENCE de scan en vol (250) — un temps, pas une amplitude ; 50 = 1 ; la note dédiée, sinon vision (retour aval : le 170 graduait par vision)
     otbF: lerp(0.85, 1.15, r('offTheBall')),                      // la cadence d'appel (151)
     offBallF: lerp(0.85, 1.15, r2('movement', 'offTheBall')),      // LE DÉPLACEMENT SANS BALLON (241b) : l'amplitude du décalage hors de l'ombre (offre) ; la note dédiée, sinon offTheBall
     posF: lerp(0.85, 1.15, r('positioning')),                     // la zone morte du slot (151)

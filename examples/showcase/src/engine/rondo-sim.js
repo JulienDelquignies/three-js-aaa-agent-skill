@@ -697,7 +697,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           st.ball.impulse([-st.ball.v[0] * 0.55 + (ux / ul) * 3.4, 0, -st.ball.v[2] * 0.55 + (uz / ul) * 3.4]);
           q._pokeCd = st.t + 1.2;
           st.lastTouch = q.team;
-          st.events.push({ t: +st.t.toFixed(2), type: 'pique', by: q.id, sur: c.id, dist: +dq.toFixed(2) });
+          st.events.push({ t: +st.t.toFixed(2), type: 'tacle-pique', by: q.id, sur: c.id, dist: +dq.toFixed(2) });   // (256) 'pique' → 'tacle-pique' : un accent séparait le tacle du bout du pied de la passe piquée
           st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
           return st;
         }
