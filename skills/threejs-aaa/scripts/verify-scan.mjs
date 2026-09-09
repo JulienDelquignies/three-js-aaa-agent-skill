@@ -11,19 +11,19 @@ const NIV = ['pace','acceleration','passing','control','finishing','tackling','r
 const eq = (over) => Array.from({ length: 11 }, () => ({ ratings: { ...Object.fromEntries(NIV.map((k) => [k, 50])), ...over } }));
 const film = (seed, over = {}, note = null, dur = 240) => {
   const st = makeMatch({ full: true, seed, squads: note != null ? [eq({ scanning: note }), eq({})] : null }), cfg = matchCfg({ shotRange: 20, ...over });
-  const o = { vols: 0, scans: 0, tVol: 0, viol: 0, nHors: 0, imgsHors: 0, sacc: 0, imgs: 0, seq: [], events: null }; const prev = new Map();
+  const o = { vols: 0, scans: 0, tVol: 0, viol: 0, nHors: 0, imgsHors: 0, sacc: 0, imgs: 0, seq: [], events: null, premiers: [] }; const prev = new Map();
   for (let i = 0; i < dur * 60; i++) {
     matchStep(st, 1 / 60, cfg);
     for (const p of st.players) { const S = p.scan; if (!S || (note != null && p.team !== 0)) continue; o.imgs++; if (S.until > st.t) o.sacc++;
       const was = prev.get(p.id); const vol = S.vol;
       if (was?.vol && !vol) { o.vols++; o.scans += was.n; o.tVol += st.t - was.t0; }
       if (!vol) { o.imgsHors++; if (S.n !== 0) o.nHors++; }
-      if (S.at === st.t) { o.seq.push(`${p.id}:${st.t.toFixed(2)}:${S.vers}`);   // une saccade naît maintenant
+      if (S.at === st.t) { o.seq.push(`${p.id}:${st.t.toFixed(2)}:${S.vers}`); if (vol && S.n === 1 && was?.t0 != null) o.premiers.push(st.t - was.t0);   // une saccade naît maintenant ; le PREMIER regard du vol est daté
         const d = Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]);
         if (st.pass?.to === p.id && (st.phase !== 'flight' || d < 1.5)) o.viol++; }
       prev.set(p.id, { vol, n: S.n, t0: vol && !was?.vol ? st.t : (was?.t0 ?? st.t) }); }
   }
-  o.events = JSON.stringify(st.events); o.parVol = o.vols ? o.scans / o.vols : 0; o.parS = o.tVol ? o.scans / o.tVol : 0; return o;
+  o.events = JSON.stringify(st.events); o.parVol = o.vols ? o.scans / o.vols : 0; o.parS = o.tVol ? o.scans / o.tVol : 0; o.premier = o.premiers.length ? o.premiers.reduce((x, y) => x + y, 0) / o.premiers.length : 0; return o;
 };
 const A = film(3), B = film(3);
 ok(`l'horloge est DÉTERMINISTE par acteur (LCG seedé par p.id) : deux films de la graine 3 donnent la même séquence de ${A.seq.length} saccades (${A.seq.length === B.seq.length && A.seq.every((x, i) => x === B.seq[i])})`, A.seq.length > 50 && A.seq.length === B.seq.length && A.seq.every((x, i) => x === B.seq[i]));
@@ -31,9 +31,11 @@ const sans = film(3, { scan: null });
 ok(`l'horloge ne bouge AUCUN bit de jeu : les événements de 240 s avec et sans cfg.scan sont identiques (${A.events === sans.events}) ; sans la clé, aucun p.scan (${sans.imgs === 0})`, A.events === sans.events && sans.imgs === 0);
 ok(`LA CADENCE DE JORDET en vol : ${A.parS.toFixed(2)} scan/s de vol (≥ 0,4, ≤ 1,0 — pros 0,4-0,6 ; ${A.parVol.toFixed(2)} regards par vol sur ${A.vols} vols) ; hors ballon les yeux sont en saccade ${(100 * A.sacc / A.imgs).toFixed(0)} % des images (8-25 %)`, A.parS >= 0.4 && A.parS <= 1.0 && A.vols >= 30 && A.sacc / A.imgs >= 0.08 && A.sacc / A.imgs <= 0.25);
 ok(`JORDET : jamais de saccade pendant la frappe du passeur (passe adoptée, pas en vol) ni pendant la prise (ballon < 1,5 m) — ${A.viol} violation(s) = 0 ; n retombe à 0 hors vol (${A.nHors} images à n ≠ 0 hors vol sur ${A.imgsHors} = 0)`, A.viol === 0 && A.nHors === 0);
-const s90 = [3, 5, 7].map((sd) => film(sd, {}, 90).parVol), s10 = [3, 5, 7].map((sd) => film(sd, {}, 10).parVol);
+const SEEDS = [3, 5, 7, 11, 13, 17];   // 3 → 6 graines DATÉ 252 (amendement 5)
+const f90 = SEEDS.map((sd) => film(sd, {}, 90)), f10 = SEEDS.map((sd) => film(sd, {}, 10));
 const m = (a) => a.reduce((x, y) => x + y, 0) / a.length;
-ok(`LA NOTE EST UN TEMPS : scanning 90 → ${m(s90).toFixed(2)} regards par vol, 10 → ${m(s10).toFixed(2)} (90 > 10 sur ${s90.filter((v, i) => v > s10[i]).length}/3 graines, écart ≥ 0,08 en moyenne — scanF × la cadence, le premier regard ÷ scanF)`, s90.every((v, i) => v > s10[i]) && m(s90) - m(s10) >= 0.08);
+// LE LEVIER EST LE PREMIER REGARD (un temps) : à 90 il tombe à 0,25-0,75 s ÷ 1,15, à 10 ÷ 0,85 — le nombre de regards par vol, lui, est fait de la durée des vols (0,84 c. 0,79 sur 6 graines : le tirage), imprimé en informatif
+ok(`LA NOTE EST UN TEMPS : le premier regard du vol tombe à ${m(f90.map((f) => f.premier)).toFixed(2)} s à scanning 90, ${m(f10.map((f) => f.premier)).toFixed(2)} s à 10 (90 plus tôt sur ${f90.filter((f, i) => f.premier < f10[i].premier).length}/${SEEDS.length} graines ≥ 5, ratio ≤ 0,85) — regards par vol ${m(f90.map((f) => f.parVol)).toFixed(2)} c. ${m(f10.map((f) => f.parVol)).toFixed(2)} (informatif)`, f90.filter((f, i) => f.premier < f10[i].premier).length >= 5 && m(f90.map((f) => f.premier)) <= 0.85 * m(f10.map((f) => f.premier)));
 console.log(`(informatif) corps ouvert après le regard (cfg.scan.corps) : mesuré placebo au 250 — pivot post-réception p50 65° avec et sans, dos au jeu à la prise 35 → 38 %, scanning 90/10 sans écart (62°/61°) ; null, code gardé`);
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

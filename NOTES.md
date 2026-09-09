@@ -10131,6 +10131,57 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      amplitude par construction (leçon 246). Le pied de réception (A12b)
      lit pick.foot, déjà écrit par la table des techniques. Banc :
      verify-scan (5 clauses), dans bancs.mjs.
+- 328: LA PASSATION DU MARQUEUR (252, Campagne V — interface gelée §3 ;
+     le débat du document : le central SUIT le 9 qui décroche, ou le
+     REMET au 6). Sondé (6 × 300 s) : la pointe décroche à plus de 6 m
+     sous la ligne des centraux 77 % des images ; alors personne à moins
+     de 5 m d'elle 67 % du temps, le central jamais (la bande de 6 m du
+     96 l'arrête), le pivot 5 %. La loi (marquage.js, cfg.passation) :
+     LA BANDE DU CENTRAL devient tactique et rôle — suit 8 m × axe
+     marquage (zone 0,6 → homme 1,4) × marqueSerre du rôle (cover 0,9,
+     stopper 1,125) — puis REMISE au pivot de la formation qui défend
+     (pivotDe) ; le pivot ne prend que LIBRE (ni presseur ni couverture
+     à l'image d'avant), l'homme À PORTÉE (10 m) et ENTRE LES LIGNES
+     (pas plus de zone 6 m sous le pivot) ; il le marque un pas côté
+     but (× markF), le rend quand l'homme remonte à remet 2,5 m de la
+     bande (cause 'homme'), le lâche s'il s'enfonce (cause 'zone') ; la
+     remise ne survit ni à la perte du ballon ni à un arrêt. Quatre
+     mesures ont fait la loi : la ligne lue deux fois flappait à 4 Hz
+     (mémorisée dans la remise) ; la zone lue depuis la ligne-spot des D
+     lâchait tout (le pivot vit 24 m sous elle : lue sous le pivot) ;
+     l'homme à 23 m sous la ligne et le pivot à 17 m de lui rendaient
+     4 remises par seconde (la portée à la remise, hystérésis + 4 au
+     lâcher) ; le pivot presseur ou couverture 36 % des images de remise
+     (libre à l'image d'avant). Mesuré après : ~27 remises par 300 s et
+     par équipe, p50 1,4 s, rendues 9 fois sur 10, le pivot libre marque
+     l'homme 21/22 ; le flux « pointe décrochée libre » ne bouge pas
+     (62 → 61 % à plus de 5 m) : le 9 du moteur décroche sous le pivot,
+     au milieu — c'est le bloc de 30 m, pas la remise ; dette nommée
+     avec le 251 (la transition). Le rôle au flux : stopper 78 c. cover
+     133 remises sur les graines 1-4, 73 c. 76 sur 3-9 — bruit, laissé
+     informatif ; la bande pure est la clause. Livrée par défaut
+     (empreintes 5721b4cffbce2dfc / 815dbeda427d613c ; passation null =
+     f8167a8c1e333a04 / b6d66a5f8aee347f, l'hier au bit). Banc :
+     verify-match11 252. LE BANC AU MONDE NOUVEAU : six clauses de flux
+     déplacées, toutes prouvées vertes à HEAD (worktree) et épinglées
+     passation null DATÉ 252 — la course traverse la frappe (l'élan
+     retenu 70/137 c. 56), l'aimant du porté (28/451 = 6,2 c. 6 %), le
+     lancé 189 (10 c. 9,1), le flux du troisième homme, la roulette
+     121, le pressing cohérent 160 (traversées 11,4 c. 8 %) ; et ma
+     propre clause 249b (présence à la craie 23 → 16 % sur 3 × 200 s)
+     mesure désormais la craie dans son monde. Le même bord de Poisson
+     à chaque loi qui bouge la défense : ces clauses jugent à ± 1
+     événement, la volumétrie est leur dette, pas la loi. Deux annexes
+     ont bougé aussi : verify-scan, dont « la note est un temps » lisait
+     les regards par vol (0,84 c. 0,79 à 6 graines — la durée des vols,
+     pas la note) : la clause lit maintenant le PREMIER regard du vol
+     (÷ scanF, le vrai levier), les regards par vol en informatif ; et
+     verify-identification, dont 7 des 18 signatures gelées tombent à
+     4/6 dans le monde de la passation (DC tenue ×2, DC C profondeur,
+     MDC B press, MDC C largeurR, AIL A/C largeurR) quand 11 montent —
+     la règle posée : à chaque monde scellé la liste se regèle (22) et
+     le journal nomme les pertes. Hérités, toujours rouges et nommés :
+     246d, les contres à l'entrée.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

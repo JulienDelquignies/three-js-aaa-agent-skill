@@ -73,3 +73,44 @@ export function refermerLigne(st, spotsBloc, mapD, nDefD, presseur, defenders, c
     if (rec && sgnAtk) dx.set(e.k, rec * sgnAtk);
   });
 }
+
+/** LA PASSATION DU MARQUEUR (252, cfg.passation — interface gelée §3 ; débat du document : le central SUIT le 9 qui
+ *  décroche, ou le REMET au 6). Sondé (6 × 300 s) : la pointe décroche à plus de 6 m sous la ligne des D 77 % des
+ *  images ; alors personne à moins de 5 m d'elle 67 % du temps, le central jamais (la bande du 96 l'arrête), le pivot
+ *  5 %. La loi : le central suit jusqu'à suit m sous sa ligne — LA TACTIQUE dit jusqu'où (axe marquage : zone 0,6 ×,
+ *  homme 1,4 ×), LE RÔLE nuance (marqueSerre 0,8-1,2 ×) — puis REMET au pivot de sa formation (pivotDe) s'il est
+ *  disponible (ni presseur ni couverture) : le pivot marque l'homme tant qu'il vit entre les lignes (à moins de zone m
+ *  sous la bande), le rend au central quand il remonte à remet m de la bande (cause 'homme'), le lâche s'il s'enfonce
+ *  au-delà (cause 'zone'). Un événement 'passation' { de, a, cause } par changement de main. Absente : hier au bit.
+ *  Rend la bande (m) que le central ne dépasse pas. */
+export function bandeDuCentral(cfg, tacDef, role, axe, p) {
+  const PA = cfg.passation; if (!PA) return 6;
+  return (PA.suit ?? 8) * axe(tacDef?.marquage ?? 0.5, 0.6, 1.4) * ((role(p).marqueSerre ?? 0.5) !== 0.5 ? axe(role(p).marqueSerre, 0.8, 1.2) : 1);
+}
+export function remettreAuPivot(st, cfg, p, m, pivot, sL, sgnDef, bande) {
+  const PA = cfg.passation; if (!PA || !pivot || pivot.id === p.id || pivot._libre === false) return;   // le pivot qui presse ou couvre (byDist 0/1) ne prend pas — mesuré sans : le pivot était presseur ou couverture 36 % des images de remise
+  const H = st._passation ??= {}; const prof = sL - m.p[0] * sgnDef;   // la profondeur de l'homme sous la ligne du central
+  if (prof <= bande) return;
+  const cur = H[m.id];
+  if ((!cur || cur.a !== pivot.id) && (Math.hypot(m.p[0] - pivot.p[0], m.p[2] - pivot.p[2]) > (PA.portee ?? 10) || prof - (sL - pivot.p[0] * sgnDef) > (PA.zone ?? 6))) return;   // …et ENTRE LES LIGNES : pas plus de zone m sous le pivot (sinon c'est un homme du milieu, le bloc)   // le pivot ne prend que ce qu'il peut atteindre — sinon la bande tient et personne ne suit (le bloc), comme hier ; mesuré sans : l'homme à 23 m sous la ligne, le pivot à 17 m de lui, 4 remises par seconde rendues aussitôt
+  if (!cur || cur.a !== pivot.id) { H[m.id] = { de: p.id, a: pivot.id, until: st.t + 0.6, sL, sgnDef, bande }; st.events.push({ t: +st.t.toFixed(2), type: 'passation', de: p.id, a: pivot.id, cause: 'decrochage' }); }
+  else { cur.until = st.t + 0.6; cur.de = p.id; cur.sL = sL; cur.bande = bande; }
+}
+/** Le pivot a-t-il un homme remis à marquer ? Rend l'homme, ou null — et clôt la passation (rendu / lâché) en nommant la cause.
+ *  La ligne et la bande sont CELLES DU CENTRAL au moment de la remise (mémorisées : deux lectures de la ligne flappaient à 4 Hz). */
+export function hommeRemis(st, cfg, pivot) {
+  const PA = cfg.passation, H = st._passation; if (!PA || !H) return null;
+  for (const [id, h] of Object.entries(H)) {
+    if (h.a !== pivot.id) continue;
+    const m = st.players[+id]; const prof = m ? h.sL - m.p[0] * h.sgnDef : -99;
+    if (!m || m.down > 0 || h.until < st.t || prof < h.bande - (PA.remet ?? 2.5)) { delete H[id]; if (m) st.events.push({ t: +st.t.toFixed(2), type: 'passation', de: pivot.id, a: h.de, cause: 'homme' }); continue; }
+    if (prof - (h.sL - pivot.p[0] * h.sgnDef) > (PA.zone ?? 6) || Math.hypot(m.p[0] - pivot.p[0], m.p[2] - pivot.p[2]) > (PA.portee ?? 10) + 4) { delete H[id]; st.events.push({ t: +st.t.toFixed(2), type: 'passation', de: pivot.id, a: -1, cause: 'zone' }); continue; }   // zone : l'homme s'enfonce à plus de zone m SOUS LE PIVOT lui-même (la ligne-spot des D vit 24 m au-dessus du pivot : une zone lue depuis elle lâchait tout)
+    return m;
+  }
+  return null;
+}
+/** La purge : une remise ne survit ni à la perte du ballon par l'attaque ni à un arrêt de jeu (mesuré : 3 images de remise sur 4 vivaient en soutien ou en marche de cérémonie). */
+export function purgerPassation(st, atk) {
+  const H = st._passation; if (!H) return;
+  for (const [id, h] of Object.entries(H)) { const m = st.players[+id]; if (!m || m.team !== atk || st.restart) delete H[id]; }
+}

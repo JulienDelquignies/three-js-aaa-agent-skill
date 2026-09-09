@@ -302,6 +302,11 @@ export const MATCH = {
                           // du RÈGLEMENT par remise (Lois 15/16/17) — les 3 m du réduit d'hier en clé absente.
   gkTenue: { min: 2.2, max: 4.2 },   // 171 : LA TENUE DU GARDIEN — la prise se tient (tirée,
                           // × axe tempo) sauf contre ouvert ; cap Loi 12.2 (gkRelease × 1,9).
+  passation: { suit: 8, remet: 2.5, zone: 6, portee: 10 },   // 252 : LA PASSATION DU MARQUEUR — le central suit
+                          // son homme jusqu'à suit m sous sa ligne (× axe marquage de la tactique 0,6-1,4, × rôle
+                          // marqueSerre 0,8-1,2), puis le REMET au pivot (pivotDe) qui le marque entre les lignes,
+                          // le rend quand il remonte à remet m de la bande, le lâche quand il s'enfonce à plus de zone m sous le pivot ou à portee + 4 m de lui (il ne prend qu'à portee m) ; événement
+                          // 'passation' { de, a, cause }. Absente : la bande de 6 m d'hier, personne ne prend.
   scan: { vol: [0.4, 0.6], horsBallon: [1.5, 4], dur: 0.45, prise: 1.5, presseur: 10, corps: null },   // 250 : L'HORLOGE DE SCAN
                           // (scan.js, interface gelée §1) — p.scan { at, until, vers, cible, n, vol } pour le
                           // rendu (A12a lit, jamais n'écrit) : vol scans/s pendant le vol d'une passe qui

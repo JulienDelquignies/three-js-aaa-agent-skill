@@ -53,7 +53,7 @@ const AXES = [['largeurR', 'larg', +1], ['profondeur', 'prof', +1], ['appel', 'a
 // CE QUE LE MOTEUR EXPRIME (consommateurs prouvés : largeurR → la craie 177/249b et les courses d'aile 125 ; repli → 251 ; press → 229/pression ; appel → 41/125/144 ; tenue → 211 ; profondeur → le poste nuancé 200)
 const PROUVES = new Set(['largeurR', 'repli', 'press', 'appel', 'tenue', 'profondeur', 'garde']);   // garde → keeper.js (le gardien libéro)
 // CE QUE LE MOTEUR EXPRIMAIT AU 249 (gelé : rôle|axe à ≥ 5/6 sur ces graines — la garde de non-régression ; vide = la première passe informative)
-const EXPRIMES_249 = ['GK A|garde', 'DC A|profondeur', 'DC A|tenue', 'GK B|garde', 'DC B|profondeur', 'DC B|tenue', 'LAT B|largeurR', 'DC C|profondeur', 'MDC A|profondeur', 'MO A|press', 'MDC B|press', 'MDC C|largeurR', 'AIL A|largeurR', 'AV A|repli', 'AV B|repli', 'AIL C|largeurR', 'AV C|repli', 'AIL D|repli'];
+const EXPRIMES_249 = ['GK A|garde', 'DC A|largeurR', 'DC A|profondeur', 'LAT A|appel', 'GK B|garde', 'DC B|profondeur', 'LAT B|largeurR', 'LAT C|appel', 'LAT D|largeurR', 'LAT D|profondeur', 'MDC A|largeurR', 'MDC A|profondeur', 'MO A|press', 'MDC B|profondeur', 'MIL B|tenue', 'MDC C|profondeur', 'AV A|repli', 'AV B|repli', 'AIL C|repli', 'AV C|repli', 'AV C|tenue', 'AIL D|repli'];   // REGELÉ DATÉ 252 (le monde de la passation) : perdues au bord (4/6) DC A|tenue, DC B|tenue, DC C|profondeur, MDC B|press, MDC C|largeurR, AIL A|largeurR, AIL C|largeurR ; gagnées 11 — la règle : à chaque monde scellé la liste se regèle et le journal nomme les pertes
 const base = {}; for (const seed of SEEDS) base[seed] = mesure(seed, null);
 const table = [];   // { doc, id, axe, k, n, sens }
 for (const run of RUNS) {

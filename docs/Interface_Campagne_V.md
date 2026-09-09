@@ -41,7 +41,7 @@ cfg.pausa = { tenue: 0.7, dur: [0.6, 1.4], presseur: 3, p: 0.4 };   // null : au
 
 ```js
 st.events.push({ t, type: 'passation', de: idMarqueur, a: idReleveur, cause: 'decrochage' | 'zone' | 'homme' });
-cfg.passation = { suit: 8, remet: 2.5 };
+cfg.passation = { suit: 8, remet: 2.5, zone: 6, portee: 10 };   // 252 : zone (m sous le pivot) et portee (m du pivot) ajoutées — le pivot ne prend que ce qu'il peut atteindre, entre les lignes
 ```
 
 ## 4. Le signal du tireur (A12f, une ligne côté cpa.js)

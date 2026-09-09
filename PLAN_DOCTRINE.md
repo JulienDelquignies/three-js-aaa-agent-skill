@@ -369,6 +369,9 @@ lue par le rendu (250), interface `p.scan` gelée avant A12a.
 6. *Ordre.* 248 (données, au bit) → 251 (repli, mesuré faux) → 249b (touches) → 249 (identification,
    informatif d'abord) → 250 (scan) → 252 → 253 → 255 → 254.
 
+**Lot 252 — SCELLÉ (NOTES 328).** La passation du marqueur (cfg.passation) : la bande du central tactique et rôle,
+la remise au pivot libre, à portée, entre les lignes ; le pivot marque 21/22 ; le flux du 9 décroché reste au bloc.
+
 **Lot 250 — SCELLÉ (NOTES 327).** L'horloge de scan (scan.js, cfg.scan, p.scan pour A12a) : déterministe, aucun bit
 de jeu, cadence de Jordet, scanning comme temps ; le corps ouvert après le regard mesuré placebo (corps null).
 

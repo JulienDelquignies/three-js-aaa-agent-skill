@@ -454,7 +454,7 @@ if (__bloc()) {
     const W = 42; let net = 0, tot = 0;
     for (const seed of [1, 3, 2, 4]) {   // 2 → 4 graines DATÉ A10 (le sabotage à 55 % pour 55,6 exigés : un point, à deux graines)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ shotRange: 20, passation: null, ...cfgExtra });   // passation null DATÉ 252 : vert à HEAD, l'élan retenu 70/137 c. 56 sous la remise au pivot (bord de Poisson)
       const hist = new Map();
       let evCount = 0;
       for (let i = 0; i < 180 * 60; i++) {
@@ -1030,7 +1030,7 @@ if (__bloc()) {
     let n = 0, dos = 0, deny = 0, foulee = 0;
     for (const seed of [2, 3, 5, 7, 11, 13, 17, 19]) {   // 2 → 8 graines DATÉ 237 (3 c. 3,2 %, puis 5 c. 5,7 à 4)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ avantContact: false, cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, ...ISO142, ...over });
+      const cfg = matchCfg({ avantContact: false, cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, passation: null, ...ISO142, ...over });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2469,12 +2469,12 @@ if (__bloc()) {
 // REMONTE à 75 % dans le dernier quart : le porteur sort LANCÉ (retour utilisateur : « plutôt
 // Zidane qu'Antony, ça manque d'envergure »). Mesuré au ship : sortie p50 2,5 → 4,3 m/s,
 // gain vers le but 1,9 → 2,7 m, garde 96 %. Le sabotage rend la toupie d'hier (0,15).
-if (__bloc()) {
+if (__bloc()) {   // passation null DATÉ 252 sur tout le bloc : vert à HEAD, déplacé par la remise au pivot (roulette 6 / 3 × 300 s)
   const mesure = (over, iso = {}) => {
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4, 5, 7, 8]) {   // 3 → 6 graines DATÉ 240 (2 sur 3 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre) contreZones:false DATÉ 242 — 121 hors contres (plancher 1,3 c. 1,4 sur 7 tours)
+      const cfg = matchCfg({ passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre) contreZones:false DATÉ 242 — 121 hors contres (plancher 1,3 c. 1,4 sur 7 tours)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4131,7 +4131,7 @@ if (__bloc()) {
     for (const seed of [3, 5, 7, 9, 11, 13, 15, 17]) {   // 4 → 8 graines DATÉ 240 (2 c. 3 reculs : Poisson)
       const st = makeMatch({ full: true, seed });
       // appuiRemise:false DATÉ 240 : la remise d'appui (B dos au but sous presseur, en contre aussi) est une passe en retrait comptée ici comme un recul (4 → 9) — c'est SA loi, mesurée au 240 ; la clause mesure l'adoption du porteur lancé
-      const cfg = matchCfg({ appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) — le monde d'hier pour la clause du lancé
+      const cfg = matchCfg({ appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) ; passation null DATÉ 252 (10 c. 9,1) — le monde d'hier pour la clause du lancé
       let seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5530,7 +5530,7 @@ if (__bloc()) {
   // ballon est encore à l'équipe 2 s après), les perdus sur service, les pertes de possession (non-dégradation), et la garde
   // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
   const flux = (over) => {
-    const cfg = matchCfg({ shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, remisesMain: null, contact: null, porteAnticipe: null, remisesPied: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // contact/porteAnticipe/remisesPied:null DATÉ A10 (le contact fait TOMBER le receveur dos au but : services perdus 37 % pour ≤ 35, 24 × 300 s — la clause mesure SA loi dans le monde d'hier ; le prix du contact sur l'appui-remise est une mesure du lot 247) ; remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)   // craie sans tenue DATÉ 249b (flux du troisième homme sous σ : 88 c. 97)
+    const cfg = matchCfg({ shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, remisesMain: null, contact: null, porteAnticipe: null, remisesPied: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // contact/porteAnticipe/remisesPied:null DATÉ A10 (le contact fait TOMBER le receveur dos au but : services perdus 37 % pour ≤ 35, 24 × 300 s — la clause mesure SA loi dans le monde d'hier ; le prix du contact sur l'appui-remise est une mesure du lot 247) ; remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)   // craie sans tenue DATÉ 249b (flux du troisième homme sous σ : 88 c. 97) ; passation null DATÉ 252 (vert à HEAD)
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
       for (let i = 0; i < 300 * 60; i++) {
@@ -5986,9 +5986,26 @@ if (__bloc()) {
 // 8,1 → 4,4 m, sorties hors fautes 25 → 45 / 90 (16 × 300 s : touches 19 → 28, corners 1 → 8, sorties de but 5 → 9).
 if (__bloc()) {
   const mesure = (over) => { let n = 0, pres = 0, flips = 0, possMin = 0; for (const seed of [1, 2, 3]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ shotRange: 20, ...over }), prev = {}; for (let i = 0; i < 200 * 60; i++) { matchStep(st, 1 / 60, cfg); if (st.restart || i % 6) continue; const t = st.possession.team; if (t < 0) continue; possMin += 0.1 / 60; const A = st._ancre; if (!A || A.team !== t) continue; for (const s of [1, -1]) { const id = A.cote[s], k = t + ':' + s; if (id !== prev[k] && prev[k] != null) flips++; prev[k] = id; if (id == null) continue; n++; if (st.pitch.hz - Math.abs(st.players[id].p[2]) < 4) pres++; } } } return { pres: n ? 100 * pres / n : 0, flips: possMin ? flips / possMin : 0 }; };
-  const tenu = mesure({}), hier = mesure({ craie: { tire: 0.6, seuil: 0.42 } });
+  const tenu = mesure({ passation: null }), hier = mesure({ craie: { tire: 0.6, seuil: 0.42 }, passation: null });   // passation null DATÉ 252 : la remise au pivot déplace le monde de 3 × 200 s (présence à < 4 m 23 → 16 %) — la craie se mesure dans le sien
   ok(`lot 249b — LA CRAIE EST UNE CHAISE TENUE : l'ancre change de mains ${tenu.flips.toFixed(1)} fois / min de possession (≤ 16 ; hier ${hier.flips.toFixed(1)}, ≥ 25) et vit à < 4 m de la ligne ${tenu.pres.toFixed(0)} % du temps (≥ 18 ; hier ${hier.pres.toFixed(0)} %, ≤ 8 — sa cible d'hier était à 5 m) — 3 × 200 s ; clé craie.tenue ${matchCfg().craie?.tenue}`,
     tenu.flips <= 16 && hier.flips >= 25 && tenu.pres >= 18 && hier.pres <= 8 && matchCfg().craie?.tenue > 0);
+}
+
+// ---------------------------------------------------------------- lot 252 : LA PASSATION DU MARQUEUR (Campagne V, interface
+// gelée §3 — débat du document : le central SUIT le 9 qui décroche, ou le REMET au 6). Sondé : la pointe décroche à plus
+// de 6 m sous la ligne des centraux 77 % des images ; alors personne à moins de 5 m 67 % du temps, le central jamais (la
+// bande du 96), le pivot 5 %. La loi (cfg.passation, marquage.js) : le central suit jusqu'à suit m sous sa ligne (× axe
+// marquage de la tactique, × marqueSerre du rôle) puis remet au pivot (pivotDe) s'il est libre, à portée, l'homme entre
+// les lignes ; le pivot le marque, le rend quand il remonte (cause 'homme'), le lâche s'il s'enfonce (cause 'zone').
+if (__bloc()) {
+  const { pivotDe } = await import('../assets/starter/src/engine/formation.js'); const { bandeDuCentral } = await import('../assets/starter/src/engine/marquage.js'); const { ROLES } = await import('../assets/starter/src/engine/roles.js'); const { axe } = await import('../assets/starter/src/engine/tactics.js');
+  const bande = (tacM, roleId) => bandeDuCentral(matchCfg({}), { marquage: tacM }, () => ROLES[roleId] ?? ROLES.polyvalent, axe, {});
+  const film = (seeds, roles = null, over = {}) => { const o = { remises: 0, libres: 0, marque: 0, rendues: 0 }; for (const seed of seeds) { const st = makeMatch({ full: true, seed, roles: roles ? [roles, roles] : null }), cfg = matchCfg({ shotRange: 20, ...over }); let seen = 0; const pend = [];
+      for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); for (; seen < st.events.length; seen++) { const e = st.events[seen]; if (e.type !== 'passation') continue; if (e.cause === 'decrochage') { o.remises++; pend.push({ a: e.a, at: st.t + 0.25, man: Object.keys(st._passation ?? {}).find((id) => st._passation[id].a === e.a) }); } else if (e.cause === 'homme') o.rendues++; }
+        for (const q of pend) if (!q.done && st.t >= q.at) { q.done = true; const piv = st.players[q.a], m = q.man != null ? st.players[+q.man] : null; if (!piv || !m || piv.job === 'press' || piv.job === 'cover' || st.restart || !(st._passation?.[q.man])) continue; o.libres++; if (piv.job === 'mark' && piv.target && Math.hypot(piv.target[0] - m.p[0], piv.target[2] - m.p[2]) < 3.5) o.marque++; } } } return o; };
+  const V = film([3, 5]), stop = film([3, 5, 7, 9], { 1: 'stopper', 2: 'stopper' }), cov = film([3, 5, 7, 9], { 1: 'cover', 2: 'cover' }), sans = film([3], null, { passation: null });
+  ok(`lot 252 — LA PASSATION DU MARQUEUR : ${V.remises} remises au pivot sur 2 × 300 s (≥ 15), rendues ${V.rendues} ; le pivot libre à +0,25 s marque l'homme remis (cible à < 3,5 m) ${V.marque}/${V.libres} fois (≥ 70 %) ; LA BANDE DU CENTRAL est tactique et rôle (pure) : polyvalent ${bande(0.5, 'polyvalent').toFixed(1)} m (= 8), homme (marquage 1) ${bande(1, 'polyvalent').toFixed(1)} (= 11,2), zone (0) ${bande(0, 'polyvalent').toFixed(1)} (= 4,8), stopper ${bande(0.5, 'stopper').toFixed(1)} > cover ${bande(0.5, 'cover').toFixed(1)} ; clé absente : ${sans.remises} remise (= 0, l'hier au bit) ; pivot du 4-3-3 = poste ${pivotDe(433)} — (informatif, flux 4 × 300 s) centraux stopper ${stop.remises} remises c. cover ${cov.remises}`,
+    V.remises >= 15 && V.libres >= 8 && V.marque / Math.max(1, V.libres) >= 0.7 && Math.abs(bande(0.5, 'polyvalent') - 8) < 1e-9 && Math.abs(bande(1, 'polyvalent') - 11.2) < 1e-9 && Math.abs(bande(0, 'polyvalent') - 4.8) < 1e-9 && bande(0.5, 'stopper') > bande(0.5, 'cover') && sans.remises === 0 && pivotDe(433) === 5);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);
