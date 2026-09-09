@@ -99,6 +99,77 @@ liste ce qui est gelé et depuis quand ; A13, le second canal d'animation (`burs
 58 % du journal), instruit avec l'agent animation ; et la règle qu'un consommateur mesure sur une VERSION, jamais
 sur une branche vivante.
 
+### Chantier F — Le book comme cahier des charges (c'est celui que la première version de ce plan oubliait)
+
+Le dépôt `JulienDelquignies/book` n'est plus un document : c'est **48 chapitres audités (~475 000 mots) en quatre
+couches** — la doctrine (ce qu'un entraîneur veut), la Bible comportementale (ce que font les 22, seconde par
+seconde, 16 chapitres du gardien au contexte de match), le modèle computationnel (les maths et l'architecture,
+16 chapitres) et le référentiel du réel (les nombres et le protocole de validation, 16 chapitres), plus les
+invariants partagés qui font foi quand deux chapitres se contredisent. Chaque chapitre porte un bloc « traduction
+moteur » et un bloc « tests de réfutation par la mesure ». Le brief qui l'accompagne cartographie l'autre moteur
+(celui du jeu aval, en TypeScript) — pas celui-ci. **Il manque donc la cartographie du book contre CE moteur**, et
+c'est le premier livrable du chantier :
+
+1. **`docs/Book_vers_Moteur.md` — la cartographie chapitre par chapitre**, sur le modèle du brief : pour chaque
+   chapitre, ce que le moteur modélise déjà (avec le numéro de lot et la clé), ce qu'il modélise partiellement, ce
+   qui est absent, et — surtout — **chacun de ses tests de réfutation** classé en *mesurable aujourd'hui* /
+   *loi existante, cible fausse* / *absent*. Le gardien est traité le premier ci-dessous, en exemple complet :
+   27 tests, dont le tout premier (distance moyenne à la ligne 13,1 m) réfute le moteur d'aujourd'hui (profondeur
+   plafonnée à 2,6 m, libéro à 10 m). C'est un travail de lecture, pas de loi : il se fait en parallèle du chantier
+   A, un chapitre par jour, et il PRODUIT les lots suivants au lieu de les deviner.
+2. **Les tests de réfutation deviennent une annexe du banc** (`verify-book.mjs`), informatifs d'abord (amendement 2 :
+   un banc ne naît pas rouge), un test à la fois promu en clause quand la loi qui le fait tenir est scellée. Le
+   chapitre 15 du référentiel donne en plus les 48 tests V01-V48 du protocole de validation, avec leur budget
+   statistique et leur cadence : les onze P0 « à chaque PR » (déterminisme, buts 2,85 ±0,25, tirs 25 ±2,5, passes
+   890 ±70 à 83 %, sortie de balle sous pressing, bloc bas, contre 3v2, détecteurs d'artefacts) sont le noyau de la
+   CI du chantier B — c'est là que « la table du réel » de la décision 4 trouve sa forme.
+3. **Le référentiel remplace nos cibles à la main.** Là où NOTES dit « réel ~25 tirs » de mémoire, le référentiel
+   donne la valeur, sa source, sa tolérance et ses pièges de définition (quatre définitions de la passe progressive,
+   deux conventions de duel à facteur 4). Chaque clause de flux cite désormais son numéro de référentiel.
+4. **Les invariants partagés deviennent des clauses de contrat** (`checkBloc`) : I1-I7 — longueur du bloc ≤ 25 m en
+   défense établie, distribution bimodale (28 / 42 m), largeur des milieux ≥ largeur des défenseurs, ligne ≥ 18 m
+   hors état de siège. Ce sont des invariants, pas des cibles : leur violation est un bug.
+5. **Les désaccords d'école restent des axes.** Le book expose les curseurs (recul-frein / jaillissement, faute
+   tactique, piège du hors-jeu, devoir de repli) sans trancher : c'est exactement la place des axes tactiques et de
+   rôle du moteur (identité 0,5), et la règle « une note est un facteur, une consigne est un axe, un interdit est
+   binaire » reste la nôtre.
+
+Ce que ça change à l'ordre : rien pour le chantier A (le book confirme les trois lots — Vol. III ch. 03 pour la
+finition, ch. 04 et ch. 10 pour les cartons, Vol. II ch. 12 pour le hors-jeu), tout pour la suite : après 259, les
+lots ne viennent plus des retours mais de la cartographie, chapitre par chapitre, dans l'ordre que le book propose
+lui-même (le second ballon, la perception non omnisciente, la chorégraphie des 22, le gardien en machine à états).
+
+#### L'exemple complet : le chapitre 02, le gardien, contre keeper.js
+
+Ce que le moteur a : le placement sur la bissectrice et la profondeur (lot 94, `KEEPER.depthMin/Max/Gain`, le mode
+libéro `cfg.libero` à 10 m max), le plongeon à portée réelle (lot 39, `diveReach` 2,95 m, `reflex` 0,12 s, la
+flottante lue tard), le relevé qui coûte (lot 91), la sortie au 1v1 (lot 104 `sortie1v1`, note `oneOnOnes` 163), la
+prise haute et la claquette (147 `handF`, 163 `aerialF`, corners 101), la distribution au pied et à la main (150,
+A9 `remisesMain`/`remisesPied`, 136 `sortieGardien`, 190 `gkAuDevant`, 179 `gkPied`), la garde par tiers (238), la
+tenue et le lâcher (171 `gkTenue`, `gkRelease` 3 s).
+
+Ce que le chapitre en dit, test par test (27 tests, ≥ 200 matchs chacun) :
+
+| Tests | Statut contre le moteur | Ce qu'il faudrait |
+|---|---|---|
+| 1 distance moyenne à la ligne 13,1 m ; 2-3b couplage à la ligne défensive (20,4 m, coefficient 0,57) | **loi existante, cible fausse** : profondeur 0,45-2,6 m, libéro 10 m — le gardien du moteur vit à moins de 3 m de sa ligne | un lot « le gardien couplé à sa ligne » : `gapToBackline`, le plafond de lob, le point de non-retour ; les 2018/2022 comme presets |
+| 4-5 actions hors surface (0,4-2,0 / 90, à 14-17 m) | mesurable aujourd'hui (le libéro, la sortie 1v1) | la sonde, puis les profils Neuer / Ederson / Buffon comme rôles de gardien (les axes `garde`, `ressort` existent) |
+| 6 set position à 85-90 % des tirs | **absent** (aucune notion d'appuis figés) | `setQuality` : un temps, pas une amplitude — lié au scan (250) |
+| 7-8 save % 68-72, dedans/dehors 60/85 | mesurable (les épingles arrêts/buts d'A10) — aujourd'hui 63 % de cadrées, le chiffre est faux par la finition (258) | se re-mesure après 258 |
+| 9-9c portée du plongeon bornée par le temps disponible (< 0,31 m sous 0,25 s), le bloc majoritaire à moins de 11 m, 2,3 % de tirs déviés | **loi existante, cible fausse** : `diveReach` 2,95 m quel que soit `tAvail` ; le contre du champ (176) existe, son effet sur l'arrêt non | la portée comme fonction du temps, le BLOCK avant le DIVE |
+| 10-12 sorties sur centre (64-71 %, capter/boxer/dévier 55/30/15, le coût de la sortie ratée xG 0,55-0,85) | partiel (101, 147, 163) ; le coût jamais mesuré | sonde, puis le geste choisi à la note et à la pression |
+| 13-14 le 1v1 (42-50 % d'arrêt, 1 par 60 min) | mesurable (104, 163) | sonde |
+| 15-19 la distribution (six mètres courts 50-80 %, précision par distance 90-95 / 45-60 %, rétention des longs 30-40 %) | mesurable (le 249 imprime déjà « passes courtes du gardien 67 % sur 6 ») — le volume est trop faible, il faut 200 matchs | l'arbre de décision §7.4 comme loi à clé, `footShort`/`footLong` comme notes |
+| 20 tenue < 8 s (IFAB 2025/26), corner dès la première infraction | **loi existante, règle périmée** : `gkRelease` 3 s à l'échelle des six secondes | mettre la Loi 12 à jour |
+| 21-23b penalty (93,7 % de plongeons, 15-21 % d'arrêts, posture sans effet) | mesurable (217) | sonde |
+| 24 distance parcourue 4,8-5,6 km, marche 68-73 % | mesurable (les allures du 57) | sonde |
+| 25-26 corners selon marquage et trajectoire | partiel (101, 225 `marquageSurface`) | sonde |
+| 27 cohérence des états (pas d'aller-retour sous 0,4 s) | **différence d'architecture** : keeper.js décide par lois, pas par machine à états ; l'engagement `T_commit` existe sous d'autres noms (`diveTime`, `gkTenue`) | ne pas réécrire ; mesurer les flaps, et seulement s'il y en a, poser un `commitUntil` |
+
+Le lot qui en sort en premier n'est pas le plus gros : c'est **le gardien couplé à sa ligne** (tests 1-3b), parce
+que tout le reste du chapitre — le plafond de lob, le point de non-retour, le coût de la sortie — n'existe qu'à
+partir d'un gardien qui vit à 13 m de sa ligne et non à 2.
+
 ## 4. La cadence
 
 - **Un sceau = un lot**, jamais deux lois dans un sceau ; le banc complet avant, le tally après `final.done`, le
@@ -106,10 +177,13 @@ sur une branche vivante.
 - **Une campagne = 4-8 lots et une table de nombres avant/après**, publiée dans MOTEUR.md.
 - **Une version = une campagne close** : empreintes, changelog, alias retirés, interfaces relues.
 - Jalons proposés : **v0.9** à la fin du chantier A (le vrai score, journal sans alias) ; **v1.0** à la fin du
-  chantier B (le paquet, la CI, le schéma du journal) ; **v1.1** à la fin de la Campagne V.
+  chantier B (le paquet, la CI avec les onze P0 du protocole, le schéma du journal) ; **v1.1** à la fin de la
+  Campagne V ; ensuite une version par volume du book cartographié.
 
 ## 5. Ce qui est à décider (par le propriétaire du dépôt, pas par l'agent)
 
+0. **Le book est-il le cahier des charges ?** Si oui, la cartographie (chantier F) devient le générateur des lots
+   après 259, et chaque chapitre coûte un jour de lecture avant le premier lot qu'il produit.
 1. **Le paquet ou la photocopie ?** Le chantier B suppose que le jeu aval consomme une version publiée. Si l'aval
    préfère continuer à photocopier, B se réduit au schéma du journal et à la CI.
 2. **Le vrai score avant les rôles ?** L'ordre A → C est un choix : la Campagne V a été demandée avant, le retour
