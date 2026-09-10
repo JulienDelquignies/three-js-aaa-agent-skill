@@ -10448,6 +10448,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      verify-loi12 « le mur se tient » (5,9 m ≥ 8,4) et son sabotage — ROUGES À HEAD en worktree,
      jamais dans la liste des annexes du banc complet jusqu'ici (ajoutés au 257, à reprendre).
      La sonde vit dans scripts/book/sonde-257.mjs.
+     Sceau : commit 74641fd, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo servi = construit).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
