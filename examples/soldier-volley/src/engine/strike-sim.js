@@ -8,6 +8,7 @@ import { flightRace, interceptPoint, laneClearance, solvePass } from './ball-pre
 import { BALL } from './ball.js';
 import { startGesture } from './gesture.js';
 import { isOffside, offsideLine, pointCorps } from './offside.js';
+import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING } from './skills-sim.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
@@ -586,7 +587,7 @@ export function strikeNow(st, c, cfg) {
       const sc3 = (20 - dB) + sg3 * (q.p[0] - choice.to.p[0]);
       if (sc3 > bs) { bs = sc3; C = q; }
     }
-    if (C && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.troisieme.p ?? 0.5) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(C).appel, 0.7, 1.3)) {
+    if (C && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.troisieme.p ?? 0.5) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(C).appel, 0.7, 1.3) * (st.full && cfg.familiarite ? affiniteMotif(affiniteFam(st, c.id, C.id, cfg), cfg.familiarite) : 1)) {   // (254) le motif à trois vit de l'affinité de la paire
       C._pace = { until: st.t + (cfg.troisieme.dur ?? 1.1), kind: 'troisieme', next: C._pace?.next ?? st.t + 6 };
       C._troisT = st.t + (cfg.troisieme.dur ?? 1.6);
       // (240, cfg.appuiRemise.vieC) LA COURSE VIT LE CYCLE : jusqu'à la réception de B + vieC s (mesuré : C partait 0,95 s avant la réception et mourait 0,65 s après — seule la une-touche le servait, 3 sur 25 contrôles) ; gardé par la clé, le jumeau au bit
@@ -605,7 +606,7 @@ export function strikeNow(st, c, cfg) {
     const presse2 = st.players.some((q) => q.team !== c.team && q.down <= 0
       && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.unDeux.press ?? 2.5));
     if (dAB < (cfg.unDeux.dist ?? 13) && presse2
-      && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.unDeux.p ?? 0.55) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(c).appel, 0.7, 1.3)) {
+      && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.unDeux.p ?? 0.55) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(c).appel, 0.7, 1.3) * (st.full && cfg.familiarite ? affiniteMotif(affiniteFam(st, c.id, choice.to.id, cfg), cfg.familiarite) : 1)) {   // (254) l'un-deux vit de l'affinité de la paire
       c._pace = { until: st.t + (cfg.unDeux.dur ?? 1.5), kind: 'un-deux', next: c._pace?.next ?? st.t + 6 };
       c._troisT = st.t + (cfg.unDeux.dur ?? 1.5);
       // …ET LE LANCEUR SPRINTE (218, cfg.unDeux.course — mesuré : 2,3 m/s à 0,3 s, 2,4 à 0,6 s

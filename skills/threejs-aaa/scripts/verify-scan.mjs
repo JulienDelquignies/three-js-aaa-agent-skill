@@ -10,7 +10,7 @@ const ok = (name, cond) => { (cond ? pass++ : fail++); console.log(`${cond ? '�
 const NIV = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
 const eq = (over) => Array.from({ length: 11 }, () => ({ ratings: { ...Object.fromEntries(NIV.map((k) => [k, 50])), ...over } }));
 const film = (seed, over = {}, note = null, dur = 240) => {
-  const st = makeMatch({ full: true, seed, squads: note != null ? [eq({ scanning: note }), eq({})] : null }), cfg = matchCfg({ pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (5/0 en worktree 22c35d7), Jordet remangé par la pausa (1 saccade pendant une frappe — le porteur qui tient scanne) — la clause mesure l'horloge de scan, pas la pausa */, shotRange: 20, ...over });
+  const st = makeMatch({ full: true, seed, squads: note != null ? [eq({ scanning: note }), eq({})] : null }), cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (5/0 au 255), Jordet remangé par la familiarité (1 saccade pendant une frappe) — la clause mesure l'horloge de scan, pas la familiarité */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (5/0 en worktree 22c35d7), Jordet remangé par la pausa (1 saccade pendant une frappe — le porteur qui tient scanne) — la clause mesure l'horloge de scan, pas la pausa */, shotRange: 20, ...over });
   const o = { vols: 0, scans: 0, tVol: 0, viol: 0, nHors: 0, imgsHors: 0, sacc: 0, imgs: 0, seq: [], events: null, premiers: [] }; const prev = new Map();
   for (let i = 0; i < dur * 60; i++) {
     matchStep(st, 1 / 60, cfg);

@@ -56,6 +56,6 @@ contre-adaptation, les instructions individuelles comme table, le vecteur de jou
    métrique, le sens, l'amplitude, la bande réelle — `verify-identification` devient un banc de monotonie.
 2. **Les deux formes étiquetées** (tests 3, 4 ; Bible 13) : `labelFormation` à 5 s, forme en possession / sans
    ballon déclarées, rôles / formes.
-3. **La familiarité et le plan adverse** (tests 6, 8 ; Bible 16, Référentiel 13) — après 1.
+3. **La familiarité et le plan adverse** (tests 6, 8 ; Bible 16, Référentiel 13) — la familiarité SCELLÉE 337 (254 : η par équipe, Φ de la paire, la synchronie de la ligne) ; le plan adverse reste à faire.
 4. **La formation à dix** (test 12 ; Bible 16 T7-T9) : la dette nommée.
 5. **Le vecteur de joueur** (test 9 ; Référentiel 12) : la signature mesurée d'un rôle × attributs.

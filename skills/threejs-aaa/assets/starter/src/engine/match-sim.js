@@ -1,7 +1,7 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne , bandeDuCentral, remettreAuPivot, hommeRemis, purgerPassation } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { familiariteStep, affinite as affiniteFam } from './familiarite.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
@@ -44,7 +44,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
         if (!spec) return;
         q.ratings = spec.ratings ?? null;
         q.skill = spec.ratings ? makeProfile(spec.ratings) : null; if (spec.postes?.length) { q.postes = spec.postes; q.posteFam = familiarite(spec.postes, posteNom(formationPour(st.tactics[team].formation, true), q.post)); if (q.posteFam < 1) q.skill = profilAuPoste(q.skill ?? makeProfile({}), q.posteFam); }   // (244d) LE POSTE NATUREL : hors poste, le profil au poste (décision, placement…) — liste absente : rien, au bit
-        if (spec.ratings?.foot) q.strongFoot = spec.ratings.foot;
+        if (spec.ratings?.foot) q.strongFoot = spec.ratings.foot; if (spec.familiarite != null) q.fam = Math.max(0, Math.min(1, spec.familiarite));   // (254) la familiarité du joueur avec le collectif (défaut 1 : rodé)
         q.look = spec.look ?? null; q.name = spec.name ?? spec.nom ?? null;   // (214b) le NOM du joueur — le squad peut le porter, le maillot l'affiche
         q.name = spec.name ?? q.name;
         q.number = spec.number ?? null;
@@ -1217,7 +1217,7 @@ export function matchStep(st, dt, cfg = matchCfg()) {
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;
   const prev = [st.ball.p[0], st.ball.p[1], st.ball.p[2]];
-  horsJeuTente(st, cfg); piegeStep(st, cfg); contreEngage(st, cfg); contreTir(st, cfg);   // LE CORPS QUI CONTRE (258b, duel.contreEngage : à l'armé du tir, le défenseur devant s'engage sur la ligne) puis LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
+  familiariteStep(st, cfg); horsJeuTente(st, cfg); piegeStep(st, cfg); contreEngage(st, cfg); contreTir(st, cfg);   // LE CORPS QUI CONTRE (258b, duel.contreEngage : à l'armé du tir, le défenseur devant s'engage sur la ligne) puis LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
   jambeTendue(st, cfg); // LA JAMBE TENDUE (181, duel.jambeTendue) : le receveur attitré touche la passe qui allait le déborder
   arbitreStep(st, dt, cfg); // L'ARBITRE INCARNÉ (185, referee.arbitreStep) : le corps du sifflet — la diagonale, la faute, le rond
   rondoStep(st, dt, cfg);

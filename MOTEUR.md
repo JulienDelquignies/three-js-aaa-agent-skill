@@ -314,6 +314,20 @@ derrière la ligne par match (équilibre 3,25). `piege: null` = la ligne d'hier 
 ligne qui se marque et monte, sabotage null, piege 0 à même hauteur). La sonde des presets : `scripts/book/sonde-255.mjs`
 (deux faces par tactique). Fiches : `03-defenseurs-centraux.md`, `10-bloc-collectif.md`, `M14-consignes-et-formations.md`.
 
+### La familiarité, le mécanisme relationnel (lot 254, `cfg.familiarite` — `familiarite.js`)
+
+Une consigne neuve n'est pas un automatisme (Modèle 14 §7). Le consommateur injecte la familiarité de chaque joueur
+avec le collectif (`squads[team][i].familiarite` ∈ [0 ; 1], défaut 1) ; η par équipe en est la moyenne, choquée à 0,7
+par un changement de posture du coach et rétablie sur deux branches (le réalignement à 90 s, l'automatisme à 25 min —
+0,35 → 0,64 à 2 min, 0,80 à 10 min). Trois canaux, ceux que le Référentiel 13 autorise (aucun ne touche la réussite
+d'une action) : **Φ de la paire** (√(fi fj) × √η) pèse l'un-deux et le troisième homme (P × Φ^0,7) ; **la synchronie de
+la ligne** au piège (255) est σ_sync = 0,12 + 0,40 (1 − η) s, chaque corps partant avec son retard ; le temps de
+réaction et l'ancre restent des dettes nommées. Les lois sont pures et exportées (`etaApres`, `sigmaSync`,
+`affiniteMotif`), l'état vit dans `st.fam[team]`, l'événement `familiarite` marque les chocs et l'événement `piege`
+porte `sigma` et `desync`. Mesuré 4 × 90 min à familiarité 0,4 : motifs divisés par deux, désynchronisation 0,32 s.
+`familiarite: null` = la ligne parfaitement synchrone et les motifs pleins d'hier au bit. Banc : bloc 254 (lois pures,
+l'état et le choc, la ligne désynchronisée, sabotage). Fiches : `M14-consignes-et-formations.md`, `10-bloc-collectif.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

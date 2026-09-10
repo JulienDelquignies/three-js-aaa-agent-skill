@@ -24,7 +24,8 @@ import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets
 import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
 import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
-import { piegeStep, piegeOffset } from '../assets/starter/src/engine/piege.js';
+import { piegeStep } from '../assets/starter/src/engine/piege.js';
+import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
@@ -4134,7 +4135,7 @@ if (__bloc()) {
     for (const seed of [3, 5, 7, 9, 11, 13, 15, 17]) {   // 4 → 8 graines DATÉ 240 (2 c. 3 reculs : Poisson)
       const st = makeMatch({ full: true, seed });
       // appuiRemise:false DATÉ 240 : la remise d'appui (B dos au but sous presseur, en contre aussi) est une passe en retrait comptée ici comme un recul (4 → 9) — c'est SA loi, mesurée au 240 ; la clause mesure l'adoption du porteur lancé
-      const cfg = matchCfg({ appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) ; passation null DATÉ 252 (10 c. 9,1) — le monde d'hier pour la clause du lancé
+      const cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le lancé remangé par la familiarité (11 reculs c. 15 × 0,7 — les motifs pèsent Φ) — la clause mesure le lancé, pas la familiarité */, appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) ; passation null DATÉ 252 (10 c. 9,1) — le monde d'hier pour la clause du lancé
       let seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5426,18 +5427,18 @@ if (__bloc()) {
   const { sortieBalle } = await import('../assets/starter/src/engine/cpa.js');
   const { tac, axe } = await import('../assets/starter/src/engine/tactics.js');
   const { mapPostes } = await import('../assets/starter/src/engine/formation.js');
-  const cfgS = matchCfg({ shotRange: 20, horsJeu: null /* horsJeu null DATÉ 259 : le flux du pivot (7,2 m devant c. sans 9,7 − 4) remangé par l'appel de l'épaule — vert à HEAD~ (worktree 3a78940) */ }), role = () => ({ arbitre: { conduite: 1 } });
+  const cfgS = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le pivot en relance basse remangé par la familiarité — la clause mesure la salida, pas la familiarité */, shotRange: 20, horsJeu: null /* horsJeu null DATÉ 259 : le flux du pivot (7,2 m devant c. sans 9,7 − 4) remangé par l'appel de l'épaule — vert à HEAD~ (worktree 3a78940) */ }), role = () => ({ arbitre: { conduite: 1 } });
   const ids = mapPostes('433'), cb = ids[1], fb = ids[0];
   const mk = (post, x, foe, over = {}, sty = 0.5) => { const st = { full: true, t: 1, tactics: [{ formation: '433', style: sty }, { formation: '433', style: sty }] }; const p = { id: 3, team: 0, post, p: [x, 0, 2], skill: null }; if (over.x0 != null) st._conduc = { id: 3, x0: over.x0, z0: 2, tient: true };
     const r = conduccion(st, over.cfg ?? cfgS, { p, atk: 0, foeGuard: foe, sg: 1, tac, axe, role }); return { r, tient: st._conduc?.tient ?? false }; };
-  const A = mk(cb, -20, 8), B = mk(cb, -20, 3), Cc = mk(cb, -20, 8, { x0: -32.5 }), D = mk(cb, -20, 8, { x0: -34 }, 0), E = mk(fb, -20, 8), F = mk(cb, -20, 8, { cfg: matchCfg({ conduc: false }) });
-  const st3 = makeMatch({ full: true, seed: 3 }); const cfg3 = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le pivot en relance basse remangé par l'appel de l'épaule (7,2 m devant c. sans 9,7 − 4) — la clause mesure la salida, pas la Loi 11 */, shotRange: 20 }); for (let i = 0; i < 60; i++) matchStep(st3, 1 / 60, cfg3);
+  const A = mk(cb, -20, 8), B = mk(cb, -20, 3), Cc = mk(cb, -20, 8, { x0: -32.5 }), D = mk(cb, -20, 8, { x0: -34 }, 0), E = mk(fb, -20, 8), F = mk(cb, -20, 8, { cfg: matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le pivot en relance basse remangé par la familiarité — la clause mesure la salida, pas la familiarité */, conduc: false }) });
+  const st3 = makeMatch({ full: true, seed: 3 }); const cfg3 = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le pivot en relance basse remangé par la familiarité (6,7 m devant c. sans 9,5 − 4) — la clause mesure la salida, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le pivot en relance basse remangé par l'appel de l'épaule (7,2 m devant c. sans 9,7 − 4) — la clause mesure la salida, pas la Loi 11 */, shotRange: 20 }); for (let i = 0; i < 60; i++) matchStep(st3, 1 / 60, cfg3);
   const og = st3.pitch.ownGoal(0), sg = -Math.sign(og.x || 1); st3.ball.restart([og.x + sg * 8, 0.11, 2], { cause: 'sortie-de-but' }); st3.restart = null;
   const pivotP = st3.players.find((q) => q.team === 0 && q.post === ids[4]);
   const opp = st3.players.filter((q) => q.team === 1 && !q.keeper).slice(0, 4); opp.forEach((q, k) => { q.p[0] = og.x + sg * (14 + k * 2); q.p[2] = (k - 1.5) * 6; });
   const rest = st3.players.filter((q) => q.team === 1 && !q.keeper && !opp.includes(q)); rest.forEach((q) => { q.p[0] = og.x + sg * 60; });
   const plan = (cfgX) => { st3._sbPlan = null; const m = sortieBalle(st3, 0, pivotP, cfgX, tac); return m ? [(m[0] - og.x) * sg, m[2]] : null; };
-  const P1 = plan(cfgS); rest.forEach((q, k) => { q.p[0] = og.x + sg * 60; }); opp.forEach((q) => { q.p[0] = og.x + sg * 60; }); st3._sbPlan = null; const P0 = plan(cfgS); opp.forEach((q, k) => { q.p[0] = og.x + sg * (14 + k * 2); }); const PS = plan(matchCfg({ salida: false }));
+  const P1 = plan(cfgS); rest.forEach((q, k) => { q.p[0] = og.x + sg * 60; }); opp.forEach((q) => { q.p[0] = og.x + sg * 60; }); st3._sbPlan = null; const P0 = plan(cfgS); opp.forEach((q, k) => { q.p[0] = og.x + sg * (14 + k * 2); }); const PS = plan(matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le pivot en relance basse remangé par la familiarité — la clause mesure la salida, pas la familiarité */, salida: false }));
   const cbLine = st3.pitch.dims.box.depth + (cfgS.relance.prof ?? -4);
   ok(`lot 239 — LA CONDUCCIÓN (central libre : cap ${A.r ? (A.r[0] + 20).toFixed(0) + ' m devant' : 'null'}, tient ${A.tient} ; cadré : ${B.r === null && !B.tient} ; au plafond 12,5 m : ${Cc.r === null} ; jeu court, 14 m : ${D.r !== null} (plafond 15,6) ; latéral : ${E.r === null} ; clé absente : ${F.r === null}) et LA SALIDA (pivot sous pression [${P1?.[0].toFixed(1)}, ${P1?.[1]}] = [${(cbLine - 1).toFixed(1)}, 0] ; sans pression [${P0?.[0].toFixed(1)}, ${P0?.[1]}] = [22, ±3] ; clé absente [${PS?.[0].toFixed(1)}, ${PS?.[1]}])`,
     A.r && Math.abs(A.r[0] + 14) < 1e-9 && A.tient && B.r === null && !B.tient && Cc.r === null && D.r !== null && E.r === null && F.r === null
@@ -5447,7 +5448,7 @@ if (__bloc()) {
   // c. sans conduc. Mesuré 9,5 → 0,5 m ; 5,5 → 8,2 m.
   const { LIGNES, formationPour } = await import('../assets/starter/src/engine/formation.js');
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
-  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); const piv = [], cond = [];
+  const flux = (over) => { const cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le pivot en relance basse remangé par la familiarité — la clause mesure la salida, pas la familiarité */, shotRange: 20, ...over }); const piv = [], cond = [];
     for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed }); let cur = 0, carry = null;
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
         for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (carry && e.type === 'pass' && e.by === carry.id) { const p = st.players[carry.id]; cond.push(Math.hypot(p.p[0] - carry.x0, p.p[2] - carry.z0)); carry = null; } else if (e.type === 'turnover') carry = null; }
@@ -5488,7 +5489,7 @@ if (__bloc()) {
   // le plus avancé derrière la ligne défensive en possession installée (mesuré 5,9 → 3,3 m).
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
   const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
-  const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); let nP = 0, serre = 0; const rot = [], haut = [];
+  const flux = (over) => { const cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le receveur serré remangé par la familiarité (19,2 c. 17,8 %) — la clause mesure la passe au marqué, pas la familiarité */, shotRange: 20, ...over }); let nP = 0, serre = 0; const rot = [], haut = [];
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed }); let cur = 0; const yawH = new Map();   // 12 graines : la part « serré » est un écart de 2 points
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg);
         for (const p of st.players) { const h = yawH.get(p.id) ?? []; h.push([st.t, p.yaw]); if (h.length > 30) h.shift(); yawH.set(p.id, h); }
@@ -5533,7 +5534,7 @@ if (__bloc()) {
   // ballon est encore à l'équipe 2 s après), les perdus sur service, les pertes de possession (non-dégradation), et la garde
   // 231 (appels profonds, débordements ± 15 %). Mesuré : servis 28 → 60 / 60 min, réussis 19 → 48, perdus 9 → 10, pertes 273 → 282.
   const flux = (over) => {
-    const cfg = matchCfg({ shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, remisesMain: null, contact: null, porteAnticipe: null, remisesPied: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // contact/porteAnticipe/remisesPied:null DATÉ A10 (le contact fait TOMBER le receveur dos au but : services perdus 37 % pour ≤ 35, 24 × 300 s — la clause mesure SA loi dans le monde d'hier ; le prix du contact sur l'appui-remise est une mesure du lot 247) ; remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)   // craie sans tenue DATÉ 249b (flux du troisième homme sous σ : 88 c. 97) ; passation null DATÉ 252 (vert à HEAD)
+    const cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le troisième homme du flux remangé par la familiarité (Φ pèse le motif, le coach choque η) — la clause mesure l'appui-remise, pas la familiarité */, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, remisesMain: null, contact: null, porteAnticipe: null, remisesPied: null, ...over }); let pertes = 0, servis = 0, reussis = 0, perdus = 0, profond = 0, deborde = 0, jeu = 0;   // contact/porteAnticipe/remisesPied:null DATÉ A10 (le contact fait TOMBER le receveur dos au but : services perdus 37 % pour ≤ 35, 24 × 300 s — la clause mesure SA loi dans le monde d'hier ; le prix du contact sur l'appui-remise est une mesure du lot 247) ; remisesMain:null DATÉ 247 : par minute de jeu le monde A9 garde + 8 % de pertes et 36 % de services perdus (hier + 1,5 %, 30 %) — la clause mesure SA loi dans le monde d'hier tant que le 247 n'a pas daté la dose ; (247) jeu = les images HORS temps mort : les pertes se comparent PAR MINUTE DE JEU — sans l'appui-remise le ballon sort 4 × plus (14 touches c. 3 / 40 min) et chaque touche A9 coûte 11 s ; les pertes brutes comparaient 33 min de jeu à 36 (573 c. 508 = « + 13 % » ; par minute : + 6 %)   // craie sans tenue DATÉ 249b (flux du troisième homme sous σ : 88 c. 97) ; passation null DATÉ 252 (vert à HEAD)
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st = makeMatch({ full: true, seed }); let prev = -1, cur = 0; const tr = [];
       for (let i = 0; i < 300 * 60; i++) {
@@ -6226,7 +6227,7 @@ if (__bloc()) {
   // rien non plus — c'est l'axe qui décide, pas la hauteur (T3b).
   const lh = resoudreTactique('ligneHaute');
   const scene = (over, tq) => {
-    const st = makeMatch({ full: true, seed: 5, tactics: ['equilibre', tq ?? { piege: 1, pressing: 0 }] }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const st = makeMatch({ full: true, seed: 5, tactics: ['equilibre', tq ?? { piege: 1, pressing: 0 }] }), cfg = matchCfg({ shotRange: 20, familiarite: null /* familiarite null DATÉ 254 : la clause mesure la synchronie du piège nu (un seul until) — la familiarité y ajoute son retard par corps, mesuré au bloc 254 */, ...(over ?? {}) });
     const own = st.pitch.ownGoal(1), sg = -own.sign;   // sg : de l'équipe 1 vers son but adverse ; sa ligne est à own.x + 27·(−sg)… on pose en x monde
     const dir = -sg;   // vers le but de 1
     const c = st.players.find((p) => p.team === 0 && p.post === 5);
@@ -6248,6 +6249,43 @@ if (__bloc()) {
   const V = scene(null, { piege: 1, pressing: 0 }), N = scene({ piege: null }, { piege: 1, pressing: 0 }), Z = scene(null, { piege: 0, pressing: 0 });
   ok(`lot 255 — LA LIGNE HAUTE ET SON PIÈGE : le preset ligneHaute existe (piege ${lh.piege} = 1, hauteurBloc ${lh.hauteurBloc} ≥ 0,85, ses hommes ${Object.keys(lh.roles ?? {}).length} ≥ 2) ; à l'armé du passeur adverse la ligne se MARQUE (${V.marques} corps de la bande, ${V.sync} until = 1 : synchrone, ${V.ev} événement) et MONTE en 0,67 s (${V.x0.toFixed(1)} → ${V.x1.toFixed(1)} m du but : +${(V.x1 - V.x0).toFixed(2)} ≥ 0,5 — depuis l'arrêt) ; sabotage « piege null » : rien (${N.marques} marqué, +${(N.x1 - N.x0).toFixed(2)} ≤ 0,3) ; à piege 0, même hauteur : rien non plus (${Z.marques} marqué — l'axe décide, pas la hauteur : T3b)`,
     lh.piege === 1 && lh.hauteurBloc >= 0.85 && Object.keys(lh.roles ?? {}).length >= 2 && V.marques >= 3 && V.sync === 1 && V.ev === 1 && V.x1 - V.x0 >= 0.5 && N.marques === 0 && N.x1 - N.x0 <= 0.3 && Z.marques === 0);
+}
+
+// ---------------------------------------------------------------- lot 254 : LA FAMILIARITÉ, LE
+// MÉCANISME RELATIONNEL (cfg.familiarite — Modèle 14 §7, Référentiel 13)
+if (__bloc()) {
+  // (a) les lois pures : η(t) sur deux branches (0,35 → ~0,64 à 2 min par la branche rapide, ~0,80 à 10 min, jamais > 1), σ_sync 0,36 s à η 0,4 et 0,12 à
+  // η 1, Φ^0,7. (b) l'état : une équipe injectée à familiarité 0,4 a η 0,4 ; un choc de posture ramène η à 0,7 et η
+  // remonte ; (c) la ligne au piège : à η 0,4 les corps partent DÉSYNCHRONISÉS (désync > 0,1 s), à η 1 presque ensemble ;
+  // sabotage « familiarite null » : tous au même instant (désync absent). (d) Φ de deux joueurs à 0,4 et 1 → 0,63.
+  const K = matchCfg({}).familiarite;
+  const e2 = etaApres(0.35, 120, K), e10 = etaApres(0.35, 600, K), e0 = etaApres(0.35, 0, K), eInf = etaApres(0.35, 1e7, K);
+  const s04 = sigmaSync(0.4, K), s1 = sigmaSync(1, K);
+  const scene = (fam, over) => {
+    const squads = fam != null ? [Array.from({ length: 11 }, () => ({ familiarite: fam })), null] : null;
+    const st = makeMatch({ full: true, seed: 5, tactics: [{ piege: 1, pressing: 0 }, 'equilibre'], ...(squads ? { squads } : {}) }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const own = st.pitch.ownGoal(0), dir = -(-own.sign);   // vers le but de 0
+    const c = st.players.find((p) => p.team === 1 && p.post === 5);
+    for (const q of st.players) { q.v = [0, 0]; q.down = 0; }
+    const defs = st.players.filter((q) => q.team === 0 && !q.keeper); defs.forEach((q, k) => { q.p[0] = own.x - dir * (k < 4 ? 27 : 40); q.p[2] = (k < 4 ? (k - 1.5) * 6 : (k - 7) * 5); });
+    for (const q of st.players.filter((q) => q.team === 1 && q !== c)) q.p[0] = own.x - dir * 34;
+    c.p[0] = own.x - dir * 42; c.p[2] = 0;
+    st.ball.restart([c.p[0] + dir * 0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 1, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 1;
+    let lcg = 4242; st.rnd2 = () => { lcg = (lcg * 1664525 + 1013904223) >>> 0; return 0.1 + 0.6 * (lcg / 4294967296); };   // le tirage du piège passe (< 0,8), les retards restent seedés
+    matchStep(st, 1 / 60, cfg);   // une image : l'état de familiarité se pose
+    const act = { id: 'pass', t: 0, anticipation: 5, follow: 0.2, total: 5.2, phase: 'anticipation', fired: false, payload: { kind: 'pass' } }; c.act = act;
+    piegeStep(st, cfg);
+    const ev = st.events.filter((e) => e.type === 'piege').at(-1);
+    const ats = defs.filter((q) => q._piege).map((q) => q._piege.at ?? st.t);
+    c.act = null;   // la fixture ne joue jamais la passe
+    return { st, cfg, eta: etaDe(st, 0, cfg), ev, desync: ats.length ? Math.max(...ats) - Math.min(...ats) : NaN, n: ats.length };
+  };
+  const V4 = scene(0.4, null), V1 = scene(null, null), N = scene(0.4, { familiarite: null });
+  chocFamiliarite(V1.st, 0, 0.7, 'posture', V1.cfg); const eChoc = etaDe(V1.st, 0, V1.cfg); for (let i = 0; i < 60 * 60; i++) matchStep(V1.st, 1 / 60, V1.cfg); const eApres = etaDe(V1.st, 0, V1.cfg);
+  const a = V4.st.players.find((p) => p.team === 0 && !p.keeper), b = V4.st.players.find((p) => p.team === 0 && !p.keeper && p !== a); const phi = affinite(V4.st, a.id, b.id, V4.cfg);
+  ok(`lot 254 — LA FAMILIARITÉ (lois pures) : η(0) ${e0.toFixed(2)} = 0,35, η(2 min) ${e2.toFixed(2)} ∈ [0,55 ; 0,75] (la branche rapide du réalignement), η(10 min) ${e10.toFixed(2)} ∈ [0,72 ; 0,88] (la branche lente de l'automatisme ne revient pas dans le match), η(∞) ${eInf.toFixed(2)} = 1 ; σ_sync ${s04.toFixed(2)} s à η 0,4 (≈ 0,36) et ${s1.toFixed(2)} à η 1 ; Φ^0,7 de 0,4 → ${affiniteMotif(0.4, K).toFixed(2)} — L'ÉTAT : l'équipe injectée à 0,4 a η ${V4.eta.toFixed(2)}, la rodée ${(scene(null, null).eta).toFixed(2)} = 1 ; le choc de posture ramène η à ${eChoc.toFixed(2)} (0,7) et une minute plus tard ${eApres.toFixed(2)} > 0,7 — LA LIGNE AU PIÈGE : à η 0,4 les ${V4.n} corps partent désynchronisés (${V4.desync.toFixed(2)} s ≥ 0,1, σ ${V4.ev?.sigma}), à η 1 presque ensemble (${V1.desync.toFixed(2)} s < ${V4.desync.toFixed(2)}) ; sabotage « familiarite null » : tous au même instant (${N.desync.toFixed(2)} = 0, aucun σ ${N.ev?.sigma === undefined}) ; Φ(0,4 ; 0,4) = ${phi.toFixed(2)} < 1`,
+    Math.abs(e0 - 0.35) < 1e-9 && e2 >= 0.55 && e2 <= 0.75 && e10 >= 0.72 && e10 <= 0.88 && Math.abs(eInf - 1) < 1e-6 && Math.abs(s04 - 0.36) < 1e-9 && Math.abs(s1 - 0.12) < 1e-9 && Math.abs(V4.eta - 0.4) < 1e-6 && Math.abs(eChoc - 0.7) < 1e-6 && eApres > 0.7 && V4.n >= 3 && V4.desync >= 0.1 && V1.desync < V4.desync && N.desync === 0 && N.ev?.sigma === undefined && phi < 1);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -481,6 +481,14 @@ imprime pour chaque tactique le gain (hors-jeu provoqués, ligne, tirs concédé
 reçus derrière la ligne, buts encaissés). Ce qu'il nomme : la ligne du preset un peu haute (36 m c. 31,6-34,6), la
 désynchronisation par la familiarité (254). L'ordre : 254, puis les transversaux.
 
+**254 — LA FAMILIARITÉ, LE MÉCANISME RELATIONNEL : SCELLÉ (337). LA CAMPAGNE V EST FINIE.** η par équipe (injectée par
+joueur, choquée par le coach, rétablie sur deux branches), Φ de la paire sur l'un-deux et le troisième homme, la
+synchronie de la ligne au piège comme familiarité. Mesuré : à familiarité 0,4 les motifs sont divisés par deux et la
+ligne part désynchronisée de 0,32 s (le book : 0,36) ; aucune réussite d'action ne bouge. Ce qu'il nomme : les canaux
+« temps de réaction » et « ancre », la ligne brisée à mesurer à 12 graines. Les lots suivants sont les transversaux
+(le profil locomoteur et le budget de course, la couche de croyance, le pas de décision séparé du pas physique) et les
+dettes nommées de la carte du book.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

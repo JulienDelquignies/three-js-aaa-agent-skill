@@ -10615,7 +10615,53 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      avec le flux : le journal les garde nommés).
      Sceau : commit d56dd43, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit).
-- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+- 337: LA FAMILIARITÉ, LE MÉCANISME RELATIONNEL (254 — le dernier lot de la Campagne V ; Modèle
+     14 §7 « une consigne neuve n'est pas un automatisme », §6.4 « piège + familiarité faible :
+     le jitter produit des lignes brisées » ; Référentiel 13 : la relation familiarité →
+     coordination est en U, son effet propre sur les points est indissociable de zéro — donc
+     AUCUN canal ne déplace la réussite moyenne d'une action). Sonde AVANT (sonde-254, 4 × 90
+     min, ligneHaute c. équilibre, familiarite null) : 174 armés de piège par match, la ligne
+     alignée à σx 1,13 m au départ du ballon, aucune désynchronisation (tous au même instant),
+     4,5 hors-jeu provoqués, 9,0 reçus derrière, 1,25 encaissé ; les motifs à deux et trois :
+     40 un-deux et 114 troisièmes hommes par match, à P pleine quelle que soit la paire. La loi
+     (cfg.familiarite, familiarite.js — etaApres, sigmaSync, affiniteMotif purs ; l'état
+     st.fam[team] ; les crochets : match-sim lit squads[i].familiarite → q.fam et fait tourner
+     familiariteStep, piege.js tire le retard de chaque corps, strike-sim pèse l'un-deux et le
+     troisième homme, coach.js choque au changement de posture) : η par équipe = la moyenne
+     des familiarités injectées (défaut 1 : l'équipe rodée), choqué à 0,7 par un changement de
+     posture du coach et rétabli sur DEUX branches — a 0,55 × e^(−t/90 s) le réalignement, 0,45
+     × e^(−t/25 min) l'automatisme (0,35 → 0,64 à 2 min, 0,80 à 10 min) ; Φij = √(fi fj) × √η
+     conditionne les motifs (P × Φ^0,7) ; la synchronie de la ligne au piège σ_sync = 0,12 +
+     0,40 (1 − η) s — chaque corps de la bande part avec son retard |gauss| × σ (au flux
+     seedé), sa cible ne monte qu'à son départ : la ligne brisée devient un événement
+     statistique. Les canaux « temps de réaction » et « ancre » du book restent des dettes
+     nommées (pas de consommateur propre). Mesuré APRÈS (4 × 90 min) : au défaut (η 1) la
+     désynchronisation p50 0,11 s (σ 0,12), 6,0 hors-jeu provoqués, 11,0 reçus derrière, 1,5
+     encaissé, 34 un-deux, 114 troisièmes ; à familiarité 0,4 : désynchronisation 0,32 s (le
+     book : 0,36 à η 0,4), 6,0 provoqués (la ligne brisée ne se lit pas à cette volumétrie :
+     24 hors-jeu par échantillon), 7,5 reçus derrière, 2,0 encaissés (+0,5 : bruit), et LES
+     MOTIFS DIVISÉS PAR DEUX : 14 un-deux, 51 troisièmes (Φ^0,7 à 0,25 → le rodage se voit dans
+     la combinaison, exactement le canal que le référentiel autorise) ; 2,5-3,5 chocs de posture
+     par match. Jumeau : familiarite null = HEAD au bit (d15c4dad937465bc / 64a1a42133aea8c8 —
+     le défaut du 255, relu par git stash). Banc : verify-match11 bloc 254 (index 157 : lois
+     pures — η(0) 0,35, η(2 min) ∈ [0,55 ; 0,75], η(10 min) ∈ [0,72 ; 0,88], η(∞) 1, σ_sync
+     0,36 à 0,4 et 0,12 à 1, Φ^0,7 ; l'état — l'équipe injectée à 0,4 a η 0,4, la rodée 1, le
+     choc de posture ramène à 0,7 et remonte ; la ligne au piège — à η 0,4 les corps partent
+     désynchronisés ≥ 0,1 s, à η 1 presque ensemble, sabotage familiarite null : tous au même
+     instant sans σ ; Φ(0,4 ; 0,4) 0,25). BANC COMPLET (final254.sh, 8 shards + 25 annexes) : 284 ✓ / 7 ✗ aux
+     shards et 556 ✓ / 8 ✗ aux annexes au premier passage. Mondes déplacés par la clé, épinglés
+     familiarite null DATÉ 254 après preuve verte à HEAD~ (worktree daf769f, le sceau 255) :
+     verify-match11 blocs 98 « lot 189 le lancé va au but » (11 reculs c. 15 × 0,7), 135 « le
+     pivot en relance basse » (6,7 m devant — quatre cfg du bloc épinglées, la première épingle
+     par numéro de ligne avait glissé), 136 « le receveur serré » (19,2 c. 17,8 %), 137 « le
+     troisième homme du flux » (Φ pèse le motif, le coach choque η), 156 « lot 255 le piège »
+     (la clause mesure le piège nu : un seul until — la familiarité y ajoute son retard) ;
+     verify-scan (Jordet : 1 saccade), verify-contact (0 chute pour 3 fautes), verify-remises
+     (le lanceur : bassin −0,72 m). verify-identification REGELÉ DATÉ 254 (la règle du 252) :
+     17 → 23 signatures — perdues DC A|profondeur, LAT A|appel, LAT D|profondeur, LAT D|appel, MDC A|profondeur, MIL A|tenue, MDC B|press, MO B|profondeur, MDC C|profondeur ; gagnées DC B|largeurR, DC B|profondeur, DC C|largeurR, DC C|profondeur, LAT D|largeurR, MO A|press, MO A|tenue, MIL B|tenue, MO B|appel, MO C|tenue, AIL A|largeurR, AV A|largeurR, AV A|profondeur, AIL B|appel, AIL C|press. Isolés après épingles : blocs 98 1/0, 135 2/0, 136 2/0, 137 2/0,
+     156 1/0, bloc 1 seul 0,95 ms/step (contention résiduelle) ; annexes identification 1/0, scan 5/0, contact 25/0,
+     remises 36/0. Rouges hérités, nommés : 246d ; « contres arrivés à l'entrée » ;
+     verify-loi12 « le mur se tient » ; verify-expulsion « le corps sort et reste ».- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,

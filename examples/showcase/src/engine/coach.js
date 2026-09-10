@@ -1,3 +1,4 @@
+import { chocFamiliarite } from './familiarite.js';
 // coach.js — LE CERVEAU DE COACH (lot 113, plan validé). Mesuré avant : st.tactics est écrit
 // UNE fois (makeMatch) puis GELÉ — le mené à la 200e (11/20 matchs) ne change RIEN et ne tire
 // que 0,64 fois dans le dernier tiers. Ici vit la lecture du MATCH : score, chrono, momentum
@@ -70,6 +71,7 @@ export function coachStep(st, cfg) {
     if (d.posture !== C.posture[team]) {
       C.posture[team] = d.posture;
       st.events.push({ t: +st.t.toFixed(2), type: 'coach', team, posture: d.posture, ecart: ctx.ecart });
+      chocFamiliarite(st, team, cfg.familiarite?.chocPosture ?? 0.7, 'posture', cfg);   // (254) une consigne neuve n'est pas un automatisme : le choc de familiarité
     }
   }
 }
