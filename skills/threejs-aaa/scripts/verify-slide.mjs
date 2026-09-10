@@ -21,7 +21,7 @@ const { slideTackleStep } = simInternals;
 // la fixture : porteur LANCÉ, chasseur écrit à la main, horloges et espacements purgés
 const chase = (seed, arrange) => {
   const st = makeMatch({ full: true, seed });
-  const cfg = matchCfg({ shotRange: 20 });
+  const cfg = matchCfg({ shotRange: 20, carton: null /* carton null DATÉ 257 : la clause « le jaune vient sur une seule glissée par derrière » mesure la récidive ×2 du 33 ; le monde 257 juge la nature (le glissé par derrière y vaut jaune à 0,91 au flux) */ });
   for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   const c = st.players[st.possession.carrier];
   const foe = st.players.find((q) => q.team !== c.team && !q.keeper);

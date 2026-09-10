@@ -741,7 +741,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
         const pass = st.events.slice(evN).find((e) => e.type === 'pass');
         if (pass) {
           passT = st.t;
-          held = st.players.filter((p) => p.team !== st.players[pass.from].team && !p.keeper && p.down <= 0)
+          held = st.players.filter((p) => p.team !== st.players[pass.by].team && !p.keeper && p.down <= 0)
             .map((p) => ({ p, t0: p.target ? [...p.target] : null }));
         }
         if (held && st.t - passT > 0 && st.t - passT < 0.6) {

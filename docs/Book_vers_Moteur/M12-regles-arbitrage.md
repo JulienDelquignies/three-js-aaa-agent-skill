@@ -41,7 +41,7 @@ additionnel ; l'arbitre faillible (erreurs selon la distance, asymétrie, charge
 | 2-3 marge et non-collage | R² ≥ 0,02 ; σ ≥ 0,8 m | à instrumenter (`st.pass.off`) |
 | 4-6 erreurs de l'arbitre | 8:1 ; minimum 11-15 m ; × 1,4 | absents (arbitre infaillible) |
 | 7 sur-dispersion des fautes | | à mesurer |
-| 8 bouclage fautes / cartons | 5-7 par jaune ; 3-5 jaunes | mesurable, **réfuté** | **2,7** par jaune ; **8,5** jaunes / match |
+| 8 bouclage fautes / cartons | 5-7 par jaune ; 3-5 jaunes | tenu au 257 | **2,7** → **5,0** par jaune ; **8,5** → **4,0** jaunes / match |
 | 9 retenue post-avertissement | 0,30-0,85 | absent |
 | 10 ablation du VAR | | absent |
 | 11 temps additionnel selon le score | coefficient significatif | Bible 16 T23 : **161 / 157 s** quel que soit l'écart |
@@ -52,7 +52,7 @@ additionnel ; l'arbitre faillible (erreurs selon la distance, asymétrie, charge
 
 ## 4. Les lots que la fiche appelle
 
-1. **Le carton qui juge la nature** (le 257 ; test 8 ; Bible 15 lot 2) : la récidive n'est pas le seul critère, le
+1. **Le carton qui juge la nature** (le 257 — SCELLÉ 333 : S de nature, prometteur, DOGSO, ardoise, retenue ; test 8 ; Bible 15 lot 2) : la récidive n'est pas le seul critère, le
    tacle glissé rare, 3-5 jaunes par match.
 2. **Le hors-jeu comme capsule et comme infraction différée** (tests 1-3 ; Bible 03 « la ligne est une ligne »,
    le 259) : la marge, l'auto-limitation, IP / IO / GA.

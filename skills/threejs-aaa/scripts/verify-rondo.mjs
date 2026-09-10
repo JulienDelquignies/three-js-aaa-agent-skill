@@ -126,7 +126,7 @@ const g = playRondo(makeRondo({ perTeam: 5, seed: 3 }), 90);
       if (e.type === 'receive' || e.type === 'loose-kept') lastTake[e.by] = e.t;
       if (e.type === 'turnover') { if (e.by != null) lastTake[e.by] = e.t; lastPass = null; after.push(e.after); }
       if (e.type === 'pass') {
-        if (lastTake[e.from] != null) holds.push(e.t - lastTake[e.from]);
+        if (lastTake[e.by] != null) holds.push(e.t - lastTake[e.by]);
         if (lastPass != null) inter.push(e.t - lastPass);
         lastPass = e.t;
       }

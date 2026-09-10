@@ -10383,6 +10383,71 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (la POST de création coupée à 6 s : « tunnel closed » au relais du proxy, api.vercel.com),
      la septième a rendu READY ; avec --archive=tgz le déploiement se crée mais le suivi des
      événements (GET follow=1) casse — repasser sans archive.
+- 333: LE CARTON JUGE LA NATURE (257 — Modèle 12 §3.1-3.5, Bible 15 §5, Référentiel 10
+     A02-A05, Référentiel 04 n° 31-34). Sonde AVANT (4 × 90 min) : 26 fautes / match (réel
+     20-30, tenu), 9,25 jaunes (3,2-4,8), 2,25 rouges tous seconds jaunes (0,08-0,36 ; seconds
+     0,12), 2,8 fautes par jaune (5,4-6,8) — la récidive à 2 du lot 25 (l'imprudence comptant
+     double) faisait pleuvoir ; 70 % des fautes sont l'accrochage du battu, 58 % arrachées, la
+     « transition prometteuse » du 97 (restants < 2) ne se déclenchait JAMAIS. La loi
+     (cfg.carton, referee.adjugeFaute ; les sites de duel.js / rondo-sim.js font voyager la
+     NATURE avec st._faute : kind, vSur, dir, arrache) : chaque faute porte un score S =
+     base[espèce] (accrochage 0,35, tacle debout 0,3, tacle glissé 0,5, charge par derrière
+     0,6, glissé par derrière 0,95) + 0,03 × v(victime) + 0,3 × (aggrF − 1) − 0,15 si arrachée
+     (la course a vécu) + 0,5 si PROMETTEUSE (la victime filait vers le but : cos > 0,5, v ≥
+     3, < 45 m, ≤ 3 corps dans le couloir de 8 m devant sa course) ; DOGSO (cos > 0,6, aucun
+     couvrant dans la bande de 18 m, < 30 m) : S = 1,5 → rouge direct, sauf dans sa surface
+     sur un tacle : jaune + penalty (IFAB). P(jaune) = σ((S − 0,8 − 0,25 si déjà averti) /
+     0,15) au flux seedé (st.rnd2), l'ARDOISE cumule S et vaut jaune à 2,0 (les fautes
+     répétées), le rouge ≥ 1,4 ; l'averti se RETIENT (× 0,55 sur l'accrochage et le glissé
+     imprudent — ρ joueur du Modèle 12 §3.5) et l'arbitre hésite à l'exclure (+0,25 sur τ —
+     ρ arbitre). L'expulsion factorisée (expulser) sert les deux branches ; l'événement
+     carton porte nature, kind, prometteur, dogso, direct / second, repetee. Ce qui a été
+     essayé et jeté : le book brut (DOGSO ≤ 1 couvrant sur 12 m à 35 m) rendait 3-14 rouges
+     par match — d'abord une faute d'index (F.p[2] pour le z : couvrants NaN → 0, la fixture
+     « un couvrant → pas de rouge » l'attrape désormais), puis la vraie géométrie : à ≤ 1
+     couvrant, la moitié des accrochages du battu sont des DOGSO ; le réel les évite par le
+     coût (Modèle 12 §3.4) — retenu : aucun couvrant, 30 m ; le rouge direct devient rare
+     (0 sur 8 matchs) et le second jaune aussi (la retenue) : le rouge est à la borne basse
+     (PL 2022-23 : 0,079). τ 0,7 → 0,78 → 0,8 sur trois lectures (5,75 → 3,5 → 4,8 jaunes ;
+     le prometteur relu à 8 m de couloir rend 4 jaunes prometteurs sur 6 matchs). Mesuré
+     APRÈS (8 × 90 min) : fautes 19,9 / match (réel 20-30 — la borne basse, le
+     monde à peu de fautes), jaunes 4,00 (3,2-4,8 ✓ ; avant 9,25), rouges 0,12 (0,08-0,36 ✓ ;
+     avant 2,25 — un second jaune sur 8 matchs, aucun DOGSO), fautes par jaune 5,0 (5,4-6,8 :
+     à la marge parce que les fautes manquent, pas les cartons), jaune / faute 0,20 (T16 du
+     chapitre 05 : 0,10-0,20) ; la nature qui vaut le jaune : accrochage 12, tacle debout 8,
+     charge par derrière 6, glissé par derrière 5, glissé 1 — 16 des 32 jaunes sont
+     PROMETTEURS (la faute tactique existe désormais), 0 à l'ardoise. Alias du 256 retirés (pass.from, turnover.to) :
+     le journal ne porte plus que by / equipe — 20 lecteurs du banc relus (verify-match11
+     × 12, expulsion, football-rules, identification, match, remises, rondo, sonde-ch09),
+     l'empreinte ne compte que les événements (inchangée). Jumeau : carton null = HEAD au
+     bit (628093125f4f1940 / 3eebf9c22a1d47c5). Banc : verify-match11 bloc 257 (index 153 :
+     fixtures sur adjugeFaute à 200 tirages — arraché 0,05 < accrochage 0,13 < charge 0,47 <
+     glissé par derrière 0,91, prometteur 0,83, averti 0,13 < 0,47, DOGSO rouge 1 et un
+     couvrant 0, DOGSO en surface sur tacle jaune 1 rouge 0, sabotage carton null 0) ;
+     épingles carton null DATÉ 257 dans verify-cartons et verify-expulsion (ils mesurent la
+     récidive du 25). verify-expulsion « le corps sort et reste » (|z| 33,8 > 34) est ROUGE À
+     HEAD (worktree 3bbfcf5) — hérité, nommé. BANC COMPLET (final257.sh, 8 shards + 25 annexes —
+     cartons, loi12, expulsion, football-rules, tete ajoutées à la liste) : 281 ✓ / 6 ✗ aux shards et
+     555 ✓ / 10 ✗ aux annexes au premier passage. Mondes déplacés par la clé, épinglés carton null
+     DATÉ 257 après preuve verte à HEAD~ (worktree 3bbfcf5) : verify-match11 bloc 59 « lot 128 la
+     passe en profondeur » (10/19 conservés c. 13/17), bloc 99 « lot 190 le gardien vient au
+     retrait » (1 retrait c. 3), bloc 142 « lot 244b le flux de la grille » (appels du 9 : 32 c.
+     ≥ 44) — les avertis se retiennent, le flux bouge ; verify-attributes ligne 171 (157 le
+     pique : tacleurs 90 à 3 armés c. 10 + 2 — les avertis glissent moins) ; verify-loi3 (tout
+     le banc : ses cartons naissent de la récidive), verify-slide ligne 24 (le jaune sur une
+     seule glissée par derrière = la récidive ×2 du 33). L'alias tombé a cassé un lecteur du
+     MOTEUR que le grep n'avait pas vu : football-rules.js (« pass-has-a-striker », minTouchGap)
+     lisait e.from → by ; verify-football-rules 59/0 après. verify-identification REGELÉ DATÉ 257
+     (la règle du 252) : 18 → 16 signatures — perdues LAT A|profondeur, MDC A|profondeur, AV
+     A|press, AV C|tenue ; gagnées DC A|profondeur, MDC A|largeurR (les mêmes signatures
+     oscillent d'un monde à l'autre : la volumétrie à 6 graines reste la dette). Isolés après
+     épingles : blocs 59 1/0, 99 1/0, 142 2/0, 1 (budget 0,47 ms/step, 2,04 sous contention) ;
+     annexes attributes 27/0, loi3 10/0, slide 10/0, identification 1/0, football-rules 59/0,
+     match 84/0, sync 9/0. Rouges hérités, nommés : 246d (34 % à 90) ; « contres arrivés à
+     l'entrée » (11 ≥ 15 × 0,75) ; verify-expulsion « le corps sort et reste » (|z| 33,8 > 34) ;
+     verify-loi12 « le mur se tient » (5,9 m ≥ 8,4) et son sabotage — ROUGES À HEAD en worktree,
+     jamais dans la liste des annexes du banc complet jusqu'ici (ajoutés au 257, à reprendre).
+     La sonde vit dans scripts/book/sonde-257.mjs.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -1003,7 +1003,7 @@ function turnover(st, carrier, why, cfg = null) {
   const dW = w ? d2(w.p, st.ball.p) : 99;
   // l'événement porte SA géométrie (loi 8) : distance gagnant→ballon au flip, vitesse avant/après —
   // c'est ce que les clauses « vol sans geste » et « télékinésie » de checkRondo lisent.
-  const ev = { t: +st.t.toFixed(2), type: 'turnover', why, to: st.players[carrier].team, equipe: st.players[carrier].team, by: carrier, after: st.passes, d: +dW.toFixed(2), v0: +sp0.toFixed(2), v1: +sp0.toFixed(2) };
+  const ev = { t: +st.t.toFixed(2), type: 'turnover', why, equipe: st.players[carrier].team, by: carrier, after: st.passes, d: +dW.toFixed(2), v0: +sp0.toFixed(2), v1: +sp0.toFixed(2) };
   st.events.push(ev);
   st.passes = 0;
   st.possession = { team: st.players[carrier].team, carrier };

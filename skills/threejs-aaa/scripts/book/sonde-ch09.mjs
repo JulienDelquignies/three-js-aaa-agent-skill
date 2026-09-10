@@ -14,7 +14,7 @@ for (const seed of seeds) {
     for (const r of pendRec) if (!r.done) { if (st.possession.team !== r.team) r.done = true; else if (st.events.slice(r.seen).some((e) => e.type === 'shot' && st.players[e.by]?.team === r.team)) { r.done = true; o.recupTir++; } }
     for (const r of pendRun) if (!r.done && st.t - r.t > 3) { r.done = true; }
     for (const s of pendShot) if (!s.done) { const sc = st.score[0] + st.score[1]; if (sc > s.sc) { s.done = true; o.buts++; if (s.boite) o.butsBoite++; if (s.gz) o.butsGZ++; if (s.uneTouche) o.butsUneTouche++; if (s.contre) o.contreFin.push(s.corps); } else if (st.t - s.t > 3) s.done = true; }
-    for (; seen < st.events.length; seen++) { const e = st.events[seen]; const by = st.players[e.by ?? e.from];
+    for (; seen < st.events.length; seen++) { const e = st.events[seen]; const by = st.players[e.by];
       if (e.type === 'burst' && by && neuf.some((n) => n && n.id === by.id)) { o.courses++; o.types[e.kind] = (o.types[e.kind] ?? 0) + 1; pendRun.push({ t: st.t, id: by.id }); }
       if (e.type === 'pass' && st.players[e.to] && neuf.some((n) => n && n.id === e.to)) { const r = pendRun.find((x) => !x.done && x.id === e.to && st.t - x.t <= 3); if (r) { r.done = true; o.servies++; } }
       if (e.type === 'hors-jeu' && neuf.some((n) => n && n.id === (e.by ?? e.joueur))) o.horsJeu9++;

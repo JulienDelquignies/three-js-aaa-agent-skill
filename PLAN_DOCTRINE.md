@@ -451,6 +451,14 @@ nomme : la limite est géométrique (47 % des tirs ont un corps devant) — le r
 tire à travers un corps SUR la ligne (le couloir à 0) et dans le bloc bas qui se ferme (253). L'ordre : 257 →
 259 → 253 → 255 → 254, puis les transversaux.
 
+**257 — LE CARTON JUGE LA NATURE : SCELLÉ (333).** La faute porte un score de nature (espèce, vitesse de la victime,
+agressivité, arraché, transition prometteuse, DOGSO) ; P(jaune) en sigmoïde au flux, l'ardoise des fautes répétées,
+le rouge direct du DOGSO (jaune + penalty dans sa surface sur un tacle), la retenue de l'averti et la réticence de
+l'arbitre. Mesuré 8 × 90 min : 9,25 → 4,0 jaunes, 2,25 → 0,12 rouge, 2,8 → 5,0 fautes par jaune. Alias du 256 retirés. Ce qu'il
+nomme : le rouge à la borne basse (le DOGSO rare parce que le battu accroche loin du but ; le second jaune tué par
+la retenue) — le tacle glissé rare (41 par équipe, Bible 15 §5.1) reste le lot du duel au sol. L'ordre : 259 → 253
+→ 255 → 254, puis les transversaux.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

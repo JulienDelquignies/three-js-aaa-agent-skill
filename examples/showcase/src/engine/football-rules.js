@@ -269,7 +269,7 @@ export const FOOT_RULES = [
     id: 'pass-has-a-striker', scope: 'event', on: 'pass',
     title: 'une passe part d\'un joueur, vers un autre',
     why: 'Une passe sans passeur ou vers soi-même est un état incohérent qui se voit comme un ballon parti tout seul.',
-    check: (e) => (e.from === undefined || e.to === undefined || e.from === e.to ? `passe ${e.from} → ${e.to}` : null),
+    check: (e) => (e.by === undefined || e.to === undefined || e.by === e.to ? `passe ${e.by} → ${e.to}` : null),   // (257) by canonique — l'alias from est tombé
   },
   {
     id: 'correct-foot', scope: 'event', on: 'pass',
@@ -283,8 +283,8 @@ export const FOOT_RULES = [
     why: 'Entre deux contacts il faut le temps d\'un appui. Sans ce minimum, la conduite se met à mitrailler.',
     check: (list, cfg) => {
       for (let i = 1; i < list.length; i++) {
-        if (list[i].from === list[i - 1].from && list[i].t - list[i - 1].t < cfg.minTouchGap) {
-          return `joueur ${list[i].from} frappe deux fois en ${(list[i].t - list[i - 1].t).toFixed(2)} s`;
+        if (list[i].by === list[i - 1].by && list[i].t - list[i - 1].t < cfg.minTouchGap) {
+          return `joueur ${list[i].by} frappe deux fois en ${(list[i].t - list[i - 1].t).toFixed(2)} s`;
         }
       }
       return null;

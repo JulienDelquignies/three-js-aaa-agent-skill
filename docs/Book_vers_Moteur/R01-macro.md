@@ -58,5 +58,5 @@
    ramènent 1 522 → 890 passes et 76 → 56 min.
 2. **L'échelle de finition** (C1, C4, C8, C29 ; le 258).
 3. **Le ballon qui sort** (C20, C26-C28, C31-C33 ; Modèle 13 lot 1, Bible 15 lot 3, Bible 14 lot 3).
-4. **Le carton qui juge la nature** (C24-C25 ; le 257).
+4. **Le carton qui juge la nature** (C24-C25 ; le 257 — SCELLÉ 333).
 5. **La saison** (C2, C37-C38 ; chantier A) : σ des buts, domicile.

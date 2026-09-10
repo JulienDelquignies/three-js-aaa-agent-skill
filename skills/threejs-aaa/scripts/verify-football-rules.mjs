@@ -130,11 +130,11 @@ sab('players-in-the-box', 'joueur hors de l\'aire de jeu',
 sab('one-carrier', 'phase « conduite » sans porteur',
   (g) => { for (const s of g.trace) { s.phase = 'carry'; s.carrier = -1; } });
 sab('pass-has-a-striker', 'passe d\'un joueur vers lui-même',
-  (g) => { for (const e of g.st.events) if (e.type === 'pass') e.to = e.from; });
+  (g) => { for (const e of g.st.events) if (e.type === 'pass') e.to = e.by; });
 sab('correct-foot', 'frappe sans pied identifié',
   (g) => { for (const e of g.st.events) if (e.type === 'pass') e.foot = 'aucun'; });
 sab('no-machine-gun-touches', 'le même joueur frappe deux fois en 30 ms',
-  (g) => { const p = g.st.events.filter((e) => e.type === 'pass'); if (p.length > 1) { p[1].from = p[0].from; p[1].t = p[0].t + 0.03; } });
+  (g) => { const p = g.st.events.filter((e) => e.type === 'pass'); if (p.length > 1) { p[1].by = p[0].by; p[1].t = p[0].t + 0.03; } });
 sab('technique-legal', 'un amorti de la poitrine sur un ballon au sol',
   (g) => { for (const e of g.st.events) if (e.tech) { e.tech = 'amorti-poitrine'; e.surface = 'chest'; e.foot = 'none'; e.height = 0.11; } });
 sab('no-crossed-legs', 'intérieur du pied droit sur un ballon arrivant à gauche',

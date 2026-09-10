@@ -26,16 +26,16 @@
 | 25-27 | Fautes / match 21,4 (PL) – 28,9 (Liga) | | **23,0** | tenu |
 | 28-29 | Fautes par tiers 23 / 47 / 30 % ; < 21 m 5-7 % | | **22 / 63 / 15 %** (Bible 15) | milieu trop lourd, offensif trop léger |
 | 30 | Fautes, dernier quart d'heure + 25-35 % | | — | à mesurer |
-| 31 | Jaunes / match | 4,20 ± 0,35 | **8,5** | **réfuté × 2** |
-| 32 | Rouges / match | 0,11-0,24 | **1,00** | **réfuté × 5** |
-| 33 | P(2ᵉ jaune \| averti) | 1,6-3,0 % | ≈ **12 %** (1 rouge pour 8,5 jaunes) | réfuté |
-| 34 | Fautes par jaune | 5,0-8,4 | **2,7** | réfuté |
+| 31 | Jaunes / match | 4,20 ± 0,35 | **8,5** → **4,0** au 257 | tenu (257) |
+| 32 | Rouges / match | 0,11-0,24 | **1,00** → **0,12** au 257 | sous la cible (257) |
+| 33 | P(2ᵉ jaune \| averti) | 1,6-3,0 % | ≈ **12 %** → **≈ 0** au 257 | sous la cible (257) |
+| 34 | Fautes par jaune | 5,0-8,4 | **2,7** → **5,0** au 257 | tenu (257) |
 | 35-36 | Jaunes par poste 41 / 40 / 17 / 2 % | | — | à instrumenter |
 | 37-38 | Effet du jaune : fautes −10-25 %, duels 0 % | | — (pas de retenue) | Modèle 12 lot 4 |
 
 ## Ce que le référentiel ajoute aux lots déjà nommés
 
-1. **Le tacle glissé rare et le carton qui juge** (13, 14, 31-34 ; le 257, Bible 15 lot 2) : 41 → 5,5 glissés par
+1. **Le tacle glissé rare et le carton qui juge** (13, 14, 31-34 ; le 257 — le carton SCELLÉ 333, le glissé rare reste à faire, Bible 15 lot 2) : 41 → 5,5 glissés par
    équipe à 16-19 % de fautes, 8,5 → 4,2 jaunes, 1,0 → 0,17 rouges, 2,7 → 5-8 fautes par jaune.
 2. **Le ciel** (2-4 ; Bible 15 lot 4) : 10 → 40 duels aériens, gagnés par les défenseurs.
 3. **Le dribble à trois issues** (8-11 ; Modèle 11 lot 1) : 199 → 55 tentatives, 13 % qui sortent.

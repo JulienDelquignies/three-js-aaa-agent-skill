@@ -17,8 +17,8 @@ gagne des champs, un type change de nom.
 | 1 | `scanning` lue par `makeProfile`, absente d'`ATTRIBUTES` | exact — la note est née au 250 sans son entrée de catalogue | entrée `scanning` au catalogue ; le commentaire de `decisions` remis à sa ligne |
 | 2 | pas de repli `r2('scanning','vision')` | exact, et l'argument est le bon (le 170 graduait par vision) | `r2('scanning', 'vision')` — un monde noté en vision scanne à sa note |
 | 3 | `wide_creator` : `repli: 0.9` ET interdit `repli` | exact — l'axe est mort sous l'interdit | l'axe retiré ; règle : l'interdit prime, on n'écrit pas les deux |
-| 4 | `pass` : `by` (376) ou `from` (1 304) | exact | `by` canonique, `from` émis en alias UN lot (256 → 257), puis retiré |
-| 5 | `to` a trois sens ; `to: -2` compté passe manquée | exact | `turnover.equipe` (alias `to` un lot) ; `sansCible: true` sur la passe sans destinataire (`clear`/urgence) — le type reste `pass` : c'est un geste de passe dont la cible est une zone |
+| 4 | `pass` : `by` (376) ou `from` (1 304) | exact | `by` canonique, `from` émis en alias UN lot (256 → 257), retiré au 257 |
+| 5 | `to` a trois sens ; `to: -2` compté passe manquée | exact | `turnover.equipe` (alias `to` un lot, retiré au 257) ; `sansCible: true` sur la passe sans destinataire (`clear`/urgence) — le type reste `pass` : c'est un geste de passe dont la cible est une zone |
 | 6 | la tête au but fait DEUX événements de frappe | exact | `shot.geste: 'tête' \| 'volée'` ; doctrine écrite : **`shot` est le seul événement de frappe**, `tête`/`volée` sont le geste, `tacle-pique` un tacle |
 | 7 | `pique` / `piqué` | exact, et le NFC/NFD est un vrai piège | le tacle devient `tacle-pique` ; `piqué` reste la passe (bancs mis à jour) |
 | 8 | après un remplacement, rien n'est attribuable | exact — `p.id` est un maillot | `remplacement { sortant: {name, number}, entrant: {name, number} }` |

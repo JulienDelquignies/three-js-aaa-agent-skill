@@ -25,7 +25,7 @@ les **contrats** (`checkBallFlight`, `checkBallBody`, `temporal-validate`, `matc
 la doctrine du journal (MOTEUR.md), la carte du book (ce dossier).
 
 **Partiel.** Le journal est riche mais **en vocabulaire maison** (pas SPADL ; alias `pass.from` / `turnover.to` à
-retirer au 257) ; les bancs mesurent des invariants **d'un monde** (jumeau au bit) et des clauses de loi, pas des
+retirés au 257 — `by` et `equipe` seuls) ; les bancs mesurent des invariants **d'un monde** (jumeau au bit) et des clauses de loi, pas des
 distributions contre le réel (la « table du réel en clause ou informative » est une décision ouverte du Plan) ;
 la neutralité de la télémétrie est tenue de fait (les sondes lisent `st`) mais non testée ; le tracking existe
 comme trace échantillonnée, pas comme flux 10 Hz normalisé ; pas de journal de décision.

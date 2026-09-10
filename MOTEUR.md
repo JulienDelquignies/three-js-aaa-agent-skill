@@ -258,6 +258,21 @@ reste au tireur) — l'événement `contre` porte `issue` et `engage`. Mesuré 8
 Banc : bloc 258b (fixture 12 m, défenseur 1,5 m devant à 0,6 m de la ligne, 48 frappes : 98 % contrés, sabotage
 0 %) ; le boulet du 176 épinglé `contre: null`. Fiches : `M10-modele-tir.md`, `R03-tirs-buts.md`, `R04-defense-duels.md`.
 
+### Le carton juge la nature (lot 257, `cfg.carton` — `referee.adjugeFaute`)
+
+Le 25 cartonnait à la récidive (2 fautes → jaune, l'imprudence double) : 9 jaunes et 2 rouges par match (réel 4 et
+0,1-0,36). Le 257 fait voyager la **nature** avec la faute (`st._faute.kind / vSur / dir / arrache`, posés aux
+sites de `duel.js` et `rondo-sim.js`) et l'arbitre la note : S = base[espèce] + 0,03 v(victime) + 0,3 (aggrF − 1)
+− 0,15 si arrachée + 0,5 si la transition était prometteuse (victime lancée vers le but, ≤ 3 corps dans le couloir
+de 8 m devant elle) ; le DOGSO (aucun couvrant dans la bande de 18 m, cos > 0,6, < 30 m) vaut rouge direct, sauf
+dans sa surface sur un tacle (jaune + penalty). P(jaune) = σ((S − 0,8 − 0,25 si déjà averti) / 0,15) au flux seedé ;
+l'ardoise cumule S et vaut jaune à 2,0 ; l'averti se retient (× 0,55 sur l'accrochage et le glissé imprudent). Les
+événements `carton` portent `nature`, `kind`, `prometteur`, `dogso`, `direct` / `second`, `repetee`. `carton: null`
+= la récidive du 25 au bit. Banc : bloc 257 (fixtures sur `adjugeFaute`, P(jaune) ordonnée par nature, DOGSO,
+réticence, sabotage) ; verify-cartons et verify-expulsion épinglés `carton: null` (ils mesurent la récidive).
+Les alias du 256 (`pass.from`, `turnover.to`) sont retirés : `by` et `equipe` seuls. Fiches : `M12-regles-arbitrage.md`,
+`R10-arbitrage-lois.md`, `R04-defense-duels.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

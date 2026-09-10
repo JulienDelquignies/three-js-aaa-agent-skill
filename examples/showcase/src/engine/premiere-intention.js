@@ -138,7 +138,7 @@ export function uneTouche(st, p, cfg) {
           ? { team: p.team, side: zS || F.side, n: F.n + 1 } : { team: p.team, side: zS, n: 1 };
       }
       st.phase = 'flight'; st.possession.carrier = -1; st.hold = 0;
-      st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, from: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(pressOk ? {} : { calme: true }), ...(force ? { appui: true } : {}) });
+      st.events.push({ t: +st.t.toFixed(2), type: 'pass', style: 'une-touche', by: p.id, to: mate.m.id, d: +mate.d.toFixed(1), ...(pressOk ? {} : { calme: true }), ...(force ? { appui: true } : {}) });
       // …LA COMBINAISON SE COMPTE (240) : le coureur du troisième homme SERVI en une touche = A → B → C abouti ; et la remise
       // d'appui garde la course de C vivante le temps du relais (vie s) — la chaîne A → B → A → C du vrai football
       if (AR) {

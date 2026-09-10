@@ -195,7 +195,7 @@ function standTackleNow(st, q, cfg) {
     // penalty si la faute vit dans la surface du fautif). Une faute à la fois : l'arbitre aussi.
     const vic = st.players[victimId];
     if (cfg.loi12 && st.full && still && vic && d2(q.p, vic.p) < (cfg.loi12.contact ?? 0.9) && !st._faute) {
-      st._faute = { t: st.t, par: q.id, sur: victimId, team: vic.team, p: [vic.p[0], vic.p[2]] };
+      st._faute = { t: st.t, par: q.id, sur: victimId, team: vic.team, p: [vic.p[0], vic.p[2]], kind: 'tacle-debout', vSur: hyp(vic.v[0], vic.v[1]), dir: [vic.v[0], vic.v[1]] };   // (257) la nature voyage avec la faute
       st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: victimId, p: [+vic.p[0].toFixed(1), +vic.p[2].toFixed(1)] }); if (st.full && cfg.contact) chuter(st, vic, q, cfg, 'tacle-debout', null);   // (A10) la fente qui trouve les jambes : il tombe
     }
     return;

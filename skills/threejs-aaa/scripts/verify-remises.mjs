@@ -158,8 +158,8 @@ for (const kind of RESTART_NAMES) {
   const libre = st0.players.filter((p) => p.team === gk.team && !p.keeper).sort((a, b) => Math.hypot(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - Math.hypot(b.p[0] - gk.p[0], b.p[2] - gk.p[2]))[1];
   const armed = simInternals.beginPass(st0, { to: { id: libre.id }, lead: [libre.p[0], 0, libre.p[2]], style: 'ground', lane: { margin: 6 } }, cfg, { forceUrgent: true, mains: true });   // lead = [x, 0, z], comme keeper.relancerGardien
   const w = st0.events.filter((e) => e.type === 'windup' && e.by === gk.id).pop();
-  for (let i = 0; i < 120 && !st0.events.some((e) => e.type === 'pass' && e.from === gk.id && w && e.t >= w.t); i++) matchStep(st0, 1 / 60, cfg);
-  const pr = st0.events.find((e) => e.type === 'pass' && e.from === gk.id && w && e.t >= w.t);
+  for (let i = 0; i < 120 && !st0.events.some((e) => e.type === 'pass' && e.by === gk.id && w && e.t >= w.t); i++) matchStep(st0, 1 / 60, cfg);
+  const pr = st0.events.find((e) => e.type === 'pass' && e.by === gk.id && w && e.t >= w.t);
   ok(!!armed && w?.tech === 'roule-main' && w.move === 'rouleMain', `la relance à la main du gardien s'habille du roulé : windup tech ${w?.tech ?? '—'}, move ${w?.move ?? '—'}`);
   ok(!!pr && pr.ballY >= 0.2 && pr.ballY <= 0.6 && pr.t - w.t > 0.4 && pr.t - w.t < 0.8, `le roulé lâche le ballon BAS devant, au contact : passe à ballY ${pr?.ballY ?? '—'} m, ${pr ? (pr.t - w.t).toFixed(2) : '—'} s après l'armé (contact ${RESTART_KINDS.rouleMain.contact} s)`);
 }
@@ -182,8 +182,8 @@ for (const kind of RESTART_NAMES) {
     const A = gk.act, w = st.events.filter((e) => e.type === 'windup' && e.by === gk.id).pop();
     let yHaut = 0, yBas = 9, yRel = null, tombe = true, prevY = null;
     for (let i = 0; i < 120 && gk.act && !gk.act.fired; i++) { matchStep(st, 1 / 60, cfg); if (!gk.act || gk.act.fired) break; const y = st.ball.p[1]; if (gk.act?.payload?.lache == null) yHaut = Math.max(yHaut, y); else { if (yRel == null) yRel = y; if (prevY != null && y > prevY + 0.03) tombe = false; yBas = Math.min(yBas, y); } prevY = y; }
-    for (let i = 0; i < 30 && !st.events.some((e) => e.type === 'pass' && e.from === gk.id && e.mains === 'volee'); i++) matchStep(st, 1 / 60, cfg);
-    const pr = st.events.find((e) => e.type === 'pass' && e.from === gk.id && e.mains === 'volee');
+    for (let i = 0; i < 30 && !st.events.some((e) => e.type === 'pass' && e.by === gk.id && e.mains === 'volee'); i++) matchStep(st, 1 / 60, cfg);
+    const pr = st.events.find((e) => e.type === 'pass' && e.by === gk.id && e.mains === 'volee');
     ok(!!armed && A?.payload?.mains === 'volee' && w?.tech === 'volee-gardien' && w.move === 'voleeGardien', `LE DÉGAGEMENT DE VOLÉE s'arme aux gants : windup tech ${w?.tech ?? '—'}, move ${w?.move ?? '—'}, mains ${A?.payload?.mains ?? '—'} (anticipation ${A?.anticipation?.toFixed(2) ?? '—'} s)`);
     ok(yHaut >= 0.9 && yRel != null && tombe && yBas <= yRel - 0.12, `le ballon vit aux mains (${yHaut.toFixed(2)} m) puis TOMBE du lâcher (${yRel?.toFixed(2) ?? '—'} m) au contact (jamais posé par écriture) : y descend jusqu'à ${yBas.toFixed(2)} m`);
     ok(!!pr && pr.ballY >= 0.45 && pr.ballY <= 0.9 && pr.style === 'lofted' && st.ball.ledger.restarts.length === n0, `la frappe part de la hauteur du ballon tombé : passe ${pr?.style ?? '—'} à ballY ${pr?.ballY ?? '—'} m (attendu 0,45-0,9 — hier : téléporté au sol, 0,11) ; aucune pose au registre`);

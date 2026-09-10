@@ -5,10 +5,10 @@
 | # | Cible | Réel | Moteur | Statut |
 |---|---|---|---|---|
 | A01 | Fautes / match | 20-30 | **23,0** | tenu |
-| A02 | Jaunes / match | 3,2-4,8 | **8,5** | réfuté × 2 |
-| A03 | Fautes par jaune | 5,4-6,8 | **2,7** | réfuté |
-| A04 | Rouges / match | 0,08-0,36 | **1,00** | réfuté × 3-12 |
-| A05 | Seconds avertissements / match | 0,12 | **≈ 1,0** (rouge = second jaune) | réfuté × 8 |
+| A02 | Jaunes / match | 3,2-4,8 | **8,5** → **4,0** au 257 (8 × 90 min) | tenu (257) |
+| A03 | Fautes par jaune | 5,4-6,8 | **2,7** → **5,0** au 257 | tenu à la marge (257 : les fautes sont à 20 par match, la borne basse) |
+| A04 | Rouges / match | 0,08-0,36 | **1,00** → **0,12** au 257 | à la borne basse (257 : le DOGSO rare, la retenue) |
+| A05 | Seconds avertissements / match | 0,12 | **≈ 1,0** → **≈ 0** au 257 (la retenue × 0,55 et la réticence + 0,25) | sous la cible (257) |
 | A06 | Penalties / match | 0,25-0,30 | **0,5** (1 sur 2 matchs) | à mesurer |
 | A07 | Penalties pour main | 3-42 % | — (pas de main) | absent |
 | A08 | Hors-jeu / match | 3,1-4,5 | **1,0** (Bible 03) ; 0,5 par équipe (Bible 10) | réfuté × 4 |
@@ -20,7 +20,7 @@
 
 ## Ce que le référentiel ajoute aux lots déjà nommés
 
-1. **Le carton qui juge la nature** (A02-A05 ; le 257) : la récidive à 2 fabrique un rouge par match ; la nature
+1. **Le carton qui juge la nature** (A02-A05 ; le 257 — SCELLÉ 333) : la récidive à 2 fabrique un rouge par match ; la nature
    de la faute (glissé par derrière, main, anti-jeu) doit porter le carton.
 2. **Le temps du match** (A13-A15 ; Bible 14 lot 3, Modèle 12 lot 3) : 84 → 56 % en jeu, 5 → 8-12 min de temps
    additionnel, 95 → 100 min de match.

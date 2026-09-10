@@ -27,7 +27,7 @@ const siffle = (st, cfg, par) => {
 };
 // un monde avec un ROUGE : 4 sifflets du même homme, posé près de la touche avant le dernier
 const rougeWorld = (seed) => {
-  const cfg = matchCfg({ shotRange: 20 });
+  const cfg = matchCfg({ shotRange: 20, carton: null /* carton null DATÉ 257 : le rouge de ce banc naît de la récidive du 25 ; le monde 257 juge la nature au flux */ });
   const st = settle(seed, cfg);
   const q = st.players.find((p) => p.team === 1 && !p.keeper);
   for (let k = 0; k < 3; k++) siffle(st, cfg, q.id);
@@ -59,7 +59,7 @@ const rougeWorld = (seed) => {
   const passes = st.events.slice(evBase).filter((e) => e.type === 'pass').length;
   ok(`le monde CONTINUE à 10 (${passes} passe(s) ≥ 3 en 45 s, aucun gel)`, passes >= 3);
   // …et l'expulsé n'est JAMAIS re-servi (aucune passe vers lui, aucun toucher de lui)
-  const luiJoue = st.events.slice(evBase).some((e) => (e.type === 'pass' && (e.from === q.id || e.to === q.id)) || (e.type === 'touch' && e.by === q.id));
+  const luiJoue = st.events.slice(evBase).some((e) => (e.type === 'pass' && (e.by === q.id || e.to === q.id)) || (e.type === 'touch' && e.by === q.id));
   ok(`l'expulsé est HORS DU MONDE (aucune passe de/vers nº${q.id}, aucun toucher)`, !luiJoue);
 }
 
@@ -87,7 +87,7 @@ const rougeWorld = (seed) => {
 
 // ---------- 4. sabotage nommé « arbitre sans poches » : jaune:0 → personne ne sort jamais
 {
-  const cfg = matchCfg({ shotRange: 20, loi12: { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 0 } });
+  const cfg = matchCfg({ shotRange: 20, carton: null, loi12: { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 0 } });
   const st = settle(3, cfg);
   const par = st.players.find((p) => p.team === 1 && !p.keeper).id;
   for (let k = 0; k < 4; k++) siffle(st, cfg, par);

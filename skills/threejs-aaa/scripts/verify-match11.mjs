@@ -31,7 +31,7 @@ import { movePlayers } from '../assets/starter/src/engine/movement.js';
 import { laneClearance } from '../assets/starter/src/engine/ball-predict.js';
 import { maybeDoubleContact, maybePetitPont, maybeRoulette, skillContactNow } from '../assets/starter/src/engine/skills-sim.js';
 import { resoudreTactique, tac, axe as axeT } from '../assets/starter/src/engine/tactics.js';
-import { cornerTrav, cornerSpots, coupFrancDirect } from '../assets/starter/src/engine/referee.js';
+import { cornerTrav, cornerSpots, coupFrancDirect, adjugeFaute } from '../assets/starter/src/engine/referee.js';
 import { relancerGardien, gkTenueDue } from '../assets/starter/src/engine/keeper.js';
 import { makeProfile } from '../assets/starter/src/engine/attributes.js';
 import { chestStep } from '../assets/starter/src/engine/tete.js';
@@ -421,8 +421,8 @@ if (__bloc()) {
         matchStep(st, 1 / 60, cfg);
         for (const e of st.events) {
           if (e._vuF) continue; e._vuF = true;
-          if ((e.type === 'shot' || e.type === 'pass') && (e.by ?? e.from) != null) {
-            const p = st.players[e.by ?? e.from];
+          if ((e.type === 'shot' || e.type === 'pass') && e.by != null) {
+            const p = st.players[e.by];
             if (p && !p.keeper) vs.push(Math.hypot(p.v[0], p.v[1]));
           }
         }
@@ -469,7 +469,7 @@ if (__bloc()) {
         while (evCount < st.events.length) {
           const e = st.events[evCount++];
           if (e.type !== 'pass' && e.type !== 'shot') continue;
-          const p = st.players[e.from ?? e.by ?? -1];
+          const p = st.players[e.by ?? -1];
           if (!p || p.keeper) continue;
           const h = hist.get(p.id) ?? [];
           if (h.length < W || h[0] < 3) continue;                   // il COURAIT à 0,7 s du contact
@@ -507,7 +507,7 @@ if (__bloc()) {
         matchStep(st, 1 / 60, cfg);
         const rp = st.events.find((e) => e.type === 'restart-pris');
         if (rp && pris == null) pris = rp;
-        const p = pris && st.events.find((e) => e.type === 'pass' && e.from === pris.by && e.t > pris.t);
+        const p = pris && st.events.find((e) => e.type === 'pass' && e.by === pris.by && e.t > pris.t);
         if (p) { ds.push(p.t - pris.t); break; }
       }
     }
@@ -2715,13 +2715,13 @@ if (__bloc()) {
     let th = 0, thOk = 0;
     for (const seed of [1, 2, 4, 3, 5, 6]) {   // 3 → 6 graines DATÉ A10 (4 through ≥ 6 à 3 graines dans le monde du contact et des remises au pied ; 8 sans leurs clés — Poisson à 4)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  contreZones: false, couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 128 hors contres (5 through sur 3 : Poisson)
+      const cfg = matchCfg({ carton: null /* carton null DATÉ 257 : vert à HEAD~ (13/17 conservés au 258b en worktree), le dosage remangé par le carton qui juge la nature (10/19 — les avertis se retiennent, le flux bouge) — la clause mesure la mène, pas le carton */, contact: null, porteAnticipe: null, remisesPied: null,  contreZones: false, couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 128 hors contres (5 through sur 3 : Poisson)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         for (; cursor < st.events.length; cursor++) {
           const e = st.events[cursor];
-          if (e.type === 'pass' && e.through && st.players[e.from]) { th++; watch.push({ t: e.t, team: st.players[e.from].team, done: false }); }
+          if (e.type === 'pass' && e.through && st.players[e.by]) { th++; watch.push({ t: e.t, team: st.players[e.by].team, done: false }); }
         }
         for (const w of watch) if (!w.done && st.t - w.t >= 2.2) {
           if ((st.ball.owner != null ? st.players[st.ball.owner].team : st.possession.team) === w.team) thOk++;
@@ -3253,7 +3253,7 @@ if (__bloc()) {
         } else if (vol && st.t - vol.t > 6) vol = null;
         while (nEv < st.events.length) {
           const e = st.events[nEv++];
-          if (e.type === 'pass' && !e.clear) vol = { team: st.players[e.from]?.team ?? 0, to: e.to, t: st.t };
+          if (e.type === 'pass' && !e.clear) vol = { team: st.players[e.by]?.team ?? 0, to: e.to, t: st.t };
           else if (e.type === 'sortie' && vol) vol = null;
         }
       }
@@ -3290,7 +3290,7 @@ if (__bloc()) {
         }
         while (nEv < st.events.length) {
           const e = st.events[nEv++];
-          if (fen && !fen.done && st.t - fen.t0 < 0.9 && (e.type === 'pass' || e.type === 'shot') && (e.from === fen.carrier || e.by === fen.carrier)) { joues++; fen.done = true; }
+          if (fen && !fen.done && st.t - fen.t0 < 0.9 && (e.type === 'pass' || e.type === 'shot') && (e.by === fen.carrier)) { joues++; fen.done = true; }
           if (fen && st.t - fen.t0 < 0.8 && e.type === 'burst' && e.kind === 'appel-profond') appels++;
         }
       }
@@ -3441,7 +3441,7 @@ if (__bloc()) {
         const e = st.events[nEv++];
         if (e.type === 'shot' && st.players[e.by]?.team === 0) tirs++;
         if (e.type !== 'pass') continue;
-        const p2 = st.players[e.from], r = st.players[e.to];
+        const p2 = st.players[e.by], r = st.players[e.to];
         if (!p2 || p2.team !== 0 || !r) continue;
         const g = st.pitch.attackGoal(0);
         if (Math.hypot(g.x - p2.p[0], p2.p[2]) - Math.hypot(g.x - r.p[0], r.p[2]) > 2) av++;
@@ -4164,7 +4164,7 @@ if (__bloc()) {
     const ds = [];
     for (const seed of [2, 3, 5, 7, 11, 13, 17, 19]) {   // 4 → 8 graines DATÉ 240 (1 retrait sur 4 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ hommeLibre: false, claquette: false, pasChasse: false, qualiteTir: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ carton: null /* carton null DATÉ 257 : vert à HEAD~ (3 retraits au 258b en worktree), le retrait remangé par le carton qui juge la nature (1 retrait) — la clause mesure le gardien, pas le carton */, hommeLibre: false, claquette: false, pasChasse: false, qualiteTir: false, shotRange: 20, ...(over ?? {}) });
       let vol = null, seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5266,7 +5266,7 @@ if (__bloc()) {
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed }); const open = [];   // 6 → 12 graines DATÉ 238 (4,8 c. 4,7 à 6 : un tirage ; à 12 : 4,1 c. 5,1)
       for (let i = 0; i < 300 * 60; i++) { const ne = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = ne; e < st.events.length; e++) { const ev = st.events[e];
-          if (ev.type === 'pass' && ev.to >= 0) { const p = st.players[ev.from], to = st.players[ev.to]; if (!p || !to) continue; let dr = 99; for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) dr = Math.min(dr, d2(q.p, to.p)); n++; if (dr < 1.5) marque++; open.push({ t: ev.t, team: p.team, issue: null }); continue; }
+          if (ev.type === 'pass' && ev.to >= 0) { const p = st.players[ev.by], to = st.players[ev.to]; if (!p || !to) continue; let dr = 99; for (const q of st.players) if (q.team !== p.team && !q.keeper && q.down <= 0) dr = Math.min(dr, d2(q.p, to.p)); n++; if (dr < 1.5) marque++; open.push({ t: ev.t, team: p.team, issue: null }); continue; }
           for (const o of open) { if (o.issue || ev.t - o.t > 3) continue; if ((ev.type === 'control' || ev.type === 'receive') && ev.by != null) { const q = st.players[ev.by]; if (q) o.issue = q.team === o.team ? 'mate' : 'foe'; } } }
         for (const o of open.filter((x) => x.issue || st.t - x.t > 3)) { open.splice(open.indexOf(o), 1); if (o.issue === 'mate') mate++; } } }
     return { n, mate: 100 * mate / Math.max(1, n), marque: 100 * marque / Math.max(1, n) }; };
@@ -5448,7 +5448,7 @@ if (__bloc()) {
   const flux = (over) => { const cfg = matchCfg({ shotRange: 20, ...over }); const piv = [], cond = [];
     for (const seed of [3, 5, 7, 11, 13, 17]) { const st = makeMatch({ full: true, seed }); let cur = 0, carry = null;
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
-        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (carry && e.type === 'pass' && e.from === carry.id) { const p = st.players[carry.id]; cond.push(Math.hypot(p.p[0] - carry.x0, p.p[2] - carry.z0)); carry = null; } else if (e.type === 'turnover') carry = null; }
+        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (carry && e.type === 'pass' && e.by === carry.id) { const p = st.players[carry.id]; cond.push(Math.hypot(p.p[0] - carry.x0, p.p[2] - carry.z0)); carry = null; } else if (e.type === 'turnover') carry = null; }
         if (poss < 0 || st.restart) { carry = null; continue; } if (!c) continue;
         const f = tac(st, poss).formation, idsP = mapPostes(f), nD = (LIGNES[formationPour(f, true)] ?? [4, 3, 3])[0], cbs = idsP.slice(1, nD - 1), ogP = st.pitch.ownGoal(poss), sgP = -Math.sign(ogP.x || 1);
         const deep = Math.abs(c.p[0] - ogP.x) < 30, isCB = cbs.includes(c.post);
@@ -5490,7 +5490,7 @@ if (__bloc()) {
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed }); let cur = 0; const yawH = new Map();   // 12 graines : la part « serré » est un écart de 2 points
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg);
         for (const p of st.players) { const h = yawH.get(p.id) ?? []; h.push([st.t, p.yaw]); if (h.length > 30) h.shift(); yawH.set(p.id, h); }
-        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (e.type !== 'pass' || e.to < 0) continue; const from = st.players[e.from], to = st.players[e.to]; if (!from || !to) continue; nP++;
+        for (; cur < st.events.length; cur++) { const e = st.events[cur]; if (e.type !== 'pass' || e.to < 0) continue; const from = st.players[e.by], to = st.players[e.to]; if (!from || !to) continue; nP++;
           let pr = 99; for (const q of st.players) if (q.team !== from.team && !q.keeper && q.down <= 0) pr = Math.min(pr, d2(q.p, to.p)); if (pr >= 2 && pr < 4) serre++;
           const h = yawH.get(from.id) ?? [], h0 = h.find((x) => x[0] >= st.t - 0.3) ?? h[0]; if (h0 && h.length > 2) { const ang = Math.atan2(to.p[2] - from.p[2], to.p[0] - from.p[0]); const rel = Math.abs(((ang - h0[1] + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI; if (rel > 110) { const dy = Math.abs(((from.yaw - h0[1] + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 180 / Math.PI; rot.push(dy / Math.max(0.05, st.t - h0[0])); } } }
         if (i % 6 === 0) { const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null; if (c && poss >= 0 && !st.restart && st.t - (st._possChangeAt ?? -99) > 4) { const sg = Math.sign(st.pitch.attackGoal(poss).x || 1); const def = st.players.filter((q) => q.team !== poss && !q.keeper && q.down <= 0).map((q) => q.p[0] * sg).sort((a, b) => b - a); const att = st.players.filter((q) => q.team === poss && !q.keeper && q.id !== c.id).map((q) => q.p[0] * sg).sort((a, b) => b - a); if (def.length >= 2 && att.length) haut.push((def[0] + def[1]) / 2 - att[0]); } } } }
@@ -5788,7 +5788,7 @@ if (__bloc()) {
   const flux = (f, over) => {
     const o = { deb: {}, appels: {}, pivots: {}, ligne: 0, img: 0, pertes: 0 };
     for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ 246 (appels du 9 en 4-2-3-1 : 20 ≥ hier 22 à 3 graines — Poisson à 20 ; le 245 l'avait laissé passer : shard relu avant sa fin)
-      const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ shotRange: 20, ...over });
+      const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ carton: null /* carton null DATÉ 257 : vert à HEAD~ (le 9 du 4-2-3-1 à ≥ 44 appels au 258b en worktree), le flux remangé par le carton qui juge la nature (32 appels du 9 — les avertis se retiennent) — la clause mesure la grille, pas le carton */, shotRange: 20, ...over });
       let prev = -1, cur = 0;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); const tm = st.possession?.team ?? -1;
@@ -5836,7 +5836,7 @@ if (__bloc()) {
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const st = makeMatch({ full: true, seed, squads: [sqAt(m), sqAt('propre')] }), cfg = matchCfg({ shotRange: 20 });
       const { trace } = playMatch(st, 300, { cfg });
-      for (const e of st.events) { const t = st.players[e.by ?? e.from]?.team; if (e.type === 'shot' && t === 1) o.tirsContre++; if (e.type === 'pass' && t === 0) o.passes++; }
+      for (const e of st.events) { const t = st.players[e.by]?.team; if (e.type === 'shot' && t === 1) o.tirsContre++; if (e.type === 'pass' && t === 0) o.passes++; }
       o.issues += __structurel(checkMatch(st, trace, cfg).issues).length;
     }
     return o;
@@ -6103,6 +6103,43 @@ if (__bloc()) {
   const C = matchCfg({}).contre;
   ok(`lot 258b — LE CORPS QUI CONTRE en fixture (12 m dans l'axe, un défenseur 1,5 m devant à 0,6 m de la ligne, 48 frappes) : le tireur tire dans le trafic (${vif.tirs}/48 tirs partis, couloir ${C.couloir} m) et le corps engagé contre ${(100 * vif.part).toFixed(0)} % ≥ 40 (issues ${JSON.stringify(vif.issues)} — renvoi / amorti / sortie / déviation) ; sabotage « contre null » (le bloc fixe du 176, rayon 0,38) : ${sab.tirs}/48 tirs partis, contrés ${(100 * sab.part).toFixed(0)} % ≤ 10 — le corps à 0,6 m ne mord pas hier`,
     vif.tirs >= 40 && vif.part >= 0.4 && sab.part <= 0.1 && C.porte >= 4 && C.corps > 0);
+}
+
+// ---------------------------------------------------------------- lot 257 : LE CARTON JUGE
+// LA NATURE (cfg.carton — la carte du book, Modèle 12 §3, Bible 15 §5 : 4 jaunes et 0,1-0,36 rouge par match)
+if (__bloc()) {
+  // Les fixtures : le même sifflet (fautif réel, fenêtre close, lésé sans ballon) sous chaque NATURE, 200 tirages
+  // seedés du flux → P(jaune) par espèce ; le DOGSO (victime lancée vers le but, aucun couvrant) → rouge direct et
+  // expulsion ; le DOGSO dans sa surface sur un tacle → jaune + penalty ; l'averti (réticence) ; le sabotage
+  // « carton null » : la récidive à 2 d'hier (2ᵉ faute → jaune, quelle que soit la nature).
+  const monde = (over) => { const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) }); const st = makeMatch({ full: true, seed: 3 }); for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg); return { st, cfg }; };
+  const pJaune = (nature, over, k = 200) => {
+    let j = 0, r = 0;
+    for (let i = 0; i < k; i++) {
+      const { st, cfg } = monde(over);
+      const par = st.players.find((q) => q.team === 1 && !q.keeper); const own = st.pitch.ownGoal(1);
+      const vic = st.players.find((q) => q.team === 0 && !q.keeper);
+      // la scène : la victime au milieu, TOUS les corps du fautif rangés derrière la faute (aucun couvrant) sauf la clause qui en veut
+      for (const q of st.players) if (q.team === 1 && !q.keeper) { q.p[0] = -own.sign * 30; q.p[2] = 20; }
+      const dir = [own.sign * 6, 0];
+      st._faute = { t: st.t - 2, par: par.id, sur: vic.id, team: 0, p: [own.x - own.sign * (nature.dist ?? 40), 0], kind: nature.kind, vSur: nature.v ?? 0, dir: nature.lance ? dir : [0, 0], arrache: !!nature.arrache };
+      if (nature.couvrants) for (let c = 0; c < nature.couvrants; c++) { const q = st.players.filter((q) => q.team === 1 && !q.keeper && q.id !== par.id)[c]; q.p[0] = own.x - own.sign * 10; q.p[2] = c * 2; }
+      if (nature.deja) par._jaunes = 1;
+      st.possession.team = 1; let lcg = (i * 2654435761 + 7) >>> 0; st.rnd2 = () => { lcg = (lcg * 1664525 + 1013904223) >>> 0; return lcg / 4294967296; };
+      const n0 = st.events.length; adjugeFaute(st, cfg);
+      const ev = st.events.slice(n0);
+      if (ev.some((e) => e.type === 'carton' && e.couleur === 'jaune')) j++;
+      if (ev.some((e) => e.type === 'carton' && e.couleur === 'rouge' && e.direct)) r++;
+    }
+    return { j: j / k, r: r / k };
+  };
+  const acc = pJaune({ kind: 'accrochage', v: 5 }), accA = pJaune({ kind: 'accrochage', v: 5, arrache: true }), deb = pJaune({ kind: 'tacle-debout', v: 3 });
+  const charge = pJaune({ kind: 'charge-derrière', v: 5 }), gliD = pJaune({ kind: 'tacle-glissé-derrière', v: 5 }), prom = pJaune({ kind: 'accrochage', v: 5, lance: true, couvrants: 2 });
+  const dogso = pJaune({ kind: 'accrochage', v: 5, lance: true, dist: 25 }, null, 20), couvert = pJaune({ kind: 'accrochage', v: 5, lance: true, dist: 25, couvrants: 1 }, null, 20), dogsoBox = pJaune({ kind: 'tacle-glissé', v: 5, lance: true, dist: 8 }, null, 20);
+  const deja = pJaune({ kind: 'charge-derrière', v: 5, deja: true }), sab = pJaune({ kind: 'accrochage', v: 5 }, { carton: null }, 20);
+  const K = matchCfg({}).carton;
+  ok(`lot 257 — LE CARTON JUGE LA NATURE (fixtures, 200 tirages) : P(jaune) accrochage arraché ${accA.j.toFixed(2)} < accrochage ${acc.j.toFixed(2)} ≤ 0,25 < charge par derrière ${charge.j.toFixed(2)} < glissé par derrière ${gliD.j.toFixed(2)} ≥ 0,6 ; tacle debout ${deb.j.toFixed(2)} ; la transition PROMETTEUSE (lancée, 2 couvrants) ${prom.j.toFixed(2)} ≥ acc + 0,3 ; l'averti sur la charge ${deja.j.toFixed(2)} < ${charge.j.toFixed(2)} (réticence) ; DOGSO (lancé, aucun couvrant, 25 m) : rouge direct ${dogso.r.toFixed(2)} = 1, UN couvrant : rouge ${couvert.r.toFixed(2)} = 0 (la géométrie lit les corps) ; DOGSO dans la surface sur un tacle : jaune ${dogsoBox.j.toFixed(2)} = 1, rouge ${dogsoBox.r.toFixed(2)} = 0 ; sabotage « carton null » : la 1ʳᵉ faute ne carte pas (${sab.j.toFixed(2)} = 0 — la récidive d'hier)`,
+    accA.j < acc.j && acc.j <= 0.25 && acc.j < charge.j && charge.j < gliD.j && gliD.j >= 0.6 && prom.j >= acc.j + 0.3 && deja.j < charge.j && dogso.r === 1 && couvert.r === 0 && dogsoBox.j === 1 && dogsoBox.r === 0 && sab.j === 0 && K.tally > 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

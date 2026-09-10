@@ -85,7 +85,7 @@ export function slideTackleStep(st, c, cfg) {
     if (!tableOk && !jambes) return;                        // rien à toucher : un pro reste debout
     // …et l'imprudence est l'EXCEPTION, pas la règle (mesuré : chaque situation jambes partait —
     // fautes 2,5/match, réel ~0,8/3 min) : 70 % du temps, le pro retient ce tacle-là aussi.
-    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > (S.imprudence ?? 0.3) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1)) return;   // …le taux d'imprudence en clé (191) × la CONSIGNE duel (196)
+    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > (S.imprudence ?? 0.3) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1) * (st.full && cfg.carton && (foe._jaunes ?? 0) >= 1 ? (cfg.carton.retenue ?? 0.55) : 1)) return;   /* (257) l'averti glisse moins */   // …le taux d'imprudence en clé (191) × la CONSIGNE duel (196)
     if (tableOk) {
       const tc = Math.min(0.4, Math.max(0.1, (sit.dist - 0.35) / Math.max(3.5, vq0)));
       const tMid = Math.min(0.5, (tc + 0.55) / 2);
@@ -139,7 +139,7 @@ export function slideTackleStep(st, c, cfg) {
     chuter(st, c, foe, cfg, 'tacle-glissé', null);                                   // (A10) le fauché tombe et la chute est nommée
     st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: foe.id, won: false, tech: 'tacle-glisse', team: foe.team, atk: c.team, sur: c.id, faute: true });
     if (cfg.loi12 && !st._faute) {
-      st._faute = { t: st.t, par: foe.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave };
+      st._faute = { t: st.t, par: foe.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave, kind: grave ? 'tacle-glissé-derrière' : 'tacle-glissé', vSur: vSpd, dir: [c.v[0], c.v[1]] };   // (257) la NATURE voyage avec la faute
       st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: foe.id, sur: c.id, kind: grave ? 'tacle-glissé-derrière' : 'tacle-glissé', p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
     }
     // le fauché ne porte plus rien : ballon lâché à ses pieds, monde en loose (la discipline
@@ -238,7 +238,7 @@ export function chargeStep(st, c, dt, cfg) {
     // à +0,6 de survitesse brute il restait 16 fautes / 9 min (réel ≈ 2,5)
     const vInto = (dxp * foe.v[0] + dzp * foe.v[1]) / dp;
     if (dp < 0.5 && vInto > vSpd + 0.8 && cfg.loi12 && !st._faute) {
-      st._faute = { t: st.t, par: foe.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]] };
+      st._faute = { t: st.t, par: foe.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], kind: 'charge-derrière', vSur: vSpd, dir: [c.v[0], c.v[1]] };
       st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: foe.id, sur: c.id, kind: 'charge-derrière', p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
       if (st.full && cfg.contact) { if (c.act && winding(c)) abortGesture(c, 'percuté', { log: st.gestures }); chuter(st, c, foe, cfg, 'charge-derrière', null); }   // (A10) percuté dans le dos : il tombe
     } else {
@@ -324,13 +324,14 @@ export function accrocheStep(st, c, cfg, pressAxe = 1) {
       && ((r.p[0] - c.p[0]) * gx + (r.p[2] - c.p[2]) * gz) / gl > 0.5).length;
     const danger = restants < 2;
     const enSurface = pitch.inBox(q.p[0], q.p[2], Math.sign(pitch.ownGoal(q.team).x || 1));
-    if ((st.rnd2 ?? st.rnd ?? (() => 0.5))() >= accrocheP(q, pressAxe, danger, enSurface) * (0.8 + 0.4 * role(q).press) * (q.skill?.aggrF ?? 1) * (enSurface && st.full && cfg.retenueSurface ? (cfg.retenueSurface.accro ?? 0.4) : 1)) continue;   // …l'AGRESSIVITÉ est une note (151) : le hargneux accroche (et paie ses fautes) — et LA RETENUE DE SURFACE (169b) resserre encore la main dans la boîte
-    st._faute = { t: st.t, par: q.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave: danger };
+    if ((st.rnd2 ?? st.rnd ?? (() => 0.5))() >= accrocheP(q, pressAxe, danger, enSurface) * (0.8 + 0.4 * role(q).press) * (q.skill?.aggrF ?? 1) * (enSurface && st.full && cfg.retenueSurface ? (cfg.retenueSurface.accro ?? 0.4) : 1) * (st.full && cfg.carton && (q._jaunes ?? 0) >= 1 ? (cfg.carton.retenue ?? 0.55) : 1)) continue;   // (257) l'AVERTI se retient (ρ joueur, Modèle 12 §3.5)   // …l'AGRESSIVITÉ est une note (151) : le hargneux accroche (et paie ses fautes) — et LA RETENUE DE SURFACE (169b) resserre encore la main dans la boîte
+    st._faute = { t: st.t, par: q.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave: danger, kind: 'accrochage', vSur: cv, dir: [c.v[0], c.v[1]] };
     // …ET LE PORTEUR S'ARRACHE UNE FOIS SUR DEUX (v2, mesuré : la v1 cassait TOUTES les courses
     // accrochées — A/B 18 → 13 buts, l'occasion supprimée chirurgicalement ; au réel le battu
     // qui retient ne stoppe pas toujours) : la faute est POSÉE (l'avantage la jouera — le
     // porteur qui file garde le ballon, l'arbitre laisse), la course VIT.
     const arrache = (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5;
+    st._faute.arrache = arrache;   // (257) l'arraché : la course a vécu, la faute pèse moins
     st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: c.id, kind: 'accrochage', prometteur: danger, arrache, p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
     if (!arrache) {
       c.v[0] *= 0.5; c.v[1] *= 0.5;                                 // la course cassée — deux foulées, pas un arrêt

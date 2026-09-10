@@ -64,7 +64,7 @@ régimes de tempo ; le budget locomoteur (17,8 km !).
 | T13 les deux pivots devant le ballon | < 4 % | mesurable, **réfuté** | **13,1 %** |
 | T14 `dSep` | 9-13 m | mesurable | **12,3 m** ✓ |
 | T15 fautes du 6 | encouragée 1,3-2,0 / interdite 0,4-0,9 | à instrumenter (0 lu) |
-| T16 jaune / faute | 0,10-0,20 | mesurable après 257 (le carton compteur : 0,5 aujourd'hui) |
+| T16 jaune / faute | 0,10-0,20 | **0,20** au 257 (le carton juge la nature) |
 | T17 fautes totales | PL 20,9 … Liga 27,0 | mesurable | **23,0** (26,0 / 28,5) ✓ |
 | T18 distance du 6 ; surcroît hors possession | ≤ 10,6 km ; +300-450 m | mesurable, **réfuté** | **17,8 km**, dont 9,6 hors possession — le 6 est le presseur permanent (`byDist` i = 0) |
 | T19 intensité en transition | | mesurable — à mesurer |

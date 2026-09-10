@@ -765,30 +765,79 @@ export function adjugeFaute(st, cfg) {
   // les cerveaux d'équipe — un chantier propre, pas un flag jeté ici.
   const seuil = cfg.loi12.jaune ?? 2;
   const fautif = st.players[F.par];
-  if (seuil > 0 && fautif) {
+  const expulser = (extra) => {
+    st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par, ...(extra ?? {}) });
+    // L'EXPULSION PHYSIQUE (lot 28) : le rouge SORT le corps. Il marche vers la ligne la
+    // plus proche et y RESTE — et il CESSE D'EXISTER pour les cerveaux par le levier natif :
+    // down géant (les ~30 filtres down<=0 du moteur le couvrent sans être touchés — une
+    // autorité, zéro seconde vérité) ; movement le laisse MARCHER (l'expulsé n'est pas un
+    // corps au sol), la Loi 11, placeKickoff/kickoffSpots et la boucle de jobs le sautent
+    // NOMMÉMENT. L'équipe joue à 10. Gardien expulsé : dette nommée (pas de remplaçant aux
+    // gants — le poste reste vide).
+    fautif.expulse = true;
+    fautif.down = 9e9;
+    fautif._exit = [Math.max(-st.pitch.hx + 2, Math.min(st.pitch.hx - 2, fautif.p[0])),
+      (fautif.p[2] >= 0 ? 1 : -1) * (st.pitch.hz + 2.5)];
+    fautif.job = 'walk'; fautif.target = [fautif._exit[0], 0, fautif._exit[1]];
+    fautif.act = null; fautif.intent = null;
+    st.events.push({ t: +st.t.toFixed(2), type: 'expulsion', by: F.par });
+  };
+  const K = st.full && seuil > 0 && fautif ? cfg.carton : null;
+  if (K) {
+    // LE CARTON JUGE LA NATURE (257, cfg.carton — la carte du book, Modèle 12 §3.1-3.5, Bible 15 §5 : réel 4 jaunes et
+    // 0,1-0,36 rouge par match pour 26 fautes, 5,4-6,8 fautes par jaune ; le moteur en montrait 9 et 2 à la récidive
+    // de 2). La faute porte un SCORE de nature S : la base de son espèce (l'accrochage 0,35 … le glissé par derrière
+    // 0,95), la vitesse de la victime (+0,03 / m/s), l'agressivité du fautif (aggrF en facteur, ±0,06), l'ARRACHÉ qui
+    // pèse moins (la course a vécu), la transition PROMETTEUSE (+0,5 : la victime filait vers le but, peu de
+    // couvrants — la faute tactique), le DOGSO (≤ 1 couvrant, cos > 0,6, < 35 m : rouge direct — sauf dans sa surface
+    // sur un tacle : jaune + penalty, IFAB). P(jaune) = σ((S − τ) / s) au flux seedé ; l'ARDOISE cumule S et vaut
+    // jaune à tally (les fautes répétées, Loi 12) ; l'averti se retient (duel : × retenue) et l'arbitre hésite à
+    // l'exclure (τ + réticence). null : la récidive à 2 du 25 au bit.
+    const vic = st.players[F.sur];
+    const own = st.pitch.ownGoal(fautif.team);
+    const base = K.base ?? {};
+    let S = (base[F.kind ?? 'tacle-debout'] ?? K.defaut ?? 0.3) + (K.vitesse ?? 0.03) * Math.min(8, F.vSur ?? 0) + (K.aggr ?? 0.3) * ((fautif.skill?.aggrF ?? 1) - 1);
+    let prometteur = false, dogso = false, couvrants = -1, couvrantsProm = 0;
+    if (vic && F.dir) {
+      const gx = own.x - F.p[0], gz = 0 - F.p[1], gl = hyp(gx, gz) || 1, vs = hyp(F.dir[0], F.dir[1]);
+      const cos = vs > 0.5 ? (F.dir[0] * gx + F.dir[1] * gz) / (gl * vs) : -1;
+      couvrants = 0;
+      for (const q of st.players) {
+        if (q.team !== fautif.team || q.keeper || q.id === fautif.id || q.down > 0) continue;
+        const along = ((q.p[0] - F.p[0]) * gx + (q.p[2] - F.p[1]) * gz) / gl, perp = Math.abs((q.p[0] - F.p[0]) * gz - (q.p[2] - F.p[1]) * gx) / gl;   // F.p est [x, z]
+        if (along > 0 && along < gl) { if (perp < (K.largeur ?? 18)) couvrants++; if (perp < (K.promLargeur ?? 8)) couvrantsProm++; }
+      }
+      dogso = cos > (K.dogsoCos ?? 0.6) && couvrants <= (K.couvrants ?? 1) && gl < (K.dogsoDist ?? 35);
+      prometteur = !dogso && !F.arrache && cos > (K.promCos ?? 0.5) && vs >= (K.promV ?? 3) && gl < (K.promDist ?? 45) && couvrantsProm <= (K.promCouvrants ?? 3);   // le couloir étroit devant la course : peu de corps à passer
+    }
+    if (F.arrache) S += K.arrache ?? -0.15;
+    if (prometteur) S += K.prometteur ?? 0.5;
+    const surfaceF = st.pitch.inBox(F.p[0], F.p[1], Math.sign(own.x || 1));
+    if (dogso) S = surfaceF && /tacle/.test(F.kind ?? '') ? Math.max(S, (K.jaune ?? 0.7) + 0.5) : Math.max(S, K.dogso ?? 1.5);
+    const deja = (fautif._jaunes ?? 0) >= 1;
+    const tau = (K.jaune ?? 0.7) + (deja ? (K.reticence ?? 0.25) : 0);
+    const u = (st.rnd2 ?? st.rnd ?? (() => 0.5))();
+    const pJ = 1 / (1 + Math.exp(-(S - tau) / (K.s ?? 0.15)));
+    fautif._fautes = (fautif._fautes ?? 0) + 1;
+    fautif._ardoise = (fautif._ardoise ?? 0) + S;
+    const rougeDirect = S >= (K.rouge ?? 1.4);
+    const nat = { nature: +S.toFixed(2), kind: F.kind ?? 'tacle-debout', ...(prometteur ? { prometteur: true } : {}), ...(dogso ? { dogso: true } : {}) };
+    if (rougeDirect) { fautif._ardoise = 0; expulser({ direct: true, ...nat }); }
+    else if (u < pJ || fautif._ardoise >= (K.tally ?? 1.5)) {
+      const repetee = !(u < pJ);
+      fautif._ardoise = 0;
+      fautif._jaunes = (fautif._jaunes ?? 0) + 1;
+      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes, ...nat, ...(repetee ? { repetee: true } : {}) });
+      if (fautif._jaunes === 2) expulser({ second: true });
+    }
+  } else if (seuil > 0 && fautif) {
     // …et l'IMPRUDENCE compte DOUBLE (F.grave — le tacle glissé par derrière, lot 33) : le
     // jaune vient vite sans être automatique, comme la vraie échelle des sanctions
     fautif._fautes = (fautif._fautes ?? 0) + (F.grave ? 2 : 1);
     if (fautif._fautes % seuil === 0) {
       fautif._jaunes = (fautif._jaunes ?? 0) + 1;
       st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes });
-      if (fautif._jaunes === 2) {
-        st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par });
-        // L'EXPULSION PHYSIQUE (lot 28) : le rouge SORT le corps. Il marche vers la ligne la
-        // plus proche et y RESTE — et il CESSE D'EXISTER pour les cerveaux par le levier natif :
-        // down géant (les ~30 filtres down<=0 du moteur le couvrent sans être touchés — une
-        // autorité, zéro seconde vérité) ; movement le laisse MARCHER (l'expulsé n'est pas un
-        // corps au sol), la Loi 11, placeKickoff/kickoffSpots et la boucle de jobs le sautent
-        // NOMMÉMENT. L'équipe joue à 10. Gardien expulsé : dette nommée (pas de remplaçant aux
-        // gants — le poste reste vide).
-        fautif.expulse = true;
-        fautif.down = 9e9;
-        fautif._exit = [Math.max(-st.pitch.hx + 2, Math.min(st.pitch.hx - 2, fautif.p[0])),
-          (fautif.p[2] >= 0 ? 1 : -1) * (st.pitch.hz + 2.5)];
-        fautif.job = 'walk'; fautif.target = [fautif._exit[0], 0, fautif._exit[1]];
-        fautif.act = null; fautif.intent = null;
-        st.events.push({ t: +st.t.toFixed(2), type: 'expulsion', by: F.par });
-      }
+      if (fautif._jaunes === 2) expulser();
     }
   }
   if (fen > 0 && fin && !perdu && holder === F.team && st.possession.carrier >= 0) {
