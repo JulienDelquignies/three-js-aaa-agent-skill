@@ -10512,6 +10512,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      identification 1/0, attributes 27/0 (l'épingle du 160 vit sur la cfg du flux, ligne 237 — deux épingles posées d'abord sur les mauvaises cfg ont été retirées). Rouges hérités, nommés : 246d ; verify-loi12
      « le mur se tient » ; verify-expulsion « le corps sort et reste ». La sonde vit dans
      scripts/book/sonde-259.mjs.
+     Sceau : commit 0e89057, poussé ; déploiement showcase-pi-mocha au second essai (cmp du chunk
+     Rondo servi = construit).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
