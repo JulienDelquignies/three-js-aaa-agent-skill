@@ -10561,7 +10561,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      semelle à sa place » (bloc 73, sabotage 17 ≥ 18) — ROUGES À HEAD en worktree, apparus au
      259 sans avoir été nommés (les shards 4-7 du 259 n'avaient pas été relus après leurs
      épingles : dette de méthode, réglée ici) ; verify-loi12 « le mur se tient » ; verify-
-     expulsion « le corps sort et reste ». La sonde vit dans scripts/book/sonde-253.mjs.- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+     expulsion « le corps sort et reste ». La sonde vit dans scripts/book/sonde-253.mjs.
+     Sceau : commit c937ac9, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo servi = construit).- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
