@@ -23,9 +23,9 @@
 
 ## Ce que le référentiel ajoute aux lots déjà nommés
 
-1. **Le profil locomoteur et le budget** (1-9, 13, 17-19 ; Modèle 02 lot 1, Bible 16 lot 1) : c'est le constat
-   transversal n° 1 — le moteur court 1,65 × trop, à haute intensité 5 × trop, accélère 10 × trop souvent, ne
-   freine pas plus qu'il n'accélère. Une seule loi (V₀/τ, intention d'effort, coût) porte tout.
+1. **Le profil locomoteur et le budget** (1-9, 13, 17-19 ; Modèle 02 lot 1, Bible 16 lot 1 ; le 260 — SCELLÉ 338) : c'était le constat
+   transversal n° 1 — le moteur courait 1,65 × trop, à haute intensité 5 × trop, accélérait 10 × trop souvent, ne
+   freinait pas plus qu'il n'accélérait. Une seule loi (V₀/τ, intention d'effort, coût) : 1,65 → 1,3 × la distance, HI 5,9 → 2,2 ×, le sprint 4,3 → 1,0 ×, accélérations 15 → 1,6 ×, le freinage 2,6 × l'accélération ; le reste est l'intention au cerveau.
 2. **Le pic par poste** (14-15) : les milieux au-dessus des ailiers — le plafond `sprintMax` est franchi par les
    glisses et rattrapages.
 3. **Les mesures à instrumenter** (6, 11-12, 20-22) : la trace 10 Hz du Modèle 16 lot 2.

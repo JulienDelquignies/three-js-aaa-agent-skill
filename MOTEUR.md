@@ -328,6 +328,19 @@ porte `sigma` et `desync`. Mesuré 4 × 90 min à familiarité 0,4 : motifs divi
 `familiarite: null` = la ligne parfaitement synchrone et les motifs pleins d'hier au bit. Banc : bloc 254 (lois pures,
 l'état et le choc, la ligne désynchronisée, sabotage). Fiches : `M14-consignes-et-formations.md`, `10-bloc-collectif.md`.
 
+### Le profil locomoteur et le budget de course (lot 260, `cfg.locomoteur` — `locomoteur.js`)
+
+L'accélération était constante (7,5 m/s² : la pointe à 4 m). Le 260 pose le profil du book (Modèle 02) : a = ε (V −
+v)/τ avec V₀ = 8,8 × topF et τ = 1,17 ÷ accelF (F₀ borné [5 ; 10,2]), **l'intention d'effort** ε par métier (marche
+0,45, bloc 0,55, pressing / chasse / porteur 0,85, rupture 1,0 — la poignée du volume d'accélérations), le freinage
+saturé (−6 m/s² au-delà de 3 m/s d'écart, le roulé en dessous), et **le réservoir W′** (`p.wp` : vidange au-dessus de
+5,5 m/s sur D′ 250 m ÷ stamF, récupération en 280 s) qui dégrade τ puis le freinage avant la pointe (λτ 0,22 > λD 0,18
+> λV 0,07) et refuse la pointe sous 0,2 (`p._paceRefus`). Les lois sont pures et exportées (`profilDe`, `epsilonDe`,
+`fatigueDe`, `pasLoco`, `budgetStep`, `pointePermise`). Mesuré 2 × 90 min : 16,65 → 13,9 km par joueur (réel 10,5), haute intensité 4 039 → 1 530 m (686), sprint 711 → 170 m (166), 13,7 → 1,45 accélérations par minute (0,9), ratio décélérations / accélérations 2,6 (> 1,15) ; les tirs inchangés. Le soutien de l'équipe en possession dans la moitié adverse court à ε 0,75 ; la petite demande (< 1,5 m/s) marche à 4 m/s² (sans quoi le gardien ne rejoignait jamais son ballon à 0,8 m). `locomoteur: null` =
+l'accélération constante et les pointes gratuites d'hier au bit. Banc : bloc 260 (lois pures, la fixture du démarrage,
+sabotage). La sonde : `scripts/book/sonde-260.mjs`. Fiches : `M02-locomotion.md`, `R05-physique.md`, `09-avant-centre.md`,
+`16-contexte-de-match.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

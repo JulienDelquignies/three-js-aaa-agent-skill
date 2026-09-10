@@ -96,7 +96,7 @@ for (const kind of RESTART_NAMES) {
 // 2 × 180 s), deux matchs, la cfg de la scène ; puis la relance à la main du gardien, prise sur pièce (l'événement
 // 'relance-main' n'est jamais tombé en 7 graines × 240 s : la clause force la distribution via beginPass).
 {
-  const cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, passation: null, chrono: { periodes: 2, duree: 180, pause: 6 } });   // passation null DATÉ 252 (constaté au 256 : 36 ✓ au 250, 3/7 touches trouvées et un lâcher à 25° dans le monde de la remise au pivot — sept touches, le tirage)
+  const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, passation: null, chrono: { periodes: 2, duree: 180, pause: 6 } });   // passation null DATÉ 252 (constaté au 256 : 36 ✓ au 250, 3/7 touches trouvées et un lâcher à 25° dans le monde de la remise au pivot — sept touches, le tirage)
   let touches = 0, hauts = 0, delais = [], recus = 0, pris = 0, rentrees = 0, faces = [], poses = [], horsLigne = [];
   for (const seed of [7, 3]) {
     let { st } = playMatch(makeMatch({ full: true, seed }), 12, { cfg });
@@ -138,7 +138,7 @@ for (const kind of RESTART_NAMES) {
   // LA CLÉ ABSENTE REND L'HIER (le contrat du moteur) : sans cfg.remisesMain, la touche part du sol à l'instant de la
   // prise (aucun armé 'touche', rentrée sans ballY) et la relance à la main du gardien reste une passe du pied
   {
-    const cfg0 = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesMain: null });
+    const cfg0 = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesMain: null });
     let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 12, { cfg: cfg0 });
     for (const x of [-20, 5, 25]) {
       const z = 33.9 * (x > 0 ? 1 : -1);
@@ -166,7 +166,7 @@ for (const kind of RESTART_NAMES) {
 
 // ---- 7. LES REMISES AU PIED (lot A9 bis, cfg.remisesPied)
 {
-  const cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
+  const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
   const hyp = Math.hypot;
   // LA VOLÉE : le gardien tient le ballon aux gants (prise forcée), le style long → beginPass(mains 'volee') arme le geste, les
   // gants descendent, le ballon TOMBE, le pied le prend à mi-hauteur (la passe part de la hauteur du ballon, jamais du sol)
@@ -217,7 +217,7 @@ for (const kind of RESTART_NAMES) {
   // LA CLÉ ABSENTE REND L'HIER : sans cfg.remisesPied, la frappe part à l'instant de la prise (aucun armé 'elan', aucun 'élan'), du
   // point de pose ; et le gardien qui tient le ballon le pose au sol à la frappe (passe sans ballY)
   {
-    const cfg0 = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesPied: null });
+    const cfg0 = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesPied: null });
     let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg: cfg0 });
     const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
     const r0 = [forceCPA(st, cfg0, 'coup-franc', [g.x - sg * 24, 3], 0), forceCPA(st, cfg0, 'corner', [g.x, st.pitch.hz], 0)];

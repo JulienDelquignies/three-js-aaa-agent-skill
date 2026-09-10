@@ -489,6 +489,12 @@ ligne part désynchronisée de 0,32 s (le book : 0,36) ; aucune réussite d'acti
 (le profil locomoteur et le budget de course, la couche de croyance, le pas de décision séparé du pas physique) et les
 dettes nommées de la carte du book.
 
+**260 — LE PROFIL LOCOMOTEUR ET LE BUDGET DE COURSE : SCELLÉ (338).** Le transversal n° 1 : le profil mono-exponentiel
+V₀/τ par attributs (garde-fou F₀), l'intention d'effort par métier, le freinage saturé, le réservoir W′ qui refuse la
+pointe et fatigue l'accélération avant la vitesse. Mesuré : 16,65 → 13,9 km par joueur (réel 10,5), haute intensité 4 039 → 1 530 m (686), sprint 711 → 170 m (166), 13,7 → 1,45 accélérations par minute (0,9), le freinage plus fort que l'accélération (ratio 2,6), les tirs inchangés. Ce qu'il nomme : le volume restant est dans
+l'intention au cerveau (les métiers qui commandent la vitesse), le prochain lot du transversal ; puis la couche de
+croyance et le pas de décision séparé du pas physique.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

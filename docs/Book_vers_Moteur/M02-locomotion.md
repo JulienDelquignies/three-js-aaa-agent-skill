@@ -59,8 +59,7 @@ réel < 0,5) ; le coût énergétique (puissance métabolique, CP/W′) — la f
 ## 4. Les lots que la fiche appelle
 
 1. **Le profil locomoteur mono-exponentiel et l'intention d'effort** (tests 2, 3, 15, 16 ; le constat n° 1 des
-   Bibles) : V₀/τ par attributs, ε 0,55 en déplacement courant, plafond dur — 8,5 accélérations par minute
-   deviennent 0,9, et le budget de course existe.
+   Bibles ; le 260 — SCELLÉ 338 : V₀/τ, ε par métier, le freinage saturé, W′) : 16,65 → 13,9 km, HI 4 039 → 1 530 m, sprint 711 → 170 m, 13,7 → 1,45 accélérations par minute (réel 0,9), ratio décel/accel 2,6 ; le reste est l'intention au cerveau (les métiers qui commandent la vitesse).
 2. **Le freinage et le changement de direction** (tests 4, 11) : D_max, plant, vitesse retenue, course arrière
    0,65 — la ligne qui recule (Bible 10 T17) en dépend.
 3. **L'évitement** (test 12) : 11,5 interpénétrations par minute — rayon 0,30, confort 0,75, ORCA à 4 voisins.

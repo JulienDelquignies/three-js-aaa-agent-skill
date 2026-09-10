@@ -10665,7 +10665,63 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Sceau : commit afee802, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit). La Campagne V (248-255) est close : les six lots de la carte du book
      (258, 258b, 257, 259, 253, 255, 254) sont scellés ; viennent les transversaux.
-- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+- 338: LE PROFIL LOCOMOTEUR ET LE BUDGET DE COURSE (260 — le transversal n° 1 de la carte du book :
+     Modèle 02, Référentiel 05, Bibles 01 T22, 07 T5, 09 T1, 16). Sonde AVANT (sonde-260, 2 × 90
+     min, par joueur de champ) : 16,65 km (réel 10,5), haute intensité > 5,5 m/s 4 039 m (686),
+     sprint > 7 m/s 711 m (166), 21,6 sprints (10,3), 13,7 accélérations > 3 m/s² tenues 0,3 s
+     par minute (0,81-0,97) et 13,75 décélérations (ratio 1,01 c. > 1,15), pic 8,0 m/s partout
+     (sprintMax) — l'accélération était CONSTANTE (cfg.accel 7,5 m/s² : la pointe à 4 m, un
+     démarrage en marche d'escalier), les pointes gratuites, le freinage égal à l'accélération.
+     La loi (cfg.locomoteur, locomoteur.js — profilDe, epsilonDe, fatigueDe, pasLoco,
+     budgetStep, pointePermise, purs ; le crochet vit dans movement.js à l'intégration du pas,
+     à la pointe et après la vitesse) : (1) LE PROFIL mono-exponentiel a = (V_eff − v∥)/τ, V₀ =
+     8,8 × topF, τ = 1,17 ÷ accelF, F₀ = V₀/τ borné [5 ; 10,2] (pace 20 / acceleration 20 rend
+     9,3, pas 10,9) — t₉₀ = 2,3 τ, la pointe à 30-40 m ; (2) L'INTENTION D'EFFORT ε par métier :
+     marche 0,45, bloc / soutien / marquage 0,55, pressing / chasse / réception / porteur /
+     gardien 0,85, rupture (burst) 1,0 — « LA poignée du volume d'accélérations », jamais
+     absorbée dans τ ; (3) LE FREINAGE saturé −6 × min(1, v/2) au-delà de 3,0 m/s d'écart (retenu ; 1,5 à l'essai), le
+     roulé −1,5 en dessous (freiner est une intention aussi) ; (4) LE BUDGET W′ : p.wp se vide
+     au-dessus de la vitesse critique 5,5 m/s (D′ 250 m ÷ stamF), se remplit en 280 s, dégrade
+     τ (λ 0,22) et le freinage (0,18) avant la pointe (0,07) — l'épuisé court encore vite en
+     ligne droite, il ne démarre plus — et REFUSE la pointe sous 0,2 (p._paceRefus : la course
+     non servie par le corps) ; événement budget sous 0,2. Ce qui a été essayé et jeté : le
+     freinage saturé sur tout écart → 6,6 décélérations par minute (ratio 3,3) — le roulé
+     sous 1,5 m/s d'écart. Mesuré APRÈS (2 × 90 min, par joueur de champ) : 13,9 km (avant 16,65 ; réel 10,5), haute intensité 1 530 m (4 039 ; 686), sprint 170 m (711 ; 166), 6,0 sprints (21,6 ; 10,3), 1,45 accélérations > 3 m/s² par minute (13,7 ; 0,81-0,97), 3,8 décélérations (13,75 ; 0,86-1,17), ratio 2,6 (1,01 ; > 1,15), pic 7,6 m/s (8,0 ; 8,5-8,9 chez les ailiers) ; et le jeu tient : 15-16,5 tirs par mi-temps (sans la clé 15,5). Le seuil de freinage à 1,5 m/s rendait 5,1 décélérations, à 3,0 (retenu) 3,8. Deux prix découverts en chemin : (a) la loi brute divisait les tirs par deux (9 par mi-temps) — les presseurs vidaient leur réservoir (D′ 250 → 350) et le soutien offensif coulissait à 0,55 : ε 0,75 pour le soutien de l'équipe en possession dans la moitié adverse (le book : 1,0 pour la course de but) ; (b) la graine 3 GELAIT 40 minutes en phase carry : le gardien à 0,8 m de son ballon ne l'atteignait jamais — le mono-exponentiel tend vers zéro sur une petite demande (a = ε v_want/τ avec v_want 0,3 m/s) : la petite demande (< 1,5 m/s) marche désormais à 4 m/s² (vLent / aLent). Un moteur qui accélère lentement révèle les recalages qui vivaient de l'accélération infinie. Le reste de l'écart (13 km c. 10,5, HI × 2)
+     est dans l'INTENTION AU CERVEAU : le presseur élu court à 6,6 m/s à chaque image, le
+     soutien coulisse à 5,4 — ce sont les métiers qui commandent le volume, la loi du corps
+     ne peut que le freiner ; le lot suivant du transversal (l'effort par tiers et par
+     situation) le prendra. Jumeau : locomoteur null = HEAD au bit (d8ca7e3a873dee9b /
+     3a429e07e7a90843 — le défaut du 254, relu par git stash). Banc : verify-match11 bloc 260
+     (index 158 : lois pures — l'identité rend l'élite, le garde-fou F₀, l'ordre des fatigues, le
+     freinage plus fort que l'accélération, la pointe refusée sans réservoir ; la fixture — un
+     corps à l'arrêt lancé au métier de bloc : 1,76 m/s à 1 s sous la clé, 3,46 en rupture,
+     4,69 sans la clé). BANC COMPLET (final260.sh, 8 shards + 25 annexes,
+     sur le moteur final — un premier banc lancé avant l'intention d'attaque et le pas lent a
+     été arrêté) : 272 ✓ / 20 ✗ aux shards et 543 ✓ / 17 ✗ aux annexes au premier passage —
+     une loi qui change le pas de chaque corps déplace toutes les fixtures dont la fenêtre de
+     temps supposait l'accélération infinie. Mondes déplacés, épinglés locomoteur null DATÉ
+     260 après preuve verte à HEAD~ (worktree 8ff0842, le sceau 254) : verify-match11 blocs 16
+     « la pose figée », 18 « touche omnisciente », 25 « lot 94 le gardien sur coup de pied
+     arrêté » (matchCfg(over) → matchCfg({ locomoteur: null, ...over })), 32 « lot 102 le corner
+     se place », 52 « lot 121 la roulette », 81 « lot 168 le lecteur de trajectoire », 98 « lot
+     189 le lancé », 115 « lots 218 / 218b / 218d le une-deux » (le sprinter à 3,2 m/s à 0,6 s
+     au lieu de ≥ 4 : la fenêtre d'hier), 121 « lots 223 / 224 les coups de pied arrêtés », 122
+     « lot 225 l'homme par homme », 134 « lot 238 le flux de la garde », 142 « lot 244b la
+     grille », 156 « lot 255 le piège » (sa fixture mesure le pas de la ligne depuis l'arrêt) ;
+     verify-attributes (153 le premier pas, 157 le pique, 160 le pressing cohérent, 162 la
+     compression), verify-scan (Jordet), verify-remises × 4 (la course d'élan, la prise au
+     contact, le lanceur), verify-slide × 3 (le dernier recours), verify-porte. UN PRIX RÉEL
+     nommé et réglé, pas épinglé : « la conduite est au pied » (pic 2,96 m > 2,3 : le porteur
+     qui démarre lentement ne rattrapait plus sa touche poussée) — la touche × 0,8 sous la clé.
+     verify-identification REGELÉ DATÉ 260 (la règle du 252) : 23 → 11 signatures — perdues LAT B|largeurR, MDC C|largeurR, LAT C|profondeur, DC B|largeurR, DC B|profondeur, DC C|largeurR, DC C|profondeur, LAT D|largeurR, MO A|tenue, MIL B|tenue, MO B|appel, MO C|tenue, AIL A|largeurR, AV A|largeurR, AV A|profondeur, AIL B|appel ; gagnées DC A|largeurR, LAT B|repli, MIL A|tenue, MO B|profondeur
+     — la plus lourde perte de la campagne : un corps qui court autrement exprime d'autres
+     signatures ; la volumétrie à 6 graines reste la dette. Isolés après épingles : tous les
+     blocs cités verts (15 1/0, 16 2/0, 18 4/0, 25 3/0, 32 2/0, 52 1/0, 81 1/0, 98 1/0, 115
+     3/0, 121 4/0, 122 1/0, 134 2/0, 142 2/0, 156 1/0), bloc 1 seul 0.46 ms/step ; annexes attributes
+     27/0, scan 5/0, identification 1/0, remises 36/0, slide 10/0, porte 4/0. Rouges hérités,
+     nommés : 246d ; « contres arrivés à l'entrée » ; verify-loi12 « le mur se tient » (4,6 m) ;
+     verify-expulsion « le corps sort et reste » (il sort maintenant — |z| 36 — mais ne se tient
+     plus : 1,96 m en 4 s ; le pas lent le fait dériver).- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,

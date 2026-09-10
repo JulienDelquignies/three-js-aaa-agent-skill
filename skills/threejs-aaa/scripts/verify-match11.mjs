@@ -26,6 +26,7 @@ import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
 import { piegeStep } from '../assets/starter/src/engine/piege.js';
 import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
+import { profilDe, epsilonDe, fatigueDe, pasLoco, pointePermise } from '../assets/starter/src/engine/locomoteur.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
@@ -906,7 +907,7 @@ if (__bloc()) {
     let still = 0, frames = 0, geles = 0, vols = 0, vol = null;
     for (const seed of [1, 3, 5, 7]) {   // 2 → 4 graines DATÉ 237 (25 c. 26 : un point, un tirage)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la pose figée remangée par la course qui traverse (17 % ≥ vivant + 10) — la clause mesure la marche au rendez-vous, pas la Loi 11 */, hommeLibre: false, shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la pose figée remangée par la course qui traverse (17 % ≥ vivant + 10) — la clause mesure la marche au rendez-vous, pas la Loi 11 */, hommeLibre: false, shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         const rec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
@@ -996,7 +997,7 @@ if (__bloc()) {
     const dosParTech = { 'amorti-poursuite': 0, autres: 0 }; let recDos = 0, recN = 0, denyDos = 0;
     for (const seed of [2, 3]) {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ avantContact: false, repli: false, dribble: false, shotRange: 20, ...over });
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, avantContact: false, repli: false, dribble: false, shotRange: 20, ...over });
     let nEv = 0;
     for (let i = 0; i < 240 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -1295,7 +1296,7 @@ if (__bloc()) {
 if (__bloc()) {
   const poser = (type, over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg(over);
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), le placement du gardien sur coup de pied arrêté remangé par le profil locomoteur (3,17 m de sa ligne) — la clause mesure la garde, pas la locomotion */, ...(over ?? {}) });
     for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
     const og = st.pitch.ownGoal(0);
     // le point : le COIN du camp défendu (0,4 m dans le champ) ou 20 m devant la ligne, z +8
@@ -1605,7 +1606,7 @@ if (__bloc()) {
 if (__bloc()) {
   const placer = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ shotRange: 20, preneurCPA: false, loi16: false, ...over });   // la clause mesure le PLACEMENT — elle isole 193 (le spécialiste élu mangeait un GRAND forgé : le tireur ne monte pas en boîte)
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, shotRange: 20, preneurCPA: false, loi16: false, ...over });   // la clause mesure le PLACEMENT — elle isole 193 (le spécialiste élu mangeait un GRAND forgé : le tireur ne monte pas en boîte)
     for (let i = 0; i < 5 * 60; i++) matchStep(st, 1 / 60, cfg);
     const og = st.pitch.ownGoal(0), sg = Math.sign(og.x || 1);      // team 1 attaque og(0)
     // les GRANDS forgés : 4 attaquants à strength 92, le reste à 35 — le tri doit choisir EUX
@@ -2478,7 +2479,7 @@ if (__bloc()) {   // passation null DATÉ 252 sur tout le bloc : vert à HEAD, d
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4, 5, 7, 8]) {   // 3 → 6 graines DATÉ 240 (2 sur 3 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre) contreZones:false DATÉ 242 — 121 hors contres (plancher 1,3 c. 1,4 sur 7 tours)
+      const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (le corps démarre en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre) contreZones:false DATÉ 242 — 121 hors contres (plancher 1,3 c. 1,4 sur 7 tours)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3650,7 +3651,7 @@ if (__bloc()) {
     let lectures = 0;
     for (const seed of [4, 7, 11, 15, 21, 33]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ avantContact: false, shotRange: 20, ...over });
+      const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, avantContact: false, shotRange: 20, ...over });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4135,7 +4136,7 @@ if (__bloc()) {
     for (const seed of [3, 5, 7, 9, 11, 13, 15, 17]) {   // 4 → 8 graines DATÉ 240 (2 c. 3 reculs : Poisson)
       const st = makeMatch({ full: true, seed });
       // appuiRemise:false DATÉ 240 : la remise d'appui (B dos au but sous presseur, en contre aussi) est une passe en retrait comptée ici comme un recul (4 → 9) — c'est SA loi, mesurée au 240 ; la clause mesure l'adoption du porteur lancé
-      const cfg = matchCfg({ familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le lancé remangé par la familiarité (11 reculs c. 15 × 0,7 — les motifs pèsent Φ) — la clause mesure le lancé, pas la familiarité */, appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) ; passation null DATÉ 252 (10 c. 9,1) — le monde d'hier pour la clause du lancé
+      const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le lancé remangé par la familiarité (11 reculs c. 15 × 0,7 — les motifs pèsent Φ) — la clause mesure le lancé, pas la familiarité */, appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) ; passation null DATÉ 252 (10 c. 9,1) — le monde d'hier pour la clause du lancé
       let seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4706,7 +4707,7 @@ if (__bloc()) {
   // élu receveur) — sa consigne EST sa cible et il file ; épinglé, il garde son slot au trot.
   const course = (over) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ couloirs: false, shotRange: 20, ...(over ?? {}) });   // couloirs:false DATÉ 241 — 218 : le sprint du lanceur mesuré hors couloirs (épinglé 4,7 = vivant 4,7 avec le registre)
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, couloirs: false, shotRange: 20, ...(over ?? {}) });   // couloirs:false DATÉ 241 — 218 : le sprint du lanceur mesuré hors couloirs (épinglé 4,7 = vivant 4,7 avec le registre)
     const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
     const R = st.players.find((p) => p.team === 0 && p.post === 8), M = st.players.find((p) => p.team === 0 && p.post === 5), C = st.players.find((p) => p.team === 0 && p.post === 7);
     for (const q of st.players) if (q.team === 0 && !q.keeper && ![5, 7, 8].includes(q.post)) { q.p[0] = -sgn * 30; q.p[2] = 15; }
@@ -4728,7 +4729,7 @@ if (__bloc()) {
   // sans, dans la couverture (+z). Le flux : retours 9/54 → 16/55 sur 12 graines (réel ~50 %).
   const cote = (over, skill) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ couloirs: false, shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 1.0, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5, ...over } } });
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, couloirs: false, shotRange: 20, unDeux: { press: 2.5, dist: 13, p: 1.0, dur: 2.4, retour: 8, course: { m: 8, ecart: 3, elan: 0.5, ...over } } });
     const sgn = Math.sign(st.pitch.attackGoal(0).x || 1);
     const c = st.players.find((p) => p.team === 0 && p.post === 5), B = st.players.find((p) => p.team === 0 && p.post === 8);
     for (const p of st.players) if (p.team === 0 && !p.keeper && ![5, 8].includes(p.post)) { p.p[0] = -sgn * 30; p.p[2] = 15; }
@@ -4943,7 +4944,7 @@ if (__bloc()) {
   // (clé absente) rend la marche vers le point de remise d'hier. Doc cpa.js et match-config.
   const scene = (type, pos, team, over, secs) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, shotRange: 20, ...(over ?? {}) });
     for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
     st.ball.restart([pos[0], 0.11, pos[1]], { cause: type });
     st.restart = { type, team, p: [pos[0], pos[1]], at: st.t + 17, carried: false, placed: true };
@@ -4987,7 +4988,7 @@ if (__bloc()) {
   const { simInternals } = await import('../assets/starter/src/engine/rondo-sim.js');
   const relance = (dPresseur, over) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, shotRange: 20, ...(over ?? {}) });
     const gk = st.players.find((p) => p.team === 0 && p.keeper), ogx = st.pitch.ownGoal(0).x, sg = -Math.sign(ogx || 1);
     for (const q of st.players) if (q.team === 1 && !q.keeper) { q.p[0] = ogx + sg * 45; q.p[2] = 20; }
     const foes = st.players.filter((q) => q.team === 1 && !q.keeper); foes[0].p[0] = ogx + sg * (5 + dPresseur); foes[0].p[2] = 0;
@@ -5015,7 +5016,7 @@ if (__bloc()) {
   // homme un marqueur à ≤ 3 m après 1 s), l'épinglé laisse un orphelin (> 3 m). cfg.assignJobs seul, puis 1 s.
   const couverture = (over) => {
     const st = makeMatch({ full: true, seed: 5 });
-    const cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, shotRange: 20, ...(over ?? {}) });
     const ogx = st.pitch.ownGoal(0).x, sg = -Math.sign(ogx || 1);   // l'équipe 0 défend son but en ogx ; l'équipe 1 attaque
     const c = st.players.find((p) => p.team === 1 && p.post === 6);
     for (const q of st.players) if (q.team === 1 && !q.keeper && q.id !== c.id) { q.p[0] = ogx + sg * 45; q.p[2] = 20; }
@@ -5403,7 +5404,7 @@ if (__bloc()) {
   // (b) Le flux (12 × 300 s — à 6 la marque vit à ± 0,2 : 2,31 / 2,04 selon les graines) : marqueur → attaquant dans la surface p50 (réel 1-2 m) avec c. sans marquageTenue ; porteur →
   // premier défenseur dans le tiers loin hors fenêtre avec c. sans gardeTiers. Mesuré 2,4 → 2,0 / 2,6 → 3,3.
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
-  const flux = (over) => { const cfg = matchCfg({ contreZones: false, shotRange: 20, finition: null /* finition null DATÉ 258 : vert à HEAD (2,27 ≤ 2,4 au 252), le marquage de surface remangé par les tirages de l'échelle de finition (2,64) — la clause mesure la garde, pas le tir */, ...over }); const box = [], loin = [], cible = [];
+  const flux = (over) => { const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), le monde remangé par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, contreZones: false, shotRange: 20, finition: null /* finition null DATÉ 258 : vert à HEAD (2,27 ≤ 2,4 au 252), le marquage de surface remangé par les tirages de l'échelle de finition (2,64) — la clause mesure la garde, pas le tir */, ...over }); const box = [], loin = [], cible = [];
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 6) continue; const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
         if (poss < 0 || st.restart || !c || c.keeper || st.ball.owner !== c.id) continue; const def = 1 - poss, og = st.pitch.ownGoal(def), L = st.pitch.hx * 2, bD = st.pitch.dims.box.depth, bW = st.pitch.dims.box.width;
@@ -5791,7 +5792,7 @@ if (__bloc()) {
   const flux = (f, over) => {
     const o = { deb: {}, appels: {}, pivots: {}, ligne: 0, img: 0, pertes: 0 };
     for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ 246 (appels du 9 en 4-2-3-1 : 20 ≥ hier 22 à 3 graines — Poisson à 20 ; le 245 l'avait laissé passer : shard relu avant sa fin)
-      const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (2/0 au 257 isolé), les pertes du 4-2-3-1 remangées par la course qui traverse (134 c. 111 × 1,15) — la clause mesure la grille, pas la Loi 11 */, carton: null /* carton null DATÉ 257 : vert à HEAD~ (le 9 du 4-2-3-1 à ≥ 44 appels au 258b en worktree), le flux remangé par le carton qui juge la nature (32 appels du 9 — les avertis se retiennent) — la clause mesure la grille, pas le carton */, shotRange: 20, ...over });
+      const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), le monde remangé par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (2/0 au 257 isolé), les pertes du 4-2-3-1 remangées par la course qui traverse (134 c. 111 × 1,15) — la clause mesure la grille, pas la Loi 11 */, carton: null /* carton null DATÉ 257 : vert à HEAD~ (le 9 du 4-2-3-1 à ≥ 44 appels au 258b en worktree), le flux remangé par le carton qui juge la nature (32 appels du 9 — les avertis se retiennent) — la clause mesure la grille, pas le carton */, shotRange: 20, ...over });
       let prev = -1, cur = 0;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); const tm = st.possession?.team ?? -1;
@@ -6227,7 +6228,7 @@ if (__bloc()) {
   // rien non plus — c'est l'axe qui décide, pas la hauteur (T3b).
   const lh = resoudreTactique('ligneHaute');
   const scene = (over, tq) => {
-    const st = makeMatch({ full: true, seed: 5, tactics: ['equilibre', tq ?? { piege: 1, pressing: 0 }] }), cfg = matchCfg({ shotRange: 20, familiarite: null /* familiarite null DATÉ 254 : la clause mesure la synchronie du piège nu (un seul until) — la familiarité y ajoute son retard par corps, mesuré au bloc 254 */, ...(over ?? {}) });
+    const st = makeMatch({ full: true, seed: 5, tactics: ['equilibre', tq ?? { piege: 1, pressing: 0 }] }), cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (le corps démarre en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, shotRange: 20, familiarite: null /* familiarite null DATÉ 254 : la clause mesure la synchronie du piège nu (un seul until) — la familiarité y ajoute son retard par corps, mesuré au bloc 254 */, ...(over ?? {}) });
     const own = st.pitch.ownGoal(1), sg = -own.sign;   // sg : de l'équipe 1 vers son but adverse ; sa ligne est à own.x + 27·(−sg)… on pose en x monde
     const dir = -sg;   // vers le but de 1
     const c = st.players.find((p) => p.team === 0 && p.post === 5);
@@ -6286,6 +6287,33 @@ if (__bloc()) {
   const a = V4.st.players.find((p) => p.team === 0 && !p.keeper), b = V4.st.players.find((p) => p.team === 0 && !p.keeper && p !== a); const phi = affinite(V4.st, a.id, b.id, V4.cfg);
   ok(`lot 254 — LA FAMILIARITÉ (lois pures) : η(0) ${e0.toFixed(2)} = 0,35, η(2 min) ${e2.toFixed(2)} ∈ [0,55 ; 0,75] (la branche rapide du réalignement), η(10 min) ${e10.toFixed(2)} ∈ [0,72 ; 0,88] (la branche lente de l'automatisme ne revient pas dans le match), η(∞) ${eInf.toFixed(2)} = 1 ; σ_sync ${s04.toFixed(2)} s à η 0,4 (≈ 0,36) et ${s1.toFixed(2)} à η 1 ; Φ^0,7 de 0,4 → ${affiniteMotif(0.4, K).toFixed(2)} — L'ÉTAT : l'équipe injectée à 0,4 a η ${V4.eta.toFixed(2)}, la rodée ${(scene(null, null).eta).toFixed(2)} = 1 ; le choc de posture ramène η à ${eChoc.toFixed(2)} (0,7) et une minute plus tard ${eApres.toFixed(2)} > 0,7 — LA LIGNE AU PIÈGE : à η 0,4 les ${V4.n} corps partent désynchronisés (${V4.desync.toFixed(2)} s ≥ 0,1, σ ${V4.ev?.sigma}), à η 1 presque ensemble (${V1.desync.toFixed(2)} s < ${V4.desync.toFixed(2)}) ; sabotage « familiarite null » : tous au même instant (${N.desync.toFixed(2)} = 0, aucun σ ${N.ev?.sigma === undefined}) ; Φ(0,4 ; 0,4) = ${phi.toFixed(2)} < 1`,
     Math.abs(e0 - 0.35) < 1e-9 && e2 >= 0.55 && e2 <= 0.75 && e10 >= 0.72 && e10 <= 0.88 && Math.abs(eInf - 1) < 1e-6 && Math.abs(s04 - 0.36) < 1e-9 && Math.abs(s1 - 0.12) < 1e-9 && Math.abs(V4.eta - 0.4) < 1e-6 && Math.abs(eChoc - 0.7) < 1e-6 && eApres > 0.7 && V4.n >= 3 && V4.desync >= 0.1 && V1.desync < V4.desync && N.desync === 0 && N.ev?.sigma === undefined && phi < 1);
+}
+
+// ---------------------------------------------------------------- lot 260 : LE PROFIL LOCOMOTEUR ET
+// LE BUDGET DE COURSE (cfg.locomoteur — Modèle 02, Référentiel 05 : le constat n° 1 des Bibles)
+if (__bloc()) {
+  // (a) les lois pures : le profil à l'identité (8,8 m/s, 1,17 s, F₀ 7,5), le garde-fou F₀ (pace 20 / acceleration 20
+  // ne fait pas 10,4/0,95 = 10,9 : borné 10,2), l'ordre des fatigues λτ > λD > λV, le freinage plus fort que
+  // l'accélération, la pointe refusée sans réservoir. (b) la fixture : un corps à l'arrêt lancé vers une cible lointaine
+  // au métier de bloc (ε 0,55) — sous la clé il n'a pas la pointe à 1 s (le mono-exponentiel : t₉₀ = 2,3 τ), sans la clé
+  // il l'a (7,5 m/s² constants : 5,4 m/s en 0,72 s) ; et en rupture (ε 1) il va plus vite qu'au bloc.
+  const K = matchCfg({}).locomoteur;
+  const id = profilDe({ skill: null }, K), sur = profilDe({ skill: { topF: 1.10, accelF: 1.12 } }, K);
+  const F0 = fatigueDe(0, K), F1 = fatigueDe(1, K);
+  const st0 = makeMatch({ full: true, seed: 5 }); st0.t = 1;
+  const pv = { skill: null, job: 'support', _pace: { until: 0 }, wp: 1 }, aAcc = pasLoco(pv, st0, K, 0, 8, 1), aFrein = pasLoco(pv, st0, K, 8, 0, 1);
+  const course = (over, burst) => {
+    const st = makeMatch({ full: true, seed: 5 }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const p = st.players.find((q) => q.team === 0 && q.post === 5);
+    for (const q of st.players) { q.v = [0, 0]; q.down = 0; }
+    p.p[0] = -10; p.p[2] = 20; st.ball.restart([40, 0.11, -20], { cause: 'coup-franc' }); st.restart = null;
+    const vs = [];
+    for (let i = 0; i < 60; i++) { p.job = 'support'; p.target = [-10, 0, -30]; p._slotT = [-10, -30]; if (burst) p._pace = { until: st.t + 5, kind: 'appel', next: st.t + 9 }; else p._pace = { until: -1, next: st.t + 99 }; matchStep(st, 1 / 60, cfg); vs.push(Math.hypot(p.v[0], p.v[1])); }
+    return { v1: vs[59], v05: vs[29], max: Math.max(...vs) };
+  };
+  const V = course(null, false), R = course(null, true), N = course({ locomoteur: null }, false);
+  ok(`lot 260 — LE PROFIL LOCOMOTEUR (lois pures) : l'identité rend l'élite (V₀ ${id.v0.toFixed(1)} m/s, τ ${id.tau.toFixed(2)} s, F₀ ${id.f0.toFixed(1)}) ; pace 20 / acceleration 20 : F₀ ${sur.f0.toFixed(1)} ≤ 10,2 (le garde-fou), τ ${sur.tau.toFixed(2)} ; les fatigues s'ordonnent λτ (${(F0.kTau - 1).toFixed(2)}) > λD (${(1 - F0.kD).toFixed(2)}) > λV (${(1 - F0.kV).toFixed(2)}), à réservoir plein tout vaut 1 ; on freine plus fort qu'on n'accélère (|${aFrein.toFixed(2)}| > ${aAcc.toFixed(2)} m/s par s) ; la pointe se refuse à wp 0,1 (${!pointePermise({ wp: 0.1 }, K)}) et se permet à 1 (${pointePermise({ wp: 1 }, K)}) — LA FIXTURE : au métier de bloc, sous la clé ${V.v1.toFixed(2)} m/s à 1 s (< 3,0 : le démarrage n'est pas une marche d'escalier), en rupture ${R.v1.toFixed(2)} > ${V.v1.toFixed(2)} ; sabotage « locomoteur null » : ${N.v1.toFixed(2)} ≥ 4,0 à 1 s (7,5 m/s² constants — la pointe à 4 m d'hier)`,
+    Math.abs(id.v0 - K.v0) < 1e-9 && Math.abs(id.tau - K.tau) < 1e-9 && sur.f0 <= K.f0Max + 1e-9 && F0.kTau - 1 > 1 - F0.kD && 1 - F0.kD > 1 - F0.kV && Math.abs(F1.kTau - 1) < 1e-9 && -aFrein > aAcc && !pointePermise({ wp: 0.1 }, K) && pointePermise({ wp: 1 }, K) && V.v1 < 3.0 && R.v1 > V.v1 && N.v1 >= 4.0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

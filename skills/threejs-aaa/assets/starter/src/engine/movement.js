@@ -5,6 +5,7 @@ import { winding } from './gesture.js';
 import { momentDuJeu } from './phases.js';
 import { scanStep, aScanne } from './scan.js';
 import { dansCone } from './dribble.js';
+import { pasLoco, budgetStep, pointePermise } from './locomoteur.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -217,7 +218,8 @@ export function movePlayers(st, dt, cfg) {
     const bursting = p._pace.until > st.t;
     // …la SORTIE DE GESTE explose plus fort que la rupture ordinaire (122, sortieBurst.top —
     // l'élimination réussie ouvre l'espace : le corps le PREND ; clé absente : le ×1,28 d'hier)
-    if (bursting) top = Math.min(top * (p._pace.kind === 'sortie-geste' ? (cfg.skill?.sortieBurst?.top ?? 1.28) : 1.28), cfg.sprintMax ?? 8.0);
+    if (bursting && st.full && cfg.locomoteur && !pointePermise(p, cfg.locomoteur)) { p._paceRefus = (p._paceRefus ?? 0) + 1; }   // (260) LE BUDGET : la pointe sans réservoir se refuse — la course reste au métier
+    else if (bursting) top = Math.min(top * (p._pace.kind === 'sortie-geste' ? (cfg.skill?.sortieBurst?.top ?? 1.28) : 1.28), cfg.sprintMax ?? 8.0);
     // …et entre les ruptures, un soutien posé MARCHE — QUAND IL EST À SON POSTE (lot 82,
     // clé settledNear, défaut Infinity = marche d'hier au bit : mesuré 10,7 m p50 du slot,
     // le soutien vivait à mi-chemin près du ballon — activer 5 le fait trotter au poste).
@@ -359,13 +361,16 @@ export function movePlayers(st, dt, cfg) {
     // tourner lui coûtent le facteur de morsure, en plus de la pointe (le modèle d'inertie fait le
     // reste : c'est lui que la feinte bat, exactement comme le commentaire ci-dessus l'annonçait)
     const kBite = (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) * (p.skill?.accelF ?? 1);   // …et le DÉMARRAGE aussi
+    const LOCO = st.full && cfg.locomoteur ? cfg.locomoteur : null;   // (260) LE PROFIL LOCOMOTEUR : a = ε (V − v)/τ, le freinage saturé — à la place de l'accélération constante
     if (sp0 > 0.4) {
       const ux = p.v[0] / sp0, uz = p.v[1] / sp0;
-      const along = clamp(dvx * ux + dvz * uz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
+      const along = LOCO ? pasLoco(p, st, LOCO, sp0, dvx * ux + dvz * uz + sp0, dt) * (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1) : clamp(dvx * ux + dvz * uz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       let latx = dvx - (dvx * ux + dvz * uz) * ux, latz = dvz - (dvx * ux + dvz * uz) * uz;
       const lat = hyp(latx, latz), cap = cfg.turnAccel * kBite * dt;
       if (lat > cap) { latx *= cap / lat; latz *= cap / lat; }
       p.v[0] += along * ux + latx; p.v[1] += along * uz + latz;
+    } else if (LOCO) {                          // (260) à l'arrêt : le démarrage mono-exponentiel vers la demande
+      const dw = hyp(dvx, dvz); if (dw > 1e-6) { const step = pasLoco(p, st, LOCO, 0, dw, dt) * (bitten ? (cfg.skill?.biteSlow ?? 0.35) : 1); p.v[0] += dvx / dw * step; p.v[1] += dvz / dw * step; }
     } else {                                     // at a standstill there is no momentum to fight
       p.v[0] += clamp(dvx, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
       p.v[1] += clamp(dvz, -cfg.accel * kBite * dt, cfg.accel * kBite * dt);
@@ -380,6 +385,7 @@ export function movePlayers(st, dt, cfg) {
     p.p[0] = clamp(p.p[0], -st.area[0] / 2 - apron, st.area[0] / 2 + apron);
     p.p[2] = clamp(p.p[2], -st.area[1] / 2 - apron, st.area[1] / 2 + apron);
     p.speed = hyp(p.v[0], p.v[1]);
+    if (st.full && cfg.locomoteur) budgetStep(p, st, cfg.locomoteur, dt);   // (260) LE BUDGET W′ : vidange au-dessus de la vitesse critique, récupération dessous
     // LE DRAIN DE FATIGUE (cfg.fatigue && st.full, lot 31) : l'effort au carré + un socle,
     // une récup légère sous 1,5 m/s — le tout À L'ÉCHELLE DU FORMAT (horizon = durée
     // nominale du match configuré : un moteur réutilisable ne code pas « 90 minutes » en

@@ -627,7 +627,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     const coneP = () => !st.full || cfg.porteCone === false || c.speed < 1.5
       || dansCone(c.yaw, c.p[0], c.p[2], st.ball.p[0], st.ball.p[2], (cfg.porteCone ?? 120) * (2 - (c.skill?.dribbleLeadF ?? 1)));
     const pl = { p: [c.p[0], c.p[2]], speed: c.speed, heading, want, turnRate: 0, leadF: c.skill?.dribbleLeadF,
-      touchF: c.touchF, coneOk: coneP(),   // le RÉGIME de touche + le cône (posés par le match, absents au rondo)
+      touchF: (c.touchF ?? 1) * (st.full && cfg.locomoteur ? (cfg.locomoteur.touche ?? 0.8) : 1), coneOk: coneP(),   /* (260) la touche poussée se calibre sur le corps qui la suit : un démarrage mono-exponentiel ne rattrape pas la poussée d'hier */   // le RÉGIME de touche + le cône (posés par le match, absents au rondo)
       touchDamp: c.touchDamp,   // le canal VITESSE (l'amorti de préparation — posé par le match)
       space: Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99) };
     pl.heading = dribbleSteer(st.ball, pl);
