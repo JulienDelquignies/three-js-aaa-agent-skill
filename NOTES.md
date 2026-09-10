@@ -10721,7 +10721,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      27/0, scan 5/0, identification 1/0, remises 36/0, slide 10/0, porte 4/0. Rouges hérités,
      nommés : 246d ; « contres arrivés à l'entrée » ; verify-loi12 « le mur se tient » (4,6 m) ;
      verify-expulsion « le corps sort et reste » (il sort maintenant — |z| 36 — mais ne se tient
-     plus : 1,96 m en 4 s ; le pas lent le fait dériver).- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+     plus : 1,96 m en 4 s ; le pas lent le fait dériver).
+     Sceau : commit b799e92, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo servi = construit). Le transversal n° 1 est scellé ; vient l'intention d'effort au cerveau.
+- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
