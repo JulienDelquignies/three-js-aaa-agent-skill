@@ -300,6 +300,20 @@ quand la course devient l'option (« servie »), quand la pression arrive (ttp <
 d'hier au bit. Banc : bloc 253 (fixture : il tient, lâche sur la course servie avec gain, rompt sur la pression ;
 sabotage). Fiches : `07-meneur-entre-les-lignes.md`, `05-milieu-defensif.md`, `14-micro-comportements.md`.
 
+### La ligne haute et son piège (lot 255, `cfg.piege`, preset `ligneHaute` — `piege.js`)
+
+L'axe tactique `piege` n'était qu'un décalage de +3 m sur la ligne postée. Le 255 en fait une **décision de ligne**
+(Bible 03 T3b : la synchronie provoque le hors-jeu, pas la hauteur) : quand le porteur adverse arme une passe entre 14
+et 45 m du but défendu, tirage 0,8 × axe(piege) par armé, la ligne arrière (les corps de champ à ≤ 4 m de
+l'avant-dernier) reçoit **le même** `until` (0,8 s) et un pas de 3 × axe(piege) m — `piegeApply`, branché juste avant
+le mouvement par le crochet `cfg.avantMouvement` du match, monte la cible de chacun depuis sa position courante ; la
+photo de la Loi 11 (259) fait le reste. Le preset `ligneHaute` (hauteurBloc 0,9, piege 1, pressing 0,8, compacité 0,7,
+stopper / récupérateur / 9 de surface) est le Barça de Flick. Mesuré 4 × 90 min : à hauteur égale piege 0 → 1,75
+hors-jeu provoqués, piege 1 → 5,25 ; le preset 4,5 provoqués, 12 tirs concédés à 17,6 m, et le prix : 9 ballons reçus
+derrière la ligne par match (équilibre 3,25). `piege: null` = la ligne d'hier au bit. Banc : bloc 255 (le preset, la
+ligne qui se marque et monte, sabotage null, piege 0 à même hauteur). La sonde des presets : `scripts/book/sonde-255.mjs`
+(deux faces par tactique). Fiches : `03-defenseurs-centraux.md`, `10-bloc-collectif.md`, `M14-consignes-et-formations.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

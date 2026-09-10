@@ -58,8 +58,8 @@ statistique.
 |---|---|---|---|
 | T1 hauteur de ligne selon `lineHeightBase` | 33-35 haut / 24-27 bas | mesurable, **l'axe marche** | défaut **26,4 m** (p50 23), hauteurBloc 0,9 → **31,8**, 0,1 → **22,6** : l'amplitude de l'axe (−6/+6 m) rend 9 m d'écart ; le monde par défaut est un bloc bas-médian |
 | T2 gardien ↔ ligne | 20,4 m ±3 | mesuré au ch. 02 | **30,3 m** |
-| T3 hors-jeu provoqués | 1,5-2,5 ordinaire, 4,8 Barcelone | mesurable | **1,0 / match, et 1,0 à hauteurBloc 0,9, 0 à 0,1** — la hauteur ne provoque rien, mais pas pour la raison du book (la désynchronisation) : personne n'attaque la profondeur (Bible 01 T7, retour aval D) |
-| T3b anticorrélation hauteur / désync | | absent (pas de `lineDesync` pilotable) |
+| T3 hors-jeu provoqués | 1,5-2,5 ordinaire, 4,8 Barcelone | tenu au 255 | **1,0** → équilibre 3,0 (259 : la Loi 11 existe), hauteur 0,9 sans piège **1,75**, avec piège **5,25**, preset ligneHaute **4,5** (4 × 90 min) |
+| T3b anticorrélation hauteur / désync | | **tenu au 255** : à hauteurBloc 0,9 égal, piege 0 → **1,75** hors-jeu provoqués, piege 1 → **5,25** (4 × 90 min) — la synchronie, pas la hauteur |
 | T4 `dLat` axial / centre | 8-12 / **5-8** | mesurable, **cible fausse en centre** | axial **12,8 m** (juste au-dessus), **centre 16,7 m** : les centraux ne se resserrent pas quand le ballon est sur l'aile — ils marquent chacun leur homme (225, 133) là où il est |
 | T5 `dLong` sur l'aile, signe | −3 à −6, correct > 80 % | **absent sur le centre** | **−0,9 m, signe correct 56 %** (0,1 m et 49 % à bloc haut ; −2,5 m et 75 % à bloc bas — le bloc bas approche) |
 | T6 réponse impulsionnelle 3 m en 1,2-2,0 s | | loi existante (236 : monte 3 m, tau 0,2 s + lecture) — à mesurer sur film |

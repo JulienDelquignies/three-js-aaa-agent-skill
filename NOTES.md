@@ -10564,7 +10564,55 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      expulsion « le corps sort et reste ». La sonde vit dans scripts/book/sonde-253.mjs.
      Sceau : commit c937ac9, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit).
-- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+- 336: LA LIGNE HAUTE ET SON PIÈGE (255 — Bible 03 T1/T3/T3b, Bible 10 §10.2, Modèle 14 §6.4 :
+     « ce n'est pas la hauteur qui provoque le hors-jeu, c'est la synchronie » — le Real 2024-25
+     joue plus haut que le Barça et provoque 46 hors-jeu de moins ; « un facteur ≈ 3 entre le
+     réglage bas (1,5-2,5) et l'extrême (4,8) par le seul déplacement des paramètres »). Sonde
+     AVANT (sonde-255, 4 × 90 min par tactique, l'équipe 0 contre l'équilibre) : équilibre
+     3,0 hors-jeu provoqués, ligne 26,0 m, 14 tirs concédés, 3,25 ballons reçus derrière la
+     ligne, 1,75 but encaissé ; l'axe hauteurBloc 0,95 + piege 1 : 4,25 provoqués, ligne 32,1
+     m, 11 tirs, 8,5 reçus derrière, 2,25 encaissés ; blocBas : 1,25 provoqués, ligne 12,7 m,
+     19 tirs, 1,25 reçus derrière, 4,0 encaissés. Les deux faces existaient déjà par la hauteur
+     (259 : la Loi 11 qui existe), mais l'axe `piege` n'était qu'un +3 m de ligne postée (149,
+     dilué par 236/238) : la synchronie n'existait pas. La loi (cfg.piege, piege.js —
+     piegeStep en tête de matchStep, piegeApply juste AVANT le mouvement par le crochet
+     cfg.avantMouvement du match) : quand le porteur adverse ARME une passe (le geste en
+     anticipation) entre 14 et 45 m du but défendu, tirage P = 0,8 × axe(piege) au flux seedé,
+     une fois par armé ; la ligne arrière — les corps de champ à ≤ 4 m de l'avant-dernier —
+     reçoit LE MÊME until (0,8 s) et un pas de 3 × axe(piege) m : la cible de chacun monte
+     depuis sa position COURANTE vers le but adverse (le presseur en course au ballon est exclu),
+     la photo de la Loi 11 au départ du ballon fait le reste. Le preset `ligneHaute` (tactics.js :
+     hauteurBloc 0,9, piege 1, pressing 0,8, compacité 0,7, ses hommes stopper / récupérateur /
+     9 de surface) est un point nommé de l'espace — le Barça de Flick. Ce qui a été essayé et
+     jeté : le pas ajouté à la hauteur de bloc du slot posté (le slot est plus profond que la
+     ligne vécue : le pas s'annulait, la ligne RECULAIT de 0,9 m dans la fixture) ; la cible
+     poussée en fin d'assignMatchJobs (réécrite ensuite : garde, marquage) — d'où le crochet
+     avantMouvement ; 2,5 m / 0,6 s : +0,28 m depuis l'arrêt (3 m / 0,8 s : +0,55). Mesuré
+     APRÈS (4 × 90 min) — LE T3b DU BOOK : à hauteur ÉGALE (0,9), piege 0 → 1,75 hors-jeu
+     provoqués (ordinaire 1,5-2,5), piege 1 → 5,25 (Barcelone 4,8) : le facteur 3 vient de la
+     synchronie, pas de la hauteur ; le preset ligneHaute : 4,5 provoqués, ligne 36,0 m du but
+     (Opta 31,6-34,6 : un peu haut), 12,25 tirs concédés à 17,6 m (équilibre : 14 à 14,8 m) —
+     FACE 1 ; 9,0 ballons reçus derrière la ligne par match (équilibre 3,25 : × 2,8, le book dit
+     × 1,9 pour ligne haute + pressing faible), 1,25 but encaissé — FACE 2, le prix visible.
+     Jumeau : piege null = HEAD au bit (81cbd2dc24fa22b0 / 91568776e30e054d). Banc :
+     verify-match11 bloc 255 (index 156 : le preset existe avec ses hommes ; à l'armé du passeur
+     adverse la ligne se marque — 4 corps, un seul until, un événement — et monte de 0,55 m en
+     0,67 s depuis l'arrêt ; sabotage piege null : rien ; piege 0 à même hauteur : rien — l'axe
+     décide, pas la hauteur). La sonde des presets (la dette « tactics API ») vit dans
+     scripts/book/sonde-255.mjs : deux faces par tactique. BANC COMPLET (final255.sh, 8 shards + 25 annexes) :
+     283 ✓ / 7 ✗ aux shards et 560 ✓ / 4 ✗ aux annexes au premier passage. Mondes déplacés par
+     la clé, épinglés piege null DATÉ 255 après preuve verte à HEAD~ (worktree 67cb463, le sceau
+     253) : verify-match11 blocs 8 « la course traverse la frappe » (47 stops sur 160, l'élan
+     retenu 83/142), 109 « lot 211 le porteur libre porte » (tenue calme 1,95 c. épinglé 1,55 +
+     0,6), 129 « le taux d'arrêt » (71 c. 83 − 8), 138 « le couloir à ≥ 3 corps » (40,6 c. 45,5 ×
+     0,8), 144 « lot 245 le flux » (vraie sortie 47 %) — les mêmes flux que le 259 et le 253 ont
+     déplacés : une ligne qui bouge déplace tout ce qui la lit. verify-identification REGELÉ DATÉ
+     255 (la règle du 252) : 19 → 17 signatures — perdues MO A|press, AIL C|repli, MDC A|largeurR, MDC B|profondeur, MO A|tenue, MDC B|appel, MDC C|appel, AIL A|largeurR, AV A|largeurR, DC B|profondeur, DC C|appel, MDC A|appel ; gagnées DC A|profondeur, LAT A|appel, LAT C|profondeur, LAT D|profondeur, LAT D|appel, MDC A|profondeur, MIL A|tenue, MDC B|press, MO B|profondeur, MDC C|profondeur. Isolés après épingles : blocs 8 1/0, 109 1/0,
+     129 2/0, 138 2/0, 144 2/0, bloc 1 seul 0,57 ms/step ; annexes tactics 11/0 (le preset entre
+     dans le contrat : borné, résolu), identification 1/0. Rouges hérités, nommés : 246d ;
+     « contres arrivés à l'entrée » ; verify-loi12 « le mur se tient » ; verify-expulsion « le
+     corps sort et reste » ; lots 135 et 142 (blocs 66, 73) — verts cette fois (ils oscillent
+     avec le flux : le journal les garde nommés).- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,

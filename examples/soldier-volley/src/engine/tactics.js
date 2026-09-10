@@ -64,6 +64,9 @@ export const TACTIQUES = {
     roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' } },
   largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5, relation: 0.25,
     roles: { 0: 'piston', 3: 'piston', 7: 'ailierDePercussion', 9: 'ailierDePercussion' } },
+  // LA LIGNE HAUTE (255 — le Barça de Flick 2024-25 : la ligne à 33,8 m et SYNCHRONE, 4,8 hors-jeu provoqués par match ; le prix : l'espace derrière, cfg.piege) — un point nommé, deux faces
+  ligneHaute:    { hauteurBloc: 0.9, largeur: 0.55, pressing: 0.8, style: 0.4, transition: 0.55, compacite: 0.7, relation: 0.6, marquage: 0.45, piege: 1.0,
+    roles: { 1: 'stopper', 5: 'recuperateur', 8: 'neufDeSurface' } },
 };
 
 /** Résout un nom de preset ou un objet partiel en tactique complète (les axes absents = 0,5). */

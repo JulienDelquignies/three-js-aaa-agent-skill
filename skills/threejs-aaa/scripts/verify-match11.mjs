@@ -24,6 +24,7 @@ import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets
 import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
 import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
 import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
+import { piegeStep, piegeOffset } from '../assets/starter/src/engine/piege.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
@@ -456,7 +457,7 @@ if (__bloc()) {
     const W = 42; let net = 0, tot = 0;
     for (const seed of [1, 3, 2, 4]) {   // 2 → 4 graines DATÉ A10 (le sabotage à 55 % pour 55,6 exigés : un point, à deux graines)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la course de frappe remangée par l'orteil et la course qui traverse (36 stops sur 134 ≤ 50 % tient, l'élan retenu 82/148 bascule) — la clause mesure la foulée de frappe, pas la Loi 11 */, shotRange: 20, passation: null, ...cfgExtra });   // passation null DATÉ 252 : vert à HEAD, l'élan retenu 70/137 c. 56 sous la remise au pivot (bord de Poisson)
+      const cfg = matchCfg({ piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), la course de frappe remangée par la ligne synchrone (47 stops sur 160, l'élan retenu 83/142) — la clause mesure la foulée de frappe, pas le piège */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la course de frappe remangée par l'orteil et la course qui traverse (36 stops sur 134 ≤ 50 % tient, l'élan retenu 82/148 bascule) — la clause mesure la foulée de frappe, pas la Loi 11 */, shotRange: 20, passation: null, ...cfgExtra });   // passation null DATÉ 252 : vert à HEAD, l'élan retenu 70/137 c. 56 sous la remise au pivot (bord de Poisson)
       const hist = new Map();
       let evCount = 0;
       for (let i = 0; i < 180 * 60; i++) {
@@ -4510,7 +4511,7 @@ if (__bloc()) {
     const hs = [];
     for (const seed of [3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ marquageSurface: false, repli: false, garde: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), la tenue calme remangée par la ligne synchrone (1,95 c. épinglé 1,55 + 0,6) — la clause mesure le porteur libre, pas le piège */, marquageSurface: false, repli: false, garde: false, shotRange: 20, ...(over ?? {}) });
       let cur = null, snap = null;
       for (let i = 0; i < 300 * 60; i++) {
         if (st.possession.carrier >= 0) {
@@ -5240,7 +5241,7 @@ if (__bloc()) {
   const S = (() => { const { ball, v } = tir(22, 18); return keeperDecide(pitch, 1, me, ball, v, 0.3, KEEPER, true, 5); })();
   ok(`lot 232b — LE PAS CHASSÉ DU GARDIEN (vol 1,2 s : ${A.mode} vers z ${A.spot?.z?.toFixed(2)} (= 2,80), pasChasse ${A.pasChasse} ; 0,7 s : ${B.mode} ${B.pasChasse} ; 0,6 s : ${C.mode} ; clé absente : ${S.mode} vers z ${S.spot?.z?.toFixed(2)} ≠ 2,80)`,
     A.mode === 'poste' && Math.abs(A.spot.z - 2.8) < 1e-6 && A.pasChasse === true && B.mode === 'poste' && B.pasChasse === true && (C.mode === 'dive' || C.mode === 'battu') && S.mode === 'poste' && Math.abs(S.spot.z - 2.8) > 0.5);
-  const flux = (over) => { const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le taux d'arrêt remangé par l'appel de l'épaule (77 c. 93 − 8) — la clause mesure le gardien, pas la Loi 11 */, contact: null, porteAnticipe: null, remisesPied: null,  couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
+  const flux = (over) => { const cfg = matchCfg({ piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), le taux d'arrêt remangé par la ligne synchrone (71 c. 83 − 8) — la clause mesure le gardien, pas le piège */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le taux d'arrêt remangé par l'appel de l'épaule (77 c. 93 − 8) — la clause mesure le gardien, pas la Loi 11 */, contact: null, porteAnticipe: null, remisesPied: null,  couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {   /* 6 → 12 graines DATÉ 237 (4 arrêts + buts sur 6) */ const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type === 'arrêt') arr++; else if (ev.type === 'but') buts++; } } }
@@ -5577,7 +5578,7 @@ if (__bloc()) {
   // le ballon − 10 m), les deux demi-espaces occupés à ≤ 15 m derrière le ballon, la réussite des passes (non-dégradation), la garde
   // 231. Mesuré : 50,5 → 30,6 %, 45 → 52 %, 74,0 → 73,1 %.
   const flux = (over) => {
-    const cfgF = matchCfg({ pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le couloir à ≥ 3 corps remangé par la pausa (38,1 % c. sans 46,9 × 0,8) — la clause mesure les couloirs, pas la pausa */, shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
+    const cfgF = matchCfg({ piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), le couloir remangé par la ligne synchrone (40,6 c. sans 45,5 × 0,8) — la clause mesure les couloirs, pas le piège */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le couloir à ≥ 3 corps remangé par la pausa (38,1 % c. sans 46,9 × 0,8) — la clause mesure les couloirs, pas la pausa */, shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st2 = makeMatch({ full: true, seed }); let cur = 0, possT = -1, possSince = 0; const pend = {};
       for (let i = 0; i < 300 * 60; i++) {
@@ -5880,7 +5881,7 @@ if (__bloc()) {
   const geo = (over) => {
     let act = 0, img = 0, vraies = 0;
     for (const seed of [1, 2, 3]) {
-      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la vraie sortie remangée par la course qui traverse (55 % c. 90) — la clause mesure l'oblique, pas la Loi 11 */, finition: null, contre: null /* contre null DATÉ 258b : vert à HEAD~ (97 % ≥ 90 au 258 isolé), la vraie sortie remangée par le corps qui contre (60 %) — la clause mesure l'oblique, pas le contre */, ...over });   // finition null DATÉ 258 : vert à HEAD (97 % ≥ 90 au 252), la vraie sortie remangée par les tirages de l'échelle de finition (88 %) — la clause mesure l'oblique, pas le tir
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), la vraie sortie remangée par la ligne synchrone (47 %) — la clause mesure l'oblique, pas le piège */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la vraie sortie remangée par la course qui traverse (55 % c. 90) — la clause mesure l'oblique, pas la Loi 11 */, finition: null, contre: null /* contre null DATÉ 258b : vert à HEAD~ (97 % ≥ 90 au 258 isolé), la vraie sortie remangée par le corps qui contre (60 %) — la clause mesure l'oblique, pas le contre */, ...over });   // finition null DATÉ 258 : vert à HEAD (97 % ≥ 90 au 252), la vraie sortie remangée par les tirages de l'échelle de finition (88 %) — la clause mesure l'oblique, pas le tir
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); if (i % 10) continue;
         const def = st.possession.team >= 0 ? 1 - st.possession.team : -1; if (def < 0) continue; img++;
@@ -6213,6 +6214,40 @@ if (__bloc()) {
   const N = scene({ pausa: null }); const ttpN = ttpDe(N.st, N.c, matchCfg({}).pausa);
   ok(`lot 253 — LA PAUSA (fixture : porteur au calme, ttp ${ttp0 === Infinity ? '∞' : ttp0.toFixed(1)} s, ${eng0} adversaires lancés, une course partenaire en cours) : le porteur TIENT (${tient}, _pausa posé ${pose}) et tient encore à +0,6 s (${tient2}) ; la course devient l'option → il LÂCHE (${!lache}) et l'événement pausa dit « ${ev[0]?.issue} » durée ${ev[0]?.duree} s, gain ${ev[0]?.gain} (valeur ${ev[0]?.valeur === true}) ; le presseur qui arrive rompt la pausa : « ${evP[0]?.issue} » ; sabotage « pausa null » : aucune tenue (${!N.c._pausa}, même scène, ttp ${ttpN === Infinity ? '∞' : ttpN.toFixed(1)})`,
     ttp0 > 1.8 && eng0 >= 2 && tient === true && pose && tient2 === true && lache === false && ev.length === 1 && ev[0].issue === 'servie' && ev[0].duree >= 1.0 && ev[0].valeur === true && lacheP === false && evP[0]?.issue === 'pression' && !N.c._pausa);
+}
+
+// ---------------------------------------------------------------- lot 255 : LA LIGNE HAUTE ET SON
+// PIÈGE (cfg.piege, preset ligneHaute — Bible 03 T3/T3b, Bible 10 §10.2 : la synchronie provoque, pas la hauteur)
+if (__bloc()) {
+  // Le preset existe et porte ses deux faces (piege 1, hauteurBloc 0,9). La fixture : l'équipe 1 défend à 27 m, l'équipe
+  // 0 porte à 42 m du but de 1 (personne ne presse) et ARME une passe (geste en anticipation) ; sous cfg.piege (piege 1) piegeStep marque la
+  // ligne — les quatre corps de la bande reçoivent LE MÊME until (la synchronie) et un pas ; en 0,67 s d'images la ligne
+  // (avant-dernier) a MONTÉ d'au moins 0,5 m (depuis l'arrêt) ; sabotage « piege null » : rien ne bouge ; et à piege 0 (même hauteur) :
+  // rien non plus — c'est l'axe qui décide, pas la hauteur (T3b).
+  const lh = resoudreTactique('ligneHaute');
+  const scene = (over, tq) => {
+    const st = makeMatch({ full: true, seed: 5, tactics: ['equilibre', tq ?? { piege: 1, pressing: 0 }] }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const own = st.pitch.ownGoal(1), sg = -own.sign;   // sg : de l'équipe 1 vers son but adverse ; sa ligne est à own.x + 27·(−sg)… on pose en x monde
+    const dir = -sg;   // vers le but de 1
+    const c = st.players.find((p) => p.team === 0 && p.post === 5);
+    for (const q of st.players) { q.v = [0, 0]; q.down = 0; }
+    const defs = st.players.filter((q) => q.team === 1 && !q.keeper); defs.forEach((q, k) => { q.p[0] = own.x - dir * (k < 4 ? 27 : 40); q.p[2] = (k < 4 ? (k - 1.5) * 6 : (k - 7) * 5); });
+    for (const q of st.players.filter((q) => q.team === 0 && q !== c)) q.p[0] = own.x - dir * 34;
+    c.p[0] = own.x - dir * 42; c.p[2] = 0; c.yaw = Math.atan2(0, dir);   // le porteur à 15 m de la ligne : personne ne presse, la ligne est postée
+    st.ball.restart([c.p[0] + dir * 0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+    let lcg = 777; st.rnd2 = () => { lcg = (lcg * 1664525 + 1013904223) >>> 0; return lcg / 4294967296; };
+    const act = { id: 'pass', t: 0, anticipation: 5, follow: 0.2, total: 5.2, phase: 'anticipation', fired: false, payload: { kind: 'pass' } }; const arme = () => { act.t = 0; act.phase = 'anticipation'; c.act = act; };   // UN SEUL armé (un objet) : le piège se tire une fois par geste   // l'armé posé et re-posé chaque image (la fixture ne joue jamais la passe : l'anticipation dure 5 s)
+    arme();
+    const ligne = () => { const xs = defs.slice(0, 4).map((q) => (q.p[0] - own.x) * (-dir)); xs.sort((a, b) => a - b); return xs[1]; };
+    const x0 = ligne(); piegeStep(st, cfg);
+    const marques = defs.filter((q) => q._piege), untils = new Set(marques.map((q) => q._piege.until));
+    for (let i = 0; i < 40; i++) { arme(); matchStep(st, 1 / 60, cfg); }
+    return { x0, x1: ligne(), marques: marques.length, sync: untils.size, ev: st.events.filter((e) => e.type === 'piege').length };
+  };
+  const V = scene(null, { piege: 1, pressing: 0 }), N = scene({ piege: null }, { piege: 1, pressing: 0 }), Z = scene(null, { piege: 0, pressing: 0 });
+  ok(`lot 255 — LA LIGNE HAUTE ET SON PIÈGE : le preset ligneHaute existe (piege ${lh.piege} = 1, hauteurBloc ${lh.hauteurBloc} ≥ 0,85, ses hommes ${Object.keys(lh.roles ?? {}).length} ≥ 2) ; à l'armé du passeur adverse la ligne se MARQUE (${V.marques} corps de la bande, ${V.sync} until = 1 : synchrone, ${V.ev} événement) et MONTE en 0,67 s (${V.x0.toFixed(1)} → ${V.x1.toFixed(1)} m du but : +${(V.x1 - V.x0).toFixed(2)} ≥ 0,5 — depuis l'arrêt) ; sabotage « piege null » : rien (${N.marques} marqué, +${(N.x1 - N.x0).toFixed(2)} ≤ 0,3) ; à piege 0, même hauteur : rien non plus (${Z.marques} marqué — l'axe décide, pas la hauteur : T3b)`,
+    lh.piege === 1 && lh.hauteurBloc >= 0.85 && Object.keys(lh.roles ?? {}).length >= 2 && V.marques >= 3 && V.sync === 1 && V.ev === 1 && V.x1 - V.x0 >= 0.5 && N.marques === 0 && N.x1 - N.x0 <= 0.3 && Z.marques === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

@@ -72,7 +72,7 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
 | 7 densité à 10 m | 4,9 médian | mesurable, **réfuté** | **3,0** (bloc passif du modèle : 3,1) |
 | 8 effet de bord | 1,34-2,00 | mesurable, **inversé** | **0,71** — la touche fait fuir la densité au lieu de la concentrer |
 | 9-10 rendement des déclencheurs, pressings avortés | | à instrumenter (pas de `PressEvent`) |
-| 11 hors-jeu par équipe | 1,5 → 4,8 | mesurable, **réfuté** | **0,5** / match / équipe, insensible à `hauteurBloc` (ch. 03) |
+| 11 hors-jeu par équipe | 1,5 → 4,8 | tenu au 255 | **0,5** → **1,75** (piege 0) → **5,25** (piege 1) provoqués par match, le preset ligneHaute 4,5 |
 | 12 ligne cassée | 1-3 / match | mesurable, **réfuté** | `desync` > 4 m sur **72 %** des images de défense placée ; **73 épisodes** > 0,5 s par match et par équipe, durée p50 **19,7 s** — la ligne n'est pas une ligne (ch. 03 T8 : 7,5 m p50) |
 | 13 dérive de l'interligne | +3 à +6 m, ≥ +2 | mesurable, **réfuté** | 9,8 → **10,9 m** (+1,1) : la fatigue ne touche pas le bloc |
 | 14 montée après dégagement | +10-18 m en 2,5-3,5 s | à instrumenter (pas d'événement de dégagement) |

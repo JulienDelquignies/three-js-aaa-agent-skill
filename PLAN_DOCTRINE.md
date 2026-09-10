@@ -473,6 +473,14 @@ arrive ou que 2,5 s passent ; l'événement porte l'issue et le gain (la pausa q
 Mesuré : 6,75 événements pausa par match, les pausas de ≥ 1,5 s 0,5 → 2,25 (réel 3-6, la marge basse). Ce qu'il nomme : la pausa sans ballon (HOLD_OFF_BALL, Götze) et les régimes de tempo par zone
 (chapitre 05) restent à faire. L'ordre : 255 → 254, puis les transversaux.
 
+**255 — LA LIGNE HAUTE ET SON PIÈGE : SCELLÉ (336).** Le preset `ligneHaute` (un point nommé de l'espace des axes) et
+l'axe `piege` devenu une décision de ligne : à l'armé du passeur adverse, la ligne arrière monte ensemble (le même
+until pour tous : la synchronie) et la photo de la Loi 11 prend les corps restés sur l'épaule. Le T3b du book tenu : à
+hauteur égale, piege 0 → 1,75 hors-jeu provoqués, piege 1 → 5,25. La clause à deux faces : la sonde des presets
+imprime pour chaque tactique le gain (hors-jeu provoqués, ligne, tirs concédés et leur distance) et le prix (ballons
+reçus derrière la ligne, buts encaissés). Ce qu'il nomme : la ligne du preset un peu haute (36 m c. 31,6-34,6), la
+désynchronisation par la familiarité (254). L'ordre : 254, puis les transversaux.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

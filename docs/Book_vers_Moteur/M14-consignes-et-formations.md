@@ -29,7 +29,7 @@ exprimées au 252) et **`verify-tactics`** ; la Loi 3 (remplacements) et l'expul
 **Partiel.** Le certificat existe sous la forme « clé absente = hier au bit » et « chaque clé exprimée » — mais sans
 bande réelle ni monotonie par cran (le test 1) ; hauteurBloc ne déplace pas le hors-jeu (Bible 03) ; la formation
 n'a pas d'**étiquetage** ni de forme déclarée par phase (les deux formes émergent des lois) ; les rôles sont des
-axes sans **devoirs** ni signatures mesurées ; la dégradation des combinaisons pathologiques n'est pas testée.
+axes sans **devoirs** ni signatures mesurées ; la dégradation des combinaisons pathologiques n'est pas testée (au 255, la première l'est : ligne haute → ballons reçus derrière la ligne × 2,8, le book dit × 1,9 — la sonde des presets, `sonde-255.mjs`).
 
 **Absent.** `labelFormation`, le rapport rôles / formes, la familiarité tactique η, le plan de match adverse et sa
 contre-adaptation, les instructions individuelles comme table, le vecteur de joueur (test 9), le coût mesuré.

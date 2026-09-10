@@ -539,7 +539,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       } else p._heldT = p.target ? [...p.target] : null;
     }
   }
-  movePlayers(st, dt, cfg);
+  cfg.avantMouvement?.(st, cfg); movePlayers(st, dt, cfg);   // (255) le match branche ici ce qui doit primer sur toute cible avant le mouvement (piege.piegeApply : la ligne synchrone)
   slideResolve(st, cfg);               // le contact du glissé sur porteur (lot 51) — duel.js
   resolveSlideL(st, cfg);              // …et sur ballon libre (aucun _slideL hors match)
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine
