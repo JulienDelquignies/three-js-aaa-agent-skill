@@ -287,6 +287,19 @@ photographié qui arrive à ≤ 1,2 m du ballon en vol est sifflé sans son pied
 photo au centre d'hier au bit. Banc : bloc 259 (loi pure de la capsule, photo à 17,9 / 18 prise sous la clé et pas
 sans, la tentative). Fiches : `M12-regles-arbitrage.md`, `R10-arbitrage-lois.md`, `09-avant-centre.md`.
 
+### La pausa (lot 253, `cfg.pausa` — `pausa.js` : `pausaStep`, `ttpDe`, `engages`)
+
+La temporisation était un tempo et une barre calme ; le 253 en fait une **décision** (Bible 07 §7 : « une
+désynchronisation volontaire »). À l'adoption de l'intention (rondo-sim), `pausaStep` juge : le porteur au calme
+(temps avant la pression ≥ seuil — 1,5 s au tempo posé, 2,0 au vif, × la tenue du rôle, ÷ composureF), dans la zone
+[55 ; 88] % du terrain, ≥ 2 adversaires lancés vers le ballon, une course partenaire en cours qui n'est pas encore
+l'option → il **tient** (aucune intention, la conduite figée dans match-sim : cible = soi, touche serrée). Il lâche
+quand la course devient l'option (« servie »), quand la pression arrive (ttp < 0,7), quand la course meurt, ou à
+2,5 s (« expirée »). L'événement `pausa` porte `duree`, `issue`, `gain` (score de l'option sortie / entrée ; ≥ 1,15 =
+`valeur: true`, la pausa qui a produit — le reste est de l'hésitation, comptée telle quelle). `pausa: null` = l'adoption
+d'hier au bit. Banc : bloc 253 (fixture : il tient, lâche sur la course servie avec gain, rompt sur la pression ;
+sabotage). Fiches : `07-meneur-entre-les-lignes.md`, `05-milieu-defensif.md`, `14-micro-comportements.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

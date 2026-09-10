@@ -46,7 +46,7 @@ saccades espacées hors ballon) — sans mémoire, sans croyance datée, sans ef
 tout) ; le taux mesuré est **plat** (0,33 partout : poste, pression, zone) ; les gestes existent mais **sans
 tromperie** : le défenseur n'infère rien, il ne part jamais du mauvais côté ; l'orientation `BACK` sous pression
 sort à 38 % (dans la bande) par la géométrie, pas par une posture jouée ; la temporisation existe par le tempo et
-le contexte de la remise, pas par la pausa (253).
+le contexte de la remise ; la pausa comme décision est venue au 253 (SCELLÉ 335).
 
 **Absent.** `HeadState` (le lacet a une vitesse, une butée), la mémoire spatiale et l'oubli, la capacité (1-3
 entités), la distance de reconnaissance ; la typologie de première touche et son bruit par type ; le modèle
@@ -87,4 +87,4 @@ humain comme objet.
    12,7-21,7, six mètres 26,2-36,7, corner 30-50), le temps additionnel qui en découle, la règle des 8 s.
 4. **La communication comme canal** (T20-T23 ; ch. 10 §11.3, ch. 12 lot 2) : voix 25 m, geste vu, boîte à un
    message.
-5. **La première touche typée** (T14, §4) et **la pausa** (253).
+5. **La première touche typée** (T14, §4) et **la pausa** (253 — SCELLÉ 335).

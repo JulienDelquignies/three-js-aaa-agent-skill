@@ -93,7 +93,7 @@ Les mêmes constats reviennent de poste en poste, et ce sont eux qui font les lo
    surface 33 % (réel 15), dribbles à 20 % (réel 40-50) mais trois fois trop nombreux. → **la finition et la passe qui
    se manquent** (258, ch. 02, 04, 08, 09).
 6. **Personne ne regarde ni ne retarde.** Aucune latence de décision, aucune croyance périmée, le scan sans effet sous
-   pression, le pausa absent, le 10 sans poche. → **la perception non omnisciente** (Modèle 04) et **la pausa** (253).
+   pression, le pausa absent, le 10 sans poche. → **la perception non omnisciente** (Modèle 04) et **la pausa** (253 — SCELLÉ 335).
 
 ## Ce que les 48 fiches disent ensemble
 

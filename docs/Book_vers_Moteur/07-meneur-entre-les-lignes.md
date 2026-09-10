@@ -32,7 +32,7 @@ le scan (250) ; la tenue calme (211) ; le contre-press (229) ; les interdits (`d
 l'adversaire ; la passe en profondeur est décidée côté passeur (le coureur existe : 75-89 % des profondeurs ont un
 appel dans les 2 s — mais le déclencheur est le passeur) ; l'orientation à la réception est produite par le corps
 ouvert (170) : trop d'« ouvert » et de « dos », pas assez de trois-quarts ; le pressing du 10 est celui de tout le
-monde (byDist) ; la pausa est le lot 253 (interface gelée), absente aujourd'hui.
+monde (byDist) ; la pausa est le lot 253 (SCELLÉ 335 : `pausa.js`).
 
 **Absent.** `InterlinePocket`, `carrierReady`, `HOLD` (l'immobilité active), la règle Mauricio, les régimes de
 possession, la fraîcheur mutuelle (`mutualAwareness`), le faux 9 comme dilemme du marqueur.
@@ -53,7 +53,7 @@ possession, la fraîcheur mutuelle (`mutualAwareness`), le faux 9 comme dilemme 
 | T11 profondeurs précédées d'un départ | > 92 % | mesurable | **75 %** (89 contre bloc bas) |
 | T12 vitesse à l'arrivée du centre ≥ 4 m/s | 70 % | mesurable — à mesurer |
 | T13 duplication de slot | ≤ 17 % | mesurable | **9 %** ✓ (182b : un corps par rai) |
-| T14 pausa 0,6-2,5 s | | **absent** : 0 / match — le lot 253 |
+| T14 pausa 0,6-2,5 s | | **0** → **6,75** au 253 (événements `pausa` ≥ 0,6 s par match ; issues servie / pression / expirée) |
 | T15-T19 tests causaux (Mauricio, faux 9, Cruyff, `pressParticipation`, `roamAt`) | | absents (les curseurs n'existent pas) ; le faux 9 est un rôle (interdit `tete`, ancrage 0,8) |
 | T20 scan élite / moyen | écart < 0,10 | loi existante (250 : 0,88 c. 0,72 par vol — l'écart est dans la tolérance) |
 | T21 bloc adverse ≤ 25 m | > 90 % | mesurable | **45 %** par défaut, **100 %** en bloc bas — le bloc par défaut est étiré |
@@ -67,7 +67,7 @@ possession, la fraîcheur mutuelle (`mutualAwareness`), le faux 9 comme dilemme 
    Il dépend de « la ligne est une ligne » (ch. 03) côté défense.
 2. **Le sprint a un budget** (T5) : 492 courses HI par match — les bursts sont gratuits ; c'est le profil locomoteur
    (ch. 01 T22) et la fatigue à compartiments (Réf. 07).
-3. **La pausa** (T14) — le 253, déjà gelé.
+3. **La pausa** (T14) — le 253, SCELLÉ 335 : la décision de tenir pour la course qui vient ; la pausa sans ballon (HOLD_OFF_BALL) reste à faire.
 4. **Le déclencheur côté attaquants** (T11, T8) — le 259 (SCELLÉ 334) : la pointe part sur le porteur prêt (posé, ≤ 28 m).
 5. **L'orientation de trois-quarts** (T7) : la réception de trois-quarts (A12b) lit `pick.foot` ; le corps ouvert
    (170) doit produire 45-60 % de trois-quarts, pas 31.

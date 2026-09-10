@@ -86,7 +86,7 @@ régimes de tempo ; le budget locomoteur (17,8 km !).
    ligne » (ch. 03).
 4. **Le budget locomoteur du 6** (T18) : 17,8 km ; il presse toujours parce qu'il est le plus proche — le token de
    pressing (ch. 01 § 8.2) et la distance d'intervention.
-5. **Les régimes de tempo** (T8, T9) : `SETTLE` = la pausa (253, déjà au plan) ; `R_fwd` par zone comme signature de
+5. **Les régimes de tempo** (T8, T9) : `SETTLE` = la pausa (253, SCELLÉ 335 — la décision de tenir ; les régimes par zone restent à faire) ; `R_fwd` par zone comme signature de
    l'axe style.
 6. **La faute tactique comme politique** (T15, T16) : avec le carton (257) et l'axe `faute` de la Campagne IV.
 7. **La fraîcheur de l'information sur son dos** (§ 4, T20) : la campagne perception (Modèle 04).

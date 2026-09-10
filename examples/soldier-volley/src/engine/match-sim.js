@@ -525,7 +525,7 @@ function assignMatchJobs(st, cfg) {
         // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà — à +0,4 m l'amorti s'équilibrait avec sa décélération, bd cloué 1,2-1,3 m : le geste accélère À TRAVERS).
         const over = (p._prepShot ?? -1) > st.t ? 2.2 : 0.4;
         p.target = [st.ball.p[0] + p.push[0] * over, 0, st.ball.p[2] + p.push[1] * over];
-      } else { p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3]; }
+      } else { p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3]; } if (st.full && cfg.pausa && p._pausa) { p.target = [p.p[0], 0, p.p[2]]; p.touchF = cfg.pausa.touche ?? 0.25; }   // (253) la pausa : le porteur ne conduit pas, il tient
       continue;
     }
     p.push = null;

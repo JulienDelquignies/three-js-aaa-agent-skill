@@ -23,6 +23,7 @@ import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets/starter/src/engine/duel.js';
 import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
 import { finitionSigma } from '../assets/starter/src/engine/strike-sim.js';
+import { pausaStep, ttpDe, engages } from '../assets/starter/src/engine/pausa.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
@@ -1147,7 +1148,7 @@ if (__bloc()) {
     const out = [];
     for (const seed of [2, 5]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...overrides });
+      const cfg = matchCfg({ pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le sabotage de l'allure remangé par la pausa (p50 8 c. ≥ 10) — la clause mesure l'allure, pas la pausa */, shotRange: 20, ...overrides });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 6) continue;
@@ -3697,7 +3698,7 @@ if (__bloc()) {
     for (const seed of [4, 7, 11, 15, 5, 9, 13, 17]) {   // 4 → 8 graines DATÉ 238 (59° c. 58° : un tirage)
       const st = makeMatch({ full: true, seed });
       // retournement:false DATÉ 240 : le plafond de rotation du porteur (240b) bride le pivot des deux côtés (59° c. 60° masqués ; 55° c. 65° sans) — la clause mesure SA loi
-      const cfg = matchCfg({ porteAnticipe: null,  shotRange: 20, retournement: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)   // porteAnticipe:null DATÉ A10 (isolé clé par clé : contact et remisesPied ne bougent rien, le porté qui anticipe fait 57 → 62° de pivot post-prise — il change la PRISE, la clause mesure la demi-position d'hier)
+      const cfg = matchCfg({ pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le pivot post-prise remangé par la pausa (62° c. épinglé 62° − 8) — la clause mesure le corps ouvert, pas la pausa */, porteAnticipe: null,  shotRange: 20, retournement: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)   // porteAnticipe:null DATÉ A10 (isolé clé par clé : contact et remisesPied ne bougent rien, le porté qui anticipe fait 57 → 62° de pivot post-prise — il change la PRISE, la clause mesure la demi-position d'hier)
       let suivi = null;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5576,7 +5577,7 @@ if (__bloc()) {
   // le ballon − 10 m), les deux demi-espaces occupés à ≤ 15 m derrière le ballon, la réussite des passes (non-dégradation), la garde
   // 231. Mesuré : 50,5 → 30,6 %, 45 → 52 %, 74,0 → 73,1 %.
   const flux = (over) => {
-    const cfgF = matchCfg({ shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
+    const cfgF = matchCfg({ pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le couloir à ≥ 3 corps remangé par la pausa (38,1 % c. sans 46,9 × 0,8) — la clause mesure les couloirs, pas la pausa */, shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st2 = makeMatch({ full: true, seed }); let cur = 0, possT = -1, possSince = 0; const pend = {};
       for (let i = 0; i < 300 * 60; i++) {
@@ -6177,6 +6178,41 @@ if (__bloc()) {
   const V = photo(null), N = photo({ horsJeu: null });
   ok(`lot 259 — L'ORTEIL (loi pure) : immobile ${pIm.toFixed(2)} m = tronc ${K.tronc} ; vers le but à 7,5 m/s ${pAv.toFixed(2)} ∈ ]tronc ; tronc + foulee ${K.foulee}] ; à reculons ${pAr.toFixed(2)} = tronc (rien vers l'arrière) ; le défenseur qui recule ${pDef.toFixed(2)} > tronc (sa ligne recule d'autant) — ET LA PHOTO : le coureur dont le centre est 10 cm en jeu au départ (17,9 / ligne 18) est PRIS d'un orteil sous la clé (${V.pris}, refus du cerveau ${V.deny} = 0 : le cerveau juge le centre), pas sans (${N.pris}) ; la TENTATIVE : le photographié à 0,8 m du ballon en vol est sifflé (${V.tente})`,
     Math.abs(pIm - K.tronc) < 1e-9 && pAv > K.tronc && pAv <= K.tronc + K.foulee + 1e-9 && Math.abs(pAr - K.tronc) < 1e-9 && pDef > K.tronc && V.pris === true && V.deny === 0 && N.pris === false && V.tente === true);
+}
+
+// ---------------------------------------------------------------- lot 253 : LA PAUSA (cfg.pausa —
+// la carte du book, Bible 07 §7 : « une désynchronisation volontaire », 3-6 par match de 1,5-3,5 s)
+if (__bloc()) {
+  // La fixture : un porteur au calme dans le tiers adverse (aucun presseur à moins de 12 m : ttp infini), deux
+  // adversaires LANCÉS vers le ballon, un partenaire en pleine course (_runT devant) qui n'est pas l'option du
+  // moment → le porteur TIENT (pausaStep true, _pausa posé) ; la course devient l'option → il lâche, l'événement
+  // `pausa` porte l'issue « servie » et le gain ; la pression arrive (ttp < 0,9) → « pression ». Sabotage
+  // « pausa null » : le monde d'hier, la clé absente ne tient rien (aucun _pausa, aucun événement).
+  const scene = (over) => {
+    const st = makeMatch({ full: true, seed: 5 }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const sgn = -st.pitch.ownGoal(0).sign;
+    const c = st.players.find((p) => p.team === 0 && p.post === 5), run = st.players.find((p) => p.team === 0 && p.post === 8), other = st.players.find((p) => p.team === 0 && p.post === 7);
+    for (const q of st.players) { q.v = [0, 0]; q.down = 0; }
+    st.t = 100;
+    c.p[0] = sgn * 20; c.p[2] = 0; other.p[0] = sgn * 14; other.p[2] = 8; run.p[0] = sgn * 30; run.p[2] = -6; run._runT = st.t + 1.2; run.v = [sgn * 6, 0];
+    for (const q of st.players.filter((q) => q.team === 0 && q !== c && q !== run && q !== other)) q.p[0] = -sgn * 20;
+    const defs = st.players.filter((q) => q.team === 1 && !q.keeper); defs.forEach((q, k) => { q.p[0] = sgn * 40; q.p[2] = (k - 5) * 5; });
+    defs[0].p[0] = sgn * 34; defs[0].p[2] = 3; defs[0].v = [-sgn * 3.5, -0.5]; defs[1].p[0] = sgn * 34; defs[1].p[2] = -4; defs[1].v = [-sgn * 3.5, 0.5];   // deux lancés vers le ballon, encore à 14 m
+    st.ball.restart([c.p[0] + sgn * 0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+    st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 0.8; st.lastTouch = 0;
+    return { st, cfg, c, run, other, defs, sgn };
+  };
+  const V = scene(null);
+  const choix = (to) => ({ to: { id: to.id }, lead: [to.p[0], 0, to.p[2]], style: 'ground', score: 1.0, lane: { margin: 3, open: true } });
+  const ttp0 = ttpDe(V.st, V.c, V.cfg.pausa), eng0 = engages(V.st, V.c, 2);
+  const tient = pausaStep(V.st, V.c, V.cfg, choix(V.other)); const pose = !!V.c._pausa;
+  V.st.t += 0.6; V.st.hold += 0.6; const tient2 = pausaStep(V.st, V.c, V.cfg, choix(V.other));   // la tenue avance avec le temps (une pausa dont la possession a changé se dissout)
+  V.st.t += 0.5; V.st.hold += 0.5; const lache = pausaStep(V.st, V.c, V.cfg, { ...choix(V.run), score: 1.4 }); const ev = V.st.events.filter((e) => e.type === 'pausa');
+  const P = scene(null); pausaStep(P.st, P.c, P.cfg, choix(P.other)); P.defs[0].p[0] = P.sgn * 21.5; P.defs[0].p[2] = 0.8; P.defs[0].v = [-P.sgn * 5, 0]; P.st.t += 0.3; P.st.hold += 0.3;   // le presseur arrive : ttp < 0,9
+  const lacheP = pausaStep(P.st, P.c, P.cfg, choix(P.other)); const evP = P.st.events.filter((e) => e.type === 'pausa');
+  const N = scene({ pausa: null }); const ttpN = ttpDe(N.st, N.c, matchCfg({}).pausa);
+  ok(`lot 253 — LA PAUSA (fixture : porteur au calme, ttp ${ttp0 === Infinity ? '∞' : ttp0.toFixed(1)} s, ${eng0} adversaires lancés, une course partenaire en cours) : le porteur TIENT (${tient}, _pausa posé ${pose}) et tient encore à +0,6 s (${tient2}) ; la course devient l'option → il LÂCHE (${!lache}) et l'événement pausa dit « ${ev[0]?.issue} » durée ${ev[0]?.duree} s, gain ${ev[0]?.gain} (valeur ${ev[0]?.valeur === true}) ; le presseur qui arrive rompt la pausa : « ${evP[0]?.issue} » ; sabotage « pausa null » : aucune tenue (${!N.c._pausa}, même scène, ttp ${ttpN === Infinity ? '∞' : ttpN.toFixed(1)})`,
+    ttp0 > 1.8 && eng0 >= 2 && tient === true && pose && tient2 === true && lache === false && ev.length === 1 && ev[0].issue === 'servie' && ev[0].duree >= 1.0 && ev[0].valeur === true && lacheP === false && evP[0]?.issue === 'pression' && !N.c._pausa);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

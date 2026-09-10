@@ -466,6 +466,13 @@ l'épaule prend un recul d'élan et part sur le porteur prêt, le photographié 
 appels profonds « d'ailleurs » partent de 9 m (le budget de course, transversal), et le coureur servi n'est pas
 encore reçu derrière la ligne (la passe se joue tôt). L'ordre : 253 → 255 → 254, puis les transversaux.
 
+**253 — LA PAUSA : SCELLÉ (335).** La temporisation devient une décision : le porteur au calme (ttp ≥ seuil au
+tempo, au rôle et au sang-froid), dans le tiers adverse, avec deux adversaires lancés et une course partenaire
+qui n'est pas encore l'option, tient — ni passe ni conduite — jusqu'à ce qu'elle le devienne, que la pression
+arrive ou que 2,5 s passent ; l'événement porte l'issue et le gain (la pausa qui produit de la valeur c. l'hésitation).
+Mesuré : 6,75 événements pausa par match, les pausas de ≥ 1,5 s 0,5 → 2,25 (réel 3-6, la marge basse). Ce qu'il nomme : la pausa sans ballon (HOLD_OFF_BALL, Götze) et les régimes de tempo par zone
+(chapitre 05) restent à faire. L'ordre : 255 → 254, puis les transversaux.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

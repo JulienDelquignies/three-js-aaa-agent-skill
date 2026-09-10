@@ -10514,7 +10514,54 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      scripts/book/sonde-259.mjs.
      Sceau : commit 0e89057, poussé ; déploiement showcase-pi-mocha au second essai (cmp du chunk
      Rondo servi = construit).
-- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+- 335: LA PAUSA (253 — Bible 07 §7 « la temporisation : définition opérationnelle », chapitre 05
+     les régimes de tempo, chapitre 14 ; la carte du book la nommait « interface gelée, absente
+     aujourd'hui »). Sonde AVANT (4 × 90 min) : 0,5 pausa par match au sens du book (le porteur
+     immobile, ballon < 1 m/s et corps < 1,5 m/s, ≥ 1,5 s ; réel 3-6 de 1,5-3,5 s), 18 fenêtres
+     immobiles de 0,6-2,5 s (p50 0,62 s), la tenue au lâcher p50 1,5 s : la temporisation
+     existait par le tempo et la barre calme, jamais comme DÉCISION. La loi (cfg.pausa,
+     pausa.js — pausaStep, ttpDe, engages ; l'accroche vit dans rondo-sim à l'adoption de
+     l'intention, la conduite se fige dans match-sim) : le porteur au calme — temps avant la
+     pression ttp = min sur les presseurs à ≤ 12 m de (distance − contact) / vitesse de
+     fermeture ≥ seuil, avec seuil = axe(tempo : posé 1,5 s → vif 2,0) × axe(tenue du rôle :
+     1,25 → 0,8) ÷ composureF —, dans la zone [55 ; 88] % du terrain, avec ≥ 2 adversaires
+     lancés vers le ballon (> 2 m/s) et UNE course partenaire en cours (≥ 0,5 s restantes) qui
+     n'est pas encore l'option, TIENT : aucune intention adoptée, la conduite figée (cible = soi,
+     touche 0,25). Il lâche quand la course devient l'option (servie), quand la pression arrive
+     (ttp < 0,7), quand la course meurt, ou à 2,5 s (expirée ; l'entrée exige hold ≤ holdMax −
+     1, l'expiration force à holdMax + 1). La pausa PERDUE (possession changée entre-temps) se
+     dissout sans événement. L'événement pausa porte durée, issue, gain (score de l'option à la
+     sortie / à l'entrée ; ≥ 1,15 = valeur produite — la condition du book qui sépare la pausa
+     de l'hésitation). Ce qui a été essayé et jeté : le seuil du book brut (1,3 / 1,8) → 9
+     pausas par match mais rompues à 0,3 s par la pression (les engagés arrivent) ; 1,8 / 2,3 →
+     1-2 par match ; retenu 1,5 / 2,0 avec la garde à 0,7 (hystérésis : on entre au calme, on
+     tient un peu dans la pression qui vient — la passe avant contact reprend à la sortie) ; une
+     pausa de 204 s au journal : la pausa survivait à la perte de balle (dissoute désormais).
+     Mesuré APRÈS : (4 × 90 min) : événements pausa 6,75 / match — servie 2,5,
+     pression 2,0, course morte 1,5, expirée 0,75 (durées p50 : servie 0,3 s, course morte
+     1,35, expirée 2,4) ; les pausas au sens du book (porteur immobile ≥ 1,5 s) 0,5 → 2,25 /
+     match (réel 3-6 : à la marge basse — la course servable vient vite, la pausa longue est
+     celle qui attend une course qui meurt), toutes au milieu du terrain, 2-3 adversaires lancés,
+     la vitesse du porteur p50 0 m/s pendant la tenue. Jumeau : pausa null = HEAD au bit (81cbd2dc24fa22b0 /
+     91568776e30e054d — le défaut du 259, relu par git stash). Banc : verify-match11 bloc 253
+     (index 155 : fixture — porteur au calme dans le tiers adverse, ttp ∞, deux adversaires
+     lancés, un partenaire en course : il tient, tient encore à +0,6 s, lâche quand la course
+     devient l'option (« servie », gain 1,4, valeur), le presseur qui arrive rompt
+     (« pression ») ; sabotage pausa null : aucune tenue — la fixture fait avancer st.hold avec st.t, sinon la
+     pausa se croit perdue). BANC COMPLET (final253.sh, 8 shards + 25 annexes) : 282 ✓ / 7 ✗ aux
+     shards et 573 ✓ / 5 ✗ aux annexes au premier passage. Mondes déplacés par la clé, épinglés
+     pausa null DATÉ 253 après preuve verte à HEAD~ (worktree 22c35d7, le sceau 259) :
+     verify-match11 blocs 22 « le sabotage de l'allure » (p50 8 c. ≥ 10), 83 « lot 170 le corps
+     ouvert » (62° c. épinglé 62° − 8), 138 « le couloir à ≥ 3 corps » (38,1 % c. sans 46,9 ×
+     0,8) ; verify-scan (Jordet : 1 saccade pendant une frappe). verify-identification REGELÉ
+     DATÉ 253 (la règle du 252) : 17 → 19 signatures — perdue DC A|profondeur ; gagnées DC
+     B|profondeur, DC C|appel, MDC A|appel. Isolés après épingles : blocs 22 2/0, 83 3/0, 138
+     2/0, 155 1/0, bloc 1 seul 0,46 ms/step ; annexes scan 5/0, identification 1/0. Rouges
+     hérités, nommés : 246d ; lot 135 « les cibles ne tremblent plus » (bloc 66) et lot 142 « la
+     semelle à sa place » (bloc 73, sabotage 17 ≥ 18) — ROUGES À HEAD en worktree, apparus au
+     259 sans avoir été nommés (les shards 4-7 du 259 n'avaient pas été relus après leurs
+     épingles : dette de méthode, réglée ici) ; verify-loi12 « le mur se tient » ; verify-
+     expulsion « le corps sort et reste ». La sonde vit dans scripts/book/sonde-253.mjs.- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,

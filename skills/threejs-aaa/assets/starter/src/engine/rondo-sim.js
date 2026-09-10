@@ -965,8 +965,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
         const dosR = st.full && cfg.retournement && !engagementCall && choice && !choice.cross && choice.style !== 'lofted' && !st.restart && st.phase === 'carry' && !pressCall && !jeteCall && st.players[choice.to.id]
           && (() => { const to = st.players[choice.to.id]; if ((to.p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) > -2) return false; let dA = Math.atan2(to.p[2] - c.p[2], to.p[0] - c.p[0]) - c.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; return Math.abs(dA) > (cfg.retournement.cap ?? 1.75); })();
         if (dosR) { if (c._retour) c._retour.to = choice.to.id; else c._retour = { to: choice.to.id, t: st.t }; } else if (c._retour) c._retour = null;   // le chronomètre part de la PREMIÈRE image dos (un receveur qui change ne le réarme pas — l'engagement attendait 7,7 s)
-        const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2);
-        if (!attendR && !reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
+        const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2); const pausaNow = st.full && cfg.pausa && !st.restart ? pausaStep(st, c, cfg, choice) : false;   // LA PAUSA (253, pausa.js) : le porteur TIENT pour la course qui vient
+        if (!pausaNow && !attendR && !reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;
@@ -1246,4 +1246,4 @@ function hullArea(pts) {
 }
 
 export { predictPath };
-import { hyp } from './hyp.js'; import { enPorte } from './movement.js'; import { presseurArrive } from './pression.js';
+import { hyp } from './hyp.js'; import { enPorte } from './movement.js'; import { presseurArrive } from './pression.js'; import { pausaStep } from './pausa.js';
