@@ -10563,7 +10563,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      épingles : dette de méthode, réglée ici) ; verify-loi12 « le mur se tient » ; verify-
      expulsion « le corps sort et reste ». La sonde vit dans scripts/book/sonde-253.mjs.
      Sceau : commit c937ac9, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
-     Rondo servi = construit).- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+     Rondo servi = construit).
+- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
