@@ -10450,6 +10450,68 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      La sonde vit dans scripts/book/sonde-257.mjs.
      Sceau : commit 74641fd, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit).
+- 334: L'ORTEIL ET LA COURSE QUI TRAVERSE (259 — « l'épaule du dernier défenseur » : Modèle 12
+     §1.2 le point du corps sans squelette, §2 l'auto-limitation ; Bible 09 §4.1 la fenêtre à
+     l'épaule, Van Nistelrooy ; Référentiel 10 A08). Sonde AVANT (4 × 90 min) : 0,75 hors-jeu
+     sifflé par match (réel 3,1-4,5) ; 65 « photos » par match (un coéquipier hors-jeu au
+     départ du ballon — jamais servi) ; 480 appels profonds par match (le budget de course,
+     lot transversal), 33 % servis ; le coureur servi est à 8,4 m EN JEU au départ du ballon
+     (p10 2,3), l'appel part 1,0 s avant la frappe, le point visé est 5,5 m AVANT la ligne :
+     la passe « en profondeur » se joue devant la ligne, jamais derrière — parce que le dart
+     s'arrêtait à 0,15 m de la ligne (dartAdv = min(off.adv − 0,15, …) : LA LIGNE COLLANTE,
+     l'erreur 1 du book) et que la photo lisait le centre du corps. La loi (cfg.horsJeu,
+     offside.pointCorps / horsJeuTente, strike-sim la photo, match-sim l'appel) : (1) L'ORTEIL —
+     la photo de la Loi 11 lit la partie du corps la plus avancée : une capsule, tronc 0,2 m +
+     l'extension du pied avant foulee 0,3 × min(1, v/8) × |sin(2π × 2,2 t)| pour celui qui
+     court vers le but (l'attaquant vers le but adverse, le défenseur vers le sien — sa ligne
+     recule d'autant) ; la phase de foulée est analytique en t (le piège de Nyquist du book :
+     jamais reconstruite de deux ticks) ; le cerveau du passeur juge toujours le centre —
+     l'écart est le hors-jeu d'un orteil. (2) LA COURSE TRAVERSE : le dart va audela 4 m
+     derrière la ligne, le passeur sert le coureur tant qu'il est en jeu, la frappe le juge.
+     (3) L'APPEL DE L'ÉPAULE : la pointe posée sur l'épaule (240d) prend 2,5 m de recul
+     (l'élan) et part quand le porteur est prêt (posé, à ≤ 28 m), à ≤ 3 m de la ligne, dans
+     l'axe (|z| < 14), 12 m d'espace derrière — hors créneau d'équipe, hors cooldown, hors
+     couloir (cadence 12 s ÷ otbF). (4) LA TENTATIVE (Loi 11 (b) : interférer) : le
+     photographié qui arrive à ≤ 1,2 m du ballon en vol est sifflé sans attendre son pied.
+     Ce qui a été essayé et jeté : l'orteil + la traversée seuls → 1,5 hors-jeu (le coureur
+     servi reste à 9 m de la ligne : c'est l'appel qui part de trop loin) ; l'épaule à 0,6 m
+     (le 9 haut du 240d) → 0 servi (il franchit avant que le passeur décide : le recul est
+     l'élan) ; le sifflet au seul toucher → 1,75 (le gardien ramasse, l'interception
+     efface : la tentative double) ; cadence 8 s → 121 appels d'épaule par match (12 s :
+     74). Mesuré APRÈS (8 × 90 min, tente
+     1,5, recul en max) : hors-jeu 5,0 / match ; tente 1,2 : 3,6 (8 × 90 min). Le banc a nommé
+     le dernier réglage : verify-roles « la profondeur est un rôle » rougissait parce que le
+     recul en max(marge de rôle, 2,5) effaçait le 9 haut du polyvalent — le recul devient
+     ADDITIF (le rôle survit : 9 haut 3,1 m, polyvalent 4,5, décrocheur 8,5) et la porte de
+     l'épaule passe à 5 m. Au sceau (4 × 90 min) : hors-jeu 3,75 / match (réel 3,1-4,5 ; avant
+     0,75), appels d'épaule 90 / match, 14,5 servis, le coureur servi de l'épaule à +2,5 m de
+     la ligne au départ (p10 0 : le brinkmanship du book, −0,3 à +0,3 chez l'élite — le
+     passeur sert tôt) ; les appels profonds servis d'ailleurs restent à 8,5 m (leur départ
+     est le lot du budget de course). Jumeau : horsJeu null = HEAD au bit (628093125f4f1940 /
+     3eebf9c22a1d47c5). Banc : verify-match11 bloc 259 (index 154 : la loi pure de la capsule,
+     la photo — centre à 17,9 / ligne 18, pris d'un orteil sous la clé, pas sans, le cerveau ne
+     refuse pas —, la tentative sifflée). BANC COMPLET (final259.sh, 8 shards + 25 annexes) : 275 ✓ / 13 ✗ aux
+     shards et 553 ✓ / 11 ✗ aux annexes au premier passage — la Loi 11 qui existe déplace
+     beaucoup de flux. Mondes déplacés par la clé, épinglés horsJeu null DATÉ 259 après preuve
+     verte à HEAD~ (worktree 3a78940, le sceau 257) : verify-match11 blocs 8 « la course
+     traverse la frappe » (l'élan retenu 82/148), 16 « la pose figée » (17 % ≥ vivant + 10),
+     27 « lot 96 la bande arrière » (sabotage 8,9 c. vivant × 1,5), 59 « lot 128 le through »
+     (9/17 conservés), 71 « lot 140 la tranchante » (35 ruptures sans tranchant : l'épaule
+     part hors créneau), 129 « le taux d'arrêt » (77 c. 93 − 8), 135 « le pivot en relance
+     basse » (7,2 m devant), 142 « lot 244b la grille » (pertes 134 c. 111 × 1,15), 143 « lot
+     244d le contre-emploi » (10 tirs c. 4), 144 « lot 245 le flux » (vraie sortie 55 %) ;
+     verify-attributes (152/158 la gradation, 160 le pressing cohérent : traversées 10,1 % c.
+     ≤ 8, 157 le pique), verify-contact (1 chute pour 6 fautes), verify-remises × 4 (le
+     lanceur : bassin −0,34 m, face 16°). verify-identification REGELÉ DATÉ 259 (la règle du
+     252, sur le moteur FINAL du sceau — un premier regel lu sur un moteur intermédiaire a été
+     refait) : 16 → 17 signatures — perdues DC B|profondeur, LAT C|appel, LAT D|largeurR, LAT
+     D|profondeur, LAT A|appel, LAT D|appel ; gagnées MDC B|profondeur, MO A|tenue, MDC B|appel,
+     MDC C|largeurR, MDC C|appel, AIL A|largeurR, AV A|largeurR. Isolés après épingles : les dix
+     blocs verts (8 1/0, 16 2/0, 27 2/0, 59 1/0, 71 1/0, 129 2/0, 135 2/0, 142 2/0, 143 2/0,
+     144 2/0), bloc 1 seul 0,43 ms/step ; annexes roles 14/0, contact 25/0, remises 36/0,
+     identification 1/0, attributes 27/0 (l'épingle du 160 vit sur la cfg du flux, ligne 237 — deux épingles posées d'abord sur les mauvaises cfg ont été retirées). Rouges hérités, nommés : 246d ; verify-loi12
+     « le mur se tient » ; verify-expulsion « le corps sort et reste ». La sonde vit dans
+     scripts/book/sonde-259.mjs.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

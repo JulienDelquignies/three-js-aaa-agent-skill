@@ -11,7 +11,7 @@
 | A05 | Seconds avertissements / match | 0,12 | **≈ 1,0** → **≈ 0** au 257 (la retenue × 0,55 et la réticence + 0,25) | sous la cible (257) |
 | A06 | Penalties / match | 0,25-0,30 | **0,5** (1 sur 2 matchs) | à mesurer |
 | A07 | Penalties pour main | 3-42 % | — (pas de main) | absent |
-| A08 | Hors-jeu / match | 3,1-4,5 | **1,0** (Bible 03) ; 0,5 par équipe (Bible 10) | réfuté × 4 |
+| A08 | Hors-jeu / match | 3,1-4,5 | **1,0** → **3,75** au 259 (4 × 90 min au sceau ; 3,6 sur 8 × 90 min au réglage précédent) | tenu (259) |
 | A09-A12 | OFR 0,16 / match ; 85 % sans OFR ; 95 % de renversement ; 60 / 21 / 19 | | — (pas de VAR) | absent |
 | A13 | Durée totale | 98-102 min | **≈ 95,3 min** (5 400 + 318 s) | proche par le bas |
 | A14 | Temps additionnel total | 8-12 min | **5,3 min** (161 + 157 s) | réfuté |
@@ -24,5 +24,5 @@
    de la faute (glissé par derrière, main, anti-jeu) doit porter le carton.
 2. **Le temps du match** (A13-A15 ; Bible 14 lot 3, Modèle 12 lot 3) : 84 → 56 % en jeu, 5 → 8-12 min de temps
    additionnel, 95 → 100 min de match.
-3. **Le hors-jeu qui existe** (A08 ; Bible 03, Bible 10 T11, le 259) : 1 → 3-4,5 par match.
+3. **Le hors-jeu qui existe** (A08 ; Bible 03, Bible 10 T11, le 259 — SCELLÉ 334) : 1 → ~4 par match.
 4. **La main et le VAR** (A07, A09-A12 ; Modèle 12 lot 5) — après 1-3.

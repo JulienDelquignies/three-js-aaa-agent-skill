@@ -18,7 +18,7 @@ import { formationSpots, checkFormation, premierOffensif, blocFor } from '../ass
 import { evadeSpot, choosePass } from '../assets/starter/src/engine/rondo.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, playMatch, matchInternals } from '../assets/starter/src/engine/match-sim.js';
 import { couloirDe, ouvrirRegistre, placerCouloir, tenirDemiEspace, dansOmbre } from '../assets/starter/src/engine/couloirs.js';
-import { checkOffside, offsideLine } from '../assets/starter/src/engine/offside.js';
+import { checkOffside, offsideLine, pointCorps, horsJeuTente } from '../assets/starter/src/engine/offside.js';
 import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 import { tackleWindow, accrocheP, tacleDegage, slideTackleStep } from '../assets/starter/src/engine/duel.js';
 import { tryCross, tryShot } from '../assets/starter/src/engine/shooting.js';
@@ -455,7 +455,7 @@ if (__bloc()) {
     const W = 42; let net = 0, tot = 0;
     for (const seed of [1, 3, 2, 4]) {   // 2 → 4 graines DATÉ A10 (le sabotage à 55 % pour 55,6 exigés : un point, à deux graines)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, passation: null, ...cfgExtra });   // passation null DATÉ 252 : vert à HEAD, l'élan retenu 70/137 c. 56 sous la remise au pivot (bord de Poisson)
+      const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la course de frappe remangée par l'orteil et la course qui traverse (36 stops sur 134 ≤ 50 % tient, l'élan retenu 82/148 bascule) — la clause mesure la foulée de frappe, pas la Loi 11 */, shotRange: 20, passation: null, ...cfgExtra });   // passation null DATÉ 252 : vert à HEAD, l'élan retenu 70/137 c. 56 sous la remise au pivot (bord de Poisson)
       const hist = new Map();
       let evCount = 0;
       for (let i = 0; i < 180 * 60; i++) {
@@ -903,7 +903,7 @@ if (__bloc()) {
     let still = 0, frames = 0, geles = 0, vols = 0, vol = null;
     for (const seed of [1, 3, 5, 7]) {   // 2 → 4 graines DATÉ 237 (25 c. 26 : un point, un tirage)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ hommeLibre: false, shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la pose figée remangée par la course qui traverse (17 % ≥ vivant + 10) — la clause mesure la marche au rendez-vous, pas la Loi 11 */, hommeLibre: false, shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         const rec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
@@ -1375,7 +1375,7 @@ if (__bloc()) {
     // jeu, [2,3,5] ne rendait plus que 59-101 échantillons d'aile — [1,2,4] en rend 101-135)
     for (const seed of [1, 2, 4, 3, 5, 6]) {   // 3 → 6 graines DATÉ A9 (sabotage 10,4 pour ≥ 10,65 dans le monde des remises à la main, 16,2 sans la clé — le rapport × 1,5 vit au bord à 3 graines)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...over });
+      const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la bande arrière remangée par l'appel de l'épaule (sabotage 8,9 c. vivant × 1,5) — la clause mesure la zone, pas la Loi 11 */, shotRange: 20, ...over });
       for (let i = 0; i < 200 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 20 !== 0) continue;
@@ -2715,7 +2715,7 @@ if (__bloc()) {
     let th = 0, thOk = 0;
     for (const seed of [1, 2, 4, 3, 5, 6]) {   // 3 → 6 graines DATÉ A10 (4 through ≥ 6 à 3 graines dans le monde du contact et des remises au pied ; 8 sans leurs clés — Poisson à 4)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ carton: null /* carton null DATÉ 257 : vert à HEAD~ (13/17 conservés au 258b en worktree), le dosage remangé par le carton qui juge la nature (10/19 — les avertis se retiennent, le flux bouge) — la clause mesure la mène, pas le carton */, contact: null, porteAnticipe: null, remisesPied: null,  contreZones: false, couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 128 hors contres (5 through sur 3 : Poisson)
+      const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le dosage du through remangé par la course qui traverse (9/17 conservés) — la clause mesure la mène, pas la Loi 11 */, carton: null /* carton null DATÉ 257 : vert à HEAD~ (13/17 conservés au 258b en worktree), le dosage remangé par le carton qui juge la nature (10/19 — les avertis se retiennent, le flux bouge) — la clause mesure la mène, pas le carton */, contact: null, porteAnticipe: null, remisesPied: null,  contreZones: false, couvert: false, contrePress: false, avantContact: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 128 hors contres (5 through sur 3 : Poisson)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3164,7 +3164,7 @@ if (__bloc()) {
     let rupts = 0, servies = 0;
     for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ A9 (2 servies ≥ 3 à 3 graines dans le monde des remises à la main ; 3 sans la clé — Poisson à 2)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contrePress: false, ...ISO171, shotRange: 20, ...over });
+      const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le sabotage « la rupture myope » remangé par l'appel de l'épaule (35 ruptures sans tranchant : l'épaule part hors créneau) — la clause mesure la tranchante, pas la Loi 11 */, contrePress: false, ...ISO171, shotRange: 20, ...over });
       let nEv = 0, pend = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5239,7 +5239,7 @@ if (__bloc()) {
   const S = (() => { const { ball, v } = tir(22, 18); return keeperDecide(pitch, 1, me, ball, v, 0.3, KEEPER, true, 5); })();
   ok(`lot 232b — LE PAS CHASSÉ DU GARDIEN (vol 1,2 s : ${A.mode} vers z ${A.spot?.z?.toFixed(2)} (= 2,80), pasChasse ${A.pasChasse} ; 0,7 s : ${B.mode} ${B.pasChasse} ; 0,6 s : ${C.mode} ; clé absente : ${S.mode} vers z ${S.spot?.z?.toFixed(2)} ≠ 2,80)`,
     A.mode === 'poste' && Math.abs(A.spot.z - 2.8) < 1e-6 && A.pasChasse === true && B.mode === 'poste' && B.pasChasse === true && (C.mode === 'dive' || C.mode === 'battu') && S.mode === 'poste' && Math.abs(S.spot.z - 2.8) > 0.5);
-  const flux = (over) => { const cfg = matchCfg({ contact: null, porteAnticipe: null, remisesPied: null,  couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
+  const flux = (over) => { const cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le taux d'arrêt remangé par l'appel de l'épaule (77 c. 93 − 8) — la clause mesure le gardien, pas la Loi 11 */, contact: null, porteAnticipe: null, remisesPied: null,  couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {   /* 6 → 12 graines DATÉ 237 (4 arrêts + buts sur 6) */ const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type === 'arrêt') arr++; else if (ev.type === 'but') buts++; } } }
@@ -5424,12 +5424,12 @@ if (__bloc()) {
   const { sortieBalle } = await import('../assets/starter/src/engine/cpa.js');
   const { tac, axe } = await import('../assets/starter/src/engine/tactics.js');
   const { mapPostes } = await import('../assets/starter/src/engine/formation.js');
-  const cfgS = matchCfg({ shotRange: 20 }), role = () => ({ arbitre: { conduite: 1 } });
+  const cfgS = matchCfg({ shotRange: 20, horsJeu: null /* horsJeu null DATÉ 259 : le flux du pivot (7,2 m devant c. sans 9,7 − 4) remangé par l'appel de l'épaule — vert à HEAD~ (worktree 3a78940) */ }), role = () => ({ arbitre: { conduite: 1 } });
   const ids = mapPostes('433'), cb = ids[1], fb = ids[0];
   const mk = (post, x, foe, over = {}, sty = 0.5) => { const st = { full: true, t: 1, tactics: [{ formation: '433', style: sty }, { formation: '433', style: sty }] }; const p = { id: 3, team: 0, post, p: [x, 0, 2], skill: null }; if (over.x0 != null) st._conduc = { id: 3, x0: over.x0, z0: 2, tient: true };
     const r = conduccion(st, over.cfg ?? cfgS, { p, atk: 0, foeGuard: foe, sg: 1, tac, axe, role }); return { r, tient: st._conduc?.tient ?? false }; };
   const A = mk(cb, -20, 8), B = mk(cb, -20, 3), Cc = mk(cb, -20, 8, { x0: -32.5 }), D = mk(cb, -20, 8, { x0: -34 }, 0), E = mk(fb, -20, 8), F = mk(cb, -20, 8, { cfg: matchCfg({ conduc: false }) });
-  const st3 = makeMatch({ full: true, seed: 3 }); const cfg3 = matchCfg({ shotRange: 20 }); for (let i = 0; i < 60; i++) matchStep(st3, 1 / 60, cfg3);
+  const st3 = makeMatch({ full: true, seed: 3 }); const cfg3 = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le pivot en relance basse remangé par l'appel de l'épaule (7,2 m devant c. sans 9,7 − 4) — la clause mesure la salida, pas la Loi 11 */, shotRange: 20 }); for (let i = 0; i < 60; i++) matchStep(st3, 1 / 60, cfg3);
   const og = st3.pitch.ownGoal(0), sg = -Math.sign(og.x || 1); st3.ball.restart([og.x + sg * 8, 0.11, 2], { cause: 'sortie-de-but' }); st3.restart = null;
   const pivotP = st3.players.find((q) => q.team === 0 && q.post === ids[4]);
   const opp = st3.players.filter((q) => q.team === 1 && !q.keeper).slice(0, 4); opp.forEach((q, k) => { q.p[0] = og.x + sg * (14 + k * 2); q.p[2] = (k - 1.5) * 6; });
@@ -5788,7 +5788,7 @@ if (__bloc()) {
   const flux = (f, over) => {
     const o = { deb: {}, appels: {}, pivots: {}, ligne: 0, img: 0, pertes: 0 };
     for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ 246 (appels du 9 en 4-2-3-1 : 20 ≥ hier 22 à 3 graines — Poisson à 20 ; le 245 l'avait laissé passer : shard relu avant sa fin)
-      const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ carton: null /* carton null DATÉ 257 : vert à HEAD~ (le 9 du 4-2-3-1 à ≥ 44 appels au 258b en worktree), le flux remangé par le carton qui juge la nature (32 appels du 9 — les avertis se retiennent) — la clause mesure la grille, pas le carton */, shotRange: 20, ...over });
+      const st = makeMatch({ full: true, seed, tactics: [{ formation: f }, { formation: '433' }] }), cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (2/0 au 257 isolé), les pertes du 4-2-3-1 remangées par la course qui traverse (134 c. 111 × 1,15) — la clause mesure la grille, pas la Loi 11 */, carton: null /* carton null DATÉ 257 : vert à HEAD~ (le 9 du 4-2-3-1 à ≥ 44 appels au 258b en worktree), le flux remangé par le carton qui juge la nature (32 appels du 9 — les avertis se retiennent) — la clause mesure la grille, pas le carton */, shotRange: 20, ...over });
       let prev = -1, cur = 0;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); const tm = st.possession?.team ?? -1;
@@ -5834,7 +5834,7 @@ if (__bloc()) {
   const flux = (m) => {
     const o = { tirsContre: 0, passes: 0, issues: 0 };
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
-      const st = makeMatch({ full: true, seed, squads: [sqAt(m), sqAt('propre')] }), cfg = matchCfg({ shotRange: 20 });
+      const st = makeMatch({ full: true, seed, squads: [sqAt(m), sqAt('propre')] }), cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le contre-emploi remangé par la course qui traverse (10 tirs c. 4) — la clause mesure les postes, pas la Loi 11 */, shotRange: 20 });
       const { trace } = playMatch(st, 300, { cfg });
       for (const e of st.events) { const t = st.players[e.by]?.team; if (e.type === 'shot' && t === 1) o.tirsContre++; if (e.type === 'pass' && t === 0) o.passes++; }
       o.issues += __structurel(checkMatch(st, trace, cfg).issues).length;
@@ -5879,7 +5879,7 @@ if (__bloc()) {
   const geo = (over) => {
     let act = 0, img = 0, vraies = 0;
     for (const seed of [1, 2, 3]) {
-      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ finition: null, contre: null /* contre null DATÉ 258b : vert à HEAD~ (97 % ≥ 90 au 258 isolé), la vraie sortie remangée par le corps qui contre (60 %) — la clause mesure l'oblique, pas le contre */, ...over });   // finition null DATÉ 258 : vert à HEAD (97 % ≥ 90 au 252), la vraie sortie remangée par les tirages de l'échelle de finition (88 %) — la clause mesure l'oblique, pas le tir
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la vraie sortie remangée par la course qui traverse (55 % c. 90) — la clause mesure l'oblique, pas la Loi 11 */, finition: null, contre: null /* contre null DATÉ 258b : vert à HEAD~ (97 % ≥ 90 au 258 isolé), la vraie sortie remangée par le corps qui contre (60 %) — la clause mesure l'oblique, pas le contre */, ...over });   // finition null DATÉ 258 : vert à HEAD (97 % ≥ 90 au 252), la vraie sortie remangée par les tirages de l'échelle de finition (88 %) — la clause mesure l'oblique, pas le tir
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); if (i % 10) continue;
         const def = st.possession.team >= 0 ? 1 - st.possession.team : -1; if (def < 0) continue; img++;
@@ -6140,6 +6140,43 @@ if (__bloc()) {
   const K = matchCfg({}).carton;
   ok(`lot 257 — LE CARTON JUGE LA NATURE (fixtures, 200 tirages) : P(jaune) accrochage arraché ${accA.j.toFixed(2)} < accrochage ${acc.j.toFixed(2)} ≤ 0,25 < charge par derrière ${charge.j.toFixed(2)} < glissé par derrière ${gliD.j.toFixed(2)} ≥ 0,6 ; tacle debout ${deb.j.toFixed(2)} ; la transition PROMETTEUSE (lancée, 2 couvrants) ${prom.j.toFixed(2)} ≥ acc + 0,3 ; l'averti sur la charge ${deja.j.toFixed(2)} < ${charge.j.toFixed(2)} (réticence) ; DOGSO (lancé, aucun couvrant, 25 m) : rouge direct ${dogso.r.toFixed(2)} = 1, UN couvrant : rouge ${couvert.r.toFixed(2)} = 0 (la géométrie lit les corps) ; DOGSO dans la surface sur un tacle : jaune ${dogsoBox.j.toFixed(2)} = 1, rouge ${dogsoBox.r.toFixed(2)} = 0 ; sabotage « carton null » : la 1ʳᵉ faute ne carte pas (${sab.j.toFixed(2)} = 0 — la récidive d'hier)`,
     accA.j < acc.j && acc.j <= 0.25 && acc.j < charge.j && charge.j < gliD.j && gliD.j >= 0.6 && prom.j >= acc.j + 0.3 && deja.j < charge.j && dogso.r === 1 && couvert.r === 0 && dogsoBox.j === 1 && dogsoBox.r === 0 && sab.j === 0 && K.tally > 0);
+}
+
+// ---------------------------------------------------------------- lot 259 : L'ORTEIL ET LA COURSE
+// QUI TRAVERSE (cfg.horsJeu — la carte du book, Modèle 12 §1.2-§2, Bible 09 §4.1 : 3,1-4,5 hors-jeu par match)
+if (__bloc()) {
+  // (a) la loi pure : la capsule — le tronc pour l'immobile, le tronc + le pied avant pour celui qui court vers le but,
+  // rien vers l'arrière ; la ligne du défenseur qui recule RECULE d'autant. (b) la photo : un coureur dont le CENTRE est
+  // 10 cm en jeu au départ du ballon est pris d'un orteil sous la clé, pas sans. (c) la tentative : le photographié qui
+  // arrive au ballon est sifflé sans son pied ; sabotage null : muet.
+  const K = matchCfg({}).horsJeu;
+  const st0 = makeMatch({ full: true, seed: 5 }); st0.t = 0.113;
+  const im = { id: 3, v: [0, 0] }, av = { id: 3, v: [7.5, 0] }, ar = { id: 3, v: [-7.5, 0] };
+  const pIm = pointCorps(st0, im, 1, K, +1), pAv = pointCorps(st0, av, 1, K, +1), pAr = pointCorps(st0, ar, 1, K, +1), pDef = pointCorps(st0, ar, 1, K, -1);
+  const photo = (over) => {
+    const st = makeMatch({ full: true, seed: 5 }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) });
+    const sgn = -st.pitch.ownGoal(0).sign;
+    const c0 = st.players.find((p) => p.team === 0 && p.post === 5), rec = st.players.find((p) => p.team === 0 && p.post === 8);
+    c0.p[0] = 0; c0.p[2] = 0; c0.v = [0, 0];
+    for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = sgn * (q.keeper ? 51 : 18); q.v = [0, 0]; }
+    for (const q of st.players.filter((q) => q.team === 0 && q !== c0 && q !== rec)) q.p[0] = -sgn * 8;
+    st.ball.restart([0, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c0.id);
+    st.possession = { team: 0, carrier: c0.id }; st.phase = 'carry'; st.hold = 1.4; st.lastTouch = 0;
+    const pin = () => { rec.p[0] = sgn * 17.9; rec.p[2] = 4; rec.v = [sgn * 7, 0]; for (const q of st.players) if (q.team === 1) { q.p[0] = sgn * (q.keeper ? 51 : 18); q.v = [0, 0]; } };
+    pin();
+    const choice = { to: rec, lead: [sgn * 24, 0.11, 4], style: 'ground', lane: { margin: 3, open: true }, dist: 18 };
+    simInternals.beginPass(st, choice, cfg);
+    let off = null;
+    for (let i = 0; i < 90; i++) { pin(); matchStep(st, 1 / 60, cfg); if (st.pass && st.phase === 'flight') { off = st.pass.off ?? {}; break; } }
+    const pris = off != null && !!off[rec.id];
+    // la tentative : le photographié arrive au ballon en vol
+    let tente = false;
+    if (pris) { rec.p[0] = st.ball.p[0] + sgn * 0.8; rec.p[2] = st.ball.p[2]; const n0 = st.events.length; horsJeuTente(st, cfg); tente = st.events.slice(n0).some((e) => e.type === 'hors-jeu' && e.tente); }
+    return { off, pris, tente, deny: st.deny?.['hors-jeu'] ?? 0 };
+  };
+  const V = photo(null), N = photo({ horsJeu: null });
+  ok(`lot 259 — L'ORTEIL (loi pure) : immobile ${pIm.toFixed(2)} m = tronc ${K.tronc} ; vers le but à 7,5 m/s ${pAv.toFixed(2)} ∈ ]tronc ; tronc + foulee ${K.foulee}] ; à reculons ${pAr.toFixed(2)} = tronc (rien vers l'arrière) ; le défenseur qui recule ${pDef.toFixed(2)} > tronc (sa ligne recule d'autant) — ET LA PHOTO : le coureur dont le centre est 10 cm en jeu au départ (17,9 / ligne 18) est PRIS d'un orteil sous la clé (${V.pris}, refus du cerveau ${V.deny} = 0 : le cerveau juge le centre), pas sans (${N.pris}) ; la TENTATIVE : le photographié à 0,8 m du ballon en vol est sifflé (${V.tente})`,
+    Math.abs(pIm - K.tronc) < 1e-9 && pAv > K.tronc && pAv <= K.tronc + K.foulee + 1e-9 && Math.abs(pAr - K.tronc) < 1e-9 && pDef > K.tronc && V.pris === true && V.deny === 0 && N.pris === false && V.tente === true);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

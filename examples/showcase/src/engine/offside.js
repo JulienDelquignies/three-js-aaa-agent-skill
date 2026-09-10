@@ -20,12 +20,25 @@
  * EXPULSÉ ne compte PAS (loi réelle aussi — il n'est plus sur le terrain : un rouge posté
  * derrière sa ligne de touche qui ferait la ligne serait un fantôme de Loi 11).
  */
-export function offsideLine(st, team) {
+/** L'ORTEIL (259, cfg.horsJeu — la carte du book, Modèle 12 §1.2 « le point du corps sans squelette ») : la Loi 11 se
+ *  juge sur la partie du corps la plus avancée (tête, tronc, pieds — pas les bras), pas sur le centre. Sans rig, une
+ *  CAPSULE : le tronc (rayon tronc m) + l'extension du pied avant, ℓ(v) × |sin φ| avec φ la phase de foulée intégrée
+ *  analytiquement (2π f t, f la cadence de foulée — jamais reconstruite de deux ticks : le piège de Nyquist). L'attaquant
+ *  (sens +1) porte son point VERS le but adverse quand il y court ; le défenseur (sens −1) porte le sien vers son but
+ *  quand il y recule. C'est cette oscillation qui fabrique les hors-jeu « d'un orteil » du réel — sans bruit artificiel. */
+export function pointCorps(st, q, sgn, K, sens) {
+  const vx = (q.v?.[0] ?? 0) * sgn * sens, v = Math.hypot(q.v?.[0] ?? 0, q.v?.[1] ?? 0);
+  const court = vx > 0.5 ? Math.min(1, v / 8) : 0;
+  const phi = 2 * Math.PI * (K.freq ?? 2.2) * (st.t ?? 0) + (q.id ?? 0) * 1.7;
+  return (K.tronc ?? 0.2) + (K.foulee ?? 0.3) * court * Math.abs(Math.sin(phi));
+}
+
+export function offsideLine(st, team, K = null) {
   const sgn = -st.pitch.ownGoal(team).sign;
   let last = -Infinity, second = -Infinity;
   for (const q of st.players) {
     if (q.team === team || q.expulse) continue;
-    const v = q.p[0] * sgn;
+    const v = q.p[0] * sgn - (K ? pointCorps(st, q, sgn, K, -1) : 0);   // (259) la partie du corps la plus proche de SA ligne de but
     if (v > last) { second = last; last = v; }
     else if (v > second) second = v;
   }
@@ -34,9 +47,9 @@ export function offsideLine(st, team) {
 
 /** `p` (position monde, [x, …, z]) est-il en position de hors-jeu pour l'attaque de `team` ?
  *  La tolérance rend à l'attaquant le bénéfice du doute — c'est un jeu, pas une VAR au millimètre. */
-export function isOffside(st, team, p, tol = 0.05) {
-  const L = offsideLine(st, team);
-  return p[0] * L.sgn > L.adv + tol;
+export function isOffside(st, team, p, tol = 0.05, K = null, q = null) {
+  const L = offsideLine(st, team, K);
+  return p[0] * L.sgn + (K && q ? pointCorps(st, q, L.sgn, K, +1) : 0) > L.adv + tol;
 }
 
 /** Le contrat de la loi — les pièges classiques, jugés sur un monde synthétique. */
@@ -69,4 +82,20 @@ export function checkOffside(pitch) {
   st = mk([50, 12, 8], 0, 12.03);
   if (isOffside(st, 0, st.players[0].p)) issues.push('VAR au millimètre : ligne + 3 cm sifflé malgré la tolérance');
   return { ok: issues.length === 0, issues };
+}
+
+/** LA TENTATIVE (259, cfg.horsJeu.tente — Loi 11 (b) : l'infraction n'est pas seulement le toucher, c'est INTERFÉRER —
+ *  jouer ou tenter de jouer un ballon proche). Le photographié qui arrive à ≤ tente m du ballon en vol est sifflé
+ *  sans attendre son pied : le drapeau se lève, la remise suit (st._whistle, le même chemin que receive). */
+export function horsJeuTente(st, cfg) {
+  const K = st.full && cfg.offside ? cfg.horsJeu : null;
+  if (!K || !st.pass?.off || st.ball.owner != null || st.restart || st._whistle) return;
+  for (const id of Object.keys(st.pass.off)) {
+    const p = st.players[id];
+    if (!p || p.down > 0 || Math.hypot(p.p[0] - st.ball.p[0], p.p[2] - st.ball.p[2]) > (K.tente ?? 1.5)) continue;
+    st.events.push({ t: +st.t.toFixed(2), type: 'hors-jeu', by: p.id, at: st.pass.off[id], p: [+p.p[0].toFixed(2), +p.p[2].toFixed(2)], tente: true });
+    st._whistle = { p: [p.p[0], p.p[2]], team: p.team === 0 ? 1 : 0 };
+    st.pass.off = null;
+    return;
+  }
 }

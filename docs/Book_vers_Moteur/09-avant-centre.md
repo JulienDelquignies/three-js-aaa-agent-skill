@@ -51,8 +51,8 @@ Zone n'est pas nommée mais le tir y est concentré (71 % des tirs, 100 % des bu
 | T5 surcoût de la courbe | +3-16 % | absent (course droite) |
 | T6 CV de la distance à ≥ 25 km/h | 50-80 % | à instrumenter |
 | T7 récupérations hautes ; → tir | 7-8,5 ; 12-22 % | mesurable | **76,5 / match** (définition : tout changement de possession à < 40 m — le monde bascule 900 fois, ch. 01) ; **18 %** → tir ✓ |
-| T8 hors-jeu du 9 | 0,3-1,2 / 90 | mesurable, **réfuté** | **0,0** (1 hors-jeu par match pour les deux équipes) |
-| T9-T10 marge de la frontière ; séparation du contre-appel | | mesurables — à instrumenter sur `st.pass.off` |
+| T8 hors-jeu du 9 | 0,3-1,2 / 90 | tenu au 259 | **0,0** → ~0,5-1 pour la pointe (3,75 pour les deux équipes au 259) |
+| T9-T10 marge de la frontière ; séparation du contre-appel | | T9 mesuré au 259 : le coureur servi de l'épaule à +2,5 m au départ (p10 0 ; élite −0,3 à +0,3 — le passeur sert tôt) ; T10 à instrumenter |
 | T11 duplication de slot | ≤ 17 % | mesuré ch. 07 | 9 % ✓ |
 | T12 vitesse à l'arrivée du centre | ≥ 4 m/s dans 70 % | à mesurer |
 | T13 buts dedans / dehors ; conversion | 84-88 % ; 14-16 / 3-5 % | mesurable | **100 %** dedans ; **33 %** / **0 %** — la finition (258) |
@@ -72,7 +72,7 @@ Zone n'est pas nommée mais le tir y est concentré (71 % des tirs, 100 % des bu
 1. **Le budget de course** (T1, T6, ch. 07 T5, ch. 08 T17) : `RunLedger` — le 9 fait 1 090 bursts par match ; le
    sprint a un prix, la course non servie éteint l'engagement. C'est le lot transversal des attaquants, avec le profil
    locomoteur.
-2. **L'épaule et le service** (T8, T9, T1 ; le 259) : les appels référencés à la levée de tête, la marge sur la
+2. **L'épaule et le service** (T8, T9, T1 ; le 259 — SCELLÉ 334 : l'appel de l'épaule sur le porteur prêt, la course qui traverse, l'orteil) : les appels référencés à la levée de tête, la marge sur la
    ligne, 12-20 % de service en profondeur pure, 0,3-1,2 hors-jeu par 90 pour le 9.
 3. **La finition** (T13-T16 ; le 258) : conversion 33 → 15 %, 3,7 % hors surface, 50-75 % en une touche.
 4. **Le pressing du 9 comme suppression d'option** (T4, T5, PT1-8) : l'ombre projetée, la course courbe, les « non ».

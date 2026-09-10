@@ -38,7 +38,7 @@ additionnel ; l'arbitre faillible (erreurs selon la distance, asymétrie, charge
 | # | Cible (book) | Statut | Mesuré |
 |---|---|---|---|
 | 1 indépendance à la cadence | hors-jeu ± 2 % | à mesurer (Modèle 01 test 3 réfute déjà les tirs) |
-| 2-3 marge et non-collage | R² ≥ 0,02 ; σ ≥ 0,8 m | à instrumenter (`st.pass.off`) |
+| 2-3 marge et non-collage | R² ≥ 0,02 ; σ ≥ 0,8 m | mesurable au 259 : le coureur servi de l'épaule à +2,5 m (p10 0, p90 +4,8) — la marge disperse |
 | 4-6 erreurs de l'arbitre | 8:1 ; minimum 11-15 m ; × 1,4 | absents (arbitre infaillible) |
 | 7 sur-dispersion des fautes | | à mesurer |
 | 8 bouclage fautes / cartons | 5-7 par jaune ; 3-5 jaunes | tenu au 257 | **2,7** → **5,0** par jaune ; **8,5** → **4,0** jaunes / match |
@@ -55,7 +55,7 @@ additionnel ; l'arbitre faillible (erreurs selon la distance, asymétrie, charge
 1. **Le carton qui juge la nature** (le 257 — SCELLÉ 333 : S de nature, prometteur, DOGSO, ardoise, retenue ; test 8 ; Bible 15 lot 2) : la récidive n'est pas le seul critère, le
    tacle glissé rare, 3-5 jaunes par match.
 2. **Le hors-jeu comme capsule et comme infraction différée** (tests 1-3 ; Bible 03 « la ligne est une ligne »,
-   le 259) : la marge, l'auto-limitation, IP / IO / GA.
+   le 259 — SCELLÉ 334 : la capsule à l'orteil, la course qui traverse, l'appel de l'épaule, la tentative sifflée ; 0,75 → ~4 hors-jeu par match) : la marge, l'auto-limitation, IP / IO / GA (IO/GA et l'interpolation sub-tick restent à faire).
 3. **Le temps du match** (tests 11, 12, 15 ; Bible 14 lot 3, 16 lot 4) : 85-105 arrêts, le registre, le temps
    additionnel qui lit le score.
 4. **L'arbitre faillible** (tests 4-6, 9, 13) : erreurs par distance, avantage `PULL_BACK`, retenue.

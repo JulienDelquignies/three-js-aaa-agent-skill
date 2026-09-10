@@ -7,7 +7,7 @@ import { gauss } from './attributes.js';
 import { flightRace, interceptPoint, laneClearance, solvePass } from './ball-predict.js';
 import { BALL } from './ball.js';
 import { startGesture } from './gesture.js';
-import { isOffside, offsideLine } from './offside.js';
+import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { MOVE_TIMING } from './skills-sim.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
@@ -657,10 +657,11 @@ export function strikeNow(st, c, cfg) {
   // efface l'ardoise (le turnover tue st.pass). Dégagements et tirs portent la même photo — le
   // renvoi qui trouve un attaquant resté aux six mètres est LE hors-jeu classique.
   if (cfg.offside && st.full) {
-    const L = offsideLine(st, c.team);
+    const K = cfg.horsJeu ?? null;   // (259) la photo lit L'ORTEIL (offside.pointCorps) — le cerveau, lui, juge le centre : l'écart est le hors-jeu d'un orteil
+    const L = offsideLine(st, c.team, K);
     let off = null;
     for (const q of st.players) {
-      if (q.team !== c.team || q.id === c.id || q.keeper || q.p[0] * L.sgn <= L.adv + 0.05) continue;
+      if (q.team !== c.team || q.id === c.id || q.keeper || q.p[0] * L.sgn + (K ? pointCorps(st, q, L.sgn, K, +1) : 0) <= L.adv + 0.05) continue;
       (off ??= {})[q.id] = [+q.p[0].toFixed(2), +q.p[2].toFixed(2)];
     }
     if (off) st.pass.off = off;

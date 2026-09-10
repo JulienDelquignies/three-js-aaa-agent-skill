@@ -459,6 +459,13 @@ nomme : le rouge à la borne basse (le DOGSO rare parce que le battu accroche lo
 la retenue) — le tacle glissé rare (41 par équipe, Bible 15 §5.1) reste le lot du duel au sol. L'ordre : 259 → 253
 → 255 → 254, puis les transversaux.
 
+**259 — L'ORTEIL ET LA COURSE QUI TRAVERSE : SCELLÉ (334).** La photo de la Loi 11 lit une capsule (tronc + pied
+avant, phase de foulée analytique), la course de l'appel traverse la ligne au lieu de s'y coller, la pointe posée sur
+l'épaule prend un recul d'élan et part sur le porteur prêt, le photographié qui tente de jouer est sifflé. Mesuré :
+0,75 → 3,75 hors-jeu par match, le coureur servi de l'épaule à +2,5 m de la ligne au départ. Ce qu'il nomme : les
+appels profonds « d'ailleurs » partent de 9 m (le budget de course, transversal), et le coureur servi n'est pas
+encore reçu derrière la ligne (la passe se joue tôt). L'ordre : 253 → 255 → 254, puis les transversaux.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

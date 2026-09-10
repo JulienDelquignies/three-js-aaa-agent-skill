@@ -56,6 +56,6 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
    probabiliste et l'erreur de geste par distance — la courte à 90 %, la longue à 50.
 2. **Le type somme et la sélection calibrée** (tests 2, 9) : classes nommées, P_succ prédit et calé (log-odds), le
    journal les porte.
-3. **Le rendez-vous et la course avant la frappe** (tests 5, 6, 8 ter ; le 259, Bible 09 lot 2).
+3. **Le rendez-vous et la course avant la frappe** (tests 5, 6, 8 ter ; le 259 — SCELLÉ 334 pour l'appel de l'épaule et la course qui traverse ; le rendez-vous derrière la ligne reste à faire, Bible 09 lot 2).
 4. **La comptabilité des pertes** (tests 3, 3 bis ; Modèle 16 lot 1) : `LossCause` en vocabulaire Opta.
 5. **Le sous-dosage et le masque dos-au-but** (tests 4, 8 ; Bible 14 lot 5).

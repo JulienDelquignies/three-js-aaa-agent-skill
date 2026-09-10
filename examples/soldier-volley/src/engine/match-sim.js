@@ -1,7 +1,7 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne , bandeDuCentral, remettreAuPivot, hommeRemis, purgerPassation } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
@@ -739,17 +739,17 @@ function assignMatchJobs(st, cfg) {
           // …ET L'ATTAQUANT ANTICIPE (213d) : 5/20 diagonales tombaient l'instant où l'ailier lâchait (hold 0,62 = son minimum sous presse) — le vrai 9 part pendant que le ballon VOYAGE vers l'ailier large. La cible large : le ballon posé large, ou en vol vers un coéquipier large du tiers offensif.
           const volLarge = st.full && cfg.profondeurAvants?.diagonale && cfg.profondeurAvants.anticipe !== false && !carrier && st.pass && st.pass.to >= 0 && st.players[st.pass.to]?.team === atk && Math.abs(st.pass.lead[2]) > pitch.hz * 0.35 && st.pass.lead[0] * off.sgn > pitch.hx / 3;
           const diagPre = st.full && cfg.profondeurAvants?.diagonale && Math.abs(p.p[2]) < 12 && off.adv - p.p[0] * off.sgn < 8 && (p._diagCd ?? -1) <= st.t
-            && ((Math.abs(st.ball.p[2]) > pitch.hz * 0.35 && st.ball.p[0] * off.sgn > pitch.hx / 3) || volLarge);
+            && ((Math.abs(st.ball.p[2]) > pitch.hz * 0.35 && st.ball.p[0] * off.sgn > pitch.hx / 3) || volLarge);   const epau = st.full && cfg.horsJeu?.epaule && posé && off.adv - p.p[0] * off.sgn <= (cfg.horsJeu.pres ?? 3) && off.adv < pitch.hx - (cfg.horsJeu.espace ?? 12) && Math.abs(p.p[2]) < (cfg.horsJeu.axe ?? 14) && (p._epauleCd ?? -1) <= st.t && d2(st.ball.p, p.p) <= (cfg.horsJeu.portee ?? 28);   // (259) L'APPEL DE L'ÉPAULE : la pointe posée sur l'épaule du dernier défenseur part quand le porteur est prêt — hors créneau, hors cooldown, hors couloir (c'est la frappe qui la juge)
           if ((p._runT ?? -1) <= st.t && (posé || (diagPre && volLarge))
-            && (diagPre || (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) - (jeteHot ? (cfg.fixe.appel ?? 4) : 0) - (st.full && cfg.appelNote ? ((p.skill?.otbF ?? 1) - 1) * (cfg.appelNote.avance ?? 4) : 0) <= st.t)   // …ET LE BON VOIT LE CRÉNEAU S'OUVRIR (210, cfg.appelNote — dette 198 : le créneau d'équipe se prenait à l'ORDRE de boucle, ratio 90/20 mesuré 1,22 pour un réel 2-3). L'avance × (otbF − 1) : l'élection continue par anticipation ; otbF 1 = 0, l'hier
-            && (diagPre || (p._appelCd ?? -1) <= st.t + (jeteHot ? 3 : 0))) {
+            && (diagPre || epau || (st._appelAt?.[atk] ?? -1) - (transOff ? axe(tac(st, atk).transition, 0, 5) : 0) - (jeteHot ? (cfg.fixe.appel ?? 4) : 0) - (st.full && cfg.appelNote ? ((p.skill?.otbF ?? 1) - 1) * (cfg.appelNote.avance ?? 4) : 0) <= st.t)   // …ET LE BON VOIT LE CRÉNEAU S'OUVRIR (210, cfg.appelNote — dette 198 : le créneau d'équipe se prenait à l'ORDRE de boucle, ratio 90/20 mesuré 1,22 pour un réel 2-3). L'avance × (otbF − 1) : l'élection continue par anticipation ; otbF 1 = 0, l'hier
+            && (diagPre || epau || (p._appelCd ?? -1) <= st.t + (jeteHot ? 3 : 0))) {
             const dB = d2(st.ball.p, p.p);
             const myAdv = p.p[0] * off.sgn;
                   const long = dB >= (cfg.passRange?.[1] ?? 13) - 0.5;   // LA RUPTURE (140, cfg.tranchant) : l'espace derrière la ligne → l'appel part de LOIN (26 c. 12,5), PROFOND (dart 12, 2,2 s) ; rondo sert (+portee), l'élection pèse les éliminés
             const rupt = st.full && cfg.tranchant && pitch.hx - off.adv >= (cfg.tranchant.espace ?? 14);
             // L'APPEL COURT EN DIAGONALE (213, cfg.profondeurAvants.diagonale — demande utilisateur : « les ailiers lancent l'attaquant en profondeur » ; mesuré : 3 coïncidences ailier-porteur/attaquant-en-appel par 30 min — l'appel profond exige un espace derrière la ligne qu'il n'y a pas dans le tiers offensif). L'attaquant CENTRAL près de la ligne, ailier porteur LARGE : l'appel est court (4 m), en diagonale vers le côté du ballon, couloir serré — le premier poteau du vrai football. Absente : hier.
             const diag = diagPre && dB > 5 && dB < 26;
-            if ((dB > 6 && (!long || (rupt && dB < (cfg.tranchant.rayon ?? 26))) && myAdv > st.ball.p[0] * off.sgn + 2) || diag) {
+            if ((dB > 6 && (!long || (rupt && dB < (cfg.tranchant.rayon ?? 26))) && myAdv > st.ball.p[0] * off.sgn + 2) || diag || (epau && dB > 4)) {
               // LE RÉPERTOIRE DE L'AILIER (125, cfg.courseAilier && st.full — 9/9 darts rentraient) : l'ESPÈCE à la SITUATION (déf. intérieur → DÉBORDE ; large → UNDERLAP), × patte/largeurR/axe ; BANANE au tirage. Absente : hier.
               let deepZ = p.p[2] * 0.55, espece = null;
               if (diag) { espece = 'diagonale'; deepZ = p.p[2] + Math.sign(st.ball.p[2] - p.p[2] || 1) * 4; }   // (213) vers le côté du ballon, le premier poteau
@@ -775,10 +775,10 @@ function assignMatchJobs(st, cfg) {
                 if (gZ != null) { deepZ = gZ; espece = 'intervalle'; }
                 else { deepZ = Math.sign(p.p[2] || ((st.rnd ? st.rnd() : 0.5) - 0.5)) * Math.min(pitch.hz - 6, Math.abs(p.p[2]) + 6); espece = 'croise'; }
               }
-              const dartAdv = Math.min(off.adv - 0.15, myAdv + (diag ? 4 : long ? (cfg.tranchant?.dart ?? 12) : 7));
+              const dartAdv = Math.min(off.adv + (st.full && cfg.horsJeu ? (cfg.horsJeu.audela ?? 6) : -0.15), myAdv + (diag ? 4 : long ? (cfg.tranchant?.dart ?? 12) : 7));   // (259) sous cfg.horsJeu la course TRAVERSE la ligne (audela m) : c'est la frappe qui la juge, pas la ligne collante d'hier
               const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
                 defenders.map((q) => q.p), { corridor: diag ? (cfg.profondeurAvants.chas ?? 0.6) : 0.9 });   // (213) la diagonale accepte le chas
-              if (lane.open) {
+              if (lane.open || epau) { if (epau) p._epauleCd = st.t + (cfg.horsJeu.cd ?? 12) / (p.skill?.otbF ?? 1);
                 // …la cadence personnelle est un RÔLE (le 9 : 6 s ; le meneur : 14 s ; polyvalent : 10 s — lot 10) …et le créneau d'équipe échoit au PREMIER ÉLIGIBLE : l'ÉLECTION du mieux-disant (dart + couloir + otbF, lot 156) a été TENTÉE ET REJETÉE à la mesure — volume −22 % (106 → 83 / 6 × 300 s), le canal otbF tué (17 ≈ 18 contre 31 vs 26 ici) : la cadence personnelle (÷ otbF) + l'ordre font DÉJÀ vivre la note, à l'échelle.
                 p._runT = st.t + (long ? 2.3 : 1.7); p._runZ = deepZ; p._runAdv = dartAdv;
                 if (diag) p._diagCd = st.t + (cfg.profondeurAvants.cadence ?? 3.5); else   // (213b) la diagonale ne consomme ni le cooldown profond ni le créneau d'équipe
@@ -788,7 +788,7 @@ function assignMatchJobs(st, cfg) {
                 const _dx7 = off.sgn * (dartAdv + 4) - p.p[0], _dz7 = deepZ - p.p[2], _dl7 = hyp(_dx7, _dz7) || 1;
                 // …le burst PORTE sa direction (167) : le solveur sert la course dès le premier pas
                 p._pace = { until: st.t + (long ? 2.2 : 1.6), kind: 'appel', ...(long ? { rupture: true } : {}), ...(diag ? { esp: 'diagonale' } : {}), next: p._pace?.next ?? st.t + 8, ...(st.full && cfg.courseServie ? { dir: [_dx7 / _dl7, _dz7 / _dl7] } : {}) };   // (213d) l'espèce voyage avec la course
-                st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'appel-profond', by: p.id, ...(espece ? { espece } : {}), ...(long ? { rupture: true } : {}) });
+                st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'appel-profond', by: p.id, ...(espece ? { espece } : {}), ...(long ? { rupture: true } : {}), ...(epau ? { epaule: true } : {}) });
               }
             }
           }
@@ -805,10 +805,10 @@ function assignMatchJobs(st, cfg) {
               p._pace = { until: st.t + 1.0, kind: 'contre-appel', next: p._pace?.next ?? st.t + 8 };
               st.events.push({ t: +st.t.toFixed(2), type: 'burst', kind: 'contre-appel', by: p.id });
             }
-            tx = off.sgn * Math.max(0, Math.min(p._runAdv ?? (off.adv - 0.15), off.adv - 0.15));
+            tx = off.sgn * Math.max(0, Math.min(p._runAdv ?? (off.adv - 0.15), off.adv + (st.full && cfg.horsJeu ? (cfg.horsJeu.audela ?? 6) : -0.15)));
             tz = p._runZ ?? tz;
           } else if (tx * off.sgn > off.adv - 0.8) tx = off.sgn * Math.max(0, off.adv - 0.8);
-          else if (st.full && cfg.epaule && (p._runT ?? -1) <= st.t) { const marge = (cfg.epaule.marge ?? 2) * axe(R.profondeur, cfg.epaule.profond ?? 3, cfg.epaule.haut ?? 0.3); const sur = off.adv - marge; if (tx * off.sgn < sur) tx = off.sgn * Math.max(0, sur); }
+          else if (st.full && cfg.epaule && (p._runT ?? -1) <= st.t) { const marge = (cfg.epaule.marge ?? 2) * axe(R.profondeur, cfg.epaule.profond ?? 3, cfg.epaule.haut ?? 0.3) + (st.full && cfg.horsJeu?.epaule ? (cfg.horsJeu.recul ?? 2.5) : 0); const sur = off.adv - marge;   /* (259) l'épaule se prend avec un RECUL : l'élan de l'appel */ if (tx * off.sgn < sur) tx = off.sgn * Math.max(0, sur); }
         }
         // LE DONNE-ET-VA COURT À SA CIBLE (218, cfg.unDeux.course — doc strike-sim) ; le hors-jeu la borne comme l'appel
         const cz = st.full && cfg.contreZones && (p._runT ?? -1) <= st.t ? contreZoneDe(st, cfg, p, atk) : null;   // (242) LES TROIS ZONES D'ENTRÉE EN CONTRE : l'élu prend sa zone, sous la Loi 11, à l'amplitude de l'axe transition (le coureur garde sa course)
@@ -1217,7 +1217,7 @@ export function matchStep(st, dt, cfg = matchCfg()) {
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;
   const prev = [st.ball.p[0], st.ball.p[1], st.ball.p[2]];
-  contreEngage(st, cfg); contreTir(st, cfg);   // LE CORPS QUI CONTRE (258b, duel.contreEngage : à l'armé du tir, le défenseur devant s'engage sur la ligne) puis LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
+  horsJeuTente(st, cfg); contreEngage(st, cfg); contreTir(st, cfg);   // LE CORPS QUI CONTRE (258b, duel.contreEngage : à l'armé du tir, le défenseur devant s'engage sur la ligne) puis LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
   jambeTendue(st, cfg); // LA JAMBE TENDUE (181, duel.jambeTendue) : le receveur attitré touche la passe qui allait le déborder
   arbitreStep(st, dt, cfg); // L'ARBITRE INCARNÉ (185, referee.arbitreStep) : le corps du sifflet — la diagonale, la faute, le rond
   rondoStep(st, dt, cfg);

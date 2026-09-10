@@ -68,6 +68,6 @@ possession, la fraîcheur mutuelle (`mutualAwareness`), le faux 9 comme dilemme 
 2. **Le sprint a un budget** (T5) : 492 courses HI par match — les bursts sont gratuits ; c'est le profil locomoteur
    (ch. 01 T22) et la fatigue à compartiments (Réf. 07).
 3. **La pausa** (T14) — le 253, déjà gelé.
-4. **Le déclencheur côté attaquants** (T11, T8) — le 259 (l'épaule) se précise : `carrierReady` lu par les coureurs.
+4. **Le déclencheur côté attaquants** (T11, T8) — le 259 (SCELLÉ 334) : la pointe part sur le porteur prêt (posé, ≤ 28 m).
 5. **L'orientation de trois-quarts** (T7) : la réception de trois-quarts (A12b) lit `pick.foot` ; le corps ouvert
    (170) doit produire 45-60 % de trois-quarts, pas 31.

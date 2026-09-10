@@ -273,6 +273,20 @@ réticence, sabotage) ; verify-cartons et verify-expulsion épinglés `carton: n
 Les alias du 256 (`pass.from`, `turnover.to`) sont retirés : `by` et `equipe` seuls. Fiches : `M12-regles-arbitrage.md`,
 `R10-arbitrage-lois.md`, `R04-defense-duels.md`.
 
+### L'orteil et la course qui traverse (lot 259, `cfg.horsJeu` — `offside.pointCorps` / `horsJeuTente`)
+
+Hier 0,75 hors-jeu par match (réel 3,1-4,5) : la course de l'appel s'arrêtait à 0,15 m de la ligne (la ligne collante)
+et la photo lisait le centre du corps. Le 259 : la photo de la Loi 11 (`strike-sim`, au départ du ballon) lit **la
+partie du corps la plus avancée** — une capsule, tronc 0,2 m + pied avant 0,3 × min(1, v/8) × |sin(2π 2,2 t)| pour
+celui qui court vers le but, l'attaquant vers le but adverse et le défenseur vers le sien (sa ligne recule) ; le cerveau
+du passeur juge toujours le centre, l'écart est le hors-jeu d'un orteil. La course de l'appel **traverse** la ligne
+(4 m au-delà) : le passeur sert tant que le coureur est en jeu, la frappe le juge. **L'appel de l'épaule** : la pointe
+posée sur l'épaule (240d) prend 2,5 m de recul en plus de sa marge de rôle et part quand le porteur est prêt (≤ 5 m de la ligne, ≤ 28 m du
+porteur, 12 m d'espace, cadence 12 s ÷ otbF), hors créneau et hors couloir. **La tentative** (Loi 11 (b)) : le
+photographié qui arrive à ≤ 1,2 m du ballon en vol est sifflé sans son pied. `horsJeu: null` = la ligne collante et la
+photo au centre d'hier au bit. Banc : bloc 259 (loi pure de la capsule, photo à 17,9 / 18 prise sous la clé et pas
+sans, la tentative). Fiches : `M12-regles-arbitrage.md`, `R10-arbitrage-lois.md`, `09-avant-centre.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

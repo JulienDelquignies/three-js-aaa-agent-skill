@@ -71,7 +71,7 @@ dynamique de Casanova ; la fatigue par phase ; le handoff en unité.
 1. **La rest defense comme structure** (11-13 ; ch. 04 lot 1) : 4-5 corps, 28 × 7 m, à 44 m — aujourd'hui 7,4 corps
    sur 27 m à 61 m : le même lot que les latéraux, et il libère le quota de surface (14).
 2. **La course avant le ballon** (22-23 ; ch. 01 T7, ch. 03 T3, retour aval D) : l'appel part sur « porteur prêt »,
-   1,5-3 s avant `ballReleased`, calculé par la cinématique — c'est le 259 du plan, il se précise ici.
+   1,5-3 s avant `ballReleased`, calculé par la cinématique — le 259 (SCELLÉ 334) a posé l'appel de l'épaule sur « porteur prêt » ; le départ calculé par la cinématique reste à faire.
 3. **Le soutien par sous-phase** (20) : 10-18 m en sortie, 6-11 m en finition, la décroissance non négociable ; le 8
    monte avec le jeu au lieu de rester au bloc.
 4. **La règle des lignes** (10) : `couloirs.ligne` mesuré et allumé (le 241 l'avait laissé à null, non mesuré).
