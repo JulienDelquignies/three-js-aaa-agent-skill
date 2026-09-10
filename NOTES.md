@@ -10315,6 +10315,69 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      construit) — le CLI vercel 59 (npx frais) passe par fetch de Node : « fetch failed »
      derrière le proxy tant que NODE_USE_ENV_PROXY=1 n'est pas posé (README du proxy) ;
      le build se lance depuis examples/showcase (le .vercel y vit).
+- 332: LE CORPS QUI CONTRE (258b — Modèle 10 §5, Bible 03, Référentiel 03 T20 / 04 n° 21 :
+     27 % des tirs réels sont contrés, le moteur en contrait 3-7). La sonde AVANT (4 × 45 min)
+     nomme la cause : la géométrie existe (44 % des tirs ont un corps à < 1,5 m de la ligne
+     dans les 5 m devant, écart p50 0,59 m) mais le bloc du 176 est un rayon FIXE de 0,38 m
+     sur un corps qui ne bouge pas — et le tireur attend son couloir de 0,45 m (tir-couloir-
+     fermé). La loi (cfg.contre, duel.contreEngage + contreTir, match-sim job 'contre',
+     shooting need) : à l'ARMÉ du tir (le geste du porteur porte choice.shot, phase
+     anticipation, une fois par geste), chaque défenseur de champ devant le tireur (≤ porte
+     8 m, ≤ portee 2 m de la ligne ballon → point visé) DÉCIDE de s'engager, P = σ(beta0 3 +
+     surface 1,5 + dernier 0,8 + aggr 4 × (aggrF − 1)) — « faible coût cognitif, forte
+     fréquence » (P ≈ 0,95 ; l'attribut module aux marges) ; engagé : jambe tendue (lam 1,0 à
+     ≤ 0,6 m de la ligne) ou jeté (lam 1,6), burst _pace 'contre', job 'contre' vers le point
+     de la ligne à 1-2,5 m du ballon (l'engagé court SUR la ligne de tir) ; son rayon
+     d'obstruction R = corps 0,28 + lam × vLat 2,2 × (t − tau 0,18)⁺ ≤ max 1,2 remplace le rayon
+     fixe ; le corps non engagé garde 0,28. Les ISSUES du contact (Modèle 10 §5.2, tirées au
+     flux seedé) : renvoi 66 % (retourné ±40°, e_c 0,55), amorti 8 % (0,30 v, le second
+     ballon), sortie 18 % (latéral 0,5 v), déviation 8 % (0,85 v ±12° — le tir continue et
+     RESTE au tireur : lastTouch inchangé, convention Opta) ; l'événement `contre` porte
+     issue et engage. Le tireur tire dans le trafic : need = couloir 0,2 m (seul un corps SUR
+     la ligne ferme le tir ; les autres contrent). Ce qui a été essayé et jeté : porte 4 m /
+     beta0 −1,2 (book brut) → 4,4 % : à l'armé les défenseurs sont encore à 4-6 m, ils
+     FERMENT en courant pendant les 0,47 s de l'armé — porte 6 → 15 %, porte 8 + portee 2 →
+     22-24 % ; beta0 6 (toujours) ne fait pas mieux que 3 : la limite est géométrique (la
+     part des tirs avec un corps devant), pas décisionnelle. Mesuré APRÈS (8 × 45 min,
+     graines 3-29) : contrés 24 % (réel 27 ; avant 4-7), cadrés 40 % des tirs, corps à < 3 m
+     devant 47 %, distance contreur → tireur p50 2,3 m ; par graine 6-30 % (le bruit de 12-20
+     tirs par mi-temps). La sonde-258 relue sur ce monde (4 × 90 min) : buts / match 2,75
+     (réel 2,85 ; 3,13 au 258), buts / tirs 9,2 % (11 ; 21 au 258), cadrés 35 % (33 ; 48), hors
+     cadre 40 % (36-38), contrés 24 % (27), arrêts 73 % des cadrés (69 ; 56) — le tableau T5-T20
+     du Référentiel 03 s'aligne d'un coup : le contré mange la conversion ET, le tireur tirant
+     dans le trafic, les frappes proches deviennent des tirs contrés au lieu de buts — le
+     gardien retrouve sa part. Restent : au-dessus / à côté 0 / 10 (les visées basses), la
+     conversion à 5-8 m (19 c. 21) et 8-14 m (6 c. 12 : l'excès de tirs de loin dans le
+     trafic), 30 tirs / match (25). Jumeau : contre null = HEAD au bit (be36eb4b6562f2b8 /
+     815dbeda427d613c — les empreintes notées au 331 étaient mal recopiées ; celles-ci sont
+     relues à HEAD par git stash). Banc : verify-match11 bloc 258b (index 152 : fixture 12 m
+     dans l'axe, un défenseur 1,5 m devant à 0,6 m de la ligne, 48 frappes : le tireur tire
+     48/48, contrés 98 % ≥ 40 (issues renvoi 31 / amorti 5 / sortie 7 / déviation 4) ;
+     sabotage contre null : 48/48 tirs, 0 % ≤ 10 — le corps à 0,6 m ne mordait pas hier) ;
+     épingle contre null DATÉ 258b dans le boulet du lot 176 (la table des issues garde
+     0,85 v à la déviation : la clause mesure le bloc fixe). Le juge apprend la loi : match-check
+     « tir à travers un mur » lit le couloir du 258b (need = couloir − 0,05 sous cfg.contre) —
+     sinon le 244c « la grille FM joue » comptait 1 écart structurel. BANC COMPLET (final258b.sh,
+     8 shards + 20 annexes) : 279 ✓ / 7 ✗ aux shards et 461 ✓ / 9 ✗ aux annexes au premier
+     passage. Mondes déplacés par la clé, épinglés contre null DATÉ 258b après preuve verte à
+     HEAD~ (les isolés du 258) : verify-match11 bloc 3 « bloc élastique » (sabotage 36,7 c.
+     37,6 ; 38,6 ≥ 36,7 au 258), bloc 19 « l'aimant du porté » (24/346 = 6,9 % ; 19/347 au 258),
+     bloc 102 « lot 194 la prise à deux mains » (0 prise / 1 claquette sur un monde à 6 tirs
+     par 3 × 300 s ; 7/0 au 258), bloc 144 « lot 245 le flux » (vraie sortie 60 % ; 97 au 258) ;
+     verify-attributes lignes 55 et 171 (152/158 la gradation : 50 → −187 au composite ; 157 le
+     pique : tacleurs 90 à 5 c. 9 + 2), verify-tactics « la hauteur de bloc » (médiane 4,49
+     arrondie 4,5), verify-contact (2 chutes pour 9 fautes), verify-porte (refus au contact 25
+     c. 58 = 43 % > 35) ; verify-sync : match-sim.js à 1251 — les deux appels contreEngage /
+     contreTir joints sur une ligne (1249) ; verify-identification REGELÉ DATÉ 258b (la règle
+     du 252) : 17 → 18 signatures — perdues DC A|largeurR, DC A|profondeur, MDC A|largeurR, LAT
+     C|profondeur, AV A|profondeur ; gagnées LAT A|appel, LAT D|appel, MDC A|profondeur, AV
+     A|press, AIL C|repli, AV C|tenue (la dette de volumétrie à 6 graines demeure). Isolés après
+     épingles : blocs 3 3/0, 19 2/0, 102 1/0, 141 3/0, 144 2/0 ; annexes attributes 27/0,
+     tactics 11/0, contact 25/0, porte 4/0, identification 1/0, sync 9/0 ; les 14 autres
+     annexes vertes au premier passage (match 84/0, rondo 40/0, gestes 60/0, foulee 45/0,
+     attente 42/0, remises 36/0, frappes 13/0…). Rouges hérités, nommés : 246d (36 % à 90, 69 à
+     10) ; « contres arrivés à l'entrée » (13 ≥ 11 × 0,75 : REROUGIT au monde 258b — noté au
+     258 comme un monde qui bouge, pas une loi). La sonde vit dans scripts/book/sonde-258b.mjs.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

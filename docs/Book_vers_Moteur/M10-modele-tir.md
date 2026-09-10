@@ -56,7 +56,7 @@ conventions de comptage ; le recentrage tête / pied.
 1. **L'échelle de finition** (le 258 — **SCELLÉ 331** : σ d'angle anisotrope, attributs en facteurs, sous-dosage, hauteur visée ; cadrés 60 → 48 % à graines égales, conversion inchangée ; tests 3, 5 bis, cibles) : l'erreur anisotrope avec exposant vitesse-précision
    (Modèle 03 lot 3), la vitesse qui coûte la précision — la conversion 24,5 → 11 %, dehors 0 → 15 % d'arrêts en
    moins, 6 → 2,85 buts.
-2. **Le blocage** (cible 27,5 %) : `contreTir` à 2 % — le corps entre le tireur et le but (Bible 03, 15).
+2. **Le blocage** (cible 27,5 % ; le 258b — **SCELLÉ 332** : l'engagement à l'armé, la jambe qui s'allonge, le tireur dans le trafic, les issues §5.2 ; contrés 4-7 → 24 % à 8 × 45 min) : `contreTir` à 2 % — le corps entre le tireur et le but (Bible 03, 15).
 3. **Le xG en forme close et PSxG** (tests 1, 4 ; Modèle 06) : la grille (X, C), la finition qui déplace PSxG.
 4. **Le gardien à enveloppe continue** (tests 5, 5 ter ; Bible 02) : budget temps, R_dive, ± 5 buts par saison.
 5. **La tête et le penalty recentrés** (9 bis, cibles) ; **le VAR** (test 8) et **les deux conventions** (test 12 ;

@@ -53,7 +53,7 @@ export function tryShot(st, c, cfg) {
   const corners = [pitch.goalHalf - 0.55, -(pitch.goalHalf - 0.55)]
     .sort((a, b) => (gk ? Math.abs(b - gk.p[2]) - Math.abs(a - gk.p[2]) : 0));
   const blockers = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0).map((q) => q.p);
-  const need = dGoal < 9 ? Math.min(cfg.shotClear, 0.3) : cfg.shotClear;
+  const need = st.full && cfg.contre ? (cfg.contre.couloir ?? 0.2) : dGoal < 9 ? Math.min(cfg.shotClear, 0.3) : cfg.shotClear;   // (258b) sous cfg.contre le tireur tire dans le trafic : seul un corps SUR la ligne ferme le tir, les autres contrent
   let tz = null, margin = -1;
   for (const cz of corners) {
     const clr = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [goal.x, 0, cz], blockers);

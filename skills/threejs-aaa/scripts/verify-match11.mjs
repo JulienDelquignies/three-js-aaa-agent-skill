@@ -196,7 +196,7 @@ if (__bloc()) {
     const dLong = [], dInter = [], aLong = [];
     for (const seed of [1, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contrePress: false, shotRange: 20, finition: null, ...cfgX });   // finition null DATÉ 258 : vert à HEAD (sabotage 38,6 ≥ 36,7 au 252), la longueur du bloc remangée par les tirages de l'échelle de finition (36,4 c. 37,5) — la clause mesure le bloc, pas le tir
+      const cfg = matchCfg({ contrePress: false, shotRange: 20, finition: null, contre: null /* contre null DATÉ 258b : vert à HEAD~ (38,6 ≥ 36,7 au 258 isolé), le sabotage remangé par le corps qui contre (36,7 c. 37,6) — la clause mesure le bloc, pas le contre */, ...cfgX });   // finition null DATÉ 258 : vert à HEAD (sabotage 38,6 ≥ 36,7 au 252), la longueur du bloc remangée par les tirages de l'échelle de finition (36,4 c. 37,5) — la clause mesure le bloc, pas le tir
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 30 !== 0 || st.restart) continue;
@@ -1031,7 +1031,7 @@ if (__bloc()) {
     let n = 0, dos = 0, deny = 0, foulee = 0;
     for (const seed of [2, 3, 5, 7, 11, 13, 17, 19]) {   // 2 → 8 graines DATÉ 237 (3 c. 3,2 %, puis 5 c. 5,7 à 4)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ avantContact: false, cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, passation: null, ...ISO142, ...over });
+      const cfg = matchCfg({ avantContact: false, cpaMontee: false, remise: false, relance: false, repli: false, garde: false, dribble: false, shotRange: 20, passation: null, contre: null /* contre null DATÉ 258b : vert à HEAD~ (19/347 ≤ 6 % au 258 isolé), la conduite dos remangée par le corps qui contre (24/346 = 6,9 %) — la clause mesure l'aimant, pas le contre */, ...ISO142, ...over });
       let nEv = 0;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3821,7 +3821,7 @@ if (__bloc()) {
   // dévie (vitesse mangée, événement nommé) ; l'épinglé TRAVERSE (le tir fantôme d'hier).
   const boulet = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg(over ?? {});
+    const cfg = matchCfg({ contre: null, ...(over ?? {}) });   // contre null DATÉ 258b : vert à HEAD (contré, v 8,6 < 12 au 258), le boulet remangé par la table des issues du corps qui contre (la déviation garde 0,85 v) — la clause mesure le bloc fixe du 176, pas le corps engagé
     const c = st.players.find((q) => q.team === 0 && !q.keeper);
     const f = st.players.find((q) => q.team === 1 && !q.keeper);
     st.lastPasser = c.id;
@@ -4313,7 +4313,7 @@ if (__bloc()) {
     let prises = 0, claques = 0;
     for (const seed of [2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, foulee: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ cpaMontee: false, remise: false, relance: false, foulee: false, shotRange: 20, contre: null, ...(over ?? {}) });   // contre null DATÉ 258b : vert à HEAD~ (7 prises ≥ 0 au 258 isolé), un monde à 6 tirs par 3 × 300 s remangé par le corps qui contre (0 prise, 1 claquette) — la clause mesure les mains du gardien, pas le contre
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       for (const e of st.events) {
         if (e.type !== 'arrêt') continue;
@@ -5879,7 +5879,7 @@ if (__bloc()) {
   const geo = (over) => {
     let act = 0, img = 0, vraies = 0;
     for (const seed of [1, 2, 3]) {
-      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ finition: null, ...over });   // finition null DATÉ 258 : vert à HEAD (97 % ≥ 90 au 252), la vraie sortie remangée par les tirages de l'échelle de finition (88 %) — la clause mesure l'oblique, pas le tir
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ finition: null, contre: null /* contre null DATÉ 258b : vert à HEAD~ (97 % ≥ 90 au 258 isolé), la vraie sortie remangée par le corps qui contre (60 %) — la clause mesure l'oblique, pas le contre */, ...over });   // finition null DATÉ 258 : vert à HEAD (97 % ≥ 90 au 252), la vraie sortie remangée par les tirages de l'échelle de finition (88 %) — la clause mesure l'oblique, pas le tir
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg); if (i % 10) continue;
         const def = st.possession.team >= 0 ? 1 - st.possession.team : -1; if (def < 0) continue; img++;
@@ -6065,6 +6065,44 @@ if (__bloc()) {
   const vifF = planFix(null), exactF = planFix({ finition: { ...F, sigma0: 0, hauteur: null } });
   ok(`lot 258 — L'ÉCHELLE DE FINITION en fixture (18 m dans l'axe, presseur de côté, 48 frappes, point de passage au plan extrapolé au lancer) : écart-type latéral ${vifF.sd.toFixed(2)} m ≥ 0,35 (σψ ≈ 1,9° × 18 m — hors du cadre : ${vifF.cote} à côté, ${vifF.dessus} au-dessus) ; sabotage « le tir exact » (sigma0 0, sans hauteur) : ${exactF.sd.toFixed(3)} m ≤ 0,05 — la loi disperse, le sabotage vise le même point`,
     vifF.n >= 40 && exactF.n >= 40 && vifF.sd >= 0.35 && exactF.sd <= 0.05 && vifF.sd >= exactF.sd + 0.3);
+}
+
+// ---------------------------------------------------------------- lot 258b : LE CORPS QUI
+// CONTRE (cfg.contre — la carte du book, Modèle 10 §5 : réel 27 % des tirs contrés, mesuré 3-7 % avant)
+if (__bloc()) {
+  // La fixture : le tireur à 12 m dans l'axe, un défenseur 1,5 m DEVANT lui à 0,6 m de la ligne de tir (la géométrie
+  // médiane du flux : « un corps dans le couloir » sur 44 % des tirs, écart p50 0,59 m — hors du rayon fixe 0,38 du 176),
+  // 48 frappes à flux seedé distincts. Monde 258b : le défenseur s'engage à l'armé, court sur la ligne et tend la jambe
+  // (R = 0,28 + 2,2 (t − 0,18)⁺) — la part CONTRÉE doit être franche ; sabotage « contre null » (le bloc fixe du 176, le
+  // tireur qui attend son couloir de 0,45 m) : le corps à 0,6 m ne mord pas.
+  const blocFix = (over) => {
+    let n = 0, contres = 0, tirs = 0; const issues = {};
+    for (let k = 0; k < 48; k++) {
+      const st = makeMatch({ full: true, seed: 5 });
+      const sgn = -st.pitch.ownGoal(0).sign, goal = st.pitch.attackGoal(0);
+      for (const q of st.players.filter((q) => q.team === 1 && !q.keeper)) { q.p[0] = -sgn * 30; q.p[2] = -28; q.v = [0, 0]; }
+      for (const q of st.players.filter((q) => q.team === 0 && !q.keeper)) { q.p[0] = -sgn * 30; q.p[2] = 28; q.v = [0, 0]; }
+      const cfg = matchCfg({ shotRange: 20, oeil: false, fixe: false, ...(over ?? {}) });
+      const c = st.players.find((p) => p.team === 0 && !p.keeper); const x = goal.x - sgn * 12;
+      c.p[0] = x; c.p[2] = 0; c.v = [0, 0]; c.yaw = Math.atan2(0, sgn);
+      const d1 = st.players.find((p) => p.team === 1 && !p.keeper); d1.p[0] = x + sgn * 1.5; d1.p[2] = 0.6; d1.v = [0, 0]; d1.down = 0;
+      st.ball.restart([x + sgn * 0.3, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id);
+      st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
+      let lcg = ((k + 1) * 2654435761 + 97) >>> 0; st.rnd = () => { lcg = (lcg * 1664525 + 1013904223) >>> 0; return lcg / 4294967296; };
+      let lcg2 = ((k + 1) * 40503 + 11) >>> 0; st.rnd2 = () => { lcg2 = (lcg2 * 1664525 + 1013904223) >>> 0; return lcg2 / 4294967296; };
+      const n0 = st.events.length;
+      tryShot(st, c, cfg); n++;
+      for (let i = 0; i < 3 * 60; i++) { matchStep(st, 1 / 60, cfg); if (st.events.slice(n0).some((e) => e.type === 'contre' || e.type === 'but' || e.type === 'arrêt' || e.type === 'sortie')) break; }
+      const ev = st.events.slice(n0);
+      if (ev.some((e) => e.type === 'shot')) tirs++;
+      const ct = ev.find((e) => e.type === 'contre'); if (ct) { contres++; issues[ct.issue ?? 'fixe'] = (issues[ct.issue ?? 'fixe'] ?? 0) + 1; }
+    }
+    return { n, tirs, contres, part: contres / Math.max(1, tirs), issues };
+  };
+  const vif = blocFix(null), sab = blocFix({ contre: null });
+  const C = matchCfg({}).contre;
+  ok(`lot 258b — LE CORPS QUI CONTRE en fixture (12 m dans l'axe, un défenseur 1,5 m devant à 0,6 m de la ligne, 48 frappes) : le tireur tire dans le trafic (${vif.tirs}/48 tirs partis, couloir ${C.couloir} m) et le corps engagé contre ${(100 * vif.part).toFixed(0)} % ≥ 40 (issues ${JSON.stringify(vif.issues)} — renvoi / amorti / sortie / déviation) ; sabotage « contre null » (le bloc fixe du 176, rayon 0,38) : ${sab.tirs}/48 tirs partis, contrés ${(100 * sab.part).toFixed(0)} % ≤ 10 — le corps à 0,6 m ne mord pas hier`,
+    vif.tirs >= 40 && vif.part >= 0.4 && sab.part <= 0.1 && C.porte >= 4 && C.corps > 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

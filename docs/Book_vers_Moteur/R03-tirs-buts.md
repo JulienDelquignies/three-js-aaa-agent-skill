@@ -15,10 +15,10 @@
 | T15 | Tirs à angle < 20° | 50 % ± 7 | — | à instrumenter |
 | T16-T17 | Tête : conversion 9,6 %, part 17 % | | **6 %** des tirs, **0** but (Modèle 10) | réfuté |
 | T18 | Ratio 0 / 1 défenseur dans le cône | 2,0 | — | à instrumenter |
-| T19 | Tirs cadrés (but + arrêt) | 33 % ± 3 | **55 %** → **48 %** au 258 (8 × 45 min à graines égales : 60 → 48) | réfuté, en marche (réel 45 des non contrés) |
-| T20 | Tirs contrés | 27 % ± 4 | **2 %** | **réfuté × 13** |
+| T19 | Tirs cadrés (but + arrêt) | 33 % ± 3 | **55 %** → **48 %** au 258 → **35 %** au 258b (4 × 90 min) | tenu (258b) |
+| T20 | Tirs contrés | 27 % ± 4 | **2 %** → **24 %** au 258b (8 × 45 min, par graine 6-30) | tenu à la marge (la limite est géométrique : 47 % des tirs ont un corps devant) |
 | T21 | Tirs sur les montants | 2,3 % | — | à instrumenter (événement `pylon` / `roof`) |
-| T22 | Taux d'arrêt | 69 % ± 4 | **44 %** (dedans 52, dehors 100) | réfuté |
+| T22 | Taux d'arrêt | 69 % ± 4 | **44 %** (dedans 52, dehors 100) → **56 %** au 258 → **73 %** au 258b (4 × 90 min) | tenu (258b) |
 | T23-T24 | Amplitude gardiens ± 5 buts / saison | | — (pas de saison) | chantier A |
 | T25-T27 | Penalty 79 % ; arrêt 13 % ; 0,35 / match | | 1 penalty raté en 2 matchs (Modèle 13) | à mesurer en protocole |
 | T28-T30 | Séance de tirs au but | 72 % ; 60 % après le 5ᵉ ; premier tireur 0 | — | absent |
@@ -27,13 +27,13 @@
 | T33 | Buts contre son camp | 3 % | — | à instrumenter |
 | T34 | Buts sur contre-attaque | 6 % ± 3 | **58 %** ≤ 10 s d'une récupération (Bible 11 X24) | **réfuté × 10** |
 | — | Buts / match | 2,85 | **6,0** | **réfuté × 2** |
-| — | Buts / tirs | 0,110 | **0,245** | réfuté |
+| — | Buts / tirs | 0,110 | **0,245** → 0,21 au 258 → **0,092** au 258b (4 × 90 min ; buts / match 2,75 c. 2,85) | tenu (258b) |
 
 ## Ce que le référentiel ajoute aux lots déjà nommés
 
 1. **L'échelle de finition** (T5, T7, T8, T19, T22 ; le 258 — SCELLÉ 331 : la dispersion est réglée, la conversion tient au contré et au gardien) : la conversion par distance (T9-T14) est la clause
    du lot — 45 % à 0-5 m, 2,2 % à > 23 m — et le gardien à 69 %.
-2. **Le corps qui contre** (T20 ; Modèle 10 lot 2) : 2 → 27 % des tirs — et les corners qui en naissent.
+2. **Le corps qui contre** (T20 ; Modèle 10 lot 2 ; le 258b — SCELLÉ 332 : 2 → 24 %) : les corners qui en naissent (la sortie à 18 % des issues) restent à sonder (T27).
 3. **La tête** (T16-T17 ; Bible 15 lot 4) : 6 → 17 % des tirs, à 9,6 %.
 4. **La part des buts par origine** (T32, T34 ; Bible 11 lot 2, Modèle 13 lot 1) : contre 58 → 6 %, CPA 8 → 22 %.
 5. **Les montants, les csc, les penalties** (T21, T25-T27, T33) : à instrumenter au journal (Modèle 16 lot 1).

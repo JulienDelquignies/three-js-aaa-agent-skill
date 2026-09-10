@@ -243,6 +243,21 @@ d'hier au bit. Mesuré à graines égales : cadrés 60 → 48 % (réel 33 + 27 c
 le contré manquant (258b) et le gardien contre les frappes hautes (Bible 02) sont les deux autres facteurs.
 Fiches : `docs/Book_vers_Moteur/M10-modele-tir.md`, `R03-tirs-buts.md`.
 
+### Le corps qui contre (lot 258b, `cfg.contre` — `duel.contreEngage` / `contreTir`, job `contre`)
+
+Le 176 posait un rayon fixe de 0,38 m sur un corps immobile : 3-7 % des tirs contrés (réel 27). Le 258b fait du
+contre une **décision à l'armé** : quand le geste du porteur porte un tir (`act.payload.choice.shot`, phase
+anticipation), chaque défenseur de champ devant lui (≤ 8 m, ≤ 2 m de la ligne ballon → point visé) s'engage avec
+P = σ(3 + 1,5 dans la surface + 0,8 dernier défenseur + 4 (aggrF − 1)) ; engagé, il prend le job `contre` (il court
+vers le point de la ligne à 1-2,5 m du ballon, burst `_pace`), et son rayon d'obstruction grandit : R = 0,28 +
+λ × 2,2 × (t − 0,18)⁺ ≤ 1,2 (λ 1,0 jambe tendue à ≤ 0,6 m de la ligne, 1,6 jeté). Le tireur **tire dans le
+trafic** (`need` = 0,2 m au lieu de shotClear 0,45). Le contact tire son issue au flux seedé (Modèle 10 §5.2) :
+renvoi 66 % (e_c 0,55, retourné ±40°), amorti 8 % (0,30 v), sortie 18 %, déviation 8 % (0,85 v ±12°, le tir
+reste au tireur) — l'événement `contre` porte `issue` et `engage`. Mesuré 8 × 45 min : contrés 24 % (par graine
+6-30), la limite étant géométrique (47 % des tirs ont un corps à < 3 m devant). `contre: null` = le 176 au bit.
+Banc : bloc 258b (fixture 12 m, défenseur 1,5 m devant à 0,6 m de la ligne, 48 frappes : 98 % contrés, sabotage
+0 %) ; le boulet du 176 épinglé `contre: null`. Fiches : `M10-modele-tir.md`, `R03-tirs-buts.md`, `R04-defense-duels.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

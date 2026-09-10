@@ -365,6 +365,48 @@ export function tacleDegage(st, q, cfg) {
  *  LIBRE, rapide (≥ vMin) et bas (≤ h) qui percute un corps ADVERSE au dernier toucheur dévie —
  *  le corps encaisse, le ricochet part large (± bruit rad), la vitesse est mangée (×0,3-0,6),
  *  l'événement 'contre' se nomme (télémétrie, ticker). Clé absente : le tir fantôme d'hier. */
+/** LE CORPS QUI CONTRE (258b, cfg.contre && st.full — la carte du book, Modèle 10 §5 : « le contre est une action à
+ *  faible coût cognitif et à forte fréquence » — réel 27 % des tirs contrés, mesuré 3-7 %) : à l'ARMÉ du tir (le geste
+ *  du porteur porte choice.shot), chaque défenseur devant le tireur (≤ porte m, ≤ portee m de la ligne de tir) DÉCIDE
+ *  une fois de s'engager — P = σ(beta0 + surface × 1,5 + dernier × 0,8 + 2,5 (aggrF − 1)) — et tend la jambe (lam 1,0)
+ *  ou se jette (lam 1,6) : il court sur la ligne ballon → point visé ; son rayon d'obstruction grandit avec le temps
+ *  depuis l'armé : R = corps 0,28 + lam × vLat 2,2 × (t − tau 0,18)⁺, plafonné max. Le tireur, lui, tire dans le
+ *  trafic (couloir 0,2 m au lieu de shotClear 0,45 : il ne refuse plus le tir pour un corps à 1 m). Clé absente : le
+ *  bloc de champ du 176 au bit (rayon 0,38 à toute image, le tireur qui attend son couloir). */
+export function contreEngage(st, cfg) {
+  const C = cfg.contre; if (!st.full || !C) return;
+  const c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
+  const ch = c?.act?.payload?.choice;
+  if (!c || !ch || !ch.shot || c.act.phase !== 'anticipation' || c._contreArme === c.act) return;
+  c._contreArme = c.act;
+  const from = [c.p[0], c.p[2]], lead = [ch.lead?.[0] ?? c.p[0], ch.lead?.[2] ?? c.p[2]];
+  const ux = lead[0] - from[0], uz = lead[1] - from[1], ul = hyp(ux, uz) || 1;
+  const own = st.pitch.ownGoal(1 - c.team);
+  const enSurface = st.pitch.inBox(c.p[0], c.p[2], own.sign);
+  const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
+  const defs = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0);
+  let dernier = null, dMin = Infinity;
+  for (const q of defs) { const dd = Math.abs(q.p[0] - own.x); if (dd < dMin) { dMin = dd; dernier = q; } }
+  for (const q of defs) {
+    const dx = q.p[0] - from[0], dz = q.p[2] - from[1];
+    const along = (dx * ux + dz * uz) / ul, perp = Math.abs(dx * uz - dz * ux) / ul;
+    if (along <= 0 || along > (C.porte ?? 4) || perp > (C.portee ?? 1.5)) continue;
+    const logit = (C.beta0 ?? -1.2) + (enSurface ? (C.surface ?? 1.5) : 0) + (q === dernier ? (C.dernier ?? 0.8) : 0) + (C.aggr ?? 2.5) * ((q.skill?.aggrF ?? 1) - 1);
+    if (rnd() >= 1 / (1 + Math.exp(-logit))) continue;
+    const lam = perp <= (C.jambe ?? 0.6) ? (C.lamJambe ?? 1.0) : (C.lamJete ?? 1.6);
+    q._contre = { t0: st.t, lam, from, u: [ux / ul, uz / ul], along, until: st.t + (C.duree ?? 1.2), shooter: c.id };
+    q._pace = { until: st.t + (C.duree ?? 1.2), kind: 'contre', next: q._pace?.next ?? st.t + 8 };
+  }
+}
+
+/** Le rayon d'obstruction d'un corps (258b) : le corps, plus l'allonge de l'engagement. */
+function rayonContre(st, q, C, CT) {
+  if (!C) return CT.rayon ?? 0.38;
+  const e = q._contre && q._contre.until > st.t ? q._contre : null;
+  const allonge = e ? Math.min(C.max ?? 1.2, e.lam * (C.vLat ?? 2.2) * Math.max(0, st.t - e.t0 - (C.tau ?? 0.18))) : 0;
+  return (C.corps ?? 0.28) + allonge;
+}
+
 export function contreTir(st, cfg) {
   const CT = cfg.contreTir;
   if (!st.full || !CT || st.ball.owner != null) return;
@@ -372,12 +414,29 @@ export function contreTir(st, cfg) {
   if (v < (CT.vMin ?? 13) || st.ball.p[1] > (CT.h ?? 1.3)) return;
   const dernier = st.players[st.lastPasser ?? -1];
   if (!dernier) return;
+  const C = cfg.contre ?? null;
   for (const q of st.players) {
     if (q.team === dernier.team || q.keeper || q.down > 0 || (q._contreCd ?? -1) > st.t) continue;
     const d = hyp(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]);
-    if (d > (CT.rayon ?? 0.38)) continue;
+    if (d > rayonContre(st, q, C, CT)) continue;
     q._contreCd = st.t + 1.5;
     const rnd = st.rnd ?? (() => 0.5);
+    if (C) {
+      // LES ISSUES DU CONTACT (258b, Modèle 10 §5.2 — la table du réel : 2,3 % de tirs déviés sur 27,5 contrés) : renvoi
+      // franc (retourné ±40°, e_c 0,55), blocage mou (0,30 v, le second ballon), sortie (latéral, 0,5 v), déviation
+      // (0,85 v, ±12° — le tir continue, gardien parti du mauvais côté). Le tirage vit dans le flux seedé.
+      const u = rnd(), T = C.issues ?? [0.66, 0.08, 0.18, 0.08];
+      const a0 = Math.atan2(st.ball.v[2], st.ball.v[0]);
+      let a, k, issue;
+      if (u < T[0]) { a = a0 + Math.PI + (rnd() - 0.5) * 2 * 0.7; k = C.ec ?? 0.55; issue = 'renvoi'; }
+      else if (u < T[0] + T[1]) { a = a0 + (rnd() - 0.5) * 2 * 1.1; k = 0.30; issue = 'amorti'; }
+      else if (u < T[0] + T[1] + T[2]) { a = a0 + (rnd() < 0.5 ? 1 : -1) * (Math.PI / 2 + (rnd() - 0.5) * 0.6); k = 0.5; issue = 'sortie'; }
+      else { a = a0 + (rnd() - 0.5) * 2 * 0.21; k = 0.85; issue = 'deviation'; }
+      st.ball.impulse([Math.cos(a) * v * k - st.ball.v[0], issue === 'deviation' ? 0 : -st.ball.v[1] * 0.6, Math.sin(a) * v * k - st.ball.v[2]]);
+      if (issue !== 'deviation') { st.lastTouch = q.team; st.lastPasser = q.id; }   // la déviation laisse le tir au tireur (Loi 17 et la convention Opta : le but reste au tireur)
+      st.events.push({ t: +st.t.toFixed(2), type: 'contre', by: q.id, sur: dernier.id, v: +v.toFixed(1), issue, ...(q._contre && q._contre.until > st.t ? { engage: q._contre.lam } : {}) });
+      return;
+    }
     const a = Math.atan2(st.ball.v[2], st.ball.v[0]) + (rnd() - 0.5) * 2 * (CT.bruit ?? 1.1);
     const k = 0.3 + rnd() * 0.3;
     st.ball.impulse([Math.cos(a) * v * k - st.ball.v[0], -st.ball.v[1] * 0.6, Math.sin(a) * v * k - st.ball.v[2]]);

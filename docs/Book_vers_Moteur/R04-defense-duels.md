@@ -20,7 +20,7 @@
 | 16 | Contests par faute | 8-11 | **≈ 8** (192 / 23) | tenu |
 | 17-18 | Interceptions 9,7 / équipe ; propre / sale 1 : 3-5 | | — | à instrumenter |
 | 19-20 | Dégagements 14-20 / équipe ; 66-71 % par des défenseurs | | 40 têtes de dégagement / 2 matchs | à instrumenter |
-| 21 | Tirs contrés / équipe | 2,7 | **≈ 0,25** (2 % de 24,5) | réfuté |
+| 21 | Tirs contrés / équipe | 2,7 | **≈ 0,25** → **≈ 2,0** au 258b (24 % de 16,4 tirs par 45 min, soit ≈ 4 par match et par équipe : le volume de tirs porte l'écart) | tenu à la marge (258b, SCELLÉ 332) |
 | 22 | Récupérations par tiers | 56 / 33 / 11 % | Bible 11 X5 : 148 / 328 / 251 sur 727 = **20 / 45 / 35 %** (par zone de récupération) | inversé : trop de récupérations hautes |
 | 23-24 | Hauteur d'action défensive 34,7-36,6 m ; amplitude 10 m | | — | à instrumenter |
 | 25-27 | Fautes / match 21,4 (PL) – 28,9 (Liga) | | **23,0** | tenu |

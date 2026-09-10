@@ -443,6 +443,14 @@ défenseur dans le couloir de tir, `contreTir` 176 qui ne mord qu'à 2 %) et **l
 hautes** (arrêts 56 % des cadrés c. 69 — Bible 02 lot 5, diveReach / diveTime). L'ordre devient : 258b → 257
 → 259, puis les transversaux.
 
+**258b — LE CORPS QUI CONTRE : SCELLÉ (332).** À l'armé du tir le défenseur devant s'engage (P ≈ 0,95, l'attribut
+aux marges), court sur la ligne de tir et tend la jambe : son rayon d'obstruction grandit avec le temps depuis
+l'armé (0,28 + 2,2 (t − 0,18)⁺ ≤ 1,2) ; le tireur tire dans le trafic (couloir 0,2 m) ; les issues du contact
+(renvoi / amorti / sortie / déviation) sont tirées au flux. Mesuré : contrés 4-7 → 24 % (réel 27). Ce qu'il
+nomme : la limite est géométrique (47 % des tirs ont un corps devant) — le reste du 27 est dans le tireur qui
+tire à travers un corps SUR la ligne (le couloir à 0) et dans le bloc bas qui se ferme (253). L'ordre : 257 →
+259 → 253 → 255 → 254, puis les transversaux.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

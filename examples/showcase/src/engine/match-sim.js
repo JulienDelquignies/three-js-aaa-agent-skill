@@ -5,7 +5,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { m
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js';
 
@@ -971,6 +971,7 @@ function assignMatchJobs(st, cfg) {
     if (st.full && cfg.referme && byDist[0]) refermerLigne(st, spotsBloc, mapD, nDefD, byDist[0], defenders, cfg, tac(st, defTeamB), axe, sgnAtk); else { if (st._bRefermeDz) st._bRefermeDz.clear(); if (st._bRefermeDx) st._bRefermeDx.clear(); }   // LA LIGNE SE REFERME (228, doc marquage.js)
     if (st.full && cfg.couvert) { let sA = 0, nA = 0; for (const q of defenders) if (q.skill?.anticipF) { sA += q.skill.anticipF; nA++; } couvertStep(st, cfg, { defTeam: defTeamB, carrier, presseur: byDist[0] ?? null, sgnAtk, anticipMoy: nA ? sA / nA : 1, tac, axe }); } else if (st._bCouvertDx) st._bCouvertDx[defTeamB] = 0;   // BALLON COUVERT / DÉCOUVERT (236, doc couvert.js)
     if (st._passation) purgerPassation(st, atk); const pivotD = st.full && cfg.passation ? (st.players.find((q) => q.team === defTeamB && q.post === pivotDe(tac(st, defTeamB).formation) && q.down <= 0) ?? null) : null; byDist.forEach((p, i) => {   // (252) pivotD : le 6 de la formation qui défend
+      if (st.full && cfg.contre && p._contre && p._contre.until > st.t && st.players[p._contre.shooter]?.team !== p.team) { const e = p._contre; const t = Math.max(cfg.contre.pres ?? 1.0, Math.min(cfg.contre.loin ?? 2.5, e.along)); p.job = 'contre'; p.target = [e.from[0] + e.u[0] * t, 0, e.from[1] + e.u[1] * t]; return; }   // (258b) l'engagé court sur la ligne de tir, à sa hauteur
       if (pivotD && p.id === pivotD.id) { p._libre = i >= 2; const mR = i >= 2 ? hommeRemis(st, cfg, p) : null; if (mR) { const gx = defGoal.x - mR.p[0], gz = -mR.p[2], gl = hyp(gx, gz) || 1, off = 1.4 * (2 - (p.skill?.markF ?? 1)); p.job = 'mark'; p.target = [mR.p[0] + (gx / gl) * off, 0, mR.p[2] + (gz / gl) * off]; return; } }   // (252) LA PASSATION : le pivot marque l'homme remis par le central, un pas côté but
       if (i === 0) {
         // LE GARDIEN EN MAINS EST INATTAQUABLE (Loi 12 à l'échelle) : le press TIENT LE BORD de la surface — le harcèlement forçait des sorties de flipper (20,5 passes/min mesurées).
@@ -1216,7 +1217,7 @@ export function matchStep(st, dt, cfg = matchCfg()) {
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;
   const prev = [st.ball.p[0], st.ball.p[1], st.ball.p[2]];
-  contreTir(st, cfg);   // LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
+  contreEngage(st, cfg); contreTir(st, cfg);   // LE CORPS QUI CONTRE (258b, duel.contreEngage : à l'armé du tir, le défenseur devant s'engage sur la ligne) puis LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
   jambeTendue(st, cfg); // LA JAMBE TENDUE (181, duel.jambeTendue) : le receveur attitré touche la passe qui allait le déborder
   arbitreStep(st, dt, cfg); // L'ARBITRE INCARNÉ (185, referee.arbitreStep) : le corps du sifflet — la diagonale, la faute, le rond
   rondoStep(st, dt, cfg);
