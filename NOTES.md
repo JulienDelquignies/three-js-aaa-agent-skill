@@ -10378,6 +10378,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      attente 42/0, remises 36/0, frappes 13/0…). Rouges hérités, nommés : 246d (36 % à 90, 69 à
      10) ; « contres arrivés à l'entrée » (13 ≥ 11 × 0,75 : REROUGIT au monde 258b — noté au
      258 comme un monde qui bouge, pas une loi). La sonde vit dans scripts/book/sonde-258b.mjs.
+     Sceau : commit 3bbfcf5, poussé ; déploiement showcase-pi-mocha (cmp du chunk Rondo servi =
+     construit, 485 010 octets) — six tentatives du CLI ont laissé des déploiements BLOCKED
+     (la POST de création coupée à 6 s : « tunnel closed » au relais du proxy, api.vercel.com),
+     la septième a rendu READY ; avec --archive=tgz le déploiement se crée mais le suivi des
+     événements (GET follow=1) casse — repasser sans archive.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
