@@ -10614,7 +10614,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      corps sort et reste » ; lots 135 et 142 (blocs 66, 73) — verts cette fois (ils oscillent
      avec le flux : le journal les garde nommés).
      Sceau : commit d56dd43, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
-     Rondo servi = construit).- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+     Rondo servi = construit).
+- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
