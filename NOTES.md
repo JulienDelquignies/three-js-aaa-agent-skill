@@ -10661,7 +10661,11 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      17 → 23 signatures — perdues DC A|profondeur, LAT A|appel, LAT D|profondeur, LAT D|appel, MDC A|profondeur, MIL A|tenue, MDC B|press, MO B|profondeur, MDC C|profondeur ; gagnées DC B|largeurR, DC B|profondeur, DC C|largeurR, DC C|profondeur, LAT D|largeurR, MO A|press, MO A|tenue, MIL B|tenue, MO B|appel, MO C|tenue, AIL A|largeurR, AV A|largeurR, AV A|profondeur, AIL B|appel, AIL C|press. Isolés après épingles : blocs 98 1/0, 135 2/0, 136 2/0, 137 2/0,
      156 1/0, bloc 1 seul 0,95 ms/step (contention résiduelle) ; annexes identification 1/0, scan 5/0, contact 25/0,
      remises 36/0. Rouges hérités, nommés : 246d ; « contres arrivés à l'entrée » ;
-     verify-loi12 « le mur se tient » ; verify-expulsion « le corps sort et reste ».- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+     verify-loi12 « le mur se tient » ; verify-expulsion « le corps sort et reste ».
+     Sceau : commit afee802, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo servi = construit). La Campagne V (248-255) est close : les six lots de la carte du book
+     (258, 258b, 257, 259, 253, 255, 254) sont scellés ; viennent les transversaux.
+- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
