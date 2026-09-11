@@ -10815,6 +10815,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le 257 : l'expulsé qui dérivait au pas lent du 260 marche désormais à l'entretien). Rouges
      hérités, nommés : 246d ; « contres arrivés à l'entrée » ; verify-loi12 « le mur se tient » (4,6
      m) + son sabotage.
+     Sceau : commit f5c12b4, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo servi = construit). Le transversal n° 2 est scellé ; vient la couche de croyance (Modèle 04).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
