@@ -1,3 +1,4 @@
+import { tirage } from './rng.js';
 // duel.js — LES DUELS DE CORPS SUR PORTEUR (lot 33 : la volumétrie est une dette comme une
 // autre — rondo-sim crevait le plafond de 1 250 à 1 263). La FAMILLE est cohésive : la CHARGE
 // D'ÉPAULE (lot 32) et le TACLE GLISSÉ SUR PORTEUR (lot 33) — les deux paris physiques joués
@@ -61,7 +62,7 @@ export function slideTackleStep(st, c, cfg) {
   // quand même — la note fait le penalty. Clé absente : le pari d'hier au bit.
   if (st.full && cfg.retenueSurface
     && st.pitch.inBox(foe.p[0], foe.p[2], Math.sign(st.pitch.ownGoal(foe.team).x || 1))
-    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() > (cfg.retenueSurface.glisse ?? 0.3) * (foe.skill?.aggrF ?? 1) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1)) {   // …ET LA CONSIGNE (196, axe duel) : « va au contact » / « reste debout » — le CHOIX du coach par-dessus le tempérament (aggrF)
+    && tirage(st, 'duel', foe.id, st.rnd2 ?? st.rnd ?? (() => 0.5))() > (cfg.retenueSurface.glisse ?? 0.3) * (foe.skill?.aggrF ?? 1) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1)) {   // …ET LA CONSIGNE (196, axe duel) : « va au contact » / « reste debout » — le CHOIX du coach par-dessus le tempérament (aggrF)
     st._slideT[foe.team] = st.t;
     st.events.push({ t: +st.t.toFixed(2), type: 'retenue-surface', by: foe.id });   // le refus NOMMÉ — comptable (télémétrie, clause)
     return;
@@ -85,7 +86,7 @@ export function slideTackleStep(st, c, cfg) {
     if (!tableOk && !jambes) return;                        // rien à toucher : un pro reste debout
     // …et l'imprudence est l'EXCEPTION, pas la règle (mesuré : chaque situation jambes partait —
     // fautes 2,5/match, réel ~0,8/3 min) : 70 % du temps, le pro retient ce tacle-là aussi.
-    if (!tableOk && (st.rnd ? st.rnd() : 0.5) > (S.imprudence ?? 0.3) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1) * (st.full && cfg.carton && (foe._jaunes ?? 0) >= 1 ? (cfg.carton.retenue ?? 0.55) : 1)) return;   /* (257) l'averti glisse moins */   // …le taux d'imprudence en clé (191) × la CONSIGNE duel (196)
+    if (!tableOk && tirage(st, 'duel', foe.id, st.rnd ?? (() => 0.5))() > (S.imprudence ?? 0.3) * ((role(foe).duel ?? 0.5) !== 0.5 ? 0.6 + 0.8 * role(foe).duel : 1) * (st.full && cfg.carton && (foe._jaunes ?? 0) >= 1 ? (cfg.carton.retenue ?? 0.55) : 1)) return;   /* (257) l'averti glisse moins */   // …le taux d'imprudence en clé (191) × la CONSIGNE duel (196)
     if (tableOk) {
       const tc = Math.min(0.4, Math.max(0.1, (sit.dist - 0.35) / Math.max(3.5, vq0)));
       const tMid = Math.min(0.5, (tc + 0.55) / 2);
@@ -97,8 +98,8 @@ export function slideTackleStep(st, c, cfg) {
   }
   foe.slideCd = st.t + cfg.slideCooldown;
   st._slideT[foe.team] = st.t;
-  foe.down = cfg.slideRecovery * (0.9 + 0.2 * (st.rnd ? st.rnd() : 0.5));
-  const roll = st.rnd ? st.rnd() : 0.5;
+  foe.down = cfg.slideRecovery * (0.9 + 0.2 * tirage(st, 'duel', foe.id, st.rnd ?? (() => 0.5))());
+  const roll = tirage(st, 'duel', foe.id, st.rnd ?? (() => 0.5))();
   // +0,15 : l'accuracy 0,6 de la table couvrait AUSSI l'incertitude géométrique — désormais
   // validée AVANT l'engagement (table + couloir prédit). Le jet ne porte plus que l'exécution
   // (mesuré à 0,6 post-validation : 65 % d'échecs, un pro engagé sur bonne géométrie touche ~75 %).
@@ -252,12 +253,12 @@ export function chargeStep(st, c, dt, cfg) {
   const edge = ((foe.skill?.chargeF ?? 1) - (c.skill?.chargeF ?? 1)) * 0.5
     + Math.min(0.15, hyp(foe.v[0], foe.v[1]) * 0.02)
     - Math.min(0.14, vSpd * 0.022);
-  const won = (st.rnd ? st.rnd() : 0.5) < 0.40 + edge;
+  const won = tirage(st, 'duel', foe.id, st.rnd ?? (() => 0.5))() < 0.40 + edge;
   st.events.push({ t: +st.t.toFixed(2), type: 'duel', by: foe.id, won, kind: 'épaule', sur: c.id });
   if (!won) { foe._bite = st.t + 0.45; return; }
   // l'épaule a gagné : le ballon jaillit du pied — latéral à la course, côté seedé
   if (c.act && winding(c)) abortGesture(c, 'chargé', { log: st.gestures });
-  const side = (st.rnd ? st.rnd() : 0.5) < 0.5 ? 1 : -1;
+  const side = tirage(st, 'duel', foe.id, st.rnd ?? (() => 0.5))() < 0.5 ? 1 : -1;
   const ux = vSpd > 0.5 ? c.v[0] / vSpd : Math.cos(c.yaw), uz = vSpd > 0.5 ? c.v[1] / vSpd : Math.sin(c.yaw);
   st.ball.release('contesté');
   // …une bousculade, pas une passe à l'adversaire : le ballon s'écarte PEU (1,4 m/s — à
@@ -324,13 +325,13 @@ export function accrocheStep(st, c, cfg, pressAxe = 1) {
       && ((r.p[0] - c.p[0]) * gx + (r.p[2] - c.p[2]) * gz) / gl > 0.5).length;
     const danger = restants < 2;
     const enSurface = pitch.inBox(q.p[0], q.p[2], Math.sign(pitch.ownGoal(q.team).x || 1));
-    if ((st.rnd2 ?? st.rnd ?? (() => 0.5))() >= accrocheP(q, pressAxe, danger, enSurface) * (0.8 + 0.4 * role(q).press) * (q.skill?.aggrF ?? 1) * (enSurface && st.full && cfg.retenueSurface ? (cfg.retenueSurface.accro ?? 0.4) : 1) * (st.full && cfg.carton && (q._jaunes ?? 0) >= 1 ? (cfg.carton.retenue ?? 0.55) : 1)) continue;   // (257) l'AVERTI se retient (ρ joueur, Modèle 12 §3.5)   // …l'AGRESSIVITÉ est une note (151) : le hargneux accroche (et paie ses fautes) — et LA RETENUE DE SURFACE (169b) resserre encore la main dans la boîte
+    if (tirage(st, 'duel', q.id, st.rnd2 ?? st.rnd ?? (() => 0.5))() >= accrocheP(q, pressAxe, danger, enSurface) * (0.8 + 0.4 * role(q).press) * (q.skill?.aggrF ?? 1) * (enSurface && st.full && cfg.retenueSurface ? (cfg.retenueSurface.accro ?? 0.4) : 1) * (st.full && cfg.carton && (q._jaunes ?? 0) >= 1 ? (cfg.carton.retenue ?? 0.55) : 1)) continue;   // (257) l'AVERTI se retient (ρ joueur, Modèle 12 §3.5)   // …l'AGRESSIVITÉ est une note (151) : le hargneux accroche (et paie ses fautes) — et LA RETENUE DE SURFACE (169b) resserre encore la main dans la boîte
     st._faute = { t: st.t, par: q.id, sur: c.id, team: c.team, p: [c.p[0], c.p[2]], grave: danger, kind: 'accrochage', vSur: cv, dir: [c.v[0], c.v[1]] };
     // …ET LE PORTEUR S'ARRACHE UNE FOIS SUR DEUX (v2, mesuré : la v1 cassait TOUTES les courses
     // accrochées — A/B 18 → 13 buts, l'occasion supprimée chirurgicalement ; au réel le battu
     // qui retient ne stoppe pas toujours) : la faute est POSÉE (l'avantage la jouera — le
     // porteur qui file garde le ballon, l'arbitre laisse), la course VIT.
-    const arrache = (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5;
+    const arrache = tirage(st, 'duel', q.id, st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5;
     st._faute.arrache = arrache;   // (257) l'arraché : la course a vécu, la faute pèse moins
     st.events.push({ t: +st.t.toFixed(2), type: 'faute', by: q.id, sur: c.id, kind: 'accrochage', prometteur: danger, arrache, p: [+c.p[0].toFixed(1), +c.p[2].toFixed(1)] });
     if (!arrache) {
@@ -350,8 +351,9 @@ export function accrocheStep(st, c, cfg, pressAxe = 1) {
  *  consigné). Rend true si dégagé (pas de prise) ; false : le chemin d'hier au bit. */
 export function tacleDegage(st, q, cfg) {
   const TD = st.full && cfg.tacleDegage;
-  if (!TD || !st.rnd || st.rnd() <= (TD.prise ?? 0.55) * (q.skill?.tacleGardeF ?? 1)) return false;
-  const a = Math.atan2(st.ball.p[2] - q.p[2], st.ball.p[0] - q.p[0]) + (st.rnd() - 0.5) * (TD.bruit ?? 0.9);
+  const rndTD = tirage(st, 'duel', q.id, st.rnd);
+  if (!TD || !rndTD || rndTD() <= (TD.prise ?? 0.55) * (q.skill?.tacleGardeF ?? 1)) return false;
+  const a = Math.atan2(st.ball.p[2] - q.p[2], st.ball.p[0] - q.p[0]) + (rndTD() - 0.5) * (TD.bruit ?? 0.9);
   const v = TD.v ?? 7;
   if (st.events.length) st.events[st.events.length - 1].degage = true;
   st.ball.release('contesté');
@@ -384,7 +386,7 @@ export function contreEngage(st, cfg) {
   const ux = lead[0] - from[0], uz = lead[1] - from[1], ul = hyp(ux, uz) || 1;
   const own = st.pitch.ownGoal(1 - c.team);
   const enSurface = st.pitch.inBox(c.p[0], c.p[2], own.sign);
-  const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
+  const rnd = tirage(st, 'duel', c.id, st.rnd2 ?? st.rnd ?? (() => 0.5));
   const defs = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0);
   let dernier = null, dMin = Infinity;
   for (const q of defs) { const dd = Math.abs(q.p[0] - own.x); if (dd < dMin) { dMin = dd; dernier = q; } }
@@ -421,7 +423,7 @@ export function contreTir(st, cfg) {
     const d = hyp(q.p[0] - st.ball.p[0], q.p[2] - st.ball.p[2]);
     if (d > rayonContre(st, q, C, CT)) continue;
     q._contreCd = st.t + 1.5;
-    const rnd = st.rnd ?? (() => 0.5);
+    const rnd = tirage(st, 'duel', q.id, st.rnd ?? (() => 0.5));
     if (C) {
       // LES ISSUES DU CONTACT (258b, Modèle 10 §5.2 — la table du réel : 2,3 % de tirs déviés sur 27,5 contrés) : renvoi
       // franc (retourné ±40°, e_c 0,55), blocage mou (0,30 v, le second ballon), sortie (latéral, 0,5 v), déviation

@@ -799,6 +799,11 @@ export const MATCH = {
   epaule: { marge: 2, profond: 3, haut: 0.3 },
   pausa: { ttpPose: 1.5, ttpVif: 2.0, tenueBas: 1.25, tenueHaut: 0.8, garde: 0.7, max: 2.5, marge: 1.0, engages: 2, engage: 2, courseMin: 0.5, zone: [0.55, 0.88], rayon: 12, contact: 1.0, touche: 0.25, gainMin: 1.15 },   // LA PAUSA (253, pausa.js — la carte du book, Bible 07 §7 : 3-6 par match de 1,5-3,5 s, mesuré 0,5) : le porteur au calme (temps avant la pression ≥ seuil : ttpPose au tempo posé → ttpVif au tempo vif, × axe(tenue du rôle : tenueBas → tenueHaut) ÷ composureF), dans la zone [zone] du terrain, avec ≥ engages adversaires lancés vers le ballon (> engage m/s) et une course partenaire en cours (≥ courseMin s restantes) pas encore servable, TIENT : ni passe ni conduite (touche serrée touche) — jusqu'à servie / pression (ttp < garde) / expirée (max s, ou holdMax + 1) / course morte ; l'entrée exige hold ≤ holdMax − marge. L'événement pausa porte durée, issue, gain (≥ gainMin = valeur produite). null : l'adoption d'hier au bit
   piege: { p: 0.8, pas: 3, duree: 0.8, bande: 4, portee: 45, min: 14 },
+  flux: true,             // LES FLUX RNG NOMMÉS (264, st.full — doc rng.js : Modèle 01 §3.1, test 8). Chaque tirage du
+                          // jeu est une fonction PURE de coordonnées (graine, sous-système, tick physique, entité, index) :
+                          // passe, tir, duel, geste, arbitre, intention, cpa (la perception a déjà ses LCG par corps).
+                          // Un tirage ajouté dans un module ne déplace plus les autres : le monde ne dépend plus de l'ordre
+                          // d'appel — la condition des rejeux et des A/B tactiques. null : le flux séquentiel d'hier au bit.
   croyance: { dtObs: 0.1, regardPasse: 0.2, phiDet: 30, kDet: 0.15, phiMot: 75, kMot: 0.10, uRef: 2, coupure: 100, r0: 45, tete: 80, qMin: 0.10, qEq: 0.15, rEq: 40, qId: 0.35, rId: 20, s0: 0.15, kappa: 0.02, sv0: 0.25, svK: 0.015, Tv: 1.2, sigV: 0.9, sigA: 1.2, sMax: 12, Tprior: 2.5, Tblend: 3, sTac: 7 },
                           // LA COUCHE DE CROYANCE (262, st.full — doc croyance.js : le transversal n° 3, Modèle 04). Chaque
                           // corps tient une croyance datée par entité, observée toutes les dtObs s : le champ visuel à deux canaux (détail phiDet / kDet,

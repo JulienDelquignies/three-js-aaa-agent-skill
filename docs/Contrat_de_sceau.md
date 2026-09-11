@@ -69,9 +69,9 @@ ultra adapté football, réutilisable sur d'autres projets. Chaque « ok continu
   RE-BASÉES au 263 par la copie `scripts/book/fingerprint-ov.mjs` : le défaut de fe85ce1 (= 262) relu = `8c7719e7be1fd95c /
   d6e16464895402f4` (le jumeau du 263 : `cadence: null`) ; 263 (cadence dec 0,1, le nouveau défaut) = `e84a43c302ac93af / 5c36757dc8e7aa1e`.
 
-## L'ordre après le 262 (PLAN_DOCTRINE, la carte du book)
+## L'ordre après le 264 (PLAN_DOCTRINE, la carte du book)
 
-Le pas de décision séparé du pas physique et les flux RNG nommés (Modèle 01) → le duel comme vecteur / la passe qui se
+Le 263 (le pas de décision, cadence.js) et le 264 (les flux RNG nommés, rng.js) sont scellés → le duel comme vecteur / la passe qui se
 manque à la bonne distance → le ballon qui sort et le temps du match → le bloc qui perçoit et la ligne qui est une ligne ;
 dans la croyance : le test d'import (les décisions lisent la croyance), l'attention, la tromperie, la communication.
 Dettes nommées : les slots qui sautent (coulissement par ligne à gain k), les ruptures trop courtes (budget de

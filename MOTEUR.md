@@ -405,6 +405,18 @@ au flux du 232), plongeons 19 → 15,5, CPU p50 430 → 192 µs par pas (182 →
 (les ticks par pas, la phase, hzDecision, le vol mort, 600 appels du cerveau par minute à 1/60 comme à 1/30, sabotage).
 Sonde : `scripts/book/sonde-263.mjs` (+ `ks-263.mjs`). Fiche : `M01-boucle-simulation.md`.
 
+### Les flux RNG nommés (lot 264, `cfg.flux` — `rng.js`)
+
+Le hasard du jeu vivait sur deux flux séquentiels partagés (`st.rnd`, `st.rnd2`). Le 264 pose le tirage à coordonnées du
+Modèle 01 §3.1 : `draw(graine, flux, tick, entité, k)` (finaliseur murmur3 sur entiers 32 bits) et `tirage(st, nom, entité,
+hier)` qui rend une fonction pure sous `st._flux` (posé par `matchStep` : la graine, le tick physique, le compteur k par
+(flux, entité) remis à zéro chaque pas) et `hier` sans la clé. Huit flux : passe, tir, duel, geste, arbitre, intention, cpa
+(la perception a ses LCG par corps). Cinquante-quatre sites convertis dans treize modules, chacun gardant son expression
+d'hier au bit sans la clé. Mesuré : un `st.rnd()` ajouté à chaque image laisse 2 × 300 s de match bit-identiques sous la
+clé et les déplace sans elle. Clé absente : le flux séquentiel d'hier au bit. Banc : bloc 264 (les lois pures, la
+corrélation des entités voisines, la fixture de neutralité, sabotage). Sonde : `scripts/book/sonde-264.mjs`. Fiche :
+`M01-boucle-simulation.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

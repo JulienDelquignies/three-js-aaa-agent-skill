@@ -1,3 +1,4 @@
+import { tirage } from './rng.js';
 // premiere-intention.js — JOUER LE BALLON SANS LE POSSÉDER : la famille de la première
 // intention. La remise de tête et la volée vivent dans tete.js (le répertoire aérien) ; ICI
 // vit la passe en UNE TOUCHE au sol (lot 44) — extraite de rondo-sim au bit près quand la
@@ -44,7 +45,7 @@ export function uneTouche(st, p, cfg) {
   const AR = st.full && cfg.appuiRemise ? cfg.appuiRemise : null;
   const sgAR = AR ? Math.sign(st.pitch.attackGoal(p.team).x || 1) : 0;
   const dosAR = !!(AR && foeU && Math.cos(p.yaw) * sgAR < -(AR.cos ?? 0.3) && d2(foeU.p, p.p) <= (AR.press ?? 2));
-  const force = dosAR && (st.rnd ? st.rnd() : 0.5) < 1 - Math.max(0, (p.skill?.composureF ?? 1) - 1) * (AR.sangFroid ?? 1);
+  const force = dosAR && tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() < 1 - Math.max(0, (p.skill?.composureF ?? 1) - 1) * (AR.sangFroid ?? 1);
   // …LE SOCLE (lot 111, UT.base — « ça manque de une-deux » : 7 % de une-touche mesuré, tout
   // au pressé ; la pente 1−2×style s'annulait au défaut 0,5). Le une-touche calme du VRAI
   // football existe à tout style (~15-25 % des passes) : base = le plancher, la pente du
@@ -52,11 +53,11 @@ export function uneTouche(st, p, cfg) {
   // …et LE RELAIS DU TROISIÈME HOMME (lot 111) force presque la tentative : un C en course.
   const relais3 = st.players.some((q) => q.team === p.team && (q._troisT ?? -1) > st.t);
   const pCalme = (UT.calme ?? 0.5) * Math.max(V ? (V.base ?? 0.45) : (UT.base ?? 0), 1 - 2 * (tac(st, p.team).style ?? 0.5)) * (relais3 ? (UT.relais ?? 2.2) : 1) * (V ? (p.skill?.visionF ?? 1) : 1);   // …ET LA VISION JOUE VITE AU CALME (216 : celui qui voit le jeu n'a pas besoin de contrôler)
-  const veut = pressOk || force || (pCalme > 0 && (st.rnd ? st.rnd() : 0.5) < pCalme);
+  const veut = pressOk || force || (pCalme > 0 && tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() < pCalme);
   if (!veut) refus('ut-envie'); else if (arrU > (UT.vmax ?? 9.5)) refus('ut-vitesse'); else if (st.ball.p[1] >= 0.5) refus('ut-haut');
   if (veut && arrU <= (UT.vmax ?? 9.5)
     && st.ball.p[1] < 0.5
-    && (force || (st.rnd ? st.rnd() : 0.5) < (UT.p ?? 0.65) * (st.full && cfg.tempoAxe !== false ? axe(tac(st, p.team).tempo, 0.6, 1.4) : 1) * Math.min(1.2, p.skill?.controlF ?? 1) * (relais3 ? (UT.murF ?? 1) : 1) * (V && (p.role?.tenue ?? 0.5) !== 0.5 ? axe(p.role.tenue, 1.4, 0.6) : 1))) {   // …ET LE RÔLE TENUE DONNE LA CADENCE (216 : le relayeur (0) joue vite, le meneur (1) garde — identité 0,5)   // …ET LE MUR REND (209, UT.murF — dette 196 : le lanceur d'un une-deux COURT, son mur se posait ; 5 retours/22. Le relais chaud pousse la une-touche au tirage FINAL, pas seulement au calme. Clé absente : ×1, l'hier)
+    && (force || tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() < (UT.p ?? 0.65) * (st.full && cfg.tempoAxe !== false ? axe(tac(st, p.team).tempo, 0.6, 1.4) : 1) * Math.min(1.2, p.skill?.controlF ?? 1) * (relais3 ? (UT.murF ?? 1) : 1) * (V && (p.role?.tenue ?? 0.5) !== 0.5 ? axe(p.role.tenue, 1.4, 0.6) : 1))) {   // …ET LE RÔLE TENUE DONNE LA CADENCE (216 : le relayeur (0) joue vite, le meneur (1) garde — identité 0,5)   // …ET LE MUR REND (209, UT.murF — dette 196 : le lanceur d'un une-deux COURT, son mur se posait ; 5 retours/22. Le relais chaud pousse la une-touche au tirage FINAL, pas seulement au calme. Clé absente : ×1, l'hier)
     const blockers = st.players.filter((q) => q.team !== p.team && !q.keeper && q.down <= 0).map((q) => q.p);
     // LA UNE-TOUCHE SE GAGNE, ELLE NE S'ESPÈRE PAS (lot 131, UT.dose — mesuré avant : 116 s
     // d'errance / 1200 s après les une-touche, p50 2,7 s ; le cap de layoff (4-6 m/s à
@@ -73,7 +74,7 @@ export function uneTouche(st, p, cfg) {
     // se perd parfois chez le mur mal noté VISION — probabilité (1 − visionF) × relaisLecture (visionF
     // 0,85 → 30 %) ; à 50 et au-dessus aucun tirage : l'identité au bit.
     const misV = V?.relaisPrio ? Math.max(0, 1 - (p.skill?.visionF ?? 1)) * (V.relaisLecture ?? 2) : 0;
-    const prioV = !!V?.relaisPrio && !(misV > 0 && (st.rnd ? st.rnd() : 0.5) < misV);
+    const prioV = !!V?.relaisPrio && !(misV > 0 && tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() < misV);
     const cands0 = st.players
       .filter((m) => m.team === p.team && m.id !== p.id && !m.keeper && m.down <= 0)
       .map((m) => { const c = cibleDe(m); return { m, c, d: hyp(c[0] - p.p[0], c[1] - p.p[2]) }; })
@@ -107,7 +108,7 @@ export function uneTouche(st, p, cfg) {
       st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: p.id, count: st.passes });
       st.lastTouch = p.team;
       const sigU = (p.skill?.passSigma ?? cfg.execSigma ?? 0.044) * (pressOk ? 1.6 : 1.3);
-      const yawU = Math.atan2(mate.c[1] - p.p[2], mate.c[0] - p.p[0]) + gauss(st.rnd ?? (() => 0.5)) * sigU;   // (218) vers la cible (la course du relais)
+      const yawU = Math.atan2(mate.c[1] - p.p[2], mate.c[0] - p.p[0]) + gauss(tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))) * sigU;   // (218) vers la cible (la course du relais)
       // …ET LE RENVOI S'AMORTIT (lot 51 — « des contrôles pas beaux ») : une première intention
       // DÉVIE le flux, elle ne le renverse pas pleine vitesse (mesuré : un vol de 7 m/s renvoyé
       // à ~180° instantanément — physiquement absurde, visuellement du ping-pong). La vitesse

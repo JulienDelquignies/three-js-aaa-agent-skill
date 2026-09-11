@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
@@ -319,7 +319,7 @@ function receive(st, id, cfg = RONDO) {
       // tirage est seedé (le hasard de la partie, pas un dé caché).
       const arr = hyp(st.ball.v[0], st.ball.v[2]);
       const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy * (p.skill?.controlF ?? 1))));
-      if (pMiss > 0 && (st.rnd ? st.rnd() : 0.5) < pMiss) {
+      if (pMiss > 0 && tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))() < pMiss) {
         deny(st, 'contrôle-manqué');
         st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62], dW(st, cfg, 0.62));
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot,
@@ -495,7 +495,7 @@ function trySlide(st, cfg) {
   p.slideCd = st.t + cfg.slideCooldown;                        // gagné ou perdu : pas deux plongeons de suite
   st._slideT[p.team] = st.t;
   // le temps au sol n'est plus une constante d'horloger (mesuré : 1,200 s pile sur chaque tacle, référence réelle 0,5-1 s) — variance seedée ±10 % autour de slideRecovery
-  p.down = cfg.slideRecovery * (0.9 + 0.2 * (st.rnd ? st.rnd() : 0.5));  // he is on the ground either way
+  p.down = cfg.slideRecovery * (0.9 + 0.2 * tirage(st, 'duel', p.id, st.rnd ?? (() => 0.5))());  // he is on the ground either way
   // LE MATCH JOUE LE CONTACT (lot 51) : le pied arrive dans ~0,1-0,4 s, la géométrie re-jugée
   // au sommet de trySlide — le réduit garde l'instantané d'hier, au bit près (doctrine st.full).
   if (st.full) {
@@ -690,7 +690,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           // duel à l'équipe qui défend le plus, et le monde noté s'égalisait (61-69 mesuré,
           // l'élite dominait 40-32 avant le pique). Le raté a un coût : le cooldown court.
           const pokeSkill = 0.5 + 0.45 * Math.max(0, Math.min(1, ((q.skill ? (q.skill.tackleReach + 0.10) / 0.20 : 0.5))));
-          if ((st.rnd ? st.rnd() : 0.5) > pokeSkill) { q._pokeCd = st.t + 0.9; continue; }
+          if (tirage(st, 'duel', q.id, st.rnd ?? (() => 0.5))() > pokeSkill) { q._pokeCd = st.t + 0.9; continue; }
           const ux = st.ball.p[0] - q.p[0], uz = st.ball.p[2] - q.p[2];
           const ul = hyp(ux, uz) || 1;
           // le pique TRAVERSE le ballon : déviation franche loin du pied qui pique — un 50/50
@@ -814,7 +814,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       st._calmKey = `${st.possession.carrier}:${st.turnovers}:${st.passes}`;
       // × persona.calm : le posé et le vif ne tiennent pas le ballon pareil — l'identité au tempo
       // …ET LE PORTEUR LIBRE PORTE (211, cfg.tenueCalme — retour utilisateur « améliorer les passes » : tenue libre mesurée p50 0,90 s pour un réel 2-4, 729 passes/90 min pour 400-600, le plafond 1,0 décapitait le calme). La plage s'étire (tenue.calm), la NOTE decisions garde la tête (× decF), le RÔLE tenue donne la cadence (le meneur garde, le relayeur joue vite — identité 0,5), le TEMPO reste le choix du coach. Clé absente : l'hier au bit.
-      { const hc = (st.full && cfg.tenueCalme?.calm) || (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + (st.rnd ? st.rnd() : 0.5) * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.5, 0.5) * (st.full && cfg.tenueCalme ? (c.skill?.decF ?? 1) * ((c.role?.tenue ?? 0.5) !== 0.5 ? axeTac(c.role.tenue, 0.7, 1.4) : 1) : 1); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
+      { const hc = (st.full && cfg.tenueCalme?.calm) || (st.full && cfg.holdCalmFull) || cfg.holdCalm; st._calmHold = (hc[0] + tirage(st, 'intention', c.id, st.rnd ?? (() => 0.5))() * (hc[1] - hc[0])) * (c.persona?.calm ?? 1) * axeTac(tacDe(st, c.team).tempo, 1.5, 0.5) * (st.full && cfg.tenueCalme ? (c.skill?.decF ?? 1) * ((c.role?.tenue ?? 0.5) !== 0.5 ? axeTac(c.role.tenue, 0.7, 1.4) : 1) : 1); }   // LE TEMPO (149) : la circulation vive raccourcit la tenue — 0,5 = ×1
     }
     const foeBody = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, c.p)), 99);
     // …SAUF LE MUR D'UN UNE-DEUX (212b — l'interaction 211×209 mesurée : 41 → 13 % de retours, le mur TENAIT son ballon calmement pendant que le lanceur courait) : un coéquipier au relais CHAUD (_troisT) veut le ballon MAINTENANT — la tenue calme s'efface, la première intention garde ses droits. Clé absente : le calme d'hier.

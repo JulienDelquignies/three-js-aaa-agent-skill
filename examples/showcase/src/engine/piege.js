@@ -10,7 +10,7 @@
 // laisse l'espace derrière elle — la passe qui bat le piège vaut une course seule. null : la ligne d'hier au bit.
 import { axe as axeTac, tac as tacDe } from './tactics.js';
 import { etaDe, sigmaSync } from './familiarite.js';
-import { gauss } from './attributes.js';
+import { gauss } from './attributes.js'; import { tirage } from './rng.js';
 
 export function piegeStep(st, cfg) {
   const K = st.full ? cfg.piege : null;
@@ -25,7 +25,7 @@ export function piegeStep(st, cfg) {
   if (dBut > (K.portee ?? 45) || dBut < (K.min ?? 14)) return;
   const agress = axeTac(tacDe(st, T).piege, 0, 1);
   if (agress <= 0) return;
-  const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
+  const rnd = tirage(st, 'intention', 30 + T, st.rnd2 ?? st.rnd ?? (() => 0.5));
   if (rnd() >= (K.p ?? 0.8) * agress) return;
   // la ligne de T : l'avant-dernier corps de T vers son but (le gardien compris, comme la Loi 11)
   let last = Infinity, second = Infinity;

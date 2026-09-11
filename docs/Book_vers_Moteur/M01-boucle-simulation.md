@@ -49,7 +49,7 @@ de jeu réel (fraction 0,83).
 | 5 autocorrélation des vitesses | écart < 0,05 au tracking | mesurable | 0,99 / 0,96 / 0,84 / 0,62 / 0,32 à 0,1 / 0,2 / 0,5 / 1 / 2 s — à confronter |
 | 6 sensibilité à la perception | pente monotone | sans objet (τ_p, σ_p absents) |
 | 7 cohérence inter-LOD | | absent (un seul LOD) |
-| 8 neutralité du flux RNG | D_KS < 0,01 | **réfuté par construction** (flux séquentiel partagé) |
+| 8 neutralité du flux RNG | D_KS < 0,01 | **tenu au 264** (forme forte : un tirage ajouté laisse 2 × 300 s bit-identiques) | avant : réfuté par construction (flux séquentiel partagé) |
 | 9 budget CPU | p50 < 40 µs, p99 < 120 | mesurable, **réfuté** | p50 **251 µs**, p99 **2 492 µs** (60 Hz : 130 s par match) ; au 262 p50 436 ; au 263 (le cerveau à 10 Hz) **p50 192 µs**, p99 2 267 (121 s par match) — le corps à 60 Hz coûte le reste |
 | 10 conservation du temps | identité dure ; fraction 0,547 | mesurable, **partiel** | 1 997 + 403 = 2 400 ✓ ; fraction **0,832** |
 | 11 bornage aérodynamique | | tenu par `checkBallFlight` (énergie, tunnel) |
@@ -66,6 +66,9 @@ de jeu réel (fraction 0,83).
    plus par match). Reste nommé : le contact balayé (le pas physique reste sensible), les tirs de loin sous la cadence.
 2. **Les flux RNG nommés** (test 8) : `subRng` par sous-système (passe, tir, duel, perception, arbitre) ; un tirage
    ajouté ne déplace plus le monde.
+   → **SCELLÉ 264** (`rng.js` draw / tirage, `cfg.flux`, NOTES 342) : le tirage à coordonnées du §3.1, huit flux nommés,
+   cinquante-quatre sites convertis ; test 8 tenu en forme forte (un tirage ajouté laisse le match bit-identique). Reste :
+   PractRand / TestU01 sur le mélange, le rejeu multi-plateforme.
 3. **Le double tampon et l'invariance d'ordre** (test 1 ; Modèle 04 test 7) : une clause au banc qui permute.
 4. **Le budget** (test 9) : 251 → 52 µs — grille spatiale, zéro allocation, décision à 10 Hz ; c'est la condition
    de la saison simulée.

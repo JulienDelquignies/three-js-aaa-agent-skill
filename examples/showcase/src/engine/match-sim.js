@@ -1,7 +1,7 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne , bandeDuCentral, remettreAuPivot, hommeRemis, purgerPassation } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { croyanceStep, croyanceDe } from './croyance.js'; import { familiariteStep, affinite as affiniteFam } from './familiarite.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { croyanceStep, croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { familiariteStep, affinite as affiniteFam } from './familiarite.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
@@ -20,7 +20,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
   const st = makeRondo({ perTeam: perTeam + 1, seed, area: [pitch.dims.length, pitch.dims.width] });
   st.full = pitch.dims.length > 60;
   // le FLUX AUXILIAIRE (lot 97, contrat rng.js : un sous-seed par sous-système) : l'accrochage tire sur st.rnd2 — consommer st.rnd décalait tout le mix aval au bit (mesuré)
-  { let s2 = (seed * 7919 + 13) >>> 0; st.rnd2 = () => ((s2 = (s2 * 1664525 + 1013904223) >>> 0) / 4294967296); }
+  st.seed = seed; { let s2 = (seed * 7919 + 13) >>> 0; st.rnd2 = () => ((s2 = (s2 * 1664525 + 1013904223) >>> 0) / 4294967296); }
   st.tactics = [resoudreTactique(tactics?.[0]), resoudreTactique(tactics?.[1])];   // LA TACTIQUE PAR ÉQUIPE (tactics.js) : absente = équilibre, l'identité au bit.
   // chaque joueur de champ reçoit SON poste (l'index dans la formation — le 9 reste le 9)
   for (const team of [0, 1]) { st.players.filter((q) => q.team === team).forEach((q, i) => { q.post = i; }); }
@@ -764,7 +764,7 @@ function assignMatchJobs(st, cfg) {
                 const wD = (latInt ? 1.6 : 0.7) * (inv ? 0.6 : 1.5) * axe(role(p).largeurR, 0.7, 1.4) * axe(tac(st, atk).largeur, 0.8, 1.3);
                 const wU = (latInt ? 0.8 : 1.5) * (inv ? 1.5 : 0.7);
                 const wB = 0.5 * (inv ? 0.8 : 1.3);
-                const uE = (st.rnd ? st.rnd() : 0.5) * (wD + wU + wB);
+                const uE = tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * (wD + wU + wB);
                 espece = uE < wD ? 'deborde' : uE < wD + wU ? 'underlap' : 'banane';
                 if (espece === 'deborde') deepZ = Math.sign(p.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(p.p[2]) + 4);
                 else if (espece === 'banane') { deepZ = Math.sign(p.p[2] || 1) * Math.min(pitch.hz - 1.5, Math.abs(p.p[2]) + 3); p._runBanane = st.t + 0.8; }
@@ -773,7 +773,7 @@ function assignMatchJobs(st, cfg) {
               if (st.full && cfg.courseServie && !espece) {
                 const gZ = gapZ(st, p, atk, off.sgn, cfg.courseServie);
                 if (gZ != null) { deepZ = gZ; espece = 'intervalle'; }
-                else { deepZ = Math.sign(p.p[2] || ((st.rnd ? st.rnd() : 0.5) - 0.5)) * Math.min(pitch.hz - 6, Math.abs(p.p[2]) + 6); espece = 'croise'; }
+                else { deepZ = Math.sign(p.p[2] || (tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() - 0.5)) * Math.min(pitch.hz - 6, Math.abs(p.p[2]) + 6); espece = 'croise'; }
               }
               const dartAdv = Math.min(off.adv + (st.full && cfg.horsJeu ? (cfg.horsJeu.audela ?? 6) : -0.15), myAdv + (diag ? 4 : long ? (cfg.tranchant?.dart ?? 12) : 7));   // (259) sous cfg.horsJeu la course TRAVERSE la ligne (audela m) : c'est la frappe qui la juge, pas la ligne collante d'hier
               const lane = laneClearance([st.ball.p[0], 0, st.ball.p[2]], [off.sgn * (dartAdv + 4), 0, deepZ],
@@ -799,7 +799,7 @@ function assignMatchJobs(st, cfg) {
               && st.players[st.possession.carrier]?.intent?.choice?.to?.id !== p.id
               && st.players.some((q) => q.team !== p.team && q.down <= 0 && d2(q.p, p.p) < (cfg.contreAppel.marque ?? 1.5)
                 && q.p[0] * off.sgn > p.p[0] * off.sgn - 0.3)
-              && (st.rnd ? st.rnd() : 0.5) < (cfg.contreAppel.p ?? 0.5) * axe(role(p).appel, 0.6, 1.4)) {
+              && tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() < (cfg.contreAppel.p ?? 0.5) * axe(role(p).appel, 0.6, 1.4)) {
               p._counter = p._runT; p._runT = st.t + 1.1;
               p._runAdv = Math.max(2, p.p[0] * off.sgn - 5); p._runZ = p.p[2] + Math.sign(st.ball.p[2] - p.p[2] || 1) * 2;
               p._pace = { until: st.t + 1.0, kind: 'contre-appel', next: p._pace?.next ?? st.t + 8 };
@@ -1212,7 +1212,7 @@ export function matchCfg(overrides = {}) {
 
 /** Avance le match d'un pas — le game-loop du rondo, configuré match. */
 export function matchStep(st, dt, cfg = matchCfg()) {
-  if (st.full && (cfg.filet || cfg.bordure)) bordFiletStep(st, dt, cfg);   // la cage et les panneaux sont un matériau (lot 116)
+  if (st.full && cfg.flux) { const F = st._flux ??= { seed: (st.seed ?? 1) >>> 0, tick: 0, k: new Map() }; F.tick = Math.round(st.t / dt); F.k.clear(); } else st._flux = null; if (st.full && (cfg.filet || cfg.bordure)) bordFiletStep(st, dt, cfg);   // (264) LES FLUX RNG NOMMÉS (rng.tirage) : la graine, le tick physique, le compteur par (flux, entité) remis à zéro chaque pas — clé absente : le flux séquentiel d'hier   // la cage et les panneaux sont un matériau (lot 116)
   // le dernier contact d'équipe : le porteur en carry, le frappeur en vol (st.lastPasser)
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;

@@ -1,3 +1,4 @@
+import { tirage } from './rng.js';
 // keeper — LE GARDIEN : la position qui coupe l'angle, la décision d'arrêt, rien d'autre.
 //
 // Un gardien n'est pas un joueur de champ lent : c'est un MÉTIER à deux lois.
@@ -447,7 +448,7 @@ export function gkTenueDue(st, gk, cfg, gkDue, tempoF) {
   if (contre) return gkDue;
   if (gk._tenueAt !== gk._gkSince) {
     gk._tenueAt = gk._gkSince;
-    gk._tenue = ((cfg.gkTenue.min ?? 2.2) + (st.rnd ? st.rnd() : 0.5) * ((cfg.gkTenue.max ?? 4.2) - (cfg.gkTenue.min ?? 2.2))) * tempoF();
+    gk._tenue = ((cfg.gkTenue.min ?? 2.2) + tirage(st, 'intention', gk.id, st.rnd ?? (() => 0.5))() * ((cfg.gkTenue.max ?? 4.2) - (cfg.gkTenue.min ?? 2.2))) * tempoF();
   }
   return Math.max(gkDue, Math.min(gk._tenue, cfg.gkRelease * 1.9));
 }

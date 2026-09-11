@@ -10971,6 +10971,71 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      reste la dette. Rouges hérités, nommés (rouges à HEAD~ aussi, isolés au worktree) : 137 « le troisième homme
      servi » en flux 24 × 300 s, 246d ; verify-loi12 « le mur se tient » (4,6 m) + son sabotage. Bloc 1 seul :
      0,45 ms/step (≤ 1,6 ; 0,54 au 262 — le cerveau de champ à 10 Hz). Le défaut du 263 (cadence dec 0,1) : e84a43c302ac93af / 5c36757dc8e7aa1e (relu par scripts/book/fingerprint-ov.mjs).
+- 342: LES FLUX RNG NOMMÉS (264 — Modèle 01 §3.1 « abandonner les générateurs à état séquentiel »,
+     test 8 « la neutralité du flux » ; la carte du book, Modèle 01 lot 2). Le hasard du jeu vivait sur
+     deux flux SÉQUENTIELS partagés (st.rnd, st.rnd2 : un LCG par partie) — un tirage ajouté dans le
+     module de tir décalait toute la séquence du module de passe, les rejeux cassaient à chaque
+     évolution du code, les A/B tactiques mélangeaient l'effet et le décalage (le test 8 « réfuté par
+     construction »). Sonde AVANT (sonde-264 hash, 2 × 300 s, graines 3 et 7) : un st.rnd() ajouté à
+     chaque image (enchaîné au crochet avantMouvement du 255 — le REMPLACER ôtait le piège et
+     déplaçait le monde pour une autre raison : la sonde a d'abord menti) déplace le match (hash
+     9f59e685 → a16ec4f7, e80e1e20 → e4e13e07). LA LOI (rng.js, cfg.flux && st.full) : le tirage est une
+     FONCTION PURE DE COORDONNÉES u = Φ(graine, sous-système, tick physique, entité, index) —
+     `draw` : un finaliseur murmur3 (mix32) sur des entiers 32 bits exacts (Math.imul, jamais de
+     flottant dans le mélange), « dans le style » Philox / Squares, à passer sur PractRand avant de
+     le tenir pour acquis (le contrat d'appel seul compte, l'algorithme est remplaçable) ; les FLUX
+     nommés : passe (l'erreur de passe, le contrôle manqué, la course du relais), tir (la dispersion
+     145 / 258, la variété, la tête au but), duel (l'épaule, l'accrochage, l'arrachage, le pique, le
+     contre du corps, le duel aérien, le temps au sol), geste (les tentatives de skills-sim), arbitre
+     (le carton, l'aléa des temps morts), intention (les ruptures, la tenue calme, le troisième
+     homme, le une-deux, l'appel, le piège, la tenue du gardien, le corner concédé), cpa (le choix des
+     coups de pied arrêtés) ; la perception et le scan avaient déjà leurs LCG par corps (250, 262).
+     `tirage(st, nom, entité, hier)` : sous st._flux (posé par matchStep : la graine, le tick
+     physique, le compteur k par (flux, entité) remis à zéro chaque pas) une fonction pure ; sinon
+     `hier` — l'expression séquentiale exacte d'hier, au bit. Cinquante-quatre sites convertis dans
+     treize modules (duel, tete, skills-sim, strike-sim, shooting, premiere-intention, referee,
+     movement, keeper, piege, match-sim, rondo-sim, rondo) — le sabotage de la clause a trouvé le
+     dernier (le contrôle manqué de rondo.js). Mesuré APRÈS : LA NEUTRALITÉ TENUE — sous la clé, le
+     tirage ajouté laisse les deux matchs BIT-IDENTIQUES (b996a76d = b996a76d, b0bd44c5 = b0bd44c5) ;
+     et le monde sous la clé est un AUTRE tirage de la même distribution (2 × 45 min : 559 → 569
+     passes par match, 12,5 → 15,5 tirs, 4,0 → 2,5 buts — le bruit de deux matchs, pas une loi). Jumeau : flux null = HEAD au bit (e84a43c302ac93af / 5c36757dc8e7aa1e — le défaut du
+     263, relu par git stash). Banc : verify-match11 bloc 264 (index 162 : les lois pures — mêmes
+     coordonnées même u, un autre flux / tick / entité / index un autre u, u ∈ [0 ; 1), la moyenne à
+     0,5, la corrélation des entités voisines < 0,05 (le garde-fou du book), tirage() compte k et
+     rend hier sans flux ; la fixture — 120 s de match avec un st.rnd() par image : identiques sous
+     la clé, déplacés au sabotage flux null). Ce qu'il nomme : PractRand / TestU01 sur le mélange
+     (le contrat tient, la qualité statistique reste à prouver), le double tampon et l'invariance
+     d'ordre (test 1 : le flux à coordonnées en est la condition — l'entité est dans la clé, plus
+     l'ordre d'appel), les rejeux multi-plateforme (test 2). BANC COMPLET (final264.sh, 8 shards + 25 annexes) : 269 ✓ / 15 ✗ aux shards et 556 ✓ / 9 ✗
+     aux annexes au premier passage — le monde sous la clé est un autre tirage : les marges des flux
+     et les fixtures qui FORCENT le dé bougent. Deux familles de mondes déplacés, épinglées flux
+     null DATÉ 264 après preuve verte à HEAD~ (worktree 9eee4ea, le sceau 263) : (a) les FLUX et
+     fixtures de marge — verify-match11 blocs 7 « la foulée de frappe » (sabotage 3,51 c. 2,74 −
+     0,12), 26 « lot 95 le jockey » (48 c. 54 %), 27 « lot 96 la bande » (sabotage 7,3 c. 8,9 × 1,5),
+     28 « lot 97 les fautes » (3 c. [4 ; 24]), 44 « lot 115 le petit pont » (2 c. 3), 66 « lot 135 la
+     course engagée », 128 « flux 232 » (17 c. 72, surface 64 c. 56), 149 « lot 249b la craie » (16 c.
+     ≥ 18 %) ; verify-attributes 152/158 (la gradation 90 → 594 < 70 → 905), 157, 160 ;
+     verify-remises « le lanceur derrière la ligne » (bassin 0,09) ; (b) les fixtures qui INJECTENT
+     le générateur (st.rnd = () => u — le flux nommé ne les écoute plus, c'est la loi) — blocs 5
+     « la prise propre » (tirage 0,99 : possédé par −1), 51 « lot 120 la chaîne du lob » (espèce
+     undefined), 137 « lot 240 l'appui-remise » (tirage 0,9), 153 « lot 257 le carton juge la
+     nature » (des LCG injectés par itération : sous le flux, mêmes coordonnées, même monde, P =
+     1,00 partout — la volumétrie par le dé d'hier), 157 « lot 254 la ligne au piège » (le tirage
+     du piège forcé) ; verify-slide (les jambes avant le ballon, faute undefined) ; verify-scan «
+     Jordet » : 1 violation — une saccade du REGARD DE PASSE (262) chevauche une frappe une-touche
+     dans ce tirage du monde : DETTE NOMMÉE, le regard de passe doit s'éteindre à la frappe (à
+     régler sous cfg.croyance au prochain lot de la croyance, pas ici : le jumeau du 264 est le
+     défaut du 263). Une règle pour la suite : une fixture ne force plus le dé par st.rnd — elle
+     variera la GRAINE (st.seed) ou posera st._flux ; les fixtures d'hier restent épinglées.
+     verify-identification REGELÉ DATÉ 264 (la règle du 252) : 17 → 23 signatures — perdues LAT D|largeurR, MIL B|tenue, AIL C|largeurR, AV C|tenue ; gagnées GK B|garde, DC B|profondeur, DC C|largeurR, DC C|profondeur, LAT C|profondeur, MIL A|tenue, AV A|profondeur, AIL B|appel, AIL C|repli, AIL D|largeurR
+     — la liste bouge sans qu'aucune loi de rôle n'ait changé : la preuve que six graines sont trop
+     peu (la dette de volumétrie). Isolés après épingles : blocs 5 4/0, 7 1/0, 26 2/0, 27 2/0, 28
+     5/0, 44 3/0, 51 1/0, 66 1/0, 128 2/0, 137 1/1 (son flux 24 × 300 s rouge à HEAD~ aussi :
+     hérité), 149 1/0, 153 1/0, 157 1/0, 162 (le 264) 1/0 ; annexes attributes 27/0, scan 5/0, slide
+     10/0, porte 4/0, remises 36/0, identification 1/0, cartons 6/0, expulsion 8/0, football-rules
+     59/0, tete 7/0 ; bloc 1 seul 0,48 ms/step (≤ 1,6 — le tirage à coordonnées ne coûte rien de
+     visible). Rouges hérités, nommés : 137 « le troisième homme servi » en flux, 246d ;
+     verify-loi12 « le mur se tient » (4,6 m) + son sabotage.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

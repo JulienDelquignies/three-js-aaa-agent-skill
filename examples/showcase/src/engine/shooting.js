@@ -7,7 +7,7 @@ import { simInternals } from './rondo-sim.js';
 import { busy, winding, startGesture } from './gesture.js';
 import { MOVES } from './animkit.js';
 import { tac, axe } from './tactics.js';
-import { role } from './roles.js';
+import { role } from './roles.js'; import { tirage } from './rng.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -86,7 +86,7 @@ export function tryShot(st, c, cfg) {
   let shotKind = null;
   let tzAim = tz;
   if (cfg.shotVariety !== false) {
-    const u = (st.rnd ?? (() => 0.5))();
+    const u = tirage(st, 'tir', c.id, st.rnd ?? (() => 0.5))();
     const fin = c.skill ? Math.max(0, Math.min(1, (0.9 - c.skill.shotSigma) / 0.9)) : 0.5;
     const elevFor = (yT, v) => Math.min(0.32, (yT + 4.9 * (dGoal / v) * (dGoal / v)) / Math.max(1, dGoal));
     // LE RÉPERTOIRE EXHAUSTIF (lot 39, retour utilisateur « flottante, enroulée, puissante,
@@ -300,7 +300,7 @@ export function tryClear(st, c, cfg) {
   // droit d'être rare — très profond (< 9 m), collé, tirage 0,3 × le sang-froid (composureF —
   // le joueur sûr trouve mieux) ; l'étage TOUCHE volontaire vit en dessous (clearTouche).
   const panique = st.full && cfg.corner && depth < (cfg.clearTouche || cfg.clearServi !== false ? 10 : 12) && (glued || near >= 2)
-    && (st.rnd2 ?? st.rnd ?? (() => 0.5))() < (cfg.clearTouche || cfg.clearServi !== false
+    && tirage(st, 'intention', c.id, st.rnd2 ?? st.rnd ?? (() => 0.5))() < (cfg.clearTouche || cfg.clearServi !== false
       ? 0.35 * Math.min(1.3, 2 - (c.skill?.composureF ?? 1)) : 0.45);
   const flank = c.p[2] >= 0 ? -pitch.hz * 0.55 : pitch.hz * 0.55;  // le flanc OPPOSÉ à la mêlée
   // LE DÉGAGEMENT CHERCHE UNE TÊTE (lot 131, cfg.clearServi && st.full — mesuré avant : 33

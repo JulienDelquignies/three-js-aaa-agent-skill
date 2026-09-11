@@ -1,4 +1,5 @@
 import { BALL } from './ball.js';
+import { tirage } from './rng.js';
 import { BallBody } from './ball-body.js';
 import { predictPath, solvePass, laneClearance, interceptPoint, etaCourse, PASS_STYLE } from './ball-predict.js';
 import { winding } from './gesture.js';
@@ -1037,7 +1038,7 @@ function turnover(st, carrier, why, cfg = null) {
     if (TP) {
       const pMiss = Math.max(0, Math.min(TP.max ?? 0.55,
         (sp0 - (TP.seuil ?? 10)) * (TP.taux ?? 0.07) / Math.max(0.5, w.skill?.controlF ?? 1)));
-      if (pMiss > 0 && (st.rnd ? st.rnd() : 0.5) < pMiss) {
+      if (pMiss > 0 && tirage(st, 'passe', w.id, st.rnd ?? (() => 0.5))() < pMiss) {
         st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62]);
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: carrier, speed: +sp0.toFixed(1), miss: true, settle: null });
         st.phase = 'loose'; st.possession = { team: st.players[carrier].team, carrier: -1 };

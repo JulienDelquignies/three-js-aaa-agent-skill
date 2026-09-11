@@ -1,3 +1,4 @@
+import { tirage } from './rng.js';
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
 // entré en surface sur 4 matchs (vols tendus mangés par le premier rideau) et 0,8 s/match de
 // fenêtre de tête avec un corps dessous — les centres retombaient, les dégagements attendaient
@@ -44,7 +45,7 @@ export function teteStep(st, cfg) {
       ? ((joueur.skill?.chargeF ?? 1) - (rival.skill?.chargeF ?? 1)) * 0.25
         + ((joueur.skill?.sautF ?? 1) - (rival.skill?.sautF ?? 1)) * 0.25
       : ((joueur.skill?.chargeF ?? 1) - (rival.skill?.chargeF ?? 1)) * 0.5;
-    const perdant = (st.rnd ? st.rnd() : 0.5) < 0.5 + edge ? rival : joueur;
+    const perdant = tirage(st, 'duel', joueur.id, st.rnd ?? (() => 0.5))() < 0.5 + edge ? rival : joueur;
     if (perdant === joueur) joueur = rival;
     st.events.push({ t: +st.t.toFixed(2), type: 'duel', kind: 'aérien', by: joueur.id, contre: perdant.id, won: true, ...(saute ? { saut: true } : {}) });
   } else if (T.duel) {
@@ -61,8 +62,8 @@ export function teteStep(st, cfg) {
         ? ((joueur.skill?.chargeF ?? 1) - (venant.skill?.chargeF ?? 1)) * 0.25
           + ((joueur.skill?.sautF ?? 1) - (venant.skill?.sautF ?? 1)) * 0.25
         : ((joueur.skill?.chargeF ?? 1) - (venant.skill?.chargeF ?? 1)) * 0.5;
-      const tenu = (st.rnd ? st.rnd() : 0.5) < 0.5 + edge;
-      if (!tenu) { gene = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (T.gene ?? 0.35) * (2 - (joueur.skill?.headF ?? 1)); geneV = T.geneV ?? 0.8; }   // …le CADRE tenu même gêné (147, heading — ×1 exact à 50)
+      const tenu = tirage(st, 'duel', joueur.id, st.rnd ?? (() => 0.5))() < 0.5 + edge;
+      if (!tenu) { gene = (tirage(st, 'duel', joueur.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (T.gene ?? 0.35) * (2 - (joueur.skill?.headF ?? 1)); geneV = T.geneV ?? 0.8; }   // …le CADRE tenu même gêné (147, heading — ×1 exact à 50)
       st.events.push({ t: +st.t.toFixed(2), type: 'duel', kind: 'aérien', by: joueur.id, contre: venant.id, won: tenu, ...(tenu ? {} : { gene: true }), ...(saute ? { saut: true } : {}) });
     }
   }
@@ -74,7 +75,7 @@ export function teteStep(st, cfg) {
   const dGoal = hyp(goal.x - joueur.p[0], joueur.p[2]);
   if (dGoal < (T.but ?? 12) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
     // LA TÊTE AU BUT : piquée vers un point du cadre seedé — canal shot standard
-    const tz = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (st.pitch.goalHalf - 0.5);
+    const tz = (tirage(st, 'tir', joueur.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.5);
     st.ball.strike({ speed: 12.5 * geneV * (joueur.skill?.headF ?? 1), dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]) + gene, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });   // …la PUISSANCE de la tête au but (147, heading)
     surprend(st);
     st.pass = null;
@@ -91,7 +92,7 @@ export function teteStep(st, cfg) {
     // Tirage rnd2 une fois sur deux (l'autre : le dégagement d'hier). Clé absente : hier au bit.
     const presse = st.full && cfg?.corner && Math.abs(own.x - joueur.p[0]) < 12
       && st.players.some((q) => q.team !== joueur.team && q.down <= 0 && d2(q.p, joueur.p) < 3.5)
-      && (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5;
+      && tirage(st, 'intention', joueur.id, st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5;
     const fz = joueur.p[2] >= 0 ? 0.45 : -0.45;
     if (presse) {
       const coinYaw = Math.atan2(Math.sign(joueur.p[2] || 1) * 2.2, Math.sign(own.x || 1));
@@ -142,7 +143,7 @@ export function voleeStep(st, cfg) {
   if (dGoal < (V.but ?? 14) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
     // LA REPRISE DE VOLÉE : première intention, le canal shot standard — le plongeon répond
     const demi = st.ball.v[1] > 0.3;
-    const tz = ((st.rnd ? st.rnd() : 0.5) * 2 - 1) * (st.pitch.goalHalf - 0.6);
+    const tz = (tirage(st, 'tir', joueur.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.6);
     st._teteCd = st.t + 0.8;
     st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
     st.ball.strike({ speed: 17, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0.5 });

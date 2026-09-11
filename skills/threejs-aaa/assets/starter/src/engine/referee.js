@@ -1,3 +1,4 @@
+import { tirage } from './rng.js';
 // referee.js — L'ARBITRAGE ET LES CÉRÉMONIES DU MATCH, sortis de match-sim (lot 16 : la
 // volumétrie est une dette comme une autre — 1 575 lignes accrétées en six lots). La FAMILLE
 // est cohésive : tout ce qui ARRÊTE et REMET le jeu — sorties (onOut), droit de prise
@@ -246,7 +247,7 @@ export function coupFrancDirect(st, id, cfg) {
   const dMax = cpaF === 'direct' ? 34 : cpaF === 'centre' ? 20 : 30;
   if (d > dMax || d < 14 || Math.abs(q.p[2]) > (cpaF === 'direct' ? 18 : 15)) return false;   // trop loin, trop près (mur infranchissable), trop excentré
   const gk = st.players.find((p) => p.keeper && p.team !== q.team);
-  const tz = (gk ? -Math.sign(gk.p[2] || 1) : (st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5 ? -1 : 1) * (pitch.goalHalf - 0.7);
+  const tz = (gk ? -Math.sign(gk.p[2] || 1) : tirage(st, 'cpa', q.id, st.rnd2 ?? st.rnd ?? (() => 0.5))() < 0.5 ? -1 : 1) * (pitch.goalHalf - 0.7);
   const yaw = Math.atan2(tz - q.p[2], goal.x - q.p[0]);
   const dT = hyp(goal.x - q.p[0], tz - q.p[2]);
   const v = d > 30 ? 21 : d > 27 ? 19.5 : 18.5;   // …le 'direct' (148) ose au-delà de 30 m : la vitesse suit (portée balistique)
@@ -285,7 +286,7 @@ export function coupFrancLance(st, id, cfg) {
   const goal = pitch.attackGoal(q.team);
   const d = hyp(goal.x - q.p[0], 0 - q.p[2]);
   if (d > 55 || d <= 30) return false;                             // trop loin pour la boîte ; à portée, le direct s'en charge
-  const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
+  const rnd = tirage(st, 'cpa', q.id, st.rnd2 ?? st.rnd ?? (() => 0.5));
   const sg = Math.sign(goal.x || 1);
   const tx = goal.x - sg * 10.5, tz = (rnd() < 0.5 ? -1 : 1) * (2 + 5 * rnd());
   const mates = st.players.filter((m) => m.team === q.team && m.id !== id && !m.keeper && m.down <= 0);
@@ -323,7 +324,7 @@ export function cornerTrav(st, id, cfg) {
   const goal = pitch.attackGoal(q.team);
   const sg = Math.sign(goal.x || 1);
   if (Math.abs(Math.abs(q.p[0]) - pitch.hx) > 4) return false;     // pas un vrai coin (sécurité)
-  const rnd = st.rnd2 ?? st.rnd ?? (() => 0.5);
+  const rnd = tirage(st, 'cpa', q.id, st.rnd2 ?? st.rnd ?? (() => 0.5));
   const sty = st.tactics ? (st.tactics[q.team]?.style ?? 0.5) : 0.5;
   if (rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30) return false;   // le CORT du style : possession 35 %, direct 5 %
   const cz = Math.sign(q.p[2] || 1);
@@ -607,7 +608,7 @@ function tempoWait(st, cfg, team, type = null) {
   const lead = team >= 0 && st.score ? (st.score[team] ?? 0) - (st.score[1 - team] ?? 0) : 0;
   const tard = st.chrono ? Math.min(1, Math.max(0, (st.chrono.t ?? st.t) / (st.chrono.total ?? 5400))) : Math.min(1, st.t / 5400);
   const contexte = lead > 0 ? 1 + (TM.traine ?? 0.35) * tard : lead < 0 ? 1 - (TM.presse ?? 0.35) * tard : 1;
-  const alea = 0.8 + 0.4 * (st.rnd ? st.rnd() : 0.5);
+  const alea = 0.8 + 0.4 * tirage(st, 'arbitre', team >= 0 ? 30 + team : 99, st.rnd ?? (() => 0.5))();
   return base * tempoF * contexte * alea;
 }
 
@@ -816,7 +817,7 @@ export function adjugeFaute(st, cfg) {
     if (dogso) S = surfaceF && /tacle/.test(F.kind ?? '') ? Math.max(S, (K.jaune ?? 0.7) + 0.5) : Math.max(S, K.dogso ?? 1.5);
     const deja = (fautif._jaunes ?? 0) >= 1;
     const tau = (K.jaune ?? 0.7) + (deja ? (K.reticence ?? 0.25) : 0);
-    const u = (st.rnd2 ?? st.rnd ?? (() => 0.5))();
+    const u = tirage(st, 'arbitre', fautif.id, st.rnd2 ?? st.rnd ?? (() => 0.5))();
     const pJ = 1 / (1 + Math.exp(-(S - tau) / (K.s ?? 0.15)));
     fautif._fautes = (fautif._fautes ?? 0) + 1;
     fautif._ardoise = (fautif._ardoise ?? 0) + S;

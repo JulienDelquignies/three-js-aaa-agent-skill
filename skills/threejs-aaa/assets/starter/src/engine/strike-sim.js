@@ -10,7 +10,7 @@ import { startGesture } from './gesture.js';
 import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING } from './skills-sim.js';
-import { croyanceDe } from './croyance.js';
+import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
 import { role } from './roles.js';
@@ -420,7 +420,7 @@ export function strikeNow(st, c, cfg) {
         + Math.min(1, hyp(c.v[0], c.v[1]) / 6) * (D145.lanceF ?? 0.5)
         + Math.max(0, dG - 11) / (D145.distF ?? 18)) * (c.skill?.composureF ?? 1);
     }
-    if (sigBase > 0) lead = [lead[0], lead[1], lead[2] + gauss(st.rnd ?? (() => 0.5)) * sigBase * sigF];
+    if (sigBase > 0) lead = [lead[0], lead[1], lead[2] + gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * sigBase * sigF];
   }
   // LE BACKSPIN DE LA PASSE LEVÉE (lot 54, cfg.passeSpin && st.full) : lofted/chip se coupent SOUS le
   // ballon — l'effet rétro PORTE le vol (Magnus) et ASSIED la retombée : le premier rebond mord le
@@ -462,8 +462,8 @@ export function strikeNow(st, c, cfg) {
     // choice.sigmaF (lot 100 — contrat générique) : le multiplicateur de dispersion DU GESTE,
     // posé par l'appelant (le centre du mauvais pied ×1,9, du pied de débordement ×0,85 —
     // shooting.tryCross). Absent : 1, le σ d'hier au bit — aucun tirage de plus.
-    if (c.skill) dirNoise = gauss(st.rnd ?? (() => 0.5)) * c.skill.passSigma * (urgent ? c.skill.composureF : 1) * (choice.sigmaF ?? 1);
-    else if (cfg.execSigma) dirNoise = gauss(st.rnd ?? (() => 0.5)) * cfg.execSigma * (urgent ? 1.25 : 1) * (choice.sigmaF ?? 1);
+    if (c.skill) dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * c.skill.passSigma * (urgent ? c.skill.composureF : 1) * (choice.sigmaF ?? 1);
+    else if (cfg.execSigma) dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * cfg.execSigma * (urgent ? 1.25 : 1) * (choice.sigmaF ?? 1);
   } else if (!shot && choice.clear && st.full && cfg.clearSigma) {
     // LE DÉGAGEMENT RESPIRE (174, cfg.clearSigma — le monde ne produisait NI touches NI
     // corners : touches 9/90 min c. 40-50 réel, corners 1/20 matchs c. ~10/match — le clear
@@ -471,7 +471,7 @@ export function strikeNow(st, c, cfg) {
     // σ de passe × ampli × composureF ; le monde NU reçoit execSigma (patron 145 : le déchet
     // existe sans notes, la note le RAFFINE). Clé absente : le clear exact d'hier au bit.
     const sigC = c.skill ? c.skill.passSigma * (c.skill.composureF ?? 1) : (cfg.execSigma ?? 0.044) * 1.25;
-    dirNoise = gauss(st.rnd ?? (() => 0.5)) * sigC * (cfg.clearSigma.ampli ?? 2.4);
+    dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * sigC * (cfg.clearSigma.ampli ?? 2.4);
   }
   sol.dirYaw += dirNoise;
   // LE RÉPERTOIRE DU TIR (choice.shotKind, posé par le match — le rondo n'en pose jamais) : le
@@ -490,14 +490,14 @@ export function strikeNow(st, c, cfg) {
   // s'envole ou s'écrase (±σEl × sigF rad) et son exécution varie (±σV × sigF) — le piqué
   // (kind.exact, une balistique de toucher) garde son geste exact
   if (D145 && shot && !kind?.exact) {
-    elev = Math.max(0.005, elev + gauss(st.rnd ?? (() => 0.5)) * (D145.sigmaEl ?? 0.04) * sigF);
-    spd = Math.max(10, spd * (1 + gauss(st.rnd ?? (() => 0.5)) * (D145.sigmaV ?? 0.05) * Math.min(1.6, sigF)));
+    elev = Math.max(0.005, elev + gauss(tirage(st, 'tir', c.id, st.rnd ?? (() => 0.5))) * (D145.sigmaEl ?? 0.04) * sigF);
+    spd = Math.max(10, spd * (1 + gauss(tirage(st, 'tir', c.id, st.rnd ?? (() => 0.5))) * (D145.sigmaV ?? 0.05) * Math.min(1.6, sigF)));
   }
   // …LA FRAPPE DÉVIE EN ANGLE (258) : σψ à la frappe, σθ = aniso × σψ, la vitesse log-normale et sous-dosée.
   // Trois tirages seedés (cap, élévation, vitesse) — le monde à clé nulle n'en tire aucun.
   let shotYawNoise = 0;
   if (F258 && shot && !kind?.exact) {
-    const rnd = st.rnd ?? (() => 0.5);
+    const rnd = tirage(st, 'tir', c.id, st.rnd ?? (() => 0.5));
     const dG = hyp(lead[0] - from[0], lead[2] - from[2]);
     let foeP = 99;
     for (const q of st.players) if (q.team !== c.team && !q.keeper && q.down <= 0) foeP = Math.min(foeP, hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]));
@@ -592,7 +592,7 @@ export function strikeNow(st, c, cfg) {
       const sc3 = (20 - dB) + sg3 * (q.p[0] - choice.to.p[0]);
       if (sc3 > bs) { bs = sc3; C = q; }
     }
-    if (C && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.troisieme.p ?? 0.5) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(C).appel, 0.7, 1.3) * (st.full && cfg.familiarite ? affiniteMotif(affiniteFam(st, c.id, C.id, cfg), cfg.familiarite) : 1)) {   // (254) le motif à trois vit de l'affinité de la paire
+    if (C && tirage(st, 'intention', c.id, st.rnd2 ?? (() => 0.5))() < (cfg.troisieme.p ?? 0.5) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(C).appel, 0.7, 1.3) * (st.full && cfg.familiarite ? affiniteMotif(affiniteFam(st, c.id, C.id, cfg), cfg.familiarite) : 1)) {   // (254) le motif à trois vit de l'affinité de la paire
       C._pace = { until: st.t + (cfg.troisieme.dur ?? 1.1), kind: 'troisieme', next: C._pace?.next ?? st.t + 6 };
       C._troisT = st.t + (cfg.troisieme.dur ?? 1.6);
       // (240, cfg.appuiRemise.vieC) LA COURSE VIT LE CYCLE : jusqu'à la réception de B + vieC s (mesuré : C partait 0,95 s avant la réception et mourait 0,65 s après — seule la une-touche le servait, 3 sur 25 contrôles) ; gardé par la clé, le jumeau au bit
@@ -611,7 +611,7 @@ export function strikeNow(st, c, cfg) {
     const presse2 = st.players.some((q) => q.team !== c.team && q.down <= 0
       && hyp(q.p[0] - c.p[0], q.p[2] - c.p[2]) < (cfg.unDeux.press ?? 2.5));
     if (dAB < (cfg.unDeux.dist ?? 13) && presse2
-      && (st.rnd2 ? st.rnd2() : 0.5) < (cfg.unDeux.p ?? 0.55) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(c).appel, 0.7, 1.3) * (st.full && cfg.familiarite ? affiniteMotif(affiniteFam(st, c.id, choice.to.id, cfg), cfg.familiarite) : 1)) {   // (254) l'un-deux vit de l'affinité de la paire
+      && tirage(st, 'intention', c.id, st.rnd2 ?? (() => 0.5))() < (cfg.unDeux.p ?? 0.55) * axe(tac(st, c.team).relation, 1.4, 0.6) * axe(role(c).appel, 0.7, 1.3) * (st.full && cfg.familiarite ? affiniteMotif(affiniteFam(st, c.id, choice.to.id, cfg), cfg.familiarite) : 1)) {   // (254) l'un-deux vit de l'affinité de la paire
       c._pace = { until: st.t + (cfg.unDeux.dur ?? 1.5), kind: 'un-deux', next: c._pace?.next ?? st.t + 6 };
       c._troisT = st.t + (cfg.unDeux.dur ?? 1.5);
       // …ET LE LANCEUR SPRINTE (218, cfg.unDeux.course — mesuré : 2,3 m/s à 0,3 s, 2,4 à 0,6 s
@@ -648,7 +648,7 @@ export function strikeNow(st, c, cfg) {
           // facteurs) : le coureur mal noté OFF THE BALL lit parfois le mauvais côté — probabilité
           // (1 − otbF) × lecture (otbF 0,85 → 30 %) ; à 50 et au-dessus aucun tirage : l'identité au bit.
           const mis = Math.max(0, 1 - (c.skill?.otbF ?? 1)) * (C.lecture ?? 2);
-          if (mis > 0 && (st.rnd2 ? st.rnd2() : 0.5) < mis) coteE = -coteE;
+          if (mis > 0 && tirage(st, 'intention', c.id, st.rnd2 ?? (() => 0.5))() < mis) coteE = -coteE;
         }
         const dx = ux, dz = uz + coteE * (C.ecart ?? 3), dl = hyp(dx, dz) || 1;
         c._pace.cible = [c.p[0] + dx, c.p[2] + dz]; c._pace.dir = [dx / dl, dz / dl];

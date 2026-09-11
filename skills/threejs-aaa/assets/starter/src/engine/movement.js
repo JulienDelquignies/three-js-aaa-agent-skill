@@ -1,3 +1,4 @@
+import { tirage } from './rng.js';
 // movement.js — LE PAS DES CORPS : allures par métier, inertie, ruptures de rythme (appels,
 // chasses), séparation des corps. Sorti de rondo.js au lot 22 (volumétrie) — au bit près, la
 // batterie est la preuve. Une famille par fichier : le cerveau décide, le mouvement PORTE.
@@ -150,16 +151,16 @@ export function movePlayers(st, dt, cfg) {
     // ouvrir une ligne) et de CHASSES (le presseur qui jaillit sur la touche de passe). Cadence
     // tirée du rnd SEEDÉ, fréquence par persona.burstiness — chaque rupture est un ÉVÉNEMENT
     // nommé, donc mesurable (clauses de bandes d'allure dans verify-rondo).
-    if (!p._pace) p._pace = { until: -1, next: 2 + (st.rnd ? st.rnd() : 0.5) * 5 };
+    if (!p._pace) p._pace = { until: -1, next: 2 + tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * 5 };
     const settled = st.phase === 'carry' && st.hold > 0.6, EK = st.full && cfg.effort ? cfg.effort : null;   // (261) L'INTENTION D'EFFORT AU CERVEAU (effort.js)
     if (st.t >= p._pace.next && p._pace.until < st.t) {
       const bz = p.persona?.burstiness ?? 1;
       if (p.job === 'support' && settled && (!EK || appelPertinent(p, st, EK))) {   // (261) l'appel ne se tire qu'à portée de passe
-        p._pace.until = st.t + 0.7 + (st.rnd ? st.rnd() : 0.5) * 0.4;
+        p._pace.until = st.t + 0.7 + tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * 0.4;
         p._pace.kind = 'appel';
         st.events.push({ type: 'burst', kind: 'appel', by: p.id, t: +st.t.toFixed(2) });
       }
-      p._pace.next = st.t + (6 + (st.rnd ? st.rnd() : 0.5) * 6) / Math.max(0.4, bz);
+      p._pace.next = st.t + (6 + tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * 6) / Math.max(0.4, bz);
     }
     // …la chasse est l'affaire du PLUS PROCHE : première version, chaque presseur ET chaque
     // intercepteur jaillissait sur chaque passe — 155 chasses en 120 s, 94 ruptures/min, la frénésie

@@ -533,6 +533,13 @@ passes de 1/60 à 1/30 : le contact par image → le contact balayé), le budget
 zéro allocation), les tirs de loin sous la cadence (la surface 69 → 54 % au flux du 232) ; puis les flux RNG nommés (Modèle 01 lot 2), le double tampon et l'invariance d'ordre
 (test 1), le temps de jeu (test 10).
 
+**264 — LES FLUX RNG NOMMÉS : SCELLÉ (342).** Le hasard du jeu est une fonction pure de coordonnées (graine, sous-système,
+tick, entité, index — rng.js `draw` / `tirage`, huit flux nommés) : un tirage ajouté dans un module ne déplace plus les
+autres. Mesuré : sous la clé, un st.rnd() ajouté à chaque image laisse 2 × 300 s de match bit-identiques ; sans elle il
+les déplace ; le monde sous la clé est un autre tirage de la même distribution. Ce qu'il nomme : PractRand sur le mélange,
+le double tampon et l'invariance d'ordre (test 1), le rejeu multi-plateforme (test 2) ; puis le duel comme vecteur et la
+passe qui se manque à la bonne distance (Modèles 11, 07, 09), le ballon qui sort et le temps du match.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
