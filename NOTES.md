@@ -10898,6 +10898,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactics 11/0, slide 10/0, porte 4/0, contact 25/0, foulee 45/0, attente 42/0, football-rules
      59/0, tete 7/0, cartons 6/0, expulsion 8/0. Rouges hérités, nommés : 246d ; verify-loi12 « le
      mur se tient » (4,6 m) + son sabotage ; « contres arrivés à l'entrée » (vert ce passage).
+     Sceau : commit c2192e8, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo servi = construit). Le transversal n° 3 est scellé ; vient le pas de décision séparé du
+     pas physique et les flux RNG nommés (Modèle 01) — et, dans la croyance, le test d'import.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
