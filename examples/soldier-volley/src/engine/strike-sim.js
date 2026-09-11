@@ -10,6 +10,7 @@ import { startGesture } from './gesture.js';
 import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING } from './skills-sim.js';
+import { croyanceDe } from './croyance.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
 import { role } from './roles.js';
@@ -81,6 +82,8 @@ export function throwNow(st, c, cfg) {
 
 export function beginPass(st, choice, cfg, opts = {}) {
   const c = st.players[st.possession.carrier];
+  // (262) LE REGARD DE PASSE : décider de servir X, c'est le REGARDER — une saccade vers le receveur à l'adoption (avant l'armé : Jordet, jamais pendant la frappe), que la couche de croyance observe à la prochaine image (c._percAt) ; le receveur hors de portée de la tête (± tete °) reste cru, pas vu — la passe vers un fantôme
+  if (st.full && cfg.croyance && c && choice?.to?.id >= 0 && !choice.shot) { const R = st.players[choice.to.id]; if (R) { const S = c.scan ??= { at: -1, until: -1, vers: 'ballon', cible: null, n: 0, vol: false, _next: 0, _lcg: ((c.id + 1) * 2654435761 + 12345) >>> 0 }; S.vers = 'receveur'; S.cible = [R.p[0], R.p[2]]; S.at = st.t; S.until = st.t + (cfg.croyance.regardPasse ?? 0.2); c._percAt = -1; } }
   // LA PORTE DE LA LOI 11 (cfg.offside — 11c11 seulement, le réduit vit la loi du futsal) : le
   // cerveau ne PLANIFIE pas une passe vers une position illicite. choosePass écarte déjà ses
   // candidats ; la porte tient les AUTRES sources d'intention (centres, rampes de distribution).
@@ -363,7 +366,9 @@ export function strikeNow(st, c, cfg) {
   // la re-mène du contact suit LA MÊME loi que le choix : une mène courte ici défaisait la mène
   // de course posée par choosePass (le tir garde sa cible fixe)
   const tRe = choice.shot ? 0 : (cfg.leadTime ? cfg.leadTime(hyp((rec?.p[0] ?? 0) - from[0], (rec?.p[2] ?? 0) - from[2]), rec) : 0.18);
-  let lead = rec ? [rec.p[0] + rec.v[0] * tRe, 0, rec.p[2] + rec.v[1] * tRe] : choice.lead;
+  const KB = rec && st.full && cfg.croyance ? croyanceDe(c, rec, st, cfg) : null, rP = KB ? KB.p : rec?.p, rV = KB ? KB.v : rec?.v;   // (262) LE PASSEUR VISE SA CROYANCE du receveur (croyance.js) : la passe vers un fantôme si elle est vieille
+  c._croyPasse = KB ? { err: hyp(KB.p[0] - rec.p[0], KB.p[2] - rec.p[2]), age: KB.age, sigma: KB.sigma } : null;
+  let lead = rec ? [rP[0] + rV[0] * tRe, 0, rP[2] + rV[1] * tRe] : choice.lead;
   // LA MÈNE DE COURSE SURVIT AU CONTACT (167, cfg.courseServie — retour utilisateur : « aucun
   // joueur ne court derrière un ballon ») : le through élu posait un rendez-vous 8-11 m devant,
   // la re-mène générique ci-dessus l'ÉCRASAIT à la frappe (mène frappée 3,6 m médiane, mesuré).
@@ -371,14 +376,14 @@ export function strikeNow(st, c, cfg) {
   // + la pointe à la vision du passeur — la position du coureur a bougé pendant l'armé, le POINT
   // se re-calcule, il ne se rabat pas. Clé absente : l'écrasement d'hier au bit.
   if (choice.through && rec && st.full && cfg.courseServie) {
-    const vR = hyp(rec.v[0], rec.v[1]);
-    const dirT = vR > 1 ? [rec.v[0] / vR, rec.v[1] / vR] : (rec._pace?.dir ?? null);
+    const vR = hyp(rV[0], rV[1]);
+    const dirT = vR > 1 ? [rV[0] / vR, rV[1] / vR] : (rec._pace?.dir ?? null);
     if (dirT) {
       let tV = hyp(rec.p[0] - from[0], rec.p[2] - from[2]) / 11;
       const vS = Math.max(vR, (cfg.courseServie.vCourse ?? 6.2) * (rec.skill?.topF ?? 1));
       for (let it = 0; it < 2; it++) {
         const adv = Math.min(vS * tV + (cfg.throughBall?.pointe ?? 2.5) * (c.skill?.visionF ?? 1), cfg.courseServie.advMax ?? 16);
-        lead = [rec.p[0] + dirT[0] * adv, 0, rec.p[2] + dirT[1] * adv];
+        lead = [rP[0] + dirT[0] * adv, 0, rP[2] + dirT[1] * adv];
         const s2 = solvePass(from, lead, { style: 'ground', arrival: choice.arrival ?? 5.2 });
         if (!s2) break;
         tV = s2.flightTime;
@@ -688,7 +693,7 @@ export function strikeNow(st, c, cfg) {
   const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
     // (256) by canonique — l'alias from est tombé au 257 ; sansCible : le ballon expédié sans destinataire (dégagement, urgence) — pas une passe manquée
-    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(choice.to.id < 0 ? { sansCible: true } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
+    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(c._croyPasse ? { croyErr: +c._croyPasse.err.toFixed(2), croyAge: +c._croyPasse.age.toFixed(2), croySigma: +c._croyPasse.sigma.toFixed(2) } : {}), ...(choice.to.id < 0 ? { sansCible: true } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure

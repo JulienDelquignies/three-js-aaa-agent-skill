@@ -505,6 +505,19 @@ lot 2 — le corps vit à 6-11 m d'un idéal qui frémit), les ruptures trop cou
 le budget de déclenchement de la Bible 16 : moins de ruptures, plus longues), la marche à 9 % de la distance c. 30 % au
 réel dont l'essentiel est le TEMPS MORT du match réel (30 min de ballon sorti où l'on marche — transversal n° 5).
 
+**262 — LA COUCHE DE CROYANCE : SCELLÉ (340).** Le transversal n° 3 : chaque corps tient une croyance datée par entité
+(croyance.js) — le champ visuel à deux canaux du Modèle 04 (détail / mouvement, l'immobile dans le dos invisible), les
+niveaux d'information, l'observation bruitée en distance à 10 Hz sur un flux de perception propre, la correction de
+Kalman scalaire, la prédiction paresseuse en τ⁴, le repli sur l'ancre du slot. Deux consommateurs : le passeur vise sa
+croyance du receveur (et décider de le servir, c'est le regarder : le regard de passe), le marqueur suit la sienne de son
+homme. Mesuré : sans le regard, le test 1 du book tenu en flux (l'erreur du passeur 0,36 → 0,81 → 2,83 → 5,65 m par âge
+croissant, le σ cru la prédit) mais la mène de course (167) cassée par la décision omnisciente ; avec le regard, l'erreur
+est le bruit d'observation (0,25 m) et le fantôme ne vit qu'à la fixture — pour 3 points de passes conservées (la bande
+de bruit). Ce qu'il nomme : les décisions qui lisent encore st.players (le test d'import — c'est LÀ que la note de vision
+se lira dans la passe), l'attention et
+l'effet tunnel, la tromperie comme inférence, la communication comme observation, l'invariance par permutation (Modèle
+04 lots 4-6) — puis le pas de décision séparé du pas physique et les flux RNG nommés (Modèle 01).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

@@ -358,6 +358,25 @@ fixture du suiveur tenue par `avantMouvement`, sabotage). Sondes : `scripts/book
 par métier et par moment), `sonde-261b.mjs` (les ruptures par sorte). Fiches : `M02-locomotion.md`, `R05-physique.md`,
 `10-bloc-collectif.md`, `16-contexte-de-match.md`.
 
+### La couche de croyance (lot 262, `cfg.croyance` — `croyance.js`)
+
+Le moteur était l'architecture A du Modèle 04 : chaque décision lisait `st.players`. Le 262 donne à chaque corps `p.vue`,
+une croyance datée par entité (21 corps + le ballon), nourrie par `croyanceStep` en tête de `matchStep` : **le champ
+visuel à deux canaux** (`qualiteDe` — détail ±30° / k 0,15, mouvement 75° / 0,10 conditionné à la vitesse en travers,
+coupure 100°, portée 45 m × visionF, la tête ±80° vers le ballon ou la saccade du scan 250), **les niveaux** (identité /
+équipe / présence / rien aux seuils du book), **l'observation** bruitée en distance à 10 Hz (`sigmaObs` 0,15 + 0,02 r
+(2 − q), le flux de perception seedé par corps) et **la correction de Kalman scalaire** (`observer`), **la prédiction
+paresseuse** (`predit` : v̂ amortie T_v 1,2 s ; σ² = σ_obs² + 0,9² τ² + ¼ (1,2 ÷ anticipF)² τ⁴, écrêtée 12 m) et **le repli
+sur l'ancre** du slot après 2,5 s. `croyanceDe(p, ent, st, cfg)` est l'API de lecture : `{ p, v, sigma, age, niveau }`, l'état
+vrai sans la clé. Consommateurs : le passeur vise sa croyance du receveur (strike-sim), le marqueur suit la sienne de son
+homme (match-sim) ; **le regard de passe** (décider de servir X, c'est le regarder : une saccade de 0,2 s à l'adoption,
+dans la portée de la tête). Mesuré 2 × 45 min : sans le regard, l'erreur du passeur 0,36 / 0,81 / 2,83 / 5,65 m par âge
+croissant et le σ cru la prédit ; avec, 0,25 m (le bruit d'observation) et le fantôme ne vit qu'à la fixture ; 65,9 →
+62,9 % de passes conservées (la bande de bruit). Clé absente :
+l'omniscience d'hier au bit. Banc : bloc 262 (la table du book au centième, la croissance, le repli, la fixture du passeur
+qui tourne le dos, sabotage). Sonde : `scripts/book/sonde-262.mjs`. Fiches : `M04-perception-cognition.md`,
+`14-micro-comportements.md`, `10-bloc-collectif.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

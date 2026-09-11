@@ -81,6 +81,9 @@ humain comme objet.
 1. **La perception non omnisciente** (T2, T3, T6-T9 ; Modèle 04 ; ch. 10 lot 1, ch. 13 lot 1) : `HeadState`, la
    croyance datée et l'oubli, 1-3 entités par balayage, le taux par poste et contexte (la pression ferme le regard),
    le scan comme **prérequis de poste**, pas un talent. C'est le lot transversal des Bibles 10, 13, 14.
+   Le 262 — SCELLÉ 340 — fait du scan (250) la SOURCE des observations : la saccade oriente le regard de la couche de
+   croyance (croyance.js) ; la note scanning ne se lit pas encore dans les passes conservées (62,5 / 62,9 / 57,8 % aux
+   notes 10 / 50 / 90 : la bande de bruit) — elle se lira quand la décision de passe lira la croyance.
 2. **La tromperie** (T15-T19, ch. 08 lot dribble) : le geste comme signal, l'inférence du défenseur, l'engagement
    tardif de l'élite, l'adaptation — et le **volume** des gestes (199 → ≈ 40, le meilleur 5 × le médian).
 3. **Le temps du match** (T24-T27, ch. 16) : ballon en jeu 84 → 55 %, les cérémonies dans la bande réelle (touche

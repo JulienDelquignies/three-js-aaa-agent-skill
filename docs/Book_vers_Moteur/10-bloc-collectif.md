@@ -88,6 +88,8 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
 1. **Le bloc qui perçoit** (tests 5, 6, 16 ; Modèle 04) : la cible de bloc de chaque joueur dérivée de **sa croyance**
    sur le ballon (latence de déclenchement 0,22 s en vision centrale, 0,8-1,6 s dos au ballon), pas de l'état vrai.
    C'est ce qui fabrique l'intervalle, le renversement qui paie (W 1,5-2,5 s), et le décalage entre lignes.
+   Le 262 — SCELLÉ 340 — a posé la croyance (croyance.js) et l'a branchée sur le marqueur (il suit sa croyance de son
+   homme : 8,9 → 9,5 m p50, pris dans le dos) ; la cible de bloc depuis la croyance du ballon reste CE lot.
 2. **Le coulissement par ligne** (test 3, 8) : `k` par ligne (MID > DEF), `k_max` de la largeur, `abandonFarSide`,
    et la touche comme douzième défenseur (`edgeFactor` dans l'utilité d'orientation, cible `dyT ≤ 4 m`).
    Le 261 — SCELLÉ 339 — a posé les TROIS RÉGIMES du §4.3 (entretien 1,4-1,8 m/s, coulissement actif 4,2, récupération

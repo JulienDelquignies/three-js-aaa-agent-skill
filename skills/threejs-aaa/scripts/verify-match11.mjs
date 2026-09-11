@@ -28,6 +28,7 @@ import { piegeStep } from '../assets/starter/src/engine/piege.js';
 import { etaApres, sigmaSync, affiniteMotif, chocFamiliarite, etaDe, affinite } from '../assets/starter/src/engine/familiarite.js';
 import { profilDe, epsilonDe, fatigueDe, pasLoco, pointePermise } from '../assets/starter/src/engine/locomoteur.js';
 import { intentionDe, horizonDe, pasDe, appelPertinent } from '../assets/starter/src/engine/effort.js';
+import { qualiteDe, sigmaObs, sigmaDe, predit, croyanceDe, croyanceStep } from '../assets/starter/src/engine/croyance.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
 import { teteStep } from '../assets/starter/src/engine/tete.js';
@@ -421,7 +422,7 @@ if (__bloc()) {
     const vs = [];
     for (const seed of [1, 3, 5, 7]) {   // 2 → 4 graines DATÉ 241 (gelé 2,29 c. vivant 2,37 sur 57 gestes : l'écart de 0,12 vit dans le bruit du p50)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la statue qui frappe remangée (3,76 c. vivant 3,33 − 0,12) — la clause mesure la foulée de frappe, pas la croyance */, shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         for (const e of st.events) {
@@ -908,7 +909,7 @@ if (__bloc()) {
     let still = 0, frames = 0, geles = 0, vols = 0, vol = null;
     for (const seed of [1, 3, 5, 7]) {   // 2 → 4 graines DATÉ 237 (25 c. 26 : un point, un tirage)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la pose figée remangée par la course qui traverse (17 % ≥ vivant + 10) — la clause mesure la marche au rendez-vous, pas la Loi 11 */, hommeLibre: false, shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la statue du sabotage remangée (18 c. vivant 9 + 10) — la clause mesure la pose au-devant, pas la croyance */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), la pose figée remangée par la course qui traverse (17 % ≥ vivant + 10) — la clause mesure la marche au rendez-vous, pas la Loi 11 */, hommeLibre: false, shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         const rec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
@@ -1152,7 +1153,7 @@ if (__bloc()) {
     const out = [];
     for (const seed of [2, 5]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le sabotage de l'allure remangé par la pausa (p50 8 c. ≥ 10) — la clause mesure l'allure, pas la pausa */, shotRange: 20, ...overrides });
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la fourmilière du sabotage remangée (p50 7 c. 8) — la clause mesure l'économie de course, pas la croyance */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le sabotage de l'allure remangé par la pausa (p50 8 c. ≥ 10) — la clause mesure l'allure, pas la pausa */, shotRange: 20, ...overrides });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 6) continue;
@@ -1330,7 +1331,7 @@ if (__bloc()) {
     const out = [];
     for (const seed of [2, 3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ repli: false, garde: false, shotRange: 20, ...over });
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), l'arrivée sous contrôle remangée (58 c. 56 % : l'écart de la minuterie d'hier ne se lit plus) — la clause mesure le jockey, pas la croyance */, repli: false, garde: false, shotRange: 20, ...over });
       const inD = new Set();
       for (let i = 0; i < 200 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -1653,7 +1654,7 @@ if (__bloc()) {
     const larg = [], proche = [];
     for (const seed of [2, 3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contreZones: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 103 mesure le comité et l'amplitude hors contres (largeur 41 c. hier, proche 8,9 : les sprints de contre déplacent le monde)
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la largeur et le voisin remangés (44 m / 9,0 c. 46 / 9,5 à HEAD) — la clause mesure le comité de soutien, pas la croyance */, contreZones: false, shotRange: 20, ...over });   // contreZones:false DATÉ 242 — 103 mesure le comité et l'amplitude hors contres (largeur 41 c. hier, proche 8,9 : les sprints de contre déplacent le monde)
       for (let i = 0; i < 150 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (st.restart || i % 30 !== 0) continue;
@@ -3065,7 +3066,7 @@ if (__bloc()) {
     const offres = [], soutiens = [];
     for (const seed of [1, 2, 3, 4, 5, 6]) {   // 3 → 6 graines DATÉ A9 (soutien 10,3 pour ≤ 10,2 dans le monde des remises à la main — le mètre de marge vit au bord à 3 graines)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ contreZones: false, couvert: false, avantContact: false, repli: false, garde: false, shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée) contreZones:false DATÉ 242 — 137 hors contres (soutien 11,1 c. 9,7)
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), l'offre du porteur qui monte remangée (p50 1 c. 2) — la clause mesure l'accompagnement, pas la croyance */, contreZones: false, couvert: false, avantContact: false, repli: false, garde: false, shotRange: 20, craie: false, gkPied: false, contreTir: false, clearSigma: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, uneToucheVive: { press: 3.4, base: 0.7, dMin: 2.5, court: 7, capCourt: 8.5, couloir: 0.9, chas: 0.22 }, ...over });   // (218c) une-touche du monde 218b — la clause mesure accompagne ; le retour du mur au coureur re-datait le soutien (9,8 c. 10,5 saboté, marge 1,5) // la clause mesure l'ACCOMPAGNEMENT — elle isole ses re-dateurs 174-183 (la craie écarte les soutiens larges ; l'engagement attendu re-datait les épisodes de montée) contreZones:false DATÉ 242 — 137 hors contres (soutien 11,1 c. 9,7)
       let ep = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4137,7 +4138,7 @@ if (__bloc()) {
     for (const seed of [3, 5, 7, 9, 11, 13, 15, 17]) {   // 4 → 8 graines DATÉ 240 (2 c. 3 reculs : Poisson)
       const st = makeMatch({ full: true, seed });
       // appuiRemise:false DATÉ 240 : la remise d'appui (B dos au but sous presseur, en contre aussi) est une passe en retrait comptée ici comme un recul (4 → 9) — c'est SA loi, mesurée au 240 ; la clause mesure l'adoption du porteur lancé
-      const cfg = matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le porteur en contre recule 13 c. 16 × 0,7 — la clause mesure le lancé, pas l'intention d'effort */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le lancé remangé par la familiarité (11 reculs c. 15 × 0,7 — les motifs pèsent Φ) — la clause mesure le lancé, pas la familiarité */, appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) ; passation null DATÉ 252 (10 c. 9,1) — le monde d'hier pour la clause du lancé
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), le porteur en contre recule 9 c. 11 × 0,7 — la clause mesure le lancé, pas la croyance */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le porteur en contre recule 13 c. 16 × 0,7 — la clause mesure le lancé, pas l'intention d'effort */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (les corps démarrent en 2,3 τ, pas en une image : les fenêtres de placement d'hier) — la clause mesure le placement ou le flux d'hier, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (worktree daf769f), le lancé remangé par la familiarité (11 reculs c. 15 × 0,7 — les motifs pèsent Φ) — la clause mesure le lancé, pas la familiarité */, appuiRemise: false, shotRange: 20, craie: { tire: 0.6, seuil: 0.42 }, passation: null, ...(over ?? {}) });   // craie sans tenue DATÉ 249b : la chaise tenue offre un appui à la ligne en transition (13 c. 11,2, σ Poisson) ; passation null DATÉ 252 (10 c. 9,1) — le monde d'hier pour la clause du lancé
       let seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -4169,7 +4170,7 @@ if (__bloc()) {
     const ds = [];
     for (const seed of [2, 3, 5, 7, 11, 13, 17, 19]) {   // 4 → 8 graines DATÉ 240 (1 retrait sur 4 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ carton: null /* carton null DATÉ 257 : vert à HEAD~ (3 retraits au 258b en worktree), le retrait remangé par le carton qui juge la nature (1 retrait) — la clause mesure le gardien, pas le carton */, hommeLibre: false, claquette: false, pasChasse: false, qualiteTir: false, shotRange: 20, ...(over ?? {}) });
+      const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), les prises du gardien remangées (p50 5,4 c. 6 m) — la clause mesure le retrait, pas la croyance */, carton: null /* carton null DATÉ 257 : vert à HEAD~ (3 retraits au 258b en worktree), le retrait remangé par le carton qui juge la nature (1 retrait) — la clause mesure le gardien, pas le carton */, hommeLibre: false, claquette: false, pasChasse: false, qualiteTir: false, shotRange: 20, ...(over ?? {}) });
       let vol = null, seen = null;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -5244,7 +5245,7 @@ if (__bloc()) {
   const S = (() => { const { ball, v } = tir(22, 18); return keeperDecide(pitch, 1, me, ball, v, 0.3, KEEPER, true, 5); })();
   ok(`lot 232b — LE PAS CHASSÉ DU GARDIEN (vol 1,2 s : ${A.mode} vers z ${A.spot?.z?.toFixed(2)} (= 2,80), pasChasse ${A.pasChasse} ; 0,7 s : ${B.mode} ${B.pasChasse} ; 0,6 s : ${C.mode} ; clé absente : ${S.mode} vers z ${S.spot?.z?.toFixed(2)} ≠ 2,80)`,
     A.mode === 'poste' && Math.abs(A.spot.z - 2.8) < 1e-6 && A.pasChasse === true && B.mode === 'poste' && B.pasChasse === true && (C.mode === 'dive' || C.mode === 'battu') && S.mode === 'poste' && Math.abs(S.spot.z - 2.8) > 0.5);
-  const flux = (over) => { const cfg = matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le taux d'arrêt remangé (90 c. 100 − 8) — la clause mesure le gardien, pas l'intention d'effort */, piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), le taux d'arrêt remangé par la ligne synchrone (71 c. 83 − 8) — la clause mesure le gardien, pas le piège */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le taux d'arrêt remangé par l'appel de l'épaule (77 c. 93 − 8) — la clause mesure le gardien, pas la Loi 11 */, contact: null, porteAnticipe: null, remisesPied: null,  couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
+  const flux = (over) => { const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), le taux d'arrêt remangé (67 c. 75 − 8) — la clause mesure le gardien, pas la croyance */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le taux d'arrêt remangé (90 c. 100 − 8) — la clause mesure le gardien, pas l'intention d'effort */, piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), le taux d'arrêt remangé par la ligne synchrone (71 c. 83 − 8) — la clause mesure le gardien, pas le piège */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (worktree 3a78940), le taux d'arrêt remangé par l'appel de l'épaule (77 c. 93 − 8) — la clause mesure le gardien, pas la Loi 11 */, contact: null, porteAnticipe: null, remisesPied: null,  couvert: false, hommeLibre: false, shotRange: 20, ...over }); let arr = 0, buts = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]) {   /* 6 → 12 graines DATÉ 237 (4 arrêts + buts sur 6) */ const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { const n = st.events.length; matchStep(st, 1 / 60, cfg);
         for (let e = n; e < st.events.length; e++) { const ev = st.events[e]; if (ev.type === 'arrêt') arr++; else if (ev.type === 'but') buts++; } } }
@@ -5390,7 +5391,7 @@ if (__bloc()) {
   const { gardeDist } = await import('../assets/starter/src/engine/garde.js');
   const { affecterMarquage } = await import('../assets/starter/src/engine/marquage.js');
   const { axe } = await import('../assets/starter/src/engine/tactics.js');
-  const cfgG = matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le marqueur de surface remangé (2,48 c. 2,26 m à HEAD, borne 2,4 — un prix de 0,2 m nommé au 339) — la clause mesure la garde par tiers, pas l'intention d'effort */, contreZones: false, shotRange: 20 });   // contreZones:false DATÉ 242 — la garde mesure son marqueur hors contres (2,53 c. 2,4 absolu : les zones amènent les attaquants plus vite en surface)
+  const cfgG = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), le marqueur de surface remangé (2,58 c. 2,48 au 261, borne 2,4 — le marqueur suit sa croyance de son homme : 0,1 m de plus, le prix nommé au 340) — la clause mesure la garde par tiers, pas la croyance */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le marqueur de surface remangé (2,48 c. 2,26 m à HEAD, borne 2,4 — un prix de 0,2 m nommé au 339) — la clause mesure la garde par tiers, pas l'intention d'effort */, contreZones: false, shotRange: 20 });   // contreZones:false DATÉ 242 — la garde mesure son marqueur hors contres (2,53 c. 2,4 absolu : les zones amènent les attaquants plus vite en surface)
   const gd = (dMon, { press = false, pr = 0.5, ag = 1 } = {}) => gardeDist({ full: true, tactics: [{ pressing: pr }] }, cfgG, { p: { team: 0, skill: { aggrF: ag } }, anchor: [dMon, 0, 0], press, ogx: 0, L: 105, tac: (s, t) => s.tactics[t], axe });
   const L6 = gd(80), M4 = gd(50), P2 = gd(10), F3 = gd(80, { press: true }), H = gd(80, { pr: 1 }), Ag = gd(80, { ag: 1.3 });
   const d2 = (a, b) => Math.hypot(a[0] - b[0], a[2] - b[2]);
@@ -5399,13 +5400,13 @@ if (__bloc()) {
     return { st, A, run: (libre) => { affecterMarquage(st, [p0, p1, libre, mH], [A], { x: 0 }, d2, cfgA); return st._bAssign.get(1) === A ? 'hier' : st._bAssign.get(libre.id) === A ? 'libre' : 'aucun'; }, mL, mN }; };
   const t1 = ass(cfgG, [[1, { id: 9 }]]); t1.A.id = 9; const r1 = t1.run(t1.mL);   // libre à 2,5 m contre l'hier à 3 m → tenu
   const t2 = ass(cfgG, [[1, { id: 9 }]]); const r2 = t2.run(t2.mN);                 // libre à 1 m → il prend
-  const t3 = ass(matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le marqueur de surface remangé (2,48 c. 2,26 m à HEAD, borne 2,4 — un prix de 0,2 m nommé au 339) — la clause mesure la garde par tiers, pas l'intention d'effort */, contreZones: false, marquageTenue: false }), [[1, { id: 9 }]]); const r3 = t3.run(t3.mL);   // sans la clé : le plus proche
+  const t3 = ass(matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), le marqueur de surface remangé (2,58 c. 2,48 au 261, borne 2,4 — le marqueur suit sa croyance de son homme : 0,1 m de plus, le prix nommé au 340) — la clause mesure la garde par tiers, pas la croyance */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le marqueur de surface remangé (2,48 c. 2,26 m à HEAD, borne 2,4 — un prix de 0,2 m nommé au 339) — la clause mesure la garde par tiers, pas l'intention d'effort */, contreZones: false, marquageTenue: false }), [[1, { id: 9 }]]); const r3 = t3.run(t3.mL);   // sans la clé : le plus proche
   ok(`lot 238 — LA GARDE PAR TIERS (80 m : ${L6} = 6 ; 50 m : ${M4} = 4 ; 10 m : ${P2} = 2 ; fenêtre ${F3} = 3 ; pressing 1 → ${H.toFixed(2)} = 3,60 ; aggrF 1,3 → ${Ag.toFixed(2)} = 4,20) et L'AFFECTATION QUI SE TIENT (libre à 2,5 m c. l'hier à 3 : ${r1} ; libre à 1 m : ${r2} ; sans la clé : ${r3})`,
     L6 === 6 && M4 === 4 && P2 === 2 && F3 === 3 && Math.abs(H - 3.6) < 1e-9 && Math.abs(Ag - 4.2) < 1e-9 && r1 === 'hier' && r2 === 'libre' && r3 === 'libre');
   // (b) Le flux (12 × 300 s — à 6 la marque vit à ± 0,2 : 2,31 / 2,04 selon les graines) : marqueur → attaquant dans la surface p50 (réel 1-2 m) avec c. sans marquageTenue ; porteur →
   // premier défenseur dans le tiers loin hors fenêtre avec c. sans gardeTiers. Mesuré 2,4 → 2,0 / 2,6 → 3,3.
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1] ?? 0; };
-  const flux = (over) => { const cfg = matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le marqueur de surface remangé (2,48 c. 2,26 m à HEAD, borne 2,4 — un prix de 0,2 m nommé au 339) — la clause mesure la garde par tiers, pas l'intention d'effort */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), le monde remangé par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, contreZones: false, shotRange: 20, finition: null /* finition null DATÉ 258 : vert à HEAD (2,27 ≤ 2,4 au 252), le marquage de surface remangé par les tirages de l'échelle de finition (2,64) — la clause mesure la garde, pas le tir */, ...over }); const box = [], loin = [], cible = [];
+  const flux = (over) => { const cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), le marqueur de surface remangé (2,58 c. 2,48 au 261, borne 2,4 — le marqueur suit sa croyance de son homme : 0,1 m de plus, le prix nommé au 340) — la clause mesure la garde par tiers, pas la croyance */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le marqueur de surface remangé (2,48 c. 2,26 m à HEAD, borne 2,4 — un prix de 0,2 m nommé au 339) — la clause mesure la garde par tiers, pas l'intention d'effort */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), le monde remangé par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, contreZones: false, shotRange: 20, finition: null /* finition null DATÉ 258 : vert à HEAD (2,27 ≤ 2,4 au 252), le marquage de surface remangé par les tirages de l'échelle de finition (2,64) — la clause mesure la garde, pas le tir */, ...over }); const box = [], loin = [], cible = [];
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { const st = makeMatch({ full: true, seed });
       for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 6) continue; const poss = st.possession.team, c = st.possession.carrier >= 0 ? st.players[st.possession.carrier] : null;
         if (poss < 0 || st.restart || !c || c.keeper || st.ball.owner !== c.id) continue; const def = 1 - poss, og = st.pitch.ownGoal(def), L = st.pitch.hx * 2, bD = st.pitch.dims.box.depth, bW = st.pitch.dims.box.width;
@@ -6355,6 +6356,46 @@ if (__bloc()) {
     Math.abs(hId - K.tAtt) < 1e-9 && Math.abs(hChasse - K.tAtt * 1.3) < 1e-9 && Math.abs(pasId - K.actifDur) < 1e-9 && Math.abs(pasMark - K.actifDur * 1.3) < 1e-9
     && loinP?.reg === 'ferme' && loinP.v === K.vActif && presP === null && fenP === null && rentre?.v === K.vRecup && sprinte === null && ap10 && !ap30
     && M.v2 <= 1.45 && N.v3 < 2.3 && M.v3 > 2.3 && M.regs.includes('actif') && M.regs.includes('ent') && M.v5 < 2.0);
+}
+
+// ---------------------------------------------------------------- lot 262 : LA COUCHE DE CROYANCE
+// (cfg.croyance — Modèle 04 §2 le champ visuel, §4 l'état de croyance ; Bibles 10, 13, 14)
+if (__bloc()) {
+  // (a) les lois pures contre la TABLE du book (§2.2, valeurs calculées) : partenaire droit devant à 20 m q_det 0,63 /
+  // q_mot 0,64 IDENTITÉ ; dans l'UFOV à 10 m / 30° 0,40 / 0,79 ; coureur en périphérie à 45 m / 80° à 4 m/s en travers
+  // q_mot 0,14 PRÉSENCE, le même à l'arrêt RIEN ; σ_obs(20 m, 0,63) = 0,70 ; la croissance 0,62 / 1,15 / 3,03 / 10,26 m à
+  // 0,5 / 1 / 2 / 4 s (σ_obs 0,4) ; le repli sur l'ancre (§4.4) ; la clé absente rend l'état vrai (σ 0, âge 0).
+  // (b) la fixture : un passeur qui a VU son receveur puis lui tourne le dos pendant que celui-ci court 3 s — la croyance
+  // vieillit (âge ≈ 3), l'erreur dépasse 3 m, σ dépasse 2 ; il se retourne 0,3 s : l'erreur retombe sous 1 m ; sabotage
+  // « croyance null » : l'erreur est 0 — l'omniscience d'hier, nommée.
+  const K = matchCfg({}).croyance, DEGr = Math.PI / 180, obs = { p: [0, 0, 0], v: [0, 0], skill: null };
+  const c80 = Math.cos(80 * DEGr), s80 = Math.sin(80 * DEGr);
+  const A = qualiteDe(obs, 0, 20, 0, K, 0, 3), B = qualiteDe(obs, 0, 10 * Math.cos(30 * DEGr), 10 * Math.sin(30 * DEGr), K, 0, 3);
+  const C = qualiteDe(obs, 0, 45 * c80, 45 * s80, K, -4 * s80, 4 * c80), D = qualiteDe(obs, 0, 45 * c80, 45 * s80, K, 0, 0);
+  const sO = sigmaObs(20, 0.63, K), sig = [0.5, 1, 2, 4].map((t) => sigmaDe(0.16, t, K));
+  const rep = predit({ x: 0, z: 0, vx: 0, vz: 0, t: 0, s2: 0.16 }, 8.5, K, [10, 0]);
+  const fix = (over) => {
+    const st = makeMatch({ full: true, seed: 5 }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) }); st.restart = null;
+    const c = st.players.find((q) => q.team === 0 && q.post === 5), r = st.players.find((q) => q.team === 0 && q.post === 8);
+    for (const q of st.players) { q.v = [0, 0]; q.down = 0; q.scan = null; }
+    c.p[0] = 0; c.p[2] = 0; r.p[0] = 12; r.p[2] = 0; st.ball.restart([30, 0.11, 0], { cause: 'coup-franc' }); st.restart = null;   // le ballon devant lui, le receveur entre les deux
+    c.yaw = 0; st.t = 10;
+    for (let i = 0; i < 12; i++) { st.t += 1 / 60; croyanceStep(st, cfg); }                      // il le voit 0,2 s
+    c.yaw = Math.PI; st.ball.restart([-30, 0.11, 0], { cause: 'coup-franc' }); st.restart = null;   // il se retourne, le ballon dans son dos au receveur
+    r.v = [0, 3];
+    for (let i = 0; i < 180; i++) { st.t += 1 / 60; r.p[2] += 3 / 60; croyanceStep(st, cfg); }     // le receveur court 3 s en travers, dans le dos
+    const vieux = croyanceDe(c, r, st, cfg), errV = Math.hypot(vieux.p[0] - r.p[0], vieux.p[2] - r.p[2]);
+    c.yaw = Math.atan2(r.p[2], r.p[0]); st.ball.restart([30, 0.11, 0], { cause: 'coup-franc' }); st.restart = null;
+    for (let i = 0; i < 18; i++) { st.t += 1 / 60; croyanceStep(st, cfg); }                      // il se retourne 0,3 s
+    const neuf = croyanceDe(c, r, st, cfg), errN = Math.hypot(neuf.p[0] - r.p[0], neuf.p[2] - r.p[2]);
+    return { age: vieux.age, errV, sigV: vieux.sigma, errN, ageN: neuf.age };
+  };
+  const F = fix(null), N = fix({ croyance: null });
+  ok(`lot 262 — LA COUCHE DE CROYANCE (lois pures, la table du book) : devant à 20 m q_det ${A.qDet.toFixed(2)} / q_mot ${A.qMot.toFixed(2)} ${A.niveau} (0,63 / 0,64 identité) ; UFOV 10 m / 30° ${B.qDet.toFixed(2)} / ${B.qMot.toFixed(2)} (0,40 / 0,79) ; coureur en périphérie 45 m / 80° ${C.qMot.toFixed(2)} ${C.niveau} (0,14 présence), à l'arrêt ${D.qMot.toFixed(2)} ${D.niveau} (rien) ; σ_obs(20 m) ${sO.toFixed(2)} (0,70) ; σ(τ) ${sig.map((x) => x.toFixed(2)).join(' / ')} (0,62 / 1,15 / 3,03 / 10,26) ; le repli sur l'ancre à 8,5 s ${rep.p[0].toFixed(2)} m vers 10 (≥ 8), σ ${rep.sigma.toFixed(1)} ≤ ${K.sTac} — LA FIXTURE : le receveur dans le dos 3 s : âge ${F.age.toFixed(2)} ≥ 2,5, erreur ${F.errV.toFixed(2)} m > 3, σ ${F.sigV.toFixed(2)} > 2 ; revu 0,3 s : erreur ${F.errN.toFixed(2)} < 1, âge ${F.ageN.toFixed(2)} < 0,2 ; sabotage « croyance null » : erreur ${N.errV.toFixed(2)} = 0, âge ${N.age} (l'omniscience d'hier)`,
+    Math.abs(A.qDet - 0.63) < 0.02 && Math.abs(A.qMot - 0.64) < 0.02 && A.niveau === 'identite' && Math.abs(B.qDet - 0.40) < 0.02 && Math.abs(B.qMot - 0.79) < 0.02
+    && Math.abs(C.qMot - 0.14) < 0.02 && C.niveau === 'presence' && D.qMot === 0 && D.niveau === 'none' && Math.abs(sO - 0.70) < 0.01
+    && Math.abs(sig[0] - 0.62) < 0.01 && Math.abs(sig[1] - 1.15) < 0.01 && Math.abs(sig[2] - 3.03) < 0.01 && Math.abs(sig[3] - 10.26) < 0.01
+    && rep.p[0] >= 8 && rep.sigma <= K.sTac && F.age >= 2.5 && F.errV > 3 && F.sigV > 2 && F.errN < 1 && F.ageN < 0.2 && N.errV === 0 && N.age === 0);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

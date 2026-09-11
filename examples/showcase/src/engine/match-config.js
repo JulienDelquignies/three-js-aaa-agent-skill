@@ -799,6 +799,18 @@ export const MATCH = {
   epaule: { marge: 2, profond: 3, haut: 0.3 },
   pausa: { ttpPose: 1.5, ttpVif: 2.0, tenueBas: 1.25, tenueHaut: 0.8, garde: 0.7, max: 2.5, marge: 1.0, engages: 2, engage: 2, courseMin: 0.5, zone: [0.55, 0.88], rayon: 12, contact: 1.0, touche: 0.25, gainMin: 1.15 },   // LA PAUSA (253, pausa.js — la carte du book, Bible 07 §7 : 3-6 par match de 1,5-3,5 s, mesuré 0,5) : le porteur au calme (temps avant la pression ≥ seuil : ttpPose au tempo posé → ttpVif au tempo vif, × axe(tenue du rôle : tenueBas → tenueHaut) ÷ composureF), dans la zone [zone] du terrain, avec ≥ engages adversaires lancés vers le ballon (> engage m/s) et une course partenaire en cours (≥ courseMin s restantes) pas encore servable, TIENT : ni passe ni conduite (touche serrée touche) — jusqu'à servie / pression (ttp < garde) / expirée (max s, ou holdMax + 1) / course morte ; l'entrée exige hold ≤ holdMax − marge. L'événement pausa porte durée, issue, gain (≥ gainMin = valeur produite). null : l'adoption d'hier au bit
   piege: { p: 0.8, pas: 3, duree: 0.8, bande: 4, portee: 45, min: 14 },
+  croyance: { dtObs: 0.1, regardPasse: 0.2, phiDet: 30, kDet: 0.15, phiMot: 75, kMot: 0.10, uRef: 2, coupure: 100, r0: 45, tete: 80, qMin: 0.10, qEq: 0.15, rEq: 40, qId: 0.35, rId: 20, s0: 0.15, kappa: 0.02, sv0: 0.25, svK: 0.015, Tv: 1.2, sigV: 0.9, sigA: 1.2, sMax: 12, Tprior: 2.5, Tblend: 3, sTac: 7 },
+                          // LA COUCHE DE CROYANCE (262, st.full — doc croyance.js : le transversal n° 3, Modèle 04). Chaque
+                          // corps tient une croyance datée par entité, observée toutes les dtObs s : le champ visuel à deux canaux (détail phiDet / kDet,
+                          // mouvement phiMot / kMot × la vitesse en travers ÷ uRef, jusqu'à la coupure ; portée r0 × visionF ;
+                          // la tête ± tete ° vers le ballon ou la saccade), les niveaux (identité qId & rId, équipe qEq & rEq,
+                          // présence qMin), le bruit
+                          // d'observation s0 + kappa r (2 − q) et sv0 + svK r sur la vitesse, la correction de Kalman
+                          // scalaire, la prédiction paresseuse (Tv ; σ² = σ_obs² + sigV² τ² + ¼ sigA² τ⁴ ÷ anticipF²,
+                          // écrêtée sMax), le repli sur l'ancre du slot après Tprior en Tblend (variance ≤ sTac).
+                          // Consommateurs : le passeur vise sa croyance du receveur (décider de le servir, c'est le regarder :
+                          // une saccade de regardPasse s à l'adoption, dans la portée de la tête), le marqueur suit la sienne
+                          // de son homme. null : l'omniscience d'hier au bit.
   effort: { saut: 5, sautV: 9, actifDur: 2.5, tolOff: 1.2, vEnt: 1.4, vEntDef: 1.8, epsEnt: 0.45, vActif: 4.2, epsActif: 0.6, gRecup: 12, rayonTrans: 20, chaud: 10, tAtt: 2.5, appelPortee: 22, fenetre: 5, repliSprint: 5, vRecup: 5.0, epsRecup: 0.7 },
                           // L'INTENTION D'EFFORT AU CERVEAU (261, st.full — doc effort.js : le transversal n° 2 de la carte du
                           // book). La SITUATION commande la vitesse voulue et l'ε de chaque corps, par-dessus les allures :

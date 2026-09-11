@@ -1,7 +1,7 @@
 // match-sim — LE MATCH : UN game-loop (rondo-sim) configuré par accroches (assignJobs/tryShot/onOut/onDive/canTake). Dettes v1 : touche au pied réduit, hors-jeu 11c11, gardien-surface.
 
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne , bandeDuCentral, remettreAuPivot, hommeRemis, purgerPassation } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
-import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { familiariteStep, affinite as affiniteFam } from './familiarite.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
+import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { croyanceStep, croyanceDe } from './croyance.js'; import { familiariteStep, affinite as affiniteFam } from './familiarite.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
 import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
@@ -1081,14 +1081,14 @@ function assignMatchJobs(st, cfg) {
         return;
       }
       if (!m) { p.job = 'mark'; p.target = [p.p[0], 0, p.p[2]]; return; }
-      const gx = defGoal.x - m.p[0], gz = 0 - m.p[2];
+      const mp = st.full && cfg.croyance ? croyanceDe(p, m, st, cfg).p : m.p, gx = defGoal.x - mp[0], gz = 0 - mp[2];   // (262) LE MARQUEUR SUIT SA CROYANCE de son homme (croyance.js) : pris dans le dos s'il ne l'a pas vu
       const gl = hyp(gx, gz) || 1;
       p.job = 'mark';
       // LA ZONE ROUGE SE SERRE (192, cfg.serreRouge — point 7 : marqueur à 3,8 m p50 au point d'appui, 66 % de retournements) : le danger < 26 m se marque AU CONTACT — la garde ×serre, l'homme prime la bande, le suivi continu. markF/press restent les facteurs. Absente : hier.
       const rouge = st.full && cfg.serreRouge && gl < (cfg.serreRouge.rayon ?? 26);
       // …ET LE RÔLE DU MARQUEUR (roles.press, lot 19) : le récupérateur COLLE (×0,82), le meneur replié marque LÂCHE (×1,18) — milieu ×1, l'identité du polyvalent
       const off = (press ? 0.95 : 1.4) * (rouge ? (cfg.serreRouge.serre ?? 0.45) : 1) * axe(role(p).press, 1.18, 0.82) * ((role(p).marqueSerre ?? 0.5) !== 0.5 ? axe(role(p).marqueSerre, 1.35, 0.65) : 1) * (2 - (p.skill?.markF ?? 1));   // …le MARQUAGE est une note (151) ET une CONSIGNE (196, axe marqueSerre : coller/laisser respirer — le même joueur, deux ordres)
-      const want = [m.p[0] + (gx / gl) * off, m.p[2] + (gz / gl) * off];
+      const want = [mp[0] + (gx / gl) * off, mp[2] + (gz / gl) * off];
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) : le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
       if (st.full && cfg.zone !== false && !rouge && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {   // …la bande cède à l'HOMME en zone rouge (192)
         let xL = spotsBloc[mapD[p.post ?? 0]]?.[0];
@@ -1217,7 +1217,7 @@ export function matchStep(st, dt, cfg = matchCfg()) {
   if (st.phase === 'carry' && st.possession.carrier >= 0) st.lastTouch = st.players[st.possession.carrier].team;
   else if (st.phase === 'flight' && st.lastPasser >= 0) st.lastTouch = st.players[st.lastPasser].team;
   const prev = [st.ball.p[0], st.ball.p[1], st.ball.p[2]];
-  familiariteStep(st, cfg); horsJeuTente(st, cfg); piegeStep(st, cfg); contreEngage(st, cfg); contreTir(st, cfg);   // LE CORPS QUI CONTRE (258b, duel.contreEngage : à l'armé du tir, le défenseur devant s'engage sur la ligne) puis LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
+  croyanceStep(st, cfg); familiariteStep(st, cfg); horsJeuTente(st, cfg); piegeStep(st, cfg); contreEngage(st, cfg); contreTir(st, cfg);   // (262) LA COUCHE DE CROYANCE : chaque corps observe avant que quiconque décide   // LE CORPS QUI CONTRE (258b, duel.contreEngage : à l'armé du tir, le défenseur devant s'engage sur la ligne) puis LE BLOC DE CHAMP (176, duel.contreTir) : le corps encaisse la frappe — la source des corners du réel
   jambeTendue(st, cfg); // LA JAMBE TENDUE (181, duel.jambeTendue) : le receveur attitré touche la passe qui allait le déborder
   arbitreStep(st, dt, cfg); // L'ARBITRE INCARNÉ (185, referee.arbitreStep) : le corps du sifflet — la diagonale, la faute, le rond
   rondoStep(st, dt, cfg);

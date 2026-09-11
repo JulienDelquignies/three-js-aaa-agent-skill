@@ -10817,6 +10817,87 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      m) + son sabotage.
      Sceau : commit f5c12b4, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit). Le transversal n° 2 est scellé ; vient la couche de croyance (Modèle 04).
+- 340: LA COUCHE DE CROYANCE (262 — le transversal n° 3 de la carte du book : Modèle 04 §2 le champ
+     visuel à deux canaux, §4 l'état de croyance ; Bibles 10 lot 1, 13 lot 1, 14 lot 1). Le moteur
+     était l'architecture A du chapitre — « FM-like » : chaque décision lisait st.players, l'état
+     vrai ; le bruit venait de la sortie, jamais de ce que le joueur SAIT (test 1 « réfuté par
+     construction : erreur 0, âge 0 »). Sonde AVANT (sonde-262, 2 × 45 min) : 586 passes par match,
+     65,9 % conservées, 14,0 tirs, erreur du passeur sur son receveur 0 partout. LA LOI (croyance.js,
+     cfg.croyance && st.full ; croyanceStep en tête de matchStep — chaque corps observe avant que
+     quiconque décide) : chaque corps tient p.vue, une croyance datée par entité (21 corps + le
+     ballon) : (1) LE CHAMP VISUEL à deux canaux — le regard = le buste ± 80° de tête vers le
+     ballon, ou la cible de la saccade en cours (scan.js, 250) ; le canal DÉTAIL q_det = D(r) /
+     (1 + e^{0,15 (φ − 30°)}), D(r) = e^{−r/45} × visionF ; le canal MOUVEMENT phiMot 75° / kMot 0,10,
+     coupé à 100°, conditionné à la vitesse relative EN TRAVERS du regard ÷ 2 m/s (« un joueur
+     immobile dans le dos est invisible, le même qui démarre devient perceptible ») ; les niveaux du
+     book (identité q_det ≥ 0,35 et r ≤ 20 ; équipe 0,15 et 40 ; présence q ≥ 0,10 ; rien) ; (2)
+     L'OBSERVATION à la cadence du book (dtObs 0,1 s — à 60 Hz des bruits indépendants s'annulent
+     en moyenne, l'œil ne rend pas soixante mesures par seconde), σ_obs = 0,15 + 0,02 r (2 − q), la
+     vitesse à 0,25 + 0,015 r, le tirage sur un flux PERCEPTION propre à chaque corps (LCG seedé
+     par p.id, aucun st.rnd consommé), la correction de Kalman scalaire ; (3) LA PRÉDICTION
+     paresseuse à la lecture : p̂ = p_obs + v̂ T_v (1 − e^{−τ/T_v}) (T_v 1,2 : sature à 8,4 m), σ² =
+     σ_obs² + 0,9² τ² + ¼ (1,2 ÷ anticipF)² τ⁴, écrêtée à 12 m ; (4) L'OUBLI N'EST PAS
+     L'EFFACEMENT : au-delà de 2,5 s sans observation, la croyance se rabat sur l'ANCRE de
+     l'entité (son slot) en 3 s, la variance plafonnée à 7 m. LES CONSOMMATEURS, sous la clé : le
+     PASSEUR vise sa croyance du receveur (strike-sim : la mène depuis p̂ + v̂ t — « la passe vers
+     un fantôme ») et le MARQUEUR suit sa croyance de son homme (match-sim : « le défenseur pris
+     dans le dos ») ; le reste des décisions lit encore l'état vrai — la dette nommée (l'attention
+     et l'effet tunnel, la tromperie comme inférence, la communication comme observation,
+     l'invariance par permutation : Modèle 04 lots 4-6 ; et le test d'import « aucune décision ne
+     lit st.players »). Les attributs : vision → la portée du détail, anticipation → l'accélération
+     imprévue, scanning → la cadence des saccades (250) ; identité à 50. Mesuré APRÈS (2 × 45 min,
+     mêmes graines) : d'abord SANS regard de passe — le test 1 du book tenu en flux : l'erreur du
+     passeur sur son receveur 0,36 m sous 0,3 s d'âge (806 passes, 83 %), 0,81 entre 0,3 et 1 s
+     (82), 2,83 entre 1 et 2,5 s (57), 5,65 au-delà (24), et le σ cru la PRÉDIT (0,30 / 0,61 / 2,32
+     / 5,84 : la croyance est honnête sur sa propre incertitude) ; mais le banc a montré le PRIX
+     d'une décision omnisciente servie par une visée crue : le lot 167 (la mène de course qui
+     survit au contact) tombait à p90 5 m (≥ 10) — le passeur ÉLISAIT un coureur qu'il n'avait
+     pas regardé et le servait à sa vieille croyance (vitesse crue nulle : pas de sprint promis).
+     D'où LE REGARD DE PASSE (cfg.croyance.regardPasse 0,2 s) : décider de servir X, c'est le
+     REGARDER — une saccade vers le receveur à l'adoption (avant l'armé : Jordet, jamais pendant
+     la frappe), dans la portée de la tête (± 80° sur le buste — une saccade ne retourne pas le
+     corps), observée à l'image suivante. Mesuré APRÈS avec le regard : 99,8 % des passes visent
+     une croyance fraîche (966/968 sous 0,3 s), l'erreur est le bruit d'observation en distance
+     (0,25 m, σ cru 0,23) ; la passe vers un fantôme ne survit en flux que pour le receveur hors
+     de portée de la tête (2 passes) — la corrélation à l'âge vit à la fixture (8,63 m à 3 s), le
+     flux la produira quand la DÉCISION lira la croyance (le test d'import, le lot suivant du
+     transversal) ; le lot 167 rend p90 15,3 m. Le prix : 65,9 → 62,9 % de passes conservées,
+     586 → 579 passes, 14 → 18 tirs, le marqueur à 8,9 → 9,5 m p50 de son homme (pris dans le
+     dos) ; la sonde d'attributs (notes 10 / 50 / 90 de scanning, vision, anticipation) rend
+     62,5 / 62,9 / 57,8 % conservées — la bande de bruit de deux matchs (± 3 pts), pas une loi : la
+     note ne se lit pas encore dans la passe, parce que la décision ne lit pas encore la croyance.
+     Les lois pures sont exportées (regardDe, qualiteDe, sigmaObs, sigmaDe, observer, predit,
+     croyanceDe, croyanceStep) ; croyanceDe rend l'état vrai (σ 0, âge 0) sans la clé ou pour une
+     entité jamais observée. Jumeau : croyance null = HEAD au bit (405d2e80b6d82e19 /
+     7ddbeaefea413442 — le défaut du 261, relu par git stash). Banc : verify-match11 bloc 262
+     (index 160 : la TABLE du book recalculée au centième — devant à 20 m 0,63 / 0,64 identité,
+     l'UFOV 0,40 / 0,79, le coureur en périphérie 0,14 présence et à l'arrêt rien, σ_obs 0,70, la
+     croissance 0,62 / 1,15 / 3,03 / 10,26, le repli sur l'ancre ; la fixture — le passeur qui a vu
+     son receveur puis lui tourne le dos 3 s : âge 3,08, erreur 8,63 m, σ 6,35 ; revu 0,3 s :
+     0,57 m ; sabotage croyance null : 0). BANC COMPLET (final262.sh, 8 shards + 25 annexes, sur le moteur final — un
+     premier banc lancé avant le regard de passe a été arrêté sur le rouge du 167) : 273 ✓ / 13 ✗
+     aux shards et 543 ✓ / 6 ✗ aux annexes au premier passage. Mondes déplacés, épinglés croyance
+     null DATÉ 262 après preuve verte à HEAD~ (worktree b5bd034, le sceau 261) : verify-match11
+     blocs 7 « la foulée de frappe » (sabotage 3,76 c. 3,33 − 0,12), 16 « la pose figée » (18 c.
+     9 + 10), 22 « l'économie de course » (sabotage p50 7 c. 8), 26 « lot 95 le jockey » (58 c.
+     56 %), 33 « lot 103 le jeu respire » (44 m / 9,0 c. 46 / 9,5), 68 « lot 137 le porteur qui
+     monte » (offre p50 1 c. 2), 98 « lot 189 le lancé » (9 c. 11 × 0,7), 99 « lot 190 le retrait »
+     (p50 5,4 c. 6), 129 « flux 232b » (67 c. 75 − 8), 134 « flux 238 la garde » (le marqueur de
+     surface 2,58 c. 2,48 au 261 — LE PRIX du marqueur qui suit sa croyance, 0,1 m de plus,
+     nommé) ; verify-attributes 157 (l'horloge du pique 5 c. 7 + 2), verify-roles 196 (la cible du
+     marqueur mesurée contre l'homme VRAI quand elle se pose sur l'homme CRU — s7 0,49/0,70) ;
+     verify-scan « l'horloge ne bouge aucun bit » épinglée PAR DESSEIN (sous la croyance, le
+     regard est une observation : la saccade bouge le jeu — Modèle 04 lot 2). verify-identification
+     REGELÉ DATÉ 262 (la règle du 252) : 15 → 22 signatures — perdues GK A|tenue, DC B|profondeur, LAT D|largeurR, MDC A|largeurR, MDC A|profondeur, MO B|profondeur, AV A|largeurR ; gagnées DC A|largeurR, LAT A|largeurR, LAT A|profondeur, LAT A|appel, DC B|largeurR, DC B|appel, DC C|largeurR, DC C|appel, LAT C|profondeur, MO A|tenue, MDC C|largeurR, AV A|profondeur, AIL C|largeurR, AIL C|repli
+     — le marqueur qui suit sa croyance et le passeur qui vise la sienne font s'exprimer les
+     axes de largeur, d'appel et de profondeur des défenseurs ; la volumétrie à 6 graines reste
+     la dette. Isolés après épingles : blocs 7 1/0, 16 2/0, 22 2/0, 26 2/0, 33 2/0, 68 1/0, 98
+     1/0, 99 1/0, 129 2/0, 134 2/0, 160 (le 262) 1/0, 80 (le 167, sans épingle : p90 15,3 m avec
+     le regard de passe) 2/0, bloc 1 seul 0.54 ms/step (la perception à 10 Hz : 22 × 22 observations
+     par tick) ; annexes attributes 27/0, roles 14/0, scan 5/0, identification 1/0, remises 36/0,
+     tactics 11/0, slide 10/0, porte 4/0, contact 25/0, foulee 45/0, attente 42/0, football-rules
+     59/0, tete 7/0, cartons 6/0, expulsion 8/0. Rouges hérités, nommés : 246d ; verify-loi12 « le
+     mur se tient » (4,6 m) + son sabotage ; « contres arrivés à l'entrée » (vert ce passage).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

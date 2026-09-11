@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // verify-scan.mjs — L'HORLOGE DE SCAN (lot 250, Campagne V — scan.js, interface gelée docs/Interface_Campagne_V.md §1).
-// Ce qui se prouve : l'horloge est déterministe et ne bouge AUCUN bit de jeu ; la cadence en vol est celle de Jordet ;
+// Ce qui se prouve : l'horloge est déterministe et ne bouge AUCUN bit de jeu (sans la couche de croyance, 262 — sous elle le regard EST une observation) ; la cadence en vol est celle de Jordet ;
 // la note scanning est un TEMPS (plus de regards par vol à 90 qu'à 10) ; jamais de saccade pendant la frappe du passeur
 // ni pendant la prise ; n compte les regards du vol en cours et retombe à 0 hors vol. Le corps ouvert après le regard
 // (cfg.scan.corps) est MESURÉ placebo (pivot 65° = 65°) : null, imprimé ici en informatif.
@@ -10,7 +10,7 @@ const ok = (name, cond) => { (cond ? pass++ : fail++); console.log(`${cond ? '�
 const NIV = ['pace','acceleration','passing','control','finishing','tackling','reactions','composure','dribbling','keeping'];
 const eq = (over) => Array.from({ length: 11 }, () => ({ ratings: { ...Object.fromEntries(NIV.map((k) => [k, 50])), ...over } }));
 const film = (seed, over = {}, note = null, dur = 240) => {
-  const st = makeMatch({ full: true, seed, squads: note != null ? [eq({ scanning: note }), eq({})] : null }), cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (27/0 au 254), le monde remangé par le profil locomoteur — la clause mesure l'attribut ou l'horloge, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (5/0 au 255), Jordet remangé par la familiarité (1 saccade pendant une frappe) — la clause mesure l'horloge de scan, pas la familiarité */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (5/0 en worktree 22c35d7), Jordet remangé par la pausa (1 saccade pendant une frappe — le porteur qui tient scanne) — la clause mesure l'horloge de scan, pas la pausa */, shotRange: 20, ...over });
+  const st = makeMatch({ full: true, seed, squads: note != null ? [eq({ scanning: note }), eq({})] : null }), cfg = matchCfg({ croyance: null /* croyance null DATÉ 262 : PAR DESSEIN — la couche de croyance lit la saccade (le regard de l'observateur) : sous elle, l'horloge de scan bouge des bits de jeu (le passeur vise ce qu'il a regardé) ; la clause prouve la NEUTRALITÉ de l'horloge d'hier, qui ne vaut que sans la croyance (Modèle 04 lot 2 : le scan devient la source des observations) */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (27/0 au 254), le monde remangé par le profil locomoteur — la clause mesure l'attribut ou l'horloge, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (5/0 au 255), Jordet remangé par la familiarité (1 saccade pendant une frappe) — la clause mesure l'horloge de scan, pas la familiarité */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (5/0 en worktree 22c35d7), Jordet remangé par la pausa (1 saccade pendant une frappe — le porteur qui tient scanne) — la clause mesure l'horloge de scan, pas la pausa */, shotRange: 20, ...over });
   const o = { vols: 0, scans: 0, tVol: 0, viol: 0, nHors: 0, imgsHors: 0, sacc: 0, imgs: 0, seq: [], events: null, premiers: [] }; const prev = new Map();
   for (let i = 0; i < dur * 60; i++) {
     matchStep(st, 1 / 60, cfg);
