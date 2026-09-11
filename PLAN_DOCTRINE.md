@@ -521,6 +521,18 @@ se lira dans la passe), l'attention et
 l'effet tunnel, la tromperie comme inférence, la communication comme observation, l'invariance par permutation (Modèle
 04 lots 4-6) — puis le pas de décision séparé du pas physique et les flux RNG nommés (Modèle 01).
 
+**263 — LE PAS DE DÉCISION SÉPARÉ DU PAS PHYSIQUE : SCELLÉ (341).** Le transversal n° 4 : deux horloges (cadence.js) — le
+cerveau (les postes, le choix du porteur, les niches du 1c1) ne parle qu'aux ticks de décision (0,1 s) ; le corps, le ballon
+(sous-pas ≤ ½ rayon), les gestes, la perception et l'arbitre vivent au pas physique ; l'intention s'adopte au tick, elle
+s'exécute à la porte du ballon au pied ; le gardien, les remises et l'administration de l'arbitre restent au pas physique
+(le gardien au tick coûtait 2 buts par match) ; les constantes en images (l'EMA de la poussée, le tour, le vol mort) se
+disent en secondes. Mesuré (le test 3 du book, 8 × 45 min) : dec 0,05 → 0,10, D_KS(possession) 0,034 (non réfuté à
+n ≈ 1 340), passes −4,0 %, tirs +5,0 %, conservées +1,7 pt ; face à hier : 1 085 → 997 passes (le réel), 63 → 65 % conservées,
+34 → 37 tirs, plongeons 19 → 15,5, CPU p50 430 → 192 µs. Ce qu'il nomme : la sensibilité au pas PHYSIQUE (980 → 1 150
+passes de 1/60 à 1/30 : le contact par image → le contact balayé), le budget (test 9 : 192 µs c. 52 — la grille spatiale,
+zéro allocation), les tirs de loin sous la cadence (la surface 69 → 54 % au flux du 232) ; puis les flux RNG nommés (Modèle 01 lot 2), le double tampon et l'invariance d'ordre
+(test 1), le temps de jeu (test 10).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

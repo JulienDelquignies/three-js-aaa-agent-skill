@@ -385,6 +385,26 @@ une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste u
 `remplacement { sortant, entrant }` : `p.id` est un maillot, pas une personne. Le rendu peint `p.number` et le `look`
 champ par champ ; `applyKit` se rappelle sur un modèle déjà posé.
 
+### Le pas de décision séparé du pas physique (lot 263, `cfg.cadence` — `cadence.js`)
+
+Le Modèle 01 demande deux horloges (décision 0,10 s, physique 0,02 s) et juge par le test 3 : « un décalage de moyenne
+> 5 % entre deux pas prouve des constantes en ticks ». Le moteur vivait un seul pas à 60 Hz. Le 263 donne au cerveau son
+horloge : `pasDecision(st, dt, C)` accumule le temps physique et rend vrai toutes les `dec` s (le premier pas décide, la
+phase se conserve) ; `rondoStep` n'appelle `assignJobs` (les postes, le marquage, le pressing, le gardien, l'administration)
+et **le choix du porteur** (choosePass, les niches du 1c1) que sur un tick, tandis que le corps, le ballon (`stepBall` :
+n = ⌈|v| dt / (r/2)⌉ sous-pas, plus fin que le K = 5 du book), les gestes, la perception (la croyance à son dtObs), le contact
+et l'arbitre — avec son administration, les remises et **le gardien** (sa décision est une réaction de corps ; au tick il
+coûtait 2 buts par match) — vivent à chaque pas physique. **La porte d'exécution** : sous la clé, le bloc du porteur s'ouvre au tick sans
+le ballon au pied pour choisir (l'intention s'adopte) ; le tir, le centre, le dégagement, `beginPass`, la semelle et le
+choix pressé attendent la porte (reachNow ou la gâchette près du but / du centre) au pas physique — décider → préparer →
+s'engager. `hzDecision(cfg)` (60 sans la clé, 1 / dec avec) dit en secondes les constantes du cerveau écrites en images :
+l'EMA de la poussée (τ 0,35 s), la vitesse de tour du retournement, le vol mort (0,3 s). Mesuré 8 × 45 min (le test 3, pas
+physique 1/60) : dec 0,05 → 0,10, D_KS(possession d'équipe) 0,034 (non réfuté à n ≈ 1 340), passes −4,0 %, tirs +5,0 %,
+conservées +1,7 pt ; face à hier : 1 085 → 997 passes, 63,3 → 65,2 % conservées, 34 → 37 tirs (le prix : la surface 69 → 54 %
+au flux du 232), plongeons 19 → 15,5, CPU p50 430 → 192 µs par pas (182 → 121 s par match). Clé absente : chaque image décide, hier au bit. Banc : bloc 263
+(les ticks par pas, la phase, hzDecision, le vol mort, 600 appels du cerveau par minute à 1/60 comme à 1/30, sabotage).
+Sonde : `scripts/book/sonde-263.mjs` (+ `ks-263.mjs`). Fiche : `M01-boucle-simulation.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

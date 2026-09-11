@@ -7,7 +7,7 @@ import { bordFiletStep, onOut, canTake, chronoStep, feuilleDeMatch, administerWh
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
-import { MOVES } from './animkit.js';
+import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
 const d2 = (a, b) => hyp(a[0] - b[0], (a[2] ?? a[1]) - (b[2] ?? b[1]));
 
@@ -105,7 +105,7 @@ function assignMatchJobs(st, cfg) {
   if (cfg.deadFlight && st.full && st.phase === 'flight' && st.ball.owner == null
     && st.ball.p[1] < 0.25 && hyp(st.ball.v[0], st.ball.v[2]) < cfg.deadFlight) {
     st._deadFlightN = (st._deadFlightN ?? 0) + 1;
-    if (st._deadFlightN >= 18) {
+    if (st._deadFlightN >= Math.round(0.3 * hzDecision(cfg))) {   // (263) 18 images d'hier = 0,3 s : le compteur se dit en secondes à la cadence du cerveau
       st.phase = 'loose';
       st.events.push({ t: +st.t.toFixed(2), type: 'vol-mort', p: [+st.ball.p[0].toFixed(1), +st.ball.p[2].toFixed(1)] });
       st._deadFlightN = 0;
@@ -412,7 +412,7 @@ function assignMatchJobs(st, cfg) {
   const flightRec = (st.phase === 'flight' && st.pass && st.pass.to >= 0) ? st.players[st.pass.to] : null;
   const goal = pitch.attackGoal(atk);
   const own = pitch.ownGoal(atk === 0 ? 1 : 0);                    // le but que la défense protège
-  void own;
+  void own; if (st.full && cfg.cadence && st._decide === false) return;   // (263) LA FRONTIÈRE DU PAS DE DÉCISION : ce qui précède — l'administration (le sifflet, le chrono, la Loi 12, la Loi 3), les remises, l'expulsé, LE GARDIEN (sa décision est une réaction de corps au vol du ballon, comme le contre et la jambe tendue : mesuré au tick, buts 4,3 → 6,3 et prises 2 → 1) — vit au pas physique ; le cerveau de champ qui suit ne parle qu'au tick (rondoStep pose st._decide)
 
   // ---- LE BALLON LIBRE EST CHASSÉ PAR LES DEUX CAMPS : le plus proche de chaque camp court.
   const bSpd = hyp(st.ball.v[0], st.ball.v[2]);
@@ -500,11 +500,11 @@ function assignMatchJobs(st, cfg) {
         const pl0 = hyp(px, pz) || 1;
         px += (-pz / pl0) * o; pz += (px / pl0) * o;
       }
-      if (aimR && p.push) { const cur = Math.atan2(p.push[1], p.push[0]); let dA = Math.atan2(pz, px) - cur; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const step = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) / 60; const ang = cur + Math.sign(dA) * Math.min(Math.abs(dA), step); px = Math.cos(ang); pz = Math.sin(ang); }
+      if (aimR && p.push) { const cur = Math.atan2(p.push[1], p.push[0]); let dA = Math.atan2(pz, px) - cur; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const step = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) / hzDecision(cfg); const ang = cur + Math.sign(dA) * Math.min(Math.abs(dA), step); px = Math.cos(ang); pz = Math.sin(ang); }
       const pl = hyp(px, pz) || 1;
       // LA POUSSÉE SE LISSE (EMA τ 0,35 s) : l'évasion 60 Hz zigzaguait — l'intention d'abord.
       const raw = [px / pl, pz / pl];
-      const a = 1 - Math.exp(-(1 / 60) / 0.35);
+      const a = 1 - Math.exp(-(1 / hzDecision(cfg)) / 0.35);   // (263) τ en secondes quelle que soit la cadence du cerveau (10 Hz sous cfg.cadence, 60 hier)
       p._pushS = p._pushS ? [p._pushS[0] + (raw[0] - p._pushS[0]) * a, p._pushS[1] + (raw[1] - p._pushS[1]) * a] : raw;
       const sl = hyp(p._pushS[0], p._pushS[1]) || 1;
       p.push = [p._pushS[0] / sl, p._pushS[1] / sl];

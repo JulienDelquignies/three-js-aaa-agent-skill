@@ -8,7 +8,7 @@ import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js'
 import { offsideLine, isOffside } from './offside.js';
 import { busteBlock } from './keeper.js';
 import { arbitre } from './menace.js';
-import { beginPass, strikeNow, throwNow, holdMains } from './strike-sim.js';
+import { beginPass, strikeNow, throwNow, holdMains } from './strike-sim.js'; import { pasDecision } from './cadence.js';   // (263) le pas de décision
 import { MOVE_TIMING, wrapA, touchEvent, maybeRateau, maybeFeinte, maybeSemelle, maybePassement, maybeCrochet, maybeDoubleContact, maybePetitPont, maybeRoulette, maybeFeinteFrappe, skillContactNow, skillFollowStep, pressPredicate, footPoint, stanceBallPoint } from './skills-sim.js';
 
 // rondo-sim — the game loop of the possession game, headless: release, pass vs press, read, and who ends up with the ball. No renderer — the whole match is proved in node (verify-rondo) before drawn.
@@ -517,7 +517,7 @@ function trySlide(st, cfg) {
  */
 export function rondoStep(st, dt, cfg = RONDO) {
   st.t += dt;
-  (cfg.assignJobs ?? assignJobs)(st, cfg);   // le match branche ici son attribution directionnelle
+  const decide = !(st.full && cfg.cadence) || pasDecision(st, dt, cfg.cadence); st._decide = decide; (cfg.assignJobs ?? assignJobs)(st, cfg);   // le match branche ici son attribution directionnelle — (263) LE PAS DE DÉCISION (cadence.js, cfg.cadence) : le cerveau (les postes, le choix du porteur) ne parle qu'aux ticks de décision (dec 0,1 s — assignMatchJobs rend la main après l'administration quand st._decide est faux) ; le corps, le ballon, les gestes, la perception, l'arbitre et son administration vivent à chaque pas physique. Sans la clé : chaque image décide (hier au bit)
   // LA LATENCE DE PERCEPTION — mesurée avant : 10 % des défenseurs re-ciblaient dans l'IMAGE du
   // départ de passe (17 ms — surhumain). Après l'événement-surprise, un adversaire du porteur
   // GARDE sa cible d'avant le temps de sa réaction résiduelle : il court sur l'ancienne image du
@@ -827,17 +827,17 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // follow-through). L'urgence contestée, elle, joue quand même : le duel n'attend pas l'assise.
     const settleGate = st._settling && st._settling.id === c.id && st.t < st._settling.at + cfg.settleExtra;
     // LES NICHES DU 1c1, du plus spécifique au plus général (114-117) : le jeté franc se perfore (croqueta), le glisseur se traverse (pont), le poursuivant s'enroule (roulette) — sortie fermée : le râteau reprend
-    if (!settleGate && maybeDoubleContact(st, c, cfg)) return st;
-    if (!settleGate && maybePetitPont(st, c, cfg)) return st;
-    if (!settleGate && maybeRoulette(st, c, cfg)) return st;
+    if (decide && !settleGate && maybeDoubleContact(st, c, cfg)) return st;   // (263) les niches du 1c1 sont des décisions : au tick
+    if (decide && !settleGate && maybePetitPont(st, c, cfg)) return st;
+    if (decide && !settleGate && maybeRoulette(st, c, cfg)) return st;
     // LE RÂTEAU AVANT QUE LE DUEL S'INSTALLE : presseur qui ferme la face, sortie arrière libre — on se retourne avec le pas d'avance (refus nommés sinon)
-    if (!settleGate && maybeRateau(st, c, cfg)) return st;
+    if (decide && !settleGate && maybeRateau(st, c, cfg)) return st;
     // le crochet coupe une COURSE fermée, le passement ment à un jockey POSTÉ — deux situations
     // disjointes du râteau (la charge frontale) ; leurs clés n'existent qu'au match
     // …le passement s'enchaîne LIBREMENT sur un contrôle (l'assise bloquait pile la fenêtre du jockey posté, 6 fenêtres/4 matchs)
-    if (maybePassement(st, c, cfg)) return st;
-    if (!settleGate && maybeCrochet(st, c, cfg)) return st;
-    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && (reachNow || gachetteNear || gachetteCentre) && (!settleGate || contested)) {
+    if (decide && maybePassement(st, c, cfg)) return st;
+    if (decide && !settleGate && maybeCrochet(st, c, cfg)) return st; const porte = reachNow || gachetteNear || gachetteCentre;   // (263) LA PORTE D'EXÉCUTION : le ballon au pied (ou la gâchette près du but / du centre) — sous cfg.cadence, le bloc s'ouvre aussi au tick de décision SANS le ballon au pied, pour CHOISIR ; l'exécution (tir, centre, beginPass) attend la porte au pas physique. Sans la clé : la porte d'hier au bit
+    if (st.hold >= Math.max(0, cfg.holdMin - cfg.windupBudget) && (porte || (decide && st.full && cfg.cadence)) && (!settleGate || contested)) {
       // PENDANT UNE LIVRAISON (contrôle en route vers le pied), on planifie CONTRE LE POINT
       // D'ARRIVÉE — pas contre le ballon en voyage (le corps partait vers l'ancre d'un ballon
       // mouvant : control-at-foot 1 % → 33 %), et pas rien du tout non plus (bloquer l'intention
@@ -885,15 +885,15 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // LE TIR — le geste du match (cfg.tryShot, match-sim) : évalué AVANT l'intention de
       // passe, parce qu'une occasion de but domine une ligne de passe. Le rondo n'a pas de but :
       // le hook n'y existe pas, et ce bloc est un no-op. Sous arbitre : seulement s'il GAGNE.
-      if (gachette && cfg.tryShot && (!arb || arb.meilleure === 'tir') && cfg.tryShot(st, c, cfg)) return st;
+      if (porte && gachette && cfg.tryShot && (!arb || arb.meilleure === 'tir') && cfg.tryShot(st, c, cfg)) return st;
       // ON TIRE SI ON PEUT ; ON FEINTE LA FRAPPE SI UN CONTREUR FERME (le refus du tir vient d'être nommé — la feinte achète l'angle qui manquait, le contreur s'assoit)
-      if (!contested && maybeFeinteFrappe(st, c, cfg, contested)) return st;
+      if (porte && !contested && maybeFeinteFrappe(st, c, cfg, contested)) return st;
       // LE CENTRE (cfg.tryCross, match) : l'aile qui ne peut pas tirer SERT la surface
-      if (!contested && cfg.tryCross && (!arb || arb.meilleure === 'centre') && cfg.tryCross(st, c, cfg)) return st;
+      if (porte && !contested && cfg.tryCross && (!arb || arb.meilleure === 'centre') && cfg.tryCross(st, c, cfg)) return st;
       // …et le DÉGAGEMENT se décide ICI aussi (pas seulement au duel installé : mesuré, la branche
       // contestée ne tournait que 17 fois en 120 s — l'équipe épinglée perdait le ballon par tacle
       // AVANT d'y entrer ; ses propres portes lisent l'étau)
-      if (cfg.tryClear && cfg.tryClear(st, c, cfg)) return st;
+      if (porte && cfg.tryClear && cfg.tryClear(st, c, cfg)) return st;
       if (contested) {
         // UN BALLON CONTESTÉ SE JOUE MAINTENANT — pas « se re-dribble sur place ». Reprendre
         // l'évasion laissait le cycle se répéter (le défenseur suit le ballon : garé, délogé,
@@ -908,11 +908,11 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // l'évasion travailler ; l'urgence ne prend la main que si le duel s'installe (pressure).
         if (c.intent) c.intent = null;
         deny(st, 'contesté');
-        if (st.pressure > 0.15 * (c.skill?.decF ?? 1) && !enLance(st, c, cfg, null)) {   // …LES DÉCISIONS sont une note (151) ; et LE LANCÉ ne panique pas (189) : le chasseur est DERRIÈRE, on court
+        if (porte && decide && st.pressure > 0.15 * (c.skill?.decF ?? 1) && !enLance(st, c, cfg, null)) {   // (263) le choix pressé aussi se décide au tick   // …LES DÉCISIONS sont une note (151) ; et LE LANCÉ ne panique pas (189) : le chasseur est DERRIÈRE, on court
           const choice = choosePass(st, cfg);
           if (choice) beginPass(st, choice, cfg, { forceUrgent: true });
         }
-      } else if (!c.intent) {
+      } else if (decide && !c.intent) {   // (263) LE CHOIX DU PORTEUR au tick de décision — l'intention adoptée s'exécute (beginPass, ci-dessous) au pas physique, quand le ballon est au pied
         const choice = choosePass(st, cfg);
         // AU CALME, LA BARRE MONTE ET LA TENUE SE PAIE : l'intention ne s'adopte qu'au-delà de la
         // tenue délibérée tirée pour CETTE possession (st._calmHold, seedée) et d'une barre de
@@ -975,9 +975,9 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // LA SEMELLE VIT DANS LA TENUE : pas d'intention encore, du champ, du calme — le pied se
         // pose sur le ballon et la tête se lève. Le geste ALLONGE la tenue de sa durée (busy),
         // ce qui est exactement ce qu'il fait au vrai foot.
-        if (!c.intent && maybeSemelle(st, c, cfg, calm, foeBody)) return st;
+        if (!c.intent && porte && maybeSemelle(st, c, cfg, calm, foeBody)) return st;
       }
-      if (c.intent) {
+      if (c.intent && porte) {   // (263) L'EXÉCUTION d'une intention adoptée : au pas physique, quand le ballon est au pied
         // …ET LE LANCÉ DÉCHIRE L'INTENTION ARRIÈRE (189) : la passe adoptée AVANT le contre s'exécutait PENDANT — le vrai joueur change d'avis, la conduite prime (l'adoption est bloquée en amont : zéro churn)
         const recI = st.players[c.intent.choice.to.id];
         if (recI && enLance(st, c, cfg, null)) {

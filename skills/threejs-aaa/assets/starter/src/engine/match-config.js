@@ -811,6 +811,16 @@ export const MATCH = {
                           // Consommateurs : le passeur vise sa croyance du receveur (décider de le servir, c'est le regarder :
                           // une saccade de regardPasse s à l'adoption, dans la portée de la tête), le marqueur suit la sienne
                           // de son homme. null : l'omniscience d'hier au bit.
+  cadence: { dec: 0.1 },
+                          // LE PAS DE DÉCISION SÉPARÉ DU PAS PHYSIQUE (263, st.full — doc cadence.js : Modèle 01 §1.4, §5.2, test 3).
+                          // Le cerveau de champ (assignJobs : les postes, le marquage, le pressing ; le choix de passe du porteur
+                          // et les niches du 1c1) ne parle qu'aux ticks de décision, toutes les dec s (10 Hz — GRF expose l'agent
+                          // à 10 Hz, les jeux de données de tracking vivent à 6,25-10 Hz) ; le corps, le ballon (sous-pas ≤ ½
+                          // rayon), les gestes, la perception (croyance, dtObs), l'arbitre et son administration, les remises et
+                          // le gardien (une réaction de corps) vivent au pas physique du caller (dt). Les gâchettes d'exécution (tryShot, tryCross, beginPass d'une intention
+                          // adoptée) restent au pas physique. Les constantes du cerveau dites en images (l'EMA de la poussée,
+                          // la vitesse de tour, le vol mort) se disent en secondes via hzDecision. null : chaque image décide
+                          // (60 Hz — hier au bit).
   effort: { saut: 5, sautV: 9, actifDur: 2.5, tolOff: 1.2, vEnt: 1.4, vEntDef: 1.8, epsEnt: 0.45, vActif: 4.2, epsActif: 0.6, gRecup: 12, rayonTrans: 20, chaud: 10, tAtt: 2.5, appelPortee: 22, fenetre: 5, repliSprint: 5, vRecup: 5.0, epsRecup: 0.7 },
                           // L'INTENTION D'EFFORT AU CERVEAU (261, st.full — doc effort.js : le transversal n° 2 de la carte du
                           // book). La SITUATION commande la vitesse voulue et l'ε de chaque corps, par-dessus les allures :

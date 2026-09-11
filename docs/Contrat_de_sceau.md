@@ -26,7 +26,7 @@ ultra adapté football, réutilisable sur d'autres projets. Chaque « ok continu
    `skills/threejs-aaa/scripts/verify-match11.mjs` (avant le `console.log` final) : lois pures contre les chiffres du
    book, une fixture (le cerveau tenu par `cfg.avantMouvement` si besoin), un sabotage `<clé>: null`.
    Isolement : `BANC_SHARDS=<N> BANC_SHARD=<index> node verify-match11.mjs`, N = nombre de `if (__bloc())` dans le
-   fichier (161 au 262), index = rang du bloc parmi ces guards à partir de 0 — `$S/blocidx.sh '<motif de la ligne ok>'`
+   fichier (161 au 262, 162 au 263), index = rang du bloc parmi ces guards à partir de 0 — `$S/blocidx.sh '<motif de la ligne ok>'`
    le calcule (compte des guards strictement avant la ligne, moins 1). Le nouveau bloc = N − 1.
 7. **Banc complet** : `$S/final<lot>.sh` (copie de `final262.sh` par `sed`) = 8 shards (4 + 4) puis 25 annexes
    (`verify-attributes` en fond ; match rondo gestes menace frappes sync ; roles identification scan loi3 kit part-tint
@@ -65,7 +65,9 @@ ultra adapté football, réutilisable sur d'autres projets. Chaque « ok continu
   un clear, recréer `blocidx.sh` (ci-dessus) et `final<lot>.sh` (le contenu est décrit au point 7) ; `fingerprint-ov.mjs`
   a une copie dans `skills/threejs-aaa/scripts/book/` si elle manque — sinon : deux matchs (graines 3, 7) de 600 s avec
   `matchCfg({ shotRange: 20, ...over })`, hash des positions et événements.
-- Empreintes défaut : 262 (HEAD 8835e33) = `405d2e80b6d82e19 / 7ddbeaefea413442` (= 261 : la croyance a un jumeau exact).
+- Empreintes défaut : 262 (HEAD 8835e33) = `405d2e80b6d82e19 / 7ddbeaefea413442` (= 261 : la croyance a un jumeau exact) —
+  RE-BASÉES au 263 par la copie `scripts/book/fingerprint-ov.mjs` : le défaut de fe85ce1 (= 262) relu = `8c7719e7be1fd95c /
+  d6e16464895402f4` (le jumeau du 263 : `cadence: null`) ; 263 (cadence dec 0,1, le nouveau défaut) = `e84a43c302ac93af / 5c36757dc8e7aa1e`.
 
 ## L'ordre après le 262 (PLAN_DOCTRINE, la carte du book)
 

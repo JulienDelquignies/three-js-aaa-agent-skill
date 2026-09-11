@@ -10901,6 +10901,76 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Sceau : commit c2192e8, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit). Le transversal n° 3 est scellé ; vient le pas de décision séparé du
      pas physique et les flux RNG nommés (Modèle 01) — et, dans la croyance, le test d'import.
+- 341: LE PAS DE DÉCISION SÉPARÉ DU PAS PHYSIQUE (263 — le transversal n° 4 de la carte du book : Modèle 01 §1
+     le choix du pas de temps, §1.4 le tableau de décision « deux horloges : décision 0,10 s / physique 0,02 s »,
+     §5.2 la répartition par sous-système ; le test 3 « insensibilité au pas »). Le moteur vivait UN SEUL pas :
+     décision, locomotion, ballon au même 60 Hz — assignJobs (les 22 postes, le marquage, le pressing, le
+     gardien, l'administration) et le choix du porteur (choosePass, l'arbitre de menace, les niches du 1c1) à
+     chaque image, et trois constantes du cerveau dites en IMAGES : l'EMA de la poussée 1 − e^{−(1/60)/0,35},
+     la vitesse de tour du retournement ÷ 60, le vol mort à 18 images — l'inventaire (1/60, ÷ 60, compteurs
+     d'appels) s'arrête là, le reste du moteur est daté sur st.t (until, at). Sonde AVANT (sonde-mc01,
+     2 × 45 min, graines 3 et 7) : 35,0 tirs / 90, 1 080 passes, D_KS(possession) 0,177 entre dt 1/60 et 1/30,
+     p50 436 µs par pas (183 s par match). LA LOI (cadence.js, cfg.cadence { dec: 0,1 } && st.full) :
+     pasDecision(st, dt, C) accumule le temps physique et rend vrai toutes les dec s (le premier pas décide,
+     la phase se conserve : les images 0, 6, 12 … à 60 Hz, 0, 3, 6 à 30 Hz) ; rondoStep n'appelle assignJobs
+     et le choix du porteur que sur un tick ; le corps (movePlayers), le ballon (stepBall : n = ⌈|v| dt / (r/2)⌉
+     sous-pas — déjà plus fin que le K = 5 du book), les gestes, la perception (la croyance à son dtObs), le
+     contact et l'arbitre vivent à chaque pas physique. LA PORTE D'EXÉCUTION — la première coupe (le bloc du
+     porteur gardé par le tick ET reachNow) mesurée puis JETÉE : passes 1 036 → 907, l'écart 1/60 c. 1/30
+     montait de 4,6 à 11,6 % — le choix restait soudé à l'instant de portée, un tick devait coïncider avec une
+     touche. La seconde : sous la clé le bloc s'ouvre au tick SANS le ballon au pied pour CHOISIR (l'intention
+     s'adopte), et l'exécution (tir, centre, dégagement, beginPass, la semelle, le choix pressé) attend la
+     porte — reachNow ou la gâchette près du but / du centre — au pas physique : décider → préparer →
+     s'engager, la doctrine du 189 devenue architecture. Les constantes en images se disent en secondes par
+     hzDecision (60 sans la clé, 1 / dec avec) : l'EMA τ 0,35 s, le tour en rad/s, le vol mort 0,3 s (3
+     appels). LA FRONTIÈRE : la première frontière (tout assignMatchJobs au tick) passait le sifflet, le chrono, les
+     Lois 3 et 12, les remises et LE GARDIEN au tick — verify-loi12 « matchStep PORTE le sifflet » rouge, et 8 × 45 min
+     rendaient buts 4,3 → 6,3 et les prises du gardien 2 → 1 (bloc 194) : le gardien décidait jusqu'à 0,1 s tard.
+     La décision du gardien est une réaction de corps au vol du ballon (comme le contre et la jambe tendue) : la
+     frontière est posée APRÈS lui — l'administration, les remises, l'expulsé, le gardien vivent au pas physique,
+     le cerveau de champ (la chasse du ballon libre, l'attaque, la défense) au tick. Mesuré APRÈS (sonde-263 — le
+     test 3 du book : deux pas de DÉCISION à pas physique fixe 1/60, 8 × 45 min, graines 3 7 11 13 17 19 23 29) :
+     dec 0,05 → 0,10 : 35,3 → 37,0 tirs / 90, 1 039 → 997 passes, 63,6 → 65,2 % conservées, 6,3 → 3,8 buts, plongeons
+     15,3 → 15,5, possession d'équipe p50 8,2 → 8,8 s ; D_KS(possession) 0,034 (cible < 0,03 ; le seuil de bruit à
+     n ≈ 1 340 est 0,052 : non réfuté), écarts de moyenne −4,0 % passes, +5,0 % tirs, +1,7 pt conservées (la clause
+     « < 5 % » tenue au bord), −40 % buts (50 c. 30 sur 8 matchs — non monotone : hier 4,3 / 90 ; les petits nombres,
+     le book demande 2 000 matchs). Face à HIER (cadence null, le cerveau à 60 Hz, mêmes 8 graines) : 1 085 → 997
+     passes (le réel 450-500 par équipe : 543 → 499), 63,3 → 65,2 % conservées, 34,3 → 37,0 tirs (réel 22-30 — LE
+     PRIX nommé : le bloc de champ déplace ses cibles au tick, le couloir de tir s'ouvre plus souvent ; la part des
+     tirs dans la surface 69 → 54 % au bloc 232 en flux — épinglé, à revoir sous la cadence avec le contre-tir), 4,3
+     → 3,8 buts, plongeons 19 → 15,5, hors-jeu 2,8 → 1,8 ; le cerveau 60 → 10 appels/s, CPU p50 430 → 192 µs par
+     pas seul sur le CPU (4 graines ; 438 → 239 sous charge à 8), 182 → 121 s par match : le test 9 reste réfuté
+     (p50 < 40 µs — le corps à 60 Hz coûte le reste ; la grille spatiale et le zéro allocation sont le lot 4 de la
+     fiche). Le pas physique reste celui du caller : à dt 1/30 avec dec 0,1, 980 → 1 150 passes (2 × 45 min) — la
+     sensibilité au pas PHYSIQUE (le contact par image, les touches de conduite) est une autre dette, celle du
+     contact balayé (§1.4). Jumeau : cadence null = HEAD au bit
+     (8c7719e7be1fd95c / d6e16464895402f4 — relu dans un worktree à HEAD fe85ce1 par le même script ; ces
+     empreintes RE-BASENT celles du contrat). Banc : verify-match11 bloc 263 (index 161 : ticksDecision 100 /
+     100 / 50 / 100 sur 10 s à 1/60, 1/30, dec 0,2, dt = dec ; hzDecision 10 / 60 / 60 / 60 ; la phase du tick
+     image 594 ; le vol mort 3 appels ; en flux 60 s le cerveau 600 appels à 1/60 et 600 à 1/30 ; sabotage
+     cadence null : 3 600 / 1 800). BANC COMPLET (final263.sh, 8 shards + 25 annexes, sur le moteur final — deux bancs
+     antérieurs, l'un avant la porte d'exécution, l'autre avant la frontière du gardien, ont été jetés avec leur
+     moteur) : 276 ✓ / 19 ✗ aux shards et 557 ✓ / 7 ✗ aux annexes au premier passage. Mondes déplacés, épinglés
+     cadence null DATÉ 263 après preuve verte à HEAD~ (worktree fe85ce1, le sceau 262 + le contrat) et rouge isolée
+     ici : verify-match11 blocs 3 (sabotage « bloc élastique »), 7 (la foulée de frappe), 12 (les pointes sur la
+     ligne), 22 (l'économie de course, sabotage allure), 26 (lot 95 le jockey), 27 (lot 96 la ligne arrière), 46
+     (lot 117 la roulette), 68 (lot 137 le porteur qui monte), 115 (218b / 218d — la fixture du une-deux : sous la
+     cadence la passe part 1 s plus tard, le calme du porteur lu au tick, la course n'a pas de cible à l'image 90),
+     129 (flux 232b le taux d'arrêts), 134 (flux 238 la garde), 139 (242 les trois zones et les contres arrivés),
+     142 (244b le dédoublement), 149 (249b la craie), 150 (252 la passation) ; verify-attributes 157 / 159 / 160
+     (le pique, le mord, le pressing cohérent en flux 6 × 300 s) et verify-match « le porté de remise roule devant
+     les pieds ». Le bloc 128 (flux 232 : la part des tirs dans la surface 54 c. 69 %), le 36 (lot 105 l'axe) et
+     le 102 (lot 194 les prises du gardien), rouges au banc avant la frontière du gardien, sont revenus verts avec
+     elle — le prix des tirs de loin reste NOMMÉ ci-dessus. Isolés après épingles : les 15 blocs 31/0 (161 — le
+     263 — compris), attributes 27/0, match 84/0, identification 1/0 (regelée), loi12 12/2. verify-identification
+     REGELÉ DATÉ 263 (la règle du 252) : 22 → 17 signatures — perdues LAT A|largeurR, LAT A|appel, GK B|garde,
+     DC B|largeurR, DC B|appel, DC C|largeurR, DC C|appel, LAT C|profondeur, MO A|tenue, MDC C|largeurR,
+     AV A|profondeur, AIL C|repli ; gagnées DC A|profondeur, DC A|press, LAT C|appel, LAT D|largeurR, MIL B|tenue,
+     MO B|profondeur, AV C|tenue — les signatures des défenseurs gagnées au 262 par le marqueur qui suit sa croyance
+     se re-brouillent sous le tick, la profondeur et le press des centraux s'expriment ; la volumétrie à 6 graines
+     reste la dette. Rouges hérités, nommés (rouges à HEAD~ aussi, isolés au worktree) : 137 « le troisième homme
+     servi » en flux 24 × 300 s, 246d ; verify-loi12 « le mur se tient » (4,6 m) + son sabotage. Bloc 1 seul :
+     0,45 ms/step (≤ 1,6 ; 0,54 au 262 — le cerveau de champ à 10 Hz). Le défaut du 263 (cadence dec 0,1) : e84a43c302ac93af / 5c36757dc8e7aa1e (relu par scripts/book/fingerprint-ov.mjs).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

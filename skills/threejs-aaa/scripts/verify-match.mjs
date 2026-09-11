@@ -1062,7 +1062,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // chaque foulée : l'œil lisait des passements de jambes sur le retour d'engagement)
   {
     const st = makeMatch({ perTeam: 5, seed: 7 });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le porté de remise à l'image, pas le pas de décision */,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le porté de remise à l'image, pas le pas de décision */ });
     let ahead = [], carried = 0;
     for (let i = 0; i < 120 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
