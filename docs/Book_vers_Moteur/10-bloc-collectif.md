@@ -90,6 +90,9 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
    C'est ce qui fabrique l'intervalle, le renversement qui paie (W 1,5-2,5 s), et le décalage entre lignes.
 2. **Le coulissement par ligne** (test 3, 8) : `k` par ligne (MID > DEF), `k_max` de la largeur, `abandonFarSide`,
    et la touche comme douzième défenseur (`edgeFactor` dans l'utilité d'orientation, cible `dyT ≤ 4 m`).
+   Le 261 — SCELLÉ 339 — a posé les TROIS RÉGIMES du §4.3 (entretien 1,4-1,8 m/s, coulissement actif 4,2, récupération
+   au plafond du métier), déclenchés par le SAUT du slot ; il a mesuré que les slots sautent 54-60 fois par minute (p50 3,5 m)
+   et que le corps vit à 6-11 m d'eux : le gain `k` par ligne et le pas du bloc restent CE lot.
 3. **La ligne est une ligne** (tests 12, 17, 18, ch. 03) : la hauteur comme régime locomoteur (montée 4-5,5 m/s,
    recul-frein 0,55 ×), `k_x` à deux régimes, « on retient les avancés », `desync` cible 0,8-1,8 m. Sans elle, le
    hors-jeu (test 11) ne peut pas exister.

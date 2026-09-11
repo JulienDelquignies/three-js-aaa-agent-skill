@@ -41,7 +41,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // clause juge désormais la MÉDIANE DE TROIS GRAINES : une tactique n'a pas le droit de
     // dépendre du tirage, et l'instrument non plus.
     const st = makeMatch({ full: true, seed, tactics: [t0, null] });
-    const cfg = matchCfg({ shotRange: 20, contre: null })   /* contre null DATÉ 258b : vert à HEAD~ (médiane > 4,5 au 258), la ligne remangée par le corps qui contre (4,49 arrondi 4,5) — la clause mesure la hauteur du bloc, pas le contre */;
+    const cfg = matchCfg({ shotRange: 20, contre: null, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), l'axe hauteurBloc rend 4,3 c. 4,5 m de médiane (la ligne suit son slot en marchant : le bloc qui monte, monte moins vite — un prix nommé au 339) — la clause mesure l'axe, pas l'intention d'effort */ })   /* contre null DATÉ 258b : vert à HEAD~ (médiane > 4,5 au 258), la ligne remangée par le corps qui contre (4,49 arrondi 4,5) — la clause mesure la hauteur du bloc, pas le contre */;
     let depth = 0, nD = 0, z = 0, nZ = 0;
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);

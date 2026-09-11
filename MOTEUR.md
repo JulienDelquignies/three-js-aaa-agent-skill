@@ -341,6 +341,23 @@ l'accélération constante et les pointes gratuites d'hier au bit. Banc : bloc 2
 sabotage). La sonde : `scripts/book/sonde-260.mjs`. Fiches : `M02-locomotion.md`, `R05-physique.md`, `09-avant-centre.md`,
 `16-contexte-de-match.md`.
 
+### L'intention d'effort au cerveau (lot 261, `cfg.effort` — `effort.js`)
+
+Le 260 a donné au corps un profil qui freine le volume ; le volume restant était COMMANDÉ par les métiers (46 % de la
+distance dans la bande course 12-19,8 km/h, réel 30 %). Le 261 fait porter à l'INTENTION sa vitesse voulue et son ε
+(`intentionDe`, appelée par movement.js avant l'économie de course ; l'ε est lu par `epsilonDe` depuis `p._effort`) :
+**les trois régimes du suiveur** (support / mark / cover — le SAUT du slot ≥ 5 m déclenche le coulissement actif 4,2 m/s
+pendant 2,5 s × workF, le marqueur × axe marquage ; sinon l'entretien suit le slot à sa vitesse, plancher 1,4 avec le
+ballon et 1,8 sans lui ; au-delà de 12 m, en transition défensive à moins de 20 m du ballon, dans la fenêtre de pressing
+des miens ou à moins de 10 m du ballon, la course entière), **le rayon d'atteignabilité du presseur** (`horizonDe` : une
+cible à plus de 2,5 s × axe pressing × rôle press × workF se ferme au régime actif), **l'appel pertinent** (à 22 m du
+ballon), **le repli qui n'est un sprint qu'en transition** (passé 5 s, la récupération à 5,0). Quand l'intention parle,
+l'allure d'hier (57) se tait ; quand elle rend null, l'allure garde la main. Le score ne branche rien : le coach déplace
+les axes (Bible 16). Mesuré 2 × 90 min : 14,24 → 13,37 km par joueur (réel 10,5), HI 1 621 → 873 m (686), HI 10,0 → 5,6 % de la distance (< 7), 1,46 → 1,17 accélérations / min ; le prix : 4 sprints c. 10 (les ruptures de 0,9 s ne montent pas à 7 m/s). Clé absente : la table des métiers d'hier au bit. Banc : bloc 261 (lois pures, la
+fixture du suiveur tenue par `avantMouvement`, sabotage). Sondes : `scripts/book/sonde-261.mjs` (l'histogramme des zones,
+par métier et par moment), `sonde-261b.mjs` (les ruptures par sorte). Fiches : `M02-locomotion.md`, `R05-physique.md`,
+`10-bloc-collectif.md`, `16-contexte-de-match.md`.
+
 **Le journal (`st.events`) vu d'un consommateur (256).** `shot` est le SEUL événement de frappe ; `tête` et `volée`
 sont le GESTE et accompagnent le `shot` (qui porte `geste`) quand ils vont au but ; `tacle-pique` est un tacle, `piqué`
 une passe en profondeur. L'auteur d'un événement est `by` (`pass.from` reste un lot en alias). `pass.to` est un joueur ;

@@ -6,6 +6,7 @@ import { momentDuJeu } from './phases.js';
 import { scanStep, aScanne } from './scan.js';
 import { dansCone } from './dribble.js';
 import { pasLoco, budgetStep, pointePermise } from './locomoteur.js';
+import { intentionDe, appelPertinent } from './effort.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -150,10 +151,10 @@ export function movePlayers(st, dt, cfg) {
     // tirée du rnd SEEDÉ, fréquence par persona.burstiness — chaque rupture est un ÉVÉNEMENT
     // nommé, donc mesurable (clauses de bandes d'allure dans verify-rondo).
     if (!p._pace) p._pace = { until: -1, next: 2 + (st.rnd ? st.rnd() : 0.5) * 5 };
-    const settled = st.phase === 'carry' && st.hold > 0.6;
+    const settled = st.phase === 'carry' && st.hold > 0.6, EK = st.full && cfg.effort ? cfg.effort : null;   // (261) L'INTENTION D'EFFORT AU CERVEAU (effort.js)
     if (st.t >= p._pace.next && p._pace.until < st.t) {
       const bz = p.persona?.burstiness ?? 1;
-      if (p.job === 'support' && settled) {
+      if (p.job === 'support' && settled && (!EK || appelPertinent(p, st, EK))) {   // (261) l'appel ne se tire qu'à portée de passe
         p._pace.until = st.t + 0.7 + (st.rnd ? st.rnd() : 0.5) * 0.4;
         p._pace.kind = 'appel';
         st.events.push({ type: 'burst', kind: 'appel', by: p.id, t: +st.t.toFixed(2) });
@@ -266,6 +267,8 @@ export function movePlayers(st, dt, cfg) {
         top = Math.min(top, (((cfg.jockey === true ? null : cfg.jockey)?.cap ?? 2.9)) * (2 - (p.skill?.getupF ?? 1)));
       }
     }
+    // (261) L'INTENTION D'EFFORT AU CERVEAU (effort.js) : la SITUATION commande la vitesse voulue et l'ε du suiveur et du presseur lointain — quand elle parle, l'économie de course d'hier se tait (son plancher 2,1 interdisait la marche ET le coulissement actif) ; quand elle rend null (l'urgence, la course entière), l'allure d'hier garde la main
+    const EF = EK ? intentionDe(p, st, cfg, EK, bursting) : null; if (EF) top = Math.min(top, EF.v); p._effort = EF ? EF.eps : null;
     // L'ÉCONOMIE DE COURSE (cfg.allure && st.full — lot 57, retour utilisateur « fourmilière ») :
     // l'allure est une DÉCISION TACTIQUE, pas un plafond. La loi tient en une phrase : EN JEU
     // PLACÉ, ON SUIT LE JEU À LA VITESSE DU JEU — un suiveur (marqueur, poste qui coulisse,
@@ -283,7 +286,7 @@ export function movePlayers(st, dt, cfg) {
       const A = cfg.allure === true || cfg.allure == null ? {} : cfg.allure;
       const enPress = st._press && st._press.until > st.t && st._press.team === p.team;
       const moment = momentDuJeu(st, p.team, A.fenetre ?? 5);
-      if (!enPress && (moment === 'attaque-placée' || moment === 'défense-placée')) {
+      if (!EF && !enPress && (moment === 'attaque-placée' || moment === 'défense-placée')) {   // (261) !EF : l'intention d'effort a parlé
         const dB = d2(p.p, st.ball.p);
         let tSpd = 0;
         if (p.target) {

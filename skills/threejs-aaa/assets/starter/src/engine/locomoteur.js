@@ -25,6 +25,7 @@ export function profilDe(p, K) {
 }
 
 export function epsilonDe(p, st, K) {
+  if (p._effort != null) return p._effort;   // (261) l'intention d'effort posée par le cerveau (effort.js) — absente : la table des métiers
   if ((p._pace?.until ?? -1) > st.t) return K.epsRupture ?? 1.0;
   if (p.job === 'carry' && st.possession?.carrier === p.id) return K.epsPorteur ?? 0.85;
   if (p.job === 'press' || p.job === 'intercept' || p.job === 'receive' || p.job === 'gkBall') return K.epsPress ?? 0.85;

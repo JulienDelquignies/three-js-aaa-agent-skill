@@ -10724,6 +10724,97 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      plus : 1,96 m en 4 s ; le pas lent le fait dériver).
      Sceau : commit b799e92, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit). Le transversal n° 1 est scellé ; vient l'intention d'effort au cerveau.
+- 339: L'INTENTION D'EFFORT AU CERVEAU (261 — le transversal n° 2 de la carte du book : Modèle 02
+     §3.5 « la capacité n'est pas le comportement », Bible 10 §4.3 les trois régimes du coulissement,
+     Bible 16 « le contexte change le seuil de déclenchement, pas la capacité », Référentiel 05 §3
+     l'histogramme des zones). Sonde AVANT (sonde-261 = la sonde 260 + l'histogramme des zones de
+     vitesse + la distance et la haute intensité par MÉTIER et par MOMENT ; 2 × 90 min, par joueur
+     de champ) : 14,24 km (réel 10,5), HI > 5,5 m/s 1 621 m (686), sprint 194 m (166), 7,1 sprints
+     (10,3), 1,46 accélérations / min (0,9), pic 7,7 m/s, 31,5 tirs par match ; L'HISTOGRAMME :
+     marche < 6 km/h 7,8 % de la distance (réel 30), jogging 34,4 (34), course 12-19,8 km/h 46,4
+     (30), HI 10,0 (< 7), sprint 1,4 (< 2) — « un moteur où les joueurs rejoignent leur cible à
+     vitesse constante produit une distribution unimodale autour de 10-14 km/h » (le Référentiel,
+     mot pour mot). Qui court : support 30,5 % de la distance, mark 26,6, les RUPTURES 20,3 % et
+     1 107 des 1 621 m de HI ; défense placée 856 m de HI, transition défensive 442. Sonde 261b
+     (les ruptures par sorte, 30 min) : le REPLI (221) 138 ruptures par joueur et par match, 1 535 m,
+     901 m de HI (55 % du total), pointe p50 5,8 m/s — re-posé à chaque image, la moitié en DÉFENSE
+     PLACÉE (plus de 5 s après la perte) ; l'APPEL (movement) 107 par joueur, à 24 m du ballon (p50,
+     p90 41) ; la chasse 62, la contre-zone 81. Et les SLOTS : immobiles 64-89 % des images, ils
+     SAUTENT 54-60 fois par minute et par suiveur (p50 3,5 m, p90 17-27 m), le corps vit à 6-11 m
+     de son slot (p50) — la course engagée (135) re-cible toutes les 1,4 s. LA LOI (effort.js,
+     cfg.effort && st.full ; le crochet dans movement.js AVANT l'économie de course, l'ε lu par
+     locomoteur.epsilonDe depuis p._effort) — une INTENTION porte sa vitesse voulue et son effort,
+     c'est la situation qui commande : (1) LES TROIS RÉGIMES DU SUIVEUR (support / mark / cover) :
+     le SAUT du slot (≥ saut 5 m d'un coup) déclenche le COULISSEMENT ACTIF (vActif 4,2, ε 0,6)
+     pour actifDur 2,5 s × workF (le marqueur × axe marquage 0,7…1,3) ou jusqu'à l'arrivée ; le
+     reste du temps on ENTRETIENT — le slot suivi à sa vitesse (× 1,15 + 0,4), plancher vEnt 1,4
+     avec le ballon (la MARCHE) et vEntDef 1,8 sans lui (la marche rapide du bloc, Bible 10 :
+     1,8-2,6), ε 0,45 ; au-delà de gRecup 12 m, en transition défensive à moins de rayonTrans 20 m
+     (× axe transition 0,6…1,4) du ballon, dans la fenêtre de pressing des miens ou à moins de
+     chaud 10 m du ballon, on RÉCUPÈRE au plafond du métier (null : la course entière, l'allure
+     d'hier garde la main) ; (2) LE RAYON D'ATTEIGNABILITÉ DU PRESSEUR : hors fenêtre collective et
+     hors chasse, une cible à plus de tAtt 2,5 s de course (etaCourse ; × axe pressing 0,7…1,3 ×
+     rôle press 0,8…1,2 × workF) se FERME au régime actif ; (3) L'APPEL PERTINENT : la rupture
+     d'appel ne se tire qu'à appelPortee 22 m du ballon ; (4) LE REPLI EST UN SPRINT DE TRANSITION :
+     passé repliSprint 5 s depuis la perte, celui qui rentre encore RÉCUPÈRE (vRecup 5,0, ε 0,7),
+     il ne sprinte plus. Le score ne branche rien : le coach déplace les axes (Bible 16). Ce qui a
+     été essayé et jeté : (a) une TOLÉRANCE autour du slot (tol0 + tolK × dBallon, hystérésis) — le
+     corps vit à 10,5 m de son slot, la tolérance ne s'appliquait que 14 % des images ; c'est le
+     SAUT qui porte l'intention, pas l'écart ; (b) le crochet APRÈS l'économie de course — son
+     plancher 2,1 m/s (le jogging du Référentiel) interdisait la marche ET son plafond (marche
+     2,1 hors du chaud) le coulissement actif (la fixture : 1,79 m/s après le saut) — quand
+     l'intention parle, l'allure d'hier se tait, quand elle rend null l'allure garde la main ;
+     (c) vEntDef balayé (2 × 90) : 1,4 → 12,63 km / 26,5 tirs ; 2,0 → 13,35 / 33,0 ; 2,4 → 13,89 /
+     34,5 — retenu 1,8, la borne basse du book. Mesuré APRÈS (2 × 90 min, mêmes graines, par joueur de champ) : 13,37 km (avant
+     14,24 ; réel 10,5), HI 873 m (1 621 ; 686), sprint 118 m (194 ; 166), 4,0 sprints (7,1 ;
+     10,3), 1,17 accélérations / min (1,46 ; 0,9), ratio décel/accel 2,9, pic 7,7 ; L'HISTOGRAMME :
+     marche 9,7 % (7,8 ; 30), jogging 34,8 (34,4 ; 34), course 48,9 (46,4 ; 30), HI 5,6 (10,0 ;
+     < 7 — la clause du Référentiel tenue), sprint 0,9 (1,4 ; < 2) ; par métier, la HI des
+     ruptures 1 107 → 496 m, du presseur 170 → 136, de la couverture 131 → 88 ; par moment, la
+     défense placée 856 → 182 m de HI (le repli qui ne sprinte plus hors transition), la
+     transition défensive 442 → 409 (elle reste une course) ; les ruptures (261b) : le repli 901
+     → 395 m de HI (pointe p50 5,8 → 4,7), l'appel 107 → 56 par joueur, tiré à 16 m du ballon (24) ;
+     les tirs 31,5 → 25,5 par match (réel ~25 ; le balayage vEntDef 1,4-2,4 rend 26,5-34,5 — le
+     bruit de deux matchs, pas une loi). Le prix nommé : 4,0 sprints c. 10,3 au réel — le repli ne
+     sprinte plus après 5 s et les ruptures durent 0,9-1,2 s quand t₉₀ vaut 2,7 s : elles ne
+     montent pas à 7 m/s ; le budget de DÉCLENCHEMENT de la Bible 16 (moins de ruptures, plus
+     longues) est le lot que ce prix appelle. La marche reste à 9,7 % c. 30 : le réel marche
+     pendant les 30 min de ballon sorti (transversal n° 5, le temps du match) et le corps vit à
+     6-11 m d'un slot qui saute 54-60 fois par minute (le coulissement par ligne à gain k, fiche
+     10 lot 2). Jumeau : effort null = HEAD au bit
+     (b5fd847f01630c86 / da9aa9d72dc19a2e — le défaut du 260, relu par git stash). Banc :
+     verify-match11 bloc 261 (index 159 : lois pures — l'horizon à l'identité, l'école de la chasse
+     × 1,3, le pas du marqueur × 1,3, le presseur à 40 m ferme / à 5 m chasse / en fenêtre chasse,
+     le repli à 6 s rentre / à 2 s sprinte, l'appel à 10 m oui / à 30 m non ; la fixture — le
+     suiveur à 8 m d'un slot immobile, à 64 m d'un ballon mort, tenu par le crochet avantMouvement :
+     1,35 m/s à 4 s sous la clé (la marche), 2,54 à 1,5 s après un saut de 6 m (le pas), 0,01 à
+     4,5 s (arrivé) ; sabotage effort null : 1,79 après le même saut — le pas n'existe pas).
+     BANC COMPLET (final261.sh, 8 shards + 25 annexes, sur le moteur final) : 277 ✓ /
+     13 ✗ aux shards et 543 ✓ / 6 ✗ aux annexes au premier passage — un suiveur qui marche déplace
+     les fixtures de placement et les flux. Mondes déplacés, épinglés effort null DATÉ 261 après
+     preuve verte à HEAD~ (worktree edda355, le sceau 260) : verify-match11 blocs 15 « la conduite
+     est au pied » (le pic 2,90 est un porteur TACLÉ AU SOL dont le ballon roule pendant que
+     possession.carrier le nomme encore 1,5 s — la possession fantôme du taclé, dette de
+     comptabilité nommée ici, pas la conduite), 27 « lot 96 la bande » (sabotage 9,2 c. 6,6 × 1,5),
+     59 « lot 128 le piqué » (11/17 c. 65 %), 72 « lot 141 la pousse » (sabotage 13,5 c. 11,5),
+     83 « lot 170 le corps ouvert » (78° c. 65), 98 « lot 189 le lancé » (13 c. 16 × 0,7), 128
+     « flux 232 » (64 c. 64 % en surface), 129 « flux 232b » (90 c. 100 − 8), 134 « flux 238 la
+     garde » (le marqueur de surface 2,48 c. 2,26 m à HEAD, borne 2,4 — UN PRIX de 0,2 m, nommé),
+     137 « flux 240 le troisième homme » (pertes 609 c. 565 × 1,05) ; verify-attributes 157
+     (l'horloge du pique à la note : 5 c. 6 + 2), verify-remises « le lanceur derrière la ligne »
+     (bassin −0,36 m sur une graine), verify-tactics « la hauteur de bloc bouge la ligne » (médiane
+     4,3 c. 4,5 — UN PRIX nommé : la ligne suit son slot en marchant, le bloc qui monte monte moins
+     vite). L'ÉPINGLE EST PAR CONTENU, PAS PAR NUMÉRO DE LIGNE (l'index d'un bloc = son rang parmi
+     les `if (__bloc())`, à partir de 0 — une première pose décalée d'un bloc a été défaite).
+     verify-identification REGELÉ DATÉ 261 (la règle du 252) : 11 → 15 signatures — perdues AIL C|press, DC A|largeurR, LAT B|repli, MIL A|tenue ; gagnées GK A|tenue, DC B|profondeur, LAT B|largeurR, LAT D|largeurR, LAT D|profondeur, MDC A|largeurR, MDC A|profondeur, AV A|largeurR
+     — le suiveur qui marche TIENT son slot : les axes de largeur et de profondeur perdus au 260
+     s'expriment à nouveau ; la volumétrie à 6 graines reste la dette. Isolés après épingles : blocs
+     15 1/0, 27 2/0, 59 1/0, 72 1/0, 83 3/0, 98 1/0, 128 2/0, 129 2/0, 134 2/0, 137 2/0, 159 (le 261)
+     1/0, bloc 1 seul 0,61 ms/step ; annexes attributes 27/0, identification 1/0, remises 36/0, tactics 11/0, scan 5/0, slide 10/0, porte 4/0, contact 25/0, foulee 45/0, attente 42/0, football-rules 59/0, tete 7/0, cartons 6/0, expulsion 8/0. Vert
+     revenu sans épingle : verify-expulsion « le corps sort et reste » (8/0 — rouge hérité depuis
+     le 257 : l'expulsé qui dérivait au pas lent du 260 marche désormais à l'entretien). Rouges
+     hérités, nommés : 246d ; « contres arrivés à l'entrée » ; verify-loi12 « le mur se tient » (4,6
+     m) + son sabotage.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

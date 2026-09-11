@@ -66,6 +66,8 @@ coach en approche) ; le momentum mesuré ; la météo et le terrain.
    38 km à haute intensité — le sprint a un prix et un plateau (pacing), la pointe ne plie que de 2-5 %.
 2. **La couche de contexte** (T5, T6, T3-T4) : `MatchContext` + modulateurs composés ; le score par multiplicateurs
    mesurés (le menant tire **moins**), les sept phases de statut pour la course.
+   Le 261 — SCELLÉ 339 — tient le postulat du chapitre : l'intention d'effort (effort.js) ne lit ni le score ni la minute,
+   elle lit les axes (pressing, marquage, transition) que le coach déplace ; le repli n'est un sprint qu'en transition.
 3. **Les trois fatigues** (T10, T16-T18 ; ch. 10 T13, ch. 12 T3) : mécanique (volume), technique (le nombre de
    passes, pas leur qualité), cognitive (la variance du temps de décision) — et la compacité qui se relâche.
 4. **Le temps du match** (T10, T23 ; ch. 14 lot 3) : le jeu effectif qui dérive, le temps additionnel qui lit le

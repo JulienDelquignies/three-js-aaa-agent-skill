@@ -495,6 +495,16 @@ pointe et fatigue l'accélération avant la vitesse. Mesuré : 16,65 → 13,9 km
 l'intention au cerveau (les métiers qui commandent la vitesse), le prochain lot du transversal ; puis la couche de
 croyance et le pas de décision séparé du pas physique.
 
+**261 — L'INTENTION D'EFFORT AU CERVEAU : SCELLÉ (339).** Le transversal n° 2 : la situation commande la vitesse voulue
+et l'ε de chaque corps (effort.js) — les trois régimes du suiveur déclenchés par le SAUT du slot (entretien / coulissement
+actif / récupération), le rayon d'atteignabilité du presseur, l'appel pertinent à portée de passe, le repli qui n'est un
+sprint qu'en transition ; quand l'intention parle, l'économie de course d'hier se tait. Les axes pressing / marquage /
+transition, le rôle press et le workRate composent sur l'identité ; le score ne branche rien (le coach déplace les axes).
+Mesuré : 14,24 → 13,37 km par joueur (réel 10,5), HI 1 621 → 873 m (686), la part de la distance à haute intensité 10,0 → 5,6 % (< 7 : la clause de l'histogramme tenue), 1,46 → 1,17 accélérations / min, la HI du repli 901 → 395 m, l'appel 107 → 56 par joueur ; le prix : 4 sprints c. 10 au réel (les ruptures trop courtes). Ce qu'il nomme : les slots qui sautent 54-60 fois par minute (le coulissement par ligne à gain k, fiche 10
+lot 2 — le corps vit à 6-11 m d'un idéal qui frémit), les ruptures trop courtes pour être des sprints (0,9 s ; t₉₀ = 2,7 s —
+le budget de déclenchement de la Bible 16 : moins de ruptures, plus longues), la marche à 9 % de la distance c. 30 % au
+réel dont l'essentiel est le TEMPS MORT du match réel (30 min de ballon sorti où l'on marche — transversal n° 5).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
