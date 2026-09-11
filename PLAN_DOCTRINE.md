@@ -81,6 +81,9 @@ offensive enfin, débats en axes tout du long.**
 
 ## 3. Les invariants de méthode (rappel, non négociables)
 
+La mécanique pratique du sceau (jumeau par git stash, index des blocs, épingles par contenu, banc complet, preuves en
+worktree, regel, build / deploy / cmp) est écrite dans `docs/Contrat_de_sceau.md` — à relire après tout clear.
+
 1. Sonde AVANT chiffrée (fichier nommé dans le scratchpad) → loi native + clé cfg → sonde APRÈS.
 2. Jumeau d'empreinte : `fingerprint-ov.mjs '{"clé":false}'` = empreinte du monde précédent.
 3. Bande A/B 20 × 300 s ; bande de santé 3-12 buts / 40-90 tirs — **à re-fonder vers le réel par
