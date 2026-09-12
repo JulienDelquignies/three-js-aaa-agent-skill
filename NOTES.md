@@ -10971,6 +10971,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      reste la dette. Rouges hérités, nommés (rouges à HEAD~ aussi, isolés au worktree) : 137 « le troisième homme
      servi » en flux 24 × 300 s, 246d ; verify-loi12 « le mur se tient » (4,6 m) + son sabotage. Bloc 1 seul :
      0,45 ms/step (≤ 1,6 ; 0,54 au 262 — le cerveau de champ à 10 Hz). Le défaut du 263 (cadence dec 0,1) : e84a43c302ac93af / 5c36757dc8e7aa1e (relu par scripts/book/fingerprint-ov.mjs).
+     Sceau : commit 9eee4ea, poussé ; déploiement showcase-pi-mocha au deuxième essai avec les 264 et 265
+     (déploiement 6429857 : cmp du chunk Rondo servi = construit).
 - 342: LES FLUX RNG NOMMÉS (264 — Modèle 01 §3.1 « abandonner les générateurs à état séquentiel »,
      test 8 « la neutralité du flux » ; la carte du book, Modèle 01 lot 2). Le hasard du jeu vivait sur
      deux flux SÉQUENTIELS partagés (st.rnd, st.rnd2 : un LCG par partie) — un tirage ajouté dans le
@@ -11036,6 +11038,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      59/0, tete 7/0 ; bloc 1 seul 0,48 ms/step (≤ 1,6 — le tirage à coordonnées ne coûte rien de
      visible). Rouges hérités, nommés : 137 « le troisième homme servi » en flux, 246d ;
      verify-loi12 « le mur se tient » (4,6 m) + son sabotage.
+     Sceau : commit 1507550, poussé ; déployé avec le 265 (6429857, deuxième essai, cmp du chunk Rondo servi =
+     construit).
 - 343: LA PASSE QUI SE MANQUE À LA BONNE DISTANCE (265 — la carte du book : Modèle 09 lot 1, Modèle
      07 lot 2 ; Modèle 09 §4.2-4.3 et §6.1, Modèle 03 §5.2 et §8.1). Sonde AVANT (sonde-265, 2 × 45
      min, graines 3 et 7) — d'abord une LEÇON DE MÉTRIQUE : la fiche M09 annonçait un gradient
@@ -11098,6 +11102,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tete 7/0 ; bloc 1 seul 0.49 ms/step (≤ 1,6). Rouges hérités, nommés : « contres arrivés à
      l'entrée » (flux 24 × 300 s), 246d (vert ce passage) ; verify-loi12 « le mur se tient » (4,6 m)
      + son sabotage.
+     Sceau : commit 6429857, poussé ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk Rondo
+     servi = construit). Vient l'interception probabiliste en vol (Modèle 07 lot 2).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
