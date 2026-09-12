@@ -36,7 +36,7 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
 
 | # | Cible (book) | Statut | Mesuré (2 × 90 min) |
 |---|---|---|---|
-| 1 étalonnage distance × direction | 5-15 yd 88-92 ; 15-30 82-87 ; 30+ 55-65 ; arrière 30-42 % | mesurable, **réfuté** | 5-15 yd **67 / 71 / 80 %** (avant / latéral / arrière) ; 15-30 yd 71 / 70 / 82 ; 30+ yd 61 / 64 / 71 — le gradient est **inversé** ; arrière : sonde Modèle 06 |
+| 1 étalonnage distance × direction | 5-15 yd 88-92 ; 15-30 82-87 ; 30+ 55-65 ; arrière 30-42 % | mesurable, **partiel au 265** (en complétion événementielle : 87 / 84 / 75 / 56 — la tranche moyenne manque) ; l'ancien « réfuté » tenait à la métrique « gardée 2 s » | 5-15 yd **67 / 71 / 80 %** (avant / latéral / arrière) ; 15-30 yd 71 / 70 / 82 ; 30+ yd 61 / 64 / 71 — le gradient est **inversé** ; arrière : sonde Modèle 06 |
 | 2 fiabilité | ECE < 0,025 | sans objet (pas de P_succ prédit) |
 | 3 causes d'échec | causes-passe 46-57 %, contrôle 9-13, blocages 10-12, hors-jeu 4-6 | à instrumenter (`turnover.why`) |
 | 3 bis contrôle raté nominal | 2-4 % | à instrumenter |
@@ -54,6 +54,11 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
 
 1. **La passe qui se manque à la bonne distance** (test 1, cal ; Modèle 07 lot 2, Modèle 03 lot 3) : l'interception
    probabiliste et l'erreur de geste par distance — la courte à 90 %, la longue à 50.
+   → **SCELLÉ 265** (`reception.js`, `cfg.passe`, NOTES 343) : la réception à quatre issues et σ_ψ par classe et
+   distance. LEÇON DE MÉTRIQUE : le gradient « inversé » du test 1 ci-dessus était mesuré en « gardée 2 s » ; en
+   complétion événementielle (première touche d'un coéquipier) le moteur rendait déjà 87 / 80 / 74 / 64 % par tranche
+   (79 % global) — monotone ; après le 265 : 87 / 84 / 75 / 56 (80 %). Le déficit de la tranche 15-30 yd est
+   l'interception (Modèle 07 lot 2). Le sous-dosage attend le receveur qui vient au-devant.
 2. **Le type somme et la sélection calibrée** (tests 2, 9) : classes nommées, P_succ prédit et calé (log-odds), le
    journal les porte.
 3. **Le rendez-vous et la course avant la frappe** (tests 5, 6, 8 ter ; le 259 — SCELLÉ 334 pour l'appel de l'épaule et la course qui traverse ; le rendez-vous derrière la ligne reste à faire, Bible 09 lot 2).

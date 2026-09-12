@@ -11,6 +11,7 @@ import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING } from './skills-sim.js';
 import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js';
+import { pressionDe, sigmaPasse } from './reception.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
 import { role } from './roles.js';
@@ -457,12 +458,13 @@ export function strikeNow(st, c, cfg) {
   // receveurs ont su faire un pas vers le ballon, la complétion est montée à ~100 % et le
   // flipper est revenu par la réception parfaite (0 sortie en 4 matchs mesurée). Un joueur
   // moyen rate aussi des passes ; la note RAFFINE ce déchet, elle ne l'invente pas.
-  let dirNoise = 0;
+  let dirNoise = 0, PG = null;
   if (!shot && !choice.clear) {
     // choice.sigmaF (lot 100 — contrat générique) : le multiplicateur de dispersion DU GESTE,
     // posé par l'appelant (le centre du mauvais pied ×1,9, du pied de débordement ×0,85 —
     // shooting.tryCross). Absent : 1, le σ d'hier au bit — aucun tirage de plus.
-    if (c.skill) dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * c.skill.passSigma * (urgent ? c.skill.composureF : 1) * (choice.sigmaF ?? 1);
+    if (c.skill && st.full && cfg.passe) { PG = pressionDe(st, c, cfg.passe, cfg).P; dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * sigmaPasse(c, choice, hyp(lead[0] - from[0], lead[2] - from[2]), PG, cfg.passe, 3.25 * Math.PI / 180) * (choice.sigmaF ?? 1); }   // (265) L'ERREUR DE GESTE PAR CLASSE ET DISTANCE (reception.js) : la base du book, la note en facteur, la classe, la pression, la distance
+    else if (c.skill) dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * c.skill.passSigma * (urgent ? c.skill.composureF : 1) * (choice.sigmaF ?? 1);
     else if (cfg.execSigma) dirNoise = gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * cfg.execSigma * (urgent ? 1.25 : 1) * (choice.sigmaF ?? 1);
   } else if (!shot && choice.clear && st.full && cfg.clearSigma) {
     // LE DÉGAGEMENT RESPIRE (174, cfg.clearSigma — le monde ne produisait NI touches NI
@@ -486,6 +488,7 @@ export function strikeNow(st, c, cfg) {
   // écrasait le θ 0,58 du piqué — apogée mesurée 0,91 m, le lob qui ne lobe pas (lot 39)
   let elev = shot ? (kind ? (kind.exact ? kind.elev : Math.max(Math.min(kind.elev, 0.32), 0.01)) : Math.min(sol.elevation, 0.10)) : sol.elevation;
   let spd = speed;
+  if (PG != null) spd *= Math.exp((cfg.passe.muV ?? -0.05) + (cfg.passe.muP ?? -0.10) * PG + gauss(tirage(st, 'passe', c.id, st.rnd ?? (() => 0.5))) * (cfg.passe.sigV ?? 0.06));   // (265) LE SOUS-DOSAGE : sous pression la passe est trop courte bien plus souvent que trop longue
   // …LE MÊME SOUFFLE SUR LA HAUTEUR ET LA VITESSE (145) : la frappe pressée/lancée/lointaine
   // s'envole ou s'écrase (±σEl × sigF rad) et son exécution varie (±σV × sigF) — le piqué
   // (kind.exact, une balistique de toucher) garde son geste exact

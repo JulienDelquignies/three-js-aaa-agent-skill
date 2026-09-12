@@ -30,6 +30,7 @@ import { profilDe, epsilonDe, fatigueDe, pasLoco, pointePermise } from '../asset
 import { intentionDe, horizonDe, pasDe, appelPertinent } from '../assets/starter/src/engine/effort.js';
 import { qualiteDe, sigmaObs, sigmaDe, predit, croyanceDe, croyanceStep } from '../assets/starter/src/engine/croyance.js';
 import { draw, tirage, FLUX } from '../assets/starter/src/engine/rng.js';
+import { pressionDe, toucheDe, pFailDe, budgetDe, classeDe, sigmaPasse, issueDe } from '../assets/starter/src/engine/reception.js';
 import { pasDecision, hzDecision, ticksDecision } from '../assets/starter/src/engine/cadence.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
@@ -424,7 +425,7 @@ if (__bloc()) {
     const vs = [];
     for (const seed of [1, 3, 5, 7]) {   // 2 → 4 graines DATÉ 241 (gelé 2,29 c. vivant 2,37 sur 57 gestes : l'écart de 0,12 vit dans le bruit du p50)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la statue qui frappe remangée (3,51 c. vivant 2,74 − 0,12) — la clause mesure la foulée de frappe, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la foulée de frappe et son sabotage, pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la statue qui frappe remangée (3,76 c. vivant 3,33 − 0,12) — la clause mesure la foulée de frappe, pas la croyance */, shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), la statue qui frappe remangée (3,39 c. vivant 2,76 − 0,12) — la clause mesure la foulée de frappe, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la statue qui frappe remangée (3,51 c. vivant 2,74 − 0,12) — la clause mesure la foulée de frappe, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la foulée de frappe et son sabotage, pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la statue qui frappe remangée (3,76 c. vivant 3,33 − 0,12) — la clause mesure la foulée de frappe, pas la croyance */, shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         for (const e of st.events) {
@@ -1155,7 +1156,7 @@ if (__bloc()) {
     const out = [];
     for (const seed of [2, 5]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la fourmilière du sabotage allure (l'économie de course), pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la fourmilière du sabotage remangée (p50 7 c. 8) — la clause mesure l'économie de course, pas la croyance */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le sabotage de l'allure remangé par la pausa (p50 8 c. ≥ 10) — la clause mesure l'allure, pas la pausa */, shotRange: 20, ...overrides });
+      const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), la fourmilière du sabotage remangée (p50 7 c. 8) — la clause mesure l'économie de course, pas la réception */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la fourmilière du sabotage allure (l'économie de course), pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la fourmilière du sabotage remangée (p50 7 c. 8) — la clause mesure l'économie de course, pas la croyance */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le sabotage de l'allure remangé par la pausa (p50 8 c. ≥ 10) — la clause mesure l'allure, pas la pausa */, shotRange: 20, ...overrides });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         if (i % 6) continue;
@@ -1426,7 +1427,7 @@ if (__bloc()) {
     // tombaient à 0-2, le bruit de Poisson des événements rares, le même remède que pertes-104)
     for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), les fautes remangées (3 c. [4 ; 24] — un autre tirage du monde) — la clause mesure l'accrochage, pas le flux */, shotRange: 20, ...over });
+      const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), les bascules remangées (2 → 0 sur 6 × 220 s : un compte de deux, un autre monde de réception) — la clause mesure la fixation, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), les fautes remangées (3 c. [4 ; 24] — un autre tirage du monde) — la clause mesure l'accrochage, pas le flux */, shotRange: 20, ...over });
       for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
       acc += st.events.filter((e) => e.kind === 'accrochage').length;
       fautes += st.events.filter((e) => e.type === 'faute').length;
@@ -1464,7 +1465,7 @@ if (__bloc()) {
     let libre = 0;
     for (const seed of [2, 3]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), les fautes remangées (3 c. [4 ; 24] — un autre tirage du monde) — la clause mesure l'accrochage, pas le flux */, shotRange: 20, ...LAB, renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false } });
+      const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), les bascules remangées (2 → 0 sur 6 × 220 s : un compte de deux, un autre monde de réception) — la clause mesure la fixation, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), les fautes remangées (3 c. [4 ; 24] — un autre tirage du monde) — la clause mesure l'accrochage, pas le flux */, shotRange: 20, ...LAB, renversement: { dense: 5, rayon: 12, dz: 18, portee: 38, bonus: 1.5, fix: false } });
       for (let i = 0; i < 220 * 60; i++) matchStep(st, 1 / 60, cfg);
       libre += st.events.filter((e) => e.type === 'renversement').length;
     }
@@ -1476,7 +1477,7 @@ if (__bloc()) {
   // tiennent (l'ailier faible = la sortie du renversement gagné). Sans la clé : zéro déport.
   {
     const st0 = makeMatch({ full: true, seed: 3 });
-    const cfg0 = matchCfg({ flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), les fautes remangées (3 c. [4 ; 24] — un autre tirage du monde) — la clause mesure l'accrochage, pas le flux */, shotRange: 20 });
+    const cfg0 = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), les bascules remangées (2 → 0 sur 6 × 220 s : un compte de deux, un autre monde de réception) — la clause mesure la fixation, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), les fautes remangées (3 c. [4 ; 24] — un autre tirage du monde) — la clause mesure l'accrochage, pas le flux */, shotRange: 20 });
     const { surcharge: _s, ...blocSans } = cfg0.bloc;
     const A = formationSpots(st0.pitch, 0, 10, true, undefined, blocFor(cfg0.bloc, null), 20);
     const B = formationSpots(st0.pitch, 0, 10, true, undefined, blocFor(blocSans, null), 20);
@@ -2619,7 +2620,7 @@ if (__bloc()) {
     const d = {};
     for (const seed of [1, 2, 3, 4, 5, 6]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ couvert: false, dribble: false, shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...(over ? { skill: { ...matchCfg({ couvert: false, dribble: false }).skill, ...over } } : {}) });   // isolation 159/160
+      const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), les passements remangés (max 2 c. 3) — la clause mesure le passement, pas la réception */, couvert: false, dribble: false, shotRange: 20, mord: false, pressZone: false, rondSort: false, compression: false, tacleDegage: false, courseServie: false, lectureCourse: false, retenueSurface: false, corpsOuvert: false, gkTenue: false, rayonsLoi: false, gkFace: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, boxCrash: { couloir: 0.4, prof: 12, garde: 12 }, moities: false, retourTrot: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, sortieGardien: {}, celebration: { dur: 6.5, n: 3 }, ...(over ? { skill: { ...matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), les passements remangés (max 2 c. 3) — la clause mesure le passement, pas la réception */, couvert: false, dribble: false }).skill, ...over } } : {}) });   // isolation 159/160
       let cursor = 0;
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3705,7 +3706,7 @@ if (__bloc()) {
     for (const seed of [4, 7, 11, 15, 5, 9, 13, 17]) {   // 4 → 8 graines DATÉ 238 (59° c. 58° : un tirage)
       const st = makeMatch({ full: true, seed });
       // retournement:false DATÉ 240 : le plafond de rotation du porteur (240b) bride le pivot des deux côtés (59° c. 60° masqués ; 55° c. 65° sans) — la clause mesure SA loi
-      const cfg = matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le pivot post-prise remangé par la pausa (62° c. épinglé 62° − 8) — la clause mesure le corps ouvert, pas la pausa */, porteAnticipe: null,  shotRange: 20, retournement: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)   // porteAnticipe:null DATÉ A10 (isolé clé par clé : contact et remisesPied ne bougent rien, le porté qui anticipe fait 57 → 62° de pivot post-prise — il change la PRISE, la clause mesure la demi-position d'hier)
+      const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), le pivot de réception remangé (77° c. 75 − 8 : la touche propre protégée tient le corps) — la clause mesure le corps ouvert, pas la réception */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le pivot post-prise remangé par la pausa (62° c. épinglé 62° − 8) — la clause mesure le corps ouvert, pas la pausa */, porteAnticipe: null,  shotRange: 20, retournement: false, clearSigma: false, contreTir: false, craie: false, gkPied: false, allonge: false, poitrine: false, lance: false, gkAuDevant: false, serreRouge: false, dosFerme: false, preneurCPA: false, loi16: false, priseGant: false, appuisRecev: false, chasseRetombee: false, pressLead: false, appelNote: false, tenueCalme: false, throughRisque: false, profondeurAvants: false, dangerPasse: false, passeSure: false, uneToucheVive: false, tempsMort: false, ancrage: false, roleStructure: false, corner: { claqueV: 13, priseV: 16 }, slideTackle: { at: [1.35, 2.5], body: 1.1, speed: 4.4, carrySpeed: 4.4, trip: 0.7 }, ...over });   // la clause mesure le CORPS OUVERT — elle isole 174-191 (l'élection de craie puis le lancé déplaçaient les receveurs)   // porteAnticipe:null DATÉ A10 (isolé clé par clé : contact et remisesPied ne bougent rien, le porté qui anticipe fait 57 → 62° de pivot post-prise — il change la PRISE, la clause mesure la demi-position d'hier)
       let suivi = null;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3731,18 +3732,18 @@ if (__bloc()) {
   const st1 = makeMatch({ full: true, seed: 3 });
   const gk1 = st1.players.find((q) => q.keeper);
   gk1._gkSince = st1.t; st1.rnd = () => 0.5;
-  const cfgT = matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */ });
+  const cfgT = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), le pivot de réception remangé (77° c. 75 − 8 : la touche propre protégée tient le corps) — la clause mesure le corps ouvert, pas la réception */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */ });
   const dueT = gkTenueDue(st1, gk1, cfgT, 1.2, () => 1);
   st1.players.find((q) => q.team === gk1.team && !q.keeper)._pace = { until: st1.t + 1, kind: 'appel' };
   const dueC = gkTenueDue(st1, gk1, cfgT, 1.2, () => 1);
-  const dueOff = gkTenueDue(st1, gk1, matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */, gkTenue: false }), 1.2, () => 1);
+  const dueOff = gkTenueDue(st1, gk1, matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), le pivot de réception remangé (77° c. 75 − 8 : la touche propre protégée tient le corps) — la clause mesure le corps ouvert, pas la réception */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */, gkTenue: false }), 1.2, () => 1);
   ok(`lot 171a — LA TENUE DU GARDIEN (sans contre : ${dueT.toFixed(2)} s ≥ 2,2 ; le contre ouvert dispense : ${dueC.toFixed(2)} = 1,2 ; clé absente : ${dueOff.toFixed(2)} = 1,2 — l'éclair est un CHOIX, mesuré avant 0,38 s médiane, après 3,23 s)`,
     dueT >= 2.2 && dueC === 1.2 && dueOff === 1.2);
   // 171d — LES RAYONS DU RÈGLEMENT : au corner l'adverse est repoussé à 9,15 (Loi 17), à la
   // touche à 2 seulement (Loi 15) — la cible de marche posée par assignJobs fait foi.
   const rayon = (type, pR) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */ });
+    const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), le pivot de réception remangé (77° c. 75 − 8 : la touche propre protégée tient le corps) — la clause mesure le corps ouvert, pas la réception */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le pivot de réception remangé (78° c. 65) — la clause mesure le corps ouvert, pas l'intention d'effort */ });
     st.restart = { type, p: pR, team: 0, at: st.t + 30, placed: true };
     const adv = st.players.find((q) => q.team === 1 && !q.keeper);
     adv.p[0] = pR[0] + 1; adv.p[2] = pR[1] + 0.5; adv.down = 0;
@@ -5566,10 +5567,10 @@ if (__bloc()) {
 if (__bloc()) {
   // LES PRIMITIVES (pures) : le couloir d'un z ; le registre (le porteur compte en premier) ; le débordement vers le voisin libre,
   // le côté opposé au ballon à égalité, le demi-espace vide qui attire ; l'hystérésis ; l'intérieur qui tient son demi-espace ; l'ombre.
-  const st = makeMatch({ full: true, seed: 3 }); const hz = st.pitch.hz, W = hz * 2 / 5; const cfg = matchCfg({ shotRange: 20 });
+  const st = makeMatch({ full: true, seed: 3 }); const hz = st.pitch.hz, W = hz * 2 / 5; const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), le flux des couloirs remangé (32,4 c. 39,4 × 0,8 : la marge) — la clause mesure les cinq couloirs, pas la réception */, shotRange: 20 });
   const cs = [couloirDe(-hz, hz), couloirDe(-hz + W * 1.5, hz), couloirDe(0, hz), couloirDe(hz * 0.99, hz)];
   const car = { p: [0, 0, 0], keeper: false }; const R = ouvrirRegistre(st, 0, st.pitch, car);
-  const mk = () => ({ id: 99, _coul: null }); const cfgR = matchCfg({ shotRange: 20, couloirs: { ...matchCfg().couloirs, remplir: false } });
+  const mk = () => ({ id: 99, _coul: null }); const cfgR = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), le flux des couloirs remangé (32,4 c. 39,4 × 0,8 : la marge) — la clause mesure les cinq couloirs, pas la réception */, shotRange: 20, couloirs: { ...matchCfg().couloirs, remplir: false } });
   const a0 = mk(), zR = placerCouloir(st, cfg, a0, 1, { atk: 0, pitch: st.pitch, ballZ: 0 }), cR = couloirDe(zR, hz);   // REMPLIR : le 2e corps d'un couloir occupé va au demi-espace vide
   ouvrirRegistre(st, 0, st.pitch, car); R.t = -1; ouvrirRegistre(st, 0, st.pitch, car);   // registre rouvert (le porteur au centre)
   const a = mk(), z1 = placerCouloir(st, cfgR, a, 1, { atk: 0, pitch: st.pitch, ballZ: 0 });   // remplir éteint : 2e au centre reste (max 2)
@@ -5584,7 +5585,7 @@ if (__bloc()) {
   // le ballon − 10 m), les deux demi-espaces occupés à ≤ 15 m derrière le ballon, la réussite des passes (non-dégradation), la garde
   // 231. Mesuré : 50,5 → 30,6 %, 45 → 52 %, 74,0 → 73,1 %.
   const flux = (over) => {
-    const cfgF = matchCfg({ piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), le couloir remangé par la ligne synchrone (40,6 c. sans 45,5 × 0,8) — la clause mesure les couloirs, pas le piège */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le couloir à ≥ 3 corps remangé par la pausa (38,1 % c. sans 46,9 × 0,8) — la clause mesure les couloirs, pas la pausa */, shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
+    const cfgF = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), le flux des couloirs remangé (32,4 c. 39,4 × 0,8 : la marge) — la clause mesure les cinq couloirs, pas la réception */, piege: null /* piege null DATÉ 255 : vert à HEAD~ (worktree 67cb463), le couloir remangé par la ligne synchrone (40,6 c. sans 45,5 × 0,8) — la clause mesure les couloirs, pas le piège */, pausa: null /* pausa null DATÉ 253 : vert à HEAD~ (worktree 22c35d7), le couloir à ≥ 3 corps remangé par la pausa (38,1 % c. sans 46,9 × 0,8) — la clause mesure les couloirs, pas la pausa */, shotRange: 20, ...over }); let img = 0, coul3 = 0, demi2 = 0, passes = 0, okP = 0, profond = 0, deborde = 0;
     for (const seed of [3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]) {
       const st2 = makeMatch({ full: true, seed }); let cur = 0, possT = -1, possSince = 0; const pend = {};
       for (let i = 0; i < 300 * 60; i++) {
@@ -5994,10 +5995,10 @@ if (__bloc()) {
 // tant qu'il n'est pas ouvert (dabord m). Mesuré : l'ancré à < 4 m de la ligne 21 → 32 % de la possession, le plus large
 // 8,1 → 4,4 m, sorties hors fautes 25 → 45 / 90 (16 × 300 s : touches 19 → 28, corners 1 → 8, sorties de but 5 → 9).
 if (__bloc()) {
-  const mesure = (over) => { let n = 0, pres = 0, flips = 0, possMin = 0; for (const seed of [1, 2, 3]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la craie remangée (16 c. ≥ 18 % à < 4 m) — la clause mesure la chaise tenue, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */,  shotRange: 20, ...over }), prev = {}; for (let i = 0; i < 200 * 60; i++) { matchStep(st, 1 / 60, cfg); if (st.restart || i % 6) continue; const t = st.possession.team; if (t < 0) continue; possMin += 0.1 / 60; const A = st._ancre; if (!A || A.team !== t) continue; for (const s of [1, -1]) { const id = A.cote[s], k = t + ':' + s; if (id !== prev[k] && prev[k] != null) flips++; prev[k] = id; if (id == null) continue; n++; if (st.pitch.hz - Math.abs(st.players[id].p[2]) < 4) pres++; } } } return { pres: n ? 100 * pres / n : 0, flips: possMin ? flips / possMin : 0 }; };
+  const mesure = (over) => { let n = 0, pres = 0, flips = 0, possMin = 0; for (const seed of [1, 2, 3]) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), la craie remangée (11,6 changements / min et la marge) — la clause mesure la chaise tenue, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la craie remangée (16 c. ≥ 18 % à < 4 m) — la clause mesure la chaise tenue, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */,  shotRange: 20, ...over }), prev = {}; for (let i = 0; i < 200 * 60; i++) { matchStep(st, 1 / 60, cfg); if (st.restart || i % 6) continue; const t = st.possession.team; if (t < 0) continue; possMin += 0.1 / 60; const A = st._ancre; if (!A || A.team !== t) continue; for (const s of [1, -1]) { const id = A.cote[s], k = t + ':' + s; if (id !== prev[k] && prev[k] != null) flips++; prev[k] = id; if (id == null) continue; n++; if (st.pitch.hz - Math.abs(st.players[id].p[2]) < 4) pres++; } } } return { pres: n ? 100 * pres / n : 0, flips: possMin ? flips / possMin : 0 }; };
   const tenu = mesure({ passation: null }), hier = mesure({ craie: { tire: 0.6, seuil: 0.42 }, passation: null });   // passation null DATÉ 252 : la remise au pivot déplace le monde de 3 × 200 s (présence à < 4 m 23 → 16 %) — la craie se mesure dans le sien
-  ok(`lot 249b — LA CRAIE EST UNE CHAISE TENUE : l'ancre change de mains ${tenu.flips.toFixed(1)} fois / min de possession (≤ 16 ; hier ${hier.flips.toFixed(1)}, ≥ 25) et vit à < 4 m de la ligne ${tenu.pres.toFixed(0)} % du temps (≥ 18 ; hier ${hier.pres.toFixed(0)} %, ≤ 8 — sa cible d'hier était à 5 m) — 3 × 200 s ; clé craie.tenue ${matchCfg({ flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la craie remangée (16 c. ≥ 18 % à < 4 m) — la clause mesure la chaise tenue, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */ }).craie?.tenue}`,
-    tenu.flips <= 16 && hier.flips >= 25 && tenu.pres >= 18 && hier.pres <= 8 && matchCfg({ flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la craie remangée (16 c. ≥ 18 % à < 4 m) — la clause mesure la chaise tenue, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */ }).craie?.tenue > 0);
+  ok(`lot 249b — LA CRAIE EST UNE CHAISE TENUE : l'ancre change de mains ${tenu.flips.toFixed(1)} fois / min de possession (≤ 16 ; hier ${hier.flips.toFixed(1)}, ≥ 25) et vit à < 4 m de la ligne ${tenu.pres.toFixed(0)} % du temps (≥ 18 ; hier ${hier.pres.toFixed(0)} %, ≤ 8 — sa cible d'hier était à 5 m) — 3 × 200 s ; clé craie.tenue ${matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), la craie remangée (11,6 changements / min et la marge) — la clause mesure la chaise tenue, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la craie remangée (16 c. ≥ 18 % à < 4 m) — la clause mesure la chaise tenue, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */ }).craie?.tenue}`,
+    tenu.flips <= 16 && hier.flips >= 25 && tenu.pres >= 18 && hier.pres <= 8 && matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), la craie remangée (11,6 changements / min et la marge) — la clause mesure la chaise tenue, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la craie remangée (16 c. ≥ 18 % à < 4 m) — la clause mesure la chaise tenue, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure les mains de l'ancre de craie (249b), pas le pas de décision */ }).craie?.tenue > 0);
 }
 
 // ---------------------------------------------------------------- lot 252 : LA PASSATION DU MARQUEUR (Campagne V, interface
@@ -6447,6 +6448,42 @@ if (__bloc()) {
   const hA = hash({}, false), hB = hash({}, true), hN = hash({ flux: null }, false), hM = hash({ flux: null }, true);
   ok(`lot 264 — LES FLUX RNG NOMMÉS (lois pures) : mêmes coordonnées, même u (${u0 === u1}) ; un autre flux / tick / entité / index, un autre u (${u0 !== uS && u0 !== uT && u0 !== uE && u0 !== uK}) ; u ∈ [0 ; 1) (${mn.toFixed(4)} … ${mx.toFixed(4)}), moyenne ${(som / 20000).toFixed(3)} ≈ 0,5 ; corrélation des entités voisines ${corr.toFixed(3)} (|·| < 0,05) ; tirage() compte k (${k0 === k0b && k1 === k1b}) et rend hier sans flux (${tH === hier}) — LA NEUTRALITÉ : sous la clé un st.rnd() ajouté à chaque image laisse 120 s de match BIT-IDENTIQUES (${hA === hB}) ; sabotage « flux null » : le monde est déplacé (${hN !== hM})`,
     u0 === u1 && u0 !== uS && u0 !== uT && u0 !== uE && u0 !== uK && mn >= 0 && mx < 1 && Math.abs(som / 20000 - 0.5) < 0.01 && Math.abs(corr) < 0.05 && k0 === k0b && k1 === k1b && tH === hier && hA === hB && hN !== hM);
+}
+
+// ---------------------------------------------------------------- lot 265 : LA PASSE QUI SE MANQUE À LA
+// BONNE DISTANCE (cfg.passe — Modèle 09 lot 1, §4.2-4.3, §6.1 ; Modèle 03 §5.2, §8.1)
+if (__bloc()) {
+  // (a) les lois pures contre les TABLES du book : la Weibull du contrôle manqué (d_touch 0,84 m → 2,6 %, 1,16 → 6,8 %,
+  // 1,45 → 13,1 % — l'exponentielle rejetée donnait 31,6 %) ; le budget (propre 0,4 s sous 0,9 m, lourde 0,55 → 0,8 s) ;
+  // la classe (courte 0,8, moyenne 1, longue / piqué 1,3, centre 1,7) ; σ_ψ à l'identité = 1,4° × la classe (la note à 50
+  // vaut 1), × (1 + κ_P P) sous pression, × (1 + 0,012 (d − 12)⁺) loin ; la pression au ballon : le presseur DERRIÈRE le
+  // corps paie le contournement. (b) la fixture : un receveur, le ballon lui arrive à 8 m/s — le presseur à 1,2 m DANS SON
+  // DOS (le ballon devant) : la touche est PROPRE et le porté n'est pas contestable pendant le budget ; le même presseur
+  // à 1,2 m DEVANT (entre le ballon et lui) : la réception est CONTESTÉE ; sabotage « passe null » : l'issue n'existe pas.
+  const K = matchCfg({}).passe, DEGr = Math.PI / 180;
+  const pf = [0.84, 1.16, 1.45].map((d) => pFailDe(d, K)), bud = [budgetDe(0.5, K), budgetDe(0.9, K), budgetDe(2.0, K)];
+  const cl = [classeDe({ style: 'ground' }, 8, K), classeDe({ style: 'ground' }, 18, K), classeDe({ through: true }, 18, K), classeDe({ cross: true }, 30, K)];
+  const nu = { skill: null, p: [0, 0, 0], v: [0, 0], team: 0 }, s50 = 3.25 * DEGr;
+  const sigId = sigmaPasse(nu, { style: 'ground' }, 8, 0, K, s50) / DEGr, sigP = sigmaPasse(nu, { style: 'ground' }, 8, 1, K, s50) / DEGr, sigL = sigmaPasse(nu, { style: 'ground' }, 22, 0, K, s50) / DEGr;
+  const dT = toucheDe(10, 0, nu, false, K), dTa = toucheDe(10, 0, nu, true, K);
+  const fix = (over, devant) => {
+    const st = makeMatch({ full: true, seed: 5 }), cfg = matchCfg({ shotRange: 20, ...(over ?? {}) }); st.restart = null;
+    const r = st.players.find((q) => q.team === 0 && q.post === 8), f = st.players.find((q) => q.team === 1 && !q.keeper);
+    for (const q of st.players) { q.v = [0, 0]; q.down = 0; q.p[0] = q.team === 0 ? -40 : 40; q.p[2] = (q.id % 11) * 5 - 25; }
+    r.p[0] = 0; r.p[2] = 0; r.yaw = Math.PI; f.p[0] = devant ? -1.2 : 1.2; f.p[2] = 0; f.v = [0, 0];   // le ballon vient de −x : devant = entre le ballon et lui
+    st.ball.restart([-2.0, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.impulse([8, 0, 0], null); st.t = 10;
+    const pr = pressionDe(st, r, cfg.passe ?? K, cfg, st.ball.p);
+    const rnd = () => 0.99;   // le dé du manqué ne tombe pas : l'issue vient de la géométrie
+    const I = st.full && cfg.passe ? issueDe(st, r, cfg.passe, cfg, rnd) : null;
+    return { pr, I };
+  };
+  const D = fix(null, false), V = fix(null, true), N = fix({ passe: null }, false);
+  // le porté protégé : sous la clé, un corps avec _protege > t n'est pas contesté par un presseur à 0,3 m du ballon
+  const stP = makeMatch({ full: true, seed: 5 }), cfgP = matchCfg({ shotRange: 20 }); stP.restart = null;
+  ok(`lot 265 — LA PASSE QUI SE MANQUE À LA BONNE DISTANCE (lois pures, les tables du book) : contrôle manqué ${pf.map((x) => (100 * x).toFixed(1)).join(' / ')} % à d_touch 0,84 / 1,16 / 1,45 m (2,6 / 6,8 / 13,1) ; budget ${bud.map((x) => x.toFixed(2)).join(' / ')} s (0,40 / 0,55 / 0,80) ; classes ${cl.join(' / ')} (0,8 / 1 / 1,3 / 1,7) ; σ_ψ identité ${sigId.toFixed(2)}° (1,12), pressé ${sigP.toFixed(2)}° (× ${(1 + K.kappaP).toFixed(1)}), à 22 m ${sigL.toFixed(2)}° (× 1,40 : la classe moyenne 1/0,8 × la distance 1,12) ; d_touch nominal ${dT.toFixed(2)} m, aérien ${dTa.toFixed(2)} (× 1,55) — LA FIXTURE : le presseur à 1,2 m dans le dos (TTP ${D.pr.ttp.toFixed(2)} s, contourné) → ${D.I?.issue} protégé ${D.I?.protege} s ; devant (TTP ${V.pr.ttp.toFixed(2)}) → ${V.I?.issue} ; sabotage « passe null » : ${N.I === null ? 'aucune issue (le contrôle d\'hier)' : 'ISSUE'}`,
+    Math.abs(pf[0] - 0.026) < 0.004 && Math.abs(pf[1] - 0.068) < 0.006 && Math.abs(pf[2] - 0.131) < 0.01 && Math.abs(bud[0] - K.tClean) < 1e-9 && Math.abs(bud[1] - K.tHeavyMin) < 1e-9 && Math.abs(bud[2] - K.tHeavyMax) < 1e-9
+    && cl[0] === K.mcCourt && cl[1] === 1 && cl[2] === K.mcLong && cl[3] === K.mcCentre && Math.abs(sigId - 1.12) < 0.01 && Math.abs(sigP / sigId - (1 + K.kappaP)) < 1e-6 && Math.abs(sigL / sigId - 1.12 / K.mcCourt) < 1e-6
+    && Math.abs(dT - K.d0) < 1e-9 && Math.abs(dTa / dT - K.chiAer) < 1e-9 && D.I?.issue === 'propre' && D.I.protege === K.tClean && D.pr.ttp > V.pr.ttp && (V.I?.issue === 'conteste-gagne' || V.I?.issue === 'conteste-perdu') && N.I === null);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

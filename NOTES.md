@@ -11036,6 +11036,68 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      59/0, tete 7/0 ; bloc 1 seul 0,48 ms/step (≤ 1,6 — le tirage à coordonnées ne coûte rien de
      visible). Rouges hérités, nommés : 137 « le troisième homme servi » en flux, 246d ;
      verify-loi12 « le mur se tient » (4,6 m) + son sabotage.
+- 343: LA PASSE QUI SE MANQUE À LA BONNE DISTANCE (265 — la carte du book : Modèle 09 lot 1, Modèle
+     07 lot 2 ; Modèle 09 §4.2-4.3 et §6.1, Modèle 03 §5.2 et §8.1). Sonde AVANT (sonde-265, 2 × 45
+     min, graines 3 et 7) — d'abord une LEÇON DE MÉTRIQUE : la fiche M09 annonçait un gradient
+     INVERSÉ (courtes 67-80 %, longues 61-71) ; c'était la métrique « gardée 2 s après la touche »
+     (56 % de réussite), pas la complétion événementielle des fournisseurs de données (la
+     première touche après la passe est d'un coéquipier). Avec la métrique du book : 79 % de
+     réussite (réel 80-83), < 10 yd 87 %, 5-15 yd 80 (réel 88-92), 15-30 yd 74 (82-87), 30+ 64
+     (55-65) — le gradient est MONOTONE, le déficit vit dans la tranche moyenne, dominé par
+     l'INTERCEPTION (le receveur à ≥ 1,5 m du ballon quand l'adversaire le prend : 14-15 %) ;
+     perdue au pied 5-8 % (20 % à 30+), contrôle manqué 0,4 % (réel 2-4), le presseur du
+     receveur à 3,7 m p50 sur les courtes. Sondé aussi (dbg-265) : la réception n'avait pas de
+     FENÊTRE — le porté était contestable à l'image même du contrôle (27 % de réceptions avec un
+     presseur à moins de 1,3 m), et la dispersion du geste (σ 3,25° à 50) valait deux fois la base
+     du book. LA LOI (reception.js, cfg.passe && st.full) : (1) LA RÉCEPTION À QUATRE ISSUES —
+     d_touch = d0 0,85 (v_rel/10)^0,8 (1 + 0,5 P) χ_aérien 1,55 ÷ controlF (la vitesse RELATIVE
+     ballon-joueur ; le bon contrôleur raccourcit la fuite), la pression P = 1 − TTP/1,5 du
+     presseur le plus proche mesurée AU BALLON par son temps d'arrivée (etaCourse — pas une
+     distance), + 0,5 s de contournement pour le presseur DERRIÈRE le corps (le ballon entre eux :
+     Modèle 11, le corps protège) ; MANQUÉ au tirage de Weibull p = 1 − e^{−(d/2,8)³} (2,6 % au cas
+     nominal — l'exponentielle rejetée par le book donnait 31 %) : ballon libre ; CONTESTÉ si le
+     presseur arrive avant la fin du contrôle (TTP < budget : 0,4 s pour une touche propre sous
+     0,9 m, 0,55 → 0,8 s pour une lourde jusqu'à 2 m) : un 50/50 pesé par chargeF ; PROPRE : le
+     receveur possède et le porté n'est PAS contestable pendant le budget (p._protege) ; LOURDE :
+     contestable. (2) L'ERREUR DE GESTE PAR CLASSE ET DISTANCE — σ_ψ = 1,4° × la note (passSigma ÷
+     sa valeur à 50 : le facteur, identité 1) × m_c (courte < 12 m 0,8 / moyenne 1 / longue > 25 m,
+     piquée, cloche 1,3 / centre 1,7) × (1 + 1,2 × composureF × P) × (1 + 0,012 (d − 12)⁺), et le
+     dosage log-normal σ_v 0,06 ; le SOUS-DOSAGE du book (μ_v −0,05 − 0,10 P) est disponible et
+     ÉTEINT : le receveur d'hier ne vient pas au-devant d'une balle courte (mesuré : 9 → 14 % de
+     passes perdues avant sa touche) — dette nommée pour le lot de la réception en mouvement.
+     Calibré au balayage (2 × 45) : tClean 0,25 / contourne 0,35 → 77 % (85 / 81 / 74 / 57) ;
+     tClean 0,4 / contourne 0,5 (retenu) → 80 %. Mesuré APRÈS (2 × 45 min, mêmes graines, la complétion
+     événementielle) : 79 → 80 % (réel 80-83) ; < 10 yd 87 → 87, 5-15 yd 80 → 84 (réel 88-92),
+     15-30 yd 74 → 75 (82-87), 30+ yd 64 → 56 (55-65) ; l'interception inchangée (10-16 %), la perte
+     au pied des courtes 5 → 3 % ; les réceptions sous la clé (20 min) : propre 58 %, contestée
+     27 % (gagnée 55 %), lourde 13 %, manquée 2 % (le book : 2-4) ; le sol 92 → 91 % sur les
+     courtes (réel 90-95). Jumeau : passe null = HEAD au bit
+     (ff08e420b047f0f0 / 1d21c57617d99adb — le défaut du 264, relu par git stash). Banc :
+     verify-match11 bloc 265 (index 163 : les TABLES du book recalculées — la Weibull 2,7 / 6,9 /
+     13,0 % à 0,84 / 1,16 / 1,45 m, le budget 0,40 / 0,55 / 0,80, les classes, σ à l'identité
+     1,12°, × 2,2 pressé, × 1,40 à 22 m, d_touch nominal 0,85 et aérien × 1,55 ; la fixture — le
+     presseur à 1,2 m DANS LE DOS du receveur : touche propre protégée 0,4 s ; DEVANT : contestée ;
+     sabotage passe null : aucune issue). Ce qu'il nomme : L'INTERCEPTION PROBABILISTE en vol
+     (Modèle 07 §4 : la logistique σ 0,45 s, λ 4,3, la croyance du défenseur — c'est LÀ que vit le
+     déficit de la tranche 15-30 yd, le lot suivant), le cône de ±40° du ballon fou, l'issue lourde
+     qui pousse vraiment le ballon à d_touch, le receveur qui vient au-devant (le sous-dosage
+     attend), la fiche M09 à corriger (sa métrique). BANC COMPLET (final265.sh, 8 shards + 25 annexes) : 286 ✓ / 8 ✗ aux shards et
+     552 ✓ / 5 ✗ aux annexes au premier passage — la touche propre protégée change les possessions,
+     les marges des flux bougent. Mondes déplacés, épinglés passe null DATÉ 265 après preuve verte à
+     HEAD~ (worktree 1507550, le sceau 264) : verify-match11 blocs 7 « la foulée de frappe »
+     (sabotage 3,39 c. 2,76 − 0,12), 22 « l'économie de course » (sabotage p50 7 c. 8), 28 « lot 98
+     la fixation » (2 → 0 bascules sur 6 × 220 s : un compte de deux), 55 « lot 124 les passements »
+     (max 2 c. 3), 83 « lot 170 le corps ouvert » (pivot 77° c. 75 − 8 : la touche protégée tient
+     le corps), 138 « flux 241 les couloirs » (32,4 c. 39,4 × 0,8), 149 « lot 249b la craie » ;
+     verify-attributes 157 (l'horloge du pique 3 c. 4 + 2) et 160 (les traversées 10,2 c. ≤ 8 %).
+     verify-identification REGELÉ DATÉ 265 (la règle du 252) : 23 → 18 signatures — perdues DC A|largeurR, DC A|profondeur, DC A|press, DC B|profondeur, DC C|largeurR, LAT C|appel, MIL A|tenue, MO B|profondeur, AIL B|appel, AIL C|repli, AIL D|largeurR ; gagnées LAT A|appel, LAT D|largeurR, MO C|tenue, AIL A|largeurR, AV A|largeurR, AIL C|largeurR
+     — la liste bouge sans qu'aucune loi de rôle n'ait changé (la dette de volumétrie à 6 graines,
+     encore). Isolés après épingles : blocs 7 1/0, 22 2/0, 28 5/0, 55 1/0, 83 3/0, 138 2/0, 149 1/0,
+     163 (le 265) 1/0 ; annexes attributes 27/0, identification 1/0, scan 5/0, slide 10/0, remises
+     36/0, tactics 11/0, contact 25/0, porte 4/0, cartons 6/0, expulsion 8/0, football-rules 59/0,
+     tete 7/0 ; bloc 1 seul 0.49 ms/step (≤ 1,6). Rouges hérités, nommés : « contres arrivés à
+     l'entrée » (flux 24 × 300 s), 246d (vert ce passage) ; verify-loi12 « le mur se tient » (4,6 m)
+     + son sabotage.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

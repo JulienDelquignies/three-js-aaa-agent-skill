@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
@@ -319,11 +319,11 @@ function receive(st, id, cfg = RONDO) {
       // tirage est seedé (le hasard de la partie, pas un dé caché).
       const arr = hyp(st.ball.v[0], st.ball.v[2]);
       const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy * (p.skill?.controlF ?? 1))));
-      if (pMiss > 0 && tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))() < pMiss) {
+      const RC = st.full && cfg.passe ? issueDe(st, p, cfg.passe, cfg, tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))) : null; if (RC ? (RC.issue === 'manque' || RC.issue === 'conteste-perdu') : (pMiss > 0 && tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))() < pMiss)) {   // (265) LA RÉCEPTION À QUATRE ISSUES (reception.js) : manqué (Weibull), contesté (le 50/50 quand le presseur arrive avant la fin du contrôle), propre (protégé tClean), lourde
         deny(st, 'contrôle-manqué');
         st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62], dW(st, cfg, 0.62));
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot,
-          surface: pick.surface, speed: +arr.toFixed(1), miss: true, settle: null });
+          surface: pick.surface, speed: +arr.toFixed(1), miss: true, settle: null, ...(RC ? { issue: RC.issue, dTouch: +RC.dTouch.toFixed(2), P: +RC.P.toFixed(2) } : {}) });
         // LE CONTRÔLE RATÉ TUE LA PASSE (lot 44, st.full — capture utilisateur : le receveur
         // du long ballon restait PLANTÉ, ciblé sur son ancien point de chute par st.pass
         // vivant, pendant que l'adversaire prenait sa touche fuyante). La livraison est MORTE
@@ -338,12 +338,12 @@ function receive(st, id, cfg = RONDO) {
       // (180 — l'amorti à la note TENTÉ ET RÉFUTÉ ici : le settle est SERVO-DOMINÉ, le porté ravale l'impulsion (jumeaux 90/10 : 0,24 = 0,24).
       // La note au contrôle vit à pMiss (le manqué) — le « 4 m de première touche » du 179 s'instruira au FILM, pas à ce site.)
       st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)], dW(st, cfg, 1 - pick.tech.power));
-      st.ball.possess(id);
+      st.ball.possess(id); if (RC) { p._protege = st.t + RC.protege; p._issue = RC.issue; }   // (265) la touche propre est SIENNE pendant le budget du contrôle
       st._settling = { ev: st.events.length, id, at: st.t + T };
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
         bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),
-        speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1),
+        speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), ...(RC ? { issue: RC.issue, dTouch: +RC.dTouch.toFixed(2), P: +RC.P.toFixed(2) } : {}),
         // OÙ LE BALLON A FINI, relativement au joueur — le nombre que la règle juge. Il n'existe PAS
         // encore à cet instant : le contrôle est devenu continu, le ballon met l'accompagnement du
         // geste à arriver. L'inscrire maintenant, ce serait inscrire l'intention à la place du
@@ -638,7 +638,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     //   CONTESTÉ : release('contesté') — le duel se joue sur un ballon PHYSIQUE, le 50/50 est réel.
     //   Re-capture : intention formée + ballon au pied non contesté — possess() + porté.
     const foeBall = Math.min(...st.players.filter((q) => q.team !== c.team && q.down <= 0).map((q) => d2(q.p, st.ball.p)), 99);
-    const contested = foeBall < cfg.contestRadius && foeBall < d2(c.p, st.ball.p) - cfg.contestSlack;
+    const contested = foeBall < cfg.contestRadius && foeBall < d2(c.p, st.ball.p) - cfg.contestSlack && !(st.full && cfg.passe && (c._protege ?? -1) > st.t);   // (265) le porté d'une touche propre n'est pas contestable pendant son budget
     const intentFresh = !!c.intent || (c.anchorHint && st.t - c.anchorHint.t < 0.4);
     const settling = st._settling && st.t < st._settling.at;
     // LE PORTEUR QUI SE RETOURNE NE POUSSE PAS (240b, cfg.retournement.tour) : la poussée à plus de tour rad du corps → porté (servo au pied) le temps du tour — un lancé qui poussait dans son dos laissait le ballon derrière lui (12 → 31 pertes sans pression / 48 min ; cône du porté 76)

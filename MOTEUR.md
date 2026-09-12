@@ -417,6 +417,18 @@ clé et les déplace sans elle. Clé absente : le flux séquentiel d'hier au bit
 corrélation des entités voisines, la fixture de neutralité, sabotage). Sonde : `scripts/book/sonde-264.mjs`. Fiche :
 `M01-boucle-simulation.md`.
 
+### La passe qui se manque à la bonne distance (lot 265, `cfg.passe` — `reception.js`)
+
+**La réception à quatre issues** (`issueDe`, appelée par rondo-sim à la capture) : la fuite du premier contact `toucheDe`
+(d0 0,85 × (v_rel/10)^0,8 × (1 + 0,5 P) × 1,55 en l'air ÷ controlF), la pression `pressionDe` (le temps d'arrivée du presseur
+au BALLON, + 0,5 s s'il est derrière le corps), le manqué de Weibull `pFailDe` (2,6 % nominal), le contesté (TTP < `budgetDe` :
+0,4 s propre, 0,55-0,8 lourde) en 50/50 × chargeF, la touche propre PROTÉGÉE (`p._protege`, lue par le porté). **L'erreur de
+geste** (`sigmaPasse`, strike-sim) : 1,4° × la note (passSigma ÷ 3,25°) × la classe (`classeDe`) × (1 + 1,2 composureF P) ×
+(1 + 0,012 (d − 12)⁺), le dosage log-normal σ_v 0,06 (le sous-dosage du book disponible, éteint : dette). Mesuré 2 × 45 min
+(complétion = première touche d'un coéquipier) : 79 → 80 % (réel 80-83), 87 / 84 / 75 / 56 par tranche. Clé absente : la
+réception et le σ d'hier au bit. Banc : bloc 265 (les tables du book, la fixture du presseur dans le dos / devant, sabotage).
+Sonde : `scripts/book/sonde-265.mjs`. Fiches : `M09-modele-passe.md`, `M07-pression-lignes-de-passe.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

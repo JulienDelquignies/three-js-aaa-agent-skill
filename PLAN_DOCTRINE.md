@@ -540,6 +540,15 @@ les déplace ; le monde sous la clé est un autre tirage de la même distributio
 le double tampon et l'invariance d'ordre (test 1), le rejeu multi-plateforme (test 2) ; puis le duel comme vecteur et la
 passe qui se manque à la bonne distance (Modèles 11, 07, 09), le ballon qui sort et le temps du match.
 
+**265 — LA PASSE QUI SE MANQUE À LA BONNE DISTANCE : SCELLÉ (343).** La réception à quatre issues du Modèle 09 (la fuite du
+premier contact d_touch, la pression au ballon par temps d'arrivée avec le corps qui protège, le manqué de Weibull, le
+contesté en 50/40, la touche propre protégée pendant son budget) et l'erreur de geste par classe et distance (la base 1,4°
+du book, la note en facteur, la pression, la distance). Une leçon de métrique : le gradient « inversé » de la fiche était
+l'artefact d'une métrique ; avec la complétion événementielle, 79 → 80 % (réel 80-83), courtes 87, 5-15 yd 80 → 84 (réel
+88-92), 15-30 yd 74-75 (82-87), 30+ 64 → 56 (55-65). Ce qu'il nomme : l'interception probabiliste en vol (Modèle 07 §4 —
+le déficit de la tranche moyenne), le receveur qui vient au-devant (le sous-dosage attend), le ballon fou en cône ; puis le
+duel comme vecteur (Modèle 11), le ballon qui sort et le temps du match.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

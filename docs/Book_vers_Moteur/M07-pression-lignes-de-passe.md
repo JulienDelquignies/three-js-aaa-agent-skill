@@ -60,6 +60,8 @@ par événement à latence ; le piège comme plan à quatre rôles (Bible 10 §8
    le journal.
 2. **L'interception probabiliste couplée** (tests 1, 2, 11 ; Modèle 03 lot 4, Modèle 09) : l'ombre exacte, σ 0,45 /
    λ 4,30 recalés sur la cinématique du moteur — la passe courte à 88-92 %, la longue à 55-65.
+   Le 265 (la réception, SCELLÉ 343) a mesuré que l'interception en vol porte le déficit de la tranche 15-30 yd
+   (14-15 % des passes prises par un adversaire à ≥ 1,5 m du receveur) : c'est CE lot, le suivant.
 3. **L'affectation avec hystérésis** (test 5 ; Bible 12 lot 3, Modèle 08 lot 1) : hongrois à ordre fixe, β_hys.
 4. **Le déclenchement par événement** (test 3 ; Bible 10 lot 6, Modèle 04) : `PressEvent`, latence, portée.
 5. **Le piège** (test 6 ; Bible 10 §8) — après 3 et 4.
