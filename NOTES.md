@@ -11164,6 +11164,95 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      sabotage). Bloc 1 seul 0.66 ms/step (≤ 1,6). Copies : starter = showcase = soldier-volley (cmp)
      ; match-sim, rondo-sim, match-config à 1249 lignes. Sceau : commit c3008a6, poussé ; déploiement showcase-pi-mocha au
      premier essai (cmp du chunk Rondo servi = construit). Vient la sélection calibrée du passeur (Modèle 09 lot 2).
+- 345: LA SÉLECTION CALIBRÉE DU PASSEUR (267 — la carte du book : Modèle 09 lot 2, tests 2 et 9 ;
+     Modèle 07 §4 la survie de Spearman, §5.3 le score). Sonde AVANT (sonde-267 = la 266 + les
+     classes nommées, la fiabilité de P_succ en 10 bacs (ECE, log-loss) et la part arrière ; 2 × 45
+     min graines 3 et 7) : réussite 80 %, 91 / 84 / 71 / 61, bloquées 3 %, tirs 16,5, buts 4,5, part
+     arrière 42 % (réel 36,5, 24-42) ; à 4 graines (3, 7, 11, 13) : 80 %, 89 / 84 / 73 / 59, tirs
+     16,3, buts 2,8. Le barème de choosePass jugeait la passe en MÈTRES (le couloir 2,4/m, la
+     liberté 1,15/m, la distance, les bonus) sans jamais nommer sa probabilité — le même score pour
+     un couloir de 2 m à 8 m et à 30 m ; la tranche 15-30 yd restait à 71-75 dans tous les mondes du
+     266. LA LOI (selection.js, cfg.selection && st.full) : (1) LA CLASSE NOMMÉE — classeNommee rend
+     l'une des douze du book (SHORT / MID / LONG_GROUND par la distance 15 / 28 m, CHANNEL / THROUGH
+     / CHIP_THROUGH pour la course servie selon la rupture et le chip, SWITCH la bascule, CROSS /
+     CUTBACK le centre, LAY_OFF la une-touche de premiere-intention, ONE_TWO_RETURN le retour du
+     une-deux, BACK_SAFE la passe qui recule de plus de 2 m à moins de 25 m) ; (2) P_SUCC PRÉDIT —
+     la factorisation physique du book avec ce que le moteur possède : P_rel = 1 − 0,06 × la
+     pression du porteur (pressionDe du 265) ; S = la survie du ballon en vol (survieDe : par
+     défenseur, la plus courte approche sur le segment, son temps d'arrivée etaCourse + la latence
+     0,25 × (2 − anticipF) du 266, la logistique σ 0,45 s de Spearman sur l'écart au ballon, le taux
+     de prise λ 4,3 (gardien 12,9) sur une fenêtre 0,25 s ; survie 'max' = le seul défenseur affecté
+     intercepte — le produit de Spearman (tous chassent) rendait 5 % prédit pour 59 % observé) ;
+     PPCF_r = la compétition terminale au point de chute (logistique σ sur t_def − t_rec après
+     l'arrivée du ballon, + 0,3 s d'avantage au receveur servi) ; P_ctrl = 1 − pFail(d_touch) du 265
+     à la vitesse d'arrivée (6,5 sol, 9 aérien) sous la pression projetée ; p borné [0,02 ; 0,995] ;
+     (3) LE CALAGE log-odds par classe — logit P̂ = α_c + β_c logit p, les 24 nombres dans
+     cfg.selection.calage, AJUSTÉS (Newton, crête 0,5) sur 1 469 passes du monde d'hier (poids 0, 4
+     graines) : BACK_SAFE [1,77 ; 0,40], SHORT_GROUND [1,15 ; 0,26], MID_GROUND [1,10 ; 0,47], le
+     global [1,18 ; 0,37] pour les classes à n < 80 ; β < 0,85 partout : la factorisation crue est
+     OMNISCIENTE (vrais corps, sigmoïdes nettes — le book, test 2 : « une pente < 0,85 prouve un
+     football omniscient »), la dette nommée. La grille σ ∈ [0,15 ; 0,8] × fenêtre ∈ [0,05 ; 0,4] ×
+     avantage sur les données du moteur (Modèle 07 test 10, 730 passes ajustées / 739 tenues) est
+     PLATE (log-loss tenu 0,356-0,358) : les valeurs du book sont gardées ; (4) LE TERME AU BARÈME —
+     poids 2 × ρ × (logit P̂ − logit 0,8), ρ = axe(mentalité, 1,5 → 0,5) × decF (le book : ρ_loss
+     0,8 pour le DC prudent, 0,35 pour le meneur offensif — ici la CONSIGNE et la note décisions, le
+     rôle attend) ; LA SÉLECTION RÉORDONNE, ELLE NE RETIENT PAS : l'élu est le meilleur de (barème +
+     terme), mais best.score rendu à la barre d'adoption est le meilleur barème NU d'hier — le
+     premier jet (le terme au niveau, pivot 0,8) faisait tenir le porteur (passes < 0,8 pénalisées →
+     forcées au holdMax → 5-15 yd 84 → 78, tirs 16,5 → 12,5) : la réservation « ne pas passer » est
+     le §9 du book, un autre lot ; (5) LE JOURNAL — l'événement pass porte cls, pSucc (calé), pBrut
+     (cru) ; le centre porte CROSS, la une-touche LAY_OFF (sans P̂). Mesuré APRÈS (4 × 45 min) :
+     réussite 81 % (réel 80-83), 88 / 83 / 77 / 60 (la tranche 15-30 yd 73 → 77 ; réel 82-87),
+     bloquées 4 %, tirs 17,3, buts 2,0, part arrière 41 % ; FIABILITÉ : ECE 0,020 (< 0,025 ✓), log-
+     loss 0,414 (la constante 0,80 du book à 0,545 est battue, le Logistic Net à 0,384 pas atteint),
+     bacs 0,6 / 0,7 / 0,8 / 0,9 : prédit 65 / 76 / 84 / 93, observé 60 / 73 / 86 / 94 ; par classe
+     (réussie c. prédite ; cible book) : BACK_SAFE 91 / 90 (94-97), SHORT_GROUND 81 / 80 (92-95),
+     MID_GROUND 74 / 72 (84-88), LONG_GROUND 75 / 76 (60-70), ONE_TWO 90 / 86 (70-82), THROUGH 38 /
+     73 (40-55 — la classe rare, sur-prédite : le rendez-vous lit la course du receveur, pas la
+     lecture des défenseurs), CHANNEL 70 / 83, LAY_OFF 82 (88-93), CROSS 58 (19-22 : le « centre »
+     du moteur est une passe trouvée, pas un centre en jeu ouvert — dette de classe). L'A/B DU POIDS
+     (4 × 45) : 0 → 80 % 89 / 84 / 73 / 59 tirs 16,3 ; 1 → 78 % 90 / 80 / 73 / 53 (421 passes) ; 2 →
+     80-81 % 89 / 81-83 / 77 / 59-60 tirs 17-21 ; 3,5 → 80 % 91 / 80 / 75 / 54 tirs 14,5 — le bruit
+     de 4 matchs vaut ± 3 points, seul le gain de la tranche moyenne (+ 4) est stable ; poids 2
+     retenu. L'AXE : mentalité 0 (les deux équipes) réussit ses longues à 66 % (5-15 yd 79, tirs
+     18), mentalité 1 à 53 % (14 SWITCH c. 6, 56 THROUGH c. 51, 564 passes c. 539, tirs 15,3) —
+     l'appétit du risque s'entend dans les longues. Jumeau : selection null = HEAD au bit
+     (877b1eda4f261e8f / 0936f0c76bfd0186 — le défaut du 266, relu par git stash). Banc : verify-
+     match11 bloc 267 (index 165 : les douze classes nommées = attendu ; la survie 1 sans défenseur,
+     ≥ 0,99 loin du couloir, 0,36 posé sur la ligne = 1 − (1 − e^{−λ·fenêtre}) ± 0,02, deux posés
+     0,345 au seul affecté c. 0,124 si tous chassent ; P_succ 0,99 > 0,88 > 0,40 quand le défenseur
+     vient au couloir ; le calage null = l'identité, [1, 1] décale d'un logit, le calage daté rend
+     0,85 pour 0,95 cru ; le terme nul à p0, −5,2 au défensif c. −1,73 à l'offensif (× 3) ; le monde
+     : choosePass porte SHORT_GROUND et P̂ 0,85, élit le receveur au couloir libre, sabotage
+     selection null : le même receveur sans classe ni probabilité ; 150 s : 25/26 passes portent
+     leur classe, 18 leur P̂). Ce qu'il nomme : P_succ comme LECTURE du moteur par lui-même (la
+     course de refus flightRace du 266 et q̂_k, la croyance du passeur sur chaque défenseur — la
+     discrimination en classe manque : β 0,26 pour la courte), ρ par rôle, le softmax T_soft /
+     decisions, la réservation η (§9), la comptabilité des pertes (lot 4), le CROSS en jeu ouvert
+     comme classe de zone.
+     Banc complet (final267 : 8 shards + 25 annexes) : shards 283 ✓ / 17 ✗ — quinze rouges du monde
+     remangé (la sélection réordonne les passes : d'autres receveurs, d'autres possessions, d'autres
+     tirages), tous verts à HEAD~ (worktree 7edf8fc) et épinglés PAR CONTENU « selection: null DATÉ
+     267 », tous verts isolés à HEAD : 245 (bloc 144, l'oblique), 95 (26, le jockey), 135 (66, les
+     sauts de cible), la démission (35), 128 (59, les through 3 c. 6 — la sélection lit P̂ 0,73 pour
+     la profondeur, sous le pivot 0,8, elle en joue moins : le terme de VALEUR du book manque,
+     Modèle 06), les bascules libres (28), 115 (44, le petit pont), 137 (68, l'offre), 138 (69,
+     l'overlap), l'allure (22), 123 (54, le box crash), le troisième homme en flux (137), 229 (125,
+     le contre-pressing), 212 (110, les through condamnés), 244b en flux (142, le dédoublement).
+     Hérités : « contres arrivés à l'entrée » (139 : vert isolé à HEAD~, rouge isolé à HEAD même
+     épinglé — la clause flotte d'un tirage à l'autre depuis le 244b, la zone occupée), 246d (148 :
+     rouge à HEAD~ aussi, il flotte). Annexes : attributes 26/1 → 27/0 (L314, la compression 31,5 c.
+     31,1 − 0,6 remangée), identification 0/1 → REGELÉ DATÉ 267 : 17 → 18 signatures (perdues DC
+     B|largeurR, DC C|largeurR, LAT C|profondeur, MDC B|tenue, MO C|tenue, AV A|profondeur ; gagnées
+     DC A|largeurR, DC A|profondeur, DC A|tenue, DC B|tenue, MIL A|tenue, AV A|tenue, AIL C|largeurR
+     — la dette de volumétrie à 6 graines demeure), remises 35/1 → 36/0 (L99, le bassin du lanceur
+     0,03), scan 4/1 → 5/0 (L13, 1 saccade de Jordet) ; frappes 13/0, gestes 60/0, match 84/0,
+     menace 11/0, roles 14/0, rondo 40/0, sync 9/0, attente 42/0, cartons 6/0, contact 25/0,
+     expulsion 8/0, football-rules 59/0, foulee 45/0, kit 5/0, loi3 10/0, part-tint 18/0, porte 4/0,
+     slide 10/0, tactics 11/0, tete 7/0, loi12 12/2 (hérité : « le mur se tient » 4,6 m + son
+     sabotage). Bloc 1 seul 0.50 ms/step (≤ 1,6 — la survie de Spearman par candidat ne pèse rien).
+     Copies : starter = showcase = soldier-volley (cmp) ; match-sim, rondo-sim, match-config à 1249
+     lignes (la clé selection fondue sur la ligne piege).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

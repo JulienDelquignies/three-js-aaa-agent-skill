@@ -36,8 +36,8 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
 
 | # | Cible (book) | Statut | Mesuré (2 × 90 min) |
 |---|---|---|---|
-| 1 étalonnage distance × direction | 5-15 yd 88-92 ; 15-30 82-87 ; 30+ 55-65 ; arrière 30-42 % | mesurable, **partiel au 265** (en complétion événementielle : 87 / 84 / 75 / 56 — la tranche moyenne manque) ; l'ancien « réfuté » tenait à la métrique « gardée 2 s » | 5-15 yd **67 / 71 / 80 %** (avant / latéral / arrière) ; 15-30 yd 71 / 70 / 82 ; 30+ yd 61 / 64 / 71 — le gradient est **inversé** ; arrière : sonde Modèle 06 |
-| 2 fiabilité | ECE < 0,025 | sans objet (pas de P_succ prédit) |
+| 1 étalonnage distance × direction | 5-15 yd 88-92 ; 15-30 82-87 ; 30+ 55-65 ; arrière 30-42 % | mesurable, **partiel au 265** (en complétion événementielle : 87 / 84 / 75 / 56 — la tranche moyenne manque) ; **au 267** (4 × 45 min) : 88 / 83 / 77 / 60 — la tranche moyenne monte de 4 points, le reste du déficit est la discrimination de P_succ (β_c 0,26-0,47) ; l'ancien « réfuté » tenait à la métrique « gardée 2 s » | 5-15 yd **67 / 71 / 80 %** (avant / latéral / arrière) ; 15-30 yd 71 / 70 / 82 ; 30+ yd 61 / 64 / 71 — le gradient est **inversé** ; arrière : sonde Modèle 06 |
+| 2 fiabilité | ECE < 0,025 | **mesurable au 267** : ECE **0,020** (< 0,025), log-loss 0,414 (< 0,545 de la constante ; 0,39 non atteint), diagonale à ± 0,05 sur les bacs 0,6-0,9 (4 × 45 min, 1 460 passes) ; β_c 0,26-0,47 < 0,85 — la factorisation crue est omnisciente (le book : « un football omniscient »), dette nommée |
 | 3 causes d'échec | causes-passe 46-57 %, contrôle 9-13, blocages 10-12, hors-jeu 4-6 | à instrumenter (`turnover.why`) |
 | 3 bis contrôle raté nominal | 2-4 % | à instrumenter |
 | 4 sous-dosage | 60-70 % trop courtes | absent (isotrope) |
@@ -61,6 +61,10 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
    l'interception (Modèle 07 lot 2). Le sous-dosage attend le receveur qui vient au-devant.
 2. **Le type somme et la sélection calibrée** (tests 2, 9) : classes nommées, P_succ prédit et calé (log-odds), le
    journal les porte.
+   → **SCELLÉ 267** (`selection.js`, `cfg.selection`, NOTES 345) : les douze classes nommées, P_succ = P_rel × S × PPCF_r ×
+   P_ctrl (la factorisation physique avec ce que le moteur possède), le calage log-odds par classe ajusté sur 1 469 passes
+   du monde d'hier, le terme au barème (ρ par la consigne mentalité × decF) qui réordonne sans retenir, le journal
+   (cls, pSucc). Test 9 tenu (calage null = l'identité, l'ordre des classes conservé) ; test 2 : ECE 0,020, log-loss 0,414 ; le monde : 80 → 81 %, 88 / 83 / 77 / 60 par tranche.
 3. **Le rendez-vous et la course avant la frappe** (tests 5, 6, 8 ter ; le 259 — SCELLÉ 334 pour l'appel de l'épaule et la course qui traverse ; le rendez-vous derrière la ligne reste à faire, Bible 09 lot 2).
 4. **La comptabilité des pertes** (tests 3, 3 bis ; Modèle 16 lot 1) : `LossCause` en vocabulaire Opta.
 5. **Le sous-dosage et le masque dos-au-but** (tests 4, 8 ; Bible 14 lot 5).

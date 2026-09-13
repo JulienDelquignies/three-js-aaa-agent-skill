@@ -6,6 +6,8 @@ import { winding } from './gesture.js';
 import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
 import { tac, axe } from './tactics.js';
+import { pSuccDe, termeDe } from './selection.js';
+import { pressionDe } from './reception.js';
 import { movePlayers, separatePlayers } from './movement.js';
 import { dansCone } from './dribble.js';
 import { RONDO } from './rondo-config.js';
@@ -138,6 +140,7 @@ export function choosePass(st, cfg = RONDO) {
   // LE CONTRE NE RECULE PAS (189) : le porteur en surnombre (enLance) paie CHER toute passe
   // arrière — le terme au score, chirurgical (les latérales/avant restent jouables)
   const _lanceC = enLance(st, c, cfg, null);
+  const _SEL = st.full && cfg.selection ? cfg.selection : null, _selPc = _SEL ? pressionDe(st, c, cfg.passe ?? {}, cfg).P : 0;   // LA SÉLECTION CALIBRÉE (267) : la pression du porteur, une fois
   const _force = st.full && cfg.passeSure && st.hold >= (cfg.holdMax ?? 3) - (cfg.passeSure.avant ?? 0.4);   // (215) la fenêtre de la passe forcée
   const _gSL = Math.sign(st.pitch?.attackGoal?.(c.team)?.x || 1);
   // LA LOI 11 EST DANS LE CERVEAU AVANT D'ÊTRE DANS LE SIFFLET (cfg.offside — 11c11 seulement) :
@@ -208,7 +211,7 @@ export function choosePass(st, cfg = RONDO) {
     }
     if (jete) st._jeteAt = { t: st.t, team: c.team };   // …le signal d'équipe : l'appel timé se déclenche sur le jeté (match-sim)
   }
-  let best = null;
+  let best = null, _bestSc = -Infinity, _lvl = -Infinity;   // (267) sous la clé : l'élu par (barème + terme), le NIVEAU d'adoption reste celui d'hier (le meilleur barème nu)
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
     // EN VETO : beginPass a fait courir la défense sur le vrai vol vers ce receveur (flightRace) et
@@ -537,12 +540,17 @@ export function choosePass(st, cfg = RONDO) {
       if (through.lead[0] * gSD > Math.abs(gxD) - (st.pitch.dims?.box?.depth ?? 16.5) && Math.abs(through.lead[2]) < (st.pitch.dims?.box?.halfWidth ?? 20.16))
         dangerB = (cfg.dangerPasse.bonus ?? 2) * axe(tac(st, c.team).mentalite ?? 0.5, 0.7, 1.3) * (c.skill?.visionF ?? 1);
     }
-    const scT = through ? score + (cfg.throughBall?.bonus ?? 0.6) + tranchB - risqueB + dangerB : -Infinity;
-    const useT = through && !_force && !(st.full && cfg.throughRisque && scT < score);   // (215) forcé : jamais en profondeur
-    if (!best || (useT ? scT : score) > best.score) best = useT
-      ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr }
-      : { to: m, lead, style, score, lane, dist: d, bascule };
+    const scT0 = through ? score + (cfg.throughBall?.bonus ?? 0.6) + tranchB - risqueB + dangerB : -Infinity;
+    // LA SÉLECTION CALIBRÉE (267, cfg.selection && st.full — doc selection.js) : la classe nommée et P_succ prédit de chaque candidat, le terme poids × ρ × (logit P̂ − logit p0) au barème ; clé absente : le barème d'hier au bit
+    const _sel = _SEL ? [pSuccDe(st, c, m, origin, lead, d, style, { bascule, unDeux: (m._troisT ?? -1) > st.t }, foesL, _SEL, cfg, _selPc), through ? pSuccDe(st, c, m, origin, through.lead, d, 'ground', { through: true, derriere: !!m._pace?.rupture, unDeux: (m._troisT ?? -1) > st.t }, foesL, _SEL, cfg, _selPc) : null] : null;
+    const scoreF = _sel ? score + termeDe(_sel[0], c, st, _SEL) : score, scT = _sel && _sel[1] ? scT0 + termeDe(_sel[1], c, st, _SEL) : scT0;
+    const useT = through && !_force && !(st.full && cfg.throughRisque && scT < scoreF);   // (215) forcé : jamais en profondeur
+    if (_sel) { _lvl = Math.max(_lvl, useT ? scT0 : score); if ((useT ? scT : scoreF) <= _bestSc) continue; _bestSc = useT ? scT : scoreF; }
+    if (!best || (useT ? scT : scoreF) > best.score) best = useT
+      ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr, ...(_sel ? { cls: _sel[1].cls, pSucc: _sel[1].pHat, pBrut: _sel[1].p, pAlt: _sel[1].pAlt, ...(_sel[1].dbg ? { selDbg: _sel[1].dbg } : {}) } : {}) }
+      : { to: m, lead, style, score: scoreF, lane, dist: d, bascule, ...(_sel ? { cls: _sel[0].cls, pSucc: _sel[0].pHat, pBrut: _sel[0].p, pAlt: _sel[0].pAlt, ...(_sel[0].dbg ? { selDbg: _sel[0].dbg } : {}) } : {}) };
   }
+  if (_SEL && best) best.score = _lvl;   // LA SÉLECTION RÉORDONNE, ELLE NE RETIENT PAS (267) : le niveau lu par la barre d'adoption est celui d'hier — la réservation (« ne pas passer ») est un autre lot (Modèle 09 §9)
   return best;
 }
 

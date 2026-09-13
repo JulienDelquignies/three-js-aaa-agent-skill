@@ -441,6 +441,23 @@ lot suivant). Clé absente : l'omniscience d'hier au bit. Banc : bloc 266 (la la
 dos, le marqueur intact, sabotage). Sonde : `scripts/book/sonde-266.mjs`. Fiches : `M07-pression-lignes-de-passe.md`,
 `M04-perception-cognition.md`.
 
+### La sélection calibrée du passeur (lot 267, `cfg.selection` — `selection.js`)
+
+Le barème de `choosePass` jugeait la passe en mètres sans nommer sa probabilité. Le 267 pose (1) **la classe nommée**
+(`classeNommee` : les douze du book — SHORT/MID/LONG_GROUND, CHANNEL, THROUGH, CHIP_THROUGH, SWITCH, CROSS, CUTBACK,
+LAY_OFF, ONE_TWO_RETURN, BACK_SAFE — par les drapeaux du choix, la distance et le sens), (2) **P_succ prédit** (`pSuccDe`
+: P_rel (la sortie de balle sous la pression du porteur) × S (`survieDe` — la survie de Spearman à la plus courte
+approche : par défenseur la logistique σ 0,45 s du temps d'arrivée et le taux de prise λ 4,3 sur une fenêtre 0,25 s,
+`survie: 'max'` = le seul défenseur affecté) × PPCF_r (la compétition terminale au point de chute, avantage 0,3 s au
+receveur servi) × P_ctrl (le 265)), (3) **le calage log-odds par classe** (`calage[cls] = [α, β]`, ajusté DATÉ 267 sur
+1 469 passes du monde d'hier — β 0,26-0,47 : la factorisation crue est omnisciente, test 2 du book), (4) **le terme au
+barème** poids × ρ × (logit P̂ − logit p0), ρ = axe(mentalité, 1,5 → 0,5) × decF : LA SÉLECTION RÉORDONNE, ELLE NE RETIENT
+PAS (le niveau lu par la barre d'adoption reste le meilleur barème nu d'hier), (5) **le journal** : l'événement pass porte
+`cls`, `pSucc`, `pBrut`. Mesuré 4 × 45 min : réussite 80 → 81 % (réel 80-83), 89 / 84 / 73 / 59 → 88 / 83 / 77 / 60 par tranche (la tranche 15-30 yd que le 266 nommait), bloquées 4 %, tirs 16,3 → 17,3 ; fiabilité ECE 0,020 (< 0,025), log-loss 0,414 (constante 0,545 battue, Logistic Net 0,384 pas atteint) ; la consigne : mentalité 0 joue ses longues à 66 %, mentalité 1 à 53 % (plus de renversements et de profondeur). Clé absente : le barème d'hier au bit. Banc : bloc 267 (les
+douze classes, la survie, la monotonie, le calage identité / daté, ρ × 3, choosePass sous la clé, sabotage). Sonde :
+`scripts/book/sonde-267.mjs` (les classes, la fiabilité ECE / log-loss en 10 bacs, la part arrière). Fiches :
+`M09-modele-passe.md`, `M07-pression-lignes-de-passe.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

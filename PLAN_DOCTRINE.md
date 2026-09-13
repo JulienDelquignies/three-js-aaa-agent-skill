@@ -557,6 +557,14 @@ souvenir), et le passeur refuse ses lignes sur les défenseurs tels qu'il les cr
 lot 2 — P_succ prédit, l'appétit du risque), la logistique σ / λ comme lecture du passeur ; puis le duel comme vecteur
 (Modèle 11), le ballon qui sort et le temps du match.
 
+**267 — LA SÉLECTION CALIBRÉE DU PASSEUR : SCELLÉ (345).** La passe est un type somme (douze classes nommées du Modèle 09),
+sa probabilité est PRÉDITE (P_rel × la survie de Spearman × la compétition au point de chute × le contrôle du 265) puis
+CALÉE par classe (log-odds α_c, β_c ajustés sur 1 469 passes du monde d'hier — les 24 nombres de la triche, localisés), et
+le barème la lit : poids × ρ(consigne mentalité × decF) × (logit P̂ − logit p0), une sélection qui réordonne sans retenir.
+Mesuré 4 × 45 min : réussite 80 → 81 % (réel 80-83), 15-30 yd 73 → 77 (réel 82-87), fiabilité ECE 0,020 (< 0,025), log-loss 0,414 (la constante 0,545 battue, le Logistic Net 0,384 non atteint) ; la consigne s'entend : mentalité 0 réussit ses longues à 66 %, mentalité 1 à 53 %. Ce qu'il nomme : la factorisation crue omnisciente (β < 0,85 — P_succ doit devenir la
+LECTURE du moteur par lui-même : la course de refus du 266, q̂_k), ρ par rôle, la réservation « ne pas passer » (§9), la
+comptabilité des pertes (lot 4) ; puis le duel comme vecteur (Modèle 11), le ballon qui sort et le temps du match.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

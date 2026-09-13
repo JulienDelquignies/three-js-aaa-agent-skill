@@ -696,7 +696,7 @@ export function strikeNow(st, c, cfg) {
   const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
     // (256) by canonique — l'alias from est tombé au 257 ; sansCible : le ballon expédié sans destinataire (dégagement, urgence) — pas une passe manquée
-    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(c._croyPasse ? { croyErr: +c._croyPasse.err.toFixed(2), croyAge: +c._croyPasse.age.toFixed(2), croySigma: +c._croyPasse.sigma.toFixed(2) } : {}), ...(choice.to.id < 0 ? { sansCible: true } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
+    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(c._croyPasse ? { croyErr: +c._croyPasse.err.toFixed(2), croyAge: +c._croyPasse.age.toFixed(2), croySigma: +c._croyPasse.sigma.toFixed(2) } : {}), ...(choice.to.id < 0 ? { sansCible: true } : {}), ...(choice.cls ? { cls: choice.cls, pSucc: +choice.pSucc.toFixed(3), pBrut: +choice.pBrut.toFixed(3), pAlt: +choice.pAlt.toFixed(3), ...(choice.selDbg ? { selDbg: choice.selDbg } : {}) } : st.full && cfg.selection && choice.cross ? { cls: 'CROSS' } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure
