@@ -458,6 +458,26 @@ douze classes, la survie, la monotonie, le calage identité / daté, ρ × 3, ch
 `scripts/book/sonde-267.mjs` (les classes, la fiabilité ECE / log-loss en 10 bacs, la part arrière). Fiches :
 `M09-modele-passe.md`, `M07-pression-lignes-de-passe.md`.
 
+### Le noyau commun de duel (lot 268, `cfg.noyau` — `noyau.js`)
+
+Hier le take-on se résolvait par la géométrie et des tirages épars : tout geste « vendu » mordait le défenseur, le petit
+pont tirait à la note, la dépossession venait par la physique — ni faute obtenue, ni sortie en touche, ni gradient
+spatial. Le 268 juge le take-on UNE fois, au contact du geste de dribble (passement, crochet, double contact, petit pont,
+roulette) contre un homme (`noyauAuContact`) : un **multinomial log-linéaire à huit issues** (franchi / franchi + faute
+obtenue / franchi + sortie / neutre + touche / neutre / dépossédé / dépossédé + faute / dépossédé + sortie — `ISSUES`),
+un score de franchissement s sur les **features du book** (`featuresDe` : la marge μ* du **disque d'atteinte** de
+Fujimura-Sugihara — `disqueDe`, α re-ajusté pour que R(1 s) soit la course du profil du moteur, `margeDe` sur l'éventail
+de 9 points à 2-5 m ; la vitesse relative, le désalignement du buste du défenseur, la distance à la touche, la pression
+secondaire, la distance au but, les défenseurs dans le cône de 3 m, a_A − a_D bornés à ± 0,7), des intercepts b_o
+**recuits DATÉ 268** sur 148 take-ons du moteur (`cfg.noyau.b` — les parts marginales tombent sur celles du book), le
+tirage Gumbel-max sur le flux 'duel' (`tirerIssue`). Les conséquences (`appliquerNoyau`, appelé par le pas de jeu) :
+franchi = la morsure d'hier ; franchi + faute = la faute posée (l'avantage la joue) ; les sorties poussent le ballon en
+touche à moins de 8 m de la ligne (sinon remappées, nommées) ; neutre = le statu quo ; dépossédé = le transfert physique
+(`receive`). Le journal : l'événement duel kind 'take-on' (issue, μ*, bande x, couloir). Mesuré 8 × 45 min : take-ons jugés 19 / match (réel 25) — franchi 54 % (book 59,4), dépossédé 28 (27,1), faute obtenue 14 (9-14), en touche 5 (12-19 : les take-ons du moteur vivent loin de la ligne, remappés, dette) ; le gradient 62 / 58 / 63 / 34 / 38 / 17 % par bande (book 0,68 → 0,41 : la pente y est, ≥ 0,20) ; l'ancienne métrique (gardé à 1,5 s) 23 → 27 %, faute 2 → 12, perdu 74 → 61 ; fautes 10 → 12,2 / match (réel 21,4).
+Clé absente : la géométrie d'hier au bit. Banc : bloc 268 (les intercepts du book, le disque à 1 s, μ* loin / sous le
+nez, la monotonie en μ, le gradient, la sortie contre la ligne, Σ p = 1, Gumbel forcé, le contact, les conséquences,
+sabotage). Sonde : `scripts/book/sonde-268.mjs`. Fiches : `M11-duels-stochastiques.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

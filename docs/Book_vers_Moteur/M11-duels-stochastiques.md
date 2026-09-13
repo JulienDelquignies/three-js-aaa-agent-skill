@@ -34,9 +34,9 @@ stagger ; le volume de contests (Bible 15 D1-D2).
 | # | Cible (book) | Statut | Mesuré (2 × 90 min) |
 |---|---|---|---|
 | 1 volume de duels | 200-265 ; 141,5 : 49,7 : 41,2 | Bible 15 : aériens **10**, au sol **182** (glissés) — le rapport est inversé |
-| 2 gradient spatial du dribble | 0,680 → 0,414 | mesurable, **réfuté** | **22 / 24 / 18 / 18 %** — plat et bas |
+| 2 gradient spatial du dribble | 0,680 → 0,414 | mesurable, **tenu au 268** : 62 / 58 / 63 / 34 / 38 / 17 % par bande (20-30 → 90-100), pente 0,45 ≥ 0,20 (8 × 45 min, 155 take-ons) | avant : **22 / 24 / 18 / 18 %** — plat et bas |
 | 3 axe / couloir | 0,03-0,14 | à instrumenter |
-| 4 issues du take-on | faute 9-14, touche 12-19, franchi + faute ≤ 0,62 | mesurable, **réfuté** | gardé **21 %**, faute **0,8 %**, touche **0 %**, perdu **78 %** ; 199 gestes / match (réel ≈ 40) |
+| 4 issues du take-on | faute 9-14, touche 12-19, franchi + faute ≤ 0,62 | mesurable, **tenu au 268** : faute obtenue **14 %**, en touche **5 %** (loin de la ligne, remappées — dette), franchi net + faute 54 % ≤ 0,62 ; 19 take-ons / match | avant : gardé **21 %**, faute **0,8 %**, touche **0 %**, perdu **78 %** ; 199 gestes / match (dont ~20 gestes de dribble contre un homme) |
 | tacle, aérien, second ballon | | Bible 15 D3, D10, D12, D20-D24 |
 
 ## 4. Les lots que la fiche appelle
@@ -44,5 +44,9 @@ stagger ; le volume de contests (Bible 15 D1-D2).
 1. **Le noyau commun de duel** (tests 1-4 ; Bible 15 lot 1) : issues à cinq états, features de contexte,
    intercepts calés sur les agrégats — le dribble gagne 68 % près de son but et 41 % près du but adverse, obtient
    une faute une fois sur dix.
+   → **SCELLÉ 268** (`noyau.js`, `cfg.noyau`, NOTES 346) : le multinomial log-linéaire à huit issues au contact du geste
+   de dribble, μ* du disque d'atteinte, les features du book, les intercepts recuits sur 148 take-ons du moteur, le
+   Gumbel-max sur le flux 'duel', les conséquences (faute posée, touche, dépossession physique). Mesuré : faute obtenue **14 %**, en touche **5 %** (loin de la ligne, remappées — dette), franchi net + faute 54 % ≤ 0,62 ; 19 take-ons / matchb.
+   Le tacle et l'aérien par le même noyau, le bruit OU de forme, la course de coupe : nommés.
 2. **Le volume et la nature des gestes** (test 4 ; Bible 14 lot 2) : 199 → 40 par match, le tacle glissé rare.
 3. **La tromperie dans le dribble** (Bible 14 lot 2, Modèle 04 lot 4) : le défenseur qui part du mauvais côté.

@@ -33,6 +33,7 @@ import { draw, tirage, FLUX } from '../assets/starter/src/engine/rng.js';
 import { pressionDe, toucheDe, pFailDe, budgetDe, classeDe, sigmaPasse, issueDe } from '../assets/starter/src/engine/reception.js';
 import { tauLecture, ecartCru, interceptionApply } from '../assets/starter/src/engine/interception.js';
 import { classeNommee, survieDe, pSuccDe, termeDe, CLASSES, logit as logitS } from '../assets/starter/src/engine/selection.js';
+import { ISSUES, PARTS_BOOK, B_BOOK, disqueDe, margeDe, featuresDe, logitsDe, probasDe, tirerIssue, noyauAuContact, appliquerNoyau } from '../assets/starter/src/engine/noyau.js';
 import { pasDecision, hzDecision, ticksDecision } from '../assets/starter/src/engine/cadence.js';
 import { planStrike } from '../assets/starter/src/engine/approach.js';
 import { TECHNIQUES } from '../assets/starter/src/engine/technique.js';
@@ -427,7 +428,7 @@ if (__bloc()) {
     const vs = [];
     for (const seed of [1, 3, 5, 7]) {   // 2 → 4 graines DATÉ 241 (gelé 2,29 c. vivant 2,37 sur 57 gestes : l'écart de 0,12 vit dans le bruit du p50)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), la statue qui frappe remangée (3,39 c. vivant 2,76 − 0,12) — la clause mesure la foulée de frappe, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la statue qui frappe remangée (3,51 c. vivant 2,74 − 0,12) — la clause mesure la foulée de frappe, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la foulée de frappe et son sabotage, pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la statue qui frappe remangée (3,76 c. vivant 3,33 − 0,12) — la clause mesure la foulée de frappe, pas la croyance */, shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ noyau: null /* noyau null DATÉ 268 : vert à HEAD~ (worktree b3276ae), la foulée de frappe remangée (le monde gelé 5,40 c. vivant − 0,12) : d'autres duels, d'autres frappes — la clause mesure sa loi, pas le noyau de duel */, passe: null /* passe null DATÉ 265 : vert à HEAD~ (worktree 1507550), la statue qui frappe remangée (3,39 c. vivant 2,76 − 0,12) — la clause mesure la foulée de frappe, pas la réception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), la statue qui frappe remangée (3,51 c. vivant 2,74 − 0,12) — la clause mesure la foulée de frappe, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la foulée de frappe et son sabotage, pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), la statue qui frappe remangée (3,76 c. vivant 3,33 − 0,12) — la clause mesure la foulée de frappe, pas la croyance */, shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
         for (const e of st.events) {
@@ -1336,7 +1337,7 @@ if (__bloc()) {
     const out = [];
     for (const seed of [2, 3, 5, 7]) {
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ selection: null /* selection null DATÉ 267 : vert à HEAD~ (worktree 7edf8fc), l'A/B du jockey remangé (50 c. 60) : le presseur court vers un autre porteur — la clause mesure sa loi, pas la sélection */, interception: null /* interception null DATÉ 266 : vert à HEAD~ (worktree 75c76ce), l'A/B du jockey remangé (54 c. 54 % dans le monde épinglé — hors des épingles la clé sépare encore 25 c. 64) — la clause mesure le jockey, pas l'interception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), l'arrivée sous contrôle remangée (48 c. 54 %) — la clause mesure le jockey, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la part des presseurs lancés (lot 95), pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), l'arrivée sous contrôle remangée (58 c. 56 % : l'écart de la minuterie d'hier ne se lit plus) — la clause mesure le jockey, pas la croyance */, repli: false, garde: false, shotRange: 20, ...over });
+      const cfg = matchCfg({ noyau: null /* noyau null DATÉ 268 : vert à HEAD~ (worktree b3276ae), l'A/B du jockey remangé (59 c. 49) : les take-ons jugés changent les courses du presseur — la clause mesure sa loi, pas le noyau de duel */, selection: null /* selection null DATÉ 267 : vert à HEAD~ (worktree 7edf8fc), l'A/B du jockey remangé (50 c. 60) : le presseur court vers un autre porteur — la clause mesure sa loi, pas la sélection */, interception: null /* interception null DATÉ 266 : vert à HEAD~ (worktree 75c76ce), l'A/B du jockey remangé (54 c. 54 % dans le monde épinglé — hors des épingles la clé sépare encore 25 c. 64) — la clause mesure le jockey, pas l'interception */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (worktree 9eee4ea), l'arrivée sous contrôle remangée (48 c. 54 %) — la clause mesure le jockey, pas le flux */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure la part des presseurs lancés (lot 95), pas le pas de décision */,  croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (worktree b5bd034), l'arrivée sous contrôle remangée (58 c. 56 % : l'écart de la minuterie d'hier ne se lit plus) — la clause mesure le jockey, pas la croyance */, repli: false, garde: false, shotRange: 20, ...over });
       const inD = new Set();
       for (let i = 0; i < 200 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -2272,7 +2273,7 @@ if (__bloc()) {
     let n3 = 0, tours = 0, gardes = 0;
     for (const seed of [1, 2, 5, 8, 3, 4, 6, 7]) {   // 4 → 8 graines DATÉ 237 (garde 4/8 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ interception: null /* interception null DATÉ 266 : vert à HEAD~ (worktree 75c76ce), les roulettes remangées (2 c. 3 sur 8 × 300 s : un compte) — la clause mesure la roulette, pas l'interception */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le compte des roulettes (117), pas le pas de décision */,  couvert: false, cpaMontee: false, remise: false, relance: false, dribble: false, shotRange: 20, ...over });
+      const cfg = matchCfg({ noyau: null /* noyau null DATÉ 268 : vert à HEAD~ (worktree b3276ae), la roulette remangée (garde 1/3 c. 60 %) : sous le noyau, une roulette sur quatre est dépossédée au contact — la clause mesure le geste d'hier, qui gardait toujours — la clause mesure sa loi, pas le noyau de duel */, interception: null /* interception null DATÉ 266 : vert à HEAD~ (worktree 75c76ce), les roulettes remangées (2 c. 3 sur 8 × 300 s : un compte) — la clause mesure la roulette, pas l'interception */, cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le compte des roulettes (117), pas le pas de décision */,  couvert: false, cpaMontee: false, remise: false, relance: false, dribble: false, shotRange: 20, ...over });
       const marks = [];
       let spinWatch = null;
       for (let i = 0; i < 300 * 60; i++) {
@@ -2486,7 +2487,7 @@ if (__bloc()) {   // passation null DATÉ 252 sur tout le bloc : vert à HEAD, d
     const outs = [], gardes = [];
     for (const seed of [1, 2, 4, 5, 7, 8]) {   // 3 → 6 graines DATÉ 240 (2 sur 3 : Poisson)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (le corps démarre en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre) contreZones:false DATÉ 242 — 121 hors contres (plancher 1,3 c. 1,4 sur 7 tours)
+      const cfg = matchCfg({ noyau: null /* noyau null DATÉ 268 : vert à HEAD~ (worktree b3276ae), la roulette remangée (plancher 1,4 m/s au bord) : le noyau juge la roulette au contact, une dépossédée n'est plus un tour plein — la clause mesure sa loi, pas le noyau de duel */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (worktree 8ff0842), la fixture remangée par le profil locomoteur (le corps démarre en 2,3 τ) — la clause mesure son mécanisme, pas la locomotion */, passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false, shotRange: 20, ...iso, ...(over ? { skill: { ...matchCfg({ passation: null, contreZones: false, couloirs: false, hommeLibre: false, referme: false, avantContact: false, repli: false, garde: false, repli: false, dribble: false }).skill, ...over } } : {}) });   // couloirs:false DATÉ 241 — 121 : la roulette mesurée hors couloirs (plancher 1,3 c. 1,4 sur 11 tours avec le registre) contreZones:false DATÉ 242 — 121 hors contres (plancher 1,3 c. 1,4 sur 7 tours)
       let cursor = 0; const watch = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -3034,7 +3035,7 @@ if (__bloc()) {
     let gk = 0, cornerClear = 0;
     for (const seed of [1, 2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]) {   // 6 → 12 graines DATÉ 240 (corner de panique 4 c. 2 : Poisson)   // élargi 205 (2/4/0 sur 3 graines = ±1 re-roule tout)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ contreZones: false, contrePress: false, referme: false, marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });   // contreZones:false DATÉ 242 — 136 hors contres (corner de panique 5 c. 4 sur 12 : Poisson)
+      const cfg = matchCfg({ noyau: null /* noyau null DATÉ 268 : vert à HEAD~ (worktree b3276ae), la sortie au gardien remangée (3 c. 4 sur 6 × 300 s) : d'autres duels, d'autres possessions — la clause mesure sa loi, pas le noyau de duel */, contreZones: false, contrePress: false, referme: false, marquageSurface: false, cpaMontee: false, remise: false, relance: false, repli: false, ...ISO171, shotRange: 20, ...ISO142, ...over });   // contreZones:false DATÉ 242 — 136 hors contres (corner de panique 5 c. 4 sur 12 : Poisson)
       let cursor = 0; const pend = [];
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -6554,6 +6555,52 @@ if (__bloc()) {
     clOk && s0 === 1 && sLoin >= 0.99 && Math.abs(sPose - sAttendu) < 0.02 && Math.abs(sDeux.max - sPose) < 0.03 && sDeux.prod < sDeux.max - 0.1 && pLoin > pMi && pMi > pPres && pLoin - pPres > 0.2 && calOk && Math.abs(t0) < 1e-12 && Math.abs(tD / tO - 3) < 1e-9 && tD < 0);
   ok(`lot 267 — …et LE MONDE : choosePass sous la clé porte la classe (${best?.cls}) et P̂ (${best?.pSucc?.toFixed(2)}), élit le receveur au couloir libre (nº${best?.to?.id} = A nº${A.id}, P̂ ${best?.pSucc?.toFixed(2)} ≥ 0,7) ; sabotage « selection null » : le même receveur sans classe ni probabilité (nº${bestN?.to?.id}, ${bestN?.cls === undefined && bestN?.pSucc === undefined}) ; 150 s de match : ${nC}/${nP} passes portent leur classe (≥ 80 %), ${nS} leur P̂ (≥ 50 %)`,
     !!best && best.cls === 'SHORT_GROUND' && best.to.id === A.id && best.pSucc >= 0.7 && !!bestN && bestN.to.id === A.id && bestN.cls === undefined && bestN.pSucc === undefined && nP >= 20 && nC / nP >= 0.8 && nS / nP >= 0.5);
+}
+
+// ---------------------------------------------------------------- lot 268 : LE NOYAU COMMUN DE DUEL
+// (cfg.noyau — Modèle 11 lot 1 : §2 le multinomial log-linéaire, §3 le dribble ; Bible 15)
+if (__bloc()) {
+  // (a) les lois pures : les intercepts du book (b_FRANCHI = 0, exp(b) ∝ les parts) ; le disque d'atteinte à 1 s = la
+  // distance courue en 1 s par le profil du moteur (+ l'allonge) ; la marge μ* positive loin du défenseur, négative sous
+  // son nez ; le score monte avec μ (+ 0,6 / m), la part franchie baisse vers le but adverse (le gradient) et la sortie
+  // se lève près de la ligne ; les probabilités somment à 1 ; le tirage Gumbel-max rend l'issue forcée ; (b) le monde :
+  // le contact d'un passement contre un homme journalise le duel (issue, μ*, bande) ; les conséquences — dépossédé :
+  // le défenseur reçoit et le geste s'interrompt ; franchi + faute : la faute posée par le défenseur ; neutre + touche
+  // à 3 m de la ligne : le ballon file en touche pour l'attaquant ; loin de la ligne, l'issue se remappe ; (c) 300 s de
+  // match : des take-ons jugés, sabotage « noyau null » : aucun duel de take-on, les gestes vivent.
+  const K = matchCfg({}).noyau, cfg = matchCfg({ shotRange: 20 });
+  const bOk = B_BOOK[0] === 0 && B_BOOK.every((b, i) => Math.abs(Math.exp(b) / Math.exp(B_BOOK[5]) - PARTS_BOOK[i] / PARTS_BOOK[5]) < 1e-9) && ISSUES.length === 8;
+  const q0 = { p: [0, 0, 0], v: [0, 0], yaw: 0, skill: null, team: 1, down: 0 }, D1 = disqueDe(q0, 1, K, cfg);
+  const acc = cfg.accel ?? 7.5, top = cfg.speeds?.chase ?? 6.4, tTop = top / acc, d1 = tTop < 1 ? top * top / (2 * acc) + top * (1 - tTop) : 0.5 * acc;   // la distance courue en 1 s par le profil
+  const disqueOk = Math.abs(D1.R - K.rho - d1) < 0.35 && D1.cx === 0;
+  const st = makeMatch({ full: true, seed: 5 }); st.restart = null;
+  for (const q of st.players) { q.v = [0, 0]; q.down = 0; q.p[0] = q.team === 0 ? -45 : 45; q.p[2] = (q.id % 11) * 5 - 25; }
+  const c = st.players.find((q) => q.team === 0 && q.post === 7), q = st.players.find((q) => q.team === 1 && !q.keeper && q.post === 5);
+  c.p[0] = 0; c.p[2] = 0; c.yaw = 0; c.v = [4, 0]; q.p[0] = 20; q.p[2] = 0; q.yaw = Math.PI;
+  const muLoin = margeDe(c, q, K, cfg); q.p[0] = 1.2; const muPres = margeDe(c, q, K, cfg);
+  const f = featuresDe(st, c, q, K, cfg), pr = (ff) => probasDe(logitsDe(ff, K)), P = pr(f), Pmu = pr({ ...f, mu: f.mu + 1 }), Pbut = pr({ ...f, x: 0.95 }), Pown = pr({ ...f, x: 0.25 }), Pligne = pr({ ...f, near: 1 });
+  const fr = (p) => p[0] + p[1] + p[2], so = (p) => p[2] + p[3] + p[7];
+  const somme = P.reduce((a, b) => a + b, 0), lmu = logitsDe({ ...f, mu: f.mu + 1 }, K)[0] - logitsDe(f, K)[0];
+  const force = (k) => { let i = 0; return tirerIssue(logitsDe(f, K), () => (i++ === k ? 0.999999 : 0.5)); };
+  const tirOk = ISSUES.every((I, k) => force(k) === I);
+  // le monde : le contact d'un passement contre q à 1,2 m
+  st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.ball.restart([0.4, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id); st.t = 10;
+  const n0 = st.events.length, N = noyauAuContact(st, c, { skill: 'passement', foeId: q.id }, cfg), ev = st.events[n0];
+  const contactOk = !!N && ISSUES.includes(N.issue) && N.q === q && ev?.type === 'duel' && ev.kind === 'take-on' && ev.issue === N.issue && Number.isFinite(ev.mu) && ev.x >= 0 && ev.x <= 1;
+  let recu = -1, aborts = 0; const rec = (s2, id) => { recu = id; }, ab = () => { aborts++; };
+  st._noyau = { issue: 'DEPOSSEDE', q, p: c.id, f, franchi: false }; appliquerNoyau(st, cfg, rec, ab); const depOk = recu === q.id && aborts === 1;
+  st._faute = null; st._noyau = { issue: 'FRANCHI_FAUTE', q, p: c.id, f, franchi: true }; appliquerNoyau(st, cfg, rec, ab); const fauteOk = st._faute?.par === q.id && st._faute?.sur === c.id && st._faute?.kind === 'take-on'; st._faute = null;
+  c.p[2] = (st.pitch.hz ?? 34) - 3; st.ball.restart([c.p[0] + 0.4, 0.11, c.p[2]], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id); st.phase = 'carry'; st.possession = { team: 0, carrier: c.id };
+  st._noyau = { issue: 'NEUTRE_TOUCHE', q, p: c.id, f, franchi: false }; appliquerNoyau(st, cfg, rec, ab); const toucheOk = st.lastTouch === q.team && st.ball.v[2] > 5 && st.phase === 'loose';
+  c.p[2] = 0; st.ball.restart([0.4, 0.11, 0], { cause: 'coup-franc' }); st.restart = null; st.ball.possess(c.id); st.phase = 'carry'; st.possession = { team: 0, carrier: c.id };
+  let remaps = 0, n2 = 0; for (let k = 0; k < 40; k++) { const M = noyauAuContact(st, c, { skill: 'crochet', foeId: q.id }, cfg); n2++; if (st.events[st.events.length - 1].remap) remaps++; if (/SORTIE|TOUCHE/.test(M.issue)) remaps = -99; }
+  const m2 = makeMatch({ full: true, seed: 5 }), m3 = makeMatch({ full: true, seed: 5 }), cfgN = matchCfg({ shotRange: 20, noyau: null });
+  for (let i = 0; i < 300 * 60; i++) { matchStep(m2, 1 / 60, cfg); matchStep(m3, 1 / 60, cfgN); }
+  const T2 = m2.events.filter((e) => e.type === 'duel' && e.kind === 'take-on'), T3 = m3.events.filter((e) => e.type === 'duel' && e.kind === 'take-on'), G3 = m3.events.filter((e) => e.type === 'skill' && ['passement', 'crochet', 'doubleContact', 'petitPont', 'roulette'].includes(e.kind));
+  ok(`lot 268 — LE NOYAU COMMUN DE DUEL (lois pures) : les intercepts du book (b_FRANCHI = 0, exp(b) ∝ ${PARTS_BOOK.map((x) => (100 * x).toFixed(1)).join(' / ')} %) ; le disque d'atteinte à 1 s : rayon ${(D1.R - K.rho).toFixed(2)} m = la course du profil ${d1.toFixed(2)} ± 0,35 (+ allonge ${K.rho}) ; μ* ${muLoin.toFixed(2)} m loin du défenseur (> 1) c. ${muPres.toFixed(2)} sous son nez (< 0) ; + 1 m de marge = + ${lmu.toFixed(2)} log-odds (w.mu ${K.w.mu}), la part franchie ${(100 * fr(P)).toFixed(0)} → ${(100 * fr(Pmu)).toFixed(0)} % ; le gradient : ${(100 * fr(Pown)).toFixed(0)} % à 25 % du terrain c. ${(100 * fr(Pbut)).toFixed(0)} % à 95 % ; les sorties ${(100 * so(P)).toFixed(0)} → ${(100 * so(Pligne)).toFixed(0)} % contre la ligne ; Σ p = ${somme.toFixed(6)} ; Gumbel-max forcé rend chaque issue`,
+    bOk && disqueOk && muLoin > 1 && muPres < 0 && Math.abs(lmu - K.w.mu) < 1e-9 && fr(Pmu) > fr(P) && fr(Pown) > fr(Pbut) + 0.1 && so(Pligne) > so(P) + 0.1 && Math.abs(somme - 1) < 1e-9 && tirOk);
+  ok(`lot 268 — …et LE MONDE : le contact du passement contre l'homme journalise le duel (${ev?.issue}, μ* ${ev?.mu} m, bande ${ev?.x}) ; dépossédé → le défenseur reçoit (nº${recu} = nº${q.id}) et le geste s'interrompt ; franchi + faute → la faute posée par nº${q.id} (${fauteOk}) ; neutre + touche à 3 m de la ligne → le ballon file en touche pour l'attaquant (${toucheOk}) ; loin de la ligne ${remaps} remappées sur ${n2} sans sortie ; 300 s : ${T2.length} take-ons jugés (≥ 2), sabotage « noyau null » : ${T3.length} = 0 et ${G3.length} gestes vivent (≥ 2)`,
+    contactOk && depOk && fauteOk && toucheOk && remaps >= 0 && T2.length >= 2 && T3.length === 0 && G3.length >= 2);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

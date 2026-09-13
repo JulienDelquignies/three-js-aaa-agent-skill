@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
@@ -106,7 +106,7 @@ function stepGestures(st, dt, cfg) {
     if (evg === 'contact') {
       const K = p.act?.payload?.kind; if (K === 'pass') strikeNow(st, p, cfg); else if (K === 'touche') throwNow(st, p, cfg); else if (K === 'elan') cfg.elanNow?.(st, p, cfg, receive);   // le lâcher de la touche (A9), la prise d'élan (A9 bis)
       else if (K === 'tacle-debout') standTackleNow(st, p, cfg);
-      else if (p.act?.payload?.kind === 'skill') skillContactNow(st, p, cfg);
+      else if (p.act?.payload?.kind === 'skill') { skillContactNow(st, p, cfg); if (st._noyau) appliquerNoyau(st, cfg, receive, (x) => abortGesture(x, 'noyau', { log: st.gestures })); }   // (268) le noyau de duel applique ses conséquences
     } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
       // la fin d'un geste technique STAMPE ses mesures — le banc juge la sim, pas une trace échantillonnée
       const A = actBefore.payload;

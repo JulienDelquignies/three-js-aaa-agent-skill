@@ -11255,6 +11255,94 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      lignes (la clé selection fondue sur la ligne piege). Sceau : commit 045edfd, poussé ; déploiement showcase-pi-mocha au
      quatrième essai (cmp du chunk Rondo servi = construit). Vient le duel comme vecteur (Modèle 11), puis le
      ballon qui sort et le temps du match.
+- 346: LE NOYAU COMMUN DE DUEL (268 — la carte du book : Modèle 11 lot 1, §1.2 le budget de duels,
+     §2 le noyau log-linéaire, §3 le dribble ; Bible 15). Sonde AVANT (sonde-268 : les gestes de
+     dribble contre un homme, l'ancienne métrique « gardé à 1,5 s », les huit issues du noyau, le
+     gradient par bande, le contraste axe / couloir ; 8 × 45 min, graines 3-29) : 22 gestes de
+     dribble / match dont 18 contre un homme à moins de 2,2 m (réel 25 take-ons déclarés — le « 199
+     gestes » de la fiche comptait toutes les feintes), gardé 23 %, faute obtenue 2 %, touche 0 %,
+     perdu 74 % ; fautes 10 / match (réel 21,4), touches 10 (réel 37-44), tirs 17,6, buts 2,4. Le
+     take-on d'hier était résolu par la géométrie et des tirages épars : tout geste « vendu »
+     MORDAIT le défenseur sans tirage (passement, crochet chaloupé, double contact, roulette), le
+     petit pont tirait sa réussite à la note, et la dépossession venait plus tard par la physique
+     (tacle debout, pique, prise) — ni faute obtenue, ni sortie en touche, ni gradient spatial. LA
+     LOI (noyau.js, cfg.noyau && st.full) : au CONTACT d'un geste de dribble contre un homme (le foe
+     du geste ou le plus proche à moins de 2,2 m), le duel se juge UNE fois — (1) LES HUIT ISSUES du
+     book (franchi 44,6 / franchi + faute obtenue 11,6 / franchi + sortie 3,2 / neutre + touche 10,0
+     / neutre 3,3 / dépossédé 24,1 / dépossédé + faute 0,7 / dépossédé + sortie 2,3 %) ; (2) LE
+     SCORE DE FRANCHISSEMENT s = Σ w·f — la MARGE μ* du disque d'atteinte de Fujimura-Sugihara
+     (centre x_d + A(α,t) v_d, rayon V_max (t − A) + ρ_d 0,95 ; α 2,05 re-ajusté pour que R(1 s)
+     soit la course du profil du moteur, 3,67 m — le piège du book : jamais l'α de Narizuka avec un
+     V_max physiologique ; l'éventail de 9 points à 2-5 m devant le dribbleur à ± 75°, le disque
+     évalué quand le ballon y passe, τ = d / v_a ≤ 1,2 s), 0,6 / m ; la vitesse relative 0,15 / m/s
+     ; le désalignement du buste du défenseur 0,5 / rad ; la distance à la touche 0,04 / m ; la
+     pression secondaire − 0,25 par défenseur à moins de 6 m ; la distance au but − 0,9 (x − 0,6) ;
+     les défenseurs dans le cône de 3 m − 0,4 ; a_A − a_D (les composites du book sur les facteurs
+     du moteur : gesteF, agilité, dribbleLeadF, controlF, flair c. tackleReach, posF, agilité,
+     anticipF, chargeF) × 0,35, bornés à ± 0,7 log-odds ; la sortie + 1,5 × (1 − d_touche / 8) ; (3)
+     LES INTERCEPTS b_o initialisés aux parts du book (B_BOOK = ln(part / part_franchi)) puis
+     RECUITS sur les données du moteur (148 take-ons journalisés, 8 × 45 min : b_o += ln(cible /
+     part prédite), 200 tours — les parts marginales tombent sur celles du book au dixième ; b = [0,
+     −1,35, −2,84, −1,11, −2,02, +0,13, −3,41, −2,43] — le dépossédé monte de − 0,62 à + 0,13 : les
+     μ* du moteur sont négatifs à p50 (− 0,65 m), le score porte déjà la défaite) ; le poids du but
+     balayé 0,9 / 1,6 / 2,4 / 3,2 : les bandes prédites 0,82 → 0,41 / 0,86 → 0,36 / 0,90 → 0,30 /
+     0,93 → 0,26 — 0,9 gardé (le plus près du book aux bandes hautes, la densité fait le reste) ;
+     (4) LE TIRAGE Gumbel-max sur le flux 'duel' (huit uniformes, rejeu exact) ; (5) LES
+     CONSÉQUENCES (appliquerNoyau, au pas de jeu après le contact) : franchi = la morsure d'hier
+     (mord gate les _bite des gestes), franchi + faute = la faute POSÉE (st._faute par le défenseur,
+     arrache true : l'avantage la joue, Loi 5), les sorties = le ballon poussé en touche à 9 m/s si
+     la ligne est à moins de 8 m (NEUTRE_TOUCHE pour l'attaquant, les autres pour la défense ; sinon
+     l'issue se remappe franchi / neutre / dépossédé, nommée remap), neutre = le statu quo (aucune
+     morsure), dépossédé = le transfert physique d'aujourd'hui (le geste interrompu, receive →
+     turnover), dépossédé + faute = la faute de l'attaquant posée ; le petit pont lit l'issue
+     (réussi = franchi) ; (6) LE JOURNAL : l'événement duel kind 'take-on' (issue, μ*, x, couloir,
+     remap ; journal:true livre les features). Première marge : μ évaluée sur TOUT l'horizon (le min
+     sur 6 pas jusqu'à T) — le disque à 1,2 s fait 5,8 m et tout point est dedans (p50 − 0,65 m, 22
+     take-ons / 2 matchs) ; corrigée : le disque au moment où le ballon passe au point (τ = d / v_a,
+     + 0,1 s de séjour). Mesuré APRÈS (8 × 45 min, 155 take-ons, 19 / match) : franchi 54 % (book
+     59,4), dépossédé 28 (27,1), faute obtenue 14 (9-14), en touche 5 (12-19 — les take-ons du
+     moteur vivent dans l'axe, 7 remappées sur 40 dans la fixture, dette nommée : la ligne comme
+     douzième défenseur attend des take-ons de couloir), neutre 14 (3,3 — la part des sorties
+     remappées), franchi net + faute 54 ≤ 0,62 ; LE GRADIENT par bande 20-30 / 30-50 / 50-70 / 70-80
+     / 80-90 / 90-100 : 62 / 58 / 63 / 34 / 38 / 17 % gagnés (book 0,680 → 0,414 : la pente 0,45 ≥
+     0,20, le monde d'hier était plat à 22 / 24 / 18 / 18), perdus 0 / 24 / 30 / 33 / 50 / 50 (book
+     0,20 → 0,35) ; le dernier tiers axe 40 % (15) c. couloir 39 % (31) — le contraste 0,076 du book
+     n'est pas là (d_side 0,04 / m ne sépare pas 15 c. 31 duels, dette de volume) ; l'ancienne
+     métrique : gardé 23 → 27 %, faute 2 → 12, perdu 74 → 61 ; fautes 10 → 12,2 / match (réel 21,4 —
+     le take-on est devenu un générateur de coups francs, 2,7 / match), jaunes 0,9 → 1,1, touches 10
+     = 10 (réel 37-44 : la dette des remises qui ne sortent jamais), tirs 17,6 → 16,8, buts 2,4 →
+     2,0. Jumeau : noyau null = HEAD au bit (fbab3fba2405194e / b1d6598a98b4a9f6 — le défaut du 267,
+     relu par git stash). Banc : verify-match11 bloc 268 (index 166 : les intercepts du book, le
+     disque à 1 s = 3,68 m = la course du profil 3,67, μ* 16,96 m loin c. − 0,57 sous le nez, + 1 m
+     = + 0,60 log-odds et 84 → 93 % franchi, le gradient 88 % à 25 % c. 75 % à 95 %, les sorties 11
+     → 37 % contre la ligne, Σ p = 1, Gumbel forcé rend chaque issue ; le monde : le contact du
+     passement journalise, dépossédé → le défenseur reçoit et le geste s'interrompt, franchi + faute
+     → la faute posée, neutre + touche à 3 m → en touche pour l'attaquant, loin de la ligne 7 / 40
+     remappées, 300 s : 8 take-ons, sabotage noyau null : 0 et les gestes vivent). Ce qu'il nomme :
+     le volume et la nature des gestes (Modèle 11 lot 2 — 19 c. 25, les touches), la tromperie (lot
+     3), le tacle debout et le glissé par le même noyau (§4.2 : le glissé ne récupère pas mieux, 3,3
+     imposés par équipe), l'aérien (§5), le bruit OU de forme (τ 240 s), l'inclinaison du buste (pas
+     de pose 3D), la jambe d'appui (poids nul), la course de coupe (§7), le contraste axe / couloir.
+    
+     Banc complet (final268 : 8 shards + 25 annexes) : shards 295 ✓ / 7 ✗ — cinq rouges du monde
+     remangé (les take-ons jugés changent les duels au sol, les courses et les possessions), tous
+     verts à HEAD~ (worktree b3276ae) et épinglés PAR CONTENU « noyau: null DATÉ 268 », tous verts
+     isolés à HEAD : 95 (bloc 26, le jockey 59 c. 49), 136 (67, la sortie au gardien 3 c. 4), 121
+     (52, la roulette traverse — une dépossédée n'est plus un tour plein), 117 (46, la roulette
+     garde 1/3 c. 60 % : sous le noyau une roulette sur quatre est dépossédée au contact, la clause
+     mesure le geste d'hier qui gardait toujours), la foulée de frappe (7, le monde gelé 5,40 c.
+     vivant − 0,12). Hérités : « contres arrivés à l'entrée » (139), 246d (148 : 48 % c. ≥ 58, il
+     flotte). Annexes : attributes 26/1 → 27/0 (L171, l'horloge du pique remangée : tacleurs 90 3
+     armés c. 10 7 + 2), identification 0/1 → REGELÉ DATÉ 268 : 18 → 16 signatures (perdues LAT
+     A|profondeur, LAT D|largeurR, MIL A|tenue, AV A|tenue, AIL C|largeurR ; gagnées MDC
+     A|profondeur, AIL A|largeurR, AIL D|largeurR — la dette de volumétrie à 6 graines demeure) ;
+     frappes 13/0, gestes 60/0, match 84/0, menace 11/0, roles 14/0, rondo 40/0, sync 9/0, attente
+     42/0, cartons 6/0, contact 25/0, expulsion 8/0, football-rules 59/0, foulee 45/0, kit 5/0, loi3
+     10/0, part-tint 18/0, porte 4/0, remises 36/0, scan 5/0, slide 10/0, tactics 11/0, tete 7/0,
+     loi12 12/2 (hérité : « le mur se tient » 4,6 m + son sabotage). Bloc 1 seul 0.43 ms/step (≤ 1,6
+     — le noyau ne se paie qu'au contact). Copies : starter = showcase = soldier-volley (cmp) ;
+     match-sim, rondo-sim, match-config à 1249 lignes (la clé noyau fondue sur la ligne piege /
+     selection).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

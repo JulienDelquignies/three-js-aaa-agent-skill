@@ -565,6 +565,15 @@ Mesuré 4 × 45 min : réussite 80 → 81 % (réel 80-83), 15-30 yd 73 → 77 (r
 LECTURE du moteur par lui-même : la course de refus du 266, q̂_k), ρ par rôle, la réservation « ne pas passer » (§9), la
 comptabilité des pertes (lot 4) ; puis le duel comme vecteur (Modèle 11), le ballon qui sort et le temps du match.
 
+**268 — LE NOYAU COMMUN DE DUEL : SCELLÉ (346).** Le take-on se juge une fois, au contact du geste de dribble contre un
+homme, par le multinomial log-linéaire du Modèle 11 : huit issues du book, la marge de franchissement du disque d'atteinte
+(Fujimura-Sugihara, α re-ajusté au profil du moteur), les features du book, des intercepts recuits sur les données du
+moteur (les parts marginales du book), le Gumbel-max sur le flux 'duel' ; la faute obtenue, la touche et la dépossession
+sont des issues, plus des accidents de la physique. Mesuré 8 × 45 min : 19 take-ons / match (réel 25), franchi 54 % (book 59), dépossédé 28 (27), faute obtenue 14 (9-14), en touche 5 (12-19 : dette de la ligne), le gradient spatial 62 → 17 % (book 68 → 41, pente ≥ 0,20 tenue) ; fautes 10 → 12,2 / match. Ce qu'il nomme : le volume et la
+nature des gestes (lot 2), la tromperie (lot 3), le tacle et l'aérien par le même noyau, le bruit de forme (OU 240 s), la
+course de coupe, les touches du moteur (8-11 / match, réel 37-44 — les remises qui ne sortent jamais) ; puis le ballon
+qui sort et le temps du match.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

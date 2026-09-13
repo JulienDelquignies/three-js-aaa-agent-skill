@@ -10,6 +10,7 @@ import { BALL } from './ball.js';
 import { MOVES } from './animkit.js';
 import { situation, footFor } from './technique.js';
 import { tac, axe } from './tactics.js';
+import { noyauAuContact } from './noyau.js';
 import { role } from './roles.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
@@ -568,6 +569,10 @@ export function maybeFeinteFrappe(st, c, cfg, contested) {
  *  ralenti est la loi de movePlayers), la plante SE POSE (le point de parking se fige). */
 export function skillContactNow(st, p, cfg) {
   const A = p.act.payload;
+  // LE NOYAU COMMUN DE DUEL (268, cfg.noyau && st.full — doc noyau.js) : le take-on se juge UNE fois au contact, huit issues ; N.franchi gate la morsure d'hier, le pas de jeu applique le reste (st._noyau). Clé absente : la géométrie d'hier au bit.
+  const N = st.full && cfg.noyau && ['passement', 'crochet', 'doubleContact', 'petitPont', 'roulette'].includes(A.skill) ? noyauAuContact(st, p, A, cfg) : null;
+  if (N) { st._noyau = { ...N, p: p.id }; A.issue = N.issue; }
+  const mord = !N || N.franchi;
   if (A.skill === 'feinte') {
     const K = cfg.skill;
     const bitten = [];
@@ -592,7 +597,7 @@ export function skillContactNow(st, p, cfg) {
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];
-    if (foe && foe.down <= 0) { foe._bite = st.t + (K.passementBite ?? 0.4) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + (K.passementBite ?? 0.4) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
     st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement-vendu', by: p.id, bitten, foot: A.pick.foot });
     // la sortie est un DÉPART… selon son MODE : le contre-pied et le fixer partent en burst
     // nommé (le fixer PLUS fort — on fige puis on perce tout droit) ; TEMPORISER protège — pas
@@ -606,7 +611,7 @@ export function skillContactNow(st, p, cfg) {
       const K = cfg.skill;
       const foe = st.players[A.foeId ?? -1];
       const bitten = [];
-      if (foe && foe.down <= 0) { foe._bite = st.t + 0.35 * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+      if (foe && foe.down <= 0 && mord) { foe._bite = st.t + 0.35 * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet-vendu', by: p.id, bitten, foot: A.pick.foot });
     }
   } else if (A.skill === 'petitPont') {
@@ -616,7 +621,7 @@ export function skillContactNow(st, p, cfg) {
     const foe = st.players[A.foeId ?? -1];
     const pOk = Math.max(0.25, Math.min(0.85,
       (K.pontP ?? 0.55) * (p.skill?.gesteF ?? 1) + (((foe?.skill?.reaction ?? 0.22) - 0.22) * 1.2)));
-    const reussi = tirage(st, 'geste', p.id, st.rnd ?? (() => 0.5))() < pOk;
+    const reussi = N ? N.franchi : tirage(st, 'geste', p.id, st.rnd ?? (() => 0.5))() < pOk;   // (268) sous le noyau, l'issue du duel décide
     if (reussi && foe && foe.down <= 0) {
       // le ballon TRAVERSE (strike doux — release intégré, le vol est physique) ; le fermeur
       // MORD (se retourner contre son pas chassé coûte) ; le contournement est LANCÉ
@@ -641,7 +646,7 @@ export function skillContactNow(st, p, cfg) {
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];
-    if (foe && foe.down <= 0) { foe._bite = st.t + (K.rouletteBite ?? 0.3) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + (K.rouletteBite ?? 0.3) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
     st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'roulette-vendu', by: p.id, bitten, foot: A.pick.foot });
   } else if (A.skill === 'doubleContact') {
     // le TRANSFERT échappe au tacle : le jeté traverse l'endroit où le ballon N'EST PLUS —
@@ -649,7 +654,7 @@ export function skillContactNow(st, p, cfg) {
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];
-    if (foe && foe.down <= 0) { foe._bite = st.t + (K.doubleBite ?? 0.55) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + (K.doubleBite ?? 0.55) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
     // …et LA SORTIE EST LANCÉE (le même burst que le passement) : l'élimination réelle est
     // l'accélération — sans elle, le porteur freiné restait dans la zone du duel et le
     // ballon jaillissait en 50/50 (mesuré : 32/45 ballons libres à +1,5 s)
