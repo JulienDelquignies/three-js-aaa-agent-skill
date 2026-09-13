@@ -11162,7 +11162,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      9/0, tactics 11/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
      6/0, expulsion 8/0, football-rules 59/0, loi12 12/2 (hérité : « le mur se tient » 4,6 m + son
      sabotage). Bloc 1 seul 0.66 ms/step (≤ 1,6). Copies : starter = showcase = soldier-volley (cmp)
-     ; match-sim, rondo-sim, match-config à 1249 lignes.
+     ; match-sim, rondo-sim, match-config à 1249 lignes. Sceau : commit c3008a6, poussé ; déploiement showcase-pi-mocha au
+     premier essai (cmp du chunk Rondo servi = construit). Vient la sélection calibrée du passeur (Modèle 09 lot 2).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
