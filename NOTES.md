@@ -11342,7 +11342,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      loi12 12/2 (hérité : « le mur se tient » 4,6 m + son sabotage). Bloc 1 seul 0.43 ms/step (≤ 1,6
      — le noyau ne se paie qu'au contact). Copies : starter = showcase = soldier-volley (cmp) ;
      match-sim, rondo-sim, match-config à 1249 lignes (la clé noyau fondue sur la ligne piege /
-     selection).
+     selection). Sceau : commit 87ad96d, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo servi = construit). Vient le volume et la nature des gestes (Modèle 11 lot 2), puis le ballon qui sort
+     et le temps du match.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
