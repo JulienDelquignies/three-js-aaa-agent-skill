@@ -10,6 +10,7 @@ import { situation, chooseTechnique } from './technique.js';
 import { winding, abortGesture } from './gesture.js';
 import { predictPath } from './ball-predict.js';
 import { role } from './roles.js';
+import { glissePermis, fauteGlisse } from './nature.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
@@ -67,6 +68,8 @@ export function slideTackleStep(st, c, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'retenue-surface', by: foe.id });   // le refus NOMMÉ — comptable (télémétrie, clause)
     return;
   }
+  // LE GLISSÉ DE DERNIER RECOURS (269, cfg.nature.glisse && st.full — doc nature.js) : battu seulement, au taux imposé du book ; le refus coûte un cooldown personnel (il a CHOISI de rester debout) — après la retenue de surface (169), qui juge la première
+  if (st.full && cfg.nature?.glisse && !glissePermis(st, foe, cfg.nature.glisse, cfg)) { foe.slideCd = st.t + (cfg.nature.glisse.refusCd ?? 2); return; }
   const sit = situation(foe.p, foe.yaw, bp, st.ball.v, bp[1]);
   const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
   // LA TABLE ET LE COULOIR SE LISENT DEBOUT (lot 66 — mesuré post-gazon : 21 des 38 glissés
@@ -152,6 +155,7 @@ export function slideTackleStep(st, c, cfg) {
   // la glissade dans le vide : le porteur file, le pari est perdu au sol
   deny(st, 'glissé-dans-le-vide');
   st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: foe.id, won: false, tech: 'tacle-glisse', team: foe.team, atk: c.team, dist: +sit.dist.toFixed(2) });
+  if (st.full && cfg.nature?.glisse) fauteGlisse(st, foe, c, cfg.nature.glisse, cfg, chuter);   // (269) le vide à portée du corps est une faute au taux du book
 }
 
 /** LE CONTACT DU GLISSÉ (lot 51) : résout les tacles lancés — le pied ARRIVE sur le ballon
@@ -180,6 +184,7 @@ export function slideResolve(st, cfg) {
       st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
     } else {
       st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: q.id, won: false, tech: 'tacle-glisse', vide: true, team: q.team, dist: +d.toFixed(2) });
+      if (st.full && cfg.nature?.glisse) fauteGlisse(st, q, st.players[g.sur], cfg.nature.glisse, cfg, chuter);   // (269) le vide au contact, à portée du corps : la faute au taux du book
     }
   }
 }

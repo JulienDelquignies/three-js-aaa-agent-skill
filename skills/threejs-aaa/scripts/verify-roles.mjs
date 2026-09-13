@@ -154,7 +154,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const dCibleDe = (v, seed) => {
     const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { marqueSerre: v };
     const st = makeMatch({ full: true, seed, roles: [roles, null] });
-    const cfg = matchCfg({ shotRange: 20, croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (14/0 au 261), la cible du marqueur se pose sur sa CROYANCE de l'homme, la clause la mesure contre l'homme vrai (s7 0,49/0,70 c. × 1,5) — la clause mesure la consigne marqueSerre, pas la croyance */ });
+    const cfg = matchCfg({ shotRange: 20, nature: null /* nature null DATÉ 269 : vert à HEAD~ (14/0 au 268), le marqueserré remangé (graine 7 sans épisode : 99/99) — la clause mesure la consigne, pas la nature des gestes */, croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (14/0 au 261), la cible du marqueur se pose sur sa CROYANCE de l'homme, la clause la mesure contre l'homme vrai (s7 0,49/0,70 c. × 1,5) — la clause mesure la consigne marqueSerre, pas la croyance */ });
     const sgn = Math.sign(st.pitch.attackGoal(1).x || 1);
     const c1 = st.players.find((p) => p.team === 1 && p.post === 5);
     c1.p[0] = 0; c1.p[2] = 0;

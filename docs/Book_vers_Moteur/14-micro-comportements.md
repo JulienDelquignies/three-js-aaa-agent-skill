@@ -68,7 +68,7 @@ humain comme objet.
 | T10-T11ter effet du scan c. pression | scan ≤ 3 pts ; OR 1,64 c. 1,13 | sans objet : le scan n'a d'effet que sur le corps ouvert |
 | T12 `BACK` sous pression | 35-55 % | mesurable, **tenu** | **38 %** (408 réceptions à < 2,5 m) |
 | T13 demi-tour lancé | 1,7-2,2 s | à instrumenter (locomotion : le yaw tourne à sa vitesse propre) |
-| T15 take-ons des spécialistes | 41-54 % | mesurable, **volume faux** | **199 gestes / match** (réel ≈ 40), réussite 37 % ; T15bis meilleur / médian **2,8** (cible ≥ 5) — tout le monde dribble |
+| T15 take-ons des spécialistes | 41-54 % | mesurable, **T15bis tenu au 269** : le meilleur / le médian **7-11** (≥ 5 ; 8 × 45 min), 35-39 gestes de dribble / match (≈ 40), 19-21 take-ons (25) | avant : **199 gestes / match** (toutes feintes comprises ; 28-39 gestes de dribble), T15bis meilleur / médian **2,8** (cible ≥ 5) — tout le monde dribblait |
 | T16-T19 mauvais sens, engagement tardif de l'élite, adaptation, cône | | absents (pas de tromperie) |
 | T20-T23 communication | | absents (un seul message, la passation 252) |
 | T24 ballon en jeu | 54-58 % | mesurable, **réfuté** | **84 %** (4 551 s sur 5 400 : pas de temps additionnel réel, reprises courtes) |

@@ -574,6 +574,12 @@ nature des gestes (lot 2), la tromperie (lot 3), le tacle et l'aérien par le m�
 course de coupe, les touches du moteur (8-11 / match, réel 37-44 — les remises qui ne sortent jamais) ; puis le ballon
 qui sort et le temps du match.
 
+**269 — LA NATURE DES GESTES : SCELLÉ (347).** Le spécialiste (la fréquence de tentative en e^{k·flair}, l'espérance à 1 :
+le meilleur 5 × le médian, Bible 14 T15bis), le glissé de dernier recours (battu seulement, au taux imposé du book :
+un geste dominé ne s'impose pas par optimisation) et sa faute au taux du book (Bible 15 D20-D21). Mesuré 8 × 45 min :
+le meilleur / le médian 4-10 → 7-11, gestes 28-45 → 35-39 (≈ 40), glissés 18-26 → 4,6 / match (réel 6,7), P(faute | glissé) 2-6 → 19 % (réel 24), jaunes 0,5-2 → 2-4 (3,1). Ce qu'il nomme : le tacle debout et le glissé par le même noyau (§4.2), le trou défensif post-glissé (§4.4),
+bravery et decisions, la tromperie (Modèle 11 lot 3, Bible 14 lot 2) ; puis le ballon qui sort et le temps du match.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

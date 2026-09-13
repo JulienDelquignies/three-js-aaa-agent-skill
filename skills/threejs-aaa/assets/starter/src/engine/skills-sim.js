@@ -11,6 +11,7 @@ import { MOVES } from './animkit.js';
 import { situation, footFor } from './technique.js';
 import { tac, axe } from './tactics.js';
 import { noyauAuContact } from './noyau.js';
+import { specialisteF } from './nature.js';
 import { role } from './roles.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { byId } from './technique.js';
@@ -62,6 +63,7 @@ export function dribM(st, c, cfg) {
   const sg = Math.sign(st.pitch?.attackGoal?.(c.team)?.x ?? 1) || 1, adv = c.p[0] * sg;
   if (adv < -hx / 3) m *= (D.propreTiers ?? 0.5); else if (adv > hx / 3) m *= (D.adverseTiers ?? 1.15);
   if (D.cadence && (c._dribAt ?? -99) > st.t - D.cadence * axe(rd, 1.5, 0.5)) m = 0;
+  if (cfg.nature?.specialiste) m *= specialisteF(c, cfg.nature.specialiste);   // LE SPÉCIALISTE (269, doc nature.js) : la FRÉQUENCE de tentative, pas le taux
   return m;
 }
 

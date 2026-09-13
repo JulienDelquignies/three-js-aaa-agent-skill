@@ -49,4 +49,7 @@ stagger ; le volume de contests (Bible 15 D1-D2).
    Gumbel-max sur le flux 'duel', les conséquences (faute posée, touche, dépossession physique). Mesuré : faute obtenue **14 %**, en touche **5 %** (loin de la ligne, remappées — dette), franchi net + faute 54 % ≤ 0,62 ; 19 take-ons / matchb.
    Le tacle et l'aérien par le même noyau, le bruit OU de forme, la course de coupe : nommés.
 2. **Le volume et la nature des gestes** (test 4 ; Bible 14 lot 2) : 199 → 40 par match, le tacle glissé rare.
+   → **SCELLÉ 269** (`nature.js`, `cfg.nature`, NOTES 347) : le « 199 gestes » comptait toutes les feintes (le moteur d'avant
+   le 269 en tentait 28-39, dont 17-20 take-ons) ; le spécialiste (la fréquence de tentative × e^{k·flair}, l'espérance à 1),
+   le glissé de dernier recours (battu, au taux imposé) et sa faute au taux du book. Mesuré : T15bis 7-11 (≥ 5), glissés 4,6 / match (6,7), P(faute | glissé) 19 % (24), gestes 35-39 (≈ 40).
 3. **La tromperie dans le dribble** (Bible 14 lot 2, Modèle 04 lot 4) : le défenseur qui part du mauvais côté.

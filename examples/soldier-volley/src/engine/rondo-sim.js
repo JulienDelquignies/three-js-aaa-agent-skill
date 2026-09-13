@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
@@ -395,7 +395,7 @@ function resoudreGlisse(st, cfg, p, pick, sit, dEvent, dPoke, won) {
     team: p.team, atk: st.possession.team,
     bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +dEvent.toFixed(2), height: +st.ball.p[1].toFixed(2),
     speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1),
-  });
+  }); if (!won && st.full && cfg.nature?.glisse) { let r = null, dr = 99; for (const q of st.players) { if (q.team === p.team || q.down > 0 || q.keeper) continue; const dq = d2(q.p, st.ball.p); if (dq < dr) { dr = dq; r = q; } } if (r) fauteGlisse(st, p, r, cfg.nature.glisse, cfg, chuter); }   // (269) le glissé manqué à portée du rival : la faute au taux du book
   if (!won) return;
   // Un tacle ne fait pas APPARAÎTRE le ballon près du tacleur : le pied le RENVOIE — une
   // impulsion, dont l'intégrateur fait une course. Le poke vise un PARTENAIRE DEBOUT (sans
@@ -482,7 +482,7 @@ function trySlide(st, cfg) {
   // couché ne compte plus comme « plus proche » (filtre down). Le ballon qu'un partenaire attaque au
   // sol est SON ballon : l'équipe espace ses plongeons.
   const lastSlide = (st._slideT ??= {})[p.team] ?? -99;
-  if (st.t - lastSlide < 4) return;
+  if (st.t - lastSlide < 4) return; if (st.full && cfg.nature?.glisse && !glissePermis(st, p, cfg.nature.glisse, cfg, true)) { p.slideCd = st.t + (cfg.nature.glisse.refusCd ?? 2); return; }   // LE GLISSÉ DE DERNIER RECOURS (269, doc nature.js) : le taux imposé du book — un geste dominé ne s'impose pas par optimisation ; le refus coûte un cooldown PERSONNEL (consommer l'espacement d'équipe éteignait tout : 0,5 glissé / match)
   const sit = situation(p.p, p.yaw, st.ball.p, st.ball.v, st.ball.p[1]);
   const pick = chooseTechnique(sit, 'win', { bias: { 'tacle-glisse': 1 } })[0];
   if (!pick || pick.tech.id !== 'tacle-glisse') return;

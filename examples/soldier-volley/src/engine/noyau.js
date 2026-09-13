@@ -50,6 +50,12 @@ export function margeDe(c, q, K, cfg) {
   return best === -Infinity ? -(K.rho ?? 0.95) : best;
 }
 
+/** L'attribut composite du dribbleur (le book : 0,34 dribbling + 0,22 agilité + 0,18 équilibre + 0,14 première touche + 0,12 flair), sur les facteurs du moteur, ∈ [−1 ; 1]. Pure. */
+export function aAttaquant(c) {
+  const sA = c.skill; if (!sA) return 0;
+  return 0.34 * n1(sA.gesteF, 0.15) + 0.22 * n1(sA.getupF, 0.28) * -1 + 0.18 * -n1(sA.dribbleLeadF, 0.07) + 0.14 * n1(sA.controlF, 0.15) + 0.12 * ((c.persona?.flair ?? 0.5) - 0.5) * 2;
+}
+
 /** Les features du take-on c contre q : { mu, dv, dpsi, dside, press, x, nc, aA, aD, near }. Pure. */
 export function featuresDe(st, c, q, K, cfg) {
   const hz = st.pitch?.hz ?? 34, hx = st.pitch?.hx ?? 52.5, gS = Math.sign(st.pitch.attackGoal(c.team).x || 1);
@@ -62,7 +68,7 @@ export function featuresDe(st, c, q, K, cfg) {
     if (d < 3 && Math.abs(wrap(Math.atan2(r.p[2] - c.p[2], r.p[0] - c.p[0]) - prog)) < 0.8) nc++;
   }
   const sA = c.skill, sD = q.skill;
-  const aA = sA ? 0.34 * n1(sA.gesteF, 0.15) + 0.22 * n1(sA.getupF, 0.28) * -1 + 0.18 * -n1(sA.dribbleLeadF, 0.07) + 0.14 * n1(sA.controlF, 0.15) + 0.12 * ((c.persona?.flair ?? 0.5) - 0.5) * 2 : 0;
+  const aA = aAttaquant(c);
   const aD = sD ? 0.30 * Math.max(-1, Math.min(1, (sD.tackleReach ?? 0) / 0.10)) + 0.24 * n1(sD.posF, 0.15) + 0.22 * n1(sD.getupF, 0.28) * -1 + 0.14 * n1(sD.anticipF, 0.15) + 0.10 * n1(sD.chargeF, 0.15) : 0;
   const dside = hz - Math.abs(c.p[2]);
   return { mu: margeDe(c, q, K, cfg), dv: hyp(c.v[0], c.v[1]) - hyp(q.v[0], q.v[1]), dpsi: Math.abs(wrap(q.yaw - axe)), dside, press, x: Math.max(0, Math.min(1, (c.p[0] * gS + hx) / (2 * hx))), nc, aA, aD, near: Math.max(0, 1 - dside / (K.sortieMax ?? 8)) };

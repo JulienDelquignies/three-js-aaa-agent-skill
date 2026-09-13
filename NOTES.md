@@ -11345,6 +11345,71 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      selection). Sceau : commit 87ad96d, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit). Vient le volume et la nature des gestes (Modèle 11 lot 2), puis le ballon qui sort
      et le temps du match.
+- 347: LA NATURE DES GESTES (269 — la carte du book : Modèle 11 lot 2 ; Bible 14 lot 2, T15bis ;
+     Bible 15 lot 2, D20-D21). Sonde AVANT (sonde-269 : les gestes de dribble par espèce et par
+     joueur, le meilleur / le médian, les glissés et leurs fautes, les tacles debout, les cartons ;
+     8 × 45 min, graines 3-29, nature null) : 28-45 gestes de dribble / match (réel ≈ 40 — le « 199
+     gestes » de la fiche du 9/09 comptait toutes les feintes et le monde d'avant le 219), 17-22
+     take-ons (25), T15bis le meilleur / le médian 4-10 (≥ 5 : tout le monde dribble — le moteur
+     modulait le TAUX, pas la FRÉQUENCE), glissés 18-26 / match (réel 6,7 — l'action ordinaire : le
+     glissé sur ballon libre de trySlide), gagnés 26-45 %, P(faute | glissé) 0-6 % (réel 24), tacles
+     debout gagnés 1,5-6, manqués 7,5-9,5, P(faute | debout) 0 (14), fautes 9,5-16 / match (21,4),
+     jaunes 0,5-2 (3,1). LA LOI (nature.js, cfg.nature && st.full) : (1) LE SPÉCIALISTE — dribM ×
+     specialisteF = exp(k · (flair centré + a_A)) ÷ sinh(k)/k, k 1,6 : le joueur à flair 1 tente e^k
+     = 5 × le médian, celui à 0,15 5 × moins, a_A du 268 s'y ajoute ; l'ESPÉRANCE à 1 sur le flair
+     uniforme (première version sans le diviseur : 28-39 → 53-57 gestes / match — l'exponentielle
+     gonflait le volume au lieu de le redistribuer) ; (2) LE GLISSÉ DE DERNIER RECOURS —
+     glissePermis aux deux sites (slideTackleStep sur porteur : battu seulement, le ballon n'est
+     plus prenable debout ; trySlide sur ballon libre : la course perdue est déjà jugée en amont) au
+     taux IMPOSÉ du book p × aggrF × consigne duel (§4.2 : « ce taux est imposé, pas émergent — un
+     geste dominé ne s'impose pas par optimisation ») ; le refus coûte un cooldown PERSONNEL refusCd
+     1 s (consommer l'espacement d'équipe éteignait tout : 0,5-1,5 glissé / match à p 0,15 ; p 0,3 +
+     2 s : 1-3,5 ; p 0,55 + 1 s : 2-8,5) ; (3) LA FAUTE DU GLISSÉ — fauteGlisse aux deux temps du
+     vide (le lancement dans le vide, le contact manqué) : à portée 2,5 m du rival, pFaute 0,4 par
+     vide (recuit à la main pour P(faute | glissé) 0,239 : 19 % mesuré), la nature 'tacle-glissé' /
+     'tacle-glissé-derrière' (grave, 257), la chute nommée (A10) ; portée 1,8 d'abord : 0 % — au
+     contact différé (0,1-0,55 s) le porteur a filé à 2 m. Mesuré APRÈS (8 × 45 min) : gestes de
+     dribble 35-39 / match (≈ 40), take-ons 19-21 (25), T15bis le meilleur / le médian 7-11 (≥ 5),
+     p90 4-7 ; glissés 4,6 / match (2 / 4 / 4 / 8,5 ; réel 6,7 — sous la cible, le bruit de 8 matchs
+     vaut ± 2), gagnés 13-53 %, P(faute | glissé) 19 % (13 / 13 / 24 / 25 ; réel 24), P(faute |
+     debout) 0 (réel 14 — le tacle debout par le noyau, dette nommée), fautes 12-14,5 / match
+     (21,4), jaunes 2-4 (3,1), tirs 14,5-18, buts 1,5-5,5. Jumeau : nature null = HEAD au bit
+     (fbb13bba24097e30 / b1d3558a98b26d53 — le défaut du 268, relu par git stash). Banc : verify-
+     match11 bloc 269 (index 167 : le médian à k / sinh k = 0,674, e^k = 4,95 × le médian au flair
+     1, 1/e^k au flair 0,15 ; le glissé refusé sur ballon prenable debout, permis sur ballon qui
+     fuit au tirage bas, refusé au tirage haut ; la faute posée à portée sous le tirage avec la
+     chute, pas au-dessus, pas hors de portée ; 600 s graine 3 : les glissés ≤ sans la clé, sabotage
+     nature null : 0 faute de nature, les gestes vivent). Ce qu'il nomme : le tacle debout par le
+     noyau (§4.2 colonne debout — P(faute | debout) 14 %), le glissé comme segment balayé (§4.1), le
+     trou défensif post-glissé mesuré (§4.4), bravery et decisions (le moteur n'a pas ces notes), la
+     tromperie (Modèle 11 lot 3 — le take-on des spécialistes à 41-54 %, T15), les 6,7 glissés à
+     retrouver à 12 graines.
+     Banc complet (final269 : 8 shards + 25 annexes ; relancé après le déplacement de la porte du
+     glissé derrière la retenue de surface — le 169 mesure la retenue comme premier juge) : shards
+     33/1 36/4 32/2 37/4 40/3 42/1 27/4 33/0 = 280 ✓ / 19 ✗ — treize rouges du monde remangé (les
+     spécialistes dribblent, les autres non ; les glissés se raréfient : d'autres ballons libres,
+     d'autres possessions), tous verts à HEAD~ (worktree 5ed7f33) et épinglés PAR CONTENU « nature:
+     null DATÉ 269 », tous verts isolés à HEAD : 112 (bloc 41, le ciel), 135 (66, les sauts de
+     cible), 189 (98, le contre qui recule), la démission (35), 168 (81, le lecteur de trajectoire),
+     l'allure (22), 115 (44, le petit pont), 121 (52, la roulette), 229 (125, le contre-pressing),
+     123 (54, le box crash), 212 (110, les through condamnés), le marquage de surface en flux (134,
+     trois cfg) ; 169 (82, la retenue au mécanisme) rouge avant le déplacement de la porte, vert
+     après sans épingle ; le budget du bloc 1 rouge sous la contention (3,21 ms : 8 shards + 7
+     isolements en parallèle), 0,57 seul. Hérités : 246d (148, il flotte). Les shards ont couru sur
+     le fichier d'avant les épingles (posées pendant leur course) : la preuve est l'isolement à
+     HEAD. Annexes : attributes 25/2 → 27/0 (L55 la gradation, L237 le pressing cohérent — trois épingles posées d'abord sur les mauvaises cfg, retirées : la clause 160 a la sienne),
+     identification 0/1 → REGELÉ DATÉ 269 : 16 → 20 signatures (perdues DC A|largeurR, DC A|tenue,
+     DC B|tenue, LAT B|largeurR, MDC A|profondeur, AIL A|largeurR, AIL D|largeurR ; gagnées DC
+     A|profondeur, LAT A|largeurR, DC B|appel, LAT B|repli, DC C|largeurR, DC C|profondeur, DC
+     C|appel, LAT C|profondeur, LAT D|appel, MDC C|largeurR, AV A|appel — la dette de volumétrie à 6
+     graines demeure), roles 13/1 → 14/0 (L157, le marqueserré à la graine 7), slide 0/3 → 10/0
+     (trois fixtures qui FORCENT un glissé sur porteur : le taux imposé les refuse — épinglées) ;
+     frappes 13/0, gestes 60/0, match 84/0, menace 11/0, rondo 40/0, scan 5/0, sync 9/0, attente
+     42/0, cartons 6/0, contact 25/0, expulsion 8/0, football-rules 59/0, foulee 45/0, kit 5/0, loi3
+     10/0, part-tint 18/0, porte 4/0, remises 36/0, tactics 11/0, tete 7/0, loi12 12/2 (hérité : «
+     le mur se tient » 4,6 m + son sabotage). Bloc 1 seul 0.57 ms/step (≤ 1,6). Copies : starter =
+     showcase = soldier-volley (cmp) ; match-sim, rondo-sim, match-config à 1249 lignes (la porte de
+     trySlide et la faute du glissé fondues sur leurs lignes).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

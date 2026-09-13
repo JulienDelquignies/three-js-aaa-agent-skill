@@ -58,8 +58,8 @@ la faute tactique comme pari ; la non-monotonie du six mètres ; la touche comme
 | D14 possession conservée 10 s après un long | 28,6 % | mesurable, **réfuté** | **65 %** (74 passes ≥ 32 m) — le jeu long est une passe qui réussit |
 | D15 gain territorial à 8 s | +35,7 m | mesurable | **+19 m** |
 | D17 longueurs | Launch 43,6 / six mètres 65,6 | mesurable | première passe du gardien après six mètres **43,6 m** (11) ; rentrée longue 0 (aucune touche longue) |
-| D20 tacles glissés | 6,7 / match | mesurable, **réfuté** | **82,5** |
-| D21 P(faute) glissé / debout | 24,2 / 14,0 % | mesurable, **inversé** | **2 % / 14 %** |
+| D20 tacles glissés | 6,7 / match | mesurable, **au 269** : **4,6** / match (8 × 45 min ; p 0,55 par occasion battue, refus 1 s) | avant : **82,5** (18-23 à la veille du 269) |
+| D21 P(faute) glissé / debout | 24,2 / 14,0 % | mesurable, **au 269** : **19 % / 0 %** — le glissé fait faute au taux du book (pFaute 0,4 par vide à portée), le debout n'en fait toujours pas (le tacle debout par le noyau, nommé) | avant : **2 % / 14 %** |
 | D23 fautes par tiers | P 8,5 / 18,9 / 22,0 | mesurable (part) | 22 / 63 / 15 % — la faute vit au milieu |
 | D24 fautes / jaunes / rouges | 26,3 / 3,9-4,4 / 0,10-0,20 | mesurable, **réfuté** | 23,0 ✓ / **8,5** / **1,00** |
 | D28-D29 six mètres, touche | non monotone ; 80 / 61 | à instrumenter |

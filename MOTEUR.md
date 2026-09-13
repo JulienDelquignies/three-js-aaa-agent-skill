@@ -478,6 +478,21 @@ Clé absente : la géométrie d'hier au bit. Banc : bloc 268 (les intercepts du 
 nez, la monotonie en μ, le gradient, la sortie contre la ligne, Σ p = 1, Gumbel forcé, le contact, les conséquences,
 sabotage). Sonde : `scripts/book/sonde-268.mjs`. Fiches : `M11-duels-stochastiques.md`.
 
+### La nature des gestes (lot 269, `cfg.nature` — `nature.js`)
+
+Tout le monde dribblait (le meilleur / le médian 2-4, réel ≥ 5) parce que le moteur modulait le taux de réussite et non la
+fréquence de tentative ; le tacle glissé était l'action ordinaire (18-23 / match, réel 6,7) avec 2-6 % de fautes (réel
+24). Le 269 pose (1) **le spécialiste** (`specialisteF`, lu par `dribM`) : la tentative de geste de dribble × exp(k ·
+(flair centré + a_A)) ÷ sinh(k)/k — l'espérance à 1 sur le flair uniforme (le volume se redistribue, il ne gonfle pas),
+le joueur à flair 1 tente e^k = 5 × le médian ; (2) **le glissé de dernier recours** (`glissePermis`, dans
+`slideTackleStep`) : on ne se couche que BATTU (le ballon n'est plus prenable debout — `balPrenable` faux) et au taux
+imposé du book (p × aggrF × consigne duel ; le refus consomme l'espacement d'équipe) ; (3) **la faute du glissé**
+(`fauteGlisse`, aux deux temps du vide) : le glissé manqué à portée du corps est une faute avec pFaute, sa nature
+'tacle-glissé' (l'arbitre juge nature et carton). Mesuré 8 × 45 min : gestes de dribble 35-39 / match (réel ≈ 40 ; take-ons 19-21, réel 25 — avant 28-45 / 17-22), le meilleur / le médian 7-11 (≥ 5 ; avant 4-10), glissés 18-26 → 4,6 / match (réel 6,7), P(faute | glissé) 2-6 → 19 % (réel 24), fautes 12-14 / match (réel 21,4), jaunes 2-4 (3,1). Clé absente : les gestes et le
+glissé d'hier au bit. Banc : bloc 269 (le médian à k / sinh k, e^k au flair 1, le refus sur ballon prenable, le taux,
+la faute à portée sous le tirage, le monde, sabotage). Sonde : `scripts/book/sonde-269.mjs`. Fiches :
+`M11-duels-stochastiques.md`, `14-micro-comportements.md`, `15-duels-seconds-ballons.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut
