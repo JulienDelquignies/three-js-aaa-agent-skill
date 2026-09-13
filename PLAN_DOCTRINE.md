@@ -549,6 +549,14 @@ l'artefact d'une métrique ; avec la complétion événementielle, 79 → 80 % (
 le déficit de la tranche moyenne), le receveur qui vient au-devant (le sous-dosage attend), le ballon fou en cône ; puis le
 duel comme vecteur (Modèle 11), le ballon qui sort et le temps du match.
 
+**266 — L'INTERCEPTION NON OMNISCIENTE : SCELLÉ (344).** Le défenseur lit le départ de la passe avec une latence (0,25 s ×
+la note d'anticipation), vise ensuite le ballon tel qu'il le CROIT (la croyance du 262 — dos au ballon, il court vers un
+souvenir), et le passeur refuse ses lignes sur les défenseurs tels qu'il les croit. Mesuré : réussite 80 % (=), courtes
+87 → 91 (réel 88-92), longues 56 → 61 (55-65), bloquées 4 → 3 % (réel 3,1) ; l'ablation montre que la tranche 15-30 yd
+(71-75 c. 82-87) tient à la SÉLECTION du passeur, pas à l'omniscience. Ce qu'il nomme : la sélection calibrée (Modèle 09
+lot 2 — P_succ prédit, l'appétit du risque), la logistique σ / λ comme lecture du passeur ; puis le duel comme vecteur
+(Modèle 11), le ballon qui sort et le temps du match.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

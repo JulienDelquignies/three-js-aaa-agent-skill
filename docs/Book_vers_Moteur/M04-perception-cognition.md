@@ -64,6 +64,8 @@ fusion, l'invariance par permutation (non prouvée), l'ablation (test 6).
    tenu (la table de §2.2 et la croissance recalculées au banc) ; test 1 tenu à la fixture et, sans le regard de passe, en
    flux (0,36 / 0,81 / 2,83 / 5,65 m par âge, le σ cru la prédit) — avec le regard, l'erreur est le bruit d'observation
    (0,25 m) : la corrélation à l'âge reviendra en flux quand la DÉCISION lira la croyance (le test d'import, lot suivant).
+   Le 266 (SCELLÉ 344) branche deux lecteurs de plus sur la croyance : le défenseur qui vise le ballon cru pendant un vol
+   et le passeur qui projette les défenseurs crus dans sa course de refus.
 2. **Le balayage comme prérequis de poste** (test 2 ; Bible 14) : cadence de rôle × attributs × pression × zone,
    durée log-normale, 0-3 entités rafraîchies — le scan 250 devient la source des observations.
 3. **La latence ex-gaussienne par décision** (§5 ; Bible 13 test 8, Modèle 01 τ_p) : 0,22 s moyen, p90 0,32,

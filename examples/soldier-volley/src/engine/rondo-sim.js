@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
@@ -539,7 +539,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       } else p._heldT = p.target ? [...p.target] : null;
     }
   }
-  cfg.avantMouvement?.(st, cfg); movePlayers(st, dt, cfg);   // (255) le match branche ici ce qui doit primer sur toute cible avant le mouvement (piege.piegeApply : la ligne synchrone)
+  cfg.avantMouvement?.(st, cfg); if (st.full && cfg.interception) interceptionApply(st, cfg); movePlayers(st, dt, cfg);   /* (266) l'interception non omnisciente : les défenseurs visent le ballon CRU */   // (255) le match branche ici ce qui doit primer sur toute cible avant le mouvement (piege.piegeApply : la ligne synchrone)
   slideResolve(st, cfg);               // le contact du glissé sur porteur (lot 51) — duel.js
   resolveSlideL(st, cfg);              // …et sur ballon libre (aucun _slideL hors match)
   stepGestures(st, dt, cfg);           // swings run on their own clock, outside the phase machine

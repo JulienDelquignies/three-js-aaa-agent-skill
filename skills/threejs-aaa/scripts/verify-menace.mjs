@@ -139,7 +139,7 @@ const cfgD = () => matchCfg({ shotRange: 20 });
   let arbs0 = null, deny0 = null, gelMax = 0, choix = new Set(), tirs = 0;
   for (const seed of [4, 1, 2, 3, 5, 6, 7, 8]) {   // 5 → 8 graines DATÉ A10 (4 changements d'avis pour ≥ 5 au max des graines dans le monde du contact — un compte à un chiffre)
     const st = makeMatch({ full: true, seed });
-    const cfg = { ...cfgD(), contact: null, porteAnticipe: null, remisesPied: null };   // DATÉ A10 : 4 changements d'avis au max pour ≥ 5 dans le monde du contact, à 5 comme à 8 graines — la clause lit l'arbitre d'hier
+    const cfg = { ...cfgD(), interception: null /* interception null DATÉ 266 : vert à HEAD~ (11/0 au 265), 6 tentatives d'angle fermé apparaissent dans ce tirage du monde — la clause mesure l'arbitre, pas l'interception */, contact: null, porteAnticipe: null, remisesPied: null };   // DATÉ A10 : 4 changements d'avis au max pour ≥ 5 dans le monde du contact, à 5 comme à 8 graines — la clause lit l'arbitre d'hier
     let gel = 0;
     for (let i = 0; i < 180 * 60; i++) {
       matchStep(st, 1 / 60, cfg);

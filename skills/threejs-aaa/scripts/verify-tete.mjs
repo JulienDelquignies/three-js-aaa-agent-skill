@@ -22,7 +22,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // parqué loin. Aucune écriture de p/v du ballon — release nommé + strike, la discipline tient.
 const ciel = (seed, arrange) => {
   const st = makeMatch({ full: true, seed });
-  const cfg = matchCfg({ shotRange: 20 });
+  const cfg = matchCfg({ shotRange: 20, interception: null /* interception null DATÉ 266 : vert à HEAD~ (7/0 au 265), la mise en scène parque les corps sans rafraîchir leur croyance du ballon (le défenseur sous l’arc court vers un souvenir, aucune tête) — la clause mesure la tête, pas l’interception */ });
   for (let i = 0; i < 8 * 60 && !(st.phase === 'carry' && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   for (const q of st.players) { q.p[0] = -45; q.p[2] = (q.id % 11) * 2 - 10; q.v = [0, 0]; q.act = null; }
   st.restart = null; st._teteCd = 0;

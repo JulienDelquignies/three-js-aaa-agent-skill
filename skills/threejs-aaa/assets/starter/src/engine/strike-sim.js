@@ -256,7 +256,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // ligne condamnée image après image. À holdMax le veto tombe : forcé, on joue le moins mauvais.
   const T = move.contact;
   const defs = st.players.filter((q) => q.team !== c.team && q.down <= 0);
-  const race = flightRace(from, sol, defs.map((q) => [q.p[0] + q.v[0] * T, 0, q.p[2] + q.v[1] * T]), { speed: cfg.speeds.chase });
+  const race = flightRace(from, sol, defs.map((q) => { if (st.full && cfg.interception && cfg.interception.passeur !== false) { const B = croyanceDe(c, q, st, cfg); return [B.p[0] + B.v[0] * T, 0, B.p[2] + B.v[1] * T]; } return [q.p[0] + q.v[0] * T, 0, q.p[2] + q.v[1] * T]; }), { speed: cfg.speeds.chase });   // (266) LE PASSEUR LIT SES CROYANCES : la course de refus projette les défenseurs là où il les croit
   const rec = st.players[choice.to.id];
   const meet = rec ? interceptPoint(race.path, [rec.p[0] + rec.v[0] * T, 0, rec.p[2] + rec.v[1] * T], cfg.speeds.chase, { reaction: 0 }) : null;
   // un TIR ne se refuse pas à la course : le défenseur qui coupe, c'est le duel du tir même.

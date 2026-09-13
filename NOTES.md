@@ -11104,6 +11104,65 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      + son sabotage.
      Sceau : commit 6429857, poussé ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk Rondo
      servi = construit). Vient l'interception probabiliste en vol (Modèle 07 lot 2).
+- 344: L'INTERCEPTION NON OMNISCIENTE (266 — la carte du book : Modèle 07 lot 2, §4.3 « le défenseur
+     ne doit jamais connaître la trajectoire avant t_pass + τ_r », test 4 ; Modèle 04 la croyance).
+     Sonde AVANT (sonde-266 = la 265 + les blocages et le monde, 2 × 45 min, graines 3 et 7) :
+     réussite 80 % (réel 80-83), < 10 yd 87, 5-15 yd 84, 15-30 yd 75, 30+ 56 ; bloquées (prises à
+     moins de 0,4 s du départ) 4 % (réel 3,1). Le défenseur d'hier visait le ballon VRAI à chaque
+     tick (anchor = st.ball.p, la mène sur sa vitesse vraie) : il coupait des passes qu'il n'avait
+     pas vues partir, dans son dos, à l'image même du départ ; et le passeur refusait ses lignes
+     sur les positions VRAIES des défenseurs (flightRace), ceux qu'il ne voyait pas compris. LA LOI
+     (interception.js, cfg.interception && st.full ; interceptionApply avant movePlayers pendant
+     un vol) : (1) LA LATENCE DE LECTURE — pendant τ_r = 0,25 × (2 − anticipF) s après le départ,
+     la cible du défenseur relative au ballon reste celle du ballon AU DÉPART (st.pass.origin) ;
+     (2) LE BALLON CRU — passé τ_r, il vise le ballon tel qu'il le croit (croyanceDe du 262 :
+     observé à 10 Hz s'il le voit, extrapolé et vieilli s'il ne le voit pas) : l'écart cru − vrai
+     se retranche aux cibles des métiers relatifs au ballon (press, intercept, cover), sous 0,15 m
+     rien ne bouge ; (3) LE PASSEUR LIT SES CROYANCES — sa course de refus projette les défenseurs
+     là où il les croit (« on ne passe qu'à ce que l'on voit, ou croit savoir », Modèle 09 §2.1) :
+     le défenseur non vu ne lui interdit rien, et coupe. Mesuré APRÈS (mêmes graines) : réussite
+     80 % (=), < 10 yd 87 → 91 (réel 88-92), 5-15 yd 84 → 84, 15-30 yd 75 → 71, 30+ 56 → 61 (55-65) ;
+     bloquées 4 → 3 % (réel 3,1) ; les interceptions des courtes 10 → 5 %. L'ABLATION (2 × 45 chacune)
+     : sans le passeur cru 77 % (89 / 78 / 72 / 57), la latence seule 77 % (86 / 78 / 74 / 56,
+     bloquées 6), le ballon cru sans latence 78 % (88 / 76 / 74 / 63) — les trois lois ensemble
+     rendent le meilleur monde, et la tranche 15-30 yd reste à 71-75 dans TOUS les mondes : son
+     déficit n'est pas l'omniscience du défenseur, c'est la SÉLECTION du passeur (Modèle 09 lot 2 :
+     P_succ prédit et calé, l'appétit du risque par la mentalité — le lot suivant de la passe).
+     Jumeau : interception null = HEAD au bit (5d8d804c0a026974 / 7f714c81d2c004eb — le défaut du
+     265, relu par git stash). Banc : verify-match11 bloc 266 (index 164 : la latence à l'identité
+     et pour l'anticipateur, l'écart cru = le départ pendant la latence ; la fixture — 1 s de vol
+     à 10 m/s : le défenseur face au ballon le vise à moins de 1 m, celui qui lui tourne le dos
+     court vers un souvenir à plus de 3 m, le marqueur n'est pas touché ; sabotage interception
+     null : aucun écart). Ce qu'il nomme : la logistique σ 0,45 / λ 4,3 du book comme LECTURE du
+     passeur (Λ et l'appétit du risque), le pré-élagage par bande, l'ombre en forme fermée, la
+     sélection calibrée.
+     Banc complet (final266 : 8 shards + 25 annexes) : shards 288 ✓ / 10 ✗ — sept rouges du monde
+     remangé, tous verts à HEAD~ (worktree 75c76ce) et épinglés PAR CONTENU « interception: null
+     DATÉ 266 » : 95 (bloc 26, le jockey sous contrôle : sous la clé et la croyance, l'A/B jockey se
+     resserre 51 c. 49 — le presseur court vers le ballon cru, pas vers le porteur ; le monde
+     épinglé rend 54 = 54, hors épingles la clé sépare encore 44 c. 60 : l'interaction est nommée,
+     pas résolue), 114 (43, la croqueta), 170 (83, le corps ouvert — même collapse : 81 = 81), 137
+     (68, l'offre au porteur qui monte), allure (22), 100 (30, la patte du centreur : l'état forgé
+     téléporte les défenseurs sans rafraîchir la croyance du centreur, sa course de refus lit des
+     fantômes), 117 (46, la roulette) — isolés 2/0, 3/0, 3/0, 1/0, 2/0, 1/0, 3/0 ; 244a (140, les
+     seize formations : dans le tirage 523 c. 433 graine 5 une faute sifflée à 35,0 s PENDANT la
+     cérémonie d'une touche de 34,6 s la remplace par un coup franc adverse, le juge apparie la
+     touche à la prise du coup franc — DETTE NOMMÉE : adjugeFaute ne lit pas st.restart, la faute
+     pendant le ballon mort doit rendre la remise d'origine (Loi 12) ; épinglé, isolé 2/0). Hérités
+     : « contres arrivés à l'entrée » (139, rouge à HEAD~ aussi), 246d (47 % sous la contention des
+     8 shards, isolé 1/0 à HEAD comme à HEAD~ : il flotte). Annexes : attributes 25/2 → 27/0
+     (épingles L55 la gradation 70 → −121, L171 le pique 5 armés sous la lecture crue), match 82/2 →
+     84/0 (L1151 : aucune passe levée en 120 s dans ce monde), menace 10/1 → 11/0 (L142 : 6 angles
+     fermés tentés dans ce tirage), scan 4/1 → 5/0 (L13 : 1 saccade de Jordet), tete 6/1 → 7/0 (L25
+     : la mise en scène parque les corps sans rafraîchir leur croyance, aucune tête de dégagement),
+     identification 0/1 → REGELÉ DATÉ 266 : 18 → 17 signatures (perdues DC C|profondeur, LAT
+     D|profondeur, AIL A|largeurR, AV A|largeurR, AIL C|largeurR ; gagnées DC B|largeurR, DC
+     C|largeurR, LAT C|appel, MDC B|tenue — la dette de volumétrie à 6 graines demeure) ; frappes
+     13/0, gestes 60/0, kit 5/0, loi3 10/0, part-tint 18/0, roles 14/0, rondo 40/0, slide 7/0, sync
+     9/0, tactics 11/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
+     6/0, expulsion 8/0, football-rules 59/0, loi12 12/2 (hérité : « le mur se tient » 4,6 m + son
+     sabotage). Bloc 1 seul 0.66 ms/step (≤ 1,6). Copies : starter = showcase = soldier-volley (cmp)
+     ; match-sim, rondo-sim, match-config à 1249 lignes.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

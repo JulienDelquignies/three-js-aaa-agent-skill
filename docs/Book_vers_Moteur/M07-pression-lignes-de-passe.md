@@ -44,7 +44,7 @@ par événement à latence ; le piège comme plan à quatre rôles (Bible 10 §8
 | 1 loi d'ombre | frontière Λ = 0,5 par distance × vitesse | à faire en protocole isolé (`laneClearance` est un corridor fixe) |
 | 2 étalonnage de la réussite | 0,85 ± 0,01 ; blocages 3,1 % | mesurable, **réfuté** | réussite **≈ 73 %** (5-15 yd 67-80, 15-30 yd 70-82, 30+ yd 61-71) ; blocages **1,6 %** |
 | 3 non-télépathie | Δt médian 0,30-0,45 s, P95 < 0,70 | Bible 10 T5 : simultané (91 % en mouvement), décalage de cap 1,6 s |
-| 4 non-omniscience de l'interception | écart 0,05-0,15 | **réfuté par construction** |
+| 4 non-omniscience de l'interception | écart 0,05-0,15 | **tenu au 266** (la latence et le ballon cru : les interceptions des courtes 10 → 5 %, bloquées 4 → 3 %) | avant : réfuté par construction |
 | 5 stabilité de l'affectation | 6-14 / min, pas de pic > 1 Hz | Bible 12 T7 : **29 / min** |
 | 6 piège | regain 28-40 % | absent |
 | 7 compacité dynamique | L 26-32 m médian ; −4-8 m bas → haut | Bible 10 T1 : **27,8 m** ✓ ; par zone à mesurer |
@@ -62,6 +62,10 @@ par événement à latence ; le piège comme plan à quatre rôles (Bible 10 §8
    λ 4,30 recalés sur la cinématique du moteur — la passe courte à 88-92 %, la longue à 55-65.
    Le 265 (la réception, SCELLÉ 343) a mesuré que l'interception en vol porte le déficit de la tranche 15-30 yd
    (14-15 % des passes prises par un adversaire à ≥ 1,5 m du receveur) : c'est CE lot, le suivant.
+   → **SCELLÉ 266** (`interception.js`, `cfg.interception`, NOTES 344) : la latence de lecture, le ballon cru, le
+   passeur qui lit ses croyances — bloquées 4 → 3 % (réel 3,1), courtes 87 → 91, longues 56 → 61 ; la tranche 15-30 yd
+   tient à la sélection du passeur (Modèle 09 lot 2). Reste : la logistique σ / λ comme lecture du passeur (Λ), l'ombre
+   en forme fermée, le pré-élagage.
 3. **L'affectation avec hystérésis** (test 5 ; Bible 12 lot 3, Modèle 08 lot 1) : hongrois à ordre fixe, β_hys.
 4. **Le déclenchement par événement** (test 3 ; Bible 10 lot 6, Modèle 04) : `PressEvent`, latence, portée.
 5. **Le piège** (test 6 ; Bible 10 §8) — après 3 et 4.

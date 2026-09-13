@@ -69,10 +69,10 @@ ultra adapté football, réutilisable sur d'autres projets. Chaque « ok continu
   RE-BASÉES au 263 par la copie `scripts/book/fingerprint-ov.mjs` : le défaut de fe85ce1 (= 262) relu = `8c7719e7be1fd95c /
   d6e16464895402f4` (le jumeau du 263 : `cadence: null`) ; 263 (cadence dec 0,1, le nouveau défaut) = `e84a43c302ac93af / 5c36757dc8e7aa1e`.
 
-## L'ordre après le 265 (PLAN_DOCTRINE, la carte du book)
+## L'ordre après le 266 (PLAN_DOCTRINE, la carte du book)
 
-Le 263 (cadence.js), le 264 (rng.js) et le 265 (reception.js — la réception à quatre issues) sont scellés → l'interception
-probabiliste en vol (Modèle 07 lot 2) → le duel comme vecteur → le ballon qui sort et le temps du match → le bloc qui perçoit et la ligne qui est une ligne ;
+Le 263 (cadence.js), le 264 (rng.js), le 265 (reception.js) et le 266 (interception.js) sont scellés → la sélection
+calibrée du passeur (Modèle 09 lot 2) → le duel comme vecteur → le ballon qui sort et le temps du match → le bloc qui perçoit et la ligne qui est une ligne ;
 dans la croyance : le test d'import (les décisions lisent la croyance), l'attention, la tromperie, la communication.
 Dettes nommées : les slots qui sautent (coulissement par ligne à gain k), les ruptures trop courtes (budget de
 déclenchement), la marche à 9 % (le temps mort), la possession fantôme du taclé, la pausa sans ballon, l'identification

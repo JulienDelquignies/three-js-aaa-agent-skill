@@ -429,6 +429,18 @@ geste** (`sigmaPasse`, strike-sim) : 1,4° × la note (passSigma ÷ 3,25°) × l
 réception et le σ d'hier au bit. Banc : bloc 265 (les tables du book, la fixture du presseur dans le dos / devant, sabotage).
 Sonde : `scripts/book/sonde-265.mjs`. Fiches : `M09-modele-passe.md`, `M07-pression-lignes-de-passe.md`.
 
+### L'interception non omnisciente (lot 266, `cfg.interception` — `interception.js`)
+
+Le défenseur d'hier visait le ballon vrai à chaque tick. Le 266 pose la latence de lecture `tauLecture` (0,25 s × (2 −
+anticipF) : pendant ce temps sa cible relative au ballon est celle du ballon au départ), puis le ballon CRU (`ecartCru` :
+la croyance du 262, `croyanceDe(q, st.ball)` — l'écart cru − vrai se retranche aux cibles press / intercept / cover par
+`interceptionApply`, appelé avant `movePlayers` pendant un vol), et le passeur projette les défenseurs là où il les croit
+dans sa course de refus (strike-sim, `interception.passeur`). Mesuré 2 × 45 min : réussite 80 % (=), courtes 87 → 91,
+longues 56 → 61, bloquées 4 → 3 % ; la tranche 15-30 yd reste à 71-75 dans toutes les ablations (la sélection du passeur,
+lot suivant). Clé absente : l'omniscience d'hier au bit. Banc : bloc 266 (la latence, l'écart au départ, la fixture face /
+dos, le marqueur intact, sabotage). Sonde : `scripts/book/sonde-266.mjs`. Fiches : `M07-pression-lignes-de-passe.md`,
+`M04-perception-cognition.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut
