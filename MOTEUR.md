@@ -509,6 +509,22 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### Le bloc qui perçoit (lot 275, `cfg.blocPercu` — `bloc-percu.js`)
+
+Le bloc d'hier lisait l'état vrai du ballon : formationSpots à l'ancre réelle, une fois par image, pour les onze — les onze
+partaient au même tick (mesuré : onset des cibles de bloc DEF = MID = ATT à 0,30-0,33 s après une passe latérale ; Bible 10
+§4.4 : « le décalage temporel entre les lignes, la variable que les moteurs oublient et qui produit tout le réalisme »). Le
+275 dérive la cible de bloc de chaque posté de SA croyance du ballon (croyance.js, 262 — le champ visuel, le dos au ballon, la
+prédiction) relue à la latence de déclenchement du book : `latenceDe` = (0,22 + 0,008 × d) × (1 − 0,15 × anticipation
+centrée) × (1 + 0,3 × (1 − stamina)) — 0,26 s à 5 m, 0,54 à 40 m ; `anchorPercu` tient l'ancre perçue (p._blocVu) jusqu'à
+la relecture ; `decalageDe` décale le slot hoisté de la réponse du bloc à l'écart perçue − vraie : `kxDe` (1 en régime
+accroché, 0 au plafond du rond central — la saturation du §3.4) et le gain latéral du bloc, borné. Les trois sites du slot
+posté (le bloc, le poste du marqueur libre, la bande du marqueur) le lisent. Attributs en facteurs (anticipation, stamina ;
+vision et scanning par la croyance), la clé absente : l'omniscience d'hier au bit. Mesuré 4 × 45 min (sonde-275) : l'ordre
+ATT → MID → DEF émerge (onset 0,33 / 0,35 / 0,47 s), le décalage 1er → dernier 1,0-1,2 s (0,6-1,2) ; la fenêtre W du
+renversement reste à prouver (3-7 renversements reçus par 2 × 45 min). Reste : le presseur et le couvreur à la croyance, la
+parole de ligne. Sondes : `scripts/book/sonde-275.mjs`, `sonde-ch10.mjs`. Fiche : `10-bloc-collectif.md`.
+
 ### L'interligne dérivé et son point de rupture (lot 274, `cfg.interligne` — `interligne.js`)
 
 Le 273 tenait la ligne arrière et mesurait son coût : l'interligne DEF↔MID 10,9 → 13,8 m, le milieu ne suivait pas — le bloc

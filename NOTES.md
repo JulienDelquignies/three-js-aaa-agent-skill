@@ -11752,6 +11752,62 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      11/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
      6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step (≤ 1,6). Sceau :
      commit 01d5d17, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-iGnP0BJS).
+- 353: LE BLOC QUI PERÇOIT (275 — la carte du book après le 274 : Bible 10 lot 1, Modèle 04 ; §4.4
+     « le décalage temporel entre les lignes : la variable que les moteurs oublient et qui produit
+     tout le réalisme » — shiftOnsetLatency = (0,22 en vision centrale, sinon + 0,5 / scanRate, +
+     0,008 × d) × fatigue × (1 − 0,15 anticipation) : le presseur à 5 m 0,26 s, la ligne opposée à
+     25-40 m 0,8-1,6 s, l'ordre ATT → MID côté ballon → DEF côté ballon → MID opposé → DEF opposé,
+     l'écart cumulé 0,6-1,2 s = 2,4-4,8 m de désalignement transitoire, « un moteur qui fait
+     partir les onze au même tick ne produira jamais ce déchet » ; §5.1 la fenêtre W = t_bloc −
+     t_ballon, 1,5-2,5 s depuis un bloc pleinement coulissé ; test 16 l'invariant de croyance).
+     Sonde AVANT (sonde-ch10 dans f755654 : T5 0,00 s — hors définition, 91 % des défenseurs déjà
+     en mouvement ; T6 0,02 s — le marqueur est déjà là ; sonde-275 dans le worktree 7e6cd12, 4 ×
+     45 min : sur la CIBLE de bloc de chaque posté après une passe latérale > 15 m, l'onset p50 DEF
+     0,33 s = MID 0,30 = ATT 0,30 — les onze partaient au même tick ; décalage 1er → dernier 1,0-1,1
+     s par la tenue des slots, pas par la perception). LA LOI (bloc-percu.js, cfg.blocPercu &&
+     cfg.croyance) : latenceDe ((base 0,22 + parM 0,008 × d) × (1 − 0,15 × (r_anticipation − 0,5))
+     × (1 + 0,3 × (1 − stam)) : 0,26 s à 5 m, 0,54 à 40 ; × 0,925 à l'élite, × 1,075 au médiocre,
+     × 1,15 à mi-essence), kxDe (le régime longitudinal du bloc chaîné : 1 si ligneF strictement
+     entre le plancher 0,05 et le plafond 0,5 du rond central, sinon 0 — la saturation du §3.4),
+     anchorPercu (la croyance du ballon du corps — croyanceDe(p, st.ball) : le champ visuel, le dos
+     au ballon, la prédiction saturée — relue quand sa latence est écoulée, tenue dans p._blocVu),
+     decalageDe ([Δx × k_x ; Δz × bloc.lateral] de l'écart perçue − vraie, borné à max 12). match-sim
+     : les gains une fois par image (BP, après spotsBloc — le hoisté du 60 reste), les trois sites du
+     slot posté décalés (le bloc i ≥ 6, le poste du marqueur libre, la bande xL du marqueur). Clé
+     absente : l'omniscience d'hier au bit. Sonde APRÈS (sonde-275, 4 × 45 min) : onset p50 DEF
+     0,47 s, MID 0,35, ATT 0,33 — l'ordre du book émerge (l'écart ATT → DEF 0,03 → 0,14 s), le
+     décalage 1er → dernier 1,1-1,2 s (0,6-1,2) ; sonde-ch10 : T5 / T6 inchangés (0,00 / 0,02 :
+     leurs définitions ne voient pas les cibles), interligne 11,9-12,5, desync 3,3 (ch. 03) ; la
+     fenêtre W sur le premier défenseur NOUVEAU à < 4 m : 2,0-2,6 s de moyenne sur 3-7
+     renversements reçus — le volume manque. Jumeau : blocPercu null = HEAD au bit
+     (2cd66a81cf90545f / 5f4d7b0a110dd04d — le défaut du 274, relu par git stash). Banc :
+     verify-match11 bloc 275 (index 173 : la latence 0,26 / 0,54 et ses trois facteurs, k_x 1 / 0 /
+     0, l'ancre perçue qui se pose, tient et se relit sur un match, le décalage borné ; 300 s graine
+     3 : 20 postés portent leur ancre, l'écart perçue − vraie 0,47 m en moyenne à la relecture, les
+     ancres à 7,5 m p50 du ballon à l'instant final — la latence fait l'écart, pas l'observation ;
+     sabotage blocPercu null : 0 ancre). Ce qu'il nomme : le presseur et le couvreur à la croyance
+     (ils lisent l'état vrai — le premier mouvement du book), la parole de ligne (§9 : LINE_UP,
+     DROP, HOLD à latence et portée), la fenêtre W à volume (un protocole de renversements
+     forcés), k_x à deux régimes et le coulissement par ligne (§3.4, lot 2), le scan qui chute
+     sous pression (d = 0,57). Banc complet (final275 : 8 shards puis 25 annexes) : 307 ✓ / 9 ✗ au
+     premier passage, puis 310 / 6 à la relance des 8 shards après la correction (l'ancre crue
+     GELÉE entre deux relectures faisait sauter les slots à chaque relecture — 135 « les cibles ne
+     tremblent plus » rouge ; l'extrapolation à la vitesse crue, saturée à extrap 6 m, l'a rendu
+     vert sans épingle, avec 112, la démission et 136) — rouges verts à HEAD~ (worktree 7e6cd12) et
+     épinglés PAR CONTENU « blocPercu: null DATÉ 275 », tous verts isolés à HEAD : la course qui
+     traverse la frappe (bloc 8), le pivot en relance basse (135), 252 (150, la passation 11 c.
+     15), le flux des tirs du 232 (128), les passes vers un receveur serré (136), le troisième
+     homme (137) ; hérités : 246d (148), les contres arrivés à l'entrée (139). Annexes :
+     identification 0/1 → REGELÉ DATÉ 275 (18 → 14 signatures : perdues AIL C|repli, AV A|press,
+     DC A|press, LAT A|appel, LAT C|appel, LAT D|appel, MIL B|tenue, MIL C|repli, MO A|tenue ;
+     gagnées AV A|profondeur, DC A|profondeur, DC B|tenue, MDC A|largeurR, MDC C|appel), remises
+     35/1 → 36/0 (L220), contact 23/2 → 25/0 (L74), loi12 12/2 hérité ; attributes 27/0, frappes
+     13/0, gestes 60/0, match 84/0, menace 11/0, roles 14/0, rondo 40/0, sync 9/0, scan 5/0, loi3
+     10/0, kit 5/0, part-tint 18/0, tactics 11/0, slide 10/0, foulee 45/0, attente 42/0, porte 4/0,
+     cartons 6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Le worker de session a été tué
+     (exit 137) pendant la relance des shards en parallèle des annexes et des worktrees : les
+     shards 4-7 relancés seuls, la leçon — pas plus de quatre node à la fois. Bloc 1 seul : 0,58
+     ms/step (≤ 1,6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

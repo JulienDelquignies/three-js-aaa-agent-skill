@@ -67,8 +67,8 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
 | 2 interligne DEF↔MID | 10-15, P95 ≤ 19, > 16 m < 8 % | mesurable, **tenu au 274** (moyenne) | moyenne 13,7-13,8 → **10,8-12,6 m** (274, 4 × 90 min), P95 21,9-22,6 → **20,0-20,9** (≤ 19 : presque), > 16 m 33-36 → **16-24 %** (< 8 : la queue des transitions) — le milieu suit la ligne tenue à la portée de ses attributs |
 | 3 gain `k` par ligne | MID 0,55-0,75 > DEF 0,35-0,50 | mesurable, **réfuté** | MID **0,40**, DEF **0,33** — un bloc rigide qui glisse peu (`lateral` 0,35, `slideMax` 8) |
 | 4 signature angulaire | DEF 90 / MID 78 / ATT 69 (± 8) | mesurable, **tenu** | **97 / 77 / 72°** — les défenseurs coulissent, les attaquants convergent |
-| 5 décalage inter-lignes | 0,6-1,2 s, > 0,3 obligatoire | mesurable, **hors définition** | **91 %** des défenseurs sont déjà à > 1 m/s à l'instant de la passe (le bloc ne s'arrête jamais) ; décalage 1ᵉʳ → dernier **changement de cap** 1,62 s p50 — un bloc qui vibre, pas un bloc qui perçoit avec retard |
-| 6 fenêtre `W` de renversement | 1,5-2,5 s | mesurable, **réfuté** | **0,15 s** (19 renversements > 35 m) : le bloc est omniscient, le receveur opposé est pressé à l'instant |
+| 5 décalage inter-lignes | 0,6-1,2 s, > 0,3 obligatoire | mesurable, **l'ordre émerge au 275** | la vitesse est hors définition (91 % déjà en mouvement) ; sur la CIBLE de bloc (sonde-275, 4 × 45 min) : onset p50 DEF 0,33 → **0,47 s**, MID 0,30 → **0,35**, ATT 0,30 → **0,33** — l'ordre du book ATT → MID → DEF émerge de la croyance et de la latence (0,22 + 0,008 d) ; décalage 1er → dernier 1,0-1,2 s (0,6-1,2) |
+| 6 fenêtre `W` de renversement | 1,5-2,5 s | mesurable, **non mesuré** (275) | **0,15 → 0,02 s** sur la pression instantanée (le marqueur est déjà là) ; sur le premier défenseur NOUVEAU à < 4 m : 2,0-2,6 s de moyenne mais 3-7 renversements reçus par 2 × 45 min — le volume manque, la fenêtre reste à prouver |
 | 7 densité à 10 m | 4,9 médian | mesurable, **réfuté** | **3,0** (bloc passif du modèle : 3,1) |
 | 8 effet de bord | 1,34-2,00 | mesurable, **inversé** | **0,71** — la touche fait fuir la densité au lieu de la concentrer |
 | 9-10 rendement des déclencheurs, pressings avortés | | à instrumenter (pas de `PressEvent`) |
@@ -77,7 +77,7 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
 | 13 dérive de l'interligne | +3 à +6 m, ≥ +2 | mesurable, **réfuté** | 9,8 → **10,9 m** (+1,1) : la fatigue ne touche pas le bloc |
 | 14 montée après dégagement | +10-18 m en 2,5-3,5 s | à instrumenter (pas d'événement de dégagement) |
 | 15 rest defense | 3,7 corps / 43,6 m / 28,2 m | mesurable, **réfuté** | **5,9 corps** derrière le ballon, à **55 m**, largeur **35 m** (ch. 04 : 7,4 / 27 m / 61 m avec la définition du plus proche) |
-| 16 invariant de croyance | défauts → 0 quand omniscient | **sans objet** : le bloc lit déjà l'état vrai — ses défauts sont donc tous « décoratifs » au sens du chapitre |
+| 16 invariant de croyance | défauts → 0 quand omniscient | **275** : le bloc lit sa croyance | la cible de bloc de chaque posté se dérive de sa croyance du ballon (bloc-percu.js) ; omniscient (blocPercu null) → les défauts de déclenchement tombent à 0 (onset DEF = MID = ATT 0,30-0,33 s) |
 | 17 asymétrie montée / recul | 4,0-5,5 / 3,5-4,4, ratio 0,50-0,65 | mesurable, **partiel** (273) | montée p50 **1,78 → 2,07 m/s** (cible 4,0-5,5), recul **2,07 → 3,15** (3,5-4,4), ratio 1,17 → 1,52 — le régime de la hauteur (montée 4,8 / recul 3,9) ne parle que hors de la bande (tol 2 m) ; la montée reste au trot du bloc chaîné |
 | 18 régime de `k_x` | ≈ 0 libre, ≈ 1 accroché | mesurable, **réfuté** | libre 0,10 → 0,27 → **0,41** (273), accroché 0,21 → 0,38 → **0,41** — la ligne suit son 2ᵉ plus reculé, lui-même chaîné au ballon par le spot ; les deux régimes de k_x restent à poser |
 | 19 coût de l'oblique | | absent (pas d'oblique) |
@@ -89,7 +89,11 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
    sur le ballon (latence de déclenchement 0,22 s en vision centrale, 0,8-1,6 s dos au ballon), pas de l'état vrai.
    C'est ce qui fabrique l'intervalle, le renversement qui paie (W 1,5-2,5 s), et le décalage entre lignes.
    Le 262 — SCELLÉ 340 — a posé la croyance (croyance.js) et l'a branchée sur le marqueur (il suit sa croyance de son
-   homme : 8,9 → 9,5 m p50, pris dans le dos) ; la cible de bloc depuis la croyance du ballon reste CE lot.
+   homme : 8,9 → 9,5 m p50, pris dans le dos). **SCELLÉ 353 (275, bloc-percu.js)** : la cible de bloc de chaque posté se dérive
+   de SA croyance du ballon relue à la latence de déclenchement du §4.4 ((0,22 + 0,008 d) × anticipation × fatigue), le slot
+   décalé de la réponse du bloc (k_x accroché / plafond, k_y latéral) ; mesuré 4 × 45 min : l'ordre ATT → MID → DEF émerge
+   (onset 0,33 / 0,35 / 0,47 s, avant 0,30 / 0,30 / 0,33). Reste : le presseur et le couvreur à la croyance (ils lisent
+   l'état vrai), W à volume, la communication (LINE_UP).
 2. **Le coulissement par ligne** (test 3, 8) : `k` par ligne (MID > DEF), `k_max` de la largeur, `abandonFarSide`,
    et la touche comme douzième défenseur (`edgeFactor` dans l'utilité d'orientation, cible `dyT ≤ 4 m`).
    Le 261 — SCELLÉ 339 — a posé les TROIS RÉGIMES du §4.3 (entretien 1,4-1,8 m/s, coulissement actif 4,2, récupération

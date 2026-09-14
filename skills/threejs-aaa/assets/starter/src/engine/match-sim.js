@@ -3,7 +3,7 @@
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne , bandeDuCentral, remettreAuPivot, hommeRemis, purgerPassation } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { croyanceStep, croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { familiariteStep, affinite as affiniteFam } from './familiarite.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
-import { huitSecondes } from './temps.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
+import { huitSecondes } from './temps.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { decalageDe, kxDe } from './bloc-percu.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
 import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
@@ -928,7 +928,7 @@ function assignMatchJobs(st, cfg) {
     const defTeamB = atk === 0 ? 1 : 0;
     const spotsBloc = st.full
       ? formationSpots(pitch, defTeamB, anchor[0], false, formationPour(tac(st, defTeamB).formation, false), blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), anchor[2], st._outDef ??= []) : null;   // la formation OFF (129)
-    const mapD = mapPostes(tac(st, defTeamB).formation), nDefD = (LIGNES[formationPour(tac(st, defTeamB).formation, false)] ?? [4])[0];   // le mapping on→off + la ligne OFF (130)
+    const mapD = mapPostes(tac(st, defTeamB).formation), nDefD = (LIGNES[formationPour(tac(st, defTeamB).formation, false)] ?? [4])[0];   /* le mapping on→off + la ligne OFF (130) */ const BP = st.full && cfg.blocPercu && cfg.croyance && spotsBloc ? (() => { const bF = blocFor(cfg.bloc ?? null, tac(st, defTeamB), st.full && cfg.zone !== false), sgB = -pitch.ownGoal(defTeamB).sign; return { anchor, kx: kxDe(anchor[0], sgB, pitch.hx * 2, bF?.ligne ?? 27, cfg.blocPercu), ky: bF?.lateral ?? 0.35 }; })() : null;   /* (275) LE BLOC QUI PERÇOIT (bloc-percu.js) : les gains du bloc à l'ancre, une fois par image ; chaque posté décale son slot de sa croyance du ballon */
     // …les BORNES de profondeur du bloc posté (162, hoisté) : la compression se juge RELATIVE au bloc — le tiers « terrain » ne matchait jamais (le bloc chaîné au ballon est déjà haut).
     let cD0 = Infinity, cD1 = -Infinity;
     if (st.full && cfg.compression && spotsBloc) {
@@ -1046,7 +1046,7 @@ function assignMatchJobs(st, cfg) {
       if (st.full && i >= 6) {
         // …le bloc défendant est CHAÎNÉ AU BALLON (cfg.bloc, lot 42) : ligne ~27 m du ballon, longueur 30 — et le bloc est CELUI DE SA TACTIQUE (blocFor : compacité, hauteur).
         const spotsD = spotsBloc;   // hoisté (60)
-        const want = spotsD[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]];
+        const want = spotsD[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]]; if (BP) { const dP = decalageDe(st, p, cfg, BP); want[0] += dP[0]; want[1] += dP[1]; }   /* (275) le slot à l'ancre PERÇUE */
         // LA HAUTEUR DE BLOC (tactics.hauteurBloc) : le bloc posté se décale de −6 à +6 m — la ligne de hors-jeu suit (Loi 11 fait exister le pari). 0,5 = 0 m, l'identité.
         const sgnD = -pitch.ownGoal(p.team).sign;
         const haut = axe(tac(st, p.team).hauteurBloc, -6, 6);
@@ -1076,7 +1076,7 @@ function assignMatchJobs(st, cfg) {
       const m = st.full && cfg.marquageSurface ? (st._bAssign?.get(p.id) ?? null) : i - 2 < marks.length ? (mTri[i - 2] ?? null) : (st.full ? null : (mTri[0] ?? null));
       if (!m && st.full) {
         const spotsM = spotsBloc;   // hoisté (60)
-        const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]], wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0;   // (228) le voisin du sorti glisse vers le trou
+        const wM0 = spotsM[mapD[p.post ?? 0]] ?? [p.p[0], p.p[2]]; if (BP) { const dP = decalageDe(st, p, cfg, BP); wM0[0] += dP[0]; wM0[1] += dP[1]; }   /* (275) */ const wM = st._bRefermeDz?.has(mapD[p.post ?? 0]) ? [wM0[0], wM0[1] + st._bRefermeDz.get(mapD[p.post ?? 0])] : wM0;   // (228) le voisin du sorti glisse vers le trou
         p.job = 'mark'; p.target = [wM[0] + (st._bCouvertDx && mapD.indexOf(p.post ?? 0) < nDefD ? (st._bCouvertDx[defTeamB] ?? 0) : 0) + (st._bRefermeDx?.get(mapD[p.post ?? 0]) ?? 0), 0, wM[1]]; if (st.full && cfg.attention && (p.skill?.concF ?? 1) < 1) { const tr = Math.floor(st.t / (cfg.attention.tenue ?? 3)); if (((p.id * 2654435761 + tr * 40503) % 1000) / 1000 < (1 - (p.skill?.concF ?? 1)) * (cfg.attention.taux ?? 1)) { if (p._vuTr !== tr) { p._vuTr = tr; p._vu = [p.target[0], p.target[2]]; } p.target[0] = p._vu[0]; p.target[2] = p._vu[1]; } else p._vuTr = -1; }   // (236) la LIGNE ARRIÈRE monte ou recule selon l'état du porteur (couvert.js)
         return;
       }
@@ -1091,7 +1091,7 @@ function assignMatchJobs(st, cfg) {
       const want = [mp[0] + (gx / gl) * off, mp[2] + (gz / gl) * off];
       // …ET LA LIGNE ARRIÈRE EST UNE BANDE (lot 96, cfg.zone — « ligne » à 19-22 m d'écart mesurée, réel 2-5) : le marqueur ne sort pas de sa bande (6 m) — il suit son homme EN LATÉRAL (le central sort dans le trou).
       if (st.full && cfg.zone !== false && !rouge && (mapD[p.post ?? 9] ?? 9) < nDefD && spotsBloc) {   // …la bande cède à l'HOMME en zone rouge (192)
-        let xL = spotsBloc[mapD[p.post ?? 0]]?.[0];
+        let xL = spotsBloc[mapD[p.post ?? 0]]?.[0]; if (BP && xL != null) xL += decalageDe(st, p, cfg, BP)[0];   /* (275) la bande du marqueur à la ligne PERÇUE */
         // …EN FENÊTRE LA BANDE MONTE AVEC LE BLOC (162) : le clamp au spot BRUT laissait le marqueur à la ligne d'hier (le plus bas du bloc = un mark, 341/354 — l'élastique venait de LÀ) ; la ligne pressante = spot + step comprimé × workF, le piège Loi 11 couvre l'homme resté bas. false : la bande d'hier.
         if (press && st.full && cfg.compression && xL != null)
           xL = xL - sgnDef * (cfg.pressTriggers.step ?? 3.5) * (1 + (cfg.compression.fond ?? 1.4)) * (p.skill?.workF ?? 1);
