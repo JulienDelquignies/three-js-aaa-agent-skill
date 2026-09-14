@@ -1,4 +1,5 @@
 import { tirage } from './rng.js';
+import { xgDe } from './xg.js';
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
 // entré en surface sur 4 matchs (vols tendus mangés par le premier rideau) et 0,8 s/match de
 // fenêtre de tête avec un corps dessous — les centres retombaient, les dégagements attendaient
@@ -80,7 +81,8 @@ export function teteStep(st, cfg) {
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
-    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', geste: 'tête', range: +dGoal.toFixed(1), speed: +(12.5 * geneV).toFixed(1) });
+    const xgT = st.full && cfg.xg ? xgDe(st, joueur, cfg, true) : null; if (xgT) (st.xg ??= [0, 0])[joueur.team] += +xgT.ref.toFixed(3);   // (272) la tête porte son xG (δ_tête recentré)
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', geste: 'tête', range: +dGoal.toFixed(1), speed: +(12.5 * geneV).toFixed(1), ...(xgT ? { xg: +xgT.ref.toFixed(3), xgDec: +xgT.dec.toFixed(3), omega: +xgT.omega.toFixed(2) } : {}) });
     return;
   }
   if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {
@@ -150,7 +152,8 @@ export function voleeStep(st, cfg) {
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'but', demi });
-    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', geste: 'volée', range: +dGoal.toFixed(1), speed: 17 });
+    const xgV = st.full && cfg.xg ? xgDe(st, joueur, cfg, false, cfg.xg.d?.[demi ? 'demiVolee' : 'volee'] ?? 0) : null; if (xgV) (st.xg ??= [0, 0])[joueur.team] += +xgV.ref.toFixed(3);   // (272) la volée porte son xG (δ volée −0,45 / demi-volée −0,20, § 2.3)
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', geste: 'volée', range: +dGoal.toFixed(1), speed: 17, ...(xgV ? { xg: +xgV.ref.toFixed(3), xgDec: +xgV.dec.toFixed(3), omega: +xgV.omega.toFixed(2) } : {}) });
     return;
   }
   if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {

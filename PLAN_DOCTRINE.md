@@ -593,6 +593,18 @@ sort en découle, pas d'un quota. Mesuré 4 × 45 min : la vitesse de sortie du 
 (la chute à 12-16 m, le TRAIL), les tirs qui ne sortent pas (Modèle 10), le jeu long qui se manque (D14, D33), la
 dispersion inter-équipes du ballon en jeu ; puis le bloc qui perçoit et la ligne qui est une ligne (Bibles 03, 10).
 
+**272 — LE xG EN FORME CLOSE ET LA PORTE DE DÉCISION : SCELLÉ (350).** Le tir n'est plus un seuil de qualité mais la comparaison
+du book (Modèle 10 §1-§2) : xG_dec > EV_cont + Θ_i — le noyau de Sumpter (huit coefficients, la table, le clamp et la
+divergence hors domaine), les corrections en log-odds (tête / pied recentrés, occlusion du cône, pression, gardien avancé et
+décentré, finition dans le seul xG de décision, coup franc, volée), le biais de tempérament Θ_i (score × temps, l'axe
+shotDoctrine, fatigue, pression, rôle) contre la continuation de la meilleure passe (son xG × pSucc). Chaque tir porte son
+xG, st.xg cumule. Mesuré 8 × 45 min : la chaîne physique convertissait DÉJÀ au xG de Sumpter (ΣxG 5,3 c. 5,1 buts) —
+c'est la sélection qui est fausse (médiane 0,15 c. 0,06 réel) ; sous la porte le xG moyen 0,16 → 0,14, ΣxG 5,3 → 5,0,
+buts / tirs 15,6 → 11 %, la distance moyenne 13,7 → 14,0 ; le volume 32,8 → 35,4 tirs / match ne bouge pas — la porte ne
+gouverne pas les entrées dans la surface (23-27 / match pour 16 réels). Ce qu'il nomme : le bloc qui perçoit et la ligne qui
+est une ligne (Bibles 03, 10 — la porosité), EV_cont sur le panier (Modèle 06), la contre-attaque et l'après-dribble non
+branchés, le verrou 0,30 s, PSxG et le gardien à enveloppe continue (Modèle 10 lot 4), les deux conventions de comptage.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

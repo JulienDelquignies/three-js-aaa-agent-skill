@@ -95,7 +95,7 @@ export function resoudreTactique(t) {
     // curseur de risque (la pente de progression du choix de passe) ; piege : l'agressivité
     // du hors-jeu (la ligne du bloc défendant monte). 0,5 = l'identité, pas un bit.
     tempo: base.tempo ?? 0.5, mentalite: base.mentalite ?? 0.5, piege: base.piege ?? 0.5,
-    gestionTemps: base.gestionTemps ?? 0.5,   // LA GESTION DU TEMPS (270, temps.js) : où l'équipe vit dans la bande des cérémonies (0 rapide, 1 lent ; 0,5 le milieu = l'identité)
+    gestionTemps: base.gestionTemps ?? 0.5, shotDoctrine: base.shotDoctrine ?? 0.5,   /* LA DOCTRINE DE TIR (272, xg.js — le brief : « gate de fréquence, PAS le geste » ; 0 travailler le ballon, 1 tirer à vue, 0,5 l'identité) */   // LA GESTION DU TEMPS (270, temps.js) : où l'équipe vit dans la bande des cérémonies (0 rapide, 1 lent ; 0,5 le milieu = l'identité)
     // LES COUPS DE PIED ARRÊTÉS PAR ÉQUIPE (lot 148 — la demande MESURÉE du consommateur
     // carrière : « un corner est deux constantes globales ») : un CPA n'est pas un axe,
     // c'est une SITUATION — il a son espace. { corner: 'court'|'premier'|'second'|'mixte',

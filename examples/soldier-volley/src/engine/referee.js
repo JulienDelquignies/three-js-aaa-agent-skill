@@ -1,4 +1,4 @@
-import { tirage } from './rng.js'; import { bandeDe, addDe, gestionDe } from './temps.js';
+import { tirage } from './rng.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
 // referee.js — L'ARBITRAGE ET LES CÉRÉMONIES DU MATCH, sortis de match-sim (lot 16 : la
 // volumétrie est une dette comme une autre — 1 575 lignes accrétées en six lots). La FAMILLE
 // est cohésive : tout ce qui ARRÊTE et REMET le jeu — sorties (onOut), droit de prise
@@ -264,8 +264,9 @@ export function coupFrancDirect(st, id, cfg) {
   st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   st.pass = { from: id, to: -2, lead: [goal.x, 0, tz], style: 'cf-direct', t: st.t, flight: dT / (v * Math.cos(theta)), origin: [q.p[0], q.p[2]] };
   st.lastPasser = id;
+  const xgCF = st.full && cfg.xg ? xgDe(st, q, cfg, false, cfg.xg.d?.cf ?? -0.55) : null; if (xgCF) (st.xg ??= [0, 0])[q.team] += +xgCF.ref.toFixed(3);   // (272) le coup franc direct porte son xG (δ_cf : conversion 2,2 % pour 0,041 — moins qu'un tir de 20 m)
   st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: id, foot: q.foot ?? 'right', kind: 'coup-franc-direct',
-    range: +d.toFixed(1), tz: +tz.toFixed(2), speed: v, elev: +theta.toFixed(2), z: +q.p[2].toFixed(1), clear: null, gkZ: gk ? +gk.p[2].toFixed(2) : null });
+    range: +d.toFixed(1), tz: +tz.toFixed(2), speed: v, elev: +theta.toFixed(2), z: +q.p[2].toFixed(1), clear: null, gkZ: gk ? +gk.p[2].toFixed(2) : null, ...(xgCF ? { xg: +xgCF.ref.toFixed(3), xgDec: +xgCF.dec.toFixed(3), omega: +xgCF.omega.toFixed(2) } : {}) });
   return true;
 }
 

@@ -18,11 +18,12 @@
 
 import { laneClearance } from './ball-predict.js';
 import { choosePass } from './rondo.js';
+import { xgDe, thetaDe, evContDe, porteDe } from './xg.js';
 import { axe } from './tactics.js';
 
 /** LE TIR — proximité × couloir réel vers le meilleur coin (les mêmes lois que tryShot : portée,
  *  moitié, angle fermé, coin choisi contre le gardien, trafic toléré à bout portant). */
-export function menaceTir(st, c, cfg) {
+export function menaceTir(st, c, cfg, ev = 0) {
   const { pitch } = st;
   const goal = pitch.attackGoal(c.team);
   const d = hyp(goal.x - c.p[0], c.p[2]);
@@ -137,6 +138,17 @@ export function menaceTir(st, c, cfg) {
   // planchers franc/tenté (× plancher + (1 − plancher)·s) : sous le seuil, la passe et la conduite reprennent la main —
   // conserver, porter vers la zone de vérité. Clé absente : l'arbitre d'hier au bit.
   let q = null;
+  // LE xG EN FORME CLOSE (272, cfg.xg && st.full — Modèle 10 §1-§2, xg.js) : la porte n'est plus un seuil de qualité mais la
+  // COMPARAISON xG_dec > EV_cont + Θ_i — le xG de décision (Sumpter + tête/pied + occlusion Ω + pression + gardien avancé /
+  // décentré + finition), contre la valeur de continuation (le xG du point de réception de la meilleure passe × sa réussite,
+  // passée par l'arbitre) plus le biais de tempérament Θ_i (score × temps, l'axe shotDoctrine, fatigue, pression, rôle) ;
+  // le lissage garde la forme du 232 (u entre 0,5 et 1,5). Clé absente : la zone de vérité du 232 au bit.
+  if (st.full && cfg.xg) {
+    const X = xgDe(st, c, cfg), g = porteDe(X.dec, ev, thetaDe(st, c, cfg, X.P), cfg.xg);
+    q = X.dec; sc *= g.f;
+    if (g.sel < 0.5 && ['occasion-franche', 'tir-tenté', 'cadre-en-vue', 'zone-grise', 'audace'].includes(why)) why = 'xg-insuffisant';
+    return { score: +sc.toFixed(3), d: +d.toFixed(1), marge: +margin.toFixed(2), tz: +tz.toFixed(1), pourquoi: why, q: +q.toFixed(3), xg: +X.ref.toFixed(3), omega: +X.omega.toFixed(2), ev: +ev.toFixed(3), seuil: +g.seuil.toFixed(3) };
+  }
   if (st.full && cfg.qualiteTir) {
     q = qualiteTir(st, c, cfg, d, murN);
     const g = selectiviteTir(st, c, cfg, q);
@@ -212,6 +224,7 @@ export function menacePasse(st, c, cfg) {
     score: +(0.30 + 0.22 * prog + 0.18 * libre + 0.16 * Math.max(0, 1 - dRec / 30)).toFixed(3),
     vers: best.to.id, prog: +prog.toFixed(2),
     pourquoi: prog > 0.2 ? 'ligne-qui-progresse' : 'circulation',
+    ...(st.full && cfg.xg ? { ev: evContDe(st, c, cfg, best) } : {}),   // (272) la valeur de continuation que la porte du tir compare
   };
 }
 
@@ -257,10 +270,11 @@ export function menaceConduite(st, c, cfg) {
  */
 export function arbitre(st, c, cfg) {
   const w = typeof cfg.menace === 'object' && cfg.menace ? cfg.menace : {};
+  const passeD = st.full && cfg.xg ? menacePasse(st, c, cfg) : null;   // (272) sous cfg.xg la passe se note D'ABORD : le tir se compare à sa continuation
   const o = {
-    tir: menaceTir(st, c, cfg),
+    tir: menaceTir(st, c, cfg, passeD?.ev ?? 0),
     centre: menaceCentre(st, c, cfg),
-    passe: menacePasse(st, c, cfg),
+    passe: passeD ?? menacePasse(st, c, cfg),
     conduite: menaceConduite(st, c, cfg),
   };
   // LE STYLE D'ÉQUIPE (tactics.style — possession ↔ direct) pèse les options PAR ÉQUIPE :

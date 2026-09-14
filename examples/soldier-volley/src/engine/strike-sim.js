@@ -567,7 +567,8 @@ export function strikeNow(st, c, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,
       tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +spd.toFixed(1),   // …le spd FRAPPÉ (145) : l'event dit la vitesse réelle, souffle compris
-      kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2), z: +st.ball.p[2].toFixed(1) });
+      kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2), z: +st.ball.p[2].toFixed(1), ...(choice.shotInfo?.xg != null ? { xg: choice.shotInfo.xg, xgDec: choice.shotInfo.xgDec, omega: choice.shotInfo.omega } : {}) });
+    if (choice.shotInfo?.xg != null) (st.xg ??= [0, 0])[c.team] += choice.shotInfo.xg;   // (272) le xG cumulé par équipe (cible 1,30 / match)
   }
   // LA PERCEPTION A UNE HORLOGE : le départ du ballon est un événement — mais l'armé était
   // VISIBLE. La défense paie max(0, réaction perso − armé vu) : une passe téléphonée s'anticipe,

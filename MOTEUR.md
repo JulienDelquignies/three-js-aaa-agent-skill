@@ -509,6 +509,24 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### Le xG en forme close et la porte de décision (lot 272, `cfg.xg` — `xg.js`)
+
+La porte du tir était un seuil de menace (232 : une qualité e-fold contre 0,14 dans la surface / 0,05 hors) ; le book
+(Modèle 10 §1-§2) demande une comparaison : on tire si xG_dec > EV_cont + Θ_i. Le 272 pose `xg.js` : `angleVisible` (atan2,
+§2.1), `logitGeo` / `xgGeo` (le noyau de Sumpter — 8 451 tirs PL 2017/18 —, clampé à 35 / 20 m, décroissant au-delà : le
+noyau diverge à 56 m), `coneDe` (l'occlusion Ω du cône par les capsules adverses fusionnées et pesées 1 − d/D ; la sortie
+g et le décentrage η du gardien), `xgDe` → { geo, ref, dec } (ref : géométrie + tête / pied recentrés + Ω + pression — la
+télémétrie ; dec : + gardien avancé / décentré + finition ±0,45 — la décision, jamais la référence), `thetaDe` (Θ_i : base
+− temps·ln κ_ctx − doctrine·(shotDoctrine − 0,5) + fatigue + pression·P − rôle), `evContDe` (le xG du point de réception de
+la meilleure passe × sa réussite attendue), `porteDe` (u = xG_dec / (EV_cont + Θ), lissé 0,5-1,5). L'arbitre note la passe
+d'abord et passe sa continuation au tir ; chaque événement 'shot' porte xg / xgDec / omega (le pied, la tête, la volée, le
+coup franc direct), `st.xg[team]` cumule. L'axe tactique `shotDoctrine` (0 travailler le ballon, 1 tirer à vue) est le
+levier du consommateur — « gate de fréquence, pas le geste ». Attributs en facteurs (finF lu en log-odds, 1 = 50 → δ 0),
+rôle en axe (arbitre.tir), tactique en axe. Mesuré 8 × 45 min : ΣxG 5,3 ≈ 5,1 buts AVANT (la physique convertit au
+Sumpter ; la sélection est fausse : médiane 0,15 c. 0,06) ; sous la porte xG moyen 0,16 → 0,14, buts / tirs 15,6 → 11 %,
+ΣxG 5,3 → 5,0 ; le volume (35 / match, 77 % dedans) ne bouge pas — les entrées dans la surface sont l'affaire du bloc.
+Sonde : `scripts/book/sonde-272.mjs`. Fiches : `M10-modele-tir.md`, `R03-tirs-buts.md`.
+
 ### Le ballon fou (lot 271, `cfg.ballonFou` — `fou.js`)
 
 Le ballon dévié repartait à 2-3 m/s (le pique 3,4 m/s, le contrôle manqué la vitesse d'arrivée × 0,62 dans son axe, le

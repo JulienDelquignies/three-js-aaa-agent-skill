@@ -38,17 +38,17 @@ conventions de comptage ; le recentrage tête / pied.
 
 | # | Cible (book) | Statut | Mesuré (2 × 90 min) |
 |---|---|---|---|
-| 1 cohérence xG / physique | RMS < 0,020 | sans objet (pas de xG) |
+| 1 cohérence xG / physique | RMS < 0,020 | **272** : le xG de Sumpter existe (xg.js, table à 0,0004 près) ; ΣxG 5,3 / match c. 5,1 buts AVANT, 5,0 c. 3,9 APRÈS (8 × 45 min) — la cohérence tient au global, la grille par cellule reste à mesurer |
 | 2 optimum puissance / placement | non monotone | partiel (258 : (v/vMax)^1,2 existe ; les vitesses restent fixes par geste) |
 | 3 anisotropie des manqués | ratio ≥ 1,1, ≈ 1,5 | **258** : σθ = 2 σψ existe ; mesuré 0-1 au-dessus / 12-14 à côté — les visées du moteur restent basses (lucarne 8 %) |
-| 4 xG / PSxG | distinguables | sans objet |
+| 4 xG / PSxG | distinguables | **272** : xG_dec porte la finition (±0,45 log-odds), xG_ref non ; PSxG attend le gardien (lot 4) |
 | 5 sensibilité au gardien | ≥ 3 pts sur R_dive | à mesurer (`diveReach`) |
 | 5 bis arrêt dedans / dehors | ≈ 60 / 85 / 69 | mesurable, **partiel** | **52 % / 100 % / 44 %** |
 | 7 rebonds | 10 % des tirs, 9 % des buts | mesurable, **proche** | **6 % / 8 %** |
 | 8 latence VAR | > 0 | absent |
 | 9 non-oscillation SHOOT | < 0,5 / match | à instrumenter |
 | 9 bis tête | 9,6 % de conversion, 15 % des buts | **6 %** des tirs, **0** but |
-| 10 ablation de la doctrine | 6-9 tirs à 0,13 c. 16-22 à 0,06 | à mesurer (axe mentalité) |
+| 10 ablation de la doctrine | 6-9 tirs à 0,13 c. 16-22 à 0,06 | **272** : l'axe `shotDoctrine` existe (Θ ∓ 0,015) ; l'A/B 200 matchs reste à courir |
 | cibles | 25,3 tirs ; 64 % dedans ; p50 16 m ; cadrés 33 ; contrés 27,5 ; buts / tirs 0,11 ; 2,85 buts | | **24,5** ✓ ; **73 %** ; **12,8 m** ; **55 %** ; **2 %** ; **0,245** ; **6,0** |
 
 ## 4. Les lots que la fiche appelle
@@ -57,7 +57,7 @@ conventions de comptage ; le recentrage tête / pied.
    (Modèle 03 lot 3), la vitesse qui coûte la précision — la conversion 24,5 → 11 %, dehors 0 → 15 % d'arrêts en
    moins, 6 → 2,85 buts.
 2. **Le blocage** (cible 27,5 % ; le 258b — **SCELLÉ 332** : l'engagement à l'armé, la jambe qui s'allonge, le tireur dans le trafic, les issues §5.2 ; contrés 4-7 → 24 % à 8 × 45 min) : `contreTir` à 2 % — le corps entre le tireur et le but (Bible 03, 15).
-3. **Le xG en forme close et PSxG** (tests 1, 4 ; Modèle 06) : la grille (X, C), la finition qui déplace PSxG.
+3. **Le xG en forme close et PSxG** (tests 1, 4 ; Modèle 06) — **SCELLÉ 350 (272, xg.js)** : la porte xG_dec > EV_cont + Θ_i, le noyau de Sumpter clampé, les corrections en log-odds, Ω, Θ_i, l'axe shotDoctrine, le xG sur chaque tir ; mesuré 8 × 45 min : xG moyen 0,16 → 0,14, buts / tirs 15,6 → 11 %, le volume (35 / match) et la surface (77 %) restent l'affaire du bloc. Reste : EV_cont sur le panier, PSxG (lot 4), le verrou 0,30 s, le test 9.
 4. **Le gardien à enveloppe continue** (tests 5, 5 ter ; Bible 02) : budget temps, R_dive, ± 5 buts par saison.
 5. **La tête et le penalty recentrés** (9 bis, cibles) ; **le VAR** (test 8) et **les deux conventions** (test 12 ;
    Modèle 16 lot 1).

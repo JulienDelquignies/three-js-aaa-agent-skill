@@ -83,7 +83,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     st.ball.restart([c.p[0] + 0.3, 0.11, 0], { cause: 'coup-franc' });
     st.restart = null; st.ball.possess(c.id);
     st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
-    return arbitre(st, c, matchCfg({ shotRange: 20 }));
+    return arbitre(st, c, matchCfg({ xg: null /* xg null DATÉ 272 : vert à HEAD~ (14/0 au 271), le monde serré remangé (le 9 → passe : la porte xG compare son tir à la continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
   };
   const men = monde('meneur'), neuf = monde('neufDeSurface');
   ok(`le RÔLE départage un monde serré (équipe neutre : le meneur → « ${men.meilleure} », le 9 → « ${neuf.meilleure} » — deux joueurs, deux footballs dans le MÊME système)`,

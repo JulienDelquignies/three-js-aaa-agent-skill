@@ -3,6 +3,7 @@
 // rangement change : une famille par fichier, un fichier par famille.
 import { BALL } from './ball.js';
 import { laneClearance } from './ball-predict.js';
+import { xgDe } from './xg.js';
 import { simInternals } from './rondo-sim.js';
 import { busy, winding, startGesture } from './gesture.js';
 import { MOVES } from './animkit.js';
@@ -179,7 +180,7 @@ export function tryShot(st, c, cfg) {
   const choice = {
     to: { id: -2 }, lead: [goal.x, 0, tzAim], style: 'ground', shot: true, shotKind,
     lane: { margin: +margin.toFixed(2) },
-    shotInfo: { range: +dGoal.toFixed(2), tz: +tz.toFixed(2), gkZ: gk ? +gk.p[2].toFixed(2) : null },
+    shotInfo: { range: +dGoal.toFixed(2), tz: +tz.toFixed(2), gkZ: gk ? +gk.p[2].toFixed(2) : null, ...(st.full && cfg.xg ? (({ ref, dec, omega }) => ({ xg: +ref.toFixed(3), xgDec: +dec.toFixed(3), omega: +omega.toFixed(2) }))(xgDe(st, c, cfg)) : {}) },   // (272) le tir porte son xG de référence et de décision
   };
   return simInternals.beginPass(st, choice, cfg, { shot: true });
 }

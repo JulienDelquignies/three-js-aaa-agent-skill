@@ -11551,6 +11551,69 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Rondo servi = construit, après un curl muet retenté). Vient le bloc qui perçoit et la ligne qui est une ligne
      (Bibles 03, 10) — ou les tirs qui sortent (Modèle 10), la source des sorties manquantes.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
+- 350: LE xG EN FORME CLOSE ET LA PORTE DE DÉCISION (272 — la carte du book après le 271 : les
+     tirs qui ne sortent pas ; Modèle 10 lot 3 : §1 la porte « xG > EV_cont + Θ_i » (1.2, le seuil
+     n'est pas un seuil, c'est une comparaison), §1.3 le biais de tempérament Θ_i (score × temps,
+     shotDoctrine, fatigue, pression, rôle — sept coefficients [À CALIBRER], aucun sourçable), §2.1
+     l'angle visible en atan2, §2.2 le noyau de Sumpter (8 451 tirs PL 2017/18, Wyscout : intercept
+     + sept coefficients recopiés à la ligne, la table des 50 cellules, la divergence hors domaine
+     — minimum à 56 m puis remontée à 0,047 à 90 m — et le clamp X ≤ 35, C ≤ 20, λ_far 0,09),
+     §2.3 les corrections en log-odds (tête / pied RECENTRÉS −0,71 / +0,14 — π_h 17 %, sinon 12 %
+     de buts perdus —, occlusion −2,2·Ω, pression −1,1·P, gardien avancé +1,3·g/D et décentré
+     +0,9·η dans le SEUL xG de décision — le piège causal du Référentiel 03.3.3 —, finition ±0,45
+     dans le seul xG_dec — Davis & Robberechts 2024, le biais de finition ; coup franc direct −0,55,
+     volée −0,45, demi-volée −0,20), §2.4 le cône visible et l'occlusion (capsules r_eff 0,30 +
+     0,55 si engagé, fusion des intervalles, pesées 1 − d_j/D — Ensum, Pollard & Taylor 2004).
+     Sonde AVANT (sonde-272 : tirs / match, p50 / moyenne, surface, pression, cadrés / contrés /
+     montants, arrêts dedans / dehors, sorties de but nées d'un tir, têtes, espèces, bandes, et le
+     xG de Sumpter de CHAQUE tir tenté ; 8 × 45 min, graines 3-19) : 32,8 tirs / match (25,3), 5,1
+     buts (2,85), buts / tirs 15,6 % (11), p50 11,7 m (16), moyenne 13,7 (14,8), 71 % dans la
+     surface (64), 40 % sous pression < 2 m, cadrés 44,6 % (33), contrés 19 % (27,5), arrêts /
+     cadrés 65 % (69 — dedans 58, dehors 89 : le gradient du 258b tient), xG moyen 0,16 (0,105),
+     MÉDIANE 0,15 (0,06 réel), ΣxG 5,3 / match c. 5,1 buts. LE DIAGNOSTIC : la chaîne physique
+     convertit exactement au xG de Sumpter (ΣxG ≈ buts, la cohérence du test 1 tient sans l'avoir
+     codée) — ce qui est faux est la SÉLECTION des tirs (16 / match de 8-14 m, une médiane à 0,15
+     quand le réel tire à 0,06 : le vrai football tire de plus loin et de plus mal), et le VOLUME
+     des arrivées dans la surface (23 tirs / match dedans pour 16 réels : la porosité du bloc, pas
+     la porte). LA LOI (xg.js, cfg.xg) : angleVisible, logitGeo (les huit coefficients), xgGeo
+     (le clamp et la décroissance), coneDe (Ω, la sortie g et le décentrage η du gardien), xgDe →
+     { geo, ref, dec, omega, P, g, eta } (ref la télémétrie, la même pour tous ; dec ce que le
+     tireur voit et ce qu'il est — finF lu en log-odds : ln(finF)/ln(0,2) = r − 0,5, l'identité
+     exacte au 50), thetaDe (base − temps·ln κ − doctrine·(shotDoctrine − 0,5) + fatigue·(1 −
+     stam) + pression·P − rôle·(arbitre.tir − 1)), evContDe (le xG géométrique du point de
+     réception de la meilleure passe × pSucc de la sélection 267 × evCont), porteDe (u = xG_dec /
+     (EV_cont + Θ), le lissage 0,5-1,5 du 232). menace.js : sous cfg.xg l'arbitre note la PASSE
+     D'ABORD (sa continuation ev est passée à menaceTir), la porte remplace la zone de vérité du
+     232 (why 'xg-insuffisant', le retour porte q = xG_dec, xg, omega, ev, seuil) ; les sites du
+     tir portent xg / xgDec / omega dans l'événement 'shot' (tryShot → shotInfo → strike-sim ; la
+     tête ; la volée ; le coup franc direct) et st.xg[team] cumule le xG de référence (cible 1,30 /
+     équipe). tactics.js : l'axe shotDoctrine (0,5 l'identité — le brief : « gate de fréquence, PAS
+     le geste », test 10). Clé absente : l'arbitre du 232 au bit. LE CALAGE : aux défauts du book
+     (Θ0 0,025, evCont 0,6) la porte est PLUS permissive que le 232 dans la surface (38 tirs / match,
+     87 % dedans, ΣxG 6,2) — le book tient son seuil par EV_cont, et une continuation à 60 % ne le
+     tient pas ; evCont 1 (la passe au mieux placé vaut son xG plein) et Θ0 0,01 (le bas de la plage
+     0,010-0,045) : 35,4 tirs / match, 3,9 buts, buts / tirs 11 % (= 11), p50 12,5, moyenne 14,0
+     (14,8), surface 77 %, xG moyen 0,14, médiane 0,135, ΣxG 5,0 c. 3,9 buts, arrêts / cadrés 72 %
+     (dedans 68, dehors 87). Le monde bouge dans le bon sens sur la qualité (0,16 → 0,14, ΣxG 5,3
+     → 5,0, moyenne 13,7 → 14,0) et pas sur le volume (32,8 → 35,4) : la porte ne gouverne pas
+     le nombre d'entrées dans la surface. Jumeau : xg null = HEAD au bit (eca6a43f52c99a9a /
+     9e20c0fef269019a — le défaut du 271, relu par git stash). Banc : verify-match11 bloc 272
+     (index 170 : la table de Sumpter à 0,0004 près sur 10 cellules, la divergence 40/56/70/90 m
+     0,0138 / 0,0096 / 0,0126 / 0,0470, le garde-fou décroissant, l'angle visible 149° à 1 m,
+     Ω 0,0845 exact pour un corps à 6 m d'un tireur de 12 m, 0,24 engagé, 0 derrière ; la finition
+     ne bouge que dec (0,27 > 0,19 > 0,13, ref identique), la tête 0,085 < pied 0,178 ; Θ = base à
+     l'identité, plus bas mené −1 à la 85' (−0,012·1,78) et à doctrine 1 (−0,015) — Θ peut devenir
+     négatif, la porte plancherise le seuil à seuilMin 0,01 (le xG du rond central) —, rôle
+     tireur plus bas, fatigué plus haut ; la porte 0 / 0,5 / 1 ; 600 s graine 3 : chaque tir porte
+     xg / xgDec / omega, st.xg = Σ ; sabotage xg null : aucun champ). Ce qu'il nomme : le volume
+     des entrées dans la surface (23-27 tirs / match dedans pour 16 : le bloc qui perçoit et la
+     ligne qui est une ligne — Bibles 03, 10, la carte), EV_cont sur la meilleure passe AU BARÈME
+     et non au xG (la sélection 267 note une seule élue ; le Modèle 06 demande la valeur de
+     continuation sur le panier), la contre-attaque +0,40 et l'après-dribble +0,25 non branchés
+     (le drapeau de transition et le noyau 268 les fourniraient), le verrou 0,30 s et le test 9
+     (non-oscillation) non instrumentés, PSxG et l'enveloppe continue du gardien (lot 4 — la
+     tête convertit à 16-33 % pour 9,6 réels : c'est le gardien), la porte de la tête (tete.js
+     garde son seuil de distance), le rebond (10 % des tirs), les deux conventions de comptage.
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,

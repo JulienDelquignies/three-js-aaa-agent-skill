@@ -5,7 +5,7 @@
 | # | Cible | Réel | Moteur | Statut |
 |---|---|---|---|---|
 | T1 | Tirs / match | 25,0 ± 2,5 | **24,5** | tenu |
-| T2-T3 | xG moyen 0,105 ; Σ xG / Σ buts = 1 | | — (pas de xG) | Modèle 10 lot 3 |
+| T2-T3 | xG moyen 0,105 ; Σ xG / Σ buts = 1 | | **0,14** (médiane 0,135 c. 0,06) ; ΣxG / buts 5,0 / 3,9 (272, 8 × 45 min ; AVANT 0,16 et 5,3 / 5,1) | 272 : la cohérence tient, la sélection tire trop près |
 | T4 | Tirs hors surface | 32 % ± 5 | **27 %** | proche |
 | T5 | Buts hors surface | 12 % ± 4 | **0 %** (Bible 09 : 100 % dedans) | réfuté |
 | T6 | Distance médiane | 15 m ± 2 | **12,8 m** | proche |

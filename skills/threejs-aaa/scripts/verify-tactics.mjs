@@ -130,7 +130,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     st.ball.restart([c.p[0] + 0.3, 0.11, 0], { cause: 'coup-franc' });
     st.restart = null; st.ball.possess(c.id);
     st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
-    return arbitre(st, c, matchCfg({ shotRange: 20 }));
+    return arbitre(st, c, matchCfg({ xg: null /* xg null DATÉ 272 : vert à HEAD~ (11/0 au 271), le choix serré remangé (direct → passe : la porte xG compare le tir à sa continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
   };
   const p = monde(0), d = monde(1);
   ok(`le STYLE bascule un choix serré (possession → « ${p.meilleure} », direct → « ${d.meilleure} » — même monde, deux équipes, deux footballs ; un choix dominant, lui, reste dominant)`,
