@@ -11,6 +11,7 @@ import { winding, abortGesture } from './gesture.js';
 import { predictPath } from './ball-predict.js';
 import { role } from './roles.js';
 import { glissePermis, fauteGlisse } from './nature.js';
+import { appliquerFou } from './fou.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 
@@ -179,7 +180,7 @@ export function slideResolve(st, cfg) {
       st.events.push({ t: +st.t.toFixed(2), type: 'slide', by: q.id, won: true, tech: 'tacle-glisse',
         foot: g.foot, surface: g.surface, team: q.team, atk: c?.team, sur: g.sur, dist: +d.toFixed(2) });
       if (st.ball.owner != null) st.ball.release('contesté');
-      st.ball.impulse([g.dir[0] * 3.2, 0.4, g.dir[1] * 3.2]);
+      st.ball.impulse([g.dir[0] * 3.2, 0.4, g.dir[1] * 3.2]); if (st.full && cfg.ballonFou) appliquerFou(st, q, cfg, Math.atan2(g.dir[1], g.dir[0]));   // (271) le glissé gagné : le ballon fou dans sa course
       st.lastTouch = q.team;
       st.phase = 'loose'; st.possession.carrier = -1; st.pass = null; st.hold = 0; st.pressure = 0;
     } else {
@@ -362,7 +363,7 @@ export function tacleDegage(st, q, cfg) {
   const v = TD.v ?? 7;
   if (st.events.length) st.events[st.events.length - 1].degage = true;
   st.ball.release('contesté');
-  st.ball.impulse([Math.cos(a) * v - st.ball.v[0], 0, Math.sin(a) * v - st.ball.v[2]]);
+  if (st.full && cfg.ballonFou) appliquerFou(st, q, cfg); else st.ball.impulse([Math.cos(a) * v - st.ball.v[0], 0, Math.sin(a) * v - st.ball.v[2]]);   // LE BALLON FOU (271, doc fou.js) : la sortie stochastique du tacle qui dégage
   st.phase = 'loose'; st.possession.carrier = -1; st.hold = 0; st.pressure = 0;
   return true;
 }

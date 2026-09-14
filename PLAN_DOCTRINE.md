@@ -587,6 +587,12 @@ les arrêts et l'écart (+ 60 s si le match est serré, Maia et al.), les huit s
 voie vers 54-58 % de ballon en jeu), les simulations (T27), refereeBias et le public (Bible 16), l'axe comme consigne
 d'entraîneur (Modèle 15).
 
+**271 — LE BALLON FOU : SCELLÉ (349).** La sortie stochastique du ballon disputé (Bible 15 §3.4 : σ_θ 75°, 45 % dans le cône,
+un quart en arrière, 4-9 m/s) après le pique, le tacle qui dégage, le contrôle manqué et le glissé — le ballon qui
+sort en découle, pas d'un quota. Mesuré 4 × 45 min : la vitesse de sortie du ballon dévié 3,3 → 8,0 m/s, le cône ± 45° à 46 % et le quart arrière à 23 % au banc ; les sorties 34 → 35 / match, touches 19 → 21 (réel 33-45) — le ballon dévié est ramassé avant la ligne, et les sorties manquantes sont les tirs (37 / match, 3 sorties de but), les dégagements (10 % dehors) et le jeu long (5 % des passes, conservé à 54-69 %). Ce qu'il nomme : le second ballon comme structure
+(la chute à 12-16 m, le TRAIL), les tirs qui ne sortent pas (Modèle 10), le jeu long qui se manque (D14, D33), la
+dispersion inter-équipes du ballon en jeu ; puis le bloc qui perçoit et la ligne qui est une ligne (Bibles 03, 10).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

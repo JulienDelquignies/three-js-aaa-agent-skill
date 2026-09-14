@@ -509,6 +509,20 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### Le ballon fou (lot 271, `cfg.ballonFou` — `fou.js`)
+
+Le ballon dévié repartait à 2-3 m/s (le pique 3,4 m/s, le contrôle manqué la vitesse d'arrivée × 0,62 dans son axe, le
+glissé 3,2 m/s dans sa course) : il ne sortait jamais — 27-35 sorties par match (réel 60-70), touches 14-21 (réel 33-45),
+le moteur « visait au lieu de dévier ». Le 271 pose la sortie stochastique du ballon disputé (Bible 15 §3.4) : après le
+pique, le tacle qui dégage, le contrôle manqué et le glissé gagné, `appliquerFou` repose la vitesse du ballon — la norme
+log-normale autour de 6,5 m/s (σ 0,35, bornée [2 ; 12]), la direction sur la normale enroulée autour de l'axe du dévieur
+avec σ_θ par la qualité du point d'appui (`sigmaFou` : élite 45°, moyenne 75°, médiocre 100° ; `qualiteDe` lit les
+facteurs de contrôle et de garde), sur le flux 'duel'. Le cône ± 45° à 45 % et le quart arrière (D8b, D9) en découlent.
+Mesuré 4 × 45 min : 8 × 45 min — la vitesse du ballon à l'image du pique 3,3 → 8,0 m/s p50 ; les sorties 34 → 35 / match (touche 19 → 21, corner 6,5 = 6,5, sortie de but 8 → 7) : la loi est tenue au banc (D8b, D9), le monde bouge peu — le ballon dévié est ramassé avant la ligne (loose-kept 800-1 000 / match), et les sorties manquantes viennent d'ailleurs : les tirs qui ne sortent pas (37 tirs / match, 3 sorties de but — Modèle 10), les dégagements en jeu (44 / match, 10 % dehors), le jeu long qui ne se manque pas (5 % de passes ≥ 32 m, réel 8-20 ; conservées 54-69 %, réel 28,6). Clé absente : les déviations d'hier au bit. Banc : bloc 271 (σ aux trois qualités,
+6 000 tirages : la vitesse, le cône, l'arrière, l'élite et le médiocre ; la pose sur le ballon ; 600 s de piques plus
+vifs ; sabotage). Sonde : `scripts/book/sonde-271.mjs` (les sorties par espèce et par cause). Fiches :
+`15-duels-seconds-ballons.md`, `M09-modele-passe.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

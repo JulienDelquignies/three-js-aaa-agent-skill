@@ -63,7 +63,7 @@ la faute tactique comme pari ; la non-monotonie du six mètres ; la touche comme
 | D23 fautes par tiers | P 8,5 / 18,9 / 22,0 | mesurable (part) | 22 / 63 / 15 % — la faute vit au milieu |
 | D24 fautes / jaunes / rouges | 26,3 / 3,9-4,4 / 0,10-0,20 | mesurable, **réfuté** | 23,0 ✓ / **8,5** / **1,00** |
 | D28-D29 six mètres, touche | non monotone ; 80 / 61 | à instrumenter |
-| D30 touches | 44 ± 20 % | mesurable, **réfuté** | **14** |
+| D30 touches | 44 ± 20 % | mesurable, **au 271** : **19 → 21** / match (8 × 45 min) — la déviation sort à 8 m/s mais le ballon est ramassé avant la ligne ; les 15-25 touches manquantes sont les tirs, les dégagements et le jeu long | avant : **14** (14-21 à la veille du 271) |
 | D33 passes ≥ 32 m | 7,9-19,7 % | mesurable, **réfuté** | **2,4 %** |
 | D35-D40 | | à calibrer / à instrumenter |
 
@@ -78,6 +78,9 @@ la faute tactique comme pari ; la non-monotonie du six mètres ; la touche comme
 3. **Le jeu long qui se manque et le ballon qui sort** (D14, D15, D17, D30, D33 ; ch. 02 longs du gardien 83 %,
    ch. 09) : la passe longue à 54 %, 28,6 % conservés, 44 touches par match — la « passe qui se manque » des neuf
    premières fiches.
+   → **partiel au 271** (`fou.js`, `cfg.ballonFou`, NOTES 349) : la sortie stochastique du ballon disputé (σ_θ 75°, 4-9 m/s,
+   le quart arrière) après le pique, le tacle qui dégage, le contrôle manqué, le glissé — la vitesse de sortie 3,3 → 8,0 m/s p50 au pique, le cône et le quart arrière au banc ; sorties 34 → 35 / match, touches 19 → 21. Le jeu long qui se
+   manque (D14, D33) reste nommé.
 4. **La tête comme volume** (D1) : 10 duels contestés — le jeu long rare (2,4 %) ne nourrit pas le ciel ; lot 3
    d'abord.
 5. **Les redistributions comme moments contestés** (D28, D29, D31) : six mètres, touche, le second ballon après.

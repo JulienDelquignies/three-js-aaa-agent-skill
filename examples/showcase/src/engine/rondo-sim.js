@@ -1,5 +1,5 @@
 import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
-import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
+import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
 import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
@@ -321,7 +321,7 @@ function receive(st, id, cfg = RONDO) {
       const pMiss = Math.max(0, Math.min(0.35, (arr - 10) * 0.07 / Math.max(0.5, pick.tech.accuracy * (p.skill?.controlF ?? 1))));
       const RC = st.full && cfg.passe ? issueDe(st, p, cfg.passe, cfg, tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))) : null; if (RC ? (RC.issue === 'manque' || RC.issue === 'conteste-perdu') : (pMiss > 0 && tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))() < pMiss)) {   // (265) LA RÉCEPTION À QUATRE ISSUES (reception.js) : manqué (Weibull), contesté (le 50/50 quand le presseur arrive avant la fin du contrôle), propre (protégé tClean), lourde
         deny(st, 'contrôle-manqué');
-        st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62], dW(st, cfg, 0.62));
+        st.ball.impulse([-st.ball.v[0] * 0.62, -st.ball.v[1] * 0.8, -st.ball.v[2] * 0.62], dW(st, cfg, 0.62)); if (st.full && cfg.ballonFou) appliquerFou(st, p, cfg, Math.atan2(st.ball.v[2], st.ball.v[0]));   // (271) le contrôle manqué : le ballon fou dans l'axe où il fuit
         st.events.push({ t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot,
           surface: pick.surface, speed: +arr.toFixed(1), miss: true, settle: null, ...(RC ? { issue: RC.issue, dTouch: +RC.dTouch.toFixed(2), P: +RC.P.toFixed(2) } : {}) });
         // LE CONTRÔLE RATÉ TUE LA PASSE (lot 44, st.full — capture utilisateur : le receveur
@@ -694,7 +694,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           const ux = st.ball.p[0] - q.p[0], uz = st.ball.p[2] - q.p[2];
           const ul = hyp(ux, uz) || 1;
           // le pique TRAVERSE le ballon : déviation franche loin du pied qui pique — un 50/50
-          st.ball.impulse([-st.ball.v[0] * 0.55 + (ux / ul) * 3.4, 0, -st.ball.v[2] * 0.55 + (uz / ul) * 3.4]);
+          st.ball.impulse([-st.ball.v[0] * 0.55 + (ux / ul) * 3.4, 0, -st.ball.v[2] * 0.55 + (uz / ul) * 3.4]); if (st.full && cfg.ballonFou) appliquerFou(st, q, cfg, Math.atan2(uz, ux));   // LE BALLON FOU (271, doc fou.js) : la sortie stochastique du ballon piqué
           q._pokeCd = st.t + 1.2;
           st.lastTouch = q.team;
           st.events.push({ t: +st.t.toFixed(2), type: 'tacle-pique', by: q.id, sur: c.id, dist: +dq.toFixed(2) });   // (256) 'pique' → 'tacle-pique' : un accent séparait le tacle du bout du pied de la passe piquée

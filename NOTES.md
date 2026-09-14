@@ -11485,6 +11485,69 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      soldier-volley (cmp) ; match-sim, rondo-sim, match-config à 1249 lignes (la garde des huit
      secondes fondue sur la ligne du gkPied). Sceau : commit d6c4ccc, poussé ; déploiement showcase-pi-mocha au deuxième essai
      (cmp du chunk Rondo servi = construit). Vient le ballon qui sort (271).
+- 349: LE BALLON FOU (271 — la carte du book : Bible 15 lot 3 « le ballon qui sort » ; §3.4 la
+     sortie stochastique du ballon disputé (huit secteurs : cône ± 45° 45,3 %, demi-plan arrière
+     25,9 %, σ_θ ≈ 75° déduit — D8b, D9), §10 la vitesse de sortie moyenne 4-9 m/s et la qualité du
+     point d'appui (élite 45°, moyenne 75°, médiocre 95-105°) ; Référentiel 01 §2.5 touches 33-45 /
+     match, corners 9-11, sorties de but ~16 ; Modèle 09 §7 la sortie non forcée 6-9 % des pertes).
+     Sonde AVANT (sonde-271 : les sorties par espèce et par CAUSE — la dernière action avant la
+     sortie —, la part des passes / tirs / dégagements qui finissent dehors, le jeu long ; 8 × 45
+     min, graines 3-29) : sorties 34 / match (réel 60-70) — touche 19 (réel 33-45), corner 6,5
+     (9-11), sortie de but 8 (~16) ; arrêts 61-65 (85-105). LES CAUSES : les passes en cloche (les
+     dégagements sansCible) 6,5-8,5, les through / channel 5-6, les passes au sol 3,5-5,5, le ballon
+     libre ramassé 3-5, le contrôle 1,5-4, le duel 1 ; et LE DIAGNOSTIC (dbg271) : après une
+     déviation le ballon repart à 2-3 m/s (le pique 3,1 p50, le tacle gagné 3,4, le contrôle manqué
+     3,0, le glissé 1,6) quand le book mesure 4-9 m/s — il ne sortait jamais (le pique 9 % dehors à
+     3 s, le tacle gagné 8 %) ; les tirs : 37 / match, 7,5 buts (!), 13,5 au gardien, 6,5 dehors
+     dont 3 sorties de but, 9,5 restent en jeu ; les dégagements 44 / match, 10 % dehors ; le jeu
+     long 5 % des passes (réel 8-20), conservé à 10 s 58-69 % (réel 28,6). LA LOI (fou.js,
+     cfg.ballonFou && st.full) : après une déviation — le pique (rondo-sim), le tacle qui dégage
+     (duel.tacleDegage, à la place de son cône serré à 7 m/s), le contrôle manqué (rondo-sim, dans
+     l'axe où le ballon fuit), le glissé gagné (slideResolve, dans sa course) — appliquerFou repose
+     la vitesse du ballon : la norme LOG-NORMALE autour de v 6,5 m/s (σ_v 0,35, bornée [2 ; 12]), la
+     direction sur la NORMALE ENROULÉE autour de l'axe du dévieur (son sens d'attaque par défaut)
+     avec σ_θ = sigmaFou(qualité) — élite 45°, moyenne 75°, médiocre 100°, la qualité lue des
+     facteurs de contrôle et de garde du tacle (0,5 à l'identité) —, sur le flux 'duel' (Box-Muller
+     sur deux uniformes). Le contre (258b) et la tête (112) gardent leur loi. Mesuré APRÈS (8 × 45
+     min) : la vitesse du ballon à l'image du pique 3,3 → 8,0 m/s p50 ; les sorties 34 → 35 / match
+     — touche 19 → 21, corner 6,5 = 6,5, sortie de but 8 → 7 ; arrêts 62-71. LA LEÇON : la loi est
+     tenue au banc (σ, le cône, le quart arrière, la vitesse) et le monde bouge PEU — le ballon
+     dévié à 8 m/s est RAMASSÉ avant la ligne (loose-kept 800-1 000 / match, le ramassage du 107, la
+     re-capture par intention), et les déviations vivent dans l'axe ; les sorties manquantes ne sont
+     pas la vitesse de déviation, elles sont (a) LES TIRS qui ne sortent pas (37 / match pour 25
+     réels, 3 sorties de but pour ~12 : Modèle 10, la dispersion et le volume du tir), (b) LES
+     DÉGAGEMENTS en jeu (44 / match, 10 % dehors — le dégagement cherche une tête, 131), (c) LE JEU
+     LONG qui ne se manque pas (D14, D33 — le sous-dosage muV / muP du 265 à 0, la passe longue
+     exacte). Jumeau : ballonFou null = HEAD au bit (4071982537b5a01b / 3ab2de16234fbc03 — le défaut
+     du 270, relu par git stash). Banc : verify-match11 bloc 271 (index 169 : σ_θ 75 / 45 / 100° aux
+     trois qualités, la qualité 0,5 sans note ; 6 000 sorties à un LCG : vitesse moyenne 6,81 m/s,
+     bornée [2 ; 12], cône 46 % (45 ± 6), arrière 23 % (26 ± 5), l'élite 68 % dans le cône, le
+     médiocre 35 ; appliquerFou pose 9,71 m/s sur le ballon ; 600 s graine 3 : 8,0 m/s p50 à l'image
+     du pique c. 3,3 sans la clé — 0,15 s plus tard les deux mondes rendent 2,3 : le ballon est déjà
+     ramassé). Deux pièges de banc : 75° × π/180 × 180/π = 75,00000000000001 (la tolérance à 1e-6),
+     hypot(cos·12, sin·12) = 12,000000000000002 (la borne à + 1e-9). Ce qu'il nomme : le second
+     ballon comme structure (Bible 15 §3.4-3.5 : la chute à 12-16 m, le TRAIL, 2,25 s de chaos), le
+     ramassage trop prompt (le ballon libre vit 2,25 s au réel), les tirs qui sortent (Modèle 10),
+     les dégagements dehors, le jeu long qui se manque (D14, D33), la dispersion inter-équipes du
+     ballon en jeu.
+     Banc complet (final271 : 8 shards + 25 annexes) : shards 36/0 42/0 32/2 39/2 41/2 43/0 33/3
+     32/1 = 298 ✓ / 10 ✗ — six rouges du monde remangé (les ballons déviés repartent vifs : d'autres
+     ballons libres, d'autres courses, d'autres possessions), tous verts à HEAD~ (worktree e0b9951)
+     et épinglés PAR CONTENU « ballonFou: null DATÉ 271 », tous verts isolés à HEAD : 95 (bloc 26,
+     le jockey 45 c. 54), 135 (66, les sauts de cible), l'allure (22), 115 (44, le petit pont), 123
+     (54, le box crash), le pivot en relance basse en flux (135, trois cfg), le marquage de surface
+     en flux (134, trois cfg). Hérités : 170 (83, le corps ouvert — il flotte depuis le 270), 246d
+     (148), « contres arrivés à l'entrée » (139). Annexes : attributes 26/1 → 27/0 (L55, la
+     gradation 50 → 104 c. 30 → 243), identification 0/1 → REGELÉ DATÉ 271 : 14 → 15 signatures
+     (perdues DC A|tenue, MDC A|profondeur, MIL C|repli ; gagnées DC A|largeurR, DC B|profondeur,
+     MDC C|appel, AV A|profondeur — la dette de volumétrie à 6 graines demeure), scan 4/1 → 5/0
+     (L13, 1 saccade de Jordet) ; frappes 13/0, gestes 60/0, match 84/0, menace 11/0, roles 14/0,
+     rondo 40/0, sync 9/0, attente 42/0, cartons 6/0, contact 25/0, expulsion 8/0, football-rules
+     59/0, foulee 45/0, kit 5/0, loi3 10/0, part-tint 18/0, porte 4/0, remises 36/0, slide 10/0,
+     tactics 11/0, tete 7/0, loi12 12/2 (hérité : « le mur se tient » 4,6 m + son sabotage). Bloc 1
+     seul 0.54 ms/step (≤ 1,6). Copies : starter = showcase = soldier-volley (cmp) ; match-sim,
+     rondo-sim, match-config à 1249 lignes (le ballon fou fondu sur les lignes du pique et du
+     contrôle manqué).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
