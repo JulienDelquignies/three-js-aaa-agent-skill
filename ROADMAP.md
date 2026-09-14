@@ -163,6 +163,10 @@
   datées du tronc (ligne: null DATÉ 273 dans verify-remises/porte/contact, locomoteur: null DATÉ 260 dans
   verify-remises) — à re-dater quand je reprends ces mondes (la ligne tenue et le profil locomoteur changent les
   corps à la remise, les portés et les chutes).
+- LIVRÉ (lot A12a, note 353) : LE SCAN DU RECEVEUR EN VOL — gaze.js lit l'horloge de scan de la sim (p.scan, 250)
+  au lieu de coller les yeux du receveur au ballon : saccades vers le presseur / l'espace pendant le vol, les yeux
+  retombent sur le ballon pour la prise, une seule horloge, clé absente = hier (29 % du vol hors ballon, 0,89
+  saccade/s, 42/43 prises au ballon ; verify-gaze 22/0, captures a12a-scan-receveur-*.png).
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

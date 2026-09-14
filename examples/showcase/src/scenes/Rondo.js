@@ -1124,7 +1124,7 @@ export class Rondo {
           : (a?.payload?.outYaw != null ? [s.p[0] + Math.cos(a.payload.outYaw) * 6, 1.4, s.p[2] + Math.sin(a.payload.outYaw) * 6] : null);
         const view = {
           id: s.id, t: this._t, ball: st.ball.p, ownerId: st.ball.owner,
-          flightTo: st.pass?.to ?? null, justReceivedAt: pl._rxAt ?? null,
+          flightTo: st.pass?.to ?? null, justReceivedAt: pl._rxAt ?? null, scan: s.scan ?? null, pos: s.p,   // (A12a) l'horloge de scan de la sim (250), lue — jamais tenue — ici
           act: a ? { t: a.t, antic: a.anticipation, targetP } : null,
           job: s.job, markP: null,   // le rondo ne marque pas à l'homme ; le scan va au porteur
           carrierP: owner && owner.id !== s.id ? [owner.p[0], 1.5, owner.p[2]] : null,

@@ -11752,6 +11752,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      11/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
      6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step (≤ 1,6). Sceau :
      commit 01d5d17, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-iGnP0BJS).
+- 353: LE SCAN DU RECEVEUR EN VOL (lot A12a — Campagne V, interface gelée §1 ;
+     « ok continue alors » après la reprise du tronc 7e6cd12). Jordet : le
+     receveur regarde autour de lui PENDANT le vol (0,4-0,6 scan/s), jamais
+     pendant la frappe du passeur ni pendant la prise. Le 250 a mis l'horloge
+     dans la sim (scan.js, p.scan, aucun bit de jeu) ; gaze.js ne la lisait
+     pas : la clause d'hier collait les yeux du receveur au ballon tout le
+     vol, et une horloge LOCALE (LCG par acteur) scannait hors ballon —
+     deux horloges dont une aveugle. La politique (pickGazeTarget) lit
+     p.scan : saccade en cours (until > t, cible posée) → les yeux à la
+     cible (tête 1,6 m pour un corps, horizon 1,0 m pour un espace), le
+     receveur en vol compris ; receveur à portée de prise (< 1,5 m) → le
+     ballon MÊME en saccade (la sim n'en ouvre pas là, celle en cours se
+     coupe ici) ; hors saccade la politique d'hier, mais le scan local se
+     tait quand la sim porte p.scan (UNE horloge) ; cfg.scan null → p.scan
+     absent → le code d'hier, littéralement. Scène : la vue passe scan et
+     pos (une ligne, Rondo à 1249). Le mécanisme Gaze ne change pas. Banc
+     verify-gaze 12 → 22 : mécanisme (cible, espace, saccade finie, prise),
+     une seule horloge (0 cible locale en 10 s), la tête qui suit (53° vers
+     le presseur à 53°, 0° à la prise) + sabotage « saccade sans fin sans
+     garde de prise » attrapé (53° à la prise) ; flux graine 3 × 240 s, la
+     politique appelée comme la scène l'appelle : 29 % des images de vol
+     hors ballon (≥ 15 %), 0,89 saccade/s de vol (Jordet ≥ 0,4 ; la sim
+     mesure 0,73 — sa cadence), yeux au ballon à la prise 42/43 ; clé
+     absente 0 % et 43/43. Captures playmode (graine 3, t = 12,9 s,
+     receveur 9, saccade vers le presseur, lacet de tête −49°) :
+     playmode-shots/a12a-scan-receveur-face.png et -plan.png — le ballon
+     roule vers lui, la tête est sur le presseur qui vient. Aucun bit de
+     jeu (verify-sync 9/0). Référence 58 (le lot A12 y grandit). Suite :
+     A12b la réception de trois-quarts.
+
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -35,6 +35,9 @@ export const GAZE = {
   scanEvery: [1.5, 4.0],   // s — cadence des scans hors ballon (pros : 0,3-0,6 scan/s)
   scanFor: 0.45,     // s — durée d'un scan avant retour ballon
   alternate: [0.4, 1.2],   // s — alternance ballon/cible du porteur
+  // (A12a) L'HORLOGE DE SCAN DE LA SIM (250, p.scan) : la hauteur des yeux sur la cible d'une saccade — un corps
+  // se regarde à la tête, un espace à hauteur d'horizon — et la PRISE (m) où les yeux retombent sur le ballon
+  scanEyeHead: 1.6, scanEyeSpace: 1.0, prise: 1.5,
 };
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -52,7 +55,15 @@ export const gazeRng = (seed) => { let s = (seed * 2654435761 + 1013904223) >>> 
  * @returns [x,y,z] la cible MONDE du regard
  */
 export function pickGazeTarget(view, st, rng) {
-  const { id, t, ball, ownerId, flightTo, justReceivedAt, act, job, markP, carrierP } = view;
+  const { id, t, ball, ownerId, flightTo, justReceivedAt, act, job, markP, carrierP, scan, pos } = view;
+  // (A12a) L'HORLOGE DE SCAN DE LA SIM a le dernier mot quand elle existe (250, p.scan — interface gelée
+  // docs/Interface_Campagne_V.md §1) : pendant une saccade (until > t, cible posée) les yeux vont à la cible,
+  // le RECEVEUR EN VOL compris — Jordet : le receveur regarde autour de lui pendant le vol, et les yeux
+  // retombent sur le ballon pour la prise (la sim n'ouvre pas de saccade à < prise m, celle en cours se coupe
+  // ici). Hors saccade : la politique d'hier, sauf le scan local hors ballon qui se tait — UNE horloge, celle
+  // de la sim, déterministe par acteur. Absente (cfg.scan null → p.scan absent) : hier au bit.
+  if (scan && scan.until > t && scan.cible && !(flightTo === id && pos && hyp(ball[0] - pos[0], ball[2] - pos[2]) < GAZE.prise))
+    return [scan.cible[0], scan.vers === 'espace' ? GAZE.scanEyeSpace : GAZE.scanEyeHead, scan.cible[1]];
   // receveur : le ballon, en continu, du départ de la passe à l'amorti compris — LE geste de
   // regard le plus universel du football (mesuré avant : 0,7 % des réceptions regardées)
   if (flightTo === id || (justReceivedAt != null && t - justReceivedAt < GAZE.holdAfterReceive)) return ball;
@@ -64,7 +75,9 @@ export function pickGazeTarget(view, st, rng) {
     return st.altOnBall || !act?.targetP ? ball : act.targetP;
   }
   if (job === 'chase' || job === 'press') return ball;   // le presseur a les yeux verrouillés dessus
-  // hors ballon : le ballon, coupé de scans vers le marqué / le porteur / l'espace
+  // hors ballon : le ballon, coupé de scans vers le marqué / le porteur / l'espace — l'horloge LOCALE
+  // d'hier, seulement quand la sim n'en porte pas (A12a : une seule horloge)
+  if (scan) return ball;
   if (st.scanUntil != null && t < st.scanUntil) return st.scanP ?? ball;
   if (t >= (st.nextScanAt ?? 0)) {
     st.nextScanAt = t + GAZE.scanEvery[0] + rng() * (GAZE.scanEvery[1] - GAZE.scanEvery[0]);
@@ -174,6 +187,12 @@ export function checkGaze() {
     last = k;
   }
   if (scans < 2) issues.push(`hors ballon la tête ne scanne pas (${scans} changements en 8 s)`);
+  // 5. (A12a) l'horloge de la sim a le dernier mot : receveur en vol, saccade en cours → la cible ; saccade
+  // finie → le ballon ; ballon à portée de prise → le ballon même en saccade
+  const rxv = (t, until, bx) => pickGazeTarget({ id: 4, t, ball: [bx, 0.1, 0], ownerId: null, flightTo: 4, justReceivedAt: null, act: null, job: 'support', markP: null, carrierP: null, scan: { at: 0, until, vers: 'presseur', cible: [4, 4], n: 1, vol: true }, pos: [0, 0, 0] }, {}, rng);
+  if (rxv(1, 1.4, 6)[2] !== 4) issues.push('receveur en vol : la saccade de la sim n\'est pas suivie');
+  if (rxv(1.5, 1.4, 6)[2] !== 0) issues.push('receveur en vol : les yeux ne reviennent pas au ballon après la saccade');
+  if (rxv(1, 1.4, 1)[2] !== 0) issues.push('receveur à la prise : les yeux ne retombent pas sur le ballon');
   return { ok: issues.length === 0, issues };
 }
 import { hyp } from './hyp.js';
