@@ -11833,6 +11833,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      au point de stance (comme porteAnticipe pendant l'armé) ; cible ≤ 0,4 m
      [CONVENTION]. Référence 58. Suite : A12d le recul-frein.
 
+- 356: LE RECUL-FREIN DU CENTRAL (lot A12d). Le mouvement est à la sim
+     (jockey 95, contact.jockey A10 : il recule et chasse en faisant face ;
+     orienteFaible ; régimes back/lat de la foulée A7) ; manquait la
+     POSTURE : la course arrière d'un athlète est droite, celle du
+     défenseur qui jockeye est basse et ouverte. motion-gait, opts.jockey
+     (aucun bit de sim) : +5 cm d'affaissement, +10° de buste, +4 cm de
+     largeur, +14° d'élévation et +20° de coude, balancier × 0,5 — composé
+     sur les régimes de la direction. Le contrôleur lit idleCtx.jockey, que
+     la scène calcule avec la condition du jockey de la sim (presseur,
+     porteur adverse à 0,3-4,5 m, ≤ 3,5 m/s, pas lancé sur lui) ; à
+     l'arrêt, l'espèce pret (A8) tenait déjà la garde. Banc verify-foulee
+     48 → 51 (en recul chassé −1,5 / 0,6 m/s : bassin 80 c. 85 cm, mains 68
+     c. 61 cm, contrat tenu, drapeau absent au bit), verify-gait 23/0,
+     verify-locomotion 6/0, verify-sync 9/0. Capture a12d-recul-frein.png
+     (graine 3). Référence 58. Suite : A12e la marche des rôles marchants.
+
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -341,7 +341,7 @@ export class CharacterController {
     if (w > 0) {
       const vb = this._bodyVelocity(v);
       G.vBody = vb;
-      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? true : undefined });   // (A12b) le ballon vole vers lui : bras en équilibre
+      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? true : undefined, jockey: this.idleCtx?.jockey ? true : undefined });   // (A12b) le ballon vole vers lui : bras en équilibre ; (A12d) il jockeye : bas et ouvert
     }
     const pose = gait && idle ? { q: blendQ(idle.q, gait.q, w, G), hips: lerp3(idle.hips, gait.hips, w) } : (gait || idle);
     if (!pose) return;

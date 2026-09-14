@@ -175,6 +175,9 @@
 - LIVRÉ (lot A12c, note 355) : LA PAUSA — l'espèce d'attente `pausa` (la semelle sur le ballon RÉEL, mains sur les
   hanches, poids sur l'appui ; idleOpts du contrôleur) ; mesuré : le moteur arrête le porteur mais laisse le ballon à
   1,6-2,0 m (4 tenues sur 11) — le signe attend que le 253 porte le ballon au pied (dette nommée). verify-attente 48/0.
+- LIVRÉ (lot A12d, note 356) : LE RECUL-FREIN — la posture du jockey dans la foulée générée (opts.jockey : bas,
+  penché, large, bras ouverts, balancier réduit), le drapeau relu de la condition du jockey de la sim ; verify-foulee
+  51/0 ; capture a12d-recul-frein.png.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

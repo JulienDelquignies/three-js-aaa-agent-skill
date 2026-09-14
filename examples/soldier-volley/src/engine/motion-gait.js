@@ -212,12 +212,16 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // fermés, balancier réduit. `opts.receveur` (true ou { elev, elbow, swing }) — posé par le contrôleur quand la scène
   // dit que le ballon vole vers lui ; absent : la foulée d'hier, au bit.
   if (opts.receveur) { const rc = opts.receveur === true ? {} : opts.receveur; p.armElev += rc.elev ?? 12; p.elbow += rc.elbow ?? 16; }
+  // (A12d) LE RECUL-FREIN : le défenseur qui jockeye le porteur (la sim le fait reculer et chasser en lui faisant face,
+  // A10 cfg.contact.jockey) est BAS et ouvert — bassin plus bas, buste penché, pieds plus larges, bras ouverts, balancier
+  // réduit (Van Dijk : « recule au tempo de l'attaquant, hanches de trois-quarts, sans se jeter »). `opts.jockey` ; absent : hier au bit.
+  if (opts.jockey) { const jk = opts.jockey === true ? {} : opts.jockey; p.drop += jk.drop ?? 0.05; p.lean += jk.lean ?? 10; p.hw += jk.hw ?? 0.04; p.armElev += jk.elev ?? 14; p.elbow += jk.elbow ?? 20; }
   const L = P.lengths, R = L.thigh + L.shank;
   const hipY = P.bones.LeftUpLeg.bindP[1], ankleY = P.bones.LeftFoot.bindP[1];
   const vC = [vR, 0, -vF];                                            // repère personnage : avant = −Z
   const ph = ((phi % 1) + 1) % 1;
   const uL = ph, uR = (ph + 0.5) % 1;
-  const armF = (opts.armSwingF ?? 1) * (opts.receveur ? ((opts.receveur === true ? {} : opts.receveur).swing ?? 0.55) : 1);
+  const armF = (opts.armSwingF ?? 1) * (opts.receveur ? ((opts.receveur === true ? {} : opts.receveur).swing ?? 0.55) : 1) * (opts.jockey ? ((opts.jockey === true ? {} : opts.jockey).swing ?? 0.5) : 1);
 
   // ---- le bassin : rebond (2/cycle), affaissement, roulis vers le pied d'appui, lacet, tangage
   const bobPhase = TAU * 2 * (ph - p.s / 2);

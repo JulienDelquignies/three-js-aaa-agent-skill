@@ -159,5 +159,19 @@ console.log('\n— A12b : la réception en mouvement — les bras en équilibre 
   ok(same, 'sans le drapeau, la foulée d\'hier au bit (receveur undefined = aucune option)');
 }
 
+console.log('\n— A12d : le recul-frein — le défenseur qui jockeye est bas et ouvert (opts.jockey) —');
+{
+  const mesure = (opts) => {
+    let spread = 0, pelvis = 0, n = 0;
+    for (let i = 0; i < 60; i++) { const g = gaitPose(P, i / 60, -1.5, 0.6, NEUTRAL_GAIT_STYLE, opts); const fk = fkPose(P, g.q, g.hips); spread += fk.RightHand.p[0] - fk.LeftHand.p[0]; pelvis += fk.Hips.p[1]; n++; }
+    return { spread: spread / n, pelvis: pelvis / n };
+  };
+  const d = mesure({}), j = mesure({ jockey: true });
+  ok(j.pelvis <= d.pelvis - 0.03 && j.spread >= d.spread + 0.05, `en recul chassé (−1,5 m/s, 0,6 latéral) le jockey est plus BAS (bassin ${(j.pelvis * 100).toFixed(0)} c. ${(d.pelvis * 100).toFixed(0)} cm, ≥ −3) et plus OUVERT (mains ${(j.spread * 100).toFixed(0)} c. ${(d.spread * 100).toFixed(0)} cm, ≥ +5)`);
+  let cg; try { cg = checkGaitGen(P, { vF: -1.5, vR: 0.6, opts: { jockey: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
+  ok(cg.ok, `…et sa foulée reste sous le contrat (checkGaitGen en recul chassé)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
+  ok(JSON.stringify(gaitPose(P, 0.3, -1.5, 0.6, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, -1.5, 0.6, NEUTRAL_GAIT_STYLE, { jockey: undefined }).q), 'sans le drapeau, le recul d\'hier au bit');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

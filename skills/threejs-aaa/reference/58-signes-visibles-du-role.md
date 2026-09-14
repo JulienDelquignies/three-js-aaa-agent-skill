@@ -116,8 +116,29 @@ t ≈ 370 s, joueur 4 à l'arrêt en pausa, le ballon à 1,8 m : la posture, et 
 253 doit porter le ballon au point de stance (comme `porteAnticipe` le fait pendant l'armé) — sans quoi la semelle n'a
 rien sous elle. Chiffres : 4 tenues à l'arrêt sur 11, ballon à 1,6-2,0 m ; cible ≤ 0,4 m [CONVENTION].
 
+## A12d — Le recul-frein du central
+
+**Le signe.** Le document (§3.2 A Van Dijk, débat 1 Maldini) : « recule au tempo de l'attaquant, oriente ses hanches
+pour lui fermer l'accès à son pied fort, attend le soutien — sans se jeter ». La sim a déjà tout le mouvement : le
+jockey (lot 95, `cfg.jockey` : les appuis du presseur près du porteur ; lot A10, `cfg.contact.jockey` : il RECULE ou
+se DÉCALE en faisant face), l'angle qui force le pied faible (`orienteFaible`), la course arrière et le pas chassé
+générés (A7 : régimes `back` et `lat`, fondus par la direction). Ce qui manquait : la POSTURE du jockey — la course
+arrière d'un athlète est droite et courte de bras, celle d'un défenseur qui jockeye est basse et ouverte.
+
+**Le mécanisme (motion-gait, aucun bit de sim).** `opts.jockey` : bassin plus bas (+5 cm d'affaissement), buste penché
+(+10°), pieds plus larges (+4 cm), bras ouverts (+14° d'élévation, +20° de coude), balancier × 0,5 — composé sur les
+régimes de la direction, donc vrai en recul comme en pas chassé. Le contrôleur pose le drapeau depuis `idleCtx.jockey`,
+que la scène calcule avec LA CONDITION DU JOCKEY DE LA SIM (presseur, porteur adverse à 0,3-4,5 m, ≤ 3,5 m/s, pas
+lancé sur lui). À l'arrêt, l'espèce d'attente `pret` (A8) prend le relais — la garde existait déjà.
+
+**Contrat.** verify-foulee 48 → 51 : en recul chassé (−1,5 m/s, 0,6 m/s latéral) le jockey est plus bas (bassin 80 c.
+85 cm) et plus ouvert (mains 68 c. 61 cm), sa foulée reste sous `checkGaitGen`, drapeau absent = le recul d'hier au
+bit. verify-gait 23/0, verify-locomotion 6/0.
+
+**Capture.** `a12d-recul-frein.png` (playmode, graine 3 : le presseur en recul devant le porteur, bas, bras ouverts).
+
 ## À venir dans ce lot
 A12c la pausa (kind/événement du 253) ;
-A12d le recul-frein du central ; A12e la marche des rôles marchants ; A12f les petits gestes signés (bras du tireur
+A12e la marche des rôles marchants ; A12f les petits gestes signés (bras du tireur
 `payload.mains = 'signal'`, la passe sans regarder, le pas de recul du renard) ; une planche « sans les noms » par
 rôle du 249.
