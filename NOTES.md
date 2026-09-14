@@ -11806,8 +11806,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      10/0, kit 5/0, part-tint 18/0, tactics 11/0, slide 10/0, foulee 45/0, attente 42/0, porte 4/0,
      cartons 6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Le worker de session a été tué
      (exit 137) pendant la relance des shards en parallèle des annexes et des worktrees : les
-     shards 4-7 relancés seuls, la leçon — pas plus de quatre node à la fois. Bloc 1 seul : 0,58
-     ms/step (≤ 1,6).
+     shards 4-7 relancés seuls, la leçon — pas plus de quatre node à la fois. Bloc 1 seul : 0,55
+     ms/step (≤ 1,6). Sceau : commit 0cc70a3, poussé ; déploiement showcase-pi-mocha au premier
+     essai (cmp du chunk Rondo-CT08IpCT).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
