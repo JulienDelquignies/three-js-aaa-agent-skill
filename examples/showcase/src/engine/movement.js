@@ -130,6 +130,7 @@ export function movePlayers(st, dt, cfg) {
     // en fin de pas (après l'intégration), l'attribut stamina le module, la précision fatiguée
     // est une dette nommée. Clé absente : le rondo et le réduit d'hier, au bit près.
     if (cfg.fatigue && st.full) top *= 1 - (cfg.fatigue.cap ?? 0.15) * (1 - (p.stam ?? 1));
+    if (st.full && cfg.ligne && p._frein && p._frein.until > st.t) top *= p._frein.f;   // (273) « on retient les avancés » : le plus avancé d'une ligne cassée freine (ligne.js)
     // LE BACKPEDAL DU LIBÉRO (lot 120, cfg.libero && st.full) : le gardien AVANCÉ qui rentre
     // revient FACE AU JEU — en reculant (retour m/s), pas en sprint dos au ballon. C'est LE
     // prix du gardien-libéro : sans lui, le retour à ~7 m/s effaçait la fenêtre du lob

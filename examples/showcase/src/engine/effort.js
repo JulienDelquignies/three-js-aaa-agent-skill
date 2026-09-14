@@ -66,6 +66,7 @@ export function intentionDe(p, st, cfg, K, bursting) {
   if (g > (K.gRecup ?? 12)) { p._reg = 'recup-loin'; return null; }
   if (momentDuJeu(st, p.team, K.fenetre ?? 5) === 'transition-def' && dB < (K.rayonTrans ?? 20) * axe(tac(st, p.team).transition, 0.6, 1.4)) { p._reg = 'recup-trans'; return null; }
   if ((p._efAct ?? -1) > st.t && g > (K.tolOff ?? 1.2)) { p._reg = 'actif'; return { v: K.vActif ?? 4.2, eps: K.epsActif ?? 0.6, reg: 'actif' }; }
+  if (p._efLigne && p._efLigne.until > st.t && g > (K.tolOff ?? 1.2)) { p._reg = 'ligne'; return { v: p._efLigne.v, eps: K.epsActif ?? 0.6, reg: 'ligne' }; }   // (273) la ligne rejoint sa bande en course avant / recul organisé (ligne.js, sous cfg.ligne seulement)
   p._reg = 'ent';
   const vEnt = st.possession?.team === p.team ? (K.vEnt ?? 1.4) : (K.vEntDef ?? K.vEnt ?? 1.4);   // l'entretien du bloc SANS ballon est une marche rapide (Bible 10 : 1,8-2,6 m/s), celui du soutien AVEC ballon une marche
   return { v: Math.max(vEnt, Math.min(K.vActif ?? 4.2, tSpd * 1.15 + 0.4)), eps: K.epsEnt ?? 0.45, reg: 'ent' };

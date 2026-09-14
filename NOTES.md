@@ -11628,6 +11628,67 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      18/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
      6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,56 ms/step (≤ 1,6). Sceau :
      commit caa013e, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-B8nMjuKr).
+- 351: LA LIGNE EST UNE LIGNE (273 — la carte du book après le 272 : « le bloc qui perçoit et la
+     ligne qui est une ligne », Bibles 03 et 10 ; le 272 nommait les entrées dans la surface, 23-27
+     tirs dedans pour 16. Bible 03 §2.3 le retard source d'intervalle (lineDesync 0,8-1,8 en régime,
+     pic ≤ 3,5 pendant 0,6 s, > 4 m sur > 0,5 s = ligne cassée) et T8 ; §9 le coût de la
+     désynchronisation ; Bible 10 §10.1 « on retient les avancés » (desync > 3 et passe en
+     profondeur possible → le plus avancé ralentit de 25 % pendant 0,4 s), §3.4 la hauteur comme
+     régime locomoteur (montée 4-5,5 m/s, recul organisé 3,5-4,4 = 0,55 × l'avant), le tick
+     d'unité 4 Hz du ch. 01 : « une grandeur calculée une fois par unité et lue par tous »).
+     Sonde AVANT (sonde-ch03, 4 × 90 min, graines 3-13 ; sonde-ch10 2 × 90 min dans le worktree
+     bfc549c) : lineDesync p50 7,2-7,5 m, p90 18,5-19,6 ; bascules de stoppeur 188-213 ; hors-jeu
+     sifflés 2,0-2,5 ; le central 10,1-10,4 km ; ch. 10 : ligne cassée 606 épisodes / match /
+     équipe, montée 1,78 m/s, recul 2,07, interligne 10,9 m, k_x libre 0,27 / accroché 0,38. LE
+     DIAGNOSTIC (dbg273) : les CIBLES des quatre étaient à 9,6 m d'écart p50 (chacun son homme, son
+     slot, sa bande de 6 m vers l'avant, le presseur et le couvreur hors ligne) et les CORPS à 8,9 —
+     puis, une fois les cibles tenues à 2,7 m, les corps restaient à 10,4 : le régime d'effort 261
+     ramène le posté au trot d'entretien (1,8 m/s) vers une cible qui ne bouge plus (5-16 m de
+     retard mesurés en recul), et le frein posé sur « le plus avancé » d'une ligne qui DESCEND
+     freinait son retardataire. LA LOI (ligne.js, cfg.ligne) : retardDe (1,3 × (2 − anticipF) × (2
+     − posF) : 1,3 exact au 50, 0,94 à l'élite, 1,72 au médiocre), referenceDe (le 2ᵉ plus reculé),
+     ligneStep (l'unité = les postes de la ligne OFF debout, hors presseur ; à hz la référence des
+     CIBLES et la desync des corps ; chaque cible bornée à [réf − arriere ; réf + avant − retard_i],
+     le marqueur au contact — sa cible est son _markT — retenu vers l'avant seulement ; le corps à
+     plus de tol m de sa cible en profondeur reçoit le régime de la hauteur p._efLigne (montee 4,8 /
+     recul 3,9 × topF, tenue 0,5 s) lu par effort.js avant l'entretien ; ligne cassée (desync >
+     seuil 3) et ballon non couvert (couvertStep) → le plus avancé QUI MONTE (sa cible devant lui à
+     tol près) freine : p._frein {until, f 0,75} lu par movement.js sur la pointe, événement 'ligne'
+     kind 'frein'). match-sim : l'appel à la fin du bloc défensif, après les cibles, avant le repli
+     et piegeApply (la ligne synchrone du 255 garde son pas). Clé absente : la ligne d'hier au bit.
+     Sonde APRÈS (4 × 90 min) : lineDesync p50 3,2 m (p90 16,7-17,4 : les transitions), bascules
+     182-204 (l'unité ne touche pas l'élection), hors-jeu 1,0-4,5 (bruit de graine), le central
+     10,2-10,6 km ; ch. 10 : ligne cassée 606 → 398, montée 1,78 → 2,07, recul 2,07 → 3,15 m/s,
+     longueur du bloc 28,4 → 29,9 ; LE COÛT : interligne DEF↔MID 10,9 → 13,8 m (> 16 m : 16 → 36 %
+     du temps) — la ligne tenue ne porte plus ses latéraux hauts, le barycentre DEF descend et le
+     milieu ne suit pas ; k_x libre 0,27 → 0,41. Jumeau : ligne null = HEAD au bit (eca6a43f52c99a9a /
+     9e20c0fef269019a — le défaut du 272, relu par git stash, identique au 271 : 90 s de graines 3
+     et 7 ne voient pas la porte xG). Banc : verify-match11 bloc 273 (index 171 : retard 1,3 / 0,939 /
+     1,719, la référence, l'unité synthétique — le monté à +2 m ramené à réf + 2 − 1,3, le couvreur
+     intact, desync 4 → frein 0,75 et l'événement, couvert → pas de frein, le presseur hors de
+     l'unité ; 300 s graine 3 : 57 freins, desync de la ligne OFF p50 5,6 m c. 9,0 sans la clé ;
+     sabotage ligne null : 0 frein). Ce qu'il nomme : l'interligne dérivé et k_x à deux régimes
+     (Bible 10 lot 4 — le milieu qui suit la ligne), le stoppeur / couvreur avec hystérésis (T7),
+     la plage 0,8-1,8 (le p90 est fait des transitions : la ligne cassée 398 épisodes compte
+     chaque recul), la montée au régime (2,1 m/s : la montée reste au trot du bloc chaîné — le
+     régime ne parle que hors de la bande), le bloc qui perçoit (Bible 10 lot 1), la parole de
+     ligne (LINE_UP / DROP / HOLD, §9). Banc complet (final273 : 8 shards puis 25 annexes) : 296 ✓ /
+     14 ✗ au premier passage — rouges : 189 (bloc 98, le contre qui recule 6 c. 7 × 0,7), 96 (27, la
+     bande d'hier : le sabotage zone:false tient aussi sous l'unité), le troisième homme (137), 170
+     (83, le corps ouvert 65° c. 64 − 8), 115 (44, le petit pont 2 c. 3), 121 (52, la roulette), la
+     ligne qui se referme (133), le pivot en relance basse (135), 267 (165, l'élection de
+     choosePass), 244b (142, le flux 3-5-2) — tous verts à HEAD~ (worktree bfc549c) et épinglés PAR
+     CONTENU « ligne: null DATÉ 273 », tous verts isolés à HEAD ; hérités : 246d (148), les contres
+     arrivés à l'entrée (139), rouges aussi à HEAD~. Annexes : attributes 26/1 → 27/0 (L314, la
+     compression), remises 34/2 → 36/0 (L99, L141, L220 — la troisième clause au pied vivait sur
+     une autre cfg que la deuxième : trois épingles), contact 23/2 → 25/0 (L74, le fauté qui
+     tombe), porte 3/1 → 4/0 (L21, les refus au contact), identification 0/1 → REGELÉ DATÉ 273 :
+     14 → 18 signatures (perdues DC A|profondeur, DC B|appel, MDC B|tenue, MDC C|appel ; gagnées
+     DC A|press, LAT D|profondeur, MDC A|profondeur, MDC B|profondeur, MDC C|largeurR, MIL C|repli,
+     AV A|largeurR, AIL D|largeurR — la ligne tenue exprime plus de rôles de ligne), loi12 12/2
+     hérité ; frappes 13/0, gestes 60/0, match 84/0, menace 11/0, roles 14/0, rondo 40/0, sync 9/0,
+     scan 5/0, loi3 10/0, kit 5/0, part-tint 18/0, tactics 11/0, slide 10/0, foulee 45/0, attente
+     42/0, cartons 6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

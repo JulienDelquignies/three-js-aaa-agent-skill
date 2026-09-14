@@ -58,19 +58,19 @@ statistique.
 |---|---|---|---|
 | T1 hauteur de ligne selon `lineHeightBase` | 33-35 haut / 24-27 bas | mesurable, **l'axe marche** | défaut **26,4 m** (p50 23), hauteurBloc 0,9 → **31,8**, 0,1 → **22,6** : l'amplitude de l'axe (−6/+6 m) rend 9 m d'écart ; le monde par défaut est un bloc bas-médian |
 | T2 gardien ↔ ligne | 20,4 m ±3 | mesuré au ch. 02 | **30,3 m** |
-| T3 hors-jeu provoqués | 1,5-2,5 ordinaire, 4,8 Barcelone | tenu au 255 | **1,0** → équilibre 3,0 (259 : la Loi 11 existe), hauteur 0,9 sans piège **1,75**, avec piège **5,25**, preset ligneHaute **4,5** (4 × 90 min) |
+| T3 hors-jeu provoqués | 1,5-2,5 ordinaire, 4,8 Barcelone | tenu au 255 | **1,0** → équilibre 3,0 (259) ; 273 : 2,0-2,5 → 1,0-4,5 sifflés (4 × 90 min, bruit de graine — la ligne tenue ne déclenche rien, le hors-jeu émerge) |
 | T3b anticorrélation hauteur / désync | | **tenu au 255** : à hauteurBloc 0,9 égal, piege 0 → **1,75** hors-jeu provoqués, piege 1 → **5,25** (4 × 90 min) — la synchronie, pas la hauteur |
 | T4 `dLat` axial / centre | 8-12 / **5-8** | mesurable, **cible fausse en centre** | axial **12,8 m** (juste au-dessus), **centre 16,7 m** : les centraux ne se resserrent pas quand le ballon est sur l'aile — ils marquent chacun leur homme (225, 133) là où il est |
 | T5 `dLong` sur l'aile, signe | −3 à −6, correct > 80 % | **absent sur le centre** | **−0,9 m, signe correct 56 %** (0,1 m et 49 % à bloc haut ; −2,5 m et 75 % à bloc bas — le bloc bas approche) |
 | T6 réponse impulsionnelle 3 m en 1,2-2,0 s | | loi existante (236 : monte 3 m, tau 0,2 s + lecture) — à mesurer sur film |
-| T7 bascules de stoppeur | 40-90 (> 250 échec) | mesurable (proxy : le central le plus proche du porteur) | **300 par équipe** (368 haut, 241 bas) — le rôle change de tête quatre fois par minute |
-| T8 `lineDesync` | 0,8-1,8 ; pic ≤ 3,5 | mesurable, **réfuté** | **p50 7,5 m, p90 18,4** (bas : 9,2 / 22,4) — la ligne arrière n'est pas une ligne : latéraux montés ou en marquage, centraux à leur homme ; c'est le constat le plus lourd de la fiche |
+| T7 bascules de stoppeur | 40-90 (> 250 échec) | mesurable (proxy géométrique) | **188-213 → 182-204** par équipe (273 : l'unité ne touche pas l'élection du presseur ; l'hystérésis reste à poser) |
+| T8 `lineDesync` | 0,8-1,8 ; pic ≤ 3,5 | **273** : la ligne est une unité (ligne.js) | **7,2-7,5 m p50 → 3,2** (4 × 90 min ; p90 18,5-19,6 → 16,7-17,4 : les transitions) — la bande [réf − 5 ; réf + 2 − retard_i] et le régime de la hauteur ; le pic ≤ 3,5 est tenu au p50, la plage 0,8-1,8 reste devant (le retard_i seul la donnerait) |
 | T9 éliminations subies /90 | 0,7-1,2 | mesurable (skill events sur le central) — à mesurer |
 | T10 duels aériens gagnés | 65-70 %, jamais > 80 | mesurable après instrumentation (l'événement `tête` ne dit pas l'issue) — 7 têtes de centraux par match, un volume faible |
 | T11 erreurs menant à un but | 0-2 / saison | absent (pas de définition « erreur » dans le journal) |
 | T12-T14 relance : issue des longs, `buildUpBravery`, conducción 8-20 m | | partiel : les longs se conservent trop (ch. 02 test 18) ; pas de curseur de bravoure ; pas de conducción |
 | T15 buts sur corner selon schéma | zone 3,3 / homme 3,1 / hybride 5,9 | mesurable (225 `marquageSurface`, 101) — volume : 200 matchs |
-| T16 distance d'un central | 9-11 km ; +550 m en défense | mesurable, **réfuté** | **14,1 km**, dont 7,6 en phase défensive — le central du moteur court 40 % de trop : il chasse (T7, T8) |
+| T16 distance d'un central | 9-11 km ; +550 m en défense | mesurable, **tenu** | **10,1-10,4 km → 10,2-10,6** (273, 4 × 90 min ; les 14,1 de la fiche étaient d'avant le 261) dont 5,5-5,9 en phase défensive |
 | T17 pic d'accélérations en transition défensive | | mesurable — à mesurer |
 | T18 bloqueur sur corner | | absent (omniscience) |
 | T19 abaisser le gardien de 6 m → la ligne descend de 3-5 m | | **absent dans ce sens** (le libéro suit la ligne, la ligne ne lit pas le gardien) |
@@ -81,10 +81,7 @@ statistique.
 
 ## 4. Les lots que la fiche appelle
 
-1. **La ligne est une ligne** (T8, puis T3, T7, T16) : les quatre défenseurs tenus comme une unité (la cadence
-   d'unité du ch. 01 : 4 Hz), la bande de 6 m appliquée aux latéraux aussi, le retard par joueur comme seule source de
-   désynchronisation (0,8-1,8 m), stoppeur/couvreur avec hystérésis. C'est le lot qui rend le piège de hors-jeu
-   possible et qui fait cesser la chasse (14 km).
+1. **La ligne est une ligne** (T8, puis T3, T7, T16) — **SCELLÉ 351 (273, ligne.js)** : l'unité arrière relit à 4 Hz sa référence (le 2ᵉ plus reculé de ses cibles), chaque corps tient sa cible dans la bande [réf − 5 ; réf + 2 − retard_i] (retard_i = 1,3 × (2 − anticipF) × (2 − posF) : 0,9-1,7 m, la seule source de désynchronisation en régime établi), le presseur hors de l'unité, le marqueur au contact retenu vers l'avant seulement, « on retient les avancés » (frein 0,75 × pointe 0,4 s quand desync > 3 et ballon non couvert), la hauteur comme régime locomoteur (montée 4,8 / recul 3,9 m/s × topF). Mesuré 4 × 90 min : desync p50 7,2-7,5 → 3,2 m. Reste : stoppeur/couvreur avec hystérésis (T7), la plage 0,8-1,8 (les transitions font le p90), l'interligne qui suit (fiche 10 lot 4).
 2. **La charnière sur le centre** (T4, T5) : `dLat` piloté par la zone du ballon (5-8 m en centre), le central opposé
    qui descend et rentre (l'oblique du centre, différente de celle de la sortie 237).
 3. **La distance d'intervention** (ch. 01, T12) et **`duelAggression`** (§ 3.1) : le même chantier — le défenseur du

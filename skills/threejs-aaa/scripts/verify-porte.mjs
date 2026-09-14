@@ -18,7 +18,7 @@ const hyp = Math.hypot;
 
 /** Un monde : les refus au contact, les épisodes « il court sans son ballon », le ballon derrière un porteur lancé. */
 const monde = (over) => {
-  const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), le porté qui anticipe remangé par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure le porté, pas la locomotion */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, contre: null /* contre null DATÉ 258b : vert à HEAD~ (porte 4/0 au 258), les refus au contact (25 c. 58 = 43 % > 35) remangés par le corps qui contre — la clause mesure le porté, pas le contre */, ...over });
+  const cfg = matchCfg({ ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (4/0 au 272), les refus au contact remangés (37 c. 40) : la ligne tenue change les portés — la clause mesure sa loi, pas la ligne */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), le porté qui anticipe remangé par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure le porté, pas la locomotion */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, contre: null /* contre null DATÉ 258b : vert à HEAD~ (porte 4/0 au 258), les refus au contact (25 c. 58 = 43 % > 35) remangés par le corps qui contre — la clause mesure le porté, pas le contre */, ...over });
   let refus = 0, armes = 0, joues = 0, episodes = 0, derriere = 0, portes = 0, reprisesRapides = 0, vendanges = 0;
   for (const seed of [3, 5, 7]) {
     const st = makeMatch({ full: true, seed }); let ep = 0, prevRefus = 0, vend = null;

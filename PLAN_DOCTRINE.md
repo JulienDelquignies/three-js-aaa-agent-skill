@@ -604,6 +604,15 @@ buts / tirs 15,6 → 11 %, la distance moyenne 13,7 → 14,0 ; le volume 32,8 �
 gouverne pas les entrées dans la surface (23-27 / match pour 16 réels). Ce qu'il nomme : le bloc qui perçoit et la ligne qui
 est une ligne (Bibles 03, 10 — la porosité), EV_cont sur le panier (Modèle 06), la contre-attaque et l'après-dribble non
 branchés, le verrou 0,30 s, PSxG et le gardien à enveloppe continue (Modèle 10 lot 4), les deux conventions de comptage.
+**273 — LA LIGNE EST UNE LIGNE : SCELLÉ (351).** L'unité arrière (ligne.js, Bible 03 §2.3 / T8, Bible 10 §10.1 et le tick 4 Hz) :
+la référence relue à 4 Hz (le 2ᵉ plus reculé des cibles), la bande [réf − 5 ; réf + 2 − retard_i] avec le retard propre du corps
+(anticipation, placement : 0,9-1,7 m, la seule désynchronisation de régime), le presseur hors de l'unité, le marqueur au contact
+retenu vers l'avant seulement, « on retient les avancés » (le frein du plus avancé qui monte, ligne cassée et ballon non couvert),
+la hauteur comme régime locomoteur (montée 4,8 / recul 3,9 m/s × topF, lu par l'effort 261). Mesuré 4 × 90 min : lineDesync p50
+7,2-7,5 → 3,2 m, recul de ligne 2,1 → 3,2 m/s, ligne cassée 606 → 398, le central à 10,2-10,6 km. Coût nommé : l'interligne
+DEF↔MID 10,9 → 13,8 m — la ligne tenue ne porte plus ses latéraux hauts et le milieu ne suit pas. Ce qu'il nomme : l'interligne
+dérivé et k_x à deux régimes (Bible 10 lot 4), le stoppeur/couvreur avec hystérésis (T7 : 190 bascules), la plage 0,8-1,8 (les
+transitions font le p90), le bloc qui perçoit (Bible 10 lot 1), la montée au régime (2,1 m/s mesurés).
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

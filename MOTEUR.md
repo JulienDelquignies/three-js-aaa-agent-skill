@@ -509,6 +509,23 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### La ligne est une ligne (lot 273, `cfg.ligne` — `ligne.js`)
+
+La ligne arrière n'était pas une ligne : chaque corps tenait son homme ou son slot, le latéral monté remettait l'attaquant en
+jeu, lineDesync p50 7,5 m (réel 0,8-1,8, pic ≤ 3,5 — Bible 03 T8). Le 273 en fait une UNITÉ (Bible 03 §2.3, Bible 10 §10.1
+et le tick d'unité 4 Hz du ch. 01) : à 4 Hz `ligneStep` relit la référence x_ligne (le 2ᵉ plus reculé des cibles de l'unité —
+la définition FIFA du hors-jeu), et chaque corps de la ligne OFF tient sa cible dans [réf − arriere ; réf + avant − retard_i] —
+`retardDe` est le déphasage propre (1,3 × (2 − anticipF) × (2 − posF), 0,9-1,7 m au monde noté, la seule source de
+désynchronisation en régime établi), `arriere` l'allongement du couvreur. Le presseur n'est pas de l'unité, le marqueur au
+contact garde son homme côté but (retenu vers l'avant seulement). « On retient les avancés » : ligne vécue cassée (desync >
+seuil) et ballon non couvert → le plus avancé qui monte freine (0,75 × sa pointe, 0,4 s — lu par movement.js). La hauteur est
+un régime locomoteur (Bible 10 §3.4) : le corps à plus de tol m de sa cible rejoint la ligne en course avant (montée 4,8) ou
+en recul organisé (3,9, × topF), lu par le régime d'effort (261). Le hors-jeu n'est jamais déclenché, il émerge (259).
+Mesuré 4 × 90 min : desync p50 7,2-7,5 → 3,2 m (p90 18 → 17 : les transitions), recul de ligne 2,1 → 3,2 m/s, ligne cassée
+606 → 398 épisodes, distance du central 10,2-10,6 km (9-11) ; coût nommé : l'interligne DEF↔MID 10,9 → 13,8 m (le milieu ne
+suit pas la ligne tenue — Bible 10 lot 4). Sondes : `scripts/book/sonde-ch03.mjs`, `sonde-ch10.mjs`. Fiches :
+`03-defenseurs-centraux.md`, `10-bloc-collectif.md`.
+
 ### Le xG en forme close et la porte de décision (lot 272, `cfg.xg` — `xg.js`)
 
 La porte du tir était un seuil de menace (232 : une qualité e-fold contre 0,14 dans la surface / 0,05 hors) ; le book

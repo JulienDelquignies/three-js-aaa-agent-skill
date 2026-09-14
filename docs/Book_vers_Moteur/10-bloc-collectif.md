@@ -64,7 +64,7 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
 | # | Cible (book) | Statut | Mesuré (2 × 90 min) |
 |---|---|---|---|
 | 1 bimodalité de la longueur | 26-32 / 38-46, écart ≥ 8 | mesurable, **tenu** | **27,8 / 40,6 m**, écart 12,8 ; 52 % des images défensives entre 25 et 30 m |
-| 2 interligne DEF↔MID | 10-15, P95 ≤ 19, > 16 m < 8 % | mesurable, **partiel** | moyenne **11,1 m**, P95 **19,1** ; > 16 m **17 %** du temps |
+| 2 interligne DEF↔MID | 10-15, P95 ≤ 19, > 16 m < 8 % | mesurable, **dégradé au 273** | moyenne 10,9 → **13,8 m**, P95 19,0 → 21,9 ; > 16 m 16 → **36 %** : la ligne arrière tenue ensemble ne porte plus ses latéraux hauts, le barycentre DEF descend et le milieu ne suit pas — l'interligne dérivé (lot 4) est le lot suivant |
 | 3 gain `k` par ligne | MID 0,55-0,75 > DEF 0,35-0,50 | mesurable, **réfuté** | MID **0,40**, DEF **0,33** — un bloc rigide qui glisse peu (`lateral` 0,35, `slideMax` 8) |
 | 4 signature angulaire | DEF 90 / MID 78 / ATT 69 (± 8) | mesurable, **tenu** | **97 / 77 / 72°** — les défenseurs coulissent, les attaquants convergent |
 | 5 décalage inter-lignes | 0,6-1,2 s, > 0,3 obligatoire | mesurable, **hors définition** | **91 %** des défenseurs sont déjà à > 1 m/s à l'instant de la passe (le bloc ne s'arrête jamais) ; décalage 1ᵉʳ → dernier **changement de cap** 1,62 s p50 — un bloc qui vibre, pas un bloc qui perçoit avec retard |
@@ -73,13 +73,13 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
 | 8 effet de bord | 1,34-2,00 | mesurable, **inversé** | **0,71** — la touche fait fuir la densité au lieu de la concentrer |
 | 9-10 rendement des déclencheurs, pressings avortés | | à instrumenter (pas de `PressEvent`) |
 | 11 hors-jeu par équipe | 1,5 → 4,8 | tenu au 255 | **0,5** → **1,75** (piege 0) → **5,25** (piege 1) provoqués par match, le preset ligneHaute 4,5 |
-| 12 ligne cassée | 1-3 / match | mesurable, **réfuté** | `desync` > 4 m sur **72 %** des images de défense placée ; **73 épisodes** > 0,5 s par match et par équipe, durée p50 **19,7 s** — la ligne n'est pas une ligne (ch. 03 T8 : 7,5 m p50) |
+| 12 ligne cassée | 1-3 / match | mesurable, **réfuté** (273 : en baisse) | 606 → **398** épisodes / match / équipe (273, 2 × 90 min) — la mesure compte chaque épisode > 0,5 s toutes transitions comprises ; la desync p50 en défense placée 7,5 → 3,2 (ch. 03 T8) |
 | 13 dérive de l'interligne | +3 à +6 m, ≥ +2 | mesurable, **réfuté** | 9,8 → **10,9 m** (+1,1) : la fatigue ne touche pas le bloc |
 | 14 montée après dégagement | +10-18 m en 2,5-3,5 s | à instrumenter (pas d'événement de dégagement) |
 | 15 rest defense | 3,7 corps / 43,6 m / 28,2 m | mesurable, **réfuté** | **5,9 corps** derrière le ballon, à **55 m**, largeur **35 m** (ch. 04 : 7,4 / 27 m / 61 m avec la définition du plus proche) |
 | 16 invariant de croyance | défauts → 0 quand omniscient | **sans objet** : le bloc lit déjà l'état vrai — ses défauts sont donc tous « décoratifs » au sens du chapitre |
-| 17 asymétrie montée / recul | 4,0-5,5 / 3,5-4,4, ratio 0,50-0,65 | mesurable, **réfuté** | montée p50 **1,7 m/s** (p90 3,0), recul p50 **2,1** (p90 4,0), ratio **1,21** — la ligne recule plus vite qu'elle ne monte, et les deux au trot de placement |
-| 18 régime de `k_x` | ≈ 0 libre, ≈ 1 accroché | mesurable, **réfuté** | libre **0,10** ✓, accroché **0,21** (fenêtres de 2 s) — la ligne est chaînée au ballon par un spot (`ligne` 27 m) qu'elle rejoint au trot : un ressort, pas un accrochage |
+| 17 asymétrie montée / recul | 4,0-5,5 / 3,5-4,4, ratio 0,50-0,65 | mesurable, **partiel** (273) | montée p50 **1,78 → 2,07 m/s** (cible 4,0-5,5), recul **2,07 → 3,15** (3,5-4,4), ratio 1,17 → 1,52 — le régime de la hauteur (montée 4,8 / recul 3,9) ne parle que hors de la bande (tol 2 m) ; la montée reste au trot du bloc chaîné |
+| 18 régime de `k_x` | ≈ 0 libre, ≈ 1 accroché | mesurable, **réfuté** | libre 0,10 → 0,27 → **0,41** (273), accroché 0,21 → 0,38 → **0,41** — la ligne suit son 2ᵉ plus reculé, lui-même chaîné au ballon par le spot ; les deux régimes de k_x restent à poser |
 | 19 coût de l'oblique | | absent (pas d'oblique) |
 | 20 loi de possession | Gamma forme 1,8-2,8, moyenne 1,1-2,5 s | mesurable, **réfuté** | moyenne **0,65 s**, forme **1,01** — exponentielle : pas de temps de contrôle incompressible |
 
@@ -95,9 +95,7 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
    Le 261 — SCELLÉ 339 — a posé les TROIS RÉGIMES du §4.3 (entretien 1,4-1,8 m/s, coulissement actif 4,2, récupération
    au plafond du métier), déclenchés par le SAUT du slot ; il a mesuré que les slots sautent 54-60 fois par minute (p50 3,5 m)
    et que le corps vit à 6-11 m d'eux : le gain `k` par ligne et le pas du bloc restent CE lot.
-3. **La ligne est une ligne** (tests 12, 17, 18, ch. 03) : la hauteur comme régime locomoteur (montée 4-5,5 m/s,
-   recul-frein 0,55 ×), `k_x` à deux régimes, « on retient les avancés », `desync` cible 0,8-1,8 m. Sans elle, le
-   hors-jeu (test 11) ne peut pas exister.
+3. **La ligne est une ligne** (tests 12, 17, 18, ch. 03) — **SCELLÉ 351 (273, ligne.js)** : l'unité à 4 Hz, la bande, le retard_i, « on retient les avancés », la hauteur comme régime locomoteur (montée 4,8 / recul 3,9 hors de la bande). Mesuré : desync p50 7,5 → 3,2 (ch. 03 T8), ligne cassée 606 → 398, recul 2,1 → 3,2 m/s ; coût : l'interligne DEF↔MID 10,9 → 13,8 (le milieu ne suit pas la ligne tenue — lot 4). Reste : `k_x` à deux régimes (test 18), la montée au régime (2,1 m/s), la plage 0,8-1,8.
 4. **L'interligne dérivé et son point de rupture** (test 2, 20) : `interlineTarget` des attributs, `INTERLINE_BREAK`
    qui publie `blockIntegrity`, et la loi de possession individuelle Gamma (le temps de contrôle incompressible,
    ch. 01 T6).
