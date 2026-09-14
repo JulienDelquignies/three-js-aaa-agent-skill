@@ -54,6 +54,10 @@ export const IDLE_KINDS = {
   // (170, corpsOuvert : le lacet), ici la POSTURE : pieds plus larges, genoux fléchis, buste un peu penché, bras en
   // équilibre devant, appuis vifs (petit rebond) ; la tête reste HAUTE (le regard scanne, A12a)
   reception:    { hw: 0.17, knee: 16, lean: 9,  headDown: 0,  sway: 0.02,  swayT: 2.6, breath: 1.4, breathT: 2.8, bounce: 0.008, bounceT: 0.5,  heel: 3,  arms: { elev: 26, fwd: 20, elbow: 74, twist: 0 }, armLive: 3 },
+  // (A12c) LA PAUSA : le porteur s'arrête net, la SEMELLE SUR LE BALLON, le poids sur l'autre jambe, les mains
+  // sur les hanches (Isco, Pedri : « met la semelle sur le cuir, attend le geste du milieu adverse ») ; le pied levé vise
+  // le ballon RÉEL de la sim (raise.at, repère personnage, posé par la scène en override) — la posture ne devine pas
+  pausa:        { hw: 0.13, knee: 6,  lean: 3,  headDown: 0,  sway: 0.008, swayT: 6.0, breath: 1.2, breathT: 4.2, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 22, fwd: -8,  elbow: 45, twist: -50 }, armLive: 1.5, shift: 0.05, raise: { side: 'Right', at: [0.10, -0.30], toe: 8 } },
 };
 export const IDLE_NAMES = Object.keys(IDLE_KINDS);
 
@@ -120,7 +124,8 @@ export function idlePose(P, t, kind = 'repos', style = NEUTRAL_IDLE_STYLE, opts 
   const R = L.thigh + L.shank;
   const drop = dropForKnee(P, K.knee, near) + 0.002 + (K.bounce > 0 ? K.bounce * (1 - bounceU) : 0);
   const heel = K.heel * bounceU;                                        // sur la pointe au sommet du rebond
-  const hips = [sw, -drop, 0];
+  const raise = K.raise || null, sgnR = raise ? (raise.side === 'Left' ? 1 : -1) : 0;   // (A12c) le côté levé : −sgn = +X droite
+  const hips = [sw - sgnR * (K.shift || 0) * 0, -drop, 0]; if (raise) hips[0] += sgnR * (K.shift || 0);   // le bassin passe sur la jambe d'APPUI (à l'opposé du pied levé)
   // le bassin roule vers le côté DÉCHARGÉ (la hanche libre descend, la jambe d'appui se tend) — rz(+) lève la droite
   const list = (sw / Math.max(1e-6, swayA)) * 2.5;
   const lean = K.lean + style.lean;
@@ -160,13 +165,16 @@ export function idlePose(P, t, kind = 'repos', style = NEUTRAL_IDLE_STYLE, opts 
   for (const [side, sgn] of [['Left', 1], ['Right', -1]]) {
     const hipW = partial[`${side}UpLeg`].p;
     const target = [-sgn * hw + (K.slide || 0) * sw, ankleY + L.foot * Math.sin(heel * D2R), 0.0];
+    const lev = raise && raise.side === side;   // (A12c) la semelle sur le ballon : cheville au-dessus du ballon (rayon 0,11), pied à plat, orteil un peu baissé
+    if (lev) { target[0] = raise.at[0]; target[2] = raise.at[1]; target[1] = ankleY + 0.22 - 0.012; }
     // la jambe LIBRE (le bassin est parti de l'autre côté) lève le talon de ce qui lui manque en
     // portée — comme une vraie jambe déchargée ; l'orteil reste au sol, la pose ne glisse pas
     const dh = Math.hypot(target[0] - hipW[0], target[2] - hipW[2]);
     const needY = hipW[1] - Math.sqrt(Math.max(0, (0.99 * R) ** 2 - dh * dh));
     const lift = Math.min(0.05, Math.max(0, needY - target[1]));
     let heelS = heel;
-    if (lift > 1e-4) { target[1] += lift; heelS = Math.max(heel, Math.asin(Math.min(1, lift / L.foot)) / D2R); }
+    if (lift > 1e-4 && !lev) { target[1] += lift; heelS = Math.max(heel, Math.asin(Math.min(1, lift / L.foot)) / D2R); }
+    if (lev) heelS = -(raise.toe ?? 8);   // l'orteil vers le bas : la semelle épouse le dessus du ballon
     const r = legIK(P, side, hipW, RHips, target, [-sgn * 0.15, 0, -1]);
     J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
     const legW = quatMul(quatMul(RHips, r.Rthigh), r.Rshank);
@@ -259,11 +267,19 @@ export function checkIdleGen(P, { kind = 'repos', style = NEUTRAL_IDLE_STYLE, op
   if (footMove > 0.005) issues.push(`les pieds bougent de ${(footMove * 100).toFixed(1)} cm — une attente ne glisse pas`);
   if (toeMin < -0.01) issues.push(`l'orteil sous la pelouse (${(toeMin * 100).toFixed(1)} cm)`);
   if (unreach) issues.push(`${unreach} instants hors de portée`);
-  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24], reception: [8, 32] }[kind] || [0, 60];
+  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24], reception: [8, 32], pausa: [0, 80] }[kind] || [0, 60];
   if (kneeMin < kneeBand[0] - 0.5 || kneeMax > kneeBand[1] + 0.5) issues.push(`${kind} : genou [${kneeMin.toFixed(0)}, ${kneeMax.toFixed(0)}]° hors [${kneeBand}]`);
   // les mains de l'espèce (poignets, repère personnage : droite +X, haut +Y, avant −Z)
   const hR = f0.R.hand, hL = f0.L.hand, eR = f0.R.elbow;
   const chestZ = f0.chest[2];
+  if (kind === 'pausa') {   // (A12c) la semelle SUR le ballon : la cheville du pied levé à 0,24-0,36 m, devant ; l'autre pied au sol ; le bassin sur la jambe d'appui
+    const R0 = (IDLE_KINDS.pausa.raise?.side ?? 'Right') === 'Left' ? 'L' : 'R', S0 = R0 === 'R' ? 'L' : 'R';
+    const up = f0[R0].ankle[1] - ground, down = f0[S0].ankle[1] - ground;
+    if (up < 0.24 || up > 0.36) issues.push(`pausa : la cheville levée à ${(up * 100).toFixed(0)} cm du sol (attendu 24-36, la semelle sur le ballon)`);
+    if (f0[R0].ankle[2] > -0.15) issues.push(`pausa : le pied levé n'est pas devant (z ${f0[R0].ankle[2].toFixed(2)} > −0,15)`);
+    if (down > 0.12) issues.push(`pausa : le pied d'appui quitte le sol (${(down * 100).toFixed(0)} cm)`);
+    if (Math.abs(f0.pelvis[0] - f0[S0].ankle[0]) > 0.12) issues.push(`pausa : le bassin n'est pas sur la jambe d'appui (${(100 * (f0.pelvis[0] - f0[S0].ankle[0])).toFixed(0)} cm)`);
+  }
   if (kind === 'reception' && !(hR[0] - hL[0] > 0.42 && hR[2] < chestZ - 0.05 && hL[2] < chestZ - 0.05)) issues.push(`réception : les mains ne sont pas en équilibre devant (écart ${(hR[0] - hL[0]).toFixed(2)} m, z ${hR[2].toFixed(2)} c. poitrine ${chestZ.toFixed(2)})`);
   if (kind === 'mainsHanches') {
     const d = Math.hypot(hR[0] - 0.24, hR[1] - 0.99, hR[2] - 0.0);

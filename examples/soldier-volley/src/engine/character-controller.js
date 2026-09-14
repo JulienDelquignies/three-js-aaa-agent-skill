@@ -118,7 +118,7 @@ export class CharacterController {
     // une espèce d'attente choisie par la politique (idleCtx posé par la scène ; idleForce : la planche),
     // au style du joueur, fondue en 0,5 s d'une espèce à l'autre et fondue avec la foulée au-dessus.
     this._idle = { style: seed != null ? idleStyleFromSeed(seed + 101) : NEUTRAL_IDLE_STYLE, kind: 'repos', prev: null, blend: 1, t: 0 };
-    this.idleCtx = null; this.idleForce = null;
+    this.idleCtx = null; this.idleForce = null; this.idleOpts = null;
   }
 
   /** Changer le style de foulée d'un joueur (sa signature, graine de persona). */
@@ -330,9 +330,9 @@ export class CharacterController {
       if (kind !== I.kind) { I.prev = I.kind; I.kind = kind; I.blend = 0; }
       I.blend = Math.min(1, I.blend + dt / 0.5);
       I.t += dt;
-      idle = idlePose(G.P, I.t, I.kind, I.style);
+      idle = idlePose(G.P, I.t, I.kind, I.style, this.idleOpts || {});   // (A12c) idleOpts : l'override de la scène (la semelle sur le ballon RÉEL)
       if (I.blend < 1 && I.prev) {
-        const b = idlePose(G.P, I.t, I.prev, I.style);
+        const b = idlePose(G.P, I.t, I.prev, I.style, this.idleOpts || {});
         idle = { q: blendQ(b.q, idle.q, I.blend, G), hips: lerp3(b.hips, idle.hips, I.blend) };
       } else if (I.prev) I.prev = null;
     }

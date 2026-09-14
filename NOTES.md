@@ -11810,6 +11810,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      éloigné quand le ballon traverse) n'est pas dans la table des
      techniques. Référence 58. Suite : A12c la pausa.
 
+- 355: LA PAUSA — LA SEMELLE SUR LE BALLON (lot A12c). Le 253 a livré un
+     ÉTAT (p._pausa, conduite figée : cible = soi, touche 0,25) et non le
+     geste annoncé par l'interface gelée ; la scène lit l'état. Mécanisme
+     (motion-idle, aucun bit de sim) : espèce `pausa` — poids sur la jambe
+     d'appui (bassin décalé 5 cm), l'autre pied LEVÉ sur le ballon (cheville
+     à 0,21 m, orteil baissé 8°), mains sur les hanches, tête haute ; le
+     pied vise le ballon RÉEL (override.raise {side, at} posé par la scène
+     chaque image via idleOpts, nouveau passage du contrôleur ; côté = côté
+     du ballon ; cible bornée x ± 0,25, z [−0,42 ; −0,12] ; au-delà de
+     0,55 m aucun pied levé). Contrat : cheville levée 24-36 cm devant, pied
+     d'appui au sol, bassin sur l'appui ; verify-attente 46 → 48, planche
+     attente-pausa-apres.png. LA SONDE QUI DÉCIDE (12 graines × 366 s) :
+     11 pausas, 4 avec le porteur à l'arrêt — mais le ballon à 1,6-2,0 m,
+     une seule à 0,36 m ; page graine 11 : 3 pausas, celle à l'arrêt ballon
+     à 1,76 m. La touche 0,25 fige la conduite sans ramener le ballon (0,77
+     → 0,96 m en 0,3 s, graine 3). Le signe n'est donc pas visible en
+     match : on voit l'attente mains sur les hanches à côté d'un ballon posé
+     1,7 m plus loin — le ballon oublié (317), version arrêtée. Capture
+     a12c-pausa-attente.png (graine 11, t ≈ 370 s, joueur 4). DETTE NOMMÉE
+     AU TRONC, bloquante pour le signe : pendant la pausa, porter le ballon
+     au point de stance (comme porteAnticipe pendant l'armé) ; cible ≤ 0,4 m
+     [CONVENTION]. Référence 58. Suite : A12d le recul-frein.
+
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

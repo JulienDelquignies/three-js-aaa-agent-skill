@@ -172,6 +172,9 @@
   lente (opts.receveur, la sim ne le laisse jamais attendre sur place : 0 % des images de vol sous 0,6 m/s) ;
   verify-attente 46/0, verify-foulee 48/0 ; captures a12b-reception-*.png. Dettes nommées au tronc : la réception
   sur place, le pied arrière comme décision.
+- LIVRÉ (lot A12c, note 355) : LA PAUSA — l'espèce d'attente `pausa` (la semelle sur le ballon RÉEL, mains sur les
+  hanches, poids sur l'appui ; idleOpts du contrôleur) ; mesuré : le moteur arrête le porteur mais laisse le ballon à
+  1,6-2,0 m (4 tenues sur 11) — le signe attend que le 253 porte le ballon au pied (dette nommée). verify-attente 48/0.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

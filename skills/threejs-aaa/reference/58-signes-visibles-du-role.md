@@ -83,6 +83,39 @@ partie des réceptions se fait à l'arrêt, le corps ouvert, le ballon qui vient
 (approche du receveur, 134/198), pas d'animation. Le pied arrière comme DÉCISION (contrôle intérieur du pied éloigné
 quand le ballon traverse) n'existe pas dans la table des techniques : idem, une loi sous clé, au tronc.
 
+## A12c — La pausa : la semelle sur le ballon
+
+**Le signe.** Le document (§3.5 A Pedri, §3.6 A Isco) : « s'arrête net, met la semelle sur le cuir, attend le geste du
+milieu adverse, repart par une passe courte déguisée ». Le lot 253 du moteur a fait de la pausa une DÉCISION
+(`pausa.js`, `cfg.pausa`) : le porteur au calme, dans le tiers adverse, deux adversaires lancés, une course partenaire
+pas encore servable — il tient (`p._pausa`, la conduite figée : cible = soi, touche 0,25), l'événement `pausa` porte
+durée, issue et gain à la sortie. L'interface gelée annonçait un geste (`kind: 'pausa'`) ; le moteur a livré un état
+(`p._pausa`) — la scène lit l'état, tel quel.
+
+**Le mécanisme (motion-idle, aucun bit de sim).** L'espèce `pausa` : le poids sur la jambe d'appui (le bassin décalé de
+5 cm), l'autre pied LEVÉ sur le ballon — la cheville à 0,21 m au-dessus de la semelle à plat, l'orteil baissé de 8°, la
+semelle qui épouse le dessus du ballon (rayon 0,11) —, les mains sur les hanches, la tête haute. Le pied levé vise le
+ballon RÉEL de la sim : la scène passe chaque image `override.raise = { side, at: [x, z] }` en repère personnage
+(`idleOpts`, nouveau passage du contrôleur), côté choisi par le côté du ballon, cible bornée à la portée (x ± 0,25 m,
+z ∈ [−0,42 ; −0,12]) ; au-delà de 0,55 m, aucun pied levé — l'attente mains sur les hanches, les deux pieds au sol.
+Contrat : cheville levée à 24-36 cm, devant ; pied d'appui au sol ; bassin sur la jambe d'appui ; genou [0, 80]°.
+
+**La sonde qui décide.** Douze graines × 366 s (le format du match servi) : 11 pausas ; le porteur s'arrête vraiment
+(v = 0) dans 4 d'entre elles, mais LE BALLON N'EST PAS AU PIED : à 1,6-2,0 m ; une seule pausa à l'arrêt avec le ballon
+à 0,36 m (graine 11 en node) ; dans la page (graine 11) : 3 pausas, celle à l'arrêt a le ballon à 1,76 m. La « touche
+0,25 » du 253 fige la conduite mais ne ramène pas le ballon : le corps freine, le ballon continue (mesuré 0,77 → 0,96 m
+en 0,3 s sur la graine 3). Le signe « semelle sur le ballon » n'est donc PAS visible en match aujourd'hui ; ce qui se
+voit, c'est l'attente mains sur les hanches à côté d'un ballon posé 1,7 m plus loin — le ballon oublié (note 317),
+version arrêtée.
+
+**Contrat.** verify-attente 46 → 48 (l'espèce sous contrat sur 24 styles, lente). Planche : `planches/attente-pausa-
+apres.png` (le pied droit sur le ballon, les mains sur les hanches). Capture : `a12c-pausa-attente.png` (graine 11,
+t ≈ 370 s, joueur 4 à l'arrêt en pausa, le ballon à 1,8 m : la posture, et la dette).
+
+**Dette nommée au tronc (bloquante pour le signe).** Pendant la pausa, ramener le ballon sous le pied : la tenue du
+253 doit porter le ballon au point de stance (comme `porteAnticipe` le fait pendant l'armé) — sans quoi la semelle n'a
+rien sous elle. Chiffres : 4 tenues à l'arrêt sur 11, ballon à 1,6-2,0 m ; cible ≤ 0,4 m [CONVENTION].
+
 ## À venir dans ce lot
 A12c la pausa (kind/événement du 253) ;
 A12d le recul-frein du central ; A12e la marche des rôles marchants ; A12f les petits gestes signés (bras du tireur
