@@ -167,6 +167,11 @@
   au lieu de coller les yeux du receveur au ballon : saccades vers le presseur / l'espace pendant le vol, les yeux
   retombent sur le ballon pour la prise, une seule horloge, clé absente = hier (29 % du vol hors ballon, 0,89
   saccade/s, 42/43 prises au ballon ; verify-gaze 22/0, captures a12a-scan-receveur-*.png).
+- LIVRÉ (lot A12b, note 354) : LA RÉCEPTION DE TROIS-QUARTS — la posture du receveur : l'espèce d'attente
+  `reception` (appuis larges, genoux fléchis, bras en équilibre, tête haute) et les bras du receveur dans la foulée
+  lente (opts.receveur, la sim ne le laisse jamais attendre sur place : 0 % des images de vol sous 0,6 m/s) ;
+  verify-attente 46/0, verify-foulee 48/0 ; captures a12b-reception-*.png. Dettes nommées au tronc : la réception
+  sur place, le pied arrière comme décision.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

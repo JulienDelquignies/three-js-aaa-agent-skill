@@ -50,6 +50,10 @@ export const IDLE_KINDS = {
   // le ballon en mains (le preneur d'une touche qui attend) : les deux poignets encadrent le ballon devant la poitrine (IK de bras)
   ballonMains:  { hw: 0.12, knee: 6,  lean: 2,  headDown: 3,  sway: 0.02,  swayT: 6.5, breath: 1.0, breathT: 4.0, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 8,  fwd: 30,  elbow: 90, twist: 0 },   armLive: 0.5, wrists: [0.16, 1.32, -0.30] },
   mur:          { hw: 0.10, knee: 10, lean: 8,  headDown: 12, sway: 0.008, swayT: 5.0, breath: 0.8, breathT: 3.8, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: -20, fwd: 26, elbow: 12, twist: 72 },  armLive: 0.4 },
+  // (A12b) LA RÉCEPTION DE TROIS-QUARTS : le receveur qui attend le ballon en vol — le corps est déjà ouvert par la sim
+  // (170, corpsOuvert : le lacet), ici la POSTURE : pieds plus larges, genoux fléchis, buste un peu penché, bras en
+  // équilibre devant, appuis vifs (petit rebond) ; la tête reste HAUTE (le regard scanne, A12a)
+  reception:    { hw: 0.17, knee: 16, lean: 9,  headDown: 0,  sway: 0.02,  swayT: 2.6, breath: 1.4, breathT: 2.8, bounce: 0.008, bounceT: 0.5,  heel: 3,  arms: { elev: 26, fwd: 20, elbow: 74, twist: 0 }, armLive: 3 },
 };
 export const IDLE_NAMES = Object.keys(IDLE_KINDS);
 
@@ -190,6 +194,7 @@ export function idlePolicy(ctx, persona = null) {
     return (ctx.ballD ?? 99) < 32 ? 'pretGardien' : 'repos';
   }
   if (ctx.dead) return burst > 1.18 ? 'sautillement' : calm > 1.1 ? 'mainsHanches' : 'repos';
+  if (ctx.receveur) return 'reception';   // (A12b) le ballon vole vers moi : la posture de réception, quel que soit le tempérament
   if (ctx.defending && (ctx.carrierD ?? 99) < 5.5) return 'pret';
   return 'repos';
 }
@@ -254,11 +259,12 @@ export function checkIdleGen(P, { kind = 'repos', style = NEUTRAL_IDLE_STYLE, op
   if (footMove > 0.005) issues.push(`les pieds bougent de ${(footMove * 100).toFixed(1)} cm — une attente ne glisse pas`);
   if (toeMin < -0.01) issues.push(`l'orteil sous la pelouse (${(toeMin * 100).toFixed(1)} cm)`);
   if (unreach) issues.push(`${unreach} instants hors de portée`);
-  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24] }[kind] || [0, 60];
+  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24], reception: [8, 32] }[kind] || [0, 60];
   if (kneeMin < kneeBand[0] - 0.5 || kneeMax > kneeBand[1] + 0.5) issues.push(`${kind} : genou [${kneeMin.toFixed(0)}, ${kneeMax.toFixed(0)}]° hors [${kneeBand}]`);
   // les mains de l'espèce (poignets, repère personnage : droite +X, haut +Y, avant −Z)
   const hR = f0.R.hand, hL = f0.L.hand, eR = f0.R.elbow;
   const chestZ = f0.chest[2];
+  if (kind === 'reception' && !(hR[0] - hL[0] > 0.42 && hR[2] < chestZ - 0.05 && hL[2] < chestZ - 0.05)) issues.push(`réception : les mains ne sont pas en équilibre devant (écart ${(hR[0] - hL[0]).toFixed(2)} m, z ${hR[2].toFixed(2)} c. poitrine ${chestZ.toFixed(2)})`);
   if (kind === 'mainsHanches') {
     const d = Math.hypot(hR[0] - 0.24, hR[1] - 0.99, hR[2] - 0.0);
     if (d > 0.07) issues.push(`mains sur les hanches : poignet droit à ${(d * 100).toFixed(1)} cm de la crête (${hR.map((v) => v.toFixed(2))})`);

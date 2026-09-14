@@ -46,8 +46,45 @@ lui, sa tête est tournée vers le presseur qui vient.
 **Ce que le lot ne fait pas.** Il ne décide pas QUAND ni VERS QUOI le joueur regarde : c'est la sim (250, `cfg.scan`
 et la note `scanning`). Il ne change aucun bit de jeu (verify-sync 9/0, empreintes du 250 inchangées).
 
+## A12b — La réception de trois-quarts : la posture du receveur
+
+**Le signe.** Le document (§1.2-1.3, §3.5 A) : le receveur « ajuste ses appuis de trois-quarts avant l'impact »
+et contrôle du pied arrière. Le trois-quarts du CORPS est déjà à la sim (170, `cfg.corpsOuvert` : le lacet
+s'ouvre vers le jeu pendant le vol) ; le pied est à la table des techniques (`pick.foot`, `footFor` : intérieur =
+pied côté ballon, extérieur = l'autre). Ce qui manquait, c'est la POSTURE : le receveur attendait en `repos` (bras
+le long du corps) ou trottait avec la foulée de tout le monde.
+
+**Sonde AVANT (3 graines × 240 s, 62 réceptions).** Angle corps → origine de la passe à la prise : p25 14°, p50 30°,
+p75 49° — de face 42 %, trois-quarts [25°, 110°) 53 %, dos 5 % ; techniques : contrôle intérieur 43, jambe tendue 9,
+amortis 6, semelle 1 ; pied côté ballon 32, pied éloigné 12 ; vitesse à la prise p50 1,97 m/s. Et le constat qui
+décide du lot : **le receveur ne s'arrête jamais** — 0 % des images de vol sous 0,6 m/s, 6 % des vols avec un seul
+instant d'attente (126 vols). La posture doit donc vivre dans la FOULÉE lente, pas seulement dans l'attente.
+
+**Deux mécanismes, aucun bit de sim.**
+- `motion-idle` : l'espèce `reception` (pieds à 0,17 m, genou 16°, buste 9°, appuis vifs, bras en équilibre devant :
+  élévation 26°, avancée 20°, coude 74°, tête haute — le regard scanne, A12a). Politique : `ctx.receveur` (le ballon
+  vole vers moi) → `reception`, avant la garde, quel que soit le tempérament. Contrat : genou [8, 32]°, mains à ≥ 0,42 m
+  l'une de l'autre et devant la poitrine ; sabotage « bras le long du corps » attrapé.
+- `motion-gait` : `opts.receveur` — le receveur qui va au-devant du ballon garde les bras en équilibre : +12° d'élévation,
+  +16° de coude, balancier × 0,55 (à 2 m/s : écart des mains 64 cm c. 52, course de la main 14 cm c. 28) ; la foulée
+  reste sous `checkGaitGen` ; drapeau absent = la foulée d'hier au bit. Le contrôleur pose le drapeau depuis
+  `idleCtx.receveur`, la scène le lit sur `st.pass.to` et `st.phase === 'flight'`.
+
+**Contrat.** verify-attente 44 → 46 (l'espèce sous contrat sur 24 styles, la politique, le sabotage) ; verify-foulee
+45 → 48 (les bras du receveur, le contrat tenu, le drapeau absent au bit). verify-gait 23/0, verify-locomotion 6/0.
+
+**Captures (playmode, graine 3).** `a12b-reception-approche.png` / `-face.png` (t = 4,3 s, receveur 1 à 1 m/s,
+corps à 67° du ballon qui roule vers lui : appuis larges, genoux fléchis, bras ouverts) ; `a12b-reception-attente-
+face.png` / `-plan.png` (t = 69,8 s, receveur 9 sous 0,5 m/s, corps à 38° d'un ballon en cloche à 13 m : la posture
+tenue, les yeux en l'air). Planche : `planches/attente-reception-apres.png`.
+
+**Dette nommée au tronc.** Le receveur ne reçoit jamais sur place (0 % des images de vol sous 0,6 m/s) : en vrai, une
+partie des réceptions se fait à l'arrêt, le corps ouvert, le ballon qui vient au pied — c'est une loi de course
+(approche du receveur, 134/198), pas d'animation. Le pied arrière comme DÉCISION (contrôle intérieur du pied éloigné
+quand le ballon traverse) n'existe pas dans la table des techniques : idem, une loi sous clé, au tronc.
+
 ## À venir dans ce lot
-A12b la réception de trois-quarts et le pied arrière (lit `pick.foot`) ; A12c la pausa (kind/événement du 253) ;
+A12c la pausa (kind/événement du 253) ;
 A12d le recul-frein du central ; A12e la marche des rôles marchants ; A12f les petits gestes signés (bras du tireur
 `payload.mains = 'signal'`, la passe sans regarder, le pas de recul du renard) ; une planche « sans les noms » par
 rôle du 249.

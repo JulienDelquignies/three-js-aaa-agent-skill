@@ -11782,6 +11782,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      jeu (verify-sync 9/0). Référence 58 (le lot A12 y grandit). Suite :
      A12b la réception de trois-quarts.
 
+- 354: LA RÉCEPTION DE TROIS-QUARTS — LA POSTURE DU RECEVEUR (lot A12b).
+     Le corps ouvert est à la sim (170), le pied à la table (footFor) ;
+     manquait la POSTURE. Sonde AVANT (3 × 240 s, 62 réceptions) : angle
+     corps → origine de la passe p50 30° (de face 42 %, trois-quarts 53 %,
+     dos 5 %), pied côté ballon 32 / éloigné 12, vitesse à la prise p50
+     1,97 m/s — et LE RECEVEUR NE S'ARRÊTE JAMAIS : 0 % des images de vol
+     sous 0,6 m/s, 6 % des vols avec un instant d'attente. Donc deux
+     mécanismes, aucun bit de sim : motion-idle, espèce `reception` (pieds
+     0,17, genou 16°, buste 9°, appuis vifs, bras en équilibre devant :
+     élévation 26°, avancée 20°, coude 74°, tête haute), politique
+     ctx.receveur → reception avant la garde ; motion-gait, opts.receveur
+     (+12° d'élévation, +16° de coude, balancier × 0,55 : à 2 m/s écart
+     des mains 64 c. 52 cm, course de la main 14 c. 28 cm), posé par le
+     contrôleur depuis idleCtx.receveur (la scène lit st.pass.to en vol) ;
+     drapeau absent = la foulée d'hier au bit. Bancs : verify-attente 44 →
+     46 (contrat sur 24 styles, politique, sabotage « bras le long du
+     corps » attrapé), verify-foulee 45 → 48 (bras du receveur, contrat
+     tenu, drapeau absent au bit), verify-gait 23/0, verify-locomotion
+     6/0, verify-sync 9/0. Captures playmode graine 3 : a12b-reception-
+     approche(-face).png (t 4,3 s, receveur 1 à 1 m/s, corps à 67° du
+     ballon qui roule vers lui), a12b-reception-attente-face/plan.png (t
+     69,8 s, receveur 9 sous 0,5 m/s, corps à 38° d'un ballon en cloche à
+     13 m) ; planche attente-reception-apres.png. DETTES NOMMÉES AU TRONC :
+     le receveur ne reçoit jamais sur place (loi de course 134/198, pas
+     d'animation) ; le pied arrière comme décision (intérieur du pied
+     éloigné quand le ballon traverse) n'est pas dans la table des
+     techniques. Référence 58. Suite : A12c la pausa.
+
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

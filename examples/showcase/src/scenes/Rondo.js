@@ -963,7 +963,7 @@ export class Rondo {
       const stx = this.state;
       // L'ATTENTE (A8, motion-idle) : la situation de la sim → l'espèce d'idle (politique pure du contrôleur)
       { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : null, tk = !!r && r.type === 'touche' && r.taker === s.id && Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) < 1.3, aT = s.act, tId = aT?.payload?.pick?.tech?.id;
-        pl.ctrl.idleCtx = { keeper: !!s.keeper, dead: !!r && r.type !== 'fin', wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, toucheTaker: tk, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team };
+        pl.ctrl.idleCtx = { keeper: !!s.keeper, dead: !!r && r.type !== 'fin', receveur: stx.phase === 'flight' && stx.pass?.to === s.id, wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, toucheTaker: tk, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team };
         // LE BALLON EN MAINS (A9) : le preneur qui attend ou arme sa touche, le gardien qui arme son roulé ou qui vient de ramasser
         pl._holdHands = tk || ((tId === 'touche' || tId === 'roule-main') && !aT.fired) || remiseHands(pl, aT, stx, s) || ((pl.gestureLayer.spec?.name ?? '') === 'ramassage' && stx.ball.owner === s.id); }
       const exemptLod = !this._animLod || pl.gestureLayer.active || s.act || (s.down ?? 0) > 0

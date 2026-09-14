@@ -138,5 +138,26 @@ sab('tronc raide en course (lean 0, bassin droit)', { vF: 5, vR: 0, opts: { over
 sab('course arrière qui lève derrière (swingPeak 0,95)', { vF: -3, vR: 0, opts: { override: { swingPeak: 0.95 } } }, /ne monte pas devant/);
 sab('pas trop long (bias −0,45)', { vF: 4.5, vR: 0, opts: { override: { bias: -0.45 } } }, /hors de portée|hanche hors|GLISSE|pas de/);
 
+console.log('\n— A12b : la réception en mouvement — les bras en équilibre du receveur (opts.receveur) —');
+{
+  const mesure = (opts) => {
+    let spread = 0, zMin = Infinity, zMax = -Infinity, n = 0;
+    for (let i = 0; i < 60; i++) {
+      const g = gaitPose(P, i / 60, 2, 0, NEUTRAL_GAIT_STYLE, opts);
+      const fk = fkPose(P, g.q, g.hips);
+      spread += fk.RightHand.p[0] - fk.LeftHand.p[0]; n++;
+      zMin = Math.min(zMin, fk.RightHand.p[2]); zMax = Math.max(zMax, fk.RightHand.p[2]);
+    }
+    return { spread: spread / n, swing: zMax - zMin };
+  };
+  const d = mesure({}), r = mesure({ receveur: true });
+  ok(r.spread >= d.spread + 0.05 && r.swing <= d.swing * 0.65 + 1e-6,
+    `à 2 m/s le receveur ouvre les bras (écart des mains ${(r.spread * 100).toFixed(0)} cm c. ${(d.spread * 100).toFixed(0)} sans, ≥ +5) et calme le balancier (course de la main ${(r.swing * 100).toFixed(0)} cm c. ${(d.swing * 100).toFixed(0)}, ≤ 65 %)`);
+  let cg; try { cg = checkGaitGen(P, { vF: 2, vR: 0, opts: { receveur: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
+  ok(cg.ok, `…et la foulée du receveur reste sous le contrat (checkGaitGen à 2 m/s)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
+  const same = JSON.stringify(gaitPose(P, 0.3, 2, 0, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, 2, 0, NEUTRAL_GAIT_STYLE, { receveur: undefined }).q);
+  ok(same, 'sans le drapeau, la foulée d\'hier au bit (receveur undefined = aucune option)');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

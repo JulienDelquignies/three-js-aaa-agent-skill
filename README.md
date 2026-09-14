@@ -64,7 +64,7 @@ threejs-aaa/ (the skill)
 │   ├── 55-motion-contact.md    GENERATED contact (falls and getting up, stumble, shoulder duel, ball shielding — the sim names the fall, the jockey faces the carrier)
 │   ├── 56-remises-au-pied.md   GENERATED foot restarts (free-kick and corner run-up taken at the end of the run, keeper's volley clearance from the hands, thrower behind the line, held aerial catch)
 │   ├── 57-porte-anticipe.md    THE FORGOTTEN BALL: during a pass windup the ball trailed the gliding body and one strike in five was refused at contact — the anticipating carry, the braking re-collect
-│   ├── 58-signes-visibles-du-role.md  THE VISIBLE SIGNS OF THE ROLE (lot A12): the receiver SCANS during the pass flight — the gaze layer reads the sim's scan clock (p.scan) instead of pinning the eyes on the ball, eyes back on the ball for the take; one clock, key absent = yesterday
+│   ├── 58-signes-visibles-du-role.md  THE VISIBLE SIGNS OF THE ROLE (lot A12): the receiver SCANS during the pass flight — the gaze layer reads the sim's scan clock (p.scan) instead of pinning the eyes on the ball, eyes back on the ball for the take; the receiver's POSTURE (ready stance, arms in balance in the slow stride); one clock, no sim bit
 │   ├── 50-charte-moteur.md     THE ENGINE CHARTER: 10 laws (one authority per body, projections last, bounded actuators, named refusals, sticky intent, races not photos, one instant one contract, composed-world clauses, budgets as debts, negative results)
 │   ├── 15-interaction-alignment.md  character↔object interaction + correctness verification
 │   ├── 18-scene-correctness.md  REQUIRED spatial rules: door-in-wall, no-clip, rests-on, ball-at-foot
