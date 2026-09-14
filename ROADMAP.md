@@ -149,6 +149,20 @@
   ballon traînait derrière le corps qui glisse), vendangé, le corps filait sans lui ; cfg.porteAnticipe : le
   ballon au point de stance du corps après son pas, le vendangé freine et se reprend (refus 65 → 20, épisodes
   35 → 2 ; un tiers des duels tombe avec les ballons vendangés — le tronc re-calibre) ; verify-porte 4 clauses.
+- REPRIS DU TRONC (14/09, fusion avant rapide sur 7e6cd12 — lots 246 à 274 du moteur) : la Campagne V est
+  CLOSE côté moteur (248-255 scellés, PLAN_DOCTRINE) et me laisse A12, LES SIGNES VISIBLES DU RÔLE, aucune loi de
+  sim, interfaces gelées dans docs/Interface_Campagne_V.md : (A12a) le scan du receveur en vol — gaze.js lit
+  p.scan {at, until, vers, cible, n, vol} de scan.js (250), le moteur ne touche pas gaze.js, clause ≥ 0,4 scan/s en
+  vol ; (A12b) la réception de trois-quarts et le pied arrière (lit pick.foot) ; (A12c) la pausa — clip sur le kind
+  'pausa' et l'événement du 253 (6,75 pausas/match, durées 0,3-2,4 s) ; (A12d) le recul-frein du central ; (A12e) la
+  marche des rôles marchants (ancrage ≥ 0,8, repli 1) ; (A12f) les petits gestes signés (bras du tireur :
+  payload.mains = 'signal' sous cfg.remise.signal, la passe sans regarder, le pas de recul du renard) ; et une
+  planche « sans les noms » par rôle du 249 (19 signatures gelées, 43 muettes nommées). Puis (A13) LE SECOND CANAL
+  D'ANIMATION : burst/touche/control/windup = 58 % du journal, une décision d'interface gaze/gesture à instruire
+  avec le tronc (docs/Retour_Reference_Journal_Fond.md). DETTE DE RELECTURE : mes annexes portent des épingles
+  datées du tronc (ligne: null DATÉ 273 dans verify-remises/porte/contact, locomoteur: null DATÉ 260 dans
+  verify-remises) — à re-dater quand je reprends ces mondes (la ligne tenue et le profil locomoteur changent les
+  corps à la remise, les portés et les chutes).
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
