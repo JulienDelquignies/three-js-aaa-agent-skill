@@ -58,6 +58,9 @@ export const IDLE_KINDS = {
   // sur les hanches (Isco, Pedri : « met la semelle sur le cuir, attend le geste du milieu adverse ») ; le pied levé vise
   // le ballon RÉEL de la sim (raise.at, repère personnage, posé par la scène en override) — la posture ne devine pas
   pausa:        { hw: 0.13, knee: 6,  lean: 3,  headDown: 0,  sway: 0.008, swayT: 6.0, breath: 1.2, breathT: 4.2, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 22, fwd: -8,  elbow: 45, twist: -50 }, armLive: 1.5, shift: 0.05, raise: { side: 'Right', at: [0.10, -0.30], toe: 8 } },
+  // (A12f) LE SIGNAL DU TIREUR : le tireur de corner qui attend lève le bras droit (le code convenu — « bras levé =
+  // premier poteau », §4.3 du document), la main gauche sur la hanche ; armR : le bras droit a sa propre pose
+  signal:       { hw: 0.12, knee: 4,  lean: 0,  headDown: 0,  sway: 0.02,  swayT: 8.0, breath: 1.0, breathT: 4.6, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 22, fwd: -8,  elbow: 45, twist: -50 }, armR: { elev: 168, fwd: 4, elbow: 6, twist: 0 }, armLive: 1 },
 };
 export const IDLE_NAMES = Object.keys(IDLE_KINDS);
 
@@ -145,10 +148,11 @@ export function idlePose(P, t, kind = 'repos', style = NEUTRAL_IDLE_STYLE, opts 
   const live = K.armLive * Math.sin(TAU * tt / 5.1 + 1.3), live2 = K.armLive * 0.6 * Math.sin(TAU * tt / 6.7);
   const A = K.arms;
   // les mains posées (hanches, mur) ne prennent pas l'accent du style : la pose EST le geste
-  const posed = kind === 'mur' || kind === 'mainsHanches';
+  const posed = kind === 'mur' || kind === 'mainsHanches' || kind === 'signal' || kind === 'pausa';
   const elev = A.elev + (posed ? 0 : style.armElev) + br * 0.5, elbow = A.elbow + (posed ? 0 : style.elbow);
   Object.assign(J, armPose('Left', { elev, fwd: A.fwd + live, elbow: elbow + live2, twist: A.twist }));
-  Object.assign(J, armPose('Right', { elev, fwd: A.fwd - live, elbow: elbow - live2, twist: A.twist }));
+  const AR = K.armR || null;   // (A12f) un bras droit à part (le signal) : sa pose, sans l'accent du style
+  Object.assign(J, AR ? armPose('Right', { elev: AR.elev + br * 0.5, fwd: AR.fwd - live, elbow: AR.elbow - live2, twist: AR.twist ?? 0 }) : armPose('Right', { elev, fwd: A.fwd - live, elbow: elbow - live2, twist: A.twist }));
   if (K.wrists) {
     // les mains SUR le ballon : IK de bras vers les deux poignets (le micro-balancier respire avec la cage)
     const w = K.wrists, lift = 0.01 * Math.sin(TAU * tt / 5.1);
@@ -203,6 +207,7 @@ export function idlePolicy(ctx, persona = null) {
   }
   if (ctx.dead) return burst > 1.18 ? 'sautillement' : calm > 1.1 ? 'mainsHanches' : 'repos';
   if (ctx.receveur) return 'reception';   // (A12b) le ballon vole vers moi : la posture de réception, quel que soit le tempérament
+  if (ctx.marcheur && (ctx.ballD ?? 0) > 25) return 'mainsHanches';   // (A12e) le rôle marchant, loin du ballon : les mains sur les hanches (Messi, l'électron libre)
   if (ctx.defending && (ctx.carrierD ?? 99) < 5.5) return 'pret';
   return 'repos';
 }
@@ -267,11 +272,12 @@ export function checkIdleGen(P, { kind = 'repos', style = NEUTRAL_IDLE_STYLE, op
   if (footMove > 0.005) issues.push(`les pieds bougent de ${(footMove * 100).toFixed(1)} cm — une attente ne glisse pas`);
   if (toeMin < -0.01) issues.push(`l'orteil sous la pelouse (${(toeMin * 100).toFixed(1)} cm)`);
   if (unreach) issues.push(`${unreach} instants hors de portée`);
-  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24], reception: [8, 32], pausa: [0, 80] }[kind] || [0, 60];
+  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24], reception: [8, 32], pausa: [0, 80], signal: [0, 24] }[kind] || [0, 60];
   if (kneeMin < kneeBand[0] - 0.5 || kneeMax > kneeBand[1] + 0.5) issues.push(`${kind} : genou [${kneeMin.toFixed(0)}, ${kneeMax.toFixed(0)}]° hors [${kneeBand}]`);
   // les mains de l'espèce (poignets, repère personnage : droite +X, haut +Y, avant −Z)
   const hR = f0.R.hand, hL = f0.L.hand, eR = f0.R.elbow;
   const chestZ = f0.chest[2];
+  if (kind === 'signal' && !(hR[1] > f0.head[1] + 0.05)) issues.push(`signal : la main droite n'est pas au-dessus de la tête (${hR[1].toFixed(2)} c. tête ${f0.head[1].toFixed(2)})`);
   if (kind === 'pausa') {   // (A12c) la semelle SUR le ballon : la cheville du pied levé à 0,24-0,36 m, devant ; l'autre pied au sol ; le bassin sur la jambe d'appui
     const R0 = (IDLE_KINDS.pausa.raise?.side ?? 'Right') === 'Left' ? 'L' : 'R', S0 = R0 === 'R' ? 'L' : 'R';
     const up = f0[R0].ankle[1] - ground, down = f0[S0].ankle[1] - ground;

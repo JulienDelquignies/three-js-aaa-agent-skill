@@ -11849,6 +11849,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      verify-locomotion 6/0, verify-sync 9/0. Capture a12d-recul-frein.png
      (graine 3). Référence 58. Suite : A12e la marche des rôles marchants.
 
+- 357: LES RÔLES MARCHANTS ET LES PETITS GESTES SIGNÉS (lots A12e, A12f).
+     A12e : les mains sur les hanches du rôle marchant (free_role_creator,
+     wide_creator, raumdeuter : ancrage ≥ 0,8 ou repli ≥ 0,9) loin du
+     ballon (> 25 m, aucun porteur adverse à < 12 m, pas receveur, sans
+     geste) — à l'arrêt, la politique répond mainsHanches (après la
+     réception) ; en marche (< 1,7 m/s), opts.mainsHanches de la foulée
+     remplace le balancier par la pose de bras de l'attente (armPose,
+     import motion-idle → motion-gait, sans cycle) ; le contrat de foulée
+     exempte les mains posées de l'opposition bras-jambes. A12f : le signal
+     du tireur de corner — espèce d'attente `signal` (armR : un bras droit
+     à part, élévation 168° ; main gauche sur la hanche), forcée par la
+     scène pendant la phase 'attend' de la course d'élan (A9 bis) — pas
+     besoin du payload.mains = 'signal' de l'interface ; la passe sans
+     regarder — gaze.js, view.noLook (gesteF ≥ 1,05, presseur < 2,5 m,
+     passe < 12 m) : au dernier tiers de l'armé les yeux au point opposé à
+     la cible, il vise d'abord ; le pas de recul du renard : une décision
+     de course, au tronc. Bancs : verify-attente 48 → 52 (politique du
+     marcheur, sabotage « signal bras baissé »), verify-foulee 51 → 54
+     (mains à ≤ 20 cm du bassin, course ≤ 5 cm c. 17, contrat tenu, absent
+     au bit), verify-gaze 22 → 25, verify-gait 23/0, verify-sync 9/0.
+     Aucun bit de sim. LE SHOWCASE NE POSE NI RÔLE NI ATTRIBUT (match11 :
+     22 polyvalents, gesteF absent) : ces signes vivent dans le projet aval ;
+     la capture a12e-marcheur.png injecte un rôle marchant dans la page,
+     la planche attente-signal-apres.png montre le bras levé. Référence 58.
+     Reste du lot A12 : les captures d'identification « sans les noms ».
+
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -163,6 +163,9 @@
   datées du tronc (ligne: null DATÉ 273 dans verify-remises/porte/contact, locomoteur: null DATÉ 260 dans
   verify-remises) — à re-dater quand je reprends ces mondes (la ligne tenue et le profil locomoteur changent les
   corps à la remise, les portés et les chutes).
+  RESTE DU LOT A12 (14/09) : les captures d'identification « sans les noms » par rôle du 249 (le showcase ne pose
+  aucun rôle : à faire en injectant les rôles dans la page, ou dans le projet aval qui les pose) ; A13 le second canal
+  d'animation (décision d'interface, à instruire avec le tronc).
 - LIVRÉ (lot A12a, note 353) : LE SCAN DU RECEVEUR EN VOL — gaze.js lit l'horloge de scan de la sim (p.scan, 250)
   au lieu de coller les yeux du receveur au ballon : saccades vers le presseur / l'espace pendant le vol, les yeux
   retombent sur le ballon pour la prise, une seule horloge, clé absente = hier (29 % du vol hors ballon, 0,89
@@ -178,6 +181,10 @@
 - LIVRÉ (lot A12d, note 356) : LE RECUL-FREIN — la posture du jockey dans la foulée générée (opts.jockey : bas,
   penché, large, bras ouverts, balancier réduit), le drapeau relu de la condition du jockey de la sim ; verify-foulee
   51/0 ; capture a12d-recul-frein.png.
+- LIVRÉ (lots A12e-f, note 357) : LES RÔLES MARCHANTS (mains sur les hanches à l'arrêt et en marche, loin du ballon,
+  rôle à ancrage ≥ 0,8 ou repli ≥ 0,9) et LES PETITS GESTES SIGNÉS (le bras levé du tireur de corner pendant la course
+  d'élan, la passe sans regarder du technicien pressé) ; verify-attente 52/0, verify-foulee 54/0, verify-gaze 25/0. Le
+  showcase ne pose ni rôle ni attribut : ces signes vivent dans le projet aval.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

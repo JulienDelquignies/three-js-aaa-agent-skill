@@ -69,7 +69,13 @@ export function pickGazeTarget(view, st, rng) {
   if (flightTo === id || (justReceivedAt != null && t - justReceivedAt < GAZE.holdAfterReceive)) return ball;
   if (ownerId === id) {
     // porteur en armé : la cible d'abord (on vise), le ballon dans le dernier tiers (on frappe)
-    if (act && act.antic > 0) return (act.t < act.antic * 0.66 && act.targetP) ? act.targetP : ball;
+    if (act && act.antic > 0) {
+      // (A12f) LA PASSE SANS REGARDER (Busquets, Firmino : « regarde à gauche, donne à droite ») : au dernier tiers de
+      // l'armé, le technicien pressé regarde le POINT OPPOSÉ à sa cible, de l'autre côté de son corps — la scène pose
+      // view.noLook (technique haute, presseur à < 2,5 m, passe courte). Sans le drapeau : le ballon, comme hier.
+      if (act.t >= act.antic * 0.66 && view.noLook && act.targetP && pos) return [2 * pos[0] - act.targetP[0], act.targetP[1], 2 * pos[2] - act.targetP[2]];
+      return (act.t < act.antic * 0.66 && act.targetP) ? act.targetP : ball;
+    }
     // porteur libre : alternance ballon ↔ cible pressentie
     if (t >= (st.altAt ?? 0)) { st.altAt = t + GAZE.alternate[0] + rng() * (GAZE.alternate[1] - GAZE.alternate[0]); st.altOnBall = !st.altOnBall; }
     return st.altOnBall || !act?.targetP ? ball : act.targetP;
@@ -193,6 +199,10 @@ export function checkGaze() {
   if (rxv(1, 1.4, 6)[2] !== 4) issues.push('receveur en vol : la saccade de la sim n\'est pas suivie');
   if (rxv(1.5, 1.4, 6)[2] !== 0) issues.push('receveur en vol : les yeux ne reviennent pas au ballon après la saccade');
   if (rxv(1, 1.4, 1)[2] !== 0) issues.push('receveur à la prise : les yeux ne retombent pas sur le ballon');
+  // 6. (A12f) la passe sans regarder : au dernier tiers de l'armé, les yeux au point opposé à la cible ; sans le drapeau, le ballon
+  const nl = (noLook) => pickGazeTarget({ id: 2, t: 5.25, ball: [0, 0.1, 0], ownerId: 2, flightTo: null, justReceivedAt: null, act: { t: 0.25, antic: 0.3, targetP: [5, 1.5, 2] }, job: 'carry', markP: null, carrierP: null, noLook, pos: [0, 0, 0] }, {}, rng);
+  if (nl(true)[0] !== -5 || nl(true)[2] !== -2) issues.push('passe sans regarder : les yeux ne vont pas au point opposé');
+  if (nl(false)[0] !== 0) issues.push('sans le drapeau, le porteur en armé ne regarde plus le ballon au dernier tiers');
   return { ok: issues.length === 0, issues };
 }
 import { hyp } from './hyp.js';

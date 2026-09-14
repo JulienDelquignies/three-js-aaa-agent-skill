@@ -142,5 +142,15 @@ console.log('\n— A12a : le scan du receveur en vol (p.scan de la sim, lue par 
   ok(`la clé absente rend l'hier au bit : sans cfg.scan, le receveur fixe le ballon tout le vol (${(sans.offShare * 100).toFixed(0)} % hors ballon = 0, ${sans.prisesBallon}/${sans.prises} prises au ballon)`, sans.offShare === 0 && sans.prisesBallon === sans.prises);
 }
 
+console.log('\n— A12f : la passe sans regarder (view.noLook) —');
+{
+  const rng = gazeRng(13);
+  const nl = (t, noLook) => pickGazeTarget({ id: 2, t, ball: [0, 0.1, 0], ownerId: 2, flightTo: null, justReceivedAt: null, act: { t: t - 5, antic: 0.3, targetP: [5, 1.5, 2] }, job: 'carry', markP: null, carrierP: null, noLook, pos: [0, 0, 0] }, {}, rng);
+  const a = nl(5.25, true), b = nl(5.1, true), c = nl(5.25, false), d = nl(5.25, undefined);
+  ok(a[0] === -5 && a[2] === -2, `au dernier tiers de l'armé, le technicien pressé regarde le POINT OPPOSÉ à sa cible [${a.join(', ')}] (cible [5, 1.5, 2])`);
+  ok(b[0] === 5 && b[2] === 2, '…mais il VISE d\'abord (premier tiers : la cible, comme tout porteur)');
+  ok(c[0] === 0 && d[0] === 0, 'sans le drapeau (false ou absent), le ballon au dernier tiers — hier au bit');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

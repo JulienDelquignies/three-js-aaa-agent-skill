@@ -173,5 +173,19 @@ console.log('\n— A12d : le recul-frein — le défenseur qui jockeye est bas e
   ok(JSON.stringify(gaitPose(P, 0.3, -1.5, 0.6, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, -1.5, 0.6, NEUTRAL_GAIT_STYLE, { jockey: undefined }).q), 'sans le drapeau, le recul d\'hier au bit');
 }
 
+console.log('\n— A12e : la marche des rôles marchants — les mains sur les hanches (opts.mainsHanches) —');
+{
+  const mesure = (opts) => {
+    let dy = 0, zMin = Infinity, zMax = -Infinity, ex = 0, n = 0;
+    for (let i = 0; i < 60; i++) { const g = gaitPose(P, i / 60, 1.2, 0, NEUTRAL_GAIT_STYLE, opts); const fk = fkPose(P, g.q, g.hips); dy += Math.abs(fk.RightHand.p[1] - fk.Hips.p[1]); zMin = Math.min(zMin, fk.RightHand.p[2]); zMax = Math.max(zMax, fk.RightHand.p[2]); ex += fk.RightForeArm.p[0] - fk.RightHand.p[0]; n++; }
+    return { dy: dy / n, swing: zMax - zMin, coudeDehors: ex / n };
+  };
+  const d = mesure({}), m = mesure({ mainsHanches: true });
+  ok(m.dy <= 0.2 && m.swing <= 0.05 && m.coudeDehors > 0.03, `en marche (1,2 m/s) les mains restent sur les hanches : main à ${(m.dy * 100).toFixed(0)} cm du bassin (≤ 20), course ${(m.swing * 100).toFixed(1)} cm (≤ 5 ; sans : ${(d.swing * 100).toFixed(0)}), coude dehors ${(m.coudeDehors * 100).toFixed(0)} cm`);
+  let cg; try { cg = checkGaitGen(P, { vF: 1.2, vR: 0, opts: { mainsHanches: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
+  ok(cg.ok, `…et la marche reste sous le contrat (checkGaitGen à 1,2 m/s)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
+  ok(JSON.stringify(gaitPose(P, 0.3, 1.2, 0, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, 1.2, 0, NEUTRAL_GAIT_STYLE, { mainsHanches: undefined }).q), 'sans le drapeau, la marche d\'hier au bit');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

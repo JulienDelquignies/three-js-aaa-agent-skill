@@ -137,8 +137,42 @@ bit. verify-gait 23/0, verify-locomotion 6/0.
 
 **Capture.** `a12d-recul-frein.png` (playmode, graine 3 : le presseur en recul devant le porteur, bas, bras ouverts).
 
+## A12e — La marche des rôles marchants : les mains sur les hanches
+
+**Le signe.** Le document (§3.6 C l'électron libre, §3.7 D le faux ailier marchant, §3.8 C Messi) : « marche de longues
+minutes les mains sur les hanches pour cartographier les failles », « marche lentement à 50 mètres du ballon ». Le rôle
+est à la sim (catalogue 248 : `free_role_creator` ancrage 0,95, `wide_creator`, `raumdeuter` ancrage 0,9 ; l'axe
+`repli` du 251 : 1 = dispensé) ; la marche loin du ballon aussi. Ce qui manquait : les MAINS.
+
+**Le mécanisme (aucun bit de sim).** La scène pose `idleCtx.marcheur` : rôle à ancrage ≥ 0,8 ou repli ≥ 0,9, sans
+geste, pas receveur, ballon à plus de 25 m, aucun porteur adverse à moins de 12 m. À l'arrêt, la politique d'attente
+répond `mainsHanches` (après la réception, avant la garde). En marche (< 1,7 m/s), `opts.mainsHanches` de la foulée
+générée remplace le balancier par la pose de bras de l'attente (`armPose`, élévation 22°, coude 45°, vrille −50° :
+les mains posées, coudes dehors) ; le contrat de foulée exempte les mains posées de l'opposition bras-jambes.
+Drapeau absent = la marche d'hier au bit.
+
+**Contrat.** verify-attente 48 → 52 (la politique : loin du ballon → mains sur les hanches, sauf si le ballon vole
+vers lui) ; verify-foulee 51 → 54 (en marche : main à ≤ 20 cm du bassin, course ≤ 5 cm — sans : 17 —, coude dehors,
+contrat tenu, drapeau absent au bit).
+
+**Ce que le showcase ne montre pas seul.** `match11.html` ne pose aucun rôle (22 joueurs polyvalents) : le signe vit
+dans le projet aval qui pose les rôles ; la capture `a12e-marcheur.png` injecte un rôle marchant dans la page.
+
+## A12f — Les petits gestes signés
+
+- **Le signal du tireur de corner** (§4.3 : « bras levé = premier poteau »). L'interface gelée prévoyait
+  `payload.mains = 'signal'` côté cpa.js ; la scène n'en a pas besoin : elle lit `st.restart.elan.phase === 'attend'`
+  du tireur d'un corner (la course d'élan de A9 bis) et force l'espèce d'attente `signal` — le bras droit levé
+  (`armR`, une pose de bras droit à part : élévation 168°), la main gauche sur la hanche. Contrat : la main droite au-
+  dessus de la tête ; sabotage « bras baissé » attrapé. Planche `planches/attente-signal-apres.png`.
+- **La passe sans regarder** (Busquets, Firmino : « regarde à gauche, donne à droite »). `gaze.js` : au dernier tiers
+  de l'armé, le porteur regarde le POINT OPPOSÉ à sa cible, de l'autre côté de son corps, quand la scène pose
+  `view.noLook` — technique haute (`gesteF` ≥ 1,05), presseur à moins de 2,5 m, passe courte (< 12 m). Il VISE d'abord
+  (premier tiers : la cible, comme tout porteur). Sans le drapeau : le ballon, comme hier. Contrat verify-gaze 22 → 25
+  et `checkGaze` (6). Le showcase ne pose pas d'attributs (`gesteF` absent = 1) : le signe vit dans le projet aval.
+- **Le pas de recul du renard** (Lewandowski, §3.8 : « un micro-pas de recul au moment du centre ») : une DÉCISION de
+  course (un déplacement de 0,8 m à l'instant du centre), pas une animation — au tronc, dette nommée.
+
 ## À venir dans ce lot
 A12c la pausa (kind/événement du 253) ;
-A12e la marche des rôles marchants ; A12f les petits gestes signés (bras du tireur
-`payload.mains = 'signal'`, la passe sans regarder, le pas de recul du renard) ; une planche « sans les noms » par
-rôle du 249.
+une planche « sans les noms » par rôle du 249 (les captures d'identification).
