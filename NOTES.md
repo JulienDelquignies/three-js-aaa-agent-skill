@@ -11550,7 +11550,6 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      contrôle manqué). Sceau : commit d2be78b, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
      Rondo servi = construit, après un curl muet retenté). Vient le bloc qui perçoit et la ligne qui est une ligne
      (Bibles 03, 10) — ou les tirs qui sortent (Modèle 10), la source des sorties manquantes.
-- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
 - 350: LE xG EN FORME CLOSE ET LA PORTE DE DÉCISION (272 — la carte du book après le 271 : les
      tirs qui ne sortent pas ; Modèle 10 lot 3 : §1 la porte « xG > EV_cont + Θ_i » (1.2, le seuil
      n'est pas un seuil, c'est une comparaison), §1.3 le biais de tempérament Θ_i (score × temps,
@@ -11614,6 +11613,22 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (non-oscillation) non instrumentés, PSxG et l'enveloppe continue du gardien (lot 4 — la
      tête convertit à 16-33 % pour 9,6 réels : c'est le gardien), la porte de la tête (tete.js
      garde son seuil de distance), le rebond (10 % des tirs), les deux conventions de comptage.
+     Banc complet (final272 : 8 shards puis 25 annexes) : 303 ✓ / 7 ✗ au premier passage — rouges :
+     232 (bloc 128, la zone de vérité : q = xG_dec 0,306 sous la clé), 95 (26, le jockey 54 c. 62),
+     le troisième homme (137, servi 59 c. 29), les bascules libres (28), les through condamnés
+     (110) — tous verts à HEAD~ (worktree 201d6c0) et épinglés PAR CONTENU « xg: null DATÉ 272 »,
+     tous verts isolés à HEAD ; hérités : 246d (148, rouge aussi à HEAD~ : 50 % à 90), les contres
+     arrivés à l'entrée (139, 11 c. 7 à HEAD~). Annexes : attributes 26/1 → 27/0 (L55, la
+     gradation), match 82/2 → 84/0 (L1151, la passe levée), roles 13/1 → 14/0 (L86, le 9 → passe :
+     le tir se compare à sa continuation), scan 4/1 → 5/0 (L13), tactics 10/1 → 11/0 (L133, le
+     choix serré), identification 0/1 → REGELÉ DATÉ 272 : 15 → 14 signatures (perdues DC A|largeurR,
+     DC B|largeurR, DC B|profondeur, DC C|largeurR, MIL B|tenue ; gagnées DC A|profondeur, DC
+     B|appel, MDC B|tenue, MO B|profondeur), loi12 12/2 hérité (le mur se tient — rouge à HEAD~) ;
+     frappes 13/0, gestes 60/0, menace 11/0, rondo 40/0, sync 9/0, loi3 10/0, kit 5/0, part-tint
+     18/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
+     6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,56 ms/step (≤ 1,6). Sceau :
+     commit caa013e, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-B8nMjuKr).
+- Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
