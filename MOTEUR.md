@@ -493,6 +493,22 @@ glissé d'hier au bit. Banc : bloc 269 (le médian à k / sinh k, e^k au flair 1
 la faute à portée sous le tirage, le monde, sabotage). Sonde : `scripts/book/sonde-269.mjs`. Fiches :
 `M11-duels-stochastiques.md`, `14-micro-comportements.md`, `15-duels-seconds-ballons.md`.
 
+### Le temps du match (lot 270, `cfg.temps` — `temps.js`)
+
+Les cérémonies vivaient à 12 / 20 / 22 / 18 s (touche 11,7 mesurée, six mètres 21, corner 24 ; réel 17,7 / 30,3 / 36,9), le
+temps additionnel était une fraction plate des arrêts plafonnée à 12 %, et le gardien n'avait pas de limite. Le 270 pose
+(1) **les cérémonies dans la bande** (`bandeDe`, lu par `tempoWait`) : la bande Opta PL 2025-26 de chaque espèce (touche
+12,7-21,7, six mètres 26,2-36,7, corner 30-50, coup franc 25,8-41,6) interpolée par le nouvel axe d'équipe `gestionTemps`
+(0,5 = le milieu, l'identité ; 0 le rapide, 1 le lent), le tempo, le contexte et l'aléa du 217 restent ; (2) **le temps
+additionnel qui lit le match** (`addDe`, dans `chronoStep`) : part × les arrêts de la période + serre s à la dernière
+période si |écart| ≤ 1 (Maia et al.), borné [min ; maxPart × période] — l'effet Garicano reste nul ; (3) **les huit
+secondes** (`huitSecondes`, au site de relance du gardien) : le gardien relâche à 6 s au plus, passé 8 s le corner est
+sifflé pour l'adversaire du côté du ballon. Mesuré 4 × 45 min : les reprises 16,6-16,9 → 27-29,4 s (réel 26-32) — touche 11,7 → 17,3-18,0 (réel 17,7), six mètres 20-22 → 33,3 (30,3), corner 21-23 → 35-37,5 (36,9), coup franc 18 → 32-33 (26-42) ; le temps additionnel 108-259 → 260-333 s par période (réel ≈ 300), + 60 s par la loi quand l'écart ≤ 1 ; le ballon en jeu 75-77 → 68-69 % (réel 54-58 : le reste est le nombre d'arrêts, 61-73 c. 85-105, le 271) ; la durée totale 94 → 96 min (réel 100,6) ; le gardien tient p50 0,5 s, max 7,5, jamais huit. Clé absente : l'horloge d'hier au bit.
+Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additionnel aux cinq cas, les huit secondes 7 c.
+9 s, la touche rapide c. lente sur le même état, 600 s de reprises plus longues, sabotage). Sonde :
+`scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
+`M01-boucle-simulation.md`.
+
 ### Le cerveau on-ball est un CONTRAT (`menace.js` — lot 12)
 
 Le patron Unity/Unreal au sens strict : **le moteur possède l'EXÉCUTION, le projet peut

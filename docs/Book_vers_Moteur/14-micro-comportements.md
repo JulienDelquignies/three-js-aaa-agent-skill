@@ -71,8 +71,8 @@ humain comme objet.
 | T15 take-ons des spécialistes | 41-54 % | mesurable, **T15bis tenu au 269** : le meilleur / le médian **7-11** (≥ 5 ; 8 × 45 min), 35-39 gestes de dribble / match (≈ 40), 19-21 take-ons (25) | avant : **199 gestes / match** (toutes feintes comprises ; 28-39 gestes de dribble), T15bis meilleur / médian **2,8** (cible ≥ 5) — tout le monde dribblait |
 | T16-T19 mauvais sens, engagement tardif de l'élite, adaptation, cône | | absents (pas de tromperie) |
 | T20-T23 communication | | absents (un seul message, la passation 252) |
-| T24 ballon en jeu | 54-58 % | mesurable, **réfuté** | **84 %** (4 551 s sur 5 400 : pas de temps additionnel réel, reprises courtes) |
-| T25 durées de reprise | touche 17,7 / six mètres 30,3 / corner 36,9 | mesurable, **partiel** | touche **11,8**, six mètres **18,1**, corner **19,2**, coup franc 18,6 (`tempsMort` 217 à 12 / 20 / 22 / 18) |
+| T24 ballon en jeu | 54-58 % | mesurable, **partiel au 270** : **68-69 %** (75-77 avant ; 4 × 45 min) — les cérémonies sont dans la bande, il manque 25-40 arrêts par match | avant : **84 %** (4 551 s sur 5 400 : pas de temps additionnel réel, reprises courtes) — le reste est le nombre d'arrêts (47-61, réel 85-105 : le 271) |
+| T25 durées de reprise | touche 17,7 / six mètres 30,3 / corner 36,9 | mesurable, **tenu au 270** : touche **17,3-18,0**, six mètres **33,3**, corner **35-37,5**, coup franc 32-33 (4 × 45 min ; l'axe gestionTemps à 0,5) | avant : touche **11,8**, six mètres **18,1**, corner **19,2**, coup franc 18,6 (`tempsMort` 217 à 12 / 20 / 22 / 18) |
 | T26 curseur `timeManagement` | ≥ 3 pts | le contexte existe (`traine` / `presse` 0,35) — à mesurer |
 | T27 simulations | 3 ± 1 par match | absent |
 
@@ -88,6 +88,9 @@ humain comme objet.
    tardif de l'élite, l'adaptation — et le **volume** des gestes (199 → ≈ 40, le meilleur 5 × le médian).
 3. **Le temps du match** (T24-T27, ch. 16) : ballon en jeu 84 → 55 %, les cérémonies dans la bande réelle (touche
    12,7-21,7, six mètres 26,2-36,7, corner 30-50), le temps additionnel qui en découle, la règle des 8 s.
+   → **SCELLÉ 270** (`temps.js`, `cfg.temps`, NOTES 348) : les cérémonies dans la bande par l'axe gestionTemps, le temps
+   additionnel qui lit les arrêts et l'écart, les huit secondes. Mesuré : reprises 16,7 → 28 s, ballon en jeu 76 → 68 %, temps additionnel 260-333 s par période. Le ballon en jeu reste au-dessus
+   de la bande tant que le ballon ne sort pas assez (le 271).
 4. **La communication comme canal** (T20-T23 ; ch. 10 §11.3, ch. 12 lot 2) : voix 25 m, geste vu, boîte à un
    message.
 5. **La première touche typée** (T14, §4) et **la pausa** (253 — SCELLÉ 335).

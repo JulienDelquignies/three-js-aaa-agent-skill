@@ -1,4 +1,4 @@
-import { tirage } from './rng.js';
+import { tirage } from './rng.js'; import { bandeDe, addDe, gestionDe } from './temps.js';
 // referee.js — L'ARBITRAGE ET LES CÉRÉMONIES DU MATCH, sortis de match-sim (lot 16 : la
 // volumétrie est une dette comme une autre — 1 575 lignes accrétées en six lots). La FAMILLE
 // est cohésive : tout ce qui ARRÊTE et REMET le jeu — sorties (onOut), droit de prise
@@ -594,7 +594,7 @@ export function onOut(st, cfg) {
 /** LE TEMPO DE LA REMISE (lot 164 — le levier n° 1 du tempo réel : jouer vite ou poser le
  *  ballon). L'attente de remise × axe tempo de l'ÉQUIPE QUI LA JOUE (vif 0,65 ↔ posé 1,35,
  *  0,5 = ×1 l'identité au bit). st.full : le réduit garde son horloge d'hier. */
-function tempoWait(st, cfg, team, type = null) {
+export function tempoWait(st, cfg, team, type = null) {
   // LES CÉRÉMONIES DE REMISE AU RÉEL (217, cfg.tempsMort — mesuré : temps mort 19 % du match pour
   // un réel de 35-40 ; touche 5,3 s (réel ~15), renvoi 6,8 (~25), corner 9,8 (~30), coup franc
   // 3 (20-30) — et 746 passes/90 min qui en découlent). Une durée par ESPÈCE, × le tempo
@@ -602,7 +602,7 @@ function tempoWait(st, cfg, team, type = null) {
   // traîne, celle qui court après se dépêche — st.score et le chrono), × un aléa seedé (0,8-1,2).
   // L'engagement garde son horloge (cérémonie du but). Clé absente : restartWait d'hier au bit.
   const TM = st.full && type && cfg.tempsMort && cfg.tempsMort[type] != null ? cfg.tempsMort : null;
-  const base = TM ? TM[type] : cfg.restartWait;
+  const base = (TM && cfg.temps && bandeDe(type, cfg.temps, gestionDe(st, team))) || (TM ? TM[type] : cfg.restartWait);   // LES CÉRÉMONIES DANS LA BANDE (270, doc temps.js) : la bande Opta de l'espèce × l'axe gestionTemps ; clé absente : le 217 au bit
   const tempoF = st.full && team >= 0 ? axeT(tacT(st, team).tempo, 1.6, 0.4) : 1;
   if (!TM) return base * tempoF;
   const lead = team >= 0 && st.score ? (st.score[team] ?? 0) - (st.score[1 - team] ?? 0) : 0;
@@ -707,7 +707,7 @@ export function chronoStep(st, cfg) {
   // et l'annonce est un événement quand la période nominale expire. false : la montre truquée
   // (sabotage nommé — la période coupe pile, les remises ont mangé du jeu).
   if (st.restart && dt > 0 && !st.fini) C.arrets = (C.arrets ?? 0) + dt;
-  const add = ch.additionnel !== false ? Math.min(duree * 0.12, (C.arrets ?? 0) * 0.35) : 0;
+  const add = ch.additionnel !== false ? (st.full && cfg.temps?.additionnel ? addDe(C.arrets ?? 0, duree, cfg.temps.additionnel, (st.score?.[0] ?? 0) - (st.score?.[1] ?? 0), C.periode >= periodes) : Math.min(duree * 0.12, (C.arrets ?? 0) * 0.35)) : 0;   // LE TEMPS ADDITIONNEL QUI LIT LE MATCH (270, doc temps.js) ; clé absente : la fraction plate d'hier au bit
   const finNominale = C.periode * duree + (C.periode - 1) * pause;
   if (ch.additionnel !== false && !C.annonce && st.t >= finNominale) {
     C.annonce = true;

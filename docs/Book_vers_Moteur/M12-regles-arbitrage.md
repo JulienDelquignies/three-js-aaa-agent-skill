@@ -44,7 +44,7 @@ additionnel ; l'arbitre faillible (erreurs selon la distance, asymétrie, charge
 | 8 bouclage fautes / cartons | 5-7 par jaune ; 3-5 jaunes | tenu au 257 | **2,7** → **5,0** par jaune ; **8,5** → **4,0** jaunes / match |
 | 9 retenue post-avertissement | 0,30-0,85 | absent |
 | 10 ablation du VAR | | absent |
-| 11 temps additionnel selon le score | coefficient significatif | Bible 16 T23 : **161 / 157 s** quel que soit l'écart |
+| 11 temps additionnel selon le score | coefficient significatif | **tenu au 270** (+ 60 s à la dernière période si l'écart ≤ 1) ; avant : Bible 16 T23 **161 / 157 s** quel que soit l'écart |
 | 12 structure des arrêts | 85-105 de 26-32 s | mesurable, **réfuté** | **49** arrêts de **17,5 s** |
 | 13 avantage non oraculaire | ≤ 85 % | à mesurer |
 | 14 non-oscillation des verdicts | 0 | tenu (refus au départ) |

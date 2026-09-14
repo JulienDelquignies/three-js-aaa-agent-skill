@@ -58,7 +58,7 @@ coach en approche) ; le momentum mesuré ; la météo et le terrain.
 | T18 variance du temps de décision | +34 % CV | absent (pas de temps de décision) |
 | T19 désynchronisation 85' c. 20' | +0,4-0,7 s | mesurable en mètres : 10,8 → 10,9 — plate, mais déjà cassée (ch. 03) |
 | T20-T22 domicile, public, arbitre | 0,35-0,45 / 0,20-0,25 / 20 % | absents |
-| T23 temps additionnel selon l'écart | ≥ +60 s si écart ≤ 1 | mesurable, **réfuté** | **161 s / 157 s** |
+| T23 temps additionnel selon l'écart | ≥ +60 s si écart ≤ 1 | mesurable, **tenu au 270** : + 60 s par la loi à la dernière période si l'écart ≤ 1 (bloc 270 : 210 c. 270 s à 600 s d'arrêts) ; en match 303-316 s serré (les quatre matchs de la sonde sont serrés : l'écart ≥ 2 n'a pas d'échantillon) | avant : **161 s / 157 s** |
 
 ## 4. Les lots que la fiche appelle
 

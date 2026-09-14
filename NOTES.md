@@ -11411,6 +11411,79 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      showcase = soldier-volley (cmp) ; match-sim, rondo-sim, match-config à 1249 lignes (la porte de
      trySlide et la faute du glissé fondues sur leurs lignes). Sceau : commit 1517286, poussé ; déploiement showcase-pi-mocha au troisième essai (cmp du
      chunk Rondo servi = construit). Vient le ballon qui sort et le temps du match.
+- 348: LE TEMPS DU MATCH (270 — la carte du book : Bible 14 lot 3 (T24 le ballon en jeu 54-58 %, T25
+     les durées de reprise 17,7 / 30,3 / 36,9 s, §9.1 la table de calibration Opta PL 2025-26 et le
+     curseur timeManagement « à l'intérieur de la bande, pas au-delà »), Bible 16 lot 4 (T10 le jeu
+     effectif 66 → 56 %, T23 le temps additionnel ≥ +60 s si l'écart ≤ 1, §6.4 Maia et al.), Modèle
+     12 test 11, Modèle 01 lot 5, la Loi 12.2 des huit secondes IFAB 2025-26). Sonde AVANT
+     (sonde-270 : le ballon en jeu, les arrêts et leur durée par espèce, la durée totale, le jeu
+     effectif des 15 premières c. 15 dernières minutes, le temps additionnel par période et par
+     écart, la tenue du gardien ; 4 × 45 min, graines 3-13, temps null) : ballon en jeu 75-77 %
+     (réel 54-58), arrêts 70-73 / match (réel 85-105) de 16,6-16,9 s (26-32) — touche 11,7 s (réel
+     17,7), six mètres 20-22 (30,3), corner 21-23 (36,9), coup franc 18 (26-42) ; durée totale 94
+     min (100,6) ; temps additionnel 108-259 s par période (la fraction plate 0,35 plafonnée à 12 %)
+     ; jeu effectif 66-78 → 76-83 % (réel 66 → 56) ; le gardien tient p50 0,4 s, max 7,3. Première
+     sonde à la borne 1,6 × la durée : le match n'atteignait pas son sifflet (72 min « totales », 0
+     % dans les 15 dernières) — la borne à 2,4 ×. LA LOI (temps.js, cfg.temps && st.full) : (1) LES
+     CÉRÉMONIES DANS LA BANDE — bandeDe(espèce, K, gestion) = lo + (hi − lo) × gestion, la bande
+     Opta par espèce (touche [12,7 ; 21,7] — Wolverhampton → Brentford —, six mètres [26,2 ; 36,7],
+     corner [30 ; 50], coup franc [25,8 ; 41,6]), l'axe d'équipe gestionTemps (tactics.js, 0,5 = le
+     milieu de la bande, l'identité ; une consigne d'entraîneur) ; tempoWait lit la bande à la place
+     de tempsMort[espèce] et garde le tempo tactique (× 1,6-0,4), le contexte (mener tard traîne,
+     courir après presse) et l'aléa 0,8-1,2 du 217 ; l'engagement et le penalty gardent leur horloge
+     (sans bande) ; (2) LE TEMPS ADDITIONNEL QUI LIT LE MATCH — addDe = clamp(part 0,35 × les arrêts
+     de la période + serre 60 s à la dernière période si |écart| ≤ 1, min 60, maxPart 0,15 × la
+     période) — le book : « plus d'une minute de plus » quand l'écart ≤ 1 (Maia), 60 s est un
+     plancher ; l'effet Garicano (refereeBias × domicile) reste nul par défaut (T23b) ; part 0,2
+     d'abord (149-189 s par période, réel ≈ 300) → 0,35 ; (3) LES HUIT SECONDES — le gardien relâche
+     à relache 6 s au plus (gkDue plafonné : le décompte visible presse, T37 : la relâche typique
+     vers 5-6 s), et passé limite 8 s huitSecondes siffle : l'événement huit-secondes, la sortie
+     'corner' pour l'adversaire du côté du ballon, la remise posée à la cérémonie du corner. Mesuré
+     APRÈS (4 × 45 min) : les reprises 27-29,4 s (réel 26-32) — touche 17,3-18,0 (17,7), six mètres
+     33,3 (30,3, dans la bande), corner 35-37,5 (36,9), coup franc 32-33 (26-42), penalty 29 (sans
+     bande) ; arrêts 61-64 / match ; ballon en jeu 68-69 % (réel 54-58 — les cérémonies sont dans la
+     bande, il manque 25-40 arrêts par match : le ballon qui sort, 271) ; durée totale 96 min
+     (100,6) ; temps additionnel 260-333 s par période (réel ≈ 300), 303-316 s serré (les quatre
+     matchs de la sonde sont serrés — l'écart ≥ 2 n'a pas d'échantillon, le bloc porte la loi : + 60
+     s exactement) ; jeu effectif 65-75 → 67-76 % (réel 66 → 56 : la dérive n'est pas là — le
+     contexte ne traîne que pour l'équipe qui mène, et les matchs sont serrés ; nommé) ; le gardien
+     tient p50 0,5 s, max 7,5, aucun huit (la limite est une garde, pas un événement du monde
+     calibré). Jumeau : temps null = HEAD au bit (4071982537b5a01b / e2d2b37e3f49cea0 — le défaut du
+     269, relu par git stash). Banc : verify-match11 bloc 270 (index 168 : la bande de la touche
+     12,7 → 21,7 aux axes 0 → 1, 17,2 au milieu, le corner 40 au milieu, l'engagement sans bande ;
+     le temps additionnel 600 s d'arrêts → 210 s, 270 serré à la dernière période, 210 à la
+     première, plancher 60, plafond 405 ; les huit secondes : 7 s rien, 9 s le corner pour
+     l'adversaire du côté du ballon ; la touche attend 10,7 s pour l'équipe rapide c. 18,2 pour la
+     lente sur le même état ; sabotage temps null : 10,4 s = tempsMort × tempo × aléa ; 600 s graine
+     3 : les reprises 28,1 s sous la clé c. 15,1 sans). Ce qu'il nomme : le ballon qui sort (271 —
+     la seule voie vers 54-58 %), la dérive du jeu effectif (T10 : la perte de temps comme
+     comportement, pas seulement la cérémonie), les simulations (T27), refereeBias et le public
+     (Bible 16), l'axe gestionTemps comme consigne (Modèle 15), la dispersion inter-équipes (T24 :
+     52-58 %).
+     Banc complet (final270 : 8 shards + 25 annexes) : shards 35/1 37/3 33/1 39/2 42/1 43/0 34/2
+     33/0 = 296 ✓ / 10 ✗ — quatre rouges du monde remangé (les cérémonies dans la bande mangent du
+     jeu : d'autres remises, d'autres possessions, un autre tirage), tous verts à HEAD~ (worktree
+     ad1b275) et épinglés PAR CONTENU « temps: null DATÉ 270 », tous verts isolés à HEAD : le gel
+     (bloc 1 — le plus long silence d'événements 34,8 s c. 31 : la borne suivait la cérémonie du
+     but, les corners vivent maintenant jusqu'à 50 s ; épinglé, la borne à re-dater), 189 (98, le
+     contre qui recule), les arrêts du gardien en flux (129), 244b en flux (142, le dédoublement) ;
+     le 268 « …et le monde » (166) rouge à HEAD~ aussi (1 geste en 300 s sur la graine 5 depuis le
+     269) : re-daté 300 → 600 s, vert ; le budget du bloc 1 rouge sous la contention (3,79 ms : 8
+     shards), 0,70 seul. Hérités : 245 (144, l'oblique — rouge à HEAD~ isolé aussi, il flotte), 170
+     (83, le corps ouvert — idem), 246d (148), « contres arrivés à l'entrée » (139). Annexes : match
+     82/2 → 84/0 (L1151 : aucune passe levée en 120 s — les cérémonies mangent le jeu court),
+     identification 0/1 → REGELÉ DATÉ 270 : 20 → 14 signatures (perdues DC A|profondeur, LAT
+     A|largeurR, DC B|appel, LAT B|repli, DC C|profondeur, DC C|appel, LAT C|profondeur, LAT
+     C|appel, LAT D|appel, MDC C|largeurR, AV A|appel, AIL C|largeurR ; gagnées DC A|tenue, DC
+     B|largeurR, MIL B|tenue, MIL C|repli, AV A|repli — le jeu joué en 300 s se réduit avec les
+     cérémonies : la dette de volumétrie à 6 graines demeure, et le test d'identification devrait
+     compter en temps de JEU, pas en temps de match) ; attributes 27/0, frappes 13/0, gestes 60/0,
+     menace 11/0, roles 14/0, rondo 40/0, scan 5/0, sync 9/0, attente 42/0, cartons 6/0, contact
+     25/0, expulsion 8/0, football-rules 59/0, foulee 45/0, kit 5/0, loi3 10/0, part-tint 18/0,
+     porte 4/0, remises 36/0, slide 10/0, tactics 11/0, tete 7/0, loi12 12/2 (hérité : « le mur se
+     tient » 4,6 m + son sabotage). Bloc 1 seul 0.70 ms/step (≤ 1,6). Copies : starter = showcase =
+     soldier-volley (cmp) ; match-sim, rondo-sim, match-config à 1249 lignes (la garde des huit
+     secondes fondue sur la ligne du gkPied).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

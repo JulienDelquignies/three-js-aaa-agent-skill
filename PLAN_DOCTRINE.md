@@ -580,6 +580,13 @@ un geste dominé ne s'impose pas par optimisation) et sa faute au taux du book (
 le meilleur / le médian 4-10 → 7-11, gestes 28-45 → 35-39 (≈ 40), glissés 18-26 → 4,6 / match (réel 6,7), P(faute | glissé) 2-6 → 19 % (réel 24), jaunes 0,5-2 → 2-4 (3,1). Ce qu'il nomme : le tacle debout et le glissé par le même noyau (§4.2), le trou défensif post-glissé (§4.4),
 bravery et decisions, la tromperie (Modèle 11 lot 3, Bible 14 lot 2) ; puis le ballon qui sort et le temps du match.
 
+**270 — LE TEMPS DU MATCH : SCELLÉ (348).** Les cérémonies dans la bande Opta de leur espèce par l'axe d'équipe
+gestionTemps (touche 12,7-21,7, six mètres 26,2-36,7, corner 30-50, coup franc 25,8-41,6), le temps additionnel qui lit
+les arrêts et l'écart (+ 60 s si le match est serré, Maia et al.), les huit secondes du gardien (IFAB 2025-26). Mesuré
+4 × 45 min : les reprises 16,7 → 28 s dans la bande (touche 17,3-18, six mètres 33, corner 35-37, coup franc 32-33), le temps additionnel 108-259 → 260-333 s par période (réel ≈ 300), le ballon en jeu 76 → 68 % (réel 54-58). Ce qu'il nomme : le ballon qui sort (271 — les arrêts 47-61 / match, réel 85-105 : la seule
+voie vers 54-58 % de ballon en jeu), les simulations (T27), refereeBias et le public (Bible 16), l'axe comme consigne
+d'entraîneur (Modèle 15).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

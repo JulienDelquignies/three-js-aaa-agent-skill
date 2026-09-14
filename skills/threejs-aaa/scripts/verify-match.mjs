@@ -1148,7 +1148,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // porte une rotation HORIZONTALE franche ; passeSpin:false la coupe à zéro (structurel).
   const premierLift = (cfgOver) => {
     const st = makeMatch({ full: true, seed: 2 });
-    const cfg = matchCfg({ interception: null /* interception null DATÉ 266 : vert à HEAD~ (84/0 au 265), aucune passe levée en 120 s sous la lecture crue (le passeur refuse ses cloches sur des défenseurs crus) — la clause mesure le spin de la levée, pas l'interception */, ...cfgOver });
+    const cfg = matchCfg({ temps: null /* temps null DATÉ 270 : vert à HEAD~ (84/0 au 269), aucune passe levée en 120 s dans ce monde (les cérémonies mangent le jeu de 120 s) — la clause mesure le spin de la levée, pas le temps du match */, interception: null /* interception null DATÉ 266 : vert à HEAD~ (84/0 au 265), aucune passe levée en 120 s sous la lecture crue (le passeur refuse ses cloches sur des défenseurs crus) — la clause mesure le spin de la levée, pas l'interception */, ...cfgOver });
     for (let i = 0; i < 120 * 60; i++) {
       const n = st.events.length;
       matchStep(st, 1 / 60, cfg);

@@ -73,4 +73,6 @@ de jeu réel (fraction 0,83).
 4. **Le budget** (test 9) : 251 → 52 µs — grille spatiale, zéro allocation, décision à 10 Hz ; c'est la condition
    de la saison simulée.
 5. **Le temps de jeu** (test 10 ; Bible 14, 16) : fraction 0,83 → 0,547.
+   → **partiel au 270** (`temps.js`) : les cérémonies dans la bande et le temps additionnel qui lit le match — reprises 16,7 → 28 s, ballon en jeu 76 → 68 %, durée totale 94 → 96 min ;
+   le reste est le nombre d'arrêts (le ballon qui sort, 271).
 6. **Le LOD1** (tests 7, 12 ; chantier A du Plan) — après 1 et 4.
