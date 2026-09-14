@@ -613,6 +613,13 @@ la hauteur comme régime locomoteur (montée 4,8 / recul 3,9 m/s × topF, lu par
 DEF↔MID 10,9 → 13,8 m — la ligne tenue ne porte plus ses latéraux hauts et le milieu ne suit pas. Ce qu'il nomme : l'interligne
 dérivé et k_x à deux régimes (Bible 10 lot 4), le stoppeur/couvreur avec hystérésis (T7 : 190 bascules), la plage 0,8-1,8 (les
 transitions font le p90), le bloc qui perçoit (Bible 10 lot 1), la montée au régime (2,1 m/s mesurés).
+**274 — L'INTERLIGNE DÉRIVÉ ET SON POINT DE RUPTURE : SCELLÉ (352).** L'interligne n'est plus une compression uniforme de la
+formation : c'est la portée d'intervention des milieux (interligne.js, Bible 10 §3.1-3.3 — Gourcuff : 15 m au puissant, 10 au
+limité, 6 en bloc bas) lue des attributs (pace, anticipation, stamina) × le mode de bloc (l'axe hauteurBloc), et la ligne du
+milieu tient ses cibles à cette distance de l'unité arrière (273) au tick d'équipe ; le point de rupture est dérivé de la
+possession individuelle (WARN 16 m, BROKEN 19 m tenu 2 s → blockIntegrity, événement 'bloc'). Mesuré 4 × 90 min : l'interligne
+DEF↔MID 13,7-13,8 → 10,8-12,6 m (cible 10-15), > 16 m 35 → 20 % du temps, P95 22 → 20. Ce qu'il nomme : la loi de possession
+Gamma (test 20), les milieux libérés au marquage sous BROKEN, MID↔ATT, k_x à deux régimes (§3.4), le bloc qui perçoit (lot 1).
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

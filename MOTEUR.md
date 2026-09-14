@@ -509,6 +509,21 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### L'interligne dérivé et son point de rupture (lot 274, `cfg.interligne` — `interligne.js`)
+
+Le 273 tenait la ligne arrière et mesurait son coût : l'interligne DEF↔MID 10,9 → 13,8 m, le milieu ne suivait pas — le bloc
+d'hier compressait la formation à `long` 30 m, uniformément, sans lire ses joueurs. Le 274 pose l'interligne de Gourcuff
+(Bible 10 §3.1-3.3) : `porteeDe`, la portée d'intervention d'un corps = base + gain × (0,5 pace + 0,3 anticipation + 0,2
+stamina) lue des facteurs (10,5 m au 50, 15 au puissant, 6 au limité) ; `cibleDe`, la moyenne de la ligne du milieu × le mode
+de bloc (l'axe tactique hauteurBloc : bas 0,55, médian 1, haut 1,15 — 0,5 = 1, l'identité), la cible [0,8 × ; 1 ×] bornée
+[5 ; 14] / [6 ; 18] ; `interligneStep`, au tick d'équipe (1 Hz) la ligne du milieu tient ses cibles à [réf + lo ; réf + hi]
+au-dessus de la référence de l'unité arrière (273 — sans `cfg.ligne`, rien), le presseur et le marqueur au contact intacts ;
+`integriteDe`, le point de rupture DÉRIVÉ (§3.2 : le presseur arrive après la médiane de la possession individuelle à 19,4 m)
+— WARN à 16, BROKEN à 19 tenu 2 s → blockIntegrity publié, événement 'bloc' kind 'rupture'. Attributs en facteurs, tactique en
+axe, clé absente : le bloc d'hier au bit. Mesuré 4 × 90 min : interligne 13,7-13,8 → 10,8-12,6 m (cible 10-15), P95 22 → 20,
+> 16 m 35 → 20 % du temps. Sonde : `scripts/book/sonde-ch10.mjs`. Fiche : `10-bloc-collectif.md`. Reste : la loi de
+possession Gamma (test 20), les milieux libérés au marquage sous BROKEN, l'interligne MID↔ATT (la distance d'enfermement).
+
 ### La ligne est une ligne (lot 273, `cfg.ligne` — `ligne.js`)
 
 La ligne arrière n'était pas une ligne : chaque corps tenait son homme ou son slot, le latéral monté remettait l'attaquant en

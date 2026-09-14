@@ -11690,6 +11690,67 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      scan 5/0, loi3 10/0, kit 5/0, part-tint 18/0, tactics 11/0, slide 10/0, foulee 45/0, attente
      42/0, cartons 6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step.
      Sceau : commit 33f3075, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-Cpo64b1M).
+- 352: L'INTERLIGNE DÉRIVÉ ET SON POINT DE RUPTURE (274 — la carte du book après le 273, qui
+     nommait son coût : l'interligne DEF↔MID 10,9 → 13,8 m, le milieu ne suivait pas la ligne tenue.
+     Bible 10 §3.1 Gourcuff : « certains joueurs peuvent intervenir sur quinze mètres, parce qu'ils
+     ont la puissance ; pour des joueurs plus limités, autour de dix ; en bloc bas, du six mètres »
+     — l'interligne est une fonction des attributs, pas une constante de système
+     (interlineTarget : 6 + 9 × (0,5 pace + 0,3 anticipation + 0,2 stamina), × 0,55 bas / 1 médian
+     / 1,15 haut) ; §3.2 le point de rupture DÉRIVÉ : le presseur (Fujimura-Sugihara 7,8 / 1,3,
+     latence 0,4 s) arrive après la médiane de la possession individuelle (Gamma 2,29 / 1,09,
+     Yamamoto) à 19,4 m — INTERLINE_WARN 16, INTERLINE_BREAK 19 → blockIntegrity BROKEN ; §3.3
+     l'asymétrie DEF↔MID (5-8 bas, 10-15 médian, 12-18 haut) / MID↔ATT ; tick d'équipe 1 Hz).
+     Sonde AVANT (sonde-ch10 dans le worktree f755654, 4 × 90 min, graines 3-13) : interligne
+     DEF↔MID 13,7-13,8 m, P95 21,9-22,6, > 16 m 33-36 % du temps ; longueur du bloc 29,2-29,9 ;
+     k MID 0,38 / DEF 0,35 ; montée 2,1 / recul 3,1 m/s ; k_x 0,36-0,41 libre. LA LOI
+     (interligne.js, cfg.interligne) : porteeDe (base 6 + gain 9 × (0,5 pace + 0,3 anticipation +
+     0,2 stamina), les r lus des facteurs topF [0,9 ; 1,1], anticipF [0,85 ; 1,15], stamF [1,25 ;
+     0,75] : 10,5 exact au 50 / sans note, 15 au puissant, 6 au limité), cibleDe (la portée moyenne
+     de la ligne du milieu × k du mode de bloc — l'axe hauteurBloc : kBas 0,55 à 0, 1 à 0,5, kHaut
+     1,15 à 1 —, [0,8 × ; 1 ×] bornée [5 ; 14] / [6 ; 18] : médian [8,4 ; 10,5], bas [5 ; 6], haut
+     [9,66 ; 12,08]), integriteDe (OK / WARN ≥ 16 / BROKEN ≥ 19), interligneStep (à hz 1 la cible ;
+     chaque milieu debout hors presseur et hors marqueur au contact tient sa cible dans [réf + lo ;
+     réf + hi] au-dessus de la référence de l'unité 273 ; l'écart des barycentres milieu − arrière
+     publié dans st._interligne[T].integrity, la rupture tenue dureeRupture 2 s comptée une fois
+     et l'événement 'bloc' kind 'rupture' {gap}). match-sim : après ligneStep (sa référence), même
+     ligne, sous cfg.ligne && cfg.interligne. Clé absente : le bloc d'hier au bit. Sonde APRÈS
+     (4 × 90 min) : interligne 10,8-12,6 m (cible 10-15), P95 20,0-20,9 (≤ 19 : presque), > 16 m
+     16-24 % (la queue des transitions), longueur du bloc 29,1-32,2, rest defense 5,4-6,6 corps,
+     hors-jeu 1,0-2,0 ; k_x et la montée inchangés (2,1 m/s — le régime de la hauteur ne parle que
+     hors de la bande), ligne cassée 351-739 (bruit de graine : la mesure compte chaque transition).
+     Jumeau : interligne null = HEAD au bit (24bf332026c99502 / 099069883dfa200d — le défaut du 273,
+     relu par git stash). Banc : verify-match11 bloc 274 (index 172 : la portée 10,5 / 15 / 6, la
+     cible aux trois modes, l'intégrité aux trois seuils, une ligne synthétique — l'arrière à 17,5,
+     trois milieux à + 33 / + 9,5 / + 5 : le premier ramené à réf + hi, le second intact, le
+     troisième remonté à réf + lo, le presseur et le marqueur intacts, l'écart 22,5 → BROKEN puis la
+     rupture à 2,5 s et l'événement ; 300 s graine 3 : interligne p50 9,6 m c. 10,8 sans la clé, 3
+     ruptures publiées ; sabotage interligne null : 0 rupture, st._interligne absent). Ce qu'il
+     nomme : la loi de possession individuelle Gamma (test 20 : forme 0,6-0,7 mesurée, 1,8-2,8
+     réel — le temps de contrôle incompressible, ch. 01 T6), les milieux libérés au marquage à
+     l'homme sous BROKEN (la bascule de référentiel du ch. 01 §3.3), l'interligne MID↔ATT (la
+     distance d'enfermement, 12-18), k_x à deux régimes (§3.4 : 0,34-0,49 libre pour ≈ 0), le
+     décalage de déclenchement entre lignes (test 5 : 0,00 s — le bloc qui perçoit, lot 1), le bloc
+     fatigable (test 13 : + 0,2-1 m pour + 3 à + 6). Banc complet (final274 : 8 shards puis 25
+     annexes) : 297 ✓ / 17 ✗ au premier passage, puis 308 / 6 à la relance des 8 shards après la
+     correction (252 : LA PASSATION — le pivot marquait 0/6 fois l'homme remis, la bande de
+     l'interligne écrasait la cible qu'il posait directement ; l'exemption p._remisAt, posée au
+     site de la passation, vert isolé sans épingle) — rouges verts à HEAD~ (worktree f755654) et
+     épinglés PAR CONTENU « interligne: null DATÉ 274 », tous verts isolés à HEAD : 103 (bloc 33,
+     le jeu respire et l'essaim), la démission (35), 112 (41, le ciel), le flux des tirs du 232
+     (128), le couloir à trois corps (138), 207 (107), 263 (161, le flux de la cadence), 273 (171,
+     la desync 7,7 c. 9,0 × 0,75 — l'unité mesurée dans un monde au milieu tenu), 97 (29), 4-4-2 c.
+     3-5-2 (14), l'allure (22), la foulée de frappe (7), 212 (110), 119 (48), 117 (46), 194 (102),
+     le marquage de surface (134) ; hérités : 246d (148), les contres arrivés à l'entrée (139),
+     rouges aussi à HEAD~. Le monde bouge large : le milieu tenu à sa portée change les soutiens,
+     les courses, les duels — dix-huit clauses de flux remangées, aucune loi contredite. Annexes :
+     identification 0/1 → REGELÉ DATÉ 274 (18 → 18 signatures : perdues AIL D|largeurR, AV
+     A|largeurR, AV A|profondeur, MDC A|profondeur, MDC B|profondeur, MDC C|largeurR, MO
+     B|profondeur ; gagnées AIL C|repli, AV A|press, LAT C|appel, LAT D|appel, LAT D|largeurR, MIL
+     B|tenue, MO A|tenue — les milieux tenus n'expriment plus leur profondeur, les latéraux leurs
+     appels), loi12 12/2 hérité ; attributes 27/0, frappes 13/0, gestes 60/0, match 84/0, menace
+     11/0, roles 14/0, rondo 40/0, sync 9/0, scan 5/0, loi3 10/0, kit 5/0, part-tint 18/0, tactics
+     11/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
+     6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step (≤ 1,6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

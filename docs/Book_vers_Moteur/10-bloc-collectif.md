@@ -64,7 +64,7 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
 | # | Cible (book) | Statut | Mesuré (2 × 90 min) |
 |---|---|---|---|
 | 1 bimodalité de la longueur | 26-32 / 38-46, écart ≥ 8 | mesurable, **tenu** | **27,8 / 40,6 m**, écart 12,8 ; 52 % des images défensives entre 25 et 30 m |
-| 2 interligne DEF↔MID | 10-15, P95 ≤ 19, > 16 m < 8 % | mesurable, **dégradé au 273** | moyenne 10,9 → **13,8 m**, P95 19,0 → 21,9 ; > 16 m 16 → **36 %** : la ligne arrière tenue ensemble ne porte plus ses latéraux hauts, le barycentre DEF descend et le milieu ne suit pas — l'interligne dérivé (lot 4) est le lot suivant |
+| 2 interligne DEF↔MID | 10-15, P95 ≤ 19, > 16 m < 8 % | mesurable, **tenu au 274** (moyenne) | moyenne 13,7-13,8 → **10,8-12,6 m** (274, 4 × 90 min), P95 21,9-22,6 → **20,0-20,9** (≤ 19 : presque), > 16 m 33-36 → **16-24 %** (< 8 : la queue des transitions) — le milieu suit la ligne tenue à la portée de ses attributs |
 | 3 gain `k` par ligne | MID 0,55-0,75 > DEF 0,35-0,50 | mesurable, **réfuté** | MID **0,40**, DEF **0,33** — un bloc rigide qui glisse peu (`lateral` 0,35, `slideMax` 8) |
 | 4 signature angulaire | DEF 90 / MID 78 / ATT 69 (± 8) | mesurable, **tenu** | **97 / 77 / 72°** — les défenseurs coulissent, les attaquants convergent |
 | 5 décalage inter-lignes | 0,6-1,2 s, > 0,3 obligatoire | mesurable, **hors définition** | **91 %** des défenseurs sont déjà à > 1 m/s à l'instant de la passe (le bloc ne s'arrête jamais) ; décalage 1ᵉʳ → dernier **changement de cap** 1,62 s p50 — un bloc qui vibre, pas un bloc qui perçoit avec retard |
@@ -96,9 +96,7 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
    au plafond du métier), déclenchés par le SAUT du slot ; il a mesuré que les slots sautent 54-60 fois par minute (p50 3,5 m)
    et que le corps vit à 6-11 m d'eux : le gain `k` par ligne et le pas du bloc restent CE lot.
 3. **La ligne est une ligne** (tests 12, 17, 18, ch. 03) — **SCELLÉ 351 (273, ligne.js)** : l'unité à 4 Hz, la bande, le retard_i, « on retient les avancés », la hauteur comme régime locomoteur (montée 4,8 / recul 3,9 hors de la bande). Mesuré : desync p50 7,5 → 3,2 (ch. 03 T8), ligne cassée 606 → 398, recul 2,1 → 3,2 m/s ; coût : l'interligne DEF↔MID 10,9 → 13,8 (le milieu ne suit pas la ligne tenue — lot 4). Reste : `k_x` à deux régimes (test 18), la montée au régime (2,1 m/s), la plage 0,8-1,8.
-4. **L'interligne dérivé et son point de rupture** (test 2, 20) : `interlineTarget` des attributs, `INTERLINE_BREAK`
-   qui publie `blockIntegrity`, et la loi de possession individuelle Gamma (le temps de contrôle incompressible,
-   ch. 01 T6).
+4. **L'interligne dérivé et son point de rupture** (test 2, 20) — **SCELLÉ 352 (274, interligne.js)** : la portée d'intervention des attributs (base 6 + 9 × (0,5 pace + 0,3 anticipation + 0,2 stamina) : 10,5 au 50, 15 au puissant, 6 au limité) × le mode de bloc (l'axe hauteurBloc : 0,55 / 1 / 1,15), la cible [0,8 × ; 1 ×] bornée, le milieu tenu à [réf + lo ; réf + hi] au-dessus de l'unité 273 au tick d'équipe (1 Hz), la rupture dérivée (WARN 16, BROKEN 19 tenue 2 s → blockIntegrity + événement 'bloc'). Mesuré 4 × 90 min : interligne 13,7 → 10,8-12,6 m, > 16 m 35 → 20 %. Reste : la loi de possession Gamma (test 20), les milieux libérés au marquage sous BROKEN, MID↔ATT.
 5. **Le bloc fatigable** (test 13, Référentiel 07) : `blockDegradation` — `k` −30 %, interligne +4 m, scan −35 %.
 6. **Les déclencheurs comme événements** (tests 9, 10, 14 ; ch. 09 PT1-8) : `PressEvent` avec TTL, portée,
    jetons contextuels 2 → 4, contre-déclencheur, verrou ; `TrapState` ; la montée après dégagement.
