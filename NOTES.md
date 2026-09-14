@@ -11672,8 +11672,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la plage 0,8-1,8 (le p90 est fait des transitions : la ligne cassée 398 épisodes compte
      chaque recul), la montée au régime (2,1 m/s : la montée reste au trot du bloc chaîné — le
      régime ne parle que hors de la bande), le bloc qui perçoit (Bible 10 lot 1), la parole de
-     ligne (LINE_UP / DROP / HOLD, §9). Banc complet (final273 : 8 shards puis 25 annexes) : 296 ✓ /
-     14 ✗ au premier passage — rouges : 189 (bloc 98, le contre qui recule 6 c. 7 × 0,7), 96 (27, la
+     ligne (LINE_UP / DROP / HOLD, §9). Banc complet (final273 : 8 shards puis 25 annexes) : 300 ✓ /
+     12 ✗ au premier passage — rouges : 189 (bloc 98, le contre qui recule 6 c. 7 × 0,7), 96 (27, la
      bande d'hier : le sabotage zone:false tient aussi sous l'unité), le troisième homme (137), 170
      (83, le corps ouvert 65° c. 64 − 8), 115 (44, le petit pont 2 c. 3), 121 (52, la roulette), la
      ligne qui se referme (133), le pivot en relance basse (135), 267 (165, l'élection de
@@ -11689,6 +11689,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      hérité ; frappes 13/0, gestes 60/0, match 84/0, menace 11/0, roles 14/0, rondo 40/0, sync 9/0,
      scan 5/0, loi3 10/0, kit 5/0, part-tint 18/0, tactics 11/0, slide 10/0, foulee 45/0, attente
      42/0, cartons 6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step.
+     Sceau : commit 33f3075, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-Cpo64b1M).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
