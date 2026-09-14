@@ -11750,7 +11750,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      appels), loi12 12/2 hérité ; attributes 27/0, frappes 13/0, gestes 60/0, match 84/0, menace
      11/0, roles 14/0, rondo 40/0, sync 9/0, scan 5/0, loi3 10/0, kit 5/0, part-tint 18/0, tactics
      11/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
-     6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step (≤ 1,6).
+     6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step (≤ 1,6). Sceau :
+     commit 01d5d17, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-iGnP0BJS).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
