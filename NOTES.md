@@ -11483,7 +11483,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      porte 4/0, remises 36/0, slide 10/0, tactics 11/0, tete 7/0, loi12 12/2 (hérité : « le mur se
      tient » 4,6 m + son sabotage). Bloc 1 seul 0.70 ms/step (≤ 1,6). Copies : starter = showcase =
      soldier-volley (cmp) ; match-sim, rondo-sim, match-config à 1249 lignes (la garde des huit
-     secondes fondue sur la ligne du gkPied).
+     secondes fondue sur la ligne du gkPied). Sceau : commit d6c4ccc, poussé ; déploiement showcase-pi-mocha au deuxième essai
+     (cmp du chunk Rondo servi = construit). Vient le ballon qui sort (271).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
