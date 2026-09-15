@@ -45,7 +45,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
         q.ratings = spec.ratings ?? null;
         q.skill = spec.ratings ? makeProfile(spec.ratings) : null; if (spec.postes?.length) { q.postes = spec.postes; q.posteFam = familiarite(spec.postes, posteNom(formationPour(st.tactics[team].formation, true), q.post)); if (q.posteFam < 1) q.skill = profilAuPoste(q.skill ?? makeProfile({}), q.posteFam); }   // (244d) LE POSTE NATUREL : hors poste, le profil au poste (décision, placement…) — liste absente : rien, au bit
         if (spec.ratings?.foot) q.strongFoot = spec.ratings.foot; if (spec.familiarite != null) q.fam = Math.max(0, Math.min(1, spec.familiarite));   // (254) la familiarité du joueur avec le collectif (défaut 1 : rodé)
-        q.look = spec.look ?? null; q.name = spec.name ?? spec.nom ?? null;   // (214b) le NOM du joueur — le squad peut le porter, le maillot l'affiche
+        q.look = spec.look ?? null; q.name = spec.name ?? spec.nom ?? null; if (spec.persona && q.persona) q.persona = { ...q.persona, ...spec.persona, posture: { ...q.persona.posture, ...(spec.persona.posture ?? {}) } }; q.style = spec.style ?? null;   // (214b) le NOM du joueur — le squad peut le porter, le maillot l'affiche ; LA PERSONA ET LE STYLE POSÉS PAR LE ROSTER (docs/Interface_Style_Joueur.md) : champs partiels, le tirage seedé pour le reste
         q.name = spec.name ?? q.name;
         q.number = spec.number ?? null;
         if (spec.ratings?.flair != null && q.persona)   // LE FLAIR EST UNE NOTE (147) : fournie, elle remplace le tirage seedé (TENTER ; FAIRE reste gesteF/technique)

@@ -51,9 +51,9 @@ export const IDLE_KINDS = {
   ballonMains:  { hw: 0.12, knee: 6,  lean: 2,  headDown: 3,  sway: 0.02,  swayT: 6.5, breath: 1.0, breathT: 4.0, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 8,  fwd: 30,  elbow: 90, twist: 0 },   armLive: 0.5, wrists: [0.16, 1.32, -0.30] },
   mur:          { hw: 0.10, knee: 10, lean: 8,  headDown: 12, sway: 0.008, swayT: 5.0, breath: 0.8, breathT: 3.8, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: -20, fwd: 26, elbow: 12, twist: 72 },  armLive: 0.4 },
   // (A12b) LA RÉCEPTION DE TROIS-QUARTS : le receveur qui attend le ballon en vol — le corps est déjà ouvert par la sim
-  // (170, corpsOuvert : le lacet), ici la POSTURE : pieds plus larges, genoux fléchis, buste un peu penché, bras en
-  // équilibre devant, appuis vifs (petit rebond) ; la tête reste HAUTE (le regard scanne, A12a)
-  reception:    { hw: 0.17, knee: 16, lean: 9,  headDown: 0,  sway: 0.02,  swayT: 2.6, breath: 1.4, breathT: 2.8, bounce: 0.008, bounceT: 0.5,  heel: 3,  arms: { elev: 26, fwd: 20, elbow: 74, twist: 0 }, armLive: 3 },
+  // (170, corpsOuvert : le lacet), ici la POSTURE : pieds plus larges, genoux fléchis, buste un peu penché, bras calmes
+  // le long du corps, coudes un peu pliés (retour utilisateur : pas de bras écartés), appuis vifs (petit rebond) ; la tête reste HAUTE (le regard scanne, A12a)
+  reception:    { hw: 0.17, knee: 16, lean: 9,  headDown: 0,  sway: 0.02,  swayT: 2.6, breath: 1.4, breathT: 2.8, bounce: 0.008, bounceT: 0.5,  heel: 3,  arms: { elev: 12, fwd: 12, elbow: 52, twist: 0 }, armLive: 3 },
   // (A12c) LA PAUSA : le porteur s'arrête net, la SEMELLE SUR LE BALLON, le poids sur l'autre jambe, les mains
   // sur les hanches (Isco, Pedri : « met la semelle sur le cuir, attend le geste du milieu adverse ») ; le pied levé vise
   // le ballon RÉEL de la sim (raise.at, repère personnage, posé par la scène en override) — la posture ne devine pas
@@ -286,7 +286,7 @@ export function checkIdleGen(P, { kind = 'repos', style = NEUTRAL_IDLE_STYLE, op
     if (down > 0.12) issues.push(`pausa : le pied d'appui quitte le sol (${(down * 100).toFixed(0)} cm)`);
     if (Math.abs(f0.pelvis[0] - f0[S0].ankle[0]) > 0.12) issues.push(`pausa : le bassin n'est pas sur la jambe d'appui (${(100 * (f0.pelvis[0] - f0[S0].ankle[0])).toFixed(0)} cm)`);
   }
-  if (kind === 'reception' && !(hR[0] - hL[0] > 0.42 && hR[2] < chestZ - 0.05 && hL[2] < chestZ - 0.05)) issues.push(`réception : les mains ne sont pas en équilibre devant (écart ${(hR[0] - hL[0]).toFixed(2)} m, z ${hR[2].toFixed(2)} c. poitrine ${chestZ.toFixed(2)})`);
+  if (kind === 'reception' && !(hR[0] - hL[0] > 0.40 && hR[0] - hL[0] < 0.66 && hR[2] < chestZ - 0.05 && hL[2] < chestZ - 0.05)) issues.push(`réception : les mains ne sont pas calmes devant le corps (écart ${(hR[0] - hL[0]).toFixed(2)} m, attendu 0,40-0,66 ; z ${hR[2].toFixed(2)} c. poitrine ${chestZ.toFixed(2)}, attendu ≥ 5 cm devant)`);
   if (kind === 'mainsHanches') {
     const d = Math.hypot(hR[0] - 0.24, hR[1] - 0.99, hR[2] - 0.0);
     if (d > 0.07) issues.push(`mains sur les hanches : poignet droit à ${(d * 100).toFixed(1)} cm de la crête (${hR.map((v) => v.toFixed(2))})`);

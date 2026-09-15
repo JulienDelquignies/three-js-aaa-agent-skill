@@ -21,7 +21,7 @@ import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
-import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
+import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
 import { aimChildAt } from '../engine/foot-lock.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 import { makeTicker } from './ticker.js';
@@ -220,7 +220,7 @@ export class Rondo {
         runClip: clips.find((a) => /run/i.test(a.name)),
         idleClip: clips.find((a) => /idle/i.test(a.name)),
         walkClip: clips.find((a) => /walk/i.test(a.name)),
-        legs, stride: 2.6, runSpeed: RONDO.speeds.chase, persona: p.persona, locomotion: q.get('foulee') === 'clips' ? 'clips' : 'generee', gaitStyle: p.id * 7919 + (Number(q.get('seed')) || 7),   // LA FOULÉE GÉNÉRÉE (A7, motion-gait) — ?foulee=clips : les trois clips du donneur (l'avant)
+        legs, stride: 2.6, runSpeed: RONDO.speeds.chase, persona: p.persona, locomotion: q.get('foulee') === 'clips' ? 'clips' : 'generee', gaitStyle: p.style?.gait ? { ...gaitStyleFromSeed(p.id * 7919 + (Number(q.get('seed')) || 7)), ...p.style.gait } : p.id * 7919 + (Number(q.get('seed')) || 7), idleStyle: p.style?.idle ? { ...idleStyleFromSeed(p.id * 7919 + (Number(q.get('seed')) || 7) + 101), ...p.style.idle } : null,   // le STYLE POSÉ par le roster (p.style, docs/Interface_Style_Joueur.md) complète le tirage de la graine — LA FOULÉE GÉNÉRÉE (A7, motion-gait) — ?foulee=clips : les trois clips du donneur (l'avant)
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer

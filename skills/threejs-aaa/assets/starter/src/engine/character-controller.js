@@ -19,7 +19,7 @@ import { UP_BONES } from './gesture-layer.js';
 const FWD = new THREE.Vector3(0, 0, -1);
 
 export class CharacterController {
-  constructor(model, { mixer, runClip, idleClip, walkClip = null, legs = null, stride = 2.6, walkStride = 1.5, walkSpeed = 1.9, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, locomotion = 'clips', gaitStyle = null, gaitProfile = null, forwardLocal = FWD, persona = null } = {}) {
+  constructor(model, { mixer, runClip, idleClip, walkClip = null, legs = null, stride = 2.6, walkStride = 1.5, walkSpeed = 1.9, runSpeed = 5.5, sprintMult = 1.6, jumpSpeed = 5.5, gravity = 18, accel = 14, turnRate = 12, locomotion = 'clips', gaitStyle = null, idleStyle = null, gaitProfile = null, forwardLocal = FWD, persona = null } = {}) {
     this.model = model; this.mixer = mixer; this.runDur = runClip.duration;
     this.stride = stride; this.runSpeed = runSpeed; this.sprintMult = sprintMult; this.jumpSpeed = jumpSpeed; this.gravity = gravity;
     this.accel = accel; this.turnRate = turnRate;
@@ -67,7 +67,7 @@ export class CharacterController {
     // L'IDENTITÉ DE MOUVEMENT (persona.js) : dix joueurs qui posent le pied gauche à la même
     // milliseconde sont un ballet militaire, pas une équipe — le cycle part DÉPHASÉ par joueur ;
     // le balancier et la posture prennent leur accent plus bas, dans la couche de gait.
-    this.persona = persona;
+    this.persona = persona; this.idleStyle = idleStyle;
     if (this.gait && persona?.gaitPhase != null) this.gait.phi = persona.gaitPhase % 1;
     // le corps accordé : bassin/colonne/bras/tête dérivés de (φ, v), appliqués APRÈS le mixer
     this._gaitBones = null;
@@ -117,7 +117,7 @@ export class CharacterController {
     // L'ATTENTE GÉNÉRÉE (motion-idle, lot A8) : sous 0,6 m/s le corps n'est plus l'idle du donneur mais
     // une espèce d'attente choisie par la politique (idleCtx posé par la scène ; idleForce : la planche),
     // au style du joueur, fondue en 0,5 s d'une espèce à l'autre et fondue avec la foulée au-dessus.
-    this._idle = { style: seed != null ? idleStyleFromSeed(seed + 101) : NEUTRAL_IDLE_STYLE, kind: 'repos', prev: null, blend: 1, t: 0 };
+    this._idle = { style: this.idleStyle ?? (seed != null ? idleStyleFromSeed(seed + 101) : NEUTRAL_IDLE_STYLE), kind: 'repos', prev: null, blend: 1, t: 0 };   // idleStyle : le style d'attente POSÉ (roster, docs/Interface_Style_Joueur.md), sinon tiré de la graine
     this.idleCtx = null; this.idleForce = null; this.idleOpts = null;
   }
 
@@ -339,9 +339,9 @@ export class CharacterController {
     // ---- la foulée
     let gait = null;
     if (w > 0) {
-      const vb = this._bodyVelocity(v);
+      const vb = this._bodyVelocity(v), bras = this.persona?.bras ?? 0.5;   // le port de bras (persona.js) : 0 bas et calme, 1 ouvert
       G.vBody = vb;
-      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? true : undefined, jockey: this.idleCtx?.jockey ? true : undefined, mainsHanches: this.idleCtx?.marcheur && v < 1.7 ? true : undefined });   // (A12b) le ballon vole vers lui : bras en équilibre ; (A12d) il jockeye : bas et ouvert
+      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: this.idleCtx?.marcheur && v < 1.7 ? true : undefined });   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert
     }
     const pose = gait && idle ? { q: blendQ(idle.q, gait.q, w, G), hips: lerp3(idle.hips, gait.hips, w) } : (gait || idle);
     if (!pose) return;

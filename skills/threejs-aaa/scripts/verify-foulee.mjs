@@ -151,8 +151,10 @@ console.log('\n— A12b : la réception en mouvement — les bras en équilibre 
     return { spread: spread / n, swing: zMax - zMin };
   };
   const d = mesure({}), r = mesure({ receveur: true });
-  ok(r.spread >= d.spread + 0.05 && r.swing <= d.swing * 0.65 + 1e-6,
-    `à 2 m/s le receveur ouvre les bras (écart des mains ${(r.spread * 100).toFixed(0)} cm c. ${(d.spread * 100).toFixed(0)} sans, ≥ +5) et calme le balancier (course de la main ${(r.swing * 100).toFixed(0)} cm c. ${(d.swing * 100).toFixed(0)}, ≤ 65 %)`);
+  ok(r.spread >= d.spread + 0.02 && r.swing <= d.swing * 0.75 + 1e-6,
+    `à 2 m/s le receveur garde les bras CALMES (écart des mains ${(r.spread * 100).toFixed(0)} cm c. ${(d.spread * 100).toFixed(0)} sans, ≥ +2 — plus d'écart uniforme, retour utilisateur) et calme le balancier (course de la main ${(r.swing * 100).toFixed(0)} cm c. ${(d.swing * 100).toFixed(0)}, ≤ 75 %)`);
+  const bas = mesure({ receveur: { elev: 2 + 8 * 0.15, elbow: 4 + 10 * 0.15, swing: 0.8 - 0.3 * 0.15 } }), haut = mesure({ receveur: { elev: 2 + 8 * 0.9, elbow: 4 + 10 * 0.9, swing: 0.8 - 0.3 * 0.9 } });
+  ok(haut.spread >= bas.spread + 0.04 && bas.spread <= d.spread + 0.04, `le PORT DE BRAS de la persona fait la différence : bras 0,15 → écart ${(bas.spread * 100).toFixed(0)} cm (≤ sans + 3), bras 0,9 → ${(haut.spread * 100).toFixed(0)} cm (≥ bas + 4)`);
   let cg; try { cg = checkGaitGen(P, { vF: 2, vR: 0, opts: { receveur: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
   ok(cg.ok, `…et la foulée du receveur reste sous le contrat (checkGaitGen à 2 m/s)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
   const same = JSON.stringify(gaitPose(P, 0.3, 2, 0, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, 2, 0, NEUTRAL_GAIT_STYLE, { receveur: undefined }).q);

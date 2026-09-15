@@ -40,6 +40,10 @@ export function makePersona(id, seed = 0) {
                                          // joueur à flair 1,0 tente ; celui à 0,15 joue simple
     reaction: span(r, 0.16, 0.26),       // s — latence de perception sur une balle SURPRISE (un
                                          // armé visible s'anticipe ; une déviation se subit)
+    bras: span(r, 0.15, 0.9),            // LE PORT DE BRAS (retour utilisateur A12b : « les bras écartés à la
+                                         // réception, c'est pas terrible ») — 0 : bras bas et calmes, 1 : bras
+                                         // qui s'ouvrent en équilibre ; lu par la foulée du receveur et du
+                                         // jockey. Tiré EN DERNIER : les autres champs gardent leur tirage.
   };
 }
 
@@ -66,6 +70,7 @@ export function checkPersona({ n = 10, seed = 3 } = {}) {
     if (p.scale < 0.96 || p.scale > 1.05) issues.push(`scale hors borne (${p.scale.toFixed(3)})`);
     if (p.paceBias < 0.93 || p.paceBias > 1.07) issues.push(`paceBias hors borne (${p.paceBias.toFixed(3)})`);
     if (Math.abs(p.posture.lean) > 3 || Math.abs(p.posture.shoulder) > 2) issues.push('posture hors borne (une signature, pas une scoliose)');
+    if (!(p.bras >= 0.15 && p.bras <= 0.9)) issues.push(`port de bras hors borne (${p.bras})`);
   }
   // distinction : chaque paire est discernable (écart L2 normalisé plancher)
   let worst = Infinity, pair = null;

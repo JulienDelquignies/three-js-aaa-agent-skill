@@ -11,6 +11,7 @@
 //      existe, les pointes existent, les appels/chasses sont des événements à cadence humaine, et
 //      deux joueurs n'ont PAS la même allure de pointe (le paceBias se voit dans la trace).
 import { makePersona, checkPersona } from '../assets/starter/src/engine/persona.js';
+import { makeMatch } from '../assets/starter/src/engine/match-sim.js';
 import { makeRondo, RONDO, rondoInternals } from '../assets/starter/src/engine/rondo.js';
 import { playRondo } from '../assets/starter/src/engine/rondo-sim.js';
 
@@ -151,6 +152,21 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // LE CONTRASTE : un soutien posé marche (settledWalkCap), un appel sprinte. Les deux régimes
   // coexistent dans la MÊME partie — c'est la définition du rythme.
   ok(`settledWalkCap est une clause de config (${RONDO.settledWalkCap} m/s)`, typeof RONDO.settledWalkCap === 'number' && RONDO.settledWalkCap <= 1.6);
+}
+
+console.log('\n— le port de bras et la persona POSÉE par le roster (docs/Interface_Style_Joueur.md) —');
+{
+  const ps = Array.from({ length: 22 }, (_, i) => makePersona(i, 3));
+  ok(`le port de bras est tiré dans [0,15 ; 0,9] et varie d'un joueur à l'autre (${Math.min(...ps.map((p) => p.bras)).toFixed(2)} → ${Math.max(...ps.map((p) => p.bras)).toFixed(2)} sur 22)`, ps.every((p) => p.bras >= 0.15 && p.bras <= 0.9) && (Math.max(...ps.map((p) => p.bras)) - Math.min(...ps.map((p) => p.bras))) > 0.4);
+  const avant = makePersona(4, 3);
+  ok('le tirage des autres champs n\'a pas bougé (bras tiré en dernier : calm, paceBias, flair identiques à eux-mêmes)', avant.calm === makePersona(4, 3).calm && Math.abs(avant.paceBias - 1) <= 0.06);
+  const sans = makeMatch({ full: true, seed: 5 }), avec = makeMatch({ full: true, seed: 5, squads: [[null, null, { persona: { bras: 0.2, calm: 1.2, posture: { lean: 2 } }, style: { gait: { armElev: -3, elbow: -10 }, idle: { elbow: -6 }, frappe: { elbow: 40 } } }], null] });
+  const q0 = sans.players.find((p) => p.team === 0 && p.post === 2), q1 = avec.players.find((p) => p.team === 0 && p.post === 2);
+  ok(`squads[team][i].persona pose des champs PARTIELS (bras 0,2, calm 1,2, posture.lean 2) et garde le tirage pour le reste (épaule ${q1.persona.posture.shoulder.toFixed(2)} = ${q0.persona.posture.shoulder.toFixed(2)}, burstiness, taille)`,
+    q1.persona.bras === 0.2 && q1.persona.calm === 1.2 && q1.persona.posture.lean === 2 && q1.persona.posture.shoulder === q0.persona.posture.shoulder && q1.persona.burstiness === q0.persona.burstiness && q1.persona.scale === q0.persona.scale);
+  ok('squads[team][i].style porte les styles de foulée, d\'attente et de frappe (partiels) — absent : null, la graine décide', q1.style?.gait?.armElev === -3 && q1.style?.idle?.elbow === -6 && q1.style?.frappe?.elbow === 40 && q0.style == null);
+  const autre = avec.players.find((p) => p.team === 0 && p.post === 3), ref = sans.players.find((p) => p.team === 0 && p.post === 3);
+  ok('le voisin sans consigne garde sa persona seedée, bit pour bit', JSON.stringify(autre.persona) === JSON.stringify(ref.persona) && autre.style == null);
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

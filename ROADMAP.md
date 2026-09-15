@@ -191,6 +191,9 @@
   passes −11 %, pertes −6 %), cfg.pasDeRecul (le receveur du centre marqué de près recule de 0,8 m au départ du vol) ;
   match11 ?roles=grille ; épingles relues (contact retirée, porte et remises gardées : A9 bis à relire dans le monde
   260). verify-signes dans bancs.mjs.
+- LIVRÉ (retour utilisateur, note 359) : LE PORT DE BRAS — les bras calmes à la réception (posture et foulée), l'amplitude
+  au port de bras de la persona (persona.bras), et pour l'aval le style posé par le roster : squads[team][i].persona et
+  .style { gait, idle, frappe } (docs/Interface_Style_Joueur.md) ; verify-persona 25/0, verify-attente 52/0, verify-foulee 55/0.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

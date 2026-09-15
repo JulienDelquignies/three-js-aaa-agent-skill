@@ -100,7 +100,7 @@ const sab = (label, args, want) => {
 };
 sab('pieds qui suivent le balancement (slide 1)', { kind: 'repos', opts: { override: { slide: 1 } } }, /pieds bougent/);
 sab('signal le bras droit baissé (armR elev 20)', { kind: 'signal', opts: { override: { armR: { elev: 20, fwd: 4, elbow: 6, twist: 0 } } } }, /au-dessus de la tête/);
-sab('réception les bras le long du corps (elev 0, fwd 0)', { kind: 'reception', opts: { override: { arms: { elev: 0, fwd: 0, elbow: 10, twist: 0 } } } }, /mains ne sont pas en équilibre/);
+sab('réception les bras le long du corps (elev 0, fwd 0)', { kind: 'reception', opts: { override: { arms: { elev: 0, fwd: 0, elbow: 10, twist: 0 } } } }, /mains ne sont pas calmes/);
 sab('orteil sous la pelouse (pointe basse)', { kind: 'sautillement', opts: { override: { heel: -30 } } }, /sous la pelouse/);
 sab('mains loin des hanches', { kind: 'mainsHanches', opts: { override: { arms: { elev: 60, fwd: 40, elbow: 0, twist: 0 } } } }, /crête|coude/);
 sab('mur bras ouverts', { kind: 'mur', opts: { override: { arms: { elev: 25, fwd: 10, elbow: 20, twist: 0 } } } }, /mains sont à|bas-ventre/);

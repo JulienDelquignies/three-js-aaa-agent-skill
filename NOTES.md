@@ -11923,6 +11923,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      300 s — le renversement à 0 du bloc 98 est une lame de couteau du
      monde, pas une loi tuée. Référence 58.
 
+- 359: LE PORT DE BRAS ET LE STYLE POSÉ PAR LE ROSTER (retour utilisateur :
+     « les bras écartés à la réception des ballons, c'est pas terrible » ;
+     « tu avais mis en place quelque chose pour avoir des postures
+     différentes par joueur ? que je le donne aux projets »). Corrigé :
+     l'espèce reception garde les bras calmes (12/12/52° au lieu de
+     26/20/74), la foulée du receveur n'ouvre plus d'un écart uniforme
+     (+4/+8° au lieu de +12/+16, balancier × 0,7) — l'amplitude vient du
+     PORT DE BRAS de la persona (persona.bras ∈ [0,15 ; 0,9], tiré en
+     dernier : les autres champs gardent leur tirage), lu par le receveur
+     et le jockey (bras 0,15 → mains à 55 cm en marche, 0,9 → 61, sans 52).
+     Ce qui existait déjà pour la posture par joueur, documenté pour l'aval
+     dans docs/Interface_Style_Joueur.md : la persona (scale, gaitPhase,
+     armSwingF, posture, paceBias, burstiness, calm, flair, reaction, bras),
+     le style de foulée (12 axes), d'attente (9), de frappe (12), tous
+     fonctions pures de (id, graine). Nouveau : squads[team][i].persona
+     (partiel, fusionné sur le tirage) et squads[team][i].style { gait,
+     idle, frappe } (partiels) — match-sim les porte sur le joueur, la
+     scène les passe au contrôleur (idleStyle nouvelle option) et à
+     motion-cast. Bancs : verify-persona 20 → 25 (bornes et variété du
+     port de bras, tirage inchangé, injection partielle, voisin au bit),
+     verify-attente 52/0 (contrat des mains recalé : 0,40-0,66 m d'écart,
+     ≥ 5 cm devant la poitrine), verify-foulee 55/0 (bras calmes ≥ +2 cm,
+     balancier ≤ 75 %, le port de bras fait la différence), verify-gait
+     23/0, verify-locomotion 6/0, verify-sync 9/0. Aucun bit de sim sans
+     roster : empreinte du monde servi 43b14c0f24b0bb37 inchangée. Capture
+     retour-bras-reception.png (graine 3, t = 4,3 s, le même instant que
+     a12b-reception-approche.png). Référence 58.
+
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

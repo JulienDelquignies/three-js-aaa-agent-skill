@@ -78,7 +78,7 @@ export function motionProfileOf(entry, report = null) {
 
 /** Ce que la scène accroche au joueur : { profile, style, moves } — `moves` se remplit à la demande. */
 export function castStrikes(entry, player, seed = 7, report = null) {
-  return { profile: motionProfileOf(entry, report), style: styleFromSeed(player.id * 7919 + seed), moves: {} };
+  return { profile: motionProfileOf(entry, report), style: { ...styleFromSeed(player.id * 7919 + seed), ...(player.style?.frappe ?? {}) }, moves: {} };   // le style de frappe POSÉ par le roster (player.style.frappe, docs/Interface_Style_Joueur.md) complète le tirage
 }
 
 /** Le geste GÉNÉRÉ de ce joueur (frappe, contrôle, tête…) — null si le geste n'est pas généré.
