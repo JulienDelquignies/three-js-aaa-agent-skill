@@ -620,14 +620,14 @@ milieu tient ses cibles à cette distance de l'unité arrière (273) au tick d'�
 possession individuelle (WARN 16 m, BROKEN 19 m tenu 2 s → blockIntegrity, événement 'bloc'). Mesuré 4 × 90 min : l'interligne
 DEF↔MID 13,7-13,8 → 10,8-12,6 m (cible 10-15), > 16 m 35 → 20 % du temps, P95 22 → 20. Ce qu'il nomme : la loi de possession
 Gamma (test 20), les milieux libérés au marquage sous BROKEN, MID↔ATT, k_x à deux régimes (§3.4), le bloc qui perçoit (lot 1).
-**275 — LE BLOC QUI PERÇOIT : SCELLÉ (353).** La cible de bloc de chaque posté se dérive de SA croyance du ballon (bloc-percu.js,
+**275 — LE BLOC QUI PERÇOIT : SCELLÉ (359).** La cible de bloc de chaque posté se dérive de SA croyance du ballon (bloc-percu.js,
 Bible 10 §4.4, Modèle 04 — le 262 avait posé la croyance et branché le marqueur ; le bloc lisait encore l'état vrai) relue à la
 latence de déclenchement du book ((0,22 + 0,008 d) × anticipation × fatigue : 0,26 s à 5 m, 0,54 à 40), le slot décalé de la
 réponse du bloc (k_x accroché / plafond, k_y latéral). Mesuré 4 × 45 min : l'ordre de déclenchement du book ATT → MID → DEF
 émerge (onset des cibles 0,33 / 0,35 / 0,47 s ; avant 0,30 / 0,30 / 0,33 — les onze partaient au même tick), le décalage
 1er → dernier 1,0-1,2 s. Ce qu'il nomme : le presseur et le couvreur à la croyance (ils lisent l'état vrai), la fenêtre W à
 volume (3-7 renversements reçus par 2 × 45 min), la parole de ligne (§9), k_x à deux régimes (§3.4).
-**276 — LE GARDIEN À ENVELOPPE CONTINUE ET PSxG : SCELLÉ (354).** Le seuil dur d'envergure (diveReach, le gant warpé) ne décide
+**276 — LE GARDIEN À ENVELOPPE CONTINUE ET PSxG : SCELLÉ (360).** Le seuil dur d'envergure (diveReach, le gant warpé) ne décide
 plus : le budget temps se calcule (enveloppe.js, Modèle 10 §6.2-6.4 — t_f en forme close, t_disp, R(t) de vitesse nulle, l'ellipse
 non centrée, le régime réflexe sous 0,25 s, p_save en sigmoïde, le tirage unique optionnel, PSxG journalisé). Mesuré 8 × 45 min :
 arrêts / cadrés 77 → 55 % (dedans 74 → 47, dehors 96 → 92 — le contraste émerge, 45 pts pour 25 réels), buts 4,9 → 7,3 / match :

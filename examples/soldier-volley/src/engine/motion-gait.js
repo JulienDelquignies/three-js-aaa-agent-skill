@@ -32,6 +32,7 @@
 
 import { fkPose, jointToSpec, quatToEulerXYZ, rx, ry, rz, chain } from './motion-rig.js';
 import { legIK, armJoints, ramp, bump } from './motion-strike.js';
+import { armPose } from './motion-idle.js';   // (A12e) la pose de bras de l'attente, reprise en marche
 import { strideLaw } from './gait.js';
 import { sub, len, quatMul, quatConjugate, quatNormalize, clamp } from './vecmath.js';
 import { subRng } from './rng.js';
@@ -207,12 +208,21 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
  */
 export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) {
   const p = gaitParams(vF, vR, style, opts.override || null);
+  // (A12b) LA RÉCEPTION EN MOUVEMENT : le receveur qui va au-devant du ballon (la sim ne le laisse jamais attendre
+  // sur place — 0 % des images de vol sous 0,6 m/s, sonde A12b) garde les bras EN ÉQUILIBRE : plus ouverts, coudes plus
+  // fermés, balancier réduit. `opts.receveur` (true ou { elev, elbow, swing }) — posé par le contrôleur quand la scène
+  // dit que le ballon vole vers lui ; absent : la foulée d'hier, au bit.
+  if (opts.receveur) { const rc = opts.receveur === true ? {} : opts.receveur; p.armElev += rc.elev ?? 12; p.elbow += rc.elbow ?? 16; }
+  // (A12d) LE RECUL-FREIN : le défenseur qui jockeye le porteur (la sim le fait reculer et chasser en lui faisant face,
+  // A10 cfg.contact.jockey) est BAS et ouvert — bassin plus bas, buste penché, pieds plus larges, bras ouverts, balancier
+  // réduit (Van Dijk : « recule au tempo de l'attaquant, hanches de trois-quarts, sans se jeter »). `opts.jockey` ; absent : hier au bit.
+  if (opts.jockey) { const jk = opts.jockey === true ? {} : opts.jockey; p.drop += jk.drop ?? 0.05; p.lean += jk.lean ?? 10; p.hw += jk.hw ?? 0.04; p.armElev += jk.elev ?? 14; p.elbow += jk.elbow ?? 20; }
   const L = P.lengths, R = L.thigh + L.shank;
   const hipY = P.bones.LeftUpLeg.bindP[1], ankleY = P.bones.LeftFoot.bindP[1];
   const vC = [vR, 0, -vF];                                            // repère personnage : avant = −Z
   const ph = ((phi % 1) + 1) % 1;
   const uL = ph, uR = (ph + 0.5) % 1;
-  const armF = (opts.armSwingF ?? 1);
+  const armF = (opts.armSwingF ?? 1) * (opts.receveur ? ((opts.receveur === true ? {} : opts.receveur).swing ?? 0.55) : 1) * (opts.jockey ? ((opts.jockey === true ? {} : opts.jockey).swing ?? 0.5) : 1);
 
   // ---- le bassin : rebond (2/cycle), affaissement, roulis vers le pied d'appui, lacet, tangage
   const bobPhase = TAU * 2 * (ph - p.s / 2);
@@ -256,6 +266,10 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   const elbowR = p.elbow + p.elbowMod * (0.5 + 0.5 * Math.cos(TAU * ph));
   Object.assign(J, armJoints('Left', { elev: p.armElev, fwd: fwdL, elbow: elbowL }));
   Object.assign(J, armJoints('Right', { elev: p.armElev, fwd: fwdR, elbow: elbowR }));
+  // (A12e) LES MAINS SUR LES HANCHES EN MARCHE : le rôle marchant loin du ballon (free_role_creator, wide_creator,
+  // raumdeuter — « marche les mains sur les hanches », §3.6 C, §3.7 D) garde ses mains posées, aucun balancier ;
+  // `opts.mainsHanches` (la scène : rôle à ancrage ≥ 0,8 ou repli ≥ 0,9, ballon à > 25 m, allure de marche) ; absent : hier au bit.
+  if (opts.mainsHanches) { Object.assign(J, armPose('Left', { elev: 22, fwd: -8, elbow: 45, twist: -50 }), armPose('Right', { elev: 22, fwd: -8, elbow: 45, twist: -50 })); }
 
   // ---- les jambes : chemin de pied → IK sur la hanche de l'instant, pied à plat + tangage + ouverture
   const partial = fkPose(P, { Hips: jointToSpec(P, 'Hips', RHips) }, hips);
@@ -387,12 +401,14 @@ export function checkGaitGen(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, op
     const want = v * T / 2;
     if (Math.abs(step - want) > 0.05 * want + 0.02) issues.push(`pas de ${step.toFixed(2)} m pour ${want.toFixed(2)} attendu (v·T/2)`);
   }
-  // les bras : opposés, et opposés à leur jambe (gauche derrière au contact gauche)
+  // les bras : opposés, et opposés à leur jambe (gauche derrière au contact gauche) — sauf les mains POSÉES (A12e : sur les hanches, aucun balancier)
+  if (!opts.mainsHanches) {
   if (v > 1.0) {
     const f0 = frames[0];
     if (!(f0.L.hand[2] > f0.R.hand[2] + 0.02)) issues.push('au contact gauche la main gauche n\'est pas derrière la droite');
     const f2 = frames[frames.length / 2];
     if (!(f2.R.hand[2] > f2.L.hand[2] + 0.02)) issues.push('au contact droit la main droite n\'est pas derrière la gauche');
+  }
   }
   // la tête stable et le buste qui penche en avant (jamais en arrière en course avant)
   const leanOf = (f) => Math.atan2(-(f.chest[2] - f.pelvis[2]), f.chest[1] - f.pelvis[1]) / D2R;

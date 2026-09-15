@@ -89,7 +89,7 @@ comme séquence ; la contrainte « on retient les avancés » ; `offsideAggressi
    sur le ballon (latence de déclenchement 0,22 s en vision centrale, 0,8-1,6 s dos au ballon), pas de l'état vrai.
    C'est ce qui fabrique l'intervalle, le renversement qui paie (W 1,5-2,5 s), et le décalage entre lignes.
    Le 262 — SCELLÉ 340 — a posé la croyance (croyance.js) et l'a branchée sur le marqueur (il suit sa croyance de son
-   homme : 8,9 → 9,5 m p50, pris dans le dos). **SCELLÉ 353 (275, bloc-percu.js)** : la cible de bloc de chaque posté se dérive
+   homme : 8,9 → 9,5 m p50, pris dans le dos). **SCELLÉ 359 (275, bloc-percu.js)** : la cible de bloc de chaque posté se dérive
    de SA croyance du ballon relue à la latence de déclenchement du §4.4 ((0,22 + 0,008 d) × anticipation × fatigue), le slot
    décalé de la réponse du bloc (k_x accroché / plafond, k_y latéral) ; mesuré 4 × 45 min : l'ordre ATT → MID → DEF émerge
    (onset 0,33 / 0,35 / 0,47 s, avant 0,30 / 0,30 / 0,33). Reste : le presseur et le couvreur à la croyance (ils lisent

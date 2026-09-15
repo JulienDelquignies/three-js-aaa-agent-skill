@@ -11752,7 +11752,178 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      11/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0, porte 4/0, cartons
      6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,57 ms/step (≤ 1,6). Sceau :
      commit 01d5d17, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-iGnP0BJS).
-- 353: LE BLOC QUI PERÇOIT (275 — la carte du book après le 274 : Bible 10 lot 1, Modèle 04 ; §4.4
+- 353: LE SCAN DU RECEVEUR EN VOL (lot A12a — Campagne V, interface gelée §1 ;
+     « ok continue alors » après la reprise du tronc 7e6cd12). Jordet : le
+     receveur regarde autour de lui PENDANT le vol (0,4-0,6 scan/s), jamais
+     pendant la frappe du passeur ni pendant la prise. Le 250 a mis l'horloge
+     dans la sim (scan.js, p.scan, aucun bit de jeu) ; gaze.js ne la lisait
+     pas : la clause d'hier collait les yeux du receveur au ballon tout le
+     vol, et une horloge LOCALE (LCG par acteur) scannait hors ballon —
+     deux horloges dont une aveugle. La politique (pickGazeTarget) lit
+     p.scan : saccade en cours (until > t, cible posée) → les yeux à la
+     cible (tête 1,6 m pour un corps, horizon 1,0 m pour un espace), le
+     receveur en vol compris ; receveur à portée de prise (< 1,5 m) → le
+     ballon MÊME en saccade (la sim n'en ouvre pas là, celle en cours se
+     coupe ici) ; hors saccade la politique d'hier, mais le scan local se
+     tait quand la sim porte p.scan (UNE horloge) ; cfg.scan null → p.scan
+     absent → le code d'hier, littéralement. Scène : la vue passe scan et
+     pos (une ligne, Rondo à 1249). Le mécanisme Gaze ne change pas. Banc
+     verify-gaze 12 → 22 : mécanisme (cible, espace, saccade finie, prise),
+     une seule horloge (0 cible locale en 10 s), la tête qui suit (53° vers
+     le presseur à 53°, 0° à la prise) + sabotage « saccade sans fin sans
+     garde de prise » attrapé (53° à la prise) ; flux graine 3 × 240 s, la
+     politique appelée comme la scène l'appelle : 29 % des images de vol
+     hors ballon (≥ 15 %), 0,89 saccade/s de vol (Jordet ≥ 0,4 ; la sim
+     mesure 0,73 — sa cadence), yeux au ballon à la prise 42/43 ; clé
+     absente 0 % et 43/43. Captures playmode (graine 3, t = 12,9 s,
+     receveur 9, saccade vers le presseur, lacet de tête −49°) :
+     playmode-shots/a12a-scan-receveur-face.png et -plan.png — le ballon
+     roule vers lui, la tête est sur le presseur qui vient. Aucun bit de
+     jeu (verify-sync 9/0). Référence 58 (le lot A12 y grandit). Suite :
+     A12b la réception de trois-quarts.
+
+- 354: LA RÉCEPTION DE TROIS-QUARTS — LA POSTURE DU RECEVEUR (lot A12b).
+     Le corps ouvert est à la sim (170), le pied à la table (footFor) ;
+     manquait la POSTURE. Sonde AVANT (3 × 240 s, 62 réceptions) : angle
+     corps → origine de la passe p50 30° (de face 42 %, trois-quarts 53 %,
+     dos 5 %), pied côté ballon 32 / éloigné 12, vitesse à la prise p50
+     1,97 m/s — et LE RECEVEUR NE S'ARRÊTE JAMAIS : 0 % des images de vol
+     sous 0,6 m/s, 6 % des vols avec un instant d'attente. Donc deux
+     mécanismes, aucun bit de sim : motion-idle, espèce `reception` (pieds
+     0,17, genou 16°, buste 9°, appuis vifs, bras en équilibre devant :
+     élévation 26°, avancée 20°, coude 74°, tête haute), politique
+     ctx.receveur → reception avant la garde ; motion-gait, opts.receveur
+     (+12° d'élévation, +16° de coude, balancier × 0,55 : à 2 m/s écart
+     des mains 64 c. 52 cm, course de la main 14 c. 28 cm), posé par le
+     contrôleur depuis idleCtx.receveur (la scène lit st.pass.to en vol) ;
+     drapeau absent = la foulée d'hier au bit. Bancs : verify-attente 44 →
+     46 (contrat sur 24 styles, politique, sabotage « bras le long du
+     corps » attrapé), verify-foulee 45 → 48 (bras du receveur, contrat
+     tenu, drapeau absent au bit), verify-gait 23/0, verify-locomotion
+     6/0, verify-sync 9/0. Captures playmode graine 3 : a12b-reception-
+     approche(-face).png (t 4,3 s, receveur 1 à 1 m/s, corps à 67° du
+     ballon qui roule vers lui), a12b-reception-attente-face/plan.png (t
+     69,8 s, receveur 9 sous 0,5 m/s, corps à 38° d'un ballon en cloche à
+     13 m) ; planche attente-reception-apres.png. DETTES NOMMÉES AU TRONC :
+     le receveur ne reçoit jamais sur place (loi de course 134/198, pas
+     d'animation) ; le pied arrière comme décision (intérieur du pied
+     éloigné quand le ballon traverse) n'est pas dans la table des
+     techniques. Référence 58. Suite : A12c la pausa.
+
+- 355: LA PAUSA — LA SEMELLE SUR LE BALLON (lot A12c). Le 253 a livré un
+     ÉTAT (p._pausa, conduite figée : cible = soi, touche 0,25) et non le
+     geste annoncé par l'interface gelée ; la scène lit l'état. Mécanisme
+     (motion-idle, aucun bit de sim) : espèce `pausa` — poids sur la jambe
+     d'appui (bassin décalé 5 cm), l'autre pied LEVÉ sur le ballon (cheville
+     à 0,21 m, orteil baissé 8°), mains sur les hanches, tête haute ; le
+     pied vise le ballon RÉEL (override.raise {side, at} posé par la scène
+     chaque image via idleOpts, nouveau passage du contrôleur ; côté = côté
+     du ballon ; cible bornée x ± 0,25, z [−0,42 ; −0,12] ; au-delà de
+     0,55 m aucun pied levé). Contrat : cheville levée 24-36 cm devant, pied
+     d'appui au sol, bassin sur l'appui ; verify-attente 46 → 48, planche
+     attente-pausa-apres.png. LA SONDE QUI DÉCIDE (12 graines × 366 s) :
+     11 pausas, 4 avec le porteur à l'arrêt — mais le ballon à 1,6-2,0 m,
+     une seule à 0,36 m ; page graine 11 : 3 pausas, celle à l'arrêt ballon
+     à 1,76 m. La touche 0,25 fige la conduite sans ramener le ballon (0,77
+     → 0,96 m en 0,3 s, graine 3). Le signe n'est donc pas visible en
+     match : on voit l'attente mains sur les hanches à côté d'un ballon posé
+     1,7 m plus loin — le ballon oublié (317), version arrêtée. Capture
+     a12c-pausa-attente.png (graine 11, t ≈ 370 s, joueur 4). DETTE NOMMÉE
+     AU TRONC, bloquante pour le signe : pendant la pausa, porter le ballon
+     au point de stance (comme porteAnticipe pendant l'armé) ; cible ≤ 0,4 m
+     [CONVENTION]. Référence 58. Suite : A12d le recul-frein.
+
+- 356: LE RECUL-FREIN DU CENTRAL (lot A12d). Le mouvement est à la sim
+     (jockey 95, contact.jockey A10 : il recule et chasse en faisant face ;
+     orienteFaible ; régimes back/lat de la foulée A7) ; manquait la
+     POSTURE : la course arrière d'un athlète est droite, celle du
+     défenseur qui jockeye est basse et ouverte. motion-gait, opts.jockey
+     (aucun bit de sim) : +5 cm d'affaissement, +10° de buste, +4 cm de
+     largeur, +14° d'élévation et +20° de coude, balancier × 0,5 — composé
+     sur les régimes de la direction. Le contrôleur lit idleCtx.jockey, que
+     la scène calcule avec la condition du jockey de la sim (presseur,
+     porteur adverse à 0,3-4,5 m, ≤ 3,5 m/s, pas lancé sur lui) ; à
+     l'arrêt, l'espèce pret (A8) tenait déjà la garde. Banc verify-foulee
+     48 → 51 (en recul chassé −1,5 / 0,6 m/s : bassin 80 c. 85 cm, mains 68
+     c. 61 cm, contrat tenu, drapeau absent au bit), verify-gait 23/0,
+     verify-locomotion 6/0, verify-sync 9/0. Capture a12d-recul-frein.png
+     (graine 3). Référence 58. Suite : A12e la marche des rôles marchants.
+
+- 357: LES RÔLES MARCHANTS ET LES PETITS GESTES SIGNÉS (lots A12e, A12f).
+     A12e : les mains sur les hanches du rôle marchant (free_role_creator,
+     wide_creator, raumdeuter : ancrage ≥ 0,8 ou repli ≥ 0,9) loin du
+     ballon (> 25 m, aucun porteur adverse à < 12 m, pas receveur, sans
+     geste) — à l'arrêt, la politique répond mainsHanches (après la
+     réception) ; en marche (< 1,7 m/s), opts.mainsHanches de la foulée
+     remplace le balancier par la pose de bras de l'attente (armPose,
+     import motion-idle → motion-gait, sans cycle) ; le contrat de foulée
+     exempte les mains posées de l'opposition bras-jambes. A12f : le signal
+     du tireur de corner — espèce d'attente `signal` (armR : un bras droit
+     à part, élévation 168° ; main gauche sur la hanche), forcée par la
+     scène pendant la phase 'attend' de la course d'élan (A9 bis) — pas
+     besoin du payload.mains = 'signal' de l'interface ; la passe sans
+     regarder — gaze.js, view.noLook (gesteF ≥ 1,05, presseur < 2,5 m,
+     passe < 12 m) : au dernier tiers de l'armé les yeux au point opposé à
+     la cible, il vise d'abord ; le pas de recul du renard : une décision
+     de course, au tronc. Bancs : verify-attente 48 → 52 (politique du
+     marcheur, sabotage « signal bras baissé »), verify-foulee 51 → 54
+     (mains à ≤ 20 cm du bassin, course ≤ 5 cm c. 17, contrat tenu, absent
+     au bit), verify-gaze 22 → 25, verify-gait 23/0, verify-sync 9/0.
+     Aucun bit de sim. LE SHOWCASE NE POSE NI RÔLE NI ATTRIBUT (match11 :
+     22 polyvalents, gesteF absent) : ces signes vivent dans le projet aval ;
+     la capture a12e-marcheur.png injecte un rôle marchant dans la page,
+     la planche attente-signal-apres.png montre le bras levé. Référence 58.
+     Reste du lot A12 : les captures d'identification « sans les noms ».
+
+- 358: LES DETTES REPRISES (« tu veux pas prendre les dettes toi ? ») — trois
+     lois sous clé, allumées par défaut, chacune null = le monde 3d72ea4 au
+     bit (jumeau aa66bb8b3ad05c2f / 39612df7d7863c75 / 33c9f358530995f1,
+     3 × 240 s ; datées 60 s dans verify-signes). cfg.pausaPied : la pausa
+     se décidait pendant la conduite, ballon poussé libre à 0,9 m, le corps
+     freinait, le ballon roulait à 1,6-2 m (4 tenues à l'arrêt sur 11) — à
+     la décision le ballon à portée (< 1,6 m) est BLOQUÉ (possédé, posé
+     0,3 s, événement control arret-semelle), pendant la pausa il est PORTÉ
+     jamais poussé (rondo-sim), s'il a filé et s'est calmé le porteur va le
+     poser sous la semelle ; après : 7 pausas, ballon ≤ 0,36 m à chacune,
+     3 à l'arrêt. cfg.recevoirSurPlace : passe au sol qui vient encore
+     (≥ 2,5 m/s), mène à < 0,6 m, non déviée, personne à < 4 m → le
+     receveur attend (meetBall se tait ; mourante, retombée, fuite,
+     menace gardent la main) ; A/B 12 × 300 s : vols avec attente 14 c.
+     10 %, images sous 0,6 m/s 5,4 c. 3,1 %, passes 599 c. 672 (−11 %),
+     pertes 163 c. 173, tirs 25 c. 27 ; jeté : marge 1,0 et cloches
+     (passes −17 %, pertes +11 %). cfg.pasDeRecul : la première écriture
+     (corps de boîte, appel ≥ 0,85) ne se déclenchait jamais (76 passages,
+     0 fort appel : le renard est le RECEVEUR du centre) → loi sur le
+     receveur du centre (match-sim) : marqué à < 1,6 m au départ du vol,
+     il recule de 0,8 m à l'opposé pendant 0,7 s puis attaque la chute ;
+     fixture 0,82 m ; flux 8 centres / 4 images (rare, vivant) ; la version
+     boxCrash gardée pour les corps de boîte à rôle. match11 ?roles=grille
+     pose la grille du 244c. Relecture des épingles : verify-contact sans
+     ligne:null 25/0 (retirée) mais recevoirSurPlace remange sa clause du
+     presseur (face 69 c. 65) → épinglée DATÉ 15/09 ; verify-porte sans
+     épingles 2/2 rouges (22 refus sans la clé sous la ligne, 9 avec : la
+     loi tient, les seuils sont d'hier) → gardées ; verify-remises sans
+     épingles 6 rouges (l'élan sous le profil locomoteur : départs 1,9-4,1
+     m, arrivée 2,4-3,1 m/s) → gardées, A9 bis à relire dans le monde 260,
+     dette nommée. Banc verify-signes (dans bancs.mjs) : (a) pausa au pied
+     12 × 366 s avec/sans, (b) attente avec/sans + garde-fou, (c) fixture
+     du recul, (d) jumeau daté. BANC COMPLET (bancs.mjs, 8 shards + annexes) :
+     678 ✓ / 23 ✗ au premier passage, les clés allumées ; la même suite à
+     clés nulles (le monde du tronc) 694 ✓ / 7 ✗ dont 246d et la gradation
+     152/158 hérités, sync et signes attendus — donc 21 clauses REMANGÉES par
+     les clés (receveur vivant, course qui traverse, ballon devant le
+     coureur, flux tirs, lancé au but, contrat à 22, renversement,
+     interligne, la fête, démission, contres, foulée de frappe, allure,
+     roulette, marqueur en surface, passation, pique, identification 249,
+     lanceur derrière la ligne et face) → épinglées PAR CONTENU « pausaPied
+     / recevoirSurPlace / pasDeRecul: null DATÉ 15/09 » sur le cfg de
+     chaque clause ; relance : 699 ✓ / 2 ✗ (246d hérité ; la roulette 117,
+     épingle posée sur le mauvais cfg, déplacée sur fluxR et relue au shard
+     7). Sondé au passage : les bascules (Δz > 25 m) 7 c. 10 c. 8 sur 6 ×
+     300 s — le renversement à 0 du bloc 98 est une lame de couteau du
+     monde, pas une loi tuée. Référence 58.
+
+- 359: LE BLOC QUI PERÇOIT (275 — la carte du book après le 274 : Bible 10 lot 1, Modèle 04 ; §4.4
      « le décalage temporel entre les lignes : la variable que les moteurs oublient et qui produit
      tout le réalisme » — shiftOnsetLatency = (0,22 en vision centrale, sinon + 0,5 / scanRate, +
      0,008 × d) × fatigue × (1 − 0,15 anticipation) : le presseur à 5 m 0,26 s, la ligne opposée à
@@ -11809,7 +11980,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      shards 4-7 relancés seuls, la leçon — pas plus de quatre node à la fois. Bloc 1 seul : 0,55
      ms/step (≤ 1,6). Sceau : commit 0cc70a3, poussé ; déploiement showcase-pi-mocha au premier
      essai (cmp du chunk Rondo-CT08IpCT).
-- 354: LE GARDIEN À ENVELOPPE CONTINUE ET PSxG (276 — la carte du book après le 275 : Modèle 10 lot 4 ;
+- 360: LE GARDIEN À ENVELOPPE CONTINUE ET PSxG (276 — la carte du book après le 275 : Modèle 10 lot 4 ;
      §6.2 le temps de vol SE CALCULE (t_f = (e^{k_D D} − 1)/(k_D v_0) : 0,97 du linéaire à 6 m, 0,85 à
      30 — « le 0,85 constant donnait au gardien 8 % de budget en trop »), t_disp = t_f − τ_r (1 −
      0,5 x̂_anticipation) − Δt_occl, L'ENVELOPPE QUI PART DE VITESSE NULLE (R(t) = R_0 + min(v_d [t − τ_a

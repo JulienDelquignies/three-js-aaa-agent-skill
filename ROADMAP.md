@@ -149,6 +149,48 @@
   ballon traînait derrière le corps qui glisse), vendangé, le corps filait sans lui ; cfg.porteAnticipe : le
   ballon au point de stance du corps après son pas, le vendangé freine et se reprend (refus 65 → 20, épisodes
   35 → 2 ; un tiers des duels tombe avec les ballons vendangés — le tronc re-calibre) ; verify-porte 4 clauses.
+- REPRIS DU TRONC (14/09, fusion avant rapide sur 7e6cd12 — lots 246 à 274 du moteur) : la Campagne V est
+  CLOSE côté moteur (248-255 scellés, PLAN_DOCTRINE) et me laisse A12, LES SIGNES VISIBLES DU RÔLE, aucune loi de
+  sim, interfaces gelées dans docs/Interface_Campagne_V.md : (A12a) le scan du receveur en vol — gaze.js lit
+  p.scan {at, until, vers, cible, n, vol} de scan.js (250), le moteur ne touche pas gaze.js, clause ≥ 0,4 scan/s en
+  vol ; (A12b) la réception de trois-quarts et le pied arrière (lit pick.foot) ; (A12c) la pausa — clip sur le kind
+  'pausa' et l'événement du 253 (6,75 pausas/match, durées 0,3-2,4 s) ; (A12d) le recul-frein du central ; (A12e) la
+  marche des rôles marchants (ancrage ≥ 0,8, repli 1) ; (A12f) les petits gestes signés (bras du tireur :
+  payload.mains = 'signal' sous cfg.remise.signal, la passe sans regarder, le pas de recul du renard) ; et une
+  planche « sans les noms » par rôle du 249 (19 signatures gelées, 43 muettes nommées). Puis (A13) LE SECOND CANAL
+  D'ANIMATION : burst/touche/control/windup = 58 % du journal, une décision d'interface gaze/gesture à instruire
+  avec le tronc (docs/Retour_Reference_Journal_Fond.md). DETTE DE RELECTURE : mes annexes portent des épingles
+  datées du tronc (ligne: null DATÉ 273 dans verify-remises/porte/contact, locomoteur: null DATÉ 260 dans
+  verify-remises) — à re-dater quand je reprends ces mondes (la ligne tenue et le profil locomoteur changent les
+  corps à la remise, les portés et les chutes).
+  RESTE DU LOT A12 (14/09) : les captures d'identification « sans les noms » par rôle du 249 (le showcase ne pose
+  aucun rôle : à faire en injectant les rôles dans la page, ou dans le projet aval qui les pose) ; A13 le second canal
+  d'animation (décision d'interface, à instruire avec le tronc).
+- LIVRÉ (lot A12a, note 353) : LE SCAN DU RECEVEUR EN VOL — gaze.js lit l'horloge de scan de la sim (p.scan, 250)
+  au lieu de coller les yeux du receveur au ballon : saccades vers le presseur / l'espace pendant le vol, les yeux
+  retombent sur le ballon pour la prise, une seule horloge, clé absente = hier (29 % du vol hors ballon, 0,89
+  saccade/s, 42/43 prises au ballon ; verify-gaze 22/0, captures a12a-scan-receveur-*.png).
+- LIVRÉ (lot A12b, note 354) : LA RÉCEPTION DE TROIS-QUARTS — la posture du receveur : l'espèce d'attente
+  `reception` (appuis larges, genoux fléchis, bras en équilibre, tête haute) et les bras du receveur dans la foulée
+  lente (opts.receveur, la sim ne le laisse jamais attendre sur place : 0 % des images de vol sous 0,6 m/s) ;
+  verify-attente 46/0, verify-foulee 48/0 ; captures a12b-reception-*.png. Dettes nommées au tronc : la réception
+  sur place, le pied arrière comme décision.
+- LIVRÉ (lot A12c, note 355) : LA PAUSA — l'espèce d'attente `pausa` (la semelle sur le ballon RÉEL, mains sur les
+  hanches, poids sur l'appui ; idleOpts du contrôleur) ; mesuré : le moteur arrête le porteur mais laisse le ballon à
+  1,6-2,0 m (4 tenues sur 11) — le signe attend que le 253 porte le ballon au pied (dette nommée). verify-attente 48/0.
+- LIVRÉ (lot A12d, note 356) : LE RECUL-FREIN — la posture du jockey dans la foulée générée (opts.jockey : bas,
+  penché, large, bras ouverts, balancier réduit), le drapeau relu de la condition du jockey de la sim ; verify-foulee
+  51/0 ; capture a12d-recul-frein.png.
+- LIVRÉ (lots A12e-f, note 357) : LES RÔLES MARCHANTS (mains sur les hanches à l'arrêt et en marche, loin du ballon,
+  rôle à ancrage ≥ 0,8 ou repli ≥ 0,9) et LES PETITS GESTES SIGNÉS (le bras levé du tireur de corner pendant la course
+  d'élan, la passe sans regarder du technicien pressé) ; verify-attente 52/0, verify-foulee 54/0, verify-gaze 25/0. Le
+  showcase ne pose ni rôle ni attribut : ces signes vivent dans le projet aval.
+- LIVRÉ (les dettes reprises, note 358) : trois lois sous clé, null = le 14/09 au bit — cfg.pausaPied (la semelle
+  bloque le ballon à la décision, le ballon porté pendant la pausa : 7 pausas sur 7 avec le ballon au pied, hier 4 sur
+  11 à 1,6-2 m), cfg.recevoirSurPlace (passe dans les pieds sans presseur → il attend : vols avec attente 14 c. 10 %,
+  passes −11 %, pertes −6 %), cfg.pasDeRecul (le receveur du centre marqué de près recule de 0,8 m au départ du vol) ;
+  match11 ?roles=grille ; épingles relues (contact retirée, porte et remises gardées : A9 bis à relire dans le monde
+  260). verify-signes dans bancs.mjs.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

@@ -7,6 +7,7 @@
 // médian (74 % sous 30°). Ces clauses verrouillent le MÉCANISME (pur) ; le composé se re-mesure
 // avec la sonde du sweep (probe-regard-tete/measure-gaze.mjs).
 import { GAZE, Gaze, pickGazeTarget, gazeRng, checkGaze } from '../assets/starter/src/engine/gaze.js';
+import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -80,6 +81,75 @@ console.log('\n— les sabotages : chaque clause doit mordre —');
     const k = tgt.join(','); if (last && k !== last) changes++; last = k;
   }
   ok(`la politique hors-ballon SCANNE (${changes} changements de cible en 10 s ≥ 3)`, changes >= 3);
+}
+
+console.log('\n— A12a : le scan du receveur en vol (p.scan de la sim, lue par la politique — interface gelée §1) —');
+{
+  const rng = gazeRng(11);
+  const rxv = (t, until, bx, vers = 'presseur', pos = [0, 0, 0]) => pickGazeTarget({ id: 4, t, ball: [bx, 0.1, 0], ownerId: null, flightTo: 4, justReceivedAt: null, act: null, job: 'support', markP: null, carrierP: null, scan: { at: 0, until, vers, cible: [4, 4], n: 1, vol: true }, pos }, {}, rng);
+  const a = rxv(1, 1.4, 6), b = rxv(1.5, 1.4, 6), c = rxv(1, 1.4, 1), e = rxv(1, 1.4, 6, 'espace');
+  ok(`receveur en vol, saccade en cours : les yeux vont à la cible de la sim [${a.map((v) => v.toFixed(1)).join(', ')}] (presseur : à hauteur de tête ${GAZE.scanEyeHead})`, a[0] === 4 && a[2] === 4 && a[1] === GAZE.scanEyeHead);
+  ok(`…un espace se regarde à hauteur d'horizon (y ${e[1]} = ${GAZE.scanEyeSpace})`, e[1] === GAZE.scanEyeSpace && e[0] === 4);
+  ok('…saccade finie (until ≤ t) : le ballon, la politique d\'hier', b[0] === 6 && b[2] === 0);
+  ok(`…ballon à portée de prise (< ${GAZE.prise} m) : le ballon MÊME en saccade (Jordet : jamais pendant la prise)`, c[0] === 1 && c[2] === 0);
+  // une seule horloge : quand la sim porte p.scan, le scan LOCAL hors ballon se tait
+  const stL = {}; let horsBallon = 0;
+  for (let t = 0; t < 10; t += 1 / 30) { const tgt = pickGazeTarget({ id: 1, t, ball: [0, 0, 0], ownerId: 2, flightTo: null, justReceivedAt: null, act: null, job: 'support', markP: [3, 1.5, 3], carrierP: [1, 1.5, 1], scan: { at: -1, until: -1, vers: 'ballon', cible: null, n: 0, vol: false }, pos: [5, 0, 5] }, stL, rng); if (tgt[0] !== 0 || tgt[2] !== 0) horsBallon++; }
+  ok(`une seule horloge : avec p.scan porté par la sim, le scan local hors ballon se tait (${horsBallon} cibles hors ballon en 10 s = 0, aucune horloge locale armée : ${stL.nextScanAt === undefined})`, horsBallon === 0 && stL.nextScanAt === undefined);
+  // la TÊTE suit : le ballon arrive de +x à 8 m/s, une saccade vers un presseur à 53° entre 0,3 et 0,75 s,
+  // la prise à 1,06 s — le lacet part vers le presseur et revient sur le ballon AVANT la prise
+  const tete = (until, pos) => {
+    const g = new Gaze({ neck: mk(), head: mk() }); let maxDev = 0, devPrise = null;
+    for (let i = 0; i <= 72; i++) {
+      const t = i / 60, bx = 10 - 8 * t;
+      const tgt = pickGazeTarget({ id: 4, t, ball: [bx, 0.1, 0], ownerId: null, flightTo: 4, justReceivedAt: null, act: null, job: 'support', markP: null, carrierP: null, scan: { at: 0.3, until: t >= 0.3 ? until : -1, vers: 'presseur', cible: [3, 4], n: 1, vol: true }, pos }, {}, rng);
+      g.update(1 / 60, [0, 1.6, 0], tgt, 0);
+      const dev = Math.abs(g.yaw);
+      if (t >= 0.3 && t <= 0.75) maxDev = Math.max(maxDev, dev);
+      if (Math.abs(bx - 1.5) < 0.07) devPrise = dev;
+    }
+    return { maxDev, devPrise };
+  };
+  const T = tete(0.75, [0, 0, 0]);
+  ok(`la TÊTE suit la saccade (lacet max ${T.maxDev.toFixed(0)}° vers le presseur à 53°, ≥ 30°) et revient sur le ballon pour la prise (${T.devPrise?.toFixed(0)}° ≤ 10° à 1,5 m)`, T.maxDev >= 30 && T.devPrise != null && T.devPrise <= 10);
+  const Sab = tete(99, null);
+  ok(`sabotage « la saccade qui ne finit jamais, sans garde de prise » attrapé (${Sab.devPrise?.toFixed(0)}° de lacet à la prise > 10°)`, Sab.devPrise != null && Sab.devPrise > 10);
+  // LE FLUX : un match 11c11 de 240 s, la politique appelée comme la scène l'appelle, sur le receveur de chaque vol
+  const film = (over) => {
+    const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ...over });
+    const gst = {}, rngs = {};
+    let frames = 0, off = 0, sacc = 0, volT = 0, prises = 0, prisesBallon = 0, last = null, lastTo = null, lastK = null, lastD = 99;
+    for (let i = 0; i < 240 * 60; i++) {
+      matchStep(st, 1 / 60, cfg);
+      const to0 = st.phase === 'flight' ? (st.pass?.to ?? null) : null, to = to0 != null && st.players[to0] ? to0 : null;   // un dégagement n'a pas de receveur (to −1)
+      if (lastTo != null && to !== lastTo) { if (lastD < 2.5) { prises++; if (lastK === 'ballon') prisesBallon++; } last = null; }
+      if (to != null) {
+        const p = st.players[to];
+        const tgt = pickGazeTarget({ id: p.id, t: st.t, ball: st.ball.p, ownerId: st.ball.owner, flightTo: to, justReceivedAt: null, act: null, job: p.job, markP: null, carrierP: null, scan: p.scan ?? null, pos: p.p }, gst[p.id] ??= {}, rngs[p.id] ??= gazeRng(p.id));
+        const onBall = tgt === st.ball.p;
+        frames++; volT += 1 / 60; if (!onBall) off++;
+        const k = onBall ? 'ballon' : 'cible';
+        if (k === 'cible' && last !== 'cible') sacc++;
+        last = k; lastK = k; lastD = Math.hypot(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]);
+      }
+      lastTo = to;
+    }
+    return { volT, offShare: off / Math.max(1, frames), perS: sacc / Math.max(0.1, volT), prises, prisesBallon };
+  };
+  const A = film({}), sans = film({ scan: null });
+  ok(`LE FLUX (graine 3, 240 s) : le receveur en vol lève les yeux — ${(A.offShare * 100).toFixed(0)} % des images de vol hors ballon (≥ 15 %), ${A.perS.toFixed(2)} saccade/s de vol (Jordet ≥ 0,4) sur ${A.volT.toFixed(0)} s de vol`, A.offShare >= 0.15 && A.perS >= 0.4);
+  ok(`…et les yeux sont sur le ballon À LA PRISE : ${A.prisesBallon}/${A.prises} réceptions (≥ 95 %)`, A.prises > 0 && A.prisesBallon / A.prises >= 0.95);
+  ok(`la clé absente rend l'hier au bit : sans cfg.scan, le receveur fixe le ballon tout le vol (${(sans.offShare * 100).toFixed(0)} % hors ballon = 0, ${sans.prisesBallon}/${sans.prises} prises au ballon)`, sans.offShare === 0 && sans.prisesBallon === sans.prises);
+}
+
+console.log('\n— A12f : la passe sans regarder (view.noLook) —');
+{
+  const rng = gazeRng(13);
+  const nl = (t, noLook) => pickGazeTarget({ id: 2, t, ball: [0, 0.1, 0], ownerId: 2, flightTo: null, justReceivedAt: null, act: { t: t - 5, antic: 0.3, targetP: [5, 1.5, 2] }, job: 'carry', markP: null, carrierP: null, noLook, pos: [0, 0, 0] }, {}, rng);
+  const a = nl(5.25, true), b = nl(5.1, true), c = nl(5.25, false), d = nl(5.25, undefined);
+  ok(a[0] === -5 && a[2] === -2, `au dernier tiers de l'armé, le technicien pressé regarde le POINT OPPOSÉ à sa cible [${a.join(', ')}] (cible [5, 1.5, 2])`);
+  ok(b[0] === 5 && b[2] === 2, '…mais il VISE d\'abord (premier tiers : la cible, comme tout porteur)');
+  ok(c[0] === 0 && d[0] === 0, 'sans le drapeau (false ou absent), le ballon au dernier tiers — hier au bit');
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

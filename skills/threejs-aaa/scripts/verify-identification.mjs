@@ -22,7 +22,7 @@ for (const g of GROUPES) {
   for (let k = 0; k < n; k++) { const roles = {}, obs = []; g.forEach((f, i) => { const e = listes[i][k]; if (e) { roles[POSTE[f]] = e[1]; obs.push({ post: POSTE[f], doc: e[0], id: e[1] }); } }); RUNS.push({ roles, obs }); }
 }
 const mesure = (seed, roles) => {
-  const st = makeMatch({ full: true, seed, tactics: [{ formation: FORM }, { formation: FORM }], roles: roles ? [roles, null] : null }), cfg = matchCfg({ shotRange: 20 });
+  const st = makeMatch({ full: true, seed, tactics: [{ formation: FORM }, { formation: FORM }], roles: roles ? [roles, null] : null }), cfg = matchCfg({ pausaPied: null, recevoirSurPlace: null, pasDeRecul: null /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, shotRange: 20 });
   const sig = {}; for (const p of st.players) if (p.team === 0) sig[p.post] = { larg: [], prof: [], appel: 0, press: 0, hors: 0, repli: 0, tenue: [], duel: 0, marque: [], dribble: 0, passes: 0, tirs: 0, centres: 0, garde: [] };
   const holdNow = {}; const doc = { corners: 0, dansBoite: 0, gkPasses: 0, gkCourtes: 0, buts: 0, butsCPA: 0, cpaT: -99 }; let prevR = null;
   let seen = 0, seenAll = 0; const hz = st.pitch.hz, sg = -st.pitch.ownGoal(0).sign;

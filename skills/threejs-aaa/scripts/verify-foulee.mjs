@@ -138,5 +138,54 @@ sab('tronc raide en course (lean 0, bassin droit)', { vF: 5, vR: 0, opts: { over
 sab('course arrière qui lève derrière (swingPeak 0,95)', { vF: -3, vR: 0, opts: { override: { swingPeak: 0.95 } } }, /ne monte pas devant/);
 sab('pas trop long (bias −0,45)', { vF: 4.5, vR: 0, opts: { override: { bias: -0.45 } } }, /hors de portée|hanche hors|GLISSE|pas de/);
 
+console.log('\n— A12b : la réception en mouvement — les bras en équilibre du receveur (opts.receveur) —');
+{
+  const mesure = (opts) => {
+    let spread = 0, zMin = Infinity, zMax = -Infinity, n = 0;
+    for (let i = 0; i < 60; i++) {
+      const g = gaitPose(P, i / 60, 2, 0, NEUTRAL_GAIT_STYLE, opts);
+      const fk = fkPose(P, g.q, g.hips);
+      spread += fk.RightHand.p[0] - fk.LeftHand.p[0]; n++;
+      zMin = Math.min(zMin, fk.RightHand.p[2]); zMax = Math.max(zMax, fk.RightHand.p[2]);
+    }
+    return { spread: spread / n, swing: zMax - zMin };
+  };
+  const d = mesure({}), r = mesure({ receveur: true });
+  ok(r.spread >= d.spread + 0.05 && r.swing <= d.swing * 0.65 + 1e-6,
+    `à 2 m/s le receveur ouvre les bras (écart des mains ${(r.spread * 100).toFixed(0)} cm c. ${(d.spread * 100).toFixed(0)} sans, ≥ +5) et calme le balancier (course de la main ${(r.swing * 100).toFixed(0)} cm c. ${(d.swing * 100).toFixed(0)}, ≤ 65 %)`);
+  let cg; try { cg = checkGaitGen(P, { vF: 2, vR: 0, opts: { receveur: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
+  ok(cg.ok, `…et la foulée du receveur reste sous le contrat (checkGaitGen à 2 m/s)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
+  const same = JSON.stringify(gaitPose(P, 0.3, 2, 0, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, 2, 0, NEUTRAL_GAIT_STYLE, { receveur: undefined }).q);
+  ok(same, 'sans le drapeau, la foulée d\'hier au bit (receveur undefined = aucune option)');
+}
+
+console.log('\n— A12d : le recul-frein — le défenseur qui jockeye est bas et ouvert (opts.jockey) —');
+{
+  const mesure = (opts) => {
+    let spread = 0, pelvis = 0, n = 0;
+    for (let i = 0; i < 60; i++) { const g = gaitPose(P, i / 60, -1.5, 0.6, NEUTRAL_GAIT_STYLE, opts); const fk = fkPose(P, g.q, g.hips); spread += fk.RightHand.p[0] - fk.LeftHand.p[0]; pelvis += fk.Hips.p[1]; n++; }
+    return { spread: spread / n, pelvis: pelvis / n };
+  };
+  const d = mesure({}), j = mesure({ jockey: true });
+  ok(j.pelvis <= d.pelvis - 0.03 && j.spread >= d.spread + 0.05, `en recul chassé (−1,5 m/s, 0,6 latéral) le jockey est plus BAS (bassin ${(j.pelvis * 100).toFixed(0)} c. ${(d.pelvis * 100).toFixed(0)} cm, ≥ −3) et plus OUVERT (mains ${(j.spread * 100).toFixed(0)} c. ${(d.spread * 100).toFixed(0)} cm, ≥ +5)`);
+  let cg; try { cg = checkGaitGen(P, { vF: -1.5, vR: 0.6, opts: { jockey: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
+  ok(cg.ok, `…et sa foulée reste sous le contrat (checkGaitGen en recul chassé)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
+  ok(JSON.stringify(gaitPose(P, 0.3, -1.5, 0.6, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, -1.5, 0.6, NEUTRAL_GAIT_STYLE, { jockey: undefined }).q), 'sans le drapeau, le recul d\'hier au bit');
+}
+
+console.log('\n— A12e : la marche des rôles marchants — les mains sur les hanches (opts.mainsHanches) —');
+{
+  const mesure = (opts) => {
+    let dy = 0, zMin = Infinity, zMax = -Infinity, ex = 0, n = 0;
+    for (let i = 0; i < 60; i++) { const g = gaitPose(P, i / 60, 1.2, 0, NEUTRAL_GAIT_STYLE, opts); const fk = fkPose(P, g.q, g.hips); dy += Math.abs(fk.RightHand.p[1] - fk.Hips.p[1]); zMin = Math.min(zMin, fk.RightHand.p[2]); zMax = Math.max(zMax, fk.RightHand.p[2]); ex += fk.RightForeArm.p[0] - fk.RightHand.p[0]; n++; }
+    return { dy: dy / n, swing: zMax - zMin, coudeDehors: ex / n };
+  };
+  const d = mesure({}), m = mesure({ mainsHanches: true });
+  ok(m.dy <= 0.2 && m.swing <= 0.05 && m.coudeDehors > 0.03, `en marche (1,2 m/s) les mains restent sur les hanches : main à ${(m.dy * 100).toFixed(0)} cm du bassin (≤ 20), course ${(m.swing * 100).toFixed(1)} cm (≤ 5 ; sans : ${(d.swing * 100).toFixed(0)}), coude dehors ${(m.coudeDehors * 100).toFixed(0)} cm`);
+  let cg; try { cg = checkGaitGen(P, { vF: 1.2, vR: 0, opts: { mainsHanches: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
+  ok(cg.ok, `…et la marche reste sous le contrat (checkGaitGen à 1,2 m/s)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
+  ok(JSON.stringify(gaitPose(P, 0.3, 1.2, 0, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, 1.2, 0, NEUTRAL_GAIT_STYLE, { mainsHanches: undefined }).q), 'sans le drapeau, la marche d\'hier au bit');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

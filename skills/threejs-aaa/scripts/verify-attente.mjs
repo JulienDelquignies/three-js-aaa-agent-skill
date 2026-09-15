@@ -87,6 +87,8 @@ for (const kind of IDLE_NAMES) {
   ok(idlePolicy({ wall: true, keeper: false, dead: true }, nerv) === 'mur' && idlePolicy({ wall: true, keeper: true, dead: true }, calm) === 'mur', 'dans le mur, tout le monde fait le mur');
   ok(idlePolicy({ dead: true }, nerv) === 'sautillement' && idlePolicy({ dead: true }, calm) === 'mainsHanches' && idlePolicy({ dead: true }, plain) === 'repos', 'le temps mort : le nerveux sautille, le calme met les mains sur les hanches, l\'autre se repose');
   ok(idlePolicy({ dead: false, defending: true, carrierD: 3 }, plain) === 'pret' && idlePolicy({ dead: false, defending: true, carrierD: 9 }, plain) === 'repos' && idlePolicy({ dead: false, defending: false, carrierD: 3 }, plain) === 'repos', 'le défenseur à moins de 5,5 m du porteur adverse se met en garde ; loin, ou en possession, il se repose');
+  ok(idlePolicy({ dead: false, receveur: true, defending: true, carrierD: 3 }, nerv) === 'reception' && idlePolicy({ dead: false, receveur: true }, plain) === 'reception' && idlePolicy({ dead: false, receveur: false }, plain) === 'repos', '(A12b) le ballon vole vers moi : la posture de réception, avant la garde et quel que soit le tempérament');
+  ok(idlePolicy({ dead: false, marcheur: true, ballD: 40 }, nerv) === 'mainsHanches' && idlePolicy({ dead: false, marcheur: true, ballD: 10 }, nerv) === 'repos' && idlePolicy({ dead: false, marcheur: true, ballD: 40, receveur: true }, nerv) === 'reception', '(A12e) le rôle marchant loin du ballon met les mains sur les hanches — sauf si le ballon vole vers lui');
   ok(idlePolicy({ dead: true }, nerv) === idlePolicy({ dead: true }, nerv), 'la politique est pure');
 }
 
@@ -97,6 +99,8 @@ const sab = (label, args, want) => {
   ok(hit, `sabotage « ${label} » attrapé${hit ? ` (${r.issues.find((i) => want.test(i)).slice(0, 90)})` : r.ok ? ' — PASSÉ SOUS LE CONTRAT' : ` — autre motif : ${r.issues.join(' ; ').slice(0, 120)}`}`);
 };
 sab('pieds qui suivent le balancement (slide 1)', { kind: 'repos', opts: { override: { slide: 1 } } }, /pieds bougent/);
+sab('signal le bras droit baissé (armR elev 20)', { kind: 'signal', opts: { override: { armR: { elev: 20, fwd: 4, elbow: 6, twist: 0 } } } }, /au-dessus de la tête/);
+sab('réception les bras le long du corps (elev 0, fwd 0)', { kind: 'reception', opts: { override: { arms: { elev: 0, fwd: 0, elbow: 10, twist: 0 } } } }, /mains ne sont pas en équilibre/);
 sab('orteil sous la pelouse (pointe basse)', { kind: 'sautillement', opts: { override: { heel: -30 } } }, /sous la pelouse/);
 sab('mains loin des hanches', { kind: 'mainsHanches', opts: { override: { arms: { elev: 60, fwd: 40, elbow: 0, twist: 0 } } } }, /crête|coude/);
 sab('mur bras ouverts', { kind: 'mur', opts: { override: { arms: { elev: 25, fwd: 10, elbow: 20, twist: 0 } } } }, /mains sont à|bas-ventre/);
