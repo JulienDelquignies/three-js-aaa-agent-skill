@@ -11951,6 +11951,94 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      retour-bras-reception.png (graine 3, t = 4,3 s, le même instant que
      a12b-reception-approche.png). Référence 58.
 
+- 360: LE SOL (lot A10 bis — « tu as d'autres animations à refaire ? » →
+     « ok vas-y »). Mesuré en page (graine 3, t = 250,18, chute avant par
+     tacle debout) : down 1,6 s pour un clip qui met 0,66 s à se coucher et
+     0,7 à se relever — 0,2 s de tenue ; à t + 0,54 la sim donnait au
+     fauché un acte « frappe » (down 1,03) et la couche remplaçait la chute
+     par l'armé, bassin à 0,93 m ; le tacleur à 0,50 m (minGap) du fauché,
+     dans son corps. La clé cfg.sol { tenue 0,9, corps 0,9 } : duel.chuter
+     tient le fauché chute + tenue × (0,7 + 0,6 × v/6) s (p50 2,5 contre
+     1,6), lâche le ballon (loose, release('perte')), tue l'armé ;
+     movement.separatePlayers : un corps couché tient les debout à ≥ corps
+     m, le debout seul recule en marchant (1,5 % des images au sol avec un
+     debout à < 0,6 m, sans la clé 10,9). Null = hier au bit (empreinte
+     jumelle 3 graines, 0ac58978 / 73c16185 / 5120d90f). A/B 12 × 300 s :
+     passes +1 %, pertes −4 %. La pose tenue VIT (motion-contact, vie) :
+     un cycle fermé entre lying et rise (main à la tête, tête qui se pose et
+     se relève, jambe du dessus qui plie — 35/15/34 cm à mi-tenue, 0 cm
+     entre lying et rise) ; l'horloge de la scène (contactClock) y fait des
+     allers-retours à ×0,6 tant que down > T − t, puis avance à (T − t)/down
+     borné ×1-2,5 : debout à l'heure sim, jamais de saut (prouvé en pur,
+     down 2,6 et 1,6). Garde-fous : un corps couché ne joue que sa chute ;
+     la prise du tacleur n'est pas une réception (l'« amorti » à 49° de
+     bras recouvrait le tacle : les « bras en croix » du vainqueur) ; un
+     contrôle ou une réception sans technique nommée se joue DU PIED quand
+     le ballon est au sol (79 amortis en deux matchs, tous bas). Bancs :
+     verify-contact 25 → 34. Captures a10bis-chute-tenue.png (graine 5,
+     t = 6,95 : la chute de côté tenue, la main à la tête, le tacleur à
+     0,9 m). Reste : le relevé aidé. Référence 59.
+- 361: L'ÉMOTION GÉNÉRÉE (lot A11). Mesuré : le buteur courait au coin les
+     bras à l'horizontale (clip 'celebration' du donneur — le dernier geste
+     non généré vu en match), seul ; salut/poignée/applaudir/consulter
+     jamais joués. motion-emotion.js, huit espèces, famille 'emotion' :
+     poing (deux pompes, +25 cm sur l'épaule), brasLeves (V, +28 cm sur la
+     tête), oreille (main à 15 cm de l'oreille, l'autre sur la hanche,
+     tronc tourné 22°), calme (mains levées paumes devant, tête basse),
+     accolade (bras qui enveloppent, 21 cm entre les mains), applaudir
+     (trois claquements à 10 cm), proteste (avant-bras ouverts, épaules
+     +9°, tête qui dit non ±8°) — gestes du HAUT (spec.upperOnly : la scène
+     laisse les jambes à la foulée) ; et la GLISSADE sur les genoux
+     (spec.ownsLegs, lying 0,55 / rise 1,35 : bassin à la cuisse, genoux à
+     3 cm, pieds 50 cm derrière pointes au sol par legIK2, bras ouverts 131
+     cm qui montent en V +42 cm et reviennent, relevé debout). L'amplitude
+     des bras suit armElev, et motion-cast porte persona.bras dans armElev
+     de TOUTES les familles (× 0,8 + 0,35 × bras). Sim, cfg.fete (null =
+     hier au bit) : referee choisit le geste par la persona (flair ≥ 0,7
+     glissade ; calm ≥ 1,15 calme, il marche ; flair ≥ 0,45 posé oreille ;
+     burstiness ≥ 1,05 poing ; sinon brasLeves), l'événement le porte ;
+     la glissade se planifie (elan 1,4 s, si > 2,5 m/s : down 1,9 s, corps
+     porté par _glisse × 1,3 — 2,1 m mesurés, événement 'glissade').
+     Scène rondo-fete.js : les gestes du haut en courant, l'oreille à
+     l'arrivée, la glissade tenue et relevée par contactClock, l'accolade
+     au contact (≤ 1,6 m, ≤ 2,2 m/s, des deux côtés), l'adversaire abattu
+     (idleCtx.abattu → attente 'abattu', foulée mainsHanches + headDown 16°
+     au pas, 8° au trot), la protestation du fautif non calme (calm < 1,08)
+     et de tout carté. Bancs : verify-emotion 33/0 (nouveau, bancs.mjs),
+     verify-attente 54/0, verify-foulee 55/0. Captures graine 3 : but à
+     232,58 par le 0 (flair 0,94) → glissade à 233,98 à 2,9 m/s
+     (a11-glissade.png), accolade du 3 à 236,3 (a11-accolade.png), les
+     adversaires abattus à l'engagement (a11-abattu.png) ; la protestation
+     déclenchée par l'événement en page (a11-proteste.png) ; planches
+     glissade/oreille/poing/proteste/brasLeves/accolade. Reste : l'accolade
+     lève un peu haut les mains ; sifflet et cartons sans corps ; salut et
+     poignée d'avant-match. Référence 59.
+- 362: LE PLONGEON BAS (retour du balayage). Mesuré : à 0,43 s la main du
+     dessus à 1,21 m pour un ballon à 0,20 (vers la barre) ; à ×0,8 le
+     gardien à plat 0,13 s avant le ballon. motion-keeper : rollC 70 → 100
+     (la poitrine vers le sol dans la détente basse), topL 156 — main du
+     dessus 0,92 → 0,33 m au contact, contrat et 20 styles verts
+     (verify-motion 206/0). Scène : rate ≥ 1, le surplus cross.t − antic
+     (≤ 0,6 s) est un DÉLAI de décollage — le gardien reste posé (poids 0),
+     puis plonge à ×1 : délai 0,19 s mesuré en page, la détente à l'heure
+     du ballon. Référence 59.
+- 363: LE BANC COMPLET ET LES ÉPINGLES. Première passe 726/17 : deux « sync »
+     (mon réglage du plongeon bas fait pendant la course — un étirement
+     tardif du bras du dessus, ext², refusé ensuite : 14 rad/s sur 8
+     styles / 40, verify-motion 206/0 sans lui) et quinze clauses de flux
+     (verify-match11 × 11, remises × 2, signes × 2, identification) qui
+     mesurent le monde de leur jour et voyaient les deux nouvelles clés par
+     défaut (sol, fete : le fauché reste à terre, la fête a un corps).
+     Comme hier (note 358) : sol et fete épinglés à null aux mêmes sites
+     datés (pasDeRecul: null → , sol: null, fete: null — 16 sites de
+     verify-match11, attributes, remises, identification, et le monde SANS
+     de verify-signes), l'empreinte jumelle ayant prouvé clés nulles = hier
+     au bit ; signes 9/0, remises 36/0, identification 1/0, attributes,
+     match11 re-shardé.
+- 364: LES TROIS COPIES ET LES DOCS du lot : verify-sync 9/0 ; NOTES,
+     ROADMAP (LIVRÉ, SUIVANT : A10 ter relevé aidé et tenue dos au but,
+     A11 bis sifflet/cartons/salut/poignée), reference/59, SKILL, README,
+     docs/Interface_Style_Joueur.md (la fête selon la persona, pour l'aval).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

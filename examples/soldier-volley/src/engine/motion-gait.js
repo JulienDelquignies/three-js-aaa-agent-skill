@@ -256,8 +256,8 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   J.Spine1 = chain(leanQ(0.35), ry(girdle * 0.35));
   J.Spine2 = chain(leanQ(0.25), ry(girdle * 0.45));
   const head = clamp(-girdle * 0.75, -6, 6);
-  J.Neck = chain(rx(p.lean * 0.3), ry(head * 0.4));
-  J.Head = chain(rx(p.lean * 0.3), ry(head * 0.6));
+  J.Neck = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.4), ry(head * 0.4));   // (A11) opts.headDown : la tête basse (l'abattu)
+  J.Head = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.6), ry(head * 0.6));
 
   // ---- les bras : opposés à leur jambe (gauche derrière à φ = 0), coude qui se ferme en avant
   const swing = p.armA * armF * Math.cos(TAU * ph + (p.armPhase || 0));   // `armPhase` : le sabotage des bras en phase

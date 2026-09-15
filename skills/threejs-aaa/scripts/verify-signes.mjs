@@ -11,7 +11,7 @@ import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/mat
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
-const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null };
+const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361) : le monde d'hier au bit, avant le sol et la fête */ };
 
 console.log('— (a) la pausa au pied —');
 const pausas = (over) => {

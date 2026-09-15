@@ -194,10 +194,17 @@
 - LIVRÉ (retour utilisateur, note 359) : LE PORT DE BRAS — les bras calmes à la réception (posture et foulée), l'amplitude
   au port de bras de la persona (persona.bras), et pour l'aval le style posé par le roster : squads[team][i].persona et
   .style { gait, idle, frappe } (docs/Interface_Style_Joueur.md) ; verify-persona 25/0, verify-attente 52/0, verify-foulee 55/0.
+- LIVRÉ (« tu as d'autres animations à refaire ? » → « ok vas-y », notes 360-364, reference/59) : LE SOL (A10 bis — cfg.sol : le fauché
+  reste à terre 2,2-2,8 s, lâche le ballon, n'agit plus couché, personne ne marche dans un corps couché ; la pose tenue VIT et le
+  relevé finit à l'heure sim sans saut ; la prise du tacleur n'est plus un amorti, les réceptions au sol se contrôlent du pied),
+  L'ÉMOTION GÉNÉRÉE (A11 — motion-emotion : poing, bras levés, oreille, calme, GLISSADE sur les genoux, accolade, applaudir,
+  proteste ; cfg.fete : le geste par la persona, la glissade planifiée et portée ; l'accolade des compagnons, l'adversaire abattu,
+  la protestation du fautif ; persona.bras porte l'élévation des bras de toutes les familles), LE PLONGEON BAS (poitrine au sol,
+  bras du dessus au ballon, délai de décollage sur le ballon lent) ; verify-contact 34/0, verify-emotion 33/0 (dans bancs.mjs),
+  verify-motion 206/0 ; empreinte jumelle sans les clés.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
-  (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
-  deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet
-  et cartons de l'arbitre, gestes sociaux générés. Et les dettes : (A2) le monde composé — re-caler
+  (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 ter) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
+  le relevé aidé ; (A11 bis) le sifflet et les cartons de l'arbitre, le salut et la poignée d'avant-match, l'accolade les mains plus basses. Et les dettes : (A2) le monde composé — re-caler
   les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s
   composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 bis) la
   cadence à l'échelle de la jambe (shanon 0,76 m : 7-12 cm d'affaissement), virage et freinage,

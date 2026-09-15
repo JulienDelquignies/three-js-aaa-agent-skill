@@ -24,6 +24,7 @@ import { GROUND_KINDS, generateGround, checkGroundGen } from './motion-ground.js
 import { KEEPER_KINDS, generateKeeper, checkKeeperGen } from './motion-keeper.js';
 import { RESTART_KINDS, generateRestart, checkRestartGen } from './motion-restart.js';
 import { CONTACT_KINDS, generateContact, checkContactGen } from './motion-contact.js';
+import { EMOTION_KINDS, generateEmotion, checkEmotionGen } from './motion-emotion.js';
 
 /** LE REGISTRE : geste → { family, generate(P, opts), check(spec, P, opts) }. */
 export const GENERATORS = {};
@@ -35,6 +36,7 @@ for (const k of Object.keys(GROUND_KINDS)) GENERATORS[k] = { family: 'ground', g
 for (const k of Object.keys(KEEPER_KINDS)) GENERATORS[k] = { family: 'keeper', generate: (P, o) => generateKeeper(k, P, o), check: (spec, P) => checkKeeperGen(spec, P, k) };
 for (const k of Object.keys(RESTART_KINDS)) GENERATORS[k] = { family: 'restart', generate: (P, o) => generateRestart(k, P, o), check: (spec, P) => checkRestartGen(spec, P, k) };
 for (const k of Object.keys(CONTACT_KINDS)) GENERATORS[k] = { family: 'contact', generate: (P, o) => generateContact(k, P, o), check: (spec, P) => checkContactGen(spec, P, k) };
+for (const k of Object.keys(EMOTION_KINDS)) GENERATORS[k] = { family: 'emotion', generate: (P, o) => generateEmotion(k, P, o), check: (spec, P) => checkEmotionGen(spec, P, k) };   // (A11) la joie, l'accolade, l'applaudissement, la protestation, la glissade
 export const GENERATED_KINDS = Object.keys(GENERATORS);
 
 /** Générer un geste par son nom (null si le geste n'est pas généré). */
@@ -78,7 +80,9 @@ export function motionProfileOf(entry, report = null) {
 
 /** Ce que la scène accroche au joueur : { profile, style, moves } — `moves` se remplit à la demande. */
 export function castStrikes(entry, player, seed = 7, report = null) {
-  return { profile: motionProfileOf(entry, report), style: { ...styleFromSeed(player.id * 7919 + seed), ...(player.style?.frappe ?? {}) }, moves: {} };   // le style de frappe POSÉ par le roster (player.style.frappe, docs/Interface_Style_Joueur.md) complète le tirage
+  const style = styleFromSeed(player.id * 7919 + seed);
+  if (player.persona?.bras != null) style.armElev *= 0.8 + 0.35 * player.persona.bras;   // (A11, retour utilisateur) LE PORT DE BRAS DE LA PERSONA porte aussi les gestes générés : bras 0,15 → ×0,85, 0,9 → ×1,12 sur l'élévation des bras de toutes les familles (le style posé par le roster garde le dernier mot)
+  return { profile: motionProfileOf(entry, report), style: { ...style, ...(player.style?.frappe ?? {}) }, moves: {} };   // le style de frappe POSÉ par le roster (player.style.frappe, docs/Interface_Style_Joueur.md) complète le tirage
 }
 
 /** Le geste GÉNÉRÉ de ce joueur (frappe, contrôle, tête…) — null si le geste n'est pas généré.

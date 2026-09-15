@@ -569,8 +569,8 @@ export function onOut(st, cfg) {
           .sort((a2, b2) => d2(a2.p, bp2) - d2(b2.p, bp2)).slice(0, C.n ?? 3).map((q) => q.id);
         st._celeb = { by, avec, until: st.t + (C.dur ?? 6) - 1.2,
           corner: [Math.sign(bp2[0] || 1) * (st.pitch.hx - 4), Math.sign(bp2[2] || 1) * (st.pitch.hz - 5)] };
-        st.players[by]._pace = { ...(st.players[by]._pace ?? { next: 3 }), until: st.t + 1.6, kind: 'celebration' };
-        st.events.push({ t: +st.t.toFixed(2), type: 'celebration', by, avec });
+        st.players[by]._pace = { ...(st.players[by]._pace ?? { next: 3 }), until: st.t + 1.6, kind: 'celebration' }; const F = cfg.fete, pers = st.players[by].persona, geste = F ? ((pers?.flair ?? 0.5) >= (F.flairGlisse ?? 0.7) ? 'glissade' : (pers?.calm ?? 1) >= (F.calme ?? 1.15) ? 'calme' : (pers?.flair ?? 0.5) >= (F.flairOreille ?? 0.45) && (pers?.calm ?? 1) >= 1.02 ? 'oreille' : (pers?.burstiness ?? 1) >= (F.poing ?? 1.05) ? 'poing' : 'brasLeves') : null;   // (A11, cfg.fete) LE TEMPÉRAMENT DE LA JOIE : la persona choisit le geste — la glissade se planifie (glisseAt, match-sim), le calme marche ; null = hier au bit
+        if (geste) { st._celeb.geste = geste; if (geste === 'glissade') st._celeb.glisseAt = st.t + (F.elan ?? 1.4); } st.events.push({ t: +st.t.toFixed(2), type: 'celebration', by, avec, ...(geste ? { geste } : {}) });
       }
     } else {
       placeKickoff(st, r.team, cfg);

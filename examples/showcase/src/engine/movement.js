@@ -545,6 +545,9 @@ export function separatePlayers(st, cfg) {
       const a = st.players[i], b = st.players[j];
       const dx = b.p[0] - a.p[0], dz = b.p[2] - a.p[2];
       const d = hyp(dx, dz);
+      // (A10 bis, cfg.sol.corps) PERSONNE NE MARCHE DANS UN CORPS COUCHÉ : un corps à terre (down, ni expulsé ni remplacé) tient les debout à ≥ corps m — le debout seul recule, en marchant (≤ 0,04 m/image) ; mesuré : le tacleur planté à 0,5 m (minGap) du fauché, dans son corps
+      const SOL = st.full && cfg.sol, aSol = SOL && a.down > 0 && a.down < 100 && !a.expulse && !a._sub, bSol = SOL && b.down > 0 && b.down < 100 && !b.expulse && !b._sub;
+      if (SOL && aSol !== bSol) { const corps = SOL.corps ?? 0.9; if (d < corps && d > 1e-6) { const push = Math.min(corps - d, 0.04), ux = dx / d, uz = dz / d; if (aSol) { b.p[0] += ux * push; b.p[2] += uz * push; } else { a.p[0] -= ux * push; a.p[2] -= uz * push; } } continue; }
       const gap = social && a.team === b.team && !st.restart && a.down <= 0 && b.down <= 0
         && !a.act && !b.act ? social : cfg.minGap;
       if (d >= gap || d < 1e-6) continue;

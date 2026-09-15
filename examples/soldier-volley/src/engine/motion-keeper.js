@@ -23,7 +23,7 @@ import { hyp } from './hyp.js';
 
 export const KEEPER_KINDS = {
   plongeon:        { duration: 1.6, contact: 0.55, rise: 1.2, dive: true, crouch: 0.25, dip: 0.26, lateral: 1.35, apex: 0.28, lying: -0.68, tLie: 0.9, roll: 80, rollC: 62, hands: 2, ball: [1.95, 1.05, -0.1] },
-  plongeonBas:     { duration: 1.4, contact: 0.5,  rise: 1.1, dive: true, crouch: 0.2,  dip: 0.34, lateral: 1.15, apex: -0.5, lying: -0.72, tLie: 0.85, roll: 82, rollC: 70, hands: 2, low: true, ball: [1.7, 0.2, -0.1] },
+  plongeonBas:     { duration: 1.4, contact: 0.5,  rise: 1.1, dive: true, crouch: 0.2,  dip: 0.34, lateral: 1.15, apex: -0.5, lying: -0.72, tLie: 0.85, roll: 82, rollC: 100, topL: 156, hands: 2, low: true, ball: [1.7, 0.2, -0.1] },   // (A10 bis) rollC 100 : la poitrine se tourne vers le sol dans la détente basse, le bras du dessus (topL) suit l'axe — les deux mains au ras du ballon (mesuré : main du dessus 0,92 → 0,33 m pour un ballon à 0,20)
   plongeonUneMain: { duration: 1.6, contact: 0.55, rise: 1.2, dive: true, crouch: 0.25, dip: 0.26, lateral: 1.5,  apex: 0.26, lying: -0.68, tLie: 0.9, roll: 82, rollC: 64, hands: 1, ball: [2.2, 1.1, -0.1] },
   plongeonPrise:   { duration: 1.3, contact: 0.5,  jump: true, crouch: 0.2, dip: 0.3, lateral: 0.72, apex: 0.55, tLand: 0.85, ball: [0.75, 2.05, -0.2] },
   paradePieds:     { duration: 0.7, contact: 0.22, kick: true, reach: 0.78, dip: 0.08, ball: [0.85, 0.15, -0.12] },
@@ -112,11 +112,11 @@ export function generateKeeper(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } 
         const relax = fall(t) * 0.45;                                    // au tapis les bras retombent à l'horizontale (devant la tête)
         const ext = armUp * (1 - relax) * (1 - a), rl = 0;
         const stage = (vA, vB, vC) => vA * a * (1 - b) + vB * b * (1 - c) + vC * c * (1 - ramp(t, tR + 0.66 * (T - tR), tR + 0.83 * (T - tR), T));
-        const topL = K.hands === 1 ? 46 : (K.low ? 146 : 162) * Math.min(S.armElev, 1.04), topR = K.hands === 1 ? 170 : (K.low ? 148 : 164) * Math.min(S.armElev, 1.04);
-        const elevL = 20 * cr + topL * ext + topL * 0.6 * rl + (K.low ? stage(42, 30, 14) : stage(52, 36, 18));
+        const topL = K.hands === 1 ? 46 : (K.low ? (K.topL ?? 126) : 162) * Math.min(S.armElev, 1.04), topR = K.hands === 1 ? 170 : (K.low ? 148 : 164) * Math.min(S.armElev, 1.04);   // (A10 bis) plongeon bas : le bras du DESSUS croise devant la poitrine vers le ballon au sol (mesuré : main gauche à 1,2 m de haut, vers la barre, pour un ballon à 20 cm)
+        const elevL = 20 * cr + topL * ext + topL * 0.6 * rl + (K.low ? stage(42, 30, 14) : stage(52, 36, 18));   // (A10 bis) un étirement TARDIF du bras du dessus (ext²) a été essayé et refusé : 14 rad/s sur 8 styles / 40 — la poitrine tournée (rollC 100) fait le travail
         const elevR = 20 * cr + topR * ext + topR * 0.6 * rl + (K.low ? stage(42, 30, 14) : stage(52, 36, 18));
         Object.assign(J,
-          armJoints('Left', { elev: 14 + elevL, fwd: -10 * cr + (K.hands === 1 ? 60 : 8) * (ext + rl) + stage(24, 20, 8), elbow: 14 - 6 * ext + (K.hands === 1 ? 100 : 0) * (ext + 0.7 * rl) + stage(20, 16, 6) }),
+          armJoints('Left', { elev: 14 + elevL, fwd: -10 * cr + (K.hands === 1 ? 60 : K.low ? (K.fwdL ?? 46) : 8) * (ext + rl) + stage(24, 20, 8), elbow: 14 - 6 * ext + (K.hands === 1 ? 100 : 0) * (ext + 0.7 * rl) + stage(20, 16, 6) }),
           armJoints('Right', { elev: 14 + elevR, fwd: -10 * cr + 8 * (ext + rl) + stage(24, 20, 8), elbow: 14 - 6 * ext + stage(20, 16, 6) }));
         J.LeftShoulder = I; J.RightShoulder = I;
         for (const side of ['Left', 'Right']) { const lg = legAt(side, t); if (lg) applyLegBetween(J, side, lg.from, lg.to, lg.u); }

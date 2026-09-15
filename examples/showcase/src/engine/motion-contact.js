@@ -35,7 +35,7 @@ import { sub, len, norm, cross, quatMul, quatConjugate, quatNormalize } from './
  *  repères (alignFrame, motion-restart) — le plus-court-arc + vrille de legIK retournait la cuisse (genou à 62 cm
  *  du sien, 174 rad/s) quand la jambe passait du couché à la flexion sous un bassin bas. Le plan du genou : celui
  *  de la jambe pliée (tibia × cuisse), sinon (jambe tendue) le pôle. */
-function legIK2(P, side, hipW, Rpar, ankle, pole) {
+export function legIK2(P, side, hipW, Rpar, ankle, pole) {
   const up = P.bones[`${side}UpLeg`], kn = P.bones[`${side}Leg`], ft = P.bones[`${side}Foot`], L = P.lengths;
   const ik = twoBoneIK(hipW, ankle, L.thigh, L.shank, pole);
   const d1 = norm(sub(ik.mid, hipW)), s1 = norm(sub(ik.end, ik.mid)), dir = norm(sub(ankle, hipW));
@@ -53,9 +53,9 @@ function legIK2(P, side, hipW, Rpar, ankle, pole) {
 }
 
 export const CONTACT_KINDS = {
-  chuteAvant:   { duration: 1.9, contact: 0.50, lying: 0.66, rise: 1.20, fwd: 0.25, dip: 0.70, pitch: -80, stumble: 0.22, headUp: 22 },
-  chuteCote:    { duration: 1.8, contact: 0.48, lying: 0.64, rise: 1.15, side: 0.30, dip: 0.70, roll: -76, pitch: -18, stumble: 0.18 },
-  chuteArriere: { duration: 1.8, contact: 0.50, lying: 0.66, rise: 1.15, back: 0.30, dip: 0.74, pitch: 58, lie: 26, stumble: 0.20 },
+  chuteAvant:   { duration: 1.9, contact: 0.50, lying: 0.66, rise: 1.20, fwd: 0.25, dip: 0.70, pitch: -80, stumble: 0.22, headUp: 22, vie: 1 },
+  chuteCote:    { duration: 1.8, contact: 0.48, lying: 0.64, rise: 1.15, side: 0.30, dip: 0.70, roll: -76, pitch: -18, stumble: 0.18, vie: 1 },
+  chuteArriere: { duration: 1.8, contact: 0.50, lying: 0.66, rise: 1.15, back: 0.30, dip: 0.74, pitch: 58, lie: 26, stumble: 0.20, vie: 1 },
   trebuche:     { duration: 0.85, contact: 0.30, pitch: 56, dip: 0.09, step: 0.42, arms: 46 },
   epaule:       { duration: 0.60, contact: 0.25, roll: 16, shift: 0.10, drop: 14, wide: 0.20, lean: 10 },
   protection:   { duration: 0.70, contact: 0.25, hold: 0.45, elev: 62, back: 42, turn: 20, lean: 8 },
@@ -76,7 +76,7 @@ function trunk(J, { lean = 0, side = 0, yaw = 0, headDown = 0, headUp = 0 }) {
 }
 
 /** la position monde de la hanche (articulation) pour un bassin donné — les cibles de pied se posent depuis là */
-function hipJoint(P, side, Rhips, hips) {
+export function hipJoint(P, side, Rhips, hips) {
   return fkPose(P, { Hips: jointToSpec(P, 'Hips', Rhips) }, hips)[`${side}UpLeg`].p;
 }
 
@@ -93,6 +93,8 @@ function generateFall(kind, P, S) {
   const up = (t) => ramp(t, tR, (tR + T) / 2, T);
   const up1 = (t) => ramp(t, tR, tR + 0.45 * (T - tR), tR + 0.55 * (T - tR));          // le premier temps du relevé : l'appui, le genou
   const up2 = (t) => ramp(t, tR + 0.45 * (T - tR), tR + 0.8 * (T - tR), T);            // le second : debout
+  // (A10 bis) LA POSE TENUE VIT : entre lying et rise, un cycle fermé (0 → 1 → 0 : la pose de rise EST celle de lying) — la tête se pose et se relève, une main va au corps, la jambe du dessus plie ; la scène y fait des allers-retours tant que la sim tient le corps au sol (rondo-contact.contactClock)
+  const vie = (t) => (K.vie ?? 1) * bump(t, tL, (tL + tR) / 2, tR);
   const prone = kind === 'chuteAvant', side = kind === 'chuteCote', back = kind === 'chuteArriere';
   // le canal hanches : bas, et devant / à droite / derrière selon la chute ; le relevé passe par le genou (0,55 m) puis debout
   const hipsOf = (t) => {
@@ -113,33 +115,33 @@ function generateFall(kind, P, S) {
     return rx(p);
   };
   const poseAt = (t) => {
-    const s = st(t), f = fa(t), e = se(t), u1 = up1(t), u2 = up2(t), a = 0.72 * f + 0.28 * e;
+    const s = st(t), f = fa(t), e = se(t), u1 = up1(t), u2 = up2(t), a = 0.72 * f + 0.28 * e, wr = vie(t);
     const J = { Hips: hipsR(t) };
     legs(t, J, prone ? a * (1 - u1) : 0);                                              // la pointe suit le tibia à plat ventre seulement
     if (prone) {
       // le buste plonge au trébuchement, s'aligne sur le bassin couché (un peu cambré : la tête hors de la pelouse), se redresse au relevé
-      trunk(J, { lean: 26 * S.lean * s * (1 - f) + 6 * a * (1 - u1) - 22 * u1 * (1 - u2), headUp: K.headUp * a * (1 - u1) + 8 * u1 * (1 - u2), headDown: 12 * s * (1 - f) });
+      trunk(J, { lean: 26 * S.lean * s * (1 - f) + 6 * a * (1 - u1) - 22 * u1 * (1 - u2), headUp: K.headUp * a * (1 - u1) - 12 * wr + 8 * u1 * (1 - u2), headDown: 12 * s * (1 - f) });
       // les bras : en avant au trébuchement, tendus vers le sol à la chute, coudes qui plient à l'impact (les mains sous les épaules), puis l'appui du relevé
       const reach = 30 * s + 60 * f, elbow = 12 + 8 * s + 64 * e * (1 - u1) + 20 * u1 * (1 - u2);   // les coudes plient à l'impact (les avant-bras se posent) : les mains restent au-dessus du plan du sol
       const elev = 24 * s * (1 - f) + 14 * f;
       const fwdR = reach * (1 - 0.65 * u1) * (1 - 0.5 * u2);                          // les bras redescendent avec le relevé (mesuré en jeu : bras en l'air dans la flexion)
-      Object.assign(J, armJoints('Left', { elev, fwd: fwdR, elbow }), armJoints('Right', { elev, fwd: fwdR, elbow }));
+      Object.assign(J, armJoints('Left', { elev, fwd: fwdR, elbow }), armJoints('Right', { elev: elev + 10 * wr, fwd: fwdR - 30 * wr, elbow: elbow + 36 * wr }));   // la vie au sol : la main droite revient vers la tête
     } else if (side) {
-      trunk(J, { lean: 14 * S.lean * s * (1 - f) + 4 * a * (1 - u1) - 16 * u1 * (1 - u2), side: -14 * a * (1 - u1), headUp: 10 * a * (1 - u1) });
+      trunk(J, { lean: 14 * S.lean * s * (1 - f) + 4 * a * (1 - u1) - 16 * u1 * (1 - u2), side: -14 * a * (1 - u1), headUp: 10 * a * (1 - u1) + 8 * wr });
       // le bras droit amortit sous le corps (coude puis main), la main gauche vient devant au sol ; les deux poussent au relevé
-      Object.assign(J, armJoints('Left', { elev: 22 * s + 30 * f * (1 - u2), fwd: 30 * s + 60 * f * (1 - 0.5 * u2), elbow: 12 + 30 * e * (1 - u1) }),
+      Object.assign(J, armJoints('Left', { elev: 22 * s + 30 * f * (1 - u2), fwd: 30 * s + 60 * f * (1 - 0.5 * u2) - 34 * wr, elbow: 12 + 30 * e * (1 - u1) + 40 * wr }),   // la vie au sol : la main du dessus va à la hanche
         armJoints('Right', { elev: 18 * s * (1 - f) + 12 * f, fwd: 20 * s + 40 * f * (1 - u2), elbow: 12 + 70 * a * (1 - u1) }));
     } else {
       // tiré en arrière : le buste part derrière, les mains cherchent le sol dans le dos ; au relevé il roule et se redresse
-      trunk(J, { lean: -8 * s - 6 * a * (1 - u1) - 18 * u1 * (1 - u2), headDown: 10 * a * (1 - u1) });
+      trunk(J, { lean: -8 * s - 6 * a * (1 - u1) - 18 * u1 * (1 - u2), headDown: 10 * a * (1 - u1) - 10 * wr });
       Object.assign(J, armJoints('Left', { elev: 30 * s + 40 * f * (1 - u1), fwd: -(20 * s + 52 * f) * (1 - u1), elbow: 10 + 30 * e * (1 - u1) }),
-        armJoints('Right', { elev: 30 * s + 40 * f * (1 - u1), fwd: -(20 * s + 52 * f) * (1 - u1), elbow: 10 + 30 * e * (1 - u1) }));
+        armJoints('Right', { elev: 30 * s + 40 * f * (1 - u1), fwd: -(20 * s + 52 * f) * (1 - u1) + 70 * wr, elbow: 10 + 30 * e * (1 - u1) + 50 * wr }));   // la vie au sol : la main droite vient au visage
     }
     return { J, hips: hipsOf(t) };
   };
   // les jambes : un appui de trébuchement, puis des cibles PORTÉES par la hanche de l'instant (couchées), puis la flexion et le debout
   const legTargets = (t) => {
-    const s = st(t), f = fa(t), e = se(t), u1 = up1(t), u2 = up2(t);
+    const s = st(t), f = fa(t), e = se(t), u1 = up1(t), u2 = up2(t), wr = vie(t);
     const Rh = hipsR(t), H = hipsOf(t);
     const hipL = hipJoint(P, 'Left', Rh, H), hipR = hipJoint(P, 'Right', Rh, H);
     // le trébuchement : le pied gauche part devant, le droit reste
@@ -147,7 +149,7 @@ function generateFall(kind, P, S) {
     let poleL = [0, 0, -1], poleR = [0, 0, -1];
     if (prone) {
       // couché à plat ventre : les jambes prolongent le corps derrière, presque tendues, le genou plie vers le HAUT (talon qui monte)
-      const lyL = [hipL[0] + 0.02, ground + 0.15, hipL[2] + 0.71], lyR = [hipR[0] - 0.02, ground + 0.15, hipR[2] + 0.72];   // presque tendues, le genou posé
+      const lyL = [hipL[0] + 0.02 + 0.04 * wr, ground + 0.15 + 0.28 * wr, hipL[2] + 0.71 - 0.20 * wr], lyR = [hipR[0] - 0.02, ground + 0.15, hipR[2] + 0.72];   // presque tendues, le genou posé ; la gauche plie (talon qui monte) pendant la vie au sol
       pL = v3(pL, lyL, f); pR = v3(pR, lyR, f);
       // le pôle tourne avec la jambe : couché (pied derrière-bas) le genou plie vers le HAUT ; en flexion (pied dessous) vers l'AVANT —
       // un pôle fixe devant-haut était ANTI-parallèle à hanche→pied une fois couché (composante ⟂ nulle : la vrille sautait de 180°)
@@ -171,7 +173,7 @@ function generateFall(kind, P, S) {
     } else if (side) {
       // couché sur le côté droit : le corps s'allonge vers −x (tête à droite, pieds à gauche) — la jambe de dessous (droite) presque
       // tendue dans l'axe, celle de dessus (gauche) repliée devant ; les genoux plient vers l'avant
-      const lyR = [hipR[0] - 0.64, ground + 0.12, hipR[2] + 0.06], lyL = [hipL[0] - 0.40, ground + 0.24, hipL[2] - 0.22];
+      const lyR = [hipR[0] - 0.64, ground + 0.12, hipR[2] + 0.06], lyL = [hipL[0] - 0.40 + 0.10 * wr, ground + 0.24 + 0.04 * wr, hipL[2] - 0.22 - 0.10 * wr];   // la jambe du dessus se replie pendant la vie au sol
       pL = v3(pL, lyL, f); pR = v3(pR, lyR, f);
       poleL = v3([0.2, 0, -1], [0, 0, -1], u1); poleR = v3([0.2, 0.2, -1], [0, 0, -1], u1);
       const plantL = [hipL[0] - 0.04, ground + 0.10, hipL[2] - 0.10], plantR = [hipR[0] + 0.04, ground + 0.10, hipR[2] - 0.06];
@@ -179,7 +181,7 @@ function generateFall(kind, P, S) {
       pL = v3(pL, restL, u2); pR = v3(pR, restR, u2);
     } else {
       // assis puis sur le dos : les jambes devant, genoux pliés vers le haut, les pieds au sol
-      const lyL = [hipL[0] - 0.02, ground + 0.12, hipL[2] - 0.52], lyR = [hipR[0] + 0.02, ground + 0.12, hipR[2] - 0.55];
+      const lyL = [hipL[0] - 0.02, ground + 0.12, hipL[2] - 0.52 + 0.12 * wr], lyR = [hipR[0] + 0.02, ground + 0.12, hipR[2] - 0.55];   // le genou gauche remonte pendant la vie au sol
       pL = v3(pL, lyL, f); pR = v3(pR, lyR, f);
       poleL = v3([0, 1, -0.3], [0, 0, -1], u1); poleR = v3([0, 1, -0.3], [0, 0, -1], u1);
       const plantL = [hipL[0] - 0.04, ground + 0.10, hipL[2] - 0.12], plantR = [hipR[0] + 0.02, ground + 0.10, hipR[2] - 0.08];
@@ -324,6 +326,12 @@ export function checkContactGen(spec, P, kind) {
     // le genou du relevé : entre la pose couchée et le debout, le bassin passe par une hauteur intermédiaire (un genou au sol), il ne « saute » pas debout
     const mid = p.series.filter((s) => s.t > spec.rise && s.t < spec.duration - 0.1).map((s) => s.pelvis[1]);
     if (!(mid.some((y) => y > ground + 0.30 && y < hipsY - 0.30))) issues.push(`${kind} : le relevé saute debout sans passer par la flexion`);
+    // (A10 bis) la pose tenue VIT : à mi-tenue une main ou un pied a bougé (≥ 8 cm), et le cycle se FERME (la pose de rise est celle de lying à 2 cm : la scène y fait des allers-retours, puis repart de là au relevé)
+    const pick = (t) => p.series.reduce((b, s) => Math.abs(s.t - t) < Math.abs(b.t - t) ? s : b, p.series[0]);
+    const gap = (a, b) => Math.max(...['head', 'lh', 'rh', 'lf', 'rf', 'pelvis'].map((k) => len(sub(a[k], b[k]))));
+    const Lp = pick(spec.lying), Rp = pick(spec.rise), Mp = pick((spec.lying + spec.rise) / 2);
+    if (!(gap(Lp, Mp) > 0.08)) issues.push(`${kind} : la pose tenue est FIGÉE (${(100 * gap(Lp, Mp)).toFixed(0)} cm de mouvement à mi-tenue, attendu ≥ 8)`);
+    if (!(gap(Lp, Rp) < 0.02)) issues.push(`${kind} : le cycle de la pose tenue ne se ferme pas (${(100 * gap(Lp, Rp)).toFixed(0)} cm entre lying et rise)`);
   }
   if (kind === 'trebuche') {
     const C = p.atC, dip = p.start.pelvis[1] - C.pelvis[1];

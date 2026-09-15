@@ -207,8 +207,9 @@ export function slideResolve(st, cfg) {
 export function chuter(st, c, foe, cfg, cause, fallback) {
   const C = st.full && cfg.contact;
   if (!C) { if (fallback != null) c.down = Math.max(c.down, fallback); return; }
-  c.down = Math.max(c.down, C.chute ?? 1.6);
-  const vSpd = hyp(c.v[0], c.v[1]);
+  const vSpd = hyp(c.v[0], c.v[1]), SOL = st.full && cfg.sol;   // (A10 bis, cfg.sol) LE SOL : le fauché reste à terre chute + tenue × (0,7 + 0,6 × v/6) s — la chute prend 0,66 s, le relevé 0,7 : à 1,6 il ne TENAIT que 0,2 s au sol ; il LÂCHE le ballon (phase loose, plus de porteur couché — mesuré en page : un fauché frappait 0,5 s après sa chute, down 1,03) et son armé meurt
+  c.down = Math.max(c.down, (C.chute ?? 1.6) + (SOL ? (SOL.tenue ?? 0.9) * (0.7 + 0.6 * Math.min(1, vSpd / 6)) : 0));
+  if (SOL) { if (st.possession.carrier === c.id) { st.phase = 'loose'; st.pass = null; st.possession.carrier = -1; st.hold = 0; st.pressure = 0; } if (st.ball.owner === c.id) st.ball.release('perte'); if (c.act && winding(c)) abortGesture(c, 'au-sol', { log: st.gestures }); c.intent = null; }
   const fx = vSpd > 0.5 ? c.v[0] / vSpd : Math.cos(c.yaw), fz = vSpd > 0.5 ? c.v[1] / vSpd : Math.sin(c.yaw);
   const dx = foe ? foe.p[0] - c.p[0] : -fx, dz = foe ? foe.p[2] - c.p[2] : -fz, d = hyp(dx, dz) || 1;
   const along = (dx * fx + dz * fz) / d, lat = (-dx * fz + dz * fx) / d;            // le coup vient de devant (+) / derrière (−) ; lat + : de la DROITE

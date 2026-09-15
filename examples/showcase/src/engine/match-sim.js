@@ -151,7 +151,7 @@ function assignMatchJobs(st, cfg) {
       }
       // …MAIS D'ABORD ON CÉLÈBRE (lot 116) : le buteur file au coin, les proches le rejoignent (st._celeb, referee)
       if (st._celeb && st.t >= st._celeb.until) st._celeb = null;
-      if (st._celeb && p.id === st._celeb.by) { p.job = 'walk'; p.target = [st._celeb.corner[0], 0, st._celeb.corner[1]]; continue; }
+      if (st._celeb && p.id === st._celeb.by) { p.job = 'walk'; p.target = [st._celeb.corner[0], 0, st._celeb.corner[1]]; const G = st._celeb.geste, F = cfg.fete; if (G === 'calme') p._walkF = F?.marche ?? 0.75; else if (G === 'glissade' && st._celeb.glisseAt != null && st.t >= st._celeb.glisseAt) { st._celeb.glisseAt = null; if (p.speed > 2.5 && p.down <= 0) { p.down = F?.glisse ?? 1.9; p._glisse = { v: [p.v[0] * (F?.portee ?? 1.3), p.v[1] * (F?.portee ?? 1.3)] }; st.events.push({ t: +st.t.toFixed(2), type: 'glissade', by: p.id }); } } continue; }   // (A11, cfg.fete) la glissade sur les genoux : lancée après la course d'élan, le corps porté par _glisse et tenu au sol (down) ; le calme marche
       if (st._celeb && st._celeb.avec.includes(p.id)) { const bC = st.players[st._celeb.by]; p.job = 'walk'; p.target = [bC.p[0], 0, bC.p[2]]; continue; }
       // LOI 16, LE CORPS (193, cfg.loi16 — patron 160b) : l'adverse du RENVOI sort par le bord le plus court — sans lui, canTake ne voyait jamais la surface vide.
       if (st.full && cfg.loi16 && r.type === 'sortie-de-but' && p.team !== r.team && !p.keeper && pitch.inBox(p.p[0], p.p[2], Math.sign(r.p[0] || 1))) {

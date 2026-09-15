@@ -56,3 +56,23 @@ Un joueur sans `persona` ni `style` est exactement celui d'hier, bit pour bit (c
   et comment le port de bras les module.
 - Planches : `node skills/threejs-aaa/scripts/contact-sheet.mjs --idle reception --seed N` (l'attente au style de la
   graine N), `--gait 2 0` (la foulée), `--move frappe --seed N` (la frappe).
+
+## La fête selon la persona (lot A11, `cfg.fete`)
+
+Le buteur célèbre selon sa persona — le moteur choisit le geste (referee.js) et l'événement `celebration` le porte
+(`geste`), la scène l'habille (motion-emotion). Un projet aval qui pose `squads[team][i].persona` choisit donc aussi la
+joie de ses joueurs :
+
+| persona | geste | ce qu'on voit |
+|---|---|---|
+| `flair ≥ 0.7` | `glissade` | la course d'élan (1,4 s), puis la glissade sur les genoux, bras ouverts qui montent en V (événement `glissade`) |
+| `calm ≥ 1.15` | `calme` | il marche, les mains levées paumes devant, la tête basse |
+| `flair ≥ 0.45` et `calm ≥ 1.02` | `oreille` | il court au coin, s'arrête face à la tribune, la main en cornet à l'oreille |
+| `burstiness ≥ 1.05` | `poing` | le poing pompé deux fois devant l'épaule, en courant |
+| sinon | `brasLeves` | les bras au ciel en V, en courant |
+
+Les seuils sont les clés de `cfg.fete` (`flairGlisse`, `calme`, `flairOreille`, `poing`). Les compagnons (`avec`)
+rejoignent le buteur et l'ACCOLADE se joue au contact ; l'équipe qui a encaissé marche tête basse, les mains sur les
+hanches ; sur une faute, le fautif dont `calm < 1.08` proteste (les avant-bras ouverts, la tête qui dit non), le carton
+fait protester tout le monde. `persona.bras` porte aussi l'élévation des bras de tous les gestes générés
+(`armElev × (0,8 + 0,35 × bras)`). `fete: null` : la célébration d'hier (bras levés, sans geste nommé).

@@ -16,6 +16,7 @@ import { styleFromSeed } from '../assets/starter/src/engine/motion-strike.js';
 import { checkClip, resolveTracks, MOVES } from '../assets/starter/src/engine/animkit.js';
 import { MOVE_TIMING } from '../assets/starter/src/engine/skills-sim.js';
 import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
+import { contactClock, VIE } from '../../../examples/showcase/src/scenes/rondo-contact.js';   // (A10 bis) l'horloge de la vie au sol est pure : prouvable ici
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
@@ -62,6 +63,35 @@ for (const kind of CONTACT_NAMES) {
   ok(pp.atH.lh[2] < pp.atH.pelvis[2] && pp.atH.rh[2] > pp.atH.pelvis[2] + 0.1, `le bouclier : la main droite derrière (${cm(pp.atH.rh[2] - pp.atH.pelvis[2])} cm), la gauche devant — le corps entre le ballon et l'adversaire`);
 }
 
+// ---- 3 bis. (A10 bis) LA POSE TENUE VIT, et l'horloge de la scène la fait vivre à l'heure de la sim
+{
+  for (const kind of ['chuteAvant', 'chuteCote', 'chuteArriere']) {
+    const spec = specs[kind], p = contactPortrait(spec, P);
+    const pick = (t) => p.series.reduce((b, s) => Math.abs(s.t - t) < Math.abs(b.t - t) ? s : b, p.series[0]);
+    const gap = (a, b) => Math.max(...['head', 'lh', 'rh', 'lf', 'rf', 'pelvis'].map((k) => Math.hypot(a[k][0] - b[k][0], a[k][1] - b[k][1], a[k][2] - b[k][2])));
+    const L = pick(spec.lying), R = pick(spec.rise), M = pick((spec.lying + spec.rise) / 2);
+    ok(gap(L, M) > 0.08 && gap(L, R) < 0.02, `${kind} : la pose tenue vit (à mi-tenue ${cm(gap(L, M))} cm de mouvement) et le cycle se ferme (rise = lying à ${cm(gap(L, R))} cm)`);
+  }
+  // l'horloge : tant que la sim a plus de temps à terre que le clip n'en demande, va-et-vient dans [lying, rise[ ; puis elle avance et finit DEBOUT quand la sim relève, sans saut de pose (≤ 2,5 images par image)
+  const spec = specs.chuteAvant, T = spec.duration, dt = 1 / 60;
+  const horloge = (downTotal) => {
+    const pl = { gestureLayer: { spec }, sim: { down: downTotal } }, meta = { t0: 0, offset: 0 };
+    let now = 0, prev = 0, prevD = 0, maxJump = 0, minT = Infinity, maxT = -Infinity, turns = 0, tEnd = null, downAtRise = null;
+    for (let i = 0; i < 300; i++) {
+      now += dt; pl.sim.down = downTotal - now;
+      const tl = now - meta.t0 + meta.offset, t = contactClock(pl, meta, tl, dt, now) ?? tl;
+      if (i) { maxJump = Math.max(maxJump, Math.abs(t - prev)); const d = Math.sign(t - prev); if (d && prevD && d !== prevD) turns++; if (d) prevD = d; }
+      if (pl.sim.down > 0 && t >= spec.lying - 1e-9 && downAtRise == null) { if (t >= spec.rise) downAtRise = pl.sim.down; else { minT = Math.min(minT, t); maxT = Math.max(maxT, t); } }
+      if (pl.sim.down <= 0 && tEnd == null) tEnd = t;
+      prev = t;
+    }
+    return { maxJump, minT, maxT, turns, tEnd, downAtRise };
+  };
+  const a = horloge(2.6), b = horloge(1.6);
+  ok(a.turns >= 1 && a.minT >= spec.lying - 1e-9 && a.maxT < spec.rise && Math.abs(a.downAtRise - (T - spec.rise)) <= 3 * dt && a.maxJump <= 2.5 * dt + 1e-9 && Math.abs(a.tEnd - T) < 0.05, `down 2,6 s : la tenue fait ${a.turns} demi-tour(s) dans [${spec.lying}, ${spec.rise}[ (${a.minT.toFixed(2)}-${a.maxT.toFixed(2)}) à ×${VIE}, le relevé part quand il reste ${a.downAtRise?.toFixed(2)} s de sim (le clip en demande ${(T - spec.rise).toFixed(2)}) et finit debout à l'heure sim (t ${a.tEnd?.toFixed(2)} pour ${T}) sans saut (max ${(a.maxJump / dt).toFixed(1)} image/image)`);
+  ok(b.maxJump <= 2.5 * dt + 1e-9 && Math.abs(b.tEnd - T) < 0.05 && b.turns === 0, `down 1,6 s (hier) : trop court pour la tenue — le clip avance plus vite (max ${(b.maxJump / dt).toFixed(1)} image/image) et finit quand même debout à l'heure sim (t ${b.tEnd?.toFixed(2)})`);
+}
+
 // ---- 4. le registre
 ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING[k].contact - CONTACT_KINDS[k].contact) < 1e-6), `les six espèces sont des MOVES générés, contact ${CONTACT_NAMES.map((k) => MOVE_TIMING[k]?.contact).join(' / ')} s`);
 
@@ -99,10 +129,38 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
   const on = run({}), off = run({ contact: null });
   const kinds = [...new Set(on.chutes.map((e) => e.kind))];
   ok(on.chutes.length >= 3 && on.chutes.every((e) => ['avant', 'cote', 'arriere'].includes(e.kind) && e.by >= 0 && e.cause), `le fauté TOMBE, nommé : ${on.chutes.length} chutes sur 6 × 300 s (${kinds.join(', ')} ; causes ${[...new Set(on.chutes.map((e) => e.cause))].join(', ')}) pour ${on.fautes} fautes`);
-  ok(on.downs.length >= 3 && med(on.downs) >= 1.3 && Math.max(...on.downs) <= 2.6, `le fauché reste à terre p50 ${med(on.downs).toFixed(2)} s (≥ 1,3 : le temps de tomber, de tenir, de se relever ; cfg.contact.chute ${matchCfg().contact.chute})`);
+  ok(on.downs.length >= 3 && med(on.downs) >= 1.3 && Math.max(...on.downs) <= 3.2, `le fauché reste à terre p50 ${med(on.downs).toFixed(2)} s (≥ 1,3 : le temps de tomber, de tenir, de se relever ; cfg.contact.chute ${matchCfg().contact.chute})`);
   const pct = (o, k) => 100 * o[k] / (o.press || 1);
   ok(pct(on, 'face') >= pct(off, 'face') + 8 && pct(on, 'back') + pct(on, 'lat') >= 6 && pct(on, 'back') + pct(on, 'lat') >= 2 * (pct(off, 'back') + pct(off, 'lat')), `le presseur qui recule FAIT FACE au porteur : ${pct(on, 'face').toFixed(0)} % des images de presse à ≤ 4,5 m (sans la clé ${pct(off, 'face').toFixed(0)}) — course arrière ${pct(on, 'back').toFixed(0)} % + pas chassé ${pct(on, 'lat').toFixed(0)} % (sans : ${pct(off, 'back').toFixed(0)} + ${pct(off, 'lat').toFixed(0)}) : les régimes du lot A7 vivent`);
   ok(off.chutes.length === 0 && off.downs.length === 0, `la clé absente rend l'hier : contact:null → ${off.chutes.length} chute nommée, ${off.fautes} fautes, les couchés d'hier (${off.tripDowns.length}) sans nom`);
+}
+
+// ---- 5 bis. (A10 bis) LA SIM SOUS cfg.sol : le fauché reste à terre plus longtemps, n'agit plus couché, et personne ne marche dans son corps
+{
+  const run = (over) => {
+    const out = { downs: [], actes: 0, framesSol: 0, framesCorps: 0 };
+    for (const seed of [7, 3, 1, 5, 2, 4]) {
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ familiarite: null, ...over });
+      const downAt = {}, prevAct = {};
+      for (let i = 0; i < 300 * 60; i++) {
+        matchStep(st, 1 / 60, cfg);
+        for (const p of st.players) {
+          const sol = p.down > 0 && p.down < 100 && !p.expulse && !p._sub && !p.keeper;
+          if (sol) { if (downAt[p.id] == null) downAt[p.id] = st.t; out.framesSol++;
+            if (p.act && prevAct[p.id] !== p.act && !p._chuteActAt) { out.actes++; }
+            if (st.players.some((q) => q !== p && q.down <= 0 && Math.hypot(q.p[0] - p.p[0], q.p[2] - p.p[2]) < 0.6)) out.framesCorps++; }
+          else if (downAt[p.id] != null) { if (p._chute && st.t - p._chute.t < 6) out.downs.push(st.t - downAt[p.id]); downAt[p.id] = null; }
+          prevAct[p.id] = p.act;
+        }
+      }
+    }
+    return out;
+  };
+  const med = (a) => { const b = [...a].sort((x, y) => x - y); return b.length ? b[b.length >> 1] : 0; };
+  const on = run({}), off = run({ sol: null });
+  ok(on.downs.length >= 3 && med(on.downs) >= 2.0 && med(off.downs) < 2.0, `le fauché reste à terre p50 ${med(on.downs).toFixed(2)} s sous cfg.sol (sans la clé ${med(off.downs).toFixed(2)} : la chute 0,66 + le relevé 0,7 ne laissaient que 0,2 s de tenue)`);
+  ok(on.actes === 0, `aucun acte de la sim sur un corps couché sous cfg.sol (${on.actes} ; sans la clé ${off.actes} — mesuré en page : une frappe 0,5 s après la chute)`);
+  ok(on.framesCorps / Math.max(1, on.framesSol) <= 0.03 && on.framesCorps / Math.max(1, on.framesSol) < off.framesCorps / Math.max(1, off.framesSol), `personne ne marche dans un corps couché : ${(100 * on.framesCorps / Math.max(1, on.framesSol)).toFixed(1)} % des images au sol avec un debout à < 0,6 m (sans la clé ${(100 * off.framesCorps / Math.max(1, off.framesSol)).toFixed(1)} %)`);
 }
 
 // ---- 6. les sabotages nommés (par la substitution des paramètres d'espèce)
@@ -118,6 +176,7 @@ const sab = (label, kind, mutate, want) => {
 sab('chute qui ne se couche pas (dip 0,3)', 'chuteAvant', () => ({ dip: 0.3 }), /ne se couche pas/);
 sab('chute sans direction (fwd 0)', 'chuteAvant', () => ({ fwd: 0.02 }), /direction de la chute/);
 sab('chute qui s\'enfonce dans la pelouse (pitch −96)', 'chuteAvant', () => ({ pitch: -96 }), /sous la pelouse/);
+sab('pose tenue figée (vie 0)', 'chuteAvant', () => ({ vie: 0 }), /FIGÉE/);
 sab('trébuchement qui ne plonge pas (pitch 4)', 'trebuche', () => ({ pitch: 4 }), /ne plonge pas/);
 sab('épaule qui ne sort pas (shift 0, drop 0, roll 0)', 'epaule', () => ({ shift: 0, drop: 0, roll: 0 }), /ne sort pas|ne descend pas/);
 sab('bouclier bras ballant (elev 5, back 0)', 'protection', () => ({ elev: 5, back: 0 }), /tendu|tourne/);
