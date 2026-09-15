@@ -12068,7 +12068,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      trois clés nulles à des empreintes DATÉES 14/09 du monde 3d72ea4 — regelé sur le monde
      fusionné 662a444, « hier » y est désormais le 276 ; son garde-fou des passes, remangé par la
      combinaison (320 c. 248), mesure sous enveloppe et blocPercu nuls), loi12 12/2 hérité ; le
-     reste vert. Bloc 1 seul : 0,45 ms/step (≤ 1,6).
+     reste vert. Bloc 1 seul : 0,45 ms/step (≤ 1,6). Sceau : fusion 662a444 puis 8cd6dbd (le banc),
+     poussés ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk Rondo-DFTZPNMq).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
