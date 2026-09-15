@@ -11875,6 +11875,54 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la planche attente-signal-apres.png montre le bras levé. Référence 58.
      Reste du lot A12 : les captures d'identification « sans les noms ».
 
+- 358: LES DETTES REPRISES (« tu veux pas prendre les dettes toi ? ») — trois
+     lois sous clé, allumées par défaut, chacune null = le monde 3d72ea4 au
+     bit (jumeau aa66bb8b3ad05c2f / 39612df7d7863c75 / 33c9f358530995f1,
+     3 × 240 s ; datées 60 s dans verify-signes). cfg.pausaPied : la pausa
+     se décidait pendant la conduite, ballon poussé libre à 0,9 m, le corps
+     freinait, le ballon roulait à 1,6-2 m (4 tenues à l'arrêt sur 11) — à
+     la décision le ballon à portée (< 1,6 m) est BLOQUÉ (possédé, posé
+     0,3 s, événement control arret-semelle), pendant la pausa il est PORTÉ
+     jamais poussé (rondo-sim), s'il a filé et s'est calmé le porteur va le
+     poser sous la semelle ; après : 7 pausas, ballon ≤ 0,36 m à chacune,
+     3 à l'arrêt. cfg.recevoirSurPlace : passe au sol qui vient encore
+     (≥ 2,5 m/s), mène à < 0,6 m, non déviée, personne à < 4 m → le
+     receveur attend (meetBall se tait ; mourante, retombée, fuite,
+     menace gardent la main) ; A/B 12 × 300 s : vols avec attente 14 c.
+     10 %, images sous 0,6 m/s 5,4 c. 3,1 %, passes 599 c. 672 (−11 %),
+     pertes 163 c. 173, tirs 25 c. 27 ; jeté : marge 1,0 et cloches
+     (passes −17 %, pertes +11 %). cfg.pasDeRecul : la première écriture
+     (corps de boîte, appel ≥ 0,85) ne se déclenchait jamais (76 passages,
+     0 fort appel : le renard est le RECEVEUR du centre) → loi sur le
+     receveur du centre (match-sim) : marqué à < 1,6 m au départ du vol,
+     il recule de 0,8 m à l'opposé pendant 0,7 s puis attaque la chute ;
+     fixture 0,82 m ; flux 8 centres / 4 images (rare, vivant) ; la version
+     boxCrash gardée pour les corps de boîte à rôle. match11 ?roles=grille
+     pose la grille du 244c. Relecture des épingles : verify-contact sans
+     ligne:null 25/0 (retirée) mais recevoirSurPlace remange sa clause du
+     presseur (face 69 c. 65) → épinglée DATÉ 15/09 ; verify-porte sans
+     épingles 2/2 rouges (22 refus sans la clé sous la ligne, 9 avec : la
+     loi tient, les seuils sont d'hier) → gardées ; verify-remises sans
+     épingles 6 rouges (l'élan sous le profil locomoteur : départs 1,9-4,1
+     m, arrivée 2,4-3,1 m/s) → gardées, A9 bis à relire dans le monde 260,
+     dette nommée. Banc verify-signes (dans bancs.mjs) : (a) pausa au pied
+     12 × 366 s avec/sans, (b) attente avec/sans + garde-fou, (c) fixture
+     du recul, (d) jumeau daté. BANC COMPLET (bancs.mjs, 8 shards + annexes) :
+     678 ✓ / 23 ✗ au premier passage, les clés allumées ; la même suite à
+     clés nulles (le monde du tronc) 694 ✓ / 7 ✗ dont 246d et la gradation
+     152/158 hérités, sync et signes attendus — donc 21 clauses REMANGÉES par
+     les clés (receveur vivant, course qui traverse, ballon devant le
+     coureur, flux tirs, lancé au but, contrat à 22, renversement,
+     interligne, la fête, démission, contres, foulée de frappe, allure,
+     roulette, marqueur en surface, passation, pique, identification 249,
+     lanceur derrière la ligne et face) → épinglées PAR CONTENU « pausaPied
+     / recevoirSurPlace / pasDeRecul: null DATÉ 15/09 » sur le cfg de
+     chaque clause ; relance : 699 ✓ / 2 ✗ (246d hérité ; la roulette 117,
+     épingle posée sur le mauvais cfg, déplacée sur fluxR et relue au shard
+     7). Sondé au passage : les bascules (Δz > 25 m) 7 c. 10 c. 8 sur 6 ×
+     300 s — le renversement à 0 du bloc 98 est une lame de couteau du
+     monde, pas une loi tuée. Référence 58.
+
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

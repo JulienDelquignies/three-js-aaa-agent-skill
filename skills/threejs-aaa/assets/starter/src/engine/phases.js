@@ -268,8 +268,12 @@ export function boxCrashStep(st, cfg, { busy, tac, axe, role, d2 }) {
               }
             }
           }
-          const px = offL ? offL.sgn * Math.min(P[k][0] * offL.sgn, offL.adv - 0.15) : P[k][0];
-          q.target = [px, 0, P[k][1]];
+          let px = offL ? offL.sgn * Math.min(P[k][0] * offL.sgn, offL.adv - 0.15) : P[k][0], pz = P[k][1];
+          // LE PAS DE RECUL DU RENARD (dette A12f, cfg.pasDeRecul — Lewandowski, §3.8 : « un micro-pas de recul au moment du centre ») : au départ du
+          // vol (fenetre s), le corps de boîte qui vit de ses courses (rôle appel ≥ 0,6 : le 9, le renard, l'ailier intérieur — le polyvalent 0,5 reste au poste) marqué à < marque m se décale de d m à l'OPPOSÉ de son marqueur — la
+          // séparation avant le ballon, dans l'angle mort. Clé absente : le poste d'hier au bit.
+          const RC = vol && cfg.pasDeRecul; if (RC && st.t - st.pass.t < (RC.fenetre ?? 0.7) && (role(q).appel ?? 0.5) >= (RC.appel ?? 0.6)) { let m = null, md = RC.marque ?? 1.6; for (const o of st.players) { if (o.team === atk || o.keeper || o.down > 0) continue; const dd = hyp(o.p[0] - q.p[0], o.p[2] - q.p[2]); if (dd < md) { md = dd; m = o; } } if (m) { const ux = q.p[0] - m.p[0], uz = q.p[2] - m.p[2], ul = hyp(ux, uz) || 1; px += (ux / ul) * (RC.d ?? 0.8); pz += (uz / ul) * (RC.d ?? 0.8); st._reculN = (st._reculN ?? 0) + 1; } }
+          q.target = [px, 0, pz];
         }
       }
     }

@@ -185,6 +185,12 @@
   rôle à ancrage ≥ 0,8 ou repli ≥ 0,9) et LES PETITS GESTES SIGNÉS (le bras levé du tireur de corner pendant la course
   d'élan, la passe sans regarder du technicien pressé) ; verify-attente 52/0, verify-foulee 54/0, verify-gaze 25/0. Le
   showcase ne pose ni rôle ni attribut : ces signes vivent dans le projet aval.
+- LIVRÉ (les dettes reprises, note 358) : trois lois sous clé, null = le 14/09 au bit — cfg.pausaPied (la semelle
+  bloque le ballon à la décision, le ballon porté pendant la pausa : 7 pausas sur 7 avec le ballon au pied, hier 4 sur
+  11 à 1,6-2 m), cfg.recevoirSurPlace (passe dans les pieds sans presseur → il attend : vols avec attente 14 c. 10 %,
+  passes −11 %, pertes −6 %), cfg.pasDeRecul (le receveur du centre marqué de près recule de 0,8 m au départ du vol) ;
+  match11 ?roles=grille ; épingles relues (contact retirée, porte et remises gardées : A9 bis à relire dans le monde
+  260). verify-signes dans bancs.mjs.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 bis) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   deux corps qui ne se traversent plus au sol, le relevé aidé ; (A11) L'ÉMOTION ET L'ARBITRAGE — célébrations par persona, protestation, sifflet

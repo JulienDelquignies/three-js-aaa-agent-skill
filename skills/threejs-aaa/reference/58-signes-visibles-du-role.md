@@ -173,6 +173,59 @@ dans le projet aval qui pose les rôles ; la capture `a12e-marcheur.png` injecte
 - **Le pas de recul du renard** (Lewandowski, §3.8 : « un micro-pas de recul au moment du centre ») : une DÉCISION de
   course (un déplacement de 0,8 m à l'instant du centre), pas une animation — au tronc, dette nommée.
 
+## Les dettes reprises (15/09) — trois lois sous clé, chacune null = le monde du 14/09 au bit
+
+Reprises à la demande de l'utilisateur (« tu veux pas prendre les dettes toi ? »). Méthode du tronc : sonde avant, loi
+native sous clé, sonde après, jumeau d'empreinte (clés à null = `aa66bb8b3ad05c2f / 39612df7d7863c75 /
+33c9f358530995f1` sur 3 graines × 240 s, le monde 3d72ea4 au bit), bande A/B 12 × 300 s, garde-fou anti-Goodhart
+(passes ± 15 %, pertes ≤ +15 %), clause au banc (`verify-signes.mjs`, dans `bancs.mjs`). Les trois clés sont ALLUMÉES
+par défaut : le match servi change.
+
+**`cfg.pausaPied` — la pausa au pied.** Sonde avant (12 × 366 s) : 11 pausas, 4 avec le porteur à l'arrêt et le ballon à
+1,6-2,0 m. Cause lue image par image (graine 12) : la pausa se décide pendant la CONDUITE — le ballon vient d'être
+poussé (libre, 3 m/s, 0,9 m devant) ; la tenue du 253 fige la cible sur soi, le corps freine, le ballon roule 2 m plus
+loin. Loi, trois temps : (1) à la décision, le ballon qui roule à portée (< bloque 1,6 m) est BLOQUÉ — possédé, posé
+0,3 s comme la ramasse du 107, événement `control arret-semelle` (la scène joue le clip de la semelle) ; (2) pendant
+toute la pausa le ballon est PORTÉ au pied, jamais poussé (`rondo-sim` : la branche du porté, sous la clé) ; (3) s'il
+avait déjà filé et s'est calmé (< lent 1,6 m/s, < rayon 3,5 m), le porteur va le poser sous la semelle (la reprise du
+porté, cap de vitesse). Sonde après : 7 pausas, le ballon à ≤ 0,36 m à chacune, 3 à l'arrêt complet. Le signe A12c
+(la semelle sur le ballon) est maintenant visible en match.
+
+**`cfg.recevoirSurPlace` — la réception sur place.** Sonde avant : 0 % des images de vol sous 0,6 m/s ; à la passe, le
+receveur court déjà (p50 3,2 m/s) et la mène est devant lui (p50 2,3 m) — seules 15 % des passes sont « dans les
+pieds sans presseur ». Loi : passe au sol qui vient encore (≥ vMin 2,5 m/s), mène à < marge 0,6 m du receveur, non
+déviée, aucun adversaire à < pression 4 m → il ATTEND (le pas au-devant de meetBall se tait ; la passe mourante, la
+retombée, la fuite, la menace gardent la main). A/B 12 × 300 s : vols avec un instant d'attente 14 % c. 10 %, images
+sous 0,6 m/s 5,4 c. 3,1 %, passes 599 c. 672 (−11 %), pertes 163 c. 173 (−6 %), tirs 25 c. 27, duels 65 c. 64.
+Essayé et jeté : marge 1,0 m avec les cloches (passes −17 %, pertes +11 %, duels +31 %) et marge 1,0 au sol (passes
+−13 %, pertes +11 %) — l'attente élargie coûte le tempo et des pertes ; la version étroite est celle qui reste sous le
+garde-fou. Effet modeste par construction : le moteur passe vers des coureurs.
+
+**`cfg.pasDeRecul` — le pas de recul du renard.** La première écriture (les corps de boîte du boxCrash, rôle appel ≥
+0,85) ne se déclenchait JAMAIS : sondé, 76 passages dans la branche des postes, 0 corps à fort appel — le renard est
+le RECEVEUR du centre, jamais un corps de boîte. Loi finale (match-sim, le receveur d'un centre) : au départ du vol
+(< fenetre 0,7 s), le receveur qui vit de ses courses (rôle appel ≥ 0,6 — le polyvalent 0,5 reste à la mène) marqué à
+< marque 1,6 m recule de d 0,8 m à l'opposé de son marqueur, puis attaque le point de chute. Fixture : cible à 0,82 m
+de la mène d'hier, plus loin du marqueur. Flux (6 × 300 s, renards au 9) : 8 centres, 4 images de recul — la loi vit,
+rarement (les centres sont rares et le renard peu marqué). La version boxCrash reste pour les corps de boîte à rôle.
+
+**Les rôles dans le showcase.** `match11.html?roles=grille` pose la grille des rôles du 244c (`rolesGrille`) sur les deux
+équipes — les signes A12e/f et les captures d'identification deviennent visibles dans la page ; sans le paramètre,
+le match servi ne change pas.
+
+**La relecture de mes épingles datées.** `verify-contact` sans `ligne: null` : 25/0 → épingle retirée ; en revanche la
+réception sur place remange sa clause du presseur (face 69 c. 65 %) → `recevoirSurPlace: null` DATÉ 15/09 dans cette
+clause. `verify-porte` sans épingles : 2/2 rouges — sous la ligne tenue (273) le monde a 22 refus au contact sans la
+clé (hier 63) et 9 avec : la loi tient (−59 %) mais les seuils sont ceux du monde de sa naissance → épingles gardées.
+`verify-remises` sans épingles : 6 rouges — sous le profil locomoteur (260) la course d'élan part à 1,9-4,1 m au lieu
+de 3,5, le corps arrive à 2,4-3,1 m/s, le bassin du lanceur à −0,10-0,57 m : A9 bis est à relire dans le monde 260,
+dette nommée, épingles gardées.
+
+**Le banc complet.** 678 ✓ / 23 ✗ les clés allumées ; 694 ✓ / 7 ✗ à clés nulles (le monde du tronc : 246d et la gradation
+152/158 hérités, le reste attendu) — 21 clauses remangées par les clés, épinglées par contenu (`pausaPied /
+recevoirSurPlace / pasDeRecul: null DATÉ 15/09`) sur le cfg de chaque clause, comme le tronc le fait à chaque loi qui
+déplace le monde ; relance 699 ✓ / 2 ✗ (246d hérité, la roulette 117 ré-épinglée sur son vrai cfg).
+
 ## À venir dans ce lot
 A12c la pausa (kind/événement du 253) ;
 une planche « sans les noms » par rôle du 249 (les captures d'identification).

@@ -19,7 +19,7 @@ import { BALL } from '../engine/ball.js';
 import { makeRondo, RONDO } from '../engine/rondo.js';
 import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
-import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js';
+import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
 import { aimChildAt } from '../engine/foot-lock.js';
@@ -149,7 +149,7 @@ export class Rondo {
     this._mcfg = this.fullMode ? matchCfg({ shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } })
       : this.matchMode ? matchCfg() : null;
     this.state = this.matchMode
-      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode })
+      ? makeMatch({ perTeam, seed: Number(q.get('seed')) || 7, full: this.fullMode, roles: q.get('roles') === 'grille' ? [rolesGrille(433), rolesGrille(433)] : null })   // ?roles=grille (dette A12) : la grille des rôles du 244c, pour voir les signes du rôle dans le showcase
       : makeRondo({ perTeam, seed: Number(q.get('seed')) || 7 });
     this.perTeam = perTeam;
 
