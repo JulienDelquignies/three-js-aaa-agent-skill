@@ -67,13 +67,14 @@ ultra adapté football, réutilisable sur d'autres projets. Chaque « ok continu
   `matchCfg({ shotRange: 20, ...over })`, hash des positions et événements.
 - Empreintes défaut : 262 (HEAD 8835e33) = `405d2e80b6d82e19 / 7ddbeaefea413442` (= 261 : la croyance a un jumeau exact) —
   RE-BASÉES au 263 par la copie `scripts/book/fingerprint-ov.mjs` : le défaut de fe85ce1 (= 262) relu = `8c7719e7be1fd95c /
-  d6e16464895402f4` (le jumeau du 263 : `cadence: null`) ; 263 (cadence dec 0,1, le nouveau défaut) = `e84a43c302ac93af / 5c36757dc8e7aa1e`. Défaut du 266 (= 267 : `selection: null`) : `877b1eda4f261e8f / 0936f0c76bfd0186`. Défaut du 267 (= 268 : `noyau: null`) : `fbab3fba2405194e / b1d6598a98b4a9f6`. Défaut du 268 (= 269 : `nature: null`) : `fbb13bba24097e30 / b1d3558a98b26d53`. Défaut du 269 (= 270 : `temps: null`) : `4071982537b5a01b / e2d2b37e3f49cea0`. Défaut du 270 (= 271 : `ballonFou: null`) : `4071982537b5a01b / 3ab2de16234fbc03`. Défaut du 271 (= 272 : `xg: null`) : `eca6a43f52c99a9a / 9e20c0fef269019a`. Défaut du 272 (= 273 : `ligne: null`) : `eca6a43f52c99a9a / 9e20c0fef269019a` (identique : la porte xG ne bouge pas 90 s de graines 3 et 7). Défaut du 273 (= 274 : `interligne: null`) : `24bf332026c99502 / 099069883dfa200d`. Défaut du 274 (= 275 : `blocPercu: null`) : `2cd66a81cf90545f / 5f4d7b0a110dd04d`.
+  d6e16464895402f4` (le jumeau du 263 : `cadence: null`) ; 263 (cadence dec 0,1, le nouveau défaut) = `e84a43c302ac93af / 5c36757dc8e7aa1e`. Défaut du 266 (= 267 : `selection: null`) : `877b1eda4f261e8f / 0936f0c76bfd0186`. Défaut du 267 (= 268 : `noyau: null`) : `fbab3fba2405194e / b1d6598a98b4a9f6`. Défaut du 268 (= 269 : `nature: null`) : `fbb13bba24097e30 / b1d3558a98b26d53`. Défaut du 269 (= 270 : `temps: null`) : `4071982537b5a01b / e2d2b37e3f49cea0`. Défaut du 270 (= 271 : `ballonFou: null`) : `4071982537b5a01b / 3ab2de16234fbc03`. Défaut du 271 (= 272 : `xg: null`) : `eca6a43f52c99a9a / 9e20c0fef269019a`. Défaut du 272 (= 273 : `ligne: null`) : `eca6a43f52c99a9a / 9e20c0fef269019a` (identique : la porte xG ne bouge pas 90 s de graines 3 et 7). Défaut du 273 (= 274 : `interligne: null`) : `24bf332026c99502 / 099069883dfa200d`. Défaut du 274 (= 275 : `blocPercu: null`) : `2cd66a81cf90545f / 5f4d7b0a110dd04d`. Défaut du 275 (= 276 : `enveloppe: null`) : `197e623b5bf4c255 / 62f928c9f83c7570`.
 
-## L'ordre après le 275 (PLAN_DOCTRINE, la carte du book)
+## L'ordre après le 276 (PLAN_DOCTRINE, la carte du book)
 
 Le 263 (cadence.js), le 264 (rng.js), le 265 (reception.js), le 266 (interception.js), le 267 (selection.js), le 268
-(noyau.js), le 269 (nature.js), le 270 (temps.js), le 271 (fou.js), le 272 (xg.js), le 273 (ligne.js), le 274 (interligne.js) et le
-275 (bloc-percu.js) sont scellés → le gardien à enveloppe continue et PSxG (Modèle 10 lot 4) → k_x à deux régimes et le
+(noyau.js), le 269 (nature.js), le 270 (temps.js), le 271 (fou.js), le 272 (xg.js), le 273 (ligne.js), le 274 (interligne.js), le
+275 (bloc-percu.js) et le 276 (enveloppe.js) sont scellés → le point visé (Modèle 10 §3.4 : le mélange à neuf modes, 36-38 % hors
+cadre, le côté ouvert par η — le tireur du moteur vise le poteau loin du gardien à ρ 3,9 m) → k_x à deux régimes et le
 coulissement par ligne (Bible 10 §3.4, lot 2) → le ballon qui sort ;
 dans la croyance : le test d'import (les décisions lisent la croyance), l'attention, la tromperie, la communication.
 Dettes nommées : les slots qui sautent (coulissement par ligne à gain k), les ruptures trop courtes (budget de

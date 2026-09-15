@@ -334,7 +334,7 @@ function assignMatchJobs(st, cfg) {
         libero: st.full && cfg.gkAuDevant?.soutien && cfg.libero ? { ...cfg.libero, soutien: cfg.gkAuDevant.soutien } : cfg.libero,   // le soutien de relance (190) voyage par gkAuDevant — un seul épinglage
         liberoGate: st.restart ? 0 : st.possession.team === gk.team ? 1 : hyp(st.ball.p[0] - pitch.ownGoal(gk.team).x, st.ball.p[2]) > (cfg.libero?.tient ?? 48) ? 0.6 : 0 };
     }
-    if (st.full && cfg.pasChasse && st.pass && st.pass.to === -2) K = { ...K, pasChasse: cfg.pasChasse };
+    if (st.full && cfg.pasChasse && st.pass && st.pass.to === -2) K = { ...K, pasChasse: cfg.pasChasse }; if (st.full && cfg.enveloppe) { if (st.pass && (st._envU ??= {})[gk.team]?.pass !== st.pass) st._envU[gk.team] = { pass: st.pass, u: tirage(st, 'intention', 40 + gk.team, st.rnd2 ?? st.rnd ?? (() => 0.5))() }; K = { ...K, enveloppe: { ...cfg.enveloppe, u: cfg.enveloppe.tirage === false ? null : (st._envU?.[gk.team]?.u ?? 0.5) }, gkSelf: gk, gkBall: [pitch.ownGoal(gk.team).x - st.ball.p[0], st.ball.p[2]] }; }   /* (276) L'ENVELOPPE CONTINUE : la décision du plongeon au budget temps (enveloppe.js) */
     // LE CÔNE DE SORTIE (lot 104, cfg.sortie1v1 && st.full) : K.cone + la couverture goal-side mesurée (keeper.js)
     if (st.full && cfg.sortie1v1) K = { ...K, cone: cfg.sortie1v1, oooF: gk.skill?.oooF ?? 1, couvertD: keeperCouvert(st.players, gk, pitch.ownGoal(gk.team), st.ball.p) };   // …oooF (163) : la note oneOnOnes fait les portes
     // LA SORTIE DANS LES PIEDS : un ballon AU SOL à portée de gants se RAMASSE — même « porté ».
@@ -368,7 +368,7 @@ function assignMatchJobs(st, cfg) {
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? hyp(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
-    const honneur = st.full && cfg.honneur !== false && dec.mode === 'battu' && dec.cross   // LE PLONGEON D'HONNEUR (132) : battu proche + cadré → le geste part ; false : le spectateur
+    if (dec.env && st.pass && st._envSeen !== st.pass) { st._envSeen = st.pass; const sh = st.players[st.pass.from]; st.events.push({ t: +st.t.toFixed(2), type: 'enveloppe', by: gk.id, mode: dec.env.mode, regime: dec.env.regime, tf: +dec.env.tf.toFixed(2), tDisp: +dec.env.tDisp.toFixed(2), R: +dec.env.R.toFixed(2), rho: +dec.env.rho.toFixed(2), pSave: +dec.env.pSave.toFixed(3), ...(dec.env.u != null ? { u: +dec.env.u.toFixed(3) } : {}) }); if (sh && sh.team !== gk.team) (st.psxg ??= [0, 0])[sh.team] += 1 - dec.env.pSave; }   /* (276) PSxG = 1 − p_save sur chaque tir cadré, journalisé, jamais tiré */ const honneur = st.full && cfg.honneur !== false && dec.mode === 'battu' && dec.cross   // LE PLONGEON D'HONNEUR (132) : battu proche + cadré → le geste part ; false : le spectateur
       && Math.abs(dec.cross.z - gk.p[2]) <= K.diveReach * (cfg.honneur?.portee ?? 1.7)
       && dec.cross.t <= (K.diveTime ?? 0.9);
     if ((dec.mode === 'dive' || honneur) && gk.down <= 0) {
@@ -395,7 +395,7 @@ function assignMatchJobs(st, cfg) {
       // le contrat du relevé (gk.rise) se stampe DÈS LE DÉPART (sans ça : 2 453°/s mesurés — le relevé joué pendant l'acte, puis le down claquait le corps au sol en une image).
       if (st.full && cfg.keeperRise !== false && espece !== 'plongeonPrise') { const R = keeperRise(gk.skill?.getupF ?? 1, true); gk.rise = { ground: R.ground, getup: R.getup }; }
       st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: gk.id, move: espece, foot: sideFoot, skill: 'plongeon', anticipation: move.contact, ...(par93 ? { mains: espece === 'plongeonUneMain' ? 1 : 2 } : {}) });
-      st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2), ...(honneur ? { honneur: true } : {}) });
+      st.events.push({ t: +st.t.toFixed(2), type: 'dive', by: gk.id, crossZ: +cross.z.toFixed(2), crossT: +cross.t.toFixed(2), ...(honneur ? { honneur: true } : {}) }); gk._battuEnv = dec.env && dec.env.mode === 'battu' ? st.t + move.duration + 0.5 : 0;   /* (276) battu à l'enveloppe : le plongeon d'honneur part, le gant ne résout pas — l'enveloppe est la portée, pas le warp */
       continue;
     }
     // 'battu' n'a pas de spot (l'état honnête) : le gardien se replace quand même sur sa loi
@@ -1136,7 +1136,7 @@ function riseDown(st, gk, cfg, resolved) {
 
 /** LE CONTACT DU PLONGEON — la géométrie du CONTACT décide : gants (≤ 1,1 m) → PRISE ;
  *  bout de gants (≤ 1,7) → CLAQUETTE ; sinon BATTU. Le gardien paie toujours (keeperDown). */
-function onDive(st, gk, cfg) {
+function onDive(st, gk, cfg) { if (st.full && cfg.enveloppe && (gk._battuEnv ?? 0) > st.t) return false;   /* (276) hors de l'enveloppe atteignable : aucune résolution du gant */
   // appelé CHAQUE IMAGE de la détente (rondo-sim, skillFollowStep) : renvoie true quand le gant a résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
   const d = hyp(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
   const y = st.ball.p[1] ?? 0;

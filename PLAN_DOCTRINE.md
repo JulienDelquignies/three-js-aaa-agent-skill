@@ -627,6 +627,14 @@ réponse du bloc (k_x accroché / plafond, k_y latéral). Mesuré 4 × 45 min : 
 émerge (onset des cibles 0,33 / 0,35 / 0,47 s ; avant 0,30 / 0,30 / 0,33 — les onze partaient au même tick), le décalage
 1er → dernier 1,0-1,2 s. Ce qu'il nomme : le presseur et le couvreur à la croyance (ils lisent l'état vrai), la fenêtre W à
 volume (3-7 renversements reçus par 2 × 45 min), la parole de ligne (§9), k_x à deux régimes (§3.4).
+**276 — LE GARDIEN À ENVELOPPE CONTINUE ET PSxG : SCELLÉ (354).** Le seuil dur d'envergure (diveReach, le gant warpé) ne décide
+plus : le budget temps se calcule (enveloppe.js, Modèle 10 §6.2-6.4 — t_f en forme close, t_disp, R(t) de vitesse nulle, l'ellipse
+non centrée, le régime réflexe sous 0,25 s, p_save en sigmoïde, le tirage unique optionnel, PSxG journalisé). Mesuré 8 × 45 min :
+arrêts / cadrés 77 → 55 % (dedans 74 → 47, dehors 96 → 92 — le contraste émerge, 45 pts pour 25 réels), buts 4,9 → 7,3 / match :
+l'envergure d'hier était physiquement impossible et la précision du tireur (le poteau loin du gardien, ρ 3,9 m p50) est nue. Ce
+qu'il nomme : LE POINT VISÉ (§3.4, le mélange à neuf modes, 36-38 % hors cadre — le prochain), ± 5 buts par saison (5 quater),
+β0 comme levier sous le tirage, l'occlusion Δt_occl à mesurer (le mur, les corps en écran), les 41-46 tirs / match depuis le 273
+(la ligne tenue concède plus d'entrées : 35 → 45).
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

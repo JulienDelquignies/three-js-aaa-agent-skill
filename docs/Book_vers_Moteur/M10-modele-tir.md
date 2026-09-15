@@ -41,9 +41,9 @@ conventions de comptage ; le recentrage tête / pied.
 | 1 cohérence xG / physique | RMS < 0,020 | **272** : le xG de Sumpter existe (xg.js, table à 0,0004 près) ; ΣxG 5,3 / match c. 5,1 buts AVANT, 5,0 c. 3,9 APRÈS (8 × 45 min) — la cohérence tient au global, la grille par cellule reste à mesurer |
 | 2 optimum puissance / placement | non monotone | partiel (258 : (v/vMax)^1,2 existe ; les vitesses restent fixes par geste) |
 | 3 anisotropie des manqués | ratio ≥ 1,1, ≈ 1,5 | **258** : σθ = 2 σψ existe ; mesuré 0-1 au-dessus / 12-14 à côté — les visées du moteur restent basses (lucarne 8 %) |
-| 4 xG / PSxG | distinguables | **272** : xG_dec porte la finition (±0,45 log-odds), xG_ref non ; PSxG attend le gardien (lot 4) |
-| 5 sensibilité au gardien | ≥ 3 pts sur R_dive | à mesurer (`diveReach`) |
-| 5 bis arrêt dedans / dehors | ≈ 60 / 85 / 69 | mesurable, **partiel** | **52 % / 100 % / 44 %** |
+| 4 xG / PSxG | distinguables | **272 / 276** : xG_dec porte la finition ; PSxG = 1 − p_save journalisé sur chaque tir cadré (enveloppe.js, événement 'enveloppe', st.psxg) — jamais tiré par défaut (tirage: false) |  |
+| 5 sensibilité au gardien | ≥ 3 pts sur R_dive | **276** : mesurable | R_dive à 1,4 → 1,9 : le levier existe (rMax × keeping) ; balayage 4 × 900 s : r0 1,3 / rMax 1,7 → 33 % d'arrêts, r0 1,5 / rMax 1,9 → 63 % — la sensibilité est là (≥ 3 pts) |
+| 5 bis arrêt dedans / dehors | ≈ 60 / 85 / 69 | **276** : le contraste émerge | **77 / 74 / 96 → 55 / 47 / 92 %** (8 × 45 min : total / dedans / dehors) — le régime réflexe et le budget temps font le gradient (45 pts pour 25 réels) ; le dedans trop bas : le tireur vise le poteau loin du gardien (ρ 3,9 m p50), le point visé § 3.4 est la dette |
 | 7 rebonds | 10 % des tirs, 9 % des buts | mesurable, **proche** | **6 % / 8 %** |
 | 8 latence VAR | > 0 | absent |
 | 9 non-oscillation SHOOT | < 0,5 / match | à instrumenter |
@@ -58,6 +58,6 @@ conventions de comptage ; le recentrage tête / pied.
    moins, 6 → 2,85 buts.
 2. **Le blocage** (cible 27,5 % ; le 258b — **SCELLÉ 332** : l'engagement à l'armé, la jambe qui s'allonge, le tireur dans le trafic, les issues §5.2 ; contrés 4-7 → 24 % à 8 × 45 min) : `contreTir` à 2 % — le corps entre le tireur et le but (Bible 03, 15).
 3. **Le xG en forme close et PSxG** (tests 1, 4 ; Modèle 06) — **SCELLÉ 350 (272, xg.js)** : la porte xG_dec > EV_cont + Θ_i, le noyau de Sumpter clampé, les corrections en log-odds, Ω, Θ_i, l'axe shotDoctrine, le xG sur chaque tir ; mesuré 8 × 45 min : xG moyen 0,16 → 0,14, buts / tirs 15,6 → 11 %, le volume (35 / match) et la surface (77 %) restent l'affaire du bloc. Reste : EV_cont sur le panier, PSxG (lot 4), le verrou 0,30 s, le test 9.
-4. **Le gardien à enveloppe continue** (tests 5, 5 ter ; Bible 02) : budget temps, R_dive, ± 5 buts par saison.
+4. **Le gardien à enveloppe continue** (tests 5, 5 ter ; Bible 02) — **SCELLÉ 354 (276, enveloppe.js)** : t_f en forme close, t_disp, R(t) de vitesse nulle (5 ter tenu : 0,025 m à 0,05 s), l'ellipse, le régime réflexe, p_save en sigmoïde et le tirage unique optionnel, PSxG journalisé ; le seuil dur d'envergure (diveReach) ne décide plus, le gant hors enveloppe ne résout pas. Mesuré 8 × 45 min : arrêts / cadrés 77 → 55 % (dedans 74 → 47, dehors 96 → 92), buts 4,9 → 7,3 / match — l'envergure d'hier était impossible, la précision du tireur reste la dette (§ 3.4). Reste : ± 5 buts par saison, β0 comme levier (le tirage), le point visé.
 5. **La tête et le penalty recentrés** (9 bis, cibles) ; **le VAR** (test 8) et **les deux conventions** (test 12 ;
    Modèle 16 lot 1).

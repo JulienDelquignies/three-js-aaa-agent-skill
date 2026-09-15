@@ -509,6 +509,23 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### Le gardien à enveloppe continue et PSxG (lot 276, `cfg.enveloppe` — `enveloppe.js`)
+
+Le gardien décidait son plongeon sur un seuil dur d'envergure (diveReach 2,95 m, le gant warpé) et le temps de vol au facteur :
+« des gardiens omniscients et des murs à la limite exacte de portée » (Modèle 10 §6.3) — 77 % d'arrêts sur tirs cadrés,
+74 % dans la surface (réel 69 / 60). Le 276 pose le budget temps qui SE CALCULE : `tempsDeVol` (e^{k_D D} − 1)/(k_D v_0),
+`tDispDe` (t_f − τ_r (1 − 0,5 anticipation) − occlusion), l'enveloppe `porteeDe` qui PART DE VITESSE NULLE (R_0 + min(v_d [t −
+τ_a (1 − e^{−t/τ_a})], R_max × keeping) : 0,025 m à 0,05 s, 1,44 m en 0,512 s, 1,68 en 0,571 — Monteiro 2022), l'ellipse non
+centrée `rhoDe` (b = 0,8 a, centre 0,95 m), le régime réflexe (t_disp < 0,25 s : on bloque, R_0 seul), `pSaveDe` la sigmoïde
+en R − ρ (+ réflexes, + handling, − vitesse, − dévié) et `decisionEnveloppe` : atteint si ρ ≤ R × marge (ou, sous `tirage`,
+UN tirage de Bernoulli sur p_save — le seul aléa non physique de la chaîne, § 6.4). Le plongeon d'honneur part toujours,
+mais hors enveloppe le gant ne résout pas ; PSxG = 1 − p_save journalisé sur chaque tir cadré (événement 'enveloppe',
+`st.psxg[team]`). Attributs en facteurs : keeping → R_max, anticipation → τ_r, réflexes → β_2, handling → β_3. Calé : R_0 1,5
+(le demi-corps et le bras), R_max 1,9 (le haut de la plage), marge 1,25 (le gant) — parce que le tireur du moteur vise le
+poteau loin du gardien (ρ 3,9 m p50 : le point visé § 3.4 est la dette). Mesuré 8 × 45 min : arrêts / cadrés 77 → 55 %
+(dedans 74 → 47, dehors 96 → 92 — le contraste émerge du budget temps, jamais codé), buts 4,9 → 7,3 / match. Sonde :
+`scripts/book/sonde-272.mjs`. Fiches : `M10-modele-tir.md`, `R03-tirs-buts.md`.
+
 ### Le bloc qui perçoit (lot 275, `cfg.blocPercu` — `bloc-percu.js`)
 
 Le bloc d'hier lisait l'état vrai du ballon : formationSpots à l'ancre réelle, une fois par image, pour les onze — les onze

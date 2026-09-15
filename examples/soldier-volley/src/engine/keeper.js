@@ -253,6 +253,14 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
   }
   if (Math.abs(cross.z) > pitch.goalHalf + 0.6 || cross.y > pitch.goalH + 0.4) return { mode: 'poste', spot }; // non cadré
   const dz = cross.z - me[2];
+  // L'ENVELOPPE CONTINUE (276, K.enveloppe — enveloppe.js) : le budget temps se calcule, l'enveloppe part de vitesse nulle, le
+  // régime réflexe bloque sans plonger ; l'envergure d'hier (diveReach) ne décide plus — la physique du gant résout toujours.
+  if (K.enveloppe) {
+    const env = decisionEnveloppe(cross, shotAge, me, K.gkSelf ?? { skill: null }, hyp(K.gkBall?.[0] ?? 0, K.gkBall?.[1] ?? 0) || speed * cross.t, speed, K.enveloppe, { u: K.enveloppe.u ?? null });
+    if (env.mode === 'battu') return { mode: 'battu', cross, env };
+    if (env.mode === 'bloc' || Math.abs(dz) <= K.gatherHalf) return { mode: 'gather', spot: { x: spot.x, z: Math.max(-pitch.goalHalf + 0.2, Math.min(pitch.goalHalf - 0.2, cross.z)), depth: spot.depth }, env, cross };
+    return { mode: 'dive', side: Math.sign(dz), cross, env };
+  }
   if (Math.abs(dz) <= K.gatherHalf) return { mode: 'gather', spot: { x: spot.x, z: cross.z, depth: spot.depth } };
   if (Math.abs(dz) <= K.diveReach) return { mode: 'dive', side: Math.sign(dz), cross };
   return { mode: 'battu', cross };
@@ -484,5 +492,5 @@ export function gkHeldBall(st, c, dt, cfg) {
     && st.t - c._gkSince < Math.min(c._tenue ?? 2.6, cfg.gkRelease * 1.9)) { st.ball.hold(keeperHoldPoint(c), dt); return true; }
   return false;
 }
-import { hyp } from './hyp.js';
+import { hyp } from './hyp.js'; import { decisionEnveloppe } from './enveloppe.js';
 const BALL_R = 0.11;   // le rayon du ballon (ball.js BALL.radius) — le point bas de la chute de la volée

@@ -11809,6 +11809,62 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      shards 4-7 relancés seuls, la leçon — pas plus de quatre node à la fois. Bloc 1 seul : 0,55
      ms/step (≤ 1,6). Sceau : commit 0cc70a3, poussé ; déploiement showcase-pi-mocha au premier
      essai (cmp du chunk Rondo-CT08IpCT).
+- 354: LE GARDIEN À ENVELOPPE CONTINUE ET PSxG (276 — la carte du book après le 275 : Modèle 10 lot 4 ;
+     §6.2 le temps de vol SE CALCULE (t_f = (e^{k_D D} − 1)/(k_D v_0) : 0,97 du linéaire à 6 m, 0,85 à
+     30 — « le 0,85 constant donnait au gardien 8 % de budget en trop »), t_disp = t_f − τ_r (1 −
+     0,5 x̂_anticipation) − Δt_occl, L'ENVELOPPE QUI PART DE VITESSE NULLE (R(t) = R_0 + min(v_d [t − τ_a
+     (1 − e^{−t/τ_a})], R_max) : 22 m/s² à l'origine, 1,44 m en 0,512 s et 1,68 en 0,571 — Monteiro
+     2022 ; la forme R_0 + R_dive (1 − e^{−t/τ}) « rend arrêtables des frappes qui ne le sont pas »),
+     l'ellipse b = 0,8 a centrée à 0,95 m, le régime réflexe sous 0,25 s (« toute frappe cadrée à
+     pleine puissance depuis l'intérieur de la surface est sous le seuil de plongeon utile ») ;
+     §6.3 p_save = σ(β0 + 3,2 (R − ρ) + 1,1 réflexes + 0,4 handling − v/30 − 1,6 dévié), le contraste
+     60 / 85 « n'a pas à être codé : il doit émerger » ; §6.4 PSxG = 1 − p_save, « le moteur ne
+     calcule jamais un tirage sur l'xG : un unique tirage de Bernoulli sur p_save » ; tests 5, 5 bis,
+     5 ter, 5 quater). Sonde AVANT (sonde-272, 8 × 45 min, graines 3-19, au 275) : 44,6 tirs / match
+     (35 au 272 — la ligne tenue du 273 concède plus d'entrées), 4,9 buts, cadrés 47,6 %, arrêts /
+     cadrés 77 % (dedans 74, dehors 96 — le gant warpé à 2,95 m + 1,35 de bassin atteignait ~4,3 m à
+     n'importe quel budget). LA LOI (enveloppe.js, cfg.enveloppe) : tempsDeVol, porteeDe (R_0 + min(v_d
+     [t − τ_a (1 − e^{−t/τ_a})], R_max × keeperReach/2,9)), tDispDe (x̂ lu d'anticipF, l'occlusion 0,12
+     s par corps plafonnée 0,25), rhoDe (l'ellipse), pSaveDe (x̂_réflexes de keeperReflex, x̂_handling
+     de handF), decisionEnveloppe → { mode bloc / plongeon / battu, regime, tf, tDisp, R, rho, pSave,
+     u } — atteint si ρ ≤ R × marge, ou, sous tirage:true, si u < p_save (le tirage unique du §6.4 au
+     flux seedé, 'intention' 40 + équipe, une fois par tir). keeper.js : sous K.enveloppe la décision
+     remplace le seuil gatherHalf / diveReach (battu → { mode 'battu', env } ; bloc ou dz ≤ gatherHalf
+     → gather ; sinon dive) ; match-sim : K.enveloppe + gkSelf + gkBall, le plongeon d'honneur part
+     TOUJOURS (132) mais hors enveloppe le gant ne résout pas (gk._battuEnv lu en tête d'onDive),
+     l'événement 'enveloppe' {mode, regime, tf, tDisp, R, rho, pSave, u} une fois par tir cadré, st.psxg
+     [team] += 1 − p_save. Clé absente : le seuil d'hier au bit. LE CALAGE (dbg276 : 4 × 900 s) : aux
+     valeurs du book (R_0 1,0, R_max 1,7, marge 1,05) les arrêts tombent à 31 % (dedans 25) — ρ p50 3,9
+     m, p90 5,9 : LE TIREUR DU MOTEUR VISE LE POTEAU LOIN DU GARDIEN (tz contre gk.z, 0,55 m du
+     poteau) et le gardien du book ne couvre que 2,7 m de son centre ; sous le tirage, β0 devrait
+     valoir + 5 pour rendre 67 % (le book borne ± 0,6) — la précision du tireur est la vraie cause, le
+     point visé du § 3.4 (neuf modes, 36-38 % hors cadre, le côté ouvert par η) est la dette nommée.
+     Retenu : R_0 1,5 (le demi-corps et le bras tendu — le book ne chiffre pas R_0), R_max 1,9 (le
+     haut de sa plage), marge 1,25 (le gant et le ballon au-delà du centre de masse), tirage:false
+     (la géométrie ; le Bernoulli reste une option du consommateur) : 63 % sur la grille. Sonde APRÈS
+     (8 × 45 min) : arrêts / cadrés 55 % (dedans 47, dehors 92 — le contraste ÉMERGE du budget temps,
+     45 pts pour 25 réels), buts 4,9 → 7,3 / match (l'envergure d'hier était impossible), cadrés
+     40 %, tirs 41 / match, PSxG journalisé. Jumeau : enveloppe null = HEAD au bit (197e623b5bf4c255 /
+     62f928c9f83c7570 — le défaut du 275, relu par git stash). Banc : verify-match11 bloc 276 (index
+     174 : t_f 0,282 / 0,957 (la table du book), R − R0 0,025 m à 0,05 s (5 ter), 0,47 / 1,44 / 1,68,
+     saturée r0 + rMax, t_disp aux trois facteurs, l'ellipse 2 / 1, p_save 0,52 à R = ρ, croissante,
+     déviée 0,18, la décision synthétique plongeon / bloc / battu ; 600 s graine 3 : les événements
+     'enveloppe' complets, st.psxg cumulé ; sabotage enveloppe null : rien). Ce qu'il nomme : LE POINT
+     VISÉ (§3.4 — le prochain), l'amplitude ± 5 buts par saison (5 quater), β0 comme levier sous le
+     tirage, Δt_occl à mesurer (le mur, les écrans), les 41-46 tirs / match depuis le 273 (35 au 272).
+     Banc complet (final276 : 8 shards puis 25 annexes) : 306 ✓ / 12 ✗ au premier passage — rouges verts
+     à HEAD~ (worktree b8a2d62) et épinglés PAR CONTENU « enveloppe: null DATÉ 276 », tous verts isolés à
+     HEAD : le plein format (bloc 1, 17 passes c. 25), 95 (26), 96 (27), 98 (28, les bascules), 115 (44),
+     132 (63, le plongeon d'honneur : son sabotage vit sous l'enveloppe), 135 (66), 167 (80), le flux des
+     tirs du 232 (128), le taux d'arrêt du pas chassé 237 (129, 29 c. 38 − 8 : l'enveloppe décide le
+     plongeon) ; hérités : 246d (148), les contres arrivés à l'entrée (139). Le monde bouge par les
+     reprises : un tir cadré qui rentre ou ressort autrement change tout ce qui suit. Annexes :
+     attributes 25/2 → 27/0 (L55 la gradation — le composite compte 10·dTirs —, L171 le pique), scan 4/1
+     → 5/0 (L13), identification 0/1 → REGELÉ DATÉ 276 (14 → 16 signatures : perdue MDC C|appel ;
+     gagnées AIL C|largeurR, LAT A|profondeur, LAT C|profondeur), loi12 12/2 hérité ; frappes 13/0,
+     gestes 60/0, match 84/0, menace 11/0, roles 14/0, rondo 40/0, sync 9/0, loi3 10/0, kit 5/0,
+     part-tint 18/0, tactics 11/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0,
+     porte 4/0, cartons 6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,56 ms/step.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
