@@ -12033,8 +12033,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      datés (pasDeRecul: null → , sol: null, fete: null — 16 sites de
      verify-match11, attributes, remises, identification, et le monde SANS
      de verify-signes), l'empreinte jumelle ayant prouvé clés nulles = hier
-     au bit ; signes 9/0, remises 36/0, identification 1/0, attributes,
-     match11 re-shardé.
+     au bit ; signes 9/0, remises 36/0, identification 1/0, attributes
+     27/0, match11 re-shardé 313/1 (le seul rouge : 246d, hérité — il
+     était le seul rouge du 699/2 d'hier). Le banc complet vaut donc
+     742/1 sur 743 clauses. Dix-neuf sites épinglés en tout (dont les
+     lots 96, 135, 190, 273, 115, le troisième homme, la patate chaude,
+     le flux 244b : des sites sans épingle A12 hier).
 - 364: LES TROIS COPIES ET LES DOCS du lot : verify-sync 9/0 ; NOTES,
      ROADMAP (LIVRÉ, SUIVANT : A10 ter relevé aidé et tenue dos au but,
      A11 bis sifflet/cartons/salut/poignée), reference/59, SKILL, README,

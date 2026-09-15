@@ -99,4 +99,7 @@ page, délai 0,19 s, la détente tombe à l'heure du ballon.
 
 verify-contact 25 → 34 (la pose tenue vit et se ferme ×3, l'horloge en pur ×2, la sim sous cfg.sol ×3, sabotage
 vie 0), verify-emotion 33/0 (nouveau, dans bancs.mjs), verify-motion 206/0, verify-attente 54/0 ('abattu'),
-verify-foulee 55/0, verify-persona 25/0, verify-gesture 28/0, verify-animkit 136/136, verify-sync 9/0.
+verify-foulee 55/0, verify-persona 25/0, verify-gesture 28/0, verify-animkit 136/136, verify-sync 9/0. Banc complet : 742/1
+(le rouge : 246d, hérité) — les deux nouvelles clés par défaut (sol, fete) ont déplacé quinze clauses de flux qui mesurent le
+monde de leur jour ; elles sont épinglées à null aux sites datés (`sol: null, fete: null /* DATÉ 15/09 */`), l'empreinte jumelle
+prouvant que clés nulles = hier au bit.

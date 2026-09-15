@@ -201,7 +201,7 @@
   proteste ; cfg.fete : le geste par la persona, la glissade planifiée et portée ; l'accolade des compagnons, l'adversaire abattu,
   la protestation du fautif ; persona.bras porte l'élévation des bras de toutes les familles), LE PLONGEON BAS (poitrine au sol,
   bras du dessus au ballon, délai de décollage sur le ballon lent) ; verify-contact 34/0, verify-emotion 33/0 (dans bancs.mjs),
-  verify-motion 206/0 ; empreinte jumelle sans les clés.
+  verify-motion 206/0 ; banc complet 742/1 (246d hérité) après les épingles sol/fete null aux sites datés ; empreinte jumelle sans les clés.
 - SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 ter) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
   le relevé aidé ; (A11 bis) le sifflet et les cartons de l'arbitre, le salut et la poignée d'avant-match, l'accolade les mains plus basses. Et les dettes : (A2) le monde composé — re-caler
