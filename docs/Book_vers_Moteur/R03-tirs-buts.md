@@ -18,7 +18,7 @@
 | T19 | Tirs cadrés (but + arrêt) | 33 % ± 3 | **55 %** → **48 %** au 258 → **35 %** au 258b (4 × 90 min) | tenu (258b) |
 | T20 | Tirs contrés | 27 % ± 4 | **2 %** → **24 %** au 258b (8 × 45 min, par graine 6-30) | tenu à la marge (la limite est géométrique : 47 % des tirs ont un corps devant) |
 | T21 | Tirs sur les montants | 2,3 % | — | à instrumenter (événement `pylon` / `roof`) |
-| T22 | Taux d'arrêt | **44 %** (dedans 52, dehors 100) → **56 %** au 258 → **73 %** au 258b → 77 % au 275 (dedans 74 !) → **55 %** au 276 (dedans 47, dehors 92 — l'enveloppe continue) | 276 : le contraste émerge, le dedans attend le point visé | **44 %** (dedans 52, dehors 100) → **56 %** au 258 → **73 %** au 258b (4 × 90 min) |
+| T22 | Taux d'arrêt | **44 %** (dedans 52, dehors 100) → **56 %** au 258 → **73 %** au 258b → 77 % au 275 → 55 % au 276 → **69-71 %** au 277 (dedans 65-67, dehors 87-92 — le point visé face au gardien à l'enveloppe) | 277 : tenu, le contraste dedans / dehors émerge | 276 : le contraste émerge, le dedans attend le point visé |
 | T23-T24 | Amplitude gardiens ± 5 buts / saison | | — (pas de saison) | chantier A |
 | T25-T27 | Penalty 79 % ; arrêt 13 % ; 0,35 / match | | 1 penalty raté en 2 matchs (Modèle 13) | à mesurer en protocole |
 | T28-T30 | Séance de tirs au but | 72 % ; 60 % après le 5ᵉ ; premier tireur 0 | — | absent |

@@ -3,7 +3,7 @@
 // rangement change : une famille par fichier, un fichier par famille.
 import { BALL } from './ball.js';
 import { laneClearance } from './ball-predict.js';
-import { xgDe } from './xg.js';
+import { xgDe } from './xg.js'; import { viseeDe } from './visee.js';
 import { simInternals } from './rondo-sim.js';
 import { busy, winding, startGesture } from './gesture.js';
 import { MOVES } from './animkit.js';
@@ -168,13 +168,18 @@ export function tryShot(st, c, cfg) {
         : u < 0.78 + pLuc ? { id: 'lucarne', speed: 19.5, elev: elevFor(1.7, 19.5), rev: 0.5 }
         : { id: 'placé', speed: 17.5, elev: 0.05, rev: 0.5 };
     }
+    // LE POINT VISÉ (277, cfg.visee — visee.js, Modèle 10 §3.4) : le coin loin du gardien d'hier devient un tirage dans le
+    // mélange à neuf modes (le côté ouvert par le décentrage du gardien, la pression qui effondre vers « le cadre ») ; les
+    // gestes EXACTS (lob, piqué) gardent leur cible. La hauteur visée voyage avec l'espèce (strike-sim la lit : yVisee).
+    let tzV = tz;
+    if (st.full && cfg.visee && shotKind && !shotKind.exact) { const V = viseeDe(st, c, cfg, { goal, gk, dGoal }); tzV = V.z; shotKind.yVisee = V.y; shotKind.visee = V.id; tzAim = tzV; }
     if (shotKind?.curl) {
       // le décalage d'aim ÉGALE la courbe mesurée (1,44·(d/16)², plafond 2 — au plafond 1,5
       // l'enroulée de 19 m dépassait son poteau de 0,54 m), jamais au-delà du milieu du cadre ;
       // le spin SIGNÉ ramène vers le vrai poteau tz
       const aimIn = Math.min(2.0, Math.max(0.7, 1.44 * (dGoal / 16) * (dGoal / 16)));
-      tzAim = tz - Math.sign(tz) * Math.min(aimIn, Math.abs(tz) * 0.7);
-      shotKind.rev = -Math.sign(goal.x) * Math.sign(tz) * shotKind.curl;
+      tzAim = tzV - Math.sign(tzV || 1) * Math.min(aimIn, Math.abs(tzV) * 0.7);
+      shotKind.rev = -Math.sign(goal.x) * Math.sign(tzV || 1) * shotKind.curl;
     }
   }
   const choice = {

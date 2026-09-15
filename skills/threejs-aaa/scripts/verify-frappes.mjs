@@ -25,7 +25,7 @@ const mk = (cfgExtra = {}) => {
   const goal = st.pitch.attackGoal(0);
   for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = -sgn * 30; q.p[2] = -28; q.v = [0, 0]; }
   for (const q of st.players.filter((q) => q.team === 0 && !q.keeper)) { q.p[0] = -sgn * 30; q.p[2] = 28; q.v = [0, 0]; }
-  return { st, sgn, goal, cfg: matchCfg({ shotRange: 20, dispersion: false, finition: null, oeil: false, fixe: false, ...cfgExtra }) };   // finition null DATÉ 258 (l'échelle de finition tire la hauteur visée et le σ d'angle : le ras-de-terre montait à 0,52 — ces fixtures jugent la BALISTIQUE de chaque geste) ; les fixtures de frappe isolent 143-145 (les tirages ajoutés re-dataient le flux : piqué y=2,91 mesuré)
+  return { st, sgn, goal, cfg: matchCfg({ visee: null /* visee null DATÉ 277 : vert à HEAD~ (13/0 au 276 fusionné), la fixture de l'enroulée vise le coin d'hier (tz 3,11) — le point visé tire un mode du mélange ; la clause mesure la courbe, pas le point visé */, shotRange: 20, dispersion: false, finition: null, oeil: false, fixe: false, ...cfgExtra }) };   // finition null DATÉ 258 (l'échelle de finition tire la hauteur visée et le σ d'angle : le ras-de-terre montait à 0,52 — ces fixtures jugent la BALISTIQUE de chaque geste) ; les fixtures de frappe isolent 143-145 (les tirages ajoutés re-dataient le flux : piqué y=2,91 mesuré)
 };
 const pose = (st, c, x, z) => {
   c.p[0] = x; c.p[2] = z; c.v = [0, 0];
@@ -217,7 +217,7 @@ const frappe = (st, c, cfg, u, gkX = null) => {
 // ---------- 11. sabotage nommé « les pieds au sol » : volee:false → le même vol traverse
 {
   const { st, sgn, goal } = mk();
-  const cfg0 = matchCfg({ shotRange: 20, volee: false });
+  const cfg0 = matchCfg({ visee: null /* visee null DATÉ 277 : vert à HEAD~ (13/0 au 276 fusionné), la fixture de l'enroulée vise le coin d'hier (tz 3,11) — le point visé tire un mode du mélange ; la clause mesure la courbe, pas le point visé */, shotRange: 20, volee: false });
   const c = st.players.find((p) => p.team === 0 && !p.keeper);
   c.p[0] = goal.x - sgn * 9; c.p[2] = 2; c.v = [0, 0]; c.act = null;
   st.ball.release('sortie');
@@ -252,7 +252,7 @@ const frappe = (st, c, cfg, u, gkX = null) => {
 // ---------- 13. sabotage nommé « que des cloches » : centreBas:false → la même scène part en cloche
 {
   const { st, sgn, goal } = mk();
-  const cfg0 = matchCfg({ shotRange: 20, centreBas: false });
+  const cfg0 = matchCfg({ visee: null /* visee null DATÉ 277 : vert à HEAD~ (13/0 au 276 fusionné), la fixture de l'enroulée vise le coin d'hier (tz 3,11) — le point visé tire un mode du mélange ; la clause mesure la courbe, pas le point visé */, shotRange: 20, centreBas: false });
   const gk1 = st.players.find((q) => q.team === 1 && q.keeper);
   gk1.p[0] = goal.x; gk1.p[2] = 0;
   const c = st.players.find((p) => p.team === 0 && !p.keeper);
@@ -272,7 +272,7 @@ const frappe = (st, c, cfg, u, gkX = null) => {
   const especes = new Set();
   for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {   // 6 → 12 graines DATÉ 240 (7 tirs / 6 × 300 s : l'espèce est un chiffre de Poisson)
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ visee: null /* visee null DATÉ 277 : vert à HEAD~ (13/0 au 276 fusionné), la fixture de l'enroulée vise le coin d'hier (tz 3,11) — le point visé tire un mode du mélange ; la clause mesure la courbe, pas le point visé */, shotRange: 20 });
     for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg);
     for (const e of st.events) if (e.type === 'shot') especes.add(e.kind);
     if (especes.size >= 4) break;

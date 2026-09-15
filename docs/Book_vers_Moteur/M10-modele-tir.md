@@ -40,16 +40,16 @@ conventions de comptage ; le recentrage tête / pied.
 |---|---|---|---|
 | 1 cohérence xG / physique | RMS < 0,020 | **272** : le xG de Sumpter existe (xg.js, table à 0,0004 près) ; ΣxG 5,3 / match c. 5,1 buts AVANT, 5,0 c. 3,9 APRÈS (8 × 45 min) — la cohérence tient au global, la grille par cellule reste à mesurer |
 | 2 optimum puissance / placement | non monotone | partiel (258 : (v/vMax)^1,2 existe ; les vitesses restent fixes par geste) |
-| 3 anisotropie des manqués | ratio ≥ 1,1, ≈ 1,5 | **258** : σθ = 2 σψ existe ; mesuré 0-1 au-dessus / 12-14 à côté — les visées du moteur restent basses (lucarne 8 %) |
+| 3 anisotropie des manqués | ratio ≥ 1,1, ≈ 1,5 | **258 / 277** : σθ = 2 σψ existe, le point visé porte sa hauteur | **277** (8 × 45 min) : au-dessus 0 / à côté 13 — aucun tir ne passe la barre : la lucarne et la barre pèsent 5 + 4 % du mélange et l'élévation compensée les tient sous 2,44 ; la dispersion du 258 est à recalibrer sur le point visé (dette) |
 | 4 xG / PSxG | distinguables | **272 / 276** : xG_dec porte la finition ; PSxG = 1 − p_save journalisé sur chaque tir cadré (enveloppe.js, événement 'enveloppe', st.psxg) — jamais tiré par défaut (tirage: false) |  |
 | 5 sensibilité au gardien | ≥ 3 pts sur R_dive | **276** : mesurable | R_dive à 1,4 → 1,9 : le levier existe (rMax × keeping) ; balayage 4 × 900 s : r0 1,3 / rMax 1,7 → 33 % d'arrêts, r0 1,5 / rMax 1,9 → 63 % — la sensibilité est là (≥ 3 pts) |
-| 5 bis arrêt dedans / dehors | ≈ 60 / 85 / 69 | **276** : le contraste émerge | **77 / 74 / 96 → 55 / 47 / 92 %** (8 × 45 min : total / dedans / dehors) — le régime réflexe et le budget temps font le gradient (45 pts pour 25 réels) ; le dedans trop bas : le tireur vise le poteau loin du gardien (ρ 3,9 m p50), le point visé § 3.4 est la dette |
+| 5 bis arrêt dedans / dehors | ≈ 60 / 85 / 69 | **276 / 277** : le contraste émerge et se cale | 276 : 77 / 74 / 96 → 55 / 47 / 92 % ; **277 (le point visé) : 69-71 / 65-67 / 87-92 %** (8 × 45 min : total / dedans / dehors — cible 69 / 60 / 85) |
 | 7 rebonds | 10 % des tirs, 9 % des buts | mesurable, **proche** | **6 % / 8 %** |
 | 8 latence VAR | > 0 | absent |
 | 9 non-oscillation SHOOT | < 0,5 / match | à instrumenter |
 | 9 bis tête | 9,6 % de conversion, 15 % des buts | **6 %** des tirs, **0** but |
 | 10 ablation de la doctrine | 6-9 tirs à 0,13 c. 16-22 à 0,06 | **272** : l'axe `shotDoctrine` existe (Θ ∓ 0,015) ; l'A/B 200 matchs reste à courir |
-| cibles | 25,3 tirs ; 64 % dedans ; p50 16 m ; cadrés 33 ; contrés 27,5 ; buts / tirs 0,11 ; 2,85 buts | | **24,5** ✓ ; **73 %** ; **12,8 m** ; **55 %** ; **2 %** ; **0,245** ; **6,0** |
+| cibles | 25,3 tirs ; 64 % dedans ; p50 16 m ; cadrés 33 ; contrés 27,5 ; buts / tirs 0,11 ; 2,85 buts | **277** | **42-46** tirs (25,3 — le volume reste l'affaire du bloc) ; **74-82 %** dedans ; p50 **12,1-12,7 m** ; cadrés **45-46** (33 — la dispersion à recalibrer) ; contrés **12-18** ; buts / tirs **0,14** ; **6,1** buts (2,85 : le volume × 0,14) |
 
 ## 4. Les lots que la fiche appelle
 
@@ -61,3 +61,4 @@ conventions de comptage ; le recentrage tête / pied.
 4. **Le gardien à enveloppe continue** (tests 5, 5 ter ; Bible 02) — **SCELLÉ 360 (276, enveloppe.js)** : t_f en forme close, t_disp, R(t) de vitesse nulle (5 ter tenu : 0,025 m à 0,05 s), l'ellipse, le régime réflexe, p_save en sigmoïde et le tirage unique optionnel, PSxG journalisé ; le seuil dur d'envergure (diveReach) ne décide plus, le gant hors enveloppe ne résout pas. Mesuré 8 × 45 min : arrêts / cadrés 77 → 55 % (dedans 74 → 47, dehors 96 → 92), buts 4,9 → 7,3 / match — l'envergure d'hier était impossible, la précision du tireur reste la dette (§ 3.4). Reste : ± 5 buts par saison, β0 comme levier (le tirage), le point visé.
 5. **La tête et le penalty recentrés** (9 bis, cibles) ; **le VAR** (test 8) et **les deux conventions** (test 12 ;
    Modèle 16 lot 1).
+6. **Le point visé** (§ 3.4, Miss It Like Messi) — **SCELLÉ 362 (277, visee.js)** : le mélange à neuf modes, le côté ouvert par η, les poids conditionnés (composure, flair, gardien avancé / engagé, angle fermé, bout portant), l'effondrement sous pression vers « le cadre » (P ≥ 0,7). Mesuré 8 × 45 min : arrêts / cadrés 52-55 → 69-71 % (dedans 39-48 → 65-67, dehors 93-100 → 87-92 : les cibles 69 / 60 / 85 du § 6.3 tenues avec le gardien du 276), buts 8,1 → 6,1 / match, xG moyen 0,157 → 0,15. Reste : les modes tirés (cadre 25 % pour 7, bas-ouvert 12 pour 26 — la pression du moteur reste haute : 45-55 % des tirs à < 2 m d'un corps), les cadrés 45 % (la dispersion du 258 à recalibrer sur le point visé), le hors-cadre au-dessus (0 pour 1,5×), le volume (42-46 tirs).

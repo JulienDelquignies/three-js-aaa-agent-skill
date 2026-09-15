@@ -635,6 +635,14 @@ l'envergure d'hier était physiquement impossible et la précision du tireur (le
 qu'il nomme : LE POINT VISÉ (§3.4, le mélange à neuf modes, 36-38 % hors cadre — le prochain), ± 5 buts par saison (5 quater),
 β0 comme levier sous le tirage, l'occlusion Δt_occl à mesurer (le mur, les corps en écran), les 41-46 tirs / match depuis le 273
 (la ligne tenue concède plus d'entrées : 35 → 45).
+**277 — LE POINT VISÉ : SCELLÉ (362).** Le coin loin du gardien devient un tirage dans le mélange à neuf modes du book
+(visee.js, Modèle 10 §3.4 — Miss It Like Messi) : le côté ouvert par le décentrage du gardien, les poids conditionnés par la
+composure, le flair, le gardien avancé ou engagé, l'angle fermé, le bout portant, l'effondrement sous pression vers « le
+cadre » ; la hauteur visée voyage avec l'espèce, la dispersion du 258 s'ajoute. Mesuré 8 × 45 min : arrêts / cadrés 52-55 →
+69-71 % (dedans 39-48 → 65-67, dehors 93-100 → 87-92 — les cibles du § 6.3 avec le gardien du 276), buts 8,1 → 6,1 / match.
+Ce qu'il nomme : la pression du moteur (45-55 % des tirs à < 2 m d'un corps : un quart des tirs s'effondrent sur « le cadre »
+pour 7 % au book), la dispersion du 258 à recalibrer sur le point visé (cadrés 45 % pour 33, au-dessus 0), le volume des tirs
+(42-46 pour 25 — les entrées dans la surface), le penalty et la tête recentrés (lot 5).
 
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 

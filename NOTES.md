@@ -12070,6 +12070,61 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      combinaison (320 c. 248), mesure sous enveloppe et blocPercu nuls), loi12 12/2 hérité ; le
      reste vert. Bloc 1 seul : 0,45 ms/step (≤ 1,6). Sceau : fusion 662a444 puis 8cd6dbd (le banc),
      poussés ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk Rondo-DFTZPNMq).
+- 362: LE POINT VISÉ (277 — la dette nommée du 276 : Modèle 10 §3.4, « le point visé n'est pas “le
+     coin” : c'est un tirage dans un mélange » — Baron, Sandholtz, Pleuler & Chan, Miss It Like Messi
+     (JQAS 2024, 77 315 tirs StatsBomb, un mélange hiérarchique de gaussiennes tronquées sur le point
+     de franchissement (y, z)) ; les neuf modes retenus pour le temps réel et leurs poids [À CALIBRER]
+     contraints par 36-38 % hors cadre, au-dessus / à côté ≈ 1,5, 2,2-2,5 % sur le cadre ; le côté
+     ouvert par η, l'effondrement sous pression vers « vers le cadre » (ch. 6 §9.2), la troncature
+     z ≥ 0). Sonde AVANT (sonde-272 sur l'état fusionné, 8 × 45 min) : 39-45 tirs / match, 8,1 buts,
+     cadrés 38-47 %, arrêts / cadrés 52-55 % (dedans 39-48, dehors 94-100) — le tireur d'hier visait
+     TOUJOURS le coin loin du gardien à 0,55 m du poteau, la hauteur au tirage du 258. LA LOI (visee.js,
+     cfg.visee) : MODES (lucarne-ouvert 3,0 / 1,95 — 0,05 ; bas-ouvert 2,9 / 0,35 — 0,26 ; mi-ouvert
+     2,7 / 1,0 — 0,17 ; bas-fermé 2,6 / 0,35 — 0,14 ; mi-fermé 2,4 / 1,0 — 0,08 ; barre-axial 0 /
+     2,05 — 0,04 ; axial-bas 0 / 0,35 — 0,09 ; premier-poteau 3,3 / 0,2 — 0,10 ; cadre 1,5 / 0,9 —
+     0,07), poidsDe (composure → lucarne × (0,5 + r), flair → contre-pied × (0,5 + r) et × 1,3 si le
+     gardien est engagé (g ≥ 1,5), gardien avancé (g ≥ 3) → lucarne × 1,5 et lob × 2, angle fermé
+     (|z|/X ≥ 0,6) → premier poteau × 2 et côté ouvert × 0,7, bout portant (D ≤ 8) → axial bas × 2 ;
+     puis s = (P − p0) / largeur effondre vers « cadre » — l'identité au 50 rend les poids du book à
+     1e-9), viseeDe (la bissectrice du cône au plan du but, le côté ouvert opposé au gardien, le
+     premier poteau du côté du tireur, la troncature au cadre à bord 0,1, y ≥ yMin, un tirage au
+     flux 'tir' seedé). shooting.js : le point visé remplace tz pour toute espèce non exacte (le lob
+     et le piqué gardent leur cible), l'enroulée décale depuis lui ; sa hauteur voyage avec l'espèce
+     (shotKind.yVisee) et strike-sim la lit à la place du tirage bas / mi / lucarne du 258 (le tirage
+     est consommé pareil : le monde à clé nulle au bit) ; l'événement 'shot' porte visee / yVisee.
+     Clé absente : le coin d'hier au bit (1dd69b0ccdc50f84 / 144d0962b66de674, le défaut fusionné).
+     LE CALAGE : au premier jet (pressT 1,5, p0 0,5, largeur 0,4) « cadre » mangeait 47-53 % des
+     tirs (le book : 7 — la pression du moteur vit à 0,6-0,7 sur un tir de surface sur deux) ; retenu
+     pressT 1,2, p0 0,7 (le « P > 0,7 » du book), largeur 0,3. Sonde APRÈS (sonde-277, 8 × 45 min) :
+     arrêts / cadrés 69-71 % (dedans 65-67, dehors 87-92 — LES CIBLES 69 / 60 / 85 DU § 6.3 TENUES avec
+     le gardien à l'enveloppe du 276), buts 8,1 → 6,1 / match, buts / tirs 0,14, xG moyen 0,157 →
+     0,15 ; les modes tirés : cadre 25-27 % (7), sans point visé (tête, volée, lob, coup franc)
+     25-29, bas-ouvert 12 (26), mi-ouvert 5-10 (17), bas-fermé 7 (14), premier poteau 6-7 (10),
+     axial 3-6 (9), mi-fermé 5-6 (8), lucarne 1-4 (5), barre 0,5-2 (4) ; cadrés 45-46 % (33), hors
+     cadre au-dessus 0 / à côté 13. Banc : verify-match11 bloc 277 (index 175 : Σ des poids 1, les
+     poids conditionnés = le book à l'identité, chaque conditionnement dans son sens, la pression
+     0,9 → cadre 1 ; 40 tirages sur le tireur axial face au gardien décentré à + 1 m : côté ouvert
+     −, les côtés et la troncature tenus, ≥ 3 modes ; 600 s graine 3 : 3 / 3 tirs non exacts portent
+     un mode du book et une hauteur ; sabotage visee null : 0). Ce qu'il nomme : la pression du
+     moteur (un tir sur deux à < 2 m d'un corps — un quart des tirs s'effondrent sur « le cadre »),
+     la dispersion du 258 à recalibrer sur le point visé (cadrés 45 % pour 33, aucun tir au-dessus
+     de la barre pour 1,5 × à côté), le volume (42-46 tirs pour 25 — les entrées dans la surface),
+     la tête et le coup franc sans point visé, le penalty et la tête recentrés (lot 5). Banc complet
+     (final278 : 8 shards puis 25 annexes) : 309 ✓ / 11 ✗ au premier passage — rouges verts à HEAD~
+     (worktree d6f1868) et épinglés PAR CONTENU « visee: null DATÉ 277 », tous verts isolés à HEAD :
+     135 (bloc 66), le flux des tirs du 232 (128), le couloir à trois corps (138), la fixture du
+     contre 258b (152 — le tireur y vise un mode, non plus le coin), 97 (28, les fautes), 118 (47),
+     244b (142), la fixture de finition 258 (151, σ latéral 2,22 : le point visé, pas la
+     dispersion) ; mon propre bloc 277 rouge en shard (la pression 0,9 n'effondre plus tout au
+     nouveau p0 0,7 : le test lit P = 1) ; hérités : 246d (148), les contres arrivés à l'entrée
+     (139). Annexes : attributes 25/2 → 27/0 (L55 la gradation, L237 le pressing cohérent),
+     frappes 12/1 → 13/0 (l'enroulée en fixture visait le coin d'hier : quatre cfg), contact 23/2
+     → 25/0 (L74), identification 0/1 → REGELÉ DATÉ 277 (16 → 14 signatures : perdues AV
+     A|profondeur, DC A|profondeur, GK A|garde, LAT A|profondeur, MDC A|largeurR ; gagnées AIL
+     C|repli, LAT A|largeurR, MO B|profondeur), loi12 12/2 hérité ; gestes 60/0, match 84/0,
+     menace 11/0, roles 14/0, rondo 40/0, sync 9/0, scan 5/0, loi3 10/0, kit 5/0, part-tint 18/0,
+     tactics 11/0, slide 10/0, foulee 54/0, attente 52/0, remises 36/0, porte 4/0, cartons 6/0,
+     expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,46 ms/step (≤ 1,6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

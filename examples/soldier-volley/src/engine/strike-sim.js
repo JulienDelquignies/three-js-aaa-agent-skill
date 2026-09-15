@@ -509,9 +509,9 @@ export function strikeNow(st, c, cfg) {
     // lucarne) : l'élévation ne vient plus du geste seul mais de la hauteur voulue au but (chute compensée) — c'est ce qui
     // rend possible le tir AU-DESSUS (réel : 1,5 × plus de manqués au-dessus qu'à côté). null : l'élévation du geste
     const H = F258.hauteur;
-    if (H && (!kind || ['placé', 'puissance', 'enroulée', 'tendu'].includes(kind.id))) {   // les FRAPPES DE BUT tirent leur hauteur ; le ras-de-terre, le pointu, la volée, le lob gardent la hauteur de leur geste (le geste EST la hauteur)
+    if (H && (!kind || kind.yVisee != null || ['placé', 'puissance', 'enroulée', 'tendu'].includes(kind.id))) {   // les FRAPPES DE BUT tirent leur hauteur ; le ras-de-terre, le pointu, la volée, le lob gardent la hauteur de leur geste (le geste EST la hauteur) ; (277) le point visé porte SA hauteur (yVisee) pour toute espèce non exacte
       const u = rnd(), pB = H.p?.[0] ?? 0.62, pM = H.p?.[1] ?? 0.30;
-      const yV = u < pB ? (H.bas ?? 0.35) : u < pB + pM ? (H.mi ?? 1.0) : (H.lucarne ?? 1.95);
+      const yV = kind?.yVisee != null ? kind.yVisee : u < pB ? (H.bas ?? 0.35) : u < pB + pM ? (H.mi ?? 1.0) : (H.lucarne ?? 1.95);
       const tv = dG / Math.max(8, spd);
       elev = Math.max(0.005, Math.min(0.45, Math.atan((yV - (from[1] ?? 0.11) + 4.905 * tv * tv) / Math.max(1, dG))));
     }
@@ -567,7 +567,7 @@ export function strikeNow(st, c, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,
       tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +spd.toFixed(1),   // …le spd FRAPPÉ (145) : l'event dit la vitesse réelle, souffle compris
-      kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2), z: +st.ball.p[2].toFixed(1), ...(choice.shotInfo?.xg != null ? { xg: choice.shotInfo.xg, xgDec: choice.shotInfo.xgDec, omega: choice.shotInfo.omega } : {}) });
+      kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2), z: +st.ball.p[2].toFixed(1), ...(kind?.visee ? { visee: kind.visee, yVisee: kind.yVisee } : {}), ...(choice.shotInfo?.xg != null ? { xg: choice.shotInfo.xg, xgDec: choice.shotInfo.xgDec, omega: choice.shotInfo.omega } : {}) });
     if (choice.shotInfo?.xg != null) (st.xg ??= [0, 0])[c.team] += choice.shotInfo.xg;   // (272) le xG cumulé par équipe (cible 1,30 / match)
   }
   // LA PERCEPTION A UNE HORLOGE : le départ du ballon est un événement — mais l'armé était

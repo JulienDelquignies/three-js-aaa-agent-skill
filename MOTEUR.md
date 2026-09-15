@@ -509,6 +509,24 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### Le point visé (lot 277, `cfg.visee` — `visee.js`)
+
+Le tireur visait toujours le coin loin du gardien, à 0,55 m du poteau : à 3,9 m du centre du gardien en médiane, aucune
+enveloppe du book ne l'atteignait (276 : 55 % d'arrêts, 47 dedans). Le 277 pose le point visé du Modèle 10 §3.4 (Baron,
+Sandholtz, Pleuler & Chan, Miss It Like Messi : un mélange de gaussiennes tronquées sur le plan du but) : `MODES`, les neuf
+modes du book avec leurs poids (bas côté ouvert 26 %, mi-hauteur côté ouvert 17, bas côté fermé — le contre-pied — 14, premier
+poteau 10, axial bas 9, mi côté fermé 8, vers le cadre 7, lucarne 5, sous la barre 4) ; `poidsDe`, les poids conditionnés
+(composure → la lucarne, flair et gardien engagé → le contre-pied, gardien avancé → lucarne et lob, angle fermé → le premier
+poteau, bout portant → l'axial bas ; identité exacte au 50) puis l'effondrement sous pression vers « le cadre » (P ≥ 0,7, le
+rétrécissement du panier) ; `viseeDe`, le côté ouvert lu du décentrage du gardien sur la bissectrice du cône, le premier poteau
+du côté du tireur, la troncature au cadre, un tirage seedé au flux 'tir'. Le point visé remplace le coin de tryShot (les gestes
+exacts — lob, piqué — gardent leur cible), sa hauteur voyage avec l'espèce jusqu'à strike-sim (yVisee) et la dispersion du 258
+s'ajoute ; l'événement 'shot' porte visee / yVisee. Attributs en facteurs (composure, flair, finition par la dispersion), la
+clé absente : le coin d'hier au bit. Mesuré 8 × 45 min : arrêts / cadrés 52-55 → 69-71 % (dedans 39-48 → 65-67, dehors
+93-100 → 87-92 — les cibles 69 / 60 / 85 du § 6.3 tenues avec le gardien du 276), buts 8,1 → 6,1 / match. Reste : la pression
+du moteur effondre encore un quart des tirs sur « le cadre », les cadrés 45 % (la dispersion à recalibrer), le hors-cadre
+au-dessus, le volume. Sonde : `scripts/book/sonde-277.mjs`. Fiches : `M10-modele-tir.md`, `R03-tirs-buts.md`.
+
 ### Le gardien à enveloppe continue et PSxG (lot 276, `cfg.enveloppe` — `enveloppe.js`)
 
 Le gardien décidait son plongeon sur un seuil dur d'envergure (diveReach 2,95 m, le gant warpé) et le temps de vol au facteur :
