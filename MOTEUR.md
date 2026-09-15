@@ -509,6 +509,31 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### L'ellipse de finition (lot 278, `cfg.ellipse` — `ellipse.js`)
+
+Le 258 tirait trois bruits indépendants et centrés (cap, élévation, vitesse) avec le `gauss` du moteur — une somme de trois
+uniformes : σ 0,707 et AUCUNE queue au-delà de 2,1 — et résolvait l'élévation dans le vide : mesuré sur le point visé du
+277, cadrés 45-46 % (réel 33), 0 tir au-dessus de la barre pour 13 à côté (réel ≈ 1,5 pour 1), le plan du but atteint 0,35 m
+sous la hauteur visée, σvert / σhoriz 0,64-0,74 (le book : 1,6-2,5). Le 278 pose l'erreur d'exécution du Modèle 03 §5 :
+`normale`, l'inverse de la normale standard (Acklam, pas de Box-Muller — §5.3) à vraies queues, tronquée à |ξ| ≤ 3,5 ;
+`ecartDe`, (Δψ, Δθ) une normale bivariée de corrélation ρψθ 0,2, ln v corrélé à Δθ (ρθv −0,35 : la frappe précipitée est
+levée ET molle), la queue basse épaisse (× 1,6 sur les ξ < 0), les biais non nuls sous pression (la sous-dose du 258, le pied
+qui s'ouvre μψ = 1,5° × P vers l'extérieur du pied qui frappe) ; `vitesseDe`, la log-normale tronquée [10 ; 33 m/s]. La
+NOMINALE est INTÉGRÉE (`nominal`, Modèle 10 §3.4 : « le point visé est atteint par construction si la trajectoire nominale
+est intégrée ») — predictPath jusqu'au plan du but, sept bissections de θ sur la hauteur visée puis le cap corrigé sur le z
+franchi (traînée et effet du geste compris — le z visé voyage avec l'espèce, `zVisee`) ; f_corps = 1 + 0,9 (1 − cos Δφ) sur
+le corps de travers (le facteur du book, absent du 258). σ0 2,0° (la borne haute du book) et l'anisotropie 4,5 EN ANGLE DE
+DÉPART : la sensibilité verticale du ballon lent (16-19 m/s) n'est que 7-9 m/rad, pas 1,2 D — au plan du but le rapport
+mesuré est 1,7-2,4, dans le [1,6 ; 2,5] du test 6. Attributs en facteurs (finF, composureF, weakF via finitionSigma),
+pression et corps en axes ; clé absente : les trois gauss d'hier, au bit. Mesuré 8 × 45 min : cadrés 45-46 → 32-37 % (33),
+au-dessus / à côté 0 → 0,83-0,93 (plan nominal : 11-16 % au-dessus, 14-17 à côté), σvert / σhoriz 0,7 → 1,7-2,4 (côté haut,
+le sol tronque le bas), buts 6,1 → 5,25 / match, arrêts / cadrés 64-67 %, sorties de but 2 → 5-8 / match. Reste : le ratio
+au-dessus / à côté sous 1,1 (les points visés du book vivent à 0,4-0,8 m des poteaux et la pression du 258 tient un tir sur
+deux à P ≈ 1 : σhoriz 1,3-1,5 m), les vitesses de frappe du book (28 / 20 m/s — le 258 vit à 17-21), les montants (5-8 %
+des trajectoires nominales à 0,17 m d'un poteau : le ballon le traverse, Modèle 03 §6.3), le volume. Sonde :
+`scripts/book/sonde-278.mjs` (le plan nominal par predictPath, sans obstacle). Fiches : `M03-physique-ballon.md`,
+`M10-modele-tir.md`, `R03-tirs-buts.md`.
+
 ### Le point visé (lot 277, `cfg.visee` — `visee.js`)
 
 Le tireur visait toujours le coin loin du gardien, à 0,55 m du poteau : à 3,9 m du centre du gardien en médiane, aucune

@@ -12126,6 +12126,57 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactics 11/0, slide 10/0, foulee 54/0, attente 52/0, remises 36/0, porte 4/0, cartons 6/0,
      expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,53 ms/step (≤ 1,6). Sceau : commit
      b0a171d, poussé ; déploiement showcase-pi-mocha au troisième essai (cmp du chunk Rondo-D92u9rx2).
+- 363: L'ELLIPSE DE FINITION (278 — la dette nommée du 277 : Modèle 03 §5.1-5.2, « (Δψ, Δθ) une normale
+     bivariée, v₀ log-normale corrélée à Δθ, tirée une fois à la frappe » ; Modèle 10 §3.4, « le point visé
+     est atteint par construction si la trajectoire nominale est intégrée »). Sonde AVANT (sonde-278 à
+     ellipse null, 8 × 45 min — le plan NOMINAL de chaque tir intégré sans obstacle par predictPath) :
+     cadrés 45-46 % (33), 0 tir au-dessus de la barre pour 13 à côté, plan nominal cadre 88-91 %,
+     au-dessus 0 / à côté 9-12, σvert 0,49 m / σhoriz 0,66-0,77 → 0,64-0,74 (le book : 1,6-2,5), le plan
+     atteint 0,35 m SOUS la hauteur visée. LE DIAGNOSTIC : (a) le gauss du moteur (attributes.js, somme de
+     trois uniformes × 1,4142) a un σ de 0,707 et AUCUN tirage au-delà de 2,12 — c'est lui qui interdisait le
+     tir au-dessus ; (b) l'élévation du 258 se résolvait dans le vide (tv = d / v) et le cap ignorait l'effet
+     propre du geste ; (c) la sensibilité verticale du ballon lent (16-19 m/s après sous-dose, le 258 vit à
+     17-21 pour 28 / 20 au book) n'est que 7-9 m/rad, pas 1,2 D : l'anisotropie 2 de départ ne fait pas 2 au
+     plan. LA LOI (ellipse.js, cfg.ellipse) : normale (l'inverse de la normale standard, Acklam 2003 — pas de
+     Box-Muller, §5.3 — tronquée |ξ| ≤ xiMax 3,5) ; ecartDe (g1, g2, g3 au flux 'tir' : zψ = g1, zθ = ρ g1 +
+     √(1 − ρ²) g2 (ρψθ 0,2), zv = ρθv zθ + √(1 − ρθv²) g3 (ρθv −0,35 : précipitée = levée ET molle), la queue
+     basse × 1,6 sur zv < 0, Δψ = biaisPsi 1,5° × P × sens × côté du pied + zψ σψ, Δθ = zθ σθ, ln v = μv + zv
+     σv) ; vitesseDe (tronquée [vPlancher 10 ; vPlafond 33]) ; finitionSigma reçoit sigma0 / aniso / corps de
+     l'ellipse (f_corps = 1 + corps (1 − cos Δφ), Δφ = cap du tir − yaw du corps ; absent : 1 exact) ; LA
+     NOMINALE INTÉGRÉE (E.nominal : predictPath(kick(from, v, cap, θ, rev)) jusqu'au plan du but, sept
+     bissections de θ sur la hauteur visée (y(θ) au plan est monotone, plateau du rebond compris — deux pas
+     de Newton divergeaient dans le rebond : mesuré −0,46 m), puis le cap corrigé linéairement sur le z
+     franchi vers zVisee (shooting.js le pose avec yVisee : la correction vise LE point, pas le décalage
+     d'aim de l'enroulée) ; l'événement 'shot' porte zVisee. Clé absente : les trois gauss d'hier au bit
+     (1dd69b0ccdc50f84 / 4c01c6cef91ccde2 = le défaut du 277 relu par git stash). LE CALAGE (4-8 × 20-45
+     min par point) : σ0 1,4-3,6 × aniso 2-4,5 — σhoriz au plan ≈ 0,7 σ0 m (la pression du 258 tient un tir
+     sur deux à P ≈ 1 : f_press 2,35), σvert du côté haut sature vers 2-3 m (la sensibilité), au-dessus 6-16 %,
+     à côté 10-20 % ; retenu σ0 2,0 (la borne haute du book), aniso 4,5, corps 0,9. Sonde APRÈS (8 × 45 min) :
+     cadrés 32-37 % (33 ✓), hors cadre 52-55 (36-38 — les tirs absorbés sans événement comptent hors), contrés
+     11-13, arrêts / cadrés 64-67 (dedans 61-62, dehors 75-85), buts 6,1 → 5,25 / match, buts / tirs
+     0,11-0,13 ; plan nominal : cadre 66-75 %, au-dessus 11-16 / à côté 14-17 → 0,83-0,93 (0 → ; cible ≥
+     1,1, ≈ 1,5), les deux 0-0,6, sur le montant 5-8 (2,3 — le ballon traverse le poteau), σvert 1,70-1,86 /
+     σhoriz 1,28-1,55 → 1,10-1,45 brut, côté haut (demi-normale) 2,65-3,07 → 1,71-2,40 (le test 6 : [1,6 ;
+     2,5]), dy p90 2,5-2,6 m, sorties de but 1,5-2,3 → 5-8,5 / match. Banc : verify-match11 bloc 278 (index
+     176 : normale inverse 1,960 à 0,975, σ 1,000, P(|ξ| > 2,5) 1,23 % — le gauss du moteur σ 0,706 et 0
+     tirage au-delà de 2,12 ; ρψθ 0,197, ρθv −0,326, E[zv] −0,23, μψ 1,49° à P 1 / 0,01° à P 0 / −1,51° du
+     pied gauche, σθ/σψ 4,5, la vitesse bornée ; 4 × 900 s : 1 / 12 tirs non exacts au-dessus de la barre,
+     5 hors cadre ; sabotage ellipse null : 0 / 14). Ce qu'il nomme : le ratio au-dessus / à côté sous 1,1
+     (les modes du book à 0,4-0,8 m des poteaux, la pression à P ≈ 1), les vitesses de frappe du book (28 /
+     20 — l'enveloppe du 276 se recale avec), les montants (la collision poteau / barre, Modèle 03 §6.3), le
+     volume (42-45 tirs pour 25), σ 0,7 sur la passe (le 265 au gauss du moteur). Banc complet (final279 :
+     8 shards puis 25 annexes) : 314 ✓ / 8 ✗ au premier passage — rouges verts à HEAD~ (worktree 59404a4)
+     et épinglés PAR CONTENU « ellipse: null DATÉ 278 », tous verts isolés à HEAD : 119 (bloc 48, le coin
+     et le une-deux), le flux des tirs du 232 (129), 135 (66), 97 (28, les fautes), 137 (68, l'offre de
+     montée), la fixture de finition 258 (151 : elle mesure le σ du 258, l'ellipse tire d'autres queues —
+     1,34 m latéral) ; hérités : 246d, les contres arrivés à l'entrée. Annexes : attributes 26/1 → 27/0
+     (L237, le pressing cohérent — 27/0 à HEAD~), scan 4/1 → 5/0 (L13, la saccade de Jordet — 5/0 à
+     HEAD~), identification 0/1 → REGELÉ DATÉ 278 (14 → 19 signatures : perdues LAT A|largeurR, MO
+     B|profondeur, AIL C|repli ; gagnées GK A|garde, DC A|profondeur, LAT A|appel, DC C|profondeur, MDC
+     A|largeurR, MDC A|appel, MIL A|tenue, AV C|tenue), loi12 12/2 hérité ; attente 52/0, cartons 6/0,
+     contact 25/0, expulsion 8/0, football-rules 59/0, foulee 54/0, frappes 13/0, gestes 60/0, kit 5/0,
+     loi3 10/0, match 84/0, menace 11/0, part-tint 18/0, porte 4/0, remises 36/0, roles 14/0, rondo 40/0,
+     slide 10/0, sync 9/0, tactics 11/0, tete 7/0. Bloc 1 seul : 0,51 ms/step (≤ 1,6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -644,6 +644,16 @@ Ce qu'il nomme : la pression du moteur (45-55 % des tirs à < 2 m d'un corps : u
 pour 7 % au book), la dispersion du 258 à recalibrer sur le point visé (cadrés 45 % pour 33, au-dessus 0), le volume des tirs
 (42-46 pour 25 — les entrées dans la surface), le penalty et la tête recentrés (lot 5).
 
+**278 — L'ELLIPSE DE FINITION : SCELLÉ (363).** L'erreur d'exécution du tir devient celle du Modèle 03 §5 (ellipse.js) :
+une vraie normale par inversion (le gauss du moteur, trois uniformes, n'avait ni le σ ni la queue — 0 tir au-dessus de la
+barre mesuré), (Δψ, Δθ) bivariée corrélée, ln v corrélé à Δθ (précipitée = levée et molle), tronquée, la queue basse épaisse,
+le pied qui s'ouvre sous pression, f_corps ; la nominale INTÉGRÉE jusqu'au plan du but (bissection de θ, cap corrigé —
+Modèle 10 §3.4) ; σ0 2,0° et l'anisotropie 4,5 en angle de départ calés sur le point visé du 277 (au plan : 1,7-2,4, le test
+6). Mesuré 8 × 45 min : cadrés 45-46 → 32-37 % (33), au-dessus / à côté 0 → 0,83-0,93, σvert / σhoriz 0,7 → 1,7-2,4, buts
+6,1 → 5,25 / match. Ce qu'il nomme : le ratio au-dessus / à côté sous 1,1 (les modes du book à 0,4-0,8 m des poteaux, la
+pression du 258 à P ≈ 1 sur un tir sur deux), les vitesses de frappe du book (28 / 20 pour 17-21), les montants traversés
+(Modèle 03 §6.3), le volume des tirs (42-45 pour 25 — les entrées dans la surface, le bloc).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

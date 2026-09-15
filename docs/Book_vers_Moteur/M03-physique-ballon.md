@@ -51,13 +51,13 @@ la météo.
 | 4 crise de traînée | inflexion 16-20, saturation 17-21 m/s à la ligne | mesurable, **partiel** | v à 20 m : 14 → 16,7 ; 16 → 16,7 ; 18 → 17,4 ; 20 → 18,5 ; 22 → 19,7 ; 26 → 22,4 ; 30 → 25,1 ; **35 → 28,4** — l'inflexion existe, pas la saturation ; `C_D` 0,45 / 0,32 / 0,17 à 8 / 13 / 25 m/s |
 | 5a `C_L` aux trois points | 0,14 / 0,29 / 0,33 | mesurable, **réfuté** | **0,054 / 0,138 / 0,191** — la moitié |
 | 5b déviation d'un coup franc à 25 m | 4,5-6,0 m | mesurable, **réfuté** | p50 **2,40 m** (1,7-3,0) |
-| 6 anisotropie du tir | σ_vert/σ_horiz 1,6-2,5 | absent (isotrope) |
-| 7 ellipse pied fort / faible | × 1,29 | partiel (`weakF` sur la dispersion ; à mesurer) |
+| 6 anisotropie du tir | σ_vert/σ_horiz 1,6-2,5 | **278** (ellipse.js) : mesuré au plan du but sur le point visé, 8 × 45 min — brut 1,10-1,45 (le sol tronque le bas : les tirs visent à 0,35 m), côté haut (demi-normale) **1,7-2,4** ; AVANT (258) 0,64-0,74 avec un gauss à σ 0,707 et sans queue ; l'anisotropie de départ est 4,5 (la sensibilité verticale du ballon à 16-19 m/s n'est que 7-9 m/rad) |
+| 7 ellipse pied fort / faible | × 1,29 | partiel (`weakF` × 0,29 sur σψ et σθ, le 258 ; l'ellipse du 278 le porte — aires à mesurer sur le protocole à 11 m) |
 | 8-9 interception, sensibilité à σ | 78-84 % équipe ; pente ≥ 6 pts | absent (pas de σ) |
 | 10 budget de déviations | 25-30 % bloqués | `contreTir` 176 existe — à instrumenter |
 | 11 non-omniscience | 4-9 pts | absent |
 | 12 rejeu bit à bit | | tenu en Node (jumeau d'empreinte du sceau) ; multi-plateforme non prouvé |
-| 13 positivité des facteurs | | à vérifier sur les 20 valeurs |
+| 13 positivité des facteurs | | tenu par construction (278 : facteurs multiplicatifs, identité 1 à 50 — finF, composureF, weakF ; f_corps ∈ [1 ; 2,8], f_press ≥ 1) |
 | 14 knuckleball | ≤ 0,45 m, λ 12-15 m | **absent** : excursion 0,000 m |
 
 ## 4. Les lots que la fiche appelle
@@ -66,7 +66,8 @@ la météo.
    enroulé et la passe brossée doublent leur courbe.
 2. **Le roulement DIN** (2, 3) : `a0 + b v` (0,40 ; 0,17) avec la norme UEFA comme clause — la passe au sol meurt
    là où elle meurt.
-3. **L'erreur anisotrope et l'exposant vitesse-précision** (6, 7, 13 ; le 258) : σ_vert/σ_horiz 2 sur le tir, 0,7 sur
-   la passe, γ 1,2, le sous-dosage sous pression — c'est le socle de l'échelle de finition.
+3. **L'erreur anisotrope et l'exposant vitesse-précision** (6, 7, 13 ; le 258) — **SCELLÉ 363 (278, ellipse.js)** : la
+   normale bivariée corrélée (ρψθ 0,2, ρθv −0,35), la vraie normale par inversion (Acklam, §5.3), la queue basse, la troncature, le
+   pied qui s'ouvre, f_corps, la nominale intégrée ; au plan 1,7-2,4. Reste : σ 0,7 sur la passe (le 265 vit encore au gauss du moteur).
 4. **L'interception probabiliste** (8, 9, 11 ; Modèle 04) : Spearman σ 0,45 s, λ 4,30, sur la trajectoire **perçue**.
 5. **Le knuckleball et la dispersion de `C_D`** (14) — après 1 et 3.

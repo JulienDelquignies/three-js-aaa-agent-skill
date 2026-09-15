@@ -4,13 +4,13 @@
 // (volumétrie du cœur), au bit près — la batterie est la preuve. Une famille par fichier.
 import { STANCES, anchorFor, planStrike, reachable } from './approach.js';
 import { gauss } from './attributes.js';
-import { flightRace, interceptPoint, laneClearance, solvePass } from './ball-predict.js';
-import { BALL } from './ball.js';
+import { flightRace, interceptPoint, laneClearance, solvePass, predictPath } from './ball-predict.js';
+import { BALL, kick } from './ball.js';
 import { startGesture } from './gesture.js';
 import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING } from './skills-sim.js';
-import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js';
+import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js';
 import { pressionDe, sigmaPasse } from './reception.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
@@ -320,7 +320,7 @@ export function finitionSigma(F, x) {
   const kappa = (F.kappa ?? 1.35) * ((x.composureF ?? 1.075) / 1.075);
   const sigPsi = (F.sigma0 ?? 1.4) * Math.PI / 180 * (x.finF ?? 1) * fPied * (1 + kappa * (x.P ?? 0))
     * (1 + (F.fatigue ?? 0.2) * (1 - (x.stam ?? 1))) * Math.pow(Math.max(0.3, (x.spd ?? 25) / (F.vMax ?? 35)), F.gamma ?? 1.2)
-    * (1 + (F.dist ?? 0.012) * Math.max(0, (x.dG ?? 12) - 12));
+    * (1 + (F.dist ?? 0.012) * Math.max(0, (x.dG ?? 12) - 12)) * (1 + (F.corps ?? 0) * (1 - Math.cos(x.dPhi ?? 0)));   /* (278) f_corps = 1 + corps (1 − cos Δφ) : le corps de travers (Modèle 03 §5.2) — absent : 1 */
   return { sigPsi, sigTheta: (F.aniso ?? 2) * sigPsi, sigV: F.sigmaV ?? 0.08,
     muV: -((F.sousDose ?? 0.05) + (F.sousDoseP ?? 0.10) * (x.P ?? 0)) - (F.fatigueV ?? 0.06) * (1 - (x.stam ?? 1)) };
 }
@@ -516,10 +516,27 @@ export function strikeNow(st, c, cfg) {
       elev = Math.max(0.005, Math.min(0.45, Math.atan((yV - (from[1] ?? 0.11) + 4.905 * tv * tv) / Math.max(1, dG))));
     }
     const faible = !!(c.strongFoot && c.strongFoot !== 'both' && c.foot && c.foot !== c.strongFoot);
-    const L = finitionSigma(F258, { finF: c.skill?.finF ?? 1, composureF: c.skill?.composureF ?? 1.075, weakF: c.skill?.weakF ?? 1, faible, P, stam: c.stam ?? 1, spd, dG });
+    // …L'ELLIPSE DE FINITION (278, cfg.ellipse — ellipse.js, Modèle 03 §5) : σ0 et aniso recalibrés sur le point visé, (Δψ, Δθ) bivariée
+    // corrélée, la vitesse log-normale corrélée à Δθ (précipitée = levée ET molle), à vraies queues (le gauss du moteur n'en a pas :
+    // 0 tir au-dessus mesuré), tronquée au plafond, le pied qui s'ouvre sous pression (μψ vers l'extérieur du pied). null : les trois tirages d'hier
+    const E = st.full && cfg.ellipse ? cfg.ellipse : null;
+    // …LA NOMINALE INTÉGRÉE (278, E.nominal — Modèle 10 §3.4 : « le point visé est atteint par construction si la trajectoire nominale est intégrée ») :
+    // l'élévation d'hier se résolvait dans le vide (mesuré : −0,35 m au plan, la traînée), le cap ignorait l'effet propre du geste (rev) ; ici la
+    // trajectoire nominale est INTÉGRÉE (predictPath) jusqu'au plan du but : iters bissections de θ sur la hauteur visée, puis le cap corrigé sur le z franchi
+    if (E && E.nominal && kind && kind.yVisee != null) { const zV = kind.zVisee ?? lead[2], sx = Math.sign(Math.cos(sol.dirYaw) || 1);
+      const plan = (el) => { const path = predictPath(kick([...from], { speed: spd, dirYaw: sol.dirYaw, elevation: el, spinAxis: [0, 1, 0], spinRev: kind.rev ?? 0 }), { maxT: 3 });
+        for (let k = 1; k < path.length; k++) { const a = path[k - 1].p[0] - lead[0], b = path[k].p[0] - lead[0]; if (a * b <= 0 && a !== b) { const u = a / (a - b); return [1, 2].map((j) => path[k - 1].p[j] + (path[k].p[j] - path[k - 1].p[j]) * u); } } return null; };
+      let lo = 0.005, hi = E.nominal.elevMax ?? 0.6, cr = plan(elev);   /* y(θ) au plan est monotone (plateau du rebond compris) : bissection sur θ, puis le cap corrigé linéairement sur le z franchi */
+      for (let it = 0; cr && it < (E.nominal.iters ?? 7); it++) { if (cr[0] < kind.yVisee) lo = elev; else hi = elev; elev = 0.5 * (lo + hi); cr = plan(elev); }
+      if (cr) sol.dirYaw += sx * (zV - cr[1]) / Math.max(1, dG); }
+    const dPhi = E ? Math.atan2(Math.sin(sol.dirYaw - (c.yaw ?? sol.dirYaw)), Math.cos(sol.dirYaw - (c.yaw ?? sol.dirYaw))) : 0;
+    const L = finitionSigma(E ? { ...F258, sigma0: E.sigma0 ?? F258.sigma0, aniso: E.aniso ?? F258.aniso, corps: E.corps ?? 0 } : F258, { finF: c.skill?.finF ?? 1, composureF: c.skill?.composureF ?? 1.075, weakF: c.skill?.weakF ?? 1, faible, P, stam: c.stam ?? 1, spd, dG, dPhi });
+    if (E) { const W = ecartDe(rnd, L, E, { P, cote: (c.foot === 'left' ? -1 : 1) * (E.sens ?? 1) }); shotYawNoise = W.dPsi; sol.dirYaw += W.dPsi; elev = Math.max(0.005, elev + W.dTheta); spd = vitesseDe(spd, W.lnV, E); }
+    else {
     shotYawNoise = gauss(rnd) * L.sigPsi; sol.dirYaw += shotYawNoise;   // la déviation de cap du tir, comme celle de la passe (dirNoise), avant la frappe
     elev = Math.max(0.005, elev + gauss(rnd) * L.sigTheta);
     spd = Math.max(10, spd * Math.exp(gauss(rnd) * L.sigV + L.muV));
+    }
   }
   // LA CLOCHE DU CENTRE (cfg.tete && st.full — lot 34) : un centre est un ARC par-dessus le
   // premier rideau, pas une passe tendue (0 centre entré en surface sur 4 matchs mesurés —
@@ -567,7 +584,7 @@ export function strikeNow(st, c, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: c.id, foot: c.foot,
       range: choice.shotInfo?.range ?? null, clear: choice.lane?.margin ?? null,
       tz: choice.shotInfo?.tz ?? null, gkZ: choice.shotInfo?.gkZ ?? null, speed: +spd.toFixed(1),   // …le spd FRAPPÉ (145) : l'event dit la vitesse réelle, souffle compris
-      kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2), z: +st.ball.p[2].toFixed(1), ...(kind?.visee ? { visee: kind.visee, yVisee: kind.yVisee } : {}), ...(choice.shotInfo?.xg != null ? { xg: choice.shotInfo.xg, xgDec: choice.shotInfo.xgDec, omega: choice.shotInfo.omega } : {}) });
+      kind: kind?.id ?? 'tendu', elev: +elev.toFixed(2), z: +st.ball.p[2].toFixed(1), ...(kind?.visee ? { visee: kind.visee, yVisee: kind.yVisee, ...(kind.zVisee != null ? { zVisee: kind.zVisee } : {}) } : {}), ...(choice.shotInfo?.xg != null ? { xg: choice.shotInfo.xg, xgDec: choice.shotInfo.xgDec, omega: choice.shotInfo.omega } : {}) });
     if (choice.shotInfo?.xg != null) (st.xg ??= [0, 0])[c.team] += choice.shotInfo.xg;   // (272) le xG cumulé par équipe (cible 1,30 / match)
   }
   // LA PERCEPTION A UNE HORLOGE : le départ du ballon est un événement — mais l'armé était

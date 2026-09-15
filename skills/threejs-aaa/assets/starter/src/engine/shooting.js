@@ -172,7 +172,7 @@ export function tryShot(st, c, cfg) {
     // mélange à neuf modes (le côté ouvert par le décentrage du gardien, la pression qui effondre vers « le cadre ») ; les
     // gestes EXACTS (lob, piqué) gardent leur cible. La hauteur visée voyage avec l'espèce (strike-sim la lit : yVisee).
     let tzV = tz;
-    if (st.full && cfg.visee && shotKind && !shotKind.exact) { const V = viseeDe(st, c, cfg, { goal, gk, dGoal }); tzV = V.z; shotKind.yVisee = V.y; shotKind.visee = V.id; tzAim = tzV; }
+    if (st.full && cfg.visee && shotKind && !shotKind.exact) { const V = viseeDe(st, c, cfg, { goal, gk, dGoal }); tzV = V.z; shotKind.yVisee = V.y; shotKind.zVisee = V.z; shotKind.visee = V.id; tzAim = tzV; }   /* (278) le z visé voyage aussi : la correction nominale de l'ellipse vise LE point, pas le décalage d'aim */
     if (shotKind?.curl) {
       // le décalage d'aim ÉGALE la courbe mesurée (1,44·(d/16)², plafond 2 — au plafond 1,5
       // l'enroulée de 19 m dépassait son poteau de 0,54 m), jamais au-delà du milieu du cadre ;
