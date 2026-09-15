@@ -12037,6 +12037,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      part-tint 18/0, tactics 11/0, slide 10/0, foulee 45/0, attente 42/0, remises 36/0, contact 25/0,
      porte 4/0, cartons 6/0, expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,56 ms/step.
      Sceau : commit 52af5ad, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-hnbeYBYC).
+- 361: LA FUSION DU 15/09 (« tu peux fusionner avec l'autre branche avant d'enchaîner ? ») — la
+     branche claude/11c11-3d-animations-ob06xa (A12a-f : le scan du receveur en vol, la réception
+     de trois-quarts, la pausa, le recul-frein, les rôles marchants, les dettes reprises sous trois
+     clés cfg.pausaPied / recevoirSurPlace / pasDeRecul — notes 353-358) et la mienne (272-276, la
+     porte xG, la ligne, l'interligne, le bloc qui perçoit, l'enveloppe du gardien) partaient toutes
+     deux du 274 (7e6cd12). Conflits : NOTES (leurs 353-358 gardent leurs numéros — leur code les
+     cite —, mes 275 et 276 passent en 359 et 360, PLAN_DOCTRINE et les fiches 10 / M10 suivent) ;
+     les épingles posées des deux côtés sur les MÊMES cfg (verify-attributes L171, verify-contact
+     L74, verify-match11 : six blocs) se combinent — mon script de fusion a d'abord AVALÉ mes
+     épingles dans leur commentaire (leur « pas les miennes */, » et mon « enveloppe: null /* … */, »
+     partageaient le suffixe « */, » : « pas les miennesenveloppe: null /* … » — l'enveloppe n'était
+     plus nulle, le 157 et le flux du 232 restaient rouges sans raison) : réparé (six lignes, la
+     détection des commentaires imbriqués sur une ligne). Empreintes : le défaut fusionné
+     1dd69b0ccdc50f84 / 144d0962b66de674 ; les cinq clés à null = le défaut du 274 au bit
+     (2cd66a81cf90545f / 5f4d7b0a110dd04d — la fusion n'invente rien) ; leurs trois clés à null ≠ le
+     défaut du 276 sur la graine 3 (19815e3b5bf6f160 c. 197e623b5bf4c255, la 7 identique) — l'autre
+     branche porte un écart hors clé (le regard, les postures : A12a-f), nommé, laissé à son auteur.
+     Banc complet sur l'état fusionné (final277) : 302 ✓ / 16 ✗ au premier passage — chaque rouge
+     vérifié dans LES DEUX PARENTS (worktrees 1a945e9 et f62c3d8), tous verts des deux côtés : la
+     combinaison remange les flux ; épinglés PAR CONTENU « DATÉ fusion 15/09 » avec les clés de
+     l'autre côté (leurs trois, mes enveloppe / blocPercu) : 114 (bloc 43), 135 (66), 167 (80),
+     190 (99), 229 (125), le flux des tirs du 232 (128 — xg null aussi : la clause compare la zone
+     de vérité à son sabotage, sous la porte xG les deux mondes sont le même), les passes vers un
+     receveur serré (136), le troisième homme (137), 244b (142), 245 (144), 273 (171), 98 (28),
+     118 (47) ; hérités : 246d (148), les contres arrivés à l'entrée (139). Annexes : attributes
+     26/1 → 27/0 (L171, l'épingle avalée réparée), match 82/2 → 84/0 (L1151, les épingles de la
+     fusion), contact 25/0 (L74 réparée), identification 1/0, foulee 54/0 et attente 52/0 (leurs
+     clauses), gaze 25/0 (leur annexe), signes 5/4 → 9/0 (leur annexe : son jumeau comparait les
+     trois clés nulles à des empreintes DATÉES 14/09 du monde 3d72ea4 — regelé sur le monde
+     fusionné 662a444, « hier » y est désormais le 276 ; son garde-fou des passes, remangé par la
+     combinaison (320 c. 248), mesure sous enveloppe et blocPercu nuls), loi12 12/2 hérité ; le
+     reste vert. Bloc 1 seul : 0,45 ms/step (≤ 1,6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

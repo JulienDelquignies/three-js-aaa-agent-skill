@@ -37,7 +37,7 @@ console.log('\n— (b) la réception sur place —');
 const attente = (over) => {
   let volF = 0, lent = 0, prises = 0, prisesLentes = 0, passes = 0, turnovers = 0;
   for (const seed of [1, 2, 3, 4, 5, 6]) {
-    const st = makeMatch({ full: true, seed }); const cfg = matchCfg(over); let lastTo = null, lentCe = false, seen = 0;
+    const st = makeMatch({ full: true, seed }); const cfg = matchCfg({ enveloppe: null, blocPercu: null /* DATÉ fusion 15/09 (272-276 × A12) : vert dans son parent (9/0 à f62c3d8), le garde-fou des passes remangé par la combinaison (320 c. 248) — la clause mesure les signes du rôle, pas le gardien à l'enveloppe ni le bloc qui perçoit */, ...over }); let lastTo = null, lentCe = false, seen = 0;
     for (let i = 0; i < 300 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       const to = st.phase === 'flight' ? (st.pass?.to ?? null) : null, p = to != null ? st.players[to] : null;
@@ -83,7 +83,7 @@ const recul = (over) => {
 console.log('\n— (d) le jumeau : les trois clés à null = le monde du 14/09 au bit —');
 {
   const emp = (over, seed) => { const st = makeMatch({ full: true, seed }); const cfg = matchCfg(over); const h = createHash('sha256'); for (let i = 0; i < 60 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 10 === 0) h.update(st.players.map((p) => p.p[0].toFixed(3) + ',' + p.p[2].toFixed(3)).join('|') + '#' + st.ball.p.map((v) => v.toFixed(3)).join(',')); } h.update(JSON.stringify(st.events.map((e) => [e.t, e.type, e.by ?? '']))); return h.digest('hex').slice(0, 16); };
-  const DATEES = { 1: '8aa4baa7c0092cec', 2: 'cecae92caa993608', 3: '9c8eda27f0f5dc63' };   // DATÉ 14/09 (dettes A12) : les empreintes du monde 3d72ea4 (clés absentes), 60 s
+  const DATEES = { 1: '76cb709b3dd0cdfe', 2: '5214c712cdf66a67', 3: 'b62c2626e236ae00' };   // REGELÉ DATÉ fusion 15/09 (272-276 × A12) : les empreintes du monde 662a444 aux trois clés nulles — « hier » est désormais le 276 (la porte xG, la ligne, l'interligne, le bloc qui perçoit, l'enveloppe) ; DATÉ 14/09 (dettes A12) : 8aa4baa7c0092cec / cecae92caa993608 / 9c8eda27f0f5dc63, le monde 3d72ea4
   for (const seed of [1, 2, 3]) { const e = emp(SANS, seed); ok(e === DATEES[seed], `graine ${seed} : ${e} = ${DATEES[seed]} (le monde d'hier au bit, clés à null)`); }
   const on = emp({}, 1); ok(on !== DATEES[1], `…et la clé allumée déplace le monde (graine 1 : ${on})`);
 }
