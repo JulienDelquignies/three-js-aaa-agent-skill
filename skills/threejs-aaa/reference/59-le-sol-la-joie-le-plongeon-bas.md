@@ -253,6 +253,10 @@ sous contrat). `petitsGestes: null` = hier au bit (aucun événement, aucune att
   `cadence` s. Rare par construction (1 en 90 s : l'appel se tire en jeu posé, hold > 0,6 s).
 - **Banc** : verify-petits-gestes 15/0 (les trois gestes × 40 styles sous contrat et checkClip ; la semelle, le mur, le dégagement, la
   feinte, les clés nulles) ; le jumeau d'empreinte avec `petitsGestes: null` = base au bit.
+- **L'applaudissement** (note 387 ; `applaudir { n 2, rayon 18, vMax 2,5, cadence 8 }`) : sur un arrêt du gardien, jusqu'à `n` coéquipiers
+  libres et posés à `rayon` m applaudissent (`applaudir`, trois claquements), une salve par équipe par `cadence` s ; et au salut final un
+  joueur sur deux applaudit la tribune (`ceremonie.salut.applaudir`, l'événement `salut` porte `geste`). C'était le seul geste généré
+  sans déclencheur : l'inventaire complet est dans `docs/Inventaire_Gestes.md` (75 sur 75 après ce lot, 74 avant — généré).
 - **Dettes** : la tête défensive DEBOUT reste `teteDebout` ; le contrôle orienté n'a pas d'événement sim (la scène le lit sur yawWant) ;
   le râteau à la relance n'est que la semelle (le preneur ne ramène pas le ballon) ; le gardien désigne sans crier ni avancer.
 

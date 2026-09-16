@@ -288,6 +288,9 @@
   — dans la surface, face au but la poitrine POSE le ballon devant à hauteur de reprise et la volée l'enchaîne (0,42 s) ; dos au but et
   libre elle le REMONTE au-dessus de la tête et la retournée s'arme au pas d'après ; le ballon remonté reste du ciel (la tête le laisse,
   la prise basse attend) ; le tireur ne se re-prend plus sa volée (une dette du tronc, sous clé) ; null = hier au bit.
+- LIVRÉ (note 387, docs/Inventaire_Gestes.md) : L'INVENTAIRE GESTE → DÉCLENCHEUR (75 gestes générés, 74 branchés avant ce lot, 75 après — généré
+  depuis le registre) et le dernier orphelin branché : applaudir (les coéquipiers sur un arrêt du gardien, un joueur sur deux au salut final).
+  Dette nommée : les touches de conduite se nomment 'control' sans technique (la scène joue le contrôle intérieur par défaut).
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

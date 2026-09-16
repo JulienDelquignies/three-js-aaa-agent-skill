@@ -70,6 +70,6 @@ export function salutStep(st, cfg) {
     if (Z.done[q.id]) { if (st.t > Z.done[q.id] + (S.duree ?? 2.8) + 1) q._regard = null; return; }
     if (st.t < Z.t0 + (S.attente ?? 0.6) + k * pas) return;
     Z.done[q.id] = st.t; q._regard = Math.atan2(tribune, 0);                          // le regard tenu vers la tribune, rendu après le salut
-    st.events.push({ t: +st.t.toFixed(2), type: 'salut', by: q.id, tribune });
+    st.events.push({ t: +st.t.toFixed(2), type: 'salut', by: q.id, tribune, geste: S.applaudir && k % 2 ? 'applaudir' : 'saluer' });   // (note 387) un joueur sur deux APPLAUDIT la tribune au lieu de saluer (S.applaudir)
   });
 }

@@ -63,5 +63,9 @@ console.log('\n— (c) la clé absente rend l\'hier ; le sabotage est attrapé �
   const s = joue({ ceremonie: { ...K, poignee: { ...K.poignee, rang: 3 } } }, 40);
   ok(`sabotage « la rangée à 3 m de la médiane » attrapé (les deux files à 6 m : à ≤ 1,1 m ${(100 * part(s.regards, (g) => g.d <= 1.1)).toFixed(0)} % des ${s.regards.length} paires — aucune main ne se joint)`, s.regards.length > 0 && part(s.regards, (g) => g.d <= 1.1) < 0.5);
 }
+{ // (note 387) le salut final mélange saluer et applaudir : un joueur sur deux applaudit (S.applaudir)
+  const r = joue({}, 100); const E = r.E; const sal = (E.saluts ?? []).filter((e) => e && e.type === 'salut'), app = sal.filter((e) => e.geste === 'applaudir');
+  ok(`LE SALUT MÊLÉ (ceremonie.salut.applaudir) : ${sal.length} saluts, dont ${app.length} applaudissent (attendu ~la moitié : ${Math.floor(sal.length / 2)})`, sal.length >= 10 && app.length === Math.floor(sal.length / 2));
+}
 console.log(`\ncérémonie : ${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

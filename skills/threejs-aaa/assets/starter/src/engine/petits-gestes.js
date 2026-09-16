@@ -37,6 +37,19 @@ export function petitsGestesStep(st, dt, cfg) {
     }
   }
   if (st._murRegard && (st.t > st._murRegard.until || !st.restart)) { const gk = st.players[st._murRegard.id]; if (gk && gk._regard != null) gk._regard = null; st._murRegard = null; }
+  // (note 387) L'APPLAUDISSEMENT : sur un arrêt du gardien, jusqu'à n coéquipiers libres et posés (≤ vMax) à rayon m applaudissent
+  // (applaudir, trois claquements) — une salve par équipe et par cadence s. Le seul geste généré sans déclencheur de l'inventaire du 16/09.
+  const i0 = st._pgIdx ?? st.events.length; st._pgIdx = st.events.length;
+  if (G?.applaudir) for (let i = i0; i < st.events.length; i++) {
+    const e = st.events[i]; if (e.type !== 'arrêt') continue;
+    const gk = st.players[e.by]; if (!gk) continue; const A = G.applaudir, team = gk.team;
+    if (st.t < ((st._applaudiAt ??= {})[team] ?? -99) + (A.cadence ?? 8)) continue;
+    const mates = st.players.filter((q) => q.team === team && q.id !== gk.id && q.down <= 0 && !q.act && !q._sub && (q.speed ?? 0) <= (A.vMax ?? 2.5) && hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2]) <= (A.rayon ?? 18))
+      .sort((a, b) => hyp(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - hyp(b.p[0] - gk.p[0], b.p[2] - gk.p[2])).slice(0, A.n ?? 2);
+    if (!mates.length) continue;
+    st._applaudiAt[team] = st.t;
+    for (const q of mates) st.events.push({ t: +st.t.toFixed(2), type: 'geste', by: q.id, move: 'applaudir', pour: gk.id, arret: e.mode });
+  }
 }
 
 /** La tête armée d'un défenseur près de son but (< 24 m, hors la tête au but) s'arme en dégagement : le geste par mode (teteStep décide de même). */

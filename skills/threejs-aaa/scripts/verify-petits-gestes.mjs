@@ -135,5 +135,22 @@ const match = (over, secs = 90) => {
   ok(`petitsGestes:null — aucun événement 'geste' en 60 s (${n.gestes.length})`, n.gestes.length === 0);
 }
 
+console.log('— (f) l\'applaudissement sur un arrêt (note 387) —');
+{
+  const arret = (over) => { const { st, cfg } = monde(over); const gk = st.players.find((q) => q.keeper && q.team === 1);
+    for (const q of st.players) { q.act = null; q.v = [0, 0]; q.speed = 0; }
+    const n0 = st.events.length; st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette' });
+    for (let i = 0; i < 12; i++) matchStep(st, 1 / 60, cfg);
+    const g1 = st.events.slice(n0).filter((e) => e.type === 'geste' && e.move === 'applaudir');
+    const n1 = st.events.length; st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'prise' });   // un second arrêt 0,2 s après : la cadence le tait
+    for (let i = 0; i < 12; i++) matchStep(st, 1 / 60, cfg);
+    const g2 = st.events.slice(n1).filter((e) => e.type === 'geste' && e.move === 'applaudir');
+    return { gk, g1, g2, ok1: g1.every((e) => { const q = st.players[e.by]; return q.team === gk.team && q.id !== gk.id && hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2]) <= K.applaudir.rayon; }) }; };
+  const r = arret({});
+  ok(`L'APPLAUDISSEMENT (petitsGestes.applaudir) : sur l'arrêt du gardien ${r.gk.id}, ${r.g1.length} coéquipiers applaudissent (≤ n ${K.applaudir.n}, à ≤ ${K.applaudir.rayon} m, pas le gardien : ${r.ok1}) — un second arrêt ${K.applaudir.cadence} s plus tôt que la cadence ne fait rien (${r.g2.length})`,
+    r.g1.length >= 1 && r.g1.length <= K.applaudir.n && r.ok1 && r.g2.length === 0);
+  const n = arret({ petitsGestes: null });
+  ok(`applaudir:null — aucun applaudissement (${n.g1.length})`, n.g1.length === 0);
+}
 console.log(`petits-gestes : ${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

@@ -28,7 +28,7 @@ export function feteEvent(scene, e) {
   } else if (e.type === 'poignee') {   // (A11 ter) LA POIGNÉE DE MAIN : les deux corps jouent serrerMain (motion-emotion, généré — le clip authored 'poignee' levait le bras sur ce rig), la scène joint les mains droites (poigneeWarp)
     for (const [id, autre] of [[e.by, e.avec], [e.avec, e.by]]) { const pl = scene.players[id]; if (!pl) continue; scene._playTech(pl, { type: 'poignee', move: 'serrerMain' }); pl._poignee = { avec: autre, t: scene._t }; pl._teched = scene._t; }
   } else if (e.type === 'salut') {   // (A11 ter) LE SALUT AU PUBLIC : saluer (motion-emotion, généré — le clip authored 'salut' sortait la main à 1 m sur ce rig) le temps de duree
-    const pl = scene.players[e.by]; if (!pl) return; scene._playTech(pl, { type: 'salut', move: 'saluer' }); pl._salutUntil = scene._t + (scene._mcfg?.ceremonie?.salut?.duree ?? 2.8); pl._teched = scene._t;
+    const pl = scene.players[e.by]; if (!pl) return; scene._playTech(pl, { type: 'salut', move: e.geste === 'applaudir' ? 'applaudir' : 'saluer' }); pl._salutUntil = scene._t + (scene._mcfg?.ceremonie?.salut?.duree ?? 2.8); pl._teched = scene._t;
   } else if (e.type === 'faute' || e.type === 'carton') {
     const pl = scene.players[e.by]; if (!pl) return;
     const calm = pl.sim.persona?.calm ?? 1;
@@ -60,7 +60,7 @@ export function feteStep(scene, pl) {
 /** (A11 ter) LES MAINS DROITES SE JOIGNENT pendant la poignée (0,15 → 0,85 s du clip) : les deux mains vont au point médian (deux IK
  *  deux os, le patron de la main saisie C2 — _armTo) ; et le salut rend le corps après sa durée (le clip est une boucle). */
 export function poigneeWarp(scene, pl) {
-  if (pl._salutUntil != null && scene._t > pl._salutUntil) { if (pl.gestureLayer.spec?.name === 'saluer') pl.gestureLayer.end(); pl._salutUntil = null; }
+  if (pl._salutUntil != null && scene._t > pl._salutUntil) { if (pl.gestureLayer.spec?.name === 'saluer' || pl.gestureLayer.spec?.name === 'applaudir') pl.gestureLayer.end(); pl._salutUntil = null; }
   const P = pl._poignee; if (!P) return;
   const tt = scene._t - P.t; if (tt > 1.3) { pl._poignee = null; return; }
   const b = scene.players[P.avec]; if (!b || b._poignee?.avec !== pl.sim.id || pl.gestureLayer.spec?.name !== 'serrerMain') return;   // la poignée est MUTUELLE : la rangée serre un nouvel homme toutes les ~0,9 s, on ne tire que vers celui qui nous tient

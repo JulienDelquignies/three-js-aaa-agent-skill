@@ -12832,3 +12832,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   ballon au pied à 1,3 m ('amorti-poitrine' possédé, la technique de la table) avant que chestStep ne parle — un ballon à hauteur de
   poitrine (≥ poitrine.min) dans la surface adverse, pour l'équipe du dernier toucheur, n'est plus pris au pied : la poitrine le joue.
 - **Épingles** : enchainement: null sur 42 bancs datés ; le jumeau (…, passements, enchainement null) = base au bit.
+
+- 387: LES INTÉGRATIONS MOTEUR RESTANTES — l'inventaire geste → déclencheur (docs/Inventaire_Gestes.md, généré : 75 gestes générés,
+  74 branchés avant ce lot, 75 après) et le seul orphelin branché, applaudir (petits-gestes.js sur un arrêt du gardien : jusqu'à 2 coéquipiers libres à 18 m,
+  une salve par équipe par 8 s, cfg.petitsGestes.applaudir ; ceremonie.js au salut final : un joueur sur deux applaudit la tribune,
+  cfg.ceremonie.salut.applaudir, l'événement 'salut' porte geste) ; la scène joue applaudir par 'geste' et par 'salut' (rondo-fete).
+  verify-petits-gestes 17/0, verify-ceremonie 9/0, verify-emotion 49/0.
+
+- **Ce qui n'est pas branché et pourquoi** : les touches de conduite du porteur (rondo.js) se nomment 'control' sans technique (23 % des
+  contrôles d'un match) — la scène joue controleInterieur/amorti par défaut ; nommer la touche (intérieur/extérieur selon le pied) est une
+  dette (rondo.js). Les clips authorés salut/poignee sont supplantés par saluer/serrerMain ; celebration et consulter restent en secours.
