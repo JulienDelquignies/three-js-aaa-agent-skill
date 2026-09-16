@@ -574,7 +574,7 @@ export const MATCH = {
                           // (réel 35-50). false : le bloc élastique d'hier (sabotage nommé) ;
                           // soutien absent : la ligne campeuse d'hier.
   volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 }, retournee: { hMin: 1.5, hMax: 2.1, reach: 0.7, dos: 2.0, libre: 1.5, but: 16, vitesse: 16, elevation: 0.05 },   // (C1) LA RETOURNÉE ARMÉE (tete.js) : le ciseau sur le ballon prédit au-dessus de la tête, dos au but, sans adversaire à portée ; null : hier
-  poitrine: { min: 1.15, max: 1.55, reach: 0.55, kill: 0.78 },  // 182a : LA POITRINE — la fenêtre
+  poitrine: { min: 1.15, max: 1.55, reach: 0.55, kill: 0.78 }, enchainement: { but: 16, libre: 1.5, prise: 0.45, apres: 0.35, volee: { delai: 0.45, devant: 0.6, hauteur: 0.7, face: 1.0 }, retournee: { devant: 0.15, hauteur: 1.75 } }, /* (note 386) L'ENCHAÎNEMENT poitrine → volée (face au but dans la surface : le ballon posé devant, repris en delai s) / poitrine → retournée (dos au but, libre : remonté au-dessus de la tête, le ciseau armé au pas d'après) ; null = hier au bit */  // 182a : LA POITRINE — la fenêtre
                           // morte entre volée et tête se joue au BUSTE (coéquipier du dernier
                           // toucheur) : amorti × controlF, ballon LIBRE devant lui. Absente : le
                           // vol qui traversait la boîte sans être joué (filmé aux centres).

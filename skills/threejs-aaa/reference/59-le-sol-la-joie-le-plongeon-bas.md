@@ -256,6 +256,30 @@ sous contrat). `petitsGestes: null` = hier au bit (aucun événement, aucune att
 - **Dettes** : la tête défensive DEBOUT reste `teteDebout` ; le contrôle orienté n'a pas d'événement sim (la scène le lit sur yawWant) ;
   le râteau à la relance n'est que la semelle (le preneur ne ramène pas le ballon) ; le gardien désigne sans crier ni avancer.
 
+## L'enchaînement contrôle poitrine → reprise de volée / retournée acrobatique (`cfg.enchainement`, note 386 — verify-enchainement 8/0)
+
+Retour : « un enchaînement contrôle poitrine reprise de volée c'est possible ? ou contrôle poitrine et retournée ? ». Oui, et les pièces
+existaient : la poitrine (182a, `chestStep`) prenait le vol à 1,15-1,55 m mais le TUAIT devant le corps et son cooldown de 0,8 s fermait
+toute reprise ; la volée (lot 40, `voleeStep`) et la retournée armée (C1, `retourneeArmerStep`) vivent dans le même bloc aérien de
+`rondo-sim` (phase `flight`, ballon libre) ; la prise à portée (< 1,9 m de haut) ramassait le ballon tombé. L'enchaînement est une loi de
+la poitrine, dans la surface (`but` 16 m) :
+
+- **face au but** (|dA| ≤ `volee.face` 1,0 rad) : la poitrine POSE le ballon — la vitesse se déduit du ballon réel pour qu'il soit
+  `devant` 0,6 m dans le regard à `hauteur` 0,7 m en `delai` 0,45 s (la poitrine le prend jusqu'à 0,9 m du corps : un pop fixe laissait
+  la reprise hors portée) — et `voleeStep` l'enchaîne : mesuré, la volée 0,42 s après la poitrine, ballon à 0,80 m et 0,48 m du corps ;
+- **dos au but** (|dA| ≥ `retournee.dos` 2,0 rad) et libre (aucun adversaire à `libre` 1,5 m) : la poitrine le REMONTE au-dessus de
+  la tête (`hauteur` 1,75 m à l'heure du contact du clip, 0,15 m derrière lui, vers le but) et la retournée s'arme au pas d'après :
+  mesuré, windup 3 images après la poitrine, le ciseau à 1,70 m, le tir « retournée » ;
+- **le ballon remonté reste du ciel** jusqu'à sa reprise (`st._enchaine { id, mode, until }`) : le bloc aérien tourne même hors phase
+  `flight`, la tête armée et la tête réactive le laissent, la prise basse attend (`prise` 0,45 m)  ; un ballon à hauteur de poitrine dans la surface adverse n'est pas pris au pied (la prise volait la poitrine, mesuré en page); les événements se nomment
+  (`control poitrine { enchaine }`, `volée { enchaine: 'poitrine' }`, `windup retournee { enchaine }`, `retournée { enchaine }`) ;
+- **et le tireur ne se re-prend pas sa volée** (`apres` 0,35 s) : mesuré, la volée ORDINAIRE d'hier était ramassée par son tireur
+  0,05 s après le tir (« amorti-poursuite », le ballon encore à portée) — une dette du tronc, ici sous clé.
+
+La scène ne change pas : `amorti` (la poitrine) puis `frappe` au contact (la volée) ou le clip `retournee` au windup — les gestes
+existaient, seul le moteur les enchaîne. `enchainement: null` = hier au bit (épinglé sur les bancs datés). Dettes : la poitrine reste
+rare en match (1 par dix minutes, les passes sont au sol) ; la retournée n'est enchaînée que dos au but ET libre.
+
 ## Bancs
 
 verify-contact 25 → 34 (la pose tenue vit et se ferme ×3, l'horloge en pur ×2, la sim sous cfg.sol ×3, sabotage

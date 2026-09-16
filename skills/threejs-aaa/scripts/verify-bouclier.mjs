@@ -15,7 +15,7 @@ const hyp = Math.hypot;
 // côté but, au pressing. On joue secs s ; appuiAt : un coéquipier libre téléporté sur son flanc (5 m de côté, 1,9 m en retrait — pas une remise arrière) à cette seconde ; lacheAt : le
 // presseur retiré. On rend la tenue vécue et sa mesure (distance mini adversaire-ballon, vitesse du porteur, le presseur dans le dos).
 const tenue = (over, { dP = 0.9, secs = 4, appuiAt = null, lacheAt = null, seed = 3 } = {}) => {
-  const st = makeMatch({ full: true, seed }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  repli: false, ...over });
+  const st = makeMatch({ full: true, seed }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  repli: false, ...over });
   for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
   st.ball.release('arrêt-de-jeu');
   const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
@@ -44,7 +44,7 @@ const tenue = (over, { dP = 0.9, secs = 4, appuiAt = null, lacheAt = null, seed 
     owner: st.ball.owner, restart: st.restart ? JSON.stringify(st.restart).slice(0, 60) : null, bouclier: ev('bouclier'), faute: ev('faute', (e) => e.sur === C.id), avantage: ev('avantage') ?? ev('restart-pris'), passe: ev('pass', (e) => e.by === C.id && e.t >= (B0 ?? 0)) ?? ev('passe', (e) => e.by === C.id && e.t >= (B0 ?? 0)), duel: ev('duel', (e) => e.sur === C.id && B1 != null && e.t <= B1 + 1e-6),
     types: E.filter((e) => e.by === C.id || e.by === D.id || /bouclier|faute|siffl|coup|carton|avantage|remise|restart/.test(e.type)).map((e) => `${e.t}:${e.type}${e.by != null ? '@' + e.by : ''}${e.kind ? '/' + e.kind : ''}${e.issue ? '/' + e.issue : ''}${e.tech ? '/' + e.tech : ''}`).join(' ') };
 };
-const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, }), K = cfg.bouclier;
+const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, }), K = cfg.bouclier;
 
 console.log('— (a) pressé dans le dos, sans appui : il TIENT, le corps entre le ballon et le presseur —');
 {

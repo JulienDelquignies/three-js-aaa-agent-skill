@@ -12814,3 +12814,21 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   LOD coupé) ; après : 0,26 m à 6 cm du ballon dès 0,10 s. Le ballon glisse ~15 cm vers le point du clip pendant l'entrée (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route).
 - **Captures** : s11-passement-cercle (le pied gauche au-dessus du ballon calé, le jockey posté).
 - **Dettes** : le ballon > 0,75 m (la touche de rappel) ; les défenseurs chargent (la posture jockey est du moteur) ; le lancé d'hier.
+
+- 386: L'ENCHAÎNEMENT POITRINE → VOLÉE / RETOURNÉE (retour utilisateur ; cfg.enchainement ; tete.chestStep (la pose), voleeStep et
+  retourneeContact (la protection après le tir), teteArmerStep/teteStep (le ballon remonté leur échappe), rondo-sim (le bloc aérien
+  hors phase flight, la prise basse qui attend) ; verify-enchainement 8/0 ; reference/59 § enchaînement).
+
+- **Les pièces existaient** (poitrine 182a, volée 40, retournée C1) mais la poitrine tuait le vol et fermait le ciel 0,8 s, et la prise
+  à portée (< 1,9 m) ramassait le ballon. Sondé sur la fixture de B3 (un centre TENDU, sommet 1,35 m sous la fenêtre de tête — à 5,8 m
+  de sommet la tête prenait tout) : hier, poitrine puis « amorti-poursuite » ; avec un pop fixe (avance 1,2 / pop 1,0 ; pop 3,2) la
+  volée ne venait pas (la phase passait à 'loose', le bloc aérien s'éteignait) et le ciseau restait à 0,75 m du ballon prédit (portée
+  0,7 : la poitrine prend jusqu'à 0,9 m). D'où la POSE (la vitesse déduite du ballon réel vers le point de reprise), st._enchaine qui
+  tient le bloc aérien et la prise basse (0,45 m), la tête qui laisse.
+- **Mesuré** : face, volée 0,42 s après la poitrine à 0,80 m ; dos, windup 3 images après, ciseau à 1,70 m ; null = hier au bit.
+- **La dette du tronc trouvée en route** : le tireur d'une volée ordinaire se re-prend le ballon 0,05 s après son tir (la prise à portée
+  0,5 m, le ballon encore là) — sous clé, `apres` 0,35 s de ciel après le tir ; hors clé, l'hier.
+- **La prise laisse la poitrine** (rondo-sim, sous clé) : en page (fixture analytique, sans traînée) le receveur dos au but PRENAIT le
+  ballon au pied à 1,3 m ('amorti-poitrine' possédé, la technique de la table) avant que chestStep ne parle — un ballon à hauteur de
+  poitrine (≥ poitrine.min) dans la surface adverse, pour l'équipe du dernier toucheur, n'est plus pris au pied : la poitrine le joue.
+- **Épingles** : enchainement: null sur 42 bancs datés ; le jumeau (…, passements, enchainement null) = base au bit.

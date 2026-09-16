@@ -16,7 +16,7 @@ const hyp = Math.hypot;
 // (theta : la raideur — 1,1 rad retombe presque à la verticale ; apex : le sommet). L'attaquant (att) est posé au point où le vol
 // redescend à 2 m et épinglé là. On rejoue jusqu'à la prise (ou 4 s) et on rend les événements du gardien.
 const lob = (over, { to = 2.5, apex = 7, theta = 1.1, att = false, gk0 = null, attLoin = null } = {}) => {
-  const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  repli: false, ...over });
+  const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  repli: false, ...over });
   for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
   st.ball.release('arrêt-de-jeu');
   for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }
@@ -52,7 +52,7 @@ const lob = (over, { to = 2.5, apex = 7, theta = 1.1, att = false, gk0 = null, a
   return { gk, A, X, t0, sg, tLand, dMax: +dMax.toFixed(2), dSpot, owner: st.ball.owner, vFin: vPoing, sortie: ev('sortie-aerienne'), windup: ev('windup', (e) => e.move === 'plongeonPrise' && e.sortie), poing: ev('windup', (e) => e.move === 'sortiePoing' && e.sortie), arretPoing: ev('arrêt', (e) => e.mode === 'poing'), sortieAv: ev('sortie-aerienne', avant), windupAv: ev('windup', (e) => e.move === 'plongeonPrise' && e.sortie && avant(e)), arret: ev('arrêt'), prise: ev('control', (e) => e.tech === 'prise-gardien'),
     types: E.map((e) => `${e.t}:${e.type}${e.by != null ? '@' + e.by : ''}${e.move ? '/' + e.move : ''}${e.mode ? '/' + e.mode : ''}${e.tech ? '/' + e.tech : ''}${e.aerienne ? '/aérienne' : ''}`).join(' ') };
 };
-const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, }), SA = cfg.sortieAerienne;
+const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, }), SA = cfg.sortieAerienne;
 
 console.log('— (a) le lob dans la surface de but : la sortie se décide, le saut à deux mains prend —');
 {

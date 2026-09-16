@@ -284,6 +284,10 @@
   le cercle était bon, le geste affamé (1 en 15 min : le porteur reçoit hors du presseur et conduit ballon devant, les défenseurs
   chargent) et le ballon calé où il traînait : le jockey jusqu'à 3,5 m, le porteur posé qui fixe son vis-à-vis (regard tenu), la charge
   jusqu'à 2,6 m/s, l'envie sur un plancher, le ballon ramené au point du clip dès l'entrée (0,6 cm au contact) ; 3 par match ; null = hier.
+- LIVRÉ (note 386, reference/59 § enchaînement, verify-enchainement 8/0) : L'ENCHAÎNEMENT POITRINE → VOLÉE / RETOURNÉE (cfg.enchainement)
+  — dans la surface, face au but la poitrine POSE le ballon devant à hauteur de reprise et la volée l'enchaîne (0,42 s) ; dos au but et
+  libre elle le REMONTE au-dessus de la tête et la retournée s'arme au pas d'après ; le ballon remonté reste du ciel (la tête le laisse,
+  la prise basse attend) ; le tireur ne se re-prend plus sa volée (une dette du tronc, sous clé) ; null = hier au bit.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

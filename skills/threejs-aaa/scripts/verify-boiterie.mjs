@@ -8,7 +8,7 @@ import { rondoInternals } from '../assets/starter/src/engine/rondo.js';
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 const hyp = Math.hypot;
-const monde = (over) => { const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, petitsGestes: null, passements: null, ...over }); for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg); return { st, cfg }; };
+const monde = (over) => { const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, petitsGestes: null, passements: null, enchainement: null, ...over }); for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg); return { st, cfg }; };
 const K = matchCfg({}).boiterie;
 
 console.log('— (a) la faute grave fait boiter, et la pointe s\'en ressent —');
@@ -37,7 +37,7 @@ console.log('\n— (b) l\'entrant trotte —');
 }
 console.log('\n— (c) les clés absentes rendent l\'hier —');
 {
-  const { st, cfg } = monde({ boiterie: null, entrant: null, petitsGestes: null, passements: null });
+  const { st, cfg } = monde({ boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
   const V = st.players.find((q) => q.team === 0 && !q.keeper), D = st.players.find((q) => q.team === 1 && !q.keeper);
   st._faute = { t: st.t, par: D.id, sur: V.id, team: V.team, p: [V.p[0], V.p[2]], grave: true, kind: 'tacle-glissé-derrière', vSur: 3, dir: [1, 0] };
   const n0 = st.events.length; for (let i = 0; i < 60 * 3; i++) matchStep(st, 1 / 60, cfg);

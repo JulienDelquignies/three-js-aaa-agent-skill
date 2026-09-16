@@ -277,7 +277,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // lacet finit SUR la sortie — mesuré en jouant le geste dans un vrai match téléporté
   {
     const st = makeMatch({ perTeam: 5, seed: 3 });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
     for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
     const c = st.players.find((p) => !p.keeper && p.team === 0);
     const foe = st.players.find((p) => !p.keeper && p.team === 1);
@@ -303,7 +303,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // et la MORSURE est longue (0,7 s — on ne se jette pas devant une demi-frappe)
   {
     const st = makeMatch({ perTeam: 5, seed: 3 });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
     for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
     const c = st.players.find((p) => !p.keeper && p.team === 0);
     const foe = st.players.find((p) => !p.keeper && p.team === 1);
@@ -432,7 +432,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // pique noté (5 sur 12 mesurées — le mécanisme vit, sa fixture le prouve à chaque run)
     for (const seed of [3, 7, 11, 1, 5, 9, 13, 2, 17, 4, 19, 6]) {
       const st = makeMatch({ perTeam: 5, seed });
-      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null });
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
       for (const e of st.events.filter((x) => x.type === 'skill')) {
         kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;

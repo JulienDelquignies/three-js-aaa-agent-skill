@@ -1027,7 +1027,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // LE COACH LIT LE MATCH (lot 113) : score/chrono/momentum → axes par paliers (coach.js)
     if (cfg.coach && st.full) coachStep(st, cfg);
     // LE CIEL SE JOUE (lot 34 tête / 182a poitrine / 40 volée — tete.js) : le vol sur un corps se reprend à SA hauteur — tête, buste (la fenêtre morte 1,15-1,55 fermée), pied
-    if (st.full && st.phase === 'flight' && released) { if (cfg.tete) { teteArmerStep(st, cfg); teteStep(st, cfg); } if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); if (cfg.retournee) retourneeArmerStep(st, cfg); }   // (C1) la retournée armée, après la volée : le ciel au-dessus de la tête debout
+    if (st.full && (st.phase === 'flight' || (st._enchaine && st.t < st._enchaine.until)) && released) { if (cfg.tete) { teteArmerStep(st, cfg); teteStep(st, cfg); }   /* (note 386) le ballon remonté par la poitrine reste du CIEL jusqu'à sa reprise */ if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); if (cfg.retournee) retourneeArmerStep(st, cfg); }   // (C1) la retournée armée, après la volée : le ciel au-dessus de la tête debout
     let taker = -1, bestD = Infinity;
     if (released) {
       const ayant = st.full && cfg.preneurCPA && st.restart && st.restart.taker >= 0 ? st.restart.taker : null;   // la remise a un AYANT DROIT (193) : l'élection ne teste que lui — le plus-proche collé gelait canTake
@@ -1035,7 +1035,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON (3 prises par corps couchés post-tacle mesurées) — possession = homme DEBOUT au ballon, le temps au sol est le prix du plongeon.
         if (p.down > 0 || (ayant != null && p.id !== ayant)) continue;
         const d = d2(p.p, st.ball.p);
-        if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
+        if (d < cfg.receiveRadius && st.ball.p[1] < (st._enchaine && st.t < st._enchaine.until ? (cfg.enchainement?.prise ?? 0.45) : 1.9) && d < bestD && !(st.full && cfg.enchainement && p.team === st.lastTouch && st.ball.p[1] >= (cfg.poitrine?.min ?? 1.15) && st.pitch.inBox(p.p[0], p.p[2], Math.sign(st.pitch.attackGoal(p.team).x || 1)))) { bestD = d; taker = p.id; }   /* (note 386) un ballon à hauteur de poitrine dans la surface adverse est à la POITRINE (chestStep), pas au pied : la prise le volait avant l'enchaînement (mesuré en page : 'amorti-poitrine' possédé) */
       }
       // LE DUEL DU CONTACT (lot 154, cfg.prise5050 && st.full) : dans la fenêtre du simultané (~12 cm)
       // la prise revient au plus VIF (reaction STRICTEMENT meilleure) ; à notes égales, l'ancien chemin
@@ -1045,7 +1045,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         for (const p of st.players) {
           if (p.down > 0 || p.team === t0.team || !p.skill) continue;
           const d = d2(p.p, st.ball.p);
-          if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d - bestD < fen
+          if (d < cfg.receiveRadius && st.ball.p[1] < (st._enchaine && st.t < st._enchaine.until ? (cfg.enchainement?.prise ?? 0.45) : 1.9) && d - bestD < fen
             && p.skill.reaction < st.players[taker].skill.reaction) taker = p.id;
         }
       }
