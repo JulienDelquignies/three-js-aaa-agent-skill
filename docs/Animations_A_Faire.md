@@ -105,10 +105,11 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
   qui plonge de ce côté) ; sim : `p._boite = { until }` posé par `adjugeFaute`, clé
   `cfg.sol.boiterie`.
 
-## 9. La tenue de balle dos au but (A10 ter)
+## 9. La tenue de balle dos au but (A10 ter) — LIVRÉ (16/09, note 379, reference/55 § A10 ter, `engine/bouclier.js`, cfg.bouclier)
 
-- **Geste.** Le bouclier existe (`contactShield`, A10 : le porteur protège son ballon) mais n'a pas
-  de DURÉE en jeu : la sim ne « tient » pas.
+- **Geste.** Le bouclier existe (`contactShield`, A10 : le porteur protège son ballon) et a maintenant sa DURÉE : la sim TIENT
+  (bouclierStep au tick de décision : arrêt, dos au presseur qui orbite, ballon porté ; issues appui / faute poussée / relache /
+  deborde / expiree ; contrat adversaire-ballon ≥ 0,6 m tenu à 0,74 m ; clé null = hier au bit).
 - **Déclencheur.** Une loi moteur : le porteur pressé dans le dos, sans appui devant, TIENT
   (`act` bouclier `ownsBody` 0,8-2 s, le ballon sous la semelle ou au pied, le corps entre le ballon
   et l'adversaire) jusqu'à un appui ou une faute ; clé `cfg.bouclier { duree, pression }`.

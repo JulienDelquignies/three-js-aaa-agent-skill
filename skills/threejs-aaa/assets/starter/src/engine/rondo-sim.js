@@ -647,7 +647,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       if (contested) {
         st.ball.release('contesté');
         { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }  // il tente de l'emmener hors du duel
-      } else if (intentFresh || settling || tourne || (st.full && cfg.pausaPied && c._pausa)) {   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
+      } else if (intentFresh || settling || tourne || (st.full && (cfg.pausaPied && c._pausa || c._bouclier))) {   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
         // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
         if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
         else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
@@ -965,8 +965,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
         const dosR = st.full && cfg.retournement && !engagementCall && choice && !choice.cross && choice.style !== 'lofted' && !st.restart && st.phase === 'carry' && !pressCall && !jeteCall && st.players[choice.to.id]
           && (() => { const to = st.players[choice.to.id]; if ((to.p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) > -2) return false; let dA = Math.atan2(to.p[2] - c.p[2], to.p[0] - c.p[0]) - c.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; return Math.abs(dA) > (cfg.retournement.cap ?? 1.75); })();
         if (dosR) { if (c._retour) c._retour.to = choice.to.id; else c._retour = { to: choice.to.id, t: st.t }; } else if (c._retour) c._retour = null;   // le chronomètre part de la PREMIÈRE image dos (un receveur qui change ne le réarme pas — l'engagement attendait 7,7 s)
-        const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2); const pausaNow = st.full && cfg.pausa && !st.restart ? pausaStep(st, c, cfg, choice) : false;   // LA PAUSA (253, pausa.js) : le porteur TIENT pour la course qui vient
-        if (!pausaNow && !attendR && !reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
+        const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2); const pausaNow = st.full && cfg.pausa && !st.restart ? pausaStep(st, c, cfg, choice) : false; const bouclierNow = st.full && cfg.bouclier && !st.restart ? bouclierStep(st, c, cfg, choice, jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) : false;   // (A10 ter, bouclier.js) LA TENUE DOS AU BUT : pressé dans le dos sans appui, il tient   // LA PAUSA (253, pausa.js) : le porteur TIENT pour la course qui vient
+        if (!pausaNow && !bouclierNow && !attendR && !reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;
@@ -1246,4 +1246,4 @@ function hullArea(pts) {
 }
 
 export { predictPath };
-import { hyp } from './hyp.js'; import { enPorte } from './movement.js'; import { presseurArrive } from './pression.js'; import { pausaStep } from './pausa.js';
+import { hyp } from './hyp.js'; import { enPorte } from './movement.js'; import { presseurArrive } from './pression.js'; import { pausaStep } from './pausa.js'; import { bouclierStep } from './bouclier.js';

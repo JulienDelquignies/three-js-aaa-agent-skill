@@ -12615,3 +12615,38 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   1 sortie, 1 saut, aucun poing — le lob contesté dans la surface de but est rare, la clause le tient.
 - **Capture** : c3-poing-cote/face (le lob à 2,5 m recalé, l'attaquant depuis 10 m à 6 m/s, l'arrêt à 0,73 s de l'armé).
 - **Dette** : le clip de prise en l'air reste plongeonPrise (pas de prisePlanante) ; le saut manqué retombe par onDiveEnd.
+
+- 379: LA TENUE DE BALLE DOS AU BUT (§ 9 = A10 ter ; `engine/bouclier.js`, cfg.bouclier ; reference/55 § A10 ter ; verify-bouclier 7/0)
+
+- **La loi** (`bouclierStep`, au tick de décision du porteur, avant l'adoption — le patron de la pausa) : le porteur (la possession,
+  le ballon à ≤ pied 1,2 m — bloqué sous la semelle s'il roule libre : possess + 'control' arret-semelle), posé (≤ vMax 4 m/s), pressé
+  DANS LE DOS (un adversaire côté but à ≤ pression 1,3 m, derrière son regard cos ≤ −0,4), SANS APPUI DEVANT (aucune passe au-dessus de
+  la barre du moment qui ne soit une remise à > 2 m en arrière), TIENT : ni passe ni conduite, la cible est sa place (match-sim), yawWant
+  à l'opposé du presseur (qui ORBITE : le corps le suit), le ballon porté au pied (rondo-sim). Issues (événement `bouclier`) : appui
+  (après min 0,8 s), faute, relache (> pression + 0,4 m), deborde (passé devant le regard), expiree (max 2 s), perdu ; la possession
+  changée entre deux ticks tombe sans événement. LA POUSSÉE : collé < 0,75 m plus de 0,6 s → un tirage (pFaute 0,3 × aggrF × rôle),
+  'faute' poussée posée (st._faute, l'arbitre l'adjuge : avantage ou coup franc, carton par la nature). Le duel d'épaule ne se joue pas
+  sur un porteur qui tient ni 0,8 s après (duel.chargeStep).
+- **Mesuré en construisant.** L'entrée jugée sur `st.ball.owner` ne s'engageait JAMAIS en match (0 tenue / 12 × 300 s ; compté sur
+  2 × 300 s : 561 ticks sur 668 sans owner — le porteur en conduite lâche le ballon entre deux touches — puis 95 sur 107 trop vite à
+  2,5 m/s) : la possession + le ballon au pied + vMax 4. L'appui jugé sur toute passe au-dessus de la barre refusait la tenue (la
+  remise arrière existe toujours) : « sans appui devant ». La sortie jugée sur l'axe du but rendait 'relache' à 2 s quand le
+  presseur avait orbité au flanc : jugée sur le regard, la tenue le suit. La fixture avec la défense adverse parquée à 60 m rendait
+  le porteur « lancé » (enLance) : la remise arrière interdite, aucune passe après l'appui — la défense est posée sur sa ligne de but.
+  Le duel d'épaule mordait 0,4 s après la tenue (40 % gagné : le ballon jaillissait) : la grâce. Une tenue perdue entre deux ticks
+  restait posée (durée 120 s dans la sonde) : la chute silencieuse (max + 1 s).
+- **Banc** (verify-bouclier, 7 clauses) : engagée au premier tick, expirée à 2,1 s, le presseur dans le dos à 0,5 m (la séparation
+  minGap), la distance adversaire-ballon mini 0,74 m (contrat ≥ 0,6), v 0 ; l'appui sur le flanc → appui à 1,1 s, la passe 0,2 s
+  après ; pFaute 1 → poussée à 1,1 s, avantage joué ; le presseur retiré → relache 0,9 s ; null → aucune tenue (hier : duel d'épaule
+  à 0,4 s, ballon à personne) ; sabotages pression:0 et contact:0 attrapés. Sync 9/0 ; jumeau sortieAerienne/retournee/bouclier null
+  = base 9fa4ec6 au bit.
+- **En match** (12 × 300 s, sonde-s9-match) : 12 tenues (relache 7, appui 3, faute 2), durée médiane 0,6 s, distance adversaire-ballon
+  mini par tenue médiane 1,12 m (mini 0,76 — jamais sous 0,6), aucune perte à la sortie, aucune poussée sifflée (pFaute 0,3 : le
+  presseur ne reste pas collé 0,6 s — la garde par tiers le tient à distance) ; le monde entier : buts 4-0 c. 2-1, fautes 16 c. 15,
+  pertes 224 c. 223, passes 575 c. 596, tirs 20 c. 21, duels d'épaule 29 c. 24 (bouclier:null). La tenue est courte parce que le
+  presseur LÂCHE : le pressing du moteur garde ses distances.
+- **En page** (match11, la fixture du banc) : engagée au premier tick, l'arrêt sous la semelle (clip arretSemelle 1 s) puis le clip
+  'protection' de la scène (contactShield, la géométrie) ; à 1,4 s le presseur à 0,5 m dans le dos (cos −0,6), le ballon à 0,69 m de
+  lui. Captures s9-tenue-cote / s9-tenue-dos.
+- **Dettes** : la tenue attend un appui SERVABLE (elle ne lit pas la course qui vient) ; le presseur qui orbite n'a pas de geste
+  (il pousse, la scène ne le montre pas) ; le clip de protection est celui de la scène (géométrie), pas un acte de la sim.

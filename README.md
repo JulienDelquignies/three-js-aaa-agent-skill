@@ -286,6 +286,8 @@ examples/
 
   The KEEPER'S PUNCH (lot C3, under `cfg.sortieAerienne`): a generated `sortiePoing` clip (jump with a raised knee, both fists together above the head, the blow through the ball, `checkKeeperGen` rules) armed instead of the two-handed catch when an attacker arrives with the ball; the flight scan stops at the first point an attacker reaches before the keeper, a decided claim sticks, and the dive resolution clears the ball far upfield (`arrêt` mode `poing`).
 
+  HOLDING THE BALL BACK TO GOAL (lot § 9, `engine/bouclier.js`, `cfg.bouclier`): a carrier pressed in the back with no forward option holds instead of dribbling away: he stops, keeps his back to the presser as the presser orbits, carries the ball at his foot (or stops a rolling one under the sole), and the hold ends on a forward option, a push-in-the-back foul (posed with a seeded draw), the presser leaving, or 2 s; no shoulder duel on a holding carrier; the scene's existing `protection` clip plays over it. Key null = yesterday bit for bit.
+
 ## Install
 
 As a plugin via marketplace:

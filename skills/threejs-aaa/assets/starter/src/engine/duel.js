@@ -228,7 +228,7 @@ export function chargeStep(st, c, dt, cfg) {
   const foe = st.players.filter((q) => q.team !== c.team && !q.keeper && q.down <= 0 && !q.act
     && d2(q.p, c.p) < (B.dist ?? 0.85) && (q._chgCd ?? 0) <= st.t)
     .sort((a, b) => d2(a.p, c.p) - d2(b.p, c.p))[0];
-  if (!foe) { st._chgT = 0; return; }
+  if (!foe || (st.full && (c._bouclier || (c._bouclierGrace ?? -1) > st.t))) { st._chgT = 0; return; }   // (A10 ter, bouclier.js) le porteur qui TIENT ne se charge pas : dans son dos c'est la poussée, jugée là-bas
   st._chgT = (st._chgT ?? 0) + dt;
   if (st._chgT < (B.time ?? 0.4)) return;
   st._chgT = 0;

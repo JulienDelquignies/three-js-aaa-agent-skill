@@ -255,6 +255,10 @@
   le geste généré sortiePoing (saut, genou levé, poings serrés à 13 cm, le coup à travers 36 cm) ; la sortie armée du poing quand
   l'attaquant arrive avec le ballon (à moins de 0,4 s), le balayage du vol arrêté au premier point qu'un attaquant prend avant le
   gardien, la sortie décidée qui tient ; le ballon dégagé du poing (12 m/s vers le terrain) ; sous sortieAerienne (null = hier).
+- LIVRÉ (note 379, reference/55 § A10 ter, verify-bouclier 7/0) : LA TENUE DE BALLE DOS AU BUT (§ 9 = A10 ter, engine/bouclier.js,
+  cfg.bouclier) — le porteur pressé dans le dos sans appui devant TIENT (arrêt, le dos au presseur qui orbite, le ballon porté ou
+  bloqué sous la semelle) jusqu'à l'appui, la POUSSÉE dans le dos (faute posée, tirage), le relâcher ou 2 s ; pas de duel d'épaule
+  sur un porteur qui tient ; contrat adversaire-ballon ≥ 0,6 m ; null = hier au bit.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

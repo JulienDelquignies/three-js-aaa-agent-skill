@@ -123,10 +123,40 @@ dans les cônes de `duel.js` et de la prise), pas un habillage ; l'alternative �
 tronc s'il préfère ses cônes d'hier. Verdict : la clé re-tire les trajectoires comme A9 (« le tirage, pas la
 clé »), l'équilibre tient, l'hier au bit sans la clé.
 
+## La tenue de balle dos au but (A10 ter — Animations_A_Faire § 9 ; `engine/bouclier.js`, `cfg.bouclier`, note 379)
+
+Le geste (`protection`) jouait sur la géométrie de la scène, mais la sim ne TENAIT pas : le porteur pressé dans le dos conduisait
+ou se retournait, le ballon libre entre ses touches à portée du presseur. La loi, au tick de décision du porteur (rondo-sim,
+`bouclierStep`, avant l'adoption d'une intention — le patron de la pausa) :
+
+- **L'entrée.** Le porteur (la possession, le ballon à ≤ `pied` 1,2 m — s'il roule libre entre deux touches il est BLOQUÉ sous
+  la semelle : possess + 'control' arret-semelle, comme la pausa au pied), posé (≤ `vMax` 4 m/s), pressé DANS LE DOS (un
+  adversaire côté but adverse — cos ≥ `dos` 0,3 — à ≤ `pression` 1,3 m, derrière son regard — cos ≤ −`face` 0,4), SANS APPUI
+  DEVANT (aucune passe au-dessus de la barre d'adoption du moment qui ne soit une remise à plus de `arriere` 2 m en arrière —
+  la remise arrière reste possible à l'expiration, elle ne dispense pas de tenir), la tenue forcée pas trop proche (holdMax −
+  `marge`), hors `cd` 3 s de la précédente.
+- **La tenue.** Ni passe ni conduite (aucune intention adoptée) ; le corps s'arrête (match-sim : la cible est sa place, le
+  patron de la pausa) ; `yawWant` à l'opposé du presseur — qui ORBITE autour du corps : le porteur le suit, le dos toujours entre
+  lui et le ballon ; le ballon PORTÉ au pied (rondo-sim, le porté de la pausa au pied). Le duel d'épaule ne se joue pas sur un
+  porteur qui tient ni dans les `grace` 0,8 s qui suivent (duel.chargeStep : dans le dos d'un homme posé, c'est la poussée).
+- **La poussée dans le dos.** Le presseur collé à < `contact` 0,75 m plus de `pousse` 0,6 s : un tirage par tenue, `pFaute` 0,3 ×
+  aggrF × (0,8 + 0,4 · rôle qui presse) ; la faute 'poussée' est POSÉE (`st._faute`, cfg.loi12) — l'arbitre l'adjuge (avantage ou
+  coup franc, le carton par la nature, base `defaut`).
+- **Les issues** (événement `bouclier` : duree, issue, par) : `appui` (une passe devant passe la barre, après `min` 0,8 s — l'adoption
+  suit au même tick), `faute`, `relache` (plus d'adversaire à ≤ pression + `hysteresis` 0,4 m), `deborde` (le presseur passé devant
+  le regard : le duel d'hier), `expiree` (`max` 2 s ou la tenue forcée), `perdu`. La possession changée entre deux ticks (le bloc ne
+  parle qu'au porteur) : la tenue tombe sans événement.
+- **Contrat** (verify-bouclier, 7 clauses) : la fixture (le porteur à 22 m dos au but, le presseur à 0,9 m dans son dos, les siens à
+  60 m, la défense adverse sur sa ligne — le porteur n'est pas « lancé ») : la tenue s'engage au premier tick, expire à 2 s, le presseur
+  toujours dans son dos, à 0,5 m (la séparation des corps), la distance adversaire-ballon mini 0,74 m (≥ 0,6), v 0, aucun duel
+  d'épaule ; l'appui sur le flanc à 1 s → issue appui à 1,1 s et la passe part 0,2 s après ; pFaute 1 → 'faute' poussée à 1,1 s,
+  la tenue finit faute, l'arbitre joue l'avantage ; le presseur retiré → relache ; bouclier:null → aucune tenue (hier : le duel
+  d'épaule à 0,4 s, le ballon à personne) ; sabotages pression:0 (jamais dans le dos) et contact:0 (jamais de poussée) attrapés.
+
 ## Les dettes nommées
 
-- Le bouclier n'a pas de durée en jeu (la sim relâche le ballon sous 0,35 s quand on est collé) ; une
-  tenue de balle dos au but serait une loi du moteur (à proposer : un `hold` de protection sous presse).
+- ~~Le bouclier n'a pas de durée en jeu~~ — livré (A10 ter, `cfg.bouclier`) ; reste : la tenue ne lit pas la course d'un partenaire
+  qui VIENT (elle attend l'appui servable), et le presseur qui orbite n'a pas de geste propre (il pousse, la scène ne le montre pas).
 - Le duel d'épaule est rare (1 en 360 s sur la graine 3) : `chargeStep` demande 0,4 s à ≤ 0,85 m.
 - La chute ne lit pas encore l'adversaire au sol (deux corps se traversent) ; pas de relevé « aidé ».
 - Le fauché glisse dans le sens de sa vitesse, quelle que soit la chute (le retenu glisse peu : 0,25 ×).
