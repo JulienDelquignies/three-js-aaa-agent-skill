@@ -73,6 +73,14 @@ instant d'attente (126 vols). La posture doit donc vivre dans la FOULÉE lente, 
 **Contrat.** verify-attente 44 → 46 (l'espèce sous contrat sur 24 styles, la politique, le sabotage) ; verify-foulee
 45 → 48 (les bras du receveur, le contrat tenu, le drapeau absent au bit). verify-gait 23/0, verify-locomotion 6/0.
 
+**Retour utilisateur (15/09) : « les bras écartés à la réception, c'est pas terrible ».** Corrigé : la posture
+`reception` garde les bras calmes le long du corps (élévation 12°, avancée 12°, coude 52° — au lieu de 26/20/74) et la
+foulée du receveur n'ouvre plus les bras d'un écart uniforme (+4° et +8° par défaut au lieu de +12/+16, balancier
+× 0,7). L'amplitude vient désormais du PORT DE BRAS de la persona (`persona.bras` ∈ [0,15 ; 0,9], tiré en dernier pour
+ne pas déplacer les autres champs) : bras 0,15 → écart des mains 55 cm en marche, 0,9 → 61 cm, sans le drapeau 52 — le
+jockey le lit aussi. Et le projet aval peut le POSER par joueur, avec la persona et les trois styles :
+`docs/Interface_Style_Joueur.md`. Aucun bit de sim (empreinte du monde servi inchangée, 43b14c0f24b0bb37).
+
 **Captures (playmode, graine 3).** `a12b-reception-approche.png` / `-face.png` (t = 4,3 s, receveur 1 à 1 m/s,
 corps à 67° du ballon qui roule vers lui : appuis larges, genoux fléchis, bras ouverts) ; `a12b-reception-attente-
 face.png` / `-plan.png` (t = 69,8 s, receveur 9 sous 0,5 m/s, corps à 38° d'un ballon en cloche à 13 m : la posture

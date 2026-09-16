@@ -1,4 +1,4 @@
-import { tirage } from './rng.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
+import { tirage } from './rng.js'; import { ramasseursStep, ramasseurPrend } from './ramasseurs.js'; import { semelleAvant, petitsGestesStep } from './petits-gestes.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
 // referee.js — L'ARBITRAGE ET LES CÉRÉMONIES DU MATCH, sortis de match-sim (lot 16 : la
 // volumétrie est une dette comme une autre — 1 575 lignes accrétées en six lots). La FAMILLE
 // est cohésive : tout ce qui ARRÊTE et REMET le jeu — sorties (onOut), droit de prise
@@ -325,9 +325,11 @@ export function cornerTrav(st, id, cfg) {
   const goal = pitch.attackGoal(q.team);
   const sg = Math.sign(goal.x || 1);
   if (Math.abs(Math.abs(q.p[0]) - pitch.hx) > 4) return false;     // pas un vrai coin (sécurité)
+  const pre = q._cornerCort; q._cornerCort = null;                  // (B2) le CORT tiré À LA POSE (elan.poserElan, tirImmediat) : 'court' → le corner de possession, joué au contact d'élan ; 'centre' → pas de second tirage
+  if (pre === 'court') return false;
   const rnd = tirage(st, 'cpa', q.id, st.rnd2 ?? st.rnd ?? (() => 0.5));
   const sty = st.tactics ? (st.tactics[q.team]?.style ?? 0.5) : 0.5;
-  if (rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30) return false;   // le CORT du style : possession 35 %, direct 5 %
+  if (!pre && rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30) return false;   // le CORT du style : possession 35 %, direct 5 %
   const cz = Math.sign(q.p[2] || 1);
   // LE STYLE DE CORNER PAR ÉQUIPE (lot 148, tac.cpa.corner — la demande mesurée du
   // consommateur carrière) : 'court' joue le une-deux du coin (nouvelle variante), 'premier'
@@ -569,8 +571,8 @@ export function onOut(st, cfg) {
           .sort((a2, b2) => d2(a2.p, bp2) - d2(b2.p, bp2)).slice(0, C.n ?? 3).map((q) => q.id);
         st._celeb = { by, avec, until: st.t + (C.dur ?? 6) - 1.2,
           corner: [Math.sign(bp2[0] || 1) * (st.pitch.hx - 4), Math.sign(bp2[2] || 1) * (st.pitch.hz - 5)] };
-        st.players[by]._pace = { ...(st.players[by]._pace ?? { next: 3 }), until: st.t + 1.6, kind: 'celebration' };
-        st.events.push({ t: +st.t.toFixed(2), type: 'celebration', by, avec });
+        st.players[by]._pace = { ...(st.players[by]._pace ?? { next: 3 }), until: st.t + 1.6, kind: 'celebration' }; const F = cfg.fete, pers = st.players[by].persona, geste = F ? ((pers?.flair ?? 0.5) >= (F.flairGlisse ?? 0.7) ? 'glissade' : (pers?.calm ?? 1) >= (F.calme ?? 1.15) ? 'calme' : (pers?.flair ?? 0.5) >= (F.flairOreille ?? 0.45) && (pers?.calm ?? 1) >= 1.02 ? 'oreille' : (pers?.burstiness ?? 1) >= (F.poing ?? 1.05) ? 'poing' : 'brasLeves') : null;   // (A11, cfg.fete) LE TEMPÉRAMENT DE LA JOIE : la persona choisit le geste — la glissade se planifie (glisseAt, match-sim), le calme marche ; null = hier au bit
+        if (geste) { st._celeb.geste = geste; if (geste === 'glissade') st._celeb.glisseAt = st.t + (F.elan ?? 1.4); } st.events.push({ t: +st.t.toFixed(2), type: 'celebration', by, avec, ...(geste ? { geste } : {}) });
       }
     } else {
       placeKickoff(st, r.team, cfg);
@@ -614,12 +616,14 @@ export function tempoWait(st, cfg, team, type = null) {
 }
 
 export function canTake(st, takerId, cfg) {
+  if (st._murCorps && st.t <= st._murCorps.until && st._murCorps.ids.includes(takerId)) return false;   // (B4) l'homme du mur ne CONTRÔLE pas le coup franc qui le frappe : le ballon rencontre son corps (elan.murCorps)
   if (!st.restart) return true;
   const p = st.players[takerId];
   if (st.restart.placed === false) return false;
   if (st.t < st.restart.at - 0.25) return false;
   if (p.team !== st.restart.team) return false;
   const ty = st.restart.type;
+  if (semelleAvant(st, p, cfg)) return false;   // (§ 10, petits-gestes.js) la sortie de but attend la SEMELLE du preneur
   // LE LANCEUR SE POSE (lot A9) : la touche se lance À L'ARRÊT, FACE AU TERRAIN (ballFetch le tourne par le slew) — mesuré
   // avant : pris en course à 4 m/s, dos au jeu, le geste lançait par-dessus la tête. Patience 3 s : jamais de gel.
   // …et la touche est à son LANCEUR (lot A9 bis, cfg.remisesPied.touche) : posté derrière la ligne, c'est lui qui lance — hier le plus proche
@@ -707,9 +711,9 @@ export function chronoStep(st, cfg) {
   // s'accumulent, l'arbitre en rend une fraction (×0,35, plafonnée à 12 % de la période) —
   // et l'annonce est un événement quand la période nominale expire. false : la montre truquée
   // (sabotage nommé — la période coupe pile, les remises ont mangé du jeu).
-  if (st.restart && dt > 0 && !st.fini) C.arrets = (C.arrets ?? 0) + dt;
+  if (st.restart && dt > 0 && !st.fini && !st._ceremonie?.actif) C.arrets = (C.arrets ?? 0) + dt;   // (A11 ter) la cérémonie d'avant-match n'est pas un arrêt de jeu
   const add = ch.additionnel !== false ? (st.full && cfg.temps?.additionnel ? addDe(C.arrets ?? 0, duree, cfg.temps.additionnel, (st.score?.[0] ?? 0) - (st.score?.[1] ?? 0), C.periode >= periodes) : Math.min(duree * 0.12, (C.arrets ?? 0) * 0.35)) : 0;   // LE TEMPS ADDITIONNEL QUI LIT LE MATCH (270, doc temps.js) ; clé absente : la fraction plate d'hier au bit
-  const finNominale = C.periode * duree + (C.periode - 1) * pause;
+  const finNominale = C.periode * duree + (C.periode - 1) * pause + (st._ceremonie?.fin ?? 0);   // (A11 ter) la période part au coup d'envoi qui suit la cérémonie
   if (ch.additionnel !== false && !C.annonce && st.t >= finNominale) {
     C.annonce = true;
     st.events.push({ t: +st.t.toFixed(2), type: 'temps-additionnel', periode: C.periode, sec: +add.toFixed(1) });
@@ -768,7 +772,7 @@ export function adjugeFaute(st, cfg) {
   const seuil = cfg.loi12.jaune ?? 2;
   const fautif = st.players[F.par];
   const expulser = (extra) => {
-    st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par, ...(extra ?? {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par, ...(extra ?? {}) }); poserGeste(st, cfg, { kind: 'carton', couleur: 'rouge', dir: st.arbitre ? Math.atan2(fautif.p[2] - st.arbitre.p[2], fautif.p[0] - st.arbitre.p[0]) : null });   // (A11 bis) le rouge montré au fautif
     // L'EXPULSION PHYSIQUE (lot 28) : le rouge SORT le corps. Il marche vers la ligne la
     // plus proche et y RESTE — et il CESSE D'EXISTER pour les cerveaux par le levier natif :
     // down géant (les ~30 filtres down<=0 du moteur le couvrent sans être touchés — une
@@ -796,6 +800,7 @@ export function adjugeFaute(st, cfg) {
     // jaune à tally (les fautes répétées, Loi 12) ; l'averti se retient (duel : × retenue) et l'arbitre hésite à
     // l'exclure (τ + réticence). null : la récidive à 2 du 25 au bit.
     const vic = st.players[F.sur];
+    if (st.full && cfg.boiterie && vic && F.grave && !vic.keeper) { const BO = cfg.boiterie; vic._boite = { until: st.t + (BO.duree ?? 25), duree: BO.duree ?? 25, side: (F.par + F.sur) % 2 ? 'left' : 'right' }; st.events.push({ t: +st.t.toFixed(2), type: 'boiterie', by: vic.id, side: vic._boite.side, duree: vic._boite.duree }); }   // (§ 8) LA BOITERIE : le fauché d'une faute grave boite duree s (la scène : opts.boite ; movement : la pointe réduite)
     const own = st.pitch.ownGoal(fautif.team);
     const base = K.base ?? {};
     let S = (base[F.kind ?? 'tacle-debout'] ?? K.defaut ?? 0.3) + (K.vitesse ?? 0.03) * Math.min(8, F.vSur ?? 0) + (K.aggr ?? 0.3) * ((fautif.skill?.aggrF ?? 1) - 1);
@@ -829,7 +834,7 @@ export function adjugeFaute(st, cfg) {
       const repetee = !(u < pJ);
       fautif._ardoise = 0;
       fautif._jaunes = (fautif._jaunes ?? 0) + 1;
-      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes, ...nat, ...(repetee ? { repetee: true } : {}) });
+      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes, ...nat, ...(repetee ? { repetee: true } : {}) }); poserGeste(st, cfg, { kind: 'carton', couleur: 'jaune', dir: st.arbitre ? Math.atan2(fautif.p[2] - st.arbitre.p[2], fautif.p[0] - st.arbitre.p[0]) : null });
       if (fautif._jaunes === 2) expulser({ second: true });
     }
   } else if (seuil > 0 && fautif) {
@@ -838,12 +843,12 @@ export function adjugeFaute(st, cfg) {
     fautif._fautes = (fautif._fautes ?? 0) + (F.grave ? 2 : 1);
     if (fautif._fautes % seuil === 0) {
       fautif._jaunes = (fautif._jaunes ?? 0) + 1;
-      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes });
+      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes }); poserGeste(st, cfg, { kind: 'carton', couleur: 'jaune', dir: st.arbitre ? Math.atan2(fautif.p[2] - st.arbitre.p[2], fautif.p[0] - st.arbitre.p[0]) : null });
       if (fautif._jaunes === 2) expulser();
     }
   }
   if (fen > 0 && fin && !perdu && holder === F.team && st.possession.carrier >= 0) {
-    st.events.push({ t: +st.t.toFixed(2), type: 'avantage', team: F.team });
+    st.events.push({ t: +st.t.toFixed(2), type: 'avantage', team: F.team }); poserGeste(st, cfg, { kind: 'avantage', enCourant: true });   // (A11 bis) « jouez » : les deux bras devant, en courant
     return;
   }
   const { pitch } = st;
@@ -854,7 +859,7 @@ export function adjugeFaute(st, cfg) {
   const p = dansSurface ? [own.x - Math.sign(own.x) * pitch.dims.spot, 0]
     : [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, F.p[0])), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, F.p[1]))];
   const type = dansSurface ? 'penalty' : 'coup-franc';
-  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: type, team: F.team, p: [+p[0].toFixed(1), +p[1].toFixed(1)] });
+  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: type, team: F.team, p: [+p[0].toFixed(1), +p[1].toFixed(1)] }); poserGeste(st, cfg, { kind: 'siffler' }); poserGeste(st, cfg, { kind: 'designer', dir: dansSurface ? Math.atan2(0 - st.arbitre?.p[2] || 0, own.x - (st.arbitre?.p[0] ?? 0)) : (Math.sign(pitch.attackGoal(F.team).x || 1) > 0 ? 0 : Math.PI) });   // (A11 bis) LE SIFFLET DE LA FAUTE : le sifflet (après le carton posé plus haut il passe devant), puis le bras vers le but attaqué — ou vers le point de penalty
   st.restart = { type, p, team: F.team, at: st.t + tempoWait(st, cfg, F.team, type) + (dansSurface ? 1 : 0) };   // (217) l'espèce (coup-franc / penalty)
   if (cfg.restartCarried !== false) {
     st.restart.placed = false;
@@ -909,7 +914,7 @@ export function administerWhistle(st, cfg) {
   const { pitch } = st;
   const x = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, w.p[0]));
   const z = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, w.p[1]));
-  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: 'coup-franc', team: w.team, p: [+x.toFixed(1), +z.toFixed(1)] });
+  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: 'coup-franc', team: w.team, p: [+x.toFixed(1), +z.toFixed(1)] }); poserGeste(st, cfg, { kind: 'siffler' }); poserGeste(st, cfg, { kind: 'designer', dir: Math.sign(st.pitch.attackGoal(w.team).x || 1) > 0 ? 0 : Math.PI });   // (A11 bis) le sifflet, puis le bras vers le but attaqué par l'équipe du coup franc
   st.restart = { type: 'coup-franc', p: [x, z], team: w.team, at: st.t + tempoWait(st, cfg, w.team, 'coup-franc') };   // (217) l'espèce
   st.ball.release('arrêt-de-jeu');
   st.ball.impulse([-st.ball.v[0] * 0.65, 0, -st.ball.v[2] * 0.65]);
@@ -961,9 +966,11 @@ export function ballFetch(st, dt, cfg) {
     // 2,2). Un ballon hors d'atteinte (au-delà du tablier + marge) ou une quête plus longue que patience s : le ballon
     // revient au point de remise — le ramasseur du réel. Absente : la quête sans fin d'hier.
     if (st.full && cfg?.ramasseur) {
+      if (st._ramasseur) { r._fetchT0 = st.t; return false; }   // (§ 5) un ramasseur y va : le preneur attend
       const RM = cfg.ramasseur, ap = (cfg.apron ?? 0) + (RM.marge ?? 0.6);
       const horsAtteinte = Math.abs(bp[0]) > st.pitch.hx + ap || Math.abs(bp[2]) > st.pitch.hz + ap;
       if ((horsAtteinte && hyp(st.ball.v[0], st.ball.v[2]) < 1) || st.t - r._fetchT0 > (RM.patience ?? 6)) {
+        if (st.full && cfg.ramasseurs && ramasseurPrend(st, r, cfg, horsAtteinte ? 'hors-atteinte' : 'patience')) return false;   // (§ 5, ramasseurs.js) un CORPS va le chercher, le ramasse et le roule au point
         st.ball.restart([r.p[0], 0.11, r.p[1]], { cause: r.type }); r.placed = true; r.placedAt = st.t; r.carried = false; r._fetchT0 = null; poserElan(st, r, cfg);
         st.events.push({ t: +st.t.toFixed(2), type: 'ramasseur', cause: horsAtteinte ? 'hors-atteinte' : 'patience' });
         return false;
@@ -1007,6 +1014,7 @@ export function ballFetch(st, dt, cfg) {
  *  LANCE (Loi 15), le coup franc se tire ou se lance, le corner se travaille, la sortie de
  *  but se distribue au style. _beginPass/_relancer injectés par l'appelant (le cycle d'import). */
 export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
+      if (type === 'coup-franc') armerMur(st, id, cfg);            // (A9 ter) le mur s'arme à la prise, il saute au départ du ballon
       if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg);
       // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
       else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
@@ -1026,11 +1034,12 @@ export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
  *  tient le bord du rond. Trois allures (marche/trot/sprint à la distance), inertie simple.
  *  La scène le rend en noir ; le moteur n'expose que st.arbitre { p, v, yaw, job }.
  *  Clé absente : l'arbitrage désincarné d'hier au bit (st.arbitre = null). */
-export function arbitreStep(st, dt, cfg) {
+/* (A11 bis, cfg.arbitreGestes) LA FILE DES GESTES DU CENTRAL : le sifflet passe devant (il précède le carton et le bras qui désigne, comme sur le terrain) ; la scène lit st.arbitre.geste — et LE PAS DU CENTRAL suit : */ export function poserGeste(st, cfg, g) { const G = st.full && cfg.arbitreGestes, a = st.arbitre; if (!G || !a) return; const it = { kind: g.kind, dur: g.dur ?? G[g.kind] ?? 1.2, dir: g.dir ?? null, couleur: g.couleur ?? null, enCourant: !!g.enCourant }; const q = a.gestes ??= []; if (g.kind === 'siffler') q.unshift(it); else q.push(it); } export function arbitreStep(st, dt, cfg) {
+  murStep(st, cfg);                                                // (A9 ter) le mur armé au coup franc saute quand le ballon part — chaque image, ballon porté ou non
   const A = cfg.arbitre;
   if (!st.full || !A) { if (st.arbitre) st.arbitre = null; return; }
   const a = st.arbitre ??= { p: [-8, 0, 6], v: [0, 0], yaw: 0, job: 'suit' };
-  const b = st.ball.p, r = st.restart;
+  const b = st.ball.p, r = st.restart; if (cfg.arbitreGestes) { if (a.geste && st.t >= a.geste.until) a.geste = null; if (!a.geste && a.gestes?.length) { const g = a.gestes.shift(); a.geste = { ...g, at: st.t, until: st.t + g.dur }; } }   // (A11 bis) le geste courant : dépilé quand le précédent finit
   let tx, tz, top = A.trot ?? 4.6;
   if (r?.type === 'engagement') {
     a.job = 'ceremonie'; const R = (st.pitch.dims.circle ?? 9.15) + 1.8;
@@ -1056,7 +1065,7 @@ export function arbitreStep(st, dt, cfg) {
   tx = Math.max(-st.pitch.hx + 1, Math.min(st.pitch.hx - 1, tx));
   tz = Math.max(-st.pitch.hz + 1, Math.min(st.pitch.hz - 1, tz));
   const dx = tx - a.p[0], dz = tz - a.p[2], d = hyp(dx, dz);
-  const want = d > 0.6 ? Math.min(top, d * 2.2) : 0;
+  const gS = cfg.arbitreGestes && a.geste && !a.geste.enCourant ? a.geste : null, want = gS ? 0 : d > 0.6 ? Math.min(top, d * 2.2) : 0;   // (A11 bis) le sifflet, le carton, le bras qui désigne se font À L'ARRÊT ; l'avantage en courant
   const wx = d > 1e-6 ? (dx / d) * want : 0, wz = d > 1e-6 ? (dz / d) * want : 0;
   const k = Math.min(1, dt * 5);                                   // l'inertie du corps (accélération bornée)
   a.v[0] += (wx - a.v[0]) * k; a.v[1] += (wz - a.v[1]) * k;
@@ -1064,8 +1073,8 @@ export function arbitreStep(st, dt, cfg) {
   const sp = hyp(a.v[0], a.v[1]);
   if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
   else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
-  a.speed = sp;
-  assistantsStep(st, dt, cfg);
+  a.speed = sp; if (gS && gS.dir != null) { let da = gS.dir - a.yaw; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; a.yaw += da * Math.min(1, dt * 6); }   // (A11 bis) le corps se tourne vers la direction du geste (le coup franc, le fautif)
+  assistantsStep(st, dt, cfg); ramasseursStep(st, dt, cfg); petitsGestesStep(st, dt, cfg);   // (§ 5) les ramasseurs de balle ; (§ 10) le gardien replace son mur
 }
 
 /** LES ASSISTANTS DE TOUCHE (lot 186, cfg.assistants — la Loi 6 : la ligne du hors-jeu
@@ -1087,6 +1096,9 @@ function assistantsStep(st, dt, cfg) {
   // à l'aplomb de la faute, tenu jusqu'à la remise jouée (ou la durée, si elle traîne).
   for (let e = st._asEv ?? 0; e < st.events.length; e++) {
     const ev = st.events[e];
+    // (A11 ter, § 5 — cfg.arbitreGestes) LES GESTES DE L'ASSISTANT : la touche de SA ligne = la hampe inclinée du côté que l'équipe attaque (vers sa droite ou sa gauche, il fait face au terrain) ; le remplacement = la hampe à l'horizontale (l'assistant 1, côté banc)
+    if (cfg.arbitreGestes && ev.type === 'sortie' && ev.out === 'touche' && ev.p) { const k = ev.p[1] >= 0 ? 0 : 1, sgA = Math.sign(st.pitch.attackGoal(ev.team).x || 1), droite = k === 0 ? sgA < 0 : sgA > 0; as[k].geste = { kind: droite ? 'drapeauIncline' : 'drapeauInclineG', at: st.t, until: st.t + 2.0 }; continue; }
+    if (cfg.arbitreGestes && ev.type === 'remplacement') { as[1].geste = { kind: 'drapeauHorizontal', at: st.t, until: st.t + 3.0 }; continue; }
     if (ev.type !== 'hors-jeu') continue;
     const team = st.players.find((p) => p.id === ev.by)?.team;
     if (team == null) continue;
@@ -1096,6 +1108,10 @@ function assistantsStep(st, dt, cfg) {
   for (let k = 0; k < 2; k++) {
     const a = as[k], cote = k === 0 ? 1 : -1;
     if (a.drapeau && ((!st.restart && st.t - a.drapeau.t > 1.5) || st.t - a.drapeau.t > (AS.drapeau ?? 12))) a.drapeau = null;   // la remise jouée : le drapeau descend (garde-fou à la durée)
+    if (cfg.arbitreGestes) {   // (A11 ter, § 5) le hors-jeu : la hampe dressée TENUE tant que le drapeau est levé (la scène clampe le geste à sa tenue) ; les autres gestes expirent
+      if (a.drapeau) { if (a.geste?.kind !== 'drapeauLeve') a.geste = { kind: 'drapeauLeve', at: st.t, until: st.t + 2.2, tenu: true }; a.geste.until = st.t + 0.5; }
+      else if (a.geste && (a.geste.tenu || st.t >= a.geste.until)) a.geste = null;
+    }
     const L = offsideLine(st, k);                                  // la ligne des attaques de l'équipe k
     let tx = Math.min(hx - 0.5, L.adv) * L.sgn;
     const r = st.restart;
@@ -1159,91 +1175,5 @@ export function elireTaker(st, r, cfg, d2) {
 import { hyp } from './hyp.js';
 import { placementEvent } from './cpa.js';
 
-// ---------------------------------------------------------------- LA COURSE D'ÉLAN (lot A9 bis, cfg.remisesPied)
-
-/**
- * LA COURSE D'ÉLAN (cfg.remisesPied.elan && st.full) : le coup franc et le corner se frappaient À L'INSTANT de la prise, du
- * point où le preneur venait de poser le ballon — aucun geste, aucune course (mesuré graine 7 : 'restart-pris' et 'corner-joué'
- * à la même image, le corps planté). Ici, le ballon posé, le preneur RECULE à son point de départ (recul m derrière le ballon
- * sur la ligne ballon-cible, lat m du côté de son pied faible — le droitier vient de la gauche, le tablier borne le départ :
- * le corner part de derrière le poteau), ATTEND face au ballon l'heure de la reprise, puis COURT (≤ vitesse m/s, movement.js
- * laisse le corps courir sous l'armé 'elan') : le geste 'frappe' s'arme sur la durée de la course et la remise se prend AU
- * CONTACT du geste, à l'arrivée au ballon (elanNow → canTake → receive → onTake : la frappe d'hier, du point d'arrivée). Un
- * preneur en retard étire son armé (le contact se rejoue à l'arrivée, jamais dans le vide) ; passé patience s sans partir,
- * ou 1,5 s de course sans arriver, la prise d'hier. Clé absente : la frappe instantanée d'hier, au bit.
- */
-export function poserElan(st, r, cfg) {
-  const E = st.full && cfg?.remisesPied?.elan;
-  if (!E || r.elan || (r.type !== 'coup-franc' && r.type !== 'corner')) return;
-  const tk = st.players[r.taker ?? -1]; if (!tk) return;
-  const g = st.pitch.attackGoal(tk.team), sg = Math.sign(g.x || 1);
-  const aim = r.type === 'corner' ? [g.x - sg * 11, 0] : [g.x, 0];                       // la cible provisoire : le point de penalty, le but
-  let ux = aim[0] - r.p[0], uz = aim[1] - r.p[1]; const L = hyp(ux, uz) || 1; ux /= L; uz /= L;
-  const lat = (tk.foot === 'left' ? -1 : 1) * (E.lat ?? 1.5), recul = E.recul ?? 3.5;   // la GAUCHE de la ligne = [uz, -ux] : le droitier vient de la gauche
-  let sx = r.p[0] - ux * recul + uz * lat, sz = r.p[1] - uz * recul - ux * lat;
-  const ap = Math.max(0.5, (cfg.apron ?? 2) - 0.3), hx = st.pitch.hx + ap, hz = st.pitch.hz + ap;
-  sx = Math.max(-hx, Math.min(hx, sx)); sz = Math.max(-hz, Math.min(hz, sz));
-  r.elan = { spot: [sx, sz], phase: 'recule', at: st.t };
-}
-
-/** Le métier du preneur pendant la course (assignMatchJobs) : recule → attend face au ballon ; court : le métier d'hier. */
-export function elanJob(st, r, tk, cfg) {
-  const RP = st.full && cfg?.remisesPied;
-  if (RP?.touche && r.type === 'touche' && r.placed === true) {   // LE LANCEUR DERRIÈRE LA LIGNE (Loi 15) : il se tient recul m dehors, le ballon sur la ligne à portée de main
-    r.placedAt ??= st.t;                                          // une pose venue d'ailleurs (le ramasseur, une remise déjà posée) date sa patience ici
-    tk.job = 'receive'; tk.target = [r.p[0], 0, r.p[1] + Math.sign(r.p[1] || 1) * (RP.touche.recul ?? 0.4)]; return true;
-  }
-  const el = r.elan;
-  if (!el || !RP?.elan) return false;
-  if (el.phase === 'court') {                                     // il court À TRAVERS le ballon (la cible au-delà : l'amorti d'arrivée ne le freine pas sur le point de contact)
-    if (!tk.act) return false;
-    const dx = st.ball.p[0] - el.spot[0], dz = st.ball.p[2] - el.spot[1], L = hyp(dx, dz) || 1;
-    tk.job = 'receive'; tk.target = [st.ball.p[0] + dx / L * 1.5, 0, st.ball.p[2] + dz / L * 1.5]; return true;
-  }
-  tk.job = 'walk';
-  if (el.phase === 'recule') tk.target = [el.spot[0], 0, el.spot[1]];
-  else { tk.target = [tk.p[0], 0, tk.p[2]]; if (hyp(tk.v[0], tk.v[1]) < 0.3) tk.yawWant = Math.atan2(st.ball.p[2] - tk.p[2], st.ball.p[0] - tk.p[0]); }
-  return true;
-}
-
-/** L'horloge de la course (chaque image, depuis ballFetch) : arrivé au départ → attend ; l'heure venue → part (le geste s'arme
- *  sur la durée de la course) ; en retard au contact → l'armé s'étire d'une image ; sans arrivée → la prise d'hier. */
-export function elanStep(st, dt, cfg) {
-  const r = st.restart, E = st.full && cfg?.remisesPied?.elan;
-  if (!r || !E || !r.elan || r.placed !== true) return;
-  const el = r.elan, tk = st.players[r.taker ?? -1];
-  if (!tk || tk.down > 0) return;
-  const bp = st.ball.p, d = hyp(bp[0] - tk.p[0], bp[2] - tk.p[2]);
-  if (el.phase === 'recule' && hyp(tk.p[0] - el.spot[0], tk.p[2] - el.spot[1]) < 0.4 && hyp(tk.v[0], tk.v[1]) < 0.9) el.phase = 'attend';
-  if (el.near == null && d < 6) el.near = st.t;                                          // la patience court depuis que le preneur est AU ballon (le ramasseur pose parfois avant lui)
-  if (el.phase !== 'court' && st.t > Math.max(r.at, el.near ?? st.t) + (E.patience ?? 4)) { el.phase = 'court'; el.rate = 'patience'; return; }   // le garde-fou anti-gel : sans course, la prise d'hier
-  if (el.phase === 'attend' && st.t >= r.at - 0.2 && !tk.act) {
-    const v = E.vitesse ?? 4, T = Math.max(0.6, d / v + 0.35);
-    const mv = MOVE_TIMING.frappe || { duration: 1.0, contact: 0.45 };
-    startGesture(tk, { id: 'frappe', duration: T + (mv.duration - mv.contact), contact: T },
-      { payload: { kind: 'elan', type: r.type, elan: v, T0: T, pick: { tech: byId['passe-laces'] ?? { id: 'elan', clip: 'frappe' }, foot: tk.foot ?? 'right' } }, log: st.gestures });
-    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: tk.id, tech: 'elan', move: 'frappe', foot: tk.foot ?? 'right', anticipation: +T.toFixed(2), remise: r.type, depart: +d.toFixed(2) });
-    el.phase = 'court'; el.t0 = st.t;
-  }
-  const A = tk.act;
-  if (A && A.payload?.kind === 'elan' && !A.fired && d < 0.4 && A.t + dt < A.anticipation) { A.total -= A.anticipation - (A.t + dt); A.anticipation = A.t + dt; }   // en avance : le contact vient À l'arrivée (il court à travers le ballon)
-  if (A && A.payload?.kind === 'elan' && !A.fired && A.t + dt >= A.anticipation && d > (cfg.receiveRadius ?? 0.85)) {   // en retard : le contact ATTEND l'arrivée
-    if (st.t - el.t0 > A.payload.T0 + 1.5) { abortGesture(tk, 'élan-sans-ballon', { log: st.gestures }); deny(st, 'élan-sans-ballon'); el.rate = 'sans-ballon'; return; }
-    A.anticipation += dt; A.total += dt;
-  }
-}
-
-/** Le contact du geste d'élan (hook elanNow du loop) : la remise se PREND ici — canTake, receive, onTake : la frappe d'hier,
- *  depuis le point d'arrivée. Arrivé trop court, ou la reprise encore fermée (Loi 16, moitiés) : refus nommé, la prise d'hier
- *  prendra au ballon. */
-export function elanNow(st, p, cfg, receive) {
-  const r = st.restart;
-  if (!r || !r.elan || r.taker !== p.id) return;
-  const d = hyp(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]);
-  if (d > (cfg.receiveRadius ?? 0.85) + 0.15) { deny(st, 'élan-loin'); return; }
-  const type = r.type, course = +(st.t - (r.elan.t0 ?? st.t)).toFixed(2), vitesse = +hyp(p.v[0], p.v[1]).toFixed(2);
-  if (cfg.canTake && !cfg.canTake(st, p.id, cfg)) { deny(st, 'élan-attend'); return; }
-  st.events.push({ t: +st.t.toFixed(2), type: 'élan', by: p.id, remise: type, vitesse, course, d: +d.toFixed(2) });
-  receive(st, p.id, cfg);
-  if (!st.restart && cfg.onTake) cfg.onTake(st, p.id, type, cfg);
-}
+// LA COURSE D'ÉLAN (lot A9 bis) et ses suites (A9 ter : sortie de but longue, touche longue, le mur qui saute) vivent dans elan.js
+import { poserElan, elanJob, elanStep, elanNow, murStep, armerMur } from './elan.js'; export { poserElan, elanJob, elanStep, elanNow };

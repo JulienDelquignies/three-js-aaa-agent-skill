@@ -2,7 +2,7 @@ import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from '.
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
-import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
+import { teteStep, teteArmerStep, teteContact, voleeStep, chestStep, retourneeArmerStep, retourneeContact } from './tete.js'; import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js'; import { uneTouche } from './premiere-intention.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 import { offsideLine, isOffside } from './offside.js';
@@ -42,7 +42,7 @@ function stepGestures(st, dt, cfg) {
         // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
         // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
         if (!(st.full && cfg.porteAnticipe)) st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });   // …sinon le porté ANTICIPE, après le glissement (plus bas)
-      } else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
+      } else if (st.ball.owner === p.id && p.act.payload?.pin) st.ball.carry(p.act.payload.pin, dt, { tau: 0.04 }); /* (passements, note 385) le ballon ramené AU POINT DU CLIP dès l'entrée, vite (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route) — l'escorte le laissait où il traînait jusqu'au contact */ else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
       // et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se règlent pendant l'armé, comme un vrai joueur ajuste ses derniers
       // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
       if (p.act.payload?.stance) {
@@ -104,7 +104,7 @@ function stepGestures(st, dt, cfg) {
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
-      const K = p.act?.payload?.kind; if (K === 'pass') strikeNow(st, p, cfg); else if (K === 'touche') throwNow(st, p, cfg); else if (K === 'elan') cfg.elanNow?.(st, p, cfg, receive);   // le lâcher de la touche (A9), la prise d'élan (A9 bis)
+      const K = p.act?.payload?.kind; if (K === 'pass') strikeNow(st, p, cfg); else if (K === 'touche') throwNow(st, p, cfg); else if (K === 'elan') cfg.elanNow?.(st, p, cfg, receive); else if (K === 'tete') teteContact(st, p, cfg); else if (K === 'retournee') retourneeContact(st, p, cfg);   // le lâcher de la touche (A9), la prise d'élan (A9 bis)
       else if (K === 'tacle-debout') standTackleNow(st, p, cfg);
       else if (p.act?.payload?.kind === 'skill') { skillContactNow(st, p, cfg); if (st._noyau) appliquerNoyau(st, cfg, receive, (x) => abortGesture(x, 'noyau', { log: st.gestures })); }   // (268) le noyau de duel applique ses conséquences
     } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
@@ -646,15 +646,15 @@ export function rondoStep(st, dt, cfg = RONDO) {
     if (st.ball.owner === c.id) {
       if (contested) {
         st.ball.release('contesté');
-        { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }  // il tente de l'emmener hors du duel
-      } else if (intentFresh || settling || tourne || (st.full && cfg.pausaPied && c._pausa)) {   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
+        { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg); }  // il tente de l'emmener hors du duel
+      } else if (intentFresh || settling || tourne || (st.full && (cfg.pausaPied && c._pausa || c._bouclier))) {   // (dette A12c, cfg.pausaPied) pendant la PAUSA le ballon est PORTÉ au pied, jamais poussé (la conduite le lâchait 1,6-2 m devant) — porté — le rassemblement > 0,45 m COURBE (lot 62, st.full), il ne claque pas ; EN TOUR (240b) : le ballon reste au pied, on ne pousse pas dans son dos
         // …avec une GRÂCE (0,3 s de servo MOU hors cône) : l'approche de frappe ARQUE autour du ballon — traverser le dos est un pas, l'ORBITE durable non (strict : 55 tirs/70 A/B).
         if (coneP()) { c._dosT = 0; st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {}); }
         else if ((c._dosT = (c._dosT ?? 0) + dt) <= (cfg.porteDosGrace ?? 0.3)) st.ball.carry(footPoint(st, c, cfg), dt, { tau: 0.25, vMax: 4 });
         else { deny(st, 'porte-dos'); st.ball.release('porte-dos'); }   // l'orbite durable : le ballon vit, le corps se retourne
       } else {
         st.ball.release('conduite');
-        { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev); }
+        { const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg); }
       }
     // LE RAMASSAGE DU BALLON MORT (lot 107, cfg.ramasse && st.full — « des ballons qui traînent » :
     // mesuré, des loose de 2+ s avec un corps à 0,1 m — la re-capture exigeait une INTENTION ;
@@ -666,7 +666,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       if (st.full && cfg.ramasse && !intentFresh) st._settling = { ev: st.events.length, id: c.id, at: st.t + (cfg.ramasse.pose ?? 0.3) };
       st.ball.carry(footPoint(st, c, cfg), dt, st.full && d2(c.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : {});
     } else {
-      const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev);
+      const rD = dribbleStep(st._drb, st.ball, pl, dt); if (rD.touched) touchEvent(st, c, rD.ev, cfg);
     }
     // LE PIQUE (cfg.pokeReach, match) : un ballon de conduite LIBRE est libre AUSSI pour
     // l'adversaire — le pied qui l'atteint AVANT le porteur le dévie (poke tackle, sans duel de
@@ -965,8 +965,8 @@ export function rondoStep(st, dt, cfg = RONDO) {
         const dosR = st.full && cfg.retournement && !engagementCall && choice && !choice.cross && choice.style !== 'lofted' && !st.restart && st.phase === 'carry' && !pressCall && !jeteCall && st.players[choice.to.id]
           && (() => { const to = st.players[choice.to.id]; if ((to.p[0] - c.p[0]) * Math.sign(st.pitch.attackGoal(c.team).x || 1) > -2) return false; let dA = Math.atan2(to.p[2] - c.p[2], to.p[0] - c.p[0]) - c.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; return Math.abs(dA) > (cfg.retournement.cap ?? 1.75); })();
         if (dosR) { if (c._retour) c._retour.to = choice.to.id; else c._retour = { to: choice.to.id, t: st.t }; } else if (c._retour) c._retour = null;   // le chronomètre part de la PREMIÈRE image dos (un receveur qui change ne le réarme pas — l'engagement attendait 7,7 s)
-        const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2); const pausaNow = st.full && cfg.pausa && !st.restart ? pausaStep(st, c, cfg, choice) : false;   // LA PAUSA (253, pausa.js) : le porteur TIENT pour la course qui vient
-        if (!pausaNow && !attendR && !reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
+        const attendR = dosR && st.t - c._retour.t < (cfg.retournement.max ?? 1.2); const pausaNow = st.full && cfg.pausa && !st.restart ? pausaStep(st, c, cfg, choice) : false; const bouclierNow = st.full && cfg.bouclier && !st.restart ? bouclierStep(st, c, cfg, choice, jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) : false;   // (A10 ter, bouclier.js) LA TENUE DOS AU BUT : pressé dans le dos sans appui, il tient   // LA PAUSA (253, pausa.js) : le porteur TIENT pour la course qui vient
+        if (!pausaNow && !bouclierNow && !attendR && !reculeL && !c.intent?.choice?.cross && choice && ((choice.score > (jeteCall ? Math.min(barL, cfg.fixe?.barre ?? 1.2) : pressCall ? Math.min(barL, AC.barre ?? 1.2) : barL) && (heldEnough || runnerCall || engagementCall || jeteCall || pressCall)) || (st.hold >= cfg.holdMax && !lanceNow))) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;
@@ -1027,7 +1027,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // LE COACH LIT LE MATCH (lot 113) : score/chrono/momentum → axes par paliers (coach.js)
     if (cfg.coach && st.full) coachStep(st, cfg);
     // LE CIEL SE JOUE (lot 34 tête / 182a poitrine / 40 volée — tete.js) : le vol sur un corps se reprend à SA hauteur — tête, buste (la fenêtre morte 1,15-1,55 fermée), pied
-    if (st.full && st.phase === 'flight' && released) { if (cfg.tete) teteStep(st, cfg); if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); }
+    if (st.full && (st.phase === 'flight' || (st._enchaine && st.t < st._enchaine.until)) && released) { if (cfg.tete) { teteArmerStep(st, cfg); teteStep(st, cfg); }   /* (note 386) le ballon remonté par la poitrine reste du CIEL jusqu'à sa reprise */ if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); if (cfg.retournee) retourneeArmerStep(st, cfg); }   // (C1) la retournée armée, après la volée : le ciel au-dessus de la tête debout
     let taker = -1, bestD = Infinity;
     if (released) {
       const ayant = st.full && cfg.preneurCPA && st.restart && st.restart.taker >= 0 ? st.restart.taker : null;   // la remise a un AYANT DROIT (193) : l'élection ne teste que lui — le plus-proche collé gelait canTake
@@ -1035,7 +1035,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // UN HOMME AU SOL NE RÉCLAME PAS UN BALLON (3 prises par corps couchés post-tacle mesurées) — possession = homme DEBOUT au ballon, le temps au sol est le prix du plongeon.
         if (p.down > 0 || (ayant != null && p.id !== ayant)) continue;
         const d = d2(p.p, st.ball.p);
-        if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d < bestD) { bestD = d; taker = p.id; }
+        if (d < cfg.receiveRadius && st.ball.p[1] < (st._enchaine && st.t < st._enchaine.until ? (cfg.enchainement?.prise ?? 0.45) : 1.9) && d < bestD && !(st.full && cfg.enchainement && p.team === st.lastTouch && st.ball.p[1] >= (cfg.poitrine?.min ?? 1.15) && st.pitch.inBox(p.p[0], p.p[2], Math.sign(st.pitch.attackGoal(p.team).x || 1)))) { bestD = d; taker = p.id; }   /* (note 386) un ballon à hauteur de poitrine dans la surface adverse est à la POITRINE (chestStep), pas au pied : la prise le volait avant l'enchaînement (mesuré en page : 'amorti-poitrine' possédé) */
       }
       // LE DUEL DU CONTACT (lot 154, cfg.prise5050 && st.full) : dans la fenêtre du simultané (~12 cm)
       // la prise revient au plus VIF (reaction STRICTEMENT meilleure) ; à notes égales, l'ancien chemin
@@ -1045,7 +1045,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         for (const p of st.players) {
           if (p.down > 0 || p.team === t0.team || !p.skill) continue;
           const d = d2(p.p, st.ball.p);
-          if (d < cfg.receiveRadius && st.ball.p[1] < 1.9 && d - bestD < fen
+          if (d < cfg.receiveRadius && st.ball.p[1] < (st._enchaine && st.t < st._enchaine.until ? (cfg.enchainement?.prise ?? 0.45) : 1.9) && d - bestD < fen
             && p.skill.reaction < st.players[taker].skill.reaction) taker = p.id;
         }
       }
@@ -1246,4 +1246,4 @@ function hullArea(pts) {
 }
 
 export { predictPath };
-import { hyp } from './hyp.js'; import { enPorte } from './movement.js'; import { presseurArrive } from './pression.js'; import { pausaStep } from './pausa.js';
+import { hyp } from './hyp.js'; import { enPorte } from './movement.js'; import { presseurArrive } from './pression.js'; import { pausaStep } from './pausa.js'; import { bouclierStep } from './bouclier.js';

@@ -135,6 +135,12 @@ export const TECHNIQUES = [
   // le ballon reste au porteur du début à la fin. Ces lignes existent pour que le vocabulaire
   // vive DANS LA TABLE (préconditions géométriques, pied, surface, clip) : checkAction peut
   // rejuger chaque râteau exécuté, comme chaque passe.
+  // (note 388) LA CONDUITE NOMMÉE : quatre touches que la sim NOMME sur la géométrie de sa poussée (skills-sim.conduiteNommee) —
+  // la table ne les choisit pas (intent 'conduite'), la scène en lit le clip et le pied.
+  { id: 'conduite-interieur', intent: 'conduite', foot: 'near', surface: 'inside', side: [0, 60], dist: [0.1, 0.9], turn: 60, power: 0.2, accuracy: 0.9, clip: 'conduiteInterieur', why: 'La touche de conduite de l\'intérieur : le ballon poussé vers le dedans du pied, ou droit devant au trot.' },
+  { id: 'conduite-exterieur', intent: 'conduite', foot: 'near', surface: 'outside', side: [0, 60], dist: [0.1, 0.9], turn: 60, power: 0.2, accuracy: 0.85, clip: 'conduiteExterieur', why: 'La touche de conduite de l\'extérieur : le ballon poussé vers le dehors du pied, la cheville en inversion.' },
+  { id: 'conduite-laces', intent: 'conduite', foot: 'near', surface: 'laces', side: [0, 30], dist: [0.1, 0.9], turn: 15, power: 0.25, accuracy: 0.85, clip: 'conduiteLaces', why: 'La touche de conduite du cou-de-pied : droit devant en course, la pointe basse.' },
+  { id: 'conduite-semelle', intent: 'conduite', foot: 'near', surface: 'sole', side: [0, 60], dist: [0.1, 0.6], turn: 90, power: 0.1, accuracy: 0.95, clip: 'conduiteSemelle', why: 'La touche de conduite de la semelle : presque arrêté, le porteur garde le ballon sous le pied.' },
   {
     id: 'rateau', intent: 'carry', foot: 'near', surface: 'sole',
     side: [0, 70], dist: [0.15, 0.8], turn: 180, power: 0.3, accuracy: 0.85,

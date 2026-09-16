@@ -30,7 +30,7 @@ const run = (st, cfg, secs) => { for (let i = 0; i < secs * 60; i++) matchStep(s
 
 // ---------- 1. la touche VOLE en cloche, à portée de bras, et un coéquipier la prend
 {
-  const cfg = matchCfg({ shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
   const st = toucheWorld(3, cfg);
   let apex = 0, rentree = null;
   for (let i = 0; i < 10 * 60; i++) {
@@ -51,7 +51,7 @@ const run = (st, cfg, secs) => { for (let i = 0; i < secs * 60; i++) matchStep(s
 
 // ---------- 2. L'EXEMPTION DE LA LOI 11 : un receveur posté HORS-JEU reçoit sans sifflet
 {
-  const cfg = matchCfg({ shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
   const st = toucheWorld(3, cfg, (st) => {
     const hz = st.pitch.hz;
     // la défense (équipe 1) tient une ligne à x=5 ; UN attaquant posté à x=12 — HORS-JEU
@@ -80,7 +80,7 @@ const run = (st, cfg, secs) => { for (let i = 0; i < secs * 60; i++) matchStep(s
 
 // ---------- 3. sabotage nommé « touche au pied » : loi15:false → le monde d'hier
 {
-  const cfg = matchCfg({ shotRange: 20, loi15: false });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, loi15: false });
   const st = toucheWorld(3, cfg);
   let apex = 0, pris = null;
   for (let i = 0; i < 8 * 60; i++) {

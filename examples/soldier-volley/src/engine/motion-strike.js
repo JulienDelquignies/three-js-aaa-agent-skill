@@ -325,7 +325,7 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
     const knee = K.backheel
       ? K.kneeFwd * ramp(t, 0, 0.6 * tPre, tPre) + (kneeTop - K.kneeFwd) * ramp(t, tPre, tc + 0.03, tBack) + (0 - kneeTop) * ramp(t, tBack, (tBack + T) / 2, T)
       : kneeTop * ramp(t, 0, 0.6 * tTopKnee, tTopKnee)
-      + (kneeMin - kneeTop) * ramp(t, tTopKnee, tc - 0.02 + snap, tKneeEnd)
+      + (kneeMin - kneeTop) * ramp(t, tTopKnee, tc + snap, tKneeEnd)   // (A2) le pic de vitesse du genou SUR le contact (hier tc − 0,02 : le pied culminait 18-27 ms avant le ballon, 30 % au-dessus de sa vitesse au contact — une poussée, pas une frappe)
       + ((K.feint ? kneeMin : 22) - kneeMin) * ramp(t, tKneeEnd, (tKneeEnd + tFt) / 2, tFt)
       + (0 - (K.feint ? kneeMin : 22)) * ramp(t, tFt, (tFt + T) / 2, T);
     // abduction : la jambe contourne le ballon (dehors à l'armé, rentre au contact)
@@ -549,7 +549,7 @@ function eulerToQuat([x, y, z]) {
   const c1 = Math.cos(x * D2R / 2), s1 = Math.sin(x * D2R / 2), c2 = Math.cos(y * D2R / 2), s2 = Math.sin(y * D2R / 2), c3 = Math.cos(z * D2R / 2), s3 = Math.sin(z * D2R / 2);
   return [s1 * c2 * c3 + c1 * s2 * s3, c1 * s2 * c3 - s1 * c2 * s3, c1 * c2 * s3 + s1 * s2 * c3, c1 * c2 * c3 - s1 * s2 * s3];
 }
-function resolveDense(spec) {
+export function resolveDense(spec) {
   const bones = new Set();
   for (const k of spec.keys) for (const b of Object.keys(k.pose)) bones.add(b);
   const tracks = {};
@@ -565,7 +565,7 @@ const slerp = (a, b, u) => {
   const wa = Math.sin((1 - u) * th) / s, wb = Math.sin(u * th) / s;
   return [a[0] * wa + bb[0] * wb, a[1] * wa + bb[1] * wb, a[2] * wa + bb[2] * wb, a[3] * wa + bb[3] * wb];
 };
-function sampleQ(tracks, t) {
+export function sampleQ(tracks, t) {
   const out = {};
   for (const [bone, ks] of Object.entries(tracks)) {
     if (t <= ks[0].t) { out[bone] = ks[0].q; continue; }
@@ -575,7 +575,7 @@ function sampleQ(tracks, t) {
   }
   return out;
 }
-function sampleHips(ks, t) {
+export function sampleHips(ks, t) {
   if (!ks) return null;
   if (t <= ks[0].t) return ks[0].p;
   if (t >= ks[ks.length - 1].t) return ks[ks.length - 1].p;

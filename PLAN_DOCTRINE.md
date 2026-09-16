@@ -644,7 +644,7 @@ Ce qu'il nomme : la pression du moteur (45-55 % des tirs à < 2 m d'un corps : u
 pour 7 % au book), la dispersion du 258 à recalibrer sur le point visé (cadrés 45 % pour 33, au-dessus 0), le volume des tirs
 (42-46 pour 25 — les entrées dans la surface), le penalty et la tête recentrés (lot 5).
 
-**278 — L'ELLIPSE DE FINITION : SCELLÉ (363).** L'erreur d'exécution du tir devient celle du Modèle 03 §5 (ellipse.js) :
+**278 — L'ELLIPSE DE FINITION : SCELLÉ (390).** L'erreur d'exécution du tir devient celle du Modèle 03 §5 (ellipse.js) :
 une vraie normale par inversion (le gauss du moteur, trois uniformes, n'avait ni le σ ni la queue — 0 tir au-dessus de la
 barre mesuré), (Δψ, Δθ) bivariée corrélée, ln v corrélé à Δθ (précipitée = levée et molle), tronquée, la queue basse épaisse,
 le pied qui s'ouvre sous pression, f_corps ; la nominale INTÉGRÉE jusqu'au plan du but (bissection de θ, cap corrigé —
@@ -654,7 +654,7 @@ Modèle 10 §3.4) ; σ0 2,0° et l'anisotropie 4,5 en angle de départ calés su
 pression du 258 à P ≈ 1 sur un tir sur deux), les vitesses de frappe du book (28 / 20 pour 17-21), les montants traversés
 (Modèle 03 §6.3), le volume des tirs (42-45 pour 25 — les entrées dans la surface, le bloc).
 
-**279 — LE RÉPERTOIRE DU BOOK : SCELLÉ (364).** Les vitesses de frappe deviennent celles du Modèle 10 §3.1 (repertoire.js :
+**279 — LE RÉPERTOIRE DU BOOK : SCELLÉ (391).** Les vitesses de frappe deviennent celles du Modèle 10 §3.1 (repertoire.js :
 placé 20, instep 28, enroulé 24, pointu 16, volée 26, tête 13 ; les colonnes de dispersion par geste sur l'ellipse ; la bride du
 bout portant ; l'attribut shotPower en facteur sur v̄ et sur la borne physiologique vMax [33 ; 38]) ; l'arrêt au journal
 (arretControle : le tir contrôlé par le gardien est un arrêt — 6 sur 27 n'étaient pas comptés). Mesuré 8 × 45 min : instep
@@ -663,7 +663,7 @@ tenues sans recaler l'enveloppe du 276), au-dessus / à côté 0,9-1,2 ; l'optim
 monotone en v₀ à 16 m). Ce qu'il nomme : le volume des tirs (42 pour 25 — les entrées dans la surface, le bloc), la sélection
 du geste par P_but (§3.2), le coup franc direct au répertoire, la convention « cadré » du contrôle du gardien.
 
-**280 — LA LIGNE ACCROCHÉE : SCELLÉ (365).** Le bloc défendant n'est plus chaîné à 27 m du ballon : la ligne arrière vit
+**280 — LA LIGNE ACCROCHÉE : SCELLÉ (392).** Le bloc défendant n'est plus chaîné à 27 m du ballon : la ligne arrière vit
 à x_ligne = min(consigne, x_ballon − marge) (ligne.js, Bible 10 §3.4 — k_x en saturation : LIBRE à sa consigne, l'axe
 hauteurBloc 22 → 52 m ± piege ; ACCROCHÉE au porteur mètre pour mètre, la marge signée par l'état du porteur du 236 × (2 −
 anticipF)). Mesuré 8 × 45 min : touches en surface adverse 76 → 59 / match (51), tirs 41,7 → 39,4, buts 6,25 → 5,6 ; le film :

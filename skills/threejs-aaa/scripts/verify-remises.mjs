@@ -96,7 +96,7 @@ for (const kind of RESTART_NAMES) {
 // 2 × 180 s), deux matchs, la cfg de la scène ; puis la relance à la main du gardien, prise sur pièce (l'événement
 // 'relance-main' n'est jamais tombé en 7 graines × 240 s : la clause force la distribution via beginPass).
 {
-  const cfg = matchCfg({ pausaPied: null, recevoirSurPlace: null, pasDeRecul: null /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (36/0 au 272), la touche remangée (1/8 premiers contacts) : la ligne tenue change les corps à la remise — la clause mesure sa loi, pas la ligne */, selection: null /* selection null DATÉ 267 : vert à HEAD~ (36/0 au 266), le lanceur remangé (bassin 0,03 c. ≥ 0,1 sur une graine) — la clause mesure la Loi 15, pas la sélection */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (au 263), le lanceur remangé (bassin 0,09 c. ≥ 0,1 sur deux graines) — la clause mesure sa loi, pas le flux */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le lanceur remangé (bassin à −0,36 m sur une graine — la prise dedans) — la clause mesure la Loi 15, pas l'intention d'effort */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, passation: null, chrono: { periodes: 2, duree: 180, pause: 6 } });   // passation null DATÉ 252 (constaté au 256 : 36 ✓ au 250, 3/7 touches trouvées et un lâcher à 25° dans le monde de la remise au pivot — sept touches, le tirage)
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361 : le fauché reste à terre plus longtemps, la fête a un corps — chaque clause mesure le monde de son jour, empreinte jumelle prouvée) */ /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (36/0 au 272), la touche remangée (1/8 premiers contacts) : la ligne tenue change les corps à la remise — la clause mesure sa loi, pas la ligne */, selection: null /* selection null DATÉ 267 : vert à HEAD~ (36/0 au 266), le lanceur remangé (bassin 0,03 c. ≥ 0,1 sur une graine) — la clause mesure la Loi 15, pas la sélection */, flux: null /* flux null DATÉ 264 : vert à HEAD~ (au 263), le lanceur remangé (bassin 0,09 c. ≥ 0,1 sur deux graines) — la clause mesure sa loi, pas le flux */, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), le lanceur remangé (bassin à −0,36 m sur une graine — la prise dedans) — la clause mesure la Loi 15, pas l'intention d'effort */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, passation: null, chrono: { periodes: 2, duree: 180, pause: 6 } });   // passation null DATÉ 252 (constaté au 256 : 36 ✓ au 250, 3/7 touches trouvées et un lâcher à 25° dans le monde de la remise au pivot — sept touches, le tirage)
   let touches = 0, hauts = 0, delais = [], recus = 0, pris = 0, rentrees = 0, faces = [], poses = [], horsLigne = [];
   for (const seed of [7, 3]) {
     let { st } = playMatch(makeMatch({ full: true, seed }), 12, { cfg });
@@ -138,7 +138,7 @@ for (const kind of RESTART_NAMES) {
   // LA CLÉ ABSENTE REND L'HIER (le contrat du moteur) : sans cfg.remisesMain, la touche part du sol à l'instant de la
   // prise (aucun armé 'touche', rentrée sans ballY) et la relance à la main du gardien reste une passe du pied
   {
-    const cfg0 = matchCfg({ ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (36/0 au 272), les remises sans clé remangées (2 prises sans armé) : la ligne tenue change les corps — la clause mesure sa loi, pas la ligne */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesMain: null });
+    const cfg0 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (36/0 au 272), les remises sans clé remangées (2 prises sans armé) : la ligne tenue change les corps — la clause mesure sa loi, pas la ligne */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesMain: null });
     let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 12, { cfg: cfg0 });
     for (const x of [-20, 5, 25]) {
       const z = 33.9 * (x > 0 ? 1 : -1);
@@ -166,7 +166,7 @@ for (const kind of RESTART_NAMES) {
 
 // ---- 7. LES REMISES AU PIED (lot A9 bis, cfg.remisesPied)
 {
-  const cfg = matchCfg({ locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 } });
   const hyp = Math.hypot;
   // LA VOLÉE : le gardien tient le ballon aux gants (prise forcée), le style long → beginPass(mains 'volee') arme le geste, les
   // gants descendent, le ballon TOMBE, le pied le prend à mi-hauteur (la passe part de la hauteur du ballon, jamais du sol)
@@ -201,7 +201,7 @@ for (const kind of RESTART_NAMES) {
     const w = ev.find((e) => e.type === 'windup' && e.tech === 'elan'), el = ev.find((e) => e.type === 'élan');
     const frappe = ev.find((e) => (e.type === 'shot' && e.kind === 'coup-franc-direct') || e.type === 'lancement' || e.type === 'corner-joué' || (e.type === 'pass' && e.t >= (el?.t ?? Infinity)));
     const pris = ev.find((e) => e.type === 'restart-pris');
-    return { type, taken: taken != null ? +(taken - t0).toFixed(2) : null, w, el, frappe, memeImage: !!(el && pris && Math.abs(pris.t - el.t) < 0.02 && (!frappe || frappe.type === 'pass' || Math.abs(frappe.t - el.t) < 0.02)) };
+    return { type, taken: taken != null ? +(taken - t0).toFixed(2) : null, w, el, frappe, memeImage: !!(el && pris && Math.abs(pris.t - el.t) < 0.02 && frappe && Math.abs(frappe.t - el.t) < 0.05) };   // (B2) durci : la passe aussi part dans l'image (≤ 0,05 s — le tick suivant), plus « la passe qui suit » à son heure
   };
   const runs = [];
   for (const seed of [7, 3]) {
@@ -217,7 +217,7 @@ for (const kind of RESTART_NAMES) {
   // LA CLÉ ABSENTE REND L'HIER : sans cfg.remisesPied, la frappe part à l'instant de la prise (aucun armé 'elan', aucun 'élan'), du
   // point de pose ; et le gardien qui tient le ballon le pose au sol à la frappe (passe sans ballY)
   {
-    const cfg0 = matchCfg({ blocPercu: null /* blocPercu null DATÉ 275 : vert à HEAD~ (36/0 au 274), les remises au pied sans clé remangées (2 prises sans armé) : le bloc qui perçoit change les corps — la clause mesure sa loi, pas le bloc perçu */, ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (36/0 au 272), les remises au pied sans clé remangées (2 prises sans armé, coup-franc-direct) : la ligne tenue change les corps — la clause mesure sa loi, pas la ligne */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesPied: null });
+    const cfg0 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (36/0 au 272), les remises au pied sans clé remangées (2 prises sans armé, coup-franc-direct) : la ligne tenue change les corps — la clause mesure sa loi, pas la ligne */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, blocPercu: null /* blocPercu null DATÉ 275 : vert à HEAD~ (36/0 au 274), les remises au pied sans clé remangées (2 prises sans armé) : le bloc qui perçoit change les corps — la clause mesure sa loi, pas le bloc perçu */, ligne: null /* ligne null DATÉ 273 : vert à HEAD~ (36/0 au 272), les remises au pied sans clé remangées (2 prises sans armé, coup-franc-direct) : la ligne tenue change les corps — la clause mesure sa loi, pas la ligne */, locomoteur: null /* locomoteur null DATÉ 260 : vert à HEAD~ (au 254), la course d'élan, la prise et le lanceur remangés par le profil locomoteur (les corps démarrent en 2,3 τ) — la clause mesure la remise, pas la locomotion */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (36/0 au 255), le lanceur remangé par la familiarité (bassin −0,72 m) — la clause mesure la touche, pas la familiarité */, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (36/0 en worktree 3a78940), le lanceur remangé par l'appel de l'épaule (bassin −0,34 m, face 16°) — la clause mesure la touche, pas la Loi 11 */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, remisesPied: null });
     let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg: cfg0 });
     const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1);
     const r0 = [forceCPA(st, cfg0, 'coup-franc', [g.x - sg * 24, 3], 0), forceCPA(st, cfg0, 'corner', [g.x, st.pitch.hz], 0)];
@@ -228,7 +228,27 @@ for (const kind of RESTART_NAMES) {
     st.tactics = st.tactics || [{}, {}]; st.tactics[0] = { ...(st.tactics[0] || {}), cpa: { ...((st.tactics[0] || {}).cpa || {}), sortieBut: 'long' } };
     relancerGardien(st, gk, cfg0, { beginPass: simInternals.beginPass });
     const m0 = gk.act?.payload?.mains ?? null;
-    ok(r0.every((r) => r.taken != null && !r.w && !r.el && r.frappe) && m0 == null, `la clé absente rend l'hier au bit : remisesPied:null → ${r0.filter((r) => r.taken != null).length} remises prises sans armé ni course (${r0.map((r) => r.frappe?.kind ?? r.frappe?.type ?? '—').join('/')}), la volée du gardien redevient la frappe du sol (mains ${m0 ?? 'null'})`);
+    // la frappe est exigée au coup franc direct ; le corner peut être DÉCLINÉ (le CORT du style, un tirage) et rester au pied
+    ok(r0.every((r) => r.taken != null && !r.w && !r.el) && r0[0].frappe && m0 == null, `la clé absente rend l'hier au bit : remisesPied:null → ${r0.filter((r) => r.taken != null).length} remises prises sans armé ni course (${r0.map((r) => r.frappe?.kind ?? r.frappe?.type ?? '—').join('/')}), la volée du gardien redevient la frappe du sol (mains ${m0 ?? 'null'})`);
+  }
+  // (B2, remisesPied.elan.tirImmediat) LE DOUBLE GESTE D'HIER : la prise qui ne fait pas partir le ballon — le coup franc LOIN
+  // (à 60 m du but : ni direct ni lancement, coupFrancLance rend false au-delà de 55 m, sans tirage) — laissait le preneur porteur ;
+  // le cerveau rejouait une passe 0,4-1,5 s plus tard (le clip d'élan frappait un ballon qui ne partait pas, puis un clip de passe
+  // le faisait partir ; mesuré 'timing' × 5 à la prise, puis 'ancre' à 0,74 m sous l'urgence). Ici : la passe s'arme dans l'image
+  // du contact d'élan (le choix du cerveau dans le cône de la course, sinon le court de la course ; la course compte comme porté,
+  // pas de porte d'ancre ni de stance — la course EST le geste) et part au tick suivant ; null : le double geste d'hier.
+  {
+    const mesure = (over) => {
+      const cfgC = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ...over }); let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg: cfgC });
+      const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1); const r = forceCPA(st, cfgC, 'coup-franc', [g.x - sg * 60, 4], 0); const el = r.el;
+      const pass = el ? st.events.find((e) => e.type === 'pass' && e.by === el.by && e.t >= el.t) : null;
+      const imm = el ? st.events.find((e) => e.type === 'tir-immédiat' && e.by === el.by && e.t >= el.t) : null;
+      return { el, delay: el && pass ? +(pass.t - el.t).toFixed(2) : null, imm, lance: !!st.events.find((e) => e.type === 'lancement' && el && e.t >= el.t) };
+    };
+    const RPh = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, }).remisesPied;
+    const vif = mesure({}), hier = mesure({ remisesPied: { ...RPh, elan: { ...RPh.elan, tirImmediat: null } } });
+    ok(!!vif.el && !vif.lance && !!vif.imm && vif.delay != null && vif.delay <= 0.05, `LE TIR IMMÉDIAT (B2) : le coup franc loin (60 m) dont la prise ne fait pas partir le ballon part au tick suivant le contact d'élan (passe ${vif.delay ?? '—'} s après 'élan' ; vers ${vif.imm?.to ?? '—'}, relèvement ${vif.imm?.bearing ?? '—'}° de la course${vif.imm?.court ? ', le court de la course' : ''})`);
+    ok(!!hier.el && !hier.imm && (hier.delay == null || hier.delay >= 0.3), `sabotage « le double geste d'hier » attrapé (tirImmediat:null : la passe ${hier.delay == null ? 'ne part pas dans la fenêtre' : hier.delay + ' s après le contact'} — le cerveau rejoue plus tard, aucun tir-immédiat)`);
   }
   // le sabotage de la sim : le preneur EMPORTÉ à 15 m dès l'armé (la course n'arrive pas) — pas de frappe dans le vide : l'armé
   // s'étire, puis s'abandonne (refus élan-sans-ballon) et la prise d'hier prend au ballon
@@ -238,6 +258,113 @@ for (const kind of RESTART_NAMES) {
     const r = forceCPA(st, cfg, 'coup-franc', [g.x - sg * 24, 3], 0, (st) => { const tk = st.players[st.restart.taker]; tk.p[0] -= sg * 15; });
     const abandon = (st.deny?.['élan-sans-ballon'] ?? 0) > 0;
     ok(r.taken != null && r.w && !r.el && r.frappe && abandon, `sabotage « le preneur emporté » attrapé : armé ${!!r.w}, aucun contact dans le vide (élan ${!!r.el}), l'armé abandonné (élan-sans-ballon ${abandon}), la remise prise quand même (${r.frappe?.kind ?? r.frappe?.type ?? '—'})`);
+  }
+}
+
+// ---- 7 ter. LA SORTIE DE BUT LONGUE, LA TOUCHE LONGUE, LE MUR QUI SAUTE (lot A9 ter, cfg.remisesPied.elan.sortieBut / elan.toucheLongue / mur)
+{
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, });
+  const hyp = Math.hypot;
+  const setCpa = (st, team, cpa) => { st.tactics = st.tactics || [{}, {}]; st.tactics[team] = { ...(st.tactics[team] || {}), cpa: { ...((st.tactics[team] || {}).cpa || {}), ...cpa } }; };
+  const forceR = (st, cfg, type, p, team, secs = 20, cpa = null) => {   // cpa : la tactique de la remise, RE-POSÉE chaque image (le coach — coach.js — remplace st.tactics[team] en cours de match)
+    quiet(st, cfg); if (st.ball.owner != null) st.ball.release('perte'); if (cpa) setCpa(st, team, cpa);
+    st.ball.restart([p[0], 0.11, p[1]], { cause: type }); st.restart = { type, p, team, at: st.t + 3, placed: false }; st.possession = { team, carrier: -1 }; st.phase = 'loose';
+    const n0 = st.events.length, t0 = st.t; let taken = null, murV = null; const prevP = new Map();
+    for (let i = 0; i < 60 * secs; i++) {
+      const had = !!st.restart; if (cpa && !st.tactics?.[team]?.cpa?.[Object.keys(cpa)[0]]) setCpa(st, team, cpa);
+      for (const q of st.players) prevP.set(q.id, [q.p[0], q.p[2]]);
+      matchStep(st, 1 / 60, cfg); if (had && !st.restart && taken == null) taken = st.t;
+      const sauteurs = st.players.filter((q) => q.act?.payload?.kind === 'saut' && q.act.t > 0.02);   // dès la 2e image de l'acte ; la vitesse est celle du DÉPLACEMENT (sous un acte le corps n'est plus intégré, p.v garde sa dernière valeur)
+      if (sauteurs.length) murV = Math.max(murV ?? 0, ...sauteurs.map((q) => { const pp = prevP.get(q.id); return hyp(q.p[0] - pp[0], q.p[2] - pp[1]) * 60; }));
+      if (taken != null && st.t > taken + 2) break;
+    }
+    const ev = st.events.slice(n0);
+    return { t0, taken: taken != null ? +(taken - t0).toFixed(2) : null, ev, w: ev.find((e) => e.type === 'windup' && e.tech === 'elan'), el: ev.find((e) => e.type === 'élan'), murV };
+  };
+  const runs = { sdb: [], touche: [], cf: [] };
+  for (const seed of [3, 7]) {
+    let { st } = playMatch(makeMatch({ full: true, seed }), 8, { cfg });
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), own = st.pitch.ownGoal(0);
+    runs.sdb.push(forceR(st, cfg, 'sortie-de-but', [own.x - own.sign * 5.5, 2], 0, 20, { sortieBut: 'long' }));
+    runs.touche.push(forceR(st, cfg, 'touche', [g.x - sg * 20, st.pitch.hz], 0, 20, { touche: 'longue' }));
+    runs.cf.push(forceR(st, cfg, 'coup-franc', [g.x - sg * 22, 3], 0));
+  }
+  // LA SORTIE DE BUT LONGUE : le gardien recule derrière le ballon (windup 'elan' remise sortie-de-but), court, et se dégage DANS L'IMAGE du contact
+  {
+    const R = runs.sdb, pass = (r) => r.ev.find((e) => e.type === 'pass' && e.by === r.el?.by && e.t >= r.el.t);
+    ok(R.every((r) => r.w?.remise === 'sortie-de-but' && r.w.depart >= 2.5 && r.el?.remise === 'sortie-de-but' && r.el.vitesse >= 2), `LA SORTIE DE BUT LONGUE a sa course d'élan : départs ${R.map((r) => r.w?.depart ?? '—').join('/')} m derrière le ballon, ${R.map((r) => r.el?.vitesse ?? '—').join('/')} m/s au contact (≥ 2)`);
+    ok(R.every((r) => { const p = pass(r); return r.el && p && p.t - r.el.t <= 0.05 && p.style === 'lofted'; }), `…et se dégage dans l'image du contact : passe lofted ${R.map((r) => { const p = pass(r); return p && r.el ? '+' + (p.t - r.el.t).toFixed(2) + ' s' : '—'; }).join('/')} après l'élan (≤ 0,05 — la porte de timing compte la course comme porté)`);
+  }
+  // LA TOUCHE LONGUE : le lanceur recule derrière la ligne (tablier), court AU ballon, l'événement 'élan' à l'arrivée, puis le lancer d'hier (windup 'touche', rentrée)
+  {
+    const R = runs.touche;
+    ok(R.every((r) => r.el?.remise === 'touche' && r.el.vitesse >= 1.5 && r.el.course >= 0.1 && !r.w), `LA TOUCHE LONGUE se lance au bout d'une course : arrivée à ${R.map((r) => r.el?.vitesse ?? '—').join('/')} m/s après ${R.map((r) => r.el?.course ?? '—').join('/')} s de course, sans geste pendant la course`);
+    ok(R.every((r) => r.taken != null && r.el && r.ev.some((e) => e.type === 'windup' && e.tech === 'touche' && e.t >= r.el.t) && r.ev.some((e) => e.type === 'rentrée' && e.t >= r.el.t)), `…puis le lancer d'hier à la ligne : windup 'touche' et rentrée (${R.map((r) => r.ev.find((e) => e.type === 'rentrée')?.range ?? '—').join('/')} m)`);
+  }
+  // LE MUR SAUTE : deux hommes du mur arment 'sautMur' retard s après le contact du coup franc, plantés pendant le saut
+  {
+    const R = runs.cf, K = cfg.remisesPied.mur;
+    const sauts = (r) => r.ev.filter((e) => e.type === 'saut');
+    const depart = (r) => r.el ? r.ev.find((e) => (e.type === 'shot' || e.type === 'lancement' || e.type === 'pass') && e.by === r.el.by && e.t >= r.el.t) : null;
+    ok(R.every((r) => depart(r) && sauts(r).length === 2 && sauts(r).every((e) => e.t - depart(r).t >= -0.01 && e.t - depart(r).t <= 0.03)), `LE MUR SAUTE au coup franc : ${R.map((r) => sauts(r).length).join('/')} sauts armés ${R.map((r) => depart(r) ? sauts(r).map((e) => '+' + (e.t - depart(r).t).toFixed(2)).join(' ') : '—').join(' | ')} s après le DÉPART du ballon (${R.map((r) => depart(r)?.type ?? '—').join('/')}), le retard de réaction (${K.retard} s) dans l'acte`);
+    ok(R.every((r) => r.ev.filter((e) => e.type === 'windup' && e.move === 'sautMur').every((e) => e.retard === K.retard && Math.abs(e.anticipation - (MOVE_TIMING.sautMur.contact + K.retard)) < 0.01)), `…l'armé du saut porte le retard (anticipation = contact ${MOVE_TIMING.sautMur.contact} + retard ${K.retard} s : la scène décale l'horloge du clip, le corps tient sa pose)`);
+    ok(R.every((r) => r.ev.filter((e) => e.type === 'windup' && e.move === 'sautMur' && e.skill === 'saut').length === 2 && (r.murV ?? 0) < 0.3), `…chacun arme 'sautMur' (windup skill 'saut', que l'audit des membres ignore) et reste PLANTÉ (vitesse max ${R.map((r) => (r.murV ?? 0).toFixed(2)).join('/')} m/s pendant le saut)`);
+  }
+  // (B4) LE MUR A UN CORPS ET DES JAMBES (loi12.murTrot, remisesPied.mur.corps). Mesuré avant : les deux hommes du mur étaient les deux
+  // plus PROFONDS, au pas — partis de 56 m, à 8-13 m du ballon à la prise ; et le vol TRAVERSAIT le mur qui saute (aucune loi de corps).
+  // Ici : les deux les plus près du point du mur, au trot (à leur point à la prise) ; un ballon bas qui passe sur un homme du mur est
+  // dévié (dévié-mur : il repart vers le tireur, ralenti, relevé), un ballon haut passe ; corps null : le mur traversé d'hier.
+  {
+    const murTest = (over, { elevation = 0.12, secs = 50 } = {}) => {
+      const cfgM = matchCfg({ sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, /* DATÉ 15/09 (B4) : les clés du 16/09 changent les 50 s de flux qui posent le coup franc ; le ramasseur retarde la remise, le mur arrive à son point au pas comme au trot */ ...over }); let { st } = playMatch(makeMatch({ full: true, seed: 7 }), secs, { cfg: cfgM });
+      const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), p = [g.x - sg * 22, 2];
+      quiet(st, cfgM); if (st.ball.owner != null) st.ball.release('perte');
+      st.ball.restart([p[0], 0.11, p[1]], { cause: 'coup-franc' }); st.restart = { type: 'coup-franc', p, team: 0, at: st.t + 3, placed: false }; st.possession = { team: 0, carrier: -1 }; st.phase = 'loose';
+      const n0 = st.events.length; let mur = null, dMur = null, trot = null, deviation = null, vAvant = null, vApres = null, depart = null, dMin = 9;
+      const og = st.pitch.ownGoal(1), gx = og.x - p[0], gz = 0 - p[1], gl = hyp(gx, gz) || 1, spot = (i) => [p[0] + (gx / gl) * 9.15 - (gz / gl) * (i === 0 ? 0.35 : -0.35), p[1] + (gz / gl) * 9.15 + (gx / gl) * (i === 0 ? 0.35 : -0.35)];
+      for (let i = 0; i < 60 * 30; i++) {
+        const had = !!st.restart; if (had && st.restart._mur && !mur) mur = [...st.restart._mur];
+        if (had && mur) trot = mur.map((id) => st.players[id]._walkF ?? null);
+        matchStep(st, 1 / 60, cfgM);
+        if (had && !st.restart) {                                            // la prise : les hommes du mur à leur point ? puis le tir FORCÉ bas (ou haut) vers le centre du mur
+          dMur = mur ? mur.map((id, k) => +hyp(st.players[id].p[0] - spot(k)[0], st.players[id].p[2] - spot(k)[1]).toFixed(2)) : null;
+          const [cx, cz] = spot(0), yaw = Math.atan2(cz - st.ball.p[2], cx - st.ball.p[0]);   // vers le premier homme du mur (le centre du mur passe entre les deux corps)
+          if (st.ball.owner != null) st.ball.release('perte');
+          const tk = st.players[mur ? (st.lastPasser ?? 0) : 0], sp = 18;
+          st.ball.strike({ speed: sp, dirYaw: yaw, elevation, spinAxis: [0, 1, 0], spinRev: 0 });   // le tir FORCÉ : la tenue de livre d'un vrai départ (pass, lastPasser) — sinon le ballon libre à 0,5 m du preneur se reprend
+          st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.pass = { from: tk?.id ?? 0, to: -2, lead: [cx, 0, cz], style: 'ground', t: st.t, flight: 0.6, origin: [st.ball.p[0], st.ball.p[2]] }; st.lastPasser = tk?.id ?? 0; st.lastTouch = 0;
+          depart = st.t; vAvant = [...st.ball.v];
+        }
+        if (depart != null && !deviation) { deviation = st.events.slice(n0).find((e) => e.type === 'dévié-mur') ?? null; if (deviation) vApres = [...st.ball.v]; if (mur) dMin = Math.min(dMin, ...mur.map((id) => hyp(st.ball.p[0] - st.players[id].p[0], st.ball.p[2] - st.players[id].p[2]))); }
+        if (depart != null && st.t - depart > 1.2) break;
+      }
+      return { mur, dMur, trot, deviation, vAvant, vApres, dMin: +dMin.toFixed(2), sauts: st.events.slice(n0).filter((e) => e.type === 'saut').length, lastTouch: st.lastTouch, corps: !!st._murCorps };
+    };
+    const vif = murTest({}, { elevation: 0.2 });                                       // à mi-hauteur : les tibias du mur qui saute
+    ok(!!vif.mur && vif.dMur && vif.dMur.every((d) => d <= 1.5) && vif.trot && vif.trot.every((f) => f === cfg.loi12.murTrot), `LE MUR TROTTE ET ARRIVE (B4) : les deux hommes à ${vif.dMur?.join(' / ') ?? '—'} m de leur point à la prise (≤ 1,5 ; _walkF ${vif.trot?.join('/') ?? '—'} = murTrot ${cfg.loi12.murTrot}), à 50 s de jeu`);
+    const dot = vif.vAvant && vif.vApres ? vif.vAvant[0] * vif.vApres[0] + vif.vAvant[2] * vif.vApres[2] : 1;
+    ok(!!vif.deviation && dot < 0 && vif.vApres[1] > 0 && hyp(vif.vApres[0], vif.vApres[2]) < 0.6 * hyp(vif.vAvant[0], vif.vAvant[2]) && vif.lastTouch === 1, `LE BALLON BAS RENCONTRE LE MUR : dévié-mur (h ${vif.deviation?.h ?? '—'} m, ${vif.deviation?.air ? 'en l\'air' : 'debout'}, ${vif.deviation?.vitesse ?? '—'} m/s) — il repart vers le tireur (${vif.vApres ? hyp(vif.vApres[0], vif.vApres[2]).toFixed(1) : '—'} m/s c. ${vif.vAvant ? hyp(vif.vAvant[0], vif.vAvant[2]).toFixed(1) : '—'}), relevé, le toucher au mur (lastTouch ${vif.lastTouch}) ; passage au plus près d'un homme du mur ${vif.dMin} m`);
+    const haut = murTest({}, { elevation: 0.45 });
+    const ras = murTest({});                                                             // rasant (0,12) : le ballon est au sol à 9 m
+    ok(!ras.deviation && ras.sauts === 2 && ras.lastTouch === 0, `…et le ballon RASANT passe SOUS le mur qui saute (aucun dévié-mur, ${ras.sauts} sauts, personne du mur ne le contrôle : lastTouch ${ras.lastTouch})`);
+    ok(!haut.deviation && haut.sauts === 2, `…et le ballon HAUT passe au-dessus du mur qui saute (aucun dévié-mur, ${haut.sauts} sauts)`);
+    const RP = cfg.remisesPied;
+    const sab = murTest({ remisesPied: { ...RP, mur: { ...RP.mur, corps: null } } }, { elevation: 0.2 });
+    ok(!sab.deviation, `sabotage « le mur traversé d'hier » attrapé (corps:null : le ballon bas passe à travers, aucun dévié-mur)`);
+    const sabT = murTest({ loi12: { ...cfg.loi12, murTrot: null } });
+    ok(!!sabT.mur && sabT.trot && sabT.trot.every((f) => f == null) && sabT.dMur && Math.max(...sabT.dMur) > Math.max(...(vif.dMur ?? [0])), `sabotage « le mur d'hier, au pas » attrapé (murTrot:null : sans trot, les hommes à ${sabT.dMur?.join(' / ') ?? '—'} m de leur point à la prise — plus loin qu'avec)`);
+  }
+  // LES SOUS-CLÉS ABSENTES RENDENT L'HIER : sans elan.sortieBut / elan.toucheLongue / mur, aucune course, aucun saut ; et un style COURT ne recule pas
+  {
+    const RP = cfg.remisesPied, cfg0 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  remisesPied: { elan: { ...RP.elan, sortieBut: null, toucheLongue: null }, volee: RP.volee, touche: RP.touche, mur: null } });
+    let { st } = playMatch(makeMatch({ full: true, seed: 3 }), 8, { cfg: cfg0 });
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), own = st.pitch.ownGoal(0);
+    const a = forceR(st, cfg0, 'sortie-de-but', [own.x - own.sign * 5.5, 2], 0, 20, { sortieBut: 'long' }), b = forceR(st, cfg0, 'touche', [g.x - sg * 20, st.pitch.hz], 0, 20, { touche: 'longue' }), c = forceR(st, cfg0, 'coup-franc', [g.x - sg * 22, 3], 0);
+    ok(a.taken != null && !a.w && !a.el && b.taken != null && !b.el && c.el && !c.ev.some((e) => e.type === 'saut'), `les sous-clés absentes rendent l'hier au bit : sortie de but et touche prises sans course (${a.taken}/${b.taken} s), le coup franc garde sa course (A9 bis) mais le mur reste planté`);
+    let { st: st2 } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg });
+    const own2 = st2.pitch.ownGoal(0);
+    const d = forceR(st2, cfg, 'sortie-de-but', [own2.x - own2.sign * 5.5, 2], 0, 20, { sortieBut: 'court' });
+    ok(d.taken != null && !d.w && !d.el, `la sortie de but COURTE (style tactique) ne recule pas : prise à ${d.taken} s sans course — la course n'est que celle du dégagement long`);
   }
 }
 

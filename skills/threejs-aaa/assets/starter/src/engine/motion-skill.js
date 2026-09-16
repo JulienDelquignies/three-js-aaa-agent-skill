@@ -38,6 +38,7 @@ export const SKILL_KINDS = {
   // LA CROQUETA : deux touches sèches, deux pieds — l'intérieur droit balaie le ballon vers la gauche, le gauche le pousse devant
   doubleContact: { duration: 0.36, contact: 0.18, ball: [0.05, BALL_R, -0.30], croqueta: true, push1: 0.10, lean: 7, dip: 0.04, headDown: 12 },
   // LA PICHENETTE : armé puis extension SÈCHE entre les jambes du fermeur — le corps est déjà bas et penché, les bras restent à la locomotion
+  feinteAppel: { duration: 0.55, contact: 0.3, feint: true, upperOnly: true, sell: 0.15, sellSide: 16, yawSell: 24, lean: 6, dip: 0, headDown: 6 },   // (§ 10) LA FEINTE D'APPEL — sans ballon : le buste VEND un départ d'un côté (l'épaule qui plonge, le lacet) puis repart de l'autre au contact ; haut du corps seul (la foulée garde les jambes : le démarrage est celui de la sim)
   petitPont: { duration: 0.3, contact: 0.12, ball: [0.08, BALL_R, -0.30], flick: true, arm: 0.07, lean: 8, dip: 0.06, noArms: true, headDown: 12, marks: [0.07] },
 };
 // les passements à N tours (2..6) : le même cercle, répété — durée et contact avancent d'un tour
@@ -300,9 +301,20 @@ export function generateSkill(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } =
       return { J, hips: hipsOf(t) };
     };
     ik = () => ({ Left: [restL[0], restL[1], restL[2]], Right: null });
+  } else if (K.feint) {
+    // (§ 10) LA FEINTE D'APPEL : la vente (bump jusqu'à `sell`) penche et tourne le buste à DROITE (le côté vendu — le miroir d'animkit fait
+    // l'autre), le bras droit s'ouvre ; au contact le buste repart à GAUCHE (le vrai départ, ×0,6) et tout revient. Aucune clé de jambe.
+    poseAt = (t) => {
+      const a = bump(t, 0, K.sell, tc), b = bump(t, K.sell, tc, T) * 0.6, on = a - b;
+      const J = {};
+      trunk(J, { lean: K.lean * S.lean * (a + b), side: K.sellSide * S.lean * on, yaw: K.yawSell * on, headDown: K.headDown * S.headDown * a, headYaw: -K.yawSell * 0.5 * on });
+      Object.assign(J, armJoints('Right', { elev: 14 + 30 * a, fwd: 6 + 28 * a - 10 * b, elbow: 14 + 46 * a + 20 * b }), armJoints('Left', { elev: 14 + 12 * b + 6 * a, fwd: 6 - 12 * a + 24 * b, elbow: 14 + 26 * a + 40 * b }));
+      J.LeftShoulder = [0, 0, 0, 1]; J.RightShoulder = [0, 0, 0, 1];
+      return { J, hips: [0, 0, 0] };   // pas de bassin : la foulée possède les jambes (un bassin qui descend sans jambes passait les pieds sous la pelouse)
+    };
   }
   const keys = emitSpec(P, { duration: T, contact: tc, fps, poseAt, ik, marks });
-  return { name: kindName, duration: T, contact: tc, foot: 'right', generated: true, family: 'skill', keys };
+  return { name: kindName, duration: T, contact: tc, foot: 'right', generated: true, family: 'skill', ...(K.upperOnly ? { upperOnly: true } : {}), keys };
 }
 
 /** Le portrait : le chemin du pied libre au fil du temps, le ballon, l'appui, le buste. */
@@ -367,7 +379,14 @@ export function skillPortrait(spec, P) {
 export function checkSkillGen(spec, P, kindName) {
   const K = SKILL_KINDS[kindName] || {};
   const p = skillPortrait(spec, P);
-  const issues = bodyIssues(p, { support: !K.croqueta }).filter((s) => !(K.noArms && /coude|main/.test(s)));   // sans clé de bras, le portrait lit la pose T du rig : les bras sont à la locomotion
+  const issues = bodyIssues(p, { support: !K.croqueta && !K.feint }).filter((s) => !(K.noArms && /coude|main/.test(s)));
+  if (K.feint) {   // (§ 10) sans ballon, sans jambes : le buste vend (lacet des épaules à la vente), et revient
+    if (spec.keys.some((k) => k.pose.LeftUpLeg || k.pose.RightUpLeg || k.pose.LeftLeg || k.pose.RightLeg)) issues.push('la feinte écrit les jambes — la foulée doit les garder');
+    const yawAt = (t) => { const w = p.samples.reduce((bst, x) => (Math.abs(x.t - t) < Math.abs(bst.t - t) ? x : bst), p.samples[0]).w; return Math.atan2(w.RightArm.p[2] - w.LeftArm.p[2], w.RightArm.p[0] - w.LeftArm.p[0]) * 180 / Math.PI; };
+    const y0 = yawAt(0), yS = yawAt(K.sell) - y0, yC = yawAt(spec.contact) - y0;
+    if (Math.abs(yS) < 10) issues.push(`le buste ne VEND pas (lacet des épaules ${yS.toFixed(0)}° à la vente < 10)`);
+    if (Math.sign(yC) === Math.sign(yS) && Math.abs(yC) > Math.abs(yS) * 0.5) issues.push(`le buste ne REPART pas de l'autre côté au contact (${yC.toFixed(0)}° après ${yS.toFixed(0)}°)`);
+  }   // sans clé de bras, le portrait lit la pose T du rig : les bras sont à la locomotion
   const b = K.ball || [0, BALL_R, -0.3];
   if (K.sole) {
     const hMin = K.toe ? 0.21 : 0.24, dMax = K.toe ? 0.17 : 0.14;

@@ -8,12 +8,14 @@ import { scanStep, aScanne } from './scan.js';
 import { dansCone } from './dribble.js';
 import { pasLoco, budgetStep, pointePermise } from './locomoteur.js';
 import { intentionDe, appelPertinent } from './effort.js';
+import { feinteAppelAt } from './petits-gestes.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /** Move every player toward their target with real acceleration limits. */
 export function movePlayers(st, dt, cfg) {
+  aideStep(st, dt, cfg);   // (A10 quater, cfg.sol.aide) le relevé aidé : après les métiers, avant le pas — l'aidant vient, tend la main
   for (const p of st.players) {
     scanStep(st, p, cfg);   // (250) l'horloge de scan — p.scan pour le rendu, le TEMPS du corps ouvert ; cfg.scan absent : rien
     // a player on the ground after a slide does not run — mais l'EXPULSÉ (Loi 12) et le
@@ -62,8 +64,9 @@ export function movePlayers(st, dt, cfg) {
     // …et un geste technique possède le corps AU-DELÀ du contact : le râteau tourne le lacet
     // pendant l'accompagnement, la semelle tient le corps immobile sur son ballon — stepGestures
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
-    if ((winding(p) || p.act?.payload?.ownsBody) && !p.act?.payload?.elan) {   // …et la COURSE D'ÉLAN (lot A9 bis) : le corps COURT sous son armé, le contact attend l'arrivée
+    if ((winding(p) || p.act?.payload?.ownsBody) && !p.act?.payload?.elan && !p.act?.payload?.mobile) {   // …et la TÊTE ARMÉE (B3, payload.mobile) : le corps court sous son armé jusqu'au ballon   // …et la COURSE D'ÉLAN (lot A9 bis) : le corps COURT sous son armé, le contact attend l'arrivée
       p.speed = hyp(p.v[0], p.v[1]);
+      if (st.full && cfg.plantVitesse && !p.act?.payload?.mains) { p.v = [0, 0]; p.push = null; p.speed = 0; continue; }   // (B6, cfg.plantVitesse) LE CORPS PLANTÉ NE BOUGE PAS : sa vitesse est nulle — hier p.v gardait sa dernière valeur (mesuré : 84 % des images plantées à > 1 m/s, l'armé de passe à 4,4 m/s p50) et qui la lisait (relV de beginPass, l'effort, les poursuivants) voyait un corps qui bouge
       if (!p.act?.payload?.mains) continue;
       p.v = [0, 0]; p.push = null; p.speed = 0;                     // …sauf les MAINS (lot A9 — touche, roulé du gardien) : planté, il TOURNE encore sur sa cible pendant l'armé (le slew ci-dessous)
     }
@@ -160,6 +163,7 @@ export function movePlayers(st, dt, cfg) {
         p._pace.until = st.t + 0.7 + tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * 0.4;
         p._pace.kind = 'appel';
         st.events.push({ type: 'burst', kind: 'appel', by: p.id, t: +st.t.toFixed(2) });
+        feinteAppelAt(st, p, cfg);   // (§ 10) le soutien posé vend un crochet du buste avant de partir
       }
       p._pace.next = st.t + (6 + tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * 6) / Math.max(0.4, bz);
     }
@@ -299,7 +303,7 @@ export function movePlayers(st, dt, cfg) {
         }
         const volVersMoi = st.pass && st.pass.lead
           && hyp(p.p[0] - st.pass.lead[0], p.p[2] - st.pass.lead[2]) < (A.chaud ?? 14);
-        if (!(dB < (A.chaud ?? 14) || volVersMoi || tSpd > (A.manRun ?? 3.5))) {
+        if (!(dB < (A.chaud ?? 14) || volVersMoi || tSpd > (A.manRun ?? 3.5) || p._sortieAerienne)) {   // (B10) la sortie aérienne du gardien est une course CHAUDE : le point de chute est loin du ballon encore haut
           // …à la vitesse du jeu, LITTÉRALEMENT : le plafond suit la cible (+15 % et 0,4 m/s de
           // convergence), borné [marche, trot] — un bloc qui coulisse sur une circulation lente
           // se déplace en marchant, pas au trot réglementaire (mesuré : p50 8 corps > 2,5 m/s
@@ -332,10 +336,11 @@ export function movePlayers(st, dt, cfg) {
         }
       } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }
-    let wx = 0, wz = 0;
+    if (p._boite && st.t < p._boite.until) top *= 1 - (cfg.boiterie?.ralenti ?? 0.3) * Math.max(0.2, (p._boite.until - st.t) / (p._boite.duree || 1));   /* (§ 8) LE FAUCHÉ BOITE : la pointe se réduit APRÈS tous les plafonds, l'intention d'effort comprise (posé avant elle, 0,7 × 6,56 = 4,59 restait au-dessus des 4,2 de l'intention et ne mordait jamais) */
+    let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
-      const d = hyp(dx, dz);
+      const d = hyp(dx, dz); dTgt = d;
       if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
     }
     // LA DEMANDE DES RÔLES CALMES EST LISSÉE (τ = wantTau). La cible de marche des soutiens sautait
@@ -352,6 +357,24 @@ export function movePlayers(st, dt, cfg) {
       p._wz = (p._wz ?? wz) + (wz - (p._wz ?? wz)) * aW;
       wx = p._wx; wz = p._wz;
     } else { p._wx = wx; p._wz = wz; }
+    // (B5, cfg.viragesLisses) LE CAP DEMANDÉ NE TREMBLE PAS ET NE TOURNE PAS PLUS VITE QUE taux/v : mesuré (sonde b5), le corps pressait
+    // en BANG-BANG latéral — press/cover : accélération latérale p50 5,9 m/s² (la saturation, turnAccel 6), 7-8 inversions par seconde ;
+    // la cible tremblait (press : 5,6°/image à p90, 4 inversions/s). Le cap voulu passe par un filtre (tau s) puis un slew borné par la
+    // vitesse (taux/v rad/s) : la demande latérale devient petite et suivie, le corps décrit des courbes. Sous des m/s (l'arrêt, le
+    // pivot) et sans demande : libre. Les rôles de course y passent aussi (l'interception est un cap : mesuré au flux). null : hier au bit.
+    if (st.full && cfg.viragesLisses && (wx || wz)) {
+      const VL = cfg.viragesLisses, spW = hyp(p.v[0], p.v[1]);
+      if (spW >= (VL.des ?? 1.0) && dTgt > (VL.arrivee ?? 1.5)) {   // …et pas à l'ARRIVÉE (la cible à < arrivee m) : le demi-tour de l'arrivée est un frein, pas un virage — le slew le retardait (mesuré : le lanceur dépassait son point de 0,17 m)
+        const want = Math.atan2(wz, wx), mag = hyp(wx, wz), have = p._capW ?? Math.atan2(p.v[1], p.v[0]);
+        let d = want - have; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+        if (VL.tau) d *= 1 - Math.exp(-dt / VL.tau);
+        const cap = ((VL.taux ?? 6) / Math.max(1, spW)) * dt;
+        const nw = have + Math.max(-cap, Math.min(cap, d));
+        let rest = want - nw; while (rest > Math.PI) rest -= 2 * Math.PI; while (rest < -Math.PI) rest += 2 * Math.PI;
+        const k = Math.max(VL.frein ?? 0.2, Math.cos(rest));               // le cap loin du voulu FREINE (on ne fait pas le tour à pleine vitesse : mesuré, le receveur en arc saturait 6 m/s² à p50)
+        wx = Math.cos(nw) * mag * k; wz = Math.sin(nw) * mag * k; p._capW = nw;
+      } else p._capW = null;
+    } else p._capW = null;
     // TURNING COSTS, AND THE FASTER YOU GO THE WIDER YOU TURN. Acceleration used to be isotropic:
     // 9.5 m/s² in any direction, so a defender at a full 6.6 m/s sprint could reverse as sharply as a
     // man standing still. With no momentum to beat, a feint cannot pay — which is why scoring the
@@ -431,7 +454,7 @@ export function movePlayers(st, dt, cfg) {
         if (d > (cfg.contact.jockey.d ?? 4.5) || d < 0.3 || p.speed > (cfg.contact.jockey.vMax ?? 3.5)) return false;
         const along = p.speed > 0.25 ? (p.v[0] * dx + p.v[1] * dz) / (p.speed * d) : 0;
         return along < 0.5 ? [dx, dz] : false; })();
-    if (p.speed > 0.25 && !sePres && !regardGk && !jockey) {
+    if (p.speed > 0.25 && !sePres && !regardGk && !jockey && p._regard == null) {   // (A11 ter) le regard TENU (p._regard) pilote le cap même en marche : le pas devient chassé
       // LE YAW NE SE TÉLÉPORTE JAMAIS (lot 139, cfg.yawSlew && st.full — mesuré : pic p50
       // 807°/s, p90 6 168°/s autour des prises, 31 % des contrôles retournent > 90° en une
       // frame : quand p.v s'inverse à la prise, le cap la suivait INSTANTANÉMENT ; réel
@@ -493,6 +516,8 @@ export function movePlayers(st, dt, cfg) {
       // LUI-MÊME sur le ballon — le pas chassé a toujours une cible de regard.
       p.yawWant = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
     }
+    if (p._regardUntil != null && st.t > p._regardUntil) { p._regard = null; p._regardUntil = null; }   // (passements) le regard tenu À TERME : le porteur qui fixe son vis-à-vis relâche seul
+    if (p._regard != null) p.yawWant = p._regard;   // (A11 ter, ceremonie.js) LE REGARD TENU : la file des poignées défile face à la rangée, le salut se tourne vers la tribune — null : l'hier au bit
     // A TURN TAKES TIME — this is the ONE place a facing may change, and it can only change at a
     // bounded rate. A first touch used to write `p.yaw = atan2(...)` directly: the man was simply
     // pointing somewhere else on the next frame, 180° in zero seconds. Nothing in the animation can
@@ -545,6 +570,9 @@ export function separatePlayers(st, cfg) {
       const a = st.players[i], b = st.players[j];
       const dx = b.p[0] - a.p[0], dz = b.p[2] - a.p[2];
       const d = hyp(dx, dz);
+      // (A10 bis, cfg.sol.corps) PERSONNE NE MARCHE DANS UN CORPS COUCHÉ : un corps à terre (down, ni expulsé ni remplacé) tient les debout à ≥ corps m — le debout seul recule, en marchant (≤ 0,04 m/image) ; mesuré : le tacleur planté à 0,5 m (minGap) du fauché, dans son corps
+      const SOL = st.full && cfg.sol, aSol = SOL && a.down > 0 && a.down < 100 && !a.expulse && !a._sub, bSol = SOL && b.down > 0 && b.down < 100 && !b.expulse && !b._sub;
+      if (SOL && aSol !== bSol) { const corps = SOL.corps ?? 0.9; if (d < corps && d > 1e-6) { const push = Math.min(corps - d, 0.04), ux = dx / d, uz = dz / d; if (aSol) { b.p[0] += ux * push; b.p[2] += uz * push; } else { a.p[0] -= ux * push; a.p[2] -= uz * push; } } continue; }
       const gap = social && a.team === b.team && !st.restart && a.down <= 0 && b.down <= 0
         && !a.act && !b.act ? social : cfg.minGap;
       if (d >= gap || d < 1e-6) continue;
@@ -556,3 +584,4 @@ export function separatePlayers(st, cfg) {
   }
 }
 import { hyp } from './hyp.js';
+import { aideStep } from './aide.js';

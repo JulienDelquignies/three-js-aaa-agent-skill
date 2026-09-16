@@ -66,7 +66,7 @@ la météo.
    enroulé et la passe brossée doublent leur courbe.
 2. **Le roulement DIN** (2, 3) : `a0 + b v` (0,40 ; 0,17) avec la norme UEFA comme clause — la passe au sol meurt
    là où elle meurt.
-3. **L'erreur anisotrope et l'exposant vitesse-précision** (6, 7, 13 ; le 258) — **SCELLÉ 363 (278, ellipse.js)** : la
+3. **L'erreur anisotrope et l'exposant vitesse-précision** (6, 7, 13 ; le 258) — **SCELLÉ 390 (278, ellipse.js)** : la
    normale bivariée corrélée (ρψθ 0,2, ρθv −0,35), la vraie normale par inversion (Acklam, §5.3), la queue basse, la troncature, le
    pied qui s'ouvre, f_corps, la nominale intégrée ; au plan 1,7-2,4. Reste : σ 0,7 sur la passe (le 265 vit encore au gauss du moteur).
 4. **L'interception probabiliste** (8, 9, 11 ; Modèle 04) : Spearman σ 0,45 s, λ 4,30, sur la trajectoire **perçue**.

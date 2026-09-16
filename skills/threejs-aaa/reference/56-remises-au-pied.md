@@ -69,7 +69,7 @@ Côté droit ; le miroir d'animkit fait la gauche. Le style borné [0,85 ; 1,2] 
   puis la scène le dessine où la sim le fait tomber ; la PRISE AÉRIENNE tenue : le ballon reste dans les gants
   du clip `plongeonPrise` tant que le gardien le possède.
 
-## Le contrat (verify-remises.mjs, 36 clauses)
+## Le contrat (verify-remises.mjs, 36 clauses — 53 avec A9 ter, B2 et B4)
 
 Le geste `voleeGardien` sous `checkRestartGen` (mains ensemble jusqu'au lâcher, lâcher devant à hauteur de
 main, pied à 0,45-0,8 m devant à > 5 m/s, l'appui au sol, le tronc cambré, les mains ouvertes, rien sous
@@ -125,13 +125,124 @@ derrière la ligne) — le réel en a 40 par match, le tronc 1,2 par 10 min. L'�
 A9 et A10, l'équilibre tient, l'hier au bit sans la clé. Nommé au tronc : la remise de la tête au lanceur
 qui vise un corps près de la ligne (une loi de `tete.js`, pas de ce lot).
 
+## La sortie de but longue, la touche longue, le mur qui saute (A9 ter — `elan.js`)
+
+La course d'élan (A9 bis) vit dans `engine/elan.js` (referee.js, au plafond de lignes, ré-exporte
+`poserElan / elanJob / elanStep / elanNow`). Trois sous-clés, chacune `null` = l'hier au bit :
+
+- **`remisesPied.elan.sortieBut`** `{ recul 3, lat 1.2, vitesse 3.5 }` : quand le style de la sortie de
+  but est LONG (`keeper.styleSortieBut` — la décision à la pression de `relancerGardien`, sortie dans
+  sa propre fonction et lue aussi À LA POSE), le gardien recule derrière le ballon sur la ligne
+  ballon-but, attend, court : le geste `frappe` s'arme sur la course et la remise se prend au contact
+  (mesuré : départ 3,4 m, 2,6 m/s au contact). Au contact, sa relance (style long forcé par
+  `gk._elanLong`) arme la passe et le tir se prend au tick suivant — la porte de timing de `beginPass`
+  refusait (`timing`) : la course COMPTE comme porté (`st.hold ← holdMin + 0,1`). La scène
+  (`rondo-remises.remiseSkip`) n'arme pas ce second geste : le clip d'élan garde son accompagnement
+  sur une horloge locale (`pl._elanTail`). Style court : la pose d'hier.
+- **`remisesPied.elan.toucheLongue`** `{ recul 4 }` : la touche longue (tactique `cpa.touche 'longue'`,
+  tiers offensif — la porte de `remiseEnTouche`) : le lanceur recule derrière la ligne (borné par le
+  tablier : 1,45 m de gazon), court AU ballon sans geste (événement `élan` remise `touche` à
+  l'arrivée : 1,9 m/s après 0,75 s), le lancer d'hier s'arme à la ligne. Une pose venue du ramasseur
+  n'avait pas de preneur à l'heure de `poserElan` : `elanJob` pose la course dès qu'il est connu.
+- **`remisesPied.mur`** `{ retard 0.12 }` : à la PRISE du coup franc (`onTakeMatch`, la voie de l'élan
+  comme la prise d'hier), les deux hommes du mur (`r._mur`, mémorisé chaque image par `elanStep`) sont armés ; ils partent quand le ballon QUITTE le preneur (direct : cette image ; lancé :
+  au contact de la passe — `murStep`, chaque image depuis `arbitreStep`) : l'acte `sautMur` possède le
+  corps (planté) et porte le retard de réaction (`payload.retard` : `remiseClock` décale l'horloge du
+  clip, le corps tient sa pose). Un homme du mur parti marquer en boîte (cfSpots passe avant le mur)
+  ne saute pas à 30 m du ballon (≤ 13 m). Le geste (`motion-emotion`, famille emotion, possède les
+  jambes) : accroupi (bassin −11 cm), détente, les deux pieds décollés (+58 cm) au sommet (0,34 s,
+  bassin +36), les mains croisées devant le bas-ventre (2 cm l'une de l'autre), réception.
+- Bancs : `verify-remises` § 7 ter (sortie de but longue : course puis passe lofted +0,02 s ; touche
+  longue : course puis lancer ; mur : deux sauts armés au départ du ballon, plantés à 0,00 m/s ;
+  sous-clés absentes = hier ; style court = pas de course), `verify-emotion` (le saut, ses sabotages).
+
+## Le tir immédiat des remises lancées (B2 — `elan.js`, `remisesPied.elan.tirImmediat`)
+
+Mesuré (12 matchs × 300 s, 20 remises à course d'élan) : le coup franc à portée se tire ou se lance
+DANS l'image du contact (`coupFrancDirect` / `coupFrancLance`, `st.ball.strike` à la prise), le corner
+se joue de même (`cornerTrav`) — mais 9 remises sur 20 restaient AU PIED du preneur : toutes des coups
+francs à 56-101 m du but (au-delà de la portée du lancement, 55 m), où la prise ne fait rien et le
+cerveau rejouait une passe 0,4-1,5 s plus tard (porte de timing : hold ≈ 0, 'timing' × 5 ; puis
+'ancre' à 0,74 m sous l'urgence). Le clip d'élan frappait un ballon qui ne partait pas, un clip de
+passe le faisait partir : le double geste. Quatre lois, sous la sous-clé `tirImmediat { cone: 40 }`
+(`null` : le double geste d'hier, empreinte jumelle identique) :
+
+1. **Le plan se prend à la pose.** Le coup franc loin (> 55 m) et le corner de possession (le CORT
+   du style, `cornerTrav` 35 % − 0,30 × style — le tirage se prend à la pose, même flux 'cpa', une
+   fois ; `tk._cornerCort` le porte à la prise) choisissent leur coéquipier AVANT la course : le plus
+   libre du demi-plan avant à 4-30 m (`planCourt`), la course s'oriente vers lui (recul court 2,5 m).
+2. **La course attend son homme.** Pendant l'attente le plan se relit toutes les 0,5 s (les
+   coéquipiers se replacent pendant la remise) et le point de départ suit — le preneur y retourne ;
+   sans personne à ≥ 4 m (mesuré graine 1 : la protestation, A11, rassemble les neuf coéquipiers à
+   0-2 m du preneur à l'heure de la remise), la course ne part pas — la patience (4 s) garde le
+   garde-fou.
+3. **Le tir dans l'image du contact.** `elanNow` : la course compte comme porté (`st.hold`), la passe
+   s'arme en urgence vers le plan (relu : à 3-32 m, ≤ 60° de la course), sinon le choix du cerveau
+   s'il est dans le cône de la course (40°), sinon le court de la course — `beginPass` avec `opts.elan`
+   (pas de porte d'ancre : le corps EST au ballon) ; l'acte rembobiné au tick suivant, `payload.
+   tirImmediat` (pas de porte de stance au tir : la course EST le geste). Événement `tir-immédiat
+   { to, bearing, court }` ; refus nommés `tir-immédiat-cône` / `-armé`.
+4. **La scène ne joue qu'un geste.** `remiseSkip` accepte le coup franc et le corner (le clip d'élan
+   garde son accompagnement, horloge locale) et la prise au contact d'élan n'est pas une réception
+   (`elanTake` : pas de clip de contrôle par-dessus le clip d'élan — mesuré en page : 'controleInterieur'
+   à l'image du tir).
+
+Banc (verify-remises, 47 clauses) : le coup franc à 60 m part au tick suivant le contact (0,01 s, vers
+le court de la course, 30° de relèvement), le sabotage `tirImmediat:null` rend le double geste, la
+clause « même image » durcie à ≤ 0,05 s pour la passe aussi. Capture : b2-coup-franc-loin-un-seul-geste.
+
+## Le mur au trot et le ballon contre lui (B4 — `elan.js`, `match-sim.js`, `referee.canTake` ; `loi12.murTrot`, `remisesPied.mur.corps`)
+
+Mesuré avant (doc Branchements § 4) : les deux hommes du mur, choisis comme les deux plus près de leur but, partaient
+de loin et MARCHAIENT (job `walk`, sans `_walkF`, les monteurs trottant à côté) ; et le ballon TRAVERSAIT le mur qui
+saute — la déviation corps du tronc ne prend que les ballons lents (< 8 m/s). À la sonde du banc, pire : l'homme du
+mur CONTRÔLAIT le coup franc qui le frappait (un `control` + `turnover` à 1 m/s dans l'image même du choc).
+
+- **`loi12.murTrot`** `1.6` (match-sim, la branche mur du tour des métiers) : les deux hommes du mur sont choisis par
+  la DISTANCE À LEUR POINT — à 9,15 m du ballon sur l'axe ballon-but, ± 0,35 m de large — (le temps d'arrivée à vitesse
+  égale ; `null` : les deux plus profonds d'hier) et y vont au trot (`_walkF = murTrot`, la convention de cpa.js).
+- **`remisesPied.mur.corps`** `2.2` (`{ retard 0.12, corps 2.2, debout 1.85, pieds 0.25, rayon 0.6, frein 0.4 }`) :
+  `murStep` ouvre au DÉPART du ballon (le même instant que les sauts) une fenêtre d'une seconde, `st._murCorps
+  { ids, until }` — le vol jusqu'au mur dure 0,4-0,6 s. `murCorps` (chaque image, avant les sauts) : un ballon libre à
+  plus de 3 m/s qui passe à ≤ `rayon` d'un homme du mur (0,6 m : les deux corps côte à côte font 1,2 m de façade, et
+  le ballon avance de 0,3 m par image), sous sa hauteur — `debout` planté, `corps` pendant la détente (l'acte `sautMur`
+  entre 0,19 et 0,52 s après son retard) — et, en l'air, AU-DESSUS de ses pieds (`pieds` : le rasant passe SOUS le mur
+  qui saute, le classique) est DÉVIÉ : `impulse` renvoie la composante horizontale × `frein` vers le tireur et relève
+  à max(2,5 m/s, v/4) ; phase `loose`, passe nulle, `lastTouch`/`lastPasser` au mur, événement `dévié-mur { by, h,
+  air, vitesse }`. La fenêtre reste ouverte après la déviation (`done`) parce que **`canTake`** (referee) la lit : un
+  homme du mur ne contrôle pas le coup franc qui le frappe ni son rebond pendant la fenêtre — le ballon est loose,
+  au premier venu.
+- Le tireur vise déjà ≥ 2,35 m à 9,15 m (`referee`, le coup franc direct) : ce sont les tirs bas et les lancés tendus
+  qui paient, et le rasant sous le mur qui saute reste une arme.
+- **`remisesPied.elan.attente`** `{ marche 4 }` : la course d'élan du coup franc et du corner se POSE dès la place
+  connue même sans preneur (la pose tardive d'un porté, le ramasseur — hier seules la touche et la sortie de but), et
+  la patience de l'élan court depuis l'ARRIVÉE au point (ou `marche` s de marche après la pose) — mesuré au banc B4 :
+  le preneur marchait 25 m et la patience tombait en chemin, la remise partait sans course. `null` : la pose et la
+  patience d'hier — la clé existe parce que ces deux lignes changeaient le monde des clauses de flux épinglées
+  (suite sur 0746dbd 761/7 c. 806/19 avant la porte).
+
+Contrat (verify-remises, bloc B4 — le coup franc FORCÉ : le monde vidé à 50 s de jeu, le coup franc à 22 m posé,
+la prise, puis `ball.strike` à 18 m/s vers le premier homme du mur avec la tenue de livre d'un vrai départ) : le mur
+trotte (`_walkF` = murTrot) et arrive à ≤ 1,5 m de son point à la prise ; le ballon à mi-hauteur (élévation 0,2)
+rencontre le mur (dévié-mur h 0,74 m, en l'air, 16,1 m/s ; il repart vers le tireur à 6,4 m/s < 0,6 × 17,6, relevé,
+`lastTouch` au mur) ; le rasant (0,12 : au sol à 9 m) passe SOUS le mur qui saute (aucun dévié-mur, deux sauts,
+personne du mur ne le contrôle) ; le haut (0,45) passe au-dessus ; sabotages `corps:null` (le mur traversé d'hier)
+et `murTrot:null` (au pas : 0,59 / 4,63 m de leur point à la prise, plus loin qu'avec). 53 clauses au banc. Les
+deux clés `null` : hier au bit — l'empreinte jumelle des trois graines est identique avec les clés B4, B5 et B6
+absentes. En match (12 × 300 s) : note 374.
+
 ## Les dettes nommées
 
-- La sortie de but n'a pas de course d'élan (le gardien la distribue par `relancerGardien` : une passe
-  armée sur place) ; la touche longue non plus (le lanceur se pose, A9).
-- Le corner court (35 % au style possession) rend le ballon au pied du preneur au contact : la course
-  finit sur une conduite, pas une frappe.
+- ~~Le ballon ne rencontre pas encore le mur qui saute : la déviation corps ne prend que les ballons
+  lents (< 8 m/s) — le saut est un corps, pas encore une hauteur d'interception.~~ — livré au B4 (`mur.corps`).
+- La sortie de but COURTE et la touche courte restent posées (c'est le réel) ; la touche longue ne
+  vit qu'avec la tactique `cpa.touche 'longue'` — le preset `direct` la porte depuis le B6 § 8 (les équipes
+  par défaut jouent `équilibre` : l'empreinte n'en sait rien).
+- ~~Le corner court rend le ballon au pied du preneur au contact~~ — livré au B2 (le plan à la pose,
+  le tir dans l'image) ; reste le coup franc loin d'un LONG arrêt (32 s : le fauché, la cérémonie),
+  pendant lequel les dix joueurs de champ marchent au ballon et s'entassent à 0-2 m (walk × 10, identique
+  dans le monde d'hier — un fait du tronc) : personne à ≥ 4 m, la course ne part pas, la prise d'hier
+  (9 prises sur 19 en 12 matchs, sans double geste).
 - La remise de la tête au lanceur vise un corps près de la ligne et sort parfois (la boucle de touches,
   4 sur 14 sans la clé, 8 sur 23 avec) : une loi de `tete.js`, nommée au tronc.
 - La prise aérienne tenue n'a pas été filmée (aucune prise aérienne en 380 s sur trois graines).
-- Aucun mur qui saute, aucune barrière qui se place au coup franc pendant la course : le mur d'hier.

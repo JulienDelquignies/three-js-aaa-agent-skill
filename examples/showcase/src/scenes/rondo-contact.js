@@ -12,6 +12,7 @@
 // Le miroir se juge au côté réel : le côté du coup pour la chute de côté (poussé de gauche, on tombe à droite : le clip
 // neutre), le côté de l'adversaire pour l'épaule et le bouclier (à droite : le clip neutre).
 
+export const VIE = 0.6;   // (A10 bis) le rythme des allers-retours de la pose tenue (× temps réel)
 const rightOf = (s, q) => { const fx = Math.cos(s.yaw), fz = Math.sin(s.yaw); return -(q.p[0] - s.p[0]) * fz + (q.p[2] - s.p[2]) * fx; };
 
 /** Les événements de contact : la chute nommée, le duel d'épaule, l'accrochage qui casse la course. */
@@ -21,7 +22,7 @@ export function contactEvent(scene, e) {
     const side = pl.sim._chute?.side ?? 1;                                      // +1 : le coup vient de la droite
     const move = e.kind === 'cote' ? 'chuteCote' : e.kind === 'arriere' ? 'chuteArriere' : 'chuteAvant';
     scene._playTech(pl, { ...e, move, foot: e.kind === 'cote' && side > 0 ? 'left' : 'right' });   // poussé de droite → tombe à gauche : miroir
-    pl._teched = scene._t; pl._fallAt = scene._t; pl._shield = null;
+    pl._teched = scene._t; pl._fallAt = scene._t; pl._shield = null; pl._sol = null;   // (A10 bis) l'horloge de la vie au sol repart
   } else if (e.type === 'duel' && e.kind === 'épaule') {
     const by = scene.players[e.by], sur = scene.players[e.sur];
     if (by && sur && !by.sim.act) { scene._playTech(by, { ...e, move: 'epaule', foot: rightOf(by.sim, sur.sim) < 0 ? 'left' : 'right' }); by._teched = scene._t; }
@@ -37,16 +38,19 @@ export function contactEvent(scene, e) {
  *  Renvoie l'heure d'échantillonnage, ou null si le geste n'est pas du contact. */
 export function contactClock(pl, meta, t, dtP, now) {
   const spec = pl.gestureLayer.spec;
-  if (!spec || spec.family !== 'contact') { pl._fallOwns = false; return null; }
+  if (!spec || (spec.family !== 'contact' && !(spec.family === 'emotion' && spec.lying != null))) { pl._fallOwns = false; return null; }   // (A11) la glissade sur les genoux tient et se relève comme une chute
   pl._fallOwns = spec.lying != null && (pl.sim.down ?? 0) > 0;                       // la chute POSSÈDE les jambes tant que le corps est au sol (la glissade ferait lire « il court »)
   if (spec.lying != null) {
-    const down = (pl.sim.down ?? 0), riseDur = spec.duration - spec.rise;
-    if (down > 0 && !pl.sim.expulse && !pl.sim._sub) {
-      if (down > riseDur) { if (t >= spec.lying) { meta.t0 += dtP; return spec.lying; } return t; }   // le sol TIENT (gel vrai : l'horloge s'arrête)
-      const tR = spec.rise + (riseDur - down);                                     // le relevé finit quand la sim relève
-      if (t < tR) meta.t0 = now - tR + (meta.offset ?? 0);
-      return Math.max(t, tR);
+    const down = (pl.sim.down ?? 0), T = spec.duration, tL = spec.lying, tR = spec.rise;
+    if (down > 0 && !pl.sim.expulse && !pl.sim._sub && t >= tL) {
+      // (A10 bis) LA POSE TENUE VIT : entre lying et rise le clip porte un cycle fermé (la main au corps, la tête qui se pose et se relève, la jambe du dessus qui plie) — l'horloge y fait des allers-retours au ralenti (VIE ×0,6) tant que la sim a plus de temps à terre que le clip n'en demande pour finir (T − t) ; puis elle AVANCE au rythme qui finit debout quand la sim relève ((T − t)/down, borné ×1-2,5 : jamais de saut de pose — hier le gel figeait la pose couchée et le relevé sautait à l'heure sim)
+      const S = pl._sol ??= { t: tL, dir: 1 }; if (S.t < tL) S.t = tL;
+      if (down > T - S.t) { S.t += S.dir * dtP * VIE; if (S.t >= tR - 1e-3) { S.t = tR - 1e-3; S.dir = -1; } else if (S.t <= tL) { S.t = tL; S.dir = 1; } }
+      else S.t = Math.min(T, S.t + dtP * Math.max(1, Math.min(2.5, (T - S.t) / Math.max(down, dtP))));
+      meta.t0 = now - S.t + (meta.offset ?? 0);
+      return S.t;
     }
+    if (down <= 0) pl._sol = null;
     return t;
   }
   if (spec.name === 'protection' && spec.hold != null && pl._shield) {

@@ -25,7 +25,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const run = (tactics) => {
     const st = makeMatch({ full: true, seed: 3, tactics });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
     for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
     return JSON.stringify(st.events);
   };
@@ -41,7 +41,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // clause juge désormais la MÉDIANE DE TROIS GRAINES : une tactique n'a pas le droit de
     // dépendre du tirage, et l'instrument non plus.
     const st = makeMatch({ full: true, seed, tactics: [t0, null] });
-    const cfg = matchCfg({ shotRange: 20, contre: null, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), l'axe hauteurBloc rend 4,3 c. 4,5 m de médiane (la ligne suit son slot en marchant : le bloc qui monte, monte moins vite — un prix nommé au 339) — la clause mesure l'axe, pas l'intention d'effort */ })   /* contre null DATÉ 258b : vert à HEAD~ (médiane > 4,5 au 258), la ligne remangée par le corps qui contre (4,49 arrondi 4,5) — la clause mesure la hauteur du bloc, pas le contre */;
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, contre: null, effort: null /* effort null DATÉ 261 : vert à HEAD~ (worktree edda355), l'axe hauteurBloc rend 4,3 c. 4,5 m de médiane (la ligne suit son slot en marchant : le bloc qui monte, monte moins vite — un prix nommé au 339) — la clause mesure l'axe, pas l'intention d'effort */ })   /* contre null DATÉ 258b : vert à HEAD~ (médiane > 4,5 au 258), la ligne remangée par le corps qui contre (4,49 arrondi 4,5) — la clause mesure la hauteur du bloc, pas le contre */;
     let depth = 0, nD = 0, z = 0, nZ = 0;
     for (let i = 0; i < 150 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -69,7 +69,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // (p.target) que le bloc offensif pose aux ailiers postés — la sortie réelle du moteur.
   const cibleAiliers = (t0) => {
     const st = makeMatch({ full: true, seed: 5, tactics: [t0, null] });
-    const cfg = matchCfg({ shotRange: 20, renversement: false });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, renversement: false });
     for (const q of st.players.filter((q) => q.team === 1)) { q.p[0] = 20; q.p[2] = (q.id % 11) * 4 - 20; q.v = [0, 0]; }
     const c = st.players.find((p) => p.team === 0 && p.post === 5);
     c.p[0] = 0; c.p[2] = 0; c.v = [0, 0];
@@ -89,7 +89,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const fen = (pressing) => {
     const st = makeMatch({ full: true, seed: 5, tactics: [null, { pressing }] });   // T1 presse
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
     const sgn = -st.pitch.ownGoal(0).sign;
     for (const q of st.players.filter((q) => q.team === 1)) q.p[0] = sgn * (q.keeper ? 51 : 20);
     for (const q of st.players.filter((q) => q.team === 0 && !q.keeper)) q.p[0] = -sgn * 8;
@@ -130,7 +130,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     st.ball.restart([c.p[0] + 0.3, 0.11, 0], { cause: 'coup-franc' });
     st.restart = null; st.ball.possess(c.id);
     st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
-    return arbitre(st, c, matchCfg({ xg: null /* xg null DATÉ 272 : vert à HEAD~ (11/0 au 271), le choix serré remangé (direct → passe : la porte xG compare le tir à sa continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
+    return arbitre(st, c, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  xg: null /* xg null DATÉ 272 : vert à HEAD~ (11/0 au 271), le choix serré remangé (direct → passe : la porte xG compare le tir à sa continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
   };
   const p = monde(0), d = monde(1);
   ok(`le STYLE bascule un choix serré (possession → « ${p.meilleure} », direct → « ${d.meilleure} » — même monde, deux équipes, deux footballs ; un choix dominant, lui, reste dominant)`,
@@ -141,7 +141,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const recit = (tactics) => {
     const st = makeMatch({ full: true, seed: 4, tactics });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
     for (let i = 0; i < 90 * 60; i++) matchStep(st, 1 / 60, cfg);
     return JSON.stringify(st.events);
   };
@@ -192,7 +192,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // les identités (défaut 0 EXACT, sabotage 0) se prouvent sur CHAQUE graine visitée.
     for (const seed of [1, 3, 5, 7, 9, 11]) {   // 3 → 6 graines DATÉ 241 (1 calme sur 1 une-touche : Poisson)
       const st = makeMatch({ full: true, seed, ...(tactics ? { tactics } : {}) });
-      const cfg = matchCfg({ shotRange: 20, uneToucheVive: false, uneTouche: { ...matchCfg().uneTouche, base: 0 }, ...cfgX });
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, uneToucheVive: false, uneTouche: { ...matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null }).uneTouche, base: 0 }, ...cfgX });
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
       for (const e of st.events) if (e.type === 'pass' && e.style === 'une-touche') { ut++; if (e.calme) calme++; }
     }

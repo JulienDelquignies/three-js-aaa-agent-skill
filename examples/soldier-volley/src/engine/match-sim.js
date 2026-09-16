@@ -3,9 +3,9 @@
 import { BALL } from './ball.js'; import { laneClearance, predictPath, interceptPoint, etaCourse } from './ball-predict.js'; import { cibleFoulee } from './foulee.js'; import { repliStep } from './repli.js'; import { lossReactStep, contrePressStep } from './contrepress.js'; import { compenserLateral } from './compensation.js'; import { projeterMilieux, postesEntreLignes } from './projection.js'; import { couvertStep } from './couvert.js'; import { gardeDist } from './garde.js'; import { salidaStep, conduccion } from './salida.js'; import { cfSpots, remiseCible, sortieBalle } from './cpa.js'; import { affecterMarquage, refermerLigne , bandeDuCentral, remettreAuPivot, hommeRemis, purgerPassation } from './marquage.js'; import { RONDO, makeRondo, evadeSpot, gapZ } from './rondo.js';
 import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { makePitch, outRule, REDUIT, FULL } from './pitch.js'; import { formationSpots, premierOffensif, pointeDe, pivotDe, familiarite, posteNom, formationPour, mapPostes, LIGNES, blocFor, coverSpot, ballsideTrim } from './formation.js'; import { offsideLine, horsJeuTente } from './offside.js'; import { piegeStep, piegeApply } from './piege.js'; import { croyanceStep, croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { familiariteStep, affinite as affiniteFam } from './familiarite.js'; import { ouvrirRegistre, placerCouloir, dansOmbre, tenirDemiEspace, placerLigne } from './couloirs.js'; import { tac, axe, resoudreTactique, triangule } from './tactics.js'; import { resoudreRole, role, deborde, ancresCraie, intrusDe, ecarteLigne } from './roles.js'; import { MATCH } from './match-config.js';
 export { MATCH };
-import { huitSecondes } from './temps.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { decalageDe, kxDe } from './bloc-percu.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
+import { huitSecondes } from './temps.js'; import { ceremonieStep, salutStep } from './ceremonie.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js'; import { decalageDe, kxDe } from './bloc-percu.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
@@ -45,7 +45,7 @@ export function makeMatch({ perTeam = 5, seed = 1, pitch = null, full = false, s
         q.ratings = spec.ratings ?? null;
         q.skill = spec.ratings ? makeProfile(spec.ratings) : null; if (spec.postes?.length) { q.postes = spec.postes; q.posteFam = familiarite(spec.postes, posteNom(formationPour(st.tactics[team].formation, true), q.post)); if (q.posteFam < 1) q.skill = profilAuPoste(q.skill ?? makeProfile({}), q.posteFam); }   // (244d) LE POSTE NATUREL : hors poste, le profil au poste (décision, placement…) — liste absente : rien, au bit
         if (spec.ratings?.foot) q.strongFoot = spec.ratings.foot; if (spec.familiarite != null) q.fam = Math.max(0, Math.min(1, spec.familiarite));   // (254) la familiarité du joueur avec le collectif (défaut 1 : rodé)
-        q.look = spec.look ?? null; q.name = spec.name ?? spec.nom ?? null;   // (214b) le NOM du joueur — le squad peut le porter, le maillot l'affiche
+        q.look = spec.look ?? null; q.name = spec.name ?? spec.nom ?? null; if (spec.persona && q.persona) q.persona = { ...q.persona, ...spec.persona, posture: { ...q.persona.posture, ...(spec.persona.posture ?? {}) } }; q.style = spec.style ?? null;   // (214b) le NOM du joueur — le squad peut le porter, le maillot l'affiche ; LA PERSONA ET LE STYLE POSÉS PAR LE ROSTER (docs/Interface_Style_Joueur.md) : champs partiels, le tirage seedé pour le reste
         q.name = spec.name ?? q.name;
         q.number = spec.number ?? null;
         if (spec.ratings?.flair != null && q.persona)   // LE FLAIR EST UNE NOTE (147) : fournie, elle remplace le tirage seedé (TENTER ; FAIRE reste gesteF/technique)
@@ -126,11 +126,11 @@ function assignMatchJobs(st, cfg) {
   if (st.restart) {
     const r = st.restart;
     // LE MATCH EST FINI (chrono) : plus d'ayant droit — le monde SE TIENT (un état terminal propre)
-    if (r.type === 'fin') {
+    if (r.type === 'fin') { if (st.full && cfg.ceremonie?.salut) salutStep(st, cfg);   // (A11 ter, ceremonie.js) le salut au public
       for (const p of st.players) { p.job = 'walk'; p.target = [p.p[0], 0, p.p[2]]; }
       return;
     }
-    const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;   // le rayon : depuis le ballon porté tant que pas posé, du point ensuite
+    if (st.full && cfg.ceremonie && ceremonieStep(st, cfg)) return; /* (A11 ter, ceremonie.js) LA FILE DES POIGNÉES avant le premier engagement : la cérémonie possède la remise */ const rp = r.placed === false ? [st.ball.p[0], st.ball.p[2]] : r.p;   // le rayon : depuis le ballon porté tant que pas posé, du point ensuite
     // LA LOI 14 (cfg.loi14 && st.full) : la CÉRÉMONIE du penalty — tous sauf preneur/gardien HORS surface, HORS arc (9,15), DERRIÈRE le ballon ; un clamp UNE passe ancré à r.p.
     const l14 = cfg.loi14 && st.full && r.type === 'penalty'
       ? { own: pitch.ownGoal(1 - r.team), def: 1 - r.team, arc: (cfg.loi12?.mur ?? 9.15) + 0.35 } : null;
@@ -147,11 +147,11 @@ function assignMatchJobs(st, cfg) {
       // l'EXPULSÉ est hors du monde, remises comprises (Loi 12) ; le REMPLACÉ marche le même chemin
       if (p.expulse || p._sub) {
         const to = p._sub?.phase === 'in' ? p._sub.entry : p._sub?.phase === 'longe' ? [0, (p._sub.bord ?? 1) * (st.pitch.hz + 2)] : p._exit;
-        p.job = 'walk'; p.target = [to[0], 0, to[1]]; continue;
+        p.job = 'walk'; p.target = [to[0], 0, to[1]]; p._walkF = p._sub?.phase === 'in' && st.full && cfg.entrant?.trot ? cfg.entrant.trot : null; continue;   // (§ 8) l'entrant TROTTE
       }
       // …MAIS D'ABORD ON CÉLÈBRE (lot 116) : le buteur file au coin, les proches le rejoignent (st._celeb, referee)
       if (st._celeb && st.t >= st._celeb.until) st._celeb = null;
-      if (st._celeb && p.id === st._celeb.by) { p.job = 'walk'; p.target = [st._celeb.corner[0], 0, st._celeb.corner[1]]; continue; }
+      if (st._celeb && p.id === st._celeb.by) { p.job = 'walk'; p.target = [st._celeb.corner[0], 0, st._celeb.corner[1]]; const G = st._celeb.geste, F = cfg.fete; if (G === 'calme') p._walkF = F?.marche ?? 0.75; else if (G === 'glissade' && st._celeb.glisseAt != null && st.t >= st._celeb.glisseAt) { st._celeb.glisseAt = null; if (p.speed > 2.5 && p.down <= 0) { p.down = F?.glisse ?? 1.9; p._glisse = { v: [p.v[0] * (F?.portee ?? 1.3), p.v[1] * (F?.portee ?? 1.3)] }; st.events.push({ t: +st.t.toFixed(2), type: 'glissade', by: p.id }); } } continue; }   // (A11, cfg.fete) la glissade sur les genoux : lancée après la course d'élan, le corps porté par _glisse et tenu au sol (down) ; le calme marche
       if (st._celeb && st._celeb.avec.includes(p.id)) { const bC = st.players[st._celeb.by]; p.job = 'walk'; p.target = [bC.p[0], 0, bC.p[2]]; continue; }
       // LOI 16, LE CORPS (193, cfg.loi16 — patron 160b) : l'adverse du RENVOI sort par le bord le plus court — sans lui, canTake ne voyait jamais la surface vide.
       if (st.full && cfg.loi16 && r.type === 'sortie-de-but' && p.team !== r.team && !p.keeper && pitch.inBox(p.p[0], p.p[2], Math.sign(r.p[0] || 1))) {
@@ -224,16 +224,14 @@ function assignMatchJobs(st, cfg) {
         if (mur !== cfg.restartClear && r.type === 'coup-franc') {
           const og = pitch.ownGoal(p.team);
           if (hyp(og.x - rp[0], rp[1]) < 30) {
+            const MT = cfg.loi12.murTrot, gx = og.x - rp[0], gz = 0 - rp[1], gl = hyp(gx, gz) || 1, mx = rp[0] + (gx / gl) * mur, mz = rp[1] + (gz / gl) * mur;   // (B4, loi12.murTrot) LES DEUX QUI Y SERONT LES PREMIERS : les deux plus près du POINT du mur, au trot — hier les deux plus PROFONDS, au pas (partis de 56 m, à 8-13 m du ballon à la prise, mesuré)
             r._mur ??= st.players.filter((q) => q.team !== r.team && !q.keeper && q.down <= 0)
-              .sort((a, b) => hyp(og.x - a.p[0], a.p[2]) - hyp(og.x - b.p[0], b.p[2]))
+              .sort(MT ? (a, b) => hyp(mx - a.p[0], mz - a.p[2]) - hyp(mx - b.p[0], mz - b.p[2]) : (a, b) => hyp(og.x - a.p[0], a.p[2]) - hyp(og.x - b.p[0], b.p[2]))
               .slice(0, 2).map((q) => q.id);
             const im = r._mur.indexOf(p.id);
             if (im >= 0) {
-              const gx = og.x - rp[0], gz = 0 - rp[1];
-              const gl = hyp(gx, gz) || 1;
               const lat = im === 0 ? 0.35 : -0.35;
-              p.job = 'walk';
-              p.target = [rp[0] + (gx / gl) * mur - (gz / gl) * lat, 0, rp[1] + (gz / gl) * mur + (gx / gl) * lat];
+              p.job = 'walk'; p.target = [mx - (gz / gl) * lat, 0, mz + (gx / gl) * lat]; if (MT) p._walkF = MT;   // au trot : la même convention collante que les monteurs de cpa.js
               continue;
             }
           }
@@ -365,6 +363,7 @@ function assignMatchJobs(st, cfg) {
       gk.target = [txG, 0, st.ball.p[2] + (st.ball.v[2] / bV) * mR];
       continue;
     }
+    if (sortieAerienne(st, gk, cfg, pitch)) continue;   // (B10, cfg.sortieAerienne) LA SORTIE AÉRIENNE : le centre qui retombe dans sa zone se va chercher — la course puis le saut à deux mains (sortie-aerienne.js) ; absente : hier
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? hyp(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
@@ -525,7 +524,7 @@ function assignMatchJobs(st, cfg) {
         // …et pendant la TOUCHE DE PRÉPARATION, on vise AU TRAVERS du ballon (2,2 m au-delà — à +0,4 m l'amorti s'équilibrait avec sa décélération, bd cloué 1,2-1,3 m : le geste accélère À TRAVERS).
         const over = (p._prepShot ?? -1) > st.t ? 2.2 : 0.4;
         p.target = [st.ball.p[0] + p.push[0] * over, 0, st.ball.p[2] + p.push[1] * over];
-      } else { p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3]; } if (st.full && cfg.pausa && p._pausa) { const PP = cfg.pausaPied, vB = hyp(st.ball.v[0], st.ball.v[2]); if (PP && st.ball.owner !== p.id && p._pausaPied !== p._pausa && dBall < (PP.bloque ?? 1.2)) { p._pausaPied = p._pausa; st.ball.possess(p.id); st._settling = { ev: st.events.length, id: p.id, at: st.t + (cfg.ramasse?.pose ?? 0.3) }; st.events.push({ t: +st.t.toFixed(2), type: 'control', by: p.id, tech: 'arret-semelle', foot: p.foot, surface: 'sole', speed: +vB.toFixed(1), settle: null }); p.target = [p.p[0], 0, p.p[2]]; } else if (PP && st.ball.owner !== p.id && dBall < (PP.rayon ?? 3.5) && vB < (PP.lent ?? 1.6)) { p.target = [st.ball.p[0], 0, st.ball.p[2]]; p._reprise = st.t + 0.3; } else p.target = [p.p[0], 0, p.p[2]]; p.touchF = cfg.pausa.touche ?? 0.25; }   // (253) la pausa : le porteur ne conduit pas, il tient — (dette A12c, cfg.pausaPied) LA SEMELLE : à la décision, le ballon qui roule à portée (< bloque m) est BLOQUÉ (possédé, posé 0,3 s comme la ramasse du 107, événement control arret-semelle) ; s'il a déjà filé et s'est calmé (< lent m/s, < rayon m), il va le poser sous la semelle ; sinon il tient
+      } else { p.target = [p.p[0] + p.push[0] * 3, 0, p.p[2] + p.push[1] * 3]; } if (st.full && (cfg.pausa && p._pausa || p._bouclier)) { const PP = cfg.pausaPied, vB = hyp(st.ball.v[0], st.ball.v[2]); if (PP && st.ball.owner !== p.id && p._pausaPied !== p._pausa && dBall < (PP.bloque ?? 1.2)) { p._pausaPied = p._pausa; st.ball.possess(p.id); st._settling = { ev: st.events.length, id: p.id, at: st.t + (cfg.ramasse?.pose ?? 0.3) }; st.events.push({ t: +st.t.toFixed(2), type: 'control', by: p.id, tech: 'arret-semelle', foot: p.foot, surface: 'sole', speed: +vB.toFixed(1), settle: null }); p.target = [p.p[0], 0, p.p[2]]; } else if (PP && st.ball.owner !== p.id && dBall < (PP.rayon ?? 3.5) && vB < (PP.lent ?? 1.6)) { p.target = [st.ball.p[0], 0, st.ball.p[2]]; p._reprise = st.t + 0.3; } else p.target = [p.p[0], 0, p.p[2]]; p.touchF = cfg.pausa?.touche ?? 0.25; }   // (253) la pausa : le porteur ne conduit pas, il tient — (dette A12c, cfg.pausaPied) LA SEMELLE : à la décision, le ballon qui roule à portée (< bloque m) est BLOQUÉ (possédé, posé 0,3 s comme la ramasse du 107, événement control arret-semelle) ; s'il a déjà filé et s'est calmé (< lent m/s, < rayon m), il va le poser sous la semelle ; sinon il tient
       continue;
     }
     p.push = null;
@@ -1140,21 +1139,22 @@ function onDive(st, gk, cfg) { if (st.full && cfg.enveloppe && (gk._battuEnv ?? 
   // appelé CHAQUE IMAGE de la détente (rondo-sim, skillFollowStep) : renvoie true quand le gant a résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
   const d = hyp(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
   const y = st.ball.p[1] ?? 0;
-  const aeF = gk.skill?.aerialF ?? 1;   // LA PORTÉE AÉRIENNE (163, note aerialReach) : la garde ET la prise à la note — 1 exact à 50/nu, bande humaine (2,1 × 1,15 = 2,42 m au gant tendu)
-  if (d > 1.7 * aeF || y > 2.1 * aeF) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
+  const aeF = gk.skill?.aerialF ?? 1, up = st.full && cfg.sortieAerienne && gk.act?.payload?.aerienne ? (cfg.sortieAerienne.saut ?? 0.45) : 0;   // LA PORTÉE AÉRIENNE (163, note aerialReach) : la garde ET la prise à la note — 1 exact à 50/nu, bande humaine (2,1 × 1,15 = 2,42 m au gant tendu) ; (B10) la sortie aérienne SAUTE : + saut m
+  if (d > 1.7 * aeF || y > (2.1 + up) * aeF) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
   // LE GANT TOUCHE AU PLUS PRÈS (le premier franchissement claquait à 1,5-1,7 m des mains) : tant que le ballon SE RAPPROCHE, le contact attend l'approche minimale ; le warp du gant fait le visuel.
   const pd = gk.act?.payload?._pd ?? Infinity;
   const closing = d < pd - 1e-4;
   if (gk.act?.payload) gk.act.payload._pd = d;
   if (closing && d > 0.35) return false;
+  if (up && y > (1.9 + up) * aeF && st.ball.v[1] < 0) return false;   // (B10) la sortie aérienne ATTEND le ballon dans les gants : au-dessus des mains et qui descend encore, on ne claque pas
   // …la détente de prise (plongeonPrise, lot 93) retombe SUR SES APPUIS : pas de gk.rise.
-  if (gk.act?.id === 'plongeonPrise') gk.down = Math.max(gk.down, 0.5);
+  if (gk.act?.id === 'plongeonPrise' || gk.act?.id === 'sortiePoing') gk.down = Math.max(gk.down, 0.5);
   else riseDown(st, gk, cfg, true);
   const spdT = hyp(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
   const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
   // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4 prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
   const priseD = st.full && cfg.priseGant ? (cfg.priseGant.d ?? 1.35) : 1.1;
-  if (d <= priseD * aeF && y <= 1.9 * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
+  if (d <= priseD * aeF && y <= (1.9 + up) * aeF && !gk.act?.payload?.poing && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)
@@ -1166,9 +1166,9 @@ function onDive(st, gk, cfg) { if (st.full && cfg.enveloppe && (gk._battuEnv ?? 
     st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'prise', aerienne: y > 1.2 });
     return true;
   } else {
-    const side = Math.sign(gk.p[2] - 0) || 1;
+    const side = Math.sign(gk.p[2] - 0) || 1, poing = st.full && !!gk.act?.payload?.poing;   // (C3) LE POING de la sortie aérienne : le ballon dégagé loin devant et haut, jamais tenu
     // LA CLAQUETTE EN CORNER (lot 101 — mesuré : 1 corner/8 matchs) : le tir FORT au bout de l'envergure OU trop vif pour les gants se DÉVIE derrière la ligne (« en corner ! », outRule juge). Clé absente : hier au bit.
-    if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) / handF && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16) * handF))
+    if (poing) st.ball.impulse([-st.ball.v[0] * 0.7 - Math.sign(st.pitch.ownGoal(gk.team).x || 1) * (cfg.sortieAerienne?.poingV ?? 12), -st.ball.v[1] * 0.6 + 4.5, -st.ball.v[2] * 0.7 + side * 3]); else if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) / handF && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16) * handF))
       st.ball.impulse([-st.ball.v[0] * 0.45, -st.ball.v[1] * 0.4 + 2.2, -st.ball.v[2] * 0.3 + side * 6]);
     else if (st.full && cfg.claquette) {
       // LA CLAQUETTE ÉCARTE (232b, cfg.claquette — le métier : la parade à deux mains AMORTIT (× devant le long du tir) et ÉCARTE (cote m/s côté gardien, haut m/s) ; hier : renvoi à 1,4 × la vitesse du tir dans l'axe, le canon vers les attaquants)
@@ -1179,7 +1179,7 @@ function onDive(st, gk, cfg) { if (st.full && cfg.enveloppe && (gk._battuEnv ?? 
     // APRÈS LE GANT, LE BALLON EST NEUF : st.pass gardait l'origine du tir — la porte anti-auto-interception gelait tout (111 s mesuré).
     st.pass = null;
     // …et la claquette dit SES MAINS (lot 90) : deux dans l'envergure courte (≤ 1,35), une au bout.
-    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette', mains: d <= 1.35 ? 2 : 1, cote: side });
+    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: poing ? 'poing' : 'claquette', mains: poing || d <= 1.35 ? 2 : 1, cote: side });
     st._surprise = { t: st.t, seen: 0 };                          // une claquette ne s'anticipe pas
     return true;
   }

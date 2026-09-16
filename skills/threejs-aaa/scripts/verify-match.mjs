@@ -16,7 +16,7 @@ import { simInternals } from '../assets/starter/src/engine/rondo-sim.js';
 // LE GEL DES GESTES 114-117 pour les clauses de FLUX du réduit (le patron LAB — la croqueta,
 // le pont et la roulette re-battaient ces bandes à CHAQUE lot : 3 re-cassures en 4 lots) ;
 // les gestes eux-mêmes se testent dans verify-gestes, en monde courant, à dessein.
-const PRE114 = { skill: { ...matchCfg().skill, doubleFoe: null, pontFoe: null, rouletteFoe: null } };
+const PRE114 = { skill: { ...matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null }).skill, doubleFoe: null, pontFoe: null, rouletteFoe: null } };
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
@@ -62,7 +62,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const SEEDS = [3, 7, 11, 1];
   for (const seed of SEEDS) {
     const st = makeMatch({ perTeam: 5, seed });
-    const { st: s2, trace } = playMatch(st, 120, { cfg: matchCfg({ ...PRE114 }) });
+    const { st: s2, trace } = playMatch(st, 120, { cfg: matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ...PRE114 }) });
     const r = checkMatch(s2, trace);
     if (r.ok) contratsOk++;
     else console.log(`  (graine ${seed} : ${r.issues[0]})`);
@@ -94,7 +94,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const { matchStep: ms } = await import('../assets/starter/src/engine/match-sim.js');
     for (const seed of [5, 9, 13, 2, 17, 4, 19, 6]) {
       const st = makeMatch({ perTeam: 5, seed });
-      const cfg = matchCfg();
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       for (let i = 0; i < 120 * 60; i++) ms(st, 1 / 60, cfg);
       sortiesH += st.events.filter((e) => e.type === 'sortie').length;
     }
@@ -118,7 +118,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const holds = [];
   for (const seed of [3, 7]) {
     const st = makeMatch({ perTeam: 5, seed });
-    const { st: s2, trace } = playMatch(st, 120, { cfg: matchCfg({ ...PRE114 }) });
+    const { st: s2, trace } = playMatch(st, 120, { cfg: matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ...PRE114 }) });
     const evs = s2.events;
     for (const p of evs.filter((e) => e.type === 'pass' && e.to >= 0)) {
       total++;
@@ -171,7 +171,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const vLaunch = new Map();                                       // l'allure de LANCEMENT de la touche (max récent, décroissance de freinage)
   for (const seed of [3, 7]) {
     const st = makeMatch({ perTeam: 5, seed });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
     // le saut de vitesse se lit ENTRE DEUX FINS DE PAS (pv = v post-pas précédent) — la première
     // version comparait à travers deux pas et mesurait 97° là où l'instant de touche donne 10
     let pv = [0, 0];
@@ -264,7 +264,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let far = 0, tot = 0;
       for (const seed of [3, 7]) {
         const st = makeMatch({ perTeam: 5, seed });
-        const cfg = matchCfg({ ...PRE114, ...overrides });
+        const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ...PRE114, ...overrides });
         for (let i = 0; i < 120 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           const c = st.players[st.possession.carrier];
@@ -320,7 +320,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
       let far = 0, tot = 0;
       for (const seed of [3, 7]) {
         const st = makeMatch({ perTeam: 5, seed });
-        const cfg = matchCfg({ ...PRE114, ...overrides });
+        const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ...PRE114, ...overrides });
         for (let i = 0; i < 120 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           const c = st.players[st.possession.carrier];
@@ -444,7 +444,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // large que ce qu'il prétend trancher (loi 8)
   for (const seed of [3, 7, 11, 1]) {
     const st = makeMatch({ perTeam: 5, seed });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
     for (let i = 0; i < 120 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       frames++;
@@ -601,7 +601,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   {
     const { matchInternals } = await import('../assets/starter/src/engine/match-sim.js');
     const st = makeMatch({ perTeam: 5, seed: 3 });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
     for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
     const c = st.players.find((p) => !p.keeper && p.team === 0);
     const m1 = st.players.find((p) => !p.keeper && p.team === 0 && p !== c);
@@ -733,7 +733,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     for (const seed of [3, 7]) {
       const st = makeMatch({ perTeam: 5, seed });
       if (reactionOverride != null) for (const p of st.players) p.persona = { ...p.persona, reaction: reactionOverride };
-      const cfg = matchCfg();
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       let passT = -9, held = null;
       for (let i = 0; i < 60 * 60; i++) {
         const evN = st.events.length;
@@ -766,7 +766,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const { matchStep: ms } = await import('../assets/starter/src/engine/match-sim.js');
     const frozenShare = (reaction) => {
       const st = makeMatch({ perTeam: 5, seed: 11 });
-      const cfg = matchCfg();
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       for (let i = 0; i < 120; i++) ms(st, 1 / 60, cfg);
       for (const p of st.players) p.persona = { ...p.persona, reaction };
       const defs = st.players.filter((p) => p.team !== st.possession.team && !p.keeper && p.down <= 0);
@@ -794,7 +794,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const { simInternals } = await import('../assets/starter/src/engine/rondo-sim.js');
   const fixture = (speed, roll) => {
     const st = makeMatch({ perTeam: 5, seed: 9 });
-    const cfg = matchCfg();
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
     const r = st.players[1];
     r.yaw = 0;                                                     // il regarde +x : le ballon arrive DE FACE
     st.restart = null; st.phase = 'flight'; st.possession.carrier = -1;
@@ -828,7 +828,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const eps = [];
     for (const seed of [3, 7, 11, 1]) {
       const st = makeMatch({ perTeam: 5, seed });
-      const cfg = matchCfg();
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       let ep = null;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -874,7 +874,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const runs = [];
     for (const seed of [3, 7, 11, 1]) {
       const st = makeMatch({ perTeam: 5, seed });
-      const cfg = matchCfg();
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       const watch = []; let prevCarrier = -1;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -939,7 +939,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let windows = 0, muets = 0;
     for (const seed of [3, 7, 11, 1]) {
       const st = makeMatch({ perTeam: 5, seed });
-      const cfg = matchCfg();
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       let w = null;
       for (let i = 0; i < 120 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -1014,7 +1014,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     let piques = 0;
     for (const seed of [3, 7, 11, 1]) {
       const st = makeMatch({ perTeam: 5, seed });
-      const cfg = matchCfg();
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
       for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
       piques += st.events.filter((e) => e.type === 'tacle-pique').length;
     }
@@ -1062,7 +1062,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // chaque foulée : l'œil lisait des passements de jambes sur le retour d'engagement)
   {
     const st = makeMatch({ perTeam: 5, seed: 7 });
-    const cfg = matchCfg({ cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le porté de remise à l'image, pas le pas de décision */,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le porté de remise à l'image, pas le pas de décision */ });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le porté de remise à l'image, pas le pas de décision */,  cadence: null /* cadence null DATÉ 263 : vert à HEAD~ (worktree fe85ce1), le cerveau de champ au tick de 0,1 s — la clause mesure le porté de remise à l'image, pas le pas de décision */ });
     let ahead = [], carried = 0;
     for (let i = 0; i < 120 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
@@ -1090,7 +1090,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // le sabotage devenait aveugle sur un monde honnête)
   const sansTir = [3, 11].some((seed) => {
     const st = makeMatch({ perTeam: 5, seed });
-    const cfg = matchCfg({ tryShot: null, tryCross: null });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  tryShot: null, tryCross: null });
     const { st: s2, trace } = playMatch(st, 90, { cfg });
     const r = checkMatch(s2, trace, cfg);
     return !r.ok && r.issues.some((i) => i.includes('TIRE'));
@@ -1148,7 +1148,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // porte une rotation HORIZONTALE franche ; passeSpin:false la coupe à zéro (structurel).
   const premierLift = (cfgOver) => {
     const st = makeMatch({ full: true, seed: 2 });
-    const cfg = matchCfg({ pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, enveloppe: null, blocPercu: null /* DATÉ fusion 15/09 (272-276 × A12) : vert dans les deux parents (84/0), aucune passe levée en 120 s dans le monde combiné — la clause mesure sa loi */, xg: null /* xg null DATÉ 272 : vert à HEAD~ (84/0 au 271), aucune passe levée en 120 s dans ce monde (la porte xG change les tirs, d'autres possessions) — la clause mesure sa loi, pas le xG */, temps: null /* temps null DATÉ 270 : vert à HEAD~ (84/0 au 269), aucune passe levée en 120 s dans ce monde (les cérémonies mangent le jeu de 120 s) — la clause mesure le spin de la levée, pas le temps du match */, interception: null /* interception null DATÉ 266 : vert à HEAD~ (84/0 au 265), aucune passe levée en 120 s sous la lecture crue (le passeur refuse ses cloches sur des défenseurs crus) — la clause mesure le spin de la levée, pas l'interception */, ...cfgOver });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  xg: null /* xg null DATÉ 272 : vert à HEAD~ (84/0 au 271), aucune passe levée en 120 s dans ce monde (la porte xG change les tirs, d'autres possessions) — la clause mesure sa loi, pas le xG */, temps: null /* temps null DATÉ 270 : vert à HEAD~ (84/0 au 269), aucune passe levée en 120 s dans ce monde (les cérémonies mangent le jeu de 120 s) — la clause mesure le spin de la levée, pas le temps du match */, interception: null /* interception null DATÉ 266 : vert à HEAD~ (84/0 au 265), aucune passe levée en 120 s sous la lecture crue (le passeur refuse ses cloches sur des défenseurs crus) — la clause mesure le spin de la levée, pas l'interception */, ...cfgOver, pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, enveloppe: null, blocPercu: null /* DATÉ fusion 15/09 (272-276 × A12) : vert dans les deux parents (84/0), aucune passe levée en 120 s dans le monde combiné — la clause mesure sa loi */, xg: null /* xg null DATÉ 272 : vert à HEAD~ (84/0 au 271), aucune passe levée en 120 s dans ce monde (la porte xG change les tirs, d'autres possessions) — la clause mesure sa loi, pas le xG */, temps: null /* temps null DATÉ 270 : vert à HEAD~ (84/0 au 269), aucune passe levée en 120 s dans ce monde (les cérémonies mangent le jeu de 120 s) — la clause mesure le spin de la levée, pas le temps du match */, interception: null /* interception null DATÉ 266 : vert à HEAD~ (84/0 au 265), aucune passe levée en 120 s sous la lecture crue (le passeur refuse ses cloches sur des défenseurs crus) — la clause mesure le spin de la levée, pas l'interception */, ...cfgOver, });
     for (let i = 0; i < 120 * 60; i++) {
       const n = st.events.length;
       matchStep(st, 1 / 60, cfg);
@@ -1175,7 +1175,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // la preuve que le monde d'hier n'a pas bougé d'un bit.
   const quarts = (full, seed, dur) => {
     const st = full ? makeMatch({ full: true, seed }) : makeMatch({ perTeam: 5, seed });
-    const cfg = full ? matchCfg({ shotRange: 20 }) : matchCfg();
+    const cfg = full ? matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 }) : matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null });
     for (let i = 0; i < dur * 60; i++) matchStep(st, 1 / 60, cfg);
     return st.events.filter((e) => e.type === 'control' && e.tech === 'quart-de-touche').length;
   };
@@ -1186,7 +1186,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // l'amorti-poursuite s'efface) → la branche du quart DOIT tirer, et se nommer.
   const quartFixture = () => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ uneTouche: false });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  uneTouche: false });
     st.ball.impulse([1.2 - st.ball.v[0], 8.0 - st.ball.v[1], -st.ball.v[2]]);
     let garde = 0;
     while (st.ball.p[1] < 1.6 && garde++ < 600) st.ball.integrate(1 / 120);  // au-dessus de la poitrine : la table sait contrôler jusqu'à ~1,4 (amorti-poitrine découvert par cette fixture)

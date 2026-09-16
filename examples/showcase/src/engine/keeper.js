@@ -281,20 +281,18 @@ export function keeperDecide(pitch, team, me, ball, ballV, shotAge = Infinity, K
  * la LONGUE directe (25…48 × kickF m, la note kicking porte la longueur — et la portée du
  * punt). Absent/'mixte' : le monde d'hier, au bit. `deps` : beginPass, leadTime (cfg).
  */
-export function relancerGardien(st, gk, cfg, deps) {
-  const { pitch } = st;
-  const g = pitch.ownGoal(gk.team);
-  const sgn = -g.sign;
-  const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
-  const volee = st.full && cfg.remisesPied?.volee && st.ball.owner === gk.id && st.ball.p[1] > 0.6 ? 'volee' : undefined;   // (A9 bis) le ballon AUX GANTS se dégage de VOLÉE — jamais posé au sol par écriture
+/** LE STYLE DE LA SORTIE DE BUT — LE CHOIX SE LIT À LA PRESSION (223b, cfg.relance.pression — brief tactique : court si le
+ *  premier presseur est loin (seuil axe style : possession 6 m → direct 14 m), ≤ dans20 adversaires dans les 20 m du ballon et
+ *  un appui LIBRE (aucun adversaire à < 4 m) ; sinon long. Mesuré avant : la sortie de balle structurée faisait jouer court
+ *  dans la pression — 12 → 19 pertes du gardien/90 min. La tactique explicite garde sa voix ; 'mixte' ou absente : la
+ *  pression décide. × (2 − composureF) sur le seuil : le gardien calme attend plus. (A9 ter) Lue aussi À LA POSE par la
+ *  course d'élan (elan.poserElan : long → le gardien recule) ; arrivé au bout de sa course (gk._elanLong), il dégage LONG. */
+export function styleSortieBut(st, gk, cfg) {
+  if (gk._elanLong) return 'long';
   let styleSB = st.tactics?.[gk.team]?.cpa?.sortieBut;
-  // LE CHOIX SE LIT À LA PRESSION (223b, cfg.relance.pression — brief tactique : court si le premier presseur est
-  // loin (seuil axe style : possession 6 m → direct 14 m), ≤ dans20 adversaires dans les 20 m du ballon et un
-  // appui LIBRE (aucun adversaire à < 4 m) ; sinon long. Mesuré avant : la sortie de balle structurée faisait
-  // jouer court dans la pression — 12 → 19 pertes du gardien/90 min. La tactique explicite garde sa voix ;
-  // 'mixte' ou absente : la pression décide. × (2 − composureF) sur le seuil : le gardien calme attend plus.
   const PR = st.full && cfg.relance?.pression ? cfg.relance.pression : null;
   if (PR && (styleSB == null || styleSB === 'mixte')) {
+    const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
     const foes = st.players.filter((q) => q.team !== gk.team && !q.keeper && q.down <= 0);
     const dPress = Math.min(99, ...foes.map((q) => hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2])));
     const dans20 = foes.filter((q) => hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2]) < 20).length;
@@ -303,6 +301,16 @@ export function relancerGardien(st, gk, cfg, deps) {
     const seuil = axeS(st.tactics?.[gk.team]?.style, PR.presseurPosé ?? 6, PR.presseurDirect ?? 14) * (2 - (gk.skill?.composureF ?? 1));
     styleSB = dPress >= seuil && dans20 <= (PR.dans20 ?? 3) && libre ? 'court' : 'long';
   }
+  return styleSB;
+}
+
+export function relancerGardien(st, gk, cfg, deps) {
+  const { pitch } = st;
+  const g = pitch.ownGoal(gk.team);
+  const sgn = -g.sign;
+  const mates = st.players.filter((q) => q.team === gk.team && !q.keeper && q.down <= 0);
+  const volee = st.full && cfg.remisesPied?.volee && st.ball.owner === gk.id && st.ball.p[1] > 0.6 ? 'volee' : undefined;   // (A9 bis) le ballon AUX GANTS se dégage de VOLÉE — jamais posé au sol par écriture
+  const styleSB = styleSortieBut(st, gk, cfg);
   if (styleSB === 'court') {
     // LA MAIN D'ABORD : un coéquipier LIBRE (aucun adversaire à < 4 m) à portée de bras
     const porteeM = 14 * (gk.skill?.throwF ?? 1);

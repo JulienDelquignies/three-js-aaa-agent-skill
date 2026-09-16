@@ -29,16 +29,16 @@ import { GROUND_KINDS, groundPortrait } from '../assets/starter/src/engine/motio
 import { KEEPER_KINDS, keeperPortrait } from '../assets/starter/src/engine/motion-keeper.js';
 import { RESTART_KINDS, restartPortrait } from '../assets/starter/src/engine/motion-restart.js';
 import { CONTACT_KINDS, contactPortrait } from '../assets/starter/src/engine/motion-contact.js';
-import { gaitParams, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from '../assets/starter/src/engine/motion-gait.js';
+import { gaitPose, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from '../assets/starter/src/engine/motion-gait.js';
 import { IDLE_KINDS, IDLE_NAMES } from '../assets/starter/src/engine/motion-idle.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, arr) => a.startsWith('--') ? [a.slice(2), arr[i + 1] && !arr[i + 1].startsWith('--') ? arr[i + 1] : '1'] : []).filter(Boolean));
 // --gait <vF> [--lat <vR>] : LA FOULÉE (lot A7) — huit phases d'un cycle, avant (clips du donneur) / après (générée), posées par le contrôleur
-const GAIT = args.gait != null ? { vF: +args.gait, vR: +(args.lat || 0) } : null;
+const GAIT = args.gait != null ? { vF: +args.gait, vR: +(args.lat || 0), turn: +(args.turn || 0), boite: args.boite ? { side: args.boite, k: 1 } : null } : null;   // (§ 8) --boite left|right : la boiterie   // (A7 ter) --turn <m/s²> : le virage (+ = à droite), le pas croisé au-delà de 7
 // --idle <espèce> : L'ATTENTE (lot A8) — huit instants d'une période, avant (idle du donneur) / après (générée)
 const IDLE = args.idle != null ? { kind: args.idle } : null;
 if (IDLE && !IDLE_KINDS[IDLE.kind]) { console.error(`espèce d'attente inconnue : ${IDLE.kind} (${IDLE_NAMES.join(', ')})`); process.exit(1); }
-const MOVE = GAIT ? `foulee-${GAIT.vF}-${GAIT.vR}` : IDLE ? `attente-${IDLE.kind}` : (args.move || 'frappe');
+const MOVE = GAIT ? `foulee-${GAIT.vF}-${GAIT.vR}${GAIT.turn ? '-virage' + GAIT.turn : ''}${GAIT.boite ? '-boite-' + GAIT.boite.side : ''}` : IDLE ? `attente-${IDLE.kind}` : (args.move || 'frappe');
 const VARIANT = args.variant || 'both';
 const SEED = args.seed != null ? +args.seed : null;
 const CELL = +(args.cell || 300);
@@ -60,7 +60,7 @@ function ballFor(move, spec) {
   const at = denseSampler(spec, P);
   const w = at(spec.contact);
   const K = CONTROL_KINDS[move];
-  if (SKILL_KINDS[move]) return [...SKILL_KINDS[move].ball];   // le geste technique DÉCLARE où est son ballon (il ne part pas)
+  if (SKILL_KINDS[move]) return SKILL_KINDS[move].ball ? [...SKILL_KINDS[move].ball] : null;   // le geste technique DÉCLARE où est son ballon (il ne part pas) ; (§ 10) la feinte d'appel n'en a pas
   if (GROUND_KINDS[move]) return [...GROUND_KINDS[move].ball];
   if (KEEPER_KINDS[move]) return [...KEEPER_KINDS[move].ball];
   if (RESTART_KINDS[move]?.foot) return RESTART_KINDS[move].ball;                                     // la volée du gardien (A9 bis) : le ballon tombé, au cou-de-pied au contact
@@ -87,8 +87,8 @@ function describe(move, spec) {
 }
 if (GAIT) {
   const v = Math.hypot(GAIT.vF, GAIT.vR), style = SEED != null ? gaitStyleFromSeed(SEED) : NEUTRAL_GAIT_STYLE;
-  const pg = gaitParams(GAIT.vF, GAIT.vR, style);
-  const dir = `${v.toFixed(1)} m/s (avant ${GAIT.vF}, droite ${GAIT.vR})`;
+  const pg = gaitPose(P, 0, GAIT.vF, GAIT.vR, style, { turn: GAIT.turn, boite: GAIT.boite || undefined }).meta;   // (A7 bis) la durée de la pose elle-même (cadence à l'échelle de la jambe)
+  const dir = `${v.toFixed(1)} m/s (avant ${GAIT.vF}, droite ${GAIT.vR}${GAIT.turn ? `, virage ${GAIT.turn} m/s²` : ''}${GAIT.boite ? `, boite ${GAIT.boite.side}` : ''})`;
   if (VARIANT !== 'after') variants.push({ label: `AVANT — les clips du donneur (Soldier) à ${dir}`, mode: 'clips', gait: { ...GAIT, seed: SEED }, spec: null, ball: [2.5, 0.11, 4] });
   if (VARIANT !== 'before') variants.push({ label: `APRÈS — la foulée générée à ${dir}${SEED != null ? ` (signature graine ${SEED})` : ''} · appui ${(pg.s * 100).toFixed(0)} %, cycle ${pg.T.toFixed(2)} s`, mode: 'generee', gait: { ...GAIT, seed: SEED }, spec: null, ball: [2.5, 0.11, 4] });
 }
@@ -149,7 +149,7 @@ for (const v of variants) {
     for (let i = 0; i < 40; i++) pl.ctrl.update(1 / 60);          // la base : l'idle, poids 1
     pl.model.position.set(0, pl.groundY, 0); pl.model.rotation.y = 0;
     pl.ctrl.pos.set(0, pl.groundY, 0);
-    S.ball.position.set(ball[0], ball[1], ball[2]);
+    if (ball) S.ball.position.set(ball[0], ball[1], ball[2]); else S.ball.visible = false;   // (§ 10) un geste sans ballon (la feinte d'appel)
     const r = spec ? pl.gestureLayer.begin(spec) : { missing: [] };
     const sheet = document.createElement('canvas');
     const W = cell, H = cell, top = 34, left = 120;
@@ -182,7 +182,7 @@ for (const v of variants) {
           // LA FOULÉE : posée par le CONTRÔLEUR (l'écrivain du jeu), à la phase φ = dt, vitesse corps (vF, vR)
           const v = Math.hypot(gait.vF, gait.vR);
           if (gait.seed != null && pl.ctrl._gaitGen) pl.ctrl.setGaitStyle(gait.seed);
-          pl.ctrl.locomotion = mode; pl.ctrl.gait.phi = dt;
+          pl.ctrl.locomotion = mode; pl.ctrl.gait.phi = dt; pl.ctrl._turn = gait.turn || 0; pl.ctrl.idleCtx = { ...(pl.ctrl.idleCtx || {}), boite: gait.boite || null };   // (A7 ter) le virage posé (l'accélération latérale mesurée vaut 0 sur un modèle immobile)
           pl.ctrl._cur.set(gait.vR / v, -gait.vF / v); pl.ctrl._yawIn = pl.ctrl.yaw;
           pl.ctrl.groundSpeed = v; pl.ctrl.speed = v; pl.ctrl._vAnim = v;
           pl.ctrl.anim.set('speed', v).update(0);

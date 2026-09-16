@@ -11,7 +11,14 @@ import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/mat
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
-const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null };
+const RP_1609 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4 }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } };   // remisesPied d'HIER (e81394e) — DATÉ 16/09 (lot A9 ter, note 368 : sortie de but longue, touche longue, mur qui saute sous remisesPied.elan.sortieBut / toucheLongue / mur) : matchCfg REMPLACE les objets imbriqués, on repasse l'objet entier d'hier ; l'empreinte jumelle a prouvé sous-clés absentes = hier au bit
+const SOL_1609 = { tenue: 0.9, corps: 0.9 };   // sol d'HIER sans aide — DATÉ 16/09 (relevé aidé, note 369 : sol.aide)
+const TETE_1609 = { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9 };   // tete d'HIER sans armee — DATÉ 16/09 (lot B3, note 373 : tete.armee)
+const LOI12_1609 = { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 2 };   // loi12 d'HIER sans murTrot — DATÉ 16/09 (lot B4, note 374 : loi12.murTrot ; viragesLisses/plantVitesse null : B5/B6, même note)
+const RP_0746 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4, sortieBut: { recul: 3, lat: 1.2, vitesse: 3.5 }, toucheLongue: { recul: 4 }, tirImmediat: { cone: 40 } }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 }, mur: { retard: 0.12 } };   // remisesPied de 0746dbd (A9 ter + B2, sans mur.corps ni elan.attente) — DATÉ 16/09 (B4, note 374)
+const B_0746 = { loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, remisesPied: RP_0746 };   // les clés venues APRÈS 0746dbd, éteintes (B4 murTrot/mur.corps/elan.attente, B5, B6, B10) — DATÉ 16/09 : les clauses non épinglées mesurent le monde de 0746dbd (suite 761/7 sur ce moteur)
+const HIER_1609 = { remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, sol: SOL_1609 };   // le monde vivant DU JOUR de la clause (b) — DATÉ 16/09
+const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361) : le monde d'hier au bit, avant le sol et la fête */ };
 
 console.log('— (a) la pausa au pied —');
 const pausas = (over) => {
@@ -49,7 +56,7 @@ const attente = (over) => {
   return { lent: lent / Math.max(1, volF), att: prisesLentes / Math.max(1, prises), passes, turnovers };
 };
 {
-  const A = attente({}), B = attente(SANS);
+  const A = attente(HIER_1609), B = attente(SANS);   // A : le monde vivant de son jour (remisesPied/sol d'hier, DATÉ 16/09 — le garde-fou comparait 120 pertes c. 97 avec les dégagements longs et le relevé aidé allumés)
   ok(A.att - B.att >= 0.015 && A.lent >= 1.5 * B.lent, `avec la clé, plus de receveurs attendent : ${(100 * A.att).toFixed(1)} % des vols c. ${(100 * B.att).toFixed(1)} % sans (≥ +1,5 point ; 12 graines : +4) ; images de vol sous 0,6 m/s ${(100 * A.lent).toFixed(1)} % c. ${(100 * B.lent).toFixed(1)} % (≥ × 1,5)`);
   ok(Math.abs(A.passes - B.passes) <= 0.15 * B.passes && A.turnovers <= B.turnovers * 1.15,
     `garde-fou : passes ${A.passes} c. ${B.passes} (± 15 %), pertes ${A.turnovers} c. ${B.turnovers} (≤ +15 %)`);

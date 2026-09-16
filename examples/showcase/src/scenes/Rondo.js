@@ -1,4 +1,4 @@
-import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { remiseClock, remiseHands } from './rondo-remises.js';   // le contact (A10), les remises au pied (A9 bis)
+import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { legsByArrive, legsByContact, fusionSample } from './rondo-fusion.js'; import { remiseClock, remiseHands, remiseSkip, elanTake } from './rondo-remises.js'; import { feteEvent, feteStep, poigneeWarp, semelleWarp } from './rondo-fete.js';   // la fête et l'humeur (A11)   // le contact (A10), les remises au pied (A9 bis)
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -21,8 +21,8 @@ import { rondoStep, checkRondo } from '../engine/rondo-sim.js';
 import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/match-sim.js';
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
-import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js';
-import { aimChildAt } from '../engine/foot-lock.js';
+import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
+import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 import { makeTicker } from './ticker.js';
 
@@ -220,7 +220,7 @@ export class Rondo {
         runClip: clips.find((a) => /run/i.test(a.name)),
         idleClip: clips.find((a) => /idle/i.test(a.name)),
         walkClip: clips.find((a) => /walk/i.test(a.name)),
-        legs, stride: 2.6, runSpeed: RONDO.speeds.chase, persona: p.persona, locomotion: q.get('foulee') === 'clips' ? 'clips' : 'generee', gaitStyle: p.id * 7919 + (Number(q.get('seed')) || 7),   // LA FOULÉE GÉNÉRÉE (A7, motion-gait) — ?foulee=clips : les trois clips du donneur (l'avant)
+        legs, stride: 2.6, runSpeed: RONDO.speeds.chase, persona: p.persona, locomotion: q.get('foulee') === 'clips' ? 'clips' : 'generee', gaitStyle: p.style?.gait ? { ...gaitStyleFromSeed(p.id * 7919 + (Number(q.get('seed')) || 7)), ...p.style.gait } : p.id * 7919 + (Number(q.get('seed')) || 7), idleStyle: p.style?.idle ? { ...idleStyleFromSeed(p.id * 7919 + (Number(q.get('seed')) || 7) + 101), ...p.style.idle } : null,   // le STYLE POSÉ par le roster (p.style, docs/Interface_Style_Joueur.md) complète le tirage de la graine — LA FOULÉE GÉNÉRÉE (A7, motion-gait) — ?foulee=clips : les trois clips du donneur (l'avant)
         forwardLocal: new THREE.Vector3(0, 0, -1),
       });
       this.night.light(model3d);            // opt the player (kit included) into the key's layer
@@ -458,8 +458,8 @@ export class Rondo {
     // UN ACTE ownsBody POSSÈDE LE CORPS (charte, loi 1) : la prise du gardien émettait une
     // réception PENDANT le plongeon et la scène jouait « amorti » par-dessus la détente (mesuré :
     // 5/7 arrêts) — un geste réactif ne reprend pas un corps possédé ; seul son windup passe.
-    if (pl.sim.act?.payload?.ownsBody && e.type !== 'windup' && pl.gestureLayer.active) return;
-    const move = e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? 'amorti' : 'passe');
+    if ((pl.sim.act?.payload?.ownsBody && e.type !== 'windup' && pl.gestureLayer.active) || (pl._fallOwns && e.type !== 'chute')) return;   // (A10 bis) …et un corps COUCHÉ ne joue rien d'autre que sa chute (mesuré : un armé sim redressait le fauché à 0,93 m de bassin, down 1,03 — la couche coupait la pose couchée)
+    const move = e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (e.type === 'control' ? (this.state.ball.p[1] > 0.55 ? 'amorti' : 'controleInterieur') : 'passe');   // (A10 bis) un contrôle sans technique nommée se joue DU PIED quand le ballon est au sol — l'amorti (poitrine, bras à 48°) n'est que pour le ballon haut (mesuré : la jambe tendue et la prise du tacleur dessinaient une poitrine)
     // UN GESTE MANQUANT DOIT SE VOIR. Ce repli était silencieux (`set[move] || set.passe`), et c'est
     // exactement pourquoi 57 % des gestes ont pu dessiner le mauvais mouvement pendant toute une
     // session sans qu'aucun contrat ne bronche : le jeu affichait quelque chose de plausible. Un repli
@@ -494,7 +494,7 @@ export class Rondo {
     // porte une impulsion authorée — démarrer DANS la montée (offset s) garde le décollage
     // synchrone du ballon sans jeter tout l'élan (le pré-saut anticipé est la dette nommée).
     pl._layerClock = { t0: this._t, offset: typeof from === 'number' && from > 0 ? from : from === 'contact' ? (spec.contact ?? 0) : 0, dur: spec.duration ?? 0.6, antic: spec.contact ?? 0.2 };
-    pl._wLegs = pl._wLegs ?? 0;
+    pl._wLegs = pl._wLegs ?? 0; pl._fireOff = null; pl._elanTail = null;   // (A2) le retard du tir se mesure à chaque geste ; (A9 ter) l'horloge locale de l'accompagnement d'élan
   }
 
   /** LE WARP DE FRAPPE, appliqué. L'autorité de la jambe frappeuse pendant l'armé (foot-lock se
@@ -588,6 +588,7 @@ export class Rondo {
       if (pl._dwNudge && pl.hipsNudge && k > 1e-3) pl.hipsNudge([pl._dwNudge[0] * k, pl._dwNudge[1] * k, pl._dwNudge[2] * k]);
     }
     if (env <= 1e-3) { if (a.payload.resolved) pl._dwarp = null; return; }
+    if (a.payload.poing) { this._armsToBall(pl, env, 0.07, -0.12); return; }   // (C3) LE POING : les deux poings serrés SOUS le ballon, la même enveloppe que le gant
     arm.hand.getWorldPosition(this._wf);   // APRÈS le nudge : le plan du gant part du squelette déplacé
     let plan = pl._dwarp;
     if (!a.payload.resolved || !plan) {   // …resolved + tenu : le plan re-vise le ballon qui rentre (lot 108)
@@ -620,15 +621,22 @@ export class Rondo {
   /** LES DEUX GANTS SUR LE BALLON — le résolveur partagé du TENU (plongeon) et de la PRISE
    *  DEBOUT : chaque main va à SON flanc du ballon sim (±grip sur l'axe droite du modèle),
    *  fondue par w, écrêtée à la portée du bras — la primitive du warp de contact (IK deux os). */
-  _armsToBall(pl, w, grip = 0.12) {
+  _armsToBall(pl, w, grip = 0.12, dy = 0) {
     const b = this.state.ball.p;
     const me = pl.model.matrixWorld.elements;
     const rl = Math.hypot(me[0], me[1], me[2]) || 1;
     for (const side of ['left', 'right']) {
-      const arm = pl.arms?.[side], lens = pl.armLens?.[side];
-      if (!arm?.up || !arm.elbow || !arm.hand || !lens) continue;
       const sgn = side === 'left' ? -1 : 1;
-      this._wt.set(b[0] + (me[0] / rl) * sgn * grip, b[1] + (me[1] / rl) * sgn * grip, b[2] + (me[2] / rl) * sgn * grip);
+      this._armTo(pl, side, b[0] + (me[0] / rl) * sgn * grip, b[1] + dy + (me[1] / rl) * sgn * grip, b[2] + (me[2] / rl) * sgn * grip, w);
+    }
+  }
+
+  /** Un bras vers un point du monde (IK deux os, l'épaule fixe, la portée bornée) — le noyau du gant, du ballon tenu et de la main saisie (C2). */
+  _armTo(pl, side, tx, ty, tz, w) {
+    const arm = pl.arms?.[side], lens = pl.armLens?.[side];
+    if (!arm?.up || !arm.elbow || !arm.hand || !lens || !(w > 1e-3)) return;
+    {
+      this._wt.set(tx, ty, tz);
       arm.hand.getWorldPosition(this._wf);
       this._wt.set(this._wf.x + (this._wt.x - this._wf.x) * w, this._wf.y + (this._wt.y - this._wf.y) * w, this._wf.z + (this._wt.z - this._wf.z) * w);
       arm.up.getWorldPosition(this._wh); arm.elbow.getWorldPosition(this._wk);
@@ -640,6 +648,47 @@ export class Rondo {
       aimChildAt(arm.up, arm.elbow, this._wm.fromArray(sol.mid));
       aimChildAt(arm.elbow, arm.hand, this._wm.fromArray(sol.end));
     }
+  }
+
+  /** (C2) LA MAIN SAISIE (Animations_A_Faire § 4) — le fauché qui se relève tend le bras vers la main de l'aidant (sim aide.js : l'aidant
+   *  posté à 1 m, 'mainTendue' 0,7 s avant le relevé) et les deux mains se REJOIGNENT au point médian pendant la main tendue et son
+   *  tir : deux IK deux os, l'enveloppe lue des horloges des deux clips (le relevé du clip couché, la main tendue de l'aidant). */
+  _applyAideWarp(pl) {
+    const s = pl.sim, cl = (x) => Math.max(0, Math.min(1, x)), KM = EMOTION_KINDS.mainTendue, tP = KM.hold + (KM.pull ?? 0);
+    if (s.act?.payload?.kind === 'aide') {                                                   // L'AIDANT : sa main droite va au point de rencontre pendant la tenue et le tir
+      const F = this.players[s.act.payload.pour]; if (!F || pl.gestureLayer.spec?.name !== 'mainTendue') return;
+      const wH = cl((s.act.t - (KM.contact - 0.15)) / 0.15) * (1 - cl((s.act.t - tP) / 0.2)), M = this._aideMeet(F, pl);
+      if (M && wH > 1e-3) this._armTo(pl, 'right', M.x, M.y, M.z, wH);
+      return;
+    }
+    if (s._aide) pl._aideMem = { by: s._aide.by, t: this._t }; else if (pl._aideMem && this._t - pl._aideMem.t > 0.8) pl._aideMem = null;   // la sim lâche _aide au relevé : la poigne tient le temps du tir
+    const A = pl._aideMem; if (!A) return;
+    const H = this.players[A.by], hAct = H?.sim.act; if (!H || hAct?.payload?.kind !== 'aide' || H.gestureLayer.spec?.name !== 'mainTendue') return;
+    const wH = cl((hAct.t - (KM.contact - 0.15)) / 0.15) * (1 - cl((hAct.t - tP) / 0.2)), spec = pl.gestureLayer.spec, tF = pl._sol?.t;
+    const wF = spec?.lying != null && tF != null ? cl((tF - spec.rise) / 0.3) : ((s.down ?? 0) <= 0.35 ? Math.max(wH, cl((0.35 - (s.down ?? 0)) / 0.3)) : 0);   // LE FAUCHÉ : le bras monte au relevé du clip couché (ou dans les 0,35 s qui précèdent le relevé sim), et tient la poigne debout
+    const M = this._aideMeet(pl, H); if (!M || wF < 1e-3) return;
+    if (wH > 1e-3) this._armTo(pl, M.side, M.x, M.y, M.z, wF);
+    else this._armTo(pl, M.side, M.hx, M.hy, M.hz, wF);                                       // la main de l'aidant n'est pas encore là : le fauché tend le bras vers elle
+    pl._aideGrip = M.gap;                                                                     // la mesure : l'écart des mains de clip avant l'IK du fauché (lu par les sondes)
+  }
+
+  /** Le point de rencontre des deux mains (fauché F, aidant H) : le milieu des deux mains de clip, ramené DANS les deux portées (trois
+   *  passes d'épaule en épaule : l'intersection des deux sphères quand elle existe, le compromis le plus proche sinon). */
+  _aideMeet(F, H) {
+    const s = F.sim, fx = Math.cos(s.yaw), fz = Math.sin(s.yaw), side = (-(H.sim.p[0] - s.p[0]) * fz + (H.sim.p[2] - s.p[2]) * fx) >= 0 ? 'right' : 'left';
+    const armF = F.arms?.[side], lensF = F.armLens?.[side], armH = H.arms?.right, lensH = H.armLens?.right;
+    if (!armF?.hand || !armF.up || !lensF || !armH?.hand || !armH.up || !lensH) return null;
+    armH.hand.getWorldPosition(this._wh); armF.hand.getWorldPosition(this._wk); const gap = this._wh.distanceTo(this._wk), hx = this._wh.x, hy = this._wh.y, hz = this._wh.z;
+    let x = (this._wh.x + this._wk.x) / 2, y = (this._wh.y + this._wk.y) / 2, z = (this._wh.z + this._wk.z) / 2;
+    armF.up.getWorldPosition(this._wf); armH.up.getWorldPosition(this._wt);
+    const Rf = (lensF.A + lensF.B) * 0.97, Rh = (lensH.A + lensH.B) * 0.97;
+    for (let k = 0; k < 3; k++) {
+      for (const [S, R] of [[this._wf, Rf], [this._wt, Rh]]) {
+        const dx = x - S.x, dy = y - S.y, dz = z - S.z, d = Math.hypot(dx, dy, dz) || 1e-6;
+        if (d > R) { x = S.x + dx * (R / d); y = S.y + dy * (R / d); z = S.z + dz * (R / d); }
+      }
+    }
+    return { side, gap, hx, hy, hz, x, y, z };
   }
 
   /** LE WARP DE PRISE DEBOUT (lot 91) — le gardien qui cueille SANS plonger jouait « amorti » :
@@ -670,7 +719,7 @@ export class Rondo {
     if (u <= 0 || u >= 1) return;
     const b = this.state.ball.p;
     if (b[1] > 0.6) return;
-    // le pied le plus proche du ballon fait la touche
+    // le pied le plus proche du ballon fait la touche — ou le pied que la sim a NOMMÉ (note 388, conduite nommée)
     let side = null, dBest = 1.8;
     for (const f of ['left', 'right']) {
       const leg = pl.legs?.[f];
@@ -679,6 +728,7 @@ export class Rondo {
       const d = Math.hypot(this._wf.x - b[0], this._wf.y - b[1], this._wf.z - b[2]);
       if (d < dBest) { dBest = d; side = f; }
     }
+    if (pl._touchFoot && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) side = pl._touchFoot;
     if (!side) return;
     const leg = pl.legs[side], lens = pl.legLens[side];
     leg.foot.getWorldPosition(this._wf);
@@ -699,79 +749,9 @@ export class Rondo {
     aimChildAt(leg.knee, leg.foot, this._wm.fromArray(sol.end));
   }
 
-  _applyStrikeWarp(pl) {
-    if (pl.sim.act?.payload?.mains) return;                        // un lancer n'a pas de pied de frappe (lot A9)
-    const a = pl.sim.act;
-    if (!a || a.payload?.kind !== 'pass' || !a.payload.pick) { pl._warp = null; pl._warpCal = null; return; }
-    const foot = a.payload.pick.foot === 'left' ? 'left' : 'right';
-    const clKey = `${pl.rig}:${a.id}:${foot}`;
-    const leg = pl.legs?.[foot], lens = pl.legLens?.[foot];
-    if (!leg?.up || !leg.knee || !leg.foot || !lens) return;
-
-    // ---- CALIBRATION EN LIGNE. Le pied lu ICI est la pose PURE du clip de cette image (le mixer
-    // ré-écrit chaque os à chaque update : le warp de l'image précédente est déjà effacé). On garde
-    // la dernière image d'avant-contact ; au passage du tir, on interpole les deux images qui
-    // encadrent l'instant exact et on verse en moyenne mobile — la vérité composée, mesurée sur le
-    // jeu réel, par (clip × pied × rig). Un probe hors pile a été essayé : il mesurait une ombre.
-    leg.foot.getWorldPosition(this._wf);
-    if (!a.fired) {
-      this._wv.copy(this._wf); pl.model.worldToLocal(this._wv);
-      pl._warpCal = { t: a.t, local: [this._wv.x, this._wv.y, this._wv.z] };
-    } else if (pl._warpCal && pl._warpCal.t < a.anticipation) {
-      const c0 = pl._warpCal; pl._warpCal = null;
-      this._wv.copy(this._wf); pl.model.worldToLocal(this._wv);
-      const u = Math.max(0, Math.min(1, (a.anticipation - c0.t) / Math.max(1e-4, a.t - c0.t)));
-      const at = [c0.local[0] + (this._wv.x - c0.local[0]) * u,
-                  c0.local[1] + (this._wv.y - c0.local[1]) * u,
-                  c0.local[2] + (this._wv.z - c0.local[2]) * u];
-      const prev = this._contactLive.get(clKey);
-      this._contactLive.set(clKey, prev ? prev.map((v, i) => v + (at[i] - v) * 0.4) : at);
-    }
-    const cl = this._contactLive.get(clKey);
-    if (!cl) { this._warpStats.denied['warp-non-calibré'] = (this._warpStats.denied['warp-non-calibré'] ?? 0) + 1; return; }
-
-    const env = warpEnvelope(a.t, a.anticipation);
-    if (env <= 0) { pl._warp = null; return; }
-    // le poids réel des jambes du geste module l'enveloppe : le warp corrige la jambe du geste
-    // dans la proportion où le geste la possède (pleine dès ~0,85 — au contact le poids y est)
-    const s = env * Math.min(1, (pl._wLegs ?? 1) / 0.85);
-    if (s <= 1e-3) return;
-    let plan = pl._warp;
-    if (!a.fired) {
-      // avant le contact : re-viser chaque image — les DEUX cibles convergent (le corps s'assied
-      // sur l'ancre, le ballon porté converge vers le point de stance), l'offset converge avec
-      this._wv.fromArray(cl); pl.model.localToWorld(this._wv);
-      const b = this.state.ball.p;
-      plan = planWarp([this._wv.x, this._wv.z], [b[0], b[2]]);
-      pl._warp = plan;
-      if (plan.denied) this._warpStats.denied[plan.denied] = (this._warpStats.denied[plan.denied] ?? 0) + 1;
-    }
-    if (!plan || (plan.denied && plan.mag <= 0)) return;
-    this._wt.set(this._wf.x + plan.offset[0] * s, this._wf.y, this._wf.z + plan.offset[1] * s);
-    leg.up.getWorldPosition(this._wh); leg.knee.getWorldPosition(this._wk);
-    if (!warpReach([this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B)) {
-      // ÉCRÊTER, PAS REFUSER : le refus binaire annulait TOUTE la correction pile aux images où le
-      // pied est le plus tendu — c'est-à-dire exactement AU CONTACT (mesuré au sweep : 62 % des
-      // passes avec au moins un refus de portée dans ±0,05 s du contact). La fraction atteignable
-      // vaut mieux que rien ; le reliquat reste une dette NOMMÉE au registre.
-      const d = this._wh.distanceTo(this._wt);
-      const R = (lens.A + lens.B) * 0.995;
-      this._wt.set(
-        this._wh.x + (this._wt.x - this._wh.x) * (R / d),
-        this._wh.y + (this._wt.y - this._wh.y) * (R / d),
-        this._wh.z + (this._wt.z - this._wh.z) * (R / d),
-      );
-      this._warpStats.denied['warp-écrêté-portée'] = (this._warpStats.denied['warp-écrêté-portée'] ?? 0) + 1;
-    }
-    if (!a.fired && this._warpStats.mags.length < 4000) { this._warpStats.n++; this._warpStats.mags.push(plan.mag); }
-    // même primitive que foot-lock : IK deux os, plan de pliage du genou = celui du clip
-    const sol = twoBoneIK(
-      [this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B,
-      [this._wk.x - this._wh.x, this._wk.y - this._wh.y, this._wk.z - this._wh.z],
-    );
-    aimChildAt(leg.up, leg.knee, this._wm.fromArray(sol.mid));
-    aimChildAt(leg.knee, leg.foot, this._wm.fromArray(sol.end));
-  }
+  /** Le warp de frappe vit dans rondo-warp.js (lot B1) : phase 1 AVANT le verrou (calibration,
+   *  amorce, plan, fente du bassin, cible), phase 2 APRÈS (l'IK de la jambe frappeuse). */
+  _applyStrikeWarp(pl) { strikeWarpApply(this, pl); }
 
   /** The broadcast camera: it TRACKS the ball with lag and a touch of overshoot, the way a real
    *  operator pans. Copying that lag buys more perceived realism than any shader. */
@@ -872,7 +852,7 @@ export class Rondo {
         // boot and the ball together was to start the clip AT its contact frame, throwing away the
         // entire backswing. That is why there was no visible movement — you were watching the second
         // half of a gesture whose first half had been deleted. Now the simulation waits for the leg.
-        this._playTech(this.players[e.by], e);
+        if (!remiseSkip(this, this.players[e.by], e)) this._playTech(this.players[e.by], e);   // (A9 ter) la passe de la sortie de but longue : le clip d'élan garde son accompagnement
       } else if (e.type === 'pass') {
         // the ball leaving is no longer a cue to animate: the swing that sent it started earlier and is
         // still running, and it will finish on its own follow-through
@@ -883,8 +863,10 @@ export class Rondo {
         // où le ballon est vraiment)
         // …la PRISE DU GARDIEN arme les MAINS, pas le pied (lot 91 — mesuré : main à 1,06 m du
         // ballon à l'instant de la prise debout, l'amorti ne tend aucun bras) : _applyCatchWarp
-        if (pl) { this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
-      } else if (e.type === 'chute' || (e.type === 'duel' && e.kind === 'épaule') || (e.type === 'faute' && e.kind === 'accrochage')) { contactEvent(this, e);   // LE CONTACT (lot A10, rondo-contact.js)
+        if (pl && pl.sim.act?.payload?.kind === 'tacle-debout') { pl._teched = this._t; pl._touchT = this._t; } /* (A10 bis) la prise du TACLEUR n'est pas une réception : le tacle possède déjà la jambe (mesuré : 'amorti' par-dessus, bras à 49° sur le vainqueur pendant son accompagnement) */ else if (pl && e.type === 'control' && elanTake(this, e)) { pl._rxAt = this._t; pl._touchT = this._t; }   /* (B2) la prise au contact d'élan : le pied frappe, pas de clip de contrôle par-dessus le clip d'élan (le warp de touche seul) */ else if (pl) { const dY = e.type === 'control' && !e.miss && e.tech !== 'prise-gardien' && this._mcfg?.petitsGestes?.controleOriente && pl.sim.yawWant != null ? Math.atan2(Math.sin(pl.sim.yawWant - pl.sim.yaw), Math.cos(pl.sim.yawWant - pl.sim.yaw)) * 180 / Math.PI : 0; this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : Math.abs(dY) >= (this._mcfg?.petitsGestes?.controleOriente?.angle ?? 45) ? { ...e, move: 'controleOriente', foot: dY > 0 ? 'left' : 'right' } : e); pl._teched = this._t;   /* (§ 10) LE CONTRÔLE ORIENTÉ : le receveur que la sim tourne (yawWant hors du presseur) de plus de `angle` ° ouvre les hanches vers sa course — le pied par le sens du virage (dY > 0 = à droite : le miroir) */ if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
+      } else if (e.type === 'faute' || e.type === 'carton' || e.type === 'glissade' || e.type === 'poignee' || e.type === 'salut') { feteEvent(this, e); if (e.type === 'faute' && e.kind === 'accrochage') contactEvent(this, e); this._ticker.event(e, this.state);   // (A11) la protestation du fautif, la glissade du buteur — le ticker garde ces événements
+      } else if (e.type === 'geste') { const pl = this.players[e.by]; if (pl && !pl.gestureLayer.active && (pl.sim.down ?? 0) <= 0 && !pl.sim.act) { this._playTech(pl, e); pl._teched = this._t; if (e.move === 'arretSemelle') pl._semelleT = this._t; }   // (§ 10, petits-gestes.js) la semelle du preneur, le gardien qui replace son mur, la feinte d'appel : un corps libre joue le geste nommé
+      } else if (e.type === 'chute' || (e.type === 'duel' && e.kind === 'épaule')) { contactEvent(this, e);   // LE CONTACT (lot A10, rondo-contact.js)
       } else if (e.type === 'arrêt' && (e.mode === 'pieds' || e.mode === 'buste')) {
         // L'ARRÊT NOMMÉ S'HABILLE (lot 93, contrat lot 90) : pieds → paradePieds, buste →
         // paradeBuste ; les modes de plongeon appartiennent à l'acte qui possède déjà le corps.
@@ -898,13 +880,16 @@ export class Rondo {
         // rafale d'événements, il a déjà le membre — on ne le lui reprend pas.
         const pl = this.players[e.by];
         if (pl) pl._rxAt = this._t;
-        if (pl && pl._teched !== this._t) this._playTech(pl, { ...e, move: e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || 'amorti' });
+        if (pl && pl._teched !== this._t) { const b = this.state.ball.p, q = pl.sim, lat = (b[0] - q.p[0]) * Math.sin(q.yaw) - (b[2] - q.p[2]) * Math.cos(q.yaw); this._playTech(pl, { ...e, move: e.move || (e.tech && TECHNIQUES_BY_ID[e.tech]?.clip) || (b[1] > 0.55 ? 'amorti' : 'controleInterieur'), foot: e.foot ?? (lat > 0 ? 'left' : 'right') }); }   // (A10 bis) une passe reçue AU SOL sans technique nommée se contrôle DU PIED, du côté du ballon — pas de la poitrine (mesuré : 'amorti', bras à 48°, sur chaque réception basse)
       } else if (e.type === 'touche') {
         // LA TOUCHE DE CONDUITE SE VOIT (retour utilisateur, captures : « il ne touche jamais le
         // ballon ») : la sim inscrit chaque touche ; la scène tend le pied vers le ballon autour
         // de cet instant (_applyTouchWarp) — sans ça le contact réel restait invisible.
         const pl = this.players[e.by];
-        if (pl) pl._touchT = this._t;
+        if (pl) { pl._touchT = this._t; pl._touchFoot = e.foot ?? null; }   // (note 388) le warp de touche suit le PIED que la sim nomme
+        // (note 388) LA CONDUITE NOMMÉE : la touche qui vire (≥ 20°), l'extérieur et la semelle jouent LEUR clip (conduite* par technique, miroir au pied nommé),
+        // cadencés comme la touche forte ; la touche droite du cou-de-pied reste au warp seul (la foulée la joue déjà)
+        if (pl && e.tech && (Math.abs(e.virage ?? 0) >= 20 || e.surface === 'outside' || e.surface === 'sole') && (e.dev ?? 0) < 110 && this._t - (pl._swingT ?? -9) >= 0.35) { this._playTech(pl, { ...e, move: TECHNIQUES_BY_ID[e.tech]?.clip ?? 'conduiteInterieur' }); pl._swingT = this._t; }
         // …ET LA TOUCHE FORTE A UN CORPS (lot 55, retour utilisateur : le demi-tour à 0,3-0,9 m
         // sans AUCUNE frappe) : l'événement porte sa cassure (dev°, dribble.js) — au-delà de 60°
         // la couche de geste joue une frappe courte (crochet court au demi-tour ≥ 110°, extérieur
@@ -921,9 +906,7 @@ export class Rondo {
         // LE CORPS DE LA JOIE (lot 116) : le buteur lève les bras (clip celebration existant
         // — il court au coin pendant que la couche haute joue), ses compagnons pareil à
         // mi-chemin ; le ticker nomme la fête.
-        const pl = this.players[e.by];
-        if (pl) this._playTech(pl, { ...e, move: 'celebration' });
-        for (const id of e.avec ?? []) { const q = this.players[id]; if (q) this._playTech(q, { ...e, by: id, move: 'celebration' }); }
+        feteEvent(this, e);   // (A11) la joie GÉNÉRÉE par persona (poing, bras levés, calme, oreille, glissade), l'accolade des compagnons — rondo-fete.js
         this._ticker.event(e, this.state);
       } else if (e.type === 'tête' || e.type === 'volée') {
         // LE CIEL A UN CORPS (lot 112) : la tête SAUTÉE joue le saut authoré (démarré dans
@@ -932,7 +915,7 @@ export class Rondo {
         // déjà son geste). Le journal du ticker nomme le contact (saut/demi se lisent).
         const pl = this.players[e.by];
         if (pl) {
-          this._playTech(pl, { ...e, move: e.type === 'volée' ? 'frappe' : e.saut ? 'tete' : 'teteDebout' },
+          this._playTech(pl, { ...e, move: e.type === 'volée' ? 'frappe' : e.saut ? (e.mode === 'dégagement' && this._mcfg?.petitsGestes?.teteDefensive ? 'teteDefensive' : 'tete') : 'teteDebout' },   // (§ 10) le dégagement sauté joue teteDefensive (l'armé le nomme déjà au windup)
             e.type === 'volée' ? 'contact' : e.saut ? 0.24 : 0.1);
           pl._teched = this._t;
         }
@@ -963,7 +946,7 @@ export class Rondo {
       const stx = this.state;
       // L'ATTENTE (A8, motion-idle) : la situation de la sim → l'espèce d'idle (politique pure du contrôleur)
       { const r = stx.restart, o = stx.ball.owner != null ? stx.players[stx.ball.owner] : null, tk = !!r && r.type === 'touche' && r.taker === s.id && Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) < 1.3, aT = s.act, tId = aT?.payload?.pick?.tech?.id;
-        pl.ctrl.idleCtx = { keeper: !!s.keeper, dead: !!r && r.type !== 'fin', receveur: stx.phase === 'flight' && stx.pass?.to === s.id, wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, toucheTaker: tk, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team, marcheur: ((s.role?.ancrage ?? 0.5) >= 0.8 || (s.role?.repli ?? 0.5) >= 0.9) && !s.act && stx.pass?.to !== s.id && Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]) > 25 && !(o && o.team !== s.team && Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) < 12), jockey: (() => { if (!o || o.team === s.team || s.job !== 'press') return false; const dx = o.p[0] - s.p[0], dz = o.p[2] - s.p[2], d = Math.hypot(dx, dz), sp = Math.hypot(s.v[0], s.v[1]); if (d > 4.5 || d < 0.3 || sp > 3.5) return false; return sp <= 0.25 || (s.v[0] * dx + s.v[1] * dz) / (sp * d) < 0.5; })() };   // jockey (A12d) : la condition du jockey de la sim (A10), relue ici
+        pl.ctrl.idleCtx = { boite: s._boite && stx.t < s._boite.until ? { side: s._boite.side, k: Math.max(0.2, (s._boite.until - stx.t) / (s._boite.duree || 1)) } : null, abattu: feteStep(this, pl), keeper: !!s.keeper, dead: !!r && r.type !== 'fin', receveur: stx.phase === 'flight' && stx.pass?.to === s.id, wall: !!r && r.type === 'coup-franc' && r.team !== s.team && Math.abs(Math.hypot(s.p[0] - r.p[0], s.p[2] - r.p[1]) - 9.5) < 1.3, toucheTaker: tk, ballD: Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]), carrierD: o && o.team !== s.team ? Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) : Infinity, defending: stx._possTeam !== s.team, marcheur: ((s.role?.ancrage ?? 0.5) >= 0.8 || (s.role?.repli ?? 0.5) >= 0.9) && !s.act && stx.pass?.to !== s.id && Math.hypot(stx.ball.p[0] - s.p[0], stx.ball.p[2] - s.p[2]) > 25 && !(o && o.team !== s.team && Math.hypot(o.p[0] - s.p[0], o.p[2] - s.p[2]) < 12), jockey: (() => { if (!o || o.team === s.team || s.job !== 'press') return false; const dx = o.p[0] - s.p[0], dz = o.p[2] - s.p[2], d = Math.hypot(dx, dz), sp = Math.hypot(s.v[0], s.v[1]); if (d > 4.5 || d < 0.3 || sp > 3.5) return false; return sp <= 0.25 || (s.v[0] * dx + s.v[1] * dz) / (sp * d) < 0.5; })() };   // jockey (A12d) : la condition du jockey de la sim (A10), relue ici
         // LE BALLON EN MAINS (A9) : le preneur qui attend ou arme sa touche, le gardien qui arme son roulé ou qui vient de ramasser
         /* (A12c) LA PAUSA (253, p._pausa) : la semelle sur le ballon RÉEL, en repère personnage */ if (s._pausa && !s.act) { const me = pl.model.matrixWorld.elements, dx = stx.ball.p[0] - s.p[0], dz = stx.ball.p[2] - s.p[2], rl = Math.hypot(me[0], me[2]) || 1, fl = Math.hypot(me[8], me[10]) || 1, at = [(dx * me[0] + dz * me[2]) / rl, (dx * me[8] + dz * me[10]) / fl]; pl.ctrl.idleForce = 'pausa'; pl.ctrl.idleOpts = { override: { raise: Math.hypot(at[0], at[1]) <= 0.55 ? { side: at[0] < 0 ? 'Left' : 'Right', at: [Math.max(-0.25, Math.min(0.25, at[0])), Math.max(-0.42, Math.min(-0.12, at[1]))], toe: 8 } : null } }; } else if (r?.type === 'corner' && r.elan?.phase === 'attend' && r.taker === s.id) { pl.ctrl.idleForce = 'signal'; pl.ctrl.idleOpts = null; } else if (pl.ctrl.idleForce === 'pausa' || pl.ctrl.idleForce === 'signal') { pl.ctrl.idleForce = null; pl.ctrl.idleOpts = null; } pl._holdHands = tk || ((tId === 'touche' || tId === 'roule-main') && !aT.fired) || remiseHands(pl, aT, stx, s) || ((pl.gestureLayer.spec?.name ?? '') === 'ramassage' && stx.ball.owner === s.id); }
       const exemptLod = !this._animLod || pl.gestureLayer.active || s.act || (s.down ?? 0) > 0
@@ -1006,7 +989,7 @@ export class Rondo {
         const act = pl.sim.act;
         const v = pl.ctrl.groundSpeed ?? 0;
         const meta = pl._layerClock ?? { t0: this._t, offset: 0, dur: 0.6, antic: 0.2 };
-        let t = act ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt; t = remiseClock(pl, act, t);   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
+        let t = act && !pl._elanTail ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt; t = remiseClock(pl, act, t);   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
         // LE TACLEUR RESTE AU SOL tant que la sim le dit (p.down = récupération) : l'horloge du
         // clip se GÈLE sur la pose couchée (clé « au sol ») au lieu de dérouler le relevé — le
         // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
@@ -1031,13 +1014,13 @@ export class Rondo {
         const diveDown = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse && !pl.sim._sub && pl.sim.rise
           && /^plongeon/.test(pl.gestureLayer.spec?.name ?? '');
         const antic = (act?.payload?.kind === 'elan' ? pl.gestureLayer.spec?.contact : act?.anticipation) || meta.antic || 0.2;   // l'élan : l'armé de la sim est la course, celui du clip son contact (rondo-remises)
-        const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
+        const byArrive = legsByArrive(v);   // (A2) les lois de fusion vivent dans rondo-fusion.js
         // …et le contact ne possède les jambes QUE jusqu'à ~0,15 s après lui : au-delà, c'est le
         // corps qui décide (byArrive). Sans cette borne, un tacleur relevé COURAIT à 3 m/s avec
         // les jambes de la pose couchée à poids plein (byContact restait à 1 tout l'accompagnement
         // du tacle, 0,9 s — orteil à −0,48 m, mesuré) ; pareil pour toute frappe dont la sim
         // repart tôt.
-        const byContact = t < antic + 0.15 ? Math.min(1, Math.pow(Math.max(0, t) / Math.max(1e-4, antic * 0.8), 1.5)) : 0;
+        const byContact = legsByContact(t, antic);
         // …et un tacleur que la SIM a relevé et remis en course lâche sa pose tout de suite : le
         // reste du clip couché n'a plus de corps à habiller (résidu mesuré : jambe fantôme à
         // −0,28 m pendant le fondu tardif)
@@ -1047,8 +1030,17 @@ export class Rondo {
         // corps à ~6 m/s, donc byArrive lit « il court » et éteint les jambes du clip (mesuré :
         // wLegs 0,24 à t=0,18, hanches DEBOUT à l'arrêt, gant à ~1 m d'un ballon au sol). La
         // vitesse d'un corps en plongeon EST celle du geste, pas de la locomotion.
-        const target = done ? 0 : (act?.payload?.skill === 'plongeon' || act?.payload?.enCourse || pl._fallOwns ? 1 : Math.max(byArrive, byContact));   // …et la chute au sol (lot A10)
-        pl._wLegs = shield ? 0 : (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, dtP / 0.05);   // le bouclier laisse les jambes à la foulée
+        const newDive = act?.payload?.skill === 'plongeon' && act.t < (pl._divePrevT ?? Infinity);
+        pl._divePrevT = act?.payload?.skill === 'plongeon' ? act.t : null;
+        if (act?.payload?.skill === 'plongeon' && act.payload.cross?.t > 0 && (!pl._diveStart || newDive)) {
+          // …le TIME-WARP JUSQU'AU CONTACT SEULEMENT : le rate calait la détente sur l'heure du
+          // ballon mais rejouait AUSSI le couché-relevé en accéléré (debout en ~0,5 s à ×2,2 —
+          // « ils se relèvent trop vite »). Après le contact du clip, l'horloge repasse à ×1.
+          const rate = Math.max(1, Math.min(2.2, antic / Math.max(0.15, act.payload.cross.t)));   // (A10 bis) …ET LE BALLON LENT SE PREND EN ATTENDANT, PAS AU RALENTI : rate ≥ 1 ; le surplus (cross.t − antic, ≤ 0,6 s) est un DÉLAI de décollage — le gardien reste posé (poids 0 : l'attente du gardien vit), puis plonge à ×1 pour que la détente tombe à l'heure du ballon (mesuré : à ×0,8 il était à plat 0,13 s avant le ballon)
+          pl._diveStart = { p: [pl.sim.p[0], pl.sim.p[2]], yaw: s.yaw, rate, tA: antic / rate, antic, delay: Math.max(0, Math.min(0.6, act.payload.cross.t - antic)) };
+        } const wait = !!(pl._diveStart && act?.payload?.skill === 'plongeon' && t < pl._diveStart.delay);   // (A10 bis) le délai de décollage : le corps reste au gardien posé
+        const target = done || wait || pl.gestureLayer.spec?.upperOnly ? 0 : (act?.payload?.skill === 'plongeon' || act?.payload?.enCourse || pl._fallOwns || pl.gestureLayer.spec?.ownsLegs ? 1 : Math.max(byArrive, byContact));   // …et la chute au sol (lot A10) ; (A11) un geste du HAUT (célébration en courant, protestation) laisse les jambes à la foulée, la glissade les possède
+        pl._wLegs = shield ? 0 : (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, dtP / (act?.payload?.kind === 'skill' ? 0.02 : 0.05));   // le bouclier laisse les jambes à la foulée ; (passements, note 385) un geste technique prend ses jambes en 0,06 s, pas 0,17 : l'entrée du passement (0,15 s) levait le pied à moitié (cheville 0,21 m au-dessus du ballon au premier tour, 0,26-0,30 aux suivants)
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
         // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à
         // chaque geste. 0,12 s d'entrée = ≤ 25° par 50 ms, sous le seuil perceptible.
@@ -1056,7 +1048,7 @@ export class Rondo {
         // « changement de mouvement » (retour utilisateur — le geste doit être la CONTINUITÉ de la
         // locomotion) : 0,12 → 0,18 s selon la vitesse sol, symétrique entrée/sortie.
         const tauW = 0.12 + 0.06 * Math.min(1, v / 4);
-        pl._wUp = done || t < 0 ? Math.max(0, (pl._wUp ?? 1) - dtP / tauW) : Math.min(1, (pl._wUp ?? 0) + dtP / tauW);   // t < 0 : le clip d'élan n'a pas commencé, le corps court
+        pl._wUp = done || t < 0 || wait ? Math.max(0, (pl._wUp ?? 1) - dtP / tauW) : Math.min(1, (pl._wUp ?? 0) + dtP / tauW);   // t < 0 : le clip d'élan n'a pas commencé, le corps court
         // L'ENTRÉE MÈNE L'HORLOGE DU CLIP (la clé t=0 est la pose NEUTRE — le haut se faisait
         // tirer au garde-à-vous avant de s'armer) : on échantillonne EN AVANCE (lead 0,3 ×
         // anticipation), convergence linéaire vers l'heure vraie AU CONTACT.
@@ -1071,18 +1063,9 @@ export class Rondo {
         // un NOUVEL acte re-pose le départ (l'horloge repart de 0) — sans ça, deux plongeons
         // enchaînés gardaient le départ du premier et le biais devenait un mensonge (écarts
         // 2,5-2,7 m mesurés sur les enchaînements, pires que sans réconciliation)
-        const newDive = act?.payload?.skill === 'plongeon' && act.t < (pl._divePrevT ?? Infinity);
-        pl._divePrevT = act?.payload?.skill === 'plongeon' ? act.t : null;
-        if (act?.payload?.skill === 'plongeon' && act.payload.cross?.t > 0 && (!pl._diveStart || newDive)) {
-          // …le TIME-WARP JUSQU'AU CONTACT SEULEMENT : le rate calait la détente sur l'heure du
-          // ballon mais rejouait AUSSI le couché-relevé en accéléré (debout en ~0,5 s à ×2,2 —
-          // « ils se relèvent trop vite »). Après le contact du clip, l'horloge repasse à ×1.
-          const rate = Math.max(0.8, Math.min(2.2, antic / Math.max(0.15, act.payload.cross.t)));
-          pl._diveStart = { p: [pl.sim.p[0], pl.sim.p[2]], yaw: s.yaw, rate, tA: antic / rate, antic };
-        }
         if (diveClip && pl._diveStart) {
           const D = pl._diveStart;
-          tG = t < D.tA ? t * D.rate : D.antic + (t - D.tA);
+          const t2 = t - (D.delay ?? 0); tG = t2 < D.tA ? t2 * D.rate : D.antic + (t2 - D.tA);   // (A10 bis) l'horloge du plongeon part après le délai de décollage
           // LA RÉCONCILIATION : le voyage sim (axes personnage) au canal de biais de l'écrivain
           // des hanches — le rendu dessine clip − voyage : le dessin domine tôt, converge vers
           // la sim, le fondu de fin part d'un delta ≈ 0.
@@ -1106,7 +1089,7 @@ export class Rondo {
           else if (pl.sim.down > pl.sim.rise.getup) { tG = Math.min(tG, tR); if (!act && t >= tR) meta.t0 += dtP; }
           else tG = tR + (1 - pl.sim.down / pl.sim.rise.getup) * (meta.dur - tR);
         }
-        const tSample = tG < antic ? tG + (0.3 * antic) * (1 - tG / antic) : tG;
+        const tSample = fusionSample(tG, antic, act, pl, pl.gestureLayer.spec, dtP);   // (A2) le swing à ×1, la clé de contact à l'image du tir — rondo-fusion.js
         pl.gestureLayer.apply(tSample, pl._wLegs, pl._wUp);
         if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
       } else {
@@ -1141,6 +1124,7 @@ export class Rondo {
       // 0,77 m par appui — le patin qui fait LIRE le jeu trop vite). Actif à toute allure ; la
       // jambe frappeuse est MASQUÉE pendant un geste (elle appartient à la couche + au warp), le
       // pied d'appui garde son verrou.
+      strikeWarpPlan(this, pl);   // B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
       {
         const act2 = pl.sim.act;
         const striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;
@@ -1154,6 +1138,7 @@ export class Rondo {
       this._applyStrikeWarp(pl);
       this._applyDiveWarp(pl, dtP);
       this._applyCatchWarp(pl);
+      this._applyAideWarp(pl); poigneeWarp(this, pl); semelleWarp(this, pl);   // (A11 ter) les mains de la poignée, la fin du salut ; (§ 10) la semelle sur le ballon
       this._applyTouchWarp(pl);
     }
 

@@ -1,0 +1,140 @@
+# Les animations à faire, et les branchements qu'elles exigeront
+
+Document de travail (16/09). Le jumeau de `docs/Branchements_Moteur_Animations.md` : ici, ce qui
+n'existe pas encore comme geste, avec pour chacun le générateur à écrire, le déclencheur sim
+qu'il faudra brancher, la lecture par la scène, le contrat, la dépendance. La recette commune est
+au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le coût.
+
+## 1. La tête ARMÉE (le geste existe, le déclencheur non) — dépend du jumeau § 2
+
+- **Geste.** `tete` (avec saut) et `teteDebout` existent (motion-aerial, A3) ; un `teteDefensive`
+  (dégagement : le buste s'arme davantage en arrière, le regard au ballon) et une `tetePlongee`
+  (tête plongeante sur un centre bas) sont à générer.
+- **Déclencheur.** L'acte armé de `tete.js` (jumeau § 2) : windup skill `tete` `antic` s avant le
+  contact, mode (but/dégagement/remise) dans le payload → le geste par mode.
+- **Scène.** `_playTech` sur le windup (plus « from contact ») ; le time-warp du saut sur l'heure
+  du ballon (le patron du plongeon : `rate`, `_diveStart`).
+- **Contrat.** Le sommet du saut au contact, la tête au ballon (≤ 0,25 m à l'image de l'événement),
+  les bras en balancier, la réception ; verify-aerial + une clause composée en page.
+
+## 2. La retournée (le geste existe, aucun déclencheur) — LIVRÉ (16/09, lot C1, note 376, reference/51-motion-strike § C1)
+
+- **Livré** : `cfg.retournee { hMin 1.5, hMax 2.1, reach 0.7, dos 2.0, libre 1.5, but 16, vitesse 16, elevation 0.05 }` (tete.js
+  retourneeArmerStep/retourneeContact, la porte du ciel de rondo-sim) : le ballon prédit au contact du clip au-dessus de la tête d'un
+  attaquant dos au but, seul, dans la surface → l'acte armé, la frappe au but au contact (espèce 'retournée'). verify-retournee 6/0.
+  Le clip est authored (animkit-data), pas généré ; il retombe et se relève seul : pas de `p.down`.
+- *(le plan d'origine, gardé pour mémoire)*
+
+- **Geste.** `retournee` (animkit-data, authored ; le doc disait motion-ground/A5 à tort) : sous contrat, jamais jouée.
+- **Déclencheur.** Dans `tete.js`/`voleeStep` : un ballon en vol qui arrive entre 1,2 et 1,7 m sur
+  un attaquant DOS AU BUT dans la surface, sans adversaire à < 1,5 m, avec une note de volée
+  (`skill.voleeF`) → acte `retournee` (anticipation = contact du clip, `ownsBody`, le corps tombe :
+  `p.down` court après, comme le tacle glissé). Clé `cfg.retournee` `{ hMin, hMax, proba }`.
+- **Scène.** Le clip possède le corps et les hanches (canal hips), la chute et le relevé à l'heure
+  sim (`contactClock`, patron du tacle).
+- **Contrat.** verify-ground existant + la clause sim (forcée : un centre à 1,5 m sur un dos au but).
+
+## 3. La sortie aérienne du gardien : la prise et le poing — LIVRÉ (B10 la sortie, C3 le poing — 16/09, note 378, reference/53 § C3)
+
+- **État.** La loi de sortie vit (`cfg.sortieAerienne`) et la prise en l'air joue `plongeonPrise` ; le POING est généré
+  (`sortiePoing`, motion-keeper : saut, genou levé, poings serrés, le coup à travers) et armé quand l'attaquant arrive avec le
+  ballon (sortie-aerienne.js `poing`), le ballon dégagé du poing (onDive, 'arrêt' poing). Reste `prisePlanante`.
+- **Geste.** `plongeonPrise` existe (A6) ; à générer : `sortiePoing` (les deux poings au ballon,
+  saut à un pied, genou levé) et `prisePlanante` (prise à deux mains en l'air, sur un pied).
+- **Déclencheur.** La loi de sortie sur centre (jumeau § 10) : le gardien élit la sortie quand le
+  vol passe dans la surface de but à ≥ 1,6 m et qu'il y arrive avant l'attaquant ; poing si un
+  adversaire est à < 1,2 m du point, prise sinon. Clé `cfg.sortieAerienne`.
+- **Scène.** Le ballon aux gants tenu (`remiseHands`, A9 bis) ou dévié du poing (un `release('poing')`).
+
+## 4. Le fauché saisit la main (A10 quinquies) — LIVRÉ (16/09, lot C2, note 377, reference/59 § C2)
+
+- **Livré** : `mainTendue` tire (hold 0,65 puis pull 0,5 : le bras revient de 14 cm, le buste se redresse — verify-emotion 47/0)
+  et la scène rejoint les deux mains au point médian pendant le relevé du fauché et le tir de l'aidant (`Rondo._applyAideWarp`,
+  deux IK deux os) ; pas de clip `releveAide` : le bras du fauché est une IK vers la main, le clip couché garde son relevé.
+- *(le plan d'origine, gardé pour mémoire)*
+
+- **Geste.** Une variante du relevé (motion-contact, segment `rise`) : `releveAide` — le bras
+  tendu vers le haut pendant le relevé, le corps remonte plus droit, et pour l'aidant une fin de
+  `mainTendue` qui TIRE (le bras revient, le buste se redresse) ; les deux synchronisés par
+  l'horloge sim du relevé (`p.down`, `contactClock`).
+- **Déclencheur.** `aide.js` sait tout : `f._aide.geste` posé = la main est là ; la scène choisit la
+  variante du relevé quand `f._aide?.geste` et que l'aidant est à ≤ 1,3 m.
+- **Contrat.** Les deux mains à ≤ 0,15 m l'une de l'autre pendant 0,3 s (composé, en page) ; le
+  fauché debout à l'heure de la sim comme aujourd'hui.
+
+## 5. Les assistants et le ramasseur (des corps de plus) — LIVRÉ (16/09, note 382, reference/59 § 5, verify-assistants 13/0, verify-ramasseurs 5/0)
+
+- **Assistants.** Deux corps sur les lignes de touche, à la hauteur de la ligne de hors-jeu
+  (`offsideLine`) ; gestes : drapeau levé (hors-jeu : l'événement `hors-jeu` existe), drapeau
+  incliné (sens de la touche : `sortie` avec `out`), drapeau à l'horizontale (remplacement).
+  Générateur `motion-arbitre` (famille arbitre, le drapeau comme la carte : une prop attachée à la
+  main). Sim : `referee.js` (au plafond → `assistants.js` : positions et gestes dans `st.assistants`),
+  clé `cfg.assistants`. Scène : `arbitre.js` `spawnOfficiel` × 2.
+- **Ramasseur.** L'événement `ramasseur` existe (le ballon revient au point) : un corps au bord qui
+  trotte au ballon, le ramasse (`ramassage`, A9) et le roule (`rouleMain`). Scène seulement, plus
+  une position dans la sim (`st.ramasseurs`).
+
+## 6. La foulée : le pas croisé, le port des bras, le verrou de pieds (A7 ter) — LIVRÉ (16/09, note 380, reference/52 § A7 ter, verify-foulee 81/0)
+
+- **Pas croisé.** Dans `gaitPose`, `opts.turn` > 7 m/s² à v > 3 : la jambe extérieure croise
+  devant (chemin de pied latéral alterné sur un cycle), le bassin tourne. Contrat : pas de
+  croisement en chassés (existant), croisement borné en virage.
+- **Port des bras.** `GAIT_REGIMES` : coude 85° → 90-100° et mains à hauteur de poitrine en
+  course (les planches montrent un bras bas) ; `persona.bras` module déjà.
+- **Verrou de pieds.** `foot-lock.js` calibré sur la foulée générée (plancher, bande) : le
+  tressaillement de 5 cm au pelage mesuré (reference/52 § dettes).
+
+## 7. L'avant-match et les gestes sociaux (A11 ter) — LIVRÉ (16/09, note 381, reference/59 § A11 ter, verify-ceremonie 8/0)
+
+- **Gestes.** `salut` (la main levée au public), `poignee` (deux joueurs, les mains droites qui se
+  joignent : un geste APPARIÉ comme l'accolade — la scène aligne les deux corps), `applaudir` et
+  `accolade` existent (accolade : les mains plus basses, retour utilisateur).
+- **Déclencheur.** La cérémonie d'engagement (`referee` : `a.job = 'ceremonie'` existe pour le
+  central) : une file de poignées entre les deux équipes avant le premier engagement, clé
+  `cfg.ceremonie.poignee` ; le salut à la fin du match (`chrono` fin de période).
+- **La carte plus lisible.** `arbitre.js` : la plaque 7,5 × 10,5 cm → une plaque tenue plus haut,
+  face au fautif, 0,3 s de plus.
+
+## 8. Le remplacement et la boiterie — LIVRÉ (16/09, note 383, reference/52 § boiterie, reference/59 § remplacement, verify-boiterie 4/0, verify-foulee 86/0)
+
+- **Remplacement.** `referee.remplacer` existe (le remplacé marche vers sa sortie, l'entrant naît à
+  la ligne) : l'entrant TROTTE (`p._walkF = cfg.entrant.trot`, marche × 1,6 en phase `in`) — livré.
+  Restent en dette : la poignée de main à la ligne (§ 7 `serrerMain` — les deux corps ne passent pas
+  au même point de la touche) et le quatrième arbitre (un corps de plus, § 5).
+- **Boiterie.** Après une faute GRAVE (`adjugeFaute`, `F.grave`, la victime pas gardien), une foulée
+  asymétrique pendant `cfg.boiterie.duree` (25 s) : `gaitPose` `opts.boite { side, k }` (l'appui du
+  côté touché ×(1 − 0,3k), le vol plus ras, moins de déroulé, le bassin qui plonge de ce côté 10°·k),
+  k = le temps qui reste / la durée ; sim : `p._boite = { until, duree, side }` posé par
+  `adjugeFaute`, la pointe × (1 − `ralenti` 0,3 × k) posée après tous les plafonds (2,98 m/s c. 4,19
+  lancé 12 s). Clé `cfg.boiterie` (pas `cfg.sol.boiterie` : la boiterie est une loi du corps, pas du
+  sol) ; null = hier au bit. Dette : le côté vient de la parité des identifiants, pas de la jambe touchée.
+
+## 9. La tenue de balle dos au but (A10 ter) — LIVRÉ (16/09, note 379, reference/55 § A10 ter, `engine/bouclier.js`, cfg.bouclier)
+
+- **Geste.** Le bouclier existe (`contactShield`, A10 : le porteur protège son ballon) et a maintenant sa DURÉE : la sim TIENT
+  (bouclierStep au tick de décision : arrêt, dos au presseur qui orbite, ballon porté ; issues appui / faute poussée / relache /
+  deborde / expiree ; contrat adversaire-ballon ≥ 0,6 m tenu à 0,74 m ; clé null = hier au bit).
+- **Déclencheur.** Une loi moteur : le porteur pressé dans le dos, sans appui devant, TIENT
+  (`act` bouclier `ownsBody` 0,8-2 s, le ballon sous la semelle ou au pied, le corps entre le ballon
+  et l'adversaire) jusqu'à un appui ou une faute ; clé `cfg.bouclier { duree, pression }`.
+  Contrat : la distance adversaire-ballon ne descend pas sous 0,6 m pendant la tenue.
+
+## 10. Les petits gestes qui manquent au match — LIVRÉ (16/09, note 384, reference/59 § 10, `engine/petits-gestes.js`, cfg.petitsGestes, verify-petits-gestes 15/0)
+
+- **Le râteau/la semelle sur ballon arrêté à la relance** — livré : la semelle (`arretSemelle`) du preneur à la sortie de but, la
+  remise attend `tenue` 0,7 s (`petitsGestes.semelle`). Reste : le râteau (le preneur ne ramène pas le ballon).
+- **Le gardien qui replace son mur** — livré : `designer` sur le gardien au coup franc adverse, le regard tenu vers le mur
+  (`petitsGestes.mur`, au pas de l'arbitre — la clé n'est pas dans `remisesPied.mur` : le mur est à match-sim, le geste au gardien).
+- **Le dégagement de la tête défensif** (§ 1 `teteDefensive`) — livré : le geste généré (le buste armé davantage, la frappe vers le
+  haut) et l'armé de `tete.js` qui le nomme pour un corps à < 24 m de son but, même heure que `tete` (`petitsGestes.teteDefensive`).
+- **Le contrôle orienté** — livré : `controleOriente` généré (les hanches et le regard ouverts vers la course, l'intérieur qui reçoit),
+  joué par la scène quand la sim tourne le receveur de ≥ 45° (`petitsGestes.controleOriente.angle` ; rondo-sim est au plafond, le
+  déclencheur est le `yawWant` qu'elle écrit déjà).
+- **La feinte de corps sans ballon** — livré : `feinteAppel` généré (haut du corps seul), tiré au départ d'un appel d'un soutien posé,
+  une fois par 20 s (`petitsGestes.feinteAppel`).
+
+## L'ordre proposé
+
+Jumeau § 1-3 d'abord (le pied, le double geste, la tête armée), puis ici 1 (tête armée, dans le
+même lot que jumeau § 2) → 2 (retournée) → 4 (la main saisie) → 3 (la sortie aérienne) → 9 (la
+tenue dos au but) → 6 → 7 → 5 → 8 → 10.

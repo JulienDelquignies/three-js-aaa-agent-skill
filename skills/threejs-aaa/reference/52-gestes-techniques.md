@@ -68,11 +68,60 @@ les yeux sont libres).
 - `verify-rondo` 40/40 (seuils recalibrés consignés), `verify-animkit` 96/96 (les trois clips +
   miroirs), audit composé 15/0, verrou de balance : record 9,1, 52,8 actions/partie.
 
+## Les passements nourris (`cfg.passements`, note 385 — verify-passements 6/0)
+
+Diagnostic du 16/09 (« tu peux corriger les passements ? ») : le CERCLE du générateur est bon — planche et page (LOD coupé), la
+cheville passe à 25-30 cm au-dessus du ballon, le pied qui cercle est masqué du verrou par `pick.foot` —, mais le geste était
+AFFAMÉ (1 passement en 15 min de match sur 3 graines) et le ballon était CALÉ LÀ OÙ IL TRAÎNAIT au contact, pas au point que le
+clip attend ([0,05 ; −0,40] dans le repère du corps) : le pied d'appui finissait dans le ballon (mesuré en page : 7 cm du centre).
+L'entonnoir mesuré sur 300 s (600-1 000 appels de `maybePassement` aux ticks de décision) : le ballon à plus de 0,6 m (256-541 refus —
+le porteur conduit ballon devant), aucun jockey à 0,9-2,6 m (176-319), le jockey hors du demi-front de 70° (95-151 — le porteur
+reçoit hors du presseur, § 10 : il lui tourne le dos), la charge au-delà de 1,5 m/s (5-31 — les défenseurs du moteur pressent plus
+qu'ils ne jockeyent), 5-10 tirages restants à un appétit de dribble de 0,03-0,48 (la cadence et le tiers propre l'éteignent).
+
+- **La loi** (`passements { spot 0,40, lat 0,05, face 100, foe 3,5, fixe 0,45, charge 2,6, ballon 0,75, envie 2, plancher 0,35 }`) :
+  le jockey jusqu'à `foe` m ; le porteur POSÉ (< 2,5 m/s) dont le jockey est au demi-front large (70-`face` °) le FIXE — le regard
+  tenu (`p._regard`, à terme `p._regardUntil` : la voie du § 7, relâchée seule par `movement`) pendant `fixe` s — et le passement part
+  une fois face (mesuré : 0,10 s après le regard, relèvement 62°) ; une charge jusqu'à `charge` m/s se fige quand même (au-delà : le
+  râteau) ; le ballon jusqu'à `ballon` m ; le tirage sur `max(plancher, dribM) × (0,32 + 0,42 flair) × gesteF² × envie` ; et LE BALLON
+  RAMENÉ AU POINT DU CLIP dès l'entrée (`payload.pin` = spot devant, lat du côté du pied ; `stepGestures` le porte pendant l'armé, vite (tau 0,04) —
+  l'escorte le laissait où il traînait —, `skillFollowStep` le cale ensuite) : à 0,6 cm du point au contact (8,1 cm avant).
+- **Mesuré** : 3 passements par match de 300 s sur 4 graines (1, 2 et 3 tours, 10 posés sur 12, 4 jockeys qui mordent) contre 1 par
+  15 min hier ; graine 3 : 5 (2 posés, 2 morsures) c. 1.
+- **`passements: null`** = hier au bit (les portes d'hier, le ballon calé au contact, aucun regard tenu) ; épinglé sur les bancs datés.
+- **Dettes** : le ballon à plus de 0,75 m reste refusé (le porteur conduit loin devant : une touche de rappel serait le vrai geste) ;
+  les défenseurs chargent plus qu'ils ne jockeyent (la posture jockey est du moteur) ; le passement lancé garde ses lois d'hier.
+
+## La conduite nommée (`cfg.conduiteNommee`, note 388 — verify-conduite 9/0)
+
+Retour : « enchaîne sur les touches de conduite pour gérer pied droit pied gauche extérieur intérieur, en faisant le nécessaire dans
+le moteur ». Hier chaque touche de conduite était un événement `touche` muet (`dev`, `spd`) : la scène tendait le pied LE PLUS PROCHE
+vers le ballon (le warp de touche) et jouait « passe extérieur » sur toute cassure ≥ 60°, quel que soit le pied ou la surface.
+
+- **Le moteur nomme** (`skills-sim.conduiteNommee`, appelé par `touchEvent` après la poussée du dribble) : le PIED est le côté du
+  ballon dans le regard (lat > 0 = gauche, la convention de la scène) ; la SURFACE se lit sur la direction de la poussée que
+  `dribbleStep` vient d'écrire (`st.ball.v`) par rapport au regard : vers le dehors du pied qui touche (à droite pour le droit) c'est
+  l'EXTÉRIEUR, vers le dedans l'INTÉRIEUR, droit devant (± `droit` 12°) le COU-DE-PIED en course (≥ `vite` 3 m/s) et l'intérieur au
+  trot, presque arrêté (< `lent` 1 m/s) la SEMELLE. Champs additifs sur l'événement (`tech`, `foot`, `surface`, `virage` signé,
+  > 0 = à droite) : la clé absente rend la touche muette d'hier, au bit.
+- **Quatre techniques** de la table (`conduite-interieur`, `-exterieur`, `-laces`, `-semelle`, intent `conduite` : la table ne les
+  choisit pas) et **quatre clips générés** (motion-control `conduiteInterieur`, `conduiteExterieur`, `conduiteLaces`, `conduiteSemelle`,
+  0,4 s, contact 0,14) : le pied va au ballon et le POUSSE (contrat `pousse` : le pied continue devant de ≥ 5 cm après le contact —
+  mesuré +21 à +29 cm), la surface se présente (turn : intérieur en rotation externe, extérieur en inversion, cou-de-pied pointe basse),
+  la semelle se pose et retient. 40 styles sous contrat et checkClip.
+- **La scène** : le warp de touche suit le pied NOMMÉ ; la touche qui vire (≥ 20°), l'extérieur et la semelle jouent leur clip par
+  technique, miroir au pied nommé, cadencées 0,35 s comme la touche forte ; la touche droite du cou-de-pied reste au warp seul (la
+  foulée la joue déjà) ; le demi-tour ≥ 110° garde le crochet court.
+- **Mesuré** (300 s, graine 3, les clés du jour à null) : 142 touches, toutes nommées, le pied cohérent avec le côté du ballon 142/142 ;
+  surfaces : cou-de-pied 87, intérieur 35, extérieur 20, semelle 0 (2 sur le monde complet) ; pieds : droit 63, gauche 79. Sur 2 × 300 s : 73 % des touches virent de moins de 6°, 7 %
+  de plus de 20° ; au trot l'intérieur domine (86/90), en course le cou-de-pied (187/216, 13 extérieurs).
+- **Dettes** : l'extérieur reste rare (la conduite du moteur vire peu : 5 %) ; le pied ne change pas au fil des touches (le ballon
+  vit devant le pied de contrôle `p.foot`) ; les prises de ballon libre (`control` sans technique) restent au contrôle intérieur.
+
 ## Dettes connues
 
 - La semelle des graines très pressées casse toujours (`broke: 'pressé'`) — la tenue complète
   n'existe que sur les graines calmes ; un jour, le porteur devrait CHOISIR un endroit calme.
-- Pas encore de roulette, passement de jambes, petit pont — le vocabulaire est extensible par
-  ligne de table + clip + déclencheur situé.
+- ~~Pas encore de roulette, passement de jambes, petit pont~~ — livrés (A4), et les passements nourris le 16/09 (ci-dessus).
 - L'audit membre ignore les gestes techniques (filtre `!x.skill`) : leurs clauses composées
   propres (semelle SUR le ballon en monde, pied du râteau au contact) restent à écrire.

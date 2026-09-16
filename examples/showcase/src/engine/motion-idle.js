@@ -44,6 +44,7 @@ const TAU = Math.PI * 2;
 export const IDLE_KINDS = {
   repos:        { hw: 0.11, knee: 5,  lean: 1,  headDown: 0,  sway: 0.035, swayT: 7.5, breath: 1.2, breathT: 4.2, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 9,  fwd: 5,   elbow: 16, twist: 0 },   armLive: 1.5 },
   mainsHanches: { hw: 0.13, knee: 4,  lean: 0,  headDown: 0,  sway: 0.03,  swayT: 8.5, breath: 1.0, breathT: 4.6, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 22, fwd: -8,  elbow: 45, twist: -50 }, armLive: 0.6 },
+  abattu:       { hw: 0.13, knee: 5,  lean: 5,  headDown: 18, sway: 0.03,  swayT: 8.0, breath: 1.0, breathT: 4.4, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 22, fwd: -8,  elbow: 45, twist: -50 }, armLive: 0.6 },   // (A11) l'adversaire qui a encaissé : mains sur les hanches, la tête basse
   sautillement: { hw: 0.12, knee: 14, lean: 4,  headDown: 2,  sway: 0.012, swayT: 3.0, breath: 1.0, breathT: 3.0, bounce: 0.035, bounceT: 0.42, heel: 14, arms: { elev: 12, fwd: 22,  elbow: 70, twist: 0 },   armLive: 2.5 },
   pret:         { hw: 0.24, knee: 32, lean: 18, headDown: 6,  sway: 0.02,  swayT: 2.4, breath: 1.4, breathT: 2.8, bounce: 0.012, bounceT: 0.75, heel: 4,  arms: { elev: 10, fwd: 24,  elbow: 50, twist: -20 }, armLive: 2.0 },
   pretGardien:  { hw: 0.30, knee: 40, lean: 26, headDown: 4,  sway: 0.015, swayT: 2.0, breath: 1.4, breathT: 2.6, bounce: 0.016, bounceT: 0.62, heel: 6,  arms: { elev: 22, fwd: 36,  elbow: 55, twist: -10 }, armLive: 2.0 },
@@ -51,9 +52,9 @@ export const IDLE_KINDS = {
   ballonMains:  { hw: 0.12, knee: 6,  lean: 2,  headDown: 3,  sway: 0.02,  swayT: 6.5, breath: 1.0, breathT: 4.0, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: 8,  fwd: 30,  elbow: 90, twist: 0 },   armLive: 0.5, wrists: [0.16, 1.32, -0.30] },
   mur:          { hw: 0.10, knee: 10, lean: 8,  headDown: 12, sway: 0.008, swayT: 5.0, breath: 0.8, breathT: 3.8, bounce: 0,     bounceT: 1,    heel: 0,  arms: { elev: -20, fwd: 26, elbow: 12, twist: 72 },  armLive: 0.4 },
   // (A12b) LA RÉCEPTION DE TROIS-QUARTS : le receveur qui attend le ballon en vol — le corps est déjà ouvert par la sim
-  // (170, corpsOuvert : le lacet), ici la POSTURE : pieds plus larges, genoux fléchis, buste un peu penché, bras en
-  // équilibre devant, appuis vifs (petit rebond) ; la tête reste HAUTE (le regard scanne, A12a)
-  reception:    { hw: 0.17, knee: 16, lean: 9,  headDown: 0,  sway: 0.02,  swayT: 2.6, breath: 1.4, breathT: 2.8, bounce: 0.008, bounceT: 0.5,  heel: 3,  arms: { elev: 26, fwd: 20, elbow: 74, twist: 0 }, armLive: 3 },
+  // (170, corpsOuvert : le lacet), ici la POSTURE : pieds plus larges, genoux fléchis, buste un peu penché, bras calmes
+  // le long du corps, coudes un peu pliés (retour utilisateur : pas de bras écartés), appuis vifs (petit rebond) ; la tête reste HAUTE (le regard scanne, A12a)
+  reception:    { hw: 0.17, knee: 16, lean: 9,  headDown: 0,  sway: 0.02,  swayT: 2.6, breath: 1.4, breathT: 2.8, bounce: 0.008, bounceT: 0.5,  heel: 3,  arms: { elev: 12, fwd: 12, elbow: 52, twist: 0 }, armLive: 3 },
   // (A12c) LA PAUSA : le porteur s'arrête net, la SEMELLE SUR LE BALLON, le poids sur l'autre jambe, les mains
   // sur les hanches (Isco, Pedri : « met la semelle sur le cuir, attend le geste du milieu adverse ») ; le pied levé vise
   // le ballon RÉEL de la sim (raise.at, repère personnage, posé par la scène en override) — la posture ne devine pas
@@ -148,7 +149,7 @@ export function idlePose(P, t, kind = 'repos', style = NEUTRAL_IDLE_STYLE, opts 
   const live = K.armLive * Math.sin(TAU * tt / 5.1 + 1.3), live2 = K.armLive * 0.6 * Math.sin(TAU * tt / 6.7);
   const A = K.arms;
   // les mains posées (hanches, mur) ne prennent pas l'accent du style : la pose EST le geste
-  const posed = kind === 'mur' || kind === 'mainsHanches' || kind === 'signal' || kind === 'pausa';
+  const posed = kind === 'mur' || kind === 'mainsHanches' || kind === 'abattu' || kind === 'signal' || kind === 'pausa';
   const elev = A.elev + (posed ? 0 : style.armElev) + br * 0.5, elbow = A.elbow + (posed ? 0 : style.elbow);
   Object.assign(J, armPose('Left', { elev, fwd: A.fwd + live, elbow: elbow + live2, twist: A.twist }));
   const AR = K.armR || null;   // (A12f) un bras droit à part (le signal) : sa pose, sans l'accent du style
@@ -205,6 +206,7 @@ export function idlePolicy(ctx, persona = null) {
     if (ctx.dead) return calm > 1.08 ? 'mainsHanches' : 'repos';
     return (ctx.ballD ?? 99) < 32 ? 'pretGardien' : 'repos';
   }
+  if (ctx.abattu) return 'abattu';   // (A11) l'équipe qui vient d'encaisser, pendant la fête adverse
   if (ctx.dead) return burst > 1.18 ? 'sautillement' : calm > 1.1 ? 'mainsHanches' : 'repos';
   if (ctx.receveur) return 'reception';   // (A12b) le ballon vole vers moi : la posture de réception, quel que soit le tempérament
   if (ctx.marcheur && (ctx.ballD ?? 0) > 25) return 'mainsHanches';   // (A12e) le rôle marchant, loin du ballon : les mains sur les hanches (Messi, l'électron libre)
@@ -272,7 +274,7 @@ export function checkIdleGen(P, { kind = 'repos', style = NEUTRAL_IDLE_STYLE, op
   if (footMove > 0.005) issues.push(`les pieds bougent de ${(footMove * 100).toFixed(1)} cm — une attente ne glisse pas`);
   if (toeMin < -0.01) issues.push(`l'orteil sous la pelouse (${(toeMin * 100).toFixed(1)} cm)`);
   if (unreach) issues.push(`${unreach} instants hors de portée`);
-  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24], reception: [8, 32], pausa: [0, 80], signal: [0, 24] }[kind] || [0, 60];
+  const kneeBand = { repos: [0, 24], mainsHanches: [0, 24], abattu: [0, 24], sautillement: [5, 45], pret: [24, 44], pretGardien: [30, 52], mur: [3, 24], reception: [8, 32], pausa: [0, 80], signal: [0, 24] }[kind] || [0, 60];
   if (kneeMin < kneeBand[0] - 0.5 || kneeMax > kneeBand[1] + 0.5) issues.push(`${kind} : genou [${kneeMin.toFixed(0)}, ${kneeMax.toFixed(0)}]° hors [${kneeBand}]`);
   // les mains de l'espèce (poignets, repère personnage : droite +X, haut +Y, avant −Z)
   const hR = f0.R.hand, hL = f0.L.hand, eR = f0.R.elbow;
@@ -286,8 +288,8 @@ export function checkIdleGen(P, { kind = 'repos', style = NEUTRAL_IDLE_STYLE, op
     if (down > 0.12) issues.push(`pausa : le pied d'appui quitte le sol (${(down * 100).toFixed(0)} cm)`);
     if (Math.abs(f0.pelvis[0] - f0[S0].ankle[0]) > 0.12) issues.push(`pausa : le bassin n'est pas sur la jambe d'appui (${(100 * (f0.pelvis[0] - f0[S0].ankle[0])).toFixed(0)} cm)`);
   }
-  if (kind === 'reception' && !(hR[0] - hL[0] > 0.42 && hR[2] < chestZ - 0.05 && hL[2] < chestZ - 0.05)) issues.push(`réception : les mains ne sont pas en équilibre devant (écart ${(hR[0] - hL[0]).toFixed(2)} m, z ${hR[2].toFixed(2)} c. poitrine ${chestZ.toFixed(2)})`);
-  if (kind === 'mainsHanches') {
+  if (kind === 'reception' && !(hR[0] - hL[0] > 0.40 && hR[0] - hL[0] < 0.66 && hR[2] < chestZ - 0.05 && hL[2] < chestZ - 0.05)) issues.push(`réception : les mains ne sont pas calmes devant le corps (écart ${(hR[0] - hL[0]).toFixed(2)} m, attendu 0,40-0,66 ; z ${hR[2].toFixed(2)} c. poitrine ${chestZ.toFixed(2)}, attendu ≥ 5 cm devant)`);
+  if (kind === 'mainsHanches' || kind === 'abattu') {
     const d = Math.hypot(hR[0] - 0.24, hR[1] - 0.99, hR[2] - 0.0);
     if (d > 0.07) issues.push(`mains sur les hanches : poignet droit à ${(d * 100).toFixed(1)} cm de la crête (${hR.map((v) => v.toFixed(2))})`);
     if (eR[0] < hR[0] + 0.03) issues.push('mains sur les hanches : le coude n\'est pas dehors');

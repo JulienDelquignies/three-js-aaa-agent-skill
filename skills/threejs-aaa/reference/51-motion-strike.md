@@ -260,11 +260,75 @@ le pied passe à 0,02-0,06 m du point de frappe (0,42 m avant le lot A1).
   dégager la pointe est bornée par le jeu de l'affaissement (elle faisait décoller l'appui du talon).
   Le pic de vitesse se cherche sur le swing. Les feintes suivent les amplitudes re-bakées.
 
+## La tête armée (B3 — `tete.js`, `cfg.tete.armee`, verify-tete-armee 6 clauses)
+
+Mesuré avant (12 matchs × 300 s) : 28 têtes, 0 windup `tete` — la tête se décidait À L'IMAGE DU
+CONTACT (`teteStep` : le ballon à hauteur de tête sur un corps → redirection immédiate) et la scène
+jouait le clip généré `tete`/`teteDebout` depuis son contact : tout l'armé et l'impulsion étaient
+perdus, on voyait la seconde moitié du geste. Le vol est déterministe ; sous `tete.armee { marge }`
+(`null` : la reprise réactive d'hier, empreinte jumelle identique) :
+
+- **`teteArmerStep`** (rondo-sim, la même porte que `teteStep`, avant lui) : à chaque image,
+  `predictPath` du ballon, et pour les deux clips (tete 0,42 s sautée, teteDebout 0,22 s debout) la
+  position du ballon à τ = leur contact ; s'il y est à hauteur de tête (fenêtre du contact réactif,
+  descendue d'une demi-marge — un vol raide la traverse en 0,1 s) et qu'un corps libre y sera aussi
+  (sa position + sa vitesse × τ, à `reach`), il ARME l'acte maintenant : `startGesture(tete|teteDebout)`,
+  payload `{ kind 'tete', saut, ownsBody, mobile }`, windup skill `tete` (anticipation τ, saut, h).
+  Une tête armée par vol.
+- **`payload.mobile`** (movement.js) : le corps COURT sous son armé jusqu'au ballon — l'armé
+  ordinaire plante le corps (« a swing owns the body ») ; ici le contact est devant, le corps y va.
+- **`teteContact`** (le contact de l'acte, `stepGesture` 'contact' → rondo-sim) résout la tête
+  forcée sur ce corps : `teteStep(st, cfg, force)` — le ballon doit y être (fenêtre et portée + marge),
+  sinon `tête-manquée` (l'acte finit son accompagnement, le vol continue, un autre corps peut le
+  reprendre) ; le duel aérien, les modes but/dégagement/remise sont ceux d'hier, l'événement `tête`
+  porte `arme: true`.
+- **La scène** ne change pas : le windup joue le clip depuis 0 (`_playTech`), l'événement `tête` au
+  contact est ignoré par le corps possédé (ownsBody) — le saut est dans le clip, l'impulsion aussi.
+
+Banc verify-tete-armee (6 clauses — verify-tete, le banc du lot 34, garde son nom ; fixture : le monde vidé, un centre depuis l'aile dont la vitesse fixe le
+sommet) : la tête debout s'arme 0,22 s avant et se résout au contact de l'acte (± 1 tick, à ± 0,15 s de
+l'arrivée prédite), la tête sautée s'arme 0,42 s avant (le saut dans le clip), l'attaquant qui arrive en
+courant se déplace de 0,86 m sous son armé (hier planté), le sabotage `armee:null` rend la reprise
+réactive sans windup. En match : voir la note 373 (la part des têtes armées, les manquées, l'écart
+windup → contact). Dettes nommées : la volée et la poitrine restent réactives (`voleeStep`, `chestStep` —
+même patron à écrire, une espèce `volee` de motion-strike serait mieux que le clip `frappe`) ; l'abandon
+de l'armé quand la prédiction meurt (une déviation) est la tête manquée, pas un `abortGesture`.
+
+## La retournée armée (C1 — `tete.js`, `cfg.retournee`, verify-retournee 6 clauses)
+
+Le clip `retournee` (animkit-data, authored : 1,35 s, contact 0,52 — accroupi, détente, le corps couché en l'air, la jambe droite
+en ciseaux par-dessus la tête, la retombée et le relevé DANS le clip, canal hips) n'avait aucun déclencheur : jamais joué en match.
+Le vol est déterministe (le patron de B3) : `retourneeArmerStep` (rondo-sim, la porte du ciel, après la volée) prédit le ballon
+libre au contact du clip (0,52 s) ; s'il y est entre `hMin` 1,5 et `hMax` 2,1 m (au-dessus de la tête debout, sous le saut de
+tête) à `reach` 0,7 m d'un attaquant DOS AU BUT (le regard à plus de `dos` 2,0 rad de la direction du but), dans la surface à moins
+de `but` 16 m, sans adversaire à `libre` 1,5 m (le ciseau serait une faute), l'acte part — `ownsBody`, le corps planté sur son
+point d'appel, windup skill 'retournee', `st._teteCd` posé jusqu'au contact (la tête et la volée attendent l'acte). Le contact de
+l'acte (`retourneeContact`, stepGesture → rondo-sim) frappe au but depuis le ballon RÉEL (`vitesse` 16 × voleeF, `elevation` 0,05,
+le canal shot, espèce 'retournée', l'xG de la volée faute d'un δ propre) s'il est à portée et dans la fenêtre — sinon
+'retournée-manquée', nommée. Face au but ou de profil : la volée et la tête d'hier ; le ballon sous 1,5 m : la volée.
+
+Contrat (verify-retournee — le monde vidé, un centre lobé depuis l'aile, l'attaquant posé au point où le vol redescend à 1,8 m,
+épinglé et tourné vers son but chaque image jusqu'à son acte) : la retournée s'arme (anticipation 0,52, ballon prédit à 1,98 m,
+regard à 2,75 rad du but) et frappe au but au contact (0,53 s après le windup, ballon à 2,0 m, tir 'retournée' à 16 m/s, élévation
+0,04 rad) ; face au but : la tête armée joue, pas de ciseau ; un adversaire à 1 m : rien ; le ballon à 1 m : la tête debout d'hier ;
+`retournee:null` : la tête armée d'hier. Le corps ne tombe pas après (la retombée est dans le clip authored — le doc
+Animations_A_Faire prévoyait un `p.down`, le clip se relève seul à 1,35 s : pas de sol à jouer). Clé `null` : hier au bit.
+
 ## Résultats négatifs et dettes nommées
 
-- Dans la composition en jeu, le poids des jambes suit l'arrivée (byArrive) : le monde composé mesure
-  5,9-8,3 m/s au contact sur une passe rapide en course (le clip seul : 10,3). Le re-calage des poids
-  d'arrivée (audit-membres) est le prochain chantier.
+- (A2, livré) Le monde composé mesurait 5-6 m/s de pied au contact contre 11 au clip. Deux causes, ni
+  l'une ni l'autre dans les poids d'arrivée (mesuré en match : wLegs 0,94-0,98 à l'image du tir, l'appui
+  posé à 12 cm sur 16 frappes sur 16) : (1) la couche de geste échantillonnait le clip EN AVANCE (lead
+  0,3 × anticipation, pour sauter la clé neutre) avec convergence linéaire vers l'heure vraie AU
+  CONTACT — tout l'armé, swing compris, à ×0,7 ; la convergence se fait à 0,6 × anticipation
+  (`rondo-fusion.js`, verify-fusion), l'armé à ×0,5 et le swing à ×1 ; (2) le générateur plaçait le pic
+  de vitesse du genou à tc − 0,02 (+ snap) : le pied culminait 18-27 ms avant le ballon, 30 % au-dessus
+  de sa vitesse au contact — une poussée. Le pic est SUR le contact (tc + snap) : passe 11,4 → 13,2 m/s,
+  passe rapide 10,4 → 12,3, frappe 14,5 → 17,0, frappe puissante 15,4 → 18,2, pivot 9,0 → 10,6,
+  extérieur 9,6 → 11,3 au contact (réel : 15-25), le pic à 4-11 ms (la hanche culmine avant, comme
+  dans la vie). Et le tir de la sim tombe au tick suivant t ≥ anticipation (0-17 ms après la clé de
+  contact : le pied 14 cm au-delà du ballon quand il partait) — la couche retient ce retard (≤ 1 tick)
+  pour l'accompagnement : le pied est sur le ballon à l'image du tir.
 - Restent authorés : la retournée (sans déclencheur sim) et les gestes sociaux (salut, poignée,
   célébration, applaudir, consulter). Tout le football du répertoire est généré.
 - La table `STANCES` est RENDUE AU MOTEUR (note 301) : la re-dériver des clips générés (passe 0,44 m,

@@ -11923,6 +11923,668 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      300 s — le renversement à 0 du bloc 98 est une lame de couteau du
      monde, pas une loi tuée. Référence 58.
 
+- 359: LE PORT DE BRAS ET LE STYLE POSÉ PAR LE ROSTER (retour utilisateur :
+     « les bras écartés à la réception des ballons, c'est pas terrible » ;
+     « tu avais mis en place quelque chose pour avoir des postures
+     différentes par joueur ? que je le donne aux projets »). Corrigé :
+     l'espèce reception garde les bras calmes (12/12/52° au lieu de
+     26/20/74), la foulée du receveur n'ouvre plus d'un écart uniforme
+     (+4/+8° au lieu de +12/+16, balancier × 0,7) — l'amplitude vient du
+     PORT DE BRAS de la persona (persona.bras ∈ [0,15 ; 0,9], tiré en
+     dernier : les autres champs gardent leur tirage), lu par le receveur
+     et le jockey (bras 0,15 → mains à 55 cm en marche, 0,9 → 61, sans 52).
+     Ce qui existait déjà pour la posture par joueur, documenté pour l'aval
+     dans docs/Interface_Style_Joueur.md : la persona (scale, gaitPhase,
+     armSwingF, posture, paceBias, burstiness, calm, flair, reaction, bras),
+     le style de foulée (12 axes), d'attente (9), de frappe (12), tous
+     fonctions pures de (id, graine). Nouveau : squads[team][i].persona
+     (partiel, fusionné sur le tirage) et squads[team][i].style { gait,
+     idle, frappe } (partiels) — match-sim les porte sur le joueur, la
+     scène les passe au contrôleur (idleStyle nouvelle option) et à
+     motion-cast. Bancs : verify-persona 20 → 25 (bornes et variété du
+     port de bras, tirage inchangé, injection partielle, voisin au bit),
+     verify-attente 52/0 (contrat des mains recalé : 0,40-0,66 m d'écart,
+     ≥ 5 cm devant la poitrine), verify-foulee 55/0 (bras calmes ≥ +2 cm,
+     balancier ≤ 75 %, le port de bras fait la différence), verify-gait
+     23/0, verify-locomotion 6/0, verify-sync 9/0. Aucun bit de sim sans
+     roster : empreinte du monde servi 43b14c0f24b0bb37 inchangée. Capture
+     retour-bras-reception.png (graine 3, t = 4,3 s, le même instant que
+     a12b-reception-approche.png). Référence 58.
+
+- 360: LE SOL (lot A10 bis — « tu as d'autres animations à refaire ? » →
+     « ok vas-y »). Mesuré en page (graine 3, t = 250,18, chute avant par
+     tacle debout) : down 1,6 s pour un clip qui met 0,66 s à se coucher et
+     0,7 à se relever — 0,2 s de tenue ; à t + 0,54 la sim donnait au
+     fauché un acte « frappe » (down 1,03) et la couche remplaçait la chute
+     par l'armé, bassin à 0,93 m ; le tacleur à 0,50 m (minGap) du fauché,
+     dans son corps. La clé cfg.sol { tenue 0,9, corps 0,9 } : duel.chuter
+     tient le fauché chute + tenue × (0,7 + 0,6 × v/6) s (p50 2,5 contre
+     1,6), lâche le ballon (loose, release('perte')), tue l'armé ;
+     movement.separatePlayers : un corps couché tient les debout à ≥ corps
+     m, le debout seul recule en marchant (1,5 % des images au sol avec un
+     debout à < 0,6 m, sans la clé 10,9). Null = hier au bit (empreinte
+     jumelle 3 graines, 0ac58978 / 73c16185 / 5120d90f). A/B 12 × 300 s :
+     passes +1 %, pertes −4 %. La pose tenue VIT (motion-contact, vie) :
+     un cycle fermé entre lying et rise (main à la tête, tête qui se pose et
+     se relève, jambe du dessus qui plie — 35/15/34 cm à mi-tenue, 0 cm
+     entre lying et rise) ; l'horloge de la scène (contactClock) y fait des
+     allers-retours à ×0,6 tant que down > T − t, puis avance à (T − t)/down
+     borné ×1-2,5 : debout à l'heure sim, jamais de saut (prouvé en pur,
+     down 2,6 et 1,6). Garde-fous : un corps couché ne joue que sa chute ;
+     la prise du tacleur n'est pas une réception (l'« amorti » à 49° de
+     bras recouvrait le tacle : les « bras en croix » du vainqueur) ; un
+     contrôle ou une réception sans technique nommée se joue DU PIED quand
+     le ballon est au sol (79 amortis en deux matchs, tous bas). Bancs :
+     verify-contact 25 → 34. Captures a10bis-chute-tenue.png (graine 5,
+     t = 6,95 : la chute de côté tenue, la main à la tête, le tacleur à
+     0,9 m). Reste : le relevé aidé. Référence 59.
+- 361: L'ÉMOTION GÉNÉRÉE (lot A11). Mesuré : le buteur courait au coin les
+     bras à l'horizontale (clip 'celebration' du donneur — le dernier geste
+     non généré vu en match), seul ; salut/poignée/applaudir/consulter
+     jamais joués. motion-emotion.js, huit espèces, famille 'emotion' :
+     poing (deux pompes, +25 cm sur l'épaule), brasLeves (V, +28 cm sur la
+     tête), oreille (main à 15 cm de l'oreille, l'autre sur la hanche,
+     tronc tourné 22°), calme (mains levées paumes devant, tête basse),
+     accolade (bras qui enveloppent, 21 cm entre les mains), applaudir
+     (trois claquements à 10 cm), proteste (avant-bras ouverts, épaules
+     +9°, tête qui dit non ±8°) — gestes du HAUT (spec.upperOnly : la scène
+     laisse les jambes à la foulée) ; et la GLISSADE sur les genoux
+     (spec.ownsLegs, lying 0,55 / rise 1,35 : bassin à la cuisse, genoux à
+     3 cm, pieds 50 cm derrière pointes au sol par legIK2, bras ouverts 131
+     cm qui montent en V +42 cm et reviennent, relevé debout). L'amplitude
+     des bras suit armElev, et motion-cast porte persona.bras dans armElev
+     de TOUTES les familles (× 0,8 + 0,35 × bras). Sim, cfg.fete (null =
+     hier au bit) : referee choisit le geste par la persona (flair ≥ 0,7
+     glissade ; calm ≥ 1,15 calme, il marche ; flair ≥ 0,45 posé oreille ;
+     burstiness ≥ 1,05 poing ; sinon brasLeves), l'événement le porte ;
+     la glissade se planifie (elan 1,4 s, si > 2,5 m/s : down 1,9 s, corps
+     porté par _glisse × 1,3 — 2,1 m mesurés, événement 'glissade').
+     Scène rondo-fete.js : les gestes du haut en courant, l'oreille à
+     l'arrivée, la glissade tenue et relevée par contactClock, l'accolade
+     au contact (≤ 1,6 m, ≤ 2,2 m/s, des deux côtés), l'adversaire abattu
+     (idleCtx.abattu → attente 'abattu', foulée mainsHanches + headDown 16°
+     au pas, 8° au trot), la protestation du fautif non calme (calm < 1,08)
+     et de tout carté. Bancs : verify-emotion 33/0 (nouveau, bancs.mjs),
+     verify-attente 54/0, verify-foulee 55/0. Captures graine 3 : but à
+     232,58 par le 0 (flair 0,94) → glissade à 233,98 à 2,9 m/s
+     (a11-glissade.png), accolade du 3 à 236,3 (a11-accolade.png), les
+     adversaires abattus à l'engagement (a11-abattu.png) ; la protestation
+     déclenchée par l'événement en page (a11-proteste.png) ; planches
+     glissade/oreille/poing/proteste/brasLeves/accolade. Reste : l'accolade
+     lève un peu haut les mains ; sifflet et cartons sans corps ; salut et
+     poignée d'avant-match. Référence 59.
+- 362: LE PLONGEON BAS (retour du balayage). Mesuré : à 0,43 s la main du
+     dessus à 1,21 m pour un ballon à 0,20 (vers la barre) ; à ×0,8 le
+     gardien à plat 0,13 s avant le ballon. motion-keeper : rollC 70 → 100
+     (la poitrine vers le sol dans la détente basse), topL 156 — main du
+     dessus 0,92 → 0,33 m au contact, contrat et 20 styles verts
+     (verify-motion 206/0). Scène : rate ≥ 1, le surplus cross.t − antic
+     (≤ 0,6 s) est un DÉLAI de décollage — le gardien reste posé (poids 0),
+     puis plonge à ×1 : délai 0,19 s mesuré en page, la détente à l'heure
+     du ballon. Référence 59.
+- 363: LE BANC COMPLET ET LES ÉPINGLES. Première passe 726/17 : deux « sync »
+     (mon réglage du plongeon bas fait pendant la course — un étirement
+     tardif du bras du dessus, ext², refusé ensuite : 14 rad/s sur 8
+     styles / 40, verify-motion 206/0 sans lui) et quinze clauses de flux
+     (verify-match11 × 11, remises × 2, signes × 2, identification) qui
+     mesurent le monde de leur jour et voyaient les deux nouvelles clés par
+     défaut (sol, fete : le fauché reste à terre, la fête a un corps).
+     Comme hier (note 358) : sol et fete épinglés à null aux mêmes sites
+     datés (pasDeRecul: null → , sol: null, fete: null — 16 sites de
+     verify-match11, attributes, remises, identification, et le monde SANS
+     de verify-signes), l'empreinte jumelle ayant prouvé clés nulles = hier
+     au bit ; signes 9/0, remises 36/0, identification 1/0, attributes
+     27/0, match11 re-shardé 313/1 (le seul rouge : 246d, hérité — il
+     était le seul rouge du 699/2 d'hier). Le banc complet vaut donc
+     742/1 sur 743 clauses. Dix-neuf sites épinglés en tout (dont les
+     lots 96, 135, 190, 273, 115, le troisième homme, la patate chaude,
+     le flux 244b : des sites sans épingle A12 hier).
+- 364: LES TROIS COPIES ET LES DOCS du lot : verify-sync 9/0 ; NOTES,
+     ROADMAP (LIVRÉ, SUIVANT : A10 ter relevé aidé et tenue dos au but,
+     A11 bis sifflet/cartons/salut/poignée), reference/59, SKILL, README,
+     docs/Interface_Style_Joueur.md (la fête selon la persona, pour l'aval).
+- 365: L'ARBITRE A UN CORPS (lot A11 bis — « d'autres animations ? » → « ok
+     vas-y suis ton plan », premier de l'ordre proposé). Le central sifflait
+     et sortait des cartons dans les événements sans aucun geste.
+     motion-arbitre.js, quatre espèces du haut du corps (famille
+     'arbitre') : siffler (la main droite au sifflet, 17 cm de la bouche,
+     coude haut), carton (le bras tendu au-dessus de la tête, +36 cm, tenu
+     1,1 s, LA CARTE dans la main : une plaque 7,5 × 10,5 cm jaune ou rouge
+     attachée au bone de la main droite, visible pendant le geste),
+     designer (le bras à l'horizontale devant, 47 cm, le tronc tourné),
+     avantage (les deux bras devant qui balaient deux fois, en courant).
+     Sim, cfg.arbitreGestes (null = hier au bit : le central court sans
+     gestes, l'empreinte des joueurs identique quoi qu'il en soit) : une
+     FILE sur st.arbitre (referee.poserGeste — le sifflet passe devant),
+     posée par adjugeFaute (sifflet puis bras vers le but attaqué, ou vers
+     le point de penalty ; le carton posé avant s'intercale : sifflet →
+     carton → bras) et par administerWhistle (le hors-jeu), les cartons
+     (tournés vers le fautif) et l'avantage (en courant) ; arbitreStep
+     dépile, arrête le corps pour le sifflet, le carton et le bras, le
+     tourne vers la direction du geste. Scène (arbitre.js) : couche de
+     geste sur le central (GestureLayer + castStrikes sur le rig du
+     squad), le haut du corps seul, entrée/sortie en 0,15 s, la carte
+     montrée au carton. Mesuré en page : au sifflet du coup franc de
+     354,4 s (graine 3) le central freine de 4 à 0,3 m/s en 0,6 s la main
+     à la bouche, puis désigne ; une faute forcée avec carton enchaîne
+     sifflet → carton (carte visible) → bras. Bancs : verify-arbitre 21/0
+     (nouveau, dans bancs.mjs : contrats, 20 styles, registre, la file au
+     sifflet, l'arrêt et la direction, l'avantage en courant, la faute
+     adjugée, la clé absente, quatre sabotages), verify-sync 9/0.
+     Captures a11bis-sifflet.png, a11bis-designer.png, a11bis-carton.png.
+     Reste : la carte est petite à l'écran (la taille réelle), le bras qui
+     désigne monte un peu haut sur le rig du squad. Référence 59.
+- 366: LE VIRAGE, LE FREIN ET LA CADENCE À L'ÉCHELLE DE LA JAMBE (lot A7 bis,
+     deuxième de l'ordre proposé). Trois choses dans motion-gait et le
+     contrôleur. (1) gaitLegK(P) = 0,90 m / (cuisse + tibia) : la loi de Dorn
+     est celle d'une jambe de 0,90 m ; shanon (0,76 m) courait avec les foulées
+     d'un grand et son bassin s'affaissait de 10-12 cm pour atteindre ses pieds.
+     Cycle ÷ 1,18 (4,5 m/s : 0,482 → 0,407 s, affaissement −10,7 → −8,4 cm ;
+     3 m/s : −9,7 → −7,8), fondu à ×1 entre 4,5 et 5,5 m/s (gaitLegFactor)
+     parce qu'au sprint la loi touche déjà le plafond des articulations de
+     checkClip (genou 30 rad/s entre deux clés à 60 Hz — le genou presque tendu
+     à la pose est le plus sensible : 36 rad/s au premier centième d'appui à
+     5,5 m/s). Le contrôleur avance son horloge du même facteur (une phase,
+     une durée) ; gaitCycleSpec et la planche-contact lisent la durée dans la
+     pose (meta.T). (2) opts.brake (décélération mesurée / 6 m/s²) : tronc
+     retenu en arrière (−3,7° c. +7,3), pied de frein plus loin devant (bias
+     −0,16), base élargie (20 c. 12 cm), talon d'abord (+10° de tangage), cycle
+     × 0,75 (les pas de frein sont courts et vifs — gaitBrakeCadence, l'horloge
+     suit), vol qui rase, bras devant et ouverts ; l'appui de frein se
+     raccourcit au sprint ((6/v)²) et en plein virage. (3) opts.turn
+     (accélération latérale mesurée, + = droite) : bassin et tronc roulent dans
+     le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 18° au plus), le bassin
+     glisse vers l'intérieur (7 cm/g), le pied extérieur se pose plus large, la
+     tête reste d'aplomb (contre-roulis 0,4 cou + 0,6 tête), la jambe
+     intérieure passe plus ras. La hanche extérieure qui MONTE avec le roulis et
+     le bassin glissé sont dans le calcul d'affaissement (sinon « le pied
+     d'appui flotte à 1,3 cm et glisse à 0,7 m/s ») ; sous frein ou virage tout
+     le cycle est échantillonné (la fin du vol du pied de frein saturait à
+     8 m/s), marge 1,2 cm. _measureAccel : sur le déplacement réel du modèle,
+     repère corps, lissé τ 0,15 s, seulement en avançant (> 1,5 m/s, plus vite
+     devant que de côté). En match (graine 3, 40 s) : frein p99 0,82
+     (décélération 4,9 m/s²), virage p90 5,7 m/s². TROUVÉ EN PASSANT :
+     _applyLean lisait le repère corps par (sin yaw, cos yaw) alors que le rig
+     regarde selon `fa` (WORLD.facingDir, π pour shanon) — 395 images sur 405
+     penchaient à l'envers (buste en arrière à l'accélération, roulis hors du
+     virage) ; même repère que _bodyVelocity désormais (94 % d'accord, le reste
+     est le retard du lissage). verify-foulee 45 → 71 clauses (miroir
+     gauche/droite débrayé sous virage, « ne penche pas » sous frein). Dette
+     assumée : deux signatures sur quarante (3, 35) passent sous le plafond
+     checkClip entre 4,75 et 5,25 m/s avec la cadence de la jambe (elles y
+     étaient déjà à 5,5 hier) — les specs exportées, pas la page.
+- 367: LA VITESSE DU PIED AU CONTACT EN JEU (lot A2, troisième de l'ordre
+     proposé). La dette disait « re-caler les poids d'arrivée » ; mesuré en
+     match (graine 3, 14 puis 21 frappes instrumentées à l'image du tir) : les
+     poids n'y étaient pour rien (wLegs 0,94-0,98 à l'image du tir, l'appui
+     posé à 12-13 cm sur 16/16, spec.contact = act.anticipation sur toutes).
+     Deux vraies causes. (1) La couche de geste échantillonnait le clip EN
+     AVANCE (lead 0,3 × anticipation, pour sauter la clé neutre de t = 0) avec
+     convergence linéaire vers l'heure vraie AU CONTACT : d(tSample)/dt = 0,7
+     pendant tout l'armé, swing compris — le pied arrivait à 70 % de sa
+     vitesse. rondo-fusion.js (les trois lois de fusion sorties de Rondo.js :
+     legsByArrive, legsByContact, sampleTime/fusionSample ; verify-fusion
+     21/0) converge à 0,6 × anticipation : l'armé à ×0,5, le SWING à ×1 ; les
+     gestes qui ne sont pas des frappes générées (plongeons warpés, contrôles,
+     remises authorées) gardent la loi d'hier au bit. (2) Le générateur
+     plaçait le pic de vitesse du genou à tc − 0,02 (+ snap) : le pied
+     culminait 18-27 ms avant le ballon, 30 % au-dessus de sa vitesse au
+     contact (passe : 15,0 de pic pour 11,4 au contact) — une poussée, pas une
+     frappe. Le pic est SUR le contact (tc + snap) : passe 11,4 → 13,2 m/s,
+     passe rapide 10,4 → 12,3, frappe 14,5 → 17,0, frappe puissante 15,4 →
+     18,2, pivot 9,0 → 10,6, extérieur 9,6 → 11,3 au clip (réel 15-25), pic à
+     4-11 ms (la hanche culmine avant, comme dans la vie) ; verify-frappes
+     13/0, strike-warp 23/0. (3) Et le tir de la sim tombe au premier tick où
+     act.t ≥ anticipation — 0 à 17 ms APRÈS la clé de contact (0,233 pour
+     0,22) : à 11 m/s le pied était 14 cm au-delà du ballon quand il partait.
+     L'heure du tir se PRÉDIT (act.t vit sur la grille des ticks) : le swing
+     se re-cadence pour que la clé de contact tombe à l'image du tir (×0,87
+     pour une passe rapide à 60 Hz, ×0,98 pour une passe), puis
+     l'accompagnement à ×1 avec ce retard constant. Première version : le
+     retard retenu d'un coup à l'image du tir — une image FIGÉE (2-4 m/s
+     mesurés à l'image du tir sur les passes rapides), retirée. RÉSULTAT en
+     match (21 frappes, vitesse du pied à l'image du tir) : médiane 9,3 →
+     11,3 m/s, p90 13,4, passes en course 12-20 ; audit-membres : la frappe
+     posée 11,1 → 16,3 m/s au contact. TROUVÉ EN MESURANT (pas dans ce lot) :
+     le PIED RATE LE BALLON — à l'image du tir l'orteil est à 30 cm du centre
+     du ballon en médiane (4-11 cm sur les bonnes, 48 sur les mauvaises,
+     warp engagé sur 14/21) : le warp de frappe (planWarp, standoff 0,13,
+     warpMax 0,42) ne le ramène pas au ballon en match — A2 bis au ROADMAP.
+- 368: LA SORTIE DE BUT LONGUE, LA TOUCHE LONGUE ET LE MUR QUI SAUTE (lot A9
+     ter, quatrième de l'ordre proposé — les trois dettes de reference/56). La
+     course d'élan (A9 bis) sort de referee.js (au plafond) dans elan.js,
+     referee.js ré-exporte. (1) cfg.remisesPied.elan.sortieBut : quand le
+     style de la sortie de but est LONG (keeper.styleSortieBut — la décision
+     à la pression de relancerGardien, sortie dans sa propre fonction, lue
+     aussi À LA POSE), le gardien recule recul m derrière le ballon sur la
+     ligne ballon-but (lat m côté pied faible), attend, court (vitesse m/s) :
+     le geste 'frappe' s'arme sur la course, la remise se prend au contact
+     (élan à 2,6 m/s, départ 3,4 m). Au contact, la relance du gardien (style
+     long forcé par gk._elanLong) arme sa passe et le tir se prend au tick
+     suivant (A.anticipation ← A.t) — la porte de timing de beginPass (holdMin
+     − contact × carve) refusait ('timing' × 5 mesuré) : la course d'élan
+     COMPTE comme porté (st.hold ← holdMin + 0,1). La scène (rondo-remises.
+     remiseSkip) n'arme pas ce second geste : le clip d'élan garde son
+     accompagnement sur une horloge LOCALE (pl._elanTail), il ne rembobine
+     pas. Style court ou pression basse : la pose d'hier. (2) elan.
+     toucheLongue : la touche longue (tactique cpa.touche 'longue', tiers
+     offensif — la porte de remiseEnTouche) : le lanceur recule derrière la
+     ligne (recul m, borné par le tablier : 1,45 m de gazon), court AU ballon
+     sans geste (l'événement 'élan' remise 'touche' à l'arrivée : 1,9 m/s
+     après 0,75 s), et le lancer d'hier s'arme à la ligne (windup 'touche',
+     rentrée). Trouvé en chemin : une pose venue du RAMASSEUR n'avait pas de
+     preneur à l'heure de poserElan (elanJob pose la course dès qu'il est
+     connu) ; le lanceur arrivé de loin en marchant vite tournait autour de
+     son point sans jamais y être « posé » (< 0,4 m et < 0,9 m/s) : 0,7 m et
+     2 m/s pour la touche, et la patience date t0. (3) remisesPied.mur : au
+     prise du coup franc (onTakeMatch — la voie de l'élan comme la prise
+     d'hier : à 50 s de jeu l'élan était refusé, 'élan-loin', et le mur ne
+     sautait pas), les deux hommes du mur (r._mur, mémorisé chaque image par
+     elanStep avant que st.restart ne meure) sont ARMÉS ; ils partent quand le ballon
+     QUITTE le preneur (direct : cette image ; lancé : au contact de la
+     passe — murStep, chaque image depuis arbitreStep, ballon porté ou non :
+     depuis ballFetch il attendait le ballon libre, 1,39 s de retard mesuré),
+     l'acte 'sautMur' possède le corps (planté : déplacement 0,00 m/s) et
+     porte le retard de réaction (payload.retard 0,12 s : remiseClock décale
+     l'horloge du clip, le corps tient sa pose) ; un homme du mur parti
+     marquer en boîte (cfSpots passe avant le mur dans le tour des métiers)
+     ne saute pas à 30 m du ballon (≤ 13 m). motion-emotion 'sautMur'
+     (famille emotion, possède les jambes) : accroupi (bassin −11 cm),
+     détente, les deux pieds décollés (+58 cm) au sommet (contact 0,34 s,
+     bassin +36), les mains croisées devant le bas-ventre (2 cm l'une de
+     l'autre : elev −26 — les bras s'adduisent —, fwd 22, elbow 32 ; la
+     première version les mettait au-dessus de la tête), réception ; les
+     jambes par legIK2 (au sol tant que le bassin est bas, repliées en vol).
+     Le ballon ne rencontre pas encore le mur (la déviation corps ne prend
+     que les ballons lents, < 8 m/s : dette). verify-remises 36 → 45,
+     verify-emotion 33 → 40 (sabotages : h 0, elev 60), empreinte identique
+     avec les sous-clés absentes ET avec les défauts (aucune remise dans la
+     fenêtre d'empreinte).
+- 369: LE RELEVÉ AIDÉ (lot A10 quater, dernier de l'ordre proposé — « un
+     coéquipier tend la main au fauché »). engine/aide.js (aideStep, appelé
+     par movement.movePlayers après les métiers, avant le pas ; cfg.sol.aide
+     { rayon 10, dist 1,1, avant 0,7, loin 15, trot 3,5 }, null = le relevé
+     solitaire d'hier, empreinte identique) : le jeu arrêté (un coup franc
+     posé, ou le ballon à plus de loin m), le coéquipier le plus proche du
+     fauché — ni le fauteur, ni le porteur, ni le preneur, ni un gardien, ni
+     un homme déjà aidant — est élu s'il peut ARRIVER avant le relevé
+     (d / trot < down − avant + 0,4 : on ne tend pas la main à un homme
+     debout) ; il trotte de loin, marche les derniers pas, se poste à dist m
+     du corps couché (hors de sol.corps), face à lui, et quand le relevé
+     approche (down ≤ avant) il arme 'mainTendue' (acte qui possède le
+     corps : planté). Événements 'aide' { by, pour, d } et 'windup' (skill
+     'aide', move 'mainTendue' — l'audit des membres l'ignore). Mesuré
+     (chutes forcées, 2 graines) : élu à 0,02 s à 3-6 m, la main tendue à
+     1,93 s pour un relevé à 2,62, à 0,9-1,4 m ; jamais à moins de 0,87 m
+     du corps. motion-emotion 'mainTendue' (le haut seul, 1,4 s) : le
+     buste se penche (tête 15 cm devant), le bras droit se tend devant et
+     bas (main à 33 cm devant la poitrine, 1,06 m de haut), la gauche en
+     balancier, retour à la pose de départ (0 cm). Le corps du fauché se
+     relève comme hier (motion-contact, à l'heure de la sim) : la main est
+     un corps de plus, pas une physique (dette nommée : la traction, le
+     fauché qui saisit la main). verify-contact 34 → 39, verify-emotion
+     40 → 45. Rareté mesurée : une chute avec _chute par 12 min de jeu sur
+     trois graines — le geste vivra surtout sur les fautes sifflées.
+- 370: LE BANC COMPLET DES QUATRE LOTS (A7 bis, A2, A9 ter, relevé aidé) ET
+     LES ÉPINGLES DU 16/09. Première passe (bancs.mjs, 8 shards + annexes,
+     2 287 s) : 800 ✓ / 11 ✗ — dix clauses de FLUX qui mesurent le monde de
+     leur jour et voyaient les sous-clés nouvelles par défaut (remisesPied.
+     elan.sortieBut / toucheLongue, remisesPied.mur, sol.aide) : verify-
+     match11 × 8 (receveur serré, couloir à trois corps, lot 97 fautes, lot
+     115 petit pont, allure, patate chaude, lot 212 through, marqueur →
+     attaquant), identification (lot 249), le garde-fou de verify-signes
+     (pertes 120 c. 97) — plus 246d, hérité (le seul rouge d'avant). La sonde
+     (6 graines × 300 s, le monde de attente()) : sol d'hier = aujourd'hui AU
+     BIT (290 passes / 120 pertes des deux côtés — l'aide n'a pas touché ce
+     flux) ; remisesPied d'hier → 280 / 105 : les 15 pertes viennent des
+     quatre courses d'élan longues de plus (sortie de but, touche), un monde
+     remangé, pas une loi cassée. Comme aux notes 358 et 363 : épinglé à
+     l'objet ENTIER d'hier (matchCfg remplace les objets imbriqués — RP_1609
+     = remisesPied de e81394e, SOL_1609 = sol sans aide) aux 27 sites datés
+     de verify-match11 + 2 sites sans épingle sol (couloir cfgF, lot 212),
+     le monde SANS et le monde A du garde-fou de verify-signes, le site de
+     verify-identification ; l'empreinte jumelle ayant prouvé sous-clés
+     absentes = hier au bit. Re-shardé : match11 1/8, 3/8, 7/8 à 36/0, 5/8 à
+     44/1 (246d), identification 1/0, signes 9/0 (mort silencieuse au premier
+     essai, six bancs + un build en même temps — relancé seul). Le banc
+     complet vaut donc 810 ✓ / 1 ✗ sur 811 clauses.
+- 371: LE PIED SUR LE BALLON (lot B1 = A2 bis, le premier branchement du doc —
+     « après ça tu peux attaquer les branchements au moteur »). L'instrument à
+     l'image du tir (match11, graine 3, 12-13 frappes par passe de 60 s) a
+     classé les 25 d'hier : la cible du warp dépassait la portée de la jambe
+     sur TOUTES (1,09-1,34 × A+B, 122 images écrêtées) et la première frappe
+     de chaque clip × pied × rig jouait sans calibration (132 images « non
+     calibré ») — le corps, lui, EST à sa stance au tir (0,53-0,57 m du ballon
+     sur 50 frappes, stance 0,58) : la loi sim « le tir attend le pied » n'a
+     pas de preuve, elle n'est pas écrite. Trois réponses, scène seule
+     (scenes/rondo-warp.js, extrait de Rondo.js au plafond — 1 248 → 1 179
+     lignes —, en deux phases autour du verrou des pieds : strikeWarpPlan
+     avant, strikeWarpApply après). (1) L'AMORCE : le clip généré connaît son
+     contact — FK du profil à spec.contact (resolveDense / sampleQ / sampleHips
+     exportés de motion-strike, synchro ×3), le pied en repère modèle (= repère
+     personnage), le gauche par le spec miroir ; la moyenne mobile reprend
+     dessus (écart amorce / mesure 1,3-2,5 cm après cinq frappes — le repère
+     est le bon). (2) LA CALIBRATION À L'IMAGE DU TIR, pas interpolée à
+     l'instant sim anticipation : la fusion pose le contact du clip SUR le tick
+     du tir ; l'interpolation d'hier (u ≈ 0,2) mesurait le pied 8-10 cm en
+     arrière, le plan visait 10 cm trop loin et le pied traversait (cheville à
+     0,125 m du centre pour un standoff de 0,18). (3) LA FENTE DU BASSIN :
+     quand la cible enveloppée dépasse la jambe, hipsNudge avance le bassin
+     vers elle du rayon manquant à cette hauteur (≤ 15 cm) et l'assied (6 cm à
+     la fente pleine), AVANT le verrou qui re-plante l'appui (la jambe d'appui
+     s'étire, le genou plie). Mesuré à l'image du tir, ballon d'avant le coup,
+     segment cheville → orteil contre la surface (13 frappes) : creux 0,9 /
+     4,4 / 5,7 cm (p25 / méd / p75), cheville → centre 0,153 / 0,164 / 0,182 m
+     (standoff 0,18), l'orteil à la hauteur du centre (0,108 m), 1 image
+     écrêtée, 0 non calibrée ; sans la fente sur le même build : 7,0 / 7,8 /
+     10,8 cm, orteil 8 cm au-dessus, 64 écrêtées ; hier : cheville → centre
+     0,30 m médian. L'appui reste planté au tir (0,10 m, aucune levée sur 13).
+     Le banc : audit-membres, clause dure « le pied est sur le ballon » (creux
+     ∈ [−4 ; 12] cm — la largeur d'un pied — sur les trois épisodes du rondo :
+     0,5 / 8,2 / 9,7), 18/0 — et son instrument corrigé : l'épisode 3 jugeait
+     une feintePasse TIRÉE dans le tampon d'avant l'armé (appui à 0,31 m, pied
+     à 0,3 m/s) pour le contact de la passe ; iStart / iFire se cherchent
+     depuis l'image de l'armé, sur le geste de l'épisode (loi 8 : encore
+     l'instrument). Capture b1-pied-sur-ballon-cote (l'image du tir, de
+     côté). Dettes nommées : la queue (3 frappes sur 13 à 7-9 cm), la
+     passePivot sans plan (warp-hors-borne), et au-delà de 15 cm de fente le
+     placement sim du corps — à re-mesurer sur les rigs du mode plein.
+- 372: LE TIR IMMÉDIAT DES REMISES LANCÉES (lot B2, doc Branchements § 3). Mesuré
+     d'abord (12 matchs × 300 s) : le double geste n'était PAS le lancé ni le corner
+     joué (ils partent dans l'image de la prise, st.ball.strike) mais le COUP FRANC
+     LOIN — 9 remises sur 20, toutes à 56-101 m du but, au-delà de la portée du
+     lancement (55 m) : la prise ne faisait rien, le preneur restait porteur, le
+     cerveau passait 0,4-1,5 s plus tard ('timing' × 5 : hold ≈ 0 ; puis, sous
+     l'urgence, 'ancre' à 0,74 m : le geste le plus prompt n'a que 0,54 m de portée).
+     Le clip d'élan frappait un ballon qui ne partait pas, un clip de passe le
+     faisait partir. Sous remisesPied.elan.tirImmediat { cone 40 } (null : hier au
+     bit, empreinte jumelle identique) : (1) LE PLAN SE PREND À LA POSE — le coup
+     franc loin et le corner de possession (le CORT du style : tirage pris à la
+     pose, même flux 'cpa', une fois ; tk._cornerCort le porte à cornerTrav)
+     choisissent leur coéquipier avant de reculer (planCourt : le plus libre à
+     4-45 m hors l'arrière strict), la course s'oriente vers lui (recul court
+     2,5 m) ; (2) LA COURSE ATTEND SON HOMME — le plan se relit toutes les 0,5 s
+     pendant l'attente (les coéquipiers se replacent), le point de départ suit et
+     le preneur y retourne ('attend' ne marche pas — mesuré : la course partait du
+     vieux point, 6 refus au cône sur 6) ; sans personne à ≥ 4 m la course ne part
+     pas, la patience (4 s) rend la prise d'hier ; (3) LE TIR DANS L'IMAGE —
+     elanNow : la course compte comme porté, la passe s'arme en urgence vers le plan
+     (relu, ≤ 60° de la course), sinon le choix du cerveau dans le cône (40°), sinon
+     le court de la course ; beginPass avec opts.elan (pas de porte d'ancre : le
+     corps EST au ballon), l'acte rembobiné au tick suivant, payload.tirImmediat
+     (pas de porte de stance au tir : la course EST le geste — sinon 'stance-au-
+     contact' vendangeait le ballon en perte) ; (4) LA SCÈNE NE JOUE QU'UN GESTE —
+     remiseSkip accepte coup franc et corner, et la prise au contact d'élan n'est
+     pas une réception (elanTake : plus de clip 'controleInterieur' par-dessus le
+     clip d'élan à l'image du tir, mesuré en page). Après (12 matchs) : 19 prises
+     CF/corner, 10 avec course — toutes parties dans l'image (5 lancements, 2 tirs,
+     2 corners joués, 1 tir immédiat) —, 9 SANS course : le coup franc loin d'un
+     LONG arrêt (32 s : le fauché, la cérémonie) pendant lequel les dix joueurs de
+     champ marchent au ballon et s'entassent à 0-2 m (walk × 10 — identique dans
+     le monde d'hier : un fait du tronc, nommé, pas de ce lot) ; zéro double geste
+     (9 → 0). Banc verify-remises 47/0 : le coup franc à 60 m part 0,01 s après
+     'élan' vers le court de la course (30°), le sabotage tirImmediat:null rend le
+     double geste, « même image » durcie à ≤ 0,05 s pour la passe aussi. Capture
+     b2-coup-franc-loin-un-seul-geste (l'accompagnement de la frappe d'élan, le
+     ballon parti vers le coéquipier).
+- 373: LA TÊTE ARMÉE (lot B3, doc Branchements § 2). Mesuré avant (12 matchs ×
+     300 s) : 28 têtes, 0 windup 'tete' — la tête se décidait à l'image du contact
+     (teteStep : le ballon à hauteur de tête sur un corps → redirection immédiate)
+     et la scène jouait le clip généré depuis son contact, l'armé et l'impulsion
+     perdus, la seconde moitié du geste. Le vol est déterministe : sous
+     cfg.tete.armee { marge 0,25 } (null : la reprise réactive d'hier, empreinte
+     jumelle identique) — teteArmerStep (rondo-sim, la porte du ciel, avant
+     teteStep) prédit le ballon (predictPath) à τ = le contact du clip (tete
+     0,42 s sautée, teteDebout 0,22 s debout) ; s'il y est à hauteur de tête
+     (la fenêtre du contact descendue d'une demi-marge : un vol raide à 7 m/s la
+     traverse en 0,1 s et le corps qui arrive freine — manqué d'une image au
+     banc avant ça) et qu'un corps libre y sera aussi (sa position + sa vitesse
+     × τ, à reach), il arme l'acte : startGesture(tete|teteDebout), payload
+     { kind 'tete', saut, ownsBody, mobile }, windup skill 'tete'. payload.mobile
+     (movement.js) : le corps COURT sous son armé — l'armé ordinaire plante le
+     corps, ici le contact est devant. teteContact (le contact de l'acte,
+     stepGesture → rondo-sim) résout la tête forcée sur ce corps (teteStep
+     force : fenêtre et portée + marge, sinon tête-manquée, nommée), les modes
+     et le duel d'hier, l'événement 'tête' porte arme:true. La scène ne change
+     pas : le windup joue le clip depuis 0, l'événement du contact est ignoré
+     par le corps possédé (ownsBody) — le saut est dans le clip. Après (12
+     matchs) : 48 têtes (le corps y va : +20, 8 sautées contre 2), 35 armées
+     (73 %), 0 manquée, écart windup → contact 0,01 s médian, 0,02 max ; les 13
+     réactives : 9 « fenêtre » (le ballon n'est jamais à hauteur de tête
+     exactement τ avant — vols raides ou rebonds), 3 « personne », 1 sans
+     tentative. Banc verify-tete-armee 6/0 (nouveau, dans bancs.mjs — verify-tete, le banc du lot 34, garde son nom ; fixture : le
+     monde vidé, un centre depuis l'aile dont la vitesse fixe le sommet — 5,8 m
+     le lobé, 2,1 la cloche courte qui ne dépasse pas la tête debout ;
+     l'attaquant posé y est épinglé chaque image, le métier receive l'emmenait
+     au point de chute) : la tête debout s'arme 0,22 s avant et se résout au
+     contact (± 1 tick, ± 0,15 s de l'arrivée prédite), la sautée 0,42 s avant,
+     l'attaquant en course se déplace de 0,86 m sous son armé (hier planté),
+     armee:null rend la réactive sans windup. En page : la fixture rejouée
+     (windup teteDebout 4,42 → tête 'but' armée 4,65), capture b3-tete-armee-
+     contact (le ballon sur la tête au contact). Dettes : la volée et la
+     poitrine restent réactives (même patron à écrire) ; la suite complète
+     (bancs.mjs) tourne sur B2 + B3 — les épingles suivront (tete d'hier aux
+     sites datés si le ciel remange les clauses de flux).
+- 374: LE MUR, LE CAP LISSÉ, LA VITESSE FIGÉE (lots B4, B5, B6 + § 8 du doc
+     Branchements — les trois derniers branchements du doc, en un commit ;
+     chaque clé null = hier au bit : l'empreinte jumelle des trois graines est
+     IDENTIQUE avec loi12.murTrot, remisesPied.mur.corps, viragesLisses et
+     plantVitesse absents, base 0746dbd).
+     B4 — LE MUR (elan.js murCorps, match-sim la branche mur, referee.canTake ;
+     reference/56 § B4). Mesuré : les deux hommes du mur (les deux plus près
+     de leur but) MARCHAIENT à leur point pendant que les monteurs trottaient,
+     et le ballon TRAVERSAIT le mur qui saute (la déviation corps du tronc ne
+     prend que les ballons lents, < 8 m/s) ; à la sonde du banc, pire : l'homme
+     du mur CONTRÔLAIT le coup franc qui le frappait — un 'control' + 'turnover'
+     à 1 m/s dans l'image même du choc. loi12.murTrot 1,6 : les deux hommes
+     choisis par la DISTANCE À LEUR POINT (9,15 m sur l'axe ballon-but,
+     ± 0,35 m — le temps d'arrivée à vitesse égale) et au trot (_walkF, la
+     convention de cpa.js). remisesPied.mur.corps 2,2 { debout 1,85, pieds
+     0,25, rayon 0,6, frein 0,4 } : murStep ouvre au DÉPART du ballon une
+     fenêtre d'une seconde (st._murCorps) ; murCorps, chaque image : un ballon
+     libre à > 3 m/s qui passe à ≤ 0,6 m d'un homme du mur (la façade des
+     deux corps, 1,2 m ; le ballon avance de 0,3 m par image), sous sa hauteur
+     (debout planté, corps pendant la détente de sautMur : 0,19-0,52 s après
+     son retard) et, en l'air, AU-DESSUS de ses pieds (le rasant passe SOUS le
+     mur qui saute — le classique) est DÉVIÉ : impulse renvoie l'horizontale
+     × 0,4 vers le tireur et relève à max(2,5, v/4) ; loose, passe nulle,
+     lastTouch au mur, événement dévié-mur { by, h, air, vitesse }. La fenêtre
+     reste ouverte après le choc (done) parce que canTake la lit : l'homme du
+     mur ne contrôle ni le coup franc qui le frappe ni son rebond. Banc
+     verify-remises 53/0 (bloc B4, le coup franc FORCÉ : le monde vidé à 50 s,
+     le coup franc à 22 m, la prise, puis ball.strike à 18 m/s vers le premier
+     homme du mur avec la tenue de livre d'un vrai départ — sans elle le
+     ballon libre à 0,5 m du preneur se reprenait) : le mur trotte et arrive
+     à ≤ 1,5 m de son point à la prise ; à mi-hauteur (élévation 0,2) dévié-mur
+     h 0,74 m en l'air à 16,1 m/s, il repart vers le tireur à 6,4 m/s ; le
+     rasant (0,12 : au sol à 9 m) passe sous le mur qui saute, deux sauts,
+     personne du mur ne le contrôle ; le haut (0,45) passe au-dessus ;
+     sabotages corps:null (traversé) et murTrot:null (au pas : 0,59 / 4,63 m
+     de leur point). Deux pièges du banc : la patience de l'élan tombait
+     pendant les 25 m de marche du preneur (el.attendAt : la patience compte
+     depuis l'attente, + 4 s de marche) et la pose lazy du coup franc/corner
+     (poserElan quand r.placed) — les deux SOUS CLÉ, remisesPied.elan.attente
+     { marche 4 } (null : hier) : livrées d'abord sous la clé A9 bis existante,
+     elles déplaçaient le monde des clauses de flux épinglées (la suite sur
+     0746dbd avec les mêmes bancs : 761/7 ; sur le moteur B4-B6 : 806/19, douze
+     rouges de flux de plus) — l'empreinte jumelle de 3 × 240 s ne les voyait
+     pas, les coups francs longs y sont rares ; le rayon 0,4 laissait passer le ballon
+     entre les deux corps (passage au plus près 0,32-0,58 m). En match (12 ×
+     300 s) : 3 coups francs avec mur seulement, 0 dévié-mur avant comme
+     après — les tireurs visent ≥ 2,35 m à 9,15 m, personne ne tire bas ; le
+     trot 6/6 (4/6), les hommes à 0,06 m de leur point à la prise (0,05 :
+     les longs arrêts leur laissent le temps, la marche d'hier suffisait au
+     flux). Le mur vit pour les tirs bas et les lancés tendus — et en page :
+     la fixture rejouée, capture b4-mur-devie-cote (les deux hommes en l'air,
+     le ballon sur le tibia).
+     B5 — LE CAP LISSÉ (movement.js, cfg.viragesLisses { taux 6, tau 0,15,
+     des 2,0, frein 0,2, arrivee 1,5 } ; reference/52 § B5). Mesuré (sonde
+     b5, 4 graines × 120 s, |Δv⊥|/dt du corps sim par métier) : press et cover
+     en BANG-BANG latéral — 5,9 m/s² en médiane (= turnAccel 6, la
+     saturation), 7-8 inversions de signe par seconde ; la cible elle-même
+     tremblait (press 5,6°/image à p90). Depuis A7 bis le corps ROULE dans
+     ces virages : le bruit était devenu visible. Le cap demandé (la
+     direction de la vitesse voulue, après le lissage des rôles calmes) passe
+     par un filtre (tau) puis un slew borné par la vitesse (taux/v rad/s) et
+     le cap loin du voulu FREINE (× cos, plancher frein — sans lui le receveur
+     en arc saturait à p50) ; libre sous 2 m/s (des : l'arrêt, le pivot — les
+     marcheurs y passaient) et à moins de 1,5 m de la cible (arrivee : le
+     lanceur dépassait sa ligne de 8 cm). Après (la mesure finale, B4-B6
+     allumés c. viragesLisses:null) : inversions/s press 7,1 → 3,9, cover
+     8,5 → 3,7, mark 4,4 → 2,0, support 3,7 → 1,6, receive 6,0 → 3,0, carry
+     5,6 → 2,9, walk 0,9 → 0,1 ; latérale p50 cover 5,9 → 2,4 (press reste au
+     taquet, 5,8 : c'est sa nature, il ne tremble plus) ; le corps suit sa
+     cible avec un peu plus de retard (écart cap p50 press 5,9 → 12,9°).
+     B6 — LA VITESSE FIGÉE (movement.js, cfg.plantVitesse ; reference/52
+     § B6). La mesure a CORRIGÉ le plan du doc : 81 % des images plantées
+     lisaient p.v > 1 m/s, mais 3 900 sur 4 370 sont l'ARMÉ DE PASSE, dont
+     p.v n'est pas fossile — c'est le rapport du glissement réel sur l'ancre
+     que stepGestures écrit chaque image (borné par glideMax : 4,7 m/s p50,
+     7,5 max), un corps qui bouge vraiment et qui le dit. Le fossile était
+     celui des gestes SANS ancre : feinte 96 images, tacle debout 85, semelle
+     64, râteau 45, passement 40, crochet 27, double contact 22, roulette 13
+     — 470 images hors passe sur 6 matchs. p.v = [0, 0] sous l'acte qui
+     plante (hors élan, tête armée, mains) : après, 110, dont 39 de plongeon
+     (6,5 m/s : la glisse du gardien, écrite par le geste) et 36 de roulette
+     (le tour du ballon, écrit par le geste) — feinte 7, tacle debout 5,
+     semelle 5, râteau 0. Petit lot, petit effet, plan corrigé dans le doc.
+     § 8 — la touche longue chez le coach : le preset direct de tactics.js
+     porte cpa.touche 'longue' (la course d'élan du lanceur d'A9 ter vit hors
+     des bancs) ; un preset, pas une clé — les équipes par défaut jouent
+     équilibre, l'empreinte n'en sait rien. § 9 (le tir un tick après) non
+     retenu, la scène compense. Reste du doc : § 10 (la sortie aérienne du
+     gardien) et les reprises armées volée/poitrine (le patron de B3). Dette
+     de mesure : les épingles de la suite complète (bancs.mjs) sur B2-B6 —
+     tete/loi12 d'hier aux sites datés, viragesLisses/plantVitesse null.
+- 375: LA SORTIE AÉRIENNE DU GARDIEN (lot B10 = doc Branchements § 10, le
+     dernier branchement du doc ; sortie-aerienne.js, cfg.sortieAerienne ;
+     reference/53 § B10). Mesuré avant (12 matchs × 300 s) : 1 prise
+     aérienne, 7 ballons hauts passés à moins de 2 m du gardien — il ne
+     venait pas au-devant des centres (keeperSpot le tient sur sa
+     bissectrice, keeperDecide ne lit que le vol qui coupe le plan du but, la
+     prise à deux mains attend un ballon sous 1,9 m à portée de bras) ; le
+     centre qui retombait dans la surface de but se jouait à la tête ou au
+     rebond. La loi : le vol est déterministe (predictPath, le patron de B3)
+     — sur un ballon libre qui monte ou qui est haut, hors remise et hors tir
+     cadré imminent (shotCross < 0,9 s : le réflexe garde le tir), le gardien
+     cherche le premier point où le vol REDESCEND entre 1,6 et 2,3 m à ≤ 8 m
+     de sa ligne (la surface de but et deux pas ; |z| ≤ goalHalf + 3) qu'il
+     atteint avant le ballon (réaction 0,2 + la course : l'accélération du
+     pas mesurée 2,6 m/s² depuis l'arrêt puis la pointe 5,5 — la première
+     version comptait la pointe seule et le gardien arrivait 2 m trop tard,
+     à 2,9 m/s) et sur lequel aucun attaquant n'arrive avant lui (7 m/s : le
+     ciel disputé reste à la tête). Il y COURT — job keeper, la cible AU
+     point ; p._sortieAerienne rend la course CHAUDE pour la loi d'économie
+     de movement.js (le point est loin du ballon encore haut : elle le
+     mettait au trot, 2,1-3,4 m/s) — et se nomme une fois par vol (événement
+     sortie-aerienne { h, dans, d }). Quand le ballon arrive dans le temps de
+     contact du clip (0,5 s) et que le point est à portée de détente, il arme
+     plongeonPrise (le saut à deux mains d'A6, payload.aerienne, windup
+     sortie:true) ; onDive résout la prise avec la portée du saut en plus
+     (saut 0,5 : 1,9 → 2,4 m) et ATTEND le ballon dans les gants tant qu'il
+     descend au-dessus des mains (mesuré sans : la première image à portée
+     claquait le ballon à 2,4 m). Le missile ou le ballon hors des gants se
+     claque (le poing d'aujourd'hui : l'impulsion, pas de clip). Banc
+     verify-sortie-aerienne 7/0 (le monde vidé, le gardien à 1 m de sa
+     ligne, un lob raide depuis l'aile RECALÉ de la traînée pour retomber à
+     2,5 m de la ligne — la formule du vide manquait de 9 m) : la sortie se
+     décide à l'image du départ (point à 2,23 m, dans 1,97 s, à 2,76 m ; la
+     cible est le point), le windup part 0,53 s avant le ballon et la prise
+     aérienne suit 0,52 s après, le ballon aux gants ; décalé de 9 m sur sa
+     ligne il ne sort pas (2,5 s de course pour 1,97 s de vol) ; un attaquant
+     posé au point de chute : aucune sortie, la tête, puis le plongeon-prise
+     du réflexe sur la tête cadrée ; la retombée à 9 m : aucune sortie ;
+     null : le gardien tient sa bissectrice et le lob retombe sans lui ;
+     sabotage saut:0 : il sort, saute et claque. Deux fixtures abandonnées,
+     et pourquoi : le lob plat qui redescend sous 1,9 m dans la zone finit
+     au but — c'est un tir, keeperDecide plonge (plongeonBas), la « prise
+     debout » n'a pas de cas propre ; et un vol lu comme tir cadré par
+     shotCross (le lob qui retombe avant la ligne coupe le plan au sol)
+     bloquait la sortie : le garde-fou ne tient que le tir IMMINENT. En
+     match (12 × 300 s) : 1 sortie décidée, 1 saut, 1 prise aérienne (2 c.
+     1), scores identiques — la loi existe, le jeu la sollicite peu : sur 6
+     matchs, 35 vols hauts redescendent entre 1,6 et 2,3 m devant un but, 23
+     à plus de 16,5 m de la ligne, 4 à moins de 8 m dont 2 prenables. Les
+     centres de ce moteur sont tendus ; la sortie attend des centres lobés
+     (une intention de centre à écrire au tronc, nommée). Clé null : hier au
+     bit (empreinte jumelle). Dettes : le poing sans geste (sortiePoing à
+     générer, Animations_A_Faire § 3) ; le saut manqué retombe par onDiveEnd
+     comme un plongeon.
+- 376: LA RETOURNÉE ARMÉE (lot C1 = Animations_A_Faire § 2, le premier lot
+     du second doc ; tete.js retourneeArmerStep/retourneeContact, cfg.retournee ;
+     reference/51-motion-strike § C1). Le clip `retournee` est AUTHORED
+     (animkit-data : 1,35 s, contact 0,52 — accroupi, détente, le corps couché
+     en l'air, la jambe droite en ciseaux par-dessus la tête, la retombée et
+     le relevé dans le clip, canal hips), pas généré comme le doc le disait ;
+     il n'avait aucun déclencheur, jamais joué. Le patron de B3 : la porte du
+     ciel de rondo-sim (après la volée) prédit le ballon libre au contact du
+     clip ; entre 1,5 et 2,1 m (au-dessus de la tête debout, sous le saut de
+     tête) à 0,7 m d'un attaquant DOS AU BUT (le regard à plus de 2,0 rad du
+     but), dans la surface à moins de 16 m, sans adversaire à 1,5 m (le ciseau
+     serait une faute), l'acte part — ownsBody, planté sur son point d'appel,
+     windup skill 'retournee', _teteCd posé jusqu'au contact (la tête et la
+     volée attendent) ; le contact de l'acte frappe au but depuis le ballon
+     réel (16 m/s × voleeF, élévation 0,05, espèce 'retournée', l'xG de la
+     volée) ou se nomme manqué. Le corps ne tombe pas après : la retombée est
+     dans le clip (le doc prévoyait un p.down — non). Banc verify-retournee
+     6/0 (le monde vidé, l'attaquant posé au point où le centre redescend à
+     1,8 m, tourné vers son but chaque image) : armé à 0,52 s, ballon prédit
+     à 1,98 m, regard à 2,75 rad ; la frappe au contact (0,53 s, ballon à
+     2,0 m, 16 m/s, élévation 0,04) ; face au but la tête armée joue ; un
+     adversaire à 1 m : rien ; le ballon à 1 m : la tête debout d'hier ; null :
+     l'hier. En match (12 × 300 s) : ZÉRO retournée, zéro windup — et
+     l'occasion elle-même n'existe pas : un seul ballon libre entre 1,5 et
+     2,1 m à 0,7 m d'un attaquant en surface en 12 matchs, et il ne tournait
+     pas le dos au but (41 têtes, 21 tirs sur la même mesure). Comme la sortie
+     aérienne (375) : ce moteur centre tendu et ses attaquants regardent le
+     ballon ; la retournée attend des centres lobés derrière l'attaquant — une
+     intention de centre à écrire au tronc, nommée deux fois. Clé null : hier
+     au bit (les bancs de flux l'éteignent : retournee: null aux 32 sites
+     datés et dans B_0746/B_1609 — et dans verify-tete-armee, dont l'attaquant
+     posé tournait le dos au but : la fixture partait en ciseau). LA SUITE
+     COMPLÈTE sur le moteur gardé (attente sous clé) et les bancs épinglés à
+     tous les sites : 828/6 — les trois rouges du tronc déjà rouges sur
+     0746dbd (lot 141 la pousse, 246d les ballons flottants, le pivot en
+     relance basse 8/8 ; JORDET revenu vert) et les trois de verify-tete-armee
+     que la retournée volait, épinglés. Le chemin : 806/19 avant les épingles
+     complètes (les clauses comparaient un monde vivant épinglé à un sabotage
+     non épinglé : la marge mesurait la clé), 761/7 sur 0746dbd avec les mêmes
+     bancs, les empreintes 6 × 300 s identiques avant et après la porte.
+- 377: LA MAIN SAISIE (lot C2 = Animations_A_Faire § 4 ; motion-emotion
+     mainTendue.pull, Rondo._applyAideWarp/_aideMeet/_armTo ; reference/59
+     § C2). Le relevé aidé (A10 quater, note 369) posait l'aidant à 1 m et
+     tendait la main 0,7 s avant le relevé — puis la main revenait seule et
+     le fauché se relevait sans la prendre : deux gestes côte à côte, pas un
+     contact. Le geste : mainTendue gagne une phase qui TIRE — tendue
+     (contact 0,5), tenue (hold 0,65), puis le bras revient (fwd 64 → 10, le
+     coude 8 → 62) et le buste se redresse (lean × 0,2) sur 0,5 s, le retour
+     ensuite (1,4 s) ; mesuré au contrat (checkEmotionGen, verify-emotion
+     47/0) : la main revient de 14 cm vers la poitrine entre la tenue et la
+     fin du tir (≥ 12), la tête recule de 12 cm ; sabotage fwdPull 64 /
+     elbowPull 8 attrapé (« la main ne revient pas en tirant ») ; la première
+     version (fwdPull 22, elbowPull 42) ne revenait que de 10 cm. La scène :
+     pour un fauché dont la sim porte _aide et dont l'aidant joue mainTendue,
+     les DEUX mains vont au point de rencontre — le milieu des deux mains de
+     clip ramené dans les deux portées (trois passes d'épaule en épaule :
+     l'intersection des sphères quand elle existe) ; le bras du fauché (le
+     côté de l'aidant) monte dès le relevé du clip couché (_sol.t ≥ rise, en
+     0,3 s) ou dans les 0,35 s qui précèdent le relevé sim, et tient la poigne
+     debout tant que dure le tir de l'aidant (la sim lâche _aide au relevé :
+     la scène s'en souvient 0,8 s) ; le bras droit de l'aidant de l'arrivée
+     de sa main (contact − 0,15) à la fin du tir (hold + pull). Deux IK deux
+     os par _armTo (le noyau extrait du gant et du ballon tenu), chacune dans
+     l'itération de SON corps (la première version corrigeait le bras de
+     l'aidant depuis l'itération du fauché : sa propre pose, appliquée
+     après, l'effaçait — mesuré : les mains à 0,66 m pendant tout le relevé).
+     Rien dans la sim. Mesuré en page (la chute forcée posée DANS le pas de
+     sim — la scène ne lit que les événements nés pendant son pas, la chute
+     poussée entre deux pas n'était jamais jouée) : l'écart des mains de clip
+     1,38 → 0,23 m ; après les deux IK 0,00-0,07 m du relevé (0,25 s après
+     le windup de l'aidant) à la fin du tir ; le point de rencontre à hauteur
+     de hanche. Captures c2-main-saisie-face/cote. Pas de clip releveAide :
+     le bras du fauché est une IK vers la main, le clip couché garde son
+     relevé (le doc en prévoyait un ; la main suffit). pull absent : le retour
+     d'hier.
 - 359: LE BLOC QUI PERÇOIT (275 — la carte du book après le 274 : Bible 10 lot 1, Modèle 04 ; §4.4
      « le décalage temporel entre les lignes : la variable que les moteurs oublient et qui produit
      tout le réalisme » — shiftOnsetLatency = (0,22 en vision centrale, sinon + 0,5 / scanRate, +
@@ -12126,7 +12788,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactics 11/0, slide 10/0, foulee 54/0, attente 52/0, remises 36/0, porte 4/0, cartons 6/0,
      expulsion 8/0, football-rules 59/0, tete 7/0. Bloc 1 seul : 0,53 ms/step (≤ 1,6). Sceau : commit
      b0a171d, poussé ; déploiement showcase-pi-mocha au troisième essai (cmp du chunk Rondo-D92u9rx2).
-- 363: L'ELLIPSE DE FINITION (278 — la dette nommée du 277 : Modèle 03 §5.1-5.2, « (Δψ, Δθ) une normale
+- 390: L'ELLIPSE DE FINITION (278 — la dette nommée du 277 : Modèle 03 §5.1-5.2, « (Δψ, Δθ) une normale
      bivariée, v₀ log-normale corrélée à Δθ, tirée une fois à la frappe » ; Modèle 10 §3.4, « le point visé
      est atteint par construction si la trajectoire nominale est intégrée »). Sonde AVANT (sonde-278 à
      ellipse null, 8 × 45 min — le plan NOMINAL de chaque tir intégré sans obstacle par predictPath) :
@@ -12178,7 +12840,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      loi3 10/0, match 84/0, menace 11/0, part-tint 18/0, porte 4/0, remises 36/0, roles 14/0, rondo 40/0,
      slide 10/0, sync 9/0, tactics 11/0, tete 7/0. Bloc 1 seul : 0,51 ms/step (≤ 1,6). Sceau : commit
      7c61e0b, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-3LbnSizO).
-- 364: LE RÉPERTOIRE DU BOOK (279 — la dette nommée du 278 : Modèle 10 §3.1, « sept gestes, chacun un
+- 391: LE RÉPERTOIRE DU BOOK (279 — la dette nommée du 278 : Modèle 10 §3.1, « sept gestes, chacun un
      triplet (vitesse, dispersion, effet) » ; ch. 3 §4, les vitesses sourcées). Sonde AVANT (= l'APRÈS du
      278, 8 × 45 min) : les espèces à 16,5-21,5 m/s nominaux (14-19 après la sous-dose — le 258 les avait
      calées sur un gardien à seuil dur), arrêts / cadrés 64-67 (dedans 61-62, dehors 75-85), buts 5,25. LA
@@ -12232,7 +12894,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactics 11/0, tete 7/0. Piège nommé : un « while pgrep -f motif » attend sa propre ligne de commande
      (la chaîne des annexes ne partait jamais). Bloc 1 seul : 0,76 ms/step (≤ 1,6, deux annexes en parallèle).
      Sceau : commit 8e19ee9, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-BK8FFurR).
-- 365: LA LIGNE ACCROCHÉE (280 — la dette nommée depuis le 275 : Bible 10 §3.4, « k_y est une fraction, k_x
+- 392: LA LIGNE ACCROCHÉE (280 — la dette nommée depuis le 275 : Bible 10 §3.4, « k_y est une fraction, k_x
      est une saturation » ; le volume des tirs, 42 pour 25). Sonde AVANT (sonde-280, 8 × 45 min : le volume par
      ses causes) : 41,7 tirs / match (dedans 31,4 pour 16,2 ; dehors 10,3 pour 9,1), touches en surface adverse
      76 (51 : 25,5 par équipe), entrées 49, tirs par touche 0,38-0,45 (0,32), possessions 270 (200-350), tirs par
@@ -12285,3 +12947,283 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
   Contrôles, Physique, Intérieur ; génération : Lieux, Stades ; plus Soldier Volley dribble→centre→volée,
   Matériaux PBR, Monde procédural, IK, Géométrie, Bloom, Océan, Herbe).
+
+- 378 — Lot C3 : LE POING DU GARDIEN (Animations_A_Faire § 3 ; sortiePoing généré, la sortie du poing, le ballon dégagé ; reference/53 § C3)
+
+- **Le geste** (`motion-keeper` sortiePoing, jump + punch) : 1,32 s, contact 0,62, saut 0,5 m, le genou gauche levé 72°, les bras à 186°
+  d'élévation dès l'impulsion, le coup = l'avant des bras 50° → −20° sur 0,16 s autour du contact, les coudes 30°, la retombée sur les
+  appuis puis une redescente lente (178° en 0,3 s faisaient 14 rad/s au bras — refusé par checkClip). Mesuré (keeperPortrait) : poings à
+  13 cm au contact, 29 cm au-dessus de la tête, le coup à travers 36 cm, le genou +73 cm. Contrat (checkKeeperGen, K.punch) : poings ≤ 34 cm,
+  à travers ≥ 8 cm, genou ≥ +25 cm, + les règles du saut. verify-motion : 198 ✓ / 10 ✗ — les 10 rouges préexistent au bit sur le moteur
+  d'hier (tronc), sortiePoing vert.
+- **La décision** (`sortie-aerienne.js`) : à chaque point du vol prédit, le premier attaquant (duel 7 m/s) ; s'il y est avant le ballon et
+  avant le gardien, le balayage S'ARRÊTE (mesuré avant : le gardien réclamait le rebond derrière la tête) ; une sortie décidée tient (−0,3 s
+  quand engagé — l'hésitation image par image le laissait à mi-chemin) ; l'attaquant qui arrive AVEC le ballon (à moins de `poing` 0,4 s
+  après lui) arme sortiePoing (payload.poing) au lieu de plongeonPrise.
+- **Le contact** (`match-sim` onDive) : sous payload.poing la prise est refusée, le ballon DÉGAGÉ (0,7 × la vitesse renversée + `poingV`
+  12 m/s vers le terrain, +4,5 m/s de haut, 3 m/s de côté), 'arrêt' mode poing mains 2, le gardien retombe (down 0,5).
+- **La scène** (Rondo.js `_applyDiveWarp`) : sous payload.poing les DEUX poings vont sous le ballon (`_armsToBall` ±7 cm, −12 cm) avec
+  l'enveloppe du gant — mesuré en page à l'image de l'arrêt : poing droit à 17 cm du centre du ballon (dessus), le gauche à 47 cm (la
+  portée du bras, 51 cm de l'épaule), l'écart des poings 35 cm ; avant : 0,5 m entre les poings et le ballon.
+- **Bancs** : verify-sortie-aerienne 8 ✓ / 0 ✗ (clause c bis : l'attaquant lancé à 6 m/s depuis 10 m — la sortie se décide, sortiePoing,
+  'arrêt' poing à deux mains, v·x 8,9 m/s vers le terrain, jamais tenu ; l'attaquant AU point : aucune sortie ; sans attaquant : la prise
+  d'hier) ; sync 9/0 ; jumeau `sortieAerienne: null, retournee: null` = base 9fa4ec6 au bit (3 graines) ; en match (12 × 300 s) :
+  1 sortie, 1 saut, aucun poing — le lob contesté dans la surface de but est rare, la clause le tient.
+- **Capture** : c3-poing-cote/face (le lob à 2,5 m recalé, l'attaquant depuis 10 m à 6 m/s, l'arrêt à 0,73 s de l'armé).
+- **Dette** : le clip de prise en l'air reste plongeonPrise (pas de prisePlanante) ; le saut manqué retombe par onDiveEnd.
+
+- 379: LA TENUE DE BALLE DOS AU BUT (§ 9 = A10 ter ; `engine/bouclier.js`, cfg.bouclier ; reference/55 § A10 ter ; verify-bouclier 7/0)
+
+- **La loi** (`bouclierStep`, au tick de décision du porteur, avant l'adoption — le patron de la pausa) : le porteur (la possession,
+  le ballon à ≤ pied 1,2 m — bloqué sous la semelle s'il roule libre : possess + 'control' arret-semelle), posé (≤ vMax 4 m/s), pressé
+  DANS LE DOS (un adversaire côté but à ≤ pression 1,3 m, derrière son regard cos ≤ −0,4), SANS APPUI DEVANT (aucune passe au-dessus de
+  la barre du moment qui ne soit une remise à > 2 m en arrière), TIENT : ni passe ni conduite, la cible est sa place (match-sim), yawWant
+  à l'opposé du presseur (qui ORBITE : le corps le suit), le ballon porté au pied (rondo-sim). Issues (événement `bouclier`) : appui
+  (après min 0,8 s), faute, relache (> pression + 0,4 m), deborde (passé devant le regard), expiree (max 2 s), perdu ; la possession
+  changée entre deux ticks tombe sans événement. LA POUSSÉE : collé < 0,75 m plus de 0,6 s → un tirage (pFaute 0,3 × aggrF × rôle),
+  'faute' poussée posée (st._faute, l'arbitre l'adjuge : avantage ou coup franc, carton par la nature). Le duel d'épaule ne se joue pas
+  sur un porteur qui tient ni 0,8 s après (duel.chargeStep).
+- **Mesuré en construisant.** L'entrée jugée sur `st.ball.owner` ne s'engageait JAMAIS en match (0 tenue / 12 × 300 s ; compté sur
+  2 × 300 s : 561 ticks sur 668 sans owner — le porteur en conduite lâche le ballon entre deux touches — puis 95 sur 107 trop vite à
+  2,5 m/s) : la possession + le ballon au pied + vMax 4. L'appui jugé sur toute passe au-dessus de la barre refusait la tenue (la
+  remise arrière existe toujours) : « sans appui devant ». La sortie jugée sur l'axe du but rendait 'relache' à 2 s quand le
+  presseur avait orbité au flanc : jugée sur le regard, la tenue le suit. La fixture avec la défense adverse parquée à 60 m rendait
+  le porteur « lancé » (enLance) : la remise arrière interdite, aucune passe après l'appui — la défense est posée sur sa ligne de but.
+  Le duel d'épaule mordait 0,4 s après la tenue (40 % gagné : le ballon jaillissait) : la grâce. Une tenue perdue entre deux ticks
+  restait posée (durée 120 s dans la sonde) : la chute silencieuse (max + 1 s).
+- **Banc** (verify-bouclier, 7 clauses) : engagée au premier tick, expirée à 2,1 s, le presseur dans le dos à 0,5 m (la séparation
+  minGap), la distance adversaire-ballon mini 0,74 m (contrat ≥ 0,6), v 0 ; l'appui sur le flanc → appui à 1,1 s, la passe 0,2 s
+  après ; pFaute 1 → poussée à 1,1 s, avantage joué ; le presseur retiré → relache 0,9 s ; null → aucune tenue (hier : duel d'épaule
+  à 0,4 s, ballon à personne) ; sabotages pression:0 et contact:0 attrapés. Sync 9/0 ; jumeau sortieAerienne/retournee/bouclier null
+  = base 9fa4ec6 au bit.
+- **En match** (12 × 300 s, sonde-s9-match) : 12 tenues (relache 7, appui 3, faute 2), durée médiane 0,6 s, distance adversaire-ballon
+  mini par tenue médiane 1,12 m (mini 0,76 — jamais sous 0,6), aucune perte à la sortie, aucune poussée sifflée (pFaute 0,3 : le
+  presseur ne reste pas collé 0,6 s — la garde par tiers le tient à distance) ; le monde entier : buts 4-0 c. 2-1, fautes 16 c. 15,
+  pertes 224 c. 223, passes 575 c. 596, tirs 20 c. 21, duels d'épaule 29 c. 24 (bouclier:null). La tenue est courte parce que le
+  presseur LÂCHE : le pressing du moteur garde ses distances.
+- **En page** (match11, la fixture du banc) : engagée au premier tick, l'arrêt sous la semelle (clip arretSemelle 1 s) puis le clip
+  'protection' de la scène (contactShield, la géométrie) ; à 1,4 s le presseur à 0,5 m dans le dos (cos −0,6), le ballon à 0,69 m de
+  lui. Captures s9-tenue-cote / s9-tenue-dos.
+- **Dettes** : la tenue attend un appui SERVABLE (elle ne lit pas la course qui vient) ; le presseur qui orbite n'a pas de geste
+  (il pousse, la scène ne le montre pas) ; le clip de protection est celui de la scène (géométrie), pas un acte de la sim.
+
+- 380: LA FOULÉE A7 ter (§ 6 : le pas croisé, le port des bras, le verrou de pieds calibré ; motion-gait.js, foot-lock.js, character-controller.js ; verify-foulee 81/0 ; reference/52 § A7 ter)
+
+- **Le pas croisé** (gaitPose, opts.turn > 7 m/s² et vF > 3) : kX = clamp((|aT| − 7)/2) × fondu(3 → 4 m/s) × atténuation sprint
+  (×0,4 à 9,5 m/s) ; le couloir de la jambe extérieure passe la médiane et se pose à 0,03·kX m à l'intérieur du couloir de l'intérieure
+  (écartée de 0,05·kX) ; pYawTurn 6°·kX (la hanche extérieure devant) ; le tronc contre-tourne en entier ; swingH ×(1 − 0,12·kX).
+  Mesuré (6 m/s, 9 m/s²) : croisé de 3,0 cm (course droite : 10,9 cm d'écart), bassin +6,1°, épaules −0,4°, genoux à 10,2 cm ; sous
+  7 m/s² : 13,4 cm d'écart, à 2,5 m/s : 18,9 ; chassés jamais. En construisant : 0,04 m / 10° poussaient la hanche extérieure à −32°
+  (contrat −30) et le genou à 142° au sprint → 0,03 / 6°, l'atténuation sprint, le vol qui rase ; le contre-tour à 25 % laissait
+  6 signatures sans opposition bras-jambe au sprint freiné → 100 %. 40 signatures × 5 virages serrés : 0 rouge.
+- **Les bras** : run coude 85 → 90, armOff 8 → 10 (sprint inchangé 92/10) ; la main avant −4 → −2 cm du sternum en course, coude
+  89-102° (hier 86-99) ; le frein ferme le coude de +6 (hier +10 : marges bras-jambe 2,2 → 1,8 cm sur 5 signatures, 2,5-3,1 après).
+  Planches : foulee-4.5-0-apres.png (après la retouche).
+- **Le verrou** : foot-lock.calibrate(sample, {band}) — le plancher balayé sur la foulée générée à 4,5 m/s (_poseGait : le même écrivain
+  que _applyGeneratedGait), la bande 0,05 → 0,025 (mode généré seul ; ?foulee=clips au bit). Mesuré en page (match11 ?animlod=0, le
+  même coureur, 3 fenêtres de 7 s, le pic d'accélération de la cheville autour de chaque relâche) : bande 5 cm → p50 4,7 cm/image²,
+  p90 6,2, maxi 6,7, 1 recapture, 4 reculs ; bande 2,5 cm → p50 2,5 / 1,9, p90 4,0 / 3,8, maxi 4,2-5,5, 0 recapture (2 à 2,8 m/s),
+  0-3 reculs. Les relâches restantes : « étirement » (le fondu à 92 % de la portée) 10-14 sur 17 appuis, « haut » 3-4.
+  La première mesure avec le LOD d'animation actif était fausse (le squelette d'un joueur lointain ne bouge qu'une image sur N :
+  cheville « ancrée » à 5 cm/image) — le LOD se coupe pour mesurer.
+- **La planche** : contact-sheet.mjs --gait <vF> --turn <m/s²> (pl.ctrl._turn posé : l'accélération mesurée vaut 0 sur un modèle
+  immobile) — foulee-6-0-virage9-apres.png.
+- **Bancs** : verify-foulee 81 ✓ / 0 ✗ (10 clauses A7 ter : le croisement, le bassin/les épaules, le miroir, sous 7 m/s² et sous 3 m/s,
+  200 foulées croisées, les chassés, les bras en course et au sprint, le frein +6, sabotage « bras bas ») ; sync 9/0 ; build ok.
+- **Dettes** : le pas croisé est rare en match (le cap lissé B5 borne le taux de virage) ; le pic de l'étirement reste.
+
+- 381: L'AVANT-MATCH ET LES GESTES SOCIAUX (§ 7 = A11 ter ; engine/ceremonie.js, cfg.ceremonie ; motion-emotion serrerMain/saluer ; movement p._regard ; verify-ceremonie 8/0 ; reference/59 § A11 ter)
+
+- **La file** (ceremonieStep, en tête du bloc de remise de match-sim — la cérémonie POSSÈDE la remise) : au premier pas, la rangée
+  (l'équipe qui n'engage pas) posée le long de la médiane (rang 0,42, pas 0,8, décalée de 2,6 m du point central), la file (l'équipe
+  qui engage) de l'autre côté ; chaque homme de la file défile DE CÔTÉ face à la rangée (le regard tenu p._regard — movement.js : le
+  cap suit le regard même en marche, le pas devient chassé) et serre la main à L'ARRIVÉE (≤ 0,3 m : 'poignee' {by, avec}, tenue 0,35 s),
+  sans doubler ; au bout, trot × 2,4 vers la place d'engagement (la position de construction) ; la rangée part quand le dernier est
+  passé ; l'engagement attend tous à ≤ 1,2 m (ou 60 s), + 1,2 s. L'horloge : la période part au coup d'envoi (st._ceremonie.fin dans
+  finNominale), la cérémonie n'est pas un arrêt (C.arrets gelé), le fil date du même coup d'envoi (ticker _decFM).
+- **En construisant.** Le rythme global (un homme par pas de file) laissait les marcheurs en retard (106 poignées sur 121, 17 % face à
+  face) : la file va à son pas (la poignée à l'arrivée, la queue qui ne double pas) → 121 ; le marcheur qui freinait puis tournait de
+  90° n'était face à l'homme que 50 % du temps à +0,4 s → le regard tenu (100 %) ; le salut à 77 % (les corps encore lancés) → le
+  regard tenu (100 %). Le temps additionnel MINIMUM de 60 s du match plein rendait la période de 40 s de la fixture interminable :
+  épinglé à 0 dans le banc (la loi ×0,35 reste). Le clip authored `poignee` levait le bras à 1,7 m et `salut` sortait la main à 1 m
+  sur ce rig → deux gestes générés (motion-emotion) : serrerMain (1,2 s, la main devant à hauteur de ceinture-poitrine) et saluer
+  (2,4 s, le bras levé haut, l'avant-bras qui balance à 2,5 Hz), sous contrat (verify-emotion 49/0). Les mains : le point médian
+  recalculé à chaque passage de la boucle laissait 17 cm, et la rangée qui serre un nouvel homme toutes les 0,9 s tirait vers le
+  mauvais partenaire → mutuelle, vers la main de l'autre à 15 % de l'écart : p50 5,6 cm, p90 7,4 (page, 636 images de paires).
+- **La carte** : motion-arbitre carton 2,0 → 2,3 s (tenue 1,85), le regard vers le fautif (la loi d'A11 bis, dir), la plaque
+  8,6 × 12 cm au bout des doigts (arbitre.js) — dette : la plaque reste dans le plan de la main.
+- **Bancs** : verify-ceremonie 8 ✓ / 0 ✗ (121 poignées, places à 37,5 s, engagement à 38,5 s, face à face 100 %, arrêts 1,0 s à la
+  prise, fin de match à fin + 40 s, 22 saluts en 3,8 s tournés vers la tribune 100 %, carte 2,3 / 1,85, null = hier (engagement à
+  0,65 s), sabotage rang:3 attrapé) ; verify-emotion 49/0 ; sync 9/0 ; jumeau sortieAerienne/retournee/bouclier/ceremonie null = base
+  9fa4ec6 au bit ; 33 bancs épinglés ceremonie:null (chaque clause mesure le monde de son jour).
+- **Captures** : s7-file-poignees (la file à 7,5 s), s7-poignee-gros-plan (les mains jointes), s7-carton (la carte face au fautif),
+  s7-salut (le salut au sifflet final).
+- **Dettes** : la cérémonie dure ~38 s (11 × 11 poignées à 0,35 s + les trajets) ; les gardiens défilent comme les autres ; la
+  plaque de la carte dans le plan de la main ; l'hymne, la photo d'équipe et le toss n'existent pas.
+
+- 382: LES ASSISTANTS ET LES RAMASSEURS (§ 5 ; motion-arbitre drapeauLeve/drapeauIncline/drapeauInclineG/drapeauHorizontal, referee.assistantsStep, engine/ramasseurs.js, scène arbitre.js ; verify-assistants 13/0, verify-ramasseurs 5/0 ; reference/59 § 5)
+
+- **Les gestes du drapeau** (générés, la hampe attachée à la main droite suit le bras) : drapeauLeve (bras tendu droit, main +37 cm
+  au-dessus de la tête, TENU tant que la sim garde a.drapeau — la scène clampe le geste à hold), drapeauIncline (le bras levé de côté
+  118°, main à 62 cm à droite de l'épaule), drapeauInclineG (elev −60 / fwd 90 : le bras croise devant, main à 42 cm à gauche de
+  l'épaule à sa hauteur — un fwd positif sur un bras levé partait DERRIÈRE le corps, mesuré : z +0,29), drapeauHorizontal (deux mains
+  à 25 cm au-dessus de la tête, 72 cm l'une de l'autre — le rot du bras est une pré-rotation d'épaule, pas un poignet : le poignet
+  (plat) couche la hampe). La sim (sous cfg.arbitreGestes) : le hors-jeu → l'assistant de la moitié, tenu ; la touche (sortie/touche,
+  le côté par z) → incliné vers le côté que l'équipe attaque (il fait face au terrain : droite = sgA < 0 côté z > 0) ; le remplacement
+  → l'assistant 1 à l'horizontale 3 s. La scène : les assistants reçoivent la couche de geste du central ; le basculement de la hampe
+  d'hier ne vaut plus que sans geste. Banc 13/0 (le hors-jeu tenu lu à 1,2 s : sans remise posée le drapeau d'hier redescend à 1,5 s).
+- **Les ramasseurs** (cfg.ramasseurs { n 4, marge 2,4, vitesse 3,6, portee 0,7, patience 12, colle 2,5 }) : quatre corps aux quarts des
+  touches ; au ballon hors d'atteinte (referee.ballFetch — le 225b le rendait au point en une image), ramasseurPrend élit le plus
+  proche, la remise attend (r.at, r._fetchT0 gelé) ; ramasseursStep : va (cinématique des assistants), ramasse (le ballon dans les mains
+  dès 0,42 s — posé par la sim à 35 cm devant, 0,95 m — le corps se tourne vers le point), roule (au contact 0,52 s le ballon part à
+  V0(d) = (d/0,667)^(1/1,56) — le frottement du moteur mesuré : 2 m/s → 1,61 m, 3 → 3,47, 4 → 5,80, 6 → 11,28, 8 → 17,11, 10 → 22,92),
+  revient ; le roulé arrêté à ≤ colle m du point s'y pose ; patience → le point d'hier ('patience-ramasseur'). La cause du ballon
+  porté est celle de la remise (le ballon connaît ses causes : 'ramasseur' n'en est pas une — planté au premier essai). Banc 5/0 : la
+  touche hors d'atteinte — parti au premier pas (18,9 m), ramassé à 5,2 s, roulé à 6,4 s (2,9 m/s pour 4 m, arrêt à 0,29 m, posé au
+  point), remise prise à 12,5 s (le preneur parqué à 40 m), assis à 12,8 s ; null → le point en une image et la remise prise à ~25 s
+  (le preneur marche) ; vitesse 0,2 → 'patience-ramasseur' à 12 s. En page : le ramassage à 5,7 s (clip ramassage sur le corps
+  d'officiel en chasuble jaune).
+- **Épingles** : 37 bancs épinglent ramasseurs:null avec ceremonie:null (chaque clause de flux mesure le monde de son jour).
+- **Captures** : s5-ramasseur-ramasse, s5-ramasseur-roule, s5-drapeau-leve, s5-drapeau-touche.
+- **Dettes** : les ramasseurs derrière les buts et le quatrième arbitre n'existent pas ; le ballon dans les mains du ramasseur est
+  posé par la sim, pas attaché aux mains rendues ; la hampe horizontale du remplacement se lit selon le poignet (plat 80 : à vérifier
+  à l'œil).
+
+- 383: LE REMPLACEMENT ET LA BOITERIE (§ 8 ; motion-gait opts.boite, referee.adjugeFaute → p._boite, movement (la pointe), match-sim
+  (_walkF de l'entrant), Rondo idleCtx.boite → character-controller ; verify-boiterie 4/0, verify-foulee 86/0 ; reference/52 § boiterie,
+  reference/59 § remplacement).
+
+- **La boiterie** (cfg.boiterie { duree 25, ralenti 0,3 }) : adjugeFaute, sur une faute GRAVE (la victime pas gardien), pose
+  vic._boite = { until, duree, side } et l'événement 'boiterie' ; le côté vient de la parité fautif + victime (la sim de contact ne
+  sait pas quelle jambe a pris le coup — dette). gaitPose opts.boite { side, k } : l'appui du côté touché ×(1 − 0,3k) (12 images sur 60
+  c. 18 à 3 m/s), le vol ×(1 − 0,2k) (à 0,35 le trot rasait sous les 4 cm du contrat), le déroulé ×(1 − 0,5k), le bassin qui plonge de
+  ce côté 10°·k quand il porte ; k = (until − t)/duree, plancher 0,2 : la boiterie s'efface ; k 0 = hier au bit. Les clauses de symétrie
+  de checkGaitGen dispensent la boiterie (pas inégaux par construction : l'appui immobile la juge). La pointe : top × (1 − ralenti × k)
+  posée APRÈS tous les plafonds, l'intention d'effort comprise — posée avant (après biteSlow), 0,7 × 6,56 = 4,59 restait au-dessus
+  des 4,2 de l'intention et ne mordait jamais (3,88 c. 3,88 à 5 s, 4,19 c. 4,19 à 12 s) ; le corps approche sa pointe avec une
+  constante de ~6 s, la clause mesure donc 12 s sous une boiterie longue (k ≈ 0,96) : 2,98 m/s c. 4,19.
+- **L'entrant trotte** (cfg.entrant { trot 1,6 }) : en phase 'in' du remplacement (Loi 3), p._walkF = trot ; l'entrant naît à la
+  ligne à 3,8 s et marche × 1,6 (hier × 1). La poignée de main à la ligne et le quatrième arbitre restent en dette (un corps par
+  remplacement, les deux corps ne passent pas au même point de la touche).
+- **Épingles** : boiterie: null, entrant: null aux sites datés (bancs de match) ; le jumeau d'empreinte (sortieAerienne, retournee,
+  bouclier, ceremonie, ramasseurs, boiterie, entrant null) = base 9fa4ec6 au bit. La suite propre du jour (851/11) a montré trois
+  bancs datés que les clés du 16/09 avaient déplacés, épinglés : verify-arbitre (run() : la cérémonie occupait les 3 s du banc — le
+  sifflet ne venait jamais, 4 rouges), verify-remises (murTest : le ramasseur retardait la remise, le mur arrivait à son point au pas
+  comme au trot — le sabotage ne mordait plus ; les clés du 16/09 changent aussi les 50 s de flux qui posent le coup franc),
+  verify-porte (bouclier : 16 refus c. 45 = 35,6 % pour ≤ 35). Les trois rouges du tronc (141, 246d, pivot 8/8) restent.
+- **L'arbitre sous checkClip** (verify-arbitre 25/0) : drapeauLeve passe à 2,8 s (la DESCENTE de 178° entre hold 1,8 et la fin
+  frôlait le plafond de 14 rad/s à 2,2 s — la montée n'y était pour rien) ; drapeauHorizontal ne prend plus l'amplitude de style sur
+  les bras (à 0,9 les mains passaient à 87-95 cm : la hampe fixe l'écart, 72 cm quel que soit le style).
+- **Captures** : planches/foulee-3-0-boite-left-apres (la foulée à 3 m/s, boite gauche : l'appui gauche court, le bassin qui plonge).
+- **Dettes** : le côté de la boiterie ; l'idle et les gestes du boiteux sont ceux d'hier (ni grimace ni main à la cuisse) ; la poignée
+  de main à la ligne ; le quatrième arbitre.
+
+- 384: LES PETITS GESTES DU MATCH (§ 10 ; engine/petits-gestes.js, cfg.petitsGestes ; motion-aerial teteDefensive, motion-control
+  controleOriente, motion-skill feinteAppel ; referee.canTake (la semelle), le pas de l'arbitre (le mur), tete.teteArmerStep (le
+  dégagement), movement (la feinte), Rondo (l'événement 'geste', la tête par mode, le contrôle orienté) ; verify-petits-gestes 15/0 ;
+  reference/59 § 10). Animations_A_Faire est ÉPUISÉ.
+
+- **Le patron** : un événement nommé `geste { by, move, foot }` posé par la sim sous une sous-clé, joué par la scène sur un corps libre
+  (pas de couche active, pas d'acte, debout) — la semelle, le mur, la feinte passent par lui ; le dégagement passe par le windup de
+  l'armé (le nom du move), le contrôle orienté par le choix de clip de la scène (rondo-sim est au plafond de 1249 lignes : aucun
+  événement sim, le déclencheur est le yawWant que la réception écrit déjà — « la touche directionnelle survit entière »).
+- **La semelle** : canTake → semelleAvant : la sortie de but attend l'arrêt du preneur (≤ 0,8 m/s), pose l'événement et tient 0,7 s ;
+  mesuré 0,78 m/s, 0,72 s d'attente (3,9 s c. 2,8). **Le mur** : petitsGestesStep au pas de l'arbitre (assistants, ramasseurs, mur) :
+  le mur élu par match-sim (r._mur) + 0,6 s → designer sur le gardien (pied par le côté), p._regard vers le point du mur 1,6 s (relâché
+  aussi à la reprise) ; mesuré 0,63 s, 4°. **Le dégagement** : teteArmerStep nomme 'teteDefensive' (< 24 m de son but, hors la tête au
+  but — l'ordre de teteStep) avec la durée et le contact de tete : windup 1,27 s et tête 1,70 s identiques avec la clé nulle (le flux
+  d'hier) ; le geste s'arme à −19,5° (tete −12,0), whipFwd 34 (à 30, trois styles passaient sous les 18° du contrat). **La feinte** :
+  feinteAppel (haut du corps seul, aucun bassin — un bassin qui descend sans jambes passait les pieds sous la pelouse sur 23 styles)
+  au départ d'un appel d'un soutien ≤ 2,2 m/s, une par 20 s : 1 en 90 s (l'appel se tire posé, hold > 0,6 s). **Le contrôle orienté** :
+  controleOriente (turn 40, yaw +24 : les hanches +12° au contact — le contrat lit le lacet du bassin sur la clé de contact), 8 des 17
+  contrôles de 90 s tournent le receveur de ≥ 45°.
+- **Épingles** : petitsGestes: null sur les 40 bancs datés (195 sites, la même passe que boiterie/entrant) ; le jumeau (sortieAerienne,
+  retournee, bouclier, ceremonie, ramasseurs, boiterie, entrant, petitsGestes null) = base 9fa4ec6 au bit.
+- **La semelle SUR le ballon** (scène, rondo-fete.semelleWarp) : le clip pose la semelle 30 cm devant le corps et la sim arrête le
+  preneur à 10-18 cm du ballon — capturé à côté ; pendant la tenue (0,12 → 0,85 s du geste) le pied le plus proche va SUR le ballon par
+  l'IK à deux os de la touche (cheville à 19 cm du sol, un quart vers la hanche) : mesuré en page, pied droit à 30 cm de haut, 4 cm du
+  centre. La planche-contact admet un geste sans ballon (la feinte).
+- **Captures** : s10-semelle-sortie-de-but (le gardien, la semelle sur le ballon), s10-gardien-replace-mur (le bras qui désigne dans le
+  but) ; planches teteDefensive / controleOriente / feinteAppel (variante après).
+- **Un rouge qui n'est pas du jour** : verify-loi12 (12/2, « le MUR se TIENT », pas enrôlé dans bancs.mjs) est rouge à l'identique sur
+  le moteur ET le banc du 1e05e28 (§ 7) : hérité, hors lot.
+- **Dettes** : la tête défensive debout ; le râteau à la relance ; le gardien désigne sans crier ; la feinte est rare (l'appel posé).
+
+- 385: LES PASSEMENTS DE JAMBES NOURRIS (retour « tu peux corriger les passements ? » ; cfg.passements ; skills-sim.maybePassement,
+  rondo-sim stepGestures (le porté au pin pendant l'armé), movement (le regard tenu à terme) ; verify-passements 6/0 ; reference/52 §
+  passements nourris).
+
+- **Le diagnostic avant de corriger** : planche (1 et 3 tours) et page (LOD coupé, fixture face-à-face) — le cercle est bon (cheville à
+  25-30 cm au-dessus du ballon, poids des jambes 0,56 → 1 en 0,2 s, le pied qui cercle masqué du verrou par pick.foot). Deux vrais
+  défauts : (1) le ballon calé au contact LÀ OÙ IL TRAÎNAIT (0,31-0,35 m devant) et non au point du clip (0,40 / 0,05) — le pied
+  d'appui finissait dans le ballon (7 cm du centre) ; (2) le geste AFFAMÉ : 1 en 15 min sur 3 graines. L'entonnoir (sonde sur une copie
+  du moteur, 600-1 000 appels/300 s) : ballon > 0,6 m 256-541, pas de jockey 176-319, hors demi-front 95-151, charge 5-31, tirages 5-10 à
+  dribM 0,03-0,48 — et 0 succès.
+- **La loi** (sous clé) : foe 3,5 ; le porteur posé FIXE un jockey à 70-100° (regard tenu 0,45 s, p._regardUntil relâché par movement)
+  et part une fois face (0,10 s après, 62°) ; charge ≤ 2,6 ; ballon ≤ 0,75 ; tirage sur max(0,35, dribM) × … × 2 ; payload.pin au
+  point du clip — stepGestures le porte pendant l'armé (tau 0,04 : l'escorte le laissait où il était), skillFollowStep le cale ensuite ;
+  mesuré 0,6 cm du point au contact (8,1 avant, 8,4 quand seul le suivi calait).
+- **Mesuré** : 12 passements sur 4 × 300 s (3 par match ; tours 1/2/3 : 8/3/1 ; 10 posés ; 4 morsures) c. 1 par 15 min ; graine 3 : 5.
+- **Épingles** : passements: null sur 42 bancs datés (203 sites) ; le jumeau (…, petitsGestes, passements null) = base au bit.
+- **La scène** : un geste technique prend ses jambes en 0,06 s au lieu de 0,17 (le lissage de _wLegs, Rondo) — l'entrée du passement
+  (0,15 s) levait le pied à moitié : cheville à 0,21 m au-dessus du ballon au premier tour c. 0,26-0,30 aux suivants (trace en page,
+  LOD coupé) ; après : 0,26 m à 6 cm du ballon dès 0,10 s. Le ballon glisse ~15 cm vers le point du clip pendant l'entrée (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route).
+- **Captures** : s11-passement-cercle (le pied gauche au-dessus du ballon calé, le jockey posté).
+- **Dettes** : le ballon > 0,75 m (la touche de rappel) ; les défenseurs chargent (la posture jockey est du moteur) ; le lancé d'hier.
+
+- 386: L'ENCHAÎNEMENT POITRINE → VOLÉE / RETOURNÉE (retour utilisateur ; cfg.enchainement ; tete.chestStep (la pose), voleeStep et
+  retourneeContact (la protection après le tir), teteArmerStep/teteStep (le ballon remonté leur échappe), rondo-sim (le bloc aérien
+  hors phase flight, la prise basse qui attend) ; verify-enchainement 8/0 ; reference/59 § enchaînement).
+
+- **Les pièces existaient** (poitrine 182a, volée 40, retournée C1) mais la poitrine tuait le vol et fermait le ciel 0,8 s, et la prise
+  à portée (< 1,9 m) ramassait le ballon. Sondé sur la fixture de B3 (un centre TENDU, sommet 1,35 m sous la fenêtre de tête — à 5,8 m
+  de sommet la tête prenait tout) : hier, poitrine puis « amorti-poursuite » ; avec un pop fixe (avance 1,2 / pop 1,0 ; pop 3,2) la
+  volée ne venait pas (la phase passait à 'loose', le bloc aérien s'éteignait) et le ciseau restait à 0,75 m du ballon prédit (portée
+  0,7 : la poitrine prend jusqu'à 0,9 m). D'où la POSE (la vitesse déduite du ballon réel vers le point de reprise), st._enchaine qui
+  tient le bloc aérien et la prise basse (0,45 m), la tête qui laisse.
+- **Mesuré** : face, volée 0,42 s après la poitrine à 0,80 m ; dos, windup 3 images après, ciseau à 1,70 m ; null = hier au bit.
+- **La dette du tronc trouvée en route** : le tireur d'une volée ordinaire se re-prend le ballon 0,05 s après son tir (la prise à portée
+  0,5 m, le ballon encore là) — sous clé, `apres` 0,35 s de ciel après le tir ; hors clé, l'hier.
+- **La prise laisse la poitrine** (rondo-sim, sous clé) : en page (fixture analytique, sans traînée) le receveur dos au but PRENAIT le
+  ballon au pied à 1,3 m ('amorti-poitrine' possédé, la technique de la table) avant que chestStep ne parle — un ballon à hauteur de
+  poitrine (≥ poitrine.min) dans la surface adverse, pour l'équipe du dernier toucheur, n'est plus pris au pied : la poitrine le joue.
+- **Épingles** : enchainement: null sur 42 bancs datés ; le jumeau (…, passements, enchainement null) = base au bit.
+
+- 387: LES INTÉGRATIONS MOTEUR RESTANTES — l'inventaire geste → déclencheur (docs/Inventaire_Gestes.md, généré : 75 gestes générés,
+  74 branchés avant ce lot, 75 après) et le seul orphelin branché, applaudir (petits-gestes.js sur un arrêt du gardien : jusqu'à 2 coéquipiers libres à 18 m,
+  une salve par équipe par 8 s, cfg.petitsGestes.applaudir ; ceremonie.js au salut final : un joueur sur deux applaudit la tribune,
+  cfg.ceremonie.salut.applaudir, l'événement 'salut' porte geste) ; la scène joue applaudir par 'geste' et par 'salut' (rondo-fete).
+  verify-petits-gestes 17/0, verify-ceremonie 9/0, verify-emotion 49/0.
+
+- **Ce qui n'est pas branché et pourquoi** : les touches de conduite du porteur (rondo.js) se nomment 'control' sans technique (23 % des
+  contrôles d'un match) — la scène joue controleInterieur/amorti par défaut ; nommer la touche (intérieur/extérieur selon le pied) est une
+  dette (rondo.js). Les clips authorés salut/poignee sont supplantés par saluer/serrerMain ; celebration et consulter restent en secours.
+
+- 388: LA CONDUITE NOMMÉE (retour « pied droit pied gauche extérieur intérieur, en faisant le nécessaire dans le moteur » ;
+  cfg.conduiteNommee ; skills-sim.conduiteNommee via touchEvent (rondo-sim lui passe cfg), technique.js × 4 (intent 'conduite'),
+  motion-control conduiteInterieur/Exterieur/Laces/Semelle (contrat pousse), Rondo (le warp au pied nommé, le clip par technique sur
+  la touche qui vire, l'extérieur, la semelle) ; verify-conduite 9/0 ; reference/52 § conduite nommée).
+
+- **Le pied** = le côté du ballon dans le regard (la convention lat de la scène) ; **la surface** = la direction de la poussée que le
+  dribble vient d'écrire, par rapport au regard : dehors du pied → extérieur, dedans → intérieur, ± 12° → cou-de-pied en course (≥ 3 m/s)
+  / intérieur au trot, < 1 m/s → semelle. Champs additifs : null = la touche muette d'hier, au bit (le jumeau ne bouge pas).
+- **Mesuré** (les clés du jour à null) : 142 touches / 300 s toutes nommées, pied cohérent 142/142 ; cou-de-pied 87, intérieur 35,
+  extérieur 20, semelle 0 (2 sur le monde complet) ; sur
+  2 × 300 s 73 % des touches virent < 6°, 7 % > 20° — l'extérieur reste rare (5 %), c'est la conduite du moteur qui vire peu.
+- **Les clips** : 0,4 s, contact 0,14, le pied pousse (+21 à +29 cm après le contact), 40 styles sous contrat ; la scène ne les joue
+  que sur la touche qui vire (≥ 20°), l'extérieur et la semelle — la touche droite reste au warp (la foulée la joue).
+- **Dettes** : l'extérieur rare ; le pied de contrôle ne change pas au fil des touches (p.foot) ; les prises de ballon libre muettes.
+
+- 389: L'APPLAUDISSEMENT D'ENCOURAGEMENT, occasionnel et sans chorégraphie (retour « de temps en temps sur quelques joueurs pour
+  encourager, mais pas trop chorégraphie » ; petits-gestes.js, ceremonie.js, cfg.petitsGestes.applaudir, cfg.ceremonie.salut.applaudir ;
+  verify-petits-gestes 19/0, verify-ceremonie 9/0).
+
+- **Les occasions** (turnover.why compris) : l'arrêt du gardien (p 0,7), le tir (0,35), le duel et le glissé gagnés (0,4), l'interception
+  (0,4), le tacle (0,4), la récupération (0,15) — mesuré : 2 arrêts, 2 tirs et 1 duel par 300 s, mais 20-25 turnovers ; sans eux
+  l'applaudissement tombait à 2 par match.
+- **Sans chorégraphie** : un ou deux coéquipiers (60 % un seul) TIRÉS AU SORT parmi les libres et posés (≤ 3,5 m/s) à 22 m — pas les
+  plus proches —, le premier part 0,15-0,8 s après l'occasion, le second au moins 0,25 s après le premier ; une salve par équipe par
+  10 s, un même corps pas deux fois en 20 s ; le tirage seedé ('geste'). Mesuré : 8-10 applaudissements par 300 s sur 6-8 corps
+  distincts, au plus 3 par corps, jamais trois en une seconde.
+- **Le salut final** : la part des applaudisseurs est tirée au sort (0,4), plus un sur deux (une alternance est une chorégraphie).
+- **Épingles** : la clé vit sous petitsGestes (épinglée) ; le jumeau reste au bit.

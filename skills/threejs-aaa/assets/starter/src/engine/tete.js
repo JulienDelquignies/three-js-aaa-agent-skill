@@ -1,6 +1,7 @@
-import { vitesseGeste } from './repertoire.js';
-import { tirage } from './rng.js';
+import { tirage } from './rng.js'; import { modeTeteDefensive } from './petits-gestes.js'; import { vitesseGeste } from './repertoire.js';
 import { xgDe } from './xg.js';
+import { predictPath, ballAt } from './ball-predict.js'; import { startGesture } from './gesture.js'; import { MOVE_TIMING } from './skills-sim.js';   // (B3) la tête armée
+import { MOVES } from './animkit.js';   // (C1) la retournée : le clip authored porte son contact (0,52 s)
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
 // entré en surface sur 4 matchs (vols tendus mangés par le premier rideau) et 0,8 s/match de
 // fenêtre de tête avec un corps dessous — les centres retombaient, les dégagements attendaient
@@ -21,22 +22,37 @@ const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
  *  (mesuré : les redirections étaient les seuls départs sans fenêtre aveugle). */
 const surprend = (st) => { st._surprise = { t: st.t, seen: 0, n: (st._surprise?.n ?? 0) + 1 }; };
 
-export function teteStep(st, cfg) {
+export function teteStep(st, cfg, force = null) {
   const T = cfg.tete;
   const bp = st.ball.p;
+  if (!force && st._enchaine && st.t < st._enchaine.until) return;   // (note 386) idem pour la tête réactive
   // LA DÉTENTE (lot 112, T.saut — la hauteur de saut du joueur moyen, m) : le ciel au-dessus
   // de la tête debout (max) s'atteint EN SAUTANT — la fenêtre devient PAR JOUEUR
   // [min ; max + saut × sautF] (l'attribut jumping : un facteur, jamais une branche ; mesuré
   // avant : 1,7 vol/match traversait 2,2-3,0 m sur un corps, muet). Clé absente : hier au bit.
   const porte = (q) => (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);
-  if (bp[1] < (T.min ?? 1.5) || bp[1] > (T.max ?? 2.2) + (T.saut ?? 0) * 1.25) return;
-  if ((st._teteCd ?? 0) > st.t) return;                            // un contact par fenêtre de vol
-  const cands = st.players.filter((q) => q.down <= 0 && !q.keeper && !q.act
-    && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
-    .sort((a, b) => d2(a.p, bp) - d2(b.p, bp));
-  if (!cands.length) return;
-  let joueur = cands[0];
-  const saute = bp[1] > (T.max ?? 2.2);
+  let joueur, saute, cands;
+  if (force) {
+    // (B3) LA TÊTE ARMÉE se résout AU CONTACT DE L'ACTE (teteContact) : le ballon doit y être — la prédiction a sa marge (armee.marge) —,
+    // sinon la tête est MANQUÉE (événement nommé) : l'acte finit son accompagnement, le vol continue, un autre corps peut le reprendre.
+    const A = T.armee || {}, marge = A.marge ?? 0.25, d = d2(force.p, bp);
+    if (bp[1] < (T.min ?? 1.5) - marge || bp[1] > porte(force) + marge || d > (T.reach ?? 1.0) + marge) {
+      st.events.push({ t: +st.t.toFixed(2), type: 'tête-manquée', by: force.id, d: +d.toFixed(2), h: +bp[1].toFixed(2) }); return;
+    }
+    joueur = force; saute = !!force.act?.payload?.saut;
+    cands = [force, ...st.players.filter((q) => q.id !== force.id && q.down <= 0 && !q.keeper && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
+      .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))];
+  } else {
+    if (bp[1] < (T.min ?? 1.5) || bp[1] > (T.max ?? 2.2) + (T.saut ?? 0) * 1.25) return;
+    if ((st._teteCd ?? 0) > st.t) return;                            // un contact par fenêtre de vol
+    cands = st.players.filter((q) => q.down <= 0 && !q.keeper && !q.act
+      && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
+      .sort((a, b) => d2(a.p, bp) - d2(b.p, bp));
+    if (!cands.length) return;
+    joueur = cands[0];
+    saute = bp[1] > (T.max ?? 2.2);
+  }
+  const arme = force ? { arme: true } : {};
   let gene = 0, geneV = 1;
   const rival = cands.find((q) => q.team !== joueur.team);
   if (rival) {
@@ -82,7 +98,7 @@ export function teteStep(st, cfg) {
     st.ball.strike({ speed: vT * geneV * (joueur.skill?.headF ?? 1), dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]) + gene, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });   // …la PUISSANCE de la tête au but (147, heading)
     surprend(st);
     st.pass = null;
-    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, ...arme, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
     const xgT = st.full && cfg.xg ? xgDe(st, joueur, cfg, true) : null; if (xgT) (st.xg ??= [0, 0])[joueur.team] += +xgT.ref.toFixed(3);   // (272) la tête porte son xG (δ_tête recentré)
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', geste: 'tête', range: +dGoal.toFixed(1), speed: +(vT * geneV).toFixed(1), ...(xgT ? { xg: +xgT.ref.toFixed(3), xgDec: +xgT.dec.toFixed(3), omega: +xgT.omega.toFixed(2) } : {}) });
     return;
@@ -104,7 +120,7 @@ export function teteStep(st, cfg) {
     } else st.ball.strike({ speed: 11.5 * geneV, dirYaw: Math.atan2(fz, -Math.sign(own.x)) + gene, elevation: 0.42, spinAxis: [0, 1, 0], spinRev: 0 });
     surprend(st);
     st.pass = null;
-    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'dégagement', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}), ...(presse ? { corner: true } : {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, ...arme, mode: 'dégagement', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}), ...(presse ? { corner: true } : {}) });
     return;
   }
   // LA REMISE DE LA TÊTE : le coéquipier proche, en cloche courte (balistique de la rentrée,
@@ -119,7 +135,86 @@ export function teteStep(st, cfg) {
   st.pass = mate
     ? { from: joueur.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'tête', t: st.t, flight: 2 * speed * Math.sin(theta) / 9.81, origin: [joueur.p[0], joueur.p[2]] }
     : null;
-  st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'remise', to: mate?.m.id, h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, ...arme, mode: 'remise', to: mate?.m.id, h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
+}
+
+/** (B3, cfg.tete.armee) LA TÊTE S'ARME : le vol est déterministe — à chaque image on regarde où sera le ballon dans le temps de contact
+ *  du clip (tete 0,42 s sauté, teteDebout 0,22 s debout) ; s'il y est à hauteur de tête et qu'un corps libre y sera aussi (sa position +
+ *  sa vitesse × τ, à reach m), il ARME l'acte maintenant : windup skill 'tete' (anticipation τ), payload { kind 'tete', saut,
+ *  ownsBody, mobile } — le corps continue sa course sous l'armé (mobile : movement ne le plante pas), le contact se résout à l'heure de
+ *  l'acte (teteContact → teteStep forcé). Une seule tête armée par vol. Hier : la tête se décidait à l'image du contact, l'armé et
+ *  l'impulsion étaient perdus — la scène jouait la seconde moitié du geste (0 windup 'tete' en 12 matchs). Absente : hier au bit. */
+export function teteArmerStep(st, cfg) {
+  const T = cfg.tete, A = T?.armee;
+  if (!A || (st._teteCd ?? 0) > st.t || st.players.some((q) => q.act?.payload?.kind === 'tete') || (st._enchaine && st.t < st._enchaine.until)) return;   // (note 386) le ballon remonté par la poitrine appartient à la reprise enchaînée, pas à la tête
+  const porte = (q) => (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);
+  const mvS = MOVE_TIMING.tete || { duration: 0.9, contact: 0.42 }, mvD = MOVE_TIMING.teteDebout || { duration: 0.55, contact: 0.22 };
+  const path = predictPath(st.ball, { maxT: Math.max(mvS.contact, mvD.contact) + 1 / 30 });
+  let why = 'fenêtre';                                             // le dernier motif de non-armé du vol (lu par les sondes : st._teteArmWhy)
+  for (const [mv, id, sauteVoulu] of [[mvS, 'tete', true], [mvD, 'teteDebout', false]]) {
+    const tau = mv.contact, b = ballAt(path, tau), marge = A.marge ?? 0.25;
+    // la fenêtre de l'armé descend d'une demi-marge sous celle du contact réactif : un vol raide (7 m/s) traverse [min ; max] en 0,1 s et
+    // le corps qui arrive freine — mesuré au banc : manqué d'une image (b22 1,55 m à 1,06 m du corps, puis 1,42 m à 0,94) ; la portée
+    // de l'armé est celle du contact (reach), la marge ne joue qu'à la résolution (teteStep forcé : reach + marge)
+    if (b[1] < (T.min ?? 1.5) - marge * 0.5 || b[1] > (T.max ?? 2.2) + (T.saut ?? 0) * 1.25) continue;
+    const saute = b[1] > (T.max ?? 2.2);
+    if (saute !== sauteVoulu) continue;
+    const ou = (q) => [q.p[0] + q.v[0] * tau, 0, q.p[2] + q.v[1] * tau];
+    const pres = st.players.filter((q) => q.down <= 0 && !q.keeper && !q._sub && b[1] <= porte(q) && d2(ou(q), b) < (T.reach ?? 1.0));
+    const q = pres.filter((q) => !q.act).sort((x, y) => d2(ou(x), b) - d2(ou(y), b))[0];
+    if (!q) { why = pres.length ? 'acte' : 'personne'; continue; }
+    const idG = id === 'tete' && modeTeteDefensive(st, q, b, cfg) ? 'teteDefensive' : id;   // (§ 10) le dégagement s'arme en teteDefensive (même durée, même contact : le flux d'hier)
+    startGesture(q, { id: idG, duration: mv.duration, contact: mv.contact }, { payload: { kind: 'tete', saut: saute, ownsBody: true, mobile: true }, log: st.gestures });
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: idG, skill: 'tete', anticipation: +tau.toFixed(2), ...(saute ? { saut: true } : {}), h: +b[1].toFixed(2) });
+    st._teteArmWhy = null; return;
+  }
+  st._teteArmWhy = why;
+}
+
+/** (B3) Le contact de l'acte 'tete' (rondo-sim, stepGesture 'contact') : la tête se résout maintenant, forcée sur ce corps. */
+export function teteContact(st, p, cfg) { if (cfg.tete) teteStep(st, cfg, p); }
+
+// LA RETOURNÉE ARMÉE (lot C1 — Animations_A_Faire § 2, cfg.retournee ; absente : hier au bit). Le clip authored `retournee` (1,35 s,
+// contact 0,52 : accroupi, détente, le corps couché en l'air, la jambe droite en ciseaux par-dessus la tête, la retombée et le relevé
+// DANS le clip) n'avait aucun déclencheur. Le vol est déterministe (le patron de B3) : un ballon libre prédit au contact du clip entre
+// hMin et hMax m (la fenêtre au-dessus de la tête debout, sous le saut de tête), à `reach` d'un attaquant DOS AU BUT (le regard à plus de
+// `dos` rad de la direction du but), dans la surface, à moins de `but` m, sans adversaire à `libre` m → l'acte part (ownsBody, le corps
+// planté sur son point d'appel), et le contact de l'acte (retourneeContact) frappe au but depuis le ballon réel — ou se nomme manqué.
+export function retourneeArmerStep(st, cfg) {
+  const R = cfg.retournee; if (!R || (st._teteCd ?? 0) > st.t || st.ball.owner != null) return;
+  if (st.players.some((q) => q.act?.payload?.kind === 'retournee')) return;
+  const mv = MOVES.retournee ?? { duration: 1.35, contact: 0.52 }, tau = mv.contact;
+  const b = ballAt(predictPath(st.ball, { maxT: tau + 1 / 30 }), tau);
+  if (b[1] < (R.hMin ?? 1.5) || b[1] > (R.hMax ?? 2.1)) return;
+  for (const q of st.players) {
+    if (q.down > 0 || q.keeper || q._sub || q.act || d2(q.p, b) > (R.reach ?? 0.7)) continue;
+    const goal = st.pitch.attackGoal(q.team), sgn = Math.sign(goal.x || 1);
+    if (!st.pitch.inBox(q.p[0], q.p[2], sgn) || hyp(goal.x - q.p[0], q.p[2]) > (R.but ?? 16)) continue;
+    let dA = Math.atan2(0 - q.p[2], goal.x - q.p[0]) - q.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI;
+    if (Math.abs(dA) < (R.dos ?? 2.0)) continue;                                                  // face ou de profil au but : la volée ou la tête, pas le ciseau
+    if (st.players.some((o) => o.team !== q.team && o.down <= 0 && d2(o.p, q.p) < (R.libre ?? 1.5))) continue;   // un corps adverse à portée : le ciseau serait une faute
+    startGesture(q, { id: 'retournee', duration: mv.duration, contact: mv.contact }, { payload: { kind: 'retournee', ownsBody: true, pick: { foot: 'right' }, h: b[1] }, log: st.gestures });
+    st._teteCd = st.t + tau + 0.3;                                                                // un contact aérien par fenêtre de vol : la tête et la volée attendent l'acte
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: 'retournee', skill: 'retournee', anticipation: +tau.toFixed(2), h: +b[1].toFixed(2), dos: +Math.abs(dA).toFixed(2), ...(st._enchaine?.id === q.id && st.t < st._enchaine.until ? { enchaine: 'poitrine' } : {}) });   // (note 386)
+    return;
+  }
+}
+
+/** (C1) Le contact de l'acte 'retournee' : le ballon réel à portée et dans la fenêtre → la frappe au but (le canal shot, espèce 'retournée') ; sinon manquée, nommée. */
+export function retourneeContact(st, p, cfg) {
+  const R = cfg.retournee; if (!R) return;
+  const bp = st.ball.p, goal = st.pitch.attackGoal(p.team), d = d2(p.p, bp);
+  if (st.ball.owner != null || d > (R.reach ?? 0.7) + 0.25 || bp[1] < (R.hMin ?? 1.5) - 0.3 || bp[1] > (R.hMax ?? 2.1) + 0.3) {
+    st.events.push({ t: +st.t.toFixed(2), type: 'retournée-manquée', by: p.id, h: +bp[1].toFixed(2), d: +d.toFixed(2) }); return;
+  }
+  const dGoal = hyp(goal.x - p.p[0], p.p[2]), v = (R.vitesse ?? 16) * (p.skill?.voleeF ?? 1);
+  const tz = (tirage(st, 'tir', p.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.6);
+  st._teteCd = st.t + 0.8; st.lastTouch = p.team; st.lastPasser = p.id;
+  st.ball.strike({ speed: v, dirYaw: Math.atan2(tz - bp[2], goal.x - bp[0]), elevation: R.elevation ?? 0.05, spinAxis: [0, 1, 0], spinRev: 0.5 });
+  surprend(st); st.pass = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'retournée', by: p.id, h: +bp[1].toFixed(2), ...(st._enchaine?.id === p.id ? { enchaine: 'poitrine' } : {}) }); st._enchaine = cfg.enchainement ? { id: p.id, mode: 'tir', until: st.t + (cfg.enchainement.apres ?? 0.35) } : null;   // (note 386)
+  const xgV = st.full && cfg.xg ? xgDe(st, p, cfg, false, cfg.xg.d?.retournee ?? cfg.xg.d?.volee ?? 0) : null; if (xgV) (st.xg ??= [0, 0])[p.team] += +xgV.ref.toFixed(3);
+  st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: p.id, kind: 'retournée', geste: 'retournée', range: +dGoal.toFixed(1), speed: +v.toFixed(1), ...(xgV ? { xg: +xgV.ref.toFixed(3), xgDec: +xgV.dec.toFixed(3), omega: +xgV.omega.toFixed(3) } : {}) });
 }
 
 // LA VOLÉE (lot 40) — le pied joue le ballon EN VOL, sous la fenêtre de tête. Mesuré avant :
@@ -154,7 +249,8 @@ export function voleeStep(st, cfg) {
     st.ball.strike({ speed: vV, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0.5 });
     surprend(st);
     st.pass = null;
-    st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'but', demi });
+    st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'but', demi, ...(st._enchaine?.id === joueur.id && st.t < st._enchaine.until ? { enchaine: 'poitrine' } : {}) });
+    st._enchaine = cfg.enchainement ? { id: joueur.id, mode: 'tir', until: st.t + (cfg.enchainement.apres ?? 0.35) } : null;   // (note 386) la reprise se nomme ; sous clé, le tireur ne se RE-PREND pas sa volée (mesuré : 'amorti-poursuite' 3 images après le tir, le ballon encore à portée)
     const xgV = st.full && cfg.xg ? xgDe(st, joueur, cfg, false, cfg.xg.d?.[demi ? 'demiVolee' : 'volee'] ?? 0) : null; if (xgV) (st.xg ??= [0, 0])[joueur.team] += +xgV.ref.toFixed(3);   // (272) la volée porte son xG (δ volée −0,45 / demi-volée −0,20, § 2.3)
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', geste: 'volée', range: +dGoal.toFixed(1), speed: vV, ...(xgV ? { xg: +xgV.ref.toFixed(3), xgDec: +xgV.dec.toFixed(3), omega: +xgV.omega.toFixed(2) } : {}) });
     return;
@@ -227,14 +323,38 @@ export function chestStep(st, cfg, dt = 1 / 60) {
     if (d < portee && d < bd) { bd = d; joueur = q; bt = tS; }
   }
   if (!joueur) return;
-  st._teteCd = st.t + 0.8;
   st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
   const ctl = Math.min(1.2, joueur.skill?.controlF ?? 1);
   const k = Math.min(0.9, (P.kill ?? 0.78) * ctl);
-  st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.8 - 0.5, -st.ball.v[2] * k],
-    st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null);
+  const dw = st.full && cfg.amortiSpin !== false ? [-st.ball.w[0] * k, -st.ball.w[1] * k, -st.ball.w[2] * k] : null;
+  // (L'ENCHAÎNEMENT, note 386 — cfg.enchainement) LA POITRINE PRÉPARE LA REPRISE : dans la surface, face au but, elle POSE le ballon
+  // devant (avance m/s dans le regard, pop vertical) — il retombe à hauteur de reprise en delai s et voleeStep l'enchaîne (la volée) ;
+  // dos au but et libre, elle le REMONTE au-dessus de la tête (pop m/s, un peu vers le but) et retourneeArmerStep l'arme au pas d'après
+  // (le ciseau). Hier : le ballon mourait devant (kill) et le cooldown de 0,8 s fermait toute reprise. Clé absente : hier au bit.
+  const E = st.full ? cfg.enchainement : null, goal = st.pitch.attackGoal(joueur.team), sgn = Math.sign(goal.x || 1);
+  const dG = hyp(goal.x - joueur.p[0], joueur.p[2]), boite = st.pitch.inBox(joueur.p[0], joueur.p[2], sgn) && dG < (E?.but ?? 16);
+  let dA = Math.atan2(0 - joueur.p[2], goal.x - joueur.p[0]) - joueur.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI;
+  const libre = !st.players.some((o) => o.team !== joueur.team && o.down <= 0 && d2(o.p, joueur.p) < (E?.libre ?? 1.5));
+  let mode = null;
+  // …le ballon est POSÉ à l'heure de la reprise : vers un point (devant m dans le regard / au-dessus de lui, hauteur m) atteint en tau s —
+  // la vitesse se déduit du ballon réel (la poitrine le prend jusqu'à 0,9 m du corps : un pop droit laissait le ciseau à 0,75 m, hors portée)
+  const pose = (tau, devant, hauteur) => { const tx = joueur.p[0] + Math.cos(joueur.yaw) * devant, tz = joueur.p[2] + Math.sin(joueur.yaw) * devant;
+    st.ball.impulse([-st.ball.v[0] + (tx - bp[0]) / tau, -st.ball.v[1] + (hauteur - bp[1] + 4.905 * tau * tau) / tau, -st.ball.v[2] + (tz - bp[2]) / tau], dw); };
+  if (E?.retournee && cfg.retournee && boite && Math.abs(dA) >= (cfg.retournee.dos ?? 2.0) && libre) {
+    const R = E.retournee, tau = (MOVES.retournee?.contact ?? 0.52) + 0.05;
+    pose(tau, -(R.devant ?? 0.15), R.hauteur ?? 1.75);   // au-dessus de lui, un peu derrière (vers le but : il est dos)
+    st._teteCd = st.t + 0.05; mode = 'retournee';
+  } else if (E?.volee && cfg.volee && boite && Math.abs(dA) <= (E.volee.face ?? 1.0)) {
+    const V = E.volee, tau = V.delai ?? 0.45;
+    pose(tau, V.devant ?? 0.6, V.hauteur ?? 0.7);      // devant lui, à hauteur de reprise
+    st._teteCd = st.t + tau - 0.05; mode = 'volee';
+  } else {
+    st._teteCd = st.t + 0.8;
+    st.ball.impulse([-st.ball.v[0] * k, -st.ball.v[1] * 0.8 - 0.5, -st.ball.v[2] * k], dw);
+  }
+  if (mode) st._enchaine = { id: joueur.id, mode, until: st.t + 1.4 };
   st.pass = null;
   st.events.push({ t: +st.t.toFixed(2), type: 'control', by: joueur.id, tech: 'poitrine', foot: 'any',
-    surface: 'chest', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null });
+    surface: 'chest', speed: +hyp(st.ball.v[0], st.ball.v[2]).toFixed(1), settle: null, ...(mode ? { enchaine: mode } : {}) });
 }
 import { hyp } from './hyp.js';

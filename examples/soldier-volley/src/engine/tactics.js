@@ -61,7 +61,7 @@ export const TACTIQUES = {
   blocBas:       { hauteurBloc: 0.08, largeur: 0.35, pressing: 0.15, style: 0.8, transition: 1.0, compacite: 0.8, relation: 0.35, marquage: 0.35,
     roles: { 4: 'recuperateur', 5: 'recuperateur', 8: 'neufDeSurface' } },
   direct:        { hauteurBloc: 0.5, largeur: 0.55, pressing: 0.45, style: 1.0, transition: 0.7, relation: 0.3,
-    roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' } },
+    roles: { 7: 'ailierDePercussion', 8: 'neufDeSurface' }, cpa: { touche: 'longue' } },   // (B6 § 8) le jeu direct lance ses touches du tiers offensif LONGUES (165 : le trébuchet ; A9 ter : la course d'élan du lanceur) — aucun preset ne la vivait
   largeEtCentres: { hauteurBloc: 0.55, largeur: 1.0, pressing: 0.5, style: 0.55, transition: 0.5, relation: 0.25,
     roles: { 0: 'piston', 3: 'piston', 7: 'ailierDePercussion', 9: 'ailierDePercussion' } },
   // LA LIGNE HAUTE (255 — le Barça de Flick 2024-25 : la ligne à 33,8 m et SYNCHRONE, 4,8 hors-jeu provoqués par match ; le prix : l'espace derrière, cfg.piege) — un point nommé, deux faces
