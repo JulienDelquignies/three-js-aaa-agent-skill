@@ -21,7 +21,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const run = (roles) => {
     const st = makeMatch({ full: true, seed: 3, roles });
-    const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
     for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
     return JSON.stringify(st.events);
   };
@@ -34,7 +34,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const cible = (roleName, post = 8) => {
     const st = makeMatch({ full: true, seed: 5, roles: roleName ? [{ [post]: roleName }, null] : null });
-    const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
     const sgn = -st.pitch.ownGoal(0).sign;
     // une attaque POSÉE : porteur + 3 soutiens à l'ancre (les slotters), le joueur observé LOIN
     // (posté), la défense au large — le calage Loi 11 hors de portée (ligne haute)
@@ -83,7 +83,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     st.ball.restart([c.p[0] + 0.3, 0.11, 0], { cause: 'coup-franc' });
     st.restart = null; st.ball.possess(c.id);
     st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
-    return arbitre(st, c, matchCfg({ ceremonie: null,  xg: null /* xg null DATÉ 272 : vert à HEAD~ (14/0 au 271), le monde serré remangé (le 9 → passe : la porte xG compare son tir à la continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
+    return arbitre(st, c, matchCfg({ ceremonie: null, ramasseurs: null,  xg: null /* xg null DATÉ 272 : vert à HEAD~ (14/0 au 271), le monde serré remangé (le 9 → passe : la porte xG compare son tir à la continuation) — la clause mesure sa loi, pas le xG */, shotRange: 20 }));
   };
   const men = monde('meneur'), neuf = monde('neufDeSurface');
   ok(`le RÔLE départage un monde serré (équipe neutre : le meneur → « ${men.meilleure} », le 9 → « ${neuf.meilleure} » — deux joueurs, deux footballs dans le MÊME système)`,
@@ -94,7 +94,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const recit = (r) => {
     const st = makeMatch({ full: true, seed: 4, roles: [r, null] });
-    const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
     for (let i = 0; i < 90 * 60; i++) matchStep(st, 1 / 60, cfg);
     return JSON.stringify(st.events);
   };
@@ -154,7 +154,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const dCibleDe = (v, seed) => {
     const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { marqueSerre: v };
     const st = makeMatch({ full: true, seed, roles: [roles, null] });
-    const cfg = matchCfg({ ceremonie: null,  shotRange: 20, nature: null /* nature null DATÉ 269 : vert à HEAD~ (14/0 au 268), le marqueserré remangé (graine 7 sans épisode : 99/99) — la clause mesure la consigne, pas la nature des gestes */, croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (14/0 au 261), la cible du marqueur se pose sur sa CROYANCE de l'homme, la clause la mesure contre l'homme vrai (s7 0,49/0,70 c. × 1,5) — la clause mesure la consigne marqueSerre, pas la croyance */ });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20, nature: null /* nature null DATÉ 269 : vert à HEAD~ (14/0 au 268), le marqueserré remangé (graine 7 sans épisode : 99/99) — la clause mesure la consigne, pas la nature des gestes */, croyance: null /* croyance null DATÉ 262 : vert à HEAD~ (14/0 au 261), la cible du marqueur se pose sur sa CROYANCE de l'homme, la clause la mesure contre l'homme vrai (s7 0,49/0,70 c. × 1,5) — la clause mesure la consigne marqueSerre, pas la croyance */ });
     const sgn = Math.sign(st.pitch.attackGoal(1).x || 1);
     const c1 = st.players.find((p) => p.team === 1 && p.post === 5);
     c1.p[0] = 0; c1.p[2] = 0;
@@ -182,7 +182,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   const cibleJockey = (v) => {
     const roles = {}; for (let i = 0; i < 10; i++) roles[i] = { orienteFaible: v };
     const st = makeMatch({ full: true, seed: 5, roles: [roles, null] });
-    const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
     const sgn = Math.sign(st.pitch.attackGoal(1).x || 1);
     const c1 = st.players.find((p) => p.team === 1 && p.post === 5);
     c1.p[0] = 0; c1.p[2] = 0; c1.strongFoot = 'right';
@@ -212,7 +212,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   // la perd : le flip binaire, même monde.
   const slotterEst = (ancA, ancB) => {
     const st = makeMatch({ full: true, seed: 5, roles: [{ 4: { ancrage: ancA }, 5: { ancrage: ancB } }, null] });
-    const cfg = matchCfg({ ceremonie: null,  shotRange: 20, soutienN: 1 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20, soutienN: 1 });
     const a = st.players.find((p) => p.team === 0 && p.post === 4);
     const b = st.players.find((p) => p.team === 0 && p.post === 5);
     const c0 = st.players.find((p) => p.team === 0 && p.post === 8);
@@ -250,7 +250,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
   ok(`lot 248 — LES 25 RÔLES DU DOCUMENT sont au catalogue (${doc.length} appariés, ${manque.length ? 'manquent : ' + manque.join(',') : 'aucun manquant'}), ${Object.keys(ROLES).length} rôles dont cinq nouveaux dans la bande (checkRoles ${c.ok ? 'vert' : c.issues.join(' ; ')}, ${neufs.filter((k) => ROLES[k] && LIBELLES_ROLES[k]).length}/5 avec libellé) ; les INTERDITS se composent (latéral inversé + refus tête → ${[...inv.interdits].join('+')}, polyvalent → ${inv.interdits.size && poly.interdits.size === 0 ? 'aucun' : '?'}, on/off → ${[...onoff.interdits].join('+')}) ; la COMPATIBILITÉ du onze avertit (onze fautif : ${fautif.length} règles — ${fautif.map((x) => x.regle.split(' ').slice(0, 4).join(' ')).join(' / ')} ; onze sain : ${sain.length} ; libéro + gardien libéro en bloc bas : ${haut.length}) ; six personas de fixture (${personas})`,
     manque.length === 0 && c.ok && neufs.every((k) => ROLES[k] && LIBELLES_ROLES[k]) && inv.interdits.has('deborde') && inv.interdits.has('tete') && poly.interdits.size === 0 && onoff.interdits.has('repli') && onoff.interdits.has('relacherPress') && fautif.length >= 3 && sain.length === 0 && haut.length === 2 && personas);
   // l'INTERDIT est lu par une loi : le latéral avec refus ['deborde'] ne déborde jamais (2 × 300 s), le même sans refus déborde
-  const debordes = (refus) => { let n = 0; for (const seed of [1, 2]) { const sq = Array.from({ length: 11 }, (_, i) => (i === 0 || i === 3) && refus ? { refus: ['deborde'] } : {}); const st = makeMatch({ full: true, seed, squads: [sq, []] }), cfg = matchCfg({ ceremonie: null,  shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg); for (const e of st.events) if (e.type === 'burst' && e.kind === 'deborde' && st.players[e.by]?.team === 0) n++; } return n; };
+  const debordes = (refus) => { let n = 0; for (const seed of [1, 2]) { const sq = Array.from({ length: 11 }, (_, i) => (i === 0 || i === 3) && refus ? { refus: ['deborde'] } : {}); const st = makeMatch({ full: true, seed, squads: [sq, []] }), cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) matchStep(st, 1 / 60, cfg); for (const e of st.events) if (e.type === 'burst' && e.kind === 'deborde' && st.players[e.by]?.team === 0) n++; } return n; };
   const avec = debordes(false), sans = debordes(true);
   ok(`lot 248 — l'INTERDIT est LU par la loi du dédoublement : latéraux avec refus ['deborde'] → ${sans} débordement(s) = 0 sur 2 × 300 s ; sans refus → ${avec} ≥ 1 (le rôle dit non AVANT que la loi n'agisse — pas un multiplicateur, la bande d'arbitre est intacte)`,
     sans === 0 && avec >= 1);
@@ -261,10 +261,10 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ne rentre jamais, sa dispense s'ajoute aux pointes — le prix, visible. Le flux (ballon à 25-52 m de notre but, 4 × 300 s) :
 // 8-9 sous la ligne 65 % des images, p50 1 devant, ≥ 6 devant 7 % ; les doses avance/axe sont des placebos (null).
 {
-  const bursts = (roleId) => { let n = 0, ahead = 0, img = 0; for (const seed of [1, 2]) { const st = makeMatch({ full: true, seed, roles: [{ 7: roleId }, {}] }), cfg = matchCfg({ ceremonie: null,  shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 30 === 0 && st.possession.team === 1 && !st.restart) { const p = st.players.find((q) => q.team === 0 && q.post === 7), sg = Math.sign(st.pitch.ownGoal(0).x || 1); img++; if ((p.p[0] - st.ball.p[0]) * sg < -2) ahead++; if (p._pace?.kind === 'repli' && p._pace.until > st.t) n++; } } } return { n, devant: 100 * ahead / Math.max(1, img) }; };
+  const bursts = (roleId) => { let n = 0, ahead = 0, img = 0; for (const seed of [1, 2]) { const st = makeMatch({ full: true, seed, roles: [{ 7: roleId }, {}] }), cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 }); for (let i = 0; i < 300 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 30 === 0 && st.possession.team === 1 && !st.restart) { const p = st.players.find((q) => q.team === 0 && q.post === 7), sg = Math.sign(st.pitch.ownGoal(0).x || 1); img++; if ((p.p[0] - st.ball.p[0]) * sg < -2) ahead++; if (p._pace?.kind === 'repli' && p._pace.until > st.t) n++; } } } return { n, devant: 100 * ahead / Math.max(1, img) }; };
   const marchant = bursts('wide_creator'), presseur = bursts('tracking_winger'), poly = bursts('polyvalent');
-  ok(`lot 251 — LE REPLI PAR RÔLE : l'ailier marchant (wide_creator, interdit 'repli') ne rentre jamais (${marchant.n} images en sprint de repli = 0 sur 2 × 300 s, devant le ballon ${marchant.devant.toFixed(0)} % des images sans ballon), l'ailier de pressing (tracking_winger, repli 0,1) rentre (${presseur.n} ≥ 1, devant ${presseur.devant.toFixed(0)} % — informatif) ; polyvalent (0,5 = l'élection d'hier) ${poly.n} sprints, devant ${poly.devant.toFixed(0)} % ; clé repli.role ${matchCfg({ ceremonie: null }).repli.role}`,
-    marchant.n === 0 && presseur.n >= 1 && matchCfg({ ceremonie: null }).repli.role === true);   // « devant » informatif DATÉ 249b : la craie tenue garde l'ailier marchant à sa ligne, pas devant le ballon (44 c. 45 %) — le mécanisme est le sprint, 0 c. 199
+  ok(`lot 251 — LE REPLI PAR RÔLE : l'ailier marchant (wide_creator, interdit 'repli') ne rentre jamais (${marchant.n} images en sprint de repli = 0 sur 2 × 300 s, devant le ballon ${marchant.devant.toFixed(0)} % des images sans ballon), l'ailier de pressing (tracking_winger, repli 0,1) rentre (${presseur.n} ≥ 1, devant ${presseur.devant.toFixed(0)} % — informatif) ; polyvalent (0,5 = l'élection d'hier) ${poly.n} sprints, devant ${poly.devant.toFixed(0)} % ; clé repli.role ${matchCfg({ ceremonie: null, ramasseurs: null }).repli.role}`,
+    marchant.n === 0 && presseur.n >= 1 && matchCfg({ ceremonie: null, ramasseurs: null }).repli.role === true);   // « devant » informatif DATÉ 249b : la craie tenue garde l'ailier marchant à sa ligne, pas devant le ballon (44 c. 45 %) — le mécanisme est le sprint, 0 c. 199
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

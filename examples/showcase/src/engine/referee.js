@@ -1,4 +1,4 @@
-import { tirage } from './rng.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
+import { tirage } from './rng.js'; import { ramasseursStep, ramasseurPrend } from './ramasseurs.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
 // referee.js — L'ARBITRAGE ET LES CÉRÉMONIES DU MATCH, sortis de match-sim (lot 16 : la
 // volumétrie est une dette comme une autre — 1 575 lignes accrétées en six lots). La FAMILLE
 // est cohésive : tout ce qui ARRÊTE et REMET le jeu — sorties (onOut), droit de prise
@@ -964,9 +964,11 @@ export function ballFetch(st, dt, cfg) {
     // 2,2). Un ballon hors d'atteinte (au-delà du tablier + marge) ou une quête plus longue que patience s : le ballon
     // revient au point de remise — le ramasseur du réel. Absente : la quête sans fin d'hier.
     if (st.full && cfg?.ramasseur) {
+      if (st._ramasseur) { r._fetchT0 = st.t; return false; }   // (§ 5) un ramasseur y va : le preneur attend
       const RM = cfg.ramasseur, ap = (cfg.apron ?? 0) + (RM.marge ?? 0.6);
       const horsAtteinte = Math.abs(bp[0]) > st.pitch.hx + ap || Math.abs(bp[2]) > st.pitch.hz + ap;
       if ((horsAtteinte && hyp(st.ball.v[0], st.ball.v[2]) < 1) || st.t - r._fetchT0 > (RM.patience ?? 6)) {
+        if (st.full && cfg.ramasseurs && ramasseurPrend(st, r, cfg, horsAtteinte ? 'hors-atteinte' : 'patience')) return false;   // (§ 5, ramasseurs.js) un CORPS va le chercher, le ramasse et le roule au point
         st.ball.restart([r.p[0], 0.11, r.p[1]], { cause: r.type }); r.placed = true; r.placedAt = st.t; r.carried = false; r._fetchT0 = null; poserElan(st, r, cfg);
         st.events.push({ t: +st.t.toFixed(2), type: 'ramasseur', cause: horsAtteinte ? 'hors-atteinte' : 'patience' });
         return false;
@@ -1070,7 +1072,7 @@ export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
   if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
   else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
   a.speed = sp; if (gS && gS.dir != null) { let da = gS.dir - a.yaw; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; a.yaw += da * Math.min(1, dt * 6); }   // (A11 bis) le corps se tourne vers la direction du geste (le coup franc, le fautif)
-  assistantsStep(st, dt, cfg);
+  assistantsStep(st, dt, cfg); ramasseursStep(st, dt, cfg);   // (§ 5) les ramasseurs de balle
 }
 
 /** LES ASSISTANTS DE TOUCHE (lot 186, cfg.assistants — la Loi 6 : la ligne du hors-jeu
@@ -1092,6 +1094,9 @@ function assistantsStep(st, dt, cfg) {
   // à l'aplomb de la faute, tenu jusqu'à la remise jouée (ou la durée, si elle traîne).
   for (let e = st._asEv ?? 0; e < st.events.length; e++) {
     const ev = st.events[e];
+    // (A11 ter, § 5 — cfg.arbitreGestes) LES GESTES DE L'ASSISTANT : la touche de SA ligne = la hampe inclinée du côté que l'équipe attaque (vers sa droite ou sa gauche, il fait face au terrain) ; le remplacement = la hampe à l'horizontale (l'assistant 1, côté banc)
+    if (cfg.arbitreGestes && ev.type === 'sortie' && ev.out === 'touche' && ev.p) { const k = ev.p[1] >= 0 ? 0 : 1, sgA = Math.sign(st.pitch.attackGoal(ev.team).x || 1), droite = k === 0 ? sgA < 0 : sgA > 0; as[k].geste = { kind: droite ? 'drapeauIncline' : 'drapeauInclineG', at: st.t, until: st.t + 2.0 }; continue; }
+    if (cfg.arbitreGestes && ev.type === 'remplacement') { as[1].geste = { kind: 'drapeauHorizontal', at: st.t, until: st.t + 3.0 }; continue; }
     if (ev.type !== 'hors-jeu') continue;
     const team = st.players.find((p) => p.id === ev.by)?.team;
     if (team == null) continue;
@@ -1101,6 +1106,10 @@ function assistantsStep(st, dt, cfg) {
   for (let k = 0; k < 2; k++) {
     const a = as[k], cote = k === 0 ? 1 : -1;
     if (a.drapeau && ((!st.restart && st.t - a.drapeau.t > 1.5) || st.t - a.drapeau.t > (AS.drapeau ?? 12))) a.drapeau = null;   // la remise jouée : le drapeau descend (garde-fou à la durée)
+    if (cfg.arbitreGestes) {   // (A11 ter, § 5) le hors-jeu : la hampe dressée TENUE tant que le drapeau est levé (la scène clampe le geste à sa tenue) ; les autres gestes expirent
+      if (a.drapeau) { if (a.geste?.kind !== 'drapeauLeve') a.geste = { kind: 'drapeauLeve', at: st.t, until: st.t + 2.2, tenu: true }; a.geste.until = st.t + 0.5; }
+      else if (a.geste && (a.geste.tenu || st.t >= a.geste.until)) a.geste = null;
+    }
     const L = offsideLine(st, k);                                  // la ligne des attaques de l'équipe k
     let tx = Math.min(hx - 0.5, L.adv) * L.sgn;
     const r = st.restart;

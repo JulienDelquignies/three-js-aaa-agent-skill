@@ -153,6 +153,30 @@ revenait toute seule et le fauché se relevait sans la prendre : deux gestes cô
   tendue à son windup) ; la synchronisation est celle d'A10 quater (la main arrive quand le fauché a fait deux tiers de son relevé,
   le tir couvre la fin du relevé et le premier pas debout).
 
+## Les assistants et les ramasseurs (Animations_A_Faire § 5 ; `motion-arbitre` drapeau*, `referee.assistantsStep`, `engine/ramasseurs.js`, note 382)
+
+- **Les gestes de l'assistant** (motion-arbitre, générés, la hampe dans la main droite — la scène l'attache au bone, elle suit le
+  bras) : `drapeauLeve` (le hors-jeu : le bras tendu droit au-dessus de la tête, main à +37 cm de la tête — TENU tant que la sim
+  garde le drapeau : la scène clampe le geste à sa tenue), `drapeauIncline` (la touche vers sa droite : le bras levé de côté à
+  118°, main à 62 cm à droite de l'épaule et 22 cm plus haut), `drapeauInclineG` (vers sa gauche : le bras croise devant, elev −60 /
+  fwd 90 — main à 42 cm à gauche de l'épaule, à sa hauteur), `drapeauHorizontal` (le remplacement : les deux mains à 25 cm au-dessus
+  de la tête, 72 cm l'une de l'autre, le poignet couche la hampe). Règles dans `checkArbitreGen`.
+- **La sim** (`assistantsStep`, sous `cfg.arbitreGestes`) : au hors-jeu l'assistant de la moitié porte `drapeauLeve` (`tenu`,
+  rafraîchi tant que `a.drapeau` vit — le drapeau d'hier reste la source) ; à la touche de SA ligne (`sortie` out 'touche', le côté
+  par z) la hampe inclinée du côté que l'équipe attaque — vers sa droite ou sa gauche, il fait face au terrain ; au `remplacement`
+  l'assistant 1 (côté banc) `drapeauHorizontal` 3 s. La scène (arbitre.js) donne aux assistants la couche de geste du central ; le
+  basculement de la hampe d'hier ne vaut plus que sans geste. `arbitreGestes:null` : la hampe qui bascule seule, au bit.
+- **Les ramasseurs de balle** (`cfg.ramasseurs`, `ramasseurs.js`) : quatre corps assis aux quarts des touches (2,4 m dehors, face au
+  terrain, chasuble jaune dans la scène), hors st.players ; au ballon hors d'atteinte (le 225b le rendait au point en une image :
+  l'événement `ramasseur`), le plus proche TROTTE au ballon (3,6 m/s), le RAMASSE (`ramassage`, le ballon dans ses mains dès le
+  contact du geste, le corps qui se tourne vers le point), le ROULE (`rouleMain` : au contact le ballon part à la vitesse qui l'arrête
+  au point — le frottement du moteur mesuré, d = 0,667·v^1,56 : 2 m/s → 1,6 m, 4 → 5,8, 8 → 17,1) et revient s'asseoir ; le roulé
+  arrêté à ≤ 2,5 m du point s'y pose ; la remise attend (`r.at`) ; `patience` 12 s : le point d'hier. Contrat (verify-ramasseurs,
+  5 clauses) : la touche hors d'atteinte — le ramasseur part au premier pas (18,9 m), ramasse à 5,2 s, roule à 6,4 s (2,9 m/s pour 4 m,
+  arrêt à 0,29 m du point, posé), la remise prise à 12,5 s, le ramasseur assis à 12,8 s ; null → le point en une image ; sabotage
+  vitesse 0,2 → 'patience-ramasseur'. Dettes : le ballon dans les mains est posé par la sim (35 cm devant, à 0,95 m), pas par la
+  scène ; les ramasseurs derrière les buts n'existent pas ; le quatrième arbitre non plus.
+
 ## L'avant-match et les gestes sociaux (A11 ter — Animations_A_Faire § 7 ; `engine/ceremonie.js`, `cfg.ceremonie`, note 381)
 
 - **La file des poignées** (`cfg.ceremonie.poignee`, `ceremonieStep` — appelé en tête du bloc de remise de match-sim, il POSSÈDE la

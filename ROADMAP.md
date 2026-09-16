@@ -267,6 +267,10 @@
   cfg.ceremonie) — la file des poignées avant le premier engagement (la rangée le long de la médiane, la file qui défile de côté et serre
   chaque main à l'arrivée, 121 poignées, les mains jointes par la scène), l'horloge qui part au coup d'envoi, le salut au public au sifflet
   final, la carte tenue 0,3 s de plus ; le regard tenu (p._regard) dans movement ; null = hier au bit.
+- LIVRÉ (note 382, reference/59 § 5, verify-assistants 13/0, verify-ramasseurs 5/0) : LES ASSISTANTS ET LES RAMASSEURS (§ 5) — les gestes
+  du drapeau générés (hors-jeu tenu, touche inclinée du côté attaqué, remplacement à l'horizontale) posés par la sim sur l'assistant qu'il
+  faut, la hampe qui suit le bras ; quatre ramasseurs de balle (engine/ramasseurs.js, cfg.ramasseurs) qui trottent au ballon hors
+  d'atteinte, le ramassent et le roulent au point (frottement mesuré), la remise qui attend ; null = hier au bit.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

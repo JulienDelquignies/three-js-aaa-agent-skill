@@ -14,7 +14,7 @@ const hyp = Math.hypot;
 // LA FIXTURE : le monde vidé, un centre lobé depuis l'aile vers la surface ; l'attaquant est posé au point où le vol REDESCEND à h m,
 // épinglé là chaque image jusqu'à son acte, le regard tourné vers SON but (dos) ou vers le but adverse (face) ; foe : un adversaire à 1 m.
 const centre = (over, { h = 1.8, regard = 'dos', foe = false, apex = 5.8 } = {}) => {
-  const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null,  repli: false, ...over });
+  const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  repli: false, ...over });
   for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
   st.ball.release('arrêt-de-jeu');
   for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }
@@ -46,7 +46,7 @@ const centre = (over, { h = 1.8, regard = 'dos', foe = false, apex = 5.8 } = {})
   return { A, X, t0, g, sg, windup, contact, vApres, shot: E.find((e) => e.type === 'shot' && e.by === A.id) ?? null, autres: E.filter((e) => ['volée', 'tête', 'windup'].includes(e.type) && e.by === A.id && e.move !== 'retournee').map((e) => e.type + (e.move ? '/' + e.move : '')).join(','),
     types: E.map((e) => `${e.t}:${e.type}${e.by != null ? '@' + e.by : ''}${e.move ? '/' + e.move : ''}${e.kind ? '/' + e.kind : ''}`).join(' ') };
 };
-const tick = 1 / 60 + 1e-6, cfg = matchCfg({ ceremonie: null, }), R = cfg.retournee;
+const tick = 1 / 60 + 1e-6, cfg = matchCfg({ ceremonie: null, ramasseurs: null, }), R = cfg.retournee;
 
 console.log('— (a) le centre à 1,8 m sur un attaquant dos au but : la retournée s\'arme et frappe au but —');
 {

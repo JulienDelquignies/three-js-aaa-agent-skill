@@ -62,7 +62,7 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
 - **Contrat.** Les deux mains à ≤ 0,15 m l'une de l'autre pendant 0,3 s (composé, en page) ; le
   fauché debout à l'heure de la sim comme aujourd'hui.
 
-## 5. Les assistants et le ramasseur (des corps de plus)
+## 5. Les assistants et le ramasseur (des corps de plus) — LIVRÉ (16/09, note 382, reference/59 § 5, verify-assistants 13/0, verify-ramasseurs 5/0)
 
 - **Assistants.** Deux corps sur les lignes de touche, à la hauteur de la ligne de hors-jeu
   (`offsideLine`) ; gestes : drapeau levé (hors-jeu : l'événement `hors-jeu` existe), drapeau

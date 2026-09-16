@@ -22,7 +22,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // parqué loin. Aucune écriture de p/v du ballon — release nommé + strike, la discipline tient.
 const ciel = (seed, arrange) => {
   const st = makeMatch({ full: true, seed });
-  const cfg = matchCfg({ ceremonie: null,  shotRange: 20, interception: null /* interception null DATÉ 266 : vert à HEAD~ (7/0 au 265), la mise en scène parque les corps sans rafraîchir leur croyance du ballon (le défenseur sous l’arc court vers un souvenir, aucune tête) — la clause mesure la tête, pas l’interception */ });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20, interception: null /* interception null DATÉ 266 : vert à HEAD~ (7/0 au 265), la mise en scène parque les corps sans rafraîchir leur croyance du ballon (le défenseur sous l’arc court vers un souvenir, aucune tête) — la clause mesure la tête, pas l’interception */ });
   for (let i = 0; i < 8 * 60 && !(st.phase === 'carry' && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   for (const q of st.players) { q.p[0] = -45; q.p[2] = (q.id % 11) * 2 - 10; q.v = [0, 0]; q.act = null; }
   st.restart = null; st._teteCd = 0;
@@ -92,7 +92,7 @@ const run = (st, cfg, s) => { for (let i = 0; i < s * 60; i++) matchStep(st, 1 /
   // la dérive) : la fixture DIRECTE juge l'adjudicateur — ballon posé à 1,85 m par la porte
   // légale du restart, deux corps écrits, UNE image de teteStep. Zéro dérive, déterminisme pur.
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
   for (let i = 0; i < 8 * 60 && !(st.phase === 'carry' && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   for (const q of st.players) { q.p[0] = -45; q.p[2] = (q.id % 11) * 2 - 10; q.v = [0, 0]; q.act = null; }
   const a = st.players.find((p) => p.team === 0 && !p.keeper);
@@ -130,7 +130,7 @@ const run = (st, cfg, s) => { for (let i = 0; i < s * 60; i++) matchStep(st, 1 /
     q.p[0] = 0; q.p[2] = 0;
     return { from: [0, -9.5], yaw: Math.PI / 2, to: q.id };
   });
-  const cfg0 = matchCfg({ ceremonie: null,  shotRange: 20, tete: false });
+  const cfg0 = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20, tete: false });
   for (let i = 0; i < 0.9 * 60; i++) matchStep(st, 1 / 60, cfg0);
   ok(`sabotage « jeu au sol » attrapé (tete:false : le même arc sur le même corps → ${st.events.filter((e) => e.type === 'tête').length} tête — le monde d'hier attend que ça retombe, nommé)`,
     !st.events.some((e) => e.type === 'tête'));
@@ -143,7 +143,7 @@ const run = (st, cfg, s) => { for (let i = 0; i < s * 60; i++) matchStep(st, 1 /
   let tetes = 0, centres = 0;
   for (const seed of [1, 3, 5, 7, 2, 4]) {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
     for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
     tetes += st.events.filter((e) => e.type === 'tête').length;
     centres += st.events.filter((e) => e.type === 'centre').length;

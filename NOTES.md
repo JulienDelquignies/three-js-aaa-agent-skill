@@ -12704,3 +12704,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   s7-salut (le salut au sifflet final).
 - **Dettes** : la cérémonie dure ~38 s (11 × 11 poignées à 0,35 s + les trajets) ; les gardiens défilent comme les autres ; la
   plaque de la carte dans le plan de la main ; l'hymne, la photo d'équipe et le toss n'existent pas.
+
+- 382: LES ASSISTANTS ET LES RAMASSEURS (§ 5 ; motion-arbitre drapeauLeve/drapeauIncline/drapeauInclineG/drapeauHorizontal, referee.assistantsStep, engine/ramasseurs.js, scène arbitre.js ; verify-assistants 13/0, verify-ramasseurs 5/0 ; reference/59 § 5)
+
+- **Les gestes du drapeau** (générés, la hampe attachée à la main droite suit le bras) : drapeauLeve (bras tendu droit, main +37 cm
+  au-dessus de la tête, TENU tant que la sim garde a.drapeau — la scène clampe le geste à hold), drapeauIncline (le bras levé de côté
+  118°, main à 62 cm à droite de l'épaule), drapeauInclineG (elev −60 / fwd 90 : le bras croise devant, main à 42 cm à gauche de
+  l'épaule à sa hauteur — un fwd positif sur un bras levé partait DERRIÈRE le corps, mesuré : z +0,29), drapeauHorizontal (deux mains
+  à 25 cm au-dessus de la tête, 72 cm l'une de l'autre — le rot du bras est une pré-rotation d'épaule, pas un poignet : le poignet
+  (plat) couche la hampe). La sim (sous cfg.arbitreGestes) : le hors-jeu → l'assistant de la moitié, tenu ; la touche (sortie/touche,
+  le côté par z) → incliné vers le côté que l'équipe attaque (il fait face au terrain : droite = sgA < 0 côté z > 0) ; le remplacement
+  → l'assistant 1 à l'horizontale 3 s. La scène : les assistants reçoivent la couche de geste du central ; le basculement de la hampe
+  d'hier ne vaut plus que sans geste. Banc 13/0 (le hors-jeu tenu lu à 1,2 s : sans remise posée le drapeau d'hier redescend à 1,5 s).
+- **Les ramasseurs** (cfg.ramasseurs { n 4, marge 2,4, vitesse 3,6, portee 0,7, patience 12, colle 2,5 }) : quatre corps aux quarts des
+  touches ; au ballon hors d'atteinte (referee.ballFetch — le 225b le rendait au point en une image), ramasseurPrend élit le plus
+  proche, la remise attend (r.at, r._fetchT0 gelé) ; ramasseursStep : va (cinématique des assistants), ramasse (le ballon dans les mains
+  dès 0,42 s — posé par la sim à 35 cm devant, 0,95 m — le corps se tourne vers le point), roule (au contact 0,52 s le ballon part à
+  V0(d) = (d/0,667)^(1/1,56) — le frottement du moteur mesuré : 2 m/s → 1,61 m, 3 → 3,47, 4 → 5,80, 6 → 11,28, 8 → 17,11, 10 → 22,92),
+  revient ; le roulé arrêté à ≤ colle m du point s'y pose ; patience → le point d'hier ('patience-ramasseur'). La cause du ballon
+  porté est celle de la remise (le ballon connaît ses causes : 'ramasseur' n'en est pas une — planté au premier essai). Banc 5/0 : la
+  touche hors d'atteinte — parti au premier pas (18,9 m), ramassé à 5,2 s, roulé à 6,4 s (2,9 m/s pour 4 m, arrêt à 0,29 m, posé au
+  point), remise prise à 12,5 s (le preneur parqué à 40 m), assis à 12,8 s ; null → le point en une image et la remise prise à ~25 s
+  (le preneur marche) ; vitesse 0,2 → 'patience-ramasseur' à 12 s. En page : le ramassage à 5,7 s (clip ramassage sur le corps
+  d'officiel en chasuble jaune).
+- **Épingles** : 37 bancs épinglent ramasseurs:null avec ceremonie:null (chaque clause de flux mesure le monde de son jour).
+- **Captures** : s5-ramasseur-ramasse, s5-ramasseur-roule, s5-drapeau-leve, s5-drapeau-touche.
+- **Dettes** : les ramasseurs derrière les buts et le quatrième arbitre n'existent pas ; le ballon dans les mains du ramasseur est
+  posé par la sim, pas attaché aux mains rendues ; la hampe horizontale du remplacement se lit selon le poignet (plat 80 : à vérifier
+  à l'œil).

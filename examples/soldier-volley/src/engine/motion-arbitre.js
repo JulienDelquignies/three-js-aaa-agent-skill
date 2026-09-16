@@ -21,6 +21,15 @@ export const ARBITRE_KINDS = {
   carton:   { duration: 2.3, contact: 0.48, hold: 1.85, upperOnly: true, elev: 176, fwd: 6, elbow: 6, headUp: 10 },   // (A11 ter) tenu 0,3 s de plus, face au fautif (referee : le regard suit dir)
   designer: { duration: 1.4, contact: 0.34, hold: 1.05, upperOnly: true, elev: 2, fwd: 96, elbow: 4, yaw: 10 },
   avantage: { duration: 1.4, contact: 0.32, hold: 1.05, upperOnly: true, elev: 8, fwd: 62, elbow: 6, sweep: 16, sweeps: 2 },
+  // (A11 ter, § 5) LES GESTES DE L'ASSISTANT — la hampe dans la main droite (la scène l'attache au bone : elle suit le bras) :
+  //   drapeauLeve       le hors-jeu : le bras tendu droit au-dessus de la tête, la hampe dressée — TENU tant que la sim le dit (la scène clampe à hold)
+  //   drapeauIncline    la touche : la hampe à ~45° du côté que l'équipe attaque — vers SA droite (le bras levé de côté)
+  //   drapeauInclineG   …vers sa gauche : le bras passe devant la poitrine
+  //   drapeauHorizontal le remplacement : la hampe tenue à deux mains au-dessus de la tête, à l'horizontale (plat : le poignet couche la hampe)
+  drapeauLeve:       { duration: 2.2, contact: 0.5, hold: 1.8, upperOnly: true, drapeau: true, elev: 178, fwd: 4, elbow: 4, headUp: 4 },
+  drapeauIncline:    { duration: 2.0, contact: 0.45, hold: 1.6, upperOnly: true, drapeau: true, elev: 118, fwd: -12, elbow: 6 },
+  drapeauInclineG:   { duration: 2.0, contact: 0.45, hold: 1.6, upperOnly: true, drapeau: true, elev: -60, fwd: 90, elbow: 8 },   // elev < 0 : le bras croise devant (mesuré : main à 42 cm à gauche de l'épaule, à sa hauteur)
+  drapeauHorizontal: { duration: 3.0, contact: 0.5, hold: 2.5, upperOnly: true, drapeau: true, deux: true, elev: 160, fwd: -30, elbow: 20, plat: 80 },   // les deux mains à 25 cm au-dessus de la tête, 72 cm l'une de l'autre ; plat : le poignet couche la hampe
 };
 export const ARBITRE_NAMES = Object.keys(ARBITRE_KINDS);
 
@@ -47,6 +56,12 @@ export function generateArbitre(kindName, P, { style = NEUTRAL_STYLE } = {}) {
   if (kindName === 'siffler') {
     poseAt = (t) => { const a = on(t), J = {}; trunk(J, { headPitch: K.headUp * a, lean: -2 * a });
       Object.assign(J, armAt('Right', NEUTRAL_ARM, { elev: K.elev * A, fwd: K.fwd, elbow: K.elbow, rot: K.rot ?? 0 }, a), armAt('Left', NEUTRAL_ARM, { elev: 16, fwd: 10, elbow: 30 }, a));
+      return { J, hips: [0, 0, 0] }; };
+  } else if (K.drapeau) {   // (A11 ter, § 5) la hampe tenue : le bras droit à sa pose, la gauche calme ou symétrique (deux mains)
+    poseAt = (t) => { const a = on(t), J = {}; trunk(J, { headPitch: (K.headUp ?? 0) * a, lean: -2 * a });
+      const R = { elev: K.elev * Math.min(A, 1.03), fwd: K.fwd, elbow: K.elbow, rot: K.rot ?? 0 };
+      Object.assign(J, armAt('Right', NEUTRAL_ARM, R, a), armAt('Left', NEUTRAL_ARM, K.deux ? { ...R, rot: -(K.rot ?? 0) } : { elev: 14, fwd: 4, elbow: 16 }, a));
+      if (K.plat) J.RightHand = rx(K.plat * a);
       return { J, hips: [0, 0, 0] }; };
   } else if (kindName === 'carton') {
     poseAt = (t) => { const a = on(t), J = {}; trunk(J, { headPitch: K.headUp * a, lean: -4 * a });
@@ -97,6 +112,20 @@ export function checkArbitreGen(spec, P, kind) {
   if (kind === 'designer') {
     if (!(Math.abs(s.rh[1] - shoulderY) < 0.14)) issues.push(`designer : la main n'est pas à hauteur d'épaule (${(100 * (s.rh[1] - shoulderY)).toFixed(0)} cm)`);
     if (!(s.rh[2] < s.rs[2] - 0.42)) issues.push(`designer : le bras n'est pas tendu devant (${(100 * (s.rs[2] - s.rh[2])).toFixed(0)} cm devant l'épaule)`);
+  }
+  if (kind === 'drapeauLeve') {
+    if (!(s.rh[1] > s.head[1] + 0.30)) issues.push(`drapeauLeve : la main n'est pas au-dessus de la tête (+${(100 * (s.rh[1] - s.head[1])).toFixed(0)} cm, ≥ 30)`);
+    if (!(dist(s.rh, s.rs) > 0.46)) issues.push(`drapeauLeve : le bras n'est pas tendu (${(100 * dist(s.rh, s.rs)).toFixed(0)} cm épaule-main)`);
+  }
+  if (kind === 'drapeauIncline') {
+    if (!(s.rh[0] > s.rs[0] + 0.30 && s.rh[1] > shoulderY + 0.12)) issues.push(`drapeauIncline : la main n'est pas levée de côté (${(100 * (s.rh[0] - s.rs[0])).toFixed(0)} cm à droite de l'épaule, +${(100 * (s.rh[1] - shoulderY)).toFixed(0)} cm)`);
+  }
+  if (kind === 'drapeauInclineG') {
+    if (!(s.rh[0] < s.rs[0] - 0.30 && s.rh[1] > shoulderY - 0.06 && s.rh[2] < s.rs[2] - 0.10)) issues.push(`drapeauInclineG : la main ne croise pas devant vers la gauche (${(100 * (s.rs[0] - s.rh[0])).toFixed(0)} cm à gauche de l'épaule, ${(100 * (s.rh[1] - shoulderY)).toFixed(0)} cm de haut, ${(100 * (s.rs[2] - s.rh[2])).toFixed(0)} cm devant)`);
+  }
+  if (kind === 'drapeauHorizontal') {
+    if (!(s.rh[1] > s.head[1] + 0.08 && s.lh[1] > s.head[1] + 0.08)) issues.push(`drapeauHorizontal : les deux mains ne sont pas au-dessus de la tête (+${(100 * (s.rh[1] - s.head[1])).toFixed(0)} / +${(100 * (s.lh[1] - s.head[1])).toFixed(0)} cm)`);
+    if (!(dist(s.rh, s.lh) > 0.25 && dist(s.rh, s.lh) < 0.75)) issues.push(`drapeauHorizontal : les mains ne tiennent pas la hampe (${(100 * dist(s.rh, s.lh)).toFixed(0)} cm entre elles, 25-75)`);
   }
   if (kind === 'avantage') {
     if (!(s.rh[2] < s.chest[2] - 0.32 && s.lh[2] < s.chest[2] - 0.32)) issues.push('avantage : les deux bras ne sont pas devant');

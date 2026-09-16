@@ -292,6 +292,8 @@ examples/
 
   THE PRE-MATCH AND THE SOCIAL GESTURES (lot § 7, `engine/ceremonie.js`, `cfg.ceremonie`): before the first kick-off the non-kicking team lines up along the halfway line and the kicking team files past sideways, shaking every hand on arrival (121 handshakes, the scene joins the right hands), the clock starts at the kick-off and the ceremony is not stoppage time; at the final whistle every player turns to the stand and waves; the referee's card is held 0.3 s longer, facing the offender. A held-gaze channel in movement (`p._regard`) drives the facing even while walking. Key null = yesterday bit for bit.
 
+  THE ASSISTANTS AND THE BALL BOYS (lot § 5): generated flag gestures for the assistant referees (offside flag held up as long as the sim keeps it, throw-in flag tilted toward the attacking side, substitution flag horizontal in both hands) posted by the sim on the right assistant, the flag prop following the arm; four ball boys (`engine/ramasseurs.js`, `cfg.ramasseurs`) who jog to a ball out of reach, pick it up and roll it to the restart spot with the speed that stops it there (measured friction), while the restart waits. Key null = yesterday bit for bit.
+
 ## Install
 
 As a plugin via marketplace:
