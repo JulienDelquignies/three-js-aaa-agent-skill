@@ -325,9 +325,11 @@ export function cornerTrav(st, id, cfg) {
   const goal = pitch.attackGoal(q.team);
   const sg = Math.sign(goal.x || 1);
   if (Math.abs(Math.abs(q.p[0]) - pitch.hx) > 4) return false;     // pas un vrai coin (sécurité)
+  const pre = q._cornerCort; q._cornerCort = null;                  // (B2) le CORT tiré À LA POSE (elan.poserElan, tirImmediat) : 'court' → le corner de possession, joué au contact d'élan ; 'centre' → pas de second tirage
+  if (pre === 'court') return false;
   const rnd = tirage(st, 'cpa', q.id, st.rnd2 ?? st.rnd ?? (() => 0.5));
   const sty = st.tactics ? (st.tactics[q.team]?.style ?? 0.5) : 0.5;
-  if (rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30) return false;   // le CORT du style : possession 35 %, direct 5 %
+  if (!pre && rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30) return false;   // le CORT du style : possession 35 %, direct 5 %
   const cz = Math.sign(q.p[2] || 1);
   // LE STYLE DE CORNER PAR ÉQUIPE (lot 148, tac.cpa.corner — la demande mesurée du
   // consommateur carrière) : 'court' joue le une-deux du coin (nouvelle variante), 'premier'

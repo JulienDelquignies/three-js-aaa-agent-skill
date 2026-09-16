@@ -108,7 +108,17 @@ manquent et les branchements qu'elles exigeront).
   vent (une déviation) lui retire reste planté 0,4 s — prévoir l'abandon (`abortGesture`) quand la
   prédiction meurt. Taille : 1 lot.
 
-## 3. Le double geste des remises lancées (coup franc lancé, corner)
+## 3. Le double geste des remises lancées (coup franc lancé, corner) — LIVRÉ (16/09, note 372, reference/56 § B2)
+
+- **Livré** : `remisesPied.elan.tirImmediat { cone: 40 }` (elan.js, null = hier au bit) — le double geste
+  n'était PAS le lancé ni le corner joué (ils partent dans l'image de la prise) mais le coup franc LOIN
+  (> 55 m : ni direct ni lancement, 9 remises sur 20 en 12 matchs) et le corner de possession. Le plan
+  se prend à la pose (le coéquipier le plus libre du demi-plan avant, la course orientée vers lui, relue
+  toutes les 0,5 s, la course attend qu'il se soit écarté — la protestation rassemble les corps), la
+  passe s'arme au contact d'élan en urgence (`opts.elan` : pas de porte d'ancre ; `payload.tirImmediat` :
+  pas de porte de stance au tir), tir au tick suivant ; la scène ne joue qu'un geste (`remiseSkip`
+  généralisé, `elanTake` : pas de clip de contrôle sur le clip d'élan). verify-remises 47/0.
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré.** Au contact de la course d'élan, `coupFrancLance` / `cornerTrav` → `beginPass` arme
   une SECONDE passe : refusée par la porte de timing (`st.hold` ≈ 0 : 'timing' × 5 mesuré), puis

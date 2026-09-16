@@ -2,11 +2,13 @@
 // LONGUE prise au bout d'une course (elan.sortieBut), la touche LONGUE lancée au bout d'une course (elan.toucheLongue), et LE MUR
 // QUI SAUTE au coup franc (remisesPied.mur). Sorti de referee.js (plafond de lignes) — referee.js ré-exporte.
 import { hyp } from './hyp.js';
+import { tirage } from './rng.js';
 import { startGesture, abortGesture } from './gesture.js';
 import { MOVE_TIMING } from './skills-sim.js';
 import { byId } from './technique.js';
 import { relancerGardien, styleSortieBut } from './keeper.js';
 import { beginPass } from './strike-sim.js';
+import { choosePass } from './rondo.js';   // (B2) le tir immédiat du preneur à son contact d'élan : le choix du porteur, dans l'image
 const deny = (st, cause) => { (st.deny ??= {})[cause] = (st.deny[cause] ?? 0) + 1; return false; };
 
 // ---------------------------------------------------------------- LA COURSE D'ÉLAN (lot A9 bis, cfg.remisesPied)
@@ -44,13 +46,40 @@ export function poserElan(st, r, cfg) {
   }
   if (r.type !== 'coup-franc' && r.type !== 'corner') return;
   const g = st.pitch.attackGoal(tk.team), sg = Math.sign(g.x || 1);
-  const aim = r.type === 'corner' ? [g.x - sg * 11, 0] : [g.x, 0];                       // la cible provisoire : le point de penalty, le but
+  let aim = r.type === 'corner' ? [g.x - sg * 11, 0] : [g.x, 0], plan = null;         // la cible provisoire : le point de penalty, le but
+  // (B2, elan.tirImmediat) LE COUP FRANC LOIN SE JOUE COURT, ET LE PLAN SE PREND À LA POSE : au-delà de la portée du lancement (55 m
+  // du but, coupFrancLance), la prise ne fera pas partir le ballon — le preneur d'hier courait vers le but, gardait le ballon au pied
+  // et passait 0,4-1,5 s plus tard (mesuré : 9 doubles gestes sur 20 remises en 12 matchs, TOUS des coups francs à 56-101 m). Ici
+  // il choisit son coéquipier avant de reculer — le plus libre du demi-plan avant (4-30 m) — et sa course s'oriente vers lui.
+  let court = false;
+  if (r.type === 'coup-franc' && E.tirImmediat && hyp(g.x - r.p[0], r.p[1]) > 55) {
+    court = true; const m = planCourt(st, tk, r.p, g);
+    if (m) { aim = [m.p[0], m.p[2]]; plan = m.id; }
+  }
+  // …et LE CORNER DE POSSESSION aussi (le CORT du style, referee.cornerTrav : 35 % − 0,30 × style) : le tirage se prend À LA POSE
+  // (même tirage, même flux 'cpa' du preneur, une fois — cornerTrav ne le rejoue pas : tk._cornerCort), le plan court avec lui.
+  if (r.type === 'corner' && E.tirImmediat && cfg.corner && Math.abs(Math.abs(r.p[0]) - st.pitch.hx) <= 4) {
+    const rnd = tirage(st, 'cpa', tk.id, st.rnd2 ?? st.rnd ?? (() => 0.5)), sty = st.tactics ? (st.tactics[tk.team]?.style ?? 0.5) : 0.5;
+    court = rnd() < 0.35 - Math.max(0, Math.min(1, sty)) * 0.30;
+    tk._cornerCort = court ? 'court' : 'centre';                                     // les deux issues : cornerTrav ne retire pas un second tirage
+    if (court) { const m = planCourt(st, tk, r.p, g); if (m) { aim = [m.p[0], m.p[2]]; plan = m.id; } }
+  }
   let ux = aim[0] - r.p[0], uz = aim[1] - r.p[1]; const L = hyp(ux, uz) || 1; ux /= L; uz /= L;
-  const lat = (tk.foot === 'left' ? -1 : 1) * (E.lat ?? 1.5), recul = E.recul ?? 3.5;   // la GAUCHE de la ligne = [uz, -ux] : le droitier vient de la gauche
+  const lat = (tk.foot === 'left' ? -1 : 1) * (E.lat ?? 1.5), recul = plan != null ? Math.min(E.recul ?? 3.5, 2.5) : (E.recul ?? 3.5);   // la GAUCHE de la ligne = [uz, -ux] : le droitier vient de la gauche ; la passe courte a sa course courte
   let sx = r.p[0] - ux * recul + uz * lat, sz = r.p[1] - uz * recul - ux * lat;
   const ap = Math.max(0.5, (cfg.apron ?? 2) - 0.3), hx = st.pitch.hx + ap, hz = st.pitch.hz + ap;
   sx = Math.max(-hx, Math.min(hx, sx)); sz = Math.max(-hz, Math.min(hz, sz));
-  r.elan = { spot: [sx, sz], phase: 'recule', at: st.t };
+  r.elan = { spot: [sx, sz], phase: 'recule', at: st.t, ...(court ? { court: true, plan } : {}) };   // court : la prise sera une passe courte — la course attend son coéquipier (plan)
+}
+
+/** (B2) Le coéquipier du plan court : le plus libre (l'adversaire le plus proche, le plus loin) à 4-45 m, hors l'arrière strict. */
+function planCourt(st, tk, bp, g) {
+  const gx = g.x - bp[0], gz = 0 - bp[1], gl = hyp(gx, gz) || 1;
+  const libre = (m) => Math.min(99, ...st.players.filter((q) => q.team !== tk.team && q.down <= 0).map((q) => hyp(q.p[0] - m.p[0], q.p[2] - m.p[2])));
+  return st.players.filter((q) => q.team === tk.team && q.id !== tk.id && !q.keeper && q.down <= 0 && !q._sub)
+    .map((q) => ({ q, d: hyp(q.p[0] - bp[0], q.p[2] - bp[1]) }))
+    .filter((x) => x.d >= 4 && x.d <= 45 && ((x.q.p[0] - bp[0]) * gx + (x.q.p[2] - bp[1]) * gz) / (x.d * gl) >= -0.5)   // ≤ 120° de la ligne du but, jusqu'à 45 m (le coup franc loin se relance aussi sur un défenseur de côté — mesuré : à 4-30 m devant, personne, la course d'hier sautait)
+    .map((x) => ({ ...x, score: libre(x.q) - 0.05 * x.d })).sort((a, b) => b.score - a.score)[0]?.q ?? null;
 }
 
 /** Le métier du preneur pendant la course (assignMatchJobs) : recule → attend face au ballon ; court : le métier d'hier. */
@@ -84,10 +113,29 @@ export function elanStep(st, dt, cfg) {
   const el = r.elan, tk = st.players[r.taker ?? -1];
   if (!tk || tk.down > 0) return;
   const bp = st.ball.p, d = hyp(bp[0] - tk.p[0], bp[2] - tk.p[2]);
+  // (B2) LE PLAN COURT SE RELIT PENDANT L'ATTENTE (toutes les 0,5 s, avant la course) : les coéquipiers se replacent pendant
+  // la remise — le coéquipier choisi à la pose avait couru 10-20 m et la course d'élan pointait dans le vide (mesuré : 8 coups
+  // francs loin sur 8 refusés au cône). Le point de départ suit : le preneur se replace de quelques mètres, comme sur le terrain.
+  // …et TANT QU'IL N'A PERSONNE, LA COURSE ATTEND (mesuré graine 1 : la faute rassemble les corps — la protestation, A11 —, les neuf
+  // coéquipiers à 0-2 m du preneur à l'heure de la remise ; le plan n'existe pas, la course partait quand même et le cône restait vide,
+  // 8 coups francs loin sur 8). Il attend que quelqu'un se soit écarté (≥ 4 m) — la patience (E.patience) garde le garde-fou.
+  if (el.court && el.phase !== 'court' && st.t >= (el.planAt ?? -9) + 0.5 && (st.t < r.at - 1.0 || el.plan == null) && !tk.act) {   // …jusqu'à 1 s de l'heure quand il a son homme : le temps de se replacer
+    el.planAt = st.t;
+    const g = st.pitch.attackGoal(tk.team), m = planCourt(st, tk, [bp[0], bp[2]], g);
+    if (!m) el.plan = null;
+    else {
+      el.plan = m.id;
+      let ux = m.p[0] - bp[0], uz = m.p[2] - bp[2]; const L = hyp(ux, uz) || 1; ux /= L; uz /= L;
+      const lat = (tk.foot === 'left' ? -1 : 1) * (E.lat ?? 1.5), recul = Math.min(E.recul ?? 3.5, 2.5);
+      const ap = Math.max(0.5, (cfg.apron ?? 2) - 0.3), hx = st.pitch.hx + ap, hz = st.pitch.hz + ap;
+      const spot = [Math.max(-hx, Math.min(hx, bp[0] - ux * recul + uz * lat)), Math.max(-hz, Math.min(hz, bp[2] - uz * recul - ux * lat))];
+      if (hyp(spot[0] - el.spot[0], spot[1] - el.spot[1]) > 0.3) { el.spot = spot; el.phase = 'recule'; }   // le point a bougé : il y RETOURNE (en 'attend' il ne marche pas — mesuré : la course partait du vieux point, 6 refus au cône sur 6)
+    }
+  }
   if (el.phase === 'recule' && hyp(tk.p[0] - el.spot[0], tk.p[2] - el.spot[1]) < (el.touche ? 0.7 : 0.4) && hyp(tk.v[0], tk.v[1]) < (el.touche ? 2 : 0.9)) el.phase = 'attend';   // (A9 ter) le lanceur arrive de loin, en marchant vite : il tourne autour de son point sans jamais y être « posé »
   if (el.near == null && d < 6) el.near = st.t;                                          // la patience court depuis que le preneur est AU ballon (le ramasseur pose parfois avant lui)
   if (el.phase !== 'court' && st.t > Math.max(r.at, el.near ?? st.t) + (E.patience ?? 4)) { el.phase = 'court'; el.rate = 'patience'; el.t0 ??= st.t; return; }   // le garde-fou anti-gel : sans course, la prise d'hier
-  if (el.phase === 'attend' && st.t >= r.at - 0.2 && !tk.act) {
+  if (el.phase === 'attend' && st.t >= r.at - 0.2 && !tk.act && !(el.court && el.plan == null)) {   // (B2) la passe courte attend son coéquipier
     if (el.touche) { el.phase = 'court'; el.t0 = st.t; return; }                        // (A9 ter) la touche longue : la course sans geste
     const v = (el.sortieBut ? E.sortieBut?.vitesse : null) ?? E.vitesse ?? 4, T = Math.max(0.6, d / v + 0.35);
     const mv = MOVE_TIMING.frappe || { duration: 1.0, contact: 0.45 };
@@ -128,6 +176,40 @@ export function elanNow(st, p, cfg, receive) {
       try { relancerGardien(st, p, cfg, { beginPass }); } finally { p._elanLong = false; }
     }
     const A = p.act; if (A?.payload?.kind === 'pass' && !A.fired && A.t < A.anticipation) { A.total -= A.anticipation - A.t; A.anticipation = A.t; }
+  }
+  // (B2, cfg.remisesPied.elan.tirImmediat) LE COUP FRANC LANCÉ ET LE CORNER SE JOUENT DANS L'IMAGE DU CONTACT D'ÉLAN AUSSI : quand la
+  // prise n'a pas fait partir le ballon (coupFrancDirect/coupFrancLance/cornerTrav rendus false — trop loin, le CORT du style, pas de
+  // cible), le preneur restait porteur et le cerveau rejouait une passe 0,4-1,5 s plus tard (porte de timing : hold ≈ 0 → 'timing'
+  // × 5 mesuré) — le clip d'élan frappait un ballon qui ne partait pas, puis un clip de passe le faisait partir (le double geste).
+  // Ici : la course compte comme porté, le choix du porteur se prend MAINTENANT en urgence (un corps lancé n'a pas de stance à
+  // rejoindre), l'armé est déjà joué par la course : le tir se prend au tick suivant. null : le double geste d'hier, au bit.
+  if ((type === 'coup-franc' || type === 'corner') && cfg.remisesPied?.elan?.tirImmediat && !st.restart && st.possession.carrier === p.id
+    && p.act?.payload?.kind !== 'pass' && (p.down ?? 0) <= 0) {
+    st.hold = Math.max(st.hold, (st._holdMin ?? cfg.holdMin ?? 0.6) + 0.1);
+    // …dans le CÔNE de la course seulement (E.tirImmediat.cone °, défaut 40) : le clip d'élan frappe le long de la course — un ballon
+    // qui partirait à 90° de la jambe serait pire que le double geste. Le choix du cerveau s'il est dans le cône ; sinon LE COURT DE
+    // LA COURSE : le coéquipier le plus libre dans le cône (4-30 m, rayon libre = l'adversaire le plus proche), au sol / tendu /
+    // en cloche selon la distance — la porte de course de beginPass (flightRace) garde son mot ; hors de tout, le cerveau d'hier.
+    const cone = (cfg.remisesPied.elan.tirImmediat.cone ?? 40) * Math.PI / 180;
+    const runYaw = hyp(p.v[0], p.v[1]) > 0.5 ? Math.atan2(p.v[1], p.v[0]) : p.yaw;
+    const bearingTo = (x, z) => Math.abs(((Math.atan2(z - p.p[2], x - p.p[0]) - runYaw + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+    const court = (m) => (m ? { to: { id: m.q.id }, lead: [m.q.p[0] + m.q.v[0] * 0.3, 0, m.q.p[2] + m.q.v[1] * 0.3], style: m.d > 18 ? 'lofted' : m.d > 10 ? 'driven' : 'ground', lane: { margin: 4 }, court: true } : null);
+    const mp = r.elan.plan != null ? st.players[r.elan.plan] : null;                    // le plan de la pose (le coup franc loin) : le coéquipier choisi avant la course, relu ici
+    const dp = mp ? hyp(mp.p[0] - p.p[0], mp.p[2] - p.p[2]) : 0;
+    let choice = mp && mp.team === p.team && mp.down <= 0 && dp >= 3 && dp <= 48 && bearingTo(mp.p[0], mp.p[2]) <= cone * 1.5 ? court({ q: mp, d: dp }) : choosePass(st, cfg);
+    let bearing = choice?.lead ? bearingTo(choice.lead[0], choice.lead[2]) : null;
+    if (!(choice && bearing <= (choice.court ? cone * 1.5 : cone))) {
+      const libre = (m) => Math.min(...st.players.filter((q) => q.team !== p.team && q.down <= 0).map((q) => hyp(q.p[0] - m.p[0], q.p[2] - m.p[2])), 99);
+      const m = st.players.filter((q) => q.team === p.team && q.id !== p.id && !q.keeper && q.down <= 0 && !q._sub)
+        .map((q) => ({ q, d: hyp(q.p[0] - p.p[0], q.p[2] - p.p[2]) })).filter((x) => x.d >= 4 && x.d <= 30 && bearingTo(x.q.p[0], x.q.p[2]) <= cone)
+        .map((x) => ({ ...x, libre: libre(x.q) })).sort((a, b) => b.libre - a.libre || a.d - b.d)[0];
+      choice = court(m);
+      bearing = choice ? bearingTo(choice.lead[0], choice.lead[2]) : null;
+    }
+    if (choice && beginPass(st, choice, cfg, { forceUrgent: true, elan: true })) {   // elan : pas de porte d'ancre — le corps est au ballon
+      const A = p.act;
+      if (A?.payload?.kind === 'pass' && !A.fired && A.t < A.anticipation) { A.total -= A.anticipation - A.t; A.anticipation = A.t; A.payload.tirImmediat = true; st.events.push({ t: +st.t.toFixed(2), type: 'tir-immédiat', by: p.id, remise: type, to: choice.to?.id, bearing: +(bearing * 180 / Math.PI).toFixed(0), ...(choice.court ? { court: true } : {}) }); }
+    } else deny(st, choice ? 'tir-immédiat-armé' : 'tir-immédiat-cône');
   }
 }
 

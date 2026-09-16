@@ -221,7 +221,10 @@ export function beginPass(st, choice, cfg, opts = {}) {
     c.anchorHint = { p: anchor.p, t: st.t };
     // borné même en urgence : l'inatteignable reste un téléport déguisé, donc refusé
     // (porté : le couple s'arrange ensemble — la borne est celle du plan, pas celle du ballon libre)
-    if (!reachable([c.p[0], c.p[2]], anchor, move.contact, st.ball.owner === c.id ? { adjustSpeed: 4.5, hardMax: 1.15 } : { adjustSpeed: 4.5, hardMax: 0.75 })) {
+    // …sauf AU CONTACT D'UNE COURSE D'ÉLAN (B2, opts.elan — elan.elanNow) : le corps lancé EST au ballon (d ≤ rayon de prise), l'armé
+    // est déjà joué par la course et le tir se prend au tick suivant — l'ancre du geste le plus prompt (0,54 m de portée à 0,12 s
+    // d'anticipation) n'a rien à dire (mesuré : refus 'ancre' à 0,74 m, le double geste restait). Sans l'option : hier au bit.
+    if (!opts.elan && !reachable([c.p[0], c.p[2]], anchor, move.contact, st.ball.owner === c.id ? { adjustSpeed: 4.5, hardMax: 1.15 } : { adjustSpeed: 4.5, hardMax: 0.75 })) {
       st._denyD?.push(hyp(anchor.p[0] - c.p[0], anchor.p[1] - c.p[2]));
       return deny(st, 'ancre');
     }
@@ -326,7 +329,7 @@ export function finitionSigma(F, x) {
 }
 
 export function strikeNow(st, c, cfg) {
-  const { choice, pick, stance, urgent } = c.act.payload;
+  const { choice, pick, stance, urgent, tirImmediat } = c.act.payload;   // tirImmediat (B2) : la passe armée au contact d'élan — pas de porte de stance, la course EST le geste
   const rec = st.players[choice.to.id];
   // LE ROULÉ DU GARDIEN (lot A9) part des MAINS, bas et devant : le ballon tenu descend au point de lâcher
   // (hold — le déplacement porté, pas un téléport) et la balistique part de là
@@ -351,7 +354,7 @@ export function strikeNow(st, c, cfg) {
   // deux cas la frappe n'est pas une passe propre : c'est un ballon VENDANGÉ, qui part mou et reste
   // disputable. Mesuré avant cette porte : 2 passes/partie à 0,26 m / 46° de leur stance — la dette
   // strike-stance crevait son budget de 2 %. Le refus se nomme au registre.
-  if (stance) {
+  if (stance && !tirImmediat) {
     const sitNow = situation(c.p, c.yaw, from, st.ball.v, from[1]);
     const bNow = ((((sitNow.side === pick.foot ? 1 : -1) * sitNow.bearing - stance.bearing + 540) % 360) - 180);
     // les seuils vivent SOUS ceux de la règle strike-stance (0,25 m / 25°) : la porte du moteur

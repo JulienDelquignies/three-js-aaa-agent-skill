@@ -201,7 +201,7 @@ for (const kind of RESTART_NAMES) {
     const w = ev.find((e) => e.type === 'windup' && e.tech === 'elan'), el = ev.find((e) => e.type === 'élan');
     const frappe = ev.find((e) => (e.type === 'shot' && e.kind === 'coup-franc-direct') || e.type === 'lancement' || e.type === 'corner-joué' || (e.type === 'pass' && e.t >= (el?.t ?? Infinity)));
     const pris = ev.find((e) => e.type === 'restart-pris');
-    return { type, taken: taken != null ? +(taken - t0).toFixed(2) : null, w, el, frappe, memeImage: !!(el && pris && Math.abs(pris.t - el.t) < 0.02 && (!frappe || frappe.type === 'pass' || Math.abs(frappe.t - el.t) < 0.02)) };
+    return { type, taken: taken != null ? +(taken - t0).toFixed(2) : null, w, el, frappe, memeImage: !!(el && pris && Math.abs(pris.t - el.t) < 0.02 && frappe && Math.abs(frappe.t - el.t) < 0.05) };   // (B2) durci : la passe aussi part dans l'image (≤ 0,05 s — le tick suivant), plus « la passe qui suit » à son heure
   };
   const runs = [];
   for (const seed of [7, 3]) {
@@ -229,6 +229,25 @@ for (const kind of RESTART_NAMES) {
     relancerGardien(st, gk, cfg0, { beginPass: simInternals.beginPass });
     const m0 = gk.act?.payload?.mains ?? null;
     ok(r0.every((r) => r.taken != null && !r.w && !r.el && r.frappe) && m0 == null, `la clé absente rend l'hier au bit : remisesPied:null → ${r0.filter((r) => r.taken != null).length} remises prises sans armé ni course (${r0.map((r) => r.frappe?.kind ?? r.frappe?.type ?? '—').join('/')}), la volée du gardien redevient la frappe du sol (mains ${m0 ?? 'null'})`);
+  }
+  // (B2, remisesPied.elan.tirImmediat) LE DOUBLE GESTE D'HIER : la prise qui ne fait pas partir le ballon — le coup franc LOIN
+  // (à 60 m du but : ni direct ni lancement, coupFrancLance rend false au-delà de 55 m, sans tirage) — laissait le preneur porteur ;
+  // le cerveau rejouait une passe 0,4-1,5 s plus tard (le clip d'élan frappait un ballon qui ne partait pas, puis un clip de passe
+  // le faisait partir ; mesuré 'timing' × 5 à la prise, puis 'ancre' à 0,74 m sous l'urgence). Ici : la passe s'arme dans l'image
+  // du contact d'élan (le choix du cerveau dans le cône de la course, sinon le court de la course ; la course compte comme porté,
+  // pas de porte d'ancre ni de stance — la course EST le geste) et part au tick suivant ; null : le double geste d'hier.
+  {
+    const mesure = (over) => {
+      const cfgC = matchCfg({ ...over }); let { st } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg: cfgC });
+      const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1); const r = forceCPA(st, cfgC, 'coup-franc', [g.x - sg * 60, 4], 0); const el = r.el;
+      const pass = el ? st.events.find((e) => e.type === 'pass' && e.by === el.by && e.t >= el.t) : null;
+      const imm = el ? st.events.find((e) => e.type === 'tir-immédiat' && e.by === el.by && e.t >= el.t) : null;
+      return { el, delay: el && pass ? +(pass.t - el.t).toFixed(2) : null, imm, lance: !!st.events.find((e) => e.type === 'lancement' && el && e.t >= el.t) };
+    };
+    const RPh = matchCfg({}).remisesPied;
+    const vif = mesure({}), hier = mesure({ remisesPied: { ...RPh, elan: { ...RPh.elan, tirImmediat: null } } });
+    ok(!!vif.el && !vif.lance && !!vif.imm && vif.delay != null && vif.delay <= 0.05, `LE TIR IMMÉDIAT (B2) : le coup franc loin (60 m) dont la prise ne fait pas partir le ballon part au tick suivant le contact d'élan (passe ${vif.delay ?? '—'} s après 'élan' ; vers ${vif.imm?.to ?? '—'}, relèvement ${vif.imm?.bearing ?? '—'}° de la course${vif.imm?.court ? ', le court de la course' : ''})`);
+    ok(!!hier.el && !hier.imm && (hier.delay == null || hier.delay >= 0.3), `sabotage « le double geste d'hier » attrapé (tirImmediat:null : la passe ${hier.delay == null ? 'ne part pas dans la fenêtre' : hier.delay + ' s après le contact'} — le cerveau rejoue plus tard, aucun tir-immédiat)`);
   }
   // le sabotage de la sim : le preneur EMPORTÉ à 15 m dès l'armé (la course n'arrive pas) — pas de frappe dans le vide : l'armé
   // s'étire, puis s'abandonne (refus élan-sans-ballon) et la prise d'hier prend au ballon

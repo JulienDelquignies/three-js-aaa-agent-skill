@@ -222,6 +222,10 @@
   scenes/rondo-warp.js (le warp de frappe en deux phases autour du verrou) : l'amorce de calibration par le clip généré, la
   calibration à l'image du tir, la fente du bassin (hipsNudge ≤ 15 cm + 6 cm d'assise) ; creux pied→surface 4,4 cm médian (hier
   cheville→centre 0,30 m), 0 image non calibrée, 1 écrêtée sur 13 frappes ; le corps est à sa stance : pas de loi sim.
+- LIVRÉ (note 372, reference/56 § B2, verify-remises 47/0) : LE TIR IMMÉDIAT DES REMISES LANCÉES (B2) — remisesPied.elan.tirImmediat :
+  le coup franc loin et le corner de possession choisissent leur coéquipier à la pose, la course s'oriente vers lui et attend qu'il se
+  soit écarté, la passe s'arme au contact d'élan (pas de porte d'ancre ni de stance : la course EST le geste) et part au tick suivant ;
+  la scène ne joue qu'un geste (remiseSkip généralisé, pas de clip de contrôle sur le clip d'élan) ; null = le double geste d'hier.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

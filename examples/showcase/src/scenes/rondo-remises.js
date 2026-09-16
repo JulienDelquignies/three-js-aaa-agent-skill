@@ -27,14 +27,24 @@ export function remiseHands(pl, aT, stx, s) {
 /** (A9 ter) LA SORTIE DE BUT LONGUE se dégage DANS L'IMAGE du contact d'élan : la sim arme sa passe (windup) dans la même image que
  *  l'événement 'élan' — l'armé est déjà joué par la course, la scène n'arme pas un second geste : le clip d'élan garde son
  *  accompagnement sur une horloge LOCALE (pl._elanTail : l'acte de passe qui suit a son t à 0, le clip ne rembobine pas). */
+const REMISES_IMMEDIATES = new Set(['sortie-de-but', 'coup-franc', 'corner']);   // (B2) le coup franc lancé et le corner aussi : la passe armée dans l'image de l'élan (elan.js, tirImmediat)
 export function remiseSkip(scene, pl, e) {
   if (e.type !== 'windup' || e.skill || !pl?.gestureLayer?.active) return false;
   const ev = scene.state.events;
   let hit = false;
-  for (let i = ev.length - 1; i >= 0 && ev[i].t >= e.t; i--) if (ev[i].type === 'élan' && ev[i].by === e.by && ev[i].remise === 'sortie-de-but') { hit = true; break; }
+  for (let i = ev.length - 1; i >= 0 && ev[i].t >= e.t; i--) if (ev[i].type === 'élan' && ev[i].by === e.by && REMISES_IMMEDIATES.has(ev[i].remise)) { hit = true; break; }
   if (!hit) return false;
   const spec = pl.gestureLayer.spec;
   pl._layerClock = { t0: scene._t - (spec?.contact ?? 0), offset: 0, dur: spec?.duration ?? 0.6, antic: spec?.contact ?? 0.2 };
   pl._elanTail = true;
   return true;
+}
+
+/** (B2) LA PRISE AU CONTACT D'ÉLAN N'EST PAS UNE RÉCEPTION : la sim émet 'control' à la prise (receive), la scène jouait un clip de
+ *  contrôle PAR-DESSUS le clip d'élan à l'instant où le pied frappe (mesuré en page : spec 'controleInterieur' à l'image du tir du coup
+ *  franc loin). Un événement 'élan' du même joueur dans la même image : le pied est au ballon, pas de geste de réception. */
+export function elanTake(scene, e) {
+  const ev = scene.state.events;
+  for (let i = ev.length - 1; i >= 0 && ev[i].t >= e.t; i--) if (ev[i].type === 'élan' && ev[i].by === e.by) return true;
+  return false;
 }

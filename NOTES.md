@@ -12289,6 +12289,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      côté). Dettes nommées : la queue (3 frappes sur 13 à 7-9 cm), la
      passePivot sans plan (warp-hors-borne), et au-delà de 15 cm de fente le
      placement sim du corps — à re-mesurer sur les rigs du mode plein.
+- 372: LE TIR IMMÉDIAT DES REMISES LANCÉES (lot B2, doc Branchements § 3). Mesuré
+     d'abord (12 matchs × 300 s) : le double geste n'était PAS le lancé ni le corner
+     joué (ils partent dans l'image de la prise, st.ball.strike) mais le COUP FRANC
+     LOIN — 9 remises sur 20, toutes à 56-101 m du but, au-delà de la portée du
+     lancement (55 m) : la prise ne faisait rien, le preneur restait porteur, le
+     cerveau passait 0,4-1,5 s plus tard ('timing' × 5 : hold ≈ 0 ; puis, sous
+     l'urgence, 'ancre' à 0,74 m : le geste le plus prompt n'a que 0,54 m de portée).
+     Le clip d'élan frappait un ballon qui ne partait pas, un clip de passe le
+     faisait partir. Sous remisesPied.elan.tirImmediat { cone 40 } (null : hier au
+     bit, empreinte jumelle identique) : (1) LE PLAN SE PREND À LA POSE — le coup
+     franc loin et le corner de possession (le CORT du style : tirage pris à la
+     pose, même flux 'cpa', une fois ; tk._cornerCort le porte à cornerTrav)
+     choisissent leur coéquipier avant de reculer (planCourt : le plus libre à
+     4-45 m hors l'arrière strict), la course s'oriente vers lui (recul court
+     2,5 m) ; (2) LA COURSE ATTEND SON HOMME — le plan se relit toutes les 0,5 s
+     pendant l'attente (les coéquipiers se replacent), le point de départ suit et
+     le preneur y retourne ('attend' ne marche pas — mesuré : la course partait du
+     vieux point, 6 refus au cône sur 6) ; sans personne à ≥ 4 m la course ne part
+     pas, la patience (4 s) rend la prise d'hier ; (3) LE TIR DANS L'IMAGE —
+     elanNow : la course compte comme porté, la passe s'arme en urgence vers le plan
+     (relu, ≤ 60° de la course), sinon le choix du cerveau dans le cône (40°), sinon
+     le court de la course ; beginPass avec opts.elan (pas de porte d'ancre : le
+     corps EST au ballon), l'acte rembobiné au tick suivant, payload.tirImmediat
+     (pas de porte de stance au tir : la course EST le geste — sinon 'stance-au-
+     contact' vendangeait le ballon en perte) ; (4) LA SCÈNE NE JOUE QU'UN GESTE —
+     remiseSkip accepte coup franc et corner, et la prise au contact d'élan n'est
+     pas une réception (elanTake : plus de clip 'controleInterieur' par-dessus le
+     clip d'élan à l'image du tir, mesuré en page). Après (12 matchs) : 19 prises
+     CF/corner, 10 avec course — toutes parties dans l'image (5 lancements, 2 tirs,
+     2 corners joués, 1 tir immédiat) —, 9 SANS course : le coup franc loin d'un
+     LONG arrêt (32 s : le fauché, la cérémonie) pendant lequel les dix joueurs de
+     champ marchent au ballon et s'entassent à 0-2 m (walk × 10 — identique dans
+     le monde d'hier : un fait du tronc, nommé, pas de ce lot) ; zéro double geste
+     (9 → 0). Banc verify-remises 47/0 : le coup franc à 60 m part 0,01 s après
+     'élan' vers le court de la course (30°), le sabotage tirImmediat:null rend le
+     double geste, « même image » durcie à ≤ 0,05 s pour la passe aussi. Capture
+     b2-coup-franc-loin-un-seul-geste (l'accompagnement de la frappe d'élan, le
+     ballon parti vers le coéquipier).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

@@ -156,14 +156,52 @@ La course d'élan (A9 bis) vit dans `engine/elan.js` (referee.js, au plafond de 
   longue : course puis lancer ; mur : deux sauts armés au départ du ballon, plantés à 0,00 m/s ;
   sous-clés absentes = hier ; style court = pas de course), `verify-emotion` (le saut, ses sabotages).
 
+## Le tir immédiat des remises lancées (B2 — `elan.js`, `remisesPied.elan.tirImmediat`)
+
+Mesuré (12 matchs × 300 s, 20 remises à course d'élan) : le coup franc à portée se tire ou se lance
+DANS l'image du contact (`coupFrancDirect` / `coupFrancLance`, `st.ball.strike` à la prise), le corner
+se joue de même (`cornerTrav`) — mais 9 remises sur 20 restaient AU PIED du preneur : toutes des coups
+francs à 56-101 m du but (au-delà de la portée du lancement, 55 m), où la prise ne fait rien et le
+cerveau rejouait une passe 0,4-1,5 s plus tard (porte de timing : hold ≈ 0, 'timing' × 5 ; puis
+'ancre' à 0,74 m sous l'urgence). Le clip d'élan frappait un ballon qui ne partait pas, un clip de
+passe le faisait partir : le double geste. Quatre lois, sous la sous-clé `tirImmediat { cone: 40 }`
+(`null` : le double geste d'hier, empreinte jumelle identique) :
+
+1. **Le plan se prend à la pose.** Le coup franc loin (> 55 m) et le corner de possession (le CORT
+   du style, `cornerTrav` 35 % − 0,30 × style — le tirage se prend à la pose, même flux 'cpa', une
+   fois ; `tk._cornerCort` le porte à la prise) choisissent leur coéquipier AVANT la course : le plus
+   libre du demi-plan avant à 4-30 m (`planCourt`), la course s'oriente vers lui (recul court 2,5 m).
+2. **La course attend son homme.** Pendant l'attente le plan se relit toutes les 0,5 s (les
+   coéquipiers se replacent pendant la remise) et le point de départ suit — le preneur y retourne ;
+   sans personne à ≥ 4 m (mesuré graine 1 : la protestation, A11, rassemble les neuf coéquipiers à
+   0-2 m du preneur à l'heure de la remise), la course ne part pas — la patience (4 s) garde le
+   garde-fou.
+3. **Le tir dans l'image du contact.** `elanNow` : la course compte comme porté (`st.hold`), la passe
+   s'arme en urgence vers le plan (relu : à 3-32 m, ≤ 60° de la course), sinon le choix du cerveau
+   s'il est dans le cône de la course (40°), sinon le court de la course — `beginPass` avec `opts.elan`
+   (pas de porte d'ancre : le corps EST au ballon) ; l'acte rembobiné au tick suivant, `payload.
+   tirImmediat` (pas de porte de stance au tir : la course EST le geste). Événement `tir-immédiat
+   { to, bearing, court }` ; refus nommés `tir-immédiat-cône` / `-armé`.
+4. **La scène ne joue qu'un geste.** `remiseSkip` accepte le coup franc et le corner (le clip d'élan
+   garde son accompagnement, horloge locale) et la prise au contact d'élan n'est pas une réception
+   (`elanTake` : pas de clip de contrôle par-dessus le clip d'élan — mesuré en page : 'controleInterieur'
+   à l'image du tir).
+
+Banc (verify-remises, 47 clauses) : le coup franc à 60 m part au tick suivant le contact (0,01 s, vers
+le court de la course, 30° de relèvement), le sabotage `tirImmediat:null` rend le double geste, la
+clause « même image » durcie à ≤ 0,05 s pour la passe aussi. Capture : b2-coup-franc-loin-un-seul-geste.
+
 ## Les dettes nommées
 
 - Le ballon ne rencontre pas encore le mur qui saute : la déviation corps ne prend que les ballons
   lents (< 8 m/s) — le saut est un corps, pas encore une hauteur d'interception.
 - La sortie de but COURTE et la touche courte restent posées (c'est le réel) ; la touche longue ne
   vit qu'avec la tactique `cpa.touche 'longue'` (aucune dans les presets par défaut).
-- Le corner court (35 % au style possession) rend le ballon au pied du preneur au contact : la course
-  finit sur une conduite, pas une frappe.
+- ~~Le corner court rend le ballon au pied du preneur au contact~~ — livré au B2 (le plan à la pose,
+  le tir dans l'image) ; reste le coup franc loin d'un LONG arrêt (32 s : le fauché, la cérémonie),
+  pendant lequel les dix joueurs de champ marchent au ballon et s'entassent à 0-2 m (walk × 10, identique
+  dans le monde d'hier — un fait du tronc) : personne à ≥ 4 m, la course ne part pas, la prise d'hier
+  (9 prises sur 19 en 12 matchs, sans double geste).
 - La remise de la tête au lanceur vise un corps près de la ligne et sort parfois (la boucle de touches,
   4 sur 14 sans la clé, 8 sur 23 avec) : une loi de `tete.js`, nommée au tronc.
 - La prise aérienne tenue n'a pas été filmée (aucune prise aérienne en 380 s sur trois graines).
