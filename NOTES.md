@@ -12451,6 +12451,60 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      gardien) et les reprises armées volée/poitrine (le patron de B3). Dette
      de mesure : les épingles de la suite complète (bancs.mjs) sur B2-B6 —
      tete/loi12 d'hier aux sites datés, viragesLisses/plantVitesse null.
+- 375: LA SORTIE AÉRIENNE DU GARDIEN (lot B10 = doc Branchements § 10, le
+     dernier branchement du doc ; sortie-aerienne.js, cfg.sortieAerienne ;
+     reference/53 § B10). Mesuré avant (12 matchs × 300 s) : 1 prise
+     aérienne, 7 ballons hauts passés à moins de 2 m du gardien — il ne
+     venait pas au-devant des centres (keeperSpot le tient sur sa
+     bissectrice, keeperDecide ne lit que le vol qui coupe le plan du but, la
+     prise à deux mains attend un ballon sous 1,9 m à portée de bras) ; le
+     centre qui retombait dans la surface de but se jouait à la tête ou au
+     rebond. La loi : le vol est déterministe (predictPath, le patron de B3)
+     — sur un ballon libre qui monte ou qui est haut, hors remise et hors tir
+     cadré imminent (shotCross < 0,9 s : le réflexe garde le tir), le gardien
+     cherche le premier point où le vol REDESCEND entre 1,6 et 2,3 m à ≤ 8 m
+     de sa ligne (la surface de but et deux pas ; |z| ≤ goalHalf + 3) qu'il
+     atteint avant le ballon (réaction 0,2 + la course : l'accélération du
+     pas mesurée 2,6 m/s² depuis l'arrêt puis la pointe 5,5 — la première
+     version comptait la pointe seule et le gardien arrivait 2 m trop tard,
+     à 2,9 m/s) et sur lequel aucun attaquant n'arrive avant lui (7 m/s : le
+     ciel disputé reste à la tête). Il y COURT — job keeper, la cible AU
+     point ; p._sortieAerienne rend la course CHAUDE pour la loi d'économie
+     de movement.js (le point est loin du ballon encore haut : elle le
+     mettait au trot, 2,1-3,4 m/s) — et se nomme une fois par vol (événement
+     sortie-aerienne { h, dans, d }). Quand le ballon arrive dans le temps de
+     contact du clip (0,5 s) et que le point est à portée de détente, il arme
+     plongeonPrise (le saut à deux mains d'A6, payload.aerienne, windup
+     sortie:true) ; onDive résout la prise avec la portée du saut en plus
+     (saut 0,5 : 1,9 → 2,4 m) et ATTEND le ballon dans les gants tant qu'il
+     descend au-dessus des mains (mesuré sans : la première image à portée
+     claquait le ballon à 2,4 m). Le missile ou le ballon hors des gants se
+     claque (le poing d'aujourd'hui : l'impulsion, pas de clip). Banc
+     verify-sortie-aerienne 7/0 (le monde vidé, le gardien à 1 m de sa
+     ligne, un lob raide depuis l'aile RECALÉ de la traînée pour retomber à
+     2,5 m de la ligne — la formule du vide manquait de 9 m) : la sortie se
+     décide à l'image du départ (point à 2,23 m, dans 1,97 s, à 2,76 m ; la
+     cible est le point), le windup part 0,53 s avant le ballon et la prise
+     aérienne suit 0,52 s après, le ballon aux gants ; décalé de 9 m sur sa
+     ligne il ne sort pas (2,5 s de course pour 1,97 s de vol) ; un attaquant
+     posé au point de chute : aucune sortie, la tête, puis le plongeon-prise
+     du réflexe sur la tête cadrée ; la retombée à 9 m : aucune sortie ;
+     null : le gardien tient sa bissectrice et le lob retombe sans lui ;
+     sabotage saut:0 : il sort, saute et claque. Deux fixtures abandonnées,
+     et pourquoi : le lob plat qui redescend sous 1,9 m dans la zone finit
+     au but — c'est un tir, keeperDecide plonge (plongeonBas), la « prise
+     debout » n'a pas de cas propre ; et un vol lu comme tir cadré par
+     shotCross (le lob qui retombe avant la ligne coupe le plan au sol)
+     bloquait la sortie : le garde-fou ne tient que le tir IMMINENT. En
+     match (12 × 300 s) : 1 sortie décidée, 1 saut, 1 prise aérienne (2 c.
+     1), scores identiques — la loi existe, le jeu la sollicite peu : sur 6
+     matchs, 35 vols hauts redescendent entre 1,6 et 2,3 m devant un but, 23
+     à plus de 16,5 m de la ligne, 4 à moins de 8 m dont 2 prenables. Les
+     centres de ce moteur sont tendus ; la sortie attend des centres lobés
+     (une intention de centre à écrire au tronc, nommée). Clé null : hier au
+     bit (empreinte jumelle). Dettes : le poing sans geste (sortiePoing à
+     générer, Animations_A_Faire § 3) ; le saut manqué retombe par onDiveEnd
+     comme un plongeon.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

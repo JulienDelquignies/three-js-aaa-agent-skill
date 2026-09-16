@@ -58,11 +58,50 @@ remises en plusieurs espèces, 4/4 contrats complets. Scores : 2-1, 3-0*, 0-1, 1
 `goal.js` aux lignes, gardien en maillot jaune, cadrage terrain, HUD au score, `check()` bascule
 sur checkMatch.
 
+## La sortie aérienne (B10 — `sortie-aerienne.js`, `cfg.sortieAerienne` ; doc Branchements § 10)
+
+Mesuré avant (12 matchs × 300 s) : 1 prise aérienne, 7 ballons hauts passés à moins de 2 m du gardien — il ne
+VENAIT pas au-devant des centres : `keeperSpot` le tient sur sa bissectrice, `keeperDecide` ne lit que le vol
+qui coupe le plan du but (le tir), et la prise à deux mains (`receive` → 'prise-gardien') attend un ballon sous
+1,9 m à portée de bras. Le centre qui retombait dans la surface de but se jouait à la tête ou au rebond.
+
+La loi (le vol est déterministe — `predictPath`, comme la tête armée B3) : sur un ballon LIBRE qui monte ou qui
+est haut (à ≤ `portee` 40 m de son but, hors remise, hors tir cadré IMMINENT — `shotCross` à < 0,9 s : le réflexe
+de `keeperDecide` garde le tir), le gardien cherche le premier point où le vol REDESCEND entre `bas` 1,6 et
+`haut` 2,3 m dans SA zone (à ≤ `zone` 8 m de sa ligne — la surface de but et deux pas ; |z| ≤ goalHalf +
+`large` 3) qu'il atteint avant le ballon (`reaction` 0,2 s + la course : l'accélération du pas mesurée
+`accel` 2,6 m/s² depuis l'arrêt puis la pointe `vitesse` 5,5, moins la `detente` 1 m, avec `marge` 0,1 s) et
+sur lequel aucun attaquant n'arrive avant lui (`duel` 7 m/s : le ciel disputé se joue à la tête, tete.js). Il y
+COURT (job keeper, la cible AU point ; `p._sortieAerienne` fait de la course une course CHAUDE pour la loi
+d'économie de movement.js — le point de chute est loin du ballon encore haut, elle le mettait au trot) et se
+nomme une fois par vol (événement `sortie-aerienne { h, dans, d }`). Quand le ballon arrive dans le temps de
+contact du clip (0,5 s) et que le point est à portée de détente, il ARME `plongeonPrise` — le saut à deux mains
+généré A6 (`payload.aerienne`, windup `sortie:true`), et le contact du plongeon (`onDive`, chaque image de la
+détente) résout la prise avec la portée du saut en plus (`saut` 0,5 m : 1,9 → 2,4 m ; il ATTEND le ballon dans
+les gants tant qu'il descend au-dessus des mains — sans ça la première image à portée claquait) ; le missile ou
+le ballon hors des gants se claque (le poing d'aujourd'hui : l'impulsion, pas encore un clip). Sous 1,9 m le
+point se prend debout — mais un vol qui redescend si bas dans la zone finit au but : c'est un tir, le réflexe.
+
+Contrat (verify-sortie-aerienne, 7 clauses — le monde vidé, le gardien à 1 m de sa ligne, un lob raide depuis
+l'aile recalé de la traînée pour retomber à 2,5 m de la ligne) : la sortie se décide à l'image du départ (point
+à 2,23 m, dans 1,97 s, à 2,76 m ; la cible EST le point) ; le windup plongeonPrise part 0,53 s avant le ballon
+et la prise aérienne suit 0,52 s après, le ballon aux gants ; le gardien décalé de 9 m sur sa ligne ne sort pas
+(2,5 s de course pour 1,97 s de vol) ; un attaquant posé au point de chute : aucune sortie, la tête, puis le
+plongeon-prise du réflexe sur la tête cadrée ; la retombée à 9 m : aucune sortie ; `sortieAerienne:null` : le
+gardien tient sa bissectrice et le lob retombe sans lui ; sabotage `saut:0` : il sort, saute, et claque au lieu
+de prendre. En match (12 × 300 s) : 1 sortie décidée, 1 saut, 1 prise aérienne (2 c. 1) — la loi existe, le jeu
+la sollicite peu : sur 6 matchs, 35 vols hauts redescendent entre 1,6 et 2,3 m devant un but, 23 à plus de
+16,5 m de la ligne, 4 à moins de 8 m dont 2 prenables (le gardien à temps, personne dessus). Les centres de ce
+moteur sont tendus ; la sortie attend des centres lobés. Clé `null` : hier au bit (empreinte jumelle).
+
 ## Dettes nommées
 
 - Corner encore rare (0 sur les graines de banc — la clause demande ≥ 2 ESPÈCES de remise) ;
   drapeaux de corner et cônes d'entraînement encore aux coins (cosmétique).
 - Pas de hors-jeu (loi du format 5+1) ; il viendra avec le 11c11 et `FULL`.
-- Le gardien ne sort jamais (depthMax 2,6) : pas de libéro, pas de un-contre-un sorti.
+- ~~Le gardien ne sort jamais (depthMax 2,6) : pas de libéro, pas de un-contre-un sorti.~~ — le libéro (cfg.libero), le
+  un-contre-un (keeperDecide 'sortie', lot 104) et la sortie aérienne (B10) sont venus depuis.
+- La sortie aérienne n'a pas de POING : le ballon hors des gants se claque par l'impulsion d'hier, sans clip
+  (`sortiePoing` à générer — Animations_A_Faire § 3) ; et le saut manqué retombe par `onDiveEnd` comme un plongeon.
 - Remise de touche au pied sans cérémonie (placement + rayon + ayant droit seulement).
 - Pas encore de mi-temps/fixtures (game-state) ni de formations nommées (le 11c11 les exigera).

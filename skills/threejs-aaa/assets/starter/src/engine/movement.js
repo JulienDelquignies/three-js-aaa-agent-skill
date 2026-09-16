@@ -301,7 +301,7 @@ export function movePlayers(st, dt, cfg) {
         }
         const volVersMoi = st.pass && st.pass.lead
           && hyp(p.p[0] - st.pass.lead[0], p.p[2] - st.pass.lead[2]) < (A.chaud ?? 14);
-        if (!(dB < (A.chaud ?? 14) || volVersMoi || tSpd > (A.manRun ?? 3.5))) {
+        if (!(dB < (A.chaud ?? 14) || volVersMoi || tSpd > (A.manRun ?? 3.5) || p._sortieAerienne)) {   // (B10) la sortie aérienne du gardien est une course CHAUDE : le point de chute est loin du ballon encore haut
           // …à la vitesse du jeu, LITTÉRALEMENT : le plafond suit la cible (+15 % et 0,4 m/s de
           // convergence), borné [marche, trot] — un bloc qui coulisse sur une circulation lente
           // se déplace en marchant, pas au trot réglementaire (mesuré : p50 8 corps > 2,5 m/s

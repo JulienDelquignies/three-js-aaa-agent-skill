@@ -28,8 +28,10 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
   sim (`contactClock`, patron du tacle).
 - **Contrat.** verify-ground existant + la clause sim (forcée : un centre à 1,5 m sur un dos au but).
 
-## 3. La sortie aérienne du gardien : la prise et le poing — dépend du jumeau § 10
+## 3. La sortie aérienne du gardien : la prise et le poing — le jumeau § 10 EST LIVRÉ (B10, 16/09)
 
+- **État.** La loi de sortie vit (`cfg.sortieAerienne`, sortie-aerienne.js) et la prise en l'air joue `plongeonPrise` (le saut
+  à deux mains d'A6, armé 0,5 s avant le ballon) ; le poing n'a pas de geste (le ballon hors des gants se claque par l'impulsion).
 - **Geste.** `plongeonPrise` existe (A6) ; à générer : `sortiePoing` (les deux poings au ballon,
   saut à un pied, genou levé) et `prisePlanante` (prise à deux mains en l'air, sur un pied).
 - **Déclencheur.** La loi de sortie sur centre (jumeau § 10) : le gardien élit la sortie quand le

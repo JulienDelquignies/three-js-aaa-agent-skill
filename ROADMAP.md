@@ -240,10 +240,15 @@
 - LIVRÉ (note 374, reference/52 § B6) : LA VITESSE FIGÉE SOUS UN ACTE (B6) — cfg.plantVitesse : p.v = 0 sous l'acte qui plante
   (le fossile des gestes sans ancre, 470 → 110 images sur 6 matchs ; l'armé de passe glisse vraiment, son p.v est un rapport) ; et § 8 : le preset direct porte cpa.touche 'longue' (la touche longue d'A9 ter vit
   hors des bancs) ; null = hier.
+- LIVRÉ (note 375, reference/53 § B10, verify-sortie-aerienne 7/0) : LA SORTIE AÉRIENNE DU GARDIEN (B10 = § 10, le dernier branchement
+  du doc) — cfg.sortieAerienne : le premier point où le vol libre redescend entre 1,6 et 2,3 m à ≤ 8 m de sa ligne, atteignable avant le
+  ballon (réaction, accélération du pas, pointe) et sans attaquant dessus → la course chaude au point puis plongeonPrise armé 0,5 s avant
+  le ballon, la prise résolue avec la portée du saut ; en match 1 sortie / 12 matchs (le jeu centre tendu) ; null = le gardien d'hier.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
-  État au 16/09 : § 1-8 livrés (B1-B6), § 9 non retenu ; restent § 10 (la sortie aérienne du gardien) et les reprises armées volée/poitrine.
+  État au 16/09 : § 1-8 et § 10 livrés (B1-B6, B10), § 9 non retenu ; le doc est ÉPUISÉ — restent les reprises armées volée/poitrine
+  (le patron de B3) et le poing du gardien (Animations_A_Faire § 3).
 - SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») — l'ordre proposé est ÉPUISÉ ; restent : (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
   la carte plus lisible. Et les dettes : (A2 bis) LIVRÉ au B1 (note 371) — reste la queue (3 frappes sur 13 à 7-9 cm de creux, la passePivot sans plan) et, au-delà de 15 cm de fente, le placement sim du corps (mesuré à sa stance aujourd'hui, à re-mesurer sur les rigs du mode plein) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 ter) le

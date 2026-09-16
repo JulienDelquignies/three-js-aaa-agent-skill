@@ -253,7 +253,16 @@ manquent et les branchements qu'elles exigeront).
   re-cadence le swing sur ce tick (A2). Une version sim : tirer au tick le plus proche
   (`act.t + dt/2 ≥ anticipation`) — clé `cfg.tirAuPlusPres`. Sans urgence.
 
-## 10. Les prises aériennes du gardien
+## 10. Les prises aériennes du gardien — LIVRÉ (16/09, note 375, reference/53 § B10)
+
+- **Livré** : `cfg.sortieAerienne { bas 1.6, haut 2.3, zone 8, large 3, vitesse 5.5, accel 2.6, reaction 0.2, marge 0.1,
+  detente 1.0, duel 7, saut 0.5, portee 40 }` (sortie-aerienne.js, appelé par le tour du gardien de match-sim avant
+  keeperDecide) : le premier point où le vol libre REDESCEND entre bas et haut dans la zone, atteignable avant le
+  ballon (réaction + accélération du pas + pointe) et sans attaquant dessus → la course chaude au point (événement
+  `sortie-aerienne`), puis `plongeonPrise` armé 0,5 s avant le ballon (windup `sortie:true`) ; onDive résout la prise
+  avec la portée du saut (+ `saut` m) et attend le ballon dans les gants. verify-sortie-aerienne 7/0 ; en match
+  1 sortie / 1 prise aérienne sur 12 matchs (le jeu centre tendu : 4 vols hauts à ≤ 8 m en 6 matchs). null : hier au bit.
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré.** `plongeonPrise` existe (`match-sim` 376-378 : cross.y ≥ 1,35 → prise), l'événement
   `arrêt` mode prise porte `aerienne` ; aucune prise aérienne filmée en 380 s sur trois graines

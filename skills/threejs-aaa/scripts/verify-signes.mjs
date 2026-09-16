@@ -13,8 +13,10 @@ let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
 const RP_1609 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4 }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } };   // remisesPied d'HIER (e81394e) — DATÉ 16/09 (lot A9 ter, note 368 : sortie de but longue, touche longue, mur qui saute sous remisesPied.elan.sortieBut / toucheLongue / mur) : matchCfg REMPLACE les objets imbriqués, on repasse l'objet entier d'hier ; l'empreinte jumelle a prouvé sous-clés absentes = hier au bit
 const SOL_1609 = { tenue: 0.9, corps: 0.9 };   // sol d'HIER sans aide — DATÉ 16/09 (relevé aidé, note 369 : sol.aide)
-const HIER_1609 = { remisesPied: RP_1609, sol: SOL_1609 };   // le monde vivant DU JOUR de la clause (b) — DATÉ 16/09
-const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609 /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361) : le monde d'hier au bit, avant le sol et la fête */ };
+const TETE_1609 = { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9 };   // tete d'HIER sans armee — DATÉ 16/09 (lot B3, note 373 : tete.armee)
+const LOI12_1609 = { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 2 };   // loi12 d'HIER sans murTrot — DATÉ 16/09 (lot B4, note 374 : loi12.murTrot ; viragesLisses/plantVitesse null : B5/B6, même note)
+const HIER_1609 = { remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sol: SOL_1609 };   // le monde vivant DU JOUR de la clause (b) — DATÉ 16/09
+const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609, tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361) : le monde d'hier au bit, avant le sol et la fête */ };
 
 console.log('— (a) la pausa au pied —');
 const pausas = (over) => {

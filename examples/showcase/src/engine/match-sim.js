@@ -5,7 +5,7 @@ import { rondoStep, checkRondo, simInternals } from './rondo-sim.js'; import { m
 export { MATCH };
 import { huitSecondes } from './temps.js'; import { ligneStep } from './ligne.js'; import { interligneStep } from './interligne.js'; import { bordFiletStep, onOut, canTake, chronoStep, tempoWait, feuilleDeMatch, administerWhistle, adjugeFaute, remiseEnTouche, coupFrancDirect, coupFrancLance, cornerTrav, cornerSpots, toucheSpots, stepRemplacements, ballFetch, kickoffSpots, placeKickoff, onTakeMatch, arbitreStep, elireTaker, elanJob, elanNow } from './referee.js'; import { tryShot, tryCross, tryClear } from './shooting.js';
 export { feuilleDeMatch, kickoffSpots, placeKickoff };
-import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
+import { KEEPER, keeperSpot, keeperDecide, keeperRise, keeperHoldPoint, keeperCouvert, relancerGardien, gkTenueDue, gkHeldBall } from './keeper.js'; import { sortieAerienne } from './sortie-aerienne.js'; import { accrocheStep, contreTir, jambeTendue, contreEngage } from './duel.js'; import { makeProfile, profilAuPoste } from './attributes.js'; import { startGesture, busy, winding } from './gesture.js';
 import { boxCrashStep, marquageCentre, intercepteurVol, accompagneMontee, contreZonesStep, contreZoneDe } from './phases.js';
 import { MOVES } from './animkit.js'; import { hzDecision } from './cadence.js';   // (263) les constantes du cerveau se disent en secondes
 
@@ -363,6 +363,7 @@ function assignMatchJobs(st, cfg) {
       gk.target = [txG, 0, st.ball.p[2] + (st.ball.v[2] / bV) * mR];
       continue;
     }
+    if (sortieAerienne(st, gk, cfg, pitch)) continue;   // (B10, cfg.sortieAerienne) LA SORTIE AÉRIENNE : le centre qui retombe dans sa zone se va chercher — la course puis le saut à deux mains (sortie-aerienne.js) ; absente : hier
     // la MENACE se lit au dernier contact ; le SPIN se lit (lot 39) — shotVariety:false = hier au bit
     const dec = keeperDecide(pitch, gk.team, [gk.p[0], 0, gk.p[2]], st.ball.p, st.ball.v, shotAge, K, st.lastTouch !== gk.team,
       cfg.shotVariety !== false ? hyp(st.ball.w[0], st.ball.w[1], st.ball.w[2]) : null);
@@ -1138,13 +1139,14 @@ function onDive(st, gk, cfg) {
   // appelé CHAQUE IMAGE de la détente (rondo-sim, skillFollowStep) : renvoie true quand le gant a résolu le ballon (prise ou claquette) — false tant qu'il passe hors de portée
   const d = hyp(gk.p[0] - st.ball.p[0], gk.p[2] - st.ball.p[2]);
   const y = st.ball.p[1] ?? 0;
-  const aeF = gk.skill?.aerialF ?? 1;   // LA PORTÉE AÉRIENNE (163, note aerialReach) : la garde ET la prise à la note — 1 exact à 50/nu, bande humaine (2,1 × 1,15 = 2,42 m au gant tendu)
-  if (d > 1.7 * aeF || y > 2.1 * aeF) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
+  const aeF = gk.skill?.aerialF ?? 1, up = st.full && cfg.sortieAerienne && gk.act?.payload?.aerienne ? (cfg.sortieAerienne.saut ?? 0.45) : 0;   // LA PORTÉE AÉRIENNE (163, note aerialReach) : la garde ET la prise à la note — 1 exact à 50/nu, bande humaine (2,1 × 1,15 = 2,42 m au gant tendu) ; (B10) la sortie aérienne SAUTE : + saut m
+  if (d > 1.7 * aeF || y > (2.1 + up) * aeF) { if (gk.act?.payload) gk.act.payload._pd = d; return false; }
   // LE GANT TOUCHE AU PLUS PRÈS (le premier franchissement claquait à 1,5-1,7 m des mains) : tant que le ballon SE RAPPROCHE, le contact attend l'approche minimale ; le warp du gant fait le visuel.
   const pd = gk.act?.payload?._pd ?? Infinity;
   const closing = d < pd - 1e-4;
   if (gk.act?.payload) gk.act.payload._pd = d;
   if (closing && d > 0.35) return false;
+  if (up && y > (1.9 + up) * aeF && st.ball.v[1] < 0) return false;   // (B10) la sortie aérienne ATTEND le ballon dans les gants : au-dessus des mains et qui descend encore, on ne claque pas
   // …la détente de prise (plongeonPrise, lot 93) retombe SUR SES APPUIS : pas de gk.rise.
   if (gk.act?.id === 'plongeonPrise') gk.down = Math.max(gk.down, 0.5);
   else riseDown(st, gk, cfg, true);
@@ -1152,7 +1154,7 @@ function onDive(st, gk, cfg) {
   const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
   // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4 prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
   const priseD = st.full && cfg.priseGant ? (cfg.priseGant.d ?? 1.35) : 1.1;
-  if (d <= priseD * aeF && y <= 1.9 * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
+  if (d <= priseD * aeF && y <= (1.9 + up) * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)
