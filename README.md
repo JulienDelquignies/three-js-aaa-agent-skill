@@ -248,7 +248,7 @@ examples/
   construction, heel-to-toe roll, flight arc, pelvis bounce and list, trunk lean, arm swing; walk → jog
   → run → sprint interpolated by speed, backpedal and side shuffle blended by direction with a
   direction-aware cadence, a per-player gait signature, posed absolutely by the controller after the
-  mixer (`verify-foulee.mjs`, 45 clauses; `contact-sheet.mjs --gait`).
+  mixer (`verify-foulee.mjs`, 71 clauses; `contact-sheet.mjs --gait`).
   `motion-idle.js` (lot A8) generates the WAITING body too — six kinds of idle (rest with the weight
   shifting foot to foot and breathing shoulders, hands on hips, bouncing on the toes, the defender's
   guard, the keeper's set position, the wall) chosen by a pure policy from the match situation and

@@ -29,7 +29,7 @@ import { GROUND_KINDS, groundPortrait } from '../assets/starter/src/engine/motio
 import { KEEPER_KINDS, keeperPortrait } from '../assets/starter/src/engine/motion-keeper.js';
 import { RESTART_KINDS, restartPortrait } from '../assets/starter/src/engine/motion-restart.js';
 import { CONTACT_KINDS, contactPortrait } from '../assets/starter/src/engine/motion-contact.js';
-import { gaitParams, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from '../assets/starter/src/engine/motion-gait.js';
+import { gaitPose, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from '../assets/starter/src/engine/motion-gait.js';
 import { IDLE_KINDS, IDLE_NAMES } from '../assets/starter/src/engine/motion-idle.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, arr) => a.startsWith('--') ? [a.slice(2), arr[i + 1] && !arr[i + 1].startsWith('--') ? arr[i + 1] : '1'] : []).filter(Boolean));
@@ -87,7 +87,7 @@ function describe(move, spec) {
 }
 if (GAIT) {
   const v = Math.hypot(GAIT.vF, GAIT.vR), style = SEED != null ? gaitStyleFromSeed(SEED) : NEUTRAL_GAIT_STYLE;
-  const pg = gaitParams(GAIT.vF, GAIT.vR, style);
+  const pg = gaitPose(P, 0, GAIT.vF, GAIT.vR, style).meta;   // (A7 bis) la durée de la pose elle-même (cadence à l'échelle de la jambe)
   const dir = `${v.toFixed(1)} m/s (avant ${GAIT.vF}, droite ${GAIT.vR})`;
   if (VARIANT !== 'after') variants.push({ label: `AVANT — les clips du donneur (Soldier) à ${dir}`, mode: 'clips', gait: { ...GAIT, seed: SEED }, spec: null, ball: [2.5, 0.11, 4] });
   if (VARIANT !== 'before') variants.push({ label: `APRÈS — la foulée générée à ${dir}${SEED != null ? ` (signature graine ${SEED})` : ''} · appui ${(pg.s * 100).toFixed(0)} %, cycle ${pg.T.toFixed(2)} s`, mode: 'generee', gait: { ...GAIT, seed: SEED }, spec: null, ball: [2.5, 0.11, 4] });

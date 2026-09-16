@@ -205,14 +205,17 @@
 - LIVRÉ (note 365, reference/59) : L'ARBITRE A UN CORPS (A11 bis) — motion-arbitre (siffler, carton avec la carte dans la main, designer,
   avantage), cfg.arbitreGestes (la file des gestes sur st.arbitre : sifflet → carton → bras vers le but attaqué, l'avantage en courant,
   null = hier au bit), la couche de geste du central dans arbitre.js ; verify-arbitre 21/0.
-- SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») : (A7 bis) le virage et le freinage ; (A2) la vitesse du pied au contact en jeu ;
+- LIVRÉ (note 366, reference/52 § A7 bis) : LE VIRAGE, LE FREIN ET LA CADENCE À L'ÉCHELLE DE LA JAMBE (A7 bis) — gaitLegK/gaitLegFactor
+  (cycle ÷ 1,18 jusqu'à 4,5 m/s, fondu à ×1 à 5,5 : affaissement −10,7 → −8,4 cm à 4,5), opts.brake et opts.turn de gaitPose nourris par
+  _measureAccel du contrôleur (repère WORLD.facingDir — qui corrige au passage _applyLean, à l'envers sur shanon) ; verify-foulee 71/0.
+- SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») : (A2) la vitesse du pied au contact en jeu ;
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; le relevé aidé ; (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
   la carte plus lisible. Et les dettes : (A2) le monde composé — re-caler
   les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s
-  composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 bis) la
-  cadence à l'échelle de la jambe (shanon 0,76 m : 7-12 cm d'affaissement), virage et freinage,
-  le port des bras en course, le verrou de pieds calibré sur la foulée générée ; (A5) la stance
+  composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 ter) le
+  port des bras en course, le verrou de pieds calibré sur la foulée générée, le pas croisé du
+  virage serré ; (A5) la stance
   dérivée et les bandes de la sim (la géométrie corps-ballon est une entrée du moteur — STANCES
   reste celle du moteur, la stance des clips vit dans STANCES_CLIP, l'écart est porté par le warp
   de frappe ; note 301).

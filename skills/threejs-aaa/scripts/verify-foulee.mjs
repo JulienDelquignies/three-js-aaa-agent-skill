@@ -11,10 +11,11 @@
 // Lancer : node skills/threejs-aaa/scripts/verify-foulee.mjs
 
 import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shanon.js';
-import { gaitPose, gaitParams, gaitPortrait, gaitCycleSpec, gaitCadenceFactor, gaitStyleFromSeed, checkGaitGen, NEUTRAL_GAIT_STYLE, GAIT_REGIMES } from '../assets/starter/src/engine/motion-gait.js';
+import { gaitPose, gaitParams, gaitPortrait, gaitCycleSpec, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, gaitBrakeCadence, checkGaitGen, NEUTRAL_GAIT_STYLE, GAIT_REGIMES } from '../assets/starter/src/engine/motion-gait.js';
 import { checkClip, resolveTracks, quatAngle } from '../assets/starter/src/engine/animkit.js';
 import { strideLaw } from '../assets/starter/src/engine/gait.js';
 import { fkPose } from '../assets/starter/src/engine/motion-rig.js';
+import { applyQuat } from '../assets/starter/src/engine/vecmath.js';
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
@@ -187,6 +188,41 @@ console.log('\n— A12e : la marche des rôles marchants — les mains sur les h
   let cg; try { cg = checkGaitGen(P, { vF: 1.2, vR: 0, opts: { mainsHanches: true } }); } catch (e) { cg = { ok: false, issues: [String(e)] }; }
   ok(cg.ok, `…et la marche reste sous le contrat (checkGaitGen à 1,2 m/s)${cg.ok ? '' : ' — ' + cg.issues.join(' ; ').slice(0, 160)}`);
   ok(JSON.stringify(gaitPose(P, 0.3, 1.2, 0, NEUTRAL_GAIT_STYLE, {}).q) === JSON.stringify(gaitPose(P, 0.3, 1.2, 0, NEUTRAL_GAIT_STYLE, { mainsHanches: undefined }).q), 'sans le drapeau, la marche d\'hier au bit');
+}
+
+console.log('\n— A7 bis : la cadence à l\'échelle de la jambe (gaitLegK), le frein (opts.brake) et le virage (opts.turn) —');
+{
+  const legK = gaitLegK(P), L = P.lengths.thigh + P.lengths.shank;
+  ok(legK > 1.1 && legK < 1.3 && Math.abs(legK - 0.9 / L) < 1e-9, `shanon : jambe ${cm(L)} cm → cadence ×${legK.toFixed(3)} (0,90 m / L, la loi de Dorn est celle d'une jambe de 0,90 m)`);
+  ok(Math.abs(gaitLegK({ lengths: { thigh: 0.45, shank: 0.45 } }) - 1) < 1e-9 && gaitLegK({ lengths: { thigh: 0.2, shank: 0.2 } }) === 1.35, 'une jambe de 0,90 m tourne à la cadence de la loi (×1) ; borné à ×1,35');
+  const hier = (v) => gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, { legK: 1 }).meta, rig = (v) => gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, {}).meta;
+  ok(Math.abs(rig(4.5).T * legK - hier(4.5).T) < 1e-9 && Math.abs(hier(4.5).T - gaitParams(4.5, 0).T) < 1e-9, `à 4,5 m/s le cycle passe de ${hier(4.5).T.toFixed(3)} s (legK 1 = gaitParams d'hier) à ${rig(4.5).T.toFixed(3)} s (× 1/legK)`);
+  ok(rig(4.5).drop <= hier(4.5).drop - 0.02 && rig(3).drop <= hier(3).drop - 0.015 && Math.abs(rig(6).T - hier(6).T) < 1e-12 && Math.abs(rig(8).drop - hier(8).drop) < 1e-12, `le bassin ne s'affaisse plus pour atteindre des foulées de grand : −${cm(hier(3).drop)} → −${cm(rig(3).drop)} cm à 3 m/s, −${cm(hier(4.5).drop)} → −${cm(rig(4.5).drop)} à 4,5 ; au-delà de 5,5 m/s la cadence d'hier (${hier(6).T.toFixed(3)} s à 6, −${cm(rig(8).drop)} cm à 8 : la loi y touche déjà le plafond des articulations)`);
+  ok(Math.abs(gaitLegFactor(legK, 4.5) - legK) < 1e-12 && Math.abs(gaitLegFactor(legK, 5) - (1 + (legK - 1) * 0.5)) < 1e-12 && gaitLegFactor(legK, 5.5) === 1 && gaitLegFactor(legK, 8) === 1, `gaitLegFactor : plein jusqu'à 4,5 m/s, à mi-chemin à 5, ×1 dès 5,5 — le même facteur pour la pose et pour l'horloge du contrôleur`);
+  const spec = gaitCycleSpec(P, { vF: 4.5, vR: 0 });
+  ok(Math.abs(spec.duration - rig(4.5).T) < 2e-4, `la spec animkit du cycle dure ce que dure la pose (${spec.duration.toFixed(4)} s) — une phase, une durée`);
+  // le frein
+  const mes = (opts, v = 4.5) => { let hw = 0, sh = 0, hx = 0, hd = 0, sp = 0, n = 0; for (let i = 0; i < 60; i++) { const g = gaitPose(P, i / 60, v, 0, NEUTRAL_GAIT_STYLE, opts); const fk = fkPose(P, g.q, g.hips); hw += fk.RightFoot.p[0] - fk.LeftFoot.p[0]; sh += fk.RightShoulder.p[1] - fk.LeftShoulder.p[1]; hx += fk.Hips.p[0]; hd += applyQuat([0, 1, 0], fk.Head.q)[0]; sp += Math.abs(applyQuat([0, 1, 0], fk.Spine2.q)[0]); n++; } const m = gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, opts).meta; return { hw: hw / n, shoulderDy: sh / n, hipsX: hx / n, headRoll: Math.asin(Math.max(-1, Math.min(1, hd / n))) / D2R, chestRoll: Math.asin(Math.min(1, sp / n)) / D2R, lean: m.lean, T: m.T, pitchHS: m.params.pitchHS }; };
+  const D2R = Math.PI / 180, d = mes({}), b = mes({ brake: 1 });
+  ok(b.lean <= d.lean - 8 && b.lean < 0, `frein 1 à 4,5 m/s : le tronc se RETIENT en arrière (${b.lean.toFixed(1)}° c. ${d.lean.toFixed(1)} en course)`);
+  ok(b.hw >= d.hw + 0.05 && b.pitchHS >= d.pitchHS + 8 && b.T <= d.T * 0.8 + 1e-9, `…la base s'élargit (${cm(b.hw)} c. ${cm(d.hw)} cm), le talon se pose d'abord (tangage ${b.pitchHS.toFixed(0)}° c. ${d.pitchHS.toFixed(0)}), les pas raccourcissent (cycle ${b.T.toFixed(3)} c. ${d.T.toFixed(3)} s)`);
+  ok(Math.abs(gaitBrakeCadence(0) - 1) < 1e-12 && Math.abs(gaitBrakeCadence(1) - 4 / 3) < 1e-12 && Math.abs(d.T / gaitBrakeCadence(1) - b.T) < 1e-9, 'gaitBrakeCadence : ×1 sans frein, ×4/3 à plein frein — le facteur que le contrôleur donne à son horloge');
+  let bad = [];
+  for (const v of [3, 4.5, 6, 8]) for (const o of [{ brake: 1 }, { brake: 0.5 }]) { const r = checkGaitGen(P, { vF: v, vR: 0, opts: o }); if (!r.ok) bad.push(`${v} m/s frein ${o.brake} : ${r.issues.join(' ; ').slice(0, 80)}`); }
+  ok(bad.length === 0, `le frein reste sous le contrat de 3 à 8 m/s (la jambe ne sature pas — l'appui de frein se raccourcit au sprint)${bad.length ? ' — ' + bad[0] : ''}`);
+  // le virage
+  const t = mes({ turn: 6 }), tl = mes({ turn: -6 });
+  ok(t.shoulderDy <= -0.025 && t.hipsX >= 0.03 && t.chestRoll >= d.chestRoll + 10, `virage à droite (6 m/s²) : l'épaule droite descend (${cm(t.shoulderDy)} cm), le bassin glisse à droite (${cm(t.hipsX)} cm), le tronc roule ${t.chestRoll.toFixed(0)}° dans le virage (${d.chestRoll.toFixed(0)}° de roulis moyen en course)`);
+  ok(Math.abs(t.headRoll - d.headRoll) <= 1 && Math.abs(tl.headRoll - d.headRoll) <= 1, `…et la tête reste d'aplomb (roulis moyen signé ${t.headRoll.toFixed(2)}° c. ${d.headRoll.toFixed(2)} en course, à 1° près — le contre-roulis cou + tête)`);
+  ok(Math.abs(tl.shoulderDy + t.shoulderDy) < 1e-4 && Math.abs(tl.hipsX + t.hipsX) < 1e-4 && t.hw >= d.hw + 0.02, `le virage à gauche est le miroir ; la base s'élargit de ${cm(t.hw - d.hw)} cm (le pied extérieur se pose plus large)`);
+  bad = [];
+  for (const v of [2.8, 4.5, 6, 8]) for (const o of [{ turn: 6 }, { turn: -6 }, { turn: 9, brake: 1 }]) { const r = checkGaitGen(P, { vF: v, vR: 0, opts: o }); if (!r.ok) bad.push(`${v} m/s ${JSON.stringify(o)} : ${r.issues.join(' ; ').slice(0, 80)}`); }
+  ok(bad.length === 0, `le virage, seul ou avec le frein, reste sous le contrat de 2,8 à 8 m/s (la hanche extérieure qui monte est dans le calcul d'affaissement)${bad.length ? ' — ' + bad[0] : ''}`);
+  let rouges = 0;
+  for (let s = 1; s <= 40; s++) { const st = gaitStyleFromSeed(s); for (const [vF, o] of [[4.5, { brake: 1 }], [7, { brake: 1 }], [4.5, { turn: 7 }], [7, { turn: -7 }], [8, { brake: 1, turn: 4 }]]) if (!checkGaitGen(P, { vF, vR: 0, style: st, opts: o }).ok) rouges++; }
+  ok(rouges === 0, `40 signatures × 5 régimes de frein et de virage = 200 foulées sous contrat (${rouges} rouges)`);
+  const a = JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, {}));
+  ok(a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: 0, turn: 0 })) && a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: undefined, turn: undefined, legK: undefined })), 'sans frein ni virage (0 ou absents), la foulée à la cadence de la jambe, au bit');
 }
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

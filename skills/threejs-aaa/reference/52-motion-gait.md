@@ -69,7 +69,7 @@ tronc ×0,75-1,25, hauteur du vol ×0,85-1,15, ouverture des pieds 3-14°, large
 lacet/roulis du bassin, point de pose, pointe au pelage, affaissement. Reconnaissable, pas
 caricatural : 40 graines × 6 régimes sont sous contrat.
 
-## Le contrat (verify-foulee.mjs — 45 clauses)
+## Le contrat (verify-foulee.mjs — 71 clauses)
 
 - 13 régimes (marche lente → sprint, arrière, chassés, diagonales) sous `checkGaitGen` : pied
   d'appui immobile au monde (≤ 0,06 m/s), pied d'appui au sol (point le plus bas ≤ 1,2 cm), vol qui
@@ -114,17 +114,54 @@ caricatural : 40 graines × 6 régimes sont sous contrat.
   les clips ; en patin (> 0,5 m/s) 46-51 % contre 54-63 % — le reste est la pose (le pied arrive
   bas et vite, comme un vrai) et le déroulé talon-pointe.
 
+## Le virage, le frein et la cadence à l'échelle de la jambe (A7 bis)
+
+- **La cadence à l'échelle de la jambe** — `gaitLegK(P) = 0,90 m / (cuisse + tibia)`, borné [0,85 ; 1,35] :
+  la loi de Dorn est celle d'une jambe de 0,90 m ; une jambe plus courte fait des foulées plus courtes
+  à la même vitesse (S ∝ L), donc une cadence plus haute. shanon (0,76 m) courait avec les foulées d'un
+  grand : ×1,18, le cycle à 4,5 m/s passe de 0,482 à 0,407 s et l'affaissement du bassin de −10,7 à
+  −8,4 cm (3 m/s : −9,7 → −7,8). `gaitLegFactor(legK, v)` fond le facteur à ×1 entre 4,5 et 5,5 m/s :
+  au sprint la loi touche déjà le plafond des articulations de `checkClip` (genou 30 rad/s, bras
+  14 rad/s entre deux clés à 60 Hz — le genou presque tendu à la pose est le plus sensible : 36 rad/s
+  au premier centième d'appui à 5,5 m/s), une cadence plus haute encore les téléporterait. Le
+  contrôleur avance son horloge du même facteur (une phase, une durée) ; `gaitCycleSpec` et la
+  planche-contact lisent la durée dans la pose (`meta.T`). `legK: 1` = la cadence d'hier.
+- **Le frein** (`opts.brake` 0..1) : le tronc se RETIENT en arrière (−3,7° contre +7,3 en course), le
+  pied de frein se pose plus loin devant le bassin (bias −0,16), la base s'élargit (20 contre 12 cm),
+  talon d'abord (+10° de tangage), les pas raccourcissent (cycle × 0,75 — `gaitBrakeCadence`,
+  l'horloge suit), le vol rase (× 0,8), les bras viennent devant et s'ouvrent. L'appui de frein se
+  raccourcit au sprint ((6/v)²) et en plein virage (la jambe sature sinon).
+- **Le virage** (`opts.turn`, accélération latérale en m/s², + = vers la droite du corps, borné ±9) :
+  le bassin et le tronc ROULENT dans le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 17° à 6, 18° au
+  plus), le bassin glisse vers l'intérieur (7 cm par g), le pied extérieur se pose plus large, la tête
+  reste d'aplomb (contre-roulis 0,4 cou + 0,6 tête), la jambe intérieure passe plus ras. La hanche
+  extérieure qui MONTE avec le roulis et le bassin glissé sont dans le calcul d'affaissement — sans
+  cela la jambe extérieure saturait (« le pied d'appui flotte à 1,3 cm et glisse à 0,7 m/s ») ; sous
+  frein ou virage, tout le cycle est échantillonné (la fin du vol du pied de frein saturait à 8 m/s),
+  marge 1,2 cm. Le miroir gauche/droite du contrat est débrayé sous virage (asymétrique par
+  construction), « ne penche pas en avant » sous frein.
+- **Le contrôleur** (`_measureAccel`) mesure sur le déplacement réel du modèle, en repère corps
+  (`WORLD.facingDir(yaw, fa)` — la convention de `_bodyVelocity`), lissé τ 0,15 s, et seulement
+  quand le corps avance (> 1,5 m/s, plus vite devant que de côté) : `brake = −aF / 6 m/s²`,
+  `turn = aR`. En match (graine 3, 40 s) : frein p90 0,25, p99 0,82 (décélération 4,9 m/s²) ;
+  virage p50 0,55, p90 5,7 m/s² (les changements de cap de la sim sont francs).
+- **Trouvé en passant** : `_applyLean` lisait le repère corps par (sin yaw, cos yaw) alors que le rig
+  regarde selon son axe de face `fa` (π pour shanon) — 395 images sur 405 penchaient à l'envers
+  (buste en arrière à l'accélération, roulis hors du virage). Même repère que `_bodyVelocity`
+  désormais : 94 % d'accord avec l'accélération de la sim (le reste, le retard du lissage).
+- Absents (`brake`, `turn` à 0 ou absents) : la foulée à la cadence de la jambe, au bit.
+
 ## Les dettes nommées
 
-- **La jambe courte de shanon** (0,76 m pour une hanche à 0,875) contre la foulée de Dorn (1,5 m à
-  1,4 m/s) : atteindre le point de pose force un affaissement de 7 cm en marche, 10-12 cm en course
-  (genou ≥ 16-20° à mi-appui — un coureur légèrement « assis »). Une cadence à l'échelle de la jambe
-  (×(0,86/L)^½) ou un pas plus court le résoudrait ; à trancher avec `verify-gait`.
+- **Deux signatures sur quarante** (graines 3 et 35) passent sous le plafond `checkClip` entre 4,75 et
+  5,25 m/s avec la cadence de la jambe (elles y étaient déjà à 5,5 hier) — les specs de cycle
+  exportées, pas la page, qui évalue `gaitPose` image par image. Le genou presque tendu à la pose
+  (portée 0,99 R) est ce qui claque ; un peu plus de genou aux extrêmes le résoudrait, au prix d'un
+  centimètre d'affaissement.
 - **La course arrière ne se déclenche presque jamais** : la sim demande aux défenseurs de regarder
   où ils courent (yawWant ≈ vitesse ; 150 s de jeu sans un seul (vF < −1,8)). Le régime existe et
   est sous contrat ; il attend une consigne de face « jockey » côté moteur (A10/A11).
-- **Le virage et le freinage** ne sont que l'inclinaison (lean) : pas de pas croisé, pas d'appui
-  long de freinage.
+- **Le pas croisé** du virage serré n'existe pas (le roulis, la base élargie et le bassin glissé, oui).
 - **L'idle** est toujours celui du Soldier (A8) ; la transition idle → foulée est un fondu de 0,35 m/s.
 - **Le verrou de pieds** re-capture parfois une image pendant le pelage (cheville à 0,15 m, sous
   sa bande de 5 cm au-dessus d'un plancher calibré sur le clip de course) — un tressaillement de

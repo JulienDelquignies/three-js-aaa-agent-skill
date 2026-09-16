@@ -87,7 +87,21 @@ function forwardParams(v) {
 }
 
 /** Les paramètres résolus pour (v→) : fondu des régimes avant / arrière / latéral par la direction. */
-export function gaitParams(vF, vR, style = NEUTRAL_GAIT_STYLE, override = null) {
+/** (A7 bis) LA CADENCE À L'ÉCHELLE DE LA JAMBE : la loi de Dorn est celle d'une jambe de 0,90 m (hanche à ~0,92 m) ; une jambe plus courte
+ *  fait des foulées plus courtes à la même vitesse (S ∝ L), donc une cadence plus haute (× L₀/L). Le rig shanon (0,76 m) tournait avec les
+ *  foulées d'un grand : 10-12 cm d'affaissement du bassin à 4,5-6 m/s pour atteindre ses pieds. Borné [0,85 ; 1,35]. */
+export const LEG_REF = 0.90;
+/** (A7 bis) LE FREIN RACCOURCIT LA FOULÉE : les pas de frein sont plus courts et plus vifs (le cycle × (1 − 0,25·frein)) — la cadence
+ *  de l'horloge du contrôleur suit du même facteur (une phase, une durée). */
+export function gaitBrakeCadence(brake) { return 1 / (1 - 0.25 * clamp(brake ?? 0, 0, 1)); }
+export function gaitLegK(P) { return clamp(LEG_REF / Math.max(0.3, P.lengths.thigh + P.lengths.shank), 0.85, 1.35); }
+/** Le facteur EFFECTIF à l'allure v : plein jusqu'à 4,5 m/s, fondu à 1 à 5,5 m/s — au sprint la loi tourne déjà à la limite des articulations
+ *  (genou 30 rad/s, bras 14 rad/s entre deux clés à 60 Hz : checkClip — le genou, presque tendu à la pose, est le plus sensible),
+ *  une cadence plus haute encore les téléporterait. */
+export const LEG_FADE = [4.5, 5.5];
+export function gaitLegFactor(legK, v) { return 1 + (legK - 1) * clamp((LEG_FADE[1] - Math.abs(v)) / (LEG_FADE[1] - LEG_FADE[0]), 0, 1); }
+
+export function gaitParams(vF, vR, style = NEUTRAL_GAIT_STYLE, override = null, legK = 1) {
   const v = Math.hypot(vF, vR);
   const f = v > 1e-6 ? Math.max(0, vF / v) : 1, bk = v > 1e-6 ? Math.max(0, -vF / v) : 0, lat = v > 1e-6 ? Math.abs(vR) / v : 0;
   const wsum = f + bk + lat || 1;
@@ -110,7 +124,7 @@ export function gaitParams(vF, vR, style = NEUTRAL_GAIT_STYLE, override = null) 
   // sans quoi un chassé à 2 m/s demanderait des pieds à 1,8 m l'un de l'autre. Le contrôleur
   // avance l'horloge avec le même facteur (gaitCadenceFactor) : une phase, une durée.
   p.kDir = gaitCadenceFactor(vF, vR);
-  p.T = 1 / Math.max(0.3, strideLaw(v) * p.kDir);                 // durée du cycle (deux appuis), s
+  p.legK = gaitLegFactor(legK, v); p.T = 1 / Math.max(0.3, strideLaw(v) * p.kDir * p.legK);   // durée du cycle (deux appuis), s — (A7 bis) × la cadence de la jambe à cette allure
   // pas chassés : la demi-largeur suit la vitesse latérale pour que les pieds ne se croisent JAMAIS
   // (le pied qui se pose au plus à droite contre celui qui décolle au plus à gauche — voir contrat)
   if (lat > 1e-3) p.hw = Math.max(p.hw, lat * (0.415 * Math.abs(vR) * p.s * p.T + 0.08));
@@ -175,7 +189,8 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
     const rho = u < sFix ? 0 : sstep((u - sFix) / Math.max(1e-6, p.s - sFix));
     const k = (u / p.s) * (1 - (p.slip || 0));                         // `slip` : le sabotage nommé de l'appui qui glisse
     pos = [land[0] - D[0] * k + dir[0] * roll * rho, 0, land[2] - D[2] * k + dir[2] * roll * rho];
-    const flatten = 1 - ramp(u / p.s, 0, 0.08, 0.16);
+    const kF = Math.max(1, 0.035 / Math.max(1e-3, 0.16 * p.s * p.T));   // (A7 bis) le talon se pose en ≥ 35 ms : à haute cadence la fenêtre en
+    const flatten = 1 - ramp(u / p.s, 0, 0.08 * kF, 0.16 * kF);          // fraction d'appui devenait un coup de genou (39 rad/s à la pose)
     const peel = u < sFix ? 0 : ramp(u, sFix, sFix + (p.s - sFix) * 0.55, p.s);
     pitch = p.pitchHS * flatten - p.pitchTO * peel;
     if (p.pitchHS < 0) pitch = Math.min(pitch, p.pitchHS * flatten);   // avant-pied : le talon ne descend pas
@@ -207,7 +222,7 @@ export function footPath(u, P_, c, vC, ankleY, Lfoot) {
  * sabotage ou un réglage nommé (bancs).
  */
 export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) {
-  const p = gaitParams(vF, vR, style, opts.override || null);
+  const p = gaitParams(vF, vR, style, opts.override || null, opts.legK ?? gaitLegK(P));   // (A7 bis) la cadence à l'échelle de la jambe du rig (le contrôleur avance l'horloge du même facteur)
   // (A12b) LA RÉCEPTION EN MOUVEMENT : le receveur qui va au-devant du ballon (la sim ne le laisse jamais attendre
   // sur place — 0 % des images de vol sous 0,6 m/s, sonde A12b) garde les bras CALMES : un peu plus ouverts, coudes un peu plus
   // fermés, balancier réduit — l'amplitude vient du PORT DE BRAS de la persona (bras 0..1), pas d'un écart uniforme. `opts.receveur` (true ou { elev, elbow, swing }) — posé par le contrôleur quand la scène
@@ -217,6 +232,15 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // A10 cfg.contact.jockey) est BAS et ouvert — bassin plus bas, buste penché, pieds plus larges, bras ouverts, balancier
   // réduit (Van Dijk : « recule au tempo de l'attaquant, hanches de trois-quarts, sans se jeter »). `opts.jockey` ; absent : hier au bit.
   if (opts.jockey) { const jk = opts.jockey === true ? {} : opts.jockey; p.drop += jk.drop ?? 0.05; p.lean += jk.lean ?? 10; p.hw += jk.hw ?? 0.04; p.armElev += jk.elev ?? 14; p.elbow += jk.elbow ?? 20; }
+  // (A7 bis) LE FREINAGE (`opts.brake` 0..1 — le contrôleur : décélération mesurée / 6 m/s²) : le buste se retient en ARRIÈRE, le pied
+  // se pose plus LOIN devant le bassin (bias négatif : l'appui de frein), talon d'abord, la base s'élargit, le bassin descend, les bras
+  // viennent devant et s'ouvrent. LE VIRAGE (`opts.turn`, accélération latérale mesurée en m/s², + = vers la droite du corps) : le bassin
+  // et le tronc ROULENT dans le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 17° à 6, 18° au plus), le bassin glisse vers l'intérieur, le pied extérieur se pose
+  // plus large, la tête reste d'aplomb (contre-roulis). Absents : la foulée d'hier au bit.
+  const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp(opts.turn ?? 0, -9, 9);
+  if (br > 0) { const kv = clamp((6 / Math.max(1, Math.abs(vF))) ** 2, 0.3, 1) * (1 - 0.5 * Math.abs(aT) / 9); p.lean -= 11 * br; p.bias -= 0.16 * br * kv; p.hw += 0.04 * br * kv; p.pitchHS += 10 * br; p.drop += 0.02 * br * kv; p.T /= gaitBrakeCadence(br); p.swingH *= 1 - 0.2 * br; p.armOff += 12 * br; p.armElev += 8 * br; p.elbow += 10 * br; }   // kv : au sprint et en plein virage la jambe sature, l'appui de frein se raccourcit
+  const rollIn = clamp(Math.atan(aT / 9.81) / D2R * 0.55, -18, 18), inG = aT / 9.81, hipX = 0.07 * inG, hipRise = (P.lengths.hipWidth / 2) * Math.sin(rollIn * D2R);
+  if (aT !== 0) p.swingH *= 1 - 0.15 * Math.min(1, Math.abs(aT) / 9);   // la jambe intérieure, hanche plus basse, passe plus ras (le genou reste sous 140°) ; les pas de frein rasent aussi
   const L = P.lengths, R = L.thigh + L.shank;
   const hipY = P.bones.LeftUpLeg.bindP[1], ankleY = P.bones.LeftFoot.bindP[1];
   const vC = [vR, 0, -vF];                                            // repère personnage : avant = −Z
@@ -230,23 +254,31 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // le bassin doit ATTEINDRE le pied aux extrêmes (pose et décollage) — l'affaissement nécessaire
   // se calcule, il ne se devine pas (la portée saturée est le patin silencieux des jambes IK)
   const reach = 0.99 * R;
-  const cL = [-p.hw, 0, 0], cR = [p.hw, 0, 0];
+  const cL = [-p.hw + 0.05 * inG - 0.04 * Math.max(0, inG), 0, 0], cR = [p.hw + 0.05 * inG + 0.04 * Math.max(0, -inG), 0, 0];   // (A7 bis) les pieds glissent vers l'intérieur du virage, l'extérieur s'élargit
   let drop = p.drop;
   for (let i = 0; i <= 16; i++) {
     const u = (i / 16) * (p.s + 0.06);
     const bobU = p.bobA * p.bobSign * Math.cos(TAU * 2 * (u - p.s / 2));
     for (const [c, side] of [[cL, 'Left'], [cR, 'Right']]) {
       const fp = footPath(u, p, c, vC, ankleY, L.foot);
-      const dx = fp.p[0] - P.bones[`${side}UpLeg`].bindP[0], dz = fp.p[2] - P.bones[`${side}UpLeg`].bindP[2];
+      const dx = fp.p[0] - P.bones[`${side}UpLeg`].bindP[0] - hipX, dz = fp.p[2] - P.bones[`${side}UpLeg`].bindP[2];   // (A7 bis) la hanche de l'instant : glissée…
       const horiz = Math.hypot(dx, dz);
       const maxDown = Math.sqrt(Math.max(0, reach * reach - horiz * horiz));
-      drop = Math.max(drop, hipY + bobU - fp.p[1] - maxDown + 0.005);
+      drop = Math.max(drop, hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - maxDown + 0.005);   // …et montée du côté extérieur du virage
     }
   }
-  const hips = [0, -drop + bob, 0];
+  if (br > 0 || aT !== 0) for (let i = 0; i < 32; i++) {              // (A7 bis) sous frein ou virage, TOUT le cycle (la fin du vol
+    const u = i / 32, bobU = p.bobA * p.bobSign * Math.cos(TAU * 2 * (u - p.s / 2));   // du pied de frein sature à 8 m/s), marge 1,2 cm
+    for (const [c, side] of [[cL, 'Left'], [cR, 'Right']]) {
+      const fp = footPath(u, p, c, vC, ankleY, L.foot);
+      const horiz = Math.hypot(fp.p[0] - P.bones[`${side}UpLeg`].bindP[0] - hipX, fp.p[2] - P.bones[`${side}UpLeg`].bindP[2]);
+      drop = Math.max(drop, hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + 0.012);
+    }
+  }
+  const hips = [hipX, -drop + bob, 0];                                // (A7 bis) le bassin glisse vers l'intérieur du virage
   const pYaw = -p.pYaw * Math.cos(TAU * ph);                          // hanche gauche devant à φ = 0
   const pList = -p.pList * Math.cos(TAU * (ph - p.s / 2));            // côté en vol qui tombe
-  const RHips = chain(rx(-p.pTilt), rz(pList), ry(pYaw));
+  const RHips = chain(rx(-p.pTilt), rz(pList - rollIn), ry(pYaw));   // (A7 bis) rz(−) : le côté droit descend — le roulis dans le virage à droite
   const J = { Hips: RHips };
 
   // ---- le tronc : inclinaison avant, contre-rotation des épaules (déphasage Pontzer), tête stable
@@ -256,8 +288,8 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   J.Spine1 = chain(leanQ(0.35), ry(girdle * 0.35));
   J.Spine2 = chain(leanQ(0.25), ry(girdle * 0.45));
   const head = clamp(-girdle * 0.75, -6, 6);
-  J.Neck = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.4), ry(head * 0.4));   // (A11) opts.headDown : la tête basse (l'abattu)
-  J.Head = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.6), ry(head * 0.6));
+  J.Neck = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.4), ry(head * 0.4), rz(rollIn * 0.4));   // (A11) opts.headDown : la tête basse (l'abattu) ; (A7 bis) la tête reste d'aplomb dans le virage
+  J.Head = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.6), ry(head * 0.6), rz(rollIn * 0.6));
 
   // ---- les bras : opposés à leur jambe (gauche derrière à φ = 0), coude qui se ferme en avant
   const swing = p.armA * armF * Math.cos(TAU * ph + (p.armPhase || 0));   // `armPhase` : le sabotage des bras en phase
@@ -293,7 +325,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
 
 /** Un CYCLE en spec animkit (une clé par 1/fps s sur la durée T, loop) — la planche-contact, checkClip. */
 export function gaitCycleSpec(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, fps = 60, opts = {}, name = null } = {}) {
-  const T = Math.round(gaitParams(vF, vR, style, opts.override || null).T * 10000) / 10000;
+  const T = Math.round(gaitPose(P, 0, vF, vR, style, opts).meta.T * 10000) / 10000;   // (A7 bis) la durée de la pose elle-même (jambe, frein)
   const n = Math.max(8, Math.round(T * fps));
   const keys = [];
   for (let i = 0; i <= n; i++) {
@@ -312,7 +344,7 @@ export function gaitCycleSpec(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, f
  */
 export function gaitPortrait(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, opts = {}, n = 120 } = {}) {
   const frames = [];
-  const T = gaitParams(vF, vR, style, opts.override || null).T;
+  const T = gaitPose(P, 0, vF, vR, style, opts).meta.T;             // (A7 bis) la durée du cycle de la pose elle-même (jambe, frein)
   for (let i = 0; i < n; i++) {
     const phi = i / n, t = phi * T;
     const g = gaitPose(P, phi, vF, vR, style, opts);
@@ -387,7 +419,7 @@ export function checkGaitGen(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, op
     if (kneeBack) issues.push(`${side} : le genou plie à l'envers sur ${kneeBack} images`);
   }
   // la symétrie : le pied droit est le gauche en miroir, un demi-cycle plus tard
-  if (Math.abs(vR) < 0.1) { let worst = 0;
+  if (Math.abs(vR) < 0.1 && !opts.turn) { let worst = 0;   // (A7 bis) le virage est asymétrique par construction
     for (let i = 0; i < frames.length; i++) {
       const a = frames[i].L.ankle, b = frames[(i + frames.length / 2) % frames.length].R.ankle;
       worst = Math.max(worst, Math.hypot(a[0] + b[0], a[1] - b[1], a[2] - b[2]));
@@ -416,7 +448,7 @@ export function checkGaitGen(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, op
   const leanRest = leanOf({ chest: rest.Spine2.p, pelvis: rest.Hips.p });
   const leans = frames.map((f) => leanOf(f) - leanRest);
   const leanMean = leans.reduce((a, b) => a + b, 0) / leans.length;
-  if (vF > 1.5 && Math.abs(vR) < 0.3 && leanMean < 0.5) issues.push(`le tronc ne penche pas en avant (${leanMean.toFixed(1)}°)`);
+  if (vF > 1.5 && Math.abs(vR) < 0.3 && leanMean < 0.5 && !(opts.brake > 0)) issues.push(`le tronc ne penche pas en avant (${leanMean.toFixed(1)}°)`);   // (A7 bis) le frein se retient en arrière
   if (leanMean > 30) issues.push(`le tronc penche trop (${leanMean.toFixed(1)}°)`);
   // pas chassés : jamais de croisement, appui large, genoux fléchis
   if (Math.abs(vR) > 0.8 && Math.abs(vF) < 0.3 * Math.abs(vR)) {

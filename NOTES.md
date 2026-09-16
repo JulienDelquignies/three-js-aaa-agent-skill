@@ -12074,6 +12074,45 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      Captures a11bis-sifflet.png, a11bis-designer.png, a11bis-carton.png.
      Reste : la carte est petite à l'écran (la taille réelle), le bras qui
      désigne monte un peu haut sur le rig du squad. Référence 59.
+- 366: LE VIRAGE, LE FREIN ET LA CADENCE À L'ÉCHELLE DE LA JAMBE (lot A7 bis,
+     deuxième de l'ordre proposé). Trois choses dans motion-gait et le
+     contrôleur. (1) gaitLegK(P) = 0,90 m / (cuisse + tibia) : la loi de Dorn
+     est celle d'une jambe de 0,90 m ; shanon (0,76 m) courait avec les foulées
+     d'un grand et son bassin s'affaissait de 10-12 cm pour atteindre ses pieds.
+     Cycle ÷ 1,18 (4,5 m/s : 0,482 → 0,407 s, affaissement −10,7 → −8,4 cm ;
+     3 m/s : −9,7 → −7,8), fondu à ×1 entre 4,5 et 5,5 m/s (gaitLegFactor)
+     parce qu'au sprint la loi touche déjà le plafond des articulations de
+     checkClip (genou 30 rad/s entre deux clés à 60 Hz — le genou presque tendu
+     à la pose est le plus sensible : 36 rad/s au premier centième d'appui à
+     5,5 m/s). Le contrôleur avance son horloge du même facteur (une phase,
+     une durée) ; gaitCycleSpec et la planche-contact lisent la durée dans la
+     pose (meta.T). (2) opts.brake (décélération mesurée / 6 m/s²) : tronc
+     retenu en arrière (−3,7° c. +7,3), pied de frein plus loin devant (bias
+     −0,16), base élargie (20 c. 12 cm), talon d'abord (+10° de tangage), cycle
+     × 0,75 (les pas de frein sont courts et vifs — gaitBrakeCadence, l'horloge
+     suit), vol qui rase, bras devant et ouverts ; l'appui de frein se
+     raccourcit au sprint ((6/v)²) et en plein virage. (3) opts.turn
+     (accélération latérale mesurée, + = droite) : bassin et tronc roulent dans
+     le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 18° au plus), le bassin
+     glisse vers l'intérieur (7 cm/g), le pied extérieur se pose plus large, la
+     tête reste d'aplomb (contre-roulis 0,4 cou + 0,6 tête), la jambe
+     intérieure passe plus ras. La hanche extérieure qui MONTE avec le roulis et
+     le bassin glissé sont dans le calcul d'affaissement (sinon « le pied
+     d'appui flotte à 1,3 cm et glisse à 0,7 m/s ») ; sous frein ou virage tout
+     le cycle est échantillonné (la fin du vol du pied de frein saturait à
+     8 m/s), marge 1,2 cm. _measureAccel : sur le déplacement réel du modèle,
+     repère corps, lissé τ 0,15 s, seulement en avançant (> 1,5 m/s, plus vite
+     devant que de côté). En match (graine 3, 40 s) : frein p99 0,82
+     (décélération 4,9 m/s²), virage p90 5,7 m/s². TROUVÉ EN PASSANT :
+     _applyLean lisait le repère corps par (sin yaw, cos yaw) alors que le rig
+     regarde selon `fa` (WORLD.facingDir, π pour shanon) — 395 images sur 405
+     penchaient à l'envers (buste en arrière à l'accélération, roulis hors du
+     virage) ; même repère que _bodyVelocity désormais (94 % d'accord, le reste
+     est le retard du lissage). verify-foulee 45 → 71 clauses (miroir
+     gauche/droite débrayé sous virage, « ne penche pas » sous frein). Dette
+     assumée : deux signatures sur quarante (3, 35) passent sous le plafond
+     checkClip entre 4,75 et 5,25 m/s avec la cadence de la jambe (elles y
+     étaient déjà à 5,5 hier) — les specs exportées, pas la page.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

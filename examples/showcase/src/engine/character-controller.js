@@ -3,7 +3,7 @@ import { FootLockIK } from './foot-lock.js';
 import { WORLD } from './world-basis.js';
 import { AnimationStateMachine } from './anim-state-machine.js';
 import { makeGaitClock, phaseOffset, gaitLayer } from './gait.js';
-import { gaitPose, gaitCadenceFactor, gaitStyleFromSeed, NEUTRAL_GAIT_STYLE } from './motion-gait.js';
+import { gaitPose, gaitCadenceFactor, gaitStyleFromSeed, gaitLegK, gaitLegFactor, gaitBrakeCadence, NEUTRAL_GAIT_STYLE } from './motion-gait.js';
 import { idlePose, idlePolicy, idleStyleFromSeed, NEUTRAL_IDLE_STYLE } from './motion-idle.js';
 import { profileFromBones } from './motion-rig.js';
 import { UP_BONES } from './gesture-layer.js';
@@ -113,7 +113,7 @@ export class CharacterController {
     const axisX = new THREE.Vector3(1 / kM, 0, 0).applyMatrix3(toParent);
     const seed = typeof style === 'number' ? style : null;
     if (typeof style === 'number') style = gaitStyleFromSeed(style);   // la graine de persona → sa signature
-    this._gaitGen = { P, style: style || NEUTRAL_GAIT_STYLE, rest, hipsRest: hips.position.clone(), axisY, axisX, tq: new THREE.Quaternion(), tq2: new THREE.Quaternion(), tp: new THREE.Vector3(), w: 0, vBody: [0, 0] };
+    this._gaitGen = { P, style: style || NEUTRAL_GAIT_STYLE, rest, hipsRest: hips.position.clone(), axisY, axisX, tq: new THREE.Quaternion(), tq2: new THREE.Quaternion(), tp: new THREE.Vector3(), w: 0, vBody: [0, 0], legK: gaitLegK(P) };   // (A7 bis) la cadence à l'échelle de la jambe du rig
     // L'ATTENTE GÉNÉRÉE (motion-idle, lot A8) : sous 0,6 m/s le corps n'est plus l'idle du donneur mais
     // une espèce d'attente choisie par la politique (idleCtx posé par la scène ; idleForce : la planche),
     // au style du joueur, fondue en 0,5 s d'une espèce à l'autre et fondue avec la foulée au-dessus.
@@ -242,7 +242,7 @@ export class CharacterController {
       // motion-gait.gaitCadenceFactor : une phase, une durée, le chemin de pied et l'horloge sont UN)
       const gen = this._gaitGen && this.locomotion === 'generee';
       const vb = gen ? this._bodyVelocity(vGait) : null;
-      if (this.gait) this.gait.advance(vGait, dt * (gen ? gaitCadenceFactor(vb[0], vb[1]) : 1));   // l'horloge unique tourne AVANT le mixer
+      if (this.gait) this.gait.advance(vGait, dt * (gen ? gaitCadenceFactor(vb[0], vb[1]) * gaitLegFactor(this._gaitGen.legK ?? 1, vGait) * gaitBrakeCadence(this._brake) : 1));   // l'horloge unique tourne AVANT le mixer — (A7 bis) × la cadence de la jambe et du frein (motion-gait : une phase, une durée)
       // PENDANT UN GESTE, LES JAMBES SUIVENT LE CORPS RÉEL — jamais un zéro forcé. L'idle forcé
       // (vTarget = 0) a été mesuré à l'audit membre par membre : le glissement d'approche translate
       // le corps jusqu'à 5,2 m/s pendant l'armé, et des jambes d'idle sous un corps qui se déplace,
@@ -318,9 +318,26 @@ export class CharacterController {
    *  (en dessous, l'idle du mixer ; au-delà, la pose calculée est CELLE DU BANC). Pendant un geste le
    *  haut du corps appartient au geste (même règle que la couche additive) ; le bassin rebondit en
    *  mètres personnage sur l'axe haut du parent. */
+  /** (A7 bis) LE FREIN ET LE VIRAGE MESURÉS — sur le déplacement réel du modèle (comme _applyLean), en repère CORPS (le regard du modèle :
+   *  avant = WORLD.facingDir(yaw, fa), droite = (−fz, fx), la convention de _bodyVelocity) ; lissés τ 0,15 s, et seulement quand le corps
+   *  AVANCE (> 1,5 m/s, plus vite devant que de côté) — à reculons ou en chassés la foulée d'hier. Les téléports de scène ne comptent pas. */
+  _measureAccel(dt) {
+    const now = this.pos ?? this.model.position, dtc = Math.max(1e-3, dt);
+    if (!this._accPrev) { this._accPrev = { p: [now.x, now.z], v: [0, 0] }; this._brake = 0; this._turn = 0; return; }
+    const vx = (now.x - this._accPrev.p[0]) / dtc, vz = (now.z - this._accPrev.p[1]) / dtc;
+    const ax = (vx - this._accPrev.v[0]) / dtc, az = (vz - this._accPrev.v[1]) / dtc;
+    this._accPrev = { p: [now.x, now.z], v: [vx, vz] };
+    const [fx, fz] = WORLD.facingDir(this._yawIn ?? this.yaw, this.fa);   // le repère de _bodyVelocity (le rig regarde selon `fa`, pas selon +Z)
+    const vF = vx * fx + vz * fz, vR = -vx * fz + vz * fx, fwd = vF > 1.5 && Math.abs(vR) < vF && hyp(ax, az) < 40;
+    const aF = ax * fx + az * fz, aR = -ax * fz + az * fx, k = 1 - Math.exp(-dtc / 0.15);
+    this._brake += ((fwd ? Math.max(0, Math.min(1, -aF / 6)) : 0) - this._brake) * k;
+    this._turn += ((fwd ? Math.max(-9, Math.min(9, aR)) : 0) - this._turn) * k;
+  }
+
   _applyGeneratedGait(v) {
     const G = this._gaitGen, I = this._idle;
     const dt = Math.max(0, this._leanDt ?? 1 / 60);
+    this._measureAccel(dt);
     const w = Math.max(0, Math.min(1, (v - 0.25) / 0.35));      // 0 : attente ; 1 : foulée ; entre : fondu
     G.w = w;
     // ---- l'attente : l'espèce de la situation (politique pure), fondue en 0,5 s à chaque changement
@@ -341,7 +358,7 @@ export class CharacterController {
     if (w > 0) {
       const vb = this._bodyVelocity(v), bras = this.persona?.bras ?? 0.5;   // le port de bras (persona.js) : 0 bas et calme, 1 ouvert
       G.vBody = vb;
-      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0 });   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert
+      gait = gaitPose(G.P, this.gait.phi, vb[0], vb[1], G.style, { armSwingF: this.persona?.armSwingF ?? 1, receveur: this.idleCtx?.receveur ? { elev: 2 + 8 * bras, elbow: 4 + 10 * bras, swing: 0.8 - 0.3 * bras } : undefined, jockey: this.idleCtx?.jockey ? { elev: 8 + 12 * bras, elbow: 12 + 16 * bras } : undefined, mainsHanches: (this.idleCtx?.marcheur && v < 1.7) || (this.idleCtx?.abattu && v < 2.2) ? true : undefined, headDown: this.idleCtx?.abattu ? (v < 2.2 ? 16 : 8) : 0, legK: G.legK, brake: this._brake || 0, turn: this._turn || 0 });   // (A7 bis) le frein (décélération / 6 m/s²) et le virage (accélération latérale) mesurés par _measureAccel   // (A11) l'adversaire abattu MARCHE mains sur les hanches, tête basse ; s'il trotte au retour (retourTrot), la tête seule   // (A12b) le ballon vole vers lui : bras calmes, ouverts au PORT DE BRAS de la persona ; (A12d) il jockeye : bas et ouvert
     }
     const pose = gait && idle ? { q: blendQ(idle.q, gait.q, w, G), hips: lerp3(idle.hips, gait.hips, w) } : (gait || idle);
     if (!pose) return;
@@ -376,9 +393,9 @@ export class CharacterController {
       const vx = (now.x - this._leanPrevP[0]) / dtc, vz = (now.z - this._leanPrevP[1]) / dtc;
       const ax = (vx - this._leanPrevV[0]) / dtc, az = (vz - this._leanPrevV[1]) / dtc;
       this._leanPrevP = [now.x, now.z]; this._leanPrevV = [vx, vz];
-      const yaw = this.yaw ?? this.model.rotation.y;
-      // repère corps : avant = (sin yaw, cos yaw) pour un modèle three tourné par rotation.y
-      const fx = Math.sin(yaw), fz = Math.cos(yaw);
+      // repère corps : le REGARD du modèle (WORLD.facingDir, avec son axe de face `fa` — le rig shanon regarde selon +Z, fa = π :
+      // (sin yaw, cos yaw) lisait l'accélération À L'ENVERS, buste en arrière à l'accélération, roulis hors du virage ; A7 bis)
+      const [fx, fz] = WORLD.facingDir(this._yawIn ?? this.yaw, this.fa);
       const aF = Math.max(-14, Math.min(14, ax * fx + az * fz));       // accélération le long du regard
       const aL = Math.max(-14, Math.min(14, ax * fz - az * fx));       // latérale (le virage)
       const k = 1 - Math.exp(-dtc / 0.12);
