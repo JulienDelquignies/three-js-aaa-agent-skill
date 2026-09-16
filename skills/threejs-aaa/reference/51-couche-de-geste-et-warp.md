@@ -54,7 +54,9 @@ Résultat composé (audit-membres 16/0) : frappe à **17,0 m/s** au contact (fou
 - L'horloge est `act.t` (la sim) : un seul instant, un seul contrat — le clip n'a plus d'horloge
   qui puisse dériver. Les poids restent les lois de composition existantes (bras tout de suite,
   jambes fondues par l'arrivée mesurée) : la couche ne décide pas QUAND le geste a les membres,
-  seulement CE QUE les membres montrent.
+  seulement CE QUE les membres montrent. Les lois (poids des jambes, heure d'échantillonnage, le tir
+  tenu) sont dans `scenes/rondo-fusion.js` (A2, verify-fusion) : le swing d'une frappe générée à ×1,
+  la clé de contact à l'image du tir de la sim.
 - Ordre du rendu (charte, loi 2) : mixer (locomotion) → gaitLayer → **couche de geste** →
   **warp de frappe** → verrous. Les contraintes du monde se projettent en dernier.
 

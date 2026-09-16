@@ -1,4 +1,4 @@
-import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { remiseClock, remiseHands } from './rondo-remises.js'; import { feteEvent, feteStep } from './rondo-fete.js';   // la fête et l'humeur (A11)   // le contact (A10), les remises au pied (A9 bis)
+import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { legsByArrive, legsByContact, fusionSample } from './rondo-fusion.js'; import { remiseClock, remiseHands } from './rondo-remises.js'; import { feteEvent, feteStep } from './rondo-fete.js';   // la fête et l'humeur (A11)   // le contact (A10), les remises au pied (A9 bis)
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -494,7 +494,7 @@ export class Rondo {
     // porte une impulsion authorée — démarrer DANS la montée (offset s) garde le décollage
     // synchrone du ballon sans jeter tout l'élan (le pré-saut anticipé est la dette nommée).
     pl._layerClock = { t0: this._t, offset: typeof from === 'number' && from > 0 ? from : from === 'contact' ? (spec.contact ?? 0) : 0, dur: spec.duration ?? 0.6, antic: spec.contact ?? 0.2 };
-    pl._wLegs = pl._wLegs ?? 0;
+    pl._wLegs = pl._wLegs ?? 0; pl._fireOff = null;   // (A2) le retard du tir se mesure à chaque geste
   }
 
   /** LE WARP DE FRAPPE, appliqué. L'autorité de la jambe frappeuse pendant l'armé (foot-lock se
@@ -1030,13 +1030,13 @@ export class Rondo {
         const diveDown = (pl.sim.down ?? 0) > 0 && !pl.sim.expulse && !pl.sim._sub && pl.sim.rise
           && /^plongeon/.test(pl.gestureLayer.spec?.name ?? '');
         const antic = (act?.payload?.kind === 'elan' ? pl.gestureLayer.spec?.contact : act?.anticipation) || meta.antic || 0.2;   // l'élan : l'armé de la sim est la course, celui du clip son contact (rondo-remises)
-        const byArrive = Math.max(0, Math.min(1, 1 - v / 2.5));
+        const byArrive = legsByArrive(v);   // (A2) les lois de fusion vivent dans rondo-fusion.js
         // …et le contact ne possède les jambes QUE jusqu'à ~0,15 s après lui : au-delà, c'est le
         // corps qui décide (byArrive). Sans cette borne, un tacleur relevé COURAIT à 3 m/s avec
         // les jambes de la pose couchée à poids plein (byContact restait à 1 tout l'accompagnement
         // du tacle, 0,9 s — orteil à −0,48 m, mesuré) ; pareil pour toute frappe dont la sim
         // repart tôt.
-        const byContact = t < antic + 0.15 ? Math.min(1, Math.pow(Math.max(0, t) / Math.max(1e-4, antic * 0.8), 1.5)) : 0;
+        const byContact = legsByContact(t, antic);
         // …et un tacleur que la SIM a relevé et remis en course lâche sa pose tout de suite : le
         // reste du clip couché n'a plus de corps à habiller (résidu mesuré : jambe fantôme à
         // −0,28 m pendant le fondu tardif)
@@ -1105,7 +1105,7 @@ export class Rondo {
           else if (pl.sim.down > pl.sim.rise.getup) { tG = Math.min(tG, tR); if (!act && t >= tR) meta.t0 += dtP; }
           else tG = tR + (1 - pl.sim.down / pl.sim.rise.getup) * (meta.dur - tR);
         }
-        const tSample = tG < antic ? tG + (0.3 * antic) * (1 - tG / antic) : tG;
+        const tSample = fusionSample(tG, antic, act, pl, pl.gestureLayer.spec, dtP);   // (A2) le swing à ×1, la clé de contact à l'image du tir — rondo-fusion.js
         pl.gestureLayer.apply(tSample, pl._wLegs, pl._wUp);
         if (done && pl._wUp <= 0 && pl._wLegs <= 0.02) { pl.gestureLayer.end(); pl._wLegs = 0; }
       } else {

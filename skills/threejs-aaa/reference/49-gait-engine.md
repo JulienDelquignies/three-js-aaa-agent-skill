@@ -186,7 +186,10 @@ régime final a trois pièces, chacune une loi :
    fondues par `max(arrivée, approche du contact)` : `1 − v/2,5` d'un côté, `(t/antic)^1,5` de
    l'autre, parce que le dernier pas EST le plant (sans le second terme, l'ease-out gardait la
    vitesse au-dessus du seuil presque tout l'armé des gestes courts et l'appui restait à 0,4-0,7 m
-   de sa stance au contact).
+   de sa stance au contact). Ces lois vivent dans `scenes/rondo-fusion.js` (A2) avec l'horloge
+   d'échantillonnage : en avance de 0,3 × anticipation à t = 0 (la clé neutre sautée), à l'heure vraie
+   dès 0,6 × anticipation — le swing d'une frappe générée se joue à ×1 (hier la convergence au contact
+   jouait tout l'armé à ×0,7 : 5-6 m/s de pied au contact composé contre 11 au clip).
 3. **Le glissement ne couvre que les derniers décimètres** (hardMax 0,6 — mesuré : 0,9 permettait
    un sprint sous l'armé, 0,5 faisait ramper l'engagement derrière l'amorti d'arrivée, +0,17 de
    taux de perte) — et la marche pilotée TRAVERSE le point de plant (cible décalée de 0,35 m) pour

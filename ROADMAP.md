@@ -208,12 +208,16 @@
 - LIVRÉ (note 366, reference/52 § A7 bis) : LE VIRAGE, LE FREIN ET LA CADENCE À L'ÉCHELLE DE LA JAMBE (A7 bis) — gaitLegK/gaitLegFactor
   (cycle ÷ 1,18 jusqu'à 4,5 m/s, fondu à ×1 à 5,5 : affaissement −10,7 → −8,4 cm à 4,5), opts.brake et opts.turn de gaitPose nourris par
   _measureAccel du contrôleur (repère WORLD.facingDir — qui corrige au passage _applyLean, à l'envers sur shanon) ; verify-foulee 71/0.
-- SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») : (A2) la vitesse du pied au contact en jeu ;
+- LIVRÉ (note 367, reference/51-motion-strike § dettes, verify-fusion 19/0) : LA VITESSE DU PIED AU CONTACT EN JEU (A2) — la couche
+  jouait tout l'armé à ×0,7 (convergence de l'échantillonnage en avance AU contact) : rondo-fusion.js converge à 0,6 × anticipation, le
+  swing à ×1 ; le générateur met le pic du genou SUR le contact (passe 11,4 → 13,2 m/s, frappe 14,5 → 17,0) ; le tir de la sim (au
+  tick suivant) est retenu par la couche, le pied est sur le ballon quand il part.
+- SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») :
   (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; le relevé aidé ; (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
-  la carte plus lisible. Et les dettes : (A2) le monde composé — re-caler
-  les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s
-  composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 ter) le
+  la carte plus lisible. Et les dettes : (A2 bis) LE PIED RATE LE BALLON — à l'image du tir l'orteil est à 30 cm du centre du ballon en
+  médiane en match (mesuré lot A2 : 4-11 cm sur les bonnes, 48 sur les mauvaises, warp engagé 14/21) : le warp de frappe ne ramène pas le
+  pied au ballon en match, à instrumenter (planWarp : heure du plan, standoff 0,13, warpMax 0,42) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 ter) le
   port des bras en course, le verrou de pieds calibré sur la foulée générée, le pas croisé du
   virage serré ; (A5) la stance
   dérivée et les bandes de la sim (la géométrie corps-ballon est une entrée du moteur — STANCES

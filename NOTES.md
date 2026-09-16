@@ -12113,6 +12113,43 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      assumée : deux signatures sur quarante (3, 35) passent sous le plafond
      checkClip entre 4,75 et 5,25 m/s avec la cadence de la jambe (elles y
      étaient déjà à 5,5 hier) — les specs exportées, pas la page.
+- 367: LA VITESSE DU PIED AU CONTACT EN JEU (lot A2, troisième de l'ordre
+     proposé). La dette disait « re-caler les poids d'arrivée » ; mesuré en
+     match (graine 3, 14 puis 21 frappes instrumentées à l'image du tir) : les
+     poids n'y étaient pour rien (wLegs 0,94-0,98 à l'image du tir, l'appui
+     posé à 12-13 cm sur 16/16, spec.contact = act.anticipation sur toutes).
+     Deux vraies causes. (1) La couche de geste échantillonnait le clip EN
+     AVANCE (lead 0,3 × anticipation, pour sauter la clé neutre de t = 0) avec
+     convergence linéaire vers l'heure vraie AU CONTACT : d(tSample)/dt = 0,7
+     pendant tout l'armé, swing compris — le pied arrivait à 70 % de sa
+     vitesse. rondo-fusion.js (les trois lois de fusion sorties de Rondo.js :
+     legsByArrive, legsByContact, sampleTime/fusionSample ; verify-fusion
+     21/0) converge à 0,6 × anticipation : l'armé à ×0,5, le SWING à ×1 ; les
+     gestes qui ne sont pas des frappes générées (plongeons warpés, contrôles,
+     remises authorées) gardent la loi d'hier au bit. (2) Le générateur
+     plaçait le pic de vitesse du genou à tc − 0,02 (+ snap) : le pied
+     culminait 18-27 ms avant le ballon, 30 % au-dessus de sa vitesse au
+     contact (passe : 15,0 de pic pour 11,4 au contact) — une poussée, pas une
+     frappe. Le pic est SUR le contact (tc + snap) : passe 11,4 → 13,2 m/s,
+     passe rapide 10,4 → 12,3, frappe 14,5 → 17,0, frappe puissante 15,4 →
+     18,2, pivot 9,0 → 10,6, extérieur 9,6 → 11,3 au clip (réel 15-25), pic à
+     4-11 ms (la hanche culmine avant, comme dans la vie) ; verify-frappes
+     13/0, strike-warp 23/0. (3) Et le tir de la sim tombe au premier tick où
+     act.t ≥ anticipation — 0 à 17 ms APRÈS la clé de contact (0,233 pour
+     0,22) : à 11 m/s le pied était 14 cm au-delà du ballon quand il partait.
+     L'heure du tir se PRÉDIT (act.t vit sur la grille des ticks) : le swing
+     se re-cadence pour que la clé de contact tombe à l'image du tir (×0,87
+     pour une passe rapide à 60 Hz, ×0,98 pour une passe), puis
+     l'accompagnement à ×1 avec ce retard constant. Première version : le
+     retard retenu d'un coup à l'image du tir — une image FIGÉE (2-4 m/s
+     mesurés à l'image du tir sur les passes rapides), retirée. RÉSULTAT en
+     match (21 frappes, vitesse du pied à l'image du tir) : médiane 9,3 →
+     11,3 m/s, p90 13,4, passes en course 12-20 ; audit-membres : la frappe
+     posée 11,1 → 16,3 m/s au contact. TROUVÉ EN MESURANT (pas dans ce lot) :
+     le PIED RATE LE BALLON — à l'image du tir l'orteil est à 30 cm du centre
+     du ballon en médiane (4-11 cm sur les bonnes, 48 sur les mauvaises,
+     warp engagé sur 14/21) : le warp de frappe (planWarp, standoff 0,13,
+     warpMax 0,42) ne le ramène pas au ballon en match — A2 bis au ROADMAP.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

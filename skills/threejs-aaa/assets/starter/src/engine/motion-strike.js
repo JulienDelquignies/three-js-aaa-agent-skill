@@ -325,7 +325,7 @@ export function generateStrike(kindName, P, { style = NEUTRAL_STYLE, fps = 60, a
     const knee = K.backheel
       ? K.kneeFwd * ramp(t, 0, 0.6 * tPre, tPre) + (kneeTop - K.kneeFwd) * ramp(t, tPre, tc + 0.03, tBack) + (0 - kneeTop) * ramp(t, tBack, (tBack + T) / 2, T)
       : kneeTop * ramp(t, 0, 0.6 * tTopKnee, tTopKnee)
-      + (kneeMin - kneeTop) * ramp(t, tTopKnee, tc - 0.02 + snap, tKneeEnd)
+      + (kneeMin - kneeTop) * ramp(t, tTopKnee, tc + snap, tKneeEnd)   // (A2) le pic de vitesse du genou SUR le contact (hier tc − 0,02 : le pied culminait 18-27 ms avant le ballon, 30 % au-dessus de sa vitesse au contact — une poussée, pas une frappe)
       + ((K.feint ? kneeMin : 22) - kneeMin) * ramp(t, tKneeEnd, (tKneeEnd + tFt) / 2, tFt)
       + (0 - (K.feint ? kneeMin : 22)) * ramp(t, tFt, (tFt + T) / 2, T);
     // abduction : la jambe contourne le ballon (dehors à l'armé, rentre au contact)

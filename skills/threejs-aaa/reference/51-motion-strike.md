@@ -262,9 +262,19 @@ le pied passe à 0,02-0,06 m du point de frappe (0,42 m avant le lot A1).
 
 ## Résultats négatifs et dettes nommées
 
-- Dans la composition en jeu, le poids des jambes suit l'arrivée (byArrive) : le monde composé mesure
-  5,9-8,3 m/s au contact sur une passe rapide en course (le clip seul : 10,3). Le re-calage des poids
-  d'arrivée (audit-membres) est le prochain chantier.
+- (A2, livré) Le monde composé mesurait 5-6 m/s de pied au contact contre 11 au clip. Deux causes, ni
+  l'une ni l'autre dans les poids d'arrivée (mesuré en match : wLegs 0,94-0,98 à l'image du tir, l'appui
+  posé à 12 cm sur 16 frappes sur 16) : (1) la couche de geste échantillonnait le clip EN AVANCE (lead
+  0,3 × anticipation, pour sauter la clé neutre) avec convergence linéaire vers l'heure vraie AU
+  CONTACT — tout l'armé, swing compris, à ×0,7 ; la convergence se fait à 0,6 × anticipation
+  (`rondo-fusion.js`, verify-fusion), l'armé à ×0,5 et le swing à ×1 ; (2) le générateur plaçait le pic
+  de vitesse du genou à tc − 0,02 (+ snap) : le pied culminait 18-27 ms avant le ballon, 30 % au-dessus
+  de sa vitesse au contact — une poussée. Le pic est SUR le contact (tc + snap) : passe 11,4 → 13,2 m/s,
+  passe rapide 10,4 → 12,3, frappe 14,5 → 17,0, frappe puissante 15,4 → 18,2, pivot 9,0 → 10,6,
+  extérieur 9,6 → 11,3 au contact (réel : 15-25), le pic à 4-11 ms (la hanche culmine avant, comme
+  dans la vie). Et le tir de la sim tombe au tick suivant t ≥ anticipation (0-17 ms après la clé de
+  contact : le pied 14 cm au-delà du ballon quand il partait) — la couche retient ce retard (≤ 1 tick)
+  pour l'accompagnement : le pied est sur le ballon à l'image du tir.
 - Restent authorés : la retournée (sans déclencheur sim) et les gestes sociaux (salut, poignée,
   célébration, applaudir, consulter). Tout le football du répertoire est généré.
 - La table `STANCES` est RENDUE AU MOTEUR (note 301) : la re-dériver des clips générés (passe 0,44 m,
