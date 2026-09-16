@@ -12232,6 +12232,52 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      tactics 11/0, tete 7/0. Piège nommé : un « while pgrep -f motif » attend sa propre ligne de commande
      (la chaîne des annexes ne partait jamais). Bloc 1 seul : 0,76 ms/step (≤ 1,6, deux annexes en parallèle).
      Sceau : commit 8e19ee9, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-BK8FFurR).
+- 365: LA LIGNE ACCROCHÉE (280 — la dette nommée depuis le 275 : Bible 10 §3.4, « k_y est une fraction, k_x
+     est une saturation » ; le volume des tirs, 42 pour 25). Sonde AVANT (sonde-280, 8 × 45 min : le volume par
+     ses causes) : 41,7 tirs / match (dedans 31,4 pour 16,2 ; dehors 10,3 pour 9,1), touches en surface adverse
+     76 (51 : 25,5 par équipe), entrées 49, tirs par touche 0,38-0,45 (0,32), possessions 270 (200-350), tirs par
+     possession 0,154 (0,11) ; le film (sonde-280b) : la ligne défendante à 23-25 m DERRIÈRE le ballon quel que
+     soit l'état du porteur (couvert / entre-deux / découvert : 20,1 / 20,8 / 23,3), à 7,7 m de son but quand le
+     ballon est à 20-30 m, à 51,9 m quand le ballon est à 60+ — le bloc chaîné à 27 m du ballon (lot 42), la
+     surface ouverte. LA LOI (ligne.js, cfg.ligneAccrochee) : accrocheDe(K, { xBallon, etat, hauteurBloc, piege,
+     anticipF }) → consigne = axe(hauteurBloc, 22, 52) + axe(piege, −3, +3) ; marge = M[etat] × (2 − anticipF)
+     (couvert 2, entre-deux 6, découvert 12) ; accroché si x_ballon − marge ≤ consigne → x_ligne = x_ballon −
+     marge, sinon libre → consigne ; plancher 6 m ; ligneStep glisse les cibles de l'unité de (x_ligne − U.ref) et
+     publie U.ref = x_ligne (l'interligne du 274 suit), le régime locomoteur du 273 fait le corps. match-sim passe
+     l'état du porteur (st._bCouvert), les axes hauteurBloc / piege et l'anticipF moyen de la ligne. PIÈGE nommé :
+     la clé s'appelait d'abord `accroche` — cfg.accroche EXISTE (lot 97, l'accrochage du battu, `true`) : la loi
+     lisait `true`, ses défauts internes tournaient et le calage semblait sans effet (trois runs identiques au
+     bit) ; renommée ligneAccrochee. Clé absente : la ligne chaînée d'hier au bit (f8ee44540564aec8 /
+     58d96787b184f5c3 = le défaut du 279 relu par git stash). LE CALAGE (4 × 45 min, graines 3-13) : marges
+     −1/3/8 (le book) → 45,8 tirs, touches 60 ; 0/4/12 → 39,5 / 56 ; 2/6/12 → 34,8 / 58,5, tirs par possession
+     0,110 ; 4/8/14 → 41,8 / 59 ; consigne 18-48 → 41,8 / 64 ; retenu 2/6/12 — les marges réalisées sont 2 m sous
+     la cible (ballon − ligne 4,2-4,5 m mesuré à 20-30 m pour une marge entre-deux de 6 : le corps suit à son
+     régime), les bandes du book se posent donc 2 m au-dessus. Θ0 (le levier de volume du book) balayé 0,01 →
+     0,025 / 0,04 : 39,8 / 38,8 tirs, dehors 6 — il ne coupe que les tirs lointains (déjà à 9-11), le dedans reste
+     32-34 : gardé à 0,01. Sonde APRÈS (8 × 45 min) : touches en surface 58,5 / 60,3 (76,5), entrées 38 / 41,5,
+     tirs 34,8 / 44,0 → 39,4 (dedans 23,8 / 33,0 ; dehors 11), tirs par touche 0,41 / 0,55, buts 5,50 / 5,75 → 5,6
+     (6,25), arrêts / cadrés 70-73 (dedans 66-73, dehors 73-84), cadrés 48-53 ; le film : ballon 20-30 → ligne à 20,6
+     m (7,7), ballon − ligne 4,2-4,5 (16-17) ; 30-40 → 7-9 (20) ; 40-50 → 13 (21) ; 60+ → ligne 37,9 (51,9). Banc :
+     verify-match11 bloc 280 (index 178 : consigne 37 à l'identité, libre à 37 pour un ballon à 60, accroché 18 /
+     24 / 28 par état à 30 m, bloc haut 52 / bas 22 / piège 40, anticipation 1,2 → marge 9,6, plancher 6 ; 2 × 600 s :
+     ballon − ligne p50 4,4 m entre 20 et 35 m sous la clé, 17,2 sans). Ce qu'il nomme : les tirs par touche en
+     surface (0,5 pour 0,32 — la porte du tir DANS la surface : le pré-filtre du §1.4, corps à 110°, angle visible,
+     contrôle avant la frappe), la sélection du geste par P_but, le coup franc direct, les montants. Banc complet
+     (final281 : 8 shards puis 25 annexes) : 305 ✓ / 21 ✗ au premier passage — le rayon d'action d'une loi de
+     bloc : 19 blocs de monde remangés, tous verts à HEAD~ (worktree 303b2e4, shards 0-6 : seuls les hérités
+     246d et les contres arrivés à l'entrée y restent rouges) et épinglés PAR CONTENU « ligneAccrochee null
+     DATÉ 280 », tous verts isolés à HEAD : 93 (bloc 24), 111 (40), 141 la pousse (72), le flux des tirs du
+     232 (128), 245 (144), 112 (41), 263 (161), 271 (169), mon 279 (177 : l'instep bridé au bout portant 21,6),
+     le bloc élastique (3), les pointes sur la ligne (12 : 16,2 % en position illicite — la ligne accrochée
+     met les pointes hors-jeu), la gâchette (20), 129 (60), 255 la ligne haute (156), 274 (172), 211 (109),
+     249b (149), le plein format 4-4-2 c. 3-5-2 (14), 252 (150), le marqueur → attaquant (134) ; hérités :
+     246d, les contres arrivés à l'entrée. Annexes : identification 0/1 → REGELÉ DATÉ 280 (15 → 24 signatures
+     — le bloc qui tient sa consigne rend les rôles plus lisibles : perdues DC C|largeurR, LAT C|profondeur,
+     LAT D|largeurR, LAT D|profondeur, MIL A|tenue, MIL B|tenue, MDC C|appel, AIL C|repli ; gagnées GK
+     A|garde, LAT A|appel, DC B|largeurR, DC B|profondeur, DC C|profondeur, LAT C|appel, MDC A|profondeur,
+     MO A|tenue, MDC B|profondeur, MO B|profondeur, MDC C|largeurR, MDC C|profondeur, MIL C|repli, AV
+     A|profondeur, AV A|press, AIL C|largeurR, AIL D|largeurR), loi12 12/2 hérité ; les 23 autres annexes
+     0 ✗ (attributes 27/0, contact 25/0, frappes 13/0, match 84/0, scan 5/0…). Bloc 1 seul : 0.43 ms/step (≤ 1,6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

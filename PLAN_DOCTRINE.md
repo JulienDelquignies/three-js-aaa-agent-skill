@@ -663,6 +663,14 @@ tenues sans recaler l'enveloppe du 276), au-dessus / à côté 0,9-1,2 ; l'optim
 monotone en v₀ à 16 m). Ce qu'il nomme : le volume des tirs (42 pour 25 — les entrées dans la surface, le bloc), la sélection
 du geste par P_but (§3.2), le coup franc direct au répertoire, la convention « cadré » du contrôle du gardien.
 
+**280 — LA LIGNE ACCROCHÉE : SCELLÉ (365).** Le bloc défendant n'est plus chaîné à 27 m du ballon : la ligne arrière vit
+à x_ligne = min(consigne, x_ballon − marge) (ligne.js, Bible 10 §3.4 — k_x en saturation : LIBRE à sa consigne, l'axe
+hauteurBloc 22 → 52 m ± piege ; ACCROCHÉE au porteur mètre pour mètre, la marge signée par l'état du porteur du 236 × (2 −
+anticipF)). Mesuré 8 × 45 min : touches en surface adverse 76 → 59 / match (51), tirs 41,7 → 39,4, buts 6,25 → 5,6 ; le film :
+ballon à 25 m → ligne à 20,6 m du but (7,7 hier), la consigne tenue quand le ballon recule. Ce qu'il nomme : les tirs par
+touche en surface (0,5 pour 0,32 — la porte du tir dans la surface, le pré-filtre du Modèle 10 §1.4), la sélection du geste
+par P_but, les montants, le coup franc direct au répertoire.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

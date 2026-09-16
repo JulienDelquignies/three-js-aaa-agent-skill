@@ -49,7 +49,7 @@ conventions de comptage ; le recentrage tête / pied.
 | 9 non-oscillation SHOOT | < 0,5 / match | à instrumenter |
 | 9 bis tête | 9,6 % de conversion, 15 % des buts | **6 %** des tirs, **0** but |
 | 10 ablation de la doctrine | 6-9 tirs à 0,13 c. 16-22 à 0,06 | **272** : l'axe `shotDoctrine` existe (Θ ∓ 0,015) ; l'A/B 200 matchs reste à courir |
-| cibles | 25,3 tirs ; 64 % dedans ; p50 16 m ; cadrés 33 ; contrés 27,5 ; buts / tirs 0,11 ; 2,85 buts | **279** | **41-42** tirs (25,3 — le volume reste l'affaire du bloc) ; **75 %** dedans ; p50 **11,6-12,7 m** ; cadrés **44-52** (33 : le contrôle du gardien compte cadré depuis l'arrêt au journal) ; hors cadre 38-43 (36-38 ✓) ; contrés **10-13** ; buts / tirs **0,13-0,17** ; **6,25** buts (2,85 : le volume × 0,15) ; arrêts / cadrés **67-71** (69 ✓ ; dedans 60-64, dehors 90-94) |
+| cibles | 25,3 tirs ; 64 % dedans ; p50 16 m ; cadrés 33 ; contrés 27,5 ; buts / tirs 0,11 ; 2,85 buts | **280** | **35-44** tirs (25,3 — la ligne accrochée ferme la surface : touches 76 → 59 ; reste la porte dans la surface, 0,5 tir par touche pour 0,32) ; **68-75 %** dedans ; p50 **13,3-14,0 m** ; cadrés **48-53** (le contrôle du gardien compte cadré) ; contrés **13-15** ; buts / tirs **0,13-0,16** ; **5,6** buts (2,85) ; arrêts / cadrés **70-73** (dedans 66-73, dehors 73-84) |
 
 ## 4. Les lots que la fiche appelle
 

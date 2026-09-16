@@ -14,6 +14,23 @@
 // n'est jamais déclenché : il émerge de la géométrie (259). Événement 'ligne' kind 'frein' au journal. Attributs en
 // facteurs, tactique et rôle par la bande d'hier (bandeDuCentral), la clé absente : la ligne d'hier au bit.
 
+/** L'ACCROCHE (280, cfg.ligneAccrochee — Bible 10 §3.4 : « k_y est une fraction, k_x est une saturation ») : la hauteur cible de la ligne
+ *  arrière est x_ligne = min(consigne, x_ballon − marge) — régime LIBRE (le ballon recule dans son camp : la ligne tient sa consigne,
+ *  k_x = 0) ou ACCROCHÉ (la ligne suit le porteur mètre pour mètre, k_x = 1), la marge de profondeur signée par l'état du porteur (couvert
+ *  −2..+1 : le pas en avant, le hors-jeu devient actif ; entre-deux +2..+4 ; découvert +6..+12 : le recul-frein). Mesuré avant : la ligne
+ *  vivait 23-25 m derrière le ballon quel que soit l'état (le bloc d'hier chaîné à 27 m du ballon) et à 6 m de son but quand le ballon
+ *  était à 25 m — la surface ouverte, 70-84 touches en surface adverse par match pour 51. La consigne est l'AXE hauteurBloc (bas 22 →
+ *  haut 52 m, l'échelle du Brief : 18-26 / 34-44 / 48-56) ± l'axe piege ; la marge par état est la loi ; l'anticipation est un facteur
+ *  (le bloc qui lit se tient plus près : marge × (2 − anticipF)). Rend { xLigne, regime, marge, consigne }. Pure. */
+export function accrocheDe(K, { xBallon, etat, hauteurBloc, piege, anticipF = 1 }) {
+  const ax = (v, lo, hi) => lo + Math.max(0, Math.min(1, v ?? 0.5)) * (hi - lo);
+  const consigne = ax(hauteurBloc, K.consigne?.bas ?? 22, K.consigne?.haut ?? 52) + ax(piege, -(K.piege ?? 3), K.piege ?? 3);
+  const M = K.marge ?? {}, m0 = etat === 'couvert' ? (M.couvert ?? -1) : etat === 'découvert' ? (M.decouvert ?? 8) : (M.entreDeux ?? 3);
+  const marge = m0 * (m0 > 0 ? (2 - anticipF) : 1);
+  const accroche = xBallon - marge <= consigne;
+  return { xLigne: Math.max(K.plancher ?? 6, accroche ? xBallon - marge : consigne), regime: accroche ? 'accroché' : 'libre', marge, consigne };
+}
+
 /** Le retard propre d'un corps (m, derrière la ligne d'unité) — l'anticipation lit, le placement tient. Pure. */
 export function retardDe(p, K) { return (K.retard ?? 1.3) * (2 - (p.skill?.anticipF ?? 1)) * (2 - (p.skill?.posF ?? 1)); }
 
@@ -27,7 +44,7 @@ export function referenceDe(avs) {
 /** L'unité tient sa ligne : relit la référence à hz, borne les cibles à la bande, retient les avancés. Après les cibles,
  *  avant le mouvement. membres : les corps de la ligne arrière (postes de la ligne OFF), debout ; ownX : la ligne de but
  *  propre ; sgnDef : le signe de ownX ; couvert : l'état du ballon (couvertStep). */
-export function ligneStep(st, cfg, { defTeam, membres, ownX, sgnDef, couvert }) {
+export function ligneStep(st, cfg, { defTeam, membres, ownX, sgnDef, couvert, accroche = null }) {
   const K = cfg.ligne; if (!K || membres.length < 2) return null;
   const av = (x) => (ownX - x) * sgnDef;                   // + = vers le but adverse
   const U = ((st._ligne ??= {})[defTeam] ??= { t: -Infinity, ref: null, desync: 0 });
@@ -40,6 +57,10 @@ export function ligneStep(st, cfg, { defTeam, membres, ownX, sgnDef, couvert }) 
     U.desync = hi - lo; U.lo = lo; U.avance = plusAvance;
   }
   if (U.ref == null) return U;
+  // …L'ACCROCHE (280) : la ligne ne vit plus à 27 m du ballon — sa référence est x_ligne = min(consigne, x_ballon − marge) ; les cibles
+  // de l'unité glissent d'un bloc (la géométrie interne tenue, le régime locomoteur du 273 fait le corps) ; U.ref devient la référence
+  // accrochée (l'interligne du 274 la lit). null : la référence chaînée d'hier au bit.
+  if (accroche) { const A = accrocheDe(cfg.ligneAccrochee, accroche); const shift = A.xLigne - U.ref; if (Math.abs(shift) > 1e-9) { for (const m of unite) if (m.target) m.target[0] -= sgnDef * shift; U.ref = A.xLigne; } U.regime = A.regime; U.marge = A.marge; }
   for (const m of unite) {
     if (!m.target) continue;
     const homme = !!(m._markT && Math.abs(m.target[0] - m._markT[0]) < 1e-9);   // le marqueur au contact garde son homme côté but

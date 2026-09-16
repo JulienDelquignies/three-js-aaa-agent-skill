@@ -4,7 +4,7 @@
 
 | # | Cible | Réel | Moteur | Statut |
 |---|---|---|---|---|
-| T1 | Tirs / match | 25,0 ± 2,5 | **24,5** | tenu |
+| T1 | Tirs / match | 25,0 ± 2,5 | **24,5** (258b) → 42-46 (272-279 : le volume s'est ouvert avec la porte du 272 et la surface ouverte) → **39,4** au 280 (la ligne accrochée : touches en surface 76 → 59 ; reste 0,5 tir par touche pour 0,32) | à reprendre (280 : la porte dans la surface) |
 | T2-T3 | xG moyen 0,105 ; Σ xG / Σ buts = 1 | | **0,14** (médiane 0,135 c. 0,06) ; ΣxG / buts 5,0 / 3,9 (272, 8 × 45 min ; AVANT 0,16 et 5,3 / 5,1) | 272 : la cohérence tient, la sélection tire trop près |
 | T4 | Tirs hors surface | 32 % ± 5 | **27 %** | proche |
 | T5 | Buts hors surface | 12 % ± 4 | **0 %** (Bible 09 : 100 % dedans) | réfuté |

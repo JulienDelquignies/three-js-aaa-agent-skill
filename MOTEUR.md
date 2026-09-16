@@ -509,6 +509,29 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### La ligne accrochée (lot 280, `cfg.ligneAccrochee` — `ligne.js`)
+
+Le bloc défendant vivait chaîné à 27 m du ballon (lot 42) : la ligne arrière suivait le porteur mètre pour mètre jusqu'à son
+propre but (à 6-8 m de sa ligne quand le ballon était à 25 m, 23-25 m derrière le ballon quel que soit l'état du porteur) et
+montait au-delà de toute consigne quand le ballon reculait (52 m du but pour un ballon à 60+) — la surface était ouverte :
+70-84 touches en surface adverse par match pour 51 (25,5 par équipe, PL 2024-25). Le 280 pose la loi de la Bible 10 §3.4 —
+« k_y est une fraction, k_x est une saturation » : `accrocheDe`, x_ligne = min(consigne, x_ballon − marge) — régime LIBRE
+(le ballon recule dans son camp : la ligne tient sa consigne, k_x = 0) ou ACCROCHÉ (la ligne suit le porteur mètre pour mètre,
+k_x = 1), la marge de profondeur signée par l'état du porteur (`couvert.js`, 236 : couvert → la marge courte, le pas en avant ;
+entre-deux ; découvert → le recul-frein). La consigne est l'AXE hauteurBloc (bas 22 → haut 52 m, l'échelle du Brief 18-26 /
+34-44 / 48-56) ± l'axe piege ; l'anticipation est un facteur (marge × (2 − anticipF) : le bloc qui lit se tient plus près) ;
+`ligneStep` (273) glisse les cibles de l'unité d'un bloc vers x_ligne et publie la référence accrochée que l'interligne (274) lit
+— le régime locomoteur du 273 fait le corps (montée 4,8 / recul 3,9). Calage : les marges réalisées sont 2 m sous la cible
+(le corps suit à son régime), les bandes du book (−2..+1 / +2..+4 / +6..+12) se posent donc à 2 / 6 / 12 (un balayage
+−1/3/8 → 0/4/12 → 2/6/12 → 4/8/14 : 45,8 → 39,5 → 34,8 → 41,8 tirs sur les graines 3-13). Clé absente : la ligne chaînée à
+27 m d'hier au bit. Mesuré 8 × 45 min : touches en surface adverse 76 → 59 / match, entrées 49 → 40, tirs 41,7 → 39,4
+(dedans 31 → 28, dehors 10-11 tenu), buts 6,25 → 5,6 ; le film : ballon à 20-30 m → ligne à 20,6 m du but (7,7), ballon − ligne
+4,2-4,5 m (16-17) ; ballon à 30-40 → 7-9 m (20) ; ballon à 60+ → la ligne à 37,9 m, sa consigne (51,9). Reste : les tirs par
+touche en surface (0,5 pour 0,32 — la porte du tir dans la surface : le pré-filtre du Modèle 10 §1.4, le corps orienté à 110°
+de la cible, l'angle visible, le contrôle avant la frappe), Θ0 ne coupe que les tirs lointains (0,01 → 0,04 : dehors 10 → 6,
+dedans inchangé). Sondes : `scripts/book/sonde-280.mjs` (le volume par ses causes), `sonde-280b.mjs` (le film de la ligne par
+bande de ballon et état du porteur). Fiches : `10-bloc-collectif.md`, `M10-modele-tir.md`, `R03-tirs-buts.md`.
+
 ### Le répertoire du book (lot 279, `cfg.repertoire` + `cfg.arretControle` — `repertoire.js`)
 
 Les espèces de tir frappaient à 16,5-21,5 m/s nominaux (14-19 après la sous-dose), calées au 258 sur un gardien à seuil dur :
