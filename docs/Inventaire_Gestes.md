@@ -1,6 +1,6 @@
 # L'inventaire des gestes générés et de leurs déclencheurs
 
-Généré le 16/09 (note 387) depuis le registre des générateurs (motion-cast.GENERATED_KINDS) croisé avec les références du moteur et de la scène : pour chaque geste, la ou les techniques de la table (technique.js) dont il est le clip, et les modules qui le nomment (sim ou scène). Un geste sans référence n'a pas de déclencheur. Les variantes construites à la volée (passementJambes2 à 6) se nomment par préfixe dans skills-sim.
+Généré le 16/09 (notes 387-388) depuis le registre des générateurs (motion-cast.GENERATED_KINDS) croisé avec les références du moteur et de la scène : pour chaque geste, la ou les techniques de la table (technique.js) dont il est le clip, et les modules qui le nomment (sim ou scène). Un geste sans référence n'a pas de déclencheur. Les variantes construites à la volée (passementJambes2 à 6) se nomment par préfixe dans skills-sim.
 
 ## Les frappes (motion-strike)
 
@@ -26,6 +26,10 @@ Généré le 16/09 (note 387) depuis le registre des générateurs (motion-cast.
 | `controleInterieur` | `controle-interieur` | Rondo, rondo-remises, technique |
 | `controleExterieur` | `controle-exterieur` | technique |
 | `controleOriente` | — | Rondo |
+| `conduiteInterieur` | `conduite-interieur` | Rondo, technique |
+| `conduiteExterieur` | `conduite-exterieur` | technique |
+| `conduiteLaces` | `conduite-laces` | technique |
+| `conduiteSemelle` | `conduite-semelle` | technique |
 | `controleSemelle` | `controle-semelle` | technique |
 | `amortiCuisse` | `amorti-cuisse` | technique |
 | `amorti` | `amorti-poitrine` | Rondo, duel, technique |
@@ -127,6 +131,6 @@ Généré le 16/09 (note 387) depuis le registre des générateurs (motion-cast.
 | `drapeauInclineG` | — | referee |
 | `drapeauHorizontal` | — | referee |
 
-**Bilan** : 75 gestes branchés sur 75.
+**Bilan** : 79 gestes branchés sur 79.
 
-Les touches de conduite du porteur (rondo.js) se nomment `control` sans technique : la scène joue `controleInterieur` (ballon bas) ou `amorti` (ballon haut) par défaut — 23 % des contrôles d'un match ; nommer la touche de conduite (intérieur/extérieur selon le pied) est une dette.
+Les touches de conduite du porteur sont NOMMÉES depuis la note 388 (cfg.conduiteNommee : `conduite-interieur`, `conduite-exterieur`, `conduite-laces`, `conduite-semelle`, le pied par le côté du ballon) ; les prises de ballon libre (rondo.js, événement `control` sans technique) restent au contrôle intérieur par défaut de la scène.

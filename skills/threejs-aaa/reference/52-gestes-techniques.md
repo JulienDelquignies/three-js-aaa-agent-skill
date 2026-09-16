@@ -92,6 +92,32 @@ qu'ils ne jockeyent), 5-10 tirages restants à un appétit de dribble de 0,03-0,
 - **Dettes** : le ballon à plus de 0,75 m reste refusé (le porteur conduit loin devant : une touche de rappel serait le vrai geste) ;
   les défenseurs chargent plus qu'ils ne jockeyent (la posture jockey est du moteur) ; le passement lancé garde ses lois d'hier.
 
+## La conduite nommée (`cfg.conduiteNommee`, note 388 — verify-conduite 9/0)
+
+Retour : « enchaîne sur les touches de conduite pour gérer pied droit pied gauche extérieur intérieur, en faisant le nécessaire dans
+le moteur ». Hier chaque touche de conduite était un événement `touche` muet (`dev`, `spd`) : la scène tendait le pied LE PLUS PROCHE
+vers le ballon (le warp de touche) et jouait « passe extérieur » sur toute cassure ≥ 60°, quel que soit le pied ou la surface.
+
+- **Le moteur nomme** (`skills-sim.conduiteNommee`, appelé par `touchEvent` après la poussée du dribble) : le PIED est le côté du
+  ballon dans le regard (lat > 0 = gauche, la convention de la scène) ; la SURFACE se lit sur la direction de la poussée que
+  `dribbleStep` vient d'écrire (`st.ball.v`) par rapport au regard : vers le dehors du pied qui touche (à droite pour le droit) c'est
+  l'EXTÉRIEUR, vers le dedans l'INTÉRIEUR, droit devant (± `droit` 12°) le COU-DE-PIED en course (≥ `vite` 3 m/s) et l'intérieur au
+  trot, presque arrêté (< `lent` 1 m/s) la SEMELLE. Champs additifs sur l'événement (`tech`, `foot`, `surface`, `virage` signé,
+  > 0 = à droite) : la clé absente rend la touche muette d'hier, au bit.
+- **Quatre techniques** de la table (`conduite-interieur`, `-exterieur`, `-laces`, `-semelle`, intent `conduite` : la table ne les
+  choisit pas) et **quatre clips générés** (motion-control `conduiteInterieur`, `conduiteExterieur`, `conduiteLaces`, `conduiteSemelle`,
+  0,4 s, contact 0,14) : le pied va au ballon et le POUSSE (contrat `pousse` : le pied continue devant de ≥ 5 cm après le contact —
+  mesuré +21 à +29 cm), la surface se présente (turn : intérieur en rotation externe, extérieur en inversion, cou-de-pied pointe basse),
+  la semelle se pose et retient. 40 styles sous contrat et checkClip.
+- **La scène** : le warp de touche suit le pied NOMMÉ ; la touche qui vire (≥ 20°), l'extérieur et la semelle jouent leur clip par
+  technique, miroir au pied nommé, cadencées 0,35 s comme la touche forte ; la touche droite du cou-de-pied reste au warp seul (la
+  foulée la joue déjà) ; le demi-tour ≥ 110° garde le crochet court.
+- **Mesuré** (300 s, graine 3, les clés du jour à null) : 142 touches, toutes nommées, le pied cohérent avec le côté du ballon 142/142 ;
+  surfaces : cou-de-pied 87, intérieur 35, extérieur 20, semelle 0 (2 sur le monde complet) ; pieds : droit 63, gauche 79. Sur 2 × 300 s : 73 % des touches virent de moins de 6°, 7 %
+  de plus de 20° ; au trot l'intérieur domine (86/90), en course le cou-de-pied (187/216, 13 extérieurs).
+- **Dettes** : l'extérieur reste rare (la conduite du moteur vire peu : 5 %) ; le pied ne change pas au fil des touches (le ballon
+  vit devant le pied de contrôle `p.foot`) ; les prises de ballon libre (`control` sans technique) restent au contrôle intérieur.
+
 ## Dettes connues
 
 - La semelle des graines très pressées casse toujours (`broke: 'pressé'`) — la tenue complète

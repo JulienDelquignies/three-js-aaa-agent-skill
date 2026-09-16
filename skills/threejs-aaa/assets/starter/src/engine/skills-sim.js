@@ -688,12 +688,33 @@ export function skillContactNow(st, p, cfg) {
 /** La touche de conduite S'INSCRIT (type 'touche') : le rendu dessine le pied qui joue, les
  *  sondes comptent les vraies touches — un contact que personne ne voit était lu « il ne touche
  *  jamais le ballon » (retour utilisateur, captures). Une par foulée : dribbleStep cadence. */
-export function touchEvent(st, c, ev = null) {
+export function touchEvent(st, c, ev = null, cfg = null) {
   // …la touche PORTE SA GÉOMÉTRIE (lot 55) : dev = cassure entrant→sortant en degrés, spd = la
   // vitesse du kick — la scène en fait un geste (crochet court au demi-tour), un projet aval
   // n'a rien à recalculer. Champs additifs : les mondes d'hier lisent les mêmes types, au bit près.
   st.events.push({ t: +st.t.toFixed(2), type: 'touche', by: c.id,
-    ...(ev ? { dev: +ev.dev.toFixed(0), spd: +ev.spd.toFixed(1) } : {}) });
+    ...(ev ? { dev: +ev.dev.toFixed(0), spd: +ev.spd.toFixed(1) } : {}), ...conduiteNommee(st, c, cfg) });
+}
+
+/** (note 388) LA CONDUITE NOMMÉE (cfg.conduiteNommee, st.full) : chaque touche dit son PIED (le côté du ballon dans le regard) et sa
+ *  SURFACE, lues sur la géométrie de la poussée que le dribble vient d'écrire (st.ball.v) : la poussée vers le dehors du pied (à droite
+ *  pour le droit) est l'EXTÉRIEUR, vers le dedans l'INTÉRIEUR ; droit devant (± droit °) c'est le COU-DE-PIED en course (≥ vite m/s),
+ *  l'intérieur au trot ; un porteur presque arrêté (< lent m/s) garde le ballon sous la SEMELLE. Champs additifs (tech, foot, surface,
+ *  virage °) : clé absente, la touche d'hier au bit. */
+export function conduiteNommee(st, c, cfg) {
+  const K = st.full && cfg ? cfg.conduiteNommee : null; if (!K) return {};
+  const b = st.ball.p, lat = (b[0] - c.p[0]) * Math.sin(c.yaw) - (b[2] - c.p[2]) * Math.cos(c.yaw);   // > 0 : le ballon à gauche
+  const foot = lat > 0 ? 'left' : 'right';
+  const vx = st.ball.v[0], vz = st.ball.v[2], sp = hyp(vx, vz);
+  let virage = sp > 0.2 ? wrapA(Math.atan2(vz, vx) - c.yaw) * 180 / Math.PI : 0;   // > 0 : vers la droite
+  const dehors = foot === 'right' ? virage : -virage;                                    // > 0 : vers le dehors du pied qui touche
+  let surface;
+  if ((c.speed ?? 0) < (K.lent ?? 1.0)) surface = 'sole';
+  else if (dehors > (K.droit ?? 12)) surface = 'outside';
+  else if (dehors < -(K.droit ?? 12)) surface = 'inside';
+  else surface = (c.speed ?? 0) >= (K.vite ?? 3.0) ? 'laces' : 'inside';
+  const tech = { sole: 'conduite-semelle', outside: 'conduite-exterieur', inside: 'conduite-interieur', laces: 'conduite-laces' }[surface];
+  return { tech, foot, surface, virage: +virage.toFixed(0) };
 }
 
 /** L'ACCOMPAGNEMENT POSSÉDÉ (ownsBody) — la seule écriture du corps pendant qu'il dure.

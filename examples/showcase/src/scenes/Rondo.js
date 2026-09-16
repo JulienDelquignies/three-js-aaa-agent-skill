@@ -719,7 +719,7 @@ export class Rondo {
     if (u <= 0 || u >= 1) return;
     const b = this.state.ball.p;
     if (b[1] > 0.6) return;
-    // le pied le plus proche du ballon fait la touche
+    // le pied le plus proche du ballon fait la touche — ou le pied que la sim a NOMMÉ (note 388, conduite nommée)
     let side = null, dBest = 1.8;
     for (const f of ['left', 'right']) {
       const leg = pl.legs?.[f];
@@ -728,6 +728,7 @@ export class Rondo {
       const d = Math.hypot(this._wf.x - b[0], this._wf.y - b[1], this._wf.z - b[2]);
       if (d < dBest) { dBest = d; side = f; }
     }
+    if (pl._touchFoot && pl.legs?.[pl._touchFoot]?.foot && pl.legLens?.[pl._touchFoot]) side = pl._touchFoot;
     if (!side) return;
     const leg = pl.legs[side], lens = pl.legLens[side];
     leg.foot.getWorldPosition(this._wf);
@@ -885,7 +886,10 @@ export class Rondo {
         // ballon ») : la sim inscrit chaque touche ; la scène tend le pied vers le ballon autour
         // de cet instant (_applyTouchWarp) — sans ça le contact réel restait invisible.
         const pl = this.players[e.by];
-        if (pl) pl._touchT = this._t;
+        if (pl) { pl._touchT = this._t; pl._touchFoot = e.foot ?? null; }   // (note 388) le warp de touche suit le PIED que la sim nomme
+        // (note 388) LA CONDUITE NOMMÉE : la touche qui vire (≥ 20°), l'extérieur et la semelle jouent LEUR clip (conduite* par technique, miroir au pied nommé),
+        // cadencés comme la touche forte ; la touche droite du cou-de-pied reste au warp seul (la foulée la joue déjà)
+        if (pl && e.tech && (Math.abs(e.virage ?? 0) >= 20 || e.surface === 'outside' || e.surface === 'sole') && (e.dev ?? 0) < 110 && this._t - (pl._swingT ?? -9) >= 0.35) { this._playTech(pl, { ...e, move: TECHNIQUES_BY_ID[e.tech]?.clip ?? 'conduiteInterieur' }); pl._swingT = this._t; }
         // …ET LA TOUCHE FORTE A UN CORPS (lot 55, retour utilisateur : le demi-tour à 0,3-0,9 m
         // sans AUCUNE frappe) : l'événement porte sa cassure (dev°, dribble.js) — au-delà de 60°
         // la couche de geste joue une frappe courte (crochet court au demi-tour ≥ 110°, extérieur

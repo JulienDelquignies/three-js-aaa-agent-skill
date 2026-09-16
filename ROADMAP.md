@@ -291,6 +291,10 @@
 - LIVRÉ (note 387, docs/Inventaire_Gestes.md) : L'INVENTAIRE GESTE → DÉCLENCHEUR (75 gestes générés, 74 branchés avant ce lot, 75 après — généré
   depuis le registre) et le dernier orphelin branché : applaudir (les coéquipiers sur un arrêt du gardien, un joueur sur deux au salut final).
   Dette nommée : les touches de conduite se nomment 'control' sans technique (la scène joue le contrôle intérieur par défaut).
+- LIVRÉ (note 388, reference/52 § conduite nommée, verify-conduite 9/0) : LA CONDUITE NOMMÉE (cfg.conduiteNommee) — le moteur nomme
+  chaque touche (pied par le côté du ballon, surface par la direction de la poussée : intérieur, extérieur, cou-de-pied, semelle),
+  quatre techniques et quatre clips générés, la scène joue le clip par technique et pied et tend le pied nommé ; null = la touche
+  muette d'hier.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

@@ -12842,3 +12842,18 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - **Ce qui n'est pas branché et pourquoi** : les touches de conduite du porteur (rondo.js) se nomment 'control' sans technique (23 % des
   contrôles d'un match) — la scène joue controleInterieur/amorti par défaut ; nommer la touche (intérieur/extérieur selon le pied) est une
   dette (rondo.js). Les clips authorés salut/poignee sont supplantés par saluer/serrerMain ; celebration et consulter restent en secours.
+
+- 388: LA CONDUITE NOMMÉE (retour « pied droit pied gauche extérieur intérieur, en faisant le nécessaire dans le moteur » ;
+  cfg.conduiteNommee ; skills-sim.conduiteNommee via touchEvent (rondo-sim lui passe cfg), technique.js × 4 (intent 'conduite'),
+  motion-control conduiteInterieur/Exterieur/Laces/Semelle (contrat pousse), Rondo (le warp au pied nommé, le clip par technique sur
+  la touche qui vire, l'extérieur, la semelle) ; verify-conduite 9/0 ; reference/52 § conduite nommée).
+
+- **Le pied** = le côté du ballon dans le regard (la convention lat de la scène) ; **la surface** = la direction de la poussée que le
+  dribble vient d'écrire, par rapport au regard : dehors du pied → extérieur, dedans → intérieur, ± 12° → cou-de-pied en course (≥ 3 m/s)
+  / intérieur au trot, < 1 m/s → semelle. Champs additifs : null = la touche muette d'hier, au bit (le jumeau ne bouge pas).
+- **Mesuré** (les clés du jour à null) : 142 touches / 300 s toutes nommées, pied cohérent 142/142 ; cou-de-pied 87, intérieur 35,
+  extérieur 20, semelle 0 (2 sur le monde complet) ; sur
+  2 × 300 s 73 % des touches virent < 6°, 7 % > 20° — l'extérieur reste rare (5 %), c'est la conduite du moteur qui vire peu.
+- **Les clips** : 0,4 s, contact 0,14, le pied pousse (+21 à +29 cm après le contact), 40 styles sous contrat ; la scène ne les joue
+  que sur la touche qui vire (≥ 20°), l'extérieur et la semelle — la touche droite reste au warp (la foulée la joue).
+- **Dettes** : l'extérieur rare ; le pied de contrôle ne change pas au fil des touches (p.foot) ; les prises de ballon libre muettes.
