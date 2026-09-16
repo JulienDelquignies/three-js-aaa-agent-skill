@@ -12277,7 +12277,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      A|garde, LAT A|appel, DC B|largeurR, DC B|profondeur, DC C|profondeur, LAT C|appel, MDC A|profondeur,
      MO A|tenue, MDC B|profondeur, MO B|profondeur, MDC C|largeurR, MDC C|profondeur, MIL C|repli, AV
      A|profondeur, AV A|press, AIL C|largeurR, AIL D|largeurR), loi12 12/2 hérité ; les 23 autres annexes
-     0 ✗ (attributes 27/0, contact 25/0, frappes 13/0, match 84/0, scan 5/0…). Bloc 1 seul : 0.43 ms/step (≤ 1,6).
+     0 ✗ (attributes 27/0, contact 25/0, frappes 13/0, match 84/0, scan 5/0…). Bloc 1 seul : 0,43 ms/step (≤ 1,6).
+     Sceau : commit 93e317e, poussé ; déploiement showcase-pi-mocha (essai 1, cmp du chunk Rondo-BQ2xMISg.js).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
