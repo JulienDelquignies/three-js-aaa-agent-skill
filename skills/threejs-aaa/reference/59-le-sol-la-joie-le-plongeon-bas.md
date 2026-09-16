@@ -253,9 +253,13 @@ sous contrat). `petitsGestes: null` = hier au bit (aucun événement, aucune att
   `cadence` s. Rare par construction (1 en 90 s : l'appel se tire en jeu posé, hold > 0,6 s).
 - **Banc** : verify-petits-gestes 15/0 (les trois gestes × 40 styles sous contrat et checkClip ; la semelle, le mur, le dégagement, la
   feinte, les clés nulles) ; le jumeau d'empreinte avec `petitsGestes: null` = base au bit.
-- **L'applaudissement** (note 387 ; `applaudir { n 2, rayon 18, vMax 2,5, cadence 8 }`) : sur un arrêt du gardien, jusqu'à `n` coéquipiers
-  libres et posés à `rayon` m applaudissent (`applaudir`, trois claquements), une salve par équipe par `cadence` s ; et au salut final un
-  joueur sur deux applaudit la tribune (`ceremonie.salut.applaudir`, l'événement `salut` porte `geste`). C'était le seul geste généré
+- **L'applaudissement d'encouragement** (notes 387, 389 ; `applaudir { n 2, rayon 22, vMax 3,5, cadence 10, cadenceJoueur 20, decal
+  [0,15 ; 0,8], p { arret 0,7, tir 0,35, duel 0,4, glisse 0,4, interception 0,4, tacle 0,4, recuperation 0,15 } }`) : sur une occasion
+  (l'arrêt, le tir, le duel ou le glissé gagné, l'interception, le tacle, la récupération — `turnover.why`), une probabilité par occasion ;
+  un ou deux coéquipiers libres et posés à `rayon` m, TIRÉS AU SORT (pas les plus proches), partent décalés (`decal`, le second ≥ 0,25 s
+  après) ; une salve par équipe par `cadence` s, un corps pas deux fois en `cadenceJoueur` s — occasionnel et sans chorégraphie (8-10
+  par 300 s sur 6-8 corps). Au salut final une part tirée au sort (`ceremonie.salut.applaudir` 0,4) applaudit la tribune au lieu de
+  saluer (l'événement `salut` porte `geste`). C'était le seul geste généré
   sans déclencheur : l'inventaire complet est dans `docs/Inventaire_Gestes.md` (75 sur 75 après ce lot, 74 avant — généré).
 - **Dettes** : la tête défensive DEBOUT reste `teteDebout` ; le contrôle orienté n'a pas d'événement sim (la scène le lit sur yawWant) ;
   le râteau à la relance n'est que la semelle (le preneur ne ramène pas le ballon) ; le gardien désigne sans crier ni avancer.

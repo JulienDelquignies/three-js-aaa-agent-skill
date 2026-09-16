@@ -6,7 +6,7 @@
 //   controleOriente (scène seule) le premier contact qui emmène le ballon dans la course : yawWant ≠ yaw de plus de `angle` ° ;
 //   feinteAppel    l'appel d'un soutien posé : un crochet du buste avant le départ (feinteAppel, haut du corps seul), une fois par `cadence` s.
 // Clé absente : l'hier au bit (aucun événement, aucune attente, aucun regard).
-import { hyp } from './hyp.js';
+import { hyp } from './hyp.js'; import { tirage } from './rng.js';
 
 /** La sortie de but attend la semelle du preneur : vrai tant que la remise doit attendre (canTake). */
 export function semelleAvant(st, p, cfg) {
@@ -37,19 +37,27 @@ export function petitsGestesStep(st, dt, cfg) {
     }
   }
   if (st._murRegard && (st.t > st._murRegard.until || !st.restart)) { const gk = st.players[st._murRegard.id]; if (gk && gk._regard != null) gk._regard = null; st._murRegard = null; }
-  // (note 387) L'APPLAUDISSEMENT : sur un arrêt du gardien, jusqu'à n coéquipiers libres et posés (≤ vMax) à rayon m applaudissent
-  // (applaudir, trois claquements) — une salve par équipe et par cadence s. Le seul geste généré sans déclencheur de l'inventaire du 16/09.
+  // (notes 387, 389) L'APPLAUDISSEMENT D'ENCOURAGEMENT, occasionnel et SANS CHORÉGRAPHIE : sur une occasion (l'arrêt du gardien, le tir
+  // manqué d'un coéquipier, le duel ou le glissé gagné), une probabilité par occasion ; un ou deux coéquipiers libres et posés à rayon
+  // m (l'interception, le tacle et la récupération comptent aussi : turnover.why), TIRÉS AU SORT (pas les plus proches), partent DÉCALÉS de decal s chacun ; une salve par équipe par cadence s, un même corps pas
+  // deux fois en cadenceJoueur s. Le tirage est seedé (rng 'geste'). Clé absente : rien.
   const i0 = st._pgIdx ?? st.events.length; st._pgIdx = st.events.length;
-  if (G?.applaudir) for (let i = i0; i < st.events.length; i++) {
-    const e = st.events[i]; if (e.type !== 'arrêt') continue;
-    const gk = st.players[e.by]; if (!gk) continue; const A = G.applaudir, team = gk.team;
-    if (st.t < ((st._applaudiAt ??= {})[team] ?? -99) + (A.cadence ?? 8)) continue;
-    const mates = st.players.filter((q) => q.team === team && q.id !== gk.id && q.down <= 0 && !q.act && !q._sub && (q.speed ?? 0) <= (A.vMax ?? 2.5) && hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2]) <= (A.rayon ?? 18))
-      .sort((a, b) => hyp(a.p[0] - gk.p[0], a.p[2] - gk.p[2]) - hyp(b.p[0] - gk.p[0], b.p[2] - gk.p[2])).slice(0, A.n ?? 2);
-    if (!mates.length) continue;
-    st._applaudiAt[team] = st.t;
-    for (const q of mates) st.events.push({ t: +st.t.toFixed(2), type: 'geste', by: q.id, move: 'applaudir', pour: gk.id, arret: e.mode });
+  const A = G?.applaudir; const rnd = (id) => tirage(st, 'geste', id, st.rnd ?? (() => 0.5))();
+  if (A) for (let i = i0; i < st.events.length; i++) {
+    const e = st.events[i];
+    const occasion = e.type === 'arrêt' ? 'arret' : e.type === 'shot' && !e.but ? 'tir' : (e.type === 'duel' && e.won && e.kind !== 'aérien') ? 'duel' : (e.type === 'slide' && e.won) ? 'glisse' : e.type === 'turnover' && e.why === 'interception' ? 'interception' : e.type === 'turnover' && e.why === 'tackle' ? 'tacle' : e.type === 'turnover' && e.why === 'récupération' ? 'recuperation' : null;   // les occasions : l'arrêt, le tir, le duel et le glissé gagnés, la récupération (turnover.why)
+    if (!occasion) continue;
+    const acteur = st.players[e.by]; if (!acteur) continue; const team = acteur.team;
+    if (st.t < ((st._applaudiAt ??= {})[team] ?? -99) + (A.cadence ?? 10)) continue;
+    if (rnd(acteur.id) >= (A.p?.[occasion] ?? 0.3)) continue;
+    const cands = st.players.filter((q) => q.team === team && q.id !== acteur.id && q.down <= 0 && !q.act && !q._sub && (q.speed ?? 0) <= (A.vMax ?? 2.5) && hyp(q.p[0] - acteur.p[0], q.p[2] - acteur.p[2]) <= (A.rayon ?? 18) && st.t >= (q._applaudiAt ?? -99) + (A.cadenceJoueur ?? 20));
+    if (!cands.length) continue;
+    const n = Math.min(cands.length, rnd(acteur.id + 1) < 0.6 ? 1 : (A.n ?? 2));
+    st._applaudiAt[team] = st.t; const [d0, d1] = A.decal ?? [0.15, 0.8];
+    let at = st.t + d0 + rnd(acteur.id + 9) * (d1 - d0);
+    for (let k = 0; k < n; k++) { const q = cands.splice(Math.floor(rnd(acteur.id + 2 + k) * cands.length), 1)[0]; q._applaudiAt = st.t; (st._applausPend ??= []).push({ id: q.id, at, pour: acteur.id, occasion }); at += 0.25 + rnd(q.id) * 0.35; }   // le second part au moins 0,25 s après le premier : deux corps, deux départs
   }
+  if (st._applausPend?.length) st._applausPend = st._applausPend.filter((w) => { if (st.t < w.at) return true; const q = st.players[w.id]; if (q && q.down <= 0 && !q.act) st.events.push({ t: +st.t.toFixed(2), type: 'geste', by: q.id, move: 'applaudir', pour: w.pour, occasion: w.occasion }); return false; });
 }
 
 /** La tête armée d'un défenseur près de son but (< 24 m, hors la tête au but) s'arme en dégagement : le geste par mode (teteStep décide de même). */

@@ -1,4 +1,5 @@
 // ceremonie.js — L'AVANT-MATCH ET LES GESTES SOCIAUX (Animations_A_Faire § 7 = A11 ter ; cfg.ceremonie && st.full ; note 381).
+import { tirage } from './rng.js';
 // LA FILE DES POIGNÉES avant le premier engagement (cfg.ceremonie.poignee) : l'équipe qui n'engage pas se range en LIGNE le long de
 // la médiane, dans sa moitié (à rang m de la ligne, pas m entre les hommes, le regard vers l'adversaire) ; l'équipe qui engage DÉFILE
 // de l'autre côté de la ligne, à son pas : chaque homme qui défile serre la main de celui d'en face À L'ARRIVÉE (tenue s) —
@@ -70,6 +71,6 @@ export function salutStep(st, cfg) {
     if (Z.done[q.id]) { if (st.t > Z.done[q.id] + (S.duree ?? 2.8) + 1) q._regard = null; return; }
     if (st.t < Z.t0 + (S.attente ?? 0.6) + k * pas) return;
     Z.done[q.id] = st.t; q._regard = Math.atan2(tribune, 0);                          // le regard tenu vers la tribune, rendu après le salut
-    st.events.push({ t: +st.t.toFixed(2), type: 'salut', by: q.id, tribune, geste: S.applaudir && k % 2 ? 'applaudir' : 'saluer' });   // (note 387) un joueur sur deux APPLAUDIT la tribune au lieu de saluer (S.applaudir)
+    st.events.push({ t: +st.t.toFixed(2), type: 'salut', by: q.id, tribune, geste: S.applaudir && tirage(st, 'geste', q.id, st.rnd ?? (() => 0.5))() < (S.applaudir === true ? 0.5 : S.applaudir) ? 'applaudir' : 'saluer' });   // (notes 387, 389) certains APPLAUDISSENT la tribune au lieu de saluer — tirés au sort (S.applaudir = la part), pas un sur deux
   });
 }

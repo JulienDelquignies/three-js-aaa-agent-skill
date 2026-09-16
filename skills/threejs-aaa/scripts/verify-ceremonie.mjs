@@ -65,7 +65,7 @@ console.log('\n— (c) la clé absente rend l\'hier ; le sabotage est attrapé �
 }
 { // (note 387) le salut final mélange saluer et applaudir : un joueur sur deux applaudit (S.applaudir)
   const r = joue({}, 100); const E = r.E; const sal = (E.saluts ?? []).filter((e) => e && e.type === 'salut'), app = sal.filter((e) => e.geste === 'applaudir');
-  ok(`LE SALUT MÊLÉ (ceremonie.salut.applaudir) : ${sal.length} saluts, dont ${app.length} applaudissent (attendu ~la moitié : ${Math.floor(sal.length / 2)})`, sal.length >= 10 && app.length === Math.floor(sal.length / 2));
+  ok(`LE SALUT MÊLÉ (ceremonie.salut.applaudir ${matchCfg({}).ceremonie.salut.applaudir}) : ${sal.length} saluts, dont ${app.length} applaudissent la tribune — tirés au sort, pas un sur deux (attendu 20-65 %)`, sal.length >= 10 && app.length >= sal.length * 0.2 && app.length <= sal.length * 0.65);
 }
 console.log(`\ncérémonie : ${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

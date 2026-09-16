@@ -295,6 +295,9 @@
   chaque touche (pied par le côté du ballon, surface par la direction de la poussée : intérieur, extérieur, cou-de-pied, semelle),
   quatre techniques et quatre clips générés, la scène joue le clip par technique et pied et tend le pied nommé ; null = la touche
   muette d'hier.
+- LIVRÉ (note 389, reference/59 § 10) : L'APPLAUDISSEMENT D'ENCOURAGEMENT occasionnel et sans chorégraphie — sept occasions à
+  probabilité, un ou deux coéquipiers tirés au sort, départs décalés, cadences par équipe et par corps (8-10 par match sur 6-8 corps) ;
+  le salut final tiré au sort plutôt qu'un sur deux.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

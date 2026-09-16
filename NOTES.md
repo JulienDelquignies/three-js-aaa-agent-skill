@@ -12857,3 +12857,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - **Les clips** : 0,4 s, contact 0,14, le pied pousse (+21 à +29 cm après le contact), 40 styles sous contrat ; la scène ne les joue
   que sur la touche qui vire (≥ 20°), l'extérieur et la semelle — la touche droite reste au warp (la foulée la joue).
 - **Dettes** : l'extérieur rare ; le pied de contrôle ne change pas au fil des touches (p.foot) ; les prises de ballon libre muettes.
+
+- 389: L'APPLAUDISSEMENT D'ENCOURAGEMENT, occasionnel et sans chorégraphie (retour « de temps en temps sur quelques joueurs pour
+  encourager, mais pas trop chorégraphie » ; petits-gestes.js, ceremonie.js, cfg.petitsGestes.applaudir, cfg.ceremonie.salut.applaudir ;
+  verify-petits-gestes 19/0, verify-ceremonie 9/0).
+
+- **Les occasions** (turnover.why compris) : l'arrêt du gardien (p 0,7), le tir (0,35), le duel et le glissé gagnés (0,4), l'interception
+  (0,4), le tacle (0,4), la récupération (0,15) — mesuré : 2 arrêts, 2 tirs et 1 duel par 300 s, mais 20-25 turnovers ; sans eux
+  l'applaudissement tombait à 2 par match.
+- **Sans chorégraphie** : un ou deux coéquipiers (60 % un seul) TIRÉS AU SORT parmi les libres et posés (≤ 3,5 m/s) à 22 m — pas les
+  plus proches —, le premier part 0,15-0,8 s après l'occasion, le second au moins 0,25 s après le premier ; une salve par équipe par
+  10 s, un même corps pas deux fois en 20 s ; le tirage seedé ('geste'). Mesuré : 8-10 applaudissements par 300 s sur 6-8 corps
+  distincts, au plus 3 par corps, jamais trois en une seconde.
+- **Le salut final** : la part des applaudisseurs est tirée au sort (0,4), plus un sur deux (une alternance est une chorégraphie).
+- **Épingles** : la clé vit sous petitsGestes (épinglée) ; le jumeau reste au bit.

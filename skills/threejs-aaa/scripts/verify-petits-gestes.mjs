@@ -135,22 +135,27 @@ const match = (over, secs = 90) => {
   ok(`petitsGestes:null — aucun événement 'geste' en 60 s (${n.gestes.length})`, n.gestes.length === 0);
 }
 
-console.log('— (f) l\'applaudissement sur un arrêt (note 387) —');
+console.log('— (f) l\'applaudissement d\'encouragement, occasionnel et sans chorégraphie (notes 387, 389) —');
 {
-  const arret = (over) => { const { st, cfg } = monde(over); const gk = st.players.find((q) => q.keeper && q.team === 1);
-    for (const q of st.players) { q.act = null; q.v = [0, 0]; q.speed = 0; }
-    const n0 = st.events.length; st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette' });
-    for (let i = 0; i < 12; i++) matchStep(st, 1 / 60, cfg);
-    const g1 = st.events.slice(n0).filter((e) => e.type === 'geste' && e.move === 'applaudir');
-    const n1 = st.events.length; st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'prise' });   // un second arrêt 0,2 s après : la cadence le tait
-    for (let i = 0; i < 12; i++) matchStep(st, 1 / 60, cfg);
-    const g2 = st.events.slice(n1).filter((e) => e.type === 'geste' && e.move === 'applaudir');
-    return { gk, g1, g2, ok1: g1.every((e) => { const q = st.players[e.by]; return q.team === gk.team && q.id !== gk.id && hyp(q.p[0] - gk.p[0], q.p[2] - gk.p[2]) <= K.applaudir.rayon; }) }; };
-  const r = arret({});
-  ok(`L'APPLAUDISSEMENT (petitsGestes.applaudir) : sur l'arrêt du gardien ${r.gk.id}, ${r.g1.length} coéquipiers applaudissent (≤ n ${K.applaudir.n}, à ≤ ${K.applaudir.rayon} m, pas le gardien : ${r.ok1}) — un second arrêt ${K.applaudir.cadence} s plus tôt que la cadence ne fait rien (${r.g2.length})`,
-    r.g1.length >= 1 && r.g1.length <= K.applaudir.n && r.ok1 && r.g2.length === 0);
-  const n = arret({ petitsGestes: null });
-  ok(`applaudir:null — aucun applaudissement (${n.g1.length})`, n.g1.length === 0);
+  const A = K.applaudir;
+  const salves = (over) => { const { st, cfg } = monde(over); const gk = st.players.find((q) => q.keeper && q.team === 1); const waves = [];
+    for (let w = 0; w < 8; w++) { for (const q of st.players) { q.act = null; q.v = [0, 0]; q.speed = 0; } const n0 = st.events.length; st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette' });
+      for (let i = 0; i < 60 * 2; i++) matchStep(st, 1 / 60, cfg); waves.push(st.events.slice(n0).filter((e) => e.type === 'geste' && e.move === 'applaudir'));
+      for (let i = 0; i < 60 * 10; i++) matchStep(st, 1 / 60, cfg); }   // 12 s entre deux arrêts : la cadence (10 s) est passée
+    return { gk, waves }; };
+  const r = salves({}); const all = r.waves.flat(), pleines = r.waves.filter((w) => w.length).length;
+  const ok1 = all.every((e) => { const q = r.gk && r.waves && e.by !== r.gk.id; return q; }), gaps = r.waves.filter((w) => w.length === 2).map((w) => Math.abs(w[1].t - w[0].t));
+  ok(`L'APPLAUDISSEMENT (petitsGestes.applaudir) : sur 8 arrêts du gardien ${r.gk.id}, ${pleines} salves (tirées à p ${A.p.arret}, attendu 3-8), ${all.length} applaudissements, jamais plus de ${Math.max(0, ...r.waves.map((w) => w.length))} par salve (≤ n ${A.n}), jamais le gardien (${ok1}), les deux d'une salve partent décalés (écarts ${gaps.map((g) => g.toFixed(2)).join('/') || '—'} s ≥ 0,25)`,
+    pleines >= 3 && pleines <= 8 && r.waves.every((w) => w.length <= A.n) && ok1 && gaps.every((g) => g >= 0.24));
+  const who = {}; for (const e of all) who[e.by] = (who[e.by] ?? 0) + 1;
+  ok(`…et pas toujours les mêmes : ${Object.keys(who).length} applaudisseurs distincts pour ${all.length} applaudissements (max ${Math.max(0, ...Object.values(who))} par corps)`, Object.keys(who).length >= Math.min(3, all.length) && Math.max(0, ...Object.values(who)) <= Math.max(2, Math.ceil(all.length / 2)));
+  const n = salves({ petitsGestes: null });
+  ok(`applaudir:null — aucun applaudissement (${n.waves.flat().length})`, n.waves.flat().length === 0);
+  // le match : occasionnel (3-20 par 300 s), jamais trois en une seconde
+  const { st, cfg } = monde({}); for (let i = 0; i < 60 * 300; i++) matchStep(st, 1 / 60, cfg);
+  const g = st.events.filter((e) => e.type === 'geste' && e.move === 'applaudir'); let trois = 0; for (let i = 2; i < g.length; i++) if (g[i].t - g[i - 2].t < 1) trois++;
+  const occ = {}; for (const e of g) occ[e.occasion] = (occ[e.occasion] ?? 0) + 1;
+  ok(`LE MATCH (300 s) : ${g.length} applaudissements (occasionnel : 3-20), occasions ${JSON.stringify(occ)}, jamais trois en une seconde (${trois})`, g.length >= 3 && g.length <= 20 && trois === 0);
 }
 console.log(`petits-gestes : ${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
