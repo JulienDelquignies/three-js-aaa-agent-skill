@@ -12403,7 +12403,12 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      de leur point). Deux pièges du banc : la patience de l'élan tombait
      pendant les 25 m de marche du preneur (el.attendAt : la patience compte
      depuis l'attente, + 4 s de marche) et la pose lazy du coup franc/corner
-     (poserElan quand r.placed) ; le rayon 0,4 laissait passer le ballon
+     (poserElan quand r.placed) — les deux SOUS CLÉ, remisesPied.elan.attente
+     { marche 4 } (null : hier) : livrées d'abord sous la clé A9 bis existante,
+     elles déplaçaient le monde des clauses de flux épinglées (la suite sur
+     0746dbd avec les mêmes bancs : 761/7 ; sur le moteur B4-B6 : 806/19, douze
+     rouges de flux de plus) — l'empreinte jumelle de 3 × 240 s ne les voyait
+     pas, les coups francs longs y sont rares ; le rayon 0,4 laissait passer le ballon
      entre les deux corps (passage au plus près 0,32-0,58 m). En match (12 ×
      300 s) : 3 coups francs avec mur seulement, 0 dévié-mur avant comme
      après — les tireurs visent ≥ 2,35 m à 9,15 m, personne ne tire bas ; le

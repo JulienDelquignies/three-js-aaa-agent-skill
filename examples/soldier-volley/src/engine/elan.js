@@ -85,7 +85,7 @@ function planCourt(st, tk, bp, g) {
 /** Le métier du preneur pendant la course (assignMatchJobs) : recule → attend face au ballon ; court : le métier d'hier. */
 export function elanJob(st, r, tk, cfg) {
   const RP = st.full && cfg?.remisesPied;
-  if (!r.elan && r.placed === true && RP?.elan) poserElan(st, r, cfg);   // (B4) …le coup franc et le corner aussi : posés sans preneur connu (la pose tardive d'un porté à 9 s, le ramasseur), ils partaient sans course — mesuré au banc, la prise dans l'image de la pose   // (A9 ter) une pose venue d'ailleurs (le ramasseur) n'avait pas de preneur : la course se pose dès qu'il est connu
+  if (!r.elan && r.placed === true && RP?.elan && (r.type === 'touche' || r.type === 'sortie-de-but' || RP.elan.attente)) poserElan(st, r, cfg);   // (B4, elan.attente) …le coup franc et le corner aussi : posés sans preneur connu (la pose tardive d'un porté à 9 s, le ramasseur), ils partaient sans course — mesuré au banc, la prise dans l'image de la pose   // (A9 ter) une pose venue d'ailleurs (le ramasseur) n'avait pas de preneur : la course se pose dès qu'il est connu
   if (RP?.touche && r.type === 'touche' && r.placed === true && !(r.elan?.touche && RP.elan)) {   // (A9 ter) …sauf la touche longue, qui a sa course   // LE LANCEUR DERRIÈRE LA LIGNE (Loi 15) : il se tient recul m dehors, le ballon sur la ligne à portée de main
     r.placedAt ??= st.t;                                          // une pose venue d'ailleurs (le ramasseur, une remise déjà posée) date sa patience ici
     tk.job = 'receive'; tk.target = [r.p[0], 0, r.p[1] + Math.sign(r.p[1] || 1) * (RP.touche.recul ?? 0.4)]; return true;
@@ -134,7 +134,7 @@ export function elanStep(st, dt, cfg) {
   }
   if (el.phase === 'recule' && hyp(tk.p[0] - el.spot[0], tk.p[2] - el.spot[1]) < (el.touche ? 0.7 : 0.4) && hyp(tk.v[0], tk.v[1]) < (el.touche ? 2 : 0.9)) { el.phase = 'attend'; el.attendAt = st.t; }   // (A9 ter) le lanceur arrive de loin, en marchant vite : il tourne autour de son point sans jamais y être « posé »
   if (el.near == null && d < 6) el.near = st.t;                                          // la patience court depuis que le preneur est AU ballon (le ramasseur pose parfois avant lui)
-  const refP = el.phase === 'attend' ? (el.attendAt ?? st.t) : (el.at ?? st.t) + 4;   // (B4) la patience court depuis l'ARRIVÉE au point (ou 4 s de marche après une pose tardive : le porté à 9 s du point) — mesuré : le coup franc du banc pris sans course, la patience consommée pendant la marche
+  const refP = !E.attente ? -Infinity : el.phase === 'attend' ? (el.attendAt ?? st.t) : (el.at ?? st.t) + (E.attente.marche ?? 4);   // (B4, elan.attente — null : la patience d'hier) la patience court depuis l'ARRIVÉE au point (ou 4 s de marche après une pose tardive : le porté à 9 s du point) — mesuré : le coup franc du banc pris sans course, la patience consommée pendant la marche
   if (el.phase !== 'court' && st.t > Math.max(r.at, refP, el.near ?? st.t) + (E.patience ?? 4)) { el.phase = 'court'; el.rate = 'patience'; el.t0 ??= st.t; return; }   // le garde-fou anti-gel : sans course, la prise d'hier
   if (el.phase === 'attend' && st.t >= r.at - 0.2 && !tk.act && !(el.court && el.plan == null)) {   // (B2) la passe courte attend son coéquipier
     if (el.touche) { el.phase = 'court'; el.t0 = st.t; return; }                        // (A9 ter) la touche longue : la course sans geste

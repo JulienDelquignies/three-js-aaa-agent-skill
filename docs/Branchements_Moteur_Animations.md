@@ -155,7 +155,10 @@ manquent et les branchements qu'elles exigeront).
   prise (à 50 s de jeu) ; le ballon à mi-hauteur (élévation 0,2) rencontre le mur (dévié-mur h 0,74 m en l'air à
   16,1 m/s, il repart vers le tireur à 6,4 m/s) ; le rasant (0,12) passe sous le mur qui saute sans être contrôlé ; le
   haut (0,45) passe au-dessus ; sabotages corps:null (traversé) et murTrot:null (au pas : 0,59 / 4,63 m de leur point à
-  la prise). null : hier au bit (empreinte jumelle identique, les clés B4-B6 absentes). En match : note 374.
+  la prise). Et `remisesPied.elan.attente { marche 4 }` : la pose de la course dès la place connue (coup franc, corner)
+  et la patience comptée depuis l'arrivée au point — les deux lignes qui faisaient partir le coup franc du banc sans course,
+  sous clé parce qu'elles déplaçaient le monde des clauses de flux épinglées. null : hier au bit (empreinte jumelle
+  identique, les clés B4-B6 absentes). En match : note 374.
 - *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré.** À 50 s de jeu, les deux hommes du mur (`r._mur` : les deux plus près de leur but)

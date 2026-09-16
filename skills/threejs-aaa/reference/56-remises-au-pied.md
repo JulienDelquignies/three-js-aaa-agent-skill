@@ -214,6 +214,12 @@ mur CONTRÔLAIT le coup franc qui le frappait (un `control` + `turnover` à 1 m/
   au premier venu.
 - Le tireur vise déjà ≥ 2,35 m à 9,15 m (`referee`, le coup franc direct) : ce sont les tirs bas et les lancés tendus
   qui paient, et le rasant sous le mur qui saute reste une arme.
+- **`remisesPied.elan.attente`** `{ marche 4 }` : la course d'élan du coup franc et du corner se POSE dès la place
+  connue même sans preneur (la pose tardive d'un porté, le ramasseur — hier seules la touche et la sortie de but), et
+  la patience de l'élan court depuis l'ARRIVÉE au point (ou `marche` s de marche après la pose) — mesuré au banc B4 :
+  le preneur marchait 25 m et la patience tombait en chemin, la remise partait sans course. `null` : la pose et la
+  patience d'hier — la clé existe parce que ces deux lignes changeaient le monde des clauses de flux épinglées
+  (suite sur 0746dbd 761/7 c. 806/19 avant la porte).
 
 Contrat (verify-remises, bloc B4 — le coup franc FORCÉ : le monde vidé à 50 s de jeu, le coup franc à 22 m posé,
 la prise, puis `ball.strike` à 18 m/s vers le premier homme du mur avec la tenue de livre d'un vrai départ) : le mur
