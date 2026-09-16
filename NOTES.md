@@ -12231,6 +12231,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      11/0, part-tint 18/0, porte 4/0, remises 36/0, roles 14/0, rondo 40/0, scan 5/0, slide 10/0, sync 9/0,
      tactics 11/0, tete 7/0. Piège nommé : un « while pgrep -f motif » attend sa propre ligne de commande
      (la chaîne des annexes ne partait jamais). Bloc 1 seul : 0,76 ms/step (≤ 1,6, deux annexes en parallèle).
+     Sceau : commit 8e19ee9, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-BK8FFurR).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
