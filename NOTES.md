@@ -12540,7 +12540,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ballon ; la retournée attend des centres lobés derrière l'attaquant — une
      intention de centre à écrire au tronc, nommée deux fois. Clé null : hier
      au bit (les bancs de flux l'éteignent : retournee: null aux 32 sites
-     datés et dans B_0746/B_1609).
+     datés et dans B_0746/B_1609 — et dans verify-tete-armee, dont l'attaquant
+     posé tournait le dos au but : la fixture partait en ciseau). LA SUITE
+     COMPLÈTE sur le moteur gardé (attente sous clé) et les bancs épinglés à
+     tous les sites : 828/6 — les trois rouges du tronc déjà rouges sur
+     0746dbd (lot 141 la pousse, 246d les ballons flottants, le pivot en
+     relance basse 8/8 ; JORDET revenu vert) et les trois de verify-tete-armee
+     que la retournée volait, épinglés. Le chemin : 806/19 avant les épingles
+     complètes (les clauses comparaient un monde vivant épinglé à un sabotage
+     non épinglé : la marge mesurait la clé), 761/7 sur 0746dbd avec les mêmes
+     bancs, les empreintes 6 × 300 s identiques avant et après la porte.
 - 377: LA MAIN SAISIE (lot C2 = Animations_A_Faire § 4 ; motion-emotion
      mainTendue.pull, Rondo._applyAideWarp/_aideMeet/_armTo ; reference/59
      § C2). Le relevé aidé (A10 quater, note 369) posait l'aidant à 1 m et
