@@ -65,6 +65,7 @@ export function movePlayers(st, dt, cfg) {
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
     if ((winding(p) || p.act?.payload?.ownsBody) && !p.act?.payload?.elan && !p.act?.payload?.mobile) {   // …et la TÊTE ARMÉE (B3, payload.mobile) : le corps court sous son armé jusqu'au ballon   // …et la COURSE D'ÉLAN (lot A9 bis) : le corps COURT sous son armé, le contact attend l'arrivée
       p.speed = hyp(p.v[0], p.v[1]);
+      if (st.full && cfg.plantVitesse && !p.act?.payload?.mains) { p.v = [0, 0]; p.push = null; p.speed = 0; continue; }   // (B6, cfg.plantVitesse) LE CORPS PLANTÉ NE BOUGE PAS : sa vitesse est nulle — hier p.v gardait sa dernière valeur (mesuré : 84 % des images plantées à > 1 m/s, l'armé de passe à 4,4 m/s p50) et qui la lisait (relV de beginPass, l'effort, les poursuivants) voyait un corps qui bouge
       if (!p.act?.payload?.mains) continue;
       p.v = [0, 0]; p.push = null; p.speed = 0;                     // …sauf les MAINS (lot A9 — touche, roulé du gardien) : planté, il TOURNE encore sur sa cible pendant l'armé (le slew ci-dessous)
     }
@@ -333,10 +334,10 @@ export function movePlayers(st, dt, cfg) {
         }
       } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }
-    let wx = 0, wz = 0;
+    let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
-      const d = hyp(dx, dz);
+      const d = hyp(dx, dz); dTgt = d;
       if (d > 0.18) { const s = Math.min(top, d * 2.6); wx = (dx / d) * s; wz = (dz / d) * s; }
     }
     // LA DEMANDE DES RÔLES CALMES EST LISSÉE (τ = wantTau). La cible de marche des soutiens sautait
@@ -353,6 +354,24 @@ export function movePlayers(st, dt, cfg) {
       p._wz = (p._wz ?? wz) + (wz - (p._wz ?? wz)) * aW;
       wx = p._wx; wz = p._wz;
     } else { p._wx = wx; p._wz = wz; }
+    // (B5, cfg.viragesLisses) LE CAP DEMANDÉ NE TREMBLE PAS ET NE TOURNE PAS PLUS VITE QUE taux/v : mesuré (sonde b5), le corps pressait
+    // en BANG-BANG latéral — press/cover : accélération latérale p50 5,9 m/s² (la saturation, turnAccel 6), 7-8 inversions par seconde ;
+    // la cible tremblait (press : 5,6°/image à p90, 4 inversions/s). Le cap voulu passe par un filtre (tau s) puis un slew borné par la
+    // vitesse (taux/v rad/s) : la demande latérale devient petite et suivie, le corps décrit des courbes. Sous des m/s (l'arrêt, le
+    // pivot) et sans demande : libre. Les rôles de course y passent aussi (l'interception est un cap : mesuré au flux). null : hier au bit.
+    if (st.full && cfg.viragesLisses && (wx || wz)) {
+      const VL = cfg.viragesLisses, spW = hyp(p.v[0], p.v[1]);
+      if (spW >= (VL.des ?? 1.0) && dTgt > (VL.arrivee ?? 1.5)) {   // …et pas à l'ARRIVÉE (la cible à < arrivee m) : le demi-tour de l'arrivée est un frein, pas un virage — le slew le retardait (mesuré : le lanceur dépassait son point de 0,17 m)
+        const want = Math.atan2(wz, wx), mag = hyp(wx, wz), have = p._capW ?? Math.atan2(p.v[1], p.v[0]);
+        let d = want - have; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+        if (VL.tau) d *= 1 - Math.exp(-dt / VL.tau);
+        const cap = ((VL.taux ?? 6) / Math.max(1, spW)) * dt;
+        const nw = have + Math.max(-cap, Math.min(cap, d));
+        let rest = want - nw; while (rest > Math.PI) rest -= 2 * Math.PI; while (rest < -Math.PI) rest += 2 * Math.PI;
+        const k = Math.max(VL.frein ?? 0.2, Math.cos(rest));               // le cap loin du voulu FREINE (on ne fait pas le tour à pleine vitesse : mesuré, le receveur en arc saturait 6 m/s² à p50)
+        wx = Math.cos(nw) * mag * k; wz = Math.sin(nw) * mag * k; p._capW = nw;
+      } else p._capW = null;
+    } else p._capW = null;
     // TURNING COSTS, AND THE FASTER YOU GO THE WIDER YOU TURN. Acceleration used to be isotropic:
     // 9.5 m/s² in any direction, so a defender at a full 6.6 m/s sprint could reverse as sharply as a
     // man standing still. With no momentum to beat, a feint cannot pay — which is why scoring the

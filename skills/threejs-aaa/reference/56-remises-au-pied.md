@@ -69,7 +69,7 @@ Côté droit ; le miroir d'animkit fait la gauche. Le style borné [0,85 ; 1,2] 
   puis la scène le dessine où la sim le fait tomber ; la PRISE AÉRIENNE tenue : le ballon reste dans les gants
   du clip `plongeonPrise` tant que le gardien le possède.
 
-## Le contrat (verify-remises.mjs, 36 clauses)
+## Le contrat (verify-remises.mjs, 36 clauses — 53 avec A9 ter, B2 et B4)
 
 Le geste `voleeGardien` sous `checkRestartGen` (mains ensemble jusqu'au lâcher, lâcher devant à hauteur de
 main, pied à 0,45-0,8 m devant à > 5 m/s, l'appui au sol, le tronc cambré, les mains ouvertes, rien sous
@@ -191,12 +191,47 @@ Banc (verify-remises, 47 clauses) : le coup franc à 60 m part au tick suivant l
 le court de la course, 30° de relèvement), le sabotage `tirImmediat:null` rend le double geste, la
 clause « même image » durcie à ≤ 0,05 s pour la passe aussi. Capture : b2-coup-franc-loin-un-seul-geste.
 
+## Le mur au trot et le ballon contre lui (B4 — `elan.js`, `match-sim.js`, `referee.canTake` ; `loi12.murTrot`, `remisesPied.mur.corps`)
+
+Mesuré avant (doc Branchements § 4) : les deux hommes du mur, choisis comme les deux plus près de leur but, partaient
+de loin et MARCHAIENT (job `walk`, sans `_walkF`, les monteurs trottant à côté) ; et le ballon TRAVERSAIT le mur qui
+saute — la déviation corps du tronc ne prend que les ballons lents (< 8 m/s). À la sonde du banc, pire : l'homme du
+mur CONTRÔLAIT le coup franc qui le frappait (un `control` + `turnover` à 1 m/s dans l'image même du choc).
+
+- **`loi12.murTrot`** `1.6` (match-sim, la branche mur du tour des métiers) : les deux hommes du mur sont choisis par
+  la DISTANCE À LEUR POINT — à 9,15 m du ballon sur l'axe ballon-but, ± 0,35 m de large — (le temps d'arrivée à vitesse
+  égale ; `null` : les deux plus profonds d'hier) et y vont au trot (`_walkF = murTrot`, la convention de cpa.js).
+- **`remisesPied.mur.corps`** `2.2` (`{ retard 0.12, corps 2.2, debout 1.85, pieds 0.25, rayon 0.6, frein 0.4 }`) :
+  `murStep` ouvre au DÉPART du ballon (le même instant que les sauts) une fenêtre d'une seconde, `st._murCorps
+  { ids, until }` — le vol jusqu'au mur dure 0,4-0,6 s. `murCorps` (chaque image, avant les sauts) : un ballon libre à
+  plus de 3 m/s qui passe à ≤ `rayon` d'un homme du mur (0,6 m : les deux corps côte à côte font 1,2 m de façade, et
+  le ballon avance de 0,3 m par image), sous sa hauteur — `debout` planté, `corps` pendant la détente (l'acte `sautMur`
+  entre 0,19 et 0,52 s après son retard) — et, en l'air, AU-DESSUS de ses pieds (`pieds` : le rasant passe SOUS le mur
+  qui saute, le classique) est DÉVIÉ : `impulse` renvoie la composante horizontale × `frein` vers le tireur et relève
+  à max(2,5 m/s, v/4) ; phase `loose`, passe nulle, `lastTouch`/`lastPasser` au mur, événement `dévié-mur { by, h,
+  air, vitesse }`. La fenêtre reste ouverte après la déviation (`done`) parce que **`canTake`** (referee) la lit : un
+  homme du mur ne contrôle pas le coup franc qui le frappe ni son rebond pendant la fenêtre — le ballon est loose,
+  au premier venu.
+- Le tireur vise déjà ≥ 2,35 m à 9,15 m (`referee`, le coup franc direct) : ce sont les tirs bas et les lancés tendus
+  qui paient, et le rasant sous le mur qui saute reste une arme.
+
+Contrat (verify-remises, bloc B4 — le coup franc FORCÉ : le monde vidé à 50 s de jeu, le coup franc à 22 m posé,
+la prise, puis `ball.strike` à 18 m/s vers le premier homme du mur avec la tenue de livre d'un vrai départ) : le mur
+trotte (`_walkF` = murTrot) et arrive à ≤ 1,5 m de son point à la prise ; le ballon à mi-hauteur (élévation 0,2)
+rencontre le mur (dévié-mur h 0,74 m, en l'air, 16,1 m/s ; il repart vers le tireur à 6,4 m/s < 0,6 × 17,6, relevé,
+`lastTouch` au mur) ; le rasant (0,12 : au sol à 9 m) passe SOUS le mur qui saute (aucun dévié-mur, deux sauts,
+personne du mur ne le contrôle) ; le haut (0,45) passe au-dessus ; sabotages `corps:null` (le mur traversé d'hier)
+et `murTrot:null` (au pas : 0,59 / 4,63 m de leur point à la prise, plus loin qu'avec). 53 clauses au banc. Les
+deux clés `null` : hier au bit — l'empreinte jumelle des trois graines est identique avec les clés B4, B5 et B6
+absentes. En match (12 × 300 s) : note 374.
+
 ## Les dettes nommées
 
-- Le ballon ne rencontre pas encore le mur qui saute : la déviation corps ne prend que les ballons
-  lents (< 8 m/s) — le saut est un corps, pas encore une hauteur d'interception.
+- ~~Le ballon ne rencontre pas encore le mur qui saute : la déviation corps ne prend que les ballons
+  lents (< 8 m/s) — le saut est un corps, pas encore une hauteur d'interception.~~ — livré au B4 (`mur.corps`).
 - La sortie de but COURTE et la touche courte restent posées (c'est le réel) ; la touche longue ne
-  vit qu'avec la tactique `cpa.touche 'longue'` (aucune dans les presets par défaut).
+  vit qu'avec la tactique `cpa.touche 'longue'` — le preset `direct` la porte depuis le B6 § 8 (les équipes
+  par défaut jouent `équilibre` : l'empreinte n'en sait rien).
 - ~~Le corner court rend le ballon au pied du preneur au contact~~ — livré au B2 (le plan à la pose,
   le tir dans l'image) ; reste le coup franc loin d'un LONG arrêt (32 s : le fauché, la cérémonie),
   pendant lequel les dix joueurs de champ marchent au ballon et s'entassent à 0-2 m (walk × 10, identique

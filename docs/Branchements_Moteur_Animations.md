@@ -141,7 +141,22 @@ manquent et les branchements qu'elles exigeront).
   verify-remises : `memeImage` durci (passe ≤ 0,05 s après 'élan' pour le lancé et le corner).
   Taille : ½ lot.
 
-## 4. Le mur : sa formation, et le ballon contre lui
+## 4. Le mur : sa formation, et le ballon contre lui — LIVRÉ (16/09, note 374, reference/56 § B4)
+
+- **Livré** : (a) la formation — `loi12.murTrot 1.6` (match-sim, la branche mur) : les deux hommes du mur sont choisis par
+  la DISTANCE À LEUR POINT (le temps d'arrivée à vitesse égale ; hier les deux plus profonds) et y TROTTENT (`_walkF`) ;
+  (b) le corps — `remisesPied.mur.corps 2.2` (elan.js `murCorps`) : au départ du ballon, une fenêtre d'une seconde
+  (`st._murCorps`) pendant laquelle un ballon qui passe à ≤ `rayon 0.6` m d'un homme du mur (la façade des deux corps),
+  sous sa hauteur (`debout 1.85` planté, `corps 2.2` en l'air pendant la détente) et, en l'air, au-dessus de ses pieds
+  (`pieds 0.25` : le rasant passe SOUS le mur qui saute) est DÉVIÉ — renvoi × `frein 0.4`, relevé, phase loose, passe
+  nulle, toucher au mur, événement `dévié-mur { by, h, air, vitesse }` ; et `canTake` (referee) ferme le contrôle aux
+  hommes du mur pendant la fenêtre (mesuré à la sonde : l'homme du mur CONTRÔLAIT le coup franc qui le frappait, un
+  turnover à 1 m/s dans l'image du choc). verify-remises 53/0 : le mur trotte et arrive à ≤ 1,5 m de son point à la
+  prise (à 50 s de jeu) ; le ballon à mi-hauteur (élévation 0,2) rencontre le mur (dévié-mur h 0,74 m en l'air à
+  16,1 m/s, il repart vers le tireur à 6,4 m/s) ; le rasant (0,12) passe sous le mur qui saute sans être contrôlé ; le
+  haut (0,45) passe au-dessus ; sabotages corps:null (traversé) et murTrot:null (au pas : 0,59 / 4,63 m de leur point à
+  la prise). null : hier au bit (empreinte jumelle identique, les clés B4-B6 absentes). En match : note 374.
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré.** À 50 s de jeu, les deux hommes du mur (`r._mur` : les deux plus près de leur but)
   partent de 56 m et arrivent à 8-13 m du ballon à la prise (16 s de pose) ; en page, l'un a sauté
@@ -159,7 +174,13 @@ manquent et les branchements qu'elles exigeront).
   verify-remises : coup franc forcé bas (élévation 0,15) → `dévié-mur` ; haut → passe ; formation :
   distance des hommes du mur à leur point ≤ 1,5 m à la prise, à 50 s de jeu. Taille : 1 lot.
 
-## 5. Les changements de cap francs (le lacet lissé)
+## 5. Les changements de cap francs (le lacet lissé) — LIVRÉ (16/09, note 374, reference/52 § B5)
+
+- **Livré** : `cfg.viragesLisses { taux 6, tau 0.15, des 2.0, frein 0.2, arrivee 1.5 }` (movement.js) — le cap demandé filtré
+  puis borné par la vitesse, le cap loin du voulu freine, libre sous 2 m/s et à moins de 1,5 m de la cible ; inversions de
+  l'accélération latérale ÷ 2 (press 7,1 → 3,9/s, cover 8,5 → 3,7, receive 6,0 → 3,0, support 3,7 → 1,6), latérale
+  médiane cover 5,9 → 2,4 m/s² (press reste au taquet : 5,8). null : hier au bit.
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré.** L'accélération latérale du modèle (repère corps, lissée 0,15 s) : p50 0,55, p90
   5,7 m/s², max 7,9 sur 40 s — des zigzags de décision, pas des courbes. Depuis A7 bis le corps
@@ -175,7 +196,14 @@ manquent et les branchements qu'elles exigeront).
   Risque : les interceptions se jouent au cap ; mesurer les pertes/interceptions avant-après.
   Taille : ½-1 lot.
 
-## 6. La vitesse figée sous un acte
+## 6. La vitesse figée sous un acte — LIVRÉ (16/09, note 374, reference/52 § B6)
+
+- **Livré** : `cfg.plantVitesse` (movement.js) — p.v = 0 sous l'acte qui plante (hors élan, tête armée, mains). La mesure
+  a corrigé le plan : 81 % des images plantées lisaient > 1 m/s, mais l'armé de passe (9 sur 10) GLISSE vraiment sur son
+  ancre et `stepGestures` écrit ce rapport chaque image — pas un fossile. Le fossile était celui des gestes sans ancre
+  (feinte, tacle debout, semelle, râteau… : 470 images hors passe sur 6 matchs → 110, dont 75 écrites par le geste
+  lui-même : plongeon, roulette). null : hier au bit.
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré.** Sous un geste (`winding` ou `ownsBody`), `movePlayers` saute l'intégration mais laisse
   `p.v` à sa dernière valeur (0,8-0,9 m/s lus sur un mur planté ; 3 m/s sur un frappeur en course).
@@ -186,7 +214,11 @@ manquent et les branchements qu'elles exigeront).
   et quelles décisions changent (empreinte + verify-match11 avec/sans).
 - Taille : ¼ lot, mais des épingles.
 
-## 7. La frappe en miroir (l'audit des membres, épisode 2)
+## 7. La frappe en miroir (l'audit des membres, épisode 2) — RÉSOLU AU B1 (l'instrument)
+
+- **Résolu** : l'épisode « posé » à l'appui en l'air et au pied frappeur à 0,3 m/s jugeait une `feintePasse` TIRÉE dans le
+  tampon d'avant l'armé, pas la passe — `audit-membres` cherche désormais `iStart`/`iFire` depuis l'image de l'armé, sur le
+  geste de l'épisode (note 371) ; les trois épisodes du rondo passent (18/0), aucune frappe en miroir mesurée.
 
 - **Mesuré.** Un épisode `passeRapide` « posée » où l'appui déclaré (LeftFoot) est en l'air à
   0,21-0,31 m et le pied frappeur déclaré à 0,3 m/s : le clip joue avec l'AUTRE pied que
@@ -198,7 +230,11 @@ manquent et les branchements qu'elles exigeront).
   dans la scène (`_playTech` rejoue depuis 0) — vérifier aussi `useMirror = e.foot === 'left'`.
 - Taille : ½ lot (surtout de l'instrument).
 
-## 8. La touche longue et la sortie de but longue chez le coach
+## 8. La touche longue et la sortie de but longue chez le coach — LA TOUCHE LIVRÉE (16/09, B6)
+
+- **Livré** : le preset `direct` de tactics.js porte `cpa: { touche: 'longue' }` — le jeu direct lance ses touches du tiers
+  offensif longues (le trébuchet du 165, la course d'élan du lanceur d'A9 ter) ; la sortie de but longue reste à la loi de
+  pression de `keeper.styleSortieBut` (déjà vivante).
 
 - **Mesuré.** `cpa.touche 'longue'` n'existe dans aucun preset (`tactics.js`), la course d'élan de
   la touche longue (A9 ter) ne vit donc qu'aux bancs ; la sortie de but longue dépend de la loi de
@@ -208,7 +244,10 @@ manquent et les branchements qu'elles exigeront).
   d'hier). Le lanceur élu doit être CE joueur (`elireTaker` : le spécialiste).
 - Taille : ¼ lot.
 
-## 9. Le tir un tick après le contact (option, la scène compense déjà)
+## 9. Le tir un tick après le contact (option, la scène compense déjà) — NON RETENU
+
+- La scène re-cadence déjà le swing sur le tick du tir (A2, rondo-fusion) et la calibration se prend à l'image du tir (B1) :
+  aucune raison de déplacer le tir de la sim.
 
 - La sim tire au premier tick où `act.t ≥ anticipation` (0-17 ms après la clé de contact). La scène
   re-cadence le swing sur ce tick (A2). Une version sim : tirer au tick le plus proche

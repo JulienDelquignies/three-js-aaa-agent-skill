@@ -151,6 +151,39 @@ caricatural : 40 graines × 6 régimes sont sous contrat.
   désormais : 94 % d'accord avec l'accélération de la sim (le reste, le retard du lissage).
 - Absents (`brake`, `turn` à 0 ou absents) : la foulée à la cadence de la jambe, au bit.
 
+## Le cap lissé (B5 — `movement.js`, `cfg.viragesLisses`) et le corps planté immobile (B6 — `cfg.plantVitesse`)
+
+Mesuré (sonde b5, 4 graines × 120 s, l'accélération latérale du corps sim |Δv⊥|/dt par métier) : le
+corps pressait en BANG-BANG latéral — press/cover à la saturation en médiane (p50 5,9 m/s² = turnAccel
+6), 7-8 inversions de signe par seconde ; la cible elle-même tremblait (press : 5,6°/image à p90, 4,2
+inversions/s ; intercept 12/s). Depuis A7 bis le corps ROULE dans ces virages (13° à 4,5 m/s²) : le
+bruit était devenu visible. `viragesLisses { taux 6, tau 0.15, des 2.0, frein 0.2 }` (`null` : les
+cassures d'hier, empreinte jumelle) : le cap demandé (la direction de la vitesse voulue, après le
+lissage des rôles calmes) passe par un filtre (tau) puis un slew borné par la vitesse (taux/v rad/s —
+le corps ne demande jamais plus vite qu'il ne peut tourner), et le cap loin du voulu FREINE (× cos,
+plancher frein : on ne fait pas le tour à pleine vitesse — sans le frein, le receveur en arc saturait
+6 m/s² à p50). Sous des m/s (l'arrêt, le pivot) : libre. Après (la mesure finale, les clés B4-B6
+allumées contre `viragesLisses:null`) : inversions/s press 7,1 → 3,9, cover 8,5 → 3,7, mark 4,4 → 2,0,
+support 3,7 → 1,6, receive 6,0 → 3,0, carry 5,6 → 2,9, walk 0,9 → 0,1 ; latérale p50 cover 5,9 → 2,4,
+receive 1,7 → 2,1, press 5,9 → 5,8 (le presseur reste au taquet en médiane : c'est sa nature, il ne
+tremble plus) ; le corps suit sa cible avec un peu plus de retard (écart cap cible − corps p50 :
+press 5,9 → 12,9°, receive 0,3 → 6,6°). Le flux (interceptions, pressing) se juge au banc complet,
+avec ses épingles.
+
+B6 § 6 — `plantVitesse` (`null` : hier) : sous un acte qui plante le corps (`winding` ou `ownsBody`,
+hors course d'élan, tête armée et mains), `movePlayers` sautait l'intégration mais laissait `p.v` à
+sa dernière valeur. Mesuré (6 graines × 300 s) : 81 % des images plantées à > 1 m/s — mais la part
+du lion (3 900 sur 4 370) est l'ARMÉ DE PASSE, dont `p.v` n'est pas fossile : c'est le RAPPORT du
+glissement réel sur l'ancre que `stepGestures` écrit chaque image (borné par `glideMax`, 4,7 m/s en
+médiane, 7,5 max) — un corps qui bouge vraiment, et qui le dit. La vitesse fossile, c'est celle des
+gestes qui n'ont pas d'ancre : feinte (96 images), tacle debout (85), semelle (64), râteau (45),
+passement (40), crochet (27), double contact (22), roulette (13) — 470 images hors passe à > 1 m/s
+sur 6 matchs. Ici `p.v = [0, 0]`, la poussée nulle, et la vitesse repart de zéro à l'accompagnement
+(le modèle d'inertie, 9,5 m/s²) : après, 110 images hors passe, dont 39 de plongeon (6,5 m/s : la
+glisse du gardien, écrite par le geste) et 36 de roulette (le tour du ballon, écrit par le geste) —
+le fossile est parti (feinte 7, tacle debout 5, semelle 5, râteau 0, passement 1, crochet 2). Petit
+lot, petit effet : l'armé de passe glisse, il ne se fige pas.
+
 ## Les dettes nommées
 
 - **Deux signatures sur quarante** (graines 3 et 35) passent sous le plafond `checkClip` entre 4,75 et

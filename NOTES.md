@@ -12365,6 +12365,92 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      poitrine restent réactives (même patron à écrire) ; la suite complète
      (bancs.mjs) tourne sur B2 + B3 — les épingles suivront (tete d'hier aux
      sites datés si le ciel remange les clauses de flux).
+- 374: LE MUR, LE CAP LISSÉ, LA VITESSE FIGÉE (lots B4, B5, B6 + § 8 du doc
+     Branchements — les trois derniers branchements du doc, en un commit ;
+     chaque clé null = hier au bit : l'empreinte jumelle des trois graines est
+     IDENTIQUE avec loi12.murTrot, remisesPied.mur.corps, viragesLisses et
+     plantVitesse absents, base 0746dbd).
+     B4 — LE MUR (elan.js murCorps, match-sim la branche mur, referee.canTake ;
+     reference/56 § B4). Mesuré : les deux hommes du mur (les deux plus près
+     de leur but) MARCHAIENT à leur point pendant que les monteurs trottaient,
+     et le ballon TRAVERSAIT le mur qui saute (la déviation corps du tronc ne
+     prend que les ballons lents, < 8 m/s) ; à la sonde du banc, pire : l'homme
+     du mur CONTRÔLAIT le coup franc qui le frappait — un 'control' + 'turnover'
+     à 1 m/s dans l'image même du choc. loi12.murTrot 1,6 : les deux hommes
+     choisis par la DISTANCE À LEUR POINT (9,15 m sur l'axe ballon-but,
+     ± 0,35 m — le temps d'arrivée à vitesse égale) et au trot (_walkF, la
+     convention de cpa.js). remisesPied.mur.corps 2,2 { debout 1,85, pieds
+     0,25, rayon 0,6, frein 0,4 } : murStep ouvre au DÉPART du ballon une
+     fenêtre d'une seconde (st._murCorps) ; murCorps, chaque image : un ballon
+     libre à > 3 m/s qui passe à ≤ 0,6 m d'un homme du mur (la façade des
+     deux corps, 1,2 m ; le ballon avance de 0,3 m par image), sous sa hauteur
+     (debout planté, corps pendant la détente de sautMur : 0,19-0,52 s après
+     son retard) et, en l'air, AU-DESSUS de ses pieds (le rasant passe SOUS le
+     mur qui saute — le classique) est DÉVIÉ : impulse renvoie l'horizontale
+     × 0,4 vers le tireur et relève à max(2,5, v/4) ; loose, passe nulle,
+     lastTouch au mur, événement dévié-mur { by, h, air, vitesse }. La fenêtre
+     reste ouverte après le choc (done) parce que canTake la lit : l'homme du
+     mur ne contrôle ni le coup franc qui le frappe ni son rebond. Banc
+     verify-remises 53/0 (bloc B4, le coup franc FORCÉ : le monde vidé à 50 s,
+     le coup franc à 22 m, la prise, puis ball.strike à 18 m/s vers le premier
+     homme du mur avec la tenue de livre d'un vrai départ — sans elle le
+     ballon libre à 0,5 m du preneur se reprenait) : le mur trotte et arrive
+     à ≤ 1,5 m de son point à la prise ; à mi-hauteur (élévation 0,2) dévié-mur
+     h 0,74 m en l'air à 16,1 m/s, il repart vers le tireur à 6,4 m/s ; le
+     rasant (0,12 : au sol à 9 m) passe sous le mur qui saute, deux sauts,
+     personne du mur ne le contrôle ; le haut (0,45) passe au-dessus ;
+     sabotages corps:null (traversé) et murTrot:null (au pas : 0,59 / 4,63 m
+     de leur point). Deux pièges du banc : la patience de l'élan tombait
+     pendant les 25 m de marche du preneur (el.attendAt : la patience compte
+     depuis l'attente, + 4 s de marche) et la pose lazy du coup franc/corner
+     (poserElan quand r.placed) ; le rayon 0,4 laissait passer le ballon
+     entre les deux corps (passage au plus près 0,32-0,58 m). En match (12 ×
+     300 s) : 3 coups francs avec mur seulement, 0 dévié-mur avant comme
+     après — les tireurs visent ≥ 2,35 m à 9,15 m, personne ne tire bas ; le
+     trot 6/6 (4/6), les hommes à 0,06 m de leur point à la prise (0,05 :
+     les longs arrêts leur laissent le temps, la marche d'hier suffisait au
+     flux). Le mur vit pour les tirs bas et les lancés tendus — et en page :
+     la fixture rejouée, capture b4-mur-devie-cote (les deux hommes en l'air,
+     le ballon sur le tibia).
+     B5 — LE CAP LISSÉ (movement.js, cfg.viragesLisses { taux 6, tau 0,15,
+     des 2,0, frein 0,2, arrivee 1,5 } ; reference/52 § B5). Mesuré (sonde
+     b5, 4 graines × 120 s, |Δv⊥|/dt du corps sim par métier) : press et cover
+     en BANG-BANG latéral — 5,9 m/s² en médiane (= turnAccel 6, la
+     saturation), 7-8 inversions de signe par seconde ; la cible elle-même
+     tremblait (press 5,6°/image à p90). Depuis A7 bis le corps ROULE dans
+     ces virages : le bruit était devenu visible. Le cap demandé (la
+     direction de la vitesse voulue, après le lissage des rôles calmes) passe
+     par un filtre (tau) puis un slew borné par la vitesse (taux/v rad/s) et
+     le cap loin du voulu FREINE (× cos, plancher frein — sans lui le receveur
+     en arc saturait à p50) ; libre sous 2 m/s (des : l'arrêt, le pivot — les
+     marcheurs y passaient) et à moins de 1,5 m de la cible (arrivee : le
+     lanceur dépassait sa ligne de 8 cm). Après (la mesure finale, B4-B6
+     allumés c. viragesLisses:null) : inversions/s press 7,1 → 3,9, cover
+     8,5 → 3,7, mark 4,4 → 2,0, support 3,7 → 1,6, receive 6,0 → 3,0, carry
+     5,6 → 2,9, walk 0,9 → 0,1 ; latérale p50 cover 5,9 → 2,4 (press reste au
+     taquet, 5,8 : c'est sa nature, il ne tremble plus) ; le corps suit sa
+     cible avec un peu plus de retard (écart cap p50 press 5,9 → 12,9°).
+     B6 — LA VITESSE FIGÉE (movement.js, cfg.plantVitesse ; reference/52
+     § B6). La mesure a CORRIGÉ le plan du doc : 81 % des images plantées
+     lisaient p.v > 1 m/s, mais 3 900 sur 4 370 sont l'ARMÉ DE PASSE, dont
+     p.v n'est pas fossile — c'est le rapport du glissement réel sur l'ancre
+     que stepGestures écrit chaque image (borné par glideMax : 4,7 m/s p50,
+     7,5 max), un corps qui bouge vraiment et qui le dit. Le fossile était
+     celui des gestes SANS ancre : feinte 96 images, tacle debout 85, semelle
+     64, râteau 45, passement 40, crochet 27, double contact 22, roulette 13
+     — 470 images hors passe sur 6 matchs. p.v = [0, 0] sous l'acte qui
+     plante (hors élan, tête armée, mains) : après, 110, dont 39 de plongeon
+     (6,5 m/s : la glisse du gardien, écrite par le geste) et 36 de roulette
+     (le tour du ballon, écrit par le geste) — feinte 7, tacle debout 5,
+     semelle 5, râteau 0. Petit lot, petit effet, plan corrigé dans le doc.
+     § 8 — la touche longue chez le coach : le preset direct de tactics.js
+     porte cpa.touche 'longue' (la course d'élan du lanceur d'A9 ter vit hors
+     des bancs) ; un preset, pas une clé — les équipes par défaut jouent
+     équilibre, l'empreinte n'en sait rien. § 9 (le tir un tick après) non
+     retenu, la scène compense. Reste du doc : § 10 (la sortie aérienne du
+     gardien) et les reprises armées volée/poitrine (le patron de B3). Dette
+     de mesure : les épingles de la suite complète (bancs.mjs) sur B2-B6 —
+     tete/loi12 d'hier aux sites datés, viragesLisses/plantVitesse null.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

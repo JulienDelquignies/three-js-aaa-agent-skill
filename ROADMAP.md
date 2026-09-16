@@ -230,9 +230,20 @@
   teteArmerStep arme l'acte tete/teteDebout le temps de contact du clip avant le ballon prédit sur le corps qui y sera (payload.mobile :
   il court sous son armé), teteContact résout la tête à l'heure de l'acte (tête-manquée sinon) ; la scène joue tout le geste depuis le
   windup, saut et impulsion compris ; null = la reprise réactive d'hier. Restent la volée et la poitrine (même patron).
+- LIVRÉ (note 374, reference/56 § B4, verify-remises 53/0) : LE MUR AU TROT ET LE BALLON CONTRE LUI (B4) — loi12.murTrot : les deux
+  hommes du mur choisis par la distance à leur point et au trot ; remisesPied.mur.corps : la fenêtre du corps au départ du ballon —
+  le ballon qui passe dans la façade du mur sous sa hauteur (planté 1,85, en l'air 2,2, au-dessus des pieds 0,25 : le rasant passe
+  dessous) est dévié (× 0,4, relevé, dévié-mur), et l'homme du mur ne contrôle pas le coup franc qui le frappe ; null = le mur d'hier.
+- LIVRÉ (note 374, reference/52 § B5) : LE CAP LISSÉ (B5) — cfg.viragesLisses : le cap demandé filtré puis borné par la vitesse, le
+  cap loin du voulu freine ; inversions de l'accélération latérale ÷ 2 (press 7,1 → 3,9/s, cover 8,5 → 3,7, support 3,7 → 1,6) ;
+  null = les cassures d'hier.
+- LIVRÉ (note 374, reference/52 § B6) : LA VITESSE FIGÉE SOUS UN ACTE (B6) — cfg.plantVitesse : p.v = 0 sous l'acte qui plante
+  (le fossile des gestes sans ancre, 470 → 110 images sur 6 matchs ; l'armé de passe glisse vraiment, son p.v est un rapport) ; et § 8 : le preset direct porte cpa.touche 'longue' (la touche longue d'A9 ter vit
+  hors des bancs) ; null = hier.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
+  État au 16/09 : § 1-8 livrés (B1-B6), § 9 non retenu ; restent § 10 (la sortie aérienne du gardien) et les reprises armées volée/poitrine.
 - SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») — l'ordre proposé est ÉPUISÉ ; restent : (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
   la carte plus lisible. Et les dettes : (A2 bis) LIVRÉ au B1 (note 371) — reste la queue (3 frappes sur 13 à 7-9 cm de creux, la passePivot sans plan) et, au-delà de 15 cm de fente, le placement sim du corps (mesuré à sa stance aujourd'hui, à re-mesurer sur les rigs du mode plein) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 ter) le

@@ -228,7 +228,8 @@ for (const kind of RESTART_NAMES) {
     st.tactics = st.tactics || [{}, {}]; st.tactics[0] = { ...(st.tactics[0] || {}), cpa: { ...((st.tactics[0] || {}).cpa || {}), sortieBut: 'long' } };
     relancerGardien(st, gk, cfg0, { beginPass: simInternals.beginPass });
     const m0 = gk.act?.payload?.mains ?? null;
-    ok(r0.every((r) => r.taken != null && !r.w && !r.el && r.frappe) && m0 == null, `la clé absente rend l'hier au bit : remisesPied:null → ${r0.filter((r) => r.taken != null).length} remises prises sans armé ni course (${r0.map((r) => r.frappe?.kind ?? r.frappe?.type ?? '—').join('/')}), la volée du gardien redevient la frappe du sol (mains ${m0 ?? 'null'})`);
+    // la frappe est exigée au coup franc direct ; le corner peut être DÉCLINÉ (le CORT du style, un tirage) et rester au pied
+    ok(r0.every((r) => r.taken != null && !r.w && !r.el) && r0[0].frappe && m0 == null, `la clé absente rend l'hier au bit : remisesPied:null → ${r0.filter((r) => r.taken != null).length} remises prises sans armé ni course (${r0.map((r) => r.frappe?.kind ?? r.frappe?.type ?? '—').join('/')}), la volée du gardien redevient la frappe du sol (mains ${m0 ?? 'null'})`);
   }
   // (B2, remisesPied.elan.tirImmediat) LE DOUBLE GESTE D'HIER : la prise qui ne fait pas partir le ballon — le coup franc LOIN
   // (à 60 m du but : ni direct ni lancement, coupFrancLance rend false au-delà de 55 m, sans tirage) — laissait le preneur porteur ;
@@ -308,6 +309,50 @@ for (const kind of RESTART_NAMES) {
     ok(R.every((r) => depart(r) && sauts(r).length === 2 && sauts(r).every((e) => e.t - depart(r).t >= -0.01 && e.t - depart(r).t <= 0.03)), `LE MUR SAUTE au coup franc : ${R.map((r) => sauts(r).length).join('/')} sauts armés ${R.map((r) => depart(r) ? sauts(r).map((e) => '+' + (e.t - depart(r).t).toFixed(2)).join(' ') : '—').join(' | ')} s après le DÉPART du ballon (${R.map((r) => depart(r)?.type ?? '—').join('/')}), le retard de réaction (${K.retard} s) dans l'acte`);
     ok(R.every((r) => r.ev.filter((e) => e.type === 'windup' && e.move === 'sautMur').every((e) => e.retard === K.retard && Math.abs(e.anticipation - (MOVE_TIMING.sautMur.contact + K.retard)) < 0.01)), `…l'armé du saut porte le retard (anticipation = contact ${MOVE_TIMING.sautMur.contact} + retard ${K.retard} s : la scène décale l'horloge du clip, le corps tient sa pose)`);
     ok(R.every((r) => r.ev.filter((e) => e.type === 'windup' && e.move === 'sautMur' && e.skill === 'saut').length === 2 && (r.murV ?? 0) < 0.3), `…chacun arme 'sautMur' (windup skill 'saut', que l'audit des membres ignore) et reste PLANTÉ (vitesse max ${R.map((r) => (r.murV ?? 0).toFixed(2)).join('/')} m/s pendant le saut)`);
+  }
+  // (B4) LE MUR A UN CORPS ET DES JAMBES (loi12.murTrot, remisesPied.mur.corps). Mesuré avant : les deux hommes du mur étaient les deux
+  // plus PROFONDS, au pas — partis de 56 m, à 8-13 m du ballon à la prise ; et le vol TRAVERSAIT le mur qui saute (aucune loi de corps).
+  // Ici : les deux les plus près du point du mur, au trot (à leur point à la prise) ; un ballon bas qui passe sur un homme du mur est
+  // dévié (dévié-mur : il repart vers le tireur, ralenti, relevé), un ballon haut passe ; corps null : le mur traversé d'hier.
+  {
+    const murTest = (over, { elevation = 0.12, secs = 50 } = {}) => {
+      const cfgM = matchCfg(over); let { st } = playMatch(makeMatch({ full: true, seed: 7 }), secs, { cfg: cfgM });
+      const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), p = [g.x - sg * 22, 2];
+      quiet(st, cfgM); if (st.ball.owner != null) st.ball.release('perte');
+      st.ball.restart([p[0], 0.11, p[1]], { cause: 'coup-franc' }); st.restart = { type: 'coup-franc', p, team: 0, at: st.t + 3, placed: false }; st.possession = { team: 0, carrier: -1 }; st.phase = 'loose';
+      const n0 = st.events.length; let mur = null, dMur = null, trot = null, deviation = null, vAvant = null, vApres = null, depart = null, dMin = 9;
+      const og = st.pitch.ownGoal(1), gx = og.x - p[0], gz = 0 - p[1], gl = hyp(gx, gz) || 1, spot = (i) => [p[0] + (gx / gl) * 9.15 - (gz / gl) * (i === 0 ? 0.35 : -0.35), p[1] + (gz / gl) * 9.15 + (gx / gl) * (i === 0 ? 0.35 : -0.35)];
+      for (let i = 0; i < 60 * 30; i++) {
+        const had = !!st.restart; if (had && st.restart._mur && !mur) mur = [...st.restart._mur];
+        if (had && mur) trot = mur.map((id) => st.players[id]._walkF ?? null);
+        matchStep(st, 1 / 60, cfgM);
+        if (had && !st.restart) {                                            // la prise : les hommes du mur à leur point ? puis le tir FORCÉ bas (ou haut) vers le centre du mur
+          dMur = mur ? mur.map((id, k) => +hyp(st.players[id].p[0] - spot(k)[0], st.players[id].p[2] - spot(k)[1]).toFixed(2)) : null;
+          const [cx, cz] = spot(0), yaw = Math.atan2(cz - st.ball.p[2], cx - st.ball.p[0]);   // vers le premier homme du mur (le centre du mur passe entre les deux corps)
+          if (st.ball.owner != null) st.ball.release('perte');
+          const tk = st.players[mur ? (st.lastPasser ?? 0) : 0], sp = 18;
+          st.ball.strike({ speed: sp, dirYaw: yaw, elevation, spinAxis: [0, 1, 0], spinRev: 0 });   // le tir FORCÉ : la tenue de livre d'un vrai départ (pass, lastPasser) — sinon le ballon libre à 0,5 m du preneur se reprend
+          st.phase = 'flight'; st.possession = { team: 0, carrier: -1 }; st.pass = { from: tk?.id ?? 0, to: -2, lead: [cx, 0, cz], style: 'ground', t: st.t, flight: 0.6, origin: [st.ball.p[0], st.ball.p[2]] }; st.lastPasser = tk?.id ?? 0; st.lastTouch = 0;
+          depart = st.t; vAvant = [...st.ball.v];
+        }
+        if (depart != null && !deviation) { deviation = st.events.slice(n0).find((e) => e.type === 'dévié-mur') ?? null; if (deviation) vApres = [...st.ball.v]; if (mur) dMin = Math.min(dMin, ...mur.map((id) => hyp(st.ball.p[0] - st.players[id].p[0], st.ball.p[2] - st.players[id].p[2]))); }
+        if (depart != null && st.t - depart > 1.2) break;
+      }
+      return { mur, dMur, trot, deviation, vAvant, vApres, dMin: +dMin.toFixed(2), sauts: st.events.slice(n0).filter((e) => e.type === 'saut').length, lastTouch: st.lastTouch, corps: !!st._murCorps };
+    };
+    const vif = murTest({}, { elevation: 0.2 });                                       // à mi-hauteur : les tibias du mur qui saute
+    ok(!!vif.mur && vif.dMur && vif.dMur.every((d) => d <= 1.5) && vif.trot && vif.trot.every((f) => f === cfg.loi12.murTrot), `LE MUR TROTTE ET ARRIVE (B4) : les deux hommes à ${vif.dMur?.join(' / ') ?? '—'} m de leur point à la prise (≤ 1,5 ; _walkF ${vif.trot?.join('/') ?? '—'} = murTrot ${cfg.loi12.murTrot}), à 50 s de jeu`);
+    const dot = vif.vAvant && vif.vApres ? vif.vAvant[0] * vif.vApres[0] + vif.vAvant[2] * vif.vApres[2] : 1;
+    ok(!!vif.deviation && dot < 0 && vif.vApres[1] > 0 && hyp(vif.vApres[0], vif.vApres[2]) < 0.6 * hyp(vif.vAvant[0], vif.vAvant[2]) && vif.lastTouch === 1, `LE BALLON BAS RENCONTRE LE MUR : dévié-mur (h ${vif.deviation?.h ?? '—'} m, ${vif.deviation?.air ? 'en l\'air' : 'debout'}, ${vif.deviation?.vitesse ?? '—'} m/s) — il repart vers le tireur (${vif.vApres ? hyp(vif.vApres[0], vif.vApres[2]).toFixed(1) : '—'} m/s c. ${vif.vAvant ? hyp(vif.vAvant[0], vif.vAvant[2]).toFixed(1) : '—'}), relevé, le toucher au mur (lastTouch ${vif.lastTouch}) ; passage au plus près d'un homme du mur ${vif.dMin} m`);
+    const haut = murTest({}, { elevation: 0.45 });
+    const ras = murTest({});                                                             // rasant (0,12) : le ballon est au sol à 9 m
+    ok(!ras.deviation && ras.sauts === 2 && ras.lastTouch === 0, `…et le ballon RASANT passe SOUS le mur qui saute (aucun dévié-mur, ${ras.sauts} sauts, personne du mur ne le contrôle : lastTouch ${ras.lastTouch})`);
+    ok(!haut.deviation && haut.sauts === 2, `…et le ballon HAUT passe au-dessus du mur qui saute (aucun dévié-mur, ${haut.sauts} sauts)`);
+    const RP = cfg.remisesPied;
+    const sab = murTest({ remisesPied: { ...RP, mur: { ...RP.mur, corps: null } } }, { elevation: 0.2 });
+    ok(!sab.deviation, `sabotage « le mur traversé d'hier » attrapé (corps:null : le ballon bas passe à travers, aucun dévié-mur)`);
+    const sabT = murTest({ loi12: { ...cfg.loi12, murTrot: null } });
+    ok(!!sabT.mur && sabT.trot && sabT.trot.every((f) => f == null) && sabT.dMur && Math.max(...sabT.dMur) > Math.max(...(vif.dMur ?? [0])), `sabotage « le mur d'hier, au pas » attrapé (murTrot:null : sans trot, les hommes à ${sabT.dMur?.join(' / ') ?? '—'} m de leur point à la prise — plus loin qu'avec)`);
   }
   // LES SOUS-CLÉS ABSENTES RENDENT L'HIER : sans elan.sortieBut / elan.toucheLongue / mur, aucune course, aucun saut ; et un style COURT ne recule pas
   {

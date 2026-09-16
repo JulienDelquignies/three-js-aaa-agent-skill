@@ -224,16 +224,14 @@ function assignMatchJobs(st, cfg) {
         if (mur !== cfg.restartClear && r.type === 'coup-franc') {
           const og = pitch.ownGoal(p.team);
           if (hyp(og.x - rp[0], rp[1]) < 30) {
+            const MT = cfg.loi12.murTrot, gx = og.x - rp[0], gz = 0 - rp[1], gl = hyp(gx, gz) || 1, mx = rp[0] + (gx / gl) * mur, mz = rp[1] + (gz / gl) * mur;   // (B4, loi12.murTrot) LES DEUX QUI Y SERONT LES PREMIERS : les deux plus près du POINT du mur, au trot — hier les deux plus PROFONDS, au pas (partis de 56 m, à 8-13 m du ballon à la prise, mesuré)
             r._mur ??= st.players.filter((q) => q.team !== r.team && !q.keeper && q.down <= 0)
-              .sort((a, b) => hyp(og.x - a.p[0], a.p[2]) - hyp(og.x - b.p[0], b.p[2]))
+              .sort(MT ? (a, b) => hyp(mx - a.p[0], mz - a.p[2]) - hyp(mx - b.p[0], mz - b.p[2]) : (a, b) => hyp(og.x - a.p[0], a.p[2]) - hyp(og.x - b.p[0], b.p[2]))
               .slice(0, 2).map((q) => q.id);
             const im = r._mur.indexOf(p.id);
             if (im >= 0) {
-              const gx = og.x - rp[0], gz = 0 - rp[1];
-              const gl = hyp(gx, gz) || 1;
               const lat = im === 0 ? 0.35 : -0.35;
-              p.job = 'walk';
-              p.target = [rp[0] + (gx / gl) * mur - (gz / gl) * lat, 0, rp[1] + (gz / gl) * mur + (gx / gl) * lat];
+              p.job = 'walk'; p.target = [mx - (gz / gl) * lat, 0, mz + (gx / gl) * lat]; if (MT) p._walkF = MT;   // au trot : la même convention collante que les monteurs de cpa.js
               continue;
             }
           }

@@ -85,7 +85,7 @@ function planCourt(st, tk, bp, g) {
 /** Le métier du preneur pendant la course (assignMatchJobs) : recule → attend face au ballon ; court : le métier d'hier. */
 export function elanJob(st, r, tk, cfg) {
   const RP = st.full && cfg?.remisesPied;
-  if (!r.elan && r.placed === true && RP?.elan && (r.type === 'touche' || r.type === 'sortie-de-but')) poserElan(st, r, cfg);   // (A9 ter) une pose venue d'ailleurs (le ramasseur) n'avait pas de preneur : la course se pose dès qu'il est connu
+  if (!r.elan && r.placed === true && RP?.elan) poserElan(st, r, cfg);   // (B4) …le coup franc et le corner aussi : posés sans preneur connu (la pose tardive d'un porté à 9 s, le ramasseur), ils partaient sans course — mesuré au banc, la prise dans l'image de la pose   // (A9 ter) une pose venue d'ailleurs (le ramasseur) n'avait pas de preneur : la course se pose dès qu'il est connu
   if (RP?.touche && r.type === 'touche' && r.placed === true && !(r.elan?.touche && RP.elan)) {   // (A9 ter) …sauf la touche longue, qui a sa course   // LE LANCEUR DERRIÈRE LA LIGNE (Loi 15) : il se tient recul m dehors, le ballon sur la ligne à portée de main
     r.placedAt ??= st.t;                                          // une pose venue d'ailleurs (le ramasseur, une remise déjà posée) date sa patience ici
     tk.job = 'receive'; tk.target = [r.p[0], 0, r.p[1] + Math.sign(r.p[1] || 1) * (RP.touche.recul ?? 0.4)]; return true;
@@ -132,9 +132,10 @@ export function elanStep(st, dt, cfg) {
       if (hyp(spot[0] - el.spot[0], spot[1] - el.spot[1]) > 0.3) { el.spot = spot; el.phase = 'recule'; }   // le point a bougé : il y RETOURNE (en 'attend' il ne marche pas — mesuré : la course partait du vieux point, 6 refus au cône sur 6)
     }
   }
-  if (el.phase === 'recule' && hyp(tk.p[0] - el.spot[0], tk.p[2] - el.spot[1]) < (el.touche ? 0.7 : 0.4) && hyp(tk.v[0], tk.v[1]) < (el.touche ? 2 : 0.9)) el.phase = 'attend';   // (A9 ter) le lanceur arrive de loin, en marchant vite : il tourne autour de son point sans jamais y être « posé »
+  if (el.phase === 'recule' && hyp(tk.p[0] - el.spot[0], tk.p[2] - el.spot[1]) < (el.touche ? 0.7 : 0.4) && hyp(tk.v[0], tk.v[1]) < (el.touche ? 2 : 0.9)) { el.phase = 'attend'; el.attendAt = st.t; }   // (A9 ter) le lanceur arrive de loin, en marchant vite : il tourne autour de son point sans jamais y être « posé »
   if (el.near == null && d < 6) el.near = st.t;                                          // la patience court depuis que le preneur est AU ballon (le ramasseur pose parfois avant lui)
-  if (el.phase !== 'court' && st.t > Math.max(r.at, el.near ?? st.t) + (E.patience ?? 4)) { el.phase = 'court'; el.rate = 'patience'; el.t0 ??= st.t; return; }   // le garde-fou anti-gel : sans course, la prise d'hier
+  const refP = el.phase === 'attend' ? (el.attendAt ?? st.t) : (el.at ?? st.t) + 4;   // (B4) la patience court depuis l'ARRIVÉE au point (ou 4 s de marche après une pose tardive : le porté à 9 s du point) — mesuré : le coup franc du banc pris sans course, la patience consommée pendant la marche
+  if (el.phase !== 'court' && st.t > Math.max(r.at, refP, el.near ?? st.t) + (E.patience ?? 4)) { el.phase = 'court'; el.rate = 'patience'; el.t0 ??= st.t; return; }   // le garde-fou anti-gel : sans course, la prise d'hier
   if (el.phase === 'attend' && st.t >= r.at - 0.2 && !tk.act && !(el.court && el.plan == null)) {   // (B2) la passe courte attend son coéquipier
     if (el.touche) { el.phase = 'court'; el.t0 = st.t; return; }                        // (A9 ter) la touche longue : la course sans geste
     const v = (el.sortieBut ? E.sortieBut?.vitesse : null) ?? E.vitesse ?? 4, T = Math.max(0.6, d / v + 0.35);
@@ -213,6 +214,30 @@ export function elanNow(st, p, cfg, receive) {
   }
 }
 
+/** (B4, cfg.remisesPied.mur.corps) LE BALLON CONTRE LE MUR : hier le vol TRAVERSAIT le mur qui saute (aucune loi de corps pour un
+ *  ballon vif — mesuré en page, un homme sauté à 1 m d'un ballon qui passe). Pendant la fenêtre ouverte au départ du ballon (1 s), un
+ *  ballon libre et vif (≥ 3 m/s) qui passe à ≤ rayon m d'un homme du mur SOUS sa hauteur — corps m quand la détente du clip le porte
+ *  (sautMur : en l'air de 0,19 à 0,52 s après le retard), debout m sinon — est DÉVIÉ : il repart vers le tireur, ralenti (× frein) et
+ *  relevé ; le vol meurt (phase loose, pass null), le toucher est au mur (lastTouch : le corner ou la touche suivent). Le tireur vise
+ *  déjà ≥ 2,35 m au-dessus du mur (referee) : seuls les tirs bas et les lancés tendus paient. corps null : le mur traversé d'hier. */
+function murCorps(st, cfg) {
+  const C = st._murCorps; if (!C || C.done) return;                                     // done : le mur a dévié — la fenêtre reste (canTake : l'homme du mur ne contrôle pas le rebond)
+  const K = cfg.remisesPied?.mur, H = K?.corps;
+  if (!H || st.t > C.until || st.ball.owner != null) { st._murCorps = null; return; }
+  const b = st.ball.p, v = st.ball.v, sp = hyp(v[0], v[2]); if (sp < 3) return;
+  for (const id of C.ids) {
+    const q = st.players[id]; if (!q || q.down > 0) continue;
+    if (hyp(b[0] - q.p[0], b[2] - q.p[2]) > (K.rayon ?? 0.35)) continue;
+    const A = q.act, tA = A && A.payload?.kind === 'saut' ? A.t - (A.payload.retard ?? 0) : -1, air = tA >= 0.19 && tA <= 0.52;
+    if (b[1] > (air ? H : (K.debout ?? 1.85)) || (air && b[1] < (K.pieds ?? 0.25))) continue;   // le rasant passe SOUS les pieds du mur qui saute
+    const k = K.frein ?? 0.4;
+    st.ball.impulse([-v[0] * (1 + k), Math.max(2.5, sp * 0.25) - v[1], -v[2] * (1 + k)]);
+    st.phase = 'loose'; st.pass = null; st.lastTouch = q.team; st.lastPasser = q.id;
+    st.events.push({ t: +st.t.toFixed(2), type: 'dévié-mur', by: q.id, h: +b[1].toFixed(2), air, vitesse: +sp.toFixed(1) });
+    C.done = true; return;
+  }
+}
+
 /** (A9 ter) LE MUR S'ARME À LA PRISE du coup franc (referee.onTakeMatch — la voie de l'élan comme la prise d'hier) : il part quand le
  *  ballon QUITTE le preneur (murStep — direct : cette image ; lancé : au contact de la passe). */
 export function armerMur(st, id, cfg) {
@@ -225,12 +250,14 @@ export function armerMur(st, id, cfg) {
  *  chaque homme du mur arme 'sautMur' (motion-emotion : accroupi, détente, pieds décollés, mains croisées devant, réception),
  *  un acte qui possède le corps (planté) ; l'événement 'saut' pour les bancs. Clé absente : le mur d'hier, planté. */
 export function murStep(st, cfg) {
+  murCorps(st, cfg);                                                                      // (B4) le ballon contre le mur, chaque image tant que la fenêtre dure
   const M = st._murSaut; if (!M) return;
   {                                                                                       // le mur lit le DÉPART du ballon, pas le contact du geste
     if (st.t - M.armedAt > 3) { st._murSaut = null; return; }
     if (!(st.ball.owner !== M.by && hyp(st.ball.v[0], st.ball.v[2]) > 3)) return;
   }
   st._murSaut = null;
+  if (cfg.remisesPied?.mur?.corps) st._murCorps = { ids: M.ids, until: st.t + 1.0 };      // (B4) la fenêtre du corps : le vol jusqu'au mur (9,15 m à 15-25 m/s : 0,4-0,6 s), retard et détente compris
   // l'acte part À LA SECONDE du départ (le mur se plante au lieu de se lancer à la poursuite) ; le retard de réaction est DANS l'acte
   // (payload.retard : la scène décale l'horloge du clip d'autant — remiseClock —, le corps tient sa pose pendant le retard)
   const mv = MOVE_TIMING.sautMur || { duration: 0.78, contact: 0.34 }, retard = cfg.remisesPied?.mur?.retard ?? 0.12;

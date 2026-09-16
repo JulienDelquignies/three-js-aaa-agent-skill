@@ -616,6 +616,7 @@ export function tempoWait(st, cfg, team, type = null) {
 }
 
 export function canTake(st, takerId, cfg) {
+  if (st._murCorps && st.t <= st._murCorps.until && st._murCorps.ids.includes(takerId)) return false;   // (B4) l'homme du mur ne CONTRÔLE pas le coup franc qui le frappe : le ballon rencontre son corps (elan.murCorps)
   if (!st.restart) return true;
   const p = st.players[takerId];
   if (st.restart.placed === false) return false;
