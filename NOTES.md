@@ -12043,6 +12043,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      ROADMAP (LIVRÉ, SUIVANT : A10 ter relevé aidé et tenue dos au but,
      A11 bis sifflet/cartons/salut/poignée), reference/59, SKILL, README,
      docs/Interface_Style_Joueur.md (la fête selon la persona, pour l'aval).
+- 365: L'ARBITRE A UN CORPS (lot A11 bis — « d'autres animations ? » → « ok
+     vas-y suis ton plan », premier de l'ordre proposé). Le central sifflait
+     et sortait des cartons dans les événements sans aucun geste.
+     motion-arbitre.js, quatre espèces du haut du corps (famille
+     'arbitre') : siffler (la main droite au sifflet, 17 cm de la bouche,
+     coude haut), carton (le bras tendu au-dessus de la tête, +36 cm, tenu
+     1,1 s, LA CARTE dans la main : une plaque 7,5 × 10,5 cm jaune ou rouge
+     attachée au bone de la main droite, visible pendant le geste),
+     designer (le bras à l'horizontale devant, 47 cm, le tronc tourné),
+     avantage (les deux bras devant qui balaient deux fois, en courant).
+     Sim, cfg.arbitreGestes (null = hier au bit : le central court sans
+     gestes, l'empreinte des joueurs identique quoi qu'il en soit) : une
+     FILE sur st.arbitre (referee.poserGeste — le sifflet passe devant),
+     posée par adjugeFaute (sifflet puis bras vers le but attaqué, ou vers
+     le point de penalty ; le carton posé avant s'intercale : sifflet →
+     carton → bras) et par administerWhistle (le hors-jeu), les cartons
+     (tournés vers le fautif) et l'avantage (en courant) ; arbitreStep
+     dépile, arrête le corps pour le sifflet, le carton et le bras, le
+     tourne vers la direction du geste. Scène (arbitre.js) : couche de
+     geste sur le central (GestureLayer + castStrikes sur le rig du
+     squad), le haut du corps seul, entrée/sortie en 0,15 s, la carte
+     montrée au carton. Mesuré en page : au sifflet du coup franc de
+     354,4 s (graine 3) le central freine de 4 à 0,3 m/s en 0,6 s la main
+     à la bouche, puis désigne ; une faute forcée avec carton enchaîne
+     sifflet → carton (carte visible) → bras. Bancs : verify-arbitre 21/0
+     (nouveau, dans bancs.mjs : contrats, 20 styles, registre, la file au
+     sifflet, l'arrêt et la direction, l'avantage en courant, la faute
+     adjugée, la clé absente, quatre sabotages), verify-sync 9/0.
+     Captures a11bis-sifflet.png, a11bis-designer.png, a11bis-carton.png.
+     Reste : la carte est petite à l'écran (la taille réelle), le bras qui
+     désigne monte un peu haut sur le rig du squad. Référence 59.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

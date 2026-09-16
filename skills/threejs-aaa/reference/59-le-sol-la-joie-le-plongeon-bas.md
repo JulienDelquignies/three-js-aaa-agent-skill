@@ -85,6 +85,32 @@ abattus à l'engagement (a11-abattu.png). Planches : glissade, oreille, poing, p
 **Reste.** L'accolade lève un peu haut les mains (vers la tête) ; le sifflet et les cartons de l'arbitre n'ont pas
 de corps ; le salut et la poignée d'avant-match restent des clips du donneur jamais joués.
 
+## A11 bis — L'arbitre a un corps
+
+**Mesuré.** Le central courait la diagonale et accourait aux fautes (lot 185), mais il sifflait et sortait les cartons
+sans un geste. `motion-arbitre` (famille 'arbitre', quatre espèces du haut du corps) : `siffler` (la main droite au
+sifflet, 17 cm de la bouche, coude haut, tenu 0,4 s), `carton` (le bras tendu au-dessus de la tête, +36 cm, tenu 1,1 s,
+la CARTE jaune ou rouge attachée au bone de la main droite et visible pendant le geste), `designer` (le bras à
+l'horizontale devant, 47 cm, le tronc tourné vers la direction), `avantage` (les deux bras devant qui balaient deux fois,
+en courant). Contrats, 20 styles, checkClip : verify-arbitre.
+
+**La sim (`cfg.arbitreGestes`, null = hier au bit — le central court sans gestes ; l'empreinte des joueurs est la même
+dans les deux mondes, l'arbitre n'est pas dans le flux).** Une file sur `st.arbitre` (`referee.poserGeste`) : le sifflet
+passe devant. `adjugeFaute` pose le sifflet puis le bras vers le but attaqué par l'équipe du coup franc (ou vers le
+point de penalty) ; le carton, posé juste avant, s'intercale (sifflet → carton → bras) ; `administerWhistle` (le hors-jeu)
+pareil ; l'avantage se pose « en courant ». `arbitreStep` dépile un geste à la fois (`st.arbitre.geste { kind, at, until,
+dir, couleur }`), arrête le corps pour le sifflet, le carton et le bras, et le tourne vers la direction du geste.
+
+**La scène (arbitre.js).** Une couche de geste sur le central (le même rig que les joueurs, `castStrikes` sur le squad),
+le haut du corps seul (les jambes restent à la locomotion), entrée et sortie en 0,15 s, la carte montrée au carton.
+
+**Mesuré en page (graine 3).** Au coup franc de 354,4 s le central freine de 4 à 0,3 m/s en 0,6 s la main à la bouche,
+puis désigne le but attaqué (a11bis-sifflet.png, a11bis-designer.png) ; une faute forcée avec carton enchaîne sifflet →
+carton (carte visible) → bras (a11bis-carton.png).
+
+**Reste.** La carte est à sa taille réelle, donc petite à l'écran ; le bras qui désigne monte un peu haut sur le rig du
+squad ; le salut et la poignée d'avant-match restent des clips du donneur.
+
 ## Le plongeon bas (retour du balayage)
 
 **Mesuré.** À 0,43 s du plongeon bas, la main du dessus (gauche) était à 1,21 m de haut pour un ballon à 0,20 m

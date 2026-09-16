@@ -202,9 +202,13 @@
   la protestation du fautif ; persona.bras porte l'élévation des bras de toutes les familles), LE PLONGEON BAS (poitrine au sol,
   bras du dessus au ballon, délai de décollage sur le ballon lent) ; verify-contact 34/0, verify-emotion 33/0 (dans bancs.mjs),
   verify-motion 206/0 ; banc complet 742/1 (246d hérité) après les épingles sol/fete null aux sites datés ; empreinte jumelle sans les clés.
-- SUIVANT, dans l'ordre (le sweep de la note 302 bis — « tu vois d'autres animations à améliorer ? ») :
-  (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; (A10 ter) la tenue de balle dos au but (une loi moteur : le bouclier n'a pas de durée en jeu),
-  le relevé aidé ; (A11 bis) le sifflet et les cartons de l'arbitre, le salut et la poignée d'avant-match, l'accolade les mains plus basses. Et les dettes : (A2) le monde composé — re-caler
+- LIVRÉ (note 365, reference/59) : L'ARBITRE A UN CORPS (A11 bis) — motion-arbitre (siffler, carton avec la carte dans la main, designer,
+  avantage), cfg.arbitreGestes (la file des gestes sur st.arbitre : sifflet → carton → bras vers le but attaqué, l'avantage en courant,
+  null = hier au bit), la couche de geste du central dans arbitre.js ; verify-arbitre 21/0.
+- SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») : (A7 bis) le virage et le freinage ; (A2) la vitesse du pied au contact en jeu ;
+  (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; le relevé aidé ; (A10 ter) la tenue de balle dos au but
+  (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
+  la carte plus lisible. Et les dettes : (A2) le monde composé — re-caler
   les poids d'arrivée pour que la vitesse du pied au contact tienne EN JEU (audit-membres : 5-6 m/s
   composé contre 11 au clip) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 bis) la
   cadence à l'échelle de la jambe (shanon 0,76 m : 7-12 cm d'affaissement), virage et freinage,

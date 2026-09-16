@@ -768,7 +768,7 @@ export function adjugeFaute(st, cfg) {
   const seuil = cfg.loi12.jaune ?? 2;
   const fautif = st.players[F.par];
   const expulser = (extra) => {
-    st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par, ...(extra ?? {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'rouge', by: F.par, ...(extra ?? {}) }); poserGeste(st, cfg, { kind: 'carton', couleur: 'rouge', dir: st.arbitre ? Math.atan2(fautif.p[2] - st.arbitre.p[2], fautif.p[0] - st.arbitre.p[0]) : null });   // (A11 bis) le rouge montré au fautif
     // L'EXPULSION PHYSIQUE (lot 28) : le rouge SORT le corps. Il marche vers la ligne la
     // plus proche et y RESTE — et il CESSE D'EXISTER pour les cerveaux par le levier natif :
     // down géant (les ~30 filtres down<=0 du moteur le couvrent sans être touchés — une
@@ -829,7 +829,7 @@ export function adjugeFaute(st, cfg) {
       const repetee = !(u < pJ);
       fautif._ardoise = 0;
       fautif._jaunes = (fautif._jaunes ?? 0) + 1;
-      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes, ...nat, ...(repetee ? { repetee: true } : {}) });
+      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes, ...nat, ...(repetee ? { repetee: true } : {}) }); poserGeste(st, cfg, { kind: 'carton', couleur: 'jaune', dir: st.arbitre ? Math.atan2(fautif.p[2] - st.arbitre.p[2], fautif.p[0] - st.arbitre.p[0]) : null });
       if (fautif._jaunes === 2) expulser({ second: true });
     }
   } else if (seuil > 0 && fautif) {
@@ -838,12 +838,12 @@ export function adjugeFaute(st, cfg) {
     fautif._fautes = (fautif._fautes ?? 0) + (F.grave ? 2 : 1);
     if (fautif._fautes % seuil === 0) {
       fautif._jaunes = (fautif._jaunes ?? 0) + 1;
-      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes });
+      st.events.push({ t: +st.t.toFixed(2), type: 'carton', couleur: 'jaune', by: F.par, cumul: fautif._jaunes }); poserGeste(st, cfg, { kind: 'carton', couleur: 'jaune', dir: st.arbitre ? Math.atan2(fautif.p[2] - st.arbitre.p[2], fautif.p[0] - st.arbitre.p[0]) : null });
       if (fautif._jaunes === 2) expulser();
     }
   }
   if (fen > 0 && fin && !perdu && holder === F.team && st.possession.carrier >= 0) {
-    st.events.push({ t: +st.t.toFixed(2), type: 'avantage', team: F.team });
+    st.events.push({ t: +st.t.toFixed(2), type: 'avantage', team: F.team }); poserGeste(st, cfg, { kind: 'avantage', enCourant: true });   // (A11 bis) « jouez » : les deux bras devant, en courant
     return;
   }
   const { pitch } = st;
@@ -854,7 +854,7 @@ export function adjugeFaute(st, cfg) {
   const p = dansSurface ? [own.x - Math.sign(own.x) * pitch.dims.spot, 0]
     : [Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, F.p[0])), Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, F.p[1]))];
   const type = dansSurface ? 'penalty' : 'coup-franc';
-  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: type, team: F.team, p: [+p[0].toFixed(1), +p[1].toFixed(1)] });
+  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: type, team: F.team, p: [+p[0].toFixed(1), +p[1].toFixed(1)] }); poserGeste(st, cfg, { kind: 'siffler' }); poserGeste(st, cfg, { kind: 'designer', dir: dansSurface ? Math.atan2(0 - st.arbitre?.p[2] || 0, own.x - (st.arbitre?.p[0] ?? 0)) : (Math.sign(pitch.attackGoal(F.team).x || 1) > 0 ? 0 : Math.PI) });   // (A11 bis) LE SIFFLET DE LA FAUTE : le sifflet (après le carton posé plus haut il passe devant), puis le bras vers le but attaqué — ou vers le point de penalty
   st.restart = { type, p, team: F.team, at: st.t + tempoWait(st, cfg, F.team, type) + (dansSurface ? 1 : 0) };   // (217) l'espèce (coup-franc / penalty)
   if (cfg.restartCarried !== false) {
     st.restart.placed = false;
@@ -909,7 +909,7 @@ export function administerWhistle(st, cfg) {
   const { pitch } = st;
   const x = Math.max(-pitch.hx + 1.2, Math.min(pitch.hx - 1.2, w.p[0]));
   const z = Math.max(-pitch.hz + 1.2, Math.min(pitch.hz - 1.2, w.p[1]));
-  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: 'coup-franc', team: w.team, p: [+x.toFixed(1), +z.toFixed(1)] });
+  st.events.push({ t: +st.t.toFixed(2), type: 'sortie', out: 'coup-franc', team: w.team, p: [+x.toFixed(1), +z.toFixed(1)] }); poserGeste(st, cfg, { kind: 'siffler' }); poserGeste(st, cfg, { kind: 'designer', dir: Math.sign(st.pitch.attackGoal(w.team).x || 1) > 0 ? 0 : Math.PI });   // (A11 bis) le sifflet, puis le bras vers le but attaqué par l'équipe du coup franc
   st.restart = { type: 'coup-franc', p: [x, z], team: w.team, at: st.t + tempoWait(st, cfg, w.team, 'coup-franc') };   // (217) l'espèce
   st.ball.release('arrêt-de-jeu');
   st.ball.impulse([-st.ball.v[0] * 0.65, 0, -st.ball.v[2] * 0.65]);
@@ -1026,11 +1026,11 @@ export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
  *  tient le bord du rond. Trois allures (marche/trot/sprint à la distance), inertie simple.
  *  La scène le rend en noir ; le moteur n'expose que st.arbitre { p, v, yaw, job }.
  *  Clé absente : l'arbitrage désincarné d'hier au bit (st.arbitre = null). */
-export function arbitreStep(st, dt, cfg) {
+/* (A11 bis, cfg.arbitreGestes) LA FILE DES GESTES DU CENTRAL : le sifflet passe devant (il précède le carton et le bras qui désigne, comme sur le terrain) ; la scène lit st.arbitre.geste — et LE PAS DU CENTRAL suit : */ export function poserGeste(st, cfg, g) { const G = st.full && cfg.arbitreGestes, a = st.arbitre; if (!G || !a) return; const it = { kind: g.kind, dur: g.dur ?? G[g.kind] ?? 1.2, dir: g.dir ?? null, couleur: g.couleur ?? null, enCourant: !!g.enCourant }; const q = a.gestes ??= []; if (g.kind === 'siffler') q.unshift(it); else q.push(it); } export function arbitreStep(st, dt, cfg) {
   const A = cfg.arbitre;
   if (!st.full || !A) { if (st.arbitre) st.arbitre = null; return; }
   const a = st.arbitre ??= { p: [-8, 0, 6], v: [0, 0], yaw: 0, job: 'suit' };
-  const b = st.ball.p, r = st.restart;
+  const b = st.ball.p, r = st.restart; if (cfg.arbitreGestes) { if (a.geste && st.t >= a.geste.until) a.geste = null; if (!a.geste && a.gestes?.length) { const g = a.gestes.shift(); a.geste = { ...g, at: st.t, until: st.t + g.dur }; } }   // (A11 bis) le geste courant : dépilé quand le précédent finit
   let tx, tz, top = A.trot ?? 4.6;
   if (r?.type === 'engagement') {
     a.job = 'ceremonie'; const R = (st.pitch.dims.circle ?? 9.15) + 1.8;
@@ -1056,7 +1056,7 @@ export function arbitreStep(st, dt, cfg) {
   tx = Math.max(-st.pitch.hx + 1, Math.min(st.pitch.hx - 1, tx));
   tz = Math.max(-st.pitch.hz + 1, Math.min(st.pitch.hz - 1, tz));
   const dx = tx - a.p[0], dz = tz - a.p[2], d = hyp(dx, dz);
-  const want = d > 0.6 ? Math.min(top, d * 2.2) : 0;
+  const gS = cfg.arbitreGestes && a.geste && !a.geste.enCourant ? a.geste : null, want = gS ? 0 : d > 0.6 ? Math.min(top, d * 2.2) : 0;   // (A11 bis) le sifflet, le carton, le bras qui désigne se font À L'ARRÊT ; l'avantage en courant
   const wx = d > 1e-6 ? (dx / d) * want : 0, wz = d > 1e-6 ? (dz / d) * want : 0;
   const k = Math.min(1, dt * 5);                                   // l'inertie du corps (accélération bornée)
   a.v[0] += (wx - a.v[0]) * k; a.v[1] += (wz - a.v[1]) * k;
@@ -1064,7 +1064,7 @@ export function arbitreStep(st, dt, cfg) {
   const sp = hyp(a.v[0], a.v[1]);
   if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
   else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
-  a.speed = sp;
+  a.speed = sp; if (gS && gS.dir != null) { let da = gS.dir - a.yaw; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; a.yaw += da * Math.min(1, dt * 6); }   // (A11 bis) le corps se tourne vers la direction du geste (le coup franc, le fautif)
   assistantsStep(st, dt, cfg);
 }
 

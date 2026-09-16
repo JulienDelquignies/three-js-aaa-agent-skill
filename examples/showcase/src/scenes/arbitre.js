@@ -6,13 +6,16 @@ import * as THREE from 'three';
 import { CharacterController } from '../engine/character-controller.js';
 import { tintPart } from '../engine/part-tint.js';
 import { RONDO } from '../engine/rondo.js';
+import { GestureLayer } from '../engine/gesture-layer.js';
+import { rigBones } from '../engine/squad.js';
+import { castStrikes, strikeSpec } from '../engine/motion-cast.js';
 
 export function spawnArbitre(ctx) {
   return { central: spawnOfficiel(ctx, [-8, 6]), assistants: [spawnOfficiel(ctx, [20, 35], true), spawnOfficiel(ctx, [-20, -35], true)] };
 }
 
 function spawnOfficiel({ squad, scene, night, q, bake }, at, drapeau = false) {
-  const { model, groundY, clips } = squad.spawn(0);
+  const { model, groundY, clips } = squad.spawn(0), entry = squad.entries?.[0];
   model.position.set(at[0], groundY, at[1]);
   scene.add(model); model.updateMatrixWorld(true);
   tintPart(model, { match: /Shirt|Shorts|Socks/i, color: 0x17171c });
@@ -45,7 +48,19 @@ function spawnOfficiel({ squad, scene, night, q, bake }, at, drapeau = false) {
       hand.add(flag);
     }
   }
-  return { model, ctrl, groundY, flag };
+  // (A11 bis) LES GESTES DU CENTRAL — motion-arbitre (siffler, carton, designer, avantage) sur la couche de geste, le HAUT du corps
+  // seul (les jambes restent à la locomotion) ; la sim pilote (st.arbitre.geste, referee.poserGeste) ; la CARTE dans la main
+  // droite (jaune ou rouge, visible pendant le geste). Les assistants n'en ont pas.
+  let geste = null;
+  if (!drapeau && entry) {
+    const layer = new GestureLayer({ bones: rigBones(model), rest: entry.bones, hipsWrite: null });
+    const cast = castStrikes(entry, { id: 99 }, 7, null);
+    let hand = null; model.traverse((o) => { if (o.isBone && /RightHand$/i.test(o.name) && !hand) hand = o; });
+    let carte = null;
+    if (hand) { carte = new THREE.Mesh(new THREE.PlaneGeometry(0.075, 0.105), new THREE.MeshLambertMaterial({ color: 0xffd400, side: THREE.DoubleSide })); carte.position.set(0, 0.09, 0.02); carte.visible = false; hand.add(carte); }
+    geste = { layer, cast, carte, at: null, t: 0, spec: null, w: 0 };
+  }
+  return { model, ctrl, groundY, flag, geste };
 }
 
 export function updateArbitre(trio, state, step, top) {
@@ -64,4 +79,18 @@ function updateOfficiel(aR, aS, step, top) {
   aR.model.position.copy(aR.ctrl.pos);
   aR.ctrl.yaw = aR.ctrl.yawFor(Math.cos(aS.yaw), Math.sin(aS.yaw));
   aR.model.rotation.y = aR.ctrl.yaw;
+  // (A11 bis) le geste courant de la sim : commencé à son heure (at), le haut du corps entre en 0,15 s et rend en 0,15 s ; la carte se montre au carton
+  const G = aR.geste; if (!G) return;
+  const g = aS.geste;
+  if (g && g.at !== G.at) {
+    const spec = strikeSpec(G.cast, g.kind);
+    if (spec) { G.layer.begin(spec); G.spec = spec; G.at = g.at; G.t = 0; if (G.carte) { G.carte.visible = g.kind === 'carton'; G.carte.material.color.setHex(g.couleur === 'rouge' ? 0xe0201c : 0xffd400); } }
+  }
+  if (G.spec) {
+    G.t += step;
+    const T = G.spec.duration, tau = 0.15;
+    G.w = G.t < T ? Math.min(1, G.w + step / tau) : Math.max(0, G.w - step / tau);
+    G.layer.apply(Math.min(T, G.t), 0, G.w);
+    if (G.t >= T && G.w <= 0.02) { G.layer.end(); G.spec = null; if (G.carte) G.carte.visible = false; }
+  }
 }

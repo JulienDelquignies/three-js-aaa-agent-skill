@@ -25,6 +25,7 @@ import { KEEPER_KINDS, generateKeeper, checkKeeperGen } from './motion-keeper.js
 import { RESTART_KINDS, generateRestart, checkRestartGen } from './motion-restart.js';
 import { CONTACT_KINDS, generateContact, checkContactGen } from './motion-contact.js';
 import { EMOTION_KINDS, generateEmotion, checkEmotionGen } from './motion-emotion.js';
+import { ARBITRE_KINDS, generateArbitre, checkArbitreGen } from './motion-arbitre.js';
 
 /** LE REGISTRE : geste → { family, generate(P, opts), check(spec, P, opts) }. */
 export const GENERATORS = {};
@@ -37,6 +38,7 @@ for (const k of Object.keys(KEEPER_KINDS)) GENERATORS[k] = { family: 'keeper', g
 for (const k of Object.keys(RESTART_KINDS)) GENERATORS[k] = { family: 'restart', generate: (P, o) => generateRestart(k, P, o), check: (spec, P) => checkRestartGen(spec, P, k) };
 for (const k of Object.keys(CONTACT_KINDS)) GENERATORS[k] = { family: 'contact', generate: (P, o) => generateContact(k, P, o), check: (spec, P) => checkContactGen(spec, P, k) };
 for (const k of Object.keys(EMOTION_KINDS)) GENERATORS[k] = { family: 'emotion', generate: (P, o) => generateEmotion(k, P, o), check: (spec, P) => checkEmotionGen(spec, P, k) };   // (A11) la joie, l'accolade, l'applaudissement, la protestation, la glissade
+for (const k of Object.keys(ARBITRE_KINDS)) GENERATORS[k] = { family: 'arbitre', generate: (P, o) => generateArbitre(k, P, o), check: (spec, P) => checkArbitreGen(spec, P, k) };   // (A11 bis) le sifflet, le carton, le bras qui désigne, l'avantage
 export const GENERATED_KINDS = Object.keys(GENERATORS);
 
 /** Générer un geste par son nom (null si le geste n'est pas généré). */
