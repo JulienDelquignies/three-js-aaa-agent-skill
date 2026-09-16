@@ -1036,7 +1036,7 @@ export class Rondo {
           pl._diveStart = { p: [pl.sim.p[0], pl.sim.p[2]], yaw: s.yaw, rate, tA: antic / rate, antic, delay: Math.max(0, Math.min(0.6, act.payload.cross.t - antic)) };
         } const wait = !!(pl._diveStart && act?.payload?.skill === 'plongeon' && t < pl._diveStart.delay);   // (A10 bis) le délai de décollage : le corps reste au gardien posé
         const target = done || wait || pl.gestureLayer.spec?.upperOnly ? 0 : (act?.payload?.skill === 'plongeon' || act?.payload?.enCourse || pl._fallOwns || pl.gestureLayer.spec?.ownsLegs ? 1 : Math.max(byArrive, byContact));   // …et la chute au sol (lot A10) ; (A11) un geste du HAUT (célébration en courant, protestation) laisse les jambes à la foulée, la glissade les possède
-        pl._wLegs = shield ? 0 : (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, dtP / 0.05);   // le bouclier laisse les jambes à la foulée
+        pl._wLegs = shield ? 0 : (pl._wLegs ?? 0) + (target - (pl._wLegs ?? 0)) * Math.min(1, dtP / (act?.payload?.kind === 'skill' ? 0.02 : 0.05));   // le bouclier laisse les jambes à la foulée ; (passements, note 385) un geste technique prend ses jambes en 0,06 s, pas 0,17 : l'entrée du passement (0,15 s) levait le pied à moitié (cheville 0,21 m au-dessus du ballon au premier tour, 0,26-0,30 aux suivants)
         // le HAUT s'arme VITE mais pas d'un coup : l'entrée sans rampe a été mesurée au sweep —
         // +54° d'élévation de bras en 50 ms (~1 086°/s), 122 fois en 2 min, un pop visible à
         // chaque geste. 0,12 s d'entrée = ≤ 25° par 50 ms, sous le seuil perceptible.

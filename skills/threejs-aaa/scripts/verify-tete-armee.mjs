@@ -13,7 +13,7 @@ const hyp = Math.hypot;
 // LA FIXTURE : le monde vidé (tous parqués loin), un centre lobé depuis l'aile vers l'entrée de la surface ; l'attaquant est posé au
 // point où le vol REDESCEND à h m (1,9 : la tête debout ; 2,6 : la tête sautée) — ou y court depuis derrière à `course` m/s.
 const centre = (over, { h = 1.9, course = 0, back = 0, apex = 5.8 } = {}) => {
-  const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  repli: false, retournee: null, bouclier: null /* retournee null DATÉ 16/09 (C1, note 376) : l'attaquant posé dos au but volait la fixture en ciseau */, ...over });
+  const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  repli: false, retournee: null, bouclier: null /* retournee null DATÉ 16/09 (C1, note 376) : l'attaquant posé dos au but volait la fixture en ciseau */, ...over });
   for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
   st.ball.release('arrêt-de-jeu');
   for (const q of st.players) { q.p[0] = -30 - (q.id % 10) * 2; q.p[2] = -25; q.v[0] = 0; q.v[1] = 0; q.act = null; }
@@ -68,7 +68,7 @@ console.log('\n— (c) le corps court sous son armé (payload.mobile : movement 
 }
 console.log('\n— (d) le sabotage : armee:null rend la reprise réactive d\'hier (aucun windup) —');
 {
-  const T = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, }).tete;
+  const T = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, }).tete;
   const r = centre({ tete: { ...T, armee: null } }, { h: 1.9, apex: 2.1 });
   ok(`sabotage « la tête réactive d'hier » attrapé : aucun windup 'tete' (${r.windup ? 'UN' : 'aucun'}), la tête se prend quand même au contact (${r.tete?.mode ?? '—'}, arme ${r.tete?.arme ?? 'absent'})`,
     !r.windup && !!r.tete && r.tete.arme == null);

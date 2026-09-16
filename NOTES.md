@@ -12792,3 +12792,25 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - **Un rouge qui n'est pas du jour** : verify-loi12 (12/2, « le MUR se TIENT », pas enrôlé dans bancs.mjs) est rouge à l'identique sur
   le moteur ET le banc du 1e05e28 (§ 7) : hérité, hors lot.
 - **Dettes** : la tête défensive debout ; le râteau à la relance ; le gardien désigne sans crier ; la feinte est rare (l'appel posé).
+
+- 385: LES PASSEMENTS DE JAMBES NOURRIS (retour « tu peux corriger les passements ? » ; cfg.passements ; skills-sim.maybePassement,
+  rondo-sim stepGestures (le porté au pin pendant l'armé), movement (le regard tenu à terme) ; verify-passements 6/0 ; reference/52 §
+  passements nourris).
+
+- **Le diagnostic avant de corriger** : planche (1 et 3 tours) et page (LOD coupé, fixture face-à-face) — le cercle est bon (cheville à
+  25-30 cm au-dessus du ballon, poids des jambes 0,56 → 1 en 0,2 s, le pied qui cercle masqué du verrou par pick.foot). Deux vrais
+  défauts : (1) le ballon calé au contact LÀ OÙ IL TRAÎNAIT (0,31-0,35 m devant) et non au point du clip (0,40 / 0,05) — le pied
+  d'appui finissait dans le ballon (7 cm du centre) ; (2) le geste AFFAMÉ : 1 en 15 min sur 3 graines. L'entonnoir (sonde sur une copie
+  du moteur, 600-1 000 appels/300 s) : ballon > 0,6 m 256-541, pas de jockey 176-319, hors demi-front 95-151, charge 5-31, tirages 5-10 à
+  dribM 0,03-0,48 — et 0 succès.
+- **La loi** (sous clé) : foe 3,5 ; le porteur posé FIXE un jockey à 70-100° (regard tenu 0,45 s, p._regardUntil relâché par movement)
+  et part une fois face (0,10 s après, 62°) ; charge ≤ 2,6 ; ballon ≤ 0,75 ; tirage sur max(0,35, dribM) × … × 2 ; payload.pin au
+  point du clip — stepGestures le porte pendant l'armé (tau 0,04 : l'escorte le laissait où il était), skillFollowStep le cale ensuite ;
+  mesuré 0,6 cm du point au contact (8,1 avant, 8,4 quand seul le suivi calait).
+- **Mesuré** : 12 passements sur 4 × 300 s (3 par match ; tours 1/2/3 : 8/3/1 ; 10 posés ; 4 morsures) c. 1 par 15 min ; graine 3 : 5.
+- **Épingles** : passements: null sur 42 bancs datés (203 sites) ; le jumeau (…, petitsGestes, passements null) = base au bit.
+- **La scène** : un geste technique prend ses jambes en 0,06 s au lieu de 0,17 (le lissage de _wLegs, Rondo) — l'entrée du passement
+  (0,15 s) levait le pied à moitié : cheville à 0,21 m au-dessus du ballon au premier tour c. 0,26-0,30 aux suivants (trace en page,
+  LOD coupé) ; après : 0,26 m à 6 cm du ballon dès 0,10 s. Le ballon glisse ~15 cm vers le point du clip pendant l'entrée (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route).
+- **Captures** : s11-passement-cercle (le pied gauche au-dessus du ballon calé, le jockey posté).
+- **Dettes** : le ballon > 0,75 m (la touche de rappel) ; les défenseurs chargent (la posture jockey est du moteur) ; le lancé d'hier.

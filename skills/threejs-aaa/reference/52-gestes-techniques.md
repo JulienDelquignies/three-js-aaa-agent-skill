@@ -68,11 +68,34 @@ les yeux sont libres).
 - `verify-rondo` 40/40 (seuils recalibrés consignés), `verify-animkit` 96/96 (les trois clips +
   miroirs), audit composé 15/0, verrou de balance : record 9,1, 52,8 actions/partie.
 
+## Les passements nourris (`cfg.passements`, note 385 — verify-passements 6/0)
+
+Diagnostic du 16/09 (« tu peux corriger les passements ? ») : le CERCLE du générateur est bon — planche et page (LOD coupé), la
+cheville passe à 25-30 cm au-dessus du ballon, le pied qui cercle est masqué du verrou par `pick.foot` —, mais le geste était
+AFFAMÉ (1 passement en 15 min de match sur 3 graines) et le ballon était CALÉ LÀ OÙ IL TRAÎNAIT au contact, pas au point que le
+clip attend ([0,05 ; −0,40] dans le repère du corps) : le pied d'appui finissait dans le ballon (mesuré en page : 7 cm du centre).
+L'entonnoir mesuré sur 300 s (600-1 000 appels de `maybePassement` aux ticks de décision) : le ballon à plus de 0,6 m (256-541 refus —
+le porteur conduit ballon devant), aucun jockey à 0,9-2,6 m (176-319), le jockey hors du demi-front de 70° (95-151 — le porteur
+reçoit hors du presseur, § 10 : il lui tourne le dos), la charge au-delà de 1,5 m/s (5-31 — les défenseurs du moteur pressent plus
+qu'ils ne jockeyent), 5-10 tirages restants à un appétit de dribble de 0,03-0,48 (la cadence et le tiers propre l'éteignent).
+
+- **La loi** (`passements { spot 0,40, lat 0,05, face 100, foe 3,5, fixe 0,45, charge 2,6, ballon 0,75, envie 2, plancher 0,35 }`) :
+  le jockey jusqu'à `foe` m ; le porteur POSÉ (< 2,5 m/s) dont le jockey est au demi-front large (70-`face` °) le FIXE — le regard
+  tenu (`p._regard`, à terme `p._regardUntil` : la voie du § 7, relâchée seule par `movement`) pendant `fixe` s — et le passement part
+  une fois face (mesuré : 0,10 s après le regard, relèvement 62°) ; une charge jusqu'à `charge` m/s se fige quand même (au-delà : le
+  râteau) ; le ballon jusqu'à `ballon` m ; le tirage sur `max(plancher, dribM) × (0,32 + 0,42 flair) × gesteF² × envie` ; et LE BALLON
+  RAMENÉ AU POINT DU CLIP dès l'entrée (`payload.pin` = spot devant, lat du côté du pied ; `stepGestures` le porte pendant l'armé, vite (tau 0,04) —
+  l'escorte le laissait où il traînait —, `skillFollowStep` le cale ensuite) : à 0,6 cm du point au contact (8,1 cm avant).
+- **Mesuré** : 3 passements par match de 300 s sur 4 graines (1, 2 et 3 tours, 10 posés sur 12, 4 jockeys qui mordent) contre 1 par
+  15 min hier ; graine 3 : 5 (2 posés, 2 morsures) c. 1.
+- **`passements: null`** = hier au bit (les portes d'hier, le ballon calé au contact, aucun regard tenu) ; épinglé sur les bancs datés.
+- **Dettes** : le ballon à plus de 0,75 m reste refusé (le porteur conduit loin devant : une touche de rappel serait le vrai geste) ;
+  les défenseurs chargent plus qu'ils ne jockeyent (la posture jockey est du moteur) ; le passement lancé garde ses lois d'hier.
+
 ## Dettes connues
 
 - La semelle des graines très pressées casse toujours (`broke: 'pressé'`) — la tenue complète
   n'existe que sur les graines calmes ; un jour, le porteur devrait CHOISIR un endroit calme.
-- Pas encore de roulette, passement de jambes, petit pont — le vocabulaire est extensible par
-  ligne de table + clip + déclencheur situé.
+- ~~Pas encore de roulette, passement de jambes, petit pont~~ — livrés (A4), et les passements nourris le 16/09 (ci-dessus).
 - L'audit membre ignore les gestes techniques (filtre `!x.skill`) : leurs clauses composées
   propres (semelle SUR le ballon en monde, pied du râteau au contact) restent à écrire.

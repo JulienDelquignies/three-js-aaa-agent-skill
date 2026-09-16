@@ -231,21 +231,24 @@ export function maybePassement(st, c, cfg) {
   // LE PASSEMENT LANCÉ (l'espèce qui manquait à l'œil — « je n'ai toujours pas vu de passement ») :
   // en course sur un jockey qui RECULE devant, le cercle se joue PAR-DESSUS le ballon qui roule
   // (pas de pin) ; à l'arrêt, le cercle classique sur ballon calé. Au-delà de 6 m/s : sprint, non.
-  const enCourse = c.speed > 2.5;
+  const enCourse = c.speed > 2.5, KP = st.full ? cfg.passements : null;   // (passements, note 385) le jockey plus loin, le porteur qui FIXE son vis-à-vis, le ballon calé au point du clip, l'envie ; null : hier
   if (c.speed > 6.0) return false;
-  if (d2(c.p, st.ball.p) > 0.6) return false;
+  if (d2(c.p, st.ball.p) > (KP?.ballon ?? 0.6)) return false;   // (passements) le ballon jusqu'à ballon m : l'entrée le ramène au point du clip (mesuré : 256-541 refus « ballon loin » sur 600-1000 appels, le porteur conduit ballon devant)
   let foe = null, fd = Infinity;
   for (const q of st.players) {
     if (q.team === c.team || q.down > 0) continue;
     const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
   }
-  if (!foe || fd < K.passementFoe[0] || fd > K.passementFoe[1]) return false;
+  if (!foe || fd < K.passementFoe[0] || fd > (KP?.foe ?? K.passementFoe[1])) return false;
   const bear = situation(c.p, c.yaw, foe.p, [0, 0], 0.11).bearing;
-  if (bear > 70) return false;                                    // il jockeye le DEMI-FRONT (l'évasion fait
+  if (bear > 70) {   // IL FIXE SON VIS-À-VIS : posé, le jockey au demi-front large (≤ face °), le porteur se tourne vers lui (le regard tenu, fixe s) — le passement part une fois face (mesuré : 165 images/300 s de jockey au demi-front étroit, le porteur reçoit hors du presseur)
+    if (KP && bear <= (KP.face ?? 100) && c.speed < 2.5 && c._regardUntil == null) { c._regard = Math.atan2(foe.p[2] - c.p[2], foe.p[0] - c.p[0]); c._regardUntil = st.t + (KP.fixe ?? 0.45); }
+    return false;
+  }                                    // il jockeye le DEMI-FRONT (l'évasion fait
   //                                                                 regarder un peu ailleurs — 55° ne laissait
   //                                                                 que 6 images alignées en 120 s, mesuré)
   const closing = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
-  if (closing > 1.5) return false;                                // il charge : c'est l'affaire du râteau
+  if (closing > (KP?.charge ?? 1.5)) return false;               // il charge : c'est l'affaire du râteau — (passements) jusqu'à charge m/s le passement le fige quand même (mesuré : 476 images de face-à-face sur 300 s, 56 sous 1,5 m/s — les défenseurs du moteur pressent plus qu'ils ne jockeyent)
   // une sortie latérale au moins est libre (le passement PRÉPARE un départ de côté)
   const sides = [c.yaw + 0.9, c.yaw - 0.9].filter((a) => {
     const ex = c.p[0] + Math.cos(a) * 1.5, ez = c.p[2] + Math.sin(a) * 1.5;
@@ -254,7 +257,7 @@ export function maybePassement(st, c, cfg) {
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
   if (enCourse && closing > 0.6) return false;                    // lancé : le jockey RECULE devant, il ne charge pas
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1)) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
   // LES TOURS ET LA SORTIE (la variété demandée : « Mancini, Reveillère… un nombre de tours
@@ -287,10 +290,13 @@ export function maybePassement(st, c, cfg) {
   const move = MOVE_TIMING[clip];
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
   startGesture(c, { id: clip, ...move }, {
-    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw, sortie, tours: enCourse ? 1 : tours, enCourse, v0: c.speed, foeId: foe.id, ballMax: 0 },
+    payload: { kind: 'skill', skill: 'passement', pick: { foot }, ownsBody: true, exitYaw, sortie, tours: enCourse ? 1 : tours, enCourse, v0: c.speed, foeId: foe.id, ballMax: 0,
+      /* (passements) LE BALLON CALÉ AU POINT DU CLIP : dès l'entrée, spot m devant, lat m du côté du pied (le clip le cercle à [0,05 ; −0,40]) — calé là où il traînait au contact, le pied d'appui finissait DANS le ballon (mesuré en page : 7 cm du centre) */
+      ...(KP && !enCourse ? { pin: [c.p[0] + Math.cos(c.yaw) * (KP.spot ?? 0.40) - Math.sin(c.yaw) * (KP.lat ?? 0.05) * (foot === 'right' ? 1 : -1), c.p[2] + Math.sin(c.yaw) * (KP.spot ?? 0.40) + Math.cos(c.yaw) * (KP.lat ?? 0.05) * (foot === 'right' ? 1 : -1)] } : {}) },
     log: st.gestures,
   });
   (c._skillCd ??= {}).passement = st.t + K.passementCd;
+  if (KP) { c._regard = null; c._regardUntil = null; }   // il a fixé, il joue
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, move: clip, foot, skill: 'passement', anticipation: move.contact });
   c._dribAt = st.t;   // (219) la cadence du dribble
   st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement', by: c.id, tours: enCourse ? 1 : tours, sortie, enCourse, foe: +fd.toFixed(2), bearing: +bear.toFixed(0) });
@@ -595,7 +601,7 @@ export function skillContactNow(st, p, cfg) {
   } else if (A.skill === 'passement') {
     // la jambe passe PAR-DESSUS : le ballon se fige (calé) ou ROULE (lancé — on n'épingle pas un
     // ballon en course), le jockey d'en face mord (le buste a vendu)
-    if (!A.enCourse) A.pin = [st.ball.p[0], st.ball.p[2]];
+    if (!A.enCourse && !A.pin) A.pin = [st.ball.p[0], st.ball.p[2]];   // (passements) le point du clip est déjà posé à l'entrée ; sans la clé : là où il traîne, comme hier
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];

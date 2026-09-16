@@ -42,7 +42,7 @@ function stepGestures(st, dt, cfg) {
         // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
         // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
         if (!(st.full && cfg.porteAnticipe)) st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });   // …sinon le porté ANTICIPE, après le glissement (plus bas)
-      } else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
+      } else if (st.ball.owner === p.id && p.act.payload?.pin) st.ball.carry(p.act.payload.pin, dt, { tau: 0.04 }); /* (passements, note 385) le ballon ramené AU POINT DU CLIP dès l'entrée, vite (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route) — l'escorte le laissait où il traînait jusqu'au contact */ else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
       // et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se règlent pendant l'armé, comme un vrai joueur ajuste ses derniers
       // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
       if (p.act.payload?.stance) {

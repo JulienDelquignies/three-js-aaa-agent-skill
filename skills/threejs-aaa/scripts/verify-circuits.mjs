@@ -25,7 +25,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     axe(0.5, 0.7, 1.3) === 1 && axe(0.5, -1, 1) === 0);
   const run = (tactics) => {
     const st = makeMatch({ full: true, seed: 3, tactics });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20 });
     for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
     return JSON.stringify(st.events);
   };
@@ -36,7 +36,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 2. la LOI DU COUREUR (fixture déterministe) : évaluable, il gagne
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20 });
   for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   const c = st.players[st.possession.carrier];
   const sgn = Math.sign(st.pitch.attackGoal(c.team).x || 1);
@@ -64,7 +64,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     const lat = [];
     for (const seed of [1, 3, 5, 7]) {   // 3 → 4 graines (lot 51 : 3 services poolés = bruit)
       const st = makeMatch({ full: true, seed, tactics });
-      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20, ...cfgExtra });
+      const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20, ...cfgExtra });
       for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
       const bursts = st.events.filter((e) => e.type === 'burst' && e.kind === 'appel-profond');
       for (const p of st.events.filter((e) => e.type === 'pass')) {

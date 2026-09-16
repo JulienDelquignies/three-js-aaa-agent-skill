@@ -16,7 +16,7 @@ let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 
 const L12 = { avantage: 1.8, contact: 0.9, mur: 9.15 };
-const CFG = () => matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20, loi12: { ...L12 } });
+const CFG = () => matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20, loi12: { ...L12 } });
 
 // un état de match POSÉ, en phase carry (le juge lit le porteur) — chaque fixture part frais
 const carryState = (seed) => {
@@ -123,7 +123,7 @@ const meuteAuPoint = (st, rp, og) => {
   // sabotage nommé « penalty déguisé » : loi12:false → le rayon retombe au réduit (restartClear 3 m)
   const st2 = carryState(3);
   meuteAuPoint(st2, [...rp], og);
-  for (let i = 0; i < 6.5 * 60; i++) matchStep(st2, 1 / 60, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20, loi12: false }));
+  for (let i = 0; i < 6.5 * 60; i++) matchStep(st2, 1 / 60, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20, loi12: false }));
   const ds2 = st2.players.filter((q) => q.team === 1 && !q.keeper).map((q) => Math.hypot(q.p[0] - rp[0], q.p[2] - rp[1])).sort((a, b) => a - b);
   ok(`sabotage « penalty déguisé » attrapé (loi12:false : la meute reste à ${ds2[0]?.toFixed(1)} m < 8,4 — un coup franc sans mur, nommé)`,
     ds2[0] < 8.4 && !st2.restart?._mur);
@@ -135,7 +135,7 @@ const meuteAuPoint = (st, rp, og) => {
   const st = carryState(3);
   st._faute = { t: st.t - 5, par: 99, sur: 1, team: 0, p: [4, 4] };
   const evBase = st.events.length;
-  for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20, loi12: false }));
+  for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20, loi12: false }));
   ok(`sabotage « arbitre aveugle » attrapé (loi12:false : st._faute inerte après 1 s, aucun sifflet ni avantage)`,
     !!st._faute && !st.events.slice(evBase).some((e) => e.type === 'avantage' || (e.type === 'sortie' && e.out === 'coup-franc')));
 }
@@ -143,7 +143,7 @@ const meuteAuPoint = (st, rp, og) => {
   // « avantage myope » : avantage:0 → sifflet IMMÉDIAT même si le lésé porte (la fenêtre EST la loi)
   const st = carryState(3);
   st._faute = { t: st.t, par: 99, sur: st.possession.carrier, team: st.possession.team, p: [2, 2] };
-  adjugeFaute(st, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20, loi12: { ...L12, avantage: 0 } }));
+  adjugeFaute(st, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20, loi12: { ...L12, avantage: 0 } }));
   ok(`sabotage « avantage myope » attrapé (avantage:0 → sifflet immédiat malgré le lésé porteur — la fenêtre est la clémence, nommée)`,
     st.restart?.type === 'coup-franc' && !st.events.some((e) => e.type === 'avantage'));
 }
@@ -169,7 +169,7 @@ const meuteAuPoint = (st, rp, og) => {
     !!stTrouve);
   // …et loi12:false reste muet sur la MÊME graine, même fenêtre (le monde d'hier)
   const st0 = makeMatch({ full: true, seed: graine ?? 1 });
-  const cfg0 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null,  shotRange: 20, loi12: false });
+  const cfg0 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null,  shotRange: 20, loi12: false });
   const fin = stTrouve ? stTrouve.t : 60;
   for (let i = 0; i < Math.ceil(fin * 60) + 60; i++) matchStep(st0, 1 / 60, cfg0);
   ok(`…et l'arbitre aveugle reste MUET sur la même fenêtre (loi12:false, graine ${graine} : ${st0.events.filter((e) => e.type === 'faute').length} faute = 0)`,

@@ -516,6 +516,7 @@ export function movePlayers(st, dt, cfg) {
       // LUI-MÊME sur le ballon — le pas chassé a toujours une cible de regard.
       p.yawWant = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
     }
+    if (p._regardUntil != null && st.t > p._regardUntil) { p._regard = null; p._regardUntil = null; }   // (passements) le regard tenu À TERME : le porteur qui fixe son vis-à-vis relâche seul
     if (p._regard != null) p.yawWant = p._regard;   // (A11 ter, ceremonie.js) LE REGARD TENU : la file des poignées défile face à la rangée, le salut se tourne vers la tribune — null : l'hier au bit
     // A TURN TAKES TIME — this is the ONE place a facing may change, and it can only change at a
     // bounded rate. A first touch used to write `p.yaw = atan2(...)` directly: the man was simply

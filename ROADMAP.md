@@ -280,6 +280,10 @@
   regard tenu), le dégagement armé en teteDefensive (même heure que tete), le contrôle orienté (controleOriente joué quand la sim tourne
   le receveur de ≥ 45°), la feinte d'appel du soutien posé (feinteAppel, haut du corps seul) ; null = hier au bit. Animations_A_Faire
   est ÉPUISÉ (§ 1-10 livrés).
+- LIVRÉ (note 385, reference/52 § passements nourris, verify-passements 6/0) : LES PASSEMENTS DE JAMBES NOURRIS (cfg.passements) —
+  le cercle était bon, le geste affamé (1 en 15 min : le porteur reçoit hors du presseur et conduit ballon devant, les défenseurs
+  chargent) et le ballon calé où il traînait : le jockey jusqu'à 3,5 m, le porteur posé qui fixe son vis-à-vis (regard tenu), la charge
+  jusqu'à 2,6 m/s, l'envie sur un plancher, le ballon ramené au point du clip dès l'entrée (0,6 cm au contact) ; 3 par match ; null = hier.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
