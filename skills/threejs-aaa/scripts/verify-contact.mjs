@@ -22,7 +22,7 @@ const RP_1609 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4 }, volee
 const SOL_1609 = { tenue: 0.9, corps: 0.9 };   // sol d'HIER sans aide — DATÉ 16/09 (relevé aidé, note 369 : sol.aide)
 const TETE_1609 = { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9 };   // tete d'HIER sans armee — DATÉ 16/09 (lot B3, note 373)
 const LOI12_1609 = { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 2 };   // loi12 d'HIER sans murTrot — DATÉ 16/09 (lot B4, note 374 ; viragesLisses/plantVitesse null : B5/B6, même note — mesuré : le lacet lissé isole le fauché de la graine 7, personne à 8 m)
-const B_1609 = { tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null };   // les clés des lots B, éteintes : chaque clause de flux mesure le monde de son jour
+const B_1609 = { tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null };   // les clés des lots B, éteintes : chaque clause de flux mesure le monde de son jour
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
 const P = SHANON_PROFILE;
