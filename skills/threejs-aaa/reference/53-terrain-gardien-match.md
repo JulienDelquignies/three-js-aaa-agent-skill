@@ -94,6 +94,35 @@ la sollicite peu : sur 6 matchs, 35 vols hauts redescendent entre 1,6 et 2,3 m d
 16,5 m de la ligne, 4 à moins de 8 m dont 2 prenables (le gardien à temps, personne dessus). Les centres de ce
 moteur sont tendus ; la sortie attend des centres lobés. Clé `null` : hier au bit (empreinte jumelle).
 
+## Le poing (C3 — `motion-keeper` sortiePoing, `sortie-aerienne.js` poing, `match-sim` onDive ; Animations_A_Faire § 3)
+
+La sortie aérienne (B10) prenait à deux mains ou claquait ; elle ne SORTAIT pas dans la foule. Ici :
+
+- **Le geste généré** `sortiePoing` (motion-keeper, `jump` + `punch` : 1,32 s, contact 0,62, saut 0,5 m, un genou (gauche) levé à
+  72° dans la détente — la jambe de protection —, les deux bras montés serrés à 186° d'élévation dès l'impulsion (les poings
+  à 13 cm l'un de l'autre au contact, 29 cm au-dessus de la tête), le COUP : les bras basculent de 50° à −20° d'avant sur
+  0,16 s autour du contact (les poings traversent le ballon de 36 cm vers l'avant), les coudes tenus à 30°, la retombée sur
+  les appuis, les bras qui redescendent lentement (178° en 0,3 s faisaient 14 rad/s au bras : mesuré, refusé par checkClip).
+  Contrat (`checkKeeperGen`, K.punch) : poings serrés ≤ 34 cm, le coup à travers ≥ 8 cm, le genou ≥ +25 cm, plus les règles du
+  saut (bassin ≥ +45 cm, la retombée sur les appuis, la fin debout sur place) ; verify-motion (toutes les espèces × 40
+  graines) le tient.
+- **La décision** (`sortie-aerienne.js`) : le premier attaquant au point se calcule à chaque point du vol (`duel` 7 m/s) ;
+  s'il y sera avant le ballon ET avant le gardien, le balayage s'arrête là (au-delà, le vol prédit est une fiction : le
+  rebond après la tête ne se réclame pas — mesuré : le gardien réclamait le rebond derrière la tête de l'attaquant) ; une
+  sortie DÉCIDÉE tient (on ne lâche que si l'attaquant est nettement premier, −0,3 s — l'hésitation image par image laissait
+  le gardien à mi-chemin) ; et si l'attaquant arrive AVEC le ballon (à moins de `poing` 0,4 s après lui), l'acte armé est
+  `sortiePoing` (payload.poing) au lieu de plongeonPrise.
+- **Le contact** (`onDive`) : sous `payload.poing` la prise est refusée, le ballon est DÉGAGÉ du poing (l'impulsion : 0,7 × la
+  vitesse renversée + `poingV` 12 m/s vers le terrain, + 4,5 m/s de haut, 3 m/s de côté) — événement `arrêt` mode 'poing',
+  mains 2 — et le gardien retombe sur ses appuis (down 0,5 comme la prise).
+- **La scène** (Rondo.js `_applyDiveWarp`) : sous payload.poing, les DEUX poings vont sous le ballon (`_armsToBall` ±7 cm, −12 cm) avec
+  l'enveloppe du gant d'hier (mesuré en page : poing droit à 17 cm du centre du ballon à l'image de l'arrêt ; avant : 0,5 m).
+
+Contrat (verify-sortie-aerienne, clause c bis) : un attaquant lancé à 6 m/s depuis 10 m du point (il y arrive après le
+gardien, avec le ballon) — la sortie se décide, l'acte est sortiePoing, 'arrêt' poing à deux mains, le ballon repart vers le
+terrain à 8,9 m/s (v·x) et en l'air, jamais tenu ; l'attaquant posé AU point : aucune sortie (la tête) ; sans attaquant : la
+prise à deux mains d'hier (clause a). Clé `sortieAerienne` null : hier au bit (le poing vit sous elle).
+
 ## Dettes nommées
 
 - Corner encore rare (0 sur les graines de banc — la clause demande ≥ 2 ESPÈCES de remise) ;
@@ -101,7 +130,7 @@ moteur sont tendus ; la sortie attend des centres lobés. Clé `null` : hier au 
 - Pas de hors-jeu (loi du format 5+1) ; il viendra avec le 11c11 et `FULL`.
 - ~~Le gardien ne sort jamais (depthMax 2,6) : pas de libéro, pas de un-contre-un sorti.~~ — le libéro (cfg.libero), le
   un-contre-un (keeperDecide 'sortie', lot 104) et la sortie aérienne (B10) sont venus depuis.
-- La sortie aérienne n'a pas de POING : le ballon hors des gants se claque par l'impulsion d'hier, sans clip
-  (`sortiePoing` à générer — Animations_A_Faire § 3) ; et le saut manqué retombe par `onDiveEnd` comme un plongeon.
+- ~~La sortie aérienne n'a pas de POING~~ — livré au C3 (`sortiePoing`) ; le saut manqué retombe encore par `onDiveEnd` comme
+  un plongeon, et le poing n'a pas de `prisePlanante` (la prise à deux mains sur un pied) : le clip de prise reste plongeonPrise.
 - Remise de touche au pied sans cérémonie (placement + rayon + ayant droit seulement).
 - Pas encore de mi-temps/fixtures (game-state) ni de formations nommées (le 11c11 les exigera).

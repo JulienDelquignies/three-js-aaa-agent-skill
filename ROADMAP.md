@@ -251,6 +251,10 @@
 - LIVRÉ (note 377, reference/59 § C2, verify-emotion 47/0) : LA MAIN SAISIE (C2 = Animations_A_Faire § 4) — mainTendue tire (le bras
   revient de 14 cm, le buste se redresse) et la scène rejoint les deux mains au point médian pendant le relevé du fauché (deux IK deux os,
   _applyAideWarp) ; rien dans la sim ; pull absent = le retour d'hier.
+- LIVRÉ (note 378, reference/53 § C3, verify-sortie-aerienne 8/0, verify-motion) : LE POING DU GARDIEN (C3 = Animations_A_Faire § 3) —
+  le geste généré sortiePoing (saut, genou levé, poings serrés à 13 cm, le coup à travers 36 cm) ; la sortie armée du poing quand
+  l'attaquant arrive avec le ballon (à moins de 0,4 s), le balayage du vol arrêté au premier point qu'un attaquant prend avant le
+  gardien, la sortie décidée qui tient ; le ballon dégagé du poing (12 m/s vers le terrain) ; sous sortieAerienne (null = hier).
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

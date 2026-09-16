@@ -284,6 +284,8 @@ examples/
 
   The HAND GRAB (lot C2): the helper's `mainTendue` now PULLS after its hold (the arm comes back 14 cm toward the chest, the trunk straightens — `verify-emotion.mjs`, 47 clauses), and the scene brings both hands to the midpoint of their clip positions while the fallen player rises and the helper pulls (`_applyAideWarp`, two two-bone IKs); nothing changes in the sim.
 
+  The KEEPER'S PUNCH (lot C3, under `cfg.sortieAerienne`): a generated `sortiePoing` clip (jump with a raised knee, both fists together above the head, the blow through the ball, `checkKeeperGen` rules) armed instead of the two-handed catch when an attacker arrives with the ball; the flight scan stops at the first point an attacker reaches before the keeper, a decided claim sticks, and the dive resolution clears the ball far upfield (`arrêt` mode `poing`).
+
 ## Install
 
 As a plugin via marketplace:

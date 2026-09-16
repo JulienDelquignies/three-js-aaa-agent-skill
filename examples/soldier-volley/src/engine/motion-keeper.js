@@ -26,6 +26,7 @@ export const KEEPER_KINDS = {
   plongeonBas:     { duration: 1.4, contact: 0.5,  rise: 1.1, dive: true, crouch: 0.2,  dip: 0.34, lateral: 1.15, apex: -0.5, lying: -0.72, tLie: 0.85, roll: 82, rollC: 100, topL: 156, hands: 2, low: true, ball: [1.7, 0.2, -0.1] },   // (A10 bis) rollC 100 : la poitrine se tourne vers le sol dans la détente basse, le bras du dessus (topL) suit l'axe — les deux mains au ras du ballon (mesuré : main du dessus 0,92 → 0,33 m pour un ballon à 0,20)
   plongeonUneMain: { duration: 1.6, contact: 0.55, rise: 1.2, dive: true, crouch: 0.25, dip: 0.26, lateral: 1.5,  apex: 0.26, lying: -0.68, tLie: 0.9, roll: 82, rollC: 64, hands: 1, ball: [2.2, 1.1, -0.1] },
   plongeonPrise:   { duration: 1.3, contact: 0.5,  jump: true, crouch: 0.2, dip: 0.3, lateral: 0.72, apex: 0.55, tLand: 0.85, ball: [0.75, 2.05, -0.2] },
+  sortiePoing:     { duration: 1.32, contact: 0.62, jump: true, punch: true, crouch: 0.26, dip: 0.3, lateral: 0.6, apex: 0.5, tLand: 0.94, kneeUp: 72, aE: 186, aF0: 50, aF1: -20, eb0: 30, eb1: 30, armEnd: 0.0, thruW: 0.16, ball: [0.7, 2.0, -0.25] },   // (C3) LA SORTIE DU POING : le saut à un genou levé, les deux poings serrés devant-haut, le coup À TRAVERS le ballon au contact
   paradePieds:     { duration: 0.7, contact: 0.22, kick: true, reach: 0.78, dip: 0.08, ball: [0.85, 0.15, -0.12] },
   paradeBuste:     { duration: 0.8, contact: 0.3,  chest: true, dip: 0.06, ball: [0.0, 1.22, -0.36] },
 };
@@ -132,17 +133,23 @@ export function generateKeeper(kindName, P, { style = NEUTRAL_STYLE, fps = 60 } 
       const land = (t) => ramp(t, tc, (tc + tLand) / 2, tLand), settle = (t) => ramp(t, tLand, (tLand + T) / 2, T);
       const hipsOf = (t) => [lat(t), -dip * crouch(t) * (1 - fly(t)) + K.apex * fly(t) * (1 - land(t)) - 0.06 * bump(t, tLand - 0.05, tLand + 0.1, T), 0];
       const solCr = solveLeg(P, 'Left', hipsOf(tCr), I, { p: restL }), solCrR = solveLeg(P, 'Right', hipsOf(tCr), I, { p: restR });
-      const flight = (side) => ({ Rthigh: rx(side === 'Right' ? 18 : 14), Rshank: rx(side === 'Right' ? -22 : -16), Rfoot: rx(-12) });
-      const armsUp = (t) => ramp(t, 0.02, 0.5 * (tc - 0.08), tc - 0.08);   // les bras PASSENT au-dessus de la tête dès l'impulsion (sous 14 rad/s)
+      // (C3) LE POING : un genou (gauche) levé dans la détente — la jambe de protection du gardien qui sort dans la foule
+      const flight = (side) => (K.punch && side === 'Left' ? { Rthigh: rx(K.kneeUp ?? 72), Rshank: rx(-(K.kneeUp ?? 72) - 18), Rfoot: rx(-10) }
+        : { Rthigh: rx(side === 'Right' ? 18 : 14), Rshank: rx(side === 'Right' ? -22 : -16), Rfoot: rx(-12) });
+      const aEnd = K.armEnd ?? 0.08, tW = K.thruW ?? 0.08;
+      const armsUp = (t) => ramp(t, 0.02, 0.5 * (tc - aEnd), tc - aEnd);   // les bras PASSENT au-dessus de la tête dès l'impulsion (sous 14 rad/s)
+      const thru = (t) => (K.punch ? ramp(t, tc - tW, tc, tc + 0.75 * tW) : 0);   // (C3) le coup : les coudes pliés se DÉTENDENT au contact, les poings traversent
       poseAt = (t) => {
-        const cr = crouch(t) * (1 - fly(t)), f = fly(t), ld = land(t), st = settle(t), au = armsUp(t) * (1 - ld);
+        const cr = crouch(t) * (1 - fly(t)), f = fly(t), ld = land(t), st = settle(t), dn = K.punch ? ramp(t, tc + 0.12, (tc + 0.12 + T) / 2, T) : ld, au = armsUp(t) * (1 - dn), th = thru(t) * (1 - dn);   // (C3) le poing redescend LENTEMENT (178° en 0,3 s de retombée : 14 rad/s au bras — mesuré)
         const J = {};
         trunk(J, { lean: 14 * S.lean * cr - 8 * f * (1 - ld) + 8 * ld * (1 - st), headDown: 6 * cr - 12 * au + 4 * ld * (1 - st) });
-        // les bras : au-dessus de la tête (les deux, paumes au ballon), puis REDESCENDENT avec le ballon tenu contre la poitrine
-        const hold = ld * (1 - st);
+        // les bras : au-dessus de la tête (les deux, paumes au ballon), puis REDESCENDENT avec le ballon tenu contre la poitrine —
+        // le poing : les deux bras serrés devant-haut, coudes pliés, qui se détendent au contact et retombent sans rien tenir
+        const hold = K.punch ? 0 : ld * (1 - st);
+        const aE = K.punch ? (K.aE ?? 150) : 132, aF = K.punch ? (K.aF0 ?? 10) * (1 - th) + (K.aF1 ?? 40) * th : 12, aB = K.punch ? (K.eb0 ?? 60) * (1 - th) + (K.eb1 ?? 25) * th : 4;   // (C3) le poing : bras hauts et serrés, le coup part de l'épaule (fwd) et du coude au contact
         Object.assign(J,
-          armJoints('Left', { elev: 14 + 132 * Math.max(0.97, Math.min(S.armElev, 1.04)) * au + 36 * hold, fwd: 12 * au + 46 * hold, elbow: 14 + 4 * au + 96 * hold }),
-          armJoints('Right', { elev: 14 + 134 * Math.max(0.97, Math.min(S.armElev, 1.04)) * au + 36 * hold, fwd: 12 * au + 46 * hold, elbow: 14 + 4 * au + 96 * hold }));
+          armJoints('Left', { elev: 14 + aE * Math.max(0.97, Math.min(S.armElev, 1.04)) * au + 36 * hold, fwd: aF * au + 46 * hold, elbow: 14 + aB * au + 96 * hold, rot: K.punch ? 18 * au : 0 }),
+          armJoints('Right', { elev: 14 + (aE + 2) * Math.max(0.97, Math.min(S.armElev, 1.04)) * au + 36 * hold, fwd: aF * au + 46 * hold, elbow: 14 + aB * au + 96 * hold, rot: K.punch ? 18 * au : 0 }));
         J.LeftShoulder = I; J.RightShoulder = I;
         if (t >= tCr && t <= tc) for (const side of ['Left', 'Right']) applyLegBetween(J, side, side === 'Left' ? solCr : solCrR, flight(side), f);
         else if (t > tc && t < tLand) for (const side of ['Left', 'Right']) applyLegBetween(J, side, flight(side), solveLeg(P, side, hipsOf(t), I, { p: side === 'Left' ? [restL[0] + L, restL[1], restL[2]] : [restR[0] + L, restR[1], restR[2]] }), ld);
@@ -216,7 +223,11 @@ export function keeperPortrait(spec, P) {
   let landed = 0;
   if (K.tLand) { const wLand = near(K.tLand + 0.05).w; landed = Math.max(wLand.LeftFoot.p[1] - w0.LeftFoot.p[1], wLand.RightFoot.p[1] - w0.RightFoot.p[1]); }
   const dipMin = spec.keys.reduce((m, k) => Math.min(m, k.hips?.[1] ?? 0), 0);
-  return { ...body, hC, handReach, handsAboveHead, rollC, pelvisLie, rollLie, pelvisE, rollE, feetE, footOutC, footHC, kneeC, headBackMax, handsFrontC, landed, dipMin };
+  // (C3) le poing : l'écart des deux mains au contact, le coup À TRAVERS (les mains avancent de −0,06 à +0,06 s autour du contact, vers −Z) et le genou levé
+  const fistsGap = hyp(wC.LeftHand.p[0] - wC.RightHand.p[0], wC.LeftHand.p[1] - wC.RightHand.p[1], wC.LeftHand.p[2] - wC.RightHand.p[2]);
+  const zH = (w) => (w.LeftHand.p[2] + w.RightHand.p[2]) / 2, punchThru = zH(near(spec.contact - 0.06).w) - zH(near(spec.contact + 0.06).w);
+  const kneeUpH = wC.LeftLeg.p[1] - w0.LeftLeg.p[1];
+  return { ...body, hC, handReach, handsAboveHead, rollC, pelvisLie, rollLie, pelvisE, rollE, feetE, footOutC, footHC, kneeC, headBackMax, handsFrontC, landed, dipMin, fistsGap, punchThru, kneeUpH };
 }
 
 /** Le contrat d'un geste de gardien. */
@@ -236,7 +247,12 @@ export function checkKeeperGen(spec, P, kindName) {
   }
   if (K.jump) {
     if (p.hC[1] < 0.45) issues.push(`la prise ne SAUTE pas (bassin +${(100 * p.hC[1]).toFixed(0)} cm au contact < 45)`);
-    if (p.handsAboveHead < 0.12) issues.push(`les mains ne sont pas AU-DESSUS de la tête au contact (${(100 * p.handsAboveHead).toFixed(0)} cm < 12)`);
+    if (p.handsAboveHead < (K.punch ? -0.05 : 0.12)) issues.push(`les mains ne sont pas AU-DESSUS de la tête au contact (${(100 * p.handsAboveHead).toFixed(0)} cm < ${K.punch ? -5 : 12})`);
+    if (K.punch) {   // (C3) les deux poings serrés, le coup à travers le ballon, un genou levé
+      if (p.fistsGap > 0.34) issues.push(`les poings ne sont pas SERRÉS au contact (${(100 * p.fistsGap).toFixed(0)} cm entre les mains > 34)`);
+      if (p.punchThru < 0.08) issues.push(`le coup ne TRAVERSE pas le ballon (mains avancées de ${(100 * p.punchThru).toFixed(0)} cm autour du contact < 8)`);
+      if (p.kneeUpH < 0.25) issues.push(`le genou ne monte pas (genou gauche à +${(100 * p.kneeUpH).toFixed(0)} cm au contact < 25)`);
+    }
     if (p.landed > 0.05) issues.push(`la retombée n'est pas sur les appuis (pied à ${(100 * p.landed).toFixed(0)} cm du sol après l'atterrissage)`);
     if (Math.abs(p.pelvisE) > 0.04 || p.feetE > 0.06) issues.push(`la fin n'est pas debout sur place (bassin ${(100 * p.pelvisE).toFixed(0)} cm, pieds ${(100 * p.feetE).toFixed(0)} cm)`);
   }

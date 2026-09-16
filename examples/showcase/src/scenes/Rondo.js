@@ -588,6 +588,7 @@ export class Rondo {
       if (pl._dwNudge && pl.hipsNudge && k > 1e-3) pl.hipsNudge([pl._dwNudge[0] * k, pl._dwNudge[1] * k, pl._dwNudge[2] * k]);
     }
     if (env <= 1e-3) { if (a.payload.resolved) pl._dwarp = null; return; }
+    if (a.payload.poing) { this._armsToBall(pl, env, 0.07, -0.12); return; }   // (C3) LE POING : les deux poings serrés SOUS le ballon, la même enveloppe que le gant
     arm.hand.getWorldPosition(this._wf);   // APRÈS le nudge : le plan du gant part du squelette déplacé
     let plan = pl._dwarp;
     if (!a.payload.resolved || !plan) {   // …resolved + tenu : le plan re-vise le ballon qui rentre (lot 108)
@@ -620,13 +621,13 @@ export class Rondo {
   /** LES DEUX GANTS SUR LE BALLON — le résolveur partagé du TENU (plongeon) et de la PRISE
    *  DEBOUT : chaque main va à SON flanc du ballon sim (±grip sur l'axe droite du modèle),
    *  fondue par w, écrêtée à la portée du bras — la primitive du warp de contact (IK deux os). */
-  _armsToBall(pl, w, grip = 0.12) {
+  _armsToBall(pl, w, grip = 0.12, dy = 0) {
     const b = this.state.ball.p;
     const me = pl.model.matrixWorld.elements;
     const rl = Math.hypot(me[0], me[1], me[2]) || 1;
     for (const side of ['left', 'right']) {
       const sgn = side === 'left' ? -1 : 1;
-      this._armTo(pl, side, b[0] + (me[0] / rl) * sgn * grip, b[1] + (me[1] / rl) * sgn * grip, b[2] + (me[2] / rl) * sgn * grip, w);
+      this._armTo(pl, side, b[0] + (me[0] / rl) * sgn * grip, b[1] + dy + (me[1] / rl) * sgn * grip, b[2] + (me[2] / rl) * sgn * grip, w);
     }
   }
 

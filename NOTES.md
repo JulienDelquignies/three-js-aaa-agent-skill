@@ -12591,3 +12591,27 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - Galerie publique déployée : https://threejs-aaa-showcase.vercel.app (jouables : **Carrière**,
   Contrôles, Physique, Intérieur ; génération : Lieux, Stades ; plus Soldier Volley dribble→centre→volée,
   Matériaux PBR, Monde procédural, IK, Géométrie, Bloom, Océan, Herbe).
+
+- 378 — Lot C3 : LE POING DU GARDIEN (Animations_A_Faire § 3 ; sortiePoing généré, la sortie du poing, le ballon dégagé ; reference/53 § C3)
+
+- **Le geste** (`motion-keeper` sortiePoing, jump + punch) : 1,32 s, contact 0,62, saut 0,5 m, le genou gauche levé 72°, les bras à 186°
+  d'élévation dès l'impulsion, le coup = l'avant des bras 50° → −20° sur 0,16 s autour du contact, les coudes 30°, la retombée sur les
+  appuis puis une redescente lente (178° en 0,3 s faisaient 14 rad/s au bras — refusé par checkClip). Mesuré (keeperPortrait) : poings à
+  13 cm au contact, 29 cm au-dessus de la tête, le coup à travers 36 cm, le genou +73 cm. Contrat (checkKeeperGen, K.punch) : poings ≤ 34 cm,
+  à travers ≥ 8 cm, genou ≥ +25 cm, + les règles du saut. verify-motion : 198 ✓ / 10 ✗ — les 10 rouges préexistent au bit sur le moteur
+  d'hier (tronc), sortiePoing vert.
+- **La décision** (`sortie-aerienne.js`) : à chaque point du vol prédit, le premier attaquant (duel 7 m/s) ; s'il y est avant le ballon et
+  avant le gardien, le balayage S'ARRÊTE (mesuré avant : le gardien réclamait le rebond derrière la tête) ; une sortie décidée tient (−0,3 s
+  quand engagé — l'hésitation image par image le laissait à mi-chemin) ; l'attaquant qui arrive AVEC le ballon (à moins de `poing` 0,4 s
+  après lui) arme sortiePoing (payload.poing) au lieu de plongeonPrise.
+- **Le contact** (`match-sim` onDive) : sous payload.poing la prise est refusée, le ballon DÉGAGÉ (0,7 × la vitesse renversée + `poingV`
+  12 m/s vers le terrain, +4,5 m/s de haut, 3 m/s de côté), 'arrêt' mode poing mains 2, le gardien retombe (down 0,5).
+- **La scène** (Rondo.js `_applyDiveWarp`) : sous payload.poing les DEUX poings vont sous le ballon (`_armsToBall` ±7 cm, −12 cm) avec
+  l'enveloppe du gant — mesuré en page à l'image de l'arrêt : poing droit à 17 cm du centre du ballon (dessus), le gauche à 47 cm (la
+  portée du bras, 51 cm de l'épaule), l'écart des poings 35 cm ; avant : 0,5 m entre les poings et le ballon.
+- **Bancs** : verify-sortie-aerienne 8 ✓ / 0 ✗ (clause c bis : l'attaquant lancé à 6 m/s depuis 10 m — la sortie se décide, sortiePoing,
+  'arrêt' poing à deux mains, v·x 8,9 m/s vers le terrain, jamais tenu ; l'attaquant AU point : aucune sortie ; sans attaquant : la prise
+  d'hier) ; sync 9/0 ; jumeau `sortieAerienne: null, retournee: null` = base 9fa4ec6 au bit (3 graines) ; en match (12 × 300 s) :
+  1 sortie, 1 saut, aucun poing — le lob contesté dans la surface de but est rare, la clause le tient.
+- **Capture** : c3-poing-cote/face (le lob à 2,5 m recalé, l'attaquant depuis 10 m à 6 m/s, l'arrêt à 0,73 s de l'armé).
+- **Dette** : le clip de prise en l'air reste plongeonPrise (pas de prisePlanante) ; le saut manqué retombe par onDiveEnd.

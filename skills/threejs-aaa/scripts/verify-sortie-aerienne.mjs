@@ -15,7 +15,7 @@ const hyp = Math.hypot;
 // LA FIXTURE : le monde vidé, le gardien de l'équipe 1 posé à 1 m de sa ligne, un lob depuis l'aile qui retombe à `to` m de la ligne
 // (theta : la raideur — 1,1 rad retombe presque à la verticale ; apex : le sommet). L'attaquant (att) est posé au point où le vol
 // redescend à 2 m et épinglé là. On rejoue jusqu'à la prise (ou 4 s) et on rend les événements du gardien.
-const lob = (over, { to = 2.5, apex = 7, theta = 1.1, att = false, gk0 = null } = {}) => {
+const lob = (over, { to = 2.5, apex = 7, theta = 1.1, att = false, gk0 = null, attLoin = null } = {}) => {
   const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ repli: false, ...over });
   for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, cfg);
   st.ball.release('arrêt-de-jeu');
@@ -36,17 +36,20 @@ const lob = (over, { to = 2.5, apex = 7, theta = 1.1, att = false, gk0 = null } 
   if (gk0 != null && X) gk.p[2] = X.p[2] + gk0;   // le gardien décalé de gk0 m en largeur (sur sa ligne) : la course au point est trop longue
   const A = st.players.find((q) => q.team === 0 && !q.keeper);
   if (att && X) { A.p[0] = X.p[0]; A.p[2] = X.p[2]; A.job = 'receive'; A.target = [X.p[0], 0, X.p[2]]; }
-  const n0 = st.events.length, t0 = st.t, own = st.pitch.ownGoal(1); let dMax = 0, dSpot = null, tLand = null;
+  if (attLoin != null && X) { A.p[0] = X.p[0] - sg * attLoin; A.p[2] = X.p[2]; A.v = [sg * 6, 0]; A.job = 'receive'; A.target = [X.p[0], 0, X.p[2]]; A.intent = null; }   // (C3) l'attaquant qui ARRIVE avec le ballon : lancé à 6 m/s depuis attLoin m, il court au point
+  const n0 = st.events.length, t0 = st.t, own = st.pitch.ownGoal(1); let dMax = 0, dSpot = null, tLand = null, vPoing = null;
   for (let i = 0; i < 60 * 4; i++) {
     if (att && !A.act) { A.p[0] = X.p[0]; A.p[2] = X.p[2]; A.v = [0, 0]; }
+    if (attLoin != null && !A.act) { A.job = 'receive'; A.target = [X.p[0], 0, X.p[2]]; }
     matchStep(st, 1 / 60, cfg);
     if (tLand == null && st.ball.p[1] < 0.15 && st.t - t0 > 0.5) tLand = st.t;
     if (tLand == null) dMax = Math.max(dMax, Math.abs(gk.p[0] - own.x));   // jusqu'à la retombée : après, le rebond lent se charge (le un-contre-un d'hier)
     if (gk._sortieAerienne && dSpot == null && !gk.act) dSpot = hyp(gk.target[0] - gk._sortieAerienne.p[0], gk.target[2] - gk._sortieAerienne.p[2]);
+    if (vPoing == null && st.events.slice(n0).some((e) => e.type === 'arrêt' && e.mode === 'poing' && e.by === gk.id)) vPoing = [...st.ball.v];   // (C3) la vitesse du ballon à l'image du poing
     if (st.ball.owner != null && st.t - t0 > 0.5) break;
   }
   const E = st.events.slice(n0), ev = (t, f = () => true) => E.find((e) => e.type === t && e.by === gk.id && f(e)) ?? null, avant = (e) => tLand == null || e.t <= tLand + 1e-6;   // avant la retombée : le rebond haut est un autre vol
-  return { gk, A, X, t0, tLand, dMax: +dMax.toFixed(2), dSpot, owner: st.ball.owner, sortie: ev('sortie-aerienne'), windup: ev('windup', (e) => e.move === 'plongeonPrise' && e.sortie), sortieAv: ev('sortie-aerienne', avant), windupAv: ev('windup', (e) => e.move === 'plongeonPrise' && e.sortie && avant(e)), arret: ev('arrêt'), prise: ev('control', (e) => e.tech === 'prise-gardien'),
+  return { gk, A, X, t0, sg, tLand, dMax: +dMax.toFixed(2), dSpot, owner: st.ball.owner, vFin: vPoing, sortie: ev('sortie-aerienne'), windup: ev('windup', (e) => e.move === 'plongeonPrise' && e.sortie), poing: ev('windup', (e) => e.move === 'sortiePoing' && e.sortie), arretPoing: ev('arrêt', (e) => e.mode === 'poing'), sortieAv: ev('sortie-aerienne', avant), windupAv: ev('windup', (e) => e.move === 'plongeonPrise' && e.sortie && avant(e)), arret: ev('arrêt'), prise: ev('control', (e) => e.tech === 'prise-gardien'),
     types: E.map((e) => `${e.t}:${e.type}${e.by != null ? '@' + e.by : ''}${e.move ? '/' + e.move : ''}${e.mode ? '/' + e.mode : ''}${e.tech ? '/' + e.tech : ''}${e.aerienne ? '/aérienne' : ''}`).join(' ') };
 };
 const cfg = matchCfg({}), SA = cfg.sortieAerienne;
@@ -72,6 +75,12 @@ console.log('\n— (c) le duel laisse le ciel à la tête ; hors zone, le gardie
     !r.sortieAv && !r.windupAv && r.dMax <= 3, r.types.slice(0, 200));
   const h = lob({}, { to: 9, apex: 6, theta: 1.0 });
   ok(`HORS ZONE (retombée à 9 m) : aucune sortie-aerienne ni saut, le gardien reste dans sa profondeur de poste jusqu'à la retombée (${h.dMax} m < zone ${SA.zone})`, !h.sortieAv && !h.windupAv && h.dMax < SA.zone, h.types.slice(0, 200));
+}
+console.log('\n— (c bis) l\'attaquant qui arrive AVEC le ballon : la sortie du POING (C3) —');
+{
+  const r = lob({}, { attLoin: 10 });
+  ok(`LE POING : un attaquant lancé à 6 m/s depuis 10 m du point (il y arrive après le gardien, avec le ballon) — la sortie se décide (${r.sortie ? 'oui' : 'non'}), l'acte est sortiePoing (windup ${r.poing ? r.poing.move : (r.windup ? r.windup.move : '—')}, poing ${r.poing?.poing ?? '—'}), le ballon DÉGAGÉ du poing ('arrêt' ${r.arretPoing?.mode ?? r.arret?.mode ?? '—'}, mains ${r.arretPoing?.mains ?? '—'}) loin devant (v·x ${r.vFin ? (r.vFin[0] * -r.sg).toFixed(1) : '—'} m/s vers le terrain, v·y ${r.vFin ? r.vFin[1].toFixed(1) : '—'}) — jamais tenu (owner ${r.owner})`,
+    !!r.sortie && !!r.poing && r.poing.poing === true && !r.windup && !!r.arretPoing && r.arretPoing.mains === 2 && r.vFin && r.vFin[0] * -r.sg > 4 && r.vFin[1] > 1 && r.owner !== r.gk.id, r.types.slice(0, 220));
 }
 console.log('\n— (d) la clé absente rend l\'hier ; le sabotage sans saut claque —');
 {

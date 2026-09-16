@@ -1148,13 +1148,13 @@ function onDive(st, gk, cfg) {
   if (closing && d > 0.35) return false;
   if (up && y > (1.9 + up) * aeF && st.ball.v[1] < 0) return false;   // (B10) la sortie aérienne ATTEND le ballon dans les gants : au-dessus des mains et qui descend encore, on ne claque pas
   // …la détente de prise (plongeonPrise, lot 93) retombe SUR SES APPUIS : pas de gk.rise.
-  if (gk.act?.id === 'plongeonPrise') gk.down = Math.max(gk.down, 0.5);
+  if (gk.act?.id === 'plongeonPrise' || gk.act?.id === 'sortiePoing') gk.down = Math.max(gk.down, 0.5);
   else riseDown(st, gk, cfg, true);
   const spdT = hyp(st.ball.v[0], st.ball.v[1], st.ball.v[2]);   // …ET LE MISSILE NE SE PREND PAS (lot 101, cfg.corner) : ≥ priseV loin du buste → il se DÉVIE (les gants ne le tiennent pas) — la claquette-corner s'en charge. Clé absente : hier.
   const handF = gk.skill?.handF ?? 1;   // L'ISSUE DE L'ARRÊT (147, note handling) : le bon CAPTE des tirs plus lourds (priseV × handF) et SÉCURISE en corner plus tôt (claqueV / handF) — 1 exact à 50, le monde nu au bit
   // LA PRISE À DEUX MAINS S'ÉTEND (194, cfg.priseGant — liste v3 point 3 : 12 claquettes/4 prises mesurées dont 8 claquettes À DEUX MAINS (d ≤ 1,35) — le gardien avait les gants dessus et poussait ; le vrai PREND le non-missile à deux mains) : le seuil de prise passe à 1,35 × aeF, la garde missile d'hier conservée. Clé absente : le poussoir d'hier au bit.
   const priseD = st.full && cfg.priseGant ? (cfg.priseGant.d ?? 1.35) : 1.1;
-  if (d <= priseD * aeF && y <= (1.9 + up) * aeF && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
+  if (d <= priseD * aeF && y <= (1.9 + up) * aeF && !gk.act?.payload?.poing && !(st.full && cfg.corner && spdT >= (cfg.corner.priseV ?? 16) * handF && d > 0.75)) {
     if (st.ball.owner != null) st.ball.release('perte');
     st.ball.impulse([-st.ball.v[0], -st.ball.v[1] * 0.9, -st.ball.v[2]],      // mort dans les gants —
       st.full && cfg.amortiSpin !== false ? [-st.ball.w[0], -st.ball.w[1], -st.ball.w[2]] : null);  // rotation comprise (lot 54, st.full : le réduit au bit près)
@@ -1166,9 +1166,9 @@ function onDive(st, gk, cfg) {
     st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'prise', aerienne: y > 1.2 });
     return true;
   } else {
-    const side = Math.sign(gk.p[2] - 0) || 1;
+    const side = Math.sign(gk.p[2] - 0) || 1, poing = st.full && !!gk.act?.payload?.poing;   // (C3) LE POING de la sortie aérienne : le ballon dégagé loin devant et haut, jamais tenu
     // LA CLAQUETTE EN CORNER (lot 101 — mesuré : 1 corner/8 matchs) : le tir FORT au bout de l'envergure OU trop vif pour les gants se DÉVIE derrière la ligne (« en corner ! », outRule juge). Clé absente : hier au bit.
-    if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) / handF && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16) * handF))
+    if (poing) st.ball.impulse([-st.ball.v[0] * 0.7 - Math.sign(st.pitch.ownGoal(gk.team).x || 1) * (cfg.sortieAerienne?.poingV ?? 12), -st.ball.v[1] * 0.6 + 4.5, -st.ball.v[2] * 0.7 + side * 3]); else if (st.full && cfg.corner && spdT >= (cfg.corner.claqueV ?? 13) / handF && (d > 1.35 || spdT >= (cfg.corner.priseV ?? 16) * handF))
       st.ball.impulse([-st.ball.v[0] * 0.45, -st.ball.v[1] * 0.4 + 2.2, -st.ball.v[2] * 0.3 + side * 6]);
     else if (st.full && cfg.claquette) {
       // LA CLAQUETTE ÉCARTE (232b, cfg.claquette — le métier : la parade à deux mains AMORTIT (× devant le long du tir) et ÉCARTE (cote m/s côté gardien, haut m/s) ; hier : renvoi à 1,4 × la vitesse du tir dans l'axe, le canon vers les attaquants)
@@ -1179,7 +1179,7 @@ function onDive(st, gk, cfg) {
     // APRÈS LE GANT, LE BALLON EST NEUF : st.pass gardait l'origine du tir — la porte anti-auto-interception gelait tout (111 s mesuré).
     st.pass = null;
     // …et la claquette dit SES MAINS (lot 90) : deux dans l'envergure courte (≤ 1,35), une au bout.
-    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'claquette', mains: d <= 1.35 ? 2 : 1, cote: side });
+    st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: poing ? 'poing' : 'claquette', mains: poing || d <= 1.35 ? 2 : 1, cote: side });
     st._surprise = { t: st.t, seen: 0 };                          // une claquette ne s'anticipe pas
     return true;
   }
