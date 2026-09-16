@@ -82,5 +82,5 @@ console.log('\n— (d) la clé absente rend l\'hier ; le sabotage sans saut claq
   ok(`sabotage « la détente sans saut » attrapé (saut:0 : le gardien sort et saute, mais le gant n'atteint pas le ballon à ${s.windup?.h ?? '—'} m — claquette (${s.arret?.mode ?? '—'}) au lieu de la prise)`,
     !!s.windup && !!s.arret && s.arret.mode === 'claquette', s.types.slice(0, 200));
 }
-console.log(`\nsortie aérienne : ✓ ${pass} / ✗ ${fail}`);
+console.log(`\nsortie aérienne : ${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);
