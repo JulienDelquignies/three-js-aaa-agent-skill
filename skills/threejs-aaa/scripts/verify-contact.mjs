@@ -18,6 +18,11 @@ import { MOVE_TIMING } from '../assets/starter/src/engine/skills-sim.js';
 import { makeMatch, matchCfg, matchStep, playMatch } from '../assets/starter/src/engine/match-sim.js';
 import { contactClock, VIE } from '../../../examples/showcase/src/scenes/rondo-contact.js';   // (A10 bis) l'horloge de la vie au sol est pure : prouvable ici
 
+const RP_1609 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4 }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } };   // remisesPied d'HIER (e81394e) — DATÉ 16/09 (lot A9 ter, note 368)
+const SOL_1609 = { tenue: 0.9, corps: 0.9 };   // sol d'HIER sans aide — DATÉ 16/09 (relevé aidé, note 369 : sol.aide)
+const TETE_1609 = { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9 };   // tete d'HIER sans armee — DATÉ 16/09 (lot B3, note 373)
+const LOI12_1609 = { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 2 };   // loi12 d'HIER sans murTrot — DATÉ 16/09 (lot B4, note 374 ; viragesLisses/plantVitesse null : B5/B6, même note — mesuré : le lacet lissé isole le fauché de la graine 7, personne à 8 m)
+const B_1609 = { tete: TETE_1609, loi12: LOI12_1609, viragesLisses: null, plantVitesse: null };   // les clés des lots B, éteintes : chaque clause de flux mesure le monde de son jour
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
 const P = SHANON_PROFILE;
@@ -101,7 +106,7 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
     const out = { fautes: 0, chutes: [], downs: [], press: 0, face: 0, back: 0, lat: 0, tripDowns: [] };
     for (const seed of [7, 3, 1, 5, 2, 4]) {   // 3 → 6 graines (le porté qui anticipe — cfg.porteAnticipe — a fait tomber les ballons vendangés et avec eux un tiers des duels : 2 chutes sur 3 graines, un compte, pas une loi)
       const st = makeMatch({ full: true, seed });
-      const cfg = matchCfg({ recevoirSurPlace: null /* recevoirSurPlace null DATÉ 15/09 (dettes A12) : vert à HEAD~ (25/0), la réception sur place remange la presse (face 69 c. 65 sans la clé) — la clause mesure sa loi, pas la mienne */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (25/0 au 255), les chutes remangées par la familiarité (0 chute pour 3 fautes) — la clause mesure le contact, pas la familiarité */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (25/0 au 257), les chutes remangées par la course qui traverse (1 chute pour 6 fautes) — la clause mesure le contact, pas la Loi 11 */, contre: null /* contre null DATÉ 258b : vert à HEAD~ (25/0 au 258), les chutes (2 sur 6 × 300 s pour 9 fautes) remangées par le corps qui contre — la clause mesure le contact, pas le contre */, ...over });
+      const cfg = matchCfg({ ...B_1609, remisesPied: RP_1609 /* remisesPied hier DATÉ 16/09 (A9 ter, note 368) */, recevoirSurPlace: null /* recevoirSurPlace null DATÉ 15/09 (dettes A12) : vert à HEAD~ (25/0), la réception sur place remange la presse (face 69 c. 65 sans la clé) — la clause mesure sa loi, pas la mienne */, familiarite: null /* familiarite null DATÉ 254 : vert à HEAD~ (25/0 au 255), les chutes remangées par la familiarité (0 chute pour 3 fautes) — la clause mesure le contact, pas la familiarité */, shotRange: 20, chrono: { periodes: 2, duree: 180, pause: 6 }, horsJeu: null /* horsJeu null DATÉ 259 : vert à HEAD~ (25/0 au 257), les chutes remangées par la course qui traverse (1 chute pour 6 fautes) — la clause mesure le contact, pas la Loi 11 */, contre: null /* contre null DATÉ 258b : vert à HEAD~ (25/0 au 258), les chutes (2 sur 6 × 300 s pour 9 fautes) remangées par le corps qui contre — la clause mesure le contact, pas le contre */, ...over });
       const downAt = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -140,7 +145,7 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
   const run = (over) => {
     const out = { downs: [], actes: 0, framesSol: 0, framesCorps: 0 };
     for (const seed of [7, 3, 1, 5, 2, 4]) {
-      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ familiarite: null, remisesPied: { elan: { recul: 3.5, lat: 1.5, vitesse: 4.0, patience: 4 }, volee: { h: 1.0, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } } /* remisesPied A9 bis DATÉ 16/09 (lot A9 ter, note 368 : la sortie de but longue et la touche longue courent, le mur saute — le flux des fautes change ; la clause mesure cfg.sol, pas les remises) */, ...over });
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...B_1609, familiarite: null, remisesPied: { elan: { recul: 3.5, lat: 1.5, vitesse: 4.0, patience: 4 }, volee: { h: 1.0, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } } /* remisesPied A9 bis DATÉ 16/09 (lot A9 ter, note 368 : la sortie de but longue et la touche longue courent, le mur saute — le flux des fautes change ; la clause mesure cfg.sol, pas les remises) */, ...over });
       const downAt = {}, prevAct = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);
@@ -157,7 +162,7 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
     return out;
   };
   const med = (a) => { const b = [...a].sort((x, y) => x - y); return b.length ? b[b.length >> 1] : 0; };
-  const on = run({}), off = run({ sol: null });
+  const on = run({ sol: SOL_1609 }), off = run({ sol: null });   // sol DATÉ 16/09 (A10 bis mesurait sans l'aide du 369 : l'aidant se poste à 1 m du corps)
   ok(on.downs.length >= 3 && med(on.downs) >= 2.0 && med(off.downs) < 2.0, `le fauché reste à terre p50 ${med(on.downs).toFixed(2)} s sous cfg.sol (sans la clé ${med(off.downs).toFixed(2)} : la chute 0,66 + le relevé 0,7 ne laissaient que 0,2 s de tenue)`);
   ok(on.actes === 0, `aucun acte de la sim sur un corps couché sous cfg.sol (${on.actes} ; sans la clé ${off.actes} — mesuré en page : une frappe 0,5 s après la chute)`);
   ok(on.framesCorps / Math.max(1, on.framesSol) <= 0.03 && on.framesCorps / Math.max(1, on.framesSol) < off.framesCorps / Math.max(1, off.framesSol), `personne ne marche dans un corps couché : ${(100 * on.framesCorps / Math.max(1, on.framesSol)).toFixed(1)} % des images au sol avec un debout à < 0,6 m (sans la clé ${(100 * off.framesCorps / Math.max(1, off.framesSol)).toFixed(1)} %)`);
@@ -182,7 +187,7 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
   };
   const runs = [];
   for (const seed of [3, 7]) {
-    const cfg = matchCfg({ familiarite: null });
+    const cfg = matchCfg({ ...B_1609, familiarite: null });
     let { st } = playMatch(makeMatch({ full: true, seed }), 10, { cfg });
     const f = st.players.find((p) => !p.keeper && p.team === 0 && p.down <= 0), foe = st.players.find((p) => p.team === 1 && !p.keeper);
     const mates = st.players.filter((p) => p.team === 0 && !p.keeper && p !== f).slice(0, 2);
@@ -197,12 +202,12 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
   ok(runs.every((r) => r.geste && r.geste.tRel < r.upAt && r.dG <= A.dist + 0.6), `…et lui TEND LA MAIN avant le relevé : geste 'mainTendue' à ${runs.map((r) => r.geste ? `${r.geste.tRel.toFixed(2)} s (relevé ${r.upAt.toFixed(2)}), ${r.dG.toFixed(2)} m` : '—').join(' ; ')} (≤ dist ${A.dist} + 0,6)`);
   ok(runs.every((r) => r.dMin >= matchCfg().sol.corps - 0.2 && r.jobs.includes('walk')), `…posté hors du corps couché (au plus près ${runs.map((r) => r.dMin.toFixed(2)).join('/')} m ≥ corps ${matchCfg().sol.corps} − 0,2), arrivé en marchant (métiers ${runs.map((r) => r.jobs.join('→')).join(' ; ')})`);
   {
-    const cfg0 = matchCfg({ familiarite: null, sol: { ...matchCfg().sol, aide: null } });
+    const cfg0 = matchCfg({ ...B_1609, familiarite: null, sol: { ...matchCfg().sol, aide: null } });
     let { st } = playMatch(makeMatch({ full: true, seed: 3 }), 10, { cfg: cfg0 });
     const f = st.players.find((p) => !p.keeper && p.team === 0 && p.down <= 0), foe = st.players.find((p) => p.team === 1 && !p.keeper), mate = st.players.find((p) => p.team === 0 && !p.keeper && p !== f);
     const r = force(st, cfg0, f.id, foe.id, true, [{ id: mate.id, dx: 3, dz: 1 }]);
     ok(!r.aide && !r.geste && r.upAt != null, `sol.aide null : le relevé solitaire d'hier (personne ne vient, relevé à ${r.upAt?.toFixed(2)} s)`);
-    const cfg1 = matchCfg({ familiarite: null });
+    const cfg1 = matchCfg({ ...B_1609, familiarite: null });
     let { st: s1 } = playMatch(makeMatch({ full: true, seed: 7 }), 10, { cfg: cfg1 });
     const f1 = s1.players.find((p) => !p.keeper && p.team === 0 && p.down <= 0), foe1 = s1.players.find((p) => p.team === 1 && !p.keeper);
     for (const q of s1.players) if (q.team === 0 && q !== f1 && !q.keeper) { q.p[0] = f1.p[0] + 30 * (q.p[0] > f1.p[0] ? 1 : -1); }   // tous les coéquipiers à 30 m : personne ne peut arriver avant le relevé
