@@ -12225,6 +12225,29 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      fauché qui saisit la main). verify-contact 34 → 39, verify-emotion
      40 → 45. Rareté mesurée : une chute avec _chute par 12 min de jeu sur
      trois graines — le geste vivra surtout sur les fautes sifflées.
+- 370: LE BANC COMPLET DES QUATRE LOTS (A7 bis, A2, A9 ter, relevé aidé) ET
+     LES ÉPINGLES DU 16/09. Première passe (bancs.mjs, 8 shards + annexes,
+     2 287 s) : 800 ✓ / 11 ✗ — dix clauses de FLUX qui mesurent le monde de
+     leur jour et voyaient les sous-clés nouvelles par défaut (remisesPied.
+     elan.sortieBut / toucheLongue, remisesPied.mur, sol.aide) : verify-
+     match11 × 8 (receveur serré, couloir à trois corps, lot 97 fautes, lot
+     115 petit pont, allure, patate chaude, lot 212 through, marqueur →
+     attaquant), identification (lot 249), le garde-fou de verify-signes
+     (pertes 120 c. 97) — plus 246d, hérité (le seul rouge d'avant). La sonde
+     (6 graines × 300 s, le monde de attente()) : sol d'hier = aujourd'hui AU
+     BIT (290 passes / 120 pertes des deux côtés — l'aide n'a pas touché ce
+     flux) ; remisesPied d'hier → 280 / 105 : les 15 pertes viennent des
+     quatre courses d'élan longues de plus (sortie de but, touche), un monde
+     remangé, pas une loi cassée. Comme aux notes 358 et 363 : épinglé à
+     l'objet ENTIER d'hier (matchCfg remplace les objets imbriqués — RP_1609
+     = remisesPied de e81394e, SOL_1609 = sol sans aide) aux 27 sites datés
+     de verify-match11 + 2 sites sans épingle sol (couloir cfgF, lot 212),
+     le monde SANS et le monde A du garde-fou de verify-signes, le site de
+     verify-identification ; l'empreinte jumelle ayant prouvé sous-clés
+     absentes = hier au bit. Re-shardé : match11 1/8, 3/8, 7/8 à 36/0, 5/8 à
+     44/1 (246d), identification 1/0, signes 9/0 (mort silencieuse au premier
+     essai, six bancs + un build en même temps — relancé seul). Le banc
+     complet vaut donc 810 ✓ / 1 ✗ sur 811 clauses.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

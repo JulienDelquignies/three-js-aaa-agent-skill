@@ -11,7 +11,10 @@ import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/mat
 
 let pass = 0, fail = 0;
 const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); } else { fail++; console.log(`✗ ${label}`); } };
-const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361) : le monde d'hier au bit, avant le sol et la fête */ };
+const RP_1609 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4 }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } };   // remisesPied d'HIER (e81394e) — DATÉ 16/09 (lot A9 ter, note 368 : sortie de but longue, touche longue, mur qui saute sous remisesPied.elan.sortieBut / toucheLongue / mur) : matchCfg REMPLACE les objets imbriqués, on repasse l'objet entier d'hier ; l'empreinte jumelle a prouvé sous-clés absentes = hier au bit
+const SOL_1609 = { tenue: 0.9, corps: 0.9 };   // sol d'HIER sans aide — DATÉ 16/09 (relevé aidé, note 369 : sol.aide)
+const HIER_1609 = { remisesPied: RP_1609, sol: SOL_1609 };   // le monde vivant DU JOUR de la clause (b) — DATÉ 16/09
+const SANS = { pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609 /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361) : le monde d'hier au bit, avant le sol et la fête */ };
 
 console.log('— (a) la pausa au pied —');
 const pausas = (over) => {
@@ -49,7 +52,7 @@ const attente = (over) => {
   return { lent: lent / Math.max(1, volF), att: prisesLentes / Math.max(1, prises), passes, turnovers };
 };
 {
-  const A = attente({}), B = attente(SANS);
+  const A = attente(HIER_1609), B = attente(SANS);   // A : le monde vivant de son jour (remisesPied/sol d'hier, DATÉ 16/09 — le garde-fou comparait 120 pertes c. 97 avec les dégagements longs et le relevé aidé allumés)
   ok(A.att - B.att >= 0.015 && A.lent >= 1.5 * B.lent, `avec la clé, plus de receveurs attendent : ${(100 * A.att).toFixed(1)} % des vols c. ${(100 * B.att).toFixed(1)} % sans (≥ +1,5 point ; 12 graines : +4) ; images de vol sous 0,6 m/s ${(100 * A.lent).toFixed(1)} % c. ${(100 * B.lent).toFixed(1)} % (≥ × 1,5)`);
   ok(Math.abs(A.passes - B.passes) <= 0.15 * B.passes && A.turnovers <= B.turnovers * 1.15,
     `garde-fou : passes ${A.passes} c. ${B.passes} (± 15 %), pertes ${A.turnovers} c. ${B.turnovers} (≤ +15 %)`);

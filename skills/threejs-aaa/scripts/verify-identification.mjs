@@ -7,6 +7,7 @@
 // non jugé) — la liste informative EST le backlog 250-254. Volumétrie : 72 matchs × dur s.
 import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
 import { ROLES, ROLES_DOCUMENT } from '../assets/starter/src/engine/roles.js';
+const RP_1609 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4 }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } };   // remisesPied d'HIER (e81394e) — DATÉ 16/09 (lot A9 ter, note 368 : sortie de but longue, touche longue, mur qui saute sous remisesPied.elan.sortieBut / toucheLongue / mur) : matchCfg REMPLACE les objets imbriqués, on repasse l'objet entier d'hier ; l'empreinte jumelle a prouvé sous-clés absentes = hier au bit
 
 let pass = 0, fail = 0;
 const ok = (name, cond) => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}`); };
@@ -22,7 +23,7 @@ for (const g of GROUPES) {
   for (let k = 0; k < n; k++) { const roles = {}, obs = []; g.forEach((f, i) => { const e = listes[i][k]; if (e) { roles[POSTE[f]] = e[1]; obs.push({ post: POSTE[f], doc: e[0], id: e[1] }); } }); RUNS.push({ roles, obs }); }
 }
 const mesure = (seed, roles) => {
-  const st = makeMatch({ full: true, seed, tactics: [{ formation: FORM }, { formation: FORM }], roles: roles ? [roles, null] : null }), cfg = matchCfg({ pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361 : le fauché reste à terre plus longtemps, la fête a un corps — chaque clause mesure le monde de son jour, empreinte jumelle prouvée) */ /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, shotRange: 20 });
+  const st = makeMatch({ full: true, seed, tactics: [{ formation: FORM }, { formation: FORM }], roles: roles ? [roles, null] : null }), cfg = matchCfg({ pausaPied: null, recevoirSurPlace: null, pasDeRecul: null, remisesPied: RP_1609 /* remisesPied hier DATÉ 16/09 (lot A9 ter, note 368) — chaque clause de flux mesure le monde de son jour */, sol: null, fete: null /* sol, fete null DATÉ 15/09 (lots A10 bis-A11, notes 360-361 : le fauché reste à terre plus longtemps, la fête a un corps — chaque clause mesure le monde de son jour, empreinte jumelle prouvée) */ /* DATÉ 15/09 (dettes A12, note 358) : vert à HEAD~ (suite à clés nulles 694/7), le monde remangé par la pausa au pied, la réception sur place et le pas de recul — la clause mesure sa loi, pas les miennes */, shotRange: 20 });
   const sig = {}; for (const p of st.players) if (p.team === 0) sig[p.post] = { larg: [], prof: [], appel: 0, press: 0, hors: 0, repli: 0, tenue: [], duel: 0, marque: [], dribble: 0, passes: 0, tirs: 0, centres: 0, garde: [] };
   const holdNow = {}; const doc = { corners: 0, dansBoite: 0, gkPasses: 0, gkCourtes: 0, buts: 0, butsCPA: 0, cpaT: -99 }; let prevR = null;
   let seen = 0, seenAll = 0; const hz = st.pitch.hz, sg = -st.pitch.ownGoal(0).sign;
