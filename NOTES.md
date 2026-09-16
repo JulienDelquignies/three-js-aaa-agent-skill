@@ -12973,7 +12973,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      la main tendue — 39/0), remises (le roulé, le mur au trot — 53/0), petits-gestes (l'applaudissement —
      19/0 : l'arrêt au journal change les arrêts vus), signes (le garde-fou de la pausa « sans la clé » ; son
      jumeau REGELÉ sur le monde fusionné : 9783de03cd1b5d01 / bd2802cdcb8bac1a / 14dfbee456047df2 — « hier »
-     y est désormais le 280) ; hérités : 246d, les contres arrivés à l'entrée. Bloc 1 seul : 0,45 ms/step (≤ 1,6).
+     y est désormais le 280) ; hérités : 246d, les contres arrivés à l'entrée. Bloc 1 seul : 0,45 ms/step (≤ 1,6). Sceau : fusion e798b47 puis 5f66f71 (le banc), poussés ; déploiement showcase-pi-mocha au premier essai
+     (nouveau jeton, cmp du chunk Rondo-CWPMocZM — les deux branches y sont : ligneAccrochee et petitsGestes).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
