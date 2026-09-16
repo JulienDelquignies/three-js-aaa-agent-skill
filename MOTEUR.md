@@ -509,6 +509,30 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### Le répertoire du book (lot 279, `cfg.repertoire` + `cfg.arretControle` — `repertoire.js`)
+
+Les espèces de tir frappaient à 16,5-21,5 m/s nominaux (14-19 après la sous-dose), calées au 258 sur un gardien à seuil dur :
+le ballon lent n'avait que 7-9 m/rad de sensibilité verticale (278) et donnait au gardien un budget temps d'un tiers trop long.
+Le 279 pose le répertoire du Modèle 10 §3.1 (ch. 3 §4, les seules colonnes sourcées) : `GESTES` — intérieur placé 20 [15-25],
+coup de pied 28 [22-33], enroulé 24 [20-28], pointu 16 [13-20], volée et demi-volée 26 [20-31], tête 13 [8-18] — avec les
+colonnes de dispersion dont seul l'ordre est contraint (σψ relatif pointu 0,55 ≪ placé 0,7 < instep 1 < volée 1,55 ; σθ/σψ 1,1
+→ 2,3) ; `FAMILLE` rattache les espèces propres du moteur (croisé → placé, ras-de-terre / flottante / mi-hauteur → instep,
+lucarne → enroulé ; lob, piqué et coup franc direct gardent leur balistique exacte) ; `vitesseGeste` = v̄ × powF × la bride du
+bout portant (l'instep à D < 8 m × 0,9 — « à bout portant, cadrer suffit »), bornée à la plage × powF ; `vMaxDe`, la borne
+physiologique de l'échelle de finition par ATTRIBUT (ch. 3 §4 : « par attribut, pas par un record ») ; `dispersionGeste` sur
+l'ellipse du 278. L'attribut `shotPower` (attributes.js : powF [0,90 ; 1,10], vMaxF → [33 ; 38] m/s, identité 1 à 50). La tête
+et la volée (tete.js) frappent aux vitesses du book. L'ARRÊT AU JOURNAL (`cfg.arretControle`, match-sim) : le tir adverse que le
+gardien CONTRÔLE dans les 3 s sans arrêt nommé devient un 'arrêt' mode 'controle' — mesuré : 6 arrêts sur 27 n'étaient pas
+comptés, le taux d'arrêt se lisait 8 points trop bas. Clés absentes : les vitesses et le journal d'hier au bit. Mesuré 8 × 45
+min : instep 23,8-24,4 m/s (28 × la sous-dose du 258), placé 17,2, enroulé 21,2-21,5, volée 26, tête 12,3-12,7, temps de vol
+p50 0,69-0,72 s ; arrêts / cadrés 67-71 % (dedans 60-64, dehors 90-94 — les cibles 69 / 60 / 85 tenues SANS recaler
+l'enveloppe du 276 : le gardien du book tient aux vitesses du book), au-dessus / à côté 0,83-0,93 → 0,91-1,18, cadrés 44-52 %
+(le contrôle du gardien compte cadré — convention à ventiler), buts 5,25 → 6,25 / match (le volume). L'optimum intérieur
+(Modèle 10 test 2, fixture à 16 m, 200 frappes par vitesse) : P(but) 2 / 4 / 16 / 10 / 12 % à 15 / 18 / 22 / 26 / 29 m/s —
+non monotone ; à 24 m 0 / 2 / 1 / 8 / 2. Reste : le volume des tirs (42 pour 25), la sélection du geste par P_but (§3.2, le
+softmax à T 0,35), le coup franc direct au répertoire. Sonde : `scripts/book/sonde-279.mjs` ; fixture `optimum279.mjs`
+(scratchpad). Fiches : `M10-modele-tir.md`, `M03-physique-ballon.md`, `R03-tirs-buts.md`.
+
 ### L'ellipse de finition (lot 278, `cfg.ellipse` — `ellipse.js`)
 
 Le 258 tirait trois bruits indépendants et centrés (cap, élévation, vitesse) avec le `gauss` du moteur — une somme de trois

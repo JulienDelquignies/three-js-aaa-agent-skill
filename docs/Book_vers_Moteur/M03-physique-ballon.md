@@ -12,7 +12,7 @@
 - **Le roulement** en loi DIN (`a0 + b v + c v²`), avec la référence mesurée (0,40 ; 0,17) et la **norme UEFA** (lâcher
   à 3,20 m/s → BRD 4-8 m) ; la table maîtresse (20 m/s : 30 m en 2,33 s, arrêt à 47,2 m) ; les presets de terrain.
 - **Rebonds** : COR sol 0,68 (2 m → 0,89-0,99), viscoélastique, frottement 0,45, poteau 0,80, corps 0,42-0,65.
-- **Frappes** : distributions de vitesse par geste ; **l'erreur d'exécution** anisotrope (tir σ_θ/σ_ψ 2,0 ; passe au
+- **Frappes** : distributions de vitesse par geste — **279** (repertoire.js) : placé 20, instep 28, enroulé 24, pointu 16, volée 26, tête 13 × powF, vMax [33 ; 38] par attribut ; **l'erreur d'exécution** anisotrope (tir σ_θ/σ_ψ 2,0 ; passe au
   sol 0,7), pied faible × 1,29, exposant vitesse-précision 1,2, fatigue → précision + 0,20 (1 − stamina) et
   → vitesse (deux fois plus), sous-dosage sous pression.
 - **L'interception** comme brique commune (Spearman : σ 0,45 s, λ 4,30 s⁻¹, τ_r 0,20) et **la non-omniscience**

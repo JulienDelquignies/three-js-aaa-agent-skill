@@ -3,7 +3,7 @@
 // rangement change : une famille par fichier, un fichier par famille.
 import { BALL } from './ball.js';
 import { laneClearance } from './ball-predict.js';
-import { xgDe } from './xg.js'; import { viseeDe } from './visee.js';
+import { xgDe } from './xg.js'; import { viseeDe } from './visee.js'; import { vitesseGeste } from './repertoire.js';
 import { simInternals } from './rondo-sim.js';
 import { busy, winding, startGesture } from './gesture.js';
 import { MOVES } from './animkit.js';
@@ -171,6 +171,7 @@ export function tryShot(st, c, cfg) {
     // LE POINT VISÉ (277, cfg.visee — visee.js, Modèle 10 §3.4) : le coin loin du gardien d'hier devient un tirage dans le
     // mélange à neuf modes (le côté ouvert par le décentrage du gardien, la pression qui effondre vers « le cadre ») ; les
     // gestes EXACTS (lob, piqué) gardent leur cible. La hauteur visée voyage avec l'espèce (strike-sim la lit : yVisee).
+    if (st.full && cfg.repertoire && shotKind && !shotKind.exact) { const vR = vitesseGeste(shotKind.id, cfg.repertoire, c, { dGoal }); if (vR != null) shotKind.speed = vR; }   /* (279) LA VITESSE DU BOOK : v̄ du geste × powF × la bride du bout portant (repertoire.js) — l'élévation se re-résout du point visé */
     let tzV = tz;
     if (st.full && cfg.visee && shotKind && !shotKind.exact) { const V = viseeDe(st, c, cfg, { goal, gk, dGoal }); tzV = V.z; shotKind.yVisee = V.y; shotKind.zVisee = V.z; shotKind.visee = V.id; tzAim = tzV; }   /* (278) le z visé voyage aussi : la correction nominale de l'ellipse vise LE point, pas le décalage d'aim */
     if (shotKind?.curl) {

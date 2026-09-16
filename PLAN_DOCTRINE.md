@@ -654,6 +654,15 @@ Modèle 10 §3.4) ; σ0 2,0° et l'anisotropie 4,5 en angle de départ calés su
 pression du 258 à P ≈ 1 sur un tir sur deux), les vitesses de frappe du book (28 / 20 pour 17-21), les montants traversés
 (Modèle 03 §6.3), le volume des tirs (42-45 pour 25 — les entrées dans la surface, le bloc).
 
+**279 — LE RÉPERTOIRE DU BOOK : SCELLÉ (364).** Les vitesses de frappe deviennent celles du Modèle 10 §3.1 (repertoire.js :
+placé 20, instep 28, enroulé 24, pointu 16, volée 26, tête 13 ; les colonnes de dispersion par geste sur l'ellipse ; la bride du
+bout portant ; l'attribut shotPower en facteur sur v̄ et sur la borne physiologique vMax [33 ; 38]) ; l'arrêt au journal
+(arretControle : le tir contrôlé par le gardien est un arrêt — 6 sur 27 n'étaient pas comptés). Mesuré 8 × 45 min : instep
+24 m/s (28 × la sous-dose), temps de vol 0,7 s ; arrêts / cadrés 67-71 % (dedans 60-64, dehors 90-94 : les cibles du § 6.3
+tenues sans recaler l'enveloppe du 276), au-dessus / à côté 0,9-1,2 ; l'optimum intérieur du test 2 émerge (P(but) non
+monotone en v₀ à 16 m). Ce qu'il nomme : le volume des tirs (42 pour 25 — les entrées dans la surface, le bloc), la sélection
+du geste par P_but (§3.2), le coup franc direct au répertoire, la convention « cadré » du contrôle du gardien.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

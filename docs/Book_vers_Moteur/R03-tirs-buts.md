@@ -15,10 +15,10 @@
 | T15 | Tirs à angle < 20° | 50 % ± 7 | — | à instrumenter |
 | T16-T17 | Tête : conversion 9,6 %, part 17 % | | **6 %** des tirs, **0** but (Modèle 10) | réfuté |
 | T18 | Ratio 0 / 1 défenseur dans le cône | 2,0 | — | à instrumenter |
-| T19 | Tirs cadrés (but + arrêt) | 33 % ± 3 | **55 %** → **48 %** au 258 → **35 %** au 258b → 45-46 % au 277 (le point visé face à un gauss sans queue) → **32-37 %** au 278 (8 × 45 min, l'ellipse de finition) | tenu (278) |
+| T19 | Tirs cadrés (but + arrêt) | 33 % ± 3 | **55 %** → **48 %** au 258 → **35 %** au 258b → 45-46 % au 277 (le point visé face à un gauss sans queue) → **32-37 %** au 278 (8 × 45 min, l'ellipse de finition) | tenu (278) ; **44-52 %** au 279 (le contrôle du gardien compte cadré — convention à ventiler : un contrôle n'est pas toujours un tir cadré) | tenu (278) ; à ventiler (279) |
 | T20 | Tirs contrés | 27 % ± 4 | **2 %** → **24 %** au 258b (8 × 45 min, par graine 6-30) | tenu à la marge (la limite est géométrique : 47 % des tirs ont un corps devant) |
 | T21 | Tirs sur les montants | 2,3 % | **278** : 5-8 % des trajectoires nominales passent à 0,17 m d'un poteau ou de la barre (sonde-278, predictPath) — le ballon les TRAVERSE (pas de collision, Modèle 03 §6.3) | à faire : la collision poteau / barre (COR 0,80) |
-| T22 | Taux d'arrêt | **44 %** (dedans 52, dehors 100) → **56 %** au 258 → **73 %** au 258b → 77 % au 275 → 55 % au 276 → **69-71 %** au 277 (dedans 65-67, dehors 87-92 — le point visé face au gardien à l'enveloppe) | 277 : tenu, le contraste dedans / dehors émerge | 276 : le contraste émerge, le dedans attend le point visé |
+| T22 | Taux d'arrêt | **44 %** (dedans 52, dehors 100) → **56 %** au 258 → **73 %** au 258b → 77 % au 275 → 55 % au 276 → 69-71 % au 277 → 64-67 au 278 → **67-71 %** au 279 (dedans 60-64, dehors 90-94 — aux vitesses du book, l'arrêt au journal compté entier : 6 arrêts sur 27 manquaient) | 279 : tenu (69 / 60 / 85) | 277 : tenu, le contraste dedans / dehors émerge |
 | T23-T24 | Amplitude gardiens ± 5 buts / saison | | — (pas de saison) | chantier A |
 | T25-T27 | Penalty 79 % ; arrêt 13 % ; 0,35 / match | | 1 penalty raté en 2 matchs (Modèle 13) | à mesurer en protocole |
 | T28-T30 | Séance de tirs au but | 72 % ; 60 % après le 5ᵉ ; premier tireur 0 | — | absent |

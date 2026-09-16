@@ -12178,6 +12178,59 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      loi3 10/0, match 84/0, menace 11/0, part-tint 18/0, porte 4/0, remises 36/0, roles 14/0, rondo 40/0,
      slide 10/0, sync 9/0, tactics 11/0, tete 7/0. Bloc 1 seul : 0,51 ms/step (≤ 1,6). Sceau : commit
      7c61e0b, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk Rondo-3LbnSizO).
+- 364: LE RÉPERTOIRE DU BOOK (279 — la dette nommée du 278 : Modèle 10 §3.1, « sept gestes, chacun un
+     triplet (vitesse, dispersion, effet) » ; ch. 3 §4, les vitesses sourcées). Sonde AVANT (= l'APRÈS du
+     278, 8 × 45 min) : les espèces à 16,5-21,5 m/s nominaux (14-19 après la sous-dose — le 258 les avait
+     calées sur un gardien à seuil dur), arrêts / cadrés 64-67 (dedans 61-62, dehors 75-85), buts 5,25. LA
+     LOI (repertoire.js, cfg.repertoire) : GESTES (placé 20 [15-25] σ×0,70 aniso 1,5 ; puissance 28 [22-33]
+     ×1 / 2,0 ; enroulée 24 [20-28] ×0,85 / 1,7 ; pointu 16 [13-20] ×0,55 / 1,1 ; volée 26 [20-31] ×1,55 /
+     2,3 ; demi-volée 26 ×1,25 / 2,1 ; tête 13 [8-18] ×1,1 / 1,8), FAMILLE (croisé → placé ; ras-de-terre,
+     flottante, mi-hauteur → puissance ; lucarne → enroulée ; lob, piqué, coup franc direct hors table),
+     vitesseGeste (v̄ × powF × la bride du bout portant — instep à D < 8 m × 0,9 —, bornée [lo ; hi] × powF),
+     vMaxDe (35,5 × vMaxF : la borne physiologique de f_v par attribut, [33 ; 38]), dispersionGeste (σψ ×
+     sigma, σθ/σψ × aniso / 2 sur l'ellipse du 278). attributes.js : shotPower → powF [0,90 ; 1,10], vMaxF
+     (identité 1 exacte à 50, contrat de monotonie). shooting.js pose la vitesse sur l'espèce non exacte
+     avant le point visé (l'élévation se re-résout de la nominale du 278) ; strike-sim passe vMax et les
+     colonnes ; tete.js frappe la tête (13 × powF × headF × gêne) et la volée (26 × powF) du book. L'ARRÊT AU
+     JOURNAL (cfg.arretControle, match-sim, en tête de la boucle gardien) : le tir adverse que le gardien
+     contrôle dans les 3 s sans arrêt nommé → 'arrêt' mode 'controle' — DIAGNOSTIC (dbg278, 2 × 45 min) :
+     92 tirs, 21 arrêts nommés, 15 buts, 31 « rien » dont 6 contrôlés par le gardien, 13 libres, 4 pris par
+     un défenseur — 6 arrêts sur 27 n'étaient pas comptés, le taux d'arrêt se lisait 8 points trop bas ;
+     piège : le hook fondu sur une ligne à commentaire « // » était avalé (les _ownPrev restaient
+     undefined) — déplacé avant, commentaire converti. Clés absentes : les vitesses et le journal d'hier au
+     bit (1dd69b0ccdc50f84 / b8b500c9aecf89ce = le défaut du 278 relu par git stash). LE CALAGE : aux
+     vitesses du book, arrêts / cadrés lus 55-64 (dedans 47-56) — quatre recalages du gardien essayés (marge
+     1,4 / 1,55, tirage du book β0 0 / 0,8 : 57-61 / 47-54, le bruit à 4 graines ±7 pts) AVANT de comprendre
+     que le journal manquait ; avec l'arrêt au journal : 67-71 % SANS recaler l'enveloppe du 276. Sonde
+     APRÈS (sonde-279, 8 × 45 min) : instep 23,8-24,4 m/s (28 × la sous-dose), placé 17,2, enroulée
+     21,2-21,5, volée 26,0, tête 12,3-12,7, temps de vol au plan p50 0,69-0,72 s ; arrêts / cadrés 66,7-71,2
+     (dedans 60-64, dehors 90-94 : les cibles 69 / 60 / 85 tenues), cadrés 44-52 (le contrôle compte cadré —
+     convention à ventiler), hors cadre 38-43 (36-38), buts 5,25 → 6,25 / match (7,25 / 5,25 — le volume,
+     42 tirs), au-dessus / à côté 0,91-1,18 (0,83-0,93 au 278), σvert / σhoriz au plan 1,0-1,8 brut,
+     1,5-3,1 côté haut. L'OPTIMUM INTÉRIEUR (test 2 du M10, optimum279.mjs : tireur posé, gardien au poste,
+     200 frappes par vitesse via powF) : à 16 m P(but) 2 / 4 / 16 / 10 / 12 % à 15 / 18 / 22 / 26 / 29 m/s
+     (cadré 73 / 87 / 85 / 76 / 68) — non monotone ; à 24 m 0 / 2 / 1 / 8 / 2. Banc : verify-match11 bloc
+     279 (index 177 : la table = le book, l'identité 28, la bride 25,2, powF 1,1 → 30,8, 0,9 à 6 m → 22,7,
+     les familles, vMax 35,5 / 33 / 38, l'ordre des colonnes, shotPower monotone ; 4 × 600 s : instep 23,8
+     m/s (≥ 23) contre 18,3 sans la clé, têtes 13,0, volées 26,0, 5 arrêts 'controle' contre 0 sans la
+     clé). Ce qu'il nomme : le volume (42 tirs pour 25 — les entrées dans la surface, le bloc), la sélection
+     du geste par P_but (§3.2, softmax T 0,35 — les espèces se tirent encore à l'uniforme), le coup franc
+     direct au répertoire (18,6-19,1 pour 28), la convention « cadré » du contrôle. Banc complet (final280 :
+     8 shards puis 25 annexes) : 317 ✓ / 7 ✗ au premier passage — rouges verts à HEAD~ (worktree 842c118)
+     et épinglés PAR CONTENU « repertoire et arretControle null DATÉ 279 », tous verts isolés à HEAD : 167
+     (bloc 80, les services de course), le plein format de 3 min (bloc 1 : 18 passes c. 25 — le budget
+     0,76 ms/step tenu), 190 (99, les prises au retrait), 123 (54, le box crash), mon propre bloc 278
+     (176 : le ballon à 28 m/s passe la barre même sans queue — le sabotage « ellipse null » mesuré au
+     répertoire d'hier) ; hérités : 246d, les contres arrivés à l'entrée. Annexes : contact 23/2 → 25/0
+     (L74, le fauté qui tombe — 25/0 à HEAD~), frappes 12/1 → 13/0 (les quatre cfg de la fixture de
+     l'enroulée : à 24 m/s la courbe ne rejoint plus le poteau calibré à 18,5 — fixture d'hier), identification
+     0/1 → REGELÉ DATÉ 279 (19 → 15 signatures : perdues GK A|garde, DC A|profondeur, LAT A|appel, DC
+     C|profondeur, MDC A|largeurR, MDC A|appel, AIL C|largeurR, AV C|tenue ; gagnées DC C|largeurR, MIL
+     B|tenue, MDC C|appel, AIL C|repli), loi12 12/2 hérité ; attente 52/0, attributes 27/0, cartons 6/0,
+     expulsion 8/0, football-rules 59/0, foulee 54/0, gestes 60/0, kit 5/0, loi3 10/0, match 84/0, menace
+     11/0, part-tint 18/0, porte 4/0, remises 36/0, roles 14/0, rondo 40/0, scan 5/0, slide 10/0, sync 9/0,
+     tactics 11/0, tete 7/0. Piège nommé : un « while pgrep -f motif » attend sa propre ligne de commande
+     (la chaîne des annexes ne partait jamais). Bloc 1 seul : 0,76 ms/step (≤ 1,6, deux annexes en parallèle).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

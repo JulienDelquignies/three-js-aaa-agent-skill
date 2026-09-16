@@ -1,3 +1,4 @@
+import { vitesseGeste } from './repertoire.js';
 import { tirage } from './rng.js';
 import { xgDe } from './xg.js';
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
@@ -77,12 +78,13 @@ export function teteStep(st, cfg) {
   if (dGoal < (T.but ?? 12) && st.pitch.inBox(joueur.p[0], joueur.p[2], sgn)) {
     // LA TÊTE AU BUT : piquée vers un point du cadre seedé — canal shot standard
     const tz = (tirage(st, 'tir', joueur.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.5);
-    st.ball.strike({ speed: 12.5 * geneV * (joueur.skill?.headF ?? 1), dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]) + gene, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });   // …la PUISSANCE de la tête au but (147, heading)
+    const vT = st.full && cfg.repertoire ? vitesseGeste('tête', cfg.repertoire, joueur, { dGoal }) : 12.5;   /* (279) la tête du book : 13 m/s × powF (null : 12,5 d'hier) */
+    st.ball.strike({ speed: vT * geneV * (joueur.skill?.headF ?? 1), dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]) + gene, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });   // …la PUISSANCE de la tête au but (147, heading)
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
     const xgT = st.full && cfg.xg ? xgDe(st, joueur, cfg, true) : null; if (xgT) (st.xg ??= [0, 0])[joueur.team] += +xgT.ref.toFixed(3);   // (272) la tête porte son xG (δ_tête recentré)
-    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', geste: 'tête', range: +dGoal.toFixed(1), speed: +(12.5 * geneV).toFixed(1), ...(xgT ? { xg: +xgT.ref.toFixed(3), xgDec: +xgT.dec.toFixed(3), omega: +xgT.omega.toFixed(2) } : {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', geste: 'tête', range: +dGoal.toFixed(1), speed: +(vT * geneV).toFixed(1), ...(xgT ? { xg: +xgT.ref.toFixed(3), xgDec: +xgT.dec.toFixed(3), omega: +xgT.omega.toFixed(2) } : {}) });
     return;
   }
   if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {
@@ -148,12 +150,13 @@ export function voleeStep(st, cfg) {
     const tz = (tirage(st, 'tir', joueur.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.6);
     st._teteCd = st.t + 0.8;
     st.lastTouch = joueur.team; st.lastPasser = joueur.id;   // le toucher au grand livre (195, Loi 17)
-    st.ball.strike({ speed: 17, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0.5 });
+    const vV = st.full && cfg.repertoire ? vitesseGeste(demi ? 'demi-volée' : 'volée', cfg.repertoire, joueur, { dGoal }) : 17;   /* (279) la volée du book : 26 [20-31] × powF (null : 17 d'hier) */
+    st.ball.strike({ speed: vV, dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]), elevation: 0.06, spinAxis: [0, 1, 0], spinRev: 0.5 });
     surprend(st);
     st.pass = null;
     st.events.push({ t: +st.t.toFixed(2), type: 'volée', by: joueur.id, mode: 'but', demi });
     const xgV = st.full && cfg.xg ? xgDe(st, joueur, cfg, false, cfg.xg.d?.[demi ? 'demiVolee' : 'volee'] ?? 0) : null; if (xgV) (st.xg ??= [0, 0])[joueur.team] += +xgV.ref.toFixed(3);   // (272) la volée porte son xG (δ volée −0,45 / demi-volée −0,20, § 2.3)
-    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', geste: 'volée', range: +dGoal.toFixed(1), speed: 17, ...(xgV ? { xg: +xgV.ref.toFixed(3), xgDec: +xgV.dec.toFixed(3), omega: +xgV.omega.toFixed(2) } : {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: demi ? 'demi-volée' : 'volée', geste: 'volée', range: +dGoal.toFixed(1), speed: vV, ...(xgV ? { xg: +xgV.ref.toFixed(3), xgDec: +xgV.dec.toFixed(3), omega: +xgV.omega.toFixed(2) } : {}) });
     return;
   }
   if (hyp(own.x - joueur.p[0], joueur.p[2]) < 24) {

@@ -31,6 +31,7 @@ export const ATTRIBUTES = {
   dribbling:   'longueur de touche → lead × [1,08 ; 0,94] ; engagement/vente des gestes × [0,55 ; 1,10] ; l\'ESQUIVE du duel ± [−0,08 ; +0,08] m (152)',
   finishing:   'placement du tir         → bruit du point visé [0,55 m ; 0,10 m] (σ) ; sous cfg.finition (258) : finF [2,24 ; 0,45] × le σ d\'angle de la frappe',
   longShots:   'frappe de loin           → audace lointaine × [0,75 ; 1,25] (cfg.audace, lot 107)',
+  shotPower:   'puissance de frappe      → powF [0,90 ; 1,10] × la vitesse du geste du book (279, cfg.repertoire) ; vMaxF : la borne physiologique [33 ; 38] m/s de l\'échelle de finition (ch. 3 §4 : par attribut, pas par un record)',
   tackling:    'fenêtre du tacle debout  → portée du duel ± [−0,10 ; +0,10] m + l\'horloge du pique (tacleTempoF, 157) + la garde du duel gagné (tacleGardeF, 166)',
   teamwork:    'la cohésion du pressing   → teamF [0,8 ; 1,2] : la pénalité de zone à l\'élection du presseur (160)',
   anticipation: 'la lecture du bloc        → anticipF [0,85 ; 1,15] : la fenêtre du pressing collectif (161)',
@@ -98,6 +99,8 @@ export function makeProfile(ratings = {}) {
     shotSigma: lerp(0.55, 0.10, r('finishing')),                  // m — sur le point visé dans le but
     finF: Math.pow(0.2, r('finishing') - 0.5),                    // × sur le σ D'ANGLE de la frappe (258, cfg.finition) : 2,24 à 0, 1 exact à 50, 0,45 à 100 — Modèle 03 §5.2 (2,5 × 0,2^f̂), recentré à l'identité
     longF: lerp(0.75, 1.25, r('longShots')),                      // × sur l'AUDACE lointaine (le 50 vaut 1 exact — l'identité du monde moyen)
+    powF: lerp(0.90, 1.10, r('shotPower')),                       // × sur la VITESSE du geste (279, cfg.repertoire) — 1 exact à 50
+    vMaxF: lerp(33, 38, r('shotPower')) / 35.5,                   // × sur la borne physiologique vMax de l'échelle de finition (279) — 1 exact à 50 (35,5 m/s)
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel
     tacleTempoF: lerp(0.85, 1.15, r('tackling')),                 // × l'horloge du pique (157) : le bon tacleur
     tacleGardeF: lerp(0.85, 1.15, r('tackling')),                 // × la part de PRISE PROPRE du duel gagné (166) : le
@@ -197,6 +200,7 @@ export function checkAttributes() {
   for (const [k, f] of [['aerialReach', 'aerialF'], ['oneOnOnes', 'oooF'], ['command', 'commandF']])
     if (!(hi[f] > mid[f] && mid[f] > lo[f]) || Math.abs(mid[f] - 1) > 1e-9) issues.push(k + ' non monotone ou no-op violé');
   if (!(hi.longF > mid.longF && mid.longF > lo.longF)) issues.push('longShots non monotone');
+  if (!(hi.powF > mid.powF && mid.powF > lo.powF) || Math.abs(mid.powF - 1) > 1e-9 || Math.abs(mid.vMaxF - 1) > 1e-9) issues.push('shotPower non monotone ou identité à 50 violée');
   if (Math.abs(mid.longF - 1) > 1e-9) issues.push('longF au 50 doit valoir 1 exact (l\'identité du monde moyen)');
   if (!(hi.sautF > mid.sautF && mid.sautF > lo.sautF)) issues.push('jumping non monotone');
   if (Math.abs(mid.sautF - 1) > 1e-9) issues.push('sautF au 50 doit valoir 1 exact (l\'identité du monde moyen)');

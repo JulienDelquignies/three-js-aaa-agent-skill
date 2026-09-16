@@ -262,7 +262,7 @@ function assignMatchJobs(st, cfg) {
 
   // ---- les gardiens (toujours, toutes phases)
   for (const gk of st.players.filter((p) => p.keeper && !p.expulse && !p._sub)) {
-    if (st.restart && st.restart.taker === gk.id) continue;        // le gardien-PRENEUR (193) garde son métier de remise — le poste ne l'écrase pas
+    if (st.restart && st.restart.taker === gk.id) continue;   if (st.full && cfg.arretControle) { const ownG = st.ball.owner === gk.id; if (ownG && !gk._ownPrev) { for (let i = st.events.length - 1; i >= 0 && st.t - st.events[i].t <= (cfg.arretControle.fenetre ?? 3); i--) { const e = st.events[i]; if (e.type === 'arrêt' && e.by === gk.id) break; if (e.type === 'shot' && st.players[e.by]?.team !== gk.team) { st.events.push({ t: +st.t.toFixed(2), type: 'arrêt', by: gk.id, mode: 'controle' }); break; } } } gk._ownPrev = ownG; }   /* (279) L'ARRÊT AU JOURNAL : le gardien qui CONTRÔLE un tir adverse (le ballon lui arrive dans les fenetre s d'un tir, sans arrêt nommé) est un arrêt — mode 'controle' ; mesuré : 6 arrêts sur 27 n'étaient pas comptés. null : le journal d'hier */   /*  le gardien-PRENEUR (193) garde son métier de remise — le poste ne l'écrase pas */
     gk.job = 'keeper';
     // LE GARDIEN PORTEUR EST UN DISTRIBUTEUR, PAS UN POSTE (CSC mesuré en marchant vers sa ligne) : il s'écarte du but, le cerveau distribue.
     if (carrier && carrier.id === gk.id) {

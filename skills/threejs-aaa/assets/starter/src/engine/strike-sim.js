@@ -10,7 +10,7 @@ import { startGesture } from './gesture.js';
 import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING } from './skills-sim.js';
-import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js';
+import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js';
 import { pressionDe, sigmaPasse } from './reception.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
@@ -530,7 +530,9 @@ export function strikeNow(st, c, cfg) {
       for (let it = 0; cr && it < (E.nominal.iters ?? 7); it++) { if (cr[0] < kind.yVisee) lo = elev; else hi = elev; elev = 0.5 * (lo + hi); cr = plan(elev); }
       if (cr) sol.dirYaw += sx * (zV - cr[1]) / Math.max(1, dG); }
     const dPhi = E ? Math.atan2(Math.sin(sol.dirYaw - (c.yaw ?? sol.dirYaw)), Math.cos(sol.dirYaw - (c.yaw ?? sol.dirYaw))) : 0;
-    const L = finitionSigma(E ? { ...F258, sigma0: E.sigma0 ?? F258.sigma0, aniso: E.aniso ?? F258.aniso, corps: E.corps ?? 0 } : F258, { finF: c.skill?.finF ?? 1, composureF: c.skill?.composureF ?? 1.075, weakF: c.skill?.weakF ?? 1, faible, P, stam: c.stam ?? 1, spd, dG, dPhi });
+    const R = E && cfg.repertoire ? cfg.repertoire : null;   /* (279) LE RÉPERTOIRE DU BOOK : vMax par attribut (f_v = (v / vMax)^γ) et les colonnes de dispersion du geste (σψ × sigma, σθ/σψ × aniso / anisoRef) sur l'ellipse */
+    const L = finitionSigma(E ? { ...F258, sigma0: E.sigma0 ?? F258.sigma0, aniso: E.aniso ?? F258.aniso, corps: E.corps ?? 0, ...(R ? { vMax: vMaxDe(c, R) } : {}) } : F258, { finF: c.skill?.finF ?? 1, composureF: c.skill?.composureF ?? 1.075, weakF: c.skill?.weakF ?? 1, faible, P, stam: c.stam ?? 1, spd, dG, dPhi });
+    if (R) { const G = dispersionGeste(kind?.id, R); L.sigPsi *= G.sigma; L.sigTheta *= G.sigma * G.aniso; }
     if (E) { const W = ecartDe(rnd, L, E, { P, cote: (c.foot === 'left' ? -1 : 1) * (E.sens ?? 1) }); shotYawNoise = W.dPsi; sol.dirYaw += W.dPsi; elev = Math.max(0.005, elev + W.dTheta); spd = vitesseDe(spd, W.lnV, E); }
     else {
     shotYawNoise = gauss(rnd) * L.sigPsi; sol.dirYaw += shotYawNoise;   // la déviation de cap du tir, comme celle de la passe (dirNoise), avant la frappe
