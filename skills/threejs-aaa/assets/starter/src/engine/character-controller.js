@@ -114,11 +114,28 @@ export class CharacterController {
     const seed = typeof style === 'number' ? style : null;
     if (typeof style === 'number') style = gaitStyleFromSeed(style);   // la graine de persona → sa signature
     this._gaitGen = { P, style: style || NEUTRAL_GAIT_STYLE, rest, hipsRest: hips.position.clone(), axisY, axisX, tq: new THREE.Quaternion(), tq2: new THREE.Quaternion(), tp: new THREE.Vector3(), w: 0, vBody: [0, 0], legK: gaitLegK(P) };   // (A7 bis) la cadence à l'échelle de la jambe du rig
+    // (A7 ter) LE VERROU DE PIEDS CALIBRÉ SUR LA FOULÉE GÉNÉRÉE : le plancher de chaque pied est le minimum de sa cheville sur un cycle
+    // de course (4,5 m/s) posé par le générateur — pas le clip du donneur — et la bande de contact descend à 2,5 cm (foot-lock.calibrate).
+    if (this.footLock) this.footLock.calibrate((p) => this._poseGait(p, 4.5), { band: 0.025 });
     // L'ATTENTE GÉNÉRÉE (motion-idle, lot A8) : sous 0,6 m/s le corps n'est plus l'idle du donneur mais
     // une espèce d'attente choisie par la politique (idleCtx posé par la scène ; idleForce : la planche),
     // au style du joueur, fondue en 0,5 s d'une espèce à l'autre et fondue avec la foulée au-dessus.
     this._idle = { style: this.idleStyle ?? (seed != null ? idleStyleFromSeed(seed + 101) : NEUTRAL_IDLE_STYLE), kind: 'repos', prev: null, blend: 1, t: 0 };   // idleStyle : le style d'attente POSÉ (roster, docs/Interface_Style_Joueur.md), sinon tiré de la graine
     this.idleCtx = null; this.idleForce = null; this.idleOpts = null;
+  }
+
+  /** (A7 ter) Poser la foulée générée à une phase et une allure (la calibration du verrou de pieds, un instrument) — le même écrivain que _applyGeneratedGait. */
+  _poseGait(phi, vF) {
+    const G = this._gaitGen; if (!G) return;
+    const g = gaitPose(G.P, phi, vF, 0, G.style, { legK: G.legK });
+    for (const name in g.q) {
+      const bone = this._gaitBones.get(name), rest = G.rest.get(name);
+      if (!bone || !rest) continue;
+      const q = g.q[name]; this._gaitQ.set(q[0], q[1], q[2], q[3]); G.tq.copy(rest).multiply(this._gaitQ); bone.quaternion.copy(G.tq);
+    }
+    const hips = this._gaitBones.get('Hips');
+    if (hips) hips.position.copy(G.hipsRest).addScaledVector(G.axisY, g.hips[1]).addScaledVector(G.axisX, g.hips[0]);
+    this.model.updateWorldMatrix(true, true);
   }
 
   /** Changer le style de foulée d'un joueur (sa signature, graine de persona). */

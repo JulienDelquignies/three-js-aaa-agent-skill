@@ -12650,3 +12650,28 @@ générée puis validée → « modifiable/personnalisable sans régression ».
   lui. Captures s9-tenue-cote / s9-tenue-dos.
 - **Dettes** : la tenue attend un appui SERVABLE (elle ne lit pas la course qui vient) ; le presseur qui orbite n'a pas de geste
   (il pousse, la scène ne le montre pas) ; le clip de protection est celui de la scène (géométrie), pas un acte de la sim.
+
+- 380: LA FOULÉE A7 ter (§ 6 : le pas croisé, le port des bras, le verrou de pieds calibré ; motion-gait.js, foot-lock.js, character-controller.js ; verify-foulee 81/0 ; reference/52 § A7 ter)
+
+- **Le pas croisé** (gaitPose, opts.turn > 7 m/s² et vF > 3) : kX = clamp((|aT| − 7)/2) × fondu(3 → 4 m/s) × atténuation sprint
+  (×0,4 à 9,5 m/s) ; le couloir de la jambe extérieure passe la médiane et se pose à 0,03·kX m à l'intérieur du couloir de l'intérieure
+  (écartée de 0,05·kX) ; pYawTurn 6°·kX (la hanche extérieure devant) ; le tronc contre-tourne en entier ; swingH ×(1 − 0,12·kX).
+  Mesuré (6 m/s, 9 m/s²) : croisé de 3,0 cm (course droite : 10,9 cm d'écart), bassin +6,1°, épaules −0,4°, genoux à 10,2 cm ; sous
+  7 m/s² : 13,4 cm d'écart, à 2,5 m/s : 18,9 ; chassés jamais. En construisant : 0,04 m / 10° poussaient la hanche extérieure à −32°
+  (contrat −30) et le genou à 142° au sprint → 0,03 / 6°, l'atténuation sprint, le vol qui rase ; le contre-tour à 25 % laissait
+  6 signatures sans opposition bras-jambe au sprint freiné → 100 %. 40 signatures × 5 virages serrés : 0 rouge.
+- **Les bras** : run coude 85 → 90, armOff 8 → 10 (sprint inchangé 92/10) ; la main avant −4 → −2 cm du sternum en course, coude
+  89-102° (hier 86-99) ; le frein ferme le coude de +6 (hier +10 : marges bras-jambe 2,2 → 1,8 cm sur 5 signatures, 2,5-3,1 après).
+  Planches : foulee-4.5-0-apres.png (après la retouche).
+- **Le verrou** : foot-lock.calibrate(sample, {band}) — le plancher balayé sur la foulée générée à 4,5 m/s (_poseGait : le même écrivain
+  que _applyGeneratedGait), la bande 0,05 → 0,025 (mode généré seul ; ?foulee=clips au bit). Mesuré en page (match11 ?animlod=0, le
+  même coureur, 3 fenêtres de 7 s, le pic d'accélération de la cheville autour de chaque relâche) : bande 5 cm → p50 4,7 cm/image²,
+  p90 6,2, maxi 6,7, 1 recapture, 4 reculs ; bande 2,5 cm → p50 2,5 / 1,9, p90 4,0 / 3,8, maxi 4,2-5,5, 0 recapture (2 à 2,8 m/s),
+  0-3 reculs. Les relâches restantes : « étirement » (le fondu à 92 % de la portée) 10-14 sur 17 appuis, « haut » 3-4.
+  La première mesure avec le LOD d'animation actif était fausse (le squelette d'un joueur lointain ne bouge qu'une image sur N :
+  cheville « ancrée » à 5 cm/image) — le LOD se coupe pour mesurer.
+- **La planche** : contact-sheet.mjs --gait <vF> --turn <m/s²> (pl.ctrl._turn posé : l'accélération mesurée vaut 0 sur un modèle
+  immobile) — foulee-6-0-virage9-apres.png.
+- **Bancs** : verify-foulee 81 ✓ / 0 ✗ (10 clauses A7 ter : le croisement, le bassin/les épaules, le miroir, sous 7 m/s² et sous 3 m/s,
+  200 foulées croisées, les chassés, les bras en course et au sprint, le frein +6, sabotage « bras bas ») ; sync 9/0 ; build ok.
+- **Dettes** : le pas croisé est rare en match (le cap lissé B5 borne le taux de virage) ; le pic de l'étirement reste.

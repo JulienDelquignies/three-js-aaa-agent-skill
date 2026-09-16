@@ -56,6 +56,17 @@ export class FootLockIK {
     }
   }
 
+  /** (A7 ter) RE-CALIBRER sur une autre locomotion : `sample(phase01)` pose le squelette — la foulée GÉNÉRÉE, pas le clip du
+   *  donneur — et le plancher de chaque pied est le minimum de sa cheville sur le cycle ; `band` : la bande de contact. La foulée
+   *  générée tient sa cheville à ≤ 1,2 cm du plancher sur l'appui plat et le pelage la monte de 6 cm : à 5 cm (la bande du clip) le
+   *  verrou re-capturait la cheville EN PLEIN PELAGE (mesuré en page, LOD coupé, 5 s à 3,5 m/s : 3 recaptures, des sauts de 8 cm en
+   *  une image à la relâche) ; à 2,5 cm il lâche au début du pelage et ne reprend qu'à la pose. */
+  calibrate(sample, { samples = 40, band = null } = {}) {
+    this.state.forEach((st) => { st.floor = Infinity; st.online = false; st.grounded = false; st.w = 0; });
+    for (let s = 0; s < samples; s++) { sample(s / samples); this.legs.forEach((l, i) => { l.foot.getWorldPosition(_foot); this.state[i].floor = Math.min(this.state[i].floor, _foot.y); }); }
+    if (band != null) this.contactBand = band;
+  }
+
   /**
    * v2, ré-écrit contre la sonde du sweep (97-98 % des appuis translataient > 0,15 m, médiane
    * 0,77 m par appui — le patin généralisé qui fait LIRE le jeu trop vite) :

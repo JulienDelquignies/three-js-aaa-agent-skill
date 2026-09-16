@@ -74,7 +74,7 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
   trotte au ballon, le ramasse (`ramassage`, A9) et le roule (`rouleMain`). Scène seulement, plus
   une position dans la sim (`st.ramasseurs`).
 
-## 6. La foulée : le pas croisé, le port des bras, le verrou de pieds (A7 ter)
+## 6. La foulée : le pas croisé, le port des bras, le verrou de pieds (A7 ter) — LIVRÉ (16/09, note 380, reference/52 § A7 ter, verify-foulee 81/0)
 
 - **Pas croisé.** Dans `gaitPose`, `opts.turn` > 7 m/s² à v > 3 : la jambe extérieure croise
   devant (chemin de pied latéral alterné sur un cycle), le bassin tourne. Contrat : pas de

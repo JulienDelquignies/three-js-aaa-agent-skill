@@ -68,7 +68,7 @@ console.log('\n— (b) face au but, un adversaire à portée, le ballon trop bas
 }
 console.log('\n— (c) la clé absente rend l\'hier —');
 {
-  const n = centre({ retournee: null });
+  const n = centre({ retournee: null, bouclier: null });
   ok(`LA CLÉ ABSENTE : retournee:null — aucun windup 'retournee', le ballon à 1,8 m sur un dos au but retombe ou se joue autrement (${n.autres || 'rien'})`, !n.windup && !n.contact, n.types.slice(0, 160));
 }
 console.log(`\nretournée : ${pass} ✓ / ${fail} ✗`);

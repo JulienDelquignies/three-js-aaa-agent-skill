@@ -69,7 +69,7 @@ tronc ×0,75-1,25, hauteur du vol ×0,85-1,15, ouverture des pieds 3-14°, large
 lacet/roulis du bassin, point de pose, pointe au pelage, affaissement. Reconnaissable, pas
 caricatural : 40 graines × 6 régimes sont sous contrat.
 
-## Le contrat (verify-foulee.mjs — 71 clauses)
+## Le contrat (verify-foulee.mjs — 81 clauses)
 
 - 13 régimes (marche lente → sprint, arrière, chassés, diagonales) sous `checkGaitGen` : pied
   d'appui immobile au monde (≤ 0,06 m/s), pied d'appui au sol (point le plus bas ≤ 1,2 cm), vol qui
@@ -184,6 +184,30 @@ glisse du gardien, écrite par le geste) et 36 de roulette (le tour du ballon, �
 le fossile est parti (feinte 7, tacle debout 5, semelle 5, râteau 0, passement 1, crochet 2). Petit
 lot, petit effet : l'armé de passe glisse, il ne se fige pas.
 
+## Le pas croisé, le port des bras, le verrou calibré (A7 ter — Animations_A_Faire § 6, note 380)
+
+- **Le pas croisé du virage serré** (`gaitPose`, `opts.turn`) : au-delà de 7 m/s² d'accélération latérale et de 3 m/s de course
+  (kX : 0 → 1 de 7 à 9 m/s², fondu 3 → 4 m/s, atténué au sprint — ×0,4 à 9,5 m/s : la foulée longue sature la hanche), la jambe
+  EXTÉRIEURE croise devant l'intérieure : son couloir passe la ligne médiane et se pose à `0,03·kX` m À L'INTÉRIEUR du couloir de
+  l'intérieure (qui s'écarte de `0,05·kX` vers l'intérieur) ; le bassin TOURNE dans le virage (`pYawTurn` 6°·kX, la hanche extérieure
+  devant) et le tronc CONTRE-TOURNE en entier (les épaules restent dans l'axe de la course — à 25 % de contre-tour, 6 signatures
+  perdaient l'opposition bras-jambe au sprint freiné) ; le vol rase un peu plus (swingH ×(1 − 0,12·kX) : le genou reste sous 140°).
+  Mesuré (6 m/s, 9 m/s²) : le pied gauche se pose 3,0 cm à l'intérieur du couloir du droit (en course droite 10,9 cm d'écart), le
+  bassin tourné de +6,1° au contact gauche, les épaules à −0,4°, les genoux à 10,2 cm au plus près ; sous 7 m/s² et sous 3 m/s :
+  aucun croisement (13,4 et 18,9 cm d'écart) ; les chassés ne croisent jamais. `contact-sheet.mjs --gait 6 --turn 9` le montre.
+- **Le port des bras en course** (`GAIT_REGIMES.run` : coude 85 → 90°, armOff 8 → 10 ; le sprint garde 92/10) : la main avant
+  monte à hauteur de poitrine (−2 cm du sternum à 4,5 m/s, hier −4 ; +2,6 au sprint), le coude fléchi 89-102° en course
+  (hier 86-99), 96-114 au sprint. Le frein ferme le coude de +6° (hier +10) : avec le coude de course monté, la main avant repliée
+  perdait l'opposition bras-jambe au sprint freiné (marges 2,2 → 1,8 cm sur 5 signatures ; 2,5-3,1 aujourd'hui).
+- **Le verrou de pieds calibré sur la foulée générée** (`foot-lock.calibrate`, `character-controller._poseGait`) : le plancher de
+  chaque pied est le minimum de sa cheville sur un cycle de course à 4,5 m/s POSÉ PAR LE GÉNÉRATEUR (pas le clip du donneur — les
+  deux valent 0,116 m sur shanon) et la bande de contact descend de 5 à 2,5 cm : la foulée générée tient sa cheville à ≤ 1,2 cm du
+  plancher sur l'appui plat et le pelage la monte de 6 cm — à 5 cm le verrou re-capturait la cheville en plein pelage. Mesuré en
+  page (match11, LOD coupé, le même coureur à 3,8-4,4 m/s, 7 s par bande, le pic d'accélération de la cheville autour de la relâche) :
+  bande 5 cm → pics p50 4,7 cm/image², p90 6,2, maxi 6,7, 1 recapture, 4 reculs ; bande 2,5 cm → p50 2,5, p90 4,0, maxi 4,2-5,5,
+  0 recapture, 0-2 reculs. Les relâches qui restent sont l'étirement (le fondu part à 92 % de la portée) — la loi d'hier. Le mode
+  `?foulee=clips` garde sa bande de 5 cm et son plancher de clip, au bit.
+
 ## Les dettes nommées
 
 - **Deux signatures sur quarante** (graines 3 et 35) passent sous le plafond `checkClip` entre 4,75 et
@@ -194,10 +218,10 @@ lot, petit effet : l'armé de passe glisse, il ne se fige pas.
 - **La course arrière ne se déclenche presque jamais** : la sim demande aux défenseurs de regarder
   où ils courent (yawWant ≈ vitesse ; 150 s de jeu sans un seul (vF < −1,8)). Le régime existe et
   est sous contrat ; il attend une consigne de face « jockey » côté moteur (A10/A11).
-- **Le pas croisé** du virage serré n'existe pas (le roulis, la base élargie et le bassin glissé, oui).
+- ~~Le pas croisé du virage serré n'existe pas~~ — livré (A7 ter) ; reste : le pas croisé ne se voit en match que dans un virage à
+  plus de 7 m/s² lancé à plus de 3 m/s (rare : le cap lissé de B5 borne le taux de virage).
 - **L'idle** est toujours celui du Soldier (A8) ; la transition idle → foulée est un fondu de 0,35 m/s.
-- **Le verrou de pieds** re-capture parfois une image pendant le pelage (cheville à 0,15 m, sous
-  sa bande de 5 cm au-dessus d'un plancher calibré sur le clip de course) — un tressaillement de
-  5 cm, à régler dans `foot-lock.js` (plancher calibré sur la foulée générée, bande plus étroite).
+- ~~Le verrou de pieds re-capture parfois une image pendant le pelage~~ — calibré sur la foulée générée (A7 ter : bande
+  2,5 cm, plancher du générateur) ; reste le pic de l'étirement (le fondu à 92 % de la portée pendant que le corps avance).
 - **Le port des bras** en course est bas et fermé (coude 85°, balancier 36°) ; les sheets
   montrent un bras qui pourrait monter (mains à hauteur de poitrine) — un réglage de `GAIT_REGIMES`.

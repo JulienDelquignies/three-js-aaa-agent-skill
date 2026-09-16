@@ -225,5 +225,34 @@ console.log('\n— A7 bis : la cadence à l\'échelle de la jambe (gaitLegK), le
   ok(a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: 0, turn: 0 })) && a === JSON.stringify(gaitPose(P, 0.3, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: undefined, turn: undefined, legK: undefined })), 'sans frein ni virage (0 ou absents), la foulée à la cadence de la jambe, au bit');
 }
 
+console.log('\n— A7 ter (§ 6) : le pas croisé du virage serré, le port des bras en course, le verrou de pieds calibré —');
+{
+  const D2R = Math.PI / 180;
+  const lanes = (v, turn) => { const pr = gaitPortrait(P, { vF: v, vR: 0, opts: { turn }, n: 60 }); const g = gaitPose(P, 0, v, 0, NEUTRAL_GAIT_STYLE, { turn }); const fk = fkPose(P, g.q, g.hips);
+    const yawHips = Math.atan2(fk.RightUpLeg.p[2] - fk.LeftUpLeg.p[2], fk.RightUpLeg.p[0] - fk.LeftUpLeg.p[0]) / D2R, yawSh = Math.atan2(fk.RightShoulder.p[2] - fk.LeftShoulder.p[2], fk.RightShoulder.p[0] - fk.LeftShoulder.p[0]) / D2R;
+    let kneeSep = 9; for (const f of pr.frames) kneeSep = Math.min(kneeSep, Math.hypot(f.L.knee[0] - f.R.knee[0], f.L.knee[1] - f.R.knee[1], f.L.knee[2] - f.R.knee[2]));
+    return { L0: pr.frames[0].L.ankle[0], R30: pr.frames[30].R.ankle[0], yawHips, yawSh, kneeSep }; };
+  const d = lanes(6, 0), c = lanes(6, 9), cg = lanes(6, -9), m = lanes(6, 6), s2 = lanes(2.5, 9);
+  ok(c.L0 - c.R30 >= 0.02 && c.L0 - c.R30 <= 0.06, `virage serré à droite (9 m/s², 6 m/s) : LE PAS CROISÉ — le pied gauche (extérieur) se pose ${cm(c.L0 - c.R30)} cm À L'INTÉRIEUR du couloir du droit (en course droite : ${cm(d.R30 - d.L0)} cm d'écart, jamais croisé) — borné à 6 cm`);
+  ok(c.yawHips - d.yawHips >= 4 && Math.abs(c.yawSh - d.yawSh) <= 1.5 && c.kneeSep >= 0.06, `…le bassin TOURNE dans le virage (+${(c.yawHips - d.yawHips).toFixed(1)}° au contact gauche), les épaules restent dans l'axe de la course (${(c.yawSh - d.yawSh).toFixed(1)}° — le tronc contre-tourne), les genoux ne se traversent pas (${cm(c.kneeSep)} cm au plus près)`);
+  ok(Math.abs((cg.L0 - cg.R30) - (c.L0 - c.R30)) < 1e-3 && Math.abs((cg.yawHips - d.yawHips) + (c.yawHips - d.yawHips)) < 0.5, `le virage serré à gauche est le miroir (le pied droit (extérieur) se pose ${cm(cg.L0 - cg.R30)} cm à l'intérieur du couloir du gauche, le bassin tourne de ${(cg.yawHips - d.yawHips).toFixed(1)}°)`);
+  ok(m.R30 - m.L0 >= 0.10 && s2.R30 - s2.L0 >= 0.10, `sous 7 m/s² (6 m/s² : ${cm(m.R30 - m.L0)} cm d'écart) et sous 3 m/s (2,5 m/s à 9 m/s² : ${cm(s2.R30 - s2.L0)} cm) : aucun croisement — le pas croisé est une allure de course dans un virage SERRÉ (la base élargie d'A7 bis reste)`);
+  let rouges = 0; for (let s = 1; s <= 40; s++) { const st = gaitStyleFromSeed(s); for (const [vF, o] of [[4.5, { turn: 9 }], [7, { turn: -9 }], [8, { brake: 1, turn: 9 }], [6, { turn: 8 }], [3.5, { turn: 9 }]]) if (!checkGaitGen(P, { vF, vR: 0, style: st, opts: o }).ok) rouges++; }
+  ok(rouges === 0, `40 signatures × 5 virages serrés (dont le frein au sprint) = 200 foulées croisées sous contrat (${rouges} rouges)`);
+  const chassesCroises = checkGaitGen(P, { vF: 0, vR: 2, opts: { turn: 9 } });   // les chassés ne croisent pas même « en virage » : le pas croisé exige vF > 3
+  ok(chassesCroises.ok || !chassesCroises.issues.some((i) => /croisent/.test(i)), `les pas chassés (0, 2 m/s) ne croisent jamais, même sous 9 m/s² (le pas croisé exige une course > 3 m/s)`);
+  // le port des bras en course
+  const bras = (v, opts = {}) => { let hMax = -9, elMin = 999, elMax = -999; for (let i = 0; i < 60; i++) { const g = gaitPose(P, i / 60, v, 0, NEUTRAL_GAIT_STYLE, opts); const fk = fkPose(P, g.q, g.hips); hMax = Math.max(hMax, fk.LeftHand.p[1] - fk.Spine2.p[1]);
+    const a = [fk.LeftArm.p[0] - fk.LeftForeArm.p[0], fk.LeftArm.p[1] - fk.LeftForeArm.p[1], fk.LeftArm.p[2] - fk.LeftForeArm.p[2]], b = [fk.LeftHand.p[0] - fk.LeftForeArm.p[0], fk.LeftHand.p[1] - fk.LeftForeArm.p[1], fk.LeftHand.p[2] - fk.LeftForeArm.p[2]];
+    const el = 180 - Math.acos(Math.max(-1, Math.min(1, (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (Math.hypot(...a) * Math.hypot(...b) || 1)))) / D2R; elMin = Math.min(elMin, el); elMax = Math.max(elMax, el); } return { hMax, elMin, elMax }; };
+  const r45 = bras(4.5), r8 = bras(8), r28 = bras(2.8);
+  ok(r45.hMax >= -0.03 && r45.elMin >= 88 && r45.elMax <= 106 && GAIT_REGIMES.run.elbow === 90, `en course (4,5 m/s) : la main avant monte à hauteur de poitrine (${cm(r45.hMax)} cm du sternum — hier −4), le coude fléchi entre ${r45.elMin.toFixed(0)} et ${r45.elMax.toFixed(0)}° (régime run : coude 90°, hier 85 ; armOff 10, hier 8)`);
+  ok(r8.hMax >= 0 && r8.elMin >= 95 && r8.elMax <= 120 && r28.elMin >= 78, `au sprint (8 m/s) : la main avant au-dessus du sternum (+${cm(r8.hMax)} cm), le coude ${r8.elMin.toFixed(0)}-${r8.elMax.toFixed(0)}° (le régime sprint est celui d'hier : 92°) ; au trot ${r28.elMin.toFixed(0)}°`);
+  const frein = gaitPose(P, 0, 4.5, 0, NEUTRAL_GAIT_STYLE, { brake: 1 }).meta.params, sans = gaitPose(P, 0, 4.5, 0, NEUTRAL_GAIT_STYLE, {}).meta.params;
+  ok(Math.abs(frein.elbow - sans.elbow - 6) < 1e-9, `au frein le coude se ferme de +6° (hier +10 : avec le coude de course monté, la main avant repliée perdait l'opposition bras-jambe au sprint freiné — marges 2,2 → 1,8 cm sur 5 signatures, 2,5-3,1 aujourd'hui)`);
+  const bas = bras(4.5, { override: { elbow: 60, armOff: 0 } });
+  ok(bas.hMax < r45.hMax - 0.06, `sabotage « le bras bas » attrapé (coude 60°, armOff 0 : la main avant retombe à ${cm(bas.hMax)} cm du sternum, ${cm(r45.hMax - bas.hMax)} cm sous la course)`);
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

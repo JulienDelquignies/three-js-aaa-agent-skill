@@ -288,6 +288,8 @@ examples/
 
   HOLDING THE BALL BACK TO GOAL (lot § 9, `engine/bouclier.js`, `cfg.bouclier`): a carrier pressed in the back with no forward option holds instead of dribbling away: he stops, keeps his back to the presser as the presser orbits, carries the ball at his foot (or stops a rolling one under the sole), and the hold ends on a forward option, a push-in-the-back foul (posed with a seeded draw), the presser leaving, or 2 s; no shoulder duel on a holding carrier; the scene's existing `protection` clip plays over it. Key null = yesterday bit for bit.
 
+  THE STRIDE, A7 ter (lot § 6): the crossover step in a sharp turn (above 7 m/s² lateral acceleration at running speed the outer leg crosses 3 cm inside the inner lane, the pelvis turns 6° into the turn and the trunk counter-rotates), the arm carriage in running (elbow 90°, the front hand at chest height), and the foot lock calibrated on the generated stride (floor swept from the generator, contact band 2.5 cm: release spikes halved, no recapture in the peel). `contact-sheet.mjs --gait 6 --turn 9` renders the crossover.
+
 ## Install
 
 As a plugin via marketplace:

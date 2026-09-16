@@ -10,7 +10,7 @@ import { RONDO } from '../assets/starter/src/engine/rondo.js';
 
 const LOI12_1609 = { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 2 };   // loi12 d'HIER sans murTrot — DATÉ 16/09 (lot B4, note 374)
 const RP_0746 = { elan: { recul: 3.5, lat: 1.5, vitesse: 4, patience: 4, sortieBut: { recul: 3, lat: 1.2, vitesse: 3.5 }, toucheLongue: { recul: 4 }, tirImmediat: { cone: 40 } }, volee: { h: 1, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 }, mur: { retard: 0.12 } };   // remisesPied de 0746dbd (A9 ter + B2, sans mur.corps ni elan.attente) — DATÉ 16/09 (B4, note 374)
-const B_0746 = { loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, remisesPied: RP_0746 };   // les clés venues APRÈS 0746dbd, éteintes (B4 murTrot/mur.corps/elan.attente, B5, B6, B10) — DATÉ 16/09 : les clauses non épinglées mesurent le monde de 0746dbd (suite 761/7 sur ce moteur)
+const B_0746 = { loi12: LOI12_1609, viragesLisses: null, plantVitesse: null, sortieAerienne: null, retournee: null, bouclier: null, remisesPied: RP_0746 };   // les clés venues APRÈS 0746dbd, éteintes (B4 murTrot/mur.corps/elan.attente, B5, B6, B10) — DATÉ 16/09 : les clauses non épinglées mesurent le monde de 0746dbd (suite 761/7 sur ce moteur)
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 

@@ -59,7 +59,7 @@ const TAU = Math.PI * 2;
 export const GAIT_REGIMES = {
   walk:   { v: 1.4, s: 0.62, peel: 0.50, bias: 0.20, roll: 0.20, hw: 0.09,  pitchHS: 12, pitchTO: 30, swingH: 0.11, swingPeak: 0.34, swingK: 1.0,  drop: 0.010, bobA: 0.024, bobSign: 1,  pYaw: 4,  pList: 4, pTilt: 0,  lean: 3,  girdle: 4.5, psi: 149, armA: 14, armOff: 0,  elbow: 24, elbowMod: 8,  armElev: 8,  turnout: 8, toeUp: 22 },
   jog:    { v: 2.8, s: 0.44, peel: 0.35, bias: 0.10, roll: 0.12, hw: 0.07,  pitchHS: 4,  pitchTO: 25, swingH: 0.20, swingPeak: 0.32, swingK: 1.2,  drop: 0.040, bobA: 0.028, bobSign: -1, pYaw: 6,  pList: 5, pTilt: 3,  lean: 6,  girdle: 9,   psi: 100, armA: 26, armOff: 6,  elbow: 75, elbowMod: 12, armElev: 11, turnout: 6, toeUp: 18 },
-  run:    { v: 5.5, s: 0.36, peel: 0.30, bias: 0.10, roll: 0.10, hw: 0.055, pitchHS: 0,  pitchTO: 22, swingH: 0.30, swingPeak: 0.30, swingK: 1.3,  drop: 0.045, bobA: 0.036, bobSign: -1, pYaw: 7,  pList: 6, pTilt: 5,  lean: 8,  girdle: 12,  psi: 94,  armA: 36, armOff: 8,  elbow: 85, elbowMod: 14, armElev: 13, turnout: 5, toeUp: 15 },
+  run:    { v: 5.5, s: 0.36, peel: 0.30, bias: 0.10, roll: 0.10, hw: 0.055, pitchHS: 0,  pitchTO: 22, swingH: 0.30, swingPeak: 0.30, swingK: 1.3,  drop: 0.045, bobA: 0.036, bobSign: -1, pYaw: 7,  pList: 6, pTilt: 5,  lean: 8,  girdle: 12,  psi: 94,  armA: 36, armOff: 10, elbow: 90, elbowMod: 14, armElev: 13, turnout: 5, toeUp: 15 },
   sprint: { v: 8.5, s: 0.27, peel: 0.30, bias: 0.12, roll: 0.06, hw: 0.045, pitchHS: -8, pitchTO: 20, swingH: 0.30, swingPeak: 0.42, swingK: 1.0,  drop: 0.035, bobA: 0.040, bobSign: -1, pYaw: 9,  pList: 5, pTilt: 8,  lean: 10, girdle: 14,  psi: 92,  armA: 42, armOff: 10, elbow: 92, elbowMod: 18, armElev: 15, turnout: 4, toeUp: 12 },
   // la course ARRIÈRE : appui sur l'avant-pied, genou devant en vol, buste droit, bras courts
   back:   { v: 3.0, s: 0.40, peel: 0.20, bias: 0,     roll: 0.05, hw: 0.09, pitchHS: -10, pitchTO: 8, swingH: 0.14, swingPeak: 0.45, swingK: 1.0, drop: 0.060, bobA: 0.025, bobSign: -1, pYaw: 3,  pList: 3, pTilt: -2, lean: 1,  girdle: 5,   psi: 100, armA: 14, armOff: 12, elbow: 70, elbowMod: 6,  armElev: 14, turnout: 6, toeUp: 10 },
@@ -238,7 +238,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // et le tronc ROULENT dans le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 17° à 6, 18° au plus), le bassin glisse vers l'intérieur, le pied extérieur se pose
   // plus large, la tête reste d'aplomb (contre-roulis). Absents : la foulée d'hier au bit.
   const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp(opts.turn ?? 0, -9, 9);
-  if (br > 0) { const kv = clamp((6 / Math.max(1, Math.abs(vF))) ** 2, 0.3, 1) * (1 - 0.5 * Math.abs(aT) / 9); p.lean -= 11 * br; p.bias -= 0.16 * br * kv; p.hw += 0.04 * br * kv; p.pitchHS += 10 * br; p.drop += 0.02 * br * kv; p.T /= gaitBrakeCadence(br); p.swingH *= 1 - 0.2 * br; p.armOff += 12 * br; p.armElev += 8 * br; p.elbow += 10 * br; }   // kv : au sprint et en plein virage la jambe sature, l'appui de frein se raccourcit
+  if (br > 0) { const kv = clamp((6 / Math.max(1, Math.abs(vF))) ** 2, 0.3, 1) * (1 - 0.5 * Math.abs(aT) / 9); p.lean -= 11 * br; p.bias -= 0.16 * br * kv; p.hw += 0.04 * br * kv; p.pitchHS += 10 * br; p.drop += 0.02 * br * kv; p.T /= gaitBrakeCadence(br); p.swingH *= 1 - 0.2 * br; p.armOff += 12 * br; p.armElev += 8 * br; p.elbow += 6 * br; }   // kv : au sprint et en plein virage la jambe sature, l'appui de frein se raccourcit
   const rollIn = clamp(Math.atan(aT / 9.81) / D2R * 0.55, -18, 18), inG = aT / 9.81, hipX = 0.07 * inG, hipRise = (P.lengths.hipWidth / 2) * Math.sin(rollIn * D2R);
   if (aT !== 0) p.swingH *= 1 - 0.15 * Math.min(1, Math.abs(aT) / 9);   // la jambe intérieure, hanche plus basse, passe plus ras (le genou reste sous 140°) ; les pas de frein rasent aussi
   const L = P.lengths, R = L.thigh + L.shank;
@@ -255,6 +255,14 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // se calcule, il ne se devine pas (la portée saturée est le patin silencieux des jambes IK)
   const reach = 0.99 * R;
   const cL = [-p.hw + 0.05 * inG - 0.04 * Math.max(0, inG), 0, 0], cR = [p.hw + 0.05 * inG + 0.04 * Math.max(0, -inG), 0, 0];   // (A7 bis) les pieds glissent vers l'intérieur du virage, l'extérieur s'élargit
+  // (A7 ter) LE PAS CROISÉ du virage serré (|aT| > 7 m/s², vF > 3) : la jambe EXTÉRIEURE croise devant l'intérieure — son couloir passe
+  // la ligne médiane et se pose à `cross` m À L'INTÉRIEUR du couloir de l'intérieure (qui s'écarte de `wide` vers l'intérieur), le bassin
+  // TOURNE dans le virage (pYawTurn : la hanche extérieure vient devant). Borné (kX 0 → 1 de 7 à 9 m/s², fondu 3 → 4 m/s) ; chassés :
+  // jamais (le contrat) ; sans virage : la foulée d'hier au bit.
+  const kX = clamp((Math.abs(aT) - 7) / 2, 0, 1) * clamp(vF - 3, 0, 1) * clamp((9.5 - vF) / 3, 0.4, 1), sX = Math.sign(aT);   // …atténué au sprint (la foulée longue sature la hanche)
+  if (kX > 0) { const wide = 0.05 * kX; if (sX > 0) { cR[0] += wide; cL[0] = cR[0] + 0.03 * kX; } else { cL[0] -= wide; cR[0] = cL[0] - 0.03 * kX; } }
+  const pYawTurn = -6 * kX * sX;
+  if (kX > 0) p.swingH *= 1 - 0.12 * kX;                                 // (A7 ter) le vol rase un peu plus dans le pas croisé (le genou reste sous 140°)
   let drop = p.drop;
   for (let i = 0; i <= 16; i++) {
     const u = (i / 16) * (p.s + 0.06);
@@ -276,7 +284,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     }
   }
   const hips = [hipX, -drop + bob, 0];                                // (A7 bis) le bassin glisse vers l'intérieur du virage
-  const pYaw = -p.pYaw * Math.cos(TAU * ph);                          // hanche gauche devant à φ = 0
+  const pYaw = -p.pYaw * Math.cos(TAU * ph) + pYawTurn;               // hanche gauche devant à φ = 0 ; (A7 ter) + le bassin tourné dans le virage serré
   const pList = -p.pList * Math.cos(TAU * (ph - p.s / 2));            // côté en vol qui tombe
   const RHips = chain(rx(-p.pTilt), rz(pList - rollIn), ry(pYaw));   // (A7 bis) rz(−) : le côté droit descend — le roulis dans le virage à droite
   const J = { Hips: RHips };
@@ -284,9 +292,9 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // ---- le tronc : inclinaison avant, contre-rotation des épaules (déphasage Pontzer), tête stable
   const girdle = p.girdle * Math.sin(TAU * ph - Math.PI / 2 - p.psi * D2R);
   const leanQ = (k) => rx(-p.lean * k);
-  J.Spine = chain(leanQ(0.4), ry(girdle * 0.2));
-  J.Spine1 = chain(leanQ(0.35), ry(girdle * 0.35));
-  J.Spine2 = chain(leanQ(0.25), ry(girdle * 0.45));
+  J.Spine = chain(leanQ(0.4), ry(girdle * 0.2 - pYawTurn / 3));         // (A7 ter) le tronc CONTRE-TOURNE le bassin du pas croisé : les épaules restent dans l'axe de la course
+  J.Spine1 = chain(leanQ(0.35), ry(girdle * 0.35 - pYawTurn / 3));
+  J.Spine2 = chain(leanQ(0.25), ry(girdle * 0.45 - pYawTurn / 3));
   const head = clamp(-girdle * 0.75, -6, 6);
   J.Neck = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.4), ry(head * 0.4), rz(rollIn * 0.4));   // (A11) opts.headDown : la tête basse (l'abattu) ; (A7 bis) la tête reste d'aplomb dans le virage
   J.Head = chain(rx(p.lean * 0.3 - (opts.headDown ?? 0) * 0.6), ry(head * 0.6), rz(rollIn * 0.6));
