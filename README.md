@@ -282,6 +282,8 @@ examples/
 
   The ARMED BICYCLE KICK (lot C1, `cfg.retournee`): the authored `retournee` clip had no trigger; the sim now arms it when the free ball is predicted at the clip's contact (0.52 s ahead) between 1.5 and 2.1 m within 0.7 m of an attacker with his back to goal, alone, inside the box — the act owns the body, and its contact strikes the real ball at goal (shot kind `retournée`), or names the miss (`verify-retournee.mjs`, 6 clauses; absent = yesterday bit for bit).
 
+  The HAND GRAB (lot C2): the helper's `mainTendue` now PULLS after its hold (the arm comes back 14 cm toward the chest, the trunk straightens — `verify-emotion.mjs`, 47 clauses), and the scene brings both hands to the midpoint of their clip positions while the fallen player rises and the helper pulls (`_applyAideWarp`, two two-bone IKs); nothing changes in the sim.
+
 ## Install
 
 As a plugin via marketplace:

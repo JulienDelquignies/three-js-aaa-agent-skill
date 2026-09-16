@@ -134,6 +134,25 @@ la main offerte à ~1 m ; acte qui possède le corps). Événements `aide { by, 
 traction et la main saisie sont la dette nommée). Mesuré (chutes forcées) : élu à 3-6 m, la main tendue
 1,93 s après la chute pour un relevé à 2,62 s, à 0,9-1,4 m. `aide: null` = le relevé solitaire d'hier.
 
+## La main saisie (C2 — Animations_A_Faire § 4 ; `motion-emotion` mainTendue.pull, `Rondo._applyAideWarp`)
+
+Le relevé aidé (A10 quater) posait l'aidant à 1 m du fauché et lui tendait la main 0,7 s avant le relevé — puis la main
+revenait toute seule et le fauché se relevait sans la prendre : deux gestes côte à côte, pas un contact. Ici :
+
+- **Le geste** : `mainTendue` gagne une phase qui TIRE — tendue devant (contact 0,5), tenue (`hold` 0,65), puis le bras
+  REVIENT (`fwd` 64 → `fwdPull` 10, le coude plie 8 → `elbowPull` 62) et le buste se redresse (lean × 0,2) sur `pull` 0,5 s,
+  le retour au neutre ensuite (1,4 s). Mesuré au contrat (verify-emotion, `checkEmotionGen`) : la main revient de 14 cm vers
+  la poitrine entre la tenue et la fin du tir (≥ 12), la tête recule de 12 cm (≥ 5) ; sabotage `fwdPull 64 / elbowPull 8`
+  attrapé (« la main ne revient pas en tirant »). `pull` absent : le retour d'hier.
+- **La scène** (`_applyAideWarp`, dans la chaîne des warps après le gant) : pour un fauché dont la sim porte `_aide` et dont
+  l'aidant joue `mainTendue`, les DEUX mains vont au POINT MÉDIAN de leurs positions de clip — le bras du fauché (le côté de
+  l'aidant) dès le relevé du clip couché (`_sol.t ≥ rise`, monte en 0,3 s) et tant que la poigne dure debout ; le bras droit
+  de l'aidant de l'arrivée de sa main (contact − 0,15 s) à la fin du tir (hold + pull). Deux IK deux os (`_armTo`, le noyau
+  extrait du gant/ballon tenu), la portée bornée à l'épaule. `pl._aideGrip` porte l'écart des mains avant l'IK, pour les sondes.
+- **Rien dans la sim** : le point de rencontre se lit des deux horloges de clip (le relevé rejoué à l'heure de la sim, la main
+  tendue à son windup) ; la synchronisation est celle d'A10 quater (la main arrive quand le fauché a fait deux tiers de son relevé,
+  le tir couvre la fin du relevé et le premier pas debout).
+
 ## Bancs
 
 verify-contact 25 → 34 (la pose tenue vit et se ferme ×3, l'horloge en pur ×2, la sim sous cfg.sol ×3, sabotage

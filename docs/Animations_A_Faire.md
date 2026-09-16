@@ -45,7 +45,12 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
   adversaire est à < 1,2 m du point, prise sinon. Clé `cfg.sortieAerienne`.
 - **Scène.** Le ballon aux gants tenu (`remiseHands`, A9 bis) ou dévié du poing (un `release('poing')`).
 
-## 4. Le fauché saisit la main (A10 quinquies)
+## 4. Le fauché saisit la main (A10 quinquies) — LIVRÉ (16/09, lot C2, note 377, reference/59 § C2)
+
+- **Livré** : `mainTendue` tire (hold 0,65 puis pull 0,5 : le bras revient de 14 cm, le buste se redresse — verify-emotion 47/0)
+  et la scène rejoint les deux mains au point médian pendant le relevé du fauché et le tir de l'aidant (`Rondo._applyAideWarp`,
+  deux IK deux os) ; pas de clip `releveAide` : le bras du fauché est une IK vers la main, le clip couché garde son relevé.
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Geste.** Une variante du relevé (motion-contact, segment `rise`) : `releveAide` — le bras
   tendu vers le haut pendant le relevé, le corps remonte plus droit, et pour l'aidant une fin de

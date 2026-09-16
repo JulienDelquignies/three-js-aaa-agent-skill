@@ -248,6 +248,9 @@
   lot du second doc) — cfg.retournee : le clip authored `retournee` (jamais joué) part quand le ballon libre est prédit au contact du clip
   entre 1,5 et 2,1 m à 0,7 m d'un attaquant dos au but, seul, dans la surface ; le contact de l'acte frappe au but (espèce 'retournée') ;
   null = la tête et la volée d'hier.
+- LIVRÉ (note 377, reference/59 § C2, verify-emotion 47/0) : LA MAIN SAISIE (C2 = Animations_A_Faire § 4) — mainTendue tire (le bras
+  revient de 14 cm, le buste se redresse) et la scène rejoint les deux mains au point médian pendant le relevé du fauché (deux IK deux os,
+  _applyAideWarp) ; rien dans la sim ; pull absent = le retour d'hier.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

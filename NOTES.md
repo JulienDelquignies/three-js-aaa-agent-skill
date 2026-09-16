@@ -12541,6 +12541,41 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      intention de centre à écrire au tronc, nommée deux fois. Clé null : hier
      au bit (les bancs de flux l'éteignent : retournee: null aux 32 sites
      datés et dans B_0746/B_1609).
+- 377: LA MAIN SAISIE (lot C2 = Animations_A_Faire § 4 ; motion-emotion
+     mainTendue.pull, Rondo._applyAideWarp/_aideMeet/_armTo ; reference/59
+     § C2). Le relevé aidé (A10 quater, note 369) posait l'aidant à 1 m et
+     tendait la main 0,7 s avant le relevé — puis la main revenait seule et
+     le fauché se relevait sans la prendre : deux gestes côte à côte, pas un
+     contact. Le geste : mainTendue gagne une phase qui TIRE — tendue
+     (contact 0,5), tenue (hold 0,65), puis le bras revient (fwd 64 → 10, le
+     coude 8 → 62) et le buste se redresse (lean × 0,2) sur 0,5 s, le retour
+     ensuite (1,4 s) ; mesuré au contrat (checkEmotionGen, verify-emotion
+     47/0) : la main revient de 14 cm vers la poitrine entre la tenue et la
+     fin du tir (≥ 12), la tête recule de 12 cm ; sabotage fwdPull 64 /
+     elbowPull 8 attrapé (« la main ne revient pas en tirant ») ; la première
+     version (fwdPull 22, elbowPull 42) ne revenait que de 10 cm. La scène :
+     pour un fauché dont la sim porte _aide et dont l'aidant joue mainTendue,
+     les DEUX mains vont au point de rencontre — le milieu des deux mains de
+     clip ramené dans les deux portées (trois passes d'épaule en épaule :
+     l'intersection des sphères quand elle existe) ; le bras du fauché (le
+     côté de l'aidant) monte dès le relevé du clip couché (_sol.t ≥ rise, en
+     0,3 s) ou dans les 0,35 s qui précèdent le relevé sim, et tient la poigne
+     debout tant que dure le tir de l'aidant (la sim lâche _aide au relevé :
+     la scène s'en souvient 0,8 s) ; le bras droit de l'aidant de l'arrivée
+     de sa main (contact − 0,15) à la fin du tir (hold + pull). Deux IK deux
+     os par _armTo (le noyau extrait du gant et du ballon tenu), chacune dans
+     l'itération de SON corps (la première version corrigeait le bras de
+     l'aidant depuis l'itération du fauché : sa propre pose, appliquée
+     après, l'effaçait — mesuré : les mains à 0,66 m pendant tout le relevé).
+     Rien dans la sim. Mesuré en page (la chute forcée posée DANS le pas de
+     sim — la scène ne lit que les événements nés pendant son pas, la chute
+     poussée entre deux pas n'était jamais jouée) : l'écart des mains de clip
+     1,38 → 0,23 m ; après les deux IK 0,00-0,07 m du relevé (0,25 s après
+     le windup de l'aidant) à la fin du tir ; le point de rencontre à hauteur
+     de hanche. Captures c2-main-saisie-face/cote. Pas de clip releveAide :
+     le bras du fauché est une IK vers la main, le clip couché garde son
+     relevé (le doc en prévoyait un ; la main suffit). pull absent : le retour
+     d'hier.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

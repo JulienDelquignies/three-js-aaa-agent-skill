@@ -78,6 +78,10 @@ for (const kind of EMOTION_NAMES) {
   const sp = specs.mainTendue, p = emotionPortrait(sp, P), s = p.pick((sp.contact + EMOTION_KINDS.mainTendue.hold) / 2), shoulderY = (s.ls[1] + s.rs[1]) / 2;
   ok(s.rh[2] < s.chest[2] - 0.25 && s.rh[1] < shoulderY - 0.12 && s.rh[1] > 0.8, `la main tendue : main droite à ${cm(s.chest[2] - s.rh[2])} cm devant la poitrine, à ${s.rh[1].toFixed(2)} m de haut (sous l'épaule ${shoulderY.toFixed(2)}, au-dessus des genoux)`);
   ok(s.head[2] < p.start.head[2] - 0.12 && s.lh[1] < shoulderY - 0.2, `…le buste penché vers le fauché (tête ${cm(p.start.head[2] - s.head[2])} cm devant sa place), la gauche basse ; le haut seul (${sp.upperOnly ? 'upperOnly' : '—'}), retour à ${cm(p.endGap)} cm`);
+  {   // (C2) LA MAIN QUI TIRE : après la tenue, le bras revient vers la poitrine et le buste se redresse — le fauché se relève à la main
+    const KM = EMOTION_KINDS.mainTendue, q = p.pick(KM.hold + KM.pull), back = (s.chest[2] - s.rh[2]) - (q.chest[2] - q.rh[2]);
+    ok(back > 0.12 && q.head[2] > s.head[2] + 0.05, `…et TIRE (C2) : à ${(KM.hold + KM.pull).toFixed(2)} s la main droite est revenue de ${cm(back)} cm vers la poitrine (≥ 12) et la tête de ${cm(q.head[2] - s.head[2])} cm en arrière (≥ 5) — le bras revient, le buste se redresse`);
+  }
 }
 
 // ---- 4. le registre
@@ -129,6 +133,7 @@ sab('l\'applaudissement muet (claps 0)', 'applaudir', () => ({ claps: 0 }), /cla
 sab('le mur qui ne saute pas (h 0)', 'sautMur', () => ({ h: 0 }), /décollent|ne monte pas/);
 sab('la main qui ne se tend pas (fwd 10)', 'mainTendue', () => ({ fwd: 10 }), /tendue devant/);
 sab('le buste qui ne se penche pas (lean 0)', 'mainTendue', () => ({ lean: 0 }), /ne se penche pas/);
+sab('la main qui ne tire pas (fwdPull 64, elbowPull 8 — C2)', 'mainTendue', () => ({ fwdPull: 64, elbowPull: 8 }), /ne revient pas/);
 sab('le mur les bras ouverts (elev 60)', 'sautMur', () => ({ elev: 60, fwd: 10, elbow: 10 }), /croisées/);
 sab('la protestation sans le non (shake 0)', 'proteste', () => ({ shake: 0 }), /ne dit pas non/);
 

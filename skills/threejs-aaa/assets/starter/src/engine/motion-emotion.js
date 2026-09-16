@@ -34,7 +34,7 @@ export const EMOTION_KINDS = {
   calme:      { duration: 2.0, contact: 0.40, upperOnly: true, hold: 1.5, elev: 52, fwd: 64, elbow: 82, headDown: 12 },
   glissade:   { duration: 2.0, contact: 0.45, lying: 0.55, rise: 1.35, ownsLegs: true, kneel: 0.06, back: 0.40, arms: 74, armsUp: 138, lean: -12, vie: 1 },
   // (A10 quater) LA MAIN TENDUE au fauché qui se relève : le buste se penche, le bras droit se tend devant et bas, la main offerte
-  mainTendue: { duration: 1.4, contact: 0.5, hold: 1.05, upperOnly: true, lean: 26, elev: 8, fwd: 64, elbow: 8, headDown: 10 },
+  mainTendue: { duration: 1.4, contact: 0.5, hold: 0.65, pull: 0.5, fwdPull: 10, elbowPull: 62, upperOnly: true, lean: 26, elev: 8, fwd: 64, elbow: 8, headDown: 10 },   // (C2) hold puis TIRE : le bras revient (fwd → fwdPull, le coude plie), le buste se redresse — le fauché se relève à la main
   // (A9 ter) LE MUR QUI SAUTE : accroupi, détente, les deux pieds décollés au sommet (contact), les mains croisées devant le bas-ventre, réception
   sautMur:    { duration: 0.78, contact: 0.34, ownsLegs: true, saut: true, crouch: 0.11, h: 0.36, tuck: 0.22, elev: -26, fwd: 22, elbow: 32, lean: 4 },   // elev < 0 : les bras se croisent devant le bas-ventre (mesuré : mains à 5 cm l'une de l'autre, +16 cm au-dessus du bassin, 18 cm devant)
   accolade:   { duration: 1.5, contact: 0.35, upperOnly: true, hold: 1.0, elev: -14, fwd: 80, elbow: 62, lean: 10, rot: -10 },
@@ -143,14 +143,17 @@ export function generateEmotion(kindName, P, { style = NEUTRAL_STYLE } = {}) {
       return { J, hips: [0, -0.01 * a, 0] };
     };
   } else if (kindName === 'mainTendue') {
-    const a = (t) => ramp(t, 0, 0.5 * tc, tc) * (1 - ramp(t, K.hold, (K.hold + T) / 2, T));
+    // (C2) LA MAIN QUI TIRE : tendue devant (contact), tenue (hold), puis le bras REVIENT et le buste se redresse (pull — le fauché
+    // se relève à la main, la scène rejoint les deux mains au point médian), le retour au neutre ensuite. pull absent : le retour d'hier.
+    const tP = K.hold + (K.pull ?? 0);
+    const a = (t) => ramp(t, 0, 0.5 * tc, tc) * (1 - ramp(t, tP, (tP + T) / 2, T)), r = (t) => (K.pull ? ramp(t, K.hold, (K.hold + tP) / 2, tP) : 0);
     poseAt = (t) => {
-      const u = a(t), J = {};
-      trunk(J, { lean: K.lean * u, headPitch: K.headDown * u });
-      Object.assign(J, armAt('Right', NEUTRAL_ARM, { elev: K.elev * A, fwd: K.fwd, elbow: K.elbow }, u), armAt('Left', NEUTRAL_ARM, { elev: 18, fwd: -16, elbow: 24 }, u));   // la gauche en balancier derrière
+      const u = a(t), q = r(t), J = {};
+      trunk(J, { lean: K.lean * u * (1 - 0.8 * q), headPitch: K.headDown * u * (1 - q) });
+      Object.assign(J, armAt('Right', NEUTRAL_ARM, { elev: K.elev * A, fwd: mix(K.fwd, K.fwdPull ?? K.fwd, q), elbow: mix(K.elbow, K.elbowPull ?? K.elbow, q) }, u), armAt('Left', NEUTRAL_ARM, { elev: 18, fwd: -16, elbow: 24 }, u));   // la gauche en balancier derrière
       return { J, hips: [0, 0, 0] };
     };
-    marks = [tc, K.hold];
+    marks = [tc, K.hold, tP];
   } else if (kindName === 'sautMur') {
     // LE SAUT DU MUR : le bassin descend (accroupi), remonte et DÉCOLLE (cloche de hauteur, sommet au contact), retombe avec
     // un amorti ; les pieds suivent le bassin et se replient sous lui en vol (IK), à plat au sol avant et après ; les bras
@@ -296,6 +299,11 @@ export function checkEmotionGen(spec, P, kind) {
     if (!(s.rh[1] < shoulderY(s) - 0.12 && s.rh[1] > s.pelvis[1] - 0.35)) issues.push(`mainTendue : la main n'est pas offerte bas (${s.rh[1].toFixed(2)} m ; attendu sous l'épaule, au-dessus des genoux)`);
     if (!(s.head[2] < p.start.head[2] - 0.12)) issues.push(`mainTendue : le buste ne se penche pas vers le fauché (tête ${(100 * (p.start.head[2] - s.head[2])).toFixed(0)} cm devant sa place)`);
     if (!(s.lh[1] < shoulderY(s) - 0.2)) issues.push('mainTendue : la main gauche monte au lieu de rester en balancier');
+    if (K.pull) {   // (C2) la main TIRE : à la fin du tir, la main droite est revenue vers la poitrine et la tête s'est redressée
+      const q = p.pick(K.hold + K.pull), back = (s.chest[2] - s.rh[2]) - (q.chest[2] - q.rh[2]);
+      if (!(back > 0.12)) issues.push(`mainTendue : la main ne revient pas en tirant (${(100 * back).toFixed(0)} cm vers la poitrine entre la tenue et la fin du tir, ≥ 12)`);
+      if (!(q.head[2] > s.head[2] + 0.05)) issues.push(`mainTendue : le buste ne se redresse pas en tirant (tête ${(100 * (q.head[2] - s.head[2])).toFixed(0)} cm en arrière, ≥ 5)`);
+    }
   }
   if (kind === 'sautMur') {
     const S = p.pick(spec.contact), C = p.pick(0.10), E = p.end, restF = (p.start.lf[1] + p.start.rf[1]) / 2;

@@ -22,7 +22,7 @@ import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/mat
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
-import { aimChildAt } from '../engine/foot-lock.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js';
+import { aimChildAt } from '../engine/foot-lock.js'; import { EMOTION_KINDS } from '../engine/motion-emotion.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 import { makeTicker } from './ticker.js';
 
@@ -625,10 +625,17 @@ export class Rondo {
     const me = pl.model.matrixWorld.elements;
     const rl = Math.hypot(me[0], me[1], me[2]) || 1;
     for (const side of ['left', 'right']) {
-      const arm = pl.arms?.[side], lens = pl.armLens?.[side];
-      if (!arm?.up || !arm.elbow || !arm.hand || !lens) continue;
       const sgn = side === 'left' ? -1 : 1;
-      this._wt.set(b[0] + (me[0] / rl) * sgn * grip, b[1] + (me[1] / rl) * sgn * grip, b[2] + (me[2] / rl) * sgn * grip);
+      this._armTo(pl, side, b[0] + (me[0] / rl) * sgn * grip, b[1] + (me[1] / rl) * sgn * grip, b[2] + (me[2] / rl) * sgn * grip, w);
+    }
+  }
+
+  /** Un bras vers un point du monde (IK deux os, l'épaule fixe, la portée bornée) — le noyau du gant, du ballon tenu et de la main saisie (C2). */
+  _armTo(pl, side, tx, ty, tz, w) {
+    const arm = pl.arms?.[side], lens = pl.armLens?.[side];
+    if (!arm?.up || !arm.elbow || !arm.hand || !lens || !(w > 1e-3)) return;
+    {
+      this._wt.set(tx, ty, tz);
       arm.hand.getWorldPosition(this._wf);
       this._wt.set(this._wf.x + (this._wt.x - this._wf.x) * w, this._wf.y + (this._wt.y - this._wf.y) * w, this._wf.z + (this._wt.z - this._wf.z) * w);
       arm.up.getWorldPosition(this._wh); arm.elbow.getWorldPosition(this._wk);
@@ -640,6 +647,47 @@ export class Rondo {
       aimChildAt(arm.up, arm.elbow, this._wm.fromArray(sol.mid));
       aimChildAt(arm.elbow, arm.hand, this._wm.fromArray(sol.end));
     }
+  }
+
+  /** (C2) LA MAIN SAISIE (Animations_A_Faire § 4) — le fauché qui se relève tend le bras vers la main de l'aidant (sim aide.js : l'aidant
+   *  posté à 1 m, 'mainTendue' 0,7 s avant le relevé) et les deux mains se REJOIGNENT au point médian pendant la main tendue et son
+   *  tir : deux IK deux os, l'enveloppe lue des horloges des deux clips (le relevé du clip couché, la main tendue de l'aidant). */
+  _applyAideWarp(pl) {
+    const s = pl.sim, cl = (x) => Math.max(0, Math.min(1, x)), KM = EMOTION_KINDS.mainTendue, tP = KM.hold + (KM.pull ?? 0);
+    if (s.act?.payload?.kind === 'aide') {                                                   // L'AIDANT : sa main droite va au point de rencontre pendant la tenue et le tir
+      const F = this.players[s.act.payload.pour]; if (!F || pl.gestureLayer.spec?.name !== 'mainTendue') return;
+      const wH = cl((s.act.t - (KM.contact - 0.15)) / 0.15) * (1 - cl((s.act.t - tP) / 0.2)), M = this._aideMeet(F, pl);
+      if (M && wH > 1e-3) this._armTo(pl, 'right', M.x, M.y, M.z, wH);
+      return;
+    }
+    if (s._aide) pl._aideMem = { by: s._aide.by, t: this._t }; else if (pl._aideMem && this._t - pl._aideMem.t > 0.8) pl._aideMem = null;   // la sim lâche _aide au relevé : la poigne tient le temps du tir
+    const A = pl._aideMem; if (!A) return;
+    const H = this.players[A.by], hAct = H?.sim.act; if (!H || hAct?.payload?.kind !== 'aide' || H.gestureLayer.spec?.name !== 'mainTendue') return;
+    const wH = cl((hAct.t - (KM.contact - 0.15)) / 0.15) * (1 - cl((hAct.t - tP) / 0.2)), spec = pl.gestureLayer.spec, tF = pl._sol?.t;
+    const wF = spec?.lying != null && tF != null ? cl((tF - spec.rise) / 0.3) : ((s.down ?? 0) <= 0.35 ? Math.max(wH, cl((0.35 - (s.down ?? 0)) / 0.3)) : 0);   // LE FAUCHÉ : le bras monte au relevé du clip couché (ou dans les 0,35 s qui précèdent le relevé sim), et tient la poigne debout
+    const M = this._aideMeet(pl, H); if (!M || wF < 1e-3) return;
+    if (wH > 1e-3) this._armTo(pl, M.side, M.x, M.y, M.z, wF);
+    else this._armTo(pl, M.side, M.hx, M.hy, M.hz, wF);                                       // la main de l'aidant n'est pas encore là : le fauché tend le bras vers elle
+    pl._aideGrip = M.gap;                                                                     // la mesure : l'écart des mains de clip avant l'IK du fauché (lu par les sondes)
+  }
+
+  /** Le point de rencontre des deux mains (fauché F, aidant H) : le milieu des deux mains de clip, ramené DANS les deux portées (trois
+   *  passes d'épaule en épaule : l'intersection des deux sphères quand elle existe, le compromis le plus proche sinon). */
+  _aideMeet(F, H) {
+    const s = F.sim, fx = Math.cos(s.yaw), fz = Math.sin(s.yaw), side = (-(H.sim.p[0] - s.p[0]) * fz + (H.sim.p[2] - s.p[2]) * fx) >= 0 ? 'right' : 'left';
+    const armF = F.arms?.[side], lensF = F.armLens?.[side], armH = H.arms?.right, lensH = H.armLens?.right;
+    if (!armF?.hand || !armF.up || !lensF || !armH?.hand || !armH.up || !lensH) return null;
+    armH.hand.getWorldPosition(this._wh); armF.hand.getWorldPosition(this._wk); const gap = this._wh.distanceTo(this._wk), hx = this._wh.x, hy = this._wh.y, hz = this._wh.z;
+    let x = (this._wh.x + this._wk.x) / 2, y = (this._wh.y + this._wk.y) / 2, z = (this._wh.z + this._wk.z) / 2;
+    armF.up.getWorldPosition(this._wf); armH.up.getWorldPosition(this._wt);
+    const Rf = (lensF.A + lensF.B) * 0.97, Rh = (lensH.A + lensH.B) * 0.97;
+    for (let k = 0; k < 3; k++) {
+      for (const [S, R] of [[this._wf, Rf], [this._wt, Rh]]) {
+        const dx = x - S.x, dy = y - S.y, dz = z - S.z, d = Math.hypot(dx, dy, dz) || 1e-6;
+        if (d > R) { x = S.x + dx * (R / d); y = S.y + dy * (R / d); z = S.z + dz * (R / d); }
+      }
+    }
+    return { side, gap, hx, hy, hz, x, y, z };
   }
 
   /** LE WARP DE PRISE DEBOUT (lot 91) — le gardien qui cueille SANS plonger jouait « amorti » :
@@ -1084,6 +1132,7 @@ export class Rondo {
       this._applyStrikeWarp(pl);
       this._applyDiveWarp(pl, dtP);
       this._applyCatchWarp(pl);
+      this._applyAideWarp(pl);
       this._applyTouchWarp(pl);
     }
 
