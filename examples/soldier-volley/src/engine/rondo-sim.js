@@ -2,7 +2,7 @@ import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from '.
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
-import { teteStep, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
+import { teteStep, teteArmerStep, teteContact, voleeStep, chestStep } from './tete.js'; import { coachStep } from './coach.js';
 import { MOVES } from './animkit.js'; import { startGesture, stepGesture, abortGesture, busy, winding, following, checkGestures } from './gesture.js'; import { uneTouche } from './premiere-intention.js';
 import { STANCES, anchorFor, reachable, glide, planStrike } from './approach.js';
 import { offsideLine, isOffside } from './offside.js';
@@ -104,7 +104,7 @@ function stepGestures(st, dt, cfg) {
     const actBefore = p.act;
     const evg = stepGesture(p, dt, { log: st.gestures });
     if (evg === 'contact') {
-      const K = p.act?.payload?.kind; if (K === 'pass') strikeNow(st, p, cfg); else if (K === 'touche') throwNow(st, p, cfg); else if (K === 'elan') cfg.elanNow?.(st, p, cfg, receive);   // le lâcher de la touche (A9), la prise d'élan (A9 bis)
+      const K = p.act?.payload?.kind; if (K === 'pass') strikeNow(st, p, cfg); else if (K === 'touche') throwNow(st, p, cfg); else if (K === 'elan') cfg.elanNow?.(st, p, cfg, receive); else if (K === 'tete') teteContact(st, p, cfg);   // le lâcher de la touche (A9), la prise d'élan (A9 bis)
       else if (K === 'tacle-debout') standTackleNow(st, p, cfg);
       else if (p.act?.payload?.kind === 'skill') { skillContactNow(st, p, cfg); if (st._noyau) appliquerNoyau(st, cfg, receive, (x) => abortGesture(x, 'noyau', { log: st.gestures })); }   // (268) le noyau de duel applique ses conséquences
     } else if (evg === 'end' && actBefore?.payload?.kind === 'skill') {
@@ -1027,7 +1027,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
     // LE COACH LIT LE MATCH (lot 113) : score/chrono/momentum → axes par paliers (coach.js)
     if (cfg.coach && st.full) coachStep(st, cfg);
     // LE CIEL SE JOUE (lot 34 tête / 182a poitrine / 40 volée — tete.js) : le vol sur un corps se reprend à SA hauteur — tête, buste (la fenêtre morte 1,15-1,55 fermée), pied
-    if (st.full && st.phase === 'flight' && released) { if (cfg.tete) teteStep(st, cfg); if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); }
+    if (st.full && st.phase === 'flight' && released) { if (cfg.tete) { teteArmerStep(st, cfg); teteStep(st, cfg); } if (cfg.poitrine) chestStep(st, cfg, dt); if (cfg.volee) voleeStep(st, cfg); }
     let taker = -1, bestD = Infinity;
     if (released) {
       const ayant = st.full && cfg.preneurCPA && st.restart && st.restart.taker >= 0 ? st.restart.taker : null;   // la remise a un AYANT DROIT (193) : l'élection ne teste que lui — le plus-proche collé gelait canTake

@@ -274,6 +274,8 @@ examples/
   touchline (Law 15) and the aerial catch stays in the gloves of the clip. Everything under `cfg.remisesPied`
   (absent = yesterday bit for bit); `verify-remises.mjs` carries the 47 clauses (reference/56 — B2 adds the immediate kick of the far free kick and the possession corner; A9 ter adds the long goal kick's and long throw-in's run-ups and the wall that jumps).
 
+  The ARMED HEADER (lot B3, `cfg.tete.armee`): the flight is deterministic, so the sim arms the `tete`/`teteDebout` act one clip-contact ahead of the predicted ball (0.42 s for the jump, 0.22 s standing) on the body that will be there — the body keeps running under its windup (`payload.mobile`) and the header resolves at the act's contact (`tête-manquée` otherwise); the scene now plays the whole gesture from the windup, jump and impulse included, instead of the second half from the contact (`verify-tete.mjs`, 6 clauses; absent = yesterday bit for bit).
+
 ## Install
 
 As a plugin via marketplace:

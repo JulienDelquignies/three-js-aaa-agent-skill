@@ -63,7 +63,7 @@ export function movePlayers(st, dt, cfg) {
     // …et un geste technique possède le corps AU-DELÀ du contact : le râteau tourne le lacet
     // pendant l'accompagnement, la semelle tient le corps immobile sur son ballon — stepGestures
     // écrit, movePlayers se tait (ownsBody : même loi, fenêtre élargie).
-    if ((winding(p) || p.act?.payload?.ownsBody) && !p.act?.payload?.elan) {   // …et la COURSE D'ÉLAN (lot A9 bis) : le corps COURT sous son armé, le contact attend l'arrivée
+    if ((winding(p) || p.act?.payload?.ownsBody) && !p.act?.payload?.elan && !p.act?.payload?.mobile) {   // …et la TÊTE ARMÉE (B3, payload.mobile) : le corps court sous son armé jusqu'au ballon   // …et la COURSE D'ÉLAN (lot A9 bis) : le corps COURT sous son armé, le contact attend l'arrivée
       p.speed = hyp(p.v[0], p.v[1]);
       if (!p.act?.payload?.mains) continue;
       p.v = [0, 0]; p.push = null; p.speed = 0;                     // …sauf les MAINS (lot A9 — touche, roulé du gardien) : planté, il TOURNE encore sur sa cible pendant l'armé (le slew ci-dessous)

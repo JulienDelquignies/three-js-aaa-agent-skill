@@ -82,7 +82,14 @@ manquent et les branchements qu'elles exigeront).
 - **Risque.** Retarder le tir change la sim (interceptions, tacles) : épingles à prévoir sur les
   clauses de flux de verify-match11. Taille : 1 lot (sonde ½ j, loi ½ j, bancs/docs ½ j).
 
-## 2. La reprise aérienne ARMÉE (tête, volée, poitrine)
+## 2. La reprise aérienne ARMÉE (tête, volée, poitrine) — LA TÊTE LIVRÉE (16/09, note 373, reference/51-motion-strike § B3)
+
+- **Livré** : `cfg.tete.armee { marge: 0.25 }` (tete.js, null = hier au bit) — `teteArmerStep` prédit le
+  ballon à τ = le contact du clip (tete 0,42 s sautée, teteDebout 0,22 s debout), arme l'acte sur le
+  corps qui y sera (`payload.mobile` : il court sous son armé), `teteContact` résout la tête à l'heure de
+  l'acte (`tête-manquée` sinon). verify-tete 6/0 (nouveau, dans bancs.mjs). Restent la volée et la
+  poitrine (même patron ; le clip `frappe` de la volée à remplacer par une espèce `volee`).
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré.** Le ciel existe (`tete.js`, lot 34 : événements `tête` mode but/dégagement/remise,
   `duel` aérien, `volée`, `control poitrine`) mais la scène joue le clip généré `tete`/`teteDebout`

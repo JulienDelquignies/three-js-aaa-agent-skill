@@ -260,6 +260,40 @@ le pied passe à 0,02-0,06 m du point de frappe (0,42 m avant le lot A1).
   dégager la pointe est bornée par le jeu de l'affaissement (elle faisait décoller l'appui du talon).
   Le pic de vitesse se cherche sur le swing. Les feintes suivent les amplitudes re-bakées.
 
+## La tête armée (B3 — `tete.js`, `cfg.tete.armee`, verify-tete 6 clauses)
+
+Mesuré avant (12 matchs × 300 s) : 28 têtes, 0 windup `tete` — la tête se décidait À L'IMAGE DU
+CONTACT (`teteStep` : le ballon à hauteur de tête sur un corps → redirection immédiate) et la scène
+jouait le clip généré `tete`/`teteDebout` depuis son contact : tout l'armé et l'impulsion étaient
+perdus, on voyait la seconde moitié du geste. Le vol est déterministe ; sous `tete.armee { marge }`
+(`null` : la reprise réactive d'hier, empreinte jumelle identique) :
+
+- **`teteArmerStep`** (rondo-sim, la même porte que `teteStep`, avant lui) : à chaque image,
+  `predictPath` du ballon, et pour les deux clips (tete 0,42 s sautée, teteDebout 0,22 s debout) la
+  position du ballon à τ = leur contact ; s'il y est à hauteur de tête (fenêtre du contact réactif,
+  descendue d'une demi-marge — un vol raide la traverse en 0,1 s) et qu'un corps libre y sera aussi
+  (sa position + sa vitesse × τ, à `reach`), il ARME l'acte maintenant : `startGesture(tete|teteDebout)`,
+  payload `{ kind 'tete', saut, ownsBody, mobile }`, windup skill `tete` (anticipation τ, saut, h).
+  Une tête armée par vol.
+- **`payload.mobile`** (movement.js) : le corps COURT sous son armé jusqu'au ballon — l'armé
+  ordinaire plante le corps (« a swing owns the body ») ; ici le contact est devant, le corps y va.
+- **`teteContact`** (le contact de l'acte, `stepGesture` 'contact' → rondo-sim) résout la tête
+  forcée sur ce corps : `teteStep(st, cfg, force)` — le ballon doit y être (fenêtre et portée + marge),
+  sinon `tête-manquée` (l'acte finit son accompagnement, le vol continue, un autre corps peut le
+  reprendre) ; le duel aérien, les modes but/dégagement/remise sont ceux d'hier, l'événement `tête`
+  porte `arme: true`.
+- **La scène** ne change pas : le windup joue le clip depuis 0 (`_playTech`), l'événement `tête` au
+  contact est ignoré par le corps possédé (ownsBody) — le saut est dans le clip, l'impulsion aussi.
+
+Banc verify-tete (6 clauses, fixture : le monde vidé, un centre depuis l'aile dont la vitesse fixe le
+sommet) : la tête debout s'arme 0,22 s avant et se résout au contact de l'acte (± 1 tick, à ± 0,15 s de
+l'arrivée prédite), la tête sautée s'arme 0,42 s avant (le saut dans le clip), l'attaquant qui arrive en
+courant se déplace de 0,86 m sous son armé (hier planté), le sabotage `armee:null` rend la reprise
+réactive sans windup. En match : voir la note 373 (la part des têtes armées, les manquées, l'écart
+windup → contact). Dettes nommées : la volée et la poitrine restent réactives (`voleeStep`, `chestStep` —
+même patron à écrire, une espèce `volee` de motion-strike serait mieux que le clip `frappe`) ; l'abandon
+de l'armé quand la prédiction meurt (une déviation) est la tête manquée, pas un `abortGesture`.
+
 ## Résultats négatifs et dettes nommées
 
 - (A2, livré) Le monde composé mesurait 5-6 m/s de pied au contact contre 11 au clip. Deux causes, ni

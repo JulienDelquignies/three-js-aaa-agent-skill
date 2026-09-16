@@ -12327,6 +12327,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      double geste, « même image » durcie à ≤ 0,05 s pour la passe aussi. Capture
      b2-coup-franc-loin-un-seul-geste (l'accompagnement de la frappe d'élan, le
      ballon parti vers le coéquipier).
+- 373: LA TÊTE ARMÉE (lot B3, doc Branchements § 2). Mesuré avant (12 matchs ×
+     300 s) : 28 têtes, 0 windup 'tete' — la tête se décidait à l'image du contact
+     (teteStep : le ballon à hauteur de tête sur un corps → redirection immédiate)
+     et la scène jouait le clip généré depuis son contact, l'armé et l'impulsion
+     perdus, la seconde moitié du geste. Le vol est déterministe : sous
+     cfg.tete.armee { marge 0,25 } (null : la reprise réactive d'hier, empreinte
+     jumelle identique) — teteArmerStep (rondo-sim, la porte du ciel, avant
+     teteStep) prédit le ballon (predictPath) à τ = le contact du clip (tete
+     0,42 s sautée, teteDebout 0,22 s debout) ; s'il y est à hauteur de tête
+     (la fenêtre du contact descendue d'une demi-marge : un vol raide à 7 m/s la
+     traverse en 0,1 s et le corps qui arrive freine — manqué d'une image au
+     banc avant ça) et qu'un corps libre y sera aussi (sa position + sa vitesse
+     × τ, à reach), il arme l'acte : startGesture(tete|teteDebout), payload
+     { kind 'tete', saut, ownsBody, mobile }, windup skill 'tete'. payload.mobile
+     (movement.js) : le corps COURT sous son armé — l'armé ordinaire plante le
+     corps, ici le contact est devant. teteContact (le contact de l'acte,
+     stepGesture → rondo-sim) résout la tête forcée sur ce corps (teteStep
+     force : fenêtre et portée + marge, sinon tête-manquée, nommée), les modes
+     et le duel d'hier, l'événement 'tête' porte arme:true. La scène ne change
+     pas : le windup joue le clip depuis 0, l'événement du contact est ignoré
+     par le corps possédé (ownsBody) — le saut est dans le clip. Après (12
+     matchs) : 48 têtes (le corps y va : +20, 8 sautées contre 2), 35 armées
+     (73 %), 0 manquée, écart windup → contact 0,01 s médian, 0,02 max ; les 13
+     réactives : 9 « fenêtre » (le ballon n'est jamais à hauteur de tête
+     exactement τ avant — vols raides ou rebonds), 3 « personne », 1 sans
+     tentative. Banc verify-tete 6/0 (nouveau, dans bancs.mjs ; fixture : le
+     monde vidé, un centre depuis l'aile dont la vitesse fixe le sommet — 5,8 m
+     le lobé, 2,1 la cloche courte qui ne dépasse pas la tête debout ;
+     l'attaquant posé y est épinglé chaque image, le métier receive l'emmenait
+     au point de chute) : la tête debout s'arme 0,22 s avant et se résout au
+     contact (± 1 tick, ± 0,15 s de l'arrivée prédite), la sautée 0,42 s avant,
+     l'attaquant en course se déplace de 0,86 m sous son armé (hier planté),
+     armee:null rend la réactive sans windup. En page : la fixture rejouée
+     (windup teteDebout 4,42 → tête 'but' armée 4,65), capture b3-tete-armee-
+     contact (le ballon sur la tête au contact). Dettes : la volée et la
+     poitrine restent réactives (même patron à écrire) ; la suite complète
+     (bancs.mjs) tourne sur B2 + B3 — les épingles suivront (tete d'hier aux
+     sites datés si le ciel remange les clauses de flux).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

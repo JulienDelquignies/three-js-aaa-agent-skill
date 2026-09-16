@@ -112,7 +112,7 @@ export const MATCH = {
                           // tactique largeur (×0,6…1,4) et la pointe de vitesse du receveur
                           // (topF → ×0,7…1,3). Absent : l'aile invisible d'hier (sabotage
                           // nommé — le barème sans valeur de position).
-  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9 },
+  tete: { min: 1.5, max: 2.2, reach: 1.0, but: 12, saut: 0.75, duel: 1.9, armee: { marge: 0.25 } /* (B3) la tête ARMÉE : l'acte tete/teteDebout s'arme le temps de contact du clip avant le ballon prédit (marge de portée m) ; null : la reprise réactive d'hier */ },
                           // LE JEU DE TÊTE (11c11, st.full — lot 34) : un vol à hauteur de
                           // tête (min-max m) au-dessus d'un corps (reach m) se REPREND : au BUT si
                           // attaquant en surface à < but m (canal shot standard — le

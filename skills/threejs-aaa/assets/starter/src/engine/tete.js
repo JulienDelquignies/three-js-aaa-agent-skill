@@ -1,5 +1,6 @@
 import { tirage } from './rng.js';
 import { xgDe } from './xg.js';
+import { predictPath, ballAt } from './ball-predict.js'; import { startGesture } from './gesture.js'; import { MOVE_TIMING } from './skills-sim.js';   // (B3) la tête armée
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
 // entré en surface sur 4 matchs (vols tendus mangés par le premier rideau) et 0,8 s/match de
 // fenêtre de tête avec un corps dessous — les centres retombaient, les dégagements attendaient
@@ -20,7 +21,7 @@ const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
  *  (mesuré : les redirections étaient les seuls départs sans fenêtre aveugle). */
 const surprend = (st) => { st._surprise = { t: st.t, seen: 0, n: (st._surprise?.n ?? 0) + 1 }; };
 
-export function teteStep(st, cfg) {
+export function teteStep(st, cfg, force = null) {
   const T = cfg.tete;
   const bp = st.ball.p;
   // LA DÉTENTE (lot 112, T.saut — la hauteur de saut du joueur moyen, m) : le ciel au-dessus
@@ -28,14 +29,28 @@ export function teteStep(st, cfg) {
   // [min ; max + saut × sautF] (l'attribut jumping : un facteur, jamais une branche ; mesuré
   // avant : 1,7 vol/match traversait 2,2-3,0 m sur un corps, muet). Clé absente : hier au bit.
   const porte = (q) => (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);
-  if (bp[1] < (T.min ?? 1.5) || bp[1] > (T.max ?? 2.2) + (T.saut ?? 0) * 1.25) return;
-  if ((st._teteCd ?? 0) > st.t) return;                            // un contact par fenêtre de vol
-  const cands = st.players.filter((q) => q.down <= 0 && !q.keeper && !q.act
-    && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
-    .sort((a, b) => d2(a.p, bp) - d2(b.p, bp));
-  if (!cands.length) return;
-  let joueur = cands[0];
-  const saute = bp[1] > (T.max ?? 2.2);
+  let joueur, saute, cands;
+  if (force) {
+    // (B3) LA TÊTE ARMÉE se résout AU CONTACT DE L'ACTE (teteContact) : le ballon doit y être — la prédiction a sa marge (armee.marge) —,
+    // sinon la tête est MANQUÉE (événement nommé) : l'acte finit son accompagnement, le vol continue, un autre corps peut le reprendre.
+    const A = T.armee || {}, marge = A.marge ?? 0.25, d = d2(force.p, bp);
+    if (bp[1] < (T.min ?? 1.5) - marge || bp[1] > porte(force) + marge || d > (T.reach ?? 1.0) + marge) {
+      st.events.push({ t: +st.t.toFixed(2), type: 'tête-manquée', by: force.id, d: +d.toFixed(2), h: +bp[1].toFixed(2) }); return;
+    }
+    joueur = force; saute = !!force.act?.payload?.saut;
+    cands = [force, ...st.players.filter((q) => q.id !== force.id && q.down <= 0 && !q.keeper && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
+      .sort((a, b) => d2(a.p, bp) - d2(b.p, bp))];
+  } else {
+    if (bp[1] < (T.min ?? 1.5) || bp[1] > (T.max ?? 2.2) + (T.saut ?? 0) * 1.25) return;
+    if ((st._teteCd ?? 0) > st.t) return;                            // un contact par fenêtre de vol
+    cands = st.players.filter((q) => q.down <= 0 && !q.keeper && !q.act
+      && d2(q.p, bp) < (T.reach ?? 1.0) && bp[1] <= porte(q))
+      .sort((a, b) => d2(a.p, bp) - d2(b.p, bp));
+    if (!cands.length) return;
+    joueur = cands[0];
+    saute = bp[1] > (T.max ?? 2.2);
+  }
+  const arme = force ? { arme: true } : {};
   let gene = 0, geneV = 1;
   const rival = cands.find((q) => q.team !== joueur.team);
   if (rival) {
@@ -80,7 +95,7 @@ export function teteStep(st, cfg) {
     st.ball.strike({ speed: 12.5 * geneV * (joueur.skill?.headF ?? 1), dirYaw: Math.atan2(tz - joueur.p[2], goal.x - joueur.p[0]) + gene, elevation: 0.03, spinAxis: [0, 1, 0], spinRev: 0 });   // …la PUISSANCE de la tête au but (147, heading)
     surprend(st);
     st.pass = null;
-    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, ...arme, mode: 'but', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
     const xgT = st.full && cfg.xg ? xgDe(st, joueur, cfg, true) : null; if (xgT) (st.xg ??= [0, 0])[joueur.team] += +xgT.ref.toFixed(3);   // (272) la tête porte son xG (δ_tête recentré)
     st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: joueur.id, kind: 'tête', geste: 'tête', range: +dGoal.toFixed(1), speed: +(12.5 * geneV).toFixed(1), ...(xgT ? { xg: +xgT.ref.toFixed(3), xgDec: +xgT.dec.toFixed(3), omega: +xgT.omega.toFixed(2) } : {}) });
     return;
@@ -102,7 +117,7 @@ export function teteStep(st, cfg) {
     } else st.ball.strike({ speed: 11.5 * geneV, dirYaw: Math.atan2(fz, -Math.sign(own.x)) + gene, elevation: 0.42, spinAxis: [0, 1, 0], spinRev: 0 });
     surprend(st);
     st.pass = null;
-    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'dégagement', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}), ...(presse ? { corner: true } : {}) });
+    st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, ...arme, mode: 'dégagement', h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}), ...(presse ? { corner: true } : {}) });
     return;
   }
   // LA REMISE DE LA TÊTE : le coéquipier proche, en cloche courte (balistique de la rentrée,
@@ -117,8 +132,43 @@ export function teteStep(st, cfg) {
   st.pass = mate
     ? { from: joueur.id, to: mate.m.id, lead: [mate.m.p[0], 0, mate.m.p[2]], style: 'tête', t: st.t, flight: 2 * speed * Math.sin(theta) / 9.81, origin: [joueur.p[0], joueur.p[2]] }
     : null;
-  st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, mode: 'remise', to: mate?.m.id, h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
+  st.events.push({ t: +st.t.toFixed(2), type: 'tête', by: joueur.id, ...arme, mode: 'remise', to: mate?.m.id, h: +bp[1].toFixed(2), ...(saute ? { saut: true } : {}) });
 }
+
+/** (B3, cfg.tete.armee) LA TÊTE S'ARME : le vol est déterministe — à chaque image on regarde où sera le ballon dans le temps de contact
+ *  du clip (tete 0,42 s sauté, teteDebout 0,22 s debout) ; s'il y est à hauteur de tête et qu'un corps libre y sera aussi (sa position +
+ *  sa vitesse × τ, à reach m), il ARME l'acte maintenant : windup skill 'tete' (anticipation τ), payload { kind 'tete', saut,
+ *  ownsBody, mobile } — le corps continue sa course sous l'armé (mobile : movement ne le plante pas), le contact se résout à l'heure de
+ *  l'acte (teteContact → teteStep forcé). Une seule tête armée par vol. Hier : la tête se décidait à l'image du contact, l'armé et
+ *  l'impulsion étaient perdus — la scène jouait la seconde moitié du geste (0 windup 'tete' en 12 matchs). Absente : hier au bit. */
+export function teteArmerStep(st, cfg) {
+  const T = cfg.tete, A = T?.armee;
+  if (!A || (st._teteCd ?? 0) > st.t || st.players.some((q) => q.act?.payload?.kind === 'tete')) return;
+  const porte = (q) => (T.max ?? 2.2) + (T.saut ?? 0) * (q.skill?.sautF ?? 1);
+  const mvS = MOVE_TIMING.tete || { duration: 0.9, contact: 0.42 }, mvD = MOVE_TIMING.teteDebout || { duration: 0.55, contact: 0.22 };
+  const path = predictPath(st.ball, { maxT: Math.max(mvS.contact, mvD.contact) + 1 / 30 });
+  let why = 'fenêtre';                                             // le dernier motif de non-armé du vol (lu par les sondes : st._teteArmWhy)
+  for (const [mv, id, sauteVoulu] of [[mvS, 'tete', true], [mvD, 'teteDebout', false]]) {
+    const tau = mv.contact, b = ballAt(path, tau), marge = A.marge ?? 0.25;
+    // la fenêtre de l'armé descend d'une demi-marge sous celle du contact réactif : un vol raide (7 m/s) traverse [min ; max] en 0,1 s et
+    // le corps qui arrive freine — mesuré au banc : manqué d'une image (b22 1,55 m à 1,06 m du corps, puis 1,42 m à 0,94) ; la portée
+    // de l'armé est celle du contact (reach), la marge ne joue qu'à la résolution (teteStep forcé : reach + marge)
+    if (b[1] < (T.min ?? 1.5) - marge * 0.5 || b[1] > (T.max ?? 2.2) + (T.saut ?? 0) * 1.25) continue;
+    const saute = b[1] > (T.max ?? 2.2);
+    if (saute !== sauteVoulu) continue;
+    const ou = (q) => [q.p[0] + q.v[0] * tau, 0, q.p[2] + q.v[1] * tau];
+    const pres = st.players.filter((q) => q.down <= 0 && !q.keeper && !q._sub && b[1] <= porte(q) && d2(ou(q), b) < (T.reach ?? 1.0));
+    const q = pres.filter((q) => !q.act).sort((x, y) => d2(ou(x), b) - d2(ou(y), b))[0];
+    if (!q) { why = pres.length ? 'acte' : 'personne'; continue; }
+    startGesture(q, { id, duration: mv.duration, contact: mv.contact }, { payload: { kind: 'tete', saut: saute, ownsBody: true, mobile: true }, log: st.gestures });
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: id, skill: 'tete', anticipation: +tau.toFixed(2), ...(saute ? { saut: true } : {}), h: +b[1].toFixed(2) });
+    st._teteArmWhy = null; return;
+  }
+  st._teteArmWhy = why;
+}
+
+/** (B3) Le contact de l'acte 'tete' (rondo-sim, stepGesture 'contact') : la tête se résout maintenant, forcée sur ce corps. */
+export function teteContact(st, p, cfg) { if (cfg.tete) teteStep(st, cfg, p); }
 
 // LA VOLÉE (lot 40) — le pied joue le ballon EN VOL, sous la fenêtre de tête. Mesuré avant :
 // 4,4 s/12 min de fenêtres à hauteur de pied sur un corps, ZÉRO geste — et 0,0 s en surface
