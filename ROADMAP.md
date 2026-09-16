@@ -244,6 +244,10 @@
   du doc) — cfg.sortieAerienne : le premier point où le vol libre redescend entre 1,6 et 2,3 m à ≤ 8 m de sa ligne, atteignable avant le
   ballon (réaction, accélération du pas, pointe) et sans attaquant dessus → la course chaude au point puis plongeonPrise armé 0,5 s avant
   le ballon, la prise résolue avec la portée du saut ; en match 1 sortie / 12 matchs (le jeu centre tendu) ; null = le gardien d'hier.
+- LIVRÉ (note 376, reference/51-motion-strike § C1, verify-retournee 6/0) : LA RETOURNÉE ARMÉE (C1 = Animations_A_Faire § 2, le premier
+  lot du second doc) — cfg.retournee : le clip authored `retournee` (jamais joué) part quand le ballon libre est prédit au contact du clip
+  entre 1,5 et 2,1 m à 0,7 m d'un attaquant dos au but, seul, dans la surface ; le contact de l'acte frappe au but (espèce 'retournée') ;
+  null = la tête et la volée d'hier.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

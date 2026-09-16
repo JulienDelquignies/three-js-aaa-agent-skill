@@ -1,6 +1,7 @@
 import { tirage } from './rng.js';
 import { xgDe } from './xg.js';
 import { predictPath, ballAt } from './ball-predict.js'; import { startGesture } from './gesture.js'; import { MOVE_TIMING } from './skills-sim.js';   // (B3) la tête armée
+import { MOVES } from './animkit.js';   // (C1) la retournée : le clip authored porte son contact (0,52 s)
 // tete.js — LE CIEL DU MATCH (lot 34). Le jeu aérien manquait ENTIER : mesuré avant, 0 centre
 // entré en surface sur 4 matchs (vols tendus mangés par le premier rideau) et 0,8 s/match de
 // fenêtre de tête avec un corps dessous — les centres retombaient, les dégagements attendaient
@@ -169,6 +170,49 @@ export function teteArmerStep(st, cfg) {
 
 /** (B3) Le contact de l'acte 'tete' (rondo-sim, stepGesture 'contact') : la tête se résout maintenant, forcée sur ce corps. */
 export function teteContact(st, p, cfg) { if (cfg.tete) teteStep(st, cfg, p); }
+
+// LA RETOURNÉE ARMÉE (lot C1 — Animations_A_Faire § 2, cfg.retournee ; absente : hier au bit). Le clip authored `retournee` (1,35 s,
+// contact 0,52 : accroupi, détente, le corps couché en l'air, la jambe droite en ciseaux par-dessus la tête, la retombée et le relevé
+// DANS le clip) n'avait aucun déclencheur. Le vol est déterministe (le patron de B3) : un ballon libre prédit au contact du clip entre
+// hMin et hMax m (la fenêtre au-dessus de la tête debout, sous le saut de tête), à `reach` d'un attaquant DOS AU BUT (le regard à plus de
+// `dos` rad de la direction du but), dans la surface, à moins de `but` m, sans adversaire à `libre` m → l'acte part (ownsBody, le corps
+// planté sur son point d'appel), et le contact de l'acte (retourneeContact) frappe au but depuis le ballon réel — ou se nomme manqué.
+export function retourneeArmerStep(st, cfg) {
+  const R = cfg.retournee; if (!R || (st._teteCd ?? 0) > st.t || st.ball.owner != null) return;
+  if (st.players.some((q) => q.act?.payload?.kind === 'retournee')) return;
+  const mv = MOVES.retournee ?? { duration: 1.35, contact: 0.52 }, tau = mv.contact;
+  const b = ballAt(predictPath(st.ball, { maxT: tau + 1 / 30 }), tau);
+  if (b[1] < (R.hMin ?? 1.5) || b[1] > (R.hMax ?? 2.1)) return;
+  for (const q of st.players) {
+    if (q.down > 0 || q.keeper || q._sub || q.act || d2(q.p, b) > (R.reach ?? 0.7)) continue;
+    const goal = st.pitch.attackGoal(q.team), sgn = Math.sign(goal.x || 1);
+    if (!st.pitch.inBox(q.p[0], q.p[2], sgn) || hyp(goal.x - q.p[0], q.p[2]) > (R.but ?? 16)) continue;
+    let dA = Math.atan2(0 - q.p[2], goal.x - q.p[0]) - q.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI;
+    if (Math.abs(dA) < (R.dos ?? 2.0)) continue;                                                  // face ou de profil au but : la volée ou la tête, pas le ciseau
+    if (st.players.some((o) => o.team !== q.team && o.down <= 0 && d2(o.p, q.p) < (R.libre ?? 1.5))) continue;   // un corps adverse à portée : le ciseau serait une faute
+    startGesture(q, { id: 'retournee', duration: mv.duration, contact: mv.contact }, { payload: { kind: 'retournee', ownsBody: true, pick: { foot: 'right' }, h: b[1] }, log: st.gestures });
+    st._teteCd = st.t + tau + 0.3;                                                                // un contact aérien par fenêtre de vol : la tête et la volée attendent l'acte
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: 'retournee', skill: 'retournee', anticipation: +tau.toFixed(2), h: +b[1].toFixed(2), dos: +Math.abs(dA).toFixed(2) });
+    return;
+  }
+}
+
+/** (C1) Le contact de l'acte 'retournee' : le ballon réel à portée et dans la fenêtre → la frappe au but (le canal shot, espèce 'retournée') ; sinon manquée, nommée. */
+export function retourneeContact(st, p, cfg) {
+  const R = cfg.retournee; if (!R) return;
+  const bp = st.ball.p, goal = st.pitch.attackGoal(p.team), d = d2(p.p, bp);
+  if (st.ball.owner != null || d > (R.reach ?? 0.7) + 0.25 || bp[1] < (R.hMin ?? 1.5) - 0.3 || bp[1] > (R.hMax ?? 2.1) + 0.3) {
+    st.events.push({ t: +st.t.toFixed(2), type: 'retournée-manquée', by: p.id, h: +bp[1].toFixed(2), d: +d.toFixed(2) }); return;
+  }
+  const dGoal = hyp(goal.x - p.p[0], p.p[2]), v = (R.vitesse ?? 16) * (p.skill?.voleeF ?? 1);
+  const tz = (tirage(st, 'tir', p.id, st.rnd ?? (() => 0.5))() * 2 - 1) * (st.pitch.goalHalf - 0.6);
+  st._teteCd = st.t + 0.8; st.lastTouch = p.team; st.lastPasser = p.id;
+  st.ball.strike({ speed: v, dirYaw: Math.atan2(tz - bp[2], goal.x - bp[0]), elevation: R.elevation ?? 0.05, spinAxis: [0, 1, 0], spinRev: 0.5 });
+  surprend(st); st.pass = null;
+  st.events.push({ t: +st.t.toFixed(2), type: 'retournée', by: p.id, h: +bp[1].toFixed(2) });
+  const xgV = st.full && cfg.xg ? xgDe(st, p, cfg, false, cfg.xg.d?.retournee ?? cfg.xg.d?.volee ?? 0) : null; if (xgV) (st.xg ??= [0, 0])[p.team] += +xgV.ref.toFixed(3);
+  st.events.push({ t: +st.t.toFixed(2), type: 'shot', by: p.id, kind: 'retournée', geste: 'retournée', range: +dGoal.toFixed(1), speed: +v.toFixed(1), ...(xgV ? { xg: +xgV.ref.toFixed(3), xgDec: +xgV.dec.toFixed(3), omega: +xgV.omega.toFixed(3) } : {}) });
+}
 
 // LA VOLÉE (lot 40) — le pied joue le ballon EN VOL, sous la fenêtre de tête. Mesuré avant :
 // 4,4 s/12 min de fenêtres à hauteur de pied sur un corps, ZÉRO geste — et 0,0 s en surface

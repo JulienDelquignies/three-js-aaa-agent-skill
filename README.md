@@ -280,6 +280,8 @@ examples/
 
   The KEEPER'S AERIAL CLAIM (lot B10, `cfg.sortieAerienne`, `sortie-aerienne.js`): the flight is deterministic, so the keeper looks for the first point where a free ball comes down between 1.6 and 2.3 m within 8 m of his line, reachable before the ball (reaction, the stride's acceleration, top speed) with no attacker on it — he runs there (a hot run for the economy law, event `sortie-aerienne`) and arms the two-handed jump catch `plongeonPrise` half a second before the ball; the dive's contact resolves the catch with the jump's extra reach and waits for the ball in the gloves (`verify-sortie-aerienne.mjs`, 7 clauses; absent = yesterday bit for bit). In match play it fires about once per 12 matches: this engine's crosses are driven, not lobbed.
 
+  The ARMED BICYCLE KICK (lot C1, `cfg.retournee`): the authored `retournee` clip had no trigger; the sim now arms it when the free ball is predicted at the clip's contact (0.52 s ahead) between 1.5 and 2.1 m within 0.7 m of an attacker with his back to goal, alone, inside the box — the act owns the body, and its contact strikes the real ball at goal (shot kind `retournée`), or names the miss (`verify-retournee.mjs`, 6 clauses; absent = yesterday bit for bit).
+
 ## Install
 
 As a plugin via marketplace:

@@ -294,6 +294,26 @@ windup → contact). Dettes nommées : la volée et la poitrine restent réactiv
 même patron à écrire, une espèce `volee` de motion-strike serait mieux que le clip `frappe`) ; l'abandon
 de l'armé quand la prédiction meurt (une déviation) est la tête manquée, pas un `abortGesture`.
 
+## La retournée armée (C1 — `tete.js`, `cfg.retournee`, verify-retournee 6 clauses)
+
+Le clip `retournee` (animkit-data, authored : 1,35 s, contact 0,52 — accroupi, détente, le corps couché en l'air, la jambe droite
+en ciseaux par-dessus la tête, la retombée et le relevé DANS le clip, canal hips) n'avait aucun déclencheur : jamais joué en match.
+Le vol est déterministe (le patron de B3) : `retourneeArmerStep` (rondo-sim, la porte du ciel, après la volée) prédit le ballon
+libre au contact du clip (0,52 s) ; s'il y est entre `hMin` 1,5 et `hMax` 2,1 m (au-dessus de la tête debout, sous le saut de
+tête) à `reach` 0,7 m d'un attaquant DOS AU BUT (le regard à plus de `dos` 2,0 rad de la direction du but), dans la surface à moins
+de `but` 16 m, sans adversaire à `libre` 1,5 m (le ciseau serait une faute), l'acte part — `ownsBody`, le corps planté sur son
+point d'appel, windup skill 'retournee', `st._teteCd` posé jusqu'au contact (la tête et la volée attendent l'acte). Le contact de
+l'acte (`retourneeContact`, stepGesture → rondo-sim) frappe au but depuis le ballon RÉEL (`vitesse` 16 × voleeF, `elevation` 0,05,
+le canal shot, espèce 'retournée', l'xG de la volée faute d'un δ propre) s'il est à portée et dans la fenêtre — sinon
+'retournée-manquée', nommée. Face au but ou de profil : la volée et la tête d'hier ; le ballon sous 1,5 m : la volée.
+
+Contrat (verify-retournee — le monde vidé, un centre lobé depuis l'aile, l'attaquant posé au point où le vol redescend à 1,8 m,
+épinglé et tourné vers son but chaque image jusqu'à son acte) : la retournée s'arme (anticipation 0,52, ballon prédit à 1,98 m,
+regard à 2,75 rad du but) et frappe au but au contact (0,53 s après le windup, ballon à 2,0 m, tir 'retournée' à 16 m/s, élévation
+0,04 rad) ; face au but : la tête armée joue, pas de ciseau ; un adversaire à 1 m : rien ; le ballon à 1 m : la tête debout d'hier ;
+`retournee:null` : la tête armée d'hier. Le corps ne tombe pas après (la retombée est dans le clip authored — le doc
+Animations_A_Faire prévoyait un `p.down`, le clip se relève seul à 1,35 s : pas de sol à jouer). Clé `null` : hier au bit.
+
 ## Résultats négatifs et dettes nommées
 
 - (A2, livré) Le monde composé mesurait 5-6 m/s de pied au contact contre 11 au clip. Deux causes, ni

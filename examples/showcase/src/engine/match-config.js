@@ -573,7 +573,7 @@ export const MATCH = {
                           // avant : campée p10 à 6 m de son but), bloc offensif étiré à longAtk m
                           // (réel 35-50). false : le bloc élastique d'hier (sabotage nommé) ;
                           // soutien absent : la ligne campeuse d'hier.
-  volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 },
+  volee: { min: 0.25, max: 1.15, reach: 1.1, but: 14 }, retournee: { hMin: 1.5, hMax: 2.1, reach: 0.7, dos: 2.0, libre: 1.5, but: 16, vitesse: 16, elevation: 0.05 },   // (C1) LA RETOURNÉE ARMÉE (tete.js) : le ciseau sur le ballon prédit au-dessus de la tête, dos au but, sans adversaire à portée ; null : hier
   poitrine: { min: 1.15, max: 1.55, reach: 0.55, kill: 0.78 },  // 182a : LA POITRINE — la fenêtre
                           // morte entre volée et tête se joue au BUSTE (coéquipier du dernier
                           // toucheur) : amorti × controlF, ballon LIBRE devant lui. Absente : le

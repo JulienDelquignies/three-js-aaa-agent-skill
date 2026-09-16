@@ -17,9 +17,15 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
 - **Contrat.** Le sommet du saut au contact, la tête au ballon (≤ 0,25 m à l'image de l'événement),
   les bras en balancier, la réception ; verify-aerial + une clause composée en page.
 
-## 2. La retournée (le geste existe, aucun déclencheur)
+## 2. La retournée (le geste existe, aucun déclencheur) — LIVRÉ (16/09, lot C1, note 376, reference/51-motion-strike § C1)
 
-- **Geste.** `retournee` (motion-ground, A5) : générée, sous contrat, jamais jouée.
+- **Livré** : `cfg.retournee { hMin 1.5, hMax 2.1, reach 0.7, dos 2.0, libre 1.5, but 16, vitesse 16, elevation 0.05 }` (tete.js
+  retourneeArmerStep/retourneeContact, la porte du ciel de rondo-sim) : le ballon prédit au contact du clip au-dessus de la tête d'un
+  attaquant dos au but, seul, dans la surface → l'acte armé, la frappe au but au contact (espèce 'retournée'). verify-retournee 6/0.
+  Le clip est authored (animkit-data), pas généré ; il retombe et se relève seul : pas de `p.down`.
+- *(le plan d'origine, gardé pour mémoire)*
+
+- **Geste.** `retournee` (animkit-data, authored ; le doc disait motion-ground/A5 à tort) : sous contrat, jamais jouée.
 - **Déclencheur.** Dans `tete.js`/`voleeStep` : un ballon en vol qui arrive entre 1,2 et 1,7 m sur
   un attaquant DOS AU BUT dans la surface, sans adversaire à < 1,5 m, avec une note de volée
   (`skill.voleeF`) → acte `retournee` (anticipation = contact du clip, `ownsBody`, le corps tombe :

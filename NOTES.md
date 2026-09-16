@@ -12510,6 +12510,37 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      bit (empreinte jumelle). Dettes : le poing sans geste (sortiePoing à
      générer, Animations_A_Faire § 3) ; le saut manqué retombe par onDiveEnd
      comme un plongeon.
+- 376: LA RETOURNÉE ARMÉE (lot C1 = Animations_A_Faire § 2, le premier lot
+     du second doc ; tete.js retourneeArmerStep/retourneeContact, cfg.retournee ;
+     reference/51-motion-strike § C1). Le clip `retournee` est AUTHORED
+     (animkit-data : 1,35 s, contact 0,52 — accroupi, détente, le corps couché
+     en l'air, la jambe droite en ciseaux par-dessus la tête, la retombée et
+     le relevé dans le clip, canal hips), pas généré comme le doc le disait ;
+     il n'avait aucun déclencheur, jamais joué. Le patron de B3 : la porte du
+     ciel de rondo-sim (après la volée) prédit le ballon libre au contact du
+     clip ; entre 1,5 et 2,1 m (au-dessus de la tête debout, sous le saut de
+     tête) à 0,7 m d'un attaquant DOS AU BUT (le regard à plus de 2,0 rad du
+     but), dans la surface à moins de 16 m, sans adversaire à 1,5 m (le ciseau
+     serait une faute), l'acte part — ownsBody, planté sur son point d'appel,
+     windup skill 'retournee', _teteCd posé jusqu'au contact (la tête et la
+     volée attendent) ; le contact de l'acte frappe au but depuis le ballon
+     réel (16 m/s × voleeF, élévation 0,05, espèce 'retournée', l'xG de la
+     volée) ou se nomme manqué. Le corps ne tombe pas après : la retombée est
+     dans le clip (le doc prévoyait un p.down — non). Banc verify-retournee
+     6/0 (le monde vidé, l'attaquant posé au point où le centre redescend à
+     1,8 m, tourné vers son but chaque image) : armé à 0,52 s, ballon prédit
+     à 1,98 m, regard à 2,75 rad ; la frappe au contact (0,53 s, ballon à
+     2,0 m, 16 m/s, élévation 0,04) ; face au but la tête armée joue ; un
+     adversaire à 1 m : rien ; le ballon à 1 m : la tête debout d'hier ; null :
+     l'hier. En match (12 × 300 s) : ZÉRO retournée, zéro windup — et
+     l'occasion elle-même n'existe pas : un seul ballon libre entre 1,5 et
+     2,1 m à 0,7 m d'un attaquant en surface en 12 matchs, et il ne tournait
+     pas le dos au but (41 têtes, 21 tirs sur la même mesure). Comme la sortie
+     aérienne (375) : ce moteur centre tendu et ses attaquants regardent le
+     ballon ; la retournée attend des centres lobés derrière l'attaquant — une
+     intention de centre à écrire au tronc, nommée deux fois. Clé null : hier
+     au bit (les bancs de flux l'éteignent : retournee: null aux 32 sites
+     datés et dans B_0746/B_1609).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
