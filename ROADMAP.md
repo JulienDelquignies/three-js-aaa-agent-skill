@@ -218,6 +218,9 @@
   deux hommes du mur arment 'sautMur' — motion-emotion — quand le ballon part, plantés, retard de réaction dans l'acte) ; null = hier.
 - LIVRÉ (note 369, reference/59 § A10 quater, verify-contact 39/0, verify-emotion 45/0) : LE RELEVÉ AIDÉ — aide.js (cfg.sol.aide) : le jeu arrêté, le
   coéquipier le plus proche qui peut arriver avant le relevé vient se poster au fauché et lui tend la main ('mainTendue', motion-emotion) ; null = hier.
+- LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
+  le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
+  la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
 - SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») — l'ordre proposé est ÉPUISÉ ; restent : (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
   la carte plus lisible. Et les dettes : (A2 bis) LE PIED RATE LE BALLON — à l'image du tir l'orteil est à 30 cm du centre du ballon en
