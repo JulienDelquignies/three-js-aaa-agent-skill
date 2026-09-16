@@ -12200,6 +12200,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      verify-emotion 33 → 40 (sabotages : h 0, elev 60), empreinte identique
      avec les sous-clés absentes ET avec les défauts (aucune remise dans la
      fenêtre d'empreinte).
+- 369: LE RELEVÉ AIDÉ (lot A10 quater, dernier de l'ordre proposé — « un
+     coéquipier tend la main au fauché »). engine/aide.js (aideStep, appelé
+     par movement.movePlayers après les métiers, avant le pas ; cfg.sol.aide
+     { rayon 10, dist 1,1, avant 0,7, loin 15, trot 3,5 }, null = le relevé
+     solitaire d'hier, empreinte identique) : le jeu arrêté (un coup franc
+     posé, ou le ballon à plus de loin m), le coéquipier le plus proche du
+     fauché — ni le fauteur, ni le porteur, ni le preneur, ni un gardien, ni
+     un homme déjà aidant — est élu s'il peut ARRIVER avant le relevé
+     (d / trot < down − avant + 0,4 : on ne tend pas la main à un homme
+     debout) ; il trotte de loin, marche les derniers pas, se poste à dist m
+     du corps couché (hors de sol.corps), face à lui, et quand le relevé
+     approche (down ≤ avant) il arme 'mainTendue' (acte qui possède le
+     corps : planté). Événements 'aide' { by, pour, d } et 'windup' (skill
+     'aide', move 'mainTendue' — l'audit des membres l'ignore). Mesuré
+     (chutes forcées, 2 graines) : élu à 0,02 s à 3-6 m, la main tendue à
+     1,93 s pour un relevé à 2,62, à 0,9-1,4 m ; jamais à moins de 0,87 m
+     du corps. motion-emotion 'mainTendue' (le haut seul, 1,4 s) : le
+     buste se penche (tête 15 cm devant), le bras droit se tend devant et
+     bas (main à 33 cm devant la poitrine, 1,06 m de haut), la gauche en
+     balancier, retour à la pose de départ (0 cm). Le corps du fauché se
+     relève comme hier (motion-contact, à l'heure de la sim) : la main est
+     un corps de plus, pas une physique (dette nommée : la traction, le
+     fauché qui saisit la main). verify-contact 34 → 39, verify-emotion
+     40 → 45. Rareté mesurée : une chute avec _chute par 12 min de jeu sur
+     trois graines — le geste vivra surtout sur les fautes sifflées.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

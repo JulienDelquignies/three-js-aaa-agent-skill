@@ -122,6 +122,18 @@ bras du dessus suit l'axe) : main du dessus à 0,33 m au contact (contrat et vin
 (≤ 0,6 s) est un DÉLAI de décollage pendant lequel le gardien reste posé (poids 0), puis plonge à ×1 : mesuré en
 page, délai 0,19 s, la détente tombe à l'heure du ballon.
 
+## Le relevé aidé (A10 quater — `engine/aide.js`, `cfg.sol.aide`)
+
+Le jeu arrêté (un coup franc posé, ou le ballon à plus de `loin` m), le coéquipier le plus proche du fauché
+— ni le fauteur, ni le porteur, ni le preneur, ni un gardien — est élu s'il peut arriver avant le relevé
+(`d / trot < down − avant + 0,4`) ; il trotte de loin, marche les derniers pas, se poste à `dist` m du
+corps couché (hors de `sol.corps`), face à lui, et quand le relevé approche (`down ≤ avant`) il arme
+`mainTendue` (motion-emotion, le haut seul : le buste se penche, le bras droit se tend devant et bas,
+la main offerte à ~1 m ; acte qui possède le corps). Événements `aide { by, pour, d }` et `windup`
+(skill `aide`). Le fauché se relève comme hier : la main est un corps de plus, pas une physique (la
+traction et la main saisie sont la dette nommée). Mesuré (chutes forcées) : élu à 3-6 m, la main tendue
+1,93 s après la chute pour un relevé à 2,62 s, à 0,9-1,4 m. `aide: null` = le relevé solitaire d'hier.
+
 ## Bancs
 
 verify-contact 25 → 34 (la pose tenue vit et se ferme ×3, l'horloge en pur ×2, la sim sous cfg.sol ×3, sabotage

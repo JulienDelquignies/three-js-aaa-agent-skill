@@ -22,7 +22,7 @@ const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); }
 const P = SHANON_PROFILE;
 const cm = (m) => (m * 100).toFixed(0);
 
-// ---- 1. les neuf gestes, style neutre (A11 : huit ; A9 ter : le saut du mur)
+// ---- 1. les dix gestes, style neutre (A11 : huit ; A9 ter : le saut du mur ; A10 quater : la main tendue)
 const specs = {};
 for (const kind of EMOTION_NAMES) {
   const spec = generateEmotion(kind, P); specs[kind] = spec;
@@ -30,7 +30,7 @@ for (const kind of EMOTION_NAMES) {
   ok(r.ok && c.ok, `${kind} (${spec.keys.length} clés, ${spec.duration} s${spec.upperOnly ? ', le haut seul' : spec.ownsLegs ? ', possède les jambes' : ''})${r.ok ? '' : ' — ' + r.issues.join(' ; ')}${c.ok ? '' : ' — checkClip : ' + c.issues.join(' ; ')}`);
 }
 
-// ---- 2. vingt styles × neuf gestes
+// ---- 2. vingt styles × dix gestes
 {
   let bad = 0;
   for (let s = 1; s <= 20; s++) for (const kind of EMOTION_NAMES) {
@@ -38,7 +38,7 @@ for (const kind of EMOTION_NAMES) {
     const r = checkEmotionGen(spec, P, kind), c = checkClip(resolveTracks(spec));
     if (!r.ok || !c.ok) { bad++; if (bad <= 3) console.log(`   graine ${s} ${kind} : ${[...r.issues, ...c.issues].join(' ; ')}`); }
   }
-  ok(bad === 0, `20 styles × 9 gestes = 180 émotions sous contrat et checkClip (${bad} rouges)`);
+  ok(bad === 0, `20 styles × 10 gestes = 200 émotions sous contrat et checkClip (${bad} rouges)`);
 }
 
 // ---- 3. ce que chaque geste a de propre
@@ -71,6 +71,13 @@ for (const kind of EMOTION_NAMES) {
   ok(C.pelvis[1] < p.start.pelvis[1] - 0.05, `…après un accroupi (bassin −${cm(p.start.pelvis[1] - C.pelvis[1])} cm à 0,10 s)`);
   ok(Math.hypot(S.lh[0] - S.rh[0], S.lh[1] - S.rh[1], S.lh[2] - S.rh[2]) < 0.30 && S.lh[1] < S.chest[1] - 0.15 && S.lh[2] < S.pelvis[2] - 0.08, `…les mains croisées devant le bas-ventre (${cm(Math.hypot(S.lh[0] - S.rh[0], S.lh[1] - S.rh[1], S.lh[2] - S.rh[2]))} cm l'une de l'autre, ${cm(S.chest[1] - S.lh[1])} cm sous la poitrine, ${cm(S.pelvis[2] - S.lh[2])} cm devant)`);
   ok(Math.abs(E.pelvis[1] - p.start.pelvis[1]) < 0.04 && E.lf[1] - restF < 0.03 && E.rf[1] - restF < 0.03 && p.lowest > -0.03, `…et la réception ramène au sol (bassin ${cm(E.pelvis[1] - p.start.pelvis[1])} cm, pieds ${cm(E.lf[1] - restF)} / ${cm(E.rf[1] - restF)} cm ; rien sous la pelouse : ${cm(p.lowest)} cm)`);
+}
+
+// ---- 3 ter. (A10 quater) LA MAIN TENDUE : le buste se penche, la main droite offerte devant et bas, la gauche en balancier, retour
+{
+  const sp = specs.mainTendue, p = emotionPortrait(sp, P), s = p.pick((sp.contact + EMOTION_KINDS.mainTendue.hold) / 2), shoulderY = (s.ls[1] + s.rs[1]) / 2;
+  ok(s.rh[2] < s.chest[2] - 0.25 && s.rh[1] < shoulderY - 0.12 && s.rh[1] > 0.8, `la main tendue : main droite à ${cm(s.chest[2] - s.rh[2])} cm devant la poitrine, à ${s.rh[1].toFixed(2)} m de haut (sous l'épaule ${shoulderY.toFixed(2)}, au-dessus des genoux)`);
+  ok(s.head[2] < p.start.head[2] - 0.12 && s.lh[1] < shoulderY - 0.2, `…le buste penché vers le fauché (tête ${cm(p.start.head[2] - s.head[2])} cm devant sa place), la gauche basse ; le haut seul (${sp.upperOnly ? 'upperOnly' : '—'}), retour à ${cm(p.endGap)} cm`);
 }
 
 // ---- 4. le registre
@@ -120,6 +127,8 @@ sab('la glissade figée (vie 0)', 'glissade', () => ({ vie: 0 }), /FIGÉE/);
 sab('l\'accolade bras écartés (elev 60, rot 0)', 'accolade', () => ({ elev: 60, rot: 0 }), /écartées|enveloppent/);
 sab('l\'applaudissement muet (claps 0)', 'applaudir', () => ({ claps: 0 }), /claquement/);
 sab('le mur qui ne saute pas (h 0)', 'sautMur', () => ({ h: 0 }), /décollent|ne monte pas/);
+sab('la main qui ne se tend pas (fwd 10)', 'mainTendue', () => ({ fwd: 10 }), /tendue devant/);
+sab('le buste qui ne se penche pas (lean 0)', 'mainTendue', () => ({ lean: 0 }), /ne se penche pas/);
 sab('le mur les bras ouverts (elev 60)', 'sautMur', () => ({ elev: 60, fwd: 10, elbow: 10 }), /croisées/);
 sab('la protestation sans le non (shake 0)', 'proteste', () => ({ shake: 0 }), /ne dit pas non/);
 

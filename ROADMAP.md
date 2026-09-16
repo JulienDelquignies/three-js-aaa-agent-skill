@@ -216,8 +216,9 @@
   MUR QUI SAUTE (A9 ter) — elan.js (la course d'élan sortie de referee.js) : elan.sortieBut (le gardien recule et court quand le style
   est long, se dégage dans l'image du contact), elan.toucheLongue (le lanceur court au ballon depuis le tablier), remisesPied.mur (les
   deux hommes du mur arment 'sautMur' — motion-emotion — quand le ballon part, plantés, retard de réaction dans l'acte) ; null = hier.
-- SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») :
-  le relevé aidé ; (A10 ter) la tenue de balle dos au but
+- LIVRÉ (note 369, reference/59 § A10 quater, verify-contact 39/0, verify-emotion 45/0) : LE RELEVÉ AIDÉ — aide.js (cfg.sol.aide) : le jeu arrêté, le
+  coéquipier le plus proche qui peut arriver avant le relevé vient se poster au fauché et lui tend la main ('mainTendue', motion-emotion) ; null = hier.
+- SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») — l'ordre proposé est ÉPUISÉ ; restent : (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
   la carte plus lisible. Et les dettes : (A2 bis) LE PIED RATE LE BALLON — à l'image du tir l'orteil est à 30 cm du centre du ballon en
   médiane en match (mesuré lot A2 : 4-11 cm sur les bonnes, 48 sur les mauvaises, warp engagé 14/21) : le warp de frappe ne ramène pas le

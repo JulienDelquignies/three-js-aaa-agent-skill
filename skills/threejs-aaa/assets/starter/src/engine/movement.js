@@ -14,6 +14,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 /** Move every player toward their target with real acceleration limits. */
 export function movePlayers(st, dt, cfg) {
+  aideStep(st, dt, cfg);   // (A10 quater, cfg.sol.aide) le relevé aidé : après les métiers, avant le pas — l'aidant vient, tend la main
   for (const p of st.players) {
     scanStep(st, p, cfg);   // (250) l'horloge de scan — p.scan pour le rendu, le TEMPS du corps ouvert ; cfg.scan absent : rien
     // a player on the ground after a slide does not run — mais l'EXPULSÉ (Loi 12) et le
@@ -559,3 +560,4 @@ export function separatePlayers(st, cfg) {
   }
 }
 import { hyp } from './hyp.js';
+import { aideStep } from './aide.js';

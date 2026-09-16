@@ -263,7 +263,7 @@ examples/
   the ball shield with the arm extended; the sim, under `cfg.contact`, names the fall at every foul
   site and makes the retreating presser face the carrier so the generated backpedal and side shuffle
   finally trigger; the scene holds the body on the ground exactly as long as the sim does
-  (`verify-contact.mjs`, 25 clauses).
+  (`verify-contact.mjs`, 39 clauses — A10 bis adds the held ground and the assisted rise of A10 quater).
 
   `motion-restart.js` (lot A9 bis) adds the FOOT restarts: free kicks and corners are taken at the end of a
   generated RUN-UP (the taker walks back behind the ball on the ball-target line, waits facing it, runs in at

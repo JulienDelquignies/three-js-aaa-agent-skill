@@ -33,6 +33,8 @@ export const EMOTION_KINDS = {
   oreille:    { duration: 2.4, contact: 0.50, upperOnly: true, hold: 1.9, elev: 135, fwd: 60, elbow: 155, rot: 0, yaw: 22 },
   calme:      { duration: 2.0, contact: 0.40, upperOnly: true, hold: 1.5, elev: 52, fwd: 64, elbow: 82, headDown: 12 },
   glissade:   { duration: 2.0, contact: 0.45, lying: 0.55, rise: 1.35, ownsLegs: true, kneel: 0.06, back: 0.40, arms: 74, armsUp: 138, lean: -12, vie: 1 },
+  // (A10 quater) LA MAIN TENDUE au fauché qui se relève : le buste se penche, le bras droit se tend devant et bas, la main offerte
+  mainTendue: { duration: 1.4, contact: 0.5, hold: 1.05, upperOnly: true, lean: 26, elev: 8, fwd: 64, elbow: 8, headDown: 10 },
   // (A9 ter) LE MUR QUI SAUTE : accroupi, détente, les deux pieds décollés au sommet (contact), les mains croisées devant le bas-ventre, réception
   sautMur:    { duration: 0.78, contact: 0.34, ownsLegs: true, saut: true, crouch: 0.11, h: 0.36, tuck: 0.22, elev: -26, fwd: 22, elbow: 32, lean: 4 },   // elev < 0 : les bras se croisent devant le bas-ventre (mesuré : mains à 5 cm l'une de l'autre, +16 cm au-dessus du bassin, 18 cm devant)
   accolade:   { duration: 1.5, contact: 0.35, upperOnly: true, hold: 1.0, elev: -14, fwd: 80, elbow: 62, lean: 10, rot: -10 },
@@ -140,6 +142,15 @@ export function generateEmotion(kindName, P, { style = NEUTRAL_STYLE } = {}) {
       J.LeftShoulder = rz(K.shrug * a); J.RightShoulder = rz(-K.shrug * a);   // les épaules qui montent
       return { J, hips: [0, -0.01 * a, 0] };
     };
+  } else if (kindName === 'mainTendue') {
+    const a = (t) => ramp(t, 0, 0.5 * tc, tc) * (1 - ramp(t, K.hold, (K.hold + T) / 2, T));
+    poseAt = (t) => {
+      const u = a(t), J = {};
+      trunk(J, { lean: K.lean * u, headPitch: K.headDown * u });
+      Object.assign(J, armAt('Right', NEUTRAL_ARM, { elev: K.elev * A, fwd: K.fwd, elbow: K.elbow }, u), armAt('Left', NEUTRAL_ARM, { elev: 18, fwd: -16, elbow: 24 }, u));   // la gauche en balancier derrière
+      return { J, hips: [0, 0, 0] };
+    };
+    marks = [tc, K.hold];
   } else if (kindName === 'sautMur') {
     // LE SAUT DU MUR : le bassin descend (accroupi), remonte et DÉCOLLE (cloche de hauteur, sommet au contact), retombe avec
     // un amorti ; les pieds suivent le bassin et se replient sous lui en vol (IK), à plat au sol avant et après ; les bras
@@ -278,6 +289,13 @@ export function checkEmotionGen(spec, P, kind) {
     const yaw = spec.keys.filter((k) => k.t > spec.contact && k.t < K.hold).map((k) => k.pose.Head?.[1] ?? 0);
     let flips = 0, sg = 0; for (const y of yaw) { const g = Math.abs(y) > 3 ? Math.sign(y) : 0; if (g && sg && g !== sg) flips++; if (g) sg = g; }
     if (flips < 2) issues.push(`proteste : la tête ne dit pas non (${flips} changement(s) de côté)`);
+  }
+  if (kind === 'mainTendue') {
+    const s = p.pick((spec.contact + K.hold) / 2);
+    if (!(s.rh[2] < s.chest[2] - 0.25)) issues.push(`mainTendue : la main n'est pas tendue devant (${(100 * (s.chest[2] - s.rh[2])).toFixed(0)} cm devant la poitrine, ≥ 25)`);
+    if (!(s.rh[1] < shoulderY(s) - 0.12 && s.rh[1] > s.pelvis[1] - 0.35)) issues.push(`mainTendue : la main n'est pas offerte bas (${s.rh[1].toFixed(2)} m ; attendu sous l'épaule, au-dessus des genoux)`);
+    if (!(s.head[2] < p.start.head[2] - 0.12)) issues.push(`mainTendue : le buste ne se penche pas vers le fauché (tête ${(100 * (p.start.head[2] - s.head[2])).toFixed(0)} cm devant sa place)`);
+    if (!(s.lh[1] < shoulderY(s) - 0.2)) issues.push('mainTendue : la main gauche monte au lieu de rester en balancier');
   }
   if (kind === 'sautMur') {
     const S = p.pick(spec.contact), C = p.pick(0.10), E = p.end, restF = (p.start.lf[1] + p.start.rf[1]) / 2;

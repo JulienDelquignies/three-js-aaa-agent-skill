@@ -15,7 +15,7 @@ import { generateContact, checkContactGen, contactPortrait, CONTACT_NAMES, CONTA
 import { styleFromSeed } from '../assets/starter/src/engine/motion-strike.js';
 import { checkClip, resolveTracks, MOVES } from '../assets/starter/src/engine/animkit.js';
 import { MOVE_TIMING } from '../assets/starter/src/engine/skills-sim.js';
-import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/match-sim.js';
+import { makeMatch, matchCfg, matchStep, playMatch } from '../assets/starter/src/engine/match-sim.js';
 import { contactClock, VIE } from '../../../examples/showcase/src/scenes/rondo-contact.js';   // (A10 bis) l'horloge de la vie au sol est pure : prouvable ici
 
 let pass = 0, fail = 0;
@@ -161,6 +161,54 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
   ok(on.downs.length >= 3 && med(on.downs) >= 2.0 && med(off.downs) < 2.0, `le fauché reste à terre p50 ${med(on.downs).toFixed(2)} s sous cfg.sol (sans la clé ${med(off.downs).toFixed(2)} : la chute 0,66 + le relevé 0,7 ne laissaient que 0,2 s de tenue)`);
   ok(on.actes === 0, `aucun acte de la sim sur un corps couché sous cfg.sol (${on.actes} ; sans la clé ${off.actes} — mesuré en page : une frappe 0,5 s après la chute)`);
   ok(on.framesCorps / Math.max(1, on.framesSol) <= 0.03 && on.framesCorps / Math.max(1, on.framesSol) < off.framesCorps / Math.max(1, off.framesSol), `personne ne marche dans un corps couché : ${(100 * on.framesCorps / Math.max(1, on.framesSol)).toFixed(1)} % des images au sol avec un debout à < 0,6 m (sans la clé ${(100 * off.framesCorps / Math.max(1, off.framesSol)).toFixed(1)} %)`);
+}
+
+// ---- 5 ter. (A10 quater) LE RELEVÉ AIDÉ (cfg.sol.aide) : le jeu arrêté, un coéquipier vient tendre la main au fauché qui se relève
+{
+  const hyp = Math.hypot;
+  const force = (st, cfg, fid, foeId, restart, helpersAt = []) => {
+    const f = st.players[fid]; if (st.ball.owner != null) st.ball.release('perte');
+    for (const ha of helpersAt) { const h = st.players[ha.id]; h.p[0] = f.p[0] + ha.dx; h.p[2] = f.p[2] + ha.dz; h.v = [0, 0]; }   // deux coéquipiers près : l'un sera le preneur du coup franc (exclu), l'autre l'aidant
+    f.down = 2.6; f._chute = { t: st.t, kind: 'avant', side: 1, by: foeId, cause: 'tacle' }; f.v = [0, 0];
+    if (restart) { const p = [f.p[0] + 0.5, f.p[2]]; st.ball.restart([p[0], 0.11, p[1]], { cause: 'coup-franc' }); st.restart = { type: 'coup-franc', p, team: f.team, at: st.t + 4, placed: false }; st.possession = { team: f.team, carrier: -1 }; st.phase = 'loose'; }
+    const n0 = st.events.length, t0 = st.t; let aide = null, geste = null, dG = null, dMin = 9, upAt = null; const jobs = new Set();
+    for (let i = 0; i < 60 * 6; i++) {
+      matchStep(st, 1 / 60, cfg);
+      for (const e of st.events.slice(n0)) { if (e.type === 'aide' && !aide) aide = { ...e, tRel: st.t - t0 }; if (e.type === 'windup' && e.skill === 'aide' && !geste) { geste = { ...e, tRel: st.t - t0 }; const h = st.players[e.by]; dG = hyp(h.p[0] - f.p[0], h.p[2] - f.p[2]); } }
+      if (aide) { const h = st.players[aide.by]; if (f.down > 0) { dMin = Math.min(dMin, hyp(h.p[0] - f.p[0], h.p[2] - f.p[2])); if (!geste) jobs.add(h.job); } }
+      if (upAt == null && f.down <= 0) upAt = st.t - t0;
+    }
+    return { f, aide, geste, dG, dMin, upAt, jobs: [...jobs], helper: aide ? st.players[aide.by] : null };
+  };
+  const runs = [];
+  for (const seed of [3, 7]) {
+    const cfg = matchCfg({ familiarite: null });
+    let { st } = playMatch(makeMatch({ full: true, seed }), 10, { cfg });
+    const f = st.players.find((p) => !p.keeper && p.team === 0 && p.down <= 0), foe = st.players.find((p) => p.team === 1 && !p.keeper);
+    const mates = st.players.filter((p) => p.team === 0 && !p.keeper && p !== f).slice(0, 2);
+    runs.push({ genre: 'jeu arrêté', foe, ...force(st, cfg, f.id, foe.id, true, [{ id: mates[0].id, dx: 3, dz: 1 }, { id: mates[1].id, dx: -2.5, dz: 2 }]) });
+    for (let i = 0; i < 300; i++) matchStep(st, 1 / 60, cfg);
+    const f2 = st.players.find((p) => !p.keeper && p.team === 1 && p.down <= 0 && hyp(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]) > 16);
+    const foe2 = st.players.find((p) => p.team === 0 && !p.keeper);
+    if (f2) runs.push({ genre: 'ballon loin', foe: foe2, ...force(st, cfg, f2.id, foe2.id, false) });
+  }
+  const A = matchCfg().sol.aide;
+  ok(runs.length >= 3 && runs.every((r) => r.aide && r.helper.team === r.f.team && r.aide.by !== r.foe.id && !r.helper.keeper), `LE RELEVÉ AIDÉ : un coéquipier vient au fauché (${runs.map((r) => `${r.genre} : ${r.aide ? '#' + r.aide.by + ' à ' + r.aide.d + ' m' : 'personne'}`).join(' ; ')}) — jamais le fauteur, jamais le gardien`);
+  ok(runs.every((r) => r.geste && r.geste.tRel < r.upAt && r.dG <= A.dist + 0.6), `…et lui TEND LA MAIN avant le relevé : geste 'mainTendue' à ${runs.map((r) => r.geste ? `${r.geste.tRel.toFixed(2)} s (relevé ${r.upAt.toFixed(2)}), ${r.dG.toFixed(2)} m` : '—').join(' ; ')} (≤ dist ${A.dist} + 0,6)`);
+  ok(runs.every((r) => r.dMin >= matchCfg().sol.corps - 0.2 && r.jobs.includes('walk')), `…posté hors du corps couché (au plus près ${runs.map((r) => r.dMin.toFixed(2)).join('/')} m ≥ corps ${matchCfg().sol.corps} − 0,2), arrivé en marchant (métiers ${runs.map((r) => r.jobs.join('→')).join(' ; ')})`);
+  {
+    const cfg0 = matchCfg({ familiarite: null, sol: { ...matchCfg().sol, aide: null } });
+    let { st } = playMatch(makeMatch({ full: true, seed: 3 }), 10, { cfg: cfg0 });
+    const f = st.players.find((p) => !p.keeper && p.team === 0 && p.down <= 0), foe = st.players.find((p) => p.team === 1 && !p.keeper), mate = st.players.find((p) => p.team === 0 && !p.keeper && p !== f);
+    const r = force(st, cfg0, f.id, foe.id, true, [{ id: mate.id, dx: 3, dz: 1 }]);
+    ok(!r.aide && !r.geste && r.upAt != null, `sol.aide null : le relevé solitaire d'hier (personne ne vient, relevé à ${r.upAt?.toFixed(2)} s)`);
+    const cfg1 = matchCfg({ familiarite: null });
+    let { st: s1 } = playMatch(makeMatch({ full: true, seed: 7 }), 10, { cfg: cfg1 });
+    const f1 = s1.players.find((p) => !p.keeper && p.team === 0 && p.down <= 0), foe1 = s1.players.find((p) => p.team === 1 && !p.keeper);
+    for (const q of s1.players) if (q.team === 0 && q !== f1 && !q.keeper) { q.p[0] = f1.p[0] + 30 * (q.p[0] > f1.p[0] ? 1 : -1); }   // tous les coéquipiers à 30 m : personne ne peut arriver avant le relevé
+    const r1 = force(s1, cfg1, f1.id, foe1.id, true);
+    ok(!r1.aide, `personne à portée (coéquipiers à 30 m, trot ${A.trot} m/s contre ${(2.6 - A.avant + 0.4).toFixed(1)} s de sol) : aucun aidant élu — on ne tend pas la main à un homme debout`);
+  }
 }
 
 // ---- 6. les sabotages nommés (par la substitution des paramètres d'espèce)
