@@ -275,6 +275,11 @@
   LA BOITERIE (§ 8) — l'entrant trotte à son poste (cfg.entrant.trot, _walkF × 1,6) ; le fauché d'une faute grave boite 25 s
   (cfg.boiterie : gaitPose opts.boite — l'appui du côté touché plus court, le vol plus ras, le bassin qui plonge ; la pointe × 0,7 posée
   après tous les plafonds, l'intention d'effort comprise), la boiterie s'efface sur sa durée ; null = hier au bit.
+- LIVRÉ (note 384, reference/59 § 10, verify-petits-gestes 15/0) : LES PETITS GESTES DU MATCH (§ 10, engine/petits-gestes.js,
+  cfg.petitsGestes) — la semelle du preneur à la sortie de but (la remise attend 0,7 s), le gardien qui replace son mur (designer, le
+  regard tenu), le dégagement armé en teteDefensive (même heure que tete), le contrôle orienté (controleOriente joué quand la sim tourne
+  le receveur de ≥ 45°), la feinte d'appel du soutien posé (feinteAppel, haut du corps seul) ; null = hier au bit. Animations_A_Faire
+  est ÉPUISÉ (§ 1-10 livrés).
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

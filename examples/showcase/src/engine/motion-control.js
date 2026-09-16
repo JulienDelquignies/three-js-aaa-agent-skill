@@ -28,6 +28,7 @@ import { hyp } from './hyp.js';
 export const CONTROL_KINDS = {
   controleInterieur: { duration: 0.62, contact: 0.2,  reach: { flex: 36, knee: 22, abd: 10, turn: 26, toe: -6, evert: 8 },  cushion: { flex: -4, knee: 52, abd: 6, turn: 12, dt: 0.16 }, lean: -6, yaw: -6, head: [16, 14], arms: { elev: 44, fwd: 20, elbow: 40 }, dip: 0.04, lat: -0.04, back: -0.03, excursion: 0.20, height: [0.02, 0.22] },
   controleExterieur: { duration: 0.6,  contact: 0.22, reach: { flex: 32, knee: 20, abd: -8, turn: -18, toe: -8, evert: -12 }, cushion: { flex: 4, knee: 50, abd: -4, turn: -8, dt: 0.16 }, lean: -5, yaw: 6, head: [16, 14], arms: { elev: 44, fwd: 22, elbow: 40 }, dip: 0.035, lat: -0.03, back: -0.03, excursion: 0.18, height: [0.02, 0.22] },
+  controleOriente:   { duration: 0.62, contact: 0.2,  reach: { flex: 36, knee: 22, abd: 12, turn: 40, toe: -6, evert: 10 }, cushion: { flex: 14, knee: 36, abd: 10, turn: 22, dt: 0.16 }, lean: -5, yaw: 24, head: [14, 10], arms: { elev: 44, fwd: 20, elbow: 40 }, dip: 0.04, lat: -0.05, back: -0.02, excursion: 0.20, height: [0.02, 0.22], oriente: true },   // (§ 10) LE CONTRÔLE ORIENTÉ : l'intérieur reçoit (turn 40 : la surface se présente au ballon) pendant que les hanches et le regard S'OUVRENT vers la course (yaw +24 : à l'opposé du ballon — l'intérieur fermé tourne vers lui, −6) ; l'amorti pousse devant (flex +14 après le contact)
   controleSemelle:   { duration: 0.55, contact: 0.22, reach: { flex: 48, knee: 32, abd: 4, turn: 0, toe: -22, evert: 0 },   cushion: { flex: 24, knee: 44, abd: 2, turn: 0, dt: 0.16 }, lean: -8, yaw: 0, head: [16, 12], arms: { elev: 40, fwd: 18, elbow: 36 }, dip: 0.06, lat: -0.04, back: -0.02, excursion: 0.18, height: [0.12, 0.34], sole: true },
   amortiCuisse:      { duration: 0.8,  contact: 0.3,  reach: { flex: 82, knee: 50, abd: 8, turn: 6, toe: 8, evert: 0 },    cushion: { flex: 50, knee: 62, abd: 4, turn: 2, dt: 0.2 },  lean: 14, yaw: 0, head: [-8, 10], arms: { elev: 48, fwd: 24, elbow: 42 }, dip: 0.04, lat: -0.05, back: -0.03, thigh: true, kneeHeight: 0.62 },
   // (« amorti » sert aussi de réception PAR DÉFAUT — un ballon sans technique nommée — : la poitrine
@@ -141,6 +142,11 @@ export function checkControlGen(spec, P, kindName, { foot = 'right' } = {}) {
     if (p.headBack < 0.07) issues.push(`la poitrine ne s'offre pas (tête ${(p.headBack * 100).toFixed(0)} cm derrière le bassin < 7)`);
     if (p.dipC > -0.04) issues.push(`les genoux ne plient pas (bassin ${(p.dipC * 100).toFixed(0)} cm)`);
     if (p.sup2 > 0.03) issues.push(`le second appui bouge (${(p.sup2 * 100).toFixed(1)} cm)`);
+  }
+  if (K.oriente) {   // (§ 10) les hanches s'ouvrent : le lacet du bassin au contact, lu sur la clé de contact (quaternion → vecteur avant)
+    const kC = spec.keys.find((k) => Math.abs(k.t - spec.contact) < 1e-6), q = kC?.pose?.Hips || [0, 0, 0, 1];
+    const hy = Math.atan2(2 * (q[0] * q[2] + q[3] * q[1]), 1 - 2 * (q[0] * q[0] + q[1] * q[1])) * 180 / Math.PI;
+    if (Math.abs(hy) < 8) issues.push(`les hanches ne s'OUVRENT pas vers la course (lacet du bassin ${hy.toFixed(0)}° au contact < 8)`);
   }
   if (K.lunge) {
     if (p.dipC > -0.09) issues.push(`la fente ne descend pas (bassin ${(p.dipC * 100).toFixed(0)} cm > −9)`);

@@ -1,4 +1,4 @@
-import { tirage } from './rng.js';
+import { tirage } from './rng.js'; import { modeTeteDefensive } from './petits-gestes.js';
 import { xgDe } from './xg.js';
 import { predictPath, ballAt } from './ball-predict.js'; import { startGesture } from './gesture.js'; import { MOVE_TIMING } from './skills-sim.js';   // (B3) la tête armée
 import { MOVES } from './animkit.js';   // (C1) la retournée : le clip authored porte son contact (0,52 s)
@@ -161,8 +161,9 @@ export function teteArmerStep(st, cfg) {
     const pres = st.players.filter((q) => q.down <= 0 && !q.keeper && !q._sub && b[1] <= porte(q) && d2(ou(q), b) < (T.reach ?? 1.0));
     const q = pres.filter((q) => !q.act).sort((x, y) => d2(ou(x), b) - d2(ou(y), b))[0];
     if (!q) { why = pres.length ? 'acte' : 'personne'; continue; }
-    startGesture(q, { id, duration: mv.duration, contact: mv.contact }, { payload: { kind: 'tete', saut: saute, ownsBody: true, mobile: true }, log: st.gestures });
-    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: id, skill: 'tete', anticipation: +tau.toFixed(2), ...(saute ? { saut: true } : {}), h: +b[1].toFixed(2) });
+    const idG = id === 'tete' && modeTeteDefensive(st, q, b, cfg) ? 'teteDefensive' : id;   // (§ 10) le dégagement s'arme en teteDefensive (même durée, même contact : le flux d'hier)
+    startGesture(q, { id: idG, duration: mv.duration, contact: mv.contact }, { payload: { kind: 'tete', saut: saute, ownsBody: true, mobile: true }, log: st.gestures });
+    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: q.id, move: idG, skill: 'tete', anticipation: +tau.toFixed(2), ...(saute ? { saut: true } : {}), h: +b[1].toFixed(2) });
     st._teteArmWhy = null; return;
   }
   st._teteArmWhy = why;

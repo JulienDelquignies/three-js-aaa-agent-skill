@@ -60,7 +60,7 @@ function ballFor(move, spec) {
   const at = denseSampler(spec, P);
   const w = at(spec.contact);
   const K = CONTROL_KINDS[move];
-  if (SKILL_KINDS[move]) return [...SKILL_KINDS[move].ball];   // le geste technique DÉCLARE où est son ballon (il ne part pas)
+  if (SKILL_KINDS[move]) return SKILL_KINDS[move].ball ? [...SKILL_KINDS[move].ball] : null;   // le geste technique DÉCLARE où est son ballon (il ne part pas) ; (§ 10) la feinte d'appel n'en a pas
   if (GROUND_KINDS[move]) return [...GROUND_KINDS[move].ball];
   if (KEEPER_KINDS[move]) return [...KEEPER_KINDS[move].ball];
   if (RESTART_KINDS[move]?.foot) return RESTART_KINDS[move].ball;                                     // la volée du gardien (A9 bis) : le ballon tombé, au cou-de-pied au contact
@@ -149,7 +149,7 @@ for (const v of variants) {
     for (let i = 0; i < 40; i++) pl.ctrl.update(1 / 60);          // la base : l'idle, poids 1
     pl.model.position.set(0, pl.groundY, 0); pl.model.rotation.y = 0;
     pl.ctrl.pos.set(0, pl.groundY, 0);
-    S.ball.position.set(ball[0], ball[1], ball[2]);
+    if (ball) S.ball.position.set(ball[0], ball[1], ball[2]); else S.ball.visible = false;   // (§ 10) un geste sans ballon (la feinte d'appel)
     const r = spec ? pl.gestureLayer.begin(spec) : { missing: [] };
     const sheet = document.createElement('canvas');
     const W = cell, H = cell, top = 34, left = 120;

@@ -19,6 +19,7 @@ import { hyp } from './hyp.js';
 export const AERIAL_KINDS = {
   tete:       { duration: 0.9,  contact: 0.42, crouch: 0.14, dip: 0.14, apex: 0.38, whipBack: 16, whipFwd: 34, trunkBack: 14, trunkFwd: 16, armsUp: 96, trail: 0.10 },
   teteDebout: { duration: 0.55, contact: 0.22, upperOnly: true, whipBack: 18, whipFwd: 34, trunkBack: 12, trunkFwd: 14, dip: 0.02 },
+  teteDefensive: { duration: 0.9, contact: 0.42, crouch: 0.14, dip: 0.14, apex: 0.38, whipBack: 26, whipFwd: 34, trunkBack: 24, trunkFwd: 10, armsUp: 104, trail: 0.10, degagement: true },   // (§ 10) LE DÉGAGEMENT : même saut, même heure que `tete` (le flux d'hier), le buste et le cou s'arment davantage en arrière (−26 / 24 c. −16 / 14) et le buste frappe moins loin devant (trunkFwd 10 : le front passe sous le ballon, vers le haut), les bras plus hauts
 };
 
 function trunkJoints(J, { lean = 0, headPitch = 0 }) {
@@ -129,6 +130,7 @@ export function checkAerialGen(spec, P, kindName) {
     if (p.apex < 0.3) issues.push(`le saut ne MONTE pas (bassin +${(p.apex * 100).toFixed(0)} cm au contact < 30)`);
     if (p.crouch > -0.1 || p.kneeAtCrouch > -40) issues.push(`l'impulsion ne PLIE pas (bassin ${(p.crouch * 100).toFixed(0)} cm, genou ${p.kneeAtCrouch.toFixed(0)}°)`);
     if (p.feetGroundDrift > 0.03) issues.push(`les pieds bougent au sol avant le décollage / après l'atterrissage (${(p.feetGroundDrift * 100).toFixed(1)} cm)`);
+    if (K.degagement && p.headBackMin > -18) issues.push(`le dégagement ne s'ARME pas davantage (tête ${p.headBackMin.toFixed(0)}° avant le contact > −18 — la tête au but s'arme à −16)`);   // (§ 10)
   }
   return { ok: issues.length === 0, issues, portrait: p };
 }

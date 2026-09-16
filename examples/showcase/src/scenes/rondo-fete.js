@@ -1,3 +1,4 @@
+import { twoBoneIK } from '../engine/strike-warp.js'; import { aimChildAt } from '../engine/foot-lock.js';   // (§ 10) la semelle sur le ballon
 // rondo-fete — LA FÊTE ET L'HUMEUR DANS LA SCÈNE (lot A11 : motion-emotion + referee.fete).
 //
 // Tout se lit de la sim, rien ne s'invente :
@@ -69,4 +70,26 @@ export function poigneeWarp(scene, pl) {
   // vers la main de l'autre, à 15 % de l'écart (la paume) : les deux corps se traitent l'un après l'autre dans la boucle — le point médian
   // recalculé à chaque passage laissait 17 cm entre les mains (mesuré) ; la main qui va à la main de l'autre converge en une image
   const k = 0.15; scene._armTo(pl, 'right', scene._wk.x + (scene._wh.x - scene._wk.x) * k, scene._wk.y + (scene._wh.y - scene._wk.y) * k - 0.01, scene._wk.z + (scene._wh.z - scene._wk.z) * k, w);
+}
+
+/** (§ 10) LA SEMELLE SUR LE BALLON : pendant la tenue d'arretSemelle posé par l'événement 'geste' (pl._semelleT), le pied le plus proche
+ *  va SUR le ballon (la cheville à 19 cm du sol, un quart du chemin vers la hanche : l'avant de la semelle sur la balle) — le clip pose
+ *  la semelle 30 cm devant le corps et la sim arrête le preneur à 10-18 cm du ballon : sans le warp elle se posait à côté (capture). */
+export function semelleWarp(scene, pl) {
+  const T = pl._semelleT; if (T == null) return;
+  const tt = scene._t - T; if (tt > 0.9) { pl._semelleT = null; return; } if (pl.sim.act || pl.gestureLayer.spec?.name !== 'arretSemelle') return;
+  const cl = (x) => Math.max(0, Math.min(1, x)), w = cl((tt - 0.12) / 0.12) * (1 - cl((tt - 0.7) / 0.15)); if (w <= 1e-3) return;
+  const b = scene.state.ball.p; if (b[1] > 0.3) return;
+  let side = null, dBest = 1.2;
+  for (const f of ['left', 'right']) { const leg = pl.legs?.[f]; if (!leg?.foot || !leg.up || !leg.knee || !pl.legLens?.[f]) continue; leg.foot.getWorldPosition(scene._wf); const d = Math.hypot(scene._wf.x - b[0], scene._wf.z - b[2]); if (d < dBest) { dBest = d; side = f; } }
+  if (!side) return;
+  const leg = pl.legs[side], lens = pl.legLens[side];
+  leg.up.getWorldPosition(scene._wh); leg.knee.getWorldPosition(scene._wk); leg.foot.getWorldPosition(scene._wf);
+  const tx = b[0] + (scene._wh.x - b[0]) * 0.25, ty = b[1] + 0.19, tz = b[2] + (scene._wh.z - b[2]) * 0.25;
+  scene._wt.set(scene._wf.x + (tx - scene._wf.x) * w, scene._wf.y + (ty - scene._wf.y) * w, scene._wf.z + (tz - scene._wf.z) * w);
+  const dT = scene._wh.distanceTo(scene._wt), R = (lens.A + lens.B) * 0.995;
+  if (dT > R) scene._wt.set(scene._wh.x + (scene._wt.x - scene._wh.x) * (R / dT), scene._wh.y + (scene._wt.y - scene._wh.y) * (R / dT), scene._wh.z + (scene._wt.z - scene._wh.z) * (R / dT));
+  const sol = twoBoneIK([scene._wh.x, scene._wh.y, scene._wh.z], [scene._wt.x, scene._wt.y, scene._wt.z], lens.A, lens.B, [scene._wk.x - scene._wh.x, scene._wk.y - scene._wh.y, scene._wk.z - scene._wh.z]);
+  aimChildAt(leg.up, leg.knee, scene._wm.fromArray(sol.mid));
+  aimChildAt(leg.knee, leg.foot, scene._wm.fromArray(sol.end));
 }

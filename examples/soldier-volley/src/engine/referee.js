@@ -1,4 +1,4 @@
-import { tirage } from './rng.js'; import { ramasseursStep, ramasseurPrend } from './ramasseurs.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
+import { tirage } from './rng.js'; import { ramasseursStep, ramasseurPrend } from './ramasseurs.js'; import { semelleAvant, petitsGestesStep } from './petits-gestes.js'; import { bandeDe, addDe, gestionDe } from './temps.js'; import { xgDe } from './xg.js';
 // referee.js — L'ARBITRAGE ET LES CÉRÉMONIES DU MATCH, sortis de match-sim (lot 16 : la
 // volumétrie est une dette comme une autre — 1 575 lignes accrétées en six lots). La FAMILLE
 // est cohésive : tout ce qui ARRÊTE et REMET le jeu — sorties (onOut), droit de prise
@@ -623,6 +623,7 @@ export function canTake(st, takerId, cfg) {
   if (st.t < st.restart.at - 0.25) return false;
   if (p.team !== st.restart.team) return false;
   const ty = st.restart.type;
+  if (semelleAvant(st, p, cfg)) return false;   // (§ 10, petits-gestes.js) la sortie de but attend la SEMELLE du preneur
   // LE LANCEUR SE POSE (lot A9) : la touche se lance À L'ARRÊT, FACE AU TERRAIN (ballFetch le tourne par le slew) — mesuré
   // avant : pris en course à 4 m/s, dos au jeu, le geste lançait par-dessus la tête. Patience 3 s : jamais de gel.
   // …et la touche est à son LANCEUR (lot A9 bis, cfg.remisesPied.touche) : posté derrière la ligne, c'est lui qui lance — hier le plus proche
@@ -1073,7 +1074,7 @@ export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
   if (sp > 0.4) a.yaw = Math.atan2(a.v[1], a.v[0]);
   else a.yaw += (Math.atan2(b[2] - a.p[2], b[0] - a.p[0]) - a.yaw) * Math.min(1, dt * 3);   // à l'arrêt il REGARDE le jeu
   a.speed = sp; if (gS && gS.dir != null) { let da = gS.dir - a.yaw; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; a.yaw += da * Math.min(1, dt * 6); }   // (A11 bis) le corps se tourne vers la direction du geste (le coup franc, le fautif)
-  assistantsStep(st, dt, cfg); ramasseursStep(st, dt, cfg);   // (§ 5) les ramasseurs de balle
+  assistantsStep(st, dt, cfg); ramasseursStep(st, dt, cfg); petitsGestesStep(st, dt, cfg);   // (§ 5) les ramasseurs de balle ; (§ 10) le gardien replace son mur
 }
 
 /** LES ASSISTANTS DE TOUCHE (lot 186, cfg.assistants — la Loi 6 : la ligne du hors-jeu

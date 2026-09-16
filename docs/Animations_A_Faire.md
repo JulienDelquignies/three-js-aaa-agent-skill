@@ -119,16 +119,19 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
   et l'adversaire) jusqu'à un appui ou une faute ; clé `cfg.bouclier { duree, pression }`.
   Contrat : la distance adversaire-ballon ne descend pas sous 0,6 m pendant la tenue.
 
-## 10. Les petits gestes qui manquent au match
+## 10. Les petits gestes qui manquent au match — LIVRÉ (16/09, note 384, reference/59 § 10, `engine/petits-gestes.js`, cfg.petitsGestes, verify-petits-gestes 15/0)
 
-- **Le râteau/la semelle sur ballon arrêté à la relance** (le gardien qui pose le ballon du pied).
-- **Le gardien qui replace son mur** (le bras qui désigne : `designer` existe, à brancher sur la
-  pose du coup franc adverse, clé dans `remisesPied.mur`).
-- **Le dégagement de la tête défensif** (§ 1 `teteDefensive`).
-- **Le contrôle orienté** (le premier contact qui emmène le ballon dans la course : motion-control
-  `controleOriente`, déclencheur : `receive` avec un cap voulu ≠ le cap du ballon).
-- **La feinte de corps sans ballon** (l'appel : un crochet du buste avant le départ — motion-skill
-  `feinteAppel`, déclencheur : `burst` kind appel).
+- **Le râteau/la semelle sur ballon arrêté à la relance** — livré : la semelle (`arretSemelle`) du preneur à la sortie de but, la
+  remise attend `tenue` 0,7 s (`petitsGestes.semelle`). Reste : le râteau (le preneur ne ramène pas le ballon).
+- **Le gardien qui replace son mur** — livré : `designer` sur le gardien au coup franc adverse, le regard tenu vers le mur
+  (`petitsGestes.mur`, au pas de l'arbitre — la clé n'est pas dans `remisesPied.mur` : le mur est à match-sim, le geste au gardien).
+- **Le dégagement de la tête défensif** (§ 1 `teteDefensive`) — livré : le geste généré (le buste armé davantage, la frappe vers le
+  haut) et l'armé de `tete.js` qui le nomme pour un corps à < 24 m de son but, même heure que `tete` (`petitsGestes.teteDefensive`).
+- **Le contrôle orienté** — livré : `controleOriente` généré (les hanches et le regard ouverts vers la course, l'intérieur qui reçoit),
+  joué par la scène quand la sim tourne le receveur de ≥ 45° (`petitsGestes.controleOriente.angle` ; rondo-sim est au plafond, le
+  déclencheur est le `yawWant` qu'elle écrit déjà).
+- **La feinte de corps sans ballon** — livré : `feinteAppel` généré (haut du corps seul), tiré au départ d'un appel d'un soutien posé,
+  une fois par 20 s (`petitsGestes.feinteAppel`).
 
 ## L'ordre proposé
 

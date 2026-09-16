@@ -1,4 +1,4 @@
-import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { legsByArrive, legsByContact, fusionSample } from './rondo-fusion.js'; import { remiseClock, remiseHands, remiseSkip, elanTake } from './rondo-remises.js'; import { feteEvent, feteStep, poigneeWarp } from './rondo-fete.js';   // la fête et l'humeur (A11)   // le contact (A10), les remises au pied (A9 bis)
+import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { legsByArrive, legsByContact, fusionSample } from './rondo-fusion.js'; import { remiseClock, remiseHands, remiseSkip, elanTake } from './rondo-remises.js'; import { feteEvent, feteStep, poigneeWarp, semelleWarp } from './rondo-fete.js';   // la fête et l'humeur (A11)   // le contact (A10), les remises au pied (A9 bis)
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -862,8 +862,9 @@ export class Rondo {
         // où le ballon est vraiment)
         // …la PRISE DU GARDIEN arme les MAINS, pas le pied (lot 91 — mesuré : main à 1,06 m du
         // ballon à l'instant de la prise debout, l'amorti ne tend aucun bras) : _applyCatchWarp
-        if (pl && pl.sim.act?.payload?.kind === 'tacle-debout') { pl._teched = this._t; pl._touchT = this._t; } /* (A10 bis) la prise du TACLEUR n'est pas une réception : le tacle possède déjà la jambe (mesuré : 'amorti' par-dessus, bras à 49° sur le vainqueur pendant son accompagnement) */ else if (pl && e.type === 'control' && elanTake(this, e)) { pl._rxAt = this._t; pl._touchT = this._t; }   /* (B2) la prise au contact d'élan : le pied frappe, pas de clip de contrôle par-dessus le clip d'élan (le warp de touche seul) */ else if (pl) { this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : e); pl._teched = this._t; if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
+        if (pl && pl.sim.act?.payload?.kind === 'tacle-debout') { pl._teched = this._t; pl._touchT = this._t; } /* (A10 bis) la prise du TACLEUR n'est pas une réception : le tacle possède déjà la jambe (mesuré : 'amorti' par-dessus, bras à 49° sur le vainqueur pendant son accompagnement) */ else if (pl && e.type === 'control' && elanTake(this, e)) { pl._rxAt = this._t; pl._touchT = this._t; }   /* (B2) la prise au contact d'élan : le pied frappe, pas de clip de contrôle par-dessus le clip d'élan (le warp de touche seul) */ else if (pl) { const dY = e.type === 'control' && !e.miss && e.tech !== 'prise-gardien' && this._mcfg?.petitsGestes?.controleOriente && pl.sim.yawWant != null ? Math.atan2(Math.sin(pl.sim.yawWant - pl.sim.yaw), Math.cos(pl.sim.yawWant - pl.sim.yaw)) * 180 / Math.PI : 0; this._playTech(pl, e.tech === 'prise-gardien' && this.state.ball.p[1] < 0.5 ? { ...e, move: 'ramassage' } : Math.abs(dY) >= (this._mcfg?.petitsGestes?.controleOriente?.angle ?? 45) ? { ...e, move: 'controleOriente', foot: dY > 0 ? 'left' : 'right' } : e); pl._teched = this._t;   /* (§ 10) LE CONTRÔLE ORIENTÉ : le receveur que la sim tourne (yawWant hors du presseur) de plus de `angle` ° ouvre les hanches vers sa course — le pied par le sens du virage (dY > 0 = à droite : le miroir) */ if (e.type === 'control') { pl._rxAt = this._t; if (e.tech === 'prise-gardien') pl._catchT = this._t; else pl._touchT = this._t; } }
       } else if (e.type === 'faute' || e.type === 'carton' || e.type === 'glissade' || e.type === 'poignee' || e.type === 'salut') { feteEvent(this, e); if (e.type === 'faute' && e.kind === 'accrochage') contactEvent(this, e); this._ticker.event(e, this.state);   // (A11) la protestation du fautif, la glissade du buteur — le ticker garde ces événements
+      } else if (e.type === 'geste') { const pl = this.players[e.by]; if (pl && !pl.gestureLayer.active && (pl.sim.down ?? 0) <= 0 && !pl.sim.act) { this._playTech(pl, e); pl._teched = this._t; if (e.move === 'arretSemelle') pl._semelleT = this._t; }   // (§ 10, petits-gestes.js) la semelle du preneur, le gardien qui replace son mur, la feinte d'appel : un corps libre joue le geste nommé
       } else if (e.type === 'chute' || (e.type === 'duel' && e.kind === 'épaule')) { contactEvent(this, e);   // LE CONTACT (lot A10, rondo-contact.js)
       } else if (e.type === 'arrêt' && (e.mode === 'pieds' || e.mode === 'buste')) {
         // L'ARRÊT NOMMÉ S'HABILLE (lot 93, contrat lot 90) : pieds → paradePieds, buste →
@@ -910,7 +911,7 @@ export class Rondo {
         // déjà son geste). Le journal du ticker nomme le contact (saut/demi se lisent).
         const pl = this.players[e.by];
         if (pl) {
-          this._playTech(pl, { ...e, move: e.type === 'volée' ? 'frappe' : e.saut ? 'tete' : 'teteDebout' },
+          this._playTech(pl, { ...e, move: e.type === 'volée' ? 'frappe' : e.saut ? (e.mode === 'dégagement' && this._mcfg?.petitsGestes?.teteDefensive ? 'teteDefensive' : 'tete') : 'teteDebout' },   // (§ 10) le dégagement sauté joue teteDefensive (l'armé le nomme déjà au windup)
             e.type === 'volée' ? 'contact' : e.saut ? 0.24 : 0.1);
           pl._teched = this._t;
         }
@@ -1133,7 +1134,7 @@ export class Rondo {
       this._applyStrikeWarp(pl);
       this._applyDiveWarp(pl, dtP);
       this._applyCatchWarp(pl);
-      this._applyAideWarp(pl); poigneeWarp(this, pl);   // (A11 ter) les mains de la poignée, la fin du salut
+      this._applyAideWarp(pl); poigneeWarp(this, pl); semelleWarp(this, pl);   // (A11 ter) les mains de la poignée, la fin du salut ; (§ 10) la semelle sur le ballon
       this._applyTouchWarp(pl);
     }
 

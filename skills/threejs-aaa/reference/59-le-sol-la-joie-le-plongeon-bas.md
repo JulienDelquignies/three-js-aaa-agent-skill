@@ -222,6 +222,40 @@ verify-boiterie « L'ENTRANT TROTTE »). `entrant: null` = hier au bit. Dettes :
 l'entrant (le geste `serrerMain` existe, § 7 ; il faudrait les deux corps au même point de la touche), le quatrième arbitre
 (un corps de plus, § 5) et le panneau ; un seul corps par remplacement.
 
+## Les petits gestes du match (Animations_A_Faire § 10 ; `cfg.petitsGestes`, `engine/petits-gestes.js`, note 384)
+
+Cinq gestes que le match montrait sans les jouer, chacun sous SA sous-clé, un événement nommé `geste { by, move, foot }` que la scène
+joue sur un corps libre (`_playTech`) ; trois gestes générés de plus (`teteDefensive`, `controleOriente`, `feinteAppel`, dans MOVES et
+sous contrat). `petitsGestes: null` = hier au bit (aucun événement, aucune attente, aucun regard).
+
+- **La semelle du preneur** (`semelle { tenue 0,7, vMax 0,8 }`, `canTake` → `semelleAvant`) : à la sortie de but, le preneur arrivé au
+  ballon (≤ vMax m/s) y pose la semelle (`arretSemelle`, la tenue de 0,62 s du geste) et la remise ATTEND `tenue` s. Mesuré : le
+  preneur à 0,78 m/s pose à 3,2 s, la sortie part 0,72 s après (3,9 s c. 2,8 sans la clé). La scène met la semelle SUR le
+  ballon (`rondo-fete.semelleWarp` : pendant la tenue, le pied le plus proche va au-dessus du ballon par l'IK de la touche — le clip
+  posait la semelle 30 cm devant un corps arrêté à 10-18 cm du ballon).
+- **Le gardien replace son mur** (`mur { delai 0,6, duree 1,6 }`, `petitsGestesStep` au pas de l'arbitre) : au coup franc adverse, le
+  mur élu (match-sim `r._mur`) depuis `delai` s, le gardien DÉSIGNE (`designer`, le pied par le côté du mur : z > 0 = miroir) et tient
+  le regard vers le point du mur (`p._regard`, la voie du § 7) pendant `duree` s ou jusqu'à la reprise. Mesuré : le mur élu à 0,02 s,
+  le geste à 0,63 s, 4° d'écart au point, le regard relâché à 1,64 s.
+- **Le dégagement armé** (`teteDefensive: true`, `teteArmerStep` → `modeTeteDefensive`) : la tête SAUTÉE d'un corps à < 24 m de son
+  but (hors la tête au but : < `tete.but` m dans la surface adverse — l'ordre de `teteStep`) s'arme en `teteDefensive` : même durée,
+  même contact que `tete` (0,9 / 0,42 — le flux d'hier au bit : le windup et la tête à la même heure, 1,27 / 1,70 s dans la fixture
+  de B3 posée sur un défenseur), le buste et le cou armés davantage (tête −19,5° avant le contact c. −12,0), le buste qui frappe moins
+  loin devant (le front passe sous le ballon), les bras plus hauts. La scène joue aussi `teteDefensive` sur une tête réactive sautée
+  en mode `dégagement`.
+- **Le contrôle orienté** (`controleOriente { angle 45 }`, scène seule — rondo-sim est au plafond et tourne déjà le receveur hors du
+  presseur par `yawWant`) : au `control` d'un receveur que la sim tourne de ≥ `angle` ° (yawWant − yaw, lu à l'événement), la scène
+  joue `controleOriente` — l'intérieur reçoit (turn 40°) pendant que les hanches (+12° au contact) et le regard s'ouvrent vers la
+  course, l'amorti pousse devant — le pied par le sens du virage (à droite = le miroir). Matière : 8 des 17 contrôles de 90 s.
+- **La feinte d'appel** (`feinteAppel { cadence 20, vMax 2,2 }`, `movement` au départ d'un appel) : le soutien posé (≤ vMax m/s) vend un
+  crochet du buste (`feinteAppel`, haut du corps seul — la foulée garde les jambes, le démarrage est celui de la sim : la vente à 0,15 s
+  penche et tourne le buste du côté vendu, le bras s'ouvre ; au contact 0,3 s le buste repart de l'autre côté ×0,6), une fois par
+  `cadence` s. Rare par construction (1 en 90 s : l'appel se tire en jeu posé, hold > 0,6 s).
+- **Banc** : verify-petits-gestes 15/0 (les trois gestes × 40 styles sous contrat et checkClip ; la semelle, le mur, le dégagement, la
+  feinte, les clés nulles) ; le jumeau d'empreinte avec `petitsGestes: null` = base au bit.
+- **Dettes** : la tête défensive DEBOUT reste `teteDebout` ; le contrôle orienté n'a pas d'événement sim (la scène le lit sur yawWant) ;
+  le râteau à la relance n'est que la semelle (le preneur ne ramène pas le ballon) ; le gardien désigne sans crier ni avancer.
+
 ## Bancs
 
 verify-contact 25 → 34 (la pose tenue vit et se ferme ×3, l'horloge en pur ×2, la sim sous cfg.sol ×3, sabotage

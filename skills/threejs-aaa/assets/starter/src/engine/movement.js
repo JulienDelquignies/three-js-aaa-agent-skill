@@ -8,6 +8,7 @@ import { scanStep, aScanne } from './scan.js';
 import { dansCone } from './dribble.js';
 import { pasLoco, budgetStep, pointePermise } from './locomoteur.js';
 import { intentionDe, appelPertinent } from './effort.js';
+import { feinteAppelAt } from './petits-gestes.js';
 
 const d2 = (a, b) => hyp(a[0] - b[0], a[2] - b[2]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -162,6 +163,7 @@ export function movePlayers(st, dt, cfg) {
         p._pace.until = st.t + 0.7 + tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * 0.4;
         p._pace.kind = 'appel';
         st.events.push({ type: 'burst', kind: 'appel', by: p.id, t: +st.t.toFixed(2) });
+        feinteAppelAt(st, p, cfg);   // (§ 10) le soutien posé vend un crochet du buste avant de partir
       }
       p._pace.next = st.t + (6 + tirage(st, 'intention', p.id, st.rnd ?? (() => 0.5))() * 6) / Math.max(0.4, bz);
     }

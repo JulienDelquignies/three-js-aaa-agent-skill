@@ -12761,3 +12761,34 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - **Captures** : planches/foulee-3-0-boite-left-apres (la foulée à 3 m/s, boite gauche : l'appui gauche court, le bassin qui plonge).
 - **Dettes** : le côté de la boiterie ; l'idle et les gestes du boiteux sont ceux d'hier (ni grimace ni main à la cuisse) ; la poignée
   de main à la ligne ; le quatrième arbitre.
+
+- 384: LES PETITS GESTES DU MATCH (§ 10 ; engine/petits-gestes.js, cfg.petitsGestes ; motion-aerial teteDefensive, motion-control
+  controleOriente, motion-skill feinteAppel ; referee.canTake (la semelle), le pas de l'arbitre (le mur), tete.teteArmerStep (le
+  dégagement), movement (la feinte), Rondo (l'événement 'geste', la tête par mode, le contrôle orienté) ; verify-petits-gestes 15/0 ;
+  reference/59 § 10). Animations_A_Faire est ÉPUISÉ.
+
+- **Le patron** : un événement nommé `geste { by, move, foot }` posé par la sim sous une sous-clé, joué par la scène sur un corps libre
+  (pas de couche active, pas d'acte, debout) — la semelle, le mur, la feinte passent par lui ; le dégagement passe par le windup de
+  l'armé (le nom du move), le contrôle orienté par le choix de clip de la scène (rondo-sim est au plafond de 1249 lignes : aucun
+  événement sim, le déclencheur est le yawWant que la réception écrit déjà — « la touche directionnelle survit entière »).
+- **La semelle** : canTake → semelleAvant : la sortie de but attend l'arrêt du preneur (≤ 0,8 m/s), pose l'événement et tient 0,7 s ;
+  mesuré 0,78 m/s, 0,72 s d'attente (3,9 s c. 2,8). **Le mur** : petitsGestesStep au pas de l'arbitre (assistants, ramasseurs, mur) :
+  le mur élu par match-sim (r._mur) + 0,6 s → designer sur le gardien (pied par le côté), p._regard vers le point du mur 1,6 s (relâché
+  aussi à la reprise) ; mesuré 0,63 s, 4°. **Le dégagement** : teteArmerStep nomme 'teteDefensive' (< 24 m de son but, hors la tête au
+  but — l'ordre de teteStep) avec la durée et le contact de tete : windup 1,27 s et tête 1,70 s identiques avec la clé nulle (le flux
+  d'hier) ; le geste s'arme à −19,5° (tete −12,0), whipFwd 34 (à 30, trois styles passaient sous les 18° du contrat). **La feinte** :
+  feinteAppel (haut du corps seul, aucun bassin — un bassin qui descend sans jambes passait les pieds sous la pelouse sur 23 styles)
+  au départ d'un appel d'un soutien ≤ 2,2 m/s, une par 20 s : 1 en 90 s (l'appel se tire posé, hold > 0,6 s). **Le contrôle orienté** :
+  controleOriente (turn 40, yaw +24 : les hanches +12° au contact — le contrat lit le lacet du bassin sur la clé de contact), 8 des 17
+  contrôles de 90 s tournent le receveur de ≥ 45°.
+- **Épingles** : petitsGestes: null sur les 40 bancs datés (195 sites, la même passe que boiterie/entrant) ; le jumeau (sortieAerienne,
+  retournee, bouclier, ceremonie, ramasseurs, boiterie, entrant, petitsGestes null) = base 9fa4ec6 au bit.
+- **La semelle SUR le ballon** (scène, rondo-fete.semelleWarp) : le clip pose la semelle 30 cm devant le corps et la sim arrête le
+  preneur à 10-18 cm du ballon — capturé à côté ; pendant la tenue (0,12 → 0,85 s du geste) le pied le plus proche va SUR le ballon par
+  l'IK à deux os de la touche (cheville à 19 cm du sol, un quart vers la hanche) : mesuré en page, pied droit à 30 cm de haut, 4 cm du
+  centre. La planche-contact admet un geste sans ballon (la feinte).
+- **Captures** : s10-semelle-sortie-de-but (le gardien, la semelle sur le ballon), s10-gardien-replace-mur (le bras qui désigne dans le
+  but) ; planches teteDefensive / controleOriente / feinteAppel (variante après).
+- **Un rouge qui n'est pas du jour** : verify-loi12 (12/2, « le MUR se TIENT », pas enrôlé dans bancs.mjs) est rouge à l'identique sur
+  le moteur ET le banc du 1e05e28 (§ 7) : hérité, hors lot.
+- **Dettes** : la tête défensive debout ; le râteau à la relance ; le gardien désigne sans crier ; la feinte est rare (l'appel posé).

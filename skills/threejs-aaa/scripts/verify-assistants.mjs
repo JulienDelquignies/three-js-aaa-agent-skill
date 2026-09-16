@@ -20,7 +20,7 @@ for (const k of ['drapeauLeve', 'drapeauIncline', 'drapeauInclineG', 'drapeauHor
   ok(`sabotage « la hampe à l'horizontale » attrapé (elev 100 : ${r.issues[0]?.slice(0, 70) ?? 'rien'})`, !r.ok && spec.keys.length > 0); }
 
 // LA FIXTURE : un match plein ; on pousse dans le journal un hors-jeu, une touche de chaque côté, un remplacement, et on lit le geste de l'assistant
-const joue = (over, f) => { const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, ...over }); for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg); return f(st, cfg); };
+const joue = (over, f) => { const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, ...over }); for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg); return f(st, cfg); };
 const step = (st, cfg, n) => { for (let i = 0; i < n; i++) matchStep(st, 1 / 60, cfg); };
 console.log('\n— (b) la sim pose les gestes sur l\'assistant qu\'il faut —');
 joue({}, (st, cfg) => {
