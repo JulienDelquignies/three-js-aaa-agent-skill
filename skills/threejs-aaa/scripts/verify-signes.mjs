@@ -34,7 +34,7 @@ const pausas = (over) => {
   return out;
 };
 {
-  const A = pausas({}), B = pausas(SANS);
+  const A = pausas({}), B = pausas({ ...SANS, ellipse: null, repertoire: null, arretControle: null, ligneAccrochee: null /* DATÉ fusion 16/09 (278-280 × A2-C3) : le garde-fou de la pausa « sans la clé » mesure le monde d'hier — sous la ligne accrochée et le répertoire, 4 pausas et 0 à l'arrêt : la combinaison remange le porteur planté, pas la loi */ });
   const arret = (L) => L.filter((c) => c.vMin < 0.3), moy = (L) => L.reduce((a, c) => a + c.d, 0) / Math.max(1, L.length);
   ok(A.length >= 2 && A.every((c) => c.d <= 0.6), `avec la clé : le ballon est AU PIED à la tenue de chacune des ${A.length} pausas (≤ 0,6 m ; à l'arrêt ${arret(A).length}, distance moyenne ${moy(A).toFixed(2)} m) — 12 × 366 s`);
   ok(B.length >= 2 && moy(arret(B)) >= 1.0, `sans la clé : ${B.length} pausas, ${arret(B).length} à l'arrêt avec le ballon à ${moy(arret(B)).toFixed(2)} m en moyenne (≥ 1,0 : le porteur planté loin du ballon, hier)`);
@@ -90,7 +90,7 @@ const recul = (over) => {
 console.log('\n— (d) le jumeau : les trois clés à null = le monde du 14/09 au bit —');
 {
   const emp = (over, seed) => { const st = makeMatch({ full: true, seed }); const cfg = matchCfg(over); const h = createHash('sha256'); for (let i = 0; i < 60 * 60; i++) { matchStep(st, 1 / 60, cfg); if (i % 10 === 0) h.update(st.players.map((p) => p.p[0].toFixed(3) + ',' + p.p[2].toFixed(3)).join('|') + '#' + st.ball.p.map((v) => v.toFixed(3)).join(',')); } h.update(JSON.stringify(st.events.map((e) => [e.t, e.type, e.by ?? '']))); return h.digest('hex').slice(0, 16); };
-  const DATEES = { 1: '76cb709b3dd0cdfe', 2: '5214c712cdf66a67', 3: 'b62c2626e236ae00' };   // REGELÉ DATÉ fusion 15/09 (272-276 × A12) : les empreintes du monde 662a444 aux trois clés nulles — « hier » est désormais le 276 (la porte xG, la ligne, l'interligne, le bloc qui perçoit, l'enveloppe) ; DATÉ 14/09 (dettes A12) : 8aa4baa7c0092cec / cecae92caa993608 / 9c8eda27f0f5dc63, le monde 3d72ea4
+  const DATEES = { 1: '9783de03cd1b5d01', 2: 'bd2802cdcb8bac1a', 3: '14dfbee456047df2' };   // REGELÉ DATÉ fusion 16/09 (278-280 × A2-C3) : les empreintes du monde fusionné e798b47 aux clés nulles — « hier » y est désormais le 280 (ellipse, répertoire, arrêt au journal, ligne accrochée allumés) ; // REGELÉ DATÉ fusion 15/09 (272-276 × A12) : les empreintes du monde 662a444 aux trois clés nulles — « hier » est désormais le 276 (la porte xG, la ligne, l'interligne, le bloc qui perçoit, l'enveloppe) ; DATÉ 14/09 (dettes A12) : 8aa4baa7c0092cec / cecae92caa993608 / 9c8eda27f0f5dc63, le monde 3d72ea4
   for (const seed of [1, 2, 3]) { const e = emp(SANS, seed); ok(e === DATEES[seed], `graine ${seed} : ${e} = ${DATEES[seed]} (le monde d'hier au bit, clés à null)`); }
   const on = emp({}, 1); ok(on !== DATEES[1], `…et la clé allumée déplace le monde (graine 1 : ${on})`);
 }

@@ -9,6 +9,7 @@ import { SHANON_PROFILE } from '../assets/starter/src/engine/motion-profile-shan
 import { checkClip, resolveTracks, MOVES } from '../assets/starter/src/engine/animkit.js';
 import { styleFromSeed } from '../assets/starter/src/engine/motion-strike.js';
 import { predictPath, crossesHeight } from '../assets/starter/src/engine/ball-predict.js';
+const MES_1609 = { blocPercu: null, enveloppe: null, visee: null, ellipse: null, repertoire: null, arretControle: null, ligneAccrochee: null };   // MES CLÉS D'HIER — DATÉ fusion 16/09 : les sept clés de 275-280 nulles = le monde de la branche animations 5f8870f au bit (bb530de469f21cbc / d5ba9ca701a880fa) sur l'état fusionné e798b47
 
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
@@ -143,7 +144,7 @@ console.log('— (f) l\'applaudissement d\'encouragement, occasionnel et sans ch
       for (let i = 0; i < 60 * 2; i++) matchStep(st, 1 / 60, cfg); waves.push(st.events.slice(n0).filter((e) => e.type === 'geste' && e.move === 'applaudir'));
       for (let i = 0; i < 60 * 10; i++) matchStep(st, 1 / 60, cfg); }   // 12 s entre deux arrêts : la cadence (10 s) est passée
     return { gk, waves }; };
-  const r = salves({}); const all = r.waves.flat(), pleines = r.waves.filter((w) => w.length).length;
+  const r = salves({ ...MES_1609 /* DATÉ fusion 16/09 : vert dans son parent 5f8870f (19/0), la combinaison (275-280 : l'arrêt au journal change les arrêts vus) remange la salve — la clause mesure sa loi sur le monde de son parent */ }); const all = r.waves.flat(), pleines = r.waves.filter((w) => w.length).length;
   const ok1 = all.every((e) => { const q = r.gk && r.waves && e.by !== r.gk.id; return q; }), gaps = r.waves.filter((w) => w.length === 2).map((w) => Math.abs(w[1].t - w[0].t));
   ok(`L'APPLAUDISSEMENT (petitsGestes.applaudir) : sur 8 arrêts du gardien ${r.gk.id}, ${pleines} salves (tirées à p ${A.p.arret}, attendu 3-8), ${all.length} applaudissements, jamais plus de ${Math.max(0, ...r.waves.map((w) => w.length))} par salve (≤ n ${A.n}), jamais le gardien (${ok1}), les deux d'une salve partent décalés (écarts ${gaps.map((g) => g.toFixed(2)).join('/') || '—'} s ≥ 0,25)`,
     pleines >= 3 && pleines <= 8 && r.waves.every((w) => w.length <= A.n) && ok1 && gaps.every((g) => g >= 0.24));

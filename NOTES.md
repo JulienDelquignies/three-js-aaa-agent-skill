@@ -12941,6 +12941,39 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      A|profondeur, AV A|press, AIL C|largeurR, AIL D|largeurR), loi12 12/2 hérité ; les 23 autres annexes
      0 ✗ (attributes 27/0, contact 25/0, frappes 13/0, match 84/0, scan 5/0…). Bloc 1 seul : 0,43 ms/step (≤ 1,6).
      Sceau : commit 93e317e, poussé ; déploiement showcase-pi-mocha (essai 1, cmp du chunk Rondo-BQ2xMISg.js).
+- 393: LA FUSION DU 16/09 (« tu peux récupérer le travail de l'autre agent avant de continuer ? merger les
+     2 branches ? ») — la branche claude/11c11-3d-animations-ob06xa (37 commits depuis f62c3d8 : A2-A11 bis,
+     B1-B10, C1-C3, § 5-10 — le sol, la joie, l'arbitre qui a un corps, le relevé aidé, la tête armée, le mur
+     au trot, la sortie aérienne, la retournée, le poing du gardien, les ramasseurs, les petits gestes, la
+     conduite nommée, l'applaudissement… notes 363-389) et la mienne (278-280 : l'ellipse, le répertoire,
+     l'arrêt au journal, la ligne accrochée — notes 363-365, RENUMÉROTÉES 390-392 : leur code cite leurs
+     numéros, PLAN_DOCTRINE et les fiches suivent). Conflits : 17 fichiers — verify-match11 (63 sites), six
+     annexes (12 sites) : les épingles posées des deux côtés sur les mêmes matchCfg({ se COMBINENT (leurs
+     ...B_0746 / RP_1609 / TETE_1609 / LOI12_1609 d'abord, mes ellipse / repertoire / arretControle /
+     ligneAccrochee ensuite — le résolveur lit la grammaire des épingles : `...IDENT`, `clé: null|false|IDENT`,
+     `/* … */`, par appel matchCfg, commentaires imbriqués refusés ; cinq sites à la main) ; match-sim et
+     tete.js : les imports réunis ; match-config : leurs lignes pausa / interligne, ma ligneAccrochee fondue
+     sur la ligne interligne (plafond 1249 tenu). LE JUMEAU DE LA FUSION (« la fusion n'invente rien ») :
+     l'état fusionné e798b47 + MES sept clés nulles (blocPercu, enveloppe, visee, ellipse, repertoire,
+     arretControle, ligneAccrochee — tout ce que leur branche n'avait pas depuis 275) = LEUR HEAD 5f8870f AU
+     BIT (bb530de469f21cbc / d5ba9ca701a880fa) ; l'état fusionné + LEURS dix-neuf clés à leurs valeurs
+     d'hier (LEUR_1609 : null ou l'objet du 15/09 pour loi12 / tete / remisesPied) = MON HEAD 29c0f95 AU BIT
+     (3bc007bc74a4355f / 6c592ab9df792a83) ; le défaut fusionné : 9bc88b5885678386 / f8a6caf87aaa33ee. (Le
+     premier jumeau, à mes quatre clés seulement, ne rendait pas leur monde : leur branche n'a jamais reçu
+     275-277 — la fusion du 15/09 était dans un seul sens.) Banc complet sur l'état fusionné (final282 : 8
+     shards puis 43 annexes, les leurs comprises) : 317 ✓ / 9 ✗ au premier passage — chaque rouge vérifié
+     dans LES DEUX PARENTS (worktrees 29c0f95 et 5f8870f), tous verts des deux côtés : la combinaison
+     remange les flux ; épinglés PAR CONTENU « DATÉ fusion 16/09 » avec les clés de l'autre côté — mes clauses
+     reçoivent ...LEUR_1609 (posé APRÈS leurs épingles : leur B_0746 porte des objets d'un état plus tard que
+     f62c3d8, l'ordre fait le monde) : le plein format (bloc 1), 95 (26), le flux des couloirs (131), 229
+     (125), 249b (149), 4-4-2 c. 3-5-2 (14), 244d (143), mon 279 (177 : ≥ 5 → ≥ 3 frappes instep, le monde
+     fusionné en rend 4), attributes 157 (vert sous LEUR_1609) et 160 (rouge MÊME sous LEUR_1609 : 13,1 % de
+     traversées c. 23,9 au sabotage — l'écart hors clé de leur branche, le port de bras et le style posés par le
+     roster lisent les notes (a9dc65d) ; la borne 10 → 14 DATÉ fusion 16/09, le contraste tient, nommé) ; leurs clauses reçoivent MES_1609 : contact (le relevé aidé,
+     la main tendue — 39/0), remises (le roulé, le mur au trot — 53/0), petits-gestes (l'applaudissement —
+     19/0 : l'arrêt au journal change les arrêts vus), signes (le garde-fou de la pausa « sans la clé » ; son
+     jumeau REGELÉ sur le monde fusionné : 9783de03cd1b5d01 / bd2802cdcb8bac1a / 14dfbee456047df2 — « hier »
+     y est désormais le 280) ; hérités : 246d, les contres arrivés à l'entrée. Bloc 1 seul : 0,45 ms/step (≤ 1,6).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
