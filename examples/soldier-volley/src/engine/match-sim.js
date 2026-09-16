@@ -147,7 +147,7 @@ function assignMatchJobs(st, cfg) {
       // l'EXPULSÉ est hors du monde, remises comprises (Loi 12) ; le REMPLACÉ marche le même chemin
       if (p.expulse || p._sub) {
         const to = p._sub?.phase === 'in' ? p._sub.entry : p._sub?.phase === 'longe' ? [0, (p._sub.bord ?? 1) * (st.pitch.hz + 2)] : p._exit;
-        p.job = 'walk'; p.target = [to[0], 0, to[1]]; continue;
+        p.job = 'walk'; p.target = [to[0], 0, to[1]]; p._walkF = p._sub?.phase === 'in' && st.full && cfg.entrant?.trot ? cfg.entrant.trot : null; continue;   // (§ 8) l'entrant TROTTE
       }
       // …MAIS D'ABORD ON CÉLÈBRE (lot 116) : le buteur file au coin, les proches le rejoignent (st._celeb, referee)
       if (st._celeb && st.t >= st._celeb.until) st._celeb = null;

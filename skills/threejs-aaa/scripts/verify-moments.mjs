@@ -17,7 +17,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 2. l'horloge du regain vit dans le match (événements + dérivation cohérents)
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null,  shotRange: 20 });
   let coherent = true, checked = 0;
   for (let i = 0; i < 120 * 60; i++) {
     matchStep(st, 1 / 60, cfg);
@@ -47,7 +47,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 3. la distribution du jeu ouvert + le consommateur d'équipe
 {
   const st = makeMatch({ full: true, seed: 4 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null,  shotRange: 20 });
   const tm = { t: 0, ouvert: 0 };
   for (let i = 0; i < 180 * 60; i++) {
     matchStep(st, 1 / 60, cfg);
@@ -68,7 +68,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const seq = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null,  shotRange: 20, ...over });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null,  shotRange: 20, ...over });
     for (let i = 0; i < 90 * 60; i++) matchStep(st, 1 / 60, cfg);
     return st.events.filter((e) => e.type === 'moment' || (e.type === 'press' && e.kind === 'contre-press'));
   };

@@ -799,6 +799,7 @@ export function adjugeFaute(st, cfg) {
     // jaune à tally (les fautes répétées, Loi 12) ; l'averti se retient (duel : × retenue) et l'arbitre hésite à
     // l'exclure (τ + réticence). null : la récidive à 2 du 25 au bit.
     const vic = st.players[F.sur];
+    if (st.full && cfg.boiterie && vic && F.grave && !vic.keeper) { const BO = cfg.boiterie; vic._boite = { until: st.t + (BO.duree ?? 25), duree: BO.duree ?? 25, side: (F.par + F.sur) % 2 ? 'left' : 'right' }; st.events.push({ t: +st.t.toFixed(2), type: 'boiterie', by: vic.id, side: vic._boite.side, duree: vic._boite.duree }); }   // (§ 8) LA BOITERIE : le fauché d'une faute grave boite duree s (la scène : opts.boite ; movement : la pointe réduite)
     const own = st.pitch.ownGoal(fautif.team);
     const base = K.base ?? {};
     let S = (base[F.kind ?? 'tacle-debout'] ?? K.defaut ?? 0.3) + (K.vitesse ?? 0.03) * Math.min(8, F.vSur ?? 0) + (K.aggr ?? 0.3) * ((fautif.skill?.aggrF ?? 1) - 1);

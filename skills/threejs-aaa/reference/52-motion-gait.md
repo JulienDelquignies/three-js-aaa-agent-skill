@@ -69,7 +69,7 @@ tronc ×0,75-1,25, hauteur du vol ×0,85-1,15, ouverture des pieds 3-14°, large
 lacet/roulis du bassin, point de pose, pointe au pelage, affaissement. Reconnaissable, pas
 caricatural : 40 graines × 6 régimes sont sous contrat.
 
-## Le contrat (verify-foulee.mjs — 81 clauses)
+## Le contrat (verify-foulee.mjs — 86 clauses)
 
 - 13 régimes (marche lente → sprint, arrière, chassés, diagonales) sous `checkGaitGen` : pied
   d'appui immobile au monde (≤ 0,06 m/s), pied d'appui au sol (point le plus bas ≤ 1,2 cm), vol qui
@@ -208,8 +208,27 @@ lot, petit effet : l'armé de passe glisse, il ne se fige pas.
   0 recapture, 0-2 reculs. Les relâches qui restent sont l'étirement (le fondu part à 92 % de la portée) — la loi d'hier. Le mode
   `?foulee=clips` garde sa bande de 5 cm et son plancher de clip, au bit.
 
+## La boiterie du fauché (§ 8 — `gaitPose` opts.boite, sim `p._boite`, `cfg.boiterie`, note 383)
+
+- **La loi du générateur** (`opts.boite { side, k }`, k ∈ [0;1]) : le côté touché a l'APPUI PLUS COURT (durée d'appui ×(1 − 0,3k)),
+  le vol plus ras (swingH ×(1 − 0,2k) — à 0,35 le trot rasait sous les 4 cm du contrat) et moins de déroulé à la relâche
+  (pitchTO ×(1 − 0,5k)) ; le BASSIN PLONGE de ce côté quand il porte (10°·k, en cloche sur l'appui) — la foulée d'une jambe
+  qui se ménage. Mesuré (3 m/s, boite gauche, k 1) : l'appui gauche tient 12 images sur 60 contre 18 pour le droit (18 c. 18
+  sans boiterie). k 0 = la foulée d'hier au bit ; le contrat (appui immobile, vol qui dégage, genou ≤ 140°) tient en marche,
+  trot et course × k 0,5 et 1 ; la boiterie est dispensée des clauses de symétrie (elle a des pas inégaux par construction :
+  l'appui immobile la juge). `contact-sheet.mjs --gait 3 --boite left` la montre.
+- **Le branchement** : `adjugeFaute` (referee, `st.full && cfg.boiterie`, la faute GRAVE, la victime pas gardien) pose
+  `vic._boite = { until: t + duree, duree, side }` et l'événement `boiterie { by, side }` ; `cfg.boiterie { duree 25, ralenti 0,3 }`.
+  La scène (Rondo `idleCtx.boite`) donne k = (until − t)/duree (plancher 0,2) → `character-controller` → `gaitPose` : la boiterie
+  s'efface sur sa durée. Côté sim (`movement`), la POINTE se réduit de `ralenti × k`, posée APRÈS tous les plafonds, l'intention
+  d'effort comprise (posée avant elle, 0,7 × 6,56 = 4,59 restait au-dessus des 4,2 de l'intention et ne mordait jamais) : le même
+  corps lancé 12 s atteint 2,98 m/s en boitant contre 4,19 sans (verify-boiterie 4/0). `boiterie: null` = hier au bit.
+
 ## Les dettes nommées
 
+- **La boiterie tire son côté de la parité des identifiants** (fautif + victime), pas de la jambe touchée : la sim de contact ne
+  sait pas quel pied a pris le coup. Elle ne se voit que dans la foulée (marche, trot, course) : l'idle et les gestes techniques
+  du boiteux sont ceux d'hier, et il n'a ni grimace ni main à la cuisse.
 - **Deux signatures sur quarante** (graines 3 et 35) passent sous le plafond `checkClip` entre 4,75 et
   5,25 m/s avec la cadence de la jambe (elles y étaient déjà à 5,5 hier) — les specs de cycle
   exportées, pas la page, qui évalue `gaitPose` image par image. Le genou presque tendu à la pose

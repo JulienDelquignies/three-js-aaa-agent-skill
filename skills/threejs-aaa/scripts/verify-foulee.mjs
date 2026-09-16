@@ -254,5 +254,19 @@ console.log('\n— A7 ter (§ 6) : le pas croisé du virage serré, le port des 
   ok(bas.hMax < r45.hMax - 0.06, `sabotage « le bras bas » attrapé (coude 60°, armOff 0 : la main avant retombe à ${cm(bas.hMax)} cm du sternum, ${cm(r45.hMax - bas.hMax)} cm sous la course)`);
 }
 
+console.log('\n— § 8 : la boiterie (opts.boite — le fauché d\'une faute grave se ménage une jambe) —');
+{
+  const d = gaitPortrait(P, { vF: 3, vR: 0, n: 60 }), b = gaitPortrait(P, { vF: 3, vR: 0, opts: { boite: { side: 'left', k: 1 } }, n: 60 });
+  const stance = (pr, side) => pr.frames.filter((f) => f[side].phase === 'stance').length;
+  ok(stance(b, 'L') < stance(d, 'L') - 4 && Math.abs(stance(b, 'R') - stance(d, 'R')) <= 2, `boite gauche à 3 m/s : l'appui gauche raccourcit (${stance(b, 'L')} images sur 60 c. ${stance(d, 'L')}), le droit tient (${stance(b, 'R')} c. ${stance(d, 'R')})`);
+  const clear = (pr, side) => Math.max(...pr.frames.filter((f) => f[side].phase === 'swing').map((f) => f[side].ankle[1]));
+  ok(clear(b, 'L') < clear(d, 'L') - 0.02, `…le vol gauche rase (cheville à ${cm(clear(b, 'L'))} c. ${cm(clear(d, 'L'))} cm au plus haut)`);
+  const list = (pr) => { let mn = 9; for (const f of pr.frames) mn = Math.min(mn, f.L.hip[1] - f.R.hip[1]); return mn; };
+  ok(list(b) < list(d) - 0.01, `…le bassin plonge du côté gauche quand il porte (la hanche gauche sous la droite de ${cm(-list(b))} cm au plus, c. ${cm(-list(d))})`);
+  let bad = []; for (const v of [1.4, 2.8, 4.5]) for (const k of [0.5, 1]) { const r = checkGaitGen(P, { vF: v, vR: 0, opts: { boite: { side: 'right', k } } }); if (!r.ok) bad.push(`${v} m/s k ${k} : ${r.issues.join(' ; ').slice(0, 70)}`); }
+  ok(bad.length === 0, `la boiterie reste sous le contrat (marche, trot, course × k 0,5 et 1 — l'appui immobile, le vol qui dégage, la symétrie dispensée)${bad.length ? ' — ' + bad[0] : ''}`);
+  ok(JSON.stringify(gaitPose(P, 0.3, 3, 0, NEUTRAL_GAIT_STYLE, {})) === JSON.stringify(gaitPose(P, 0.3, 3, 0, NEUTRAL_GAIT_STYLE, { boite: { side: 'left', k: 0 } })), 'boite k 0 (guéri) : la foulée d\'hier au bit');
+}
+
 console.log(`\n${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

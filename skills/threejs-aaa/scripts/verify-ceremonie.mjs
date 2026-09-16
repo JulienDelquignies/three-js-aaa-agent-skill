@@ -57,7 +57,7 @@ console.log('\n— (b) le salut au public au sifflet final —');
 }
 console.log('\n— (c) la clé absente rend l\'hier ; le sabotage est attrapé —');
 {
-  const h = joue({ ceremonie: null, ramasseurs: null }, 50);
+  const h = joue({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null }, 50);
   ok(`LA CLÉ ABSENTE : ceremonie:null — aucune cérémonie, aucune poignée, aucun salut (${h.E.cere.length} / ${h.E.poignees.length} / ${h.E.saluts.length}), l'engagement pris à ${h.tPris?.toFixed(2) ?? '—'} s (hier), la fin de match à ${h.E.fin?.t ?? '—'} s`,
     h.E.cere.length === 0 && h.E.poignees.length === 0 && h.E.saluts.length === 0 && h.tPris != null && h.tPris < 3 && !!h.E.fin && h.E.fin.t < 50);
   const s = joue({ ceremonie: { ...K, poignee: { ...K.poignee, rang: 3 } } }, 40);

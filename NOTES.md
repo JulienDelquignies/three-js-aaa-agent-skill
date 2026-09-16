@@ -12732,3 +12732,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - **Dettes** : les ramasseurs derrière les buts et le quatrième arbitre n'existent pas ; le ballon dans les mains du ramasseur est
   posé par la sim, pas attaché aux mains rendues ; la hampe horizontale du remplacement se lit selon le poignet (plat 80 : à vérifier
   à l'œil).
+
+- 383: LE REMPLACEMENT ET LA BOITERIE (§ 8 ; motion-gait opts.boite, referee.adjugeFaute → p._boite, movement (la pointe), match-sim
+  (_walkF de l'entrant), Rondo idleCtx.boite → character-controller ; verify-boiterie 4/0, verify-foulee 86/0 ; reference/52 § boiterie,
+  reference/59 § remplacement).
+
+- **La boiterie** (cfg.boiterie { duree 25, ralenti 0,3 }) : adjugeFaute, sur une faute GRAVE (la victime pas gardien), pose
+  vic._boite = { until, duree, side } et l'événement 'boiterie' ; le côté vient de la parité fautif + victime (la sim de contact ne
+  sait pas quelle jambe a pris le coup — dette). gaitPose opts.boite { side, k } : l'appui du côté touché ×(1 − 0,3k) (12 images sur 60
+  c. 18 à 3 m/s), le vol ×(1 − 0,2k) (à 0,35 le trot rasait sous les 4 cm du contrat), le déroulé ×(1 − 0,5k), le bassin qui plonge de
+  ce côté 10°·k quand il porte ; k = (until − t)/duree, plancher 0,2 : la boiterie s'efface ; k 0 = hier au bit. Les clauses de symétrie
+  de checkGaitGen dispensent la boiterie (pas inégaux par construction : l'appui immobile la juge). La pointe : top × (1 − ralenti × k)
+  posée APRÈS tous les plafonds, l'intention d'effort comprise — posée avant (après biteSlow), 0,7 × 6,56 = 4,59 restait au-dessus
+  des 4,2 de l'intention et ne mordait jamais (3,88 c. 3,88 à 5 s, 4,19 c. 4,19 à 12 s) ; le corps approche sa pointe avec une
+  constante de ~6 s, la clause mesure donc 12 s sous une boiterie longue (k ≈ 0,96) : 2,98 m/s c. 4,19.
+- **L'entrant trotte** (cfg.entrant { trot 1,6 }) : en phase 'in' du remplacement (Loi 3), p._walkF = trot ; l'entrant naît à la
+  ligne à 3,8 s et marche × 1,6 (hier × 1). La poignée de main à la ligne et le quatrième arbitre restent en dette (un corps par
+  remplacement, les deux corps ne passent pas au même point de la touche).
+- **Épingles** : boiterie: null, entrant: null aux sites datés (bancs de match) ; le jumeau d'empreinte (sortieAerienne, retournee,
+  bouclier, ceremonie, ramasseurs, boiterie, entrant null) = base 9fa4ec6 au bit. La suite propre du jour (851/11) a montré trois
+  bancs datés que les clés du 16/09 avaient déplacés, épinglés : verify-arbitre (run() : la cérémonie occupait les 3 s du banc — le
+  sifflet ne venait jamais, 4 rouges), verify-remises (murTest : le ramasseur retardait la remise, le mur arrivait à son point au pas
+  comme au trot — le sabotage ne mordait plus ; les clés du 16/09 changent aussi les 50 s de flux qui posent le coup franc),
+  verify-porte (bouclier : 16 refus c. 45 = 35,6 % pour ≤ 35). Les trois rouges du tronc (141, 246d, pivot 8/8) restent.
+- **L'arbitre sous checkClip** (verify-arbitre 25/0) : drapeauLeve passe à 2,8 s (la DESCENTE de 178° entre hold 1,8 et la fin
+  frôlait le plafond de 14 rad/s à 2,2 s — la montée n'y était pour rien) ; drapeauHorizontal ne prend plus l'amplitude de style sur
+  les bras (à 0,9 les mains passaient à 87-95 cm : la hampe fixe l'écart, 72 cm quel que soit le style).
+- **Captures** : planches/foulee-3-0-boite-left-apres (la foulée à 3 m/s, boite gauche : l'appui gauche court, le bassin qui plonge).
+- **Dettes** : le côté de la boiterie ; l'idle et les gestes du boiteux sont ceux d'hier (ni grimace ni main à la cuisse) ; la poignée
+  de main à la ligne ; le quatrième arbitre.

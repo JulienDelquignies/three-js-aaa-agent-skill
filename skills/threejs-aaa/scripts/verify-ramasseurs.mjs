@@ -44,7 +44,7 @@ console.log('— (a) le ramasseur va au ballon, le ramasse, le roule au point �
 }
 console.log('\n— (b) la clé absente rend l\'hier ; le sabotage est attrapé —');
 {
-  const h = joue({ ramasseurs: null }, 30);   // le preneur parqué à 40 m met ~25 s à venir : on lui laisse le temps
+  const h = joue({ ramasseurs: null, boiterie: null, entrant: null }, 30);   // le preneur parqué à 40 m met ~25 s à venir : on lui laisse le temps
   ok(`LA CLÉ ABSENTE : ramasseurs:null — 'ramasseur' ${h.ram ? `à ${(h.ram.t - h.t0).toFixed(2)} s (${h.ram.cause})` : 'jamais'} et le ballon AU POINT en une image (posé à ${h.tPlace != null ? (h.tPlace - h.t0).toFixed(2) : '—'} s), aucun corps (${h.st.ramasseurs ? 'des ramasseurs' : 'aucun'}), aucun geste (${h.ramasse ? 'ramassage' : 'aucun'})`,
     !!h.ram && !h.st.ramasseurs && !h.ramasse && h.tPlace != null && h.tPlace - h.ram.t < 0.05 && !!h.pris);
   const s = joue({ ramasseurs: { ...K, vitesse: 0.2 } }, 16);

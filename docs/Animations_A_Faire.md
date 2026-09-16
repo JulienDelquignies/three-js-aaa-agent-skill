@@ -95,15 +95,19 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
 - **La carte plus lisible.** `arbitre.js` : la plaque 7,5 × 10,5 cm → une plaque tenue plus haut,
   face au fautif, 0,3 s de plus.
 
-## 8. Le remplacement et la boiterie
+## 8. Le remplacement et la boiterie — LIVRÉ (16/09, note 383, reference/52 § boiterie, reference/59 § remplacement, verify-boiterie 4/0, verify-foulee 86/0)
 
 - **Remplacement.** `referee.remplacer` existe (le remplacé marche vers sa sortie, l'entrant naît à
-  la ligne) : à animer la poignée de main à la ligne (§ 7 `poignee`) et l'entrant qui TROTTE
-  (`_walkF`), le quatrième arbitre (un corps de plus, § 5).
-- **Boiterie.** Après une faute grave (`carton`/`faute` kind grave), une foulée asymétrique pendant
-  N s : `gaitPose` `opts.boite` (le pas du côté touché raccourci, l'appui plus court, le bassin
-  qui plonge de ce côté) ; sim : `p._boite = { until }` posé par `adjugeFaute`, clé
-  `cfg.sol.boiterie`.
+  la ligne) : l'entrant TROTTE (`p._walkF = cfg.entrant.trot`, marche × 1,6 en phase `in`) — livré.
+  Restent en dette : la poignée de main à la ligne (§ 7 `serrerMain` — les deux corps ne passent pas
+  au même point de la touche) et le quatrième arbitre (un corps de plus, § 5).
+- **Boiterie.** Après une faute GRAVE (`adjugeFaute`, `F.grave`, la victime pas gardien), une foulée
+  asymétrique pendant `cfg.boiterie.duree` (25 s) : `gaitPose` `opts.boite { side, k }` (l'appui du
+  côté touché ×(1 − 0,3k), le vol plus ras, moins de déroulé, le bassin qui plonge de ce côté 10°·k),
+  k = le temps qui reste / la durée ; sim : `p._boite = { until, duree, side }` posé par
+  `adjugeFaute`, la pointe × (1 − `ralenti` 0,3 × k) posée après tous les plafonds (2,98 m/s c. 4,19
+  lancé 12 s). Clé `cfg.boiterie` (pas `cfg.sol.boiterie` : la boiterie est une loi du corps, pas du
+  sol) ; null = hier au bit. Dette : le côté vient de la parité des identifiants, pas de la jambe touchée.
 
 ## 9. La tenue de balle dos au but (A10 ter) — LIVRÉ (16/09, note 379, reference/55 § A10 ter, `engine/bouclier.js`, cfg.bouclier)
 

@@ -160,7 +160,7 @@ revenait toute seule et le fauché se relevait sans la prendre : deux gestes cô
   garde le drapeau : la scène clampe le geste à sa tenue), `drapeauIncline` (la touche vers sa droite : le bras levé de côté à
   118°, main à 62 cm à droite de l'épaule et 22 cm plus haut), `drapeauInclineG` (vers sa gauche : le bras croise devant, elev −60 /
   fwd 90 — main à 42 cm à gauche de l'épaule, à sa hauteur), `drapeauHorizontal` (le remplacement : les deux mains à 25 cm au-dessus
-  de la tête, 72 cm l'une de l'autre, le poignet couche la hampe). Règles dans `checkArbitreGen`.
+  de la tête, 72 cm l'une de l'autre quel que soit le style (la hampe fixe l'écart : les bras ne prennent pas l'amplitude de style), le poignet couche la hampe). Règles dans `checkArbitreGen`.
 - **La sim** (`assistantsStep`, sous `cfg.arbitreGestes`) : au hors-jeu l'assistant de la moitié porte `drapeauLeve` (`tenu`,
   rafraîchi tant que `a.drapeau` vit — le drapeau d'hier reste la source) ; à la touche de SA ligne (`sortie` out 'touche', le côté
   par z) la hampe inclinée du côté que l'équipe attaque — vers sa droite ou sa gauche, il fait face au terrain ; au `remplacement`
@@ -212,6 +212,15 @@ revenait toute seule et le fauché se relevait sans la prendre : deux gestes cô
   face à face (100 %) ; à la prise chacun à ≤ 2,5 m de sa place ; les arrêts comptés à la prise 1,0 s et la fin de match à
   fin + 40 s ; 22 saluts en 3,8 s, tournés vers la tribune (100 %) ; la carte 2,3 / 1,85 ; ceremonie:null → aucune cérémonie,
   l'engagement à 0,65 s, l'hier ; sabotage rang:3 attrapé (aucune main ne se joint).
+
+## Le remplacement : l'entrant trotte (Animations_A_Faire § 8 ; `cfg.entrant.trot`, `match-sim`, note 383)
+
+`referee.remplacer` (Loi 3) fait sortir le remplacé en marchant à un arrêt de jeu et fait naître l'entrant à la ligne (phases out
+→ longe → in). Sous `cfg.entrant { trot 1.6 }` et `st.full`, l'entrant en phase `in` porte `p._walkF = trot` : il rejoint son poste
+au trot (marche × 1,6) au lieu du pas d'hier — mesuré : l'entrant naît à la ligne à 3,8 s et marche × 1,6 (hier × 1 ;
+verify-boiterie « L'ENTRANT TROTTE »). `entrant: null` = hier au bit. Dettes : la poignée de main à la ligne entre le sortant et
+l'entrant (le geste `serrerMain` existe, § 7 ; il faudrait les deux corps au même point de la touche), le quatrième arbitre
+(un corps de plus, § 5) et le panneau ; un seul corps par remplacement.
 
 ## Bancs
 

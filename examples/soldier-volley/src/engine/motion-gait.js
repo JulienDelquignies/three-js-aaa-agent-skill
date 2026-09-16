@@ -238,6 +238,11 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   // et le tronc ROULENT dans le virage (atan(a/g) × 0,55 : 13° à 4,5 m/s², 17° à 6, 18° au plus), le bassin glisse vers l'intérieur, le pied extérieur se pose
   // plus large, la tête reste d'aplomb (contre-roulis). Absents : la foulée d'hier au bit.
   const br = clamp(opts.brake ?? 0, 0, 1), aT = clamp(opts.turn ?? 0, -9, 9);
+  // (§ 8) LA BOITERIE (opts.boite { side, k } — le fauché d'une faute grave, sim p._boite) : le côté touché a l'appui plus court (s ×(1 − 0,3k)),
+  // le vol plus ras (swingH ×(1 − 0,2k) — à 0,35 le trot rasait sous les 4 cm du contrat), moins de déroulé (pitchTO) ; le bassin PLONGE de ce côté quand il porte (10°·k) — la foulée
+  // d'une jambe qui se ménage. Absente : la foulée d'hier au bit.
+  const B = opts.boite && opts.boite.k > 0 ? { side: opts.boite.side === 'right' ? 'Right' : 'Left', k: clamp(opts.boite.k, 0, 1) } : null;
+  const pS = (side) => B && side === B.side ? { ...p, s: p.s * (1 - 0.3 * B.k), swingH: p.swingH * (1 - 0.2 * B.k), pitchTO: p.pitchTO * (1 - 0.5 * B.k) } : p;
   if (br > 0) { const kv = clamp((6 / Math.max(1, Math.abs(vF))) ** 2, 0.3, 1) * (1 - 0.5 * Math.abs(aT) / 9); p.lean -= 11 * br; p.bias -= 0.16 * br * kv; p.hw += 0.04 * br * kv; p.pitchHS += 10 * br; p.drop += 0.02 * br * kv; p.T /= gaitBrakeCadence(br); p.swingH *= 1 - 0.2 * br; p.armOff += 12 * br; p.armElev += 8 * br; p.elbow += 6 * br; }   // kv : au sprint et en plein virage la jambe sature, l'appui de frein se raccourcit
   const rollIn = clamp(Math.atan(aT / 9.81) / D2R * 0.55, -18, 18), inG = aT / 9.81, hipX = 0.07 * inG, hipRise = (P.lengths.hipWidth / 2) * Math.sin(rollIn * D2R);
   if (aT !== 0) p.swingH *= 1 - 0.15 * Math.min(1, Math.abs(aT) / 9);   // la jambe intérieure, hanche plus basse, passe plus ras (le genou reste sous 140°) ; les pas de frein rasent aussi
@@ -268,24 +273,24 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
     const u = (i / 16) * (p.s + 0.06);
     const bobU = p.bobA * p.bobSign * Math.cos(TAU * 2 * (u - p.s / 2));
     for (const [c, side] of [[cL, 'Left'], [cR, 'Right']]) {
-      const fp = footPath(u, p, c, vC, ankleY, L.foot);
+      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot);
       const dx = fp.p[0] - P.bones[`${side}UpLeg`].bindP[0] - hipX, dz = fp.p[2] - P.bones[`${side}UpLeg`].bindP[2];   // (A7 bis) la hanche de l'instant : glissée…
       const horiz = Math.hypot(dx, dz);
       const maxDown = Math.sqrt(Math.max(0, reach * reach - horiz * horiz));
       drop = Math.max(drop, hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - maxDown + 0.005);   // …et montée du côté extérieur du virage
     }
   }
-  if (br > 0 || aT !== 0) for (let i = 0; i < 32; i++) {              // (A7 bis) sous frein ou virage, TOUT le cycle (la fin du vol
+  if (br > 0 || aT !== 0 || B) for (let i = 0; i < 32; i++) {              // (A7 bis) sous frein ou virage, TOUT le cycle (la fin du vol
     const u = i / 32, bobU = p.bobA * p.bobSign * Math.cos(TAU * 2 * (u - p.s / 2));   // du pied de frein sature à 8 m/s), marge 1,2 cm
     for (const [c, side] of [[cL, 'Left'], [cR, 'Right']]) {
-      const fp = footPath(u, p, c, vC, ankleY, L.foot);
+      const fp = footPath(u, pS(side), c, vC, ankleY, L.foot);
       const horiz = Math.hypot(fp.p[0] - P.bones[`${side}UpLeg`].bindP[0] - hipX, fp.p[2] - P.bones[`${side}UpLeg`].bindP[2]);
       drop = Math.max(drop, hipY + (side === 'Left' ? hipRise : -hipRise) + bobU - fp.p[1] - Math.sqrt(Math.max(0, reach * reach - horiz * horiz)) + 0.012);
     }
   }
   const hips = [hipX, -drop + bob, 0];                                // (A7 bis) le bassin glisse vers l'intérieur du virage
   const pYaw = -p.pYaw * Math.cos(TAU * ph) + pYawTurn;               // hanche gauche devant à φ = 0 ; (A7 ter) + le bassin tourné dans le virage serré
-  const pList = -p.pList * Math.cos(TAU * (ph - p.s / 2));            // côté en vol qui tombe
+  const pList = -p.pList * Math.cos(TAU * (ph - p.s / 2)) + (B ? (B.side === 'Left' ? 1 : -1) * 10 * B.k * (0.5 + 0.5 * Math.cos(TAU * (ph - (B.side === 'Left' ? 0 : 0.5) - p.s / 4))) : 0);   // côté en vol qui tombe ; (§ 8) le bassin plonge du côté qui boite quand il porte
   const RHips = chain(rx(-p.pTilt), rz(pList - rollIn), ry(pYaw));   // (A7 bis) rz(−) : le côté droit descend — le roulis dans le virage à droite
   const J = { Hips: RHips };
 
@@ -315,7 +320,7 @@ export function gaitPose(P, phi, vF, vR, style = NEUTRAL_GAIT_STYLE, opts = {}) 
   const partial = fkPose(P, { Hips: jointToSpec(P, 'Hips', RHips) }, hips);
   const feet = {};
   for (const [side, u, c, sgn] of [['Left', uL, cL, 1], ['Right', uR, cR, -1]]) {
-    const fp = footPath(u, p, c, vC, ankleY, L.foot);
+    const fp = footPath(u, pS(side), c, vC, ankleY, L.foot);
     const hipW = partial[`${side}UpLeg`].p;
     const pole = [p.pole[0] - sgn * 0.12, p.pole[1], p.pole[2]];
     const r = legIK(P, side, hipW, RHips, fp.p, pole);
@@ -427,7 +432,7 @@ export function checkGaitGen(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, op
     if (kneeBack) issues.push(`${side} : le genou plie à l'envers sur ${kneeBack} images`);
   }
   // la symétrie : le pied droit est le gauche en miroir, un demi-cycle plus tard
-  if (Math.abs(vR) < 0.1 && !opts.turn) { let worst = 0;   // (A7 bis) le virage est asymétrique par construction
+  if (Math.abs(vR) < 0.1 && !opts.turn && !opts.boite) { let worst = 0;   // (A7 bis) le virage est asymétrique par construction ; (§ 8) la boiterie aussi
     for (let i = 0; i < frames.length; i++) {
       const a = frames[i].L.ankle, b = frames[(i + frames.length / 2) % frames.length].R.ankle;
       worst = Math.max(worst, Math.hypot(a[0] + b[0], a[1] - b[1], a[2] - b[2]));
@@ -435,7 +440,7 @@ export function checkGaitGen(P, { vF = 4, vR = 0, style = NEUTRAL_GAIT_STYLE, op
     if (worst > 0.02) issues.push(`asymétrie gauche/droite ${(worst * 100).toFixed(1)} cm`); }
   // la longueur du pas = la moitié de la foulée de la loi (v·T/2) — la cadence et le chemin sont UN
   // (en avant/arrière : de côté les deux demi-pas sont inégaux, le pied qui mène et celui qui suit)
-  if (v > 0.8 && Math.abs(vR) < 0.1 * Math.abs(vF)) {
+  if (v > 0.8 && Math.abs(vR) < 0.1 * Math.abs(vF) && !opts.boite) {   // (§ 8) la boiterie a des pas inégaux par construction (l'appui immobile la juge)
     const l0 = frames[0].L.ankleW, r0 = frames[frames.length / 2].R.ankleW;
     const step = ((r0[0] - l0[0]) * vR + (r0[2] - l0[2]) * -vF) / v;   // le long de la vitesse
     const want = v * T / 2;

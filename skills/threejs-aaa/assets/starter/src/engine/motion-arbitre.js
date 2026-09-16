@@ -26,7 +26,7 @@ export const ARBITRE_KINDS = {
   //   drapeauIncline    la touche : la hampe à ~45° du côté que l'équipe attaque — vers SA droite (le bras levé de côté)
   //   drapeauInclineG   …vers sa gauche : le bras passe devant la poitrine
   //   drapeauHorizontal le remplacement : la hampe tenue à deux mains au-dessus de la tête, à l'horizontale (plat : le poignet couche la hampe)
-  drapeauLeve:       { duration: 2.2, contact: 0.5, hold: 1.8, upperOnly: true, drapeau: true, elev: 178, fwd: 4, elbow: 4, headUp: 4 },
+  drapeauLeve:       { duration: 2.8, contact: 0.5, hold: 1.8, upperOnly: true, drapeau: true, elev: 178, fwd: 4, elbow: 4, headUp: 4 },   /* duration 2,8 : à 2,2 la DESCENTE de 178° entre hold (1,8) et la fin frôlait le plafond de checkClip (14 rad/s entre clés) */
   drapeauIncline:    { duration: 2.0, contact: 0.45, hold: 1.6, upperOnly: true, drapeau: true, elev: 118, fwd: -12, elbow: 6 },
   drapeauInclineG:   { duration: 2.0, contact: 0.45, hold: 1.6, upperOnly: true, drapeau: true, elev: -60, fwd: 90, elbow: 8 },   // elev < 0 : le bras croise devant (mesuré : main à 42 cm à gauche de l'épaule, à sa hauteur)
   drapeauHorizontal: { duration: 3.0, contact: 0.5, hold: 2.5, upperOnly: true, drapeau: true, deux: true, elev: 160, fwd: -30, elbow: 20, plat: 80 },   // les deux mains à 25 cm au-dessus de la tête, 72 cm l'une de l'autre ; plat : le poignet couche la hampe
@@ -59,7 +59,7 @@ export function generateArbitre(kindName, P, { style = NEUTRAL_STYLE } = {}) {
       return { J, hips: [0, 0, 0] }; };
   } else if (K.drapeau) {   // (A11 ter, § 5) la hampe tenue : le bras droit à sa pose, la gauche calme ou symétrique (deux mains)
     poseAt = (t) => { const a = on(t), J = {}; trunk(J, { headPitch: (K.headUp ?? 0) * a, lean: -2 * a });
-      const R = { elev: K.elev * Math.min(A, 1.03), fwd: K.fwd, elbow: K.elbow, rot: K.rot ?? 0 };
+      const R = { elev: K.elev * (K.deux ? 1 : Math.min(A, 1.03)), fwd: K.fwd, elbow: K.elbow, rot: K.rot ?? 0 };   /* deux mains : la hampe fixe l'écart des mains, le style n'ouvre pas les bras (à 0,9 les mains passaient à 87-95 cm) */
       Object.assign(J, armAt('Right', NEUTRAL_ARM, R, a), armAt('Left', NEUTRAL_ARM, K.deux ? { ...R, rot: -(K.rot ?? 0) } : { elev: 14, fwd: 4, elbow: 16 }, a));
       if (K.plat) J.RightHand = rx(K.plat * a);
       return { J, hips: [0, 0, 0] }; };

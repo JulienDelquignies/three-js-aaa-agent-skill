@@ -271,6 +271,10 @@
   du drapeau générés (hors-jeu tenu, touche inclinée du côté attaqué, remplacement à l'horizontale) posés par la sim sur l'assistant qu'il
   faut, la hampe qui suit le bras ; quatre ramasseurs de balle (engine/ramasseurs.js, cfg.ramasseurs) qui trottent au ballon hors
   d'atteinte, le ramassent et le roulent au point (frottement mesuré), la remise qui attend ; null = hier au bit.
+- LIVRÉ (note 383, reference/52 § boiterie, reference/59 § remplacement, verify-boiterie 4/0, verify-foulee 86/0) : LE REMPLACEMENT ET
+  LA BOITERIE (§ 8) — l'entrant trotte à son poste (cfg.entrant.trot, _walkF × 1,6) ; le fauché d'une faute grave boite 25 s
+  (cfg.boiterie : gaitPose opts.boite — l'appui du côté touché plus court, le vol plus ras, le bassin qui plonge ; la pointe × 0,7 posée
+  après tous les plafonds, l'intention d'effort comprise), la boiterie s'efface sur sa durée ; null = hier au bit.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
