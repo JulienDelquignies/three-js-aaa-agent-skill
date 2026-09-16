@@ -12352,7 +12352,7 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      (73 %), 0 manquée, écart windup → contact 0,01 s médian, 0,02 max ; les 13
      réactives : 9 « fenêtre » (le ballon n'est jamais à hauteur de tête
      exactement τ avant — vols raides ou rebonds), 3 « personne », 1 sans
-     tentative. Banc verify-tete 6/0 (nouveau, dans bancs.mjs ; fixture : le
+     tentative. Banc verify-tete-armee 6/0 (nouveau, dans bancs.mjs — verify-tete, le banc du lot 34, garde son nom ; fixture : le
      monde vidé, un centre depuis l'aile dont la vitesse fixe le sommet — 5,8 m
      le lobé, 2,1 la cloche courte qui ne dépasse pas la tête debout ;
      l'attaquant posé y est épinglé chaque image, le métier receive l'emmenait

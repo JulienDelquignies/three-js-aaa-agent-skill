@@ -260,7 +260,7 @@ le pied passe à 0,02-0,06 m du point de frappe (0,42 m avant le lot A1).
   dégager la pointe est bornée par le jeu de l'affaissement (elle faisait décoller l'appui du talon).
   Le pic de vitesse se cherche sur le swing. Les feintes suivent les amplitudes re-bakées.
 
-## La tête armée (B3 — `tete.js`, `cfg.tete.armee`, verify-tete 6 clauses)
+## La tête armée (B3 — `tete.js`, `cfg.tete.armee`, verify-tete-armee 6 clauses)
 
 Mesuré avant (12 matchs × 300 s) : 28 têtes, 0 windup `tete` — la tête se décidait À L'IMAGE DU
 CONTACT (`teteStep` : le ballon à hauteur de tête sur un corps → redirection immédiate) et la scène
@@ -285,7 +285,7 @@ perdus, on voyait la seconde moitié du geste. Le vol est déterministe ; sous `
 - **La scène** ne change pas : le windup joue le clip depuis 0 (`_playTech`), l'événement `tête` au
   contact est ignoré par le corps possédé (ownsBody) — le saut est dans le clip, l'impulsion aussi.
 
-Banc verify-tete (6 clauses, fixture : le monde vidé, un centre depuis l'aile dont la vitesse fixe le
+Banc verify-tete-armee (6 clauses — verify-tete, le banc du lot 34, garde son nom ; fixture : le monde vidé, un centre depuis l'aile dont la vitesse fixe le
 sommet) : la tête debout s'arme 0,22 s avant et se résout au contact de l'acte (± 1 tick, à ± 0,15 s de
 l'arrivée prédite), la tête sautée s'arme 0,42 s avant (le saut dans le clip), l'attaquant qui arrive en
 courant se déplace de 0,86 m sous son armé (hier planté), le sabotage `armee:null` rend la reprise

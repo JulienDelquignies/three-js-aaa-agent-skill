@@ -87,7 +87,7 @@ manquent et les branchements qu'elles exigeront).
 - **Livré** : `cfg.tete.armee { marge: 0.25 }` (tete.js, null = hier au bit) — `teteArmerStep` prédit le
   ballon à τ = le contact du clip (tete 0,42 s sautée, teteDebout 0,22 s debout), arme l'acte sur le
   corps qui y sera (`payload.mobile` : il court sous son armé), `teteContact` résout la tête à l'heure de
-  l'acte (`tête-manquée` sinon). verify-tete 6/0 (nouveau, dans bancs.mjs). Restent la volée et la
+  l'acte (`tête-manquée` sinon). verify-tete-armee 6/0 (nouveau, dans bancs.mjs). Restent la volée et la
   poitrine (même patron ; le clip `frappe` de la volée à remplacer par une espèce `volee`).
 - *(le plan d'origine, gardé pour mémoire)*
 

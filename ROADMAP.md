@@ -226,7 +226,7 @@
   le coup franc loin et le corner de possession choisissent leur coéquipier à la pose, la course s'oriente vers lui et attend qu'il se
   soit écarté, la passe s'arme au contact d'élan (pas de porte d'ancre ni de stance : la course EST le geste) et part au tick suivant ;
   la scène ne joue qu'un geste (remiseSkip généralisé, pas de clip de contrôle sur le clip d'élan) ; null = le double geste d'hier.
-- LIVRÉ (note 373, reference/51-motion-strike § B3, verify-tete 6/0) : LA TÊTE ARMÉE (B3) — cfg.tete.armee : le vol est déterministe,
+- LIVRÉ (note 373, reference/51-motion-strike § B3, verify-tete-armee 6/0) : LA TÊTE ARMÉE (B3) — cfg.tete.armee : le vol est déterministe,
   teteArmerStep arme l'acte tete/teteDebout le temps de contact du clip avant le ballon prédit sur le corps qui y sera (payload.mobile :
   il court sous son armé), teteContact résout la tête à l'heure de l'acte (tête-manquée sinon) ; la scène joue tout le geste depuis le
   windup, saut et impulsion compris ; null = la reprise réactive d'hier. Restent la volée et la poitrine (même patron).
