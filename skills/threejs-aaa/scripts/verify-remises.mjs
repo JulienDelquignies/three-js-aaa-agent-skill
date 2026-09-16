@@ -241,6 +241,69 @@ for (const kind of RESTART_NAMES) {
   }
 }
 
+// ---- 7 ter. LA SORTIE DE BUT LONGUE, LA TOUCHE LONGUE, LE MUR QUI SAUTE (lot A9 ter, cfg.remisesPied.elan.sortieBut / elan.toucheLongue / mur)
+{
+  const cfg = matchCfg({});
+  const hyp = Math.hypot;
+  const setCpa = (st, team, cpa) => { st.tactics = st.tactics || [{}, {}]; st.tactics[team] = { ...(st.tactics[team] || {}), cpa: { ...((st.tactics[team] || {}).cpa || {}), ...cpa } }; };
+  const forceR = (st, cfg, type, p, team, secs = 20, cpa = null) => {   // cpa : la tactique de la remise, RE-POSÉE chaque image (le coach — coach.js — remplace st.tactics[team] en cours de match)
+    quiet(st, cfg); if (st.ball.owner != null) st.ball.release('perte'); if (cpa) setCpa(st, team, cpa);
+    st.ball.restart([p[0], 0.11, p[1]], { cause: type }); st.restart = { type, p, team, at: st.t + 3, placed: false }; st.possession = { team, carrier: -1 }; st.phase = 'loose';
+    const n0 = st.events.length, t0 = st.t; let taken = null, murV = null; const prevP = new Map();
+    for (let i = 0; i < 60 * secs; i++) {
+      const had = !!st.restart; if (cpa && !st.tactics?.[team]?.cpa?.[Object.keys(cpa)[0]]) setCpa(st, team, cpa);
+      for (const q of st.players) prevP.set(q.id, [q.p[0], q.p[2]]);
+      matchStep(st, 1 / 60, cfg); if (had && !st.restart && taken == null) taken = st.t;
+      const sauteurs = st.players.filter((q) => q.act?.payload?.kind === 'saut' && q.act.t > 0.02);   // dès la 2e image de l'acte ; la vitesse est celle du DÉPLACEMENT (sous un acte le corps n'est plus intégré, p.v garde sa dernière valeur)
+      if (sauteurs.length) murV = Math.max(murV ?? 0, ...sauteurs.map((q) => { const pp = prevP.get(q.id); return hyp(q.p[0] - pp[0], q.p[2] - pp[1]) * 60; }));
+      if (taken != null && st.t > taken + 2) break;
+    }
+    const ev = st.events.slice(n0);
+    return { t0, taken: taken != null ? +(taken - t0).toFixed(2) : null, ev, w: ev.find((e) => e.type === 'windup' && e.tech === 'elan'), el: ev.find((e) => e.type === 'élan'), murV };
+  };
+  const runs = { sdb: [], touche: [], cf: [] };
+  for (const seed of [3, 7]) {
+    let { st } = playMatch(makeMatch({ full: true, seed }), 8, { cfg });
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), own = st.pitch.ownGoal(0);
+    runs.sdb.push(forceR(st, cfg, 'sortie-de-but', [own.x - own.sign * 5.5, 2], 0, 20, { sortieBut: 'long' }));
+    runs.touche.push(forceR(st, cfg, 'touche', [g.x - sg * 20, st.pitch.hz], 0, 20, { touche: 'longue' }));
+    runs.cf.push(forceR(st, cfg, 'coup-franc', [g.x - sg * 22, 3], 0));
+  }
+  // LA SORTIE DE BUT LONGUE : le gardien recule derrière le ballon (windup 'elan' remise sortie-de-but), court, et se dégage DANS L'IMAGE du contact
+  {
+    const R = runs.sdb, pass = (r) => r.ev.find((e) => e.type === 'pass' && e.by === r.el?.by && e.t >= r.el.t);
+    ok(R.every((r) => r.w?.remise === 'sortie-de-but' && r.w.depart >= 2.5 && r.el?.remise === 'sortie-de-but' && r.el.vitesse >= 2), `LA SORTIE DE BUT LONGUE a sa course d'élan : départs ${R.map((r) => r.w?.depart ?? '—').join('/')} m derrière le ballon, ${R.map((r) => r.el?.vitesse ?? '—').join('/')} m/s au contact (≥ 2)`);
+    ok(R.every((r) => { const p = pass(r); return r.el && p && p.t - r.el.t <= 0.05 && p.style === 'lofted'; }), `…et se dégage dans l'image du contact : passe lofted ${R.map((r) => { const p = pass(r); return p && r.el ? '+' + (p.t - r.el.t).toFixed(2) + ' s' : '—'; }).join('/')} après l'élan (≤ 0,05 — la porte de timing compte la course comme porté)`);
+  }
+  // LA TOUCHE LONGUE : le lanceur recule derrière la ligne (tablier), court AU ballon, l'événement 'élan' à l'arrivée, puis le lancer d'hier (windup 'touche', rentrée)
+  {
+    const R = runs.touche;
+    ok(R.every((r) => r.el?.remise === 'touche' && r.el.vitesse >= 1.5 && r.el.course >= 0.1 && !r.w), `LA TOUCHE LONGUE se lance au bout d'une course : arrivée à ${R.map((r) => r.el?.vitesse ?? '—').join('/')} m/s après ${R.map((r) => r.el?.course ?? '—').join('/')} s de course, sans geste pendant la course`);
+    ok(R.every((r) => r.taken != null && r.el && r.ev.some((e) => e.type === 'windup' && e.tech === 'touche' && e.t >= r.el.t) && r.ev.some((e) => e.type === 'rentrée' && e.t >= r.el.t)), `…puis le lancer d'hier à la ligne : windup 'touche' et rentrée (${R.map((r) => r.ev.find((e) => e.type === 'rentrée')?.range ?? '—').join('/')} m)`);
+  }
+  // LE MUR SAUTE : deux hommes du mur arment 'sautMur' retard s après le contact du coup franc, plantés pendant le saut
+  {
+    const R = runs.cf, K = cfg.remisesPied.mur;
+    const sauts = (r) => r.ev.filter((e) => e.type === 'saut');
+    const depart = (r) => r.el ? r.ev.find((e) => (e.type === 'shot' || e.type === 'lancement' || e.type === 'pass') && e.by === r.el.by && e.t >= r.el.t) : null;
+    ok(R.every((r) => depart(r) && sauts(r).length === 2 && sauts(r).every((e) => e.t - depart(r).t >= -0.01 && e.t - depart(r).t <= 0.03)), `LE MUR SAUTE au coup franc : ${R.map((r) => sauts(r).length).join('/')} sauts armés ${R.map((r) => depart(r) ? sauts(r).map((e) => '+' + (e.t - depart(r).t).toFixed(2)).join(' ') : '—').join(' | ')} s après le DÉPART du ballon (${R.map((r) => depart(r)?.type ?? '—').join('/')}), le retard de réaction (${K.retard} s) dans l'acte`);
+    ok(R.every((r) => r.ev.filter((e) => e.type === 'windup' && e.move === 'sautMur').every((e) => e.retard === K.retard && Math.abs(e.anticipation - (MOVE_TIMING.sautMur.contact + K.retard)) < 0.01)), `…l'armé du saut porte le retard (anticipation = contact ${MOVE_TIMING.sautMur.contact} + retard ${K.retard} s : la scène décale l'horloge du clip, le corps tient sa pose)`);
+    ok(R.every((r) => r.ev.filter((e) => e.type === 'windup' && e.move === 'sautMur' && e.skill === 'saut').length === 2 && (r.murV ?? 0) < 0.3), `…chacun arme 'sautMur' (windup skill 'saut', que l'audit des membres ignore) et reste PLANTÉ (vitesse max ${R.map((r) => (r.murV ?? 0).toFixed(2)).join('/')} m/s pendant le saut)`);
+  }
+  // LES SOUS-CLÉS ABSENTES RENDENT L'HIER : sans elan.sortieBut / elan.toucheLongue / mur, aucune course, aucun saut ; et un style COURT ne recule pas
+  {
+    const RP = cfg.remisesPied, cfg0 = matchCfg({ remisesPied: { elan: { ...RP.elan, sortieBut: null, toucheLongue: null }, volee: RP.volee, touche: RP.touche, mur: null } });
+    let { st } = playMatch(makeMatch({ full: true, seed: 3 }), 8, { cfg: cfg0 });
+    const g = st.pitch.attackGoal(0), sg = Math.sign(g.x || 1), own = st.pitch.ownGoal(0);
+    const a = forceR(st, cfg0, 'sortie-de-but', [own.x - own.sign * 5.5, 2], 0, 20, { sortieBut: 'long' }), b = forceR(st, cfg0, 'touche', [g.x - sg * 20, st.pitch.hz], 0, 20, { touche: 'longue' }), c = forceR(st, cfg0, 'coup-franc', [g.x - sg * 22, 3], 0);
+    ok(a.taken != null && !a.w && !a.el && b.taken != null && !b.el && c.el && !c.ev.some((e) => e.type === 'saut'), `les sous-clés absentes rendent l'hier au bit : sortie de but et touche prises sans course (${a.taken}/${b.taken} s), le coup franc garde sa course (A9 bis) mais le mur reste planté`);
+    let { st: st2 } = playMatch(makeMatch({ full: true, seed: 7 }), 8, { cfg });
+    const own2 = st2.pitch.ownGoal(0);
+    const d = forceR(st2, cfg, 'sortie-de-but', [own2.x - own2.sign * 5.5, 2], 0, 20, { sortieBut: 'court' });
+    ok(d.taken != null && !d.w && !d.el, `la sortie de but COURTE (style tactique) ne recule pas : prise à ${d.taken} s sans course — la course n'est que celle du dégagement long`);
+  }
+}
+
 // ---- 6. les sabotages nommés (par la substitution des paramètres d'espèce)
 const sab = (label, kind, mutate, want) => {
   const K = RESTART_KINDS[kind], saved = { ...K };

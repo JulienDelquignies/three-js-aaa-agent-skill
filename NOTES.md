@@ -12150,6 +12150,56 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      du ballon en médiane (4-11 cm sur les bonnes, 48 sur les mauvaises,
      warp engagé sur 14/21) : le warp de frappe (planWarp, standoff 0,13,
      warpMax 0,42) ne le ramène pas au ballon en match — A2 bis au ROADMAP.
+- 368: LA SORTIE DE BUT LONGUE, LA TOUCHE LONGUE ET LE MUR QUI SAUTE (lot A9
+     ter, quatrième de l'ordre proposé — les trois dettes de reference/56). La
+     course d'élan (A9 bis) sort de referee.js (au plafond) dans elan.js,
+     referee.js ré-exporte. (1) cfg.remisesPied.elan.sortieBut : quand le
+     style de la sortie de but est LONG (keeper.styleSortieBut — la décision
+     à la pression de relancerGardien, sortie dans sa propre fonction, lue
+     aussi À LA POSE), le gardien recule recul m derrière le ballon sur la
+     ligne ballon-but (lat m côté pied faible), attend, court (vitesse m/s) :
+     le geste 'frappe' s'arme sur la course, la remise se prend au contact
+     (élan à 2,6 m/s, départ 3,4 m). Au contact, la relance du gardien (style
+     long forcé par gk._elanLong) arme sa passe et le tir se prend au tick
+     suivant (A.anticipation ← A.t) — la porte de timing de beginPass (holdMin
+     − contact × carve) refusait ('timing' × 5 mesuré) : la course d'élan
+     COMPTE comme porté (st.hold ← holdMin + 0,1). La scène (rondo-remises.
+     remiseSkip) n'arme pas ce second geste : le clip d'élan garde son
+     accompagnement sur une horloge LOCALE (pl._elanTail), il ne rembobine
+     pas. Style court ou pression basse : la pose d'hier. (2) elan.
+     toucheLongue : la touche longue (tactique cpa.touche 'longue', tiers
+     offensif — la porte de remiseEnTouche) : le lanceur recule derrière la
+     ligne (recul m, borné par le tablier : 1,45 m de gazon), court AU ballon
+     sans geste (l'événement 'élan' remise 'touche' à l'arrivée : 1,9 m/s
+     après 0,75 s), et le lancer d'hier s'arme à la ligne (windup 'touche',
+     rentrée). Trouvé en chemin : une pose venue du RAMASSEUR n'avait pas de
+     preneur à l'heure de poserElan (elanJob pose la course dès qu'il est
+     connu) ; le lanceur arrivé de loin en marchant vite tournait autour de
+     son point sans jamais y être « posé » (< 0,4 m et < 0,9 m/s) : 0,7 m et
+     2 m/s pour la touche, et la patience date t0. (3) remisesPied.mur : au
+     prise du coup franc (onTakeMatch — la voie de l'élan comme la prise
+     d'hier : à 50 s de jeu l'élan était refusé, 'élan-loin', et le mur ne
+     sautait pas), les deux hommes du mur (r._mur, mémorisé chaque image par
+     elanStep avant que st.restart ne meure) sont ARMÉS ; ils partent quand le ballon
+     QUITTE le preneur (direct : cette image ; lancé : au contact de la
+     passe — murStep, chaque image depuis arbitreStep, ballon porté ou non :
+     depuis ballFetch il attendait le ballon libre, 1,39 s de retard mesuré),
+     l'acte 'sautMur' possède le corps (planté : déplacement 0,00 m/s) et
+     porte le retard de réaction (payload.retard 0,12 s : remiseClock décale
+     l'horloge du clip, le corps tient sa pose) ; un homme du mur parti
+     marquer en boîte (cfSpots passe avant le mur dans le tour des métiers)
+     ne saute pas à 30 m du ballon (≤ 13 m). motion-emotion 'sautMur'
+     (famille emotion, possède les jambes) : accroupi (bassin −11 cm),
+     détente, les deux pieds décollés (+58 cm) au sommet (contact 0,34 s,
+     bassin +36), les mains croisées devant le bas-ventre (2 cm l'une de
+     l'autre : elev −26 — les bras s'adduisent —, fwd 22, elbow 32 ; la
+     première version les mettait au-dessus de la tête), réception ; les
+     jambes par legIK2 (au sol tant que le bassin est bas, repliées en vol).
+     Le ballon ne rencontre pas encore le mur (la déviation corps ne prend
+     que les ballons lents, < 8 m/s : dette). verify-remises 36 → 45,
+     verify-emotion 33 → 40 (sabotages : h 0, elev 60), empreinte identique
+     avec les sous-clés absentes ET avec les défauts (aucune remise dans la
+     fenêtre d'empreinte).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

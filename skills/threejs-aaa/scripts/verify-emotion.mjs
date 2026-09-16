@@ -22,7 +22,7 @@ const ok = (cond, label) => { if (cond) { pass++; console.log(`✓ ${label}`); }
 const P = SHANON_PROFILE;
 const cm = (m) => (m * 100).toFixed(0);
 
-// ---- 1. les huit gestes, style neutre
+// ---- 1. les neuf gestes, style neutre (A11 : huit ; A9 ter : le saut du mur)
 const specs = {};
 for (const kind of EMOTION_NAMES) {
   const spec = generateEmotion(kind, P); specs[kind] = spec;
@@ -30,7 +30,7 @@ for (const kind of EMOTION_NAMES) {
   ok(r.ok && c.ok, `${kind} (${spec.keys.length} clés, ${spec.duration} s${spec.upperOnly ? ', le haut seul' : spec.ownsLegs ? ', possède les jambes' : ''})${r.ok ? '' : ' — ' + r.issues.join(' ; ')}${c.ok ? '' : ' — checkClip : ' + c.issues.join(' ; ')}`);
 }
 
-// ---- 2. vingt styles × huit gestes
+// ---- 2. vingt styles × neuf gestes
 {
   let bad = 0;
   for (let s = 1; s <= 20; s++) for (const kind of EMOTION_NAMES) {
@@ -38,7 +38,7 @@ for (const kind of EMOTION_NAMES) {
     const r = checkEmotionGen(spec, P, kind), c = checkClip(resolveTracks(spec));
     if (!r.ok || !c.ok) { bad++; if (bad <= 3) console.log(`   graine ${s} ${kind} : ${[...r.issues, ...c.issues].join(' ; ')}`); }
   }
-  ok(bad === 0, `20 styles × 8 gestes = 160 émotions sous contrat et checkClip (${bad} rouges)`);
+  ok(bad === 0, `20 styles × 9 gestes = 180 émotions sous contrat et checkClip (${bad} rouges)`);
 }
 
 // ---- 3. ce que chaque geste a de propre
@@ -64,9 +64,18 @@ for (const kind of EMOTION_NAMES) {
   ok(Math.max(...yaws) > 6 && Math.min(...yaws) < -6, `la protestation : la tête dit non (lacet ${Math.min(...yaws).toFixed(0)}° ↔ +${Math.max(...yaws).toFixed(0)}°), les avant-bras ouverts, les épaules qui montent (${EMOTION_KINDS.proteste.shrug}°)`);
 }
 
+// ---- 3 bis. (A9 ter) LE SAUT DU MUR : accroupi, détente, les deux pieds décollés au sommet, les mains croisées devant, la réception
+{
+  const sp = specs.sautMur, p = emotionPortrait(sp, P), S = p.pick(sp.contact), C = p.pick(0.10), E = p.end, restF = (p.start.lf[1] + p.start.rf[1]) / 2;
+  ok(S.lf[1] - restF > 0.2 && S.rf[1] - restF > 0.2 && S.pelvis[1] - p.start.pelvis[1] > 0.22, `le mur SAUTE : pieds à +${cm(S.lf[1] - restF)} / +${cm(S.rf[1] - restF)} cm, bassin à +${cm(S.pelvis[1] - p.start.pelvis[1])} cm au sommet (contact ${sp.contact} s)`);
+  ok(C.pelvis[1] < p.start.pelvis[1] - 0.05, `…après un accroupi (bassin −${cm(p.start.pelvis[1] - C.pelvis[1])} cm à 0,10 s)`);
+  ok(Math.hypot(S.lh[0] - S.rh[0], S.lh[1] - S.rh[1], S.lh[2] - S.rh[2]) < 0.30 && S.lh[1] < S.chest[1] - 0.15 && S.lh[2] < S.pelvis[2] - 0.08, `…les mains croisées devant le bas-ventre (${cm(Math.hypot(S.lh[0] - S.rh[0], S.lh[1] - S.rh[1], S.lh[2] - S.rh[2]))} cm l'une de l'autre, ${cm(S.chest[1] - S.lh[1])} cm sous la poitrine, ${cm(S.pelvis[2] - S.lh[2])} cm devant)`);
+  ok(Math.abs(E.pelvis[1] - p.start.pelvis[1]) < 0.04 && E.lf[1] - restF < 0.03 && E.rf[1] - restF < 0.03 && p.lowest > -0.03, `…et la réception ramène au sol (bassin ${cm(E.pelvis[1] - p.start.pelvis[1])} cm, pieds ${cm(E.lf[1] - restF)} / ${cm(E.rf[1] - restF)} cm ; rien sous la pelouse : ${cm(p.lowest)} cm)`);
+}
+
 // ---- 4. le registre
 ok(EMOTION_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING[k].contact - EMOTION_KINDS[k].contact) < 1e-6), `les huit espèces sont des MOVES générés, contact ${EMOTION_NAMES.map((k) => MOVE_TIMING[k]?.contact).join(' / ')} s`);
-ok(EMOTION_NAMES.filter((k) => k !== 'glissade').every((k) => MOVES[k].upperOnly) && MOVES.glissade.ownsLegs && MOVES.glissade.lying > 0 && MOVES.glissade.rise > MOVES.glissade.lying, 'sept gestes du haut (les jambes restent à la foulée), la glissade possède les jambes et déclare lying/rise (la scène la tient et la relève comme une chute)');
+ok(EMOTION_NAMES.filter((k) => k !== 'glissade' && k !== 'sautMur').every((k) => MOVES[k].upperOnly) && MOVES.sautMur.ownsLegs && MOVES.glissade.ownsLegs && MOVES.glissade.lying > 0 && MOVES.glissade.rise > MOVES.glissade.lying, 'sept gestes du haut (les jambes restent à la foulée), la glissade possède les jambes et déclare lying/rise (la scène la tient et la relève comme une chute)');
 
 // ---- 5. LA SIM (cfg.fete) : le geste vient de la persona ; la glissade se lance après l'élan ; la clé absente rend l'hier
 {
@@ -110,6 +119,8 @@ sab('la glissade debout (kneel 0.45)', 'glissade', () => ({ kneel: 0.45 }), /gen
 sab('la glissade figée (vie 0)', 'glissade', () => ({ vie: 0 }), /FIGÉE/);
 sab('l\'accolade bras écartés (elev 60, rot 0)', 'accolade', () => ({ elev: 60, rot: 0 }), /écartées|enveloppent/);
 sab('l\'applaudissement muet (claps 0)', 'applaudir', () => ({ claps: 0 }), /claquement/);
+sab('le mur qui ne saute pas (h 0)', 'sautMur', () => ({ h: 0 }), /décollent|ne monte pas/);
+sab('le mur les bras ouverts (elev 60)', 'sautMur', () => ({ elev: 60, fwd: 10, elbow: 10 }), /croisées/);
 sab('la protestation sans le non (shake 0)', 'proteste', () => ({ shake: 0 }), /ne dit pas non/);
 
 console.log(`\n${pass} ✓ / ${fail} ✗`);

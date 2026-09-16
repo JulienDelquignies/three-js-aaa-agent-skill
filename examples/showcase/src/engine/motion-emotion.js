@@ -33,6 +33,8 @@ export const EMOTION_KINDS = {
   oreille:    { duration: 2.4, contact: 0.50, upperOnly: true, hold: 1.9, elev: 135, fwd: 60, elbow: 155, rot: 0, yaw: 22 },
   calme:      { duration: 2.0, contact: 0.40, upperOnly: true, hold: 1.5, elev: 52, fwd: 64, elbow: 82, headDown: 12 },
   glissade:   { duration: 2.0, contact: 0.45, lying: 0.55, rise: 1.35, ownsLegs: true, kneel: 0.06, back: 0.40, arms: 74, armsUp: 138, lean: -12, vie: 1 },
+  // (A9 ter) LE MUR QUI SAUTE : accroupi, détente, les deux pieds décollés au sommet (contact), les mains croisées devant le bas-ventre, réception
+  sautMur:    { duration: 0.78, contact: 0.34, ownsLegs: true, saut: true, crouch: 0.11, h: 0.36, tuck: 0.22, elev: -26, fwd: 22, elbow: 32, lean: 4 },   // elev < 0 : les bras se croisent devant le bas-ventre (mesuré : mains à 5 cm l'une de l'autre, +16 cm au-dessus du bassin, 18 cm devant)
   accolade:   { duration: 1.5, contact: 0.35, upperOnly: true, hold: 1.0, elev: -14, fwd: 80, elbow: 62, lean: 10, rot: -10 },
   applaudir:  { duration: 1.2, contact: 0.20, upperOnly: true, claps: 3, elev: 22, fwd: 62, elbow: 92 },
   proteste:   { duration: 1.6, contact: 0.35, upperOnly: true, hold: 1.2, elev: 42, fwd: 28, elbow: 72, shrug: 9, shake: 14 },
@@ -138,6 +140,31 @@ export function generateEmotion(kindName, P, { style = NEUTRAL_STYLE } = {}) {
       J.LeftShoulder = rz(K.shrug * a); J.RightShoulder = rz(-K.shrug * a);   // les épaules qui montent
       return { J, hips: [0, -0.01 * a, 0] };
     };
+  } else if (kindName === 'sautMur') {
+    // LE SAUT DU MUR : le bassin descend (accroupi), remonte et DÉCOLLE (cloche de hauteur, sommet au contact), retombe avec
+    // un amorti ; les pieds suivent le bassin et se replient sous lui en vol (IK), à plat au sol avant et après ; les bras
+    // se croisent devant le bas-ventre (la protection du mur), le buste se retient un peu en arrière, la tête rentre.
+    const yOf = (t) => -K.crouch * bump(t, 0, 0.11, 0.21) + K.h * bump(t, 0.19, tc, 0.52) - 0.05 * bump(t, 0.52, 0.60, 0.70);
+    const air = (t) => bump(t, 0.20, tc, 0.51);
+    const hipsOf = (t) => [0, yOf(t), 0.02 * air(t)];
+    poseAt = (t) => {
+      const a = ramp(t, 0, 0.11, 0.22) * (1 - ramp(t, 0.56, 0.68, T)), f = air(t), J = {};   // les bras se croisent en 0,22 s (≤ 14 rad/s aux avant-bras : checkClip)
+      trunk(J, { lean: -K.lean * f + 6 * bump(t, 0, 0.11, 0.21), headPitch: 8 * a });
+      const cross = { elev: K.elev * A, fwd: K.fwd, elbow: K.elbow };
+      Object.assign(J, armAt('Left', NEUTRAL_ARM, cross, a), armAt('Right', NEUTRAL_ARM, cross, a));
+      const H = hipsOf(t), RH = rx(-K.lean * f * 0.3);
+      J.Hips = RH;
+      for (const side of ['Left', 'Right']) {
+        const rest = side === 'Left' ? restL : restR;
+        const target = [rest[0], rest[1] + Math.max(0, H[1]) + K.tuck * f, rest[2] - 0.03 * f];   // au sol tant que le bassin est bas ; en vol les pieds suivent et se replient
+        const r = legIK2(P, side, hipJoint(P, side, RH, H), RH, target, [0, 0, -1]);
+        J[`${side}UpLeg`] = r.Rthigh; J[`${side}Leg`] = r.Rshank;
+        const flat = quatNormalize(quatConjugate(quatMul(quatMul(RH, r.Rthigh), r.Rshank)));
+        J[`${side}Foot`] = chain(flat, rx(-18 * f)); J[`${side}ToeBase`] = I;   // la pointe tombe un peu en vol
+      }
+      return { J, hips: H };
+    };
+    marks = [tc];
   } else {
     // LA GLISSADE : descente sur les genoux (0 → contact), pose tenue vivante (lying → rise), relevé (rise → fin)
     const tL = K.lying, tR = K.rise;
@@ -251,6 +278,14 @@ export function checkEmotionGen(spec, P, kind) {
     const yaw = spec.keys.filter((k) => k.t > spec.contact && k.t < K.hold).map((k) => k.pose.Head?.[1] ?? 0);
     let flips = 0, sg = 0; for (const y of yaw) { const g = Math.abs(y) > 3 ? Math.sign(y) : 0; if (g && sg && g !== sg) flips++; if (g) sg = g; }
     if (flips < 2) issues.push(`proteste : la tête ne dit pas non (${flips} changement(s) de côté)`);
+  }
+  if (kind === 'sautMur') {
+    const S = p.pick(spec.contact), C = p.pick(0.10), E = p.end, restF = (p.start.lf[1] + p.start.rf[1]) / 2;
+    if (!(S.lf[1] > restF + 0.20 && S.rf[1] > restF + 0.20)) issues.push(`sautMur : les pieds ne décollent pas (${(100 * (S.lf[1] - restF)).toFixed(0)} / ${(100 * (S.rf[1] - restF)).toFixed(0)} cm au sommet, ≥ 20)`);
+    if (!(S.pelvis[1] > hipsY + 0.22)) issues.push(`sautMur : le bassin ne monte pas (+${(100 * (S.pelvis[1] - hipsY)).toFixed(0)} cm au sommet, ≥ 22)`);
+    if (!(C.pelvis[1] < hipsY - 0.05)) issues.push(`sautMur : pas d'accroupi avant la détente (bassin ${(100 * (C.pelvis[1] - hipsY)).toFixed(0)} cm à 0,10 s)`);
+    if (!(S.lh[1] < S.chest[1] - 0.15 && S.rh[1] < S.chest[1] - 0.15 && dist(S.lh, S.rh) < 0.30 && S.lh[2] < S.pelvis[2] - 0.08)) issues.push(`sautMur : les mains ne sont pas croisées devant sous la poitrine (${(100 * dist(S.lh, S.rh)).toFixed(0)} cm entre elles)`);
+    if (!(Math.abs(E.pelvis[1] - hipsY) < 0.04 && E.lf[1] < restF + 0.03 && E.rf[1] < restF + 0.03)) issues.push(`sautMur : la réception ne ramène pas au sol (bassin ${(100 * (E.pelvis[1] - hipsY)).toFixed(0)} cm, pieds ${(100 * (E.lf[1] - restF)).toFixed(0)} / ${(100 * (E.rf[1] - restF)).toFixed(0)} cm)`);
   }
   if (kind === 'glissade') {
     const L = p.pick(spec.lying), M = p.pick((spec.lying + spec.rise) / 2), R = p.pick(spec.rise), E = p.end;

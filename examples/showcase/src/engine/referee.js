@@ -1007,6 +1007,7 @@ export function ballFetch(st, dt, cfg) {
  *  LANCE (Loi 15), le coup franc se tire ou se lance, le corner se travaille, la sortie de
  *  but se distribue au style. _beginPass/_relancer injectés par l'appelant (le cycle d'import). */
 export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
+      if (type === 'coup-franc') armerMur(st, id, cfg);            // (A9 ter) le mur s'arme à la prise, il saute au départ du ballon
       if (type === 'touche' && cfg.loi15 && st.full) remiseEnTouche(st, id, cfg);
       // …le COUP FRANC a un prix (lot 97) : à portée il se TIRE, lointain il se LANCE — et le CORNER se TRAVAILLE (lot 101)
       else if (type === 'coup-franc' && cfg.cfDirect !== false && st.full) coupFrancDirect(st, id, cfg) || coupFrancLance(st, id, cfg);
@@ -1027,6 +1028,7 @@ export function onTakeMatch(st, id, type, cfg, _beginPass, _relancer) {
  *  La scène le rend en noir ; le moteur n'expose que st.arbitre { p, v, yaw, job }.
  *  Clé absente : l'arbitrage désincarné d'hier au bit (st.arbitre = null). */
 /* (A11 bis, cfg.arbitreGestes) LA FILE DES GESTES DU CENTRAL : le sifflet passe devant (il précède le carton et le bras qui désigne, comme sur le terrain) ; la scène lit st.arbitre.geste — et LE PAS DU CENTRAL suit : */ export function poserGeste(st, cfg, g) { const G = st.full && cfg.arbitreGestes, a = st.arbitre; if (!G || !a) return; const it = { kind: g.kind, dur: g.dur ?? G[g.kind] ?? 1.2, dir: g.dir ?? null, couleur: g.couleur ?? null, enCourant: !!g.enCourant }; const q = a.gestes ??= []; if (g.kind === 'siffler') q.unshift(it); else q.push(it); } export function arbitreStep(st, dt, cfg) {
+  murStep(st, cfg);                                                // (A9 ter) le mur armé au coup franc saute quand le ballon part — chaque image, ballon porté ou non
   const A = cfg.arbitre;
   if (!st.full || !A) { if (st.arbitre) st.arbitre = null; return; }
   const a = st.arbitre ??= { p: [-8, 0, 6], v: [0, 0], yaw: 0, job: 'suit' };
@@ -1159,91 +1161,5 @@ export function elireTaker(st, r, cfg, d2) {
 import { hyp } from './hyp.js';
 import { placementEvent } from './cpa.js';
 
-// ---------------------------------------------------------------- LA COURSE D'ÉLAN (lot A9 bis, cfg.remisesPied)
-
-/**
- * LA COURSE D'ÉLAN (cfg.remisesPied.elan && st.full) : le coup franc et le corner se frappaient À L'INSTANT de la prise, du
- * point où le preneur venait de poser le ballon — aucun geste, aucune course (mesuré graine 7 : 'restart-pris' et 'corner-joué'
- * à la même image, le corps planté). Ici, le ballon posé, le preneur RECULE à son point de départ (recul m derrière le ballon
- * sur la ligne ballon-cible, lat m du côté de son pied faible — le droitier vient de la gauche, le tablier borne le départ :
- * le corner part de derrière le poteau), ATTEND face au ballon l'heure de la reprise, puis COURT (≤ vitesse m/s, movement.js
- * laisse le corps courir sous l'armé 'elan') : le geste 'frappe' s'arme sur la durée de la course et la remise se prend AU
- * CONTACT du geste, à l'arrivée au ballon (elanNow → canTake → receive → onTake : la frappe d'hier, du point d'arrivée). Un
- * preneur en retard étire son armé (le contact se rejoue à l'arrivée, jamais dans le vide) ; passé patience s sans partir,
- * ou 1,5 s de course sans arriver, la prise d'hier. Clé absente : la frappe instantanée d'hier, au bit.
- */
-export function poserElan(st, r, cfg) {
-  const E = st.full && cfg?.remisesPied?.elan;
-  if (!E || r.elan || (r.type !== 'coup-franc' && r.type !== 'corner')) return;
-  const tk = st.players[r.taker ?? -1]; if (!tk) return;
-  const g = st.pitch.attackGoal(tk.team), sg = Math.sign(g.x || 1);
-  const aim = r.type === 'corner' ? [g.x - sg * 11, 0] : [g.x, 0];                       // la cible provisoire : le point de penalty, le but
-  let ux = aim[0] - r.p[0], uz = aim[1] - r.p[1]; const L = hyp(ux, uz) || 1; ux /= L; uz /= L;
-  const lat = (tk.foot === 'left' ? -1 : 1) * (E.lat ?? 1.5), recul = E.recul ?? 3.5;   // la GAUCHE de la ligne = [uz, -ux] : le droitier vient de la gauche
-  let sx = r.p[0] - ux * recul + uz * lat, sz = r.p[1] - uz * recul - ux * lat;
-  const ap = Math.max(0.5, (cfg.apron ?? 2) - 0.3), hx = st.pitch.hx + ap, hz = st.pitch.hz + ap;
-  sx = Math.max(-hx, Math.min(hx, sx)); sz = Math.max(-hz, Math.min(hz, sz));
-  r.elan = { spot: [sx, sz], phase: 'recule', at: st.t };
-}
-
-/** Le métier du preneur pendant la course (assignMatchJobs) : recule → attend face au ballon ; court : le métier d'hier. */
-export function elanJob(st, r, tk, cfg) {
-  const RP = st.full && cfg?.remisesPied;
-  if (RP?.touche && r.type === 'touche' && r.placed === true) {   // LE LANCEUR DERRIÈRE LA LIGNE (Loi 15) : il se tient recul m dehors, le ballon sur la ligne à portée de main
-    r.placedAt ??= st.t;                                          // une pose venue d'ailleurs (le ramasseur, une remise déjà posée) date sa patience ici
-    tk.job = 'receive'; tk.target = [r.p[0], 0, r.p[1] + Math.sign(r.p[1] || 1) * (RP.touche.recul ?? 0.4)]; return true;
-  }
-  const el = r.elan;
-  if (!el || !RP?.elan) return false;
-  if (el.phase === 'court') {                                     // il court À TRAVERS le ballon (la cible au-delà : l'amorti d'arrivée ne le freine pas sur le point de contact)
-    if (!tk.act) return false;
-    const dx = st.ball.p[0] - el.spot[0], dz = st.ball.p[2] - el.spot[1], L = hyp(dx, dz) || 1;
-    tk.job = 'receive'; tk.target = [st.ball.p[0] + dx / L * 1.5, 0, st.ball.p[2] + dz / L * 1.5]; return true;
-  }
-  tk.job = 'walk';
-  if (el.phase === 'recule') tk.target = [el.spot[0], 0, el.spot[1]];
-  else { tk.target = [tk.p[0], 0, tk.p[2]]; if (hyp(tk.v[0], tk.v[1]) < 0.3) tk.yawWant = Math.atan2(st.ball.p[2] - tk.p[2], st.ball.p[0] - tk.p[0]); }
-  return true;
-}
-
-/** L'horloge de la course (chaque image, depuis ballFetch) : arrivé au départ → attend ; l'heure venue → part (le geste s'arme
- *  sur la durée de la course) ; en retard au contact → l'armé s'étire d'une image ; sans arrivée → la prise d'hier. */
-export function elanStep(st, dt, cfg) {
-  const r = st.restart, E = st.full && cfg?.remisesPied?.elan;
-  if (!r || !E || !r.elan || r.placed !== true) return;
-  const el = r.elan, tk = st.players[r.taker ?? -1];
-  if (!tk || tk.down > 0) return;
-  const bp = st.ball.p, d = hyp(bp[0] - tk.p[0], bp[2] - tk.p[2]);
-  if (el.phase === 'recule' && hyp(tk.p[0] - el.spot[0], tk.p[2] - el.spot[1]) < 0.4 && hyp(tk.v[0], tk.v[1]) < 0.9) el.phase = 'attend';
-  if (el.near == null && d < 6) el.near = st.t;                                          // la patience court depuis que le preneur est AU ballon (le ramasseur pose parfois avant lui)
-  if (el.phase !== 'court' && st.t > Math.max(r.at, el.near ?? st.t) + (E.patience ?? 4)) { el.phase = 'court'; el.rate = 'patience'; return; }   // le garde-fou anti-gel : sans course, la prise d'hier
-  if (el.phase === 'attend' && st.t >= r.at - 0.2 && !tk.act) {
-    const v = E.vitesse ?? 4, T = Math.max(0.6, d / v + 0.35);
-    const mv = MOVE_TIMING.frappe || { duration: 1.0, contact: 0.45 };
-    startGesture(tk, { id: 'frappe', duration: T + (mv.duration - mv.contact), contact: T },
-      { payload: { kind: 'elan', type: r.type, elan: v, T0: T, pick: { tech: byId['passe-laces'] ?? { id: 'elan', clip: 'frappe' }, foot: tk.foot ?? 'right' } }, log: st.gestures });
-    st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: tk.id, tech: 'elan', move: 'frappe', foot: tk.foot ?? 'right', anticipation: +T.toFixed(2), remise: r.type, depart: +d.toFixed(2) });
-    el.phase = 'court'; el.t0 = st.t;
-  }
-  const A = tk.act;
-  if (A && A.payload?.kind === 'elan' && !A.fired && d < 0.4 && A.t + dt < A.anticipation) { A.total -= A.anticipation - (A.t + dt); A.anticipation = A.t + dt; }   // en avance : le contact vient À l'arrivée (il court à travers le ballon)
-  if (A && A.payload?.kind === 'elan' && !A.fired && A.t + dt >= A.anticipation && d > (cfg.receiveRadius ?? 0.85)) {   // en retard : le contact ATTEND l'arrivée
-    if (st.t - el.t0 > A.payload.T0 + 1.5) { abortGesture(tk, 'élan-sans-ballon', { log: st.gestures }); deny(st, 'élan-sans-ballon'); el.rate = 'sans-ballon'; return; }
-    A.anticipation += dt; A.total += dt;
-  }
-}
-
-/** Le contact du geste d'élan (hook elanNow du loop) : la remise se PREND ici — canTake, receive, onTake : la frappe d'hier,
- *  depuis le point d'arrivée. Arrivé trop court, ou la reprise encore fermée (Loi 16, moitiés) : refus nommé, la prise d'hier
- *  prendra au ballon. */
-export function elanNow(st, p, cfg, receive) {
-  const r = st.restart;
-  if (!r || !r.elan || r.taker !== p.id) return;
-  const d = hyp(st.ball.p[0] - p.p[0], st.ball.p[2] - p.p[2]);
-  if (d > (cfg.receiveRadius ?? 0.85) + 0.15) { deny(st, 'élan-loin'); return; }
-  const type = r.type, course = +(st.t - (r.elan.t0 ?? st.t)).toFixed(2), vitesse = +hyp(p.v[0], p.v[1]).toFixed(2);
-  if (cfg.canTake && !cfg.canTake(st, p.id, cfg)) { deny(st, 'élan-attend'); return; }
-  st.events.push({ t: +st.t.toFixed(2), type: 'élan', by: p.id, remise: type, vitesse, course, d: +d.toFixed(2) });
-  receive(st, p.id, cfg);
-  if (!st.restart && cfg.onTake) cfg.onTake(st, p.id, type, cfg);
-}
+// LA COURSE D'ÉLAN (lot A9 bis) et ses suites (A9 ter : sortie de but longue, touche longue, le mur qui saute) vivent dans elan.js
+import { poserElan, elanJob, elanStep, elanNow, murStep, armerMur } from './elan.js'; export { poserElan, elanJob, elanStep, elanNow };

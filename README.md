@@ -272,7 +272,7 @@ examples/
   the ball is carried to the drop point by the gloves, FALLS from the hand and the instep takes it mid-height —
   the pass leaves from the ball's real height, never teleported to the ground), the thrower stands behind the
   touchline (Law 15) and the aerial catch stays in the gloves of the clip. Everything under `cfg.remisesPied`
-  (absent = yesterday bit for bit); `verify-remises.mjs` carries the 36 clauses (reference/56).
+  (absent = yesterday bit for bit); `verify-remises.mjs` carries the 45 clauses (reference/56 — A9 ter adds the long goal kick's and long throw-in's run-ups and the wall that jumps).
 
 ## Install
 

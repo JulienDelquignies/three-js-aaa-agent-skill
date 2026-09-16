@@ -125,13 +125,45 @@ derrière la ligne) — le réel en a 40 par match, le tronc 1,2 par 10 min. L'�
 A9 et A10, l'équilibre tient, l'hier au bit sans la clé. Nommé au tronc : la remise de la tête au lanceur
 qui vise un corps près de la ligne (une loi de `tete.js`, pas de ce lot).
 
+## La sortie de but longue, la touche longue, le mur qui saute (A9 ter — `elan.js`)
+
+La course d'élan (A9 bis) vit dans `engine/elan.js` (referee.js, au plafond de lignes, ré-exporte
+`poserElan / elanJob / elanStep / elanNow`). Trois sous-clés, chacune `null` = l'hier au bit :
+
+- **`remisesPied.elan.sortieBut`** `{ recul 3, lat 1.2, vitesse 3.5 }` : quand le style de la sortie de
+  but est LONG (`keeper.styleSortieBut` — la décision à la pression de `relancerGardien`, sortie dans
+  sa propre fonction et lue aussi À LA POSE), le gardien recule derrière le ballon sur la ligne
+  ballon-but, attend, court : le geste `frappe` s'arme sur la course et la remise se prend au contact
+  (mesuré : départ 3,4 m, 2,6 m/s au contact). Au contact, sa relance (style long forcé par
+  `gk._elanLong`) arme la passe et le tir se prend au tick suivant — la porte de timing de `beginPass`
+  refusait (`timing`) : la course COMPTE comme porté (`st.hold ← holdMin + 0,1`). La scène
+  (`rondo-remises.remiseSkip`) n'arme pas ce second geste : le clip d'élan garde son accompagnement
+  sur une horloge locale (`pl._elanTail`). Style court : la pose d'hier.
+- **`remisesPied.elan.toucheLongue`** `{ recul 4 }` : la touche longue (tactique `cpa.touche 'longue'`,
+  tiers offensif — la porte de `remiseEnTouche`) : le lanceur recule derrière la ligne (borné par le
+  tablier : 1,45 m de gazon), court AU ballon sans geste (événement `élan` remise `touche` à
+  l'arrivée : 1,9 m/s après 0,75 s), le lancer d'hier s'arme à la ligne. Une pose venue du ramasseur
+  n'avait pas de preneur à l'heure de `poserElan` : `elanJob` pose la course dès qu'il est connu.
+- **`remisesPied.mur`** `{ retard 0.12 }` : à la PRISE du coup franc (`onTakeMatch`, la voie de l'élan
+  comme la prise d'hier), les deux hommes du mur (`r._mur`, mémorisé chaque image par `elanStep`) sont armés ; ils partent quand le ballon QUITTE le preneur (direct : cette image ; lancé :
+  au contact de la passe — `murStep`, chaque image depuis `arbitreStep`) : l'acte `sautMur` possède le
+  corps (planté) et porte le retard de réaction (`payload.retard` : `remiseClock` décale l'horloge du
+  clip, le corps tient sa pose). Un homme du mur parti marquer en boîte (cfSpots passe avant le mur)
+  ne saute pas à 30 m du ballon (≤ 13 m). Le geste (`motion-emotion`, famille emotion, possède les
+  jambes) : accroupi (bassin −11 cm), détente, les deux pieds décollés (+58 cm) au sommet (0,34 s,
+  bassin +36), les mains croisées devant le bas-ventre (2 cm l'une de l'autre), réception.
+- Bancs : `verify-remises` § 7 ter (sortie de but longue : course puis passe lofted +0,02 s ; touche
+  longue : course puis lancer ; mur : deux sauts armés au départ du ballon, plantés à 0,00 m/s ;
+  sous-clés absentes = hier ; style court = pas de course), `verify-emotion` (le saut, ses sabotages).
+
 ## Les dettes nommées
 
-- La sortie de but n'a pas de course d'élan (le gardien la distribue par `relancerGardien` : une passe
-  armée sur place) ; la touche longue non plus (le lanceur se pose, A9).
+- Le ballon ne rencontre pas encore le mur qui saute : la déviation corps ne prend que les ballons
+  lents (< 8 m/s) — le saut est un corps, pas encore une hauteur d'interception.
+- La sortie de but COURTE et la touche courte restent posées (c'est le réel) ; la touche longue ne
+  vit qu'avec la tactique `cpa.touche 'longue'` (aucune dans les presets par défaut).
 - Le corner court (35 % au style possession) rend le ballon au pied du preneur au contact : la course
   finit sur une conduite, pas une frappe.
 - La remise de la tête au lanceur vise un corps près de la ligne et sort parfois (la boucle de touches,
   4 sur 14 sans la clé, 8 sur 23 avec) : une loi de `tete.js`, nommée au tronc.
 - La prise aérienne tenue n'a pas été filmée (aucune prise aérienne en 380 s sur trois graines).
-- Aucun mur qui saute, aucune barrière qui se place au coup franc pendant la course : le mur d'hier.

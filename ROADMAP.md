@@ -212,8 +212,12 @@
   jouait tout l'armé à ×0,7 (convergence de l'échantillonnage en avance AU contact) : rondo-fusion.js converge à 0,6 × anticipation, le
   swing à ×1 ; le générateur met le pic du genou SUR le contact (passe 11,4 → 13,2 m/s, frappe 14,5 → 17,0) ; le tir de la sim (au
   tick suivant) est retenu par la couche, le pied est sur le ballon quand il part.
+- LIVRÉ (note 368, reference/56 § A9 ter, verify-remises 45/0, verify-emotion 40/0) : LA SORTIE DE BUT LONGUE, LA TOUCHE LONGUE ET LE
+  MUR QUI SAUTE (A9 ter) — elan.js (la course d'élan sortie de referee.js) : elan.sortieBut (le gardien recule et court quand le style
+  est long, se dégage dans l'image du contact), elan.toucheLongue (le lanceur court au ballon depuis le tablier), remisesPied.mur (les
+  deux hommes du mur arment 'sautMur' — motion-emotion — quand le ballon part, plantés, retard de réaction dans l'acte) ; null = hier.
 - SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») :
-  (A9 ter) la course d'élan de la sortie de but et de la touche longue, le mur qui saute ; le relevé aidé ; (A10 ter) la tenue de balle dos au but
+  le relevé aidé ; (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
   la carte plus lisible. Et les dettes : (A2 bis) LE PIED RATE LE BALLON — à l'image du tir l'orteil est à 30 cm du centre du ballon en
   médiane en match (mesuré lot A2 : 4-11 cm sur les bonnes, 48 sur les mauvaises, warp engagé 14/21) : le warp de frappe ne ramène pas le

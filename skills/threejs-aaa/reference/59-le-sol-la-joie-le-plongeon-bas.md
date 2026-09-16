@@ -56,7 +56,8 @@ scène laisse les jambes à la foulée — poids des jambes 0) : `poing` (deux p
 +25 cm), `brasLeves` (le V au ciel, mains +28 cm au-dessus de la tête, tenu), `oreille` (la main en cornet à 15 cm
 de l'oreille droite, la gauche sur la hanche, le tronc tourné de 22° vers la tribune), `calme` (les mains levées
 paumes devant à hauteur d'épaule, la tête basse), `accolade` (les deux bras qui enveloppent devant, 21 cm entre les
-mains), `applaudir` (trois claquements, mains à 10 cm, écartées de 63 cm entre deux), `proteste` (les avant-bras
+mains), `applaudir` (trois claquements, mains à 10 cm, écartées de 63 cm entre deux), `sautMur` (A9 ter, reference/56 : le
+saut du mur — accroupi, pieds décollés de 58 cm au sommet, mains croisées devant le bas-ventre, réception ; possède les jambes), `proteste` (les avant-bras
 qui s'ouvrent, les épaules qui montent de 9°, la tête qui dit non ±8°). Et la `glissade` sur les genoux
 (`spec.ownsLegs`, `lying` 0,55 / `rise` 1,35) : le corps descend sur les genoux (bassin à la hauteur de la cuisse,
 genoux à 3 cm du sol, pieds 50 cm derrière, pointes au sol, legIK2 en repères alignés — pas de vrille), le buste

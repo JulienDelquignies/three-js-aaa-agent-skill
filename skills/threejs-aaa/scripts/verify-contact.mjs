@@ -140,7 +140,7 @@ ok(CONTACT_NAMES.every((k) => MOVES[k] && MOVE_TIMING[k] && Math.abs(MOVE_TIMING
   const run = (over) => {
     const out = { downs: [], actes: 0, framesSol: 0, framesCorps: 0 };
     for (const seed of [7, 3, 1, 5, 2, 4]) {
-      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ familiarite: null, ...over });
+      const st = makeMatch({ full: true, seed }), cfg = matchCfg({ familiarite: null, remisesPied: { elan: { recul: 3.5, lat: 1.5, vitesse: 4.0, patience: 4 }, volee: { h: 1.0, avance: 0.45, lacher: 0.72 }, touche: { recul: 0.25 } } /* remisesPied A9 bis DATÉ 16/09 (lot A9 ter, note 368 : la sortie de but longue et la touche longue courent, le mur saute — le flux des fautes change ; la clause mesure cfg.sol, pas les remises) */, ...over });
       const downAt = {}, prevAct = {};
       for (let i = 0; i < 300 * 60; i++) {
         matchStep(st, 1 / 60, cfg);

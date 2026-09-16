@@ -1,4 +1,4 @@
-import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { legsByArrive, legsByContact, fusionSample } from './rondo-fusion.js'; import { remiseClock, remiseHands } from './rondo-remises.js'; import { feteEvent, feteStep } from './rondo-fete.js';   // la fête et l'humeur (A11)   // le contact (A10), les remises au pied (A9 bis)
+import { contactEvent, contactClock, contactShield } from './rondo-contact.js'; import { legsByArrive, legsByContact, fusionSample } from './rondo-fusion.js'; import { remiseClock, remiseHands, remiseSkip } from './rondo-remises.js'; import { feteEvent, feteStep } from './rondo-fete.js';   // la fête et l'humeur (A11)   // le contact (A10), les remises au pied (A9 bis)
 import * as THREE from 'three/webgpu';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -494,7 +494,7 @@ export class Rondo {
     // porte une impulsion authorée — démarrer DANS la montée (offset s) garde le décollage
     // synchrone du ballon sans jeter tout l'élan (le pré-saut anticipé est la dette nommée).
     pl._layerClock = { t0: this._t, offset: typeof from === 'number' && from > 0 ? from : from === 'contact' ? (spec.contact ?? 0) : 0, dur: spec.duration ?? 0.6, antic: spec.contact ?? 0.2 };
-    pl._wLegs = pl._wLegs ?? 0; pl._fireOff = null;   // (A2) le retard du tir se mesure à chaque geste
+    pl._wLegs = pl._wLegs ?? 0; pl._fireOff = null; pl._elanTail = null;   // (A2) le retard du tir se mesure à chaque geste ; (A9 ter) l'horloge locale de l'accompagnement d'élan
   }
 
   /** LE WARP DE FRAPPE, appliqué. L'autorité de la jambe frappeuse pendant l'armé (foot-lock se
@@ -872,7 +872,7 @@ export class Rondo {
         // boot and the ball together was to start the clip AT its contact frame, throwing away the
         // entire backswing. That is why there was no visible movement — you were watching the second
         // half of a gesture whose first half had been deleted. Now the simulation waits for the leg.
-        this._playTech(this.players[e.by], e);
+        if (!remiseSkip(this, this.players[e.by], e)) this._playTech(this.players[e.by], e);   // (A9 ter) la passe de la sortie de but longue : le clip d'élan garde son accompagnement
       } else if (e.type === 'pass') {
         // the ball leaving is no longer a cue to animate: the swing that sent it started earlier and is
         // still running, and it will finish on its own follow-through
@@ -1005,7 +1005,7 @@ export class Rondo {
         const act = pl.sim.act;
         const v = pl.ctrl.groundSpeed ?? 0;
         const meta = pl._layerClock ?? { t0: this._t, offset: 0, dur: 0.6, antic: 0.2 };
-        let t = act ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt; t = remiseClock(pl, act, t);   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
+        let t = act && !pl._elanTail ? act.t : (this._t - meta.t0 + meta.offset); const tCt = contactClock(pl, meta, t, dtP, this._t); if (tCt != null) t = tCt; t = remiseClock(pl, act, t);   // la chute tient au sol et se relève à l'heure sim, le bouclier tient (lot A10)
         // LE TACLEUR RESTE AU SOL tant que la sim le dit (p.down = récupération) : l'horloge du
         // clip se GÈLE sur la pose couchée (clé « au sol ») au lieu de dérouler le relevé — le
         // sweep a mesuré des tacleurs qui « glissaient » puis se relevaient pendant que la sim
