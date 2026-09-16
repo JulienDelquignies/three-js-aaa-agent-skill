@@ -22,7 +22,7 @@ import { makeMatch, matchCfg, matchStep, checkMatch, MATCH } from '../engine/mat
 import { byId as TECHNIQUES_BY_ID } from '../engine/technique.js'; import { rolesGrille } from '../engine/roles.js';
 import { warpEnvelope, planWarp, planWarp3, warpReach, twoBoneIK, checkStrikeWarp, WARP, HAND_WARP } from '../engine/strike-warp.js';
 import { Gaze, pickGazeTarget, gazeRng, checkGaze } from '../engine/gaze.js'; import { gaitStyleFromSeed } from '../engine/motion-gait.js'; import { idleStyleFromSeed } from '../engine/motion-idle.js';
-import { aimChildAt } from '../engine/foot-lock.js';
+import { aimChildAt } from '../engine/foot-lock.js'; import { strikeWarpPlan, strikeWarpApply } from './rondo-warp.js';
 import { buildRondoGrid, ballMesh } from './rondo-props.js';
 import { makeTicker } from './ticker.js';
 
@@ -699,79 +699,9 @@ export class Rondo {
     aimChildAt(leg.knee, leg.foot, this._wm.fromArray(sol.end));
   }
 
-  _applyStrikeWarp(pl) {
-    if (pl.sim.act?.payload?.mains) return;                        // un lancer n'a pas de pied de frappe (lot A9)
-    const a = pl.sim.act;
-    if (!a || a.payload?.kind !== 'pass' || !a.payload.pick) { pl._warp = null; pl._warpCal = null; return; }
-    const foot = a.payload.pick.foot === 'left' ? 'left' : 'right';
-    const clKey = `${pl.rig}:${a.id}:${foot}`;
-    const leg = pl.legs?.[foot], lens = pl.legLens?.[foot];
-    if (!leg?.up || !leg.knee || !leg.foot || !lens) return;
-
-    // ---- CALIBRATION EN LIGNE. Le pied lu ICI est la pose PURE du clip de cette image (le mixer
-    // ré-écrit chaque os à chaque update : le warp de l'image précédente est déjà effacé). On garde
-    // la dernière image d'avant-contact ; au passage du tir, on interpole les deux images qui
-    // encadrent l'instant exact et on verse en moyenne mobile — la vérité composée, mesurée sur le
-    // jeu réel, par (clip × pied × rig). Un probe hors pile a été essayé : il mesurait une ombre.
-    leg.foot.getWorldPosition(this._wf);
-    if (!a.fired) {
-      this._wv.copy(this._wf); pl.model.worldToLocal(this._wv);
-      pl._warpCal = { t: a.t, local: [this._wv.x, this._wv.y, this._wv.z] };
-    } else if (pl._warpCal && pl._warpCal.t < a.anticipation) {
-      const c0 = pl._warpCal; pl._warpCal = null;
-      this._wv.copy(this._wf); pl.model.worldToLocal(this._wv);
-      const u = Math.max(0, Math.min(1, (a.anticipation - c0.t) / Math.max(1e-4, a.t - c0.t)));
-      const at = [c0.local[0] + (this._wv.x - c0.local[0]) * u,
-                  c0.local[1] + (this._wv.y - c0.local[1]) * u,
-                  c0.local[2] + (this._wv.z - c0.local[2]) * u];
-      const prev = this._contactLive.get(clKey);
-      this._contactLive.set(clKey, prev ? prev.map((v, i) => v + (at[i] - v) * 0.4) : at);
-    }
-    const cl = this._contactLive.get(clKey);
-    if (!cl) { this._warpStats.denied['warp-non-calibré'] = (this._warpStats.denied['warp-non-calibré'] ?? 0) + 1; return; }
-
-    const env = warpEnvelope(a.t, a.anticipation);
-    if (env <= 0) { pl._warp = null; return; }
-    // le poids réel des jambes du geste module l'enveloppe : le warp corrige la jambe du geste
-    // dans la proportion où le geste la possède (pleine dès ~0,85 — au contact le poids y est)
-    const s = env * Math.min(1, (pl._wLegs ?? 1) / 0.85);
-    if (s <= 1e-3) return;
-    let plan = pl._warp;
-    if (!a.fired) {
-      // avant le contact : re-viser chaque image — les DEUX cibles convergent (le corps s'assied
-      // sur l'ancre, le ballon porté converge vers le point de stance), l'offset converge avec
-      this._wv.fromArray(cl); pl.model.localToWorld(this._wv);
-      const b = this.state.ball.p;
-      plan = planWarp([this._wv.x, this._wv.z], [b[0], b[2]]);
-      pl._warp = plan;
-      if (plan.denied) this._warpStats.denied[plan.denied] = (this._warpStats.denied[plan.denied] ?? 0) + 1;
-    }
-    if (!plan || (plan.denied && plan.mag <= 0)) return;
-    this._wt.set(this._wf.x + plan.offset[0] * s, this._wf.y, this._wf.z + plan.offset[1] * s);
-    leg.up.getWorldPosition(this._wh); leg.knee.getWorldPosition(this._wk);
-    if (!warpReach([this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B)) {
-      // ÉCRÊTER, PAS REFUSER : le refus binaire annulait TOUTE la correction pile aux images où le
-      // pied est le plus tendu — c'est-à-dire exactement AU CONTACT (mesuré au sweep : 62 % des
-      // passes avec au moins un refus de portée dans ±0,05 s du contact). La fraction atteignable
-      // vaut mieux que rien ; le reliquat reste une dette NOMMÉE au registre.
-      const d = this._wh.distanceTo(this._wt);
-      const R = (lens.A + lens.B) * 0.995;
-      this._wt.set(
-        this._wh.x + (this._wt.x - this._wh.x) * (R / d),
-        this._wh.y + (this._wt.y - this._wh.y) * (R / d),
-        this._wh.z + (this._wt.z - this._wh.z) * (R / d),
-      );
-      this._warpStats.denied['warp-écrêté-portée'] = (this._warpStats.denied['warp-écrêté-portée'] ?? 0) + 1;
-    }
-    if (!a.fired && this._warpStats.mags.length < 4000) { this._warpStats.n++; this._warpStats.mags.push(plan.mag); }
-    // même primitive que foot-lock : IK deux os, plan de pliage du genou = celui du clip
-    const sol = twoBoneIK(
-      [this._wh.x, this._wh.y, this._wh.z], [this._wt.x, this._wt.y, this._wt.z], lens.A, lens.B,
-      [this._wk.x - this._wh.x, this._wk.y - this._wh.y, this._wk.z - this._wh.z],
-    );
-    aimChildAt(leg.up, leg.knee, this._wm.fromArray(sol.mid));
-    aimChildAt(leg.knee, leg.foot, this._wm.fromArray(sol.end));
-  }
+  /** Le warp de frappe vit dans rondo-warp.js (lot B1) : phase 1 AVANT le verrou (calibration,
+   *  amorce, plan, fente du bassin, cible), phase 2 APRÈS (l'IK de la jambe frappeuse). */
+  _applyStrikeWarp(pl) { strikeWarpApply(this, pl); }
 
   /** The broadcast camera: it TRACKS the ball with lag and a touch of overshoot, the way a real
    *  operator pans. Copying that lag buys more perceived realism than any shader. */
@@ -1140,6 +1070,7 @@ export class Rondo {
       // 0,77 m par appui — le patin qui fait LIRE le jeu trop vite). Actif à toute allure ; la
       // jambe frappeuse est MASQUÉE pendant un geste (elle appartient à la couche + au warp), le
       // pied d'appui garde son verrou.
+      strikeWarpPlan(this, pl);   // B1 : la cible du warp et la fente du bassin AVANT le verrou (qui re-plante l'appui)
       {
         const act2 = pl.sim.act;
         const striking = act2?.payload?.pick ? (act2.payload.pick.foot === 'left' ? 0 : 1) : -1;

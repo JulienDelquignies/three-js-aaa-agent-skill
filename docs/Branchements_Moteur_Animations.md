@@ -39,7 +39,19 @@ manquent et les branchements qu'elles exigeront).
    `rondo-remises.js`) au lieu de gonfler. Trois copies du moteur synchronisées par `cp`
    (showcase → starter → soldier-volley), `verify-sync.mjs` 9/0.
 
-## 1. Le pied sur le ballon (A2 bis) — le premier à faire
+## 1. Le pied sur le ballon (A2 bis) — LIVRÉ (16/09, note 371, reference/51 § B1)
+
+- **Livré, scène seule** : `scenes/rondo-warp.js` (le warp de frappe en deux phases autour du verrou
+  des pieds) — l'amorce de calibration par le clip généré, la calibration à l'image du tir, la fente
+  du bassin (`hipsNudge`, ≤ 15 cm + 6 cm d'assise, avant le verrou). Mesuré à l'image du tir, ballon
+  d'avant le coup : creux pied→surface 0,9 / 4,4 / 5,7 cm (13 frappes ; sans la fente 7,0 / 7,8 /
+  10,8), cheville→centre 0,164 m (hier 0,30), 0 image non calibrée, 1 écrêtée ; clause dure dans
+  audit-membres (18/0). Le mécanisme était (b) — la portée — plus la calibration biaisée d'hier
+  (interpolée à l'instant sim, 8-10 cm en arrière du contact composé), pas (a) : le corps EST à sa
+  stance au tir (0,53-0,57 m du ballon sur 50 frappes, stance 0,58) ; la loi sim « le tir attend le
+  pied » n'est pas écrite, faute de preuve (à re-mesurer sur les rigs du mode plein). Reste : la
+  queue (3 frappes sur 13 à 7-9 cm), la passePivot sans plan.
+- *(le plan d'origine, gardé pour mémoire)*
 
 - **Mesuré** (match11, graine 3, 21 frappes instrumentées à l'image du tir, lot A2) : l'orteil est à
   30 cm du centre du ballon en médiane, 4-11 cm sur les bonnes, 48 sur les mauvaises ; le warp est

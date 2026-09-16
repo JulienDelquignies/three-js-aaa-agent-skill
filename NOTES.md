@@ -12248,6 +12248,47 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      44/1 (246d), identification 1/0, signes 9/0 (mort silencieuse au premier
      essai, six bancs + un build en même temps — relancé seul). Le banc
      complet vaut donc 810 ✓ / 1 ✗ sur 811 clauses.
+- 371: LE PIED SUR LE BALLON (lot B1 = A2 bis, le premier branchement du doc —
+     « après ça tu peux attaquer les branchements au moteur »). L'instrument à
+     l'image du tir (match11, graine 3, 12-13 frappes par passe de 60 s) a
+     classé les 25 d'hier : la cible du warp dépassait la portée de la jambe
+     sur TOUTES (1,09-1,34 × A+B, 122 images écrêtées) et la première frappe
+     de chaque clip × pied × rig jouait sans calibration (132 images « non
+     calibré ») — le corps, lui, EST à sa stance au tir (0,53-0,57 m du ballon
+     sur 50 frappes, stance 0,58) : la loi sim « le tir attend le pied » n'a
+     pas de preuve, elle n'est pas écrite. Trois réponses, scène seule
+     (scenes/rondo-warp.js, extrait de Rondo.js au plafond — 1 248 → 1 179
+     lignes —, en deux phases autour du verrou des pieds : strikeWarpPlan
+     avant, strikeWarpApply après). (1) L'AMORCE : le clip généré connaît son
+     contact — FK du profil à spec.contact (resolveDense / sampleQ / sampleHips
+     exportés de motion-strike, synchro ×3), le pied en repère modèle (= repère
+     personnage), le gauche par le spec miroir ; la moyenne mobile reprend
+     dessus (écart amorce / mesure 1,3-2,5 cm après cinq frappes — le repère
+     est le bon). (2) LA CALIBRATION À L'IMAGE DU TIR, pas interpolée à
+     l'instant sim anticipation : la fusion pose le contact du clip SUR le tick
+     du tir ; l'interpolation d'hier (u ≈ 0,2) mesurait le pied 8-10 cm en
+     arrière, le plan visait 10 cm trop loin et le pied traversait (cheville à
+     0,125 m du centre pour un standoff de 0,18). (3) LA FENTE DU BASSIN :
+     quand la cible enveloppée dépasse la jambe, hipsNudge avance le bassin
+     vers elle du rayon manquant à cette hauteur (≤ 15 cm) et l'assied (6 cm à
+     la fente pleine), AVANT le verrou qui re-plante l'appui (la jambe d'appui
+     s'étire, le genou plie). Mesuré à l'image du tir, ballon d'avant le coup,
+     segment cheville → orteil contre la surface (13 frappes) : creux 0,9 /
+     4,4 / 5,7 cm (p25 / méd / p75), cheville → centre 0,153 / 0,164 / 0,182 m
+     (standoff 0,18), l'orteil à la hauteur du centre (0,108 m), 1 image
+     écrêtée, 0 non calibrée ; sans la fente sur le même build : 7,0 / 7,8 /
+     10,8 cm, orteil 8 cm au-dessus, 64 écrêtées ; hier : cheville → centre
+     0,30 m médian. L'appui reste planté au tir (0,10 m, aucune levée sur 13).
+     Le banc : audit-membres, clause dure « le pied est sur le ballon » (creux
+     ∈ [−4 ; 12] cm — la largeur d'un pied — sur les trois épisodes du rondo :
+     0,5 / 8,2 / 9,7), 18/0 — et son instrument corrigé : l'épisode 3 jugeait
+     une feintePasse TIRÉE dans le tampon d'avant l'armé (appui à 0,31 m, pied
+     à 0,3 m/s) pour le contact de la passe ; iStart / iFire se cherchent
+     depuis l'image de l'armé, sur le geste de l'épisode (loi 8 : encore
+     l'instrument). Capture b1-pied-sur-ballon-cote (l'image du tir, de
+     côté). Dettes nommées : la queue (3 frappes sur 13 à 7-9 cm), la
+     passePivot sans plan (warp-hors-borne), et au-delà de 15 cm de fente le
+     placement sim du corps — à re-mesurer sur les rigs du mode plein.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

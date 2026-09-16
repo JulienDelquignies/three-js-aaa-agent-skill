@@ -81,7 +81,7 @@ const episodes = await page.evaluate(async () => {
       // frappe : « l'appui posé au contact » et l'amplitude du genou sont des clauses de frappe)
       const w = S.state.events.slice(nEv).find((x) => x.type === 'windup' && x.by === carrier && x.foot && !x.skill);
       if (w && i > 300) {
-        current = { by: w.by, move: w.move, foot: w.foot, tech: w.tech, antic: w.anticipation, frames: [...ring], post: 0 };
+        current = { by: w.by, move: w.move, foot: w.foot, tech: w.tech, antic: w.anticipation, frames: [...ring], ringN: ring.length, post: 0 };   // ringN : l'image de l'armé (B1 — le tampon peut porter un geste TIRÉ d'avant)
       }
     } else if (current) {
       current.frames.push(snap(current.by));
@@ -106,8 +106,12 @@ const ang = (a, b, c) => {
 ok(`3 épisodes capturés (${episodes.length})`, episodes.length >= 3);
 for (const [ei, ep] of episodes.entries()) {
   const F = ep.frames, dt = 1/60;
-  const iStart = F.findIndex((f) => f.act);
-  const iFire = F.findIndex((f) => f.act && f.act.fired);
+  // L'ACTE DE L'ÉPISODE, cherché depuis l'image de l'armé et sur SON geste (B1, note 371) : le tampon
+  // roulant d'avant l'armé portait une feintePasse tirée 10 images plus tôt — « l'appui posé » jugeait
+  // le pied lancé de la feinte (0,31 m, pied à 0,3 m/s) pour le contact de la passe. Loi 8 : l'instrument.
+  const iW = Math.max(0, (ep.ringN ?? 1) - 1);
+  const iStart = F.findIndex((f, i) => i >= iW && f.act && f.act.id === ep.move);
+  const iFire = F.findIndex((f, i) => i >= Math.max(iW, iStart) && f.act && f.act.fired && f.act.id === ep.move);
   const strike = ep.foot === 'right' ? 'RightFoot' : 'LeftFoot';
   const support = ep.foot === 'right' ? 'LeftFoot' : 'RightFoot';
   const phase = (i) => i < iStart ? 'approche' : (iFire < 0 || i < iFire) ? 'armé' : 'suite';
@@ -213,6 +217,19 @@ for (const [ei, ep] of episodes.entries()) {
     const bAt = c.ball;
     let minD = 9; for (let i = iStart; i < Math.min(F.length, iFire + 6); i++) minD = Math.min(minD, H(F[i].bones[strike], bAt));
     const vC = H(F[iFire-1].bones[strike], F[iFire].bones[strike]) / dt;
+    // LE PIED SUR LE BALLON (lot B1, note 370) : à l'IMAGE DU TIR (la fusion pose le contact du clip sur
+    // le tick du tir), le segment du pied frappeur (cheville → orteil) contre la SURFACE du ballon tel
+    // qu'il était avant le coup — creux en 3D, mètres ; ≤ 0 traverse, ~0,04 touche (la demi-largeur
+    // du pied), > 0,12 de l'air visible (la largeur d'un pied). Mesuré en page (13 frappes) : 0,009 / 0,044 / 0,057 avec la
+    // fente du bassin et l'amorce, 0,070 / 0,078 / 0,108 sans la fente ; hier cheville→centre 0,30 m.
+    {
+      const fb = F[iFire].bones[strike], tb = F[iFire].bones[strike.replace('Foot', 'ToeBase')] ?? fb;
+      const ab = [tb[0] - fb[0], tb[1] - fb[1], tb[2] - fb[2]], ap = [bAt[0] - fb[0], bAt[1] - fb[1], bAt[2] - fb[2]];
+      const L2 = ab[0] ** 2 + ab[1] ** 2 + ab[2] ** 2 || 1e-9, u = Math.max(0, Math.min(1, (ap[0] * ab[0] + ap[1] * ab[1] + ap[2] * ab[2]) / L2));
+      const creux = Math.hypot(bAt[0] - fb[0] - ab[0] * u, bAt[1] - fb[1] - ab[1] * u, bAt[2] - fb[2] - ab[2] * u) - 0.11;
+      ok(`  LE PIED EST SUR LE BALLON à l'image du tir (creux pied→surface ${(creux * 100).toFixed(1)} cm ∈ [−4 ; 12] ; cheville→centre ${H(fb, bAt).toFixed(3)} m, standoff 0,18 ; cheville y ${fb[1].toFixed(2)})`,
+        creux >= -0.04 && creux <= 0.12);
+    }
     let above = 0, nn = 0;
     for (let i = iStart; i < F.length; i++) { nn++; const b = F[i].bones; if (b.LeftHand[1] > b.Neck[1] || b.RightHand[1] > b.Neck[1]) above++; }
     console.log(`  INFO clips: pied→frappe min ${minD.toFixed(2)} m | vitesse pied au contact ${vC.toFixed(1)} m/s (réel: 15-25) | appui→ballon ${H(c.bones[support], bAt).toFixed(2)} m (stance ~0,30) | mains>cou ${(100*above/nn).toFixed(0)}%`);

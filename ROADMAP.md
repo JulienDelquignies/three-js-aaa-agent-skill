@@ -218,14 +218,16 @@
   deux hommes du mur arment 'sautMur' — motion-emotion — quand le ballon part, plantés, retard de réaction dans l'acte) ; null = hier.
 - LIVRÉ (note 369, reference/59 § A10 quater, verify-contact 39/0, verify-emotion 45/0) : LE RELEVÉ AIDÉ — aide.js (cfg.sol.aide) : le jeu arrêté, le
   coéquipier le plus proche qui peut arriver avant le relevé vient se poster au fauché et lui tend la main ('mainTendue', motion-emotion) ; null = hier.
+- LIVRÉ (note 371, reference/51 § B1, audit-membres 18/0) : LE PIED SUR LE BALLON (B1 = A2 bis, le premier branchement du doc) —
+  scenes/rondo-warp.js (le warp de frappe en deux phases autour du verrou) : l'amorce de calibration par le clip généré, la
+  calibration à l'image du tir, la fente du bassin (hipsNudge ≤ 15 cm + 6 cm d'assise) ; creux pied→surface 4,4 cm médian (hier
+  cheville→centre 0,30 m), 0 image non calibrée, 1 écrêtée sur 13 frappes ; le corps est à sa stance : pas de loi sim.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
 - SUIVANT, dans l'ordre (« ok vas-y suis ton plan ») — l'ordre proposé est ÉPUISÉ ; restent : (A10 ter) la tenue de balle dos au but
   (une loi moteur : le bouclier n'a pas de durée en jeu) ; (A11 ter) le salut et la poignée d'avant-match, l'accolade les mains plus basses,
-  la carte plus lisible. Et les dettes : (A2 bis) LE PIED RATE LE BALLON — à l'image du tir l'orteil est à 30 cm du centre du ballon en
-  médiane en match (mesuré lot A2 : 4-11 cm sur les bonnes, 48 sur les mauvaises, warp engagé 14/21) : le warp de frappe ne ramène pas le
-  pied au ballon en match, à instrumenter (planWarp : heure du plan, standoff 0,13, warpMax 0,42) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 ter) le
+  la carte plus lisible. Et les dettes : (A2 bis) LIVRÉ au B1 (note 371) — reste la queue (3 frappes sur 13 à 7-9 cm de creux, la passePivot sans plan) et, au-delà de 15 cm de fente, le placement sim du corps (mesuré à sa stance aujourd'hui, à re-mesurer sur les rigs du mode plein) ; (A6 bis) la retournée quand la sim la déclenchera ; (A7 ter) le
   port des bras en course, le verrou de pieds calibré sur la foulée générée, le pas croisé du
   virage serré ; (A5) la stance
   dérivée et les bandes de la sim (la géométrie corps-ballon est une entrée du moteur — STANCES

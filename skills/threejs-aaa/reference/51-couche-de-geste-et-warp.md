@@ -80,6 +80,42 @@ Quatre lois, chacune avec sa clause et son sabotage :
 L'application IK réutilise les primitives de foot-lock (`twoBoneIK` + `aimChildAt` exporté) — une
 seule façon de poser une jambe dans ce moteur.
 
+## B1 — le pied sur le ballon (scenes/rondo-warp.js, note 371)
+
+Le warp de frappe de la scène vit dans `scenes/rondo-warp.js` (extrait de Rondo.js, au plafond), en
+deux phases autour du verrou des pieds : `strikeWarpPlan` AVANT (calibration, amorce, plan, fente,
+cible), `strikeWarpApply` APRÈS (l'IK deux os de la jambe frappeuse). Trois lois de plus, mesurées à
+l'image du tir (match11, graine 3, 13 frappes par passe de 60 s, le ballon d'avant le coup) :
+
+5. **L'amorce.** Le clip GÉNÉRÉ connaît son contact : FK du profil à `spec.contact`
+   (`resolveDense`/`sampleQ`/`sampleHips` exportés de motion-strike), le pied en repère modèle
+   (= repère personnage : droite +X, haut +Y, avant −Z ; le gauche par le spec miroir « -gauche »).
+   La moyenne mobile en ligne reprend par-dessus — écart amorce/mesure 1,3-2,5 cm après cinq
+   frappes : le repère est le bon. Hier : 132 images « non calibré » sur 25 frappes, la première
+   frappe de chaque clip × pied × rig jouait sans warp.
+6. **La calibration à l'image du tir.** La fusion (rondo-fusion) pose le contact du clip SUR le
+   tick du tir : la pose pure de cette image EST le contact composé. Interpoler à l'instant sim
+   `anticipation` (u ≈ 0,2 entre les deux images) mesurait le pied 8-10 cm en arrière (amorce
+   z −0,29 c. moyenne mobile −0,19) : le plan visait 10 cm trop loin et le pied traversait le
+   ballon (cheville à 0,125 m du centre pour un standoff de 0,18, creux médian −1 cm).
+7. **La fente du bassin.** Quand la cible enveloppée dépasse la portée de la jambe (mesuré hier :
+   1,09-1,34 × A+B sur TOUTES les frappes, 122 images écrêtées), `hipsNudge` avance le bassin vers
+   elle du rayon manquant à cette hauteur (≤ 15 cm, `LUNGE.max`) et l'assied (6 cm à la fente
+   pleine, `LUNGE.drop`), AVANT le verrou qui re-plante l'appui : la jambe d'appui s'étire, le
+   genou plie — un corps qui va chercher un ballon un peu loin. Le reliquat reste écrêté (1 image
+   sur 13 frappes, contre 48-119 sans la fente).
+
+Mesuré, segment cheville→orteil contre la surface du ballon, creux p25 / méd / p75 : 0,9 / 4,4 /
+5,7 cm avec, 7,0 / 7,8 / 10,8 sans la fente sur le même build ; cheville→centre 0,164 m médian
+(hier 0,30) ; l'orteil à la hauteur du centre du ballon (0,108 m ; sans la fente 8 cm au-dessus) ;
+l'appui planté au tir (0,10 m, aucune levée sur 13). Clause dure dans audit-membres : creux
+∈ [−4 ; 12] cm à l'image du tir sur les trois épisodes du rondo (0,5 / 8,2 / 9,7) — et son
+instrument corrigé : l'épisode se juge depuis l'image de l'armé, sur SON geste (le tampon portait
+une feintePasse tirée dix images plus tôt ; « l'appui posé » jugeait son pied lancé). Dettes
+nommées : la queue (3 frappes sur 13 à 7-9 cm), la passePivot sans plan (`warp-hors-borne`), et
+au-delà de 15 cm de fente c'est le placement sim du corps — mesuré à sa stance aujourd'hui
+(0,53-0,57 m du ballon au tir sur 50 frappes, stance 0,58) : pas de loi sim sans preuve.
+
 ## Les leçons portables (n'importe quel jeu de foot, n'importe quel rig)
 
 - **Les signes articulaires se sondent, jamais ne se croient** : une rotation à la fois, FK nue,
