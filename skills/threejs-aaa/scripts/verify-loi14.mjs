@@ -49,7 +49,7 @@ const penaltyWorld = (seed, cfg) => {
 
 // ---------- 1. la CÉRÉMONIE (photo à la prise) + la LIGNE + la FRAPPE
 for (const seed of [3, 7]) {
-  const { photo, evs } = penaltyWorld(seed, matchCfg({ shotRange: 20 }));
+  const { photo, evs } = penaltyWorld(seed, matchCfg({ ceremonie: null,  shotRange: 20 }));
   ok(`graine ${seed} — la cérémonie est PROPRE à la prise (surface ${photo?.enSurface} = 0, arc ${photo?.dansArc} = 0, devant le ballon ${photo?.devant} = 0 — corps hors preneur et gardien de la ligne)`,
     !!photo && photo.enSurface === 0 && photo.dansArc === 0 && photo.devant === 0);
   ok(`graine ${seed} — le gardien TIENT SA LIGNE (${photo?.gkLigne.toFixed(2)} m ≤ 0,6 de la ligne, |z| ${photo?.gkZ.toFixed(1)} ≤ poteaux — était 1,81 m devant sans la loi)`,
@@ -63,7 +63,7 @@ for (const seed of [3, 7]) {
 
 // ---------- 2. sabotage nommé « cérémonie foraine » : loi14:false → le monde d'hier, mesuré
 {
-  const { photo } = penaltyWorld(3, matchCfg({ shotRange: 20, loi14: false }));
+  const { photo } = penaltyWorld(3, matchCfg({ ceremonie: null,  shotRange: 20, loi14: false }));
   ok(`sabotage « cérémonie foraine » attrapé (loi14:false : gardien à ${photo?.gkLigne.toFixed(2)} m > 1 de sa ligne, ${(photo?.enSurface ?? 0) + (photo?.dansArc ?? 0) + (photo?.devant ?? 0)} violation(s) de cérémonie ≥ 1 — coéquipiers vers le point, la remise générique nommée)`,
     !!photo && photo.gkLigne > 1 && (photo.enSurface + photo.dansArc + photo.devant) >= 1);
 }
@@ -71,7 +71,7 @@ for (const seed of [3, 7]) {
 // ---------- 3. la loi est UNE CLÉ DE TYPE : le coup franc sous loi14 garde SON mur (Loi 13)
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
   for (let i = 0; i < 8 * 60 && !(st.phase === 'carry' && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   const og = st.pitch.ownGoal(1);
   const rp = [og.x - og.sign * 24, 3];

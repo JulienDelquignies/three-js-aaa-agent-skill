@@ -451,7 +451,7 @@ export function movePlayers(st, dt, cfg) {
         if (d > (cfg.contact.jockey.d ?? 4.5) || d < 0.3 || p.speed > (cfg.contact.jockey.vMax ?? 3.5)) return false;
         const along = p.speed > 0.25 ? (p.v[0] * dx + p.v[1] * dz) / (p.speed * d) : 0;
         return along < 0.5 ? [dx, dz] : false; })();
-    if (p.speed > 0.25 && !sePres && !regardGk && !jockey) {
+    if (p.speed > 0.25 && !sePres && !regardGk && !jockey && p._regard == null) {   // (A11 ter) le regard TENU (p._regard) pilote le cap même en marche : le pas devient chassé
       // LE YAW NE SE TÉLÉPORTE JAMAIS (lot 139, cfg.yawSlew && st.full — mesuré : pic p50
       // 807°/s, p90 6 168°/s autour des prises, 31 % des contrôles retournent > 90° en une
       // frame : quand p.v s'inverse à la prise, le cap la suivait INSTANTANÉMENT ; réel
@@ -513,6 +513,7 @@ export function movePlayers(st, dt, cfg) {
       // LUI-MÊME sur le ballon — le pas chassé a toujours une cible de regard.
       p.yawWant = Math.atan2(st.ball.p[2] - p.p[2], st.ball.p[0] - p.p[0]);
     }
+    if (p._regard != null) p.yawWant = p._regard;   // (A11 ter, ceremonie.js) LE REGARD TENU : la file des poignées défile face à la rangée, le salut se tourne vers la tribune — null : l'hier au bit
     // A TURN TAKES TIME — this is the ONE place a facing may change, and it can only change at a
     // bounded rate. A first touch used to write `p.yaw = atan2(...)` directly: the man was simply
     // pointing somewhere else on the next frame, 180° in zero seconds. Nothing in the animation can

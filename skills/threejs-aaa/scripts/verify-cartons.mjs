@@ -31,7 +31,7 @@ const siffle = (st, cfg, par) => {
 
 // ---------- 1. la récidive : rien, puis JAUNE, puis SECOND JAUNE → ROUGE
 {
-  const cfg = matchCfg({ shotRange: 20, carton: null /* carton null DATÉ 257 : ce banc mesure la RÉCIDIVE du 25 (jaune à 2, second jaune rouge) ; le monde 257 juge la nature au flux */ });
+  const cfg = matchCfg({ ceremonie: null,  shotRange: 20, carton: null /* carton null DATÉ 257 : ce banc mesure la RÉCIDIVE du 25 (jaune à 2, second jaune rouge) ; le monde 257 juge la nature au flux */ });
   const st = settle(3, cfg);
   const par = st.players.find((q) => q.team === 1 && !q.keeper).id;
   siffle(st, cfg, par);
@@ -56,7 +56,7 @@ const siffle = (st, cfg, par) => {
 
 // ---------- 2. le carton SURVIT à l'avantage (l'arbitre montre au fautif, le jeu a joué)
 {
-  const cfg = matchCfg({ shotRange: 20, carton: null /* carton null DATÉ 257 : ce banc mesure la RÉCIDIVE du 25 (jaune à 2, second jaune rouge) ; le monde 257 juge la nature au flux */ });
+  const cfg = matchCfg({ ceremonie: null,  shotRange: 20, carton: null /* carton null DATÉ 257 : ce banc mesure la RÉCIDIVE du 25 (jaune à 2, second jaune rouge) ; le monde 257 juge la nature au flux */ });
   const st = settle(3, cfg);
   const par = st.players.find((q) => q.team !== st.possession.team && !q.keeper).id;
   for (let k = 0; k < 2; k++) {
@@ -72,7 +72,7 @@ const siffle = (st, cfg, par) => {
 
 // ---------- 3. sabotage nommé « arbitre sans poches » : jaune:0 → des fautes, aucun carton
 {
-  const cfg = matchCfg({ shotRange: 20, carton: null, loi12: { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 0 } });
+  const cfg = matchCfg({ ceremonie: null,  shotRange: 20, carton: null, loi12: { avantage: 1.8, contact: 0.9, mur: 9.15, jaune: 0 } });
   const st = settle(3, cfg);
   const par = st.players.find((q) => q.team === 1 && !q.keeper).id;
   for (let k = 0; k < 4; k++) siffle(st, cfg, par);

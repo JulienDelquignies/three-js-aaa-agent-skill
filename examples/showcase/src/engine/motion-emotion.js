@@ -38,6 +38,10 @@ export const EMOTION_KINDS = {
   // (A9 ter) LE MUR QUI SAUTE : accroupi, détente, les deux pieds décollés au sommet (contact), les mains croisées devant le bas-ventre, réception
   sautMur:    { duration: 0.78, contact: 0.34, ownsLegs: true, saut: true, crouch: 0.11, h: 0.36, tuck: 0.22, elev: -26, fwd: 22, elbow: 32, lean: 4 },   // elev < 0 : les bras se croisent devant le bas-ventre (mesuré : mains à 5 cm l'une de l'autre, +16 cm au-dessus du bassin, 18 cm devant)
   accolade:   { duration: 1.5, contact: 0.35, upperOnly: true, hold: 1.0, elev: -14, fwd: 80, elbow: 62, lean: 10, rot: -10 },
+  // (A11 ter) LA POIGNÉE DE MAIN debout (la file d'avant-match, ceremonie.js) : le bras droit tendu devant à hauteur de ceinture-poitrine, tenu, sans tirer — la scène joint les deux mains (rondo-fete.poigneeWarp)
+  serrerMain: { duration: 1.2, contact: 0.3, hold: 0.85, pull: 0, upperOnly: true, lean: 5, elev: 6, fwd: 46, elbow: 40, headDown: 3 },
+  // (A11 ter) LE SALUT AU PUBLIC (le sifflet final, ceremonie.js) : le bras droit levé haut, l'avant-bras qui balance (wave Hz), la gauche calme
+  saluer:     { duration: 2.4, contact: 0.4, hold: 2.0, upperOnly: true, elev: 150, fwd: 20, elbow: 24, wave: 2.5, headUp: 6 },
   applaudir:  { duration: 1.2, contact: 0.20, upperOnly: true, claps: 3, elev: 22, fwd: 62, elbow: 92 },
   proteste:   { duration: 1.6, contact: 0.35, upperOnly: true, hold: 1.2, elev: 42, fwd: 28, elbow: 72, shrug: 9, shake: 14 },
 };
@@ -78,6 +82,15 @@ export function generateEmotion(kindName, P, { style = NEUTRAL_STYLE } = {}) {
       return { J, hips: [0, 0, 0] };
     };
     marks = [p1, p2];
+  } else if (kindName === 'saluer') {
+    const on = (t) => ramp(t, 0, 0.55 * tc, tc) * (1 - ramp(t, K.hold, (K.hold + T) / 2, T));
+    poseAt = (t) => {
+      const a = on(t), w = Math.sin((t - tc) * (K.wave ?? 2.5) * 2 * Math.PI) * a, J = {};
+      trunk(J, { lean: -3 * a, headPitch: K.headUp * a });
+      Object.assign(J, armAt('Right', NEUTRAL_ARM, { elev: K.elev * Math.min(A, 1.06) + 6 * w, fwd: K.fwd, elbow: K.elbow + 22 * (0.5 + 0.5 * w), rot: 10 * w }, a), armAt('Left', NEUTRAL_ARM, { elev: 14, fwd: 8, elbow: 20 }, a));
+      return { J, hips: [0, 0, 0] };
+    };
+    marks = [tc, K.hold];
   } else if (kindName === 'brasLeves') {
     const on = (t) => ramp(t, 0, 0.55 * tc, tc) * (1 - ramp(t, K.hold, (K.hold + T) / 2, T));
     poseAt = (t) => {
@@ -142,7 +155,7 @@ export function generateEmotion(kindName, P, { style = NEUTRAL_STYLE } = {}) {
       J.LeftShoulder = rz(K.shrug * a); J.RightShoulder = rz(-K.shrug * a);   // les épaules qui montent
       return { J, hips: [0, -0.01 * a, 0] };
     };
-  } else if (kindName === 'mainTendue') {
+  } else if (kindName === 'mainTendue' || kindName === 'serrerMain') {
     // (C2) LA MAIN QUI TIRE : tendue devant (contact), tenue (hold), puis le bras REVIENT et le buste se redresse (pull — le fauché
     // se relève à la main, la scène rejoint les deux mains au point médian), le retour au neutre ensuite. pull absent : le retour d'hier.
     const tP = K.hold + (K.pull ?? 0);
@@ -304,6 +317,20 @@ export function checkEmotionGen(spec, P, kind) {
       if (!(back > 0.12)) issues.push(`mainTendue : la main ne revient pas en tirant (${(100 * back).toFixed(0)} cm vers la poitrine entre la tenue et la fin du tir, ≥ 12)`);
       if (!(q.head[2] > s.head[2] + 0.05)) issues.push(`mainTendue : le buste ne se redresse pas en tirant (tête ${(100 * (q.head[2] - s.head[2])).toFixed(0)} cm en arrière, ≥ 5)`);
     }
+  }
+  if (kind === 'saluer') {   // (A11 ter) la main droite au-dessus de la tête, la gauche en bas, l'avant-bras qui balance (la main change de sens ≥ 3 fois pendant la tenue)
+    const s = p.pick((spec.contact + K.hold) / 2);
+    if (!(s.rh[1] > s.head[1] + 0.08)) issues.push(`saluer : la main droite n'est pas au-dessus de la tête (+${(100 * (s.rh[1] - s.head[1])).toFixed(0)} cm, ≥ 8)`);
+    if (!(s.lh[1] < shoulderY(s) - 0.2)) issues.push('saluer : la main gauche monte au lieu de rester calme');
+    let flips = 0, prev = 0; for (let t = spec.contact + 0.05; t < K.hold; t += 0.04) { const x = p.pick(t).rh[0], d = Math.sign(x - (p.pick(t - 0.04).rh[0])); if (d && prev && d !== prev) flips++; if (d) prev = d; }
+    if (flips < 3) issues.push(`saluer : la main ne balance pas (${flips} changement(s) de sens, ≥ 3)`);
+  }
+  if (kind === 'serrerMain') {   // (A11 ter) la main droite tendue devant à hauteur de ceinture-poitrine, le buste presque droit, la gauche en balancier
+    const s = p.pick((spec.contact + K.hold) / 2);
+    if (!(s.rh[2] < s.chest[2] - 0.22)) issues.push(`serrerMain : la main n'est pas tendue devant (${(100 * (s.chest[2] - s.rh[2])).toFixed(0)} cm devant la poitrine, ≥ 22)`);
+    if (!(s.rh[1] < shoulderY(s) - 0.05 && s.rh[1] > s.pelvis[1] + 0.05)) issues.push(`serrerMain : la main n'est pas à hauteur de poignée (${s.rh[1].toFixed(2)} m ; attendu sous l'épaule, au-dessus du bassin)`);
+    if (!(s.head[2] > p.start.head[2] - 0.10)) issues.push(`serrerMain : le buste se penche trop (tête ${(100 * (p.start.head[2] - s.head[2])).toFixed(0)} cm devant sa place, ≤ 10)`);
+    if (!(s.lh[1] < shoulderY(s) - 0.2)) issues.push('serrerMain : la main gauche monte au lieu de rester en balancier');
   }
   if (kind === 'sautMur') {
     const S = p.pick(spec.contact), C = p.pick(0.10), E = p.end, restF = (p.start.lf[1] + p.start.rf[1]) / 2;

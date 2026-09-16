@@ -153,6 +153,42 @@ revenait toute seule et le fauché se relevait sans la prendre : deux gestes cô
   tendue à son windup) ; la synchronisation est celle d'A10 quater (la main arrive quand le fauché a fait deux tiers de son relevé,
   le tir couvre la fin du relevé et le premier pas debout).
 
+## L'avant-match et les gestes sociaux (A11 ter — Animations_A_Faire § 7 ; `engine/ceremonie.js`, `cfg.ceremonie`, note 381)
+
+- **La file des poignées** (`cfg.ceremonie.poignee`, `ceremonieStep` — appelé en tête du bloc de remise de match-sim, il POSSÈDE la
+  remise tant qu'il rend vrai) : au premier pas du match (l'engagement posé à la construction), l'équipe qui n'engage pas est POSÉE en
+  rangée le long de la médiane dans sa moitié (`rang` 0,42 m de la ligne, `pas` 0,8 m entre les hommes, décalée de `decale` 2,6 m du
+  point central pour laisser le ballon dégagé, le regard vers l'adversaire —
+  yawWant chaque image), l'équipe qui engage en file de l'autre côté (`espace` 0,75 m) ; chaque homme de la file défile DE CÔTÉ face à
+  la rangée (le regard tenu `p._regard`, movement.js : le cap suit le regard même en marche — le pas devient chassé) et serre la main
+  de l'homme d'en face À L'ARRIVÉE (≤ `arrive` 0,3 m : événement `poignee` {by : la file, avec : la rangée}, `tenue` 0,35 s), sans
+  doubler celui de devant (il attend un homme derrière lui) ; au bout de la rangée il trotte (`trot` 2,4 × marche) à sa place
+  d'engagement (la position de construction) ; la rangée part quand le dernier de la file est passé. L'engagement (`r.at`) attend
+  que tous soient à ≤ `marge` 1,2 m de leur place (ou `patience` 60 s), puis `avant` 1,2 s. L'HORLOGE (referee.chronoStep) : la
+  période part au coup d'envoi (`st._ceremonie.fin` s'ajoute à la fin nominale) et la cérémonie n'est pas un arrêt de jeu (les
+  arrêts ne s'accumulent pas tant que `actif`) ; le fil (ticker.js) date à partir du même coup d'envoi.
+- **Les gestes** (motion-emotion, générés) : `serrerMain` (1,2 s, contact 0,3, tenue 0,85 : le bras droit tendu devant à hauteur de
+  ceinture-poitrine, la gauche en balancier — le clip authored `poignee` LEVAIT le bras à 1,7 m sur ce rig) et `saluer` (2,4 s : le bras
+  droit levé haut, l'avant-bras qui balance à 2,5 Hz, la gauche calme — le clip authored `salut` sortait la main à 1 m) ; leurs règles
+  dans `checkEmotionGen` (la main devant ≥ 22 cm entre bassin et épaule ; la main au-dessus de la tête ≥ 8 cm et ≥ 3 changements de sens).
+- **La scène** (rondo-fete.js) : l'événement `poignee` joue `serrerMain` sur les DEUX corps et `poigneeWarp` tire la main droite de
+  chacun vers la main de l'autre (à 15 % de l'écart — le point médian recalculé à chaque passage de la boucle laissait 17 cm), deux IK
+  deux os (`_armTo`, le patron de la main saisie C2), de 0,15 à 0,85 s du clip, MUTUELLEMENT (la rangée serre un nouvel homme toutes
+  les ~0,9 s : on ne tire que vers celui qui nous tient). Mesuré en page : l'écart des mains p50 5,6 cm, p90 7,4, à 1,15 m de haut.
+- **Le salut au public** (`cfg.ceremonie.salut`, `salutStep` au sifflet final — la remise 'fin') : chacun se tourne vers la tribune
+  (`tribune` +1 : z > 0, le regard tenu) et salue (`salut` échelonné de `pas` 0,15 s après `attente` 0,6 s) ; la scène joue `saluer`
+  `duree` 2,8 s puis rend le corps.
+- **La carte** (motion-arbitre `carton`) : tenue 0,3 s de plus (2,3 s, hold 1,85), face au fautif (le regard du central suit `dir`
+  — la loi d'A11 bis) ; la plaque de la scène aux dimensions réelles (8,6 × 12 cm) tenue au bout des doigts (arbitre.js). Dette : la
+  plaque reste dans le plan de la main (vue de face elle se lit de biais).
+- **Les épingles** : la cérémonie change les 40 premières secondes de TOUT match — 33 bancs qui jouent un match épinglent
+  `ceremonie: null` (chaque clause mesure le monde de son jour) ; verify-ceremonie seul la joue.
+- **Contrat** (verify-ceremonie, 8 clauses ; une période de 40 s, le temps additionnel minimum épinglé à 0) : 121 poignées (11 × 11),
+  les places rejointes après 37,5 s, l'engagement pris à 38,5 s (hier 0,4) ; 0,4 s après chaque poignée les deux hommes à ≤ 1,1 m et
+  face à face (100 %) ; à la prise chacun à ≤ 2,5 m de sa place ; les arrêts comptés à la prise 1,0 s et la fin de match à
+  fin + 40 s ; 22 saluts en 3,8 s, tournés vers la tribune (100 %) ; la carte 2,3 / 1,85 ; ceremonie:null → aucune cérémonie,
+  l'engagement à 0,65 s, l'hier ; sabotage rang:3 attrapé (aucune main ne se joint).
+
 ## Bancs
 
 verify-contact 25 → 34 (la pose tenue vit et se ferme ×3, l'horloge en pur ×2, la sim sous cfg.sol ×3, sabotage

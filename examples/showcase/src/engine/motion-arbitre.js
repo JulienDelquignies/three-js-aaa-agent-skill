@@ -18,7 +18,7 @@ import { ramp, emitSpec, armJoints, bodyPortrait, NEUTRAL_STYLE } from './motion
 
 export const ARBITRE_KINDS = {
   siffler:  { duration: 1.3, contact: 0.44, hold: 0.8, upperOnly: true, elev: 30, fwd: 50, elbow: 150, rot: 60, headUp: 6 },
-  carton:   { duration: 2.0, contact: 0.48, hold: 1.55, upperOnly: true, elev: 176, fwd: 6, elbow: 6, headUp: 10 },
+  carton:   { duration: 2.3, contact: 0.48, hold: 1.85, upperOnly: true, elev: 176, fwd: 6, elbow: 6, headUp: 10 },   // (A11 ter) tenu 0,3 s de plus, face au fautif (referee : le regard suit dir)
   designer: { duration: 1.4, contact: 0.34, hold: 1.05, upperOnly: true, elev: 2, fwd: 96, elbow: 4, yaw: 10 },
   avantage: { duration: 1.4, contact: 0.32, hold: 1.05, upperOnly: true, elev: 8, fwd: 62, elbow: 6, sweep: 16, sweeps: 2 },
 };

@@ -263,6 +263,10 @@
   la jambe extérieure croise 3 cm à l'intérieur, le bassin tourne 6°, le tronc contre-tourne), le port des bras en course (coude 90°, la
   main avant à hauteur de poitrine), le verrou de pieds calibré sur la foulée générée (plancher du générateur, bande 2,5 cm : les pics à
   la relâche divisés par deux, 0 recapture) ; contact-sheet --turn.
+- LIVRÉ (note 381, reference/59 § A11 ter, verify-ceremonie 8/0) : L'AVANT-MATCH ET LES GESTES SOCIAUX (§ 7 = A11 ter, engine/ceremonie.js,
+  cfg.ceremonie) — la file des poignées avant le premier engagement (la rangée le long de la médiane, la file qui défile de côté et serre
+  chaque main à l'arrivée, 121 poignées, les mains jointes par la scène), l'horloge qui part au coup d'envoi, le salut au public au sifflet
+  final, la carte tenue 0,3 s de plus ; le regard tenu (p._regard) dans movement ; null = hier au bit.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

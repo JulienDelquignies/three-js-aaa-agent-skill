@@ -84,7 +84,7 @@ au § 0 du jumeau. L'ordre est celui de la valeur visuelle, pondérée par le co
 - **Verrou de pieds.** `foot-lock.js` calibré sur la foulée générée (plancher, bande) : le
   tressaillement de 5 cm au pelage mesuré (reference/52 § dettes).
 
-## 7. L'avant-match et les gestes sociaux (A11 ter)
+## 7. L'avant-match et les gestes sociaux (A11 ter) — LIVRÉ (16/09, note 381, reference/59 § A11 ter, verify-ceremonie 8/0)
 
 - **Gestes.** `salut` (la main levée au public), `poignee` (deux joueurs, les mains droites qui se
   joignent : un geste APPARIÉ comme l'accolade — la scène aligne les deux corps), `applaudir` et

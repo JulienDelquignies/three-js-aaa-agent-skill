@@ -710,9 +710,9 @@ export function chronoStep(st, cfg) {
   // s'accumulent, l'arbitre en rend une fraction (×0,35, plafonnée à 12 % de la période) —
   // et l'annonce est un événement quand la période nominale expire. false : la montre truquée
   // (sabotage nommé — la période coupe pile, les remises ont mangé du jeu).
-  if (st.restart && dt > 0 && !st.fini) C.arrets = (C.arrets ?? 0) + dt;
+  if (st.restart && dt > 0 && !st.fini && !st._ceremonie?.actif) C.arrets = (C.arrets ?? 0) + dt;   // (A11 ter) la cérémonie d'avant-match n'est pas un arrêt de jeu
   const add = ch.additionnel !== false ? (st.full && cfg.temps?.additionnel ? addDe(C.arrets ?? 0, duree, cfg.temps.additionnel, (st.score?.[0] ?? 0) - (st.score?.[1] ?? 0), C.periode >= periodes) : Math.min(duree * 0.12, (C.arrets ?? 0) * 0.35)) : 0;   // LE TEMPS ADDITIONNEL QUI LIT LE MATCH (270, doc temps.js) ; clé absente : la fraction plate d'hier au bit
-  const finNominale = C.periode * duree + (C.periode - 1) * pause;
+  const finNominale = C.periode * duree + (C.periode - 1) * pause + (st._ceremonie?.fin ?? 0);   // (A11 ter) la période part au coup d'envoi qui suit la cérémonie
   if (ch.additionnel !== false && !C.annonce && st.t >= finNominale) {
     C.annonce = true;
     st.events.push({ t: +st.t.toFixed(2), type: 'temps-additionnel', periode: C.periode, sec: +add.toFixed(1) });

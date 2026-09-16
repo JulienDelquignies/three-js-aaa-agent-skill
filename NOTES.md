@@ -12675,3 +12675,32 @@ générée puis validée → « modifiable/personnalisable sans régression ».
 - **Bancs** : verify-foulee 81 ✓ / 0 ✗ (10 clauses A7 ter : le croisement, le bassin/les épaules, le miroir, sous 7 m/s² et sous 3 m/s,
   200 foulées croisées, les chassés, les bras en course et au sprint, le frein +6, sabotage « bras bas ») ; sync 9/0 ; build ok.
 - **Dettes** : le pas croisé est rare en match (le cap lissé B5 borne le taux de virage) ; le pic de l'étirement reste.
+
+- 381: L'AVANT-MATCH ET LES GESTES SOCIAUX (§ 7 = A11 ter ; engine/ceremonie.js, cfg.ceremonie ; motion-emotion serrerMain/saluer ; movement p._regard ; verify-ceremonie 8/0 ; reference/59 § A11 ter)
+
+- **La file** (ceremonieStep, en tête du bloc de remise de match-sim — la cérémonie POSSÈDE la remise) : au premier pas, la rangée
+  (l'équipe qui n'engage pas) posée le long de la médiane (rang 0,42, pas 0,8, décalée de 2,6 m du point central), la file (l'équipe
+  qui engage) de l'autre côté ; chaque homme de la file défile DE CÔTÉ face à la rangée (le regard tenu p._regard — movement.js : le
+  cap suit le regard même en marche, le pas devient chassé) et serre la main à L'ARRIVÉE (≤ 0,3 m : 'poignee' {by, avec}, tenue 0,35 s),
+  sans doubler ; au bout, trot × 2,4 vers la place d'engagement (la position de construction) ; la rangée part quand le dernier est
+  passé ; l'engagement attend tous à ≤ 1,2 m (ou 60 s), + 1,2 s. L'horloge : la période part au coup d'envoi (st._ceremonie.fin dans
+  finNominale), la cérémonie n'est pas un arrêt (C.arrets gelé), le fil date du même coup d'envoi (ticker _decFM).
+- **En construisant.** Le rythme global (un homme par pas de file) laissait les marcheurs en retard (106 poignées sur 121, 17 % face à
+  face) : la file va à son pas (la poignée à l'arrivée, la queue qui ne double pas) → 121 ; le marcheur qui freinait puis tournait de
+  90° n'était face à l'homme que 50 % du temps à +0,4 s → le regard tenu (100 %) ; le salut à 77 % (les corps encore lancés) → le
+  regard tenu (100 %). Le temps additionnel MINIMUM de 60 s du match plein rendait la période de 40 s de la fixture interminable :
+  épinglé à 0 dans le banc (la loi ×0,35 reste). Le clip authored `poignee` levait le bras à 1,7 m et `salut` sortait la main à 1 m
+  sur ce rig → deux gestes générés (motion-emotion) : serrerMain (1,2 s, la main devant à hauteur de ceinture-poitrine) et saluer
+  (2,4 s, le bras levé haut, l'avant-bras qui balance à 2,5 Hz), sous contrat (verify-emotion 49/0). Les mains : le point médian
+  recalculé à chaque passage de la boucle laissait 17 cm, et la rangée qui serre un nouvel homme toutes les 0,9 s tirait vers le
+  mauvais partenaire → mutuelle, vers la main de l'autre à 15 % de l'écart : p50 5,6 cm, p90 7,4 (page, 636 images de paires).
+- **La carte** : motion-arbitre carton 2,0 → 2,3 s (tenue 1,85), le regard vers le fautif (la loi d'A11 bis, dir), la plaque
+  8,6 × 12 cm au bout des doigts (arbitre.js) — dette : la plaque reste dans le plan de la main.
+- **Bancs** : verify-ceremonie 8 ✓ / 0 ✗ (121 poignées, places à 37,5 s, engagement à 38,5 s, face à face 100 %, arrêts 1,0 s à la
+  prise, fin de match à fin + 40 s, 22 saluts en 3,8 s tournés vers la tribune 100 %, carte 2,3 / 1,85, null = hier (engagement à
+  0,65 s), sabotage rang:3 attrapé) ; verify-emotion 49/0 ; sync 9/0 ; jumeau sortieAerienne/retournee/bouclier/ceremonie null = base
+  9fa4ec6 au bit ; 33 bancs épinglés ceremonie:null (chaque clause mesure le monde de son jour).
+- **Captures** : s7-file-poignees (la file à 7,5 s), s7-poignee-gros-plan (les mains jointes), s7-carton (la carte face au fautif),
+  s7-salut (le salut au sifflet final).
+- **Dettes** : la cérémonie dure ~38 s (11 × 11 poignées à 0,35 s + les trajets) ; les gardiens défilent comme les autres ; la
+  plaque de la carte dans le plan de la main ; l'hymne, la photo d'équipe et le toss n'existent pas.

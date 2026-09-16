@@ -57,7 +57,7 @@ function spawnOfficiel({ squad, scene, night, q, bake }, at, drapeau = false) {
     const cast = castStrikes(entry, { id: 99 }, 7, null);
     let hand = null; model.traverse((o) => { if (o.isBone && /RightHand$/i.test(o.name) && !hand) hand = o; });
     let carte = null;
-    if (hand) { carte = new THREE.Mesh(new THREE.PlaneGeometry(0.075, 0.105), new THREE.MeshLambertMaterial({ color: 0xffd400, side: THREE.DoubleSide })); carte.position.set(0, 0.09, 0.02); carte.visible = false; hand.add(carte); }
+    if (hand) { carte = new THREE.Mesh(new THREE.PlaneGeometry(0.086, 0.12), new THREE.MeshLambertMaterial({ color: 0xffd400, side: THREE.DoubleSide })); carte.position.set(0, 0.125, 0.02); /* (A11 ter) la carte aux dimensions réelles (8,6 × 12 cm), tenue au bout des doigts */ carte.visible = false; hand.add(carte); }
     geste = { layer, cast, carte, at: null, t: 0, spec: null, w: 0 };
   }
   return { model, ctrl, groundY, flag, geste };

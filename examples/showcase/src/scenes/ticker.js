@@ -11,8 +11,8 @@
 // même else-if. Fusionnées ici : le carton siffle ET s'inscrit au journal.
 const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 // L'HORLOGE FM (175) : le fil date en minutes de MATCH (le ratio du chrono moteur) — « 67' »
-let _ratioFM = 1;
-const tFM = (t) => mmss(t * _ratioFM);
+let _ratioFM = 1, _decFM = 0;   // (A11 ter) la période part au coup d'envoi qui suit la cérémonie d'avant-match (st._ceremonie.fin)
+const tFM = (t) => mmss(Math.max(0, t - _decFM) * _ratioFM);
 
 export function makeTicker(TEAMS) {
   const hud = typeof document !== 'undefined' ? document.getElementById('gestes') : null;
@@ -41,7 +41,7 @@ export function makeTicker(TEAMS) {
   /** Traite un événement de PRÉSENTATION ; rend true s'il en était un (les événements de
    *  gameplay — windup, control, touche… — restent le métier de la scène). */
   const event = (e, state) => {
-    _ratioFM = state?._chrono?.ratio ?? 1;
+    _ratioFM = state?._chrono?.ratio ?? 1; _decFM = state?._ceremonie?.fin ?? 0;
     if (e.type === 'skill' && hud && !e.kind.endsWith('-vendu')) {
       // le ticker des gestes : l'événement du CONTACT (skillContactNow), pas l'intention —
       // les '*-vendu' sont le mordu du même geste. Les ESPÈCES se nomment (crochet court ≠

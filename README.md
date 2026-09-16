@@ -290,6 +290,8 @@ examples/
 
   THE STRIDE, A7 ter (lot § 6): the crossover step in a sharp turn (above 7 m/s² lateral acceleration at running speed the outer leg crosses 3 cm inside the inner lane, the pelvis turns 6° into the turn and the trunk counter-rotates), the arm carriage in running (elbow 90°, the front hand at chest height), and the foot lock calibrated on the generated stride (floor swept from the generator, contact band 2.5 cm: release spikes halved, no recapture in the peel). `contact-sheet.mjs --gait 6 --turn 9` renders the crossover.
 
+  THE PRE-MATCH AND THE SOCIAL GESTURES (lot § 7, `engine/ceremonie.js`, `cfg.ceremonie`): before the first kick-off the non-kicking team lines up along the halfway line and the kicking team files past sideways, shaking every hand on arrival (121 handshakes, the scene joins the right hands), the clock starts at the kick-off and the ceremony is not stoppage time; at the final whistle every player turns to the stand and waves; the referee's card is held 0.3 s longer, facing the offender. A held-gaze channel in movement (`p._regard`) drives the facing even while walking. Key null = yesterday bit for bit.
+
 ## Install
 
 As a plugin via marketplace:

@@ -21,7 +21,7 @@ const { chargeStep } = simInternals;
 // une fixture d'ADJUDICATION : monde posé, porteur et chargeur écrits à la main, horloge mûre
 const duelWorld = (seed, arrange) => {
   const st = makeMatch({ full: true, seed });
-  const cfg = matchCfg({ shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
   for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   const c = st.players[st.possession.carrier];
   const foe = st.players.find((q) => q.team !== c.team && !q.keeper);
@@ -99,7 +99,7 @@ const cote = (st, c, foe) => {                                     // chargeur �
   let ep = 0, fa = 0, buts = 0;
   for (const seed of [1, 3, 5, 7]) {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null,  shotRange: 20 });
     for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
     ep += st.events.filter((e) => e.type === 'duel' && e.kind === 'épaule').length;
     fa += st.events.filter((e) => e.type === 'faute').length;
@@ -115,7 +115,7 @@ const cote = (st, c, foe) => {                                     // chargeur �
 // ---------- 5. sabotage nommé « jeu sans contact » : charge:false → le monde d'hier
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ shotRange: 20, charge: false });
+  const cfg = matchCfg({ ceremonie: null,  shotRange: 20, charge: false });
   for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
   ok(`sabotage « jeu sans contact » attrapé (charge:false : ${st.events.filter((e) => e.kind === 'épaule').length} épaule en 60 s — le défenseur plane à 1,3 m pour toujours, nommé)`,
     !st.events.some((e) => e.kind === 'épaule'));
