@@ -52,6 +52,9 @@ température, w± mesurables, la variété inter-joueurs mesurée, le test d'imp
 
 1. **Une valeur d'état calibrée** (tests 1, 3 ; Modèle 10 lot 3) : xT en grille interpolée d'abord (public,
    auditable), V calée sur la fréquence du prochain but — l'utilité devient ΔV × P_succ.
+   **SCELLÉ 406 (283, xt.js)** : la grille 12 × 8 du book, bilinéaire, les trois faits au banc, ΔV × P_succ × visionF × axe(style) au
+   barème de choosePass — mécanisme prouvé (fixture), monde peu remué (la valeur est au barème, l'offre n'y est pas : OBSO §6 ensuite).
+   V calée sur le prochain but (ECE) reste à faire.
 2. **La direction et la longueur des passes comme distribution** (test 2, cal ; Bible 05 « le renversement qui
    existe », Bible 15 lot 3) : 49 → 36,5 % vers l'arrière, 1,6 → 11 % de ballons longs, 1 545 → 900 passes.
 3. **L'attitude au risque qui déplace** (test 5 ; Bible 16 lot 2) : w± par score et temps, mesuré au banc.

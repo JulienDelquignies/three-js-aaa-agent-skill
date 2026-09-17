@@ -534,6 +534,30 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La valeur de position xT (lot 283, `cfg.xt` — `xt.js`)
+
+Le Modèle 06 §3 : « embarquer la grille 12 × 8 publiée, lue par interpolation bilinéaire » ; §8.1 : l'utilité d'une passe est
+ΔV × P_succ, ΔV = V(arrivée) − V(départ). Mesuré avant (`scripts/book/sonde-283.mjs`, 4 × 90 min) : le barème de `choosePass`
+n'avait aucune valeur de position — depuis la surface, 8 passes par match à −34 ‰ de xT (72 % reculées), la remise en retrait
+vers le point de penalty perdait contre l'entrée de surface au point doux du barème.
+
+- **`XT`** : la grille de Karun Singh (open_xt_12x8_v1) relue par le book à la quatrième décimale sur huit colonnes et quatre
+  bandes symétriques ; les colonnes non citées sont la moyenne géométrique de leurs voisines (nommé). **`xtAt(xB, yB)`** lit
+  bilinéairement sur les centres de cellules (x ∈ [0 ; 105] vers le but attaqué, y ∈ [0 ; 68]) ; **`versBook(pitch, goal, p)`**
+  ramène un point moteur au terrain du book ; **`xtDe`** compose les deux ; **`termeXt(dV, pSucc, K, { visionF, style })`** =
+  poids × P_succ × ΔV × visionF × axe(style, possession, direct). Tout est pur.
+- **Où** : `choosePass` ajoute le terme du point de chute (le lead, ou le lead du through) après le terme de sélection 267 ; le
+  niveau d'adoption reste le barème nu ; l'élue porte `dxt`, `menacePasse` le relaie.
+- **Attributs, tactiques** : `visionF` (vision | passing) multiplie le terme — le passeur qui voit la valeur ; l'axe `style`
+  (possession 0,8 ↔ direct 1,2) ; 50 et 0,5 sont l'identité. Les rôles gardent leurs préférences ailleurs.
+- **Config** `xt: { poids: 20, possession: 0.8, direct: 1.2 }` (50 essayé : la fixture bascule plus franchement mais dans le monde épinglé
+  du bloc 1 personne ne tirait plus en 480 s — la porte du 272 compare le tir à une continuation devenue trop belle ; 20 garde les tirs) ; clé absente : le barème d'hier au bit (la loi est inerte à 90 s :
+  le champ est plat au milieu du terrain).
+- **Mesuré après** : le mécanisme est prouvé (la fixture), le monde bouge peu — depuis la surface −34 → −26 ‰, V du point reçu
+  p90 0,098 → 0,122, EV_cont p50 0,023 → 0,028 ; valeur des réceptions 20,2 → 20,1 ‰. Ce que la sonde nomme : la valeur est au
+  barème, l'OFFRE n'y est pas — le point de penalty n'est pas occupé ; le prochain levier est la position sans ballon par la
+  valeur (OBSO, Modèle 06 §6). Réutilisation : la grille et `xtDe` servent à tout projet (heatmaps, IA entraîneur, télémétrie).
+
 ### La porte du tir dans la surface (lot 282, `cfg.prefiltreTir` — `prefiltre.js`)
 
 Le Modèle 10 §1.4 : « la porte n'est pas évaluée à chaque tick ; elle l'est à 10 Hz, et seulement si un pré-filtre O(1) passe :

@@ -17,7 +17,7 @@ console.log('— (a) le match : le porté se soude moins —');
 const match = (over, seeds = [3, 7, 11, 15, 19, 23, 27, 31], secs = 300) => {   // 8 graines : une clause de flux se juge à 8 graines (leçon 398) — à 4, libre 3 m rendait 43-45 % de soudure et 0,57 perte par passe
   const R = { port: 0, soude: 0, settling: 0, pousses: 0, controles: 0, pertes: 0, passes: 0 };
   for (const seed of seeds) {
-    const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...PINS, ...over });
+    const st = makeMatch({ full: true, seed }), cfg = matchCfg({ xt: null /* xt null DATÉ 283 : vert à HEAD~ (worktree bd3322e), les pertes absolues remangées (157 c. 131 × 1,1 : la valeur de position change les passes échangées contre des conduites) — la clause mesure sa loi, pas la valeur de position xT */, ...PINS, ...over });
     for (let i = 0; i < 60 * secs; i++) {
       matchStep(st, 1 / 60, cfg);
       if (st.phase === 'carry') { const c = st.players[st.possession.carrier]; if (c) { R.port++; if (st.ball.owner === c.id) { R.soude++; if (!c.act && !c.intent && st._settling && st.t < st._settling.at) R.settling++; } } }

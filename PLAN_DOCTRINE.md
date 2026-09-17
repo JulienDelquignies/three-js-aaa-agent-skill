@@ -686,6 +686,18 @@ compare à une continuation PETITE (EV_cont p50 0,024) — le prochain levier es
 **FUSION DU 17/09 (405).** La relecture du match du 17/09 de la branche animations (lots 6-9, notes 395-403 : orientationPasse,
 verticalite, decalage, toucheOrientee, ramasseurs.rattrape) fusionnée sur le 282 — jumeau prouvé dans les deux sens.
 
+**283 — LA VALEUR DE POSITION xT : SCELLÉ (406).** La grille 12 × 8 du book (xt.js : bilinéaire, symétrique, les trois faits — plat sur
+75 m puis × 10,8, l'anisotropie latérale à la surface seule, le recul qui coûte peu) et le terme ΔV × P_succ × visionF × axe(style) au
+barème de choosePass. Le mécanisme est prouvé (la fixture : au ras de la surface le penalty bat l'entrée), le monde bouge peu (valeur
+des réceptions 20,2 → 20,1 ‰ à 4 × 90 min ; depuis la surface −34 → −26 ‰) : la valeur est au barème, l'OFFRE n'y est pas — le
+prochain levier est la position sans ballon par la valeur (OBSO, Modèle 06 §6), pas le passeur.
+
+**LES RETOURS DU 17/09 (soir) — LA PROCHAINE SÉRIE.** Un match regardé : le temps de jeu (cérémonie sautable, touches rapides et le
+receveur qui ne remet pas de la tête au lanceur, les CPA vivants), le foot (contrôles ratés et demi-tours, passes en une touche mal
+angulées / mal ciblées / ratées, le rythme, les percussions rectilignes finies en passe longue arrière, la défense qui recule sans
+se jeter), la caméra (le zoom trop tard, une caméra rapprochée), le produit FM (90 vraies minutes, pause / lecture / avance rapide,
+moments clés, résumés court et long, match complet). Sonde avant loi, un lot par point ; la carte du book reprend ensuite (OBSO).
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

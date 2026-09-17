@@ -13252,6 +13252,44 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      match, jeu axial 35 %), moments (les miroirs en flux), loi15 (l'apex de la touche 4,37 m > 3,4) : hérités, à re-dater
      par leur lot. Bloc 1 seul : 0,58 ms/step (≤ 1,6). Sceau : fusion b26488b puis ab77606 (le banc), poussés ; déploiement showcase-pi-mocha au premier essai
      (cmp du chunk Rondo-DdOSgqOG — les deux branches y sont : toucheOrientee et prefiltreTir).
+- 406: LA CONTINUATION DEPUIS LA SURFACE — LA VALEUR DE POSITION xT (283, xt.js, cfg.xt ; Modèle 06 §3 « embarquer la grille
+     12 × 8 publiée, lue par interpolation bilinéaire », §8.1 le terme ΔV × P_succ ; la carte après le 282 : « EV_cont p50 0,024 —
+     le point de réception à meilleur xG »). LA SONDE (sonde-283, 4 × 90 min, graines 3/7/11/13) : 329 passes reçues / match,
+     ΔxT moyen 2,84 ‰, reculées 30,2 % (réel 36), reçues dans le dernier tiers 21,5 %, valeur de position moyenne des réceptions
+     20,2 ‰ ; DEPUIS LA SURFACE 8 passes / match à ΔxT −33,9 ‰ (elles PERDENT de la valeur : 72 % reculées, 1,3 remise en retrait
+     vers l'axe / match, V du point reçu p50 0,046) ; la porte en surface à 10 Hz : EV_cont p50 0,023, tir élu 65 % ; 0,52 tir par
+     touche. Le barème de choosePass n'avait AUCUNE valeur de position : la latérale sûre et la remise arrière valaient une remise
+     en retrait sur le point de penalty (la fixture le prouve : sans la clé, l'entrée de surface à 10 m — le point doux du barème —
+     gagne contre le penalty à 12,8 m). LA LOI (xt.js, pure) : la grille de Karun Singh relue par le book à la quatrième décimale
+     (huit colonnes citées, les quatre bandes symétriques ; les colonnes 13,1 / 30,6 / 65,6 m en moyenne géométrique des voisines,
+     48,1 m dans l'axe cité 0,0148), xtAt bilinéaire sur les centres de cellules, versBook (le terrain moteur ramené à 105 × 68
+     vers le but attaqué), termeXt = poids × P_succ × ΔV × visionF × axe(style, 0,8, 1,2). Les trois faits du book tiennent au
+     banc : plat sur 75 m (× 2,55) puis explose (× 10,7), axe / couloir 1,15 à 57 m et 6,78 à 100,6 m, recul −0,0203 c. pénétration
+     +0,038. Au barème de choosePass : ΔV du point de chute (lead, ou le lead du through) × P̂_succ de la sélection 267 (p0 0,8 sans
+     elle), ajouté APRÈS le terme de sélection (le niveau d'adoption reste le barème nu — 267) ; l'élue porte dxt, menacePasse le
+     relaie. Attributs en facteur : visionF (le passeur qui VOIT la valeur), 1 à 50 ; tactique : l'axe style (possession 0,8 ↔
+     direct 1,2), 0,5 identité. Clé absente : le barème d'hier au bit — jumeau prouvé (xt null = le défaut fusionné bd3322e
+     326ae7bb803ff4f9 / fffdfa37645b241d), et la loi est INERTE à 90 s (le champ est plat au milieu du terrain : ΔV ~ 10⁻³, le
+     terme ~ 0,05 sur un barème à ~10). Le poids : 20 retenu (la fixture bascule à +0,9 contre le point doux 0,9 ; à 50 elle bascule à
+     +2,2 mais dans le monde ÉPINGLÉ du bloc 1 personne ne tirait plus en 480 s — 0 tir pour 94 passes, un rondo décoré : la
+     porte du 272 compare le tir à une continuation devenue trop belle ; 100 essayé, pas mieux au monde). APRÈS (4 × 90 min,
+     poids 20) : depuis la surface ΔxT −33,9 → −7,8 ‰, remises en retrait 1,3 → 2,5 / match, V du point reçu p90 0,098 → 0,150,
+     reçues dans le dernier tiers 21,5 → 23,6 %, EV_cont p50 0,023 → 0,022, 0,52 → 0,48 tir par touche, tirs 42,5 → 41,3 ;
+     la valeur de position moyenne des réceptions 20,2 → 20,5 ‰ (p90 30,9 → 31,1), 345 passes reçues (329). CE QUE
+     LA SONDE NOMME : la valeur est au barème, l'OFFRE n'y est pas — le point de penalty n'est pas occupé quand le porteur est au
+     ras de la surface (le crash de surface 123 pose des corps, pas des points de valeur) ; le prochain levier est la position
+     SANS ballon par la valeur (OBSO, Modèle 06 §6 : le receveur va où le ballon vaudrait), pas le passeur. Banc : verify-match11
+     bloc 283 (index 181 : les trois faits, la symétrie, le terme à l'identité ; la fixture — au ras de la surface le penalty
+     bat l'entrée sous la clé, l'entrée gagne sans ; le monde 3 × 600 s : valeur des réceptions 20,9 c. 18,6 ‰ sans (non-
+     dégradation × 0,97), dernier tiers 27,7 c. 20,2 %, reculées 39,6 %). Banc complet (final287 : 8 shards puis 49 annexes, à poids 20 ; le banc à poids 50 — final286 — avait
+     montré le rondo décoré du bloc 1 et 0 tir en 600 s au 277) : 1247 ✓ / 17 ✗ au premier passage — match11 328 ✓ / 6 ✗ : quatre
+     blocs verts à HEAD~ (worktree bd3322e) et épinglés xt null DATÉ 283 [141 la pousse, 135 les cibles, 245 l'oblique, le troisième
+     homme (137), les contres à l'entrée (139), l'allure (22) — six sites], hérités : 246d, le FLUX des couloirs ; annexes 919 ✓ /
+     11 ✗ : menace (l'angle fermé tenté 12 fois — 11/0), remises (le lanceur face à sa cible — 53/0), signes (le garde-fou de la
+     pausa « sans la clé » — 9/0), decalage (les crochets — 9/0), touche-orientee (les pertes absolues — 6/0) épinglés xt null
+     DATÉ 283 après preuve à HEAD~ ; identification REGELÉE 16 → 10 signatures (perdues LAT B|largeurR, LAT C|appel, LAT D|largeurR,
+     MDC A|profondeur, MDC C|profondeur, AV A|largeurR ; aucune gagnée) ; hérités : loi12 (le mur), loi15, moments, renversement.
+     Réexécutions isolées toutes vertes. Bloc 1 seul : 0,59 ms/step (≤ 1,6). SCEAU_283
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

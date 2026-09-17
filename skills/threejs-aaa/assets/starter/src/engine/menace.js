@@ -226,6 +226,7 @@ export function menacePasse(st, c, cfg) {
     vers: best.to.id, prog: +prog.toFixed(2),
     pourquoi: prog > 0.2 ? 'ligne-qui-progresse' : 'circulation',
     ...(st.full && cfg.xg ? { ev: evContDe(st, c, cfg, best) } : {}),   // (272) la valeur de continuation que la porte du tir compare
+    ...(best.dxt != null ? { dxt: best.dxt } : {}),   /* (283) le terme xT de l'élue */
   };
 }
 

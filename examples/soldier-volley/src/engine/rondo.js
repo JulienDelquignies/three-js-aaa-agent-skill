@@ -6,6 +6,7 @@ import { winding } from './gesture.js';
 import { makePersona } from './persona.js';
 import { offsideLine } from './offside.js';
 import { tac, axe } from './tactics.js';
+import { xtDe, termeXt } from './xt.js';
 import { pSuccDe, termeDe } from './selection.js';
 import { pressionDe } from './reception.js';
 import { movePlayers, separatePlayers } from './movement.js';
@@ -143,6 +144,7 @@ export function choosePass(st, cfg = RONDO) {
   const _SEL = st.full && cfg.selection ? cfg.selection : null, _selPc = _SEL ? pressionDe(st, c, cfg.passe ?? {}, cfg).P : 0;   // LA SÉLECTION CALIBRÉE (267) : la pression du porteur, une fois
   const _force = st.full && cfg.passeSure && st.hold >= (cfg.holdMax ?? 3) - (cfg.passeSure.avant ?? 0.4);   // (215) la fenêtre de la passe forcée
   const _gSL = Math.sign(st.pitch?.attackGoal?.(c.team)?.x || 1);
+  const _xtG = st.full && cfg.xt && st.pitch?.attackGoal ? st.pitch.attackGoal(c.team) : null, _xtC = _xtG ? xtDe(st.pitch, _xtG, c.p) : 0;   /* (283) la valeur de position xT du porteur — le terme ΔV au barème (Modèle 06 §8.1) */
   // LA LOI 11 EST DANS LE CERVEAU AVANT D'ÊTRE DANS LE SIFFLET (cfg.offside — 11c11 seulement) :
   // on ne SERT pas un coéquipier en position de hors-jeu. La position se juge MAINTENANT ; la
   // photo légale, elle, se prend au DÉPART du ballon (strikeNow) — entre les deux vit l'armé,
@@ -569,12 +571,13 @@ export function choosePass(st, cfg = RONDO) {
     const scT0 = through ? score + (cfg.throughBall?.bonus ?? 0.6) + tranchB - risqueB + dangerB : -Infinity;
     // LA SÉLECTION CALIBRÉE (267, cfg.selection && st.full — doc selection.js) : la classe nommée et P_succ prédit de chaque candidat, le terme poids × ρ × (logit P̂ − logit p0) au barème ; clé absente : le barème d'hier au bit
     const _sel = _SEL ? [pSuccDe(st, c, m, origin, lead, d, style, { bascule, unDeux: (m._troisT ?? -1) > st.t }, foesL, _SEL, cfg, _selPc), through ? pSuccDe(st, c, m, origin, through.lead, d, 'ground', { through: true, derriere: !!m._pace?.rupture, unDeux: (m._troisT ?? -1) > st.t }, foesL, _SEL, cfg, _selPc) : null] : null;
-    const scoreF = _sel ? score + termeDe(_sel[0], c, st, _SEL) : score, scT = _sel && _sel[1] ? scT0 + termeDe(_sel[1], c, st, _SEL) : scT0;
+    const _xtB = _xtG ? termeXt(xtDe(st.pitch, _xtG, lead) - _xtC, _sel ? _sel[0].pHat : (cfg.selection?.p0 ?? 0.8), cfg.xt, { visionF: c.skill?.visionF ?? 1, style: _sty }) : 0, _xtT = _xtG && through ? termeXt(xtDe(st.pitch, _xtG, through.lead) - _xtC, _sel && _sel[1] ? _sel[1].pHat : (cfg.selection?.p0 ?? 0.8), cfg.xt, { visionF: c.skill?.visionF ?? 1, style: _sty }) : 0;   /* (283) ΔV du point de chute × P_succ × visionF × axe(style) */
+    const scoreF = (_sel ? score + termeDe(_sel[0], c, st, _SEL) : score) + _xtB, scT = (_sel && _sel[1] ? scT0 + termeDe(_sel[1], c, st, _SEL) : scT0) + _xtT;
     const useT = through && !_force && !(st.full && cfg.throughRisque && scT < scoreF);   // (215) forcé : jamais en profondeur
     if (_sel) { _lvl = Math.max(_lvl, useT ? scT0 : score); if ((useT ? scT : scoreF) <= _bestSc) continue; _bestSc = useT ? scT : scoreF; }
     if (!best || (useT ? scT : scoreF) > best.score) best = useT
-      ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr, ...(_sel ? { cls: _sel[1].cls, pSucc: _sel[1].pHat, pBrut: _sel[1].p, pAlt: _sel[1].pAlt, ...(_sel[1].dbg ? { selDbg: _sel[1].dbg } : {}) } : {}) }
-      : { to: m, lead, style, score: scoreF, lane, dist: d, bascule, ...(_esp ? { esp: true } : {}), ...(_sel ? { cls: _sel[0].cls, pSucc: _sel[0].pHat, pBrut: _sel[0].p, pAlt: _sel[0].pAlt, ...(_sel[0].dbg ? { selDbg: _sel[0].dbg } : {}) } : {}) };   // (400) esp : l'élu est l'homme libre dans l'espace — l'appel de l'espace casse la tenue (rondo-sim, strike-sim)
+      ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr, ...(_xtG ? { dxt: +_xtT.toFixed(3) } : {}), ...(_sel ? { cls: _sel[1].cls, pSucc: _sel[1].pHat, pBrut: _sel[1].p, pAlt: _sel[1].pAlt, ...(_sel[1].dbg ? { selDbg: _sel[1].dbg } : {}) } : {}) }
+      : { to: m, lead, style, score: scoreF, lane, dist: d, bascule, ...(_xtG ? { dxt: +_xtB.toFixed(3) } : {}), ...(_esp ? { esp: true } : {}), ...(_sel ? { cls: _sel[0].cls, pSucc: _sel[0].pHat, pBrut: _sel[0].p, pAlt: _sel[0].pAlt, ...(_sel[0].dbg ? { selDbg: _sel[0].dbg } : {}) } : {}) };   // (400) esp : l'élu est l'homme libre dans l'espace — l'appel de l'espace casse la tenue (rondo-sim, strike-sim)
   }
   if (_SEL && best) best.score = _lvl;   // LA SÉLECTION RÉORDONNE, ELLE NE RETIENT PAS (267) : le niveau lu par la barre d'adoption est celui d'hier — la réservation (« ne pas passer ») est un autre lot (Modèle 09 §9)
   return best;
