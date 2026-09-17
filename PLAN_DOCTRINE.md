@@ -671,6 +671,12 @@ ballon à 25 m → ligne à 20,6 m du but (7,7 hier), la consigne tenue quand le
 touche en surface (0,5 pour 0,32 — la porte du tir dans la surface, le pré-filtre du Modèle 10 §1.4), la sélection du geste
 par P_but, les montants, le coup franc direct au répertoire.
 
+**281 — LES TROIS RETOURS DU 16/09 : SCELLÉ (394).** Les postes de la remise (cfg.remisePostes : l'équipe qui remet tient ses
+postes ancrés au ballon, deux appuis — hier tous au ballon : 10 → 1 corps au coup franc) ; la passe au rendez-vous
+(rendezvous.js, Modèle 09 §3 : le receveur en course reçoit au point fixe r + v T, le biais de sécurité vers l'avant — demi-tour
+avant la réception 37 → 20 % des reçues, pertes 134 → 122) ; la conduite mesurée serrée (poussées reprises p90 0,99 m), les
+ballons qui s'éloignent sont des ballons perdus au duel — le côté visuel du port reste à la branche animations.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

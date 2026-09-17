@@ -12975,6 +12975,51 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      jumeau REGELÉ sur le monde fusionné : 9783de03cd1b5d01 / bd2802cdcb8bac1a / 14dfbee456047df2 — « hier »
      y est désormais le 280) ; hérités : 246d, les contres arrivés à l'entrée. Bloc 1 seul : 0,45 ms/step (≤ 1,6). Sceau : fusion e798b47 puis 5f66f71 (le banc), poussés ; déploiement showcase-pi-mocha au premier essai
      (nouveau jeton, cmp du chunk Rondo-CWPMocZM — les deux branches y sont : ligneAccrochee et petitsGestes).
+- 394: LES TROIS RETOURS DU 16/09 (281 — capture showcase-pi-mocha, match11 à 90:00+18 : « 1. chaque coup
+     franc, l'équipe qui tire vient à 10 autour du ballon ; 2. trop de mauvaises passes, dans le dos du receveur,
+     des demi-tours ; 3. les conduites ne sont pas fluides, le ballon s'éloigne »). LA SONDE (sonde-281, trois
+     volets, 2 × 15-20 min sur le monde fusionné, le monde de leur branche (mes sept clés nulles) et le mien
+     (LEUR_1609)) : les trois symptômes vivent dans LES DEUX PARENTS — rien de la fusion. (1) 8,5-10 corps de
+     l'équipe qui remet à ≤ 6 m du ballon au coup franc (100 %) : match-sim, le sans-spot de l'équipe qui
+     remet avait pour cible de repli LE BALLON (`?? [r.p[0], 0, r.p[1]]`) — le corner et la touche avaient leurs
+     plans (102, 165, 223), le coup franc hors montée (224) non. LA LOI (cfg.remisePostes, match-sim fondu sur
+     la ligne du sans-spot) : les postes de formation ON ancrés au ballon (formationSpots + blocFor), deux appuis
+     (les plus proches : recul 5 m derrière, côté 6 m), calculés une fois par remise (r._postes). Après : 1,0-1,2
+     corps. (2) 37 % des passes reçues faisaient faire un DEMI-TOUR (> 120°) au receveur AVANT la réception (74 /
+     91 en course, 69 / 91 ballon parti dans son dos), 0 % « revenaient sur leurs pas » : la mène d'hier
+     (leadTime 0,85 × min(0,4 + d/9, 1) s) ne rejoint pas le coureur au bout du vol. LA LOI (rendezvous.js,
+     cfg.rendezVous — Modèle 09 §3.1 « le rendez-vous est la racine de g(t) = ‖r(t) − p‖ − s(t) », §3.3 le biais
+     de sécurité) : rendezVousDe(from, rP, rV, K, { sigPsi, topF, solve }) — point fixe T = armee + vol(r + v T)
+     (iters 6, |ΔT| < 0,02 s — trois itérations laissaient 0,04 s au point fixe, la raison v / v_ballon ≈ 0,42), v bornée vCourse 7,5 × topF, repli × 0,6 si v0 > vMax 26 ou T > tMax 2,5, biais =
+     min(2,5, kb 0,8 × ℓ × σψ) vers l'avant ; strike-sim l'applique à la passe ordinaire (pas le tir, le centre,
+     le through — courseServie —, le dégagement) sur la CROYANCE du receveur (262) ; l'événement 'pass' porte
+     rdv / biais. Après (2 × 15 min) : demi-tour avant 36,7 → 20,1 % des reçues, total 65 → 50 %, pertes 134 →
+     122 / match, 68,5 % des passes au rendez-vous ; « reçu dans le dos d'un receveur en course » 10,9 → 16,7 %
+     (la course servie par-derrière, sans demi-tour — la métrique compte le regard, pas le geste). (3) LA
+     CONDUITE EST SERRÉE : ballon-porteur p50 0,30 / p90 0,62 pendant le port ; poussées reprises par le porteur
+     max p50 0,33 / p90 0,99 / p99 1,49 m, reprise p50 0,08 s ; les 10 % de poussées à > 2,5 m (p99 25 m) sont
+     TOUTES perdues (un autre corps touche, 6-9 m/s au maximum de l'écart : le duel, pas la conduite) — le côté
+     visuel du port (le pied du clip, foot-lock, gait — 11c11) reste à voir avec l'auteur, nommé. Jumeau :
+     remisePostes et rendezVous nuls = le défaut fusionné 0f5e292 au bit (9bc88b5885678386 /
+     f8a6caf87aaa33ee). Banc : verify-match11 bloc 281 (index 179 : le point fixe 10 / 7 s à 17,1 m + biais, le
+     receveur lent → null, la borne vCourse, le repli ; 2 × 600 s : demi-tours en course ≤ 0,75 × sans la clé,
+     passes au rendez-vous ≥ 10, pertes ≤ 1,2 ×, coup franc ≤ 3 corps c. ≥ 5). Banc complet (final283 : 8 shards puis 42 annexes) : 1164 ✓ / 41 ✗ au premier passage — match11 303 ✓ / 25 ✗ :
+     23 clauses (22 blocs) vertes à HEAD~ (worktree 0f5e292) et épinglées remisePostes + rendezVous null DATÉ 281, le
+     rayon d'action de la passe au rendez-vous [la frappe en course (bloc 8), le plein format (1), le renvoi et la touche
+     223/226, l'instep du 279, le presseur 95, les cibles 135, les fautes 97, le petit pont 115, la roulette 121, le
+     porteur qui monte 137, l'interligne 274, la meute 229, la craie 249b, l'allure, le box crash 123, le flux du
+     presseur, 244b, la relance basse, le contact 167, la touche 270, les contres à l'entrée (139), le laps 246c — en
+     90 s l'équipe 1 n'a jamais le ballon : l'équipe 0 garde la possession puis attend son corner 38 s dans la bande
+     Opta ; la sonde donne 48,1 % de laps sur le monde défaut, la fenêtre de 90 s est la fragilité] ; hérités : 246d
+     (rouge à HEAD~), le FLUX des couloirs 241/245 (bloc 138 : rouge à HEAD~ au bit, réussite 69,3 % c. ≥ 70,0 — la
+     non-dégradation à 0,7 point, hérité de la fusion, à re-dater). Annexes 861 ✓ / 16 ✗ : attributes 157/160
+     épinglés (27/0), contact (le sol, le relevé aidé, la main tendue — 39/0), scan (Jordet, 1 saccade — 5/0), signes
+     (la pausa au pied, les receveurs qui attendent — 9/0 ; empreintes REGELÉES 8d0f931c77f089d1 / e6c9a2f0078d6ad0 /
+     1d55cbd217793c90 : « hier » y est désormais le 281), identification REGELÉE 24 → 16 signatures (perdues LAT A|appel,
+     DC B|largeurR, DC B|profondeur, DC B|tenue, DC C|profondeur, MO A|tenue, MDC B|profondeur, MDC C|largeurR,
+     MIL C|repli, AV A|press, AIL C|largeurR, AIL D|largeurR ; gagnées LAT D|largeurR, MDC B|press, MDC B|tenue,
+     AV A|largeurR), loi12 (le mur : 2 rouges hérités, identiques au banc de la fusion, rouges à HEAD~). Réexécutions
+     isolées toutes vertes. Bloc 1 seul : 0,42 ms/step (≤ 1,6). SCEAU_281
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

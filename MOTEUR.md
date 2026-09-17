@@ -509,6 +509,31 @@ Banc : bloc 270 (la bande aux trois axes, l'espèce sans bande, le temps additio
 `scripts/book/sonde-270.mjs`. Fiches : `14-micro-comportements.md`, `16-contexte-de-match.md`, `M12-regles-arbitrage.md`,
 `M01-boucle-simulation.md`.
 
+### Les trois retours du 16/09 (lot 281, `cfg.remisePostes` + `cfg.rendezVous` — `rendezvous.js`)
+
+Trois retours utilisateur sur le showcase fusionné, instruits par une sonde à trois volets (`scripts/book/sonde-281.mjs`).
+**1. « Chaque coup franc, l'équipe qui tire vient à 10 autour du ballon. »** Mesuré : 8,5-10 corps de l'équipe qui remet à
+moins de 6 m du ballon juste avant un coup franc (100 % des coups francs, dans les deux parents de la fusion) — sans spot de
+plan (montée sur coup franc, appuis de touche), la cible de repli était LE BALLON. `cfg.remisePostes` : l'équipe qui remet
+tient ses postes de formation ancrés au ballon, deux appuis en soutien (recul 5 m, côté 6 m), le preneur a son métier.
+Mesuré après : 1,0-1,2 corps. **2. « Trop de mauvaises passes : dans le dos du receveur, des demi-tours. »** Mesuré : 37 % des
+passes reçues faisaient faire un demi-tour (> 120°) au receveur AVANT la réception — 74 sur 91 à un receveur en course, 69 sur
+91 à un ballon parti dans son dos : la mène d'hier (0,85 × min(0,4 + d/9, 1) s de la vitesse du receveur) ne rejoignait pas le
+coureur au bout du vol, le ballon arrivait où il était. `rendezvous.js` (Modèle 09 §3.1-3.3) : le receveur en course (≥ 1,5
+m/s) reçoit au RENDEZ-VOUS, la position prédite sous son plan de course à la date où le ballon y arrive — le point fixe T =
+vol(r + v T) sur la balistique réelle du solveur (six itérations), la vitesse du coureur bornée vCourse × topF, la passe trop
+forte ou trop longue repliée, puis le biais de sécurité dans le sens de la course (kb × ℓ × σψ du passeur, ≤ 2,5 m : trente
+centimètres trop long ne coûtent rien). Le through garde la loi du 167, le tir et le centre leur cible, le receveur lent la mène
+d'hier ; l'événement 'pass' porte rdv / biais. Mesuré 2 × 15 min : demi-tour avant la réception 36,7 → 20,1 % des reçues,
+demi-tour total 65 → 50 %, pertes 134 → 122 / match, 68 % des passes au rendez-vous (le ballon « reçu dans le dos d'un receveur
+en course » monte 11 → 17 % : c'est la course servie par-derrière, sans demi-tour). **3. « Les conduites ne sont pas fluides,
+le ballon s'éloigne. »** Mesuré : pendant le port, ballon-porteur p50 0,30 m, p90 0,62 ; les poussées de conduite que le porteur
+reprend lui-même : max p50 0,33 m, p90 0,99, p99 1,49, reprise en 0,08 s p50 — la conduite simulée est serrée. Les ballons
+qui s'éloignent (10 % des poussées à plus de 2,5 m, p99 25 m) sont TOUS des ballons perdus : un adversaire les touche (6-9 m/s au
+maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas des conduites. Ce qui reste à voir est le côté
+VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
+mesurable ici. Clés absentes : hier au bit.
+
 ### La ligne accrochée (lot 280, `cfg.ligneAccrochee` — `ligne.js`)
 
 Le bloc défendant vivait chaîné à 27 m du ballon (lot 42) : la ligne arrière suivait le porteur mètre pour mètre jusqu'à son

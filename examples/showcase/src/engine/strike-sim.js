@@ -10,7 +10,7 @@ import { startGesture } from './gesture.js';
 import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
 import { MOVE_TIMING } from './skills-sim.js';
-import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js';
+import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js'; import { rendezVousDe } from './rendezvous.js';
 import { pressionDe, sigmaPasse } from './reception.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
 import { axe, tac } from './tactics.js';
@@ -373,6 +373,14 @@ export function strikeNow(st, c, cfg) {
   const KB = rec && st.full && cfg.croyance ? croyanceDe(c, rec, st, cfg) : null, rP = KB ? KB.p : rec?.p, rV = KB ? KB.v : rec?.v;   // (262) LE PASSEUR VISE SA CROYANCE du receveur (croyance.js) : la passe vers un fantôme si elle est vieille
   c._croyPasse = KB ? { err: hyp(KB.p[0] - rec.p[0], KB.p[2] - rec.p[2]), age: KB.age, sigma: KB.sigma } : null;
   let lead = rec ? [rP[0] + rV[0] * tRe, 0, rP[2] + rV[1] * tRe] : choice.lead;
+  // LA PASSE AU RENDEZ-VOUS (281, cfg.rendezVous — rendezvous.js, Modèle 09 §3) : le coureur reçoit DANS SA COURSE — le point fixe
+  // T = vol(r + v T) sur la balistique réelle, le biais de sécurité vers l'avant ; le through garde la loi du 167, le tir et le centre
+  // leur cible ; le receveur lent garde la mène d'hier. Mesuré avant : 37 % des receveurs faisaient demi-tour AVANT de recevoir.
+  let rdv = null;
+  if (st.full && cfg.rendezVous && rec && !choice.shot && !choice.cross && !choice.through && !choice.clear) {
+    rdv = rendezVousDe(from, rP, rV, cfg.rendezVous, { sigPsi: c.skill?.passSigma ?? 0.035, topF: rec.skill?.topF ?? 1, solve: (f, l) => solvePass(f, l, { style: choice.style, ...(choice.arrival ? { arrival: choice.arrival } : {}) }) });
+    if (rdv) lead = rdv.lead;
+  }
   // LA MÈNE DE COURSE SURVIT AU CONTACT (167, cfg.courseServie — retour utilisateur : « aucun
   // joueur ne court derrière un ballon ») : le through élu posait un rendez-vous 8-11 m devant,
   // la re-mène générique ci-dessus l'ÉCRASAIT à la frappe (mène frappée 3,6 m médiane, mesuré).
@@ -719,7 +727,7 @@ export function strikeNow(st, c, cfg) {
   const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
     // (256) by canonique — l'alias from est tombé au 257 ; sansCible : le ballon expédié sans destinataire (dégagement, urgence) — pas une passe manquée
-    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(c._croyPasse ? { croyErr: +c._croyPasse.err.toFixed(2), croyAge: +c._croyPasse.age.toFixed(2), croySigma: +c._croyPasse.sigma.toFixed(2) } : {}), ...(choice.to.id < 0 ? { sansCible: true } : {}), ...(choice.cls ? { cls: choice.cls, pSucc: +choice.pSucc.toFixed(3), pBrut: +choice.pBrut.toFixed(3), pAlt: +choice.pAlt.toFixed(3), ...(choice.selDbg ? { selDbg: choice.selDbg } : {}) } : st.full && cfg.selection && choice.cross ? { cls: 'CROSS' } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
+    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(rdv ? { rdv: +rdv.T.toFixed(2), biais: +rdv.biais.toFixed(2) } : {}), ...(c._croyPasse ? { croyErr: +c._croyPasse.err.toFixed(2), croyAge: +c._croyPasse.age.toFixed(2), croySigma: +c._croyPasse.sigma.toFixed(2) } : {}), ...(choice.to.id < 0 ? { sansCible: true } : {}), ...(choice.cls ? { cls: choice.cls, pSucc: +choice.pSucc.toFixed(3), pBrut: +choice.pBrut.toFixed(3), pAlt: +choice.pAlt.toFixed(3), ...(choice.selDbg ? { selDbg: choice.selDbg } : {}) } : st.full && cfg.selection && choice.cross ? { cls: 'CROSS' } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure
