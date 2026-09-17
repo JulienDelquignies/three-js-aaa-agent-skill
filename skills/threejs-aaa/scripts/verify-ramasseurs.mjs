@@ -9,7 +9,7 @@ const hyp = Math.hypot;
 
 // LA FIXTURE : un match plein, tout le monde parqué loin, une touche posée à (10, hz) et le ballon mort à 4 m au-delà de la touche
 // (hors du tablier : hors d'atteinte). On rejoue secs s et on lit les événements du ramasseur, le ballon, la remise.
-const joue = (over, secs = 20) => {
+const joue = (over, secs = 20, mort = null) => {   // mort : { apres, d } — le roulé MEURT à d m du point apres s après le lancer (le ballon posé là, arrêté) : la fixture du rattrapage
   const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ...over });
   for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg);
   for (const q of st.players) { q.p[0] = -40 - (q.id % 10) * 1.5; q.p[2] = -20 + (q.team ? 4 : 0); q.v[0] = 0; q.v[1] = 0; q.act = null; q.intent = null; }
@@ -17,8 +17,10 @@ const joue = (over, secs = 20) => {
   st.ball.release('arrêt-de-jeu'); st.ball.restart([10, 0.11, hz + 4], { cause: 'touche' }); st.ball.impulse([-st.ball.v[0], -st.ball.v[1], -st.ball.v[2]]);
   st.restart = { type: 'touche', p: P, team: 0, at: st.t + 0.5, placed: false }; st.phase = 'loose'; st.possession = { team: 0, carrier: -1 };
   const n0 = st.events.length, t0 = st.t; let tRoule = null, dArret = null, boyHome = null, boyPath = 0, prev = null, tPlace = null, dMinApres = Infinity, tPris = null;
+  let mortFait = false;
   for (let i = 0; i < secs * 60; i++) {
     matchStep(st, 1 / 60, cfg);
+    if (mort && !mortFait && tRoule != null && st.t > tRoule + mort.apres) { mortFait = true; st.ball.restart([P[0] - mort.d, 0.11, P[1] - 1], { cause: 'touche' }); st.ball.impulse([-st.ball.v[0], -st.ball.v[1], -st.ball.v[2]]); }
     const F = st._ramasseur, R = st.ramasseurs;
     if (F && R) { const q = R[F.boy]; if (prev) boyPath += hyp(q.p[0] - prev[0], q.p[2] - prev[1]); prev = [q.p[0], q.p[2]]; }
     const ev = st.events.slice(n0);
@@ -49,6 +51,14 @@ console.log('\n— (b) la clé absente rend l\'hier ; le sabotage est attrapé �
     !!h.ram && !h.st.ramasseurs && !h.ramasse && h.tPlace != null && h.tPlace - h.ram.t < 0.05 && !!h.pris);
   const s = joue({ ramasseurs: { ...K, vitesse: 0.2 } }, 16);
   ok(`sabotage « le ramasseur à 0,2 m/s » attrapé (il n'arrive pas : le point d'hier après patience ${K.patience} s — ${s.patience ? `'patience-ramasseur' à ${(s.patience.t - s.t0).toFixed(1)} s` : 'jamais'}, ramassage ${s.ramasse ? 'oui' : 'non'})`, !!s.patience && !s.ramasse && s.tPlace != null);
+}
+console.log('\n— (c) le roulé mort loin du point se rattrape (17/09, cfg.ramasseurs.rattrape) —');
+{
+  // mesuré graine 3 × 600 s : un roulé de 32 m arrêté à 11,7 m du point APRÈS la fenêtre de 6 s — personne n'y va, le lanceur attend au point, la touche gèle jusqu'à la fin du match (0 tir, 33 passes en 600 s)
+  const m = joue({}, 24, { apres: 0.6, d: 12 }), mortEv = m.st.events.find((e) => e.type === 'ramasseur' && e.cause === 'roulé-mort');
+  ok(`LE ROULÉ MORT À 12 m DU POINT : 'roulé-mort' ${mortEv ? `à ${(mortEv.t - m.t0).toFixed(2)} s (d ${mortEv.d} m)` : 'jamais'}, le ballon revenu au point (au plus près ${m.dMinApres} m avant la prise) et la remise PRISE ${m.pris ? `à ${(m.pris.t - m.t0).toFixed(1)} s` : 'jamais'} — dans rattrape ${K.rattrape} s`, !!mortEv && m.dMinApres < 0.3 && !!m.pris && mortEv.t - m.t0 < K.rattrape + 3);
+  const h = joue({ ramasseurs: { ...K, rattrape: null } }, 24, { apres: 0.6, d: 12 }), dH = hyp(h.st.ball.p[0] - h.P[0], h.st.ball.p[2] - h.P[1]);
+  ok(`rattrape:null — le même roulé mort : le ballon reste à ${dH.toFixed(1)} m du point 24 s plus tard, la remise ${h.pris ? 'prise' : 'JAMAIS prise'} (le gel d'hier, au bit)`, dH > 8 && !h.pris);
 }
 console.log(`\nramasseurs : ${pass} ✓ / ${fail} ✗`);
 process.exit(fail ? 1 : 0);

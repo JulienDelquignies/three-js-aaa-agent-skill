@@ -174,8 +174,12 @@ revenait toute seule et le fauché se relevait sans la prendre : deux gestes cô
   arrêté à ≤ 2,5 m du point s'y pose ; la remise attend (`r.at`) ; `patience` 12 s : le point d'hier. Contrat (verify-ramasseurs,
   5 clauses) : la touche hors d'atteinte — le ramasseur part au premier pas (18,9 m), ramasse à 5,2 s, roule à 6,4 s (2,9 m/s pour 4 m,
   arrêt à 0,29 m du point, posé), la remise prise à 12,5 s, le ramasseur assis à 12,8 s ; null → le point en une image ; sabotage
-  vitesse 0,2 → 'patience-ramasseur'. Dettes : le ballon dans les mains est posé par la sim (35 cm devant, à 0,95 m), pas par la
-  scène ; les ramasseurs derrière les buts n'existent pas ; le quatrième arbitre non plus.
+  vitesse 0,2 → 'patience-ramasseur'. LE ROULÉ MORT SE RATTRAPE (17/09, `rattrape` 14 s, note 403) : un roulé de 32 m arrêté à
+  11,7 m du point après la fenêtre de 6 s gelait la touche jusqu'à la fin du match (graine 3 × 600 s : 33 passes, 0 tir) — dans
+  rattrape s après la pose, un roulé arrêté sans preneur se pose au point quelle que soit la distance ('ramasseur' cause
+  'roulé-mort') ; null : les 6 s et la colle d'hier. Contrat : la clause (c) — le roulé mort à 12 m posé au point, la remise prise à
+  12,5 s ; rattrape:null → 12 m, jamais prise. Dettes : le ballon dans les mains est posé par la sim (35 cm devant, à 0,95 m), pas par
+  la scène ; les ramasseurs derrière les buts n'existent pas ; le quatrième arbitre non plus.
 
 ## L'avant-match et les gestes sociaux (A11 ter — Animations_A_Faire § 7 ; `engine/ceremonie.js`, `cfg.ceremonie`, note 381)
 
