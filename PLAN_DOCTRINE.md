@@ -677,6 +677,12 @@ postes ancrés au ballon, deux appuis — hier tous au ballon : 10 → 1 corps a
 avant la réception 37 → 20 % des reçues, pertes 134 → 122) ; la conduite mesurée serrée (poussées reprises p90 0,99 m), les
 ballons qui s'éloignent sont des ballons perdus au duel — le côté visuel du port reste à la branche animations.
 
+**282 — LA PORTE DU TIR DANS LA SURFACE : SCELLÉ (395).** Le pré-filtre du Modèle 10 §1.4 (prefiltre.js, cfg.prefiltreTir : contrôle,
+distance < 35 m, angle visible > 4°, corps orienté < 110° × pivotF — technique / agilité) ferme le candidat tir de l'arbitre et refuse
+tryShot avant toute évaluation ; les frappes dos au but disparaissent (4,2 → 0 % des tirs contrôlés en surface, p90 du corps 60 → 22°),
+le porteur muré garde le ballon en surface (touches 50 → 63) ; le volume tient (0,63 → 0,55 tir par touche pour 0,32) : la porte du 272
+compare à une continuation PETITE (EV_cont p50 0,024) — le prochain levier est le point de réception à meilleur xG, pas un seuil.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute

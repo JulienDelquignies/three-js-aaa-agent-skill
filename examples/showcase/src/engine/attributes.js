@@ -42,7 +42,7 @@ export const ATTRIBUTES = {
   reactions:   'latence de perception    → réaction [0,30 s ; 0,14 s] (remplace l\'axe persona)',
   composure:   'sang-froid sous pression → l\'erreur de passe pressée × [1,30 ; 0,85]',
   keeping:     'métier de gardien        → envergure [1,8 ; 2,5] m, réflexe [0,16 ; 0,09] s',
-  agility:     'souplesse du corps       → durée du relevé après plongeon × [1,28 ; 0,72] (lot 91)',
+  agility:     'souplesse du corps       → durée du relevé après plongeon × [1,28 ; 0,72] (lot 91) ; porteuse de technique pour la tolérance du corps au tir (282)',
   stamina:     'réserve d\'endurance      → drain de fatigue × [1,25 ; 0,75] (cfg.fatigue, lot 31)',
   strength:    'force dans le duel       → charge d\'épaule × [0,85 ; 1,15] (cfg.charge, lot 32)',
   jumping:     'détente verticale        → hauteur de saut de tête × [0,75 ; 1,25] (cfg.tete.saut, lot 112)',
@@ -99,6 +99,7 @@ export function makeProfile(ratings = {}) {
     shotSigma: lerp(0.55, 0.10, r('finishing')),                  // m — sur le point visé dans le but
     finF: Math.pow(0.2, r('finishing') - 0.5),                    // × sur le σ D'ANGLE de la frappe (258, cfg.finition) : 2,24 à 0, 1 exact à 50, 0,45 à 100 — Modèle 03 §5.2 (2,5 × 0,2^f̂), recentré à l'identité
     longF: lerp(0.75, 1.25, r('longShots')),                      // × sur l'AUDACE lointaine (le 50 vaut 1 exact — l'identité du monde moyen)
+    pivotF: lerp(0.85, 1.15, r2('technique', 'agility')),        // × la tolérance du corps au pré-filtre du tir (282) : le pivot souple frappe dos au but
     powF: lerp(0.90, 1.10, r('shotPower')),                       // × sur la VITESSE du geste (279, cfg.repertoire) — 1 exact à 50
     vMaxF: lerp(33, 38, r('shotPower')) / 35.5,                   // × sur la borne physiologique vMax de l'échelle de finition (279) — 1 exact à 50 (35,5 m/s)
     tackleReach: lerp(-0.10, 0.10, r('tackling')),                // m — sur la fenêtre du duel

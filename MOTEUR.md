@@ -534,6 +534,27 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La porte du tir dans la surface (lot 282, `cfg.prefiltreTir` — `prefiltre.js`)
+
+Le Modèle 10 §1.4 : « la porte n'est pas évaluée à chaque tick ; elle l'est à 10 Hz, et seulement si un pré-filtre O(1) passe :
+ballon contrôlé, distance au but < 35 m, angle visible > 4°, corps orienté à moins de 110° de la cible ». Mesuré avant
+(`scripts/book/sonde-282.mjs`, 4 × 90 min) : 4,2 % des tirs contrôlés en surface partaient DOS AU BUT (corps > 110°, p90 60°),
+0,63 tir par touche en surface pour 0,32 réel.
+
+- **`prefiltreDe(K, { d, X, C, yaw, cap, pivotF, hold, holdMin })`** (pure) rend `{ ouvert, raison, corps, angle, tol }` : la première
+  raison fermée dans l'ordre contrôle → distance → angle → corps ; l'angle visible est celui de Sumpter (`angleVisible` de `xg.js`),
+  le corps l'écart entre le yaw et le cap au centre du but. **`entreesPrefiltre(c, goal)`** les lit sur un porteur.
+- **Attributs en facteur** : `pivotF = lerp(0,85 ; 1,15, technique | agilité)` multiplie la tolérance du corps (93,5° pour le raide,
+  126,5° pour le souple, 110° exacts à 50). **Rôles et tactiques** gardent leurs leviers dans Θ_i (272) — le pré-filtre est géométrique.
+- **Où** : `menaceTir` rend le candidat tir à 0 (`pourquoi: 'pré-filtre-<raison>'`, compté dans `st.deny` hors distance) — l'arbitre
+  rend la passe et la conduite ; `tryShot` refuse `deny('pré-filtre-<raison>')` — le porteur muré se retourne au lieu de frapper.
+  La tête, la volée, la retournée (`tete.js`) n'y passent pas ; le lob garde sa porte.
+- **Config** `prefiltreTir: { dMax: 35, angleMin: 4, corps: 110, controle: 0 }` ; clé absente : la porte d'hier au bit.
+- **Mesuré après** : dos au but 4,2 → 0 %, p90 du corps 60 → 22°, 85 fermetures de corps par match ; touches en surface 50 → 63,
+  tirs 42 → 45,5, 0,63 → 0,55 tir par touche. Ce que la sonde nomme : la porte du 272 est facile parce que la CONTINUATION est
+  petite (EV_cont p50 0,024 : les passes offertes depuis la surface mènent hors du danger) — le prochain levier est le point de
+  réception à meilleur xG (remise en retrait, crash de surface), pas un seuil.
+
 ### La ligne accrochée (lot 280, `cfg.ligneAccrochee` — `ligne.js`)
 
 Le bloc défendant vivait chaîné à 27 m du ballon (lot 42) : la ligne arrière suivait le porteur mètre pour mètre jusqu'à son

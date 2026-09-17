@@ -13021,6 +13021,36 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      AV A|largeurR), loi12 (le mur : 2 rouges hérités, identiques au banc de la fusion, rouges à HEAD~). Réexécutions
      isolées toutes vertes. Bloc 1 seul : 0,42 ms/step (≤ 1,6). Sceau : commit 3a0df60, poussé ; déploiement showcase-pi-mocha au premier essai
      (cmp du chunk Rondo-j51hRboJ — la passe au rendez-vous et les postes de la remise y sont).
+- 395: LA PORTE DU TIR DANS LA SURFACE (282 — le pré-filtre du Modèle 10 §1.4, prefiltre.js, cfg.prefiltreTir ; la carte
+     après le 281 : « 0,5 tir par touche en surface pour 0,32 »). LA SONDE (sonde-282 = la sonde-280 + le corps et l'angle
+     visible au moment de chaque tir contrôlé en surface, 4 × 90 min, graines 3/7/11/13) : tirs 42,0 / match (25,3 réel), dedans
+     31,3 (16,2), touches en surface 50,0 (51), 0,63 tir par touche (0,32) ; le CORPS au tir contrôlé (hors tête, volée,
+     retournée) p50 11°, p90 60°, DOS AU BUT (> 110°) 4,2 % de 96 ; l'angle visible p10 23,6°, cadre < 4° 0 %. Une sonde de
+     décision (dbg282-porte, arbitre() à 10 Hz sur le porteur en surface, 2 × 15 min) : 73 échantillons — angle-fermé 38,
+     pré-filtre-corps 18, xg-insuffisant 7, occasion-franche 9 ; la porte du 272 y compare xG_dec p50 0,067 à EV_cont p50 0,024
+     (p90 0,034 : la meilleure passe depuis la surface mène à un point de faible xG — la continuation est PETITE, c'est elle
+     qui rend la porte facile, pas Θ). LA LOI (prefiltre.js, pure : prefiltreDe(K, { d, X, C, yaw, cap, pivotF, hold, holdMin })
+     → { ouvert, raison, corps, angle, tol }) : quatre tests O(1) nommés — contrôle (hold ≥ controle), distance (< 35 m, la
+     borne du clamp §2.2), angle visible (> 4°, angleVisible de xg.js), corps orienté (< 110° × pivotF : technique / agilité
+     [0,85 ; 1,15], 93,5° pour le raide, 126,5° pour le souple, 110° exacts à 50). Elle ferme le candidat tir de l'arbitre
+     (menaceTir → score 0, pourquoi 'pré-filtre-<raison>', compté dans st.deny hors distance) et refuse tryShot (deny
+     'pré-filtre-<raison>') ; la tête, la volée et la retournée n'y passent pas (des reprises, pas des tirs contrôlés) ; le lob
+     garde sa porte. Clé absente : la porte d'hier au bit — jumeau prouvé (prefiltreTir null = défaut 281 d3dbe73 :
+     afff3ab4b4fbbdac / 7f45f8db1717cd98), et la loi est INERTE en 90 s (le défaut 282 rend la même empreinte : les 90
+     premières secondes ne posent pas de porteur dos au but en surface). APRÈS (4 × 90 min) : dos au but 4,2 → 0,0 % de 115,
+     p90 du corps 60 → 22°, 85 fermetures de corps et 22 d'angle par match ; tirs 42,0 → 45,5 (dedans 34,8), touches en
+     surface 50 → 63 (entrées 34 → 41 : le porteur muré garde le ballon en surface au lieu de frapper), 0,63 → 0,55 tir par
+     touche (0,32). Ce que la sonde nomme : le pré-filtre ferme les frappes impossibles, il ne ferme pas le VOLUME — la porte
+     du 272 tient à EV_cont, et EV_cont est petit (p50 0,024) parce que les passes offertes depuis la surface mènent hors
+     du danger : le prochain levier est la CONTINUATION (le point de réception à meilleur xG — la remise en retrait, le
+     crash de surface 123, la sélection par P_but §3.2), pas un seuil. Banc : verify-match11 bloc 282 (index 180 : lois
+     pures — face / dos / souple-raide / ras de ligne / 40 m / cru ; la fixture — un attaquant posé à 11 m dos au but,
+     l'arbitre ferme « pré-filtre-corps » sous la clé, « occasion-franche » sans, face au but ouvert ; le monde 3 × 600 s :
+     0 tir contrôlé dos au but, 23 fermetures ≥ 10, tirs ≥ 0,7 × sans, touches ≥ 0,9 × sans). Banc complet (final284 : 8 shards puis 42 annexes) : 1203 ✓ / 5 ✗ au premier passage — match11 328 ✓ / 3 ✗ :
+     le bloc 279 (la famille instep : 1 tir instep en 4 × 600 s c. ≥ 3 — le pré-filtre ferme les frappes du corps fermé) vert à
+     HEAD~ (worktree d3dbe73, 44/0) et épinglé prefiltreTir null DATÉ 282 ; hérités : 246d et le FLUX des couloirs (bloc 138,
+     nommés au 281). Annexes 875 ✓ / 2 ✗ : loi12 (le mur, hérité) ; identification et signes vertes sans regel. Réexécution
+     isolée du 279 : 2/0 (4 tirs instep). Bloc 1 seul : 0,46 ms/step (≤ 1,6). SCEAU_282
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

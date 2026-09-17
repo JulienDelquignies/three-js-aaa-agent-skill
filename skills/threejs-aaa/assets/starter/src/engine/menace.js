@@ -18,7 +18,7 @@
 
 import { laneClearance } from './ball-predict.js';
 import { choosePass } from './rondo.js';
-import { xgDe, thetaDe, evContDe, porteDe } from './xg.js';
+import { xgDe, thetaDe, evContDe, porteDe } from './xg.js'; import { prefiltreDe, entreesPrefiltre } from './prefiltre.js';
 import { axe } from './tactics.js';
 
 /** LE TIR — proximité × couloir réel vers le meilleur coin (les mêmes lois que tryShot : portée,
@@ -59,6 +59,7 @@ export function menaceTir(st, c, cfg, ev = 0) {
     }
     return { score: +scL.toFixed(3), d: +d.toFixed(1), pourquoi: whyL, ...(qL != null ? { q: +qL.toFixed(3) } : {}) };
   }
+  if (st.full && cfg.prefiltreTir && !c.keeper) { const pf = prefiltreDe(cfg.prefiltreTir, { ...entreesPrefiltre(c, goal), hold: st.hold, holdMin: cfg.prefiltreTir.controle ?? 0 }); if (!pf.ouvert) { if (pf.raison !== 'distance') (st.deny ??= {})['pré-filtre-' + pf.raison] = (st.deny['pré-filtre-' + pf.raison] ?? 0) + 1; return { score: 0, d: +d.toFixed(1), pourquoi: 'pré-filtre-' + pf.raison, corps: pf.corps, angle: pf.angle }; } }   /* (282) le pré-filtre du §1.4 ferme le candidat avant toute évaluation — l'arbitre rend la passe et la conduite */
   if (c.keeper || d > grise) return { score: 0, d: +d.toFixed(1), pourquoi: 'hors-portée' };
   if (Math.sign(c.p[0] || goal.x) !== Math.sign(goal.x) && d > R * 0.75) return { score: 0, d: +d.toFixed(1), pourquoi: 'sa-moitié' };
   // …l'angle fermé s'assouplit DE LOIN (lot 107, cfg.audace) : la porte tuait la frappe de

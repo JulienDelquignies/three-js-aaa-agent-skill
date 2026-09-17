@@ -3,7 +3,7 @@
 // rangement change : une famille par fichier, un fichier par famille.
 import { BALL } from './ball.js';
 import { laneClearance } from './ball-predict.js';
-import { xgDe } from './xg.js'; import { viseeDe } from './visee.js'; import { vitesseGeste } from './repertoire.js';
+import { xgDe } from './xg.js'; import { prefiltreDe, entreesPrefiltre } from './prefiltre.js'; import { viseeDe } from './visee.js'; import { vitesseGeste } from './repertoire.js';
 import { simInternals } from './rondo-sim.js';
 import { busy, winding, startGesture } from './gesture.js';
 import { MOVES } from './animkit.js';
@@ -41,6 +41,7 @@ export function tryShot(st, c, cfg) {
   if (dGoal > cfg.shotRange * (st.full && cfg.menace?.grise ? cfg.menace.grise : 1) && !porteLob) return false;
   if (st.hold < cfg.shotHold) return false;
   if (Math.sign(c.p[0] - 0) !== Math.sign(goal.x) && dGoal > cfg.shotRange * 0.75) return false; // pas de sa moitié
+  if (st.full && cfg.prefiltreTir && !porteLob) { const pf = prefiltreDe(cfg.prefiltreTir, { ...entreesPrefiltre(c, goal), hold: st.hold, holdMin: cfg.prefiltreTir.controle ?? 0 }); if (!pf.ouvert) return deny(st, 'pré-filtre-' + pf.raison); }   /* (282) le pré-filtre du Modèle 10 §1.4 : contrôle, distance, angle visible, corps orienté — le refus se nomme */
   // L'ANGLE FERMÉ N'EST PAS UN TIR, C'EST UN CENTRE RATÉ : l'aile voyait 15 m de « portée » et
   // canonnait du couloir (0 centre mesuré — tryShot passait toujours avant tryCross). Au-delà de
   // l'épaule de la surface et hors du bout portant, le refus se nomme et l'aile SERT.
