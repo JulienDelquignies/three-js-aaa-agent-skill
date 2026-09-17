@@ -157,7 +157,9 @@ au jeu.
 Le receveur libre (personne à `libre` m), en course (≥ `v`) ou dos au jeu (`dos`), ne capture pas le ballon : sa première
 touche l'emmène du côté ouvert — douze directions notées par le sens du jeu (`sens`), l'élan (`elan`), le champ devant
 (`champ` m dans les `devant` m), jamais vers la craie — à `lead` m (entre `leadMin` et `leadMax` selon l'allure), et il tourne
-sur sa touche ; la conduite reprend à la touche suivante. Le pressé garde la capture protégée du 265. Porté soudé 49 → 38 %.
+sur sa touche ; la conduite reprend à la touche suivante. Le pressé garde la capture protégée du 265. Porté soudé 49 → 41 % à
+8 graines avec `libre` 4 m (à 3 m : 45 %, et 169 pertes contre 148 — mesuré au sceau, note 403) ; la clé échange des passes
+contre des conduites (290 contre 362), les pertes absolues tiennent (155 contre 148). Banc : 6 clauses, le monde à 8 graines.
 
 ## L'espace devant casse la tenue (`cfg.verticalite.appel`, note 400)
 

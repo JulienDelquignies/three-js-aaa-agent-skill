@@ -13161,6 +13161,31 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      0,59), réussite 0,58 → 0,61, tirs 13 → 8, buts 2 → 3. Avant le retrait du receveur (même graines 41-71) : 313 / 154 /
      10 tirs. LE PRIX NOMMÉ : un quart de passes en moins (le porteur conduit, fixe, décale au lieu de redonner en une
      touche) et plus de pertes par passe — les tirs ne bougent pas d'un jeu de graines à l'autre. À relire en page.
+- 403: LE SCEAU DES LOTS 6-9 — CE QUE LA SUITE A ATTRAPÉ (17/09). (a) LE ROULÉ MORT : la suite rendait lots 276/277 rouges (0 tir
+     en 600 s, graine 3, le monde vivant) — tracé : une touche à 320 s, le ballon hors d'atteinte, le ramasseur roule 32 m, le
+     ballon meurt à 11,7 m du point APRÈS la fenêtre de 6 s (personne n'y va, le lanceur attend au point) : la touche gèle
+     jusqu'à la fin du match (33 passes en 600 s). Un bug du § 5 (note 382), rare (0 sur 8 graines canoniques × 300 s), que le
+     chaos de mes clés a exposé sur cette graine. cfg.ramasseurs.rattrape 14 s : dans rattrape s après la pose, un roulé arrêté
+     sans preneur se pose au point quelle que soit la distance ('ramasseur' cause 'roulé-mort'). Absente : l'hier au bit (jumeau
+     identique avec la sous-clé nulle). verify-ramasseurs 7/0, clause (c). Commit 58b4b13. (b) LE TEMPS MORT DU MATCH — sonde-temps
+     (8 graines canoniques × 300 s) : le ballon est en REMISE 41 % du temps hier (tempsMort du 217 : engagement 34-38 s, coup
+     franc 32-35, sortie de but 36, corner 41-45, penalty 27 — le temps réel du football, cérémonie comprise) et 49 % avec mes
+     clés : plus de coups francs (8 → 11-12, les duels de la conduite font des fautes), des corners et des penalties (0 → 1-5),
+     moins de touches (10 → 2-12). Le quart de passes en moins se décompose : −12 % de temps de jeu, −13 % de passes par
+     seconde jouée (le porteur conduit au lieu de redonner). Le levier du « il se passe rien » que je ne touche pas : le
+     tempsMort du tronc (18-28 s par remise, réaliste, long pour une vitrine). (c) LES ABLATIONS (8 graines canoniques, le monde
+     final moins UNE clé, libre 3 m) : sans orientationPasse 303 passes / 156 pertes / 12 tirs ; sans verticalite 303 / 172 / 7
+     (la verticalité paie : −16 pertes, +8 tirs) ; sans decalage 320 / 148 / 13 (le décalage coûte 32 passes et 8 pertes) ; sans
+     toucheOrientee 333 / 163 / 13 (la touche coûtait 45 passes) ; sans verticalite.appel 295 / 171 / 15 ; sans decalage.sortie
+     285 / 170 / 17 ; tout : 288 / 156 / 15. (d) LA TOUCHE ORIENTÉE JUGÉE À 8 GRAINES : ses deux clauses de monde, vertes à 4
+     graines avec le receveur ouvert, rouges à 8 sans lui (soudé 45 c. 49 %, 0,57 perte par passe) — quatre variantes mesurées
+     (libre 4 / 5, poussée courte, receveur lancé) : libre 4 m rend soudé 41 c. 49 %, poussées 37 %, 290 passes c. 362, 155
+     pertes c. 148, 15 tirs ; libre 5 : 45,6 % ; poussée courte : 44,5 % ; v 2,5 : 190 pertes. Réglage : libre 3 → 4 (le ballon
+     libre 1 m devant avec un corps à 3 m était une perte). Les clauses de monde à 8 graines, en pertes ABSOLUES (la clé échange
+     des passes contre des conduites : la perte par passe monte mécaniquement et ne juge pas cette clé). (e) LA SONDE DU PORTÉ
+     RELUE : sonde-match suivait le porteur par ball.owner — la touche orientée et le dribble libèrent le ballon entre deux
+     touches, les conduites du monde nouveau se fragmentaient (147 conduites, 2,4 m d'avancée médiane) ; par le porteur de la
+     possession : 318 conduites, 157 longues, 5,5 m d'avancée médiane, 150 virages, 20 décalages, rectitude 0,925.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
