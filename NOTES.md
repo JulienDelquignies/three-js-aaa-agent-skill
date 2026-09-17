@@ -13289,7 +13289,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      pausa « sans la clé » — 9/0), decalage (les crochets — 9/0), touche-orientee (les pertes absolues — 6/0) épinglés xt null
      DATÉ 283 après preuve à HEAD~ ; identification REGELÉE 16 → 10 signatures (perdues LAT B|largeurR, LAT C|appel, LAT D|largeurR,
      MDC A|profondeur, MDC C|profondeur, AV A|largeurR ; aucune gagnée) ; hérités : loi12 (le mur), loi15, moments, renversement.
-     Réexécutions isolées toutes vertes. Bloc 1 seul : 0,59 ms/step (≤ 1,6). SCEAU_283
+     Réexécutions isolées toutes vertes. Bloc 1 seul : 0,59 ms/step (≤ 1,6). Sceau : commit 2a6a5e7, poussé ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk
+     Rondo-Dyr98qYk — la grille xT y est, 0,2575 au coin de l'axe).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
