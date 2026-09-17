@@ -13050,7 +13050,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le bloc 279 (la famille instep : 1 tir instep en 4 × 600 s c. ≥ 3 — le pré-filtre ferme les frappes du corps fermé) vert à
      HEAD~ (worktree d3dbe73, 44/0) et épinglé prefiltreTir null DATÉ 282 ; hérités : 246d et le FLUX des couloirs (bloc 138,
      nommés au 281). Annexes 875 ✓ / 2 ✗ : loi12 (le mur, hérité) ; identification et signes vertes sans regel. Réexécution
-     isolée du 279 : 2/0 (4 tirs instep). Bloc 1 seul : 0,46 ms/step (≤ 1,6). SCEAU_282
+     isolée du 279 : 2/0 (4 tirs instep). Bloc 1 seul : 0,46 ms/step (≤ 1,6). Sceau : commit 98d471c, poussé ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk
+     Rondo-BMgqLBqF — le pré-filtre de la porte du tir y est).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
