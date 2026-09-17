@@ -13250,7 +13250,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      couloirs : hérités, nommés aux 281-282) ; annexes 925 ✓ / 5 ✗ : loi12 (le mur, hérité), et trois annexes que le tronc
      n'avait jamais listées, rouges sur LES DEUX PARENTS (worktrees 7c62a5d et 038034f) — renversement (0 renversement /
      match, jeu axial 35 %), moments (les miroirs en flux), loi15 (l'apex de la touche 4,37 m > 3,4) : hérités, à re-dater
-     par leur lot. Bloc 1 seul : 0,58 ms/step (≤ 1,6). SCEAU_FUSION
+     par leur lot. Bloc 1 seul : 0,58 ms/step (≤ 1,6). Sceau : fusion b26488b puis ab77606 (le banc), poussés ; déploiement showcase-pi-mocha au premier essai
+     (cmp du chunk Rondo-DdOSgqOG — les deux branches y sont : toucheOrientee et prefiltreTir).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
