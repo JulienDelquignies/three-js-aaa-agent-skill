@@ -13019,7 +13019,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      DC B|largeurR, DC B|profondeur, DC B|tenue, DC C|profondeur, MO A|tenue, MDC B|profondeur, MDC C|largeurR,
      MIL C|repli, AV A|press, AIL C|largeurR, AIL D|largeurR ; gagnées LAT D|largeurR, MDC B|press, MDC B|tenue,
      AV A|largeurR), loi12 (le mur : 2 rouges hérités, identiques au banc de la fusion, rouges à HEAD~). Réexécutions
-     isolées toutes vertes. Bloc 1 seul : 0,42 ms/step (≤ 1,6). SCEAU_281
+     isolées toutes vertes. Bloc 1 seul : 0,42 ms/step (≤ 1,6). Sceau : commit 3a0df60, poussé ; déploiement showcase-pi-mocha au premier essai
+     (cmp du chunk Rondo-j51hRboJ — la passe au rendez-vous et les postes de la remise y sont).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
