@@ -256,7 +256,7 @@ export function maybePassement(st, c, cfg) {
     return !st.players.some((q) => q.team !== c.team && q.down <= 0 && hyp(q.p[0] - ex, q.p[2] - ez) < 1.2);
   });
   if (!sides.length) return deny(st, 'passement-sans-issue');
-  if (enCourse && closing > 0.6) return false;                    // lancé : le jockey RECULE devant, il ne charge pas
+  if (enCourse && closing > (st.full && cfg.decalage ? (cfg.decalage.chargeCourse ?? 2.0) : 0.6)) return false;   // lancé : le jockey RECULE devant, il ne charge pas — (397) jusqu'à chargeCourse m/s sous cfg.decalage
   if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KP ? (KP.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.32 + 0.42 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2)) * (KP?.envie ?? 1)) {   // (passements) × envie, et un PLANCHER sous l'appétit de dribble (mesuré : 5-10 tirages/300 s à dribM 0,03-0,48 — la cadence et le tiers propre l'éteignent, le passement n'est pas une percée)   // …LA TENTATIVE AU CARRÉ (197, liste v3 point 10 : ratio bons/faibles 1,5 mesuré, réel 3-5 — le maladroit n'essaie pas)
     (c._skillCd ??= {}).passement = st.t + 0.8; return false;     // la fenêtre est fugace : on re-tire vite
   }
@@ -311,13 +311,15 @@ export function maybeCrochet(st, c, cfg) {
   if (c.keeper) return false;
   if ((c._skillCd?.crochet ?? -1) > st.t) return false;
   if (c.speed < 1.2) return false;                                // un crochet REDIRIGE une course
-  if (d2(c.p, st.ball.p) > 0.65) return false;
+  const KD = st.full ? cfg.decalage : null;   // (397) LE CROCHET EN COURSE (cfg.decalage) : le ballon de course jusqu'à ballon m (ramené au point du clip pendant l'armé), le défenseur jusqu'à foe m, la fermeture RELATIVE (un jockey posté qu'on attaque ferme aussi), un plancher d'appétit, le corps qui court sous l'armé — mesuré avant : 0 crochet / 10 min (597 refus « ballon loin », 571 « fenêtre », 8 arrivés à la porte de fermeture)
+  if (d2(c.p, st.ball.p) > (KD?.ballon ?? 0.65)) return false;
   let foe = null, fd = Infinity;
   for (const q of st.players) {
     if (q.team === c.team || q.down > 0) continue;
+    if (KD && situation(c.p, c.yaw, q.p, [0, 0], 0.11).bearing > 75) continue;   // (397) le crochet se joue sur le défenseur DEVANT : le chasseur dans le dos (mesuré : le plus proche à 132° p50) a sa loi (le râteau, le bouclier)
     const d = d2(q.p, c.p); if (d < fd) { fd = d; foe = q; }
   }
-  if (!foe || fd < K.crochetFoe[0] || fd > K.crochetFoe[1]) return false;
+  if (!foe || fd < K.crochetFoe[0] || fd > (KD?.foe ?? K.crochetFoe[1])) return false;
   // L'AILE SERT D'ABORD (même doctrine que le repique : LA BOÎTE COMMANDE L'AILE) : des coureurs
   // dans la surface → le couloir appartient au CENTRE — le crochet vit dans l'axe et sur l'aile
   // vide (mesuré : 23-27 crochets par lot mangeaient tous les duels d'aile, centres 6 → 1)
@@ -330,8 +332,9 @@ export function maybeCrochet(st, c, cfg) {
   const sitFoe = situation(c.p, c.yaw, foe.p, [0, 0], 0.11);
   if (sitFoe.bearing > 75) return false;                          // il ferme DEVANT, pas dans le dos
   // …et il FERME vraiment (vitesse de rapprochement) : le jockey posté appartient au passement
-  const closingC = ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
-  if (closingC < 0.8) return false;
+  const closingC = KD ? ((c.p[0] - foe.p[0]) * (foe.v[0] - c.v[0]) + (c.p[2] - foe.p[2]) * (foe.v[1] - c.v[1])) / Math.max(1e-4, fd)
+    : ((c.p[0] - foe.p[0]) * foe.v[0] + (c.p[2] - foe.p[2]) * foe.v[1]) / Math.max(1e-4, fd);
+  if (closingC < (KD?.closing ?? 0.8)) return false;
   // on coupe DU CÔTÉ OPPOSÉ au défenseur ; la sortie doit être libre
   const away = sitFoe.side === 'left' ? -1 : 1;                   // side = côté du foe → on part à l'opposé
   const exitYaw = c.yaw + away * (K.crochetTurn ?? 1.4);
@@ -341,7 +344,7 @@ export function maybeCrochet(st, c, cfg) {
     if (q.team === c.team || q.down > 0) continue;
     if (hyp(q.p[0] - ex, q.p[2] - ez) < (K.crochetClear ?? 1.2)) return deny(st, 'crochet-sans-issue');
   }
-  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > dribM(st, c, cfg) * ((0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …la tentative au carré (197)
+  if (tirage(st, 'geste', c.id, st.rnd ?? (() => 0.5))() > Math.max(KD ? (KD.plancher ?? 0) : 0, dribM(st, c, cfg)) * ((0.15 + 0.4 * (c.persona?.flair ?? 0.5)) * ((c.skill?.gesteF ?? 1) ** 2))) {   // …la tentative au carré (197) — (397) sur un plancher d'appétit
     (c._skillCd ??= {}).crochet = st.t + 2; return false;
   }
   // L'ESPÈCE (la variété demandée : « du Dembélé, du Yamal ») : le CHALOUPÉ veut du TEMPS — le
@@ -358,7 +361,7 @@ export function maybeCrochet(st, c, cfg) {
   const move = MOVE_TIMING[espece];
   if (st.ball.owner !== c.id) st.ball.possess(c.id);
   startGesture(c, { id: espece, ...move }, {
-    payload: { kind: 'skill', skill: 'crochet', espece, pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw: exitYawE, foeId: foe.id, ballMax: 0 },
+    payload: { kind: 'skill', skill: 'crochet', espece, pick: { foot }, ownsBody: true, yaw0: c.yaw, exitYaw: exitYawE, foeId: foe.id, ballMax: 0, ...(KD ? { pinRel: KD.pinRel ?? 0.4, mobile: c.speed >= (KD.v ?? 2) } : {}) },   // (397) en course : le ballon ramené devant le pied pendant l'armé, le corps qui court sous l'armé (movement : mobile)
     log: st.gestures,
   });
   (c._skillCd ??= {}).crochet = st.t + K.crochetCd;
@@ -605,7 +608,7 @@ export function skillContactNow(st, p, cfg) {
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];
-    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + (K.passementBite ?? 0.4) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + Math.max((K.passementBite ?? 0.4) * (p.skill?.gesteF ?? 1), st.full && cfg.decalage?.sortie ? (cfg.decalage.sortie.bite ?? 0.6) : 0); bitten.push(foe.id); }   // (402) LA SORTIE MENÉE AU BOUT (cfg.decalage.sortie) : le mordu s'assoit au moins bite s — le temps que la sortie qui explose passe son épaule (mesuré : 7 gestes vendus / 20 min, 1 défenseur battu)
     st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement-vendu', by: p.id, bitten, foot: A.pick.foot });
     // la sortie est un DÉPART… selon son MODE : le contre-pied et le fixer partent en burst
     // nommé (le fixer PLUS fort — on fige puis on perce tout droit) ; TEMPORISER protège — pas
@@ -619,7 +622,7 @@ export function skillContactNow(st, p, cfg) {
       const K = cfg.skill;
       const foe = st.players[A.foeId ?? -1];
       const bitten = [];
-      if (foe && foe.down <= 0 && mord) { foe._bite = st.t + 0.35 * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+      if (foe && foe.down <= 0 && mord) { foe._bite = st.t + Math.max(0.35 * (p.skill?.gesteF ?? 1), st.full && cfg.decalage?.sortie ? (cfg.decalage.sortie.bite ?? 0.6) : 0); bitten.push(foe.id); }   // (402)
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet-vendu', by: p.id, bitten, foot: A.pick.foot });
     }
   } else if (A.skill === 'petitPont') {

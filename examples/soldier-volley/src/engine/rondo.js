@@ -211,6 +211,16 @@ export function choosePass(st, cfg = RONDO) {
     }
     if (jete) st._jeteAt = { t: st.t, team: c.team };   // …le signal d'équipe : l'appel timé se déclenche sur le jeté (match-sim)
   }
+  // LA VERTICALITÉ (note 396, cfg.verticalite && st.full — retour utilisateur du 17/09 : « jamais de passes en profondeur quand il y a de
+  // l'espace, beaucoup de longues passes en retrait ». Mesuré (2 × 300 s) : 41 occasions de profondeur (un coéquipier EN JEU à ≥ 8 m devant,
+  // dans les 14 m avant la ligne, libre à 4 m, rien devant lui), 4 prises ; 28 % de BACK_SAFE, 12 retraits ≥ 12 m ; la passe se joue pressée
+  // (presseur p50 2,8 m). Le point doux 10 m du rondo (−0,32/m) enterrait toute passe qui avance de 20 m ; le retrait vers l'homme libre
+  // gagnait au couloir + à la liberté. Trois termes : (a) la passe qui AVANCE rend le point doux jusqu'à plafond m ; (b) l'ESPACE DEVANT
+  // vaut espace ; (c) le RETRAIT du porteur LIBRE (personne à libre m) se paie retrait × recul/dosPlein — jamais la sortie au gardien, le
+  // relais du une-deux, la bascule ni la course servie. Absente : le barème d'hier au bit.
+  const _V = st.full && cfg.verticalite ? cfg.verticalite : null;
+  const _foeC = _V ? Math.min(...foesL.filter((q) => q.down <= 0).map((q) => d2(q.p, c.p)), 99) : 99;
+  const _ligneV = _V ? Math.max(...foesL.filter((q) => !q.keeper && q.down <= 0).map((q) => q.p[0] * gSF), -99) : 0;
   let best = null, _bestSc = -Infinity, _lvl = -Infinity;   // (267) sous la clé : l'élu par (barème + terme), le NIVEAU d'adoption reste celui d'hier (le meilleur barème nu)
   for (const m of mates(st, c.team)) {
     if (m.id === c.id) continue;
@@ -277,10 +287,16 @@ export function choosePass(st, cfg = RONDO) {
     // dart sortait de l'enveloppe en 0,6 s — mesuré : 11 appels, 1 servi). La garde st.full est
     // une leçon MESURÉE : sans elle, les bursts cadencés du réduit héritaient de l'extension et
     // un monde calibré 76 clauses a bougé (tempsLoin 4,6 > 2,5). Clé ou format absents : + 0.
+    // (396) L'ESPACE DEVANT : le coéquipier EN JEU à ≥ profond m devant, dans les zone m avant la ligne, libre à rayon m, rien à devant m devant lui —
+    // mesuré : 29 occasions par 300 s, 2 prises ; les occasions vivaient à 27-64 m, hors du vocabulaire (passRange 13 m) — la profondeur a SA portée
+    const _esp = !!_V && (m.p[0] - origin[0]) * gSF >= (_V.profond ?? 8) && m.p[0] * gSF <= _ligneV + 0.05 && m.p[0] * gSF >= _ligneV - (_V.zone ?? 14)
+      && !foesL.some((q) => q.down <= 0 && d2(q.p, m.p) < (_V.rayon ?? 4))
+      && !foesL.some((q) => q.down <= 0 && (q.p[0] - m.p[0]) * gSF > 0 && (q.p[0] - m.p[0]) * gSF < (_V.devant ?? 6) && Math.abs(q.p[2] - m.p[2]) < 3);
     const rMax = bascule ? (cfg.renversement.portee ?? 38)
       : couloirB > 0 ? Math.max(cfg.passRange[1], cfg.couloir.portee ?? 24)   // la passe d'ÉCARTEMENT a sa porte (lot 99)
       : ecarteB > 0 ? Math.max(cfg.passRange[1], cfg.ecarte.portee ?? 32)     // la sortie d'axe a la sienne (lot 105)
       : gardienOk && m.keeper ? (cfg.sortieGardien?.portee ?? 26)             // la sortie au gardien a la SIENNE (lot 136 — le retrait vit à 20-30 m)
+      : _esp ? Math.max(cfg.passRange[1], _V.portee ?? 30)                     // (396) la profondeur a la sienne
       : cfg.passRange[1] + (st.full && (m._pace?.until ?? -1) > st.t && m._pace.kind === 'appel'
         ? (cfg.appelRange ?? 0) + (cfg.tranchant && m._pace.rupture ? (cfg.tranchant.portee ?? 12) : 0) : 0);   // …la RUPTURE (140) se sert de LOIN
     if (d < cfg.passRange[0] || d > rMax) continue;
@@ -450,6 +466,15 @@ export function choosePass(st, cfg = RONDO) {
     // × axe(style : possession refuse, direct accepte) ÷ controlF du RECEVEUR (le bon toucher tient un ballon serré) —
     // divisé par remiseF si le receveur a une REMISE possible (un coéquipier libre à ≤ remise m, couloir dégagé depuis
     // son point de chute) : le marqué se joue s'il peut remettre, c'est le troisième homme (240). Absente : l'hier au bit.
+    let vertB = 0;   // (396) la verticalité
+    if (_V && !bascule && !servi) {
+      const gain = (lead[0] - origin[0]) * gSF;
+      if (gain > 0) vertB += Math.min(Math.abs(d - 10) * 0.32, (_V.avance ?? 0.32) * Math.min(gain, _V.plafond ?? 20));
+      if (_esp && recvPressure >= (_V.rayon ?? 4)) vertB += _V.espace ?? 3;
+      if (gain < -(_V.dos ?? 3) && _foeC > (_V.libre ?? 4) && !(gardienOk && m.keeper) && !((m._troisT ?? -1) > st.t)) vertB -= (_V.retrait ?? 3) * Math.min(1, -gain / (_V.dosPlein ?? 10));
+      // (d) LE LONG RETRAIT se paie même pressé (mesuré 4 × 300 s : 10 → 15 retraits ≥ 12 m quand (a)-(c) seuls jouaient) — sauf la sortie au gardien et le relais
+      if (gain < -(_V.dosLong ?? 12) && !(gardienOk && m.keeper) && !((m._troisT ?? -1) > st.t)) vertB -= _V.retraitLong ?? 3;
+    }
     const PM = st.full && !through && !servi ? cfg.passeMarque : null;
     const malusMarque = PM && recvPressure < (PM.seuil ?? 4.5)
       ? malusPasseMarque(recvPressure, cfg, { visionF: c.skill?.visionF ?? 1, sty: _sty, controlF: m.skill?.controlF ?? 1, remise: remisePossible(st, c, m, lead, foesL, opp, cfg) })
@@ -499,7 +524,8 @@ export function choosePass(st, cfg = RONDO) {
         * Math.min(1.2, c.skill?.composureF ?? 1) : 0)        // la sortie au gardien (136) : PENTE DE STYLE pure —
       // …ET LE JETÉ PAIE (144) : la passe qui avance pendant qu'il vole, l'homme qu'il lâche pèse plus
       + (jete ? (cfg.fixe.bonus ?? 1.5) * Math.max(0, Math.min(1, (gSF * (m.p[0] - c.p[0]) - 2) / 8))
-        * (c.skill?.visionF ?? 1) * (d2(jete.p, m.p) < (cfg.fixe.zone ?? 5) ? 1 + (cfg.fixe.libre ?? 0.6) : 1) : 0);
+        * (c.skill?.visionF ?? 1) * (d2(jete.p, m.p) < (cfg.fixe.zone ?? 5) ? 1 + (cfg.fixe.libre ?? 0.6) : 1) : 0)
+      + vertB;                                               // (396) la verticalité — 0 sans la clé
                                                               // 0 au défaut 0,5 (l'identité, le patron UT.calme du 49),
                                                               // pleine en possession — le Guardiola vit dans le preset
     // …le THROUGH remplace la mène et le style du candidat servi (le rendez-vous a son couloir jugé)
@@ -548,7 +574,7 @@ export function choosePass(st, cfg = RONDO) {
     if (_sel) { _lvl = Math.max(_lvl, useT ? scT0 : score); if ((useT ? scT : scoreF) <= _bestSc) continue; _bestSc = useT ? scT : scoreF; }
     if (!best || (useT ? scT : scoreF) > best.score) best = useT
       ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr, ...(_sel ? { cls: _sel[1].cls, pSucc: _sel[1].pHat, pBrut: _sel[1].p, pAlt: _sel[1].pAlt, ...(_sel[1].dbg ? { selDbg: _sel[1].dbg } : {}) } : {}) }
-      : { to: m, lead, style, score: scoreF, lane, dist: d, bascule, ...(_sel ? { cls: _sel[0].cls, pSucc: _sel[0].pHat, pBrut: _sel[0].p, pAlt: _sel[0].pAlt, ...(_sel[0].dbg ? { selDbg: _sel[0].dbg } : {}) } : {}) };
+      : { to: m, lead, style, score: scoreF, lane, dist: d, bascule, ...(_esp ? { esp: true } : {}), ...(_sel ? { cls: _sel[0].cls, pSucc: _sel[0].pHat, pBrut: _sel[0].p, pAlt: _sel[0].pAlt, ...(_sel[0].dbg ? { selDbg: _sel[0].dbg } : {}) } : {}) };   // (400) esp : l'élu est l'homme libre dans l'espace — l'appel de l'espace casse la tenue (rondo-sim, strike-sim)
   }
   if (_SEL && best) best.score = _lvl;   // LA SÉLECTION RÉORDONNE, ELLE NE RETIENT PAS (267) : le niveau lu par la barre d'adoption est celui d'hier — la réservation (« ne pas passer ») est un autre lot (Modèle 09 §9)
   return best;

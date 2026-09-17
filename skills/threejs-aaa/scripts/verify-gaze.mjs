@@ -116,7 +116,7 @@ console.log('\n— A12a : le scan du receveur en vol (p.scan de la sim, lue par 
   ok(`sabotage « la saccade qui ne finit jamais, sans garde de prise » attrapé (${Sab.devPrise?.toFixed(0)}° de lacet à la prise > 10°)`, Sab.devPrise != null && Sab.devPrise > 10);
   // LE FLUX : un match 11c11 de 240 s, la politique appelée comme la scène l'appelle, sur le receveur de chaque vol
   const film = (over) => {
-    const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  ...over });
+    const st = makeMatch({ full: true, seed: 3 }); const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  ...over });
     const gst = {}, rngs = {};
     let frames = 0, off = 0, sacc = 0, volT = 0, prises = 0, prisesBallon = 0, last = null, lastTo = null, lastK = null, lastD = 99;
     for (let i = 0; i < 240 * 60; i++) {

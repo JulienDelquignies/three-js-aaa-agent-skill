@@ -118,10 +118,77 @@ vers le ballon (le warp de touche) et jouait « passe extérieur » sur toute ca
 - **Dettes** : l'extérieur reste rare (la conduite du moteur vire peu : 5 %) ; le pied ne change pas au fil des touches (le ballon
   vit devant le pied de contrôle `p.foot`) ; les prises de ballon libre (`control` sans technique) restent au contrôle intérieur.
 
+## La passe dans le sens du geste (`cfg.orientationPasse`, note 395 — verify-orientation 8/0 avec la clause (f) du 401)
+
+Mesuré le 17/09 : 10 des 42 passes planifiées partaient à plus de 60° du regard au contact (passe-rapide à 64-110°, pivots
+à 60-130°) — le plan de frappe ne jugeait que l'ancre, jamais la sortie, et le porteur qui avait adopté une passe arrière
+courait encore une seconde vers l'avant. La loi : à l'adoption au-delà de `tourner` ° le porteur se retourne avec le ballon
+(le `_retour` du 240b) ; `beginPass` choisit la technique pour le tour qu'elle doit faire (fenêtre `turn` plafonnée à
+`fenetre` 40°, plus `marge` × retournement.rate × anticipation) ; libre et rien ne tient, il s'ouvre sur place (regard tenu,
+pointe capée `vTour`, refus nommé `orientation`), pressé et rien ne tient il prend le geste qui tourne le plus parmi les
+prompts (armé ≤ `anticPresse` : la passe posée, 87° en 0,38 s) ; l'engagement part au `holdMin` d'origine. Résultat : 3
+passes planifiées sur 55 à plus de 60° du regard sur 4 graines (des posées pressées à 150-165° de tour ; hier 19 sur 94),
+l'engagement à 27° en 1,1 s ; +12 % de pertes sur 8 graines (le pressé qui tourne se fait prendre plus que la rapide).
+
+## La verticalité (`cfg.verticalite`, note 396 — verify-verticalite 6/0 avec la clause (c) du 400)
+
+Les occasions de profondeur (un coéquipier en jeu à ≥ `profond` m devant, dans les `zone` m avant la ligne, libre à
+`rayon` m, rien à `devant` m devant lui) vivaient à 27-64 m, hors du vocabulaire (passRange 13 m). La loi dans
+`choosePass` : la passe qui avance rend le point doux 10 m (`avance`, `plafond`), l'espace devant vaut `espace` et a sa
+portée (`portee` 30 m), le retrait du porteur libre se paie (`retrait`, `libre`, `dos`, `dosPlein`), le long retrait se paie
+même pressé (`dosLong`, `retraitLong`). Jamais la sortie au gardien, le relais du une-deux, la bascule ni la course servie.
+
+## La conduite qui décale (`cfg.decalage`, note 397 — verify-decalage 9/0 avec la clause (e) du 402)
+
+L'épaule : le porteur lancé (≥ `v`) avec un défenseur devant (< `fixe` m, < `lat` m) vise son épaule (`cote` m) du côté
+libre, l'évasion ne dilue plus (`tenir`). Le crochet en course : le défenseur devant (≤ 75°), jusqu'à `foe` m, le ballon
+jusqu'à `ballon` m ramené devant le pied pendant l'armé (`pinRel`), la fermeture relative (`closing`), un plancher d'appétit
+(`plancher`), le corps qui court sous l'armé (`mobile`). Le passement en course jusqu'à `chargeCourse` m/s de charge. La scène
+n'a rien à faire de plus : les clips `crochet*` et `passementJambes` jouent comme avant, le corps bouge sous eux.
+
+## Le receveur ouvert — essai retiré (note 398)
+
+Le receveur qui court à l'opposé du ballon se présentait pendant le vol : à 8 graines, rien (67 → 65 % de coureurs servis
+dans le dos) — le job de réception le tourne déjà vers le ballon. Clé retirée ; la touche orientée (399) règle la prise dos
+au jeu.
+
+## La touche orientée en course (`cfg.toucheOrientee`, note 399 — verify-touche-orientee 6/0)
+
+Le receveur libre (personne à `libre` m), en course (≥ `v`) ou dos au jeu (`dos`), ne capture pas le ballon : sa première
+touche l'emmène du côté ouvert — douze directions notées par le sens du jeu (`sens`), l'élan (`elan`), le champ devant
+(`champ` m dans les `devant` m), jamais vers la craie — à `lead` m (entre `leadMin` et `leadMax` selon l'allure), et il tourne
+sur sa touche ; la conduite reprend à la touche suivante. Le pressé garde la capture protégée du 265. Porté soudé 49 → 41 % à
+8 graines avec `libre` 4 m (à 3 m : 45 %, et 169 pertes contre 148 — mesuré au sceau, note 403) ; la clé échange des passes
+contre des conduites (290 contre 362), les pertes absolues tiennent (155 contre 148). Banc : 6 clauses, le monde à 8 graines.
+
+## L'espace devant casse la tenue (`cfg.verticalite.appel`, note 400)
+
+L'élu dans l'espace (`esp`) vaut un appel : la tenue calme est dispensée, la porte du timing s'ouvre au `holdMin`
+d'origine. Passes 145 → 151, pertes 76 → 67 sur 4 graines.
+Banc : verify-verticalite (c) — l'avant libre à 16 m, la ligne 12 m derrière, la tenue calme d'origine : la passe part en
+0,42 s avec l'appel contre 2,52 s sans. La fixture épingle `croyance: null` : elle téléporte la défense et la couche de
+croyance du porteur mettait 1,5 s à la voir (la course de `beginPass` refusait la passe sur des fantômes).
+
+## La talonnade honnête (`cfg.orientationPasse.talon`, note 401)
+
+L'ancre du talon regarde à l'opposé de la sortie (`anchorFor` avec `dos`), le taux borné du glissement s'applique, et le
+pressé dont la sortie est derrière (≥ 115°) talonne — le corps ne claque plus vers la cible. 14-17 talonnades par 4 × 300 s,
+la sortie à 135-180° du regard, le tour pendant l'armé ≤ 40°.
+
+## La sortie menée au bout (`cfg.decalage.sortie`, note 402)
+
+Le défenseur mordu par un geste vendu s'assoit au moins `bite` s. Effet mesuré faible (défenseurs battus 1/7 → 2/14) : le
+1c1 gagné au bout de la course reste une loi de duel (dette).
+
 ## Dettes connues
 
 - La semelle des graines très pressées casse toujours (`broke: 'pressé'`) — la tenue complète
   n'existe que sur les graines calmes ; un jour, le porteur devrait CHOISIR un endroit calme.
 - ~~Pas encore de roulette, passement de jambes, petit pont~~ — livrés (A4), et les passements nourris le 16/09 (ci-dessus).
+- ~~Le porté soudé vient de la fenêtre de contrôle de la réception~~ — la touche orientée en course (399) l'a réglé pour le
+  receveur libre (49 → 38 % d'images soudées) ; le pressé capture encore (la touche protégée du 265), l'armé porte le ballon
+  au point de frappe (physique).
+- Le 1c1 gagné au bout de la course (« battus » 0 malgré l'épaule attaquée et les crochets) : le duel se règle par le tacle,
+  la charge ou la passe — une loi de duel (duel.js, tronc).
 - L'audit membre ignore les gestes techniques (filtre `!x.skill`) : leurs clauses composées
   propres (semelle SUR le ballon en monde, pied du râteau au contact) restent à écrire.

@@ -81,7 +81,7 @@ const wrap = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI)
  * @param outYaw le lacet de la direction de PASSE voulue
  * @param foot   'right' | 'left' — le miroir change le CÔTÉ du relèvement, jamais la distance
  */
-export function anchorFor(ball, outYaw, foot, stance) {
+export function anchorFor(ball, outYaw, foot, stance, opts = null) {   // (401) opts.dos : la talonnade HONNÊTE — le corps regarde à l'OPPOSÉ de la sortie, le ballon derrière lui (stance 153°) part vers la cible
   // le corps regarde la sortie, tourné de peu : la stance dit où est le ballon DANS ce regard.
   // LE CÔTÉ SUIT LA CONVENTION DE situation() (technique.js) : cross = fx·uz − fz·ux, POSITIF =
   // ballon à GAUCHE, et un ballon à l'angle yaw+β a cross = sin(β). Donc pied gauche ⇒ β > 0.
@@ -89,7 +89,7 @@ export function anchorFor(ball, outYaw, foot, stance) {
   // corps, un gaucher avec le ballon à droite. Attrapé par la mesure (écart uniforme de 76°), et
   // c'est désormais une clause avec ce sabotage précis.
   const side = foot === 'left' ? 1 : -1;
-  const yaw = outYaw;                                        // le regard au contact = la direction de passe
+  const yaw = opts?.dos ? outYaw + Math.PI : outYaw;         // le regard au contact = la direction de passe (le talon honnête : son opposé)
   const b = stance.bearing * side * D2R;
   // ballon = corps + R(yaw + b) · dist  ⇒  corps = ballon − R(yaw + b) · dist
   const a = yaw + b;
@@ -176,14 +176,14 @@ export function glide(from, fromYaw, anchor, t01) {
  */
 export function planStrike(playerP, ball, outYaw, candidates, {
   stances = STANCES, adjustSpeed = 3.6, hardMax = 0.6,
-  rushed = false, rushedSlack = 0.2, farCost = 0.35, extraReach = 0,
+  rushed = false, rushedSlack = 0.2, farCost = 0.35, extraReach = 0, talonDos = false,
 } = {}) {
   const all = [];
   for (const cand of candidates) {
     const s = stances[cand.clip];
     if (!s) continue;
     for (const foot of ['right', 'left']) {
-      const anchor = anchorFor(ball, outYaw, foot, s);
+      const anchor = anchorFor(ball, outYaw, foot, s, talonDos && cand.data?.surface === 'heel' ? { dos: true } : null);   // (401)
       const d = hyp(anchor.p[0] - playerP[0], anchor.p[1] - playerP[1]);
       // `extraReach` : mètres de MARCHE déjà acquis avant que le glissement ne commence — le cas de
       // la livraison en route (le corps se place PENDANT que le ballon voyage). La borne du

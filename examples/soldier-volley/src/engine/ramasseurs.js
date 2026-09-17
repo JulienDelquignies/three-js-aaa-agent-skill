@@ -66,8 +66,9 @@ export function ramasseursStep(st, dt, cfg) {
     r.at = Math.max(r.at ?? 0, st.t + 1.0);                       // la remise attend le ramasseur
     if (st.t - F.t0 > (K.patience ?? 12)) { pose(st, r); R[F.boy].geste = null; R[F.boy].job = 'revient'; st._ramasseur = null; ev('ramasseur', { cause: 'patience-ramasseur', boy: F.boy }); }
   }
-  if (!F && r && r.placed && r.placedAt != null && st.t - r.placedAt < 6 && r.placedAt > 0 && st.ball.owner == null && hyp(st.ball.v[0], st.ball.v[2]) < 0.3) {   // le roulé arrêté près du point s'y pose (le ballon d'hier est AU point)
+  if (!F && r && r.placed && r.placedAt != null && st.t - r.placedAt < (K.rattrape ?? 6) && r.placedAt > 0 && st.ball.owner == null && hyp(st.ball.v[0], st.ball.v[2]) < 0.3) {   // le roulé arrêté près du point s'y pose (le ballon d'hier est AU point)
     const dP = hyp(st.ball.p[0] - r.p[0], st.ball.p[2] - r.p[1]);
-    if (dP > 0.05 && dP <= (K.colle ?? 2.5) && st._ramasseurRoule === r) { st.ball.restart([r.p[0], 0.11, r.p[1]], { cause: r.type }); st._ramasseurRoule = null; }
+    // …ET LE ROULÉ MORT LOIN DU POINT SE RATTRAPE (17/09, K.rattrape s — mesuré graine 3 : un roulé de 32 m arrêté à 11,7 m du point après la fenêtre de 6 s, personne n'y va, le lanceur attend au point : touche gelée jusqu'à la fin du match). Dans rattrape s après la pose, un roulé arrêté (v < 0,3) sans preneur se pose au point quelle que soit la distance. Absente : les 6 s et la colle d'hier, au bit.
+    if (dP > 0.05 && (dP <= (K.colle ?? 2.5) || K.rattrape) && st._ramasseurRoule === r) { st.ball.restart([r.p[0], 0.11, r.p[1]], { cause: r.type }); st._ramasseurRoule = null; if (dP > (K.colle ?? 2.5)) ev('ramasseur', { cause: 'roulé-mort', d: +dP.toFixed(1) }); }
   }
 }

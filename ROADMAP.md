@@ -267,7 +267,7 @@
   cfg.ceremonie) — la file des poignées avant le premier engagement (la rangée le long de la médiane, la file qui défile de côté et serre
   chaque main à l'arrivée, 121 poignées, les mains jointes par la scène), l'horloge qui part au coup d'envoi, le salut au public au sifflet
   final, la carte tenue 0,3 s de plus ; le regard tenu (p._regard) dans movement ; null = hier au bit.
-- LIVRÉ (note 382, reference/59 § 5, verify-assistants 13/0, verify-ramasseurs 5/0) : LES ASSISTANTS ET LES RAMASSEURS (§ 5) — les gestes
+- LIVRÉ (note 382, reference/59 § 5, verify-assistants 13/0, verify-ramasseurs 7/0 au 17/09) : LES ASSISTANTS ET LES RAMASSEURS (§ 5) — les gestes
   du drapeau générés (hors-jeu tenu, touche inclinée du côté attaqué, remplacement à l'horizontale) posés par la sim sur l'assistant qu'il
   faut, la hampe qui suit le bras ; quatre ramasseurs de balle (engine/ramasseurs.js, cfg.ramasseurs) qui trottent au ballon hors
   d'atteinte, le ramassent et le roulent au point (frottement mesuré), la remise qui attend ; null = hier au bit.
@@ -298,6 +298,25 @@
 - LIVRÉ (note 389, reference/59 § 10) : L'APPLAUDISSEMENT D'ENCOURAGEMENT occasionnel et sans chorégraphie — sept occasions à
   probabilité, un ou deux coéquipiers tirés au sort, départs décalés, cadences par équipe et par corps (8-10 par match sur 6-8 corps) ;
   le salut final tiré au sort plutôt qu'un sur deux.
+- LIVRÉ (notes 395-398, reference/52 §§ passe dans le sens du geste, verticalité, conduite qui décale, receveur ouvert ;
+  verify-orientation 8/0, verify-verticalite 6/0, verify-decalage 9/0 au sceau des lots 6-9) : LA RELECTURE DU MATCH DU 17/09
+  — la technique de passe choisie pour le tour qu'elle doit faire, le porteur qui s'ouvre avant d'armer, l'engagement au
+  holdMin (cfg.orientationPasse : 0 passe planifiée à > 60° du regard contre 10/42) ; la passe qui avance et l'espace devant
+  avec leur portée, le retrait qui se paie (cfg.verticalite) ; l'épaule attaquée, le crochet et le passement en course
+  (cfg.decalage : crochets 0 → 3-4 / 10 min) ; l'essai du receveur ouvert (cfg.receveurOuvert) retiré : rien à 8 graines. Dettes nommées au tronc : la touche orientée en course (le porté
+  soudé vient de la fenêtre de contrôle de la réception), le 1c1 gagné au bout de la course (loi de duel), la talonnade
+  honnête (le corps claque vers la cible). Bilan 8 graines × 300 s, hier → aujourd'hui : passes 378 → 318, pertes 159 → 160,
+  réussite 0,65 → 0,66 — moins de passes et plus de duels ; boutons decalage.tenir / plancher, orientationPasse.anticPresse.
+- LIVRÉ (notes 399-402, reference/52 §§ touche orientée, espace devant, talonnade honnête, sortie menée au bout ;
+  verify-touche-orientee 6/0, les clauses (c)/(f)/(e) des bancs du 17/09) : LA SUITE DE LA RELECTURE — la première touche
+  du receveur libre emmène le ballon du côté ouvert au lieu de le capturer (cfg.toucheOrientee : porté soudé 49 → 38 %,
+  tirs 3 → 7 sur 4 graines) ; l'élu dans l'espace part au holdMin (cfg.verticalite.appel : pertes 76 → 67) ; la talonnade
+  honnête, le corps dos à la cible (cfg.orientationPasse.talon) ; la morsure tenue après un geste vendu (cfg.decalage.sortie,
+  effet faible — le 1c1 mené au bout reste une loi de duel). Bilan au sceau (8 graines × 300 s, hier → lots 1-9, note 403) :
+  passes 378 → 304, pertes 159 → 160, tirs 12 → 12 sur les graines 41-71 ; 362 → 292, 151 → 152, 13 → 10 sur les graines
+  3-59 — un cinquième de passes en moins (−12 % de temps de jeu, −10 % de passes par seconde jouée), pertes et tirs stables ;
+  les mécanismes sont là, le monde bouge peu (passements en course ×2, passes hors du geste ÷2, profondeur prise sans
+  progrès : l'appel de l'avant est le prochain lot). Attrapé au sceau : le roulé mort du ramasseur (cfg.ramasseurs.rattrape).
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

@@ -15,7 +15,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 const CH = { periodes: 2, duree: 60, pause: 5 };
 const joue = (seed, over = {}) => {
   const st = makeMatch({ full: true, seed });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, chrono: CH, ...over });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, chrono: CH, ...over });
   let miTempsRestart = null;
   for (let i = 0; i < 140 * 60; i++) {
     matchStep(st, 1 / 60, cfg);
@@ -48,7 +48,7 @@ const joue = (seed, over = {}) => {
   // l'état terminal est CALME : le monde tient, personne ne joue un ballon mort
   const evAvant = st.events.length;
   const pAvant = st.players.map((p) => [p.p[0], p.p[2]]);
-  for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, chrono: CH }));
+  for (let i = 0; i < 120; i++) matchStep(st, 1 / 60, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, chrono: CH }));
   const bouge = st.players.reduce((a, p, i) => Math.max(a, Math.hypot(p.p[0] - pAvant[i][0], p.p[2] - pAvant[i][1])), 0);
   // …borne 1 → 2 m (lot 56) : l'économie de course fait FINIR les corps EN MARCHANT — le plus
   // grand déplacement post-sifflet est une décélération de marcheur (1,79 m en 2 s = 0,9 m/s),
@@ -82,18 +82,18 @@ const joue = (seed, over = {}) => {
 {
   const st = makeMatch({ full: true, seed: 3 });
   const avant = st.pitch.ownGoal(0).x;
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, chrono: CH });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, chrono: CH });
   for (let i = 0; i < 75 * 60 && !st.events.some((e) => e.type === 'mi-temps'); i++) matchStep(st, 1 / 60, cfg);
   const apres = st.pitch.ownGoal(0).x;
   ok(`les CAMPS s'échangent à la mi-temps (but propre de l'équipe 0 : x ${avant} → ${apres} — une bascule, tout le moteur suit par ownGoal)`,
     avant === -apres && Math.abs(avant) > 10);
   const st2 = makeMatch({ full: true, seed: 3 });
-  const cfg2 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, chrono: { ...CH, echangeCamps: false } });
+  const cfg2 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, chrono: { ...CH, echangeCamps: false } });
   for (let i = 0; i < 75 * 60 && !st2.events.some((e) => e.type === 'mi-temps'); i++) matchStep(st2, 1 / 60, cfg2);
   ok(`…et refusent de s'échanger sur demande (echangeCamps:false → but propre inchangé ${st2.pitch.ownGoal(0).x})`,
     st2.pitch.ownGoal(0).x === avant);
   const st3 = makeMatch({ full: true, seed: 3 });
-  const cfg3 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, chrono: { ...CH, additionnel: false } });
+  const cfg3 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, chrono: { ...CH, additionnel: false } });
   let mt3 = null;
   for (let i = 0; i < 75 * 60 && !mt3; i++) { matchStep(st3, 1 / 60, cfg3); mt3 = st3.events.find((e) => e.type === 'mi-temps'); }
   ok(`sabotage « montre truquée » attrapé (additionnel:false — la période coupe PILE à ${mt3?.t} ≈ 60 : les remises ont mangé du jeu sans être rendues)`,
@@ -103,7 +103,7 @@ const joue = (seed, over = {}) => {
 // ---------- 4. sabotage nommé « match sans fin » : chrono absent → le monde d'hier, qui ne finit pas
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20 });
   for (let i = 0; i < 140 * 60; i++) matchStep(st, 1 / 60, cfg);
   ok(`sabotage « match sans fin » attrapé (chrono absent : t=${st.t.toFixed(0)} s, aucun sifflet, st.fini=${!!st.fini} — le monde d'hier, nommé)`,
     !st.fini && !st.events.some((e) => e.type === 'fin-de-match' || e.type === 'mi-temps'));

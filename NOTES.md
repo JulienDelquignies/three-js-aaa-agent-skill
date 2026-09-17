@@ -13021,7 +13021,189 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      AV A|largeurR), loi12 (le mur : 2 rouges hérités, identiques au banc de la fusion, rouges à HEAD~). Réexécutions
      isolées toutes vertes. Bloc 1 seul : 0,42 ms/step (≤ 1,6). Sceau : commit 3a0df60, poussé ; déploiement showcase-pi-mocha au premier essai
      (cmp du chunk Rondo-j51hRboJ — la passe au rendez-vous et les postes de la remise y sont).
-- 395: LA PORTE DU TIR DANS LA SURFACE (282 — le pré-filtre du Modèle 10 §1.4, prefiltre.js, cfg.prefiltreTir ; la carte
+- 395: LA PASSE DANS LE SENS DU GESTE (17/09, cfg.orientationPasse — retour utilisateur : « des passes faites dans des
+     directions qui correspondent pas forcément au geste » ; le lot 1 de la relecture du match après la fusion sur d3dbe73).
+     LA SONDE (sonde-match / sonde-out, 2-4 × 300 s) : 10 des 42 passes PLANIFIÉES partaient à > 60° du regard au contact
+     (les urgentes et les une-touche tiennent leur fenêtre : chooseTechnique lit outBearing) — la passe-rapide à 64-110°
+     (l'armé de 0,22 s ne tourne le corps qu'à retournement.rate × antic = 50°), puis les pivots à 60-130° : le porteur ADOPTE
+     une passe arrière et court encore une seconde vers l'avant (la tenue calme retient l'armé, l'intention vit, rien ne
+     tourne le corps) ; l'ENGAGEMENT en tête (4 graines sur 4 : le preneur courait 1 s vers l'avant puis pivotait à −78°).
+     LA LOI, trois branchements : (1) rondo-sim, à l'adoption au-delà de tourner ° le porteur se RETOURNE AVEC LE BALLON —
+     le _retour du 240b (match-sim : la poussée vise le receveur) ; (2) strike-sim.beginPass choisit LA TECHNIQUE POUR LE
+     TOUR QU'ELLE DOIT FAIRE — un candidat reste si sa fenêtre (turn, plafonnée à fenetre 40° : le clip du pivot ne tourne
+     le bassin que de 38°, sa fenêtre de 150° est la légalité de la sim) plus ce que son armé tourne (marge 0,6 × rate ×
+     antic) couvre l'écart regard→sortie ; libre (presseur > presse 2,2 m) et rien ne tient : il S'OUVRE SUR PLACE (le regard
+     tenu vers la sortie — movement : yawWant au rythme du porteur —, la pointe capée à vTour 1,2 m/s : sous 1,5 le cône du
+     porté ne joue pas, la semelle tourne avec), refus nommé 'orientation', le pivot exclu ; PRESSÉ et rien ne tient : le
+     geste qui TOURNE LE PLUS parmi les PROMPTS (armé ≤ anticPresse 0,4 s : la passe posée, 87° de tour — le plan d'hier
+     élisait la rapide, 48° de tour, et frappait à 70-140° du regard : 12 sur 73 mesurés) ; (3) l'engagement part au holdMin
+     d'origine. L'A/B DU PRESSÉ (8 graines × 300 s, les quatre clés vivantes) : la posée 318 passes / 160 pertes / 11 tirs et
+     3 passes à > 60° sur 55 ; le plan d'hier 322 / 143 / 14 et 12 sur 73 (jusqu'à 140°) ; le pivot (0,52 s) 304 / 152 —
+     l'ancre et l'urgence — ; le talon 361 / 134 / 16 mais le corps claqué : la posée est retenue, +12 % de pertes pour
+     neuf passes à 100-140° de moins par 20 min. QUATRE ESSAIS REFUSÉS À LA MESURE OU À L'ŒIL :
+     le regard tenu EN COURSE (−27 % de passes : le cône du porté lâchait le ballon pendant le tour) ; la fenêtre du pivot à
+     60° (il partait à l'adoption avec 109° de tour pour 135° d'écart, le receveur dérivait de 30° pendant l'armé : −57° au
+     contact) ; « pressé : le talon si la sortie est derrière » (vu en page : la talonnade claque le corps vers la cible — le
+     glissement de l'armé exclut le talon du taux borné, un héritage — et frappe un ballon derrière elle vers l'avant).
+     le pivot pressé (−20 % de passes). APRÈS (4 × 300 s) : 3 passes planifiées sur 55 à > 60° du regard avec les quatre
+     clés (contre 19/94 — les trois : des passes posées pressées à 150-165° de tour, résidu 73-75°) ; la clé seule (le banc) :
+     11/83 c. 19/67, la moitié — le résidu vit chez les pressés à > 140° de tour ; l'engagement part à 27° en 1,1 s (contre
+     97-99° à 1,5-2,5 s) ; 8 graines × 300 s : le bilan des quatre clés, plus bas. DETTE NOMMÉE AU TRONC : la talonnade
+     honnête — anchorFor met le regard sur la sortie pour toutes les stances et le glissement exclut le talon du taux borné :
+     le corps claque vers la cible et talonne un ballon derrière lui vers l'avant. Jumeau :
+     clé nulle = d3dbe73 au bit (base-engine-s16, empreinte-s16). Banc : verify-orientation 7/0 (le match, l'engagement,
+     la fixture du porteur lancé — il tourne 150°, refus nommés, passe posée à 19° —, le pressé sans refus, la fenêtre des
+     candidats). Épinglée nulle (DATÉ 17/09) sur les 44 bancs datés.
+- 396: LA VERTICALITÉ (17/09, cfg.verticalite — retour utilisateur : « jamais de passes en profondeur quand il y a de
+     l'espace, beaucoup de longues passes en retrait »). LA SONDE : 76 occasions de profondeur (un coéquipier EN JEU à ≥ 8 m
+     devant, dans les 14 m avant la ligne, libre à 4 m, rien à 6 m devant lui) en 4 × 300 s, 7 prises ; les occasions vivaient
+     à 27-64 m, HORS du vocabulaire (passRange 13 m — seuls l'appel, le couloir, la bascule, la sortie au gardien l'étendent) ;
+     29 % de BACK_SAFE, 10 retraits ≥ 12 m ; au tick de décision avec une occasion à ≤ 30 m, choosePass élisait le retrait 18
+     fois sur 31, l'occasion 4 (le point doux 10 m du rondo, −0,32/m, enterrait toute passe de 20 m ; l'homme libre derrière
+     gagnait au couloir + à la liberté). LA LOI (rondo.choosePass, sous la clé) : (a) la passe qui AVANCE rend le point doux
+     (jusqu'à avance × min(gain, plafond 20 m)) ; (b) L'ESPACE DEVANT (le prédicat _esp de la sonde) vaut espace 3 et a SA
+     portée (portee 30 m) ; (c) le RETRAIT du porteur LIBRE (personne à libre 4 m) se paie retrait 3 × recul/dosPlein ; (d) le
+     LONG retrait (> dosLong 12 m) se paie retraitLong 6 même pressé — jamais la sortie au gardien, le relais du une-deux, la
+     bascule ni la course servie. Au tick : l'occasion élue 7 fois sur 10 ; les intentions longues (≥ 15 m) armées 8 → 12 sur
+     38 → 28 (les autres meurent au timing/à l'ancre : la tenue calme, l'approche — hérité). APRÈS (4 × 300 s) : passes
+     longues qui avancent (≥ 15 m, ≥ 8 m de gain) 20 → 23-28, longs retraits 10 → 8, une-deux 10 → 16, combinaisons à trois
+     32 → 41, réussite 0,59 → 0,67 ; pertes par passe stables (0,42 → 0,46). Jumeau : identique. Banc : verify-verticalite
+     4/1 → 5/0 (le match ×1,2, les longs retraits, le monde ; la fixture choosePass : l'avant libre à 22 m est l'élu, le
+     défenseur à 12 m hier). Épinglée nulle sur les 44 bancs datés.
+- 397: LA CONDUITE QUI DÉCALE (17/09, cfg.decalage — retour utilisateur : « la conduite ne crée pas de décalage, trop rigide,
+     trop rectiligne ; les passements de jambes sont toujours arrêtés, je les attends en course »). LA SONDE : rectitude
+     médiane des conduites longues 0,98, 1 décalage / 14 (un défenseur à 4 m devant fini derrière), 0 crochet / 10 min,
+     3 passements en course pour 6 posés ; L'ENTONNOIR (dev-engine instrumenté, chaque return nommé) : crochet — 597 refus
+     « ballon > 0,65 m » (le ballon de course vit à 0,9-1,4 m), 571 « fenêtre [1 ; 2,3] », 78 « pas devant » puis, la fenêtre
+     élargie, 267 « pas devant » : le PLUS PROCHE adversaire est le chasseur dans le dos (132° p50), et la fermeture ne lisait
+     que la vitesse du défenseur (un jockey posté qu'on attaque ne « ferme » jamais : closing 0 < 0,8) ; passement en course —
+     la charge > 0,6 m/s refusait. LA LOI : (1) L'ÉPAULE (match-sim, le job du porteur) : lancé (≥ v 2 m/s) avec un défenseur
+     devant (< fixe 5 m, < lat 3 m), le point de mire devient son épaule (cote 1,3 m) du côté libre — l'espace au-delà, loin de
+     la craie, à l'opposé de son élan latéral —, l'évasion ne dilue plus (tenir 0,7 ; 0,9 coûtait +27 % de pertes par passe :
+     ramené) ; (2) LE CROCHET EN COURSE (skills-sim) : le défenseur DEVANT (≤ 75°, plus le plus proche), jusqu'à foe 3 m, le
+     ballon jusqu'à ballon 1,1 m ramené devant le pied pendant l'armé (pinRel 0,4 — rondo-sim : le point du clip suit le
+     corps), la fermeture RELATIVE (closing 1 m/s), un plancher d'appétit (0,3), le corps qui COURT sous l'armé (payload
+     mobile — movement ne le plante pas) ; (3) LE PASSEMENT EN COURSE jusqu'à chargeCourse 2 m/s. APRÈS (2 × 300 s) : crochets
+     0 → 3-4 (+ 1 vendu), passements en course 3 → 4-8, approche minimale du défenseur devant 2,19 → 1,8 m (il l'attaque) ;
+     « battus » toujours 0 : le duel se règle par le tacle, la charge ou la passe — le 1c1 gagné au bout de la course est une
+     loi de duel (dette nommée au tronc). Jumeau : identique. Banc : verify-decalage 8/0 (le match, l'épaule à 15°, le crochet
+     chaloupé en course sur un jockey posté — mobile, pinRel —, le passement en course sur un jockey qui avance à 1,2 m/s ;
+     hier : aucun des deux). Épinglée nulle sur les 44 bancs datés.
+- 398: LE RECEVEUR OUVERT — ESSAI RETIRÉ (17/09, cfg.receveurOuvert — retour utilisateur : « beaucoup trop de passes dans le
+     dos des joueurs qui donnent des réceptions mauvaises avec des demi-tours »). LA SONDE : 18 des 30 receveurs EN COURSE
+     recevaient dans le dos (60 %), 12 demi-tours > 100° dans la seconde après la prise (11 en mouvement, 4 après un
+     BACK_SAFE). L'ESSAI (movement) : le receveur désigné qui court à l'opposé du ballon, sous 3,6 m/s, se présentait aussi
+     pendant le vol. Il a paru marcher à 2 graines (60 → 29 %) puis à 4 (49 → 41 %) — À 8 GRAINES SUR L'ÉTAT FINAL : 67 → 65 %,
+     RIEN. La raison, vue à la fixture : le job 'receive' du vol tourne DÉJÀ le receveur vers le ballon dès la passe, à
+     toute allure — la loi n'ajoutait rien, la mesure à peu de graines tenait du hasard. Clé retirée (le code, la config,
+     le banc, les épingles) ; ce qui reste du symptôme est la prise dos au jeu suivie d'un demi-tour : la touche orientée en
+     course (399) le règle pour le receveur libre. Leçon consignée : une clause de flux se juge à 8 graines. LE PORTÉ
+     SOUDÉ, REMESURÉ par cause (55 % des images de port : contrôle en cours 19 %, armé 16 %, intention 10 %, autre 9 %) : un
+     essai « le coureur ne ramasse pas son ballon lent » (cfg.porteLibre) n'a rien changé (0,50 → 0,52) — la soudure vient de
+     la fenêtre de contrôle de la RÉCEPTION, pas du ramassage ; clé retirée, dette nommée. Jumeau : identique. Banc :
+     verify-receveur 3/0 (le match 37 % c. 60 %, les demi-tours, la fixture du receveur qui court vers son but : ouvert en
+     courant 0,02 s après la passe, reçu à 31° — le monde nul faisait pareil). BILAN DES TROIS CLÉS RESTANTES (8 graines ×
+     300 s, graines 41-71, hier → aujourd'hui) : passes 378 → 318, pertes 159 → 160 (par passe 0,42 → 0,50), réussite 0,65 →
+     0,66, tirs 12 → 11 — moins de passes et plus de duels : la conduite qui décale (397) coûte ~10 % de passes (le porteur
+     attaque au lieu de donner) et le pressé qui tourne (395) se fait prendre plus que la rapide ; les boutons sont
+     decalage.tenir / plancher et orientationPasse.anticPresse. Suite complète sur 304a648 : 959 ✓ / 5 ✗ (2948 s) — deux
+     hérités (245 le flux des couloirs, 246d), trois clauses de flux datées qui n'épinglaient pas les quatre clés (279 le
+     monde du book, 281 le monde du rendez-vous, petits-gestes) : épinglées DATÉ 17/09, rejouées 34/0, 27/0, 19/0. Les quatre
+     bancs du 17/09 rejoués sur l'état final (le pressé qui tourne parmi les prompts) : 7/0, 5/0, 8/0 (le quatrième retiré avec sa clé) ; jumeau identique
+     (base-engine-s16 = d3dbe73), verify-sync 9/0. Sceau : commits 304a648 puis le sceau, poussés sur claude/11c11.
+- 399: LA TOUCHE ORIENTÉE EN COURSE (17/09, cfg.toucheOrientee, touche-orientee.js — retour utilisateur : « le ballon est un
+     corps étranger », « des réceptions mauvaises avec des demi-tours » ; la réponse à « pourquoi pas plus ? » : les lots 6-9).
+     LA SONDE (4 × 300 s) : 49 % des images de port SOUDÉES au servo, dont 16 % par la fenêtre de contrôle de la RÉCEPTION —
+     receive() capture le ballon (possess) puis le porte au point du pied 0,3-0,5 s (le follow du clip), le corps tourne
+     APRÈS (yawWant hors du presseur) ; la dette nommée au 398. LA LOI : le receveur LIBRE (personne à libre 3 m), en course
+     (≥ v 1,5 m/s) ou DOS AU JEU (cos(cap, but) < −dos), ne capture pas — sa première touche EMMÈNE le ballon du côté ouvert :
+     douze directions notées (le sens du jeu × sens, un peu vers l'axe ; l'élan × elan ; du champ : aucun corps à moins de
+     champ 3 m dans les devant 4 m ; jamais vers la craie), à lead m (0,6-1,6 selon l'allure), à la vitesse de dribble.js
+     (pushSpeed sur le corps projeté) ; il tourne SUR sa touche (yawWant, le slew de movement) ; la conduite (le régime
+     libre du dribble) reprend à la touche suivante ; l'événement 'control' porte pousse {dir, lead, v}, la mesure settle se
+     prend ballon libre. Le pressé garde la capture d'hier (la touche propre protégée du 265) ; l'issue manquée/contestée
+     aussi. APRÈS (4 × 300 s) : porté soudé 49 → 38 % (la fenêtre de contrôle 16 → 10 %), 36 % des contrôles au pied
+     poussés ; pertes 69 → 62, tirs 3 → 7, réussite 0,63 → 0,66. Les demi-tours après la prise (> 100° / 1,2 s) restent
+     ~38 % : ils se font désormais SUR un ballon qui roule devant (le contrôle orienté), plus sur un ballon soudé. Jumeau :
+     identique. Banc : verify-touche-orientee 6/0 (le match, le receveur libre dos au jeu — poussée, ballon libre, vers le
+     jeu, le corps tourne 141° en 0,6 s —, le pressé qui capture). Épinglée nulle sur les 48 bancs datés.
+- 400: L'ESPACE DEVANT CASSE LA TENUE (17/09, cfg.verticalite.appel). Mesuré au 396 : les intentions longues mouraient au
+     timing (346 refus / 600 s) — la tenue calme (1,2-3 s, plafond 2,5) retenait l'armé pendant que la fenêtre se fermait.
+     LA LOI : choosePass marque l'élu « dans l'espace » (esp, le prédicat du 396) ; à l'adoption il vaut un appel
+     (runnerCall — la tenue calme dispensée) ; beginPass lui ouvre la porte du timing au holdMin d'origine, comme
+     l'engagement ; l'événement 'pass' porte esp. A/B 4 × 300 s (sans → avec) : passes 145 → 151, pertes 76 → 67, réussite
+     0,59 → 0,68 ; occasions prises 10-13 → 15 %. Banc : verify-verticalite (c) — l'avant libre à 16 m (hors passRange :
+     il n'existe que par la portée de l'espace), la ligne 12 m derrière lui, la tenue calme d'origine : la passe part en
+     0,42 s contre 2,52 s sans l'appel. ATTRAPÉ EN ÉCRIVANT LA FIXTURE : elle téléporte la défense, et la couche de
+     croyance du porteur (266) mettait 1,5 s à la voir — la course de beginPass refusait la passe sur des fantômes à 1 m
+     (deny 'course', l'intention re-décidée au vetoTtl) ; la fixture épingle croyance:null — elle mesure la tenue, pas la
+     perception. Sous-clé : appel:false = le 396 seul. RELU AU SCEAU (403 f) : à 8 graines canoniques la part d'occasions de
+     profondeur PRISES ne progresse pas (14,8 → 11,9 %) — la course de beginPass refuse la passe longue vers un avant posé ;
+     l'appel de l'avant, côté receveur, est le lot suivant.
+- 401: LA TALONNADE HONNÊTE (17/09, cfg.orientationPasse.talon — approach.anchorFor opts.dos, planStrike talonDos, le
+     payload dos, le glissement de rondo-sim). Vu en page au 395 : anchorFor posait le regard SUR la sortie pour toutes les
+     stances — le talon (ballon à 153° derrière) claquait le corps vers la cible (le glissement l'excluait du taux borné) et
+     frappait un ballon derrière lui vers l'avant. LA LOI : pour la surface heel l'ancre regarde à l'OPPOSÉ de la sortie
+     (yaw = outYaw + π), le ballon derrière le corps part derrière lui ; le taux borné s'applique (le tour est petit : la
+     cible est derrière) ; pressé et rien ne tient, le talon reprend sa place dans le plan quand la sortie est derrière
+     (≥ 115°) — le geste que l'A/B du 395 donnait meilleur (361 passes / 134 pertes) mais que le corps claqué interdisait.
+     Attrapé à la mesure : le pick planifié n'a pas de .surface (13 talonnades au corps tourné de 115-179° vers la cible
+     pendant l'armé) — la ligne de la table (pick.tech.surface) fait foi. APRÈS (4 × 300 s) : 14-17 talonnades, la sortie
+     à 135-180° du regard, le tour pendant l'armé ≤ 40°, 13/14 reçues ; les passes planifiées hors du geste (talon exclu) :
+     0-1 / 69-75. Banc : verify-orientation (f) ; le talon:false d'hier : 0 talonnade.
+- 402: LA SORTIE MENÉE AU BOUT (17/09, cfg.decalage.sortie — skills-sim). LA SONDE (8 × 300 s) : après un geste VENDU
+     (passement/crochet mordu) le porteur garde le ballon 8 fois sur 14, en passe 6, n'en perd 0 — mais ne bat le défenseur
+     (le corps dépassé) que 1-2 fois : la morsure (0,35-0,4 s × gesteF) est plus courte que la sortie. LA LOI : le mordu
+     s'assoit au moins bite 0,6 s (la pointe au ralenti de movement, biteSlow). EFFET MESURÉ FAIBLE (battus 1/7 → 2/14) :
+     le 1c1 mené au bout demande la trajectoire de sortie par l'épaule et la reprise du défenseur — le modèle de duel du
+     tronc, dette maintenue. Banc : verify-decalage (e) — la morsure tenue ≥ 0,6 s sur le passement vendu au jockey posté.
+     BILAN DES LOTS 6-9 AU SCEAU (8 graines × 300 s, le receveur ouvert retiré, la touche à libre 4 m, les quatre clés
+     vivantes ; hier → lots 1-9) — graines 41-71 : passes 378 → 304, pertes 159 → 160 (par passe 0,42 → 0,53), réussite
+     0,65 → 0,63, tirs 12 → 12, buts 5 → 3 ; graines 3-59 (un second jeu, pour ne pas juger sur un seul) : passes 362 → 292,
+     pertes 151 → 152, réussite 0,58 → 0,63, tirs 13 → 10, buts 2 → 3. Avant le retrait du receveur (graines 41-71, libre 3) :
+     313 / 154 / 10 tirs. LE PRIX NOMMÉ : un cinquième de passes en moins (−12 % de temps de jeu : plus de coups francs et de
+     corners ; −10 % de passes par seconde jouée : le porteur conduit au lieu de redonner en une touche), les pertes et les
+     tirs ne bougent pas. Le détail par défaut nommé au 403 (f).
+- 403: LE SCEAU DES LOTS 6-9 — CE QUE LA SUITE A ATTRAPÉ (17/09). (a) LE ROULÉ MORT : la suite rendait lots 276/277 rouges (0 tir
+     en 600 s, graine 3, le monde vivant) — tracé : une touche à 320 s, le ballon hors d'atteinte, le ramasseur roule 32 m, le
+     ballon meurt à 11,7 m du point APRÈS la fenêtre de 6 s (personne n'y va, le lanceur attend au point) : la touche gèle
+     jusqu'à la fin du match (33 passes en 600 s). Un bug du § 5 (note 382), rare (0 sur 8 graines canoniques × 300 s), que le
+     chaos de mes clés a exposé sur cette graine. cfg.ramasseurs.rattrape 14 s : dans rattrape s après la pose, un roulé arrêté
+     sans preneur se pose au point quelle que soit la distance ('ramasseur' cause 'roulé-mort'). Absente : l'hier au bit (jumeau
+     identique avec la sous-clé nulle). verify-ramasseurs 7/0, clause (c). Commit 58b4b13. (b) LE TEMPS MORT DU MATCH — sonde-temps
+     (8 graines canoniques × 300 s) : le ballon est en REMISE 41 % du temps hier (tempsMort du 217 : engagement 34-38 s, coup
+     franc 32-35, sortie de but 36, corner 41-45, penalty 27 — le temps réel du football, cérémonie comprise) et 49 % avec mes
+     clés : plus de coups francs (8 → 11-12, les duels de la conduite font des fautes), des corners et des penalties (0 → 1-5),
+     moins de touches (10 → 2-12). Le quart de passes en moins se décompose : −12 % de temps de jeu, −13 % de passes par
+     seconde jouée (le porteur conduit au lieu de redonner). Le levier du « il se passe rien » que je ne touche pas : le
+     tempsMort du tronc (18-28 s par remise, réaliste, long pour une vitrine). (c) LES ABLATIONS (8 graines canoniques, le monde
+     final moins UNE clé, libre 3 m) : sans orientationPasse 303 passes / 156 pertes / 12 tirs ; sans verticalite 303 / 172 / 7
+     (la verticalité paie : −16 pertes, +8 tirs) ; sans decalage 320 / 148 / 13 (le décalage coûte 32 passes et 8 pertes) ; sans
+     toucheOrientee 333 / 163 / 13 (la touche coûtait 45 passes) ; sans verticalite.appel 295 / 171 / 15 ; sans decalage.sortie
+     285 / 170 / 17 ; tout : 288 / 156 / 15. (d) LA TOUCHE ORIENTÉE JUGÉE À 8 GRAINES : ses deux clauses de monde, vertes à 4
+     graines avec le receveur ouvert, rouges à 8 sans lui (soudé 45 c. 49 %, 0,57 perte par passe) — quatre variantes mesurées
+     (libre 4 / 5, poussée courte, receveur lancé) : libre 4 m rend soudé 41 c. 49 %, poussées 37 %, 290 passes c. 362, 155
+     pertes c. 148, 15 tirs ; libre 5 : 45,6 % ; poussée courte : 44,5 % ; v 2,5 : 190 pertes. Réglage : libre 3 → 4 (le ballon
+     libre 1 m devant avec un corps à 3 m était une perte). Les clauses de monde à 8 graines, en pertes ABSOLUES (la clé échange
+     des passes contre des conduites : la perte par passe monte mécaniquement et ne juge pas cette clé). (e) LA SONDE DU PORTÉ
+     RELUE : sonde-match suivait le porteur par ball.owner — la touche orientée et le dribble libèrent le ballon entre deux
+     touches, les conduites du monde nouveau se fragmentaient (147 conduites, 2,4 m d'avancée médiane) ; par le porteur de la
+     possession : 318 conduites, 157 longues, 5,5 m d'avancée médiane, 150 virages, 20 décalages, rectitude 0,925 — et
+     hier, à la même sonde : 353 / 203 / 5,8 m / 201 / 32 / 0,920. (f) LE VERDICT À 8 GRAINES, DÉFAUT PAR DÉFAUT (graines
+     41-71, hier → aujourd'hui) : les passes planifiées hors du geste (60-90° du regard) 33 → 15 et 90°+ 55 → 42 (les talons
+     honnêtes) ; les passements EN COURSE 10 → 20 ; la part en une touche 0,20 → 0,17 ; les longs retraits 32 → 30 (la part
+     8,5 → 9,9 %) ; les occasions de profondeur PRISES 20/135 → 15/126 (14,8 → 11,9 % : la profondeur n'a PAS progressé dans
+     le monde — la course de beginPass refuse la passe longue vers un avant POSÉ ; l'appel de l'avant, côté receveur, est le
+     prochain lot) ; les demi-tours après la prise 0,24 → 0,23 (les ballons reçus de dos 0,45 → 0,56 : les passes vers
+     l'avant, reçues face au but) ; les combinaisons 105 → 92 (la part par passe 0,28 → 0,30) ; les décalages en conduite 32 →
+     20 (9 → 6 % des conduites). LES MÉCANISMES SONT LÀ (les fixtures et les bancs), LE MONDE BOUGE PEU — et il paie un
+     cinquième de passes. À juger en page ; chaque clé se rend nulle séparément (orientationPasse, verticalite, decalage,
+     toucheOrientee).
+     SCEAU : suite 970 ✓ / 2 ✗ (les deux rouges hérités du tronc, 245 flux et 246d, rouges à d3dbe73 déjà ; le temps par pas et
+     les lots 276/277 verts — la graine 3 dégelée), verify-sync 9/0, jumeau d'empreinte identique (base-engine-s16 = d3dbe73,
+     les quatre clés et ramasseurs.rattrape nuls). Commits be50da4, 58b4b13, 176be9e, 06b1be3 puis le sceau, poussés sur
+     claude/11c11 ; le tronc n'a pas encore fusionné, Vercel montre le tronc.
+- 404: LA PORTE DU TIR DANS LA SURFACE (282 — le pré-filtre du Modèle 10 §1.4, prefiltre.js, cfg.prefiltreTir ; la carte
      après le 281 : « 0,5 tir par touche en surface pour 0,32 »). LA SONDE (sonde-282 = la sonde-280 + le corps et l'angle
      visible au moment de chaque tir contrôlé en surface, 4 × 90 min, graines 3/7/11/13) : tirs 42,0 / match (25,3 réel), dedans
      31,3 (16,2), touches en surface 50,0 (51), 0,63 tir par touche (0,32) ; le CORPS au tir contrôlé (hors tête, volée,
