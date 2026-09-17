@@ -14,7 +14,7 @@ const hyp = Math.hypot;
 // la distance de chacun à sa place d'engagement à la prise, l'orientation 0,6 s après chaque salut.
 const T0 = matchCfg({}).temps;   // le temps additionnel MINIMUM de 60 s du match plein (cfg.temps.additionnel.min) ferait durer la période de 40 s plus de 100 s : épinglé à 0 dans la fixture (la loi d'ajout ×0,35 reste)
 const joue = (over, secs, seed = 3) => {
-  const st = makeMatch({ full: true, seed }); const cfg = matchCfg({ chrono: { periodes: 1, duree: 40, pause: 4 }, temps: { ...T0, additionnel: { ...T0.additionnel, min: 0 } }, petitsGestes: null, passements: null, enchainement: null /* DATÉ 16/09 (§ 10) */, ...over });
+  const st = makeMatch({ full: true, seed }); const cfg = matchCfg({ chrono: { periodes: 1, duree: 40, pause: 4 }, temps: { ...T0, additionnel: { ...T0.additionnel, min: 0 } }, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null /* DATÉ 16/09 (§ 10) */, ...over });
   const spots0 = st.players.map((q) => [q.p[0], q.p[2]]);
   const E = { poignees: [], pris: [], saluts: [], cere: [], fin: null, add: null }, pend = [], regards = [], salutSin = []; let seen = 0, prisPos = null, arretsPris = null, tPris = null;
   for (let i = 0; i < secs * 60; i++) {
@@ -57,7 +57,7 @@ console.log('\n— (b) le salut au public au sifflet final —');
 }
 console.log('\n— (c) la clé absente rend l\'hier ; le sabotage est attrapé —');
 {
-  const h = joue({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null }, 50);
+  const h = joue({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null }, 50);
   ok(`LA CLÉ ABSENTE : ceremonie:null — aucune cérémonie, aucune poignée, aucun salut (${h.E.cere.length} / ${h.E.poignees.length} / ${h.E.saluts.length}), l'engagement pris à ${h.tPris?.toFixed(2) ?? '—'} s (hier), la fin de match à ${h.E.fin?.t ?? '—'} s`,
     h.E.cere.length === 0 && h.E.poignees.length === 0 && h.E.saluts.length === 0 && h.tPris != null && h.tPris < 3 && !!h.E.fin && h.E.fin.t < 50);
   const s = joue({ ceremonie: { ...K, poignee: { ...K.poignee, rang: 3 } } }, 40);

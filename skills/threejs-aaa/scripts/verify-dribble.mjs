@@ -117,7 +117,7 @@ function run({ speed = 5, turn = 0, T = 6, dt = 1 / 120 } = {}) {
 {
   const { makeMatch, matchCfg, matchStep } = await import('../assets/starter/src/engine/match-sim.js');
   const st = makeMatch({ full: true, seed: 1 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20 });
   for (let i = 0; i < 120 * 60; i++) matchStep(st, 1 / 60, cfg);
   const touches = st.events.filter((e) => e.type === 'touche');
   const nues = touches.filter((e) => e.dev == null || e.spd == null || !Number.isFinite(e.dev));

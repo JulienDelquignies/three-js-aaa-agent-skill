@@ -9,7 +9,7 @@ import { BALL, kick } from './ball.js';
 import { startGesture } from './gesture.js';
 import { isOffside, offsideLine, pointCorps } from './offside.js';
 import { affinite as affiniteFam, affiniteMotif } from './familiarite.js';
-import { MOVE_TIMING } from './skills-sim.js';
+import { MOVE_TIMING, wrapA } from './skills-sim.js';
 import { croyanceDe } from './croyance.js'; import { tirage } from './rng.js'; import { ecartDe, vitesseDe } from './ellipse.js'; import { vMaxDe, dispersionGeste } from './repertoire.js'; import { rendezVousDe } from './rendezvous.js';
 import { pressionDe, sigmaPasse } from './reception.js';
 import { TECHNIQUES, chooseTechnique, situation, byId } from './technique.js';
@@ -175,6 +175,28 @@ export function beginPass(st, choice, cfg, opts = {}) {
     // (75 sorties). Rejoindre la stance d'un ballon porté n'est pas une marche vers un point du
     // monde : c'est ARRANGER LE COUPLE (pivoter, un demi-pas) — corps et ballon glissent ensemble,
     // le glissement de l'armé fait les deux, et la borne est celle d'un ajustement à deux pas.
+    // LA PASSE DANS LE SENS DU GESTE (note 395, cfg.orientationPasse && st.full — retour utilisateur : « des passes faites dans des directions qui ne
+    // correspondent pas au geste » ; mesuré : 10/42 passes planifiées partaient à > 60° du regard au contact — passe-rapide à 64-110°, puis les
+    // pivots à 60-130° : le porteur ADOPTE une passe arrière et court encore une seconde vers l'avant (la tenue calme), sans se tourner, puis le
+    // pivot ne tourne que retournement.rate × 0,52 s. Trois branchements : (1) rondo-sim, à l'adoption au-delà de tourner ° le porteur se
+    // RETOURNE AVEC LE BALLON (le _retour du 240b : la poussée vise le receveur) ; (2) ici LA TECHNIQUE SE CHOISIT POUR LE TOUR QU'ELLE DOIT
+    // FAIRE — un candidat reste si sa fenêtre (turn, plafonnée à fenetre ° : le clip du pivot ne tourne le bassin que de 38°) plus ce que son
+    // armé tourne encore (× marge) couvre l'écart regard→sortie, le talon si la sortie est derrière ; rien ne tient : le porteur LIBRE (presseur
+    // > presse m) attend le tick suivant en se tournant (refus nommé), le pressé joue l'hier ; (3) l'engagement (engagementPasse) part au
+    // holdMin d'origine, pas à la tenue calme (le preneur courait 1 s vers l'avant avant de pivoter). Premier essai (le regard tenu en
+    // course) : −27 % de passes, le cône du porté lâchait le ballon — refusé à la mesure. Tir, centre, main, dégagement, élan : l'hier.
+    if (st.full && cfg.orientationPasse && !mains && !opts.shot && !opts.clear && !opts.elan && !choice.cross) {
+      const KO = cfg.orientationPasse, dY = Math.abs(wrapA(outYaw - c.yaw)), tour = (KO.marge ?? 0.8) * (cfg.retournement?.rate ?? 4) * (c.skill?.accelF ?? 1);
+      const libre = nearFoe > (KO.presse ?? 2.2);   // libre : le pivot n'est pas un tour (son clip ne tourne le bassin que de 38°, sa fenêtre de 150° est la légalité de la sim) — il finit de se tourner et joue la passe posée
+      const fits = cands.filter((cd) => cd.data?.surface !== 'heel' && !(libre && cd.clip === 'passePivot') && Math.min(cd.data?.turn ?? 35, KO.fenetre ?? 60) * Math.PI / 180 + tour * cd.antic >= dY);
+      if (fits.length) { cands = fits; if (c._regardOri) { c._regard = null; c._regardUntil = null; c._regardOri = false; } }
+      else if (libre) {   // LIBRE : IL S'OUVRE SUR PLACE — le regard tenu vers la sortie (movement : le cap pivote à retournement.rate), la pointe
+        // capée à vTour (sous 1,5 m/s le cône du porté ne joue pas : la semelle tourne avec, le ballon suit le point du pied) ; la poussée du _retour aidait trop peu
+        // (mesuré : 0,85 rad/s — l'EMA et le mélange d'évasion freinent la rotation). Le talon n'est pas un geste de confort : il ne remplace pas le tour.
+        c._regard = outYaw; c._regardUntil = st.t + (KO.ouvre ?? 0.3); c._regardOri = true; c._ouvre = st.t + (KO.ouvre ?? 0.3);
+        return deny(st, 'orientation');
+      } else { const talon = cands.filter((cd) => cd.data?.surface === 'heel' && dY >= (130 - (cd.data.turn ?? 15)) * Math.PI / 180); if (talon.length) cands = talon; }   // pressé : le talon si la sortie est derrière, sinon l'hier
+    }
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
       { rushed: nearFoe < cfg.rushedRadius, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
     // UN REFUS PILOTE L'APPROCHE : même sans stance atteignable, le plan dit OÙ MARCHER (steer) —
@@ -243,7 +265,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // …et la MAIN du gardien ne « pose » pas un ballon qu'elle tient : la tenue (gkTenueDue) a déjà été servie,
   // la porte ne s'applique qu'au pied (lot A9 — mesuré : holdMin conditionnel 2,2 s au calme, la relance à la
   // main refusée 'timing' à chaque essai, 0 relance-main en 7 graines × 240 s).
-  const holdGate = opts.shot ? cfg.holdMin : (st._holdMin ?? cfg.holdMin);
+  const holdGate = opts.shot || (st.full && cfg.orientationPasse?.engagement && st._engagement && st._engagement.by === c.id && st.t - st._engagement.t < 2.5) ? cfg.holdMin : (st._holdMin ?? cfg.holdMin);   // (395) l'engagement part au holdMin d'origine
   if (!mains && st.hold < holdGate - move.contact * cfg.windupCarve) return deny(st, 'timing');
 
   // LA COURSE. Le couloir de choosePass est une photo (des mètres perpendiculaires, MAINTENANT) ;

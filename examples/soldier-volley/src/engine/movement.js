@@ -336,7 +336,7 @@ export function movePlayers(st, dt, cfg) {
         }
       } else if (p.target) p._tgtPrev = { x: p.target[0], z: p.target[2], t: st.t };
     }
-    if (p._boite && st.t < p._boite.until) top *= 1 - (cfg.boiterie?.ralenti ?? 0.3) * Math.max(0.2, (p._boite.until - st.t) / (p._boite.duree || 1));   /* (§ 8) LE FAUCHÉ BOITE : la pointe se réduit APRÈS tous les plafonds, l'intention d'effort comprise (posé avant elle, 0,7 × 6,56 = 4,59 restait au-dessus des 4,2 de l'intention et ne mordait jamais) */
+    if (p._boite && st.t < p._boite.until) top *= 1 - (cfg.boiterie?.ralenti ?? 0.3) * Math.max(0.2, (p._boite.until - st.t) / (p._boite.duree || 1)); if (st.full && cfg.orientationPasse && (p._ouvre ?? -1) > st.t && st.possession.carrier === p.id) top = Math.min(top, cfg.orientationPasse.vTour ?? 1.2);   /* (395) LE PORTEUR QUI S'OUVRE FREINE : sous vTour le cône du porté ne joue pas, le ballon tourne avec lui */   /* (§ 8) LE FAUCHÉ BOITE : la pointe se réduit APRÈS tous les plafonds, l'intention d'effort comprise (posé avant elle, 0,7 × 6,56 = 4,59 restait au-dessus des 4,2 de l'intention et ne mordait jamais) */
     let wx = 0, wz = 0, dTgt = Infinity;
     if (p.target) {
       const dx = p.target[0] - p.p[0], dz = p.target[2] - p.p[2];
@@ -438,7 +438,8 @@ export function movePlayers(st, dt, cfg) {
     // dérive : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à chaque
     // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la
     // v1 de la loi (p90 156° au contact).
-    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && p.speed < 2.2;
+    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && (p.speed < 2.2
+      || (cfg.receveurOuvert && !st.pass.through && p.speed < (cfg.receveurOuvert.v ?? 3.6) && p.speed > 0.25 && (p.v[0] * (st.ball.p[0] - p.p[0]) + p.v[1] * (st.ball.p[2] - p.p[2])) < 0));   // (398) LE RECEVEUR OUVERT (cfg.receveurOuvert) : celui qui COURT À L'OPPOSÉ du ballon qui lui vient (le retrait, la course arrière — mesuré : 12 demi-tours > 100° sur 55 réceptions, 11 en mouvement) se présente aussi — le corps s'ouvre pendant le vol, pas après ; la course servie (through) garde sa loi
     // LE GARDIEN NE QUITTE PAS LE BALLON DES YEUX (lot 132, cfg.regardGardien && st.full —
     // mesuré : 3/20 plongeons déclenchés sur un regard > 60° du ballon, p90 107° — le côté
     // du clip se calculait sur la dérive de COURSE, le corps « se retournait ») : le yaw du

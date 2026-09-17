@@ -42,7 +42,7 @@ function stepGestures(st, dt, cfg) {
         // ballon encore à > 0,45 m du corps se rassemble DOUX (lot 63, st.full — film seed 7 : chaque virage sans contact restant vivait à ±0,05 s d'un windup, le
         // ballon REBROUSSAIT sec vers le stance depuis 0,8 m).
         if (!(st.full && cfg.porteAnticipe)) st.ball.carry(stanceBallPoint(p, p.act.payload.stance, p.act.payload.pick.foot), dt, st.full && d2(p.p, st.ball.p) > 0.45 ? { tau: 0.12, vMax: 6.5 } : { tau: 0.035 });   // …sinon le porté ANTICIPE, après le glissement (plus bas)
-      } else if (st.ball.owner === p.id && p.act.payload?.pin) st.ball.carry(p.act.payload.pin, dt, { tau: 0.04 }); /* (passements, note 385) le ballon ramené AU POINT DU CLIP dès l'entrée, vite (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route) — l'escorte le laissait où il traînait jusqu'au contact */ else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
+      } else if (st.ball.owner === p.id && (p.act.payload?.pin || p.act.payload?.pinRel)) st.ball.carry(p.act.payload.pinRel ? [p.p[0] + Math.cos(p.yaw) * p.act.payload.pinRel, p.p[2] + Math.sin(p.yaw) * p.act.payload.pinRel] : p.act.payload.pin, dt, { tau: 0.04 });   /* (397) pinRel : le point du clip suit le corps qui court (crochet en course) */ /* (passements, note 385) le ballon ramené AU POINT DU CLIP dès l'entrée, vite (tau 0,04 : à 0,08 le premier tour cerclait un ballon encore en route) — l'escorte le laissait où il traînait jusqu'au contact */ else if (!(st._settling && st.t < st._settling.at)) st.ball.escort([0, 0], dt, { tau: 0.09 });
       // et le CORPS GLISSE SUR L'ANCRE de la stance (approach.glide) : les derniers décimètres se règlent pendant l'armé, comme un vrai joueur ajuste ses derniers
       // appuis. La vitesse écrite est celle du glissement, pour que l'inertie et l'animation lisent le mouvement réel.
       if (p.act.payload?.stance) {
@@ -249,7 +249,7 @@ function receive(st, id, cfg = RONDO) {
     if (st.possession.carrier !== id || !p._takeP) p._takeP = [p.p[0], p.p[2]];
     st.possession.carrier = id; st.phase = 'carry'; st.pass = null;
     st.hold = 0; st.pressure = 0;
-    p.intent = null; p.anchorHint = null;  // une possession neuve décide pour elle-même — plan ET cap (le hint survivant pilotait vers l'ancre d'un autre monde)
+    p.intent = null; p.anchorHint = null; if (st.full && cfg.orientationPasse) p._retour = null;   /* (395) le retournement d'une autre possession ne pilote pas celle-ci */  // une possession neuve décide pour elle-même — plan ET cap (le hint survivant pilotait vers l'ancre d'un autre monde)
     // LE GARDIEN PREND À DEUX MAINS : sa prise est un CATCH (les gardiens n'existent pas au rondo) ; le tir DANS LE CORPS à hauteur de poitrine : le buste ENCAISSE (lot 93).
     if (p.keeper) {
       if (st.full && cfg.parades !== false && busteBlock(st, p, cfg)) return;
@@ -970,7 +970,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
           const paceTo = st.players[choice.to.id]?._pace;
           const ttl = st.full && (paceTo?.until ?? -1) > st.t && paceTo.kind === 'appel'
             ? Math.min(st.t + cfg.intentTtl, paceTo.until + 0.3) : st.t + cfg.intentTtl;
-          c.intent = { choice, until: ttl };
+          c.intent = { choice, until: ttl }; if (st.full && cfg.orientationPasse && st.players[choice.to.id]) { const toO = st.players[choice.to.id]; if (Math.abs(wrapA(Math.atan2(toO.p[2] - c.p[2], toO.p[0] - c.p[0]) - c.yaw)) > (cfg.orientationPasse.tourner ?? 60) * Math.PI / 180) c._retour = { to: choice.to.id, t: c._retour?.t ?? st.t }; }   // (395) L'ADOPTION AU-DELÀ DE tourner ° SE RETOURNE AVEC LE BALLON : le _retour du 240b (match-sim : la poussée vise le receveur), la passe s'arme une fois le corps ouvert
         }
         // LA SEMELLE VIT DANS LA TENUE : pas d'intention encore, du champ, du calme — le pied se
         // pose sur le ballon et la tête se lève. Le geste ALLONGE la tenue de sa durée (busy),

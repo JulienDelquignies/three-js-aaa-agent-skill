@@ -49,7 +49,7 @@ const sortie = (over, secs = 30) => {
   const r = sortie({});
   ok(`LA SEMELLE (petitsGestes.semelle) : le preneur arrivé au ballon (${r.vAt != null ? r.vAt.toFixed(2) + ' m/s' : '—'} ≤ ${K.semelle.vMax}) pose la semelle (geste arretSemelle par ${r.geste?.by ?? '—'} à ${r.geste ? (r.geste.t - r.t0).toFixed(1) : '—'} s) et la sortie de but PART ${r.geste && r.pris ? (r.pris.t - r.geste.t).toFixed(2) : '—'} s après (≥ tenue ${K.semelle.tenue} − 1 tick, le même preneur ${r.pris?.by ?? '—'})`,
     !!r.geste && !!r.pris && r.pris.by === r.geste.by && r.pris.t - r.geste.t >= K.semelle.tenue - 0.02 && r.vAt <= K.semelle.vMax + 0.05);
-  const n = sortie({ petitsGestes: null, passements: null, enchainement: null });
+  const n = sortie({ petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null });
   ok(`semelle:null — aucune semelle (${n.geste ? 'geste' : 'rien'}), la sortie de but part (${n.pris ? (n.pris.t - n.t0).toFixed(1) + ' s' : 'jamais'}) ; avec la clé : ${r.pris ? (r.pris.t - r.t0).toFixed(1) : '—'} s`, !n.geste && !!n.pris);
 }
 
@@ -74,7 +74,7 @@ const coupFranc = (over, secs = 8) => {
     !!r.geste && r.geste.by === r.gk.id && r.murAt != null && r.geste.t >= r.murAt + K.mur.delai - 0.02 && r.regardAt != null && vers < 0.15);   // le gardien a bougé d'ici la fin de la course : ± 8°
   ok(`…et le relâche à l'heure (regard nul à ${r.regardOff != null ? (r.regardOff - r.geste.t).toFixed(2) : '—'} s du geste ≈ duree ${K.mur.duree}, ou à la reprise ${r.pris ? (r.pris.t - r.t0).toFixed(1) + ' s' : '—'})`,
     r.regardOff != null && (Math.abs(r.regardOff - r.geste.t - K.mur.duree) <= 0.06 || (r.pris && Math.abs(r.regardOff - r.pris.t) <= 0.06)));
-  const n = coupFranc({ petitsGestes: null, passements: null, enchainement: null });
+  const n = coupFranc({ petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null });
   ok(`mur:null — aucun geste (${n.geste ? 'geste' : 'rien'}), aucun regard tenu (${n.regardAt ?? 'nul'}), le mur d'hier élu (${n.murAt != null ? 'oui' : 'non'})`, !n.geste && n.regardAt == null && n.murAt != null);
 }
 
@@ -105,7 +105,7 @@ const centre = (over, { h = 2.6 } = {}) => {   // la fixture de verify-tete-arme
   return { A, t0, tete, windup, own: hyp(st.pitch.ownGoal(1).x - A.p[0], A.p[2]) };
 };
 {
-  const r = centre({}), n = centre({ petitsGestes: null, passements: null, enchainement: null });
+  const r = centre({}), n = centre({ petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null });
   ok(`LE DÉGAGEMENT ARMÉ (petitsGestes.teteDefensive) : le défenseur ${r.A.id} à ${r.own.toFixed(0)} m de son but arme la tête sautée en '${r.windup?.move ?? '—'}' (windup à ${r.windup ? (r.windup.t - r.t0).toFixed(2) : '—'} s) et la joue en '${r.tete?.mode ?? '—'}'${r.tete?.saut ? ' sautée' : ''}`,
     !!r.windup && r.windup.move === 'teteDefensive' && !!r.tete && r.tete.mode === 'dégagement' && !!r.tete.saut);
   ok(`teteDefensive:null — le même armé se nomme '${n.windup?.move ?? '—'}' à la même heure (${n.windup ? (n.windup.t - n.t0).toFixed(2) : '—'} s c. ${r.windup ? (r.windup.t - r.t0).toFixed(2) : '—'}), la tête à la même heure (${n.tete ? (n.tete.t - n.t0).toFixed(2) : '—'} c. ${r.tete ? (r.tete.t - r.t0).toFixed(2) : '—'})`,
@@ -132,7 +132,7 @@ const match = (over, secs = 90) => {
   ok(`LA FEINTE D'APPEL (petitsGestes.feinteAppel) : ${r.feintes.length} feintes en 90 s par ${parJoueur.size} soutiens posés (vitesse au geste ≤ ${K.feinteAppel.vMax} : max ${r.vitesses.length ? Math.max(...r.vitesses).toFixed(2) : '—'}), jamais deux à moins de ${K.feinteAppel.cadence} s pour un même corps (${serre} serrées)`,
     r.feintes.length >= 1 && serre === 0 && Math.max(...r.vitesses) <= K.feinteAppel.vMax + 0.05);
   ok(`LE CONTRÔLE ORIENTÉ (scène, petitsGestes.controleOriente.angle ${K.controleOriente.angle}°) a matière : ${r.orientes} des ${r.controles} contrôles de 90 s tournent le receveur de ≥ ${K.controleOriente.angle}° (yawWant − yaw) — informatif`, r.orientes >= 1);
-  const n = match({ petitsGestes: null, passements: null, enchainement: null }, 60);
+  const n = match({ petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null }, 60);
   ok(`petitsGestes:null — aucun événement 'geste' en 60 s (${n.gestes.length})`, n.gestes.length === 0);
 }
 

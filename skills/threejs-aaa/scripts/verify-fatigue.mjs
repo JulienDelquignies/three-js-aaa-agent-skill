@@ -18,7 +18,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 1. frais au coup d'envoi, puis le drain CORRÈLE au travail
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20 });
   matchStep(st, 1 / 60, cfg);
   ok(`tout le monde est FRAIS au coup d'envoi (stam min ${Math.min(...st.players.map((p) => p.stam ?? 1)).toFixed(3)} ≥ 0,999)`,
     Math.min(...st.players.map((p) => p.stam ?? 1)) >= 0.999);
@@ -34,7 +34,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 {
   const vitesse = (force) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20 });
     let p95 = [];
     for (let i = 0; i < 25 * 60; i++) {
       if (force != null) for (const p of st.players) p.stam = force;
@@ -54,7 +54,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 3. les VESTIAIRES rendent des jambes (chrono court, +0,25 à la pause)
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, chrono: { periodes: 2, duree: 60, pause: 5 } });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, chrono: { periodes: 2, duree: 60, pause: 5 } });
   let avant = null;
   for (let i = 0; i < 80 * 60 && avant === null; i++) {
     const prev = st.players.map((p) => p.stam ?? 1);
@@ -80,7 +80,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
     // drain, pas le volume de course — l'économie de course a assez baissé l'effort du poste 5
     // pour compresser l'écart endurant/fragile sous la marge (0,58 vs 0,57 mesuré). On isole :
     // le monde plein-effort sépare les notes, l'économie a SA clause (verify-match11).
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, allure: false });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, allure: false });
     const q = st.players.find((p) => p.team === 0 && p.post === 5);   // le poste qui COURT (récupérateur)
     q.skill = makeProfile({ stamina: note });
     for (let i = 0; i < 180 * 60; i++) matchStep(st, 1 / 60, cfg);
@@ -93,7 +93,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 
 // ---------- 5. le PONT Loi 3 : le projet lit q.stam, l'entrant naît frais
 {
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20 });
   const st = makeMatch({ full: true, seed: 3 });
   for (let i = 0; i < 8 * 60 && !(st.phase === 'carry' && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   const q = st.players.find((p) => p.team === 1 && !p.keeper);
@@ -113,7 +113,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 6. sabotage nommé « moteur infatigable » : fatigue:false → le monde d'hier
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, fatigue: false });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, fatigue: false });
   for (let i = 0; i < 60 * 60; i++) matchStep(st, 1 / 60, cfg);
   ok(`sabotage « moteur infatigable » attrapé (fatigue:false : aucun q.stam posé, aucun événement 'fatigue' — personne ne fatigue jamais, nommé)`,
     st.players.every((p) => p.stam === undefined) && !st.events.some((e) => e.type === 'fatigue'));

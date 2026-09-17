@@ -13021,6 +13021,78 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      AV A|largeurR), loi12 (le mur : 2 rouges hérités, identiques au banc de la fusion, rouges à HEAD~). Réexécutions
      isolées toutes vertes. Bloc 1 seul : 0,42 ms/step (≤ 1,6). Sceau : commit 3a0df60, poussé ; déploiement showcase-pi-mocha au premier essai
      (cmp du chunk Rondo-j51hRboJ — la passe au rendez-vous et les postes de la remise y sont).
+- 395: LA PASSE DANS LE SENS DU GESTE (17/09, cfg.orientationPasse — retour utilisateur : « des passes faites dans des
+     directions qui correspondent pas forcément au geste » ; le lot 1 de la relecture du match après la fusion sur d3dbe73).
+     LA SONDE (sonde-match / sonde-out, 2-4 × 300 s) : 10 des 42 passes PLANIFIÉES partaient à > 60° du regard au contact
+     (les urgentes et les une-touche tiennent leur fenêtre : chooseTechnique lit outBearing) — la passe-rapide à 64-110°
+     (l'armé de 0,22 s ne tourne le corps qu'à retournement.rate × antic = 50°), puis les pivots à 60-130° : le porteur ADOPTE
+     une passe arrière et court encore une seconde vers l'avant (la tenue calme retient l'armé, l'intention vit, rien ne
+     tourne le corps) ; l'ENGAGEMENT en tête (4 graines sur 4 : le preneur courait 1 s vers l'avant puis pivotait à −78°).
+     LA LOI, trois branchements : (1) rondo-sim, à l'adoption au-delà de tourner ° le porteur se RETOURNE AVEC LE BALLON —
+     le _retour du 240b (match-sim : la poussée vise le receveur) ; (2) strike-sim.beginPass choisit LA TECHNIQUE POUR LE
+     TOUR QU'ELLE DOIT FAIRE — un candidat reste si sa fenêtre (turn, plafonnée à fenetre 40° : le clip du pivot ne tourne
+     le bassin que de 38°, sa fenêtre de 150° est la légalité de la sim) plus ce que son armé tourne (marge 0,6 × rate ×
+     antic) couvre l'écart regard→sortie ; libre (presseur > presse 2,2 m) et rien ne tient : il S'OUVRE SUR PLACE (le regard
+     tenu vers la sortie — movement : yawWant au rythme du porteur —, la pointe capée à vTour 1,2 m/s : sous 1,5 le cône du
+     porté ne joue pas, la semelle tourne avec), refus nommé 'orientation', le pivot exclu ; pressé : le talon si la sortie
+     est derrière, sinon l'hier ; (3) l'engagement part au holdMin d'origine. DEUX ESSAIS REFUSÉS À LA MESURE : le regard
+     tenu EN COURSE (−27 % de passes : le cône du porté lâchait le ballon pendant le tour) ; la fenêtre du pivot à 60° (il
+     partait à l'adoption avec 109° de tour pour 135° d'écart, le receveur dérivait de 30° pendant l'armé : −57° au contact).
+     APRÈS (4 × 300 s) : 0 passe planifiée sur 65-94 à > 60° (contre 10/42) ; l'engagement part à 27° en 1,1 s (contre
+     97-99° à 1,5-2,5 s) ; 8 graines × 300 s : passes 378 → 361, pertes 159 → 134, tirs 12 → 16, réussite égale. Jumeau :
+     clé nulle = d3dbe73 au bit (base-engine-s16, empreinte-s16). Banc : verify-orientation 7/0 (le match, l'engagement,
+     la fixture du porteur lancé — il tourne 150°, refus nommés, passe posée à 19° —, le pressé sans refus, la fenêtre des
+     candidats). Épinglée nulle (DATÉ 17/09) sur les 44 bancs datés.
+- 396: LA VERTICALITÉ (17/09, cfg.verticalite — retour utilisateur : « jamais de passes en profondeur quand il y a de
+     l'espace, beaucoup de longues passes en retrait »). LA SONDE : 76 occasions de profondeur (un coéquipier EN JEU à ≥ 8 m
+     devant, dans les 14 m avant la ligne, libre à 4 m, rien à 6 m devant lui) en 4 × 300 s, 7 prises ; les occasions vivaient
+     à 27-64 m, HORS du vocabulaire (passRange 13 m — seuls l'appel, le couloir, la bascule, la sortie au gardien l'étendent) ;
+     29 % de BACK_SAFE, 10 retraits ≥ 12 m ; au tick de décision avec une occasion à ≤ 30 m, choosePass élisait le retrait 18
+     fois sur 31, l'occasion 4 (le point doux 10 m du rondo, −0,32/m, enterrait toute passe de 20 m ; l'homme libre derrière
+     gagnait au couloir + à la liberté). LA LOI (rondo.choosePass, sous la clé) : (a) la passe qui AVANCE rend le point doux
+     (jusqu'à avance × min(gain, plafond 20 m)) ; (b) L'ESPACE DEVANT (le prédicat _esp de la sonde) vaut espace 3 et a SA
+     portée (portee 30 m) ; (c) le RETRAIT du porteur LIBRE (personne à libre 4 m) se paie retrait 3 × recul/dosPlein ; (d) le
+     LONG retrait (> dosLong 12 m) se paie retraitLong 6 même pressé — jamais la sortie au gardien, le relais du une-deux, la
+     bascule ni la course servie. Au tick : l'occasion élue 7 fois sur 10 ; les intentions longues (≥ 15 m) armées 8 → 12 sur
+     38 → 28 (les autres meurent au timing/à l'ancre : la tenue calme, l'approche — hérité). APRÈS (4 × 300 s) : passes
+     longues qui avancent (≥ 15 m, ≥ 8 m de gain) 20 → 23-28, longs retraits 10 → 8, une-deux 10 → 16, combinaisons à trois
+     32 → 41, réussite 0,59 → 0,67 ; pertes par passe stables (0,42 → 0,46). Jumeau : identique. Banc : verify-verticalite
+     4/1 → 5/0 (le match ×1,2, les longs retraits, le monde ; la fixture choosePass : l'avant libre à 22 m est l'élu, le
+     défenseur à 12 m hier). Épinglée nulle sur les 44 bancs datés.
+- 397: LA CONDUITE QUI DÉCALE (17/09, cfg.decalage — retour utilisateur : « la conduite ne crée pas de décalage, trop rigide,
+     trop rectiligne ; les passements de jambes sont toujours arrêtés, je les attends en course »). LA SONDE : rectitude
+     médiane des conduites longues 0,98, 1 décalage / 14 (un défenseur à 4 m devant fini derrière), 0 crochet / 10 min,
+     3 passements en course pour 6 posés ; L'ENTONNOIR (dev-engine instrumenté, chaque return nommé) : crochet — 597 refus
+     « ballon > 0,65 m » (le ballon de course vit à 0,9-1,4 m), 571 « fenêtre [1 ; 2,3] », 78 « pas devant » puis, la fenêtre
+     élargie, 267 « pas devant » : le PLUS PROCHE adversaire est le chasseur dans le dos (132° p50), et la fermeture ne lisait
+     que la vitesse du défenseur (un jockey posté qu'on attaque ne « ferme » jamais : closing 0 < 0,8) ; passement en course —
+     la charge > 0,6 m/s refusait. LA LOI : (1) L'ÉPAULE (match-sim, le job du porteur) : lancé (≥ v 2 m/s) avec un défenseur
+     devant (< fixe 5 m, < lat 3 m), le point de mire devient son épaule (cote 1,3 m) du côté libre — l'espace au-delà, loin de
+     la craie, à l'opposé de son élan latéral —, l'évasion ne dilue plus (tenir 0,7 ; 0,9 coûtait +27 % de pertes par passe :
+     ramené) ; (2) LE CROCHET EN COURSE (skills-sim) : le défenseur DEVANT (≤ 75°, plus le plus proche), jusqu'à foe 3 m, le
+     ballon jusqu'à ballon 1,1 m ramené devant le pied pendant l'armé (pinRel 0,4 — rondo-sim : le point du clip suit le
+     corps), la fermeture RELATIVE (closing 1 m/s), un plancher d'appétit (0,3), le corps qui COURT sous l'armé (payload
+     mobile — movement ne le plante pas) ; (3) LE PASSEMENT EN COURSE jusqu'à chargeCourse 2 m/s. APRÈS (2 × 300 s) : crochets
+     0 → 3-4 (+ 1 vendu), passements en course 3 → 4-8, approche minimale du défenseur devant 2,19 → 1,8 m (il l'attaque) ;
+     « battus » toujours 0 : le duel se règle par le tacle, la charge ou la passe — le 1c1 gagné au bout de la course est une
+     loi de duel (dette nommée au tronc). Jumeau : identique. Banc : verify-decalage 8/0 (le match, l'épaule à 15°, le crochet
+     chaloupé en course sur un jockey posté — mobile, pinRel —, le passement en course sur un jockey qui avance à 1,2 m/s ;
+     hier : aucun des deux). Épinglée nulle sur les 44 bancs datés.
+- 398: LE RECEVEUR OUVERT (17/09, cfg.receveurOuvert — retour utilisateur : « beaucoup trop de passes dans le dos des joueurs
+     qui donnent des réceptions mauvaises avec des demi-tours »). LA SONDE : 18 des 30 receveurs EN COURSE recevaient dans le
+     dos (60 %), 12 demi-tours > 100° dans la seconde après la prise (11 en mouvement, 4 après un BACK_SAFE — le défenseur qui
+     décroche vers son but, reçoit dos au jeu, se retourne) ; les statiques, eux, se présentent (lot 70). LA LOI (movement) :
+     le receveur désigné qui COURT À L'OPPOSÉ du ballon (v · (ballon − p) < 0), sous v 3,6 m/s, se présente AUSSI pendant le
+     vol — le corps s'ouvre au ballon (corpsOuvert garde sa demi-position, le slew borné son rythme) ; la course servie
+     (through) garde sa loi. APRÈS : receveurs en course servis dans le dos 60 → 29-37 % ; demi-tours 13/38 → 16-17/53 (la
+     part stable : ceux qui restent sont les prises dos au but suivies d'une relance — la touche orientée en course, qui
+     pousserait le ballon devant au lieu de le souder 0,3-0,5 s, est une loi de réception : dette nommée au tronc). LE PORTÉ
+     SOUDÉ, REMESURÉ par cause (55 % des images de port : contrôle en cours 19 %, armé 16 %, intention 10 %, autre 9 %) : un
+     essai « le coureur ne ramasse pas son ballon lent » (cfg.porteLibre) n'a rien changé (0,50 → 0,52) — la soudure vient de
+     la fenêtre de contrôle de la RÉCEPTION, pas du ramassage ; clé retirée, dette nommée. Jumeau : identique. Banc :
+     verify-receveur 3/0 (le match 37 % c. 60 %, les demi-tours, la fixture du receveur qui court vers son but : ouvert en
+     courant 0,02 s après la passe, reçu à 31°). Épinglée nulle sur les 44 bancs datés. Bilan des quatre clés (8 graines ×
+     300 s, hier → aujourd'hui) : passes 333 → 389, pertes 142 → 163 (par passe 0,43 → 0,42), réussite 0,56 → 0,66.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

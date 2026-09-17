@@ -118,10 +118,46 @@ vers le ballon (le warp de touche) et jouait « passe extérieur » sur toute ca
 - **Dettes** : l'extérieur reste rare (la conduite du moteur vire peu : 5 %) ; le pied ne change pas au fil des touches (le ballon
   vit devant le pied de contrôle `p.foot`) ; les prises de ballon libre (`control` sans technique) restent au contrôle intérieur.
 
+## La passe dans le sens du geste (`cfg.orientationPasse`, note 395 — verify-orientation 7/0)
+
+Mesuré le 17/09 : 10 des 42 passes planifiées partaient à plus de 60° du regard au contact (passe-rapide à 64-110°, pivots
+à 60-130°) — le plan de frappe ne jugeait que l'ancre, jamais la sortie, et le porteur qui avait adopté une passe arrière
+courait encore une seconde vers l'avant. La loi : à l'adoption au-delà de `tourner` ° le porteur se retourne avec le ballon
+(le `_retour` du 240b) ; `beginPass` choisit la technique pour le tour qu'elle doit faire (fenêtre `turn` plafonnée à
+`fenetre` 40°, plus `marge` × retournement.rate × anticipation) ; libre et rien ne tient, il s'ouvre sur place (regard tenu,
+pointe capée `vTour`, refus nommé `orientation`), pressé il joue l'hier (le talon si la sortie est derrière) ; l'engagement
+part au `holdMin` d'origine. Résultat : 0 passe planifiée à plus de 60° sur 4 graines, l'engagement à 27° en 1,1 s.
+
+## La verticalité (`cfg.verticalite`, note 396 — verify-verticalite 5/0)
+
+Les occasions de profondeur (un coéquipier en jeu à ≥ `profond` m devant, dans les `zone` m avant la ligne, libre à
+`rayon` m, rien à `devant` m devant lui) vivaient à 27-64 m, hors du vocabulaire (passRange 13 m). La loi dans
+`choosePass` : la passe qui avance rend le point doux 10 m (`avance`, `plafond`), l'espace devant vaut `espace` et a sa
+portée (`portee` 30 m), le retrait du porteur libre se paie (`retrait`, `libre`, `dos`, `dosPlein`), le long retrait se paie
+même pressé (`dosLong`, `retraitLong`). Jamais la sortie au gardien, le relais du une-deux, la bascule ni la course servie.
+
+## La conduite qui décale (`cfg.decalage`, note 397 — verify-decalage 8/0)
+
+L'épaule : le porteur lancé (≥ `v`) avec un défenseur devant (< `fixe` m, < `lat` m) vise son épaule (`cote` m) du côté
+libre, l'évasion ne dilue plus (`tenir`). Le crochet en course : le défenseur devant (≤ 75°), jusqu'à `foe` m, le ballon
+jusqu'à `ballon` m ramené devant le pied pendant l'armé (`pinRel`), la fermeture relative (`closing`), un plancher d'appétit
+(`plancher`), le corps qui court sous l'armé (`mobile`). Le passement en course jusqu'à `chargeCourse` m/s de charge. La scène
+n'a rien à faire de plus : les clips `crochet*` et `passementJambes` jouent comme avant, le corps bouge sous eux.
+
+## Le receveur ouvert (`cfg.receveurOuvert`, note 398 — verify-receveur 3/0)
+
+Le receveur désigné qui court à l'opposé du ballon qui lui vient, sous `v` m/s, se présente pendant le vol (la loi du lot 70
+ne s'ouvrait qu'à l'arrêt) ; la course servie garde sa loi. Receveurs en course servis dans le dos : 60 → 29-37 %.
+
 ## Dettes connues
 
 - La semelle des graines très pressées casse toujours (`broke: 'pressé'`) — la tenue complète
   n'existe que sur les graines calmes ; un jour, le porteur devrait CHOISIR un endroit calme.
 - ~~Pas encore de roulette, passement de jambes, petit pont~~ — livrés (A4), et les passements nourris le 16/09 (ci-dessus).
+- Le porté soudé (55 % des images de port) vient de la fenêtre de contrôle de la RÉCEPTION (19 %), de l'armé (16 %) et de
+  l'intention (10 %) : la touche orientée en course, qui pousserait le ballon devant au lieu de le souder 0,3-0,5 s, est une
+  loi de réception (reception.js, tronc) — mesuré le 17/09, l'essai `porteLibre` sur le ramassage n'a rien changé.
+- Le 1c1 gagné au bout de la course (« battus » 0 malgré l'épaule attaquée et les crochets) : le duel se règle par le tacle,
+  la charge ou la passe — une loi de duel (duel.js, tronc).
 - L'audit membre ignore les gestes techniques (filtre `!x.skill`) : leurs clauses composées
   propres (semelle SUR le ballon en monde, pied du râteau au contact) restent à écrire.

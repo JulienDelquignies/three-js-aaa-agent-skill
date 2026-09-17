@@ -36,7 +36,7 @@ const arret = (st) => {                                            // un arrêt 
 
 // ---------- 1. la file, l'arrêt de jeu, la marche, l'identité, le retour
 {
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null });
   const st = settle(3, cfg);
   const q = st.players.find((p) => p.team === 1 && !p.keeper);
   const avant = { name: q.name, skill: q.skill };
@@ -60,7 +60,7 @@ const arret = (st) => {                                            // un arrêt 
 
 // ---------- 2. l'ardoise disciplinaire PART AVEC L'HOMME
 {
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null });
   const st = settle(3, cfg);
   const q = st.players.find((p) => p.team === 1 && !p.keeper);
   siffle(st, cfg, q.id); siffle(st, cfg, q.id);                    // récidive → JAUNE
@@ -78,23 +78,23 @@ const arret = (st) => {                                            // un arrêt 
 
 // ---------- 3. la LIMITE et les refus nommés
 {
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null, loi3: { changements: 1 } });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null, loi3: { changements: 1 } });
   const st = settle(3, cfg);
   const [a, b] = st.players.filter((p) => p.team === 1 && !p.keeper);
   const r1 = remplacer(st, cfg, 1, a.id, null);
   const r2 = remplacer(st, cfg, 1, b.id, null);
   ok(`la LIMITE refuse (changements:1 — premier=${r1}, second=${r2})`, r1 === true && r2 === false);
   // …et l'EXPULSÉ est irremplaçable (le rouge laisse l'équipe à 10 — la loi réelle)
-  const st2 = settle(3, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null }));
+  const st2 = settle(3, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null }));
   const c = st2.players.find((p) => p.team === 1 && !p.keeper);
-  for (let k = 0; k < 4; k++) siffle(st2, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null }), c.id);
-  ok(`l'EXPULSÉ est irremplaçable (rouge posé : remplacer=${remplacer(st2, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null }), 1, c.id, null)} — l'équipe RESTE à 10)`,
-    c.expulse === true && remplacer(st2, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null }), 1, c.id, null) === false);
+  for (let k = 0; k < 4; k++) siffle(st2, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null }), c.id);
+  ok(`l'EXPULSÉ est irremplaçable (rouge posé : remplacer=${remplacer(st2, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null }), 1, c.id, null)} — l'équipe RESTE à 10)`,
+    c.expulse === true && remplacer(st2, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null }), 1, c.id, null) === false);
 }
 
 // ---------- 4. sabotage nommé « porte tournante fermée » : loi3 absent → l'API refuse tout
 {
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, carton: null, loi3: false });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, carton: null, loi3: false });
   const st = settle(3, cfg);
   const q = st.players.find((p) => p.team === 1 && !p.keeper);
   ok(`sabotage « porte tournante fermée » attrapé (loi3:false : remplacer=${remplacer(st, cfg, 1, q.id, null)}, aucune file posée)`,
@@ -105,7 +105,7 @@ const arret = (st) => {                                            // un arrêt 
 {
   const entre = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, repli: false, ...(over ?? {}) });   // (221) repli:false — la clause dépend de LA première remise après 30 s de la graine 3 ; le repli en change le monde et le changement demandé s'annule à la reprise
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, repli: false, ...(over ?? {}) });   // (221) repli:false — la clause dépend de LA première remise après 30 s de la graine 3 ; le repli en change le monde et le changement demandé s'annule à la reprise
     let demande = false, xIn = null, longe = false, tOut = null, tIn = null;
     for (let i = 0; i < 200 * 60 && xIn == null; i++) {
       matchStep(st, 1 / 60, cfg);

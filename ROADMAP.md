@@ -298,6 +298,14 @@
 - LIVRÉ (note 389, reference/59 § 10) : L'APPLAUDISSEMENT D'ENCOURAGEMENT occasionnel et sans chorégraphie — sept occasions à
   probabilité, un ou deux coéquipiers tirés au sort, départs décalés, cadences par équipe et par corps (8-10 par match sur 6-8 corps) ;
   le salut final tiré au sort plutôt qu'un sur deux.
+- LIVRÉ (notes 395-398, reference/52 §§ passe dans le sens du geste, verticalité, conduite qui décale, receveur ouvert ;
+  verify-orientation 7/0, verify-verticalite 5/0, verify-decalage 8/0, verify-receveur 3/0) : LA RELECTURE DU MATCH DU 17/09
+  — la technique de passe choisie pour le tour qu'elle doit faire, le porteur qui s'ouvre avant d'armer, l'engagement au
+  holdMin (cfg.orientationPasse : 0 passe planifiée à > 60° du regard contre 10/42) ; la passe qui avance et l'espace devant
+  avec leur portée, le retrait qui se paie (cfg.verticalite) ; l'épaule attaquée, le crochet et le passement en course
+  (cfg.decalage : crochets 0 → 3-4 / 10 min) ; le receveur qui court à l'opposé et s'ouvre pendant le vol (cfg.receveurOuvert :
+  60 → 29-37 % de receveurs en course servis dans le dos). Dettes nommées au tronc : la touche orientée en course (le porté
+  soudé vient de la fenêtre de contrôle de la réception), le 1c1 gagné au bout de la course (loi de duel).
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

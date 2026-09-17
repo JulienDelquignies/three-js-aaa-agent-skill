@@ -29,7 +29,7 @@ const pose = (st, c, x, z) => {
   st.restart = null; st.ball.possess(c.id);
   st.possession = { team: 0, carrier: c.id }; st.phase = 'carry'; st.hold = 1.0; st.lastTouch = 0;
 };
-const cfgD = () => matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20 });
+const cfgD = () => matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20 });
 
 // ---------- 1. les quatre gagnants, chacun sur SA géométrie
 {
@@ -108,7 +108,7 @@ const cfgD = () => matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null,
   wall[2].p[0] = goal.x - sgn * 5.5; wall[2].p[2] = 0;
   const mate = st.players.find((p) => p.team === 0 && p.post === 9);
   mate.p[0] = goal.x - sgn * 7; mate.p[2] = 7;
-  const a = arbitre(st, c, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, menace: { tir: 1, centre: 0, passe: 0, conduite: 0 } }));
+  const a = arbitre(st, c, matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, menace: { tir: 1, centre: 0, passe: 0, conduite: 0 } }));
   ok(`sabotage « cerveau d'un seul geste » attrapé (poids tir seul : on choisit un MAUVAIS tir — meilleure '${a.meilleure}' malgré « ${a.tir.pourquoi} »)`,
     a.meilleure === 'tir' && a.tir.pourquoi === 'couloir-serré');
 }
@@ -119,7 +119,7 @@ const cfgD = () => matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null,
     const { st, sgn, goal } = mk();
     const c = st.players.find((p) => p.team === 0 && p.post === 8);
     pose(st, c, goal.x - sgn * 9, 0);
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null,  shotRange: 20, ...over });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, ...over });
     for (let i = 0; i < 90; i++) matchStep(st, 1 / 60, cfg);
     return st;
   };
