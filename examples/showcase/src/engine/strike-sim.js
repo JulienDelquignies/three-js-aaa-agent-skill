@@ -195,13 +195,16 @@ export function beginPass(st, choice, cfg, opts = {}) {
         // (mesuré : 0,85 rad/s — l'EMA et le mélange d'évasion freinent la rotation). Le talon n'est pas un geste de confort : il ne remplace pas le tour.
         c._regard = outYaw; c._regardUntil = st.t + (KO.ouvre ?? 0.3); c._regardOri = true; c._ouvre = st.t + (KO.ouvre ?? 0.3);
         return deny(st, 'orientation');
+      } else if (KO.talon && cands.some((cd) => cd.data?.surface === 'heel') && dY >= (130 - 15) * Math.PI / 180) {   // (401) PRESSÉ, la sortie derrière : le talon HONNÊTE (le corps dos à la cible, sans tour) — l'A/B du 395 le donnait meilleur (361 passes / 134 pertes) quand son corps claquait ; honnête, il vaut
+        cands = cands.filter((cd) => cd.data?.surface === 'heel');
       } else {   // PRESSÉ et rien ne tient : le geste qui TOURNE LE PLUS parmi les PROMPTS (armé ≤ anticPresse : la passe posée, 0,38 s, 87° de tour) — le plan d'hier élisait la rapide (0,22 s, 48°) et frappait à 70-140° du regard (12 sur 73 mesurés) ; le pivot (0,52 s) coûtait −20 % de passes sur 8 graines (l'ancre et l'urgence) ; « le talon si la sortie est derrière » claquait le corps vers la cible (vu en page)
         const cap = (cd) => Math.min(cd.data?.turn ?? 35, KO.fenetre ?? 60) * Math.PI / 180 + tour * cd.antic;
         const prompts = cands.filter((cd) => cd.data?.surface !== 'heel' && cd.antic <= (KO.anticPresse ?? 0.4)); if (prompts.length) cands = [prompts.reduce((b, cd) => (cap(cd) > cap(b) ? cd : b), prompts[0])];
       }
     }
+    const talonDos = !!(st.full && cfg.orientationPasse?.talon && !mains);   // (401) LA TALONNADE HONNÊTE (cfg.orientationPasse.talon) : le corps dos à la cible
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
-      { rushed: nearFoe < cfg.rushedRadius, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
+      { rushed: nearFoe < cfg.rushedRadius, talonDos, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });
     // UN REFUS PILOTE L'APPROCHE : même sans stance atteignable, le plan dit OÙ MARCHER (steer) —
     // sans ce cap, le porteur restait sur son standoff d'évasion à p50 = 1,07 m de l'ancre,
     // image après image, jusqu'au tacle (1 573 refus, 122 tacles, médiane de possession 0 passe).
@@ -242,7 +245,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
     pick = good.reduce((b, o) => (antic(o) < antic(b) ? o : b), good[0]);
     move = MOVE_TIMING[pick.tech.clip] || MOVE_TIMING.passe;
     stance = STANCES[pick.tech.clip] || STANCES.passe;
-    anchor = anchorFor(bref, outYaw, pick.foot, stance);
+    anchor = anchorFor(bref, outYaw, pick.foot, stance, st.full && cfg.orientationPasse?.talon && pick.tech?.surface === 'heel' ? { dos: true } : null);   // (401)
     c.anchorHint = { p: anchor.p, t: st.t };
     // borné même en urgence : l'inatteignable reste un téléport déguisé, donc refusé
     // (porté : le couple s'arrange ensemble — la borne est celle du plan, pas celle du ballon libre)
@@ -268,7 +271,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   // …et la MAIN du gardien ne « pose » pas un ballon qu'elle tient : la tenue (gkTenueDue) a déjà été servie,
   // la porte ne s'applique qu'au pied (lot A9 — mesuré : holdMin conditionnel 2,2 s au calme, la relance à la
   // main refusée 'timing' à chaque essai, 0 relance-main en 7 graines × 240 s).
-  const holdGate = opts.shot || (st.full && cfg.orientationPasse?.engagement && st._engagement && st._engagement.by === c.id && st.t - st._engagement.t < 2.5) ? cfg.holdMin : (st._holdMin ?? cfg.holdMin);   // (395) l'engagement part au holdMin d'origine
+  const holdGate = opts.shot || (st.full && cfg.orientationPasse?.engagement && st._engagement && st._engagement.by === c.id && st.t - st._engagement.t < 2.5) || (st.full && cfg.verticalite?.appel && choice.esp) ? cfg.holdMin : (st._holdMin ?? cfg.holdMin);   // (395) l'engagement part au holdMin d'origine ; (400) l'homme libre dans l'espace aussi
   if (!mains && st.hold < holdGate - move.contact * cfg.windupCarve) return deny(st, 'timing');
 
   // LA COURSE. Le couloir de choosePass est une photo (des mètres perpendiculaires, MAINTENANT) ;
@@ -324,7 +327,7 @@ export function beginPass(st, choice, cfg, opts = {}) {
   }
   c.foot = pick.foot;
   c.intent = null;                                          // l'intention a abouti : le geste prend le relais
-  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw, mains,
+  startGesture(c, { id: pick.tech.clip, ...move }, { payload: { kind: 'pass', choice, pick, stance, urgent, outYaw, from: [c.p[0], c.p[2]], fromYaw: c.yaw, mains, ...(st.full && cfg.orientationPasse?.talon && pick.tech?.surface === 'heel' && !mains ? { dos: true } : {}),   /* (401) le pick planifié n'a pas de .surface : la ligne de la table fait foi (mesuré : 13 talonnades au corps tourné de 115-179° vers la cible pendant l'armé) */
     // …l'ÉLAN du commit (lot 45) : la foulée de frappe le porte DANS le geste (stepGestures)
     v0: hyp(c.v[0], c.v[1]), vYaw: Math.atan2(c.v[1], c.v[0]) }, log: st.gestures });
   st.events.push({ t: +st.t.toFixed(2), type: 'windup', by: c.id, tech: pick.tech.id, move: pick.tech.clip, foot: pick.foot, anticipation: move.contact });
@@ -752,7 +755,7 @@ export function strikeNow(st, c, cfg) {
   const outBearing = (Math.atan2(fx * tz - fz * tx, fx * tx + fz * tz) * 180) / Math.PI;
   st.events.push({
     // (256) by canonique — l'alias from est tombé au 257 ; sansCible : le ballon expédié sans destinataire (dégagement, urgence) — pas une passe manquée
-    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(rdv ? { rdv: +rdv.T.toFixed(2), biais: +rdv.biais.toFixed(2) } : {}), ...(c._croyPasse ? { croyErr: +c._croyPasse.err.toFixed(2), croyAge: +c._croyPasse.age.toFixed(2), croySigma: +c._croyPasse.sigma.toFixed(2) } : {}), ...(choice.to.id < 0 ? { sansCible: true } : {}), ...(choice.cls ? { cls: choice.cls, pSucc: +choice.pSucc.toFixed(3), pBrut: +choice.pBrut.toFixed(3), pAlt: +choice.pAlt.toFixed(3), ...(choice.selDbg ? { selDbg: choice.selDbg } : {}) } : st.full && cfg.selection && choice.cross ? { cls: 'CROSS' } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
+    t: +st.t.toFixed(2), type: 'pass', by: c.id, to: choice.to.id, ...(choice.esp ? { esp: true } : {}), ...(rdv ? { rdv: +rdv.T.toFixed(2), biais: +rdv.biais.toFixed(2) } : {}), ...(c._croyPasse ? { croyErr: +c._croyPasse.err.toFixed(2), croyAge: +c._croyPasse.age.toFixed(2), croySigma: +c._croyPasse.sigma.toFixed(2) } : {}), ...(choice.to.id < 0 ? { sansCible: true } : {}), ...(choice.cls ? { cls: choice.cls, pSucc: +choice.pSucc.toFixed(3), pBrut: +choice.pBrut.toFixed(3), pAlt: +choice.pAlt.toFixed(3), ...(choice.selDbg ? { selDbg: choice.selDbg } : {}) } : st.full && cfg.selection && choice.cross ? { cls: 'CROSS' } : {}), style: choice.style, foot: c.foot, ...(mains ? { mains, ballY: +from[1].toFixed(2) } : {}), ...(choice.through ? { through: true } : {}), ...(choice.clear ? { clear: true } : {}),
     margin: +choice.lane.margin.toFixed(2),
     bearing: +sit.bearing.toFixed(1), ballDist: +sit.dist.toFixed(2), ballY: +from[1].toFixed(2), speed: +sol.speed.toFixed(1),
     // the TECHNIQUE the gesture actually was, with the geometry it was chosen on — a later re-measure

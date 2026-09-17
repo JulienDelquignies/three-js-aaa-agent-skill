@@ -1,4 +1,4 @@
-import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
+import { BALL, stepBall, kick } from './ball.js'; import { predictPath } from './ball-predict.js'; import { toucheOrientee } from './touche-orientee.js'; import { solvePass, solveGroundLeg, flightRace, interceptPoint } from './ball-predict.js';
 import { axe as axeTac, tac as tacDe } from './tactics.js'; import { tirage } from './rng.js'; import { issueDe } from './reception.js'; import { interceptionApply } from './interception.js'; import { appliquerNoyau } from './noyau.js'; import { glissePermis, fauteGlisse } from './nature.js'; import { appliquerFou } from './fou.js';   // le TEMPO (149) — sans tactiques : equilibre, l'identité
 import { makeDribbler, dribbleStep, dribbleSteer, touchDistance, balPrenable, dansCone } from './dribble.js'; import { RONDO, assignJobs, choosePass, strikingFoot, rondoInternals, enLance } from './rondo.js';
 import { situation, chooseTechnique, checkAction, TECHNIQUES, byId, footFor } from './technique.js'; import { chuter, chargeStep, slideTackleStep, slideResolve, ecartCouloir, tackleWindow, accrocheStep, tacleDegage } from './duel.js';
@@ -48,7 +48,7 @@ function stepGestures(st, dt, cfg) {
       if (p.act.payload?.stance) {
         const A = p.act.payload;
         // l'ancre se recalcule sur le ballon COURANT : il freine encore de quelques centimètres au début de l'armé, et une ancre figée sur sa position d'engagement raterait de ce freinage.
-        const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance);
+        const anchor = anchorFor([st.ball.p[0], st.ball.p[2]], A.outYaw, A.pick.foot, A.stance, A.dos ? { dos: true } : undefined);   // (401) la talonnade honnête : l'ancre regarde à l'opposé de la sortie
         // LA FOULÉE DE FRAPPE (lot 45, cfg.strideStrike && st.full) : l'ancre avance de v0·e^(−t/τ), plafond cumulé, strikeNow re-résout. ET ELLE PORTE LES DEUX BOUTS
         // (ride, lot 48) : l'offset commit→ancre d'un porteur lancé est quasi nul — l'ease multipliait le pas d'ancre par ~0 en début d'armé (falaise). Doc : match-
         // config, NOTES 83.
@@ -86,7 +86,7 @@ function stepGestures(st, dt, cfg) {
           p.v[1] = (ez * k) / Math.max(1e-4, dt);
           p.p[0] += ex * k; p.p[2] += ez * k;
         }
-        if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted' || A.pick?.tech?.clip === 'talonnade')) { let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
+        if (st.full && cfg.retournement && st.possession.carrier === p.id && !(A.choice?.cross || A.cross || A.choice?.style === 'lofted' || A.style === 'lofted' || (A.pick?.tech?.clip === 'talonnade' && !A.dos))) {   /* (401) le talon honnête tourne au taux borné comme les autres : sa sortie est derrière, le tour est petit */ let dA = g.yaw - p.yaw; while (dA > Math.PI) dA -= 2 * Math.PI; while (dA < -Math.PI) dA += 2 * Math.PI; const pas = (cfg.retournement.rate ?? 4) * (p.skill?.accelF ?? 1) * dt; p.yaw = Math.abs(dA) <= pas ? g.yaw : p.yaw + Math.sign(dA) * pas; p.yawWant = null; }
         else { p.yaw = g.yaw; p.yawWant = null; }
         p.speed = hyp(p.v[0], p.v[1]);
         if (st.full && cfg.porteAnticipe && st.ball.owner === p.id && A.stance) { const sp = stanceBallPoint(p, A.stance, A.pick.foot), loin = d2(p.p, st.ball.p) > 0.45; st.ball.carry(sp, dt, loin ? { tau: 0.12, vMax: 9 } : { tau: cfg.porteAnticipe.tau ?? 0.015 }); }   // LE PORTÉ ANTICIPE (cfg.porteAnticipe && st.full — retour utilisateur « le joueur oublie le ballon ») : le ballon se portait au point de stance du corps D'AVANT le glissement (tau 0,035) — à 7,5 m/s il traînait 0,38 m derrière, la frappe REFUSÉE au contact (stance-au-contact 65 par 900 s, un armé sur cinq), le ballon vendangé, le corps filait sur son élan (32 des 35 « il court sans son ballon »). Ici : le point de stance du corps APRÈS son pas, au servo serré (tau). Absente : hier au bit.
@@ -338,8 +338,8 @@ function receive(st, id, cfg = RONDO) {
       // (180 — l'amorti à la note TENTÉ ET RÉFUTÉ ici : le settle est SERVO-DOMINÉ, le porté ravale l'impulsion (jumeaux 90/10 : 0,24 = 0,24).
       // La note au contrôle vit à pMiss (le manqué) — le « 4 m de première touche » du 179 s'instruira au FILM, pas à ce site.)
       st.ball.impulse([-st.ball.v[0] * (1 - pick.tech.power), -st.ball.v[1], -st.ball.v[2] * (1 - pick.tech.power)], dW(st, cfg, 1 - pick.tech.power));
-      st.ball.possess(id); if (RC) { p._protege = st.t + RC.protege; p._issue = RC.issue; }   // (265) la touche propre est SIENNE pendant le budget du contrôle
-      st._settling = { ev: st.events.length, id, at: st.t + T };
+      if (!toucheOrientee(st, p, cfg, RC)) st.ball.possess(id); if (RC) { p._protege = st.t + RC.protege; p._issue = RC.issue; }   /* (399) LA TOUCHE ORIENTÉE (cfg.toucheOrientee) : le receveur libre en course ou dos au jeu EMMÈNE le ballon du côté ouvert au lieu de le capturer */   // (265) la touche propre est SIENNE pendant le budget du contrôle
+      st._settling = { ev: st.events.length, id, at: st.t + T, ...(st._pousse ? { pousse: true } : {}) };
       st.events.push({
         t: +st.t.toFixed(2), type: 'control', by: id, tech: pick.tech.id, foot: pick.foot, surface: pick.surface,
         bearing: +sit.bearing.toFixed(1), side: sit.side, dist: +sit.dist.toFixed(2), height: +sit.height.toFixed(2),
@@ -349,8 +349,8 @@ function receive(st, id, cfg = RONDO) {
         // geste à arriver. L'inscrire maintenant, ce serait inscrire l'intention à la place du
         // résultat (mesuré : 0,8 m au contact contre 0,36 m à l'arrivée). Il est rempli plus bas,
         // quand le ballon est vraiment arrivé.
-        settle: null,
-      });
+        settle: null, ...(st._pousse ? { pousse: st._pousse } : {}),
+      }); st._pousse = null;
     } else {
       // LE CÔNE AVANT D'ABORD (lot 70, cfg.priseCone — doc dansCone/match-config) : hors cône en
       // match, PAS de touche — le ballon COURT (le pivot en cours reprend à la capture ; le vrai dos se chasse)
@@ -559,7 +559,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
       // enchaînement une-touche légitime que l'ancienne mesure comptait comme un contrôle mort à
       // 1,29 m), contesté, ou perdu — et CE contrat-là l'a jugé. Un instant, un contrat ;
       // l'exemption reste bornée dans le harnais.
-      if (st.ball.owner === st._settling.id) ev.settle = +d2(pl.p, st.ball.p).toFixed(2);
+      if (st.ball.owner === st._settling.id || st._settling.pousse) ev.settle = +d2(pl.p, st.ball.p).toFixed(2);   // (399) la touche orientée se juge à sa distance, ballon libre
       else ev.oneTouche = true;
     }
     st._settling = null;
@@ -935,7 +935,7 @@ export function rondoStep(st, dt, cfg = RONDO) {
         // étaient désynchronisées — le temps d'avoir « assez tenu », la course était finie (3
         // appels servis sur 41 mesurés). Au vrai foot, la course DÉCLENCHE le ballon : un coureur
         // en rupture au bout d'une ligne qui score dispense de finir la tenue délibérée.
-        const runnerCall = choice && (st.players[choice.to.id]?._pace?.until ?? -1) > st.t;
+        const runnerCall = (choice && (st.players[choice.to.id]?._pace?.until ?? -1) > st.t) || !!(st.full && cfg.verticalite?.appel && choice?.esp);   // (400) L'ESPACE DEVANT CASSE LA TENUE (cfg.verticalite.appel) : l'homme libre dans l'espace se sert MAINTENANT, comme un coureur — mesuré : les intentions longues mouraient au timing (346 refus / 600 s), la fenêtre se fermait pendant la tenue calme
         // …ET LE JETÉ DÉCLENCHE (lot 144, cfg.fixe && st.full) : le porteur A fixé — le presseur
         // LANCÉ sur lui dispense de finir la tenue, la barre s'abaisse : le ballon part PENDANT
         // qu'il vole (l'élection qui avance vit dans choosePass). false : la tenue sourde d'hier.

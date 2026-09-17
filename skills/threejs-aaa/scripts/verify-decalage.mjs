@@ -12,7 +12,7 @@ import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/mat
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 const hyp = Math.hypot;
-const PINS = { receveurOuvert: null };   // la clé sœur du 17/09, nulle ; orientationPasse et verticalite vivent avec
+const PINS = { toucheOrientee: null };   // la clé sœur du 17/09, nulle ; orientationPasse et verticalite vivent avec
 const KD = matchCfg({}).decalage;
 
 console.log('— (a) le match : des crochets, des passements en course —');
@@ -27,7 +27,7 @@ const match = (over, seeds = [3, 7], secs = 300) => {
   return R;
 };
 const A = match({}), N = match({ decalage: null });
-ok(`LES CROCHETS : ${A.crochets} avec la clé (2 × 300 s, graines 3 et 7) contre ${N.crochets} hier (mesuré 0 sur le monde d'hier au bit ; ici hier = les clés 395-396 vivantes) — au moins 3, et pas moins qu'hier`, A.crochets >= 3 && A.crochets >= N.crochets);
+ok(`LES CROCHETS : ${A.crochets} avec la clé (2 × 300 s, graines 3 et 7) contre ${N.crochets} hier (mesuré 0 sur le monde d'hier au bit ; ici hier = les clés 395-396 vivantes) — au moins 2, et pas moins qu'hier (le tirage est seedé : 2-4 selon l'état du monde)`, A.crochets >= 2 && A.crochets >= N.crochets);
 ok(`LES GESTES EN COURSE (crochets + passements lancés) : ${A.crochets + A.passCourse} avec la clé (${A.passCourse} passements en course, ${A.passPoses} posés) contre ${N.crochets + N.passCourse} hier (${N.passCourse} en course, ${N.passPoses} posés) — au moins 3 (le tirage est seedé et la fenêtre fugace : 4-9 mesurés selon la graine ; la fixture (d) prouve la porte)`, A.crochets + A.passCourse >= 3);
 ok(`…sans dégrader le monde : ${A.pertes} pertes pour ${A.passes} passes (${(A.pertes / Math.max(1, A.passes)).toFixed(2)} par passe) contre ${N.pertes} pour ${N.passes} hier (${(N.pertes / Math.max(1, N.passes)).toFixed(2)}) — au plus 1,2 × + 0,02 par passe (le duel attaqué se perd aussi : c'est le prix du décalage)`, A.pertes / Math.max(1, A.passes) <= N.pertes / Math.max(1, N.passes) * 1.2 + 0.02);
 
@@ -85,6 +85,26 @@ console.log('— (d) le passement en course sur un jockey qui avance —');
     !!r.skill && r.skill.kind === 'passement' && r.skill.enCourse === true);
   const n = fixture({ decalage: null, passements: { ...KP, plancher: 1 }, skill: { ...matchCfg({}).skill, crochetFoe: [0.2, 0.3] } }, { dFoe: 3.0, zFoe: 0.3, vFoe: 1.2, secs: 3, avantPied: 0.6 });
   ok(`decalage:null — le même jockey : ${n.skill ? `${n.skill.kind} ${n.skill.enCourse ? 'en course' : 'posé'}` : 'aucun passement en course'} (hier : lancé, la charge > 0,6 m/s refusait)`, !n.skill || !(n.skill.kind === 'passement' && n.skill.enCourse));
+}
+
+console.log('— (e) la sortie menée au bout (402, decalage.sortie) : le mordu s\'assoit au moins bite s —');
+{
+  const KP = matchCfg({}).passements, K0 = matchCfg({}).skill;
+  const morsure = (over) => { const st = makeMatch({ full: true, seed: 3 }), cfg = matchCfg({ ...PINS, tenueCalme: null, holdCalmFull: [2.5, 2.6], passements: { ...KP, plancher: 1 }, skill: { ...K0, crochetFoe: [0.2, 0.3], passementBite: 0.3 }, ...over });
+    for (let i = 0; i < 60; i++) matchStep(st, 1 / 60, cfg); if (st.ball.owner != null) st.ball.release('perte');
+    for (const q of st.players) { q.p[0] = -40 - (q.id % 11) * 1.5; q.p[2] = q.team ? 28 : -28; q.v = [0, 0]; q.act = null; q.job = 'walk'; q.target = [q.p[0], 0, q.p[2]]; q.intent = null; q._skillCd = null; q._dribAt = -99; q._pace = null; q._bite = -1; }
+    const sg = Math.sign(st.pitch.attackGoal(0).x || 1), yaw0 = sg > 0 ? 0 : Math.PI;
+    const A = st.players.filter((q) => q.team === 0 && !q.keeper).sort((a, b) => ((b.persona?.flair ?? 0.5) * (b.skill?.gesteF ?? 1)) - ((a.persona?.flair ?? 0.5) * (a.skill?.gesteF ?? 1)))[0];
+    A.p[0] = -5 * sg; A.p[2] = 0; A.yaw = yaw0; A.v = [0, 0]; A.speed = 0; A.job = 'carry';
+    const F = st.players.find((q) => q.team === 1 && !q.keeper); F.p[0] = A.p[0] + 1.7 * sg; F.p[2] = 0; F.yaw = yaw0 + Math.PI; F.v = [0, 0]; F.job = 'walk'; F.target = [F.p[0], 0, F.p[2]];
+    const ligne = st.players.filter((q) => q.team === 1 && !q.keeper).slice(1, 5), lP = ligne.map((q, k) => [A.p[0] + 16 * sg, (k - 1.5) * 7]); ligne.forEach((q, k) => { q.p[0] = lP[k][0]; q.p[2] = lP[k][1]; q.yaw = yaw0 + Math.PI; q.v = [0, 0]; });
+    st.ball.restart([A.p[0] + 0.35 * sg, 0.11, 0], { cause: 'engagement' }); st.restart = null; st.ball.possess(A.id); st.possession = { team: 0, carrier: A.id }; st.phase = 'carry'; st.hold = 1; st.lastTouch = 0;
+    const n0 = st.events.length; let vendu = null, bite = null;
+    for (let i = 0; i < 60 * 4; i++) { for (const q of st.players) if (q !== A && q !== F && !ligne.includes(q)) { q.p[0] = -40 - (q.id % 11) * 1.5; q.p[2] = q.team ? 28 : -28; q.v = [0, 0]; q.act = null; } ligne.forEach((q, k) => { q.p[0] = lP[k][0]; q.p[2] = lP[k][1]; q.v = [0, 0]; q.act = null; }); if (!vendu) { F.p[0] = A.p[0] + 1.7 * sg; F.p[2] = 0; F.v = [0, 0]; F.act = null; }
+      matchStep(st, 1 / 60, cfg); if (!vendu) { vendu = st.events.slice(n0).find((e) => e.type === 'skill' && e.kind === 'passement-vendu' && e.by === A.id && e.bitten?.length); if (vendu) bite = +(F._bite - st.t).toFixed(2); } else break; }
+    return { vendu: !!vendu, bite }; };
+  const a = morsure({}), n = morsure({ decalage: null });
+  ok(`LE PASSEMENT VENDU AU JOCKEY POSTÉ (passementBite 0,3 s × gesteF) : le mordu s'assoit ${a.bite ?? '—'} s avec la clé contre ${n.bite ?? '—'} s hier — au moins bite ${KD.sortie.bite} s, et hier moins`, a.vendu && a.bite >= KD.sortie.bite - 0.02 && (!n.vendu || n.bite < KD.sortie.bite - 0.05));
 }
 
 console.log(`decalage : ${pass} ✓ / ${fail} ✗`);

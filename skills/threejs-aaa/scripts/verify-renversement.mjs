@@ -20,7 +20,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // opposé posté seul au large — et le reste du monde parqué hors de portée.
 const etau = (seed, nBloc) => {
   const st = makeMatch({ full: true, seed });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20 });
+  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20 });
   for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
   const c = st.players[st.possession.carrier];
   // LE BALLON EST L'ORIGINE DU CERVEAU (leçon de fixture : téléporter le porteur SANS son
@@ -87,7 +87,7 @@ const etau = (seed, nBloc) => {
 // ---------- 4. sabotage nommé « jeu axial » : renversement:false → le vocabulaire d'hier
 {
   const { st, ailier } = etau(3, 6);
-  const cfg0 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, renversement: false });
+  const cfg0 = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, renversement: false });
   const choix = choosePass(st, cfg0);
   ok(`sabotage « jeu axial » attrapé (renversement:false, MÊME étau : l'ailier à 26 m est HORS vocabulaire — choix=${choix ? `nº${choix.to.id} à ${choix.dist.toFixed(1)} m` : 'aucun'}, jamais l'ailier)`,
     !choix || (choix.to.id !== ailier.id && choix.dist <= 19.01));
@@ -101,7 +101,7 @@ const etau = (seed, nBloc) => {
   // hier sur 8 × 300 s, contrôle consigné — la fenêtre courte échantillonnait l'ouverture)
   for (const seed of [1, 3, 5, 7]) {
     const st = makeMatch({ full: true, seed });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20 });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20 });
     for (let i = 0; i < 300 * 60; i++) {
       matchStep(st, 1 / 60, cfg);
       if (!st.restart && i % 30 === 0) { n++; if (Math.abs(st.ball.p[2]) < 8) axial++; }
@@ -129,7 +129,7 @@ const etau = (seed, nBloc) => {
       let ax = 0, nn = 0;
       for (const seed of [1, 3, 5, 7]) {
         const st = makeMatch({ full: true, seed });
-        const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, ecarte: false, conduiteCouloir: false, ...over });
+        const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, ecarte: false, conduiteCouloir: false, ...over });
         for (let i = 0; i < 180 * 60; i++) {
           matchStep(st, 1 / 60, cfg);
           if (!st.restart && i % 30 === 0) { nn++; if (Math.abs(st.ball.p[2]) < 8) ax++; }
@@ -156,7 +156,7 @@ const etau = (seed, nBloc) => {
 {
   const aile = (over) => {
     const st = makeMatch({ full: true, seed: 3 });
-    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null,  shotRange: 20, ...over });
+    const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20, ...over });
     for (let i = 0; i < 30 * 60 && !(st.phase === 'carry' && st.possession.carrier >= 0 && !st.restart); i++) matchStep(st, 1 / 60, cfg);
     const c = st.players[st.possession.carrier];
     st.ball.release('perte');

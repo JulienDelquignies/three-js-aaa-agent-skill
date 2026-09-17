@@ -62,10 +62,10 @@ console.log('— (b) dos au but : poitrine → retournée —');
 }
 console.log('— (c) hier au bit, et la volée ordinaire —');
 {
-  const f = centre({ enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null }), d = centre({ enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null }, { dos: true });
+  const f = centre({ enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null }), d = centre({ enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null }, { dos: true });
   ok(`enchainement:null — face : la poitrine sans nom (${f.poitrine ? '[' + (f.poitrine.enchaine ?? 'rien') + ']' : '—'}), pas de volée (${f.volee ? 'volée !' : 'aucune'}), le ballon mort ramassé (${f.prise?.tech ?? '—'} à ${rel(f, f.prise)}) ; dos : pas de retournée (${d.windup ? 'armée !' : 'aucune'}), ramassé (${d.prise?.tech ?? '—'})`,
     !!f.poitrine && !f.poitrine.enchaine && !f.volee && !!f.prise && !d.windup && !d.retournee);
-  const v = centre({}, { h: 0.8, apex: 0.9 }), vn = centre({ enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null }, { h: 0.8, apex: 0.9 });
+  const v = centre({}, { h: 0.8, apex: 0.9 }), vn = centre({ enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null }, { h: 0.8, apex: 0.9 });
   ok(`LA VOLÉE ORDINAIRE (le vol arrive à 0,8 m, sans poitrine) : sous clé le tireur ne se re-prend pas le ballon (prise après ${rel(v, v.volee)} : ${v.prise ? v.prise.tech : 'aucune'}) — hier il se le reprenait ${vn.prise ? (vn.prise.t - vn.volee.t).toFixed(2) + ' s après (' + vn.prise.tech + ')' : 'non'} : une dette du tronc, ici sous clé`,
     !!v.volee && !v.prise && !!vn.volee);
 }

@@ -608,7 +608,7 @@ export function skillContactNow(st, p, cfg) {
     const K = cfg.skill;
     const foe = st.players[A.foeId ?? -1];
     const bitten = [];
-    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + (K.passementBite ?? 0.4) * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+    if (foe && foe.down <= 0 && mord) { foe._bite = st.t + Math.max((K.passementBite ?? 0.4) * (p.skill?.gesteF ?? 1), st.full && cfg.decalage?.sortie ? (cfg.decalage.sortie.bite ?? 0.6) : 0); bitten.push(foe.id); }   // (402) LA SORTIE MENÉE AU BOUT (cfg.decalage.sortie) : le mordu s'assoit au moins bite s — le temps que la sortie qui explose passe son épaule (mesuré : 7 gestes vendus / 20 min, 1 défenseur battu)
     st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'passement-vendu', by: p.id, bitten, foot: A.pick.foot });
     // la sortie est un DÉPART… selon son MODE : le contre-pied et le fixer partent en burst
     // nommé (le fixer PLUS fort — on fige puis on perce tout droit) ; TEMPORISER protège — pas
@@ -622,7 +622,7 @@ export function skillContactNow(st, p, cfg) {
       const K = cfg.skill;
       const foe = st.players[A.foeId ?? -1];
       const bitten = [];
-      if (foe && foe.down <= 0 && mord) { foe._bite = st.t + 0.35 * (p.skill?.gesteF ?? 1); bitten.push(foe.id); }
+      if (foe && foe.down <= 0 && mord) { foe._bite = st.t + Math.max(0.35 * (p.skill?.gesteF ?? 1), st.full && cfg.decalage?.sortie ? (cfg.decalage.sortie.bite ?? 0.6) : 0); bitten.push(foe.id); }   // (402)
       st.events.push({ t: +st.t.toFixed(2), type: 'skill', kind: 'crochet-vendu', by: p.id, bitten, foot: A.pick.foot });
     }
   } else if (A.skill === 'petitPont') {

@@ -92,7 +92,7 @@ ok(EMOTION_NAMES.filter((k) => k !== 'glissade' && k !== 'sautMur').every((k) =>
 {
   const fete = (over, persona) => {
     const squads = [0, 1].map(() => Array.from({ length: 11 }, () => ({ persona })));
-    const st = makeMatch({ full: true, seed: 3, squads }), cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null, ...over });   // (A11 ter) la cérémonie d'avant-match est d'aujourd'hui : ces clauses mesurent le monde de leur jour
+    const st = makeMatch({ full: true, seed: 3, squads }), cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null, ...over });   // (A11 ter) la cérémonie d'avant-match est d'aujourd'hui : ces clauses mesurent le monde de leur jour
     for (let i = 0; i < 4 * 60; i++) matchStep(st, 1 / 60, cfg);
     st.ball.restart([st.pitch.hx - 7, 0.11, 2.6], { cause: 'engagement' }); st.lastTouch = 0;
     st.ball.strike({ speed: 30, dirYaw: 0, elevation: 0.03 });

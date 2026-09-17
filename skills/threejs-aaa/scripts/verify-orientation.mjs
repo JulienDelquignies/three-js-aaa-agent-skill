@@ -12,7 +12,7 @@ import { makeMatch, matchCfg, matchStep } from '../assets/starter/src/engine/mat
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 const hyp = Math.hypot, wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a)), deg = (a) => wrap(a) * 180 / Math.PI;
-const PINS = { verticalite: null, decalage: null, receveurOuvert: null };   // les clés SŒURS du 17/09, nulles : ce banc mesure l'orientation seule
+const PINS = { verticalite: null, decalage: null, toucheOrientee: null };   // les clés SŒURS du 17/09, nulles : ce banc mesure l'orientation seule
 const KO = matchCfg({}).orientationPasse;
 
 // LE MATCH : les passes planifiées (ni urgentes ni une-touche) qui partent à plus de 60° du regard au contact, et le bilan
@@ -21,7 +21,7 @@ const match = (over, seeds = [3, 7, 11, 15], secs = 300) => {   // 4 graines : �
   for (const seed of seeds) {
     const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...PINS, ...over });
     for (let i = 0; i < 60 * secs; i++) matchStep(st, 1 / 60, cfg);
-    for (const e of st.events) if (e.type === 'pass') { R.passes++; if (!e.urgent && e.style !== 'une-touche') { R.planifiees++; if (Math.abs(e.out ?? 0) > 60) R.gros++; } }
+    for (const e of st.events) if (e.type === 'pass') { R.passes++; if (!e.urgent && e.style !== 'une-touche' && e.tech !== 'talonnade') { R.planifiees++; if (Math.abs(e.out ?? 0) > 60) R.gros++; } }   // (401) le talon honnête sort à ~180° du regard : c'est son geste, il ne compte pas
     R.pertes += st.turnovers ?? 0;
     const eng = st.events.find((e) => e.type === 'restart-pris' && e.kind === 'engagement') ?? st.events.find((e) => e.type === 'restart-pris');
     const first = st.events.find((e) => e.type === 'pass' && eng && e.t > eng.t);
@@ -91,6 +91,15 @@ console.log('— (e) la technique choisie pour le tour —');
   const tour = (turn, antic) => Math.min(turn, KP.fenetre) * Math.PI / 180 + KP.marge * 4 * antic;
   ok(`LA FENÊTRE D'UN CANDIDAT : passe (turn 40, armé 0,38 s) couvre ${(tour(40, 0.38) * 180 / Math.PI).toFixed(0)}°, passe-rapide (35, 0,22 s) ${(tour(35, 0.22) * 180 / Math.PI).toFixed(0)}°, pivot plafonné (150 → ${KP.fenetre}, 0,52 s) ${(tour(150, 0.52) * 180 / Math.PI).toFixed(0)}° — la posée prend le relais de la rapide au-delà de ~65°`,
     tour(40, 0.38) > tour(35, 0.22) && tour(35, 0.22) * 180 / Math.PI < 70 && tour(40, 0.38) * 180 / Math.PI > 85);
+}
+
+console.log('— (f) la talonnade honnête (401, orientationPasse.talon) —');
+{
+  // le corps DOS à la cible : la sortie part derrière lui (|out| ≥ 140°), l'armé ne le retourne pas (tour ≤ 60°) — hier le glissement claquait le corps vers la cible (tours de 115-179° mesurés) et le talon était exclu du plan (0 talonnade)
+  const talons = (over, seeds = [3, 7, 11, 15]) => { const rows = []; for (const seed of seeds) { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...PINS, ...over }); const arme = new Map(); for (let i = 0; i < 60 * 300; i++) { for (const q of st.players) { if (q.act && q.act.payload?.kind === 'pass' && !arme.has(q.id)) arme.set(q.id, q.yaw); if (!q.act) arme.delete(q.id); } const n0 = st.events.length; matchStep(st, 1 / 60, cfg); for (const e of st.events.slice(n0)) if (e.type === 'pass' && e.tech === 'talonnade') { const y0 = arme.get(e.by); rows.push({ out: Math.abs(e.out ?? 0), tour: y0 != null ? deg(st.players[e.by].yaw - y0) : 0 }); } } } return rows; };
+  const a = talons({}), n = talons({ orientationPasse: { ...KO, talon: false } });
+  ok(`LES TALONNADES (4 × 300 s) : ${a.length} avec la clé, sortie à ${a.length ? Math.min(...a.map((r) => r.out)).toFixed(0) + '-' + Math.max(...a.map((r) => r.out)).toFixed(0) : '—'}° du regard, tour pendant l'armé ≤ ${a.length ? Math.max(...a.map((r) => r.tour)).toFixed(0) : '—'}° — au moins 4, toutes derrière (≥ 135°) et sans demi-tour (≤ 60°) ; talon:false : ${n.length} (hier : exclu du plan, ou claqué)`,
+    a.length >= 4 && a.every((r) => r.out >= 135 && r.tour <= 60) && n.every((r) => r.out < 135 || r.tour > 60));
 }
 
 console.log(`orientation : ${pass} ✓ / ${fail} ✗`);

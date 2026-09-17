@@ -48,7 +48,7 @@ console.log('— (a) le ballon calé au point du clip —');
     !!r.ev && !r.ev.enCourse && !!r.pinAtStart);
   ok(`…et au contact le ballon est AU POINT DU CLIP : à ${r.rel?.auPin != null ? (100 * r.rel.auPin).toFixed(1) : '—'} cm du pin (≤ 6), soit ${r.rel ? `${r.rel.devant.toFixed(2)} m devant (spot ${KP.spot}), ${r.rel.droite.toFixed(2)} m à droite (lat ${KP.lat} × ${s})` : '—'}`,
     !!r.rel && r.rel.auPin < 0.06 && Math.abs(r.rel.devant - KP.spot) < 0.08 && Math.abs(r.rel.droite - KP.lat * s) < 0.08);
-  const n = faceAFace({ passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null });
+  const n = faceAFace({ passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null });
   ok(`passements:null — le même face-à-face : ${n.ev ? 'passement' : 'pas de passement'}, pin à l'entrée ${n.pinAtStart ? 'posé' : 'absent'} (hier : le ballon calé au contact là où il traîne${n.rel ? ` — ${n.rel.devant.toFixed(2)} m devant` : ''})`, !n.pinAtStart);
 }
 
@@ -58,14 +58,14 @@ console.log('— (b) il fixe son vis-à-vis —');
   const vers = r.regard != null ? Math.abs(wrap(r.regard - Math.atan2(r.F.p[2] - 0, r.F.p[0] - 5))) * 180 / Math.PI : null;
   ok(`LE JOCKEY AU DEMI-FRONT LARGE (85°) : le porteur posé TOURNE LE REGARD vers lui (regard tenu ${r.regard != null ? r.regard.toFixed(2) + ' rad, ' + vers.toFixed(0) + '° du jockey' : 'absent'}) puis le passement part face (${r.ev ? `à ${(r.ev.t - r.regardAt).toFixed(2)} s du regard, relèvement ${r.ev.bearing}°` : 'jamais'})`,
     r.regard != null && vers < 5 && !!r.ev && r.ev.bearing <= 70 && r.ev.t - r.regardAt <= 1.6);
-  const n = faceAFace({ passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null }, { bear: 85, d: 1.9 });
+  const n = faceAFace({ passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null }, { bear: 85, d: 1.9 });
   ok(`passements:null — au demi-front large, aucun regard tenu (${n.regard == null ? 'nul' : n.regard.toFixed(2)}), ${n.ev ? 'un passement' : 'pas de passement'} (hier : bearing > 70 refusé)`, n.regard == null && !n.ev);
 }
 
 console.log('— (c) le match nourri —');
 {
   const compte = (over, seed = 3) => { const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...PINS, ...over }); for (let i = 0; i < 60 * 300; i++) matchStep(st, 1 / 60, cfg); const ev = st.events.filter((e) => e.type === 'skill' && e.kind === 'passement'); return { n: ev.length, poses: ev.filter((e) => !e.enCourse).length, tours: ev.map((e) => e.tours).join('/'), vendus: st.events.filter((e) => e.type === 'skill' && e.kind === 'passement-vendu' && e.bitten?.length).length }; };
-  const a = compte({}), n = compte({ passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, receveurOuvert: null });
+  const a = compte({}), n = compte({ passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null });
   ok(`LE MATCH NOURRI : ${a.n} passements en 300 s (graine 3 ; ${a.poses} posés, tours ${a.tours || '—'}, ${a.vendus} jockeys qui mordent) contre ${n.n} hier (mesuré 4 graines : 3 par match, 1 par 15 min hier)`, a.n >= 2 && a.n >= n.n);
 }
 

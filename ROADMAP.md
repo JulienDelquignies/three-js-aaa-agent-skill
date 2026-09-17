@@ -299,15 +299,22 @@
   probabilité, un ou deux coéquipiers tirés au sort, départs décalés, cadences par équipe et par corps (8-10 par match sur 6-8 corps) ;
   le salut final tiré au sort plutôt qu'un sur deux.
 - LIVRÉ (notes 395-398, reference/52 §§ passe dans le sens du geste, verticalité, conduite qui décale, receveur ouvert ;
-  verify-orientation 7/0, verify-verticalite 5/0, verify-decalage 8/0, verify-receveur 3/0) : LA RELECTURE DU MATCH DU 17/09
+  verify-orientation 8/0, verify-verticalite 6/0, verify-decalage 9/0 au sceau des lots 6-9) : LA RELECTURE DU MATCH DU 17/09
   — la technique de passe choisie pour le tour qu'elle doit faire, le porteur qui s'ouvre avant d'armer, l'engagement au
   holdMin (cfg.orientationPasse : 0 passe planifiée à > 60° du regard contre 10/42) ; la passe qui avance et l'espace devant
   avec leur portée, le retrait qui se paie (cfg.verticalite) ; l'épaule attaquée, le crochet et le passement en course
-  (cfg.decalage : crochets 0 → 3-4 / 10 min) ; le receveur qui court à l'opposé et s'ouvre pendant le vol (cfg.receveurOuvert :
-  60 → 29-37 % de receveurs en course servis dans le dos). Dettes nommées au tronc : la touche orientée en course (le porté
+  (cfg.decalage : crochets 0 → 3-4 / 10 min) ; l'essai du receveur ouvert (cfg.receveurOuvert) retiré : rien à 8 graines. Dettes nommées au tronc : la touche orientée en course (le porté
   soudé vient de la fenêtre de contrôle de la réception), le 1c1 gagné au bout de la course (loi de duel), la talonnade
   honnête (le corps claque vers la cible). Bilan 8 graines × 300 s, hier → aujourd'hui : passes 378 → 318, pertes 159 → 160,
   réussite 0,65 → 0,66 — moins de passes et plus de duels ; boutons decalage.tenir / plancher, orientationPasse.anticPresse.
+- LIVRÉ (notes 399-402, reference/52 §§ touche orientée, espace devant, talonnade honnête, sortie menée au bout ;
+  verify-touche-orientee 6/0, les clauses (c)/(f)/(e) des bancs du 17/09) : LA SUITE DE LA RELECTURE — la première touche
+  du receveur libre emmène le ballon du côté ouvert au lieu de le capturer (cfg.toucheOrientee : porté soudé 49 → 38 %,
+  tirs 3 → 7 sur 4 graines) ; l'élu dans l'espace part au holdMin (cfg.verticalite.appel : pertes 76 → 67) ; la talonnade
+  honnête, le corps dos à la cible (cfg.orientationPasse.talon) ; la morsure tenue après un geste vendu (cfg.decalage.sortie,
+  effet faible — le 1c1 mené au bout reste une loi de duel). Bilan au sceau (8 graines × 300 s, hier → lots 1-9) : passes
+  378 → 288, pertes 159 → 156, tirs 12 → 15 sur les graines 41-71 ; 362 → 282, 151 → 166, 13 → 8 sur les graines 3-59 —
+  un quart de passes en moins et plus de pertes par passe, le prix nommé de la conduite qui décale.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).

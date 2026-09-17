@@ -574,7 +574,7 @@ export function choosePass(st, cfg = RONDO) {
     if (_sel) { _lvl = Math.max(_lvl, useT ? scT0 : score); if ((useT ? scT : scoreF) <= _bestSc) continue; _bestSc = useT ? scT : scoreF; }
     if (!best || (useT ? scT : scoreF) > best.score) best = useT
       ? { to: m, lead: through.lead, style: 'ground', score: scT, lane: through.lane, dist: d, bascule, through: true, arrival: through.arr, ...(_sel ? { cls: _sel[1].cls, pSucc: _sel[1].pHat, pBrut: _sel[1].p, pAlt: _sel[1].pAlt, ...(_sel[1].dbg ? { selDbg: _sel[1].dbg } : {}) } : {}) }
-      : { to: m, lead, style, score: scoreF, lane, dist: d, bascule, ...(_sel ? { cls: _sel[0].cls, pSucc: _sel[0].pHat, pBrut: _sel[0].p, pAlt: _sel[0].pAlt, ...(_sel[0].dbg ? { selDbg: _sel[0].dbg } : {}) } : {}) };
+      : { to: m, lead, style, score: scoreF, lane, dist: d, bascule, ...(_esp ? { esp: true } : {}), ...(_sel ? { cls: _sel[0].cls, pSucc: _sel[0].pHat, pBrut: _sel[0].p, pAlt: _sel[0].pAlt, ...(_sel[0].dbg ? { selDbg: _sel[0].dbg } : {}) } : {}) };   // (400) esp : l'élu est l'homme libre dans l'espace — l'appel de l'espace casse la tenue (rondo-sim, strike-sim)
   }
   if (_SEL && best) best.score = _lvl;   // LA SÉLECTION RÉORDONNE, ELLE NE RETIENT PAS (267) : le niveau lu par la barre d'adoption est celui d'hier — la réservation (« ne pas passer ») est un autre lot (Modèle 09 §9)
   return best;

@@ -438,8 +438,7 @@ export function movePlayers(st, dt, cfg) {
     // dérive : le piétinement de la statue vivante (> 0,25 m/s) re-collait le yaw à chaque
     // frame et le slew ne gagnait jamais — mesuré : 24 % des réceptions encore dos APRÈS la
     // v1 de la loi (p90 156° au contact).
-    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && (p.speed < 2.2
-      || (cfg.receveurOuvert && !st.pass.through && p.speed < (cfg.receveurOuvert.v ?? 3.6) && p.speed > 0.25 && (p.v[0] * (st.ball.p[0] - p.p[0]) + p.v[1] * (st.ball.p[2] - p.p[2])) < 0));   // (398) LE RECEVEUR OUVERT (cfg.receveurOuvert) : celui qui COURT À L'OPPOSÉ du ballon qui lui vient (le retrait, la course arrière — mesuré : 12 demi-tours > 100° sur 55 réceptions, 11 en mouvement) se présente aussi — le corps s'ouvre pendant le vol, pas après ; la course servie (through) garde sa loi
+    const sePres = st.full && cfg.sePresente !== false && st.phase === 'flight' && st.pass?.to === p.id && p.speed < 2.2;
     // LE GARDIEN NE QUITTE PAS LE BALLON DES YEUX (lot 132, cfg.regardGardien && st.full —
     // mesuré : 3/20 plongeons déclenchés sur un regard > 60° du ballon, p90 107° — le côté
     // du clip se calculait sur la dérive de COURSE, le corps « se retournait ») : le yaw du
