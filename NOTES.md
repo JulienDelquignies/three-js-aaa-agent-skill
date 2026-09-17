@@ -13199,6 +13199,10 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      20 (9 → 6 % des conduites). LES MÉCANISMES SONT LÀ (les fixtures et les bancs), LE MONDE BOUGE PEU — et il paie un
      cinquième de passes. À juger en page ; chaque clé se rend nulle séparément (orientationPasse, verticalite, decalage,
      toucheOrientee).
+     SCEAU : suite 970 ✓ / 2 ✗ (les deux rouges hérités du tronc, 245 flux et 246d, rouges à d3dbe73 déjà ; le temps par pas et
+     les lots 276/277 verts — la graine 3 dégelée), verify-sync 9/0, jumeau d'empreinte identique (base-engine-s16 = d3dbe73,
+     les quatre clés et ramasseurs.rattrape nuls). Commits be50da4, 58b4b13, 176be9e, 06b1be3 puis le sceau, poussés sur
+     claude/11c11 ; le tronc n'a pas encore fusionné, Vercel montre le tronc.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
