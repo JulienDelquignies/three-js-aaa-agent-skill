@@ -125,8 +125,10 @@ Mesuré le 17/09 : 10 des 42 passes planifiées partaient à plus de 60° du reg
 courait encore une seconde vers l'avant. La loi : à l'adoption au-delà de `tourner` ° le porteur se retourne avec le ballon
 (le `_retour` du 240b) ; `beginPass` choisit la technique pour le tour qu'elle doit faire (fenêtre `turn` plafonnée à
 `fenetre` 40°, plus `marge` × retournement.rate × anticipation) ; libre et rien ne tient, il s'ouvre sur place (regard tenu,
-pointe capée `vTour`, refus nommé `orientation`), pressé il joue l'hier (le talon si la sortie est derrière) ; l'engagement
-part au `holdMin` d'origine. Résultat : 0 passe planifiée à plus de 60° sur 4 graines, l'engagement à 27° en 1,1 s.
+pointe capée `vTour`, refus nommé `orientation`), pressé et rien ne tient il prend le geste qui tourne le plus parmi les
+prompts (armé ≤ `anticPresse` : la passe posée, 87° en 0,38 s) ; l'engagement part au `holdMin` d'origine. Résultat : 3
+passes planifiées sur 55 à plus de 60° du regard sur 4 graines (des posées pressées à 150-165° de tour ; hier 19 sur 94),
+l'engagement à 27° en 1,1 s ; +12 % de pertes sur 8 graines (le pressé qui tourne se fait prendre plus que la rapide).
 
 ## La verticalité (`cfg.verticalite`, note 396 — verify-verticalite 5/0)
 

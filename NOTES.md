@@ -13034,12 +13034,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      le bassin que de 38°, sa fenêtre de 150° est la légalité de la sim) plus ce que son armé tourne (marge 0,6 × rate ×
      antic) couvre l'écart regard→sortie ; libre (presseur > presse 2,2 m) et rien ne tient : il S'OUVRE SUR PLACE (le regard
      tenu vers la sortie — movement : yawWant au rythme du porteur —, la pointe capée à vTour 1,2 m/s : sous 1,5 le cône du
-     porté ne joue pas, la semelle tourne avec), refus nommé 'orientation', le pivot exclu ; pressé : le talon si la sortie
-     est derrière, sinon l'hier ; (3) l'engagement part au holdMin d'origine. DEUX ESSAIS REFUSÉS À LA MESURE : le regard
-     tenu EN COURSE (−27 % de passes : le cône du porté lâchait le ballon pendant le tour) ; la fenêtre du pivot à 60° (il
-     partait à l'adoption avec 109° de tour pour 135° d'écart, le receveur dérivait de 30° pendant l'armé : −57° au contact).
-     APRÈS (4 × 300 s) : 0 passe planifiée sur 65-94 à > 60° (contre 10/42) ; l'engagement part à 27° en 1,1 s (contre
-     97-99° à 1,5-2,5 s) ; 8 graines × 300 s : passes 378 → 361, pertes 159 → 134, tirs 12 → 16, réussite égale. Jumeau :
+     porté ne joue pas, la semelle tourne avec), refus nommé 'orientation', le pivot exclu ; PRESSÉ et rien ne tient : le
+     geste qui TOURNE LE PLUS parmi les PROMPTS (armé ≤ anticPresse 0,4 s : la passe posée, 87° de tour — le plan d'hier
+     élisait la rapide, 48° de tour, et frappait à 70-140° du regard : 12 sur 73 mesurés) ; (3) l'engagement part au holdMin
+     d'origine. L'A/B DU PRESSÉ (8 graines × 300 s, les quatre clés vivantes) : la posée 318 passes / 160 pertes / 11 tirs et
+     3 passes à > 60° sur 55 ; le plan d'hier 322 / 143 / 14 et 12 sur 73 (jusqu'à 140°) ; le pivot (0,52 s) 304 / 152 —
+     l'ancre et l'urgence — ; le talon 361 / 134 / 16 mais le corps claqué : la posée est retenue, +12 % de pertes pour
+     neuf passes à 100-140° de moins par 20 min. QUATRE ESSAIS REFUSÉS À LA MESURE OU À L'ŒIL :
+     le regard tenu EN COURSE (−27 % de passes : le cône du porté lâchait le ballon pendant le tour) ; la fenêtre du pivot à
+     60° (il partait à l'adoption avec 109° de tour pour 135° d'écart, le receveur dérivait de 30° pendant l'armé : −57° au
+     contact) ; « pressé : le talon si la sortie est derrière » (vu en page : la talonnade claque le corps vers la cible — le
+     glissement de l'armé exclut le talon du taux borné, un héritage — et frappe un ballon derrière elle vers l'avant).
+     le pivot pressé (−20 % de passes). APRÈS (4 × 300 s) : 3 passes planifiées sur 55 à > 60° du regard avec les quatre
+     clés (contre 19/94 — les trois : des passes posées pressées à 150-165° de tour, résidu 73-75°) ; la clé seule (le banc) :
+     11/83 c. 19/67, la moitié — le résidu vit chez les pressés à > 140° de tour ; l'engagement part à 27° en 1,1 s (contre
+     97-99° à 1,5-2,5 s) ; 8 graines × 300 s : le bilan des quatre clés, plus bas. DETTE NOMMÉE AU TRONC : la talonnade
+     honnête — anchorFor met le regard sur la sortie pour toutes les stances et le glissement exclut le talon du taux borné :
+     le corps claque vers la cible et talonne un ballon derrière lui vers l'avant. Jumeau :
      clé nulle = d3dbe73 au bit (base-engine-s16, empreinte-s16). Banc : verify-orientation 7/0 (le match, l'engagement,
      la fixture du porteur lancé — il tourne 150°, refus nommés, passe posée à 19° —, le pressé sans refus, la fenêtre des
      candidats). Épinglée nulle (DATÉ 17/09) sur les 44 bancs datés.
@@ -13091,8 +13102,16 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      essai « le coureur ne ramasse pas son ballon lent » (cfg.porteLibre) n'a rien changé (0,50 → 0,52) — la soudure vient de
      la fenêtre de contrôle de la RÉCEPTION, pas du ramassage ; clé retirée, dette nommée. Jumeau : identique. Banc :
      verify-receveur 3/0 (le match 37 % c. 60 %, les demi-tours, la fixture du receveur qui court vers son but : ouvert en
-     courant 0,02 s après la passe, reçu à 31°). Épinglée nulle sur les 44 bancs datés. Bilan des quatre clés (8 graines ×
-     300 s, hier → aujourd'hui) : passes 333 → 389, pertes 142 → 163 (par passe 0,43 → 0,42), réussite 0,56 → 0,66.
+     courant 0,02 s après la passe, reçu à 31°). Épinglée nulle sur les 44 bancs datés. BILAN DES QUATRE CLÉS (8 graines ×
+     300 s, graines 41-71, hier → aujourd'hui) : passes 378 → 318, pertes 159 → 160 (par passe 0,42 → 0,50), réussite 0,65 →
+     0,66, tirs 12 → 11 — moins de passes et plus de duels : la conduite qui décale (397) coûte ~10 % de passes (le porteur
+     attaque au lieu de donner) et le pressé qui tourne (395) se fait prendre plus que la rapide ; les boutons sont
+     decalage.tenir / plancher et orientationPasse.anticPresse. Le receveur ouvert remesuré sur l'état final (4 × 300 s) :
+     receveurs en course servis dans le dos 49 → 41 % (la mesure à 2 graines, 60 → 29, tenait du hasard des graines). Suite complète sur 304a648 : 959 ✓ / 5 ✗ (2948 s) — deux
+     hérités (245 le flux des couloirs, 246d), trois clauses de flux datées qui n'épinglaient pas les quatre clés (279 le
+     monde du book, 281 le monde du rendez-vous, petits-gestes) : épinglées DATÉ 17/09, rejouées 34/0, 27/0, 19/0. Les quatre
+     bancs du 17/09 rejoués sur l'état final (le pressé qui tourne parmi les prompts) : 7/0, 5/0, 8/0, 3/0 ; jumeau identique
+     (base-engine-s16 = d3dbe73), verify-sync 9/0. Sceau : commits 304a648 puis le sceau, poussés sur claude/11c11.
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

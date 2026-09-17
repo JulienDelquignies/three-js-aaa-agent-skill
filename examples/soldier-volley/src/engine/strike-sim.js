@@ -195,7 +195,10 @@ export function beginPass(st, choice, cfg, opts = {}) {
         // (mesuré : 0,85 rad/s — l'EMA et le mélange d'évasion freinent la rotation). Le talon n'est pas un geste de confort : il ne remplace pas le tour.
         c._regard = outYaw; c._regardUntil = st.t + (KO.ouvre ?? 0.3); c._regardOri = true; c._ouvre = st.t + (KO.ouvre ?? 0.3);
         return deny(st, 'orientation');
-      } else { const talon = cands.filter((cd) => cd.data?.surface === 'heel' && dY >= (130 - (cd.data.turn ?? 15)) * Math.PI / 180); if (talon.length) cands = talon; }   // pressé : le talon si la sortie est derrière, sinon l'hier
+      } else {   // PRESSÉ et rien ne tient : le geste qui TOURNE LE PLUS parmi les PROMPTS (armé ≤ anticPresse : la passe posée, 0,38 s, 87° de tour) — le plan d'hier élisait la rapide (0,22 s, 48°) et frappait à 70-140° du regard (12 sur 73 mesurés) ; le pivot (0,52 s) coûtait −20 % de passes sur 8 graines (l'ancre et l'urgence) ; « le talon si la sortie est derrière » claquait le corps vers la cible (vu en page)
+        const cap = (cd) => Math.min(cd.data?.turn ?? 35, KO.fenetre ?? 60) * Math.PI / 180 + tour * cd.antic;
+        const prompts = cands.filter((cd) => cd.data?.surface !== 'heel' && cd.antic <= (KO.anticPresse ?? 0.4)); if (prompts.length) cands = [prompts.reduce((b, cd) => (cap(cd) > cap(b) ? cd : b), prompts[0])];
+      }
     }
     const plan = planStrike([c.p[0], c.p[2]], bref, outYaw, cands,
       { rushed: nearFoe < cfg.rushedRadius, ...(couple ? { hardMax: 1.0, adjustSpeed: 4.2 } : {}) });

@@ -36,7 +36,7 @@ console.log('— (a) le match : la passe qui avance existe, le long retrait recu
 const A = match({}), N = match({ verticalite: null });
 ok(`LES PASSES LONGUES QUI AVANCENT (≥ 15 m, ≥ 8 m de gain) : ${A.longuesAvant} avec la clé (2 × 300 s, graines 3 et 7) contre ${N.longuesAvant} hier — au moins 1,2 × hier`, A.longuesAvant >= N.longuesAvant * 1.2);
 ok(`LES LONGS RETRAITS (≥ 12 m de recul) : ${A.retraitLong} avec la clé contre ${N.retraitLong} hier — pas plus qu'hier`, A.retraitLong <= N.retraitLong);
-ok(`…sans dégrader le monde : ${A.pertes} pertes pour ${A.passes} passes (${(A.pertes / A.passes).toFixed(2)} par passe) contre ${N.pertes} pour ${N.passes} hier (${(N.pertes / N.passes).toFixed(2)}) — au plus 1,1 × + 0,02 par passe, et au moins 0,9 × les passes`, A.pertes / A.passes <= N.pertes / N.passes * 1.1 + 0.02 && A.passes >= N.passes * 0.9);
+ok(`…sans dégrader le monde : ${A.pertes} pertes pour ${A.passes} passes (${(A.pertes / A.passes).toFixed(2)} par passe) contre ${N.pertes} pour ${N.passes} hier (${(N.pertes / N.passes).toFixed(2)}) — au plus 1,1 × + 0,02 par passe, et au moins 0,75 × les passes (le pressé qui tourne — 395 — et le porteur qui attaque — 397 — vivent avec : moins de passes, c'est le monde du 17/09)`, A.pertes / A.passes <= N.pertes / N.passes * 1.1 + 0.02 && A.passes >= N.passes * 0.75);
 
 // LA FIXTURE : le porteur libre au milieu, un avant LIBRE dans l'espace à 22 m devant (en jeu : la ligne défensive est 4 m devant lui), un défenseur libre 12 m derrière, une ligne adverse
 const fixture = (over) => {

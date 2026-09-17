@@ -305,7 +305,9 @@
   avec leur portée, le retrait qui se paie (cfg.verticalite) ; l'épaule attaquée, le crochet et le passement en course
   (cfg.decalage : crochets 0 → 3-4 / 10 min) ; le receveur qui court à l'opposé et s'ouvre pendant le vol (cfg.receveurOuvert :
   60 → 29-37 % de receveurs en course servis dans le dos). Dettes nommées au tronc : la touche orientée en course (le porté
-  soudé vient de la fenêtre de contrôle de la réception), le 1c1 gagné au bout de la course (loi de duel).
+  soudé vient de la fenêtre de contrôle de la réception), le 1c1 gagné au bout de la course (loi de duel), la talonnade
+  honnête (le corps claque vers la cible). Bilan 8 graines × 300 s, hier → aujourd'hui : passes 378 → 318, pertes 159 → 160,
+  réussite 0,65 → 0,66 — moins de passes et plus de duels ; boutons decalage.tenir / plancher, orientationPasse.anticPresse.
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
