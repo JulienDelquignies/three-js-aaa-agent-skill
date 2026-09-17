@@ -13137,7 +13137,9 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      0,42 s contre 2,52 s sans l'appel. ATTRAPÉ EN ÉCRIVANT LA FIXTURE : elle téléporte la défense, et la couche de
      croyance du porteur (266) mettait 1,5 s à la voir — la course de beginPass refusait la passe sur des fantômes à 1 m
      (deny 'course', l'intention re-décidée au vetoTtl) ; la fixture épingle croyance:null — elle mesure la tenue, pas la
-     perception. Sous-clé : appel:false = le 396 seul.
+     perception. Sous-clé : appel:false = le 396 seul. RELU AU SCEAU (403 f) : à 8 graines canoniques la part d'occasions de
+     profondeur PRISES ne progresse pas (14,8 → 11,9 %) — la course de beginPass refuse la passe longue vers un avant posé ;
+     l'appel de l'avant, côté receveur, est le lot suivant.
 - 401: LA TALONNADE HONNÊTE (17/09, cfg.orientationPasse.talon — approach.anchorFor opts.dos, planStrike talonDos, le
      payload dos, le glissement de rondo-sim). Vu en page au 395 : anchorFor posait le regard SUR la sortie pour toutes les
      stances — le talon (ballon à 153° derrière) claquait le corps vers la cible (le glissement l'excluait du taux borné) et
@@ -13155,12 +13157,13 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      s'assoit au moins bite 0,6 s (la pointe au ralenti de movement, biteSlow). EFFET MESURÉ FAIBLE (battus 1/7 → 2/14) :
      le 1c1 mené au bout demande la trajectoire de sortie par l'épaule et la reprise du défenseur — le modèle de duel du
      tronc, dette maintenue. Banc : verify-decalage (e) — la morsure tenue ≥ 0,6 s sur le passement vendu au jockey posté.
-     BILAN DES LOTS 6-9 AU SCEAU (8 graines × 300 s, le receveur ouvert retiré, les quatre clés vivantes ; hier → lots 1-9)
-     — graines 41-71 : passes 378 → 288, pertes 159 → 156 (par passe 0,42 → 0,54), réussite 0,65 → 0,64, tirs 12 → 15,
-     buts 5 → 4 ; graines 3-59 (un second jeu, pour ne pas juger sur un seul) : passes 362 → 282, pertes 151 → 166 (0,42 →
-     0,59), réussite 0,58 → 0,61, tirs 13 → 8, buts 2 → 3. Avant le retrait du receveur (même graines 41-71) : 313 / 154 /
-     10 tirs. LE PRIX NOMMÉ : un quart de passes en moins (le porteur conduit, fixe, décale au lieu de redonner en une
-     touche) et plus de pertes par passe — les tirs ne bougent pas d'un jeu de graines à l'autre. À relire en page.
+     BILAN DES LOTS 6-9 AU SCEAU (8 graines × 300 s, le receveur ouvert retiré, la touche à libre 4 m, les quatre clés
+     vivantes ; hier → lots 1-9) — graines 41-71 : passes 378 → 304, pertes 159 → 160 (par passe 0,42 → 0,53), réussite
+     0,65 → 0,63, tirs 12 → 12, buts 5 → 3 ; graines 3-59 (un second jeu, pour ne pas juger sur un seul) : passes 362 → 292,
+     pertes 151 → 152, réussite 0,58 → 0,63, tirs 13 → 10, buts 2 → 3. Avant le retrait du receveur (graines 41-71, libre 3) :
+     313 / 154 / 10 tirs. LE PRIX NOMMÉ : un cinquième de passes en moins (−12 % de temps de jeu : plus de coups francs et de
+     corners ; −10 % de passes par seconde jouée : le porteur conduit au lieu de redonner en une touche), les pertes et les
+     tirs ne bougent pas. Le détail par défaut nommé au 403 (f).
 - 403: LE SCEAU DES LOTS 6-9 — CE QUE LA SUITE A ATTRAPÉ (17/09). (a) LE ROULÉ MORT : la suite rendait lots 276/277 rouges (0 tir
      en 600 s, graine 3, le monde vivant) — tracé : une touche à 320 s, le ballon hors d'atteinte, le ramasseur roule 32 m, le
      ballon meurt à 11,7 m du point APRÈS la fenêtre de 6 s (personne n'y va, le lanceur attend au point) : la touche gèle
@@ -13185,7 +13188,17 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      des passes contre des conduites : la perte par passe monte mécaniquement et ne juge pas cette clé). (e) LA SONDE DU PORTÉ
      RELUE : sonde-match suivait le porteur par ball.owner — la touche orientée et le dribble libèrent le ballon entre deux
      touches, les conduites du monde nouveau se fragmentaient (147 conduites, 2,4 m d'avancée médiane) ; par le porteur de la
-     possession : 318 conduites, 157 longues, 5,5 m d'avancée médiane, 150 virages, 20 décalages, rectitude 0,925.
+     possession : 318 conduites, 157 longues, 5,5 m d'avancée médiane, 150 virages, 20 décalages, rectitude 0,925 — et
+     hier, à la même sonde : 353 / 203 / 5,8 m / 201 / 32 / 0,920. (f) LE VERDICT À 8 GRAINES, DÉFAUT PAR DÉFAUT (graines
+     41-71, hier → aujourd'hui) : les passes planifiées hors du geste (60-90° du regard) 33 → 15 et 90°+ 55 → 42 (les talons
+     honnêtes) ; les passements EN COURSE 10 → 20 ; la part en une touche 0,20 → 0,17 ; les longs retraits 32 → 30 (la part
+     8,5 → 9,9 %) ; les occasions de profondeur PRISES 20/135 → 15/126 (14,8 → 11,9 % : la profondeur n'a PAS progressé dans
+     le monde — la course de beginPass refuse la passe longue vers un avant POSÉ ; l'appel de l'avant, côté receveur, est le
+     prochain lot) ; les demi-tours après la prise 0,24 → 0,23 (les ballons reçus de dos 0,45 → 0,56 : les passes vers
+     l'avant, reçues face au but) ; les combinaisons 105 → 92 (la part par passe 0,28 → 0,30) ; les décalages en conduite 32 →
+     20 (9 → 6 % des conduites). LES MÉCANISMES SONT LÀ (les fixtures et les bancs), LE MONDE BOUGE PEU — et il paie un
+     cinquième de passes. À juger en page ; chaque clé se rend nulle séparément (orientationPasse, verticalite, decalage,
+     toucheOrientee).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

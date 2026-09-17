@@ -312,9 +312,11 @@
   du receveur libre emmène le ballon du côté ouvert au lieu de le capturer (cfg.toucheOrientee : porté soudé 49 → 38 %,
   tirs 3 → 7 sur 4 graines) ; l'élu dans l'espace part au holdMin (cfg.verticalite.appel : pertes 76 → 67) ; la talonnade
   honnête, le corps dos à la cible (cfg.orientationPasse.talon) ; la morsure tenue après un geste vendu (cfg.decalage.sortie,
-  effet faible — le 1c1 mené au bout reste une loi de duel). Bilan au sceau (8 graines × 300 s, hier → lots 1-9) : passes
-  378 → 288, pertes 159 → 156, tirs 12 → 15 sur les graines 41-71 ; 362 → 282, 151 → 166, 13 → 8 sur les graines 3-59 —
-  un quart de passes en moins et plus de pertes par passe, le prix nommé de la conduite qui décale.
+  effet faible — le 1c1 mené au bout reste une loi de duel). Bilan au sceau (8 graines × 300 s, hier → lots 1-9, note 403) :
+  passes 378 → 304, pertes 159 → 160, tirs 12 → 12 sur les graines 41-71 ; 362 → 292, 151 → 152, 13 → 10 sur les graines
+  3-59 — un cinquième de passes en moins (−12 % de temps de jeu, −10 % de passes par seconde jouée), pertes et tirs stables ;
+  les mécanismes sont là, le monde bouge peu (passements en course ×2, passes hors du geste ÷2, profondeur prise sans
+  progrès : l'appel de l'avant est le prochain lot). Attrapé au sceau : le roulé mort du ramasseur (cfg.ramasseurs.rattrape).
 - LES DEUX DOCS DE TRAVAIL (16/09) : docs/Branchements_Moteur_Animations.md (ce que la sim doit brancher pour les gestes qui existent :
   le pied sur le ballon, la tête armée, le double geste des remises lancées, le mur, le lacet lissé, la vitesse figée, la frappe en miroir,
   la touche longue chez le coach, les prises aériennes) et docs/Animations_A_Faire.md (les gestes qui manquent et leurs déclencheurs).
