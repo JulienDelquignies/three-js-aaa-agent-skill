@@ -13234,6 +13234,23 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      nommés au 281). Annexes 875 ✓ / 2 ✗ : loi12 (le mur, hérité) ; identification et signes vertes sans regel. Réexécution
      isolée du 279 : 2/0 (4 tirs instep). Bloc 1 seul : 0,46 ms/step (≤ 1,6). Sceau : commit 98d471c, poussé ; déploiement showcase-pi-mocha au deuxième essai (cmp du chunk
      Rondo-BMgqLBqF — le pré-filtre de la porte du tir y est).
+- 405: LA FUSION DU 17/09 (« merge avec l'autre branche ») — la branche claude/11c11-3d-animations-ob06xa (7 commits
+     depuis d3dbe73, mon sceau du 281 : la relecture du match du 17/09, lots 6-9, notes 395-403 — la passe dans le sens
+     du geste (orientationPasse), la verticalité (verticalite), la conduite qui décale (decalage), la touche orientée
+     en course (toucheOrientee, touche-orientee.js), l'espace devant qui casse la tenue, la talonnade honnête, la sortie
+     menée au bout, le roulé mort rattrapé (ramasseurs.rattrape) ; le receveur ouvert retiré) dans la mienne (282, la
+     porte du tir). Base commune d3dbe73 : deux conflits — NOTES (leurs 395-403 gardées, ma note du 282 renumérotée
+     395 → 404) et le bloc 279 de verify-match11 (leurs quatre clés nulles DATÉ 17/09 et mon prefiltreTir null DATÉ 282
+     combinés sur la même ligne). Les trois copies moteur identiques après fusion. JUMEAU DANS LES DEUX SENS : fusionné +
+     prefiltreTir null = leur HEAD 7c62a5d au bit (326ae7bb803ff4f9 / fffdfa37645b241d — et le défaut fusionné rend la
+     même empreinte : ma loi est inerte à 90 s) ; fusionné + orientationPasse, verticalite, decalage, toucheOrientee nuls +
+     ramasseurs d'hier (sans rattrape) = mon HEAD 038034f au bit (afff3ab4b4fbbdac / 7f45f8db1717cd98). Banc complet sur l'état fusionné
+     (final285 : 8 shards puis 49 annexes — les leurs comprises : orientation 8/0, touche-orientee 6/0, verticalite 6/0,
+     decalage 9/0) : 1254 ✓ / 7 ✗ au premier passage, AUCUNE épingle à poser — match11 329 ✓ / 2 ✗ (246d, le FLUX des
+     couloirs : hérités, nommés aux 281-282) ; annexes 925 ✓ / 5 ✗ : loi12 (le mur, hérité), et trois annexes que le tronc
+     n'avait jamais listées, rouges sur LES DEUX PARENTS (worktrees 7c62a5d et 038034f) — renversement (0 renversement /
+     match, jeu axial 35 %), moments (les miroirs en flux), loi15 (l'apex de la touche 4,37 m > 3,4) : hérités, à re-dater
+     par leur lot. Bloc 1 seul : 0,58 ms/step (≤ 1,6). SCEAU_FUSION
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

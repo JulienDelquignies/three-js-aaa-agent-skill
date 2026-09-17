@@ -683,6 +683,9 @@ tryShot avant toute évaluation ; les frappes dos au but disparaissent (4,2 → 
 le porteur muré garde le ballon en surface (touches 50 → 63) ; le volume tient (0,63 → 0,55 tir par touche pour 0,32) : la porte du 272
 compare à une continuation PETITE (EV_cont p50 0,024) — le prochain levier est le point de réception à meilleur xG, pas un seuil.
 
+**FUSION DU 17/09 (405).** La relecture du match du 17/09 de la branche animations (lots 6-9, notes 395-403 : orientationPasse,
+verticalite, decalage, toucheOrientee, ramasseurs.rattrape) fusionnée sur le 282 — jumeau prouvé dans les deux sens.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
