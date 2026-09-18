@@ -13438,7 +13438,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      garde-fou rouge depuis le 284 REDEVIENT VERT (pertes 103 c. 106), la pausa au pied épinglée, les trois empreintes DATEES regelées ;
      identification regelée 21 → 11 (la plage des lots 280-286 est 10-24 ; 6 × 240 s ne tiennent pas 5/6 quand le monde bouge) ;
      hérités inchangés : loi12 le mur (2), loi15 la cloche, renversement (l'orientation), 246d. Réexécutions isolées vertes ; bloc 1
-     seul 0,56 ms/step (1,37 en contention des 8 shards). SCEAU_287
+     seul 0,56 ms/step (1,37 en contention des 8 shards). SCEAU 287 : commit 45c5b26 poussé ; build + deploy
+     Vercel prod (https://showcase-pi-mocha.vercel.app), Rondo-Bl70KgOo.js identique au bit (cmp, 623 403 octets).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
