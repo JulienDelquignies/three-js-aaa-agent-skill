@@ -13402,7 +13402,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      285, la vraie est celle-ci). Banc complet (final292 : 8 shards puis 49 annexes) : 1265 ✓ / 7 ✗ au premier passage, AUCUNE épingle
      (le monde par défaut est celui du 285 au bit) — match11 341 ✓ / 1 ✗ (246d, hérité) ; annexes 924 ✓ / 6 ✗ : loi12 (le mur),
      loi15, renversement (l'orientation — et le lot 99, rouge à HEAD~ 81be7bf aussi : hérité du 285, nommé ici), signes (le
-     garde-fou, hérité du 284) — tous hérités. Bloc 1 seul : 0,61 ms/step (≤ 1,6). SCEAU_286
+     garde-fou, hérité du 284) — tous hérités. Bloc 1 seul : 0,61 ms/step (≤ 1,6). Sceau : commit 5290ce0, poussé ; déploiement showcase-pi-mocha (cmp du chunk Rondo-BeYjWC2R.js — la loi
+     nommée y est, éteinte).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
