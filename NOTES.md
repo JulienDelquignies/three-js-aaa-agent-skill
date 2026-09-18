@@ -13372,7 +13372,8 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      LAT A|profondeur, LAT A|appel, LAT C|appel, LAT D|largeurR, MDC A|largeurR, MO A|press, MDC B|profondeur, MDC C|largeurR,
      MDC C|profondeur, AV A|largeurR, AIL D|largeurR) ; hérités : loi12 (le mur), et le garde-fou des signes (passes 340 c. 346,
      pertes 124 c. 107 ≤ +15 %) — rouge à HEAD~ 3d79d38 AUSSI : la borne min 3 → 5 du 284 a été posée après son banc, les annexes
-     n'ont pas été rejouées, nommé ici. Réexécutions isolées toutes vertes. Bloc 1 seul : 0,65 ms/step (≤ 1,6). SCEAU_285
+     n'ont pas été rejouées, nommé ici. Réexécutions isolées toutes vertes. Bloc 1 seul : 0,65 ms/step (≤ 1,6). Sceau : commit 45a43bd, poussé ; déploiement showcase-pi-mocha au premier essai (cmp du chunk
+     Rondo-91ZWpKs5 — l'attente vivante y est).
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.
