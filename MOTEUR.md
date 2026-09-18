@@ -534,6 +534,24 @@ maximum de l'écart, événements 'touche' d'un autre corps) — des duels, pas 
 VISUEL du port (le pied du clip et le ballon : foot-lock, gait, les touches du 11c11) — la branche animations, nommé, pas
 mesurable ici. Clés absentes : hier au bit.
 
+### La une-touche jugée par son angle (lot 287, `cfg.layoff` — `layoff.js`)
+
+Les retours du 17/09, point 2 (les passes en une touche). Sondé (`scripts/book/sonde-287.mjs`, 4 × 90 min) : 11-15 une-touche par match,
+déviation p90 166°, réussite qui s'effondre au-delà de 90° ; la dispersion du geste ignorait l'angle et le tri des cibles ne lisait que
+la marge nue du couloir.
+
+- **`sigmaLayoffF(dev, arr, K, layoffF)`** : le facteur de dispersion — × (1 + kDev × dev/90°) × (1 + kV × (arr − v0)/vRef)+ × layoffF.
+- **`scoreLayoffDe(x, K)`** : la marge du couloir plafonnée à margeMax − kDev2 par 90° − kFoe par mètre sous foeRef + face.
+- **`impossibleDe(dev, presse, K)`** : au-delà de devMax hors pression, la une-touche n'est pas tentée. `premiere-intention.js` les lit :
+  les candidats portent dev / foe / face, le tri garde la priorité du relais chaud puis lit le score, la dispersion paie l'angle.
+- **Attributs** : `layoffF` (technique | control, [1,15 ; 0,85], 1 à 50). Les portes de style, tempo et relais restent celles des lots
+  44-240.
+- **Config** `layoff: { kDev: 0.8, kV: 0.5, v0: 5, vRef: 5, margeMax: 4, kDev2: 2, kFoe: 1, foeRef: 3, face: 1, devMax: 135 }` ; clé
+  absente : la une-touche d'hier au bit.
+- **Mesuré après** (4 × 45 min) : 11 → 8 une-touche par match, déviation p90 166 → 109°, au-delà de 135° 8 → 0, réussite 64 → 64 % ;
+  les passes rapides après contrôle 45 → 42 par match, 49 → 53 %.
+- **Nommé** : les passes rapides après contrôle (45 par match, 49 %) — le barème de la passe qui ignore l'angle du ballon reçu.
+
 ### La touche qui engage (lot 286, `cfg.toucheEngage` — `engage.js`, éteinte par défaut)
 
 Les retours du 17/09, point 2 (les contrôles). Sondé (`scripts/book/sonde-286.mjs`, 4 × 90 min) : après un contrôle, un demi-tour de

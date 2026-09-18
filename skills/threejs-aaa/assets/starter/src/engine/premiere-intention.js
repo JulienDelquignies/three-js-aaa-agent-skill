@@ -1,4 +1,4 @@
-import { tirage } from './rng.js';
+import { tirage } from './rng.js'; import { sigmaLayoffF, scoreLayoffDe, impossibleDe } from './layoff.js';
 // premiere-intention.js — JOUER LE BALLON SANS LE POSSÉDER : la famille de la première
 // intention. La remise de tête et la volée vivent dans tete.js (le répertoire aérien) ; ICI
 // vit la passe en UNE TOUCHE au sol (lot 44) — extraite de rondo-sim au bit près quand la
@@ -80,8 +80,10 @@ export function uneTouche(st, p, cfg) {
       .map((m) => { const c = cibleDe(m); return { m, c, d: hyp(c[0] - p.p[0], c[1] - p.p[2]) }; })
       .filter((x) => x.d > (V ? (V.dMin ?? 2.5) : 3) && x.d < (UT.portee ?? 14));   // (216) la remise très courte est un candidat
     if (force && !cands0.length) refus('ar-portee');
+    const LO = st.full && cfg.layoff ? cfg.layoff : null;   /* (287) la remise jugée par son angle : dev / foe / face par candidat, le score au tri, l'angle impossible se contrôle */
     const candsL = cands0
-      .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.c[0], 0, x.c[1]], blockers).margin ?? 0 }))
+      .map((x) => ({ ...x, marge: laneClearance([p.p[0], 0, p.p[2]], [x.c[0], 0, x.c[1]], blockers).margin ?? 0, ...(LO ? { dev: Math.acos(Math.max(-1, Math.min(1, ((x.c[0] - p.p[0]) * st.ball.v[0] + (x.c[1] - p.p[2]) * st.ball.v[2]) / (x.d * bvl0)))), foe: Math.min(...blockers.map((b) => hyp(b[0] - x.c[0], b[2] - x.c[1])), 99), face: (x.c[0] - p.p[0]) * Math.cos(p.yaw) + (x.c[1] - p.p[2]) * Math.sin(p.yaw) > 0 } : {}) }))
+      .filter((x) => !LO || !impossibleDe(x.dev, pressOk || force, LO))
       .filter((x) => x.marge >= (V ? (V.couloir ?? 0.9) : (UT.couloir ?? 0.5)) * ((x.m._troisT ?? -1) > st.t ? (V ? (V.chas ?? 0.22) : (UT.chas ?? 1)) : 1))   // …ET LA UNE-TOUCHE ORDINAIRE VEUT UN COULOIR (216 : à 0,5 m la remise rapide se faisait intercepter — 73 % ; à 0,9 : 77 %, les passes de jeu retrouvent 78 %) ; le relais chaud garde ses 0,2 m absolus (0,9 × 0,22)   // …ET LE RETOUR ACCEPTE LE CHAS (209, dette 196 : les refus mesurés à marge 0,05-0,35 — le donne-et-va rend PAR NATURE dans le couloir étroit du presseur contourné ; le une-deux réel ose la remise rasante). Relais froid : le 0,5 d'hier.;
     if (force && cands0.length && !candsL.length) refus('ar-couloir');
     const cands = candsL
@@ -99,7 +101,8 @@ export function uneTouche(st, p, cfg) {
     const candAR = force ? cands.filter((x) => (x.c[0] - p.p[0]) * Math.cos(p.yaw) + (x.c[1] - p.p[2]) * Math.sin(p.yaw) > 0) : [];   // (240) DE FACE d'abord — s'il n'y en a pas, tous
     if (force && cands.length && !candAR.length) refus('ar-de-dos');   // (informatif : la remise part quand même, vers un appui dans le dos)
     const mate = (candAR.length ? candAR : cands)
-      .sort((a, b) => ((prioV ? (((b.m._troisT ?? -1) > st.t) - ((a.m._troisT ?? -1) > st.t)) : 0)   // (218c, V.relaisPrio) LE RELAIS CHAUD FAISABLE PASSE DEVANT : sans bloqueur la marge d'un appui vaut 99 et écrasait le coureur (marge 1-3 + bonus) — 11 murs en une touche, 1 retour ; absente : le barème d'hier
+      .sort((a, b) => ((prioV ? (((b.m._troisT ?? -1) > st.t) - ((a.m._troisT ?? -1) > st.t)) : 0)
+        || (LO ? scoreLayoffDe(b, LO) - scoreLayoffDe(a, LO) : 0)   // (218c, V.relaisPrio) LE RELAIS CHAUD FAISABLE PASSE DEVANT : sans bloqueur la marge d'un appui vaut 99 et écrasait le coureur (marge 1-3 + bonus) — 11 murs en une touche, 1 retour ; absente : le barème d'hier
         || ((b.marge + ((b.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0))
         - (a.marge + ((a.m._troisT ?? -1) > st.t ? (V ? (V.bonus3 ?? 1.5) : (UT.bonus3 ?? 1.5)) : 0)))))[0];   // le coureur du relais d'abord (lot 111)
     if (!mate) refus('ut-candidat');
@@ -107,7 +110,7 @@ export function uneTouche(st, p, cfg) {
       st.passes++; st.best = Math.max(st.best, st.passes);
       st.events.push({ t: +st.t.toFixed(2), type: 'receive', by: p.id, count: st.passes });
       st.lastTouch = p.team;
-      const sigU = (p.skill?.passSigma ?? cfg.execSigma ?? 0.044) * (pressOk ? 1.6 : 1.3);
+      const sigU = (p.skill?.passSigma ?? cfg.execSigma ?? 0.044) * (pressOk ? 1.6 : 1.3) * (LO ? sigmaLayoffF(mate.dev ?? 0, arrU, LO, p.skill?.layoffF ?? 1) : 1);   /* (287) la dispersion paie l'angle et la vitesse d'arrivée */
       const yawU = Math.atan2(mate.c[1] - p.p[2], mate.c[0] - p.p[0]) + gauss(tirage(st, 'passe', p.id, st.rnd ?? (() => 0.5))) * sigU;   // (218) vers la cible (la course du relais)
       // …ET LE RENVOI S'AMORTIT (lot 51 — « des contrôles pas beaux ») : une première intention
       // DÉVIE le flux, elle ne le renverse pas pleine vitesse (mesuré : un vol de 7 m/s renvoyé

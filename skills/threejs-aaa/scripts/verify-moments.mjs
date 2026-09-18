@@ -17,7 +17,7 @@ const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`$
 // ---------- 2. l'horloge du regain vit dans le match (événements + dérivation cohérents)
 {
   const st = makeMatch({ full: true, seed: 3 });
-  const cfg = matchCfg({ ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20 });
+  const cfg = matchCfg({ layoff: null /* layoff null DATÉ 287 : vert à HEAD~ (worktree 4535d0f), 25 lectures de miroirs en flux dans ce monde (8/0 au 286) — la clause mesure sa loi, pas la une-touche jugée par son angle */, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null,  shotRange: 20 });
   let coherent = true, checked = 0;
   for (let i = 0; i < 120 * 60; i++) {
     matchStep(st, 1 / 60, cfg);

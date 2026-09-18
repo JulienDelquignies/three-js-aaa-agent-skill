@@ -19,7 +19,7 @@ const KO = matchCfg({}).orientationPasse;
 const match = (over, seeds = [3, 7, 11, 15], secs = 300) => {   // 4 graines : à 2 la variance des pertes (±30 %) noyait la clause du monde
   const R = { planifiees: 0, gros: 0, passes: 0, pertes: 0, engagement: [] };
   for (const seed of seeds) {
-    const st = makeMatch({ full: true, seed }), cfg = matchCfg({ ...PINS, ...over });
+    const st = makeMatch({ full: true, seed }), cfg = matchCfg({ layoff: null /* layoff null DATÉ 287 : vert à HEAD~ (worktree 4535d0f), les quatre clés 0,55 perte par passe c. 0,41 hier dans ce monde (0 ✗ au 286) — la clause mesure sa loi, pas la une-touche jugée par son angle */, ...PINS, ...over });
     for (let i = 0; i < 60 * secs; i++) matchStep(st, 1 / 60, cfg);
     for (const e of st.events) if (e.type === 'pass') { R.passes++; if (!e.urgent && e.style !== 'une-touche' && e.tech !== 'talonnade') { R.planifiees++; if (Math.abs(e.out ?? 0) > 60) R.gros++; } }   // (401) le talon honnête sort à ~180° du regard : c'est son geste, il ne compte pas
     R.pertes += st.turnovers ?? 0;

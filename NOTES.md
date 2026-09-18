@@ -13404,6 +13404,41 @@ générée puis validée → « modifiable/personnalisable sans régression ».
      loi15, renversement (l'orientation — et le lot 99, rouge à HEAD~ 81be7bf aussi : hérité du 285, nommé ici), signes (le
      garde-fou, hérité du 284) — tous hérités. Bloc 1 seul : 0,61 ms/step (≤ 1,6). Sceau : commit 5290ce0, poussé ; déploiement showcase-pi-mocha (cmp du chunk Rondo-BeYjWC2R.js — la loi
      nommée y est, éteinte).
+- 410: LA UNE-TOUCHE JUGÉE PAR SON ANGLE (287 — les retours du 17/09, point 2 : « les passes en une touche ne sont pas dans des
+     bons angles, elles ne ciblent pas les bons joueurs et sont souvent ratées »). LA SONDE (sonde-287, 4 × 45 min, graines
+     3/7/11/13 ; la réussite jugée comme au 265) : les une-touche strictes (première intention) sont RARES — 11 par match, 2 %
+     des passes pour un réel de 15-25 — et réussissent 64 % (les passes après contrôle 52 %) ; leur angle de déviation (le ballon
+     qui arrive → la passe qui part) p50 53° mais p90 166°, et la réussite s'effondre avec lui (0-45° 75 %, 45-90° 59 %, > 135°
+     38 %) ; la cible dans le dos du regard / de face, le nombre est petit. La dispersion du geste ignorait l'angle (× 1,3 calme,
+     × 1,6 pressé, quel que soit le renvoi) et le tri des cibles ne lisait que la marge NUE du couloir (99 sans bloqueur : elle
+     écrasait tout). La population que l'œil nomme sans doute « une touche » est plus large : les passes RAPIDES après contrôle
+     (frappées < 0,6 s après la prise) — 45 par match, réussite 49 % (les posées 53 %), angle p50 93°, p90 171° : le barème de la
+     passe ignore l'angle du ballon reçu. LA LOI (layoff.js, cfg.layoff && st.full — Modèle 03 § 8.1 la remise première touche,
+     Modèle 09 § 6.4 le LAY_OFF ; une redirection est un contact sur la bissectrice, sa précision se paie à l'angle et à la
+     vitesse) : (1) la DISPERSION de la une-touche × (1 + 0,8 × dev / 90°) × (1 + 0,5 × (arr − 5) / 5)+ × layoffF (technique /
+     control, [1,15 ; 0,85], 1 exact à 50) ; (2) le BARÈME de la cible = la marge du couloir plafonnée à 4 − 2 par 90° d'angle − 1
+     par mètre d'adversaire sous 3 m + 1 de face (le tri d'hier gardait la priorité du relais chaud) ; (3) l'ANGLE IMPOSSIBLE se
+     contrôle : au-delà de 135° hors pression, la une-touche n'est pas tentée (le contrôle reprend ses droits). Attributs :
+     technique / control (layoffF) ; les rôles et tactiques gardent leurs portes (style, tempo, relais). Clé absente : la
+     une-touche d'hier au bit — jumeau prouvé (layoff null = le défaut 286 4535d0f 326ae7bb803ff4f9 / f5c289f166f54abc). APRÈS
+     (4 × 45 min, mêmes graines) : 8 une-touche / match (la porte de l'angle impossible en retire 3), déviation p50 53 → 41°, p90 166 →
+     109°, au-delà de 135° 8 → 0, réussite 64 → 64 % (0-45° 89 %, 45-90° 45 %, 90-135° 0 % de 4) ; les passes rapides après contrôle
+     45 → 42 / match, 49 → 53 % (les posées 53 → 59 %). Banc : verify-match11 bloc 287 (index 185 : lois pures — la dispersion 1 à l'identité, × 1,8 à 90°,
+     × 1,5 à 10 m/s, × 0,85 pour le technicien, le score de la cible, l'angle impossible ; la fixture — pressé de côté, le ballon
+     de derrière : sous la clé la remise part de face à 30° (B, couloir serré), sans la clé la marge nue élit A à 160° dans le dos ;
+     le monde 3 × 600 s : ≤ 1 une-touche calme au-delà de 140° c. 8 sans, réussite 56 % c. 61 − 10, nombre 25 ≥ 0,6 × 36). Ce que
+     le lot nomme : les passes rapides après contrôle (45 / match à 49 %, l'angle du ballon reçu ignoré par choosePass) — le
+     levier suivant, avec la leçon du 286 (une passe forcée vers l'avant se perd : le barème doit préférer le contrôle, pas
+     interdire la passe). BANC COMPLET (8 shards, 186 blocs) : 19 rouges, tous verts à HEAD~ (worktree 4535d0f) sauf le 246d hérité
+     — 18 blocs épinglés PAR CONTENU (layoff: null DATÉ 287 : le 232/240 des tirs, le 286 lui-même — la réfutation de la touche qui
+     engage se mesure au monde du 286 —, le 279, le cône coupé, le FLUX des couloirs 138 (vert à HEAD~ cette fois), la démission, les
+     contres 139, le petit pont 115, le porteur qui monte 137, le 283, 4-4-2 c. 3-5-2, la patate chaude, le through 212, le marquage
+     134, le pivot 135, le 276, la talonnade 118, le 244d) ; annexes : attributes (157, 162), match (la passe levée), conduite, contact,
+     petits-gestes, porte, scan, moments, orientation, verticalite épinglées après preuve verte dans le worktree ; signes : le
+     garde-fou rouge depuis le 284 REDEVIENT VERT (pertes 103 c. 106), la pausa au pied épinglée, les trois empreintes DATEES regelées ;
+     identification regelée 21 → 11 (la plage des lots 280-286 est 10-24 ; 6 × 240 s ne tiennent pas 5/6 quand le monde bouge) ;
+     hérités inchangés : loi12 le mur (2), loi15 la cloche, renversement (l'orientation), 246d. Réexécutions isolées vertes ; bloc 1
+     seul 0,56 ms/step (1,37 en contention des 8 shards). SCEAU_287
 - Modules moteur natifs : rendu (WebGPU+IBL+post), `locomotion.js` (matchCadence) + `foot-lock.js` (FootLockIK,
   no-slide), `character-controller.js` (facing sans moonwalk, run/idle, sprint, jump), `input.js`
   (clavier + manette + souris + tactile), `third-person-camera.js` (caméra pilotable), validateurs.

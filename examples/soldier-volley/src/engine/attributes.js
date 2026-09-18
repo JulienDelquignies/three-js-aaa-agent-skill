@@ -99,6 +99,7 @@ export function makeProfile(ratings = {}) {
     shotSigma: lerp(0.55, 0.10, r('finishing')),                  // m — sur le point visé dans le but
     finF: Math.pow(0.2, r('finishing') - 0.5),                    // × sur le σ D'ANGLE de la frappe (258, cfg.finition) : 2,24 à 0, 1 exact à 50, 0,45 à 100 — Modèle 03 §5.2 (2,5 × 0,2^f̂), recentré à l'identité
     longF: lerp(0.75, 1.25, r('longShots')),                      // × sur l'AUDACE lointaine (le 50 vaut 1 exact — l'identité du monde moyen)
+    layoffF: lerp(1.15, 0.85, r2('technique', 'control')),       // × la dispersion de la une-touche (287) : le technicien redirige juste, 1 exact à 50
     pivotF: lerp(0.85, 1.15, r2('technique', 'agility')),        // × la tolérance du corps au pré-filtre du tir (282) : le pivot souple frappe dos au but
     powF: lerp(0.90, 1.10, r('shotPower')),                       // × sur la VITESSE du geste (279, cfg.repertoire) — 1 exact à 50
     vMaxF: lerp(33, 38, r('shotPower')) / 35.5,                   // × sur la borne physiologique vMax de l'échelle de finition (279) — 1 exact à 50 (35,5 m/s)

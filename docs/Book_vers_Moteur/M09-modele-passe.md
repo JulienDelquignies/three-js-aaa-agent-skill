@@ -43,7 +43,7 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
 | 4 sous-dosage | 60-70 % trop courtes | absent (isotrope) |
 | 5-6 fenêtre et non-télépathie du rendez-vous | 0,4-0,9 s ; +0,25-0,40 s ; 25-40 % non servies | Bible 09 T1 : 11 % servies (89 % non servies) ; fenêtre à instrumenter |
 | 7 ruptures de ligne | 20-45 par équipe | à instrumenter |
-| 8 masque dos-au-but | > 90 % `LAY_OFF` | partiel (240 remise) — à mesurer |
+| 8 masque dos-au-but | > 90 % `LAY_OFF` | partiel (240 remise) — **287** : la une-touche stricte 11-15 / match (2-3 % des passes ; le réel 15-25), réussite 64 % ; sa dispersion paie l'angle de déviation et la vitesse d'arrivée (`layoff.js`), la cible se choisit sur la marge plafonnée, l'angle, l'adversaire et la face ; au-delà de 135° hors pression le contrôle reprend ses droits (p90 de déviation 166 → 109°, 11 → 8 par match). Le > 90 % du book n'est pas mesuré : la population « masque dos-au-but » n'est pas instrumentée |
 | 8 bis monotonie des attributs | | tenu par construction (facteurs) — à balayer |
 | 8 ter hors-jeu au rendez-vous | 100 % licites à la frappe | tenu (`deny` hors-jeu au départ) |
 | cal sol / aérien | 90-95 > aérien | **78 %** / 66 % (ordre ✓, niveau ✗) |
@@ -68,3 +68,6 @@ raté comme taux nominal 2-4 % ; la comptabilité des pertes ; les ruptures de l
 3. **Le rendez-vous et la course avant la frappe** (tests 5, 6, 8 ter ; le 259 — SCELLÉ 334 pour l'appel de l'épaule et la course qui traverse ; le rendez-vous derrière la ligne reste à faire, Bible 09 lot 2).
 4. **La comptabilité des pertes** (tests 3, 3 bis ; Modèle 16 lot 1) : `LossCause` en vocabulaire Opta.
 5. **Le sous-dosage et le masque dos-au-but** (tests 4, 8 ; Bible 14 lot 5).
+   → **287** (`layoff.js`, `cfg.layoff`, `layoffF` technique / control, NOTES 410) : la une-touche jugée par son angle. Reste nommé :
+   la passe RAPIDE après contrôle (45 / match, 49 % de réussite, le barème de `choosePass` ignore l'angle du ballon reçu) — la
+   leçon du 286 tient (préférer le contrôle, ne pas interdire la passe).

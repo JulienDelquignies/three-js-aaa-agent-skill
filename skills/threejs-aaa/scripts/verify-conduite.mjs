@@ -16,7 +16,7 @@ import { conduiteNommee } from '../assets/starter/src/engine/skills-sim.js';
 let pass = 0, fail = 0;
 const ok = (name, cond, info = '') => { (cond ? pass++ : fail++); console.log(`${cond ? '✓' : '✗'} ${name}${info ? ' — ' + info : ''}`); };
 const P = SHANON_PROFILE, K = matchCfg({}).conduiteNommee;
-const PINS = { ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null };
+const PINS = { layoff: null /* layoff null DATÉ 287 : vert à HEAD~ (worktree 4535d0f), le match de 300 s de la conduite nommée (0 ✗ au 286) — la clause mesure sa loi, pas la une-touche jugée par son angle */, ceremonie: null, ramasseurs: null, boiterie: null, entrant: null, petitsGestes: null, passements: null, enchainement: null, orientationPasse: null, verticalite: null, decalage: null, toucheOrientee: null };
 
 console.log('— (a) quatre touches de conduite générées, sous contrat —');
 for (const kind of ['conduiteInterieur', 'conduiteExterieur', 'conduiteLaces', 'conduiteSemelle']) {

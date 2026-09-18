@@ -714,6 +714,11 @@ qui engage (engage.js : T_commit du ch. 8 §6) baisse peu les demi-tours et mont
 corps ouvert plus tôt (170) n'y change rien. Nommé : le demi-tour est l'exécution d'une passe arrière élue (le barème de la passe en
 une touche, le point suivant), le pivot soudé est un geste à animer.
 
+**287 — LA UNE-TOUCHE JUGÉE PAR SON ANGLE : SCELLÉ (410).** La dispersion de la première intention paie l'angle de déviation et la vitesse
+d'arrivée (÷ technique / control), la cible se choisit sur la marge plafonnée, l'angle, l'adversaire et la face, l'angle impossible se
+contrôle (layoff.js) ; la queue des renvois à 160° disparaît (p90 166 → 109°, 11 → 8 par match). Nommé : les passes rapides après contrôle (45 / match,
+49 % de réussite, l'angle du ballon reçu ignoré par le barème) — avec la leçon du 286.
+
 ### Campagne IV — Les débats comme axes (tout du long, à faible coût)
 
 - **Faute tactique (débat 1)** → axe d'équipe `faute` [0..1] (0 : Zeidler, jamais ; 1 : la faute
